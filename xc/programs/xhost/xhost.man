@@ -1,10 +1,21 @@
-.\" $XConsortium: xhost.man,v 1.13 93/08/02 11:13:07 gildea Exp $
+.\" $XConsortium: xhost.man,v 1.14 94/04/11 14:26:17 gildea Exp $
+.\" Copyright 1988 Massachusetts Institute of Technology
+.\"
+.\" Permission to use, copy, modify, distribute, and sell this software and
+.\" its documentation for any purpose is hereby granted without fee, provided
+.\" that the above copyright notice appear in all copies and that both that
+.\" copyright notice and this permission notice appear in supporting
+.\" documentation, and that the name of M.I.T. not be used in advertising or
+.\" publicity pertaining to distribution of the software without specific,
+.\" written prior permission.  M.I.T. makes no representations about the
+.\" suitability of this software for any purpose.  It is provided "as is"
+.\" without express or implied warranty.
 .TH XHOST 1 "Release 6" "X Version 11"
 .SH NAME
-xhost - server access control program for X
+xhost \- server access control program for X
 .SH SYNOPSIS
 .B xhost
-[[+-]name ...]
+[[+\-]name ...]
 .SH DESCRIPTION
 The \fIxhost\fP program 
 is used to add and delete host names or user names to the list allowed
@@ -12,7 +23,7 @@ to make connections to the X server.  In the case of hosts, this provides
 a rudimentary form of privacy control and security.  It is only sufficient
 for a workstation (single user) environment, although it does limit the
 worst abuses.  Environments which require more sophisticated measures should
-implement the user-based mechanism, or use the hooks in the
+implement the user-based mechanism or use the hooks in the
 protocol for passing other authentication data to the server.
 .PP
 Hostnames that are followed by two colons (::) are used in checking DECnet
@@ -21,12 +32,15 @@ connections; all other hostnames are used for TCP/IP connections.
 User names contain an at-sign (@).  When Secure RPC is being used, the
 network independent netname (e.g., "unix.\fIuid\fP@\fIdomainname\fP") can
 be specified, or a local user can be specified with just the username
-and a trailing at-sign (e.g., "joe@").
+and a trailing at-sign (e.g., "pat@").
 .SH OPTIONS
 \fIXhost\fP accepts the following command line options described below.  For
 security, the options that effect access control may only be run from the
 "controlling host".  For workstations, this is the same machine as the
 server.  For X terminals, it is the login host.
+.TP 8
+.B \-help
+Prints a usage message.
 .TP 8
 .BI "\[\+\]" "name"
 The given \fIname\fP (the plus sign is optional)
@@ -59,10 +73,10 @@ This is the only option that may be used from machines other than
 the controlling host.
 .SH DIAGNOSTICS
 For each name added to the access control list,
-a line of the form "\fIname\fP being added to access contro list"
+a line of the form "\fIname\fP being added to access control list"
 is printed.
 For each name removed from the access control list,
-a line of the form "\fIname\fP being removed from access contro list"
+a line of the form "\fIname\fP being removed from access control list"
 is printed.
 .SH FILES
 /etc/X*.hosts
@@ -81,14 +95,10 @@ to remove the machine named
 .I ``display''
 from the access list).
 .PP
-This is not really a bug, but
-the X server stores network addresses, not host names.  If somehow you
-change a host's network address while the server is still running,
-\fIxhost\fP must be used to add the new address and/or remove the old address.
-.SH COPYRIGHT
-Copyright 1988, Massachusetts Institute of Technology.
-.br
-See \fIX(1)\fP for a full statement of rights and permissions.
+The X server stores network addresses, not host names.  This is not
+really a bug.  If somehow you change a host's network address while
+the server is still running, \fIxhost\fP must be used to add the new
+address and/or remove the old address.
 .SH AUTHORS
 Bob Scheifler, MIT Laboratory for Computer Science,
 .br
