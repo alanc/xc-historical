@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: TextAction.c,v 1.18 89/11/01 15:51:09 kit Exp $";
+static char Xrcsid[] = "$XConsortium: TextAction.c,v 1.19 89/11/01 17:00:06 kit Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -50,6 +50,8 @@ SOFTWARE.
 #include <X11/Xaw/TextP.h>
 
 #define SrcScan                XawTextSourceScan
+#define FindDist               XawTextSinkFindDistance
+#define FindPos                XawTextSinkFindPosition
 
 /*
  * These are defined in TextPop.c
@@ -353,7 +355,8 @@ TextWidget ctx;
 XEvent *event;
 XawTextScanDirection dir;
 {
-  XawTextPosition next_line, new, from_left;
+  XawTextPosition new, next_line, junk;
+  int from_left, garbage;
 
   StartAction(ctx, event);
 
@@ -363,16 +366,17 @@ XawTextScanDirection dir;
   new = SrcScan(ctx->text.source, ctx->text.insertPos,
 		XawstEOL, XawsdLeft, 1, FALSE);
 
-  from_left = (ctx->text.insertPos - new);
+  FindDist(ctx->text.sink, new, ctx->text.margin.left, ctx->text.insertPos,
+	   &from_left, &junk, &garbage);
 
   new = SrcScan(ctx->text.source, ctx->text.insertPos, XawstEOL, dir,
 		ctx->text.mult, (dir == XawsdRight));
 
   next_line = SrcScan(ctx->text.source, new, XawstEOL, XawsdRight, 1, FALSE);
 
-  ctx->text.insertPos = SrcScan(ctx->text.source, new,
-				XawstPositions, XawsdRight, from_left, TRUE);
-
+  FindPos(ctx->text.sink, new, ctx->text.margin.left, from_left, FALSE,
+	  &(ctx->text.insertPos), &garbage, &garbage);
+  
   if (ctx->text.insertPos > next_line)
     ctx->text.insertPos = next_line;
 
