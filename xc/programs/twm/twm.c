@@ -53,7 +53,7 @@ in this Software without prior written authorization from the X Consortium.
 
 /***********************************************************************
  *
- * $XConsortium: twm.c,v 1.4 94/07/05 11:16:46 mor Exp $
+ * $XConsortium: twm.c,v 1.131 94/07/06 16:18:51 mor Exp $
  *
  * twm - "Tom's Window Manager"
  *
@@ -140,10 +140,10 @@ unsigned long black, white;
 
 extern void assign_var_savecolor();
 
-Atom TwmAtoms[9];
+Atom TwmAtoms[11];
 
 /* don't change the order of these strings */
-static char* atom_names[9] = {
+static char* atom_names[11] = {
     "_MIT_PRIORITY_COLORS",
     "WM_CHANGE_STATE",
     "WM_STATE",
@@ -152,7 +152,10 @@ static char* atom_names[9] = {
     "WM_TAKE_FOCUS",
     "WM_SAVE_YOURSELF",
     "WM_DELETE_WINDOW",
-    "SM_CLIENT_ID" };
+    "SM_CLIENT_ID",
+    "WM_CLIENT_LEADER",
+    "WM_WINDOW_ROLE"
+};
 
 /***********************************************************************
  *
