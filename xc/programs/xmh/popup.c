@@ -1,4 +1,4 @@
-/* $Header: popup.c,v 1.2 88/01/19 14:39:40 swick Locked $ */
+/* $Header: popup.c,v 2.2 88/01/19 14:39:40 swick Locked $ */
 /* popup.c -- Handle pop-up widgets. */
 
 #include "xmh.h"
@@ -39,8 +39,8 @@ void CenterWidget(parent, child)
 Widget parent, child;
 {
     int x, y;
-    x = (parent->core.width - child->core.width) / 2;
-    y = (parent->core.height - child->core.height) / 2;
+    x = (GetWidth(parent) - GetWidth(child)) / 2;
+    y = (GetHeight(parent) - GetHeight(child)) / 2;
     if (x < 0) x = 0;
     XtMoveWidget(child, x, y);
 }
