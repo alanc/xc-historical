@@ -1,5 +1,5 @@
 ##
-# $XConsortium: Imakefile,v 5.7 91/04/05 17:31:36 hersh Exp $
+# $XConsortium: Imakefile,v 5.8 91/05/06 19:44:06 rws Exp $
 ##
 ## 
 ## Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -32,6 +32,7 @@
   CCOPTIONS = PexCCOptions
 CDEBUGFLAGS = PexPhigsCDebugFlags
     DEFINES = PexPhigsDefines
+API_DEFINES = -DPEXAPIDIR=\"$(PEXAPIDIR)\"
 
 SRCS = ut_path.c ut_mat.c ut_misc.c ut_vers.c utx.c utx_conv.c ut_ntfy.c \
        ut_htab.c
@@ -68,6 +69,8 @@ llib-lut.ln : $(SRCS)
 
 .c.lint:
 	$(LINT) $< $(LINTFLAGS) $(LINT_LIBS) $(XLINT_LIBS) 
+
+SpecialObjectRule(ut_path.o,$(ICONFIGFILES),$(API_DEFINES))
 
 #ifdef HPArchitecture
 SpecialObjectRule(hpext.o, $(IRULESRC)/$(MACROFILE), $(EXT_DEFINES))
