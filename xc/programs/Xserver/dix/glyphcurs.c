@@ -22,7 +22,7 @@ SOFTWARE.
 
 ************************************************************************/
 
-/* $XConsortium: glyphcurs.c,v 5.2 91/01/27 13:01:03 keith Exp $ */
+/* $XConsortium: glyphcurs.c,v 5.1 89/07/03 13:27:00 rws Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -96,9 +96,6 @@ ServerBitsFromGlyph(pfont, ch, cm, ppbits)
     rect.width = cm->width;
     rect.height = cm->height;
 
-/* XXX -- need the proper closure data */
-    (void) LoadGlyphs((pointer) 0, pfont, 1, 2, char2b);
-
     /* fill the pixmap with 0 */
     gcval[0] = GXcopy;
     gcval[1] = 0;
@@ -127,12 +124,15 @@ CursorMetricsFromGlyph( pfont, ch, cm)
     unsigned		ch;
     register CursorMetricPtr cm;
 {
-    register CharInfoPtr 	pci;
+    CharInfoPtr 	pci;
+    int			nglyphs;
+    CARD8		chs[2];
 
-    if (   ch < FONTFIRSTCOL(pfont)
-	|| ch >= FONTFIRSTCOL(pfont) + N1dChars(pfont))
+    chs[0] = ch >> 8;
+    chs[1] = ch;
+    (*pfont->GetGlyphs) (pfont, 1, chs, Linear16Bit, &nglyphs, &pci);
+    if (nglyphs == 0)
 	return FALSE;
-    pci = ADDRXTHISCHARINFO(pfont, ch);
     cm->width = pci->metrics.rightSideBearing - pci->metrics.leftSideBearing;
     cm->height = pci->metrics.descent + pci->metrics.ascent;
     if (pci->metrics.leftSideBearing > 0)
