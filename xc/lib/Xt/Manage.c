@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Manage.c,v 6.5 88/02/03 13:09:59 swick Locked $";
+static char rcsid[] = "$Header: Manage.c,v 6.6 88/02/04 14:22:27 swick Exp $";
 #endif lint
 
 /*
@@ -110,6 +110,7 @@ void XtManageChildren(children, num_children)
     Widget			parent_cache[MAXCHILDREN];
     register WidgetList		unique_parents;
     register Widget		*parentP;
+    Boolean			parent_realized = FALSE;
 
     if (num_children == 0) return;
     if (children[0] == NULL) {
@@ -160,7 +161,7 @@ void XtManageChildren(children, num_children)
 
 	for (; parentP >= unique_parents; parentP--) {
 	    if (XtIsRealized(*parentP)) {
-
+	        parent_realized = TRUE;
 		/* Compute geometry of new managed set of children. */
 		change_managed =
 		    ((CompositeWidgetClass) (*parentP)->core.widget_class)->
@@ -168,12 +169,14 @@ void XtManageChildren(children, num_children)
 		if (change_managed != NULL) (*change_managed) (*parentP);
 	    }
 	}
-	/* Realize each child if necessary, then map if necessary */
-	for (i = 0; i < num_unique_children; i++) {
-	    child = unique_children[i];
-	    if (XtIsRealized(child->core.parent)) {
-		if (! XtIsRealized(child)) XtRealizeWidget(child);
-		if (child->core.mapped_when_managed) XtMapWidget(child);
+	if (parent_realized) {
+	    /* Realize each child if necessary, then map if necessary */
+	    for (i = 0; i < num_unique_children; i++) {
+	        child = unique_children[i];
+		if (XtIsRealized(child->core.parent)) {
+		    if (! XtIsRealized(child)) XtRealizeWidget(child);
+		    if (child->core.mapped_when_managed) XtMapWidget(child);
+		}
 	    }
 	}
     }
