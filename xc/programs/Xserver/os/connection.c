@@ -21,12 +21,11 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: connection.c,v 1.83 88/09/13 16:40:10 jim Exp $ */
+/* $XConsortium: connection.c,v 1.84 88/09/13 17:01:29 jim Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
- *      EstablishNewConnections, CreateWellKnownSockets, 
- *      CloseDownWellKnownSockets,
+ *      EstablishNewConnections, CreateWellKnownSockets, ResetWellKnownSockets,
  *      CloseDownConnection, CheckConnections, AddEnabledDevice,
  *	RemoveEnabledDevice, OnlyListToOneClient,
  *      ListenToAllClients,
@@ -69,6 +68,7 @@ SOFTWARE.
  * sites should be careful to have separate /tmp directories for diskless nodes
  */
 #include <sys/un.h>
+static int unixDomainConnection = -1;
 #endif
 
 #include <stdio.h>
@@ -126,6 +126,36 @@ int swappedClients[MAXSOCKS];
 extern int AutoResetServer();
 extern int GiveUp();
 
+#ifdef UNIXCONN
+static int open_unix_socket ()
+{
+    struct sockaddr_un unsock;
+    int oldUmask;
+    int request;
+
+    unsock.sun_family = AF_UNIX;
+    oldUmask = umask (0);
+#ifdef X_UNIX_DIR
+    mkdir (X_UNIX_DIR, 0777);
+#endif
+    strcpy (unsock.sun_path, X_UNIX_PATH);
+    strcat (unsock.sun_path, display);
+    unlink (unsock.sun_path);
+    if ((request = socket (AF_UNIX, SOCK_STREAM, 0)) < 0) 
+    {
+	Notice ("Creating Unix socket");
+    } 
+    else 
+    {
+	if(bind(request,(struct sockaddr *)&unsock, strlen(unsock.sun_path)+2))
+	    Error ("Binding Unix socket");
+	if (listen (request, 5)) Error ("Unix Listening");
+    }
+    (void)umask(oldUmask);
+    return request;
+}
+#endif /*UNIXCONN */
+
 /*****************
  * CreateWellKnownSockets
  *    At initialization, create the sockets to listen on for new clients.
@@ -148,11 +178,6 @@ CreateWellKnownSockets()
 #endif /* SO_LINGER */
 
 #endif /* TCPCONN */
-
-#ifdef UNIXCONN
-    struct sockaddr_un unsock;
-    int         oldUmask;
-#endif /* UNIXCONN */
 
 #ifdef DNETCONN
     struct sockaddr_dn dnsock;
@@ -238,26 +263,10 @@ CreateWellKnownSockets()
 #endif /* TCPCONN */
 
 #ifdef UNIXCONN
-    unsock.sun_family = AF_UNIX;
-    oldUmask = umask (0);
-#ifdef X_UNIX_DIR
-    mkdir (X_UNIX_DIR, 0777);
-#endif
-    strcpy (unsock.sun_path, X_UNIX_PATH);
-    strcat (unsock.sun_path, display);
-    unlink (unsock.sun_path);
-    if ((request = socket (AF_UNIX, SOCK_STREAM, 0)) < 0) 
-    {
-	Notice ("Creating Unix socket");
-    } 
-    else 
-    {
-	if(bind(request,(struct sockaddr *)&unsock, strlen(unsock.sun_path)+2))
-	    Error ("Binding Unix socket");
-	if (listen (request, 5)) Error ("Unix Listening");
-	WellKnownConnections |= (1 << request);
+    if ((request = open_unix_socket ()) != -1) {
+	WellKnownConnections |= (1L << request);
+	unixDomainConnection = request;
     }
-    (void)umask(oldUmask);
 #endif /*UNIXCONN */
 
 #ifdef DNETCONN
@@ -299,19 +308,20 @@ CreateWellKnownSockets()
 }
 
 void
-CloseDownWellKnownSockets ()
+ResetWellKnownSockets ()
 {
-    register int i;
-    register long l;
-
-    for (i = 0, l = 1L; i < 32; i++, l <<= 1) {
-	if (WellKnownConnections & l) {
-	    (void) close (i);
-	}
+#ifdef UNIXCONN
+    if (unixDomainConnection != -1 &&
+	(WellKnownConnections & (1L << unixDomainConnection))) {
+	(void) close (unixDomainConnection);
+	WellKnownConnections &= ~unixDomainConnection;
+	unixDomainConnection = open_unix_socket ();
+	if (unixDomainConnection != -1)
+	  WellKnownConnections |= (1L << unixDomainConnection);
     }
-    WellKnownConnections = 0;
-    return;
+#endif /* UNIXCONN */
 }
+
 
 /* We want to read the connection information.  If the client doesn't
  * send us enough data, however, we want to time out eventually.
