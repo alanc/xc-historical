@@ -18,7 +18,7 @@ purpose.  It is provided "as is" without express or implied warranty.
 Author: Keith Packard
 
 */
-/* $XConsortium: cfbbitblt.c,v 5.34 90/03/29 18:31:57 keith Exp $ */
+/* $XConsortium: cfbbitblt.c,v 5.35 91/01/27 13:12:41 keith Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -63,6 +63,7 @@ cfbDoBitblt (pSrc, pDst, alu, prgnDst, pptSrc, planemask)
 }
 
 static int (*doBitBlt)() = cfbDoBitbltCopy;
+static unsigned long bitBltPlane = 0;
 
 RegionPtr
 cfbCopyArea(pSrcDrawable, pDstDrawable,
@@ -92,6 +93,7 @@ cfbCopyArea(pSrcDrawable, pDstDrawable,
     int fastClip = 0;		/* for fast clipping with pixmap source */
     int fastExpose = 0;		/* for fast exposures with pixmap source */
     int (*localDoBitBlt)();
+    unsigned long localBitBltPlane;
 
     origSource.x = srcx;
     origSource.y = srcy;
@@ -101,7 +103,9 @@ cfbCopyArea(pSrcDrawable, pDstDrawable,
     origDest.y = dsty;
 
     localDoBitBlt = doBitBlt;
+    localBitBltPlane = bitBltPlane;
     doBitBlt = cfbDoBitbltCopy;
+    bitBltPlane = 0;
 
     if ((pSrcDrawable != pDstDrawable) &&
 	pSrcDrawable->pScreen->SourceValidate)
@@ -325,7 +329,7 @@ cfbCopyArea(pSrcDrawable, pDstDrawable,
 				  origSource.x, origSource.y,
 				  (int)origSource.width,
 				  (int)origSource.height,
-				  origDest.x, origDest.y, (unsigned long)0);
+				  origDest.x, origDest.y, localBitBltPlane);
     }
     (*pGC->pScreen->RegionUninit)(&rgnDst);
     if (freeSrcClip)
@@ -645,6 +649,7 @@ RegionPtr cfbCopyPlane(pSrcDrawable, pDstDrawable,
     	if (bitPlane == 1)
 	{
        	    doBitBlt = cfbCopyPlane1to8;
+	    bitBltPlane = bitPlane;
 	    cfb8CheckOpaqueStipple (pGC->alu,
 				    pGC->fgPixel, pGC->bgPixel,
 				    pGC->planemask);
@@ -667,6 +672,7 @@ RegionPtr cfbCopyPlane(pSrcDrawable, pDstDrawable,
 	    pGC->alu = mfbReduceRop(pGC->alu, pGC->fgPixel);
 	cfbCopyPlaneBitPlane = bitPlane;
 	doBitBlt = cfbCopyPlane8to1;
+	bitBltPlane = bitPlane;
 	ret = cfbCopyArea (pSrcDrawable, pDstDrawable,
 		    pGC, srcx, srcy, width, height, dstx, dsty);
 	pGC->alu = oldalu;
@@ -695,6 +701,7 @@ RegionPtr cfbCopyPlane(pSrcDrawable, pDstDrawable,
 	ValidateGC ((DrawablePtr) pBitmap, pGC1);
 	cfbCopyPlaneBitPlane = bitPlane;
 	doBitBlt = cfbCopyPlane8to1;
+	bitBltPlane = bitPlane;
 	/* no exposures here, scratch GC's don't get graphics expose */
 	(void) cfbCopyArea (pSrcDrawable, (DrawablePtr) pBitmap,
 			    pGC1, srcx, srcy, width, height, 0, 0);
@@ -703,6 +710,7 @@ RegionPtr cfbCopyPlane(pSrcDrawable, pDstDrawable,
 	if (!cfb8CheckPixels(fg, bg))
 	    cfb8SetPixels (fg, bg);
 	doBitBlt = cfbCopyPlane1to8;
+	bitBltPlane = 1;
 	/* no exposures here, copy bits from inside a pixmap */
 	(void) cfbCopyArea ((DrawablePtr) pBitmap, pDstDrawable, pGC,
 			    0, 0, width, height, dstx, dsty);
