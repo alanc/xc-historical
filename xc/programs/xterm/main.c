@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: main.c,v 1.131 89/11/30 20:17:17 jim Exp $";
+static char rcs_id[] = "$XConsortium: main.c,v 1.132 89/12/06 15:31:42 jim Exp $";
 #endif	/* lint */
 
 /*
@@ -49,6 +49,10 @@ SOFTWARE.
 #include <pwd.h>
 #include <ctype.h>
 
+#ifdef att
+#define USE_USG_PTYS
+#endif
+
 #ifndef att
 #define USE_HANDSHAKE
 #endif
@@ -57,7 +61,7 @@ SOFTWARE.
 
 #ifdef SYSV
 #include <sys/termio.h>
-#ifdef STREAMSCONN			/* AT&T SYSV has no ptyio.h */
+#ifdef USE_USG_PTYS			/* AT&T SYSV has no ptyio.h */
 #include <sys/stream.h>			/* get typedef used in ptem.h */
 #include <sys/ptem.h>			/* get struct winsize */
 #include <sys/stropts.h>		/* for I_PUSH */
@@ -550,7 +554,7 @@ char **argv;
 	** of the various terminal structures (which may change from
 	** implementation to implementation).
 	*/
-#ifdef macII
+#if defined(macII) || defined(att)
 	d_tio.c_iflag = ICRNL|IXON;
 	d_tio.c_oflag = OPOST|ONLCR|TAB3;
     	d_tio.c_cflag = B9600|CS8|CREAD|PARENB|HUPCL;
@@ -567,13 +571,15 @@ char **argv;
 	d_tio.c_cc[VEOL2] = CNUL;
 	d_tio.c_cc[VSWTCH] = CNUL;
 
+#ifdef TIOCSLTC
         d_ltc.t_suspc = CSUSP;		/* t_suspc */
         d_ltc.t_dsuspc = CDSUSP;	/* t_dsuspc */
         d_ltc.t_rprntc = 0;		/* reserved...*/
         d_ltc.t_flushc = 0;
         d_ltc.t_werasc = 0;
         d_ltc.t_lnextc = 0;
-#else  /* macII */
+#endif /* TIOCSLTC */
+#else  /* else !macII */
 	d_tio.c_iflag = ICRNL|IXON;
 	d_tio.c_oflag = OPOST|ONLCR|TAB3;
 #ifdef BAUD_0
@@ -1047,6 +1053,7 @@ first_map_occurred ()
 {
     return;
 }
+#define HsSysError(a,b)
 #endif /* USE_HANDSHAKE else !USE_HANDSHAKE */
 
 
@@ -1462,6 +1469,8 @@ spawn ()
 			(void) strcpy(ttydev, ptr);
 		}
 
+#endif /* !USE_HANDSHAKE else USE_HANDSHAKE - from near fork */
+
 #ifdef USE_TTY_GROUP
 	{ 
 #include <grp.h>
@@ -1478,13 +1487,13 @@ spawn ()
 		}
 		endgrent();
 	}
-#else
+#else /* else !USE_TTY_GROUP */
 		/* change ownership of tty to real group and user id */
 		chown (ttydev, screen->uid, screen->gid);
 
 		/* change protection of tty */
 		chmod (ttydev, 0622);
-#endif
+#endif /* USE_TTY_GROUP */
 
 		/*
 		 * set up the tty modes
@@ -1616,7 +1625,6 @@ spawn ()
 #endif	/* TIOCCONS */
 #endif	/* !USE_SYSV_TERMIO */
 		}
-#endif /* !USE_HANDSHAKE else USE_HANDSHAKE - from near fork */
 
 		signal (SIGCHLD, SIG_DFL);
 #ifdef att
