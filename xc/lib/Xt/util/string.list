@@ -1,4 +1,4 @@
-! $XConsortium: string.list,v 1.5 94/01/19 17:09:16 converse Exp $
+! $XConsortium: string.list,v 1.6 94/02/04 17:43:42 converse Exp $
 ! NOTE: To maintain binary compatibility, you can only APPEND items within
 !	a given list!!!!
 
@@ -319,6 +319,8 @@ NdieCallback
 NdiscardCommand
 Nenvironment
 NinteractCallback
+NjoinSession
+NprogramPath
 NresignCommand
 NrestartCommand
 NrestartStyle
@@ -330,6 +332,8 @@ CConnection
 CCurrentDirectory
 CDiscardCommand
 CEnvironment
+CJoinSession
+CProgramPath
 CResignCommand
 CRestartCommand
 CRestartStyle
