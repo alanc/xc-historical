@@ -1,4 +1,4 @@
-/* $XConsortium: xkbSwap.c,v 1.1 93/09/28 22:06:21 rws Exp $ */
+/* $XConsortium: xkbSwap.c,v 1.2 94/04/01 18:48:02 erik Exp dpw $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -73,7 +73,7 @@ SProcXkbSelectEvents(client)
 	    CARD8	*c8;
 	    CARD16	*c16;
 	    CARD32	*c32;
-	} from,to;
+	} from;
 	register unsigned bit,ndx,maskLeft,dataLeft,size;
 
 	from.c8= (CARD8 *)&stuff[1];
@@ -109,12 +109,11 @@ SProcXkbSelectEvents(client)
 	    if (dataLeft<(size*2))
 		return BadLength;
 	    if (size==2) {
-		swaps(&to.c16[0],n);
-		swaps(&to.c16[1],n);
+		swaps(&from.c16[0],n);
+		swaps(&from.c16[1],n);
 	    }
 	    else if (size==4) {
-		swapl(to.c32[0],n);
-		swapl(to.c32[0],n);
+		swapl(from.c32[0],n);
 	    }
 	    from.c8+= (size*2);
 	    dataLeft-= (size*2);
