@@ -1,4 +1,4 @@
-/* $XConsortium: Xlib.h,v 11.219 93/02/15 11:13:18 rws Exp $ */
+/* $XConsortium: Xlib.h,v 11.220 93/06/25 16:29:12 gildea Exp $ */
 /* 
  * Copyright 1985, 1986, 1987, 1991 by the Massachusetts Institute of Technology
  *
@@ -1595,13 +1595,13 @@ extern Status XInitThreads(
 #endif
 );
 
-extern Status XLockDisplay(
+extern void XLockDisplay(
 #if NeedFunctionPrototypes
     Display*		/* display */
 #endif
 );
 
-extern Status XUnlockDisplay(
+extern void XUnlockDisplay(
 #if NeedFunctionPrototypes
     Display*		/* display */
 #endif
