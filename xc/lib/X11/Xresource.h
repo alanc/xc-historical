@@ -1,4 +1,4 @@
-/* $XConsortium: Xresource.h,v 1.15 89/07/20 09:51:24 jim Exp $ */
+/* $XConsortium: Xresource.h,v 1.16 89/07/20 09:59:59 jim Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -64,8 +64,11 @@ SOFTWARE.
  *
  ****************************************************************/
 
-extern char *Xpermalloc();
-    /* unsigned int size;   */
+extern char *Xpermalloc(
+#if NeedFunctionPrototypes
+    unsigned int	/* size */
+#endif
+);
 
 /****************************************************************
  *
@@ -80,14 +83,24 @@ typedef char *XrmString;
 #define NULLSTRING ((XrmString) 0)
 
 /* find quark for string, create new quark if none already exists */
-extern XrmQuark XrmStringToQuark(); /* name */
-    /* XrmString name; */
+extern XrmQuark XrmStringToQuark(
+#if NeedFunctionPrototypes
+    XrmString 		/* string */
+#endif
+);
 
 /* find string for quark */
-extern XrmString XrmQuarkToString(); /* quark */
-    /* XrmQuark name; */
+extern XrmString XrmQuarkToString(
+#if NeedFunctionPrototypes
+    XrmQuark 		/* quark */
+#endif
+);
 
-extern XrmQuark XrmUniqueQuark();
+extern XrmQuark XrmUniqueQuark(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
 
 #define XrmStringsEqual(a1, a2) (strcmp(a1, a2) == 0)
 
@@ -98,15 +111,20 @@ extern XrmQuark XrmUniqueQuark();
  *
  ****************************************************************/
 
-extern void XrmStringToQuarkList();
-    /* char		*name;  */
-    /* XrmQuarkList     quarks; */  /* RETURN */
+extern void XrmStringToQuarkList(
+#if NeedFunctionPrototypes
+    char*		/* string */,
+    XrmQuarkList	/* quarks_return */
+#endif
+);
 
-extern void XrmStringToBindingQuarkList();
-    /* char		*name;      */
-    /* XrmBindingList   bindings;   */  /* RETURN */
-    /* XrmQuarkList     quarks;     */  /* RETURN */
-
+extern void XrmStringToBindingQuarkList(
+#if NeedFunctionPrototypes
+    char*		/* string */,
+    XrmBindingList	/* bindings_return */,
+    XrmQuarkList	/* quarks_return */
+#endif
+);
 
 /****************************************************************
  *
@@ -158,63 +176,94 @@ typedef XrmHashTable XrmSearchList[];
 typedef struct _XrmHashBucketRec *XrmDatabase;
 
 
-extern void XrmInitialize();
+extern void XrmInitialize(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
 
-extern void XrmQPutResource();
-    /* XrmDatabase	    *pdb;	*/
-    /* XrmBindingList       bindings;   */
-    /* XrmQuarkList	    quarks;     */
-    /* XrmRepresentation    type;       */
-    /* XrmValue		    *value;	*/
+extern void XrmQPutResource(
+#if NeedFunctionPrototypes
+    XrmDatabase*	/* database */,
+    XrmBindingList	/* bindings */,
+    XrmQuarkList	/* quarks */,
+    XrmRepresentation	/* type */,
+    XrmValue*		/* value */
+#endif
+);
 
-extern void XrmPutResource();
-    /* XrmDatabase	    *pdb;       */
-    /* char		    *specifier; */
-    /* char		    *type;      */
-    /* XrmValue		    *value;     */
+extern void XrmPutResource(
+#if NeedFunctionPrototypes
+    XrmDatabase*	/* database */,
+    char*		/* specifier */,
+    char*		/* type */,
+    XrmValue*		/* value */
+#endif
+);
 
-extern void XrmQPutStringResource();
-    /* XrmDatabase	    *pdb;       */
-    /* XrmBindingList       bindings;   */
-    /* XrmQuarkList	    quarks;     */
-    /* char		    *str;       */
+extern void XrmQPutStringResource(
+#if NeedFunctionPrototypes
+    XrmDatabase*	/* database */,
+    XrmBindingList      /* bindings */,
+    XrmQuarkList	/* quarks */,
+    char*		/* value */
+#endif
+);
 
-extern void XrmPutStringResource();
-    /* XrmDatabase	    *pdb;       */
-    /* char		    *specifier; */
-    /* char		    *str;       */
+extern void XrmPutStringResource(
+#if NeedFunctionPrototypes
+    XrmDatabase*	/* database */,
+    char*		/* specifier */,
+    char*		/* value */
+#endif
+);
 
-extern void XrmPutLineResource();
-    /* XrmDatabase	    *pdb;       */
-    /* char		    *line;	*/
+extern void XrmPutLineResource(
+#if NeedFunctionPrototypes
+    XrmDatabase*	/* database */,
+    char*		/* line */
+#endif
+);
 
-extern  XrmQGetResource();
-    /* XrmDatabase	    db;		*/
-    /* XrmNameList	    names;      */
-    /* XrmClassList	    classes;    */
-    /* XrmRepresentation    *type;      */  /* RETURN */
-    /* XrmValue		    *value;     */  /* RETURN */
+extern  XrmQGetResource(
+#if NeedFunctionPrototypes
+    XrmDatabase		/* database */,
+    XrmNameList		/* quark_name */,
+    XrmClassList	/* quark_class */,
+    XrmRepresentation*	/* quark_type_return */,
+    XrmValue*		/* value_return */
+#endif
+);
 
-extern Bool XrmGetResource();
-    /* XrmDatabase	    db;		*/
-    /* char		    *name_str;  */
-    /* char		    *class_str; */
-    /* char		    *type;      */  /* RETURN */
-    /* XrmValue		    *value;     */  /* RETURN */
+extern Bool XrmGetResource(
+#if NeedFunctionPrototypes
+    XrmDatabase		/* database */,
+    char*		/* str_name */,
+    char*		/* str_class */,
+    char**		/* str_type_return */,
+    XrmValue*		/* value_return */
+#endif
+);
 
-extern Bool XrmQGetSearchList();
-    /* XrmDatabase	    db;		*/
-    /* XrmNameList	    names;      */
-    /* XrmClassList	    classes;    */
-    /* XrmSearchList	    searchList; */  /* RETURN */
-    /* int		    listLength; */
+extern Bool XrmQGetSearchList(
+#if NeedFunctionPrototypes
+    XrmDatabase		/* database */,
+    XrmNameList		/* names */,
+    XrmClassList	/* classes */,
+    XrmSearchList	/* list_return */,
+    int			/* list_length */
+#endif
+);
 
-extern Bool XrmQGetSearchResource();
-    /* SearchList	    searchList; */
-    /* XrmName		    name;       */
-    /* XrmClass		    class;      */
-    /* XrmRepresentation    *type;      */  /* RETURN */
-    /* XrmValue		    *value;     */  /* RETURN */
+extern Bool XrmQGetSearchResource(
+#if NeedFunctionPrototypes
+    XrmSearchList	/* list */,
+    XrmName		/* name */,
+    XrmClass		/* class */,
+    XrmRepresentation*	/* type_return */,
+    XrmValue*		/* value_return */
+#endif
+);
 
 /****************************************************************
  *
@@ -222,20 +271,31 @@ extern Bool XrmQGetSearchResource();
  *
  ****************************************************************/
 
-extern XrmDatabase XrmGetFileDatabase();
-    /* char	    *filename;  */
+extern XrmDatabase XrmGetFileDatabase(
+#if NeedFunctionPrototypes
+    char*		/* filename */
+#endif
+);
 
-extern XrmDatabase XrmGetStringDatabase();
-    /* char	    *data;      */  /*  null terminated string */
+extern XrmDatabase XrmGetStringDatabase(
+#if NeedFunctionPrototypes
+    char*		/* data */  /*  null terminated string */
+#endif
+);
 
-extern void XrmPutFileDatabase();
-    /* XrmDatabase  db;		*/
-    /* char	    *filename   */
+extern void XrmPutFileDatabase(
+#if NeedFunctionPrototypes
+    XrmDatabase		/* database */,
+    char*		/* filename */
+#endif
+);
 
-extern void XrmMergeDatabases();
-    /* XrmDatabase  new;	*/
-    /* XrmDatabase  *into;      */  /* RETURN */
-
+extern void XrmMergeDatabases(
+#if NeedFunctionPrototypes
+    XrmDatabase		/* source_db */,
+    XrmDatabase*	/* target_db */
+#endif
+);
 
 
 
@@ -264,15 +324,17 @@ typedef struct {
     caddr_t	    value;	    /* Value to provide if XrmoptionNoArg   */
 } XrmOptionDescRec, *XrmOptionDescList;
 
-extern void XrmParseCommand();
-    /* XrmDatabase	    *pdb;	    */
-    /* XrmOptionDescList    options;	    */
-    /* int		    num_options;    */
-    /* char		    *prefix;	    */
-    /* int		    *argc;	    */
-    /* char		    **argv;	    */
 
-
+extern void XrmParseCommand(
+#if NeedFunctionPrototypes
+    XrmDatabase*	/* database */,
+    XrmOptionDescList	/* table */,
+    int			/* table_count */,
+    char*		/* name */,
+    int*		/* argc_in_out */,
+    char**		/* argv_in_out */		     
+#endif
+);
 
 #endif /* _Xresource_h */
 /* DON'T ADD STUFF AFTER THIS #endif */
