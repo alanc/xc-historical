@@ -77,6 +77,7 @@ typedef struct _Parms {
 typedef struct _XParms {
     Display	    *d;
     Window	    w;
+    Pixmap          p;
     GC		    fggc;
     GC		    bggc;
     GC		    ddfggc;
