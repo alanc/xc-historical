@@ -1,5 +1,5 @@
 .\" Use eqn, tbl and -ms and macros.t
-.\" $XConsortium: xlfd.tbl.ms,v 1.19 93/12/29 15:17:57 gildea Exp $
+.\" $XConsortium: xlfd.tbl.ms,v 1.20 93/12/29 18:54:44 gildea Exp $
 .de sC			\" start change
 .mc \s+5\(br\s0		\" make tall enough to span paragraph skip
 ..
@@ -383,6 +383,15 @@ HYPHEN (02/13), the XLFD font name delimiter character
 .IP \(bu 5
 QUESTION MARK (03/15) and ASTERISK (02/10), the X protocol 
 fontname wildcard characters
+.br
+.sC
+.IP \(bu 5
+COMMA (02/12), used by Xlib to separate XLFD font names in a font set.
+.IP \(bu 5
+QUOTATION MARK (02/02), used by some commercial products to quote an
+XLFD font name.
+.br
+.eC
 .LP
 Alphabetic case distinctions are allowed but are for human readability 
 concerns only.
@@ -393,7 +402,8 @@ It is recommended that clients construct font name query patterns
 by explicitly including all field delimiters to avoid unexpected results.
 Note that SPACE is a valid character of a 
 .PN FontName 
-field; for example, the string "ITC Avant Garde Gothic" might be a FAMILY_NAME.
+field; for example, the string \*QITC Avant Garde Gothic\*U might be a
+FAMILY_NAME.
 .NH 3
 FontName Field Definitions
 .XS
@@ -2056,6 +2066,139 @@ T}
 .sp 6p
 _
 .TE
+
+
+.br
+.sC
+.NH 3
+FONT_TYPE
+.br
+.eC
+.XS
+\*(SN FONT_TYPE
+.XE
+.sC
+.LP
+FONT_TYPE is a human-readable string (of type ATOM) which
+describes the format of a font before any rasterization
+operation has been performed on it.  It
+is a static attribute of the source data.  It can be used
+by clients to select a type of bitmap or outline font
+without regard to the rasterizer used to render the font.
+.LP
+Predefined values are
+.TS
+l lw(5i).
+.sC
+_
+.sp 6p
+Value	When applicable
+.sp 6p
+_
+.sp 6p
+\*QBitmap\*U	T{
+.eC
+Hand-tuned bitmap fonts.  Some
+attempt has been made to optimized
+the visual appearance of the font
+for the requested size and
+resolution.
+T}
+.sC
+\*QPrebuilt\*U	T{
+.eC
+All bitmap format fonts which
+cannot be described as \*QBitmap\*U,
+that is, hand-tuned.  For example,
+a bitmap format font which was
+generated mechanically using a
+scaleable font rasterizer
+would be considered \*QPrebuilt\*U, not \*QBitmap\*U.
+T}
+.sC
+\*QType 1\*U	Any Type 1 font.
+\*QTrueType\*U	Any TrueType font.
+\*QSpeedo\*U	Any Speedo font.
+.sp 6p
+_
+.TE
+.LP
+Other values may be registered with the X Consortium.
+.NH 3
+FONT_VERSION
+.br
+.eC
+.XS
+\*(SN FONT_VERSION
+.XE
+.sC
+.LP
+FONT_VERSION is the human-readable string (of type ATOM)
+which describes the formal or informal version of the font.
+This property is optional.  \fBNone\fP is a valid
+value.
+.NH 3
+RASTERSIZER_NAME
+.br
+.eC
+.XS
+\*(SN RASTERSIZER_NAME
+.XE
+.sC
+.LP
+RASTERIZER_NAME is the human-readable string (of type ATOM)
+which is the specific vendor or commercial name of the
+rasterizer that has performed some rasterization operation
+(such as scaling from outlines) on this font.
+.LP
+To define a RASTERIZER_NAME, the following format is
+recommended:
+.TS
+rw(1.5i) lw(3.75i).
+.sC
+RasterizerName ::=	OrganizationId Space Rasterizer
+OrganizationId ::=	T{
+.eC
+STRING8\*-the X Registry ORGANIZATION name
+of the rasterizer vendor or implementor.
+T}
+.sC
+Rasterizer ::=	T{
+.eC
+the case-sensitive, human-readable product name
+of the rasterizer.  Words within this
+name should be separated by a single SPACE.
+T}
+.sC
+Space ::=	OCTET\-the value of ISO 8859-1 SPACE (Column/Row 02/00)
+.TE
+.LP
+Examples:
+.nf
+		X Consortium Bit Scaler
+		X Consortium Type 1 Rasterizer
+		X Consortium Speedo Rasterizer
+		Adobe Type Manager
+.fi
+.LP
+If RASTERIZER_NAME is not defined, or is \fBNone\fP, no
+rasterization operation has been applied to the FONT_TYPE.
+.NH 3
+RASTERSIZER_VERSION
+.br
+.eC
+.XS
+\*(SN RASTERSIZER_VERSION
+.XE
+.sC
+.LP
+RASTERIZER_VERSION is the human-readable string (of type
+ATOM) which represents the formal or informal version of a
+font rasterizer.
+The RASTERIZER_VERSION should match the corresponding
+prodect version number known to users, when applicable.
+.br
+.eC
 .NH 2
 Built-in Font Property Atoms
 .XS
@@ -2096,7 +2239,9 @@ WEIGHT	CARD32
 POINT_SIZE	INT32
 RESOLUTION	CARD32 \- deprecated
 COPYRIGHT	ATOM
+.sC
 FULL_NAME	ATOM \- deprecated
+.eC
 FAMILY_NAME	ATOM
 DEFAULT_CHAR	CARD32
 .sp 6p
