@@ -1,5 +1,5 @@
 /*
- * $XConsortium: sharedlib.c,v 1.9 91/01/09 20:11:42 gildea Exp $
+ * $XConsortium: sharedlib.c,v 1.10 91/05/03 15:33:42 rws Exp $
  * 
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -11,10 +11,11 @@
 #if (defined(SUNSHLIB) || defined(AIXSHLIB)) && !defined(SHAREDCODE)
 #include "IntrinsicI.h"
 #include "VarargsI.h"
-
-#ifdef AIXSHLIB
 #include "ShellP.h"
 #include "VendorP.h"
+
+
+#ifdef AIXSHLIB
 WidgetClass vendorShellWidgetClass = (WidgetClass) &vendorShellClassRec;
 
 static void _XtVendorInitialize()
@@ -126,3 +127,43 @@ Widget XtVaAppInitialize(app_context_return, application_class, options,
 static int dummy;			/* avoid warning from ranlib */
 
 #endif /* SUNSHLIB or AIXSHLIB */
+
+#if defined(SUNSHLIB) && !defined(SHAREDCODE)
+
+int _XtInheritTranslations = 0;
+
+extern CompositeClassRec compositeClassRec;
+WidgetClass compositeWidgetClass = (WidgetClass) &compositeClassRec;
+
+extern ConstraintClassRec constraintClassRec;
+WidgetClass constraintWidgetClass = (WidgetClass) &constraintClassRec;
+
+extern WidgetClassRec widgetClassRec;
+WidgetClass widgetClass = &widgetClassRec;
+WidgetClass coreWidgetClass = &widgetClassRec;
+
+extern ObjectClassRec objectClassRec;
+WidgetClass objectClass = (WidgetClass)&objectClassRec;
+
+extern RectObjClassRec rectObjClassRec;
+WidgetClass rectObjClass = (WidgetClass)&rectObjClassRec;
+
+extern ShellClassRec shellClassRec;
+WidgetClass shellWidgetClass = (WidgetClass) &shellClassRec;
+
+extern OverrideShellClassRec overrideShellClassRec;
+WidgetClass overrideShellWidgetClass = (WidgetClass) &overrideShellClassRec;
+
+extern WMShellClassRec wmShellClassRec;
+WidgetClass wmShellWidgetClass = (WidgetClass) &wmShellClassRec;
+
+extern TransientShellClassRec transientShellClassRec;
+WidgetClass transientShellWidgetClass = (WidgetClass) &transientShellClassRec;
+
+extern TopLevelShellClassRec topLevelShellClassRec;
+WidgetClass topLevelShellWidgetClass = (WidgetClass) &topLevelShellClassRec;
+
+extern ApplicationShellClassRec applicationShellClassRec;
+WidgetClass applicationShellWidgetClass = (WidgetClass) &applicationShellClassRec;
+
+#endif /* SUNSHLIB */
