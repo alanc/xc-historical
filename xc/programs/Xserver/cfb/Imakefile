@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 5.31 91/07/16 22:51:52 gildea Exp $
+XCOMM $XConsortium: Imakefile,v 5.32 91/12/19 14:15:23 keith Exp $
 #include <Server.tmpl>
 
 #ifndef PixelSize
@@ -131,6 +131,7 @@ LinkDepSourceFile(stip68kgnu.h,LinkDirectory)
 LinkDepSourceFile(stipmips.s,LinkDirectory)
 LinkDepSourceFile(stipple68k.s,LinkDirectory)
 LinkDepSourceFile(stipsparc.s,LinkDirectory)
+LinkDepSourceFile(stipsparc32.s,LinkDirectory)
 #endif
 
 #ifdef MipsArchitecture
@@ -155,8 +156,7 @@ stipsparc.o: stipsparc.s
 
 stipsparcte.o: stipsparcte.s
 	$(CPP) -DTETEXT stipsparcte.s | $(AS) -o $@ -
-#endif
-#ifdef SparcArchitecture
+
 stipsparcte32.s: stipsparc32.s
 	$(RM) $@
 	$(LN) stipsparc32.s stipsparcte32.s
@@ -164,10 +164,10 @@ clean::
 	$(RM) stipsparcte32.s
 
 stipsparc32.o: stipsparc32.s
-	$(CPP) stipsparc.s | $(AS) -o $@ -
+	$(CPP) stipsparc32.s | $(AS) -o $@ -
 
 stipsparcte32.o: stipsparcte32.s
-	$(CPP) -DTETEXT stipsparcte.s | $(AS) -o $@ -
+	$(CPP) -DTETEXT stipsparcte32.s | $(AS) -o $@ -
 #endif
 
 ObjectFromSpecialSource(cfbseg,cfbline,-DPOLYSEGMENT)
