@@ -1,4 +1,4 @@
-/* $XConsortium: info.c,v 1.14 94/08/11 19:14:54 mor Exp mor $ */
+/* $XConsortium: info.c,v 1.15 94/08/17 18:24:53 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -565,7 +565,7 @@ XtPointer 	callData;
 	propval.value = (SmPointer) &hint;
 	propval.length = 1;
 	
-	SetProperty (client, &prop);
+	SetProperty (client, &prop, False /* don't free it */);
     }
 
     UpdateClientList ();
@@ -596,6 +596,27 @@ XtPointer 	callData;
 
 
 void
+ClientInfoStructureNotifyXtHandler (w, closure, event, continue_to_dispatch)
+
+Widget w;
+XtPointer closure;
+XEvent *event;
+Boolean *continue_to_dispatch;
+
+{
+    if (event->type == MapNotify)
+    {
+	UpdateClientList ();
+	XawListHighlight (clientListWidget, current_client_selected);
+
+	XtRemoveEventHandler (clientInfoPopup, StructureNotifyMask, False,
+	    ClientInfoStructureNotifyXtHandler, NULL);
+    }
+}
+
+
+
+void
 ClientInfoXtProc (w, client_data, callData)
     Widget	w;
     XtPointer 	client_data;
@@ -603,6 +624,7 @@ ClientInfoXtProc (w, client_data, callData)
 
 {
     Position x, y, rootx, rooty;
+    static int first_time = 1;
 
     if (!client_info_visible)
     {
@@ -620,6 +642,19 @@ ClientInfoXtProc (w, client_data, callData)
 	    XtNx, rootx + 100,
 	    XtNy, rooty + 50,
 	    NULL);
+
+	if (first_time)
+	{
+	    if (num_clients_in_last_session > 0 &&
+		num_clients_in_last_session != numClientListNames)
+	    {
+		XtAddEventHandler (clientInfoPopup, StructureNotifyMask, False,
+	            ClientInfoStructureNotifyXtHandler, NULL);
+	    }
+
+	    first_time = 0;
+	}
+
 	XtPopup (clientInfoPopup, XtGrabNone);
 
 	client_info_visible = 1;
