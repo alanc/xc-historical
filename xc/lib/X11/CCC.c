@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsCCC.c,v 1.10 91/07/25 01:08:25 rws Exp $" */
+/* $XConsortium: XcmsCCC.c,v 1.11 91/12/20 15:58:21 rws Exp $" */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -193,7 +193,7 @@ XcmsDefaultCCC(dpy, screenNumber)
 	 * If ccc->pPerScrnInfo->state == XcmsInitSuccess,
 	 *    then the pPerScrnInfo component has already been initialized
 	 *    therefore, just return ccc.
-	 * If ccc->pPerScrnInfo->state == XcmsInitDefault,
+	 * If ccc->pPerScrnInfo->state == XcmsInitFailure,
 	 *    then this means that we already attempted to initialize
 	 *    the pPerScrnInfo component but failed therefore stuffing
 	 *    the pPerScrnInfo component with defaults.  Just return ccc.
@@ -201,7 +201,7 @@ XcmsDefaultCCC(dpy, screenNumber)
 	 *    then attempt to initialize the pPerScrnInfo component.
 	 */
 	switch (ccc->pPerScrnInfo->state) {
-	   case XcmsInitDefault :
+	   case XcmsInitFailure :
 	    /* fall through */
 	   case XcmsInitSuccess :
 	    return(ccc);

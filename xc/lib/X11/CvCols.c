@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsCvCols.c,v 1.8 91/07/09 14:19:12 rws Exp $" */
+/* $XConsortium: XcmsCvCols.c,v 1.9 91/07/25 01:08:38 rws Exp $" */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -212,8 +212,7 @@ ValidDDColorSpaceID(ccc, id)
 {
     XcmsColorSpace **papRec;
 
-    if (ccc->pPerScrnInfo->state == XcmsInitSuccess ||
-	    ccc->pPerScrnInfo->state == XcmsInitDefault) {
+    if (ccc->pPerScrnInfo->state != XcmsInitNone) {
 	papRec = ((XcmsFunctionSet *)ccc->pPerScrnInfo->functionSet)->DDColorSpaces;
 	while (*papRec != NULL) {
 	    if ((*papRec)->id == id) {

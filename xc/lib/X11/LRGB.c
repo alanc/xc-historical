@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsLRGB.c,v 1.22 92/01/02 19:28:13 rws Exp $" */
+/* $XConsortium: XcmsLRGB.c,v 1.23 92/04/13 19:38:17 rws Exp $" */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -1806,6 +1806,6 @@ _XcmsLRGB_InitScrnDefault(dpy, screenNumber, pPerScrnInfo)
     pPerScrnInfo->screenWhitePt.format = XcmsCIEXYZFormat;
     pPerScrnInfo->screenWhitePt.pixel = 0;
     pPerScrnInfo->functionSet = (XPointer)&XcmsLinearRGBFunctionSet;
-    pPerScrnInfo->state = XcmsInitDefault;
+    pPerScrnInfo->state = XcmsInitFailure; /* default initialization */
     return(1);
 }

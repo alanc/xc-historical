@@ -65,7 +65,7 @@
      */
 #define XcmsInitNone		0x00	/* no initialization attempted */
 #define XcmsInitSuccess		0x01	/* initialization successful */
-#define XcmsInitDefault		0xff	/* initialization failed */
+#define XcmsInitFailure		0xff	/* failure, use defaults */
 
 #define DisplayOfCCC(ccc)		((ccc)->dpy)
 #define ScreenNumberOfCCC(ccc)		((ccc)->screenNumber)
@@ -191,7 +191,7 @@ typedef struct _XcmsPerScrnInfo {
 				/*      Function Set structure		*/
     XPointer	screenData;	/* pointer to corresponding Screen Color*/
 				/*	Characterization Data		*/
-    unsigned char state;	/* XcmsInitNone, XcmsInitSuccess, XcmsInitDefault */
+    unsigned char state;   /* XcmsInitNone, XcmsInitSuccess, XcmsInitFailure */
     char	pad[3];
 } XcmsPerScrnInfo;
 

@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsInt.c,v 1.8 91/07/25 01:08:44 rws Exp $" */
+/* $XConsortium: XcmsInt.c,v 1.9 92/01/02 19:27:32 rws Exp $" */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -262,8 +262,7 @@ _XcmsFreeDefaultCCCs(dpy)
 	 */
 	if (ccc->pPerScrnInfo) {
 	    /* Check if SCCData exists */
-	    if ((ccc->pPerScrnInfo->state == XcmsInitSuccess ||
-		    ccc->pPerScrnInfo->state == XcmsInitDefault)
+	    if (ccc->pPerScrnInfo->state != XcmsInitNone
 		    && ccc->pPerScrnInfo->screenData) {
 		(*((XcmsFunctionSet *)ccc->pPerScrnInfo->functionSet)->screenFreeProc)
 			(ccc->pPerScrnInfo->screenData);
