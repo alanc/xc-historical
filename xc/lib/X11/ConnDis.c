@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XConnDis.c,v 11.77 91/04/04 18:57:12 gildea Exp $
+ * $XConsortium: XConnDis.c,v 11.78 91/04/08 17:02:00 gildea Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -275,21 +275,8 @@ int _XConnectDisplay (display_name, fullnamep, dpynump, screenp,
 
 
     /*
-     * Set the connection non-blocking since we use select() to block; also
-     * set close-on-exec so that programs that fork() doesn't get confused.
+     * Set close-on-exec so that programs that fork() doesn't get confused.
      */
-#if defined(hpux) && defined(FIOSNBIO)
-    {
-	int arg = 1;
-	ioctl (fd, FIOSNBIO, &arg);
-    }
-#else
-#ifdef O_NONBLOCK
-    (void) fcntl (fd, F_SETFL, O_NONBLOCK);
-#else
-    (void) fcntl (fd, F_SETFL, FNDELAY);
-#endif /* O_NONBLOCK */
-#endif /* hpux */
 
 #ifdef FD_CLOEXEC
     (void) fcntl (fd, F_SETFD, FD_CLOEXEC);
@@ -797,5 +784,23 @@ _XSendClientPrefix (dpy, client, auth_proto, auth_string)
 
 #undef add_to_iov
 
-    return WritevToServer (dpy->fd, iovarray, niov) == len;
+    len -= WritevToServer (dpy->fd, iovarray, niov);
+
+    /*
+     * Set the connection non-blocking since we use select() to block.
+     */
+#if defined(hpux) && defined(FIOSNBIO)
+    {
+	int arg = 1;
+	ioctl (dpy->fd, FIOSNBIO, &arg);
+    }
+#else
+#ifdef O_NONBLOCK
+    (void) fcntl (dpy->fd, F_SETFL, O_NONBLOCK);
+#else
+    (void) fcntl (dpy->fd, F_SETFL, FNDELAY);
+#endif /* O_NONBLOCK */
+#endif /* hpux */
+
+    return len == 0;
 }
