@@ -1,5 +1,5 @@
 /*
- * $XConsortium: folder.c,v 2.33 91/02/07 16:30:24 rws Exp $
+ * $XConsortium: folder.c,v 2.34 91/04/02 19:28:36 gildea Exp $
  *
  *
  *		       COPYRIGHT 1987, 1989
@@ -99,15 +99,12 @@ void DoClose(widget, client_data, call_data)
  */
 #ifdef DEBUG_CLEANUP
 	XtDestroyWidget(scrn->parent);
-#else
-	XtUnmapWidget(scrn->parent);
-#endif
-	XtDestroyApplicationContext
-	    (XtWidgetToApplicationContext(scrn->parent));
-#ifdef DEBUG_CLEANUP
 	ExitLoop = TRUE;
 	return;
 #else
+	XtUnmapWidget(scrn->parent);
+	XtDestroyApplicationContext
+	    (XtWidgetToApplicationContext(scrn->parent));
 	exit(0);
 #endif
     }
