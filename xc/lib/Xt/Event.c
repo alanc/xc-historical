@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header$";
+static char rcsid[] = "$Header: Event.c,v 1.39 87/11/01 16:42:39 haynes BL5 $";
 #endif lint
 
 /*
@@ -25,6 +25,8 @@ static char rcsid[] = "$Header$";
  * SOFTWARE.
  */
 #include "Intrinsic.h"
+#include "Atoms.h"
+
 EventMask _XtBuildEventMask(widget)
     Widget widget;
 {
@@ -55,7 +57,7 @@ void XtRemoveEventHandler(widget, eventMask, other, proc, closure)
     p = *pp;
 
     /* find it */
-    while (p != NULL && p->proc != proc && p->closure != closure) {
+    while (p != NULL && (p->proc != proc || p->closure != closure)) {
 	pp = &p->next;
 	p = *pp;
     }
@@ -63,7 +65,7 @@ void XtRemoveEventHandler(widget, eventMask, other, proc, closure)
 
     /* un-register it */
     p->mask &= ~eventMask;
-    p->non_filter = p->non_filter && ! other;
+    if (other) p->non_filter = FALSE;
 
     if (p->mask == 0 && !p->non_filter) {
 	/* delete it entirely */
@@ -96,14 +98,14 @@ void XtAddEventHandler(widget, eventMask, other, proc, closure)
 
    pp = & widget->core.event_table;
    p = *pp;
-   while (p != NULL && p->proc != proc && p->closure != closure) {
+   while (p != NULL && (p->proc != proc || p->closure != closure)) {
          pp = &p->next;
          p = *pp;
    }
 
    if (p == NULL) {
 	/* new proc to add to list */
-	p = (XtEventRec*) XtMalloc((unsigned)sizeof(XtEventRec));
+	p = XtNew(XtEventRec);
 	p->proc = proc;
 	p->closure = closure;
 	p->mask = eventMask;
@@ -149,7 +151,7 @@ static HashTable table = NULL;
 
 static void ExpandTable();
 
-void RegisterWindow(window, widget)
+void _XtRegisterWindow(window, widget)
     Window window;
     Widget widget;
 {
@@ -170,7 +172,7 @@ void RegisterWindow(window, widget)
 	hp = *hpp;
     }
 
-    hp = *hpp = (HashPtr) XtMalloc((unsigned)sizeof(HashRec));
+    hp = *hpp = XtNew(HashRec);
     hp->window = window;
     hp->widget = widget;
     hp->next = NULL;
@@ -178,7 +180,7 @@ void RegisterWindow(window, widget)
 }
 
 
-void UnregisterWindow(window, widget)
+void _XtUnregisterWindow(window, widget)
     Window window;
     Widget widget;
 {
@@ -223,7 +225,7 @@ static void ExpandTable()
 	hp = oldTable->entries[i];
 	while (hp != NULL) {
 	    HashPtr temp = hp;
-	    RegisterWindow(hp->window, hp->widget);
+	    _XtRegisterWindow(hp->window, hp->widget);
 	    hp = hp->next;
 	    XtFree((char *) temp);
 	}
@@ -232,7 +234,7 @@ static void ExpandTable()
 }
 
 
-Widget ConvertWindowToWidget(window)
+Widget XtWindowToWidget(window)
     Window window;
 {
     HashPtr hp;
@@ -246,7 +248,7 @@ Widget ConvertWindowToWidget(window)
     return NULL;
 }
 
-void InitializeHash()
+static void InitializeHash()
 {
     int i;
 
@@ -260,99 +262,7 @@ void InitializeHash()
 }
 
 
-extern void ConvertTypeToMask();
-extern Boolean onGrabList();
-extern void DispatchEvent();
-
-void XtDispatchEvent (event)
-    XEvent  *event;
-
-{
-    Widget widget;
-    EventMask mask;
-    GrabType grabType;
-    Boolean sensitivity;
-#define IsSensitive ((!sensitivity) || (widget->core.sensitive && widget->core.ancestor_sensitive))
-
-    widget =ConvertWindowToWidget (event->xany.window);
-    if (widget == NULL) return;
-    ConvertTypeToMask(event->xany.type, &mask, &grabType, &sensitivity);
-    if ((grabType == pass || grabList == NULL) && IsSensitive)
-           DispatchEvent(event,widget, mask);
-    else if (onGrabList(widget)) {
-           if (IsSensitive) DispatchEvent(event,widget,mask);
-           else DispatchEvent(event, grabList->widget, mask);
-           }  
-    else if (grabType == remap)
-           DispatchEvent(event,grabList->widget, mask);
-    return;
-}
-
-Boolean onGrabList (widget)
-    Widget widget;
-
-{
-   GrabRec* gl;
-   for (; widget != NULL; widget = (Widget)widget->core.parent)
-	for (gl = grabList; gl != NULL && gl->exclusive; gl = gl->next) 
-	    if (gl->widget == widget) return (TRUE);
-   return (FALSE);
-}
-
-void ConvertTypeToMask (eventType,mask,grabType,sensitive)
-    int eventType;
-    EventMask *mask;
-    GrabType *grabType;
-    Boolean *sensitive;
-    
-{
-
-static MaskRec masks[] = {
-	{0,pass,not_sensitive},	/* should never see type = 0*/
-        {0,pass,not_sensitive},   /* should never see type = 1*/
-        {KeyPressMask,remap,is_sensitive}, /*KeyPress*/
-        {KeyReleaseMask,remap,is_sensitive}, /*KeyRelease*/
-        {ButtonPressMask,remap,is_sensitive}, /*ButtonPress*/
-        {ButtonReleaseMask,remap,is_sensitive}, /*ButtonRelease*/
-        {PointerMotionMask | Button1MotionMask | Button2MotionMask |
-            Button3MotionMask | Button4MotionMask | Button5MotionMask | ButtonMotionMask,
-           ignore,is_sensitive},		/*MotionNotify*/
-        {EnterWindowMask,ignore,is_sensitive}, /*EnterNotify*/
-        {LeaveWindowMask,ignore,is_sensitive}, /*LeaveNotify*/
-        {FocusChangeMask,ignore,is_sensitive}, /*FocusIn*/
-        {FocusChangeMask,ignore,is_sensitive}, /*FocusOut*/
-        {KeymapStateMask,ignore,not_sensitive},/*KeymapNotify*/
-        {ExposureMask,pass,not_sensitive},    /*Expose*/
-        {0,pass,not_sensitive},               /*GraphicsExpose*/
-        {0,pass,not_sensitive},               /*NoExpose*/
-        {VisibilityChangeMask,pass,not_sensitive}, /*VisibilityNotify*/
-        {0,pass,not_sensitive},		    /*CreateNotify should never come in*/
-        {StructureNotifyMask,pass,not_sensitive}, /*DestroyNotify*/
-        {StructureNotifyMask,pass,not_sensitive}, /*UnmapNotify*/
-        {StructureNotifyMask,pass,not_sensitive}, /*MapNotify*/
-        {0,pass,not_sensitive},			/*MapRequest*/
-        {StructureNotifyMask,pass,not_sensitive}, /*ReparentNotify*/
-        {StructureNotifyMask,pass,not_sensitive}, /*ConfigureNotify*/
-        {0,pass,not_sensitive},			/*ConfigureRequest*/
-        {StructureNotifyMask,pass,not_sensitive}, /*GravityNotify*/
-        {0,pass,not_sensitive},			/*ResizeRequest*/
-        {StructureNotifyMask,pass,not_sensitive}, /*CirculateNotify*/
-        {0,pass,not_sensitive},			/*CirculateRequest*/
-        {PropertyChangeMask,ignore,not_sensitive}, /*PropertyNotify*/
-        {0,ignore,not_sensitive},			/*SelectionClear*/
-        {0,ignore,not_sensitive},			/*SelectionRequest*/
-        {StructureNotifyMask,pass,not_sensitive}, /*SelectionNotify*/
-        {ColormapChangeMask,ignore,not_sensitive}, /*ColormapNotify*/
-        {0,ignore,not_sensitive},			/*ClientMessage*/
-        {0 ,ignore,not_sensitive},              /*MappingNotify*/
-  };
-	(*mask) = masks[eventType].mask;
-        (*grabType) = masks[eventType].grabType;
-        (*sensitive) = masks[eventType].sensitive;
-   return;
-};
-
-void DispatchEvent(event, widget, mask)
+static void DispatchEvent(event, widget, mask)
     XEvent    *event;
     Widget    widget;
     unsigned long mask;
@@ -368,7 +278,8 @@ void DispatchEvent(event, widget, mask)
         && (event->xexpose.count != 0)) 
         return;
       if(widget->core.widget_class->core_class.expose != NULL)
-         widget->core.widget_class->core_class.expose (widget,event);
+	 /* use VMS bindings for parameters ???? */
+         (*(widget->core.widget_class->core_class.expose))(widget,event);
     }
     if ((mask == VisibilityNotify) &&
             !(widget->core.widget_class->core_class.visible_interest)) return;
@@ -383,9 +294,196 @@ void DispatchEvent(event, widget, mask)
 	}
 
     for (i=0 ; i<numprocs ; i++)
+	 /* use VMS bindings for parameters ???*/
 	(*(proc[i]))(widget, closure[i], event);
 }
 
+
+static void ConvertTypeToMask (eventType,mask,grabType,sensitive)
+    int eventType;
+    EventMask *mask;
+    GrabType *grabType;
+    Boolean *sensitive;
+    
+{
+
+static MaskRec masks[] = {
+    {0,			pass,   not_sensitive}, /* shouldn't see 0      */
+    {0,			pass,   not_sensitive}, /* shouldn't see 1      */
+    {KeyPressMask,      remap,  is_sensitive},  /* KeyPress		*/
+    {KeyReleaseMask,    remap,  is_sensitive},  /* KeyRelease		*/
+    {ButtonPressMask,   remap,  is_sensitive},  /* ButtonPress		*/
+    {ButtonReleaseMask, remap,  is_sensitive},  /* ButtonRelease	*/
+    {PointerMotionMask | 
+     Button1MotionMask | 
+     Button2MotionMask |
+     Button3MotionMask | 
+     Button4MotionMask | 
+     Button5MotionMask | 
+     ButtonMotionMask,  ignore, is_sensitive},  /* MotionNotify		*/
+    {EnterWindowMask,   ignore, is_sensitive},  /* EnterNotify		*/
+    {LeaveWindowMask,   ignore, is_sensitive},  /* LeaveNotify		*/
+    {FocusChangeMask,   ignore, is_sensitive},  /* FocusIn		*/
+    {FocusChangeMask,   ignore, is_sensitive},  /* FocusOut		*/
+    {KeymapStateMask,   ignore, not_sensitive}, /* KeymapNotify		*/
+    {ExposureMask,      pass,   not_sensitive}, /* Expose		*/
+    {0,			pass,   not_sensitive}, /* GraphicsExpose       */
+    {0,			pass,   not_sensitive}, /* NoExpose		*/
+    {VisibilityChangeMask,pass, not_sensitive}, /* VisibilityNotify     */
+    {0,			pass,   not_sensitive}, /* shouldn't see CreateNotify */
+    {StructureNotifyMask,pass,  not_sensitive}, /* DestroyNotify	*/
+    {StructureNotifyMask,pass,  not_sensitive}, /* UnmapNotify		*/
+    {StructureNotifyMask,pass,  not_sensitive}, /* MapNotify		*/
+    {0,			pass,   not_sensitive},	/* MapRequest		*/
+    {StructureNotifyMask,pass,  not_sensitive}, /* ReparentNotify       */
+    {StructureNotifyMask,pass,  not_sensitive}, /* ConfigureNotify      */
+    {0,			pass,   not_sensitive},	/* ConfigureRequest     */
+    {StructureNotifyMask,pass,  not_sensitive}, /* GravityNotify	*/
+    {0,			pass,   not_sensitive},	/* ResizeRequest	*/
+    {StructureNotifyMask,pass,  not_sensitive}, /* CirculateNotify      */
+    {0,			pass,   not_sensitive},	/* CirculateRequest     */
+    {PropertyChangeMask,ignore, not_sensitive}, /* PropertyNotify       */
+    {0,			ignore, not_sensitive},	/* SelectionClear       */
+    {0,			ignore, not_sensitive},	/* SelectionRequest     */
+    {StructureNotifyMask,pass,  not_sensitive}, /* SelectionNotify      */
+    {ColormapChangeMask,ignore, not_sensitive}, /* ColormapNotify       */
+    {0,			ignore, not_sensitive},	/* ClientMessage	*/
+    {0 ,		ignore, not_sensitive}, /* MappingNotify	*/
+  };
+
+    eventType &= 0x7f;	/* Events sent with XSendEvent have high bit set. */
+    (*mask)      = masks[eventType].mask;
+    (*grabType)  = masks[eventType].grabType;
+    (*sensitive) = masks[eventType].sensitive;
+    return;
+};
+
+
+static Boolean OnGrabList (widget)
+    register Widget widget;
+
+{
+    register GrabRec* gl;
+    for (; widget != NULL; widget = (Widget)widget->core.parent)
+	for (gl = grabList; gl != NULL; gl = gl->next) {
+	    if (gl->widget == widget) return (TRUE);
+	    if (gl->exclusive) break;
+	}
+    return (FALSE);
+}
+
+
+void XtDispatchEvent (event)
+    XEvent  *event;
+
+{
+    register Widget widget;
+    EventMask   mask;
+    GrabType    grabType;
+    Boolean     sensitivity;
+    register GrabList gl;
+
+#define IsSensitive ((!sensitivity) || (widget->core.sensitive && widget->core.ancestor_sensitive))
+
+    widget = XtWindowToWidget (event->xany.window);
+    if (widget == NULL) return;
+
+    ConvertTypeToMask(event->xany.type, &mask, &grabType, &sensitivity);
+
+    if (grabType == pass) {
+	DispatchEvent(event, widget, mask);
+
+    } else if (grabList == NULL) {
+	if IsSensitive {
+	    DispatchEvent(event, widget, mask);
+	}
+
+    } else if (grabType == remap) {
+        if (OnGrabList(widget) && IsSensitive) {
+	    DispatchEvent(event, widget, mask);
+	}
+	/* Also dispatch to nearest accessible spring_loaded */
+        /* Dispatching the event may invoke a proc that popdowns all
+           the popups and un-registers all the grabs from the grabList,
+           so check for something still on the grabList. */
+ 	gl = grabList;
+	while (gl!= NULL) {
+	    if (gl->spring_loaded) {
+		if (gl->widget != widget) {
+		    DispatchEvent(event, gl->widget, mask);
+		}
+		break;
+	    }
+	    if (gl->exclusive) {
+		break;
+	    }
+	    gl = gl->next;
+	} 
+
+    }  else if (OnGrabList(widget)) {
+	if IsSensitive {
+	    DispatchEvent(event, widget, mask);
+	}
+    }
+}
+
+static void GrabDestroyCallback(widget, closure, call_data)
+    Widget  widget;
+    caddr_t closure;
+    caddr_t call_data;
+{
+    /* Remove widget from grab list if it destroyed */
+    XtRemoveGrab(widget);
+}
+
+void XtAddGrab(widget, exclusive, spring_loaded)
+    Widget  widget;
+    Boolean exclusive;
+    Boolean spring_loaded;
+{
+    register GrabList    gl;
+
+    if (spring_loaded && !exclusive) {
+	XtWarning("XtAddGrab requires exclusive grab if spring_loaded is TRUE");
+	exclusive = TRUE;
+    }
+
+    gl		      = XtNew(GrabRec);
+    gl->next	      = grabList;
+    grabList	      = gl;
+    gl->widget        = widget;
+    gl->exclusive     = exclusive;
+    gl->spring_loaded = spring_loaded;
+
+    XtAddCallback(widget, XtNdestroyCallback, GrabDestroyCallback, NULL);
+}
+
+void XtRemoveGrab(widget)
+    Widget  widget;
+{
+    register GrabList gl;
+    register Boolean done;
+
+    for (gl = grabList; gl != NULL; gl = gl->next) {
+	if (gl->widget == widget) {
+	    break;
+	}
+    }
+
+    if (gl == NULL) {
+	XtWarning("XtRemoveGrab asked to remove a widget not on the grab list");
+	return;
+    }
+
+    do {
+	gl = grabList;
+	done = (gl->widget == widget);
+	grabList = gl->next;
+	XtFree(gl);
+    } while (! done);
+
+    XtRemoveCallback(widget, XtNdestroyCallback, GrabDestroyCallback, NULL);
+}
 
 
 void XtMainLoop()
@@ -399,7 +497,7 @@ void XtMainLoop()
 }
 
 
-void EventInitialize()
+void _XtEventInitialize()
 {
     grabList = NULL;
     DestroyList = NULL;
