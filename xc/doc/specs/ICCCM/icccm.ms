@@ -4730,23 +4730,25 @@ VisualID2	CARD	(exists iff property format is 8)
 VisualID3	CARD	Least significant (exists iff property format is 8 or 16)
 type	CARD	0 for this type of correction
 count	CARD	number of tables following (either 1 or 3)
-length	CARD	number of pairs following in this table
+length	CARD	number of pairs - 1 following in this table
 value	CARD	X Protocol RGB value
 intensity	CARD	Interpret as a number 0 <= intensity <= 1
-\&...	...	Total of \fIlength\fP pairs of value/intensity values
-length-g	CARD	number of pairs following in this table (iff \fIcount\fP is 3)
+\&...	...	Total of \fIlength+1\fP pairs of value/intensity values
+lengthg	CARD	number of pairs - 1 following in this table (iff \fIcount\fP is 3)
 value	CARD	X Protocol RGB value
 intensity	CARD	Interpret as a number 0 <= intensity <= 1
-\&...	...	Total of \fIlength-g\fP pairs of value/intensity values
-length-b	CARD	number of pairs following in this table (iff \fIcount\fP is 3)
+\&...	...	Total of \fIlengthg+1\fP pairs of value/intensity values
+lengthb	CARD	number of pairs - 1 following in this table (iff \fIcount\fP is 3)
 value	CARD	X Protocol RGB value
 intensity	CARD	Interpret as a number 0 <= intensity <= 1
-\&...	...	Total of \fIlength-b\fP pairs of value/intensity values
+\&...	...	Total of \fIlengthb+1\fP pairs of value/intensity values
 .TE
 .LP
 Note that the VisualID is stored in 4, 2, or 1 pieces, depending on whether
 the property format is 8, 16, or 32, respectively.  The VisualID is always
 stored most-significant piece first.
+Note that the length fields are stored as one less than the actual length,
+so that 256 entries can be stored in format 8.
 .LP
 The second representation is a simple array of intensities for a linear subset
 of RGB values.  The expected size of this table is the bits-per-rgb-value of
@@ -4754,7 +4756,7 @@ the screen, but it can be any length.  This is similar to the first mechanism,
 except that the RGB value numbers are implicitly defined by the index in the
 array (indices start at 0):
 .EQ
-	RGB sub value = { Array ~ Index ~ times ~ 65535 } over { Array ~ Size }
+	RGB sub value = { Array ~ Index ~ times ~ 65535 } over { Array ~ Size ~ - ~ 1 }
 .EN
 When converting, the client may linearly interpolate between entries in this
 table.  The intensity values will be encoded just as in the first
@@ -4775,15 +4777,15 @@ VisualID2	CARD	(exists iff property format is 8)
 VisualID3	CARD	Least significant (exists iff property format is 8 or 16)
 type	CARD	1 for this type of correction
 count	CARD	number of tables following (either 1 or 3)
-length	CARD	number of elements following in this table
+length	CARD	number of elements - 1 following in this table
 intensity	CARD	Interpret as a number 0 <= intensity <= 1
-\&...	...	Total of \fIlength\fP intensity elements
-length-g	CARD	number of elements following in this table (iff \fIcount\fP is 3)
+\&...	...	Total of \fIlength+1\fP intensity elements
+lengthg	CARD	number of elements - 1 following in this table (iff \fIcount\fP is 3)
 intensity	CARD	Interpret as a number 0 <= intensity <= 1
-\&...	...	Total of \fIlength-g\fP intensity elements
-length-b	CARD	number of elements following in this table (iff \fIcount\fP is 3)
+\&...	...	Total of \fIlengthg+1\fP intensity elements
+lengthb	CARD	number of elements - 1 following in this table (iff \fIcount\fP is 3)
 intensity	CARD	Interpret as a number 0 <= intensity <= 1
-\&...	...	Total of \fIlength-b\fP intensity elements
+\&...	...	Total of \fIlengthb+1\fP intensity elements
 .TE
 .NH 1
 Conclusion
