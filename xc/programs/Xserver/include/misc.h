@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: misc.h,v 1.44 87/10/07 17:33:57 rws Locked $ */
+/* $Header: misc.h,v 1.45 87/11/05 17:21:50 newman Locked $ */
 #ifndef MISC_H
 #define MISC_H 1
 /*
@@ -69,7 +69,7 @@ typedef int ATOM;
 /* byte swap a long literal */
 #define lswapl(x) ((((x) & 0xff) << 24) |\
 		   (((x) & 0xff00) << 8) |\
-		   (((x) & 0xff000) >> 8) |\
+		   (((x) & 0xff0000) >> 8) |\
 		   (((x) >> 24) & 0xff))
 
 /* byte swap a short literal */
