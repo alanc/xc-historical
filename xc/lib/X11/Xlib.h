@@ -1,4 +1,4 @@
-/* $XConsortium: Xlib.h,v 11.185 91/01/30 09:48:41 dave Exp $ */
+/* $XConsortium: Xlib.h,v 11.186 91/02/03 13:28:36 rws Exp $ */
 /* 
  * Copyright 1985, 1986, 1987 by the Massachusetts Institute of Technology
  *
@@ -12,7 +12,7 @@
  * suitability of this software for any purpose.  It is provided "as is"
  * without express or implied warranty.
  *
- * The X Window System is a Trademark of MIT.
+ * X Window System is a Trademark of MIT.
  *
  */
 
@@ -38,36 +38,7 @@
 
 #include <X11/X.h>
 
-#ifndef NeedFunctionPrototypes
-#if defined(FUNCPROTO) || __STDC__ || defined(__cplusplus) || defined(c_plusplus)
-#define NeedFunctionPrototypes 1
-#else
-#define NeedFunctionPrototypes 0
-#endif /* __STDC__ */
-#endif /* NeedFunctionPrototypes */
-
-#ifdef NeedFunctionPrototypes
-#if __STDC__ || defined(__cplusplus) || defined(c_plusplus)
-#define _Xconst const
-#ifndef NeedNestedPrototypes
-#define NeedNestedPrototypes 1
-#endif
-#else
-#define _Xconst
-#endif
-#endif /* NeedFunctionPrototypes */
-
-#ifndef NeedWidePrototypes
-#if defined(NARROWPROTO)
-#define NeedWidePrototypes 0
-#else
-#define NeedWidePrototypes 1		/* default to make interropt. easier */
-#endif
-#endif
-
-#ifdef __cplusplus			/* do not leave open across includes */
-extern "C" {					/* for C++ V2.0 */
-#endif
+#include <X11/Xfuncproto.h>
 
 #define Bool int
 #define Status int
@@ -1056,6 +1027,8 @@ typedef union { Display *display;
 		Screen *screen;
 		ScreenFormat *pixmap_format;
 		XFontStruct *font; } XEDataObject;
+
+_XFUNCPROTOBEGIN
 
 extern XFontStruct *XLoadQueryFont(
 #if NeedFunctionPrototypes
@@ -3843,8 +3816,6 @@ extern int XWriteBitmapFile(
 #endif
 );
 
-#ifdef __cplusplus
-}						/* for C++ V2.0 */
-#endif
+_XFUNCPROTOEND
 
 #endif /* _XLIB_H_ */

@@ -1,4 +1,4 @@
-/* $XConsortium: Xutil.h,v 11.62 91/02/03 13:30:35 rws Exp $ */
+/* $XConsortium: Xutil.h,v 11.62 91/02/03 13:37:46 rws Exp $ */
 
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -27,25 +27,7 @@ SOFTWARE.
 #ifndef _XUTIL_H_
 #define _XUTIL_H_
 
-#ifdef __cplusplus
-extern "C" {					/* for C++ V2.0 */
-#endif
-
-#ifndef NeedFunctionPrototypes
-#if defined(FUNCPROTO) || __STDC__ || defined(__cplusplus) || defined(c_plusplus)
-#define NeedFunctionPrototypes 1
-#else
-#define NeedFunctionPrototypes 0
-#endif /* __STDC__ */
-#endif /* NeedFunctionPrototypes */
-
-#if defined(NeedFunctionPrototypes) && !defined(_Xconst)
-#if __STDC__ || defined(__cplusplus) || defined(c_plusplus)
-#define _Xconst const
-#else
-#define _Xconst
-#endif
-#endif /* NeedFunctionPrototypes */
+#include <X11/Xfuncproto.h>
 
 /* 
  * Bitmask returned by XParseGeometry().  Each bit tells if the corresponding
@@ -306,6 +288,8 @@ typedef int XContext;
 
 #define XUniqueContext()       ((XContext) XrmUniqueQuark())
 #define XStringToContext(string)   ((XContext) XrmStringToQuark(string))
+
+_XFUNCPROTOBEGIN
 
 extern int XSaveContext(
 #if NeedFunctionPrototypes
@@ -818,8 +802,6 @@ extern char *XFindFile(
 #endif
 );
 
-#ifdef __cplusplus
-}						/* for C++ V2.0 */
-#endif
+_XFUNCPROTOEND
 
 #endif /* _XUTIL_H_ */
