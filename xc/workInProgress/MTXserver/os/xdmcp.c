@@ -1,4 +1,4 @@
-/* $XConsortium: xdmcp.c,v 1.2 94/01/10 10:59:14 rob Exp $ */
+/* $XConsortium: xdmcp.c,v 1.3 94/01/11 20:54:41 rob Exp $ */
 /*
  * Copyright 1989 Network Computing Devices, Inc., Mountain View, California.
  *
@@ -187,7 +187,7 @@ static restart(
 #endif
 );
 
-static void XdmcpBlockHandler(
+void XdmcpBlockHandler(
 #if NeedFunctionPrototypes
     pointer /*data*/,
     struct timeval **/*wt*/,
@@ -195,7 +195,7 @@ static void XdmcpBlockHandler(
 #endif
 );
 
-static void XdmcpWakeupHandler(
+void XdmcpWakeupHandler(
 #if NeedFunctionPrototypes
     pointer /*data*/,
     int /*i*/,
@@ -612,7 +612,7 @@ XdmcpCloseDisplay(sock)
  */
 
 /*ARGSUSED*/
-static void
+void
 XdmcpBlockHandler(data, wt, pReadmask)
     pointer	    data;   /* unused */
     struct timeval  **wt;
@@ -660,7 +660,7 @@ XdmcpBlockHandler(data, wt, pReadmask)
  */
 
 /*ARGSUSED*/
-static void
+void
 XdmcpWakeupHandler(data, i, pReadmask)
     pointer data;   /* unused */
     int	    i;

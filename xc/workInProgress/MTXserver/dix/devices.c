@@ -43,7 +43,7 @@ OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: devices.c,v 1.2 94/01/10 16:53:37 rob Exp $ */
+/* $XConsortium: devices.c,v 1.3 94/01/11 20:45:23 rob Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -1755,7 +1755,7 @@ ProcGetMotionEvents(client)
         {
 	    MTXReturnPooledMessage;
 	    DEALLOCATE_LOCAL(coords);
-    	    Unlock_WINDOW(pWin, stuff->window, client);
+    	    MTX_UNLOCK_WINDOW(pWin, stuff->window, client);
 	    return BadAlloc;
         }
 

@@ -43,7 +43,7 @@ OF THIS SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: property.c,v 1.1 93/12/15 16:06:34 rob Exp $ */
+/* $XConsortium: property.c,v 1.2 94/01/11 20:47:10 rob Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -593,7 +593,7 @@ ProcGetProperty(client)
 	UpdateCurrentTime();
     }
 
-    LOCK_AND_VERIFY_WINDOW(pWin, stuff->window, client, POQ_NULL_REGION, 
+    MTX_LOCK_AND_VERIFY_WINDOW(pWin, stuff->window, client, POQ_NULL_REGION, 
 			   CM_XGetProperty);
 
     if (!ValidAtom(stuff->property))

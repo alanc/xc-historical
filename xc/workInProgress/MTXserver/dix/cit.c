@@ -38,6 +38,7 @@
 #include "windowstr.h"
 #include "fontstruct.h"
 #include "dixfontstr.h"
+#include "gc.h"
 #include "gcstruct.h"
 #include "selection.h"
 #include "colormapst.h"
@@ -214,7 +215,7 @@ CloseDownClientInputThread(client)
     /* ungrab server if grabbing client dies */
     POQUngrabServer(client);
 
-    LOCK_PENDING_OPERATION_QUEUE(client, CM_XKillClient); /* lock it all */
+    MTX_LOCK_PENDING_OPERATION_QUEUE(client, CM_XKillClient); /* lock it all */
 
     DeleteClientFromAnySelections(client);
     ReleaseActiveGrabs(client);
@@ -252,7 +253,7 @@ CloseDownClientInputThread(client)
         X_MUTEX_UNLOCK(&ConnectionMutex);
     }
 
-    UNLOCK_PENDING_OPERATION_QUEUE(client);
+    MTX_UNLOCK_PENDING_OPERATION_QUEUE(client);
 
     TransferLocalMessagesToGlobal(localMsgBuffer);
     FlushAllMessages(NULL);

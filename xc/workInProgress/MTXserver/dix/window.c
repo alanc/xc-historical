@@ -43,7 +43,7 @@ OF THIS SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: window.c,v 1.2 94/01/06 23:03:02 rob Exp $ */
+/* $XConsortium: window.c,v 1.3 94/01/11 20:47:36 rob Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -60,6 +60,7 @@ OF THIS SOFTWARE.
 #include "colormapst.h"
 #include "cursorstr.h"
 #include "dixstruct.h"
+#include "gc.h"
 #include "gcstruct.h"
 #include "servermd.h"
 
@@ -1413,7 +1414,11 @@ GetWindowAttributes(pWin, client)
 {
     REPLY_DECL(xGetWindowAttributesReply,wa);
 
-    MTX_REP_CHECK_RETURN(wa,BadAlloc);
+#ifdef XTHREADS
+    if (!wa)
+	return;
+    /* cannot do MTX_REP_CHECK_RETURN(wa,BadAlloc); since void function */
+#endif
 
     wa->type = X_Reply;
     wa->bitGravity = pWin->bitGravity;

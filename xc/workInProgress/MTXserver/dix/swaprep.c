@@ -20,6 +20,27 @@ WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION,
 ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
+Copyright 1992, 1993 Data General Corporation;
+Copyright 1992, 1993 OMRON Corporation  
+
+Permission to use, copy, modify, distribute, and sell this software and its
+documentation for any purpose is hereby granted without fee, provided that the
+above copyright notice appear in all copies and that both that copyright
+notice and this permission notice appear in supporting documentation, and that
+neither the name OMRON or DATA GENERAL be used in advertising or publicity
+pertaining to distribution of the software without specific, written prior
+permission of the party whose name is to be used.  Neither OMRON or 
+DATA GENERAL make any representation about the suitability of this software
+for any purpose.  It is provided "as is" without express or implied warranty.  
+
+OMRON AND DATA GENERAL EACH DISCLAIM ALL WARRANTIES WITH REGARD TO THIS
+SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS,
+IN NO EVENT SHALL OMRON OR DATA GENERAL BE LIABLE FOR ANY SPECIAL, INDIRECT
+OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
+DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
+TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE
+OF THIS SOFTWARE.
+
 ********************************************************/
 
 /* $XConsortium: swaprep.c,v 1.39 93/09/23 19:47:01 rws Exp $ */
@@ -101,6 +122,74 @@ CopySwap32Write(pClient, size, pbuf)
     if (pbufT != tmpbuf)
 	DEALLOCATE_LOCAL ((char *) pbufT);
 }
+#ifdef XTHREADS
+void
+Swap32(size, pbuf)
+    int		size;  /* in bytes */
+    register long *pbuf;
+{
+    register int i;
+    register char n;
+
+    size >>= 2;
+    for(i = 0; i < size; i++)
+    /* brackets are mandatory here, because "swapl" macro expands
+       to several statements */
+    {   
+	swapl(&pbuf[i], n);
+    }
+}
+
+void
+CopySwap32(size, pbuf)
+    int		size;   /* in bytes */
+    long	*pbuf;
+{
+    int bufsize = size;
+    long *pbufT;
+    register long *from, *to, *fromLast, *toLast;
+    long tmpbuf[1];
+    char *copyBack;
+    
+    /* Allocate as big a buffer as we can... */
+    while (!(pbufT = (long *) ALLOCATE_LOCAL(bufsize)))
+    {
+        bufsize >>= 1;
+	if (bufsize == 4)
+	{
+	    pbufT = tmpbuf;
+	    break;
+	}
+    }
+    
+    /* convert lengths from # of bytes to # of longs */
+    size >>= 2;
+    bufsize >>= 2;
+
+    from = pbuf;
+    copyBack = (char *) pbuf;
+    fromLast = from + size;
+    while (from < fromLast) {
+	int nbytes;
+        to = pbufT;
+        toLast = to + min (bufsize, fromLast - from);
+        nbytes = (toLast - to) << 2;
+        while (to < toLast) {
+            /* can't write "cpswapl(*from++, *to++)" because cpswapl is a macro
+	       that evaulates its args more than once */
+	    cpswapl(*from, *to);
+            from++;
+            to++;
+	    }
+        bcopy(pbufT, copyBack, nbytes);
+	copyBack = copyBack + nbytes;
+	}
+
+    if (pbufT != tmpbuf)
+	DEALLOCATE_LOCAL ((char *) pbufT);
+}
+#endif /*XTHREADS*/
+
 
 void
 CopySwap16Write(pClient, size, pbuf)
@@ -148,6 +237,56 @@ CopySwap16Write(pClient, size, pbuf)
     if (pbufT != tmpbuf)
 	DEALLOCATE_LOCAL ((char *) pbufT);
 }
+
+#ifdef XTHREADS
+void
+CopySwap16(size, pbuf)
+    int		size;   /* in bytes */
+    short	*pbuf;
+{
+    int bufsize = size;
+    short *pbufT;
+    register short *from, *to, *fromLast, *toLast;
+    short tmpbuf[2];
+    char *copyBack;
+    
+    /* Allocate as big a buffer as we can... */
+    while (!(pbufT = (short *) ALLOCATE_LOCAL(bufsize)))
+    {
+        bufsize >>= 1;
+	if (bufsize == 4)
+	{
+	    pbufT = tmpbuf;
+	    break;
+	}
+    }
+    
+    /* convert lengths from # of bytes to # of shorts */
+    size >>= 1;
+    bufsize >>= 1;
+
+    from = pbuf;
+    fromLast = from + size;
+    while (from < fromLast) {
+	int nbytes;
+        to = pbufT;
+        toLast = to + min (bufsize, fromLast - from);
+        nbytes = (toLast - to) << 1;
+        while (to < toLast) {
+            /* can't write "cpswaps(*from++, *to++)" because cpswaps is a macro
+	       that evaulates its args more than once */
+	    cpswaps(*from, *to);
+            from++;
+            to++;
+	    }
+        bcopy(pbufT, copyBack, nbytes);
+	copyBack = copyBack + nbytes;
+	}
+
+    if (pbufT != tmpbuf)
+	DEALLOCATE_LOCAL ((char *) pbufT);
+}
+#endif /* XTHREADS */
 
 
 /* Extra-small reply */
@@ -1242,6 +1381,70 @@ SKeymapNotifyEvent(from, to)
     *to = *from;
 }
 
+#ifdef XTHREADS
+void
+SwapConnectionInfo(pClient, size, pInfo)
+    ClientPtr		pClient;
+    unsigned long	size;
+    char 		*pInfo;
+{
+    int		i, j, k;
+    ScreenPtr	pScreen;
+    DepthPtr	pDepth;
+    char        *pInfoBase;
+    char	*pInfoT, *pInfoTBase;
+    xConnSetup	*pConnSetup = (xConnSetup *)pInfo;
+
+    pInfoBase = pInfo;
+    pInfoT = pInfoTBase = (char *) ALLOCATE_LOCAL(size);
+    if (!pInfoTBase)
+    {
+	pClient->noClientException = -1;
+	return;
+    }
+    SwapConnSetup(pConnSetup, (xConnSetup *)pInfoT);
+    pInfo += sizeof(xConnSetup);
+    pInfoT += sizeof(xConnSetup);
+
+    /* Copy the vendor string */
+    i = (pConnSetup->nbytesVendor + 3) & ~3;
+    bcopy(pInfo, pInfoT, i);
+    pInfo += i;
+    pInfoT += i;
+
+    /* The Pixmap formats don't need to be swapped, just copied. */
+    i = sizeof(xPixmapFormat) * screenInfo.numPixmapFormats;
+    bcopy(pInfo, pInfoT, i);
+    pInfo += i;
+    pInfoT += i;
+
+    for(i = 0; i < screenInfo.numScreens; i++)
+    {
+	pScreen = screenInfo.screens[i];
+	SwapWinRoot((xWindowRoot *)pInfo, (xWindowRoot *)pInfoT);
+	pInfo += sizeof(xWindowRoot);
+	pInfoT += sizeof(xWindowRoot);
+	pDepth = pScreen->allowedDepths;
+	for(j = 0; j < pScreen->numDepths; j++, pDepth++)
+	{
+            ((xDepth *)pInfoT)->depth = ((xDepth *)pInfo)->depth;
+	    cpswaps(((xDepth *)pInfo)->nVisuals, ((xDepth *)pInfoT)->nVisuals);
+	    pInfo += sizeof(xDepth);
+	    pInfoT += sizeof(xDepth);
+	    for(k = 0; k < pDepth->numVids; k++)
+	    {
+		SwapVisual((xVisualType *)pInfo, (xVisualType *)pInfoT);
+		pInfo += sizeof(xVisualType);
+		pInfoT += sizeof(xVisualType);
+	    }
+	}
+    }
+
+    bcopy(pInfoTBase, pInfoBase, size);
+    DEALLOCATE_LOCAL(pInfoTBase);
+}
+#endif /* XTHREADS */
+
 void
 WriteSConnectionInfo(pClient, size, pInfo)
     ClientPtr		pClient;
@@ -1371,3 +1574,19 @@ WriteSConnSetupPrefix(pClient, pcsp)
     (void)WriteToClient(pClient, sizeof(cspT), (char *) &cspT);
 }
 
+#ifdef XTHREADS
+void
+SwapConnSetupPrefix(pClient, pcsp)
+    ClientPtr		pClient;
+    xConnSetupPrefix	*pcsp;
+{
+    xConnSetupPrefix	cspT;
+
+    cspT.success = pcsp->success;
+    cspT.lengthReason = pcsp->lengthReason;
+    cpswaps(pcsp->majorVersion, cspT.majorVersion);
+    cpswaps(pcsp->minorVersion, cspT.minorVersion);
+    cpswaps(pcsp->length, cspT.length);
+    bcopy((char *) &cspT, (char *)pcsp, sizeof(cspT));
+}
+#endif /* XTHREADS */

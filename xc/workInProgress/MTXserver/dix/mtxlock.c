@@ -36,7 +36,6 @@
 #include "fontstruct.h"
 #include "dixfontstr.h"
 #include "gcstruct.h"
-#include "osstruct.h"
 #include "selection.h"
 #include "colormapst.h"
 #include "cursorstr.h"
@@ -138,7 +137,7 @@ LockDevicesAndPOQ(client, conflictMask)
     ClientPtr client;
     Mask conflictMask;
 {
-    LOCK_PENDING_OPERATION_QUEUE(client, conflictMask);
+    MTX_LOCK_PENDING_OPERATION_QUEUE(client, conflictMask);
     LockDevices();
     return;
 }
@@ -150,7 +149,7 @@ UnlockDevicesAndPOQ(client)
     ClientPtr client;
 {
     UnlockDevices();
-    UNLOCK_PENDING_OPERATION_QUEUE(client);
+    MTX_UNLOCK_PENDING_OPERATION_QUEUE(client);
 }
 
 #endif /* XTHREADS */
