@@ -1,4 +1,4 @@
-/* $XConsortium: Xregistry,v 1.52 91/11/21 14:52:14 rws Exp $ */
+/* $XConsortium: Xregistry,v 1.53 91/12/09 09:44:17 rws Exp $ */
 
 1. ORGANIZATION NAMES
 
@@ -260,6 +260,7 @@ Name						Reference
 "ESLayersExtension"				[75]
 "ESCursorAttrExtension"				[75]
 "ESPickExtension"				[75]
+"fujitsu-Control-Modifiers"			[87]
 "FUJITSU-VX-VideoControl"			[87]
 "FUJITSU-VX-DeviceControl"			[87]
 "MIT-SHM"					[8]
@@ -467,6 +468,8 @@ Name						Reference
 	suggested in that standard
 "DEC.DTSCS.1990-2"				[54]
 	DEC Taiwan Supplemental Character Set
+"fujitsu.u90x01.1991-0"				[87]
+"fujitsu.u90x03.1991-0"				[87]
 "GB2312.1980-0"					[39],[12]
 	China (PRC) Hanzi, GL encoding
 "GB2312.1980-1"					[39],[12]
