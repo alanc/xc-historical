@@ -179,9 +179,15 @@ double RoundTo3Digits(d)
     /* It's kind of silly to print out things like ``193658.4/sec'' so just
        junk all but 3 most significant digits. */
 
-    double exponent;
+    double exponent, sign;
 
     exponent = 1.0;
+    /* the code below won't work if d should happen to be non-positive. */
+    if (d < 0.0) {
+	d = -d;
+	sign = -1.0;
+    } else
+	sign = 1.0;
     if (d >= 1000.0) {
 	do {
 	    exponent *= 10.0;
@@ -189,13 +195,15 @@ double RoundTo3Digits(d)
 	d = (double)((int) (d/exponent + 0.5));
 	d *= exponent;
     } else {
-	while (d*exponent < 100.0) {
-	    exponent *= 10.0;
+	if (d != 0.0) {
+	    while (d*exponent < 100.0) {
+	        exponent *= 10.0;
+	    }
 	}
 	d = (double)((int) (d*exponent + 0.5));
 	d /= exponent;
     }
-    return d;
+    return d * sign;
 }
 
 
@@ -206,20 +214,27 @@ void ReportTimes(usecs, n, str, average)
 {
     double msecsperobj, objspersec;
 
-    msecsperobj = usecs / (1000.0 * (double)n);
-    objspersec = (double) n * 1000000.0 / usecs;
+    if(usecs != 0.0)
+    {
+        msecsperobj = usecs / (1000.0 * (double)n);
+        objspersec = (double) n * 1000000.0 / usecs;
 
-    /* Round obj/sec to 3 significant digits.  Leave msec untouched, to allow
-	averaging results from several repetitions. */
-    objspersec =  RoundTo3Digits(objspersec);
+        /* Round obj/sec to 3 significant digits.  Leave msec untouched, to
+	   allow averaging results from several repetitions. */
+        objspersec =  RoundTo3Digits(objspersec);
 
-    if (average) {
-	printf("%6d trep @ %7.4f msec (%6.1f/sec): %s\n", 
-	    n, msecsperobj, objspersec, str);
+        if (average) {
+	    printf("%6d trep @ %7.4f msec (%6.1f/sec): %s\n", 
+		    n, msecsperobj, objspersec, str);
+	} else {
+	    printf("%6d reps @ %7.4f msec (%6.1f/sec): %s\n", 
+	        n, msecsperobj, objspersec, str);
+	}
     } else {
-	printf("%6d reps @ %7.4f msec (%6.1f/sec): %s\n", 
-	    n, msecsperobj, objspersec, str);
+	printf("%6d %sreps @ 0.0 msec (unmeasurably fast): %s\n",
+	    n, average ? "t" : "", str);
     }
+
 }
 
 
