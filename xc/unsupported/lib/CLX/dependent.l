@@ -670,19 +670,35 @@
 	   (sys:store-conditional ,lock sys:current-process nil))))))
 
 #+excl
+;;
+;; Note that there is a special hack here.  If the current process is nil it
+;; means we're running in the scheduler stack group, which means in turn that
+;; we're running a process wait function.  This wait functions should *always*
+;; be: (event-listen display 0).  So if we are running in the scheduler and the
+;; lock isn't already being held just run the body without trying to grab the
+;; lock.  If the lock *is* already being held we have to throw out of the
+;; event-listen.
+;;
 (defmacro holding-lock ((locator &optional whostate) &body body)
   ;; This macro is for use in a multi-process environment.
-  (let ((lock (gensym)) (have-lock (gensym)) (curproc (gensym)))
+  (let ((lock (gensym)) (curproc (gensym)) (locker (gensym)))
     `(let* ((,lock ,locator)
-	    (,curproc (if mp:*current-process* mp:*current-process* 83239))
-	    (,have-lock (eql (mp:process-lock-locker ,lock) ,curproc)))
-      (unwind-protect
-	   (progn (unless ,have-lock
-		    (mp:process-lock ,lock ,curproc
-				     ,@(when whostate `(,whostate))))
-		  ,@body)
-	(unless ,have-lock
-	  (mp:process-unlock ,lock ,curproc))))))
+	    (,curproc mp:*current-process*) ; nil if in scheduler (wait fun)
+	    (,locker (mp:process-lock-locker ,lock)))
+       
+       (unwind-protect
+	    (progn 
+	      (if (and (null ,curproc) ,locker)
+		  (if (member 'event-listen (excl::all-catch-tags) :test #'eq)
+		      (throw 'event-listen :would-block)
+		    (error "The only CLX function call allowed from a process wait function is \
+       event-listen with timeout 0.")))
+	      (unless (eql ,locker ,curproc)
+		(mp:process-lock ,lock ,curproc
+				 ,@(when whostate `(,whostate))))
+	      ,@body)
+	 (if (and ,curproc (eql (mp:process-lock-locker ,lock) ,curproc))
+	     (mp:process-unlock ,lock ,curproc))))))
 
 ;; If you're not sharing DISPLAY objects within a multi-processing
 ;; shared-memory environment, this is sufficient
@@ -708,6 +724,17 @@
 #-lispm
 (defmacro atomic-pop (list)
   `(pop ,list))
+
+#+excl
+(defmacro wrap-event-listen (form &body body)
+  ;; If we are running a process wait function (in the scheduler stack group)
+  ;; and the input lock is held by another process, return nil.
+  `(unless (eq :would-block (catch 'event-listen ,form))
+     . ,body))
+
+#-excl
+(defmacro wrap-event-listen (form &body body)
+  `(progn ,form . ,body))
 
 ;;;-----------------------------------------------------------------------------
 ;;; IO Error Recovery
