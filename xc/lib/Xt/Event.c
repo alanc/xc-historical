@@ -1,4 +1,4 @@
-/* $XConsortium: Event.c,v 1.169 94/09/15 19:42:47 kaleb Exp converse $ */
+/* $XConsortium: Event.c,v 1.170 95/02/21 19:45:06 converse Exp converse $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -1336,7 +1336,7 @@ static Boolean DispatchEvent(event, widget)
 	    XPeekEvent(event->xcrossing.display, &nextEvent);
 	    if (nextEvent.type == LeaveNotify &&
 		event->xcrossing.window == nextEvent.xcrossing.window &&
-		event->xcrossing.mode == nextEvent.xcrossing.mode &&
+		nextEvent.xcrossing.mode == NotifyNormal &&
 		(event->xcrossing.detail != NotifyInferior &&
 		 nextEvent.xcrossing.detail != NotifyInferior ||
 		 event->xcrossing.detail == NotifyInferior &&
