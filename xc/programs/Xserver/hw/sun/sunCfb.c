@@ -1,5 +1,5 @@
 
-/* $XConsortium: sunCfb.c,v 1.15 94/05/18 11:17:56 kaleb Exp $ */
+/* $XConsortium: sunCfb.c,v 1.16 94/07/28 15:44:29 dpw Exp kaleb $ */
 
 /*
 Copyright (c) 1990  X Consortium
@@ -254,11 +254,7 @@ static void checkMono (argc, argv)
  * and let it go at that.
  */
 
-#ifdef SVR4
 #define CG3_MMAP_OFFSET 0x04000000
-#else
-#include <pixrect/cg3var.h>
-#endif
 
 Bool sunCG3Init (screen, pScreen, argc, argv)
     int	    	  screen;    	/* what screen am I going to be */
@@ -278,7 +274,11 @@ Bool sunCG3Init (screen, pScreen, argc, argv)
 #ifdef SVR4
 #include <sys/cg2reg.h>
 #else
+#ifndef __NetBSD__
 #include <pixrect/cg2reg.h>
+#else
+#include <machine/cgtworeg.h>
+#endif
 #endif
 
 typedef struct {
@@ -362,12 +362,6 @@ Bool sunCG2Init (screen, pScreen, argc, argv)
     }
     return ret;
 }
-
-#ifdef SVR4
-#include    <sys/cg4reg.h>
-#else
-#include    <sundev/cg4reg.h>
-#endif
 
 #define	CG4_HEIGHT	900
 #define	CG4_WIDTH	1152
