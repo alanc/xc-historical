@@ -1,4 +1,4 @@
-/* $XConsortium: Initialize.c,v 1.180 91/04/01 16:31:58 gildea Exp $ */
+/* $XConsortium: Initialize.c,v 1.181 91/04/08 14:45:57 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -306,11 +306,6 @@ XtLangProc XtSetLanguageProc(app, proc, closure)
 #endif
 {
     XtLangProc	old;
-
-    if (!proc) {
-	proc = XtDefaultLanguageProc;
-	closure = NULL;
-    }
 
     if (app) {
 	/* set langProcRec only for this application context */
