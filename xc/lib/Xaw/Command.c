@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Command.c,v 1.54 89/09/23 00:36:02 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Command.c,v 1.55 89/09/25 13:05:22 swick Exp $";
 #endif /* lint */
 
 /***********************************************************
@@ -232,7 +232,7 @@ Cardinal *num_args;		/* unused */
 	    cbw->command.shape_style = XawShapeOval;
   }
   if (cbw->command.highlight_thickness == 32767) {
-      if (cbw->command.shape_style == XawShapeOval)
+      if (cbw->command.shape_style != XawShapeRectangular)
 	  cbw->command.highlight_thickness = 0;
       else
 	  cbw->command.highlight_thickness = DEFAULT_HIGHLIGHT_THICKNESS;
@@ -388,8 +388,12 @@ Cardinal *num_params;	/* unused */
 {
   CommandWidget cbw = (CommandWidget)w; 
 
-  if (cbw->command.set)              /*  Why is this code here??? */
-    XtCallCallbacks(w, XtNcallback, NULL);
+  /* check to be sure state is still Set so that user can cancel
+     the action (e.g. by moving outside the window, in the default
+     bindings.
+  */
+  if (cbw->command.set)
+    XtCallCallbackList(cbw->command.callbacks, NULL);
 }
 
 /*
@@ -540,6 +544,34 @@ Widget current, request, new;
     redisplay = True;
   }
 
+#ifdef SHAPE
+  if (XtIsRealized(new)
+      && oldcbw->command.shape_style != cbw->command.shape_style) {
+
+      switch (cbw->command.shape_style) {
+
+	case XawShapeRectangular:
+	  XShapeCombineMask( XtDisplay(new), XtWindow(new),
+			     ShapeBounding, 0, 0, None, ShapeSet );
+	  XShapeCombineMask( XtDisplay(new), XtWindow(new),
+			     ShapeClip, 0, 0, None, ShapeSet );
+	  break;
+
+	case XawShapeOval:
+	  ShapeOval(new);
+	  break;
+
+	case XawShapeEllipse:
+	  ShapeEllipse(new);
+	  break;
+
+	default:
+	  ShapeError(new);
+	  cbw->command.shape_style = oldcbw->command.shape_style;
+      }
+  }
+#endif /*SHAPE*/
+
   return (redisplay);
 }
 
@@ -573,12 +605,15 @@ static Boolean CvtStringToShapeStyle(dpy, args, num_args, from, toVal, data)
     XrmValue *toVal;
     XtPointer *data;		/* unused */
 {
-    if (   XmuCompareISOLatin1((char*)from->addr, "ShapeRectangular")
-	|| XmuCompareISOLatin1((char*)from->addr, "Rectangular"))
+    if (   XmuCompareISOLatin1((char*)from->addr, "ShapeRectangular") == 0
+	|| XmuCompareISOLatin1((char*)from->addr, "Rectangular") == 0)
 	done( int, XawShapeRectangular );
-    if (   XmuCompareISOLatin1((char*)from->addr, "ShapeOval")
-	|| XmuCompareISOLatin1((char*)from->addr, "Oval"))
+    if (   XmuCompareISOLatin1((char*)from->addr, "ShapeOval") == 0
+	|| XmuCompareISOLatin1((char*)from->addr, "Oval") == 0)
 	done( int, XawShapeOval );
+    if (   XmuCompareISOLatin1((char*)from->addr, "ShapeEllipse") == 0
+	|| XmuCompareISOLatin1((char*)from->addr, "Ellipse") == 0)
+	done( int, XawShapeEllipse );
     {
 	int style = 0;
 	char ch, *p = (char*)from->addr;
@@ -602,25 +637,128 @@ static void ClassInitialize()
 		        NULL, 0, XtCacheAll, NULL );
 }
 
+static ShapeError(w)
+    Widget w;
+{
+    String params[1];
+    Cardinal num_params = 1;
+    params[0] = XtName(w);
+    XtAppWarningMsg( XtWidgetToApplicationContext(w),
+		     "shapeUnknown", "xawCommandRealize", "XawLibrary",
+		     "Unsupported shape style for Command widget \"%s\"",
+		     params, &num_params
+		   );
+}
 
 static void Realize(w)
     Widget w;
 {
     (*commandWidgetClass->core_class.superclass->core_class.realize)(w);
-    if (((CommandWidget)w)->command.shape_style == XawShapeOval)
+    switch (((CommandWidget)w)->command.shape_style) {
+      case XawShapeRectangular:
+	break;
+
+      case XawShapeOval:
 	ShapeOval(w);
+	break;
+
+      case XawShapeEllipse:
+	ShapeEllipse(w);
+	break;
+
+      default:
+	ShapeError(w);
+	((CommandWidget)w)->command.shape_style = XawShapeOval;
+	ShapeOval(w);
+    }
 }
 
 static void Resize(w)
     Widget w;
 {
-    if (((CommandWidget)w)->command.shape_style == XawShapeOval)
-	ShapeOval(w);
+    if (XtIsRealized(w)) {
+	switch (((CommandWidget)w)->command.shape_style) {
+	  case XawShapeRectangular:
+	    break;
+
+	  case XawShapeOval:
+	    ShapeOval(w);
+	    break;
+
+	  case XawShapeEllipse:
+	    ShapeEllipse(w);
+	    break;
+
+	  default:
+	    ShapeError(w);
+	    ((CommandWidget)w)->command.shape_style = XawShapeOval;
+	    ShapeOval(w);
+	}
+    }
     (*commandWidgetClass->core_class.superclass->core_class.resize)(w);
 }
 
 
 static ShapeOval(W)
+    Widget W;
+{
+    CommandWidget w = (CommandWidget)W;
+    Display *dpy = XtDisplay(W);
+    unsigned width = w->core.width + (w->core.border_width<<1);
+    unsigned height = w->core.height + (w->core.border_width<<1);
+    Pixmap p = XCreatePixmap( dpy, XtWindow(W), width, height, 1 );
+    XGCValues values;
+    GC set_gc, clear_gc;
+    unsigned int diam, x2, y2;
+
+    values.foreground = 1;
+    values.background = 0;
+    values.cap_style = CapRound;
+    if (width < height) {
+	diam = width;
+	x2 = diam>>1;
+	y2 = height - x2 - 1;	/* can't explain the off-by-one */
+    } else {
+	diam = height;
+	y2 = diam>>1;
+	x2 = width - y2 - 1;
+    }
+    values.line_width = diam;
+    set_gc = XtGetGC( W,
+		      GCForeground | GCBackground | GCLineWidth | GCCapStyle,
+		      &values
+		    );
+    clear_gc = XtGetGC( W, 0, &values );
+    XFillRectangle( dpy, p, clear_gc, 0, 0, width, height );
+    XDrawLine( dpy, p, set_gc, diam>>1, diam>>1, x2, y2 );
+    XShapeCombineMask( dpy, XtWindow(W), ShapeBounding, 
+		       -(w->core.border_width), -(w->core.border_width),
+		       p, ShapeSet );
+    XtReleaseGC( W, set_gc );
+    XFillRectangle( dpy, p, clear_gc, 0, 0, width, height );
+    if (w->core.width < w->core.height) {
+	diam = w->core.width;
+	x2 = diam>>1;
+	y2 = w->core.height - x2 - 1;
+    } else {
+	diam = w->core.height;
+	y2 = diam>>1;
+	x2 = w->core.width - y2 - 1;
+    }
+    values.line_width = diam;
+    set_gc = XtGetGC( W,
+		      GCForeground | GCBackground | GCLineWidth | GCCapStyle,
+		      &values
+		    );
+    XDrawLine( dpy, p, set_gc, diam>>1, diam>>1, x2, y2 );
+    XShapeCombineMask( dpy, XtWindow(W), ShapeClip, 0, 0, p, ShapeSet );
+    XFreePixmap( dpy, p );
+    XtReleaseGC( W, set_gc );
+    XtReleaseGC( W, clear_gc );
+}
+
+
+static ShapeEllipse(W)
     Widget W;
 {
     CommandWidget w = (CommandWidget)W;
