@@ -128,6 +128,7 @@ typedef union {
 } _XAlignedBuffer;
 
 static char *_XAsyncReply();
+static void _XProcessInternalConnection();
 
 /*
  * The following routines are internal routines used by Xlib for protocol
@@ -412,13 +413,7 @@ _XWaitForReadable(dpy)
 
 	    for (ilist=dpy->im_fd_info, i=1; ilist; ilist=ilist->next, i++) {
 		if (filedes[i].revents & POLLIN) {
-		    /* equivalent to XProcessInternalConnection,
-		       but more efficient */
-		    dpy->in_process_conni = True;
-		    UnlockDisplay(dpy);
-		    (*ilist->read_callback) (dpy, ilist->fd, ilist->call_data);
-		    LockDisplay(dpy);
-		    dpy->in_process_conni = False;
+		    _XProcessInternalConnection(dpy, ilist);
 		}
 	    }
 	    if (dpy->im_fd_length + 1 > POLLFD_CACHE_SIZE)
@@ -430,13 +425,7 @@ _XWaitForReadable(dpy)
 	if (!dpy->in_process_conni)
 	    for (ilist=dpy->im_fd_info; ilist; ilist=ilist->next) {
 		if (FD_ISSET(ilist->fd, (struct fd_set*)(r_mask))) {
-		    /* equivalent to XProcessInternalConnection,
-		       but more efficient */
-		    dpy->in_process_conni = True;
-		    UnlockDisplay(dpy);
-		    (*ilist->read_callback) (dpy, ilist->fd, ilist->call_data);
-		    LockDisplay(dpy);
-		    dpy->in_process_conni = False;
+		    _XProcessInternalConnection(dpy, ilist);
 		}
 	    }
 #endif
@@ -1677,10 +1666,34 @@ XInternalConnectionNumbers(dpy, fd_return, count_return)
     return 1;
 }
 
+static void _XProcessInternalConnection(dpy, conn_info)
+    Display *dpy;
+    struct _XConnectionInfo *conn_info;
+{
+    dpy->in_process_conni = True;
+#ifdef XTHREADS
+    if (dpy->lock) {
+	/* check cache to avoid call to thread_self */
+	if (xthread_have_id(dpy->lock->reading_thread))
+	    dpy->lock->conni_thread = dpy->lock->reading_thread;
+	else
+	    dpy->lock->conni_thread = XThread_Self();
+    }
+#endif /* XTHREADS */
+    UnlockDisplay(dpy);
+    (*conn_info->read_callback) (dpy, conn_info->fd, conn_info->call_data);
+    LockDisplay(dpy);
+#ifdef XTHREADS
+    if (dpy->lock)
+	xthread_clear_id(dpy->lock->conni_thread);
+#endif /* XTHREADS */
+    dpy->in_process_conni = False;
+}
+
 /* XProcessInternalConnection
  * Call the _XInternalConnectionProc registered by _XRegisterInternalConnection
  * for this fd.
- * The Display is NOT locked.
+ * The Display is NOT locked during the call.
  */
 #if NeedFunctionPrototypes
 void XProcessInternalConnection(
@@ -1696,14 +1709,14 @@ XProcessInternalConnection(dpy, fd)
 {
     struct _XConnectionInfo *info_list;
 
-    dpy->in_process_conni = True;
+    LockDisplay(dpy);
     for (info_list=dpy->im_fd_info; info_list; info_list=info_list->next) {
 	if (info_list->fd == fd) {
-	    (*info_list->read_callback) (dpy, fd, info_list->call_data);
+	    _XProcessInternalConnection(dpy, info_list);
 	    break;
 	}
     }
-    dpy->in_process_conni = False;
+    UnlockDisplay(dpy);
 }
 
 /* XAddConnectionWatch
