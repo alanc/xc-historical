@@ -12,7 +12,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium$
+ * $XConsortium: config.c,v 1.24 92/06/11 15:47:50 rws Exp $
  */
 
 #include	"stdlib.h"
@@ -23,6 +23,7 @@
 #include	"Xutil.h"
 #include	"xtestlib.h"
 #include	"tet_api.h"
+#include	"ximtest.h"
 
 
 /*
@@ -72,6 +73,7 @@ char *str;
 }
 
 struct	config	config;
+struct	ximconfig	ximconfig;
 
 #define	T_INT		1
 #define	T_STRING	2
@@ -170,6 +172,13 @@ struct	getparam parm[] = {
 
 	/* Parameters only used during test development */
 	{"XT_FONTDIR", T_STRING, (char*)&config.fontdir, FL_OPTIONAL},
+
+	{"XT_LOCALE", T_STRING, (char*)&ximconfig.locale, FL_OPTIONAL},
+	{"XT_LOCALE_MODIFIERS", T_STRING,
+		(char*)&ximconfig.locale_modifiers, FL_OPTIONAL},
+	{"XT_FONTSET", T_STRING, (char*)&ximconfig.fontsets, FL_OPTIONAL},
+	{"XT_SAVE_IM", T_YESNO, (char*)&ximconfig.save_im, FL_OPTIONAL},
+
 };
 
 /*
