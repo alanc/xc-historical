@@ -11,7 +11,7 @@
 .if n .sp 1
 .if t .sp .5
 ..
-.TH fntchoosr 1 "5 November 1989" "X Version 11"
+.TH fntchoosr 1 "7 November 1989" "X Version 11"
 .SH NAME
 .PP
 fntchoosr - point & click interface for selecting X11 font names
@@ -19,6 +19,7 @@ fntchoosr - point & click interface for selecting X11 font names
 .SH SYNTAX
 .PP
 \fBfntchoosr\fP [-\fItoolkitoption\fP ...]
+[\fB-pattern \fIfontname\fP]
 [\fB-print\fP]
 [\fB-sample \fItext\fP]
 .PP
@@ -28,14 +29,22 @@ The \fIfntchoosr\fP application provides a simple way to display
 the fonts known to your X server, examine samples of each, and
 retrieve the X Logical Font Description ("XLFD") full name for a font.
 .PP
-If \fB-print\fP is specified on the command line, the selected
+If \fB-pattern\fP is not specified, all fonts with XLFD 14-part
+names will be selectable.  To work with only a subset of the
+fonts, specify \fB-pattern\fP followed by a partially or fully
+qualified font name; e.g., ``-pattern *medium*'' will
+select that subset of fonts which contain the string ``medium''
+somewhere in their font name.  Be careful about escaping
+wildcard characters in your shell.
+.PP
+If \fB-print\fP is specified on the command line the selected
 font specifier will be written to standard output when the \fIquit\fP
 button is activated.  Regardless of whether or not \fB-print\fP was
 specified, the font specifier may be made the PRIMARY (text)
 selection by activating the \fIselect\fP button.
 .PP
 The \fB-sample\fP option specifies the sample text to be used to
-display the selected font, over-riding the default.
+display the selected font, overriding the default.
 .PP
 .SH INTERACTIONS
 .PP
@@ -49,25 +58,31 @@ some other field(s) by choosing the ``*'' entry in that field.
 Clicking the left pointer button in the \fIselect\fP widget will
 cause the currently selected font name to become the PRIMARY text
 selection.  This then allows you to paste the string into other
-applications, for example.  The \fBselect\fP button remains
+applications.  The \fBselect\fP button remains
 highlighted to remind you of this fact, and de-highlights when
 some other application takes the PRIMARY selection away.
 .PP
 .SH RESOURCES
 .PP
 The application class is \fBFntChoosr\fP.  Most of the user-interface
-is configured in the app-defaults file; if this file is missing,
+is configured in the app-defaults file; if this file is missing
 a warning message will be printed to standard output and the
 resulting window will be nearly incomprehensible.
 .PP
-Most of the widget hierarchy is documented in the app-defaults
-file (normally /usr/lib/X11/app-defaults/FntChoosr).
+Most of the significant parts of the widget hierarchy are documented
+in the app-defaults file (normally /usr/lib/X11/app-defaults/FntChoosr).
 .PP
 Application specific resources:
 .PP
 .TP 8
 .B "cursor (\fPclass\fB Cursor)"
 Specifies the cursor for the application window.
+.TP 8
+.B "pattern (\fPclass\fB Pattern)"
+Specifies the font name pattern for selecting a subset of
+available fonts.  Equivalent to the \fB-pattern\fP option.
+Most useful patterns will contain at least one field
+delimiter; e.g. ``*-m-*'' for monospaced fonts.
 .TP 8
 .B "printOnQuit (\fPclass\fP PrintOnQuit)"
 If \fITrue\fP the currently selected font name is printed
@@ -83,14 +98,20 @@ xrdb(1)
 .PP
 .SH BUGS
 .PP
+Sufficiently ambiguous patterns can be misinterpreted and lead to an
+initial selection string which may not correspond to what the user intended
+and which may cause the initial sample text output to fail to match
+the proffered string.  Selecting any new field value will correct the
+sample output, though possibly resulting in no matching font.
+.PP
 Should be able to return a FONT for the PRIMARY selection, not
 just a STRING.
 .PP
-\fPselect\fP also owns the PRIMARY_FONT selection.  This is for
-future work.
+Any change in field value will cause \fIfntchoosr\fP to assert
+ownership of the PRIMARY_FONT selection.  This is for future work.
 .PP
 .SH COPYRIGHT
-Copyright 1988 by Massachusetts Institute of Technology
+Copyright 1989 by the Massachusetts Institute of Technology
 .br
 See \fIX(1)\fP for a full statement of rights and permissions.
 .SH AUTHOR
