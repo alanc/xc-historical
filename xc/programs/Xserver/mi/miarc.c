@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: miarc.c,v 5.0 89/06/09 15:07:34 keith Exp $ */
+/* $XConsortium: miarc.c,v 5.1 89/07/16 21:04:13 keith Exp $ */
 /* Author: Keith Packard */
 
 #include <math.h>
@@ -1289,6 +1289,7 @@ miComputeArcs (parcs, narcs, pGC)
 			/*
 			 * add dashed arcs to each bucket
 			 */
+			arc = 0;
 			while (dashAngle != endAngle) {
 				prevDashAngle = dashAngle;
 				dashAngle = computeAngleFromPath (prevDashAngle, endAngle,
@@ -1385,10 +1386,13 @@ miComputeArcs (parcs, narcs, pGC)
 	 		    ISEQUAL (data[i].x1, data[j].x0) &&
 			    ISEQUAL (data[i].y1, data[j].y0) &&
 			    !data[i].selfJoin && !data[j].selfJoin;
-		if (arcsJoin)
-			arc->render = 0;
-		else
-			arc->render = 1;
+		if (arc)
+		{
+			if (arcsJoin)
+				arc->render = 0;
+			else
+				arc->render = 1;
+		}
 		if (arcsJoin &&
 		    (prevphase == 0 || isDoubleDash) &&
 		    (iphase == 0 || isDoubleDash))
