@@ -1,4 +1,4 @@
-/* $XConsortium: ico.c,v 1.24 89/10/06 11:42:41 jim Exp $ */
+/* $XConsortium: ico.c,v 1.25 89/10/08 19:31:17 jim Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -177,9 +177,11 @@ char **argv;
 	char *delta_geom = NULL;
 	int icodeltax2, icodeltay2;
 	extern int _Xdebug;
+	int initcolors = 0;
 #ifdef MULTIBUFFER
 	int update_action = MultibufferUpdateActionBackground;
 #endif
+
 	ProgramName = argv[0];
 
 	/* Process arguments: */
@@ -406,11 +408,15 @@ char **argv;
 		for (i=0; i<numcolors; i++) {
 			setBufColname(i+1,colornames[i]);
 		}
+		initcolors = 1;
 	}
 	else if (dblbuf || dofaces) {
 		initDBufs(fg,bg,1);
+		initcolors = 1;
 	}
-	setDisplayBuf(dblbuf?1:0);	/* insert new colors */
+	if (initcolors) {
+	    setDisplayBuf(dblbuf?1:0);	/* insert new colors */
+	}
 	if (!numcolors) numcolors=1;
 
 	if (dsync)
