@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Scroll.c,v 1.13 87/12/14 09:18:13 swick Locked $";
+static char rcsid[] = "$Header: Scroll.c,v 1.14 87/12/23 12:11:01 swick Locked $";
 #endif lint
 
 /*
@@ -60,7 +60,7 @@ static float floatZero = 0.0;
 
 static XtResource resources[] = {
   {XtNwidth, XtCWidth, XrmRInt, sizeof(int),
-	     Offset(core.width), XtRString, "10"},
+	     Offset(core.width), XtRString, "15"},
   {XtNorientation, XtCOrientation, XtROrientation, sizeof(XtOrientation),
 	     Offset(scrollbar.orientation), XtRString, "vertical"},
   {XtNscrollProc, XtCCallback, XtRPointer, sizeof(caddr_t),
