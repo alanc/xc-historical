@@ -1,20 +1,22 @@
-/* $XConsortium: main.c,v 1.185 91/05/09 16:59:55 gildea Exp $ */
+/* $XConsortium: main.c,v 1.186 91/05/10 16:57:18 gildea Exp $ */
 
 /*
  * 				 W A R N I N G
  * 
- * If you think you know what all of this code is doing, you are probably
- * very mistaken.  There be serious and nasty dragons here.
+ * If you think you know what all of this code is doing, you are
+ * probably very mistaken.  There be serious and nasty dragons here.
  *
- * This client is *not* to be taken as an example of how to write X Toolkit
- * applications.  It is in need of a substantial rewrite, ideally to create
- * a generic tty widget with several different parsing widgets so that you 
- * can plug 'em together any way you want.  Don't hold your breath, though....
+ * This client is *not* to be taken as an example of how to write X
+ * Toolkit applications.  It is in need of a substantial rewrite,
+ * ideally to create a generic tty widget with several different parsing
+ * widgets so that you can plug 'em together any way you want.  Don't
+ * hold your breath, though....
  */
 
 /***********************************************************
-Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
-and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
+Copyright 1987, 1988 by Digital Equipment Corporation, Maynard,
+Massachusetts, and the Massachusetts Institute of Technology,
+Cambridge, Massachusetts.
 
                         All Rights Reserved
 
@@ -57,7 +59,7 @@ SOFTWARE.
 #endif
 
 #ifdef SVR4
-#define SYSV			/* SVR4 is (approx) a superset of SVR3 */
+#define SYSV			/* SVR4 is (approx) superset of SVR3 */
 #define USE_SYSV_UTMP
 #define ATT
 #endif
