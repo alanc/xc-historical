@@ -1,5 +1,5 @@
 
-/* $XConsortium: sun.h,v 5.30 93/11/16 10:15:07 kaleb Exp $ */
+/* $XConsortium: sun.h,v 5.31 93/11/19 09:43:47 kaleb Exp $ */
 
 /*-
  * Copyright (c) 1987 by the Regents of the University of California
@@ -37,16 +37,14 @@ extern char *getenv();
 #include <sys/filio.h>
 #include <sys/ioctl.h>
 #include <sys/resource.h>
-#ifdef SVR4
-#ifdef X_POSIX_C_SOURCE
-#define _POSIX_C_SOURCE X_POSIX_C_SOURCE
+#if !defined(SVR4) || defined(_POSIX_SOURCE)
 #include <signal.h>
-#undef _POSIX_C_SOURCE
 #else
 #define _POSIX_SOURCE
-#include <signal.h>
+#define _POSIX_C_SOURCE 3
+# include <signal.h>
 #undef _POSIX_SOURCE
-#endif
+#undef _POSIX_C_SOURCE
 #endif
 #include <fcntl.h>
 #ifndef i386
@@ -376,5 +374,44 @@ extern int sunMouseProc(
  *	Given a struct timeval, convert its time into milliseconds...
  */
 #define TVTOMILLI(tv)	(((tv).tv_usec/1000)+((tv).tv_sec*1000))
+
+extern Bool sunCfbSetupScreen(
+#if NeedFunctionPrototypes
+    ScreenPtr /* pScreen */,
+    pointer /* pbits */,	/* pointer to screen bitmap */
+    int /* xsize */,		/* in pixels */
+    int /* ysize */,
+    int /* dpix */,		/* dots per inch */
+    int /* dpiy */,		/* dots per inch */
+    int /* width */,		/* pixel width of frame buffer */
+    int	/* bpp */		/* bits per pixel of root */
+#endif
+);
+
+extern Bool sunCfbFinishScreenInit(
+#if NeedFunctionPrototypes
+    ScreenPtr /* pScreen */,
+    pointer /* pbits */,	/* pointer to screen bitmap */
+    int /* xsize */,		/* in pixels */
+    int /* ysize */,
+    int /* dpix */,		/* dots per inch */
+    int /* dpiy */,		/* dots per inch */
+    int /* width */,		/* pixel width of frame buffer */
+    int	/* bpp */		/* bits per pixel of root */
+#endif
+);
+
+extern Bool sunCfbScreenInit(
+#if NeedFunctionPrototypes
+    ScreenPtr /* pScreen */,
+    pointer /* pbits */,	/* pointer to screen bitmap */
+    int /* xsize */,		/* in pixels */
+    int /* ysize */,
+    int /* dpix */,		/* dots per inch */
+    int /* dpiy */,		/* dots per inch */
+    int /* width */,		/* pixel width of frame buffer */
+    int	/* bpp */		/* bits per pixel of root */
+#endif
+);
 
 #endif
