@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: sharedlib.c,v 1.2 89/08/23 19:02:41 jim Exp $
  * 
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -20,30 +20,17 @@ void _XtInherit()
     __XtInherit();
 }
 
-
 /*
- * One of the following three routines will be called by every toolkit
+ * The following routine will be called by every toolkit
  * application, forcing this file to be statically linked.
  *
- * XXX - add XtAppInitialize when it is coded.
+ * Note: Both XtInitialize and XtAppInitialize call XtToolkitInitialize.
  */
 
 void XtToolkitInitialize()
 {
     extern void _XtToolkitInitialize();
     _XtToolkitInitialize();
-}
-
-Widget XtInitialize (name, classname, urlist, num_urs, argc, argv)
-	char *name;		/* unused in R3 */
-	char *classname;
-	XrmOptionDescRec *urlist;
-	Cardinal num_urs;
-	Cardinal *argc;
-	char *argv[];
-{
-    extern Widget _XtInitialize();
-    return _XtInitialize (name, classname, urlist, num_urs, argc, argv);
 }
 
 #endif /* SUNSHLIB */
