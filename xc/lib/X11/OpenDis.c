@@ -1,5 +1,5 @@
 /*
- * $XConsortium: OpenDis.c,v 11.149 94/02/03 18:48:09 rws Exp $
+ * $XConsortium: OpenDis.c,v 11.150 94/02/08 23:18:05 rws Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986	*/
@@ -108,6 +108,7 @@ Display *XOpenDisplay (display)
 	extern Bool _XSendClientPrefix();
 	extern XtransConnInfo _X11TransConnectDisplay();
 	extern XID _XAllocID();
+	extern void _XAllocIDs();
 
 	/*
 	 * If the display specifier string supplied as an argument to this 
@@ -218,6 +219,7 @@ Display *XOpenDisplay (display)
  */
 	dpy->vnumber = X_PROTOCOL;
 	dpy->resource_alloc = _XAllocID;
+	dpy->idlist_alloc = _XAllocIDs;
 	dpy->synchandler = NULL;
 	dpy->savedsynchandler = NULL;
 	dpy->request = 0;
