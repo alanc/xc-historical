@@ -1,4 +1,4 @@
-.\" $XConsortium: X11.protocol,v 1.40 94/04/16 19:08:07 rws Exp $
+.\" $XConsortium: X11.protocol,v 1.41 94/04/18 14:04:24 rws Exp $
 .EH ''''
 .OH ''''
 .EF ''''
@@ -10,7 +10,7 @@
 .ce 4
 \s+2\fBX Window System Protocol\fP\s-2
 
-\s+1\fBMIT X Consortium Standard\fP\s-1
+\s+1\fBX Consortium Standard\fP\s-1
 
 \s+1\fBX Version 11, Release 6\fP\s-1
 .sp 6
