@@ -1,4 +1,4 @@
-/* $XConsortium: miFillArea.c,v 5.4 91/05/01 14:33:09 hersh Exp $ */
+/* $XConsortium: miFillArea.c,v 5.5 91/07/01 08:27:56 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -162,7 +162,7 @@ miFillArea(pRend, pExecuteOC)
       if (pddc->Static.attrs->reflModel != PEXReflectionNoShading) {
 	
 	/* Transform to WC prior to applying lighting */
-	out_type = input_list->type;
+	out_type = mc_list->type;
 	if (DD_IsVertNormal(out_type)) VALIDATEINVTRMCTOWCXFRM(pddc);
 	if (status = miTransform(pddc, mc_list, &wc_list, 
 				 pddc->Dynamic->mc_to_wc_xform,
