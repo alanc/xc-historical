@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Mailbox.c,v 1.20 89/04/11 19:30:45 jim Exp $
+ * $XConsortium: Mailbox.c,v 1.21 89/04/12 08:37:19 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -96,7 +96,7 @@ static XtResource resources[] = {
     { XtNemptyPixmap, XtCPixmapMask, XtRPixmap, sizeof(Pixmap),
 	offset (empty.mask), XtRPixmap, (caddr_t) &nopix },
     { XtNflip, XtCFlip, XtRBoolean, sizeof(Boolean),
-	offset (flip), XtRString, "true" },
+	offset (flipit), XtRString, "true" },
 };
 
 #undef offset
@@ -346,7 +346,7 @@ static void Realize (gw, valuemaskp, attr)
 					   &w->mailbox.empty.width,
 					   &w->mailbox.empty.height);
     w->mailbox.full.pixmap = make_pixmap (dpy, w, w->mailbox.full.bitmap,
-					  depth, w->mailbox.flip,
+					  depth, w->mailbox.flipit,
 					  &w->mailbox.full.width,
 					  &w->mailbox.full.height);
 			 
@@ -526,7 +526,7 @@ static void redraw_mailbox (w)
 
     if (w->mailbox.flag_up) {		/* paint the "up" position */
 	im = &w->mailbox.full;
-	if (w->mailbox.flip) back = w->mailbox.foreground_pixel;
+	if (w->mailbox.flipit) back = w->mailbox.foreground_pixel;
     } else {				/* paint the "down" position */
 	im = &w->mailbox.empty;
     }
