@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: miNS.c,v 5.1 91/02/16 09:56:17 rws Exp $ */
 
 
 /***********************************************************
@@ -100,6 +100,7 @@ CreateNameSet(pNS)
     }
 
     pheader->nameCount = 0;
+    pheader->refCount = 0;
     pheader->freeFlag = MI_FALSE;
     MINS_EMPTY_NAMESET(pheader->names);
 
