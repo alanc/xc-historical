@@ -1,5 +1,5 @@
 /*
- * $XConsortium: imakemdep.h,v 1.23 91/03/28 18:21:58 rws Exp $
+ * $XConsortium: imakemdep.h,v 1.24 91/04/02 11:22:17 rws Exp $
  * 
  * This file contains machine-dependent constants for the imake utility.  When
  * porting imake, read each of the steps below and add in any necessary
@@ -43,8 +43,12 @@
 #define imake_ccflags "-DSYSV -DUSG"
 #endif
 
+#ifdef _IBMR2
+#define imake_ccflags "-Daix -DSYSV -D_IBMR2"
+#else
 #ifdef aix
 #define imake_ccflags "-Daix -DSYSV"
+#endif
 #endif
 
 #ifdef umips
@@ -93,6 +97,9 @@
 #ifdef apollo
 #define DEFAULT_CPP "/usr/lib/cpp"
 #endif
+#if defined(_IBMR2) && !defined(DEFAULT_CPP)
+#define DEFAULT_CPP "/usr/lpp/X11/Xamples/util/cpp/cpp"
+#endif
 
 /*
  * Step 5:  cpp_argv
@@ -137,6 +144,12 @@ char *cpp_argv[ARGUMENTS] = {
 #endif
 #ifdef sony
 	"-Dsony",	/* Sony */
+#endif
+#ifdef _IBMR2
+	"-D_IBMR2",	/* IBM RS-6000 (we ensured that aix is defined above */
+#ifndef aix
+#define aix		/* allow BOOTSTRAPCFLAGS="-D_IBMR2" */
+#endif
 #endif
 #ifdef aix
 	"-Daix",	/* AIX instead of AOS */

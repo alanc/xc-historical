@@ -7,7 +7,7 @@
 #endif
 XCOMM -------------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-XCOMM $XConsortium: Imake.tmpl,v 1.110 91/04/05 14:53:36 rws Exp $
+XCOMM $XConsortium: Imake.tmpl,v 1.111 91/04/09 14:39:05 rws Exp $
 XCOMM
 XCOMM Platform-specific parameters may be set in the appropriate .cf
 XCOMM configuration files.  Site-wide parameters may be set in the file
@@ -150,15 +150,7 @@ XCOMM
 #endif
 
 
-/*
- * A convenience for people running on RTs since they define ibm032, and for
- * people running AIX (note that AOS will no longer be supported by IBM).
- */
-#if defined(ibm032) && !defined(ibm)
-#define ibm
-#endif
-
-#if defined(aix) && !defined(ibm)
+#if (defined(_IBMR2) || defined(ibm032) || defined(aix)) && !defined(ibm)
 #define ibm
 #endif
 
@@ -178,6 +170,10 @@ XCOMM
 #ifdef aix
 #undef aix
 #define AIXArchitecture
+#endif
+#ifdef _IBMR2
+#undef _IBMR2
+#define RsArchitecture
 #endif
 #endif /* ibm */
 
