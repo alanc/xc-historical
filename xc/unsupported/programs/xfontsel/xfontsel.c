@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: fntchoosr.c,v 1.4 89/11/07 08:54:53 swick Exp $";
+static char Xrcsid[] = "$XConsortium: fntchoosr.c,v 1.5 89/11/07 09:16:04 swick Exp $";
 #endif
 
 /*
@@ -51,6 +51,7 @@ Author:	Ralph R. Swick, DEC/MIT Project Athena
 #define BACKGROUND 10
 
 GetFontNames();
+Boolean Matches();
 Boolean DoWorkPiece();
 void Quit();
 void OwnSelection();
@@ -62,23 +63,27 @@ void SelectValue();
 void AnyValue();
 void EnableOtherValues();
 void EnableMenu();
+void SetCurrentFont();
+Boolean IsXLFDFontName();
 
 typedef void (*XtProc)();
 
 static struct _appRes {
     int app_defaults_version;
     Cursor cursor;
-    String font_spec;
+    String pattern;
     Boolean print_on_quit;
 } AppRes;
+
+char defaultPattern[] = "-*-*-*-*-*-*-*-*-*-*-*-*-*-*";
 
 static XtResource resources[] = {
     { "cursor", "Cursor", XtRCursor, sizeof(Cursor),
 		XtOffsetOf( struct _appRes, cursor ),
 		XtRImmediate, NULL },
     { "pattern", "Pattern", XtRString, sizeof(String),
-		XtOffsetOf( struct _appRes, font_spec ),
-		XtRString, "-*-*-*-*-*-*-*-*-*-*-*-*-*-*" },
+		XtOffsetOf( struct _appRes, pattern ),
+		XtRString, (XtPointer)defaultPattern },
     { "printOnQuit", "PrintOnQuit", XtRBoolean, sizeof(Boolean),
 	  	XtOffsetOf( struct _appRes, print_on_quit ),
       		XtRImmediate, (XtPointer)False },
@@ -97,7 +102,7 @@ Syntax(call)
     char *call;
 {
     fprintf( stderr,
-	     "Usage: %s [-toolkitOption] [-print] [-sample <text>]\n",
+	     "Usage: %s [-toolkitOption] [-pattern <fontspec>] [-print] [-sample <text>]\n",
 	     call );
 }
 
@@ -119,7 +124,7 @@ typedef struct FieldValueList FieldValueList;
 struct FieldValueList {
     int count;			/* of values */
     int allocated;
-    FieldValue value[1];            /* really [allocated] */
+    FieldValue value[1];	/* really [allocated] */
 };
 
 
@@ -145,11 +150,14 @@ struct Choice {
 
 XtAppContext appCtx;
 int numFonts;
+int numBadFonts;
 FontValues *fonts;
 FieldValueList *fieldValues[FIELD_COUNT];
 FontValues currentFont;
 int matchingFontCount;
 static Boolean anyDisabled = False;
+Widget ownButton;
+Widget fieldBox;
 Widget countLabel;
 Widget currentFontName;
 String currentFontNameString;
@@ -159,6 +167,7 @@ static XFontStruct *sampleFont = NULL;
 Boolean *fontInSet;
 static Choice *choiceList = NULL;
 int enabledMenuIndex;
+static Boolean patternFieldSpecified[FIELD_COUNT]; /* = 0 */
 
 
 void main(argc, argv)
@@ -173,7 +182,8 @@ void main(argc, argv)
     if (argc != 1) Syntax(argv[0]);
 
     appCtx = XtWidgetToApplicationContext(topLevel);
-    XtGetApplicationResources(topLevel,&AppRes,resources,XtNumber(resources),NZ );
+    XtGetApplicationResources( topLevel, &AppRes,
+			       resources, XtNumber(resources), NZ );
     if (AppRes.app_defaults_version < MIN_APP_DEFAULTS_VERSION) {
 	XrmDatabase rdb = XtDatabase(XtDisplay(topLevel));
 	XtWarning( "app-defaults file not properly installed." );
@@ -187,11 +197,11 @@ see 'fntchoosr' manual page."
 
     pane = XtCreateManagedWidget("pane",panedWidgetClass,topLevel,NZ);
     {
-	Widget commandBox, fieldBox, /*currentFontName,*/ viewPort;
+	Widget commandBox, /* fieldBox, currentFontName,*/ viewPort;
 
 	commandBox = XtCreateManagedWidget("commandBox",formWidgetClass,pane,NZ);
 	{
-	    Widget quitButton, ownButton /*, countLabel*/;
+	    Widget quitButton /*, ownButton , countLabel*/;
 
 	    quitButton =
 		XtCreateManagedWidget("quitButton",commandWidgetClass,commandBox,NZ);
@@ -220,18 +230,18 @@ see 'fntchoosr' manual page."
 		XtAddCallback(field, XtNcallback, SelectField, (XtPointer)f);
 		makeRec->field = f;
 		makeRec->button = field;
-		ScheduleWork(MakeFieldMenu, (XtPointer)makeRec, 0);
-		ScheduleWork(XtFree, (XtPointer)makeRec, 0);
+		ScheduleWork(MakeFieldMenu, (XtPointer)makeRec, 2);
+		ScheduleWork(XtFree, (XtPointer)makeRec, 2);
 	    }
 	}
 
 	/* currentFontName = */
 	{
 	    Arg args[1];
-	    currentFontNameSize = strlen(AppRes.font_spec);
+	    currentFontNameSize = strlen(AppRes.pattern);
 	    if (currentFontNameSize < 128) currentFontNameSize = 128;
 	    currentFontNameString = (String)XtMalloc(currentFontNameSize);
-	    strcpy(currentFontNameString, AppRes.font_spec);
+	    strcpy(currentFontNameString, AppRes.pattern);
 	    XtSetArg(args[0], XtNlabel, currentFontNameString);
 	    currentFontName =
 		XtCreateManagedWidget("fontName",labelWidgetClass,pane,args,ONE);
@@ -290,22 +300,27 @@ ScheduleWork( proc, closure, priority )
     XtPointer closure;
     int priority;
 {
-    WorkPiece n;
     WorkPiece piece = XtNew(WorkPieceRec);
 
-    piece->next = NULL;
     piece->priority = priority;
     piece->proc = proc;
     piece->closure = closure;
     if (workQueue == NULL) {
+	piece->next = NULL;
 	workQueue = piece;
 	XtAppAddWorkProc(appCtx, DoWorkPiece, NULL);
     } else {
-	for (n = workQueue; n->next != NULL; n = n->next) {
-	    if (n->next->priority < priority) break;
+	if (workQueue->priority > priority) {
+	    piece->next = workQueue;
+	    workQueue = piece;
 	}
-	piece->next = n->next;
-	n->next = piece;
+	else {
+	    WorkPiece n;
+	    for (n = workQueue; n->next && n->next->priority <= priority;)
+		n = n->next;
+	    piece->next = n->next;
+	    n->next = piece;
+	}
     }
 }
 
@@ -355,45 +370,69 @@ GetFontNames( closure )
 {
     Display *dpy = (Display*)closure;
     ParseRec *parseRec = XtNew(ParseRec);
-    int field, count;
+    int f, field, count;
+    String *fontNames;
+    Boolean *b;
+    int work_priority = 0;
 
-    parseRec->fontNames =
-	XListFonts(dpy, AppRes.font_spec, 32767, &numFonts);
+    fontNames = parseRec->fontNames =
+	XListFonts(dpy, AppRes.pattern, 32767, &numFonts);
 
     fonts = (FontValues*)XtMalloc( numFonts*sizeof(FontValues) );
     fontInSet = (Boolean*)XtMalloc( numFonts*sizeof(Boolean) );
+    for (f = numFonts, b = fontInSet; f; f--, b++) *b = True;
     for (field = 0; field < FIELD_COUNT; field++) {
 	fieldValues[field] = (FieldValueList*)XtMalloc(sizeof(FieldValueList));
 	fieldValues[field]->allocated = 1;
 	fieldValues[field]->count = 0;
     }
+    if (numFonts == 0) {
+	SetNoFonts();
+	return;
+    }
+    numBadFonts = 0;
     parseRec->fonts = fonts;
-    parseRec->num_fonts = count = numFonts;
+    parseRec->num_fonts = count = matchingFontCount = numFonts;
     parseRec->fieldValues = fieldValues;
     parseRec->start = 0;
     while (count > PARSE_QUANTUM) {
 	ParseRec *prevRec = parseRec;
 	parseRec->end = parseRec->start + PARSE_QUANTUM;
-	ScheduleWork(ParseFontNames, (XtPointer)parseRec, 1);
-	ScheduleWork(XtFree, (XtPointer)parseRec, 1);
+	ScheduleWork(ParseFontNames, (XtPointer)parseRec, work_priority);
+	ScheduleWork(XtFree, (XtPointer)parseRec, work_priority);
 	parseRec = XtNew(ParseRec);
 	*parseRec = *prevRec;
 	parseRec->start += PARSE_QUANTUM;
 	parseRec->fonts += PARSE_QUANTUM;
 	parseRec->fontNames += PARSE_QUANTUM;
 	count -= PARSE_QUANTUM;
+	work_priority = 1;
     }
     parseRec->end = numFonts;
-    ScheduleWork(ParseFontNames, (XtPointer)parseRec, 1);
-    ScheduleWork(XFreeFontNames, (XtPointer)parseRec->fontNames, 1);
-    ScheduleWork(XtFree, (XtPointer)parseRec, 1);
-    {
-	char label[80];
-	Arg args[1];
-	sprintf( label, "%d fonts match", numFonts );
-	XtSetArg( args[0], XtNlabel, label );
-	XtSetValues( countLabel, args, ONE );
+    ScheduleWork(ParseFontNames,(XtPointer)parseRec,work_priority);
+    ScheduleWork(XFreeFontNames,(XtPointer)parseRec->fontNames,work_priority);
+    ScheduleWork(XtFree, (XtPointer)parseRec, work_priority);
+    SetCurrentFontCount();
+    if (AppRes.pattern != defaultPattern) {
+	int maxField, f;
+	for (f = 0; f < numFonts && !IsXLFDFontName(fontNames[f]); f++);
+	if (f != numFonts) {
+	    if (Matches(AppRes.pattern, fontNames[f],
+			 patternFieldSpecified, &maxField)) {
+		for (f = 0; f <= maxField; f++) {
+		    if (patternFieldSpecified[f])
+			currentFont.value_index[f] = 0;
+		}
+	    }
+	    else
+		XtAppWarning( "internal error; pattern didn't match first font" );
+	}
+	else {
+	    SetNoFonts();
+	    return;
+	}
     }
+    ScheduleWork(SetCurrentFont, NULL, 1);
 }
 
 
@@ -404,15 +443,21 @@ void ParseFontNames( closure )
     char **fontNames = parseRec->fontNames;
     int num_fonts = parseRec->end;
     FieldValueList **fieldValues = parseRec->fieldValues;
-    FontValues *fontValues = parseRec->fonts;
+    FontValues *fontValues = parseRec->fonts - numBadFonts;
     int i, font;
 
-    for (font = parseRec->start; font < num_fonts; font++, fontValues++) {
-        char *p = *fontNames++;
+    for (font = parseRec->start; font < num_fonts; font++) {
+        char *p;
         int f, len;
         FieldValue *v;
 
-	for (f = 0; f < FIELD_COUNT; f++) {
+	if (!IsXLFDFontName(*fontNames)) {
+	    numFonts--;
+	    numBadFonts++;
+	    continue;
+	}
+
+	for (f = 0, p = *fontNames++; f < FIELD_COUNT; f++) {
 	    char *fieldP;
 
 	    if (*p) fieldP = ++p;
@@ -423,7 +468,7 @@ void ParseFontNames( closure )
 		while (*p && *++p != DELIM);
 		len = p - fieldP;
 	    }
-	    for (i=fieldValues[f]->count,v=fieldValues[f]->value; i; i--,v++) {
+	    for (i=fieldValues[f]->count,v=fieldValues[f]->value; i;i--,v++) {
 		if (len == 0) {
 		    if (v->nil) break;
 		}
@@ -456,6 +501,7 @@ void ParseFontNames( closure )
 		v->font = (int*)XtMalloc( 10*sizeof(int) );
 		v->allocated = 10;
 		v->count = 0;
+		v->enable = True;
 		i = 1;
 	    }
 	    fontValues->value_index[f] = fieldValues[f]->count - i;
@@ -463,9 +509,19 @@ void ParseFontNames( closure )
 		int allocated = (v->allocated += 10);
 		v->font = (int*)XtRealloc( v->font, allocated * sizeof(int) );
 	    }
-	    v->font[i] = font;
-	}	
+	    v->font[i] = font - numBadFonts;
+	}
+	fontValues++;
     }
+}
+
+
+Boolean IsXLFDFontName(fontName)
+    String fontName;
+{
+    int f;
+    for (f = 0; *fontName;) if (*fontName++ == DELIM) f++;
+    return (f == FIELD_COUNT);
 }
 
 
@@ -473,20 +529,28 @@ void MakeFieldMenu(closure)
     XtPointer closure;
 {
     FieldMenuRec *makeRec = (FieldMenuRec*)closure;
-    Widget menu =
-	XtCreatePopupShell("menu", simpleMenuWidgetClass, makeRec->button, NZ);
+    Widget menu;
     FieldValueList *values = fieldValues[makeRec->field];
     FieldValue *val = values->value;
     int i;
     Arg args[1];
     register Widget item;
 
+    if (numFonts)
+	menu =
+	  XtCreatePopupShell("menu",simpleMenuWidgetClass,makeRec->button,NZ);
+    else {
+	SetNoFonts();
+	return;
+    }
     XtAddCallback(menu, XtNpopupCallback, EnableOtherValues,
 		  (XtPointer)makeRec->field );
 
-    XtSetArg( args[0], XtNlabel, "*" );
-    item = XtCreateManagedWidget("any",smeBSBObjectClass,menu,args,ONE);
-    XtAddCallback(item, XtNcallback, AnyValue, (XtPointer)val->field);
+    if (!patternFieldSpecified[val->field]) {
+	XtSetArg( args[0], XtNlabel, "*" );
+	item = XtCreateManagedWidget("any",smeBSBObjectClass,menu,args,ONE);
+	XtAddCallback(item, XtNcallback, AnyValue, (XtPointer)val->field);
+    }
 
     for (i = values->count; i; i--, val++) {
 	XtSetArg( args[0], XtNlabel, val->nil ? "(nil)" : val->string );
@@ -496,6 +560,72 @@ void MakeFieldMenu(closure)
 	XtAddCallback(item, XtNcallback, SelectValue, (XtPointer)val);
 	val->menu_item = item;
     }
+}
+
+
+SetNoFonts()
+{
+    matchingFontCount = 0;
+    SetCurrentFontCount();
+    XtSetSensitive(fieldBox, False);
+    XtSetSensitive(ownButton, False);
+    if (AppRes.app_defaults_version >= MIN_APP_DEFAULTS_VERSION) {
+#ifdef USE_TEXT_WIDGET
+	XtUnmapWidget(XtParent(sampleText));
+#else
+	XtUnmapWidget(sampleText);
+#endif
+    }
+}
+
+
+Boolean Matches(pattern, fontName, fields, maxField)
+    register String pattern, fontName;
+    Boolean fields[/*FIELD_COUNT*/];
+    int *maxField;
+{
+    register int field = (*fontName == DELIM) ? -1 : 0;
+    register Boolean marked_this_field = False;
+
+    while (*pattern) {
+	if (*pattern == *fontName || *pattern == '?') {
+	    pattern++;
+	    if (*fontName++ == DELIM) {
+		field++;
+		marked_this_field = False;
+	    }
+	    else if (!marked_this_field)
+		fields[field] = marked_this_field = True; 
+	    continue;
+	}
+	if (*pattern == '*') {
+	    if (*++pattern == '\0') {
+		*maxField = field;
+		return True;
+	    }
+	    while (*fontName) {
+		Boolean field_bits[FIELD_COUNT];
+		int max_field;
+		if (*fontName == DELIM) field++;
+		bzero( field_bits, sizeof(field_bits) );
+		if (Matches(pattern, fontName++, field_bits, &max_field)) {
+		    int f;
+		    *maxField = field + max_field;
+		    for (f = 0; f <= max_field; field++, f++)
+			fields[field] = field_bits[f];
+		    return True;
+		}
+	    }
+	    return False;
+	}
+	else /* (*pattern != '*') */
+	    return False;
+    }
+    if (*fontName)
+	return False;
+
+    *maxField = field;
+    return True;
 }
 
 
@@ -526,7 +656,7 @@ void SelectValue(w, closure, callData)
     choice->value = val;
     choiceList = choice;
 	
-    SetCurrentFont();
+    SetCurrentFont(NULL);
     EnableRemainingItems();
 }
 
@@ -538,67 +668,80 @@ void AnyValue(w, closure, callData)
 {
     int field = (int)closure;
     currentFont.value_index[field] = -1;
-    SetCurrentFont();
+    SetCurrentFont(NULL);
     EnableAllItems(field);
     EnableRemainingItems();
 }
 
 
-SetCurrentFont()
+SetCurrentFontCount()
 {
-    int bytesLeft = currentFontNameSize;
-    int pos = 0;
+    char label[80];
+    Arg args[1];
+    if (matchingFontCount == 1)
+	strcpy( label, "1 font matches" );
+    else if (matchingFontCount)
+	sprintf( label, "%d fonts match", matchingFontCount );
+    else
+	strcpy( label, "no fonts match" );
+    XtSetArg( args[0], XtNlabel, label );
+    XtSetValues( countLabel, args, ONE );
+}
+
+
+/* ARGSUSED */
+void SetCurrentFont(closure)
+    XtPointer closure;		/* unused */
+{
     int f;
     Boolean *b;
 
+    if (numFonts == 0) {
+	SetNoFonts();
+	return;
+    }
     for (f = numFonts, b = fontInSet; f; f--, b++) *b = True;
 
-    for (f = 0; f < FIELD_COUNT; f++) {
-	int len, i;
-	String str;
+    {
+	int bytesLeft = currentFontNameSize;
+	int pos = 0;
 
-	currentFontNameString[pos++] = DELIM;
-	if ((i = currentFont.value_index[f]) != -1) {
-	    FieldValue *val = &fieldValues[f]->value[i];
-	    str = val->string;
-	    len = strlen(str);
-	    MarkInvalidFonts(fontInSet, val);
-	} else {
-	    str = "*";
-	    len = 1;
+	for (f = 0; f < FIELD_COUNT; f++) {
+	    int len, i;
+	    String str;
+
+	    currentFontNameString[pos++] = DELIM;
+	    if ((i = currentFont.value_index[f]) != -1) {
+		FieldValue *val = &fieldValues[f]->value[i];
+		str = val->string;
+		len = strlen(str);
+		MarkInvalidFonts(fontInSet, val);
+	    } else {
+		str = "*";
+		len = 1;
+	    }
+	    if (len+1 > --bytesLeft) {
+		currentFontNameString = (String)
+		    XtRealloc(currentFontNameString, currentFontNameSize+=128);
+		bytesLeft += 128;
+	    }
+	    strcpy( &currentFontNameString[pos], str );
+	    pos += len;
+	    bytesLeft -= len;
 	}
-	if (len+1 > --bytesLeft) {
-	    currentFontNameString = (String)
-		XtRealloc(currentFontNameString, currentFontNameSize+=128);
-	    bytesLeft += 128;
-	}
-	strcpy( &currentFontNameString[pos], str );
-	pos += len;
-	bytesLeft -= len;
     }
     {
 	Arg args[1];
 	XtSetArg( args[0], XtNlabel, currentFontNameString );
 	XtSetValues( currentFontName, args, ONE );
-	FlushEvents();
     }
-    {
-	char label[80];
-	Arg args[1];
-	int f;
-	Boolean *b;
+    matchingFontCount = 0;
+    for (f = numFonts, b = fontInSet; f; f--, b++) {
+	if (*b) matchingFontCount++;
+    }
 
-	matchingFontCount = 0;
-	for (f = numFonts, b = fontInSet; f; f--, b++) {
-	    if (*b) matchingFontCount++;
-	}
-	if (matchingFontCount == 1)
-	    strcpy( label, "1 font matches" );
-	else
-	    sprintf( label, "%d fonts match", matchingFontCount );
-	XtSetArg( args[0], XtNlabel, label );
-	XtSetValues( countLabel, args, ONE );
-    }
+    SetCurrentFontCount();
+
     {
 #ifdef USE_TEXT_WIDGET
 	Widget mapWidget = XtParent(sampleText);
@@ -618,7 +761,7 @@ SetCurrentFont()
 	    sampleFont = font;
 	    OwnSelection( sampleText, (XtPointer)False, (XtPointer)True );
 	}
-	FlushEvents();
+	FlushXqueue(dpy);
     }
 }
 
@@ -779,8 +922,10 @@ void EnableMenu(closure)
 }
 
 
-FlushEvents()
+FlushXqueue(dpy)
+    Display *dpy;
 {
+    XSync(dpy, False);
     while (XtAppPending(appCtx)) XtAppProcessEvent(appCtx, XtIMAll);
 }
 
