@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: main.c,v 1.129 88/01/02 15:38:50 rws Exp $ */
+/* $Header: main.c,v 1.130 88/01/04 08:25:36 rws Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -404,7 +404,7 @@ AddScreen(pfnInit, argc, argv)
 {
 
     int i = screenInfo.numScreens;
-    int scanlinepad, format, bitsPerPixel, j, k;
+    int scanlinepad, format, depth, bitsPerPixel, j, k;
 #ifdef DEBUG
     void	(**jNI) ();
 #endif /* DEBUG */
@@ -436,12 +436,13 @@ AddScreen(pfnInit, argc, argv)
      */
     for (format=0; format<screenInfo.numPixmapFormats; format++)
     {
+ 	depth = screenInfo.formats[format].depth;
  	bitsPerPixel = screenInfo.formats[format].bitsPerPixel;
   	scanlinepad = screenInfo.formats[format].scanlinePad;
  	j = indexForBitsPerPixel[ bitsPerPixel ];
   	k = indexForScanlinePad[ scanlinepad ];
- 	PixmapWidthPaddingInfo[ bitsPerPixel ].bitmapPadLog2 = answer[j][k];
- 	PixmapWidthPaddingInfo[ bitsPerPixel ].scanlinePad =
+ 	PixmapWidthPaddingInfo[ depth ].bitmapPadLog2 = answer[j][k];
+ 	PixmapWidthPaddingInfo[ depth ].scanlinePad =
  	    (scanlinepad/bitsPerPixel) - 1;
     }
   
