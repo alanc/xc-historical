@@ -195,34 +195,23 @@ Add_Mapping(atom, format, dformat)
  * 
  */
 
-typedef struct { Atom atom; char *format; char *dformat; } _default_mapping;
-_default_mapping _default_mappings[] = {
+typedef struct _propertyRec {
+    char *	name;
+    Atom	atom;
+    char *	format;
+    char *	dformat;
+} propertyRec;
 
-	/*
-	 * General types:
-	 */
-	{ XA_INTEGER, "0i", 0 },
-	{ XA_CARDINAL, "0c", 0 },
-	{ XA_STRING, "8s", 0 },
-	{ XA_ATOM, "32a", 0 },
-
-	{ XA_POINT, "16ii", " = $0, $1\n" },
-	{ XA_RECTANGLE, "16iicc", ":\n\t\tupper left corner: $0, $1\n\
-\t\tsize: $2 by $3\n" },
-	{ XA_ARC, "16iiccii", ":\n\t\tarc at $0, $1\n\
+#define ARC_DFORMAT	":\n\
+\t\tarc at $0, $1\n\
 \t\tsize: $2 by $3\n\
-\t\tfrom angle $4 to angle $5\n" },
+\t\tfrom angle $4 to angle $5\n"
 
-	{ XA_FONT, "32x", ": font id # $0\n" },
-	{ XA_DRAWABLE, "32x", ": drawable id # $0\n" },
-	{ XA_WINDOW, "32x", ": window id # $0\n" },
-	{ XA_PIXMAP, "32x", ": pixmap id # $0\n" },
-	{ XA_BITMAP, "32x", ": bitmap id # $0\n" },
-	{ XA_VISUALID, "32x", ": visual id # $0\n" },
-	{ XA_COLORMAP, "32x", ": colormap id # $0\n" },
-	{ XA_CURSOR, "32x", ": cursor id # $0\n" },
+#define RECTANGLE_DFORMAT	":\n\
+\t\tupper left corner: $0, $1\n\
+\t\tsize: $2 by $3\n"
 
-	{ XA_RGB_COLOR_MAP, "32xccccccc", ":\n\
+#define RGB_COLOR_MAP_DFORMAT	":\n\
 \t\tcolormap id #: $0\n\
 \t\tred-max: $1\n\
 \t\tred-mult: $2\n\
@@ -230,13 +219,9 @@ _default_mapping _default_mappings[] = {
 \t\tgreen-mult: $4\n\
 \t\tblue-max: $5\n\
 \t\tblue-mult: $6\n\
-\t\tbase-pixel: $7\n" },
+\t\tbase-pixel: $7\n"
 
-	/*
-	 * Window manager types:
-	 */
-	{ XA_WM_COMMAND, "8s", " = { $0+ }\n" },
-	{ XA_WM_HINTS, "32mbcxxiixx", ":\n\
+#define WM_HINTS_DFORMAT	":\n\
 ?m0(\t\tClient accepts input or input focus: $1\n)\
 ?m1(\t\tInitial state is \
 ?$2=0(Don't Care State)\
@@ -249,8 +234,14 @@ _default_mapping _default_mappings[] = {
 ?m5(\t\tbitmap id # of mask for icon: $7\n)\
 ?m3(\t\twindow id # to use for icon: $4\n)\
 ?m4(\t\tstarting position for icon: $5, $6\n)\
-?m6(\t\twindow id # of group leader: $8\n)" },
-	{ XA_WM_SIZE_HINTS, "32mii", ":\n\
+?m6(\t\twindow id # of group leader: $8\n)"
+
+#define WM_ICON_SIZE_DFORMAT	":\n\
+\t\tminimum icon size: $0 by $1\n\
+\t\tmaximum icon size: $2 by $3\n\
+\t\tincremental size change: $4 by $5\n"
+
+#define WM_SIZE_HINTS_DFORMAT ":\n\
 ?m0(\t\tuser specified location: $1, $2\n)\
 ?m2(\t\tprogram specified location: $1, $2\n)\
 ?m1(\t\tuser specified size: $3 by $4\n)\
@@ -273,71 +264,150 @@ _default_mapping _default_mappings[] = {
 ?$17=8(South)\
 ?$17=9(SouthEast)\
 ?$17=10(Static)\
-\n)"},
-	{ XA_WM_ICON_SIZE, "32cccccc", ":\n\
-\t\tminimum icon size: $0 by $1\n\
-\t\tmaximum icon size: $2 by $3\n\
-\t\tincremental size change: $4 by $5\n" },
+\n)"
 
-	/*
-	 * Font specific mapping of property names to types:
-	 */
-	{ XA_MIN_SPACE, "32c", 0 },
-	{ XA_NORM_SPACE, "32c", 0 },
-	{ XA_MAX_SPACE, "32c", 0 },
-	{ XA_END_SPACE, "32c", 0 },
-	{ XA_SUPERSCRIPT_X, "32i", 0 },
-	{ XA_SUPERSCRIPT_Y, "32i", 0 },
-	{ XA_SUBSCRIPT_X, "32i", 0 },
-	{ XA_SUBSCRIPT_Y, "32i", 0 },
-	{ XA_UNDERLINE_POSITION, "32i", 0 },
-	{ XA_UNDERLINE_THICKNESS, "32c", 0 },
-	{ XA_STRIKEOUT_ASCENT, "32i", 0 },
-	{ XA_STRIKEOUT_DESCENT, "32i", 0 },
-	{ XA_ITALIC_ANGLE, "32i", 0 },
-	{ XA_X_HEIGHT, "32i", 0 },
-	{ XA_QUAD_WIDTH, "32i", 0 },
-	{ XA_WEIGHT, "32c", 0 },
-	{ XA_POINT_SIZE, "32c", 0 },
-	{ XA_RESOLUTION, "32c", 0 },
-	{ XA_COPYRIGHT, "32a", 0 },
-	{ XA_NOTICE, "32a", 0 },
-	{ XA_FONT_NAME, "32a", 0 },
-	{ XA_FAMILY_NAME, "32a", 0 },
-	{ XA_FULL_NAME, "32a", 0 },
+#define WM_STATE_DFORMAT	 ":\n\
+\t\twindow state: ?$0=0(Withdrawn)?$0=1(Normal)?$0=3(Iconic)\n\
+\t\ticon window: $1\n"
 
-	{ 0, 0, 0 } };
-	
+propertyRec windowPropTable[] = {
+    {"ARC",		XA_ARC,		"16iiccii",   ARC_DFORMAT },
+    {"ATOM",		XA_ATOM,	 "32a",	      0 },
+    {"BITMAP",		XA_BITMAP,	 "32x",	      ": bitmap id # $0\n" },
+    {"CARDINAL",	XA_CARDINAL,	 "0c",	      0 },
+    {"COLORMAP",	XA_COLORMAP,	 "32x",	      ": colormap id # $0\n" },
+    {"CURSOR",		XA_CURSOR,	 "32x",	      ": cursor id # $0\n" },
+    {"DRAWABLE",	XA_DRAWABLE,	 "32x",	      ": drawable id # $0\n" },
+    {"FONT",		XA_FONT,	 "32x",	      ": font id # $0\n" },
+    {"INTEGER",		XA_INTEGER,	 "0i",	      0 },
+    {"PIXMAP",		XA_PIXMAP,	 "32x",	      ": pixmap id # $0\n" },
+    {"POINT",		XA_POINT,	 "16ii",      " = $0, $1\n" },
+    {"RECTANGLE",	XA_RECTANGLE,	 "16iicc",    RECTANGLE_DFORMAT },
+    {"RGB_COLOR_MAP",	XA_RGB_COLOR_MAP,"32xccccccc",RGB_COLOR_MAP_DFORMAT},
+    {"STRING",		XA_STRING,	 "8s",	      0 },
+    {"WINDOW",		XA_WINDOW,	 "32x",	      ": window id # $0\n" },
+    {"VISUALID",	XA_VISUALID,	 "32x",	      ": visual id # $0\n" },
+    {"WM_COLORMAP_WINDOWS",	0,	 "32cx",      ": window id #  $0+\n"},
+    {"WM_COMMAND",	XA_WM_COMMAND,	 "8s",	      " = { $0+ }\n" },
+    {"WM_HINTS",	XA_WM_HINTS,	 "32mbcxxiixx",	WM_HINTS_DFORMAT },
+    {"WM_ICON_SIZE",	XA_WM_ICON_SIZE, "32cccccc",	WM_ICON_SIZE_DFORMAT},
+    {"WM_PROTOCOLS",		0,	 "32a",	      ": protocols  $0+\n"},
+    {"WM_SIZE_HINTS",	XA_WM_SIZE_HINTS,"32mii",     WM_SIZE_HINTS_DFORMAT },
+    {"WM_STATE",		0,	 "32cx",      WM_STATE_DFORMAT}
+};
+#undef ARC_DFORMAT
+#undef RECTANGLE_DFORMAT
+#undef RGB_COLOR_MAP_DFORMAT
+#undef WM_ICON_SIZE_DFORMAT
+#undef WM_HINTS_DFORMAT
+#undef WM_SIZE_HINTS_DFORMAT
+#undef WM_STATE_DFORMAT
+
+/* 
+ * Font-specific mapping of property names to types:
+ */
+propertyRec fontPropTable[] = {
+
+    /* XLFD name properties */
+
+    "FOUNDRY",			0, 	 		"32a",	0,
+    "FAMILY_NAME",		XA_FAMILY_NAME,		"32a",	0,
+    "WEIGHT_NAME",		0,			"32a",	0,
+    "SLANT",			0,			"32a",	0,
+    "SETWIDTH_NAME",		0,			"32a",	0,
+    "ADD_STYLE_NAME",		0,			"32a",	0,
+    "PIXEL_SIZE",		0,			"32c",	0,
+    "POINT_SIZE",		XA_POINT_SIZE,		"32c",	0,
+    "RESOLUTION_X",		0,			"32c",	0,
+    "RESOLUTION_Y",		0,			"32c",	0,
+    "SPACING",			0,			"32a",	0,
+    "AVERAGE_WIDTH",		0,			"32c",	0,
+    "CHARSET_REGISTRY",		0,			"32a",	0,
+    "CHARSET_ENCODING",		0,			"32a",	0,
+
+    /* other font properties referenced in the XLFD */
+
+    "QUAD_WIDTH",		XA_QUAD_WIDTH,		"32i",	0,
+    "RESOLUTION",		XA_RESOLUTION,		"32c",	0,
+    "MIN_SPACE",		XA_MIN_SPACE,		"32c",	0,
+    "NORM_SPACE",		XA_NORM_SPACE,		"32c",	0,
+    "MAX_SPACE",		XA_MAX_SPACE,		"32c",	0,
+    "END_SPACE",		XA_END_SPACE,		"32c",	0,
+    "SUPERSCRIPT_X",		XA_SUPERSCRIPT_X,	"32i",	0,
+    "SUPERSCRIPT_Y",		XA_SUPERSCRIPT_Y,	"32i",	0,
+    "SUBSCRIPT_X",		XA_SUBSCRIPT_X,		"32i",	0,
+    "SUBSCRIPT_Y",		XA_SUBSCRIPT_Y,		"32i",	0,
+    "UNDERLINE_POSITION",	XA_UNDERLINE_POSITION,	"32i",	0,
+    "UNDERLINE_THICKNESS",	XA_UNDERLINE_THICKNESS,	"32i",	0,
+    "STRIKEOUT_ASCENT",		XA_STRIKEOUT_ASCENT,	"32i",	0,
+    "STRIKEOUT_DESCENT",	XA_STRIKEOUT_DESCENT,	"32i",	0,
+    "ITALIC_ANGLE",		XA_ITALIC_ANGLE,	"32i",	0,
+    "X_HEIGHT",			XA_X_HEIGHT,		"32i",	0,
+    "WEIGHT",			XA_WEIGHT,		"32i",	0,
+    "FACE_NAME",		0,			"32a",	0,
+    "COPYRIGHT",		XA_COPYRIGHT,		"32a",	0,
+    "AVG_CAPITAL_WIDTH",	0,			"32i",	0,
+    "AVG_LOWERCASE_WIDTH",	0,			"32i",	0,
+    "RELATIVE_SETWIDTH",	0,			"32c",	0,
+    "RELATIVE_WEIGHT",		0,			"32c",	0,
+    "CAP_HEIGHT",		XA_CAP_HEIGHT,		"32c",	0,
+    "SUPERSCRIPT_SIZE",		0,			"32c",	0,
+    "FIGURE_WIDTH",		0,			"32i",	0,
+    "SUBSCRIPT_SIZE",		0,			"32c",	0,
+    "SMALL_CAP_SIZE",		0,			"32i",	0,
+    "NOTICE",			XA_NOTICE,		"32a",	0,
+    "DESTINATION",		0,			"32c",	0,
+
+    /* other font properties */
+
+    "FONT",			XA_FONT,		"32a",	0,
+    "FONT_NAME",		XA_FONT_NAME,		"32a",	0,
+};    
+
+static int XpropMode;
+#define XpropWindowProperties 0
+#define XpropFontProperties   1
+
 Setup_Mapping()
 {
-	_default_mapping *dmap = _default_mappings;
-	Atom wm_state = XInternAtom (dpy, "WM_STATE", True);
-	Atom wm_colormap_windows = XInternAtom (dpy, "WM_COLORMAP_WINDOWS",
-						True);
-	Atom wm_protocols = XInternAtom (dpy, "WM_PROTOCOLS", True);
-
-
-	while (dmap->format) {
-		Add_Mapping( dmap->atom, dmap->format, dmap->dformat );
-		dmap++;
+    int n;
+    propertyRec *p;
+    
+    if (XpropMode == XpropWindowProperties) {
+	n = sizeof(windowPropTable) / sizeof(propertyRec);
+	p = windowPropTable;
+    } else {
+	n = sizeof (fontPropTable) / sizeof (propertyRec);
+	p = fontPropTable;
+    }
+    for ( ; --n >= 0; p++) {
+	if (! p->atom) {
+	    p->atom = XInternAtom(dpy, p->name, True);
+	    if (p->atom == None)
+		continue;
 	}
+	Add_Mapping(p->atom, p->format, p->dformat);
+    }	
+}
 
-	/*
-	 * grok WM_STATE for debugging window and session managers
-	 */
-	if (wm_state != None) {
-	    Add_Mapping (wm_state, "32cx", ":\n\
-\t\twindow state: ?$0=0(Withdrawn)?$0=1(Normal)?$0=3(Iconic)\n\
-\t\ticon window: $1\n");
-	}
+char *GetAtomName(atom)
+    Atom atom;
+{
+    int n;
+    propertyRec *p;
+        
+    if (XpropMode == XpropWindowProperties) {
+	n = sizeof(windowPropTable) / sizeof(propertyRec);
+	p = windowPropTable;
+    } else {
+	n = sizeof (fontPropTable) / sizeof (propertyRec);
+	p = fontPropTable;
+    }
+    for ( ; --n >= 0; p++)
+	if (p->atom == atom)
+	    return p->name;
 
-	if (wm_colormap_windows != None) {
-	    Add_Mapping (wm_colormap_windows, "32x", ": window id #  $0+\n");
-	}
-
-	if (wm_protocols != None) {
-	    Add_Mapping (wm_protocols, "32a", ": protocols  $0+\n");
-	}
+    return (char *) NULL;
 }
 
 /*
@@ -407,6 +477,7 @@ char *Format_Signed(word)
   return(_formatting_buffer2);
 }
 
+/*ARGSUSED*/
 int ignore_errors (dpy, ev)
     Display *dpy;
     XErrorEvent *ev;
@@ -420,14 +491,20 @@ char *Format_Atom(atom)
   char *name;
   int (*handler)();
 
+  if (name = GetAtomName(atom)) {
+      strncpy(_formatting_buffer, name, MAXSTR);
+      return(_formatting_buffer);
+  }
+
   handler = XSetErrorHandler (ignore_errors);
   name=XGetAtomName(dpy, atom);
   XSetErrorHandler(handler);
-  if (!name)
-    sprintf(_formatting_buffer, "undefined atom # 0x%lx", atom);
-  else
-    strncpy(_formatting_buffer, name, MAXSTR);
-
+  if (! name)
+      sprintf(_formatting_buffer, "undefined atom # 0x%lx", atom);
+  else {
+      strncpy(_formatting_buffer, name, MAXSTR);
+      XFree(name);
+  }
   return(_formatting_buffer);
 }
 
@@ -1071,6 +1148,8 @@ char **argv;
   thunk *props, *Handle_Prop_Requests();
   char *remove_propname = NULL;
   Bool frame_only = False;
+  int n;
+  char **nargv;
 
   INIT_NAME;
 
@@ -1081,6 +1160,12 @@ char **argv;
   target_win = Select_Window_Args(&argc, argv);
 
   /* Set up default atom to format, dformat mapping */
+  XpropMode = XpropWindowProperties;
+  for (n=argc, nargv=argv; n; nargv++, n--)
+      if (! strcmp(nargv[0], "-font")) {
+	  XpropMode = XpropFontProperties;
+	  break;
+      }
   Setup_Mapping();
   if (name = getenv("XPROPFORMATS")) {
 	  if (!(stream=fopen(name, "r")))
