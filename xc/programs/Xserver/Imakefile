@@ -13,6 +13,7 @@
              MI = ddx/mi/libmi.a
             DIX = dix/libdix.a
             SUN = ddx/sun/libsun.a
+     EXTENSIONS =
         SYSLIBS = -lm -ldbm
             ALL = Xqvss Xsun Xapa16 Xapollo
 
@@ -36,7 +37,7 @@ servertype:
 #
 QVSSDIRS = ddx/mi ddx/mfb ddx/lk201 ddx/qvss os/4.2bsd
 QVSSOBJS = ddx/qvss/init.o ddx/qvss/qvss_io.o ddx/lk201/lk201.o
-QVSSLIBS = $(DIX) $(UNIX) $(MFB) $(MI)
+QVSSLIBS = $(DIX) $(UNIX) $(MFB) $(MI) $(EXTENSIONS)
 #ifdef XQvssServer
 SERVERDIRS = $(QVSSDIRS)
 #endif
@@ -49,7 +50,7 @@ ServerTarget(Xqvss,dix $(QVSSDIRS),$(QVSSOBJS),$(QVSSLIBS),$(SYSLIBS))
 #
 SUNDIRS = ddx/mi ddx/mfb ddx/cfb ddx/sun os/4.2bsd
 SUNOBJS = ddx/sun/sunInit.o
-SUNLIBS = $(SUN) $(CFB) $(DIX) $(UNIX) $(MFB) $(MI)
+SUNLIBS = $(SUN) $(CFB) $(DIX) $(UNIX) $(MFB) $(MI) $(EXTENSIONS)
 SUNSYSLIBS = $(SYSLIBS) -lsunwindow -lpixrect
 #ifdef XSunServer
 SERVERDIRS = $(SUNDIRS)
@@ -64,7 +65,7 @@ ServerTarget(Xsun,dix $(SUNDIRS),$(SUNOBJS),$(SUNLIBS),$(SUNSYSLIBS))
 APA16DIRS = ddx/mi ddx/mfb ddx/ibm/apa16 ddx/ibm/rt os/4.2bsd
 APA16OBJS = ddx/ibm/rt/rtinit.o ddx/ibm/rt/rtio.o
 APA16LIBS = ddx/ibm/rt/librt.a ddx/ibm/apa16/libapa16.a \
-		$(DIX) $(UNIX) $(MFB) $(MI)
+		$(DIX) $(UNIX) $(MFB) $(MI) $(EXTENSIONS)
 #ifdef XApa16Server
 SERVERDIRS = $(APA16DIRS)
 #endif
@@ -78,7 +79,7 @@ ServerTarget(Xapa16,dix $(APA16DIRS),$(APA16OBJS),$(APA16LIBS),$(SYSLIBS))
 APOLLODIRS = ddx/mi ddx/mfb ddx/apollo os/4.2bsd
 APOLLOOBJS = ddx/apollo/init.o ddx/apollo/apollo_io.o \
 		ddx/apollo/gpr_type_mgr.o /sys/traits/io_traits
-APOLLOLIBS = $(DIX) $(UNIX) $(MFB) $(MI)
+APOLLOLIBS = $(DIX) $(UNIX) $(MFB) $(MI) $(EXTENSIONS)
 #ifdef XApolloServer
 SERVERDIRS = $(APA16DIRS)
 #endif
