@@ -1,4 +1,4 @@
-/* $XConsortium: technq.c,v 1.1 93/10/26 09:58:45 rws Exp $ */
+/* $XConsortium: technq.c,v 1.2 93/10/31 09:41:22 dpw Exp $ */
 /**** module technq.c ****/
 /****************************************************************************
 				NOTICE
@@ -327,7 +327,7 @@ NoParamCheck: Used as copyfnc for techniques that do not have parameters.
 *************************************************************************/
 static Bool NoParamCheck(flo, rparms, cparms, tsize) 
      floDefPtr flo;
-     void  *rparms, *cparms;
+     pointer rparms, cparms;
      CARD16 tsize;
 {
   return(!tsize);
@@ -339,8 +339,8 @@ NoTechYet: error stub for unimplemented technique routines
 static Bool NoTechYet(flo, ped, parm, tech) 
      floDefPtr flo;
      peDefPtr  ped;
-     void    *parm;
-     void    *tech;
+     pointer   parm;
+     pointer   tech;
 {
   return(FALSE);
 }			/* end NoTechYet */
