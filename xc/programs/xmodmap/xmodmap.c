@@ -1,7 +1,7 @@
 /*
  * xmodmap - program for loading keymap definitions into server
  *
- * $XConsortium: xmodmap.c,v 1.21 91/07/18 10:25:49 rws Exp $
+ * $XConsortium: xmodmap.c,v 1.22 94/03/16 18:34:43 converse Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -306,6 +306,7 @@ main (argc, argv)
 	fprintf (stderr, "%s:  %d error%s encountered, aborting.\n",
 		 ProgramName, parse_errors,
 		 (parse_errors == 1 ? "" : "s"));
+	status = -1;	/* return an error condition */
     } else {
 	status = execute_work_queue ();
     }
