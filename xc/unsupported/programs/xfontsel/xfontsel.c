@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: xfontsel.c,v 1.11 89/11/14 20:28:36 swick Exp $";
+static char Xrcsid[] = "$XConsortium: xfontsel.c,v 1.12 89/11/15 08:20:23 swick Exp $";
 #endif
 
 /*
@@ -424,7 +424,7 @@ void GetFontNames( closure )
     ScheduleWork(ParseFontNames,(XtPointer)parseRec,work_priority);
     ScheduleWork(XFreeFontNames,(XtPointer)fontNames,work_priority);
     ScheduleWork(XtFree, (XtPointer)parseRec, work_priority);
-    SetCurrentFontCount();
+    SetParsingFontCount(matchingFontCount);
     if (AppRes.pattern != defaultPattern) {
 	int maxField, f;
 	for (f = 0; f < numFonts && !IsXLFDFontName(fontNames[f]); f++);
@@ -523,6 +523,7 @@ void ParseFontNames( closure )
 	}
 	fontValues++;
     }
+    SetParsingFontCount(numFonts - num_fonts);
 }
 
 
@@ -698,6 +699,20 @@ SetCurrentFontCount()
 	strcpy( label, "no fonts match" );
     XtSetArg( args[0], XtNlabel, label );
     XtSetValues( countLabel, args, ONE );
+}
+
+
+SetParsingFontCount(count)
+{
+    char label[80];
+    Arg args[1];
+    if (count == 1)
+	strcpy( label, "1 name to parse" );
+    else
+	sprintf( label, "%d names to parse", count );
+    XtSetArg( args[0], XtNlabel, label );
+    XtSetValues( countLabel, args, ONE );
+    FlushXqueue(XtDisplay(countLabel));
 }
 
 
