@@ -1,5 +1,5 @@
 /*
- * $XConsortium: init.c,v 2.43 89/12/10 17:31:20 converse Exp $
+ * $XConsortium: init.c,v 2.44 89/12/16 03:33:44 converse Exp $
  *
  *
  *		        COPYRIGHT 1987, 1989
@@ -246,6 +246,7 @@ char **argv;
 	{"XmhPackFolder",		XmhPackFolder},
 	{"XmhSortFolder",		XmhSortFolder},
 	{"XmhForceRescan",		XmhForceRescan},
+	{"XmhReloadSeqLists",		XmhReloadSeqLists},
 
 	/* actions upon the currently selected message(s) */
 
@@ -283,6 +284,7 @@ char **argv;
 	{"XmhEditView",			XmhEditView},
 	{"XmhSaveView",			XmhSaveView},
 	{"XmhPrintView",		XmhPrintView},
+	{"XmhViewMarkDelete",		XmhViewMarkDelete},
 
        	/* actions upon a composition, reply, or forward */
 

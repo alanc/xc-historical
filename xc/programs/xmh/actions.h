@@ -1,5 +1,5 @@
 /*
- * $XConsortium: actions.h,v 1.3 89/11/30 20:07:14 converse Exp $
+ * $XConsortium: actions.h,v 1.4 89/12/16 03:34:00 converse Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -58,6 +58,7 @@ extern void	XmhPromptOkayAction();
 
 extern void	XmhPushSequence();
 extern void	XmhPopSequence();
+extern void	XmhReloadSeqLists();
 
 	/* from tocfuncs.c */
 
@@ -92,3 +93,4 @@ extern void	XmhViewUseAsComposition();
 extern void	XmhEditView();
 extern void	XmhSaveView();
 extern void	XmhPrintView();
+extern void	XmhViewMarkDelete();
