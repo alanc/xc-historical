@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: bbox.c,v 2.17 88/02/22 21:40:30 swick Exp $";
+static char rcs_id[] = "$XConsortium: bbox.c,v 2.18 88/09/06 17:22:57 jim Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -32,6 +32,7 @@ static char rcs_id[] = "$XConsortium: bbox.c,v 2.17 88/02/22 21:40:30 swick Exp 
    to create new buttonboxes and manage their contents.  It is a layer hiding
    the toolkit interfaces. */
 
+#include <X11/Cardinals.h>
 #include "xmh.h"
 #include "bboxint.h"
 
@@ -60,10 +61,8 @@ ButtonBox BBoxRadioCreate(scrn, position, name, radio)
 	{XtNallowVert, True},
 	{XtNskipAdjust, True},
     };
-    int width;
     ButtonBox buttonbox;
 
-    width = GetWidth(scrn->widget);
     buttonbox = XtNew(ButtonBoxRec);
     bzero((char *)buttonbox, sizeof(ButtonBoxRec));
     buttonbox->updatemode = TRUE;
@@ -156,7 +155,7 @@ char **extra;			/* Extra translation bindings. */
     Button button;
     int i;
     static XtCallbackRec callback[] = { {DoButtonPress, NULL}, {NULL, NULL} };
-    static Arg arglist[] = { {XtNcallback, (XtArgVal)callback} };
+    Arg arglist[1];
 
     if (position > buttonbox->numbuttons) position = buttonbox->numbuttons;
     buttonbox->numbuttons++;
@@ -170,9 +169,9 @@ char **extra;			/* Extra translation bindings. */
     callback[0].closure = (caddr_t)button;
     button->buttonbox = buttonbox;
     button->name = MallocACopy(name);
+    XtSetArg(arglist[0], XtNcallback, callback);
     button->widget = XtCreateWidget(name, commandWidgetClass,
-				    buttonbox->inner, arglist,
-				    XtNumber(arglist));
+				    buttonbox->inner, arglist, ONE);
 /*    if (extra) XtAugmentTranslations(button->widget,
 				     XtParseTranslationTable(extra));*/
     button->func = func;
