@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbbresd.c,v 1.7 94/03/06 23:15:09 dpw Exp $ */
+/* $XConsortium: mfbbresd.c,v 1.6 94/01/12 18:04:36 dpw Exp $ */
 #include "X.h"
 #include "misc.h"
 #include "mfb.h"

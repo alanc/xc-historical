@@ -1,4 +1,4 @@
-/* $XConsortium: mi.h,v 1.14 94/03/06 23:13:32 dpw Exp $ */
+/* $XConsortium: mi.h,v 1.13 94/01/07 09:44:08 dpw Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
