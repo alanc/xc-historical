@@ -1,4 +1,4 @@
-/* $XConsortium: pl_oc_enc.c,v 1.2 92/07/16 11:02:11 mor Exp $ */
+/* $XConsortium: pl_oc_enc.c,v 1.3 92/07/24 13:47:03 mor Exp $ */
 
 /******************************************************************************
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -1199,8 +1199,8 @@ char		**ocDest;
 	pexQuadrilateralMesh, pInfo);
     
     pInfo->colorType = colorType;
-    pInfo->mPts = rowCount;
-    pInfo->nPts = colCount;
+    pInfo->mPts = colCount;
+    pInfo->nPts = rowCount;
     pInfo->facetAttribs = facetAttributes;
     pInfo->vertexAttribs = vertexAttributes;
     pInfo->shape = ocSrc->data.QuadrilateralMesh.shape_hint;

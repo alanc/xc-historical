@@ -1,4 +1,4 @@
-/* $XConsortium: pl_oc_prim.c,v 1.6 92/07/16 11:17:59 mor Exp $ */
+/* $XConsortium: pl_oc_prim.c,v 1.7 92/07/24 13:50:27 mor Exp $ */
 
 /******************************************************************************
 Copyright 1987,1991 by Digital Equipment Corporation, Maynard, Massachusetts
@@ -1309,8 +1309,8 @@ INPUT PEXArrayOfVertex		vertices;
      */
 
     pReq->colorType = colorType;
-    pReq->mPts = rowCount;
-    pReq->nPts = colCount;
+    pReq->mPts = colCount;
+    pReq->nPts = rowCount;
     pReq->facetAttribs = facetAttributes;
     pReq->vertexAttribs = vertexAttributes;
     pReq->shape = shape;

@@ -1,4 +1,4 @@
-/* $XConsortium: pl_oc_dec.c,v 1.5 92/07/16 11:02:50 mor Exp $ */
+/* $XConsortium: pl_oc_dec.c,v 1.6 92/07/24 13:47:34 mor Exp $ */
 
 /******************************************************************************
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -1262,8 +1262,8 @@ PEXOCData	*ocDest;
     ocDest->data.QuadrilateralMesh.facet_attributes = oc->facetAttribs;
     ocDest->data.QuadrilateralMesh.vertex_attributes = oc->vertexAttribs;
     ocDest->data.QuadrilateralMesh.color_type = oc->colorType;
-    ocDest->data.QuadrilateralMesh.col_count = oc->nPts;
-    ocDest->data.QuadrilateralMesh.row_count = oc->mPts;
+    ocDest->data.QuadrilateralMesh.col_count = oc->mPts;
+    ocDest->data.QuadrilateralMesh.row_count = oc->nPts;
 
     lenofColor = GetColorLength (oc->colorType);
     lenofFacetDataList = ((oc->mPts - 1) * (oc->nPts - 1)) *
