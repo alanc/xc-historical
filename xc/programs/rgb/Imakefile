@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.23 91/09/09 16:09:09 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.24 92/05/22 11:50:50 rws Exp $
         RGB_DB = DefaultRGBDatabase
    SITE_RGB_DB = -DRGB_DB=\"$(RGB_DB)\"
       DEPLIBS = 
@@ -30,8 +30,8 @@ all:: $(PROGRAMS) $(DATADEP)
 
 SingleProgramTarget(rgb,$(OBJS1),NullParameter,$(DBMLIB))
 SingleProgramTarget(showrgb,$(OBJS2),NullParameter,$(DBMLIB))
-SpecialObjectRule(rgb.o,$(ICONFIGFILES),$(_NOOP_))
-SpecialObjectRule(showrgb.o,$(ICONFIGFILES),$(_NOOP_))
+SpecialCObjectRule(rgb,$(ICONFIGFILES),$(_NOOP_))
+SpecialCObjectRule(showrgb,$(ICONFIGFILES),$(_NOOP_))
 InstallMultiple($(DATAFILES) rgb.txt,$(LIBDIR))
 InstallProgramWithFlags(showrgb,$(BINDIR),)
 InstallManPage(showrgb,$(MANDIR))

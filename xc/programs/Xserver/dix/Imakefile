@@ -1,4 +1,4 @@
-XCOMM $XConsortium$
+XCOMM $XConsortium: Imakefile,v 1.37 91/07/16 22:54:10 gildea Exp $
 #include <Server.tmpl>
 
 SRCS = atom.c colormap.c cursor.c devices.c dispatch.c dixutils.c events.c \
@@ -48,11 +48,6 @@ NormalLibraryTarget(dix,$(OBJS))
 LintLibraryTarget(dix,$(SRCS))
 NormalLintTarget($(SRCS))
 
-SpecialObjectRule(globals.o, $(ICONFIGFILES), $(SITE_DEFINES))
-
-#if HasSaberC
-saber_src:
-	XCOMM load $(CFLAGS) $(SITE_DEFINES) $(SRCS)
-#endif
+SpecialCObjectRule(globals,$(ICONFIGFILES),$(SITE_DEFINES))
 
 DependTarget()

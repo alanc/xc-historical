@@ -1,4 +1,4 @@
-XCOMM $XConsortium$
+XCOMM $XConsortium: Imakefile,v 1.33 91/07/17 00:48:06 gildea Exp $
 XCOMM
 XCOMM Here is an Imakefile for twm.  It depends on having TWMDIR defined
 XCOMM in Imake.tmpl.  I like to use Imakefiles for everything, and I am sure
@@ -22,9 +22,9 @@ LOCAL_LIBRARIES = $(XMULIB) $(EXTENSIONLIB) $(XLIB)
 
 AllTarget(twm)
 
-SpecialObjectRule(parse.o,NullParameter,'-DSYSTEM_INIT_FILE="'$(TWMDIR)'/system.twmrc"')
+SpecialCObjectRule(parse,NullParameter,'-DSYSTEM_INIT_FILE="'$(TWMDIR)'/system.twmrc"')
 #if !HasPutenv
-SpecialObjectRule(util.o,NullParameter,-DNOPUTENV)
+SpecialCObjectRule(util,NullParameter,-DNOPUTENV)
 #endif
 
 depend:: lex.c gram.c deftwmrc.c 
