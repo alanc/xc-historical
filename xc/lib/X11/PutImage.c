@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XPutImage.c,v 11.49 89/05/15 14:17:19 jim Exp $ */
+/* $XConsortium: XPutImage.c,v 11.50 89/11/08 17:07:37 converse Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include <stdio.h>
@@ -579,10 +579,11 @@ SendXYImage(dpy, req, image, req_xoffset, req_yoffset)
     }
 
     length = ROUNDUP(length, 4);
-    if (((dpy->bufptr + length) > dpy->bufmax) && 
-	((buf = _XAllocScratch(dpy, (unsigned long) (length))) == NULL)) {
-	UnGetReq(PutImage);
-	return;	
+    if ((dpy->bufptr + length) > dpy->bufmax) {
+	if ((buf = _XAllocScratch(dpy, (unsigned long) (length))) == NULL) {
+	    UnGetReq(PutImage);
+	    return;	
+	}
     }
     else
 	buf = dpy->bufptr;
@@ -601,10 +602,11 @@ SendXYImage(dpy, req, image, req_xoffset, req_yoffset)
 	src -= total_xoffset;
 	bytes_per_temp_plane = bytes_per_line * req->height;
 	temp_length = ROUNDUP(bytes_per_temp_plane * image->depth, 4);
-	if ((buf == dpy->bufptr) &&
-	    (! (temp = _XAllocScratch(dpy, (unsigned long) temp_length)))) {
-	    UnGetReq(PutImage);
-	    return;
+	if (buf == dpy->bufptr) {
+	    if (! (temp = _XAllocScratch(dpy, (unsigned long) temp_length))) {
+		UnGetReq(PutImage);
+		return;
+	    }
 	}
 	else
 	    if ((extra = temp = Xmalloc((unsigned) temp_length)) == NULL) {
