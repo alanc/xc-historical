@@ -7,8 +7,8 @@
 #define OSName                 HP-UX 6.01
 #define OSMajorVersion         6
 #define OSMinorVersion         0
-#define StandardDefines        -Wc,-Nd4000,-Ns3000 -DSYSV
-#define LintOpts               -ax -Nd4000 -Ns3000 -Na25000 -DSYSV
+#define StandardDefines        -Wc,-Nd4000,-Ns3000,-Ne700 -DSYSV
+#define LintOpts               -ax -Nd4000 -Ns3000 -Ne700 -Na25000 -DSYSV
 #define LnCmd                  ln -s
 #define ExecableScripts        YES
 #define HasSockets             YES
@@ -20,7 +20,7 @@
 #define NeedBerklibInXlib      YES		/* snag Berklib for Xlib */
 
 
-/**/# platform:  $XConsortium: hp.cf,v 1.5 89/01/27 11:08:50 jim Exp $
+/**/# platform:  $XConsortium: hp.cf,v 1.6 89/01/27 16:11:28 jim Exp $
 /**/# operating system:  OSName
 
 /*
