@@ -1,5 +1,5 @@
 /*
- * $XConsortium: swaprep.c,v 1.2 94/11/08 20:08:01 mor Exp mor $
+ * $XConsortium: swaprep.c,v 1.3 94/12/01 20:53:19 mor Exp $
  *
  * Copyright 1994 Network Computing Devices, Inc.
  *
@@ -323,6 +323,16 @@ SwapGetImageReply (rep)
     swaps (&rep->sequenceNumber, n);
     swapl (&rep->length, n);
     swapl (&rep->visual, n);
+}
+
+void
+SwapQueryExtensionReply(rep)
+    xQueryExtensionReply	*rep;
+{
+    char n;
+
+    swaps (&rep->sequenceNumber, n);
+    swapl (&rep->length, n);
 }
 
 static void

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: swap.h,v 1.2 94/11/08 20:08:14 mor Exp mor $
+ * $XConsortium: swap.h,v 1.3 94/12/01 20:41:41 mor Exp $
  *
  * Copyright 1994 Network Computing Devices, Inc.
  *
@@ -57,6 +57,7 @@ extern void SwapModmapReply();
 extern void SwapKeymapReply();
 extern void SwapFont();
 extern void SwapGetImageReply();
+extern void SwapQueryExtensionReply();
 
 extern void WriteSConnectionInfo();
 
