@@ -1,4 +1,4 @@
-/* $XConsortium: Scrollbar.c,v 1.65 90/12/31 17:29:09 gildea Exp $ */
+/* $XConsortium: Scrollbar.c,v 1.66 91/01/11 18:43:33 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -52,29 +52,29 @@ static char defaultTranslations[] =
 
 static float floatZero = 0.0;
 
-#define Offset(field) XtOffset(ScrollbarWidget, field)
+#define Offset(field) XtOffsetOf(ScrollbarRec, field)
 
 static XtResource resources[] = {
   {XtNlength, XtCLength, XtRDimension, sizeof(Dimension),
-       Offset(scrollbar.length), XtRImmediate, (caddr_t) 1},
+       Offset(scrollbar.length), XtRImmediate, (XtPointer) 1},
   {XtNthickness, XtCThickness, XtRDimension, sizeof(Dimension),
-       Offset(scrollbar.thickness), XtRImmediate, (caddr_t) 14},
+       Offset(scrollbar.thickness), XtRImmediate, (XtPointer) 14},
   {XtNorientation, XtCOrientation, XtROrientation, sizeof(XtOrientation),
-      Offset(scrollbar.orientation), XtRImmediate, (caddr_t) XtorientVertical},
-  {XtNscrollProc, XtCCallback, XtRCallback, sizeof(caddr_t),
+      Offset(scrollbar.orientation), XtRImmediate, (XtPointer) XtorientVertical},
+  {XtNscrollProc, XtCCallback, XtRCallback, sizeof(XtPointer),
        Offset(scrollbar.scrollProc), XtRCallback, NULL},
-  {XtNthumbProc, XtCCallback, XtRCallback, sizeof(caddr_t),
+  {XtNthumbProc, XtCCallback, XtRCallback, sizeof(XtPointer),
        Offset(scrollbar.thumbProc), XtRCallback, NULL},
-  {XtNjumpProc, XtCCallback, XtRCallback, sizeof(caddr_t),
+  {XtNjumpProc, XtCCallback, XtRCallback, sizeof(XtPointer),
        Offset(scrollbar.jumpProc), XtRCallback, NULL},
   {XtNthumb, XtCThumb, XtRBitmap, sizeof(Pixmap),
        Offset(scrollbar.thumb), XtRImmediate, (XtPointer) XtUnspecifiedPixmap},
   {XtNforeground, XtCForeground, XtRPixel, sizeof(Pixel),
        Offset(scrollbar.foreground), XtRString, XtDefaultForeground},
   {XtNshown, XtCShown, XtRFloat, sizeof(float),
-       Offset(scrollbar.shown), XtRFloat, (caddr_t)&floatZero},
+       Offset(scrollbar.shown), XtRFloat, (XtPointer)&floatZero},
   {XtNtopOfThumb, XtCTopOfThumb, XtRFloat, sizeof(float),
-       Offset(scrollbar.top), XtRFloat, (caddr_t)&floatZero},
+       Offset(scrollbar.top), XtRFloat, (XtPointer)&floatZero},
   {XtNscrollVCursor, XtCCursor, XtRCursor, sizeof(Cursor),
        Offset(scrollbar.verCursor), XtRString, "sb_v_double_arrow"},
   {XtNscrollHCursor, XtCCursor, XtRCursor, sizeof(Cursor),
@@ -88,8 +88,9 @@ static XtResource resources[] = {
   {XtNscrollRCursor, XtCCursor, XtRCursor, sizeof(Cursor),
        Offset(scrollbar.rightCursor), XtRString, "sb_right_arrow"},
   {XtNminimumThumb, XtCMinimumThumb, XtRDimension, sizeof(Dimension),
-       Offset(scrollbar.min_thumb), XtRImmediate, (caddr_t) 7},
+       Offset(scrollbar.min_thumb), XtRImmediate, (XtPointer) 7},
 };
+#undef Offset
 
 static void ClassInitialize();
 static void Initialize();
@@ -640,7 +641,7 @@ static void NotifyScroll( gw, event, params, num_params   )
         case 'b':    call_data = -call_data;
 	  	     /* fall through */
         case 'F':
-	case 'f':    XtCallCallbacks( gw, XtNscrollProc, (caddr_t)call_data );
+	case 'f':    XtCallCallbacks( gw, XtNscrollProc, (XtPointer)call_data);
 	             break;
 
         case 'C':

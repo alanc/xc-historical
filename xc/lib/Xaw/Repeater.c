@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Repeater.c,v 1.5 90/03/15 11:08:58 jim Exp $
+ * $XConsortium: Repeater.c,v 1.6 90/12/31 17:23:31 gildea Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -38,7 +38,7 @@ static void tic();			/* clock timeout */
 
 #define ADD_TIMEOUT(rw,delay) \
   XtAppAddTimeOut (XtWidgetToApplicationContext ((Widget) rw), \
-		   (unsigned long) delay, tic, (caddr_t) rw)
+		   (unsigned long) delay, tic, (XtPointer) rw)
 
 #define CLEAR_TIMEOUT(rw) \
   if ((rw)->repeater.timer) { \
@@ -72,7 +72,7 @@ static XtActionsRec actions[] = {
  * New resources added by this widget
  */
 static XtResource resources[] = {
-#define off(field) XtOffset(RepeaterWidget, repeater.field)
+#define off(field) XtOffsetOf(RepeaterRec, repeater.field)
     { XtNdecay, XtCDecay, XtRInt, sizeof (int),
 	off(decay), XtRImmediate, (XtPointer) REP_DEF_DECAY },
     { XtNinitialDelay, XtCDelay, XtRInt, sizeof (int),

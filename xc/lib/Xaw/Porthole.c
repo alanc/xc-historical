@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Porthole.c,v 1.11 90/03/15 11:07:07 jim Exp $
+ * $XConsortium: Porthole.c,v 1.12 90/04/26 17:35:33 converse Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -37,7 +37,7 @@
  * resources for the porthole
  */
 static XtResource resources[] = {
-#define poff(field) XtOffset(PortholeWidget, porthole.field)
+#define poff(field) XtOffsetOf(PortholeRec, porthole.field)
     { XtNreportCallback, XtCReportCallback, XtRCallback, sizeof(XtPointer),
 	poff(report_callbacks), XtRCallback, (XtPointer) NULL },
 #undef poff
@@ -144,7 +144,7 @@ static void SendReport (pw, changed)
 	prep.canvas_width = child->core.width;
 	prep.canvas_height = child->core.height;
 	XtCallCallbackList ((Widget)pw, pw->porthole.report_callbacks,
-			    (caddr_t) &prep);
+			    (XtPointer) &prep);
     }
 }
 
