@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: ultrix.cf,v 1.59 93/09/21 18:11:38 rws Exp $
+XCOMM platform:  $XConsortium: ultrix.cf,v 1.60 93/09/25 21:31:13 rws Exp $
 
 #define OSName            Ultrix-32 4.3
 XCOMM operating system:  OSName
@@ -16,12 +16,9 @@ XCOMM operating system:  OSName
 #endif
 
 #ifdef VaxArchitecture
-#define XqdssServer YES
-#define XqvssServer YES
 #define PexNativeFPFormat PEXDEC_F_Floating
 #define NativeFPFormat DEC_F_Float
 #define UnalignedReferencesAllowed YES	       /* if arbitrary deref is okay */
-#define BuildPexExt XqdssServer
 #endif
 
 #ifdef MipsArchitecture
@@ -31,8 +28,6 @@ XCOMM operating system:  OSName
 /* Even under ultrix 4.2, the compiler miscompiles some alloca calls */
 #define AllocateLocalDefines /* -DINCLUDE_ALLOCA_H */
 #else
-#define XmfbpmaxServer NO
-#define XcfbpmaxServer YES
 #define AllocateLocalDefines /**/
 #endif
 #if !HasGcc
@@ -60,8 +55,4 @@ XCOMM operating system:  OSName
 #define AllocateLocalDefines /* */
 #endif
 
-#if defined(VaxArchitecture) && XqdssServer
-#define ServerExtraDefines AllocateLocalDefines -DNEED_LINEHELPER
-#else
 #define ServerExtraDefines AllocateLocalDefines
-#endif
