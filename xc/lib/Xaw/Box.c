@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Box.c,v 1.23 88/01/29 14:37:55 swick Locked $";
+static char rcsid[] = "$Header: Box.c,v 1.24 88/02/05 21:09:40 swick Exp $";
 #endif lint
 
 /*
@@ -316,6 +316,7 @@ static Boolean TryNewLayout(bbw)
 	}
 	iterations++;
     } while (iterations < 10);
+    return (FALSE);
 }
 
 /*
