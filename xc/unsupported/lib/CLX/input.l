@@ -562,9 +562,9 @@
 (define-event :map-request 20)
 (define-event :reparent-notify 21)
 (define-event :configure-notify 22)
-(define-event :gravity-notify 23)
-(define-event :resize-request 24)
-(define-event :configure-request 25)
+(define-event :configure-request 23)
+(define-event :gravity-notify 24)
+(define-event :resize-request 25)
 (define-event :circulate-notify 26)
 (define-event :circulate-request 27)
 (define-event :property-notify 28)
@@ -630,8 +630,7 @@
 			       (setq keywords (append item keywords))
 			       `((,(putify type) ,index
 				  (check-consistency ',names ,@item) ,@args))))))))
-    #-excl
-    (ignore get-index put-index)
+    get-index put-index				; not used
     `(within-definition (,name declare-event)
        (defun ,get-macro (display event-key variable)
 	 ;; Note: we take pains to macroexpand the get-code here to enable application
@@ -945,7 +944,7 @@
 ;; and pass them into a lambda expression, rather than using lexical closures?
 ;; (i.e. expand the code generated for the declare-event get-function inside
 ;; the event-case call)
-(defmacro event-case ((display &key timeout peek-p discard-p force-output-p)
+(defmacro event-case ((display &key timeout peek-p discard-p (force-output-p t))
 		      &body clauses)
   (declare-arglist (display &key timeout peek-p discard-p force-output-p)
 		   (event-or-events ((&rest args) |...|) &body body) |...|)
@@ -982,40 +981,41 @@
 (defmacro event-dispatch ((display event) &body clauses)
   ;; Helper macro for event-case
   (let ((event-key (gensym))
-	(all-events 0))
+	(all-events (make-array *max-events* :element-type 'bit :initial-element 0)))
     `(reading-event (,event)
        (let ((,event-key (aref *event-key-vector* (event-code ,event))))
 	 (case ,event-key
 	   ,@(mapcar
-	      #'(lambda (clause)
-		  (let* ((events (car clause))
-			 (arglist (cadr clause))
-			 (body (cddr clause)))
-		    (if (member events '(otherwise t))
-			;; code for OTHERWISE clause.  Find all events NOT
-			;; used by other clauses
-			(let ((keys (do ((i 0 (1+ i))
-					 (key nil)
-					 (result nil))
-					((>= i *max-events*) result)
-				      (setq key (aref *event-key-vector* i))
-				      (when (and key (not (logbitp i all-events)))
-					(push key result)))))
-			  `(otherwise (binding-event-values
-					(,display ,event-key ,keys ,@arglist)
-					,@body)))
-		      ;; Code for normal clauses
-		      (let (true-events) ;; canonicalize event-names
-			(if (consp events)
-			    (setq true-events (mapcar #'canonicalize-event-name events)
-				  all-events (apply #'logior all-events
-						    (mapcar #'get-event-code true-events)))
-			  (setq true-events (canonicalize-event-name events)
-				all-events (logior all-events (get-event-code true-events))))
-			`(,true-events (binding-event-values
-					 (,display ,event-key ,true-events ,@arglist)
-					 ,@body))))))
-		     clauses))))))
+	       #'(lambda (clause)
+		   (let* ((events (car clause))
+			  (arglist (cadr clause))
+			  (body (cddr clause)))
+		     (if (member events '(otherwise t))
+			 ;; code for OTHERWISE clause.  Find all events NOT
+			 ;; used by other clauses
+			 (let ((keys (do ((i 0 (1+ i))
+					  (key nil)
+					  (result nil))
+					 ((>= i *max-events*) result)
+				       (setq key (aref *event-key-vector* i))
+				       (when (and key (zerop (aref all-events i)))
+					 (push key result)))))
+			   `(otherwise (binding-event-values
+					 (,display ,event-key ,keys ,@arglist)
+					 ,@body)))
+			 ;; Code for normal clauses
+			 (let (true-events) ;; canonicalize event-names
+			   (if (consp events)
+			       (progn
+				 (setq true-events (mapcar #'canonicalize-event-name events))
+				 (dolist (event all-events)
+				   (setf (aref all-events (get-event-code event)) 1)))
+			       (setf true-events (canonicalize-event-name events)
+				     (aref all-events (get-event-code true-events)) 1))
+			   `(,true-events (binding-event-values
+					    (,display ,event-key ,true-events ,@arglist)
+					    ,@body))))))
+	       clauses))))))
 
 (defmacro binding-event-values ((display event-key event-keys &rest value-list) &body body)
   ;; Execute BODY with the variables in VALUE-LIST bound to components of the
