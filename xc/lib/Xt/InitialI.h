@@ -1,4 +1,4 @@
-/* $XConsortium: InitialI.h,v 1.58 91/05/31 17:54:49 converse Exp $ */
+/* $XConsortium: InitialI.h,v 1.59 91/06/11 15:08:00 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -241,6 +241,7 @@ typedef struct _XtPerDisplayStruct {
     CaseConverterPtr case_cvt;		/* user-registered case converters */
     XtKeyProc defaultKeycodeTranslator;
     XtAppContext appContext;
+    unsigned long keysyms_serial;      /* for tracking MappingNotify events */
     KeySym *keysyms;                   /* keycode to keysym table */
     int keysyms_per_keycode;           /* number of keysyms for each keycode*/
     int min_keycode, max_keycode;      /* range of keycodes */
