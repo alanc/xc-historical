@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.156 90/04/13 13:40:55 jim Exp $
+ * $XConsortium: events.c,v 1.157 90/04/17 14:04:40 jim Exp $
  *
  * twm event handling
  *
@@ -38,7 +38,7 @@
 
 #if !defined(lint) && !defined(SABER)
 static char RCSinfo[]=
-"$XConsortium: events.c,v 1.156 90/04/13 13:40:55 jim Exp $";
+"$XConsortium: events.c,v 1.157 90/04/17 14:04:40 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -2231,6 +2231,10 @@ HandleShapeNotify ()
 	return;
     if (sev->kind != ShapeBounding)
 	return;
+    if (!Tmp_win->wShaped && sev->shaped) {
+	XShapeCombineMask (dpy, Tmp_win->frame, ShapeClip, 0, 0, None,
+			   ShapeSet);
+    }
     Tmp_win->wShaped = sev->shaped;
     SetFrameShape (Tmp_win);
 }
