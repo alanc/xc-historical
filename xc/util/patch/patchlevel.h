@@ -1,1 +1,2 @@
-#define PATCHLEVEL "12u9.XC1"
+/* $XConsortium$ */
+#define PATCHLEVEL "12u9.XC2"
