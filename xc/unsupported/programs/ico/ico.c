@@ -1,4 +1,4 @@
-/* $XConsortium: ico.c,v 1.31 90/12/13 08:20:57 rws Exp $ */
+/* $XConsortium: ico.c,v 1.32 91/01/09 17:42:27 rws Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -92,12 +92,7 @@ XColor bgcolor,fgcolor;
 
 extern long time();
 
-#ifdef SYSV
-#define random rand
-#define srandom srand
-#endif
-
-extern long random();
+extern long rand();
 
 char *ProgramName;
 Display *dpy;
@@ -442,9 +437,9 @@ char **argv;
 
 	/* Get the initial position, size, and speed of the bounding-box: */
 
-	srandom((int) time(0) % 231);
-	icoX = ((winW - icoW) * (random() & 0xFF)) >> 8;
-	icoY = ((winH - icoH) * (random() & 0xFF)) >> 8;
+	srand((int) time(0) % 231);
+	icoX = ((winW - icoW) * (rand() & 0xFF)) >> 8;
+	icoY = ((winH - icoH) * (rand() & 0xFF)) >> 8;
 
 
 	/* Bounce the box in the window: */
