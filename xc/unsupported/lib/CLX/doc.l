@@ -1799,25 +1799,32 @@
 
 (defun event-listen (display &optional (timeout 0))
   (declare (type display display)
-	   (type (or null number) timeout))
-  ;; Returns the number of events queued locally, if any, else nil.  Hangs waiting
-  ;; for events, forever if timeout is nil, else for the specified number of seconds.
+	   (type (or null number) timeout)
+	   (values (or null number) (or null (member :timeout) (not null))))
+  ;; Returns the number of events queued locally, if any, else nil.  Hangs
+  ;; waiting for events, forever if timeout is nil, else for the specified
+  ;; number of seconds.  The second value returned is :timeout if the
+  ;; operation timed out, and some other non-nil value if an EOF has been
+  ;; detected.
   )
 
 (defun process-event (display &key handler timeout peek-p discard-p (force-output-p t))
-  ;; If force-output-p is true, first invokes display-force-output.  Invokes handler
-  ;; on each queued event until handler returns non-nil, and that returned object is
-  ;; then returned by process-event.  If peek-p is true, then the event is not
-  ;; removed from the queue.  If discard-p is true, then events for which handler
-  ;; returns nil are removed from the queue, otherwise they are left in place.  Hangs
-  ;; until non-nil is generated for some event, or for the specified timeout (in
-  ;; seconds, if given); however, it is acceptable for an implementation to wait only
-  ;; once on network data, and therefore timeout prematurely.  Returns nil on
-  ;; timeout.  If handler is a sequence, it is expected to contain handler functions
-  ;; specific to each event class; the event code is used to index the sequence,
-  ;; fetching the appropriate handler.  The arguments to the handler are described
-  ;; further below using declare-event.  If process-event is invoked recursively, the
-  ;; nested invocation begins with the event after the one currently being processed.
+  ;; If force-output-p is true, first invokes display-force-output.  Invokes
+  ;; handler on each queued event until handler returns non-nil, and that
+  ;; returned object is then returned by process-event.  If peek-p is true,
+  ;; then the event is not removed from the queue.  If discard-p is true, then
+  ;; events for which handler returns nil are removed from the queue,
+  ;; otherwise they are left in place.  Hangs until non-nil is generated for
+  ;; some event, or for the specified timeout (in seconds, if given); however,
+  ;; it is acceptable for an implementation to wait only once on network data,
+  ;; and therefore timeout prematurely.  Returns nil on timeout or EOF, with a
+  ;; second return value being :timeout for a timeout and some other non-nil
+  ;; value for EOF.  If handler is a sequence, it is expected to contain
+  ;; handler functions specific to each event class; the event code is used to
+  ;; index the sequence, fetching the appropriate handler.  The arguments to
+  ;; the handler are described further below using declare-event.  If
+  ;; process-event is invoked recursively, the nested invocation begins with
+  ;; the event after the one currently being processed.
   (declare (type display display)
 	   (type (or (sequence (function (&rest key-vals) t))
 		     (function (&rest key-vals) t))
@@ -1829,25 +1836,28 @@
 		      &body clauses)
   (declare (arglist (display &key timeout peek-p discard-p force-output-p)
 		    (event-or-events ((&rest args) |...|) &body body) |...|))
-  ;; If force-output-p is true, first invokes display-force-output.  Executes the
-  ;; matching clause for each queued event until a clause returns non-nil, and that
-  ;; returned object is then returned by event-case.  If peek-p is true, then the
-  ;; event is not removed from the queue.  If discard-p is true, then events for
-  ;; which the clause returns nil are removed from the queue, otherwise they are left
-  ;; in place.  Hangs until non-nil is generated for some event, or for the specified
-  ;; timeout (in seconds, if given); however, it is acceptable for an implementation
-  ;; to wait only once on network data, and therefore timeout prematurely.  Returns
-  ;; nil on timeout.  In each clause, event-or-events is an event-key or a list of
-  ;; event-keys (but they need not be typed as keywords) or the symbol t or otherwise
-  ;; (but only in the last clause).  The keys are not evaluated, and it is an error
-  ;; for the same key to appear in more than one clause.  Args is the list of event
-  ;; components of interest; corresponding values (if any) are bound to variables
-  ;; with these names (i.e., the args are variable names, not keywords, the keywords
-  ;; are derived from the variable names).  An arg can also be a (keyword var) form,
-  ;; as for keyword args in a lambda lists.  If no t/otherwise clause appears, it is
-  ;; equivalent to having one that returns nil.  If process-event is invoked
-  ;; recursively, the nested invocation begins with the event after the one currently
-  ;; being processed.
+  ;; If force-output-p is true, first invokes display-force-output.  Executes
+  ;; the matching clause for each queued event until a clause returns non-nil,
+  ;; and that returned object is then returned by event-case.  If peek-p is
+  ;; true, then the event is not removed from the queue.  If discard-p is
+  ;; true, then events for which the clause returns nil are removed from the
+  ;; queue, otherwise they are left in place.  Hangs until non-nil is
+  ;; generated for some event, or for the specified timeout (in seconds, if
+  ;; given); however, it is acceptable for an implementation to wait only once
+  ;; on network data, and therefore timeout prematurely.  Returns nil on
+  ;; timeout or EOF with a second return value being :timeout for a timeout
+  ;; and some other non-nil value for EOF.  In each clause, event-or-events is
+  ;; an event-key or a list of event-keys (but they need not be typed as
+  ;; keywords) or the symbol t or otherwise (but only in the last clause).
+  ;; The keys are not evaluated, and it is an error for the same key to appear
+  ;; in more than one clause.  Args is the list of event components of
+  ;; interest; corresponding values (if any) are bound to variables with these
+  ;; names (i.e., the args are variable names, not keywords, the keywords are
+  ;; derived from the variable names).  An arg can also be a (keyword var)
+  ;; form, as for keyword args in a lambda lists.  If no t/otherwise clause
+  ;; appears, it is equivalent to having one that returns nil.  If
+  ;; process-event is invoked recursively, the nested invocation begins with
+  ;; the event after the one currently being processed.
   )
 
 (defmacro event-cond ((display &key timeout peek-p discard-p (force-output-p t))
@@ -1889,7 +1899,10 @@
   ;;
   ;; TIMEOUT		If NIL, hang until non-nil is generated for some event's
   ;;			test-form. Otherwise return NIL after TIMEOUT seconds have
-  ;;			elapsed.
+  ;;			elapsed.  NIL is also returned whenever EOF is read.
+  ;;			Whenever NIL is returned a second value is returned which
+  ;;			is either :TIMEOUT if a timeout occurred or some other
+  ;;			non-NIL value if an EOF is detected.
   ;;
   (declare (arglist (display &key timeout peek-p discard-p force-output-p)
 		   (event-or-events (&rest args) test-form &body body) |...|))
