@@ -1,5 +1,5 @@
-/* $XConsortium$ */
-/**** module mig4.c ****/
+/* $XConsortium: mifax.c,v 1.1 93/10/26 09:45:23 rws Exp $ */
+/**** module mifax.c ****/
 /******************************************************************************
 				NOTICE
                               
@@ -42,8 +42,9 @@ terms and conditions:
      Logic, Inc.
 *****************************************************************************
   
-	miactg4.c --    DDXIE prototype import client photo element,
-			portions specific to G4 decompression
+	mifax.c --    DDXIE prototype import client photo and 
+			import photomap element, portions specific 
+			to FAX decompression
   
 	Ben Fahy -- AGE Logic, Inc. July, 1993
   
@@ -51,6 +52,8 @@ terms and conditions:
 
 #define _XIEC_MICPHOTO
 #define _XIEC_ICPHOTO
+#define _XIEC_MIPHOTO
+#define _XIEC_IPHOTO
 
 /*
  *  Include files
@@ -77,6 +80,7 @@ terms and conditions:
  */
 #include <error.h>
 #include <macro.h>
+#include <photomap.h>
 #include <element.h>
 #include <texstr.h>
 #include <fax.h>
@@ -86,18 +90,23 @@ terms and conditions:
 /*
  *  routines referenced by other DDXIE modules
 /*
-int CreateICPhotoG42D();
-int InitializeICPhotoG42D();
-int ActivateICPhotoG42D();
-int DestroyICPhotoG42D();
+int CreateICPhotoFax();
+int InitializeICPhotoFax();
+int InitializeIPhotoFax();
+int ActivateICPhotoFax();
+int ResetICPhotoFax();
+int DestroyICPhotoFax();
 
 /*
  * Local Declarations
  */
 
+static int common_init();
+
 #define MAX_STRIPS_INC	20
-typedef struct _g4pvt {
+typedef struct _faxpvt {
   FaxState state;
+  int width,height;	/* not strictly necessary, but handy	*/
   int max_strips;	/* how many we've allocated space for	*/
   int n_strips;		/* how many strips we've seen so far 	*/
   int next_byte;	/* next input byte we are looking for	*/
@@ -105,57 +114,140 @@ typedef struct _g4pvt {
   char **o_lines;	/* array of pointers to output lines	*/
   int 	(*decodptr)();	/* function used to decode the data	*/
   xieTypOrientation encodedOrder;
-} g3or4PvtRec, *g3or4PvtPtr;
-
+  int notify;		/* (ICP) we might have to send an event	*/
+  int normal;		/* if not, swap the output bit order	*/
+   photomapPtr map;	/* (IP)  just in case we need it	*/
+} faxPvtRec, *faxPvtPtr;
 
 /*------------------------------------------------------------------------
 ---------------------------- create peTex . . . --------------------------
 ------------------------------------------------------------------------*/
-int CreateICPhotoG42D(flo,ped)
+int CreateICPhotoFax(flo,ped)
      floDefPtr flo;
      peDefPtr  ped;
 {
   /* attach an execution context to the photo element definition */
-  return MakePETex(flo,ped, sizeof(g3or4PvtRec), NO_SYNC, NO_SYNC); 
-}                               /* end CreateICPhotoG42D */
+  return MakePETex(flo,ped, sizeof(faxPvtRec), NO_SYNC, NO_SYNC); 
+}                               /* end CreateICPhotoFax */
 
 /*------------------------------------------------------------------------
 ---------------------------- initialize peTex . . . ----------------------
 ------------------------------------------------------------------------*/
-int InitializeICPhotoG42D(flo,ped)
+int InitializeIPhotoFax(flo,ped)
      floDefPtr flo;
      peDefPtr  ped;
 {
-  xieFloImportClientPhoto *raw = (xieFloImportClientPhoto *)ped->elemRaw;
-  xieTecDecodeG42D *tecG42D=(xieTecDecodeG42D *) &raw[1];
-  xieTecDecodeG42D *tecG32D=(xieTecDecodeG32D *) &raw[1];
-  xieTecDecodeG42D *tecG31D=(xieTecDecodeG31D *) &raw[1];
-  peTexPtr  pet=ped->peTex;
-  g3or4PvtPtr  texpvt = (g3or4PvtPtr) pet->private;
-  bandPtr   dbnd = &pet->emitter[0];
-  int	    pbytes;
+photomapPtr map = ((iPhotoDefPtr)ped->elemPvt)->map;
+peTexPtr pet = ped->peTex;
+faxPvtPtr texpvt=(faxPvtPtr) pet->private;
 
-  switch(raw->decodeTechnique) {
+ 	if (!common_init(flo,ped,(void *)map->tecParms,map->technique))
+		return(0);
+
+ 	texpvt->map = map;	/* can be used as flag in Activate routine */ 
+
+ 	return( 
+	  ImportStrips(flo,pet,&pet->receptor[0].band[0],&map->strips[0])
+	); 
+
+}					/* end InitializeIPhotoFax */
+/*------------------------------------------------------------------------
+---------------------------- initialize peTex . . . ----------------------
+------------------------------------------------------------------------*/
+int InitializeICPhotoFax(flo,ped)
+     floDefPtr flo;
+     peDefPtr  ped;
+{
+xieFloImportClientPhoto *raw = (xieFloImportClientPhoto *) ped->elemRaw;
+peTexPtr		 pet = ped->peTex;
+faxPvtPtr	      texpvt = (faxPvtPtr) pet->private;
+
+	if( !common_init(flo,ped,(void *) &raw[1],raw->decodeTechnique) )
+		return(0);
+
+	texpvt->notify = raw->notify;
+	return(1);
+}					/* end InitializeICPhotoFax */
+/*------------------------------------------------------------------------
+------- lots of stuff shared between ICPhoto and IPhoto. . . -------------
+------------------------------------------------------------------------*/
+static int common_init(flo,ped,tec,technique)
+floDefPtr flo;
+peDefPtr  ped;
+void *tec;		/* we won't know the type until later */
+xieTypDecodeTechnique technique;
+			/*  (but we can get it from this  :-) */
+{
+peTexPtr     pet = ped->peTex;
+faxPvtPtr texpvt = (faxPvtPtr) pet->private;
+formatPtr    inf = pet->receptor[0].band[0].format;
+int	  pbytes;
+
+/* Start over with clean structure */
+  bzero(texpvt,sizeof(faxPvtRec));
+
+
+/* Now start adding what we know */
+  texpvt->width  	= inf->width;
+  texpvt->height 	= inf->height;
+  texpvt->state.width   = inf->width;
+	/* nice thing about using receptor format is that it doesn't matter */
+	/* whether you are importing from a client or a photomap	*/
+
+  switch(technique) {
   case xieValDecodeG31D: 
-	texpvt->decodptr = decode_g31d;   
-	texpvt->encodedOrder = tecG31D->encodedOrder;
-  	texpvt->state.goal     = FAX_GOAL_SkipPastAnyToEOL;
+	{
+	xieTecDecodeG31D *tecG31D=(xieTecDecodeG31D *)    tec;
+		texpvt->decodptr 	  = decode_g31d;   
+		texpvt->encodedOrder 	  = tecG31D->encodedOrder;
+  		texpvt->state.goal     	  = FAX_GOAL_SkipPastAnyToEOL;
+  		texpvt->state.radiometric = tecG31D->radiometric;
+		texpvt->normal 		  = tecG31D->normal;
+	}
 	break;
   case xieValDecodeG32D:
-	texpvt->decodptr = decode_g32d;   
-	texpvt->encodedOrder = tecG32D->encodedOrder;
-  	texpvt->state.goal     = FAX_GOAL_SeekEOLandTag;
+	{
+	xieTecDecodeG32D *tecG32D=(xieTecDecodeG32D *)    tec;
+		texpvt->decodptr 	  = decode_g32d;   
+		texpvt->encodedOrder 	  = tecG32D->encodedOrder;
+  		texpvt->state.goal     	  = FAX_GOAL_SeekEOLandTag;
+  		texpvt->state.radiometric = tecG32D->radiometric;
+		texpvt->normal 		  = tecG32D->normal;
+	}
 	break;
   case xieValDecodeG42D: 
-	texpvt->decodptr = decode_g4;   
-	texpvt->encodedOrder = tecG42D->encodedOrder;
-  	texpvt->state.goal     = FAX_GOAL_StartNewLine;
+	{
+	xieTecDecodeG42D *tecG42D=(xieTecDecodeG42D *)    tec;
+		texpvt->decodptr 	  = decode_g4;   
+		texpvt->encodedOrder 	  = tecG42D->encodedOrder;
+  		texpvt->state.goal     	  = FAX_GOAL_StartNewLine;
+  		texpvt->state.radiometric = tecG42D->radiometric;
+		texpvt->normal 		  = tecG42D->normal;
+	}
+	break;
+  case xieValDecodeTIFF2: 
+	{
+	xieTecDecodeTIFF2 *tecTIFF2=(xieTecDecodeTIFF2 *) tec;
+		texpvt->decodptr 	  = decode_tiff2;   
+		texpvt->encodedOrder 	  = tecTIFF2->encodedOrder;
+		texpvt->state.goal     	  = FAX_GOAL_StartNewLine;
+		texpvt->state.radiometric = tecTIFF2->radiometric;
+		texpvt->normal 		  = tecTIFF2->normal;
+	}
+	break;
+  case xieValDecodeTIFFPackBits: 
+	{
+	xieTecDecodeTIFFPackBits *tecTIFFPackBits=
+	   (xieTecDecodeTIFFPackBits *)tec;
+		texpvt->decodptr 	  = decode_tiffpb;   
+		texpvt->encodedOrder 	  = tecTIFFPackBits->encodedOrder;
+		texpvt->state.goal     	  = PB_GOAL_StartNewLine;
+		texpvt->normal 		  = tecTIFFPackBits->normal;
+	}
 	break;
   }
 
 
-/* the following will be freed automatically */
-  texpvt->state.width    = raw->width0;
   texpvt->state.a0_color = WHITE;
   texpvt->state.a0_pos   = (-1);
 
@@ -178,10 +270,10 @@ int InitializeICPhotoG42D(flo,ped)
 
 /* the following must be freed explicitly */
 
-  texpvt->state.old_trans = (int *) XieMalloc(raw->width0 * sizeof(int));
+  texpvt->state.old_trans = (int *) XieMalloc(texpvt->width * sizeof(int));
   if (!texpvt->state.old_trans) AllocError(flo,ped, return(FALSE));
 
-  texpvt->state.new_trans = (int *) XieMalloc(raw->width0 * sizeof(int));
+  texpvt->state.new_trans = (int *) XieMalloc(texpvt->width * sizeof(int));
   if (!texpvt->state.new_trans) AllocError(flo,ped, return(FALSE));
 
 /* 
@@ -200,35 +292,35 @@ int InitializeICPhotoG42D(flo,ped)
 /* set output emitter to map texpvt->max_lines lines of data */
   return( InitReceptors(flo, ped, NO_DATAMAP, 1) && 
 	  InitEmitter(flo, ped, texpvt->max_lines, NO_INPLACE) );
-}                               /* end InitializeICPhotoG4 */
 
-
+}        					/* end common_init() */
 /*------------------------------------------------------------------------
 ----------------------------- crank some data ----------------------------
 ------------------------------------------------------------------------*/
-int ActivateICPhotoG42D(flo,ped,pet)
+int ActivateICPhotoFax(flo,ped,pet)
      floDefPtr flo;
      peDefPtr  ped;
      peTexPtr  pet;
 {
-  xieFloImportClientPhoto *raw = (xieFloImportClientPhoto *)ped->elemRaw;
-  xieTecDecodeG42D *tecG42D=(xieTecDecodeG42D *) &raw[1];
-  xieTecDecodeG32D *tecG32D=(xieTecDecodeG32D *) &raw[1];
-  xieTecDecodeG31D *tecG31D=(xieTecDecodeG31D *) &raw[1];
-  bandPtr   sbnd = &pet->receptor[IMPORT].band[0];
-  bandPtr   dbnd = &pet->emitter[0];
-  CARD32    olen = dbnd->format->pitch+7>>3;
-  g3or4PvtPtr  texpvt = (g3or4PvtPtr) ped->peTex->private;
-  FaxState  *state = &(texpvt->state);
-  CARD32   min_len = max(MIN_BYTES_NEEDED, sbnd->available);
+  bandPtr    sbnd = &pet->receptor[IMPORT].band[0];
+  bandPtr    dbnd = &pet->emitter[0];
+  faxPvtPtr  texpvt = (faxPvtPtr) ped->peTex->private;
+  FaxState   *state = &(texpvt->state);
   BytePixel *src, *dst;
   int	    lines_found;
   Bool ok;
   int 	(*decodptr)() = texpvt->decodptr;
 
+  
 /*
  *  get current input and output strips
  */
+  if (dbnd->final  && dbnd->current >= dbnd->format->height) {
+	/* be forgiving if extra data gets passed to us */
+  	FreeData(flo,pet,sbnd,sbnd->maxGlobal);
+	return(TRUE);
+  }
+
  /* 
   * Important!  As long as there is source data available, we'd better
   * deal with it, because it's probably owned by Core X and will die
@@ -237,130 +329,157 @@ int ActivateICPhotoG42D(flo,ped,pet)
   * exit with FALSE unless we are absolutely sure we are done with all
   * current input strips.
   */
-  if(src = GetSrcBytes(BytePixel,flo,pet,sbnd,sbnd->current,min_len,KEEP)) {
-     /* 
-      * Ok, so if we are here, there is src available. We will ignore it
-      * though if we already have a strip scrolled away in state->strip.
-      */
-      if (!state->strip) {
-	 state->strip 	    = (unsigned char *) src;
-	 state->strip_state = StripStateNew;
-  	 state->strip_size  = sbnd->maxLocal - sbnd->minLocal;
-  	 state->final  	    = sbnd->final;
-	 if (texpvt->encodedOrder == xieValLSFirst) {
-	   register int i,size=state->strip_size;
-	   register unsigned char *ucp = state->strip;
-	   for (i=0; i<size; ++i)
-		*ucp++ = _ByteReverseTable[*ucp];
-	 }
-
-#ifdef foo
-         texpvt->next_byte += state->strip_size;
-#endif
-      }
-     /*
-      * We have some data to decode, anything to write to?
-      */
-      while (dst = GetDst(BytePixel,flo,pet,dbnd,state->o_line,KEEP)) {
-
-
-	/*
- 	 *  Now, as much as I'd like to use our nifty line-oriented macros,
- 	 *  it would kill performance.  So instead we ask the decoder to 
- 	 *  decode as much as remains in the output line as it can get.
- 	 *  We ask the data manager to map all the lines of data in the 
-	 *  current output strip to a convenient array.
- 	 */
-
-  	state->nl_sought = dbnd->maxLocal - state->o_line; 
-
-  	ok = MapData(flo,pet,dbnd,0,dbnd->current,state->nl_sought,KEEP);
-		/* map desired lines into an array starting at 0 */
-  	/* printf(" tring to map dst, got %d\n",ok); */
-  	if (!ok)
-      	    ImplementationError(flo,ped, return(FALSE));
-
-  	state->o_lines = (char **) dbnd->dataMap;
-
-  	lines_found = (*decodptr)(&(texpvt->state));
-  	if (lines_found < 0) {
-     		ImplementationError(flo,ped, return(FALSE));
-	} else {
-		state->o_line += lines_found;
-		PutData(flo,pet,dbnd,state->o_line);
-        }
-	if (state->decoder_done) {
-		/* decoders sometimes return errors when they run
-		   out of data. ignore them if we got all the lines
-		   we wanted.
-		*/
-		if (state->o_line < raw->height0 &&
-		    state->decoder_done > FAX_DECODE_DONE_OK) {
-		   printf(" error code returned is %d\n",
-			state->decoder_done);
-     	           ImplementationError(flo,ped, return(FALSE));
-		}
-  	      	FreeData(BytePixel,flo,pet,sbnd,sbnd->maxGlobal);
-	       	break;
+  src = GetSrcBytes(BytePixel,flo,pet,sbnd,sbnd->current,
+		    MIN_BYTES_NEEDED,KEEP);
+  /*  
+   * Ok, so if we are here, there is src available. We will ignore it
+   * though if we already have a strip scrolled away in state->strip.
+   */
+  if (!state->strip) {
+    state->strip       = (unsigned char *) src;
+    state->strip_state = StripStateNew;
+    state->strip_size  = sbnd->maxLocal - sbnd->minLocal;
+    state->final       = sbnd->strip ? sbnd->strip->final : sbnd->final;
+    if (texpvt->encodedOrder == xieValLSFirst) {
+      register int i,size=state->strip_size;
+      register unsigned char *ucp = state->strip;
+      for (i=0; i<size; ++i)
+	*ucp++ = _ByteReverseTable[*ucp];
+    }
+  }
+  /*
+   * We have some data to decode, anything to write to?
+   */
+  while (dst = GetDst(BytePixel,flo,pet,dbnd,state->o_line,KEEP)) {
+    
+    
+    /*
+     *  Now, as much as I'd like to use our nifty line-oriented macros,
+     *  it would kill performance.  So instead we ask the decoder to 
+     *  decode as much as remains in the output line as it can get.
+     *  We ask the data manager to map all the lines of data in the 
+     *  current output strip to a convenient array.
+     */
+    
+    state->nl_sought = dbnd->maxLocal - state->o_line; 
+    
+    ok = MapData(flo,pet,dbnd,0,dbnd->current,state->nl_sought,KEEP);
+    /* map desired lines into an array starting at 0 */
+    if (!ok)
+      ImplementationError(flo,ped, return(FALSE));
+    
+    state->o_lines = (char **) dbnd->dataMap;
+    
+    lines_found = (*decodptr)(state);
+    if (lines_found < 0) {
+      /* decoder hit unknown error. Pass error code to client */
+      if (lines_found > 0)
+	state->o_line += lines_found;
+      
+      ValueError(flo,ped,(state->o_line + (state->decoder_done << 16)), 
+		 return(FALSE));
+    } else {
+      if (!texpvt->normal) {
+	/* have to swap bit order on output */
+	int pbytes = (ped->outFlo.format[0].pitch + 7) >> 3;
+	register int i;
+	for (i=0; i<lines_found; ++i) {
+	  register CARD8 *ucp = dbnd->dataMap[i];
+	  register int size=pbytes;
+	  while (size--)	
+	    *ucp++ = _ByteReverseTable[*ucp];
 	}
-
-	if (state->magic_needs) {
-	    /* decoder needs a new strip */
-	    if (state->strip_state != StripStateDone)  {
-     	       ImplementationError(flo,ped, return(FALSE));
-	    }
-  	    FreeData(BytePixel,flo,pet,sbnd,sbnd->maxLocal);
-
-  	    texpvt->state.strip_state = StripStateNone;
-  	    texpvt->state.strip	      = 0;
-  	    texpvt->state.strip_size  = 0;
-
-	    if (!state->final) 
-	        break;
-	}
-      } /* end of while(dst = ...) */
-     /*
-      *  No more dst or need another src strip? three possible reasons:
-      *
-      *  1:  we're done with output image.  Just shut down and be happy
-      *  2:  scheduler has noticed a downstream element can run. In this
-      *      case, we should be a good guy and return TRUE so the scheduler
-      *      gives us back control again later (without going back to Core
-      *	     X, which would cause our input strip to vanish).
-      *	 3:  we ran out of src.
-      */
-      if (!dst && dbnd->final) {
-  	 FreeData(BytePixel,flo,pet,sbnd,sbnd->maxGlobal);
       }
-      SetBandThreshold(sbnd, !dst ? 1 : sbnd->available + 1);
-  }  /* end of if (src = ...) */
-
-/* 
- * if here, we ran out of src.  Scheduler will wake us up again
- * when a PutClientData request comes along.
- */
+      state->o_line += lines_found;
+      if (PutData(flo,pet,dbnd,state->o_line))
+	return(TRUE);
+    }
+    if (state->decoder_done) {
+      /* decoders sometimes return errors when they run
+	 out of data. ignore them if we got all the lines
+	 we wanted.
+	 */
+      if (state->o_line < texpvt->height &&
+	  state->decoder_done > FAX_DECODE_DONE_OK) {
+	ValueError(flo,ped,
+		   (state->o_line + (state->decoder_done<<16)),return(FALSE));
+      }
+      FreeData(flo,pet,sbnd,sbnd->maxGlobal);
+      break;
+    }
+    
+    if (state->magic_needs) {
+      /* decoder needs a new strip */
+      if (state->strip_state != StripStateDone)  {
+	ImplementationError(flo,ped, return(FALSE));
+      }
+      FreeData(flo,pet,sbnd,sbnd->maxLocal);
+      
+      texpvt->state.strip_state = StripStateNone;
+      texpvt->state.strip	      = 0;
+      texpvt->state.strip_size  = 0;
+      
+      if (!state->final) 
+	break;
+      else
+	state->strip_state = StripStateNoMore;
+      /* need to live with what you've got */
+    }
+  } /* end of while(dst = ...) */
+  /*
+   *  No more dst or need another src strip? three possible reasons:
+   *
+   *  1:  we're done with output image.  Just shut down and be happy
+   *  2:  scheduler has noticed a downstream element can run. In this
+   *      case, we should be a good guy and return TRUE so the scheduler
+   *      gives us back control again later (without going back to Core
+   *	     X, which would cause our input strip to vanish).
+   *	 3:  we ran out of src.
+   */
+  if (!dst && dbnd->final) {
+    FreeData(flo,pet,sbnd,sbnd->maxGlobal);
+  }
+  SetBandThreshold(sbnd, !dst ? 1 : sbnd->available + 1);
+  
+  /* 
+   * if here, we ran out of src.  Scheduler will wake us up again
+   * when a PutClientData request comes along.
+   */
   return TRUE;	/* Hmmm. Well, I think I did my part ok... */
-}                               /* end ActivateICPhotoG4 */
+}                               /* end ActivateICPhotoFax */
 
+/*------------------------------------------------------------------------
+------------------------ get rid of run-time stuff -----------------------
+------------------------------------------------------------------------*/
+int ResetICPhotoFax(flo,ped)
+     floDefPtr flo;
+     peDefPtr  ped;
+{
+  ResetReceptors(ped);
+  ResetEmitter(ped);
+
+  /* get rid of the peTex structures malloc'd by Initialize  */
+  if(ped->peTex) {
+     faxPvtPtr texpvt = (faxPvtPtr) ped->peTex->private;
+
+    /* only have to nuke parts of private structure which were malloc'd */
+    if (texpvt->state.old_trans)
+	texpvt->state.old_trans = (int *)XieFree(texpvt->state.old_trans);
+    if (texpvt->state.new_trans)
+	texpvt->state.new_trans = (int *)XieFree(texpvt->state.new_trans);
+  }
+  return(TRUE);
+}                               /* end ResetICPhotoFax */
 
 /*------------------------------------------------------------------------
 -------------------------- get rid of this element -----------------------
 ------------------------------------------------------------------------*/
-int DestroyICPhotoG42D(flo,ped)
+int DestroyICPhotoFax(flo,ped)
      floDefPtr flo;
      peDefPtr  ped;
 {
   /* get rid of the peTex structure  */
   if(ped->peTex) {
-     g3or4PvtPtr texpvt = (g3or4PvtPtr) ped->peTex->private;
-
-    /* only have to parts of private structure which were malloc'd */
-    if (texpvt->state.old_trans)
-	texpvt->state.old_trans = (int *)XieFree(texpvt->state.old_trans);
-    if (texpvt->state.new_trans)
-	texpvt->state.new_trans = (int *)XieFree(texpvt->state.new_trans);
-
-    /* this frees everything else */
     ped->peTex = (peTexPtr) XieFree(ped->peTex);
   }
 
@@ -375,4 +494,4 @@ int DestroyICPhotoG42D(flo,ped)
   return(TRUE);
 }                               /* end DestroyICPhoto */
 
-/* end module mig4.c */
+/* end module mifax.c */
