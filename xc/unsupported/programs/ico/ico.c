@@ -1,4 +1,4 @@
-/* $XConsortium: ico.c,v 1.44 94/01/28 16:41:20 gildea Exp $ */
+/* $XConsortium: ico.c,v 1.45 94/03/25 11:01:05 dpw Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -658,7 +658,7 @@ initPoly(closure, poly, icoW, icoH)
     FormatRotateMat('y', 5 * 3.1416 / 180.0, r2);
     ConcatMat(r1, r2, closure->xform);
 
-    bcopy((char *) vertices, (char *) closure->xv[0], NV * sizeof(Point3D));
+    memcpy((char *)closure->xv[0], (char *)vertices, NV * sizeof(Point3D));
     closure->xv_buffer = 0;
 
     closure->wo2 = icoW / 2.0;
