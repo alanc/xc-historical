@@ -1,7 +1,6 @@
     STD_DEFINES = LibraryDefines
     CDEBUGFLAGS = LibraryCDebugFlags
        INCLUDES = -I. -I$(XLIBSRC) -I$(TOP) -I$(TOP)/X11
-        DEFINES = -DLIBDIR=\"$(LIBDIR)\"
    INSTALLFLAGS = -m 0644
        LINTLIBS = $(LINTXLIB)
 
