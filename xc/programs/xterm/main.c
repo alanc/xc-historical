@@ -1,5 +1,5 @@
 #ifndef lint
-static char *rid="$XConsortium: main.c,v 1.188 91/06/24 18:17:53 gildea Exp $";
+static char *rid="$XConsortium: main.c,v 1.189 91/06/24 18:43:00 gildea Exp $";
 #endif /* lint */
 
 /*
@@ -1096,7 +1096,7 @@ char *name;
  */
 
 get_pty (pty)
-int *pty;
+    int *pty;
 {
 #ifdef ATT
 	if ((*pty = open ("/dev/ptmx", O_RDWR)) < 0) {
@@ -1106,7 +1106,22 @@ int *pty;
 	strcpy(ttydev, ptsname(*pty));
 #endif
 	return 0;
-#else /* ATT */
+#else /* ATT else */
+#ifdef __convex__
+        {
+	    char *pty_name, *getpty();
+
+	    while ((pty_name = getpty()) != NULL) {
+		if ((*pty = open (pty_name, O_RDWR)) >= 0) {
+		    strcpy(ptydev, pty_name);
+		    strcpy(ttydev, pty_name);
+		    ttydev[5] = 't';
+		    return 0;
+		}
+	    }
+	    return 1;
+	}
+#endif /* __convex__ */
 #ifdef USE_GET_PSEUDOTTY
 	return ((*pty = getpseudotty (&ttydev, &ptydev)) >= 0 ? 0 : 1);
 #else
