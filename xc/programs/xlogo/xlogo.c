@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: xlogo.c,v 1.11 89/12/09 13:13:19 kit Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -29,6 +29,10 @@
 
 extern void exit();
 
+static XrmOptionDescRec options[] = {
+{ "-shape", "*shapeWindow", XrmoptionNoArg, (caddr_t) "on" },
+};
+
 String fallback_resources[] = {
     "*iconPixmap:    xlogo32",
     "*iconMask:      xlogo32",
@@ -47,7 +51,9 @@ Syntax(call)
 		   "[-bw <pixels>] [-bd <color>]");
     (void) printf ("             [-d [<host>]:[<vs>]]\n");
     (void) printf ("             [-g [<width>][x<height>]%s", 
-		   "[<+-><xoff>[<+-><yoff>]]]\n\n");
+		   "[<+-><xoff>[<+-><yoff>]]]\n");
+    (void) printf ("             [-shape]\n");
+    (void) printf ("\n");
     exit(1);
 }
 
@@ -59,8 +65,8 @@ char **argv;
     Widget toplevel;
     XtAppContext app_con;
 
-    toplevel = XtAppInitialize(&app_con, "XLogo", NULL, ZERO, &argc, argv,
-			       fallback_resources, NULL, ZERO);
+    toplevel = XtAppInitialize(&app_con, "XLogo", options, XtNumber(options), 
+			       &argc, argv, fallback_resources, NULL, ZERO);
 
     if (argc != 1) 
 	Syntax(argv[0]);
