@@ -1,4 +1,4 @@
-/* $XConsortium: Xtransint.h,v 1.10 94/02/06 16:03:23 mor Exp $ */
+/* $XConsortium: Xtransint.h,v 1.11 94/02/06 16:07:38 mor Exp $ */
 
 /* Copyright (c) 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  * Copyright 1993, 1994 by the Massachusetts Institute of Technology
@@ -138,135 +138,137 @@ typedef struct _Xtransport {
 
     XtransConnInfo (*OpenCOTSClient)(
 #if NeedNestedPrototypes
-	struct _Xtransport *,
-	char *,
-	char *,
-	char *
+	struct _Xtransport *,	/* transport */
+	char *,			/* protocol */
+	char *,			/* host */
+	char *			/* port */
 #endif
     );
 
     XtransConnInfo (*OpenCOTSServer)(
 #if NeedNestedPrototypes
-	struct _Xtransport *,
-	char *,
-	char *,
-	char *
+	struct _Xtransport *,	/* transport */
+	char *,			/* protocol */
+	char *,			/* host */
+	char *			/* port */
 #endif
     );
 
     XtransConnInfo (*OpenCLTSClient)(
 #if NeedNestedPrototypes
-	struct _Xtransport *,
-	char *,
-	char *,
-	char *
+	struct _Xtransport *,	/* transport */
+	char *,			/* protocol */
+	char *,			/* host */
+	char *			/* port */
 #endif
     );
 
     XtransConnInfo (*OpenCLTSServer)(
 #if NeedNestedPrototypes
-	struct _Xtransport *,
-	char *,
-	char *,
-	char *
+	struct _Xtransport *,	/* transport */
+	char *,			/* protocol */
+	char *,			/* host */
+	char *			/* port */
 #endif
     );
 
     int	(*SetOption)(
 #if NeedNestedPrototypes
-	XtransConnInfo,
-	int,
-	int
+	XtransConnInfo,		/* connection */
+	int,			/* option */
+	int			/* arg */
 #endif
     );
 
     int	(*CreateListener)(
 #if NeedNestedPrototypes
-	XtransConnInfo,
-	char *
+	XtransConnInfo,		/* connection */
+	char *			/* port */
 #endif
     );
 
     int	(*ResetListener)(
 #if NeedNestedPrototypes
-	XtransConnInfo
+	XtransConnInfo		/* connection */
 #endif
     );
 
     XtransConnInfo (*Accept)(
 #if NeedNestedPrototypes
-	XtransConnInfo
+	XtransConnInfo		/* connection */
 #endif
     );
 
     int	(*Connect)(
 #if NeedNestedPrototypes
-	XtransConnInfo,
-	char *,
-	char *
+	XtransConnInfo,		/* connection */
+	char *,			/* host */
+	char *			/* port */
 #endif
     );
 
     int	(*BytesReadable)(
 #if NeedNestedPrototypes
-	XtransConnInfo,
-	BytesReadable_t *
+	XtransConnInfo,		/* connection */
+	BytesReadable_t *	/* pend */
 #endif
     );
 
     int	(*Read)(
 #if NeedNestedPrototypes
-	XtransConnInfo,
-	char *,
-	int
+	XtransConnInfo,		/* connection */
+	char *,			/* buf */
+	int			/* size */
 #endif
     );
 
     int	(*Write)(
 #if NeedNestedPrototypes
-	XtransConnInfo,
-	char *,
-	int
+	XtransConnInfo,		/* connection */
+	char *,			/* buf */
+	int			/* size */
 #endif
     );
 
     int	(*Readv)(
 #if NeedNestedPrototypes
-	XtransConnInfo,
-	struct iovec *,
-	int
+	XtransConnInfo,		/* connection */
+	struct iovec *,		/* buf */
+	int			/* size */
 #endif
     );
 
     int	(*Writev)(
 #if NeedNestedPrototypes
-	XtransConnInfo,
-	struct iovec *,
-	int
+	XtransConnInfo,		/* connection */
+	struct iovec *,		/* buf */
+	int			/* size */
 #endif
     );
 
     int	(*Disconnect)(
 #if NeedNestedPrototypes
-	XtransConnInfo
+	XtransConnInfo		/* connection */
 #endif
     );
 
     int	(*Close)(
 #if NeedNestedPrototypes
-	XtransConnInfo
+	XtransConnInfo		/* connection */
 #endif
     );
 
     int	(*NameToAddr)(
 #if NeedNestedPrototypes
-	XtransConnInfo
+	XtransConnInfo		/* connection */
+	/* What else ??? */
 #endif
     );
 
     int	(*AddrToName)(
 #if NeedNestedPrototypes
-	XtransConnInfo
+	XtransConnInfo		/* connection */
+	/* What else ??? */
 #endif
     );
 
