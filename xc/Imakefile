@@ -92,23 +92,15 @@ World::
 	@echo "# the directory util/imake.includes and set BOOTSTRAPCFLAGS? #"
 	@echo "##############################################################"
 	@echo ""
-	@echo "Making imake; BOOTSTRAPCFLAGS better be right..."
 	@date
 	cd $(IMAKESRC); $(MAKE) clean; $(MAKE) BOOTSTRAPCFLAGS="$(BOOTSTRAPCFLAGS)"
 	-$(MV) Makefile Makefile.bak
-	@echo "Making new, system-dependent makefiles from Imakefiles"
-	@date
 	$(MAKE) -f Makefile.bak Makefile
 	$(MAKE) Makefiles
-	@echo "Doing make clean to get rid of any previous build."
-	@date
 	$(MAKE) clean
-	@echo "Appending dependencies to Makefiles"
-	@date
 	$(MAKE) depend
-	@echo "Starting compile of core distribution."
-	@date
 	$(MAKE) $(WORLDOPTS)
+	@echo ""
 	@echo "Build of the X Window System complete."
 	@date
 
