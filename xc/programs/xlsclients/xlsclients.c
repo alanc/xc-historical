@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xlsclients.c,v 1.2 89/03/07 17:37:59 jim Exp $
+ * $XConsortium: xlsclients.c,v 1.3 89/03/29 14:37:22 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -287,7 +287,7 @@ unknown (dpy, actual_type, actual_format)
     if (actual_type == None) printf ("None");
     else if ((s = XGetAtomName (dpy, actual_type)) != NULL) {
 	fputs (s, stdout);
-	free (s);
+	XFree (s);
     } else {
 	fputs (Nil, stdout);
     }
