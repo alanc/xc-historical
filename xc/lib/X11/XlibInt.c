@@ -2,7 +2,7 @@
 /* Copyright    Massachusetts Institute of Technology    1985, 1986, 1987 */
 
 #ifndef lint
-static char rcsid[] = "$Header: XlibInt.c,v 11.55 87/08/20 17:25:23 newman Locked $";
+static char rcsid[] = "$Header: XlibInt.c,v 11.56 87/10/29 19:02:05 rws Locked $";
 #endif
 
 /*
@@ -50,11 +50,11 @@ static xReq _dummy_request = {
 _XFlush (dpy)
 	register Display *dpy;
 {
-	register long size;
+	register long size, todo;
 	register int write_stat;
 	register char *bufindex;
 
-	size = dpy->bufptr - dpy->buffer;
+	size = todo = dpy->bufptr - dpy->buffer;
 	bufindex = dpy->bufptr = dpy->buffer;
 	/*
 	 * While write has not written the entire buffer, keep looping
@@ -62,12 +62,19 @@ _XFlush (dpy)
 	 * and size decremented as buffer is written out.
 	 */
 	while (size) {
-	    write_stat = WriteToServer(dpy->fd, bufindex, (int) size);
-	    if (write_stat > 0) {
+	    write_stat = WriteToServer(dpy->fd, bufindex, (int) todo);
+	    if (write_stat >= 0) {
 		size -= write_stat;
+		todo = size;
 		bufindex += write_stat;
+#ifdef EWOULDBLOCK
 	    } else if (errno == EWOULDBLOCK) {
 		_XWaitForWritable(dpy);
+#endif
+#ifdef EMSGSIZE
+	    } else if (errno == EMSGSIZE) {
+		todo >>= 1;
+#endif
 	    } else {
 		/* Write failed! */
 		/* errno set by write system call. */
@@ -96,12 +103,12 @@ _XRead (dpy, data, size)
 		    size -= bytes_read;
 		    data += bytes_read;
 		    }
-
+#ifdef EWOULDBLOCK
 		else if (errno == EWOULDBLOCK) {
 		    _XWaitForReadable(dpy);
 		    errno = 0;
 		}
-		
+#endif		
 		else if (bytes_read == 0) {
 		    /* Read failed because of end of file! */
 		    errno = EPIPE;
@@ -155,11 +162,12 @@ _XReadPad (dpy, data, size)
 	    	else
 	    	    iov[0].iov_base += bytes_read;
 	    	}
-
+#ifdef EWOULDBLOCK
 	    else if (errno == EWOULDBLOCK) {
 		_XWaitForReadable(dpy);
 		errno = 0;
 	    }
+#endif
 	    else if (bytes_read == 0) {
 		/* Read failed because of end of file! */
 		errno = EPIPE;
@@ -185,46 +193,61 @@ _XSend (dpy, data, size)
 	char *data;
 	register long size;
 {
-	register long len;
 	struct iovec iov[3];
 	static char pad[3] = {0, 0, 0};
            /* XText8 and XText16 require that the padding bytes be zero! */
 
-	iov[0].iov_len = len = dpy->bufptr - dpy->buffer;
-	iov[0].iov_base = dpy->bufptr = dpy->buffer;
-	iov[1].iov_len = size;
-	iov[1].iov_base = data;
-	/* 
-	 * The following hack is used to provide 32 bit long-word
-	 * aligned padding.  The [2] vector is of length 0, 1, 2, or 3,
-	 * whatever is needed.
+	long skip = 0;
+	long total = (dpy->bufptr - dpy->buffer) + ((size + 3) & ~3);
+	long todo = total;
+
+	while (total) {
+	    long before = skip;
+	    long remain = todo;
+	    int i = 0;
+	    long len;
+
+	/* You could be very general here and have "in" and "out" iovecs
+	 * and write a loop without using a macro, but what the heck
 	 */
-	iov[2].iov_len = padlength[size & 3];
-	iov[2].iov_base = pad;
-	len += (size + 3) & ~3;
-	/*
-	 * Use while to allow for incremental writes.
-	 */
-	while ((size = WritevToServer(dpy->fd, iov, 3)) != len) {
-	    if (size > 0) {
-		len -= size;
-		if ((iov[0].iov_len -= size) < 0) {
-		    iov[1].iov_len += iov[0].iov_len;
-		    iov[1].iov_base -= iov[0].iov_len;
-		    iov[0].iov_len = 0;
-		    if (iov[1].iov_len < 0) {
-	    	    	iov[2].iov_len += iov[1].iov_len;
-			iov[2].iov_base -= iov[1].iov_len;
-			iov[1].iov_len = 0;
-		    }
-		}
-		else {
-			iov[0].iov_base += size;
-		}
+
+#define InsertIOV(pointer, length) \
+	    len = (length) - before; \
+	    if (len > remain) \
+		len = remain; \
+	    if (len <= 0) { \
+		before = -len; \
+	    } else { \
+		iov[i].iov_len = len; \
+		iov[i].iov_base = (pointer) + before; \
+		i++; \
+		remain -= len; \
+		before = 0; \
+	    }
+
+	    InsertIOV(dpy->buffer, dpy->bufptr - dpy->buffer)
+	    InsertIOV(data, size)
+	    /* Provide 32-bit aligned padding as necessary */
+	    InsertIOV(pad, padlength[size & 3])
+    
+	    if ((len = WritevToServer(dpy->fd, iov, i)) >= 0) {
+		skip += len;
+		total -= len;
+		todo = total;
+#ifdef EWOULDBLOCK
 	    } else if (errno == EWOULDBLOCK) {
 		_XWaitForWritable(dpy);
-	    } else (*_XIOErrorFunction)(dpy);
+#endif
+#ifdef EMSGSIZE
+	    } else if (errno == EMSGSIZE) {
+		todo = todo >> 1;
+#endif
+	    } else {
+		(*_XIOErrorFunction)(dpy);
+	    }
 	}
+
+	dpy->bufptr = dpy->buffer;
 	dpy->last_req = (char *) & _dummy_request;
 }
 
