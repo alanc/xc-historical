@@ -1,4 +1,4 @@
-/* $XConsortium: Sme.c,v 1.6 89/12/11 15:20:07 kit Exp $ */
+/* $XConsortium: Sme.c,v 1.7 91/01/06 16:08:40 rws Exp $ */
 
 /*
  * Copyright 1989 Massachusetts Institute of Technology
@@ -39,10 +39,10 @@
 #include <X11/Xaw/SmeP.h>
 #include <X11/Xaw/Cardinals.h>
 
-#define offset(field) XtOffset(SmeObject, sme.field)
+#define offset(field) XtOffsetOf(SmeRec sme.field)
 static XtResource resources[] = {
-  {XtNcallback, XtCCallback, XtRCallback, sizeof(caddr_t),
-     offset(callbacks), XtRCallback, (caddr_t)NULL},
+  {XtNcallback, XtCCallback, XtRCallback, sizeof(XtPointer),
+     offset(callbacks), XtRCallback, (XtPointer)NULL},
 };   
 #undef offset
 
