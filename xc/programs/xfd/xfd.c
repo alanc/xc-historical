@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xfd.c,v 1.20 90/05/11 11:43:26 jim Exp $
+ * $XConsortium: xfd.c,v 1.21 90/05/11 15:32:52 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -58,6 +58,8 @@ static XtActionsRec xfd_actions[] = {
   { "Prev", do_prev },
   { "Next", do_next },
 };
+
+static Atom wm_delete_window;
 
 Widget quitButton, prevButton, nextButton;
 
@@ -138,6 +140,9 @@ main (argc, argv)
     if (argc != 1) usage ();
     XtAppAddActions (XtWidgetToApplicationContext (toplevel),
                      xfd_actions, XtNumber (xfd_actions));
+    XtOverrideTranslations
+        (toplevel, XtParseTranslationTable ("<Message>WM_PROTOCOLS: Quit()"));
+
     XmuSetStringToFontStructConverter (FALSE);
 
     XtGetApplicationResources (toplevel, (caddr_t) &xfd_resources, Resources,
@@ -210,8 +215,13 @@ main (argc, argv)
 	     fs->max_byte1, fs->max_char_or_byte2);
     XtSetValues (rangeLabel, av, i);
 
-
     XtRealizeWidget (toplevel);
+
+    wm_delete_window = XInternAtom(XtDisplay(toplevel), "WM_DELETE_WINDOW",
+                                   False);
+    (void) XSetWMProtocols (XtDisplay(toplevel), XtWindow(toplevel),
+                            &wm_delete_window, 1);
+
     change_page (0);
     XtMainLoop ();
 }
