@@ -1,4 +1,4 @@
-/* $XConsortium: miStruct.h,v 5.3 92/11/17 17:32:06 hersh Exp $ */
+/* $XConsortium: miStruct.h,v 5.4 94/04/17 20:36:47 hersh Exp $ */
 
 
 /***********************************************************
@@ -62,6 +62,12 @@ typedef struct {
 	ddUSHORT		pexOClength;
 	/* concatenate imp. dep. data definitions here */
 	/* sample server definitions are listed later in this file */
+	
+	/* do the following to pad to 64 bit alignment for alpha */
+#ifdef __alpha
+	ddUSHORT		unused0;
+	ddUSHORT		unused1;
+#endif
 } miGenericStr;
 	
 typedef struct _miCSSElement {
