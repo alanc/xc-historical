@@ -1,4 +1,4 @@
-/* $XConsortium: TranslateI.h,v 1.25 90/08/17 15:48:27 swick Exp $ */
+/* $XConsortium: TranslateI.h,v 1.26 90/12/27 09:47:08 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -155,11 +155,23 @@ typedef struct _ActionHookRec {
     XtPointer closure;
 } ActionHookRec, *ActionHook;
 
+/* choose a number between 2 and 8 */
+#define TMKEYCACHELOG2 6
+#define TMKEYCACHESIZE (1<<TMKEYCACHELOG2)
+
+typedef struct _KeyCacheRec {
+    Modifiers modifiers_return; /* constant for a give XtKeyProc */
+    KeyCode keycode[TMKEYCACHESIZE];
+    unsigned short modifiers[TMKEYCACHESIZE];
+    KeySym keysym[TMKEYCACHESIZE];
+} TMKeyCache;
+
 typedef struct _TMContext {
     XEvent *event;
     unsigned long serial;
     KeySym keysym;
     Modifiers modifiers;
+    TMKeyCache keycache;  /* keep this last, to keep offsets to others small */
 } TMContextRec, *TMContext;
 
 extern Boolean _XtMatchUsingStandardMods();
