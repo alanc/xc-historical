@@ -52,7 +52,7 @@ extern long OutputPending[];
 
 extern long ScreenSaverTime;               /* milliseconds */
 extern long ScreenSaverInterval;               /* milliseconds */
-extern ClientPtr ConnectionTranslation[];
+extern int ConnectionTranslation[];
 
 extern Bool clientsDoomed;
 extern Bool NewOutputPending;
@@ -91,10 +91,7 @@ extern int playback_on;
  *     saved, depending on the hardware).  So, WaitForSomething()
  *     has to handle this also (that's why the select() has a timeout.
  *     For more info on ClientsWithInput, see ReadRequestFromClient().
- *     pClientsReady is a mask, the bits set are 
- *     indices into the o.s. depedent table of available clients.
- *     (In this case, there is no table -- the index is the socket
- *     file descriptor.)  
+ *     pClientsReady is an array to store ready client->index values into.
  *****************/
 
 static long timeTilFrob = 0;		/* while screen saving */
@@ -115,11 +112,9 @@ ANYSET(src)
 }
 #endif
 
-WaitForSomething(pClientsReady, nready, pNewClients, nnew)
-    ClientPtr *pClientsReady;
-    int *nready;
-    ClientPtr *pNewClients;
-    int *nnew;
+int
+WaitForSomething(pClientsReady)
+    int *pClientsReady;
 {
     int i;
     struct timeval waittime, *wt;
@@ -128,13 +123,12 @@ WaitForSomething(pClientsReady, nready, pNewClients, nnew)
     long clientsWritable[mskcnt];
     long curclient;
     int selecterr;
+    int nready;
 
 #ifdef	hpux
 	long	ready_inputs;  /* to tell HIL drivers about input */
 #endif	hpux
 
-    *nready = 0;
-    *nnew = 0;
     CLEARBITS(clientsReadable);
     if (! (ANYSET(ClientsWithInput)))
     {
@@ -151,7 +145,6 @@ WaitForSomething(pClientsReady, nready, pNewClients, nnew)
 
 		    if (clientsDoomed)
 		    {
-		        *nnew = *nready = 0;
 			break;
 		    }
 
@@ -230,7 +223,7 @@ WaitForSomething(pClientsReady, nready, pNewClients, nnew)
 		    {
 	            	CheckConnections ();
 			if (! ANYSET (AllClients))
-			    return;
+			    return 0;
 		    }
 		    else if (selecterr != EINTR)
 			ErrorF("WaitForSomething(): select: errno=%d\n",
@@ -256,8 +249,8 @@ WaitForSomething(pClientsReady, nready, pNewClients, nnew)
 
  		MASKANDSETBITS(clientsReadable, LastSelectMask, AllClients); 
 		if (LastSelectMask[0] & WellKnownConnections) 
-		    EstablishNewConnections(pNewClients, nnew);
-		if (*nnew || (LastSelectMask[0] & EnabledDevices) 
+		    EstablishNewConnections();
+		if ((LastSelectMask[0] & EnabledDevices) 
 		    || (ANYSET (clientsReadable)))
 			    break;
 	    }
@@ -268,6 +261,7 @@ WaitForSomething(pClientsReady, nready, pNewClients, nnew)
        COPYBITS(ClientsWithInput, clientsReadable);
     }
 
+    nready = 0;
     if (ANYSET(clientsReadable))
     {
 	for (i=0; i<mskcnt; i++)
@@ -275,12 +269,13 @@ WaitForSomething(pClientsReady, nready, pNewClients, nnew)
 	    while (clientsReadable[i])
 	    {
 		curclient = ffs (clientsReadable[i]) - 1;
-		pClientsReady[(*nready)++] = 
-			ConnectionTranslation[curclient + (32 * i)];
+		pClientsReady[nready++] = 
+			ConnectionTranslation[curclient + (i << 5)];
 		clientsReadable[i] &= ~(1 << curclient);
 	    }
 	}	
     }
+    return nready;
 }
 
 
