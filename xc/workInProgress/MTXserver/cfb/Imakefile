@@ -12,18 +12,20 @@ OBJS =   cfbgc.o cfbwindow.o cfbmisc.o \
 
 CDEBUGFLAGS = ServerCDebugFlags
    INCLUDES = -I. -I../../include -I../../../include -I../mfb
-       LINT = lint
-     LFLAGS = -buxz
+   LINTLIBS = -lc ../../dix/llib-ldix.ln ../os/4.2bsd/llib-los.ln \
+	     ../mfb/llib-lmfb.ln ../mi/llib-lmi.ln
 
 NormalLibraryObjectRule()
 NormalLibraryTarget(cfb,$(OBJS))
+LintLibraryTarget(cfb,$(SRCS))
+
+lint:
+	@echo 'Expect the following warnings from lint:'
+	@echo '  cfbpntwin.c: srcStartOver set but not used'
+	@echo '  cfbfillsp.c: srcStartOver set but not used'
+	@echo '  cfbbitblt.c: tmpDst set but not used (4 of these)'
+	@echo '-------'
+
+NormalLintTarget($(SRCS))
 
 DependTarget()
-
-lint: ${SRCS}
-	@echo 'Expect the following warnings from lint:' >lint.out
-	@echo '  cfbpntwin.c: srcStartOver set but not used' >>lint.out
-	@echo '  cfbfillsp.c: srcStartOver set but not used' >>lint.out
-	@echo '  cfbbitblt.c: tmpDst set but not used (4 of these)' >>lint.out
-	@echo '-------' >>lint.out
-	$(LINT) $(LFLAGS) -Clibcfb $(INCLUDES) $(SRCS) >> lint.out 2>&1
