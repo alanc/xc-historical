@@ -1,4 +1,4 @@
-/* $XConsortium: info.c,v 1.10 94/08/10 15:56:51 mor Exp mor $ */
+/* $XConsortium: info.c,v 1.11 94/08/10 19:44:15 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -314,6 +314,7 @@ XtPointer 	callData;
     {
 	SmProp prop;
 	SmPropValue propval;
+	int found = 0;
 
 	client->restartHint = hint;
 
@@ -321,17 +322,27 @@ XtPointer 	callData;
 	    if (strcmp (SmRestartStyleHint, client->props[i]->name) == 0)
 	    {
 		*((char *) (client->props[i]->vals[0].value)) = hint;
-		return;
+		found = 1;
+		break;
 	    }
 
-	prop.name = SmRestartStyleHint;
-	prop.type = SmCARD8;
-	prop.num_vals = 1;
-	prop.vals = &propval;
-	propval.value = (SmPointer) &hint;
-	propval.length = 1;
+	if (!found)
+	{
+	    prop.name = SmRestartStyleHint;
+	    prop.type = SmCARD8;
+	    prop.num_vals = 1;
+	    prop.vals = &propval;
+	    propval.value = (SmPointer) &hint;
+	    propval.length = 1;
 
-	SetProperty (client, &prop, True /* Malloc for us */);
+	    SetProperty (client, &prop, True /* Malloc for us */);
+	}
+
+	if (client_prop_visible && clientListRecs &&
+	    clientListRecs[current_client_selected] == client)
+	{
+	    DisplayProps (client, clientListNames[current_client_selected]);
+	}
     }
 }
 
