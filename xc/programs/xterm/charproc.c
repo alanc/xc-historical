@@ -1,6 +1,6 @@
 
 /*
- *	$Header: charproc.c,v 1.4 88/02/12 08:51:08 jim Exp $
+ *	$Header: charproc.c,v 1.5 88/02/12 09:15:16 jim Exp $
  */
 
 
@@ -57,7 +57,7 @@ extern void exit(), bcopy();
 #define	doinput()		(bcnt-- > 0 ? *bptr++ : in_put())
 
 #ifndef lint
-static char rcs_id[] = "$Header: charproc.c,v 1.4 88/02/12 08:51:08 jim Exp $";
+static char rcs_id[] = "$Header: charproc.c,v 1.5 88/02/12 09:15:16 jim Exp $";
 #endif	/* lint */
 
 static long arg;
@@ -1848,6 +1848,8 @@ XSetWindowAttributes *values;
 		screen->scrollbar = 0;
 		ScrollBarOn(screen, TRUE);
 	}
+	CursorSave (term, &screen->sc);
+	return;
 }
 
 /*
