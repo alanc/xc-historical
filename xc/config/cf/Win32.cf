@@ -1,9 +1,9 @@
-XCOMM platform:  $XConsortium: Win32.cf,v 1.37 94/03/29 20:25:02 rws Exp $
+XCOMM platform:  $XConsortium: Win32.cf,v 1.38 94/04/01 19:58:56 kaleb Exp kaleb $
 
-#define OSName			Microsoft Windows NT 3.1
+#define OSName			Microsoft Windows NT 3.5
 XCOMM operating system:  OSName
 #define OSMajorVersion		3
-#define OSMinorVersion		1
+#define OSMinorVersion		5
 
 #define BootstrapCFlags		-DWIN32
 #ifdef _M_IX86
