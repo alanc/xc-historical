@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.123 91/07/25 11:58:01 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.124 91/07/25 20:53:49 rws Exp $
 #define DoNormalLib NormalLibX
 #define DoSharedLib SharedLibX
 #define DoDebugLib DebugLibX
@@ -1044,7 +1044,7 @@ LinkSourceFile(Wraphelp.c,$(XDMCPLIBSRC))
 
 ks_tables.h: $(INCLUDESRC)/keysymdef.h util/makekeys.c
 	$(RM) $@ makekeys
-	-$(CC) -o makekeys util/makekeys.c $(CFLAGS) $(LOCAL_LDFLAGS) $(LDLIBS) $(EXTRA_LOAD_FLAGS)
+	-$(CC) -o makekeys util/makekeys.c $(CFLAGS) $(LOCAL_LDFLAGS) $(LDLIBS)
 	./makekeys < $(INCLUDESRC)/keysymdef.h > ks_tables_h
 	$(MV) ks_tables_h $@
 	$(RM) makekeys ks_tables_h
