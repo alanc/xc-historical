@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: window.c,v 5.76 91/07/20 20:52:21 rws Exp $ */
+/* $XConsortium: window.c,v 5.77 91/09/17 11:02:41 keith Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -3884,11 +3884,16 @@ HandleSaveSet(client)
             pParent = pParent->parent;
         if (pParent)
 	{
-            ReparentWindow(pWin, pParent, pWin->drawable.x - wBorderWidth (pWin),
-			   pWin->drawable.y - wBorderWidth (pWin), client);
-	    if(!pWin->realized && pWin->mapped)
-		pWin->mapped = FALSE;
-            MapWindow(pWin, client);
+	    if (pParent != pWin->parent)
+	    {
+		ReparentWindow(pWin, pParent,
+			       pWin->drawable.x - wBorderWidth (pWin) - pParent->drawable.x,
+			       pWin->drawable.y - wBorderWidth (pWin) - pParent->drawable.y,
+			       client);
+		if(!pWin->realized && pWin->mapped)
+		    pWin->mapped = FALSE;
+	    }
+	    MapWindow(pWin, client);
 	}
     }
     xfree(client->saveSet);
