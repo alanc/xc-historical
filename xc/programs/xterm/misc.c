@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: misc.c,v 1.50 89/10/17 17:04:26 jim Exp $
+ *	$XConsortium: misc.c,v 1.51 89/10/17 18:22:14 jim Exp $
  */
 
 
@@ -58,7 +58,7 @@ static void DoSpecialEnterNotify();
 static void DoSpecialLeaveNotify();
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: misc.c,v 1.50 89/10/17 17:04:26 jim Exp $";
+static char rcs_id[] = "$XConsortium: misc.c,v 1.51 89/10/17 18:22:14 jim Exp $";
 #endif	/* lint */
 
 xevents()
@@ -568,19 +568,10 @@ int (*func)();
 		}
 		break;
 
-#ifdef ALLOW_WRITEBACK
-	 case 100:	/* send back display name */
-		unparsefputs (DisplayString(screen->display), screen->respond);
-		unparseputc ('\r', screen->respond);
-		break;
-
-	 case 101:	/* send back host name */
-		len = XmuGetHostname (buf, sizeof buf);
-		buf[(sizeof buf) - 1] = '\0';
-		unparsefputs (buf, screen->respond);
-		unparseputc ('\r', screen->respond);
-		break;
-#endif /* ALLOW_WRITEBACK */
+	/*
+	 * One could write code to send back the display and host names,
+	 * but that could potentially open a fairly nasty security hole.
+	 */
 	}
 }
 
