@@ -22,7 +22,7 @@ SOFTWARE.
 
 ************************************************************************/
 
-/* $XConsortium: dixfonts.c,v 1.44 94/02/03 10:07:16 gildea Exp $ */
+/* $XConsortium: dixfonts.c,v 1.45 94/02/20 10:39:37 dpw Exp $ */
 
 #define NEED_REPLIES
 #include "X.h"
@@ -285,7 +285,8 @@ doOpenFont(client, c)
 	err = BadFontName;
 	goto bail;
     }
-    pfont->fpe = fpe;
+    if (!pfont->fpe)
+	pfont->fpe = fpe;
     pfont->refcnt++;
     if (pfont->refcnt == 1) {
 	UseFPE(pfont->fpe);

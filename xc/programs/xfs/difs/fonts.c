@@ -1,4 +1,4 @@
-/* $XConsortium: fonts.c,v 1.19 93/09/23 14:45:23 gildea Exp $ */
+/* $XConsortium: fonts.c,v 1.20 94/02/03 10:07:23 gildea Exp $ */
 /*
  * font control
  */
@@ -367,7 +367,8 @@ do_open_font(client, c)
     WriteReplyToClient(client,
 		       SIZEOF(fsOpenBitmapFontReply), &rep);
     if (pfont->refcnt == 0) {
-	pfont->fpe = fpe;
+	if (!pfont->fpe)
+	    pfont->fpe = fpe;
 	UseFPE(pfont->fpe);
     }
     pfont->refcnt++;

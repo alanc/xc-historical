@@ -1,6 +1,6 @@
 /* $NCDId: @(#)bitsource.c,v 1.4 1991/07/02 17:00:59 lemke Exp $ */
 /*
- * $XConsortium: bitsource.c,v 1.5 91/07/17 14:29:54 keith Exp $
+ * $XConsortium: bitsource.c,v 1.6 93/09/17 18:26:46 gildea Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -115,6 +115,7 @@ FontFileMatchBitmapSource (fpe, pFont, flags, entry, zeroPat, vals, format, fmas
 	    if (scaled->pFont)
 	    {
 		*pFont = scaled->pFont;
+		(*pFont)->fpe = FontFileBitmapSources.fpe[source];
 		ret = Successful;
 	    }
 	    else if (scaled->bitmap)
@@ -124,6 +125,7 @@ FontFileMatchBitmapSource (fpe, pFont, flags, entry, zeroPat, vals, format, fmas
 		if (bitmap->pFont)
 		{
 		    *pFont = bitmap->pFont;
+		    (*pFont)->fpe = FontFileBitmapSources.fpe[source];
 		    ret = Successful;
 		}
 		else
@@ -131,6 +133,8 @@ FontFileMatchBitmapSource (fpe, pFont, flags, entry, zeroPat, vals, format, fmas
 		    ret = FontFileOpenBitmap (
 				FontFileBitmapSources.fpe[source],
 				pFont, flags, entry, format, fmask);
+		    if (ret == Successful && *pFont)
+			(*pFont)->fpe = FontFileBitmapSources.fpe[source];
 		}
 	    }
 	    else /* "cannot" happen */
