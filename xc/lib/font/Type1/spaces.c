@@ -1,4 +1,4 @@
-/* $XConsortium: spaces.c,v 1.4 91/10/10 11:19:16 rws Exp $ */
+/* $XConsortium: spaces.c,v 1.5 92/07/07 17:14:50 gildea Exp $ */
 /* Copyright International Business Machines, Corp. 1991
  * All Rights Reserved
  * Copyright Lexmark International, Inc. 1991
@@ -734,7 +734,7 @@ transformation matrix and keep the handles up to date.
  
 This is the external user's entry point.
 */
-struct xobject *xiTransform(obj, cxx, cyx, cxy, cyy)
+struct xobject *t1_Transform(obj, cxx, cyx, cxy, cyy)
        struct xobject *obj;
        double cxx,cyx,cxy,cyy;  /* 2x2 transform matrix elements in row order */
 {
