@@ -1,4 +1,4 @@
-/* $XConsortium: keysymdef.h,v 1.14 91/02/14 15:26:22 rws Exp $ */
+/* $XConsortium: keysymdef.h,v 1.15 93/04/02 10:57:36 rws Exp $ */
 
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -231,6 +231,104 @@ SOFTWARE.
 #define XK_Hyper_L		0xFFED	/* Left hyper */
 #define XK_Hyper_R		0xFFEE	/* Right hyper */
 #endif /* XK_MISCELLANY */
+
+/*
+ * ISO 9995 Function and Modifier Keys
+ * Byte 3 = 0xFE
+ */
+
+#ifdef XK_XKB_KEYS
+#define	XK_ISO_Lock					0xFE01
+#define	XK_ISO_Level2_Latch				0xFE02
+#define	XK_ISO_Level3_Shift				0xFE03
+#define	XK_ISO_Level3_Latch				0xFE04
+#define	XK_ISO_Level3_Lock				0xFE05
+#define	XK_ISO_Group_Shift		0xFF7E	/* Alias for mode_switch */
+#define	XK_ISO_Group_Latch				0xFE06
+#define	XK_ISO_Group_Lock				0xFE07
+#define	XK_ISO_Next_Group				0xFE08
+#define	XK_ISO_Next_Group_Lock				0xFE09
+#define	XK_ISO_Prev_Group				0xFE0A
+#define	XK_ISO_Prev_Group_Lock				0xFE0B
+#define	XK_ISO_First_Group				0xFE0C
+#define	XK_ISO_First_Group_Lock				0xFE0D
+#define	XK_ISO_Last_Group				0xFE0E
+#define	XK_ISO_Last_Group_Lock				0xFE0F
+
+#define	XK_ISO_Left_Tab					0xFE20
+#define	XK_ISO_Move_Line_Up				0xFE21
+#define	XK_ISO_Move_Line_Down				0xFE22
+#define	XK_ISO_Partial_Line_Up				0xFE23
+#define	XK_ISO_Partial_Line_Down			0xFE24
+#define	XK_ISO_Partial_Space_Left			0xFE25
+#define	XK_ISO_Partial_Space_Right			0xFE26
+#define	XK_ISO_Set_Margin_Left				0xFE27
+#define	XK_ISO_Set_Margin_Right				0xFE28
+#define	XK_ISO_Release_Margin_Left			0xFE29
+#define	XK_ISO_Release_Margin_Right			0xFE2A
+#define	XK_ISO_Release_Both_Margins			0xFE2B
+#define	XK_ISO_Fast_Cursor_Left				0xFE2C
+#define	XK_ISO_Fast_Cursor_Right			0xFE2D
+#define	XK_ISO_Fast_Cursor_Up				0xFE2E
+#define	XK_ISO_Fast_Cursor_Down				0xFE2F
+#define	XK_ISO_Continuous_Underline			0xFE30
+#define	XK_ISO_Discontniuous_Underline			0xFE31
+#define	XK_ISO_Emphasize				0xFE32
+#define	XK_ISO_Center_Object				0xFE33
+#define	XK_ISO_Enter					0xFE34
+
+#define	XK_dead_grave					0xFE50
+#define	XK_dead_acute					0xFE51
+#define	XK_dead_circumflex				0xFE52
+#define	XK_dead_tilde					0xFE53
+#define	XK_dead_macron					0xFE54
+#define	XK_dead_breve					0xFE55
+#define	XK_dead_abovedot				0xFE56
+#define	XK_dead_diaeresis				0xFE57
+#define	XK_dead_abovering				0xFE58
+#define	XK_dead_doubleacute				0xFE59
+#define	XK_dead_caron					0xFE5A
+#define	XK_dead_cedilla					0xFE5B
+#define	XK_dead_ogonek					0xFE5C
+#define	XK_dead_iota					0xFE5D
+#define	XK_dead_voiced_sound				0xFE5E
+#define	XK_dead_semivoiced_sound			0xFE5F
+
+#define	XK_First_Virtual_Screen				0xFED0
+#define	XK_Prev_Virtual_Screen				0xFED1
+#define	XK_Next_Virtual_Screen				0xFED2
+#define	XK_Last_Virtual_Screen				0xFED4
+#define	XK_Terminate_Server				0xFED5
+
+#define	XK_Pointer_Left					0xFEE0
+#define	XK_Pointer_Right				0xFEE1
+#define	XK_Pointer_Up					0xFEE2
+#define	XK_Pointer_Down					0xFEE3
+#define	XK_Pointer_UpLeft				0xFEE4
+#define	XK_Pointer_UpRight				0xFEE5
+#define	XK_Pointer_DownLeft				0xFEE6
+#define	XK_Pointer_DownRight				0xFEE7
+#define	XK_Pointer_Button_Dflt				0xFEE8
+#define	XK_Pointer_Button1				0xFEE9
+#define	XK_Pointer_Button2				0xFEEA
+#define	XK_Pointer_Button3				0xFEEB
+#define	XK_Pointer_Button4				0xFEEC
+#define	XK_Pointer_Button5				0xFEED
+#define	XK_Pointer_DblClick_Dflt			0xFEEE
+#define	XK_Pointer_DblClick1				0xFEEF
+#define	XK_Pointer_DblClick2				0xFEF0
+#define	XK_Pointer_DblClick3				0xFEF1
+#define	XK_Pointer_DblClick4				0xFEF2
+#define	XK_Pointer_DblClick5				0xFEF3
+#define	XK_Pointer_Drag_Dflt				0xFEF4
+#define	XK_Pointer_Drag1				0xFEF5
+#define	XK_Pointer_Drag2				0xFEF6
+#define	XK_Pointer_Drag3				0xFEF7
+#define	XK_Pointer_Drag4				0xFEF8
+
+#define	XK_Pointer_EnableKeys				0xFEF9
+#define	XK_Pointer_Accelerate				0xFEFA
+#endif
 
 /*
  *  Latin 1
