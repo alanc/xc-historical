@@ -37,10 +37,6 @@ SOFTWARE.
 #include "mibstore.h"
 
 #include "cfbmskbits.h"
-#ifdef CFBROTPIX
-extern cfbXRotatePixmap();
-extern cfbYRotatePixmap();
-#endif
 
 static void cfbValidateGC(), cfbChangeGC(), cfbCopyGC(), cfbDestroyGC();
 static void cfbChangeClip(), cfbDestroyClip(), cfbCopyClip();
@@ -168,15 +164,7 @@ cfbCreateGC(pGC)
 	pPriv->rop = pGC->alu;
 	pPriv->fExpose = TRUE;
 	pGC->devPrivates[cfbGCPrivateIndex].ptr = (pointer) pPriv;
-#ifdef CFBROTPIX
-	pPriv->pRotatedTile = NullPixmap;
-	pPriv->pRotatedStipple = NullPixmap;
-#endif
-	pPriv->pAbsClientRegion = (*pGC->pScreen->RegionCreate) (NULL, 1);
-	/* since freeCompClip isn't FREE_CC, we don't need to create
-	   a null region -- no one will try to free the field.
-	*/
-	pPriv->freeCompClip = REPLACE_CC;
+	pPriv->freeCompClip = FALSE;
     }
     return TRUE;
 }
@@ -197,16 +185,8 @@ cfbDestroyGC(pGC)
     cfbPrivGC *pPriv;
 
     pPriv = (cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr);
-#ifdef CFBROTPIX
-    if (pPriv->pRotatedTile)
-	cfbDestroyPixmap(pPriv->pRotatedTile);
-    if (pPriv->pRotatedStipple)
-	cfbDestroyPixmap(pPriv->pRotatedStipple);
-#endif
-    if (pPriv->freeCompClip == FREE_CC)
+    if (pPriv->freeCompClip)
 	(*pGC->pScreen->RegionDestroy)(pPriv->pCompositeClip);
-    if(pPriv->pAbsClientRegion)
-	(*pGC->pScreen->RegionDestroy)(pPriv->pAbsClientRegion);
     xfree(pGC->devPrivates[cfbGCPrivateIndex].ptr);
     cfbDestroyOps (pGC->ops);
 }
@@ -259,10 +239,6 @@ cfbValidateGC(pGC, changes, pDrawable)
     WindowPtr   pWin;
     int         mask;		/* stateChanges */
     int         index;		/* used for stepping through bitfields */
-#ifdef CFBROTPIX
-    int         xrot, yrot;	/* rotations for tile and stipple pattern */
-    Bool        fRotate = FALSE;/* True if rotated pixmaps are needed */
-#endif
     int         new_line, new_text, new_fillspans;
     /* flags for changing the proc vector */
     cfbPrivGCPtr devPriv;
@@ -293,38 +269,19 @@ cfbValidateGC(pGC, changes, pDrawable)
 	(pDrawable->serialNumber != (pGC->serialNumber & DRAWABLE_SERIAL_BITS))
 	)
     {
-	/*
-	 * if there is a client clip (always a region, for us) AND it has
-	 * moved or is different OR the window has moved we need to
-	 * (re)translate it. 
-	 */
-	if ((pGC->clientClipType == CT_REGION) &&
-	    ((changes & (GCClipXOrigin | GCClipYOrigin | GCClipMask)) ||
-	     (oldOrg.x != pGC->lastWinOrg.x) || (oldOrg.y != pGC->lastWinOrg.y)
-	     )
-	    )
-	{
-	    /* retranslate client clip */
-	    (*pGC->pScreen->RegionCopy) (devPriv->pAbsClientRegion,
-					 pGC->clientClip);
-
-	    (*pGC->pScreen->TranslateRegion) (
-				devPriv->pAbsClientRegion,
-				pGC->lastWinOrg.x + pGC->clipOrg.x,
-				pGC->lastWinOrg.y + pGC->clipOrg.y);
-	}
+	ScreenPtr pScreen = pGC->pScreen;
 
 	if (pWin) {
 	    RegionPtr   pregWin;
-	    int         freeTmpClip, freeCompClip;
+	    Bool        freeTmpClip, freeCompClip;
 
 	    if (pGC->subWindowMode == IncludeInferiors) {
 		pregWin = NotClippedByChildren(pWin);
-		freeTmpClip = FREE_CC;
+		freeTmpClip = TRUE;
 	    }
 	    else {
 		pregWin = &pWin->clipList;
-		freeTmpClip = REPLACE_CC;
+		freeTmpClip = FALSE;
 	    }
 	    freeCompClip = devPriv->freeCompClip;
 
@@ -336,9 +293,8 @@ cfbValidateGC(pGC, changes, pDrawable)
 	     * many clients clip by children and have no client clip.) 
 	     */
 	    if (pGC->clientClipType == CT_NONE) {
-		if (freeCompClip == FREE_CC) {
-		    (*pGC->pScreen->RegionDestroy) (devPriv->pCompositeClip);
-		}
+		if (freeCompClip)
+		    (*pScreen->RegionDestroy) (devPriv->pCompositeClip);
 		devPriv->pCompositeClip = pregWin;
 		devPriv->freeCompClip = freeTmpClip;
 	    }
@@ -353,38 +309,34 @@ cfbValidateGC(pGC, changes, pDrawable)
 		 * neither is real, create a new region. 
 		 */
 
-		if ((freeTmpClip == FREE_CC) && (freeCompClip == FREE_CC)) {
-		    (*pGC->pScreen->Intersect) (
-						devPriv->pCompositeClip,
-						pregWin,
-					      devPriv->pAbsClientRegion);
-		    (*pGC->pScreen->RegionDestroy) (pregWin);
+		(*pScreen->TranslateRegion)(pGC->clientClip,
+					    pDrawable->x + pGC->clipOrg.x,
+					    pDrawable->y + pGC->clipOrg.y);
+						  
+		if (freeCompClip)
+		{
+		    (*pGC->pScreen->Intersect)(devPriv->pCompositeClip,
+					       pregWin, pGC->clientClip);
+		    if (freeTmpClip)
+			(*pScreen->RegionDestroy)(pregWin);
 		}
-		else if ((freeTmpClip == REPLACE_CC) &&
-			 (freeCompClip == FREE_CC)) {
-		    (*pGC->pScreen->Intersect) (
-						devPriv->pCompositeClip,
-						pregWin,
-					      devPriv->pAbsClientRegion);
-		}
-		else if ((freeTmpClip == FREE_CC) &&
-			 (freeCompClip == REPLACE_CC)) {
-		    (*pGC->pScreen->Intersect) (
-						pregWin,
-						pregWin,
-					      devPriv->pAbsClientRegion);
+		else if (freeTmpClip)
+		{
+		    (*pScreen->Intersect)(pregWin, pregWin, pGC->clientClip);
 		    devPriv->pCompositeClip = pregWin;
 		}
-		else if ((freeTmpClip == REPLACE_CC) &&
-			 (freeCompClip == REPLACE_CC)) {
-		    devPriv->pCompositeClip =
-			(*pGC->pScreen->RegionCreate) (NULL, 1);
-		    (*pGC->pScreen->Intersect) (
-						devPriv->pCompositeClip,
-						pregWin,
-					      devPriv->pAbsClientRegion);
+		else
+		{
+		    devPriv->pCompositeClip = (*pScreen->RegionCreate)(NullBox,
+								       0);
+		    (*pScreen->Intersect)(devPriv->pCompositeClip,
+					  pregWin, pGC->clientClip);
 		}
-		devPriv->freeCompClip = FREE_CC;
+		devPriv->freeCompClip = TRUE;
+		(*pScreen->TranslateRegion)(pGC->clientClip,
+					    -(pDrawable->x + pGC->clipOrg.x),
+					    -(pDrawable->y + pGC->clipOrg.y));
+						  
 	    }
 	}			/* end of composite clip for a window */
 	else {
@@ -395,43 +347,20 @@ cfbValidateGC(pGC, changes, pDrawable)
 	    pixbounds.x2 = pDrawable->width;
 	    pixbounds.y2 = pDrawable->height;
 
-	    if (devPriv->freeCompClip == FREE_CC)
-		(*pGC->pScreen->RegionReset) (
-				    devPriv->pCompositeClip, &pixbounds);
+	    if (devPriv->freeCompClip)
+		(*pScreen->RegionReset)(devPriv->pCompositeClip, &pixbounds);
 	    else {
-		devPriv->freeCompClip = FREE_CC;
-		devPriv->pCompositeClip =
-		    (*pGC->pScreen->RegionCreate) (&pixbounds, 1);
+		devPriv->freeCompClip = TRUE;
+		devPriv->pCompositeClip = (*pScreen->RegionCreate)(&pixbounds,
+								   1);
 	    }
 
 	    if (pGC->clientClipType == CT_REGION)
-		(*pGC->pScreen->Intersect) (
-					    devPriv->pCompositeClip,
-					    devPriv->pCompositeClip,
-					    devPriv->pAbsClientRegion);
+		(*pScreen->Intersect)(devPriv->pCompositeClip,
+				      devPriv->pCompositeClip,
+				      pGC->clientClip);
 	}			/* end of composute clip for pixmap */
     }
-
-/*
-    if (pWin) {
-
-	*
-	 * rotate tile patterns so that pattern can be combined in word by
-	 * word, but the pattern seems to begin aligned with the window 
-	 *
-	xrot = pWin->absCorner.x;
-	yrot = pWin->absCorner.y;
-    }
-    else {
-*/
-#ifdef CFBROTPIX
-	yrot = 0;
-	xrot = 0;
-#endif
-/*
-    }
-*/
-
 
     new_line = FALSE;
     new_text = FALSE;
@@ -488,9 +417,6 @@ cfbValidateGC(pGC, changes, pDrawable)
 		    pGC->tile.pixmap = ntile;
 		}
 	    }
-#ifdef CFBROTPIX
-	    fRotate = TRUE;
-#endif
 	    new_fillspans = TRUE;
 	    break;
 
@@ -508,21 +434,8 @@ cfbValidateGC(pGC, changes, pDrawable)
 		    pGC->stipple = nstipple;
 		}
 	    }
-#ifdef CFBROTPIX
-	    fRotate = TRUE;
-#endif
 	    new_fillspans = TRUE;
 	    break;
-
-#ifdef CFBROTPIX
-	case GCTileStipXOrigin:
-	    fRotate = TRUE;
-	    break;
-
-	case GCTileStipYOrigin:
-	    fRotate = TRUE;
-	    break;
-#endif
 
 	case GCFont:
 	    new_text = TRUE;
@@ -646,45 +559,6 @@ cfbValidateGC(pGC, changes, pDrawable)
 	    FatalError("cfbValidateGC: illegal fillStyle\n");
 	}
     } /* end of new_fillspans */
-
-#ifdef CFBROTPIX
-    if (xrot || yrot || fRotate) {
-	/*
-	 * First destroy any previously-rotated tile/stipple
-	 */
-	if (devPriv->pRotatedTile) {
-	    cfbDestroyPixmap(devPriv->pRotatedTile);
-	    devPriv->pRotatedTile = (PixmapPtr)NULL;
-	}
-	if (devPriv->pRotatedStipple) {
-	    cfbDestroyPixmap(devPriv->pRotatedStipple);
-	    devPriv->pRotatedStipple = (PixmapPtr)NULL;
-	}
-	if (!pGC->tileIsPixel)
-	    devPriv->pRotatedTile = cfbCopyPixmap(pGC->tile.pixmap);
-	if (pGC->stipple)
-	    devPriv->pRotatedStipple = cfbCopyPixmap(pGC->stipple);
-	/*
-	 * If we've gotten here, we're probably going to rotate the tile
-	 * and/or stipple, so we have to add the pattern origin into
-	 * the rotation factor, even if it hasn't changed.
-	 */
-	xrot += pGC->patOrg.x;
-	yrot += pGC->patOrg.y;
-	if (xrot) {
-	    if (!pGC->tileIsPixel && devPriv->pRotatedTile)
-		cfbXRotatePixmap(devPriv->pRotatedTile, xrot);
-	    if (pGC->stipple && devPriv->pRotatedStipple)
-		cfbXRotatePixmap(devPriv->pRotatedStipple, xrot);
-	}
-	if (yrot) {
-	    if (!pGC->tileIsPixel && devPriv->pRotatedTile)
-		cfbYRotatePixmap(devPriv->pRotatedTile, yrot);
-	    if (pGC->stipple && devPriv->pRotatedStipple)
-		cfbYRotatePixmap(devPriv->pRotatedStipple, yrot);
-	}
-    }
-#endif
 }
 
 static void
