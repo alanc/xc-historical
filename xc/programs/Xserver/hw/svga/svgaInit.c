@@ -1,4 +1,4 @@
-/* $XConsortium: svgaInit.c,v 1.5 93/09/20 13:17:49 rws Exp $ */
+/* $XConsortium: svgaInit.c,v 1.6 93/09/25 17:38:00 rws Exp $ */
 /*
  * Copyright 1990,91,92,93 by Thomas Roell, Germany.
  * Copyright 1991,92,93    by SGCS (Snitily Graphics Consulting Services), USA.
@@ -45,10 +45,6 @@ extern void ProcessInputEvents();
 
 #ifndef PATH_MAX
 #define PATH_MAX 256
-#endif
-
-#ifndef ADMPATH
-#define ADMPATH "/usr/adm/X%smsgs"
 #endif
 
 char *svgaconfig = SVGACONFIG;
