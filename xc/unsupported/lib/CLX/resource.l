@@ -42,33 +42,25 @@
   "When non-nil and no match found, search superclasses.")
 
 ;; The C version of this uses a 64 entry hash table at each entry.
-;; Small hash tables loose in Lisp, so we do linear searches on lists.
-
-;; This code uses resource-database-NAME for resource lookup, and 
-;; resource-database-STRING when reading/writing resources.  This
-;; is to enable us to upcase and intern the string for fast resource
-;; lookup EQ tests while maintaing the original string for 
-;; write-resources [it should be possible to read a upper/lower
-;; case resource file, modify it and write it out correctly]
+;; Small hash tables lose in Lisp, so we do linear searches on lists.
 
 (defstruct (resource-database (:copier nil) (:print-function print-resource)
 			      (:constructor make-resource-database-internal)
 			      #+explorer (:callable-constructors nil)
 			      )
-  (name nil :type symbol :read-only t)
-  (string "" :type stringable :read-only t)
+  (name nil :type stringable :read-only t)
   (value nil)
   (tight nil :type list) ;; List of resource-database
   (loose nil :type list) ;; List of resource-database
   )
 
-;; The value slot of the top-level resource-database structure is used for a time-stamp.
+;; The value slot of the top-level resource-database structure is used for a
+;; time-stamp.
 
 (defun make-resource-database ()
   ;; Make a resource-database with initial timestamp of 0
-  (make-resource-database-internal :name :top-level :string "Top-Level" :value 0))
+  (make-resource-database-internal :name "Top-Level" :value 0))
 
-(proclaim '(inline resource-database-timestamp))
 (defun resource-database-timestamp (database)
   (declare (type resource-database database))
   (resource-database-value database))
@@ -86,12 +78,11 @@
 (defun print-resource (database stream depth)
   (declare (type resource-database database))
   (declare (ignore depth))
-  (princ "#<Resource " stream)
-  (princ (resource-database-name database) stream)
-  (when (resource-database-value database)
-    (princ " " stream)
-    (prin1 (resource-database-value database) stream))
-  (princ ">" stream))
+  (printing-object (database stream)
+    (princ (resource-database-name database) stream)
+    (when (resource-database-value database)
+      (princ " " stream)
+      (prin1 (resource-database-value database) stream))))
 
 ;; DEBUG FUNCTION  (not exported)
 (defun print-db (entry &optional (level 0) type)
@@ -122,20 +113,22 @@
 	    (format t "  duplicate at ~s" db))))
       )))
 
-(proclaim '(inline resource-key))
-(defun resource-key (stringable)
-  ;; Ensure STRINGABLE is a keyword.
-  (declare (type stringable stringable))
-  (if (keywordp stringable)
-      (the keyword stringable)
-    (resource-key-internal stringable)))
-
-(defun resource-key-internal (stringable)
-  ;; Ensure STRINGABLE is a keyword.
-  (declare (type stringable stringable))
-  (if (symbolp stringable)
-      (kintern stringable)
-    (kintern (string-upcase (the string stringable)))))
+(defun stringable-equal (a b)
+  ;; Compare two stringables.
+  ;; Ignore case when comparing to a symbol.
+  (declare (type stringable a b))
+  (declare (values boolean))
+  (if (symbolp a)
+      (if (symbolp b)
+	  (string= (the string (symbol-name (the symbol a)))
+		   (the string (symbol-name (the symbol b))))
+	(string-equal (the string (symbol-name (the symbol a)))
+		      (the string b)))
+    (if (symbolp b)
+	(string-equal (the string a)
+		      (the string (symbol-name (the symbol b))))
+      (string= (the string a)
+	       (the string b)))))
 
 
 ;;;-----------------------------------------------------------------------------
@@ -152,30 +145,28 @@
   (unless value (error "Null resource values are ignored"))
   (incf-resource-database-timestamp database)
   (do* ((list name-list (cdr list))
-	(string (car list) (car list))
+	(name (car list) (car list))
 	(node database)
 	(loose-p nil))
        ((endp list)
 	(setf (resource-database-value node) value))
     ;; Key is the first name that isn't *
-    (if (or (equal string "*") (eq string '*))
+    (if (stringable-equal name "*")
 	(setq loose-p t)
       ;; find the entry associated with name
       (progn
 	(do ((entry (if loose-p
 			(resource-database-loose node)
 		      (resource-database-tight node))
-		    (cdr entry))
-	     ;; Terminal names are ALWAYS in the keyword package
-	     (name (resource-key string)))
+		    (cdr entry)))
 	    ((endp entry)
 	     ;; Entry not found - create a new one
-	     (setq entry (make-resource-database-internal :name name :string string))
+	     (setq entry (make-resource-database-internal :name name))
 	     (if loose-p
 		 (push entry (resource-database-loose node))
 	       (push entry (resource-database-tight node)))
 	     (setq node entry))
-	  (when (stringable-equal string (resource-database-string (car entry)))
+	  (when (stringable-equal name (resource-database-name (car entry)))
 	    ;; Found entry - use it
 	    (return (setq node (car entry)))))
 	(setq loose-p nil)))))
@@ -196,7 +187,7 @@
 	(loose-p nil))
        ((endp list) nil)
     ;; Key is the first name that isn't *
-    (if (or (equal string "*") (eq string '*))
+    (if (stringable-equal string "*")
 	(setq loose-p t)
       ;; find the entry associated with name
       (progn 
@@ -208,15 +199,17 @@
 	     ((endp entry-list)
 	      ;; Entry not found - exit
 	      (return-from delete-resource-internal nil))
-	  (when (stringable-equal string (resource-database-string entry))
+	  (when (stringable-equal string (resource-database-name entry))
 	    (when (cdr list) (delete-resource-internal entry (cdr list)))
 	    (when (and (null (resource-database-loose entry))
 		       (null (resource-database-tight entry)))
 	      (if loose-p
 		  (setf (resource-database-loose node)
-			(delete entry (resource-database-loose node) :test #'eq :count 1))
+			(delete entry (resource-database-loose node)
+				:test #'eq :count 1))
 		(setf (resource-database-tight node)
-		      (delete entry (resource-database-tight node) :test #'eq :count 1))))
+		      (delete entry (resource-database-tight node)
+			      :test #'eq :count 1))))
 	    (return-from delete-resource-internal t)))
 	(setq loose-p nil)))))
 
@@ -231,9 +224,10 @@
 	   (type stringable value-name value-class)
 	   (type list full-name full-class)) ;; (list stringable)
   (declare (values value))
-  (let ((names (append full-name (list (resource-key value-name))))
-	(classes (append full-class (list (resource-key value-class)))))
-    (let* ((result (get-entry (resource-database-tight database) (resource-database-loose database)
+  (let ((names (append full-name (list value-name)))
+	(classes (append full-class (list value-class))))
+    (let* ((result (get-entry (resource-database-tight database)
+			      (resource-database-loose database)
 			      names classes)))
       (when result
 	(resource-database-value result)))))
@@ -241,13 +235,13 @@
 (defun get-entry-lookup (table name names classes)
   (declare (type list table names classes)
 	   (symbol name))
-  (declare (inline get-entry-lookup))
   (dolist (entry table)
     (declare (type resource-database entry))
     (when (stringable-equal name (resource-database-name entry))
       (if (null (cdr names))
 	  (return entry)
-	(let ((result (get-entry (resource-database-tight entry) (resource-database-loose entry)
+	(let ((result (get-entry (resource-database-tight entry)
+				 (resource-database-loose entry)
 				 (cdr names) (cdr classes))))
 	  (declare (type (or null resource-database) result))
 	  (when result
@@ -256,7 +250,6 @@
 
 (defun get-entry (tight loose names classes &aux result)
   (declare (type list tight loose names classes))
-;;  (DECLARE (inline get-entry-lookup))
   (declare (inline resource-key))
   (let ((name (car names))
 	(class (car classes)))
@@ -266,20 +259,22 @@
 	  ((and loose
 		(get-entry-lookup loose name names classes)))
 	  ((and tight
-		(not (equal name class))
+		(not (stringable-equal name class))
 		(get-entry-lookup tight class names classes)))
 	  ((and loose
-		(not (equal name class))
+		(not (stringable-equal name class))
 		(get-entry-lookup loose class names classes)))
 	  #+clue ;; for CLUE only
 	  ((and *resource-subclassp*
 		(or loose tight)
 		(dolist (class (cluei::class-all-superclasses class))
 		  (when tight
-		    (when (setq result (get-entry-lookup tight class names classes))
+		    (when (setq result
+				(get-entry-lookup tight class names classes))
 		      (return result)))
 		  (when loose
-		    (when (setq result (get-entry-lookup loose class names classes))
+		    (when (setq result
+				(get-entry-lookup loose class names classes))
 		      (return result))))))	
 	  (loose
 	   (loop
@@ -289,13 +284,15 @@
 		   class (car classes))
 	     (when (setq result (get-entry-lookup loose name names classes))
 	       (return result))
-	     (when (and (not (equal name class))
-			(setq result (get-entry-lookup loose class names classes)))
+	     (when (and (not (stringable-equal name class))
+			(setq result
+			      (get-entry-lookup loose class names classes)))
 	       (return result))
 	     #+clue ;; for CLUE only
 	     (when *resource-subclassp*
 	       (dolist (class (cluei::class-all-superclasses class))
-		 (when (setq result (get-entry-lookup loose class names classes))
+		 (when (setq result
+			     (get-entry-lookup loose class names classes))
 		   (return-from get-entry result))))
 	     )))))
 
@@ -304,29 +301,29 @@
 ;;; Get-resource with search-table
 
 (defun get-search-resource (table name class)
-  ;; (get-search-resource (get-search-table database full-name full-class) value-name value-class)
+  ;; (get-search-resource (get-search-table database full-name full-class) 
+  ;;                      value-name value-class)
   ;; is equivalent to 
   ;; (get-resource database value-name value-class full-name full-class)
-  ;; But since most of the work is done by get-search-table, get-search-resource is MUCH
-  ;; faster when getting several resources with the same full-name/full-class
+  ;; But since most of the work is done by get-search-table,
+  ;; get-search-resource is MUCH faster when getting several resources with
+  ;; the same full-name/full-class
   (declare (type list table)
 	   (type stringable name class))
-  (declare (inline resource-key))
-  (let ((name (resource-key name))
-	(class (and class (resource-key class))))
-    (declare (type stringable name class))
-    (block exit
-      (dolist (dbase-list table)
-	(declare (type list dbase-list))
+  (let ((do-class (and class (not (stringable-equal name class)))))
+    (dolist (dbase-list table)
+      (declare (type list dbase-list))
+      (dolist (dbase dbase-list)
+	(declare (type resource-database dbase))
+	(when (stringable-equal name (resource-database-name dbase))
+	  (return-from get-search-resource
+	    (resource-database-value dbase))))
+      (when do-class
 	(dolist (dbase dbase-list)
 	  (declare (type resource-database dbase))
-	  (when (eq name (resource-database-name dbase))
-	    (return-from exit (resource-database-value dbase))))
-	(when (and class (not (eq name class)))
-	  (dolist (dbase dbase-list)
-	    (declare (type resource-database dbase))
-	    (when (eq class (resource-database-name dbase))
-	      (return-from exit (resource-database-value dbase)))))))))
+	  (when (stringable-equal class (resource-database-name dbase))
+	    (return-from get-search-resource
+	      (resource-database-value dbase))))))))
 
 (defvar *get-table-result*)
 
@@ -345,11 +342,12 @@
       (when full-name
 	(get-tables tight loose full-name full-class))
 
-      ;; Pick up bindings of the form (* name). These are the elements of top-level
-      ;; loose without further tight/loose databases.
+      ;; Pick up bindings of the form (* name). These are the elements of
+      ;; top-level loose without further tight/loose databases.
       ;;
-      ;; (Hack: these bindings belong in ANY search table, so recomputing them is a drag.
-      ;; True fix involves redesigning entire lookup data-structure/algorithm.)
+      ;; (Hack: these bindings belong in ANY search table, so recomputing them
+      ;; is a drag.  True fix involves redesigning entire lookup
+      ;; data-structure/algorithm.)
       ;;
       (let ((universal-bindings
 	      (remove nil loose :test-not #'eq
@@ -386,9 +384,6 @@
 
 (defun get-tables (tight loose names classes)
   (declare (type list tight loose names classes))
-  (declare (inline resource-key)
-	   (inline get-tables-lookup)
-	   (optimize speed))
   (let ((name (car names))
 	(class (car classes)))
     (declare (type symbol name class))
@@ -396,9 +391,9 @@
       (get-tables-lookup tight name names classes))
     (when loose
       (get-tables-lookup loose name names classes))
-    (when (and tight (not (equal name class)))
+    (when (and tight (not (stringable-equal name class)))
       (get-tables-lookup tight class names classes))
-    (when (and loose (not (equal name class)))
+    (when (and loose (not (stringable-equal name class)))
       (get-tables-lookup loose class names classes))
     #+clue ;; for CLUE only
     (when *resource-subclassp*
@@ -416,7 +411,7 @@
 	(setq name (car names)
 	      class (car classes))
 	(get-tables-lookup loose name names classes)
-	(unless (equal name class)
+	(unless (stringable-equal name class)
 	  (get-tables-lookup loose class names classes))
 	#+clue ;; for CLUE only
 	(when *resource-subclassp*
@@ -447,14 +442,18 @@
 	       (dolist (resource tight)
 		 (declare (type resource-database resource))
 		 (let ((value (resource-database-value resource))
-		       (name (append name (list (resource-database-name resource)))))
+		       (name (append
+			       name
+			       (list (resource-database-name resource)))))
 		   (if value
 		       (apply function name value args)
 		     (map-resource-internal resource function args name))))
 	       (dolist (resource loose)
 		 (declare (type resource-database resource))
 		 (let ((value (resource-database-value resource))
-		       (name (append name (list '* (resource-database-name resource)))))
+		       (name (append
+			       name
+			       (list "*" (resource-database-name resource)))))
 		   (if value
 		       (apply function name value args)
 		     (map-resource-internal resource function args name)))))))
@@ -472,7 +471,8 @@
   (member char key))
 
 (defmacro resource-with-open-file ((stream pathname &rest options) &body body)
-  ;; Private WITH-OPEN-FILE, which, when pathname is a stream, uses it as the stream
+  ;; Private WITH-OPEN-FILE, which, when pathname is a stream, uses it as the
+  ;; stream
   (let ((abortp (gensym))
 	(streamp (gensym)))
     `(let* ((,abortp t)
@@ -503,7 +503,8 @@
 	(declare (type string string))
 	(when (eq string :eof) (return database))
 	(let* ((end (length string))
-	       (i (position '(#\tab #\space) string :test-not #'char-memq :end end))
+	       (i (position '(#\tab #\space) string
+			    :test-not #'char-memq :end end))
 	       (term nil))
 	  (declare (type array-index end)
 		   (type (or null array-index) i term))
@@ -516,8 +517,10 @@
 				    :start i :end end))
 	       (if (not (string-equal string "#INCLUDE" :start1 i :end1 term))
 		   (format t "~%Resource File error. Ignoring: ~a" string)
-		 (let ((path (merge-pathnames (subseq string (1+ term)) (truename stream))))
-		   (read-resources database path :key key :test test :test-not test-not))))
+		 (let ((path (merge-pathnames
+			       (subseq string (1+ term)) (truename stream))))
+		   (read-resources database path
+				   :key key :test test :test-not test-not))))
 	      (otherwise
 	       (multiple-value-bind (name-list value)
 		   (parse-resource string i end)
@@ -529,7 +532,8 @@
 		   (add-resource database name-list value)))))))))))
 
 (defun parse-resource (string &optional (start 0) end)
-  ;; Parse a resource specfication string into a list of names and a value string
+  ;; Parse a resource specfication string into a list of names and a value
+  ;; string
   (declare (type string string)
 	   (type array-index start)
 	   (type (or null array-index) end))
@@ -554,8 +558,10 @@
       ;; Value separator
       (#\:
        (push (subseq string i term) name-list)
-       (return (values (nreverse name-list)
-		       (string-trim '(#\tab #\space) (subseq string (1+ term)))))))
+       (return
+	 (values
+	   (nreverse name-list)
+	   (string-trim '(#\tab #\space) (subseq string (1+ term)))))))
     (setq i (1+ term))))
 
 (defun write-resources (database pathname &key write test test-not)
@@ -579,7 +585,8 @@
 	    (let ((previous (car name-list)))
 	      (princ previous stream)
 	      (dolist (name (cdr name-list))
-		(unless (or (eq name '*) (eq previous '*))
+		(unless (or (stringable-equal name "*")
+			    (stringable-equal previous "*"))
 		  (write-char #\. stream))
 		(setq previous name)
 		(princ name stream)))
@@ -603,10 +610,12 @@
                  test test-not))
   (declare (values resource-database))
   (let ((string (get-property window :RESOURCE_MANAGER :type :STRING
-			      :result-type 'string :transform #'xlib::card8->char)))
+			      :result-type 'string
+			      :transform #'xlib::card8->char)))
     (when string
       (with-input-from-string (stream string)
-	(read-resources database stream :key key :test test :test-not test-not)))))
+	(read-resources database stream
+			:key key :test test :test-not test-not)))))
 
 (defun set-wm-resources (database window &key write test test-not)
   ;; Sets the resources associated with the RESOURCE_MANAGER property
@@ -668,7 +677,8 @@
 		     (display-default-screen screen)
 		   screen))
 	 (window (screen-root screen)))
-    (set-wm-resources database window :write write :test test :test-not test-not)
+    (set-wm-resources database window
+		      :write write :test test :test-not test-not)
     database))
 
 (defsetf root-resources set-root-resources)
