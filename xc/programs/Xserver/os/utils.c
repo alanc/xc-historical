@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: utils.c,v 1.59 88/08/21 09:49:07 rws Exp $ */
+/* $Header: utils.c,v 1.59 88/08/21 09:52:05 rws Exp $ */
 #include <stdio.h>
 #include "Xos.h"
 #include "misc.h"
@@ -158,6 +158,7 @@ void UseMsg()
     ErrorF("-to #                  connection time out\n");
     ErrorF("v                      video blanking for screen-saver\n");
     ErrorF("-v                     screen-saver without video blanking\n");
+    ErrorF("-wm                    WhenMapped default backing-store\n");
     ErrorF("-wp<:screen> color     WhitePixel for screen\n");
     ddxUseMsg();
 }
