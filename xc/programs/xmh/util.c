@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: util.c,v 2.14 88/02/06 10:23:07 swick Exp $";
+static char rcs_id[] = "$Header: util.c,v 2.15 88/02/22 21:37:59 swick Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -133,8 +133,12 @@ FILEPTR FOpenAndCheck(name, mode)
 {
     FILEPTR result;
     result = myfopen(name, mode);
-    if (result == NULL)
-	Punt("Error in FOpenAndCheck");
+    if (result == NULL) {
+	char str[500];
+	perror(progName);
+	(void)sprintf(str, "Error in FOpenAndCheck(%s, %s)", name, mode);
+	Punt(str);
+    }
     return result;
 }
 
@@ -193,8 +197,12 @@ char *ReadLineWithCR(fid)
 DeleteFileAndCheck(name)
   char *name;
 {
-    if (strcmp(name, "/dev/null") != 0 && unlink(name) == -1)
-	Punt("DeleteFileAndCheck failed!");
+    if (strcmp(name, "/dev/null") != 0 && unlink(name) == -1) {
+	char str[500];
+	perror(progName);
+	(void)sprintf(str, "DeleteFileAndCheck(%s) failed!", name);
+	Punt(str);
+    }
 }
 
 CopyFileAndCheck(from, to)
@@ -204,7 +212,11 @@ CopyFileAndCheck(from, to)
     char buf[512];
     fromfid = myopen(from, O_RDONLY, 0666);
     tofid = myopen(to, O_WRONLY | O_TRUNC | O_CREAT, 0666);
-    if (fromfid < 0 || tofid < 0) Punt("CopyFileAndCheck failed!");
+    if (fromfid < 0 || tofid < 0) {
+	perror(progName);
+	(void)sprintf(buf, "CopyFileAndCheck(%s->%s) failed!", from, to);
+	Punt(buf);
+    }
     do {
 	n = read(fromfid, buf, 512);
 	if (n) (void) write(tofid, buf, n);
@@ -218,7 +230,12 @@ RenameAndCheck(from, to)
   char *from, *to;
 {
     if (rename(from, to) == -1) {
-	if (errno != EXDEV) Punt("RenameAndCheck failed!");
+	if (errno != EXDEV) {
+	    char str[500];
+	    perror(progName);
+	    (void)sprintf(str, "RenameAndCheck(%s->%s) failed!", from, to);
+	    Punt(str);
+	}
 	CopyFileAndCheck(from, to);
 	DeleteFileAndCheck(from);
     }
