@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: resize.c,v 1.22 91/05/06 17:12:14 gildea Exp $
+ *	$XConsortium: resize.c,v 1.23 91/05/10 16:57:35 gildea Exp $
  */
 
 /*
@@ -275,20 +275,17 @@ main (argc, argv)
 	}
 	tty = fileno(ttyfp);
 #ifdef USE_TERMCAP
-	if((env = getenv("TERMCAP")) && *env)
-		strcpy(termcap, env);
-	else {
-		if(!(env = getenv("TERM")) || !*env) {
-			env = "xterm";
-			if(SHELL_BOURNE == shell_type)
-				setname = "TERM=xterm;\nexport TERM;\n";
-			else	setname = "setenv TERM xterm;\n";
-		}
-		if(tgetent (termcap, env) <= 0) {
-			fprintf(stderr, "%s: Can't get entry \"%s\"\n",
-			 myname, env);
-			exit(1);
-		}
+	if(!(env = getenv("TERM")) || !*env) {
+	    env = "xterm";
+	    if(SHELL_BOURNE == shell_type)
+		setname = "TERM=xterm;\nexport TERM;\n";
+	    else
+		setname = "setenv TERM xterm;\n";
+	}
+	if(tgetent (termcap, env) <= 0) {
+	    fprintf(stderr, "%s: Can't get entry \"%s\"\n",
+		    myname, env);
+	    exit(1);
 	}
 #else /* else not USE_TERMCAP */
 	if(!(env = getenv("TERM")) || !*env) {
