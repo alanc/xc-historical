@@ -23,7 +23,7 @@
  * Author:  Keith Packard, Network Computing Devices
  */
 
- /* $XConsortium: init.c,v 1.3 94/02/10 20:08:49 dpw Exp $ */
+ /* $XConsortium: init.c,v 1.4 94/02/17 15:27:11 dpw Exp $ */
 
 /* Hook up to an X server and set up a multiplexing LBX encoded connection */
 
@@ -44,10 +44,14 @@ InitMux (dpy_name, requestp, eventp, errorp, sequencep)
     if (!dpy)
 	return -1;
     
-    if (!XLbxQueryExtension (dpy, requestp, eventp, errorp))
+    if (!XLbxQueryExtension (dpy, requestp, eventp, errorp)) {
+	ErrorF("X server doesn't have LBX extension\n");
 	return -1;
-    if (!XLbxQueryVersion (dpy, &lbxMajor, &lbxMinor))
+    }
+    if (!XLbxQueryVersion (dpy, &lbxMajor, &lbxMinor)) {
+	ErrorF("LBX extension query failed\n");
 	return -1;
+    }
     /* yuck.  Guess at the request number; 1 XFreeGC per screen and 1 XSync */
 #if R5Xlib
     /*  XXX This works for R5 Xlib.  The else block works for R6 Xlib.
