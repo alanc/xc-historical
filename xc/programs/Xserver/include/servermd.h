@@ -23,7 +23,7 @@ SOFTWARE.
 ******************************************************************/
 #ifndef SERVERMD_H
 #define SERVERMD_H 1
-/* $Header: servermd.h,v 1.21 87/08/31 12:17:17 toddb Locked $ */
+/* $Header: servermd.h,v 1.22 87/09/07 18:53:24 toddb Locked $ */
 
 /*
  * The vendor string identifies the vendor responsible for the
@@ -75,7 +75,7 @@ SOFTWARE.
 
 #define IMAGE_BYTE_ORDER	MSBFirst        /* Values for the Apollo only*/
 #define BITMAP_BIT_ORDER	MSBFirst
-#define	GLYPHPADBYTES		1
+#define	GLYPHPADBYTES		2
 
 #  else
 #   ifdef ibm032
