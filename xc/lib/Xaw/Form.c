@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Form.c,v 1.1 87/09/11 07:58:23 toddb Exp $";
+static char rcsid[] = "$Header: Form.c,v 1.2 87/12/22 08:51:49 swick Locked $";
 #endif lint
 /*
  * Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
@@ -44,7 +44,7 @@ static XtResource resources[] = {
 static XtEdgeType defEdge = XtRubber;
 
 #define Offset(field) XtOffset(FormConstraints, field)
-static XtResource constraint_resources[] = {
+XtResource formConstraintResources[] = {
     {XtNtop, XtCEdge, XtRJustify, sizeof(XtEdgeType),
 	Offset(top), XtRJustify, (caddr_t)&defEdge},
     {XtNbottom, XtCEdge, XtRJustify, sizeof(XtEdgeType),
@@ -65,6 +65,8 @@ static XtResource constraint_resources[] = {
 	Offset(allow_resize), XrmRString, "FALSE"},
 };
 #undef Offset
+
+Cardinal formConstraintResourceCount = XtNumber(formConstraintResources);
 
 
 static void Initialize(), Resize();
@@ -107,8 +109,8 @@ FormClassRec formClassRec = {
     /* move_focus_to_prev */   NULL
   },
   { /* constraint_class fields */
-    /* subresourses       */   constraint_resources,
-    /* subresource_count  */   XtNumber(constraint_resources),
+    /* subresourses       */   formConstraintResources,
+    /* subresource_count  */   XtNumber(formConstraintResources),
     /* constraint_size    */   sizeof(FormConstraintsRec),
     /* initialize         */   ConstraintInitialize,
     /* destroy            */   NULL,
@@ -128,6 +130,7 @@ WidgetClass formWidgetClass = (WidgetClass)&formClassRec;
  ****************************************************************/
 
 
+/* ARGSUSED */
 static void Initialize(request, new, args, num_args)
     Widget request, new;
     ArgList args;
@@ -230,13 +233,13 @@ static void Resize(w)
 				    + (*childP)->core.width
 				    + (*childP)->core.border_width),
 			 fw->form.old_width, fw->core.width,
-			 form->right ) - x;
+			 form->right ) - x - (*childP)->core.border_width;
 	height =
 	  TransformCoord((Position)((*childP)->core.y
 				    + (*childP)->core.height
 				    + (*childP)->core.border_width),
 			 fw->form.old_height, fw->core.height,
-			 form->bottom ) - y;
+			 form->bottom ) - y - (*childP)->core.border_width;
 	if (width < 1) width = 1;
 	if (height < 1) height = 1;
 	XtMoveWidget( (*childP), x, y );
@@ -290,6 +293,7 @@ static Boolean SetValues(current, request, new, last)
 }
 
 
+/* ARGSUSED */
 static void ConstraintInitialize(request, new, args, num_args)
     Widget request, new;
     ArgList args;
