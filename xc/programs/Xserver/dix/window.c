@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: window.c,v 5.54 90/06/26 10:22:59 keith Exp $ */
+/* $XConsortium: window.c,v 5.55 90/08/30 16:41:49 rws Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -1232,7 +1232,7 @@ ChangeWindowAttributes(pWin, vmask, vlist, client)
 	    }
 	    else if (pixID == ParentRelative)
 	    {
-		if (!pWin->parent ||
+		if (pWin->parent &&
 		    pWin->drawable.depth != pWin->parent->drawable.depth)
 		{
 		    error = BadMatch;
@@ -1240,7 +1240,10 @@ ChangeWindowAttributes(pWin, vmask, vlist, client)
 		}
 		if (pWin->backgroundState == BackgroundPixmap)
 		    (* pScreen->DestroyPixmap)(pWin->background.pixmap);
-	        pWin->backgroundState = ParentRelative;
+		if (!pWin->parent)
+		    MakeRootTile(pWin);
+		else
+	            pWin->backgroundState = ParentRelative;
 		/* Note that the parent's backgroundTile's refcnt is NOT
 		 * incremented. */
 	    }
