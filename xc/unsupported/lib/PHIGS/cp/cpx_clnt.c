@@ -1,4 +1,4 @@
-/* $XConsortium: cpx_clnt.c,v 5.7 91/07/15 18:19:50 hersh Exp $ */
+/* $XConsortium: cpx_clnt.c,v 5.8 92/01/26 15:58:13 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -25,6 +25,8 @@ SOFTWARE.
 ******************************************************************/
 
 /* CPX code that is used only in the client process. */
+
+#define NEED_EVENTS
 
 #include <X11/Xlibint.h>
 #include "phg.h"

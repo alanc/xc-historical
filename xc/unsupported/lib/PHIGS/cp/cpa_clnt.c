@@ -1,4 +1,4 @@
-/* $XConsortium: cpa_clnt.c,v 5.2 91/04/04 21:05:51 hersh Exp $ */
+/* $XConsortium: cpa_clnt.c,v 5.3 92/01/26 15:58:52 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -23,6 +23,8 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
+
+#define NEED_EVENTS
 
 #include <sys/types.h>
 #include <sys/stat.h>
