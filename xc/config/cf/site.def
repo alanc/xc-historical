@@ -1,4 +1,4 @@
-XCOMM site:  $XConsortium: site.def,v 1.135 94/09/01 14:05:58 matt Exp matt $
+XCOMM site:  $XConsortium: site.def,v 1.136 94/09/19 18:08:55 matt Exp matt $
 
 /***************************************************************************
  *                                                                         *
@@ -108,7 +108,6 @@ XCOMM site:  $XConsortium: site.def,v 1.135 94/09/01 14:05:58 matt Exp matt $
 #endif /* HPArchitecture */
 
 
-
 #if defined(BSD386Architecture) || defined(SVR4Architecture)
 #ifndef XF86SVGAServer
 #define XF86SVGAServer NO
@@ -155,11 +154,6 @@ XCOMM site:  $XConsortium: site.def,v 1.135 94/09/01 14:05:58 matt Exp matt $
 #endif
 #endif
 
-#if HasGcc2ForCplusplus
-#ifdef AlphaArchitecture
-#define CplusplusLibC /usr/local/lib/gcc-lib/alpha-dec-osf3.0/2.6.0/libgcc.a
-#endif
-#endif
 
 #ifdef SGIArchitecture
 /* this is to disable dynamic loading without changing ddx Imakefiles */
