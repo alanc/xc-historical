@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Command.c,v 1.45 88/10/19 09:39:35 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Command.c,v 1.46 88/11/01 16:57:33 swick Exp $";
 #endif lint
 
 /***********************************************************
@@ -79,6 +79,19 @@ static XtActionsRec actionsList[] =
   {"unset",		Unset},
   {"unhighlight",	Unhighlight},
 };
+
+/*
+ * This is a temporary exported actions list for the command
+ * widget I have added this code because there is a bug in the MIT
+ * Xtk Intrinsics implementation that does not allow the action table
+ * to be retreived from the widget class, Ralph Swick has promised me that
+ * this will eventually be fixed, but until then this is how the toggle
+ * widget will get the command widget's actions list.
+ *
+ * Chris D. Peterson - 12/28/88.
+ */
+
+XtActionList xt_command_actions_list = actionsList;
 
 #define SuperClass ((LabelWidgetClass)&labelClassRec)
 
@@ -164,7 +177,7 @@ static void Initialize(request, new)
     ComWlabelGC = ComWnormalGC;
 
     ComWset = FALSE;
-    ComWhighlighted = FALSE;
+    ComWhighlighted = HighlightNone;
 }
 
 static Region HighlightRegion(cbw)
@@ -239,7 +252,7 @@ static void Reset(w,event,params,num_params)
 {
   CommandWidget cbw = (CommandWidget)w;
   if (ComWset) {
-      ComWhighlighted = FALSE;
+      ComWhighlighted = HighlightNone;
       Unset(w,event,params,num_params);
   }
   else {
@@ -251,14 +264,27 @@ static void Reset(w,event,params,num_params)
 static void Highlight(w,event,params,num_params)
      Widget w;
      XEvent *event;
-     String *params;		/* unused */
-     Cardinal *num_params;	/* unused */
+     String *params;		
+     Cardinal *num_params;	
 {
   CommandWidget cbw = (CommandWidget)w;
-  if (!ComWhighlighted) {
-      ComWhighlighted = TRUE;
-      Redisplay(w, event, HighlightRegion(cbw));
+  if ( *num_params == (Cardinal) 0) 
+    ComWhighlighted = HighlightWhenUnset;
+  else {
+    if ( *num_params != (Cardinal) 1) 
+      XtWarning("Too many parameters passed to highlight action table.");
+    switch (params[0][0]) {
+    case 'A':
+    case 'a':
+      ComWhighlighted = HighlightAlways;
+      break;
+    default:
+      ComWhighlighted = HighlightWhenUnset;
+      break;
+    }
   }
+
+  Redisplay(w, event, HighlightRegion(cbw));
 }
 
 /* ARGSUSED */
@@ -269,10 +295,8 @@ static void Unhighlight(w,event,params,num_params)
      Cardinal *num_params;	/* unused */
 {
   CommandWidget cbw = (CommandWidget)w;
-  if (ComWhighlighted) {
-      ComWhighlighted = FALSE;
-      Redisplay(w, event, HighlightRegion(cbw));
-  }
+  ComWhighlighted = HighlightNone;
+  Redisplay(w, event, HighlightRegion(cbw));
 }
 
 /* ARGSUSED */
@@ -282,9 +306,9 @@ static void Notify(w,event,params,num_params)
      String *params;		/* unused */
      Cardinal *num_params;	/* unused */
 {
-  CommandWidget cbw = (CommandWidget)w;
-  if (ComWset)
-      XtCallCallbacks(w, XtNcallback, NULL);
+  CommandWidget cbw = (CommandWidget)w; 
+  if (ComWset)              /*  Why is this code here??? */
+    XtCallCallbacks(w, XtNcallback, NULL);
 }
 /*
  * Repaint the widget window
@@ -304,27 +328,61 @@ static void Redisplay(w, event, region)
 {
    CommandWidget cbw = (CommandWidget) w;
    Boolean very_thick = ComWhighlightThickness > Min(ComWwidth,ComWheight)/2;
+   GC norm_gc, rev_gc;
 
-   if (ComWset)
-       XFillRectangle(XtDisplay(w), XtWindow(w), ComWnormalGC,
-		      0, 0, ComWwidth, ComWheight);
+/* 
+ * This should probabally be more sophisticated, but it works. 
+ *
+ * Current behavior causesd the command widget to be less efficient when
+ * set.
+ */
+   
+   if (ComWset) {
+     XFillRectangle(XtDisplay(w), XtWindow(w), ComWnormalGC,
+		    0, 0, ComWwidth, ComWheight);
+     region = NULL;
+   }
 
-   if (!ComWset && ComWhighlightThickness > 0) {
-       if (very_thick) {
-	   ComWlabelGC = ComWhighlighted ? ComWinverseGC : ComWnormalGC;
-	   XFillRectangle(XtDisplay(w),XtWindow(w), 
-			  (ComWhighlighted ? ComWnormalGC : ComWinverseGC),
-			  0,0,ComWwidth,ComWheight);
+   if (ComWhighlightThickness > 0) {
+     switch (ComWhighlighted) {
+     case HighlightNone:
+       if (ComWset) {
+	 norm_gc = ComWinverseGC;
+	 rev_gc = ComWnormalGC;
        }
        else {
-	   /* wide lines are centered on the path, so indent it */
-	   int offset = ComWhighlightThickness/2;
-	   XDrawRectangle(XtDisplay(w),XtWindow(w),
-			  (ComWhighlighted ? ComWnormalGC : ComWinverseGC),
-			  offset, offset,
-			  ComWwidth - ComWhighlightThickness,
-			  ComWheight - ComWhighlightThickness);
+	 norm_gc = ComWnormalGC;
+	 rev_gc = ComWinverseGC;
        }
+       break;
+     case HighlightWhenUnset:
+     case HighlightAlways:
+       if (ComWset) {
+	 norm_gc = ComWnormalGC;
+	 rev_gc = ComWinverseGC;
+       }
+       else {
+	 norm_gc = ComWinverseGC;
+	 rev_gc = ComWnormalGC;
+       }
+       break;
+     default:
+       XtError("Unknown Highlight state in Command Widget Redisplay.\n");
+     }
+     if ( !((ComWhighlighted == HighlightWhenUnset) && ComWset) ) {
+       if (very_thick) {
+	 ComWlabelGC = norm_gc;
+	 XFillRectangle(XtDisplay(w),XtWindow(w), rev_gc,
+			0, 0, ComWwidth, ComWheight);
+       }
+       else {
+	 /* wide lines are centered on the path, so indent it */
+	 int offset = ComWhighlightThickness/2;
+	 XDrawRectangle(XtDisplay(w),XtWindow(w), rev_gc, offset,
+			offset, ComWwidth - ComWhighlightThickness,
+			ComWheight - ComWhighlightThickness);
+       }
+     }
    }
 
    (*SuperClass->core_class.expose) (w, event, region);
@@ -355,7 +413,7 @@ static Boolean SetValues (current, request, new)
     if (XtCField(oldcbw,sensitive) != ComWsensitive && !ComWsensitive) {
 	/* about to become insensitive */
 	ComWset = FALSE;
-	ComWhighlighted = FALSE;
+	ComWhighlighted = HighlightNone;
     }
 
     if (XtLField(oldcbw,foreground) != ComWforeground ||

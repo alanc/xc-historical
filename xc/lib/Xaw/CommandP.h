@@ -1,5 +1,5 @@
 /*
-* $XConsortium: CommandP.h,v 1.20 88/09/26 18:03:16 swick Exp $
+* $XConsortium: CommandP.h,v 1.21 88/09/27 11:19:53 swick Exp $
 */
 
 
@@ -43,6 +43,15 @@ SOFTWARE.
  * Command Widget Private Data
  *
  ***********************************************************************/
+
+typedef enum {
+  HighlightNone,		/* Do not highlight. */
+  HighlightWhenUnset,		/* Highlight only when unset, this is
+				   to preserve current command widget 
+				   functionality. */
+  HighlightAlways,		/* Always highlight, lets the toggle widget
+				   and other subclasses do the right thing. */
+} XtCommandHighlight;
 
 /************************************
  *
