@@ -1,4 +1,4 @@
-/* $XConsortium: Initialize.c,v 1.214 94/01/18 21:21:58 converse Exp $ */
+/* $XConsortium: Initialize.c,v 1.215 94/01/20 18:26:00 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -968,51 +968,6 @@ ArgList args_in;
     XtFree((XtPointer)merged_args);
     XtFree((XtPointer)argv_in_out);
     UNLOCK_APP(app_con);
-    return root;
-}
-
-Widget XtSessionInitialize(
-#if NeedFunctionPrototypes
-    XtAppContext *	app_context_return,
-    _Xconst char *	application_class,
-    String		session_name,
-    WidgetClass		session_class,
-    XrmOptionDescRec *	options,
-    Cardinal		num_options,
-    int *		argc_in_out,
-    String *		argv_in_out,
-    String *		fallback_resources,
-    ArgList		args_in,
-    Cardinal		num_args_in
-)
-#else
-    app_context_return, application_class, session_name, session_class,
-    options, num_options, argc_in_out, argv_in_out, fallback_resources,
-    args_in, num_args_in)
-    XtAppContext * app_context_return;
-    String application_class;
-    String session_name;
-    WidgetClass session_class;
-    XrmOptionDescRec *options;
-    Cardinal num_options, num_args_in;
-    int *argc_in_out;
-    String *argv_in_out, * fallback_resources;     
-    ArgList args_in;
-#endif
-{
-    Widget	root;
-    Widget	session;
-    Arg		args[1];
-    
-    root = XtAppInitialize(app_context_return, application_class,
-			   options, num_options, argc_in_out, argv_in_out,
-			   fallback_resources, args_in, num_args_in);
-    if (session_class) {
-	session = XtCreateWidget(session_name ? session_name : "session",
-				 session_class, root, NULL, 0);
-	XtSetArg(args[0], XtNsession, session);
-	XtSetValues(root, args, (Cardinal) 1);
-    }
     return root;
 }
 
