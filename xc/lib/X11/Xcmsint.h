@@ -1,4 +1,4 @@
-/* $XConsortium: Xcmsint.h,v 1.7 91/02/17 15:41:29 rws Exp $ */
+/* $XConsortium: Xcmsint.h,v 1.9 91/05/13 21:44:45 rws Exp $ */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -46,9 +46,6 @@
 	 * Device Color Name Database related defines
 	 */
 #define	XCMS_DBFILEPATH_ENV_VAR		"XCMS_DBFILEPATH"
-#define	XCMS_COLORNAMEDB_TYPE		"colordb"
-#define	XCMS_COLORNAMEDB_FILENAME	"Xcms"
-#define	XCMS_COLORNAMEDB_SUFFIX		".txt"
 
 	/*
 	 * Color Space ID's are of XcmsColorFormat type, which is an
