@@ -37,7 +37,7 @@
  */
 
 #ifndef lint
-static char *rcsid_xwd_c = "$Header: xwd.c,v 1.13 87/06/16 06:44:44 chariot Locked $";
+static char *rcsid_xwd_c = "$Header: xwd.c,v 1.14 87/06/16 07:28:27 chariot Locked $";
 #endif
 
 /*%
@@ -51,26 +51,9 @@ static char *rcsid_xwd_c = "$Header: xwd.c,v 1.13 87/06/16 06:44:44 chariot Lock
 #include <stdio.h>
 #include <strings.h>
 
-char *calloc();
-
-#include "XWDFile.h"
-
-#define UBPS (sizeof(short)/2) /* useful bytes per short */
-#define BitmapSize(width, height) (((((width) + 15) >> 3) &~ 1) * (height) * UBPS)
-#define XYPixmapSize(width, height, planes) (BitmapSize(width, height) * (planes))
-
-/*%
-#define BZPixmapSize(width, height) ((width) * (height))
-#define WZPixmapSize(width, height) (((width) * (height)) << 1)
-%*/
-
 #define FAILURE 0
 
 #define FEEP_VOLUME 0
-
-#define DONT_KNOW_YET 17
-
-extern int errno;
 
 /* Include routines to do parsing */
 #include "jdisplay.h"
@@ -147,6 +130,21 @@ main(argc, argv)
  * Window_Dump: dump a window to a file which must already be open for
  *              writting.
  */
+
+char *calloc();
+
+#include "XWDFile.h"
+
+#define UBPS (sizeof(short)/2) /* useful bytes per short */
+#define BitmapSize(width, height) (((((width) + 15) >> 3) &~ 1) * (height) * UBPS)
+#define XYPixmapSize(width, height, planes) (BitmapSize(width, height) * (planes))
+/*%
+#define BZPixmapSize(width, height) ((width) * (height))
+#define WZPixmapSize(width, height) (((width) * (height)) << 1)
+%*/
+
+#define DONT_KNOW_YET 17
+
 Window_Dump(window, out)
      Window window;
      FILE *out;
@@ -250,9 +248,9 @@ Window_Dump(window, out)
      */
     plane_mask = 1;
 
-/*    XGetImage() calls XCreateImage() internally, and this, in turn
- *  does the memory allocation so we don't have to.
- */
+    /*    XGetImage() calls XCreateImage() internally, and this, in turn
+     *  does the memory allocation so we don't have to.
+     */
 
     image = XGetImage ( dpy, window, 0, 0, virt_width,
 		       virt_height, plane_mask, format);
@@ -427,6 +425,8 @@ usage()
 /*
  * Error - Fatal xwd error.
  */
+extern int errno;
+
 Error(string)
 	char *string;	/* Error description string. */
 {
@@ -438,5 +438,3 @@ Error(string)
 
 	exit(1);
 }
-
-/* End of xwd.c */
