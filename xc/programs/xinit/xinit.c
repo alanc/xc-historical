@@ -1,5 +1,5 @@
 #ifndef lint
-static char *rcsid_xinit_c = "$XConsortium: xinit.c,v 11.34 89/04/06 13:38:10 keith Exp $";
+static char *rcsid_xinit_c = "$XConsortium: xinit.c,v 11.35 89/05/30 18:40:18 rws Exp $";
 #endif /* lint */
 #include <X11/copyright.h>
 
@@ -177,7 +177,7 @@ register char **argv;
 	 * copy the client args.
 	 */
 	if (argc == 0 ||
-	    (**argv != '/' && **argv != '.' && !isalpha(**argv))) {
+	    (**argv != '/' && **argv != '.')) {
 		for (ptr = default_client; *ptr; )
 			*cptr++ = *ptr++;
 		strcpy(client_display, displayname);
@@ -211,7 +211,7 @@ register char **argv;
 	 * Copy the server args.
 	 */
 	if (argc == 0 ||
-	    (**argv != '/' && **argv != '.' && !isalpha(**argv))) {
+	    (**argv != '/' && **argv != '.')) {
 		*sptr++ = default_server;
 	} else {
 		server_given = 1;
