@@ -168,13 +168,22 @@ character metric information.
 .bp
 \&
 .sp 30
-.ce
-Figure 1
+.ce 5
+BBw = 9, BBh = 22, BBox = -2, BBoy = -6
+DWIDTH = 8 0
+SWIDTH] = 355 0
+``+'' = character origin and width
+
+Figure 1: An example of a descender
 .bp
 \&
 .sp 30
-.ce
-Figure 2
+.ce 4
+BBh = 6, BBw = 4, BBox = +2, BBoy = +12
+DWIDTH = 5 0
+SWIDTH = 223 0
+
+Figure 2: An example with the origin outside the bounding box
 .bp
 .SH
 An Example File
