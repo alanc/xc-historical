@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xrm.c,v 1.85 94/01/15 10:09:06 gildea Exp $
+ * $XConsortium: Xrm.c,v 1.86 94/01/17 11:21:42 kaleb Exp $
  */
 
 /***********************************************************
@@ -36,6 +36,7 @@ SOFTWARE.
 #include	"locking.h"
 #endif
 #include 	"XrmI.h"
+#include	<X11/Xos.h>
 
 #if __STDC__
 #define Const const
@@ -1938,7 +1939,7 @@ static Bool DumpEntry(db, bindings, quarks, type, value, data)
 	    i--;
     }
     else
-	fprintf(stream, "=%s:\t", XrmRepresentationToString(*type));
+	(void) fprintf(stream, "=%s:\t", XrmRepresentationToString(*type));
     if (i && (*s == ' ' || *s == '\t'))
 	(void) putc('\\', stream); /* preserve leading whitespace */
     while (i--) {
@@ -1957,7 +1958,7 @@ static Bool DumpEntry(db, bindings, quarks, type, value, data)
 	    (void) putc(c, stream);
     }
     (void) putc('\n', stream);
-    return False;
+    return ferror(stream) != 0;
 }
 
 #ifdef DEBUG
@@ -2000,8 +2001,9 @@ void XrmPutFileDatabase(db, fileName)
 
     if (!db) return;
     if (!(file = fopen(fileName, "w"))) return;
-    (void)XrmEnumerateDatabase(db, &empty, &empty, XrmEnumAllLevels,
-			       DumpEntry, (XPointer) file);
+    if (XrmEnumerateDatabase(db, &empty, &empty, XrmEnumAllLevels,
+			     DumpEntry, (XPointer) file))
+	unlink((char *)fileName);
     fclose(file);
 }
 
