@@ -1,4 +1,4 @@
-/* "$XConsortium: TMstate.c,v 1.109 90/07/12 17:53:36 swick Exp $"; */
+/* "$XConsortium: TMstate.c,v 1.110 90/07/15 21:17:38 swick Exp $"; */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -2067,6 +2067,7 @@ void _XtFreeTranslations(app, toVal, closure, args, num_args)
 		XtFree( action->params[--i] );
 	    }
 	    XtFree( (char*)action->params );
+	    XtFree( (char*)action );
 	    action = nextAction;
 	}
 	XtFree( (char*)state );
