@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header$";
+static char rcsid[] = "$Header: XGetDflt.c,v 1.5 88/02/03 23:53:56 swick Exp $";
 #endif lint
 
 /*
@@ -27,7 +27,7 @@ static char rcsid[] = "$Header$";
 
 #include <stdio.h>
 #include <ctype.h>
-#include <X/Xos.h>
+#include <X11/Xos.h>
 #include "Xlibint.h"
 #include <Xresource.h>
 

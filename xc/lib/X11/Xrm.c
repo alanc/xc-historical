@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: ParseCmd.c,v 1.5 88/01/29 10:43:37 swick Exp $";
+static char rcsid[] = "$Header: Xrm.c,v 1.6 88/02/03 19:48:30 swick Exp $";
 #endif lint
 
 /*
@@ -25,9 +25,9 @@ static char rcsid[] = "$Header: ParseCmd.c,v 1.5 88/01/29 10:43:37 swick Exp $";
  * SOFTWARE.
  */
 
-#include	<X/Xlib.h>
+#include	<X11/Xlib.h>
 #include	"Xlibint.h"
-#include	<X/Xresource.h>
+#include	<X11/Xresource.h>
 #include	<stdio.h>
 #include	<ctype.h>
 
