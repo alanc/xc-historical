@@ -1,4 +1,4 @@
-/* $XConsortium: xsm.c,v 1.59 94/07/28 13:26:04 mor Exp mor $ */
+/* $XConsortium: xsm.c,v 1.60 94/08/10 15:32:51 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -737,25 +737,6 @@ ClientRec *client;
 
 
 
-void
-AddDeadClient (client)
-
-ClientRec *client;
-
-{
-    List *cl;
-
-    for (cl = ListFirst (dead_clients); cl; cl = ListNext (cl))
-    {
-	if (strcmp ((char *) cl->thing, client->clientId) == 0)
-	    return;
-    }
-
-    ListAddLast (dead_clients, XtNewString (client->clientId));
-}
-
-
-
 /*
  * Session Manager callbacks
  */
@@ -853,7 +834,9 @@ char 		*previousId;
 			False);
     } else if (client_info_visible) {
 	/* We already have all required client info */
+
 	UpdateClientList ();
+	XawListHighlight (clientListWidget, current_client_selected);
     }
 
     return (1);
@@ -993,30 +976,16 @@ SaveYourselfDoneProc (smsConn, managerData, success)
 
 
 
-void
-CloseConnectionProc (smsConn, managerData, count, reasonMsgs)
-    SmsConn 	smsConn;
-    SmPointer  	managerData;
-    int		count;
-    char 	**reasonMsgs;
+static void
+CloseDownClient (client)
+
+ClientRec *client;
 
 {
-    ClientRec	*client = (ClientRec *) managerData;
     ClientRec 	*next = client->next;
     ClientRec	*ptr;
-    int i;
-
-    if (verbose) {
-	printf("Client Id = %s, received CONNECTION CLOSED\n",
-	       client->clientId);
-
-	for (i = 0; i < count; i++)
-	    printf ("   Reason string %d: %s\n", i + 1, reasonMsgs[i]);
-	printf ("\n");
-    }
-
-    SmFreeReasons (count, reasonMsgs);
-    SmsCleanUp (smsConn);
+    List	*cl;
+    int		index_deleted, i;
 
     if (verbose) {
 	printf ("ICE Connection closed, IceConn fd = %d\n",
@@ -1024,6 +993,7 @@ CloseConnectionProc (smsConn, managerData, count, reasonMsgs)
 	printf ("\n");
     }
 
+    SmsCleanUp (client->smsConn);
     IceSetShutdownNegotiation (client->ice_conn, False);
     IceCloseConnection (client->ice_conn);
 
@@ -1031,11 +1001,21 @@ CloseConnectionProc (smsConn, managerData, count, reasonMsgs)
     client->smsConn = NULL;
     client->running = False;
 
-    AddDeadClient (client);
+    ListAddLast (dead_clients, XtNewString (client->clientId));
 
     if (client->restartHint == SmRestartImmediately && !shutdownInProgress)
     {
 	Clone (client, True /* use saved state */);
+    }
+
+    if (!shutdownInProgress && client_info_visible)
+    {
+	for (index_deleted = 0;
+	    index_deleted < numClientListNames; index_deleted++)
+	{
+	    if (clientListRecs[index_deleted] == client)
+		break;
+	}
     }
 
     if (client->restartHint != SmRestartAnyway || shutdownInProgress)
@@ -1067,7 +1047,62 @@ CloseConnectionProc (smsConn, managerData, count, reasonMsgs)
 	    EndSession ();
     }
     else if (client_info_visible)
+    {
 	UpdateClientList ();
+
+	if (current_client_selected == index_deleted)
+	{
+	    if (current_client_selected == numClients)
+		current_client_selected--;
+
+	    if (current_client_selected >= 0)
+	    {
+		XawListHighlight (clientListWidget, current_client_selected);
+		ShowHint (clientListRecs[current_client_selected]);
+		if (client_prop_visible)
+		{
+		    DisplayProps (clientListRecs[current_client_selected],
+			clientListNames[current_client_selected]);
+		}
+	    }
+	}
+	else
+	{
+	    if (index_deleted < current_client_selected)
+		current_client_selected--;
+	    XawListHighlight (clientListWidget, current_client_selected);
+	}
+    }
+}
+
+
+
+
+void
+CloseConnectionProc (smsConn, managerData, count, reasonMsgs)
+    SmsConn 	smsConn;
+    SmPointer  	managerData;
+    int		count;
+    char 	**reasonMsgs;
+
+{
+    ClientRec	*client = (ClientRec *) managerData;
+
+    if (verbose)
+    {
+	int i;
+
+	printf ("Client Id = %s, received CONNECTION CLOSED\n",
+	    client->clientId);
+
+	for (i = 0; i < count; i++)
+	    printf ("   Reason string %d: %s\n", i + 1, reasonMsgs[i]);
+	printf ("\n");
+    }
+
+    SmFreeReasons (count, reasonMsgs);
+
+    CloseDownClient (client);
 }
 
 
@@ -1082,14 +1117,14 @@ SmProp 		**props;
 
 {
     ClientRec	*client = (ClientRec *) managerData;
-    int		update, i;
+    int		updateList, i;
 
     if (verbose) {
 	printf ("Client Id = %s, received SET PROPERTIES ", client->clientId);
 	printf ("[Num props = %d]\n", numProps);
     }
 
-    update = client->numProps == 0 && numProps > 0 && client_info_visible;
+    updateList = client->numProps == 0 && numProps > 0 && client_info_visible;
 
     for (i = 0; i < numProps; i++) {
 	if(verbose)
@@ -1098,8 +1133,20 @@ SmProp 		**props;
     }
     free ((char *) props);
 
-    if (update)
+    if (updateList)
+    {
+	/*
+	 * We have enough info from the client to display it in our list.
+	 */
+
 	UpdateClientList ();
+	XawListHighlight (clientListWidget, current_client_selected);
+    }
+    else if (client_prop_visible && clientListRecs &&
+	clientListRecs[current_client_selected] == client)
+    {
+	DisplayProps (client, clientListNames[current_client_selected]);
+    }
 }
 
 
@@ -1174,6 +1221,8 @@ char 		**failureReasonRet;
 
 {
     ClientRec *newClient = (ClientRec *) malloc (sizeof (ClientRec));
+    ClientRec *ptr, *prev;
+
     *maskRet = 0;
 
     if (!newClient)
@@ -1199,9 +1248,22 @@ char 		**failureReasonRet;
     newClient->saveDiscardCommand = NULL;
     newClient->running = True;
     newClient->restartHint = SmRestartIfRunning;
-    newClient->next = ClientList;
+    newClient->next = NULL;
 
-    ClientList = newClient;
+    ptr = ClientList;
+    prev = NULL;
+	
+    while (ptr)
+    {
+	prev = ptr;
+	ptr = ptr->next;
+    }
+
+    if (prev)
+	prev->next = newClient;
+    else
+	ClientList = newClient;
+
     numClients++;
 
     if (verbose) {
@@ -1323,7 +1385,7 @@ Bool on;
     XtSetSensitive (clientPropPopup, on);
 
     if (on)
-	XawListHighlight (clientListWidget, 0);
+	XawListHighlight (clientListWidget, current_client_selected);
 }
 
 
@@ -1351,65 +1413,26 @@ IceConn 	ice_conn;
     }
     else
     {
-	ClientRec *ptr = ClientList;
-	ClientRec *prev = NULL;
+	ClientRec *client = ClientList;
 	
-	while (ptr && ptr->ice_conn != ice_conn)
-	{
-	    prev = ptr;
-	    ptr = ptr->next;
-	}
+	while (client && client->ice_conn != ice_conn)
+	    client = client->next;
 
-	if (!ptr)
+	if (!client)
 	{
-	    fprintf (stderr, "Internal error; couldn't find ice_conn\n");
+	    fprintf (stderr,
+	"Internal error found in IO error handler - couldn't find ice_conn\n");
 	    exit (1);
 	}
-	else
+
+	if (verbose)
 	{
-	    if (verbose)
-	    {
-		printf ("ICE Connection terminated (fd = %d)\n",
-			IceConnectionNumber (ice_conn));
-		printf ("\n");
-	    }
-
-	    IceSetShutdownNegotiation (ice_conn, False);
-	    IceCloseConnection (ice_conn);
-	    SmsCleanUp (ptr->smsConn);
-
-	    ptr->ice_conn = NULL;
-	    ptr->smsConn = NULL;
-	    ptr->running = False;
-
-	    AddDeadClient (ptr);
-
-	    if (ptr->restartHint == SmRestartImmediately &&
-		!shutdownInProgress)
-	    {
-		Clone (ptr, True /* use saved state */);
-	    }
-
-	    if (ptr->restartHint != SmRestartAnyway || shutdownInProgress)
-	    {
-		if (prev == NULL)
-		    ClientList = ptr->next;
-		else
-		    prev->next = ptr->next;
-
-		FreeClientInfo (ptr);
-	    }
-
-	    numClients--;
-
-	    if (shutdownInProgress)
-	    {
-		if (numClients == 0)
-		    EndSession ();
-	    }
-	    else if (client_info_visible)
-		UpdateClientList ();
+	    printf ("IO error on connection (fd = %d)\n",
+		IceConnectionNumber (ice_conn));
+	    printf ("\n");
 	}
+
+	CloseDownClient (client);
     }
 
 
