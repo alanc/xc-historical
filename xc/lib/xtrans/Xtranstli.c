@@ -108,7 +108,7 @@ if( (ciptr->addr=(char *)malloc(netbuf.len)) == NULL )
         return -1;
         }
 
-ciptr->family=sockname.family;
+ciptr->family=((struct sockaddr *) &sockname)->sa_family;
 ciptr->addrlen=netbuf.len;
 memcpy(ciptr->addr,&sockname,ciptr->addrlen);
 
@@ -140,7 +140,7 @@ if( t_getname(ciptr->fd,&netbuf,REMOTENAME) < 0 )
 	}
 
 PRMSG(4,"TRANS(TLIGetPeerAddr): got family %d len %d\n",
-				sockname.family ,netbuf.len, 0 );
+		((struct sockaddr *) &sockname)->sa_family ,netbuf.len, 0 );
 
 /*
  * Everything looks good: fill in the XtransConnInfo structure.
