@@ -23,7 +23,7 @@ SOFTWARE.
 ******************************************************************/
 #ifndef SERVERMD_H
 #define SERVERMD_H 1
-/* $Header: servermd.h,v 1.33 88/07/12 16:24:45 toddb Exp $ */
+/* $Header: servermd.h,v 1.35 88/07/20 11:45:40 xguest Locked $ */
 
 /*
  * The vendor string identifies the vendor responsible for the
@@ -120,13 +120,22 @@ SOFTWARE.
 #define	GETLEFTBITS_ALIGNMENT	4
 
 #    else
-#     if defined(M4315) || defined(M4317) ||f defined(M4319) || defined(M4330)
+#     if defined(M4315) || defined(M4317) || defined(M4319) || defined(M4330)
 
 #define IMAGE_BYTE_ORDER	MSBFirst        /* Values for Pegasus only */
 #define BITMAP_BIT_ORDER	MSBFirst
 #define GLYPHPADBYTES		1
 #define GETLEFTBITS_ALIGNMENT	4
 
+#      else
+#      ifdef macII
+
+#define IMAGE_BYTE_ORDER      	MSBFirst        /* Values for the MacII only */
+#define BITMAP_BIT_ORDER      	MSBFirst
+#define GLYPHPADBYTES         	4
+#define GETLEFTBITS_ALIGNMENT 	1
+
+#      endif
 #     endif
 #    endif
 #   endif
