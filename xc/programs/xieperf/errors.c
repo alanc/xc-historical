@@ -1,4 +1,4 @@
-/* $XConsortium: errors.c,v 1.1 93/10/26 10:08:30 rws Exp $ */
+/* $XConsortium: errors.c,v 1.2 93/10/27 21:52:08 rws Exp $ */
 /**** module errors.c ****/
 /******************************************************************************
 				NOTICE
@@ -129,11 +129,7 @@ static void
 ErrorEventPrintError (display, error, fp)
 Display		*display;
 XErrorEvent	*error;
-#if NeedFunctionPrototypes
-void		*fp;
-#else
 FILE		*fp;
-#endif
 {
     XieExtensionInfo 	 *xieExtInfo;
     XieFloAccessError    *flo_error      = (XieFloAccessError *) error;
