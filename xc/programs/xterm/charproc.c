@@ -1,5 +1,5 @@
 /*
- * $XConsortium: charproc.c,v 1.152 91/04/26 16:42:14 gildea Exp $
+ * $XConsortium: charproc.c,v 1.154 91/05/04 18:21:38 gildea Exp $
  */
 
 /*
@@ -1982,7 +1982,6 @@ VTRun()
 	register int i;
 	
 	if (!screen->Vshow) {
-	    XtRealizeWidget (term->core.parent);
 	    set_vt_visibility (TRUE);
 	} 
 	update_vttekmode();
@@ -2078,12 +2077,21 @@ static void VTResize(w)
 		    &term->flags);
 }
 
+				
+extern Atom wm_delete_window;	/* for ICCCM delete window */
 
 int VTInit ()
 {
     register TScreen *screen = &term->screen;
+    Widget toplevel = term->core.parent;
 
-    XtRealizeWidget (term->core.parent);
+    XtRealizeWidget (toplevel);
+    XtOverrideTranslations(toplevel, 
+			   XtParseTranslationTable
+			    ("<Message>WM_PROTOCOLS: DeleteWindow()"));
+    (void) XSetWMProtocols (XtDisplay(toplevel), XtWindow(toplevel),
+			    &wm_delete_window, 1);
+
     if (screen->allbuf == NULL) VTallocbuf ();
     return (1);
 }

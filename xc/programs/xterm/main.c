@@ -1,4 +1,4 @@
-/* $XConsortium: main.c,v 1.177 91/04/15 13:53:06 gildea Exp $ */
+/* $XConsortium: main.c,v 1.179 91/05/04 18:20:30 gildea Exp $ */
 
 /*
  * 				 W A R N I N G
@@ -810,9 +810,6 @@ char **argv;
 	 * ICCCM delete_window.
 	 */
 	XtAppAddActions(app_con, actionProcs, XtNumber(actionProcs));
-	XtOverrideTranslations
-	  (toplevel, 
-	   XtParseTranslationTable("<Message>WM_PROTOCOLS: DeleteWindow()"));
 
 	/*
 	 * fill in terminal modes
@@ -1472,14 +1469,10 @@ spawn ()
 	/* avoid double MapWindow requests */
 	XtSetMappedWhenManaged( screen->TekEmu ? XtParent(tekWidget) :
 			        XtParent(term), False );
-        /* Realize the Tek or VT widget, depending on which mode we're in.
-           If VT mode, this calls VTRealize (the widget's Realize proc) */
-        XtRealizeWidget (screen->TekEmu ? XtParent(tekWidget) :
-			 XtParent(term));
 	wm_delete_window = XInternAtom(XtDisplay(toplevel), "WM_DELETE_WINDOW",
 				       False);
-	(void) XSetWMProtocols (XtDisplay(toplevel), XtWindow(toplevel),
-				&wm_delete_window, 1);
+	if (!screen->TekEmu)
+	    VTInit();		/* realize now so know window size for tty driver */
 #ifdef TIOCCONS
 	if (Console) {
 	    /*

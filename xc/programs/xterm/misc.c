@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: misc.c,v 1.77 91/04/14 12:24:13 rws Exp $
+ *	$XConsortium: misc.c,v 1.79 91/05/04 18:21:53 gildea Exp $
  */
 
 /*
@@ -848,9 +848,8 @@ void set_vt_visibility (on)
     update_vtshow();
     return;
 }
-
-				/* for ICCCM delete window */
-extern Atom wm_delete_window;
+				
+extern Atom wm_delete_window;	/* for ICCCM delete window */
 
 void set_tek_visibility (on)
     Boolean on;
