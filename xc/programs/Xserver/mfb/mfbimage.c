@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbimage.c,v 5.0 89/06/09 15:06:39 keith Exp $ */
+/* $XConsortium: mfbimage.c,v 5.1 89/07/26 15:50:51 rws Exp $ */
 
 #include "X.h"
 
@@ -122,43 +122,37 @@ mfbGetImage( pDrawable, sx, sy, w, h, format, planeMask, pdstLine)
     unsigned long planeMask;
     pointer	pdstLine;
 {
-    int xorg, yorg;
-    PixmapPtr pPixmap;
+    PixmapRec FakePixmap;
     BoxRec box;
     DDXPointRec ptSrc;
-    RegionPtr prgnDst;
-    pointer pspare;
+    RegionRec rgnDst;
 
-    if ((planeMask & 0x1) &&
-	(pPixmap = (PixmapPtr)mfbCreatePixmap(pDrawable->pScreen, w, h, 1)))
+    if (planeMask & 0x1)
     {
-	xorg = pDrawable->x;
-	yorg = pDrawable->y;
-
-        pspare = pPixmap->devPrivate.ptr;
-        pPixmap->devPrivate.ptr = pdstLine;
-        ptSrc.x = sx + xorg;
-        ptSrc.y = sy + yorg;
+	FakePixmap.drawable.type = DRAWABLE_PIXMAP;
+	FakePixmap.drawable.class = 0;
+	FakePixmap.drawable.pScreen = pDrawable->pScreen;
+	FakePixmap.drawable.depth = 1;
+	FakePixmap.drawable.bitsPerPixel = 1;
+	FakePixmap.drawable.id = 0;
+	FakePixmap.drawable.serialNumber = NEXT_SERIAL_NUMBER;
+	FakePixmap.drawable.x = 0;
+	FakePixmap.drawable.y = 0;
+	FakePixmap.drawable.width = w;
+	FakePixmap.drawable.height = h;
+	FakePixmap.devKind = PixmapBytePad(w, 1);
+	FakePixmap.refcnt = 1;
+	FakePixmap.devPrivate.ptr = pdstLine;
+        ptSrc.x = sx + pDrawable->x;
+        ptSrc.y = sy + pDrawable->y;
         box.x1 = 0;
         box.y1 = 0;
         box.x2 = w;
         box.y2 = h;
-
-        prgnDst = (*pDrawable->pScreen->RegionCreate)(&box, 1);
-        mfbDoBitblt(pDrawable, (DrawablePtr)pPixmap, GXcopy, prgnDst, &ptSrc);
-
-#ifdef NOTDEF
-	if ((pDrawable->type == DRAWABLE_WINDOW) &&
-	    (((WindowPtr)pDrawable)->backingStore != NotUseful))
-	{
-	    miBSGetImage((WindowPtr)pDrawable, pPixmap, sx, sy, w, h, format,
-			 planeMask, (pointer) 0);
-	}
-#endif
-
-        (*pDrawable->pScreen->RegionDestroy)(prgnDst);
-        pPixmap->devPrivate.ptr = pspare;
-        mfbDestroyPixmap(pPixmap);
+        (*pDrawable->pScreen->RegionInit)(&rgnDst, &box, 1);
+        mfbDoBitblt(pDrawable, (DrawablePtr)&FakePixmap,
+		    GXcopy, &rgnDst, &ptSrc);
+        (*pDrawable->pScreen->RegionUninit)(&rgnDst);
     }
     else
     {
