@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: events.c,v 5.5 89/07/16 17:22:43 rws Exp $ */
+/* $XConsortium: events.c,v 5.6 89/07/20 11:40:45 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -77,6 +77,11 @@ extern void SetCriticalOutputPending();
 
 #define IsOn(ptr, bit) \
 	(((BYTE *) (ptr))[(bit)>>3] & (1 << ((bit) & 7)))
+
+#define SameClient(obj,client) \
+	(CLIENT_BITS((obj)->resource) == (client)->clientAsMask)
+
+#define rClient(obj) (clients[CLIENT_ID((obj)->resource)])
 
 static debug_events = 0;
 static debug_modifiers = 0;
@@ -614,10 +619,11 @@ playmore:
     PostNewCursor();
 }
 
+static void
 CheckGrabForSyncs(grab, thisDev, thisMode, otherDev, otherMode)
     GrabPtr grab;
     DeviceIntPtr thisDev, otherDev;
-    int thisMode, otherMode;
+    Bool thisMode, otherMode;
 {
     if (thisMode == GrabModeSync)
 	thisDev->sync.state = FROZEN_NO_EVENT;
@@ -625,7 +631,8 @@ CheckGrabForSyncs(grab, thisDev, thisMode, otherDev, otherMode)
     {	/* free both if same client owns both */
 	thisDev->sync.state = THAWED;
 	if (thisDev->sync.other &&
-	    (thisDev->sync.other->client == grab->client))
+	    (CLIENT_BITS(thisDev->sync.other->resource) ==
+	     CLIENT_BITS(grab->resource)))
 	    thisDev->sync.other = NullGrab;
     }
     if (otherMode == GrabModeSync)
@@ -633,7 +640,8 @@ CheckGrabForSyncs(grab, thisDev, thisMode, otherDev, otherMode)
     else
     {	/* free both if same client owns both */
 	if (otherDev->sync.other &&
-	    (otherDev->sync.other->client == grab->client))
+	    (CLIENT_BITS(otherDev->sync.other->resource) ==
+	     CLIENT_BITS(grab->resource)))
 	    otherDev->sync.other = NullGrab;
     }
     ComputeFreezes(thisDev, otherDev);
@@ -668,8 +676,8 @@ ActivatePointerGrab(mouse, grab, time, autoGrab)
     mouse->u.ptr.autoReleaseGrab = autoGrab;
     PostNewCursor();
     CheckGrabForSyncs(
-	mouse->grab, mouse, grab->pointerMode,
-	inputInfo.keyboard, grab->keyboardMode);
+	mouse->grab, mouse, (Bool)grab->pointerMode,
+	inputInfo.keyboard, (Bool)grab->keyboardMode);
 }
 
 static void
@@ -713,8 +721,8 @@ ActivateKeyboardGrab(keybd, grab, time, passive)
     keybd->grab = &keybdGrab;
     keybd->u.keybd.passiveGrab = passive;
     CheckGrabForSyncs(
-	keybd->grab, keybd, grab->keyboardMode,
-	inputInfo.pointer, grab->pointerMode);
+	keybd->grab, keybd, (Bool)grab->keyboardMode,
+	inputInfo.pointer, (Bool)grab->pointerMode);
 }
 
 static void
@@ -743,8 +751,8 @@ AllowSome(client, time, thisDev, otherDev, newState)
     Bool	thisGrabbed, otherGrabbed;
     TimeStamp	grabTime;
 
-    thisGrabbed = thisDev->grab && (thisDev->grab->client == client);
-    otherGrabbed = otherDev->grab && (otherDev->grab->client == client);
+    thisGrabbed = thisDev->grab && SameClient(thisDev->grab, client);
+    otherGrabbed = otherDev->grab && SameClient(otherDev->grab, client);
     if (!((thisGrabbed && thisDev->sync.state >= FROZEN) ||
 	  (otherGrabbed && thisDev->sync.other)))
 	return;
@@ -877,7 +885,7 @@ ReleaseActiveGrabs(client)
     for (i = 0; i < inputInfo.numDevices; i++)
     {
 	d = inputInfo.devices[i];
-	if (d->grab && (d->grab->client == client))
+	if (d->grab && SameClient(d->grab, client))
 	{
 	    if (d == inputInfo.keyboard)
 		DeactivateKeyboardGrab(d);
@@ -909,7 +917,7 @@ TryClientEvents (client, pEvents, count, mask, filter, grab)
     if ((client) && (client != serverClient) && (!client->clientGone) &&
 	((filter == CantBeFiltered) || (mask & filter)))
     {
-	if (grab && (client != grab->client))
+	if (grab && !SameClient(grab, client))
 	    return -1; /* don't send, but notify caller */
 	if (pEvents->u.u.type == MotionNotify)
 	{
@@ -983,12 +991,12 @@ DeliverEventsToWindow(pWin, pEvents, count, filter, grab)
 	for (other = wOtherClients(pWin); other; other = other->next)
 	{
 	    if (attempt = TryClientEvents(
-		  other->client, pEvents, count, other->mask, filter, grab))
+		  rClient(other), pEvents, count, other->mask, filter, grab))
 	    {
 		if (attempt > 0)
 		{
 		    deliveries++;
-		    client = other->client;
+		    client = rClient(other);
 		    deliveryMask = other->mask;
 		} else
 		    nondeliveries--;
@@ -999,7 +1007,7 @@ DeliverEventsToWindow(pWin, pEvents, count, filter, grab)
 	GrabRec tempGrab;
 
 	tempGrab.device = inputInfo.pointer;
-	tempGrab.client = client;
+	tempGrab.resource = client->clientAsMask;
 	tempGrab.window = pWin;
 	tempGrab.ownerEvents = (deliveryMask & OwnerGrabButtonMask) ? TRUE : FALSE;
 	tempGrab.eventMask =  deliveryMask;
@@ -1040,10 +1048,10 @@ MaybeDeliverEventsToClient(pWin, pEvents, count, filter, dontDeliverToMe)
     for (other = wOtherClients(pWin); other; other = other->next)
 	if (other->mask & filter)
 	{
-            if (other->client == dontDeliverToMe)
+            if (SameClient(other, dontDeliverToMe))
 		return 0;
 	    return TryClientEvents(
-		other->client, pEvents, count, other->mask, filter, NullGrab);
+		rClient(other), pEvents, count, other->mask, filter, NullGrab);
 	}
     return 2;
 }
@@ -1441,7 +1449,7 @@ CheckPassiveGrabsOnWindow(pWin, device, xE, isKeyboard)
  
 	    FixUpEventFromWindow(xE, grab->window, None, TRUE);
 
-	    (void) TryClientEvents(grab->client, xE, 1, filters[xE->u.u.type],
+	    (void) TryClientEvents(rClient(grab), xE, 1, filters[xE->u.u.type],
 				   filters[xE->u.u.type],  grab);
 
 	    if (device->sync.state == FROZEN_NO_EVENT)
@@ -1556,7 +1564,8 @@ DeliverGrabbedEvent(xE, thisDev, otherDev, deactivateGrab, isKeyboard)
     if (!deliveries)
     {
 	FixUpEventFromWindow(xE, grab->window, None, TRUE);
-	deliveries = TryClientEvents(grab->client, xE, 1, grab->eventMask,
+	deliveries = TryClientEvents(rClient(grab), xE, 1,
+				     (Mask)grab->eventMask,
 				     filters[xE->u.u.type], grab);
 	if (deliveries && (xE->u.u.type == MotionNotify))
 	    motionHintWindow = grab->window;
@@ -1567,7 +1576,8 @@ DeliverGrabbedEvent(xE, thisDev, otherDev, deactivateGrab, isKeyboard)
 	   case FREEZE_BOTH_NEXT_EVENT:
 		FreezeThaw(otherDev, TRUE);
 		if ((otherDev->sync.state == FREEZE_BOTH_NEXT_EVENT) &&
-		    (otherDev->grab->client == thisDev->grab->client))
+		    (CLIENT_BITS(otherDev->grab->resource) ==
+		     CLIENT_BITS(thisDev->grab->resource)))
 		    otherDev->sync.state = FROZEN_NO_EVENT;
 		else
 		    otherDev->sync.other = thisDev->grab;
@@ -1840,7 +1850,7 @@ EventSelectForWindow(pWin, client, mask)
 	    return BadAccess;
 	for (others = wOtherClients (pWin); others; others = others->next)
 	{
-	    if ((others->client != client) && (check & others->mask))
+	    if (!SameClient(others, client) && (check & others->mask))
 		return BadAccess;
 	}
     }
@@ -1853,7 +1863,7 @@ EventSelectForWindow(pWin, client, mask)
     {
 	for (others = wOtherClients (pWin); others; others = others->next)
 	{
-	    if (others->client == client)
+	    if (SameClient(others, client))
 	    {
 		check = others->mask;
 		if (mask == 0)
@@ -1872,7 +1882,6 @@ EventSelectForWindow(pWin, client, mask)
 	others = (OtherClients *) xalloc(sizeof(OtherClients));
 	if (!others)
 	    return BadAlloc;
-	others->client = client;
 	others->mask = mask;
 	others->resource = FakeClientID(client->index);
 	others->next = pWin->optional->otherClients;
@@ -1942,7 +1951,7 @@ EnterLeaveEvent(type, mode, detail, pWin)
     {
 	mask = (pWin == grab->window) ? grab->eventMask : 0;
 	if (grab->ownerEvents)
-	    mask |= EventMaskForClient(pWin, grab->client);
+	    mask |= EventMaskForClient(pWin, rClient(grab));
     }
     else
     {
@@ -1967,7 +1976,7 @@ EnterLeaveEvent(type, mode, detail, pWin)
 	     IsParent(focus, pWin)))
 	    event.u.enterLeave.flags |= ELFlagFocus;
 	if (grab)
-	    (void)TryClientEvents(grab->client, &event, 1, mask,
+	    (void)TryClientEvents(rClient(grab), &event, 1, mask,
 				  filters[type], grab);
 	else
 	    (void)DeliverEventsToWindow(pWin, &event, 1, filters[type],
@@ -1979,7 +1988,7 @@ EnterLeaveEvent(type, mode, detail, pWin)
 	ke.type = KeymapNotify;
 	bcopy((char *)&keybd->down[1], (char *)&ke.map[0], 31);
 	if (grab)
-	    (void)TryClientEvents(grab->client, (xEvent *)&ke, 1, mask,
+	    (void)TryClientEvents(rClient(grab), (xEvent *)&ke, 1, mask,
 				  KeymapStateMask, grab);
 	else
 	    (void)DeliverEventsToWindow(pWin, (xEvent *)&ke, 1,
@@ -2389,7 +2398,7 @@ ProcGrabPointer(client)
     rep.type = X_Reply;
     rep.sequenceNumber = client->sequence;
     rep.length = 0;
-    if ((grab) && (grab->client != client))
+    if ((grab) && !SameClient(grab, client))
 	rep.status = AlreadyGrabbed;
     else if ((!pWin->realized) ||
 	     (confineTo &&
@@ -2398,9 +2407,10 @@ ProcGrabPointer(client)
 			(&confineTo->borderSize))))
 	rep.status = GrabNotViewable;
     else if (device->sync.frozen &&
-	     ((device->sync.other && (device->sync.other->client != client)) ||
+	     ((device->sync.other &&
+	       !SameClient(device->sync.other, client)) ||
 	     ((device->sync.state >= FROZEN) &&
-	      (device->grab->client != client))))
+	      !SameClient(device->grab, client))))
 	rep.status = GrabFrozen;
     else if ((CompareTimeStamps(time, currentTime) == LATER) ||
 	     (device->grab &&
@@ -2413,7 +2423,7 @@ ProcGrabPointer(client)
 	if (grab && grab->confineTo && !confineTo)
 	    ConfineCursorToWindow(ROOT, FALSE);
 	tempGrab.cursor = cursor;
-	tempGrab.client = client;
+	tempGrab.resource = client->clientAsMask;
 	tempGrab.ownerEvents = stuff->ownerEvents;
 	tempGrab.eventMask = stuff->eventMask;
 	tempGrab.confineTo = confineTo;
@@ -2457,7 +2467,7 @@ ProcChangeActivePointerGrab(client)
     }
     if (!grab)
 	return Success;
-    if (grab->client != client)
+    if (!SameClient(grab, client))
 	return BadAccess;
     time = ClientTimeToServerTime(stuff->time);
     if ((CompareTimeStamps(time, currentTime) == LATER) ||
@@ -2487,7 +2497,7 @@ ProcUngrabPointer(client)
     time = ClientTimeToServerTime(stuff->id);
     if ((CompareTimeStamps(time, currentTime) != LATER) &&
 	    (CompareTimeStamps(time, device->grabTime) != EARLIER) &&
-	    (grab) && (grab->client == client))
+	    (grab) && SameClient(grab, client))
 	DeactivatePointerGrab(inputInfo.pointer);
     return Success;
 }
@@ -2529,7 +2539,7 @@ ProcGrabKeyboard(client)
     rep.type = X_Reply;
     rep.sequenceNumber = client->sequence;
     rep.length = 0;
-    if ((grab) && (grab->client != client))
+    if ((grab) && !SameClient(grab, client))
 	rep.status = AlreadyGrabbed;
     else if (!pWin->realized)
 	rep.status = GrabNotViewable;
@@ -2538,16 +2548,17 @@ ProcGrabKeyboard(client)
 	     (CompareTimeStamps(time, device->grabTime) == EARLIER)))
 	rep.status = GrabInvalidTime;
     else if (device->sync.frozen &&
-	     ((device->sync.other && (device->sync.other->client != client)) ||
+	     ((device->sync.other &&
+	       !SameClient(device->sync.other, client)) ||
 	     ((device->sync.state >= FROZEN) &&
-	      (device->grab->client != client))))
+	      !SameClient(device->grab, client))))
 	rep.status = GrabFrozen;
     else
     {
 	GrabRec tempGrab;
 
 	tempGrab.window = pWin;
-	tempGrab.client = client;
+	tempGrab.resource = client->clientAsMask;
 	tempGrab.ownerEvents = stuff->ownerEvents;
 	tempGrab.keyboardMode = stuff->keyboardMode;
 	tempGrab.pointerMode = stuff->pointerMode;
@@ -2576,7 +2587,7 @@ ProcUngrabKeyboard(client)
     time = ClientTimeToServerTime(stuff->id);
     if ((CompareTimeStamps(time, currentTime) != LATER) &&
 	(CompareTimeStamps(time, device->grabTime) != EARLIER) &&
-	(grab) && (grab->client == client))
+	(grab) && SameClient(grab, client))
 	DeactivateKeyboardGrab(device);
     return Success;
 }
@@ -3669,7 +3680,7 @@ MaybeStopHint(client)
 {
     GrabPtr grab = inputInfo.pointer->grab;
 
-    if ((grab && (client == grab->client) &&
+    if ((grab && SameClient(grab, client) &&
 	 ((grab->eventMask & PointerMotionHintMask) ||
 	  (grab->ownerEvents &&
 	   (EventMaskForClient(motionHintWindow, client) &
@@ -3905,7 +3916,7 @@ ProcUngrabKey(client)
 	return BadValue;
     }
 
-    temporaryGrab.client = client;
+    temporaryGrab.resource = client->clientAsMask;
     temporaryGrab.device = inputInfo.keyboard;
     temporaryGrab.window = pWin;
     temporaryGrab.modifiersDetail.exact = stuff->modifiers;
@@ -3955,7 +3966,7 @@ ProcGrabKey(client)
     if (!pWin)
 	return BadWindow;
 
-    grab = CreateGrab(client, inputInfo.keyboard, pWin, 
+    grab = CreateGrab(client->index, inputInfo.keyboard, pWin, 
 	(Mask)(KeyPressMask | KeyReleaseMask), (Bool)stuff->ownerEvents,
 	(Bool)stuff->keyboardMode, (Bool)stuff->pointerMode,
 	stuff->modifiers, stuff->key, NullWindow, NullCursor);
@@ -4025,7 +4036,7 @@ ProcGrabButton(client)
 	}
     }
 
-    grab = CreateGrab(client, inputInfo.pointer, pWin, 
+    grab = CreateGrab(client->index, inputInfo.pointer, pWin, 
 	permitOldBugs ? (Mask)(stuff->eventMask |
 			       ButtonPressMask | ButtonReleaseMask) :
 			(Mask)stuff->eventMask,
@@ -4056,7 +4067,7 @@ ProcUngrabButton(client)
     if (!pWin)
 	return BadWindow;
 
-    temporaryGrab.client = client;
+    temporaryGrab.resource = client->clientAsMask;
     temporaryGrab.device = inputInfo.pointer;
     temporaryGrab.window = pWin;
     temporaryGrab.modifiersDetail.exact = stuff->modifiers;
@@ -4176,7 +4187,7 @@ EventMaskForClient(pWin, client)
 	return pWin->eventMask;
     for (other = wOtherClients(pWin); other; other = other->next)
     {
-	if (other->client == client)
+	if (SameClient(other, client))
 	    return other->mask;
     }
     return 0;
