@@ -1,5 +1,5 @@
 /*
-* $Header: CommandP.h,v 1.11 87/10/29 14:44:41 susan BL5 $
+* $Header: CommandP.h,v 1.11 87/10/29 14:44:41 swick Locked $
 */
 
 /*
@@ -34,21 +34,6 @@
 
 #ifndef _XtCommandPrivate_h
 #define _XtCommandPrivate_h
-
-#define XtCallParentProcedure(proc,arg) \
-    (*((commandWidgetClass->core_class.superclass)->core_class.proc))(arg)
-#define XtCallParentProcedure2Args(proc,arg1,arg2) \
-    (*((commandWidgetClass->core_class.superclass)->core_class.proc)) \
-	(arg1,arg2)
-#define XtCallParentProcedure3Args(proc,arg1,arg2,arg3) \
-    (*((commandWidgetClass->core_class.superclass)->core_class.proc)) \
-       (arg1,arg2,arg3)
-
-#define XtAddSingleCallback(f,resourceName,cb,cl,p)  \
-                       if (XrmAtomsEqual(resourceName, XtNfunction))   \
-			  XtAddCallbackToList(f,cb,cl,p)
-
-
 
 /***********************************************************************
  *
@@ -91,9 +76,7 @@ typedef struct {
     GC          inverse_GC;
     GC          inverse_text_GC;
     Dimension   highlight_thickness;
-    XtCallbackList callback_list;
-    XtCallbackProc callback;
-    Opaque	closure;
+    XtCallbackList callbacks;
     Boolean     set;
     Boolean     highlighted;
     Boolean     display_set;
