@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Bitmap.c,v 1.25 91/01/19 16:16:05 dmatic Exp $
+ * $XConsortium: Bitmap.c,v 1.26 91/01/25 11:05:08 dave Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -1416,7 +1416,6 @@ static void ResizeGrid(BW, width, height)
   BW->bitmap.buffer = buffer;
   BW->bitmap.width = width;
   BW->bitmap.height = height;
-  
   
   FixHotSpot(BW);
   FixMark(BW);
