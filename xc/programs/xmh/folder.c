@@ -1,5 +1,5 @@
 /*
- * $XConsortium: folder.c,v 2.38 91/07/17 21:37:03 converse Exp $
+ * $XConsortium: folder.c,v 2.39 91/07/17 21:55:11 converse Exp $
  *
  *
  *		       COPYRIGHT 1987, 1989
@@ -30,6 +30,7 @@
 
 #include "xmh.h"
 #include <X11/Xaw/Cardinals.h>
+#include <X11/Xatom.h>
 #include <sys/stat.h>
 #include <ctype.h>
 #include "bboxint.h"
@@ -945,9 +946,8 @@ void XmhWMProtocols(w, event, params, num_params)
 		MsgCheckPoint(scrnList[i]->msg);
 	if (w) /* don't generate a property notify via the checkpoint timer */
 	    XChangeProperty(XtDisplay(toplevel), XtWindow(toplevel),
-			    XInternAtom(XtDisplay(toplevel),"WM_COMMAND", 0),
-			    XInternAtom(XtDisplay(toplevel), "STRING", 0),
-			    8, PropModeAppend, (unsigned char *)"", 0);
+			    XA_WM_COMMAND, XA_STRING, 8, PropModeAppend,
+			    (unsigned char *)"", 0);
     }
     if (dw && w) {
 	Scrn scrn;
