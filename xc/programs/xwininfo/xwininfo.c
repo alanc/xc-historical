@@ -193,7 +193,7 @@ Display_Window_Id(window)
 	  return;
   }
   if (!XFetchName(dpy, window, &win_name)) { /* Get window name if any */
-	  printf(" (XFetchName failed!)\n");
+	  printf(" (has no name)\n");
 	  return;
   }
   if (win_name) {
