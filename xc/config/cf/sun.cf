@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: sun.cf,v 1.93 93/09/03 17:23:22 kaleb Exp $
+XCOMM platform:  $XConsortium: sun.cf,v 1.94 93/09/04 16:06:19 rws Exp $
 
 #ifdef SVR4
 #define OSName            SunOS 5.2
@@ -37,8 +37,6 @@ XCOMM operating system:  OSName
 #define ThreadedX	  YES
 #define SystemMTDefines -D_REENTRANT
 #define ThreadsLibraries -lthread
-#define SharedXlibReqs   -lthread
-#define SharedXtReqs $(XLIBONLY)
 #endif
 #define ArCmdBase	  /usr/ccs/bin/ar
 #define AsCmd		  /usr/ccs/bin/as
