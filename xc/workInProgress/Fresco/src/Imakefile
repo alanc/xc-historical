@@ -1,79 +1,67 @@
-XCOMM
-XCOMM Fresco library
-XCOMM
+XCOMM $XConsortium: Imakefile,v 1.3 94/02/09 09:45:59 matt Exp $
+#define DoNormalLib NormalLibFresco
+#define DoSharedLib SharedLibFresco
+#define DoDebugLib DebugLibFresco
+#define DoProfileLib ProfileLibFresco
+#define LibName Fresco
+#define LibHeaders NO
+#define SoRev SOFRESCOREV
 
-#ifdef InObjectCodeDir
+  INSTALLFLAGS = $(INSTINCFLAGS)
+      LINTLIBS = $(LINTXLIB)
+DEPEND_DEFINES = CplusplusDependIncludes
+FRESCO_DEFINES = -DFRESCO_LIBALL='"$(XLIBDIR)/X11"' -DX_LIBDIR='"$(XLIBDIR)/X11"'
 
-LIB = Fresco
-VERSION = 0.5
+HEADERS =
 
-#if !defined(UseDebug)
-APP_CCFLAGS = $(OPTIMIZE_CCFLAGS)
-#endif
-APP_CCINCLUDES = -I$(SRC)
+SRCS =  Xdisplay.CCsuf \
+	Xdrawing.CCsuf \
+	Xraster.CCsuf \
+	Xwindow.CCsuf \
+	figures.CCsuf \
+	fresco.CCsuf \
+	glyphs.CCsuf \
+	inits.CCsuf \
+	layouts.CCsuf \
+	objects.CCsuf \
+	os.CCsuf \
+	ox-ids.CCsuf \
+	stubs1.CCsuf \
+	stubs2.CCsuf \
+	threads.CCsuf \
+	transport.CCsuf \
+	types.CCsuf \
+	viewers.CCsuf \
+	widgets.CCsuf
 
-LIBPATHS   = -DFRESCO_LIBALL='"$(ABSLIBALLDIR)"' -DX_LIBDIR='"$(XLIBDIR)/X11"'
+OBJS =  Xdisplay.Osuf \
+	Xdrawing.Osuf \
+	Xraster.Osuf \
+	Xwindow.Osuf \
+	figures.Osuf \
+	fresco.Osuf \
+	glyphs.Osuf \
+	inits.Osuf \
+	layouts.Osuf \
+	objects.Osuf \
+	os.Osuf \
+	ox-ids.Osuf \
+	stubs1.Osuf \
+	stubs2.Osuf \
+	threads.Osuf \
+	transport.Osuf \
+	types.Osuf \
+	viewers.Osuf \
+	widgets.Osuf
 
-MakeLibrary($(LIB),$(VERSION))
+#define CplusplusSource
 
-/*
- * Avoid possibility on some systems (notably OSF/1) of a
- * cyclic make dependency.
- */
-LDLIBFRESCO =
+#include <Library.tmpl>
 
-I = $(INCSRC)/Fresco/Interfaces
-I_OS = $(INCSRC)/Fresco/OS/Interfaces
-I_OX = $(INCSRC)/Fresco/Ox/Interfaces
+SpecialCplusplusLibObjectRule(Xdisplay,$(ICONFIGFILES),$(FRESCO_DEFINES))
 
-STUBS_IDL_FILES = \
-    $(I)/display.idl \
-    $(I)/drawing.idl \
-    $(I)/figures.idl \
-    $(I)/glyph.idl \
-    $(I)/layouts.idl \
-    $(I)/types.idl \
-    $(I)/viewer.idl \
-    $(I)/widgets.idl
+ALLDEFINES = $(CCDEFINES)
 
-EditImpl(figures,$(I)/glyph.idl $(I)/figures.idl)
-EditImpl(fresco,$(I)/types.idl)
-EditImpl(glyphs,$(I)/glyph.idl)
-EditImpl(layouts,$(I)/glyph.idl $(I)/layouts.idl)
-EditImpl(objects,$(I_OX)/object.idl)
-EditImpl(stubs-1,$(STUBS_IDL_FILES))
-EditImpl(stubs-2,$(STUBS_IDL_FILES))
-EditImpl(threads,$(I_OS)/thread.idl)
-EditImpl(types,$(I)/types.idl)
-EditImpl(viewers,$(I)/viewer.idl)
-EditImpl(widgets,$(I)/widgets.idl)
-EditImpl(Xdisplay,$(I)/display.idl $(I)/viewer.idl)
-EditImpl(Xdrawing,$(I)/drawing.idl)
-EditImpl(Xraster,$(I)/drawing.idl)
-EditImpl(Xwindow,$(I)/display.idl $(I)/glyph.idl)
+DependTarget()
 
-MakeObjectFromSrc(figures)
-MakeObjectFromSrc(fresco)
-MakeObjectFromSrc(glyphs)
-MakeObjectFromSrc(inits)
-MakeObjectFromSrc(layouts)
-MakeObjectFromSrc(objects)
-MakeObjectFromSrc(os)
-MakeObjectFromSrc(ox-ids)
-MakeObjectFromSrc(stubs-1)
-MakeObjectFromSrc(stubs-2)
-MakeObjectFromSrc(threads)
-MakeObjectFromSrc(transport)
-MakeObjectFromSrc(types)
-MakeObjectFromSrc(viewers)
-MakeObjectFromSrc(widgets)
-MakeObjectFromSrcFlags(Xdisplay,$(LIBPATHS))
-MakeObjectFromSrc(Xdrawing)
-MakeObjectFromSrc(Xraster)
-MakeObjectFromSrc(Xwindow)
-
-#else
-
-MakeInObjectCodeDir()
-
-#endif
+clean::
