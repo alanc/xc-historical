@@ -1,4 +1,4 @@
-/* $XConsortium: Xlib.h,v 11.210 91/06/11 18:38:47 rws Exp $ */
+/* $XConsortium: Xlib.h,v 11.211 91/06/11 19:10:59 rws Exp $ */
 /* 
  * Copyright 1985, 1986, 1987, 1991 by the Massachusetts Institute of Technology
  *
@@ -188,10 +188,8 @@ typedef struct {
 } XGCValues;
 
 /*
- * Graphics context.  All Xlib routines deal in this rather than
- * in raw protocol GContext ID's.  This is so that the library can keep
- * a "shadow" set of values, and thus avoid passing values over the
- * wire which are not in fact changing. 
+ * Graphics context.  The contents of this structure are implementation
+ * dependent.  A GC should be treated as opaque by application code.
  */
 
 typedef struct _XGC {
@@ -230,7 +228,9 @@ typedef struct {
 } Depth;
 
 /*
- * Information about the screen.
+ * Information about the screen.  The contents of this structure are
+ * implementation dependent.  A Screen should be treated as opaque
+ * by application code.
  */
 typedef struct {
 	XExtData *ext_data;	/* hook for extension to hang data */
@@ -262,10 +262,6 @@ typedef struct {
 	int scanline_pad;	/* scanline must padded to this multiple */
 } ScreenFormat;
 
-#if NeedFunctionPrototypes	/* prototypes require event type definitions */
-#undef _XSTRUCT_
-#endif
-#ifndef _XSTRUCT_	/* hack to reduce symbol load in Xlib routines */
 /*
  * Data structure for setting window attributes.
  */
@@ -447,10 +443,10 @@ typedef struct {
  	KeyCode *modifiermap;	/* An 8 by max_keypermod array of modifiers */
 } XModifierKeymap;
 
-#endif /* _XSTRUCT_ */
-
 /*
  * Display datatype maintaining display specific data.
+ * The contents of this structure are implementation dependent.
+ * A Display should be treated as opaque by application code.
  */
 typedef struct _XDisplay {
 	XExtData *ext_data;	/* hook for extension to hang data */
@@ -539,24 +535,6 @@ typedef struct _XDisplay {
 #undef _XEVENT_
 #endif
 #ifndef _XEVENT_
-/*
- * A "XEvent" structure always  has type as the first entry.  This 
- * uniquely identifies what  kind of event it is.  The second entry
- * is always the serial number of the last request processed by the
- * server.  The third entry is always a boolean indicating whether
- * the event came from a SendEvent (the MSB of the type byte in the
- * protocol encoding).  The fourth entry is always a pointer to the
- * display the event was read from.  The fifth entry is always a
- * resource id of one type or another, usually a window, carefully
- * selected to be useful to toolkit dispatchers.  The fifth entry
- * should always exist, even if the event does not have a natural
- * "destination"; if there is no value from the protocol to put in
- * the entry, initialize it to zero.  You must not change the order
- * of the five elements or toolkits will break!  The pointer to the
- * generic event must be cast before use to access any other information
- * in the structure.
- */
-
 /*
  * Definitions of specific events.
  */
@@ -984,8 +962,8 @@ typedef union _XEvent {
 	long pad[24];
 } XEvent;
 #endif
+
 #define XAllocID(dpy) ((*(dpy)->resource_alloc)((dpy)))
-#ifndef _XSTRUCT_
 
 /*
  * per character font metric information.
@@ -1313,7 +1291,6 @@ extern XImage *XGetSubImage(
 #endif
 );
 
-#endif	/* _XSTRUCT_ */
 /* 
  * X function declarations.
  */
@@ -1447,6 +1424,12 @@ extern GC XCreateGC(
 );
 extern GContext XGContextFromGC(
 #if NeedFunctionPrototypes
+    GC			/* gc */
+#endif
+);
+extern void XFlushGC(
+#if NeedFunctionPrototypes
+    Display*		/* display */,
     GC			/* gc */
 #endif
 );
