@@ -131,8 +131,8 @@ struct stem {                     /* representation of a STEM hint */
     int vertical;                 /* TRUE if vertical, FALSE otherwise */
     double x, dx;                 /* interval of vertical stem */
     double y, dy;                 /* interval of horizontal stem */
-    struct segment *tlhint, *tlrevhint;   /* top/left hint adjustment */
-    struct segment *brhint, *brrevhint;   /* bottom/right hint adj.   */
+    struct segment *lbhint, *lbrevhint;   /* left  or bottom hint adjustment */
+    struct segment *rthint, *rtrevhint;   /* right or top    hint adjustment */
 };
  
 extern struct XYspace *IDENTITY;
@@ -267,10 +267,10 @@ static FinitStems()  /* Terminate the STEM hint data structures */
   int i;
  
   for (i = 0; i < numstems; i++) {
-    Destroy(stems[i].tlhint);
-    Destroy(stems[i].tlrevhint);
-    Destroy(stems[i].brhint);
-    Destroy(stems[i].brrevhint);
+    Destroy(stems[i].lbhint);
+    Destroy(stems[i].lbrevhint);
+    Destroy(stems[i].rthint);
+    Destroy(stems[i].rtrevhint);
   }
 }
  
@@ -281,433 +281,294 @@ static FinitStems()  /* Terminate the STEM hint data structures */
 static ComputeStem(stemno)
 int stemno;
 {
-  int vertical, idealwidth;
-  double leftx, lefty, rightx, righty;
-  double widthx, widthy, center, stemwidthpixels;
+  int verticalondevice, idealwidth;
+  double stemstart, stemwidth;
   struct segment *p;
   int i;
-  double stembottomy, stemtopy, flatposition;
+  double stembottom, stemtop, flatposition;
   double Xpixels, Ypixels;
-  double unitpixelsX, unitpixelsY, unitpixels, oblslope;
-  double overshoot, overshootshift, flatposshift, flatpospixels;
-  double overshootposition, shifttoovershoot, overshootpospixels;
-  double overshootposshift, shiftpixels;
-  double widthdiff, standardwidth, widthdiffpixels;
-  double tlhintvalue, brhintvalue;
+  double unitpixels, onepixel;
+  int suppressovershoot, enforceovershoot;
+  double stemshift, flatpospixels, overshoot;
+  double widthdiff; /* Number of character space units to adjust width */
+  double lbhintvalue, rthintvalue;
+  double cxx, cyx, cxy, cyy; /* Transformation matrix */
+  int rotated; /* TRUE if character is on the side, FALSE if upright */
  
-  /* Compute left and right (or bottom and top) xith a unit of 1 pel */
+  /************************************************/
+  /* DETERMINE ORIENTATION OF CHARACTER ON DEVICE */
+  /************************************************/
  
-  p = Loc(CharSpace, stems[stemno].x, stems[stemno].y);
-  QueryLoc(p, IDENTITY, &leftx, &lefty);
+  QuerySpace(CharSpace, &cxx, &cyx, &cxy, &cyy); /* Transformation matrix */
  
-  p = Join(p, Loc(CharSpace, stems[stemno].dx, stems[stemno].dy));
-  QueryLoc(p, IDENTITY, &rightx, &righty);
-  Destroy(p);
- 
-  widthx = FABS(rightx - leftx);
-  widthy = FABS(righty - lefty);
- 
-  if (widthy <= EPS) { /* vertical hint */
-    vertical = TRUE;
-    center = (rightx + leftx) / 2.0;
-    stemwidthpixels = widthx;
-  }
-  else if (widthx <= EPS) { /* horizontal hint */
-    vertical = FALSE;
-    center = (righty + lefty) / 2.0;
-    stemwidthpixels = widthy;
-  }
-  else { /* neither horizontal nor vertical and not oblique */
-    stems[stemno].tlhint = NULL;
-    stems[stemno].tlrevhint = NULL;
-    stems[stemno].brhint = NULL;
-    stems[stemno].brrevhint = NULL;
+  if (FABS(cxx) < 0.00001 || FABS(cyy) < 0.00001)
+    rotated = TRUE; /* Char is on side (90 or 270 degrees), possibly oblique. */
+  else if (FABS(cyx) < 0.00001 || FABS(cxy) < 0.00001)
+    rotated = FALSE; /* Char is upright (0 or 180 degrees), possibly oblique. */
+  else {
+    stems[stemno].lbhint = NULL; /* Char is at non-axial angle, ignore hints. */
+    stems[stemno].lbrevhint = NULL;
+    stems[stemno].rthint = NULL;
+    stems[stemno].rtrevhint = NULL;
     return;
   }
-  oblslope = 0;
-  if (stems[stemno].vertical == FALSE) {
-    /* Find out how many pixels correspond to 1 font space unit */
-    p = ILoc(CharSpace, 0, 1);
-    QueryLoc(p, IDENTITY, &unitpixelsX, &unitpixelsY);
-    Destroy(p);
-    if (vertical) {
-      unitpixels = unitpixelsX;
-      /* oblslope = unitpixelsY/unitpixelsX; */
-    } else {
-      unitpixels = unitpixelsY;
-      /* oblslope = unitpixelsX/unitpixelsY; */
-    }
+ 
+  /* Determine orientation of stem */
+ 
+  if (stems[stemno].vertical) {
+    verticalondevice = !rotated;
+    stemstart = stems[stemno].x;
+    stemwidth = stems[stemno].dx;
+  } else {
+    verticalondevice = rotated;
+    stemstart = stems[stemno].y;
+    stemwidth = stems[stemno].dy;
   }
  
-  /* Do we need to adjust stem widths? */
-  widthdiff = 0;
+  /* Determine how many pixels (non-negative) correspond to 1 character space
+     unit (unitpixels), and how many character space units (non-negative)
+     correspond to one pixel (onepixel). */
  
-  if (stems[stemno].vertical == FALSE) {  /* a horizontal stem */
-    /* first look at StdHW */
-    if (blues->StdHW != 0) {       /* there is an entry for StdHW */
-      /* standardwidth = blues->StdHW; */
-      widthdiff = blues->StdHW - stems[stemno].dy;
-    }
-    /* now look at StemSnapH */
-    for (i = 0; i < blues->numStemSnapH; ++i) {
-      if (blues->StemSnapH[i] - stems[stemno].dy < widthdiff) {
-        /* this standard width is the best match so far for this stem */
-        /* standardwidth = blues->StemSnapH[i]; */
-        widthdiff = blues->StemSnapH[i] - stems[stemno].dy;
-      }
-    }
-  } else {                                /* a vertical stem */
-    /* first look at StdVW */
-    if (blues->StdVW != 0) {       /* there is an entry for StdVW */
-      /* standardwidth = blues->StdVW; */
-      widthdiff = blues->StdVW - stems[stemno].dx;
-    }
-    /* now look at StemSnapV */
-    for (i = 0; i < blues->numStemSnapV; ++i) {
-      if (blues->StemSnapV[i] - stems[stemno].dx < widthdiff) {
-        /* this standard width is the best match so far for this stem */
-        /* standardwidth = blues->StemSnapV[i]; */
-        widthdiff = blues->StemSnapV[i] - stems[stemno].dx;
-      }
-    }
-  }
- 
-  /* See how big the difference between the standard stem width and */
-  /* this stem is in pixels.  With this code widthdiffpixels will */
-  /* always be positive when the stem should be expanded, and negative */
-  /* when it should be shrunk.  We must therefore be very careful when it */
-  /* comes time to add this component to the hintvalues because */
-  /* XIMAGER y is + for down and - for up, so I have to subtract */
-  /* widthdiffpixels if I want to move something up on the page. */
-  /* Warning: This code needs to be modified to allow arbitrary transforms! */
   if (stems[stemno].vertical)
-    p = Loc(CharSpace, widthdiff, 0.0);
+    p = ILoc(CharSpace, 1, 0);
   else
-    p = Loc(CharSpace, 0.0, widthdiff);
+    p = ILoc(CharSpace, 0, 1);
   QueryLoc(p, IDENTITY, &Xpixels, &Ypixels);
   Destroy(p);
-  widthdiffpixels = (vertical) ? Xpixels : -Ypixels;
+  if (verticalondevice)
+    unitpixels = FABS(Xpixels);
+  else
+    unitpixels = FABS(Ypixels);
  
-  /* Only widen stems if they differ by less than 1 pixel from the */
-  /* closest standard width, otherwise make the width difference=0 */
-  if (FABS(widthdiffpixels) >= 1.0)
-    widthdiffpixels = 0;
+  onepixel = 1.0 / unitpixels;
  
-  /* Apply ForceBold to vertical stems.                                 */
-  /* (Uses the same mechanism as for forcing stems to standard widths.) */
-  /* Note: ForceBold overrides StdHW, StdVW, etc.                       */
-  if (blues->ForceBold && stems[stemno].vertical) {
-    /* Force this vertical stem to be bold (at least DEFAULTBOLDSTEMWIDTH */
-    /* wide - which is usually 2.0 (see blues.h)).                        */
-    if (stemwidthpixels + widthdiffpixels < DEFAULTBOLDSTEMWIDTH)
-      widthdiffpixels = DEFAULTBOLDSTEMWIDTH - stemwidthpixels;
+  /**********************/
+  /* ADJUST STEM WIDTHS */
+  /**********************/
+ 
+  widthdiff = 0.0;
+ 
+  /* Find standard stem with smallest width difference from this stem */
+  if (stems[stemno].vertical) { /* vertical stem */
+    if (blues->StdVW != 0)      /* there is an entry for StdVW */
+      widthdiff = blues->StdVW - stemwidth;
+    for (i = 0; i < blues->numStemSnapV; ++i) { /* now look at StemSnapV */
+      if (blues->StemSnapV[i] - stemwidth < widthdiff)
+        /* this standard width is the best match so far for this stem */
+        widthdiff = blues->StemSnapV[i] - stemwidth;
+    }
+  } else {                      /* horizontal stem */
+    if (blues->StdHW != 0)      /* there is an entry for StdHW */
+      widthdiff = blues->StdHW - stemwidth;
+    for (i = 0; i < blues->numStemSnapH; ++i) { /* now look at StemSnapH */
+      if (blues->StemSnapH[i] - stemwidth < widthdiff)
+        /* this standard width is the best match so far for this stem */
+        widthdiff = blues->StemSnapH[i] - stemwidth;
+    }
   }
  
-  /* Ensure that all stems are always at least one pixel wide. */
-  if (stemwidthpixels + widthdiffpixels < 1.0)
-    widthdiffpixels = 1.0 - stemwidthpixels;
+  /* Only expand or contract stems if they differ by less than 1 pixel from
+     the closest standard width, otherwise make the width difference = 0. */
+  if (FABS(widthdiff) > onepixel)
+    widthdiff = 0.0;
  
-  /* Overshoot suppression */
-  /* We only consider overshoot suppression in horizontal stems */
+  /* Expand or contract stem to the nearest integral number of pixels. */
+  idealwidth = ROUND((stemwidth + widthdiff) * unitpixels);
+  /* Ensure that all stems are at least one pixel wide. */
+  if (idealwidth == 0)
+    idealwidth = 1;
+  /* Apply ForceBold to vertical stems. */
+  if (blues->ForceBold && stems[stemno].vertical)
+    /* Force this vertical stem to be at least DEFAULTBOLDSTEMWIDTH wide. */
+    if (idealwidth < DEFAULTBOLDSTEMWIDTH)
+      idealwidth = DEFAULTBOLDSTEMWIDTH;
+  /* Now compute the number of character space units necessary */
+  widthdiff = idealwidth * onepixel - stemwidth;
+ 
+  /*********************************************************************/
+  /* ALIGNMENT ZONES AND OVERSHOOT SUPPRESSION - HORIZONTAL STEMS ONLY */
+  /*********************************************************************/
+ 
+  stemshift = 0.0;
+ 
   if (!stems[stemno].vertical) {
-    /* These are the bottom and top boundaries of the stem -- */
-    /* stems[].y is always lower than stems[].y+stems[].dy */
-    /*      --->  see HStem() and VStem() */
-    stembottomy = stems[stemno].y;
-    stemtopy = stems[stemno].y + stems[stemno].dy;
+ 
+    /* Get bottom and top boundaries of the stem. */
+    stembottom = stemstart;
+    stemtop = stemstart + stemwidth;
  
     /* Find out if this stem intersects an alignment zone (the BlueFuzz  */
     /* entry in the Private dictionary specifies the number of character */
     /* units to extend (in both directions) the effect of an alignment   */
     /* zone on a horizontal stem.  The default value of BlueFuzz is 1.   */
     for (i = 0; i < numalignmentzones; ++i) {
-      if ((stembottomy >= alignmentzones[i].bottomy &&
-        stembottomy - blues->BlueFuzz <= alignmentzones[i].topy &&
-        alignmentzones[i].topzone == FALSE) ||
-        (stemtopy + blues->BlueFuzz >= alignmentzones[i].bottomy &&
-        stemtopy <= alignmentzones[i].topy &&
-        alignmentzones[i].topzone == TRUE)) {
- 
-        /* We've found an intersecting alignment zone */
- 
-        /* Test whether it's smaller than BlueScale */
-        /* FABS(unitpixels) because unitpixels will be neg. since */
-        /* pos. y values in Type1 Font space are neg. in XIMAGER */
-        /* Warning: Not true if rotated */
-        if (FABS(unitpixels) < blues->BlueScale) {
-          /* We must suppress overshoots */
-          /* Find this alignment zone's flat position */
-          if (alignmentzones[i].topzone == TRUE) {
-            flatposition = alignmentzones[i].bottomy;
-            overshoot = flatposition - stemtopy;
-          } else {
-            flatposition = alignmentzones[i].topy;
-            overshoot = flatposition - stembottomy;
-          }
- 
-          p = Loc(CharSpace, 0.0, flatposition);
-          /* find the flat position in pixels */
-          QueryLoc(p, IDENTITY, &Xpixels, &Ypixels);
-          Destroy(p);
-          flatpospixels = (vertical) ? Xpixels : Ypixels;
- 
-          /* find the shift necessary to align the flat */
-          /* position on a pixel boundary */
-          flatposshift = ROUND(flatpospixels) -
-            flatpospixels;
- 
-          p = Loc(CharSpace, 0.0, overshoot);
-          /* find overshoot amount in pixels */
-          QueryLoc(p, IDENTITY, &Xpixels, &Ypixels);
-          Destroy(p);
-          overshootshift = (vertical) ? Xpixels : Ypixels;
-          if (alignmentzones[i].topzone == TRUE) {
-            /* widen at the bottom of the stem - in order to */
-            /* not mess up the carefully aligned top */
-            tlhintvalue = flatposshift + overshootshift;
-            brhintvalue = flatposshift + overshootshift +
-              widthdiffpixels;
-          } else {
-            /* widen at the top of the stem -- in order to */
-            /* not mess up the carefully aligned bottom */
-            tlhintvalue = flatposshift + overshootshift -
-              widthdiffpixels;
-            brhintvalue = flatposshift + overshootshift;
-          }
-          if (vertical) {
-            stems[stemno].tlhint =
-              Permanent(Loc(IDENTITY, tlhintvalue, tlhintvalue*oblslope));
-            stems[stemno].tlrevhint =
-              Permanent(Loc(IDENTITY, -tlhintvalue, -tlhintvalue*oblslope));
-            stems[stemno].brhint =
-              Permanent(Loc(IDENTITY, brhintvalue, brhintvalue*oblslope));
-            stems[stemno].brrevhint =
-              Permanent(Loc(IDENTITY, -brhintvalue, -brhintvalue*oblslope));
-          } else {
-            stems[stemno].tlhint =
-              Permanent(Loc(IDENTITY, tlhintvalue*oblslope, tlhintvalue));
-            stems[stemno].tlrevhint =
-              Permanent(Loc(IDENTITY, -tlhintvalue*oblslope, -tlhintvalue));
-            stems[stemno].brhint =
-              Permanent(Loc(IDENTITY, brhintvalue*oblslope, brhintvalue));
-            stems[stemno].brrevhint =
-              Permanent(Loc(IDENTITY, -brhintvalue*oblslope, -brhintvalue));
-          }
-        } else if ((alignmentzones[i].topzone == TRUE && stemtopy >
-                    alignmentzones[i].bottomy + blues->BlueShift) ||
-                   (alignmentzones[i].topzone == FALSE && stembottomy <
-                    alignmentzones[i].topy - blues->BlueShift)) {
-          /* we must enforce overshoot */
-          /* find this zone's overshoot position */
-          if (alignmentzones[i].topzone == TRUE) {
-            overshootposition = alignmentzones[i].topy;
-            shifttoovershoot = overshootposition - stemtopy;
-          } else {
-            overshootposition = alignmentzones[i].bottomy;
-            shifttoovershoot = overshootposition-stembottomy;
-          }
- 
-          p = Loc(CharSpace, 0.0, overshootposition);
-          /* find the overshoot position in pixels */
-          QueryLoc(p, IDENTITY, &Xpixels, &Ypixels);
-          Destroy(p);
-          overshootpospixels = (vertical) ? Xpixels : Ypixels;
- 
-          /* find the shift necessary to align the overshoot */
-          /* position on a pixel boundary */
-          overshootposshift = ROUND(overshootpospixels) -
-            overshootpospixels;
- 
-          p = Loc(CharSpace, 0.0, shifttoovershoot);
-          /* find shift to overshoot in pixels */
-          QueryLoc(p, IDENTITY, &Xpixels, &Ypixels);
-          Destroy(p);
-          shiftpixels = (vertical) ? Xpixels : Ypixels;
-          if (alignmentzones[i].topzone == TRUE) {
-            /* widen at the bottom of the stem - in order to */
-            /* not mess up the carefully aligned top */
-            tlhintvalue = overshootposshift + shiftpixels;
-            brhintvalue = overshootposshift + shiftpixels +
-              widthdiffpixels;
-          } else {
-            /* widen at the top of the stem -- in order to */
-            /* not mess up the carefully aligned bottom */
-            tlhintvalue = overshootposshift + shiftpixels -
-              widthdiffpixels;
-            brhintvalue = overshootposshift + shiftpixels;
-          }
-          if (vertical) {
-            stems[stemno].tlhint =
-              Permanent(Loc(IDENTITY, tlhintvalue, tlhintvalue*oblslope));
-            stems[stemno].tlrevhint =
-              Permanent(Loc(IDENTITY, -tlhintvalue, -tlhintvalue*oblslope));
-            stems[stemno].brhint =
-              Permanent(Loc(IDENTITY, brhintvalue, brhintvalue*oblslope));
-            stems[stemno].brrevhint =
-              Permanent(Loc(IDENTITY, -brhintvalue, -brhintvalue*oblslope));
-          } else {
-            stems[stemno].tlhint =
-              Permanent(Loc(IDENTITY, tlhintvalue*oblslope, tlhintvalue));
-            stems[stemno].tlrevhint =
-              Permanent(Loc(IDENTITY, -tlhintvalue*oblslope, -tlhintvalue));
-            stems[stemno].brhint =
-              Permanent(Loc(IDENTITY, brhintvalue*oblslope, brhintvalue));
-            stems[stemno].brrevhint =
-              Permanent(Loc(IDENTITY, -brhintvalue*oblslope, -brhintvalue));
-          }
-        } else {
-          /* here we do neither overshoot suppression nor */
-          /* enforcement.                                 */
-          /* Find this alignment zone's flat position */
-          if (alignmentzones[i].topzone == TRUE) {
-            flatposition = alignmentzones[i].bottomy;
-            /* overshoot = flatposition - stemtopy; */
-          } else {
-            flatposition = alignmentzones[i].topy;
-            /* overshoot = flatposition - stembottomy; */
-          }
- 
-          p = Loc(CharSpace, 0.0, flatposition);
-          /* find the flat position in pixels */
-          QueryLoc(p, IDENTITY, &Xpixels, &Ypixels);
-          Destroy(p);
-          flatpospixels = (vertical) ? Xpixels : Ypixels;
- 
-          /* find the shift necessary to align the flat */
-          /* position on a pixel boundary */
-          flatposshift = ROUND(flatpospixels) - flatpospixels;
- 
-          if (alignmentzones[i].topzone == TRUE) {
-            /* widen at the bottom of the stem - in order to */
-            /* not mess up the carefully aligned top */
-            tlhintvalue = flatposshift;
-            brhintvalue = flatposshift + widthdiffpixels;
-          } else {
-            /* widen at the top of the stem -- in order to */
-            /* not mess up the carefully aligned bottom */
-            tlhintvalue = flatposshift - widthdiffpixels;
-            brhintvalue = flatposshift;
-          }
-          if (vertical) {
-            stems[stemno].tlhint =
-              Permanent(Loc(IDENTITY, tlhintvalue, tlhintvalue*oblslope));
-            stems[stemno].tlrevhint =
-              Permanent(Loc(IDENTITY, -tlhintvalue, -tlhintvalue*oblslope));
-            stems[stemno].brhint =
-              Permanent(Loc(IDENTITY, brhintvalue, brhintvalue*oblslope));
-            stems[stemno].brrevhint =
-              Permanent(Loc(IDENTITY, -brhintvalue, -brhintvalue*oblslope));
-          } else {
-            stems[stemno].tlhint =
-              Permanent(Loc(IDENTITY, tlhintvalue*oblslope, tlhintvalue));
-            stems[stemno].tlrevhint =
-              Permanent(Loc(IDENTITY, -tlhintvalue*oblslope, -tlhintvalue));
-            stems[stemno].brhint =
-              Permanent(Loc(IDENTITY, brhintvalue*oblslope, brhintvalue));
-            stems[stemno].brrevhint =
-              Permanent(Loc(IDENTITY, -brhintvalue*oblslope, -brhintvalue));
-          }
+      if (alignmentzones[i].topzone) {
+        if (stemtop >= alignmentzones[i].bottomy &&
+            stemtop <= alignmentzones[i].topy + blues->BlueFuzz) {
+          break; /* We found a top-zone */
         }
-        return;
+      } else {
+        if (stembottom <= alignmentzones[i].topy &&
+            stembottom >= alignmentzones[i].bottomy - blues->BlueFuzz) {
+          break; /* We found a bottom-zone */
+        }
+      }
+    }
  
-      } /* end of if checking for an intersecting alignment zone */
+    if (i < numalignmentzones) { /* We found an intersecting zone (number i). */
+      suppressovershoot = FALSE;
+      enforceovershoot = FALSE;
  
-    } /* end of looping through alignment zones */
-    /* we didn't find any alignment zones intersecting this stem */
+      /* When 1 character space unit is rendered smaller than BlueScale
+         device units (pixels), we must SUPPRESS overshoots.  Otherwise,
+         if the top (or bottom) of this stem is more than BlueShift character
+         space units away from the flat position, we must ENFORCE overshoot. */
  
-    /* here we not suppressing overshoot, do normal hint calculations */
-  } /* end of if statement checking for horizontal stems */
+      if (unitpixels < blues->BlueScale)
+        suppressovershoot = TRUE;
+      else
+        if (alignmentzones[i].topzone)
+          if (stemtop >= alignmentzones[i].bottomy + blues->BlueShift)
+            enforceovershoot = TRUE;
+        else
+          if (stembottom <= alignmentzones[i].topy - blues->BlueShift)
+            enforceovershoot = TRUE;
  
-  /* Take into account any stem widening here */
-  idealwidth = ROUND(stemwidthpixels + widthdiffpixels);
-  if (idealwidth == 0) idealwidth = 1;
-  widthdiffpixels = idealwidth - stemwidthpixels; /* Adjust outlines to fit */
+      /*************************************************/
+      /* ALIGN THE FLAT POSITION OF THE ALIGNMENT ZONE */
+      /*************************************************/
  
-  if (ODD(idealwidth)) {       /* is ideal width odd? */
-    /* center stem over pel */
-    tlhintvalue = FLOOR(center) + 0.5 - center - widthdiffpixels/2;
-    brhintvalue = FLOOR(center) + 0.5 - center + widthdiffpixels/2;
-  }
-  else {
-    /* align stem on pel boundary */
-    tlhintvalue = ROUND(center) - center - widthdiffpixels/2;
-    brhintvalue = ROUND(center) - center + widthdiffpixels/2;
-  }
+      /* Compute the position of the alignment zone's flat position in
+         device space and the amount of shift needed to align it on a
+         pixel boundary. Move all stems this amount. */
  
-  if (vertical) {
-    stems[stemno].tlhint =
-      Permanent(Loc(IDENTITY, tlhintvalue, 0.0));
-    stems[stemno].tlrevhint =
-      Permanent(Loc(IDENTITY, -tlhintvalue, 0.0));
-    stems[stemno].brhint =
-      Permanent(Loc(IDENTITY, brhintvalue, 0.0));
-    stems[stemno].brrevhint =
-      Permanent(Loc(IDENTITY, -brhintvalue, 0.0));
+      if (alignmentzones[i].topzone)
+        flatposition = alignmentzones[i].bottomy;
+      else
+        flatposition = alignmentzones[i].topy;
+ 
+      /* Find the flat position in pixels */
+      flatpospixels = flatposition * unitpixels;
+ 
+      /* Find the stem shift necessary to align the flat
+         position on a pixel boundary, and use this shift for all stems */
+      stemshift = (ROUND(flatpospixels) - flatpospixels) * onepixel;
+ 
+      /************************************************/
+      /* HANDLE OVERSHOOT ENFORCEMENT AND SUPPRESSION */
+      /************************************************/
+ 
+      /* Compute overshoot amount (non-negative) */
+      if (alignmentzones[i].topzone)
+        overshoot = stemtop - flatposition;
+      else
+        overshoot = flatposition - stembottom;
+ 
+      if (overshoot > 0.0) {
+        /* ENFORCE overshoot by shifting the entire stem (if necessary) so that
+           it falls at least one pixel beyond the flat position. */
+ 
+        if (enforceovershoot)
+          if (overshoot < onepixel)
+            if (alignmentzones[i].topzone)
+              stemshift += onepixel - overshoot;
+            else
+              stemshift -= onepixel - overshoot;
+ 
+        /* SUPPRESS overshoot by aligning the stem to the alignment zone's
+           flat position. */
+ 
+        if (suppressovershoot)
+          if (alignmentzones[i].topzone)
+            stemshift -= overshoot;
+          else
+            stemshift += overshoot;
+      }
+ 
+      /************************************************************/
+      /* COMPUTE HINT VALUES FOR EACH SIDE OF THE HORIZONTAL STEM */
+      /************************************************************/
+ 
+      /* If the stem was aligned by a topzone, we expand or contract the stem
+         only at the bottom - since the stem top was aligned by the zone.
+         If the stem was aligned by a bottomzone, we expand or contract the stem
+         only at the top - since the stem bottom was aligned by the zone. */
+      if (alignmentzones[i].topzone) {
+        lbhintvalue = stemshift - widthdiff; /* bottom */
+        rthintvalue = stemshift;             /* top    */
+      } else {
+        lbhintvalue = stemshift;             /* bottom */
+        rthintvalue = stemshift + widthdiff; /* top    */
+      }
+ 
+      stems[stemno].lbhint    = Permanent(Loc(CharSpace, 0.0,  lbhintvalue));
+      stems[stemno].lbrevhint = Permanent(Loc(CharSpace, 0.0, -lbhintvalue));
+      stems[stemno].rthint    = Permanent(Loc(CharSpace, 0.0,  rthintvalue));
+      stems[stemno].rtrevhint = Permanent(Loc(CharSpace, 0.0, -rthintvalue));
+ 
+      return;
+ 
+    } /* endif (i < numalignmentzones) */
+ 
+    /* We didn't find any alignment zones intersecting this stem, so
+       proceed with normal stem alignment below. */
+ 
+  } /* endif (!stems[stemno].vertical) */
+ 
+  /* Align stem with pixel boundaries on device */
+  stemstart = stemstart - widthdiff / 2;
+  stemshift = ROUND(stemstart * unitpixels) * onepixel - stemstart;
+ 
+  /* Adjust the boundaries of the stem */
+  lbhintvalue = stemshift - widthdiff / 2; /* left  or bottom */
+  rthintvalue = stemshift + widthdiff / 2; /* right or top    */
+ 
+  if (stems[stemno].vertical) {
+    stems[stemno].lbhint    = Permanent(Loc(CharSpace,  lbhintvalue, 0.0));
+    stems[stemno].lbrevhint = Permanent(Loc(CharSpace, -lbhintvalue, 0.0));
+    stems[stemno].rthint    = Permanent(Loc(CharSpace,  rthintvalue, 0.0));
+    stems[stemno].rtrevhint = Permanent(Loc(CharSpace, -rthintvalue, 0.0));
   } else {
-    stems[stemno].tlhint =
-      Permanent(Loc(IDENTITY, tlhintvalue*oblslope, tlhintvalue));
-    stems[stemno].tlrevhint =
-      Permanent(Loc(IDENTITY, -tlhintvalue*oblslope, -tlhintvalue));
-    stems[stemno].brhint =
-      Permanent(Loc(IDENTITY, brhintvalue*oblslope, brhintvalue));
-    stems[stemno].brrevhint =
-      Permanent(Loc(IDENTITY, -brhintvalue*oblslope, -brhintvalue));
+    stems[stemno].lbhint    = Permanent(Loc(CharSpace, 0.0,  lbhintvalue));
+    stems[stemno].lbrevhint = Permanent(Loc(CharSpace, 0.0, -lbhintvalue));
+    stems[stemno].rthint    = Permanent(Loc(CharSpace, 0.0,  rthintvalue));
+    stems[stemno].rtrevhint = Permanent(Loc(CharSpace, 0.0, -rthintvalue));
   }
 }
+ 
+#define LEFT   1
+#define RIGHT  2
+#define BOTTOM 3
+#define TOP    4
+ 
 /*********************************************************************/
-/* Adjust a point using the given stem hint.  Use the top/left hint  */
-/* value or the bottom/right hint value depending on where the point */
-/* lies in the stem.                                                 */
+/* Adjust a point using the given stem hint.  Use the left/bottom    */
+/* hint value or the right/top hint value depending on where the     */
+/* point lies in the stem.                                           */
 /*********************************************************************/
 static struct segment *Applyhint(p, stemnumber, half)
 struct segment *p;
 int stemnumber, half;
 {
-  if (stems[stemnumber].vertical == TRUE) {
-    if (half == TOPLEFT) {
-      /* the point is in the left part of the stem */
-      return Join(p, stems[stemnumber].tlhint);
-    } else {
-      /* the point is in the right part of the stem */
-      return Join(p, stems[stemnumber].brhint);
-    }
-  } else {
-    if (half == BOTTOMRIGHT) {
-      /* the point is in the bottom part of the stem */
-      return Join(p, stems[stemnumber].brhint);
-    } else {
-      /* the point is in the top part of the stem */
-      return Join(p, stems[stemnumber].tlhint);
-    }
-  }
+  if (half == LEFT || half == BOTTOM)
+    return Join(p, stems[stemnumber].lbhint); /* left  or bottom hint */
+  else
+    return Join(p, stems[stemnumber].rthint); /* right or top    hint */
 }
  
-/***********************************************************************/
-/* Adjust a point using the given reverse hint.  Use the top/left hint */
-/* value or the bottom/right hint value depending on where the point   */
-/* lies in the stem.                                                   */
-/***********************************************************************/
+/*********************************************************************/
+/* Adjust a point using the given reverse hint.  Use the left/bottom */
+/* hint value or the right/top hint value depending on where the     */
+/* point lies in the stem.                                           */
+/*********************************************************************/
 static struct segment *Applyrevhint(p, stemnumber, half)
 struct segment *p;
 int stemnumber, half;
 {
-  if (stems[stemnumber].vertical == TRUE) {
-    if (half == TOPLEFT) {
-      /* the point is in the left part of the stem */
-      return Join(p, stems[stemnumber].tlrevhint);
-    } else {
-      /* the point is in the right part of the stem */
-      return Join(p, stems[stemnumber].brrevhint);
-    }
-  } else {
-    if (half == BOTTOMRIGHT) {
-      /* the point is in the bottom part of the stem */
-      return Join(p, stems[stemnumber].brrevhint);
-    } else {
-      /* the point is in the top part of the stem */
-      return Join(p, stems[stemnumber].tlrevhint);
-    }
-  }
+  if (half == LEFT || half == BOTTOM)
+    return Join(p, stems[stemnumber].lbrevhint); /* left  or bottom hint */
+  else
+    return Join(p, stems[stemnumber].rtrevhint); /* right or top    hint */
 }
  
 /***********************************************************************/
@@ -737,11 +598,11 @@ double x, y, dx, dy;
           (x <= stems[i].x+stems[i].dx + EPS)) {
         newvert = i;
         if (dy != 0.0) {
-          if (dy < 0) newverthalf = TOPLEFT;
-          else newverthalf = BOTTOMRIGHT;
+          if (dy < 0) newverthalf = LEFT;
+          else        newverthalf = RIGHT;
         } else {
-          if (x < stems[i].x+stems[i].dx/2) newverthalf = TOPLEFT;
-          else newverthalf = BOTTOMRIGHT;
+          if (x < stems[i].x+stems[i].dx / 2) newverthalf = LEFT;
+          else                                newverthalf = RIGHT;
         }
       }
     } else {                 /* HSTEM hint */
@@ -749,11 +610,11 @@ double x, y, dx, dy;
           (y <= stems[i].y+stems[i].dy + EPS)) {
         newhor = i;
         if (dx != 0.0) {
-          if (dx < 0) newhorhalf = TOPLEFT;
-          else newhorhalf = BOTTOMRIGHT;
+          if (dx < 0) newhorhalf = TOP;
+          else        newhorhalf = BOTTOM;
         } else {
-          if (y >= stems[i].y+stems[i].dy/2) newhorhalf = TOPLEFT;
-          else newhorhalf = BOTTOMRIGHT;
+          if (y < stems[i].y+stems[i].dy / 2) newhorhalf = BOTTOM;
+          else                                newhorhalf = TOP;
         }
       }
     }
@@ -880,7 +741,7 @@ static double PSFakePop ()
 /***********************************************************************/
 static struct segment *CenterStem(double edge1, double edge2)
 {
-  int idealwidth, vertical;
+  int idealwidth, verticalondevice;
   double leftx, lefty, rightx, righty, center, width;
   double widthx, widthy;
   double shift, shiftx, shifty;
@@ -897,17 +758,17 @@ static struct segment *CenterStem(double edge1, double edge2)
   widthx = FABS(rightx - leftx);
   widthy = FABS(righty - lefty);
  
-  if (widthy <= EPS) { /* vertical hint */
-    vertical = TRUE;
-    center = (rightx + leftx)/2.0;
+  if (widthy <= EPS) { /* verticalondevice hint */
+    verticalondevice = TRUE;
+    center = (rightx + leftx) / 2.0;
     width = widthx;
   }
   else if (widthx <= EPS) { /* horizontal hint */
-    vertical = FALSE;
-    center = (righty + lefty)/2.0;
+    verticalondevice = FALSE;
+    center = (righty + lefty) / 2.0;
     width = widthy;
   }
-  else { /* neither horizontal nor vertical and not oblique */
+  else { /* neither horizontal nor verticalondevice and not oblique */
     return (NULL);
   }
  
@@ -922,7 +783,7 @@ static struct segment *CenterStem(double edge1, double edge2)
     shift = ROUND(center) - center;
   }
  
-  if (vertical) {
+  if (verticalondevice) {
     shiftx = shift;
     shifty = 0.0;
   } else {
@@ -1588,7 +1449,7 @@ static void FlxProc(c1x2, c1y2, c3x0, c3y0, c3x1, c3y1, c3x2, c3y2,
   double c2x0, c2y0, c2x1, c2y1, c2x2, c2y2;
   char yflag;
   double x0, y0, x1, y1, x2, y2, x3, y3, x4, y4, x5, y5;
-  double cxx, cyx, cxy, cyy; /* Partial transformation matrix */
+  double cxx, cyx, cxy, cyy; /* Transformation matrix */
   int flipXY;
   double x, y;
   double erosion = 1; /* Device parameter */
