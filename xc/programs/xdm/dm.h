@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: dm.h,v 1.10 88/11/23 17:00:11 keith Exp $
+ * $XConsortium: dm.h,v 1.11 88/12/05 15:24:02 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -109,6 +109,7 @@ struct display {
 	Xauth		*authorization;	/* authorization data */
 	char		*authFile;	/* file to store authorization in */
 	char		*userAuthDir;	/* backup directory for tickets */
+	char		*authGen;	/* authorization generation program */
 	int		openDelay;	/* open delay time */
 	int		openRepeat;	/* open attempts to make */
 	int		openTimeout;	/* abort open attempt timeout */
@@ -158,7 +159,6 @@ extern int	debugLevel;
 extern char	*errorLogFile;
 extern int	daemonMode;
 extern char	*pidFile;
-extern char	*authGen;
 
 extern struct display	*FindDisplayByName (),
 			*FindDisplayByPid (),
