@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM X Window System Build Parameters
-XCOMM $XConsortium: Project.tmpl,v 1.139 91/10/10 19:39:06 rws Exp $
+XCOMM $XConsortium: Project.tmpl,v 1.140 91/11/17 16:54:42 keith Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -561,9 +561,11 @@ XCOMM X Window System make variables; this need to be coordinated with rules
        AWIDGETSRC = $(LIBSRC)/Xaw
        OLDXLIBSRC = $(LIBSRC)/oldX
       XDMCPLIBSRC = $(LIBSRC)/Xdmcp
-      BDFTOSNFSRC = $(FONTSRC)/bdftosnf
+#ifdef SnfFonts
       BDFTOSNFSRC = $(FONTSRC)/clients/bdftosnf
+#else
       BDFTOPCFSRC = $(FONTSRC)/clients/bdftopcf
+#endif
      MKFONTDIRSRC = $(FONTSRC)/clients/mkfontdir
          FSLIBSRC = $(FONTSRC)/lib/fs
     FONTSERVERSRC = $(FONTSRC)/server
