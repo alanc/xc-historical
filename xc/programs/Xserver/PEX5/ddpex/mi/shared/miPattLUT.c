@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: miPattLUT.c,v 5.1 91/02/16 09:56:32 rws Exp $ */
 
 /***********************************************************
 Copyright (c) 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -312,6 +312,12 @@ LUT_COPY (pSrcLUT, pDestLUT)
        if (destHeader->wksRefList->numObj)
 	       err = miDealWithDynamics( DYNAMIC, destHeader->wksRefList );
 #endif	/* DYNAMIC */
+
+    err =  destHeader->ops[MILUT_REQUEST_OP(milut_mod_call_back)](pDestLUT,
+		 MILUT_START_INDEX(destHeader), MILUT_DEF_ENTS(destHeader), 
+		 MILUT_COPY_MOD);
+    /* check err here if your call back proc can return an error */
+    if (err != Success) return(err);
 
     return (err);
 }                             
