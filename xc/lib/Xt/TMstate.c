@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: TMstate.c,v 1.68 89/01/31 15:50:05 swick Exp $";
+static char Xrcsid[] = "$XConsortium: TMstate.c,v 1.69 89/04/24 15:06:15 swick Exp $";
 /* $oHeader: TMstate.c,v 1.5 88/09/01 17:17:29 asente Exp $ */
 #endif lint
 /*LINTLIBRARY*/
@@ -1860,7 +1860,7 @@ void _XtRegisterGrabs(widget,tm)
 				    (unsigned) event->modifiers,
 				    XtWindow(widget),
 				    TRUE,
-				    ButtonPress|ButtonRelease,
+				    ButtonPressMask|ButtonReleaseMask,
 				    GrabModeAsync,
 				    GrabModeAsync,
 				    None,
