@@ -12,7 +12,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium$
+ * $XConsortium: stwmprprts.m,v 1.17 92/06/11 17:31:47 rws Exp $
  */
 >>TITLE XSetWMProperties CH09
 void
@@ -578,7 +578,7 @@ Verify that the property value was correctly set with XGetWindowProperty.
 Window		win;
 XVisualInfo	*vp;
 XWMHints	hints;
-XWMHints	*hints_ret;
+long		*hints_ret;
 unsigned long	leftover, nitems;
 int		actual_format;
 Atom		actual_type;
@@ -590,12 +590,12 @@ Atom		actual_type;
 	hints.flags = AllHints;
 	hints.input = True;
 	hints.initial_state = IconicState;
-	hints.icon_pixmap =  1L;
-	hints.icon_window = 1L;
+	hints.icon_pixmap =  154376L;
+	hints.icon_window = 197236L;
 	hints.icon_x = 13;
 	hints.icon_y = 7;
-	hints.icon_mask = 1L;
-	hints.window_group = 1L;
+	hints.icon_mask = 146890L;
+	hints.window_group = 137235L;
 
 	w = win;
 	wm_hints = &hints;
@@ -634,57 +634,56 @@ Atom		actual_type;
 	} else
 		CHECK;
 
-	if(hints_ret->flags != AllHints) {
-		report("The flags component was %lu instead of AllHints.", hints_ret->flags);
+	if(hints_ret[0] != hints.flags) {
+		report("The flags component was %lu instead of %lu.", hints_ret[0], hints.flags);
 		FAIL;
 	} else
 		CHECK;
 
-	if(hints_ret->input != True) {
-		report("The hints_ret component of the XWMHints structure was %d instead of True.", (Bool) hints_ret->input);
+	if(hints_ret[1] != hints.input) {
+		report("The hints_ret component of the XWMHints structure was %lu instead of %d.", hints_ret[1], hints.input);
 		FAIL;
 	} else
 		CHECK;
 
-	if(hints_ret->initial_state != IconicState) {
-		report("The initial_state component of the XWMHints structure was %d instead of IconicState.",
-			hints_ret->initial_state);
+	if(hints_ret[2] != hints.initial_state) {
+		report("The initial_state component of the XWMHints structure was %lu instead of %d.", hints_ret[2], hints.initial_state);
 		FAIL;
 	} else
 		CHECK;
 
-	if(hints_ret->icon_pixmap !=  1L) {
-		report("The icon_pixmap component of the XWMHints structure was %lu instead of 1.", hints_ret->icon_pixmap);
+	if(hints_ret[3] != hints.icon_pixmap) {
+		report("The icon_pixmap component of the XWMHints structure was %lu instead of %lu.", hints_ret[3], hints.icon_pixmap);
 		FAIL;
 	} else
 		CHECK;
 
-	if(hints_ret->icon_window != 1L) {
-		report("The icon_window component of the XWMHints structure was %lu instead of 1.", hints_ret->icon_window);
+	if(hints_ret[4] != hints.icon_window) {
+		report("The icon_window component of the XWMHints structure was %lu instead of %lu.", hints_ret[4], hints.icon_window);
 		FAIL;
 	} else
 		CHECK;
 
-	if(hints_ret->icon_x != 13) {
-		report("The icon_x component of the XWMHints structure was %d instead of 13.", hints_ret->icon_x);
+	if(hints_ret[5] != hints.icon_x) {
+		report("The icon_x component of the XWMHints structure was %ld instead of %d.", hints_ret[5], hints.icon_x);
 		FAIL;
 	} else
 		CHECK;
 
-	if(hints_ret->icon_y != 7) {
-		report("The icon_y component of the XWMHints structure was %d instead of 7.", hints_ret->icon_y);
+	if(hints_ret[6] != hints.icon_y) {
+		report("The icon_y component of the XWMHints structure was %ld instead of %d.", hints_ret[6], hints.icon_y);
 		FAIL;
 	} else
 		CHECK;
 
-	if(hints_ret->icon_mask != 1L) {
-		report("The icon_mask component of the XWMHints structure was %lu instead of 1.", hints_ret->icon_mask);
+	if(hints_ret[7] != hints.icon_mask) {
+		report("The icon_mask component of the XWMHints structure was %lu instead of %lu.", hints_ret[7], hints.icon_mask);
 		FAIL;
 	} else
 		CHECK;
 
-	if(hints_ret->window_group != 1L) {
-		report("The window_group component of the XWMHints structure was %lu instead of 1.", hints_ret->window_group);
+	if(hints_ret[8] != hints.window_group) {
+		report("The window_group component of the XWMHints structure was %lu instead of %lu.", hints_ret[8], hints.window_group);
 		FAIL;
 	} else
 		CHECK;
