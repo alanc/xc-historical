@@ -1,4 +1,4 @@
-/* $XConsortium: ico.c,v 1.10 89/10/04 16:35:24 jim Exp $ */
+/* $XConsortium: ico.c,v 1.11 89/10/04 16:46:02 jim Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -89,7 +89,7 @@ extern long random();
 char *ProgramName;
 Display *dpy;
 Window win, draw_window;
-int winWidth, winHeight;
+int winX, winY, winW, winH;
 Colormap cmap;
 GC gc;
 int multibuf = 0;
@@ -105,7 +105,6 @@ int nplanesets;
 int dsync = 0;
 int softdbl = 0, dblbuf = 0;
 int sleepcount = 0;
-int isleepcount = 5;
 int numcolors = 0;
 char **colornames;	/* points into argv */
 int dofaces = 0;
@@ -149,7 +148,6 @@ char **argv;
 	int fg, bg;
 	int invert = 0;
 	int dash = 0;
-	int winX, winY, winW, winH;
 	XSetWindowAttributes xswa;
 	XWindowAttributes xwa;
 	Polyinfo *poly;		/* the poly to draw */
@@ -157,6 +155,7 @@ char **argv;
 	int icoDeltaX, icoDeltaY;
 	int icoW, icoH;
 	XEvent xev;
+	Bool blocking = False;
 	unsigned long vmask;
 	XGCValues xgcv;
 	int linewidth = 0;
@@ -212,8 +211,6 @@ char **argv;
 			invert = 1;
 		else if (!strcmp (*argv, "-sleep"))
 			sleepcount = atoi(*++argv);
-		else if (!strcmp (*argv, "-isleep"))
-			isleepcount = atoi(*++argv);
 		else if (!strcmp (*argv, "-obj"))
 			poly = findpoly(*++argv);
 		else if (!strcmp(*argv, "-dsync"))
@@ -286,7 +283,7 @@ char **argv;
 		if (geom) 
 			XParseGeometry(geom, &winX, &winY, &winW, &winH);
 
-		xswa.event_mask = ExposureMask;
+		xswa.event_mask = ExposureMask | StructureNotifyMask;
 		xswa.background_pixel = bg;
 		xswa.border_pixel = fg;
 		draw_window = XCreateWindow(dpy, DefaultRootWindow(dpy), 
@@ -305,8 +302,8 @@ char **argv;
 		if (XGetWindowAttributes(dpy,draw_window,&xwa)==0) {
 			icoFatal("cant get window attributes (size)");
 		}
-		winWidth = xwa.width;
-		winHeight = xwa.height;
+		winW = xwa.width;
+		winH = xwa.height;
 		}
 
 	win = None;
@@ -397,8 +394,22 @@ char **argv;
 		int prevX;
 		int prevY;
 
-		if (XPending(dpy))
-			XNextEvent(dpy, &xev);
+		if (blocking || XPending(dpy)) {
+		    XNextEvent(dpy, &xev);
+
+		    switch (xev.type) {
+		      case ConfigureNotify:
+			winW = xev.xconfigure.width;
+			winH = xev.xconfigure.height;
+			break;
+		      case MapNotify:
+			blocking = False;
+			break;
+		      case UnmapNotify:
+			blocking = True;
+			continue;
+		    }
+		}
 
 		prevX = icoX;
 		prevY = icoY;
@@ -654,10 +665,9 @@ int prevX, prevY;
 		dbpair.drawbuf->prevY = icoY;
 		setDisplayBuf(dbpair.dbufnum);
 	}
-/*	XSync(dpy, 0); */
 	if (dblbuf)
 		dbpair.dbufnum = 1 - dbpair.dbufnum;
-/*	if (sleepcount) sleep(sleepcount); */
+	if (sleepcount) sleep(sleepcount);
 	}
 
 char *xalloc(nbytes)
@@ -745,12 +755,8 @@ DBufInfo *b, *otherb;
 	    setDrawBuf(0);
 	    XSetBackground(dpy, gc, dbpair.bufs[0].pixels[0]);
 	    XSetPlaneMask(dpy, gc, AllPlanes);
-	    icoClearArea(0, 0, winWidth, winHeight); /* clear entire window */
+	    icoClearArea(0, 0, winW, winH); /* clear entire window */
 	}
-#ifdef bogus
-	sleep(isleepcount);	/*** doesn't work without this!!! */
-	XSync(dpy,0);
-#endif
 
 	if (softdbl) setDisplayBuf(1);
 }
