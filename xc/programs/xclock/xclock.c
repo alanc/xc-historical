@@ -2,7 +2,7 @@
  *  Hacked from Tony Della Fera's much hacked clock program.
  */
 #ifndef lint
-static char rcsid[] = "$Header: xclock.c,v 1.11 88/02/13 21:27:54 rws Exp $";
+static char rcsid[] = "$Header: xclock.c,v 1.12 88/02/14 15:22:47 jim Exp $";
 #endif  lint
 
 #include <X11/Xatom.h>
@@ -30,8 +30,6 @@ static XrmOptionDescRec options[] = {
 {"-d",		"*clock.analog",	XrmoptionNoArg,		"FALSE"},
 {"-digital",	"*clock.analog",	XrmoptionNoArg,		"FALSE"},
 {"-analog",	"*clock.analog",	XrmoptionNoArg,		"TRUE"},
-{"-rv",		"*clock.reverseVideo",	XrmoptionNoArg,		"TRUE"},
-{"-reverse",	"*clock.reverseVideo",	XrmoptionNoArg,		"TRUE"},
 };
 
 
