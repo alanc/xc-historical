@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: dixstruct.h,v 1.12 89/01/05 09:25:28 rws Exp $ */
+/* $XConsortium: dixstruct.h,v 1.13 89/05/18 20:44:41 rws Exp $ */
 #ifndef DIXSTRUCT_H
 #define DIXSTRUCT_H
 
@@ -42,7 +42,9 @@ typedef struct _TimeStamp {
     unsigned long	milliseconds;
 } TimeStamp;
 
+#ifdef DEBUG
 #define MAX_REQUEST_LOG 100
+#endif
 
 typedef struct _Client {
     int index;
@@ -62,10 +64,12 @@ typedef struct _Client {
     GContext lastGCID;    
     pointer *saveSet;
     int numSaved;
-    int requestLog[MAX_REQUEST_LOG];
-    int requestLogIndex;
     pointer screenPrivate[MAXSCREENS];
     int (**requestVector)();
+#ifdef DEBUG
+    unsigned char requestLog[MAX_REQUEST_LOG];
+    int requestLogIndex;
+#endif
 } ClientRec;
 
 extern TimeStamp currentTime;
