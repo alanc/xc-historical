@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: misc.c,v 1.9 89/02/15 18:44:03 kit Exp $
+ * $XConsortium: misc.c,v 1.10 89/02/15 19:25:33 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -118,13 +118,11 @@ char * entry;
   FILE * file;
   Widget w = man_globals->manpagewidgets.directory;
   Widget manpage = man_globals->manpagewidgets.manpage;
-  Window junk;
   char cmdbuf[BUFSIZ], tmp[BUFSIZ], catdir[BUFSIZ];
   char path[BUFSIZ], section[BUFSIZ], error_buf[BUFSIZ];
   XEvent event;
-
-  int x,y;			/* location to pop up whould you 
-				   like to save widget. */
+  Position x,y;			/* location to pop up the
+				   "would you like to save" widget. */
 
   strcpy(tmp,MANTEMP);		/* get a temp file. */
   strcpy(man_globals->tmpfile,mktemp(tmp));
@@ -184,12 +182,11 @@ char * entry;
   XtPopdown( XtParent(man_globals->standby) );
   
   if( (access(catdir,W_OK)) == 0)  {
-    x = (int) Width(man_globals->manpagewidgets.manpage)/2;
-    y = (int) Height(man_globals->manpagewidgets.manpage)/2;
-    XTranslateCoordinates(XtDisplay(manpage), XtWindow(manpage),
-			  XtScreen(manpage)->root, x, y, &x, &y, &junk);
+    x = (Position) Width(man_globals->manpagewidgets.manpage)/2;
+    y = (Position) Height(man_globals->manpagewidgets.manpage)/2;
+    XtTranslateCoords(manpage, x, y, &x, &y);
     PositionCenter( PopupChild(man_globals->manpagewidgets.manpage, 0),
-		    x, y, 0, 0, 0, 0);
+		    (int) x, (int) y, 0, 0, 0, 0);
     XtPopup( PopupChild(man_globals->manpagewidgets.manpage, 0),
 	    XtGrabExclusive);
   }
