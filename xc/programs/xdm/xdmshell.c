@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: xdmshell.c,v 1.14 94/10/18 16:09:08 converse Exp gildea $ */
 /*
  * xdmshell - simple program for running xdm from login
  *
@@ -43,9 +43,6 @@ in this Software without prior written authorization from the X Consortium.
 #ifdef X_NOT_STDC_ENV
 extern int errno;
 #endif
-
-extern int sys_nerr;
-extern char *sys_errlist[];
 
 #ifdef macII
 #define ON_CONSOLE_ONLY
