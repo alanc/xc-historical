@@ -1,4 +1,4 @@
-/* $XConsortium: TMgrab.c,v 1.4 91/04/12 14:02:15 converse Exp $ */
+/* $XConsortium: TMgrab.c,v 1.5 92/04/03 16:47:06 converse Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -57,10 +57,12 @@ static void GrabAllCorrectKeys(widget, typeMatch, modMatch, grabP)
 	if (modMatch->standard) {
 	    /* find standard modifiers that produce this keysym */
 	    KeySym keysym;
-	    int std_mods, least_mod = 1;
+	    int std_mods, least_mod;
 	    Modifiers modifiers_return;
 	    XtTranslateKeycode( dpy, *keycodeP, (Modifiers)0,
 			        &modifiers_return, &keysym );
+	    if (modifiers_return & modMatch->modifiers)
+		return;
 	    if (keysym == typeMatch->eventCode) {
 		XtGrabKey(widget, *keycodeP,
 			  (unsigned)modMatch->modifiers,
@@ -70,17 +72,19 @@ static void GrabAllCorrectKeys(widget, typeMatch, modMatch, grabP)
 			);
 		/* continue; */		/* grab all modifier combinations */
 	    }
-	    while ((least_mod & modifiers_return)==0) least_mod <<= 1;	    
+	    least_mod = modifiers_return & (~modifiers_return + 1);
 	    for (std_mods = modifiers_return;
 		 std_mods >= least_mod; std_mods--) {
+		Modifiers dummy;
 		 /* check all useful combinations of modifier bits */
-		if (modifiers_return & std_mods) {
+		if (modifiers_return & std_mods &&
+		    !(std_mods & ~modifiers_return)) {
 		    XtTranslateKeycode( dpy, *keycodeP,
 					(Modifiers)std_mods,
-					&modifiers_return, &keysym );
+					&dummy, &keysym );
 		    if (keysym == typeMatch->eventCode) {
 			XtGrabKey(widget, *keycodeP,
-				  (unsigned)modMatch->modifiers | std_mods,
+				  (Modifiers) (modMatch->modifiers | std_mods),
 				  grabP->owner_events,
 				  grabP->pointer_mode,
 				  grabP->keyboard_mode
