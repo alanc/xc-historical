@@ -25,7 +25,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: add_window.c,v 1.48 89/06/09 13:36:31 jim Exp $
+ * $XConsortium: add_window.c,v 1.49 89/06/09 13:42:07 jim Exp $
  *
  * Add a new window, put the titlbar and other stuff around
  * the window
@@ -36,7 +36,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: add_window.c,v 1.48 89/06/09 13:36:31 jim Exp $";
+"$XConsortium: add_window.c,v 1.49 89/06/09 13:42:07 jim Exp $";
 #endif /* lint */
 
 #include <stdio.h>
@@ -66,14 +66,13 @@ static int PlaceY = 50;
 char NoName[] = "No Name"; /* name if no name is specified */
 
 
-/***********************************************************************
+/************************************************************************
  *
  *  Procedure:
  *	GetGravityOffsets - map gravity to (x,y) offset signs for adding
  *		to x and y when window is mapped to get proper placement.
- *
- *  Return Value:
- *	Bool - true if valid input gravity
+ * 
+ ************************************************************************
  */
 
 GetGravityOffsets (tmp, xp, yp)
@@ -147,6 +146,7 @@ IconMgr *iconp;
     XWindowAttributes gattr;
     int trans;
     long supplied;
+    int gravx, gravy;			/* gravity signs for positioning */
 
 #ifdef DEBUG
     fprintf(stderr, "AddWindow: w = 0x%x\n", w);
@@ -266,8 +266,24 @@ IconMgr *iconp;
 	tmp_win->wmhints->flags |= StateHint;
     }
 
-    if (HandlingEvents && dont_know && !Scr->RandomPlacement)
-    {
+    GetGravityOffsets (tmp_win, &gravx, &gravy);
+
+
+    /*
+     * do any prompting for position
+     */
+    if (HandlingEvents && dont_know) {
+      if (Scr->RandomPlacement) {	/* just stick it somewhere */
+	if ((PlaceX + tmp_win->attr.width) > Scr->MyDisplayWidth)
+	    PlaceX = 50;
+	if ((PlaceY + tmp_win->attr.height) > Scr->MyDisplayHeight)
+	    PlaceY = 50;
+
+	tmp_win->attr.x = PlaceX;
+	tmp_win->attr.y = PlaceY;
+	PlaceX += 30;
+	PlaceY += 30;
+      } else {				/* else prompt */
 	if (!(tmp_win->wmhints && tmp_win->wmhints->flags & StateHint &&
 	      tmp_win->wmhints->initial_state == IconicState))
 	{
@@ -302,8 +318,10 @@ IconMgr *iconp;
 		    firsttime = False;
 		}
 
-		if (JunkMask != 0)
-		    continue;
+		/*
+		 * wait for buttons to come up; yuck
+		 */
+		if (JunkMask != 0) continue;
 
 		/* 
 		 * this will cause a warp to the indicated root
@@ -416,24 +434,12 @@ IconMgr *iconp;
 
 	    XUngrabServer(dpy);
 	}
-    }
-    else if (HandlingEvents && dont_know && Scr->RandomPlacement)
-    {
-	if ((PlaceX + tmp_win->attr.width) > Scr->MyDisplayWidth)
-	    PlaceX = 50;
-	if ((PlaceY + tmp_win->attr.height) > Scr->MyDisplayHeight)
-	    PlaceY = 50;
-
-	tmp_win->attr.x = PlaceX;
-	tmp_win->attr.y = PlaceY;
-	PlaceX += 30;
-	PlaceY += 30;
+      }
+    } else {				/* put it where asked, mod title bar */
+	/* if the gravity is towards the top, move it by the title height */
+	if (gravy < 0) tmp_win->attr.y -= gravy * tmp_win->title_height;
     }
 
-#ifdef OLD_WAY
-    if (tmp_win->attr.y < tmp_win->title_height)
-	tmp_win->attr.y = tmp_win->title_height;
-#endif
 
     xwcm = CWX | CWY | CWWidth | CWHeight;
 
@@ -444,14 +450,13 @@ IconMgr *iconp;
 	    tmp_win->attr.width,
 	    tmp_win->attr.height);
 #endif
-    if (!Scr->ClientBorderWidth) {
-	int xoff, yoff;
 
-	GetGravityOffsets (tmp_win, &xoff, &yoff);
-	tmp_win->attr.x += (xoff * tmp_win->attr.border_width);
-	tmp_win->attr.y += (yoff * tmp_win->attr.border_width);
+    if (!Scr->ClientBorderWidth) {	/* need to adjust for twm borders */
+	tmp_win->attr.x += (gravx * tmp_win->attr.border_width);
+	tmp_win->attr.y += (gravy * tmp_win->attr.border_width);
     }
 
+					/* set up the configure */
     xwc.x = tmp_win->attr.x + tmp_win->attr.border_width;
     xwc.y = tmp_win->attr.y + tmp_win->attr.border_width;
     xwc.width = tmp_win->attr.width;

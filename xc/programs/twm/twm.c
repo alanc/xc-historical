@@ -25,7 +25,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: twm.c,v 1.49 89/06/09 13:38:09 jim Exp $
+ * $XConsortium: twm.c,v 1.50 89/06/09 13:42:52 jim Exp $
  *
  * twm - "Tom's Window Manager"
  *
@@ -35,7 +35,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: twm.c,v 1.49 89/06/09 13:38:09 jim Exp $";
+"$XConsortium: twm.c,v 1.50 89/06/09 13:42:52 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -618,7 +618,7 @@ Reborder ()
     XWindowChanges xwc;		/* change window structure */
     unsigned int xwcm;		/* change window mask */
     int scrnum;
-    int xoff, yoff;
+    int gravx, gravy;
 
     /* put a border back around all windows */
 
@@ -629,24 +629,28 @@ Reborder ()
 
 	for (tmp = Scr->TwmRoot.next; tmp != NULL; tmp = tmp->next)
 	{
+	    GetGravityOffsets (tmp, &gravx, &gravy);
 	    XGetGeometry(dpy, tmp->w, &JunkRoot, &x,&y, &JunkWidth,&JunkHeight,
 			 &JunkBW, &JunkDepth);
 
 	    xwcm = CWX | CWY;
 	    xwc.x = x;
-	    xwc.y = y;
+	    xwc.y = y + ((gravy < 0) ? (gravy * tmp->title_height) : 0);
 
 	    if (JunkBW != tmp->old_bw) {
+		int xoff, yoff;
+
 		/*
 		 * restore the window position if gravitated
 		 */
-		if (!Scr->ClientBorderWidth)
-		  GetGravityOffsets (tmp, &xoff, &yoff);
-		else
+		if (!Scr->ClientBorderWidth) {
+		    xoff = gravx;
+		    yoff = gravy;
+		} else
 		  xoff = yoff = 0;
 
-	    	xwc.x = x - (xoff + 1) * tmp->old_bw;
-	    	xwc.y = y - (yoff + 1) * tmp->old_bw;
+	    	xwc.x -= (xoff + 1) * tmp->old_bw;
+	    	xwc.y -= (yoff + 1) * tmp->old_bw;
 	    	xwc.border_width = tmp->old_bw;
 		xwcm |= CWBorderWidth;
 	    }
