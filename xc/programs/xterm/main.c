@@ -1,5 +1,5 @@
 /*
- *	$Header: main.c,v 1.6 88/02/12 12:21:31 jim Exp $
+ *	$Header: main.c,v 1.7 88/02/13 15:24:07 jim Exp $
  */
 
 #include <X11/copyright.h>
@@ -30,7 +30,7 @@
 /* main.c */
 
 #ifndef lint
-static char rcs_id[] = "$Header: main.c,v 1.6 88/02/12 12:21:31 jim Exp $";
+static char rcs_id[] = "$Header: main.c,v 1.7 88/02/13 15:24:07 jim Exp $";
 #endif	/* lint */
 
 #include <X11/Xos.h>
@@ -299,7 +299,7 @@ static XtResource resources[] = {
 	XtRBoolean, (caddr_t) &defaultFALSE},
 {XtNtekInhibit, XtCTekInhibit, XtRBoolean, sizeof(Boolean),
 	XtOffset(XtermWidget, misc.tekInhibit),
-	XtRBoolean, (caddr_t) &defaultFALSE},
+	XtRBoolean, (caddr_t) &defaultTRUE},
 {XtNtekStartup, XtCTekStartup, XtRBoolean, sizeof(Boolean),
 	XtOffset(XtermWidget, screen.TekEmu),
 	XtRBoolean, (caddr_t) &defaultFALSE},
@@ -700,9 +700,11 @@ gettimeofday(&initT, &tz);
 	XSetErrorHandler(xerror);
 	XSetIOErrorHandler(xioerror);
 	for( ; ; )
-		if(screen->TekEmu)
+		if(screen->TekEmu) {
+			Bell();
 			TekRun();
-		else
+			screen->TekEmu = FALSE;
+		} else
 			VTRun();
 }
 
