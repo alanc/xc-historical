@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: resize.c,v 1.24 91/06/24 15:19:54 gildea Exp $
+ *	$XConsortium: resize.c,v 1.25 91/07/09 18:02:37 gildea Exp $
  */
 
 /*
@@ -111,10 +111,12 @@ struct {
 } shell_list[] = {
 	"csh",		SHELL_C,	/* vanilla cshell */
 	"tcsh",		SHELL_C,
+	"jcsh",		SHELL_C,
 	"sh",		SHELL_BOURNE,	/* vanilla Bourne shell */
 	"ksh",		SHELL_BOURNE,	/* Korn shell (from AT&T toolchest) */
 	"ksh-i",	SHELL_BOURNE,	/* other name for latest Korn shell */
 	"bash",		SHELL_BOURNE,	/* GNU Bourne again shell */
+	"jsh",		SHELL_BOURNE,
 	NULL,		SHELL_BOURNE	/* default (same as xterm's) */
 };
 
