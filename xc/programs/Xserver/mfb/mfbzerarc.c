@@ -15,7 +15,7 @@ without any express or implied warranty.
 
 ********************************************************/
 
-/* $XConsortium: mfbzerarc.c,v 5.6 89/09/17 16:54:09 rws Exp $ */
+/* $XConsortium: mfbzerarc.c,v 5.7 89/09/18 16:51:57 rws Exp $ */
 
 /* Derived from:
  * "Algorithm for drawing ellipses or hyperbolae with a digital plotter"
@@ -112,8 +112,11 @@ mfbZeroArcSS(pDraw, pGC, arc)
 	DoPix(2, yorgl, info.xorgo);
 	DoPix(8, yorgol, info.xorgo);
     }
-    if (!info.endx)
-	mask = info.endMask;
+    if (!info.end.x)
+    {
+	mask = info.end.mask;
+	info.end = info.altend;
+    }
     if (do360 && (arc->width == arc->height) && !(arc->width & 1))
     {
 	int xoffset = nlwidth;
@@ -239,14 +242,20 @@ mfbZeroArcSS(pDraw, pGC, arc)
 		d = b - (a >> 1) - d + (k3 >> 3);
 		a = (info.alpha - info.beta) - a;
 	    }
-	    if ((x == info.startx) || (y == info.starty))
-		mask = info.startMask;
+	    if ((x == info.start.x) || (y == info.start.y))
+	    {
+		mask = info.start.mask;
+		info.start = info.altstart;
+	    }
 	    DoPix(1, yorgl + yoffset, info.xorg + x);
 	    DoPix(2, yorgl + yoffset, info.xorgo - x);
 	    DoPix(4, yorgol - yoffset, info.xorgo - x);
 	    DoPix(8, yorgol - yoffset, info.xorg + x);
-	    if ((x == info.endx) || (y == info.endy))
-		mask = info.endMask;
+	    if ((x == info.end.x) || (y == info.end.y))
+	    {
+		mask = info.end.mask;
+		info.end = info.altend;
+	    }
 	    b -= k1;
 	    if (d < 0)
 	    {
@@ -268,8 +277,11 @@ mfbZeroArcSS(pDraw, pGC, arc)
     }
     for (; x <= info.w; x++)
     {
-	if ((x == info.startx) || (y == info.starty))
-	    mask = info.startMask;
+	if ((x == info.start.x) || (y == info.start.y))
+	{
+	    mask = info.start.mask;
+	    info.start = info.altstart;
+	}
 	DoPix(1, yorgl + yoffset, info.xorg + x);
 	DoPix(4, yorgol - yoffset, info.xorgo - x);
 	if (!arc->height || (arc->height & 1))
@@ -277,8 +289,11 @@ mfbZeroArcSS(pDraw, pGC, arc)
 	    DoPix(2, yorgl + yoffset, info.xorgo - x);
 	    DoPix(8, yorgol - yoffset, info.xorg + x);
 	}
-	if (x == info.endx)
-	    mask = info.endMask;
+	if (x == info.end.x)
+	{
+	    mask = info.end.mask;
+	    info.end = info.altend;
+	}
     }
 }
 
