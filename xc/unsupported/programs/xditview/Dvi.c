@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Dvi.c,v 1.2 89/03/03 13:57:50 keith Exp $";
+static char Xrcsid[] = "$XConsortium: Dvi.c,v 1.3 89/03/05 19:38:03 keith Exp $";
 #endif lint
 
 /*
@@ -68,8 +68,10 @@ static XtResource resources[] = {
 	 offset(dvi.requested_page), XtRString, "1"},
 	{XtNlastPageNumber, XtCLastPageNumber, XtRInt, sizeof (int),
 	 offset (dvi.last_page), XtRString, "0"},
-	{XtNfileName, XtCFileName, XtRString, sizeof (char *),
-	 offset(dvi.file_name), XtRString, (char *) 0},
+	{XtNfile, XtCFile, XtRFile, sizeof (FILE *),
+	 offset (dvi.file), XtRFile, (char *) 0},
+	{XtNseek, XtCSeek, XtRBoolean, sizeof (Boolean),
+	 offset(dvi.seek), XtRString, "false"},
 	{XtNfont, XtCFont, XtRFontStruct, sizeof (XFontStruct *),
 	 offset(dvi.default_font), XtRString, "xtdefaultfont"},
 	{XtNbackingStore, XtCBackingStore, XtRBackingStore, sizeof (int),
@@ -82,7 +84,7 @@ static XtResource resources[] = {
 
 static void		ClassInitialize ();
 static void		Initialize(), Realize (), Destroy (), Redisplay ();
-static Boolean		SetValues ();
+static Boolean		SetValues (), SetValuesHook ();
 static XtGeometryResult	QueryGeometry ();
 static void		ShowDvi ();
 static void		CloseFile (), OpenFile ();
@@ -111,7 +113,7 @@ static DviClassRec dviClassRec = {
 	NULL,				/* resize		  */
 	Redisplay,			/* expose		  */
 	SetValues,			/* set_values		  */
-	NULL,				/* set_values_hook	  */
+	SetValuesHook,			/* set_values_hook	  */
 	NULL,				/* set_values_almost	  */
 	NULL,				/* get_values_hook	  */
 	NULL,				/* accept_focus		  */
@@ -130,8 +132,8 @@ WidgetClass dviWidgetClass = (WidgetClass) &dviClassRec;
 
 static void ClassInitialize ()
 {
-    XtAddConverter( XtRString, XtRBackingStore, XmuCvtStringToBackingStore,
-		    NULL, 0 );
+	XtAddConverter( XtRString, XtRBackingStore, XmuCvtStringToBackingStore,
+			NULL, 0 );
 }
 
 /****************************************************************
@@ -149,8 +151,8 @@ static void Initialize(request, new)
 	dw->dvi.current_page = 0;
 	dw->dvi.font_map = 0;
 	dw->dvi.cache.index = 0;
-	dw->dvi.file_name = 0;
 	dw->dvi.file = 0;
+	dw->dvi.seek = False;
 }
 
 static void
@@ -171,7 +173,7 @@ Realize (w, valueMask, attrs)
 	values.foreground = dw->dvi.foreground;
 	dw->dvi.normal_GC = XCreateGC (XtDisplay (w), XtWindow (w),
 					GCForeground, &values);
-	if (dw->dvi.file_name)
+	if (dw->dvi.file)
 		OpenFile (dw);
 	ParseFontMap (dw);
 }
@@ -217,50 +219,72 @@ static Boolean
 SetValues (current, request, new)
 	DviWidget current, request, new;
 {
-	Boolean	redisplay = FALSE;
-	extern char	    *malloc ();
-	int		    cur, req;
+	Boolean		redisplay = FALSE;
+	extern char	*malloc ();
+	char		*new_map;
+	int		cur, req;
 
 	req = request->dvi.requested_page;
 	cur = current->dvi.requested_page;
 	if (cur != req) {
-		if (req < 1)
-			req = 1;
-		if (current->dvi.last_page != 0 &&
-		    req > current->dvi.last_page)
-			req = current->dvi.last_page;
+		if (!request->dvi.file)
+		    req = 0;
+		else {
+		    if (req < 1)
+			    req = 1;
+		    if (current->dvi.last_page != 0 &&
+			req > current->dvi.last_page)
+			    req = current->dvi.last_page;
+		}
 		if (cur != req)
-		    redisplay = TRUE;
+	    	    redisplay = TRUE;
 		new->dvi.requested_page = req;
 	}
 	
 	if (current->dvi.font_map_string != request->dvi.font_map_string) {
-		redisplay = TRUE;
-		new->dvi.font_map_string = request->dvi.font_map_string;
-		ParseFontMap (new);
-	}
-	if (current->dvi.file_name != request->dvi.file_name) {
-		CloseFile (current);
-		new->dvi.file_name = malloc (strlen (request->dvi.file_name) + 1);
-		if (new->dvi.file_name)
-			strcpy (new->dvi.file_name, request->dvi.file_name);
-		if (current->dvi.file_name)
-			free (current->dvi.file_name);
-		OpenFile (new);
-		redisplay = TRUE;
+		new_map = malloc (strlen (request->dvi.font_map_string) + 1);
+		if (new_map) {
+			redisplay = TRUE;
+			strcpy (new_map, request->dvi.font_map_string);
+			new->dvi.font_map_string = new_map;
+			if (current->dvi.font_map_string)
+				free (current->dvi.font_map_string);
+			current->dvi.font_map_string = 0;
+			ParseFontMap (new);
+		}
 	}
 	return redisplay;
+}
+
+/*
+ * use the set_values_hook entry to check when
+ * the file is set
+ */
+
+static Boolean
+SetValuesHook (dw, args, num_argsp)
+	DviWidget	dw;
+	ArgList		args;
+	Cardinal	*num_argsp;
+{
+	Cardinal	i;
+
+	for (i = 0; i < *num_argsp; i++) {
+		if (!strcmp (args[i].name, XtNfile)) {
+			CloseFile (dw);
+			OpenFile (dw);
+			return TRUE;
+		}
+	}
+	return FALSE;
 }
 
 static void CloseFile (dw)
 	DviWidget	dw;
 {
-	if (dw->dvi.file) {
-		if (strcmp (dw->dvi.file, "-"))
-			fclose (dw->dvi.file);
-		else
-			fclose (dw->dvi.tmpFile);
-	}
+	if (dw->dvi.tmpFile)
+		fclose (dw->dvi.tmpFile);
+	ForgetPagePositions (dw);
 }
 
 static void OpenFile (dw)
@@ -268,15 +292,12 @@ static void OpenFile (dw)
 {
 	char	tmpName[sizeof ("/tmp/dviXXXXXX")];
 
-	if (!strcmp (dw->dvi.file_name, "-")) {
-		dw->dvi.file = stdin;
+	dw->dvi.tmpFile = 0;
+	if (!dw->dvi.seek) {
 		strcpy (tmpName, "/tmp/dviXXXXXX");
 		mktemp (tmpName);
 		dw->dvi.tmpFile = fopen (tmpName, "w+");
 		unlink (tmpName);
-	} else {
-		dw->dvi.file = fopen (dw->dvi.file_name, "r");
-		dw->dvi.tmpFile = 0;
 	}
 	dw->dvi.requested_page = 1;
 	dw->dvi.last_page = 0;
@@ -306,12 +327,8 @@ ShowDvi (dw)
 	long	file_position;
 
 	if (!dw->dvi.file) {
-		char Error[1024];
+		static char Error[] = "No file selected";
 
-		if (!dw->dvi.file_name)
-			sprintf (Error, "No file selected yet");
-		else
-			sprintf (Error, "%s: No such file", dw->dvi.file_name);
 		XSetFont (XtDisplay(dw), dw->dvi.normal_GC,
 			  dw->dvi.default_font->fid);
 		XDrawString (XtDisplay (dw), XtWindow (dw), dw->dvi.normal_GC,
@@ -352,6 +369,7 @@ ShowDvi (dw)
 						dw->dvi.current_page);
 				if (file_position != -1)
 					FileSeek (dw, file_position);
+				break;
 			}
 		}
 	}

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: DviP.h,v 1.1 89/03/01 15:50:43 keith Exp $
+ * $XConsortium: DviP.h,v 1.2 89/03/03 13:58:13 keith Exp $
  */
 
 /* 
@@ -118,15 +118,15 @@ typedef struct {
 	 */
 	char		*font_map_string;
 	unsigned long	foreground;
-	char		*file_name;
 	int		requested_page;
 	int		last_page;
 	XFontStruct	*default_font;
+	FILE		*file;
 	Boolean		noPolyText;
+	Boolean		seek;		/* file is "seekable" */
 	/*
  	 * private state
  	 */
-	FILE		*file;
 	FILE		*tmpFile;	/* used when reading stdin */
 	char		readingTmp;	/* reading now from tmp */
 	char		ungot;		/* have ungetc'd a char */
