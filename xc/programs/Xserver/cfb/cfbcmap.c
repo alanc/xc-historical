@@ -1,4 +1,4 @@
-/* $XConsortium: cfbcmap.c,v 4.16 93/12/13 17:21:52 dpw Exp $ */
+/* $XConsortium: cfbcmap.c,v 4.17 94/01/21 22:07:25 dpw Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -303,6 +303,8 @@ cfbCreateDefColormap(pScreen)
 		       0)
 	!= Success)
 	return FALSE;
+    wp = pScreen->whitePixel;
+    bp = pScreen->blackPixel;
     if ((AllocColor(cmap, &ones, &ones, &ones, &wp, 0) !=
        	   Success) ||
     	(AllocColor(cmap, &zero, &zero, &zero, &bp, 0) !=
