@@ -6,10 +6,10 @@ sessreg \- manage utmp/wtmp entries for non-init clients
 [-w \fIwtmp-file\fP]
 [-u \fIutmp-file\fP]
 [-l \fIline-name\fP]
-[-h \fIhost-name\fP (BSD only)]
-[-s \fIslot-number\fP (BSD only)]
-[-x \fIXservers-file\fP (BSD only)]
-[-t \fIttys-file\fP (BSD only)]
+[-h \fIhost-name\fP]
+[-s \fIslot-number\fP]
+[-x \fIXservers-file\fP]
+[-t \fIttys-file\fP]
 [-a]
 [-d]
 \fIuser-name\fP
@@ -22,28 +22,36 @@ System V has a better interface to /etc/utmp than Berkeley Unix; it
 dynamically allocates entries in the file, instead of writing them at fixed
 positions indexed by position in /etc/ttys.
 .PP
-To manage Berkeley style utmp files, \fIsessreg\P has two strategies.  In
+To manage Berkeley style utmp files, \fIsessreg\fP has two strategies.  In
 conjunction with xdm, the -x option counts the number of lines in /etc/ttys
-and then adds that number to the number of the line in the xdm-specific
-Xservers file specifying the display.  This sum then specifies the
-"slot-number" in /etc/utmp that this entry will be written at.  In the more
-general case, the -s option specifies the slot-number directly
+and then adds to that the number of the line in the Xservers file which
+specifies the display.  This sum is used as the "slot-number" in /etc/utmp
+that this entry will be written at.  In the more general case, the -s option
+specifies the slot-number directly.  If for some strange reason your system
+uses a file other that /etc/ttys to manage init, the -t option can direct
+\fIsessreg\fP to look elsewhere for a count of terminal sessions.
 .PP
-Conversely, System V managers will not ever need to use these options.  To
-make the program easier to document and explain, \fIsessreg\fP accepts the
-Berkeley-specific flags in the System V environment and ignores them.
+Conversely, System V managers will not ever need to use these options (-x,
+-s and -t).  To make the program easier to document and explain,
+\fIsessreg\fP accepts the Berkeley-specific flags in the System V
+environment and ignores them.
+.PP
+BSD also has a host-name field in the utmp file which doesn't exist in
+System V.  This option is also ignored by the System V version of
+\fIsessreg\fP.
 .SH USAGE
 .PP
 In Xstartup, place a call like:
-.br
 .nf
+
        sessreg -a -l $DISPLAY -x /usr/lib/X11/xdm/Xservers $USER
+
 .fi
-.br
 and in Xreset:
-.br
 .nf
+
        sessreg -a -l $DISPLAY -x /usr/lib/X11/xdm/Xservers $USER
+
 .fi
 .SH OPTIONS
 .IP "\fB-w\fP \fIwtmp-file\fP"
@@ -83,8 +91,6 @@ This session should be deleted from utmp/wtmp.  One of -a/-d must
 be specified.
 .SH "SEE ALSO"
 xdm(1)
-.SH BUGS
-.br
 .SH COPYRIGHT
 Copyright 1988, Massachusetts Institute of Technology.
 .br
