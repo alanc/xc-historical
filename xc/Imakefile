@@ -16,7 +16,8 @@ BOOTSTRAPCFLAGS =
 #if BuildServer
 SERVERDIRSTOMAKE = \
 		$(SERVERSRC) \
-		$(FONTSRC) 
+		$(FONTSRC) \
+		$(RGBSRC)  
 #endif
 CLIENTDIRSTOMAKE = \
 		$(CLIENTSRC) \
@@ -34,7 +35,7 @@ CLIENTDIRSTOMAKE = \
 		$(EXTENSIONSRC) \
 		$(LIBSRC)
 
-MakeSubdirs($(DIRSTOMAKE) $(RGBSRC) $(XMANSRC))
+MakeSubdirs($(DIRSTOMAKE) $(XMANSRC))
 
 install.ln::
 	-mkdir $(LINTLIBDIR)
