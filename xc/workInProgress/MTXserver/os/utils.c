@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: utils.c,v 1.133 93/12/06 15:21:07 kaleb Exp $ */
+/* $XConsortium: utils.c,v 1.2 94/01/10 11:06:54 rob Exp $ */
 #include "Xos.h"
 #include <stdio.h>
 #include "misc.h"
@@ -956,8 +956,8 @@ VErrorF(f, args)
 {
 #ifdef MTX
     extern X_MUTEX_TYPE PrintfMutex;
-#endif /* MTX */
     MTX_MUTEX_LOCK (&PrintfMutex);
+#endif /* MTX */
 #ifdef AIXV3
     vfprintf(aixfd, f, args);
     fflush (aixfd);
@@ -966,7 +966,9 @@ VErrorF(f, args)
 #else
     vfprintf(stderr, f, args);
 #endif /* AIXV3 */
+#ifdef MTX
     MTX_MUTEX_UNLOCK (&PrintfMutex);
+#endif
 }
 #endif
 
@@ -989,8 +991,8 @@ ErrorF(
 #else
 #ifdef MTX
     extern X_MUTEX_TYPE PrintfMutex;
-#endif /* MTX */
     MTX_MUTEX_LOCK (&PrintfMutex);
+#endif /* MTX */
 #ifdef AIXV3
     fprintf(aixfd, f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9);
     fflush (aixfd);
@@ -1000,7 +1002,9 @@ ErrorF(
     fprintf( stderr, f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9);
 #endif /* AIXV3 */
 #endif
+#ifdef MTX
     MTX_MUTEX_UNLOCK (&PrintfMutex);
+#endif
 }
 
 #ifdef AIXV3
