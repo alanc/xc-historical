@@ -1,5 +1,5 @@
 /*
- * $XConsortium: viewres.c,v 1.52 90/03/07 17:43:54 jim Exp $
+ * $XConsortium: viewres.c,v 1.53 90/03/09 14:37:10 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -951,15 +951,10 @@ main (argc, argv)
      * callbacks (passing the other widget each callback)
      */
     XtSetArg (args[0], XtNbackgroundPixmap, None);  /* faster updates */
-    XtSetArg (args[1], XtNtop, XtChainTop);
-    XtSetArg (args[2], XtNbottom, XtChainBottom);
-    XtSetArg (args[3], XtNleft, XtChainLeft);
-    XtSetArg (args[4], XtNright, XtChainRight);
-    XtSetArg (args[5], XtNresizable, TRUE);
     porthole = XtCreateManagedWidget ("porthole", portholeWidgetClass, form,
-				      args, SIX);
-    panner = XtCreateWidget ("panner", pannerWidgetClass, form,
-			     (ArgList) NULL, ZERO);
+				      args, ONE);
+    panner = XtCreateManagedWidget ("panner", pannerWidgetClass, form,
+				    (ArgList) NULL, ZERO);
 
     XtSetArg (args[0], XtNreportCallback, callback_rec);
     callback_rec[0].callback = (XtCallbackProc) panner_callback;
@@ -999,7 +994,6 @@ main (argc, argv)
     XtSetArg (args[3], XtNsliderHeight, height);
     XtSetValues (panner, args, FOUR);
 
-    XtMapWidget (panner);
     XRaiseWindow (XtDisplay(panner), XtWindow(panner));
     XtAppMainLoop (app_con);
 }

@@ -7,6 +7,16 @@
 *buttonbox*ShapeStyle: oval
 *treeform.Thickness: 0
 *treeform.borderWidth: 0
+*Porthole.top: ChainTop
+*Porthole.left: ChainLeft
+*Porthole.bottom: ChainBottom
+*Porthole.right:  ChainRight
+*Porthole.resizable: on
+*Panner.top: ChainTop
+*Panner.left: ChainLeft
+*Panner.bottom: ChainTop
+*Panner.right:  ChainLeft
+*Panner.resizable: on
 *Tree.borderWidth: 0
 *Porthole.borderWidth: 0
 *Panner*DefaultScale: 5
