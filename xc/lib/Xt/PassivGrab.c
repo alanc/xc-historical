@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: PassivGrab.c,v 1.11 90/04/03 20:14:33 swick Exp $";
+static char Xrcsid[] = "$XConsortium: PassivGrab.c,v 1.12 90/04/04 11:28:14 swick Exp $";
 #endif
 
 /********************************************************
@@ -517,7 +517,7 @@ void _XtDestroyServerGrabs(w, pwi, call_data)
  */
 
 XtServerGrabPtr _XtCheckServerGrabsOnWidget (event, widget, isKeyboard, pdi)
-    XKeyEvent 		* event;
+    XEvent 		*event;
     Widget		widget;
     Boolean		isKeyboard;
     XtPerDisplayInput	pdi;
@@ -544,8 +544,8 @@ XtServerGrabPtr _XtCheckServerGrabsOnWidget (event, widget, isKeyboard, pdi)
     
     
     tempGrab.widget = widget;
-    tempGrab.detail.exact = event->keycode; /* also button */
-    tempGrab.modifiersDetail.exact = event->state;
+    tempGrab.detail.exact = event->xkey.keycode; /* also xbutton.button */
+    tempGrab.modifiersDetail.exact = event->xkey.state; /*also xbutton.state*/
     tempGrab.detail.pMask = NULL;
     tempGrab.modifiersDetail.pMask = NULL;
 
