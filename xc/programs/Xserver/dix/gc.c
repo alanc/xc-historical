@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: gc.c,v 5.22 93/07/17 09:52:26 dpw Exp $ */
+/* $XConsortium: gc.c,v 5.23 93/09/03 08:03:14 dpw Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -453,7 +453,7 @@ AllocateGC(pScreen)
 	ptr = (char *)(ppriv + pScreen->GCPrivateLen);
 	for (i = pScreen->GCPrivateLen; --i >= 0; ppriv++, sizes++)
 	{
-	    if (size = *sizes)
+	    if ( (size = *sizes) )
 	    {
 		ppriv->ptr = (pointer)ptr;
 		ptr += size;
@@ -867,7 +867,7 @@ CreateScratchGC(pScreen, depth)
     return pGC;
 }
 
-
+void
 FreeGCperDepth(screenNum)
     int screenNum;
 {
@@ -953,6 +953,7 @@ CreateDefaultStipple(screenNum)
     return TRUE;
 }
 
+void
 FreeDefaultStipple(screenNum)
     int screenNum;
 {
@@ -960,7 +961,7 @@ FreeDefaultStipple(screenNum)
     (*pScreen->DestroyPixmap)(pScreen->PixmapPerDepth[0]);
 }
 
-
+int
 SetDashes(pGC, offset, ndash, pdash)
 register GCPtr pGC;
 unsigned offset;

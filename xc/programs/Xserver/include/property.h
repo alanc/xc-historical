@@ -1,4 +1,4 @@
-/* $XConsortium: property.h,v 1.2 88/09/06 15:48:53 jim Exp $ */
+/* $XConsortium: property.h,v 1.3 93/07/12 09:44:58 dpw Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -46,7 +46,7 @@ extern int DeleteProperty(
 #endif
 );
 
-extern int DeleteAllWindowProperties(
+extern void DeleteAllWindowProperties(
 #if NeedFunctionPrototypes
     WindowPtr /*pWin*/
 #endif

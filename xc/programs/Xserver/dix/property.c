@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: property.c,v 5.8 93/07/12 09:24:01 dpw Exp $ */
+/* $XConsortium: property.c,v 5.9 93/09/03 08:02:55 dpw Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -314,6 +314,7 @@ ChangeWindowProperty(pWin, property, type, format, mode, len, value, sendevent)
     return(Success);
 }
 
+int
 DeleteProperty(pWin, propName)
     WindowPtr pWin;
     Atom propName;
@@ -354,6 +355,7 @@ DeleteProperty(pWin, propName)
     return(Success);
 }
 
+void
 DeleteAllWindowProperties(pWin)
     WindowPtr pWin;
 {
