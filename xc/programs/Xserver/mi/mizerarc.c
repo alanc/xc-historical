@@ -15,7 +15,7 @@ without any express or implied warranty.
 
 ********************************************************/
 
-/* $XConsortium: mizerarc.c,v 5.14 89/09/14 20:00:03 rws Exp $ */
+/* $XConsortium: mizerarc.c,v 5.15 89/09/15 13:12:50 rws Exp $ */
 
 /* Derived from:
  * "Algorithm for drawing ellipses or hyperbolae with a digital plotter"
@@ -331,9 +331,9 @@ miZeroArcPts(arc, pts)
 #define DoPix(idx, xval, yval) \
     if (mask & (1 << idx)) \
     { \
-	circPts[idx]->x = xval; \
-	circPts[idx]->y = yval; \
-	circPts[idx]++; \
+	arcPts[idx]->x = xval; \
+	arcPts[idx]->y = yval; \
+	arcPts[idx]++; \
     }
 
 static void
@@ -348,7 +348,7 @@ miZeroArcDashPts(pGC, arc, points, maxPts, evenPts, oddPts)
     register int k1, k3, dx1, dy1;
     unsigned char *pDash;
     int numInDashList, dashIndex, dashOffset, dashRemaining;
-    DDXPointPtr circPts[4];
+    DDXPointPtr arcPts[4];
     DDXPointPtr startPt;
     DDXPointPtr pt, lastPt, *pts;
     int i, delta, ptsdelta, seg, startseg;
@@ -356,7 +356,7 @@ miZeroArcDashPts(pGC, arc, points, maxPts, evenPts, oddPts)
     if (!arc->angle2)
 	return;
     for (i = 0; i < 4; i++)
-	circPts[i] = points + (i * maxPts);
+	arcPts[i] = points + (i * maxPts);
     (void)miZeroArcSetup(arc, &info, FALSE);
     x = info.x;
     y = info.y;
@@ -374,7 +374,7 @@ miZeroArcDashPts(pGC, arc, points, maxPts, evenPts, oddPts)
 	DoPix(2, info.xorg, info.yorgo);
     }
     startseg = info.startAngle / QUADRANT;
-    startPt = circPts[startseg];
+    startPt = arcPts[startseg];
     if (!info.endx)
 	mask = info.endMask;
     while (y < info.h)
@@ -392,7 +392,7 @@ miZeroArcDashPts(pGC, arc, points, maxPts, evenPts, oddPts)
 	if ((x == info.startx) || (y == info.starty))
 	{
 	    mask = info.startMask;
-	    startPt = circPts[startseg];
+	    startPt = arcPts[startseg];
 	}
 	DoPix(0, info.xorg + x, info.yorg + y);
 	DoPix(1, info.xorgo - x, info.yorg + y);
@@ -417,11 +417,11 @@ miZeroArcDashPts(pGC, arc, points, maxPts, evenPts, oddPts)
 	}
     }
     if ((x == info.startx) || (y == info.starty))
-	startPt = circPts[startseg];
+	startPt = arcPts[startseg];
     for (; x <= info.w; x++)
     {
 	if (x == info.startx)
-	    startPt = circPts[startseg];
+	    startPt = arcPts[startseg];
 	DoPix(0, info.xorg + x, info.yorg + y);
 	DoPix(1, info.xorgo - x, info.yorg + y);
 	if (!arc->height || (arc->height & 1))
@@ -443,7 +443,7 @@ miZeroArcDashPts(pGC, arc, points, maxPts, evenPts, oddPts)
 	pt = points + (seg * maxPts);
 	if (seg & 1)
 	{
-	    lastPt = circPts[seg];
+	    lastPt = arcPts[seg];
 	    delta = 1;
 	    if (i == 0)
 		pt = startPt;
@@ -457,7 +457,7 @@ miZeroArcDashPts(pGC, arc, points, maxPts, evenPts, oddPts)
 	else
 	{
 	    lastPt = pt - 1;
-	    pt = circPts[seg] - 1;
+	    pt = arcPts[seg] - 1;
 	    delta = -1;
 	    if (i == 0)
 	    {
