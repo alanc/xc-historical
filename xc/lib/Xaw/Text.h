@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Text.h,v 1.29 89/08/14 14:43:18 kit Exp $
+* $XConsortium: Text.h,v 1.30 89/09/01 14:30:05 kit Exp $
 */
 
 
@@ -30,6 +30,7 @@ SOFTWARE.
 #ifndef _XawText_h
 #define _XawText_h
 
+#include <X11/Xaw/TextSink.h>
 #include <X11/Xaw/TextSrc.h>
 
 /****************************************************************
@@ -49,9 +50,7 @@ SOFTWARE.
  dialogHOffset	     Margin		int		10
  dialogVOffset	     Margin		int		10
  displayCaret	     Output		Boolean		True
- displayNonPrinting  Output		Boolean		True
  displayPosition     TextPosition	int		0
- echo		     Output		Boolean		True
  editType	     EditType		XtTextEditType	XttextRead
  height		     Height		Dimension	font height
  insertPosition	     TextPosition	int		0
@@ -86,9 +85,7 @@ SOFTWARE.
 #define XtNdialogHOffset "dialogHOffset"
 #define XtNdialogVOffset "dialogVOffset"
 #define XtNdisplayCaret "displayCaret"
-#define XtNdisplayNonPrinting "displayNonPrinting"
 #define XtNdisplayPosition "displayPosition"
-#define XtNecho "echo"
 #define XtNinsertPosition "insertPosition"
 #define XtNleftMargin "leftMargin"
 #define XtNresize "resize"
@@ -101,7 +98,6 @@ SOFTWARE.
 #define XtNwrap "wrap"
 
 #define XtCAutoFill "AutoFill"
-#define XtCOutput "Output"
 #define XtCResize "Resize"
 #define XtCScroll "Scroll"
 #define XtCSelectTypes "SelectTypes"
@@ -127,8 +123,6 @@ typedef struct _TextClassRec *TextWidgetClass;
 typedef struct _TextRec      *TextWidget;
 
 /* other stuff */
-
-typedef struct _XawTextSink XawTextSinkRec, *XawTextSink;
 
 typedef enum { XawtextScrollNever,
 	       XawtextScrollWhenNeeded, XawtextScrollAlways} XawTextScrollMode;
@@ -170,7 +164,6 @@ typedef struct {
 #define editable		0x40
 
 typedef long XtTextPosition;
-typedef struct _XawTextSink XtTextSinkRec, *XtTextSink;
 
 #define XtTextBlock                XawTextBlock
 #define XtTextBlockPtr             XawTextBlockPtr
@@ -217,8 +210,6 @@ typedef struct _XawTextSink XtTextSinkRec, *XtTextSink;
 #define XtTextSetSelection         XawTextSetSelection
 #define XtTextInvalidate           XawTextInvalidate
 
-#define XtAsciiSinkCreate          XawAsciiSinkCreate
-#define XtAsciiSinkDestroy         XawAsciiSinkDestroy
 #define XtDiskSourceCreate         XawDiskSourceCreate
 #define XtDiskSourceDestroy        XawDiskSourceDestroy
 #define XtStringSourceCreate       XawStringSourceCreate
@@ -295,22 +286,11 @@ extern XawTextPosition XawTextSearch() ; /* w, dir, text */
     /* XawTextBlock      *text;  */
 
 /*
- * Stuff from AsciiSink
- */
-
-extern XawTextSink XawAsciiSinkCreate(); /* parent, args, num_args */
-    /* Widget parent;		*/
-    /* ArgList args;		*/
-    /* Cardinal num_args;	*/
-
-extern void XawAsciiSinkDestroy(); /* sink */
-    /* XawTextSink  sink */
-
-/*
  * For R3 compatability only. 
  */
 
 #include <X11/Xaw/AsciiSrc.h>
+#include <X11/Xaw/AsciiSink.h>
 
 #endif /* _XawText_h */
 /* DON'T ADD STUFF AFTER THIS #endif */

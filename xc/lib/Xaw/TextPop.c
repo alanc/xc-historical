@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: TextPop.c,v 1.5 89/08/30 19:09:52 converse Exp $";
+static char Xrcsid[] = "$XConsortium: TextPop.c,v 1.6 89/09/01 14:29:39 kit Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************

@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: AsciiSink.c,v 1.36 89/08/17 19:10:48 kit Exp $";
+static char Xrcsid[] = "$XConsortium: AsciiSink.c,v 1.37 89/09/01 14:30:10 kit Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -26,14 +26,16 @@ SOFTWARE.
 
 ******************************************************************/
 
-#define XAW_BC			/* Tempory. */
+#include <stdio.h>
 
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <X11/Xatom.h>
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
-#include <X11/Xaw/TextP.h>
+#include <X11/Xaw/AsciiSinkP.h>
+#include <X11/Xaw/AsciiSrcP.h>	/* For source function defs. */
+#include <X11/Xaw/TextP.h>	/* I also reach into the text widget. */
 
 #ifdef GETLASTPOS
 #undef GETLASTPOS		/* We will use our own GETLASTPOS. */
@@ -41,60 +43,102 @@ SOFTWARE.
 
 #define GETLASTPOS XawTextSourceScan(source, 0, XawstAll, XawsdRight, 1, TRUE)
 
-/* Private Ascii TextSink Definitions */
+static void Initialize(), Destroy();
+static Boolean SetValues();
 
-static unsigned bufferSize = 200;
+static void DisplayText(), InsertCursor(), FindPosition();
+static void FindDistance(), Resolve(), GetCursorBounds();
 
-typedef struct _AsciiSinkData {
-      /* public resources */
-    Pixel foreground;
-    XFontStruct *font;
-    Boolean echo;
-    Boolean display_nonprinting;
-      /* private state */
-    GC normgc, invgc, xorgc;
-    int em;
-    Pixmap insertCursorOn;
-    XawTextInsertState laststate;
-    int tab_count;
-    short cursor_x, cursor_y;	/* Cursor Location. */
-    Position *tabs;
-} AsciiSinkData, *AsciiSinkPtr;
+#define offset(field) XtOffset(AsciiSinkWidget, ascii_sink.field)
 
-static char *buf = NULL;
-
-static XtResource SinkResources[] = {
-    {XtNfont, XtCFont, XtRFontStruct, sizeof (XFontStruct *),
-        XtOffset(AsciiSinkPtr, font), XtRString, "Fixed"},
-    {XtNforeground, XtCForeground, XtRPixel, sizeof (int),
-        XtOffset(AsciiSinkPtr, foreground), XtRString, "XtDefaultForeground"}, 
+static XtResource resources[] = {
     {XtNecho, XtCOutput, XtRBoolean, sizeof(Boolean),
-	XtOffset(AsciiSinkPtr, echo), XtRImmediate, (caddr_t)True},
+	offset(echo), XtRImmediate, (caddr_t) True},
     {XtNdisplayNonPrinting, XtCOutput, XtRBoolean, sizeof(Boolean),
-	XtOffset(AsciiSinkPtr, display_nonprinting), XtRImmediate,
-	(caddr_t)True},
+	offset(display_nonprinting), XtRImmediate, (caddr_t) True},
 };
+#undef offset
+
+#define SuperClass		(&textSinkClassRec)
+AsciiSinkClassRec asciiSinkClassRec = {
+  {
+/* core_class fields */	
+    /* superclass	  	*/	(WidgetClass) SuperClass,
+    /* class_name	  	*/	"AsciiSink",
+    /* widget_size	  	*/	sizeof(AsciiSinkRec),
+    /* class_initialize   	*/	NULL,
+    /* class_part_initialize	*/	NULL,
+    /* class_inited       	*/	FALSE,
+    /* initialize	  	*/	Initialize,
+    /* initialize_hook		*/	NULL,
+    /* realize		  	*/	NULL,
+    /* actions		  	*/	NULL,
+    /* num_actions	  	*/	0,
+    /* resources	  	*/	resources,
+    /* num_resources	  	*/	XtNumber(resources),
+    /* xrm_class	  	*/	NULLQUARK,
+    /* compress_motion	  	*/	FALSE,
+    /* compress_exposure  	*/	FALSE,
+    /* compress_enterleave	*/	FALSE,
+    /* visible_interest	  	*/	FALSE,
+    /* destroy		  	*/	Destroy,
+    /* resize		  	*/	NULL,
+    /* expose		  	*/	NULL,
+    /* set_values	  	*/	SetValues,
+    /* set_values_hook		*/	NULL,
+    /* set_values_almost	*/	NULL,
+    /* get_values_hook		*/	NULL,
+    /* accept_focus	 	*/	NULL,
+    /* version			*/	XtVersion,
+    /* callback_private   	*/	NULL,
+    /* tm_table		   	*/	NULL,
+    /* query_geometry		*/	NULL,
+    /* display_accelerator	*/	NULL,
+    /* extension		*/	NULL
+  },
+/* text_sink_class fields */
+  {
+    /* DisplayText              */      DisplayText,
+    /* InsertCursor             */      InsertCursor,
+    /* ClearToBackground        */      XtInheritClearToBackground,
+    /* FindPosition             */      FindPosition,
+    /* FindDistance             */      FindDistance,
+    /* Resolve                  */      Resolve,
+    /* MaxLines                 */      XtInheritMaxLines,
+    /* MaxHeight                */      XtInheritMaxHeight,
+    /* SetTabs                  */      XtInheritSetTabs,
+    /* GetCursorBounds          */      GetCursorBounds
+  },
+/* ascii_sink_class fields. */
+  {
+    /* Keep Compiler happy.     */      NULL
+  }
+};
+
+WidgetClass asciiSinkWidgetClass = (WidgetClass)&asciiSinkClassRec;
 
 /* Utilities */
 
-static int CharWidth (w, x, c)
-  Widget w;
-  int x;
-  char c;
+static int 
+CharWidth (w, x, c)
+Widget w;
+int x;
+char c;
 {
-    AsciiSinkData *data = (AsciiSinkData*) ((TextWidget)w)->text.sink->data;
-    int     width, nonPrinting;
-    XFontStruct *font = data->font;
+    register int    i, width, nonPrinting;
+    AsciiSinkWidget sink = (AsciiSinkWidget) w;
+    XFontStruct *font = sink->text_sink.font;
+    Position *tab;
 
     if ( c == LF ) return(0);
 
     if (c == TAB) {
-	int i;
-	Position *tab;
-	x -= ((TextWidget) w)->text.margin.left; /* Adjust for Left Margin. */
+	/* Adjust for Left Margin. */
+	x -= ((TextWidget) XtParent(w))->text.margin.left;
 
 	if (x >= w->core.width) return 0;
-	for (i = 0, tab = data->tabs ; i < data->tab_count ; i++, tab++) {
+	for (i = 0, tab = sink->text_sink.tabs ; 
+	     i < sink->text_sink.tab_count ; i++, tab++) {
 	    if (x < *tab) {
 		if (*tab < w->core.width)
 		    return *tab - x;
@@ -106,7 +150,7 @@ static int CharWidth (w, x, c)
     }
 
     if ( (nonPrinting = (c < SP)) ) {         /* Yes, This is right. */
-	if (data->display_nonprinting)
+	if (sink->ascii_sink.display_nonprinting)
 	    c += '@';
 	else {
 	    c = SP;
@@ -146,24 +190,27 @@ Position x, y;
 char * buf;
 int len;
 {
-    TextWidget ctx = (TextWidget) w;
-    XawTextSink sink = ctx->text.sink;
-    AsciiSinkData *data = (AsciiSinkData *) sink->data;
+    AsciiSinkWidget sink = (AsciiSinkWidget) w;
+    TextWidget ctx = (TextWidget) XtParent(w);
+
     Position max_x;
-    Dimension width = XTextWidth(data->font, buf, len); 
+    Dimension width = XTextWidth(sink->text_sink.font, buf, len); 
     max_x = (Position) ctx->core.width;
 
     if ( ((int) width) <= -x)	           /* Don't draw if we can't see it. */
       return(width);
 
-    XDrawImageString(XtDisplay(w), XtWindow(w), gc,(int) x, (int) y, buf, len);
+    XDrawImageString(XtDisplay(ctx), XtWindow(ctx), gc, 
+		     (int) x, (int) y, buf, len);
     if ( (((Position) width + x) > max_x) && (ctx->text.margin.right != 0) ) {
 	x = ctx->core.width - ctx->text.margin.right;
 	width = ctx->text.margin.right;
-	XFillRectangle(XtDisplay(w), XtWindow(w), data->normgc, (int) x,
-		       (int) y - data->font->ascent, (unsigned int) width,
-		       (unsigned int) (data->font->ascent +
-				       data->font->descent));
+	XFillRectangle(XtDisplay((Widget) ctx), XtWindow( (Widget) ctx),
+		       sink->ascii_sink.normgc, (int) x,
+		       (int) y - sink->text_sink.font->ascent, 
+		       (unsigned int) width,
+		       (unsigned int) (sink->text_sink.font->ascent +
+				       sink->text_sink.font->descent));
 	return(0);
     }
     return(width);
@@ -171,32 +218,35 @@ int len;
 
 /* Sink Object Functions */
 
+/*
+ * This function does not know about drawing more than one line of text.
+ */
+ 
 static void 
-AsciiDisplayText (w, x, y, pos1, pos2, highlight)
+DisplayText(w, x, y, pos1, pos2, highlight)
 Widget w;
 Position x, y;
-int highlight;
+Boolean highlight;
 XawTextPosition pos1, pos2;
 {
-    TextWidget ctx = (TextWidget) w;
-    XawTextSink sink = ctx->text.sink;
-    AsciiSinkData *data = (AsciiSinkData *) sink->data;
-    XawTextSource source = ctx->text.source;
+    AsciiSinkWidget sink = (AsciiSinkWidget) w;
+    Widget source = XawTextGetSource(XtParent(w));
+    char buf[BUFSIZ];
 
     int j, k;
     XawTextBlock blk;
-    GC gc = highlight ? data->invgc : data->normgc;
-    GC invgc = highlight ? data->normgc : data->invgc;
+    GC gc = highlight ? sink->ascii_sink.invgc : sink->ascii_sink.normgc;
+    GC invgc = highlight ? sink->ascii_sink.normgc : sink->ascii_sink.invgc;
 
-    if (!data->echo) return;
+    if (!sink->ascii_sink.echo) return;
 
-    y += data->font->ascent;
+    y += sink->text_sink.font->ascent;
     for ( j = 0 ; pos1 < pos2 ; ) {
 	pos1 = XawTextSourceRead(source, pos1, &blk, pos2 - pos1);
 	for (k = 0; k < blk.length; k++) {
-	    if (j >= bufferSize - 5) {
-		bufferSize *= 2;
-		buf = XtRealloc(buf, bufferSize);
+	    if (j >= BUFSIZ) {	/* buffer full, dump the text. */
+	        x += PaintText(w, gc, x, y, buf, j);
+		j = 0;
 	    }
 	    buf[j] = blk.ptr[k];
 	    if (buf[j] == LF)	/* line feeds ('\n') are not printed. */
@@ -212,15 +262,15 @@ XawTextPosition pos1, pos2;
 	        x += temp;
 		width = CharWidth(w, x, '\t');
 		XFillRectangle(XtDisplay(w), XtWindow(w), invgc, (int) x,
-			       (int) y - data->font->ascent,
+			       (int) y - sink->text_sink.font->ascent,
 			       (unsigned int) width,
-			       (unsigned int) (data->font->ascent +
-					       data->font->descent));
+			       (unsigned int) (sink->text_sink.font->ascent +
+					       sink->text_sink.font->descent));
 		x += width;
 		j = -1;
 	    }
 	    else if (buf[j] < ' ') {
-	        if (data->display_nonprinting) {
+	        if (sink->ascii_sink.display_nonprinting) {
 		    buf[j + 1] = buf[j] + '@';
 		    buf[j] = '^';
 		    j++;
@@ -239,11 +289,12 @@ XawTextPosition pos1, pos2;
 #define insertCursor_height 3
 static char insertCursor_bits[] = {0x0c, 0x1e, 0x33};
 
-static Pixmap CreateInsertCursor(s)
+static Pixmap
+CreateInsertCursor(s)
 Screen *s;
 {
     return (XCreateBitmapFromData (DisplayOfScreen(s), RootWindowOfScreen(s),
-        insertCursor_bits, insertCursor_width, insertCursor_height));
+		  insertCursor_bits, insertCursor_width, insertCursor_height));
 }
 
 /*	Function Name: GetCursorBounds
@@ -258,13 +309,12 @@ GetCursorBounds(w, rect)
 Widget w;
 XRectangle * rect;
 {
-    XawTextSink sink = ((TextWidget)w)->text.sink;
-    AsciiSinkData *data = (AsciiSinkData *) sink->data;
-  
+    AsciiSinkWidget sink = (AsciiSinkWidget) w;
+
     rect->width = (unsigned short) insertCursor_width;
     rect->height = (unsigned short) insertCursor_height;
-    rect->x = data->cursor_x - (short) (rect->width / 2);
-    rect->y = data->cursor_y - (short) rect->height;
+    rect->x = sink->ascii_sink.cursor_x - (short) (rect->width / 2);
+    rect->y = sink->ascii_sink.cursor_y - (short) rect->height;
 }
 
 /*
@@ -272,45 +322,26 @@ XRectangle * rect;
  */
 
 static void
-AsciiInsertCursor (w, x, y, state)
+InsertCursor (w, x, y, state)
 Widget w;
 Position x, y;
 XawTextInsertState state;
 {
-    XawTextSink sink = ((TextWidget)w)->text.sink;
-    AsciiSinkData *data = (AsciiSinkData *) sink->data;
+    AsciiSinkWidget sink = (AsciiSinkWidget) w;
+    Widget text_widget = XtParent(w);
     XRectangle rect;
 
-    data->cursor_x = x;
-    data->cursor_y = y;
+    sink->ascii_sink.cursor_x = x;
+    sink->ascii_sink.cursor_y = y;
 
     GetCursorBounds(w, &rect);
-    if (state != data->laststate && XtIsRealized(w)) 
-        XCopyPlane(XtDisplay(w),
-		   data->insertCursorOn, XtWindow(w), data->xorgc,
+    if (state != sink->ascii_sink.laststate && XtIsRealized(text_widget)) 
+        XCopyPlane(XtDisplay(text_widget),
+		   sink->ascii_sink.insertCursorOn,
+		   XtWindow(text_widget), sink->ascii_sink.xorgc,
 		   0, 0, (unsigned int) rect.width, (unsigned int) rect.height,
 		   (int) rect.x, (int) rect.y, 1);
-    data->laststate = state;
-}
-
-/*
- * Clear the passed region to the background color.
- */
-
-static void
-AsciiClearToBackground (w, x, y, width, height)
-Widget w;
-Position x, y;
-Dimension width, height;
-{
-
-/* 
- * Don't clear in height or width are zero.
- * XClearArea() has special semantic for these values.
- */
-
-    if ( (height == 0) || (width == 0) ) return;
-    XClearArea(XtDisplay(w), XtWindow(w), x, y, width, height, False);
+    sink->ascii_sink.laststate = state;
 }
 
 /*
@@ -318,24 +349,22 @@ Dimension width, height;
  */
 
 static void
-AsciiFindDistance (w, fromPos, fromx, toPos, resWidth, resPos, resHeight)
-  Widget w;
-  XawTextPosition fromPos;	/* First position. */
-  int fromx;			/* Horizontal location of first position. */
-  XawTextPosition toPos;		/* Second position. */
-  int *resWidth;		/* Distance between fromPos and resPos. */
-  XawTextPosition *resPos;	/* Actual second position used. */
-  int *resHeight;		/* Height required. */
+FindDistance (w, fromPos, fromx, toPos, resWidth, resPos, resHeight)
+Widget w;
+XawTextPosition fromPos;	/* First position. */
+int fromx;			/* Horizontal location of first position. */
+XawTextPosition toPos;		/* Second position. */
+int *resWidth;			/* Distance between fromPos and resPos. */
+XawTextPosition *resPos;	/* Actual second position used. */
+int *resHeight;			/* Height required. */
 {
-    XawTextSink sink = ((TextWidget)w)->text.sink;
-    XawTextSource source = ((TextWidget)w)->text.source;
+    AsciiSinkWidget sink = (AsciiSinkWidget) w;
+    Widget source = XawTextGetSource(XtParent(w));
 
-    AsciiSinkData *data;
-    register    XawTextPosition index, lastPos;
+    register XawTextPosition index, lastPos;
     register char   c;
     XawTextBlock blk;
 
-    data = (AsciiSinkData *) sink->data;
     /* we may not need this */
     lastPos = GETLASTPOS;
     XawTextSourceRead(source, fromPos, &blk, toPos - fromPos);
@@ -352,42 +381,42 @@ AsciiFindDistance (w, fromPos, fromx, toPos, resWidth, resPos, resHeight)
 	*resWidth += CharWidth(w, fromx + *resWidth, c);
     }
     *resPos = index;
-    *resHeight = data->font->ascent + data->font->descent;
+    *resHeight = sink->text_sink.font->ascent +sink->text_sink.font->descent;
 }
 
 
-static  void
-AsciiFindPosition(w, fromPos, fromx, width, stopAtWordBreak, 
+static void
+FindPosition(w, fromPos, fromx, width, stopAtWordBreak, 
 		  resPos, resWidth, resHeight)
-  Widget w;
-  XawTextPosition fromPos; 	/* Starting position. */
-  int fromx;			/* Horizontal location of starting position.*/
-  int width;			/* Desired width. */
-  int stopAtWordBreak;		/* Whether the resulting position should be at
+Widget w;
+XawTextPosition fromPos; 	/* Starting position. */
+int fromx;			/* Horizontal location of starting position.*/
+int width;			/* Desired width. */
+int stopAtWordBreak;		/* Whether the resulting position should be at
 				   a word break. */
-  XawTextPosition *resPos;	/* Resulting position. */
-  int *resWidth;		/* Actual width used. */
-  int *resHeight;		/* Height required. */
+XawTextPosition *resPos;	/* Resulting position. */
+int *resWidth;			/* Actual width used. */
+int *resHeight;			/* Height required. */
 {
-    XawTextSink sink = ((TextWidget)w)->text.sink;
-    XawTextSource source = ((TextWidget)w)->text.source;
-    AsciiSinkData *data;
+    AsciiSinkWidget sink = (AsciiSinkWidget) w;
+    Widget source = XawTextGetSource(XtParent(w));
+
     XawTextPosition lastPos, index, whiteSpacePosition;
     int     lastWidth, whiteSpaceWidth;
     Boolean whiteSpaceSeen;
     char    c;
     XawTextBlock blk;
-    data = (AsciiSinkData *) sink->data;
+
     lastPos = GETLASTPOS;
 
-    XawTextSourceRead(source, fromPos, &blk, bufferSize);
+    XawTextSourceRead(source, fromPos, &blk, BUFSIZ);
     *resWidth = 0;
     whiteSpaceSeen = FALSE;
     c = 0;
     for (index = fromPos; *resWidth <= width && index < lastPos; index++) {
 	lastWidth = *resWidth;
 	if (index - blk.firstPos >= blk.length)
-	    XawTextSourceRead(source, index, &blk, bufferSize);
+	    XawTextSourceRead(source, index, &blk, BUFSIZ);
 	c = blk.ptr[index - blk.firstPos];
 	*resWidth += CharWidth(w, fromx + *resWidth, c);
 
@@ -411,151 +440,107 @@ AsciiFindPosition(w, fromPos, fromx, width, stopAtWordBreak,
     }
     if (index == lastPos && c != LF) index = lastPos + 1;
     *resPos = index;
-    *resHeight = data->font->ascent + data->font->descent;
+    *resHeight = sink->text_sink.font->ascent +sink->text_sink.font->descent;
 }
 
 static void
-AsciiResolveToPosition (w, pos, fromx, width, leftPos, rightPos)
+Resolve (w, pos, fromx, width, leftPos, rightPos)
 Widget w;
 XawTextPosition pos;
 int fromx, width;
 XawTextPosition *leftPos, *rightPos;
 {
     int resWidth, resHeight;
-    XawTextSource source = ((TextWidget)w)->text.source;
+    Widget source = XawTextGetSource(XtParent(w));
 
-    AsciiFindPosition(w, pos, fromx, width, FALSE,
-          leftPos, &resWidth, &resHeight);
+    FindPosition(w, pos, fromx, width, FALSE, leftPos, &resWidth, &resHeight);
     if (*leftPos > GETLASTPOS)
       *leftPos = GETLASTPOS;
     *rightPos = *leftPos;
 }
 
-static int 
-AsciiMaxLinesForHeight (w, height)
-Widget w;
-Dimension height;
-{
-    AsciiSinkData *data;
-    XawTextSink sink = ((TextWidget)w)->text.sink;
-
-    data = (AsciiSinkData *) sink->data;
-    return(height / (data->font->ascent + data->font->descent));
-}
-
-
-static int 
-AsciiMaxHeightForLines (w, lines)
-Widget w;
-int lines;
-{
-    AsciiSinkData *data;
-    XawTextSink sink = ((TextWidget)w)->text.sink;
-
-    data = (AsciiSinkData *) sink->data;
-    return(lines * (data->font->ascent + data->font->descent));
-}
-
-/* ARGSUSED */
-static void AsciiSetTabs (w, offset, tab_count, tabs)
-  Widget w;			/* for context */
-  Position offset;		/* UNUSED.*/
-  int tab_count;		/* count of entries in tabs */
-  Position *tabs;		/* list of character positions */
-{
-    AsciiSinkData *data = (AsciiSinkData*)((TextWidget)w)->text.sink->data;
-    int i;
-
-    if (tab_count > data->tab_count) {
-	data->tabs = (Position*)XtRealloc(data->tabs,
-				    (unsigned)tab_count * sizeof(Position));
-    }
-    
-    for (i=0; i < tab_count; i++) data->tabs[i] = tabs[i] * data->em;
-    data->tab_count = tab_count;
-}
-
 /***** Public routines *****/
 
-XawTextSink XawAsciiSinkCreate (parent, args, num_args)
-    Widget	parent;
-    ArgList 	args;
-    Cardinal 	num_args;
+/*	Function Name: Initialize
+ *	Description: Initializes the TextSink Widget.
+ *	Arguments: request, new - the requested and new values for the widget
+ *                                instance.
+ *	Returns: none.
+ *
+ */
+
+/* ARGSUSED */
+static void
+Initialize(request, new)
+Widget request, new;
 {
-    XawTextSink sink;
-    AsciiSinkData *data;
-    unsigned long valuemask = (GCFont | GCGraphicsExposures |
-			       GCForeground | GCBackground | GCFunction);
+    AsciiSinkWidget sink = (AsciiSinkWidget) new;
+    Widget parent = XtParent(new);
+
+    XtGCMask valuemask = (GCFont | 
+			  GCGraphicsExposures | GCForeground | GCBackground );
     XGCValues values;
-    long wid;
-    XFontStruct *font;
-    Atom XA_FIGURE_WIDTH;
 
-    if (!buf) buf = XtMalloc(bufferSize);
-
-    sink = XtNew(XawTextSinkRec);
-    sink->Display = AsciiDisplayText;
-    sink->InsertCursor = AsciiInsertCursor;
-    sink->ClearToBackground = AsciiClearToBackground;
-    sink->FindPosition = AsciiFindPosition;
-    sink->FindDistance = AsciiFindDistance;
-    sink->Resolve = AsciiResolveToPosition;
-    sink->MaxLines = AsciiMaxLinesForHeight;
-    sink->MaxHeight = AsciiMaxHeightForLines;
-    sink->SetTabs = AsciiSetTabs;
-    sink->GetCursorBounds = GetCursorBounds;
-    data = XtNew(AsciiSinkData);
-    sink->data = (caddr_t)data;
-
-    XtGetSubresources (parent, (caddr_t)data, XtNtextSink, XtCTextSink, 
-		       SinkResources, XtNumber(SinkResources),
-		       args, num_args);
-
-    font = data->font;
-    values.function = GXcopy;
-    values.font = font->fid;
+    values.font = sink->text_sink.font->fid;
     values.graphics_exposures = (Bool) FALSE;
-    values.foreground = data->foreground;
+    
+    values.foreground = sink->text_sink.foreground;
     values.background = parent->core.background_pixel;
-    data->normgc = XtGetGC(parent, valuemask, &values);
+    sink->ascii_sink.normgc = XtGetGC(parent, valuemask, &values);
+    
     values.foreground = parent->core.background_pixel;
-    values.background = data->foreground;
-    data->invgc = XtGetGC(parent, valuemask, &values);
+    values.background = sink->text_sink.foreground;
+    sink->ascii_sink.invgc = XtGetGC(parent, valuemask, &values);
+    
     values.function = GXxor;
-    values.foreground = data->foreground ^ parent->core.background_pixel;
-    values.background = 0;
-    data->xorgc = XtGetGC(parent, valuemask, &values);
-
-    XA_FIGURE_WIDTH = XInternAtom(XtDisplay(parent), "FIGURE_WIDTH", FALSE);
-    wid = -1;
-    if ( (XA_FIGURE_WIDTH != NULL) && 
-	((!XGetFontProperty(font, XA_FIGURE_WIDTH, &wid)) || wid <= 0) ) {
-        if (font->per_char && font->min_char_or_byte2 <= '$' &&
-	    		      font->max_char_or_byte2 >= '$')
-	    wid = font->per_char['$' - font->min_char_or_byte2].width;
-	else
-	    wid = font->max_bounds.width;
-    }
-    if (wid <= 0)
-	data->em = 1;
-    else
-	data->em = wid;
-
-    data->font = font;
-    data->insertCursorOn = CreateInsertCursor(XtScreen(parent));
-    data->laststate = XawisOff;
-    data->tab_count = 0;
-    data->tabs = NULL;
-    return sink;
+    values.foreground ^= values.background;
+    valuemask = GCGraphicsExposures | GCForeground | GCFunction;
+    
+    sink->ascii_sink.xorgc = XtGetGC(parent, valuemask, &values);
+    
+    sink->ascii_sink.insertCursorOn = CreateInsertCursor(XtScreen(parent));
+    sink->ascii_sink.laststate = XawisOff;
 }
 
-void XawAsciiSinkDestroy (sink)
-    XawTextSink sink;
-{
-    AsciiSinkData *data;
+/*	Function Name: Destroy
+ *	Description: This function cleans up when the widget is 
+ *                   destroyed.
+ *	Arguments: w - the AsciiSink Widget.
+ *	Returns: none.
+ */
 
-    data = (AsciiSinkData *) sink->data;
-    XtFree((char *) data->tabs);
-    XtFree((char *) data);
-    XtFree((char *) sink);
+static void
+Destroy(w)
+Widget w;
+{
+   AsciiSinkWidget sink = (AsciiSinkWidget) w;
+
+   XtReleaseGC(w, sink->ascii_sink.normgc);
+   XtReleaseGC(w, sink->ascii_sink.invgc);
+   XtReleaseGC(w, sink->ascii_sink.xorgc);
+   XFreePixmap(XtDisplay(w), sink->ascii_sink.insertCursorOn);
+}
+
+/*	Function Name: SetValues
+ *	Description: Sets the values for the AsciiSink
+ *	Arguments: current - current state of the widget.
+ *                 request - what was requested.
+ *                 new - what the widget will become.
+ *	Returns: True if redisplay is needed.
+ */
+
+/* ARGSUSED */
+static Boolean
+SetValues(current, request, new)
+Widget current, request, new;
+{
+    AsciiSinkWidget w = (AsciiSinkWidget) new;
+    AsciiSinkWidget old_w = (AsciiSinkWidget) current;
+
+    if ( (w->ascii_sink.echo != old_w->ascii_sink.echo) ||
+	(w->ascii_sink.display_nonprinting != 
+                                     old_w->ascii_sink.display_nonprinting) )
+        return(TRUE);
+    
+    return(FALSE);
 }

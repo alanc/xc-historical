@@ -1,5 +1,5 @@
 /*
- * $XConsortium: TextSrc.h,v 1.24 89/07/21 01:48:51 kit Exp $
+ * $XConsortium: TextSrc.h,v 1.1 89/09/01 14:28:36 kit Exp $
  */
 
 /***********************************************************
@@ -55,7 +55,6 @@ typedef struct _TextSrcRec      *TextSrcWidget;
 typedef enum {XawstPositions, XawstWhiteSpace, XawstEOL, XawstParagraph,
               XawstAll} XawTextScanType;
 typedef enum {Normal, Selected }highlightType;
-typedef enum {XawisOn, XawisOff} XawTextInsertState;
 typedef enum {XawsmTextSelect, XawsmTextExtend} XawTextSelectionMode;
 typedef enum {XawactionStart, XawactionAdjust, XawactionEnd}
     XawTextSelectionAction;

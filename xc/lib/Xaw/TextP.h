@@ -1,5 +1,5 @@
 /*
-* $XConsortium: TextP.h,v 1.38 89/08/14 14:43:20 kit Exp $
+* $XConsortium: TextP.h,v 1.39 89/09/01 14:30:07 kit Exp $
 */
 
 
@@ -32,28 +32,6 @@ SOFTWARE.
 
 #include <X11/Xaw/Text.h>
 #include <X11/Xaw/SimpleP.h>
-
-/*
- * This only temporary.
- */
-
-typedef struct _XawTextSink {
-    XFontStruct	*font;
-    int foreground;
-
-    void (*Display)();
-    void (*InsertCursor)();
-    void (*ClearToBackground)();
-    void (*FindPosition)();
-    void (*FindDistance)();
-    void (*Resolve)();
-    int (*MaxLines)();
-    int (*MaxHeight)();
-    void (*SetTabs)();		/* widget, offset, tab_count, *tabs */
-    void (*GetCursorBounds)();	/* widget, rectangle */
-
-    caddr_t data;
-};
 
 /****************************************************************
  *
@@ -158,8 +136,7 @@ extern TextClassRec textClassRec;
 typedef struct _TextPart {
     /* resources */
 
-    Widget              source;
-    XawTextSink		sink;
+    Widget              source, sink;
     XawTextPosition	insertPos;
     XawTextSelection	s;
     XawTextSelectType	*sarray;	   /* Array to cycle for selections. */

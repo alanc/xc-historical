@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: AsciiText.c,v 1.29 89/08/24 16:52:52 kit Exp $";
+static char Xrcsid[] = "$XConsortium: AsciiText.c,v 1.30 89/09/01 14:30:12 kit Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -54,7 +54,7 @@ SOFTWARE.
 #include <X11/Xaw/AsciiTextP.h>
 #include <X11/Xaw/Cardinals.h>
 
-extern void _XawTextBuildLineTable(); /* in Text.c */
+#define TAB_COUNT 32
 
 static void ClassInitialize(), Initialize(), CreateSourceSink(), Destroy();
 
@@ -126,32 +126,24 @@ ArgList args;
 Cardinal *num_args;
 {
   AsciiWidget w = (AsciiWidget) widget;
-  void (*NullProc)() = NULL;	/* some compilers require this */
+  int i;
+  int tabs[TAB_COUNT], tab;
   
   w->text.source = XtCreateWidget( "textSource", asciiSrcWidgetClass,
 				   widget, args, *num_args );
-  w->text.sink = XawAsciiSinkCreate( widget, args, *num_args );
-
-  w->text.lastPos = /* GETLASTPOS */
-    XawTextSourceScan(w->text.source, 0, XawstAll, XawsdRight, 1, TRUE );
-
+  w->text.sink = XtCreateWidget( "textSink", asciiSinkWidgetClass,
+				 widget, args, *num_args );
 
   if (w->core.height == DEFAULT_TEXT_HEIGHT)
-    w->core.height = VMargins(w) + (*w->text.sink->MaxHeight)(widget, 1);
+    w->core.height = VMargins(w) + XawTextSinkMaxHeight(w->text.sink, 1);
 
-    if (w->text.sink->SetTabs != NullProc) {
-#define TAB_COUNT 32
-	int i;
-	Position tabs[TAB_COUNT], tab;
+  for (i=0, tab=0 ; i < TAB_COUNT ; i++) 
+    tabs[i] = (tab += 8);
+  
+  XawTextSinkSetTabs(w->text.sink, TAB_COUNT, tabs);
 
-	for (i=0, tab=0; i<TAB_COUNT;i++) {
-	    tabs[i] = (tab += 8);
-	}
-	(w->text.sink->SetTabs)(widget, 0, TAB_COUNT, tabs);
-#undef TAB_COUNT
-    }
-
-    _XawTextBuildLineTable( (TextWidget) w, w->text.lt.top, TRUE );
+  XawTextDisableRedisplay(widget);
+  XawTextEnableRedisplay(widget);
 }
 
 static void 
@@ -159,7 +151,7 @@ Destroy(w)
 Widget w;
 {
   XtDestroyWidget( ((AsciiWidget)w)->text.source);
-  XawAsciiSinkDestroy( ((AsciiWidget)w)->text.sink );
+  XtDestroyWidget( ((AsciiWidget)w)->text.sink );
 }
 
 #ifdef ASCII_STRING

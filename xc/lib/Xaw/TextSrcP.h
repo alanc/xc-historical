@@ -1,5 +1,5 @@
 /*
-* $XConsortium: TextSrcP.h,v 1.14 89/09/01 14:28:37 kit Exp $
+* $XConsortium: TextSrcP.h,v 1.15 89/09/01 17:46:30 kit Exp $
 */
 
 

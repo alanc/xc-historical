@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: TextAction.c,v 1.11 89/08/22 16:29:43 kit Exp $";
+static char Xrcsid[] = "$XConsortium: TextAction.c,v 1.12 89/09/01 14:29:43 kit Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -904,7 +904,6 @@ static void
 AutoFill(ctx)
 TextWidget ctx;
 {
-  void (*FindPosition)() = ctx->text.sink->FindPosition;
   int width, height, x, line_num, max_width;
   XawTextPosition ret_pos;
   XawTextBlock text;
@@ -920,8 +919,8 @@ TextWidget ctx;
   max_width = Max(0, ctx->core.width - HMargins(ctx));
 
   x = ctx->text.margin.left;
-  (*FindPosition) ( (Widget) ctx, ctx->text.lt.info[line_num].position, x, 
-		   max_width, TRUE, &ret_pos, &width, &height);
+  XawTextSinkFindPosition( ctx->text.sink,ctx->text.lt.info[line_num].position,
+			  x, max_width, TRUE, &ret_pos, &width, &height);
   
   if ( ret_pos >= ctx->text.insertPos )
     return;
@@ -944,10 +943,10 @@ TextWidget ctx;
   ctx->text.lt.info[line_num].textWidth = width;
   ctx->text.lt.info[line_num + 1].position = ret_pos;
   
-  (*FindPosition) ( (Widget) ctx,
-		   ctx->text.lt.info[line_num + 1].position + 1, x,
-		   (int) (ctx->core.width - x), FALSE, 
-		   &ret_pos, &width, &height);
+  XawTextSinkFindPosition( ctx->text.sink,
+			  ctx->text.lt.info[line_num + 1].position + 1, x,
+			  (int) (ctx->core.width - x), FALSE, 
+			  &ret_pos, &width, &height);
   
   ctx->text.lt.info[line_num + 1].textWidth = width;
   
@@ -1226,7 +1225,6 @@ InsertNewCRs(ctx, from, to)
 TextWidget ctx;
 XawTextPosition from, to;
 {
-  void (*FindPosition)() = ctx->text.sink->FindPosition;
   XawTextPosition startPos, endPos, space, eol;
   XawTextBlock text;
   int i, width, height, len;
@@ -1239,9 +1237,10 @@ XawTextPosition from, to;
 
   startPos = from;
   while (TRUE) {
-    (*FindPosition) ( (Widget) ctx, startPos, (int) ctx->text.margin.left,
-		      (int) (ctx->core.width - HMargins(ctx)), 
-		      TRUE, &eol, &width, &height);
+    XawTextSinkFindPosition( ctx->text.sink, startPos, 
+			    (int) ctx->text.margin.left,
+			    (int) (ctx->core.width - HMargins(ctx)), 
+			    TRUE, &eol, &width, &height);
     if (eol >= to)
       break;
 

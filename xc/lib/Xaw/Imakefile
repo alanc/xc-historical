@@ -7,6 +7,8 @@
        LINTLIBS = $(LINTXLIB) $(LINTXTOOL)
 
 HEADERS = \
+	AsciiSink.h \
+	AsciiSinkP.h \
 	AsciiSrc.h \
 	AsciiSrcP.h \
 	AsciiText.h \
@@ -49,6 +51,8 @@ HEADERS = \
 	TemplateP.h \
 	Text.h \
 	TextP.h \
+	TextSink.h \
+	TextSinkP.h \
 	TextSrc.h \
 	TextSrcP.h \
 	Toggle.h \
@@ -78,6 +82,7 @@ SRCS = \
 	SimpleMenu.c \
 	StripChart.c \
 	Text.c \
+	TextSink.c \
 	TextSrc.c \
         TextAction.c \
         TextPop.c \
@@ -107,6 +112,7 @@ OBJS = \
 	SimpleMenu.o \
 	StripChart.o \
 	Text.o \
+	TextSink.o \
 	TextSrc.o \
         TextAction.o \
 	TextPop.o \
