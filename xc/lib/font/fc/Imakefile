@@ -1,6 +1,5 @@
 #include <Server.tmpl>
 
-   FONTSERVERSRC = $(FONTSRC)/server
         INCLUDES = -I$(FONTSRC)/include -I../include -I$(FONTSERVERSRC)/include
          HEADERS = 
 #ifdef FontFormatDefines
