@@ -1,4 +1,4 @@
-/* $XConsortium: sunKbd.c,v 5.23 93/08/31 18:17:17 kaleb Exp $ */
+/* $XConsortium: sunKbd.c,v 5.24 93/09/03 17:21:34 kaleb Exp $ */
 /*-
  * Copyright (c) 1987 by the Regents of the University of California
  *
@@ -278,8 +278,6 @@ sunKbdProc (pKeyboard, what)
 	     * structure and fill in various slots in the device record
 	     * itself which couldn't be filled in before.
 	     */
-	    pKeyboard->devicePrivate = (pointer)&sysKbPriv;
-	    pKeyboard->on = FALSE;
 	    (void) memset ((void *) defaultKeyboardControl.autoRepeats,
 			   ~0, sizeof defaultKeyboardControl.autoRepeats);
 	    autoRepeatKeyDown = 0;
@@ -313,6 +311,8 @@ sunKbdProc (pKeyboard, what)
 	    if (sunConKeySyms->maxKeyCode > MAX_KEYCODE)
 		sunConKeySyms->maxKeyCode = MAX_KEYCODE;
 	}
+	pKeyboard->devicePrivate = (pointer)&sysKbPriv;
+	pKeyboard->on = FALSE;
 
 	InitKeyboardDeviceStruct (pKeyboard, sunConKeySyms, sunConModMap,
 				  bell, kbdCtrl);
