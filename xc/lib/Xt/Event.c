@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Event.c,v 1.67 88/03/25 15:32:13 swick Exp $";
+static char rcsid[] = "$Header: Event.c,v 1.68 88/03/28 13:36:05 swick Exp $";
 #endif lint
 
 /***********************************************************
@@ -507,17 +507,73 @@ static struct {
 };
 
 
-static GrabRec* OnGrabList (widget)
+static Boolean OnGrabList (widget)
     register Widget widget;
 
 {
     register GrabRec* gl;
     for (; widget != NULL; widget = (Widget)widget->core.parent)
 	for (gl = grabList; gl != NULL; gl = gl->next) {
-	    if (gl->widget == widget) return (gl);
+	    if (gl->widget == widget) return True;
 	    if (gl->exclusive) break;
 	}
-    return (NULL);
+    return False;
+}
+
+
+static Widget FindKeyboardFocus(widget)
+    Widget widget;
+{
+    register GrabRec* gl;
+#define FOCUS_TRACE_SIZE 100
+    GrabRec* focus_trace[FOCUS_TRACE_SIZE];
+    int i = 0, num_focus_entries;
+    enum {non_exclusive, first_pass, dont_check} exclusive = non_exclusive;
+    register Widget w, focus_widget = widget;
+
+    for (num_focus_entries = 0, gl = grabList; gl != NULL; gl = gl->next) {
+	if (gl->keyboard_focus != NULL) num_focus_entries++;
+    }
+    if (num_focus_entries == 0) return focus_widget;
+    /* assert: a grab for a widget always occurs on the list before
+     * a keyboard focus entry for the same widget
+     */
+    for (w = widget; w != NULL; w = XtParent(w)) {
+	for (gl = grabList; gl != NULL; gl = gl->next) {
+	    if (gl->widget == w) {
+		if (gl->keyboard_focus != NULL) {
+		    if (i == FOCUS_TRACE_SIZE)
+			XtError("FindKeyboardFocus: nesting depth exceeded.");
+		    focus_trace[i++] = gl;
+		    break;
+		}
+		else if (gl->exclusive) {
+		    if (exclusive == dont_check)
+			break;
+		    else
+			exclusive = first_pass;
+		}
+	    }
+	    else if (gl->exclusive && exclusive == dont_check)
+		break;
+	}
+	if (i == num_focus_entries) break;
+	if (exclusive == first_pass) exclusive = dont_check;
+    }
+    focus_widget = widget;
+    if (i > 0) {
+	focus_widget = focus_trace[--i]->keyboard_focus;
+	while (i > 0) {
+	    if (focus_trace[--i]->widget == focus_widget)
+		focus_widget = focus_trace[i]->keyboard_focus;
+	}
+    }
+    /* replace with focus widget iff source widget
+     * is not a descendant of the focus widget
+     */
+    for (w = widget; w != NULL && w != focus_widget; w = XtParent(w));
+    if (w == focus_widget) return w;
+    else		   return focus_widget;
 }
 
 
@@ -561,17 +617,9 @@ void XtDispatchEvent (event)
 
     } else if (grabType == remap) {
         if ((mask & (ButtonPressMask|ButtonReleaseMask) && OnlyKeyboardGrabs)
-	    || (gl = OnGrabList(widget))) {
-	    if (mask & (KeyPressMask|KeyReleaseMask) &&
-		 gl->keyboard_focus != NULL) {
-		/* replace with focus widget iff source widget
-		   is not a child of the focus widget */
-		register Widget w;
-		for (w = widget; w != gl->keyboard_focus && w != gl->widget;)
-		     w = XtParent(w);
-		if (w != gl->keyboard_focus)
-		    widget = gl->keyboard_focus;
-	    }
+	    || OnGrabList(widget)) {
+	    if (mask & (KeyPressMask|KeyReleaseMask))
+		widget = FindKeyboardFocus(widget);
 	    if ShouldDispatch {
 		DispatchEvent(event, widget, mask);
 	    }
@@ -600,7 +648,7 @@ void XtDispatchEvent (event)
     }
 }
 
-static void RemoveGrab();
+static Boolean RemoveGrab();
 
 /* ARGSUSED */
 static void GrabDestroyCallback(widget, closure, call_data)
@@ -610,9 +658,9 @@ static void GrabDestroyCallback(widget, closure, call_data)
 {
     /* Remove widget from grab list if it destroyed */
     if (closure != NULL)	/* removing a keyboard grab on some parent? */
-	RemoveGrab( (Widget)closure, True );
+	(void)RemoveGrab( (Widget)closure, True );
     else
-	RemoveGrab( widget, False );
+	(void)RemoveGrab( widget, False );
 }
 
 static void AddGrab(widget, exclusive, spring_loaded, keyboard_focus)
@@ -660,7 +708,7 @@ static Boolean InsertKeyboardGrab(widget, keyboard_focus)
 
     if (grabList == NULL) {
 	AddGrab( widget, False, False, keyboard_focus );
-	return;
+	return True;
     }
     /* look for a keyboard grab entry for the same parent; if none,
        reposition this entry after any other entries for the same tree */
@@ -711,9 +759,10 @@ void XtAddGrab(widget, exclusive, spring_loaded)
 }
 
 
-static void RemoveGrab(widget, keyboard_focus)
+static Boolean RemoveGrab(widget, keyboard_focus)
     Widget widget;
     Boolean keyboard_focus;
+    /* returns False if no grab entry was found, True otherwise */
 {
     register GrabList gl;
     register GrabList* prev;
@@ -731,7 +780,7 @@ static void RemoveGrab(widget, keyboard_focus)
     if (gl == NULL) {
 	if (!keyboard_focus)
 	    XtWarning("XtRemoveGrab asked to remove a widget not on the grab list");
-	return;
+	return False;
     }
 
     if (!keyboard_focus) {	/* remove all non-kbd grabs up to this'n */
@@ -765,13 +814,14 @@ static void RemoveGrab(widget, keyboard_focus)
 		     XtNdestroyCallback, GrabDestroyCallback,
 		     (caddr_t)(keyboard_focus ? widget : NULL)
 		    );
+    return True;
 }
 
 
 void XtRemoveGrab(widget)
     Widget  widget;
 {
-    RemoveGrab(widget, False);
+    (void)RemoveGrab(widget, False);
 }
 
 
@@ -850,7 +900,7 @@ static void HandleFocus(widget, client_data, event)
     if (which == add)
 	InsertKeyboardGrab( widget, descendant );
     else
-	RemoveGrab( widget, True );
+	(void)RemoveGrab( widget, True );
 
     SendFocusNotify( descendant, (which == add) ? FocusIn : FocusOut );
 }
@@ -866,6 +916,12 @@ static void AddForwardingHandler(widget, descendant)
     register XtEventRec* p = widget->core.event_table;
     register XtEventHandler proc = ForwardEvent; /* compiler bug */
 
+    /* %%%
+       Until we implement a mechanism for propagating keyboard event
+       interest to all ancestors for which the descendant may be the
+       focus target, the following optimization requires
+       XtSetKeyboardFocus calls to be executed from the inside out.
+     */
     eventMask = _XtBuildEventMask(descendant);
     eventMask &= KeyPressMask | KeyReleaseMask;
 
@@ -937,6 +993,7 @@ void XtSetKeyboardFocus(widget, descendant)
 	proc = HandleFocus;	/* compiler bug */
 	while (p != NULL && p->proc != proc) p = p->next;
 	if (p != NULL) {
+	    descendant = (Widget)p->closure;
 	    XtRemoveEventHandler(widget, XtAllEvents, False,
 				 HandleFocus, p->closure);
 	}
@@ -947,7 +1004,8 @@ void XtSetKeyboardFocus(widget, descendant)
 	    XtRemoveEventHandler(widget, XtAllEvents, False,
 				 ForwardEvent, p->closure);
 	}
-	RemoveGrab( widget, True );
+	if (RemoveGrab( widget, True ) && descendant != (Widget)None)
+	    SendFocusNotify( descendant, FocusOut );
     }
     else {
 	Boolean is_shell = XtIsSubclass(widget, shellWidgetClass);
