@@ -89,7 +89,6 @@ print_display_info (dpy)
     int i, n;
 
     printf ("name of display:    %s\n", DisplayString (dpy));
-    printf ("\n");
     printf ("version number:    %d.%d\n",
 	    ProtocolVersion (dpy), ProtocolRevision (dpy));
     printf ("vendor string:    %s\n", ServerVendor (dpy));
