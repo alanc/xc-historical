@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Convert.c,v 1.13 88/09/06 09:47:31 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Convert.c,v 1.14 88/09/06 16:27:21 jim Exp $";
 /* $oHeader: Convert.c,v 1.4 88/09/01 11:10:44 asente Exp $ */
 #endif lint
 /*LINTLIBRARY*/
@@ -173,8 +173,12 @@ static void CacheEnter(converter, args, num_args, from, to, hash)
 	}
     }
     p->to.size  = to->size;
-    p->to.addr  = (caddr_t) Xpermalloc(to->size);
-    XtBCopy(to->addr, p->to.addr, to->size);
+    if (to->addr != NULL) {
+	p->to.addr  = (caddr_t) Xpermalloc(to->size);
+	XtBCopy(to->addr, p->to.addr, to->size);
+    }
+    else
+	p->to.addr = NULL;
 }
 
 
