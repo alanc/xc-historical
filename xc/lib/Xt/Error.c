@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Error.c,v 1.20 89/06/16 19:34:29 jim Exp $";
+static char Xrcsid[] = "$XConsortium: Error.c,v 1.21 89/09/27 13:15:28 swick Exp $";
 /* $oHeader: Error.c,v 1.6 88/08/31 17:46:14 asente Exp $ */
 #endif /* lint */
 
@@ -134,15 +134,22 @@ static void _XtDefaultErrorMsg (name,type,class,defaultp,params,num_params)
     String* params;
     Cardinal* num_params;
 {
-    char buffer[1000],message[1000];
+    char buffer[1000], message[1000];
     XtGetErrorDatabaseText(name,type,class,defaultp, buffer, 1000);
 /*need better solution here, perhaps use lower level printf primitives? */
-    if (num_params == NULL) XtError(buffer);
+    if (params == NULL || num_params == NULL || *num_params == 0)
+	XtError(buffer);
     else {
-        (void) sprintf(message, buffer, params[0], params[1], params[2],
-		params[3], params[4], params[5], params[6], params[7],
-		params[8], params[9]);
+	int i = *num_params;
+	String par[10];
+	if (i > 10) i = 10;
+	bcopy( (char*)params, (char*)par, i * sizeof(String) );
+	bzero( &par[i], (10-i) * sizeof(String) );
+        (void) sprintf(message, buffer, par[0], par[1], par[2], par[3],
+		       par[4], par[5], par[6], par[7], par[8], par[9]);
 	XtError(message);
+	if (i != *num_params)
+	    XtWarning( "some arguments in previous message were lost" );
     }
 }
 
@@ -152,15 +159,22 @@ static void _XtDefaultWarningMsg (name,type,class,defaultp,params,num_params)
     Cardinal* num_params;
 {
 
-    char buffer[1000],message[1000];
+    char buffer[1000], message[1000];
     XtGetErrorDatabaseText(name,type,class,defaultp, buffer, 1000);
 /*need better solution here*/
-    if (num_params == NULL) XtWarning(buffer);
+    if (params == NULL || num_params == NULL || *num_params == 0)
+	XtWarning(buffer);
     else {
-        (void) sprintf(message, buffer, params[0], params[1], params[2],
-		params[3], params[4], params[5], params[6], params[7],
-		params[8], params[9]);
+	int i = *num_params;
+	String par[10];
+	if (i > 10) i = 10;
+	bcopy( (char*)params, (char*)par, i * sizeof(String) );
+	bzero( &par[i], (10-i) * sizeof(String) );
+        (void) sprintf(message, buffer, par[0], par[1], par[2], par[3],
+		       par[4], par[5], par[6], par[7], par[8], par[9]);
 	XtWarning(message); 
+	if (i != *num_params)
+	    XtWarning( "some arguments in previous message were lost" );
    }
 }
 
@@ -269,14 +283,14 @@ static void _XtDefaultError(message)
 {
     extern void exit();
 
-    (void)fprintf(stderr, "X Toolkit Error: %s\n", message);
+    (void)fprintf(stderr, "%sError: %s\n", XTERROR_PREFIX, message);
     exit(1);
 }
 
 static void _XtDefaultWarning(message)
     String message;
 {
-       (void)fprintf(stderr, "X Toolkit Warning: %s\n", message); 
+       (void)fprintf(stderr, "%sWarning: %s\n", XTWARNING_PREFIX, message); 
     return;
 }
 
