@@ -1,6 +1,5 @@
-/* $XConsortium$ */
-
-/* @(#)FSFontInfo.c	4.1	91/05/02
+/* $XConsortium: FSFontInfo.c,v 1.2 91/05/13 15:11:37 gildea Exp $ */
+/*
  * Copyright 1990 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
  * Massachusetts Institute of Technology
@@ -47,6 +46,7 @@ FSListFontsWithXInfo(svr, pattern, maxNames, count, info, pprops, offsets, prop_
     char      **flist = NULL;
     fsListFontsWithXInfoReply reply;
     fsListFontsWithXInfoReq *req;
+    Status status;
 
     GetReq(ListFontsWithXInfo, req);
     req->maxNames = maxNames;
@@ -55,9 +55,21 @@ FSListFontsWithXInfo(svr, pattern, maxNames, count, info, pprops, offsets, prop_
     _FSSend(svr, pattern, nbytes);
 
     for (i = 0;; i++) {
-	if (!_FSReply(svr, (fsReply *) & reply,
-		      ((SIZEOF(fsListFontsWithXInfoReply) -
-			SIZEOF(fsGenericReply)) >> 2), fsFalse)) {
+	if (FSProtocolVersion(svr) > 1)
+	{
+	    status = _FSReply(svr, (fsReply *) &reply, 0, fsFalse);
+	    if (status != 0  &&  reply.nameLength == 0)	/* got last reply */
+		break;
+	    if (status)
+		_FSRead(svr, (char *) &reply.nReplies,
+			SIZEOF(fsListFontsWithXInfoReply) -
+			SIZEOF(fsGenericReply));
+	} else {
+	    status = _FSReply(svr, (fsReply *) & reply,
+			      ((SIZEOF(fsListFontsWithXInfoReply) -
+				SIZEOF(fsGenericReply)) >> 2), fsFalse);
+	}
+	if (!status) {
 	    for (j = (i - 1); j >= 0; j--) {
 		FSfree((char *) fhdr[j]);
 		FSfree((char *) pi[j]);
@@ -79,7 +91,7 @@ FSListFontsWithXInfo(svr, pattern, maxNames, count, info, pprops, offsets, prop_
 	    SyncHandle();
 	    return (char **) NULL;
 	}
-	if (reply.nameLength == 0)	/* got last reply */
+	if (reply.nameLength == 0)	/* got last reply in version 1 */
 	    break;
 	if ((i + reply.nReplies) >= size) {
 	    size = i + reply.nReplies + 1;
@@ -172,16 +184,29 @@ FSListFontsWithXInfo(svr, pattern, maxNames, count, info, pprops, offsets, prop_
 	    goto badmem;
 	}
 	bcopy((char *) &reply.header, (char *) fhdr[i], sizeof(fsFontHeader));
-
-	/* get the name */
-	flist[i] = (char *) FSmalloc((unsigned int) (reply.nameLength + 1));
-	if (!flist[i]) {
-	    nbytes = reply.nameLength + 3 & ~3;
-	    _FSEatData(svr, (unsigned long) nbytes);
-	    goto badmem;
+	if (FSProtocolVersion(svr) == 1)
+	{
+	    fhdr[i]->char_range.min_char.high = reply.header.char_range.min_char.low;
+	    fhdr[i]->char_range.min_char.low = reply.header.char_range.min_char.high;
+	    fhdr[i]->char_range.max_char.high = reply.header.char_range.max_char.low;
+	    fhdr[i]->char_range.max_char.low = reply.header.char_range.max_char.high;
+	    fhdr[i]->default_char.high = reply.header.default_char.low;
+	    fhdr[i]->default_char.low = reply.header.default_char.high;
 	}
-	_FSReadPad(svr, flist[i], (long) reply.nameLength);
-	flist[i][reply.nameLength] = '\0';
+
+	/* alloc space for the name */
+	flist[i] = (char *) FSmalloc((unsigned int) (reply.nameLength + 1));
+	if (FSProtocolVersion(svr) == 1)
+	{
+	    /* get the name */
+	    if (!flist[i]) {
+		nbytes = reply.nameLength + 3 & ~3;
+		_FSEatData(svr, (unsigned long) nbytes);
+		goto badmem;
+	    }
+	    _FSReadPad(svr, flist[i], (long) reply.nameLength);
+	    flist[i][reply.nameLength] = '\0';
+	}
 
 	pi[i] = (fsPropInfo *) FSmalloc(sizeof(fsPropInfo));
 	if (!pi[i]) {
@@ -208,8 +233,22 @@ FSListFontsWithXInfo(svr, pattern, maxNames, count, info, pprops, offsets, prop_
 	_FSReadPad(svr, (char *) po[i],
 		   (pi[i]->num_offsets * sizeof(fsPropOffset)));
 	/* get prop data */
-	_FSReadPad(svr, (char *) pd[i], pi[i]->data_len);
+	if (FSProtocolVersion(svr) == 1)
+	    _FSReadPad(svr, (char *) pd[i], pi[i]->data_len);
+	else
+	    _FSRead(svr, (char *) pd[i], pi[i]->data_len);
 
+	if (FSProtocolVersion(svr) != 1)
+	{
+	    /* get the name */
+	    if (!flist[i]) {
+		nbytes = reply.nameLength + 3 & ~3;
+		_FSEatData(svr, (unsigned long) nbytes);
+		goto badmem;
+	    }
+	    _FSReadPad(svr, flist[i], (long) reply.nameLength);
+	    flist[i][reply.nameLength] = '\0';
+	}
     }
     *info = fhdr;
     *count = i;
