@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsTrig.c,v 1.3 91/08/17 16:57:35 rws Exp $" */
+/* $XConsortium: XcmsTrig.c,v 1.4 91/11/05 11:02:20 rws Exp $" */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -63,6 +63,11 @@ double _XcmsArcTangent();
  *	DEFINES
  */
 
+#if __STDC__
+#define Const const
+#else
+#define Const /**/
+#endif
 #define XCMS_MAXERROR       	0.000001
 #define XCMS_MAXITER       	10000
 #define XCMS_PI       		3.14159265358979323846264338327950
@@ -88,28 +93,28 @@ double _XcmsArcTangent();
  *	LOCAL VARIABLES
  */
 
-static double cos_pcoeffs[] = {
+static double Const cos_pcoeffs[] = {
     0.12905394659037374438e7,
    -0.37456703915723204710e6,
     0.13432300986539084285e5,
    -0.11231450823340933092e3
 };
 
-static double cos_qcoeffs[] = {
+static double Const cos_qcoeffs[] = {
     0.12905394659037373590e7,
     0.23467773107245835052e5,
     0.20969518196726306286e3,
     1.0
 };
 
-static double sin_pcoeffs[] = {
+static double Const sin_pcoeffs[] = {
     0.20664343336995858240e7,
    -0.18160398797407332550e6,
     0.35999306949636188317e4,
    -0.20107483294588615719e2
 };
 
-static double sin_qcoeffs[] = {
+static double Const sin_qcoeffs[] = {
     0.26310659102647698963e7,
     0.39270242774649000308e5,
     0.27811919481083844087e3,
@@ -370,7 +375,7 @@ register double *dp;
 
 static double _XcmsPolynomial (order, coeffs, x)
 register int order;
-double *coeffs;
+double Const *coeffs;
 double x;
 {
     auto double rtn_value;
