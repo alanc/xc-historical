@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Intrinsic.c,v 1.102 88/01/07 13:37:18 swick Locked $";
+static char rcsid[] = "$Header: Intrinsic.c,v 1.103 88/01/08 13:13:21 swick Locked $";
 #endif lint
 
 /*
@@ -710,12 +710,15 @@ void XtManageChildren(children, num_children)
 {
 
     CompositeWidget	parent;
-    register Widget	child;
+    register Widget	child, *realizeP;
     Cardinal		num_unique_children, i;
+    WidgetList		realizeList;
 
     if (num_children == 0) return;
     parent = (CompositeWidget) children[0]->core.parent;
     if (parent->core.being_destroyed) return;
+
+    realizeP = realizeList = (Widget*)XtMalloc( num_children*sizeof(Widget) );
 
     num_unique_children = 0;
     for (i = 0; i < num_children; i++) {
@@ -725,16 +728,11 @@ void XtManageChildren(children, num_children)
 	} else if ((child->core.managed) || (child->core.being_destroyed)) {
 	    /* Do nothing */
 	} else {
-	    if (XtIsRealized(child->core.parent) && ! XtIsRealized(child))
-		XtRealizeWidget(child);
-	    if (child->core.mapped_when_managed) {
-		if (XtIsRealized(child)) {
-		    /* ||| Should really do mapping after change_managed */
-		    XtMapWidget(child);
-		}
-		num_unique_children++;
-	    }
 	    child->core.managed = TRUE;
+	    if (child->core.mapped_when_managed)
+		num_unique_children++;
+	    if (XtIsRealized(child->core.parent) && ! XtIsRealized(child))
+		*realizeP++ = child;
 	}
     }
     parent->composite.num_mapped_children =
@@ -742,6 +740,14 @@ void XtManageChildren(children, num_children)
 
     (*(((CompositeWidgetClass)parent->core.widget_class)
         ->composite_class.change_managed))(parent);
+
+    for (; --realizeP >= realizeList; ) {
+	XtRealizeWidget(*realizeP);
+	if ((*realizeP)->core.mapped_when_managed) {
+	    XtMapWidget(*realizeP);
+	}
+    }
+    XtFree( realizeList );
 }
 
 void XtManageChild(child)
