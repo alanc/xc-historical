@@ -1,8 +1,16 @@
 #include <ctype.h>
 #ifndef WIN32
-/*
- * 4.2bsd-based systems
- */
+
+#if defined(TCPCONN) || defined(UNIXCONN)
+#include <netinet/in.h>
+#else
+#ifdef ESIX
+#include <lan/in.h>
+#endif
+#endif
+#if defined(TCPCONN) || defined(UNIXCONN)
+#include <netdb.h>
+#endif
 
 #ifdef UNIXCONN
 #include <sys/un.h>
@@ -23,16 +31,6 @@
 #include <netinet/tcp.h>
 #endif /* !NO_TCP_H */
 #include <sys/ioctl.h>
-#if defined(TCPCONN) || defined(UNIXCONN)
-#include <netinet/in.h>
-#else
-#ifdef ESIX
-#include <lan/in.h>
-#endif
-#endif
-#if defined(TCPCONN) || defined(UNIXCONN)
-#include <netdb.h>
-#endif
 #ifdef SVR4
 #include <sys/filio.h>
 #endif
