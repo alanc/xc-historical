@@ -1,7 +1,7 @@
 /*
  * Xau - X Authorization Database Library
  *
- * $XConsortium: AuUnlock.c,v 1.4 91/01/08 15:09:39 gildea Exp $
+ * $XConsortium: AuUnlock.c,v 1.5 91/04/17 11:00:11 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -35,6 +35,7 @@ XauUnlockAuth (file_name)
 char	*file_name;
 #endif
 {
+#ifndef WIN32 /* XXX */
     char	creat_name[1025], link_name[1025];
     char	*strcpy (), *strcat ();
 
@@ -49,4 +50,5 @@ char	*file_name;
      */
     (void) unlink (creat_name);
     (void) unlink (link_name);
+#endif
 }

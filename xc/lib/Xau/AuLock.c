@@ -1,7 +1,7 @@
 /*
  * Xau - X Authorization Database Library
  *
- * $XConsortium: AuLock.c,v 1.8 91/12/16 19:56:07 gildea Exp $
+ * $XConsortium: AuLock.c,v 1.9 93/08/16 12:12:23 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -43,6 +43,7 @@ int	timeout;
 long	dead;
 #endif
 {
+#ifndef WIN32 /* XXX */
     char	creat_name[1025], link_name[1025];
     struct stat	statb;
     long	now;
@@ -89,4 +90,7 @@ long	dead;
 	--retries;
     }
     return LOCK_TIMEOUT;
+#else
+    return LOCK_SUCCESS;
+#endif
 }
