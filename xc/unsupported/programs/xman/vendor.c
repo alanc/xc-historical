@@ -39,7 +39,11 @@ static SectionNameRec SectionNames[] = {
     {"(8) Sys. Administration",		"8"},
     {"(l) Local",			"l"},
     {"(n) New",				"n"},
-    {"(o) Old",				"o"}
+    {"(o) Old",				"o"},
+#ifdef sony
+    {"(p) Public Domain",		"p"},
+    {"(s) Sony Specific",		"s"},
+#endif
 };
 
 #endif
