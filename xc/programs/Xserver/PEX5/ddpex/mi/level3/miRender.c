@@ -1,4 +1,4 @@
-/* $XConsortium: miRender.c,v 5.2 91/05/01 14:22:05 hersh Exp $ */
+/* $XConsortium: miRender.c,v 5.3 91/07/19 16:02:57 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -787,7 +787,7 @@ ValidateRenderer(pRend)
 	tables = pRend->tablesChanges & ~pRend->tablesMask;
 	namesets = pRend->namesetsChanges & ~pRend->namesetsMask;
 	attrs = pRend->attrsChanges & ~pRend->attrsMask;
-	ValidateFilters(pRend, pddc, tables, namesets, attrs);
+	ValidateFilters(pRend, pddc, namesets);
 	ValidateDDContextAttrs(pRend, pddc, tables, namesets, attrs);
 	pRend->tablesChanges &= (~tables);
 	pRend->namesetsChanges &= (~namesets);
@@ -799,7 +799,7 @@ ValidateRenderer(pRend)
 	namesets = pRend->namesetsChanges;
 	attrs = pRend->attrsChanges;
 	ValidateDDContextAttrs(pRend, pddc, tables, namesets, attrs);
-	ValidateFilters(pRend, pddc, tables, namesets, attrs);
+	ValidateFilters(pRend, pddc, namesets);
 	/* reset change masks */
 	MI_ZERO_ALL_CHANGES(pRend);
     }
