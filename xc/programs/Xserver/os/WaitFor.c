@@ -97,7 +97,7 @@ extern int playback_on;
  *     file descriptor.)  
  *****************/
 
-static int timeTilFrob = 0;		/* while screen saving */
+static long timeTilFrob = 0;		/* while screen saving */
 
 #if (mskcnt>4)
 /*
@@ -147,7 +147,7 @@ WaitForSomething(pClientsReady, nready, pNewClients, nnew)
                 timeout = ScreenSaverTime - TimeSinceLastInputEvent();
 	        if (timeout <= 0) /* may be forced by AutoResetServer() */
 	        {
-		    int timeSinceSave;
+		    long timeSinceSave;
 
 		    if (clientsDoomed)
 		    {
@@ -156,13 +156,16 @@ WaitForSomething(pClientsReady, nready, pNewClients, nnew)
 		    }
 
 		    timeSinceSave = -timeout;
-	            if (timeSinceSave >= timeTilFrob)
+	            if ((timeSinceSave >= timeTilFrob) && (timeTilFrob >= 0))
                     {
 		        SaveScreens(SCREEN_SAVER_ON, ScreenSaverActive);
-			/* round up to the next ScreenSaverInterval */
-			timeTilFrob = ScreenSaverInterval *
- 				((timeSinceSave + ScreenSaverInterval) /
-	 				ScreenSaverInterval);
+			if (ScreenSaverInterval)
+			    /* round up to the next ScreenSaverInterval */
+			    timeTilFrob = ScreenSaverInterval *
+				    ((timeSinceSave + ScreenSaverInterval) /
+					    ScreenSaverInterval);
+			else
+			    timeTilFrob = -1;
 		    }
     	            timeout = timeTilFrob - timeSinceSave;
     	        }
@@ -172,10 +175,17 @@ WaitForSomething(pClientsReady, nready, pNewClients, nnew)
 		        timeout = ScreenSaverTime;
 	            timeTilFrob = 0;
 		}
-                waittime.tv_sec = timeout / MILLI_PER_SECOND;
-	        waittime.tv_usec = (timeout % MILLI_PER_SECOND) *
- 					(1000000 / MILLI_PER_SECOND);
-		wt = &waittime;
+		if (timeTilFrob >= 0)
+		{
+		    waittime.tv_sec = timeout / MILLI_PER_SECOND;
+		    waittime.tv_usec = (timeout % MILLI_PER_SECOND) *
+					    (1000000 / MILLI_PER_SECOND);
+		    wt = &waittime;
+		}
+		else
+		{
+		    wt = NULL;
+		}
 	    }
             else
                 wt = NULL;
