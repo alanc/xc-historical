@@ -1,4 +1,4 @@
-/* $XConsortium: uOCprim.c,v 5.2 91/03/15 18:31:59 keith Exp $ */
+/* $XConsortium: uOCprim.c,v 5.3 91/05/04 23:16:20 keith Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -101,12 +101,15 @@ SWAP_FUNC_PREFIX(SwapReflectionAttr) (swapPtr, ptr)
 pexSwap	    *swapPtr;
 pexReflectionAttr   *ptr;
 {
+    unsigned char *pret = (unsigned char *)ptr;
+
     SWAP_FLOAT (ptr->ambient);
     SWAP_FLOAT (ptr->diffuse);
     SWAP_FLOAT (ptr->specular);
     SWAP_FLOAT (ptr->specularConc);
     SWAP_FLOAT (ptr->transmission); 
-    SWAP_FUNC_PREFIX(SwapColourSpecifier) (swapPtr, &(ptr->specularColour));
+    pret = SWAP_FUNC_PREFIX(SwapColourSpecifier) (swapPtr, &(ptr->specularColour));
+    return (pret);
 }
 
 
