@@ -1,4 +1,4 @@
-/* $XConsortium: Xregistry,v 1.28 91/04/16 10:19:33 rws Exp $ */
+/* $XConsortium: Xregistry,v 1.29 91/04/26 18:14:05 rws Exp $ */
 
 1. ORGANIZATION NAMES
 
@@ -147,6 +147,7 @@ osfXK_Escape		0x1004FF1B		[7]
 osfXK_AddMode		0x1004FF31		[7]
 osfXK_PrimaryPaste	0x1004FF32		[7]
 osfXK_QuickPaste	0x1004FF33		[7]
+osfXK_PageLeft		0x1004FF40		[7]
 osfXK_PageUp		0x1004FF41		[7]
 osfXK_PageDown		0x1004FF42		[7]
 osfXK_PageRight		0x1004FF43		[7]
