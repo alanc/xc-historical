@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XConnDis.c,v 11.51 89/06/21 14:49:47 jim Exp $
+ * $XConsortium: XConnDis.c,v 11.52 89/06/22 14:10:54 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -264,7 +264,7 @@ int _XConnectDisplay (display_name, fullnamep, dpynump, screenp,
      * being a server listening at all, which is why we have to not retry
      * too many times).
      */
-    if ((p = getenv ("XRETRIES")) != NULL) {
+    if ((p = getenv ("XCONNECTRETRIES")) != NULL) {
 	retries = atoi (p);
     }
     if ((fd = (*connfunc) (phostname, idisplay, retries,
@@ -452,7 +452,7 @@ static int MakeUNIXSocketConnection (phostname, idisplay, retries,
 	if (connect (fd, addr, addrlen) < 0) {
 	    int olderrno = errno;
 	    (void) close (fd);
-	    if (olderrno != ENOENT) {	/* other than no such socket */
+	    if (olderrno != ENOENT || retries <= 0) {
 		errno = olderrno;
 		return -1;
 	    }
@@ -574,7 +574,7 @@ static int MakeTCPConnection (phostname, idisplay, retries,
 	if (connect (fd, addr, addrlen) < 0) {
 	    int olderrno = errno;
 	    (void) close (fd);
-	    if (olderrno != ECONNREFUSED) {  /* anything but no server ready */
+	    if (olderrno != ECONNREFUSED || retries <= 0) {
 		errno = olderrno;
 		return -1;
 	    }
