@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: util.c,v 1.43 91/01/18 17:26:38 dave Exp $
+ * $XConsortium: util.c,v 1.44 91/01/25 14:29:50 dave Exp $
  *
  * utility routines for twm
  *
@@ -36,13 +36,13 @@
  *
  ***********************************************************************/
 
-#include <stdio.h>
 #include "twm.h"
 #include "util.h"
 #include "gram.h"
 #include "screen.h"
 #include <X11/Xos.h>
 #include <X11/Xatom.h>
+#include <stdio.h>
 #include <X11/Xmu/Drawing.h>
 #include <X11/Xmu/CharSet.h>
 
@@ -622,7 +622,6 @@ int
 putenv(s)
     char *s;
 {
-    extern char *index();
     char *v;
     int varlen, idx;
     extern char **environ;
