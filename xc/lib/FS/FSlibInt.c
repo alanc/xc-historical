@@ -1,4 +1,4 @@
-/* $XConsortium: FSlibInt.c,v 1.9 91/07/22 11:29:28 rws Exp $ */
+/* $XConsortium: FSlibInt.c,v 1.10 92/11/18 21:31:12 gildea Exp $ */
 /*
  * Copyright 1990 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -34,14 +34,25 @@ static void _EatData32();
 /* check for both EAGAIN and EWOULDBLOCK, because some supposedly POSIX
  * systems are broken and return EWOULDBLOCK when they should return EAGAIN
  */
+#ifdef WIN32
+#define ETEST() (WSAGetLastError() == WSAEWOULDBLOCK)
+#else
 #if defined(EAGAIN) && defined(EWOULDBLOCK)
-#define ETEST(err) (err == EAGAIN || err == EWOULDBLOCK)
+#define ETEST() (errno == EAGAIN || errno == EWOULDBLOCK)
 #else
 #ifdef EAGAIN
-#define ETEST(err) (err == EAGAIN)
+#define ETEST() (errno == EAGAIN)
 #else
-#define ETEST(err) (err == EWOULDBLOCK)
+#define ETEST() (errno == EWOULDBLOCK)
 #endif
+#endif
+#endif
+#ifdef WIN32
+#define ECHECK(err) (WSAGetLastError() == err)
+#define ESET(val) WSASetLastError(val)
+#else
+#define ECHECK(err) (errno == err)
+#define ESET(val) errno = val
 #endif
 
 #ifdef CRAY
@@ -88,11 +99,13 @@ _FSWriteV(fd, iov, iovcnt)
 
 #endif				/* CRAY */
 
-#if defined(SYSV) && defined(SYSV386) && !defined(STREAMSCONN)
+#if (defined(SYSV) && defined(SYSV386) && !defined(STREAMSCONN)) || defined(WIN32)
 /*
- * SYSV/386 does not have readv so we emulate
+ * SYSV/386 and WIN32 do not have readv so we emulate
  */
+#ifndef WIN32
 #include <sys/uio.h>
+#endif
 
 int _FSReadV(fd, iov, iovcnt)
 int fd;
@@ -102,16 +115,16 @@ int iovcnt;
     int i, len, total;
     char *base;
 
-    errno = 0;
+    ESET(0);
     for (i=0, total=0;  i<iovcnt;  i++, iov++) {
 	len = iov->iov_len;
 	base = iov->iov_base;
 	while (len > 0) {
 	    register int nbytes;
-	    nbytes = read(fd, base, len);
+	    nbytes = ReadFromServer(fd, base, len);
 	    if (nbytes < 0 && total == 0)  return -1;
 	    if (nbytes <= 0)  return total;
-	    errno = 0;
+	    ESET(0);
 	    len   -= nbytes;
 	    total += nbytes;
 	    base  += nbytes;
@@ -120,7 +133,36 @@ int iovcnt;
     return total;
 }
 
-#endif /* SYSV && SYSV386 && !STREAMSCONN */
+#endif /* SYSV && SYSV386 && !STREAMSCONN || WIN32 */
+
+#ifdef WIN32
+
+int _FSWriteV (fd, iov, iovcnt)
+    int fd;
+    struct iovec *iov;
+    int iovcnt;
+{
+    int i, len, total;
+    char *base;
+
+    ESET(0);
+    for (i=0, total=0;  i<iovcnt;  i++, iov++) {
+	len = iov->iov_len;
+	base = iov->iov_base;
+	while (len > 0) {
+	    register int nbytes;
+	    nbytes = WriteToServer(fd, base, len);
+	    if (nbytes < 0 && total == 0)  return -1;
+	    if (nbytes <= 0)  return total;
+	    ESET(0);
+	    len   -= nbytes;
+	    total += nbytes;
+	    base  += nbytes;
+	}
+    }
+    return total;
+}
+#endif /* WIN32 */
 
 /*
  * The following routines are internal routines used by FSlib for protocol
@@ -174,21 +216,21 @@ _FSFlush(svr)
      * decremented as buffer is written out.
      */
     while (size) {
-	errno = 0;
+	ESET(0);
 	write_stat = WriteToServer(svr->fd, bufindex, (int) todo);
 	if (write_stat >= 0) {
 	    size -= write_stat;
 	    todo = size;
 	    bufindex += write_stat;
-	} else if (ETEST(errno)) {
+	} else if (ETEST()) {
 	    _FSWaitForWritable(svr);
 #ifdef SUNSYSV
-	} else if (errno == 0) {
+	} else if (ECHECK(0)) {
 	    _FSWaitForWritable(svr);
 #endif
 
 #ifdef EMSGSIZE
-	} else if (errno == EMSGSIZE) {
+	} else if (ECHECK(EMSGSIZE)) {
 	    if (todo > 1)
 		todo >>= 1;
 	    else
@@ -308,7 +350,7 @@ _FSRead(svr, data, size)
 
     if (size == 0)
 	return;
-    errno = 0;
+    ESET(0);
     while ((bytes_read = ReadFromServer(svr->fd, data, (int) size))
 	    != size) {
 
@@ -316,23 +358,23 @@ _FSRead(svr, data, size)
 	    size -= bytes_read;
 	    data += bytes_read;
 	}
-	else if (ETEST(errno)) {
+	else if (ETEST()) {
 	    _FSWaitForReadable(svr);
-	    errno = 0;
+	    ESET(0);
 	}
 #ifdef SUNSYSV
-	else if (errno == 0) {
+	else if (ECHECK(0)) {
 	    _FSWaitForReadable(svr);
 	}
 #endif
 
 	else if (bytes_read == 0) {
 	    /* Read failed because of end of file! */
-	    errno = EPIPE;
+	    ESET(EPIPE);
 	    (*_FSIOErrorFunction) (svr);
 	} else {		/* bytes_read is less than 0; presumably -1 */
 	    /* If it's a system call interrupt, it's not an error. */
-	    if (errno != EINTR)
+	    if (!ECHECK(EINTR))
 		(*_FSIOErrorFunction) (svr);
 	}
     }
@@ -494,7 +536,7 @@ _FSReadPad(svr, data, size)
     iov[1].iov_base = pad;
     size += iov[1].iov_len;
 
-    errno = 0;
+    ESET(0);
     while ((bytes_read = ReadvFromServer(svr->fd, iov, 2)) != size) {
 
 	if (bytes_read > 0) {
@@ -506,23 +548,23 @@ _FSReadPad(svr, data, size)
 	    } else
 		iov[0].iov_base += bytes_read;
 	}
-	else if (ETEST(errno)) {
+	else if (ETEST()) {
 	    _FSWaitForReadable(svr);
-	    errno = 0;
+	    ESET(0);
 	}
 #ifdef SUNSYSV
-	else if (errno == 0) {
+	else if (ECHECK(0)) {
 	    _FSWaitForReadable(svr);
 	}
 #endif
 
 	else if (bytes_read == 0) {
 	    /* Read failed because of end of file! */
-	    errno = EPIPE;
+	    ESET(EPIPE);
 	    (*_FSIOErrorFunction) (svr);
 	} else {		/* bytes_read is less than 0; presumably -1 */
 	    /* If it's a system call interrupt, it's not an error. */
-	    if (errno != EINTR)
+	    if (!ECHECK(EINTR))
 		(*_FSIOErrorFunction) (svr);
 	}
     }
@@ -593,20 +635,20 @@ _FSSend(svr, data, size)
 	InsertIOV(data, size)
 	InsertIOV(pad, padsize)
 
-	errno = 0;
+	ESET(0);
 	if ((len = WritevToServer(svr->fd, iov, i)) >= 0) {
 	    skip += len;
 	    total -= len;
 	    todo = total;
-	} else if (ETEST(errno)) {
+	} else if (ETEST()) {
 		_FSWaitForWritable(svr);
 #ifdef SUNSYSV
-	} else if (errno == 0) {
+	} else if (ECHECK(0)) {
 	    _FSWaitForWritable(svr);
 #endif
 
 #ifdef EMSGSIZE
-	} else if (errno == EMSGSIZE) {
+	} else if (ECHECK(EMSGSIZE)) {
 	    if (todo > 1)
 		todo >>= 1;
 	    else
@@ -848,7 +890,7 @@ _FSEnq(svr, event)
     } else if ((qelt =
 	     (_FSQEvent *) FSmalloc((unsigned) sizeof(_FSQEvent))) == NULL) {
 	/* Malloc call failed! */
-	errno = ENOMEM;
+	ESET(ENOMEM);
 	(*_FSIOErrorFunction) (svr);
     }
     qelt->next = NULL;
@@ -949,21 +991,27 @@ _SysErrorMsg(n)
 }
 
 /*
- * _FSIOError - Default fatal system error reporting routine.  Called when
- * an X internal system error is encountered.
+ * _FSDefaultIOError - Default fatal system error reporting routine.  Called
+ * when an X internal system error is encountered.
  */
-_FSIOError(svr)
+_FSDefaultIOError(svr)
     FSServer   *svr;
 {
     (void) fprintf(stderr,
 		   "FSIO:  fatal IO error %d (%s) on font server \"%s\"\r\n",
-		   errno, _SysErrorMsg(errno), FSServerString(svr));
+#ifdef WIN32
+			WSAGetLastError(), strerror(WSAGetLastError()),
+#else
+
+		   errno, _SysErrorMsg(errno),
+#endif
+		   FSServerString(svr));
     (void) fprintf(stderr,
 		   "      after %lu requests (%lu known processed) with %d events remaining.\r\n",
 		   NextRequest(svr) - 1, LastKnownRequestProcessed(svr),
 		   QLength(svr));
 
-    if (errno == EPIPE) {
+    if (ECHECK(EPIPE)) {
 	(void) fprintf(stderr,
 	"      The connection was probably broken by a server shutdown.\r\n");
     }
@@ -997,24 +1045,6 @@ _FSError(svr, rep)
     }
     exit(1);
     /* NOTREACHED */
-}
-
-int
-_FSDefaultIOError(svr)
-    FSServer   *svr;
-{
-    (void) fprintf(stderr,
-		   "FSIO:  fatal IO error %d (%s) on Font server \"%s\"\r\n",
-		   errno, _SysErrorMsg(errno), FSServerString(svr));
-    (void) fprintf(stderr,
-		   "	after %lu requests (%lu known processed) with %d events remaining.\r\n",
-		   NextRequest(svr) - 1, LastKnownRequestProcessed(svr),
-		   QLength(svr));
-    if (errno == EPIPE) {
-	(void) fprintf(stderr,
-		       "	The connection was probably broken by a server shutdown.\n\r");
-    }
-    exit(1);
 }
 
 int
@@ -1083,7 +1113,7 @@ _FSDefaultError(svr, event)
     /* NOTREACHED */
 }
 
-int         (*_FSIOErrorFunction) () = _FSIOError;
+int         (*_FSIOErrorFunction) () = _FSDefaultIOError;
 int         (*_FSErrorFunction) () = _FSDefaultError;
 
 /*
