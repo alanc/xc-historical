@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM X Window System Build Parameters and Rules
-XCOMM $XConsortium: Project.tmpl,v 1.168 93/08/17 11:02:34 rws Exp $
+XCOMM $XConsortium: Project.tmpl,v 1.169 93/08/20 10:41:19 mor Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -101,96 +101,6 @@ XCOMM $XConsortium: Project.tmpl,v 1.168 93/08/17 11:02:34 rws Exp $
 #endif
 #ifndef InstallAppDefFiles
 #define InstallAppDefFiles	YES	/* install application defaults */
-#endif
-#ifndef DebugLibX
-#define DebugLibX		NO	/* debugged X library */
-#endif
-#ifndef ProfileLibX
-#define ProfileLibX		NO	/* profiled X library */
-#endif
-#ifndef DebugOldLibX
-#define DebugOldLibX		NO	/* debugged old X library */
-#endif
-#ifndef ProfileOldLibX
-#define ProfileOldLibX		NO	/* profiled old X library */
-#endif
-#ifndef DebugLibXt
-#define DebugLibXt		NO	/* debugged toolkit library */
-#endif
-#ifndef ProfileLibXt
-#define ProfileLibXt		NO	/* profiled toolkit library */
-#endif
-#ifndef DebugLibXaw
-#define DebugLibXaw		NO	/* debugged widget library */
-#endif
-#ifndef ProfileLibXaw
-#define ProfileLibXaw		NO	/* profiled widget library */
-#endif
-#ifndef DebugLibXext
-#define DebugLibXext		NO	/* debugged Xext library */
-#endif
-#ifndef ProfileLibXext
-#define ProfileLibXext		NO	/* profiled Xext library */
-#endif
-#ifndef DebugLibXmu
-#define DebugLibXmu		NO	/* debugged Xmu library */
-#endif
-#ifndef ProfileLibXmu
-#define ProfileLibXmu		NO	/* profiled Xmu library */
-#endif
-#ifndef DebugLibXau
-#define DebugLibXau		NO	/* debugged auth library */
-#endif
-#ifndef ProfileLibXau
-#define ProfileLibXau		NO	/* profiled auth library */
-#endif
-#ifndef DebugLibXdmcp
-#define DebugLibXdmcp		NO	/* debugged XDMCP library */
-#endif
-#ifndef ProfileLibXdmcp
-#define ProfileLibXdmcp		NO	/* profiled XDMCP library */
-#endif
-#ifndef DebugLibXinput
-#define DebugLibXinput		NO	/* debugged Xi library */
-#endif
-#ifndef ProfileLibXinput
-#define ProfileLibXinput	NO	/* profiled Xi library */
-#endif
-#ifndef DebugLibXTest
-#define DebugLibXTest		NO	/* debugged Xtst library */
-#endif
-#ifndef ProfileLibXTest
-#define ProfileLibXTest		NO	/* profiled Xtst library */
-#endif
-#ifndef DebugLibXTrap
-#define DebugLibXTrap		NO	/* debugged XTrap library */
-#endif
-#ifndef ProfileLibXTrap
-#define ProfileLibXTrap		NO	/* profiled XTrap library */
-#endif
-#ifndef DebugLibPex
-#define DebugLibPex		NO	/* debugged PEX5 library */
-#endif
-#ifndef ProfileLibPex
-#define ProfileLibPex		NO	/* profiled PEX5 library */
-#endif
-#ifndef DebugLibXie
-#define DebugLibXie		NO	/* debugged XIE library */
-#endif
-#ifndef ProfileLibXie
-#define ProfileLibXie		NO	/* profiled XIE library */
-#endif
-#ifndef DebugLibICE
-#define DebugLibICE		NO	/* debugged ICE library */
-#endif
-#ifndef ProfileLibICE
-#define ProfileLibICE		NO	/* profiled ICE library */
-#endif
-#ifndef DebugLibSM
-#define DebugLibSM		NO	/* debugged SM library */
-#endif
-#ifndef ProfileLibSM
-#define ProfileLibSM		NO	/* profiled SM library */
 #endif
 #ifndef ThreadedX
 #if HasPosixThreads || HasCThreads
@@ -439,102 +349,6 @@ XCOMM $XConsortium: Project.tmpl,v 1.168 93/08/17 11:02:34 rws Exp $
 #ifndef ForceNormalLib
 #define ForceNormalLib (HasSaberC | HasGcc)
 #endif
-#ifndef SharedLibX
-#define SharedLibX HasSharedLibraries
-#endif
-#ifndef NormalLibX
-#define NormalLibX (!SharedLibX | ForceNormalLib)
-#endif
-#ifndef SharedOldLibX
-#define SharedOldLibX HasSharedLibraries
-#endif
-#ifndef NormalOldLibX
-#define NormalOldLibX (!SharedOldLibX | ForceNormalLib)
-#endif
-#ifndef SharedLibXt
-#define SharedLibXt HasSharedLibraries
-#endif
-#ifndef NormalLibXt
-#define NormalLibXt (!SharedLibXt | ForceNormalLib)
-#endif
-#ifndef SharedLibXaw
-#define SharedLibXaw HasSharedLibraries
-#endif
-#ifndef NormalLibXaw
-#define NormalLibXaw (!SharedLibXaw | ForceNormalLib)
-#endif
-#ifndef SharedLibXmu
-#define SharedLibXmu HasSharedLibraries
-#endif
-#ifndef NormalLibXmu
-#define NormalLibXmu (!SharedLibXmu | ForceNormalLib)
-#endif
-#ifndef SharedLibXau
-#define SharedLibXau NO		/* don't need shared form */
-#endif
-#ifndef NormalLibXau
-#define NormalLibXau (!SharedLibXau | ForceNormalLib)
-#endif
-#ifndef SharedLibXdmcp
-#define SharedLibXdmcp NO	/* don't need shared form */
-#endif
-#ifndef NormalLibXdmcp
-#define NormalLibXdmcp (!SharedLibXdmcp | ForceNormalLib)
-#endif
-#ifndef SharedLibXext
-#define SharedLibXext HasSharedLibraries
-#endif
-#ifndef NormalLibXext
-#define NormalLibXext (!SharedLibXext | ForceNormalLib)
-#endif
-#ifndef SharedLibXinput
-#define SharedLibXinput HasSharedLibraries
-#endif
-#ifndef NormalLibXinput
-#define NormalLibXinput (!SharedLibXinput | ForceNormalLib)
-#endif
-#ifndef SharedLibXTest
-#define SharedLibXTest HasSharedLibraries
-#endif
-#ifndef NormalLibXTest
-#define NormalLibXTest (!SharedLibXTest | ForceNormalLib)
-#endif
-#ifndef SharedLibXTrap
-#define SharedLibXTrap 	HasSharedLibaries
-#endif
-#ifndef NormalLibXTrap
-#define NormalLibXTrap 	(!SharedLibXTrap | ForceNormalLib)
-#endif
-#ifndef SharedLibPex
-#define SharedLibPex HasSharedLibraries
-#endif
-#ifndef NormalLibPex
-#define NormalLibPex (!SharedLibPex | ForceNormalLib)
-#endif
-#ifndef SharedLibXie
-#define SharedLibXie HasSharedLibraries
-#endif
-#ifndef NormalLibXie
-#define NormalLibXie (!SharedLibXie | ForceNormalLib)
-#endif
-#ifndef SharedLibPhigs
-#define SharedLibPhigs NO	/* XXX - haven't made it sharable yet */
-#endif
-#ifndef NormalLibPhigs
-#define NormalLibPhigs (!SharedLibPhigs | ForceNormalLib)
-#endif
-#ifndef SharedLibICE
-#define SharedLibICE HasSharedLibraries
-#endif
-#ifndef NormalLibICE
-#define NormalLibICE (!SharedLibICE | ForceNormalLib)
-#endif
-#ifndef SharedLibSM
-#define SharedLibSM HasSharedLibraries
-#endif
-#ifndef NormalLibSM
-#define NormalLibSM (!SharedLibSM | ForceNormalLib)
-#endif
 
 
 #ifndef DoInstallExtensionsIntoXlib
@@ -584,27 +398,13 @@ XCOMM X Window System make variables; these need to be coordinated with rules
           FONTSRC = $(TOP)/fonts
        INCLUDESRC = $(TOP)/X11
         SERVERSRC = $(TOP)/server
-       EXAMPLESRC = $(TOP)/examples
        CONTRIBSRC = ContribDir
            DOCSRC = $(TOP)/doc
            RGBSRC = $(TOP)/rgb
-         XAUTHSRC = $(LIBSRC)/Xau
-          XLIBSRC = $(LIBSRC)/X
-           XMUSRC = $(LIBSRC)/Xmu
-       TOOLKITSRC = $(LIBSRC)/Xt
-       AWIDGETSRC = $(LIBSRC)/Xaw
-       OLDXLIBSRC = $(LIBSRC)/oldX
-      XDMCPLIBSRC = $(LIBSRC)/Xdmcp
       BDFTOPCFSRC = $(FONTSRC)/clients/bdftopcf
      MKFONTDIRSRC = $(FONTSRC)/clients/mkfontdir
-         FSLIBSRC = $(FONTSRC)/lib/fs
     FONTSERVERSRC = $(FONTSRC)/server
      EXTENSIONSRC = $(TOP)/extensions
-         XILIBSRC = $(EXTENSIONSRC)/lib/xinput
-      XTESTLIBSRC = $(EXTENSIONSRC)/lib/xtest
-        PEXLIBSRC = $(EXTENSIONSRC)/lib/PEXlib
-        XIELIBSRC = $(EXTENSIONSRC)/lib/XIE
-      PHIGSLIBSRC = $(EXTENSIONSRC)/lib/PEX
 
 #ifndef ShLibIncludeFile
 /* need this to make ANSI-style preprocessors happy */
@@ -613,78 +413,301 @@ XCOMM X Window System make variables; these need to be coordinated with rules
 
 #include ShLibIncludeFile
 
-#if SharedLibXext
-SharedLibReferences(EXTENSION,Xext,$(EXTENSIONSRC)/lib,SOXEXTREV,SharedXextRev)
-#else
-UnsharedLibReferences(EXTENSION,Xext,$(EXTENSIONSRC)/lib)
+#ifndef SharedLibX
+#define SharedLibX HasSharedLibraries
 #endif
-LINTEXTENSIONLIB = $(LINTEXTENSION)
+#ifndef NormalLibX
+#define NormalLibX (!SharedLibX | ForceNormalLib)
+#endif
+#ifndef DebugLibX
+#define DebugLibX		NO	/* debugged X library */
+#endif
+#ifndef ProfileLibX
+#define ProfileLibX		NO	/* profiled X library */
+#endif
+          XLIBSRC = $(LIBSRC)/X
 #if SharedLibX
 SharedLibReferences(XONLY,X11,$(XLIBSRC),SOXLIBREV,SharedXlibRev)
 #else
 UnsharedLibReferences(XONLY,X11,$(XLIBSRC))
 #endif
          XLIBONLY = $(XONLYLIB)
+
+#ifndef SharedLibXext
+#define SharedLibXext HasSharedLibraries
+#endif
+#ifndef NormalLibXext
+#define NormalLibXext (!SharedLibXext | ForceNormalLib)
+#endif
+#ifndef DebugLibXext
+#define DebugLibXext		NO	/* debugged Xext library */
+#endif
+#ifndef ProfileLibXext
+#define ProfileLibXext		NO	/* profiled Xext library */
+#endif
+      XEXTLIBSRC = $(EXTENSIONSRC)/lib
+#if SharedLibXext
+SharedLibReferences(EXTENSION,Xext,$(XEXTLIBSRC),SOXEXTREV,SharedXextRev)
+#else
+UnsharedLibReferences(EXTENSION,Xext,$(XEXTLIBSRC))
+#endif
+LINTEXTENSIONLIB = $(LINTEXTENSION)
           DEPXLIB = $(DEPEXTENSIONLIB) $(DEPXONLYLIB)
              XLIB = $(EXTENSIONLIB) $(XONLYLIB)
          LINTXLIB = $(LINTXONLYLIB)
+
+#ifndef SharedLibXau
+#define SharedLibXau NO		/* don't need shared form */
+#endif
+#ifndef NormalLibXau
+#define NormalLibXau (!SharedLibXau | ForceNormalLib)
+#endif
+#ifndef DebugLibXau
+#define DebugLibXau		NO	/* debugged auth library */
+#endif
+#ifndef ProfileLibXau
+#define ProfileLibXau		NO	/* profiled auth library */
+#endif
+         XAUTHSRC = $(LIBSRC)/Xau
 UnsharedLibReferences(XAUTH,Xau,$(XAUTHSRC))
+
+#ifndef SharedLibXdmcp
+#define SharedLibXdmcp NO	/* don't need shared form */
+#endif
+#ifndef NormalLibXdmcp
+#define NormalLibXdmcp (!SharedLibXdmcp | ForceNormalLib)
+#endif
+#ifndef DebugLibXdmcp
+#define DebugLibXdmcp		NO	/* debugged XDMCP library */
+#endif
+#ifndef ProfileLibXdmcp
+#define ProfileLibXdmcp		NO	/* profiled XDMCP library */
+#endif
+      XDMCPLIBSRC = $(LIBSRC)/Xdmcp
 UnsharedLibReferences(XDMCP,Xdmcp,$(XDMCPLIBSRC))
+
+#ifndef SharedLibXmu
+#define SharedLibXmu HasSharedLibraries
+#endif
+#ifndef NormalLibXmu
+#define NormalLibXmu (!SharedLibXmu | ForceNormalLib)
+#endif
+#ifndef DebugLibXmu
+#define DebugLibXmu		NO	/* debugged Xmu library */
+#endif
+#ifndef ProfileLibXmu
+#define ProfileLibXmu		NO	/* profiled Xmu library */
+#endif
+           XMUSRC = $(LIBSRC)/Xmu
 #if SharedLibXmu
 SharedDSLibReferences(XMU,Xmu,$(XMUSRC),SOXMUREV,SharedXmuRev)
 #else
 UnsharedLibReferences(XMU,Xmu,$(XMUSRC))
 #endif
+
+#ifndef SharedOldLibX
+#define SharedOldLibX HasSharedLibraries
+#endif
+#ifndef NormalOldLibX
+#define NormalOldLibX (!SharedOldLibX | ForceNormalLib)
+#endif
+#ifndef DebugOldLibX
+#define DebugOldLibX		NO	/* debugged old X library */
+#endif
+#ifndef ProfileOldLibX
+#define ProfileOldLibX		NO	/* profiled old X library */
+#endif
+       OLDXLIBSRC = $(LIBSRC)/oldX
 #if SharedOldLibX
 SharedLibReferences(OLDX,oldX,$(OLDXLIBSRC),SOOLDXREV,SharedOldXRev)
 #else
 UnsharedLibReferences(OLDX,oldX,$(OLDXLIBSRC))
 #endif
+
+#ifndef SharedLibXt
+#define SharedLibXt HasSharedLibraries
+#endif
+#ifndef NormalLibXt
+#define NormalLibXt (!SharedLibXt | ForceNormalLib)
+#endif
+#ifndef DebugLibXt
+#define DebugLibXt		NO	/* debugged toolkit library */
+#endif
+#ifndef ProfileLibXt
+#define ProfileLibXt		NO	/* profiled toolkit library */
+#endif
+       TOOLKITSRC = $(LIBSRC)/Xt
 #if SharedLibXt
 SharedDSLibReferences(XTOOL,Xt,$(TOOLKITSRC),SOXTREV,SharedXtRev)
 #else
 UnsharedLibReferences(XTOOL,Xt,$(TOOLKITSRC))
 #endif
+
+#ifndef SharedLibXaw
+#define SharedLibXaw HasSharedLibraries
+#endif
+#ifndef NormalLibXaw
+#define NormalLibXaw (!SharedLibXaw | ForceNormalLib)
+#endif
+#ifndef DebugLibXaw
+#define DebugLibXaw		NO	/* debugged widget library */
+#endif
+#ifndef ProfileLibXaw
+#define ProfileLibXaw		NO	/* profiled widget library */
+#endif
+       AWIDGETSRC = $(LIBSRC)/Xaw
 #if SharedLibXaw
 SharedDSLibReferences(XAW,Xaw,$(AWIDGETSRC),SOXAWREV,SharedXawRev)
 #else
 UnsharedLibReferences(XAW,Xaw,$(AWIDGETSRC))
 #endif
+
+#ifndef SharedLibXinput
+#define SharedLibXinput HasSharedLibraries
+#endif
+#ifndef NormalLibXinput
+#define NormalLibXinput (!SharedLibXinput | ForceNormalLib)
+#endif
+#ifndef DebugLibXinput
+#define DebugLibXinput		NO	/* debugged Xi library */
+#endif
+#ifndef ProfileLibXinput
+#define ProfileLibXinput	NO	/* profiled Xi library */
+#endif
+         XILIBSRC = $(EXTENSIONSRC)/lib/xinput
 #if SharedLibXinput
 SharedLibReferences(XI,Xi,$(XILIBSRC),SOXINPUTREV,SharedXinputRev)
 #else
 UnsharedLibReferences(XI,Xi,$(XILIBSRC))
 #endif
+
+#ifndef SharedLibXTest
+#define SharedLibXTest HasSharedLibraries
+#endif
+#ifndef NormalLibXTest
+#define NormalLibXTest (!SharedLibXTest | ForceNormalLib)
+#endif
+#ifndef DebugLibXTest
+#define DebugLibXTest		NO	/* debugged Xtst library */
+#endif
+#ifndef ProfileLibXTest
+#define ProfileLibXTest		NO	/* profiled Xtst library */
+#endif
+      XTESTLIBSRC = $(EXTENSIONSRC)/lib/xtest
 #if SharedLibXTest
 SharedLibReferences(XTEST,Xtst,$(XTESTLIBSRC),SOXTESTREV,SharedXTestRev)
 #else
 UnsharedLibReferences(XTEST,Xtst,$(XTESTLIBSRC))
 #endif
+
+#ifndef SharedLibPex
+#define SharedLibPex HasSharedLibraries
+#endif
+#ifndef NormalLibPex
+#define NormalLibPex (!SharedLibPex | ForceNormalLib)
+#endif
+#ifndef DebugLibPex
+#define DebugLibPex		NO	/* debugged PEX5 library */
+#endif
+#ifndef ProfileLibPex
+#define ProfileLibPex		NO	/* profiled PEX5 library */
+#endif
+        PEXLIBSRC = $(EXTENSIONSRC)/lib/PEXlib
 #if SharedLibPex
 SharedLibReferences(PEX,PEX5,$(PEXLIBSRC),SOPEXREV,SharedPexRev)
 #else
 UnsharedLibReferences(PEX,PEX5,$(PEXLIBSRC))
 #endif
+
+#ifndef SharedLibXie
+#define SharedLibXie HasSharedLibraries
+#endif
+#ifndef NormalLibXie
+#define NormalLibXie (!SharedLibXie | ForceNormalLib)
+#endif
+#ifndef DebugLibXie
+#define DebugLibXie		NO	/* debugged XIE library */
+#endif
+#ifndef ProfileLibXie
+#define ProfileLibXie		NO	/* profiled XIE library */
+#endif
+        XIELIBSRC = $(EXTENSIONSRC)/lib/XIE
 #if SharedLibXie
 SharedLibReferences(XIE,XIE,$(XIELIBSRC),SOXIEREV,SharedXieRev)
 #else
 UnsharedLibReferences(XIE,XIE,$(XIELIBSRC))
 #endif
+
+#ifndef SharedLibPhigs
+#define SharedLibPhigs NO	/* XXX - haven't made it sharable yet */
+#endif
+#ifndef NormalLibPhigs
+#define NormalLibPhigs (!SharedLibPhigs | ForceNormalLib)
+#endif
+      PHIGSLIBSRC = $(EXTENSIONSRC)/lib/PEX
 #if SharedLibPhigs
 SharedLibReferences(PHIGS,phigs,$(PHIGSLIBSRC),SOPHIGSREV,SharedPhigsRev)
 #else
 UnsharedLibReferences(PHIGS,phigs,$(PHIGSLIBSRC))
 #endif
+
 UnsharedLibReferences(XBSD,Xbsd,$(LIBSRC)/Berk)
+
+#ifndef SharedLibICE
+#define SharedLibICE HasSharedLibraries
+#endif
+#ifndef NormalLibICE
+#define NormalLibICE (!SharedLibICE | ForceNormalLib)
+#endif
+#ifndef DebugLibICE
+#define DebugLibICE		NO	/* debugged ICE library */
+#endif
+#ifndef ProfileLibICE
+#define ProfileLibICE		NO	/* profiled ICE library */
+#endif
+           ICESRC = $(LIBSRC)/lib/ICE
 #if SharedLibICE
 SharedDSLibReferences(ICE,ICE,$(ICESRC),SOICEREV,SharedICERev)
 #else
 UnsharedLibReferences(ICE,ICE,$(ICESRC))
 #endif
+
+#ifndef SharedLibSM
+#define SharedLibSM HasSharedLibraries
+#endif
+#ifndef NormalLibSM
+#define NormalLibSM (!SharedLibSM | ForceNormalLib)
+#endif
+#ifndef DebugLibSM
+#define DebugLibSM		NO	/* debugged SM library */
+#endif
+#ifndef ProfileLibSM
+#define ProfileLibSM		NO	/* profiled SM library */
+#endif
+            SMSRC = $(LIBSRC)/lib/SM
 #if SharedLibSM
 SharedDSLibReferences(SM,SM,$(SMSRC),SOSMREV,SharedSMRev)
 #else
 UnsharedLibReferences(SM,SM,$(SMSRC))
+#endif
+
+         FSLIBSRC = $(FONTSRC)/lib/fs
+UnsharedLibReferences(FS,FS,$(FSLIBSRC))
+
+         FONTLIBSRC = $(FONTSRC)/lib/font
+UnsharedLibReferences(FONT,font,$(FONTLIBSRC))
+
+#ifndef SharedLibXTrap
+#define SharedLibXTrap 	HasSharedLibaries
+#endif
+#ifndef NormalLibXTrap
+#define NormalLibXTrap 	(!SharedLibXTrap | ForceNormalLib)
+#endif
+#ifndef DebugLibXTrap
+#define DebugLibXTrap		NO	/* debugged XTrap library */
+#endif
+#ifndef ProfileLibXTrap
+#define ProfileLibXTrap		NO	/* profiled XTrap library */
 #endif
 
 #ifndef XawClientDepLibs
@@ -751,10 +774,10 @@ install:: file.ad							@@\
 all:: fonts.dir								@@\
 									@@\
 fonts.dir:  deplist							@@\
-	$(MKFONTDIR) .							@@\
+	RunProgram(MKFONTDIR,.)						@@\
 									@@\
 clean::									@@\
-	$(RM) fonts.dir
+	RemoveFile(fonts.dir)
 #endif /* MakeFontsDir */
 
 
@@ -768,7 +791,7 @@ all::  $(OBJS)								@@\
 MakeFontsDir($(OBJS))							@@\
 									@@\
 clean::									@@\
-	$(RM) *.snf *.snf.Z *.pcf *.pcf.Z
+	RemoveFiles(*.pcf *.pcf.Z)
 #endif /* MakeFonts */
 
 
