@@ -1,4 +1,4 @@
-/* $XConsortium: xcmiscstr.h,v 1.2 92/09/08 15:26:01 rws Exp $ */
+/* $XConsortium: xcmiscstr.h,v 1.1 93/10/21 10:09:45 rws Exp $ */
 /*
 
 Copyright 1993 by the Massachusetts Institute of Technology
@@ -63,8 +63,8 @@ typedef struct {
     CARD8	pad0;
     CARD16	sequenceNumber B16;
     CARD32	length B32;
-    CARD32	min_id B32;
-    CARD32	max_id B32;
+    CARD32	start_id B32;
+    CARD32	count B32;
     CARD32	pad1 B32;
     CARD32	pad2 B32;
     CARD32	pad3 B32;

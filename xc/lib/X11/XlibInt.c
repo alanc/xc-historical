@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlibInt.c,v 11.194 93/10/21 10:53:38 rws Exp $
+ * $XConsortium: XlibInt.c,v 11.195 93/10/21 18:38:17 rws Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986, 1987 */
@@ -1290,15 +1290,12 @@ _XIDHandler(dpy)
 	GetReq(XCMiscGetXIDRange, greq);
 	greq->reqType = qrep.major_opcode;
 	greq->miscReqType = X_XCMiscGetXIDRange;
-	if (_XReply (dpy, (xReply *)&grep, 0, xTrue) && grep.min_id) {
-	    dpy->resource_id = ((grep.min_id - dpy->resource_base) >>
+	if (_XReply (dpy, (xReply *)&grep, 0, xTrue) && grep.count) {
+	    dpy->resource_id = ((grep.start_id - dpy->resource_base) >>
 				dpy->resource_shift);
-	    dpy->resource_max = ((grep.max_id - dpy->resource_base) >>
-				 dpy->resource_shift);
-	    if ((dpy->resource_max - dpy->resource_id) > 5)
-		dpy->resource_max -= 5;
-	    else
-		dpy->resource_max = dpy->resource_id;
+	    dpy->resource_max = dpy->resource_id;
+	    if (grep.count > 5)
+		dpy->resource_max += grep.count - 6;
 	    dpy->resource_max <<= dpy->resource_shift;
 	}
     }

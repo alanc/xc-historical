@@ -1,4 +1,4 @@
-/* $XConsortium: xcmisc.c,v 1.2 92/09/08 15:25:16 rws Exp $ */
+/* $XConsortium: xcmisc.c,v 1.1 93/10/21 10:09:35 rws Exp $ */
 /*
 
 Copyright 1993 by the Massachusetts Institute of Technology
@@ -82,12 +82,12 @@ ProcXCMiscGetXIDRange(client)
     rep.type = X_Reply;
     rep.length = 0;
     rep.sequenceNumber = client->sequence;
-    rep.min_id = min_id;
-    rep.max_id = max_id;
+    rep.start_id = min_id;
+    rep.count = max_id - min_id + 1;
     if (client->swapped) {
     	swaps(&rep.sequenceNumber, n);
-	swapl(&rep.min_id, n);
-	swapl(&rep.max_id, n);
+	swapl(&rep.start_id, n);
+	swapl(&rep.count, n);
     }
     WriteToClient(client, sizeof(xXCMiscGetXIDRangeReply), (char *)&rep);
     return(client->noClientException);
