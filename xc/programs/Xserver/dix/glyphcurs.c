@@ -22,7 +22,7 @@ SOFTWARE.
 
 ************************************************************************/
 
-/* $XConsortium: glyphcurs.c,v 5.1 89/07/03 13:27:00 rws Exp $ */
+/* $XConsortium: glyphcurs.c,v 5.4 91/02/20 19:40:07 keith Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -130,7 +130,7 @@ CursorMetricsFromGlyph( pfont, ch, cm)
 
     chs[0] = ch >> 8;
     chs[1] = ch;
-    (*pfont->GetGlyphs) (pfont, 1, chs, Linear16Bit, &nglyphs, &pci);
+    (*pfont->get_glyphs) (pfont, 1, chs, Linear16Bit, &nglyphs, &pci);
     if (nglyphs == 0)
 	return FALSE;
     cm->width = pci->metrics.rightSideBearing - pci->metrics.leftSideBearing;
