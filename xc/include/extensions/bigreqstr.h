@@ -1,4 +1,4 @@
-/* $XConsortium: bigreqstr.h,v 1.5 92/04/20 13:14:15 rws Exp $ */
+/* $XConsortium: bigreqstr.h,v 1.1 92/09/07 13:37:31 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -32,19 +32,18 @@ typedef struct {
     CARD8	reqType;	/* always XBigReqCode */
     CARD8	brReqType;	/* always X_BigReqGetVersion */
     CARD16	length B16;
-    CARD8	majorVersion;
-    CARD8	pad;
+    CARD16	majorVersion B16;
     CARD16	minorVersion B16;
 } xBigReqGetVersionReq;
 #define sz_xBigReqGetVersionReq 8
 
 typedef struct {
     BYTE	type;			/* X_Reply */
-    CARD8	majorVersion;
+    CARD8	pad0;
     CARD16	sequenceNumber B16;
     CARD32	length B32;
+    CARD16	majorVersion B16;
     CARD16	minorVersion B16;
-    CARD16	pad0 B16;
     CARD32	pad1 B32;
     CARD32	pad2 B32;
     CARD32	pad3 B32;
