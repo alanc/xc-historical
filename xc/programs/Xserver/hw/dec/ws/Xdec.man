@@ -1,5 +1,5 @@
-.\" $XConsortium: Xdec.man,v 1.2 91/07/29 15:33:48 rws Exp $
-.TH XDEC 1 "Release 5" "X Version 11"
+.\" $XConsortium: Xdec.man,v 1.3 91/08/01 02:35:07 keith Exp $
+.TH XDEC 1 "Release 6" "X Version 11"
 .SH Name
 Xdec \- X server for Digital RISC machines
 .SH Syntax
@@ -55,121 +55,9 @@ file.
 Start the server in bug compatibility mode (with the \fBbc\fP
 option) to remain bug-for-bug compatible with previous releases of the server.
 .SH Options
-The following options are device independent.  These options are available
-on all workstation hardware platforms running X11 servers.
-.IP "\fB\-a\fP \fInum\fP" 20 
-Sets the mouse acceleration value to the specified number of pixels.
-The default is 4.
-.IP "\fB\-auth\fP \fIstring\fP" 20 
-Selects a file containing authorization records.  Hosts listed in the file
-are allowed to access to the server's display.  By default, no authorization
-file is used.
-.IP "\fBbc\fP
-Enables bug compatibility with previous releases.
-.IP "\fB\-bs\fP
-Disables Backing Store. Backing Store is disabled if you specify the 
-\fB\-bs\fP option on the command line.
-.IP "\fB\-c\fP
-Turns off key clicking.
-.IP "\fBc\fP \fInum\fP"
-Sets the key click volume to the specified number (0-100).
-The default is 20.
-.IP "\fB\-co\fP \fIstring\fP"
-Selects a color database.  The default is
-.PN /usr/lib/X11/rgb.txt .
-.IP "\fB\-f\fP \fInum\fP"
-Sets the bell volume to the specified number (0-100).
-The default is 50.
-.IP "\fB\-fc\fP \fIstring\fP"
-Sets the default cursor font.  The default is
-.PN cursor .
-.IP "\fB\-fd\fP \fInum\fP"
-Sets the font size in dots per inch.  Acceptable values are 75 and 100.
-.IP "\fB\-fn\fP \fIstring\fP"
-Sets the default text font.
-The default is
-.PN fixed .
-.IP "\fB\-fp\fP \fIstring\fP"
-Sets the default font directory path.
-The default font directory paths are:
-.PN /usr/lib/X11/fonts/misc
-.br
-.PN /usr/lib/X11/fonts/75dpi/
-.br
-.PN /usr/lib/X11/fonts/100dpi/
-.br
-.PN /usr/lib/X11/fonts/scaled/
-.br
-.IP "\fB+fp\fP \fIpath\fP[,\fIpath\fP...]"
-Prepends the specified font paths to the default path.
-.IP "\fBfp+\fP \fIpath\fP[,\fIpath\fP...]"
-Appends the specified font paths to the default path.
-.IP "\fB\-help\fP"
-Displays the
-.PN Xdec
-command usage message.
-.IP "\fB\-I\fP"
-Directs the server to ignore all remaining command line arguments.
-.IP "\fB\-ld\fP \fInum\fP"
-Limits data space to \fInum\fP Kbytes.
-.IP "\fB\-ls\fP \fInum\fP"
-Limits stack space to \fInum\fP Kbytes.
-.IP "\fB\-logo\fP"
-Enables the X logo screen saver.
-.IP "\fBlogo\fP"
-Disables the X logo screen saver.
-.IP "\fB\-p\fR \fIseconds\fR"
-Determines how long to wait before changing the background pattern
-of the screen saver.
-The default is 10 seconds.
-.IP \fB\-r\fP
-Turns off automatic repetition of keyboard key characters.
-.IP \fBr\fP
-Turns on automatic repetition of keyboard key characters. 
-The default is on.
-.IP "\fB\-s\fP \fIseconds\fP"
-Sets the screen-saver timeout value to the specified number of seconds.
-The default is 10.
-.IP \fB\-su\fP
-Disables Save-Unders.
-.IP "\fB\-t\fP \fInum\fP"
-Sets the mouse threshold in pixels.  The mouse will accelerate only if
-the threshold is exceeded.  The default threshold is 4.
-.IP "\fB\-to\fP \fIseconds\fP"
-Specifies the number of seconds for the server to wait before declaring a
-session connection timed out.
-.IP "\fBtty\fIxx\fR"
-Specifies the terminal on which the server is to start.
-.IP \fBv\fP
-Specifies that a blank screen is used for the screen saver.
-This is the default screen saver.
-.IP \fB\-v\fP
-Specifies that a pattern (noblank) screen is used for the screen saver.
-.IP "\fB\-wm\fP"
-Enables the use of Backing Store with WhenMapped calls.
-.IP "\fB\-x\fP \fIstring\fP"
-Loads the file \fIstring\fP containing an X extension.
-.IP \fB:\fP\fInum\fP
-On a multihead system,
-specifies the head on which the server is run (0 or 1).
-The default is 0.
-.IP \fB\-broadcast\fP 20
-Enables X Display Manager Control Protocol (XDMCP) and sends broadcast
-query packets over the network.
-.IP "\fB\-displayID\fP \fIdisplay-id\fP" 20
-For XDMCP, identifies manufacturer's display ID for display
-.IP "\fB\-indirect\fP \fIhostname\fP" 20
-Enables XDMCP and sends indirect query packets to the specified host.
-.IP \fB\-once\fP 20
-Terminates the server after one session.
-.IP "\fB\-port\fP \fInum\fP" 20
-Specifies the UDP port number that will receive messages.
-.IP "\fB\-query\fP \fIhostname\fP" 20
-Enables XDMCP and sends query packets to the specified host.
-.IP "\fB\-XDMCP_class\fP \fIdisplay-class\fP" 20
-Specifies an additional display qualifier used in resource management by XDMCP.
-.PP
-The following are device-dependent, vendor-specific options.
+In addition to the normal server options described in the \fIXserver(1)\fP
+manual page, \fIXdec\fP accepts the following 
+device-dependent, vendor-specific options.
 When the server is run on multiscreen capable platforms, selected
 device-dependent options take an optional screen-specification argument.
 Omitting the screen-specification argument defines the parameter for all

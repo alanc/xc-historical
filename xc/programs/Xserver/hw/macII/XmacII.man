@@ -1,4 +1,4 @@
-.\" $XConsortium: XmacII.man,v 1.8 91/07/27 16:17:30 rws Exp $
+.\" $XConsortium: XmacII.man,v 1.9 94/01/28 22:29:55 rws Exp $
 .TH XMACII 1 "Release 6" "X Version 11"
 .SH NAME
 XmacII \- Macintosh II server for X Version 11
@@ -16,7 +16,9 @@ It will normally be started by the shell script
 operates under A/UX Release 2.0 and later.
 Color and multiple screens are supported.
 .SH OPTIONS
-The following options can be given on the command line to the X server.
+.PP
+In addition to the normal server options described in the \fIXserver(1)\fP
+manual page, \fIXmacII\fP accepts the following command line switches:
 .TP 8
 .B \-screen \fInumber\fP \-depth \fInumber\fP
 arranges that the given screen will operate at the given depth.
@@ -27,52 +29,6 @@ Supported depths are 1 (monochrome at 1 bit per pixel),
 24 (color at 24 bits per pixel). The server starts up, by default, in the
 deepest depth available for any particular screen. This option must be used to
 modify that behavior.
-.TP 8
-.B \-a \fInumber\fP
-sets pointer acceleration (i.e. the ratio of how much is reported to how much
-the user actually moved the pointer).
-.TP 8
-.B \-logo
-turns on the X Window System logo display in the screen-saver.
-There is currently no way to change this from a client.
-.TP 8
-.B nologo
-turns off the X Window System logo display in the screen-saver.
-There is currently no way to change this from a client.
-.TP 8
-.B \-p \fIminutes\fP
-sets screen-saver pattern cycle time in minutes.
-.TP 8
-.B \-r
-turns off auto-repeat.
-.TP 8
-.B r
-turns on auto-repeat.
-.TP 8
-.B \-s \fIminutes\fP
-sets screen-saver timeout time in minutes.
-.TP 8
-.B \-t \fInumbers\fP
-sets pointer acceleration threshold in pixels (i.e. after how many pixels
-pointer acceleration should take effect).
-.TP 8
-.B \-to \fIseconds\fP
-sets default screensaver timeout in seconds.
-.TP 8
-.B \-co \fIfilename\fP
-sets name of RGB color database
-.TP 8
-.B \-help
-prints a usage message
-.TP 8
-.B \-fp \fIfontPath
-sets the search path for fonts
-.TP 8
-.B \-fc \fIcursorFont\fP
-sets default cursor font
-.TP 8
-.B \-fn \fIfont\fP
-sets the default font
 .TP 8
 .B \-optionmouse
 requires holding the option key down while pressing the arrow keys to get
@@ -124,8 +80,8 @@ additional suffix (usually ".Z", defined when the server is built) must
 be appended to the usual filename.
 .SH "FILES"
 .TP 30
-/usr/bin/X11/X11 
-/usr/bin/X11/X11R6 
+/usr/X11R6/bin/X11/X11 
+/usr/X11R6/bin/X11/X11R6 
 Bourne shell scripts which start the server and initial 
 .I xterm 
 client
@@ -134,20 +90,20 @@ $HOME/.x11start
 Bourne shell script executed by initial 
 .I xterm 
 client which starts a slew of other clients. 
-Reference copy in /usr/lib/X11/.x11start
+Reference copy in /usr/X11R6/lib/X11/.x11start
 .TP 30
-/usr/bin/X11/XmacII 
+/usr/X11R6/bin/X11/XmacII 
 the server binary
 .TP 30
-/usr/bin/X11/Xrepair 
+/usr/X11R6/bin/X11/Xrepair 
 ensures console viability after server exits
 .TP 30
-/usr/bin/X11/* 
+/usr/X11R6/bin/X11/* 
 client binaries
 .TP 30
-/usr/lib/X11/fonts/*
+/usr/X11R6/lib/X11/fonts/*
 .TP 30
-/usr/lib/X11/rgb.{dir,pag,txt} 
+/usr/X11R6/lib/X11/rgb.{dir,pag,txt} 
 color names to RGB mapping
 .TP 30
 /etc/X0.hosts
@@ -162,26 +118,26 @@ Error log file
 $HOME/.twmrc 
 customization for the
 .I twm
-window manager. Reference copy in /usr/lib/X11/Sample.twmrc
+window manager. Reference copy in /usr/X11R6/lib/X11/Sample.twmrc
 .TP 30
-/usr/lib/X11/XErrorDB 
+/usr/X11R6/lib/X11/XErrorDB 
 client error message database
 .TP 30
-/usr/lib/X11/app-defaults 
+/usr/X11R6/lib/X11/app-defaults 
 client specific resource specifications
 .TP 30
-/usr/lib/X11/examples/Xaw/* 
+/usr/X11R6/lib/X11/examples/Xaw/* 
 source code examples of applications built on the
 .I X
 Toolkit
 .TP 30
-/usr/lib/terminfo/x/xterm* 
+/usr/X11R6/lib/terminfo/x/xterm* 
 .I terminfo
 database entries descibing the terminal emulation capabilities of the
 .I xterm
-client. Reference copies in /usr/lib/X11/xterm*.tic
+client. Reference copies in /usr/X11R6/lib/X11/xterm*.tic
 .TP 30
-/usr/include/X11/bitmaps/*icon 
+/usr/X11R6/include/X11/bitmaps/*icon 
 bitmap representations of icons used by the
 .I twm
 window manager
