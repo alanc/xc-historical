@@ -11,8 +11,34 @@ OBJS = atom.o colormap.o cursor.o dispatch.o dixutils.o events.o \
  CDEBUGFLAGS = ServerCDebugFlags
     INCLUDES = -I. -I../include -I$(INCLUDESRC)
  EXT_DEFINES = ExtensionDefines
-SITE_DEFINES = -DCOMPILEDDEFAULTFONTPATH=\"DefaultFontPath\" -DRGB_DB=\"$(LIBDIR)/rgb\"
     LINTLIBS = ../ddx/snf/llib-lsnf.ln ../os/4.2bsd/llib-los.ln
+
+/*
+ * The following configuration parameters may be set in the appropriate
+ * .macros files in util/imake.includes/:
+ *
+ *     DefaultFontPath                COMPILEDDEFAULTFONTPATH
+ *     DefaultRGBDatabase             RGB_DB
+ *
+ * The sample util/imake.includes/Imake.tmpl will provide generic defaults.
+ * The values in site.h are simply a last line of defense and are generally
+ * not used.
+ */
+
+#ifdef DefaultFontPath
+SITE_FONT_PATH = -DCOMPILEDDEFAULTFONTPATH=\"DefaultFontPath\"
+#else
+SITE_FONT_PATH = /* as nothing */
+#endif
+
+#ifdef DefaultRGBDatabase
+   SITE_RGB_DB = -DRGB_DB=\"DefaultRGBDatabase\"
+#else
+   SITE_RBB_DB = /* as nothing */
+#endif
+
+SITE_DEFINES = $(SITE_FONT_PATH) $(SITE_RGB_DB)
+
 
 NormalLibraryObjectRule()
 NormalLibraryTarget(dix,$(OBJS))
