@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: Win32.cf,v 1.23 93/08/26 09:00:50 rws Exp $
+XCOMM platform:  $XConsortium: Win32.cf,v 1.24 93/09/09 11:44:58 rws Exp $
 
 #define OSName			Microsoft Windows NT 3.1
 XCOMM operating system:  OSName
@@ -11,6 +11,7 @@ XCOMM operating system:  OSName
 #endif
 /* brain-damaged windows headers will not compile with -Za */
 #define StandardDefines		-DWIN32 -D__STDC__ CpuDefines
+#define DefaultCCOptions -nologo -batch -G4 -W2
 #define DebuggableCDebugFlags -Zi
 #define ThreadedX		YES
 #define CpCmd copy
@@ -23,7 +24,8 @@ XCOMM operating system:  OSName
 #define ArCmdBase lib32
 #define ArCmd ArCmdBase
 #define MkdirHierCmd mkdir
-#define DefaultCCOptions -nologo -batch -G4 -W2
+#define InstallCmd copy
+#define InstallFlags /**/
 #define ExtraLibraries libc.lib kernel32.lib wsock32.lib
 #define MakeCmd nmake -nologo
 #define LdCmd link32
