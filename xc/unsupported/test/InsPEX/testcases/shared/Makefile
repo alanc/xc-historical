@@ -1,4 +1,4 @@
-# $XConsortium: Makefile,v 5.3 91/02/16 10:02:45 rws Exp $
+# $XConsortium: Makefile,v 5.4 91/02/18 22:13:00 hersh Exp $
 ###################################################################
 # Copyright (c) 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
 # 
@@ -42,7 +42,7 @@ PEXINCLUDE = -I$(PEXINCDIR) -I$(XINCDIR)
 INSPEXINCLUDE = -I$(INSPEXHOME)/tools/pexint -I$(INSPEXDEST)/include
 PEXLIB = -L$(PEXLIBDIR)  -L$(XLIBDIR)
 INSPEXLIB = -L$(INSPEXDEST)/lib
-LIBS = -linspex -l../../../../lib/PEX/libphigs.a -lX11 -lm 
+LIBS = -l$(INSPEXDEST)/lib/libinspex.a ../../../../lib/PEX/libphigs.a -lX11 -lm 
 
 LDFLAGS = -g $(I_LDFLAGS) $(PEXLIB) $(INSPEXLIB) $(LIBS)
 CFLAGS = -g  $(I_CFLAGS) $(CPPFLAGS) $(PEXINCLUDE) $(INSPEXINCLUDE)
