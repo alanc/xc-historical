@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: gc.c,v 1.86 87/08/25 08:33:38 toddb Locked $ */
+/* $Header: gc.c,v 1.87 87/08/28 17:29:03 drewry Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -363,7 +363,7 @@ CreateGC(pDrawable, mask, pval, pStatus)
     register GC *pGC;
     extern FontPtr defaultFont;
     CARD32	tmpval[3];
-    PixmapPtr pStip, pTile;
+    PixmapPtr 	pTile;
     GCPtr pgcScratch;	/* for drawing into default tile and stipple */
     xRectangle rect;
 #ifdef DEBUG
@@ -401,23 +401,9 @@ CreateGC(pDrawable, mask, pval, pStatus)
 	pGC->font->refcnt++;
     pGC->tile = NullPixmap;
 
-    /* build a stipple and fill it with 1 */
-    pStip = (PixmapPtr)
-	    (*pGC->pScreen->CreatePixmap)(pDrawable->pScreen,
-					  1, 1, 1);
-    tmpval[0] = GXcopy; tmpval[1] = 1; tmpval[2] = FillSolid;
-    pgcScratch = GetScratchGC(1, pGC->pScreen);
-    ChangeGC(pgcScratch, GCFunction | GCForeground | GCFillStyle, tmpval);
-    ValidateGC(pStip, pgcScratch);
-    rect.x = 0;
-    rect.y = 0;
-    rect.width = 0;
-    rect.height = 0;
-    (*pgcScratch->PolyFillRect)(pStip, pgcScratch, 1, &rect);
-    /* Always remember to free the scratch gc. PRH */
-    FreeScratchGC(pgcScratch);
-
-    pGC->stipple = pStip;
+    /* use the default stipple */
+    pGC->stipple = pGC->pScreen->PixmapPerDepth[0];
+    pGC->stipple->refcnt++;
     pGC->patOrg.x = 0;
     pGC->patOrg.y = 0;
     pGC->subWindowMode = ClipByChildren;
@@ -437,15 +423,19 @@ CreateGC(pDrawable, mask, pval, pStatus)
     else
 	*pStatus = Success;
 
-
     /* if the client hasn't provided a tile, build one and fill it with
        the foreground pixel
     */
     if (!pGC->tile)
     {
+	int w, h;
+
+	w = 16;
+	h = 16;
+	(*pGC->pScreen->QueryBestSize)(TileShape, &w, &h);
 	pTile = (PixmapPtr)
 		(*pGC->pScreen->CreatePixmap)(pDrawable->pScreen,
-					      1, 1, pGC->depth);
+					      w, h, pGC->depth);
 	tmpval[1] = pGC->fgPixel;
 	pgcScratch = GetScratchGC(pGC->depth, pGC->pScreen);
 	ChangeGC(pgcScratch, GCFunction | GCForeground | GCFillStyle, 
@@ -753,6 +743,46 @@ CreateGCperDepthArray(screenNum)
 	(pScreen->GCperDepth[i+1])->graphicsExposures = FALSE;
     }
 }
+
+CreateDefaultStipple(screenNum)
+    int screenNum;
+{
+    register ScreenPtr pScreen;
+    DepthPtr pDepth;
+    int tmpval[3];
+    xRectangle rect;
+    int w, h;
+    GCPtr pgcScratch;
+
+    pScreen = &screenInfo.screen[screenNum];
+
+    (* pScreen->QueryBestSize)(StippleShape, &w, &h);
+    w = 16;
+    h = 16;
+    pScreen->PixmapPerDepth[0] = 
+		(*pScreen->CreatePixmap)(pScreen, w, h, 1);
+
+    /* fill stipple with 1 */
+    tmpval[0] = GXcopy; tmpval[1] = 1; tmpval[2] = FillSolid;
+    pgcScratch = GetScratchGC(1, pScreen);
+    ChangeGC(pgcScratch, GCFunction | GCForeground | GCFillStyle, tmpval);
+    ValidateGC(pScreen->PixmapPerDepth[0], pgcScratch);
+    rect.x = 0;
+    rect.y = 0;
+    rect.width = w;
+    rect.height = h;
+    (*pgcScratch->PolyFillRect)(pScreen->PixmapPerDepth[0], 
+				pgcScratch, 1, &rect);
+    FreeScratchGC(pgcScratch);
+}
+
+FreeDefaultStipple(screenNum)
+    int screenNum;
+{
+    ScreenPtr pScreen = &screenInfo.screen[screenNum];
+    (*pScreen->DestroyPixmap)(pScreen->PixmapPerDepth[0]);
+}
+
 
 SetDashes(pGC, offset, ndash, pdash)
 register GCPtr pGC;
