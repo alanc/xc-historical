@@ -18,12 +18,13 @@ Superclass	Composite
 .LP
 The Box widget provides geometry management of arbitrary widgets in a
 box of a specified dimension.  The children are rearranged when
-resizing events occur either on the Box, or when children are managed or
-unmanaged.  The Box widget always attempts to pack its children as
-tightly as possible within the geometry allowed by its parent.  The
-algorithm used gives preference to vertical stacking.  An unconstrained
-Box will resize itself to be as wide as its widest child.  The height
-of the Box will be just enough to contain all its children.
+resizing events occur either on the Box or its children, or when
+children are managed or unmanaged.  The Box widget always attempts to
+pack its children as tightly as possible within the geometry allowed by
+its parent.  The algorithm used gives preference to vertical stacking.
+An unconstrained Box will resize itself to be as wide as its widest
+child.  The height of the Box will be just enough to contain all its
+children.
 .LP
 Box widgets are commonly used to manage a related set of buttons and
 are often called ButtonBox widgets, but the children are not
@@ -87,14 +88,14 @@ insensitive if either it or any of its ancestors is insensitive.
 This resource should not be changed with \fBXtSetValues\fP.  It may,
 however, be queried.
 .IP background 1.5i
-An index into this widget's colormap specifing the background color of the
+An index into this widget's colormap specifying the background color of the
 widget's window.
 .IP backgroundPixmap 1.5i
 The background pixmap of this widget.  If this resource is set to
 anything other than \fBXtUnspecifiedPixmap\fP the pixmap specified will be
 used instead of the background color.
 .IP borderColor 1.5i
-An index into this widget's colormap specifing the border color of the
+An index into this widget's colormap specifying the border color of the
 widget's window.
 .IP borderPixmap 1.5i
 The border pixmap of this widget.  If this resource is set to
@@ -103,7 +104,7 @@ used instead of the border color.
 .IP borderWidth 1.5i
 This is the width of this widget's border.
 .IP children 1.5i
-A list of all this composite widget'c current children.
+A list of all this composite widget's current children.
 .IP colormap 1.5i
 The colormap that this widget wants for its window.
 .IP depth 1.5i
@@ -150,7 +151,7 @@ to reposition the remaining children to compact the box.  Children are
 positioned in order left to right, top to bottom.  When the next child
 does not fit on the current row, a new row is started.  If a child is
 wider than the width of the box, the box will request a larger width
-from it parent and will begin the layout process from the beginning if
+from its parent and will begin the layout process from the beginning if
 a new width is granted.  After positioning all children, the Box
 widget attempts to shrink its own size to the minimum dimensions
 required for the layout.
