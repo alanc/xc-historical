@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfb.h,v 5.17 92/03/13 16:05:20 eswu Exp $ */
+/* $XConsortium: mfb.h,v 5.18 92/12/23 17:31:24 rws Exp $ */
 /* Monochrome Frame Buffer definitions 
    written by drewry, september 1986
 */
@@ -226,16 +226,18 @@ typedef struct {
 #define mfbGetWindowByteWidthAndPointer(pWin, width, pointer) \
     mfbGetWindowTypedWidthAndPointer(pWin, width, pointer, char, char)
 
-#define mfbScanXYOffset(x, y, width) (((y) * (width)) + ((x) >> 5))
 #define mfbScanYOffset(y, width) ((y) * (width))
+#define mfbScanXYOffset(x, y, width) (mfbScanYOffset(y, width) + ((x) >> 5))
 
-#define mfbScanlineInc(pointer, offset, width) pointer += offset
+#define mfbScanlineInc(pointer, offset, width) pointer += (offset)
+
+#define mfbScanlineOffset(pointer, offset, width) ((pointer) + (offset))
 
 #define mfbScanlineDelta(pointer, y, width) \
-    ((pointer) + mfbScanYOffset(y, width))
+    mfbScanlineOffset(pointer, mfbScanYOffset(y, width), width)
 
 #define mfbScanline(pointer, x, y, width) \
-    ((pointer) + mfbScanXYOffset(x, y, width))
+    mfbScanlineOffset(pointer, mfbScanXYOffset(x, y, width), width)
 
 /* precomputed information about each glyph for GlyphBlt code.
    this saves recalculating the per glyph information for each
