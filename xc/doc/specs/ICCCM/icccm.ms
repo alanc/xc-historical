@@ -4868,4 +4868,6 @@ the Visual and the Screen of a colormap.
 .IP \(bu 5
 There should be some way to reclaim assignments to the five nonpre-assigned
 modifiers when they are no longer needed.
+.bp
+.tm .pn \n%
 .TC
