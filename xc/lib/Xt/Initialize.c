@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Initialize.c,v 1.130 89/06/09 08:15:59 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Initialize.c,v 1.131 89/06/16 19:34:45 jim Exp $";
 /* $oHeader: Initialize.c,v 1.7 88/08/31 16:33:39 asente Exp $ */
 #endif /* lint */
 
@@ -43,6 +43,18 @@ SOFTWARE.
 #include "ShellP.h"
 #include "Quarks.h"
 
+#ifdef hpux
+#define USE_UNAME
+#endif
+#ifdef USG
+#define USE_UNAME
+#endif
+
+#ifdef USE_UNAME
+#include <sys/utsname.h>
+#endif
+
+
 /*
  This is a set of default records describing the command line arguments that
  Xlib will parse and set into the resource data base.
@@ -76,6 +88,36 @@ static XrmOptionDescRec opTable[] = {
 {"-title",	".title",	XrmoptionSepArg,	(caddr_t) NULL},
 {"-xrm",	NULL,		XrmoptionResArg,	(caddr_t) NULL},
 };
+
+
+/*
+ * _XtGetHostname - emulates gethostname() on non-bsd systems.
+ */
+
+int _XtGetHostname (buf, maxlen)
+    char *buf;
+    int maxlen;
+{
+    int len;
+
+#ifdef USE_UTSNAME
+    struct utsname name;
+
+    uname (&uname);
+    len = strlen (name.nodename);
+    if (len >= maxlen) len = maxlen - 1;
+    (void) strncpy (buf, name.nodename, len);
+    buf[len] = '\0';
+#else
+    buf[0] = '\0';
+    (void) gethostname (buf, maxlen);
+    buf [maxlen - 1] = '\0';
+    len = strlen(buf);
+#endif
+    return len;
+}
+
+
 
 void XtToolkitInitialize()
 {
@@ -197,7 +239,7 @@ static XrmDatabase GetEnvironmentDefaults(dpy)
 	    (void) XtGetRootDirName(filename = &filenamebuf[0]);
 	    (void) strcat(filename, ".Xdefaults-");
 	    len = strlen(filename);
-	    gethostname(filename+len, MAXPATHLEN-len);
+	    (void) _XtGetHostname (filename+len, MAXPATHLEN-len);
 	}
 
 	rdb = XrmGetFileDatabase(filename);
@@ -446,3 +488,5 @@ Widget XtInitialize(name, classname, urlist, num_urs, argc, argv)
 
 	return root;
 }
+
+
