@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Tree.c,v 1.37 90/05/03 14:06:27 jim Exp $
+ * $XConsortium: Tree.c,v 1.38 90/05/04 17:26:18 jim Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  * Copyright 1989 Prentice Hall
@@ -860,22 +860,29 @@ static void arrange_subtree (tree, w, depth, x, y)
      * now layout parent between first and last children
      */
     if (relayout) {
+	Position adjusted;
 	firstcc = TREE_CONSTRAINT (tc->tree.children[0]);
 	lastcc = TREE_CONSTRAINT (child);
 
+	/* Adjustments are disallowed if they result in a position above
+         * or to the left of the originally requested position, because
+	 * this could collide with the position of the previous sibling.
+	 */
 	if (horiz) {
 	    tc->tree.x = x;
-	    tc->tree.y = firstcc->tree.y +
+	    adjusted = firstcc->tree.y +
 	      ((lastcc->tree.y + (Position) child->core.height + 
 		(Position) child->core.border_width * 2 -
 		firstcc->tree.y - (Position) w->core.height - 
 		(Position) w->core.border_width * 2 + 1) / 2);
+	    if (adjusted > tc->tree.y) tc->tree.y = adjusted;
 	} else {
-	    tc->tree.x = firstcc->tree.x +
+	    adjusted = firstcc->tree.x +
 	      ((lastcc->tree.x + (Position) child->core.width +
 		(Position) child->core.border_width * 2 -
 		firstcc->tree.x - (Position) w->core.width -
 		(Position) w->core.border_width * 2 + 1) / 2);
+	    if (adjusted > tc->tree.x) tc->tree.x = adjusted;
 	    tc->tree.y = y;
 	}
     }
