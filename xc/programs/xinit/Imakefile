@@ -16,7 +16,7 @@ MakeScriptFromCpp(xinitrc, -DXINITDIR=$(XINITDIR))
 InstallProgram(startx,$(BINDIR))
 
 #if InstallXinitConfig
-MakeDirectories(install $(XINITDIR))
+MakeDirectories(install,$(XINITDIR))
 
 InstallMultiple($(SAMPLECONFIGS),$(XINITDIR))
 #endif
