@@ -6,7 +6,7 @@ XauGetAuthByAddr \- X authority database routines
 .B "#include <X11/Xauth.h>"
 .PP
 .nf
-.ta .5i 3i
+.ta .5i 2i
 typedef struct xauth {
 	unsigned short	family;
 	unsigned short	address_length;
@@ -45,7 +45,7 @@ Xauth *XauGetAuthByAddr (\kAfamily,
 	char *number;
 
 .ft B
-int XauLockAuth (file_name, retries, timeout, dead)"
+int XauLockAuth (file_name, retries, timeout, dead)
 .ft I
 	char *file_name;
 	int retries;
