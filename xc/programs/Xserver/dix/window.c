@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: window.c,v 5.55 90/08/30 16:41:49 rws Exp $ */
+/* $XConsortium: window.c,v 5.56 90/08/31 14:44:22 rws Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -3640,9 +3640,11 @@ UnrealizeTree(pWin, fromConfigure)
     register WindowPtr pChild;
     void (*RegionEmpty)();
     Bool (*Unrealize)();
+    void (*ClipNotify)();
 
     RegionEmpty = pWin->drawable.pScreen->RegionEmpty;
     Unrealize = pWin->drawable.pScreen->UnrealizeWindow;
+    ClipNotify = pWin->drawable.pScreen->ClipNotify;
     pChild = pWin;
     while (1)
     {
@@ -3665,6 +3667,8 @@ UnrealizeTree(pWin, fromConfigure)
 		if ((pChild != pWin) || fromConfigure)
 		{
 		    (* RegionEmpty)(&pChild->clipList);
+		    if (ClipNotify)
+			(* ClipNotify)(pChild, 0, 0);
 		    (* RegionEmpty)(&pChild->borderClip);
 		}
 		pChild->drawable.serialNumber = NEXT_SERIAL_NUMBER;
