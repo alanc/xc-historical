@@ -1,5 +1,5 @@
 /*
- * $XConsortium: skyIO.c,v 1.1 91/05/10 09:09:03 jap Exp $
+ * $XConsortium: skyScrInit.c,v 1.2 91/07/16 13:17:01 jap Exp $
  *
  * Copyright IBM Corporation 1987,1988,1989,1990,1991
  *
@@ -87,12 +87,12 @@ int index ;
 	        return -1 ;
 	}
 
-	segAddr = (unsigned long *) skyHdwrInfo.segment ;
+	segAddr = (unsigned long) skyHdwrInfo.segment ;
 	SKYWAY_OFFSET[index] = segAddr;
 	SKYWAY_VRAM_START[index] = segAddr | skyRegMap.vr_addr ;
 	IOREG[index] = segAddr | skyRegMap.io_addr   ;
 	COPREG[index] = segAddr | skyRegMap.cp_addr  ;
-	pSkywayFrame = SKYWAY_VRAM_START[index] ;
+	pSkywayFrame = (pointer) SKYWAY_VRAM_START[index] ;
 
 	TRACE (("skyScreenInit: SEGADDR is %x\n", segAddr));
 	TRACE (("skyScreenInit: VRAM_OFFSET is %x\n", SKYWAY_OFFSET[index]));

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: skyHdwr.c,v 1.3 91/07/16 13:14:26 jap Exp $
+ * $XConsortium: skyHdwr.c,v 1.4 91/09/13 14:28:20 rws Exp $
  *
  * Copyright IBM Corporation 1987,1988,1989,1990,1991
  *
@@ -426,5 +426,5 @@ int index;
 
 	cop = (struct SkyCopRegs *) COPREG[index];
 	cop->pix_index	= PixMapC;
-	cop->pixmap_base= SKYWAY_VRAM_START[index];
+	cop->pixmap_base= (char *) SKYWAY_VRAM_START[index];
 }
