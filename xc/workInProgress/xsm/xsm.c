@@ -1,4 +1,4 @@
-/* $XConsortium: xsm.c,v 1.15 94/02/05 15:04:08 rws Exp $ */
+/* $XConsortium: xsm.c,v 1.16 94/02/06 21:13:41 rws Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -51,6 +51,7 @@ purpose.  It is provided "as is" without express or implied warranty.
 #define PATH_MAX 1024
 #endif
 #endif
+#include <X11/Xos.h>
 
 /* Fix ISC brain damage.  When using gcc fdopen isn't declared in <stdio.h>. */
 #if defined(SYSV) && defined(SYSV386) && defined(__STDC__) && defined(ISC)
@@ -217,7 +218,7 @@ SetInitialProperties(client, pendclient)
 ClientRec	*client;
 PendingClient	*pendclient;
 {
-    int			index;
+    int			idx;
     SmProp		*prop;
     SmPropValue		*val;
     List		*pl;
@@ -228,11 +229,11 @@ PendingClient	*pendclient;
     if (app_resources.verbose)
 	printf("Setting initial properties for %s\n", client->clientId);
 
-    index = 0;
+    idx = 0;
     for(pl = ListFirst(pendclient->props); pl; pl = ListNext(pl)) {
 	pprop = (PendingProp *)pl->thing;
 	prop = (SmProp *)malloc(sizeof *prop);
-	client->props[index] = prop;
+	client->props[idx] = prop;
 	prop->name = pprop->name;
 	prop->type = pprop->type;
 	prop->num_vals = ListCount(pprop->values);
@@ -247,9 +248,9 @@ PendingClient	*pendclient;
 	}
 	ListFreeAll(pprop->values);
 	free(pprop);
-	index++;
+	idx++;
     }
-    client->numProps = index;
+    client->numProps = idx;
 
     ListFreeAll(pendclient->props);
     XtFree(pendclient->clientId);
@@ -458,7 +459,7 @@ SetProperty(client, prop)
 ClientRec	*client;
 SmProp		*prop;
 {
-    int	index, j;
+    int	idx, j;
 
     for (j = 0; j < client->numProps; j++)
 	if (strcmp (prop->name, client->props[j]->name) == 0)
@@ -468,17 +469,17 @@ SmProp		*prop;
 	}
 
     if (j < client->numProps)
-	index = j;
+	idx = j;
     else
     {
-	index = client->numProps;
+	idx = client->numProps;
 	client->numProps++;
 
 	if (client->numProps > MAX_PROPS)
 	    return;
     }
 
-    client->props[index] = prop;
+    client->props[idx] = prop;
 }
 
 void
@@ -2072,7 +2073,7 @@ putenv(s)
     char **newenv;
     static int virgin = 1; /* true while "environ" is a virgin */
 
-    v = index(s, '=');
+    v = strchr(s, '=');
     if(v == 0)
 	return 0; /* punt if it's not of the right form */
     varlen = (v + 1) - s;
