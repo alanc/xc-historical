@@ -1,7 +1,7 @@
 /*
  * xman - X Window System manual page display program.
  *
- * $XConsortium: man.c,v 1.27 91/07/21 21:19:56 rws Exp $
+ * $XConsortium: man.c,v 1.28 91/07/21 21:28:24 rws Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -46,7 +46,6 @@ static char error_buf[BUFSIZ];		/* The buffer for error messages. */
 static void SortList(), ReadMandescFile(), SortAndRemove(), InitManual();
 static void AddToCurrentSection();
 static void ReadCurrentSection();
-static int CmpEntryLabel();
 
 #define SECT_ERROR -1
 
