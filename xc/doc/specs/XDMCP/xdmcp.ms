@@ -168,7 +168,7 @@ This specifies what step of the protocol this packet represents and should
 contain one of the following values (encoding provided in section below):
 \f8BroadcastQuery\fP, \f8Query\fP, \f8IndirectQuery\fP, \f8ForwardQuery\fP,
 \f8Willing\fP, \f8Unwilling\fP, \f8Request\fP, \f8Accept\fP, \f8Decline\fP,
-\f8Manage\fP, \f8Refuse\fP, \f8Failed\fP.
+\f8Manage\fP, \f8Refuse\fP, \f8Failed\fP, \f8KeepAlive\fP, \f8Alive\fP.
 .RE
 .LP
 Length of data in bytes
@@ -831,7 +831,8 @@ retransmitted.
 .RE
 .LP
 \f8Failed\fP
-.RS Manager \(-> Display
+.RS
+Manager \(-> Display
 .br
 Additional Fields:
 .RS
@@ -857,6 +858,84 @@ Problems/Solutions
 Same as for \f8Refuse\fP.
 .RE
 .RE
+.LP
+\f8KeepAlive\fP
+.RS
+Display \(-> Manager
+.br
+Additional Fields:
+.RS
+\f7Session ID\fP:
+CARD32
+.RE
+Sematics:
+.RS
+A \f8KeepAlive\fP packet can be sent at any time during the session by a
+display to discover if the manager is running.  The manager should respond
+with \f8Alive\fP whenever it receives this type of packet.
+.LP
+This allows the display to discover when the manager host is no longer running.
+A display is not required to send KeepAlive packets, and, upon receipt, is not
+required to perform any specific action.
+.LP
+An expected use of this packet is to terminate an active session when the
+manager host or network link fails.  The display should keep track of the
+time since any packet has been received from the manager host and
+use \f8KeepAlive\fP packets when a substantial time has elapsed since the
+most recent packet.
+.RE
+Valid Responses:
+.RS
+\f8Alive\fP
+.RE
+Problems/Solutions:
+.RS
+Problem:
+.RS
+Manager doesn't receive the packet or display doesn't receive the response.
+.RE
+.RS
+Indication:
+.RS
+No \f8Alive\fP packet returned
+.RE
+Solution:
+.RS
+Retransmit the packet with an exponential backoff; start at 2 seconds and
+assume the host is not up after 30 seconds.
+.RE
+.RE
+.RE
+.RE
+.LP
+\f8Alive\fP
+.RS
+Manager \(-> Display
+.br
+Additional Fields:
+.RS
+\f7Session Running\fP:
+CARD8
+.RS
+This field indicates that the session indicated by \f7Session ID\fP is
+currently active.  The value is 0 if no session is active, 1 if a session
+is active.
+.RE
+\f7Session ID\fP:
+CARD32
+.RS
+The ID of the currently running session; if any.  When no session is active
+this field should be zero.
+.RE
+.RE
+Semantics:
+.RS
+An \f8Alive\fP packet is sent in response to a \f8KeepAlive\fP request.  If
+a session is currently active on the display, the manager includes the
+\f7Session ID\fP in the packet.  The display can use this information to
+determine the status of the manager.
+.RE
+.RE
 .RE
 .NH 1
 Session Termination
@@ -865,6 +944,13 @@ When the session is over, the initial connection with the display (the one
 which ack's the \f8Manage\fP packet) will be closed by the manager.  At this
 point, all other display connections should be closed by the display and the
 display can request another session.
+.LP
+The session may also be terminated at any time by the display if the
+managing host no longer responds to \f8KeepAlive\fP packets.  The exact
+time-outs for sending \f8KeepAlive\fP packets is not specified in this
+protocol as the trade off between 1: loading an otherwise idle system with
+spurious \f8KeepAlive\fP packets and 2: not noticing that the manager host is
+down for a long time should not be fixed.
 .NH 1
 State Diagrams
 .LP
@@ -1021,10 +1107,38 @@ Display cause of termination to user
 
 \f6run-session\fP:
 .RS
+Decide to send \f8KeepAlive\fP packet \(-> \f6keep-alive\fP
+
 await close of first display connection
+
 .br
 \(-> \f6reset-display\fP
 .RE	
+
+.LP
+\f6keep-alive\fP:
+.RS
+send \f8KeepAlive\fP packet with current \f7Session ID\fP
+
+.br
+\(-> \f6await-alive\fP
+.RE
+
+.LP
+\f6await-alive\fP:
+.RS
+Receive \f8Alive\fP with matching \f7Session ID\fP \(-> \f6run-session\fP
+
+.br
+Receive \f8Alive\fP with non-matching \f7Session ID\fP or
+FALSE \f7Session Running\fP \(-> \f6reset-display\fP
+
+.br
+Final Timeout without receiving \f8Alive\fP packet \(-> \f6reset-display\fP
+
+.br
+timeout \(-> \f6keep-alive\fP
+.RE
 
 .LP
 \f6reset-display\fP:
@@ -1061,6 +1175,9 @@ receive \f8Manage\fP \(-> \f6manage\fP
 
 .br
 an active session terminates \(-> \f6finish-session\fP
+
+.br
+receive \f8KeepAlive\fP \(-> \f6send-alive\fP
 
 .br
 \(-> \f6idle\fP
@@ -1210,6 +1327,15 @@ XCloseDisplay
 \(-> \f6idle\fP
 .RE
 
+.LP
+\f6send-alive\fP:
+.RS
+Send \f8Alive\fP packet containing current status.
+
+.br
+\(-> \f6idle\fP
+.RE
+
 .RE
 .NH 1
 Protocol Encoding
@@ -1235,6 +1361,8 @@ Decline	9
 Manage	10
 Refuse	11
 Failed	12
+Alive	13
+KeepAlive	14
 .TE
 .RE
 .LP
@@ -1430,6 +1558,35 @@ _
 4	CARD32	\f7Session ID\fP
 1	CARD8	Length of \f7Status\fP (m)
 m	CARD8	\f7Status\fP
+.TE
+.RE
+.LP
+\f8KeepAlive\fP
+.RS
+.TS
+c c c
+c l l.
+Length	Type	Description
+_
+2	CARD16	version number (always 1)
+2	CARD16	opcode (always \f8KeepAlive\fP)
+2	CARD16	length (4)
+4	CARD32	\f7Session ID\fP
+.TE
+.RE
+.LP
+\f8Alive\fP
+.RS
+.TS
+c c c
+c l l.
+Length	Type	Description
+_
+2	CARD16	version number (always 1)
+2	CARD16	opcode (always \f8Alive\fP)
+2	CARD16	length (5)
+1	CARD8	\f7Session Running\fP (0: not running 1: running)
+4	CARD32	\f7Session ID\fP (0: not running)
 .TE
 .RE
 .NH 1
