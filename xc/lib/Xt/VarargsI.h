@@ -1,4 +1,4 @@
-/* $XConsortium: VarargsI.h,v 1.2 89/11/10 17:40:15 swick Exp $ */
+/* $XConsortium: VarargsI.h,v 1.4 89/11/13 13:09:23 swick Exp $ */
 /*
 
 Copyright 1985, 1986, 1987, 1988, 1989 by the
@@ -21,12 +21,14 @@ without express or implied warranty.
 #ifndef _VarargsI_h_ 
 #define _VarargsI_h_ 
  
-#if defined(__STDC__) && ! defined(MissingStdargH)
-#include <stdarg.h>
-#define Va_start(a,b) va_start(a,b)
+#ifdef __STDC__
+# ifndef MISSING_STDARG_H
+#  include <stdarg.h>
+# endif
+# define Va_start(a,b) va_start(a,b)
 #else
-#include <varargs.h>
-#define Va_start(a,b) va_start(a)
+# include <varargs.h>
+# define Va_start(a,b) va_start(a)
 #endif
 
 typedef struct _XtTypedArg{
@@ -40,25 +42,25 @@ typedef struct _XtTypedArg{
 
 extern void _XtCountVaList(
 #if IncludePrototypes
-    va_list var, int *total_count, int *typed_count
+    va_list /*var*/, int* /*total_count*/, int* /*typed_count*/
 #endif
 );
 
 extern void _XtVaToArgList(
 #if IncludePrototypes
-   Widget widget, va_list var, int max_count, ArgList *args_return, Cardinal *num_args_return
+   Widget /*widget*/, va_list /*var*/, int /*max_count*/, ArgList* /*args_return*/, Cardinal* /*num_args_return*/
 #endif
 );
 
 extern void _XtVaToTypedArgList(
 #if IncludePrototypes
-    va_list var, int count, XtTypedArgList *args_return, Cardinal *num_args_return
+    va_list /*var*/, int /*count*/, XtTypedArgList* /*args_return*/, Cardinal* /*num_args_return*/
 #endif
 );
 
 extern XtTypedArgList _XtVaCreateTypedArgList(
 #if IncludePrototypes
-    va_list var, int count
+    va_list /*var*/, int /*count*/
 #endif
 );
 
