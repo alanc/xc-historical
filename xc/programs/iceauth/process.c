@@ -1,5 +1,5 @@
 /*
- * $XConsortium: process.c,v 1.3 94/03/17 12:20:36 mor Exp $
+ * $XConsortium: process.c,v 1.4 94/04/17 20:39:56 mor Exp $
  *
  * 
 Copyright (c) 1989  X Consortium
@@ -782,21 +782,32 @@ static int extract_entry (inputfilename, lineno, auth, data)
 }
 
 
-static int match_auth (a, b)
+static int match_auth (a, b, authDataSame)
     register IceAuthFileEntry *a, *b;
+    int *authDataSame;
 {
-    return (strcmp (a->protocol_name, b->protocol_name) == 0 &&
+    int match = strcmp (a->protocol_name, b->protocol_name) == 0 &&
 	    strcmp (a->network_id, b->network_id) == 0 &&
-            strcmp (a->auth_name, b->auth_name) == 0);
+            strcmp (a->auth_name, b->auth_name) == 0;
+
+    if (match)
+    {
+	*authDataSame = (a->auth_data_length == b->auth_data_length &&
+	    binaryEqual (a->auth_data, b->auth_data, a->auth_data_length));
+    }
+    else
+	*authDataSame = 0;
+
+    return (match);
 }
 
 
-static int merge_entries (firstp, second, nnewp, nreplp)
+static int merge_entries (firstp, second, nnewp, nreplp, ndupp)
     AuthList **firstp, *second;
-    int *nnewp, *nreplp;
+    int *nnewp, *nreplp, *ndupp;
 {
     AuthList *a, *b, *first, *tail;
-    int n = 0, nnew = 0, nrepl = 0;
+    int n = 0, nnew = 0, nrepl = 0, ndup = 0;
 
     if (!second) return 0;
 
@@ -805,6 +816,7 @@ static int merge_entries (firstp, second, nnewp, nreplp)
 	for (tail = *firstp, n = 1; tail->next; n++, tail = tail->next) ;
 	*nnewp = n;
 	*nreplp = 0;
+	*ndupp = 0;
 	return n;
     }
 
@@ -822,36 +834,57 @@ static int merge_entries (firstp, second, nnewp, nreplp)
      */
     for (b = second; b; ) {
 	AuthList *next = b->next;	/* in case we free it */
+	int duplicate;
 
+	duplicate = 0;
 	a = first;
 	for (;;) {
-	    if (match_auth (a->auth, b->auth)) {  /* found a duplicate */
-		AuthList tmp;		/* swap it in for old one */
-		tmp = *a;
-		*a = *b;
-		*b = tmp;
-		a->next = b->next;
-		IceFreeAuthFileEntry (b->auth);
-		free ((char *) b);
-		b = NULL;
-		tail->next = next;
-		nrepl++;
-		nnew--;
-		break;
+	    int authDataSame;
+	    if (match_auth (a->auth, b->auth, &authDataSame)) {
+		if (authDataSame)
+		{
+		    /* found a complete duplicate, ignore */
+		    duplicate = 1;
+		    break;
+		}
+		else
+		{
+		    /* found a duplicate, but auth data differs */
+
+		    AuthList tmp;		/* swap it in for old one */
+		    tmp = *a;
+		    *a = *b;
+		    *b = tmp;
+		    a->next = b->next;
+		    IceFreeAuthFileEntry (b->auth);
+		    free ((char *) b);
+		    b = NULL;
+		    tail->next = next;
+		    nrepl++;
+		    nnew--;
+		    break;
+		}
 	    }
 	    if (a == tail) break;	/* if have looked at left side */
 	    a = a->next;
 	}
-	if (b) {			/* if we didn't remove it */
+	if (!duplicate && b) {		/* if we didn't remove it */
 	    tail = b;			/* bump end of first list */
 	}
 	b = next;
-	n++;
-	nnew++;
+
+	if (duplicate)
+	    ndup++;
+	else
+	{
+	    n++;
+	    nnew++;
+	}
     }
 
     *nnewp = nnew;
     *nreplp = nrepl;
+    *ndupp = ndup;
     return n;
 
 }
@@ -1090,7 +1123,7 @@ static int do_merge (inputfilename, lineno, argc, argv)
     int i;
     int errors = 0;
     AuthList *head, *tail, *listhead, *listtail;
-    int nentries, nnew, nrepl;
+    int nentries, nnew, nrepl, ndup;
 
     if (argc < 2) {
 	prefix (inputfilename, lineno);
@@ -1131,7 +1164,8 @@ static int do_merge (inputfilename, lineno, argc, argv)
      * if we have new entries, merge them in (freeing any duplicates)
      */
     if (listhead) {
-	nentries = merge_entries (&iceauth_head, listhead, &nnew, &nrepl);
+	nentries = merge_entries (&iceauth_head, listhead,
+	    &nnew, &nrepl, &ndup);
 	if (verbose) 
 	  printf ("%d entries read in:  %d new, %d replacement%s\n", 
 	  	  nentries, nnew, nrepl, nrepl != 1 ? "s" : "");
@@ -1194,7 +1228,7 @@ static int do_add (inputfilename, lineno, argc, argv)
     int argc;
     char **argv;
 { 
-    int n, nnew, nrepl;
+    int n, nnew, nrepl, ndup;
     char *protoname;
     char *protodata_hex;
     char *protodata = NULL; /* not required */
@@ -1205,6 +1239,7 @@ static int do_add (inputfilename, lineno, argc, argv)
     int protodata_len, authdata_len;
     IceAuthFileEntry *auth;
     AuthList *list;
+    int status = 0;
 
     if (argc != 6 || !argv[1] || !argv[2] ||
 	!argv[3] || !argv[4] || !argv[5])
@@ -1313,22 +1348,32 @@ static int do_add (inputfilename, lineno, argc, argv)
      * merge it in; note that merge will deal with allocation
      */
 
-    n = merge_entries (&iceauth_head, list, &nnew, &nrepl);
+    n = merge_entries (&iceauth_head, list, &nnew, &nrepl, &ndup);
 
-    if (n <= 0)
+    if (n > 0)
+	iceauth_modified = True;
+    else
     {
 	prefix (inputfilename, lineno);
-	fprintf (stderr, "unable to merge in added record\n");
+	if (ndup > 0)
+	{
+	    status = 0;
+	    fprintf (stderr, "no records added - all duplicate\n");
+	}
+	else
+	{
+	    status = 1;
+	    fprintf (stderr, "unable to merge in added record\n");
+	}
 	goto cant_add;
     }
-
-    iceauth_modified = True;
 
     return 0;
 
 
 add_bad_malloc:
 
+    status = 1;
     prefix (inputfilename, lineno);
     fprintf (stderr, "unable to allocate memory to add an entry\n");
 
@@ -1353,7 +1398,7 @@ cant_add:
 	free ((char *) auth);
     }
 
-    return 1;
+    return status;
 }
 
 /*
