@@ -1,6 +1,6 @@
 #ifndef lint
 static char Xrcsid[] =
-    "$XConsortium: VarGet.c,v 1.4 89/11/10 17:48:21 swick Exp $";
+    "$XConsortium: VarGet.c,v 1.8 89/11/13 14:08:55 swick Exp $";
 #endif
 /*
 
@@ -234,11 +234,15 @@ void XtVaGetValues(widget, va_alist)
 	    typed_arg.value = va_arg(var, XtArgVal);
 	    typed_arg.size = va_arg(var, int);
 
-	    XtGetResourceList(XtClass(widget), &resources, &num_resources);
+	    if (resources == NULL) {
+		XtGetResourceList(XtClass(widget), &resources,&num_resources);
+	    }
 
 	    _XtGetTypedArg(widget, &typed_arg, resources, num_resources);
 	} else if (strcmp(attr, XtVaNestedList) == 0) {
-	    XtGetResourceList(XtClass(widget), &resources, &num_resources);
+	    if (resources == NULL) {
+		XtGetResourceList(XtClass(widget),&resources, &num_resources);
+	    }
 
 	    count += _XtGetNestedArg(widget, va_arg(var, XtTypedArgList),
 				     (args+count), resources, num_resources);
@@ -248,6 +252,7 @@ void XtVaGetValues(widget, va_alist)
 	    count ++;
 	}
     }
+    va_end(var);
 
     if (resources != (XtResourceList)NULL) { 
 	XtFree((XtPointer)resources); 
@@ -257,8 +262,6 @@ void XtVaGetValues(widget, va_alist)
 	XtGetValues(widget, args, count);
 	XtFree((XtPointer)args);
     }
-       
-    va_end(var);
 }
 
 #if IncludePrototypes
@@ -289,12 +292,11 @@ void XtVaGetSubvalues(base, resources, num_resources, va_alist)
 
     Va_start(var,num_resources);
     _XtVaToArgList((Widget)NULL, var, total_count, &args, &num_args);
+    va_end(var);
 
     XtGetSubvalues(base, resources, num_resources, args, num_args);
 
     if (num_args != 0) {
         XtFree((XtPointer)args);
     }    
-
-    va_end(var);
 }
