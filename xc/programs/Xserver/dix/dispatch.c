@@ -1,4 +1,4 @@
-/* $Header: dispatch.c,v 1.5 87/08/14 22:02:04 newman Locked $ */
+/* $Header: dispatch.c,v 1.4 87/08/14 22:23:39 toddb Locked $ */
 /************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -1174,85 +1174,49 @@ int
 ProcListFontsWithInfo(client)
     register ClientPtr client;
 {
-    xListFontsWithInfoReply reply;
-    xQueryFontReply	*fontInfoReply; 
-    FontDataRec fdr;
-    FontPathPtr fpr;
-    int stringLens, rlength, i;
-    char *bufptr, *bufferStart;
+    xListFontsWithInfoReply *reply;
+    xListFontsWithInfoReply last_reply;
+    FontRec font;
+    FontInfoRec finfo;
+    FontPathPtr fpaths;
+    char **path;
+    int n, *length, rlength;
     REQUEST(xListFontsWithInfoReq);
 
     REQUEST_AT_LEAST_SIZE(xListFontsWithInfoReq);
 
-    fpr = ExpandFontNamePattern( stuff->nbytes, &stuff[1], stuff->maxNames);
-    fdr.nfonts = fpr->npaths;
-    fdr.pFI = (FontInfoPtr)ALLOCATE_LOCAL(sizeof(FontInfoRec) * fdr.nfonts);
-    fdr.pFP = (DIXFontProp **)ALLOCATE_LOCAL(sizeof(DIXFontProp *) * fdr.nfonts);
-    if(!fdr.pFI || !fdr.pFP)
+    fpaths = ExpandFontNamePattern( stuff->nbytes, &stuff[1], stuff->maxNames);
+    font.pFI = &finfo;
+    for (n = fpaths->npaths, path = fpaths->paths, length = fpaths->length;
+	 --n >= 0;
+	 path++, length++)
     {
-	DEALLOCATE_LOCAL(fdr.pFP);
-	DEALLOCATE_LOCAL(fdr.pFI);
-        return(client->noClientException = BadAlloc);
+	if (!(DescribeFont(*path, *length, &finfo, &font.pFP)))
+	   continue;
+	rlength = sizeof(xListFontsWithInfoReply)
+		    + finfo.nProps * sizeof(xFontProp);
+	if (reply = (xListFontsWithInfoReply *)ALLOCATE_LOCAL(rlength))
+  	{
+		reply->type = X_Reply;
+		reply->sequenceNumber = client->sequence;
+		reply->length = (rlength - sizeof(xGenericReply)
+				 + *length + 3) >> 2;
+		QueryFont(&font, (xQueryFontReply *) reply, 0);
+		reply->nameLength = *length;
+		reply->nReplies = n;
+		WriteReplyToClient(client, rlength, reply);
+		WriteToClient(client, *length, *path);
+		DEALLOCATE_LOCAL(reply);
+  	}
+	Xfree((char *)font.pFP);
     }
-
-    DescribeFontList(fpr, &fdr);
-    stringLens = 0;
-    for (i=0; i<fpr->npaths; i++)
-        stringLens += fpr->length[i];
-
-    reply.type = X_Reply;
-    reply.length = (stringLens + fpr->npaths + 3) >> 2;
-    reply.nFonts = fpr->npaths;
-    reply.sequenceNumber = client->sequence;
-
-    if(!(bufptr = bufferStart = (char *)ALLOCATE_LOCAL(reply.length << 2)))
-    {
-	DEALLOCATE_LOCAL(fdr.pFP);
-	DEALLOCATE_LOCAL(fdr.pFI);
-        return(client->noClientException = BadAlloc);
-    }
-	
-            /* since WriteToClient long word aligns things, 
-	       copy to temp buffer and write all at once */
-    for (i=0; i<fpr->npaths; i++)
-    {
-        *bufptr++ = fpr->length[i];
-        bcopy(fpr->paths[i], bufptr,  fpr->length[i]);
-        bufptr += fpr->length[i];
-    }
-    WriteReplyToClient(client, sizeof(xListFontsWithInfoReply), &reply);
-    WriteToClient(client, reply.length << 2, bufferStart);
-    FreeFontRecord(fpr);
-    DEALLOCATE_LOCAL(bufferStart);
-
-    for (i=0; i<fdr.nfonts; i++)
-    {
-   	FontRec font;
-
-	font.pFI = &fdr.pFI[i];
-        font.pFP = fdr.pFP[i];
-
-	rlength = sizeof(xQueryFontReply) 
-		+ fdr.pFI[i].nProps * sizeof(xFontProp);
-
-    	fontInfoReply = (xQueryFontReply *)ALLOCATE_LOCAL(rlength);
-	if(!fontInfoReply)
-	{
-	    return(client->noClientException = BadAlloc);
-	}
-
-	fontInfoReply->type = X_Reply;
-	fontInfoReply->length = (rlength - sizeof(xGenericReply)) >> 2;
-	fontInfoReply->sequenceNumber = client->sequence;
-	QueryFont(&font, fontInfoReply, 0);
-
-        WriteReplyToClient(client, rlength, fontInfoReply);
-	DEALLOCATE_LOCAL(fontInfoReply);
-
-    }
-
-    DEALLOCATE_LOCAL(fdr.pFP);
-    DEALLOCATE_LOCAL(fdr.pFI);
+    FreeFontRecord(fpaths);
+    bzero((char *)&last_reply, sizeof(xListFontsWithInfoReply));
+    last_reply.type = X_Reply;
+    last_reply.sequenceNumber = client->sequence;
+    last_reply.length = (sizeof(xListFontsWithInfoReply)
+			  - sizeof(xGenericReply)) >> 2;
+    WriteReplyToClient(client, sizeof(xListFontsWithInfoReply), &last_reply);
     return(client->noClientException);
 }
 
