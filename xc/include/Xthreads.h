@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xthreads.h,v 1.14 94/03/07 22:36:47 rws Exp $
+ * $XConsortium: Xthreads.h,v 1.15 94/03/14 20:45:00 rws Exp $
  *
  * Copyright 1993 Massachusetts Institute of Technology
  *
@@ -45,17 +45,20 @@ typedef struct mutex xmutex_rec;
 #define xthread_fork(func,closure) cthread_fork(func,closure)
 #define xthread_yield() cthread_yield()
 #define xthread_exit(v) cthread_exit(v)
+#define xthread_set_name(t,str) cthread_set_name(t,str)
 #define xmutex_init(m) mutex_init(m)
 #define xmutex_clear(m) mutex_clear(m)
 #define xmutex_lock(m) mutex_lock(m)
 #define xmutex_unlock(m) mutex_unlock(m)
+#define xmutex_set_name(m,str) mutex_set_name(m,str)
 #define xcondition_init(cv) condition_init(cv)
 #define xcondition_clear(cv) condition_clear(cv)
 #define xcondition_wait(cv,m) condition_wait(cv,m)
 #define xcondition_signal(cv) condition_signal(cv)
 #define xcondition_broadcast(cv) condition_broadcast(cv)
+#define xcondition_set_name(cv,str) condition_set_name(cv,str)
 #else
-#ifdef sun
+#if defined(sun) || defined(__sun__)
 #include <thread.h>
 typedef thread_t xthread_t;
 typedef cond_t xcondition_rec;
@@ -167,6 +170,13 @@ static xthread_t _X_no_thread_id;
 #define xthread_clear_id(id) id = _X_no_thread_id
 #define xthread_equal(id1,id2) pthread_equal(id1, id2)
 #endif /* _DECTHREADS_ */
+#if _CMA_VENDOR_ == _CMA__IBM
+#ifdef DEBUG			/* too much of a hack to enable normally */
+/* see also cma__obj_set_name() */
+#define xmutex_set_name(m,str) ((char**)(m)->field1)[5] = (str)
+#define xcondition_set_name(cv,str) ((char**)(cv)->field1)[5] = (str)
+#endif /* DEBUG */
+#endif /* _CMA_VENDOR_ == _CMA__IBM */
 #endif /* WIN32 */
 #endif /* sun */
 #endif /* CTHREADS */
@@ -192,6 +202,16 @@ typedef xmutex_rec *xmutex_t;
 #endif
 #ifndef xthread_equal
 #define xthread_equal(id1,id2) ((id1) == (id2))
+#endif
+/* aids understood by some debuggers */
+#ifndef xthread_set_name
+#define xthread_set_name(t,str)
+#endif
+#ifndef xmutex_set_name
+#define xmutex_set_name(m,str)
+#endif
+#ifndef xcondition_set_name
+#define xcondition_set_name(cv,str)
 #endif
 
 #endif /* _XTHREADS_H_ */
