@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: button.c,v 1.25 88/12/09 15:41:56 swick Exp $
+ *	$XConsortium: button.c,v 1.26 89/01/03 15:09:38 jim Exp $
  */
 
 
@@ -35,7 +35,7 @@ button.c	Handles button events in the terminal emulator.
 				J. Gettys.
 */
 #ifndef lint
-static char rcs_id[] = "$XConsortium: button.c,v 1.25 88/12/09 15:41:56 swick Exp $";
+static char rcs_id[] = "$XConsortium: button.c,v 1.26 89/01/03 15:09:38 jim Exp $";
 #endif	/* lint */
 #include <X11/Xos.h>
 #include <X11/Xlib.h>
@@ -608,6 +608,26 @@ int amount;
     if (rawRow < minrow) rawRow = minrow;
 }
 
+
+ResizeSelection (screen, rows, cols)
+    TScreen *screen;
+    int rows, cols;
+{
+    rows--;				/* decr to get 0-max */
+    cols--;
+
+    if (startRRow > rows) startRRow = rows;
+    if (startSRow > rows) startSRow = rows;
+    if (endRRow > rows) endRRow = rows;
+    if (endSRow > rows) endSRow = rows;
+    if (rawRow > rows) rawRow = rows;
+
+    if (startRCol > cols) startRCol = cols;
+    if (startSCol > cols) startSCol = cols;
+    if (endRCol > cols) endRCol = cols;
+    if (endSCol > cols) endSCol = cols;
+    if (rawCol > cols) rawCol = cols;
+}
 
 PointToRowCol(y, x, r, c)
 register int y, x;

@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: screen.c,v 1.8 88/10/07 08:18:41 swick Exp $
+ *	$XConsortium: screen.c,v 1.9 88/11/07 11:34:48 jim Exp $
  */
 
 #include <X11/copyright.h>
@@ -30,7 +30,7 @@
 /* screen.c */
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: screen.c,v 1.8 88/10/07 08:18:41 swick Exp $";
+static char rcs_id[] = "$XConsortium: screen.c,v 1.9 88/11/07 11:34:48 jim Exp $";
 #endif	/* lint */
 
 #include <X11/Xlib.h>
@@ -526,6 +526,7 @@ unsigned *flags;
 	
 	screen->fullVwin.fullheight = height;
 	screen->fullVwin.fullwidth = width;
+	ResizeSelection (screen, rows, cols);
 #ifdef sun
 #ifdef TIOCSSIZE
 	/* Set tty's idea of window size */
