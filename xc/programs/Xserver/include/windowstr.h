@@ -1,4 +1,4 @@
-/* $Header: windowstr.h,v 1.6 88/01/04 07:30:47 rws Exp $ */
+/* $Header: windowstr.h,v 1.7 88/07/29 12:17:22 keith Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -76,7 +76,7 @@ typedef struct _Window {
 	RegionPtr clipList;               /* clipping rectangle for output*/
 	RegionPtr winSize;                /* inside window dimensions, 
 					  clipped to parent */
-	RegionPtr borderClip;             /* clipList + border */
+	RegionPtr borderClip;             /* NotClippedByChildren clip + border*/
 	RegionPtr borderSize;             /* window + border, clip to parent */
         RegionPtr exposed;                /* list of exposed regions, 
 					  translated.  After ValidateTree,
