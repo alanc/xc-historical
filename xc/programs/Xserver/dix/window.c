@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: window.c,v 5.38 89/10/08 15:19:50 rws Exp $ */
+/* $XConsortium: window.c,v 5.39 89/10/08 17:43:58 rws Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -4031,6 +4031,10 @@ CheckWindowOptionalNeed (w)
     if (optional->clipShape != NULL)
 	return;
 #endif
+#ifdef XINPUT
+    if (optional->inputMasks != NULL)
+	return;
+#endif
     parentOptional = FindWindowWithOptional(w)->optional;
     if (optional->visual != parentOptional->visual)
 	return;
@@ -4070,6 +4074,9 @@ MakeWindowOptional (pWin)
 #ifdef SHAPE
     optional->boundingShape = NULL;
     optional->clipShape = NULL;
+#endif
+#ifdef XINPUT
+    optional->inputMasks = NULL;
 #endif
     parentOptional = FindWindowWithOptional(pWin)->optional;
     optional->visual = parentOptional->visual;
