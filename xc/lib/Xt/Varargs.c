@@ -1,4 +1,4 @@
-/* $XConsortium: Varargs.c,v 1.28 95/06/08 16:09:48 converse Exp $ */
+/* $XConsortium: Varargs.c,v 1.28 95/06/08 19:21:35 converse Exp converse $ */
 
 /*
 
@@ -202,7 +202,6 @@ _XtTypedArgToArg(widget, typed_arg, arg_return, resources, num_resources,
 {     
     String              to_type = NULL;
     XrmValue            from_val, to_val;
-    register int        i;
       
 
     if (widget == NULL) {
@@ -215,13 +214,11 @@ _XtTypedArgToArg(widget, typed_arg, arg_return, resources, num_resources,
        
     /* again we assume that the XtResourceList is un-compiled */
 
-    for (i = 0; i < num_resources; i++) {
-        if (StringToName(typed_arg->name) ==
-            StringToName(resources[i].resource_name)) {
-            to_type = resources[i].resource_type;
-            break;
-        }
-    }
+    for (; num_resources--; resources++)
+	if (strcmp(typed_arg->name, resources->resource_name) == 0) {
+	    to_type = resources->resource_type;
+	    break;
+	}
 
     if (to_type == NULL) {
         XtAppWarningMsg(XtWidgetToApplicationContext(widget),
