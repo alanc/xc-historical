@@ -1,5 +1,5 @@
 /*
- * $XConsortium: EditresCom.c,v 1.18 90/07/11 10:06:51 rws Exp $
+ * $XConsortium: EditresCom.c,v 1.19 90/09/06 15:17:09 swick Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -114,6 +114,13 @@ static void SendFailure(), SendCommand(), InsertWidget(), ExecuteCommand();
 static void FreeEvent(), ExecuteSetValues(), ExecuteGetGeometry();
 static void ExecuteGetResources();
 
+static void GetCommand();
+static void LoadResources();
+static Boolean IsChild();
+static void DumpChildren();
+static char *DumpWidgets(), *DoSetValues(), *DoFindChild();
+static char *DoGetGeometry(), *DoGetResources();
+
 #if defined(SUNSHLIB) && defined(SHAREDCODE)
 /*
  * hack to avoid undefined symbol errors at runtime
@@ -154,11 +161,9 @@ Boolean *cont;
     ResIdent ident;
     static Boolean first_time = FALSE;
     static Atom res_editor, res_comm;
-    static void GetCommand();
     Display * disp;
 
     if (!first_time) {
-	static void LoadResources();
 	disp = XtDisplay(w);
 
 	first_time = TRUE;
@@ -419,9 +424,7 @@ Atom sel;
 ResIdent ident;
 EditresEvent * event;
 {
-    static char * (*func)();
-    static char * DumpWidgets(), *DoSetValues(), *DoFindChild();
-    static char * DoGetGeometry(), *DoGetResources();
+    char * (*func)();
     char * str;
 
     if (globals.block == BlockAll) {
@@ -512,8 +515,12 @@ int * format_ret;
  *	Returns: none.
  */
 
+/* ARGSUSED */
 static void
-CommandDone()
+CommandDone(widget, selection, target)
+Widget widget;
+Atom *selection;
+Atom *target;    
 {
     /* Keep the toolkit from automaticaly freeing the selection value */
 }
@@ -710,7 +717,6 @@ Widget w;
 WidgetInfo *info;
 {
     Widget top;
-    static Boolean IsChild();
 
     register int count;
     register Widget parent;
@@ -758,7 +764,7 @@ EditresEvent * event;
 ProtocolStream * stream;
 {
     char * str;
-    register int i;
+    register unsigned i;
     unsigned short count = 0;
     SetValuesEvent * sv_event = (SetValuesEvent *) event;
     
@@ -890,7 +896,6 @@ Widget w;
 EditresEvent * event;		/* UNUSED */
 ProtocolStream * stream;
 {
-    static void DumpChildren();
     unsigned short count = 0;
         
     /* Find Tree's root. */
@@ -988,7 +993,7 @@ Widget w;
 EditresEvent * event;
 ProtocolStream * stream;
 {
-    int i;
+    unsigned i;
     char * str;
     GetGeomEvent * geom_event = (GetGeomEvent *) event;
     
@@ -1135,8 +1140,10 @@ int x, y;
 	    return(FALSE);
     }
 
-    return( (x >= child_x) && (x <= (child_x + width + 2 * border_width)) &&
-	    (y >= child_y) && (y <= (child_y + height + 2 * border_width)) );
+    return (x >= child_x) &&
+	   (x <= (child_x + (Position)width + 2 * (Position)border_width)) &&
+	   (y >= child_y) &&
+	   (y <= (child_y + (Position)height + 2 * (Position)border_width));
 }
 
 /*	Function Name: _FindChild
@@ -1226,7 +1233,7 @@ Widget w;
 EditresEvent * event;
 ProtocolStream * stream;
 {
-    int i;
+    unsigned int i;
     char * str;
     GetResEvent * res_event = (GetResEvent *) event;
     
@@ -1450,7 +1457,7 @@ _EresInsertWidgetInfo(stream, info)
 ProtocolStream * stream;
 WidgetInfo * info;
 {
-    int i;
+    unsigned int i;
 
     _EresInsert16(stream, info->num_widgets);
     for (i = 0; i < info->num_widgets; i++) 
@@ -1599,7 +1606,7 @@ ProtocolStream * stream;
 char ** str;
 {
     unsigned short len;
-    register int i;
+    register unsigned i;
 
     if (!_EresRetrieve16(stream, &len)) {
 	return(FALSE);
@@ -1631,7 +1638,7 @@ _EresRetrieveWidgetInfo(stream, info)
 ProtocolStream * stream;
 WidgetInfo * info;
 {
-    int i;
+    unsigned int i;
 
     if (!_EresRetrieve16(stream, &(info->num_widgets))) 
 	return(FALSE);
@@ -1668,7 +1675,7 @@ static Boolean
 CvtStringToBlock(dpy, args, num_args, from_val, to_val, converter_data)
 Display * dpy;
 XrmValue * args;
-Cardinal num_args;
+Cardinal * num_args;
 XrmValue * from_val, * to_val;
 XtPointer * converter_data;
 {
