@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Label.c,v 1.25 87/09/13 22:09:43 swick Locked $";
+static char rcsid[] = "$Header: Label.c,v 1.26 87/12/01 12:05:06 swick Locked $";
 #endif lint
 
 /*
@@ -231,8 +231,6 @@ static void Initialize(request, new, args, num_args)
 
     Resize((Widget)lw);
 
-    lw->label.display_sensitive = FALSE;
-
 } /* Initialize */
 
 
@@ -256,7 +254,7 @@ static void Realize(w, valueMask, attributes)
 	lw->core.border_pixmap = lw->label.gray_pixmap;
 	attributes->border_pixmap = lw->label.gray_pixmap;
 	*valueMask |= CWBorderPixmap;
-	lw->label.display_sensitive = TRUE;
+	*valueMask &= ~CWBorderPixel;
       }
     
 
@@ -278,7 +276,8 @@ static void Redisplay(w, event)
    LabelWidget lw = (LabelWidget) w;
 
    XDrawString(
-	XtDisplay(w), XtWindow(w), lw->label.normal_GC,
+	XtDisplay(w), XtWindow(w),
+	lw->core.sensitive ? lw->label.normal_GC : lw->label.gray_GC,
 	lw->label.label_x, lw->label.label_y,
 	lw->label.label, (int) lw->label.label_len);
 }
@@ -418,14 +417,19 @@ static Boolean SetValues(current, request, new, last)
 	    XtDisplay(newlw), newlw->core.window, valueMask, &attributes);
     }
 
-    if (curlw->core.sensitive != newlw->core.sensitive) {
-	XtWarning("Setting Label sensitivity not implemented.");
-    }
+    if (curlw->core.sensitive != newlw->core.sensitive && XtIsRealized(newlw))
+        if (newlw->core.sensitive)
+	    XSetWindowBorder( XtDisplay(newlw), XtWindow(newlw), 
+			      newlw->core.border_pixel );
+	else
+	    XSetWindowBorderPixmap(XtDisplay(newlw), XtWindow(newlw),
+				   newlw->label.gray_pixmap);
 
     if (curlw->label.foreground != newlw->label.foreground
 	|| curlw->label.font->fid != newlw->label.font->fid) {
 
 	XtDestroyGC(curlw->label.normal_GC);
+	XtDestroyGC(curlw->label.gray_GC);
 	GetnormalGC(newlw);
 	GetgrayGC(newlw);
     }

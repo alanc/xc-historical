@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Command.c,v 1.24 87/09/13 23:04:23 swick Locked $";
+static char rcsid[] = "$Header: Command.c,v 1.25 87/12/01 15:27:34 swick Locked $";
 #endif lint
 
 /*
@@ -281,31 +281,12 @@ static void Redisplay(w, event)
       If the command button is set, draw the button and text
       in inverse. */
 
-   /* Just to make sure everything is okay, check for sensitivity,
-      too.  If non-sensitive, then gray out the border. */
-
    /* Note that Redisplay must remember the state of its last
       draw to determine whether to erase the window before
       redrawing to avoid flicker.  If the state is the same,
       the window just needs to redraw (even on an expose). */
 
-   if (!ComWsensitive && ComWdisplaySensitive) 
-      {
-	  /* change border to gray */
-	window_attributes.border_pixmap = ComWgrayPixmap;
-	XChangeWindowAttributes(XtDisplay(w),XtWindow(w),
-				CWBorderPixmap,&window_attributes);
-      }
-   else if (ComWsensitive && !ComWdisplaySensitive)
-     {
-       /* change border to black */
-       window_attributes.border_pixel = ComWforeground;
-       XChangeWindowAttributes(XtDisplay(w),XtWindow(w),
-			       CWBorderPixel,&window_attributes);
-     }
-
    if ((!ComWhighlighted && ComWdisplayHighlighted) ||
-       ComWsensitive != ComWdisplaySensitive ||
        (!ComWset && ComWdisplaySet))
      XClearWindow(XtDisplay(w),XtWindow(w));
      /* Don't clear the window if the button's in a set condition;
@@ -330,7 +311,6 @@ static void Redisplay(w, event)
 
    ComWdisplayHighlighted = ComWhighlighted;
    ComWdisplaySet = ComWset;
-   ComWdisplaySensitive = ComWsensitive;
 }
 
 
@@ -379,5 +359,7 @@ static Boolean SetValues (current, request, new, last)
     /* Change Label to remove ClearWindow and Redisplay */
     /* Change Label to change GCs if foreground, etc */
 
-    return (FALSE);  /* actually need to return TRUE if Redisplay is needed! */
+    return (XtCField(newcbw, sensitive) != ComWsensitive ||
+	    XtCBField(newcbw, set) != ComWset ||
+	    XtCBField(newcbw, highlighted) != ComWhighlighted);
 }

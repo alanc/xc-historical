@@ -1,5 +1,5 @@
 /*
-* $Header$
+* $Header: LabelP.h,v 1.7 87/09/11 21:21:50 swick Locked $
 */
 
 /*
@@ -71,7 +71,6 @@ typedef struct {
     Dimension	label_width;
     Dimension	label_height;
     unsigned int label_len;
-    Boolean     display_sensitive;
 } LabelPart;
 
 
@@ -85,28 +84,6 @@ typedef struct _LabelRec {
     CorePart	core;
     LabelPart	label;
 } LabelRec;
-
-/* $Log:	LabelPrivate.h,v $
- * Revision 1.6  87/09/10  14:39:17  haynes
- * major renaming cataclysm, de-linted, cleaned up
- * 
- * Revision 1.5  87/08/31  07:35:16  chow
- * bugs
- * 
- * Revision 1.4  87/08/30  20:16:17  ackerman
- * Added grayGC, displaySensitive to LabelPart; renamed to normalGC
- *   Also changed to new naming scheme.
- * 
- * Revision 1.3  87/08/28  18:38:51  ackerman
- * Moved full instance declaration of LabelData, LabelWidget into file
- * 
- * Revision 1.2  87/08/28  15:19:38  haynes
- * changed how resizing works
- * 
- * Revision 1.1  87/08/27  16:55:13  haynes
- * Initial revision
- *  */
-
 
 #endif _XtLabelPrivate_h
 /* DON'T ADD STUFF AFTER THIS #endif */
