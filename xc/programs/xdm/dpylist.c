@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: dpylist.c,v 1.15 89/11/03 14:44:54 keith Exp $
+ * $XConsortium: dpylist.c,v 1.16 89/11/08 17:21:09 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -217,6 +217,7 @@ char		*class;
     d->openRepeat = 0;
     d->openTimeout = 0;
     d->startAttempts = 0;
+    d->startTries = 0;
     d->terminateServer = 0;
     d->grabTimeout = 0;
     d->sessionID = 0;
