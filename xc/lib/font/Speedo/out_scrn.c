@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: out_scrn.c,v 1.2 91/05/11 09:53:11 rws Exp $ */
 
 /*
 
@@ -375,7 +375,7 @@ temp1 = (yc << sp_globals.pixshift) - y0 + sp_globals.pixrnd;
 
 temp2 = (fix15)(MULT16(temp1,(fix15)(dx_dy >> 16)) >> 15);
 
-if (  (temp2 != (fix15)0xFFFF) &&
+if (  ((temp2 & 0xFFFF) != (fix15)0xFFFF) &&
       (temp2 != 0x0000)   )
     {  /* Overflow. Pick point closest to yc + .5 */
     if (ABS(temp1) < ABS((yc << sp_globals.pixshift) - y1 + sp_globals.pixrnd))
@@ -691,7 +691,7 @@ register fix15 xloc;
 register fix15 xfrac;
 
 #if DEBUG
-printf("    Add intercept(%2d, %d)\n", y + sp_globals.y_band.band_min,x);
+printf("    Add intercept(%2d, %x)\n", y + sp_globals.y_band.band_min, x);
 
 /* Bounds checking IS done in debug mode */
 if (y < 0)       /* Y value below bottom of current band? */
