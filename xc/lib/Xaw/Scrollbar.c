@@ -1,6 +1,6 @@
 #ifndef lint
 static char Xrcsid[] =
-    "$XConsortium: Scroll.c,v 1.56 89/12/07 20:17:59 kit Exp $";
+    "$XConsortium: Scroll.c,v 1.57 89/12/09 21:58:40 rws Exp $";
 #endif /* lint */
 
 /***********************************************************
@@ -35,7 +35,7 @@ SOFTWARE.
 #include <X11/StringDefs.h>
 
 #include <X11/Xaw/XawInit.h>
-#include <X11/Xaw/ScrollP.h>
+#include <X11/Xaw/ScrollbarP.h>
 
 /* Private definitions. */
 
