@@ -1,4 +1,4 @@
-/* $XConsortium: pl_oc_util.h,v 1.6 92/08/26 13:06:17 mor Exp $ */
+/* $XConsortium: pl_oc_util.h,v 1.7 92/10/26 11:05:45 mor Exp $ */
 
 /******************************************************************************
 Copyright 1987,1991 by Digital Equipment Corporation, Maynard, Massachusetts
@@ -24,6 +24,40 @@ WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION,
 ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 ******************************************************************************/
+
+/*
+ * NAME:
+ *	PEXCopyBytesToOC
+ *
+ * ARGUMENTS:
+ *	_display	The display pointer.
+ *
+ *	_numBytes	The number of bytes to copy.
+ *
+ *	_data		The data to copy.
+ *
+ * DESCRIPTION:
+ *	This macro serves the same purpose as the PEXlib function
+ *	PEXCopyBytesToOC, but is used internally by PEXlib in order to
+ *	avoid a function call (in the simple case when there is enough
+ *	space in the X transport buffer to do the copy).
+ */
+
+extern void _PEXSendBytesToOC();
+
+#define PEXCopyBytesToOC(_display, _numBytes, _data) \
+{ \
+    if (_numBytes <= BytesLeftInXBuffer (_display)) \
+    { \
+	COPY_AREA (_data, _display->bufptr, _numBytes); \
+	_display->bufptr += _numBytes; \
+    } \
+    else \
+    { \
+	_PEXSendBytesToOC (_display, _numBytes, _data); \
+    } \
+}
+
 
 /*
  * NAME:
