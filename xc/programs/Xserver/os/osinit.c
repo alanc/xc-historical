@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: osinit.c,v 1.31 91/05/09 18:39:01 rws Exp $ */
+/* $XConsortium: osinit.c,v 1.32 91/06/13 08:51:10 rws Exp $ */
 #include "os.h"
 #undef NULL
 #include <stdio.h>
@@ -76,7 +76,7 @@ OsInit()
 		dup2 (fileno (err), 2);
 		fclose (err);
 	    }
-#ifdef SYSV		/* yes, even though it is 4.2bsd.... */
+#if defined(SYSV) || defined(SVR4)
 	    {
 	    static char buf[BUFSIZ];
 	    setvbuf (stderr, buf, _IOLBF, BUFSIZ);
