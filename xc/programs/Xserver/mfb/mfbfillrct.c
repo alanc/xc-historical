@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: mfbfillrct.c,v 1.32 87/08/20 17:42:26 drewry Exp $ */
+/* $Header: mfbfillrct.c,v 1.32 87/09/08 15:32:46 drewry Locked $ */
 #include "X.h"
 #include "Xprotostr.h"
 #include "pixmapstr.h"
@@ -33,9 +33,6 @@ SOFTWARE.
 
 #include "mfb.h"
 #include "maskbits.h"
-
-#define MODEQ(a, b) ((a) %= (b))
-void mfbPaintOddSize();
 
 /* 
     filled rectangles.
@@ -93,16 +90,20 @@ mfbPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
     {
 	BoxRec box;
 
-	if (prect->width <= 0 || prect->height <= 0)
-	{
-	    prect++;
-	    continue;
-	}
 	box.x1 = prect->x;
 	box.y1 = prect->y;
 	box.x2 = box.x1 + prect->width;
 	box.y2 = box.y1 + prect->height;
 	prect++;
+	/* since we're adding 16-bit unsigned to 15-bit signed
+	   numbers, we have to check for wraparound (or overflow,
+	   to ue a less pleasant word.)  If this has happened,
+	   make the offending coordinate as large as possible.
+	*/
+	if (box.x2 < box.x1)
+	    box.x2 = MAXSHORT;
+	if (box.y2 < box.y1)
+	    box.y2 = MAXSHORT;
 
 	switch((*pGC->pScreen->RectIn)(prgnClip, &box))
 	{
