@@ -1,4 +1,4 @@
-/* $XConsortium: Xutil.h,v 11.72 91/06/05 08:43:51 rws Exp $ */
+/* $XConsortium: Xutil.h,v 11.73 91/07/30 16:21:37 rws Exp $ */
 
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -183,24 +183,27 @@ typedef struct _XComposeStatus {
  * Keysym macros, used on Keysyms to test for classes of symbols
  */
 #define IsKeypadKey(keysym) \
-  (((unsigned)(keysym) >= XK_KP_Space) && ((unsigned)(keysym) <= XK_KP_Equal))
+  (((KeySym)(keysym) >= XK_KP_Space) && ((KeySym)(keysym) <= XK_KP_Equal))
+
+#define IsPrivateKeypadKey(keysym) \
+  (((KeySym)(keysym) >= 0x11000000) && ((KeySym)(keysym) <= 0x1100FFFF))
 
 #define IsCursorKey(keysym) \
-  (((unsigned)(keysym) >= XK_Home)     && ((unsigned)(keysym) <  XK_Select))
+  (((KeySym)(keysym) >= XK_Home)     && ((KeySym)(keysym) <  XK_Select))
 
 #define IsPFKey(keysym) \
-  (((unsigned)(keysym) >= XK_KP_F1)     && ((unsigned)(keysym) <= XK_KP_F4))
+  (((KeySym)(keysym) >= XK_KP_F1)     && ((KeySym)(keysym) <= XK_KP_F4))
 
 #define IsFunctionKey(keysym) \
-  (((unsigned)(keysym) >= XK_F1)       && ((unsigned)(keysym) <= XK_F35))
+  (((KeySym)(keysym) >= XK_F1)       && ((KeySym)(keysym) <= XK_F35))
 
 #define IsMiscFunctionKey(keysym) \
-  (((unsigned)(keysym) >= XK_Select)   && ((unsigned)(keysym) <= XK_Break))
+  (((KeySym)(keysym) >= XK_Select)   && ((KeySym)(keysym) <= XK_Break))
 
 #define IsModifierKey(keysym) \
-  ((((unsigned)(keysym) >= XK_Shift_L) && ((unsigned)(keysym) <= XK_Hyper_R)) \
-   || ((unsigned)(keysym) == XK_Mode_switch) \
-   || ((unsigned)(keysym) == XK_Num_Lock))
+  ((((KeySym)(keysym) >= XK_Shift_L) && ((KeySym)(keysym) <= XK_Hyper_R)) \
+   || ((KeySym)(keysym) == XK_Mode_switch) \
+   || ((KeySym)(keysym) == XK_Num_Lock))
 /*
  * opaque reference to Region data type 
  */
