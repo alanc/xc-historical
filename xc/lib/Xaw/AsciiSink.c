@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: AsciiSink.c,v 1.47 89/11/01 17:32:50 kit Exp $";
+static char Xrcsid[] = "$XConsortium: AsciiSink.c,v 1.48 89/11/21 15:54:50 swick Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -509,6 +509,7 @@ Widget request, new;
     
     sink->ascii_sink.insertCursorOn= CreateInsertCursor(XtScreenOfObject(new));
     sink->ascii_sink.laststate = XawisOff;
+    sink->ascii_sink.cursor_x = sink->ascii_sink.cursor_y = 0;
 }
 
 /*	Function Name: Destroy
