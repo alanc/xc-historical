@@ -8,7 +8,7 @@
           SRCS2 = resize.c
           OBJS2 = resize.o
        PROGRAMS = resize xterm
-   INSTALLFLAGS = -m 4755
+   INSTALLFLAGS = $(INSTUIDFLAGS)
        INCLUDES = -I$(TOOLKITSRC) -I$(TOP)
 
 ComplexProgramTarget_1(xterm,$(XAWLIB) $(XTOOLLIB) $(XLIB),-ltermcap)

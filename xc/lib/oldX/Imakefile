@@ -1,5 +1,5 @@
        INCLUDES = -I$(TOP) -I$(INCLUDESRC) -I$(XLIBSRC)
-   INSTALLFLAGS = -m 0644
+   INSTALLFLAGS = $(INSTINCFLAGS)
            SRCS = *.c
         HEADERS = X10.h
        LINTLIBS =

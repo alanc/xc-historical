@@ -1,5 +1,5 @@
      INCLUDES = -I$(TOP) -I$(SERVERSRC)/include
-INSTALL_FLAGS = -c -m 0644
+ INSTALLFLAGS = $(INSTLIBFLAGS)
          OBJS = rgb.o
          SRCS = rgb.c
 

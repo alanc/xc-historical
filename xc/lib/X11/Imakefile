@@ -2,7 +2,7 @@
     CDEBUGFLAGS = LibraryCDebugFlags
        INCLUDES = -I. -I$(TOP) -I$(INCLUDESRC)
         DEFINES = ConnectionFlags
-   INSTALLFLAGS = -m 0644
+   INSTALLFLAGS = $(INSTINCFLAGS)
 #if BandAidLibrary
         AIDSRCS = BandAidLibrarySources
         AIDOBJS = BandAidLibraryObjects

@@ -1,4 +1,5 @@
        INCLUDES = -I$(TOP) -I$(TOP)/X11
+   INSTALLFLAGS = $(INSTUIDFLAGS)
            OBJS = xload.o
            SRCS = xload.c
 
