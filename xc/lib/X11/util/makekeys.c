@@ -1,4 +1,4 @@
-/* $XConsortium: makekeys.C,v 11.0 90/07/26 18:34:05 rws Exp $ */
+/* $XConsortium: makekeys.C,v 11.1 90/07/28 09:44:25 rws Exp $ */
 /*
 Copyright 1990 by the Massachusetts Institute of Technology
 
@@ -37,6 +37,7 @@ static struct info {
 char tab[KTNUM];
 unsigned short offsets[KTNUM];
 unsigned short indexes[KTNUM];
+KeySym values[KTNUM];
 char buf[1024];
 
 main()
@@ -53,13 +54,15 @@ main()
     int num_found;
     KeySym val;
 
-    for (ksnum = 0; 1; gets(buf)) {
+    for (ksnum = 0; 1; (void)gets(buf)) {
 	i = scanf("#define XK_%s 0x%lx", buf, &info[ksnum].val);
 	if (i == EOF)
 	    break;
 	if (i != 2)
 	    continue;
-	if ((info[ksnum].val > 0xffff) && (info[ksnum].val != XK_VoidSymbol)) {
+	if (info[ksnum].val == XK_VoidSymbol)
+	    info[ksnum].val = 0;
+	if (info[ksnum].val > 0xffff) {
 	    fprintf(stderr,
 		    "ignoring illegal keysym (%s), remove it from .h file!\n",
 		    buf);
@@ -136,8 +139,6 @@ next1:	;
 	offsets[j] = k;
 	indexes[i] = k;
 	val = info[i].val;
-	if (val == XK_VoidSymbol)
-	    val = 0;
 	printf("0x%.2x, 0x%.2x, 0x%.2x, 0x%.2x, ",
 	       (sig >> 8) & 0xff, sig & 0xff,
 	       (val >> 8) & 0xff, val & 0xff);
@@ -168,10 +169,11 @@ next1:	;
 	max_rehash = 0;
 	bzero(tab, z);
 	for (i = 0; i < ksnum; i++) {
-	    if (i && (info[i].val == info[i-1].val))
-		continue;
-	    first = j = info[i].val % z;
+	    val = info[i].val;
+	    first = j = val % z;
 	    for (k = 0; tab[j]; k++) {
+		if (values[j] == val)
+		    goto skip1;
 		j += first + 1;
 		if (j >= z)
 		    j -= z;
@@ -179,8 +181,10 @@ next1:	;
 		    goto next2;
 	    }
 	    tab[j] = 1;
+	    values[j] = val;
 	    if (k > max_rehash)
 		max_rehash = k;
+skip1:	;
 	}
 	if (max_rehash < MIN_REHASH) {
 	    if (max_rehash < best_max_rehash) {
@@ -197,13 +201,18 @@ next2:	;
     z = best_z;
     bzero((char *)offsets, z * sizeof(unsigned short));
     for (i = 0; i < ksnum; i++) {
-	first = j = info[i].val % z;
+	val = info[i].val;
+	first = j = val % z;
 	while (offsets[j]) {
+	    if (values[j] == val)
+		goto skip2;
 	    j += first + 1;
 	    if (j >= z)
 		j -= z;
 	}
 	offsets[j] = indexes[i] + 2;
+	values[j] = val;
+skip2:	;
     }
     printf("\n");
     printf("#ifdef NEEDVTABLE\n");
