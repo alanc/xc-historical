@@ -1,5 +1,5 @@
 /*
-* $Header: Atoms.h,v 6.9 88/01/26 16:28:37 asente Exp $
+* $Header: Atoms.h,v 1.28 88/02/02 08:13:38 swick Exp $
 */
 
 /*
@@ -134,6 +134,7 @@
 #define XtCParameter		"Parameter"
 #define XtCPixmap		"Pixmap"
 #define XtCPosition		"Position"
+#define XtCReverseVideo		"ReverseVideo"
 #define XtCScrollProc		"ScrollProc"
 #define XtCScrollDCursor	"ScrollDownCursor"
 #define XtCScrollHCursor	"ScrollHorizontalCursor"
