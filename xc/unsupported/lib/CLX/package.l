@@ -121,7 +121,8 @@
     font-name font-p font-path font-plist font-properties
     font-property fontable force-gcontext-changes free-colormap
     free-colors free-cursor free-gcontext free-pixmap gcontext
-    gcontext-arc-mode gcontext-background gcontext-cap-style
+    gcontext-arc-mode gcontext-background 
+    gcontext-cache-p gcontext-cap-style
     gcontext-clip-mask gcontext-clip-ordering gcontext-clip-x
     gcontext-clip-y gcontext-dash-offset gcontext-dashes gcontext-display
     gcontext-equal gcontext-error gcontext-exposures gcontext-fill-rule
@@ -289,7 +290,8 @@
     font-name font-p font-path font-plist font-properties
     font-property fontable force-gcontext-changes free-colormap
     free-colors free-cursor free-gcontext free-pixmap gcontext
-    gcontext-arc-mode gcontext-background gcontext-cap-style
+    gcontext-arc-mode gcontext-background
+    gcontext-cache-p gcontext-cap-style
     gcontext-clip-mask gcontext-clip-ordering gcontext-clip-x
     gcontext-clip-y gcontext-dash-offset gcontext-dashes gcontext-display
     gcontext-equal gcontext-error gcontext-exposures gcontext-fill-rule

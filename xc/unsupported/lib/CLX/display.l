@@ -242,7 +242,8 @@
   ;; PROTOCOL is the network protocol (something like :TCP :DNA or :CHAOS). See OPEN-X-STREAM.
   (let* ((stream (open-x-stream host display protocol))
 	 (disp (apply #'make-buffer
-		      #x2000 'make-display-internal
+		      *output-buffer-size*
+		      'make-display-internal
 		      :host host
 		      :display display
 		      :output-stream stream

@@ -755,7 +755,15 @@
     (when dashes (setf (gcontext-dashes gcontext) dashes))
     
     (setf (gcontext-internal-timestamp server-state) 1)
-    (setf (gcontext-internal-timestamp local-state) 1)
+    (setf (gcontext-internal-timestamp local-state)
+	  ;; SetClipRectangles or SetDashes request need to be sent?
+	  (if (or (gcontext-internal-clip local-state)
+		  (gcontext-internal-dash local-state))
+	      ;; Yes, mark local state "modified" to ensure
+	      ;; force-gcontext-changes will occur.
+	      0
+	    ;; No, mark local state "unmodified"
+	    1))
     
     (with-buffer-request (display *x-creategc*)
       (resource-id gcontextid)

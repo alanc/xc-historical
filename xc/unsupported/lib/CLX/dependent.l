@@ -20,6 +20,9 @@
 
 (in-package :xlib)
 
+;;; The size of the output buffer.  Must be a multiple of 4.
+(defparameter *output-buffer-size* 8192)
+
 #+explorer
 (zwei:define-indentation event-case (1 1))
 
@@ -200,7 +203,7 @@
 
 )
 
-#+(or excl lcl3.0 clx-overlapping-arrays)
+#+(or excl (and lcl3.0 (not pa)) clx-overlapping-arrays)
 (declaim (inline aref-card16 aref-int16 aref-card32 aref-int32 aref-card29
 		 aset-card16 aset-int16 aset-card32 aset-int32 aset-card29))
 
