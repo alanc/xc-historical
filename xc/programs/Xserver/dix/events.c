@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: events.c,v 1.155 88/09/06 15:40:49 jim Exp $ */
+/* $XConsortium: events.c,v 1.156 88/09/27 17:43:47 jim Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -2805,14 +2805,24 @@ BadDeviceMap(buff, length, low, high, errval)
 }
 
 static Bool
-AllModifierKeysAreUp(map, len)
-    CARD8 *map;
-    int len;
+AllModifierKeysAreUp(map1, per1, map2, per2)
+    register CARD8 *map1, *map2;
+    int per1, per2;
 {
-    while (len--) {
-	if (*map && IsOn(inputInfo.keyboard->down, *map))
-	    return FALSE;
-	map++;
+    register int i, j, k;
+
+    for (i = 8; --i >= 0; map2 += per2)
+    {
+	for (j = per1; --j >= 0; map1++)
+	{
+	    if (*map1 && IsOn(inputInfo.keyboard->down, *map1))
+	    {
+		for (k = per2; (--k >= 0) && (*map1 != map2[k]);)
+		  ;
+		if (k < 0)
+		    return FALSE;
+	    }
+	}
     }
     return TRUE;
 }
@@ -2860,8 +2870,11 @@ ProcSetModifierMapping(client)
      *	modifier keys may be down while we change the mapping,  and
      *	that the DDX layer likes the choice.
      */
-    if (!AllModifierKeysAreUp(modifierKeyMap, 8*(int)maxKeysPerModifier)
-	    || !AllModifierKeysAreUp(inputMap, inputMapLen)) {
+    if (!AllModifierKeysAreUp(modifierKeyMap, (int)maxKeysPerModifier,
+			      inputMap, (int)stuff->numKeyPerModifier)
+	    ||
+	!AllModifierKeysAreUp(inputMap, (int)stuff->numKeyPerModifier,
+			      modifierKeyMap, (int)maxKeysPerModifier)) {
 	if (debug_modifiers)
 	    ErrorF("Busy\n");
 	rep.success = MappingBusy;
