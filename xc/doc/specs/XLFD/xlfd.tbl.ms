@@ -1,5 +1,5 @@
 .\" Use tbl and -ms and macros.t
-.\" $XConsortium: xlfd.tbl.ms,v 1.4 91/06/17 20:12:45 rws Exp $
+.\" $XConsortium: xlfd.tbl.ms,v 1.5 91/06/19 12:18:45 rws Exp $
 .EH ''''
 .OH ''''
 .EF ''''
@@ -1971,9 +1971,9 @@ For a nonscalable font source, the simple font name
 for each character set is included in the global list.
 For a scalable font source, a scalable font name for each character set
 is included in the list.  In addition to the scalable font name,
-specific derived instance names can also be included in the list.
+specific derived instance names may also be included in the list.
 The relative order of derived instances with respect to the scalable
-font name is not constrained.  Finally, font name aliases can also be included
+font name is not constrained.  Finally, font name aliases may also be included
 in the list.  The relative order of aliases with respect to the ``real''
 font name is not constrained.
 .LP
