@@ -58,8 +58,9 @@ borderColor	BorderColor	Pixel		XtDefaultForeground
 borderPixmap	Pixmap	Pixmap		XtUnspecifiedPixmap
 borderWidth	BorderWidth	Dimension		1
 bottomMargin	Margin	Position		2
-colormap	Colormap	Pointer		Parent's Colormap
+colormap	Colormap	Colormap		Parent's Colormap
 cursor	Cursor	Cursor		XC_xterm
+cursorName	Cursor	String		NULL
 depth	Depth	int	C	Parent's Depth
 destroyCallback	Callback	XtCallbackList		NULL
 displayCaret	Output	Boolean		True
@@ -69,10 +70,12 @@ insensitiveBorder	Insensitive	Pixmap		GreyPixmap
 insertPosition	TextPosition	int		0
 leftMargin	Margin	Dimension		2
 mappedWhenManaged	MappedWhenManaged	Boolean		True
+pointerColor	Foreground	Pixel		XtDefaultForeground
+pointerColorBackground	Background	Pixel		XtDefaultBackground
 resize	Resize	XawTextResizeMode		XawtextResizeNever
 rightMargin	Margin	Position		2
 screen	Screen	Pointer	R	Parent's Screen
-scrollHorizontal	Scroll	XawTextScrollMode		XawtextScrollNever
+scrollHorizontal	Scroll	ScrollMode		XawtextScrollNever
 scrollVertical	Scroll	XawTextScrollMode		XawtextScrollNever
 selectTypes	SelectTypes	XawTextSelectType*		See above
 sensitive	Sensitive	Boolean		True
@@ -80,10 +83,11 @@ textSink	TextSink	Widget		NULL
 textSource	TextSource	Widget		NULL
 topMargin	Margin	Position		2		
 translations	Translations	TranslationTable		See above
+unrealizeCallback	Callback	XtCallbackList		NULL
 width	Width	Dimension		100
 wrap	Wrap	WrapMode		XawtextWrapNever
-x	X	Position		0
-y	Y	Position		0
+x	Position	Position		0
+y	Position	Position		0
 .sp 3p
 _
 .TE
@@ -102,6 +106,7 @@ _
 .Tm Bold
 .Cm
 .Cu
+.Pn
 .Dp
 .Dc
 .Tc Bold
@@ -110,6 +115,8 @@ _
 .Ib
 .Ti Bold
 .Mm
+.Pf
+.Pb
 .Tz Bold
 .Sc
 .Ts Bold
@@ -118,4 +125,5 @@ _
 .To Bold
 .Tr
 .Tw Bold
+.Tu Bold
 .Xy
