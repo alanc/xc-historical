@@ -1,4 +1,4 @@
-/* $XConsortium: Context.c,v 1.14 92/07/29 10:01:30 rws Exp $ */
+/* $XConsortium: Context.c,v 1.15 92/07/29 11:15:44 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988, 1990 by Digital Equipment Corporation, Maynard,
@@ -73,7 +73,7 @@ static void ResizeTable(db)
 {
     TableEntry *otable;
     register TableEntry entry, next, *pold, *head;
-    register int i;
+    register int i, j;
 
     otable = db->table;
     for (i = INITHASHMASK+1; (i + i) < db->numentries; )
@@ -83,8 +83,9 @@ static void ResizeTable(db)
 	db->table = otable;
 	return;
     }
+    j = db->mask + 1;
     db->mask = i - 1;
-    for (pold = otable ; --i >= 0; pold++) {
+    for (pold = otable ; --j >= 0; pold++) {
 	for (entry = *pold; entry; entry = next) {
 	    next = entry->next;
 	    head = &Hash(db, entry->rid, entry->context);
