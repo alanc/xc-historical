@@ -1,4 +1,4 @@
-/* $XConsortium: setauth.c,v 1.1 93/11/24 15:44:29 mor Exp $ */
+/* $XConsortium: setauth.c,v 1.2 93/11/30 15:30:21 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -18,107 +18,63 @@ purpose.  It is provided "as is" without express or implied warranty.
 #include <X11/ICE/ICElibint.h>
 
 
-/*
- * The following routines are for manipulating the authentication data
- * bound to each listen object.  The reason this data is not retrieved from
- * the .ICEauthority file is because this would be a security hole.
- * The connecting client would be able to simply write an entry in the
- * file knowing that the accepting side would use it in authentication.
- *
- * NOTE: These routines are to be used by the client accepting connections
- *	 or Protocol Setups.
- */
-
 void
-IceSetAuthenticationData (listenObj, numEntries, entries)
+IceSetPaAuthData (numEntries, entries)
 
-IceListenObj		listenObj;
 int			numEntries;
 IceAuthDataEntry	*entries;
 
 {
-    int i;
+    /*
+     * _IcePaAuthDataEntries should really be a linked list.
+     * On my list of TO DO stuff.
+     */
 
-    if (listenObj->auth_data_entries)
-    {
-	for (i = 0; i < listenObj->auth_data_entry_count; i++)
-	{
-	    free (listenObj->auth_data_entries[i].protocol_name);
-	    free (listenObj->auth_data_entries[i].auth_name);
-	    free (listenObj->auth_data_entries[i].auth_data);
-	}
-
-	free ((char *) listenObj->auth_data_entries);
-    }
-
-    listenObj->auth_data_entry_count = numEntries;
-
-    listenObj->auth_data_entries = (IceAuthDataEntry *) malloc (
-	numEntries * sizeof (IceAuthDataEntry));
+    int i, j;
 
     for (i = 0; i < numEntries; i++)
     {
-	listenObj->auth_data_entries[i].protocol_name = (char *) malloc (
+	for (j = 0; j < _IcePaAuthDataEntryCount; j++)
+	    if (strcmp (entries[i].protocol_name,
+		_IcePaAuthDataEntries[j].protocol_name) == 0 &&
+                strcmp (entries[i].address,
+		_IcePaAuthDataEntries[j].address) == 0 &&
+                strcmp (entries[i].auth_name,
+		_IcePaAuthDataEntries[j].auth_name) == 0)
+		break;
+
+	if (j < _IcePaAuthDataEntryCount)
+	{
+	    free (_IcePaAuthDataEntries[j].protocol_name);
+	    free (_IcePaAuthDataEntries[j].address);
+	    free (_IcePaAuthDataEntries[j].auth_name);
+	    free (_IcePaAuthDataEntries[j].auth_data);
+	}
+	else
+	{
+	    _IcePaAuthDataEntryCount++;
+	}
+
+	_IcePaAuthDataEntries[j].protocol_name = (char *) malloc (
 	    strlen (entries[i].protocol_name) + 1);
-	strcpy (listenObj->auth_data_entries[i].protocol_name,
+	strcpy (_IcePaAuthDataEntries[j].protocol_name,
 	    entries[i].protocol_name);
 
-	listenObj->auth_data_entries[i].auth_name = (char *) malloc (
+	_IcePaAuthDataEntries[j].address = (char *) malloc (
+	    strlen (entries[i].address) + 1);
+	strcpy (_IcePaAuthDataEntries[j].address,
+	    entries[i].address);
+
+	_IcePaAuthDataEntries[j].auth_name = (char *) malloc (
             strlen (entries[i].auth_name) + 1);
-	strcpy (listenObj->auth_data_entries[i].auth_name,
+	strcpy (_IcePaAuthDataEntries[j].auth_name,
 	    entries[i].auth_name);
 
-	listenObj->auth_data_entries[i].auth_data_length =
+	_IcePaAuthDataEntries[j].auth_data_length =
             entries[i].auth_data_length;
-	listenObj->auth_data_entries[i].auth_data = (char *) malloc (
+	_IcePaAuthDataEntries[j].auth_data = (char *) malloc (
             entries[i].auth_data_length);
-	memcpy (listenObj->auth_data_entries[i].auth_data,
+	memcpy (_IcePaAuthDataEntries[j].auth_data,
             entries[i].auth_data, entries[i].auth_data_length);
     }
-}
-
-
-
-IceAuthDataEntry *
-IceGetAuthenticationData (listenObj, protocolName, authName)
-
-IceListenObj	listenObj;
-char		*protocolName;
-char		*authName;
-
-{
-    IceAuthDataEntry	*entry;
-    int			found = 0;
-    int			i;
-
-    for (i = 0; i < listenObj->auth_data_entry_count && !found; i++)
-    {
-	entry = &listenObj->auth_data_entries[i];
-
-	found = strcmp (protocolName, entry->protocol_name) == 0 &&
-            strcmp (authName, entry->auth_name) == 0;
-    }
-
-    if (found)
-	return (entry);
-    else
-	return (NULL);
-}
-
-
-
-/*
- * Allow host based authentication for the ICE Connection Setup.
- * Do not confuse with the host based authentication callbacks that
- * can be set up in IceRegisterForProtocolReply.
- */
-
-void
-IceSetHostBasedAuthProc (listenObj, hostBasedAuthProc)
-
-IceListenObj		listenObj;
-IceHostBasedAuthProc	hostBasedAuthProc;
-
-{
-    listenObj->host_based_auth_proc = hostBasedAuthProc;
 }
