@@ -1,4 +1,4 @@
-/* $XConsortium: XawI18n.h,v 1.6 94/03/30 21:28:47 kaleb Exp $ */
+/* $XConsortium: XawI18n.h,v 1.7 94/04/01 10:17:17 rws Exp $ */
 
 /************************************************************
 Copyright 1993 by The Massachusetts Institute of Technology
@@ -26,130 +26,32 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* Everyone does this differently. POSIX and Standard C don't have
- * nearly enough to be useful. Does ISO 10646 specify header files
- * and their contents? There's got to be a better way!
- */
-
-#ifdef sgi
-/* IRIX 5.x close enough for Xaw */
-#define SVR4
-#endif
-
-#ifdef SVR4
-
-#ifndef NO_WCHAR
+#ifdef HAS_WCTYPE_H
 #include <wctype.h>
 #include <widec.h>
 #define wcslen(c) wslen(c)
 #define wcscpy(d,s) wscpy(d,s)
 #define wcsncpy(d,s,l) wsncpy(d,s,l)
-#else
-#ifdef NCR
-#define iswspace(c) _iswspace(c)
-extern int _iswspace(wchar_t);
-#define USE_XWCHAR_STRING
-#endif
-#endif
-
-#ifdef sun
-#define HAS_ISW_FUNCS
-#endif
-
-#else /* SVR4 */
-
-#ifdef luna
-#ifdef MACH
-#define HAS_WCHAR_H
-#endif
-#endif
-
-#ifdef hpux
-#define HAS_WCHAR_H
-#endif
-
-#ifdef __osf__
-#ifdef __WCHAR_T_LEN
-#define HAS_WCHAR_H
-#endif
-#endif
-
-#ifdef WIN32
-#define HAS_WCHAR_H
 #endif
 
 #ifdef HAS_WCHAR_H
 #include <wchar.h>
 #endif
 
-#ifdef luna
-#ifdef MACH
-#define HAS_ISW_FUNCS
-#endif
+#ifdef AIXV3
+#include <ctype.h>
 #endif
 
-#ifdef hpux
-#define HAS_ISW_FUNCS
-#endif
-
-#endif /* !SVR4 */
-
-/* now deal with the exceptions */
-
-#ifdef ultrix
-#define USE_XWCHAR_STRING
+#ifdef NCR
+#define iswspace(c) _Xaw_iswspace(c)
+extern int _Xaw_iswspace(wchar_t);
 #endif
 
 #ifdef sony
 #ifndef SVR4
 #include <jctype.h>
 #define iswspace(c) jisspace(c)
-#define USE_XWCHAR_STRING
 #endif
-#endif
-
-#ifdef sun
-#ifndef SVR4
-#define USE_XWCHAR_STRING
-#endif
-#endif
-
-#ifdef macII
-#define USE_XWCHAR_STRING
-#endif
-
-#ifdef __bsdi__
-#define USE_XWCHAR_STRING
-#endif
-
-#ifdef CRAY
-#define USE_XWCHAR_STRING
-#endif
-
-#ifdef __osf__
-#ifndef __WCHAR_T_LEN
-#define USE_XWCHAR_STRING
-#endif
-#endif
-
-#ifdef AMOEBA
-#define USE_XWCHAR_STRING
-#endif
-
-#ifdef _MINIX
-#define USE_XWCHAR_STRING
-#endif
-
-#ifdef __FreeBSD__
-#define USE_XWCHAR_STRING
-#endif
-
-#ifdef __NetBSD__
-#define USE_XWCHAR_STRING
-#endif
-
-#ifdef __linux__
-#define USE_XWCHAR_STRING
 #endif
 
 #ifdef USE_XWCHAR_STRING
@@ -161,21 +63,12 @@ extern int _iswspace(wchar_t);
 #endif
 #endif
 
-#ifdef AIXV3
-#include <ctype.h>
-#endif
-
 extern wchar_t _Xaw_atowc (
 #if NeedFunctionPrototypes
     unsigned char	c
 #endif
 );
 
-/* 
- * At this point the only place these are undefined is on, e.g. BSD (like 
- * SunOS 4, Ultrix, BSDI, older Sony, and old MIPS OSF/1, whose locale 
- * support only handles C locale anyway.
- */
 #ifndef HAS_ISW_FUNCS
 #include <ctype.h>
 #ifndef iswspace

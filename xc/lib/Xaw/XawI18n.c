@@ -1,4 +1,4 @@
-/* $XConsortium: XawI18n.c,v 1.3 94/03/08 12:19:27 kaleb Exp $ */
+/* $XConsortium: XawI18n.c,v 1.4 94/03/21 13:24:58 kaleb Exp $ */
 
 /* Copyright 1991 NCR Corporation - Dayton, Ohio, USA */
 /*
@@ -51,17 +51,12 @@ wchar_t _Xaw_atowc(c)
 }
 
 #ifdef NCR
-
-int _iswspace(wchar_t w)
+int _Xaw_iswspace(wchar_t w)
 {
     int ret = 0;
-
     wchar_t s = _Xaw_atowc(' ');
-
     if (s == w)
 	ret = 1;
-
     return ret;
 }
-
 #endif
