@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: colormap.c,v 1.83 89/03/23 08:51:01 rws Exp $ */
+/* $XConsortium: colormap.c,v 1.84 89/03/24 18:36:27 rws Exp $ */
 
 #include "X.h"
 #define NEED_EVENTS
@@ -1475,7 +1475,7 @@ AllocCP (pmap, pentFirst, count, Free, planes, contig, pixels, pMask)
     ent = pentFirst;
 
     /* first try for contiguous planes, since it's fastest */
-    for (mask = (1 << planes) - 1, base = 1, dplanes -= (planes - 1);
+    for (mask = (((Pixel)1) << planes) - 1, base = 1, dplanes -= (planes - 1);
          --dplanes >= 0;
          mask += mask, base += base)
     {
@@ -1549,8 +1549,9 @@ AllocCP (pmap, pentFirst, count, Free, planes, contig, pixels, pMask)
     */
 
     finalmask =
-        (((1<<(planes-1)) - 1) << (dplanes-planes+1)) + (1<<(dplanes-planes-1));
-    for (mask = (3 << (planes -1)) - 1; mask <= finalmask; mask++)
+        (((((Pixel)1)<<(planes-1)) - 1) << (dplanes-planes+1)) +
+	  (((Pixel)1)<<(dplanes-planes-1));
+    for (mask = (((Pixel)3) << (planes -1)) - 1; mask <= finalmask; mask++)
     {
         /* next 3 magic statements count number of ones (HAKMEM #169) */
         pixel = (mask >> 1) & 033333333333;
@@ -1705,7 +1706,7 @@ FreeColors (pmap, client, count, pixels, mask)
     Pixel	mask;
 {
     int		rval, result, class;
-
+    Pixel	rmask;
 
     class = pmap->class;
     if((pmap->flags & AllAllocated) || !(class & DynamicClass))
@@ -1714,19 +1715,29 @@ FreeColors (pmap, client, count, pixels, mask)
     }
     if (class == DirectColor)
     {
-        result = FreeCo(pmap, client, REDMAP, count, pixels, mask);
+	rmask = mask & (pmap->pVisual->redMask |
+			pmap->pVisual->greenMask |
+			pmap->pVisual->blueMask);
+        result = FreeCo(pmap, client, REDMAP, count, pixels, rmask);
 	/* If any of the three calls fails, we must report that, if more
 	 * than one fails, it's ok that we report the last one */
-        rval = FreeCo(pmap, client, GREENMAP, count, pixels, mask);
+        rval = FreeCo(pmap, client, GREENMAP, count, pixels, rmask);
 	if(rval != Success)
 	    result = rval;
-	rval = FreeCo(pmap, client, BLUEMAP, count, pixels, mask);
+	rval = FreeCo(pmap, client, BLUEMAP, count, pixels, rmask);
 	if(rval != Success)
 	    result = rval;
     }
     else
-        result = FreeCo(pmap, client, PSEUDOMAP, count, pixels, mask);
-
+    {
+	rmask = mask & ((((Pixel)1) << pmap->pVisual->nplanes) - 1);
+        result = FreeCo(pmap, client, PSEUDOMAP, count, pixels, rmask);
+    }
+    if ((mask != rmask) && count)
+    {
+	clientErrorValue = *pixels | mask;
+	result = BadValue;
+    }
     /* XXX should worry about removing any RT_CMAPENTRY resource */
     return (result);
 }
@@ -1795,7 +1806,7 @@ FreeCo (pmap, client, color, npixIn, ppixIn, mask)
 	    pixTest = ((*pptr | bits) & cmask) >> offset;
 	    if (pixTest >= pmap->pVisual->ColormapEntries)
 	    {
-		clientErrorValue = *pptr;
+		clientErrorValue = *pptr | bits;
 		errVal = BadValue;
 		continue;
 	    }
