@@ -1,4 +1,4 @@
-/* $XConsortium: sm_client.c,v 1.17 93/12/15 17:32:01 mor Exp $ */
+/* $XConsortium: sm_client.c,v 1.18 93/12/15 20:16:43 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -95,7 +95,7 @@ char 		*errorStringRet;
     }
 
     if ((iceConn = IceOpenConnection (
-	ids, 0, errorLength, errorStringRet)) == NULL)
+	ids, 0, _SmcOpcode, errorLength, errorStringRet)) == NULL)
     {
 	return (NULL);
     }
@@ -338,10 +338,9 @@ SmcCallbacks	*callbacks;
 
 
 void
-SmcSetProperties (smcConn, sequenceRef, numProps, props)
+SmcSetProperties (smcConn, numProps, props)
 
 SmcConn    	smcConn;
-unsigned long 	sequenceRef;
 int      	numProps;
 SmProp       	**props;
 
@@ -357,7 +356,6 @@ SmProp       	**props;
 
     LISTOF_PROP_BYTES (numProps, props, bytes);
     pMsg->length += WORD64COUNT (bytes);
-    pMsg->sequenceRef = sequenceRef;
 
     pBuf = pStart = IceAllocScratch (iceConn, bytes);
 
