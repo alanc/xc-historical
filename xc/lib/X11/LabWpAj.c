@@ -1,24 +1,27 @@
-/* $XConsortium: CIELabWpAj.c,v 1.2 91/01/30 17:12:25 dave Exp $" */
+/* $XConsortium: CIELabWpAj.c,v 1.3 91/02/12 16:09:07 dave Exp $" */
 
 /*
- * (c) Copyright 1990 1991 Tektronix Inc.
+ * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
  * 	All Rights Reserved
- *
- * This code, which implements the TekColor Human Interface and/or the TekHVC
- * Color Space algorithms, is proprietary to Tektronix, Inc., and permission
- * is granted for use only in the form supplied.  Revisions, modifications,
- * or * adaptations are not permitted without the prior written approval of
- * Tektronix, Inc., Beaverton, OR 97077.  Code and supporting documentation
- * copyright Tektronix, Inc. 1990 1991 All rights reserved.  TekColor and TekHVC
- * are trademarks of Tektronix, Inc.  U.S. and foreign patents pending.
- *
- * Tektronix disclaims all warranties with regard to this software, including
- * all implied warranties of merchantability and fitness, in no event shall
- * Tektronix be liable for any special, indirect or consequential damages or
- * any damages whatsoever resulting from loss of use, data or profits,
- * whether in an action of contract, negligence or other tortious action,
- * arising out of or in connection with the use or performance of this
- * software.
+ * 
+ * This file is a component of an X Window System-specific implementation
+ * of XCMS based on the TekColor Color Management System.  Permission is
+ * hereby granted to use, copy, modify, sell, and otherwise distribute this
+ * software and its documentation for any purpose and without fee, provided
+ * that this copyright, permission, and disclaimer notice is reproduced in
+ * all copies of this software and in supporting documentation.  TekColor
+ * is a trademark of Tektronix, Inc.
+ * 
+ * Tektronix makes no representation about the suitability of this software
+ * for any purpose.  It is provided "as is" and with all faults.
+ * 
+ * TEKTRONIX DISCLAIMS ALL WARRANTIES APPLICABLE TO THIS SOFTWARE,
+ * INCLUDING THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+ * PARTICULAR PURPOSE.  IN NO EVENT SHALL TEKTRONIX BE LIABLE FOR ANY
+ * SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER
+ * RESULTING FROM LOSS OF USE, DATA, OR PROFITS, WHETHER IN AN ACTION OF
+ * CONTRACT, NEGLIGENCE, OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
+ * CONNECTION WITH THE USE OR THE PERFORMANCE OF THIS SOFTWARE.
  *
  *
  *	NAME
@@ -48,17 +51,17 @@ extern Status _XcmsConvertColorsWithWhitePt();
 
 /*
  *	NAME
- *		XcmsCIELab_WhiteAdjColors
+ *		XcmsCIELabWhiteShiftColors
  *
  *	SYNOPSIS
  */
 Status
-XcmsCIELab_WhiteAdjColors(pCCC, pWhitePtFrom, pWhitePtTo, destSpecFmt,
+XcmsCIELabWhiteShiftColors(ccc, pWhitePtFrom, pWhitePtTo, destSpecFmt,
 	pColors_in_out, nColors, pCompressed)
-    XcmsCCC *pCCC;
+    XcmsCCC ccc;
     XcmsColor *pWhitePtFrom;
     XcmsColor *pWhitePtTo;
-    XcmsSpecFmt destSpecFmt;
+    XcmsColorFormat destSpecFmt;
     XcmsColor *pColors_in_out;
     unsigned int nColors;
     Bool *pCompressed;
@@ -68,9 +71,9 @@ XcmsCIELab_WhiteAdjColors(pCCC, pWhitePtFrom, pWhitePtTo, destSpecFmt,
  *		differences in white points.
  *
  *	RETURNS
- *		XCMS_FAILURE if failed,
- *		XCMS_SUCCESS if succeeded without gamut compression,
- *		XCMS_SUCCESS_WITH_COMPRESSION if succeeded with gamut
+ *		XcmsFailure if failed,
+ *		XcmsSuccess if succeeded without gamut compression,
+ *		XcmsSuccessWithCompression if succeeded with gamut
  *			compression.
  */
 {
@@ -81,14 +84,14 @@ XcmsCIELab_WhiteAdjColors(pCCC, pWhitePtFrom, pWhitePtTo, destSpecFmt,
     /*
      * Convert to CIELab using pWhitePtFrom
      */
-    if (_XcmsConvertColorsWithWhitePt(pCCC, pColors_in_out, pWhitePtFrom,
-	    nColors, XCMS_CIELab_FORMAT, pCompressed) == XCMS_FAILURE) {
-	return(XCMS_FAILURE);
+    if (_XcmsConvertColorsWithWhitePt(ccc, pColors_in_out, pWhitePtFrom,
+	    nColors, XcmsCIELabFormat, pCompressed) == XcmsFailure) {
+	return(XcmsFailure);
     }
 
     /*
      * Convert from CIELab to destSpecFmt using pWhitePtTo
      */
-    return(_XcmsConvertColorsWithWhitePt(pCCC, pColors_in_out,
+    return(_XcmsConvertColorsWithWhitePt(ccc, pColors_in_out,
 	pWhitePtTo, nColors, destSpecFmt, pCompressed));
 }

@@ -1,24 +1,27 @@
-/* $XConsortium: CIEXYZ.c,v 1.3 91/01/22 22:13:51 alt Exp $ */
+/* $XConsortium: CIEXYZ.c,v 1.3 91/01/22 22:13:51 alt Exp $" */
 
 /*
- * (c) Copyright 1990 1991 Tektronix Inc.
+ * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
  * 	All Rights Reserved
- *
- * Permission to use, copy, modify, and distribute this software and its
- * documentation for any purpose and without fee is hereby granted,
- * provided that the above copyright notice appear in all copies and that
- * both that copyright notice and this permission notice appear in
- * supporting documentation, and that the name of Tektronix not be used
- * in advertising or publicity pertaining to distribution of the software
- * without specific, written prior permission.
- *
- * Tektronix disclaims all warranties with regard to this software, including
- * all implied warranties of merchantability and fitness, in no event shall
- * Tektronix be liable for any special, indirect or consequential damages or
- * any damages whatsoever resulting from loss of use, data or profits,
- * whether in an action of contract, negligence or other tortious action,
- * arising out of or in connection with the use or performance of this
- * software.
+ * 
+ * This file is a component of an X Window System-specific implementation
+ * of XCMS based on the TekColor Color Management System.  Permission is
+ * hereby granted to use, copy, modify, sell, and otherwise distribute this
+ * software and its documentation for any purpose and without fee, provided
+ * that this copyright, permission, and disclaimer notice is reproduced in
+ * all copies of this software and in supporting documentation.  TekColor
+ * is a trademark of Tektronix, Inc.
+ * 
+ * Tektronix makes no representation about the suitability of this software
+ * for any purpose.  It is provided "as is" and with all faults.
+ * 
+ * TEKTRONIX DISCLAIMS ALL WARRANTIES APPLICABLE TO THIS SOFTWARE,
+ * INCLUDING THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+ * PARTICULAR PURPOSE.  IN NO EVENT SHALL TEKTRONIX BE LIABLE FOR ANY
+ * SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER
+ * RESULTING FROM LOSS OF USE, DATA, OR PROFITS, WHETHER IN AN ACTION OF
+ * CONTRACT, NEGLIGENCE, OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
+ * CONNECTION WITH THE USE OR THE PERFORMANCE OF THIS SOFTWARE.
  *
  *
  *
@@ -80,13 +83,14 @@ static XcmsFuncPtr Fl_CIEXYZ_to_CIEXYZ[] = {
     /*
      * CIE XYZ Color Space
      */
-XcmsColorSpace	XcmsCIEXYZ_ColorSpace =
+XcmsColorSpace	XcmsCIEXYZColorSpace =
     {
 	XcmsCIEXYZ_prefix,		/* prefix */
-	XCMS_CIEXYZ_FORMAT,		/* id */
+	XcmsCIEXYZFormat,		/* id */
 	CIEXYZ_ParseString,	/* parseString */
 	Fl_CIEXYZ_to_CIEXYZ,	/* to_CIEXYZ */
-	Fl_CIEXYZ_to_CIEXYZ	/* from_CIEXYZ */
+	Fl_CIEXYZ_to_CIEXYZ,	/* from_CIEXYZ */
+	1
     };
 
 
@@ -109,7 +113,7 @@ CIEXYZ_ParseString(spec, pColor)
 /*
  *	DESCRIPTION
  *		This routines takes a string and attempts to convert
- *		it into a XcmsColor structure with XCMS_CIEXYZ_FORMAT.
+ *		it into a XcmsColor structure with XcmsCIEXYZFormat.
  *		The assumed CIEXYZ string syntax is:
  *		    CIEXYZ:<X>/<Y>/<Z>
  *		Where X, Y, and Z are in string input format for floats
@@ -126,7 +130,7 @@ CIEXYZ_ParseString(spec, pColor)
     char *pchar;
 
     if ((pchar = strchr(spec, ':')) == NULL) {
-	return(XCMS_FAILURE);
+	return(XcmsFailure);
     }
     n = (int)(pchar - spec);
 
@@ -134,7 +138,7 @@ CIEXYZ_ParseString(spec, pColor)
      * Check for proper prefix.
      */
     if (strncmp(spec, XcmsCIEXYZ_prefix, n) != 0) {
-	return(XCMS_FAILURE);
+	return(XcmsFailure);
     }
 
     /*
@@ -144,9 +148,9 @@ CIEXYZ_ParseString(spec, pColor)
 	    &pColor->spec.CIEXYZ.X,
 	    &pColor->spec.CIEXYZ.Y,
 	    &pColor->spec.CIEXYZ.Z) != 3) {
-	return(XCMS_FAILURE);
+	return(XcmsFailure);
     }
-    pColor->format = XCMS_CIEXYZ_FORMAT;
+    pColor->format = XcmsCIEXYZFormat;
     pColor->pixel = 0;
     return(XcmsCIEXYZ_ValidSpec(pColor));
 }
@@ -172,17 +176,17 @@ XcmsCIEXYZ_ValidSpec(pColor)
  *		Checks if color specification valid for CIE XYZ
  *
  *	RETURNS
- *		XCMS_FAILURE if invalid,
- *		XCMS_SUCCESS if valid.
+ *		XcmsFailure if invalid,
+ *		XcmsSuccess if valid.
  *
  */
 {
-    if (pColor->format != XCMS_CIEXYZ_FORMAT
+    if (pColor->format != XcmsCIEXYZFormat
 	    ||
 	    (pColor->spec.CIEXYZ.Y < 0.0 - XMY_DBL_EPSILON)
 	    ||
 	    (pColor->spec.CIEXYZ.Y > 1.0 + XMY_DBL_EPSILON)) {
-	return(XCMS_FAILURE);
+	return(XcmsFailure);
     }
-    return(XCMS_SUCCESS);
+    return(XcmsSuccess);
 }

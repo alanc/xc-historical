@@ -1,24 +1,27 @@
-/* $XConsortium: CIELuv.c,v 1.4 91/02/07 14:58:13 rws Exp $" */
+/* $XConsortium: CIELuv.c,v 1.5 91/02/12 16:09:18 dave Exp $" */
 
 /*
- * (c) Copyright 1990 1991 Tektronix Inc.
+ * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
  * 	All Rights Reserved
- *
- * This code, which implements the TekColor Human Interface and/or the TekHVC
- * Color Space algorithms, is proprietary to Tektronix, Inc., and permission
- * is granted for use only in the form supplied.  Revisions, modifications,
- * or * adaptations are not permitted without the prior written approval of
- * Tektronix, Inc., Beaverton, OR 97077.  Code and supporting documentation
- * copyright Tektronix, Inc. 1990 1991 All rights reserved.  TekColor and TekHVC
- * are trademarks of Tektronix, Inc.  U.S. and foreign patents pending.
- *
- * Tektronix disclaims all warranties with regard to this software, including
- * all implied warranties of merchantability and fitness, in no event shall
- * Tektronix be liable for any special, indirect or consequential damages or
- * any damages whatsoever resulting from loss of use, data or profits,
- * whether in an action of contract, negligence or other tortious action,
- * arising out of or in connection with the use or performance of this
- * software.
+ * 
+ * This file is a component of an X Window System-specific implementation
+ * of XCMS based on the TekColor Color Management System.  Permission is
+ * hereby granted to use, copy, modify, sell, and otherwise distribute this
+ * software and its documentation for any purpose and without fee, provided
+ * that this copyright, permission, and disclaimer notice is reproduced in
+ * all copies of this software and in supporting documentation.  TekColor
+ * is a trademark of Tektronix, Inc.
+ * 
+ * Tektronix makes no representation about the suitability of this software
+ * for any purpose.  It is provided "as is" and with all faults.
+ * 
+ * TEKTRONIX DISCLAIMS ALL WARRANTIES APPLICABLE TO THIS SOFTWARE,
+ * INCLUDING THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+ * PARTICULAR PURPOSE.  IN NO EVENT SHALL TEKTRONIX BE LIABLE FOR ANY
+ * SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER
+ * RESULTING FROM LOSS OF USE, DATA, OR PROFITS, WHETHER IN AN ACTION OF
+ * CONTRACT, NEGLIGENCE, OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
+ * CONNECTION WITH THE USE OR THE PERFORMANCE OF THIS SOFTWARE.
  *
  *
  *	NAME
@@ -43,8 +46,8 @@
  */
 
 extern char XcmsCIELuv_prefix[];
-extern int XcmsCIEuvY_to_CIEXYZ();
-extern int XcmsCIEXYZ_to_CIEuvY();
+extern int XcmsCIEuvYToCIEXYZ();
+extern int XcmsCIEXYZToCIEuvY();
 
 
 /*
@@ -53,8 +56,8 @@ extern int XcmsCIEXYZ_to_CIEuvY();
 
 static int CIELuv_ParseString();
 Status XcmsCIELuv_ValidSpec();
-Status XcmsCIELuv_to_CIEuvY();
-Status XcmsCIEuvY_to_CIELuv();
+Status XcmsCIELuvToCIEuvY();
+Status XcmsCIEuvYToCIELuv();
 
 /*
  *	DEFINES
@@ -76,8 +79,8 @@ Status XcmsCIEuvY_to_CIELuv();
      * NULL terminated list of functions applied to get from CIELuv to CIEXYZ
      */
 static XcmsFuncPtr Fl_CIELuv_to_CIEXYZ[] = {
-    XcmsCIELuv_to_CIEuvY,
-    XcmsCIEuvY_to_CIEXYZ,
+    XcmsCIELuvToCIEuvY,
+    XcmsCIEuvYToCIEXYZ,
     NULL
 };
 
@@ -85,8 +88,8 @@ static XcmsFuncPtr Fl_CIELuv_to_CIEXYZ[] = {
      * NULL terminated list of functions applied to get from CIEXYZ to CIELuv
      */
 static XcmsFuncPtr Fl_CIEXYZ_to_CIELuv[] = {
-    XcmsCIEXYZ_to_CIEuvY,
-    XcmsCIEuvY_to_CIELuv,
+    XcmsCIEXYZToCIEuvY,
+    XcmsCIEuvYToCIELuv,
     NULL
 };
 
@@ -97,13 +100,14 @@ static XcmsFuncPtr Fl_CIEXYZ_to_CIELuv[] = {
     /*
      * CIE Luv Color Space
      */
-XcmsColorSpace	XcmsCIELuv_ColorSpace =
+XcmsColorSpace	XcmsCIELuvColorSpace =
     {
 	XcmsCIELuv_prefix,	/* prefix */
-	XCMS_CIELuv_FORMAT,		/* id */
+	XcmsCIELuvFormat,		/* id */
 	CIELuv_ParseString,	/* parseString */
 	Fl_CIELuv_to_CIEXYZ,	/* to_CIEXYZ */
-	Fl_CIEXYZ_to_CIELuv	/* from_CIEXYZ */
+	Fl_CIEXYZ_to_CIELuv,	/* from_CIEXYZ */
+	1
     };
 
 
@@ -126,7 +130,7 @@ CIELuv_ParseString(spec, pColor)
 /*
  *	DESCRIPTION
  *		This routines takes a string and attempts to convert
- *		it into a XcmsColor structure with XCMS_CIELuv_FORMAT.
+ *		it into a XcmsColor structure with XcmsCIELuvFormat.
  *		The assumed CIELuv string syntax is:
  *		    CIELuv:<L>/<u>/<v>
  *		Where L, u, and v are in string input format for floats
@@ -144,7 +148,7 @@ CIELuv_ParseString(spec, pColor)
     char *pchar;
 
     if ((pchar = strchr(spec, ':')) == NULL) {
-	return(XCMS_FAILURE);
+	return(XcmsFailure);
     }
     n = (int)(pchar - spec);
 
@@ -152,19 +156,19 @@ CIELuv_ParseString(spec, pColor)
      * Check for proper prefix.
      */
     if (strncmp(spec, XcmsCIELuv_prefix, n) != 0) {
-	return(XCMS_FAILURE);
+	return(XcmsFailure);
     }
 
     /*
      * Attempt to parse the value portion.
      */
     if (sscanf(spec + n + 1, "%lf/%lf/%lf",
-	    &pColor->spec.CIELuv.L,
-	    &pColor->spec.CIELuv.u,
-	    &pColor->spec.CIELuv.v) != 3) {
-	return(XCMS_FAILURE);
+	    &pColor->spec.CIELuv.L_star,
+	    &pColor->spec.CIELuv.u_star,
+	    &pColor->spec.CIELuv.v_star) != 3) {
+	return(XcmsFailure);
     }
-    pColor->format = XCMS_CIELuv_FORMAT;
+    pColor->format = XcmsCIELuvFormat;
     pColor->pixel = 0;
     return(XcmsCIELuv_ValidSpec(pColor));
 }
@@ -190,31 +194,31 @@ XcmsCIELuv_ValidSpec(pColor)
  *		Checks if color specification valid for CIE L*u*v*.
  *
  *	RETURNS
- *		XCMS_FAILURE if invalid,
- *		XCMS_SUCCESS if valid.
+ *		XcmsFailure if invalid,
+ *		XcmsSuccess if valid.
  *
  */
 {
-    if (pColor->format != XCMS_CIELuv_FORMAT
+    if (pColor->format != XcmsCIELuvFormat
 	    ||
-	    (pColor->spec.CIELuv.L < 0.0 - XMY_DBL_EPSILON)
+	    (pColor->spec.CIELuv.L_star < 0.0 - XMY_DBL_EPSILON)
 	    ||
-	    (pColor->spec.CIELuv.L > 1.0 + XMY_DBL_EPSILON)) {
-	return(XCMS_FAILURE);
+	    (pColor->spec.CIELuv.L_star > 100.0 + XMY_DBL_EPSILON)) {
+	return(XcmsFailure);
     }
-    return(XCMS_SUCCESS);
+    return(XcmsSuccess);
 }
 
 
 /*
  *	NAME
- *		XcmsCIELuv_to_CIEuvY - convert CIELuv to CIEuvY
+ *		XcmsCIELuvToCIEuvY - convert CIELuv to CIEuvY
  *
  *	SYNOPSIS
  */
 Status
-XcmsCIELuv_to_CIEuvY(pCCC, pLuv_WhitePt, pColors_in_out, nColors)
-    XcmsCCC *pCCC;
+XcmsCIELuvToCIEuvY(ccc, pLuv_WhitePt, pColors_in_out, nColors)
+    XcmsCCC ccc;
     XcmsColor *pLuv_WhitePt;
     XcmsColor *pColors_in_out;
     unsigned int nColors;
@@ -224,8 +228,8 @@ XcmsCIELuv_to_CIEuvY(pCCC, pLuv_WhitePt, pColors_in_out, nColors)
  *		structures from CIELuv format to CIEuvY format.
  *
  *	RETURNS
- *		XCMS_FAILURE if failed,
- *		XCMS_SUCCESS if succeeded.
+ *		XcmsFailure if failed,
+ *		XcmsSuccess if succeeded.
  *
  */
 {
@@ -239,24 +243,24 @@ XcmsCIELuv_to_CIEuvY(pCCC, pLuv_WhitePt, pColors_in_out, nColors)
      * Check arguments
      */
     if (pLuv_WhitePt == NULL || pColors_in_out == NULL) {
-	return(XCMS_FAILURE);
+	return(XcmsFailure);
     }
 
     /*
      * Make sure white point is in CIEuvY form
      */
-    if (pLuv_WhitePt->format != XCMS_CIEuvY_FORMAT) {
+    if (pLuv_WhitePt->format != XcmsCIEuvYFormat) {
 	/* Make copy of the white point because we're going to modify it */
 	bcopy((char *)pLuv_WhitePt, (char *)&whitePt, sizeof(XcmsColor));
-	if (!_XcmsDIConvertColors(pCCC, &whitePt, (XcmsColor *)NULL,
-		1, XCMS_CIEuvY_FORMAT)) {
-	    return(XCMS_FAILURE);
+	if (!_XcmsDIConvertColors(ccc, &whitePt, (XcmsColor *)NULL,
+		1, XcmsCIEuvYFormat)) {
+	    return(XcmsFailure);
 	}
 	pLuv_WhitePt = &whitePt;
     }
     /* Make sure it is a white point, i.e., Y == 1.0 */
     if (pLuv_WhitePt->spec.CIEuvY.Y != 1.0) {
-	return(XCMS_FAILURE);
+	return(XcmsFailure);
     }
 
     /*
@@ -266,50 +270,57 @@ XcmsCIELuv_to_CIEuvY(pCCC, pLuv_WhitePt, pColors_in_out, nColors)
 
 	/* Make sure original format is CIELuv and is valid */
 	if (!XcmsCIELuv_ValidSpec(pColor)) {
-	    return(XCMS_FAILURE);
+	    return(XcmsFailure);
 	}
 
-	if (pColor->spec.CIELuv.L < 0.0799953624) {
-	    uvY_return.Y = pColor->spec.CIELuv.L / 9.0329;
+	if (pColor->spec.CIELuv.L_star < 7.99953624) {
+	    uvY_return.Y = pColor->spec.CIELuv.L_star / 903.29;
 	} else {
-	    tmpVal = (pColor->spec.CIELuv.L + 0.16) / 1.16;
+	    tmpVal = (pColor->spec.CIELuv.L_star + 16.0) / 116.0;
 	    uvY_return.Y = tmpVal * tmpVal * tmpVal; /* tmpVal ** 3 */
 	}
 
 
 
-	if (pColor->spec.CIELuv.L == 0.0) {
-	    uvY_return.u = pLuv_WhitePt->spec.CIEuvY.u;
-	    uvY_return.v = pLuv_WhitePt->spec.CIEuvY.v;
+	if (pColor->spec.CIELuv.L_star == 0.0) {
+	    uvY_return.u_prime = pLuv_WhitePt->spec.CIEuvY.u_prime;
+	    uvY_return.v_prime = pLuv_WhitePt->spec.CIEuvY.v_prime;
 	} else {
-	    uvY_return.u = (pColor->spec.CIELuv.u + 
-			    (13.0 * pColor->spec.CIELuv.L * 
-			     pLuv_WhitePt->spec.CIEuvY.u)) / 
-			   (13.0 * pColor->spec.CIELuv.L);
-	    uvY_return.v = (pColor->spec.CIELuv.v +
-			    (13.0 * pColor->spec.CIELuv.L *
-			     pLuv_WhitePt->spec.CIEuvY.v)) /
-			    (13.0 * pColor->spec.CIELuv.L);
+#ifndef WRONG
+	    tmpVal = 13.0 * (pColor->spec.CIELuv.L_star / 100.0);
+	    uvY_return.u_prime = (pColor->spec.CIELuv.u_star + 
+			    (tmpVal * pLuv_WhitePt->spec.CIEuvY.u_prime)) / 
+			    tmpVal;
+	    uvY_return.v_prime = (pColor->spec.CIELuv.v_star +
+			    (tmpVal * pLuv_WhitePt->spec.CIEuvY.v_prime)) /
+			    tmpVal;
+#else
+	    tmpVal = 13.0 * (pColor->spec.CIELuv.L_star / 100.0);
+	    uvY_return.u_prime = pColor->spec.CIELuv.u_star/tmpVal + 
+			    pLuv_WhitePt->spec.CIEuvY.u_prime;
+	    uvY_return.v_prime = pColor->spec.CIELuv.v_star/tmpVal +
+			    pLuv_WhitePt->spec.CIEuvY.v_prime;
+#endif /* OK */
 	}
 	/* Copy result to pColor */
 	bcopy ((char *)&uvY_return, (char *)&pColor->spec, sizeof(XcmsCIEuvY));
 
 	/* Identify that the format is now CIEuvY */
-	pColor->format = XCMS_CIEuvY_FORMAT;
+	pColor->format = XcmsCIEuvYFormat;
     }
-    return(XCMS_SUCCESS);
+    return(XcmsSuccess);
 }
 
 
 /*
  *	NAME
- *		XcmsCIEuvY_to_CIELuv - convert CIEuvY to CIELuv
+ *		XcmsCIEuvYToCIELuv - convert CIEuvY to CIELuv
  *
  *	SYNOPSIS
  */
 Status
-XcmsCIEuvY_to_CIELuv(pCCC, pLuv_WhitePt, pColors_in_out, nColors)
-    XcmsCCC *pCCC;
+XcmsCIEuvYToCIELuv(ccc, pLuv_WhitePt, pColors_in_out, nColors)
+    XcmsCCC ccc;
     XcmsColor *pLuv_WhitePt;
     XcmsColor *pColors_in_out;
     unsigned int nColors;
@@ -319,38 +330,39 @@ XcmsCIEuvY_to_CIELuv(pCCC, pLuv_WhitePt, pColors_in_out, nColors)
  *		structures from CIEuvY format to CIELab format.
  *
  *	RETURNS
- *		XCMS_FAILURE if failed,
- *		XCMS_SUCCESS if succeeded.
+ *		XcmsFailure if failed,
+ *		XcmsSuccess if succeeded.
  *
  */
 {
     XcmsColor	*pColor = pColors_in_out;
     XcmsColor	whitePt;
     XcmsCIELuv	Luv_return;
+    XcmsFloat	tmpVal;
     register int i;
 
     /*
      * Check arguments
      */
     if (pLuv_WhitePt == NULL || pColors_in_out == NULL) {
-	return(XCMS_FAILURE);
+	return(XcmsFailure);
     }
 
     /*
      * Make sure white point is in CIEuvY form
      */
-    if (pLuv_WhitePt->format != XCMS_CIEuvY_FORMAT) {
+    if (pLuv_WhitePt->format != XcmsCIEuvYFormat) {
 	/* Make copy of the white point because we're going to modify it */
 	bcopy((char *)pLuv_WhitePt, (char *)&whitePt, sizeof(XcmsColor));
-	if (!_XcmsDIConvertColors(pCCC, &whitePt,
-		(XcmsColor *)NULL, 1, XCMS_CIEuvY_FORMAT)) {
-	    return(XCMS_FAILURE);
+	if (!_XcmsDIConvertColors(ccc, &whitePt,
+		(XcmsColor *)NULL, 1, XcmsCIEuvYFormat)) {
+	    return(XcmsFailure);
 	}
 	pLuv_WhitePt = &whitePt;
     }
     /* Make sure it is a white point, i.e., Y == 1.0 */
     if (pLuv_WhitePt->spec.CIEuvY.Y != 1.0) {
-	return(XCMS_FAILURE);
+	return(XcmsFailure);
     }
 
     /*
@@ -359,26 +371,27 @@ XcmsCIEuvY_to_CIELuv(pCCC, pLuv_WhitePt, pColors_in_out, nColors)
     for (i = 0; i < nColors; i++, pColor++) {
 
 	if (!XcmsCIEuvY_ValidSpec(pColor)) {
-	    return(XCMS_FAILURE);
+	    return(XcmsFailure);
 	}
 
 	/* Now convert the uvY to Luv */
-	Luv_return.L = 
+	Luv_return.L_star = 
 	    (pColor->spec.CIEuvY.Y < 0.008856)
 	    ?
 	    (pColor->spec.CIEuvY.Y * 9.0329)
 	    :
-	    ((XcmsFloat)(XCMS_CUBEROOT(pColor->spec.CIEuvY.Y) * 1.16) - 0.16);
-	Luv_return.u = 13.0 * Luv_return.L * 
-		       (pColor->spec.CIEuvY.u - pLuv_WhitePt->spec.CIEuvY.u);
-	Luv_return.v = 13.0 * Luv_return.L *
-		       (pColor->spec.CIEuvY.v - pLuv_WhitePt->spec.CIEuvY.v);
+	    ((XcmsFloat)(XCMS_CUBEROOT(pColor->spec.CIEuvY.Y) * 116.0) - 16.0);
+	tmpVal = 13.0 * (Luv_return.L_star / 100.0);
+	Luv_return.u_star = tmpVal *
+	   (pColor->spec.CIEuvY.u_prime - pLuv_WhitePt->spec.CIEuvY.u_prime);
+	Luv_return.v_star = tmpVal *
+	   (pColor->spec.CIEuvY.v_prime - pLuv_WhitePt->spec.CIEuvY.v_prime);
 
 	/* Copy result to pColor */
 	bcopy ((char *)&Luv_return, (char *)&pColor->spec, sizeof(XcmsCIELuv));
 
 	/* Identify that the format is now CIEuvY */
-	pColor->format = XCMS_CIELuv_FORMAT;
+	pColor->format = XcmsCIELuvFormat;
     }
-    return(XCMS_SUCCESS);
+    return(XcmsSuccess);
 }
