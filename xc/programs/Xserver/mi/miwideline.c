@@ -1,5 +1,5 @@
 /*
- * $XConsortium: miwideline.c,v 1.29 90/04/13 14:56:50 keith Exp $
+ * $XConsortium: miwideline.c,v 1.30 90/11/19 15:17:35 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -1245,8 +1245,22 @@ miCleanupSpanData (pDrawable, pGC, spanData)
 {
     if (pGC->lineStyle == LineDoubleDash)
     {
+	unsigned long	oldPixel, pixel;
+	
+	pixel = pGC->bgPixel;
+	oldPixel = pGC->fgPixel;
+    	if (pixel != oldPixel)
+    	{
+    	    DoChangeGC (pGC, GCForeground, (XID *)&pixel, FALSE);
+    	    ValidateGC (pDrawable, pGC);
+    	}
 	miFillUniqueSpanGroup (pDrawable, pGC, &spanData->bgGroup);
 	miFreeSpanGroup (&spanData->bgGroup);
+    	if (pixel != oldPixel)
+    	{
+	    DoChangeGC (pGC, GCForeground, (XID *)&oldPixel, FALSE);
+	    ValidateGC (pDrawable, pGC);
+    	}
     }
     miFillUniqueSpanGroup (pDrawable, pGC, &spanData->fgGroup);
     miFreeSpanGroup (&spanData->fgGroup);
