@@ -1,5 +1,5 @@
 /*
- * $XConsortium: fontdir.c,v 1.9 92/03/20 15:53:29 eswu Exp $
+ * $XConsortium: fontdir.c,v 1.10 92/11/20 15:30:49 gildea Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -337,8 +337,8 @@ FontFileCountDashes (name, namelen)
     return ndashes;
 }
 
-static char *
-SaveString (s)
+char *
+FontFileSaveString (s)
     char    *s;
 {
     char    *n;
@@ -459,7 +459,7 @@ FontFileAddFontFile (dir, fontName, fileName)
 	entry.type = FONT_ENTRY_BITMAP;
 	entry.u.bitmap.renderer = renderer;
 	entry.u.bitmap.pFont = NullFont;
-	if (!(entry.u.bitmap.fileName = SaveString (fileName)))
+	if (!(entry.u.bitmap.fileName = FontFileSaveString (fileName)))
 	    return FALSE;
 	if (!(bitmap = FontFileAddEntry (&dir->nonScalable, &entry)))
 	{
@@ -495,14 +495,14 @@ FontFileAddFontFile (dir, fontName, fileName)
 		{
 		    existing->u.scalable.extra->defaults = vals;
 		    xfree (existing->u.scalable.fileName);
-		    if (!(existing->u.scalable.fileName = SaveString (fileName)))
+		    if (!(existing->u.scalable.fileName = FontFileSaveString (fileName)))
 			return FALSE;
 		}
 		FontFileAddScaledInstance (existing, &vals, NullFont, bitmap->name.name);
 		return TRUE;
 	    }
 	}
-	if (!(entry.u.scalable.fileName = SaveString (fileName)))
+	if (!(entry.u.scalable.fileName = FontFileSaveString (fileName)))
 	    return FALSE;
 	extra = (FontScalableExtraPtr) xalloc (sizeof (FontScalableExtraRec));
 	if (!extra)
@@ -579,7 +579,7 @@ FontFileAddFontAlias (dir, aliasName, fontName)
     entry.name.name = aliasName;
     entry.name.ndashes = FontFileCountDashes (entry.name.name, entry.name.length);
     entry.type = FONT_ENTRY_ALIAS;
-    if (!(entry.u.alias.resolved = SaveString (fontName)))
+    if (!(entry.u.alias.resolved = FontFileSaveString (fontName)))
 	return FALSE;
     if (!FontFileAddEntry (&dir->nonScalable, &entry))
     {
