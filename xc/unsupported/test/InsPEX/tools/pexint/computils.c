@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: computils.c,v 5.1 91/02/16 10:00:26 rws Exp $ */
 
 /*****************************************************************
 Copyright (c) 1989,1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -28,7 +28,7 @@ SOFTWARE.
  * computils.c - comparison utilities.
  * This file contains PHIGS testing utilties for data comparison
  */
-#include "phigs/phigs.h"
+#include <phigs/phigs.h>
 #include "stdio.h"
 #include "logmsg.h"
 #include "imath.h"

@@ -1,5 +1,5 @@
 
-/* $XConsortium$ */
+/* $XConsortium: testutils.h,v 5.1 91/02/16 10:00:22 rws Exp $ */
 
 /*****************************************************************
 Copyright (c) 1989,1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -29,7 +29,7 @@ SOFTWARE.
 #ifndef _testutils_h
 #define _testutils_h
 
-#include "phigs/phigs.h"
+#include <phigs/phigs.h>
 #include "portable.h"
 
 extern void i_open_phigs();
