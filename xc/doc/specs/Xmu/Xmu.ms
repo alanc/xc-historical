@@ -70,6 +70,8 @@ AtomPtr XmuMakeAtom(\fIname\fP)
 .br
       char* \fIname\fP;
 .FN
+.IP \fIname\fP 1i
+specifies the atom name
 .LP
 Creates and initializes an opaque object, an
 .PN AtomPtr ,
@@ -85,6 +87,8 @@ char *XmuNameOfAtom(\fIatom_ptr\fP)
 .br
       AtomPtr \fIatom_ptr\fP;
 .FN
+.IP \fIatom_ptr\fP 1i
+specifies the AtomPtr
 .LP
 Returns the name of an AtomPtr.
 .sp
@@ -95,6 +99,10 @@ Atom XmuInternAtom(\fId\fP, \fIatom_ptr\fP)
 .br
       AtomPtr \fIatom_ptr\fP;
 .FN
+.IP \fId\fP 1i
+specifies the connection to the X server
+.IP \fIatom_ptr\fP 1i
+specifies the AtomPtr
 .LP
 Returns the
 .PN Atom
@@ -112,6 +120,10 @@ char *XmuGetAtomName(\fId\fP, \fIatom\fP)
 .br
       Atom \fIatom\fP;
 .FN
+.IP \fId\fP 1i
+specifies the connection to the X server
+.IP \fIatom\fP 1i
+specifies the atom whose name is desired
 .LP
 Returns name of an
 .PN Atom .
@@ -160,6 +172,12 @@ int XmuPrintDefaultErrorMessage(\fIdpy\fP, \fIevent\fP, \fIfp\fP)
 .br
       FILE *\fIfp\fP;
 .FN
+.IP \fIdpy\fP 1i
+specifies the connection to the X server
+.IP \fIevent\fP 1i
+specifies the error
+.IP \fIfp\fP 1i
+specifies where to print the error message
 .LP
 This function prints an error message, equivalent to Xlib's default error
 message for protocol errors.  It returns 1 if the caller should consider
@@ -174,6 +192,10 @@ int XmuSimpleErrorHandler(\fIdpy\fP, \fIerrorp\fP)
 .br
       XErrorEvent *\fIerrorp\fP;
 .FN
+.IP \fIdpy\fP 1i
+specifies the connection to the X server
+.IP \fIerrorp\fP 1i
+specifies the error
 .LP
 This function ignores errors for
 .PN BadWindow
@@ -203,6 +225,10 @@ int XmuGetHostname(\fIbuf\fP, \fImaxlen\fP)
 .br
       int \fImaxlen\fP;
 .FN
+.IP \fIbuf\fP 1i
+returns the host name
+.IP \fImaxlen\fP 1i
+specifies the length of buf
 .LP
 This function stores the null terminated name of the local host in buf, and
 returns length of the name.  This function hides operating system differences,
@@ -222,6 +248,10 @@ Screen *XmuScreenOfWindow(\fIdpy\fP, \fIw\fP)
 .br
       Window \fIw\fP;
 .FN
+.IP \fIdpy\fP 1i
+specifies the connection to the X server
+.IP \fIw\fP 1i
+specifies the window
 .LP
 This function returns the
 .PN Screen
@@ -234,6 +264,10 @@ Window XmuClientWindow(\fIdpy\fP, \fIwin\fP)
 .br
       Window \fIwin\fP;
 .FN
+.IP \fIdpy\fP 1i
+specifies the connection to the X server
+.IP \fIwin\fP 1i
+specifies the window
 .LP
 This function finds a window, at or below the specified window, which has a
 WM_STATE property.  If such a window is found, it is returned, otherwise the
@@ -248,6 +282,12 @@ Bool XmuUpdateMapHints(\fIdpy\fP, \fIw\fP, \fIhints\fP)
 .br
       XSizeHints *\fIhints\fP;
 .FN
+.IP \fIdpy\fP 1i
+specifies the connection to the X server
+.IP \fIwin\fP 1i
+specifies the window
+.IP \fIhints\fP 1i
+specifies the new hints, or NULL
 .LP
 This function clears the
 .PN PPosition
@@ -283,6 +323,8 @@ int XmuCursorNameToIndex(\fIname\fP)
 .br
       char *\fIname\fP;
 .FN
+.IP \fIname\fP 1i
+specifies the name of the cursor
 .LP
 This function takes the name of a standard cursor and returns its index
 in the standard cursor font.  The cursor names are formed by removing the
@@ -307,6 +349,24 @@ void XmuDrawRoundedRectangle(\fIdpy\fP, \fIdraw\fP, \fIgc\fP, \fIx\fP, \fIy\fP, 
 .br
       int \fIx\fP, \fIy\fP, \fIw\fP, \fIh\fP, \fIew\fP, \fIeh\fP;
 .FN
+.IP \fIdpy\fP 1i
+specifies the connection to the X server
+.IP \fIdraw\fP 1i
+specifies the drawable
+.IP \fIgc\fP 1i
+specifies the GC
+.IP \fIx\fP 1i
+specifies the upper left x coordinate
+.IP \fIy\fP 1i
+specifies the upper left y coordinate
+.IP \fIw\fP 1i
+specifies the rectangle width
+.IP \fIh\fP 1i
+specifies the rectangle height
+.IP \fIew\fP 1i
+specifies the corner width
+.IP \fIeh\fP 1i
+specifies the corner height
 .LP
 This function draws a rounded rectangle, where x, y, w, h are the dimensions
 of the overall rectangle, and ew and eh are the sizes of a bounding box that
@@ -325,6 +385,24 @@ void XmuFillRoundedRectangle(\fIdpy\fP, \fIdraw\fP, \fIgc\fP, \fIx\fP, \fIy\fP, 
 .br
       int \fIx\fP, \fIy\fP, \fIw\fP, \fIh\fP, \fIew\fP, \fIeh\fP;
 .FN
+.IP \fIdpy\fP 1i
+specifies the connection to the X server
+.IP \fIdraw\fP 1i
+specifies the drawable
+.IP \fIgc\fP 1i
+specifies the GC
+.IP \fIx\fP 1i
+specifies the upper left x coordinate
+.IP \fIy\fP 1i
+specifies the upper left y coordinate
+.IP \fIw\fP 1i
+specifies the rectangle width
+.IP \fIh\fP 1i
+specifies the rectangle height
+.IP \fIew\fP 1i
+specifies the corner width
+.IP \fIeh\fP 1i
+specifies the corner height
 .LP
 This function draws a filled rounded rectangle, where x, y, w, h are the
 dimensions of the overall rectangle, and ew and eh are the sizes of a
@@ -345,6 +423,22 @@ XmuDrawLogo(\fIdpy\fP, \fIdrawable\fP, \fIgcFore\fP, \fIgcBack\fP, \fIx\fP, \fIy
 .br
       unsigned int \fIwidth\fP, \fIheight\fP;
 .FN
+.IP \fIdpy\fP 1i
+specifies the connection to the X server
+.IP \fIdrawable\fP 1i
+specifies the drawable
+.IP \fIgcFore\fP 1i
+specifies the foreground GC
+.IP \fIgcBack\fP 1i
+specifies the background GC
+.IP \fIx\fP 1i
+specifies the upper left x coordinate
+.IP \fIy\fP 1i
+specifies the upper left y coordinate
+.IP \fIwidth\fP 1i
+specifies the logo width
+.IP \fIheight\fP 1i
+specifies the logo height
 .LP
 This function draws the ``official'' X Window System logo.  The bounding box
 of the logo in the drawable is given by x, y, width, and height.  The logo
@@ -360,6 +454,14 @@ Pixmap XmuCreateStippledPixmap(\fIscreen\fP, \fIfore\fP, \fIback\fP, \fIdepth\fP
 .br
       unsigned int \fIdepth\fP;
 .FN
+.IP \fIscreen\fP 1i
+specifies the screen the pixmap is created on
+.IP \fIfore\fP 1i
+specifies the foreground pixel value
+.IP \fIback\fP 1i
+specifies the background pixel value
+.IP \fIdepth\fP 1i
+specifies the depth of the pixmap
 .LP
 This function creates a two pixel by one pixel stippled pixmap of specified
 depth on the specified screen.  The pixmap is cached so that multiple
@@ -374,6 +476,10 @@ void XmuReleaseStippledPixmap(\fIscreen\fP, \fIpixmap\fP)
 .br
       Pixmap \fIpixmap\fP;
 .FN
+.IP \fIscreen\fP 1i
+specifies the screen the pixmap was created on
+.IP \fIpixmap\fP 1i
+specifies the pixmap to free
 .LP
 This function frees a pixmap created with
 .PN XmuCreateStippledPixmap .
@@ -520,6 +626,22 @@ Boolean XmuConvertStandardSelection(\fIw\fP, \fItime\fP, \fIselection\fP, \fItar
 .br
       int *\fIformat\fP;
 .FN
+.IP \fIw\fP 1i
+specifies the widget which currently owns the selection
+.IP \fItime\fP 1i
+specifies the time at which the selection was established
+.IP \fIselection\fP 1i
+this argument is ignored
+.IP \fItarget\fP 1i
+specifies the target type of the selection
+.IP \fItype\fP 1i
+returns the property type of the converted value
+.IP \fIvalue\fP 1i
+returns the converted value
+.IP \fIlength\fP 1i
+returns the number of elements in the converted value
+.IP \fIformat\fP 1i
+returns the size in bits of the elements
 .LP
 This function converts the following standard selections: CLASS,
 CLIENT_WINDOW, DECNET_ADDRESS, HOSTNAME, IP_ADDRESS, NAME, OWNER_OS,
@@ -901,6 +1023,10 @@ void XmuCopyISOLatin1Lowered(\fIdst\fP, \fIsrc\fP)
 .br
       char *\fIdst\fP, *\fIsrc\fP;
 .FN
+.IP \fIdst\fP 1i
+returns the string copy
+.IP \fIsrc\fP 1i
+specifies the string to copy
 .LP
 This function copies a null terminated string from src to dst (including the
 null), changing all Latin-1 uppercase letters to lowercase.  The string is
@@ -911,6 +1037,10 @@ void XmuCopyISOLatin1Uppered(\fIdst\fP, \fIsrc\fP)
 .br
       char *\fIdst\fP, *\fIsrc\fP;
 .FN
+.IP \fIdst\fP 1i
+returns the string copy
+.IP \fIsrc\fP 1i
+specifies the string to copy
 .LP
 This function copies a null terminated string from src to dst (including the
 null), changing all Latin-1 lowercase letters to uppercase.  The string is
@@ -921,6 +1051,10 @@ int XmuCompareISOLatin1(\fIfirst\fP, \fIsecond\fP)
 .br
       char *\fIfirst\fP, *\fIsecond\fP;
 .FN
+.IP \fIdst\fP 1i
+specifies a string to compare
+.IP \fIsrc\fP 1i
+specifies a string to compare
 .LP
 This function compares two null terminated Latin-1 strings, ignoring case
 differences, and returns an integer greater than, equal to, or less than 0,
@@ -941,6 +1075,16 @@ int XmuLookupLatin1(\fIevent\fP, \fIbuffer\fP, \fInbytes\fP, \fIkeysym\fP, \fIst
 .br
       XComposeStatus *\fIstatus\fP;
 .FN
+.IP \fIevent\fP 1i
+specifies the key event
+.IP \fIbuffer\fP 1i
+returns the translated characters
+.IP \fInbytes\fP 1i
+specifies the length of the buffer
+.IP \fIkeysym\fP 1i
+returns the computed KeySym, or None
+.IP \fIstatus\fP 1i
+specifies or returns the compose state
 .LP
 This function is identical to
 .PN XLookupString ,
@@ -959,6 +1103,16 @@ int XmuLookupLatin2(\fIevent\fP, \fIbuffer\fP, \fInbytes\fP, \fIkeysym\fP, \fIst
 .br
       XComposeStatus *\fIstatus\fP;
 .FN
+.IP \fIevent\fP 1i
+specifies the key event
+.IP \fIbuffer\fP 1i
+returns the translated characters
+.IP \fInbytes\fP 1i
+specifies the length of the buffer
+.IP \fIkeysym\fP 1i
+returns the computed KeySym, or None
+.IP \fIstatus\fP 1i
+specifies or returns the compose state
 .LP
 This function is similar to
 .PN XLookupString ,
@@ -978,6 +1132,16 @@ int XmuLookupLatin3(\fIevent\fP, \fIbuffer\fP, \fInbytes\fP, \fIkeysym\fP, \fIst
 .br
       XComposeStatus *\fIstatus\fP;
 .FN
+.IP \fIevent\fP 1i
+specifies the key event
+.IP \fIbuffer\fP 1i
+returns the translated characters
+.IP \fInbytes\fP 1i
+specifies the length of the buffer
+.IP \fIkeysym\fP 1i
+returns the computed KeySym, or None
+.IP \fIstatus\fP 1i
+specifies or returns the compose state
 .LP
 This function is similar to
 .PN XLookupString ,
@@ -997,6 +1161,16 @@ int XmuLookupLatin4(\fIevent\fP, \fIbuffer\fP, \fInbytes\fP, \fIkeysym\fP, \fIst
 .br
       XComposeStatus *\fIstatus\fP;
 .FN
+.IP \fIevent\fP 1i
+specifies the key event
+.IP \fIbuffer\fP 1i
+returns the translated characters
+.IP \fInbytes\fP 1i
+specifies the length of the buffer
+.IP \fIkeysym\fP 1i
+returns the computed KeySym, or None
+.IP \fIstatus\fP 1i
+specifies or returns the compose state
 .LP
 This function is similar to
 .PN XLookupString ,
@@ -1016,6 +1190,16 @@ int XmuLookupKana(\fIevent\fP, \fIbuffer\fP, \fInbytes\fP, \fIkeysym\fP, \fIstat
 .br
       XComposeStatus *\fIstatus\fP;
 .FN
+.IP \fIevent\fP 1i
+specifies the key event
+.IP \fIbuffer\fP 1i
+returns the translated characters
+.IP \fInbytes\fP 1i
+specifies the length of the buffer
+.IP \fIkeysym\fP 1i
+returns the computed KeySym, or None
+.IP \fIstatus\fP 1i
+specifies or returns the compose state
 .LP
 This function is similar to
 .PN XLookupString ,
@@ -1038,6 +1222,16 @@ int XmuLookupJISX0201(\fIevent\fP, \fIbuffer\fP, \fInbytes\fP, \fIkeysym\fP, \fI
 .br
       XComposeStatus *\fIstatus\fP;
 .FN
+.IP \fIevent\fP 1i
+specifies the key event
+.IP \fIbuffer\fP 1i
+returns the translated characters
+.IP \fInbytes\fP 1i
+specifies the length of the buffer
+.IP \fIkeysym\fP 1i
+returns the computed KeySym, or None
+.IP \fIstatus\fP 1i
+specifies or returns the compose state
 .LP
 This function is similar to
 .PN XLookupString ,
@@ -1057,6 +1251,16 @@ int XmuLookupArabic(\fIevent\fP, \fIbuffer\fP, \fInbytes\fP, \fIkeysym\fP, \fIst
 .br
       XComposeStatus *\fIstatus\fP;
 .FN
+.IP \fIevent\fP 1i
+specifies the key event
+.IP \fIbuffer\fP 1i
+returns the translated characters
+.IP \fInbytes\fP 1i
+specifies the length of the buffer
+.IP \fIkeysym\fP 1i
+returns the computed KeySym, or None
+.IP \fIstatus\fP 1i
+specifies or returns the compose state
 .LP
 This function is similar to
 .PN XLookupString ,
@@ -1076,6 +1280,16 @@ int XmuLookupCyrillic(\fIevent\fP, \fIbuffer\fP, \fInbytes\fP, \fIkeysym\fP, \fI
 .br
       XComposeStatus *\fIstatus\fP;
 .FN
+.IP \fIevent\fP 1i
+specifies the key event
+.IP \fIbuffer\fP 1i
+returns the translated characters
+.IP \fInbytes\fP 1i
+specifies the length of the buffer
+.IP \fIkeysym\fP 1i
+returns the computed KeySym, or None
+.IP \fIstatus\fP 1i
+specifies or returns the compose state
 .LP
 This function is similar to
 .PN XLookupString ,
@@ -1095,6 +1309,16 @@ int XmuLookupGreek(\fIevent\fP, \fIbuffer\fP, \fInbytes\fP, \fIkeysym\fP, \fIsta
 .br
       XComposeStatus *\fIstatus\fP;
 .FN
+.IP \fIevent\fP 1i
+specifies the key event
+.IP \fIbuffer\fP 1i
+returns the translated characters
+.IP \fInbytes\fP 1i
+specifies the length of the buffer
+.IP \fIkeysym\fP 1i
+returns the computed KeySym, or None
+.IP \fIstatus\fP 1i
+specifies or returns the compose state
 .LP
 This function is similar to
 .PN XLookupString ,
@@ -1114,6 +1338,16 @@ int XmuLookupHebrew(\fIevent\fP, \fIbuffer\fP, \fInbytes\fP, \fIkeysym\fP, \fIst
 .br
       XComposeStatus *\fIstatus\fP;
 .FN
+.IP \fIevent\fP 1i
+specifies the key event
+.IP \fIbuffer\fP 1i
+returns the translated characters
+.IP \fInbytes\fP 1i
+specifies the length of the buffer
+.IP \fIkeysym\fP 1i
+returns the computed KeySym, or None
+.IP \fIstatus\fP 1i
+specifies or returns the compose state
 .LP
 This function is similar to
 .PN XLookupString ,
@@ -1133,6 +1367,16 @@ int XmuLookupAPL(\fIevent\fP, \fIbuffer\fP, \fInbytes\fP, \fIkeysym\fP, \fIstatu
 .br
       XComposeStatus *\fIstatus\fP;
 .FN
+.IP \fIevent\fP 1i
+specifies the key event
+.IP \fIbuffer\fP 1i
+returns the translated characters
+.IP \fInbytes\fP 1i
+specifies the length of the buffer
+.IP \fIkeysym\fP 1i
+returns the computed KeySym, or None
+.IP \fIstatus\fP 1i
+specifies or returns the compose state
 .LP
 This function is similar to
 .PN XLookupString ,
@@ -1255,6 +1499,8 @@ void XctReset(\fIdata\fP)
 .br
       XctData \fIdata\fP;
 .FN
+.IP \fIdata\fP 1i
+specifies the Compound Text structure
 .LP
 This function resets the
 .PN XctData
@@ -1265,6 +1511,8 @@ XctResult XctNextItem(\fIdata\fP)
 .br
       XctData \fIdata\fP;
 .FN
+.IP \fIdata\fP 1i
+specifies the Compound Text structure
 .LP
 This function parses the next ``item'' from the Compound Text string.  The
 return value indicates what kind of item is returned.  The item itself, it's
@@ -1338,6 +1586,8 @@ void XctFree(\fIdata\fP)
 .br
       XctData \fIdata\fP;
 .FN
+.IP \fIdata\fP 1i
+specifies the Compound Text structure
 .LP
 This function frees all data associated with the
 .PN XctData
@@ -1470,6 +1720,12 @@ XmuDisplayQueue *XmuDQCreate(\fIclosefunc\fP, \fIfreefunc\fP, \fIdata\fP)
 .br
       caddr_t \fIdata\fP;
 .FN
+.IP \fIclosefunc\fP 1i
+specifies the close function
+.IP \fIfreefunc\fP 1i
+specifies the free function
+.IP \fIdata\fP 1i
+specifies private data for the functions
 .LP
 This function creates and returns an empty
 .PN XmuDisplayQueue
@@ -1504,6 +1760,12 @@ XmuDisplayQueueEntry *XmuDQAddDisplay(\fIq\fP, \fIdpy\fP, \fIdata\fP)
 .br
       caddr_t \fIdata\fP;
 .FN
+.IP \fIq\fP 1i
+specifies the queue
+.IP \fIdpy\fP 1i
+specifies the display to add
+.IP \fIdata\fP 1i
+specifies private data for the free function
 .LP
 This function adds the specified display to the queue.  If successful,
 the queue entry is returned, otherwise NULL is returned.
@@ -1520,6 +1782,10 @@ XmuDisplayQueueEntry *XmuDQLookupDisplay(\fIq\fP, \fIdpy\fP)
 .br
       Display *\fIdpy\fP;
 .FN
+.IP \fIq\fP 1i
+specifies the queue
+.IP \fIdpy\fP 1i
+specifies the display to lookup
 .LP
 This function returns the queue entry for the specified display, or NULL if
 the display is not in the queue.
@@ -1537,6 +1803,10 @@ Bool XmuDQRemoveDisplay(\fIq\fP, \fIdpy\fP)
 .br
       Display *\fIdpy\fP;
 .FN
+.IP \fIq\fP 1i
+specifies the queue
+.IP \fIdpy\fP 1i
+specifies the display to remove
 .LP
 This function removes the specified display from the specified queue.
 No callbacks are performed.
@@ -1553,6 +1823,10 @@ Bool XmuDQDestroy(\fIq\fP, \fIdocallbacks\fP)
 .br
       Bool \fIdocallbacks\fP;
 .FN
+.IP \fIq\fP 1i
+specifies the queue to destroy
+.IP \fIdocallbacks\fP 1i
+specifies whether close functions should be called
 .LP
 This function releases all memory associated with the specified queue.
 If docallbacks is
@@ -1576,6 +1850,10 @@ void XmuAddInitializer(\fIfunc\fP, \fIdata\fP)
 .br
       caddr_t \fIdata\fP;
 .FN
+.IP \fIfunc\fP 1i
+specifies the procedure to register
+.IP \fIdata\fP 1i
+specifies private data for the procedure
 .LP
 This function registers a procedure, to be invoked the first time
 .PN XmuCallInitializers
@@ -1589,6 +1867,8 @@ void XmuCallInitializers(\fIapp_con\fP)
 .br
       XtAppContext \fIapp_con\fP;
 .FN
+.IP \fIapp_con\fP 1i
+specifies the application context to initialize
 .LP
 This function calls each of the procedures that have been registered with
 .PN XmuAddInitializer ,
