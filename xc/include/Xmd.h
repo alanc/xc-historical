@@ -1,6 +1,6 @@
 #ifndef XMD_H
 #define XMD_H 1
-/* $Header: Xmd.h,v 1.18 87/06/17 21:00:17 toddb Locked $ */
+/* $Header: Xmd.h,v 1.19 87/06/22 21:19:57 toddb Locked $ */
 /*
  *  MACHINE DEPENDENT DECLARATIONS.
  *
@@ -61,6 +61,8 @@
 #define	GETBITS_ALIGNMENT	4
 #define B16
 #define B32
+pragma on(pointers_compatible);
+pragma off(char_default_unsigned);
 
 #   endif
 #  endif
