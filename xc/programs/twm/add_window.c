@@ -53,7 +53,7 @@ in this Software without prior written authorization from the X Consortium.
 
 /**********************************************************************
  *
- * $XConsortium: add_window.c,v 1.3 94/06/16 16:33:14 mor Exp $
+ * $XConsortium: add_window.c,v 1.157 94/07/06 16:19:53 mor Exp $
  *
  * Add a new window, put the titlbar and other stuff around
  * the window
@@ -244,6 +244,7 @@ IconMgr *iconp;
 
     tmp_win->transient = Transient(tmp_win->w, &tmp_win->transientfor);
 
+    tmp_win->nameChanged = 0;
     if (tmp_win->name == NULL)
 	tmp_win->name = NoName;
     if (tmp_win->class.res_name == NULL)
