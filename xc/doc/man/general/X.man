@@ -349,11 +349,11 @@ cursor font.  It also has font name aliases for the commonly used fonts
 This directory contains fonts contributed by Adobe Systems and
 Digital Equipment Corporation for 75 dots per inch displays.  A variety of
 sizes and faces for the following font families are provided:
-Times, Helvetica, Courier, Symbol, New Century Schoolbook, and Terminal.
+Times, Helvetica, Courier, Symbol, and New Century Schoolbook.
 .TP 8
 .I /usr/lib/X11/fonts/100dpi
-This directory contains 100 dots per inch versions of the fonts in the 
-\fI75dpi\fP directory.
+This directory contains 100 dots per inch versions of some of the fonts in the 
+\fI75dpi\fP directory.  
 .PP
 Font databases are created by running the \fImkfontdir\fP program in the
 directory containing the compiled versions of the fonts (the \fI.snf\fP files).
@@ -573,9 +573,13 @@ Any application- or machine-specific resources can be stored in
 the class resource files located in the XAPPLOADDIR directory (this is a 
 configuration parameter that is /usr/lib/X11/app-defaults in the 
 standard distribution).  Programs that use the X Toolkit
-will also look in the user's
-home directory for files named \fI.Class\fP where \fIClass\fP is the class
+will also look in the directory named by the environment variable
+XAPPLRESDIR (default value is user's home directory)
+for files named \fIClass\fP where \fIClass\fP is the class
 name of the particular application.
+XAPPLOADDIR and XAPPLRESDIR configuration files are actually loaded
+\fIbefore\fP the RESOURCE_MANAGER property, so that the property
+can override the values.
 .TP 8
 .B XENVIRONMENT
 Any user- and machine-specific resources may be specified by setting
