@@ -341,9 +341,12 @@ XCOMM
 SUBDIRS0 = MFBSubdirs ddx/x386
 X386DIRS = $(SUBDIRS0) $(DEPDIRS)
 X386OBJS = ddx/x386/x386Init.o
-/* X386LIBS = $(DIX) $(OS) $(FONT) ddx/x386/libx386.a ddx/x386/vga/libvga.a ddx/x386/drivers/libdrivers.a ddx/x386/cfb.banked/libcfb.a $(MFB) $(MI) $(EXTENSIONS) */
-X386LIBS = ddx/x386/libx386.a ddx/x386/vga/libvga.a ddx/x386/drivers/libdrivers.a ddx/x386/cfb.banked/libcfb.a MFBLibs
+#ifdef i386SVR3Architecture
+X386SYSLIBS = $(CBRT) $(BSDEMUL)
+#endif
+X386LIBS = ddx/x386/libx386.a ddx/x386/vga/libvga.a ddx/x386/drivers/libdrivers.a ddx/x386/cfb.banked/libcfb.a MFBLibs $(X386SYSLIBS)
 
+INSTPGMFLAGS = $(INSTUIDFLAGS)     /* server must be suid root  */
 ServerTarget(X386,$(X386DIRS),$(X386OBJS),$(X386LIBS),$(SYSLIBS))
 #endif /* X386Server */
 
