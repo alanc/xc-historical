@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
-XCOMM rules:  $XConsortium: Imake.rules,v 1.76 90/12/13 14:26:47 rws Exp $
+XCOMM rules:  $XConsortium: Imake.rules,v 1.77 90/12/13 14:44:32 rws Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -664,7 +664,7 @@ clean::									@@\
 #ifndef ProfiledLibraryObjectRule
 #define	ProfiledLibraryObjectRule()					@@\
 all::									@@\
-	@if [ -d profiled ]; then exit 0; else mkdir profiled; fi	@@\
+	-@if [ -d profiled ]; then exit 0; else mkdir profiled; fi	@@\
 									@@\
 .c.o:									@@\
 	$(RM) $@ profiled/$@						@@\
@@ -686,7 +686,7 @@ clean::									@@\
 #ifndef DebuggedLibraryObjectRule
 #define	DebuggedLibraryObjectRule()					@@\
 all::									@@\
-	@if [ -d debugger ]; then exit 0; else mkdir debugger; fi	@@\
+	-@if [ -d debugger ]; then exit 0; else mkdir debugger; fi	@@\
 									@@\
 .c.o:									@@\
 	$(RM) $@ debugger/$@						@@\
@@ -708,8 +708,8 @@ clean::									@@\
 #ifndef DebuggedAndProfiledLibraryObjectRule
 #define	DebuggedAndProfiledLibraryObjectRule()				@@\
 all::									@@\
-	@if [ -d profiled ]; then exit 0; else mkdir profiled; fi	@@\
-	@if [ -d debugger ]; then exit 0; else mkdir debugger; fi	@@\
+	-@if [ -d profiled ]; then exit 0; else mkdir profiled; fi	@@\
+	-@if [ -d debugger ]; then exit 0; else mkdir debugger; fi	@@\
 									@@\
 .c.o:									@@\
 	$(RM) $@ profiled/$@ debugger/$@				@@\
@@ -735,7 +735,7 @@ clean::									@@\
 #ifndef SharedLibraryObjectRule
 #define SharedLibraryObjectRule()					@@\
 all::									@@\
-	@if [ -d shared ]; then exit 0; else mkdir shared; fi		@@\
+	-@if [ -d shared ]; then exit 0; else mkdir shared; fi		@@\
 									@@\
 .c.o:									@@\
 	$(RM) $@ shared/$@						@@\
@@ -756,8 +756,8 @@ clean::									@@\
 #ifndef SharedAndDebuggedLibraryObjectRule
 #define SharedAndDebuggedLibraryObjectRule()				@@\
 all::									@@\
-	@if [ -d shared ]; then exit 0; else mkdir shared; fi		@@\
-	@if [ -d debugger ]; then exit 0; else mkdir debugger; fi	@@\
+	-@if [ -d shared ]; then exit 0; else mkdir shared; fi		@@\
+	-@if [ -d debugger ]; then exit 0; else mkdir debugger; fi	@@\
 									@@\
 .c.o:									@@\
 	$(RM) $@ shared/$@ debugger/$@					@@\
@@ -782,8 +782,8 @@ clean::									@@\
 #ifndef SpecialSharedAndDebuggedObjectRule
 #define	SpecialSharedAndDebuggedObjectRule(objs,depends,options)	@@\
 all::									@@\
-	@if [ -d shared ]; then exit 0; else mkdir shared; fi		@@\
-	@if [ -d debugger ]; then exit 0; else mkdir debugger; fi	@@\
+	-@if [ -d shared ]; then exit 0; else mkdir shared; fi		@@\
+	-@if [ -d debugger ]; then exit 0; else mkdir debugger; fi	@@\
 									@@\
 objs:	depends								@@\
 	$(RM) $@ shared/$@ debugger/$@					@@\
@@ -801,7 +801,7 @@ objs:	depends								@@\
 #ifndef SpecialSharedObjectRule
 #define	SpecialSharedObjectRule(objs,depends,options)			@@\
 all::									@@\
-	@if [ -d shared ]; then exit 0; else mkdir shared; fi		@@\
+	-@if [ -d shared ]; then exit 0; else mkdir shared; fi		@@\
 									@@\
 objs:	depends								@@\
 	$(RM) $@ shared/$@ 						@@\
@@ -830,7 +830,7 @@ objs:	depends								@@\
 #ifndef SpecialProfiledObjectRule
 #define	SpecialProfiledObjectRule(objs,depends,options)			@@\
 all::									@@\
-	@if [ -d profiled ]; then exit 0; else mkdir profiled; fi	@@\
+	-@if [ -d profiled ]; then exit 0; else mkdir profiled; fi	@@\
 									@@\
 objs:	depends								@@\
 	$(RM) $@ profiled/$@						@@\
@@ -847,7 +847,7 @@ objs:	depends								@@\
 #ifndef SpecialDebuggedObjectRule
 #define	SpecialDebuggedObjectRule(objs,depends,options)			@@\
 all::									@@\
-	@if [ -d debugger ]; then exit 0; else mkdir debugger; fi	@@\
+	-@if [ -d debugger ]; then exit 0; else mkdir debugger; fi	@@\
 									@@\
 objs:	depends								@@\
 	$(RM) $@ debugger/$@						@@\
@@ -864,8 +864,8 @@ objs:	depends								@@\
 #ifndef SpecialDebuggedAndProfiledObjectRule
 #define	SpecialDebuggedAndProfiledObjectRule(objs,depends,options)	@@\
 all::									@@\
-	@if [ -d profiled ]; then exit 0; else mkdir profiled; fi	@@\
-	@if [ -d debugger ]; then exit 0; else mkdir debugger; fi	@@\
+	-@if [ -d profiled ]; then exit 0; else mkdir profiled; fi	@@\
+	-@if [ -d debugger ]; then exit 0; else mkdir debugger; fi	@@\
 									@@\
 objs:	depends								@@\
 	$(RM) $@ profiled/$@ debugger/$@				@@\
