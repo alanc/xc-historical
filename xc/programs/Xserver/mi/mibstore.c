@@ -1,4 +1,4 @@
-/* $XConsortium: mibstore.c,v 5.16 89/07/18 18:02:18 rws Exp $ */
+/* $XConsortium: mibstore.c,v 5.17 89/07/19 21:25:00 keith Exp $ */
 /***********************************************************
 Copyright 1987 by the Regents of the University of California
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -340,7 +340,7 @@ miBSGetImage (pDrawable, sx, sy, w, h, format, planemask, pdstLine)
 	    if (pWin->viewable && pWin->backStorage &&
 		pWin->drawable.depth == depth &&
 	        ((*pScreen->RectIn) (&(pWindowPriv =
-		    (miBSWindowPtr) pWin->backStorage)->pSavedRegion,
+		    (miBSWindowPtr) pWin->backStorage)->SavedRegion,
 		    &bounds) != rgnOUT ||
 		 (*pScreen->RectIn) (&Remaining,
 		  (*pScreen->RegionExtents) (&pWin->borderSize)) != rgnOUT))
@@ -384,7 +384,7 @@ miBSGetImage (pDrawable, sx, sy, w, h, format, planemask, pdstLine)
 		(*pScreen->TranslateRegion) (&Inside,
 					     -pWin->drawable.x,
  					     -pWin->drawable.y);
-		(*pScreen->Intersect) (&Inside, &Inside, &pWindowPriv->pSavedRegion);
+		(*pScreen->Intersect) (&Inside, &Inside, &pWindowPriv->SavedRegion);
 
 		xoff = pWin->drawable.x - pDrawable->x - sx;
 		yoff = pWin->drawable.y - pDrawable->y - sy;
@@ -435,16 +435,13 @@ miBSGetImage (pDrawable, sx, sy, w, h, format, planemask, pdstLine)
 		pWin = pWin->firstChild;
 	    else
 	    {
-		while (!pWin->nextSib)
-		{
+		while (!pWin->nextSib && pWin != (WindowPtr) pDrawable)
 		    pWin = pWin->parent;
-		    if (pWin == (WindowPtr) pDrawable)
-			goto done;
-		}
+		if (pWin == (WindowPtr) pDrawable)
+		    break;
 		pWin = pWin->nextSib;
 	    }
 	}
-done:	;
 
 	if (pPixmap)
 	{
@@ -511,7 +508,7 @@ miBSGetSpans (pDrawable, wMax, ppt, pwidth, nspans)
 	    	bounds.y2 = ppt[i].y;
     	}
     
-    	switch ((*pScreen->RectIn) (&pWindowPriv->pSavedRegion, &bounds))
+    	switch ((*pScreen->RectIn) (&pWindowPriv->SavedRegion, &bounds))
  	{
 	case rgnPART:
 	    if (!pPixmap)
@@ -997,7 +994,7 @@ miBSDoCopy(pWin, pGC, srcx, srcy, w, h, dstx, dsty, plane, copyProc, ppRgn)
     (*pGC->pScreen->TranslateRegion) (pRgnObs,
 				      -pWin->drawable.x,
 				      -pWin->drawable.y);
-    (*pGC->pScreen->Intersect)(pRgnObs, pRgnObs, &pBackingStore->pSavedRegion);
+    (*pGC->pScreen->Intersect)(pRgnObs, pRgnObs, &pBackingStore->SavedRegion);
 
     /*
      * If the obscured region is empty, there's no point being fancy.
@@ -2100,7 +2097,7 @@ miBSClearBackingStore(pWin, x, y, w, h, generateExposures)
     pRgn = (*pWin->drawable.pScreen->RegionCreate)(&box, 1);
     if (!pRgn)
 	return;
-    (* pScreen->Intersect) (pRgn, pRgn, &pBackingStore->pSavedRegion);
+    (* pScreen->Intersect) (pRgn, pRgn, &pBackingStore->SavedRegion);
 
     if ((* pScreen->RegionNotEmpty) (pRgn))
     {
@@ -2364,7 +2361,7 @@ miBSAllocate(pWin)
 	    return;
 
 	pBackingStore->pBackingPixmap = NullPixmap;
-	(* pScreen->RegionInit)(&pBackingStore->pSavedRegion, NullBox, 1);
+	(* pScreen->RegionInit)(&pBackingStore->SavedRegion, NullBox, 1);
 	pBackingStore->viewable = (char)pWin->viewable;
 	pBackingStore->status = StatusNoPixmap;
 	pBackingStore->backgroundState = None;
@@ -2372,10 +2369,10 @@ miBSAllocate(pWin)
 	pWin->backStorage = (pointer) pBackingStore;
 
 	/*
-	 * Now want to initialize the backing pixmap and pSavedRegion if
+	 * Now want to initialize the backing pixmap and SavedRegion if
 	 * necessary. The initialization consists of finding all the
 	 * currently-obscured regions, by taking the inverse of the window's
-	 * clip list, storing the result in pSavedRegion, and exposing those
+	 * clip list, storing the result in SavedRegion, and exposing those
 	 * areas of the window.
 	 */
 
@@ -2389,7 +2386,7 @@ miBSAllocate(pWin)
 	    int		i;
 	    int		numRects;
 
-	    pSavedRegion = &pBackingStore->pSavedRegion;
+	    pSavedRegion = &pBackingStore->SavedRegion;
 
 	    box.x1 = pWin->drawable.x;
 	    box.x2 = box.x1 + (int) pWin->drawable.width;
@@ -2463,7 +2460,7 @@ miBSFree(pWin)
 	{
 	    miDestroyBSPixmap (pWin);
     
-	    (* pScreen->RegionUninit)(&pBackingStore->pSavedRegion);
+	    (* pScreen->RegionUninit)(&pBackingStore->SavedRegion);
 
 	    if (pBackingStore->backgroundState == BackgroundPixmap)
 		(*pScreen->DestroyPixmap) (pBackingStore->background.pixmap);
@@ -2521,9 +2518,9 @@ miResizeBackingStore(pWin, dx, dy)
 
 	if (pNewPixmap)
 	{
-	    if ((* pScreen->RegionNotEmpty) (&pBackingStore->pSavedRegion))
+	    if ((* pScreen->RegionNotEmpty) (&pBackingStore->SavedRegion))
 	    {
-		extents = (*pScreen->RegionExtents)(&pBackingStore->pSavedRegion);
+		extents = (*pScreen->RegionExtents)(&pBackingStore->SavedRegion);
 		pGC = GetScratchGC(pNewPixmap->drawable.depth, pScreen);
 		if (pGC)
 		{
@@ -2547,13 +2544,13 @@ miResizeBackingStore(pWin, dx, dy)
     }
 
     /*
-     * Now we need to translate pSavedRegion, as appropriate, and clip it
+     * Now we need to translate SavedRegion, as appropriate, and clip it
      * to be within the window's new bounds.
      */
     if (dx || dy)
     {
 	(* pWin->drawable.pScreen->TranslateRegion)
-				(&pBackingStore->pSavedRegion, dx, dy);
+				(&pBackingStore->SavedRegion, dx, dy);
     }
     pixbounds.x1 = 0;
     pixbounds.x2 = pWin->drawable.width;
@@ -2566,8 +2563,8 @@ miResizeBackingStore(pWin, dx, dy)
     if (wClipShape (pWin))
 	(*pScreen->Intersect) (prgnTmp, prgnTmp, wClipShape (pWin));
 #endif
-    (* pScreen->Intersect)(&pBackingStore->pSavedRegion,
-			   &pBackingStore->pSavedRegion,
+    (* pScreen->Intersect)(&pBackingStore->SavedRegion,
+			   &pBackingStore->SavedRegion,
 			   prgnTmp);
     (* pScreen->RegionDestroy)(prgnTmp);
 }
@@ -2585,7 +2582,7 @@ miResizeBackingStore(pWin, dx, dy)
  *
  * Side Effects:
  *	The region is copied from the screen into pBackingPixmap and
- *	pSavedRegion is updated.
+ *	SavedRegion is updated.
  *
  *-----------------------------------------------------------------------
  */
@@ -2611,7 +2608,7 @@ miBSSaveDoomedAreas(pWin, pObscured, dx, dy)
 	pBackingStore->viewable = (char)pWin->viewable;
 	if (pWin->backingStore != Always)
 	{
-	    (* pScreen->RegionEmpty) (&pBackingStore->pSavedRegion);
+	    (* pScreen->RegionEmpty) (&pBackingStore->SavedRegion);
 	    miDestroyBSPixmap (pWin);
 	    return;
 	}
@@ -2644,8 +2641,8 @@ miBSSaveDoomedAreas(pWin, pObscured, dx, dy)
 						   pWin->drawable.x - dx,
 						   pWin->drawable.y - dy);
 	}
-	(* pScreen->Union)(&pBackingStore->pSavedRegion,
-			   &pBackingStore->pSavedRegion,
+	(* pScreen->Union)(&pBackingStore->SavedRegion,
+			   &pBackingStore->SavedRegion,
 			   pObscured);
 	(*pScreen->TranslateRegion) (pObscured,
 				     pWin->drawable.x, pWin->drawable.y);
@@ -2692,7 +2689,7 @@ miBSRestoreAreas(pWin, prgnExposed)
     pBackingStore = (miBSWindowPtr)pWin->backStorage;
     pBackingPixmap = pBackingStore->pBackingPixmap;
 
-    prgnSaved = &pBackingStore->pSavedRegion;
+    prgnSaved = &pBackingStore->SavedRegion;
 
     if (pBackingStore->status == StatusContents)
     {
@@ -2777,7 +2774,7 @@ miBSRestoreAreas(pWin, prgnExposed)
 	 */
 	BoxRec  box;
 	
-	prgnSaved = &pBackingStore->pSavedRegion;
+	prgnSaved = &pBackingStore->SavedRegion;
 
 	box.x1 = pWin->drawable.x;
 	box.x2 = box.x1 + (int) pWin->drawable.width;
@@ -2840,12 +2837,12 @@ miBSTranslateBackingStore(pWin, dx, dy, oldClip)
     if (((dx != 0) || (dy != 0)) && (pBackingStore->status != StatusContents))
 	miCreateBSPixmap(pWin);
 
-    pSavedRegion = &pBackingStore->pSavedRegion;
+    pSavedRegion = &pBackingStore->SavedRegion;
     if (!oldClip)
 	(* pScreen->RegionEmpty) (pSavedRegion);
     newSaved = (* pScreen->RegionCreate) (NullBox, 1);
     obscured = (* pScreen->RegionCreate) (NullBox, 1);
-    /* resize and translate backing pixmap and pSavedRegion */
+    /* resize and translate backing pixmap and SavedRegion */
     miResizeBackingStore(pWin, dx, dy);
     /* now find any already saved areas we should retain */
     if (pWin->viewable)
@@ -2898,8 +2895,8 @@ miBSTranslateBackingStore(pWin, dx, dy, oldClip)
     {
 	RegionRec tmpRgn;
 	extents = *((* pScreen->RegionExtents) (obscured));
-	tmpRgn = pBackingStore->pSavedRegion; /* don't look */
-	pBackingStore->pSavedRegion = *obscured;
+	tmpRgn = pBackingStore->SavedRegion; /* don't look */
+	pBackingStore->SavedRegion = *obscured;
 	/* XXX there is a problem here.  The protocol requires that
 	 * only the last exposure event in a series can have a zero
 	 * count, but we might generate one here, and then another
@@ -2910,9 +2907,9 @@ miBSTranslateBackingStore(pWin, dx, dy, oldClip)
 			      extents.x2 - extents.x1,
 			      extents.y2 - extents.y1,
 			      TRUE);
-	pBackingStore->pSavedRegion = tmpRgn;
+	pBackingStore->SavedRegion = tmpRgn;
     }
-    /* finally install new pSavedRegion */
+    /* finally install new SavedRegion */
     (* pScreen->Union) (pSavedRegion, pSavedRegion, newSaved);
     (* pScreen->RegionDestroy) (newSaved);
     (* pScreen->RegionDestroy) (obscured);
@@ -3033,14 +3030,14 @@ miBSValidateGC (pGC, stateChanges, pDrawable)
         ((pDrawable->serialNumber != pPriv->serialNumber) ||
 	 (stateChanges&(GCClipXOrigin|GCClipYOrigin|GCClipMask|GCSubwindowMode))))
     {
-	if ((*pGC->pScreen->RegionNotEmpty) (&pWindowPriv->pSavedRegion))
+	if ((*pGC->pScreen->RegionNotEmpty) (&pWindowPriv->SavedRegion))
  	{
 	    backingCompositeClip = (*pGC->pScreen->RegionCreate) (NULL, 1);
 	    if ((pGC->clientClipType == CT_NONE) || 
 		(pGC->clientClipType == CT_PIXMAP))
 	    {
 		(*pGC->pScreen->RegionCopy) (backingCompositeClip,
-					     &pWindowPriv->pSavedRegion); 
+					     &pWindowPriv->SavedRegion); 
 	    }
 	    else
 	    {
@@ -3054,7 +3051,7 @@ miBSValidateGC (pGC, stateChanges, pDrawable)
 						  pGC->clipOrg.x,
 						  pGC->clipOrg.y);
 		(*pGC->pScreen->Intersect) (backingCompositeClip, backingCompositeClip,
-					    &pWindowPriv->pSavedRegion);
+					    &pWindowPriv->SavedRegion);
 	    }
 	    if (pGC->subWindowMode == IncludeInferiors)
  	    {
@@ -3387,9 +3384,9 @@ miCreateBSPixmap (pWin)
 	    pWin->background.pixmap->refcnt++;
     }
 
-    if ((* pScreen->RegionNotEmpty) (&pBackingStore->pSavedRegion))
+    if ((* pScreen->RegionNotEmpty) (&pBackingStore->SavedRegion))
     {
-	extents = (* pScreen->RegionExtents) (&pBackingStore->pSavedRegion);
+	extents = (* pScreen->RegionExtents) (&pBackingStore->SavedRegion);
 	miBSClearBackingStore(pWin,
 			      extents->x1, extents->y1,
 			      extents->x2 - extents->x1,
@@ -3449,7 +3446,7 @@ miBSExposeCopy (pSrc, pDst, pGC, prgnExposed, srcx, srcy, dstx, dsty, plane)
 
     tempRgn = (* pGC->pScreen->RegionCreate) (NULL, 1);
     (* pGC->pScreen->Intersect) (tempRgn, prgnExposed,
-				 &pBackingStore->pSavedRegion);
+				 &pBackingStore->SavedRegion);
     (* pGC->pScreen->Subtract) (prgnExposed, prgnExposed, tempRgn);
 
     if (plane != 0) {
