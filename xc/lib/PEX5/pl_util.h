@@ -1,4 +1,4 @@
-/* $XConsortium: pl_util.h,v 1.3 92/08/10 17:04:29 mor Exp $ */
+/* $XConsortium: pl_util.h,v 1.4 92/10/15 10:48:20 mor Exp $ */
 
 /******************************************************************************
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -101,16 +101,3 @@ without express or implied warranty.
      _point.x <= _view.clip_limits.max.x && \
      _point.y >= _view.clip_limits.min.y && \
      _point.y <= _view.clip_limits.max.y)
-
-
-/*
- * Xlib defines min and max as macros; Must undef to compile pl_util.c
- */
-
-#ifdef min
-#undef min
-#endif
-
-#ifdef max
-#undef max
-#endif
