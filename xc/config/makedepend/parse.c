@@ -1,26 +1,5 @@
 /*
- * $Header: parse.c,v 1.1 87/09/11 08:13:35 xswick Locked $
- *
- * $Log:	parse.c,v $
- * Revision 1.1  87/09/11  08:13:35  toddb
- * Initial revision
- * 
- * Revision 1.1  87/04/08  16:40:53  rich
- * Initial revision
- * 
- * Revision 1.3  86/09/13  10:14:25  toddb
- * Previous fix could cause problems if the number of defines in a
- * file was an integral multiple of SYMTABINC: there would be no
- * s_name = NULL at the end.
- * 
- * Revision 1.2  86/09/04  12:45:35  toddb
- * The way that define() allocated new define slots, every tenth entry had
- * a null s_name and s_value.  The effect was that slookup() only checked
- * the first ten defines in any file.
- * 
- * Revision 1.1  86/04/15  08:34:40  toddb
- * Initial revision
- * 
+ * $Header: parse.c,v 1.2 88/08/03 08:55:57 xswick Exp $
  */
 #include "def.h"
 #include	<sys/signal.h>
@@ -92,6 +71,7 @@ find_includes(filep, file, file_red, recursion)
 			add_include(file, file_red, line, TRUE);
 			break;
 		case PRAGMA:
+		case EJECT:
 			break;
 		case -1:
 			log("%s, line %d: unknown directive == \"%s\"\n",
@@ -134,6 +114,7 @@ gobble(filep, file, file_red)
 		case INCLUDE:
 		case INCLUDEDOT:
 		case PRAGMA:
+		case EJECT:
 			break;
 		case -1:
 			log("%s, line %d: unknown directive == \"%s\"\n",
@@ -235,6 +216,7 @@ deftype(line, filep, file_red, file, parse_it)
 	case ELSE:
 	case ENDIF:
 	case PRAGMA:
+	case EJECT:
 		debug0("%s, line %d: #%s\n",
 			file->i_file, filep->f_line, directives[ret]);
 		/*

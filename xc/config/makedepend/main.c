@@ -1,56 +1,5 @@
 /*
- * $Header: main.c,v 1.13 88/08/03 08:56:32 xswick Exp $
- *
- * $Log:	main.c,v $
- * Revision 1.13  88/08/03  08:56:32  xswick
- * ignore X3J11 #pragma directive    
- * 
- * Revision 1.12  88/05/04  14:39:50  jim
- * fixed problem with makedepend misinterpretting cc flags
- * 
- * Revision 1.11  88/05/04  13:35:32  jim
- * fix from bug #120; added vax predefine
- * 
- * Revision 1.10  88/03/03  08:58:13  swick
- * less lint; remove unused variables
- * 
- * Revision 1.9  88/02/16  19:25:04  rws
- * more defines
- * 
- * Revision 1.8  87/12/22  12:24:38  rws
- * build in some defines used in various sources
- * 
- * Revision 1.7  87/12/16  16:55:04  rws
- * HP lossage
- * 
- * Revision 1.6  87/08/14  17:59:51  toddb
- * Added call to inc_clean() after traversing graph.
- * 
- * Revision 1.5  87/06/29  16:16:50  toddb
- * One too few bytes allocated.
- * 
- * Revision 1.4  87/06/29  16:13:18  toddb
- * Initial revision.
- * 
- * Revision 1.4  87/04/28  19:04:06  karlton
- * make sure makefile has contents before dereferencing
- * 
- * Revision 1.3  87/04/09  17:25:30  karlton
- * restore stat of Makefile
- * 
- * Revision 1.2  87/04/09  13:45:24  rich
- * added code to ignore unknown options.
- * 
- * Revision 1.1  87/04/08  16:40:48  rich
- * Initial revision
- * 
- * Revision 1.2  86/04/18  14:07:07  toddb
- * main() now initializes the delimiter message in the makefile if
- * one does not exist.
- * 
- * Revision 1.1  86/04/15  08:34:35  toddb
- * Initial revision
- * 
+ * $Header: main.c,v 1.14 88/08/18 22:18:36 jim Exp $
  */
 #include "def.h"
 #ifdef hpux
@@ -73,6 +22,7 @@ char	*directives[] = {
 	"include",
 	"line",
 	"pragma",
+	"eject",
 	NULL
 };
 

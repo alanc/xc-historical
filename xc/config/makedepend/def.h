@@ -1,24 +1,5 @@
 /*
- * $Header: def.h,v 1.2 87/08/20 12:13:09 xswick Locked $
- *
- * $Log:	def.h,v $
- * Revision 1.2  87/08/20  12:13:09  toddb
- * add define for u_char for the sake of USG.
- * 
- * Revision 1.1  87/04/08  16:40:37  rich
- * Initial revision
- * 
- * Revision 1.1  87/04/08  16:40:37  rich
- * Initial revision
- * 
- * Revision 1.2  86/04/18  14:05:40  toddb
- * Added a new field to struct inclist: "i_marked".  This is used
- * by recursive_pr() to tell if it is traversing a loop of include
- * files.
- * 
- * Revision 1.1  86/04/15  08:34:21  toddb
- * Initial revision
- * 
+ * $Header: def.h,v 1.3 88/08/03 08:55:12 xswick Exp $
  */
 #include <stdio.h>
 #include <ctype.h>
@@ -48,8 +29,9 @@
 #define	INCLUDE		7
 #define	LINE		8
 #define	PRAGMA		9
-#define	IFFALSE		10	/* pseudo value --- never matched */
-#define	INCLUDEDOT	11	/* pseudo value --- never matched */
+#define EJECT		10
+#define	IFFALSE		11	/* pseudo value --- never matched */
+#define	INCLUDEDOT	12	/* pseudo value --- never matched */
 
 #ifdef DEBUG
 extern int	debug;
