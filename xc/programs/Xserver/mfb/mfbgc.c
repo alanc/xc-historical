@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbgc.c,v 1.123 88/08/14 09:09:07 rws Exp $ */
+/* $XConsortium: mfbgc.c,v 1.124 88/09/06 14:53:16 jim Exp $ */
 #include "X.h"
 #include "Xmd.h"
 #include "Xproto.h"
@@ -85,7 +85,7 @@ mfbCreateGC(pGC)
     /* mfb wants to translate before scan convesion */
     pGC->miTranslate = 1;
 
-    pPriv = (mfbPrivGC *)Xalloc(sizeof(mfbPrivGC));
+    pPriv = (mfbPrivGC *)xalloc(sizeof(mfbPrivGC));
     if (!pPriv)
 	return FALSE;
     else
@@ -106,10 +106,10 @@ mfbCreateGC(pGC)
     }
     pGC->devBackingStore = (pointer)NULL;
 
-    pQ = (GCInterestPtr) Xalloc(sizeof(GCInterestRec));
+    pQ = (GCInterestPtr) xalloc(sizeof(GCInterestRec));
     if(!pQ)
     {
-	Xfree(pPriv);
+	xfree(pPriv);
 	return FALSE;
     }
      
