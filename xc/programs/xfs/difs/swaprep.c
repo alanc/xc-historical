@@ -1,4 +1,4 @@
-/* $XConsortium: swaprep.c,v 1.2 91/05/13 16:56:14 gildea Exp $ */
+/* $XConsortium: swaprep.c,v 1.3 91/07/16 20:23:39 keith Exp $ */
 /*
  * font server reply swapping
  */
@@ -343,7 +343,9 @@ SQueryXBitmaps8Reply(client, size, pRep)
 
     swaps(&pRep->sequenceNumber, n);
     swapl(&pRep->length, n);
+    swapl(&pRep->replies_hint, n);
     swapl(&pRep->num_chars, n);
+    swapl(&pRep->nbytes, n);
     (void) WriteToClient(client, size, (char *) pRep);
 }
 

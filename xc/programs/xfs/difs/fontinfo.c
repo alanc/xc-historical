@@ -1,4 +1,4 @@
-/* $XConsortium: fontinfo.c,v 1.5 91/07/16 20:23:21 keith Exp $ */
+/* $XConsortium: fontinfo.c,v 1.6 91/07/18 22:34:57 keith Exp $ */
 /*
  * font data query
  */
@@ -339,7 +339,9 @@ do_query_bitmaps(client, c)
     }
     reply.type = FS_Reply;
     reply.sequenceNumber = c->client->sequence;
+    reply.replies_hint = 0;
     reply.num_chars = num_glyphs;
+    reply.nbytes = data_size;
     reply.length = (sizeof(fsQueryXBitmaps8Reply) + data_size +
 		    (sizeof(fsOffset) * num_glyphs) + 3) >> 2;
 
