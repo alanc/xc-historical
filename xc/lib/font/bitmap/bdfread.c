@@ -22,7 +22,7 @@ SOFTWARE.
 
 ************************************************************************/
 
-/* $XConsortium: bdfread.c,v 1.6 91/07/17 20:43:21 rws Exp $ */
+/* $XConsortium: bdfread.c,v 1.8 91/07/22 22:58:44 keith Exp $ */
 
 #include <ctype.h>
 #include "fontfilest.h"
@@ -32,6 +32,7 @@ SOFTWARE.
 
 #define INDICES 256
 #define MAXENCODING 0xFFFF
+#define BDFLINELEN  1024
 
 extern int  bitmapGetGlyphs(), bitmapGetMetrics();
 extern int  bitmapGetBitmaps(), bitmapGetExtents();
@@ -62,7 +63,7 @@ bdfReadBitmap(pCI, file, bit, byte, glyph, scan, sizes)
     unsigned char *pInBits,
                *picture,
                *line = NULL;
-    char        lineBuf[BUFSIZ];
+    char        lineBuf[BDFLINELEN];
 
     widthBits = GLYPHWIDTHPIXELS(pCI);
     height = GLYPHHEIGHTPIXELS(pCI);
@@ -88,7 +89,7 @@ bdfReadBitmap(pCI, file, bit, byte, glyph, scan, sizes)
 /*		0 width characters? */
 
     for (row = 0; row < height; row++) {
-	line = bdfGetLine(file, lineBuf, BUFSIZ);
+	line = bdfGetLine(file, lineBuf, BDFLINELEN);
 	if (!line)
 	    break;
 
@@ -136,7 +137,7 @@ bdfReadBitmap(pCI, file, bit, byte, glyph, scan, sizes)
     }
 
     if ((line && (!bdfIsPrefix(line, "ENDCHAR"))) || (height == 0))
-	line = bdfGetLine(file, lineBuf, BUFSIZ);
+	line = bdfGetLine(file, lineBuf, BDFLINELEN);
 
     if ((!line) || (!bdfIsPrefix(line, "ENDCHAR"))) {
 	bdfError("missing 'ENDCHAR'\n");
@@ -174,10 +175,10 @@ bdfSkipBitmap(file, height)
 {
     unsigned char *line;
     int         i = 0;
-    char        lineBuf[BUFSIZ];
+    char        lineBuf[BDFLINELEN];
 
     do {
-	line = bdfGetLine(file, lineBuf, BUFSIZ);
+	line = bdfGetLine(file, lineBuf, BDFLINELEN);
 	i++;
     } while (line && !bdfIsPrefix(line, "ENDCHAR") && i <= height);
 
@@ -214,7 +215,7 @@ bdfReadCharacters(file, pFont, pState, bit, byte, glyph, scan)
     BitmapFontPtr  bitmapFont;
     BitmapExtraPtr bitmapExtra;
     CARD32     *bitmapsSizes;
-    char        lineBuf[BUFSIZ];
+    char        lineBuf[BDFLINELEN];
     int         nencoding;
 
     bitmapFont = (BitmapFontPtr) pFont->fontPrivate;
@@ -233,7 +234,7 @@ bdfReadCharacters(file, pFont, pState, bit, byte, glyph, scan)
     bitmapFont->metrics = NULL;
     ndx = 0;
 
-    line = bdfGetLine(file, lineBuf, BUFSIZ);
+    line = bdfGetLine(file, lineBuf, BDFLINELEN);
 
     if ((!line) || (sscanf((char *) line, "CHARS %d", &nchars) != 1)) {
 	bdfError("bad 'CHARS' in bdf file\n");
@@ -267,7 +268,7 @@ bdfReadCharacters(file, pFont, pState, bit, byte, glyph, scan)
 	    return FALSE;
 	}
     }
-    line = bdfGetLine(file, lineBuf, BUFSIZ);
+    line = bdfGetLine(file, lineBuf, BDFLINELEN);
     pFont->info.firstRow = 256;
     pFont->info.lastRow = 0;
     pFont->info.firstCol = 256;
@@ -294,7 +295,7 @@ bdfReadCharacters(file, pFont, pState, bit, byte, glyph, scan)
 	if (bitmapExtra)
 	    bitmapExtra->glyphNames[ndx] = bdfForceMakeAtom(charName, NULL);
 
-	line = bdfGetLine(file, lineBuf, BUFSIZ);
+	line = bdfGetLine(file, lineBuf, BDFLINELEN);
 	if (!line || (t = sscanf((char *) line, "ENCODING %d %d", &enc, &enc2)) < 1) {
 	    bdfError("bad 'ENCODING' in BDF file\n");
 	    goto BAILOUT;
@@ -342,7 +343,7 @@ bdfReadCharacters(file, pFont, pState, bit, byte, glyph, scan)
 	    }
 	}
 
-	line = bdfGetLine(file, lineBuf, BUFSIZ);
+	line = bdfGetLine(file, lineBuf, BDFLINELEN);
 	if ((!line) || (sscanf((char *) line, "SWIDTH %d %d", &wx, &wy) != 2)) {
 	    bdfError("bad 'SWIDTH'\n");
 	    goto BAILOUT;
@@ -357,7 +358,7 @@ bdfReadCharacters(file, pFont, pState, bit, byte, glyph, scan)
 /* 5/31/89 (ef) -- we should be able to ditch the character and recover */
 /*		from all of these.					*/
 
-	line = bdfGetLine(file, lineBuf, BUFSIZ);
+	line = bdfGetLine(file, lineBuf, BDFLINELEN);
 	if ((!line) || (sscanf((char *) line, "DWIDTH %d %d", &wx, &wy) != 2)) {
 	    bdfError("bad 'DWIDTH'\n");
 	    goto BAILOUT;
@@ -366,7 +367,7 @@ bdfReadCharacters(file, pFont, pState, bit, byte, glyph, scan)
 	    bdfError("DWIDTH y value must be zero\n");
 	    goto BAILOUT;
 	}
-	line = bdfGetLine(file, lineBuf, BUFSIZ);
+	line = bdfGetLine(file, lineBuf, BDFLINELEN);
 	if ((!line) || (sscanf((char *) line, "BBX %d %d %d %d", &bw, &bh, &bl, &bb) != 4)) {
 	    bdfError("bad 'BBX'\n");
 	    goto BAILOUT;
@@ -376,14 +377,14 @@ bdfReadCharacters(file, pFont, pState, bit, byte, glyph, scan)
 		     charName, bw, bh);
 	    goto BAILOUT;
 	}
-	line = bdfGetLine(file, lineBuf, BUFSIZ);
+	line = bdfGetLine(file, lineBuf, BDFLINELEN);
 	if ((line) && (bdfIsPrefix(line, "ATTRIBUTES"))) {
 	    for (p = line + strlen("ATTRIBUTES ");
 		    (*p == ' ') || (*p == '\t');
 		    p++)
 		 /* empty for loop */ ;
 	    ci->metrics.attributes = bdfHexByte(p) << 8 + bdfHexByte(p + 2);
-	    line = bdfGetLine(file, lineBuf, BUFSIZ);
+	    line = bdfGetLine(file, lineBuf, BDFLINELEN);
 	} else
 	    ci->metrics.attributes = 0;
 
@@ -413,7 +414,7 @@ bdfReadCharacters(file, pFont, pState, bit, byte, glyph, scan)
 	} else
 	    bdfSkipBitmap(file, bh);
 
-	line = bdfGetLine(file, lineBuf, BUFSIZ);	/* get STARTCHAR or
+	line = bdfGetLine(file, lineBuf, BDFLINELEN);	/* get STARTCHAR or
 							 * ENDFONT */
     }
 
@@ -492,22 +493,22 @@ bdfReadHeader(file, pState)
     bdfFileState *pState;
 {
     unsigned char *line;
-    char        namebuf[BUFSIZ];
+    char        namebuf[BDFLINELEN];
     int         tmp;
-    char        lineBuf[BUFSIZ];
+    char        lineBuf[BDFLINELEN];
 
-    line = bdfGetLine(file, lineBuf, BUFSIZ);
+    line = bdfGetLine(file, lineBuf, BDFLINELEN);
     if (!line || sscanf((char *) line, "STARTFONT %s", namebuf) != 1 ||
 	    !bdfStrEqual(namebuf, "2.1")) {
 	bdfError("bad 'STARTFONT'\n");
 	return (FALSE);
     }
-    line = bdfGetLine(file, lineBuf, BUFSIZ);
+    line = bdfGetLine(file, lineBuf, BDFLINELEN);
     if (!line || sscanf((char *) line, "FONT %[^\n]", pState->fontName) != 1) {
 	bdfError("bad 'FONT'\n");
 	return (FALSE);
     }
-    line = bdfGetLine(file, lineBuf, BUFSIZ);
+    line = bdfGetLine(file, lineBuf, BDFLINELEN);
     if (!line || !bdfIsPrefix(line, "SIZE")) {
 	bdfError("missing 'SIZE'\n");
 	return (FALSE);
@@ -522,7 +523,7 @@ bdfReadHeader(file, pState)
 	bdfError("SIZE values must be > 0\n");
 	return (FALSE);
     }
-    line = bdfGetLine(file, lineBuf, BUFSIZ);
+    line = bdfGetLine(file, lineBuf, BDFLINELEN);
     if (!line || !bdfIsPrefix(line, "FONTBOUNDINGBOX")) {
 	bdfError("missing 'FONTBOUNDINGBOX'\n");
 	return (FALSE);
@@ -542,14 +543,14 @@ bdfReadProperties(file, pFont, pState)
                 nextProp;
     char       *stringProps;
     FontPropPtr props;
-    char        namebuf[BUFSIZ],
-                secondbuf[BUFSIZ],
-                thirdbuf[BUFSIZ];
+    char        namebuf[BDFLINELEN],
+                secondbuf[BDFLINELEN],
+                thirdbuf[BDFLINELEN];
     unsigned char *line;
-    char        lineBuf[BUFSIZ];
+    char        lineBuf[BDFLINELEN];
     BitmapFontPtr  bitmapFont = (BitmapFontPtr) pFont->fontPrivate;
 
-    line = bdfGetLine(file, lineBuf, BUFSIZ);
+    line = bdfGetLine(file, lineBuf, BDFLINELEN);
     if (!line || !bdfIsPrefix(line, "STARTPROPERTIES")) {
 	bdfError(file, "missing 'STARTPROPERTIES'\n");
 	return (FALSE);
@@ -577,7 +578,7 @@ bdfReadProperties(file, pFont, pState)
     }
     nextProp = 0;
     while (nProps-- > 0) {
-	line = bdfGetLine(file, lineBuf, BUFSIZ);
+	line = bdfGetLine(file, lineBuf, BDFLINELEN);
 	if (line == NULL || bdfIsPrefix(line, "ENDPROPERTIES")) {
 	    bdfError("%d too few properites\n", nProps + 1);
 	    goto BAILOUT;
@@ -635,7 +636,7 @@ bdfReadProperties(file, pFont, pState)
 	    nextProp++;
     }
 
-    line = bdfGetLine(file, lineBuf, BUFSIZ);
+    line = bdfGetLine(file, lineBuf, BDFLINELEN);
     if (!bdfIsPrefix(line, "ENDPROPERTIES")) {
 	bdfError("missing 'ENDPROPERTIES'\n");
 	goto BAILOUT;
@@ -717,7 +718,7 @@ BAILOUT:
 	pFont->info.props = NULL;
     }
     while (line && bdfIsPrefix(line, "ENDPROPERTIES"))
-	line = bdfGetLine(file, lineBuf, BUFSIZ);
+	line = bdfGetLine(file, lineBuf, BDFLINELEN);
     return (FALSE);
 }
 

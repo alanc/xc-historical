@@ -1,5 +1,5 @@
 /*
- * $XConsortium: bitmapfuncs.c,v 1.2 91/05/29 15:26:49 keith Exp $
+ * $XConsortium: bitmapfuncs.c,v 1.3 91/06/12 14:35:17 keith Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -44,7 +44,10 @@ extern int  BitmapGetInfoScalable ();
  */
 static BitmapFileFunctionsRec readers[] = {
     pcfReadFont, pcfReadFontInfo,
+    pcfReadFont, pcfReadFontInfo,
     snfReadFont, snfReadFontInfo,
+    snfReadFont, snfReadFontInfo,
+    bdfReadFont, bdfReadFontInfo,
     bdfReadFont, bdfReadFontInfo,
 };
 
@@ -52,10 +55,19 @@ static FontRendererRec	renderers[] = {
     ".pcf", 4,
     BitmapOpenBitmap, BitmapOpenScalable,
 	BitmapGetInfoBitmap, BitmapGetInfoScalable, 0,
+    ".pcf.Z", 6,
+    BitmapOpenBitmap, BitmapOpenScalable,
+	BitmapGetInfoBitmap, BitmapGetInfoScalable, 0,
     ".snf", 4,
     BitmapOpenBitmap, BitmapOpenScalable,
 	BitmapGetInfoBitmap, BitmapGetInfoScalable, 0,
+    ".snf.Z", 6,
+    BitmapOpenBitmap, BitmapOpenScalable,
+	BitmapGetInfoBitmap, BitmapGetInfoScalable, 0,
     ".bdf", 4,
+    BitmapOpenBitmap, BitmapOpenScalable,
+	BitmapGetInfoBitmap, BitmapGetInfoScalable, 0,
+    ".bdf.Z", 6,
     BitmapOpenBitmap, BitmapOpenScalable,
 	BitmapGetInfoBitmap, BitmapGetInfoScalable, 0,
 };
@@ -69,7 +81,7 @@ BitmapOpenBitmap (fpe, ppFont, flags, entry, fileName, format, fmask)
     fsBitmapFormat	format;
     fsBitmapFormatMask	fmask;
 {
-    FILE       *file;
+    FontFilePtr	file;
     FontPtr     pFont;
     int         i;
     int         ret;
@@ -84,12 +96,12 @@ BitmapOpenBitmap (fpe, ppFont, flags, entry, fileName, format, fmask)
      * useful in the file functions array
      */
     i = entry->u.bitmap.renderer - renderers;
-    file = fopen(fileName, "r");
+    file = FontFileOpen (fileName);
     if (!file)
 	return BadFontName;
     pFont = (FontPtr) xalloc(sizeof(FontRec));
     if (!pFont) {
-	fclose(file);
+	FontFileClose (file);
 	return AllocError;
     }
     /* set up default values */
@@ -104,7 +116,7 @@ BitmapOpenBitmap (fpe, ppFont, flags, entry, fileName, format, fmask)
 
     ret = (*readers[i].ReadFont) (pFont, file, bit, byte, glyph, scan);
 
-    fclose(file);
+    FontFileClose (file);
     if (ret != Successful)
 	xfree(pFont);
     else
@@ -118,20 +130,20 @@ BitmapGetInfoBitmap (fpe, pFontInfo, entry, fileName)
     FontEntryPtr	entry;
     char		*fileName;
 {
-    FILE    *file;
-    int	    i;
-    int	    ret;
+    FontFilePtr file;
+    int		i;
+    int		ret;
     FontRendererPtr renderer;
 
     renderer = FontFileMatchRenderer (fileName);
     if (!renderer)
 	return BadFontName;
     i = renderer - renderers;
-    file = fopen (fileName, "r");
+    file = FontFileOpen (fileName);
     if (!file)
 	return BadFontName;
     ret = (*readers[i].ReadInfo) (pFontInfo, file);
-    fclose (file);
+    FontFileClose (file);
     return ret;
 }
 
