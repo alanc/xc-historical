@@ -22,7 +22,7 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: resource.c,v 1.69 89/01/16 13:48:16 rws Exp $ */
+/* $XConsortium: resource.c,v 1.70 89/02/02 14:49:29 rws Exp $ */
 
 /*	Routines to manage various kinds of resources:
  *
@@ -57,6 +57,7 @@ SOFTWARE.
 
 extern void HandleSaveSet();
 extern void FlushClientCaches();
+static void RebuildTable();
 
 #define CACHEDTYPES (RT_WINDOW | RT_PIXMAP | RT_GC)
 #define INITBUCKETS 64
@@ -79,6 +80,7 @@ typedef struct _ClientResource {
     int		buckets;
     int		hashsize;	/* log(2)(buckets) */
     XID		fakeID;
+    XID		expectID;
 } ClientResourceRec;
 
 static unsigned short lastResourceType;
@@ -107,6 +109,7 @@ ClientResourceRec clientTable[MAXCLIENTS];
  *    in resource table
  *****************/
 
+Bool
 InitClientResources(client)
     ClientPtr client;
 {
@@ -119,14 +122,18 @@ InitClientResources(client)
     }
     clientTable[i = client->index].resources =
 	(ResourcePtr *)xalloc(INITBUCKETS*sizeof(ResourcePtr));
+    if (!clientTable[i].resources)
+	return FALSE;
     clientTable[i].buckets = INITBUCKETS;
     clientTable[i].elements = 0;
     clientTable[i].hashsize = INITHASHSIZE;
     clientTable[i].fakeID = 100;
+    clientTable[i].expectID = client->clientAsMask;
     for (j=0; j<INITBUCKETS; j++) 
     {
         clientTable[i].resources[j] = NullResource;
     }
+    return TRUE;
 }
 
 static int
@@ -162,7 +169,7 @@ FakeClientID(client)
 	    ((clientTable[client].fakeID++) & RESOURCE_ID_MASK));
 }
 
-void
+Bool
 AddResource(id, type, value, func, class)
     XID id;
     unsigned short type, class;
@@ -170,11 +177,12 @@ AddResource(id, type, value, func, class)
     int (* func)();
 {
     int client;
-    register int j;
-    register ResourcePtr res, next, *head;
+    register ClientResourceRec *rrec;
+    register ResourcePtr res, *head;
     	
     client = CLIENT_ID(id);
-    if (!clientTable[client].buckets)
+    rrec = &clientTable[client];
+    if (!rrec->buckets)
     {
 	ErrorF("AddResource(%x, %d, %x, %d), client=%d \n",
 		id, type, value, class, client);
@@ -186,46 +194,16 @@ AddResource(id, type, value, func, class)
 		id, type, value, class, client);
         FatalError("No delete function given to AddResource \n");
     }
-    if ((clientTable[client].elements >= 4*clientTable[client].buckets) &&
-	(clientTable[client].hashsize < MAXHASHSIZE))
-    {
-	/*
-	 * For now, preserve insertion order, since some ddx layers depend
-	 * on resources being free in the opposite order they are added.
-	 */
-	ResourcePtr **tails, *resources;
-	register ResourcePtr **tptr, *rptr;
-
-	j = 2 * clientTable[client].buckets;
-	tails = (ResourcePtr **)ALLOCATE_LOCAL(j * sizeof(ResourcePtr *));
-	resources = (ResourcePtr *)xalloc(j * sizeof(ResourcePtr));
-	for (rptr = resources, tptr = tails; --j >= 0; rptr++, tptr++)
-	{
-	    *rptr = NullResource;
-	    *tptr = rptr;
-	}
-	clientTable[client].hashsize++;
-	for (j = clientTable[client].buckets,
-	     rptr = clientTable[client].resources;
-	     --j >= 0;
-	     rptr++)
-	{
-	    for (res = *rptr; res; res = next)
-	    {
-		next = res->next;
-		res->next = NullResource;
-		tptr = &tails[Hash(client, res->id)];
-		**tptr = res;
-		*tptr = &res->next;
-	    }
-	}
-	DEALLOCATE_LOCAL(tails);
-	clientTable[client].buckets *= 2;
-	xfree(clientTable[client].resources);
-	clientTable[client].resources = resources;
-    }
-    head = &clientTable[client].resources[Hash(client, id)];
+    if ((rrec->elements >= 4*rrec->buckets) &&
+	(rrec->hashsize < MAXHASHSIZE))
+	RebuildTable(client);
+    head = &rrec->resources[Hash(client, id)];
     res = (ResourcePtr)xalloc(sizeof(ResourceRec));
+    if (!res)
+    {
+	(*func)(value, id);
+	return FALSE;
+    }
     res->next = *head;
     res->id = id;
     res->DeleteFunc = func;
@@ -233,7 +211,60 @@ AddResource(id, type, value, func, class)
     res->class = class;
     res->value = value;
     *head = res;
-    clientTable[client].elements++;
+    rrec->elements++;
+    if (!(id & SERVER_BIT) && (id >= rrec->expectID))
+	rrec->expectID = id + 1;
+    return TRUE;
+}
+
+static void
+RebuildTable(client)
+    int client;
+{
+    register int j;
+    register ResourcePtr res, next;
+    ResourcePtr **tails, *resources;
+    register ResourcePtr **tptr, *rptr;
+
+    /*
+     * For now, preserve insertion order, since some ddx layers depend
+     * on resources being free in the opposite order they are added.
+     */
+
+    j = 2 * clientTable[client].buckets;
+    tails = (ResourcePtr **)ALLOCATE_LOCAL(j * sizeof(ResourcePtr *));
+    if (!tails)
+	return;
+    resources = (ResourcePtr *)xalloc(j * sizeof(ResourcePtr));
+    if (!resources)
+    {
+	DEALLOCATE_LOCAL(tails);
+	return;
+    }
+    for (rptr = resources, tptr = tails; --j >= 0; rptr++, tptr++)
+    {
+	*rptr = NullResource;
+	*tptr = rptr;
+    }
+    clientTable[client].hashsize++;
+    for (j = clientTable[client].buckets,
+	 rptr = clientTable[client].resources;
+	 --j >= 0;
+	 rptr++)
+    {
+	for (res = *rptr; res; res = next)
+	{
+	    next = res->next;
+	    res->next = NullResource;
+	    tptr = &tails[Hash(client, res->id)];
+	    **tptr = res;
+	    *tptr = &res->next;
+	}
+    }
+    DEALLOCATE_LOCAL(tails);
+    clientTable[client].buckets *= 2;
+    xfree(clientTable[client].resources);
+    clientTable[client].resources = resources;
 }
 
 void
@@ -337,6 +368,16 @@ FreeAllResources()
         if (clientTable[i].buckets) 
 	    FreeClientResources(clients[i]);
     }
+}
+
+Bool
+LegalNewID(id, client)
+    XID id;
+    register ClientPtr client;
+{
+    return ((client->clientAsMask == CLIENT_BITS(id)) && !(id & SERVER_BIT) &&
+	    ((clientTable[client->index].expectID == id) ||
+	     !LookupID(id, RT_ANY, RC_CORE)));
 }
 
 /*
