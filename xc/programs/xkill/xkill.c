@@ -1,7 +1,7 @@
 /*
  * xkill - simple program for destroying unwanted clients
  *
- * $XConsortium: xkill.c,v 1.5 88/09/06 14:37:16 jim Exp $
+ * $XConsortium: xkill.c,v 1.6 88/10/10 15:51:01 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -313,16 +313,16 @@ int kill_all_windows (dpy, screenno)
     int nchildren;
     int i;
 
-    if (!XQueryTree (dpy, root, &dummywindow, &dummywindow,
-		     &children, &nchildren)) {
-	return -1;
-    }
-
     XSync (dpy, 0);
     XSetErrorHandler (catch_window_errors);
 
-    for (i = 0; i < nchildren; i++) {
-	XKillClient (dpy, children[i]);
+    nchildren = 0;
+    while (XQueryTree (dpy, root, &dummywindow, &dummywindow,
+		       &children, &nchildren) && nchildren > 0) {
+	for (i = 0; i < nchildren; i++) {
+	    XKillClient (dpy, children[i]);
+	}
+	XFree (children);
     }
 
     XSync (dpy, 0);
