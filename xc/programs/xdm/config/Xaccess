@@ -18,7 +18,7 @@
 
 *					#any host can get a login window
 
-%hostlist	host1 host2 host3
+%hostlist	expo export
 
 *		CHOOSER %hostlist	#forward Indirect queries to hostlist
 
