@@ -1,13 +1,13 @@
-/* $XConsortium: imake.c,v 1.68 92/06/05 17:13:13 rws Exp $ */
+/* $XConsortium: imake.c,v 1.69 92/06/05 18:18:58 rws Exp $ */
 
-/*****************************************************************************\
+/*****************************************************************************
  *                                                                           *
  *                                Porting Note                               *
  *                                                                           *
  * Add the value of BOOTSTRAPCFLAGS to the cpp_argv table so that it will be *
  * passed to the template file.                                              *
  *                                                                           *
-\*****************************************************************************/
+ *****************************************************************************/
 
 /*
  * 
@@ -32,16 +32,18 @@
  *
  * imake: the include-make program.
  *
- * Usage: imake [-Idir] [-Ddefine] [-T] [-f imakefile ] [-s] [-e] [-v] [make flags]
+ * Usage: imake [-Idir] [-Ddefine] [-T template] [-f imakefile ] [-C Imakefile.c ] [-s] [-e] [-v] [make flags]
  *
- * Imake takes a template makefile (Imake.tmpl) and runs cpp on it
- * producing a temporary makefile in /tmp.  It then runs make on
- * this pre-processed makefile.
+ * Imake takes a template file (Imake.tmpl) and a prototype (Imakefile)
+ * and runs cpp on them producing a Makefile.  It then optionally runs make
+ * on the Makefile.
  * Options:
  *		-D	define.  Same as cpp -D argument.
  *		-I	Include directory.  Same as cpp -I argument.
  *		-T	template.  Designate a template other
- * 			than Imake.tmpl
+ *			than Imake.tmpl
+ *		-f	specify the Imakefile file
+ *		-C	specify the name to use instead of Imakefile.c
  *		-s[F]	show.  Show the produced makefile on the standard
  *			output.  Make is not run is this case.  If a file
  *			argument is provided, the output is placed there.
@@ -51,7 +53,7 @@
  * Environment variables:
  *		
  *		IMAKEINCLUDE	Include directory to use in addition to "."
- *		IMAKECPP	Cpp to use instead of /lib/cpp
+ *		IMAKECPP	Cpp to use instead of cc -E
  *		IMAKEMAKE	make program to use other than what is
  *				found by searching the $PATH variable.
  * Other features:
@@ -60,6 +62,8 @@
  *	a newline.  It also trims any trailing white space on output lines
  *	(because make gets upset at them).  This helps when cpp expands
  *	multi-line macros but you want them to appear on multiple lines.
+ *	It also changes occurences of "XCOMM" to "#", to avoid problems
+ *	with treating commands as invalid preprocessor commands.
  *
  *	The macros MAKEFILE and MAKE are provided as macros
  *	to make.  MAKEFILE is set to imake's makefile (not the constructed,
@@ -73,19 +77,23 @@
  *	make as MAKEFILE=<imakefile>.
  *   2. Determine the name of the template from the command line (-T)
  *	or the default, Imake.tmpl.  Call this <template>
- *   3. Start up cpp an provide it with three lines of input:
+ *   3. Determine the name of the imakeCfile from the command line (-C)
+ *	or the default, Imakefile.c.  Call this <imakeCfile>
+ *   3. Store three lines of input into <imakeCfile>:
  *		#define IMAKE_TEMPLATE		" <template> "
  *		#define INCLUDE_IMAKEFILE	< <imakefile> >
  *		#include IMAKE_TEMPLATE
+ *	Start up cpp and provide it with this file.
  *	Note that the define for INCLUDE_IMAKEFILE is intended for
  *	use in the template file.  This implies that the imake is
  *	useless unless the template file contains at least the line
  *		#include INCLUDE_IMAKEFILE
  *   4. Gather the output from cpp, and clean it up, expanding @@ to
  *	newlines, stripping trailing white space, cpp control lines,
- *	and extra blank lines.  This cleaned output is placed in a
- *	temporary file.  Call this <makefile>.
- *   5. Start up make specifying <makefile> as its input.
+ *	and extra blank lines, and changing XCOMM to #.  This cleaned
+ *	output is placed in a new file, default "Makefile", but can
+ *	be specified with -s or -e options.
+ *   5. Optionally start up make on the resulting file.
  *
  * The design of the template makefile should therefore be:
  *	<set global macros like CFLAGS, etc.>
@@ -182,10 +190,12 @@ int	InRule = FALSE;
 
 typedef	unsigned char	boolean;
 
-#ifndef DEFAULT_CPP
 #ifdef USE_CC_E
-#define DEFAULT_CPP "/bin/cc"
+#ifndef DEFAULT_CC
+#define DEFAULT_CC "cc"
+#endif
 #else
+#ifndef DEFAULT_CPP
 #ifdef CPP_PROGRAM
 #define DEFAULT_CPP CPP_PROGRAM
 #else
@@ -194,10 +204,9 @@ typedef	unsigned char	boolean;
 #endif
 #endif
 
-char *cpp = DEFAULT_CPP;
+char *cpp = NULL;
 
 char	*tmpMakefile    = "/tmp/Imf.XXXXXX";
-char	*tmpImakefile    = "/tmp/IIf.XXXXXX";
 char	*make_argv[ ARGUMENTS ] = { "make" };
 
 int	make_argindex;
@@ -206,10 +215,10 @@ char	*make = NULL;
 char	*Imakefile = NULL;
 char	*Makefile = "Makefile";
 char	*Template = "Imake.tmpl";
+char	*ImakefileC = "Imakefile.c";
 char	*program;
 char	*FindImakefile();
 char	*ReadLine();
-char	*CleanCppInput();
 char	*Strdup();
 char	*Emalloc();
 
@@ -227,11 +236,9 @@ main(argc, argv)
 	program = argv[0];
 	init();
 	SetOpts(argc, argv);
-#ifdef USE_CC_E
-	AddCppArg("-");
-#endif
 
 	Imakefile = FindImakefile(Imakefile);
+	CheckImakefileC(ImakefileC);
 	if (Makefile)
 		tmpMakefile = Makefile;
 	else {
@@ -248,7 +255,7 @@ main(argc, argv)
 	if ((tmpfd = fopen(tmpMakefile, "w+")) == NULL)
 		LogFatal("Cannot create temporary file %s.", tmpMakefile);
 
-	cppit(Imakefile, Template, tmpfd, tmpMakefile);
+	cppit(Imakefile, Template, ImakefileC, tmpfd, tmpMakefile);
 
 	if (show) {
 		if (Makefile == NULL)
@@ -276,7 +283,6 @@ wrapup()
 {
 	if (tmpMakefile != Makefile)
 		unlink(tmpMakefile);
-	unlink(tmpImakefile);
 }
 
 #ifdef SIGNALRETURNSINT
@@ -296,7 +302,7 @@ catch(sig)
  */
 init()
 {
-	char	*p;
+	register char	*p;
 
 	make_argindex=0;
 	while (make_argv[ make_argindex ] != NULL)
@@ -400,6 +406,15 @@ SetOpts(argc, argv)
 			    LogFatal("No description arg after -T flag\n", "");
 			Template = argv[0];
 		    }
+		} else if (argv[0][1] == 'C') {
+		    if (argv[0][2])
+			ImakefileC = argv[0]+2;
+		    else {
+			argc--, argv++;
+			if (! argc)
+			    LogFatal("No imakeCfile arg after -C flag\n", "");
+			ImakefileC = argv[0];
+		    }
 		} else if (argv[0][1] == 'v') {
 		    verbose = TRUE;
 		} else
@@ -407,26 +422,35 @@ SetOpts(argc, argv)
 	    } else
 		AddMakeArg(argv[0]);
 	}
+#ifdef USE_CC_E
+	if (!cpp)
+	{
+		AddCppArg("-E");
+		cpp = DEFAULT_CC;
+	}
+#else
+	if (!cpp)
+		cpp = DEFAULT_CPP;
+#endif
+	cpp_argv[0] = cpp;
+	AddCppArg(ImakefileC);
 }
 
 char *FindImakefile(Imakefile)
 	char	*Imakefile;
 {
-	int	fd;
-
 	if (Imakefile) {
-		if ((fd = open(Imakefile, O_RDONLY)) < 0)
-			LogFatal("Cannot open %s.", Imakefile);
+		if (access(Imakefile, R_OK) < 0)
+			LogFatal("Cannot find %s.", Imakefile);
 	} else {
-		if ((fd = open("Imakefile", O_RDONLY)) < 0)
-			if ((fd = open("imakefile", O_RDONLY)) < 0)
+		if (access("Imakefile", R_OK) < 0)
+			if (access("imakefile", R_OK) < 0)
 				LogFatal("No description file.", "");
 			else
 				Imakefile = "imakefile";
 		else
 			Imakefile = "Imakefile";
 	}
-	close (fd);
 	return(Imakefile);
 }
 
@@ -465,23 +489,53 @@ showargs(argv)
 	fprintf(stderr, "\n");
 }
 
-cppit(Imakefile, template, outfd, outfname)
+#define TmplDef "#define IMAKE_TEMPLATE"
+#define ImakeDef "#define INCLUDE_IMAKEFILE"
+#define TmplInc "#include IMAKE_TEMPLATE"
+
+CheckImakefileC(masterc)
+	char *masterc;
+{
+	char mkcbuf[1024];
+	FILE *inFile;
+
+	if (access(masterc, F_OK) == 0) {
+		inFile = fopen(masterc, "r");
+		if (inFile == NULL)
+			LogFatalI("Refuse to overwrite: %s", masterc);
+		if ((fgets(mkcbuf, sizeof(mkcbuf), inFile) &&
+		     strncmp(mkcbuf, TmplDef, sizeof(TmplDef)-1)) ||
+		    (fgets(mkcbuf, sizeof(mkcbuf), inFile) &&
+		     strncmp(mkcbuf, ImakeDef, sizeof(ImakeDef)-1)) ||
+		    (fgets(mkcbuf, sizeof(mkcbuf), inFile) &&
+		     strncmp(mkcbuf, TmplInc, sizeof(TmplInc)-1)) ||
+		    fgets(mkcbuf, sizeof(mkcbuf), inFile))
+		{
+			fclose(inFile);
+			LogFatalI("Refuse to overwrite: %s", masterc);
+		}
+		fclose(inFile);
+	}
+}
+
+cppit(Imakefile, template, masterc, outfd, outfname)
 	char	*Imakefile;
 	char	*template;
+	char	*masterc;
 	FILE	*outfd;
 	char	*outfname;
 {
-	FILE	*pipeFile;
-	int	pid, pipefd[2];
+	FILE	*inFile;
+	int	pid;
 	waitType	status;
-	char	*cleanedImakefile;
 
-	/*
-	 * Get a pipe.
-	 */
-	if (pipe(pipefd) < 0)
-		LogFatal("Cannot make a pipe.", "");
-
+	inFile = fopen(masterc, "w");
+	if (inFile == NULL)
+		LogFatalI("Cannot open %s for output.", masterc);
+	fprintf(inFile, "%s \"%s\"\n", TmplDef, template);
+	fprintf(inFile, "%s <%s>\n", ImakeDef, Imakefile);
+	fprintf(inFile, "%s\n", TmplInc);
+	fclose(inFile);
 	/*
 	 * Fork and exec cpp
 	 */
@@ -489,31 +543,26 @@ cppit(Imakefile, template, outfd, outfname)
 	if (pid < 0)
 		LogFatal("Cannot fork.", "");
 	if (pid) {	/* parent */
-		close(pipefd[0]);
-		cleanedImakefile = CleanCppInput(Imakefile);
-		if ((pipeFile = fdopen(pipefd[1], "w")) == NULL)
-			LogFatalI("Cannot fdopen fd %d for output.", pipefd[1]);
-		fprintf(pipeFile, "#define IMAKE_TEMPLATE\t\"%s\"\n",
-			template);
-		fprintf(pipeFile, "#define INCLUDE_IMAKEFILE\t<%s>\n",
-			cleanedImakefile);
-		fprintf(pipeFile, "#include IMAKE_TEMPLATE\n");
-		fclose(pipeFile);
 		while (wait(&status) > 0) {
 			errno = 0;
 			if (WIFSIGNALED(status))
+			{
+				unlink(masterc);
 				LogFatalI("Signal %d.", waitSig(status));
+			}
 			if (WIFEXITED(status) && waitCode(status))
+			{
+				unlink(masterc);
 				LogFatalI("Exit code %d.", waitCode(status));
+			}
 		}
+		unlink(masterc);
 		CleanCppOutput(outfd, outfname);
 	} else {	/* child... dup and exec cpp */
 		if (verbose)
 			showargs(cpp_argv);
-		dup2(pipefd[0], 0);
 		dup2(fileno(outfd), 1);
-		close(pipefd[1]);
-		execv(cpp, cpp_argv);
+		execvp(cpp, cpp_argv);
 		LogFatal("Cannot exec %s.", cpp);
 	}
 }
@@ -540,84 +589,9 @@ makeit()
 	} else {	/* child... dup and exec cpp */
 		if (verbose)
 			showargs(make_argv);
-		if (make)
-			execv(make, make_argv);
-		else
-			execvp("make", make_argv);
+		execvp(make, make_argv);
 		LogFatal("Cannot exec %s.", make);
 	}
-}
-
-char *CleanCppInput(Imakefile)
-	char	*Imakefile;
-{
-	FILE	*outFile = NULL;
-	int	infd;
-	char	*buf,		/* buffer for file content */
-		*pbuf,		/* walking pointer to buf */
-		*punwritten,	/* pointer to unwritten portion of buf */
-		*cleanedImakefile = Imakefile,	/* return value */
-		*ptoken,	/* pointer to # token */
-		*pend,		/* pointer to end of # token */
-		savec;		/* temporary character holder */
-	struct stat	st;
-
-	/*
-	 * grab the entire file.
-	 */
-	if ((infd = open(Imakefile, O_RDONLY)) < 0)
-		LogFatal("Cannot open %s for input.", Imakefile);
-	fstat(infd, &st);
-	buf = Emalloc(st.st_size+1);
-	if (read(infd, buf, st.st_size) != st.st_size)
-		LogFatal("Cannot read all of %s:", Imakefile);
-	close(infd);
-	buf[ st.st_size ] = '\0';
-
-	punwritten = pbuf = buf;
-	while (*pbuf) {
-	    /* pad make comments for cpp */
-	    if (*pbuf == '#' && (pbuf == buf || pbuf[-1] == '\n')) {
-
-		ptoken = pbuf+1;
-		while (*ptoken == ' ' || *ptoken == '\t')
-			ptoken++;
-		pend = ptoken;
-		while (*pend && *pend != ' ' && *pend != '\t' && *pend != '\n')
-			pend++;
-		savec = *pend;
-		*pend = '\0';
-		if (strcmp(ptoken, "include")
-		 && strcmp(ptoken, "define")
-		 && strcmp(ptoken, "undef")
-		 && strcmp(ptoken, "ifdef")
-		 && strcmp(ptoken, "ifndef")
-		 && strcmp(ptoken, "else")
-		 && strcmp(ptoken, "endif")
-		 && strcmp(ptoken, "if")) {
-		    if (outFile == NULL) {
-			tmpImakefile = Strdup(tmpImakefile);
-			(void) mktemp(tmpImakefile);
-			cleanedImakefile = tmpImakefile;
-			outFile = fopen(tmpImakefile, "w");
-			if (outFile == NULL)
-			    LogFatal("Cannot open %s for write.\n",
-				tmpImakefile);
-		    }
-		    fwrite(punwritten, sizeof(char), pbuf-punwritten, outFile);
-		    fputs("/**/", outFile);
-		    punwritten = pbuf;
-		}
-		*pend = savec;
-	    }
-	    pbuf++;
-	}
-	if (outFile) {
-	    fwrite(punwritten, sizeof(char), pbuf-punwritten, outFile);
-	    fclose(outFile); /* also closes the pipe */
-	}
-
-	return(cleanedImakefile);
 }
 
 CleanCppOutput(tmpfd, tmpfname)
@@ -651,13 +625,14 @@ CleanCppOutput(tmpfd, tmpfname)
 }
 
 /*
- * Determine of a line has nothing in it.  As a side effect, we trim white
+ * Determine if a line has nothing in it.  As a side effect, we trim white
  * space from the end of the line.  Cpp magic cookies are also thrown away.
+ * "XCOMM" token is transformed to "#".
  */
 isempty(line)
-	char	*line;
+	register char	*line;
 {
-	char	*pend;
+	register char	*pend;
 
 	/*
 	 * Check for lines of the form
@@ -669,27 +644,34 @@ isempty(line)
 		pend = line+1;
 		if (*pend == ' ')
 			pend++;
-		if (strncmp(pend, "line ", 5) == 0)
+		if (*pend == 'l' && pend[1] == 'i' && pend[2] == 'n' &&
+		    pend[3] == 'e' && pend[4] == ' ')
 			pend += 5;
 		if (isdigit(*pend)) {
-			while (isdigit(*pend))
-				pend++;
+		    	do {
+			    pend++;
+			} while (isdigit(*pend));
 			if (*pend == '\n' || *pend == '\0')
 				return(TRUE);
 			if (*pend++ == ' ' && *pend == '"')
 				return(TRUE);
 		}
+		while (*pend)
+		    pend++;
+	} else {
+	    for (pend = line; *pend; pend++) {
+		if (*pend == 'X' && pend[1] == 'C' && pend[2] == 'O' &&
+		    pend[3] == 'M' && pend[4] == 'M' &&
+		    (pend == line || pend[-1] == ' ' || pend[-1] == '\t') &&
+		    (pend[5] == ' ' || pend[5] == '\t' || pend[5] == '\0'))
+		{
+		    *pend = '#';
+		    strcpy(pend+1, pend+5);
+		}
+	    }
 	}
-
-	/*
-	 * Find the end of the line and then walk back.
-	 */
-	for (pend=line; *pend; pend++) ;
-
-	pend--;
-	while (pend >= line && (*pend == ' ' || *pend == '\t'))
-		pend--;
-	*++pend = '\0';
+	while (--pend >= line && (*pend == ' ' || *pend == '\t')) ;
+	pend[1] = '\0';
 	return (*line == '\0');
 }
 
@@ -700,7 +682,7 @@ char *ReadLine(tmpfd, tmpfname)
 {
 	static boolean	initialized = FALSE;
 	static char	*buf, *pline, *end;
-	char	*p1, *p2;
+	register char	*p1, *p2;
 
 	if (! initialized) {
 		int	total_red;
@@ -712,12 +694,12 @@ char *ReadLine(tmpfd, tmpfname)
 		fseek(tmpfd, 0, 0);
 		fstat(fileno(tmpfd), &st);
 		pline = buf = Emalloc(st.st_size+1);
-		total_red = read(fileno(tmpfd), buf, st.st_size);
+		total_red = fread(buf, 1, st.st_size, tmpfd);
 		if (total_red != st.st_size)
 			LogFatal("cannot read %s\n", tmpMakefile);
 		end = buf + st.st_size;
 		*end = '\0';
-		lseek(fileno(tmpfd), 0, 0);
+		fseek(tmpfd, 0, 0);
 #ifdef SYSV
 		freopen(tmpfname, "w+", tmpfd);
 #else	/* !SYSV */
@@ -726,7 +708,7 @@ char *ReadLine(tmpfd, tmpfname)
 		initialized = TRUE;
 	    fprintf (tmpfd, "# Makefile generated by imake - do not edit!\n");
 	    fprintf (tmpfd, "# %s\n",
-		"$XConsortium: imake.c,v 1.68 92/06/05 17:13:13 rws Exp $");
+		"$XConsortium: imake.c,v 1.69 92/06/05 18:18:58 rws Exp $");
 
 #ifdef FIXUP_CPP_WHITESPACE
 	    {
@@ -737,10 +719,10 @@ char *ReadLine(tmpfd, tmpfname)
 "# for this, but is not always successful.",
 "#",
 NULL };
-		char **cpp;
+		char **wp;
 
-		for (cpp = cpp_warning; *cpp; cpp++) {
-		    fprintf (tmpfd, "%s\n", *cpp);
+		for (wp = cpp_warning; *wp; wp++) {
+		    fprintf (tmpfd, "%s\n", *wp);
 		}
 	    }
 #endif /* FIXUP_CPP_WHITESPACE */
