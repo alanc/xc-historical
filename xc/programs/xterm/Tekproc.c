@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Tekproc.c,v 1.89 91/03/13 14:05:32 gildea Exp $
+ * $XConsortium: Tekproc.c,v 1.90 91/04/03 17:47:52 gildea Exp $
  *
  * Warning, there be crufty dragons here.
  */
@@ -1339,8 +1339,8 @@ static void TekRealize (gw, valuemaskp, values)
 
     {	/* there's gotta be a better way... */
 	static Arg args[] = {
-	    {XtNtitle, NULL},
-	    {XtNiconName, NULL},
+	    {XtNtitle, (XtArgVal)NULL},
+	    {XtNiconName, (XtArgVal)NULL},
 	};
 	char *icon_name, *title, *tek_icon_name, *tek_title;
 
