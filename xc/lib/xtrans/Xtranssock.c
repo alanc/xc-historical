@@ -517,10 +517,14 @@ if (is_numeric (port))
 {
     tmpport = (short) atoi (port);
 
+#if 0
     if( tmpport < 1024 ) /* IP_RESERVED */
+#endif
 	sprintf(portbuf,"%d", X_TCP_PORT+tmpport );
+#if 0
     else
 	strncpy(portbuf,port,PORTBUFSIZE);
+#endif
 }
 else
     strncpy(portbuf,port,PORTBUFSIZE);
@@ -873,10 +877,14 @@ if (is_numeric (port))
 {
     tmpport = (short) atoi (port);
 
+#if 0
     if( tmpport < 1024 ) /* IP_RESERVED */
+#endif
 	sprintf(portbuf,"%d", X_TCP_PORT+tmpport );
+#if 0
     else
 	strncpy(portbuf,port,PORTBUFSIZE);
+#endif
 }
 else
 #endif
@@ -900,7 +908,7 @@ sockname.sin_family=AF_INET;
 if (isascii(host[0]) && isdigit(host[0])) {
     tmpaddr=inet_addr(host); /* returns network byte order */
 } else {
-    tmpaddr=-1;
+    tmpaddr = -1;
 }
 
 PRMSG(4,"TRANS(SocketINETConnect) inet_addr(%s) = %x\n", host,tmpaddr, 0);
