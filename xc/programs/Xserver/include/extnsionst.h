@@ -1,4 +1,4 @@
-/* $XConsortium: extnsionst.h,v 1.4 87/08/31 19:58:18 toddb Exp $ */
+/* $XConsortium: extnsionst.h,v 1.5 88/09/06 15:49:10 jim Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -92,8 +92,8 @@ extern int ProcQueryExtension();
 extern int ProcListExtensions();
 extern ExtensionEntry *AddExtension();
 extern ExtensionLookupProc LookupProc();
-extern void RegisterProc();
-extern void RegisterScreenProc();
+extern Bool RegisterProc();
+extern Bool RegisterScreenProc();
 
 /*  List of extension procs go here */
 
