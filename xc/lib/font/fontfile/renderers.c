@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: renderers.c,v 1.1 91/05/10 14:46:38 keith Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -29,6 +29,7 @@ FontFileRegisterFontFileFunctions ()
 {
     BitmapRegisterFontFileFunctions ();
     SpeedoRegisterFontFileFunctions ();
+    Type1RegisterFontFileFunctions();
 }
 
 static FontRenderersRec	renderers;
