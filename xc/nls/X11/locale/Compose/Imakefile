@@ -1,16 +1,7 @@
-XCOMM $XConsortium$
-#ifdef XlibI18nPath
-  XLIBI18N_PATH = XlibI18nPath
-#else
-  XLIBI18N_PATH = $(LIBDIR)/locale
-#endif
-
-       DESTNAME = Compose
-
-     LOCALE_01 = iso8859-1
+XCOMM $XConsortium: Imakefile,v 1.1 93/09/17 13:37:18 rws Exp $
 
 all::
 
-InstallNamedNonExec($(LOCALE_01),$(DESTNAME),$(XLIBI18N_PATH)/$(LOCALE_01))
+InstallNamedNonExec(iso8859-1,Compose,$(XLOCALEDIR)/iso8859-1)
 
 depend::

@@ -1,20 +1,11 @@
-XCOMM $XConsortium$
+XCOMM $XConsortium: Imakefile,v 1.1 93/09/17 13:33:48 rws Exp $
 #define IHaveSubdirs
 #define PassCDebugFlags
-
-#ifdef XlibI18nPath
-  XLIBI18N_PATH = XlibI18nPath
-#else
-  XLIBI18N_PATH = $(LIBDIR)/locale
-#endif
-
-   LOCALE_ALIAS = locale.alias
-     LOCALE_DIR = locale.dir
 
         SUBDIRS = XLC_LOCALE Compose
 
 MakeSubdirs($(SUBDIRS))
 DependSubdirs($(SUBDIRS))
 
-InstallNonExecFile($(LOCALE_ALIAS),$(XLIBI18N_PATH))
-InstallNonExecFile($(LOCALE_DIR),$(XLIBI18N_PATH))
+InstallNonExecFile(locale.alias,$(XLOCALEDIR))
+InstallNonExecFile(locale.dir,$(XLOCALEDIR))
