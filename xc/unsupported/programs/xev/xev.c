@@ -1,7 +1,7 @@
 /*
  * xev - event diagnostics
  *
- * $XConsortium: xev.c,v 1.12 90/04/17 15:04:45 rws Exp $
+ * $XConsortium: xev.c,v 1.13 90/07/03 13:44:48 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -178,7 +178,7 @@ main (argc, argv)
     attr.event_mask = KeyPressMask | KeyReleaseMask | ButtonPressMask |
 			   ButtonReleaseMask | EnterWindowMask |
 			   LeaveWindowMask | PointerMotionMask | 
-			   PointerMotionHintMask | Button1MotionMask |
+			   Button1MotionMask |
 			   Button2MotionMask | Button3MotionMask |
 			   Button4MotionMask | Button5MotionMask |
 			   ButtonMotionMask | KeymapStateMask |
