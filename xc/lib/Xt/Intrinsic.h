@@ -287,13 +287,15 @@ extern Boolean XtIsSubclass ();
     /* WidgetClass widgetClass; */
 
 extern Widget XtWidgetCreate ();
+    /* char	   *name; */
     /* WidgetClass widgetClass; */
     /* Widget      parent; */
     /* ArgList     args; */
     /* Cardinal    argCount; */
 
 extern Widget TopLevelCreate (); /*hack for now*/
-  /* WidgetClass widgetClass; */
+    /* char	   *name; */
+    /* WidgetClass widgetClass; */
     /* Screen      *screen;*/
     /* ArgList     args; */
     /* Cardinal    argCount; */

@@ -46,7 +46,8 @@ WidgetClassData widgetClassData = {
           SetValues,		/*set_values*/
           (WidgetProc)NULL      /*accept_focus*/
 };
-Widget TopLevelCreate(widgetClass,screen,args,argCount)
+Widget TopLevelCreate(name,widgetClass,screen,args,argCount)
+    char *name;
     WidgetClass widgetClass;
     Screen* screen;
     ArgList args;
@@ -54,6 +55,7 @@ Widget TopLevelCreate(widgetClass,screen,args,argCount)
 {
    Widget widget;
     widget = (Widget)XtMalloc(widgetClass->coreClass.size);
+    widget->core.name = (char *)strcpy(XtMalloc(strlen(name)+1), name);
     widget->core.widget_class = widgetClass;
     widget->core.parent = NULL;
     widget->core.screen = screen;
@@ -68,8 +70,8 @@ Widget TopLevelCreate(widgetClass,screen,args,argCount)
    return (widget);
 }
 
-Widget XtWidgetCreate(widgetClass,parent,args,argCount)
-	
+Widget XtWidgetCreate(name,widgetClass,parent,args,argCount)
+    char *name;	
     WidgetClass   widgetClass;
     CompositeWidget   parent;
     ArgList       args;
@@ -83,6 +85,7 @@ Widget XtWidgetCreate(widgetClass,parent,args,argCount)
 			return;
 			}
     widget = (Widget)XtMalloc(widgetClass->coreClass.size); 
+    widget->core.name = (char *)strcpy(XtMalloc(strlen(name)+1), name);
     widget->core.widget_class = widgetClass;
     widget->core.parent = parent;
     widget->core.screen = parent->core.screen;
