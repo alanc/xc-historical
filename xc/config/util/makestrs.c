@@ -1,4 +1,4 @@
-/* $XConsortium: makestrs.c,v 1.3 91/05/04 17:28:39 rws Exp $ */
+/* $XConsortium: makestrs.c,v 1.4 91/05/04 18:25:06 rws Exp $ */
 /*
 Copyright 1991 by the Massachusetts Institute of Technology
 
@@ -33,14 +33,13 @@ typedef struct _Rec {
     int offset;
 } Rec;
 
-char buf[1024];
-char global[64];
-char header_name[64];
-Rec *recs;
-Rec **tail = &recs;
-int offset;
+static char global[64];
+static char header_name[64];
+static Rec *recs;
+static Rec **tail = &recs;
+static int offset;
 
-AddRec(left, right)
+static void AddRec(left, right)
     char *left;
     char *right;
 {
@@ -70,7 +69,7 @@ AddRec(left, right)
     tail = &rec->next;
 }
 
-FlushRecs(header)
+static void FlushRecs(header)
     FILE *header;
 {
     Rec *rec;
@@ -113,8 +112,10 @@ FlushRecs(header)
     offset = 0;
 }
 
-main()
+int main()
 {
+    char buf[1024];
+    char Hbuf[1024];
     FILE *header = NULL;
     char *right;
 #ifndef ARRAYPERSTR
@@ -166,6 +167,11 @@ main()
 	    *right++ = 0;
 	else
 	    right = buf + 1;
+	if (buf[0] == 'H') {
+	    strcpy (Hbuf, "Xt");
+	    strcat (Hbuf, right);
+	    right = Hbuf;
+	}
 	AddRec(buf, right);
 #ifdef ARRAYPERSTR
 	printf("Const char Xt%s[] = \"%s\";\n", buf, right);
