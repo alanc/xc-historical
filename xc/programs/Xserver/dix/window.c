@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: window.c,v 1.219 88/10/15 09:11:24 rws Exp $ */
+/* $XConsortium: window.c,v 1.220 88/10/22 13:27:56 keith Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -3273,6 +3273,8 @@ UnmapSubwindows(pWin, sendExposures)
     Bool anyMarked;
     BoxPtr box;
 
+    if (!pWin->firstChild)
+	return;
     if (wasViewable)
     {
 	box = (* pWin->drawable.pScreen->RegionExtents)(pWin->winSize);
