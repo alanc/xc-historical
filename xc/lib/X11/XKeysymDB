@@ -1,4 +1,4 @@
-! $XConsortium: XKeysymDB,v 1.10 93/07/30 10:32:16 rws Exp $
+! $XConsortium: XKeysymDB,v 1.11 93/09/28 14:34:03 kaleb Exp $
 
 hpmute_acute		:100000A8
 hpmute_grave		:100000A9
@@ -155,6 +155,14 @@ SunCopy			:1005FF72
 SunOpen			:1005FF73
 SunPaste		:1005FF74
 SunCut			:1005FF75
+SunPowerSwitch		:1005FF76
+SunAudioLowerVolume	:1005FF77
+SunAudioMute		:1005FF78
+SunAudioRaiseVolume	:1005FF79
+SunVideoDegauss		:1005FF7A
+SunVideoLowerBrightness	:1005FF7B
+SunVideoRaiseBrightness	:1005FF7C
+SunPowerSwitchShift	:1005FF7D
 
 SunCompose		:FF20
 SunPageUp		:FF55
@@ -165,14 +173,6 @@ SunAgain		:FF66
 SunFind			:FF68
 SunStop			:FF69
 SunAltGraph		:FF7E
-
-SunAudioMute		:1005FF76
-SunVideoDegauss		:1005FF77
-SunAudioLower		:1005FF78
-SunVideoLower		:1005FF79
-SunAudioRaise		:1005FF7A
-SunVideoRaise		:1005FF7B
-SunPowerSwitch		:1005FF7C
 
 WYSetup			:1006FF00
 
