@@ -1,5 +1,5 @@
 /*
- * $XConsortium: actions.c,v 1.2 89/05/08 16:22:27 converse Exp $
+ * $XConsortium: actions.c,v 1.3 89/05/08 17:38:15 converse Exp $
  *
  * actions.c - externally available procedures for xcalc
  * 
@@ -26,9 +26,20 @@
  */
 
 #include <X11/Intrinsic.h>
+#include <setjmp.h>
 #include "xcalc.h"
 extern int rpn;
+extern Atom wm_delete_window;
 extern void pre_op(), post_op(), Quit(), ringbell(), do_select();
+
+#ifndef IEEE
+extern    jmp_buf env;
+extern void fail_op();
+#define XCALC_PRE_OP(keynum) { int i; pre_op(keynum); \
+		       if ((i = setjmp (env))) {fail_op(i); return;}}
+#else
+#define XCALC_PRE_OP(keynum) pre_op(keynum);
+#endif
 
 /*ARGSUSED*/
 void add(w, e, vector, count)
@@ -37,7 +48,7 @@ void add(w, e, vector, count)
     String	*vector;
     Cardinal	*count;
 {
-    pre_op(kADD);
+    XCALC_PRE_OP(kADD);
     rpn ? twof(kADD) : twoop(kADD);
     post_op();
 }
@@ -49,7 +60,7 @@ void back(w, e, vector, count)
     String	*vector;
     Cardinal	*count;
 {
-    pre_op(kBKSP);
+    XCALC_PRE_OP(kBKSP);
     bkspf();
     post_op();
 }
@@ -71,7 +82,7 @@ void clear(w, e, vector, count)
     String	*vector;
     Cardinal	*count;
 {
-    pre_op(kCLR);
+    XCALC_PRE_OP(kCLR);
     clearf();
     post_op();
 }
@@ -83,7 +94,7 @@ void cosine(w, e, vector, count)
     String	*vector;
     Cardinal	*count;
 {
-    pre_op(kCOS);
+    XCALC_PRE_OP(kCOS);
     oneop(kCOS);
     post_op();
 }
@@ -95,7 +106,7 @@ void decimal(w, e, vector, count)
     String	*vector;
     Cardinal	*count;
 {
-    pre_op(kDEC);
+    XCALC_PRE_OP(kDEC);
     decf();
     post_op();
 }
@@ -107,7 +118,7 @@ void degree(w, e, vector, count)
     String	*vector;
     Cardinal	*count;
 {
-    pre_op(kDRG);
+    XCALC_PRE_OP(kDRG);
     drgf();
     post_op();
 }
@@ -121,16 +132,16 @@ void digit(w, e, vector, count)
 {
     switch (vector[0][0])
     {
-      case '1':	pre_op(kONE); numeric(kONE); break;
-      case '2': pre_op(kTWO); numeric(kTWO); break;
-      case '3': pre_op(kTHREE); numeric(kTHREE); break;
-      case '4': pre_op(kFOUR); numeric(kFOUR); break;
-      case '5': pre_op(kFIVE); numeric(kFIVE); break;
-      case '6': pre_op(kSIX); numeric(kSIX); break;
-      case '7': pre_op(kSEVEN); numeric(kSEVEN); break;
-      case '8': pre_op(kEIGHT); numeric(kEIGHT); break;
-      case '9': pre_op(kNINE); numeric(kNINE); break;
-      case '0': pre_op(kZERO); numeric(kZERO); break;
+      case '1':	XCALC_PRE_OP(kONE); numeric(kONE); break;
+      case '2': XCALC_PRE_OP(kTWO); numeric(kTWO); break;
+      case '3': XCALC_PRE_OP(kTHREE); numeric(kTHREE); break;
+      case '4': XCALC_PRE_OP(kFOUR); numeric(kFOUR); break;
+      case '5': XCALC_PRE_OP(kFIVE); numeric(kFIVE); break;
+      case '6': XCALC_PRE_OP(kSIX); numeric(kSIX); break;
+      case '7': XCALC_PRE_OP(kSEVEN); numeric(kSEVEN); break;
+      case '8': XCALC_PRE_OP(kEIGHT); numeric(kEIGHT); break;
+      case '9': XCALC_PRE_OP(kNINE); numeric(kNINE); break;
+      case '0': XCALC_PRE_OP(kZERO); numeric(kZERO); break;
     }
     post_op();
 }
@@ -142,7 +153,7 @@ void divide(w, e, vector, count)
     String	*vector;
     Cardinal	*count;
 {
-    pre_op(kDIV);
+    XCALC_PRE_OP(kDIV);
     rpn  ? twof(kDIV) : twoop(kDIV);
     post_op();
 }
@@ -154,7 +165,7 @@ void e(w, e, vector, count)
     String	*vector;
     Cardinal	*count;
 {
-    pre_op(kE);
+    XCALC_PRE_OP(kE);
     oneop(kE);
     post_op();
 }
@@ -166,7 +177,7 @@ void enter(w, e, vector, count)
     String	*vector;
     Cardinal	*count;
 {
-    pre_op(kENTR);
+    XCALC_PRE_OP(kENTR);
     entrf();
     post_op();
 }
@@ -178,7 +189,7 @@ void epower(w, e, vector, count)
     String	*vector;
     Cardinal	*count;
 {
-    pre_op(kEXP);
+    XCALC_PRE_OP(kEXP);
     oneop(kEXP);
     post_op();
 }
@@ -190,7 +201,7 @@ void equal(w, e, vector, count)
     String	*vector;
     Cardinal	*count;
 {
-    pre_op(kEQU);
+    XCALC_PRE_OP(kEQU);
     equf();
     post_op();
 }
@@ -202,7 +213,7 @@ void exchange(w, e, vector, count)
     String	*vector;
     Cardinal	*count;
 {
-    pre_op(kEXC);
+    XCALC_PRE_OP(kEXC);
     oneop(kEXC);
     post_op();
 }
@@ -214,7 +225,7 @@ void factorial(w, e, vector, count)
     String	*vector;
     Cardinal	*count;
 {
-    pre_op(kFACT);
+    XCALC_PRE_OP(kFACT);
     oneop(kFACT);
     post_op();
 }
@@ -226,7 +237,7 @@ void inverse(w, e, vector, count)
     String	*vector;
     Cardinal	*count;
 {
-    pre_op(kINV);
+    XCALC_PRE_OP(kINV);
     invf();
     post_op();
 }
@@ -238,7 +249,7 @@ void leftParen(w, e, vector, count)
     String	*vector;
     Cardinal	*count;
 {
-    pre_op(kLPAR);
+    XCALC_PRE_OP(kLPAR);
     lparf();
     post_op();
 }
@@ -250,7 +261,7 @@ void logarithm(w, e, vector, count)
     String	*vector;
     Cardinal	*count;
 {
-    pre_op(kLOG);
+    XCALC_PRE_OP(kLOG);
     oneop(kLOG);
     post_op();
 }
@@ -262,7 +273,7 @@ void multiply(w, e, vector, count)
     String	*vector;
     Cardinal	*count;
 {
-    pre_op(kMUL);
+    XCALC_PRE_OP(kMUL);
     rpn ? twof(kMUL) : twoop(kMUL);
     post_op();
 }
@@ -274,7 +285,7 @@ void naturalLog(w, e, vector, count)
     String	*vector;
     Cardinal	*count;
 {
-    pre_op(kLN);
+    XCALC_PRE_OP(kLN);
     oneop(kLN);
     post_op();
 }
@@ -286,7 +297,7 @@ void negate(w, e, vector, count)
     String	*vector;
     Cardinal	*count;
 {
-    pre_op(kNEG);
+    XCALC_PRE_OP(kNEG);
     negf();
     post_op();
 }
@@ -308,7 +319,7 @@ void off(w, e, vector, count)
     String	*vector;
     Cardinal	*count;
 {
-    pre_op(kOFF);
+    XCALC_PRE_OP(kOFF);
     offf();
     post_op();
 }
@@ -320,7 +331,7 @@ void pi(w, e, vector, count)
     String	*vector;
     Cardinal	*count;
 {
-    pre_op(kPI);
+    XCALC_PRE_OP(kPI);
     oneop(kPI);
     post_op();
 }
@@ -332,7 +343,7 @@ void power(w, e, vector, count)
     String	*vector;
     Cardinal	*count;
 {
-    pre_op(kPOW);
+    XCALC_PRE_OP(kPOW);
     rpn ? twof(kPOW) : twoop(kPOW);
     post_op();
 }
@@ -344,7 +355,10 @@ void quit(w, e, vector, count)
     String	*vector;
     Cardinal	*count;
 {
-    Quit();
+    if (e->type == ClientMessage && e->xclient.data.l[0] != wm_delete_window)
+	ringbell();
+    else
+	Quit();
 }
 
 /*ARGSUSED*/
@@ -354,7 +368,7 @@ void recall(w, e, vector, count)
     String	*vector;
     Cardinal	*count;
 {
-    pre_op(kRCL);
+    XCALC_PRE_OP(kRCL);
     rpn ? memf(kRCL) : oneop(kRCL);
     post_op();
 }
@@ -366,7 +380,7 @@ void reciprocal(w, e, vector, count)
     String	*vector;
     Cardinal	*count;
 {
-    pre_op(kRECIP);
+    XCALC_PRE_OP(kRECIP);
     oneop(kRECIP);
     post_op();
 }
@@ -378,7 +392,7 @@ void rightParen(w, e, vector, count)
     String	*vector;
     Cardinal	*count;
 {
-    pre_op(kRPAR);
+    XCALC_PRE_OP(kRPAR);
     rparf();
     post_op();
 }
@@ -390,7 +404,7 @@ void roll(w, e, vector, count)
     String	*vector;
     Cardinal	*count;
 {
-    pre_op(kROLL);
+    XCALC_PRE_OP(kROLL);
     rollf();
     post_op();
 }
@@ -402,7 +416,7 @@ void scientific(w, e, vector, count)
     String	*vector;
     Cardinal	*count;
 {
-    pre_op(kEE);
+    XCALC_PRE_OP(kEE);
     eef();
     post_op();
 }
@@ -424,7 +438,7 @@ void sine(w, e, vector, count)
     String	*vector;
     Cardinal	*count;
 {
-    pre_op(kSIN);
+    XCALC_PRE_OP(kSIN);
     oneop(kSIN);
     post_op();
 }
@@ -436,7 +450,7 @@ void square(w, e, vector, count)
     String	*vector;
     Cardinal	*count;
 {
-    pre_op(kSQR);
+    XCALC_PRE_OP(kSQR);
     oneop(kSQR);
     post_op();
 }
@@ -448,7 +462,7 @@ void squareRoot(w, e, vector, count)
     String	*vector;
     Cardinal	*count;
 {
-    pre_op(kSQRT);
+    XCALC_PRE_OP(kSQRT);
     oneop(kSQRT);
     post_op();
 }
@@ -460,7 +474,7 @@ void store(w, e, vector, count)
     String	*vector;
     Cardinal	*count;
 {
-    pre_op(kSTO);
+    XCALC_PRE_OP(kSTO);
     rpn ? memf(kSTO) : oneop(kSTO);
     post_op();
 }
@@ -472,7 +486,7 @@ void subtract(w, e, vector, count)
     String	*vector;
     Cardinal	*count;
 {
-    pre_op(kSUB);
+    XCALC_PRE_OP(kSUB);
     rpn ? twof(kSUB) : twoop(kSUB);
     post_op();
 }
@@ -484,7 +498,7 @@ void sum(w, e, vector, count)
     String	*vector;
     Cardinal	*count;
 {
-    pre_op(kSUM);
+    XCALC_PRE_OP(kSUM);
     rpn ? memf(kSUM) : oneop(kSUM);
     post_op();
 }
@@ -496,7 +510,7 @@ void tangent(w, e, vector, count)
     String	*vector;
     Cardinal	*count;
 {
-    pre_op(kTAN);
+    XCALC_PRE_OP(kTAN);
     oneop(kTAN);
     post_op();
 }
@@ -508,7 +522,7 @@ void tenpower(w, e, vector, count)
     String	*vector;
     Cardinal	*count;
 {
-    pre_op(k10X);
+    XCALC_PRE_OP(k10X);
     oneop(k10X);
     post_op();
 }
@@ -520,7 +534,7 @@ void XexchangeY(w, e, vector, count)
     String	*vector;
     Cardinal	*count;
 {
-    pre_op(kXXY);
+    XCALC_PRE_OP(kXXY);
     twof(kXXY);
     post_op();
 }

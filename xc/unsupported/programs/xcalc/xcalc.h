@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xcalc.h,v 1.1 89/05/04 11:44:14 jim Exp $
+ * $XConsortium: xcalc.h,v 1.2 89/12/08 19:32:17 converse Exp $
  * 
  * xcalc.h - symbolic constants for xcalc
  *
@@ -24,6 +24,12 @@
  *
  * Author:  Donna Converse, MIT X Consortium
  */
+
+#ifdef SIGNALRETURNSINT
+#define signal_t int
+#else
+#define signal_t void
+#endif
 
 #define kRECIP 0	/* reciprocal */
 #define kSQR   1	/* square */

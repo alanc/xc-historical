@@ -1,4 +1,4 @@
-/* $XConsortium: math.c,v 1.2 89/05/04 12:15:21 jim Exp $ 
+/* $XConsortium: math.c,v 1.3 89/12/08 19:32:20 converse Exp $ 
  *
  *  math.c  -  mathematics functions for a hand calculator under X
  *
@@ -107,21 +107,22 @@ void pre_op(keynum)
 	clrdisp++;
       } else {
         ringbell();
-        return;
+        return;	/* the intent was probably not to do the operation */
       }
     }
 
     code = keynum;
     if (code != kCLR) CLR=0;
     if (code != kOFF) OFF=0;
-    
+}
 
 #ifndef IEEE
-    i=setjmp(env);
-    if (i) {
-        switch (i) {
+void fail_op(i) 
+int i;
+{
+    switch (i) {
 #ifdef FPE_FLTDIV_TRAP
-           case FPE_FLTDIV_TRAP:  strcpy(dispstr,"div by zero"); break;
+      case FPE_FLTDIV_TRAP:  strcpy(dispstr,"div by zero"); break;
 #endif
 #ifdef FPE_FLTDIV_FAULT
            case FPE_FLTDIV_FAULT: strcpy(dispstr,"div by zero"); break;
@@ -139,13 +140,13 @@ void pre_op(keynum)
            case FPE_FLTUND_FAULT: strcpy(dispstr,"underflow"); break;
 #endif
            default:               strcpy(dispstr,"error");
-           }
-        entered=3;
-        DrawDisplay();
-        return;
-        }
-#endif
+    }
+    entered=3;
+    DrawDisplay();
+    return;
 }
+#endif	/* not IEEE */
+
 
 void post_op()
 {
@@ -872,7 +873,7 @@ ResetCalc()
 #ifndef IEEE
 /******************/
 /*ARGSUSED*/
-void fperr(sig,code,scp)
+signal_t fperr(sig,code,scp)
   int sig,code;
   struct sigcontext *scp;
 /******************/

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xcalc.c,v 1.8 89/11/14 18:50:44 converse Exp $
+ * $XConsortium: xcalc.c,v 1.9 89/12/08 19:30:28 converse Exp $
  *
  * xcalc.c  -  a hand calculator for the X Window system
  * 
@@ -46,12 +46,17 @@
 #include "xcalc.h"
 #include "actions.h"
 
+#ifndef IEEE
+extern signal_t fperr();
+#endif
+
 /*
  *	global data
  */
 int	rpn = 0;		/* Reverse Polish Notation (HP mode) flag */
 #define LCD_STR_LEN	32
 char	dispstr[LCD_STR_LEN];		/* string to show up in the LCD */
+Atom	wm_delete_window;		/* see ICCCM section 5.2.2 */
 
 /*
  *	local data 
@@ -100,9 +105,7 @@ void main(argc, argv)
     char	**argv;
 {
     Arg		args[3];
-#ifndef IEEE
-    extern void fperr();
-#endif
+
     void create_calculator();
     void Quit(), Syntax();
 
@@ -123,9 +126,14 @@ void main(argc, argv)
     XtAppAddActions(XtWidgetToApplicationContext(toplevel), Actions,
 		    XtNumber(Actions));
 
+    XtOverrideTranslations(toplevel, 
+	   XtParseTranslationTable("<Message>WM_PROTOCOLS: quit()\n"));
+
     XtRealizeWidget(toplevel);
 
     dpy = XtDisplay(toplevel);
+    wm_delete_window = XInternAtom(dpy, "WM_DELETE_WINDOW", False);
+    (void) XSetWMProtocols(dpy, XtWindow(toplevel), &wm_delete_window, 1);
     XDefineCursor(dpy, XtWindow(toplevel), App_Resources.cursor);
 
     if (App_Resources.stipple || (CellsOfScreen(XtScreen(toplevel)) <= 2))
