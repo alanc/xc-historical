@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsLRGB.c,v 1.15 91/07/22 16:50:22 rws Exp $" */
+/* $XConsortium: XcmsLRGB.c,v 1.16 91/07/22 18:24:42 rws Exp $" */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -759,7 +759,7 @@ LINEAR_RGB_InitSCCData(dpy, screenNumber, pPerScrnInfo)
 		/* Blue Intensity Table */
 		if (!(pScreenData->pBlueTbl = (IntensityTbl *)
 			Xcalloc (1, sizeof(IntensityTbl)))) {
-		    goto FreeGreenTblElements;
+		    goto FreeBlueTblElements;
 		}
 		if (_XcmsGetTableType1(pScreenData->pBlueTbl, format_return, &pChar,
 			&nitems) == XcmsFailure) {
