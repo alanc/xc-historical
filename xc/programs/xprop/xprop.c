@@ -6,8 +6,7 @@
 
 #include <X11/Xatom.h>
 
-#include "jdisplay.h"
-#include "ostuff.h"
+#include "dsimple.h"
 
 #define MAXSTR 10000
 
