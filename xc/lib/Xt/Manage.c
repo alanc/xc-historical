@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Manage.c,v 1.15 88/09/06 16:28:16 jim Exp $";
+static char Xrcsid[] = "$XConsortium: Manage.c,v 1.16 88/09/06 17:02:43 swick Exp $";
 /* $oHeader: Manage.c,v 1.3 88/09/01 11:41:51 asente Exp $ */
 #endif lint
 
@@ -73,7 +73,7 @@ void XtUnmanageChildren(children, num_children)
 	    return;
 	}
         if ((CompositeWidget) child->core.parent != parent) {
-	   XtAppWarningMsg(XtWidgetToApplicationContext(parent),
+	   XtAppWarningMsg(XtWidgetToApplicationContext((Widget)parent),
 		   "ambigiousParent","xtUnmanageChildren","XtToolkitError",
            "Not all children have same parent in XtUnmanageChildren",
              (String *)NULL, (Cardinal *)NULL);
@@ -148,7 +148,7 @@ void XtManageChildren(children, num_children)
 	parent_realized = XtIsRealized(t);
 
     } else {
-	XtAppErrorMsg(XtWidgetToApplicationContext(parent),
+	XtAppErrorMsg(XtWidgetToApplicationContext((Widget)parent),
 		"invalidParent","xtManageChildren", "XtToolkitError",
 	    "Attempt to manage a child when parent is not Composite",
 	    (String *) NULL, (Cardinal *) NULL);
@@ -172,7 +172,7 @@ void XtManageChildren(children, num_children)
 	    return;
 	}
         if ((CompositeWidget) child->core.parent != parent) {
-	    XtAppWarningMsg(XtWidgetToApplicationContext(parent),
+	    XtAppWarningMsg(XtWidgetToApplicationContext((Widget)parent),
 		    "ambigiousParent","xtManageChildren","XtToolkitError",
 		"Not all children have same parent in XtManageChildren",
 		(String *)NULL, (Cardinal *)NULL);
