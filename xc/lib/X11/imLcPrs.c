@@ -1,4 +1,4 @@
-/* $XConsortium: imLcPrs.c,v 1.4 94/01/20 18:05:11 rws Exp $ */
+/* $XConsortium: imLcPrs.c,v 1.5 94/03/26 17:00:38 rws Exp $ */
 /******************************************************************
 
               Copyright 1992 by Oki Technosystems Laboratory, Inc.
@@ -211,6 +211,7 @@ nexttoken(fp)
 		        goto string_error;
 		    }
 		    putbackch(c);
+		    *p++ = (char)i;
 #undef ishexch
 		    break;
 		  case '\n':
