@@ -1,8 +1,6 @@
-.\"
-.EH ''''
-.OH ''''
-.EF ''''
-.OF ''''
+.\" $XConsortium$
+.ds CH
+.ds CF
 .ps 11
 .nr PS 11
 \&
@@ -120,8 +118,7 @@ the MIT X Consortium, with significant contributions by Jim Fulton (NCD).
 Donna Converse
 July, 1991
 .De
-.bp
-.EH '\fBAthena Widget Set\fP''\fBX11, Release 5\fP'
-.OH '\fBAthena Widget Set\fP''\fBX11, Release 5\fP'
-.EF ''\fB % \fP''
-.OF ''\fB % \fP''
+.ds LH \fBAthena Widget Set\fP
+.ds CH
+.ds RH \fBX11, Release 5\fP
+.ds CF \fB % \fP
