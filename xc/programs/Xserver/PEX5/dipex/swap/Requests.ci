@@ -1,4 +1,3 @@
-/* $XConsortium$ */
 /* Automatically generated Request table
  */
 /******************************************************************
@@ -33,31 +32,31 @@ RequestFunction SWAP_FUNC_PREFIX(PEXRequest)[] = {
 /*   3	*/  SWAP_FUNC_PREFIX(PEXGetImpDepConstants),
 /*   4	*/  SWAP_FUNC_PREFIX(PEXCreateLookupTable),
 /*   5	*/  SWAP_FUNC_PREFIX(PEXCopyLookupTable),
-/*   6	*/  SWAP_FUNC_PREFIX(PEXGenericRequest),	/*FreeLookupTable*/
+/*   6	*/  SWAP_FUNC_PREFIX(PEXGenericResourceRequest),	/*FreeLookupTable*/
 /*   7	*/  SWAP_FUNC_PREFIX(PEXGetTableInfo),
 /*   8	*/  SWAP_FUNC_PREFIX(PEXGetPredefinedEntries),
-/*   9	*/  SWAP_FUNC_PREFIX(PEXGenericRequest),	/*GetDefinedIndices*/
+/*   9	*/  SWAP_FUNC_PREFIX(PEXGenericResourceRequest),	/*GetDefinedIndices*/
 /*   10	*/  SWAP_FUNC_PREFIX(PEXGetTableEntry),
 /*   11	*/  SWAP_FUNC_PREFIX(PEXGetTableEntries),
 /*   12	*/  SWAP_FUNC_PREFIX(PEXSetTableEntries),
 /*   13	*/  SWAP_FUNC_PREFIX(PEXDeleteTableEntries),
 /*   14	*/  SWAP_FUNC_PREFIX(PEXCreatePipelineContext),
 /*   15	*/  SWAP_FUNC_PREFIX(PEXCopyPipelineContext),
-/*   16	*/  SWAP_FUNC_PREFIX(PEXGenericRequest),	/*FreePipelineContext*/
+/*   16	*/  SWAP_FUNC_PREFIX(PEXGenericResourceRequest),	/*FreePipelineContext*/
 /*   17	*/  SWAP_FUNC_PREFIX(PEXGetPipelineContext),
 /*   18	*/  SWAP_FUNC_PREFIX(PEXChangePipelineContext),
 /*   19	*/  SWAP_FUNC_PREFIX(PEXCreateRenderer),
-/*   20	*/  SWAP_FUNC_PREFIX(PEXGenericRequest),	/*FreeRenderer*/
+/*   20	*/  SWAP_FUNC_PREFIX(PEXGenericResourceRequest),	/*FreeRenderer*/
 /*   21	*/  SWAP_FUNC_PREFIX(PEXChangeRenderer),
 /*   22	*/  SWAP_FUNC_PREFIX(PEXGetRendererAttributes),
-/*   23	*/  SWAP_FUNC_PREFIX(PEXGenericRequest),	/*GetRendererDynamics*/
+/*   23	*/  SWAP_FUNC_PREFIX(PEXGenericResourceRequest),	/*GetRendererDynamics*/
 /*   24	*/  SWAP_FUNC_PREFIX(PEXBeginRendering),
-/*   25	*/  SWAP_FUNC_PREFIX(PEXGenericRequest),	/*EndRendering*/
+/*   25	*/  SWAP_FUNC_PREFIX(PEXGenericResourceRequest),	/*EndRendering*/
 /*   26	*/  SWAP_FUNC_PREFIX(PEXBeginStructure),
-/*   27	*/  SWAP_FUNC_PREFIX(PEXGenericRequest),	/*EndStructure*/
+/*   27	*/  SWAP_FUNC_PREFIX(PEXGenericResourceRequest),	/*EndStructure*/
 /*   28	*/  SWAP_FUNC_PREFIX(PEXRenderOutputCommands),
 /*   29	*/  SWAP_FUNC_PREFIX(PEXRenderNetwork),
-/*   30	*/  SWAP_FUNC_PREFIX(PEXGenericRequest),	/*CreateStructure*/
+/*   30	*/  SWAP_FUNC_PREFIX(PEXGenericResourceRequest),	/*CreateStructure*/
 /*   31	*/  SWAP_FUNC_PREFIX(PEXCopyStructure),
 /*   32	*/  SWAP_FUNC_PREFIX(PEXDestroyStructures),
 /*   33	*/  SWAP_FUNC_PREFIX(PEXGetStructureInfo),
@@ -76,26 +75,26 @@ RequestFunction SWAP_FUNC_PREFIX(PEXRequest)[] = {
 /*   46	*/  SWAP_FUNC_PREFIX(PEXDeleteBetweenLabels),
 /*   47	*/  SWAP_FUNC_PREFIX(PEXCopyElements),
 /*   48	*/  SWAP_FUNC_PREFIX(PEXChangeStructureRefs),
-/*   49	*/  SWAP_FUNC_PREFIX(PEXGenericRequest),	/*CreateNameSet*/
+/*   49	*/  SWAP_FUNC_PREFIX(PEXGenericResourceRequest),	/*CreateNameSet*/
 /*   50	*/  SWAP_FUNC_PREFIX(PEXCopyNameSet),
-/*   51	*/  SWAP_FUNC_PREFIX(PEXGenericRequest),	/*FreeNameSet*/
-/*   52	*/  SWAP_FUNC_PREFIX(PEXGenericRequest),	/*GetNameSet*/
+/*   51	*/  SWAP_FUNC_PREFIX(PEXGenericResourceRequest),	/*FreeNameSet*/
+/*   52	*/  SWAP_FUNC_PREFIX(PEXGenericResourceRequest),	/*GetNameSet*/
 /*   53	*/  SWAP_FUNC_PREFIX(PEXChangeNameSet),
 /*   54	*/  SWAP_FUNC_PREFIX(PEXCreateSearchContext),
 /*   55	*/  SWAP_FUNC_PREFIX(PEXCopySearchContext),
-/*   56	*/  SWAP_FUNC_PREFIX(PEXGenericRequest),	/*FreeSearchContext*/
+/*   56	*/  SWAP_FUNC_PREFIX(PEXGenericResourceRequest),	/*FreeSearchContext*/
 /*   57	*/  SWAP_FUNC_PREFIX(PEXGetSearchContext),
 /*   58	*/  SWAP_FUNC_PREFIX(PEXChangeSearchContext),
-/*   59	*/  SWAP_FUNC_PREFIX(PEXGenericRequest),	/*SearchNetwork*/
+/*   59	*/  SWAP_FUNC_PREFIX(PEXGenericResourceRequest),	/*SearchNetwork*/
 /*   60	*/  SWAP_FUNC_PREFIX(PEXCreatePhigsWks),
-/*   61	*/  SWAP_FUNC_PREFIX(PEXGenericRequest),	/*FreePhigsWks*/
+/*   61	*/  SWAP_FUNC_PREFIX(PEXGenericResourceRequest),	/*FreePhigsWks*/
 /*   62	*/  SWAP_FUNC_PREFIX(PEXGetWksInfo),
 /*   63	*/  SWAP_FUNC_PREFIX(PEXGetDynamics),
 /*   64	*/  SWAP_FUNC_PREFIX(PEXGetViewRep),
-/*   65	*/  SWAP_FUNC_PREFIX(PEXGenericRequest),	/*RedrawAllStructures*/
-/*   66	*/  SWAP_FUNC_PREFIX(PEXGenericRequest),	/*UpdateWorkstation*/
+/*   65	*/  SWAP_FUNC_PREFIX(PEXGenericResourceRequest),	/*RedrawAllStructures*/
+/*   66	*/  SWAP_FUNC_PREFIX(PEXGenericResourceRequest),	/*UpdateWorkstation*/
 /*   67	*/  SWAP_FUNC_PREFIX(PEXRedrawClipRegion),
-/*   68	*/  SWAP_FUNC_PREFIX(PEXGenericRequest),	/*ExecuteDeferredActions*/
+/*   68	*/  SWAP_FUNC_PREFIX(PEXGenericResourceRequest),	/*ExecuteDeferredActions*/
 /*   69	*/  SWAP_FUNC_PREFIX(PEXSetViewPriority),
 /*   70	*/  SWAP_FUNC_PREFIX(PEXSetDisplayUpdateMode),
 /*   71	*/  SWAP_FUNC_PREFIX(PEXMapDCtoWC),
@@ -107,16 +106,16 @@ RequestFunction SWAP_FUNC_PREFIX(PEXRequest)[] = {
 /*   77	*/  SWAP_FUNC_PREFIX(PEXSetWksBufferMode),
 /*   78	*/  SWAP_FUNC_PREFIX(PEXPostStructure),
 /*   79	*/  SWAP_FUNC_PREFIX(PEXUnpostStructure),
-/*   80	*/  SWAP_FUNC_PREFIX(PEXGenericRequest),	/*UnpostAllStructures*/
-/*   81	*/  SWAP_FUNC_PREFIX(PEXGenericRequest),	/*GetWksPostings*/
+/*   80	*/  SWAP_FUNC_PREFIX(PEXGenericResourceRequest),	/*UnpostAllStructures*/
+/*   81	*/  SWAP_FUNC_PREFIX(PEXGenericResourceRequest),	/*GetWksPostings*/
 /*   82	*/  SWAP_FUNC_PREFIX(PEXGetPickDevice),
 /*   83	*/  SWAP_FUNC_PREFIX(PEXChangePickDevice),
 /*   84	*/  SWAP_FUNC_PREFIX(PEXCreatePickMeasure),
-/*   85	*/  SWAP_FUNC_PREFIX(PEXGenericRequest),	/*FreePickMeasure*/
+/*   85	*/  SWAP_FUNC_PREFIX(PEXGenericResourceRequest),	/*FreePickMeasure*/
 /*   86	*/  SWAP_FUNC_PREFIX(PEXGetPickMeasure),
 /*   87	*/  SWAP_FUNC_PREFIX(PEXUpdatePickMeasure),
 /*   88	*/  SWAP_FUNC_PREFIX(PEXOpenFont),
-/*   89	*/  SWAP_FUNC_PREFIX(PEXGenericRequest),	/*CloseFont*/
+/*   89	*/  SWAP_FUNC_PREFIX(PEXGenericResourceRequest),	/*CloseFont*/
 /*   90	*/  SWAP_FUNC_PREFIX(PEXQueryFont),
 /*   91	*/  SWAP_FUNC_PREFIX(PEXListFonts),
 /*   92	*/  SWAP_FUNC_PREFIX(PEXListFontsWithInfo),
