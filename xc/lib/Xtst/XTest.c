@@ -1,0 +1,174 @@
+/* $XConsortium: XTest.c,v 1.0 91/04/16 15:03:32 rws Exp $ */
+/*
+
+Copyright 1990, 1991 by UniSoft Group Limited
+Copyright 1992 by the Massachusetts Institute of Technology
+
+Permission to use, copy, modify, distribute, and sell this software and its
+documentation for any purpose is hereby granted without fee, provided that
+the above copyright notice appear in all copies and that both that
+copyright notice and this permission notice appear in supporting
+documentation, and that the name of M.I.T. not be used in advertising or
+publicity pertaining to distribution of the software without specific,
+written prior permission.  M.I.T. makes no representations about the
+suitability of this software for any purpose.  It is provided "as is"
+without express or implied warranty.
+
+*/
+
+#define NEED_REPLIES
+#include "Xlibint.h"
+#include "XTest.h"
+#include "xteststr.h"
+#include "Xext.h"
+#include "extutil.h"
+
+static XExtensionInfo _xtest_info_data;
+static XExtensionInfo *xtest_info = &_xtest_info_data;
+static /* const */ char *xtest_extension_name = XTESTNAME;
+
+#define XTestCheckExtension(dpy,i,val) \
+  XextCheckExtension (dpy, i, xtest_extension_name, val)
+
+/*****************************************************************************
+ *                                                                           *
+ *			   private utility routines                          *
+ *                                                                           *
+ *****************************************************************************/
+
+static int close_display();
+static /* const */ XExtensionHooks xtest_extension_hooks = {
+    NULL,				/* create_gc */
+    NULL,				/* copy_gc */
+    NULL,				/* flush_gc */
+    NULL,				/* free_gc */
+    NULL,				/* create_font */
+    NULL,				/* free_font */
+    close_display,			/* close_display */
+    NULL,				/* wire_to_event */
+    NULL,				/* event_to_wire */
+    NULL,				/* error */
+    NULL				/* error_string */
+};
+
+static XEXT_GENERATE_FIND_DISPLAY (find_display, xtest_info,
+				   xtest_extension_name, 
+				   &xtest_extension_hooks, XTestNumberEvents,
+				   NULL)
+
+static XEXT_GENERATE_CLOSE_DISPLAY (close_display, xtest_info)
+
+/*****************************************************************************
+ *                                                                           *
+ *		    public routines               			     *
+ *                                                                           *
+ *****************************************************************************/
+
+Bool
+XTestQueryExtension (dpy, event_basep, error_basep, majorp, minorp)
+    Display *dpy;
+    int *event_basep, *error_basep;
+    int *majorp, *minorp;
+{
+    XExtDisplayInfo *info = find_display (dpy);
+    register xXTestGetVersionReq *req;
+    xXTestGetVersionReply rep;
+
+    if (XextHasExtension(info)) {
+	LockDisplay(dpy);
+	GetReq(XTestGetVersion, req);
+	req->reqType = info->codes->major_opcode;
+	req->xtReqType = X_XTestGetVersion;
+	req->major = XTEST_MAJOR;
+	req->minor = XTEST_MINOR;
+	if (!_XReply(dpy, (xReply *)&rep, 0, xFalse)) {
+	    UnlockDisplay(dpy);
+	    SyncHandle();
+	    return False;
+	}
+	UnlockDisplay(dpy);
+	SyncHandle();
+	*event_basep = info->codes->first_event;
+	*error_basep = info->codes->first_error;
+	*majorp = rep.major;
+	*minorp = rep.minor;
+	return True;
+    } else {
+	return False;
+    }
+}
+
+Bool
+XTestCompareCursorWithWindow(dpy, window, cursor)
+    Display *dpy;
+    Window window;
+    Cursor cursor;
+{
+    XExtDisplayInfo *info = find_display (dpy);
+    register xXTestCompareCursorReq *req;
+    xXTestCompareCursorReply rep;
+
+    XTestCheckExtension (dpy, info, 0);
+
+    LockDisplay(dpy);
+    GetReq(XTestCompareCursor, req);
+    req->reqType = info->codes->major_opcode;
+    req->xtReqType = X_XTestCompareCursor;
+    if (!_XReply(dpy, (xReply *)&rep, 0, xFalse)) {
+	UnlockDisplay(dpy);
+	SyncHandle();
+	return False;
+    }
+    UnlockDisplay(dpy);
+    SyncHandle();
+    return rep.same;
+}
+
+Bool
+XTestCompareCurrrentCursorWithWindow(dpy, window)
+    Display *dpy;
+    Window window;
+{
+    return XTestCompareCursorWithWindow(dpy, window, XTestCurrentCursor);
+}
+
+void
+XTestSetGContextOfGC(gc, gid)
+    GC gc;
+    GContext gid;
+{
+    gc->gid = gid;
+}
+
+void
+XTestSetVisualIDOfVisual(visual, visualid)
+    Visual *visual;
+    VisualID visualid;
+{
+    visual->visualid = visualid;
+}
+
+static xReq _dummy_request = {
+	0, 0, 0
+};
+
+Status
+XTestDiscard(dpy)
+    Display *dpy;
+{
+    Bool something;
+    register char *ptr;
+
+    LockDisplay(dpy);
+    if (something = (dpy->bufptr != dpy->buffer)) {
+	for (ptr = dpy->buffer;
+	     ptr < dpy->bufptr;
+	     ptr += (((xReq *)ptr)->length << 2))
+	    dpy->request--;
+	dpy->bufptr = dpy->buffer;
+	dpy->last_req = (char *)&_dummy_request;
+    }
+    UnlockDisplay(dpy);
+    SyncHandle();
+    return something;
+}
