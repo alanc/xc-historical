@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XPutImage.c,v 11.30 87/08/12 16:38:10 toddb Locked $ */
+/* $Header: XPutImage.c,v 11.31 87/08/30 12:10:32 ham Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include <stdio.h>
@@ -19,8 +19,8 @@ client and server are MSB machines but the client specifies a bitmap_unit of 8
 bits and the server's is 16 or 32 ( and vice-versa ).  This case requires byte
 swapping, but I am unsure how it fits into byteswapping that must be done for
 other reasons.  Also, if a client sends ZPixmap format images of 4
-bits_per_pixel and byte swapping is required, this routine does swap the 4 bit
-nibbles as it should.
+bits_per_pixel and byte swapping is required, this routine does not swap the 
+4 bit nibbles as it should.
 
 Peter Ham
 
