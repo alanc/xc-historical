@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: auth.c,v 1.1 88/11/23 16:59:05 keith Exp $
+ * $XConsortium: auth.c,v 1.2 88/11/29 14:56:14 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -50,13 +50,14 @@ static int  auth_pid = -1;
 static int  to_auth, from_auth;
 static FILE *from_auth_file;
 
-InitAuthorization ()
+InitAuthorization (d)
+struct display	*d;
 {
     int	    pipein[2], pipeout[2];
     char    **argv, **parseArgs ();
 
     Debug ("InitAuthorization\n");
-    if (authGen == 0 || authGen[0] == '\0')
+    if (d->authGen == 0 || d->authGen[0] == '\0')
 	return;
     if (pipe (pipein) == -1)
 	return;
@@ -67,8 +68,8 @@ InitAuthorization ()
     }
     switch (auth_pid = fork ()) {
     case 0:
-	Debug ("starting authGen: %s\n", authGen);
-	argv = parseArgs ((char **) 0, authGen);
+	Debug ("starting authGen: %s\n", d->authGen);
+	argv = parseArgs ((char **) 0, d->authGen);
 	close (pipein[1]);
 	if (pipein[0] != 0) {
 	    dup2 (pipein[0], 0);
@@ -244,10 +245,10 @@ Xauth	*auth;
 }
 
 struct addrList {
-	char	family;
-	short	address_length;
+	unsigned short	family;
+	unsigned short	address_length;
 	char	*address;
-	short	number_length;
+	unsigned short	number_length;
 	char	*number;
 	struct addrList	*next;
 };
@@ -273,7 +274,8 @@ doneAddrs ()
 }
 
 saveAddr (family, address_length, address, number_length, number)
-char	family;
+unsigned short	family;
+unsigned short	address_length, number_length;
 char	*address, *number;
 {
 	struct addrList	*new;
@@ -309,7 +311,8 @@ char	*address, *number;
 }
 
 checkAddr (family, address_length, address, number_length, number)
-char	family;
+unsigned short	family;
+unsigned short	address_length, number_length;
 char	*address, *number;
 {
 	struct addrList	*a;
@@ -347,7 +350,7 @@ Xauth	*auth;
 
 	Debug ("writeAddr ");
 	dumpAuth (auth);
-	auth->family = (char) family;
+	auth->family = (unsigned short) family;
 	auth->address_length = addr_length;
 	auth->address = addr;
 	writeAuth (file, auth);
@@ -653,19 +656,10 @@ struct verify_info	*verify;
 		}
 		XauUnlockAuth (name);
 		if (envname) {
-#ifdef SYSV
-			chown (envname, verify->uid);
-#ifdef NGROUPS
-			chgrp (envname, verify->groups[0]);
-#else
-			chgrp (envname, verify->gid);
-#endif
-#else
 #ifdef NGROUPS
 			chown (envname, verify->uid, verify->groups[0]);
 #else
 			chown (envname, verify->uid, verify->gid);
-#endif
 #endif
 		}
 	}
