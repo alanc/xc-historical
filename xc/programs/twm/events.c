@@ -25,7 +25,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.54 89/05/02 10:17:03 jim Exp $
+ * $XConsortium: events.c,v 1.55 89/05/03 14:37:09 jim Exp $
  *
  * twm event handling
  *
@@ -35,7 +35,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: events.c,v 1.54 89/05/02 10:17:03 jim Exp $";
+"$XConsortium: events.c,v 1.55 89/05/03 14:37:09 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -1202,7 +1202,7 @@ HandleButtonRelease()
 	if (DownIconManager)
 	{
 	    DownIconManager->down = FALSE;
-	    DrawIconManagerBorder(DownIconManager);
+	    if (Scr->Highlight) DrawIconManagerBorder(DownIconManager);
 	    DownIconManager = NULL;
 	}
 	Cancel = FALSE;
@@ -1334,7 +1334,7 @@ HandleButtonPress()
 		Event.xany.window == Tmp_win->list->icon))
 	{
 	    Tmp_win->list->down = TRUE;
-	    DrawIconManagerBorder(Tmp_win->list);
+	    if (Scr->Highlight) DrawIconManagerBorder(Tmp_win->list);
 	    DownIconManager = Tmp_win->list;
 	    Context = C_ICONMGR;
 	}

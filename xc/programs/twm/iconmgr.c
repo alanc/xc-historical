@@ -1,6 +1,6 @@
 /***********************************************************************
  *
- * $XConsortium: iconmgr.c,v 1.20 89/04/12 18:55:42 jim Exp $
+ * $XConsortium: iconmgr.c,v 1.21 89/04/13 10:01:13 jim Exp $
  *
  * Icon Manager routines
  *
@@ -641,7 +641,7 @@ WList *tmp;
 	    XDrawRectangle(dpy, tmp->w, Scr->NormalGC, 2, 2,
 		tmp->width-5, tmp->height-5);
 
-	if (tmp->active)
+	if (tmp->active && Scr->Highlight)
 	    XSetForeground(dpy, Scr->NormalGC, tmp->highlight);
 	else
 	    XSetForeground(dpy, Scr->NormalGC, tmp->back);
