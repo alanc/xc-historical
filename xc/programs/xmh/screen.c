@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: screen.c,v 2.17 88/02/15 16:02:59 swick Exp $";
+static char rcs_id[] = "$Header: screen.c,v 2.18 88/02/22 10:38:55 swick Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -177,7 +177,6 @@ Scrn scrn;
  *	{XtNselectionArrayCount, (XtArgVal) XtNumber(sarray)}
  */
 
-    XtPanedSetRefigureMode(scrn->widget, FALSE);
     scrn->folderbuttons = BBoxRadioCreate(scrn, 0, "folders",
 					  &(scrn->curfolder));
     scrn->mainbuttons = BBoxCreate(scrn, 1, "folderButtons");
@@ -243,32 +242,18 @@ Scrn scrn;
 
     FillViewButtons(scrn);
 
-    XtPanedSetRefigureMode(scrn->widget, TRUE);
-
-    /* now need to realize the tree, causing all the change_managed procs
-       to be executed so things get their correct size.  However, we don't
-       want to be mapped just yet as there's a little more fiddling to do
-    */
-    arglist[0].value = (XtArgVal) NoMailPixmap;
-    /* %%% Wrong; should check InitialFolder->mailpending.  */
-    XtSetValues(scrn->parent, arglist, XtNumber(arglist));
-    XtRealizeWidget(scrn->parent);
-
-    /* crock, because we want requested height reductions to succeed
-       but VPaned thinks total height is way too big until we shrink
-       all boxes */
-
-    XtPanedSetRefigureMode(scrn->widget, FALSE);
-
     BBoxLockSize(scrn->folderbuttons);
     BBoxLockSize(scrn->mainbuttons);
     BBoxLockSize(scrn->seqbuttons);
     BBoxLockSize(scrn->tocbuttons);
     BBoxLockSize(scrn->viewbuttons);
 
-    XtPanedSetRefigureMode(scrn->widget, TRUE);
+    arglist[0].value = (XtArgVal) NoMailPixmap;
+    /* %%% Wrong; should check InitialFolder->mailpending.  */
+    XtSetValues(scrn->parent, arglist, XtNumber(arglist));
 
-/* %%%  XtPanedAllowResizing(scrn->widget, FALSE); */
+    XtRealizeWidget(scrn->parent);
+
     theight = GetHeight((Widget)scrn->tocwidget) +
 	GetHeight((Widget)scrn->viewwidget);
     theight = defTocPercentage * theight / 100;
@@ -315,9 +300,6 @@ ScrnKind kind;
     static Arg arglist[] = {
 	{XtNgeometry, NULL},
     };
-    static Arg scrn_args[] = {
-	{XtNmappedWhenManaged, FALSE},
-    };
 
     for (i=0 ; i<numScrns ; i++)
 	if (scrnList[i]->kind == kind && !scrnList[i]->mapped)
@@ -337,11 +319,11 @@ ScrnKind kind;
     scrn->kind = kind;
     if (numScrns == 1) scrn->parent = toplevel;
     else scrn->parent = XtCreatePopupShell(
-				   progName, shellWidgetClass,
+				   progName, topLevelShellWidgetClass,
 				   toplevel, arglist, XtNumber(arglist));
     scrn->widget =
 	XtCreateManagedWidget(progName, vPanedWidgetClass, scrn->parent,
-			      scrn_args, XtNumber(scrn_args));
+			      NULL, (Cardinal)0);
 
     switch (kind) {
 	case STtocAndView:	MakeTocAndView(scrn);	break;
@@ -350,8 +332,7 @@ ScrnKind kind;
     }
 
     DEBUG("Realizing...")
-    XtSetMappedWhenManaged(scrn->widget, TRUE);
-    XtRealizeWidget(scrn->widget);
+    XtRealizeWidget(scrn->parent);
     DEBUG(" done.\n")
     XDefineCursor( theDisplay, XtWindow(scrn->parent),
 		   XtGetCursor( theDisplay, XC_left_ptr ) );
