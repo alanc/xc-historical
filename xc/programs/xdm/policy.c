@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: policy.c,v 1.4 90/08/21 14:37:48 keith Exp $
+ * $XConsortium: policy.c,v 1.5 90/09/14 17:51:48 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -115,7 +115,7 @@ Willing (addr, connectionType, authenticationName, status, type)
     if (!ret)
 	sprintf (statusBuf, "Display not authorized to connect");
     else
-	sprintf (statusBuf, "Ready and 'Rarrin to GO!");
+	sprintf (statusBuf, "Willing to manage");
     status->length = strlen (statusBuf);
     status->data = (CARD8Ptr) malloc (status->length);
     if (!status->data)
