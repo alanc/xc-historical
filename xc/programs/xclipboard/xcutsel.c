@@ -1,16 +1,17 @@
 #ifndef lint
-static char rcsid[] = "$XConsortium: xcutsel.c,v 1.3 88/10/17 12:38:17 swick Exp $";
+static char rcsid[] = "$XConsortium: xcutsel.c,v 1.4 88/10/17 14:02:57 swick Exp $";
 #endif	lint
 
 #include <stdio.h>
 #include <X11/Intrinsic.h>
 #include <X11/StringDefs.h>
-#include <X11/Command.h>
-#include <X11/Box.h>
-#include <X11/Cardinals.h>
-#include <X11/Xmu.h>
 #include <X11/Xatom.h>
 
+#include <X11/Xmu/Xmu.h>
+
+#include <X11/Xaw/Command.h>
+#include <X11/Xaw/Box.h>
+#include <X11/Xaw/Cardinals.h>
 
 static XrmOptionDescRec options[] = {
     {"-selection", "selection",	XrmoptionSepArg, NULL},

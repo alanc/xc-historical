@@ -1,14 +1,22 @@
-/* $XConsortium: xclipboard.c,v 1.1 88/10/14 17:42:34 swick Exp $ */
+/* $XConsortium: xclipboard.c,v 1.2 88/10/18 14:28:15 swick Exp $ */
+
+#include <stdio.h>
+#include <sys/param.h>
+
+#ifdef UTEK
+#undef dirty			/* Brain dead standard include files... */
+#endif
+
 #include <X11/Intrinsic.h>
 #include <X11/StringDefs.h>
-#include <X11/Form.h>
-#include <X11/Command.h>
-#include <X11/AsciiText.h>
 #include <X11/Xatom.h>
-#include <X11/Xmu.h>
-#include <X11/Cardinals.h>
-#include <sys/param.h>
-#include <stdio.h>
+
+#include <X11/Xmu/Xmu.h>
+
+#include <X11/Xaw/Form.h>
+#include <X11/Xaw/Command.h>
+#include <X11/Xaw/AsciiText.h>
+#include <X11/Xaw/Cardinals.h>
 
 static XrmOptionDescRec table[] = {
     {"-w",	"wordWrap",		XrmoptionNoArg,  "on"},
@@ -36,9 +44,9 @@ static void InsertClipboard(w, client_data, selection, type,
     unsigned long *length;
     int *format;
 {
-    XtTextBlock text;
+    XawTextBlock text;
     Arg args[1];
-    XtTextPosition last;
+    XawTextPosition last;
 
     if (*type == 0 /*XT_CONVERT_FAIL*/ || *length == 0) {
 	XBell( XtDisplay(w), 0 );
@@ -49,8 +57,8 @@ static void InsertClipboard(w, client_data, selection, type,
     XtSetArg( args[0], XtNlength, &end );
     XtGetValues( w, args, ONE );
 #else
-    XtTextSetInsertionPoint(w, 9999999);
-    last = XtTextGetInsertionPoint(w);
+    XawTextSetInsertionPoint(w, 9999999);
+    last = XawTextGetInsertionPoint(w);
 #endif /*notdef*/
 
     text.ptr = (char*)value;
@@ -58,17 +66,17 @@ static void InsertClipboard(w, client_data, selection, type,
     text.length = *length;
     text.format = FMT8BIT;
 
-    if (XtTextReplace(w, last, last, &text))
+    if (XawTextReplace(w, last, last, &text))
 	XBell( XtDisplay(w), 0);
     else {
-	XtTextPosition newend;
-	XtTextSetInsertionPoint(w, last + text.length);
-	newend = XtTextGetInsertionPoint(w);
+	XawTextPosition newend;
+	XawTextSetInsertionPoint(w, last + text.length);
+	newend = XawTextGetInsertionPoint(w);
 	if (text.ptr[text.length-1] != '\n') {
 	    text.ptr = "\n";
 	    text.length = 1;
-	    XtTextReplace(w, newend, newend, &text);
-	    XtTextSetInsertionPoint(w, newend += 1);
+	    XawTextReplace(w, newend, newend, &text);
+	    XawTextSetInsertionPoint(w, newend += 1);
 	}
     }
     
@@ -113,7 +121,7 @@ static Boolean ConvertSelection(w, selection, target,
 #ifdef notdef
     if (*target == XA_STRING || *target == XA_TEXT(d)) {
 	*type = XA_STRING;
-	*value = _XtTextGetText(ctx, ctx->text.s.left, ctx->text.s.right);
+	*value = _XawTextGetText(ctx, ctx->text.s.left, ctx->text.s.right);
 	*length = strlen(*value);
 	*format = 8;
 	return True;
@@ -193,7 +201,7 @@ char **argv;
     static Arg textArgs[] = {
 	{XtNfile, 0},
 	{XtNtextOptions, (XtArgVal)scrollVertical },
-	{XtNeditType, (XtArgVal)XttextAppend},
+	{XtNeditType, (XtArgVal)XawtextAppend},
 	{XtNwidth, 500},
 	{XtNheight, 100},
     };
