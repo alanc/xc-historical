@@ -1,5 +1,5 @@
 /*
-* $XConsortium: fd.h,v 1.13 89/05/14 11:51:38 rws Exp $
+* $XConsortium: fd.h,v 1.14 89/10/05 13:32:53 swick Exp $
 * $oHeader: fd.h,v 1.4 88/08/26 14:49:54 asente Exp $
 */
 
@@ -30,7 +30,7 @@ SOFTWARE.
 #ifndef _Xt_fd_set
 #define _Xt_fd_set
 
-#if defined(CRAY) && !defined(FD_SETSIZE)
+#if (defined(SVR4) || defined(CRAY) || defined(AIXV3)) && !defined(FD_SETSIZE)
 #include <sys/select.h>		/* defines FD stuff except howmany() */
 #endif
 
