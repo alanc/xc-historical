@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: window.c,v 1.226 89/03/11 16:53:03 rws Exp $ */
+/* $XConsortium: window.c,v 1.227 89/03/12 15:04:56 rws Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -597,6 +597,8 @@ MakeRootTile(pWin)
 						    pScreen->rootDepth);
 
     pGC = GetScratchGC(pScreen->rootDepth, pScreen);
+    if (!pWin->backgroundTile || !pGC)
+	FatalError("cound not create root tile");
 
     {
 	CARD32 attributes[2];
@@ -604,7 +606,7 @@ MakeRootTile(pWin)
 	attributes[0] = pScreen->whitePixel;
 	attributes[1] = pScreen->blackPixel;
 
-	ChangeGC(pGC, GCForeground | GCBackground, attributes);
+	(void)ChangeGC(pGC, GCForeground | GCBackground, attributes);
     }
 
    ValidateGC((DrawablePtr)pWin->backgroundTile, pGC);
@@ -3735,6 +3737,8 @@ DrawLogo(pWin)
     width = pScreen->width;
     height = pScreen->height;
     pGC = GetScratchGC(pScreen->rootDepth, pScreen);
+    if (!pGC)
+	return;
 
     if ((random() % 100) == 17) /* make the probability for white fairly low */
 	fore[0] = pScreen->whitePixel;
@@ -3762,7 +3766,7 @@ DrawLogo(pWin)
     } else {
 	back[0] = 0;
 	back[1] = 0;
-	DoChangeGC(pGC, GCTileStipXOrigin|GCTileStipYOrigin, back, 0);
+	(void)DoChangeGC(pGC, GCTileStipXOrigin|GCTileStipYOrigin, back, 0);
 	back[0] = FillTiled;
 	back[1] = (XID)pWin->backgroundTile;
 	bmask = GCFillStyle|GCTile;
@@ -3793,7 +3797,7 @@ DrawLogo(pWin)
     poly[1].x = x + size-d31;          poly[1].y = y;
     poly[2].x = x + 0;                 poly[2].y = y + size;
     poly[3].x = x + d31;               poly[3].y = y + size;
-    DoChangeGC(pGC, fmask, fore, 1);
+    (void)DoChangeGC(pGC, fmask, fore, 1);
     ValidateGC(pDraw, pGC);
     (*pGC->FillPolygon)(pDraw, pGC, Convex, CoordModeOrigin, 4, poly);
 
@@ -3810,7 +3814,7 @@ DrawLogo(pWin)
     poly[1].x = x + size / 2;                    poly[1].y = y + size/2;
     poly[2].x = x + (size/2)+(d31-(d31/2));      poly[2].y = y + size/2;
     poly[3].x = x + d31;                         poly[3].y = y + size;
-    DoChangeGC(pGC, bmask, back, 1);
+    (void)DoChangeGC(pGC, bmask, back, 1);
     ValidateGC(pDraw, pGC);
     (*pGC->FillPolygon)(pDraw, pGC, Convex, CoordModeOrigin, 4, poly);
 
@@ -3843,7 +3847,7 @@ DrawLogo(pWin)
     poly[1].x = x + size/4;            poly[1].y = y;
     poly[2].x = x + size;              poly[2].y = y + size;
     poly[3].x = x + size - size/4;     poly[3].y = y + size;
-    DoChangeGC(pGC, fmask, fore, 1);    
+    (void)DoChangeGC(pGC, fmask, fore, 1);    
     ValidateGC(pDraw, pGC);
     (*pGC->FillPolygon)(pDraw, pGC, Convex, CoordModeOrigin, 4, poly);
 
@@ -3859,7 +3863,7 @@ DrawLogo(pWin)
     poly[1].x = x + size-( d11+d21);  poly[1].y = y;
     poly[2].x = x + d11;              poly[2].y = y + size;
     poly[3].x = x + d11 + d21;        poly[3].y = y + size;
-    DoChangeGC(pGC, bmask, back, 1);    
+    (void)DoChangeGC(pGC, bmask, back, 1);    
     ValidateGC(pDraw, pGC);
     (*pGC->FillPolygon)(pDraw, pGC, Convex, CoordModeOrigin, 4, poly);
 

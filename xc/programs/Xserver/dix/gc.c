@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: gc.c,v 1.114 89/03/13 08:27:02 rws Exp $ */
+/* $XConsortium: gc.c,v 1.116 89/03/17 16:36:44 rws Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -71,6 +71,7 @@ ValidateGC(pDraw, pGC)
 
 /* Publically defined entry to ChangeGC.  Just calls DoChangeGC and tells
  * it that all of the entries are constants or IDs */
+int
 ChangeGC(pGC, mask, pval)
     register GC 	*pGC;
     register BITS32	mask;
@@ -470,14 +471,8 @@ CreateGC(pDrawable, mask, pval, pStatus)
     pGC->fillStyle = FillSolid;
     pGC->fillRule = EvenOddRule;
     pGC->arcMode = ArcPieSlice;
-    pGC->font = defaultFont;
-    if ( pGC->font)  /* necessary, because open of default font could fail */
-	pGC->font->refcnt++;
     pGC->tile = NullPixmap;
 
-    /* use the default stipple */
-    pGC->stipple = pGC->pScreen->PixmapPerDepth[0];
-    pGC->stipple->refcnt++;
     pGC->patOrg.x = 0;
     pGC->patOrg.y = 0;
     pGC->subWindowMode = ClipByChildren;
@@ -508,15 +503,26 @@ CreateGC(pDrawable, mask, pval, pStatus)
 	pTile = (PixmapPtr)
 		(*pGC->pScreen->CreatePixmap)(pDrawable->pScreen,
 					      w, h, pGC->depth);
+	pgcScratch = GetScratchGC(pGC->depth, pGC->pScreen);
+	if (!pTile || !pgcScratch)
+	{
+	    if (pTile)
+		(*pTile->drawable.pScreen->DestroyPixmap)(pTile);
+	    if (pgcScratch)
+		FreeScratchGC(pgcScratch);
+	    xfree(pGC->dash);
+	    xfree(pGC);
+	    *pStatus = BadAlloc;
+	    return (GCPtr)NULL;
+	}
 	tmpval[0] = GXcopy;
 	tmpval[1] = (mask & GCForeground) ? 
 	    /* blech */
 	    pval[(mask & GCFunction) + ((mask & GCPlaneMask) == GCPlaneMask)] :
 	    pGC->fgPixel;
 	tmpval[2] = FillSolid;
-	pgcScratch = GetScratchGC(pGC->depth, pGC->pScreen);
-	ChangeGC(pgcScratch, GCFunction | GCForeground | GCFillStyle, 
-		 tmpval);
+	(void)ChangeGC(pgcScratch, GCFunction | GCForeground | GCFillStyle, 
+		       tmpval);
 	ValidateGC((DrawablePtr)pTile, pgcScratch);
 	rect.x = 0;
 	rect.y = 0;
@@ -528,6 +534,12 @@ CreateGC(pDrawable, mask, pval, pStatus)
 
 	pGC->tile = pTile;
     }
+    /* use the default font and stipple */
+    pGC->font = defaultFont;
+    defaultFont->refcnt++;
+    pGC->stipple = pGC->pScreen->PixmapPerDepth[0];
+    pGC->stipple->refcnt++;
+
     pGC->stateChanges = (1 << GCLastBit+1) - 1;
     (*pGC->pScreen->CreateGC)(pGC);
     if(mask)
@@ -856,14 +868,16 @@ CreateGCperDepthArray(screenNum)
     pScreen = &screenInfo.screen[screenNum];
     pScreen->rgf = 0;
     /* do depth 1 seperately because it's not included in list */
-    pScreen->GCperDepth[0] = CreateScratchGC(pScreen, 1);
+    if (!(pScreen->GCperDepth[0] = CreateScratchGC(pScreen, 1)))
+	FatalError("failed to create scratch GC");
     (pScreen->GCperDepth[0])->graphicsExposures = FALSE;
 
     pDepth = pScreen->allowedDepths;
     for (i=0; i<pScreen->numDepths; i++, pDepth++)
     {
-	pScreen->GCperDepth[i+1] = CreateScratchGC(pScreen,
-						   pDepth->depth);
+	if (!(pScreen->GCperDepth[i+1] = CreateScratchGC(pScreen,
+							 pDepth->depth)))
+	    FatalError("failed to create scratch GC");
 	(pScreen->GCperDepth[i+1])->graphicsExposures = FALSE;
     }
 }
@@ -882,13 +896,15 @@ CreateDefaultStipple(screenNum)
     w = 16;
     h = 16;
     (* pScreen->QueryBestSize)(StippleShape, &w, &h);
-    pScreen->PixmapPerDepth[0] = 
-		(*pScreen->CreatePixmap)(pScreen, w, h, 1);
-
+    if (!(pScreen->PixmapPerDepth[0] =
+			(*pScreen->CreatePixmap)(pScreen, w, h, 1)))
+	FatalError("failed to create default stipple");
     /* fill stipple with 1 */
     tmpval[0] = GXcopy; tmpval[1] = 1; tmpval[2] = FillSolid;
     pgcScratch = GetScratchGC(1, pScreen);
-    ChangeGC(pgcScratch, GCFunction | GCForeground | GCFillStyle, tmpval);
+    if (!pgcScratch)
+	FatalError("failed to create default stipple");
+    (void)ChangeGC(pgcScratch, GCFunction|GCForeground|GCFillStyle, tmpval);
     ValidateGC((DrawablePtr)pScreen->PixmapPerDepth[0], pgcScratch);
     rect.x = 0;
     rect.y = 0;
@@ -1096,8 +1112,9 @@ GetScratchGC(depth, pScreen)
 	    return pGC;
 	}
     /* if we make it this far, need to roll our own */
-    pGC =  CreateScratchGC(pScreen, depth);
-    pGC->graphicsExposures = FALSE;
+    pGC = CreateScratchGC(pScreen, depth);
+    if (pGC)
+	pGC->graphicsExposures = FALSE;
     return pGC;
 }
 

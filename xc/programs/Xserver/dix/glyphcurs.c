@@ -22,7 +22,7 @@ SOFTWARE.
 
 ************************************************************************/
 
-/* $XConsortium: glyphcurs.c,v 1.13 88/02/02 19:12:50 rws Exp $ */
+/* $XConsortium: glyphcurs.c,v 1.14 88/09/06 15:41:10 jim Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -93,12 +93,16 @@ ServerBitsFromGlyph(fontID, pfont, ch, cm, ppbits)
 
     ppix = (PixmapPtr)(*pScreen->CreatePixmap)(pScreen, cm->width,
 					       cm->height, 1);
-    if (!ppix)
+    pGC = GetScratchGC(1, pScreen);
+    if (!ppix || !pGC)
     {
+	if (ppix)
+	    (*pScreen->DestroyPixmap)(ppix);
+	if (pGC)
+	    FreeScratchGC(pGC);
 	xfree(pbits);
 	return BadAlloc;
     }
-    pGC = GetScratchGC(1, pScreen);
 
     rect.x = 0;
     rect.y = 0;
