@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: dm.c,v 1.25 89/11/14 13:34:58 keith Exp $
+ * $XConsortium: dm.c,v 1.26 89/11/17 18:42:55 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -34,7 +34,7 @@ extern void	exit (), abort ();
 static void	RescanServers ();
 int		Rescan;
 static long	ServersModTime, ConfigModTime;
-static void	TerminateAll (), RescanNotify ();
+static SIGVAL	TerminateAll (), RescanNotify ();
 static void	StopDisplay ();
 
 #ifndef NOXDMTITLE
@@ -47,7 +47,7 @@ int	argc;
 char	**argv;
 {
 #ifndef SYSV
-    void	ChildNotify ();
+    static SIGVAL	ChildNotify ();
 #endif
 
 #ifndef NOXDMTITLE
@@ -105,11 +105,9 @@ char	**argv;
     Debug ("Nothing left to do, exiting\n");
 }
 
-static void
+static SIGVAL
 RescanNotify ()
 {
-    void	RescanNotify ();
-
     Debug ("Caught SIGHUP\n");
     Rescan = 1;
 #ifdef SYSV
@@ -219,7 +217,7 @@ RescanIfMod ()
  * catch a SIGTERM, kill all displays and exit
  */
 
-static void
+static SIGVAL
 TerminateAll ()
 {
     void    TerminateDisplay ();
@@ -235,11 +233,13 @@ TerminateAll ()
 
 int	ChildReady;
 
-void
+#ifndef SYSV
+static SIGVAL
 ChildNotify ()
 {
     ChildReady = 1;
 }
+#endif
 
 WaitForChild ()
 {
@@ -507,13 +507,13 @@ StorePid ()
     }
 }
 
+/*VARARGS*/
 SetTitle (va_alist)
 va_dcl
 {
 #ifndef NOXDMTITLE
     char	*p = Title;
     int	left = TitleLen;
-    int	len;
     char	*s;
     va_list	args;
 

@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: server.c,v 1.2 89/11/08 17:21:11 keith Exp $
+ * $XConsortium: server.c,v 1.3 89/11/17 18:43:21 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -29,10 +29,11 @@
 static receivedUsr1;
 
 extern int  errno;
+static serverPause ();
 
 static Display	*dpy;
 
-static void
+static SIGVAL
 CatchUsr1 ()
 {
 #ifdef SYSV
@@ -99,7 +100,7 @@ struct display	*d;
     }
     Debug ("Server Started %d\n", pid);
     d->serverPid = pid;
-    if (serverPause (d->openDelay, pid))
+    if (serverPause ((unsigned) d->openDelay, pid))
 	return FALSE;
     return TRUE;
 }
@@ -112,13 +113,13 @@ struct display	*d;
 static jmp_buf	pauseAbort;
 static int	serverPauseRet;
 
-static void
+static SIGVAL
 serverPauseAbort ()
 {
     longjmp (pauseAbort, 1);
 }
 
-static void
+static SIGVAL
 serverPauseUsr1 ()
 {
     Debug ("display manager paused til SIGUSR1\n");
@@ -194,7 +195,7 @@ int	    serverPid;
 
 static jmp_buf	openAbort;
 
-static void
+static SIGVAL
 abortOpen ()
 {
 	longjmp (openAbort, 1);
@@ -210,7 +211,7 @@ GetRemoteAddress (d, fd)
 
     if (d->peer)
 	free ((char *) d->peer);
-    getpeername (fd, buf, &len);
+    getpeername (fd, (struct sockaddr *) buf, &len);
     d->peerlen = 0;
     if (len)
     {
@@ -224,6 +225,7 @@ GetRemoteAddress (d, fd)
     Debug ("Got remote address %s %d\n", d->name, d->peerlen);
 }
 
+int
 WaitForServer (d)
     struct display  *d;
 {
@@ -249,7 +251,7 @@ WaitForServer (d)
 		       errno, _SysErrorMsg (errno), d->name);
 	    }
 	    Debug ("waiting for server to start %d\n", i);
-	    sleep (d->openDelay);
+	    sleep ((unsigned) d->openDelay);
     	} else {
 	    Debug ("hung in open, aborting\n");
 	    LogError ("Hung in XOpenDisplay(%s), aborting\n", d->name);
@@ -259,6 +261,7 @@ WaitForServer (d)
     }
     Debug ("giving up on server\n");
     LogError ("server open failed for %s, giving up\n", d->name);
+    return 0;
 }
 
 ResetServer (d)
@@ -270,7 +273,7 @@ ResetServer (d)
 
 static jmp_buf	pingTime;
 
-int
+static int
 PingLost ()
 {
     longjmp (pingTime, 1);
@@ -281,7 +284,7 @@ PingServer (d, alternateDpy)
     Display	    *alternateDpy;
 {
     int	    (*oldError)();
-    void    (*oldSig)();
+    SIGVAL  (*oldSig)();
     int	    oldAlarm;
 
     if (!alternateDpy)
