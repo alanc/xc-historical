@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: resource.c,v 1.3 91/05/13 16:56:06 gildea Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -123,6 +123,11 @@ ClientResourceRec clientTable[MAXCLIENTS];
  *    in resource table
  *****************/
 
+int
+NoneDeleteFunc ()
+{
+}
+
 Bool
 InitClientResources(client)
     ClientPtr   client;
@@ -142,6 +147,7 @@ InitClientResources(client)
 					     sizeof(DeleteType));
 	if (!DeleteFuncs)
 	    return FALSE;
+	DeleteFuncs[RT_NONE & TypeMask] = NoneDeleteFunc;
 	DeleteFuncs[RT_FONT & TypeMask] = CloseClientFont;
     }
     clientTable[i = client->index].resources =
