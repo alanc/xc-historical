@@ -1,5 +1,5 @@
 /*
- * $XConsortium: charproc.c,v 1.57 88/10/07 08:17:26 swick Exp $
+ * $XConsortium: charproc.c,v 1.58 88/10/07 11:01:47 jim Exp $
  */
 
 
@@ -132,7 +132,7 @@ static void VTallocbuf();
 #define	doinput()		(bcnt-- > 0 ? *bptr++ : in_put())
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: charproc.c,v 1.57 88/10/07 08:17:26 swick Exp $";
+static char rcs_id[] = "$XConsortium: charproc.c,v 1.58 88/10/07 11:01:47 jim Exp $";
 #endif	/* lint */
 
 static long arg;
@@ -1023,8 +1023,8 @@ in_put()
 				FlushLog(screen);
 			if((bcnt = read(screen->respond, bptr = buffer,
 			 BUF_SIZE)) < 0) {
-				if(errno == EIO && am_slave)
-					exit(0);
+				if(errno == EIO)
+					Cleanup (0);
 				else if(errno != EWOULDBLOCK)
 					Panic(
 				 "input: read returned unexpected error (%d)\n",
