@@ -20,7 +20,7 @@
 #endif
        AUTHOBJS = AuDispose.o AuGetBest.o AuFileName.o AuRead.o 
        AUTHSRCS = AuDispose.c AuGetBest.c AuFileName.c AuRead.c 
-           SRCS = *.c $(AIDSRCS)
+           SRCS = *.c
         HEADERS = Xlib.h Xresource.h Xutil.h cursorfont.h Xlibint.h Xlibos.h \
 			Xstreams.h
        LINTLIBS =
@@ -389,8 +389,6 @@ InstallLibrary(X11_d,$(USRLIBDIR))
 Berklib.c: sysV/Berklib.c
 	-$(RM) Berklib.c
 	-$(LN) sysV/Berklib.c .
-
-depend::  $(AIDSRCS)
 #endif
 
 AuDispose.c:  $(XAUTHSRC)/AuDispose.c
@@ -430,17 +428,15 @@ ks_tables.h: $(INCLUDESRC)/keysymdef.h makekeys.C
 	$(MV) ks_tables_h $@
 	$(RM) makekeys ks_tables_h
 
-includes:: ks_tables.h des.h
+includes:: ks_tables.h des.h $(DESSRCS) $(AIDSRCS)
 
-depend:: ks_tables.h des.h
+depend:: ks_tables.h des.h $(AUTHSRCS) $(DESSRCS) $(AIDSRCS)
 
 clean::
 	$(RM) ks_tables_h ks_tables.h makekeys.c makekeys
 
 clean::
-	$(RM) $(AUTHSRCS) $(DESSRCS)
-
-depend:: $(AUTHSRCS) $(DESSRCS)
+	$(RM) $(AUTHSRCS) $(DESSRCS) $(AIDSRCS)
 
 DependTarget()
 
