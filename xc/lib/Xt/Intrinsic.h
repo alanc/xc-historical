@@ -1,4 +1,4 @@
-/* $XConsortium: Intrinsic.h,v 1.195 94/03/30 19:45:03 converse Exp $ */
+/* $XConsortium: Intrinsic.h,v 1.196 94/04/01 20:51:21 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -2822,6 +2822,17 @@ extern Boolean XtCvtStringToAtom(
 #endif
 );
 
+extern Boolean XtCvtStringToBool(
+#if NeedFunctionPrototypes
+    Display*	/* dpy */,
+    XrmValuePtr /* args */,	/* none */
+    Cardinal*   /* num_args */,	
+    XrmValuePtr	/* fromVal */,
+    XrmValuePtr	/* toVal */,
+    XtPointer*	/* closure_ret */
+#endif
+);
+
 extern Boolean XtCvtStringToBoolean(
 #if NeedFunctionPrototypes
     Display*	/* dpy */,
@@ -2833,7 +2844,7 @@ extern Boolean XtCvtStringToBoolean(
 #endif
 );
 
-extern Boolean XtCvtStringToBool(
+extern Boolean XtCvtStringToCommandArgArray(
 #if NeedFunctionPrototypes
     Display*	/* dpy */,
     XrmValuePtr /* args */,	/* none */
@@ -2856,6 +2867,17 @@ extern Boolean XtCvtStringToCursor(
 );
 
 extern Boolean XtCvtStringToDimension(
+#if NeedFunctionPrototypes
+    Display*	/* dpy */,
+    XrmValuePtr /* args */,	/* none */
+    Cardinal*   /* num_args */,	
+    XrmValuePtr	/* fromVal */,
+    XrmValuePtr	/* toVal */,
+    XtPointer*	/* closure_ret */
+#endif
+);
+
+extern Boolean XtCvtStringToDirectoryString(
 #if NeedFunctionPrototypes
     Display*	/* dpy */,
     XrmValuePtr /* args */,	/* none */
@@ -2943,7 +2965,7 @@ extern Boolean XtCvtStringToGravity(
 #endif
 );
 
-extern Boolean XtCvtStringToInt(
+extern Boolean XtCvtStringToInitialState(
 #if NeedFunctionPrototypes
     Display*	/* dpy */,
     XrmValuePtr /* args */,	/* none */
@@ -2954,7 +2976,7 @@ extern Boolean XtCvtStringToInt(
 #endif
 );
 
-extern Boolean XtCvtStringToInitialState(
+extern Boolean XtCvtStringToInt(
 #if NeedFunctionPrototypes
     Display*	/* dpy */,
     XrmValuePtr /* args */,	/* none */
@@ -2976,6 +2998,8 @@ extern Boolean XtCvtStringToPixel(
 #endif
 );
 
+#define XtCvtStringToPosition XtCvtStringToShort
+
 extern Boolean XtCvtStringToRestartStyle(
 #if NeedFunctionPrototypes
     Display*	/* dpy */,
@@ -2987,20 +3011,7 @@ extern Boolean XtCvtStringToRestartStyle(
 #endif
 );
 
-#define XtCvtStringToPosition XtCvtStringToShort
-
 extern Boolean XtCvtStringToShort(
-#if NeedFunctionPrototypes
-    Display*	/* dpy */,
-    XrmValuePtr /* args */,	/* none */
-    Cardinal*   /* num_args */,	
-    XrmValuePtr	/* fromVal */,
-    XrmValuePtr	/* toVal */,
-    XtPointer*	/* closure_ret */
-#endif
-);
-
-extern Boolean XtCvtStringToStringArray(
 #if NeedFunctionPrototypes
     Display*	/* dpy */,
     XrmValuePtr /* args */,	/* none */
@@ -3046,7 +3057,7 @@ extern Boolean XtCvtStringToVisual(
 
 /* int converters */
 
-extern Boolean XtCvtIntToBoolean(
+extern Boolean XtCvtIntToBool(
 #if NeedFunctionPrototypes
     Display*	/* dpy */,
     XrmValuePtr /* args */,	/* none */
@@ -3057,7 +3068,7 @@ extern Boolean XtCvtIntToBoolean(
 #endif
 );
 
-extern Boolean XtCvtIntToBool(
+extern Boolean XtCvtIntToBoolean(
 #if NeedFunctionPrototypes
     Display*	/* dpy */,
     XrmValuePtr /* args */,	/* none */
