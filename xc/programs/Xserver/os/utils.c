@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: utils.c,v 1.62 88/08/30 18:00:53 jim Exp $ */
+/* $XConsortium: utils.c,v 1.63 88/09/06 15:50:42 jim Exp $ */
 #include <stdio.h>
 #include "Xos.h"
 #include "misc.h"
@@ -154,8 +154,8 @@ void UseMsg()
     ErrorF("c #                    key-click volume (0-8)\n");
     ErrorF("-co string             color database file\n");
     ErrorF("-fc string             cursor font\n");
-    ErrorF("-fn string             default text font name\n");
-    ErrorF("-fp string             default text font path\n");
+    ErrorF("-fn string             default font name\n");
+    ErrorF("-fp string             default font path\n");
 #ifndef NOLOGOHACK
     ErrorF("-logo                  enable logo in screen saver\n");
     ErrorF("nologo                 disable logo in screen saver\n");
