@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: events.c,v 5.33 91/01/31 16:34:37 rws Exp $ */
+/* $XConsortium: events.c,v 5.34 91/04/07 18:56:54 keith Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -457,6 +457,12 @@ WindowPtr
 GetSpriteWindow()
 {
     return sprite.win;
+}
+
+CursorPtr
+GetSpriteCursor()
+{
+    return sprite.current;
 }
 
 #define NoticeTime(xE) { \
