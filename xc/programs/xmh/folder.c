@@ -1,5 +1,5 @@
 /*
- * $XConsortium: folder.c,v 2.29 89/12/11 16:32:18 converse Exp $
+ * $XConsortium: folder.c,v 2.30 89/12/14 21:07:26 converse Exp $
  *
  *
  *		       COPYRIGHT 1987, 1989
@@ -37,6 +37,7 @@
 #include "tocintrnl.h"
 #include <X11/Xaw/Cardinals.h>
 extern void exit();
+extern void free();
 
 typedef struct {	/* client data structure for callbacks */
     Scrn	scrn;		/* the xmh scrn of action */
@@ -116,7 +117,11 @@ void XmhClose(w, event, params, num_params)
     String	*params;	/* unused */
     Cardinal	*num_params;	/* unused */
 {
-    Scrn scrn = ScrnFromWidget(w);
+    Scrn	scrn;
+    if (event->type == ClientMessage &&
+	event->xclient.data.l[0] != wm_delete_window)
+	return;
+    scrn = ScrnFromWidget(w);
     DoClose(w, (XtPointer) scrn, (XtPointer) NULL);
 }
 
@@ -241,7 +246,7 @@ static void CreateFolder(widget, client_data, call_data)
     char	*name;
     Widget	dialog = (Widget) client_data;
     Arg		args[3];
-    char 	*str[256], *label;
+    char 	str[300], *label;
 
     name = XawDialogGetValueString(dialog);
     for (i=0 ; name[i] > ' ' ; i++) ;

@@ -1,5 +1,5 @@
 /*
- *  $XConsortium: globals.h,v 2.30 89/11/25 21:07:29 converse Exp $
+ *  $XConsortium: globals.h,v 2.31 89/12/10 17:38:07 converse Exp $
  *
  *
  *		       COPYRIGHT 1987, 1989
@@ -35,6 +35,7 @@ ext Display	*theDisplay;	/* Display variable. */
 ext Widget	toplevel;	/* The top level widget (A hack %%%). */
 ext char	*progName;	/* Program name. */
 ext char	*homeDir;	/* User's home directory. */
+ext Atom	wm_delete_window;	/* see ICCCM on Window Deletion */
 
 ext struct _resources {
     Boolean	debug;

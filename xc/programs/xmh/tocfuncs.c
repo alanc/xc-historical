@@ -1,5 +1,5 @@
 /*
- * $XConsortium: tocfuncs.c,v 2.29 89/12/10 17:31:00 converse Exp $
+ * $XConsortium: tocfuncs.c,v 2.30 89/12/14 21:18:05 converse Exp $
  *
  *
  *			COPYRIGHT 1987, 1989
@@ -467,7 +467,8 @@ void DoPrint(w, client_data, call_data)
 	}
     }
     else {
-	PopupNotice( "print: no messages selected", NULL, NULL );
+	PopupNotice( "print: no messages selected.", 
+		    (XtCallbackProc) NULL, (XtPointer) NULL);
     }
     FreeMsgList(mlist);
 }
@@ -690,6 +691,7 @@ void DoPickMessages(w, client_data, call_data)
     Scrn	nscrn;
     char *	toseq;
     Sequence	selectedseq;
+    Boolean	recycled;
 
     if (toc == NULL) return;
     if ((selectedseq = TocSelectedSequence(toc)) == NULL)
@@ -700,13 +702,18 @@ void DoPickMessages(w, client_data, call_data)
 	    toseq = "temp";
     }
     nscrn = CreateNewScrn(STpick);
+    recycled = (nscrn->pick) ? True : False;
     AddPick(nscrn, toc, (TocViewedSequence(toc))->name, toseq);
     DEBUG("Realizing Pick...")
     XtRealizeWidget(nscrn->parent);
     DEBUG(" done.\n")
-    InitBusyCursor(nscrn);
-    XDefineCursor(XtDisplay(nscrn->parent), XtWindow(nscrn->parent),
-		  app_resources.cursor);
+    if (! recycled) {
+	InitBusyCursor(nscrn);
+	XDefineCursor(XtDisplay(nscrn->parent), XtWindow(nscrn->parent),
+		      app_resources.cursor);
+	XSetWMProtocols(XtDisplay(toplevel), XtWindow(nscrn->parent),
+			&wm_delete_window, 1);
+    }
     MapScrn(nscrn);
 }
 

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: viewfuncs.c,v 2.17 89/09/27 19:17:00 converse Exp $
+ * $XConsortium: viewfuncs.c,v 2.18 89/10/06 15:04:15 converse Exp $
  *
  *
  *		       COPYRIGHT 1987, 1989
@@ -58,7 +58,11 @@ void XmhCloseView(w, event, params, num_params)
     String	*params;
     Cardinal	*num_params;
 {
-    Scrn scrn = ScrnFromWidget(w);
+    Scrn	scrn;
+    if (event->type == ClientMessage &&
+	event->xclient.data.l[0] != wm_delete_window)
+	return;
+    scrn = ScrnFromWidget(w);
     DoCloseView(w, (XtPointer) scrn, (XtPointer) NULL);
 }
 
@@ -199,7 +203,6 @@ void DoSaveView(w, client_data, call_data)
     Scrn	scrn = (Scrn) client_data;
     Arg		args[2];
 
-    DEBUG("DoSaveView\n")
     if (scrn->msg == NULL) return;
     if (MsgSaveChanges(scrn->msg)) {
 	XtSetArg(args[0], XtNtranslations, scrn->read_translations);

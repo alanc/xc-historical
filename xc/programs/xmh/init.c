@@ -1,5 +1,5 @@
 /*
- * $XConsortium: init.c,v 2.42 89/11/30 20:07:08 converse Exp $
+ * $XConsortium: init.c,v 2.43 89/12/10 17:31:20 converse Exp $
  *
  *
  *		        COPYRIGHT 1987, 1989
@@ -164,7 +164,7 @@ Dimension defwidth, defheight;
 	height = defheight;
 	gbits |= HeightValue;
     }
-    return CreateGeometry(gbits, x, y, width, height);
+    return CreateGeometry(gbits, x, y, (int) width, (int) height);
 }
 
 
@@ -187,6 +187,7 @@ static _IOErrorHandler(dpy)
     Punt("Cannot continue from server error.");
 }
 
+/*ARGSUSED*/
 static void PopupAppDefaultsWarning(w, closure, event, cont)
     Widget w;
     XtPointer closure;
@@ -294,7 +295,11 @@ char **argv;
 
 	/* popup dialog box button action procedures */
 
-	{"XmhPromptOkayAction",		XmhPromptOkayAction}
+	{"XmhPromptOkayAction",		XmhPromptOkayAction},
+
+	/* additional actions to implement support for WM_PROTOCOLS */
+
+	{"XmhCancelPick",		XmhCancelPick}
     };
 
     static Arg shell_args[] = {
@@ -394,6 +399,9 @@ char **argv;
 
     XtAppAddActions( XtWidgetToApplicationContext(toplevel),
 		    actions, XtNumber(actions));
+
+    wm_delete_window = XInternAtom(XtDisplay(toplevel), "WM_DELETE_WINDOW",
+				   False);
 
     MenuItemBitmap =
 	XCreateBitmapFromData( XtDisplay(toplevel),

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: actions.h,v 1.2 89/11/16 21:01:41 converse Exp $
+ * $XConsortium: actions.h,v 1.3 89/11/30 20:07:14 converse Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -45,6 +45,10 @@ extern void	XmhPopFolder();
 	/* from msg.c */
 
 extern void	XmhInsert();
+
+	/* from pick.c */
+
+extern void	XmhCancelPick();
 
 	/* from popup.c */
 

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: screen.c,v 2.52 89/11/14 17:56:15 converse Exp $
+ * $XConsortium: screen.c,v 2.53 89/12/14 21:12:24 converse Exp $
  *
  *
  *		        COPYRIGHT 1987, 1989
@@ -148,7 +148,7 @@ static void MakeCommandMenu(scrn, mbd)
 	{ (XtCallbackProc) NULL, (XtPointer) NULL},
     };
 
-    /* Menus are created as childen of the shell of the scrn in order
+    /* Menus are created as childen of the Paned widget of the scrn in order
      * that they can be used both as pop-up and as pull-down menus.
      */
 
@@ -244,6 +244,9 @@ Scrn scrn;
 	}
     }
 
+    XtOverrideTranslations(scrn->parent, 
+        XtParseTranslationTable("<Message>WM_PROTOCOLS: XmhClose()\n"));
+
     if (app_resources.mail_waiting_flag) {
 	static Arg arglist[] = {XtNiconPixmap, NULL};
 	arglist[0].value = (XtArgVal) NoMailPixmap;
@@ -255,6 +258,8 @@ Scrn scrn;
 static void MakeView(scrn)
 Scrn scrn;
 {
+    XtOverrideTranslations(scrn->parent, 
+        XtParseTranslationTable("<Message>WM_PROTOCOLS: XmhCloseView()\n"));
     scrn->viewlabel = CreateTitleBar(scrn, "viewTitlebar");
     scrn->viewwidget = CreateTextSW(scrn, "view", (ArgList)NULL, (Cardinal)0);
     scrn->viewbuttons = BBoxCreate(scrn, "viewButtons");
@@ -265,6 +270,8 @@ Scrn scrn;
 static void MakeComp(scrn)
 Scrn scrn;
 {
+    XtOverrideTranslations(scrn->parent, 
+        XtParseTranslationTable("<Message>WM_PROTOCOLS: XmhCloseView()\n"));
     scrn->viewlabel = CreateTitleBar(scrn, "composeTitlebar");
     scrn->viewwidget = CreateTextSW(scrn, "comp", (ArgList)NULL, (Cardinal)0);
     scrn->viewbuttons = BBoxCreate(scrn, "compButtons");
@@ -313,8 +320,8 @@ ScrnKind kind;
 			      (ArgList) NULL, (Cardinal) 0);
 
     switch (kind) {
-	case STtocAndView:	MakeTocAndView(scrn);	break;
-	case STview:		MakeView(scrn);	break;
+	case STtocAndView: 	MakeTocAndView(scrn); break;
+	case STview:		MakeView(scrn); break;
 	case STcomp:		MakeComp(scrn);	break;
     }
 
@@ -366,6 +373,8 @@ ScrnKind kind;
 	InitBusyCursor(scrn);
 	XDefineCursor(XtDisplay(scrn->parent), XtWindow(scrn->parent),
 		      app_resources.cursor);
+	XSetWMProtocols(XtDisplay(toplevel), XtWindow(scrn->parent),
+			&wm_delete_window, 1);
     }
     scrn->mapped = (numScrns == 1);
     return scrn;
@@ -399,7 +408,7 @@ void DestroyScrn(scrn)
 {
     if (scrn->mapped) {
 	scrn->mapped = False;
-	XtPopdown(scrn->parent);	/* cannot popdown the first one? */
+	XtPopdown(scrn->parent);
 	TocSetScrn((Toc) NULL, scrn);
 	MsgSetScrnForce((Msg) NULL, scrn);
 	lastInput.win = -1;
@@ -421,11 +430,12 @@ Scrn ScrnFromWidget(w)		/* heavily used, should be efficient */
 Widget w;
 {
     register int i;
-    while (w && XtClass(w) != panedWidgetClass)
+    while (w && (XtClass(w) != applicationShellWidgetClass) &&
+	   (XtClass(w) != topLevelShellWidgetClass))
 	w = XtParent(w);
     if (w) {
 	for (i=0 ; i<numScrns ; i++) {
-	    if (w == (Widget) scrnList[i]->widget)
+	    if (w == (Widget) scrnList[i]->parent)
 		return scrnList[i];
 	}
     }
