@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.67 93/09/21 11:14:00 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.68 93/09/26 15:41:14 gildea Exp $
 #include <Server.tmpl>
 
 #if (SystemV || SystemV4) && !HasSockets
@@ -50,7 +50,6 @@ RPCSRCS =
 #if HasKrb5
 KRB5OBJS = k5auth.o k5encode.o
 KRB5SRCS = k5auth.c k5encode.c
-LinkSourceFile(k5encode.c,$(XAUTHSRC))
 #endif
 
 #if HasBSD44Sockets
@@ -115,6 +114,10 @@ oscolor.o: oscolor.c $(ICONFIGFILES)
 	cc -c $(DBM_DEFINES) $(CDEBUGFLAGS) $(ALLDEFINES) $*.c
 #else
 SpecialCObjectRule(oscolor,$(ICONFIGFILES),$(DBM_DEFINES))
+#endif
+
+#if HasKrb5
+LinkSourceFile(k5encode.c,$(XAUTHSRC))
 #endif
 
 DependTarget()
