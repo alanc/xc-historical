@@ -328,6 +328,8 @@
 	    (when (eq class (resource-database-name dbase))
 	      (return-from exit (resource-database-value dbase)))))))))
 
+(defvar *get-table-result*)
+
 (defun get-search-table (database full-name full-class)
   ;; Return a search table for use with get-search-resource.
   (declare (type resource-database database)
@@ -336,10 +338,9 @@
   (let* ((tight (resource-database-tight database))
 	 (loose (resource-database-loose database))
 	 (result (cons nil nil))
-	 (*result* result))
+	 (*get-table-result* result))
     (declare (type list tight loose)
-	     (type cons result)
-	     (special *result*))
+	     (type cons result))
     (when (or tight loose)
       (when full-name
 	(get-tables tight loose full-name full-class))
@@ -352,18 +353,17 @@
       ;;
       (let ((universal-bindings
 	      (remove nil loose :test-not #'eq
-		      :key #'(lambda (database) (or (resource-database-tight database)
-						    (resource-database-loose database))))))
+		      :key #'(lambda (database)
+			       (or (resource-database-tight database)
+				   (resource-database-loose database))))))
 	(when universal-bindings
-	  (setf (cdr *result*) (list universal-bindings)))))
+	  (setf (cdr *get-table-result*) (list universal-bindings)))))
     (cdr result)))
 
-(proclaim '(inline get-tables-lookup))
 (defun get-tables-lookup (dbase name names classes)
   (declare (type list dbase names classes)
 	   (type symbol name))
   (declare (optimize speed))
-  (declare (special *result*))
   (dolist (entry dbase)
     (declare (type resource-database entry))
     (when (stringable-equal name (resource-database-name entry))
@@ -374,11 +374,15 @@
 	  (if (cdr names)
 	      (get-tables tight loose (cdr names) (cdr classes))
 	    (when tight
-	      (let ((result *result*)) ;; Put tight at end of *result*
-		(setf (cdr result) (setq *result* (cons tight nil))))))
+	      (let ((result *get-table-result*))
+		;; Put tight at end of *get-table-result*
+		(setf (cdr result)
+		      (setq *get-table-result* (cons tight nil))))))
 	  (when loose
-	    (let ((result *result*)) ;; Put loose at end of *result*
-	      (setf (cdr result) (setq *result* (cons loose nil))))))))))
+	    (let ((result *get-table-result*))
+	      ;; Put loose at end of *get-table-result*
+	      (setf (cdr result)
+		    (setq *get-table-result* (cons loose nil))))))))))
 
 (defun get-tables (tight loose names classes)
   (declare (type list tight loose names classes))
