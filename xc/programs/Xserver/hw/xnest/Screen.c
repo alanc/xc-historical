@@ -1,4 +1,4 @@
-/* $XConsortium: Screen.c,v 1.1 93/07/12 15:28:46 rws Exp $ */
+/* $XConsortium: Screen.c,v 1.2 93/07/19 18:21:59 rws Exp $ */
 /*
 
 Copyright 1993 by Davor Matic
@@ -42,6 +42,7 @@ is" without express or implied warranty.
 extern Bool miModifyPixmapHeader();
 extern Bool miCreateScreenResources();
 extern Bool miCloseScreen();
+extern Bool miScreenInit();
 
 Window xnestDefaultWindows[MAXSCREENS];
 Window xnestScreenSaverWindows[MAXSCREENS];
@@ -115,7 +116,7 @@ Bool xnestOpenScreen(index, pScreen, argc, argv)
   Mask valuemask;
   XSetWindowAttributes attributes;
   XSizeHints sizeHints;
-  
+
   if (!(AllocateWindowPrivate(pScreen, xnestWindowPrivateIndex,
 			    sizeof(xnestPrivWin))  &&
 	  AllocateGCPrivate(pScreen, xnestGCPrivateIndex, 
@@ -168,8 +169,12 @@ Bool xnestOpenScreen(index, pScreen, argc, argv)
 
   /* myNum */
   /* id */
-  pScreen->width = xnestWidth;
-  pScreen->height = xnestHeight;
+  miScreenInit(pScreen, NULL, xnestWidth, xnestHeight, 1, 1, xnestWidth,
+	       visuals[xnestDefaultVisualIndex].nplanes, /* rootDepth */
+	       numDepths, depths,
+	       visuals[xnestDefaultVisualIndex].vid, /* root visual */
+	       numVisuals, visuals, NULL);
+
   pScreen->mmWidth = xnestWidth * DisplayWidthMM(xnestDisplay, 
 		       DefaultScreen(xnestDisplay)) / 
 			 DisplayWidth(xnestDisplay, 
@@ -178,10 +183,7 @@ Bool xnestOpenScreen(index, pScreen, argc, argv)
 		        DefaultScreen(xnestDisplay)) /
 			  DisplayHeight(xnestDisplay, 
 			    DefaultScreen(xnestDisplay));
-  pScreen->numDepths = numDepths;
-  pScreen->rootDepth = visuals[xnestDefaultVisualIndex].nplanes;
-  pScreen->allowedDepths = depths;
-  pScreen->rootVisual = visuals[xnestDefaultVisualIndex].vid;
+
   pScreen->defColormap = (Colormap) FakeClientID(0);
   pScreen->minInstalledCmaps = MINCMAPS;
   pScreen->maxInstalledCmaps = MAXCMAPS;
@@ -189,14 +191,10 @@ Bool xnestOpenScreen(index, pScreen, argc, argv)
   pScreen->saveUnderSupport = NotUseful;
   pScreen->whitePixel = xnestWhitePixel;
   pScreen->blackPixel = xnestBlackPixel;
-  pScreen->ModifyPixmapHeader = miModifyPixmapHeader;
-  pScreen->CreateScreenResources = miCreateScreenResources;
   /* rgf */
   /* GCperDepth */
   /* PixmapPerDepth */
   pScreen->devPrivate = NULL;
-  pScreen->numVisuals = numVisuals;
-  pScreen->visuals = visuals;
   /* WindowPrivateLen */
   /* WindowPrivateSizes */
   /* totalWindowSize */
@@ -222,13 +220,11 @@ Bool xnestOpenScreen(index, pScreen, argc, argv)
   pScreen->ChangeWindowAttributes = xnestChangeWindowAttributes;
   pScreen->RealizeWindow = xnestRealizeWindow;
   pScreen->UnrealizeWindow = xnestUnrealizeWindow;
-  pScreen->ValidateTree = miValidateTree;
   pScreen->PostValidateTree = (void (*)()) 0;
   pScreen->WindowExposures = xnestWindowExposures;
   pScreen->PaintWindowBackground = xnestPaintWindowBackground;
   pScreen->PaintWindowBorder = xnestPaintWindowBorder;
   pScreen->CopyWindow = xnestCopyWindow;
-  pScreen->ClearToBackground = miClearToBackground;
   pScreen->ClipNotify = xnestClipNotify;
 
   /* Pixmap procedures */
@@ -274,29 +270,7 @@ Bool xnestOpenScreen(index, pScreen, argc, argv)
   pScreen->StoreColors = xnestStoreColors;
   pScreen->ResolveColor = xnestResolveColor;
 
-  /* Region procedures */
-
-  pScreen->RegionCreate = miRegionCreate;
-  pScreen->RegionInit = miRegionInit;
-  pScreen->RegionCopy = miRegionCopy;
-  pScreen->RegionDestroy = miRegionDestroy;
-  pScreen->RegionUninit = miRegionUninit;
-  pScreen->Intersect = miIntersect;
-  pScreen->Union = miUnion;
-  pScreen->Subtract = miSubtract;
-  pScreen->Inverse = miInverse;
-  pScreen->RegionReset = miRegionReset;
-  pScreen->TranslateRegion = miTranslateRegion;
-  pScreen->RectIn = miRectIn;
-  pScreen->PointInRegion = miPointInRegion;
-  pScreen->RegionNotEmpty = miRegionNotEmpty;
-  pScreen->RegionEmpty = miRegionEmpty;
-  pScreen->RegionExtents = miRegionExtents;
-  pScreen->RegionAppend = miRegionAppend;
-  pScreen->RegionValidate = miRegionValidate;
-  pScreen->BitmapToRegion = xnestPixmapToRegion;
-  pScreen->RectsToRegion = miRectsToRegion;
-  pScreen->SendGraphicsExpose = miSendGraphicsExpose;
+   pScreen->BitmapToRegion = xnestPixmapToRegion;
 
   /* OS layer procedures */
 
