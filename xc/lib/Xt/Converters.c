@@ -1,4 +1,4 @@
-/* $XConsortium: Converters.c,v 1.80 91/07/05 13:16:06 rws Exp $ */
+/* $XConsortium: Converters.c,v 1.81 91/07/16 18:06:03 rws Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -1137,6 +1137,32 @@ Boolean XtCvtStringToShort(dpy, args, num_args, fromVal, toVal, closure_ret)
 }
 
 /*ARGSUSED*/
+Boolean XtCvtStringToDimension(dpy, args, num_args, fromVal, toVal, closure_ret)
+    Display*	dpy;
+    XrmValuePtr args;
+    Cardinal    *num_args;
+    XrmValuePtr fromVal;
+    XrmValuePtr toVal;
+    XtPointer	*closure_ret;
+{
+    int i;
+
+    if (*num_args != 0)
+        XtAppWarningMsg(XtDisplayToApplicationContext(dpy),
+	  XtNwrongParameters,"cvtStringToShort",XtCXtToolkitError,
+          "String to Integer conversion needs no extra arguments",
+           (String *) NULL, (Cardinal *)NULL);
+    if (IsInteger((String)fromVal->addr, &i)) {
+        if ( i < 0 )
+            XtDisplayStringConversionWarning(dpy, (char*)fromVal->addr,
+					     XtRDimension);
+        done(Dimension, (Dimension)i);
+    }
+    XtDisplayStringConversionWarning(dpy, (char *) fromVal->addr, XtRShort);
+    return False;
+}
+
+/*ARGSUSED*/
 Boolean XtCvtStringToUnsignedChar(dpy, args, num_args, fromVal, toVal, closure_ret)
     Display*	dpy;
     XrmValuePtr args;
@@ -1431,7 +1457,7 @@ _XtAddDefaultConverters(table)
    Add2(_XtQString, XtQCursor,    XtCvtStringToCursor,
 	displayConvertArg, XtNumber(displayConvertArg),
 	XtCacheByDisplay, FreeCursor);
-    Add(_XtQString, XtQDimension, XtCvtStringToShort,   NULL, 0, XtCacheNone);
+    Add(_XtQString, XtQDimension, XtCvtStringToDimension,NULL, 0, XtCacheNone);
     Add(_XtQString, XtQDisplay,   XtCvtStringToDisplay, NULL, 0, XtCacheAll);
    Add2(_XtQString, XtQFile,      XtCvtStringToFile,    NULL, 0,
 	XtCacheAll | XtCacheRefCount, FreeFile);
