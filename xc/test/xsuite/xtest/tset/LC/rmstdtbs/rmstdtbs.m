@@ -1,4 +1,4 @@
-/* $XConsortium: rmstdtbs.m,v 1.1 94/01/29 16:03:50 rws Exp $ */
+/* $XConsortium: rmstdtbs.m,v 1.2 94/04/17 21:14:23 rws Exp dpw $ */
 /*
 
 Copyright (c) 1993  X Consortium
@@ -79,7 +79,7 @@ database which was created.
 	else
 	{
 		XCALL;
-		if(database != display->db)
+		if(database != XrmGetDatabase(display))
 		{
 			report("%s failed to set the db field of the display",
 				TestName);
