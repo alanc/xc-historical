@@ -1,6 +1,6 @@
 #ifndef lint
-static char rcsid[] = "$XConsortium: Callback.c,v 1.5 88/08/31 09:47:31 swick Exp $";
-/* $oHeader: Callback.c,v 1.3 88/08/19 16:46:25 asente Exp $ */
+static char rcsid[] = "$XConsortium: Callback.c,v 1.6 88/09/04 12:16:37 swick Exp $";
+/* $oHeader: Callback.c,v 1.4 88/09/01 11:08:37 asente Exp $ */
 #endif lint
 
 /***********************************************************
@@ -86,7 +86,8 @@ void XtAddCallback(widget, name, callback, closure)
 
     callbacks = FetchCallbackList(widget,name);
     if (callbacks == NULL) {
-       XtWarningMsg("invalidCallbackList","xtAddCallback","XtToolkitError",
+       XtAppWarningMsg(XtWidgetToApplicationContext(widget),
+	       "invalidCallbackList","xtAddCallback","XtToolkitError",
               "Cannot find callback list in XtAddCallbacks",
 	      (String *)NULL, (Cardinal *)NULL);
        return;
@@ -113,7 +114,8 @@ void XtAddCallbacks(widget, name, xtcallbacks)
 
     callbacks = FetchCallbackList(widget, name);
     if (callbacks == NULL) {
-       XtWarningMsg("invalidCallbackList","xtAddCallback","XtToolkitError",
+       XtAppWarningMsg(XtWidgetToApplicationContext(widget),
+	       "invalidCallbackList","xtAddCallback","XtToolkitError",
               "Cannot find callback list in XtAddCallbacks",
 	      (String *)NULL, (Cardinal *)NULL);
        return;
@@ -151,7 +153,8 @@ void XtRemoveCallback (widget, name, callback, closure)
 
     callbacks = FetchCallbackList(widget, name);
     if (callbacks == NULL) {
-       XtWarningMsg("invalidCallbackList","xtRemoveCallback","XtToolkitError",
+       XtAppWarningMsg(XtWidgetToApplicationContext(widget),
+	       "invalidCallbackList","xtRemoveCallback","XtToolkitError",
               "Cannot find callback list in XtRemoveCallbacks",
 	      (String *)NULL, (Cardinal *)NULL);
 	return;
@@ -170,7 +173,8 @@ void XtRemoveCallbacks (widget, name, xtcallbacks)
 
     callbacks = FetchCallbackList(widget, name);
     if (callbacks == NULL) {
-       XtWarningMsg("invalidCallbackList","xtRemoveCallback","XtToolkitError",
+       XtAppWarningMsg(XtWidgetToApplicationContext(widget),
+	       "invalidCallbackList","xtRemoveCallback","XtToolkitError",
               "Cannot find callback list in XtRemoveCallbacks",
 	      (String *)NULL, (Cardinal *)NULL);
 	return;
@@ -206,7 +210,8 @@ void XtRemoveAllCallbacks(widget, name)
 
     callbacks = FetchCallbackList(widget, name);
     if (callbacks == NULL) {
-       XtWarningMsg("invalidCallbackList","xtRemoveAllCallback","XtToolkitError",
+       XtAppWarningMsg(XtWidgetToApplicationContext(widget),
+	       "invalidCallbackList","xtRemoveAllCallback","XtToolkitError",
               "Cannot find callback list in XtRemoveAllCallbacks",
 	      (String *)NULL, (Cardinal *)NULL);
 
@@ -290,7 +295,8 @@ void XtCallCallbacks(widget, name, call_data)
 
     callbacks = FetchCallbackList(widget, name);
     if (callbacks == NULL) {
-       XtWarningMsg("invalidCallbackList","xtCallCallback","XtToolkitError",
+       XtAppWarningMsg(XtWidgetToApplicationContext(widget),
+	       "invalidCallbackList","xtCallCallback","XtToolkitError",
               "Cannot find callback list in XtCallCallbacks",
 	      (String *)NULL, (Cardinal *)NULL);
 	return;
