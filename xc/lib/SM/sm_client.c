@@ -1,4 +1,4 @@
-/* $XConsortium: sm_client.c,v 1.9 93/09/24 12:09:10 mor Exp $ */
+/* $XConsortium: sm_client.c,v 1.10 93/09/24 15:56:31 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -316,7 +316,7 @@ SmcSetProperties (smcConn, sequenceRef, numProps, props)
 SmcConn    	smcConn;
 unsigned long 	sequenceRef;
 int      	numProps;
-SmProp       	*props;
+SmProp       	**props;
 
 {
     IceConn		iceConn = smcConn->iceConn;
