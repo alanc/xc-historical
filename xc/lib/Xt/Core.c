@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Core.c,v 1.36 90/04/04 11:27:36 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Core.c,v 1.37 90/04/13 20:14:01 swick Exp $";
 /* $oHeader: Core.c,v 1.2 88/08/18 15:37:59 asente Exp $ */
 #endif /* lint */
 
@@ -247,7 +247,6 @@ static void CoreRealize(widget, value_mask, attributes)
 static void CoreDestroy (widget)
      Widget    widget;
 {
-    XtFree((char *) (widget->core.name));
     _XtFreeEventTable(&widget->core.event_table);
     XtFree((char *) widget->core.tm.proc_table);
     _XtUnregisterWindow(widget->core.window, widget);
