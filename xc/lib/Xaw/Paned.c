@@ -1,4 +1,4 @@
-/* $XConsortium: Paned.c,v 1.19 91/02/17 15:35:36 converse Exp $ */
+/* $XConsortium: Paned.c,v 1.20 91/02/17 16:32:22 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -91,7 +91,7 @@ static char defGripTranslations[] =
 static XtResource resources[] = {
     {XtNinternalBorderColor, XtCBorderColor, XtRPixel, sizeof(Pixel),
 	 offset(internal_bp), XtRString, 
-         (XtPointer) "XtDefaultForeground"},
+         (XtPointer) XtDefaultForeground},
     {XtNinternalBorderWidth, XtCBorderWidth, XtRDimension, sizeof(Dimension),
 	 offset(internal_bw), XtRImmediate, (XtPointer) 1},
     {XtNgripIndent, XtCGripIndent, XtRPosition, sizeof(Position),

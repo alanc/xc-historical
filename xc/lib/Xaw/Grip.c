@@ -1,4 +1,4 @@
-/* $XConsortium: Grip.c,v 1.28 91/01/06 16:08:35 rws Exp $ */
+/* $XConsortium: Grip.c,v 1.29 91/02/17 15:08:41 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -42,7 +42,7 @@ static XtResource resources[] = {
       (XtPointer) DEFAULT_GRIP_SIZE},
    {XtNforeground, XtCForeground, XtRPixel, sizeof(Pixel),
       XtOffsetOf(GripRec, core.background_pixel), XtRString,
-	"XtDefaultForeground"},
+      XtDefaultForeground},
    {XtNborderWidth, XtCBorderWidth, XtRDimension, sizeof(Dimension),
       XtOffsetOf(GripRec, core.border_width), XtRImmediate, (XtPointer)0},
    {XtNcallback, XtCCallback, XtRCallback, sizeof(XtPointer), 
