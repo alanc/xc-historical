@@ -1,4 +1,4 @@
-/* $XConsortium: Xresource.h,v 1.33 91/04/11 19:46:43 rws Exp $ */
+/* $XConsortium: Xresource.h,v 1.34 91/04/11 20:02:12 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -335,6 +335,12 @@ extern Bool XrmEnumerateDatabase(
 #endif
 	     )		/* proc */,
     XPointer		/* closure */
+#endif
+);
+
+extern char *XrmLocaleOfDatabase(
+#if NeedFunctionPrototypes
+    XrmDatabase 	/* database */
 #endif
 );
 
