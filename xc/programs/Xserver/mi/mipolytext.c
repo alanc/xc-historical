@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ************************************************************************/
-/* $XConsortium: mipolytext.c,v 5.1 90/02/09 14:26:09 keith Exp $ */
+/* $XConsortium: mipolytext.c,v 5.2 91/01/27 13:01:31 keith Exp $ */
 /*
  * mipolytext.c - text routines
  *
@@ -48,12 +48,10 @@ miPolyText(pDraw, pGC, x, y, count, chars, fontEncoding)
     char 	*chars;
     FontEncoding fontEncoding;
 {
-    register CharInfoPtr *charinfo;
     unsigned long n, i;
     int w;
+    CharInfoPtr charinfo[255];	/* encoding only has 1 byte for count */
 
-    if(!(charinfo = (CharInfoPtr *)ALLOCATE_LOCAL(count*sizeof(CharInfoPtr ))))
-	return x ;
     GetGlyphs(pGC->font, (unsigned long)count, (unsigned char *)chars,
 	      fontEncoding, &n, charinfo);
     w = 0;
@@ -61,8 +59,6 @@ miPolyText(pDraw, pGC, x, y, count, chars, fontEncoding)
     if (n != 0)
         (*pGC->ops->PolyGlyphBlt)(
 	    pDraw, pGC, x, y, n, charinfo, FONTGLYPHS(pGC->font));
-
-    DEALLOCATE_LOCAL(charinfo);
     return x+w;
 }
 
@@ -75,12 +71,10 @@ miPolyText8(pDraw, pGC, x, y, count, chars)
     int 	count;
     char	*chars;
 {
-    register CharInfoPtr *charinfo;
     unsigned long n, i;
     int w;
+    CharInfoPtr charinfo[255];	/* encoding only has 1 byte for count */
 
-    if(!(charinfo = (CharInfoPtr *)ALLOCATE_LOCAL(count*sizeof(CharInfoPtr ))))
-	return x ;
     GetGlyphs(pGC->font, (unsigned long)count, (unsigned char *)chars,
 	      Linear8Bit, &n, charinfo);
     w = 0;
@@ -88,8 +82,6 @@ miPolyText8(pDraw, pGC, x, y, count, chars)
     if (n != 0)
         (*pGC->ops->PolyGlyphBlt)(
 	    pDraw, pGC, x, y, n, charinfo, FONTGLYPHS(pGC->font));
-
-    DEALLOCATE_LOCAL(charinfo);
     return x+w;
 }
 
@@ -102,12 +94,10 @@ miPolyText16(pDraw, pGC, x, y, count, chars)
     int		count;
     unsigned short *chars;
 {
-    register CharInfoPtr *charinfo;
     unsigned long n, i;
     int w;
+    CharInfoPtr charinfo[255];	/* encoding only has 1 byte for count */
 
-    if(!(charinfo = (CharInfoPtr *)ALLOCATE_LOCAL(count*sizeof(CharInfoPtr ))))
-	return x ;
     GetGlyphs(pGC->font, (unsigned long)count, (unsigned char *)chars,
 	      (FONTLASTROW(pGC->font) == 0) ? Linear16Bit : TwoD16Bit,
 	      &n, charinfo);
@@ -116,8 +106,6 @@ miPolyText16(pDraw, pGC, x, y, count, chars)
     if (n != 0)
         (*pGC->ops->PolyGlyphBlt)(
 	    pDraw, pGC, x, y, n, charinfo, FONTGLYPHS(pGC->font));
-
-    DEALLOCATE_LOCAL(charinfo);
     return x+w;
 }
 
@@ -131,20 +119,17 @@ miImageText(pDraw, pGC, x, y, count, chars, fontEncoding)
     char 	*chars;
     FontEncoding fontEncoding;
 {
-    register CharInfoPtr *charinfo;
     unsigned long n, i;
     FontPtr font = pGC->font;
     int w;
+    CharInfoPtr charinfo[255];
 
-    if(!(charinfo = (CharInfoPtr *)ALLOCATE_LOCAL(count*sizeof(CharInfoPtr))))
-	return x;
     GetGlyphs(font, (unsigned long)count, (unsigned char *)chars,
 	      fontEncoding, &n, charinfo);
     w = 0;
     for (i=0; i < n; i++) w += charinfo[i]->metrics.characterWidth;
     if (n !=0 )
         (*pGC->ops->ImageGlyphBlt)(pDraw, pGC, x, y, n, charinfo, FONTGLYPHS(font));
-    DEALLOCATE_LOCAL(charinfo);
     return x+w;
 }
 
@@ -157,17 +142,14 @@ miImageText8(pDraw, pGC, x, y, count, chars)
     int		count;
     char	*chars;
 {
-    CharInfoPtr *charinfo;
     unsigned long n;
     FontPtr font = pGC->font;
+    CharInfoPtr charinfo[255];	/* encoding only has 1 byte for count */
 
-    if(!(charinfo = (CharInfoPtr *)ALLOCATE_LOCAL(count*sizeof(CharInfoPtr))))
-	return;
     GetGlyphs(font, (unsigned long)count, (unsigned char *)chars,
 	      Linear8Bit, &n, charinfo);
     if (n !=0 )
         (*pGC->ops->ImageGlyphBlt)(pDraw, pGC, x, y, n, charinfo, FONTGLYPHS(font));
-    DEALLOCATE_LOCAL(charinfo);
 }
 
 
@@ -179,16 +161,13 @@ miImageText16(pDraw, pGC, x, y, count, chars)
     int		count;
     unsigned short *chars;
 {
-    CharInfoPtr *charinfo;
     unsigned long n;
     FontPtr font = pGC->font;
+    CharInfoPtr charinfo[255];	/* encoding only has 1 byte for count */
 
-    if(!(charinfo = (CharInfoPtr *)ALLOCATE_LOCAL(count*sizeof(CharInfoPtr))))
-	return;
     GetGlyphs(font, (unsigned long)count, (unsigned char *)chars,
 	      (FONTLASTROW(pGC->font) == 0) ? Linear16Bit : TwoD16Bit,
 	      &n, charinfo);
     if (n !=0 )
         (*pGC->ops->ImageGlyphBlt)(pDraw, pGC, x, y, n, charinfo, FONTGLYPHS(font));
-    DEALLOCATE_LOCAL(charinfo);
 }
