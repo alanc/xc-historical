@@ -1,5 +1,4 @@
-/*
- * $XConsortium: CutPaste.c,v 1.3 91/07/19 18:29:10 dave Exp $
+/* $XConsortium: CutPaste.c,v 1.4 92/02/03 12:23:29 gildea Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -24,42 +23,30 @@
  */
 
 #include <X11/IntrinsicP.h>
+#include <X11/Xmu/StdSel.h>
+#include <X11/Xmu/Atoms.h>
 #include <X11/Xatom.h>
 #include "ScaleP.h"
 #include "Scale.h"
 #include <stdio.h>
 
-#define XtStrlen(s) ((s) ? strlen(s) : 0)
-
 extern Pixmap SWGetPixmap();
 extern void SWAutoscale();
 
-/* ARGSUSED */
+/*ARGSUSED*/
 static Boolean
-ConvertSelection(w, selection, target, type, vret, length, format)
+ConvertSelection(w, selection, target, type, value, length, format)
     Widget w;
     Atom *selection, *target, *type;
-    XtPointer *vret;
+    XtPointer *value;
     unsigned long *length;
     int *format;
 {
-    caddr_t *value = (caddr_t *)vret;
-    ScaleWidget sw = (ScaleWidget) w;
-    Pixmap *pixmap;
- 
-    switch (*target) {
-/*
-    case XA_TARGETS:
-	*type = XA_ATOM;
-	*value = (caddr_t) scaleClassRec.scale_class.targets;
-	*length = scaleClassRec.scale_class.num_targets;
-	*format = 32;
-	return True;
-*/
+    Boolean success;
 
-    case XA_PIXMAP:
-    case XA_BITMAP:
-	pixmap = (Pixmap *) XtMalloc(sizeof(Pixmap));
+    if (*target == XA_PIXMAP || *target == XA_BITMAP) {
+	ScaleWidget sw = (ScaleWidget) w;
+	Pixmap *pixmap = (Pixmap *) XtMalloc(sizeof(Pixmap));
 	*pixmap = XCreatePixmap(XtDisplay(w), XtWindow(w),
 				sw->scale.image->width, 
 				sw->scale.image->height, 
@@ -67,75 +54,56 @@ ConvertSelection(w, selection, target, type, vret, length, format)
 	XPutImage(XtDisplay(w), *pixmap, sw->scale.gc, sw->scale.image,
 		  0, 0, 0, 0, sw->scale.image->width, sw->scale.image->height);
 	*type = XA_PIXMAP;
-	*value = (caddr_t) pixmap;
+	*value = (XtPointer) pixmap;
 	*length = 1;
 	*format = 32;
-	return True;
-	
-    case XA_STRING:
-	*type = XA_STRING;
-	*value = (caddr_t)"Hello world!";
-	*length = XtStrlen(*value);
-	*format = 8;
-	return True;
-	
-    default:
-	return False;
+	success = True;
+    } else {
+	/* Xt will always respond to selection requests for the TIMESTAMP
+	   target, so we can pass a bogus time to XmuConvertStandardSelection.
+	   In addition to the targets provided by XmuConvertStandardSelection,
+	   Xt converts MULTIPLE, and we convert PIXMAP and BITMAP.
+	 */
+	success = XmuConvertStandardSelection(w, 0L, selection, target,
+					      type, value, length, format);
+	if (success && *target == XA_TARGETS(XtDisplay(w))) {
+	    Atom* tmp;
+	    tmp = (Atom *) XtRealloc(*value, (*length + 3) * sizeof(Atom));
+	    tmp[(*length)++] = XInternAtom(XtDisplay(w), "MULTIPLE", False);
+	    tmp[(*length)++] = XA_PIXMAP;
+	    tmp[(*length)++] = XA_BITMAP;
+	    *value = (XtPointer) tmp;
+	}
     }
-}
-
-/* ARGSUSED */
-static void LoseSelection(w, selection)
-    Widget w;
-    Atom *selection;
-{
-
-	/*fprintf(stderr, "Lost Selection\n");*/
-}
-
-/* ARGSUSED */
-static void SelectionDone(w, selection, target)
-    Widget w;
-    Atom *selection, *target;
-{
-/*  
-    ScaleWidget sw = (ScaleWidget) w;
-    if (*target != XA_TARGETS)
-	XtFree(sw->scale.value);
-*/
+    return success;
 }
 
 void SWGrabSelection(w, time)
     Widget w;
     Time time;
 {
-    
-    if (XtOwnSelection(w, XA_PRIMARY, time,
-		       ConvertSelection, LoseSelection, SelectionDone))
-
-	    /*fprintf(stderr, "Own the selection\n")*/;
+    (void) XtOwnSelection(w, XA_PRIMARY, time, ConvertSelection, NULL, NULL);
 }
+
 
 /* ARGSUSED */
 static void
-SelectionCallback(w, clientData, selection, type, v, length, format)
+SelectionCallback(w, client_data, selection, type, value, length, format)
     Widget w;
-    XtPointer clientData; 
+    XtPointer client_data;	/* unused */
     Atom *selection, *type;
-    XtPointer v;
+    XtPointer value;
     unsigned long *length;
     int *format;
 {
-    caddr_t value = (caddr_t)v;
-    Pixmap *pixmap;
-    XImage *image;
-    Window root;
-    int x, y;
-    unsigned int width, height, border_width, depth;
 
-    switch (*type) {
-	
-    case XA_PIXMAP:
+    if  (*type == XA_PIXMAP) {
+	Pixmap *pixmap;
+	XImage *image;
+	Window root;
+	int x, y;
+	unsigned int width, height, border_width, depth;
+
 	pixmap = (Pixmap *) value;
 	XGetGeometry(XtDisplay(w), *pixmap, &root, &x, &y,
 		     &width, &height, &border_width, &depth);
@@ -143,17 +111,8 @@ SelectionCallback(w, clientData, selection, type, v, length, format)
 			  AllPlanes, ZPixmap);
 	SWAutoscale(w);
 	SWSetImage(w, image);
-	XFree((char *)pixmap);
+	XtFree(value);
 	XDestroyImage(image);
-	break;
-	
-    case XA_STRING:
-	    /*fprintf(stderr, "Received:%s\n", value);*/
-	break;
-
-    default:
-	XtWarning(" selection request failed.  ScaleWidget");
-	break;
     }
 }
 
@@ -161,8 +120,6 @@ void SWRequestSelection(w, time)
     Widget w;
     Time time;
 {
-    /*fprintf(stderr, "------------------------------------------>\n");*/
-    XtGetSelectionValue(w, XA_PRIMARY, XA_PIXMAP,
-			SelectionCallback, NULL, time);
+    XtGetSelectionValue(w, XA_PRIMARY, XA_PIXMAP, SelectionCallback, NULL,
+			time);
 }
-
