@@ -1,8 +1,7 @@
-XCOMM $XConsortium: Imakefile,v 1.10 92/06/01 18:32:48 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.11 93/08/17 21:20:53 rws Exp $
         DEFINES = 
            SRCS = dashlist.c planemask.c getfile.c tests.c text.c \
                   choice.c main.c interpret.c record.c testfrac.c
-      OTHERSRCS = gram.y lex.l
            OBJS = dashlist.o planemask.o getfile.o tests.o text.o \
                   choice.o main.o interpret.o record.o testfrac.o \
                   gram.o lex.o
@@ -11,16 +10,12 @@ LOCAL_LIBRARIES = $(XAWLIB) $(XMULIB) $(XTOOLLIB) $(XLIB)
   SYS_LIBRARIES = MathLibrary
          YFLAGS = -d
 
+all::
+
+LexFile(lex)
+
+YaccFile(gram,$(YFLAGS))
+
 ComplexProgramTarget(xgc)
 
 InstallAppDefaults(Xgc)
-
-gram.h gram.c: gram.y
-	$(YACC) -d gram.y
-	$(MV) y.tab.c gram.c
-	$(MV) y.tab.h gram.h
-
-clean::
-	RemoveFiles(y.tab.h y.tab.c lex.yy.c gram.h gram.c lex.c)
-
-depend:: lex.c gram.c
