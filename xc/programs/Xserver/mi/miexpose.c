@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: miexpose.c,v 1.28 88/03/15 17:57:27 rws Exp $ */
+/* $Header: miexpose.c,v 1.29 88/04/10 12:03:10 rws Exp $ */
 
 #include "X.h"
 #define NEED_EVENTS
@@ -343,14 +343,14 @@ int what;
 	     GCTileStipXOrigin | GCTileStipYOrigin | GCClipMask;
     if (what == PW_BACKGROUND)
     {
-	if (pWin->backgroundTile == None)
+	if (pWin->backgroundTile == (PixmapPtr)None)
 	    return;
-	else if ((int)pWin->backgroundTile == ParentRelative)
+	else if (pWin->backgroundTile == (PixmapPtr)ParentRelative)
 	{
 	    (*pWin->parent->PaintWindowBorder)(pWin->parent, prgn, what);
 	    return;
 	}
-	else if ((int)pWin->backgroundTile == USE_BACKGROUND_PIXEL)
+	else if (pWin->backgroundTile == (PixmapPtr)USE_BACKGROUND_PIXEL)
 	{
 	    gcval[1] = pWin->backgroundPixel;
 	    gcval[2] = FillSolid;
@@ -368,9 +368,7 @@ int what;
     }
     else
     {
-	if (pWin->borderTile == None)
-	    return;
-	else if ((int)pWin->borderTile == USE_BORDER_PIXEL)
+	if (pWin->borderTile == (PixmapPtr)USE_BORDER_PIXEL)
 	{
 	    gcval[1] = pWin->borderPixel;
 	    gcval[2] = FillSolid;
