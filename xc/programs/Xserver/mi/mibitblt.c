@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mibitblt.c,v 5.17 93/09/20 20:25:03 dpw Exp $ */
+/* $XConsortium: mibitblt.c,v 5.18 93/10/12 10:50:04 dpw Exp $ */
 /* Author: Todd Newman  (aided and abetted by Mr. Drewry) */
 
 #include "X.h"
@@ -594,12 +594,12 @@ miCopyPlane(pSrcDrawable, pDstDrawable,
  * get the single plane specified in planemask
  */
 void
-miGetImage(pDraw, sx, sy, w, h, format, planeMask, pdstLine)
+miGetImage(pDraw, sx, sy, w, h, format, planeMask, pDst)
     DrawablePtr 	pDraw;
     int			sx, sy, w, h;
     unsigned int 	format;
     unsigned long 	planeMask;
-    pointer             pdstLine;
+    char *              pDst;
 {
     unsigned char	depth;
     int			i, linelength, width, srcx, srcy;
@@ -607,7 +607,6 @@ miGetImage(pDraw, sx, sy, w, h, format, planeMask, pdstLine)
     XID			gcv[2];
     PixmapPtr		pPixmap = (PixmapPtr)NULL;
     GCPtr		pGC;
-    unsigned char *	pDst = pdstLine;
 
     depth = pDraw->depth;
     if(format == ZPixmap)
@@ -648,18 +647,16 @@ miGetImage(pDraw, sx, sy, w, h, format, planeMask, pdstLine)
 	    pt.x = srcx;
 	    pt.y = srcy + i;
 	    width = w;
-	    (*pDraw->pScreen->GetSpans)(pDraw, w, &pt, &width, 1,
-					(char *)pDst);
+	    (*pDraw->pScreen->GetSpans)(pDraw, w, &pt, &width, 1, pDst);
 	    if (pPixmap)
 	    {
 	       pt.x = 0;
 	       pt.y = 0;
 	       width = w;
-	       (*pGC->ops->SetSpans)((DrawablePtr)pPixmap, pGC,
-				     (char *)pDst,
+	       (*pGC->ops->SetSpans)((DrawablePtr)pPixmap, pGC, pDst,
 				     &pt, &width, 1, TRUE);
 	       (*pDraw->pScreen->GetSpans)((DrawablePtr)pPixmap, w, &pt,
-					   &width, 1, (char *)pDst);
+					   &width, 1, pDst);
 	    }
 	    pDst += linelength;
 	}

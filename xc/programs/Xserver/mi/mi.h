@@ -1,4 +1,4 @@
-/* $XConsortium: mi.h,v 1.10 93/09/29 18:58:20 dpw Exp $ */
+/* $XConsortium: mi.h,v 1.11 93/10/12 11:41:02 dpw Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -102,7 +102,7 @@ extern void miGetImage(
     int /*h*/,
     unsigned int /*format*/,
     unsigned long /*planeMask*/,
-    pointer /*pdstLine*/
+    char * /*pdstLine*/
 #endif
 );
 
