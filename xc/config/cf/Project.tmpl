@@ -1,6 +1,6 @@
 /**/###########################################################################
 /**/# X Window System Build Parameters
-/**/# $XConsortium: Project.tmpl,v 1.50 89/11/01 09:24:54 jim Exp $
+/**/# $XConsortium: Project.tmpl,v 1.51 89/11/19 13:37:55 jim Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -324,9 +324,16 @@ Berklib.c: sysV/Berklib.c					@@\
 #define BandAidLibraryNeeded NO		/* for getting right stuff into Xlib */
 #endif
 
+#ifndef XawClientDepLibs
+#define XawClientDepLibs $(DEPXAWLIB) $(DEPXMULIB) $(DEPXTOOLLIB) $(DEPXLIB)
+#endif
+#ifndef XawClientLibs
+#define XawClientLibs $(XAWLIB) $(XMULIB) $(XTOOLLIB) $(XLIB)
+#endif
+
 /**/###########################################################################
 /**/# X Window System make variables; this need to be coordinated with rules
-/**/# $XConsortium: Project.tmpl,v 1.50 89/11/01 09:24:54 jim Exp $
+/**/# $XConsortium: Project.tmpl,v 1.51 89/11/19 13:37:55 jim Exp $
 
 /*
  * This list must be reflected in the DIRS_TO_BUILD list in the top-level
