@@ -1,4 +1,4 @@
-/* $XConsortium: XChProp.c,v 11.21 91/01/05 17:02:10 rws Exp $ */
+/* $XConsortium: XChProp.c,v 11.22 91/01/06 11:44:22 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -44,15 +44,16 @@ XChangeProperty (dpy, w, property, type, format, mode, data, nelements)
     req->window = w;
     req->property = property;
     req->type = type;
-    req->format = format;
     req->mode = mode;
     if (nelements < 0) {
 	req->nUnits = 0;
 	req->format = 0; /* ask for garbage, get garbage */
-    } else
+    } else {
 	req->nUnits = nelements;
-    
-    switch (format) {
+	req->format = format;
+    }
+
+    switch (req->format) {
       case 8:
 	len = req->length + (((long)nelements + 3)>>2);
 	if (len <= 65535) {
