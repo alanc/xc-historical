@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: imTransR.c,v 1.1 93/09/17 13:29:30 rws Exp $ */
 /******************************************************************
 
               Copyright 1992 by Sun Microsystems, Inc.
@@ -41,6 +41,7 @@ extern Bool	_XimXConf(
 #endif
 );
 
+#ifdef TCPCONN
 extern Bool	_XimTcpInetConf(
 #if NeedFunctionPrototypes
     Xim		 im,
@@ -54,6 +55,7 @@ extern Bool	_XimTcpInternalConf(
     char	*address
 #endif
 );
+#endif /* TCPCONN */
 
 #ifdef DNETCONN
 extern Bool	_XimDecnetConf(
@@ -64,21 +66,27 @@ extern Bool	_XimDecnetConf(
 );
 #endif /* DNETCONN */
 
+#ifdef STREAMSCONN
 extern Bool	_XimStreamsConf(
 #if NeedFunctionPrototypes
     Xim		 im,
     char	*address
 #endif
 );
+#endif /* STREAMSCONN */
 
 Public TransportSW _XimTransportRec[] = {
     "X",          1, _XimXConf,  /* 1st entry must be X. 
 					This will be a fallback */
+#ifdef TCPCONN
     "tcp",        3, _XimTcpInetConf,
     "local",      4, _XimTcpInternalConf,
+#endif /* TCPCONN */
 #ifdef DNETCONN
     "decnet",     6, _XimDecnetConf,
 #endif /* DNETCONN */
-    "strams",     6, _XimStreamsConf,
+#ifdef STREAMSCONN
+    "streams",    6, _XimStreamsConf,
+#endif /* STREAMSCONN */
     (char *)NULL, 0, (Bool (*)())NULL,
 };
