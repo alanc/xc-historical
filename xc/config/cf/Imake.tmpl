@@ -7,21 +7,16 @@
 #endif
 XCOMM -------------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-XCOMM $XConsortium: Imake.tmpl,v 1.135 91/07/23 23:16:37 keith Exp $
+XCOMM $XConsortium: Imake.tmpl,v 1.136 91/07/28 22:40:24 rws Exp $
 XCOMM
-XCOMM Platform-specific parameters may be set in the appropriate .cf
-XCOMM configuration files.  Site-wide parameters may be set in the file
+XCOMM Platform-specific parameters may be set in the appropriate <vendor>.cf
+XCOMM configuration files.  Site-specific parameters should be set in the file
 XCOMM site.def.  Full rebuilds are recommended if any parameters are changed.
 XCOMM
 XCOMM If your C preprocessor does not define any unique symbols, you will need
 XCOMM to set BOOTSTRAPCFLAGS when rebuilding imake (usually when doing
-XCOMM "make Makefile", "make Makefiles", or "make World").
+XCOMM "make World" the first time).
 XCOMM
-XCOMM If you absolutely cannot get imake to work, you will need to set the 
-XCOMM variables at the top of each Makefile as well as the dependencies at the
-XCOMM bottom (makedepend will do this automatically).
-XCOMM
-
 
 #define	YES	1
 #define NO	0
@@ -260,6 +255,13 @@ XCOMM This might mean that BOOTSTRAPCFLAGS was not set when building imake.
 
 
 XCOMM -------------------------------------------------------------------------
+XCOMM site-specific configuration parameters that need to come before
+XCOMM the platform-specific parameters - edit site.def to change
+#define BeforeVendorCF
+#include <site.def>
+#undef BeforeVendorCF
+
+XCOMM -------------------------------------------------------------------------
 XCOMM platform-specific configuration parameters - edit MacroFile to change
 #include MacroIncludeFile
 
@@ -290,8 +292,11 @@ XCOMM platform-specific configuration parameters - edit MacroFile to change
 #endif
 
 XCOMM -------------------------------------------------------------------------
-XCOMM site-specific configuration parameters - edit site.def to change
+XCOMM site-specific configuration parameters that go after
+XCOMM the platform-specific parameters - edit site.def to change
+#define AfterVendorCF
 #include <site.def>
+#undef AfterVendorCF
 
 /*
  * defaults for various generic parameters; set in site.def if needed
