@@ -558,9 +558,6 @@ close_font(pfont)
     FontPtr     pfont;
 {
     FontPathElementPtr fpe;
-    FontIDListPtr *idlist;
-    FontIDListPtr ids;
-    int i;
 
     assert(pfont);
     if (--pfont->refcnt == 0) {
@@ -781,6 +778,7 @@ SetFontCatalogue(str, badpath)
     return err;
 }
 
+Bool
 do_list_fonts_and_aliases(client, c)
     ClientPtr   client;
     LFclosurePtr c;
@@ -791,8 +789,6 @@ do_list_fonts_and_aliases(client, c)
     char       *name, *resolved;
     int         namelen, resolvedlen;
     int		nnames;
-    int         numFonts;
-    int         length;
     int         stringLens;
     int         i;
     fsListFontsReply reply;
@@ -896,6 +892,7 @@ do_list_fonts_and_aliases(client, c)
 	     * old state
 	     */
 	    else if (err == FontNameAlias) {
+		char	tmp_pattern[256];
 		/*
 		 * when an alias recurses, we need to give
 		 * the last FPE a chance to clean up; so we call
@@ -903,6 +900,7 @@ do_list_fonts_and_aliases(client, c)
 		 * is BadFontName, indicating the alias resolution
 		 * is complete.
 		 */
+		memmove(tmp_pattern, resolved, resolvedlen);
 		if (c->haveSaved)
 		{
 		    char    *tmpname;
@@ -930,7 +928,7 @@ do_list_fonts_and_aliases(client, c)
 		    c->savedNameLen = namelen;
 		    aliascount = 20;
 		}
-		c->current.pattern = resolved;
+		memmove(c->current.pattern, tmp_pattern, resolvedlen);
 		c->current.patlen = resolvedlen;
 		c->current.max_names = c->names->nnames + 1;
 		c->current.current_fpe = -1;
@@ -1034,7 +1032,6 @@ bail:
     fsfree(c->fpe_list);
     if (c->savedName) fsfree(c->savedName);
     FreeFontNames(names);
-    fsfree(c->current.pattern);
     fsfree(c);
     return TRUE;
 }
@@ -1051,14 +1048,9 @@ ListFonts(client, length, pattern, maxNames)
 
     if (!(c = (LFclosurePtr) fsalloc(sizeof *c)))
 	goto badAlloc;
-    if (!(c->current.pattern = (char *) fsalloc(length)) && length) {
-	fsfree(c);
-	goto badAlloc;
-    }
     c->fpe_list = (FontPathElementPtr *)
 	fsalloc(sizeof(FontPathElementPtr) * num_fpes);
     if (!c->fpe_list) {
-	fsfree(c->current.pattern);
 	fsfree(c);
 	goto badAlloc;
     }
@@ -1066,7 +1058,6 @@ ListFonts(client, length, pattern, maxNames)
     if (!c->names)
     {
 	fsfree(c->fpe_list);
-	fsfree(c->current.pattern);
 	fsfree(c);
 	goto badAlloc;
     }
@@ -1095,6 +1086,7 @@ badAlloc:
 static int padlength[4] = {0, 3, 2, 1};
 static char padding[3];
 
+Bool
 do_list_fonts_with_info(client, c)
     ClientPtr   client;
     LFWXIclosurePtr c;
@@ -1193,7 +1185,7 @@ do_list_fonts_with_info(client, c)
 		c->savedName = (char *) pFontInfo;
 		aliascount = 20;
 	    }
-	    c->current.pattern = name;
+	    memmove(c->current.pattern, name, namelen);
 	    c->current.patlen = namelen;
 	    c->current.max_names = 1;
 	    c->current.current_fpe = 0;
@@ -1314,7 +1306,6 @@ bail:
     for (i = 0; i < c->num_fpes; i++)
 	FreeFPE(c->fpe_list[i]);
     fsfree(c->fpe_list);
-    fsfree(c->current.pattern);
     fsfree(c->reply);
     fsfree(c);
     return TRUE;
@@ -1332,14 +1323,9 @@ StartListFontsWithInfo(client, length, pattern, maxNames)
 
     if (!(c = (LFWXIclosurePtr) fsalloc(sizeof *c)))
 	goto badAlloc;
-    if (!(c->current.pattern = (char *) fsalloc(length)) && length) {
-	fsfree(c);
-	goto badAlloc;
-    }
     c->fpe_list = (FontPathElementPtr *)
 	fsalloc(sizeof(FontPathElementPtr) * num_fpes);
     if (!c->fpe_list) {
-	fsfree(c->current.pattern);
 	fsfree(c);
 	goto badAlloc;
     }
@@ -1440,6 +1426,7 @@ RegisterFPEFunctions(name_func, init_func, free_func, reset_func,
     return num_fpe_types++;
 }
 
+void
 FreeFonts()
 {
 }
@@ -1467,6 +1454,7 @@ StoreFontClientFont(pfont, id)
     return AddResource(SERVER_CLIENT, id, RT_NONE, (pointer) pfont);
 }
 
+void
 DeleteFontClientID(id)
     Font        id;
 {
@@ -1476,6 +1464,7 @@ DeleteFontClientID(id)
 static int  fs_handlers_installed = 0;
 static unsigned int last_server_gen;
 
+int
 init_fs_handlers(fpe, block_handler)
     FontPathElementPtr fpe;
     void         (*block_handler) ();
@@ -1500,6 +1489,7 @@ init_fs_handlers(fpe, block_handler)
     return Successful;
 }
 
+void
 remove_fs_handlers(fpe, block_handler, all)
     FontPathElementPtr fpe;
     void        (*block_handler) ();
@@ -1520,6 +1510,7 @@ remove_fs_handlers(fpe, block_handler, all)
     RemoveFontWakeup(fpe);
 }
 
+void
 DeleteClientFontStuff(client)
     ClientPtr   client;
 {
