@@ -8,6 +8,7 @@
 .\" suitability for any purpose of the information in this document.  It is 
 .\" provided \`\`as is'' without express or implied warranty.
 .\" 
+.\" $XConsortium$
 .ds xL Programming With Xlib
 .TH XGetExtensionVersion 3X "" "X Version 11" 
 .SH NAME
