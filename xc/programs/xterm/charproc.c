@@ -1,5 +1,5 @@
 /*
- * $XConsortium: charproc.c,v 1.55 88/10/05 15:13:20 swick Exp $
+ * $XConsortium: charproc.c,v 1.56 88/10/06 08:11:10 swick Exp $
  */
 
 
@@ -128,7 +128,7 @@ static void VTallocbuf();
 #define	doinput()		(bcnt-- > 0 ? *bptr++ : in_put())
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: charproc.c,v 1.55 88/10/05 15:13:20 swick Exp $";
+static char rcs_id[] = "$XConsortium: charproc.c,v 1.56 88/10/06 08:11:10 swick Exp $";
 #endif	/* lint */
 
 static long arg;
@@ -781,7 +781,7 @@ VTparse()
 					*cp++ = 'E';
 			}
 			ScrnRefresh(screen, 0, 0, screen->max_row + 1,
-			 screen->max_col + 1);
+			 screen->max_col + 1, False);
 			parsestate = groundtable;
 			break;
 
@@ -1726,7 +1726,7 @@ register TScreen *screen;
 				* FontHeight(screen),
 			    FALSE);
 	}
-	ScrnRefresh(screen, 0, 0, rows, screen->max_col + 1);
+	ScrnRefresh(screen, 0, 0, rows, screen->max_col + 1, False);
 }
 
 VTRun()

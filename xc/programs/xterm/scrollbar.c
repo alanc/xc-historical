@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: scrollbar.c,v 1.14 88/09/26 12:38:56 swick Exp $
+ *	$XConsortium: scrollbar.c,v 1.15 88/10/06 09:10:00 swick Exp $
  */
 
 #include <X11/copyright.h>
@@ -42,7 +42,7 @@
 extern void Bcopy();
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: scrollbar.c,v 1.14 88/09/26 12:38:56 swick Exp $";
+static char rcs_id[] = "$XConsortium: scrollbar.c,v 1.15 88/10/06 09:10:00 swick Exp $";
 #endif	/* lint */
 
 /* Event handlers */
@@ -295,7 +295,7 @@ WindowScroll(screen, top)
 	    (unsigned) Width(screen),
 	    (unsigned) lines * FontHeight(screen),
 	    FALSE);
-	ScrnRefresh(screen, refreshtop, 0, lines, screen->max_col + 1);
+	ScrnRefresh(screen, refreshtop, 0, lines, screen->max_col + 1, False);
 
 	ScrollBarDrawThumb(screen->scrollWidget);
 }
