@@ -1,5 +1,5 @@
 /*
- * $XConsortium: miwideline.c,v 1.25 89/11/25 12:11:01 rws Exp $
+ * $XConsortium: miwideline.c,v 1.26 90/01/10 15:17:51 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -1348,6 +1348,7 @@ miWideLine (pDrawable, pGC, mode, npt, pPts)
 		       &leftFace, (LineFacePtr) NULL,
 		       (double)0.0, (double)0.0,
 		       TRUE);
+	    rightFace.dx = -1;	/* sleezy hack to make it work */
 	    miLineArc (pDrawable, pGC, pixel, spanData,
 		       (LineFacePtr) NULL, &rightFace,
  		       (double)0.0, (double)0.0,
