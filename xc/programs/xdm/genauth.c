@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: genauth.c,v 1.10 92/08/24 13:17:57 gildea Exp $
+ * $XConsortium: genauth.c,v 1.11 93/09/20 18:03:19 hersh Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -102,8 +102,12 @@ int	len;
 #ifdef ITIMER_REAL
     {
 	struct timeval  now;
+#if defined(SVR4) || defined(WIN32) || defined(VMS)
+	gettimeofday (&now);
+#else
 	struct timezone zone;
 	gettimeofday (&now, &zone);
+#endif
 	ldata[0] = now.tv_sec;
 	ldata[1] = now.tv_usec;
     }
