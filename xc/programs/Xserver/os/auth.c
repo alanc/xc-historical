@@ -1,7 +1,7 @@
 /*
  * authorization hooks for the server
  *
- * $XConsortium: auth.c,v 1.14 93/09/26 15:41:07 gildea Exp $
+ * $XConsortium: auth.c,v 1.15 93/09/28 01:34:21 gildea Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -171,7 +171,7 @@ ClientPtr client;
     struct stat buf;
     static time_t lastmod = 0;
 
-    if (stat(authorization_file, &buf))
+    if (!authorization_file || stat(authorization_file, &buf))
     {
 	lastmod = 0;
 	ShouldLoadAuth = TRUE;	/* stat lost, so force reload */
