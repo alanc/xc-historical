@@ -1,5 +1,5 @@
 /*
- * $XConsortium: util.c,v 2.41 93/09/20 17:51:57 hersh Exp $
+ * $XConsortium: util.c,v 2.42 94/01/01 18:35:49 rws Exp $
  *
  *
  *			  COPYRIGHT 1987
@@ -32,6 +32,15 @@
 #include <errno.h>
 #include <ctype.h>
 #include <X11/cursorfont.h>
+
+#ifdef X_NOT_STDC_ENV
+extern int errno;
+#define Time_t long
+extern Time_t time ();
+#else
+#include <time.h>
+#define Time_t time_t
+#endif
 
 #ifndef abs
 #define abs(x)		((x) < 0 ? (-(x)) : (x))
@@ -300,14 +309,7 @@ LastModifyDate(file)
 
 CurrentDate()
 {
-    struct timeval time;
-#if defined(SVR4) || defined(WIN32) || defined(VMS)
-    (void) gettimeofday(&time);
-#else
-    struct timezone zone;
-    (void) gettimeofday(&time, &zone);
-#endif
-    return time.tv_sec;
+    return time((Time_t*)0);
 }
 
 GetFileLength(file)
