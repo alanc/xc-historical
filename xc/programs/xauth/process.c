@@ -1,5 +1,5 @@
 /*
- * $XConsortium: process.c,v 1.4 88/11/30 16:34:05 jim Exp $
+ * $XConsortium: process.c,v 1.5 88/12/01 16:46:57 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -31,35 +31,65 @@
 
 extern int errno;			/* for stupid errno.h files */
 
+#ifndef DEFAULT_PROTOCOL
 #define DEFAULT_PROTOCOL "MIT-MAGIC-COOKIE-1"
+#endif
+
+#ifndef DEFAULT_PROTOCOL_ABBREV
+#define DEFAULT_PROTOCOL_ABBREV "."
+#endif
 
 typedef struct _AuthList {
     struct _AuthList *next;
     Xauth *auth;
 } AuthList;
 
-static int do_list(), do_merge(), do_extract(), do_add(), do_remove();
-static int do_help(), do_source(), do_numeric(), do_info(), do_quit();
+#define add_to_list(h,t,e) {if (t) (t)->next = (e); else (h) = (e); (t) = (e);}
 
-struct _cmdtab {			/* commands that are understood */
+typedef struct _CommandTable {		/* commands that are understood */
     char *name;				/* full name */
     int minlen;				/* unique prefix */
     int maxlen;				/* strlen(name) */
     int (*processfunc)();		/* handler */
-} command_table[] = {
-    { "add",     1, 5, do_add },	/* add dpy proto hexkey */
+} CommandTable;
+
+struct _extract_data {
+    FILE *fp;
+    char *filename;
+    int nwritten;
+};
+
+
+static int do_list(), do_merge(), do_extract(), do_add(), do_remove();
+static int do_help(), do_source(), do_set(), do_info(), do_quit();
+static int do_abort(), do_questionmark();
+
+CommandTable command_table[] = {
+    { "abort",   2, 5, do_abort },	/* abort */
+    { "add",     2, 3, do_add },	/* add dpy proto hexkey */
     { "extract", 1, 7, do_extract },	/* extract filename dpy */
     { "help",    1, 4, do_help },	/* help */
     { "info",    1, 4, do_info },	/* info */
     { "list",    1, 4, do_list },	/* list [dpy] */
     { "merge",   1, 5, do_merge },	/* merge filename [filename ...] */
-    { "numeric", 1, 7, do_numeric },	/* numeric [on/off] */
     { "quit",    1, 4, do_quit },	/* quit */
     { "remove",  1, 6, do_remove },	/* remove dpy */
+    { "set",     1, 3, do_set },	/* set numeric [on/off] */
     { "source",  1, 6, do_source },	/* source filename */
-    { "?",       1, 1, do_help },	/* synonym for help */
+    { "?",       1, 1, do_questionmark },  /* print xauth commands */
     { NULL,      0, 0, NULL },
 };
+
+
+static int do_set_numeric();
+
+CommandTable set_table[] = {
+    { "numeric", 1, 7, do_set_numeric },  /* set numeric {on,off} */
+    { NULL,      0, 0, NULL },
+};
+
+#define COMMAND_NAMES_PADDED 10		/* widget than anything above */
+
 
 static Bool okay_to_use_stdin = True;	/* set to false after using */
 
@@ -124,6 +154,12 @@ static void badcommandline (cmd)
     char *cmd;
 {
     fprintf (stderr, "bad \"%s\" command line\n", cmd);
+}
+
+static void badset (cmd)
+    char *cmd;
+{
+    fprintf (stderr, "bad \"%s\" parameter to set command\n", cmd);
 }
 
 static int parse_boolean (s)
@@ -197,8 +233,8 @@ static char **split_into_words (src, argcp)
 	*src = '\0';
 	if (cur == total) {
 	    total += WORDSTOALLOC;
-	    cur = realloc (argv, total * sizeof (char *));
-	    if (!cur) return NULL;
+	    argv = (char **) realloc (argv, total * sizeof (char *));
+	    if (!argv) return NULL;
 	}
 	argv[cur++] = word;
 	if (savec) src++;		/* if not last on line advance */
@@ -305,13 +341,110 @@ static Bool get_displayname_auth (displayname, auth)
 	auth->address_length = proto.address_length;
 	auth->number = proto.number;
 	auth->number_length = proto.number_length;
+	auth->name = NULL;
+	auth->name_length = 0;
+	auth->data = NULL;
+	auth->data_length = 0;
 	return True;
     } else {
 	return False;
     }
 }
 
-	
+static void free_list (list)
+    AuthList *list;
+{
+    while (list) {
+	AuthList *next = list->next;
+
+	XauDisposeAuth (list->auth);
+	free ((char *) list);
+	list = next;
+    }
+    return;
+}
+
+
+static int cvthexkey (hexstr, ptrp)
+    char *hexstr;
+    char **ptrp;
+{
+    int i;
+    int len = 0;
+    char *retval, *s;
+    unsigned char *us;
+    char savec;
+    int whichchar;
+    static char *hexdigits = "0123456789abcdef";
+
+    /* convert to lower case and count */
+    for (s = hexstr; *s; s++) {
+	if (!isascii(*s)) return -1;
+	if (isspace(*s)) continue;
+	if (!isxdigit(*s)) return -1;
+	len++;
+    }
+
+    /* if odd then there was an error */
+    if ((len & 1) == 1) return -1;
+
+
+    /* now we know that the input is good */
+    len >>= 1;
+    retval = malloc (len);
+    if (!retval) {
+	fprintf (stderr, "%s:  unable to allocate %d bytes for hexkey\n",
+		 ProgramName, len);
+	return -1;
+    }
+
+    whichchar = 0;
+    for (us = (unsigned char *) retval, i = len; i > 0; hexstr++) {
+	if (isspace(*hexstr)) continue;	 /* already know it is ascii */
+	if (whichchar) {
+#define atoh(c) ((c) - (((c) >= '0' && (c) <= '9') ? '0' : 'a'))
+	    *us = (unsigned char)((atoh(savec) << 4) + atoh(*hexstr));
+#undef atoh
+	    whichchar = 0;		/* ready for next character */
+	    us++;
+	    i--;
+	} else {
+	    savec = *hexstr;
+	    whichchar = 1;
+	}
+    }
+    *ptrp = retval;
+    return len;
+}
+
+static int dispatch_command (inputfilename, lineno, argc, argv, tab, statusp)
+    char *inputfilename;
+    int lineno;
+    int argc;
+    char **argv;
+    CommandTable *tab;
+    int *statusp;
+{
+    CommandTable *ct;
+    char *cmd;
+    int n;
+					/* scan table for command */
+    cmd = argv[0];
+    n = strlen (cmd);
+    for (ct = tab; ct->name; ct++) {
+					/* look for unique prefix */
+	if (n >= ct->minlen && n <= ct->maxlen &&
+	    strncmp (cmd, ct->name, n) == 0) {
+	    *statusp = (*(ct->processfunc))(inputfilename, lineno, argc, argv);
+	    return 1;
+	}
+    }
+
+    *statusp = 1;
+    return 0;
+}
+
+
 /*
  * public procedures for parsing lines of input
  */
@@ -358,6 +491,7 @@ int auth_finalize ()
 {
     if (xauth_modified) {
 	/* XXX - need to write stuff back out */
+	printf ("Writing authority file \"%s\"\n", xauth_filename);
     }
     return 0;
 }
@@ -368,28 +502,17 @@ int process_command (inputfilename, lineno, argc, argv)
     int argc;
     char **argv;
 {
-    struct _cmdtab *ct;
+    CommandTable *ct;
     int n, status;
-    char *cmd;
 
     if (argc < 1 || !argv || !argv[0]) return 1;
 
-					/* scan table for command */
-    cmd = argv[0];
-    n = strlen (cmd);
-    for (ct = command_table; ct->name; ct++) {
-					/* look for unique prefix */
-	if (n >= ct->minlen && n <= ct->maxlen &&
-	    strncmp (cmd, ct->name, n) == 0) {
-	    status = (*(ct->processfunc)) (inputfilename, lineno, argc, argv);
-	    return status;
-	}
-    }
+    if (dispatch_command (inputfilename, lineno, argc, argv,
+			  command_table, &status))
+      return status;
 
     prefix (inputfilename, lineno);
-    fprintf (stderr, "unknown command \"");
-    fwrite (cmd, sizeof (char), n, stderr);
-    fprintf (stderr, "\"\n");
+    fprintf (stderr, "unknown command \"%s\"\n", argv[0]);
     return 1;
 }
 
@@ -413,7 +536,9 @@ static void fprintfhex (fp, len, cp)
     return;
 }
 
-static int dump_entry (auth, data)
+static int dump_entry (inputfilename, lineno, auth, data)
+    char *inputfilename;
+    int lineno;
     Xauth *auth;
     char *data;
 {
@@ -464,6 +589,41 @@ static int dump_entry (auth, data)
     return 0;
 }
 
+static void dumpauthlist (inputfilename, lineno, l)
+    char *inputfilename;
+    int lineno;
+    register AuthList *l;
+{
+    for (; l; l = l->next) {
+	dump_entry (inputfilename, lineno, l->auth, (char *) stdout);
+    }
+    return;
+}
+
+static int extract_entry (inputfilename, lineno, auth, data)
+    char *inputfilename;
+    int lineno;
+    Xauth *auth;
+    char *data;
+{
+    struct _extract_data *ed = (struct _extract_data *) data;
+
+    if (!ed->fp) {
+	ed->fp = fopen (ed->filename, "w");
+	if (!ed->fp) {
+	    prefix (inputfilename, lineno);
+	    fprintf (stderr,
+		     "unable to open extraction file \"%s\"\n",
+		     ed->filename);
+	    return -1;
+	}
+    }
+    XauWriteAuth (ed->fp, auth);
+    ed->nwritten++;
+
+    return 0;
+}
+
 
 static int match_auth (a, b)
     register Xauth *a, *b;
@@ -476,7 +636,65 @@ static int match_auth (a, b)
 }
 
 
-static int iterate (inputfilename, lineno, start,
+static int merge_entries (firstp, second)
+    AuthList **firstp, *second;
+{
+    AuthList *a, *b, *first, *tail;
+    int n = 0;
+
+    if (!second) return 0;
+
+    if (!*firstp) {			/* if nothing to merge into */
+	*firstp = second;
+	for (tail = *firstp, n = 0; tail->next; n++, tail = tail->next) ;
+	return n;
+    }
+
+    first = *firstp;
+    /*
+     * find end of first list and stick second list on it
+     */
+    for (tail = first; tail->next; tail = tail->next) ;
+    tail->next = second;
+
+    /*
+     * run down list freeing duplicate entries; if an entry is okay, then
+     * bump the tail up to include it, otherwise, cut the entry out of
+     * the chain.
+     */
+    for (b = second; b; ) {
+	AuthList *next = b->next;	/* in case we free it */
+
+	a = first;
+	while (1) {
+	    if (match_auth (a->auth, b->auth)) {  /* found a duplicate */
+		AuthList tmp;		/* swap it in for old one */
+		tmp = *a;
+		*a = *b;
+		*b = tmp;
+		a->next = b->next;
+		XauDisposeAuth (b->auth);
+		free ((char *) b);
+		b = NULL;
+		tail->next = next;
+		break;
+	    }
+	    if (a == tail) break;	/* if have looked at left side */
+	    a = a->next;
+	}
+	if (b) {			/* if we didn't remove it */
+	    tail = b;			/* bump end of first list */
+	}
+	b = next;
+	n++;
+    }
+
+    return n;
+
+}
+
+
+static int iterdpy (inputfilename, lineno, start,
 		    argc, argv, yfunc, nfunc, data)
     char *inputfilename;
     int lineno;
@@ -487,6 +705,7 @@ static int iterate (inputfilename, lineno, start,
     char *data;
 {
     int i;
+    int status;
     int errors = 0;
     Xauth proto;
     AuthList *l;
@@ -503,22 +722,55 @@ static int iterate (inputfilename, lineno, start,
 	    errors++;
 	    continue;
 	}
+	status = 0;
 	for (l = xauth_head; l; l = l->next) {
 	    if (match_auth (&proto, l->auth)) {
 		if (yfunc) {
-		    errors += (*yfunc) (l->auth, data);
+		    status = (*yfunc) (inputfilename, lineno,
+				       l->auth, data);
+		    if (status < 0) break;
 		}
 	    } else {
 		if (nfunc) {
-		    errors += (*nfunc) (l->auth, data);
+		    status = (*nfunc) (inputfilename, lineno,
+				       l->auth, data);
+		    if (status < 0) break;
 		}
 	    }
 	}
 	if (proto.address) free (proto.address);
 	if (proto.number) free (proto.number);
+	if (status < 0) {
+	    errors -= status;		/* since status is negative */
+	    break;
+	}
     }
 
     return errors;
+}
+
+static int remove_entry (listp, auth)
+    AuthList **listp;
+    Xauth *auth;
+{
+    AuthList *prev, *list;
+    int removed = 0, notremoved = 0;
+
+    if (!*listp) return -1;		/* if nothing to remove */
+
+    for (prev = NULL, list = *listp; list; prev = list, list = list->next) {
+	if (match_auth (list->auth, auth)) {
+	    if (prev) prev->next = list->next;
+	    XauDisposeAuth (list->auth);
+	    free (list);
+	    list = prev;		/* back it up before continuing */
+	    removed++;
+	} else
+	  notremoved++;
+    }
+
+    if (notremoved == 0) *listp = NULL;
+    return removed;
 }
 
 /*
@@ -540,6 +792,44 @@ static int do_help (inputfilename, lineno, argc, argv)
 }
 
 /*
+ * questionmark
+ */
+static int do_questionmark (inputfilename, lineno, argc, argv)
+    char *inputfilename;
+    int lineno;
+    int argc;
+    char **argv;
+{
+    CommandTable *ct;
+    int i;
+#define WIDEST_COLUMN 72
+    int col = WIDEST_COLUMN;
+
+    printf ("Commands:\n");
+    for (ct = command_table; ct->name; ct++) {
+	if ((col + ct->maxlen) > WIDEST_COLUMN) {
+	    if (ct != command_table) {
+		putc ('\n', stdout);
+	    }
+	    fputs ("        ", stdout);
+	    col = 8;			/* length of string above */
+	}
+	fputs (ct->name, stdout);
+	col += ct->maxlen;
+	for (i = ct->maxlen; i < COMMAND_NAMES_PADDED; i++) {
+	    putc (' ', stdout);
+	    col++;
+	}
+    }
+    if (col != 0) {
+	putc ('\n', stdout);
+    }
+
+    /* allow bad lines since this is help */
+    return 0;
+}
+
+/*
  * list [displayname ...]
  */
 static int do_list (inputfilename, lineno, argc, argv)
@@ -556,13 +846,11 @@ static int do_list (inputfilename, lineno, argc, argv)
     int errors = 0;
 
     if (argc == 1) {
-	for (l = xauth_head; l; l = l->next) {
-	    dump_entry (l->auth, stdout);
-	}
+	dumpauthlist (inputfilename, lineno, xauth_head);
 	return 0;
     }
 
-    return iterate (inputfilename, lineno, 1, argc, argv,
+    return iterdpy (inputfilename, lineno, 1, argc, argv,
 		    dump_entry, NULL, (char *) stdout);
 }
 
@@ -576,12 +864,68 @@ static int do_merge (inputfilename, lineno, argc, argv)
     char **argv;
 {
     int i;
-    AuthList *head, *tail, *list;
+    int errors = 0;
+    AuthList *head, *tail, *listhead, *listtail;
+    int nentries;
 
     if (argc < 2) {
 	prefix (inputfilename, lineno);
 	badcommandline (argv[0]);
 	return 1;
+    }
+
+    listhead = listtail = NULL;
+
+    for (i = 1; i < argc; i++) {
+	char *filename = argv[i];
+	FILE *fp;
+	Bool used_stdin = False;
+
+	if (strcmp (filename, "-") == 0) {
+	    if (okay_to_use_stdin) {
+		fp = stdin;
+		okay_to_use_stdin = False;
+		used_stdin = True;
+		filename = "(stdin)";
+	    } else {
+		prefix (inputfilename, lineno);
+		fprintf (stderr, "%s:  stdin already in use\n", argv[0]);
+		errors++;
+		continue;
+	    }
+	} else {
+	    fp = fopen (filename, "r");
+	}
+
+	if (!fp) {
+	    prefix (inputfilename, lineno);
+	    fprintf (stderr, "unable to open file \"%s\" for merging\n",
+		     filename);
+	    errors++;
+	    continue;
+	}
+
+	head = tail = NULL;
+	nentries = read_auth_entries (fp, format_numeric, &head, &tail);
+	if (nentries == 0) {
+	    prefix (inputfilename, lineno);
+	    fprintf (stderr, "unable to read any entries from file \"%s\"\n",
+		     filename);
+	    errors++;
+	} else {			/* link it in */
+	    add_to_list (listhead, listtail, head);
+ 	}
+
+	if (!used_stdin) (void) fclose (fp);
+    }
+
+    /*
+     * if we have new entries, merge them in (freeing any duplicates)
+     */
+    if (listhead) {
+	nentries = merge_entries (&xauth_head, listhead);
+	printf ("%d new entries read in.\n", nentries);
+	if (nentries > 0) xauth_modified = True;
     }
 
     return 0;
@@ -596,12 +940,9 @@ static int do_extract (inputfilename, lineno, argc, argv)
     int argc;
     char **argv;
 {
-    int i;
-    FILE *fp = NULL;
     Xauth proto;
-    AuthList *l;
-    int errors = 0;
-    char *filename;
+    int errors;
+    struct _extract_data ed;
 
     if (argc < 3) {
 	prefix (inputfilename, lineno);
@@ -609,46 +950,19 @@ static int do_extract (inputfilename, lineno, argc, argv)
 	return 1;
     }
 
-    filename = argv[1];
+    ed.fp = NULL;
+    ed.filename = argv[1];
+    ed.nwritten = 0;
 
-    /*
-     * should use iterate
-     */
-    for (i = 2; i < argc; i++) {
-	char *displayname = argv[i];
-	proto.address = proto.number = NULL;
-	if (!get_displayname_auth (displayname, &proto)) {
-	    prefix (inputfilename, lineno);
-	    baddisplayname (displayname, argv[0]);
-	    errors++;
-	    continue;
-	}
+    errors = iterdpy (inputfilename, lineno, 2, argc, argv, 
+		      extract_entry, NULL, (char *) &ed);
 
-	for (l = xauth_head; l; l = l->next) {
-	    if (match_auth (&proto, l->auth)) {
-		if (!fp) {
-		    fp = fopen (filename, "w");
-		    if (!fp) {
-			prefix (inputfilename, lineno);
-			fprintf (stderr,
-				 "unable to open extraction file \"%s\"\n",
-				 filename);
-			errors++;
-			break;
-		    }
-		}
-		XauWriteAuth (fp, l->auth);
-	    }
-	}
-	if (proto.address) free (proto.address);
-	if (proto.number) free (proto.number);
-    }
-
-    if (!fp) {
+    if (!ed.fp) {
 	printf ("No matches found, authority file \"%s\" not written.\n",
-		filename);
+		ed.filename);
     } else {
-	(void) fclose (fp);
+	printf ("%d entries written to \"%s\"\n", ed.nwritten, ed.filename);
+	(void) fclose (ed.fp);
     }
 
     return errors;
@@ -663,12 +977,94 @@ static int do_add (inputfilename, lineno, argc, argv)
     int argc;
     char **argv;
 { 
+    int n;
+    int len;
+    char *dpyname;
+    char *protoname;
+    char *hexkey;
+    char *key;
+    Xauth *auth;
+    AuthList *list;
+
     if (argc != 4 || !argv[1] || !argv[2] || !argv[3]) {
 	prefix (inputfilename, lineno);
 	badcommandline (argv[0]);
 	return 1;
     }
-    /* XXX */
+
+    dpyname = argv[1];
+    protoname = argv[2];
+    hexkey = argv[3];
+
+    len = cvthexkey (hexkey, &key);
+    if (len < 0) {
+	prefix (inputfilename, lineno);
+	fprintf (stderr,
+		 "hexkey contains odd or non-hexidecimal characters\n");
+	return 1;
+    }
+
+    auth = (Xauth *) malloc (sizeof (Xauth));
+    if (!auth) {
+	prefix (inputfilename, lineno);
+	fprintf (stderr, "unable to allocate %d bytes for Xauth structure\n",
+		 sizeof (Xauth));
+	free (key);
+	return 1;
+    }
+
+    if (!get_displayname_auth (dpyname, auth)) {
+	prefix (inputfilename, lineno);
+	baddisplayname (dpyname, argv[0]);
+	free (auth);
+	free (key);
+	return 1;
+    }
+
+    /*
+     * allow an abbreviation for common protocol names
+     */
+    if (strcmp (protoname, DEFAULT_PROTOCOL_ABBREV) == 0) {
+	protoname = DEFAULT_PROTOCOL;
+    }
+
+    auth->name_length = strlen (protoname);
+    auth->name = copystring (protoname, auth->name_length);
+    if (!auth->name) {
+	prefix (inputfilename, lineno);
+	fprintf (stderr, "unable to allocate %d character protocol name\n",
+		 auth->name_length);
+	free (auth);
+	free (key);
+	return 1;
+    }
+    auth->data_length = len;
+    auth->data = key;
+
+    list = (AuthList *) malloc (sizeof (AuthList));
+    if (!list) {
+	prefix (inputfilename, lineno);
+	fprintf (stderr, "unable to allocate %d bytes for auth list\n",
+		 sizeof (AuthList));
+	free (auth);
+	free (key);
+	free (auth->name);
+	return 1;
+    }
+
+    list->next = NULL;
+    list->auth = auth;
+
+    /*
+     * merge it in; note that merge will deal with allocation
+     */
+    n = merge_entries (&xauth_head, list);
+    if (n == 0) {
+	prefix (inputfilename, lineno);
+	fprintf (stderr, "unable to merge in added record\n");
+	return 1;
+    }
+
     return 0;
 }
 
@@ -704,53 +1100,75 @@ static int do_info (inputfilename, lineno, argc, argv)
 	badcommandline (argv[0]);
 	return 1;
     }
-    printf ("Authority file:  %s\n", 
-	    xauth_filename ? xauth_filename : "(none)");
+    printf ("Authority file:  %s%s\n", 
+	    xauth_filename ? xauth_filename : "(none)",
+	    xauth_modified ? " (needs to be written out)" : "");
     printf ("Numeric format:  %s\n", format_numeric ? "on" : "off");
     printf ("Current input:   %s, line %d\n", inputfilename, lineno);
     return 0;
 }
 
 /*
- * numeric [on/off]
+ * set ...
  */
-static int do_numeric (inputfilename, lineno, argc, argv)
+static int do_set (inputfilename, lineno, argc, argv)
     char *inputfilename;
     int lineno;
     int argc;
     char **argv;
 {
-    switch (argc) {
-      case 1:				/* numeric - toggle */
-	format_numeric = (!format_numeric);
-	break;
-      case 2:
-	switch (parse_boolean (argv[1])) {
-	  case 0:
-	    format_numeric = False;
-	    break;
-	  case 1:
-	    format_numeric = True;
-	    break;
-	  default:
-	    prefix (inputfilename, lineno);
-	    fprintf (stderr, "use \"on\" or \"off\" with numeric\n");
-	    return 1;
-	}
-	break;
-      default:
+    int status;
+
+    if (argc < 2) {
 	prefix (inputfilename, lineno);
 	badcommandline (argv[0]);
 	return 1;
     }
+
+    if (dispatch_command (inputfilename, lineno, argc - 1, argv + 1,
+			  set_table, &status))
+      return status;
+
+    prefix (inputfilename, lineno);
+    fprintf (stderr, "unknown set parameter \"%s\"\n", argv[1]);
+    return 1;
+}
+
+static int do_set_numeric (inputfilename, lineno, argc, argv)
+    char *inputfilename;
+    int lineno;
+    int argc;
+    char **argv;
+{
+    if (argc != 2) {
+	prefix (inputfilename, lineno);
+	badset (argv[0]);
+	return 1;
+    }
+
+    switch (parse_boolean (argv[1])) {
+      case 0:
+	format_numeric = False;
+	break;
+      case 1:
+	format_numeric = True;
+	break;
+      default:
+	prefix (inputfilename, lineno);
+	fprintf (stderr, "numeric takes \"on\" or \"off\"\n");
+	return 1;
+    }
+
+    printf ("Numeric mode turned %s\n", format_numeric ? "on" : "off");
     return 0;
 }
 
-static Bool quit = False;
 
 /*
  * quit
  */
+static Bool quit = False;
+
 static int do_quit (inputfilename, lineno, argc, argv)
     char *inputfilename;
     int lineno;
@@ -760,6 +1178,20 @@ static int do_quit (inputfilename, lineno, argc, argv)
     /* allow bogus stuff */
     quit = True;
     return 0;
+}
+
+/*
+ * abort
+ */
+static int do_abort (inputfilename, lineno, argc, argv)
+    char *inputfilename;
+    int lineno;
+    int argc;
+    char **argv;
+{
+    /* allow bogus stuff */
+    exit (0);
+    /* NOTREACHED */
 }
 
 
@@ -794,12 +1226,12 @@ static int do_source (inputfilename, lineno, argc, argv)
     if (strcmp (script, "-") == 0) {
 	if (okay_to_use_stdin) {
 	    fp = stdin;
-	    okay_to_use_stdin++;
+	    okay_to_use_stdin = False;
 	    used_stdin = True;
 	    script = "(stdin)";
 	} else {
 	    prefix (inputfilename, lineno);
-	    fprintf (stderr, "stdin already in use\n");
+	    fprintf (stderr, "%s:  stdin already in use\n", argv[0]);
 	    return 1;
 	}
     } else {
@@ -816,7 +1248,7 @@ static int do_source (inputfilename, lineno, argc, argv)
     while (!quit) {
 	buf[0] = '\0';
 	if (prompt) {
-	    printf ("\r\nxauth> ");
+	    printf ("xauth> ");
 	    fflush (stdout);
 	}
 	if (fgets (buf, sizeof buf, fp) == NULL) break;
