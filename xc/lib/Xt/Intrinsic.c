@@ -46,10 +46,29 @@ WidgetClassData widgetClassData = {
           SetValues,		/*set_values*/
           (WidgetProc)NULL      /*accept_focus*/
 };
-          
+Widget TopLevelCreate(widgetClass,screen,args,argCount)
+    WidgetClass widgetClass;
+    Screen* screen;
+    ArgList args;
+    Cardinal argCount;
+{
+   Widget widget;
+    widget = (Widget)XtMalloc(widgetClass->coreClass.size);
+    widget->core.widget_class = widgetClass;
+    widget->core.parent = NULL;
+    widget->core.screen = screen;
+    widget->core.visible = TRUE;
+   if (XtIsSubClass (widget,compositeWidgetClass)) {
+                ((CompositeWidget)widget)->composite.num_children = 0;
+               ((CompositeWidget)widget)->composite.num_managed_children = 0;
+                ((CompositeWidget)widget)->composite.children = NULL;
+                }
+    XtGetResources(widget,args,argCount);
+   widgetClass->coreClass.initialize();
+   return (widget);
+}
 
-
-Widget XtCreate(widgetClass,parent,args,argCount)
+Widget XtWidgetCreate(widgetClass,parent,args,argCount)
 	
     WidgetClass   widgetClass;
     CompositeWidget   parent;
@@ -76,8 +95,9 @@ Widget XtCreate(widgetClass,parent,args,argCount)
 		((CompositeWidget)widget)->composite.children = NULL;
                 }
     XtGetResources(widget,args,argCount);    
-    XtRegisterTranslations(widget);
+    XtDefineTranslation(widget);
     widgetClass->coreClass.initialize();
+    ((CompositeWidgetClass)(widget->core.parent->core.widget_class))->compositeClass.insert_child(widget);
     return (widget);
 }
 void FillInParameters(widget,valuemask,values)
@@ -113,7 +133,7 @@ Boolean XtIsSubClass(widget, widgetClass)
   return (FALSE);
 }
 
-void XtRealize (widget)
+void XtWidgetRealize (widget)
     
     Widget    widget;
 {
@@ -128,7 +148,7 @@ void XtRealize (widget)
    if (XtIsSubClass (widget, compositeWidgetClass)) {
         cwidget = (CompositeWidget)widget;
 	for (i= cwidget->composite.num_children;i!=0;--i) 
-		XtRealize(cwidget->composite.children[i-1]);
+		XtWidgetRealize(cwidget->composite.children[i-1]);
         if (cwidget->composite.num_children == cwidget->composite.num_managed_children)
 		XMapSubwindows(widget);
 	else while (i= cwidget->composite.num_managed_children > 0) {
@@ -142,7 +162,7 @@ void XtRealize (widget)
 }
 			
 		
-void XtSetSensitive(widget,sensitive)
+void XtWidgetSetSensitive(widget,sensitive)
     Widget    widget;
     Boolean   sensitive;
 {
@@ -151,7 +171,7 @@ void XtSetSensitive(widget,sensitive)
     if ((widget->core.sensitive == widget->core.ancestor_sensitive) 
                                  && XtIsSubClass (widget,compositeWidgetClass))
       for (i= ((CompositeWidget)widget)->composite.num_children;i != 0; --i)
-        XtSetSensitive (((CompositeWidget)widget)->composite.children[i-1],sensitive);
+        XtWidgetSetSensitive (((CompositeWidget)widget)->composite.children[i-1],sensitive);
       
 }
 
@@ -277,7 +297,7 @@ void XtPhase2Destroy (widget)
 }
 
 
-void XtDestroy (widget)
+void XtWidgetDestroy (widget)
     Widget    widget;
 
 {
