@@ -6,6 +6,10 @@
 #define ccflags "-DSYSV"
 #endif /* macII */
 
+#ifdef att
+#define ccflags "-DSYSV"
+#endif /* att */
+
 #ifdef CRAY
 #define ccflags "-DSYSV"
 #endif /* CRAY */
