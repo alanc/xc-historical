@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM X Window System Build Parameters
-XCOMM $XConsortium: Project.tmpl,v 1.109 91/05/04 11:41:52 rws Exp $
+XCOMM $XConsortium: Project.tmpl,v 1.110 91/05/06 12:11:45 rws Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -192,12 +192,6 @@ XCOMM $XConsortium: Project.tmpl,v 1.109 91/05/04 11:41:52 rws Exp $
 #endif
 #ifndef ServerExtraDefines
 #define ServerExtraDefines -DXDMCP
-#endif
-#ifndef ServerCDebugFlags
-#define ServerCDebugFlags OptimizedCDebugFlags
-#endif
-#ifndef LibraryDefines
-#define LibraryDefines StandardDefines
 #endif
 #ifndef ServerOSDefines
 #define ServerOSDefines /**/
@@ -415,7 +409,7 @@ XCOMM $XConsortium: Project.tmpl,v 1.109 91/05/04 11:41:52 rws Exp $
 
 XCOMM -------------------------------------------------------------------------
 XCOMM X Window System make variables; this need to be coordinated with rules
-XCOMM $XConsortium: Project.tmpl,v 1.109 91/05/04 11:41:52 rws Exp $
+XCOMM $XConsortium: Project.tmpl,v 1.110 91/05/06 12:11:45 rws Exp $
 
 /*
  * This list must be reflected in the DIRS_TO_BUILD list in the top-level
