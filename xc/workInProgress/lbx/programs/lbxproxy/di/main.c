@@ -1,6 +1,6 @@
 /*
  * $NCDOr$
- * $NCDId: @(#)main.c,v 1.8 1994/01/22 01:34:28 lemke Exp $
+ * $NCDId: @(#)main.c,v 1.9 1994/02/03 01:48:44 lemke Exp $
  *
  * Copyright 1992 Network Computing Devices
  *
@@ -38,7 +38,7 @@
 
 char	*display = "10";
 
-long	ScreenSaverTime = 0;
+CARD32	ScreenSaverTime = 0;
 
 extern Bool NoticeServer ();
 
@@ -95,6 +95,8 @@ main (argc, argv)
     exit (0);
 }
 
-MarkClientException ()
+void
+MarkClientException (client)
+    ClientPtr client;
 {
 }
