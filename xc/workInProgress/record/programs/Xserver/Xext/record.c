@@ -1,4 +1,4 @@
-/* $XConsortium: record.c,v 1.1 94/01/29 17:47:05 rws Exp $ */
+/* $XConsortium: record.c,v 1.2 94/01/29 18:12:34 rws Exp $ */
 /***************************************************************************
  * Copyright 1994 Network Computing Devices;
  * Portions Copyright 1988 by Digital Equipment Corporation and the
@@ -752,14 +752,14 @@ ProcRecordChangeConfig(client)
 {
     REQUEST(xRecordChangeConfigReq);
     RecordConfigPtr 	pConfig;
-    pointer 		*pResource;
+    pointer 		pResource;
     int 		clientIndex, status; 
 
     REQUEST_SIZE_MATCH(xRecordChangeConfigReq);
     VERIFY_RCONFIG(stuff->cid, pConfig, client); 
     VERIFY_FLAGS(stuff->record_flags);
 
-    pResource = (pointer *)LookupIDByClass(stuff->id_base, RC_ANY);
+    pResource = LookupIDByClass(stuff->id_base, RC_ANY);
     clientIndex = CLIENT_ID(stuff->id_base);   
     if(pResource == NULL || clientIndex == NULL)
     {
@@ -793,7 +793,6 @@ ProcRecordGetConfig(client)
 {
     REQUEST(xRecordGetConfigReq); 
     RecordConfigPtr 		pConfig;
-    pointer 			*pResource;
     ClientPtr 			recordclient;
     xRecordGetConfigReply 	rep;
     register int		i; 
