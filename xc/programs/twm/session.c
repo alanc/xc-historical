@@ -1,4 +1,4 @@
-/* $XConsortium: session.c,v 1.11 94/08/25 20:18:02 mor Exp mor $ */
+/* $XConsortium: session.c,v 1.12 94/08/25 20:54:15 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1994  X Consortium
@@ -119,10 +119,27 @@ unsigned char   b;
 
 
 int
-write_short (file, s)
+write_ushort (file, s)
 
 FILE		*file;
 unsigned short	s;
+
+{
+    unsigned char   file_short[2];
+
+    file_short[0] = (s & (unsigned)0xff00) >> 8;
+    file_short[1] = s & 0xff;
+    if (fwrite ((char *) file_short, (int) sizeof (file_short), 1, file) != 1)
+	return 0;
+    return 1;
+}
+
+
+int
+write_short (file, s)
+
+FILE	*file;
+short	s;
 
 {
     unsigned char   file_short[2];
@@ -176,10 +193,26 @@ unsigned char	*bp;
 
 
 int
-read_short (file, shortp)
+read_ushort (file, shortp)
 
 FILE		*file;
 unsigned short	*shortp;
+
+{
+    unsigned char   file_short[2];
+
+    if (fread ((char *) file_short, (int) sizeof (file_short), 1, file) != 1)
+	return 0;
+    *shortp = file_short[0] * 256 + file_short[1];
+    return 1;
+}
+
+
+int
+read_short (file, shortp)
+
+FILE	*file;
+short	*shortp;
 
 {
     unsigned char   file_short[2];
@@ -332,19 +365,19 @@ char *windowRole;
 	XGetGeometry (dpy, theWindow->icon_w, &JunkRoot, &icon_x,
 	    &icon_y, &JunkWidth, &JunkHeight, &JunkBW, &JunkDepth);
 
-	if (!write_short (configFile, (unsigned short) icon_x))
+	if (!write_short (configFile, (short) icon_x))
 	    return 0;
-	if (!write_short (configFile, (unsigned short) icon_y))
+	if (!write_short (configFile, (short) icon_y))
 	    return 0;
     }
 
-    if (!write_short (configFile, (unsigned short) theWindow->frame_x))
+    if (!write_short (configFile, (short) theWindow->frame_x))
 	return 0;
-    if (!write_short (configFile, (unsigned short) theWindow->frame_y))
+    if (!write_short (configFile, (short) theWindow->frame_y))
 	return 0;
-    if (!write_short (configFile, (unsigned short) theWindow->attr.width))
+    if (!write_ushort (configFile, (unsigned short) theWindow->attr.width))
 	return 0;
-    if (!write_short (configFile, (unsigned short) theWindow->attr.height))
+    if (!write_ushort (configFile, (unsigned short) theWindow->attr.height))
 	return 0;
 
     return 1;
@@ -421,19 +454,19 @@ TWMWinConfigEntry **pentry;
 
     if (entry->icon_info_present)
     {
-	if (!read_short (configFile, &entry->icon_x))
+	if (!read_short (configFile, (short *) &entry->icon_x))
 	    goto give_up;
-	if (!read_short (configFile, &entry->icon_y))
+	if (!read_short (configFile, (short *) &entry->icon_y))
 	    goto give_up;
     }
 
-    if (!read_short (configFile, &entry->x))
+    if (!read_short (configFile, (short *) &entry->x))
 	goto give_up;
-    if (!read_short (configFile, &entry->y))
+    if (!read_short (configFile, (short *) &entry->y))
 	goto give_up;
-    if (!read_short (configFile, &entry->width))
+    if (!read_ushort (configFile, &entry->width))
 	goto give_up;
-    if (!read_short (configFile, &entry->height))
+    if (!read_ushort (configFile, &entry->height))
 	goto give_up;
 
     return 1;
@@ -481,7 +514,7 @@ char *filename;
     if (!configFile)
 	return;
 
-    if (!read_short (configFile, &version) ||
+    if (!read_ushort (configFile, &version) ||
 	version > SAVEFILE_VERSION)
     {
 	done = 1;
@@ -508,10 +541,11 @@ GetWindowConfig (theWindow, x, y, width, height,
     iconified, icon_info_present, icon_x, icon_y)
 
 TwmWindow *theWindow;
-unsigned short *x, *y, *width, *height;
+short *x, *y;
+unsigned short *width, *height;
 Bool *iconified;
 Bool *icon_info_present;
-unsigned short *icon_x, *icon_y;
+short *icon_x, *icon_y;
 
 {
     char *clientId, *windowRole;
@@ -666,7 +700,7 @@ SmPointer clientData;
     filename = tempnam (path, ".twm");
     configFile = fopen (filename, "wb");
 
-    if (!write_short (configFile, SAVEFILE_VERSION))
+    if (!write_ushort (configFile, SAVEFILE_VERSION))
 	success = False;
 
     for (scrnum = 0; scrnum < NumScreens && success; scrnum++)
