@@ -12,12 +12,12 @@ BEGIN {
 	printf("#define XATOM_H 1\n\n") > hfile;
 	printf("/* THIS IS A GENERATED FILE\n") > hfile;
 	printf(" *\n") > hfile;
-	printf(" * Do not edit it directly or put it under source control.\n") > hfile;
+	printf(" * Do not change!  Changing this file implies a protocol change!\n") > hfile;
 	printf(" */\n\n") > hfile;
 
 	printf("/* THIS IS A GENERATED FILE\n") > cfile;
 	printf(" *\n") > cfile;
-	printf(" * Do not edit it directly or put it under source control.\n") > cfile;
+	printf(" * Do not change!  Changing this file implies a protocol change!\n") > cfile;
 	printf(" */\n\n") > cfile;
 	printf("#include \"X.h\"\n") > cfile;
 	printf("#include \"Xatom.h\"\n") > cfile;
