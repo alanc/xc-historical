@@ -376,7 +376,8 @@ See the porting layer document for details.  Also, the contents of union
 _Validate (validate.h) are now device dependent; mivalidate.h contains a
 sample definition.
 
-The ddx document, xc/doc/specs/Server/ddx.tbl.ms, is up to date.
+An effort has been made to bring the ddx document up to date; see
+xc/doc/specs/Server/ddx.tbl.ms.
 
 An implementation of the SYNC extension is in place (Xserver/Xext/sync.c) and
 is believed to fully implement the current spec.  As part of this work, client
