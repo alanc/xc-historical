@@ -62,7 +62,7 @@ extern int errno;
 
 usage()
 {
-    outl("%s: %s [-help][-debug][-rv][input <file>][[host]:vs]\n",
+    outl("%s: %s [-help][-debug][-inverse][-in <file>][[host]:vs]\n",
 	 program_name, program_name);
     exit(1);
 }
@@ -81,7 +81,6 @@ main(argc, argv)
     Visual *visual;
     register char *buffer;
 
-    int screen;
     int j, status;
     int onebufsize;
     int planes;
@@ -115,19 +114,18 @@ main(argc, argv)
 
     FILE *in_file = stdin;
 
+    INIT_NAME;
+
+    Setup_Display_And_Screen(&argc, argv);
+
     for (i = 1; i < argc; i++) {
-	str_index = (char *)index (argv[i], ':');
-	if(str_index != NULL) {
-	    (void) strncpy(display,argv[i],sizeof(display));
-	    continue;
-        }
 	str_index = (char *) index (argv [i], '-');
-	if (str_index == NULL) Syntax(argv[0]);
+	if (str_index == NULL) usage();
 	if (strncmp(argv[i], "-help", 5) == 0) {
-	    Syntax(argv[0]);
+	    usage();
 	}
 	if (strncmp(argv[i], "-in", 4) == 0) {
-	    if (++i >= argc) Syntax(argv[0]);
+	    if (++i >= argc) usage();
 	    file_name = argv[i];
 	    standard_in = False;
 	    continue;
@@ -140,7 +138,7 @@ main(argc, argv)
 	    debug = True;
 	    continue;
 	}
-	Syntax(argv[0]);
+	usage();
     }
     
     if (!standard_in) {
@@ -153,15 +151,6 @@ main(argc, argv)
 	}
     }
     
-    /*
-     * Open the display.
-     */
-    if ((dpy = XOpenDisplay(display)) == NULL) {
-        fprintf(stderr, "%s: Can't open display '%s'\n",
-		argv[0], XDisplayName(display));
-	exit(1);
-    }
-
     /*
      * Read in header information.
      */
@@ -179,7 +168,6 @@ main(argc, argv)
 	else Error("exiting.");
       }
 
-    screen = DefaultScreen(dpy);
     colormap = DefaultColormap(dpy, screen);
     if((planeno = DisplayPlanes(dpy, screen)) < header.display_planes)
       Error("Windump has more planes than display.");
@@ -546,19 +534,6 @@ ColorEqual(color1, color2)
 	   color1->red   == color2->red &&
 	   color1->green == color2->green &&
 	   color1->blue  == color2->blue);
-}
-
-/*
- * Report the syntax for calling xwud.
- */
-Syntax(call)
-    char *call;
-{
-    fprintf( stderr,
-	"xwud: %s [-help][-debug][-inverse][-in <file>][[host]:vs]\n",
-    	call
-    );
-    exit(1);
 }
 
 
