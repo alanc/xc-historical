@@ -303,7 +303,7 @@ extern XcmsCCC *XcmsCCCofColormap (
 extern Status XcmsConvertColors (
 #if NeedFunctionPrototypes
     XcmsCCC*		/* pCCC */,
-    XcmsColor []	/* colorArry_in_out */,
+    XcmsColor*		/* colorArry_in_out */,
     unsigned int	/* nColors */,
     XcmsSpecFmt		/* targetFormat */,
     Bool*		/* compArry_return */
@@ -360,7 +360,7 @@ extern Status XcmsQueryColors (
 #if NeedFunctionPrototypes
     Display*		/* dpy */,
     Colormap		/* colormap */,
-    XcmsColor []	/* colorArry_in_out */,
+    XcmsColor*		/* colorArry_in_out */,
     unsigned int	/* nColors */,
     XcmsSpecFmt		/* result_format */
 #endif
@@ -378,7 +378,7 @@ extern Status XcmsStoreColors (
 #if NeedFunctionPrototypes
     Display*		/* dpy */,
     Colormap		/* colormap */,
-    XcmsColor []	/* colorArry_in */,
+    XcmsColor*		/* colorArry_in */,
     unsigned int	/* nColors */,
     Bool*		/* compArry_return */
 #endif
