@@ -1,5 +1,5 @@
 /*
- * $XConsortium: def.h,v 1.6 88/09/22 13:52:33 jim Exp $
+ * $XConsortium: def.h,v 1.7 89/06/02 17:29:54 jim Exp $
  */
 #include <stdio.h>
 #include <ctype.h>
@@ -47,7 +47,7 @@ extern int	debug;
 #define	debug4	((debug&0x0010)==0) ? debug : log /* unused */
 #define	debug5	((debug&0x0020)==0) ? debug : log /* unused */
 #define	debug6	((debug&0x0040)==0) ? debug : log /* unused */
-#else DEBUG
+#else
 #define	debug0
 #define	debug1
 #define	debug2
@@ -55,7 +55,7 @@ extern int	debug;
 #define	debug4
 #define	debug5
 #define	debug6
-#endif DEBUG
+#endif /* DEBUG */
 
 typedef	u_char	boolean;
 
