@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: multibufst.h,v 1.1 89/09/25 16:19:09 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -36,7 +36,7 @@
 #define BUFFER_MINOR_VERSION	0
 
 typedef struct {
-	CARD32	VISUALID B32;		/* associated visual */
+	CARD32	visualID B32;		/* associated visual */
 	CARD16	maxBuffers B16;		/* maximum supported buffers */
 	CARD8	depth;			/* depth of visual (redundant) */
 	CARD8	unused;
@@ -74,7 +74,7 @@ typedef struct {
 
 typedef struct {
     CARD8	reqType;		/* always BufferReqCode */
-    CARD8	bufferReqType;		/* always X_GetBufferVersion */
+    CARD8	bufferReqType;		/* always X_MbufGetBufferVersion */
     CARD16	length B16;
 } xMbufGetBufferVersionReq;
 #define sz_xMbufGetBufferVersionReq	4
@@ -97,7 +97,7 @@ typedef struct {
 
 typedef struct {
     CARD8	reqType;	/* always BufferReqCode */
-    CARD8	bufferReqType;	/* always X_CreateImageBuffers */
+    CARD8	bufferReqType;	/* always X_MbufCreateImageBuffers */
     CARD16	length B16;
     CARD32	window B32;	/* associated window */
     CARD8	updateAction;	/* action at update */
@@ -123,7 +123,7 @@ typedef struct {
 
 typedef struct {
     CARD8	reqType;	/* always BufferReqCode */
-    CARD8	bufferReqType;	/* always X_DestroyImageBuffers */
+    CARD8	bufferReqType;	/* always X_MbufDestroyImageBuffers */
     CARD16	length B16;
     CARD32	window B32;	/* associated window */
 } xMbufDestroyImageBuffersReq;
@@ -131,7 +131,7 @@ typedef struct {
 
 typedef struct {
     CARD8	reqType;	/* always BufferReqCode */
-    CARD8	bufferReqType;	/* always X_DisplayImageBuffers */
+    CARD8	bufferReqType;	/* always X_MbufDisplayImageBuffers */
     CARD16	length B16;
     CARD16	minDelay B16;	/* minimum time between last update and now */
     CARD16	maxDelay B16;	/* maximum time between last update and now */
@@ -140,7 +140,7 @@ typedef struct {
 
 typedef struct {
     CARD8	reqType;	/* always BufferReqCode */
-    CARD8	bufferReqType;	/* always X_SetMultiBufferAttributes */
+    CARD8	bufferReqType;	/* always X_MbufSetMultiBufferAttributes */
     CARD16	length B16;
     CARD32	window B32;	/* associated window */
     CARD32	valueMask B32;	/* modified entries */
@@ -149,7 +149,7 @@ typedef struct {
 
 typedef struct {
     CARD8	reqType;	/* always BufferReqCode */
-    CARD8	bufferReqType;	/* always X_GetMultiBufferAttributes */
+    CARD8	bufferReqType;	/* always X_MbufGetMultiBufferAttributes */
     CARD16	length B16;
     CARD32	window B32;	/* associated window */
 } xMbufGetMultiBufferAttributesReq;
@@ -175,7 +175,7 @@ typedef struct {
 
 typedef struct {
     CARD8	reqType;	/* always BufferReqCode */
-    CARD8	bufferReqType;	/* always X_SetBufferAttributes */
+    CARD8	bufferReqType;	/* always X_MbufSetBufferAttributes */
     CARD16	length B16;
     CARD32	buffer B32;
     CARD32	valueMask B32;
@@ -184,7 +184,7 @@ typedef struct {
 
 typedef struct {
     CARD8	reqType;	/* always BufferReqCode */
-    CARD8	bufferReqType;	/* always X_GetBufferAttributes */
+    CARD8	bufferReqType;	/* always X_MbufGetBufferAttributes */
     CARD16	length B16;
     CARD32	buffer B32;
 } xMbufGetBufferAttributesReq;
@@ -197,7 +197,7 @@ typedef struct {
     CARD32	length B32;
     CARD32	window B32;
     CARD32	eventMask B32;
-    CARD16	index B16;
+    CARD16	bufferIndex B16;
     CARD8	side;
     CARD8	unused0;
     CARD32	unused1 B32;
@@ -208,10 +208,11 @@ typedef struct {
 
 typedef struct {
     CARD8	reqType;	/* always BufferReqCode */
-    CARD8	bufferReqType;	/* always X_GetBufferInfo */
+    CARD8	bufferReqType;	/* always X_MbufGetBufferInfo */
     CARD16	length B16;
+    Drawable	drawable B32;
 } xMbufGetBufferInfoReq;
-#define sz_xMbufGetBufferInfoReq 4
+#define sz_xMbufGetBufferInfoReq 8
 
 typedef struct {
     BYTE	type;			/* X_Reply */
