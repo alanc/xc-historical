@@ -1,4 +1,4 @@
-/* $XConsortium: do_geometry.c,v 1.1 93/07/19 13:02:44 rws Exp $ */
+/* $XConsortium: geometry.c,v 1.2 93/07/19 14:43:55 rws Exp $ */
 
 /**** module do_logical.c ****/
 /******************************************************************************
@@ -51,6 +51,9 @@ terms and conditions:
 #include "xieperf.h"
 #include <stdio.h>
 #include <math.h>
+#ifndef M_PI
+#define M_PI	3.14159265358979323846
+#endif
 
 static XiePhotomap XIEPhotomap;
 
