@@ -1,4 +1,4 @@
-/* $XConsortium: cb_inp.c,v 5.4 91/11/27 14:42:06 hersh Exp $ */
+/* $XConsortium: cb_inp.c,v 5.5 92/02/24 15:52:31 mor Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -35,7 +35,7 @@ SOFTWARE.
     (((Wst*)_wsinfo->wstype)->desc_tbl.phigs_dt.ws_category)
 
 #define DEVICE_EXISTS( _idt, _class, _num) \
-    ((_num) <= (_idt)->num_devs._class)
+    ((_num) > 0 && (_num) <= (_idt)->num_devs._class)
 
 #define LINE_BUNDLE_VALID( _lb, _dt ) \
     ( (_lb)->colour >= 0 \
