@@ -1,5 +1,5 @@
 /*
- * $XConsortium: locking.c,v 1.13 93/09/14 17:27:44 gildea Exp $
+ * $XConsortium: locking.c,v 1.14 93/09/15 13:22:43 rws Exp $
  *
  * Copyright 1992 Massachusetts Institute of Technology
  *
@@ -61,6 +61,11 @@ _Xthread_waiter()
     return me;
 }
 #endif /* WIN32 */
+
+static xthread_t _Xthread_self()
+{
+    return xthread_self();
+}
 
 static xmutex_t _Xglobal_lock;
 
@@ -341,6 +346,8 @@ static int _XInitDisplayLock(dpy)
     dpy->lock->event_awaiters = NULL;
     dpy->lock->event_awaiters_tail = &dpy->lock->event_awaiters;
     xthread_clear_id(dpy->lock->locking_thread);
+    xthread_clear_id(dpy->lock->reading_thread);
+    xthread_clear_id(dpy->lock->conni_thread);
     dpy->lock->cv = NULL;
 
     dpy->lock->mutex = xmutex_malloc();
@@ -472,7 +479,7 @@ Status XInitThreads()
     _XUnlockMutex_fn = _XUnlockMutex;
     _XInitDisplayLock_fn = _XInitDisplayLock;
     _XFreeDisplayLock_fn = _XFreeDisplayLock;
-    _Xthread_self_fn = xthread_self;
+    _Xthread_self_fn = _Xthread_self;
 
 #ifdef XTHREADS_WARN
 #ifdef XTHREADS_DEBUG
