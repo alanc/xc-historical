@@ -1,4 +1,4 @@
-/* $XConsortium: miline.h,v 1.1 94/03/06 19:10:36 dpw Exp $ */
+/* $XConsortium: copyright.h,v 1.11 94/03/01 12:07:38 gildea Exp $ */
 
 /*
 
