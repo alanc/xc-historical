@@ -1,7 +1,7 @@
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <stdio.h>
-#include "simple.h"
+#include "jdisplay.h"
 
 #define N_START 1000  /* Maximum # of fonts to start with */
 
