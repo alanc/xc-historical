@@ -1,7 +1,7 @@
 
 
 
-/* $XConsortium$ */
+/* $XConsortium: ipp.c,v 5.1 91/02/16 09:59:55 rws Exp $ */
 
 /*****************************************************************
 Copyright (c) 1989,1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -562,6 +562,7 @@ W_fcnbegin()
 {
 	int i;
 
+	fprintf(dotcfp, "#define XLIB_ILLEGAL_ACCESS\n");
 	fprintf(dotcfp, "#include \"%s\"\n",doth);
 	if (icount) {
 		for (i=0;i<icount;++i)
