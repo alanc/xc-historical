@@ -4,10 +4,18 @@
 /**/# generate a Makefile from an Imakefile from inside or outside the sources!
 /**/# 
 
-usage="usage:  $0 [top_of_sources_pathname [current_directory]]"
+usage="usage:  $0 [-a] [top_of_sources_pathname [current_directory]]"
 
 topdir=
 curdir=.
+do_all=
+
+case "$1" in
+-a)
+    do_all="yes"
+    shift
+    ;;
+esac
 
 case $# in 
     0) ;;
@@ -32,4 +40,15 @@ else
 fi
 
 echo imake $args
-imake $args
+case "$do_all" in
+yes)
+    imake $args && 
+    echo "make Makefiles" &&
+    make Makefiles &&
+    echo "make depend" &&
+    make depend
+    ;;
+*)
+    imake $args
+    ;;
+esac
