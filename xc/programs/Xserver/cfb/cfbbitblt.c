@@ -18,7 +18,7 @@ purpose.  It is provided "as is" without express or implied warranty.
 Author: Keith Packard
 
 */
-/* $XConsortium: cfbbitblt.c,v 5.41 91/07/14 13:50:43 keith Exp $ */
+/* $XConsortium: cfbbitblt.c,v 5.42 91/07/18 23:30:20 keith Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -645,11 +645,11 @@ RegionPtr cfbCopyPlane(pSrcDrawable, pDstDrawable,
 	int oldalu;
 
 	oldalu = pGC->alu;
-    	if (pGC->fgPixel == 0 && pGC->bgPixel == 1)
+    	if ((pGC->fgPixel & 1) == 0 && (pGC->bgPixel&1) == 1)
 	    pGC->alu = InverseAlu[pGC->alu];
-    	else if (pGC->fgPixel == pGC->bgPixel)
+    	else if ((pGC->fgPixel & 1) == (pGC->bgPixel & 1))
 	    pGC->alu = mfbReduceRop(pGC->alu, pGC->fgPixel);
-	ret = cfbCopyArea (pSrcDrawable, pDstDrawable,
+	ret = cfbBitBlt (pSrcDrawable, pDstDrawable,
 		    pGC, srcx, srcy, width, height, dstx, dsty, cfbCopyPlane8to1, bitPlane);
 	pGC->alu = oldalu;
     }
@@ -676,13 +676,13 @@ RegionPtr cfbCopyPlane(pSrcDrawable, pDstDrawable,
 	 */
 	ValidateGC ((DrawablePtr) pBitmap, pGC1);
 	/* no exposures here, scratch GC's don't get graphics expose */
-	(void) cfbCopyArea (pSrcDrawable, (DrawablePtr) pBitmap,
+	(void) cfbBitBlt (pSrcDrawable, (DrawablePtr) pBitmap,
 			    pGC1, srcx, srcy, width, height, 0, 0, cfbCopyPlane8to1, bitPlane);
 	cfb8CheckOpaqueStipple (pGC->alu,
 				pGC->fgPixel, pGC->bgPixel,
 				pGC->planemask);
 	/* no exposures here, copy bits from inside a pixmap */
-	(void) cfbCopyArea ((DrawablePtr) pBitmap, pDstDrawable, pGC,
+	(void) cfbBitBlt ((DrawablePtr) pBitmap, pDstDrawable, pGC,
 			    0, 0, width, height, dstx, dsty, cfbCopyPlane1to8, 1);
 	FreeScratchGC (pGC1);
 	(*pScreen->DestroyPixmap) (pBitmap);
