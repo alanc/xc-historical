@@ -1,4 +1,4 @@
-/* $XConsortium: dispatch.c,v 5.22 90/07/03 12:07:20 rws Exp $ */
+/* $XConsortium: dispatch.c,v 5.23 91/01/27 13:01:06 keith Exp $ */
 /************************************************************
 Copyright 1987, 1989 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -2836,16 +2836,28 @@ ProcSetScreenSaver            (client)
     if ((blankingOption != DontPreferBlanking) &&
         (blankingOption != PreferBlanking) &&
         (blankingOption != DefaultBlanking))
-        return BadMatch;
-
+    {
+	client->errorValue = blankingOption;
+        return BadValue;
+    }
     exposureOption = stuff->allowExpose;
     if ((exposureOption != DontAllowExposures) &&
         (exposureOption != AllowExposures) &&
         (exposureOption != DefaultExposures))
-        return BadMatch;
-
-    if ((stuff->timeout < -1) || (stuff->interval < -1))
-        return BadMatch;
+    {
+	client->errorValue = exposureOption;
+        return BadValue;
+    }
+    if (stuff->timeout < -1)
+    {
+	client->errorValue = stuff->timeout;
+        return BadValue;
+    }
+    if (stuff->interval < -1)
+    {
+	client->errorValue = stuff->interval;
+        return BadValue;
+    }
 
     if (blankingOption == DefaultBlanking)
 	ScreenSaverBlanking = defaultScreenSaverBlanking;
