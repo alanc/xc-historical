@@ -73,6 +73,8 @@ IMPORTS2 = \
 	$(AWIDGETSRC)/ScrollP.h \
 	$(AWIDGETSRC)/Simple.h \
 	$(AWIDGETSRC)/SimpleP.h \
+	$(AWIDGETSRC)/SimpleMenu.h \
+	$(AWIDGETSRC)/SimpleMenuP.h \
 	$(AWIDGETSRC)/Text.h \
 	$(AWIDGETSRC)/TextP.h \
 	$(AWIDGETSRC)/TextSrcP.h \
