@@ -1,4 +1,4 @@
-/* $XConsortium: TranslateI.h,v 1.31 91/02/06 21:17:01 converse Exp $ */
+/* $XConsortium: TranslateI.h,v 1.32 91/02/07 19:13:37 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -357,6 +357,14 @@ extern void _XtRegisterGrabs(
 #endif
 );
 
+extern XtPointer _XtInitializeActionData(
+#if NeedFunctionPrototypes
+    struct _XtActionsRec *	/* actions */,
+    Cardinal 			/* count */,
+    Boolean			/* inPlace */
+#endif
+);
+
 #undef Boolean
 
 extern void _XtAddEventSeqToStateTree(
@@ -512,14 +520,6 @@ extern TMShortCard _XtGetTypeIndex(
 extern void _XtGrabInitialize(
 #if NeedFunctionPrototypes
     XtAppContext	/* app */
-#endif
-);
-
-extern XtPointer _XtInitializeActionData(
-#if NeedFunctionPrototypes
-    struct _XtActionsRec *	/* actions */,
-    Cardinal 			/* count */,
-    Boolean			/* inPlace */
 #endif
 );
 
