@@ -272,11 +272,13 @@ void GetLoadPoint( w, closure, call_data )
 #    ifdef sequent
 #        define KERNEL_FILE "/dynix"
 #    endif /* sequent */
+#endif /* KERNEL_LOAD_VARIABLE */
 
 /*
  * provide default for everyone else
  */
 
+#ifndef KERNEL_LOAD_VARIABLE
 #    ifdef USG
 #        define KERNEL_LOAD_VARIABLE "sysinfo"
 #        define SYSINFO
