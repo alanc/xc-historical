@@ -15,12 +15,12 @@
 #define __TYPES__
 #endif /* __TYPES__ */
 #else
-#if !defined(_POSIX_SOURCE) || !defined(MOTOROLA)
-#include <sys/types.h>
-#else
+#if defined(_POSIX_SOURCE) && defined(MOTOROLA)
 #undef _POSIX_SOURCE
 #include <sys/types.h>
 #define _POSIX_SOURCE
+#else
+#include <sys/types.h>
 #endif
 #endif /* USG */
 
