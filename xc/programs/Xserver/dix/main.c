@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: main.c,v 1.125 87/11/09 13:42:22 rws Locked $ */
+/* $Header: main.c,v 1.126 87/11/27 10:09:17 rws Locked $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -189,11 +189,11 @@ main(argc, argv)
 	PixmapWidthPaddingInfo[1].bitmapPadLog2 = answer[j][k];
 
 	InitAtoms();
-	InitExtensions(); 
 	InitOutput(&screenInfo, argc, argv);
 	if (screenInfo.numScreens < 1)
 	    FatalError("no screens found\n");
 	InitEvents();
+	InitExtensions(); 
 	InitInput(argc, argv);
 	InitAndStartDevices(argc, argv);
 
