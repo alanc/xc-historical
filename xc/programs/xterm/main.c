@@ -1,5 +1,5 @@
 #ifndef lint
-static char *rid="$XConsortium: main.c,v 1.216 94/02/04 17:12:25 kaleb Exp $";
+static char *rid="$XConsortium: main.c,v 1.217 94/02/04 19:31:19 kaleb Exp $";
 #endif /* lint */
 
 /*
@@ -178,6 +178,7 @@ static Bool IsPts = False;
 #define HAS_UTMP_UT_HOST
 #define HAS_BSD_GROUPS
 #ifdef __osf__
+#define USE_SYSV_UTMP
 #define setpgrp setpgid
 #endif
 #endif	/* } !SYSV */
@@ -231,16 +232,26 @@ int	Ptyfd;
 #endif
 
 #ifndef UTMP_FILENAME
+#ifdef UTMP_FILE
+#define UTMP_FILENAME UTMP_FILE
+#else
 #define UTMP_FILENAME "/etc/utmp"
 #endif
+#endif
+
 #ifndef LASTLOG_FILENAME
 #define LASTLOG_FILENAME "/usr/adm/lastlog"  /* only on BSD systems */
 #endif
+
 #ifndef WTMP_FILENAME
-#if defined(SYSV)
+#ifdef WTMP_FILE
+#define WTMP_FILENAME WTMP_FILE
+#else
+#ifdef SYSV
 #define WTMP_FILENAME "/etc/wtmp"
 #else
 #define WTMP_FILENAME "/usr/adm/wtmp"
+#endif
 #endif
 #endif
 
@@ -388,7 +399,7 @@ struct _xttymodes {
 };
 
 #ifdef USE_SYSV_UTMP
-#ifndef SVR4			/* otherwise declared in utmp.h */
+#if defined(X_NOT_STDC_ENV) || defined(AIXV3)
 extern struct utmp *getutent();
 extern struct utmp *getutid();
 extern struct utmp *getutline();
@@ -398,7 +409,7 @@ extern void endutent();
 extern void utmpname();
 #endif /* !SVR4 */
 
-#ifdef X_NOT_POSIX		/* could remove paragraph unconditionally? */
+#ifdef X_NOT_STDC_ENV		/* could remove paragraph unconditionally? */
 extern struct passwd *getpwent();
 extern struct passwd *getpwuid();
 extern struct passwd *getpwnam();
@@ -1821,10 +1832,10 @@ spawn ()
 #endif
 #ifdef USE_SYSV_TERMIO
 		char numbuf[12];
+#endif	/* USE_SYSV_TERMIO */
 #if defined(UTMP) && defined(USE_SYSV_UTMP)
 		char *ptyname;
 #endif
-#endif	/* USE_SYSV_TERMIO */
 
 #ifdef USE_USG_PTYS
 #if defined(SYSV) && defined(SYSV386)
