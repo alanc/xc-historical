@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
-XCOMM rules:  $XConsortium: Imake.rules,v 1.75 90/11/30 11:16:39 rws Exp $
+XCOMM rules:  $XConsortium: Imake.rules,v 1.76 90/12/13 14:26:47 rws Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -352,7 +352,9 @@ install:: Concat(lib,libname.sa.rev)					@@\
 #ifndef InstallLibraryAlias
 #define	InstallLibraryAlias(libname,alias,dest)				@@\
 install::								@@\
-	-(cd dest; $(LN) Concat(lib,libname.a) Concat(lib,alias.a))
+	-(cd dest; \							@@\
+		$(RM) Concat(lib,alias.a); \				@@\
+		$(LN) Concat(lib,libname.a) Concat(lib,alias.a))
 #endif /* InstallLibraryAlias */
 
 
@@ -440,7 +442,8 @@ install:: program.script						@@\
 #define LinkFileList(step,list,dir,sub)					@@\
 step:: list								@@\
 	@case '${MFLAGS}' in *[i]*) set +e;; esac; \			@@\
-	echo "	cd" dir; cd dir; for i in list; do (set -x; $(LN) sub/$$i .); done
+	echo "	cd" dir; cd dir; \					@@\
+	for i in list; do (set -x; $(RM) $$i; $(LN) sub/$$i .); done
 #endif
 
 
