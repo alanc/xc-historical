@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: CursorName.c,v 1.1 89/07/19 15:40:18 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -33,7 +33,7 @@ int XmuCursorNameToIndex (name)
 	char		*name;
 	unsigned int	shape;
     } cursor_names[] = {
-			{"X_cursor",		XC_X_cursor},
+			{"x_cursor",		XC_X_cursor},
 			{"arrow",		XC_arrow},
 			{"based_arrow_down",	XC_based_arrow_down},
 			{"based_arrow_up",	XC_based_arrow_up},
