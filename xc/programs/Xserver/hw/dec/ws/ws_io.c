@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: ws_io.c,v 1.1 91/05/11 10:51:16 rws Exp $ */
+/* $Header: ws_io.c,v 1.2 91/05/31 16:06:52 keith Exp $ */
 
 #include <stdio.h>
 #include <sys/types.h>
@@ -303,12 +303,13 @@ wsMouseProc(pDev, onoff, argc, argv)
 }
 
 /* since this driver does up/down autorepeat right, any key can be a modifier*/
+/*ARGSUSED*/
 Bool
-LegalModifier(key)
+LegalModifier(key, pDev)
     BYTE key;
+    DevicePtr	pDev;
 {
     return TRUE;
-
 }
 
 int

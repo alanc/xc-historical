@@ -830,7 +830,9 @@ sunKbdEnqueueEventSunWin(pKeyboard,se)
 
 /*ARGSUSED*/
 Bool
-LegalModifier(key)
+LegalModifier(key, pDev)
+    BYTE    key;
+    DevicePtr	pDev;
 {
     return (TRUE);
 }
