@@ -25,7 +25,7 @@
 #define FAILURE 0
 
 Window window;
-static char *window_id_format = " 0x%x";
+static char *window_id_format = " 0x%lx";
 
 /*
  * Report the syntax for calling xwininfo:
@@ -60,7 +60,7 @@ main(argc, argv)
     if (!strcmp(argv[i], "-help"))
       usage();
     if (!strcmp(argv[i], "-int")) {
-      window_id_format = " %d";
+      window_id_format = " %ld";
       continue;
     }
     if (!strcmp(argv[i], "-tree")) {
@@ -85,6 +85,10 @@ main(argc, argv)
     }
     if (!strcmp(argv[i], "-size")) {
       size = 1;
+      continue;
+    }
+    if (!strcmp(argv[i], "-all")) {
+      tree = stats = bits = events = wm = size = 1;
       continue;
     }
     usage();
@@ -386,9 +390,10 @@ Display_Hints(hints)
 	  printf("             ==> Program supplied location: %d, %d\n",
 		 hints.x, hints.y);
 
-	if (flags & USSize)
+	if (flags & USSize) {
 	  printf("             ==> User supplied size: %d by %d\n",
 		 hints.width, hints.height);
+	}
 
 	if (flags & PSize)
 	  printf("             ==> Program supplied size: %d by %d\n",
@@ -407,6 +412,14 @@ Display_Hints(hints)
 		 hints.width_inc);
 	  printf("             ==> Program supplied y resize increment: %d\n",
 		 hints.height_inc);
+	  if (flags & USSize && hints.width_inc != 0 && hints.height_inc != 0)
+	    printf("             ==> User supplied size in resize increments:  %d by %d\n",
+		   (hints.width / hints.width_inc), 
+		   (hints.height / hints.height_inc));
+	  if (flags & PSize && hints.width_inc != 0 && hints.height_inc != 0)
+	    printf("             ==> Program supplied size in resize increments:  %d by %d\n",
+		   (hints.width / hints.width_inc), 
+		   (hints.height / hints.height_inc));
         }
 
 	if (flags & PAspect) {
