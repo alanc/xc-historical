@@ -714,6 +714,15 @@ in a circular ring, when mapped, to make it possible to define
 the window ring.  (See the
 .B f.wrapring
 section below to find how to bind keys or buttons for ring warping.)
+.IP "\fBWarpUnmapped\fP" 8
+This variable makes it possible to use the
+.B f.warpto
+command to move the cursor to an unmapped window.  With this variable
+set, if the object of a warp is an unmapped window, the window will
+be mapped and then the cursor will be moved into the window.
+The default is ignore
+.B f.warpto
+commands when the destination window is unmapped.
 .IP "\fBXORValue\fP \fInumber\fP" 8
 This variable specifies the value to use when drawing temporary lines when
 resizing or moving a window.  The default is to use a value that causes 
