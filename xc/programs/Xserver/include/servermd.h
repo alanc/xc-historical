@@ -23,24 +23,7 @@ SOFTWARE.
 ******************************************************************/
 #ifndef SERVERMD_H
 #define SERVERMD_H 1
-/* $XConsortium: servermd.h,v 1.53 90/11/07 18:03:34 keith Exp $ */
-
-/*
- * The vendor string identifies the vendor responsible for the
- * server executable.
- */
-#ifndef VENDOR_STRING
-#define VENDOR_STRING "MIT X Consortium"
-#endif
-
-/*
- * The vendor release number identifies, for the purpose of submitting
- * traceable bug reports, the release number of software produced
- * by the vendor.
- */
-#ifndef VENDOR_RELEASE
-#define VENDOR_RELEASE	4
-#endif
+/* $XConsortium: servermd.h,v 1.55 90/11/30 15:28:15 keith Exp $ */
 
 /*
  * Machine dependent values:
