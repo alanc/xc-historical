@@ -1,5 +1,5 @@
 /*
- * $XConsortium: LocBitmap.c,v 1.11 91/01/05 11:57:50 rws Exp $
+ * $XConsortium: LocBitmap.c,v 1.12 91/03/23 18:13:50 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -29,19 +29,24 @@
 #include <X11/Xmu/CvtCache.h>
 #include <X11/Xmu/Drawing.h>
 
-#ifndef PATH_MAX
+#ifndef X_NOT_POSIX
 #ifdef _POSIX_SOURCE
 #include <limits.h>
 #else
+#define _POSIX_SOURCE
+#include <limits.h>
+#undef _POSIX_SOURCE
+#endif
+#endif
+#ifndef PATH_MAX
 #include <sys/param.h>
 #ifdef MAXPATHLEN
 #define PATH_MAX MAXPATHLEN
 #endif
-#endif /* _POSIX_SOURCE */
+#endif
 #ifndef PATH_MAX
 #define PATH_MAX 1024
 #endif
-#endif /* PATH_MAX */
 
 static char **split_path_string();
 
