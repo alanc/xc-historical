@@ -1,5 +1,5 @@
 /*
-* $Header: LabelP.h,v 1.7 87/09/11 21:21:50 swick Locked $
+* $Header: LabelP.h,v 1.8 87/12/04 10:56:40 swick Locked $
 */
 
 /*
@@ -25,16 +25,12 @@
  * SOFTWARE.
  */
 /* 
- * LabelPrivate.h - Private definitions for Label widget
+ * LabelP.h - Private definitions for Label widget
  * 
- * Author:	Charles Haynes
- * 		Digital Equipment Corporation
- * 		Western Software Laboratory
- * Date:	Thu Aug 27 1987
  */
 
-#ifndef _XtLabelPrivate_h
-#define _XtLabelPrivate_h
+#ifndef _XtLabelP_h
+#define _XtLabelP_h
 
 /***********************************************************************
  *
@@ -85,6 +81,4 @@ typedef struct _LabelRec {
     LabelPart	label;
 } LabelRec;
 
-#endif _XtLabelPrivate_h
-/* DON'T ADD STUFF AFTER THIS #endif */
-
+#endif _XtLabelP_h
