@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xfd.c,v 1.6 89/06/05 17:30:27 jim Exp $
+ * $XConsortium: xfd.c,v 1.7 89/06/07 17:03:30 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -49,6 +49,7 @@ static XrmOptionDescRec xfd_options[] = {
 
 static void do_quit(), do_next(), do_prev();
 static void initialize_description_labels ();
+static void change_page (), set_page_label ();
 static char *get_font_name();
 
 static XtActionsRec xfd_actions[] = {
@@ -69,7 +70,7 @@ usage()
 }
 
 
-static Widget chardesc1Label, charlabel2Label, fontGrid;
+static Widget chardesc1Label, charlabel2Label, charlabel3Label, fontGrid;
 
 main (argc, argv) 
     int argc;
@@ -83,6 +84,7 @@ main (argc, argv)
     static XtCallbackRec cb[2] = { { SelectChar, NULL }, { NULL, NULL } };
     XFontStruct *fs;
     char *fontname;
+    long start;
 
     ProgramName = argv[0];
 
@@ -113,6 +115,8 @@ main (argc, argv)
 					    pane, NULL, ZERO);
     charlabel2Label = XtCreateManagedWidget ("charlabel2", labelWidgetClass,
 					     pane, NULL, ZERO);
+    charlabel3Label = XtCreateManagedWidget ("charlabel3", labelWidgetClass,
+					     pane, NULL, ZERO);
 
     /* form in which to draw */
     form = XtCreateManagedWidget ("form", formWidgetClass, pane, NULL, ZERO);
@@ -134,6 +138,7 @@ main (argc, argv)
     initialize_description_labels (fs, 0, False);
 
     XtRealizeWidget (toplevel);
+    change_page (0);
     XtMainLoop ();
 }
 
@@ -188,18 +193,27 @@ static void do_quit (w, event, params, num_params)
     exit (0);
 }
 
-change_page (page)
+static void change_page (page)
     int page;
 {
     long start;
     unsigned int ncols, nrows;
     Arg arg;
 
+    arg.name = XtNstartChar;
     GetFontGridCellDimensions (fontGrid, &start, &ncols, &nrows);
-    start += ((long) ncols) * ((long) nrows) * ((long) page);
 
-    XtSetArg (arg, XtNstartChar, start);
-    XtSetValues (fontGrid, &arg, ONE);
+    if (page) {
+	start += ((long) ncols) * ((long) nrows) * ((long) page);
+
+	arg.value = (XtArgVal) start;
+	XtSetValues (fontGrid, &arg, ONE);
+    }
+
+    /* find out what it got set to */
+    arg.value = (XtArgVal) &start;
+    XtGetValues (fontGrid, &arg, ONE);
+    set_page_label (start, ncols, nrows);
 }
 
 
@@ -262,10 +276,26 @@ static void initialize_description_labels (fs, charnum, valid)
     }
     XtSetValues (chardesc1Label, &arg, ONE);
 
-    sprintf (buf, "0x%02x%02x (%u,%u) through 0x%02x%02x (%u,%u).",
+    sprintf (buf, "0x%02x%02x (%u,%u) thru 0x%02x%02x (%u,%u).",
 	     fs->min_byte1, fs->min_char_or_byte2,
 	     fs->min_byte1, fs->min_char_or_byte2,
 	     fs->max_byte1, fs->max_char_or_byte2,
 	     fs->max_byte1, fs->max_char_or_byte2);
     XtSetValues (charlabel2Label, &arg, ONE);
+}
+
+
+static void set_page_label (start, ncols, nrows)
+    long start;
+    int ncols, nrows;
+{
+    char buf[256];
+    unsigned startcol = (start & 0xff), startrow = ((start >> 8) & 0xff);
+    Arg arg;
+
+    XtSetArg (arg, XtNlabel, buf);
+
+    sprintf (buf, "Current page:  %d by %d starting at 0x%02x%02x (%d,%d).",
+	     ncols, nrows, startrow, startcol, startrow, startcol);
+    XtSetValues (charlabel3Label, &arg, ONE);
 }
