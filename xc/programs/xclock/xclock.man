@@ -65,8 +65,8 @@ between the window border and anything
 .I xclock
 displays.  The default padding is 10 in digital mode and 8 in analog mode.
 .PP
-The following standard X toolkit arguments are commonly used with 
-.I xclock.
+The following standard X Toolkit command line arguments are commonly used with 
+.I xclock:
 .PP
 .TP 8
 .B \-bg \fIcolor\fP
