@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: dm.h,v 1.23 89/11/18 12:44:54 rws Exp $
+ * $XConsortium: dm.h,v 1.24 89/12/06 19:36:31 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -127,6 +127,7 @@ struct display {
 	int		pingInterval;	/* interval between XSync */
 	int		pingTimeout;	/* timeout for XSync */
 	int		terminateServer;/* restart for each session */
+	int		grabServer;	/* keep server grabbed for Login */
 	int		grabTimeout;	/* time to wait for grab */
 	int		resetForAuth;	/* server reads auth file at reset */
 	DisplayType	displayType;	/* method to handle with */
@@ -187,6 +188,8 @@ extern int	debugLevel;
 extern char	*errorLogFile;
 extern int	daemonMode;
 extern char	*pidFile;
+extern int	lockfPidFile;
+extern int	flockPidFile;
 extern char	*remoteAuthDir;
 extern int	autoRescan;
 extern int	removeDomainname;
