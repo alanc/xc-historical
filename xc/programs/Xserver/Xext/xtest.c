@@ -1,4 +1,4 @@
-/* $XConsortium: xtest.c,v 1.9 92/03/19 11:29:59 rws Exp $ */
+/* $XConsortium: xtest.c,v 1.10 92/03/23 16:12:07 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -214,18 +214,14 @@ ProcXTestFakeInput(client)
 	    client->errorValue = ev->u.u.detail;
 	    return BadValue;
 	}
-	if (ev->u.keyButtonPointer.rootX < 0 ||
-	    ev->u.keyButtonPointer.rootX > root->drawable.width)
-	{
-	    client->errorValue = ev->u.keyButtonPointer.rootX;
-	    return BadValue;
-	}
-	if (ev->u.keyButtonPointer.rootY < 0 ||
-	    ev->u.keyButtonPointer.rootY > root->drawable.height)
-	{
-	    client->errorValue = ev->u.keyButtonPointer.rootY;
-	    return BadValue;
-	}
+	if (ev->u.keyButtonPointer.rootX < 0)
+	    ev->u.keyButtonPointer.rootX = 0;
+	else if (ev->u.keyButtonPointer.rootX >= root->drawable.width)
+	    ev->u.keyButtonPointer.rootX = root->drawable.width - 1;
+	if (ev->u.keyButtonPointer.rootY < 0)
+	    ev->u.keyButtonPointer.rootY = 0;
+	else if (ev->u.keyButtonPointer.rootY >= root->drawable.height)
+	    ev->u.keyButtonPointer.rootY = root->drawable.height - 1;
 	if (root != GetCurrentRootWindow())
 	{
 	    NewCurrentScreen(root->drawable.pScreen,
@@ -249,6 +245,8 @@ ProcXTestFakeInput(client)
 	break;
     }
     ev->u.keyButtonPointer.time = currentTime.milliseconds;
+    if (screenIsSaved == SCREEN_SAVER_ON)
+	SaveScreens(SCREEN_SAVER_OFF, ScreenSaverReset);
     (*dev->public.processInputProc)(ev, (DevicePtr)dev, 1); 
     return client->noClientException;
 }
