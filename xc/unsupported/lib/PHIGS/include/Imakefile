@@ -1,5 +1,5 @@
 ##
-# $XConsortium: Imakefile,v 5.11 91/03/26 14:45:17 rws Exp $
+# $XConsortium: Imakefile,v 5.12 91/04/04 20:53:54 hersh Exp $
 ##
 ## 
 ## Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -32,6 +32,7 @@
 #endif
 
 INSTALLFLAGS = $(INSTINCFLAGS)
+  CCOPTIONS = PexCCOptions
 CDEBUGFLAGS = PexPhigsCDebugFlags
     DEFINES = PexPhigsDefines
 
