@@ -1,4 +1,4 @@
-/* $XConsortium: cfbwindow.c,v 5.19 94/01/21 22:07:23 dpw Exp $ */
+/* $XConsortium: cfbwindow.c,v 5.20 94/03/16 15:34:37 dpw Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -65,9 +65,9 @@ cfbDestroyWindow(pWin)
     pPrivWin = cfbGetWindowPrivate(pWin);
 
     if (pPrivWin->pRotatedBorder)
-	cfbDestroyPixmap(pPrivWin->pRotatedBorder);
+	(*pWin->drawable.pScreen->DestroyPixmap)(pPrivWin->pRotatedBorder);
     if (pPrivWin->pRotatedBackground)
-	cfbDestroyPixmap(pPrivWin->pRotatedBackground);
+	(*pWin->drawable.pScreen->DestroyPixmap)(pPrivWin->pRotatedBackground);
     return(TRUE);
 }
 
@@ -242,6 +242,8 @@ cfbChangeWindowAttributes(pWin, mask)
 				  pBgWin->drawable.x - pPrivWin->oldRotate.x);
 		    cfbYRotatePixmap(pPrivWin->pRotatedBorder,
 				  pBgWin->drawable.y - pPrivWin->oldRotate.y);
+		    pPrivWin->oldRotate.x = pBgWin->drawable.x;
+		    pPrivWin->oldRotate.y = pBgWin->drawable.y;
 		}
 	    }
 	    else if (((width = (pWin->background.pixmap->drawable.width * PSZ))

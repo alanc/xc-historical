@@ -1,4 +1,4 @@
-/* $XConsortium: mfbwindow.c,v 5.11 94/01/12 18:05:37 dpw Exp $ */
+/* $XConsortium: mfbwindow.c,v 5.12 94/03/16 15:32:56 dpw Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -60,9 +60,9 @@ mfbDestroyWindow(pWin)
     pPrivWin = (mfbPrivWin *)(pWin->devPrivates[mfbWindowPrivateIndex].ptr);
 
     if (pPrivWin->pRotatedBorder)
-	mfbDestroyPixmap(pPrivWin->pRotatedBorder);
+	(*pWin->drawable.pScreen->DestroyPixmap)(pPrivWin->pRotatedBorder);
     if (pPrivWin->pRotatedBackground)
-	mfbDestroyPixmap(pPrivWin->pRotatedBackground);
+	(*pWin->drawable.pScreen->DestroyPixmap)(pPrivWin->pRotatedBackground);
     return (TRUE);
 }
 
@@ -243,6 +243,8 @@ mfbChangeWindowAttributes(pWin, mask)
 				    pBgWin->drawable.x - pPrivWin->oldRotate.x);
 		      mfbYRotatePixmap(pPrivWin->pRotatedBorder,
 				    pBgWin->drawable.y - pPrivWin->oldRotate.y);
+		      pPrivWin->oldRotate.x = pBgWin->drawable.x;
+		      pPrivWin->oldRotate.y = pBgWin->drawable.y;
 		  }
 	      }
 	      else if ((pWin->background.pixmap->drawable.width <= PPW) &&
