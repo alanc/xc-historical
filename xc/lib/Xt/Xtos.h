@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Xtos.h,v 1.2 89/09/20 09:29:22 swick Exp $
+* $XConsortium: Xtos.h,v 1.3 89/10/03 12:41:47 swick Exp $
 */
 
 /***********************************************************
@@ -33,16 +33,19 @@ SOFTWARE.
 #include <alloca.h>
 #endif
 
-#ifdef att
-/*
- * UNIX System V Release 3.2
- */
-#define MALLOC_0_RETURNS_NULL
-#endif
-
 #ifdef CRAY
 #define WORD64
 #define MAXPATHLEN PATH_MAX
+#endif
+
+#ifdef __HIGHC__
+# ifdef MissingStdargH
+#  if ! MissingStdargH
+#   undef MissingStdargH
+#  endif
+# else
+#  define MissingStdargH
+# endif
 #endif
 
 /* stolen from server/include/os.h */
