@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: gram.y,v 1.62 89/11/01 19:21:02 jim Exp $
+ * $XConsortium: gram.y,v 1.63 89/11/03 14:59:13 jim Exp $
  *
  * .twmrc command grammer
  *
@@ -38,7 +38,7 @@
 
 %{
 static char RCSinfo[]=
-"$XConsortium: gram.y,v 1.62 89/11/01 19:21:02 jim Exp $";
+"$XConsortium: gram.y,v 1.63 89/11/03 14:59:13 jim Exp $";
 
 #include <stdio.h>
 #include <ctype.h>
@@ -112,7 +112,7 @@ extern int yylineno;
 %token <num> CUR_MOVE CUR_RESIZE CUR_WAIT CUR_SELECT CUR_KILL
 %token <num> ICON_REGION NORTH SOUTH EAST WEST RESTART_PREVIOUS_STATE
 %token <num> F_WARPTOSCREEN AUTO_RELATIVE_RESIZE FRAME_PADDING TITLE_PADDING
-%token <num> CONSTRAINED_MOVE_TIME USE_PPOSITION TITLEBUTTON
+%token <num> CONSTRAINED_MOVE_TIME USE_PPOSITION TITLEBUTTON SQUEEZETITLE;
 %token <ptr> STRING
 
 %type <ptr> string
@@ -222,6 +222,8 @@ stmt		: error
 						Scr->RandomPlacement=TRUE; }
 		| DECORATE_TRANSIENTS	{ if (Scr->FirstTime) 
 						Scr->DecorateTransients = TRUE;}
+		| SQUEEZETITLE		{ if (Scr->FirstTime)
+						Scr->SqueezeTitle = TRUE; }
 		| PIXMAPS pixmap_list	{}
 		| CURSORS cursor_list	{}
 		| ICONIFY_BY_UNMAPPING	{ list = &Scr->IconifyByUn; }

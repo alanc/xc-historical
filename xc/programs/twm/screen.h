@@ -21,7 +21,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: screen.h,v 1.43 89/11/03 14:59:21 jim Exp $
+ * $XConsortium: screen.h,v 1.44 89/11/03 16:15:31 jim Exp $
  *
  * twm per-screen data include file
  *
@@ -207,6 +207,7 @@ typedef struct ScreenInfo
     short InterpolateMenuColors;/* make pretty menus */
     short NoIconManagers;	/* Don't create any icon managers */
     short ClientBorderWidth;	/* respect client window border width */
+    short SqueezeTitle;		/* make title as small as possible */
     short HaveFonts;		/* set if fonts have been loaded */
     short FirstTime;		/* first time we've read .twmrc */
 

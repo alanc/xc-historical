@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: twm.c,v 1.76 89/11/03 16:15:33 jim Exp $
+ * $XConsortium: twm.c,v 1.77 89/11/03 19:11:01 jim Exp $
  *
  * twm - "Tom's Window Manager"
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: twm.c,v 1.76 89/11/03 16:15:33 jim Exp $";
+"$XConsortium: twm.c,v 1.77 89/11/03 19:11:01 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -596,6 +596,7 @@ InitVariables()
     Scr->InterpolateMenuColors = FALSE;
     Scr->NoIconManagers = FALSE;
     Scr->ClientBorderWidth = FALSE;
+    Scr->SqueezeTitle = FALSE;
     Scr->FirstRegion = NULL;
     Scr->LastRegion = NULL;
     Scr->FirstTime = TRUE;
