@@ -19,4 +19,4 @@ DependSubdirs($(SUBDIRS))
 
 ComplexProgramTarget_1(xditview,$(LOCAL_LIBRARIES),)
 SingleProgramTarget(xtotroff,$(OBJS2),$(LOCAL_LIBRARIES),)
-
+InstallAppDefaults(Xditview)
