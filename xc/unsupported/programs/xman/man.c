@@ -1,7 +1,7 @@
 /*
  * xman - X Window System manual page display program.
  *
- * $XConsortium: man.c,v 1.26 91/07/10 10:47:59 dave Exp $
+ * $XConsortium: man.c,v 1.27 91/07/21 21:19:56 rws Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -64,14 +64,20 @@ Man()
   int sect, num_alloced;
 
 /* 
- * Get the environment variable MANPATH, and if it doesn't exist then back
- * up to MANDIR.
+ * Get the environment variable MANPATH, and if it doesn't exist then use
+ * SYSMANPATH and LOCALMANPATH.
  */
 
   ptr = getenv("MANPATH");
-  if (ptr == NULL || streq(ptr , "") )
-    ptr = MANDIR;
-  strcpy(manpath, ptr);
+  if (ptr == NULL || streq(ptr , "") ) {
+    strcpy(manpath, SYSMANPATH);
+#ifdef LOCALMANPATH
+    strcat(manpath, ":");
+    strcat(manpath, LOCALMANPATH);
+#endif
+  } else {
+    strcpy(manpath, ptr);
+  }
 
 /*
  * Get the list of manual directories in the users MANPATH that we should

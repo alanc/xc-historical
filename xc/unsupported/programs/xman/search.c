@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: search.c,v 1.18 91/06/20 09:28:17 dave Exp $
+ * $XConsortium: search.c,v 1.19 91/07/21 20:20:16 rws Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -171,10 +171,15 @@ int type;
   /* set the command */
 
   manpath=getenv("MANPATH");
-  if (manpath == NULL || streq(manpath,"") )
-    strcpy(path,MANDIR);
-  else
+  if (manpath == NULL || streq(manpath,"") ) {
+    strcpy(path,SYSMANPATH);
+#ifdef LOCALMANPATH
+    strcat(path,":");
+    strcat(path,LOCALMANPATH);
+#endif
+  } else {
     strcpy(path,manpath);
+  }
 
   if (type == APROPOS) {
     char label[BUFSIZ];
