@@ -22,7 +22,7 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $Header: swaprep.c,v 1.26 87/08/20 23:02:08 newman Exp $ */
+/* $Header: swaprep.c,v 1.27 87/09/05 17:57:32 rws Locked $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -32,7 +32,7 @@ SOFTWARE.
 #include "dixstruct.h"
 #include "scrnintstr.h"
 
-void SwapVisual(), SwapConnSetup(), SwapWinRoot(), WriteToClient();
+void SwapVisual(), SwapConnSetup(), SwapWinRoot(), SwapFont();
 
 /* copy long from src to dst byteswapping on the way */
 #define cpswapl(src, dst) \
@@ -62,7 +62,7 @@ Swap32Write(pClient, size, pbuf)
     {   
 	swapl(&pbuf[i], n);
     }
-    WriteToClient(pClient, size << 2, (char *) pbuf);
+    (void)WriteToClient(pClient, size << 2, (char *) pbuf);
 }
 
 void
@@ -97,7 +97,7 @@ CopySwap32Write(pClient, size, pbuf)
             from++;
             to++;
 	    }
-	WriteToClient (pClient, nbytes, (char *) pbufT);
+	(void)WriteToClient (pClient, nbytes, (char *) pbufT);
 	}
 
     DEALLOCATE_LOCAL ((char *) pbufT);
@@ -135,7 +135,7 @@ CopySwap16Write(pClient, size, pbuf)
             from++;
             to++;
 	    }
-	WriteToClient (pClient, nbytes, (char *) pbufT);
+	(void)WriteToClient (pClient, nbytes, (char *) pbufT);
 	}
 
     DEALLOCATE_LOCAL ((char *) pbufT);
@@ -152,7 +152,7 @@ SGenericReply(pClient, size, pRep)
     int n;
 
     swaps(&pRep->sequenceNumber, n);
-    WriteToClient(pClient, size, (char *) pRep);
+    (void)WriteToClient(pClient, size, (char *) pRep);
 }
 
 /* Extra-large reply */
@@ -174,7 +174,7 @@ SGetWindowAttributesReply(pClient, size, pRep)
     swapl(&pRep->allEventMasks, n);
     swapl(&pRep->yourEventMask, n);
     swaps(&pRep->doNotPropagateMask, n);
-    WriteToClient(pClient, size, (char *) pRep);
+    (void)WriteToClient(pClient, size, (char *) pRep);
 }
 
 void
@@ -192,7 +192,7 @@ SGetGeometryReply(pClient, size, pRep)
     swaps(&pRep->width, n);
     swaps(&pRep->height, n);
     swaps(&pRep->borderWidth, n);
-    WriteToClient(pClient, size, (char *) pRep);
+    (void)WriteToClient(pClient, size, (char *) pRep);
 }
 
 void
@@ -208,7 +208,7 @@ SQueryTreeReply(pClient, size, pRep)
     swapl(&pRep->root, n);
     swapl(&pRep->parent, n);
     swaps(&pRep->nChildren, n);
-    WriteToClient(pClient, size, (char *) pRep);
+    (void)WriteToClient(pClient, size, (char *) pRep);
 }
 
 void
@@ -221,7 +221,7 @@ SInternAtomReply(pClient, size, pRep)
 
     swaps(&pRep->sequenceNumber, n);
     swapl(&pRep->atom, n);
-    WriteToClient(pClient, size, (char *) pRep);
+    (void)WriteToClient(pClient, size, (char *) pRep);
 }
 
 void
@@ -235,7 +235,7 @@ SGetAtomNameReply(pClient, size, pRep)
     swaps(&pRep->sequenceNumber, n);
     swapl(&pRep->length, n);
     swaps(&pRep->nameLength, n);
-    WriteToClient(pClient, size, (char *) pRep);
+    (void)WriteToClient(pClient, size, (char *) pRep);
 }
 
 
@@ -252,7 +252,7 @@ SGetPropertyReply(pClient, size, pRep)
     swapl(&pRep->propertyType, n);
     swapl(&pRep->bytesAfter, n);
     swapl(&pRep->nItems, n);
-    WriteToClient(pClient, size, (char *) pRep);
+    (void)WriteToClient(pClient, size, (char *) pRep);
 }
 
 void
@@ -266,7 +266,7 @@ SListPropertiesReply(pClient, size, pRep)
     swaps(&pRep->sequenceNumber, n);
     swapl(&pRep->length, n);
     swaps(&pRep->nProperties, n);
-    WriteToClient(pClient, size, (char *) pRep);
+    (void)WriteToClient(pClient, size, (char *) pRep);
 }
 
 void
@@ -279,7 +279,7 @@ SGetSelectionOwnerReply(pClient, size, pRep)
 
     swaps(&pRep->sequenceNumber, n);
     swapl(&pRep->owner, n);
-    WriteToClient(pClient, size, (char *) pRep);
+    (void)WriteToClient(pClient, size, (char *) pRep);
 }
 
 
@@ -299,7 +299,7 @@ SQueryPointerReply(pClient, size, pRep)
     swaps(&pRep->winX, n);
     swaps(&pRep->winY, n);
     swaps(&pRep->mask, n);
-    WriteToClient(pClient, size, (char *) pRep);
+    (void)WriteToClient(pClient, size, (char *) pRep);
 }
 
 void
@@ -318,7 +318,7 @@ SwapTimeCoordWrite(pClient, size, pRep)
 	SwapTimecoord(pRepT);
 	pRepT++;
     }
-    WriteToClient(pClient, size, (char *) pRep);
+    (void)WriteToClient(pClient, size, (char *) pRep);
 
 }
 void
@@ -332,7 +332,7 @@ SGetMotionEventsReply(pClient, size, pRep)
     swaps(&pRep->sequenceNumber, n);
     swapl(&pRep->length, n);
     swapl(&pRep->nEvents, n);
-    WriteToClient(pClient, size, (char *) pRep);
+    (void)WriteToClient(pClient, size, (char *) pRep);
 }
 
 void
@@ -347,7 +347,7 @@ STranslateCoordsReply(pClient, size, pRep)
     swapl(&pRep->child, n);
     swaps(&pRep->dstX, n);
     swaps(&pRep->dstY, n);
-    WriteToClient(pClient, size, (char *) pRep);
+    (void)WriteToClient(pClient, size, (char *) pRep);
 }
 
 void
@@ -360,7 +360,7 @@ SGetInputFocusReply(pClient, size, pRep)
 
     swaps(&pRep->sequenceNumber, n);
     swapl(&pRep->focus, n);
-    WriteToClient(pClient, size, (char *) pRep);
+    (void)WriteToClient(pClient, size, (char *) pRep);
 }
 
 /* extra long reply */
@@ -374,7 +374,7 @@ SQueryKeymapReply(pClient, size, pRep)
 
     swaps(&pRep->sequenceNumber, n);
     swapl(&pRep->length, n);
-    WriteToClient(pClient, size, (char *) pRep);
+    (void)WriteToClient(pClient, size, (char *) pRep);
 }
 
 void
@@ -384,7 +384,7 @@ SQueryFontReply(pClient, size, pRep)
     xQueryFontReply	*pRep;
 {
     SwapFont(pRep, TRUE);
-    WriteToClient(pClient, size, (char *) pRep);
+    (void)WriteToClient(pClient, size, (char *) pRep);
 }
 
 void
@@ -403,7 +403,7 @@ SQueryTextExtentsReply(pClient, size, pRep)
     swapl(&pRep->overallWidth, n);
     swapl(&pRep->overallLeft, n);
     swapl(&pRep->overallRight, n);
-    WriteToClient(pClient, size, (char *) pRep);
+    (void)WriteToClient(pClient, size, (char *) pRep);
 }
 
 void
@@ -417,7 +417,7 @@ SListFontsReply(pClient, size, pRep)
     swaps(&pRep->sequenceNumber, n);
     swapl(&pRep->length, n);
     swaps(&pRep->nFonts, n);
-    WriteToClient(pClient, size, (char *) pRep);
+    (void)WriteToClient(pClient, size, (char *) pRep);
 }
 
 void
@@ -427,7 +427,7 @@ SListFontsWithInfoReply(pClient, size, pRep)
     xListFontsWithInfoReply	*pRep;
 {
     SwapFont((xQueryFontReply *)pRep, FALSE);
-    WriteToClient(pClient, size, (char *) pRep);
+    (void)WriteToClient(pClient, size, (char *) pRep);
 }
 
 void
@@ -441,7 +441,7 @@ SGetFontPathReply(pClient, size, pRep)
     swaps(&pRep->sequenceNumber, n);
     swapl(&pRep->length, n);
     swaps(&pRep->nPaths, n);
-    WriteToClient(pClient, size, (char *) pRep);
+    (void)WriteToClient(pClient, size, (char *) pRep);
 }
 
 void
@@ -455,7 +455,7 @@ SGetImageReply(pClient, size, pRep)
     swaps(&pRep->sequenceNumber, n);
     swapl(&pRep->length, n);
     swapl(&pRep->visual, n);
-    WriteToClient(pClient, size, (char *) pRep);
+    (void)WriteToClient(pClient, size, (char *) pRep);
     /* Fortunately, image doesn't need swapping */
 }
 
@@ -470,7 +470,7 @@ SListInstalledColormapsReply(pClient, size, pRep)
     swaps(&pRep->sequenceNumber, n);
     swapl(&pRep->length, n);
     swaps(&pRep->nColormaps, n);
-    WriteToClient(pClient, size, (char *) pRep);
+    (void)WriteToClient(pClient, size, (char *) pRep);
 }
 
 void
@@ -486,7 +486,7 @@ SAllocColorReply(pClient, size, pRep)
     swaps(&pRep->green, n);
     swaps(&pRep->blue, n);
     swapl(&pRep->pixel, n);
-    WriteToClient(pClient, size, (char *) pRep);
+    (void)WriteToClient(pClient, size, (char *) pRep);
 }
 
 void
@@ -505,7 +505,7 @@ SAllocNamedColorReply(pClient, size, pRep)
     swaps(&pRep->screenRed, n);
     swaps(&pRep->screenGreen, n);
     swaps(&pRep->screenBlue, n);
-    WriteToClient(pClient, size, (char *) pRep);
+    (void)WriteToClient(pClient, size, (char *) pRep);
 }
 
 void
@@ -520,7 +520,7 @@ SAllocColorCellsReply(pClient, size, pRep)
     swapl(&pRep->length, n);
     swaps(&pRep->nPixels, n);
     swaps(&pRep->nMasks, n);
-    WriteToClient(pClient, size, (char *) pRep);
+    (void)WriteToClient(pClient, size, (char *) pRep);
 }
 
 
@@ -538,7 +538,7 @@ SAllocColorPlanesReply(pClient, size, pRep)
     swapl(&pRep->redMask, n);
     swapl(&pRep->greenMask, n);
     swapl(&pRep->blueMask, n);
-    WriteToClient(pClient, size, (char *) pRep);
+    (void)WriteToClient(pClient, size, (char *) pRep);
 }
 
 void
@@ -557,7 +557,7 @@ SQColorsExtend(pClient, size, prgb)
 	SwapRGB(prgbT);
 	prgbT++;
     }
-    WriteToClient(pClient, size, (char *) prgb);
+    (void)WriteToClient(pClient, size, (char *) prgb);
 }
 
 void
@@ -571,7 +571,7 @@ SQueryColorsReply(pClient, size, pRep)
     swaps(&pRep->sequenceNumber, n);
     swapl(&pRep->length, n);
     swaps(&pRep->nColors, n);
-    WriteToClient(pClient, size, (char *) pRep);
+    (void)WriteToClient(pClient, size, (char *) pRep);
 }
 
 void
@@ -589,7 +589,7 @@ SLookupColorReply(pClient, size, pRep)
     swaps(&pRep->screenRed, n);
     swaps(&pRep->screenGreen, n);
     swaps(&pRep->screenBlue, n);
-    WriteToClient(pClient, size, (char *) pRep);
+    (void)WriteToClient(pClient, size, (char *) pRep);
 }
 
 void
@@ -603,7 +603,7 @@ SQueryBestSizeReply(pClient, size, pRep)
     swaps(&pRep->sequenceNumber, n);
     swaps(&pRep->width, n);
     swaps(&pRep->height, n);
-    WriteToClient(pClient, size, (char *) pRep);
+    (void)WriteToClient(pClient, size, (char *) pRep);
 }
 
 void
@@ -616,7 +616,7 @@ SListExtensionsReply(pClient, size, pRep)
 
     swaps(&pRep->sequenceNumber, n);
     swapl(&pRep->length, n);
-    WriteToClient(pClient, size, (char *) pRep);
+    (void)WriteToClient(pClient, size, (char *) pRep);
 }
 
 void
@@ -629,7 +629,7 @@ SGetKeyboardMappingReply(pClient, size, pRep)
 
     swaps(&pRep->sequenceNumber, n);
     swapl(&pRep->length, n);
-    WriteToClient(pClient, size, (char *) pRep);
+    (void)WriteToClient(pClient, size, (char *) pRep);
 }
 
 void
@@ -642,7 +642,7 @@ SGetPointerMappingReply(pClient, size, pRep)
 
     swaps(&pRep->sequenceNumber, n);
     swapl(&pRep->length, n);
-    WriteToClient(pClient, size, (char *) pRep);
+    (void)WriteToClient(pClient, size, (char *) pRep);
 }
 
 void
@@ -655,7 +655,7 @@ SGetModifierMappingReply(pClient, size, pRep)
 
     swaps(&pRep->sequenceNumber, n);
     swapl(&pRep->length, n);
-    WriteToClient(pClient, size, (char *) pRep);
+    (void)WriteToClient(pClient, size, (char *) pRep);
 }
 
 void
@@ -671,7 +671,7 @@ SGetKeyboardControlReply(pClient, size, pRep)
     swapl(&pRep->ledMask, n);
     swaps(&pRep->bellPitch, n);
     swaps(&pRep->bellDuration, n);
-    WriteToClient(pClient, size, (char *) pRep);
+    (void)WriteToClient(pClient, size, (char *) pRep);
 }
 
 void
@@ -686,7 +686,7 @@ SGetPointerControlReply(pClient, size, pRep)
     swaps(&pRep->accelNumerator, n);
     swaps(&pRep->accelDenominator, n);
     swaps(&pRep->threshold, n);
-    WriteToClient(pClient, size, (char *) pRep);
+    (void)WriteToClient(pClient, size, (char *) pRep);
 }
 
 void
@@ -700,7 +700,7 @@ SGetScreenSaverReply(pClient, size, pRep)
     swaps(&pRep->sequenceNumber, n);
     swaps(&pRep->timeout, n);
     swaps(&pRep->interval, n);
-    WriteToClient(pClient, size, (char *) pRep);
+    (void)WriteToClient(pClient, size, (char *) pRep);
 }
 
 void
@@ -718,7 +718,7 @@ SLHostsExtend(pClient, size, buf)
 	swaps (&host->length, n);
 	bufT += sizeof (xHostEntry) + (((len + 3) >> 2) << 2);
 	}
-    WriteToClient (pClient, size, buf);
+    (void)WriteToClient (pClient, size, buf);
 }
 
 void
@@ -732,7 +732,7 @@ SListHostsReply(pClient, size, pRep)
     swaps(&pRep->sequenceNumber, n);
     swapl(&pRep->length, n);
     swaps(&pRep->nHosts, n);
-    WriteToClient(pClient, size, (char *) pRep);
+    (void)WriteToClient(pClient, size, (char *) pRep);
 }
 
 
@@ -1172,7 +1172,7 @@ SKeymapNotifyEvent(from, to)
 void
 WriteSConnectionInfo(pClient, size, pInfo)
     ClientPtr		pClient;
-    int			size;
+    unsigned long	size;
     char 		*pInfo;
 {
     int		i, j, k;
@@ -1183,7 +1183,7 @@ WriteSConnectionInfo(pClient, size, pInfo)
 
     pInfoT = pInfoTBase = (char *) ALLOCATE_LOCAL(size);
 
-    SwapConnSetup(pInfo, pInfoT);
+    SwapConnSetup(pConnSetup, (xConnSetup *)pInfoT);
     pInfo += sizeof(xConnSetup);
     pInfoT += sizeof(xConnSetup);
 
@@ -1202,7 +1202,7 @@ WriteSConnectionInfo(pClient, size, pInfo)
     for(i = 0; i < screenInfo.numScreens; i++)
     {
 	pScreen = (ScreenPtr)&screenInfo.screen[i];
-	SwapWinRoot(pInfo, pInfoT);
+	SwapWinRoot((xWindowRoot *)pInfo, (xWindowRoot *)pInfoT);
 	pInfo += sizeof(xWindowRoot);
 	pInfoT += sizeof(xWindowRoot);
 	pDepth = pScreen->allowedDepths;
@@ -1214,13 +1214,13 @@ WriteSConnectionInfo(pClient, size, pInfo)
 	    pInfoT += sizeof(xDepth);
 	    for(k = 0; k < pDepth->numVids; k++)
 	    {
-		SwapVisual(pInfo, pInfoT);
+		SwapVisual((xVisualType *)pInfo, (xVisualType *)pInfoT);
 		pInfo += sizeof(xVisualType);
 		pInfoT += sizeof(xVisualType);
 	    }
 	}
     }
-    WriteToClient(pClient, size, (char *) pInfoTBase);
+    (void)WriteToClient(pClient, size, (char *) pInfoTBase);
     DEALLOCATE_LOCAL(pInfoTBase);
 }
 
@@ -1290,6 +1290,6 @@ WriteSConnSetupPrefix(pClient, pcsp)
     cpswaps(pcsp->majorVersion, cspT.majorVersion);
     cpswaps(pcsp->minorVersion, cspT.minorVersion);
     cpswaps(pcsp->length, cspT.length);
-    WriteToClient(pClient, sizeof(cspT), (char *) &cspT);
+    (void)WriteToClient(pClient, sizeof(cspT), (char *) &cspT);
 }
 
