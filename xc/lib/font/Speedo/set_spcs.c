@@ -1,4 +1,4 @@
-/* $XConsortium: set_spcs.c,v 1.2 91/05/11 09:54:30 rws Exp $ */
+/* $XConsortium: set_spcs.c,v 1.3 93/10/28 15:27:12 gildea Exp $ */
 
 /*
 
@@ -507,7 +507,7 @@ sp_globals.poshift = 16 - sp_globals.pixshift;
 
 sp_globals.onepix = (fix15)1 << sp_globals.pixshift;
 sp_globals.pixrnd = sp_globals.onepix >> 1;
-sp_globals.pixfix = 0xffff << sp_globals.pixshift;
+sp_globals.pixfix = ~0 << sp_globals.pixshift;
 
 sp_globals.mpshift = sp_globals.multshift - sp_globals.pixshift;
 if (sp_globals.mpshift < 0)
