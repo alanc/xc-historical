@@ -1,4 +1,4 @@
-/* $XConsortium: fserve.c,v 1.13 91/07/18 22:38:56 keith Exp $ */
+/* $XConsortium: fserve.c,v 1.14 91/07/26 20:59:30 keith Exp $ */
 /*
  *
  * Copyright 1990 Network Computing Devices
@@ -1484,7 +1484,7 @@ fs_send_load_extents(client, pfont, flags, nranges, range)
     FSBlockDataPtr blockrec;
     FSBlockedExtentPtr blockedextent;
     int         res;
-    fsQueryXBitmaps8Req req;
+    fsQueryXExtents8Req req;
     FSFontDataPtr fsd = (FSFontDataPtr) (pfont->fpePrivate);
     FontPathElementPtr fpe = fsd->fpe;
     FSFpePtr    conn = (FSFpePtr) fpe->private;
