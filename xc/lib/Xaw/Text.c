@@ -1,4 +1,4 @@
-/* $XConsortium: Text.c,v 1.180 91/07/20 23:20:22 converse Exp $ */
+/* $XConsortium: Text.c,v 1.181 91/07/24 18:53:12 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -2870,18 +2870,23 @@ XRectangle * expose;
 {
     struct text_move * offsets = ctx->text.copy_area_offsets;
     int value;
+    int x, y, width, height;
 
     /*
      * Skip over the first one, this has already been taken into account.
      */
 
-    if ( (offsets == NULL) || ((offsets = offsets->next) == NULL) )
+    if (!offsets || !(offsets = offsets->next))
 	return(TRUE);
 
-    while (offsets != NULL) {
-	expose->x += offsets->h;
-	expose->y += offsets->v;
+    x = expose->x;
+    y = expose->y;
+    width = expose->width;
+    height = expose->height;
 
+    while (offsets) {
+	x += offsets->h;
+	y += offsets->v;
 	offsets = offsets->next;
     }
 
@@ -2889,34 +2894,38 @@ XRectangle * expose;
      * remove that area of the region that is now outside the window.
      */
 
-    if (expose->y < 0) {
-	expose->height += expose->y;
-	expose->y = 0;
+    if (y < 0) {
+	height += y;
+	y = 0;
     }
 
-    value = expose->y + expose->height - ctx->core.height;
+    value = y + height - ctx->core.height;
     if (value > 0)
-	expose->height -= value;
+	height -= value;
 
-    if (expose->height <= 0)
+    if (height <= 0)
 	return(FALSE);		/* no need to draw outside the window. */
 
     /*
      * and now in the horiz direction...
      */
 
-    if (expose->x < 0) {
-	expose->width += expose->x;
-	expose->x = 0;
+    if (x < 0) {
+	width += x;
+	x = 0;
     }
 
-    value = expose->x + expose->width - ctx->core.width;
+    value = x + width - ctx->core.width;
     if (value > 0)
-	expose->width -= value;
+	width -= value;
 
-    if (expose->width <= 0)
+    if (width <= 0)
 	return(FALSE);		/* no need to draw outside the window. */
     
+    expose->x = x;
+    expose->y = y;
+    expose->width = width;
+    expose->height = height;
     return(TRUE);
 }
 
