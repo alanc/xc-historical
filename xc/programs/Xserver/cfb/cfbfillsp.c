@@ -56,6 +56,7 @@ SOFTWARE.
 #include "window.h"
 #include "pixmapstr.h"
 #include "scrnintstr.h"
+#include "windowstr.h"
 
 #include "cfb.h"
 #include "cfbmskbits.h"
@@ -475,31 +476,37 @@ static unsigned int QuartetPixelMaskTable[16] = {
  * It will take pixels from 0x4C5D6E7F corresponding to the one-bits in this 
  * quartet, so dest = 0x005D007F.
  *
- * XXX This should be turned into a macro after it is debugged.
- * XXX Has byte order dependencies.
- * XXX This works for all values of x and w within a doubleword, depending
- *     on the compiler to generate proper code for negative shifts.
+ * XXX Works with both byte order.
+ * XXX This works for all values of x and w within a doubleword.
  */
-
-void getstipplepixels( psrcstip, x, w, ones, psrcpix, destpix )
-unsigned int *psrcstip, *psrcpix, *destpix;
-int x, w, ones;
-{
-    unsigned int q;
-
 #if (BITMAP_BIT_ORDER == MSBFirst)
-    q = ((*psrcstip) >> (28-x)) & 0x0F;
-    if ( x+w > 32 )
-	q |= *(psrcstip+1) >> (64-x-w); /* & 0xF ? ****XXX*/
-#else
-    q = (*psrcstip) >> x;
-    if ( x+w > 32 )
-	q |= *(psrcstip+1) << (32-x);
-    q &= 0xf;
-#endif
-    q = QuartetBitsTable[w] & (ones ? q : ~q);
-    *destpix = (*(psrcpix)) & QuartetPixelMaskTable[q];
+#define getstipplepixels( psrcstip, x, w, ones, psrcpix, destpix ) \
+{ \
+    unsigned int q; \
+    int m,temp; \
+    if ((m = ((x) - 28)) > 0) { \
+        temp = (1 << (32 - (x))) - 1; \
+        q = ((*(psrcstip)) & temp) << m; \
+    } \
+    else \
+    	q = ((*(psrcstip)) >> (28-(x))) & 0x0F; \
+    if ( (x)+(w) > 32 ) \
+        q |= (*((psrcstip)+1)) >> (64-(x)-(w)); \
+    q = QuartetBitsTable[(w)] & ((ones) ? q : ~q); \
+    *(destpix) = (*(psrcpix)) & QuartetPixelMaskTable[q]; \
 }
+#else /* BITMAP_BIT_ORDER == LSB */
+#define getstipplepixels( psrcstip, xt, w, ones, psrcpix, destpix ) \
+{ \
+    unsigned int q; \
+    q = (*(psrcstip)) >> (xt); \
+    if ( ((xt)+(w)) > 32 ) \
+	q |= (*((psrcstip)+1)) << (32-(xt)); \
+    q &= 0xf; \
+    q = QuartetBitsTable[(w)] & ((ones) ? q : ~q); \
+    *(destpix) = (*(psrcpix)) & QuartetPixelMaskTable[q]; \
+}
+#endif
     
 
 /* Fill spans with stipples that aren't 32 bits wide */
@@ -514,7 +521,6 @@ int fSorted;
 {
 				/* next three parameters are post-clip */
     int n;			/* number of spans to fill */
-    int xrem; 
     register DDXPointPtr ppt;	/* pointer to list of start points */
     register int *pwidth;	/* pointer to list of n widths */
     int		iline;		/* first line of tile to use */
@@ -522,7 +528,7 @@ int fSorted;
     int		 nlwidth;	/* width in longwords of bitmap */
     register int *pdst;		/* pointer to current word in bitmap */
     PixmapPtr	pStipple;	/* pointer to stipple we want to fill with */
-    int		w, width,  x;
+    int		w, width,  x, xrem, xSrc, ySrc;
     unsigned int tmpSrc, tmpDst1, tmpDst2;
     int 	stwidth, stippleWidth, *psrcS, rop;
     int *pwidthFree;		/* copies of the pointers to free */
@@ -592,16 +598,19 @@ int fSorted;
 		(((PixmapPtr)(pDrawable->pScreen->devPrivate))->devPrivate);
 	nlwidth = (int)
 		(((PixmapPtr)(pDrawable->pScreen->devPrivate))->devKind) >> 2;
+        xSrc = ((WindowPtr)pDrawable)->absCorner.x;
+        ySrc = ((WindowPtr)pDrawable)->absCorner.y;
     }
     else
     {
 	addrlBase = (int *)(((PixmapPtr)pDrawable)->devPrivate);
 	nlwidth = (int)(((PixmapPtr)pDrawable)->devKind) >> 2;
+        xSrc = ySrc = 0;
     }
 
     while (n--)
     {
-	iline = ppt->y % pStipple->height;
+	iline = (ppt->y - ySrc) % pStipple->height;
 	x = ppt->x;
 	pdst = addrlBase + (ppt->y * nlwidth);
         psrcS = (int *) pStipple->devPrivate + (iline * stwidth);
@@ -611,6 +620,8 @@ int fSorted;
 	    width = *pwidth;
 	    while(width > 0)
 	    {
+	        int xtemp;
+		unsigned int *ptemp;
 		/*
 		 *  Do a stripe through the stipple & destination w pixels
 		 *  wide.  w is not more than:
@@ -623,27 +634,25 @@ int fSorted;
 		 */
 
 		/* width of dest/stipple */
-                xrem = x % stippleWidth;
+                xrem = (x - xSrc) % stippleWidth;
 	        w = min((stippleWidth - xrem), width);
 		/* dist to word bound in dest */
 		w = min(w, PPW - (x & PIM));
 		/* dist to word bound in stip */
-		w = min(w, 32 - (xrem & 0x1f));
+		w = min(w, 32 - (x & 0x1f));
 
-		/* Fill tmpSrc with the source pixels */
-		tmpSrc = *(pdst + (x >> PWSH));
+	        xtemp = (xrem & 0x1f);
+	        ptemp = (unsigned int *)(psrcS + (xrem >> 5));
 		switch ( pGC->fillStyle ) {
 		    case FillOpaqueStippled:
-			getstipplepixels(psrcS + (xrem>>5), (xrem&0x1f), w, 0, 
-			    &bgfill, &tmpDst1);
-			getstipplepixels(psrcS + (xrem>>5), (xrem&0x1f), w, 1,
-			    &fgfill, &tmpDst2);
+			getstipplepixels(ptemp, xtemp, w, 0, &bgfill, &tmpDst1);
+			getstipplepixels(ptemp, xtemp, w, 1, &fgfill, &tmpDst2);
 			break;
 		    case FillStippled:
-			getstipplepixels(psrcS + (xrem>>5), (xrem&0x1f), w, 0,
-			    &tmpSrc, &tmpDst1);
-			getstipplepixels(psrcS + (xrem>>5), (xrem&0x1f), w, 1,
-			    &fgfill, &tmpDst2);
+			/* Fill tmpSrc with the source pixels */
+			tmpSrc = *(pdst + (x >> PWSH));
+			getstipplepixels(ptemp, xtemp, w, 0, &tmpSrc, &tmpDst1);
+			getstipplepixels(ptemp, xtemp, w, 1, &fgfill, &tmpDst2);
 			break;
 		}
 #ifdef notdef
