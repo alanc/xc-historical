@@ -381,10 +381,14 @@ void
 XdmcpOpenDisplay(sock)
     int	sock;
 {
+    extern void AugmentSelf();
+
     if (state != XDM_AWAIT_MANAGE_RESPONSE)
 	return;
     state = XDM_RUN_SESSION;
     sessionSocket = sock;
+    /* permit access control manipulations from this host */
+    AugmentSelf(sock);
 }
 
 void 
