@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.137 90/03/15 16:59:48 jim Exp $
+ * $XConsortium: events.c,v 1.138 90/03/16 10:44:40 jim Exp $
  *
  * twm event handling
  *
@@ -38,7 +38,7 @@
 
 #if !defined(lint) && !defined(SABER)
 static char RCSinfo[]=
-"$XConsortium: events.c,v 1.137 90/03/15 16:59:48 jim Exp $";
+"$XConsortium: events.c,v 1.138 90/03/16 10:44:40 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -1453,7 +1453,7 @@ HandleButtonRelease()
 	else
 	    XMoveWindow (dpy, DragWindow, xl, yt);
 
-	if (!Scr->NoRaiseMove)
+	if (!Scr->NoRaiseMove && !Scr->OpaqueMove)    /* opaque already did */
 	    XRaiseWindow(dpy, DragWindow);
 
 	if (!Scr->OpaqueMove)

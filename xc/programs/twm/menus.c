@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.149 90/03/15 16:59:43 jim Exp $
+ * $XConsortium: menus.c,v 1.150 90/03/16 10:44:34 jim Exp $
  *
  * twm menu code
  *
@@ -38,7 +38,7 @@
 
 #if !defined(lint) && !defined(SABER)
 static char RCSinfo[] =
-"$XConsortium: menus.c,v 1.149 90/03/15 16:59:43 jim Exp $";
+"$XConsortium: menus.c,v 1.150 90/03/16 10:44:34 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -1444,6 +1444,9 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
 
 	    WindowMoved = TRUE;
 	    DragWindow = w;
+
+	    if (!Scr->NoRaiseMove && Scr->OpaqueMove)	/* can't restore... */
+	      XRaiseWindow(dpy, DragWindow);
 
 	    if (ConstMove)
 	    {
