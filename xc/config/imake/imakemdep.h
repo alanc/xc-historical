@@ -1,5 +1,5 @@
 /*
- * $XConsortium: imakemdep.h,v 1.19 91/02/13 11:18:13 rws Exp $
+ * $XConsortium: imakemdep.h,v 1.20 91/02/13 11:29:19 rws Exp $
  * 
  * This file contains machine-dependent constants for the imake utility.  When
  * porting imake, read each of the steps below and add in any necessary
@@ -226,6 +226,9 @@ struct symtab	predefs[] = {
 #endif
 #ifdef luna
 	{"luna", "1"},
+#endif
+#ifdef luna88k
+	{"luna88k", "1"},
 #endif
 #ifdef ieeep754
 	{"ieeep754", "1"},
