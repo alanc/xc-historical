@@ -1,4 +1,4 @@
-/* $XConsortium: Composite.h,v 1.11 91/06/11 18:19:08 converse Exp $ */
+/* $XConsortium: Composite.h,v 1.12 91/10/24 13:19:40 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -60,6 +60,28 @@ extern void XtUnmanageChildren(
 extern void XtUnmanageChild(
 #if NeedFunctionPrototypes
     Widget 		/* child */
+#endif
+);
+
+typedef void (*XtCSMHookProc)(
+#if NeedFunctionPrototypes
+    Widget		/* composite_parent	*/,
+    WidgetList		/* manage_children	*/,
+    Cardinal		/* num_manage_children	*/,
+    WidgetList		/* unmanage_children	*/,
+    Cardinal		/* num_unmanage_children*/,
+    XtPointer		/* client_data		*/
+#endif
+);
+
+extern void XtChangeManagedSet(
+#if NeedFunctionPrototypes
+    WidgetList		/* unmanage_children	*/,
+    Cardinal		/* num_unmanage_children*/,
+    WidgetList		/* manage_children	*/,
+    Cardinal		/* num_manage_children	*/,
+    XtCSMHookProc	/* post_unmanage_pre_manage_hook */,
+    XtPointer		/* client_data		*/
 #endif
 );
 
