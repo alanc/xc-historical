@@ -1,8 +1,8 @@
-XCOMM $XConsortium: Imakefile,v 1.14 91/07/19 11:26:36 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.15 91/08/23 12:25:20 gildea Exp $
 
 SYS_LIBRARIES = -lm
-        DEPLIBS = $(DEPXMULIB) $(DEPXTOOLLIB) $(DEPEXTENSIONLIB) $(DEPXLIB)
-LOCAL_LIBRARIES = $(XMULIB) $(XTOOLLIB) $(EXTENSIONLIB) $(XLIB)
+        DEPLIBS = $(DEPXMULIB) $(DEPXTOOLLIB) $(DEPXLIB)
+LOCAL_LIBRARIES = $(XMULIB) $(XTOOLLIB) $(XLIB)
 
 SRCS = xeyes.c Eyes.c transform.c
 OBJS = xeyes.o Eyes.o transform.o
