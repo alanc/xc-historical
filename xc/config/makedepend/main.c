@@ -1,5 +1,5 @@
 /*
- * $XConsortium: main.c,v 1.50 91/04/10 16:07:14 rws Exp $
+ * $XConsortium: main.c,v 1.51 91/04/15 18:16:29 rws Exp $
  */
 #include "def.h"
 #ifdef hpux
@@ -7,7 +7,9 @@
 #endif /* hpux */
 
 #ifndef X_NOT_POSIX
+#ifndef _POSIX_SOURCE
 #define _POSIX_SOURCE
+#endif
 #endif
 #include <signal.h>
 
