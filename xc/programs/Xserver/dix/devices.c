@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: devices.c,v 5.0 89/10/03 19:55:31 rws Exp $ */
+/* $XConsortium: devices.c,v 5.1 89/10/04 22:50:46 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -246,7 +246,7 @@ QueryMinMaxKeyCodes(minCode, maxCode)
     *maxCode = inputInfo.keyboard->key->curKeySyms.maxKeyCode;
 }
 
-static Bool
+Bool
 SetKeySymsMap(dst, src)
     register KeySymsPtr dst, src;
 {
