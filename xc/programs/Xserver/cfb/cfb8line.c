@@ -172,7 +172,7 @@ RROP_NAME(cfb8LineSS1Rect) (pDrawable, pGC, mode, npt, pptInit)
 	    stepx = -1;
 	}
 	stepy = nwidth;
-	if ((ady = y2 - y1) < 0)
+	if ((ady = y2 - y1) <= 0)
 	{
 	    ady = -ady;
 	    stepy = -nwidth;
@@ -195,8 +195,6 @@ RROP_NAME(cfb8LineSS1Rect) (pDrawable, pGC, mode, npt, pptInit)
 
 #ifdef POLYSEGMENT
 	if (capStyle == CapNotLast)
-#else
-/*	if (npt || capStyle == CapNotLast) */
 #endif
 	    --len;
 #ifdef REARRANGE
@@ -209,35 +207,57 @@ RROP_NAME(cfb8LineSS1Rect) (pDrawable, pGC, mode, npt, pptInit)
 
 	addrb = addr + (y1 * nwidth) + x1;
 
+	if (!ady)
+	{
+#define body	{ RROP_SOLID(addrb); addrb += stepx; }
+#ifdef LARGE_INSTRUCTION_CACHE
+	    while (len >= 4)
+	    {
+		body body body body
+		len -= 4;
+	    }
+	    switch (len)
+	    {
+	    case  3: body case 2: body case 1: body
+	    }
+#else
+	    while (len--)
+		body
+#endif
+#undef body
+	}
+	else
+	{
 #define body {\
-	    RROP_SOLID(addrb); \
-	    addrb += stepx; \
-	    e += e1; \
-	    if (e >= 0) \
-	    { \
-		addrb += stepy; \
-		e += e3; \
-	     } \
-}
+	    	RROP_SOLID(addrb); \
+	    	addrb += stepx; \
+	    	e += e1; \
+	    	if (e >= 0) \
+	    	{ \
+		    addrb += stepy; \
+		    e += e3; \
+	     	 } \
+	    }
 
 #ifdef LARGE_INSTRUCTION_CACHE
-	while (len >= 4)
-	{
-	    body body body body
-	    len -= 4;
-	}
-	switch (len)
-	{
-	case  3: body case 2: body case 1: body
-	}
+	    while (len >= 4)
+	    {
+	    	body body body body
+	    	len -= 4;
+	    }
+	    switch (len)
+	    {
+	    case  3: body case 2: body case 1: body
+	    }
 #else
-	while ((len -= 2) >= 0)
-	{
-	    body body
-	}
-	if (len & 1)
-	    body;
+	    while ((len -= 2) >= 0)
+	    {
+	    	body body
+	    }
+	    if (len & 1)
+	    	body;
 #endif
+	}
 	RROP_SOLID(addrb);
 #undef body
 
@@ -247,6 +267,20 @@ RROP_NAME(cfb8LineSS1Rect) (pDrawable, pGC, mode, npt, pptInit)
 #endif
 
     }
+#ifndef POLYSEGMENT
+    if (capStyle != CapNotLast && !oc2 &&
+	(x2 != pptInit->x || y2 != pptInit->y))
+    {
+#ifdef REARRANGE
+	register char	*addrb;
+	RROP_DECLARE
+
+	RROP_FETCH_GCPRIV(devPriv);
+#endif
+	addrb = addr + (y2 * nwidth) + x2;
+	RROP_SOLID (addrb);
+    }
+#endif
     return -1;
 }
 
@@ -435,6 +469,21 @@ drawClippedLine (pDrawable, pGC, x1, y1, x2, y2, shorten)
     OUTCODES (oc2, x2, y2, box);
     if (oc1 & oc2)
 	return;
+    if (oc2)
+    {
+	int xt = x2, yt = y2;
+	int	dx = x2 - x1, dy = y2 - y1;
+	int change;
+
+	cfbClipPoint (oc2, &xt, &yt, dx, dy, box, TRUE);
+	if (axis == Y_AXIS)
+	    change = y2 - yt;
+	else
+	    change = x2 - xt;
+	if (change < 0)
+	    change = -change;
+	len -= change;
+    }
     if (oc1)
     {
 	int	xt = x1, yt = y1;
@@ -458,22 +507,8 @@ drawClippedLine (pDrawable, pGC, x1, y1, x2, y2, shorten)
 	    len -= changex;
 	    e = e + (changex * e2) + ((changey - changex) * e1);
 	}
-	
-    }
-    if (oc2)
-    {
-	int xt = x2, yt = y2;
-	int	dx = x2 - x1, dy = y2 - y1;
-	int change;
-
-	cfbClipPoint (oc2, &xt, &yt, dx, dy, box, TRUE);
-	if (axis == Y_AXIS)
-	    change = y2 - yt;
-	else
-	    change = x2 - xt;
-	if (change < 0)
-	    change = -change;
-	len -= change;
+	x1 = xt;
+	y1 = yt;
     }
     if (shorten && !oc2)
 	--len;
