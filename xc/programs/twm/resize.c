@@ -26,7 +26,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: resize.c,v 1.19 89/05/03 14:37:16 jim Exp $
+ * $XConsortium: resize.c,v 1.20 89/06/08 17:43:00 jim Exp $
  *
  * window resizing borrowed from the "wm" window manager
  *
@@ -36,7 +36,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: resize.c,v 1.19 89/05/03 14:37:16 jim Exp $";
+"$XConsortium: resize.c,v 1.20 89/06/08 17:43:00 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -67,8 +67,6 @@ static int clampRight;
 
 static int last_width;
 static int last_height;
-
-static void ConstrainSize();
 
 
 /***********************************************************************
@@ -255,7 +253,7 @@ TwmWindow *tmp_win;
         action = 1;
     }
     if (action) {
-        ConstrainSize(tmp_win);
+        ConstrainSize (tmp_win, &dragWidth, &dragHeight);
         if (clampLeft)
             dragx = origx + origWidth - dragWidth;
         if (clampTop)
@@ -348,7 +346,7 @@ EndResize()
 
     XFindContext(dpy, ResizeWindow, TwmContext, &tmp_win);
 
-    ConstrainSize(tmp_win);
+    ConstrainSize (tmp_win, &dragWidth, &dragHeight);
 
     if (dragWidth != tmp_win->frame_width ||
         dragHeight != tmp_win->frame_height)
@@ -401,7 +399,7 @@ TwmWindow *tmp_win;
 
     XUnmapWindow(dpy, Scr->SizeWindow);
 
-    ConstrainSize(tmp_win);
+    ConstrainSize (tmp_win, &dragWidth, &dragHeight);
     AddingX = dragx;
     AddingY = dragy;
     AddingW = dragWidth + (2 * (tmp_win->bw + tmp_win->frame_bw));
@@ -412,7 +410,7 @@ TwmWindow *tmp_win;
 /***********************************************************************
  *
  *  Procedure:
- *      FixSize - adjust the given width and height to account for the
+ *      ConstrainSize - adjust the given width and height to account for the
  *              constraints imposed by size hints
  *
  *      The general algorithm, especially the aspect ratio stuff, is
@@ -420,7 +418,7 @@ TwmWindow *tmp_win;
  * 
  ***********************************************************************/
 
-FixSize (tmp_win, widthp, heightp)
+ConstrainSize (tmp_win, widthp, heightp)
     TwmWindow *tmp_win;
     int *widthp, *heightp;
 {
@@ -497,23 +495,6 @@ FixSize (tmp_win, widthp, heightp)
 
     *widthp = dwidth + 2*tmp_win->bw;
     *heightp = dheight + tmp_win->title_height + 2*tmp_win->bw;
-}
-
-
-/***********************************************************************
- *
- *  Procedure:
- *      ConstrainSize - adjust dragWidth and dragHeight to account for
- *              constraints imposed by size hints
- *
- ***********************************************************************
- */
-
-static void
-ConstrainSize(tmp_win)
-TwmWindow *tmp_win;
-{
-    FixSize (tmp_win, &dragWidth, &dragHeight);
 }
 
 
