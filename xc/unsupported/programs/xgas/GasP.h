@@ -1,4 +1,4 @@
-/* $XConsortium: XGasP.h,v 1.1 91/04/18 09:47:27 dave Exp $ */
+/* $XConsortium: GasP.h,v 1.1 91/04/18 09:49:00 dave Exp $ */
 
 /* Copyright	Massachusetts Institute of Technology	1987, 1988
  *
@@ -24,7 +24,7 @@
 #ifndef _GasP_h
 #define _GasP_h
 
-#include "XGas.h"
+#include "Gas.h"
 /* include superclass private header file */
 #include <X11/CoreP.h>
 
