@@ -100,10 +100,10 @@ extern void miCopyPlane();
 extern void miPolyPoint();
 extern void miPushPixels();
 
-extern int cfbListInstalledColormaps();
-
-extern ColormapPtr cfbGetStaticColormap();
 #ifdef	STATIC_COLOR
+extern void cfbInstallColormap();
+extern void cfbUninstallColormap();
+extern int cfbListInstalledColormaps();
 extern void cfbResolveStaticColor();
 #endif
 
