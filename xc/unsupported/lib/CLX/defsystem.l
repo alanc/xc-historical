@@ -451,10 +451,10 @@
 ;;; modules, so a pathname needs to be supplied).
 
 ;;; The REQUIRE should find a file that does
-;;;		(IN-PACKAGE 'XLIB :USE '(LISP))
-;;;		(PROVIDE 'CLX)
-;;;		(LOAD <clx-defsystem-file>)
-;;;		(LOAD-CLX <binary-specific-clx-directory>)
+;;;		(in-package :user)
+;;;		(provide :clx)
+;;;		(load <clx-defsystem-file>)
+;;;		(load-clx <binary-specific-clx-directory>)
 
 #-(or lispm allegro)
 (defun load-clx (&optional (binary-pathname-defaults "")
