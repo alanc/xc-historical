@@ -5,7 +5,7 @@ XTerm*SimpleMenu*translations:	#override \
 	<BtnUp>:	MenuPopdown() notify() unhighlight()
 
 
-XTerm*mainMenu.Label:  X11 xterm
+XTerm*mainMenu.Label:  Main Options
 XTerm*mainMenu*securekbd*Label:  Secure Keyboard
 XTerm*mainMenu*logging*Label:  Log to File
 XTerm*mainMenu*redraw*Label:  Redraw Window
@@ -19,7 +19,7 @@ XTerm*mainMenu*kill*Label:  Send KILL Signal
 XTerm*mainMenu*line2*Type:  separator
 XTerm*mainMenu*quit*Label:  Quit
 
-XTerm*vtMenu.Label:  VT Modes
+XTerm*vtMenu.Label:  VT Options
 XTerm*vtMenu*scrollbar*Label:  Show Scrollbar
 XTerm*vtMenu*jumpscroll*Label:  Enable Jump Scroll
 XTerm*vtMenu*reversevideo*Label:  Enable Reverse Video
@@ -43,7 +43,7 @@ XTerm*vtMenu*tekshow*Label:  Show Tek Window
 XTerm*vtMenu*tekmode*Label:  Switch to Tek Mode
 XTerm*vtMenu*vthide*Label:  Hide VT Window
 
-XTerm*tekMenu.Label:  Tek Modes
+XTerm*tekMenu.Label:  Tek Options
 XTerm*tekMenu*tektextlarge*Label:  Large Characters
 XTerm*tekMenu*tektext2*Label:  #2 Size Characters
 XTerm*tekMenu*tektext3*Label:  #3 Size Characters
