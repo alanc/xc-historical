@@ -1,17 +1,11 @@
-XCOMM $XConsortium: Imakefile,v 1.3 94/02/10 20:35:13 matt Exp $
+XCOMM $XConsortium: Imakefile,v 1.4 94/03/07 15:14:44 matt Exp $
+XCOMM
+XCOMM IDL-to-MIF documentation generator
+XCOMM
 
-        DEPLIBS = FrescoClientDepLibs
-LOCAL_LIBRARIES = FrescoClientLibs 
-           SRCS = main.CCsuf
-           OBJS = main.o
+#include <fresco.cf>
 
-#if ThreadedX
-  LOCAL_LDFLAGS = ThreadsLoadFlags
-  SYS_LIBRARIES = ThreadsLibraries
-#endif
-
-#define CplusplusSource
-
-NormalCplusplusObjectRule()
+SRCS = main.CCsuf
+OBJS = main.o
 
 ComplexCplusplusProgramTarget(i2mif)
