@@ -1,5 +1,5 @@
 /*
- *	$Header: misc.c,v 1.12 88/02/20 15:30:21 swick Exp $
+ *	$Header: misc.c,v 1.13 88/02/21 16:37:07 jim Exp $
  */
 
 
@@ -53,7 +53,7 @@ extern void perror();
 extern void abort();
 
 #ifndef lint
-static char rcs_id[] = "$Header: misc.c,v 1.12 88/02/20 15:30:21 swick Exp $";
+static char rcs_id[] = "$Header: misc.c,v 1.13 88/02/21 16:37:07 jim Exp $";
 #endif	/* lint */
 
 xevents()
@@ -197,9 +197,9 @@ register int flag;
     register int i;
 
     if(screen->TekEmu) {
+	screen->select &= ~flag;
 	TekUnselect();
 	if(!Ttoggled) TCursorToggle(TOGGLE);
-	screen->select &= ~flag;
 #ifdef obsolete
 			if(screen->cellsused) {
 				i = (term->flags & REVERSE_VIDEO) == 0;
@@ -213,8 +213,8 @@ register int flag;
 #endif /* obsolete */
 	if(!Ttoggled) TCursorToggle(TOGGLE);
     } else {
-	VTUnselect();
 	screen->select &= ~flag;
+	VTUnselect();
 	if(screen->cursor_state &&
 	   (screen->cursor_col != screen->cur_col ||
 	    screen->cursor_row != screen->cur_row))
