@@ -1,4 +1,4 @@
-/* $XConsortium: Xregistry,v 1.13 90/11/15 09:19:55 rws Exp $ */
+/* $XConsortium: Xregistry,v 1.14 90/11/17 13:32:57 rws Exp $ */
 
 1. ORGANIZATION NAMES
 
@@ -607,6 +607,7 @@ Name						Reference
 19. DISPLAY MANUFACTURER ID
 
 "Acorn"						[49]
+"TD"						[63]
 "MIT"						[8]
 
 
@@ -903,4 +904,9 @@ REFERENCES
 	International Lisp Associates
 	114 Mount Auburn Street
 	Cambridge, MA 02138
+
+[63]	Sigvald Refsum
+	Tandberg Data A/S
+	PO Box 9
+	Korsvoll, N-0808 OSLO 8
 Sumitomo Electric Workstation Corp.	[77]
