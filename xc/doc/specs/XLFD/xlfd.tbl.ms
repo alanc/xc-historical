@@ -1,5 +1,5 @@
 .\" Use tbl and -ms and macros.t
-.\" $XConsortium: xlfd.tbl.ms,v 1.5 91/06/19 12:18:45 rws Exp $
+.\" $XConsortium: xlfd.tbl.ms,v 1.6 91/06/19 14:35:52 rws Exp $
 .EH ''''
 .OH ''''
 .EF ''''
@@ -1071,7 +1071,8 @@ the asterisk ``*'' denotes real multiplication,
 and ``ROUND'' denotes a function that rounds its real argument 'a' up or down
 to the next integer. 
 This rounding is done according to X = FLOOR (a + O.5),
-where FLOOR is a function that rounds its real argument down to an integer.
+where FLOOR is a function that rounds its real argument down to the
+nearest integer.
 .LP
 PIXEL_SIZE can be approximated if not supplied as a font property, 
 according to the following algorithm:
