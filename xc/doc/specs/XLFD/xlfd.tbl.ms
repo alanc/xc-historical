@@ -1,5 +1,5 @@
 .\" Use tbl and -ms and macros.t
-.\" $XConsortium: xlfd.tbl.ms,v 1.9 91/06/30 17:50:47 rws Exp $
+.\" $XConsortium: xlfd.tbl.ms,v 1.10 91/07/03 14:21:54 rws Exp $
 .EH ''''
 .OH ''''
 .EF ''''
@@ -8,12 +8,19 @@
 .nr PS 11
 \&
 .sp 8
-.ce 5
+.ce 4
 \s+2\fBX Logical Font Description Conventions\fP\s-2
 
-\s-1\fBVersion 1.4\fP\s-1
+\fBVersion 1.4\fP
 
-\s+1\fBMIT X Consortium Standard\fP\s-1
+\fBMIT X Consortium Standard\fP
+
+\fBX Version 11, Release 5\fP
+.sp 6
+.ce 2
+\s+1Jim Flowers\s-1
+.sp 6p
+\s+1Digital Equipment Corporation\s-1
 .bp
 \&
 .ps 9
