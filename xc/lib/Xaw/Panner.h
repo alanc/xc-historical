@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Panner.h,v 1.10 90/02/13 14:04:06 jim Exp $
+ * $XConsortium: Panner.h,v 1.11 90/02/26 19:03:57 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -41,6 +41,7 @@
  * 
  *  allowOff		AllowOff	Boolean		FALSE
  *  background		Background	Pixel		XtDefaultBackground
+ *  backgroundStipple	BackgroundStipple	String	NULL
  *  canvasWidth		CanvasWidth	Dimension	0
  *  canvasHeight	CanvasHeight	Dimension	0
  *  defaultScale	DefaultScale	Dimension	10 (percent)
@@ -56,13 +57,14 @@
  *  sliderY		SliderY		Position	0
  *  sliderWidth		SliderWidth	Dimension	0
  *  sliderHeight	SliderHeight	Dimension	0
- *  stippleName		StippleName	String		NULL
  * 
  *****************************************************************************/
 
 					/* new instance and class names */
 #define XtNallowOff "allowOff"
 #define XtCAllowOff "AllowOff"
+#define XtNbackgroundStipple "backgroundStipple"
+#define XtCBackgroundStipple "BackgroundStipple"
 #define XtNdefaultScale "defaultScale"
 #define XtCDefaultScale "DefaultScale"
 #define XtNcanvasWidth "canvasWidth"
@@ -88,8 +90,6 @@
 #define XtCSliderWidth "SliderWidth"
 #define XtNsliderHeight "sliderHeight"
 #define XtCSliderHeight "SliderHeight"
-#define XtNstippleName "stippleName"
-#define XtCStippleName "StippleName"
 
 					/* external declarations */
 extern WidgetClass pannerWidgetClass;

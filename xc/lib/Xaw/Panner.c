@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Panner.c,v 1.13 90/02/13 14:12:40 jim Exp $
+ * $XConsortium: Panner.c,v 1.14 90/02/26 19:03:54 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -88,7 +88,7 @@ static XtResource resources[] = {
 	poff(slider_height), XtRImmediate, (XtPointer) 0 },
     { XtNshadow, XtCShadow, XtRBoolean, sizeof(Boolean),
 	poff(shadow), XtRImmediate, (XtPointer) TRUE },
-    { XtNstippleName, XtCStippleName, XtRString, sizeof(String),
+    { XtNbackgroundStipple, XtCBackgroundStipple, XtRString, sizeof(String),
 	poff(stipple_name), XtRImmediate, (XtPointer) NULL },
 #undef poff
 };

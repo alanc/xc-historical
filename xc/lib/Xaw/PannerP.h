@@ -1,5 +1,5 @@
 /*
- * $XConsortium: PannerP.h,v 1.9 90/02/13 14:04:07 jim Exp $
+ * $XConsortium: PannerP.h,v 1.10 90/02/26 19:03:59 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -55,7 +55,7 @@ typedef struct {			/* new fields in widget */
     Dimension slider_width;		/* sliderWidth/SliderWidth */
     Dimension slider_height;		/* sliderHeight/SliderHeight */
     Dimension internal_border;		/* internalBorderWidth/BorderWidth */
-    String stipple_name;		/* stippleName/StippleName */
+    String stipple_name;		/* backgroundStipple/BackgroundStipple */
     /* private data... */
     GC slider_gc;			/* background of slider */
     GC shadow_gc;			/* edge of slider and shadow */
