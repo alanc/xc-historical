@@ -26,6 +26,7 @@
             SUN = ddx/sun/libsun.a
           MACII = ddx/macII/libmacII.a
             TEK = ddx/tek/libtek.a
+          HPMIT = ddx/hp.mit/libhp.a
          XAULIB = $(TOP)/lib/Xau/libXau.a
        XDMCPLIB = $(TOP)/lib/Xdmcp/libXdmcp.a
         SYSLIBS = -lm -ldbm
@@ -95,6 +96,12 @@
 #define	XhpServer /* as nothing */
 #endif
 
+#ifdef XhpMitServer
+#define dohpMitServer
+#else
+#define XhpMitServer /* as nothing */
+#endif
+
 #ifdef	XapolloServer
 #define doapolloServer
 #else
@@ -126,8 +133,8 @@
  *                                                                           *
 /*****************************************************************************
  */
-ALL = XqvssServer XqdssServer XsunServer XapolloServer XibmServer XhpServer XmacIIServer XmfbpmaxServer XcfbpmaxServer XtekServer
-ALLPOSSIBLE = Xqvss Xqdss Xsun Xibm Xapollo Xhp XmacII Xcfbpmax Xmfbpmax Xtek
+ALL = XqvssServer XqdssServer XsunServer XapolloServer XibmServer XhpServer XhpMitServer XmacIIServer XmfbpmaxServer XcfbpmaxServer XtekServer
+ALLPOSSIBLE = Xqvss Xqdss Xsun Xibm Xapollo Xhp XhpMit XmacII Xcfbpmax Xmfbpmax Xtek
 
 all: $(ALL)
 
@@ -301,6 +308,31 @@ XhpDIRS = $(HPDIRS)
 
 ServerTarget(Xhp,$(EXTDIR) $(FONTUTILDIR) $(HPDIRS),$(HPOBJS),$(HPLIBS),$(HPSYSLIBS))
 #endif /* dohpServer */
+
+
+#ifdef dohpMitServer
+/**/#
+/**/# HP server
+/**/#
+#define need_dix
+#define need_ddx_snf
+#define need_ddx_mi
+#define need_ddx_hpMit
+#define need_ddx_cfb
+#define need_ddx_mfb
+#define need_os_42bsd
+#define need_os_bsdemul
+HPMITDIRS = dix ddx/snf ddx/mi ddx/mfb ddx/cfb ddx/hp.mit os/4.2bsd os/bsdemul
+HPMITOBJS = ddx/hp.mit/hpInit.o $(FONTUTIL)
+HPMITLIBS = $(HPMIT) $(CFB) $(DIX) $(BSD) $(SNF) $(MFB) $(MI) $(EXTENSIONS) $(BSDEMUL)
+#if ServerMallocLib
+HPMITMALLOCLIB = -lmalloc
+#endif
+HPMITSYSLIBS = $(SYSLIBS) $(HPMALLOCLIB)
+XhpMitDIRS = $(HPMITDIRS)
+
+ServerTarget(XhpMit,$(EXTDIR) $(FONTUTILDIR) $(HPMITDIRS),$(HPMITOBJS),$(HPMITLIBS),$(HPMITSYSLIBS))
+#endif /* dohpMitServer */
 
 
 #ifdef doibmServer
@@ -487,6 +519,11 @@ ServerTarget(XmacII,$(EXTDIR) $(FONTUTILDIR) $(MACIIDIRS),$(MACIIOBJS),$(MACIILI
 #else
 #define dir_ddx_hp /**/
 #endif
+#ifdef need_ddx_hpMit
+#define dir_ddx_hpMit ddx/hp.mit
+#else
+#define dir_ddx_hpMit /**/
+#endif
 #ifdef need_ddx_ibm
 #define dir_ddx_ibm ddx/ibm
 #else
@@ -507,7 +544,7 @@ OURDIX = dir_dix
 OURDDX = dir_ddx_snf dir_ddx_mfb dir_ddx_cfb dir_ddx_mi
 OUROS = dir_os_42bsd dir_os_bsdemul
 DECDDX = dir_ddx_dec_lk201 dir_ddx_dec_qdss dir_ddx_dec_qvss dir_ddx_dec_mfbpmax dir_ddx_dec_cfbpmax
-HPDDX = dir_ddx_hp
+HPDDX = dir_ddx_hp dir_ddx_hpMit
 OTHERDDX = dir_ddx_apollo dir_ddx_apollo_apc dir_ddx_ibm dir_ddx_macII dir_ddx_sun dir_ddx_tek
 
 SUBDIRS = $(OURDIX) $(OURDDX) $(OUROS) $(DECDDX) $(HPDDX) $(OTHERDDX)
@@ -518,7 +555,7 @@ SUBDIRS = $(OURDIX) $(OURDDX) $(OUROS) $(DECDDX) $(HPDDX) $(OTHERDDX)
                   ddx/apollo ddx/apollo/apc \
                   ddx/ibm \
 		  ddx/dec/mfbpmax ddx/dec/cfbpmax \
-                  ddx/hp ddx/tek \
+                  ddx/hp ddx/hp.mit ddx/tek \
                   ddx/macII
       ALLOSDIRS = os/4.2bsd os/bsdemul
      ALLSUBDIRS = dix $(ALLDDXDIRS) $(ALLOSDIRS)
