@@ -1,4 +1,4 @@
-/* $XConsortium: charinfo.c,v 1.2 92/03/17 20:31:29 eswu Exp $ */
+/* $XConsortium: charinfo.c,v 1.3 92/05/12 18:08:13 gildea Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -290,8 +290,11 @@ packGlyphs (client, pfont, format, flags, num_ranges, range, tsize, num_glyphs,
     /* compute dstbpr for padded out fonts */
     reformat = bitorder != src_bit_order || byteorder != src_byte_order;
 
-    /* we need the ink metrics when shrink-wrapping a TE font (sigh) */
-    if (mappad != BitmapFormatImageRectMax && pinfo->inkMetrics)
+    /* we need the ink metrics when shrink-wrapping a TE font (sigh),
+     * but only for protocol version > 1 */
+    if (mappad != BitmapFormatImageRectMax &&
+	pinfo->inkMetrics &&
+	client->major_version > 1)
     {
 	err = getCharInfos (pfont, num_ranges, range, TRUE, &nchars, &inkCharsFree);
 	if (err != Successful)
@@ -306,6 +309,7 @@ packGlyphs (client, pfont, format, flags, num_ranges, range, tsize, num_glyphs,
     lengths = (fsOffset *) fsalloc(sizeof(fsOffset) * nchars);
     if (!lengths) {
 	fsfree (bitCharsFree);
+	fsfree (inkCharsFree);
 	return AllocError;
     }
     
@@ -373,6 +377,7 @@ packGlyphs (client, pfont, format, flags, num_ranges, range, tsize, num_glyphs,
 	*tsize = size;
 	*offsets = lengths;
 	fsfree (bitCharsFree);
+	fsfree (inkCharsFree);
 	return Successful;
     }
     if (size)
@@ -380,6 +385,7 @@ packGlyphs (client, pfont, format, flags, num_ranges, range, tsize, num_glyphs,
 	gdata = (pointer) fsalloc(size);
 	if (!gdata) {
 	    fsfree (bitCharsFree);
+	    fsfree (inkCharsFree);
 	    fsfree (lengths);
 	    return AllocError;
 	}
@@ -553,6 +559,7 @@ packGlyphs (client, pfont, format, flags, num_ranges, range, tsize, num_glyphs,
 	    FourByteSwap(gdata, size);
     }
     fsfree (bitCharsFree);
+    fsfree (inkCharsFree);
     *num_glyphs = nchars;
     *data = gdata;
     *tsize = size;
