@@ -1,4 +1,4 @@
-/* $XConsortium: Event.c,v 1.159 93/10/13 18:47:24 kaleb Exp $ */
+/* $XConsortium: Event.c,v 1.160 93/10/13 19:07:33 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -1266,7 +1266,10 @@ static Boolean DispatchEvent(event, widget)
 
 typedef enum _GrabType {pass, ignore, remap} GrabType;
 
-static Boolean DefaultDispatcher(event)
+#if !defined(AIXV3) || !defined(AIXSHLIB)
+static /* AIX shared libraries are broken */
+#endif
+Boolean _XtDefaultDispatcher(event)
     XEvent  *event;
 {
     register    Widget widget;
@@ -1358,7 +1361,7 @@ Boolean XtDispatchEvent (event)
     int starting_count;
     XtPerDisplay pd;
     Time	time = 0;
-    XtEventDispatchProc dispatch = DefaultDispatcher;
+    XtEventDispatchProc dispatch = _XtDefaultDispatcher;
     XtAppContext app = XtDisplayToApplicationContext(event->xany.display);
 
     LOCK_APP(app);
@@ -1384,7 +1387,7 @@ Boolean XtDispatchEvent (event)
 
     if (pd->dispatcher_list) {
 	dispatch = pd->dispatcher_list[event->type];
-	if (dispatch == NULL) dispatch = DefaultDispatcher;
+	if (dispatch == NULL) dispatch = _XtDefaultDispatcher;
     }
     was_dispatched = (*dispatch)(event);
 
@@ -1682,11 +1685,11 @@ XtEventDispatchProc XtSetEventDispatcher(dpy, event_type, proc)
     list = pd->dispatcher_list;
     if (!list) {
 	if (proc) list = pd->dispatcher_list = NewDispatcherList();
-	else return DefaultDispatcher;
+	else return _XtDefaultDispatcher;
     }
     old_proc = list[event_type];
     list[event_type] = proc;
-    if (old_proc == NULL) old_proc = DefaultDispatcher;
+    if (old_proc == NULL) old_proc = _XtDefaultDispatcher;
     UNLOCK_PROCESS;
     UNLOCK_APP(app);
     return old_proc;
