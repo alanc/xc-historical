@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Mailbox.h,v 1.14 89/04/11 19:21:30 jim Exp $
+ * $XConsortium: Mailbox.h,v 1.15 89/04/11 19:30:48 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -35,12 +35,14 @@
 #define XtNemptyPixmap		"emptyPixmap"
 #define XtNemptyPixmapMask	"emptyPixmapMask"
 #define XtNflip			"flip"
+#define XtNshapeWindow		"shapeWindow"
 
 #define XtCCheckCommand		"CheckCommand"
 #define XtCVolume		"Volume"
 #define XtCPixmap		"Pixmap"
 #define XtCPixmapMask		"PixmapMask"
 #define XtCFlip			"Flip"
+#define XtCShapeWindow		"ShapeWindow"
 
 
 /* structures */
