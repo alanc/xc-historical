@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: connection.c,v 1.108 89/08/03 20:26:02 rws Exp $ */
+/* $XConsortium: connection.c,v 1.109 89/08/04 08:28:40 rws Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -347,6 +347,9 @@ CreateWellKnownSockets()
 	    kill (ParentProcess, SIGUSR1);
 	}
     }
+#ifdef SERVER_XDMCP
+    XdmcpInit ();
+#endif
 }
 
 void
@@ -569,6 +572,10 @@ EstablishNewConnections()
 	    ErrorConnMax(newconn);
 	    CloseDownFileDescriptor(oc);
 	}
+#ifdef SERVER_XDMCP
+	/* indicate to Xdmcp protocol that we've opened new client */
+	XdmcpOpenDisplay(newconn);
+#endif /* SERVER_XDMCP */
     }
 }
 
@@ -707,6 +714,9 @@ CloseDownConnection(client)
     if (oc->output && oc->output->count)
 	FlushClient(client, oc, (char *)NULL, 0);
     ConnectionTranslation[oc->fd] = 0;
+#ifdef SERVER_XDMCP
+    XdmcpCloseDisplay(oc->fd);
+#endif
     CloseDownFileDescriptor(oc);
     client->osPrivate = (pointer)NULL;
 }

@@ -183,6 +183,9 @@ WaitForSomething(pClientsReady)
 	    }
 #endif /* MULTI_X_HACK */
 	    COPYBITS(AllSockets, LastSelectMask);
+#ifdef SERVER_XDMCP
+	    XdmcpBlockHandler((pointer)&wt, (pointer)LastSelectMask);
+#endif /* SERVER_XDMCP */
 	    BlockHandler((pointer)&wt, (pointer)LastSelectMask);
 	    if (NewOutputPending)
 	    	FlushAllOutput();
@@ -206,6 +209,9 @@ WaitForSomething(pClientsReady)
 		i = select (MAXSOCKS, (int *)LastSelectMask,
 			    (int *) NULL, (int *) NULL, wt);
 	    selecterr = errno;
+#ifdef SERVER_XDMCP
+	    XdmcpWakeupHandler((unsigned long)i, (pointer)LastSelectMask);
+#endif /* SERVER_XDMCP */
 	    WakeupHandler((unsigned long)i, (pointer)LastSelectMask);
 #ifdef XTESTEXT1
 	    if (playback_on) {

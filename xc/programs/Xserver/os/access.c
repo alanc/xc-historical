@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: access.c,v 1.35 89/07/14 16:25:56 rws Exp $ */
+/* $XConsortium: access.c,v 1.36 89/07/21 14:00:26 keith Exp $ */
 
 #include "Xos.h"
 #include "X.h"
@@ -224,6 +224,26 @@ DefineSelf (fd)
 	    host->next = selfhosts;
 	    selfhosts = host;
 	}
+#ifdef SERVER_XDMCP
+	{
+	    struct sockaddr broad_addr;
+
+	    XdmcpRegisterConnection (FamilyInternet, addr, len);
+#ifdef SIOCGIFBRDADDR
+	    {
+	    	struct ifreq    broad_req;
+    
+	    	broad_req = *ifr;
+	    	ioctl (fd, SIOCGIFBRDADDR, &broad_req);
+	    	broad_addr = broad_req.ifr_addr;
+	    }
+#else
+	    broad_addr = ifr->ifr_addr;
+	    ((struct sockaddr_in *) &broad_addr)->sin_addr = INADDR_BROADCAST;
+#endif
+	    XdmcpRegisterBroadcastAddress ((struct sockaddr_in *) &broad_addr);
+	}
+#endif
     }
 }
 #endif /* hpux */
