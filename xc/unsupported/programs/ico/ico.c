@@ -1,4 +1,4 @@
-/* $XConsortium: ico.c,v 1.7 89/08/21 19:30:19 jim Exp $ */
+/* $XConsortium: ico.c,v 1.8 89/10/04 14:56:39 jim Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -370,8 +370,6 @@ char **argv;
 			icoDeltaY = - icoDeltaY;
 			}
 
-		printf ("draw poly into win 0x%lx, current buf is %d\n",
-			win, dbpair.dbufnum);
 		drawPoly(poly, win, gc, icoX, icoY, icoW, icoH, prevX, prevY);
 		}
 	}
@@ -757,8 +755,6 @@ setDrawBuf (n)
 
 #ifdef MULTIBUFFER
     if (multibuf) {
-	printf ("switching to draw buffer %d, current is %d\n", n,
-		dbpair.dbufnum);
 	win = multibuffers[n];
 	n = 0;
     }
@@ -781,7 +777,6 @@ int n;
     if (multibuf) {
 	static int firsttime = 1;
 
-	printf ("displaying buffer %d, current is %d\n", n, dbpair.dbufnum);
 	XmbufDisplayBuffers (dpy, 1, &multibuffers[1-n], 0, 0);
 	if (firsttime) {
 	    firsttime = 0;
@@ -792,19 +787,7 @@ int n;
 #endif
     {
       storecolors:
-	printf ("Storing %d colors for buffer %d\n", dbpair.totalpixels, n);
 	dbpair.dpybuf= dbpair.bufs+n;
-	{
-	    int i;
-
-	    for (i = 0; i < dbpair.totalpixels; i++) {
-		printf ("    %d  [%04x, %04x, %04x]\n",
-			dbpair.dpybuf->colors[i].pixel,
-			dbpair.dpybuf->colors[i].red,
-			dbpair.dpybuf->colors[i].green,
-			dbpair.dpybuf->colors[i].blue);
-	    }
-	}
 	XStoreColors(dpy,cmap,dbpair.dpybuf->colors,dbpair.totalpixels);
     }
 }
