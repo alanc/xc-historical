@@ -1,5 +1,5 @@
 /*
- * $XConsortium: mieq.c,v 1.2 91/05/04 23:10:48 keith Exp $
+ * $XConsortium: mieq.c,v 1.3 91/07/18 22:54:12 keith Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -82,6 +82,7 @@ mieqInit (pKbd, pPtr)
  * called from regular code.
  */
 
+void
 mieqEnqueue (e)
     xEvent	*e;
 {
@@ -121,6 +122,7 @@ mieqEnqueue (e)
     miEventQueue.events[oldtail].pScreen = miEventQueue.pEnqueueScreen;
 }
 
+void
 mieqSwitchScreen (pScreen)
     ScreenPtr	pScreen;
 {
