@@ -1,5 +1,5 @@
 /*
- * $XConsortium: ibmInit.c,v 1.5 91/12/20 18:13:55 eswu Exp $
+ * $XConsortium: ibmInit.c,v 1.6 93/07/12 09:27:16 dpw Exp $
  *
  * Copyright IBM Corporation 1987,1988,1989,1990,1991
  *
@@ -275,7 +275,7 @@ static DevicePtr mouse;
 void
 InitInput()
 {
-extern  DeviceProc OS_MouseProc,OS_KeybdProc;
+extern  int OS_MouseProc(),OS_KeybdProc();
 
     TRACE(("InitInput()\n"));
 
