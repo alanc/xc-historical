@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Simple.c,v 1.14 88/09/06 16:42:21 jim Exp $";
+static char Xrcsid[] = "$XConsortium: Simple.c,v 1.15 88/09/12 11:48:04 swick Exp $";
 #endif lint
 
 /* Copyright	Massachusetts Institute of Technology	1987 */
@@ -97,9 +97,12 @@ static void Realize(w, valueMask, attributes)
     if (!IsSensitive(w)) {
 	/* change border to gray; have to remember the old one,
 	 * so XtDestroyWidget deletes the proper one */
-	if (!((SimpleWidget)w)->simple.insensitive_border)
+	if (((SimpleWidget)w)->simple.insensitive_border == NULL)
 	    ((SimpleWidget)w)->simple.insensitive_border =
-		XtGrayPixmap( XtScreen(w) );
+		XmuCreateStippledPixmap(XtScreen(w),
+					w->core.border_pixel, 
+					w->core.background_pixel,
+					w->core.depth);
         border_pixmap = w->core.border_pixmap;
 	attributes->border_pixmap =
 	  w->core.border_pixmap = ((SimpleWidget)w)->simple.insensitive_border;
@@ -144,9 +147,12 @@ static Boolean ChangeSensitive(w)
 		XSetWindowBorder( XtDisplay(w), XtWindow(w), 
 				  w->core.border_pixel );
 	else {
-	    if (!((SimpleWidget)w)->simple.insensitive_border)
+	    if (((SimpleWidget)w)->simple.insensitive_border == NULL)
 		((SimpleWidget)w)->simple.insensitive_border =
-		    XtGrayPixmap( XtScreen(w) );
+		    XmuCreateStippledPixmap(XtScreen(w),
+					    w->core.border_pixel, 
+					    w->core.background_pixel,
+					    w->core.depth);
 	    XSetWindowBorderPixmap( XtDisplay(w), XtWindow(w),
 				    ((SimpleWidget)w)->
 				        simple.insensitive_border );

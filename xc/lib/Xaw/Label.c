@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Label.c,v 1.56 88/09/26 18:03:02 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Label.c,v 1.57 88/09/27 11:18:15 swick Exp $";
 #endif lint
 
 
@@ -175,13 +175,16 @@ static void GetgrayGC(lw)
     values.foreground = lw->label.foreground;
     values.background = lw->core.background_pixel;
     values.font	      = lw->label.font->fid;
-    values.tile       = XtGrayPixmap(XtScreen((Widget)lw));
     values.fill_style = FillTiled;
+    values.tile       = XmuCreateStippledPixmap(XtScreen((Widget)lw),
+						lw->label.foreground, 
+						lw->core.background_pixel,
+						lw->core.depth);
 
-    lw->label.gray_GC = XtGetGC(
-	(Widget)lw, 
-	(unsigned) GCForeground | GCBackground | GCFont | GCTile | GCFillStyle,
-	&values);
+    lw->label.gray_GC = XtGetGC((Widget)lw, 
+				(unsigned) GCForeground | GCBackground |
+					   GCFont | GCTile | GCFillStyle,
+				&values);
 }
 
 /* ARGSUSED */
