@@ -1,4 +1,4 @@
-/* $XConsortium: imExten.c,v 1.3 94/01/20 18:04:27 rws Exp $ */
+/* $XConsortium: imExten.c,v 1.4 94/03/26 16:57:55 rws Exp $ */
 /******************************************************************
 
            Copyright 1992, 1993, 1994 by FUJITSU LIMITED
@@ -76,7 +76,7 @@ _XimIsSupportExt(idx)
 
     for (i = 0; i < n; i++) {
 	if (extensions[i].idx == idx)
-	    if (extensions[idx].is_support)
+	    if (extensions[i].is_support)
 		return i;
 	    else
 		break;
