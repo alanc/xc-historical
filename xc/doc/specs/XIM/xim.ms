@@ -1,4 +1,4 @@
-.\" $XConsortium: xim.ms,v 1.3 94/04/14 21:07:49 rws Exp $
+.\" $XConsortium: xim.ms,v 1.4 94/04/14 21:24:40 rws Exp $
 .\" To print this out, type tbl macros.t ThisFile | troff -ms
 .EH ''''
 .OH ''''
@@ -949,6 +949,7 @@ XIM_CONNECT_REPLY (IM Server \(-> IM library)
 .LP
 .IP (*1)
 Specify the version of IM Protocol that the IM Server supports.
+This document specifies major version zero, minor version zero.
 .RE
 .sp
 .LP	
