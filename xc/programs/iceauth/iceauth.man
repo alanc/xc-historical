@@ -1,4 +1,16 @@
-.\" $XConsortium: iceauth.man,v 1.1 94/02/10 21:28:08 rws Exp $
+.\" $XConsortium: iceauth.man,v 1.2 94/04/11 14:29:10 gildea Exp $
+.\" Copyright 1994, X Consortium, Inc.
+.\" Copyright 1993 Massachusetts Institute of Technology
+.\"
+.\" Permission to use, copy, modify, distribute, and sell this software and
+.\" its documentation for any purpose is hereby granted without fee, provided
+.\" that the above copyright notice appear in all copies and that both that
+.\" copyright notice and this permission notice appear in supporting
+.\" documentation, and that the name of M.I.T. not be used in advertising or
+.\" publicity pertaining to distribution of the software without specific,
+.\" written prior permission.  M.I.T. makes no representations about the
+.\" suitability of this software for any purpose.  It is provided "as is"
+.\" without express or implied warranty.
 .TH ICEAUTH 1 "Release 6" "X Version 11"
 .SH NAME
 iceauth \- ICE authority file utility
@@ -13,7 +25,5 @@ used to extract authorization records from one machine and merge them in on
 another (as is the case when using remote logins or granting access to
 other users).  Commands (described below) may be entered interactively,
 on the \fIiceauth\fP command line, or in scripts.
-.SH COPYRIGHT
-Copyright 1994, X Consortium, Inc.
 .SH AUTHOR
 Ralph Mor, X Consortium
