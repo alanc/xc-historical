@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: fsio.c,v 1.19 91/07/15 22:42:43 keith Exp $ */
 /*
  *
  * Copyright 1990 Network Computing Devices
@@ -485,7 +485,7 @@ _fs_data_ready(conn)
 {
     long        readable;
 
-    if (ioctl(conn->fs_fd, FIONREAD, &readable) < 0)
+    if (BytesReadable(conn->fs_fd, &readable) < 0)
 	return -1;
     return readable;
 }
