@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: events.c,v 1.154 88/09/05 14:47:11 rws Exp $ */
+/* $XConsortium: events.c,v 1.155 88/09/06 15:40:49 jim Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -3162,6 +3162,7 @@ ProcChangeKeyboardControl (client)
 	    }
 	    if (!(stuff->mask & KBLedMode))
 		return BadMatch;
+	    break;
 	case KBLedMode:
 	    t = (CARD8)*vlist;
 	    vlist++;
