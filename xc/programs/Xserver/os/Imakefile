@@ -87,11 +87,11 @@ dbm.o:  $(DBMLIB)
 	mv a.out.o ndbm.o; ld -r -o ../dbm.o *.o)
 #else
 dbm.o:  $(DBMLIB)
-        rm -f dbm.o
-        if [ ! -d dbm ]; then $(RM) -r dbm; mkdir dbm; else /bin/true; fi
-        (cd dbm; rm -f *.o; ar -x $(DBMLIB); \
-        ld -r -o a.out.o -h bcopy ndbm.o; \
-        mv a.out.o ndbm.o; ld -r -o ../dbm.o *.o)
+	rm -f dbm.o
+	if [ ! -d dbm ]; then $(RM) -r dbm; mkdir dbm; else /bin/true; fi
+	(cd dbm; rm -f *.o; ar -x $(DBMLIB); \
+	ld -r -o a.out.o -h bcopy ndbm.o; \
+	mv a.out.o ndbm.o; ld -r -o ../dbm.o *.o)
 #endif /* hp9000s300 */
 #endif /* HPArchitecture */
 
