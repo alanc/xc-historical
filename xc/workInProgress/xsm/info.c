@@ -1,4 +1,4 @@
-/* $XConsortium: info.c,v 1.13 94/08/11 14:34:49 mor Exp mor $ */
+/* $XConsortium: info.c,v 1.14 94/08/11 19:14:54 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -65,7 +65,9 @@ ClientRec *client;
 
 {
     Position x, y, rootx, rooty;
-    int index, i, j;
+    int index;
+    List *pl, *pj, *vl;
+    PropValue *pval;
 
     for (index = 0; index < numClientListNames; index++)
 	if (clientListRecs[index] == client)
@@ -74,7 +76,7 @@ ClientRec *client;
     if (index >= numClientListNames)
 	return;
 
-    if (client->numProps > 0)
+    if (ListCount (client->props) > 0)
     {
 	char buffer[1024];		/* ugh, gotta fix this */
 	char number[10];
@@ -86,30 +88,37 @@ ClientRec *client;
 	strcat (buffer, client->clientId);
 	strcat (buffer, " ***\n\n");
 
-	for (i = 0; i < client->numProps; i++)
+	for (pl = ListFirst (client->props); pl; pl = ListNext (pl))
 	{
-	    SmProp *prop = client->props[i];
+	    Prop *pprop = (Prop *) pl->thing;
 
 	    strcat (buffer, "Name:		");
-	    strcat (buffer, prop->name);
+	    strcat (buffer, pprop->name);
 	    strcat (buffer, "\n");
 	    strcat (buffer, "Type:		");
-	    strcat (buffer, prop->type);
+	    strcat (buffer, pprop->type);
 	    strcat (buffer, "\n");
 	    strcat (buffer, "Num values:	");
-	    sprintf (number, "%d", prop->num_vals);
+	    sprintf (number, "%d", ListCount (pprop->values));
 	    strcat (buffer, number);
 	    strcat (buffer, "\n");
 
-	    if (strcmp (prop->type, SmCARD8) == 0)
+	    if (strcmp (pprop->type, SmCARD8) == 0)
 	    {
-		char *card8 = prop->vals->value;
-		int value = *card8;
+		char *card8;
+		int value;
+
+		vl = ListFirst (pprop->values);
+		pval = (PropValue *) vl->thing;
+
+		card8 = pval->value;
+		value = *card8;
+
 		strcat (buffer, "Value 1:	");
 		sprintf (number, "%d", value);
 		strcat (buffer, number);
 
-		if (strcmp (prop->name, SmRestartStyleHint) == 0)
+		if (strcmp (pprop->name, SmRestartStyleHint) == 0)
 		{
 		    if (value == SmRestartAnyway)
 			strcat (buffer, " (Restart Anyway)");
@@ -125,19 +134,23 @@ ClientRec *client;
 	    }
 	    else
 	    {
-		for (j = 0; j < prop->num_vals; j++)
+		int propnum = 0;
+
+		for (pj = ListFirst (pprop->values); pj; pj = ListNext (pj))
 		{
+		    propnum++;
+
+		    pval = (PropValue *) pj->thing;
 		    strcat (buffer, "Value ");
-		    sprintf (number, "%d", j + 1);
+		    sprintf (number, "%d", propnum);
 		    strcat (buffer, number);
 		    strcat (buffer, ":	");
-		    strcat (buffer, (char *) prop->vals[j].value);
+		    strcat (buffer, (char *) pval->value);
 		    strcat (buffer, "\n");
 		}
 	    }
 
-	    if (i < client->numProps - 1)
-		strcat (buffer, "\n");
+	    strcat (buffer, "\n");
 	}
 
 	XtVaSetValues (clientPropTextWidget,
@@ -322,7 +335,8 @@ UpdateClientList ()
     int maxlen1, maxlen2;
     char extraBuf1[80], extraBuf2[80];
     char *restart_service_prop;
-    int i, j, k;
+    List *cl, *pl;
+    int i, k;
 
     if (clientListNames)
     {
@@ -334,7 +348,7 @@ UpdateClientList ()
 	for (i = 0; i < numClientListNames; i++)
 	    XtFree (clientListNames[i]);
 
-	free ((char *) clientListNames);
+	XtFree ((char *) clientListNames);
 
 	clientListNames = NULL;
     }
@@ -345,35 +359,36 @@ UpdateClientList ()
 	 * Free the mapping of client names to client records
 	 */
 
-	free ((char *) clientListRecs);
+	XtFree ((char *) clientListRecs);
 	clientListRecs = NULL;
     }
 
     maxlen1 = maxlen2 = 0;
     numClientListNames = 0;
 
-    for (client = ClientList; client; client = client->next)
+    for (cl = ListFirst (RunningList); cl; cl = ListNext (cl))
     {
-	if (!client->running)
-	    continue;
+	client = (ClientRec *) cl->thing;
 
 	progName = NULL;
 	restart_service_prop = NULL;
 
-	for (j = 0; j < client->numProps; j++)
+	for (pl = ListFirst (client->props); pl; pl = ListNext (pl))
 	{
-	    if (strcmp (client->props[j]->name, SmProgram) == 0)
+	    Prop *pprop = (Prop *) pl->thing;
+	    List *vl = ListFirst (pprop->values);
+	    PropValue *pval = (PropValue *) vl->thing;
+
+	    if (strcmp (pprop->name, SmProgram) == 0)
 	    {
-		progName = GetProgramName (client->props[j]->vals[0].value);
+		progName = GetProgramName ((char *) pval->value);
 
 		if (strlen (progName) > maxlen1)
 		    maxlen1 = strlen (progName);
 	    }
-	    else if (strcmp (client->props[j]->name,
-		"_XC_RestartService") == 0)
+	    else if (strcmp (pprop->name, "_XC_RestartService") == 0)
 	    {
-		restart_service_prop =
-		    (char *) client->props[j]->vals[0].value;
+		restart_service_prop = (char *) pval->value;
 	    }
 	}
 
@@ -398,34 +413,35 @@ UpdateClientList ()
 	numClientListNames++;
     }
 
-    clientListNames = (String *) malloc (numClientListNames * sizeof (String));
-    clientListRecs = (ClientRec **) malloc (
+    clientListNames = (String *) XtMalloc (
+	numClientListNames * sizeof (String));
+    clientListRecs = (ClientRec **) XtMalloc (
 	numClientListNames * sizeof (ClientRec *));
 
-    for (client = ClientList, i = 0; client; client = client->next)
+    i = 0;
+    for (cl = ListFirst (RunningList); cl; cl = ListNext (cl))
     {
+	ClientRec *client = (ClientRec *) cl->thing;
 	int extra1, extra2;
 	char *hint;
-
-	if (!client->running)
-	    continue;
 
 	progName = NULL;
 	restart_service_prop = NULL;
 
-	for (j = 0; j < client->numProps; j++)
+	for (pl = ListFirst (client->props); pl; pl = ListNext (pl))
 	{
-	    if (strcmp (client->props[j]->name, SmProgram) == 0)
+	    Prop *pprop = (Prop *) pl->thing;
+	    List *vl = ListFirst (pprop->values);
+	    PropValue *pval = (PropValue *) vl->thing;
+
+	    if (strcmp (pprop->name, SmProgram) == 0)
 	    {
-		progName = GetProgramName (client->props[j]->vals[0].value);
+		progName = GetProgramName ((char *) pval->value);
 	    }
-	    else if (strcmp (client->props[j]->name,
-		"_XC_RestartService") == 0)
+	    else if (strcmp (pprop->name, "_XC_RestartService") == 0)
 	    {
-		restart_service_prop =
-		    (char *) client->props[j]->vals[0].value;
+		restart_service_prop = (char *) pval->value;
 	    }
-	    
 	}
 
 	if (!progName)
@@ -492,9 +508,8 @@ XtPointer 	callData;
     XawListReturnStruct *current;
     ClientRec *client;
     Widget active;
-    SmProp prop;
-    SmPropValue propval;
-    int found = 0, i;
+    int found = 0;
+    List *pl;
     char hint;
 
     current = XawListShowCurrent (clientListWidget);
@@ -523,16 +538,26 @@ XtPointer 	callData;
 
     client->restartHint = hint;
 
-    for (i = 0; i < client->numProps; i++)
-	if (strcmp (SmRestartStyleHint, client->props[i]->name) == 0)
+    for (pl = ListFirst (client->props); pl; pl = ListNext (pl))
+    {
+	Prop *pprop = (Prop *) pl->thing;
+
+	if (strcmp (SmRestartStyleHint, pprop->name) == 0)
 	{
-	    *((char *) (client->props[i]->vals[0].value)) = hint;
+	    List *vl = ListFirst (pprop->values);
+	    PropValue *pval = (PropValue *) vl->thing;
+
+	    *((char *) (pval->value)) = hint;
 	    found = 1;
 	    break;
 	}
+    }
 
     if (!found)
     {
+	SmProp prop;
+	SmPropValue propval;
+
 	prop.name = SmRestartStyleHint;
 	prop.type = SmCARD8;
 	prop.num_vals = 1;
@@ -540,11 +565,12 @@ XtPointer 	callData;
 	propval.value = (SmPointer) &hint;
 	propval.length = 1;
 	
-	SetProperty (client, &prop, True /* Malloc for us */);
+	SetProperty (client, &prop);
     }
 
     UpdateClientList ();
     XawListHighlight (clientListWidget, current_client_selected);
+    ShowHint (client);
 
     if (client_prop_visible && clientListRecs &&
 	clientListRecs[current_client_selected] == client)
@@ -675,8 +701,8 @@ create_client_info_popup ()
 	XtNmenuName, "restartHintMenu",
         XtNfromHoriz, killClientButton,
         XtNfromVert, NULL,
-	XtNtop, XawChainBottom,
-	XtNbottom, XawChainBottom,
+	XtNtop, XawChainTop,
+	XtNbottom, XawChainTop,
 	NULL);
 
     restartHintMenu = XtVaCreatePopupShell (
