@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.140 93/07/22 13:45:34 gildea Exp $
+XCOMM $XConsortium: Imakefile,v 1.141 93/07/28 19:05:27 rws Exp $
 #define DoNormalLib NormalLibX
 #define DoSharedLib SharedLibX
 #define DoDebugLib DebugLibX
@@ -67,7 +67,7 @@ XBSDLIB = /**/
 			Xcms.h Xlocale.h
        LINTLIBS =
 
-SRCS1 =\
+SRCS1 = \
 	Context.c \
 	Depths.c \
 	ParseCmd.c \
@@ -197,7 +197,7 @@ SRCS1 =\
 	XLookupCol.c \
 	XLowerWin.c 
 
-OBJS1 =\
+OBJS1 = \
 	Context.o \
 	Depths.o \
 	ParseCmd.o \
@@ -327,7 +327,7 @@ OBJS1 =\
 	XLookupCol.o \
 	XLowerWin.o 
 
-SRCS2 =\
+SRCS2 = \
 	XMacros.c \
 	XMapRaised.c \
 	XMapSubs.c \
@@ -393,7 +393,7 @@ SRCS2 =\
 	XSetStip.c \
 	XSetStCmap.c \
 	XSetTile.c \
-	XSetTSOrig.c\
+	XSetTSOrig.c \
 	XStBytes.c \
 	XStColor.c \
 	XStColors.c \
@@ -451,7 +451,7 @@ SRCS2 =\
 	$(AUTHSRCS) \
 	$(XDMAUTHSRCS)
 
-OBJS2 =\
+OBJS2 = \
 	XMacros.o \
 	XMapRaised.o \
 	XMapSubs.o \
@@ -517,7 +517,7 @@ OBJS2 =\
 	XSetStip.o \
 	XSetStCmap.o \
 	XSetTile.o \
-	XSetTSOrig.o\
+	XSetTSOrig.o \
 	XStBytes.o \
 	XStColor.o \
 	XStColors.o \
