@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xclipboard.c,v 1.15 89/12/15 20:11:09 keith Exp $
+ * $XConsortium: xclipboard.c,v 1.16 90/03/05 11:47:34 keith Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -25,7 +25,7 @@
  * Reauthored by: Keith Packard, MIT X Consortium.
  */
 
-/* $XConsortium: xclipboard.c,v 1.15 89/12/15 20:11:09 keith Exp $ */
+/* $XConsortium: xclipboard.c,v 1.16 90/03/05 11:47:34 keith Exp $ */
 
 #include <stdio.h>
 #include <X11/Intrinsic.h>
@@ -293,8 +293,6 @@ SaveToFile (w, e, argv, argc)
 {
     Arg	    args[1];
     char    *filename;
-    Dimension	width, height;
-    Position	x, y;
 
     filename = "clipboard";
     if (currentClip->filename)
@@ -362,7 +360,6 @@ NewCurrentClipContents (data, len)
     int	    len;
 {
     XawTextBlock textBlock;
-    ClipPtr newCurrent;
 
     SaveClip (text, currentClip);
 
@@ -567,10 +564,9 @@ char **argv;
 {
     Arg args[2];
     Widget parent, quit, delete, new, save;
-    Widget fileDialogOk, fileDialogCancel;
 
     top = XtInitialize( "xclipboard", "XClipboard", table, XtNumber(table),
-			  &argc, argv);
+			 (Cardinal*) &argc, argv);
 
     XtAddActions (xclipboard_actions, XtNumber (xclipboard_actions));
     /* CLIPBOARD_MANAGER is a non-standard mechanism */
