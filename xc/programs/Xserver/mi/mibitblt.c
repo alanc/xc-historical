@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: mibitblt.c,v 1.49 87/09/08 16:16:16 rws Locked $ */
+/* $Header: mibitblt.c,v 1.50 87/09/09 20:12:22 rws Locked $ */
 /* Author: Todd Newman  (aided and abetted by Mr. Drewry) */
 
 #include "X.h"
@@ -290,7 +290,7 @@ miGetPlane(pDraw, planeNum, sx, sy, w, h, result)
 	sx += ((WindowPtr) pDraw)->absCorner.x;
 	sy += ((WindowPtr) pDraw)->absCorner.y;
     }
-    widthInBytes = PixmapBytePad(w, depth);
+    widthInBytes = PixmapBytePad(w, 1);
     if(!result)
         result = (unsigned long *)Xalloc(h * widthInBytes);
     bitsPerPixel = GetBitsPerPixel(depth);
@@ -327,23 +327,42 @@ miGetPlane(pDraw, planeNum, sx, sy, w, h, result)
 		pline = (*pDraw->pScreen->GetSpans)(pDraw, width, &pt,
 		                                   &width, 1);
 		/* Use a macro in Xmd.h to grab the appropriate bit */
-		bit = (unsigned int) GetBitFromPixel(*pline, planeNum, depth);
+		bit = (unsigned int) ((*pline >> planeNum) & 1);
 		/* Now insert that bit into a bitmap in XY format */
-		bit = SCRRIGHT(bit, k);
+	        if(BITMAP_BIT_ORDER == LSBFirst)
+		    bit <<= k;
+		else
+		    bit <<= ((BITMAP_SCANLINE_UNIT - 1) - k);
 		if(BITMAP_SCANLINE_UNIT == 8)
 		{
 		    *pCharsOut |= (unsigned char) bit;
-		    k = (++k == 8) ? pCharsOut++, 0 : k;
+		    k++;
+		    if (k == 8)
+		    {
+		        pCharsOut++;
+		        k = 0;
+		    }
 		}
 		else if(BITMAP_SCANLINE_UNIT == 16)
 		{
 		    *pShortsOut |= (CARD16) bit;
+		    k++;
+		    if (k == 16)
+		    {
+		        pShortsOut++;
+		        k = 0;
+		    }
 		    k = (++k == 16) ? pShortsOut++, 0 : k;
 		}
 		if(BITMAP_SCANLINE_UNIT == 32)
 		{
 		    *pLongsOut |= (CARD32) bit;
-		    k = (++k == 32) ? pLongsOut++, 0 : k;
+		    k++;
+		    if (k == 32)
+		    {
+		        pLongsOut++;
+		        k = 0;
+		    }
 		}
 	        Xfree(pline);
 	    }
@@ -746,13 +765,17 @@ miPutImage(pDraw, pGC, depth, x, y, w, h, leftPad, format, pImage)
 	gcv[1] = 0;
 	DoChangeGC(pGC, GCForeground | GCBackground, gcv, 0);
 
-	for (i = depth-1; i >=0; i--)
+	for (i = 1 << (depth-1); i > 0; i >>= 1)
 	{
-	    DoChangeGC(pGC, GCPlaneMask, gcv, 0);
-	    ValidateGC(pDraw, pGC);
-	    (*pGC->PutImage)(pDraw, pGC, 1, x, y, w, h, leftPad,
-			     XYBitmap, pImage);
-	    pImage += h * PixmapBytePad(w, 1);
+	    if (i & oldPlanemask)
+	    {
+	        gcv[0] = i;
+	        DoChangeGC(pGC, GCPlaneMask, gcv, 0);
+	        ValidateGC(pDraw, pGC);
+	        (*pGC->PutImage)(pDraw, pGC, 1, x, y, w, h, leftPad,
+			         XYBitmap, pImage);
+	        pImage += h * PixmapBytePad(w, 1);
+	    }
 	}
 	gcv[0] = oldPlanemask;
 	gcv[1] = oldFg;
