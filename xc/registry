@@ -1,3 +1,5 @@
+/* $XConsortium: Xregistry,v 1.30 90/07/09 08:54:56 rws Exp $ */
+
 1. ORGANIZATION NAMES
 
 Name						Reference
@@ -9,6 +11,7 @@ Name						Reference
 "ARDENT"					[2]
 "CRUC"						[30]
 "DG"						[48]
+"FXD"						[55]
 "IBM"						[33]
 "ICS"						[31]
 "IXI"						[20]
@@ -812,4 +815,9 @@ REFERENCES
 	2-4/F Henan Building
 	90 Jaffe Road, Wanchai,
 	Hong Kong
+
+[55]	Mike Wexler
+	FXD/Telerate, Inc.
+	2091 Landings Drive
+	Mountain View, CA 94043
 Sumitomo Electric Workstation Corp.	[77]
