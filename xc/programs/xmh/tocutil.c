@@ -512,8 +512,16 @@ void TUEnsureScanIsValidAndOpen(toc)
 {
     if (toc) {
 	TUGetFullFolderInfo(toc);
-	if (TUScanFileOutOfDate(toc))
-	    TocForceRescan(toc);
+	if (TUScanFileOutOfDate(toc)) {
+	    if (toc->source) {
+		XtFree((char *) toc->source);
+		toc->source = NULL;
+	    }
+	    TUScanFileForToc(toc);
+	}
+	if (toc->source == NULL)
+	    TULoadTocFile(toc);
+	toc->validity = valid;
     }
 }
 
