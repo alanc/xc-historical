@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Event.c,v 1.40 88/01/07 10:38:18 swick Locked $";
+static char rcsid[] = "$Header: Event.c,v 1.41 88/01/07 13:31:19 swick Locked $";
 #endif lint
 
 /*
@@ -274,11 +274,11 @@ static void DispatchEvent(event, widget, mask)
     Opaque closure[100];
     int numprocs, i;
     if (mask == ExposureMask) {
-      if ((widget->core.widget_class->core_class.compress_exposure)
-        && (event->xexpose.count != 0)) 
-        return;
+      if (widget->core.widget_class->core_class.compress_exposure &&
+	  ((event->type == Expose && event->xexpose.count != 0) ||
+	   (event->type == GraphicsExpose && event->xgraphicsexpose.count != 0)))
+	  return;
       if(widget->core.widget_class->core_class.expose != NULL)
-	 /* use VMS bindings for parameters ???? */
          (*(widget->core.widget_class->core_class.expose))(widget,event);
     }
     if ((mask == VisibilityNotify) &&
