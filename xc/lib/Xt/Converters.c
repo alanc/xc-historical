@@ -1,4 +1,4 @@
-/* $XConsortium: Converters.c,v 1.90 93/10/22 10:57:48 kaleb Exp $ */
+/* $XConsortium: Converters.c,v 1.91 94/01/20 17:48:43 converse Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -838,7 +838,7 @@ Boolean XtCvtStringToFont(dpy, args, num_args, fromVal, toVal, closure_ret)
 
     XtAppWarningMsg(XtDisplayToApplicationContext(dpy),
 		    "noFont","cvtStringToFont",XtCXtToolkitError,
-		    "Unable to load any useable ISO8859-1 font",
+		    "Unable to load any usable ISO8859-1 font",
 		    (String *) NULL, (Cardinal *)NULL);
 
     return False;
@@ -978,7 +978,7 @@ Boolean XtCvtStringToFontSet(dpy, args, num_args, fromVal, toVal, closure_ret)
 
     XtAppWarningMsg(XtDisplayToApplicationContext(dpy),
            "noFont","cvtStringToFontSet",XtCXtToolkitError,
-             "Unable to load any useable fontset",
+             "Unable to load any usable fontset",
               (String *) NULL, (Cardinal *)NULL);
     
     return False;
@@ -1095,7 +1095,7 @@ XtCvtStringToFontStruct(dpy, args, num_args, fromVal, toVal, closure_ret)
 
     XtAppWarningMsg(XtDisplayToApplicationContext(dpy),
 	     "noFont","cvtStringToFontStruct",XtCXtToolkitError,
-             "Unable to load any useable ISO8859-1 font",
+             "Unable to load any usable ISO8859-1 font",
               (String *) NULL, (Cardinal *)NULL);
     
     return False;
