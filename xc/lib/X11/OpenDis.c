@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XOpenDis.c,v 11.77 89/03/06 13:51:09 jim Exp $
+ * $XConsortium: XOpenDis.c,v 11.78 89/03/06 13:59:08 jim Exp $
  */
 
 #include "copyright.h"
@@ -34,6 +34,8 @@ static int xauth_namelen = 0;
 static char *xauth_name = NULL;	 /* NULL means use default mechanism */
 static int xauth_datalen = 0;
 static char *xauth_data = NULL;	 /* NULL means get default data */
+
+static OutOfMemory();
 
 void XSetAuthorization (name, namelen, data, datalen)
     int namelen, datalen;		/* lengths of name and data */
