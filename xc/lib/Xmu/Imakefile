@@ -14,9 +14,6 @@
 OS_NAME_DEFINES = OsNameDefines
 #endif
 
-/*
- * If you add anything to this list, don't forget to update ./X11/Imakefile
- */
 HEADERS = \
 	Xmu.h \
 	Atoms.h \
