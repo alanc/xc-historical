@@ -1,4 +1,4 @@
-/* $Header: dixfontstr.h,v 1.2 88/01/02 17:09:14 rws Exp $ */
+/* $Header: dixfontstr.h,v 1.3 88/08/16 12:16:12 keith Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -46,12 +46,15 @@ typedef struct _DIXFontProp {
 typedef struct _Font {
     FontInfoPtr	pFI;
     DIXFontProp	*pFP;
-    CharInfoPtr	pCI;
+    CharInfoPtr	pCI;			/* bitmap metrics and offset */
     char	*pGlyphs;
     pointer	osPrivate;
     int		fileType;		/* tag for OS layer */
     int		refcnt;			/* free storage when this goes to 0 */
     pointer	devPriv[MAXSCREENS];	/* information private to screen */
+    CharInfoPtr	pInkCI;			/* ink metrics */
+    CharInfoPtr	pInkMin;		/* ink metrics */
+    CharInfoPtr	pInkMax;		/* ink metrics */
 } FontRec;
 
 
