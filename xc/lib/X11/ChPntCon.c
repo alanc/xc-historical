@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XChPntCon.c,v 11.6 87/05/24 21:32:54 jg Exp $ */
+/* $Header: XChPntCon.c,v 11.6 87/09/08 12:28:38 newman Locked $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
@@ -8,7 +8,7 @@
 XChangePointerControl(dpy, do_acc, do_thresh, acc_numerator,
 		      acc_denominator, threshold)
      register Display *dpy;
-     int do_acc, do_thresh;  /*boolean*/
+     Bool do_acc, do_thresh;
      int acc_numerator, acc_denominator, threshold;
 
 {
