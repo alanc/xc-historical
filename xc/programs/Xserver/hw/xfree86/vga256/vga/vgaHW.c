@@ -1,5 +1,6 @@
 /*
- * $XConsortium: vgaHW.c,v 1.3 91/08/26 15:40:56 gildea Exp $
+ * $XConsortium: vgaHW.c,v 1.1 94/10/05 13:51:06 kaleb Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaHW.c,v 3.10 1994/09/23 10:27:05 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -37,14 +38,14 @@
 #include <sys/wait.h>
 #undef _POSIX_SOURCE
 #else
-#if defined(_MINIX) || defined(AMOEBA)
+#if defined(MINIX) || defined(AMOEBA)
 #include <sys/types.h>
 #endif
 #include <sys/wait.h>
 #endif
 #endif
 
-#if !defined(AMOEBA) && !defined(_MINIX)
+#if !defined(AMOEBA) && !defined(MINIX)
 #define _NEED_SYSI86
 #endif
 
@@ -67,7 +68,7 @@
 #endif
 #endif
 
-#if defined(__BSD__) || defined(MACH386) || defined(linux) || defined(AMOEBA) || defined(_MINIX)
+#if defined(__BSD__) || defined(MACH386) || defined(linux) || defined(AMOEBA) || defined(MINIX)
 #ifndef NEED_SAVED_CMAP
 #define NEED_SAVED_CMAP
 #endif
@@ -82,7 +83,7 @@
 #endif
 
 /* bytes per plane to save for text */
-#if defined(linux) || defined(_MINIX)
+#if defined(linux) || defined(MINIX)
 #define TEXT_AMOUNT 16384
 #else
 #define TEXT_AMOUNT 4096
@@ -103,6 +104,11 @@
 
 extern void SetTimeSinceLastInputEvent();
 
+/* This the only where the definition seems to work (out of
+ * vga.c/vgaHW.c/vgaCmap.c).
+ */
+Bool clgd6225Lcd= FALSE;
+
 #ifdef MONOVGA
 /* DAC indices for white and black */
 #define WHITE_VALUE 0x3F
@@ -112,6 +118,8 @@ extern void SetTimeSinceLastInputEvent();
 
 static int currentGraphicsClock = -1;
 static int currentExternClock = -1;
+
+Bool vgaPowerSaver = FALSE;
 
 #define new ((vgaHWPtr)vgaNewVideoState)
 
@@ -194,6 +202,15 @@ unsigned char defaultDAC[768] =
 #endif /* NEED_SAVED_CMAP */
 
 /*
+ * With USE_ASM_SLOWBCOPY, the version in common_hw/SlowBcopy.s is used.
+ * This avoids port I/O during the copy (which causes problems with
+ * some hardware.
+ */
+#define USE_ASM_SLOWBCOPY
+#ifdef USE_ASM_SLOWBCOPY
+#define slowbcopy SlowBcopy
+#else
+/*
  * slowbcopy --
  *	slow version of bcopy for save/restore of font and text data.
  */
@@ -208,9 +225,10 @@ slowbcopy(src, dst, count)
   for (i = 0; i < count; i++)
   {
     *dst++ = *src++;
-    temp = inb(vgaIOBase + 0x0A);
+    outb(0x80, 0x00);
   }
 }
+#endif
 
 /*
  * vgaProtect --
@@ -230,7 +248,6 @@ vgaProtect(on)
       outb(0x3C4, 0x01);
       tmp = inb(0x3C5);
 
-      (*vgaSaveScreenFunc)(SS_START);
       outw(0x3C4, 0x0100);			/* start synchronous reset */
       outw(0x3C4, ((tmp | 0x20) << 8) | 0x01);	/* disable the display */
 
@@ -246,7 +263,6 @@ vgaProtect(on)
 
       outw(0x3C4, ((tmp & 0xDF) << 8) | 0x01);	/* reenable display */
       outw(0x3C4, 0x0300);			/* clear synchronousreset */
-      (*vgaSaveScreenFunc)(SS_FINISH);
 
       tmp = inb(vgaIOBase + 0x0A);
       outb(0x3C0, 0x20);			/* disable pallete access */
@@ -264,23 +280,34 @@ vgaSaveScreen (pScreen, on)
      ScreenPtr     pScreen;
      Bool          on;
 {
-  unsigned char   state;
+  unsigned char   state, state2;
 
   if (on)
     SetTimeSinceLastInputEvent();
   if (xf86VTSema) {
     outb(0x3C4,1);
     state = inb(0x3C5);
+    outb(vgaIOBase + 4, 0x17);
+    state2 = inb(vgaIOBase + 5);
   
-    if (on) state &= 0xDF;
-    else    state |= 0x20;
+    if (on) {
+      state &= 0xDF;
+      state2 |= 0x80;
+    } else {
+      state |= 0x20;
+      state2 &= ~0x80;
+    }
     
     /*
-     * turn off srceen if necessary
+     * turn off screen if necessary
      */
     (*vgaSaveScreenFunc)(SS_START);
     outw(0x3C4, 0x0100);              /* syncronous reset */
     outw(0x3C4, (state << 8) | 0x01); /* change mode */
+    if (vgaPowerSaver) {
+      outb(vgaIOBase + 4, 0x17);
+      outb(vgaIOBase + 5, state2);
+    }
     outw(0x3C4, 0x0300);              /* syncronous reset */
     (*vgaSaveScreenFunc)(SS_FINISH);
 
@@ -324,12 +351,12 @@ setExternClock(clock)
 	 * Make sure that the child doesn't inherit any I/O permissions it
 	 * shouldn't have.  It's better to put constraints on the development
 	 * of a clock program than to give I/O permissions to a bogus program
-	 * in someone's Xconfig file
+	 * in someone's XF86Config file
 	 */
 	for (i = 0; i < MAXSCREENS; i++)
 	  xf86DisableIOPorts(i);
         setuid(getuid());
-#if !defined(AMOEBA) && !defined(_MINIX)
+#if !defined(AMOEBA) && !defined(MINIX)
         /* set stdin, stdout to the consoleFD, and leave stderr alone */
         for (i = 0; i < 2; i++)
         {
@@ -500,6 +527,14 @@ vgaHWRestore(restore)
     outb(0x3C0,i); outb(0x3C0, restore->Attribute[i]);
   }
   
+  if (clgd6225Lcd)
+  {
+    for (i= 0; i<768; i++)
+    {
+      /* The LCD doesn't like white */
+      if (restore->DAC[i] == 63) restore->DAC[i]= 62;
+    }
+  }
   outb(0x3C6,0xFF);
   outb(0x3C8,0x00);
   for (i=0; i<768; i++)
@@ -614,7 +649,7 @@ vgaHWSave(save, size)
        * save the default lookup table
        */
       bcopy(defaultDAC, save->DAC, 768);
-      ErrorF("VGA256: Cannot read colourmap from VGA.");
+      ErrorF("%s: Cannot read colourmap from VGA.", vga256InfoRec.name);
       ErrorF("  Will restore with default\n");
     }
     else
@@ -866,7 +901,7 @@ vgaHWInit(mode, size)
   new->CRTC[16] = mode->VSyncStart & 0xFF;
   new->CRTC[17] = (mode->VSyncEnd & 0x0F) | 0x20;
   new->CRTC[18] = (mode->VDisplay -1) & 0xFF;
-  new->CRTC[19] = vga256InfoRec.virtualX >> 4;  /* just a guess */
+  new->CRTC[19] = vga256InfoRec.displayWidth >> 4;  /* just a guess */
   new->CRTC[20] = 0x00;
   new->CRTC[21] = mode->VSyncStart & 0xFF; 
   new->CRTC[22] = (mode->VSyncStart +1) & 0xFF;

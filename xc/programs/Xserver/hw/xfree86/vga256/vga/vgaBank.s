@@ -1,4 +1,5 @@
-/* $XConsortium: io.c,v 1.86 94/03/27 13:06:32 dpw Exp $ */
+/* $XConsortium: vgaBank.s,v 1.1 94/10/05 13:51:06 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaBank.s,v 3.1 1994/05/06 08:27:17 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -106,9 +107,15 @@ GLNAME(saveseg):
  * vgaSetReadWrite(p)
  *     register pointer p;
  * {
+ * #ifdef XF86VGA16
+ *   writeseg = ((unsigned long)p - vgaBase) >> vgaSegmentShift;
+ *   (vgaSetReadWriteFunc)(writeseg);
+ *   return (vgaWriteBottom + (((unsigned int)p - vgaBase) & vgaSegmentMask));
+ * #else
  *   writeseg = ((unsigned long)p - VGABASE) >> vgaSegmentShift;
  *   (vgaSetReadWriteFunc)(writeseg);
  *   return (vgaWriteBottom + ((unsigned int)p & vgaSegmentMask));
+ * #endif
  * }
  *
  */
@@ -118,7 +125,11 @@ GLNAME(vgaSetReadWrite):
 	MOV_L	(REGOFF(4,ESP),EAX)
 	PUSH_L	(ECX)
 	PUSH_L	(EDX)
+#ifdef XF86VGA16
+	SUB_L	(CONTENT(GLNAME(vgaBase)),EAX)
+#else
 	SUB_L	(VGABASE,EAX)
+#endif
 	MOV_L	(CONTENT(GLNAME(vgaSegmentShift)),ECX)
 	SHR_L	(CL,EAX)
 	MOV_L	(EAX,CONTENT(GLNAME(writeseg)))
@@ -127,6 +138,9 @@ GLNAME(vgaSetReadWrite):
 	POP_L	(EDX)
 	POP_L	(ECX)
 	MOV_L	(REGOFF(4,ESP),EAX)
+#ifdef XF86VGA16
+	SUB_L	(CONTENT(GLNAME(vgaBase)),EAX)
+#endif
 	AND_L	(CONTENT(GLNAME(vgaSegmentMask)),EAX)
 	ADD_L	(CONTENT(GLNAME(vgaWriteBottom)),EAX)
  	RET
@@ -212,9 +226,15 @@ GLNAME(vgaReadWritePrev):
  * vgaSetRead(p)
  *     register pointer p;
  * {
+ * #ifdef XF86VGA16
+ *   readseg = ((unsigned long)p - vgaBase) >> vgaSegmentShift;
+ *   (vgaSetReadFunc)(readseg);
+ *   return (vgaReadBottom + (((unsigned int)p - vgaBase) & vgaSegmentMask));
+ * #else
  *   readseg = ((unsigned long)p - VGABASE) >> vgaSegmentShift;
  *   (vgaSetReadFunc)(readseg);
  *   return (vgaReadBottom + ((unsigned int)p & vgaSegmentMask));
+ * #endif
  * }
  *
  */
@@ -224,7 +244,11 @@ GLNAME(vgaSetRead):
 	MOV_L	(REGOFF(4,ESP),EAX)
 	PUSH_L  (ECX)
 	PUSH_L	(EDX)
+#ifdef XF86VGA16
+	SUB_L	(CONTENT(GLNAME(vgaBase)),EAX)
+#else
 	SUB_L	(VGABASE,EAX)
+#endif
 	MOV_L	(CONTENT(GLNAME(vgaSegmentShift)),ECX)
 	SHR_L	(CL,EAX)
 	MOV_L	(EAX,CONTENT(GLNAME(readseg)))
@@ -233,6 +257,9 @@ GLNAME(vgaSetRead):
 	POP_L	(EDX)
 	POP_L	(ECX)
 	MOV_L	(REGOFF(4,ESP),EAX)
+#ifdef XF86VGA16
+	SUB_L	(CONTENT(GLNAME(vgaBase)),EAX)
+#endif
 	AND_L	(CONTENT(GLNAME(vgaSegmentMask)),EAX)
 	ADD_L	(CONTENT(GLNAME(vgaReadBottom)),EAX)
  	RET
@@ -318,9 +345,15 @@ GLNAME(vgaReadPrev):
  * vgaSetWrite(p)
  *     register pointer p;
  * {
+ * #ifdef XF86VGA16
+ *   writeseg = ((unsigned long)p - vgaBase) >> vgaSegmentShift;
+ *   (vgaSetWriteFunc)(writeseg);
+ *   return (vgaWriteBottom + (((unsigned int)p - vgaBase) & vgaSegmentMask));
+ * #else
  *   writeseg = ((unsigned long)p - VGABASE) >> vgaSegmentShift;
  *   (vgaSetWriteFunc)(writeseg);
  *   return (vgaWriteBottom + ((unsigned int)p & vgaSegmentMask));
+ * #endif
  * }
  *
  */
@@ -330,7 +363,11 @@ GLNAME(vgaSetWrite):
 	MOV_L	(REGOFF(4,ESP),EAX)
 	PUSH_L  (ECX)
 	PUSH_L	(EDX)
+#ifdef XF86VGA16
+	SUB_L	(CONTENT(GLNAME(vgaBase)),EAX)
+#else
 	SUB_L	(VGABASE,EAX)
+#endif
 	MOV_L	(CONTENT(GLNAME(vgaSegmentShift)),ECX)
 	SHR_L	(CL,EAX)
 	MOV_L	(EAX,CONTENT(GLNAME(writeseg)))
@@ -339,6 +376,9 @@ GLNAME(vgaSetWrite):
 	POP_L	(EDX)
 	POP_L	(ECX)
 	MOV_L	(REGOFF(4,ESP),EAX)
+#ifdef XF86VGA16
+	SUB_L	(CONTENT(GLNAME(vgaBase)),EAX)
+#endif
 	AND_L	(CONTENT(GLNAME(vgaSegmentMask)),EAX)
 	ADD_L	(CONTENT(GLNAME(vgaWriteBottom)),EAX)
  	RET

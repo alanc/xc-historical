@@ -1,4 +1,5 @@
-/* $XConsortium$ */
+/* $XConsortium: vga.h,v 1.1 94/10/05 13:51:06 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.h,v 3.4 1994/09/11 00:53:25 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -29,7 +30,7 @@
 
 #define VGA2_PATCHLEVEL "0"
 #define VGA16_PATCHLEVEL "0"
-#define VGA256_PATCHLEVEL "0"
+#define SVGA_PATCHLEVEL "0"
 
 #include "X.h"
 #include "misc.h"
@@ -94,7 +95,15 @@ typedef struct {
                                        interlaced modes */
   OFlagSet ChipOptionFlags;         /* option flags support by this driver */
   int ChipRounding;                 /* the horizontal resolution rounding */
-  
+  Bool ChipUseLinearAddressing;	    /* TRUE if driver has requested linear
+  				       addressing */
+  int ChipLinearBase;		    /* Physical base address of the linear
+  				       framebuffer */
+  int ChipLinearSize;		    /* Size of the linear framebuffer */
+  Bool ChipHas16bpp;		    /* Driver supports 16bpp */
+  Bool ChipHas32bpp;		    /* Driver supports 32bpp */
+  DisplayModePtr ChipBuiltinModes;  /* Pointer to builtin mode list */
+  int ChipClockScaleFactor;	    /* Factor to divide raw clocks by */
 } vgaVideoChipRec, *vgaVideoChipPtr;
 
 
@@ -116,6 +125,7 @@ extern int vgaSegmentShift;
 extern int vgaSegmentMask;
 extern int vgaIOBase;
 extern int vgaInterlaceType;
+extern int vgaBitsPerPixel;
 
 #if !defined(S3_SERVER) && !defined(MACH32_SERVER)
 #include "vgaBank.h"
@@ -124,6 +134,7 @@ extern int vgaInterlaceType;
 extern pointer vgaOrigVideoState;    /* buffers for all video information */
 extern pointer vgaNewVideoState;
 extern pointer vgaBase;              /* the framebuffer himself */
+extern pointer vgaLinearBase;
 
 
 typedef struct {
@@ -177,6 +188,9 @@ extern void vgaDoBitBlt();
 #endif
 #ifdef MACH32_SERVER
 #define vga256InfoRec mach32InfoRec
+#endif
+#ifdef AGX_SERVER
+#define vga256InfoRec agxInfoRec
 #endif
 extern ScrnInfoRec vga256InfoRec;
 
