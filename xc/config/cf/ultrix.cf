@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: ultrix.cf,v 1.51 93/09/04 16:07:29 rws Exp $
+XCOMM platform:  $XConsortium: ultrix.cf,v 1.52 93/09/12 20:01:36 rws Exp $
 
 #define OSName            Ultrix-32 4.3
 XCOMM operating system:  OSName
@@ -18,8 +18,6 @@ XCOMM operating system:  OSName
 #define UnalignedReferencesAllowed YES	       /* if arbitrary deref is okay */
 #if HasGcc
 #define BuildPexExt XqdssServer
-#else
-#define BuildPex NO /* compiler runs out of table space */
 #endif
 #endif
 
