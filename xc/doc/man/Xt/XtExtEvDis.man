@@ -200,7 +200,7 @@ Specifies when the event handler is to be called relative to other
 previously registered handlers.
 .IP \fIdisplay\fP 1i
 Specifies the display.
-.IP \fImin_event_type, max_event_type\fP 1i
+.IP \fImin_event_type,\ max_event_type\fP 1i
 Specifies the range of event types for this extension.
 .IP \fIevent\fP 1i
 Specifies a pointer to the event to be dispatched.
