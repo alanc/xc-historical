@@ -1,5 +1,5 @@
 /*
- * $XConsortium: viewres.c,v 1.26 90/02/07 12:00:54 jim Exp $
+ * $XConsortium: viewres.c,v 1.27 90/02/07 15:18:22 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -39,6 +39,7 @@
 #include <X11/Xaw/Toggle.h>
 #include <X11/Xaw/Text.h>
 #include <X11/Xaw/List.h>
+#include <X11/Xaw/Scrollbar.h>
 #include "Tree.h"
 #include <X11/Xmu/Converters.h>
 #include <X11/Xmu/CharSet.h>
@@ -96,7 +97,7 @@ static char *fallback_resources[] = {
 };
 
 static void HandleQuit(), HandleSetLableType(), HandleSetOrientation();
-static void HandleSelect(), HandleShowResources();
+static void HandleSelect(), HandleShowResources(), HandleScroll();
 static void set_labeltype_menu(), set_orientation_menu();
 static void build_tree(), set_node_labels();
 
@@ -106,6 +107,7 @@ static XtActionsRec viewres_actions[] = {
     { "SetOrientation", HandleSetOrientation },
     { "Select", HandleSelect },
     { "ShowResources", HandleShowResources },
+    { "Scroll", HandleScroll },
 };
 
 #define VIEW_VARIABLES 0
@@ -143,9 +145,12 @@ static struct _nametable {
     { "on", 1 },
     { "true", 1 },
     { "yes", 1 },
+}, scroll_nametable[] = {
+    { "backward", 0 },
+    { "forward", 1 },
 };
 
-static Widget treeWidget;
+static Widget treeWidget, viewportWidget;
 static Widget quitButton, viewButton, viewMenu, selectButton, selectMenu;
 static Widget view_widgets[VIEW_number];
 static Widget select_widgets[SELECT_number];
@@ -245,6 +250,7 @@ static void view_resources_callback (gw, closure, data)
     XawTreeForceLayout (treeWidget);
     XMapWindow (XtDisplay(treeWidget), XtWindow(treeWidget));
 }
+
 
 static void initialize_widgetnode_list (listp, sizep, n)
     WidgetNode ***listp;
@@ -436,7 +442,7 @@ main (argc, argv)
     int argc;
     char **argv;
 {
-    Widget toplevel, pane, box, viewport, dummy;
+    Widget toplevel, pane, box, dummy;
     XtAppContext app_con;
     Arg args[2];
     static XtCallbackRec callback_rec[2] = {{ NULL, NULL }, { NULL, NULL }};
@@ -545,9 +551,10 @@ main (argc, argv)
 
 
     XtSetArg (args[0], XtNbackgroundPixmap, None);
-    viewport = XtCreateManagedWidget ("viewport", viewportWidgetClass,
-				      pane, args, ONE);
-    treeWidget = XtCreateManagedWidget ("tree", treeWidgetClass, viewport,
+    viewportWidget = XtCreateManagedWidget ("viewport", viewportWidgetClass,
+					    pane, args, ONE);
+    treeWidget = XtCreateManagedWidget ("tree", treeWidgetClass,
+					viewportWidget,
 					NULL, 0);
     XtSetArg (args[0], XtNorientation, &orient);
 
@@ -710,6 +717,36 @@ static void HandleShowResources (w, event, params, num_params)
     } else {
 	do_single_arg (w, params, *num_params, boolean_nametable,
 		       XtNumber(boolean_nametable), view_resources_callback);
+    }
+}
+
+
+/* ARGSUSED */
+static void HandleScroll (w, event, params, num_params)
+    Widget w;
+    XEvent *event;
+    String *params;			/* sbname, direction */
+    Cardinal *num_params;
+{
+    Widget sb;
+     
+    if (*num_params != 2) {
+	XBell (XtDisplay(w), 0);
+	return;
+    }
+
+    if (sb = XtNameToWidget (viewportWidget, params[0])) {
+	Arg args[1];
+	float top;
+
+	XtSetArg (args[0], XtNtopOfThumb, &top);
+	XtGetValues (sb, args, ONE);
+
+	top += ((float) atoi(params[1])) / 100.0;
+	if (top < 0.0) top = 0.0;
+	else if (top > 1.0) top = 1.0;
+
+	XawScrollbarSetThumb (sb, top, -1.0);
     }
 }
 
