@@ -1,4 +1,4 @@
-/* $XConsortium: XStrKeysym.c,v 11.5 90/06/15 11:24:25 rws Exp $ */
+/* $XConsortium: XStrKeysym.c,v 11.6 90/07/26 18:31:38 rws Exp $ */
 /* Copyright 1985, 1987, 1990 Massachusetts Institute of Technology */
 
 #include "Xlibint.h"
@@ -92,7 +92,7 @@ KeySym XStringToKeysym(s)
 	KeySym val;
 	XrmQuark names[2];
 
-	names[0] = _XrmInternalStringToQuark(s, strlen(s), sig);
+	names[0] = _XrmInternalStringToQuark(s, p - s - 1, sig);
 	names[1] = NULLQUARK;
 	(void)XrmQGetResource(keysymdb, names, Qkeysym, &from_type, &result);
 	if (result.addr && (result.size > 1))
