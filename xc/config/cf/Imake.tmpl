@@ -1,6 +1,6 @@
 XCOMM -----------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-XCOMM $XConsortium: Imake.tmpl,v 1.215 94/03/28 15:24:39 gildea Exp $
+XCOMM $XConsortium: Imake.tmpl,v 1.216 94/03/28 17:10:53 matt Exp $
 XCOMM
 
 /*
@@ -116,6 +116,9 @@ XCOMM the platform-specific parameters - edit site.def to change
  _NULLCMD_ = @ echo -n
 #endif
 
+#ifndef CrossCompiling
+#define CrossCompiling		NO
+#endif
 #ifndef BourneShell			/* to force shell in makefile */
 #define BourneShell		/bin/sh
 #endif
@@ -300,6 +303,9 @@ XCOMM the platform-specific parameters - edit site.def to change
 #endif
 #ifndef LibmanDir
 #define LibmanDir $(MANSOURCEPATH)$(LIBMANSUFFIX)
+#endif
+#ifndef FileManDir
+#define FileManDir $(MANSOURCEPATH)$(FILEMANSUFFIX)
 #endif
 #ifndef ConfigSrc
 #define ConfigSrc $(TOP)/config
@@ -498,6 +504,9 @@ XCOMM the platform-specific parameters - edit site.def to change
 #endif
 #ifndef LexCmd
 #define LexCmd lex
+#endif
+#ifndef LexLib
+#define LexLib -ll
 #endif
 #ifndef YaccCmd
 #define YaccCmd yacc
@@ -722,6 +731,9 @@ XCOMM the platform-specific parameters - edit site.def to change
 #ifndef LibManSuffix
 #define LibManSuffix	3		/* use just one tab or cpp will die */
 #endif
+#ifndef FileManSuffix
+#define FileManSuffix	4		/* use just one tab or cpp will die */
+#endif
 #ifndef ExpandManNames
 #if SystemV
 #define ExpandManNames NO
@@ -784,6 +796,7 @@ XCOMM the platform-specific parameters - edit site.def to change
     MANSOURCEPATH = ManSourcePath	/* prefix for man page sources */
            MANDIR = ManDir		/* man pages for commands */
         LIBMANDIR = LibmanDir		/* man pages for library routines */
+       FILEMANDIR = FileManDir		/* man pages for config files */
 
                AR = ArCmd
   BOOTSTRAPCFLAGS = BootstrapCFlags	/* set if cpp does not have uniq sym */
@@ -815,6 +828,7 @@ CXXEXTRA_INCLUDES = CplusplusExtraIncludes
      INSTALLFLAGS = InstallFlags
                LD = LdCmd
               LEX = LexCmd
+           LEXLIB = LexLib
              YACC = YaccCmd
            CCYACC = CplusplusYaccCmd
              LINT = LintCmd
@@ -829,8 +843,9 @@ CXXEXTRA_INCLUDES = CplusplusExtraIncludes
   RANLIBINSTFLAGS = RanlibInstFlags
 #endif
                RM = RmCmd
-        MANSUFFIX = ManSuffix		/* suffix for man pages */
+        MANSUFFIX = ManSuffix		/* suffix for command man pages */
      LIBMANSUFFIX = LibManSuffix	/* suffix for library man pages */
+    FILEMANSUFFIX = FileManSuffix	/* suffix for config file man pages */
             TROFF = TroffCmd
          MSMACROS = MsMacros
               TBL = TblCmd
