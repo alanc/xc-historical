@@ -1,4 +1,4 @@
-/* $XConsortium: Xresource.h,v 1.34 91/04/11 20:02:12 rws Exp $ */
+/* $XConsortium: Xresource.h,v 1.35 91/04/13 10:50:30 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -131,9 +131,9 @@ typedef XrmQuarkList XrmNameList;
 
 typedef XrmQuark     XrmClass;
 typedef XrmQuarkList XrmClassList;
-#define XrmClassToString(class)		XrmQuarkToString(class)
-#define XrmStringToClass(class)		XrmStringToQuark(class)
-#define XrmStringToClassList(str,class)	XrmStringToQuarkList(str, class)
+#define XrmClassToString(c_class)	XrmQuarkToString(c_class)
+#define XrmStringToClass(c_class)	XrmStringToQuark(c_class)
+#define XrmStringToClassList(str,c_class) XrmStringToQuarkList(str, c_class)
 
 
 
