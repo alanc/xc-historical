@@ -15,16 +15,16 @@ without any express or implied warranty.
 
 ********************************************************/
 
-/* EXPERIMENTAL! THIS HAS NO OFFICIAL X CONSORTIUM BLESSING */
+/* THIS IS NOT AN X CONSORTIUM STANDARD */
 
-/* $XConsortium: shmstr.h,v 1.4 89/08/21 08:58:04 rws Exp $ */
+/* $XConsortium: shmstr.h,v 1.5 89/08/31 12:58:17 rws Exp $ */
 
 #include "XShm.h"
 
 #define SHMNAME "MIT-SHM"
 
 #define SHM_MAJOR_VERSION	1	/* current version numbers */
-#define SHM_MINOR_VERSION	0
+#define SHM_MINOR_VERSION	1
 
 #ifdef _XSHM_SERVER_
 typedef struct _ShmFuncs {
@@ -49,10 +49,12 @@ typedef struct {
     CARD16	minorVersion B16;	/* minor version of SHM protocol */
     CARD16	uid B16;
     CARD16	gid B16;
-    CARD32	pad0 B32;
-    CARD32	pad1 B32;
+    CARD8	pixmapFormat;
+    CARD8	pad0;
+    CARD16	pad1 B16;
     CARD32	pad2 B32;
     CARD32	pad3 B32;
+    CARD32	pad4 B32;
 } xShmQueryVersionReply;
 #define sz_xShmQueryVersionReply	32
 
