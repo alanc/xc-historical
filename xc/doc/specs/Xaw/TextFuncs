@@ -3,7 +3,7 @@ Text Functions
 .LP
 The following functions are provided as convenience routines for use with
 the Text widget.  Although many of these actions can be performed by
-modifing resources, the interfaces are frequently more efficient
+modifying resources, these interfaces are frequently more efficient.
 .NH 3
 Selecting Text
 .LP
@@ -60,7 +60,6 @@ Specifies the Text widget.
 Returns the beginning of the text selection.
 .IP \fIend_return\fP 1i
 Returns the end of the text selection.
-function returns.  
 .LP
 If the returned values are equal, no text is currently selected.
 .NH 3
@@ -85,8 +84,8 @@ Specifies the starting character position of the text replacement.
 Specifies the ending character position of the text replacement.
 .IP \fItext\fP 1i
 Specifies the text to be inserted into the file.  This function will not
-be able to replace text in Read-only text widgets.  It will also only
-be able to append text to an Append-only text widget.
+be able to replace text in read-only text widgets.  It will also only
+be able to append text to an append-only text widget.
 .LP
 This function may return the following values:
 .IP \fBXawEditDone\fP 1.25i
@@ -131,8 +130,8 @@ The \fBXawTextReplace\fP arguments \fIstart\fP and
 \fIend\fP represent the text source character positions for the
 existing text that is to be replaced by the text in the text block.
 The characters from \fIstart\fP up to
-but not including \fIend\fP are deleted, and the characters that are
-specified by the text block are inserted in their place.  If
+but not including \fIend\fP are deleted, and the characters
+specified on the text block are inserted in their place.  If
 \fIstart\fP and \fIend\fP are equal, no text is deleted and the new
 text is inserted after \fIstart\fP. 
 .NH 3
@@ -153,7 +152,7 @@ XawTextPosition XawTextSearch(\fIw\fP, \fIdir\fP, \fItext\fP)
 .IP \fIw\fP 1i
 Specifies the Text widget.
 .IP \fIdir\fP 1i
-Specifies the direction to search in.  Acceptable values are
+Specifies the direction to search in.  Legal values are
 \fBXawsdLeft\fP and \fBXawsdRight\fP.
 .IP \fItext\fP 1i
 Specifies a text block structure (see \fBXawTextReplace\fP for the
@@ -257,7 +256,7 @@ void XawTextSetSelectionArray(\fIw\fP, \fIsarray\fP)
 .br
       Widget \fIw\fP;
 .br
-      SelectionType * \fIsarray\fP;
+      XawTextSelectType * \fIsarray\fP;
 .FN
 .IP \fIw\fP 1i
 Specifies the Text widget.

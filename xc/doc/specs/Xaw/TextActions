@@ -7,8 +7,8 @@ Text Widget Actions.
 .IN "Actions" "Text Widgets" "@DEF@"
 .IN "Text Widgets" "Actions" "@DEF@"
 
-All editing functions are performed by translation manager actions thatn may
-be specified throught the \fBtranslations\fP resource in the Text widget.
+All editing functions are performed by translation manager actions that may
+be specified through the \fBtranslations\fP resource in the Text widget.
 .LP
 .sp
 .Ds 0
@@ -42,7 +42,7 @@ Miscellaneous	New Line
 	display-caret
 	focus-in	Kill
 	focus-in		kill-word
-	search			backword-kill-word
+	search			backward-kill-word
 	multiply		kill-selection
 	form-paragraph		kill-to-end-of-line
 	transpose-characters		kill-paragraph
@@ -61,9 +61,9 @@ Cursor Movement Actions\fP
 .br
 .ns
 .IP backward-character(\|) 2.0i
-These actions move the insert point forward or backward one
-character in the file.  If the insert point is at the end or beginning of a
-line this action will move the insert point to the next (or previous) line.
+These actions move the insert point forward or backward one character in
+the buffer.  If the insert point is at the end or beginning of a line
+this action will move the insert point to the next (or previous) line.
 .IP forward-word(\|) 2.0i
 .br
 .ns
@@ -87,19 +87,19 @@ insert point is already at the end or beginning of the line then no action is ta
 .br
 .ns
 .IP previous-line(\|) 2.0i
-These actions move the insert point up or down one line.  If the insert point is
-currently N characters from the beginning of the line then it will
-be N characters from the beginning of the next or previous line.  This
-currently causes problems with tabs.  If N is past the end of the line
-the the insert point is placed at the end of the line.
+These actions move the insert point up or down one line.  If the insert
+point is currently N characters from the beginning of the line then it
+will be N characters from the beginning of the next or previous line.
+If N is past the end of the line, the insert point is placed at the end
+of the line.
 .IP next-page(\|) 2.0i
 .br
 .ns
 .IP previous-page(\|) 2.0i
-These actions move the insert point up or down one page in the file.  One page
-is defined as the current height of the text widget.  So in a text
-widget that is 10 lines high, one page is 10 lines.  The
-insert point is always placed at the first character of a line by this action.
+These actions move the insert point up or down one page in the file.
+One page is defined as the current height of the text widget.  The
+insert point is always placed at the first character of the top line by
+this action.
 .IP beginning-of-file(\|) 2.0i
 .br
 .ns
@@ -111,11 +111,11 @@ amount necessary to make the new insert point location visible.
 .br
 .ns
 .IP scroll-one-line-down(\|) 2.0i
-These actions scroll the current text field up or down by one line.  They
-do not move the insert point.  Other than the scrollbars this is the only
-way that the insert point may be moved off of the visible text area.  The widget
-will be scrolled so that the insert point is back on the screen as soon as some
-other action is executed.
+These actions scroll the current text field up or down by one line.
+They do not move the insert point.  Other than the scrollbars this is
+the only way that the insert point may be moved off of the visible text
+area.  The widget will be scrolled so that the insert point is back on
+the screen as soon as some other action is executed.
 .NH 3
 Delete Actions
 .LP
@@ -132,8 +132,8 @@ appended to the end of the current line.
 .ns
 .IP delete-previous-word(\|) 2.0i
 These actions remove all characters between the insert point location and
-the next word boundary.  Word boundary is defined in the 
-\fIforward-word\fP action.
+the next word boundary.  A word boundary is defined as a Space, Tab or
+Carriage Return.
 .IP delete-selection(\|) 2.0i
 This action removes all characters in the current selection.
 The selection can be set with the selection actions.
@@ -147,44 +147,38 @@ If the insert point is between words then it will select the previous word.
 .IP select-all(\|) 2.0i
 This action selects the entire text buffer.
 .IP select-start(\|) 2.0i
-This action sets the insert point to the place in the window where
-the event occurred.  If this action is bound to a mouse button then
-the pointer location is used.  It will then begin a selection at
-this location. 
-If many of these selection actions occur quickly in sucession then the
-selection count mechanism will be invoked (see the section titled
-\fBText Selections for Application Programmers\fP for details).
+This action sets the insert point to the current pointer location.  It
+will then begin a selection at this location.  If many of these
+selection actions occur quickly in succession then the selection count
+mechanism will be invoked (see the section titled \fBText Selections for
+Application Programmers\fP for details).
 .IP select-adjust(\|) 2.0i
 This action allows a selection started with the \fIselect-start\fP
-action to be modified, as desctibed above.
+action to be modified, as described above.
 .IP select-end(\fIname\fP[,\fIname\fP,...]) 2.0i
-This action ends a text selection that began with the
-\fIselect-start\fP action, and asserts ownership of
-the selection or selections specified.  A \fIname\fP can be
-a selection (e.g. \fBPRIMARY\fP) or a cut buffer (e.g
-\fBCUT_BUFFER0\fP).  Note that case is important.  If no
-names are given, PRIMARY is asserted.
+This action ends a text selection that began with the \fIselect-start\fP
+action, and asserts ownership of the selection or selections specified.
+A \fIname\fP can be a selection (e.g. \fBPRIMARY\fP) or a cut buffer
+(e.g \fBCUT_BUFFER0\fP).  Note that case is important.  If no
+\fInames\fP are specified, \fBPRIMARY\fP is asserted. 
 .IP extend-start(\|) 2.0i
-This action finds the nearest end of the current selection, and moves
-it to the location in which the event occurred.  If this action is bound
-to a mouse button then the pointer location is used.  The
-selection can then be modified until an \fIextend-end\fP action occurs.
+This action finds the nearest end of the current selection, and moves it
+to the current pointer location.
 .IP extend-adjust(\|) 2.0i
-This action allows a selection started with an \fIextend-start\fP
-action to be modified.
+This action allows a selection started with an \fIextend-start\fP action
+to be modified.
 .IP extend-end(\fIname\fP[,\fIname\fP,...]) 2.0i
-This action ends a text selection that began with the
-\fIextend-start\fP action, and asserts ownership of
-the selection or selections specified.  A \fIname\fP can be
-a selection (e.g. \fBPRIMARY\fP) or a cut buffer (e.g
-\fBCUT_BUFFER0\fP).  Note that case is important.  If no
-names are given, PRIMARY is asserted.
-.IP insert-selection(\fIname\fP[,\fIname\fP,...]) 2.0i
-This action retrieves the value of the first (left-most) named selection that
-exists or the cut buffer that is not empty and inserts it into the
-text widget at the current insert point location. A \fIname\fP can be a
-selection (e.g. \fBPRIMARY\fP) or a cut buffer (e.g
-\fBCUT_BUFFER0\fP).  Note that case is important.
+This action ends a text selection that began with the \fIextend-start\fP
+action, and asserts ownership of the selection or selections specified.
+A \fIname\fP can be a selection (e.g. \fBPRIMARY\fP) or a cut buffer
+(e.g \fBCUT_BUFFER0\fP).  Note that case is important.  If no names are
+given, \fBPRIMARY\fP is asserted.
+.IP insert-selection(\fIname\fP[,\fIname\fP,...]) 2.0i 
+This action retrieves the value of the first (left-most) named selection
+that exists or the cut buffer that is not empty and inserts it into the
+Text widget at the current insert point location. A \fIname\fP can be a
+selection (e.g. \fBPRIMARY\fP) or a cut buffer (e.g \fBCUT_BUFFER0\fP).
+Note that case is important.
 .NH 3
 The New Line Actions
 .LP
@@ -207,21 +201,21 @@ Kill and Actions
 .IP backword-kill-word(\|) 2.0i
 These actions act exactly like the \fIdelete-next-word\fP and
 \fIdelete-previous-word\fP actions, but they stuff the word that was
-killed into the kill buffer (CUT_BUFFER_1).
+killed into the kill buffer (\fBCUT_BUFFER_1\fP).
 .IP kill-selection(\|) 2.0i
 This action deletes the current selection and stuffs the deleted text into
-the kill buffer (CUT_BUFFER_1).
+the kill buffer (\fBCUT_BUFFER_1\fP).
 .IP kill-to-end-of-line(\|) 2.0i
 This action deletes the entire line to the right of the insert point position,
-and stuffs the deleted text into the kill buffer (CUT_BUFFER_1).
+and stuffs the deleted text into the kill buffer (\fBCUT_BUFFER_1\fP).
 .IP kill-paragraph(\|) 2.0i
 This action deletes the current paragraph, if between paragraphs it deletes
 the paragraph above the insert point, and stuffs the deleted text into
-the kill buffer (CUT_BUFFER_1). 
+the kill buffer (\fBCUT_BUFFER_1\fP). 
 .IP kill-to-end-of-paragraph(\|) 2.0i
 This action deletes everything between the current insert point location and
 the next paragraph boundary, and stuffs the deleted text into the kill
-buffer (CUT_BUFFER_1). 
+buffer (\fBCUT_BUFFER_1\fP). 
 .NH 3
 Miscellaneous Actions
 .LP
@@ -241,11 +235,11 @@ calls XLookupString to translate the event into a (rebindable) Latin-1
 character (sequence) and inserts that sequence into the text at the 
 insert point position.
 .IP insert-string(\fIstring\fP[,\fIstring\fP,...]) 2.0i
-This action inserts each \fIstring\fP into the text at the
-insert point position.  Any \fIstring\fP beginning with the characters "0x" 
-and containing only
-valid hexadecimal digits in the remainder is interpreted as a hexadecimal
-constant and the corresponding single character is inserted instead.
+This action inserts each \fIstring\fP into the text at the insert point
+location.  Any \fIstring\fP beginning with the characters "0x" and
+containing only valid hexadecimal digits in the remainder is interpreted
+as a hexadecimal constant and the corresponding single character is
+inserted instead.
 .IP display-caret(\fIstate\fP,\fIwhen\fP) 2.0i
 This action allows the insert point to be turned on and off.
 The \fIstate\fP argument specifies the desired state of the insert point.
@@ -280,7 +274,7 @@ For further explanation of the search widget see the section on
 \fBText Searches\fP.
 .IP multiply(\fIvalue\fP) 2.0i
 The multiply action allows the user to multiply the effects of many of
-the text actions.  Thus the folowing action sequence
+the text actions.  Thus the following action sequence
 \fImultiply(10) delete-next-word()\fP will delete 10 words.  It does not
 matter whether these actions take place in one event or many events.
 Using the default translations the key sequence \fIControl-u,
@@ -300,25 +294,25 @@ This action will swap the position of the character to the left of the
 insert point with the character to the right of the insert point.  The insert point will then
 be advanced one character.  
 .IP no-op([\fIaction\fP]) 2.0i
-The no-op action makes no change to the text widget, and is mainly useful
-when used when overriding translations to remove a specific translation from
-the Text widget.  This action takes one optional argument.  If this argument 
-is \fIRingBell\fP then a beep is sent to the display.
+The no-op action makes no change to the text widget, and is mainly used
+to override translations.  This action takes one optional argument.  If
+this argument is \fIRingBell\fP then a beep is sent to the display.
 .NH 3
 Text Selections for Application Programmers
 .IN "text widgets" "Text Selections for Application Programmers"
 .LP
 The default behavior of the text selection array is described in the
 section called \fBText Selections for Users\fP.  To modify the selections
-a programmer must contruct a \fBXawTextSelectType\fP array (called the
+a programmer must construct a \fBXawTextSelectType\fP array (called the
 selection array), containing the selections desired, and pass this as
-the new value for the \fBselectionTypes\fP resource.  All selection
-arrays must end with the value \fBXawselectNull\fP.  The
-\fBselectionTypes\fP resource has no converter registered and cannot
-be modified through the resource manager.   
+the new value for the \fBselectionTypes\fP resource.  The selection
+array may also be modified using the \fBXawSetSelectionArray\fP
+function.  All selection arrays must end with the value
+\fBXawselectNull\fP.  The \fBselectionTypes\fP resource has no converter
+registered and cannot be modified through the resource manager.
 .LP
 The array contains a list of entries that will be called when the user
-attempts to select text in rapid sucession with the \fIselect-start\fP
+attempts to select text in rapid succession with the \fIselect-start\fP
 action (usually by clicking a pointer button).  The first entry in the
 selection array will be used when the \fIselect-start\fP action is
 initially called.  The next entry will be used when \fIselect-start\fP
@@ -385,9 +379,10 @@ change it until the text widget is destroyed or until a new selection
 array is set.
 .NH 2
 Default Translation Bindings
+.LP
 .IN "text widgets" "Default Translations"
 The following translations are defaults built into every Text widget.
-They can be overriden, or replaced by specifing a new value for the
+They can be overridden, or replaced by specifying a new value for the
 Text widget's \fBtranslations\fP resource.
 .LP
 .sp

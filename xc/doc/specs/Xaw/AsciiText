@@ -80,7 +80,7 @@ rightMargin	Margin	Position		2
 screen	Screen	Pointer	R	Parent's Screen
 scrollHorizontal	Scroll	XawTextScrollMode		XawtextScrollNever
 scrollVertical	Scroll	XawTextScrollMode		XawtextScrollNever
-selectTypes	SelectTypes	XtTextSelectType*		See above
+selectTypes	SelectTypes	TextSelectType		See above
 sensitive	Sensitive	Boolean		True
 string	String	String		NULL
 textSink	TextSink	Widget		An AsciiSink
