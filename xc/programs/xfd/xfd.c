@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xfd.c,v 1.23 90/11/10 11:28:08 rws Exp $
+ * $XConsortium: xfd.c,v 1.24 91/01/10 21:53:53 gildea Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -79,22 +79,22 @@ static struct _xfd_resources {
   char *nochar_format;
 } xfd_resources;
 
+#define Offset(field) XtOffsetOf(struct _xfd_resources, field)
+
 static XtResource Resources[] = {
-#define offset(field) XtOffset(struct _xfd_resources *, field)
   { "selectFormat", "SelectFormat", XtRString, sizeof(char *), 
-      offset(select_format), XtRString, DEF_SELECT_FORMAT },
+      Offset(select_format), XtRString, DEF_SELECT_FORMAT },
   { "metricsFormat", "MetricsFormat", XtRString, sizeof(char *), 
-      offset(metrics_format), XtRString, DEF_METRICS_FORMAT },
+      Offset(metrics_format), XtRString, DEF_METRICS_FORMAT },
   { "rangeFormat", "RangeFormat", XtRString, sizeof(char *), 
-      offset(range_format), XtRString, DEF_RANGE_FORMAT },
+      Offset(range_format), XtRString, DEF_RANGE_FORMAT },
   { "startFormat", "StartFormat", XtRString, sizeof(char *), 
-      offset(start_format), XtRString, DEF_START_FORMAT },
+      Offset(start_format), XtRString, DEF_START_FORMAT },
   { "nocharFormat", "NocharFormat", XtRString, sizeof(char *), 
-      offset(nochar_format), XtRString, DEF_NOCHAR_FORMAT },
-#undef offset
+      Offset(nochar_format), XtRString, DEF_NOCHAR_FORMAT },
 };
 
-
+#undef Offset
 
 usage()
 {

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: fontgrid.c,v 1.18 89/12/18 10:59:40 rws Exp $
+ * $XConsortium: fontgrid.c,v 1.19 90/10/29 11:30:02 dave Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -39,37 +39,38 @@ static void Destroy(), Resize(), paint_grid();
 static Boolean SetValues();
 static char stupidString[] = {'-','1'}; /* workaround scanf bug */
 
+#define Offset(field) XtOffsetOf(FontGridRec, fontgrid.field)
+
 static XtResource resources[] = {
-#define offset(field) XtOffset(FontGridWidget, fontgrid.field)
     { XtNfont, XtCFont, XtRFontStruct, sizeof(XFontStruct *),
-	offset(text_font), XtRString, (caddr_t) NULL },
+	Offset(text_font), XtRString, (caddr_t) NULL },
     { XtNcellColumns, XtCCellColumns, XtRInt, sizeof(int),
-	offset(cell_cols), XtRString, (caddr_t) "0" },
+	Offset(cell_cols), XtRString, (caddr_t) "0" },
     { XtNcellRows, XtCCellRows, XtRInt, sizeof(int),
-	offset(cell_rows), XtRString, (caddr_t) "0" },
+	Offset(cell_rows), XtRString, (caddr_t) "0" },
     { XtNcellWidth, XtCCellWidth, XtRInt, sizeof(int),
-	offset(cell_width), XtRString, (caddr_t) "0" },
+	Offset(cell_width), XtRString, (caddr_t) "0" },
     { XtNcellHeight, XtCCellHeight, XtRInt, sizeof(int),
-	offset(cell_height), XtRString, (caddr_t) "0" },
+	Offset(cell_height), XtRString, (caddr_t) "0" },
     { XtNstartChar, XtCStartChar, XtRLong, sizeof(long),
-	offset(start_char), XtRString, (caddr_t) stupidString },
+	Offset(start_char), XtRString, (caddr_t) stupidString },
     { XtNforeground, XtCForeground, XtRPixel, sizeof(Pixel),
-	offset(foreground_pixel), XtRString, (caddr_t) "XtDefaultForeground" },
+	Offset(foreground_pixel), XtRString, (caddr_t) "XtDefaultForeground" },
     { XtNcenterChars, XtCCenterChars, XtRBoolean, sizeof(Boolean),
-	offset(center_chars), XtRString, (caddr_t) "FALSE" },
+	Offset(center_chars), XtRString, (caddr_t) "FALSE" },
     { XtNboxChars, XtCBoxChars, XtRBoolean, sizeof(Boolean),
-	offset(box_chars), XtRString, (caddr_t) "FALSE" },
+	Offset(box_chars), XtRString, (caddr_t) "FALSE" },
     { XtNboxColor, XtCForeground, XtRPixel, sizeof(Pixel),
-	offset(box_pixel), XtRString, (caddr_t) "XtDefaultForeground" },
+	Offset(box_pixel), XtRString, (caddr_t) "XtDefaultForeground" },
     { XtNcallback, XtCCallback, XtRCallback, sizeof(caddr_t),
-	offset(callbacks), XtRCallback, (caddr_t) NULL },
+	Offset(callbacks), XtRCallback, (caddr_t) NULL },
     { XtNinternalPad, XtCInternalPad, XtRInt, sizeof(int),
-	offset(internal_pad), XtRString, (caddr_t) "4" },
+	Offset(internal_pad), XtRString, (caddr_t) "4" },
     { XtNgridWidth, XtCGridWidth, XtRInt, sizeof(int),
-	offset(grid_width), XtRString, (caddr_t) "1" },
-#undef offset
+	Offset(grid_width), XtRString, (caddr_t) "1" },
 };
 
+#undef Offset
 
 static char defaultTranslations[] = 
   "<ButtonPress>:  notify()";
