@@ -1,4 +1,4 @@
-/* $XConsortium: mi.h,v 1.2 88/08/30 17:11:02 keith Exp $ */
+/* $XConsortium: mi.h,v 1.3 88/09/06 15:48:17 jim Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -60,24 +60,32 @@ extern miDashPtr   miDashLine();
 extern void  miPushPixels();
 extern void  miGetPts(), miRoundCap(), miOneSegWide();
 extern int   miPtToAngle();
-extern    RegionPtr miRegionCreate();
-extern    void miRegionCopy();
-extern    void miRegionDestroy();
-extern    int miIntersect();
-extern    int miInverse();
-extern    int miUnion();
-extern    int miSubtract();
-extern    void miRegionReset();
-extern    void miTranslateRegion();
-extern    int miRectIn();
-extern	RegionPtr miRectsToRegion();
-extern    Bool miPointInRegion();
-extern    Bool miRegionNotEmpty();
-extern    void miRegionEmpty();
-extern    int miNumberRectsInRegion();
-extern    void miWindowExposures();    
-extern    BoxPtr miRegionExtents();
-extern    void miSendGraphicsExpose();
-extern    RegionPtr miHandleExposures();
+extern RegionPtr miRegionCreate();
+extern void miRegionInit();
+extern void miRegionCopy();
+extern void miRegionDestroy();
+extern void miRegionUninit();
+extern int miIntersect();
+extern int miInverse();
+extern int miUnion();
+extern int miSubtract();
+extern void miRegionReset();
+extern void miTranslateRegion();
+extern int miRectIn();
+extern void miRegionAppend();
+extern Bool miRegionValidate();
+extern RegionPtr miRectsToRegion();
+extern Bool miPointInRegion();
+extern Bool miRegionNotEmpty();
+extern void miRegionEmpty();
+extern int miNumberRectsInRegion();
+extern void miWindowExposures();    
+extern BoxPtr miRegionExtents();
+extern void miSendGraphicsExpose();
+extern RegionPtr miHandleExposures();
+extern void miRectAlloc();
+#ifdef DEBUG
+extern Bool miValidRegion();
+#endif
 
 #endif /* MI_H */
