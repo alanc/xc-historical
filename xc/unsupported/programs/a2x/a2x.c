@@ -1,4 +1,4 @@
-/* $XConsortium: a2x.c,v 1.38 92/04/05 15:04:20 rws Exp $ */
+/* $XConsortium: a2x.c,v 1.39 92/04/05 15:43:55 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -64,6 +64,7 @@ released automatically at next button or non-modifier key.
 #include <stdlib.h>
 #include <math.h> /* Sun needs it */
 #include <X11/Xlib.h>
+#include <X11/Xutil.h>
 #include <X11/extensions/XTest.h>
 #include <X11/Xos.h>
 #include <X11/keysym.h>
@@ -107,8 +108,8 @@ typedef struct _undo {
     int seq_len;
     char *undo;
     int undo_len;
-} undo;
-undo *undos[256];
+} Undo;
+Undo *undos[256];
 int curbscount = 0;
 Bool in_control_seq = False;
 
@@ -121,7 +122,13 @@ typedef struct {
     int bestx, besty;
     double best_dist;
     Bool recurse;
-} closest;
+} Closest;
+typedef struct {
+    int x1;
+    int y1;
+    int x2;
+    int y2;
+} BBox;
 
 void process();
 
@@ -508,11 +515,118 @@ do_warp(buf)
     }
 }
 
+Region
+compute_univ(puniv, wa)
+    Region puniv;
+    XWindowAttributes *wa;
+{
+    XRectangle rect;
+    Region univ;
+
+    rect.x = wa->x;
+    rect.y = wa->y;
+    rect.width = wa->width + (2 * wa->border_width);
+    rect.height = wa->height + (2 * wa->border_width);
+    univ = XCreateRegion();
+    XUnionRectWithRegion(&rect, univ, univ);
+    XIntersectRegion(puniv, univ, univ);
+    if (XEmptyRegion(univ)) {
+	XDestroyRegion(univ);
+	return NULL;
+    }
+    XSubtractRegion(puniv, univ, puniv);
+    return univ;
+}
+
+void
+compute_box(univ, box)
+    Region univ;
+    BBox *box;
+{
+    XRectangle rect;
+
+    XClipBox(univ, &rect);
+    box->x1 = rect.x;
+    box->y1 = rect.y;
+    box->x2 = rect.x + (int)rect.width;
+    box->y2 = rect.y + (int)rect.height;
+}
+
+void
+compute_point(univ, box, rec)
+    Region univ;
+    BBox *box;
+    Closest *rec;
+{
+    int lim;
+    int max;
+    int i;
+
+    lim = (box->x2 - box->x1) / 2;
+    i = (box->y2 - box->y1) / 2;
+    if (i > lim)
+	lim = i;
+    for (max = 0; max <= lim; max++) {
+	for (i = 0; i <= max; i++) {
+	    if (XPointInRegion(univ, rec->bestx - max, rec->besty - i)) {
+		rec->bestx -= max;
+		rec->besty -= i;
+		return;
+	    }
+	    if (XPointInRegion(univ, rec->bestx - max, rec->besty + i)) {
+		rec->bestx -= max;
+		rec->besty += i;
+		return;
+	    }
+	    if (XPointInRegion(univ, rec->bestx + max, rec->besty - i)) {
+		rec->bestx += max;
+		rec->besty -= i;
+		return;
+	    }
+	    if (XPointInRegion(univ, rec->bestx + max, rec->besty + i)) {
+		rec->bestx += max;
+		rec->besty += i;
+		return;
+	    }
+	    if (XPointInRegion(univ, rec->bestx - i, rec->besty - max)) {
+		rec->bestx -= i;
+		rec->besty -= max;
+		return;
+	    }
+	    if (XPointInRegion(univ, rec->bestx - i, rec->besty + max)) {
+		rec->bestx -= i;
+		rec->besty += max;
+		return;
+	    }
+	    if (XPointInRegion(univ, rec->bestx + i, rec->besty - max)) {
+		rec->bestx += i;
+		rec->besty -= max;
+		return;
+	    }
+	    if (XPointInRegion(univ, rec->bestx + i, rec->besty + max)) {
+		rec->bestx += i;
+		rec->besty += max;
+		return;
+	    }
+	}
+    }
+}
+
+Region
+destroy_region(univ)
+    Region univ;
+{
+    if (univ)
+	XDestroyRegion(univ);
+    return NULL;
+}
+
 Bool
-find_closest(rec, parent, pwa)
-    closest *rec;
+find_closest(rec, parent, pwa, puniv)
+    Closest *rec;
     Window parent;
     XWindowAttributes *pwa;
+    Region puniv;
 {
     Window *children;
     unsigned int nchild;
@@ -520,72 +634,69 @@ find_closest(rec, parent, pwa)
     int i;
     Bool found = False;
     double dist;
-    int x1, y1, x2, y2, x, y;
-    double xmult = 1.0;
-    double ymult = 1.0;
+    BBox box;
+    int x, y;
+    Region univ;
 
     XQueryTree(dpy, parent, &wa.root, &wa.root, &children, &nchild);
-    for (i = nchild; --i >= 0; ) {
+    univ = NULL;
+    for (i = nchild; --i >= 0; univ = destroy_region(univ)) {
 	if (!XGetWindowAttributes(dpy, children[i], &wa))
 	    continue;
 	if (wa.map_state != IsViewable)
 	    continue;
-	x1 = wa.x;
-	y1 = wa.y;
-	x2 = x1 + wa.width + (2 * wa.border_width);
-	y2 = y1 + wa.height + (2 * wa.border_width);
-	if (x1 >= pwa->width || x2 <= 0 || y1 >= pwa->height || y2 <= 0)
+	wa.x += pwa->x;
+	wa.y += pwa->y;
+	univ = compute_univ(puniv, &wa);
+	if (!univ)
 	    continue;
-	x1 += pwa->x;
-	y1 += pwa->y;
-	wa.x = x1;
-	wa.y = y1;
-	x2 += pwa->x;
-	y2 += pwa->y;
-	if (rec->recurse && find_closest(rec, children[i], &wa)) {
+	if (rec->recurse && find_closest(rec, children[i], &wa, univ))
 	    found = True;
-	}
 	if (rec->input && !(wa.all_event_masks & rec->input))
 	    continue;
-	if (rec->rootx >= x1 && rec->rootx < x2 &&
-	    rec->rooty >= y1 && rec->rooty < y2)
+	if (XEmptyRegion(univ))
 	    continue;
+	if (XPointInRegion(univ, rec->rootx, rec->rooty))
+	    continue;
+	compute_box(univ, &box);
 	switch (rec->dir) {
 	case 'U':
 	case 'D':
-	    if ((rec->dir == 'U') ? (y2 > rec->rooty) : (y1 < rec->rooty))
+	    if ((rec->dir == 'U') ?
+		(box.y2 > rec->rooty) : (box.y1 < rec->rooty))
 		continue;
-	    if (x2 < rec->rootx)
-		x = x2;
-	    else if (x1 > rec->rootx)
-		x = x1;
+	    if (box.x2 < rec->rootx)
+		x = box.x2;
+	    else if (box.x1 > rec->rootx)
+		x = box.x1;
 	    else
 		x = rec->rootx;
-	    y = (rec->dir == 'U') ? y2 : y1;
+	    y = (rec->dir == 'U') ? box.y2 : box.y1;
 	    break;
 	case 'R':
 	case 'L':
-	    if ((rec->dir == 'R') ? (x1 < rec->rootx) : (x2 > rec->rootx))
+	    if ((rec->dir == 'R') ?
+		(box.x1 < rec->rootx) : (box.x2 > rec->rootx))
 	    	continue;
-	    if (y2 < rec->rooty)
-		y = y2;
-	    else if (y1 > rec->rooty)
-		y = y1;
+	    if (box.y2 < rec->rooty)
+		y = box.y2;
+	    else if (box.y1 > rec->rooty)
+		y = box.y1;
 	    else
 		y = rec->rooty;
-	    x = (rec->dir == 'R') ? x1 : x2;
+	    x = (rec->dir == 'R') ? box.x1 : box.x2;
 	    break;
 	default:
-	    if (x2 < rec->rootx)
-		x = x2;
-	    else if (x1 > rec->rootx)
-		x = x1;
+	    if (box.x2 < rec->rootx)
+		x = box.x2;
+	    else if (box.x1 > rec->rootx)
+		x = box.x1;
 	    else
 		x = rec->rootx;
-	    if (y2 < rec->rooty)
-		y = y2;
-	    else if (y1 > rec->rooty)
-		y = y1;
+	    if (box.y2 < rec->rooty)
+		y = box.y2;
+	    else if (box.y1 > rec->rooty)
+		y = box.y1;
 	    else
 		y = rec->rooty;
 	}
@@ -593,8 +704,10 @@ find_closest(rec, parent, pwa)
 		rec->ymult * (y - rec->rooty) * (y - rec->rooty));
 	if (dist >= rec->best_dist)
 	    continue;
-	rec->bestx = (x1 + x2) / 2;
-	rec->besty = (y1 + y2) / 2;
+	rec->bestx = (box.x1 + box.x2) / 2;
+	rec->besty = (box.y1 + box.y2) / 2;
+	if (!XPointInRegion(univ, rec->bestx, rec->besty))
+	    compute_point(univ, &box, rec);
 	rec->best_dist = dist;
 	found = True;
     }
@@ -612,7 +725,9 @@ do_jump(buf)
     int screen;
     double mult = 10.0;
     char *endptr;
-    closest rec;
+    Closest rec;
+    Region univ;
+    XRectangle rect;
 
     rec.dir = 0;
     rec.recurse = False;
@@ -684,8 +799,15 @@ do_jump(buf)
 	wa.width = WidthOfScreen(ScreenOfDisplay(dpy, screen));
 	wa.height = HeightOfScreen(ScreenOfDisplay(dpy, screen));
     }
-    if (find_closest(&rec, root, &wa))
+    univ = XCreateRegion();
+    rect.x = wa.x;
+    rect.y = wa.y;
+    rect.width = wa.width;
+    rect.height = wa.height;
+    XUnionRectWithRegion(&rect, univ, univ);
+    if (find_closest(&rec, root, &wa, univ))
 	generate_warp(screen, rec.bestx, rec.besty);
+    XDestroyRegion(univ);
 }
 
 void
@@ -797,7 +919,7 @@ undo_stroke()
 void
 do_backspace()
 {
-    undo *u;
+    Undo *u;
     Bool partial = False;
 
     curbscount++;
@@ -909,7 +1031,7 @@ mark_controls(s, len)
 
 void
 free_undo(up)
-    undo *up;
+    Undo *up;
 {
     free(up->seq);
     free(up->undo);
@@ -922,7 +1044,7 @@ get_undofile()
     FILE *fp;
     char buf[1024];
     int i;
-    undo *up, **upp;
+    Undo *up, **upp;
     int line;
 
     fp = fopen(undofile, "r");
@@ -938,7 +1060,7 @@ get_undofile()
     for (; fgets(buf, sizeof(buf), fp); line++) {
 	if (buf[0] == '\n' || buf[0] == '!')
 	    continue;
-	up = (undo *)malloc(sizeof(undo));
+	up = (Undo *)malloc(sizeof(Undo));
 	up->seq = NULL;
 	up->undo = NULL;
 	i = 0;
