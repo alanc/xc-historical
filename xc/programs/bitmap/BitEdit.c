@@ -1,5 +1,5 @@
 /*
- * $XConsortium: BitEdit.c,v 1.17 91/01/11 14:34:19 dmatic Exp $
+ * $XConsortium: BitEdit.c,v 1.18 91/01/11 20:06:04 converse Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -364,13 +364,40 @@ void FixImage()
 	XFreePixmap(XtDisplay(bitmap_widget), old_image);
 }
 
+FixStatus()
+{
+    int n;
+    Arg wargs[2];
+    String str, label;
+
+    str = BWUnparseStatus(bitmap_widget);
+
+    n=0;
+    XtSetArg(wargs[n], XtNlabel, &label); n++;
+    XtGetValues(status_widget, wargs, n);
+
+    if (strcmp(str, label)) {
+      n = 0;
+      XtSetArg(wargs[n], XtNlabel, str); n++;
+      XtSetValues(status_widget, wargs, n);
+    }
+
+    /*XtFree(str); */
+}
+
+void FixUp()
+{
+  FixImage();
+  FixStatus();
+}
+
 void FixEntry(w, id)
     Widget w;
     int *id;
 {
     int n;
     Arg wargs[2];
-
+    Time dummy = 0;
 
     n = 0;
     
@@ -417,7 +444,8 @@ void FixEntry(w, id)
 	break;
 
     case Paste:
-	XtSetArg(wargs[n], XtNsensitive, BWQueryStored(bitmap_widget)); n++;
+	XtSetArg(wargs[n], XtNsensitive, 
+		 BWQuerySelection(bitmap_widget, dummy)); n++;
 	break;
 
     default:
@@ -440,27 +468,14 @@ void FixMenu(w, event)
 	FixEntry(edit_menu[i].widget, &edit_menu[i].id);
 }
 
-FixStatus()
-{
-    int n;
-    Arg wargs[2];
-    String str;
-
-    str = BWUnparseStatus(bitmap_widget);
-    
-    n = 0;
-    XtSetArg(wargs[n], XtNlabel, str); n++;
-    XtSetValues(status_widget, wargs, n);
-}
-
 static int zero = 0;
 #define Plain  (char *)&zero,sizeof(int)
 /* ARGSUSED */
-void TheCallback(w, id)
+void TheCallback(w, clientData, callData)
      Widget w;           /* not used */
-     int   *id;
+     XtPointer clientData, callData;
 {
-    
+    int *id = (int *)clientData;
     switch (*id) {
 	
     case New:
@@ -925,9 +940,7 @@ void DoSaveAs()
 
 void DoResize()
 {
-  char x;
   Dimension width, height;
-
   format = "";
  RetryResize:
   if (PopupDialog(input_dialog, "Resize to WIDTHxHEIGHT:",
@@ -949,7 +962,6 @@ void DoResize()
 
 void DoRescale()
 {
-  char x;
   Dimension width, height;
 
   format = "";
@@ -991,7 +1003,7 @@ void DoBasename()
   }
 }
 
-void DoQuit(w)
+void DoQuit(w) /* ARGSUSED */
     Widget w;
 {
   if (BWQueryChanged(bitmap_widget)) {
@@ -1154,7 +1166,7 @@ void main(argc, argv)
     
     XtRealizeWidget(image_shell);
 
-    Notify(bitmap_widget, FixImage);
+    BWNotify(bitmap_widget, FixUp);
 
     FixStatus();
 

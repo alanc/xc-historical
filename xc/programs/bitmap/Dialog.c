@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Dialog.c,v 1.7 90/12/08 17:29:35 dmatic Exp $
+ * $XConsortium: Dialog.c,v 1.8 91/01/11 14:34:39 dmatic Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -53,10 +53,11 @@ static DialogButton dialog_buttons[] = {
 static unsigned long selected;
 
 /* ARGSUSED */
-static void SetSelected(w, name)
+static void SetSelected(w, clientData, callData) /* ARGSUSED */
      Widget w;
-     String name;
+     XtPointer clientData, callData;
 {
+    String name = (String)clientData;
     int i;
     
     for (i = 0; i < XtNumber(dialog_buttons); i++) 
@@ -71,14 +72,17 @@ static void SetDialogButton(w, event, argv, argc)
      String *argv;
      Cardinal *argc;  
 {
-  String button_name[80];
+  char button_name[80];
+  XtPointer dummy = NULL;
   int i;
 
   for (i = 0; i < *argc; i++) {
     XmuCopyISOLatin1Lowered (button_name, argv[i]);
-    SetSelected(w, button_name);
+    SetSelected(w, button_name, dummy);
   }
 }
+
+static Boolean firstTime = True;
 
 Dialog CreateDialog(top_widget, name, options)
      Widget top_widget;
@@ -91,8 +95,10 @@ Dialog CreateDialog(top_widget, name, options)
     popup = (Dialog) XtMalloc(sizeof(_Dialog));
 
     if (popup) {
-	XtAddActions(actions_table, XtNumber(actions_table));
-	
+        if (firstTime) {
+	  XtAddActions(actions_table, XtNumber(actions_table));
+	  firstTime = False;
+	}
 	popup->top_widget = top_widget;
 	popup->shell_widget = XtCreatePopupShell(name, 
 						 transientShellWidgetClass, 
