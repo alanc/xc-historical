@@ -1,7 +1,7 @@
 /*
  * xrdb - X resource manager database utility
  *
- * $XConsortium: xrdb.c,v 11.43 91/05/11 15:45:24 gildea Exp $
+ * $XConsortium: xrdb.c,v 11.44 91/05/16 09:41:42 rws Exp $
  */
 
 /*
@@ -815,13 +815,18 @@ StoreProperty(dpy, root, res_prop)
     unsigned char *buf = (unsigned char *)buffer.buff;
     int max = (XMaxRequestSize(dpy) << 2) - 28;
 
-    while (len > max) {
-	XChangeProperty(dpy, root, res_prop, XA_STRING, 8, mode, buf, max);
-	buf += max;
-	len -= max;
-	mode = PropModeAppend;
+    if (len > max) {
+	XGrabServer(dpy);
+	do {
+	    XChangeProperty(dpy, root, res_prop, XA_STRING, 8, mode, buf, max);
+	    buf += max;
+	    len -= max;
+	    mode = PropModeAppend;
+	} while (len > max);
     }
     XChangeProperty(dpy, root, res_prop, XA_STRING, 8, mode, buf, len);
+    if (mode != PropModeReplace)
+	XUngrabServer(dpy);
 }
 
 Process(scrno, doScreen, execute)
