@@ -137,7 +137,8 @@ This option indicates that operation should be performed on the
 screen-independent resource property (RESOURCE_MANAGER), as well as
 the screen-specific property (SCREEN_RESOURCES) on every screen of the
 display.  For example, when used in conjunction with \fI-query\fP,
-the contents of all properties are output.  For \fI-load\fP and \fI-merge\fP,
+the contents of all properties are output.  For \fI-load\fP, -fI-override\fP
+and \fI-merge\fP,
 the input file is processed once for each screen.  The resources which occur
 in common in the output for every screen are collected, and these are applied
 as the screen-independent resources.  The remaining resources are applied
@@ -154,12 +155,12 @@ the SCREEN_RESOURCES property of the default screen of the display.
 .B \-screens
 This option indicates that the operation should be performed on
 the SCREEN_RESOURCES property of each screen of the display.
-For \fI-load\fP and \fI-merge\fP, the input file is processed for
-each screen.
+For \fI-load\fP, \fI-override\fP and \fI-merge\fP, the input file is
+processed for each screen.
 .TP 8
 .B \-n
 This option indicates that changes to the specified properties (when used with
-\fI-load\fP or \fI-merge\fP)
+\fI-load\fP, \fI-override\fP or \fI-merge\fP)
 or to the resource file (when used with \fI-edit\fP) should be shown on the
 standard output, but should not be performed.
 .TP 8
@@ -199,9 +200,14 @@ This option indicates that the input should be loaded as the new value
 of the specified properties, replacing whatever was there (i.e.
 the old contents are removed).  This is the default action.
 .TP 8
+.B \-override
+This option indicates that the input should be added to, instead of
+replacing, the current contents of the specified properties.
+New entries override previous entries.
+.TP 8
 .B \-merge
-This option indicates that the input should be merged with, instead of
-replacing, the current contents of the specified properties.  
+This option indicates that the input should be merged and sorted with,
+instead of replacing, the current contents of the specified properties.  
 Note that this option does a
 lexicographic sorted merge of the two inputs, which is almost certainly
 not what you want, but remains for backward compatibility.
