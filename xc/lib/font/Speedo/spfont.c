@@ -1,4 +1,4 @@
-/* $XConsortium: spfont.c,v 1.4 91/05/11 13:36:45 rws Exp $ */
+/* $XConsortium: spfont.c,v 1.5 91/05/29 15:28:16 keith Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -452,6 +452,8 @@ get_sp_glyphs(pFont, count, chars, charEncoding, glyphCount, glyphs)
 
     case Linear8Bit:
     case TwoD8Bit:
+	if (pFont->info.firstRow > 0)
+	    break;
 	if (pFont->info.allExist && pDefault) {
 	    while (count--) {
 		c = (*chars++) - firstCol;
@@ -510,6 +512,8 @@ get_sp_glyphs(pFont, count, chars, charEncoding, glyphCount, glyphs)
     return Successful;
 }
 
+static CharInfoRec nonExistantChar;
+
 static int
 get_sp_metrics(pFont, count, chars, charEncoding, glyphCount, glyphs)
     FontPtr     pFont;
@@ -522,23 +526,15 @@ get_sp_metrics(pFont, count, chars, charEncoding, glyphCount, glyphs)
     int         ret;
     SpeedoFontPtr spf;
     int         i;
+    CharInfoPtr	oldDefault;
 
     spf = (SpeedoFontPtr) pFont->fontPrivate;
-    if (!spf->pDefault)
-	spf->pDefault = &junkDefault;
+    oldDefault = spf->pDefault;
+    spf->pDefault = &nonExistantChar;
     ret = get_sp_glyphs(pFont, count, chars, charEncoding,
 			glyphCount, (CharInfoPtr *) glyphs);
 
-    if (ret == Successful) {
-	if (spf->pDefault == &junkDefault) {
-	    for (i = 0; i < *glyphCount; i++) {
-		if (glyphs[i] == (xCharInfo *) & junkDefault)
-		    glyphs[i] = 0;
-	    }
-	}
-    }
-    if (spf->pDefault == &junkDefault)
-	spf->pDefault = 0;
+    spf->pDefault = oldDefault;
     return ret;
 }
 

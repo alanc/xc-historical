@@ -1,4 +1,4 @@
-/* $XConsortium: fsconvert.c,v 1.3 91/05/13 16:42:13 gildea Exp $ */
+/* $XConsortium: fsconvert.c,v 1.4 91/05/14 15:40:29 rws Exp $ */
 /*
  * Copyright 1990 Network Computing Devices
  *
@@ -249,6 +249,8 @@ _fs_get_glyphs(pFont, count, chars, charEncoding, glyphCount, glyphs)
 
     case Linear8Bit:
     case TwoD8Bit:
+	if (pFont->info.firstRow > 0)
+	    break;
 	if (pFont->info.allExist && pDefault) {
 	    while (count--) {
 		c = (*chars++) - firstCol;
