@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.90 91/07/30 22:00:44 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.91 91/09/09 14:50:00 rws Exp $
 #define DoNormalLib NormalLibXt
 #define DoSharedLib SharedLibXt
 #define DoDebugLib DebugLibXt
@@ -22,6 +22,10 @@ XTWARNINGPREFIX = XtWarningPrefix
 
 #if UnalignedReferencesAllowed
   ALIGN_DEFINES = -DUNALIGNED
+#endif
+#if DoSharedLib && defined(SharedAllocateLocalDefines)
+#undef AllocateLocalDefines
+#define AllocateLocalDefines SharedAllocateLocalDefines
 #endif
         DEFINES = AllocateLocalDefines $(ALIGN_DEFINES)
      DB_DEFINES = -DERRORDB=\"$(LIBDIR)/XtErrorDB\" \
