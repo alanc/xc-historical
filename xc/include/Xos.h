@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xos.h,v 1.41 91/05/04 12:00:56 rws Exp $
+ * $XConsortium: Xos.h,v 1.42 91/05/11 23:24:53 rws Exp $
  * 
  * Copyright 1987 by the Massachusetts Institute of Technology
  *
@@ -76,6 +76,10 @@
  * Get open(2) constants
  */
 #ifdef X_NOT_POSIX
+#include <fcntl.h>
+#ifdef CRAY
+#include <unistd.h>
+#endif
 #include <sys/file.h>
 #else
 #if defined(_POSIX_SOURCE) || !defined(macII)
