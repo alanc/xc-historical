@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: main.c,v 1.103 89/03/02 13:28:24 jim Exp $";
+static char rcs_id[] = "$XConsortium: main.c,v 1.104 89/03/06 10:38:12 jim Exp $";
 #endif	/* lint */
 
 /*
@@ -262,12 +262,6 @@ static struct _resource {
     Boolean utmpInhibit;
     Boolean sunFunctionKeys;	/* %%% should be widget resource? */
 } resource;
-
-#ifndef GETTY_EXE
-#define GETTY_EXE "/etc/getty"
-#endif /* GETTY_EXE */
-
-static char *getty_program = GETTY_EXE;
 
 /* used by VT (charproc.c) */
 
@@ -972,8 +966,6 @@ spawn ()
 /* 
  *  Inits pty and tty and forks a login process.
  *  Does not close fd Xsocket.
- *  If getty,  execs getty rather than csh and uses std fd's rather
- *  than opening a pty/tty pair.
  *  If slave, the pty named in passedPty is already open for use
  */
 {
@@ -2003,64 +1995,6 @@ char *fmt;
 #endif	/* TIOCNOTTY */
 }
 
-checklogin() 
-{
-	register int ts, i;
-	register struct passwd *pw;
-#ifdef USE_SYSV_UTMP
-	char *name;
-	struct utmp utmp;
-	struct utmp *utptr;
-#else /* not USE_SYSV_UTMP */
-	struct utmp utmp;
-#endif /* USE_SYSV_UTMP */
-
-#ifdef USE_SYSV_UTMP
-	(void) setutent ();
-	/* set up entry to search for */
-	(void) strncpy(utmp.ut_id,ttydev + strlen(ttydev) - 2,
-	 sizeof (utmp.ut_id));
-	utmp.ut_type = DEAD_PROCESS;
-
-	/* position to entry in utmp file */
-	utptr = getutid(&utmp);
-
-	/* entry must:
-	 *  - exist,
-	 *  - have a name in ut_user,
-	 *  - that is not GETTY (seems to null it out in this case, but
-	 *    better to be safe),
-	 *  - have an entry in /etc/utmp for that user.
-	 *
-	 * BTW, endutent() seems to zero out utptr.
-	 */
-	if (!utptr || !*utptr->ut_user || !XStrCmp(utptr->ut_user, "GETTY") ||
-	 (pw = getpwnam(utptr->ut_name)) == NULL) {
-		endutent();
-		return(FALSE);
-	}
-	endutent();
-#else	/* not USE_SYSV_UTMP */
-	ts = tslot > 0 ? tslot : -tslot;
-	if((i = open(etc_utmp, O_RDONLY)) < 0)
-		return(FALSE);
-	lseek(i, (long)(ts * sizeof(struct utmp)), 0);
-	ts = read(i, (char *)&utmp, sizeof(utmp));
-	close(i);
-	if(ts != sizeof(utmp) || 
-	 !*utmp.ut_name || (pw = getpwnam(utmp.ut_name)) == NULL)
-		return(FALSE);
-#endif	/* USE_SYSV_UTMP */
-	chdir(pw->pw_dir);
-	/* This is kind of ugly since we won't be able to clean up /etc/utmp
-	 * ourselves, but it shouldn't be too bad, since we will be kicked
-	 * off right away again by init and  will clean things up at that time.
-	 */
-	setgid(pw->pw_gid);
-	setuid(pw->pw_uid);
-	L_flag = 0;
-	return(TRUE);
-}
 
 remove_termcap_entry (buf, str)
     char *buf;
