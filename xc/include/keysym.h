@@ -1,4 +1,4 @@
-/* $XConsortium: keysym.h,v 1.12 88/09/06 15:56:09 jim Exp $ */
+/* $XConsortium: keysym.h,v 1.13 91/03/13 20:09:49 rws Exp $ */
 
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -26,6 +26,7 @@ SOFTWARE.
 
 /* default keysyms */
 #define XK_MISCELLANY
+#define XK_XKB_KEYS
 #define XK_LATIN1
 #define XK_LATIN2
 #define XK_LATIN3
