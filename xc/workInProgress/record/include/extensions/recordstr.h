@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: recordstr.h,v 1.1 94/01/29 17:43:53 rws Exp $ */
 /***************************************************************************
  * Copyright 1994 Network Computing Devices;
  * Portions Copyright 1988 by Digital Equipment Corporation and the
@@ -24,7 +24,7 @@
 
 #include <X11/Xmd.h>
 
-#define globaldef 
+#define globaldef
 #define globalref extern
 
 typedef int  (*int_function)();
@@ -85,29 +85,29 @@ typedef struct
 {
     BOOL 	       enabled;
     CARD8              pad0;  
-    CARD16             pad1 B16; 
+    CARD16             pad1 B16;
     XRecordFlags       intercepted;
 } XRecordState; /* size 36 */
 
-typedef struct 
+typedef struct
 {
     CARD8  reqType;
     CARD8  minor_opcode;
     CARD16 length B16;
-    CARD32 pad0 B32;     
+    CARD32 pad0 B32;
 } xRecordReq;
 #define sz_xRecordReq 			8
 
 typedef struct {
-    CARD8       reqType;        
-    CARD8       minor_opcode;  
+    CARD8       reqType;
+    CARD8       minor_opcode;
     CARD16      length B16;
     CARD16      majorVersion B16;
     CARD16      minorVersion B16;
 } xRecordQueryVersionReq;
 #define sz_xRecordQueryVersionReq 	8
-  
-typedef struct 
+
+typedef struct
 {
     CARD8     	reqType;
     CARD8     	minor_opcode;
@@ -115,18 +115,18 @@ typedef struct
     XRecordConfig cid B32;
     XRecordFlags  record_flags;
 } xRecordCreateConfigReq;
-#define sz_xRecordCreateConfigReq 	40 
+#define sz_xRecordCreateConfigReq 	40
 
-typedef struct 
+typedef struct
 {
     CARD8     	reqType;
     CARD8     	minor_opcode;
     CARD16    	length B16;
     XRecordConfig cid B32;
 } xRecordFreeConfigReq;
-#define sz_xRecordFreeConfigReq 	8 
+#define sz_xRecordFreeConfigReq 	8
 
-typedef struct 
+typedef struct
 {
     CARD8     	reqType;
     CARD8     	minor_opcode;
@@ -134,20 +134,20 @@ typedef struct
     XRecordConfig cid B32;
     CARD32      id_base B32 ;
     XRecordFlags  record_flags;
-    BOOL	add; 
+    BOOL	add;
 } xRecordChangeConfigReq;
 #define sz_xRecordChangeConfigReq 	48
 
-typedef struct 
+typedef struct
 {
     CARD8     	reqType;
     CARD8     	minor_opcode;
     CARD16    	length B16;
     XRecordConfig cid B32;
 } xRecordGetConfigReq;
-#define sz_xRecordGetConfigReq 		8   
+#define sz_xRecordGetConfigReq 		8
 
-typedef struct 
+typedef struct
 {
     CARD8     	reqType;
     CARD8     	minor_opcode;
@@ -155,9 +155,9 @@ typedef struct
     XRecordConfig cid B32;
     BOOL        enable;
     CARD8       pad0;
-    CARD16      pad6 B16; 
+    CARD16      pad6 B16;
 } xRecordEnableConfigReq;
-#define sz_xRecordEnableConfigReq 	12 
+#define sz_xRecordEnableConfigReq 	12
 
 typedef struct
 {
@@ -173,23 +173,23 @@ typedef struct
     CARD16  minorVersion B16; 	
 } XRecordQueryVersionReply;
 
-typedef struct 
+typedef struct
 {
-    XRecordReplyHdr 	 hdr; 
+    XRecordReplyHdr 	 hdr;
     CARD16  majorVersion B16;
     CARD16  minorVersion B16; 	
     CARD32  pad1	 B32;
     CARD32  pad2	 B32;
     CARD32  pad3	 B32;
     CARD32  pad4	 B32;
-    CARD32  pad5	 B32; 
+    CARD32  pad5	 B32;
  } xRecordQueryVersionReply;
-#define sz_xRecordQueryVersionReply  	32 
+#define sz_xRecordQueryVersionReply  	32
 
-typedef struct 
+typedef struct
 {
     XRecordReplyHdr 	 hdr;
-    XRecordState         record_state; 
+    XRecordState         record_state;
 } xRecordGetConfigReply;
 #define sz_xRecordGetConfigReply  	44
 
@@ -204,19 +204,21 @@ typedef struct
    } u;
 } XRecordDatum;
 
-typedef struct 
+typedef struct
 {
     XRecordReplyHdr     hdr;
     CARD32        	nReplies B32;
     CARD32        	id_base B32;
-    CARD32        	client_seq B32; 
+    CARD32        	client_seq B32;
     CARD8         	direction;
     BOOL          	client_swapped;
-    XRecordDatum    data;
+    CARD16		pad0;
+    CARD32		pad1;
+    CARD32		pad2;
 } xRecordEnableConfigReply;
-#define sz_xRecordEnableConfigReply 	56
+#define sz_xRecordEnableConfigReply 	32
 
-typedef struct 
+typedef struct
 {
     CARD32        replies_following_hint B32;
     CARD32        id_base B32;
@@ -224,5 +226,5 @@ typedef struct
     CARD8         direction;
     BOOL          client_swapped;
     XRecordDatum    data;
-} XRecordEnableCGReply;  
+} XRecordEnableCGReply;
 
