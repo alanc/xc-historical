@@ -4,7 +4,7 @@
 
 /**/###########################################################################
 /**/# Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-/**/# $XConsortium: Imake.tmpl,v 1.55 89/10/03 08:52:55 jim Exp $
+/**/# $XConsortium: Imake.tmpl,v 1.56 89/10/03 09:39:25 jim Exp $
 /**/#
 /**/# Platform-specific parameters may be set in the appropriate .cf
 /**/# configuration files.  Site-wide parameters may be set in the file
@@ -275,6 +275,13 @@
 #define HasSunOSSharedLibraries NO
 #endif
 
+#ifndef SharedCodeDef
+#if HasSunOSSharedLibraries
+#define SharedCodeDef -DSHAREDCODE
+#else
+#define SharedCodeDef /**/
+#endif
+#endif
 #ifndef SharedLibraryDef
 #if HasSunOSSharedLibraries
 #define SharedLibraryDef -DSUNSHLIB	/* eventually will be SVR4SHLIB... */
@@ -526,6 +533,7 @@
            MFLAGS = -$(MAKEFLAGS)
 #endif
 #if HasSharedLibraries
+    SHAREDCODEDEF = SharedCodeDef
          SHLIBDEF = SharedLibraryDef
 #endif
 
