@@ -1,5 +1,5 @@
 
-/* $XConsortium: sunCfb.c,v 1.14 94/04/17 20:29:34 kaleb Exp $ */
+/* $XConsortium: sunCfb.c,v 1.15 94/05/18 11:17:56 kaleb Exp $ */
 
 /*
 Copyright (c) 1990  X Consortium
@@ -86,6 +86,9 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 #include "sun.h"
 #include "cfb/cfb.h"
+#include "mi/miline.h"
+
+#define GXZEROLINEBIAS	(OCTANT1 | OCTANT3 | OCTANT4 | OCTANT6)
 
 static void CGUpdateColormap(pScreen, dex, count, rmap, gmap, bmap)
     ScreenPtr	pScreen;
@@ -450,6 +453,9 @@ Bool sunCG6Init (screen, pScreen, argc, argv)
 	    sunFbs[screen].info.fb_width,
 	    sunFbs[screen].info.fb_depth))
 	return FALSE;
+    if (sunNoGX == FALSE) {
+	miSetZeroLineBias(pScreen, GXZEROLINEBIAS);
+    }
     CGScreenInit (pScreen);
     if (!sunScreenInit (pScreen))
 	return FALSE;
