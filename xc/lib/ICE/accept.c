@@ -1,4 +1,4 @@
-/* $XConsortium: accept.c,v 1.1 93/08/19 18:25:20 mor Exp $ */
+/* $XConsortium: accept.c,v 1.2 93/08/20 15:36:11 rws Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -276,6 +276,8 @@ int fd;
 
     iceConn->scratch = NULL;
     iceConn->scratch_size = 0;
+
+    iceConn->saved_reply_waits = NULL;
 
     iceConn->process_msg_info = NULL;
 
