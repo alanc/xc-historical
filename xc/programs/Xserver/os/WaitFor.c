@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: WaitFor.c,v 1.25 87/09/13 20:31:42 sun Exp $ */
+/* $Header: WaitFor.c,v 1.26 88/05/16 17:37:47 keith Exp $ */
 
 /*****************************************************************
  * OS Depedent input routines:
@@ -147,7 +147,11 @@ WaitForSomething(pClientsReady, nready, pNewClients, nnew)
             {
 		if (i < 0) 
 		    if (selecterr == EBADF)    /* Some client disconnected */
+		    {
 	            	CheckConnections ();
+			if (! ANYSET (AllClients))
+			    return;
+		    }
 		    else if (selecterr != EINTR)
 			ErrorF("WaitForSomething(): select: errno=%d\n",
 			    selecterr);
