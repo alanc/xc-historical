@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Panner.c,v 1.16 90/02/28 11:38:52 jim Exp $
+ * $XConsortium: Panner.c,v 1.17 90/02/28 11:51:39 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -362,7 +362,7 @@ static Boolean get_event_xy (pw, event, x, y)
 
 #define BACKGROUND_STIPPLE(pw) \
   XmuLocatePixmapFile (pw->core.screen, pw->panner.stipple_name, \
-		       pw->panner.foreground, pw->core.background_pixel, \
+		       pw->panner.shadow_color, pw->core.background_pixel, \
 		       pw->core.depth, NULL, 0, NULL, NULL, NULL, NULL)
     
 
@@ -513,7 +513,9 @@ static Boolean SetValues (gcur, greq, gnew, args, num_args)
 	if (new->panner.tmp.doing) redisplay = TRUE;
     }
 
-    if (cur->panner.stipple_name != new->panner.stipple_name &&
+    if ((cur->panner.stipple_name != new->panner.stipple_name ||
+	 cur->panner.shadow_color != new->panner.shadow_color ||
+	 cur->core.background_pixel != new->core.background_pixel) &&
 	XtIsRealized(new)) {
 	Pixmap pm = (new->panner.stipple_name ? BACKGROUND_STIPPLE (new)
 		     : XtUnspecifiedPixmap);
