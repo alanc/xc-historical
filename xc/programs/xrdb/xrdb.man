@@ -48,8 +48,17 @@ DirectColor.
 .B HEIGHT=num
 the height of the default screen in pixels.
 .TP 8
-.B HOST=hostname
+.B SERVERHOST=hostname
 the hostname portion of the display to which you are connected.
+.TP 8
+.B HOST=hostname
+the same as
+.BR SERVERHOST .
+.TP 8
+.B CLIENTHOST=hostname
+the name of the host on which
+.I xrdb
+is running.
 .TP 8
 .B PLANES=num
 the number of bit planes (the depth) of the root window of the default screen.
@@ -139,14 +148,16 @@ replacing, the current contents of the RESOURCE_MANAGER property.  Since
 .I xrdb
 can read the standard input, this option can be used to
 the change the contents of the RESOURCE_MANAGER property directly from
-a terminal or from a shell script.
+a terminal or from a shell script.  Note that this option does a
+lexicographic sorted merge of the two inputs, which is almost certainly
+not what you want, but remains for backward compatibility.
 .TP 8
 .B \-remove
 This option indicates that the RESOURCE_MANAGER property should be removed
 from its window.
 .TP 8
 .B \-retain
-This option indicates that the server should be instructed not to reset of
+This option indicates that the server should be instructed not to reset if
 \fIxrdb\fP is the first client.
 .TP 8
 .B \-edit \fIfilename\fP
