@@ -13,26 +13,17 @@
  * arguments, lots of side effects.  Don't use them casually.
  */
 
-#ifdef mips
-#define FAST_CONSTANT_OFFSET_MODE
-#endif
-
-#ifdef sparc
-#define FAST_CONSTANT_OFFSET_MODE
-#endif
-
-#ifdef FAST_CONSTANT_OFFSET_MODE
-
-#define UNROLL 8
-
 #define SwitchOdd(n) case n: BodyOdd(n)
 #define SwitchEven(n) case n: BodyEven(n)
 
+/* to allow mfb and cfb to share code... */
 #ifndef BitRight
 #define BitRight(a,b) SCRRIGHT(a,b)
 #define BitLeft(a,b) SCRLEFT(a,b)
 #endif
 
+#ifdef LARGE_INSTRUCTION_CACHE
+#define UNROLL 8
 #define PackedLoop \
     switch (nl & (UNROLL-1)) { \
     SwitchOdd( 7) SwitchEven( 6) SwitchOdd( 5) SwitchEven( 4) \
@@ -44,7 +35,17 @@
     	BodyOdd( 7) BodyEven( 6) BodyOdd( 5) BodyEven( 4) \
     	BodyOdd( 3) BodyEven( 2) BodyOdd( 1) \
     }
-
+#else
+#define UNROLL 4
+#define PackedLoop \
+    switch (nl & (UNROLL-1)) { \
+    SwitchOdd( 3) SwitchEven( 2) SwitchOdd( 1) \
+    } \
+    while ((nl -= UNROLL) >= 0) { \
+	LoopReset \
+    	BodyEven( 4) \
+    	BodyOdd( 3) BodyEven( 2) BodyOdd( 1) \
+    }
 #endif
 
 #define DuffL(counter,label,body) \

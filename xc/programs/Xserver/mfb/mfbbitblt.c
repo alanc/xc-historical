@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbbitblt.c,v 5.10 89/09/13 18:57:45 rws Exp $ */
+/* $XConsortium: mfbbitblt.c,v 5.11 89/09/14 16:26:35 rws Exp $ */
 #include "X.h"
 #include "Xprotostr.h"
 
@@ -516,10 +516,8 @@ DDXPointPtr pptSrc;
     if (alu == GXcopy)
     {
 	register int nl;		/* temp copy of nlMiddle */
-	register unsigned int tmp, bits;
-#ifdef FAST_CONSTANT_OFFSET_MODE
+	register unsigned int bits;
 	register unsigned int bits1;
-#endif
 	int xoffSrc, xoffDst;
 	int	leftShift, rightShift;
 
@@ -575,7 +573,9 @@ DDXPointPtr pptSrc;
 			    }
 			    nl = nlMiddle;
 
+#ifdef LARGE_INSTRUCTION_CACHE
 #ifdef FAST_CONSTANT_OFFSET_MODE
+
 			    psrc += nl & (UNROLL-1);
 			    pdst += nl & (UNROLL-1);
 
@@ -586,6 +586,14 @@ DDXPointPtr pptSrc;
     pdst += UNROLL; \
     psrc += UNROLL;
 
+#else
+
+#define BodyOdd(n)  *pdst++ = *psrc++;
+#define BodyEven(n) BodyOdd(n)
+
+#define LoopReset   ;
+
+#endif
 			    PackedLoop
 
 #undef BodyOdd
@@ -593,9 +601,8 @@ DDXPointPtr pptSrc;
 #undef LoopReset
 
 #else
-			    DuffL(nl, label1,  *pdst++ = *psrc++;)
+			    DuffL(nl, label1, *pdst++ = *psrc++;)
 #endif
-
 			    if (endmask)
 			    	*pdst = (*pdst & ~endmask) | (*psrc++ & endmask);
 		    	}
@@ -623,16 +630,19 @@ DDXPointPtr pptSrc;
 			    	bits = *psrc++;
 			    if (startmask)
 			    {
-			    	tmp = SCRLEFT(bits,leftShift);
+			    	bits1 = SCRLEFT(bits,leftShift);
 			    	bits = *psrc++;
-			    	tmp |= SCRRIGHT(bits,rightShift);
+			    	bits1 |= SCRRIGHT(bits,rightShift);
 			    	*pdst = (*pdst & ~startmask) |
-				    	(tmp & startmask);
+				    	(bits1 & startmask);
 			    	pdst++;
 			    }
 			    nl = nlMiddle;
-#ifdef FAST_CONSTANT_OFFSET_MODE
+
+#ifdef LARGE_INSTRUCTION_CACHE
 			    bits1 = bits;
+#ifdef FAST_CONSTANT_OFFSET_MODE
+
 			    psrc += nl & (UNROLL-1);
 			    pdst += nl & (UNROLL-1);
 
@@ -648,30 +658,43 @@ DDXPointPtr pptSrc;
     pdst += UNROLL; \
     psrc += UNROLL;
 
+#else
+
+#define BodyOdd(n) \
+    bits = *psrc++; \
+    *pdst++ = BitLeft(bits1, leftShift) | BitRight(bits, rightShift);
+			   
+#define BodyEven(n) \
+    bits1 = *psrc++; \
+    *pdst++ = BitLeft(bits, leftShift) | BitRight(bits1, rightShift);
+
+#define LoopReset   ;
+
+#endif	/* !FAST_CONSTANT_OFFSET_MODE */
+
 			    PackedLoop
 
 #undef BodyOdd
 #undef BodyEven
 #undef LoopReset
-
+    
 #else
-			    DuffL (nl, label2, 
-				tmp = SCRLEFT(bits, leftShift);
+			    DuffL (nl,label2,
+				bits1 = BitLeft(bits, leftShift);
 				bits = *psrc++;
-				*pdst++ = tmp | SCRRIGHT(bits, rightShift);
+				*pdst++ = bits1 | BitRight(bits, rightShift);
 			    )
 #endif
-    
 			    if (endmask)
 			    {
-			    	tmp = SCRLEFT(bits, leftShift);
+			    	bits1 = SCRLEFT(bits, leftShift);
 			    	if (SCRLEFT(endmask, rightShift))
 			    	{
 				    bits = *psrc++;
-				    tmp |= SCRRIGHT(bits, rightShift);
+				    bits1 |= SCRRIGHT(bits, rightShift);
 			    	}
 			    	*pdst = (*pdst & ~endmask) |
-				    	(tmp & endmask);
+				    	(bits1 & endmask);
 			    }
 		    	}
 		    }
@@ -697,6 +720,7 @@ DDXPointPtr pptSrc;
 			    }
 			    nl = nlMiddle;
 
+#ifdef LARGE_INSTRUCTION_CACHE
 #ifdef FAST_CONSTANT_OFFSET_MODE
 			    psrc -= nl & (UNROLL - 1);
 			    pdst -= nl & (UNROLL - 1);
@@ -706,9 +730,16 @@ DDXPointPtr pptSrc;
 #define BodyEven(n) pdst[n-1] = psrc[n-1];
 
 #define LoopReset \
-    pdst -= UNROLL; \
+    pdst -= UNROLL;\
     psrc -= UNROLL;
 
+#else
+
+#define BodyOdd(n)  *--pdst = *--psrc;
+#define BodyEven(n) BodyOdd(n)
+#define LoopReset   ;
+
+#endif
 			    PackedLoop
 
 #undef BodyOdd
@@ -716,9 +747,8 @@ DDXPointPtr pptSrc;
 #undef LoopReset
 
 #else
-			    DuffL(nl, label3, *--pdst = *--psrc;)
+			    DuffL(nl,label3, *--pdst = *--psrc;)
 #endif
-
 			    if (startmask)
 			    {
 			    	--pdst;
@@ -749,17 +779,18 @@ DDXPointPtr pptSrc;
 				bits = *--psrc;
 			    if (endmask)
 			    {
-			    	tmp = SCRRIGHT(bits, rightShift);
+			    	bits1 = SCRRIGHT(bits, rightShift);
 			    	bits = *--psrc;
-			    	tmp |= SCRLEFT(bits, leftShift);
+			    	bits1 |= SCRLEFT(bits, leftShift);
 			    	pdst--;
 			    	*pdst = (*pdst & ~endmask) |
-				    	(tmp & endmask);
+				    	(bits1 & endmask);
 			    }
 			    nl = nlMiddle;
 
-#ifdef FAST_CONSTANT_OFFSET_MODE
+#ifdef LARGE_INSTRUCTION_CACHE
 			    bits1 = bits;
+#ifdef FAST_CONSTANT_OFFSET_MODE
 			    psrc -= nl & (UNROLL - 1);
 			    pdst -= nl & (UNROLL - 1);
 
@@ -774,6 +805,21 @@ DDXPointPtr pptSrc;
 #define LoopReset \
     pdst -= UNROLL; \
     psrc -= UNROLL;
+
+#else
+
+#define BodyOdd(n) \
+    bits = *--psrc; \
+    *--pdst = BitRight(bits1, rightShift) | BitLeft(bits, leftShift);
+
+#define BodyEven(n) \
+    bits1 = *--psrc; \
+    *--pdst = BitRight(bits, rightShift) | BitLeft(bits1, leftShift);
+
+#define LoopReset   ;
+
+#endif
+
 			    PackedLoop
 
 #undef BodyOdd
@@ -781,24 +827,24 @@ DDXPointPtr pptSrc;
 #undef LoopReset
 
 #else
-			    DuffL(nl, label4,
-				tmp = SCRRIGHT(bits, rightShift);
+			    DuffL (nl, label4,
+				bits1 = BitRight(bits, rightShift);
 				bits = *--psrc;
-				*--pdst = tmp | SCRLEFT(bits, leftShift);
+				*--pdst = bits1 | BitLeft(bits, leftShift);
 			    )
 #endif
 
 			    if (startmask)
 			    {
-			    	tmp = SCRRIGHT(bits, rightShift);
+			    	bits1 = SCRRIGHT(bits, rightShift);
 			    	if (SCRRIGHT (startmask, leftShift))
 			    	{
 				    bits = *--psrc;
-				    tmp |= SCRLEFT(bits, leftShift);
+				    bits1 |= SCRLEFT(bits, leftShift);
 			    	}
 			    	--pdst;
 			    	*pdst = (*pdst & ~startmask) |
-				    	(tmp & startmask);
+				    	(bits1 & startmask);
 			    }
 		    	}
 		    }
