@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: WaitFor.c,v 1.20 87/08/19 18:17:31 drewry Exp $ */
+/* $Header: WaitFor.c,v 1.20 87/08/26 23:44:30 toddb Locked $ */
 
 /*****************************************************************
  * OS Depedent input routines:
@@ -132,7 +132,7 @@ WaitForSomething(pClientsReady, nready, pNewClients, nnew)
 		if (i < 0) 
 		    if (errno == EBADF)    /* Some client disconnected */
 	            	CheckConnections ();
-		    else
+		    else if (errno != EINTR)
 			ErrorF("WaitForSomething(): select: errrno=%d\n",
 			    errno);
     	    }
