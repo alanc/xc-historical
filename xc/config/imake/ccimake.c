@@ -10,9 +10,11 @@
 #define ccflags "-DSYSV"
 #endif /* CRAY */
 
-#if defined(mips) && defined(SYSTYPE_SYSV)
-#define ccflags "../../lib/X/mips/mips_sysv_c.c -DSYSV -I../../lib/X//mips -I/usr/include/bsd -lbsd"
-#endif /* mips && SYSTYPE_SYSV */
+#ifdef umips
+#ifdef SYSTYPE_SYSV
+#define ccflags "-DSYSV -I../../lib/X/mips -I/usr/include/bsd ../../lib/X/mips/mipssysvc.c -lbsd"
+#endif
+#endif
 
 #ifndef ccflags
 #define ccflags "-O"
