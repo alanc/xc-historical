@@ -1,4 +1,4 @@
-XCOMM $XConsortium: hpLib.tmpl,v 1.3 92/06/28 17:44:32 rws Exp $
+XCOMM $XConsortium: hpLib.tmpl,v 1.4 93/07/13 17:42:11 mor Exp $
 
 /*
  * HP shared library template
@@ -36,53 +36,4 @@ XCOMM $XConsortium: hpLib.tmpl,v 1.3 92/06/28 17:44:32 rws Exp $
 #endif
 #ifndef SharedXieRev
 #define SharedXieRev 1.0
-#endif
-
-SHLIBLDFLAGS = SharedLibraryLoadFlags
-PICFLAGS = PositionIndependentCFlags
-
-/*
- * and now a little bit of magic for using imake without source tree; if we
- * are using shared libraries, we really do not need to depend on anything
- */
-#if SharedLibXext
-  DEPEXTENSIONLIB = /* _UseCat($(USRLIBDIR),$(EXTENSIONSRC)/lib,/libXext.sl.$(SOXEXTREV)) */
-     EXTENSIONLIB = _Use(-lXext,-L$(EXTENSIONSRC)/lib -lXext)
-#endif
-#if SharedLibX
-          DEPXLIB = $(DEPEXTENSIONLIB) /* _UseCat($(USRLIBDIR),$(XLIBSRC),/libX11.sl.$(SOXLIBREV)) */
-         XLIBONLY = _Use(-lX11,-L$(XLIBSRC) -lX11)
-             XLIB = $(EXTENSIONLIB) $(XLIBONLY)
-#endif
-#if SharedLibXmu
-        DEPXMULIB = /* _UseCat($(USRLIBDIR),$(XMUSRC),/libXmu.sl.$(SOXMUREV)) */
-           XMULIB = _Use(-lXmu,-L$(XMUSRC) -lXmu)
-#endif
-#if SharedOldLibX
-       DEPOLDXLIB = /* _UseCat($(USRLIBDIR),$(OLDXLIBSRC),/liboldX.sl.$(SOOLDXREV)) */
-          OLDXLIB = _Use(-loldX,-L$(OLDXLIBSRC) -loldX)
-#endif
-#if SharedLibXt
-      DEPXTOOLLIB = /* _UseCat($(USRLIBDIR),$(TOOLKITSRC),/libXt.sl.$(SOXTREV)) */
-         XTOOLLIB = _Use(-lXt,-L$(TOOLKITSRC) -lXt)
-#endif
-#if SharedLibXaw
-        DEPXAWLIB = /* _UseCat($(USRLIBDIR),$(AWIDGETSRC),/libXaw.sl.$(SOXAWREV)) */
-           XAWLIB = _Use(-lXaw,-L$(AWIDGETSRC) -lXaw)
-#endif
-#if SharedLibXinput
-        DEPXILIB = /* _UseCat($(USRLIBDIR),$(XILIBSRC),/libXi.sl.$(SOXINPUTREV)) */
-           XILIB = _Use(-lXi,-L$(XILIBSRC) -lXi)
-#endif
-#if SharedLibXTest
-        DEPXTESTLIB = /* _UseCat($(USRLIBDIR),$(XTESTLIBSRC),/libXtst.sl.$(SOXTESTREV)) */
-           XTESTLIB = _Use(-lXtst,-L$(XTESTLIBSRC) -lXtst)
-#endif
-#if SharedLibPex
-        DEPPEXLIB = /* _UseCat($(USRLIBDIR),$(PEXLIBSRC),/libPEX5.sl.$(SOPEXREV)) */
-         PEXLIB = _Use(-lPEX5,-L$(PEXLIBSRC) -lPEX5)
-#endif
-#if SharedLibXie
-        DEPXIELIB = /* _UseCat($(USRLIBDIR),$(XIELIBSRC),/libXIE.sl.$(SOXIEREV)) */
-         XIELIB = _Use(-lXIE,-L$(XIELIBSRC) -lXIE)
 #endif
