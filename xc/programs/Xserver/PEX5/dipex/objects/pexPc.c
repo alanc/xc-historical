@@ -1,4 +1,4 @@
-/* $XConsortium: pexPc.c,v 5.4 91/10/01 02:34:18 hersh Exp $ */
+/* $XConsortium: pexPc.c,v 5.5 91/11/22 14:38:36 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -334,15 +334,20 @@ unsigned char	*ptr;
     }
 
     CHECK_BITMASK_ARRAY(itemMask, PEXPCModelClipVolume) {
-	unsigned long i;
-	EXTRACT_CARD32 (i, ptr);
+	unsigned long i, numHalfSpaces;
+	EXTRACT_CARD32 ( numHalfSpaces, ptr);
 	PU_EMPTY_LIST(pca->modelClipVolume);
       /* don't need to do this emptying the list and adding is sufficient
 	puDeleteList(pca->modelClipVolume);
 	pca->modelClipVolume = puCreateList(DD_HALF_SPACE);
 	if (!pca->modelClipVolume) PEX_ERR_EXIT(BadAlloc,0,cntxtPtr);
       */
-	puAddToList((ddPointer)ptr, i, pca->modelClipVolume);
+	puAddToList((ddPointer)ptr, numHalfSpaces, pca->modelClipVolume);
+	/* skip past list of Half Space */
+	for ( i = 0; i < numHalfSpaces; i++) {
+	  SKIP_STRUCT(ptr, 1, ddCoord3D);
+	  SKIP_STRUCT(ptr, 1, ddVector3D);
+	}
     }
 
     CHECK_BITMASK_ARRAY(itemMask, PEXPCViewIndex) {
@@ -350,12 +355,13 @@ unsigned char	*ptr;
     }
 
     CHECK_BITMASK_ARRAY(itemMask, PEXPCLightState) {
-	unsigned long i;
+	unsigned long i, numskip;
 	EXTRACT_CARD32(i,ptr);
 	PU_EMPTY_LIST(pca->lightState);
 	puAddToList((ddPointer)ptr,i,pca->lightState);
-	if (i % 2) 
-	    SKIP_PADDING(ptr,2);
+	/* skip over CARD16 and pad if any */
+	numskip = (i + 1) / 2;
+	SKIP_PADDING( ptr, numskip * 4);
     }
 
     CHECK_BITMASK_ARRAY(itemMask, PEXPCDepthCueIndex) {
