@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XSetStip.c,v 11.11 87/05/26 16:55:24 jg Exp $ */
+/* $Header: XSetStip.c,v 11.11 87/09/11 08:07:22 toddb Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
@@ -11,12 +11,10 @@ GC gc;
 Pixmap stipple;
 {
     LockDisplay(dpy);
-
-    if (gc->values.stipple != stipple) {
-	gc->values.stipple = stipple;
-	gc->dirty |= GCStipple;
-	_XFlushGCCache(dpy, gc);
-    }
+    /* always update, since client may have changed pixmap contents */
+    gc->values.stipple = stipple;
+    gc->dirty |= GCStipple;
+    _XFlushGCCache(dpy, gc);
     UnlockDisplay(dpy);
     SyncHandle();
 }
