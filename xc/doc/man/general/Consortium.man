@@ -1,4 +1,4 @@
-.\" $XConsortium: Consortium.man,v 1.34 94/04/16 14:12:18 rws Exp $
+.\" $XConsortium: Consortium.man,v 1.35 94/04/17 18:53:25 rws Exp $
 .\" Copyright (c) 1993, 1994  X Consortium
 .\" 
 .\" Permission is hereby granted, free of charge, to any person obtaining a
@@ -100,7 +100,7 @@ Harold D. Blair, Partner, Partnerwerks
 Roger S. Gourd, VP and Chief of Staff, Open Software Foundation
 David Harris, Director, Adobe Systems [ex officio as Chairman, X Industry Association]
 Dr. Robin Hillyard, Chairman and Chief Technical Officer, Novasoft Systems
-Chong Lee, President, Phase X Systems, Inc.
+Dr. Chong Lee, President and CEO, Phase X Systems, Inc.
 Don McGovern, Vice President - UNIX Systems Group, Novell, Inc.
 Therese E. Myers, President and CEO, Quarterdeck Office Systems
 Peter J. Shaw, President and CEO, AGE Logic, Inc.
