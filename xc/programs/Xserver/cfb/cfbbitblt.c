@@ -94,7 +94,7 @@ int dstx, dsty;
     RegionPtr prgnSrcClip;      /* may be a new region, or just a copy */
     int realSrcClip = 0;        /* non-0 if we've created a src clip */
  
-    RegionPtr prgnDst, prgnExposed;
+    RegionPtr prgnDst, prgnExposed = NULL;
     DDXPointPtr pptSrc;
     register DDXPointPtr ppt;
     register BoxPtr pbox;
