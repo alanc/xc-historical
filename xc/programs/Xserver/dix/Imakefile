@@ -17,5 +17,3 @@ lint:
 
 ../../include/Xatom.h initatoms.c:	BuiltInAtoms buildatoms
 	buildatoms
-
-Makefiles:
