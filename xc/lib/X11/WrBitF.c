@@ -91,8 +91,8 @@ int XWriteBitmapFile(display, filename, bitmap, width, height, x_hot, y_hot)
   }
 
   /* Write out standard header */
-  fprintf(stream, "#define %s_width %d\n", name, image->width);
-  fprintf(stream, "#define %s_height %d\n", name, image->height);
+  fprintf(stream, "#define %s_width %d\n", name, width);
+  fprintf(stream, "#define %s_height %d\n", name, height);
   if (x_hot != -1) {
     fprintf(stream, "#define %s_x_hot %d\n", name, x_hot);
     fprintf(stream, "#define %s_y_hot %d\n", name, y_hot);
