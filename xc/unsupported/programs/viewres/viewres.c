@@ -1,5 +1,5 @@
 /*
- * $XConsortium: viewres.c,v 1.10 90/02/02 17:59:11 jim Exp $
+ * $XConsortium: viewres.c,v 1.11 90/02/02 18:56:33 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -133,6 +133,7 @@ main (argc, argv)
     int i;
     Widget toplevel, pane, box, viewport;
     XtAppContext app_con;
+    Arg args[1];
 
     ProgramName = argv[0];
 
@@ -163,8 +164,9 @@ main (argc, argv)
 					       commandWidgetClass, box,
 					       NULL, ZERO);
 
+    XtSetArg (args[0], XtNbackgroundPixmap, None);
     viewport = XtCreateManagedWidget ("viewport", viewportWidgetClass,
-				      pane, NULL, 0);
+				      pane, args, ONE);
     treeWidget = XtCreateManagedWidget ("tree", treeWidgetClass, viewport,
 					NULL, 0);
 
@@ -222,7 +224,9 @@ static void do_set_labeltype (w, event, params, num_params)
 
     if (Appresources.show_variable != oldvar) {
 	set_labeltype_button ();
+	XUnmapWindow (XtDisplay(treeWidget), XtWindow(treeWidget));
 	set_node_labels (topnode, 0);
+	XMapWindow (XtDisplay(treeWidget), XtWindow(treeWidget));
     }
     return;
 }
@@ -270,7 +274,10 @@ static void do_set_orientation (w, event, params, num_params)
 	set_orientation_button (horiz);
 	XtSetArg (args[0], XtNorientation,
 		  horiz ? XtorientHorizontal : XtorientVertical);
+	XUnmapWindow (XtDisplay(treeWidget), XtWindow(treeWidget));
  	XtSetValues (treeWidget, args, ONE);
+	XMapWindow (XtDisplay(treeWidget), XtWindow(treeWidget));
+
     }
     return;
 }
