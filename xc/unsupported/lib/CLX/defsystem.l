@@ -355,11 +355,13 @@
 
   ;; Load the definition of connect_to_server
   #+apollo
-  (lucid::load-foreign-file (merge-pathnames "socket" binary-path)
-			    :preserve-pathname t)
+  (lucid::load-foreign-file
+    (namestring (merge-pathnames "socket" binary-path))
+    :preserve-pathname t)
   #-apollo
-  (lucid::load-foreign-files (list (merge-pathnames "socket.o" binary-path))
-			     *foreign-libraries*))
+  (lucid::load-foreign-files
+    (list (namestring (merge-pathnames "socket.o" binary-path)))
+    *foreign-libraries*))
 
 
 ;; socket interface for kcl and ibcl
