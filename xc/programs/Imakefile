@@ -5,7 +5,7 @@ SUBDIRS = \
 	appres bitmap listres oclock twm xauth xbiff xcalc xclipboard xclock \
 	xditview xdm xdpyinfo xedit xfd xhost xinit xkill xload xlogo \
 	xlsatoms xlsclients xlsfonts xlswins xmag xman xmessage xmh \
-	xmodmap xpr xprop xrdb xrefresh \
+	xmodmap xpr xprop xrdb xrefresh xfontsel \
  	xset xsetroot xstdcmap xterm xwd xwininfo xwud
 
 MakeSubdirs($(SUBDIRS))
