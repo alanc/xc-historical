@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XSetCRects.c,v 11.12 87/08/24 18:29:38 newman Locked $ */
+/* $Header: XSetCRects.c,v 11.13 87/08/24 18:53:17 newman Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
@@ -16,7 +16,7 @@ XSetClipRectangles (dpy, gc, clip_x_origin, clip_y_origin, rectangles, n,
 {
     LockDisplay(dpy);
     _XSetClipRectangles (dpy, gc, clip_x_origin, clip_y_origin, rectangles, n,
-                    ordering)
+                    ordering);
     UnlockDisplay(dpy);
     SyncHandle();
 }
