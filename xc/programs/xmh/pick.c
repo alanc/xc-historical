@@ -1,5 +1,5 @@
 /*
- * $XConsortium: pick.c,v 2.35 89/09/27 19:16:05 converse Exp $
+ * $XConsortium: pick.c,v 2.36 89/10/06 15:03:16 converse Exp $
  *
  *
  *			  COPYRIGHT 1987
@@ -103,6 +103,13 @@ InitPick()
     TypeName[RTsubject] = "Subject:";
     TypeName[RTsearch]	= "Search:";
     TypeName[RTother]	= NULL;
+
+    /* Translations which will prevent the Search and Replace functionality
+     * of the Text widget in text fields of pick and popups.  The toc's
+     * Search and Replace functionality is removed in the app defaults file.
+     */
+    NoTextSearchAndReplace = XtParseTranslationTable
+	("Ctrl<Key>R: no-op(RingBell)\n\Ctrl<Key>S: no-op(RingBell)\n");
 }
 
 
@@ -181,6 +188,7 @@ static void AddTextEntry(row, str)
   RowList row;
   char *str;
 {
+    FormEntry	entry;
     static Arg arglist[] = {
 	{XtNstring, (XtArgVal) NULL},
 	{XtNwidth, (XtArgVal) NULL},
@@ -190,7 +198,8 @@ static void AddTextEntry(row, str)
     };
     arglist[0].value = (XtArgVal) str;
     arglist[1].value = (XtArgVal) stdwidth;
-    (void) CreateWidget( row, WTtextentry, arglist, XtNumber(arglist) );
+    entry = CreateWidget( row, WTtextentry, arglist, XtNumber(arglist) );
+    XtOverrideTranslations(entry->widget, NoTextSearchAndReplace);
 }
 
 

@@ -1,5 +1,5 @@
 /*
- *  $XConsortium: globals.h,v 2.29 89/11/15 11:03:24 converse Exp $
+ *  $XConsortium: globals.h,v 2.30 89/11/25 21:07:29 converse Exp $
  *
  *
  *		       COPYRIGHT 1987, 1989
@@ -93,6 +93,7 @@ ext Dimension	rootheight;
 ext Pixmap	NoMailPixmap;	/* Icon pixmap if no new mail. */
 ext Pixmap	NewMailPixmap;	/* Icon pixmap if new mail. */
 ext Pixmap	MenuItemBitmap;	/* Options menu item checkmark */
+ext XtTranslations NoTextSearchAndReplace; /* no-op ^S and ^R in Text */
 
 ext struct _LastInput {
     Window win;

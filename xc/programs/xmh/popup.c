@@ -1,5 +1,5 @@
 /*
- * $XConsortium: popup.c,v 2.24 89/11/20 21:04:06 converse Exp $
+ * $XConsortium: popup.c,v 2.25 89/11/25 20:55:09 converse Exp $
  *
  *
  *			  COPYRIGHT 1989
@@ -200,10 +200,14 @@ void PopupPrompt(question, okayCallback)
     Arg			args[4];
     Widget		popup;
     Widget		dialog;
+    Widget		value;
     Position		x, y;
     Boolean		positioned;
 
-    static String text_translations = "<Key>Return: XmhPromptOkayAction()\n";
+    static String text_translations =
+	"<Key>Return: XmhPromptOkayAction()\n\
+         Ctrl<Key>R:  no-op(RingBell)\n\
+         Ctrl<Key>S:  no-op(RingBell)\n";
 
     DeterminePopupPosition(&x, &y);
     XtSetArg(args[0], XtNallowShellResize, True);
@@ -218,9 +222,9 @@ void PopupPrompt(question, okayCallback)
 				   TWO);
     XtSetArg(args[0], XtNresizable, True);
     XtSetValues( XtNameToWidget(dialog, "label"), args, ONE);
-    XtSetValues( XtNameToWidget(dialog, "value"), args, ONE);
-    XtOverrideTranslations(XtNameToWidget(dialog, "value"), 
-			   XtParseTranslationTable(text_translations));
+    value = XtNameToWidget(dialog, "value");
+    XtSetValues( value, args, ONE);
+    XtOverrideTranslations(value, XtParseTranslationTable(text_translations));
 
     XawDialogAddButton(dialog, OKAY_NAME, okayCallback, (XtPointer) dialog);
     XawDialogAddButton(dialog, "cancel", DestroyPopup, (XtPointer) popup);
@@ -254,6 +258,7 @@ void PopupNotice( message, callback, closure )
     PopupStatus popup_status = (PopupStatus)closure;
     Arg args[5];
     Widget dialog;
+    Widget value;
     Position x, y;
     char command[65], label[128];
 
@@ -283,10 +288,11 @@ void PopupNotice( message, callback, closure )
 				   popup_status->popup, args, TWO);
 
     /* The text area of the dialog box will not be editable. */
-
+    value = XtNameToWidget(dialog, "value");
     XtSetArg( args[0], XtNeditType, XawtextRead);
     XtSetArg( args[1], XtNdisplayCaret, False);
-    XtSetValues( XtNameToWidget(dialog, "value"), args, TWO);
+    XtSetValues( value, args, TWO);
+    XtOverrideTranslations(value, NoTextSearchAndReplace);
 
     XawDialogAddButton( dialog, "confirm",
 		       ((callback != (XtCallbackProc) NULL)
