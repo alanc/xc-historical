@@ -1,4 +1,4 @@
-/* $XConsortium: authutil.c,v 1.10 94/02/06 15:23:26 mor Exp $ */
+/* $XConsortium: authutil.c,v 1.11 94/03/05 12:45:27 rws Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -226,7 +226,7 @@ FILE	*auth_file;
 
     local.protocol_name = NULL;
     local.protocol_data = NULL;
-    local.address = NULL;
+    local.network_id = NULL;
     local.auth_name = NULL;
     local.auth_data = NULL;
 
@@ -237,7 +237,7 @@ FILE	*auth_file;
 	&local.protocol_data_length, &local.protocol_data))
 	goto bad;
 
-    if (!read_string (auth_file, &local.address))
+    if (!read_string (auth_file, &local.network_id))
 	goto bad;
 
     if (!read_string (auth_file, &local.auth_name))
@@ -258,7 +258,7 @@ FILE	*auth_file;
 
     if (local.protocol_name) free (local.protocol_name);
     if (local.protocol_data) free (local.protocol_data);
-    if (local.address) free (local.address);
+    if (local.network_id) free (local.network_id);
     if (local.auth_name) free (local.auth_name);
     if (local.auth_data) free (local.auth_data);
 
@@ -277,7 +277,7 @@ IceAuthFileEntry	*auth;
     {
 	if (auth->protocol_name) free (auth->protocol_name);
 	if (auth->protocol_data) free (auth->protocol_data);
-	if (auth->address) free (auth->address);
+	if (auth->network_id) free (auth->network_id);
 	if (auth->auth_name) free (auth->auth_name);
 	if (auth->auth_data) free (auth->auth_data);
 	free ((char *) auth);
@@ -300,7 +300,7 @@ IceAuthFileEntry	*auth;
 	auth->protocol_data_length, auth->protocol_data))
 	return (0);
 
-    if (!write_string (auth_file, auth->address))
+    if (!write_string (auth_file, auth->network_id))
 	return (0);
 
     if (!write_string (auth_file, auth->auth_name))
@@ -316,10 +316,10 @@ IceAuthFileEntry	*auth;
 
 
 IceAuthFileEntry *
-IceGetAuthFileEntry (protocol_name, address, auth_name)
+IceGetAuthFileEntry (protocol_name, network_id, auth_name)
 
 char	*protocol_name;
-char	*address;
+char	*network_id;
 char	*auth_name;
 
 {
@@ -342,7 +342,7 @@ char	*auth_name;
 	    break;
 
 	if (strcmp (protocol_name, entry->protocol_name) == 0 &&
-	    strcmp (address, entry->address) == 0 &&
+	    strcmp (network_id, entry->network_id) == 0 &&
             strcmp (auth_name, entry->auth_name) == 0)
 	{
 	    break;

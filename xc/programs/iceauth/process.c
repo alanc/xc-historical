@@ -1,5 +1,5 @@
 /*
- * $XConsortium: process.c,v 1.1 93/12/30 11:58:27 mor Exp $
+ * $XConsortium: process.c,v 1.2 94/02/05 12:29:09 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -84,7 +84,7 @@ static CommandTable command_table[] = {	/* table of known commands */
 { "add", 2, 3, do_add,
 "\
 add       add an entry\n\
-          add protoname protodata address authname authdata"
+          add protoname protodata netid authname authdata"
 },
 
 { "exit", 3, 4, do_exit,
@@ -95,7 +95,7 @@ exit      save changes and exit program"
 { "extract", 3, 7, do_extract,
 "\
 extract   extract entries into file\n\
-          extract filename <protoname=$> <protodata=$> <address=$> <authname=$>"
+          extract filename <protoname=$> <protodata=$> <netid=$> <authname=$>"
 },
 
 { "help", 1, 4, do_help,
@@ -112,7 +112,7 @@ info      print information about entries"
 { "list", 1, 4, do_list,
 "\
 list      list entries\n\
-          list <protoname=$> <protodata=$> <address=$> <authname=$>"
+          list <protoname=$> <protodata=$> <netid=$> <authname=$>"
 },
 
 { "merge", 1, 5, do_merge,
@@ -128,7 +128,7 @@ quit      abort changes and exit program" },
 { "remove", 1, 6, do_remove,
 "\
 remove    remove entries\n\
-          remove <protoname=$> <protodata=$> <address=$> <authname=$>"
+          remove <protoname=$> <protodata=$> <netid=$> <authname=$>"
 },
 
 { "source", 1, 6, do_source,
@@ -733,7 +733,7 @@ static int dump_entry (inputfilename, lineno, auth, data)
     else
 	fprintf (fp, "\"\"");
     putc (' ', fp);
-    fprintf (fp, "%s", auth->address);
+    fprintf (fp, "%s", auth->network_id);
     putc (' ', fp);
     fprintf (fp, "%s", auth->auth_name);
     putc (' ', fp);
@@ -781,7 +781,7 @@ static int match_auth (a, b)
     register IceAuthFileEntry *a, *b;
 {
     return (strcmp (a->protocol_name, b->protocol_name) == 0 &&
-	    strcmp (a->address, b->address) == 0 &&
+	    strcmp (a->network_id, b->network_id) == 0 &&
             strcmp (a->auth_name, b->auth_name) == 0);
 }
 
@@ -866,13 +866,13 @@ static int search_and_do (inputfilename, lineno, start,
     int status;
     int errors = 0;
     AuthList *l, *next;
-    char *protoname, *protodata, *address, *authname;
+    char *protoname, *protodata, *netid, *authname;
 
     for (l = iceauth_head; l; l = next)
     {
 	next = l->next;
 
-	protoname = protodata = address = authname = NULL;
+	protoname = protodata = netid = authname = NULL;
 
 	for (i = start; i < argc; i++)
 	{
@@ -880,15 +880,15 @@ static int search_and_do (inputfilename, lineno, start,
 		protoname = argv[i] + 10;
 	    else if (!strncmp ("protodata=", argv[i], 10))
 		protodata = argv[i] + 10;
-	    else if (!strncmp ("address=", argv[i], 8))
-		address = argv[i] + 8;
+	    else if (!strncmp ("netid=", argv[i], 8))
+		netid = argv[i] + 8;
 	    else if (!strncmp ("authname=", argv[i], 9))
 		authname = argv[i] + 9;
 	}
 
 	status = 0;
 
-	if (protoname || protodata || address || authname)
+	if (protoname || protodata || netid || authname)
 	{
 	    if (protoname && strcmp (protoname, l->auth->protocol_name))
 		continue;
@@ -897,7 +897,7 @@ static int search_and_do (inputfilename, lineno, start,
 		l->auth->protocol_data, l->auth->protocol_data_length))
 		continue;
 
-	    if (address && strcmp (address, l->auth->address))
+	    if (netid && strcmp (netid, l->auth->network_id))
 		continue;
 
 	    if (authname && strcmp (authname, l->auth->auth_name))
@@ -1181,7 +1181,7 @@ static int do_extract (inputfilename, lineno, argc, argv)
 
 
 /*
- * add protoname protodata address authname authdata
+ * add protoname protodata netid authname authdata
  */
 static int do_add (inputfilename, lineno, argc, argv)
     char *inputfilename;
@@ -1193,7 +1193,7 @@ static int do_add (inputfilename, lineno, argc, argv)
     char *protoname;
     char *protodata_hex;
     char *protodata = NULL; /* not required */
-    char *address;
+    char *netid;
     char *authname;
     char *authdata_hex;
     char *authdata;
@@ -1211,7 +1211,7 @@ static int do_add (inputfilename, lineno, argc, argv)
 
     protoname = argv[1];
     protodata_hex = argv[2];
-    address = argv[3];
+    netid = argv[3];
     authname = argv[4];
     authdata_hex = argv[5];
 
@@ -1283,14 +1283,14 @@ static int do_add (inputfilename, lineno, argc, argv)
     auth->protocol_name = copystring (protoname);
     auth->protocol_data_length = protodata_len;
     auth->protocol_data = protodata;
-    auth->address = copystring (address);
+    auth->network_id = copystring (netid);
     auth->auth_name = copystring (authname);
     auth->auth_data_length = authdata_len;
     auth->auth_data = authdata;
 
     if (!auth->protocol_name ||
 	(!auth->protocol_data && auth->protocol_data_length > 0) ||
-        !auth->address || !auth->auth_name ||
+        !auth->network_id || !auth->auth_name ||
 	(!auth->auth_data && auth->auth_data_length > 0))
     {
 	goto add_bad_malloc;
@@ -1339,8 +1339,8 @@ cant_add:
 	    free (auth->protocol_name);
 	if (auth->protocol_data)
 	    free (auth->protocol_data);
-	if (auth->address)
-	    free (auth->address);
+	if (auth->network_id)
+	    free (auth->network_id);
 	if (auth->auth_name)
 	    free (auth->auth_name);
 	if (auth->auth_data)

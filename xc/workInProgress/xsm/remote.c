@@ -1,4 +1,4 @@
-/* $XConsortium: remote.c,v 1.1 94/02/22 14:32:37 mor Exp $ */
+/* $XConsortium: remote.c,v 1.2 94/02/22 15:44:19 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -115,12 +115,12 @@ char	*non_local_session_env;
 
 	    for (i = 0; i < numTransports * 2; i++)
 	    {
-		if (Strstr (authDataEntries[i].address, "local/"))
+		if (Strstr (authDataEntries[i].network_id, "local/"))
 		    continue;
 
 		fprintf (fp, "AUTH ICE %s \"\" %s %s ",
 		    authDataEntries[i].protocol_name,
-		    authDataEntries[i].address,
+		    authDataEntries[i].network_id,
 		    authDataEntries[i].auth_name);
 		
 		fprintfhex (fp,

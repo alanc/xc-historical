@@ -1,4 +1,4 @@
-/* $XConsortium: ICEutil.h,v 1.1 94/02/06 15:22:41 mor Exp $ */
+/* $XConsortium: ICEutil.h,v 1.2 94/03/08 12:16:06 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -30,7 +30,7 @@ typedef struct {
     char    	    *protocol_name;
     unsigned short  protocol_data_length;
     char   	    *protocol_data;
-    char    	    *address;
+    char    	    *network_id;
     char    	    *auth_name;
     unsigned short  auth_data_length;
     char   	    *auth_data;
@@ -43,7 +43,7 @@ typedef struct {
 
 typedef struct {
     char    	    *protocol_name;
-    char	    *address;
+    char	    *network_id;
     char    	    *auth_name;
     unsigned short  auth_data_length;
     char   	    *auth_data;
@@ -106,7 +106,7 @@ extern Status IceWriteAuthFileEntry (
 extern IceAuthFileEntry *IceGetAuthFileEntry (
 #if NeedFunctionPrototypes
     char *		/* protocol_name */,
-    char *		/* address */,
+    char *		/* network_id */,
     char *		/* auth_name */
 #endif
 );

@@ -1,4 +1,4 @@
-/* $XConsortium: getauth.c,v 1.4 94/02/06 15:23:12 mor Exp $ */
+/* $XConsortium: getauth.c,v 1.5 94/03/08 12:18:50 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -45,11 +45,11 @@ extern IceAuthDataEntry _IcePaAuthDataEntries[];
  */
 
 void
-_IceGetPoAuthData (protocolName, address, authName,
+_IceGetPoAuthData (protocolName, networkId, authName,
     authDataLenRet, authDataRet)
 
 char		*protocolName;
-char		*address;
+char		*networkId;
 char		*authName;
 unsigned short	*authDataLenRet;
 char		**authDataRet;
@@ -57,7 +57,7 @@ char		**authDataRet;
 {
     IceAuthFileEntry    *entry;
 
-    entry = IceGetAuthFileEntry (protocolName, address, authName);
+    entry = IceGetAuthFileEntry (protocolName, networkId, authName);
 
     if (entry)
     {
@@ -78,11 +78,11 @@ char		**authDataRet;
 
 
 void
-_IceGetPaAuthData (protocolName, address, authName,
+_IceGetPaAuthData (protocolName, networkId, authName,
     authDataLenRet, authDataRet)
 
 char		*protocolName;
-char		*address;
+char		*networkId;
 char		*authName;
 unsigned short	*authDataLenRet;
 char		**authDataRet;
@@ -98,7 +98,7 @@ char		**authDataRet;
 
 	found =
 	    strcmp (protocolName, entry->protocol_name) == 0 &&
-            strcmp (address, entry->address) == 0 &&
+            strcmp (networkId, entry->network_id) == 0 &&
             strcmp (authName, entry->auth_name) == 0;
     }
 
@@ -119,11 +119,11 @@ char		**authDataRet;
 
 
 void
-_IceGetPoValidAuthIndices (protocol_name, address,
+_IceGetPoValidAuthIndices (protocol_name, network_id,
     num_auth_names, auth_names, num_indices_ret, indices_ret)
 
 char	*protocol_name;
-char	*address;
+char	*network_id;
 int	num_auth_names;
 char	**auth_names;
 int	*num_indices_ret;
@@ -152,7 +152,7 @@ int	*indices_ret;		/* in/out arg */
 	    break;
 
 	if (strcmp (protocol_name, entry->protocol_name) == 0 &&
-	    strcmp (address, entry->address) == 0 &&
+	    strcmp (network_id, entry->network_id) == 0 &&
 	    auth_valid (entry->auth_name, num_auth_names,
 	    auth_names, &index_ret))
 	{
@@ -180,11 +180,11 @@ int	*indices_ret;		/* in/out arg */
 
 
 void
-_IceGetPaValidAuthIndices (protocol_name, address,
+_IceGetPaValidAuthIndices (protocol_name, network_id,
     num_auth_names, auth_names, num_indices_ret, indices_ret)
 
 char	*protocol_name;
-char	*address;
+char	*network_id;
 int	num_auth_names;
 char	**auth_names;
 int	*num_indices_ret;
@@ -202,7 +202,7 @@ int	*indices_ret;		/* in/out arg */
 	entry = &_IcePaAuthDataEntries[i];
 
 	if (strcmp (protocol_name, entry->protocol_name) == 0 &&
-            strcmp (address, entry->address) == 0 &&
+            strcmp (network_id, entry->network_id) == 0 &&
 	    auth_valid (entry->auth_name, num_auth_names,
 	    auth_names, &index_ret))
 	{

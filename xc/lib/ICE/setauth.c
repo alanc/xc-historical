@@ -1,4 +1,4 @@
-/* $XConsortium: setauth.c,v 1.4 93/12/07 11:04:16 mor Exp $ */
+/* $XConsortium: setauth.c,v 1.5 94/03/08 12:18:28 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -60,8 +60,8 @@ IceAuthDataEntry	*entries;
 	for (j = 0; j < _IcePaAuthDataEntryCount; j++)
 	    if (strcmp (entries[i].protocol_name,
 		_IcePaAuthDataEntries[j].protocol_name) == 0 &&
-                strcmp (entries[i].address,
-		_IcePaAuthDataEntries[j].address) == 0 &&
+                strcmp (entries[i].network_id,
+		_IcePaAuthDataEntries[j].network_id) == 0 &&
                 strcmp (entries[i].auth_name,
 		_IcePaAuthDataEntries[j].auth_name) == 0)
 		break;
@@ -69,7 +69,7 @@ IceAuthDataEntry	*entries;
 	if (j < _IcePaAuthDataEntryCount)
 	{
 	    free (_IcePaAuthDataEntries[j].protocol_name);
-	    free (_IcePaAuthDataEntries[j].address);
+	    free (_IcePaAuthDataEntries[j].network_id);
 	    free (_IcePaAuthDataEntries[j].auth_name);
 	    free (_IcePaAuthDataEntries[j].auth_data);
 	}
@@ -83,10 +83,10 @@ IceAuthDataEntry	*entries;
 	strcpy (_IcePaAuthDataEntries[j].protocol_name,
 	    entries[i].protocol_name);
 
-	_IcePaAuthDataEntries[j].address = (char *) malloc (
-	    strlen (entries[i].address) + 1);
-	strcpy (_IcePaAuthDataEntries[j].address,
-	    entries[i].address);
+	_IcePaAuthDataEntries[j].network_id = (char *) malloc (
+	    strlen (entries[i].network_id) + 1);
+	strcpy (_IcePaAuthDataEntries[j].network_id,
+	    entries[i].network_id);
 
 	_IcePaAuthDataEntries[j].auth_name = (char *) malloc (
             strlen (entries[i].auth_name) + 1);

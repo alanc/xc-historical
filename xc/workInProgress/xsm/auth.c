@@ -1,4 +1,4 @@
-/* $XConsortium: auth.c,v 1.2 94/03/08 12:29:34 mor Exp $ */
+/* $XConsortium: auth.c,v 1.3 94/03/16 15:18:30 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -50,15 +50,15 @@ IceAuthDataEntry *entry;
     fprintf (addfp,
 	"add %s \"\" %s %s ",
 	entry->protocol_name,
-        entry->address,
+        entry->network_id,
         entry->auth_name);
     fprintfhex (addfp, entry->auth_data_length, entry->auth_data);
     fprintf (addfp, "\n");
 
     fprintf (removefp,
-	"remove protoname=%s protodata=\"\" address=%s authname=%s\n",
+	"remove protoname=%s protodata=\"\" netid=%s authname=%s\n",
 	entry->protocol_name,
-        entry->address,
+        entry->network_id,
         entry->auth_name);
 }
 
@@ -93,7 +93,7 @@ IceAuthDataEntry	**authDataEntries;
 
     for (i = 0; i < count * 2; i += 2)
     {
-	(*authDataEntries)[i].address =
+	(*authDataEntries)[i].network_id =
 	    IceGetListenConnectionString (listenObjs[i/2]);
 	(*authDataEntries)[i].protocol_name = "ICE";
 	(*authDataEntries)[i].auth_name = "MIT-MAGIC-COOKIE-1";
@@ -102,7 +102,7 @@ IceAuthDataEntry	**authDataEntries;
 	    IceGenerateMagicCookie (MAGIC_COOKIE_LEN);
 	(*authDataEntries)[i].auth_data_length = MAGIC_COOKIE_LEN;
 
-	(*authDataEntries)[i+1].address =
+	(*authDataEntries)[i+1].network_id =
 	    IceGetListenConnectionString (listenObjs[i/2]);
 	(*authDataEntries)[i+1].protocol_name = "XSMP";
 	(*authDataEntries)[i+1].auth_name = "MIT-MAGIC-COOKIE-1";
@@ -146,7 +146,7 @@ IceAuthDataEntry 	*authDataEntries;
 
     for (i = 0; i < count * 2; i++)
     {
-	free (authDataEntries[i].address);
+	free (authDataEntries[i].network_id);
 	free (authDataEntries[i].auth_data);
     }
 
