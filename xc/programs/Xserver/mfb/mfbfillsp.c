@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbfillsp.c,v 5.3 89/09/13 18:57:57 rws Exp $ */
+/* $XConsortium: mfbfillsp.c,v 5.4 89/09/14 16:26:25 rws Exp $ */
 #include "X.h"
 #include "Xmd.h"
 #include "gcstruct.h"
@@ -995,7 +995,7 @@ int fSorted;
 		    */
 		    w = min(min(tileWidth - rem, width), BITMAP_SCANLINE_UNIT);
 		    endinc = rem / BITMAP_SCANLINE_UNIT;
-		    getandputrop((psrc + endinc), (rem & 0x1f), (x & 0x1f),
+		    getandputrrop((psrc + endinc), (rem & 0x1f), (x & 0x1f),
 				 w, pdst, rop)
 		    if((x & 0x1f) + w >= 0x20)
 			pdst++;
