@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Box.c,v 1.42 89/11/06 10:50:58 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Box.c,v 1.43 89/12/07 20:14:26 kit Exp $";
 #endif /* lint */
 
 
@@ -198,9 +198,9 @@ static DoLayout(bbw, width, height, reply_width, reply_height, position)
 		 * perform the moves from the correct end so we don't
 		 * force extra exposures as children occlude each other.
 		 */
-		if (XtIsRealized(widget))
+		if (XtIsRealized(widget) && widget->core.mapped_when_managed)
 		    XUnmapWindow( XtDisplay(widget), XtWindow(widget) );
-		XtMoveWidget(bbw->composite.children[i], (int)lw, (int)h);
+		XtMoveWidget(widget, (int)lw, (int)h);
 	    }
 	    lw += bw;
 	    bh = widget->core.height + 2*widget->core.border_width;
@@ -231,15 +231,12 @@ static DoLayout(bbw, width, height, reply_width, reply_height, position)
 	if (bbw->composite.num_children == num_mapped_children)
 	    XMapSubwindows( XtDisplay((Widget)bbw), XtWindow((Widget)bbw) );
 	else {
-	    int i = num_mapped_children;
+	    int i = bbw->composite.num_children;
 	    register Widget *childP = bbw->composite.children;
-	    for (; i > 0; childP++) {
-		if (XtIsManaged(*childP) &&
-		    (*childP)->core.mapped_when_managed) {
+	    for (; i > 0; childP++, i--)
+		if (XtIsRealized(*childP) && XtIsManaged(*childP) &&
+		    (*childP)->core.mapped_when_managed)
 		    XtMapWidget(*childP);
-		    i--;
-		}
-	    }
 	}
     }
 
