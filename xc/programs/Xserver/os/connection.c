@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: connection.c,v 1.105 89/05/20 17:55:11 rws Exp $ */
+/* $XConsortium: connection.c,v 1.106 89/07/21 14:00:28 keith Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -679,9 +679,9 @@ CloseDownFileDescriptor(oc)
 void
 CheckConnections()
 {
-    long		mask[mskcnt];
+    long		mask;
     long		tmask[mskcnt]; 
-    register int	curclient;
+    register int	curclient, curoff;
     int			i;
     struct timeval	notime;
     int r;
@@ -689,19 +689,20 @@ CheckConnections()
     notime.tv_sec = 0;
     notime.tv_usec = 0;
 
-    COPYBITS(AllClients, mask);
     for (i=0; i<mskcnt; i++)
     {
-        while (mask[i])
+	mask = AllClients[i];
+        while (mask)
     	{
-	    curclient = ffs (mask[i]) - 1 + (i << 5);
+	    curoff = ffs (mask) - 1;
+ 	    curclient = curoff + (i << 5);
             CLEARBITS(tmask);
             BITSET(tmask, curclient);
             r = select (curclient + 1, (int *)tmask, (int *)NULL, (int *)NULL, 
 			&notime);
             if (r < 0)
 		CloseDownClient(clients[ConnectionTranslation[curclient]]);
-	    BITCLEAR(mask, curclient);
+	    mask &= ~(1 << curoff);
 	}
     }	
 }
