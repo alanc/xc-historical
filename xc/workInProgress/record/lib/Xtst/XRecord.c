@@ -2,7 +2,7 @@
  * Copyright 1988-1993 Network Computing Devices, Inc.  All rights reserved.
  * An unpublished work.
  * 
- * $XConsortium$
+ * $XConsortium: XRecord.c,v 1.1 94/01/29 17:44:56 rws Exp $
  */
 
 #include <stdio.h>
@@ -104,7 +104,7 @@ _XCGHandler(dpy, rep, buf, len, data)
     attr->client_seq = repl->client_seq;
     attr->client_swapped = repl->client_swapped; 
     attr->direction = repl->direction;
-    memcpy(attr->data, repl->data, sizeof(XRecordDatum)); 
+    memcpy((char *)&attr->data, (char *)&repl->data, sizeof(XRecordDatum)); 
     return True;
 }
 
@@ -161,11 +161,11 @@ XRecordCreateCG(dpy, record_flags)
 
     if(record_flags == (XRecordFlags *)NULL)
     { 
-         memset(&(req->record_flags), 0L, SIZEOF(XRecordFlags));           
+         bzero((char *)&(req->record_flags), SIZEOF(XRecordFlags));           
     } 
     else 
     {  
- 	memcpy(&(req->record_flags), (char *)record_flags, 
+ 	memcpy((char *)&(req->record_flags), (char *)record_flags, 
 	SIZEOF(XRecordFlags)); 
     } 
     UnlockDisplay(dpy);
@@ -196,9 +196,9 @@ Status
 XRecordChangeCG(dpy, config, id_base, record_flags, add)
     Display 		*dpy;
     XRecordConfig	config;
-    CARD32      	id_base;
+    XID      	        id_base;
     XRecordFlags  	*record_flags;
-    BOOL		add;
+    Bool		add;
 {
     XExtDisplayInfo *info = find_display (dpy);
     register xRecordChangeConfigReq 	*req;  
@@ -210,7 +210,7 @@ XRecordChangeCG(dpy, config, id_base, record_flags, add)
     req->minor_opcode = X_RecordChangeConfig;   
     req->cid = config;
     req->id_base = id_base;
-    memcpy(&(req->record_flags), (XRecordFlags *)record_flags, 
+    memcpy((char *)&(req->record_flags), (char *)record_flags, 
 	SIZEOF(XRecordFlags));
     req->add = add;
     UnlockDisplay(dpy);
@@ -239,8 +239,8 @@ XRecordGetCG(dpy, config, ret)
 	SyncHandle();
 	return False;
     }
-    memset(ret, 0L, sizeof(XRecordState) );
-    memcpy(ret, rep.record_state, sizeof(XRecordState)); 
+    bzero((char *)ret, sizeof(XRecordState) );
+    memcpy((char *)ret, (char *)&rep.record_state, sizeof(XRecordState)); 
     UnlockDisplay(dpy);
     SyncHandle();    
     return True;
@@ -250,7 +250,7 @@ Status
 XRecordEnableCG(dpy, config, enable, attr)
     Display 		*dpy;
     XRecordConfig 	config;
-    BOOL 		enable;
+    Bool 		enable;
     XRecordEnableCGReply *attr;
 {
     XExtDisplayInfo *info = find_display (dpy);

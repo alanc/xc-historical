@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: record.h,v 1.1 94/01/29 17:43:47 rws Exp $ */
 /***************************************************************************
  * Copyright 1994 Network Computing Devices;
  * Portions Copyright 1988 by Digital Equipment Corporation and the
@@ -43,40 +43,6 @@
 #define XRecordActive         0L    	/* If sending/receiving between client/ext */
 
 #define XRecordNumEvents      1L
-#ifndef MAX
-# define MAX(a,b) ((a) > (b) ? (a) : (b))
-#endif
-
-extern int XRecordRequestVector(
-#if NeedFunctionPrototypes
-	ClientPtr client
-#endif
-);
-
-extern int  XRecordEventVector(
-#if NeedFunctionPrototypes
-	ClientPtr client, 
-        xEvent *x_event
-#endif
-);
-extern int XRecordErrorVector(
-#if NeedFunctionPrototypes
-	ClientPtr client, 
-        xError *x_error
-#endif
-); 
-
-extern int ProcRecordDispatch(
-#if NeedFunctionPrototypes
-	ClientPtr client
-#endif
-);
-
-extern int sProcRecordDispatch(
-#if NeedFunctionPrototypes
-	ClientPtr client
-#endif
-);
 
 #ifndef _XRECORD_SERVER_
 
@@ -106,9 +72,9 @@ extern Status XRecordChangeCG(
 #if NeedFunctionPrototypes
     	Display* 		/* dpy */, 
         XRecordConfig 		/* config */, 
-        CARD32 		        /* id_base */, 
+        XID 		        /* id_base */, 
     	XRecordFlags* 		/* record_flags */,  
-        BOOL			/* add/delete id_base */
+        Bool			/* add/delete id_base */
 #endif
 );
 
@@ -124,7 +90,8 @@ extern Status XRecordEnableCG(
 #if NeedFunctionPrototypes
     	Display*		/* dpy */,
         XRecordConfig 		/* config */, 
-        BOOL 		        /* enable */
+        Bool 		        /* enable */,
+	XRecordEnableCGReply*	/* attr */
 #endif
 ); 
 
