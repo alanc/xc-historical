@@ -1,7 +1,7 @@
 /* 
- * $Locker:  $ 
+ * $Locker: jim $ 
  */ 
-static char	*rcsid = "$Header: xwud.c,v 1.16 88/01/04 08:49:47 rws Exp $";
+static char	*rcsid = "$Header: xwud.c,v 1.17 88/01/31 16:05:46 jim Locked $";
 #include <X11/copyright.h>
 
 /* Copyright 1985, 1986, Massachusetts Institute of Technology */
@@ -32,7 +32,7 @@ static char	*rcsid = "$Header: xwud.c,v 1.16 88/01/04 08:49:47 rws Exp $";
  */
 
 #ifndef lint
-static char *rcsid_xwud_c = "$Header: xwud.c,v 1.16 88/01/04 08:49:47 rws Exp $";
+static char *rcsid_xwud_c = "$Header: xwud.c,v 1.17 88/01/31 16:05:46 jim Locked $";
 #endif
 
 #include <X11/Xos.h>
@@ -48,14 +48,8 @@ extern int errno;
 
 usage()
 {
-    outl("usage: %s [-help] [-debug] [-inverse] [-in <file>] [display]\n",
+    outl("usage: %s [display host:dpy] [-help] [-debug] [-inverse] [-in <file>]\n",
 	 program_name);
-    fprintf (stderr,
-	"where display can be specified as:\n");
-    fprintf (stderr,
-	"    -display host:dpy    or -d host:dpy\n");
-    fprintf (stderr,
-	"    host:dpy             obselete format, use -display\n");
     exit(1);
 }
 
