@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfb.h,v 5.6 89/07/18 17:59:50 rws Exp $ */
+/* $XConsortium: mfb.h,v 5.7 89/07/26 12:09:47 rws Exp $ */
 /* Monochrome Frame Buffer definitions 
    written by drewry, september 1986
 */
@@ -101,6 +101,7 @@ extern int mfbPolyText16();
 extern int mfbPolyText8();
 extern PixmapPtr mfbCopyPixmap();
 extern RegionPtr mfbPixmapToRegion();
+extern void mfbSolidPP();
 extern void mfbPushPixels();
 
 /* text for glyphs <= 32 bits wide */
