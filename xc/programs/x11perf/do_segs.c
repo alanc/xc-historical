@@ -22,7 +22,6 @@ SOFTWARE.
 ******************************************************************************/
 
 #include "x11perf.h"
-#include "stdio.h"
 
 static XSegment *segments;
 static GC       pgc;
@@ -37,78 +36,120 @@ int InitSegments(xp, p, reps)
     int i;
     int     rows;       /* Number of rows filled in current column      */
     int x, y;		/* base of square to draw in			*/
-    int x1, y1;		/* offsets into square				*/
-    int x1inc, y1inc;   /* How to get to next x1, y1			*/
-    int minorphase;     /* # iterations left with current x1inc, y1inc  */
-    int majorphase;     /* count 0..3 for which type of x1inc, y1inc    */
+    int x1, y1, x2, y2;	/* offsets into square				*/
+    int phase;		/* how far into 0..8*size we are		*/
+    int phaseinc;       /* how much to increment phase at each segment  */
+    int size8;		/* 8 * size					*/
     XGCValues   gcv;
 
     pgc = xp->fggc;
 
     size = p->special;
+    size8 = 8 * size;
     half = (size + 19) / 20;
 
     segments = (XSegment *)malloc((p->objects) * sizeof(XSegment));
 
-    /* All this x, x1, x1inc, etc. stuff is to create a pattern that
+    /* All this x, x1, etc. stuff is to create a pattern that
 	(1) scans down the screen vertically, with each new segment going
-	    into a square of size x size.
+	    into a square of size^2.
 
 	(2) rotates the endpoints clockwise around the square
 
-	(3) CapNotLast used so we can create segments of length 1 that
-	    nonetheless have a distince direction
+	(3) rotates by ``large'' steps if we aren't going to paint enough
+	    segments to get full coverage
+
+	(4) uses CapNotLast so we can create segments of length 1 that
+	    nonetheless have a distinct direction
     */
 
     x     = half;  y     = half;
-    x1    = 0;     y1    = 0;
-    x1inc = 1;     y1inc = 0;
-    minorphase = size;
-    majorphase = 0;
-
+    phase = 0;
+    phaseinc = size8 / p->objects;
+    if (phaseinc == 0) phaseinc = 1;
     rows = 0;
 
     for (i = 0; i != p->objects; i++) {    
+	switch (phase / size) {
+	case 0:
+	    x1 = 0;
+	    y1 = 0;
+	    x2 = size;
+	    y2 = phase;
+	    break;
+
+	case 1:
+	    x1 = phase % size;    
+	    y1 = 0;
+	    x2 = size;
+	    y2 = size;
+	    break;
+
+	case 2:
+	    x1 = size;
+	    y1 = 0;
+	    x2 = size - phase % size;
+	    y2 = size;
+	    break;
+
+	case 3:
+	    x1 = size;
+	    y1 = phase % size;
+	    x2 = 0;
+	    y2 = size;
+	    break;
+
+	case 4:
+	    x1 = size;
+	    y1 = size;
+	    x2 = 0;
+	    y2 = size - phase % size;
+	    break;
+
+	case 5:
+	    x1 = size - phase % size;
+	    y1 = size;
+	    x2 = 0;
+	    y2 = 0;
+	    break;
+
+	case 6:
+	    x1 = 0;
+	    y1 = size;
+	    x2 = phase % size;
+	    y2 = 0;
+	    break;
+
+	case 7:
+	    x1 = 0;
+	    y1 = size - phase % size;
+	    x2 = size;
+	    y2 = 0;
+	    break;
+	} /* end switch */
+
 	segments[i].x1 = x + x1;
 	segments[i].y1 = y + y1;
-	segments[i].x2 = x + size - x1;
-	segments[i].y2 = y + size - y1;
+	segments[i].x2 = x + x2;
+	segments[i].y2 = y + y2;
 
-/*
-	if (i < 20) {
-	    printf("%d %d %d %d\n", segments[i].x1, segments[i].y1,
-		    segments[i].x2, segments[i].y2);
-	}
-*/
 	/* Change square to draw segment in */
 	rows++;
-	y += size + 1;
+	y += size;
 	if (y >= HEIGHT - size - half || rows == MAXROWS) {
 	    /* Go to next column */
 	    rows = 0;
 	    y = half;
-	    x += size + 1;
+	    x += size;
 	    if (x >= WIDTH - size - half) {
 		x = half;
 	    }
 	}
 
-	/* Change coordinates of offsets in square */
-	x1 += x1inc;
-	y1 += y1inc;
+	/* Increment phase */
+	phase += phaseinc;
+	if (phase >= size8) phase -= size8;
 
-	/* Change increments if needed */
-	minorphase--;
-	if (minorphase <= 0) {
-	    minorphase = size;
-	    majorphase = (majorphase + 1) % 4;
-	    switch (majorphase) {
-		case 0: x1inc =  1; y1inc =  0; break;
-		case 1: x1inc =  0; y1inc =  1; break;
-		case 2: x1inc = -1; y1inc =  0; break;
-		case 3: x1inc =  0; y1inc = -1; break;
-	    }
-	}
     }
 
     gcv.cap_style = CapNotLast;
