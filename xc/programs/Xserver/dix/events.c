@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: events.c,v 5.32 91/01/03 09:34:27 rws Exp $ */
+/* $XConsortium: events.c,v 5.33 91/01/31 16:34:37 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -2899,6 +2899,7 @@ InitEvents()
     sprite.hotLimits.x2 = 0;
     sprite.hotLimits.y2 = 0;
     syncEvents.replayDev = (DeviceIntPtr)NULL;
+    syncEvents.replayWin = NullWindow;
     while (syncEvents.pending)
     {
 	QdEventPtr next = syncEvents.pending->next;
@@ -2907,6 +2908,8 @@ InitEvents()
     }
     syncEvents.pendtail = &syncEvents.pending;
     syncEvents.playingEvents = FALSE;
+    syncEvents.time.months = 0;
+    syncEvents.time.milliseconds = 0;	/* hardly matters */
     currentTime.months = 0;
     currentTime.milliseconds = GetTimeInMillis();
     for (i = 0; i < DNPMCOUNT; i++)
