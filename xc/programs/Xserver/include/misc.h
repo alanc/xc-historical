@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: misc.h,v 1.45 87/11/05 17:21:50 newman Locked $ */
+/* $Header: misc.h,v 1.46 87/12/07 18:11:32 rws Locked $ */
 #ifndef MISC_H
 #define MISC_H 1
 /*
@@ -43,8 +43,8 @@ extern unsigned long globalSerialNumber;
 
 typedef unsigned char *pointer;
 typedef int Bool;
-typedef long PIXEL;
-typedef int ATOM;
+typedef unsigned long PIXEL;
+typedef unsigned long ATOM;
 
 
 #ifndef TRUE
