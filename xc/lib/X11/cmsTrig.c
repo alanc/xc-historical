@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsTrig.c,v 1.2 91/07/23 12:13:52 rws Exp $" */
+/* $XConsortium: XcmsTrig.c,v 1.3 91/08/17 16:57:35 rws Exp $" */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -53,9 +53,9 @@ extern double _XcmsSquareRoot();
  *	FORWARD DECLARATIONS
  */
 double _XcmsCosine();
-double _XcmsModulo();
-double _XcmsModuloF();
-double _XcmsPolynomial();
+static double _XcmsModulo();
+static double _XcmsModuloF();
+static double _XcmsPolynomial();
 double _XcmsSine();
 double _XcmsArcTangent();
 
@@ -284,7 +284,7 @@ double x;
  *	Fred Fish
  *
  */
-double _XcmsModulo (value, base)
+static double _XcmsModulo (value, base)
 double value;
 double base;
 {
@@ -306,7 +306,7 @@ double base;
  * "math.c" instantiates a copy of the inline function
  * defined in "math.h".
  */
-double
+static double
 _XcmsModuloF(val, dp)
 double val;
 register double *dp;
@@ -368,7 +368,7 @@ register double *dp;
  *
  */
 
-double _XcmsPolynomial (order, coeffs, x)
+static double _XcmsPolynomial (order, coeffs, x)
 register int order;
 double *coeffs;
 double x;
