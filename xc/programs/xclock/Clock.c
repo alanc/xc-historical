@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Clock.c,v 1.28 88/02/26 10:25:14 swick Exp $";
+static char rcsid[] = "$Header: Clock.c,v 1.29 88/03/03 14:40:15 swick Exp $";
 #endif lint
 
 
@@ -158,7 +158,8 @@ static void Initialize (request, new)
        str = asctime(&tm);
        if (w->clock.font == NULL)
           w->clock.font = XQueryFont( XtDisplay(w),
-				      DefaultGCOfScreen(XtScreen(w)) );
+				      XGContextFromGC(
+					   DefaultGCOfScreen(XtScreen(w))) );
        min_width = XTextWidth(w->clock.font, str, strlen(str)) +
 	  2 * w->clock.padding;
        min_height = w->clock.font->ascent +
