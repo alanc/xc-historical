@@ -39,17 +39,64 @@
  */
 
 #include "Xtrans.h"
-/*
-#include <debug/malloc.h>
-*/
+
 #ifdef DEBUG
 #include <stdio.h>
 #endif /* DEBUG */
 
 #include <errno.h>
-
 #ifdef X_NOT_STDC_ENV
 extern int  errno;		/* Internal system error number. */
+#endif
+
+#ifndef WIN32
+#include <sys/socket.h>
+
+#ifndef X_NOT_POSIX
+#ifdef _POSIX_SOURCE
+#include <limits.h>
+#else
+#define _POSIX_SOURCE
+#include <limits.h>
+#undef _POSIX_SOURCE
+#endif
+#endif
+#ifndef OPEN_MAX
+#ifdef SVR4
+#define OPEN_MAX 256
+#else
+#include <sys/param.h>
+#ifndef OPEN_MAX
+#ifdef NOFILE
+#define OPEN_MAX NOFILE
+#else
+#define OPEN_MAX NOFILES_MAX
+#endif
+#endif
+#endif
+#endif
+
+#if OPEN_MAX > 256
+#undef OPEN_MAX
+#define OPEN_MAX 256
+#endif
+
+#define ESET(val) errno = val
+#define EGET() errno
+
+#else /* WIN32 */
+
+#define ESET(val) WSASetLastError(val)
+#define EGET() WSAGetLastError()
+
+#endif /* WIN32 */
+
+#ifndef NULL
+#define NULL 0
+#endif
+
+#ifdef X11
+#define X_TCP_PORT	6000
 #endif
 
 struct _XtransConnInfo {
