@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xfd.c,v 1.12 89/06/08 14:14:33 jim Exp $
+ * $XConsortium: xfd.c,v 1.13 89/06/13 11:48:38 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -172,6 +172,7 @@ main (argc, argv)
     i = 0;
     XtSetArg (av[i], XtNfont, &fs); i++;
     XtGetValues (fontGrid, av, i);
+    if (!fs) usage ();			/* no font specified */
     fontname = get_font_name (XtDisplay(toplevel), fs);
     if (!fontname) fontname = "unknown font!";
     i = 0;

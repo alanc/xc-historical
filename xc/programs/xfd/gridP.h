@@ -14,10 +14,12 @@ extern FontGridClassRec fontgridClassRec;
 
 typedef struct _FontGridPart {
     XFontStruct *	text_font;		/* font to display */
+    int			cell_cols, cell_rows;  /* number of cells */
+    int			cell_width, cell_height;  /* size of cell */
     Pixel		foreground_pixel;	/* color of text */
+    Pixel		box_pixel;	/* for box_chars */
     Boolean		center_chars;	/* center characters in grid */
     Boolean		box_chars;	/* put box around logical width */
-    Pixel		box_pixel;	/* for box_chars */
     XtCallbackList	callbacks;	/* for notifying caller */
     int			internal_pad;	/* extra padding inside grid */
     long		start_char;	/* first character of grid */
@@ -25,8 +27,7 @@ typedef struct _FontGridPart {
     /* private data */
     GC			text_gc;	/* printing text */
     GC			box_gc;		/* for box_chars */
-    int			cell_width, cell_height;  /* size of cell */
-    int			cell_cols, cell_rows;  /* number of cells */
+    int			xoff, yoff;	/* extra offsets within grid */
 } FontGridPart;
 
 typedef struct _FontGridRec {
@@ -35,15 +36,16 @@ typedef struct _FontGridRec {
     FontGridPart	fontgrid;
 } FontGridRec;
 
-#define CellWidth(fgw) (((fgw)->fontgrid.text_font->max_bounds.width) + \
-			((fgw)->fontgrid.internal_pad * 2))
-#define CellHeight(fgw) ((fgw)->fontgrid.text_font->ascent + \
-			 (fgw)->fontgrid.text_font->descent + \
-			 ((fgw)->fontgrid.internal_pad * 2))
+#define DefaultCellWidth(fgw) (((fgw)->fontgrid.text_font->max_bounds.width) \
+			       + ((fgw)->fontgrid.internal_pad * 2))
+#define DefaultCellHeight(fgw) ((fgw)->fontgrid.text_font->ascent + \
+				(fgw)->fontgrid.text_font->descent + \
+				((fgw)->fontgrid.internal_pad * 2))
 
-#define CellColumns(fgw) (((fgw)->core.width + (fgw)->fontgrid.grid_width) \
-			  / (fgw)->fontgrid.cell_width)
-#define CellRows(fgw) (((fgw)->core.height + (fgw)->fontgrid.grid_width) \
-		       / (fgw)->fontgrid.cell_height)
+
+#define CellWidth(fgw) (((fgw)->core.width + (fgw)->fontgrid.grid_width) \
+			/ (fgw)->fontgrid.cell_cols)
+#define CellHeight(fgw) (((fgw)->core.height + (fgw)->fontgrid.grid_width) \
+		       / (fgw)->fontgrid.cell_rows)
 
 #endif /* _FontGridP_h_ */

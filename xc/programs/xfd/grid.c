@@ -1,5 +1,5 @@
 /*
- * $XConsortium: fontgrid.c,v 1.11 89/06/08 14:21:02 jim Exp $
+ * $XConsortium: fontgrid.c,v 1.12 89/07/16 15:36:56 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -43,6 +43,14 @@ static XtResource resources[] = {
 #define offset(field) XtOffset(FontGridWidget, fontgrid.field)
     { XtNfont, XtCFont, XtRFontStruct, sizeof(XFontStruct *),
 	offset(text_font), XtRString, (caddr_t) NULL },
+    { XtNcellColumns, XtCCellColumns, XtRInt, sizeof(int),
+	offset(cell_cols), XtRString, (caddr_t) "16" },
+    { XtNcellRows, XtCCellRows, XtRInt, sizeof(int),
+	offset(cell_rows), XtRString, (caddr_t) "16" },
+    { XtNcellWidth, XtCCellWidth, XtRInt, sizeof(int),
+	offset(cell_width), XtRString, (caddr_t) "-1" },
+    { XtNcellHeight, XtCCellHeight, XtRInt, sizeof(int),
+	offset(cell_height), XtRString, (caddr_t) "-1" },
     { XtNstartChar, XtCStartChar, XtRLong, sizeof(long),
 	offset(start_char), XtRString, (caddr_t) "-1" },
     { XtNforeground, XtCForeground, XtRPixel, sizeof(Pixel),
@@ -160,32 +168,29 @@ static void ClassInitialize ()
 static void Initialize (request, new)
     Widget request, new;
 {
+    FontGridWidget reqfg = (FontGridWidget) request;
     FontGridWidget newfg = (FontGridWidget) new;
     int tcols = 0, nrows = 16;
 
-    newfg->fontgrid.cell_width = CellWidth (newfg);
-    newfg->fontgrid.cell_height = CellHeight (newfg);
+    if (reqfg->fontgrid.cell_width == -1)
+      newfg->fontgrid.cell_width = DefaultCellWidth (newfg);
+    if (reqfg->fontgrid.cell_height == -1)
+      newfg->fontgrid.cell_height = DefaultCellHeight (newfg);
 
     /* give a nice size that fits one screen full */
-    if (newfg->core.width == 0) {
-	tcols = 16;
-	newfg->core.width = (newfg->fontgrid.cell_width * 16 +
-			     newfg->fontgrid.grid_width);
-    }
+    if (newfg->core.width == 0)
+      newfg->core.width = (newfg->fontgrid.cell_width * 
+			   newfg->fontgrid.cell_cols +
+			   newfg->fontgrid.grid_width);
 
-    if (newfg->core.height == 0) {
-	/* if small font, default to not showing extra empty lines */
-	if (newfg->fontgrid.text_font->max_byte1 == 0) {
-	    if (tcols == 0) {
-		tcols = ((newfg->core.width + newfg->fontgrid.grid_width) /
-			 newfg->fontgrid.cell_width);
-	    }
-	    nrows = (newfg->fontgrid.text_font->max_char_or_byte2 / tcols) + 1;
-	    if (nrows > 16) nrows = 16;
-	}
-	newfg->core.height = (newfg->fontgrid.cell_height * nrows +
-			      newfg->fontgrid.grid_width);
-    }
+    if (newfg->core.height == 0) 
+      newfg->core.height = (newfg->fontgrid.cell_height * 
+			    newfg->fontgrid.cell_rows +
+			    newfg->fontgrid.grid_width);
+
+    /*
+     * select the first character
+     */
 
     if (newfg->fontgrid.start_char == -1L) {
 	newfg->fontgrid.start_char = 
@@ -229,8 +234,13 @@ static void Resize (gw)
     FontGridWidget fgw = (FontGridWidget) gw;
 
     /* recompute in case we've changed size */
-    fgw->fontgrid.cell_cols = CellColumns (fgw);
-    fgw->fontgrid.cell_rows = CellRows (fgw);
+    fgw->fontgrid.cell_width = CellWidth (fgw);
+    fgw->fontgrid.cell_height = CellHeight (fgw);
+    fgw->fontgrid.xoff = (fgw->fontgrid.cell_width -
+			    DefaultCellWidth (fgw)) / 2;
+    fgw->fontgrid.yoff = (fgw->fontgrid.cell_height -
+			    DefaultCellHeight (fgw)) / 2;
+
 }
 
 
@@ -323,7 +333,7 @@ static void paint_grid (fgw, col, row, ncols, nrows)
 	n = prevn;
 	for (i = 0, x = startx; i < ncols; i++, x += cw) {
 	    XChar2b thechar;
-	    int xoff = 0, yoff = 0;
+	    int xoff = p->xoff, yoff = p->yoff;
 
 	    if (n > maxn) goto done;	/* no break out of nested */
 
@@ -380,10 +390,8 @@ static Boolean SetValues (current, request, new)
 
     if (curfg->fontgrid.text_font != newfg->fontgrid.text_font ||
 	curfg->fontgrid.internal_pad != newfg->fontgrid.internal_pad) {
-	newfg->fontgrid.cell_width = CellWidth (newfg);
-	newfg->fontgrid.cell_height = CellHeight (newfg);
-	newfg->fontgrid.cell_cols = CellColumns (newfg);
-	newfg->fontgrid.cell_rows = CellRows (newfg);
+	newfg->fontgrid.cell_width = DefaultCellWidth (newfg);
+	newfg->fontgrid.cell_height = DefaultCellHeight (newfg);
 	redisplay = TRUE;
     }
 

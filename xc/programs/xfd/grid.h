@@ -4,6 +4,15 @@
 typedef struct _FontGridRec *FontGridWidget;
 extern WidgetClass fontgridWidgetClass;
 
+#define XtNcellRows "cellRows"
+#define XtCCellRows "CellRows"
+#define XtNcellColumns "cellColumns"
+#define XtCCellColumns "CellColumns"
+#define XtNcellWidth "cellWidth"
+#define XtCCellWidth "CellWidth"
+#define XtNcellHeight "cellHeight"
+#define XtCCellHeight "CellHeight"
+
 #define XtNcenterChars "centerChars"
 #define XtCCenterChars "CenterChars"
 
