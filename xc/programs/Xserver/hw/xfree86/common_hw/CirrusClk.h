@@ -1,4 +1,4 @@
-/* $XConsortium $ */
+/* $XConsortium: $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/CirrusClk.h,v 3.0 1994/10/20 06:09:42 dawes Exp $ */
 
 int CirrusFindClock( 

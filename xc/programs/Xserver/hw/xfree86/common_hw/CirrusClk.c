@@ -1,4 +1,4 @@
-/* $XConsortium $ */
+/* $XConsortium: $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/CirrusClk.c,v 3.4 1995/01/15 10:33:34 dawes Exp $ */
 
 /*
