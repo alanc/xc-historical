@@ -1,4 +1,4 @@
-/* $Header$ */
+/* $Header: FormP.h,v 1.4 88/01/29 10:53:13 swick Locked $ */
 /* Copyright	Massachusetts Institute of Technology	1987 */
 
 /* Form widget private definitions */
@@ -7,6 +7,8 @@
 #define _FormP_h
 
 #include <X/Form.h>
+
+#define XtREdgeType		"EdgeType"
 
 typedef struct {int empty;} FormClassPart;
 
