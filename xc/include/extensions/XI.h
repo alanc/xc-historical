@@ -1,4 +1,4 @@
-/* $Header: XI.h,v 1.9 91/02/22 15:20:26 rws Exp $ */
+/* $Header: XI.h,v 1.10 91/04/14 13:07:06 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -133,7 +133,7 @@ SOFTWARE.
 #define XPOINTER		0
 #define XKEYBOARD		1
 
-#define UseXKeyboard		0
+#define UseXKeyboard		0xFF
 
 #define IsXPointer		0
 #define IsXKeyboard		1
