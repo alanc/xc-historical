@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XCrGC.c,v 11.22 88/01/30 14:09:08 jim Locked $ */
+/* $Header: XCrGC.c,v 11.23 88/02/07 11:07:50 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
@@ -17,11 +17,11 @@ static XGCValues initial_GC = {
     FillSolid,	/* fill_style */
     EvenOddRule,/* fill_rule */
     ArcPieSlice,/* arc_mode */
-    ~0,		/* tile, impossible (unknown) resource */
-    ~0,		/* stipple, impossible (unknown) resource */
+    ~0L,	/* tile, impossible (unknown) resource */
+    ~0L,	/* stipple, impossible (unknown) resource */
     0,		/* ts_x_origin */
     0,		/* ts_y_origin */
-    ~0,		/* font, impossible (unknown) resource */
+    ~0L,	/* font, impossible (unknown) resource */
     ClipByChildren, /* subwindow_mode */
     True,	/* graphics_exposures */
     0,		/* clip_x_origin */
@@ -208,13 +208,13 @@ _XUpdateGCCache (gc, mask, att)
 	    gc->dirty |= GCArcMode;
 	  }
 
-    /* always write through resource ID changes */
+    /* always write through tile change, since client may have changed pixmap contents */
     if (mask & GCTile) {
 	    gv->tile = att->tile;
 	    gc->dirty |= GCTile;
 	  }
 
-    /* always write through resource ID changes */
+    /* always write through stipple change, since client may have changed pixmap contents */
     if (mask & GCStipple) {
 	    gv->stipple = att->stipple;
 	    gc->dirty |= GCStipple;
@@ -232,8 +232,8 @@ _XUpdateGCCache (gc, mask, att)
 	    gc->dirty |= GCTileStipYOrigin;
 	  }
 
-    /* always write through resource ID changes */
-    if (mask & GCFont) {
+    if (mask & GCFont)
+        if (gv->font != att->font) {
 	    gv->font = att->font;
 	    gc->dirty |= GCFont;
 	  }
