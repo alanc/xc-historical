@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Form.c,v 1.6 88/01/20 19:53:58 swick Locked $";
+static char rcsid[] = "$Header: Form.c,v 1.7 88/01/22 20:26:07 swick Locked $";
 #endif lint
 /*
  * Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
@@ -45,14 +45,14 @@ static XtEdgeType defEdge = XtRubber;
 
 #define Offset(field) XtOffset(FormConstraints, form.field)
 static XtResource formConstraintResources[] = {
-    {XtNtop, XtCEdge, XtRJustify, sizeof(XtEdgeType),
-	Offset(top), XtRJustify, (caddr_t)&defEdge},
-    {XtNbottom, XtCEdge, XtRJustify, sizeof(XtEdgeType),
-	Offset(bottom), XtRJustify, (caddr_t)&defEdge},
-    {XtNleft, XtCEdge, XtRJustify, sizeof(XtEdgeType),
-	Offset(left), XtRJustify, (caddr_t)&defEdge},
-    {XtNright, XtCEdge, XtRJustify, sizeof(XtEdgeType),
-	Offset(right), XtRJustify, (caddr_t)&defEdge},
+    {XtNtop, XtCEdge, XtREdgeType, sizeof(XtEdgeType),
+	Offset(top), XtREdgeType, (caddr_t)&defEdge},
+    {XtNbottom, XtCEdge, XtREdgeType, sizeof(XtEdgeType),
+	Offset(bottom), XtREdgeType, (caddr_t)&defEdge},
+    {XtNleft, XtCEdge, XtREdgeType, sizeof(XtEdgeType),
+	Offset(left), XtREdgeType, (caddr_t)&defEdge},
+    {XtNright, XtCEdge, XtREdgeType, sizeof(XtEdgeType),
+	Offset(right), XtREdgeType, (caddr_t)&defEdge},
     {XtNhorizDistance, XtCThickness, XrmRInt, sizeof(int),
 	Offset(dx), XrmRString, "-9999" /*DEFAULTVALUE*/ },
     {XtNfromHoriz, XtCWidget, XtRWidget, sizeof(Widget),
