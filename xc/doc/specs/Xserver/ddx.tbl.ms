@@ -16,6 +16,12 @@ Philip Karlton
 Todd Newman
 .AI
 Digital Equipment Corporation
+.AI
+minor revisions by
+.AU
+Bob Scheifler
+.AI
+Massachusetts Institute of Technology
 
 .LP
 The following document explains the
