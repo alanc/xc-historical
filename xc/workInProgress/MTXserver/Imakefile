@@ -4,7 +4,7 @@
      EXTENSIONS = $(EXTENSIONSRC)/server/libext.a
          EXTDIR = $(EXTENSIONSRC)/server
      ALLDDXDIRS = ddx/mi ddx/sun ddx/cfb ddx/apollo ddx/mfb ddx/lk201 \
-                    ddx/qvss ddx/qdss ddx/ibm/apa16 ddx/ibm/rt
+                    ddx/qvss ddx/qdss ddx/ibm/apa16 ddx/ibm/rt ddx/ibm/aed
       ALLOSDIRS = os/sysV os/4.2bsd
         SUBDIRS = dix $(ALLDDXDIRS) $(ALLOSDIRS)
            UNIX = os/4.2bsd/libos.a
@@ -37,7 +37,17 @@
 #define	Xapa16Server /* as nothing */
 #endif
 
-            ALL = XqvssServer XqdssServer XsunServer XapolloServer Xapa16Server
+#ifndef	XaedServer
+#define	XaedServer /* as nothing */
+#endif
+
+            ALL = \
+		XqvssServer \
+		XqdssServer \
+		XsunServer \
+		XapolloServer \
+		Xapa16Server \
+		XaedServer
 
 #
 # This turns off the default rule for compiling .c files because
@@ -91,11 +101,22 @@ ServerTarget(Xsun,$(EXTDIR) $(SUNDIRS),$(SUNOBJS),$(SUNLIBS),$(SUNSYSLIBS))
 #
 APA16DIRS = dix ddx/mi ddx/mfb ddx/ibm/apa16 ddx/ibm/rt os/4.2bsd
 APA16OBJS = ddx/ibm/rt/rtinit.o ddx/ibm/rt/rtio.o
-APA16LIBS = ddx/ibm/rt/librt.a ddx/ibm/apa16/libapa16.a \
+APA16LIBS = ddx/ibm/apa16/libapa16.a ddx/ibm/rt/librt.a \
 		$(DIX) $(UNIX) $(MFB) $(MI) $(EXTENSIONS)
 Xapa16DIRS = $(APA16DIRS)
 
 ServerTarget(Xapa16,$(EXTDIR) $(APA16DIRS),$(APA16OBJS),$(APA16LIBS),$(SYSLIBS))
+
+#
+# aed server
+#
+AEDDIRS = dix ddx/mi ddx/mfb ddx/ibm/aed ddx/ibm/rt os/4.2bsd
+AEDOBJS = ddx/ibm/rt/rtinit.o ddx/ibm/rt/rtio.o
+AEDLIBS = ddx/ibm/aed/libaed.a ddx/ibm/rt/librt.a \
+		$(DIX) $(UNIX) $(MFB) $(MI) $(EXTENSIONS)
+XaedDIRS = $(AEDDIRS)
+
+ServerTarget(Xaed,$(EXTDIR) $(AEDDIRS),$(AEDOBJS),$(AEDLIBS),$(SYSLIBS))
 
 
 #
