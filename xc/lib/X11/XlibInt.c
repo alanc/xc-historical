@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlibInt.c,v 11.173 93/08/15 16:25:39 rws Exp $
+ * $XConsortium: XlibInt.c,v 11.174 93/08/20 16:12:20 rws Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986, 1987 */
@@ -166,7 +166,7 @@ _XWaitForWritable(dpy
 		  )
     Display *dpy;
 #ifdef XTHREADS
-    condition_t cv;		/* our reading condition variable */
+    xcondition_t cv;		/* our reading condition variable */
 #endif
 {
 #ifdef USE_POLL
@@ -355,7 +355,7 @@ _XFlush (dpy)
 
 static _XFlushInt (dpy, cv)
 	register Display *dpy;
-        register condition_t cv;
+        register xcondition_t cv;
 {
 #endif /* XTHREADS*/
 	register long size, todo;
