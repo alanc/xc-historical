@@ -1,6 +1,6 @@
 #if !defined(lint) && !defined(SABER)
 static char rcs_id[] =
-    "$XConsortium: command.c,v 2.30 89/10/08 14:06:39 rws Exp $";
+    "$XConsortium: command.c,v 2.31 89/11/13 11:01:46 converse Exp $";
 #endif
 /*
  *			  COPYRIGHT 1987, 1989
@@ -35,7 +35,6 @@ static char rcs_id[] =
 #ifndef SYSV
 #include <sys/wait.h>
 #endif	/* SYSV */
-#include <sys/resource.h>
 
 /* number of user input events to queue before malloc */
 #define TYPEAHEADSIZE 20
