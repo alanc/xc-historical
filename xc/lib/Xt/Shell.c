@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Shell.c,v 1.81 89/12/13 17:09:58 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Shell.c,v 1.82 89/12/15 12:02:11 jim Exp $";
 /* $oHeader: Shell.c,v 1.7 88/09/01 11:57:00 asente Exp $ */
 #endif /* lint */
 
@@ -555,6 +555,16 @@ static XtResource applicationResources[]=
 
 static void ApplicationInitialize();
 static void ApplicationDestroy();
+static void ApplicationShellInsertChild();
+
+static CompositeClassExtensionRec compositeClassExtension = {
+    /* next_extension	*/	NULL,
+    /* record_type	*/	NULLQUARK,
+    /* version		*/	XtCompositeExtensionVersion,
+    /* record_size	*/	sizeof(CompositeClassExtensionRec),
+    /* accepts_objects	*/	TRUE
+};
+
 
 externaldef(applicationshellclassrec) ApplicationShellClassRec applicationShellClassRec = {
   {
@@ -565,7 +575,7 @@ externaldef(applicationshellclassrec) ApplicationShellClassRec applicationShellC
     /* class_part_initialize*/	NULL,
     /* Class init'ed ?    */	FALSE,
     /* initialize         */    ApplicationInitialize,
-    /* initialize_notify    */	NULL,		
+    /* initialize_notify  */	NULL,		
     /* realize            */    XtInheritRealize,
     /* actions            */    NULL,
     /* num_actions        */    0,
@@ -580,30 +590,30 @@ externaldef(applicationshellclassrec) ApplicationShellClassRec applicationShellC
     /* resize             */    XtInheritResize,
     /* expose             */    NULL,
     /* set_values         */    NULL,
-    /* set_values_hook      */	NULL,			
-    /* set_values_almost    */	XtInheritSetValuesAlmost,
-    /* get_values_hook      */	NULL,			
+    /* set_values_hook    */	NULL,			
+    /* set_values_almost  */	XtInheritSetValuesAlmost,
+    /* get_values_hook    */	NULL,			
     /* accept_focus       */    NULL,
     /* intrinsics version */	XtVersion,
     /* callback offsets   */    NULL,
-    /* tm_table		    */  XtInheritTranslations,
-    /* query_geometry	    */  NULL,
-    /* display_accelerator  */  NULL,
-    /* extension	    */  NULL
+    /* tm_table		  */	XtInheritTranslations,
+    /* query_geometry	  */	NULL,
+    /* display_accelerator*/	NULL,
+    /* extension	  */	NULL
   },{
     /* geometry_manager   */    XtInheritGeometryManager,
     /* change_managed     */    XtInheritChangeManaged,
-    /* insert_child	  */	XtInheritInsertChild,
+    /* insert_child	  */	ApplicationShellInsertChild,
     /* delete_child	  */	XtInheritDeleteChild,
-    /* extension	    */  NULL
+    /* extension	  */	(XtPointer)&compositeClassExtension
   },{
-    /* extension	    */  NULL
+    /* extension	  */	NULL
   },{
-    /* extension	    */  NULL
+    /* extension	  */	NULL
   },{
-    /* extension	    */  NULL
+    /* extension	  */	NULL
   },{
-    /* extension	    */  NULL
+    /* extension	  */	NULL
   }
 };
 
@@ -1926,4 +1936,20 @@ void _XtShellGetCoordinates( widget, x, y)
     }
     *x = w->core.x;
     *y = w->core.y;
+}
+
+
+static void ApplicationShellInsertChild(widget)
+    Widget widget;
+{
+    if (! XtIsWidget(widget) && XtIsRectObj(widget)) {
+	XtAppWarningMsg(XtWidgetToApplicationContext(widget),
+	       "invalidClass", "applicationShellInsertChild", "XtToolkitError",
+	       "ApplicationShell does not accept RectObj children; ignored",
+	       (String*)NULL, (Cardinal*)NULL);
+    }
+    else {
+	(*((CompositeWidgetClass)applicationShellClassRec.core_class.
+	   superclass)->composite_class.insert_child) (widget);
+    }
 }
