@@ -1,4 +1,4 @@
-XCOMM site:  $XConsortium: site.def,v 1.128 94/06/03 21:38:49 matt Exp $
+XCOMM site:  $XConsortium: site.def,v 1.129 94/07/21 16:49:44 gildea Exp gildea $
 
 /*****************************************************************************
  *                                                                           *
@@ -244,6 +244,7 @@ clean::									@@\
 #define XmhLibDir /usr/local/lib/mh
 #endif
 
+#undef DefaultUserPath
 #define DefaultUserPath /bin:/usr/bin:$(BINDIR):/usr/ucb:/usr/local/bin:/usr/local/bin/mh:/site/local/scripts
 
 #include <host.def>
