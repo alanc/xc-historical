@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: input.c,v 1.15 91/05/09 17:23:26 gildea Exp $
+ *	$XConsortium: input.c,v 1.16 91/05/10 16:57:16 gildea Exp $
  */
 
 /*
@@ -79,34 +79,9 @@ Input (keyboard, screen, event, eightbit)
 	int	nbytes;
 	KeySym  keysym;
 	ANSI	reply;
-	char	tmp[STRBUFSIZE];
-	char	*bp = strbuf;
-	int	count;
-	XEvent	ev;
 
-	count = XLookupString (event, tmp, STRBUFSIZE,
-			       &keysym, &compose_status);
-	strncpy(bp, tmp, count);
-	bp += count;
-	nbytes = count;
-	/*
-	 * Make sure we get every keystroke available
-	 * before we start doing the update, so can issue a single
-	 * DrawString instead of several.
-	 */
-	while (nbytes < STRBUFSIZE && 
-	       XCheckMaskEvent(screen->display, KeyPressMask, &ev))	{
-	    count = XLookupString ((XKeyEvent *)&ev, tmp, STRBUFSIZE,
-				   &keysym, &compose_status);
-	    if (nbytes + count <= STRBUFSIZE) {
-		strncpy(bp, tmp, count);
-		bp += count;
-		nbytes += count;
-	    } else {
-		XPutBackEvent(screen->display, &ev);
-		break;
-	    }
-	}
+	nbytes = XLookupString (event, strbuf, STRBUFSIZE,
+				&keysym, &compose_status);
 
 	string = &strbuf[0];
 	reply.a_pintro = 0;
