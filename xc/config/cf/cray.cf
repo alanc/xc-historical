@@ -1,4 +1,4 @@
-/**/# platform:  $XConsortium: cray.cf,v 1.1 89/01/10 18:15:23 jim Exp $
+/**/# platform:  $XConsortium: cray.cf,v 1.2 89/02/09 12:49:16 jim Exp $
 
 #define StandardSystemDefines -DSYSV
 #define StandardDefines StandardSystemDefines
@@ -9,7 +9,7 @@ BOOTSTRAPCFLAGS =
             CPP = /lib/cpp
              LD = ld
            LINT = lint
-        INSTALL = $(SCRIPTSSRC)/install.sh
+        INSTALL = $(SCRIPTSRC)/install.sh
            TAGS = ctags
              RM = rm -f
              MV = mv

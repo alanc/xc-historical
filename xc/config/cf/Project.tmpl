@@ -1,6 +1,6 @@
 /**/###########################################################################
 /**/# X Window System Build Parameters
-/**/# $XConsortium: Project.tmpl,v 1.12 89/02/09 12:46:36 jim Exp $
+/**/# $XConsortium: Project.tmpl,v 1.13 89/02/21 11:19:00 jim Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -205,7 +205,7 @@
 #endif
 #ifndef DependDir
 #ifdef UseCCMakeDepend			/* use slow cc -E script */
-#define DependDir $(SCRIPTSSRC)
+#define DependDir $(SCRIPTSRC)
 #else
 #define DependDir $(UTILSRC)/makedepend
 #endif
@@ -231,7 +231,7 @@ Berklib.c: sysV/Berklib.c					@@\
 
 /**/###########################################################################
 /**/# X Window System make variables; this need to be coordinated with rules
-/**/# $XConsortium: Project.tmpl,v 1.12 89/02/09 12:46:36 jim Exp $
+/**/# $XConsortium: Project.tmpl,v 1.13 89/02/21 11:19:00 jim Exp $
 
 /*
  * This list must be reflected in the DIRS_TO_BUILD list in the top-level
@@ -273,7 +273,7 @@ Berklib.c: sysV/Berklib.c					@@\
               RGB = $(RGBSRC)/rgb
                FC = $(BDFTOSNFSRC)/bdftosnf
         MKFONTDIR = $(MKFONTDIRSRC)/mkfontdir
-        MKDIRHIER = BourneShell $(SCRIPTSSRC)/mkdirhier.sh
+        MKDIRHIER = BourneShell $(SCRIPTSRC)/mkdirhier.sh
 
         CONFIGSRC = $(TOP)/config
         CLIENTSRC = $(TOP)/clients
@@ -283,7 +283,7 @@ Berklib.c: sysV/Berklib.c					@@\
        INCLUDESRC = $(TOP)/X11
         SERVERSRC = $(TOP)/server
           UTILSRC = $(TOP)/util
-       SCRIPTSSRC = $(UTILSRC)/scripts
+        SCRIPTSRC = $(UTILSRC)/scripts
        EXAMPLESRC = $(TOP)/examples
        CONTRIBSRC = $(TOP)/contrib
            DOCSRC = $(TOP)/doc
