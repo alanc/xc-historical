@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XSynchro.c,v 11.5 87/05/24 21:40:05 jg Exp $ */
+/* $XConsortium: XSynchro.c,v 11.5 87/09/11 08:07:45 toddb Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"

@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XChkIfEv.c,v 11.7 88/08/30 15:47:18 jim Exp $ */
+/* $XConsortium: XChkIfEv.c,v 11.8 88/08/30 19:52:00 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1985, 1987	*/
 #define NEED_EVENTS
 #include "Xlibint.h"

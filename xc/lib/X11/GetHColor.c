@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XGetHColor.c,v 11.9 87/05/24 21:35:41 jg Exp $ */
+/* $XConsortium: XGetHColor.c,v 11.9 87/09/11 08:04:08 toddb Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #define NEED_REPLIES

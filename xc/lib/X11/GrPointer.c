@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XGrPointer.c,v 11.15 87/08/07 12:08:58 jg Exp $ */
+/* $XConsortium: XGrPointer.c,v 11.15 87/09/11 08:04:34 toddb Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #define NEED_REPLIES

@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XFillRects.c,v 11.10 88/08/10 16:08:25 jim Exp $ */
+/* $XConsortium: XFillRects.c,v 11.11 88/08/11 14:55:02 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"

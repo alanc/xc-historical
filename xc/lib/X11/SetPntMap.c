@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XSetPntMap.c,v 11.7 88/08/11 15:13:48 jim Exp $ */
+/* $XConsortium: XSetPntMap.c,v 11.8 88/08/29 16:53:13 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #define NEED_REPLIES

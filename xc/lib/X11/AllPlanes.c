@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XAllPlanes.c,v 11.13 87/09/11 08:00:55 toddb Exp $ */
+/* $XConsortium: XAllPlanes.c,v 11.14 88/08/11 11:18:17 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 #define NEED_REPLIES
 #include "Xlibint.h"

@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XGetAtomNm.c,v 11.13 87/06/10 23:05:51 jg Exp $ */
+/* $XConsortium: XGetAtomNm.c,v 11.13 87/09/11 08:03:51 toddb Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 #define NEED_REPLIES
 #include "Xlibint.h"

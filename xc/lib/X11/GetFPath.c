@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XGetFPath.c,v 11.11 87/06/13 14:42:59 jg Exp $ */
+/* $XConsortium: XGetFPath.c,v 11.11 87/09/11 08:03:58 toddb Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #define NEED_REPLIES

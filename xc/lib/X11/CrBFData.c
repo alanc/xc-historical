@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XCrBFData.c,v 1.4 88/02/07 11:10:59 jim Exp $ */
+/* $XConsortium: XCrBFData.c,v 1.5 88/02/22 19:33:47 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1987	*/
 
 #include "Xlib.h"

@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XSetDashes.c,v 11.7 87/08/24 18:29:26 newman Locked $ */
+/* $XConsortium: XSetDashes.c,v 11.8 87/08/24 18:54:40 newman Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"

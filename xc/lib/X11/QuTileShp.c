@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XQuTileShp.c,v 11.9 87/06/10 23:11:51 jg Exp $ */
+/* $XConsortium: XQuTileShp.c,v 11.9 87/09/11 08:06:17 toddb Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #define NEED_REPLIES

@@ -1,4 +1,4 @@
-/* $Header: Xutil.h,v 11.41 88/02/14 11:55:28 rws Exp $ */
+/* $XConsortium: Xutil.h,v 11.42 88/08/11 15:07:27 jim Exp $ */
 
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,

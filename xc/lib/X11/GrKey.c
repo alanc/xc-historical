@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XGrKey.c,v 11.5 87/09/08 12:28:05 newman Locked $ */
+/* $XConsortium: XGrKey.c,v 11.6 87/09/08 14:31:25 newman Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"

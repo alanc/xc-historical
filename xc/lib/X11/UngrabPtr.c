@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XUngrabPtr.c,v 11.7 87/05/24 21:40:31 jg Exp $ */
+/* $XConsortium: XUngrabPtr.c,v 11.7 87/09/11 08:08:05 toddb Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"

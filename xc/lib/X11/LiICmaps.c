@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XLiICmaps.c,v 11.13 87/09/11 08:04:49 toddb Exp $ */
+/* $XConsortium: XLiICmaps.c,v 11.14 88/08/11 11:49:03 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #define NEED_REPLIES

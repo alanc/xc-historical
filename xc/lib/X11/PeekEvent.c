@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XPeekEvent.c,v 11.11 87/09/11 08:05:29 toddb Exp $ */
+/* $XConsortium: XPeekEvent.c,v 11.12 88/02/03 20:44:25 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #define NEED_EVENTS

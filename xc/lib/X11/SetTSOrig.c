@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XSetTSOrig.c,v 11.2 87/05/26 16:55:29 jg Exp $ */
+/* $XConsortium: XSetTSOrig.c,v 11.2 87/09/11 08:15:56 toddb Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"

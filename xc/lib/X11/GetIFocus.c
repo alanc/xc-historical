@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XGetIFocus.c,v 11.8 87/05/24 21:35:47 jg Exp $ */
+/* $XConsortium: XGetIFocus.c,v 11.8 87/09/11 08:04:11 toddb Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #define NEED_REPLIES

@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XRecolorC.c,v 11.6 87/05/24 21:38:32 jg Exp $ */
+/* $XConsortium: XRecolorC.c,v 11.6 87/09/11 08:06:26 toddb Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"

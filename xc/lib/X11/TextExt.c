@@ -1,4 +1,4 @@
-/* $Header: XTextExt.c,v 11.11 87/09/11 08:09:21 toddb Exp $ */
+/* $XConsortium: XTextExt.c,v 11.12 88/06/19 16:53:52 rws Exp $ */
 /************************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.

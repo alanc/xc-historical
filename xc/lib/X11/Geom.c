@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XGeom.c,v 1.2 87/09/11 08:09:25 jim Locked $/
+/* $XConsortium: XGeom.c,v 1.3 88/02/07 11:22:03 jim Exp $/
 /* Copyright Massachusetts Institute of Technology 1985 */
 
 #include "Xlibint.h"

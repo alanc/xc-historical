@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XSetHints.c,v 11.24 88/08/09 15:57:10 jim Exp $ */
+/* $XConsortium: XSetHints.c,v 11.25 88/08/11 11:35:59 jim Exp $ */
 
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,

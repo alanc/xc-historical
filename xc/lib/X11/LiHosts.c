@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XLiHosts.c,v 11.13 88/02/07 11:58:29 jim Exp $ */
+/* $XConsortium: XLiHosts.c,v 11.14 88/08/09 15:56:34 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 /* This can really be considered an os dependent routine */
 

@@ -1,4 +1,4 @@
-/* $Header: XStBytes.c,v 11.13 87/09/01 15:06:39 jim Locked $ */
+/* $XConsortium: XStBytes.c,v 11.14 88/02/07 13:03:39 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"

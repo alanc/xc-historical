@@ -1,4 +1,4 @@
-/* $Header$ */
+/* $XConsortium: poly.h,v 1.1 87/09/11 08:15:38 toddb Exp $ */
 /************************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.

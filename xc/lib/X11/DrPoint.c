@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XDrPoint.c,v 11.9 88/08/09 15:57:40 jim Exp $ */
+/* $XConsortium: XDrPoint.c,v 11.10 88/08/10 16:09:07 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"

@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XQuExt.c,v 11.12 87/09/11 08:05:57 newman Locked $ */
+/* $XConsortium: XQuExt.c,v 11.13 87/10/29 23:59:58 newman Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #define NEED_REPLIES

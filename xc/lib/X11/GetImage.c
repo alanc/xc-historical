@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XGetImage.c,v 11.19 88/02/07 11:41:29 jim Exp $ */
+/* $XConsortium: XGetImage.c,v 11.20 88/08/26 18:31:49 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #define NEED_REPLIES

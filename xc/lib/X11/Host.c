@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XHost.c,v 11.8 87/09/11 08:08:38 toddb Exp $ */
+/* $XConsortium: XHost.c,v 11.9 88/08/10 16:08:55 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 /* this might be rightly reguarded an os dependent file */
 

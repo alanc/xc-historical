@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XLookupCol.c,v 11.6 87/09/11 08:10:04 newman Locked $ */
+/* $XConsortium: XLookupCol.c,v 11.7 87/10/29 23:59:45 newman Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1985	*/
 
 #define NEED_REPLIES

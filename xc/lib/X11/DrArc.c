@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XDrArc.c,v 11.12 88/08/09 15:57:33 jim Exp $ */
+/* $XConsortium: XDrArc.c,v 11.13 88/08/10 16:09:00 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /* Note to future maintainers:  XDrawArc does NOT batch successive PolyArc

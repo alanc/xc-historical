@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XCopyPlane.c,v 11.7 87/05/30 23:37:07 drewry Exp $ */
+/* $XConsortium: XCopyPlane.c,v 11.7 87/09/11 08:02:23 toddb Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"

@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XKeyBind.c,v 11.42 88/09/02 09:21:06 rws Exp $ */
+/* $XConsortium: XKeyBind.c,v 11.42 88/09/02 09:32:06 rws Exp $ */
 /* Copyright 1985, 1987, Massachusetts Institute of Technology */
 
 /* Beware, here be monsters (still under construction... - JG */

@@ -1,4 +1,4 @@
-/* $Header: XPolyReg.c,v 11.13 88/01/31 10:50:39 rws Exp $ */
+/* $XConsortium: XPolyReg.c,v 11.14 88/08/15 18:20:04 jim Exp $ */
 /************************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.

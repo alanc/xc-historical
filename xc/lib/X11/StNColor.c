@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XStNColor.c,v 11.8 87/09/11 08:07:36 newman Locked $ */
+/* $XConsortium: XStNColor.c,v 11.9 87/10/30 00:00:23 newman Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"

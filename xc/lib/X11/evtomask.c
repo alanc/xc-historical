@@ -1,4 +1,4 @@
-/* $Header$ */
+/* $XConsortium: evtomask.c,v 1.1 87/09/11 08:08:35 toddb Exp $ */
 #include "X.h"
 /*
  * This array can be used given an event type to determine the mask bits

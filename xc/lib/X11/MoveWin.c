@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XMoveWin.c,v 11.7 88/08/10 16:08:30 jim Exp $ */
+/* $XConsortium: XMoveWin.c,v 11.8 88/08/11 14:52:11 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"

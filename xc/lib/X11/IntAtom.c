@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XIntAtom.c,v 11.10 87/09/08 14:32:02 newman Locked $ */
+/* $XConsortium: XIntAtom.c,v 11.11 87/10/29 23:59:32 newman Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #define NEED_REPLIES

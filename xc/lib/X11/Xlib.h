@@ -1,4 +1,4 @@
-/* $Header: Xlib.h,v 11.146 88/08/18 10:45:52 jim Exp $ */
+/* $XConsortium: Xlib.h,v 11.147 88/08/19 17:26:00 jim Exp $ */
 /* 
  * Copyright 1985, 1986, 1987 by the Massachusetts Institute of Technology
  *

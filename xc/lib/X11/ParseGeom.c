@@ -1,7 +1,7 @@
 #include "copyright.h"
 
 /* Copyright 	Massachusetts Institute of Technology  1985, 1986, 1987 */
-/* $Header: XParseGeom.c,v 11.11 88/01/30 17:36:27 jim Locked $ */
+/* $XConsortium: XParseGeom.c,v 11.12 88/02/06 15:33:15 jim Exp $ */
 
 #include "Xlibint.h"
 #include "Xutil.h"

@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XDefCursor.c,v 11.5 87/09/11 08:02:40 toddb Exp $ */
+/* $XConsortium: XDefCursor.c,v 11.6 88/08/10 16:08:17 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"

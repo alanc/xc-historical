@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XCursor.c,v 11.10 87/08/29 17:03:58 newman Locked $ */
+/* $XConsortium: XCursor.c,v 11.11 87/09/08 14:31:05 newman Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1987	*/
 
 #include "Xlibint.h"

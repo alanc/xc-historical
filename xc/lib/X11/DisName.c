@@ -1,4 +1,4 @@
-/* $Header: XDisName.c,v 11.3 87/05/24 21:34:25 jg Exp $ */
+/* $XConsortium: XDisName.c,v 11.3 87/09/11 08:08:59 toddb Exp $ */
 
 /* XDisplayName.c */
 /* 

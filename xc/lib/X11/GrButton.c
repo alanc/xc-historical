@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XGrButton.c,v 11.7 87/08/07 11:55:56 jg Exp $ */
+/* $XConsortium: XGrButton.c,v 11.7 87/09/11 08:04:30 toddb Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"

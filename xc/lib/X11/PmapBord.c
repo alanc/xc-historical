@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XPmapBord.c,v 11.5 87/09/11 08:05:38 toddb Exp $ */
+/* $XConsortium: XPmapBord.c,v 11.6 88/08/10 16:08:33 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"

@@ -1,4 +1,4 @@
-/* $Header: XStrKeysym.c,v 11.1 87/08/30 21:18:57 jg Exp $ */
+/* $XConsortium: XStrKeysym.c,v 11.1 87/08/30 21:18:57 jg Exp $ */
 /* Copyright 1985, 1987, Massachusetts Institute of Technology */
 
 #include "Xlibint.h"

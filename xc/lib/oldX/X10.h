@@ -1,4 +1,4 @@
-/* $Header: X10.h,v 11.9 87/07/23 15:18:38 ham Exp $ */
+/* $XConsortium: X10.h,v 11.9 87/09/11 07:56:29 toddb Exp $ */
 /* 
  * Copyright 1985, 1986, 1987 by the Massachusetts Institute of Technology
  *

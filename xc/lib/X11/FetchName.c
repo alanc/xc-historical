@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XFetchName.c,v 11.20 88/01/30 10:44:04 jim Locked $ */
+/* $XConsortium: XFetchName.c,v 11.21 88/02/07 11:13:44 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include <stdio.h>

@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: XGetDflt.c,v 1.11 88/08/10 16:09:16 jim Exp $";
+static char rcsid[] = "$XConsortium: XGetDflt.c,v 1.12 88/08/11 15:07:50 jim Exp $";
 #endif /* lint */
 
 /***********************************************************

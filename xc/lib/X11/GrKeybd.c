@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XGrKeybd.c,v 11.13 87/09/08 12:28:23 newman Locked $ */
+/* $XConsortium: XGrKeybd.c,v 11.14 87/09/08 14:31:53 newman Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #define NEED_REPLIES

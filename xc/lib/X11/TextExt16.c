@@ -1,4 +1,4 @@
-/* $Header: XTextExt16.c,v 11.10 87/08/22 11:49:19 toddb Locked $ */
+/* $XConsortium: XTextExt16.c,v 11.11 87/09/08 00:22:20 toddb Exp $ */
 /************************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.

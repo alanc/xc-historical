@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XFontInfo.c,v 11.12 88/08/10 16:08:56 jim Exp $ */
+/* $XConsortium: XFontInfo.c,v 11.13 88/08/11 14:33:01 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 #define NEED_REPLIES
 #include "Xlibint.h"

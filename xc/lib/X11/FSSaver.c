@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XFSSaver.c,v 1.3 87/05/24 21:34:53 jg Exp $ */
+/* $XConsortium: XFSSaver.c,v 1.3 87/09/11 08:09:13 toddb Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1987	*/
 
 #include "Xlibint.h"

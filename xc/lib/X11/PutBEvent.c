@@ -1,7 +1,7 @@
 #include "copyright.h"
 
 /* Copyright 	Massachusetts Institute of Technology  1986 */
-/* $Header: XPutBEvent.c,v 11.8 87/05/24 21:37:55 jg Exp $ */
+/* $XConsortium: XPutBEvent.c,v 11.8 87/09/11 08:05:41 toddb Exp $ */
 /* XPutBackEvent puts an event back at the head of the queue. */
 #define NEED_EVENTS
 #include "Xlibint.h"

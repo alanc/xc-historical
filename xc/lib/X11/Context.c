@@ -1,4 +1,4 @@
-/* $Header: Context.c,v 1.2 88/02/26 12:57:50 swick Exp $ */
+/* $XConsortium: Context.c,v 1.3 88/08/11 15:07:31 jim Exp $ */
 #ifndef lint
 static char *sccsid = "@(#)Context.c	1.5	2/24/87";
 #endif /* lint */

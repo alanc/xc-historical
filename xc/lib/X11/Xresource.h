@@ -1,4 +1,4 @@
-/* $Header: Xresource.h,v 1.11 88/08/09 17:12:40 jim Exp $ */
+/* $XConsortium: Xresource.h,v 1.12 88/08/11 15:07:22 jim Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,

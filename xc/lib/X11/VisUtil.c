@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XVisUtil.c,v 11.8 87/08/24 13:21:52 ham Exp $ */
+/* $XConsortium: XVisUtil.c,v 11.8 87/09/11 08:15:44 toddb Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include <stdio.h>

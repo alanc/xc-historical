@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XMaskEvent.c,v 11.16 88/02/04 19:34:31 rws Exp $ */
+/* $XConsortium: XMaskEvent.c,v 11.17 88/05/16 11:25:04 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #define NEED_EVENTS

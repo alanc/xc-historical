@@ -1,4 +1,4 @@
-/* $Header: XRegion.c,v 11.20 88/07/05 16:46:56 rws Exp $ */
+/* $XConsortium: XRegion.c,v 11.21 88/07/07 11:03:58 rws Exp $ */
 /************************************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.

@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XImText16.c,v 11.12 87/09/01 14:52:21 toddb Locked $ */
+/* $XConsortium: XImText16.c,v 11.13 87/09/01 14:52:38 toddb Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"

@@ -1,6 +1,6 @@
 #include "copyright.h"
 #ifndef lint
-static char *rcsid_xopendisplay_c = "$Header: XOpenDis.c,v 11.65 88/08/25 14:35:23 jim Exp $";
+static char *rcsid_xopendisplay_c = "$XConsortium: XOpenDis.c,v 11.66 88/08/26 18:31:29 jim Exp $";
 #endif
 /* Copyright    Massachusetts Institute of Technology    1985, 1986	*/
 

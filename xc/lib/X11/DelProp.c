@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XDelProp.c,v 11.4 87/05/24 21:34:16 jg Exp $ */
+/* $XConsortium: XDelProp.c,v 11.4 87/09/11 08:02:43 toddb Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"

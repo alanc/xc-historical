@@ -1,4 +1,4 @@
-/* $Header: region.h,v 11.8 87/09/03 17:20:11 newman Exp $ */
+/* $XConsortium: region.h,v 11.9 88/07/25 20:43:06 toddb Exp $ */
 /************************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.

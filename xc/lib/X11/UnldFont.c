@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XUnldFont.c,v 11.5 87/05/24 21:40:38 jg Exp $ */
+/* $XConsortium: XUnldFont.c,v 11.5 87/09/11 08:08:14 toddb Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"

@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XSetFPath.c,v 11.10 87/09/11 08:06:49 newman Locked $ */
+/* $XConsortium: XSetFPath.c,v 11.11 87/10/30 00:00:04 newman Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"

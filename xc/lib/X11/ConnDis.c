@@ -1,5 +1,5 @@
 #include "copyright.h"
-/* $Header: XConnDis.c,v 11.33 88/08/31 15:48:12 jim Exp $ */
+/* $XConsortium: XConnDis.c,v 11.34 88/09/02 14:47:39 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1985, 1986	*/
 #define NEED_EVENTS
 /*

@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XListExt.c,v 11.5 87/08/06 23:08:57 newman Locked $ */
+/* $XConsortium: XListExt.c,v 11.6 87/08/06 23:11:33 newman Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #define NEED_REPLIES

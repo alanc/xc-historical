@@ -1,4 +1,4 @@
-/* $Header: XDraw.c,v 1.5 88/04/29 14:12:12 jim Exp $ */
+/* $XConsortium: XDraw.c,v 1.6 88/07/26 22:03:37 toddb Exp $ */
 #include "copyright.h"
 
 /* Copyright    Massachusetts Institute of Technology    1987	*/

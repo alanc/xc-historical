@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XSync.c,v 11.12 87/05/24 21:40:02 jg Exp $ */
+/* $XConsortium: XSync.c,v 11.12 87/09/11 08:07:42 toddb Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #define NEED_REPLIES

@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XGetProp.c,v 11.13 88/07/22 19:22:52 jim Exp $ */
+/* $XConsortium: XGetProp.c,v 11.14 88/08/12 17:03:35 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #define NEED_REPLIES

@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XSelInput.c,v 11.6 88/05/16 11:21:15 rws Exp $ */
+/* $XConsortium: XSelInput.c,v 11.7 88/08/10 16:08:41 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"

@@ -1,6 +1,6 @@
 #include <X11/copyright.h>
 
-/* $Header: Xlibint.h,v 11.59 88/08/26 18:25:32 jim Exp $ */
+/* $XConsortium: Xlibint.h,v 11.60 88/09/02 14:47:29 jim Exp $ */
 /* Copyright 1984, 1985, 1987  Massachusetts Institute of Technology */
 
 /*

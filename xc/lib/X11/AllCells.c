@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XAllCells.c,v 11.15 88/02/07 11:10:59 jim Exp $ */
+/* $XConsortium: XAllCells.c,v 11.16 88/08/11 15:15:15 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 #define NEED_REPLIES
 

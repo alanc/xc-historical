@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XParseCol.c,v 11.14 87/10/29 17:36:25 newman Locked $ */
+/* $XConsortium: XParseCol.c,v 11.15 87/10/29 23:59:52 newman Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1985	*/
 
 #define NEED_REPLIES

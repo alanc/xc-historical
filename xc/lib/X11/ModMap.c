@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XModMap.c,v 11.5 88/08/09 15:56:28 jim Exp $ */
+/* $XConsortium: XModMap.c,v 11.6 88/08/11 11:45:45 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #define NEED_REPLIES

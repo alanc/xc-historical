@@ -1,4 +1,4 @@
-/* $Header: Xatomtype.h,v 11.9 88/08/11 17:27:54 jim Exp $ */
+/* $XConsortium: Xatomtype.h,v 11.10 88/08/31 19:14:53 jim Exp $ */
 
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,

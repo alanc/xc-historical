@@ -2,7 +2,7 @@
 /* Copyright    Massachusetts Institute of Technology    1985, 1986, 1987 */
 
 #ifndef lint
-static char rcsid[] = "$Header: XEvToWire.c,v 11.14 88/02/06 15:27:54 jim Exp $";
+static char rcsid[] = "$XConsortium: XEvToWire.c,v 11.15 88/02/20 20:25:43 rws Exp $";
 #endif
 
 /*

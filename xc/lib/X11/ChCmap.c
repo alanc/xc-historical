@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XChCmap.c,v 11.5 87/09/11 08:01:29 toddb Exp $ */
+/* $XConsortium: XChCmap.c,v 11.6 88/08/10 16:08:01 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"

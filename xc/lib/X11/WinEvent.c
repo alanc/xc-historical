@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XWinEvent.c,v 11.13 88/02/03 20:44:08 rws Exp $ */
+/* $XConsortium: XWinEvent.c,v 11.14 88/02/04 19:33:20 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1985	*/
 
 #define NEED_EVENTS

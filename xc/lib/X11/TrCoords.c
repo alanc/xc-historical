@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XTrCoords.c,v 11.10 87/09/11 08:07:48 toddb Exp $ */
+/* $XConsortium: XTrCoords.c,v 11.11 88/08/11 14:32:47 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #define NEED_REPLIES

@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XGetMoEv.c,v 11.13 87/06/03 13:19:46 jg Exp $ */
+/* $XConsortium: XGetMoEv.c,v 11.13 87/09/11 08:04:16 toddb Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #define NEED_REPLIES

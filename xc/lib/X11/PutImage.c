@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XPutImage.c,v 11.44 88/08/09 15:56:54 jim Exp $ */
+/* $XConsortium: XPutImage.c,v 11.45 88/08/29 22:11:27 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include <stdio.h>
