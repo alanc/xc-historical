@@ -1,4 +1,4 @@
-/* $XConsortium: mpcnst.c,v 1.1 93/10/26 09:46:34 rws Exp $ */
+/* $XConsortium: mpcnst.c,v 1.2 93/10/31 09:48:08 dpw Exp $ */
 /**** module mpcnst.c ****/
 /******************************************************************************
 				NOTICE
@@ -116,7 +116,7 @@ static ddElemVecRec ConstrainVec = {
 
 typedef struct _mpconstraindef {
 	void	(*action) ();
-	void	*lut;
+	pointer lut;
 	double	pad[7];
 } mpCnstPvtRec, *mpCnstPvtPtr;
 
@@ -203,7 +203,7 @@ static int InitializeConstrain(flo,ped)
     peDefPtr  ped;
 {
     peTexPtr  pet = ped->peTex;
-    pCnstDefPtr techpvt = ped->techPvt;
+    pCnstDefPtr techpvt = (pCnstDefPtr)ped->techPvt;
     mpCnstPvtPtr pvt = (mpCnstPvtPtr) pet->private;
     bandPtr oband;
     bandPtr iband;
@@ -251,28 +251,28 @@ static int ActivateConstrain(flo,ped,pet)
 
     for(band = 0; band < nbands; band++, pvt++, iband++, oband++) {
 	register int bw = iband->format->width;
-	void *ivoid, *ovoid;
+	pointer ivoid, ovoid;
 
-	if (!(ivoid = GetCurrentSrc(void,flo,pet,iband)))
+	if (!(ivoid = GetCurrentSrc(pointer,flo,pet,iband)))
 		continue;
 
 	if (!pvt->action) {
 	    do { /* pass a clone of the current src strip downstream */
 		if(!PassStrip(flo,pet,oband,iband->strip))
 		    return(FALSE);
-	    	ivoid = GetSrc(void,flo,pet,iband,iband->maxLocal,TRUE);
+	    	ivoid = GetSrc(pointer,flo,pet,iband,iband->maxLocal,TRUE);
 	    } while (!ferrCode(flo) && ivoid) ;
 	    FreeData(flo, pet, iband, iband->current);
 	    continue;
 	}
 
-	if (!(ovoid = GetCurrentDst(void,flo,pet,oband)))
+	if (!(ovoid = GetCurrentDst(pointer,flo,pet,oband)))
 		continue;
 
 	do {
 	    (*(pvt->action)) (ivoid, ovoid, pvt, bw);
-	    ivoid = GetNextSrc(void,flo,pet,iband,TRUE);
-	    ovoid = GetNextDst(void,flo,pet,oband,TRUE);
+	    ivoid = GetNextSrc(pointer,flo,pet,iband,TRUE);
+	    ovoid = GetNextDst(pointer,flo,pet,oband,TRUE);
 	} while (!ferrCode(flo) && ivoid && ovoid) ;
 
 	FreeData(flo, pet, iband, iband->current);
@@ -303,7 +303,7 @@ static int ResetConstrain(flo,ped)
     /* free any dynamic private data */
     for (band = 0 ; band < xieValMaxBands ; band++, pvt++)
 	if (pvt->lut)
-	    pvt->lut = (void *) XieFree(pvt->lut);
+	    pvt->lut = (pointer) XieFree(pvt->lut);
 
     ResetReceptors(ped);
     ResetEmitter(ped);
@@ -351,7 +351,7 @@ static int DestroyConstrain(flo,ped)
 */
 
 static void constrain_nop(INP,OUTP,pvt,bw)
-	void *INP; void *OUTP; mpCnstPvtPtr pvt; int bw;
+	pointer INP; pointer OUTP; mpCnstPvtPtr pvt; int bw;
 {
 	return;
 }
@@ -367,25 +367,25 @@ static void (*cs_nop(iband,oband,pvt,techpvt,band))()
 }
 
 static void clearbitline(INP,OUTP,pvt,bw)
-	void *INP; void *OUTP; mpCnstPvtPtr pvt; int bw;
+	pointer INP; pointer OUTP; mpCnstPvtPtr pvt; int bw;
 {
 	action_clear(OUTP, bw, 0);
 }
 
 static void setbitline(INP,OUTP,pvt,bw)
-	void *INP; void *OUTP; mpCnstPvtPtr pvt; int bw;
+	pointer INP; pointer OUTP; mpCnstPvtPtr pvt; int bw;
 {
 	action_set(OUTP, bw, 0);
 }
 
 static void copybitline(INP,OUTP,pvt,bw)
-	void *INP; void *OUTP; mpCnstPvtPtr pvt; int bw;
+	pointer INP; pointer OUTP; mpCnstPvtPtr pvt; int bw;
 {
 	passcopy_bit(OUTP, INP, bw, 0);
 }
 
 static void invertbitline(INP,OUTP,pvt,bw)
-	void *INP; void *OUTP; mpCnstPvtPtr pvt; int bw;
+	pointer INP; pointer OUTP; mpCnstPvtPtr pvt; int bw;
 {
 	action_invert(OUTP, bw, 0);
 }
@@ -407,7 +407,7 @@ static void 								\
 #define DO_HCc(fn_prep,fn_do_a, fn_do_b,itype,otype) 			\
 static void 								\
 fn_do_a(INP,OUTP,pvt,bw) 						\
-	void *INP; void *OUTP; mpCnstPvtPtr pvt; int bw; 		\
+	pointer INP; pointer OUTP; mpCnstPvtPtr pvt; int bw; 		\
 { 									\
 	LogInt inval, M, *inp = (LogInt *) INP; 			\
 	otype *outp = (otype *) OUTP; 					\
@@ -420,7 +420,7 @@ fn_do_a(INP,OUTP,pvt,bw) 						\
 } 									\
 static void 								\
 fn_do_b(INP,OUTP,pvt,bw) 						\
-	void *INP; void *OUTP; mpCnstPvtPtr pvt; int bw; 		\
+	pointer INP; pointer OUTP; mpCnstPvtPtr pvt; int bw; 		\
 { 									\
 	bzero((char *)OUTP, bw * sizeof(otype)); 			\
 	/* action_clear(OUTP, (bw * sizeof(otype)) << 3, 0); */		\
@@ -437,13 +437,13 @@ static void 								\
 #define DO_HCcx(fn_prep,fn_do,fn_do_b,itype,otype)                      \
 static void 								\
 fn_do(INP,OUTP,pvt,bw) 							\
-	void *INP; void *OUTP; mpCnstPvtPtr pvt; int bw; 		\
+	pointer INP; pointer OUTP; mpCnstPvtPtr pvt; int bw; 		\
 { 									\
 	bitexpand(INP, OUTP, bw, 0, 1);					\
 } 									\
 static void 								\
 fn_do_b(INP,OUTP,pvt,bw) 						\
-	void *INP; void *OUTP; mpCnstPvtPtr pvt; int bw; 		\
+	pointer INP; pointer OUTP; mpCnstPvtPtr pvt; int bw; 		\
 { 									\
 	bzero((char *)OUTP, bw * sizeof(otype)); 			\
 	/* action_clear(OUTP, (bw * sizeof(otype)) << 3, 0); */		\
@@ -460,7 +460,7 @@ static void 								\
 #define DO_HCp(fn_prep,fn_do_a, fn_do_b,itype,otype) 			\
 static void 								\
 fn_do_a(INP,OUTP,pvt,bw) 						\
-	void *INP; void *OUTP; mpCnstPvtPtr pvt; int bw; 		\
+	pointer INP; pointer OUTP; mpCnstPvtPtr pvt; int bw; 		\
 { 									\
 	itype *inp = (itype *) INP; 					\
 	LogInt outval, M, *outp = (LogInt *) OUTP; 			\
@@ -487,7 +487,7 @@ static void 								\
 #define DO_HCfp(fn_prep,fn_do_a, fn_do_b,itype,otype) 			\
 static void 								\
 fn_do_a(INP,OUTP,pvt,bw) 						\
-	void *INP; void *OUTP; mpCnstPvtPtr pvt; int bw; 		\
+	pointer INP; pointer OUTP; mpCnstPvtPtr pvt; int bw; 		\
 { 									\
 	itype *inp = (itype *) INP; 					\
 	LogInt outval, M, *outp = (LogInt *) OUTP; 			\
@@ -514,7 +514,7 @@ static void 								\
 #define DO_HClt(fn_prep,fn_do_a, fn_do_b,itype,otype) 			\
 static void 								\
 fn_do_b(INP,OUTP,pvt,bw) 						\
-	void *INP; void *OUTP; mpCnstPvtPtr pvt; int bw; 		\
+	pointer INP; pointer OUTP; mpCnstPvtPtr pvt; int bw; 		\
 { 									\
 	itype *inp = (itype *) INP; 					\
 	otype *outp = (otype *) OUTP; 					\
@@ -532,7 +532,7 @@ static void 								\
 #define DO_HCeq(fn_prep,fn_do_a, fn_do_b,itype,otype) 			\
 static void 								\
 fn_do_a(INP,OUTP,pvt,bw) 						\
-	void *INP; void *OUTP; mpCnstPvtPtr pvt; int bw; 		\
+	pointer INP; pointer OUTP; mpCnstPvtPtr pvt; int bw; 		\
 { 									\
 	itype *inp = (itype *) INP; 					\
 	otype *outp = (otype *) OUTP; 					\
@@ -562,7 +562,7 @@ static void 								\
 #define DO_HCgt(fn_prep,fn_do_a, fn_do_b,itype,otype) 			\
 static void 								\
 fn_do_a(INP,OUTP,pvt,bw) 						\
-	void *INP; void *OUTP; mpCnstPvtPtr pvt; int bw; 		\
+	pointer INP; pointer OUTP; mpCnstPvtPtr pvt; int bw; 		\
 { 									\
 	itype *inp = (itype *) INP; 					\
 	otype *outp = (otype *) OUTP; 					\
@@ -586,7 +586,7 @@ static void 								\
 #define DO_HCf(fn_prep,fn_do_a,fn_do_b,itype,otype) 			\
 static void 								\
 fn_do_a(INP,OUTP,pvt,bw) 						\
-	void *INP; void *OUTP; mpCnstPvtPtr pvt; int bw; 		\
+	pointer INP; pointer OUTP; mpCnstPvtPtr pvt; int bw; 		\
 { 									\
 	itype *inp = (itype *) INP; 					\
 	otype *outp = (otype *) OUTP; 					\
@@ -713,7 +713,7 @@ static void 								\
 #define DO_CSc(fn_prep,fn_do,fn_do_b,itype,otype) 			\
 static void 								\
 fn_do(INP,OUTP,pvt,bw) 							\
-	void *INP; void *OUTP; mpCnstPvtPtr pvt; int bw; 		\
+	pointer INP; pointer OUTP; mpCnstPvtPtr pvt; int bw; 		\
 { 									\
 	LogInt inval, M, *inp = (LogInt *) INP; 			\
 	otype *outp = (otype *) OUTP; 					\
@@ -739,7 +739,7 @@ static void 								\
 #define DO_CScx(fn_prep,fn_do,fn_do_b,itype,otype)                      \
 static void 								\
 fn_do(INP,OUTP,pvt,bw) 							\
-	void *INP; void *OUTP; mpCnstPvtPtr pvt; int bw; 		\
+	pointer INP; pointer OUTP; mpCnstPvtPtr pvt; int bw; 		\
 { 									\
         otype olow = OLOW(otype), ohigh = OHIGH(otype); 		\
 	bitexpand(INP, OUTP, bw, olow, ohigh);				\
@@ -758,7 +758,7 @@ static void 								\
 #define DO_CSp(fn_prep,fn_do,fn_do_b,itype,otype) 			\
 static void 								\
 fn_do(INP,OUTP,pvt,bw) 							\
-	void *INP; void *OUTP; mpCnstPvtPtr pvt; int bw; 		\
+	pointer INP; pointer OUTP; mpCnstPvtPtr pvt; int bw; 		\
 { 									\
 	itype *inp = (itype *) INP; 					\
 	LogInt outval, M, *outp = (LogInt *) OUTP; 			\
@@ -776,7 +776,7 @@ fn_do(INP,OUTP,pvt,bw) 							\
 } 									\
 static void 								\
 fn_do_b(INP,OUTP,pvt,bw) 						\
-	void *INP; void *OUTP; mpCnstPvtPtr pvt; int bw; 		\
+	pointer INP; pointer OUTP; mpCnstPvtPtr pvt; int bw; 		\
 { 									\
 	itype *inp = (itype *) INP; 					\
 	LogInt outval, M, *outp = (LogInt *) OUTP; 			\
@@ -810,7 +810,7 @@ static void 								\
 #define DO_CS(fn_prep,fn_do,fn_do_b,itype,otype) 			\
 static void 								\
 fn_do(INP,OUTP,pvt,bw) 							\
-	void *INP; void *OUTP; mpCnstPvtPtr pvt; int bw; 		\
+	pointer INP; pointer OUTP; mpCnstPvtPtr pvt; int bw; 		\
 { 									\
 	itype *inp = (itype *) INP; otype *outp = (otype *) OUTP; 	\
 	itype inv, lbound = LBOUND(itype), ubound = UBOUND(itype); 	\
@@ -828,7 +828,7 @@ fn_do(INP,OUTP,pvt,bw) 							\
 } 									\
 static void 								\
 fn_do_b(INP,OUTP,pvt,bw) 						\
-	void *INP; void *OUTP; mpCnstPvtPtr pvt; int bw; 		\
+	pointer INP; pointer OUTP; mpCnstPvtPtr pvt; int bw; 		\
 { 									\
 	itype *inp = (itype *) INP; otype *outp = (otype *) OUTP; 	\
 	itype inv, lbound = LBOUND(itype), ubound = UBOUND(itype); 	\
@@ -866,7 +866,7 @@ static void 								\
 #define DO_CSi_part1(fna,itype,otype,shift)				\
 static void 								\
 fna(INP,OUTP,pvt,bw) 							\
-	void *INP; void *OUTP; mpCnstPvtPtr pvt; int bw; 		\
+	pointer INP; pointer OUTP; mpCnstPvtPtr pvt; int bw; 		\
 { 									\
 	itype *inp = (itype *) INP; otype *outp = (otype *) OUTP; 	\
         otype out, olow = OLOW(otype), ohigh = OHIGH(otype); 		\
@@ -889,7 +889,7 @@ fna(INP,OUTP,pvt,bw) 							\
 #define DO_CSi_part2(fnb,itype,otype,shift)				\
 static void 								\
 fnb(INP,OUTP,pvt,bw) 							\
-	void *INP; void *OUTP; mpCnstPvtPtr pvt; int bw; 		\
+	pointer INP; pointer OUTP; mpCnstPvtPtr pvt; int bw; 		\
 { 									\
 	itype *inp = (itype *) INP; otype *outp = (otype *) OUTP; 	\
         otype out, olow = OLOW(otype), ohigh = OHIGH(otype); 		\
@@ -940,7 +940,7 @@ static void 								\
 #define DO_CSf(fn_prep,fn_do,fn_do_b,itype,otype) 			\
 static void 								\
 fn_do(INP,OUTP,pvt,bw) 							\
-	void *INP; void *OUTP; mpCnstPvtPtr pvt; int bw; 		\
+	pointer INP; pointer OUTP; mpCnstPvtPtr pvt; int bw; 		\
 { 									\
 	itype *inp = (itype *) INP; otype *outp = (otype *) OUTP; 	\
 	itype inv, lbound = LBOUND(itype), ubound = UBOUND(itype); 	\
@@ -958,7 +958,7 @@ fn_do(INP,OUTP,pvt,bw) 							\
 } 									\
 static void 								\
 fn_do_b(INP,OUTP,pvt,bw) 						\
-	void *INP; void *OUTP; mpCnstPvtPtr pvt; int bw; 		\
+	pointer INP; pointer OUTP; mpCnstPvtPtr pvt; int bw; 		\
 { 									\
 	itype *inp = (itype *) INP; otype *outp = (otype *) OUTP; 	\
 	itype inv, lbound = LBOUND(itype), ubound = UBOUND(itype); 	\
