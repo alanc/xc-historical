@@ -78,18 +78,6 @@ DIRS_TO_BUILD = $(DIRS_SERVER) /* $(LINTLIBDIR) */ \
 
 MakeDirectories(install, $(DIRS_TO_BUILD))
 
-/**/# special rule for installing the config files since we're not allowed
-/**/# to have Imakefiles in the config directory
-
-CONFIG_FILES = $(CONFIGSRC)/Imake.rules $(CONFIGSRC)/Imake.tmpl \
-	$(CONFIGSRC)/Project.tmpl $(CONFIGSRC)/site.def \
-	$(CONFIGSRC)/rtcchack.bac $(CONFIGSRC)//**/*.cf 
-
-InstallMultipleDestFlags(install.conf,$(CONFIG_FILES),$(CONFIGDIR),$(INSTDATFLAGS))
-
-install:: install.conf
-	@echo "Done installing configuration files"
-
 MakeDirectories(install.man, $(MANPATH) $(MANDIR) $(LIBMANDIR))
 InstallManPage(X,$(MANDIR))
 
@@ -133,6 +121,22 @@ CHANGES.ALL::
 	echo $$i; echo ""; cat $$i; echo ""; \
 	echo "==========================================================="; \
 	done) >$@
+
+/*
+ * special rule for config Makefile
+ */
+Makefiles::
+	$(MAKE) config.Makefile NEWTOP=../ MAKEFILE_SUBDIR=config 
+
+config.Makefile:
+	$(RM) $(MAKEFILE_SUBDIR)/Makefile.bak
+	-@if [ -f $(MAKEFILE_SUBDIR)/Makefile ]; then \
+	echo "$(MV) $(MAKEFILE_SUBDIR)/Makefile $(MAKEFILE_SUBDIR)/Makefile.bak"; \
+	$(MV) $(MAKEFILE_SUBDIR)/Makefile $(MAKEFILE_SUBDIR)/Makefile.bak; \
+	else exit 0; fi
+	cd $(MAKEFILE_SUBDIR); $(IMAKE_CMD) -DTOPDIR=../$(TOP) -fImake.file
+
+InstallSubdirs(config)
 
 /*
  * This section used for generating distributions will not be useful to most
