@@ -1,5 +1,5 @@
 #ifndef lint
-static char *rid="$XConsortium: main.c,v 1.196 91/10/31 09:41:38 rws Exp $";
+static char *rid="$XConsortium: main.c,v 1.197 91/11/09 16:22:33 keith Exp $";
 #endif /* lint */
 
 /*
@@ -1092,6 +1092,24 @@ char **argv;
 	}
 	screen->inhibit = inhibit;
 
+#ifdef AIXV3
+	/* In AIXV3, xterms started from /dev/console have CLOCAL set.
+	 * This means we need to clear CLOCAL so that SIGHUP gets sent
+	 * to the slave-pty process when xterm exits. 
+	 */
+
+	{
+	    struct termio tio;
+
+	    if(ioctl(pty, TCGETA, &tio) == -1)
+		SysError(ERROR_TIOCGETP);
+
+	    tio.c_cflag &= ~(CLOCAL);
+
+	    if (ioctl (pty, TCSETA, &tio) == -1)
+		SysError(ERROR_TIOCSETP);
+	}
+#endif
 #ifdef USE_SYSV_TERMIO
 	if (0 > (mode = fcntl(pty, F_GETFL, 0)))
 		Error();
@@ -1183,6 +1201,13 @@ get_pty (pty)
 #endif
 	return 0;
 #else /* ATT else */
+#ifdef AIXV3
+	if ((*pty = open ("/dev/ptc", O_RDWR)) < 0) {
+	    return 1;
+	}
+	strcpy(ttydev, ttyname(*pty));
+	return 0;
+#endif
 #ifdef sgi
 	{
 	    char    *tty_name;
