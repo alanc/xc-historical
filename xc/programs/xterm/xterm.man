@@ -558,7 +558,7 @@ scrollbar is turned on.  The default is 64.
 Specifies whether or not the scrollbar should be displayed.  The default is
 ``false.''
 .TP 8
-.B "scrollInput (\fPclass\fB ScrollCond)"
+.B "scrollTtyOutput (\fPclass\fB ScrollCond)"
 Specifies whether or not output to the terminal should automatically cause
 the scrollbar to go to the bottom of the scrolling region.  The default is
 ``true.''
