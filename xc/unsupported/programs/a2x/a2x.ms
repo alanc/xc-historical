@@ -1,5 +1,5 @@
 .\" Use -ms
-.\" $XConsortium: a2x.ms,v 1.20 92/09/09 20:08:44 rws Exp $
+.\" $XConsortium: a2x.ms,v 1.21 92/09/09 20:29:11 rws Exp $
 .de Ds
 .RS
 .nf
@@ -95,13 +95,13 @@ of telnet, but the performance may be substantially worse.  If you do not have
 a network connection, it should be possible to use a terminal program and log
 in to the workstation over a serial line, but performance over a serial line
 will likely not be as good as over a network.  In the telnet session, run the
-script "DragonDictate" provided with the \fBa2x\fP distribution.  You should
-be able to speak this, by saying "DragonDictate", "[enter\ key]", "OK" (the
-"OK" being necessary to pop down the menu to permit execution to continue).
-This script simply clears the screen and starts up \fBa2x\fP.  Clearing the
-screen is a convenience so that the focus of attention on the PC screen will
-be the DragonDictate menus.  You can, of course, write your own script or
-simply run \fBa2x\fP directly.
+script \fBDragonDictate\fP provided with the \fBa2x\fP distribution.  You
+should be able to speak this, by saying "DragonDictate", "[enter\ key]", "OK"
+(the "OK" being necessary to pop down the menu to permit execution to
+continue).  This script simply clears the screen and starts up \fBa2x\fP.
+Clearing the screen is a convenience so that the focus of attention on the PC
+screen will be the DragonDictate menus.  You can, of course, write your own
+script or simply run \fBa2x\fP directly.
 .LP
 You will probably find it convenient to force the DragonDictate menus to
 appear in a fixed position on the PC screen.  For example, in the "Parameters"
@@ -856,10 +856,10 @@ applications you use grab the server during the time you need to generate
 input.  For example, many window managers will grab the server when they
 resize or move windows, or perhaps even when displaying menus.  In that case,
 you will be unable to use voice control for those operations.  Some
-applications may provide options to disable server grabs; for example, twm
-provides the NoGrabServer option to not use server grabs for menus or opaque
-window moves, and olwm provides a "ServerGrabs" boolean resource for menus and
-notices.
+applications may provide options to disable server grabs; for example,
+\fBtwm\fP provides the NoGrabServer option to not use server grabs for menus
+or opaque window moves, and \fBolwm\fP provides a "ServerGrabs" boolean
+resource for menus and notices.
 .NH 1
 Changing Displays
 .LP
@@ -984,7 +984,7 @@ To accomplish this, you start a DOS window on your X display, then start up
 DragonDictate in that DOS window.  If you have a version of \fBa2x\fP compiled
 to run on your PC, you can then run that \fBa2x\fP in the DOS window;
 otherwise, you telnet to your workstation (from within the DOS window) and
-then run the "DragonDictate" script.
+then run the \fBDragonDictate\fP script.
 .LP
 To be able to run DragonDictate in a DOS window, you must permit lots of
 Expanded Memory to be used.  Use DVPMAN on \\DVX\\DVPS\\DOS.DVP, and under the
@@ -999,7 +999,7 @@ in a local DOS window, or else type:
 rsh \fI<PC-hostname>\fP dos
 .De
 from a shell on your X display.  Alternatively, you can create a fancier
-.DVP to run.  For example, in the \\DVP\\DVPS\\ directory, copy DOS.DVP to
+DVP to run.  For example, in the \\DVP\\DVPS\\ directory, copy DOS.DVP to
 A2X.DVP.  Then use DVPMAN to edit this file.  Change the "Program Name" to
 "a2x", and change the "DOS Command" to:
 .Ds
@@ -1038,10 +1038,10 @@ prefer.
 .LP
 There is no good way through DESQview/X to control the initial size and
 position of the DOS window on your X display.  (Actually, you can control the
-initial size by changing the Maximum Width and Maximum Height in the
-.DVP file, but if you do this DragonDictate's menus will come out
-scrambled.)  For this reason, \fBa2x\fP has command line options to permit you to
-reconfigure the DOS window:
+initial size by changing the Maximum Width and Maximum Height in the DVP file,
+but if you do this DragonDictate's menus will come out scrambled.)  For this
+reason, \fBa2x\fP has command line options to permit you to reconfigure the
+DOS window:
 .Ds
 -w \fI<DOS-window-name>\fP -g \fI<geometry-spec>\fP
 .De
