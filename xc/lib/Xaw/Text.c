@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Text.c,v 1.9 87/12/23 16:27:24 swick Locked $";
+static char rcsid[] = "$Header: Text.c,v 1.16 88/01/08 07:37:59 swick Locked $";
 #endif lint
 
 /*
@@ -1368,11 +1368,7 @@ void XtTextSetSelectionArray(w, sarray)
     Widget w;
     XtTextSelectType *sarray;
 {
-    TextWidget ctx = (TextWidget) w;
-    XtTextSelectType *s2;
-
-    s2 = ctx->text.sarray;
-    while (XtselectNull != (*s2++ = *sarray++)) ;
+    ((TextWidget)w)->text.sarray = sarray;
 }
 
 void XtTextSetLastPos (w, lastPos)
