@@ -1,4 +1,4 @@
-/* $Header: keysym.h,v 1.9 87/08/17 12:11:56 toddb Locked $ */
+/* $Header: keysym.h,v 1.10 87/08/29 16:24:17 toddb Locked $ */
 
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -32,4 +32,4 @@ SOFTWARE.
 #define XK_LATIN4
 #define XK_GREEK
 
-#include "X11/keysymdef.h"
+#include "keysymdef.h"
