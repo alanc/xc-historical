@@ -1,7 +1,7 @@
 /*
  * get_load - get system load
  *
- * $XConsortium$
+ * $XConsortium: get_load.c,v 1.11 90/12/21 11:41:46 gildea Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -58,7 +58,9 @@
 
 #ifdef	CRAY
 #include <sys/param.h>
+#define word word_t
 #include <sys/sysinfo.h>
+#undef word
 #undef n_type
 #define n_type n_value
 #endif	/* CRAY */
