@@ -1,4 +1,4 @@
-/* $XConsortium: globals.h,v 1.7 93/12/07 11:05:28 mor Exp $ */
+/* $XConsortium: globals.h,v 1.8 93/12/16 14:51:07 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -43,7 +43,7 @@ IcePaVersionRec _SmsVersions[] = {
 	  	    {SmProtoMajor, SmProtoMinor, _SmsProcessMessage}};
 
 int		_SmAuthCount = 1;
-char		*_SmAuthNames[] = {"ICE-MAGIC-COOKIE-1"};
+char		*_SmAuthNames[] = {"MIT-MAGIC-COOKIE-1"};
 IcePoAuthProc 	_SmcAuthProcs[] = {_IcePoMagicCookie1Proc};
 IcePaAuthProc 	_SmsAuthProcs[] = {_IcePaMagicCookie1Proc};
 
