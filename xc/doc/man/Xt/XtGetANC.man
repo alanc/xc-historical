@@ -6,7 +6,7 @@
 .ds xC Inter-Client Communication Conventions Manual
 .ds Rn 3
 .ds Vn 2.2
-.hw XtGet-Name-And-Class wid-get
+.hw XtGet-Application-Name-And-Class wid-get
 .na
 .de Ds
 .nf
@@ -97,11 +97,12 @@
 .el .sp 10p
 ..
 .ny0
-.TH XtGetNameAndClass 3Xt "Release 6" "X Version 11" "XT FUNCTIONS"
+.TH XtGetApplicationNameAndClass 3Xt "Release 6" "X Version 11" "XT FUNCTIONS"
 .SH NAME
-XtGetNameAndClass \- retrieve application name and class
+XtGetApplicationNameAndClass \- retrieve application name and class
 .SH SYNTAX
-void XtGetNameAndClass(\fIdisplay\fP, \fIname_return\fP, \fIclass_return\fP)
+void XtGetApplicationNameAndClass(\fIdisplay\fP, \fIname_return\fP, \
+\fIclass_return\fP)
 .br
       Display* \fIdisplay\fP;
 .br
