@@ -1,9 +1,5 @@
 #include <Library.tmpl>
 
-#if BuildXawBC
-   XAWBCDEFINES = -DXAW_BC
-#endif
-        DEFINES = -DSHAPE $(XAWBCDEFINES)
        INCLUDES = -I. -I$(TOOLKITSRC) -I$(TOP) -I$(TOP)/X11
    INSTALLFLAGS = $(INSTINCFLAGS)
        LINTLIBS = $(LINTXLIB) $(LINTXTOOL)
@@ -48,7 +44,6 @@ HEADERS = \
 	Repeater.h \
 	RepeaterP.h \
 	Reports.h \
-	Scroll.h \
 	Scrollbar.h \
 	ScrollbarP.h \
 	Simple.h \
@@ -79,7 +74,6 @@ HEADERS = \
 	TreeP.h \
 	Viewport.h \
 	ViewportP.h \
-	VPaned.h \
 	XawInit.h 
 
 SRCS = \
@@ -213,11 +207,6 @@ BuildIncludes($(HEADERS),Xaw,..)
 MakeDirectories(install,$(INCDIR)/Xaw)
 
 InstallMultiple($(HEADERS),$(INCDIR)/Xaw)
-
-#if InstallOldHeaderFiles 
-/* Make links for old programs that need to be converted. */ 
-LinkFileList(install,$(HEADERS),$(INCDIR),Xaw)
-#endif
 
 DependTarget()
 
