@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Viewport.c,v 1.49 90/02/05 11:45:40 jim Exp $";
+static char Xrcsid[] = "$XConsortium: Viewport.c,v 1.50 90/02/05 14:04:32 jim Exp $";
 #endif /* lint */
 
 
@@ -752,7 +752,6 @@ static XtGeometryResult GeometryManager(child, request, reply)
     ViewportWidget w = (ViewportWidget)child->core.parent;
     Boolean rWidth = (Boolean)(request->request_mode & CWWidth);
     Boolean rHeight = (Boolean)(request->request_mode & CWHeight);
-    Boolean rBW = (Boolean)(request->request_mode & CWBorderWidth);
     XtWidgetGeometry allowed;
     XtGeometryResult result;
     Boolean reconfigured;
