@@ -14,9 +14,9 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: ungrbdvky.m,v 1.5 94/01/29 15:18:01 rws Exp $
+ * $XConsortium: ungrbdvky.m,v 1.6 94/01/30 11:12:09 rws Exp $
  */
->>TITLE XUngrabDeviceKey XEXTENSIONS
+>>TITLE XUngrabDeviceKey XINPUT
 void
 
 Display	*display = Dsp;

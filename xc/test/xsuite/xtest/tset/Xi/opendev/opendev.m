@@ -14,10 +14,10 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium$
+ * $XConsortium: opendev.m,v 1.5 94/01/29 15:17:31 rws Exp $
  */
 
->>TITLE XOpenDevice XEXTENSIONS
+>>TITLE XOpenDevice XINPUT
 XDevice *
 
 Display	*display = Dsp;

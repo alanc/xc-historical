@@ -14,10 +14,10 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium$
+ * $XConsortium: gtslctevnt.m,v 1.5 94/01/29 15:20:14 rws Exp $
  */
 
->>TITLE XGetSelectedExtensionEvents XEXTENSIONS
+>>TITLE XGetSelectedExtensionEvents XINPUT
 XEventClass *
 
 Display	*display = Dsp;

@@ -14,10 +14,10 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium$
+ * $XConsortium: chgprop.m,v 1.5 94/01/29 15:20:01 rws Exp $
  */
 
->>TITLE XChangeDeviceDontPropagateList XEXTENSIONS
+>>TITLE XChangeDeviceDontPropagateList XINPUT
 int
 
 Display	*display = Dsp;

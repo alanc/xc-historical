@@ -14,9 +14,9 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium$
+ * $XConsortium: getdctl.m,v 1.4 94/01/29 15:22:32 rws Exp $
  */
->>TITLE XGetDeviceControl XEXTENSIONS
+>>TITLE XGetDeviceControl XINPUT
 XGetDeviceControl *
 
 Display	*display = Dsp;

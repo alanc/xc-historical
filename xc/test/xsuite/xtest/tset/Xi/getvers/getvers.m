@@ -14,10 +14,10 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium$
+ * $XConsortium: getvers.m,v 1.5 94/01/29 15:20:56 rws Exp $
  */
 
->>TITLE XGetExtensionVersion XEXTENSIONS
+>>TITLE XGetExtensionVersion XINPUT
 XExtensionVersion *
 
 Display	*display = Dsp;

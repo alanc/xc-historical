@@ -14,9 +14,9 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium$
+ * $XConsortium: chgdvctl.m,v 1.4 94/01/29 15:21:29 rws Exp $
  */
->>TITLE XChangeDeviceControl XEXTENSIONS
+>>TITLE XChangeDeviceControl XINPUT
 int
 xname()
 Display	*display = Dsp;

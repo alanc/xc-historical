@@ -14,10 +14,10 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium$
+ * $XConsortium: getprop.m,v 1.5 94/01/29 15:19:48 rws Exp $
  */
 
->>TITLE XGetDeviceDontPropagateList XEXTENSIONS
+>>TITLE XGetDeviceDontPropagateList XINPUT
 XEventClass *
 
 Display	*display = Dsp;

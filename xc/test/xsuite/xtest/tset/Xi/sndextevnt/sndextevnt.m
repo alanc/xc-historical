@@ -14,9 +14,9 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: sndextevnt.m,v 1.18 94/01/29 15:18:55 rws Exp $
+ * $XConsortium: sndextevnt.m,v 1.19 94/01/30 11:10:07 rws Exp $
  */
->>TITLE XSendExtensionEvent XEXTENSIONS
+>>TITLE XSendExtensionEvent XINPUT
 Status
 XSendExtensionEvent(display, device, w, propagate, count, event_list, event_send)
 Display *display = Dsp;

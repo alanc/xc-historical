@@ -14,9 +14,9 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium$
+ * $XConsortium: setdvbmap.m,v 1.5 94/01/29 15:18:41 rws Exp $
  */
->>TITLE XSetDeviceButtonMapping XEXTENSIONS
+>>TITLE XSetDeviceButtonMapping XINPUT
 >>SET return-value MappingSuccess
 int
 

@@ -14,9 +14,9 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: slextevnt.m,v 1.12 94/01/29 15:17:45 rws Exp $
+ * $XConsortium: slextevnt.m,v 1.13 94/01/30 11:05:48 rws Exp $
  */
->>TITLE XSelectExtensionEvent XEXTENSIONS
+>>TITLE XSelectExtensionEvent XINPUT
 void
 XSelectExtensionEvent(display, w, class, count)
 Display *display = Dsp;

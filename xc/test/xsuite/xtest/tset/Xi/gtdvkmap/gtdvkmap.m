@@ -14,9 +14,9 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium$
+ * $XConsortium: gtdvkmap.m,v 1.4 94/01/29 15:22:46 rws Exp $
  */
->>TITLE XGetDeviceKeyMapping XEXTENSIONS
+>>TITLE XGetDeviceKeyMapping XINPUT
 void
 
 Display	*display = Dsp;

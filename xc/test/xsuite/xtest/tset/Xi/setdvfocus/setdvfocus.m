@@ -14,9 +14,9 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium$
+ * $XConsortium: setdvfocus.m,v 1.4 94/01/29 15:20:43 rws Exp $
  */
->>TITLE XSetDeviceFocus XEXTENSIONS
+>>TITLE XSetDeviceFocus XINPUT
 void
 
 Display	*display = Dsp;

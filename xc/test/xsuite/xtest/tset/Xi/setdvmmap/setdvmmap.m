@@ -14,9 +14,9 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium$
+ * $XConsortium: setdvmmap.m,v 1.9 94/01/29 15:18:28 rws Exp $
  */
->>TITLE XSetDeviceModifierMapping XEXTENSIONS
+>>TITLE XSetDeviceModifierMapping XINPUT
 int
 xname
 Display	*display = Dsp;

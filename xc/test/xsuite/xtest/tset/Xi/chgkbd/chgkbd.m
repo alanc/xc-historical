@@ -14,9 +14,9 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium$
+ * $XConsortium: chgkbd.m,v 1.4 94/01/29 15:17:01 rws Exp $
  */
->>TITLE XChangeKeyboardDevice XEXTENSIONS
+>>TITLE XChangeKeyboardDevice XINPUT
 void
 
 Display	*display = Dsp;

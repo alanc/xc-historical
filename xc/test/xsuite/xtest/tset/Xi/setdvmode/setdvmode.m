@@ -14,9 +14,9 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium$
+ * $XConsortium: setdvmode.m,v 1.4 94/01/29 15:23:27 rws Exp $
  */
->>TITLE XSetDeviceMode XEXTENSIONS
+>>TITLE XSetDeviceMode XINPUT
 void
 
 Display	*display = Dsp;

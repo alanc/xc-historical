@@ -14,9 +14,9 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium$
+ * $XConsortium: dvbell.m,v 1.4 94/01/29 15:22:19 rws Exp $
  */
->>TITLE XDeviceBell XEXTENSIONS
+>>TITLE XDeviceBell XINPUT
 void
 
 Display	*display = Dsp;

@@ -14,7 +14,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium$
+ * $XConsortium: gtdvmmap.m,v 1.9 94/01/29 15:23:56 rws Exp $
  */
 >>TITLE XGetDeviceModifierMapping EXTENSIONS
 XModifierKeymap	*

@@ -14,9 +14,9 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium$
+ * $XConsortium: gtbtnmppn.m,v 1.4 94/01/29 15:16:21 rws Exp $
  */
->>TITLE XGetDeviceButtonMapping XEXTENSIONS
+>>TITLE XGetDeviceButtonMapping XINPUT
 int
 xname()
 Display	*display = Dsp;

@@ -14,9 +14,9 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium$
+ * $XConsortium: misc.m,v 1.4 94/01/29 15:23:41 rws Exp $
  */
->>TITLE Miscellaneous XEXTENSIONS
+>>TITLE Miscellaneous XINPUT
 void
 
 Display	*display = Dsp;

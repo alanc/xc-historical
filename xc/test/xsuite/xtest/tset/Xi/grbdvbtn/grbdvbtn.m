@@ -14,9 +14,9 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: grbdvbtn.m,v 1.4 94/01/29 15:16:34 rws Exp $
+ * $XConsortium: grbdvbtn.m,v 1.5 94/01/30 11:03:45 rws Exp $
  */
->>TITLE XGrabDeviceButton XEXTENSIONS
+>>TITLE XGrabDeviceButton XINPUT
 void
 
 Display	*display = Dsp;

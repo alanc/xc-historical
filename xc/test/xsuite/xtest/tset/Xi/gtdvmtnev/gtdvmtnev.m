@@ -14,9 +14,9 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium$
+ * $XConsortium: gtdvmtnev.m,v 1.10 94/01/29 15:19:22 rws Exp $
  */
->>TITLE XGetDeviceMotionEvents XEXTENSIONS
+>>TITLE XGetDeviceMotionEvents XINPUT
 XDeviceTimeCoord *
 XGetDeviceMotionEvents(display, device, start, stop, nevents_return, mode_return, axis_count_return)
 Display *display = Dsp;

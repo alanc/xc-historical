@@ -14,10 +14,10 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: closdev.m,v 1.5 94/01/29 15:22:04 rws Exp $
+ * $XConsortium: closdev.m,v 1.6 94/01/30 11:00:51 rws Exp $
  */
 
->>TITLE XCloseDevice XEXTENSIONS
+>>TITLE XCloseDevice XINPUT
 int
 
 Display	*display = Dsp;

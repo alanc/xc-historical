@@ -14,9 +14,9 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium$
+ * $XConsortium: getfctl.m,v 1.4 94/01/29 15:19:08 rws Exp $
  */
->>TITLE XGetFeedbackControl XEXTENSIONS
+>>TITLE XGetFeedbackControl XINPUT
 XFeedbackState *
 xname()
 Display	*display = Dsp;

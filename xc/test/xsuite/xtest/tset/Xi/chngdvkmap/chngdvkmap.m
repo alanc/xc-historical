@@ -14,9 +14,9 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: chngdvkmap.m,v 1.6 92/06/11 17:11:50 rws Exp $
+ * $XConsortium: chngdvkmap.m,v 1.6 94/01/29 15:21:50 rws Exp $
  */
->>TITLE XChangeDeviceKeyMapping XEXTENSIONS
+>>TITLE XChangeDeviceKeyMapping XINPUT
 void
 
 Display	*display = Dsp;

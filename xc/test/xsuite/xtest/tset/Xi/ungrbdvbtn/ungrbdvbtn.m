@@ -14,9 +14,9 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: ungrbdvbtn.m,v 1.5 94/01/29 15:18:15 rws Exp $
+ * $XConsortium: ungrbdvbtn.m,v 1.6 94/01/30 11:11:35 rws Exp $
  */
->>TITLE XUngrabDeviceButton XEXTENSIONS
+>>TITLE XUngrabDeviceButton XINPUT
 void
 
 Display	*display = Dsp;

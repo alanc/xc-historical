@@ -14,9 +14,9 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: chgptr.m,v 1.4 94/01/29 15:16:47 rws Exp $
+ * $XConsortium: chgptr.m,v 1.5 94/01/30 11:17:11 rws Exp $
  */
->>TITLE XChangePointerDevice XEXTENSIONS
+>>TITLE XChangePointerDevice XINPUT
 void
 
 Display	*display = Dsp;
