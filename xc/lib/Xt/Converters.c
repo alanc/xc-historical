@@ -1,4 +1,4 @@
-/* $XConsortium: Converters.c,v 1.89 93/10/06 17:04:10 kaleb Exp $ */
+/* $XConsortium: Converters.c,v 1.90 93/10/22 10:57:48 kaleb Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -63,6 +63,7 @@ static Const String XtNmissingCharsetList = "missingCharsetList";
 #define XtQFloat	XrmPermStringToQuark(XtRFloat)
 #define XtQInitialState	XrmPermStringToQuark(XtRInitialState)
 #define XtQPixmap	XrmPermStringToQuark(XtRPixmap)
+#define XtQRestartStyle XrmPermStringToQuark(XtRRestartStyle)
 #define XtQShort	XrmPermStringToQuark(XtRShort)
 #define XtQUnsignedChar	XrmPermStringToQuark(XtRUnsignedChar)
 #define XtQVisual	XrmPermStringToQuark(XtRVisual)
@@ -1468,6 +1469,34 @@ Boolean XtCvtStringToAtom(dpy, args, num_args, fromVal, toVal, closure_ret)
     done(Atom, atom);
 }
 
+/*ARGSUSED*/
+Boolean XtCvtStringToRestartStyle(dpy, args, num_args, fromVal, toVal,
+				  closure_ret)
+    Display* dpy;
+    XrmValuePtr args;
+    Cardinal    *num_args;
+    XrmValuePtr fromVal;
+    XrmValuePtr toVal;
+    XtPointer	*closure_ret;
+{
+    String str = (String)fromVal->addr;
+    if (*num_args != 0)
+	XtAppWarningMsg(XtDisplayToApplicationContext(dpy),
+	      XtNwrongParameters,"cvtStringToRestartStyle",XtCXtToolkitError,
+              "String to RestartStyle conversion needs no extra arguments",
+              (String *)NULL, (Cardinal *)NULL);
+
+    if (CompareISOLatin1(str, "RestartIfRunning") == 0)
+	done(unsigned char, SmRestartIfRunning);
+    if (CompareISOLatin1(str, "RestartAnyway") == 0)
+	done(unsigned char, SmRestartAnyway);
+    if (CompareISOLatin1(str, "RestartImmediately") == 0)
+	done(unsigned char, SmRestartImmediately);
+    XtDisplayStringConversionWarning(dpy, str, XtRRestartStyle);
+    return False;
+}
+
+/*ARGSUSED*/
 Boolean XtCvtStringToGravity (dpy, args, num_args, fromVal, toVal, closure_ret)
     Display* dpy;
     XrmValuePtr args;
@@ -1598,6 +1627,8 @@ void _XtAddDefaultConverters(table)
 	colorConvertArgs, XtNumber(colorConvertArgs),
 	XtCacheByDisplay, FreePixel);
     Add(_XtQString, XtQPosition,     XtCvtStringToShort,  NULL, 0, XtCacheAll);
+    Add(_XtQString, XtQRestartStyle, XtCvtStringToRestartStyle, NULL, 0,
+	XtCacheNone);
     Add(_XtQString, XtQShort,        XtCvtStringToShort,  NULL, 0, XtCacheAll);
     Add(_XtQString, XtQUnsignedChar, XtCvtStringToUnsignedChar,
 	NULL, 0, XtCacheAll);
