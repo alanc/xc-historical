@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlibInt.c,v 11.148 91/06/13 18:35:30 rws Exp $
+ * $XConsortium: XlibInt.c,v 11.149 91/07/09 20:10:36 rws Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986, 1987 */
@@ -29,10 +29,6 @@ without express or implied warranty.
 #include <stdio.h>
 
 static void _EatData32();
-
-#if USG
-int _XReadV(), _XWriteV();
-#endif 
 
 /* check for both EAGAIN and EWOULDBLOCK, because some supposedly POSIX
  * systems are broken and return EWOULDBLOCK when they should return EAGAIN
@@ -1765,6 +1761,39 @@ int iovcnt;
 
 #endif /* CRAY */
 
+#if defined(SYSV) && defined(SYSV386)
+/*
+ * SYSV/386 does not have readv so we emulate
+ */
+#include <sys/uio.h>
+
+int _XReadV (fd, iov, iovcnt)
+int fd;
+struct iovec *iov;
+int iovcnt;
+{
+    int i, len, total;
+    char *base;
+
+    errno = 0;
+    for (i=0, total=0;  i<iovcnt;  i++, iov++) {
+	len = iov->iov_len;
+	base = iov->iov_base;
+	while (len > 0) {
+	    register int nbytes;
+	    nbytes = read(fd, base, len);
+	    if (nbytes < 0 && total == 0)  return -1;
+	    if (nbytes <= 0)  return total;
+	    errno = 0;
+	    len   -= nbytes;
+	    total += nbytes;
+	    base  += nbytes;
+	}
+    }
+    return total;
+}
+
+#endif /* SYSV && SYSV386 */
 
 #ifdef STREAMSCONN
 /*
