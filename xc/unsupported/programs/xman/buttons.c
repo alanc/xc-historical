@@ -1,8 +1,8 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: buttons.c,v 1.19 89/12/15 12:06:38 kit Exp $
- * $Header: buttons.c,v 1.19 89/12/15 12:06:38 kit Exp $
+ * $XConsortium: buttons.c,v 1.20 90/02/07 16:07:43 kit Exp $
+ * $Header: buttons.c,v 1.20 90/02/07 16:07:43 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -653,8 +653,8 @@ char ** full_size, ** half_size;
   if (long_widget == (Widget) NULL) {          /* Make sure we found one. */
     PrintWarning(GetGlobals(parent), 
 		 "Could not find longest widget, aborting...");
-    XtFree(full_widgets);
-    XtFree(half_widgets);
+    XtFree((char *)full_widgets);
+    XtFree((char *)half_widgets);
     return;
   }
 
@@ -692,8 +692,8 @@ char ** full_size, ** half_size;
     XtSetValues(*temp, arglist, (Cardinal) 1);
   }
 
-  XtFree(full_widgets);
-  XtFree(half_widgets);
+  XtFree((char *)full_widgets);
+  XtFree((char *)half_widgets);
 }
   
 /*      Function Name: ConvertNamesToWidgets
@@ -724,7 +724,7 @@ char ** names;
     
       sprintf(error_buf, "Could not find widget named '%s'", *names);
       PrintError(error_buf);
-      XtFree(ids);
+      XtFree((char *)ids);
       return(NULL);
     }
   }
