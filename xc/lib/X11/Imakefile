@@ -55,6 +55,7 @@ OBJS =\
 	XCrCursor.o \
 	XCrGC.o \
 	XCrGlCur.o \
+	XCrPFBData.o \
 	XCrPixmap.o \
 	XCrWindow.o \
 	XCursor.o \
