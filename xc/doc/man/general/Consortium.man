@@ -1,4 +1,4 @@
-.\" $XConsortium: Consortium.man,v 1.38 94/05/06 17:44:38 rws Exp $
+.\" $XConsortium: Consortium.man,v 1.39 94/06/30 16:15:21 rws Exp $
 .\" Copyright (c) 1993, 1994  X Consortium
 .\" 
 .\" Permission is hereby granted, free of charge, to any person obtaining a
@@ -142,6 +142,7 @@ Megatek Corp.
 Motorola, Inc.
 NEC Corporation
 Nippon Telegraph and Telephone Corporation
+Novell, Inc.
 Oki Electric Industry Co., Ltd.
 OMRON Corporation
 The Santa Cruz Operation, Inc.
@@ -150,7 +151,6 @@ Silicon Graphics, Inc.
 Sony Corporation
 Sun Microsystems, Inc.
 Tektronix, Inc.
-Unix Systems Laboratories (includes Novell)
 .fi
 
 .SH ASSOCIATE MEMBERS
