@@ -1,5 +1,5 @@
 #ifndef lint
-static char *rcsid_xinit_c = "$Header: xinit.c,v 11.13 88/07/27 09:38:27 jim Exp $";
+static char *rcsid_xinit_c = "$Header: xinit.c,v 11.14 88/07/27 09:38:55 jim Exp $";
 #endif /* lint */
 #include <X11/copyright.h>
 
@@ -15,6 +15,7 @@ static char *rcsid_xinit_c = "$Header: xinit.c,v 11.13 88/07/27 09:38:27 jim Exp
 #include <sys/wait.h>
 #endif
 #include <errno.h>
+extern int sys_nerr;
 #ifdef hpux
 #include <sys/utsname.h>
 #endif
@@ -31,10 +32,42 @@ static char *rcsid_xinit_c = "$Header: xinit.c,v 11.13 88/07/27 09:38:27 jim Exp
 #define	FALSE		0
 #define	OK_EXIT		0
 #define	ERR_EXIT	1
-#define DEFAULT_SERVER "X"
-#define DEFAULT_DISPLAY ":0"
 char hostname[100] = "unix";
 char client_display[100];
+
+char *bindir = BINDIR;
+char *server_names[] = {
+#ifdef vax				/* Digital */
+    "Xqvss       Digital monochrome display on Microvax II or III series",
+    "Xqdss       Digital color display on Microvax II or III series",
+    "Xsm         Digital monochrome display on Vaxstation 2000",
+    "Xsg         Digital color display on Vaxstation 2000",
+#endif
+#ifdef sun				/* Sun */
+    "Xsun        Sun monochrome and color displays on Sun 2, 3, or 4 series",
+#endif
+#ifdef hpux				/* HP */
+    "Xhp         HP monochrome and colors displays on 9000/300 series",
+#endif
+#ifdef apollo				/* Apollo */
+    "Xapollo     Apollo monochrome and color displays",
+#endif
+#ifdef ibm				/* IBM */
+    "Xibm        IBM AED, APA, 8514a, megapel, VGA displays on PC/RT",
+#endif
+#ifdef macII				/* MacII */
+    "XmacII      Apple monochrome display on Macintosh II",
+#endif
+#ifdef M4310				/* Tektronix Pegasus */
+    "Xpeg        Tektronix Pegasus display on 4310",
+#endif
+#if defined(vax) || defined(sun)	/* Parallax */
+    "Xplx        Parallax color and video graphics controller",
+#endif
+    NULL};
+
+char *default_server = "X";
+char *default_display = ":0";		/* choose most efficient */
 char *default_client[] = {"xterm", "=+1+1", "-n", "login", "-display", NULL};
 char *server[100];
 char *client[100];
@@ -102,7 +135,7 @@ register char **argv;
 		for (ptr = default_client; *ptr; )
 			*cptr++ = *ptr++;
 		strcpy(client_display, hostname);
-		strcat(client_display, DEFAULT_DISPLAY);
+		strcat(client_display, default_display);
 		*cptr++ = client_display;
 #ifdef sun
 		/* 
@@ -128,7 +161,7 @@ register char **argv;
 	 * Copy the server args.
 	 */
 	if (argc == 0 || (**argv != '/' && **argv != '.' && !isalpha(**argv))) {
-		*sptr++ = DEFAULT_SERVER;
+		*sptr++ = default_server;
 	} else {
 		*sptr++ = *argv++;
 		argc--;
@@ -136,7 +169,7 @@ register char **argv;
 	if (argc > 0 && (argv[0][0] == ':' && isdigit(argv[0][1])))
 		displayNum = *argv;
 	else
-		displayNum = *sptr++ = DEFAULT_DISPLAY;
+		displayNum = *sptr++ = default_display;
 	while (--argc >= 0)
 		*sptr++ = *argv++;
 	*sptr = NULL;
@@ -233,9 +266,9 @@ Error(fmt, x0,x1,x2,x3,x4,x5,x6,x7,x8,x9)
 {
 	extern char	*sys_errlist[];
 
-	fprintf(stderr, "%s: ", program);
-	if (errno)
-		fprintf(stderr, "%s: ", sys_errlist[ errno ]);
+	fprintf(stderr, "%s:  ", program);
+	if (errno > 0 && errno < sys_nerr)
+	  fprintf (stderr, "%s (errno %d):  ", sys_errlist[errno], errno);
 	fprintf(stderr, fmt, x0,x1,x2,x3,x4,x5,x6,x7,x8,x9);
 }
 
@@ -274,7 +307,25 @@ startServer(server)
 		setpgrp(0,0);
 
 		execvp(server[0], server);
-		Fatal("Server \"%s\" died on startup\n", server[0]);
+		Error ("no server \"%s\" in PATH\n", server[0]);
+		{
+		    char **cpp;
+
+		    fprintf (stderr,
+"\nUse the -- option, or make sure that %s is in your path and\n",
+			     bindir);
+		    fprintf (stderr,
+"that \"%s\" is a program or a link to the right type of server\n",
+			     server[0]);
+		    fprintf (stderr,
+"for your display.  Possible server names include:\n\n");
+		    for (cpp = server_names; *cpp; cpp++) {
+			fprintf (stderr, "    %s\n", *cpp);
+		    }
+		    fprintf (stderr, "\n");
+		}
+		exit (ERR_EXIT);
+
 		break;
 	case -1:
 		break;
@@ -298,7 +349,7 @@ startServer(server)
 		sleep(5);
 
 		if (waitforserver(serverpid) == 0) {
-			Error("Can't connect to server\n");
+			Error("unable to connect to server\n");
 			shutdown(serverpid, -1);
 			serverpid = -1;
 		}
@@ -317,7 +368,13 @@ startClient(client)
 		setuid(getuid());
 		setpgrp(0, getpid());
 		execvp(client[0], client);
-		Fatal("Client \"%s\" died on startup\n", client[0]);
+		Error ("no program named \"%s\" in PATH\n", client[0]);
+		fprintf (stderr,
+"\nSpecify a program on the command line or make sure that %s\n", bindir);
+		fprintf (stderr,
+"is in your path.\n");
+		fprintf (stderr, "\n");
+		exit (ERR_EXIT);
 	}
 	return (clientpid);
 }
