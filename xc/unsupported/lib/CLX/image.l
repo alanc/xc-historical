@@ -1984,7 +1984,18 @@
 		(let ((pixmap-format
 			(find depth (display-pixmap-formats display)
 			      :key #'pixmap-format-depth)))
-		  (declare (type pixmap-format pixmap-format))
+		  (declare (type (or null pixmap-format) pixmap-format))
+		  (if (null pixmap-format)
+		      (error "The depth of the image ~s does not match any server pixmap format." image))
+		  (if (not (= (typecase image
+				(image-z (image-z-bits-per-pixel image))
+				(image-x (image-x-bits-per-pixel image)))
+			      (pixmap-format-bits-per-pixel pixmap-format)))
+		      ;; We could try to use the "/* XXX slow, but works */"
+		      ;; code in XPutImage from X11R4 here.  However, that
+		      ;; would require considerable support code
+		      ;; (see XImUtil.c, etc).
+		      (error "The bits-per-pixel of the image ~s does not match any server pixmap format." image))
 		  (values (pixmap-format-scanline-pad pixmap-format)
 			  (pixmap-format-bits-per-pixel pixmap-format))))))
 	(declare (type (member 8 16 32) pad)
