@@ -17,7 +17,7 @@ without any express or implied warranty.
 
 /* THIS IS NOT AN X CONSORTIUM STANDARD */
 
-/* $XConsortium: shm.c,v 1.16 93/01/28 19:29:19 rws Exp $ */
+/* $XConsortium: shm.c,v 1.17 93/06/24 11:16:32 dpw Exp $ */
 
 #include <sys/types.h>
 #include <sys/ipc.h>
@@ -65,7 +65,6 @@ char *shmat();
 
 static void miShmPutImage(), fbShmPutImage();
 static PixmapPtr fbShmCreatePixmap();
-ExtensionEntry *AddExtension();
 static int ProcShmDispatch(), SProcShmDispatch();
 static int ShmDetachSegment();
 static void ShmResetProc(), SShmCompletionEvent();
@@ -267,10 +266,11 @@ ProcShmAttach(client)
 
 /*ARGSUSED*/
 static int
-ShmDetachSegment(shmdesc, shmseg)
-    ShmDescPtr shmdesc;
-    ShmSeg shmseg;
+ShmDetachSegment(value, shmseg)
+    pointer value; /* must conform to DeleteType */
+    XID shmseg;
 {
+    ShmDescPtr shmdesc = (ShmDescPtr)value;
     ShmDescPtr *prev;
 
     if (--shmdesc->refcnt)
@@ -316,13 +316,15 @@ miShmPutImage(dst, pGC, depth, format, w, h, sx, sy, sw, sh, dx, dy, data)
 	return;
     }
     ValidateGC((DrawablePtr)pmap, putGC);
-    (*putGC->ops->PutImage)(pmap, putGC, depth, -sx, -sy, w, h, 0,
+    (*putGC->ops->PutImage)((DrawablePtr)pmap, putGC, depth, -sx, -sy, w, h, 0,
 			    (format == XYPixmap) ? XYPixmap : ZPixmap, data);
     FreeScratchGC(putGC);
     if (format == XYBitmap)
-	(void)(*pGC->ops->CopyPlane)(pmap, dst, pGC, 0, 0, sw, sh, dx, dy, 1L);
+	(void)(*pGC->ops->CopyPlane)((DrawablePtr)pmap, dst, pGC, 0, 0, sw, sh,
+				     dx, dy, 1L);
     else
-	(void)(*pGC->ops->CopyArea)(pmap, dst, pGC, 0, 0, sw, sh, dx, dy);
+	(void)(*pGC->ops->CopyArea)((DrawablePtr)pmap, dst, pGC, 0, 0, sw, sh,
+				    dx, dy);
     (*pmap->drawable.pScreen->DestroyPixmap)(pmap);
 }
 
