@@ -1,4 +1,4 @@
-/* $XConsortium: miNSurf.c,v 5.5 91/05/03 14:37:26 hersh Exp $ */
+/* $XConsortium: miNSurf.c,v 5.6 91/07/01 08:37:48 rws Exp $ */
 
 #define TRIMING 1
 
@@ -56,8 +56,9 @@ static void	       compute_edge_point_normals();
 static void	       build_edge_reps();
 static void	       make_edge_segments();
 static void	       span_evaluation_points();
+#ifdef TRIMING
 static ddpex3rtn       add_pgon_point();
-
+#endif
 
 
 /* 
