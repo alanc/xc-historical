@@ -1,4 +1,4 @@
-/* $XConsortium: mfbtegblt.c,v 5.0 89/06/09 15:07:05 keith Exp $ */
+/* $XConsortium: mfbtegblt.c,v 5.1 89/09/13 18:58:31 rws Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -60,6 +60,50 @@ two times:
 
 */
 
+#if defined(NO_3_60_CG4) && defined(FASTPUTBITS) && defined(FASTGETBITS)
+#define FASTCHARS
+#endif
+
+#ifdef FASTCHARS
+#define glyphbits(bits,width,mask,dst) FASTGETBITS(bits,0,width,dst)
+#define screenbits(bits,off,width,mask,dst) FASTPUTBITS(OP(bits), off, width,dst)
+#else
+#define glyphbits(bits,width,mask,dst) getleftbits(bits,width,dst); dst &= mask;
+#define screenbits(bits,off,width,mask,dst) *(dst) = *(dst) & ~(mask) | \
+					OP(SCRRIGHT(c,off)) & (mask)
+#endif
+
+#if GLYPHPADBYTES != 4
+#define USE_LEFTBITS
+#endif
+
+#ifdef USE_LEFTBITS
+typedef	unsigned char	*glyphPointer;
+
+#define GetBits4    glyphbits(char1, widthGlyph, glyphMask, c); \
+		    char1 += glyphBytes; \
+		    glyphbits(char2, widthGlyph, glyphMask, tmpSrc); \
+		    char2 += glyphBytes; \
+		    c |= SCRRIGHT(tmpSrc, xoff2); \
+		    glyphbits(char3, widthGlyph, glyphMask, tmpSrc); \
+		    char3 += glyphBytes; \
+		    c |= SCRRIGHT(tmpSrc, xoff3); \
+		    glyphbits(char4, widthGlyph, glyphMask, tmpSrc); \
+		    char4 += glyphBytes; \
+		    c |= SCRRIGHT(tmpSrc, xoff4);
+#define GetBits1    glyphbits (char1, widthGlyph, glyphMask, c); \
+		    char1 += glyphBytes;
+#else
+typedef unsigned int	*glyphPointer;
+
+#define GetBits4    c = *char1++ | \
+			SCRRIGHT (*char2++, xoff2) | \
+			SCRRIGHT (*char3++, xoff3) | \
+			SCRRIGHT (*char4++, xoff4);
+
+#define GetBits1    c = *char1++;
+#endif
+
 void
 MFBTEGLYPHBLT(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     DrawablePtr pDrawable;
@@ -71,27 +115,31 @@ MFBTEGLYPHBLT(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 {
     CharInfoPtr pci;
     FontInfoPtr pfi = pGC->font->pFI;
-    int xorg, yorg;
     int widthDst;
     unsigned int *pdstBase;	/* pointer to longword with top row 
 				   of current glyph */
 
-    int w;			/* width of glyph and char */
     int h;			/* height of glyph and char */
-    register int xpos;		/* current x%32  */
-    int ypos;			/* current y%32 */
-    register unsigned char *pglyph;
+    register int xpos;		/* current x  */
+    int ypos;			/* current y */
     int widthGlyph;
 
-    register unsigned int *pdst;/* pointer to current longword in dst */
     int hTmp;			/* counter for height */
     register int startmask, endmask;
     int nfirst;			/* used if glyphs spans a longword boundary */
-    register unsigned int tmpSrc;
     BoxRec bbox;		/* for clipping */
+    int	widthGlyphs;
+    register unsigned int  *dst;
+    register unsigned int  c;
+    register int	    xoff1, xoff2, xoff3, xoff4;
+    register glyphPointer   char1, char2, char3, char4;
 
-    xorg = pDrawable->x;
-    yorg = pDrawable->y;
+#ifdef USE_LEFTBITS
+    register int	    glyphMask;
+    register unsigned int  tmpSrc;
+    register int	    glyphBytes;
+#endif
+
     if (pDrawable->type == DRAWABLE_WINDOW)
     {
 	pdstBase = (unsigned int *)
@@ -105,27 +153,24 @@ MFBTEGLYPHBLT(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 	widthDst = (int)(((PixmapPtr)pDrawable)->devKind) >> 2;
     }
 
-    xpos = x + xorg;
-    ypos = y + yorg;
+    xpos = x + pDrawable->x;
+    ypos = y + pDrawable->y;
 
     pci = &pfi->maxbounds;
-    w = pci->metrics.characterWidth;
+    widthGlyph = pci->metrics.characterWidth;
     h = pfi->fontAscent + pfi->fontDescent;
-    widthGlyph = GLYPHWIDTHBYTESPADDED(pci);
 
     xpos += pci->metrics.leftSideBearing;
     ypos -= pfi->fontAscent;
 
     bbox.x1 = xpos;
-    bbox.x2 = xpos + (w * nglyph);
+    bbox.x2 = xpos + (widthGlyph * nglyph);
     bbox.y1 = ypos;
     bbox.y2 = ypos + h;
 
     switch ((*pGC->pScreen->RectIn)(
                 ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->pCompositeClip, &bbox))
     {
-      case rgnOUT:
-	break;
       case rgnPART:
 	/* this is the WRONG thing to do, but it works.
 	   calling the non-terminal text is easy, but slow, given
@@ -148,69 +193,97 @@ MFBTEGLYPHBLT(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 	   one day...
 	*/
 	CLIPTETEXT(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase);
-	break;
-      case rgnIN:
-        pdstBase += ((widthDst * ypos) + (xpos >> 5));
-        xpos &= 0x1f;
-        while(nglyph--)
-        {
-	    pglyph = pglyphBase + (*ppci++)->byteOffset;
-	    hTmp = h;
-	    pdst = pdstBase;
+      case rgnOUT:
+	return;
+    }
+    pdstBase += widthDst * ypos;
+    widthGlyphs = widthGlyph << 2;
 
-#if defined(NO_3_60_CG4) && defined(FASTPUTBITS) && defined(FASTGETBITS)
-#define FASTCHARS
+#ifdef USE_LEFTBITS
+    glyphMask = (1 << widthGlyph) - 1;
+    glyphBytes = GLYPHWIDTHBYTESPADDED(pci);
 #endif
 
+    while(nglyph)
+    {
+	xoff1 = xpos & 0x1f;
+	char1 = (glyphPointer) (pglyphBase + (*ppci++)->byteOffset);
+	hTmp = h;
+	dst = pdstBase + (xpos >> 5);
+
+	if (nglyph >= 4 && widthGlyphs <= 32)
+	{
+	    nglyph -= 4;
+	    xoff2 = widthGlyph;
+	    xoff3 = xoff2 + widthGlyph;
+	    xoff4 = xoff3 + widthGlyph;
+	    char2 = (glyphPointer) (pglyphBase + (*ppci++)->byteOffset);
+	    char3 = (glyphPointer) (pglyphBase + (*ppci++)->byteOffset);
+	    char4 = (glyphPointer) (pglyphBase + (*ppci++)->byteOffset);
+
 #ifndef FASTCHARS
-	    if ( (xpos+w) < 32)
+	    if (xoff1 + widthGlyphs <= 32)
 	    {
-	        maskpartialbits(xpos, w, startmask);
-#endif /* FASTCHARS */
-	        while(hTmp--)
-	        {
+	    	maskpartialbits (xpos, widthGlyphs, startmask);
+#endif
+	    	while (hTmp--)
+	    	{
+		    GetBits4
+		    screenbits(c,xoff1,widthGlyphs,startmask,dst);
+		    dst += widthDst;
+	    	}
 #ifndef FASTCHARS
-		    getleftbits(pglyph, w, tmpSrc);
-		    *pdst = (*pdst & ~startmask) |
-			    (OP(SCRRIGHT(tmpSrc, xpos)) & startmask);
-#else
-		    FASTGETBITS(pglyph, 0, w, tmpSrc);
-		    FASTPUTBITS(OP(tmpSrc), xpos, w, pdst);
-#endif  /* FASTCHARS */
-		    pdst += widthDst;
-		    pglyph += widthGlyph;
-	        }
-#ifdef FASTCHARS
-	        xpos += w;
-		if (xpos >= 32)
-		{
-		    xpos &= 0x1f;
-	            pdstBase++;
-		}
-#else
-	        xpos += w;
 	    }
 	    else
 	    {
-	        mask32bits(xpos, w, startmask, endmask);
-	        nfirst = 32 - xpos;
-	        while(hTmp--)
-	        {
-		    getleftbits(pglyph, w, tmpSrc);
-		    *pdst = (*pdst & ~startmask) |
-			    (OP(SCRRIGHT(tmpSrc, xpos)) & startmask);
-		    *(pdst+1) = (*(pdst+1) & ~endmask) |
-			    (OP(SCRLEFT(tmpSrc, nfirst)) & endmask);
-		    pdst += widthDst;
-		    pglyph += widthGlyph;
-	        }
-	        xpos += w;
-	        xpos &= 0x1f;
-	        pdstBase++;
+		mask32bits (xoff1, widthGlyphs, startmask, endmask);
+		nfirst = 32 - xoff1;
+		while (hTmp--)
+		{
+		    GetBits4
+		    dst[0] = dst[0] & ~startmask |
+			     OP(SCRRIGHT(c,xoff1)) & startmask;
+		    dst[1] = dst[1] & ~endmask |
+ 		             OP(SCRLEFT(c,nfirst)) & endmask;
+		    dst += widthDst;
+		}
 	    }
-#endif /* FASTCHARS */
-        }
-	break;
+#endif
+	    xpos += widthGlyphs;
+	}
+	else
+	{
+	    nglyph--;
+
+#ifndef FASTCHARS
+	    if (xoff1 + widthGlyph <= 32)
+	    {
+		maskpartialbits (xoff1, widthGlyph, startmask);
+#endif
+		while (hTmp--)
+		{
+		    GetBits1
+		    screenbits(c,xoff1,widthGlyph,startmask,dst);
+		    dst += widthDst;
+		}
+#ifndef FASTCHARS
+	    }
+	    else
+	    {
+		mask32bits (xoff1, widthGlyph, startmask, endmask);
+		nfirst = 32 - xoff1;
+		while (hTmp--)
+		{
+		    GetBits1
+		    dst[0] = dst[0] & ~startmask |
+			     OP(SCRRIGHT(c,xoff1)) & startmask;
+		    dst[1] = dst[1] & ~endmask |
+			     OP(SCRLEFT(c,nfirst)) & endmask;
+		    dst += widthDst;
+		}
+	    }
+#endif
+	    xpos += widthGlyph;
+	}
     }
 }
-
