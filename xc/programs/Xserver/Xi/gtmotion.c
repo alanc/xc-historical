@@ -1,5 +1,4 @@
-#ifdef XINPUT
-/* $XConsortium: xgtmotion.c,v 1.5 89/10/10 16:10:37 gms Exp $ */
+/* $XConsortium: xgtmotion.c,v 1.6 89/11/21 13:49:47 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -179,4 +178,3 @@ SRepXGetDeviceMotionEvents (client, size, rep)
     swapl(&rep->nEvents, n);
     WriteToClient(client, size, rep);
     }
-#endif /* XINPUT */

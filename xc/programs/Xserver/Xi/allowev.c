@@ -1,4 +1,3 @@
-#ifdef XINPUT
 /* $XConsortium: xallowev.c,v 1.5 89/10/10 16:00:59 gms Exp $ */
 
 /************************************************************
@@ -115,4 +114,3 @@ ProcXAllowDeviceEvents(client)
         }
     return Success;
     }
-#endif /* XINPUT */

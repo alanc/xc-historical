@@ -1,5 +1,4 @@
-#ifdef XINPUT
-/* $XConsortium: xsetmmap.c,v 1.4 89/10/10 16:11:16 gms Exp $ */
+/* $XConsortium: xsetmmap.c,v 1.5 89/11/07 19:40:57 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -135,4 +134,3 @@ SRepXSetDeviceModifierMapping (client, size, rep)
     WriteToClient(client, size, rep);
     }
 
-#endif /* XINPUT */

@@ -1,4 +1,3 @@
-#ifdef XINPUT
 /* $XConsortium: xlistdev.c,v 1.7 89/10/12 16:56:14 gms Exp $ */
 
 /************************************************************
@@ -366,5 +365,3 @@ SRepXListInputDevices (client, size, rep)
     swapl(&rep->length, n);
     WriteToClient(client, size, rep);
     }
-
-#endif /* XINPUT */

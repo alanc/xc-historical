@@ -1,4 +1,3 @@
-#ifdef XINPUT
 /* $XConsortium: xgetvers.c,v 1.3 89/10/10 16:10:23 gms Exp $ */
 
 /************************************************************
@@ -118,5 +117,3 @@ SRepXGetExtensionVersion (client, size, rep)
     swaps(&rep->minor_version, n);
     WriteToClient(client, size, rep);
     }
-
-#endif /* XINPUT */

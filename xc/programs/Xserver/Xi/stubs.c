@@ -1,5 +1,4 @@
-#ifdef XINPUT
-/* $XConsortium: xstubs.c,v 1.1 89/11/08 17:54:37 rws Exp $ */
+/* $XConsortium: xstubs.c,v 1.2 89/11/10 11:58:20 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -117,5 +116,3 @@ OpenInputDevice (dev, client, status)
     int *status;
     {
     }
-
-#endif /* XINPUT */

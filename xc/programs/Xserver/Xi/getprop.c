@@ -1,4 +1,3 @@
-#ifdef XINPUT
 /* $XConsortium: xgetprop.c,v 1.5 89/10/10 16:10:16 gms Exp $ */
 
 /************************************************************
@@ -178,5 +177,3 @@ SRepXGetDeviceDontPropagateList (client, size, rep)
     swaps(&rep->count, n);
     WriteToClient(client, size, rep);
     }
-
-#endif /* XINPUT */

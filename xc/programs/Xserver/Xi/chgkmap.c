@@ -1,4 +1,3 @@
-#ifdef XINPUT
 /* $XConsortium: xchgkmap.c,v 1.4 89/09/25 16:23:18 gms Exp $ */
 
 /************************************************************
@@ -105,5 +104,3 @@ ProcXChangeDeviceKeyMapping(client)
 		ret);
     return Success;
     }
-
-#endif /* XINPUT */

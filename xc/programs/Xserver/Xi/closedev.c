@@ -1,4 +1,3 @@
-#ifdef XINPUT
 /* $XConsortium: xclosedev.c,v 1.6 89/10/12 12:16:51 gms Exp $ */
 
 /************************************************************
@@ -162,4 +161,3 @@ DeleteDeviceEvents (dev, pWin, client)
 		FreeResource (grab->resource, RT_NONE);
     }
 
-#endif /* XINPUT */

@@ -1,4 +1,3 @@
-#ifdef XINPUT
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
 Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -172,5 +171,3 @@ SRepXGetSelectedExtensionEvents (client, size, rep)
     swaps(&rep->all_clients_count, n);
     WriteToClient(client, size, rep);
     }
-
-#endif /* XINPUT */

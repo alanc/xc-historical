@@ -1,4 +1,3 @@
-#ifdef XINPUT
 /* $XConsortium: xgetfctl.c,v 1.4 89/10/10 16:09:58 gms Exp $ */
 
 /************************************************************
@@ -360,5 +359,3 @@ SRepXGetFeedbackControl (client, size, rep)
     swaps(&rep->num_feedbacks, n);
     WriteToClient(client, size, rep);
     }
-
-#endif /* XINPUT */

@@ -1,4 +1,3 @@
-#ifdef XINPUT
 /* $XConsortium: xgetkmap.c,v 1.3 89/10/10 16:10:08 gms Exp $ */
 
 /************************************************************
@@ -147,4 +146,3 @@ SRepXGetDeviceKeyMapping (client, size, rep)
     WriteToClient(client, size, rep);
     }
 
-#endif /* XINPUT */

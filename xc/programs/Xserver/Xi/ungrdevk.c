@@ -1,4 +1,3 @@
-#ifdef XINPUT
 /* $XConsortium: xungrdevk.c,v 1.4 89/10/10 16:11:34 gms Exp $ */
 
 /************************************************************
@@ -133,4 +132,3 @@ ProcXUngrabDeviceKey(client)
     DeletePassiveGrabFromList(&temporaryGrab);
     return Success;
     }
-#endif /* XINPUT */

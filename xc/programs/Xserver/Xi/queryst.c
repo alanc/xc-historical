@@ -1,4 +1,3 @@
-#ifdef XINPUT
 /* $XConsortium: xqueryst.c,v 1.3 89/10/10 16:10:48 gms Exp $ */
 
 /***********************************************************************
@@ -173,5 +172,3 @@ SRepXQueryDeviceState (client, size, rep)
     swapl(&rep->length, n);
     WriteToClient(client, size, rep);
     }
-
-#endif /* XINPUT */

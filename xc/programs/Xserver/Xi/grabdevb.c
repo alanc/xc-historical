@@ -1,5 +1,4 @@
-#ifdef XINPUT
-/* $XConsortium: xgrabdevb.c,v 1.4 89/10/10 16:10:30 gms Exp $ */
+/* $XConsortium: xgrabdevb.c,v 1.5 89/11/06 18:38:12 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -133,5 +132,3 @@ ProcXGrabDeviceButton(client)
 	SendErrorToClient(client, IReqCode, X_GrabDeviceButton, 0, ret);
     return(Success);
     }
-    
-#endif /* XINPUT */

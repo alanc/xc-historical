@@ -1,4 +1,3 @@
-#ifdef XINPUT
 /* $XConsortium: xselectev.c,v 1.6 89/10/10 16:10:52 gms Exp $ */
 
 /************************************************************
@@ -128,5 +127,3 @@ ProcXSelectExtensionEvent (client)
 
     return Success;
     }
-
-#endif /* XINPUT */

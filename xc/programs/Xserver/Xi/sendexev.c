@@ -1,4 +1,3 @@
-#ifdef XINPUT
 /* $XConsortium: xsendexev.c,v 1.4 89/10/10 16:11:01 gms Exp $ */
 
 /************************************************************
@@ -135,5 +134,3 @@ ProcXSendExtensionEvent (client)
 
     return Success;
     }
-
-#endif /* XINPUT */

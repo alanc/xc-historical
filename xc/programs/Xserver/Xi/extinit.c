@@ -1,5 +1,4 @@
-#ifdef XINPUT
-/* $XConsortium: xextinit.c,v 1.4 89/11/08 17:29:24 rws Exp $ */
+/* $XConsortium: xextinit.c,v 1.5 89/11/21 13:48:41 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -892,4 +891,3 @@ SetEventInfo(mask, constant)
     EventInfo[ExtEventIndex].mask = mask;
     EventInfo[ExtEventIndex++].type = constant;
     }
-#endif /* XINPUT */

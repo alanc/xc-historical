@@ -1,5 +1,4 @@
-#ifdef XINPUT
-/* $XConsortium: xchgkbd.c,v 1.5 89/11/07 19:40:10 rws Exp $ */
+/* $XConsortium: xchgkbd.c,v 1.6 89/11/10 11:58:42 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -163,4 +162,3 @@ SRepXChangeKeyboardDevice (client, size, rep)
     WriteToClient(client, size, rep);
     }
 
-#endif /* XINPUT */

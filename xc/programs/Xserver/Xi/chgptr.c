@@ -1,5 +1,4 @@
-#ifdef XINPUT
-/* $XConsortium: xchgptr.c,v 1.5 89/11/07 19:40:36 rws Exp $ */
+/* $XConsortium: xchgptr.c,v 1.6 89/11/08 17:54:50 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -215,5 +214,3 @@ SRepXChangePointerDevice (client, size, rep)
     swapl(&rep->length, n);
     WriteToClient(client, size, rep);
     }
-
-#endif /* XINPUT */

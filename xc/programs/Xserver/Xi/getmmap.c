@@ -1,4 +1,3 @@
-#ifdef XINPUT
 /* $XConsortium: xgetmmap.c,v 1.3 89/10/10 16:10:12 gms Exp $ */
 
 /************************************************************
@@ -128,5 +127,3 @@ SRepXGetDeviceModifierMapping (client, size, rep)
     swapl(&rep->length, n);
     WriteToClient(client, size, rep);
     }
-
-#endif /* XINPUT */

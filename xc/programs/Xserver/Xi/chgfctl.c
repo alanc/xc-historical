@@ -1,4 +1,3 @@
-#ifdef XINPUT
 /* $XConsortium: xchgfctl.c,v 1.4 89/10/10 16:04:44 gms Exp $ */
 
 /************************************************************
@@ -518,5 +517,3 @@ ChangeLedFeedback (client, dev, mask, f)
     (*l->CtrlProc)(dev, &l->ctrl);
     return Success;
     }
-
-#endif /* XINPUT */

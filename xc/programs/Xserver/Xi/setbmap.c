@@ -1,5 +1,4 @@
-#ifdef XINPUT
-/* $XConsortium: xsetbmap.c,v 1.4 89/10/10 16:11:06 gms Exp $ */
+/* $XConsortium: xsetbmap.c,v 1.5 89/11/07 19:40:44 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -140,5 +139,3 @@ SRepXSetDeviceButtonMapping (client, size, rep)
     swapl(&rep->length, n);
     WriteToClient(client, size, rep);
     }
-
-#endif /* XINPUT */

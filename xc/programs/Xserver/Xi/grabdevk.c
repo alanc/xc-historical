@@ -1,4 +1,3 @@
-#ifdef XINPUT
 /* $XConsortium: xgrabdevk.c,v 1.4 89/10/10 16:10:33 gms Exp $ */
 
 /************************************************************
@@ -134,5 +133,3 @@ ProcXGrabDeviceKey(client)
 
     return Success;
     }
-
-#endif /* XINPUT */

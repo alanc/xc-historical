@@ -1,5 +1,4 @@
-#ifdef XINPUT
-/* $XConsortium: xchgprop.c,v 1.4 89/10/10 16:08:12 gms Exp $ */
+/* $XConsortium: xchgprop.c,v 1.5 89/11/21 14:50:31 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -121,5 +120,3 @@ ProcXChangeDeviceDontPropagateList (client)
 
     return Success;
     }
-
-#endif /* XINPUT */

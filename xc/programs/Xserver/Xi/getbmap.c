@@ -1,4 +1,3 @@
-#ifdef XINPUT
 /* $XConsortium: xgetbmap.c,v 1.3 89/10/10 16:09:40 gms Exp $ */
 
 /************************************************************
@@ -124,5 +123,3 @@ SRepXGetDeviceButtonMapping (client, size, rep)
     swapl(&rep->length, n);
     WriteToClient(client, size, rep);
     }
-
-#endif /* XINPUT */

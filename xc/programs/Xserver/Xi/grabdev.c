@@ -1,5 +1,4 @@
-#ifdef XINPUT
-/* $XConsortium: xgrabdev.c,v 1.6 89/10/10 16:10:26 gms Exp $ */
+/* $XConsortium: xgrabdev.c,v 1.7 89/11/06 18:23:56 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -197,5 +196,3 @@ SRepXGrabDevice (client, size, rep)
     swapl(&rep->length, n);
     WriteToClient(client, size, rep);
     }
-
-#endif /* XINPUT */

@@ -1,4 +1,3 @@
-#ifdef XINPUT
 /* $XConsortium: xgetfocus.c,v 1.3 89/10/10 16:10:04 gms Exp $ */
 
 /************************************************************
@@ -128,5 +127,3 @@ SRepXGetDeviceFocus (client, size, rep)
     swapl(&rep->time, n);
     WriteToClient(client, size, rep);
     }
-
-#endif /* XINPUT */

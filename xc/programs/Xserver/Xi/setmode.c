@@ -1,4 +1,3 @@
-#ifdef XINPUT
 /* $XConsortium: xsetmode.c,v 1.3 89/10/10 16:11:21 gms Exp $ */
 
 /************************************************************
@@ -134,5 +133,3 @@ SetDeviceMode (client, id, mode)
     {
     return Success;
     }
-
-#endif /* XINPUT */

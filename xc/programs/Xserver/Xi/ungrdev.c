@@ -1,4 +1,3 @@
-#ifdef XINPUT
 /* $XConsortium: xungrdev.c,v 1.5 89/10/10 16:11:25 gms Exp $ */
 
 /************************************************************
@@ -94,5 +93,3 @@ register ClientPtr client;
 	(*dev->DeactivateGrab)(dev);
     return Success;
     }
-
-#endif /* XINPUT */

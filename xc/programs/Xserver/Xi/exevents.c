@@ -1,5 +1,4 @@
-/* $XConsortium: xexevents.c,v 1.6 89/11/21 13:49:17 rws Exp $ */
-#ifdef XINPUT
+/* $XConsortium: xexevents.c,v 1.7 89/11/21 14:51:02 rws Exp $ */
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
 Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -1145,4 +1144,3 @@ DeviceEventSuppressForWindow(pWin, client, mask, maskndx)
 	}
     RecalculateDeviceDeliverableEvents(pWin);
     }
-#endif /* XINPUT */

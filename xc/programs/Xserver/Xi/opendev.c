@@ -1,5 +1,4 @@
-#ifdef XINPUT
-/* $XConsortium: xopendev.c,v 1.6 89/10/12 12:22:10 gms Exp $ */
+/* $XConsortium: xopendev.c,v 1.7 89/11/21 13:39:37 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -173,5 +172,3 @@ SRepXOpenDevice (client, size, rep)
     swapl(&rep->length, n);
     WriteToClient(client, size, rep);
     }
-
-#endif /* XINPUT */
