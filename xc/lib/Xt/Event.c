@@ -345,7 +345,7 @@ void DispatchEvent(event, widget, mask)
             !(widget->core.widget_class->core_class.visible_interest)) return;
 
     for (p=widget->core.event_table; p != NULL; p = p->next) {
-	if ((mask && p->mask != 0) || (mask==0 && p->non_filter == TRUE)) 
+	if ((mask & p->mask) != 0 || (mask == 0 && p->non_filter == TRUE)) 
               (*(p->proc))(widget, p->closure, event);
          }
     return;
