@@ -1,5 +1,5 @@
 .\" Use tbl and -ms and macros.t	-*- Nroff -*-
-.\" $XConsortium: xlfd.tbl.ms,v 1.23 94/01/07 08:48:02 gildea Exp $
+.\" $XConsortium: xlfd.tbl.ms,v 1.24 94/01/07 14:32:54 gildea Exp $
 .de sC			\" start change
 .mc \s+5\(br\s0\"	\" make tall enough to span paragraph skip
 ..
@@ -18,19 +18,25 @@
 .if n .nr LL 72m
 \&
 .sp 8
-.ce 4
+.ce 100
 \s+2\fBX Logical Font Description Conventions\fP\s-2
 
 \fBVersion 1.5\fP
 
-\fBPublic Review (draft 2)\fP
+\fBPublic Review Draft\fP
+.br
+(with change bars against version 1.4)
 
-\fBX Version 11, Release 6\fP
+\fBX Consortium Draft Standard\fP
 .sp 6
-.ce 2
 \s+1Jim Flowers\s-1
 .sp 6p
 \s+1Digital Equipment Corporation\s-1
+.sp 6
+\s+1Version 1.5 edited by Stephen Gildea\s0
+.sp 6p
+\s+1X Consortium, Inc.\s0
+.ce 0
 .bp
 \&
 .ps 9
@@ -50,11 +56,7 @@ Bitstream Amerigo is a registered trademark of Bitstream Inc.
 .LP             
 Stone is a registered trademark of Adobe Systems Inc.
 .LP
-Copyright \(co 1994
-X Consortium,
-Cambridge, Mass., USA.
-.LP
-Copyright \(co 1988 
+Copyright \(co 1988, 1994 
 Massachusetts Institute of Technology, 
 Cambridge, MA USA.
 .LP
@@ -65,9 +67,12 @@ Permission to use, copy, modify, and distribute this documentation
 for any purpose and without fee is hereby granted, provided 
 that the above copyright notice and this permission 
 notice appear in all copies.
-MIT and Digital Equipment Corporation make no representations about the 
+X Consortium, MIT and Digital Equipment Corporation make no representations
+about the 
 suitability for any purpose of the information in this document. 
 This documentation is provided as is without express or implied warranty. 
+This document is only a draft standard of the X Consortium and is therefore
+subject to change.
 .ps 11
 .nr PS 11
 .bp 1
@@ -122,13 +127,6 @@ In addition,
 this information is required by certain clients 
 to position subscripts automatically and determine small capital heights, 
 recommended leading, word-space values, and so on.
-.LP
-.sC
-Change bars note sections that have changed or been added since
-version 1.4 of this document, which was part of X11 Release 5.
-Version 1.5 was edited by Stephen Gildea.
-.br
-.eC
 .NH 1
 Requirements and Goals
 .XS
@@ -2580,9 +2578,9 @@ entire field.
 There may be multiple polymorphic values
 in the ADD_STYLE_NAME field.
 They are surrounded by \*Q[\*U and \*Q]\*U and separated by a Space,
-as \fC[0 0]\fP.  \fC[...]\fP may coexist with
+as \*Q\fC[0 0]\fP\*U.  The polymorphic values may coexist with
 other data in the field.
-It is recommened that the polymorphic values
+It is recommended that the polymorphic values
 be at the end of the ADD_STYLE_NAME field.
 .LP
 The font matching algorithms for a font with polymorphic fields are
@@ -2597,9 +2595,9 @@ giving the minimum and maximum allowable values for that axis.
 AXIS_TYPES is like AXIS_NAMES,
 but can be registered as having specific semantics.
 .LP
-The axes properties are in the same order as the corresponding fields
-of the font name.  They are matched with font name fields by looking
-for the special polymorphic values (\fC0\fP) in the font name.
+The axes are listed in the properties in the same order as they
+appear in the font name.  They are matched with font name fields by
+looking for the special polymorphic values in the font name.
 .LP
 Examples:
 .LP
