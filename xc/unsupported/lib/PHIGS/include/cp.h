@@ -1,4 +1,4 @@
-/* $XConsortium: cp.h,v 5.1 91/02/16 09:49:26 rws Exp $ */
+/* $XConsortium: cp.h,v 5.2 91/02/16 15:09:18 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -159,6 +159,9 @@ typedef struct {
 #define MSKCNT ((NOFILE + 31) / 32)
 #else
 #define MSKCNT ((NOFILES_MAX + 31) / 32)
+#endif
+#ifdef FLOAT
+#undef FLOAT	/* hp9000s300 defines FLOAT in <sys/param.h> */
 #endif
 #endif
 
