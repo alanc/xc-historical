@@ -1,4 +1,4 @@
-/* $XConsortium: xcmsdb.c,v 1.5 91/07/22 16:36:55 rws Exp $ */
+/* $XConsortium: xcmsdb.c,v 1.6 91/07/22 16:45:45 rws Exp $ */
 
 /*
  * (c) Copyright 1990 Tektronix Inc.
@@ -806,6 +806,7 @@ _XcmsGetElement (format, pValue, pCount)
 #endif
 	*pValue += 4;
 	*pCount -= 1;
+	break;
       case 16:
 #ifdef WORD64
 	value = ((unsigned long)(((unsigned char *)(*pValue))[0])) << 8 ||
@@ -815,10 +816,12 @@ _XcmsGetElement (format, pValue, pCount)
 #endif
 	*pValue += 2;
 	*pCount -= 1;
+	break;
       case 8:
 	value = *((unsigned char *) (*pValue));
 	*pValue += 1;
 	*pCount -= 1;
+	break;
       default:
 	value = 0;
 	break;
