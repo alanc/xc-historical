@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.156 93/08/08 13:20:14 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.159 93/09/04 16:57:05 rws Exp $
 /*
  * Server Master Makefile
  */
@@ -445,7 +445,7 @@ XNESTDIRS = StdSubdirs $(SUBDIRS4) $(DEPDIRS)
 XNESTOBJS = 
 XNEST = hw/xnest/libxnest.a
 XNESTLIBS = $(DIX) $(OS) $(FONT) $(XNEST) $(MI) $(EXTENSIONS)
-XNESTSYSLIBS = $(XLIB) $(SYSLIBS)
+XNESTSYSLIBS = $(LDPRELIB) $(XLIB) $(SYSLIBS)
 
 ServerTarget(Xnest,$(XNESTDIRS),$(XNESTOBJS),$(XNESTLIBS),$(XNESTSYSLIBS))
 #endif /* XnestServer */
