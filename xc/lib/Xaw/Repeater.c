@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: Repeater.c,v 1.1 90/03/02 11:46:57 jim Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -21,6 +21,8 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  * Author:  Jim Fulton, MIT X Consortium
+ * 
+ * This widget is used for press-and-hold style buttons.
  */
 
 #include <X11/IntrinsicP.h>		/* for toolkit inheritance stuff */
@@ -48,7 +50,7 @@ static void tic();			/* clock timeout */
  */
 static char defaultTranslations[] = 
   "<EnterWindow>:     highlight() \n\
-   <LeaveWindow>:     stop() unhighlight() \n\
+   <LeaveWindow>:     unhighlight() \n\
    <Btn1Down>:        set() start() \n\
    <Btn1Up>:          stop() unset() ";
 
