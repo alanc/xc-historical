@@ -170,6 +170,7 @@
 /* Representation types */
 #define XtRBoolean		XrmRBoolean
 #define XtRColor		XrmRColor
+#define XtRCursor		XrmRCursor
 #define XtRDims			XrmRDims
 #define XtRDisplay		XrmRDisplay
 #define XtREditMode		"EditMode"
