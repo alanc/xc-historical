@@ -1,5 +1,5 @@
 /*
- * $XConsortium: folder.c,v 2.34 91/04/02 19:28:36 gildea Exp $
+ * $XConsortium: folder.c,v 2.35 91/07/02 17:35:57 converse Exp $
  *
  *
  *		       COPYRIGHT 1987, 1989
@@ -302,21 +302,23 @@ static void CreateFolder(widget, client_data, call_data)
 /*ARGSUSED*/
 void DoCreateFolder(widget, client_data, call_data)
     Widget	widget;		/* unused */
-    XtPointer	client_data;	/* unused */
+    XtPointer	client_data;
     XtPointer	call_data;	/* unused */
 {
-    PopupPrompt("Create folder named:", CreateFolder);
+    Scrn scrn = (Scrn) client_data;
+    PopupPrompt(scrn->parent, "Create folder named:", CreateFolder);
 }
 
 
 /*ARGSUSED*/
 void XmhCreateFolder(w, event, params, num_params)
-    Widget	w;		/* unused */
+    Widget	w;
     XEvent	*event;		/* unused */
     String	*params;	/* unused */
     Cardinal	*num_params;	/* unused */
 {
-    DoCreateFolder(w, (XtPointer) NULL, (XtPointer) NULL);
+    Scrn scrn = ScrnFromWidget(w);
+    DoCreateFolder(w, (XtPointer)scrn, (XtPointer)NULL);
 }
 
 
@@ -488,7 +490,7 @@ void DoDeleteFolder(w, client_data, call_data)
      * TestAndSet returns true if there is a delete pending on this folder.
      */
     if (TocTestAndSetDeletePending(toc))	{
-	PopupError("There is a delete pending on this folder.");
+	PopupError(scrn->parent, "There is a delete pending on this folder.");
 	return;
     }
 
