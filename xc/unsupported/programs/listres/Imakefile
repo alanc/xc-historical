@@ -14,7 +14,6 @@ clean::
 	$(RM) widgets.c
 
 ComplexProgramTarget(listres)
-InstallAppDefaults(Listres)
 
 widgets.c: genlist.sh
 	$(RM) $@
