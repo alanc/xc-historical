@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XKeyBind.c,v 11.50 89/10/04 20:29:54 rws Exp $ */
+/* $XConsortium: XKeyBind.c,v 11.51 89/10/05 11:36:13 rws Exp $ */
 /* Copyright 1985, 1987, Massachusetts Institute of Technology */
 
 /* Beware, here be monsters (still under construction... - JG */
@@ -266,8 +266,8 @@ XTranslateKey(dpy, keycode, modifiers, modifiers_return, keysym_return)
 	    XConvertCase(dpy, syms[0], keysym_return, &usym);
 	else
 	    *keysym_return = syms[0];
-    } else if ((modifiers & ShiftMask) ||
-	       (dpy->lock_meaning == XK_Shift_Lock)) {
+    } else if (!(modifiers & LockMask) ||
+	       (dpy->lock_meaning != XK_Caps_Lock)) {
 	if ((per == 1) || ((usym = syms[1]) == NoSymbol))
 	    XConvertCase(dpy, syms[0], &lsym, &usym);
 	*keysym_return = usym;
@@ -275,7 +275,8 @@ XTranslateKey(dpy, keycode, modifiers, modifiers_return, keysym_return)
 	if ((per == 1) || ((sym = syms[1]) == NoSymbol))
 	    sym = syms[0];
 	XConvertCase(dpy, sym, &lsym, &usym);
-	if (((sym != usym) || (lsym == usym)) && (sym != syms[0]))
+	if (!(modifiers & ShiftMask) && (sym != syms[0]) &&
+	    ((sym != usym) || (lsym == usym)))
 	    XConvertCase(dpy, syms[0], &lsym, &usym);
 	*keysym_return = usym;
     }
