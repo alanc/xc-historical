@@ -38,7 +38,8 @@ is \fIImakefile\fP.
 .TP 8
 .B \-s \fIfilename\fP
 This option specifies the name of the \fImake\fP description file to be 
-generated but \fImake\fP shou.  If the \fIfilename\fP is a dash (-), the 
+generated but \fImake\fP should not be invoked.
+If the \fIfilename\fP is a dash (-), the 
 output is written to \fIstdout\fP.  The default is to generate, but
 not execute, a \fIMakefile\fP.
 .TP 8
@@ -103,7 +104,7 @@ foo:	foo1.o foo2.o
 On systems whose \fIcpp\fP reduces multiple tabs and spaces to a single
 space, \fIimake\fP attempts to put back any necessary tabs (\fImake\fP is
 very picky about the difference between tabs and spaces).  For this reason,
-colons (:) in command lines must be preceeded by a backslash (\\).
+colons (:) in command lines must be preceded by a backslash (\\).
 .SH "USE WITH THE X WINDOW SYSTEM"
 The X Window System uses \fIimake\fP extensively, for both full builds within
 the source tree and external software.  As mentioned above, two special
@@ -114,7 +115,7 @@ generated automatically to build the \fIMakefile\fP in the directory
 .sp
 .nf
 	%  ../.././config/imake  -I../.././config \\
-		-DTOPDIR=../../. -DCURDUR=./lib/X
+		-DTOPDIR=../../. -DCURDIR=./lib/X
 .fi
 .sp
 When building X programs outside the source tree, a special symbol
@@ -172,7 +173,7 @@ will use whatever
 program is found using
 .I execvp(3).
 .SH "BUGS"
-Comments should be preceeded by ``/**/#'' to protect them from \fIcpp\fP.
+Comments should be preceded by ``/**/#'' to protect them from \fIcpp\fP.
 .SH "AUTHOR"
 Todd Brunhoff, Tektronix and MIT Project Athena; Jim Fulton, MIT X Consortium
 
