@@ -517,15 +517,6 @@ ClientAuthorized(client, proto_n, auth_proto, string_n, auth_string)
 
 #ifdef LBX
 
-XtransConnInfo
-ClientTransportObject(client)
-    ClientPtr	client;
-{
-    OsCommPtr oc = (OsCommPtr) client->osPrivate;
-
-    return oc->trans_conn;
-}
-
 int
 ClientConnectionNumber (client)
     ClientPtr	client;
@@ -595,6 +586,17 @@ AllocNewConnection (trans_conn, fd, Read, Writev, Close)
     client->public.uncompressedWriteToClient = UncompressWriteToClient;
     client->public.requestLength = StandardRequestLength;
     return client;
+}
+
+ClientPtr
+AllocPiggybackConnection (client, Read, Writev, Close)
+    ClientPtr client;
+    int	    (*Read)();
+    int	    (*Writev)();
+    void    (*Close)();
+{
+    OsCommPtr oc = (OsCommPtr) client->osPrivate;
+    return AllocNewConnection(oc->trans_conn, oc->fd, Read, Writev, Close);
 }
 
 void

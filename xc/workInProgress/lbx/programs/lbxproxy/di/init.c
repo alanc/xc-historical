@@ -23,9 +23,15 @@
  * Author:  Keith Packard, Network Computing Devices
  */
 
- /* $XConsortium: init.c,v 1.4 94/02/17 15:27:11 dpw Exp $ */
+ /* $XConsortium: init.c,v 1.5 95/04/04 21:03:04 dpw Exp dpw $ */
 
 /* Hook up to an X server and set up a multiplexing LBX encoded connection */
+
+/* lbxproxy source files are compiled with -D_XSERVER64 on 64 bit machines.
+ * For the most part, this is appropriate.  However, for this file it
+ * is not, because we make Xlib calls here.
+ */
+#undef _XSERVER64
 
 #include <X11/Xlib.h>
 

@@ -1,4 +1,4 @@
-/* $XConsortium: colormap.h,v 1.4 94/03/08 20:51:16 dpw Exp $ */
+/* $XConsortium: colormap.h,v 1.5 94/03/27 13:36:38 dpw Exp $ */
 /*
  * Copyright 1994 Network Computing Devices, Inc.
  *
@@ -42,7 +42,7 @@ typedef struct _rgbentry {
                 vgreen;		/* visual */
 }           RGBEntryRec, *RGBEntryPtr;
 
-typedef unsigned long Pixel;
+typedef CARD32 Pixel;
 
 extern RGBEntryPtr FindColorName();
 extern Bool AddColorName();

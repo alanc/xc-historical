@@ -1659,13 +1659,13 @@ ProcLbxSwitch(client)
     LbxSwitchRecv (proxy, proxy->lbxClients[stuff->client]);
     return Success;
 }
-    
+
 int
 ProcLbxNewClient(client)
     register ClientPtr client;
 {
     REQUEST(xLbxNewClientReq);
-    ClientPtr	    newClient, AllocNewConnection ();
+    ClientPtr	    newClient;
     LbxProxyPtr	    proxy = LbxMaybeProxy(client);
     LbxClientPtr    newLbxClient;
     int		    c;
@@ -1684,11 +1684,7 @@ ProcLbxNewClient(client)
 	return BadAlloc;
     bcopy ((char *)&stuff[1], setupbuf, len);
 
-    newClient = AllocNewConnection (
-#ifndef NCD	/* R6-ism */
-    ClientTransportObject(client),
-#endif
-				    ClientConnectionNumber (client), 
+    newClient = AllocPiggybackConnection (client,
 				    LbxRead, LbxWritev, LbxCloseClient);
     if (!newClient)
 	return BadAlloc;
@@ -1727,9 +1723,9 @@ ProcLbxEstablishConnection(client)
 	reason = "Protocol version mismatch";
     else
 	reason = ClientAuthorized(client,
-				  (unsigned short)prefix->nbytesAuthProto,
+				  prefix->nbytesAuthProto,
 				  auth_proto,
-				  (unsigned short)prefix->nbytesAuthString,
+				  prefix->nbytesAuthString,
 				  auth_string);
     /*
      * if auth protocol does some magic, fall back through to the
