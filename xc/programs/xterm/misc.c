@@ -1,5 +1,5 @@
 /*
- *	$Header: misc.c,v 1.7 88/02/17 12:18:43 jim Exp $
+ *	$Header: misc.c,v 1.8 88/02/17 15:48:08 jim Exp $
  */
 
 
@@ -52,7 +52,7 @@ extern void perror();
 extern void abort();
 
 #ifndef lint
-static char rcs_id[] = "$Header: misc.c,v 1.7 88/02/17 12:18:43 jim Exp $";
+static char rcs_id[] = "$Header: misc.c,v 1.8 88/02/17 15:48:08 jim Exp $";
 #endif	/* lint */
 
 xevents()
@@ -114,11 +114,6 @@ caddr_t eventdata;
 
     if (w == (screen->TekEmu ? (Widget)tekWidget : (Widget)term)) {
 	if (((event->detail) != NotifyInferior) && event->focus) {
-#ifdef DEBUG
-		if(debug)
-			fprintf(stderr, "EnterWindow %s\n", window ==
-			 VWindow(screen) ? "VT" : "Tek");
-#endif	/* DEBUG */
 		selectwindow(screen, INWINDOW);
 	}
     }
@@ -134,12 +129,7 @@ caddr_t eventdata;
 
     if (w == (screen->TekEmu ? (Widget)tekWidget : (Widget)term)) {
 	if (((event->detail) != NotifyInferior) && event->focus) {
-#ifdef DEBUG
-		if(debug)
-			fprintf(stderr, "LeaveWindow %s\n", window ==
-			 VWindow(screen) ? "VT" : "Tek");
-#endif	/* DEBUG */
-		unselectwindow(screen, INWINDOW);
+	    unselectwindow(screen, INWINDOW);
 	}
     }
 }
@@ -169,6 +159,8 @@ register int flag;
 		TekSelect();
 		if(!Ttoggled)
 			TCursorToggle(TOGGLE);
+		screen->select |= flag;
+#ifdef obsolete
 		if(screen->cellsused) {
 			screen->colorcells[2].pixel =
 			 screen->Tcursorcolor;
@@ -177,7 +169,7 @@ register int flag;
 				DefaultScreen(screen->display)),
 			 &screen->colorcells[2]);
 		}
-		screen->select |= flag;
+#endif /* obsolete */
 		if(!Ttoggled)
 			TCursorToggle(TOGGLE);
 		return;
@@ -198,14 +190,13 @@ unselectwindow(screen, flag)
 register TScreen *screen;
 register int flag;
 {
-	register int i;
+    register int i;
 
+    if(screen->TekEmu) {
+	TekUnselect();
+	if(!Ttoggled) TCursorToggle(TOGGLE);
 	screen->select &= ~flag;
-	if(!(screen->select)) {
-		if(screen->TekEmu) {
-			TekUnselect();
-			if(!Ttoggled)
-				TCursorToggle(TOGGLE);
+#ifdef obsolete
 			if(screen->cellsused) {
 				i = (term->flags & REVERSE_VIDEO) == 0;
 				screen->colorcells[i].pixel =
@@ -215,18 +206,18 @@ register int flag;
 					       DefaultScreen(screen->display)),
 				 &screen->colorcells[i]);
 			}
-			if(!Ttoggled)
-				TCursorToggle(TOGGLE);
-		} else {
-			VTUnselect();
-			if(screen->cursor_state &&
-			 (screen->cursor_col != screen->cur_col ||
-			 screen->cursor_row != screen->cur_row))
-				HideCursor();
-			if(screen->cursor_state)
-				ShowCursor();
-		}
-	}
+#endif /* obsolete */
+	if(!Ttoggled) TCursorToggle(TOGGLE);
+    } else {
+	VTUnselect();
+	screen->select &= ~flag;
+	if(screen->cursor_state &&
+	   (screen->cursor_col != screen->cur_col ||
+	    screen->cursor_row != screen->cur_row))
+	      HideCursor();
+	if(screen->cursor_state)
+	  ShowCursor();
+    }
 }
 
 reselectwindow(screen)
