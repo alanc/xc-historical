@@ -1,5 +1,5 @@
 /*
- * $XConsortium: fmalloc.c,v 1.3 92/04/08 14:31:19 keith Exp $
+ * $XConsortium: fmalloc.c,v 1.4 92/05/15 13:58:51 keith Exp $
  *
  * Copyright 1992 Massachusetts Institute of Technology
  *
@@ -651,7 +651,11 @@ realloc (old, desiredsize)
 	    copysize = desiredsize;
 	    if (h->desiredsize < desiredsize)
 		copysize = h->desiredsize;
+#ifdef SVR4
+	    memmove (new, old, copysize);
+#else
 	    bcopy (old, new, copysize);
+#endif
 	    RemoveActiveBlock (h);
 #ifdef HAS_GET_RETURN_ADDRESS
 	    getStackTrace (h->returnStack, MAX_RETURN_STACK);
@@ -672,7 +676,11 @@ calloc (num, size)
     ret = malloc (size);
     if (!ret)
 	return NULL;
+#ifdef SVR4
+    memset (ret, 0, size);
+#else
     bzero (ret, size);
+#endif
     return ret;
 }
 
