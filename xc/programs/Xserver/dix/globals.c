@@ -22,7 +22,7 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: globals.c,v 1.45 89/07/03 15:07:27 rws Exp $ */
+/* $XConsortium: globals.c,v 1.46 89/07/18 18:18:49 rws Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -77,6 +77,7 @@ char *defaultFontPath = COMPILEDDEFAULTFONTPATH;
 char *defaultTextFont = COMPILEDDEFAULTFONT;
 char *defaultCursorFont = COMPILEDCURSORFONT;
 char *rgbPath = RGB_DB;
+char *defaultDisplayClass = COMPILEDDISPLAYCLASS;
 FontPtr defaultFont;   /* not declared in dix.h to avoid including font.h in
 			every compilation of dix code */
 CursorPtr rootCursor;

@@ -36,7 +36,13 @@ SITE_FONT_PATH = /* as nothing */
    SITE_RBB_DB = /* as nothing */
 #endif
 
-SITE_DEFINES = $(SITE_FONT_PATH) $(SITE_RGB_DB)
+#ifdef DefaultDisplayClass
+   SITE_DISPLAY_CLASS = -DCOMPILEDDISPLAYCLASS=\"DefaultDisplayClass\"
+#else
+   SITE_DISPLAY_CLASS = /* as nothing */
+#endif
+
+SITE_DEFINES = $(SITE_FONT_PATH) $(SITE_RGB_DB) $(SITE_DISPLAY_CLASS)
 
 
 NormalLibraryObjectRule()
