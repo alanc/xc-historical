@@ -1,4 +1,4 @@
-/* $XConsortium: XimintL.h,v 1.2 94/01/20 18:02:56 rws Exp $ */
+/* $XConsortium: XimintL.h,v 1.3 94/03/26 16:57:18 rws Exp $ */
 /******************************************************************
 
           Copyright 1991, 1992, 1993, 1994 by FUJITSU LIMITED
@@ -75,7 +75,6 @@ typedef struct _XicLocalPrivateRec {
 } XicLocalPrivateRec;
 
 #define XIM_LOCAL_DEFAULT_FONT_NAME \
- "-*-fixed-medium-r-normal--14-*-*-*-*-*-jisx0201.1976-* \
-, -*-fixed-medium-r-normal--14-*-*-*-*-*-jisx0208.1983-*"
+ "-*-fixed-medium-r-normal--14-*-*-*-*-*-*-*"
 
 #endif /* _XIMINTL_H */
