@@ -4,33 +4,30 @@
 
 #define SystemV           YES
 
-#define OSName            A/UX 1.1
-#define OSMajorVersion    1
-#define OSMinorVersion    1
+#define OSName            A/UX 2.0
+#define OSMajorVersion    2
+#define OSMinorVersion    0
+/* the server *REALLY* needs GCC for performance */
+#define HasGcc         NO
+#if HasGcc
 #define BootstrapCFlags   -DmacII
+#endif
 #define StandardDefines    -DmacII -DSYSV
 #define StandardCppDefines -DmacII -DSYSV
 #define LnCmd             ln -s
 #define ExecableScripts   NO
 #define NeedBerklibInXlib YES
 #define HasSockets        YES
-/* the server *REALLY* needs GCC for performance */
-#define HasGcc         YES
+#define HasVoidSignalReturn NO
 
 #if !HasGcc
 #define CcCmd cc -B /usr/lib/big/
 #endif
 
-#undef ExtensionDefines
-#define ExtensionDefines -DSHAPE -DMULTIBUFFER -DMITSHM -DMITMISC
-
 #define XmacIIServer      XmacII
 #define BuildServer YES
 
-#define ServerDefines StandardDefines ExtensionDefines -DPURDUE
-
-
-XCOMM platform:  $XConsortium: macII.cf,v 1.19 90/11/30 11:14:14 rws Exp $
+XCOMM platform:  $XConsortium: macII.cf,v 1.20 90/12/26 11:38:43 rws Exp $
 XCOMM operating system:  OSName
 
 /*****************************************************************************
