@@ -1,4 +1,4 @@
-.\" $XConsortium: Consortium.man,v 1.39 94/06/30 16:15:21 rws Exp $
+.\" $XConsortium: Consortium.man,v 1.40 94/07/02 16:41:33 rws Exp $
 .\" Copyright (c) 1993, 1994  X Consortium
 .\" 
 .\" Permission is hereby granted, free of charge, to any person obtaining a
@@ -66,6 +66,9 @@ Bob Scheifler, rws@x.org, phone: (617) 374-1010
 
 Office Manager:
 Janet O'Halloran, joh@x.org, phone: (617) 374-1011
+
+Director of Engineering:
+Jim Fournier, jff@x.org
 
 Technical Director, Integration Technology:
 Ralph Swick, swick@x.org
@@ -171,6 +174,7 @@ ATR Institute International
 BARCO Chromatics, Inc.
 Congruent Corp.
 Diagnostic/Retrieval Systems, Inc.
+Electronic Book Technologies, Inc.
 Gallium Software, Inc.
 Georgia Institute of Technology
 Human Designed Systems, Inc.
