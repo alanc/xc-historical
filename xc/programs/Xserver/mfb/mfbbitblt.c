@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbbitblt.c,v 5.19 91/05/24 16:34:06 keith Exp $ */
+/* $XConsortium: mfbbitblt.c,v 5.20 91/05/25 16:52:53 rws Exp $ */
 #include "X.h"
 #include "Xprotostr.h"
 
@@ -135,7 +135,9 @@ int dstx, dsty;
 
     if ((pSrcDrawable != pDstDrawable) &&
 	pSrcDrawable->pScreen->SourceValidate)
+    {
 	(*pSrcDrawable->pScreen->SourceValidate) (pSrcDrawable, srcx, srcy, width, height);
+    }
 
     switch (pGC->alu) {
     case GXcopy:
@@ -169,30 +171,22 @@ int dstx, dsty;
 	}
 	else
 	{
-	    /* Pixmap sources generate simple exposure events */
-	    fastExpose = 1;
-
-	    /* Pixmap is just one clipping rectangle so we can avoid
-	       allocating a full-blown region. */
 	    fastClip = 1;
-
-	    fastBox.x1 = srcx;
-	    fastBox.y1 = srcy;
-	    fastBox.x2 = srcx + width;
-	    fastBox.y2 = srcy + height;
-	    
-	    /* Left and top are already clipped, so clip right and bottom */
-	    if (fastBox.x2 > pSrcDrawable->x + (int) pSrcDrawable->width)
-	      fastBox.x2 = pSrcDrawable->x + (int) pSrcDrawable->width;
-	    if (fastBox.y2 > pSrcDrawable->y + (int) pSrcDrawable->height)
-	      fastBox.y2 = pSrcDrawable->y + (int) pSrcDrawable->height;
 	}
     }
     else
     {
 	if (pGC->subWindowMode == IncludeInferiors)
 	{
-	    if ((pSrcDrawable == pDstDrawable) &&
+	    if (!((WindowPtr) pSrcDrawable)->parent)
+	    {
+		/*
+		 * special case bitblt from root window in
+		 * IncludeInferiors mode; just like from a pixmap
+		 */
+		fastClip = 1;
+	    }
+	    else if ((pSrcDrawable == pDstDrawable) &&
 		(pGC->clientClipType == CT_NONE))
 	    {
 		prgnSrcClip = ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->pCompositeClip;
@@ -209,20 +203,46 @@ int dstx, dsty;
 	}
     }
 
-    /* Don't create a source region if we are doing a fast clip */
-    if (!fastClip)
-    {
-	BoxRec srcBox;
+    fastBox.x1 = srcx;
+    fastBox.y1 = srcy;
+    fastBox.x2 = srcx + width;
+    fastBox.y2 = srcy + height;
 
-	srcBox.x1 = srcx;
-	srcBox.y1 = srcy;
-	srcBox.x2 = srcx + width;
-	srcBox.y2 = srcy + height;
-	
-	(*pGC->pScreen->RegionInit)(&rgnDst, &srcBox, 1);
+    /* Don't create a source region if we are doing a fast clip */
+    if (fastClip)
+    {
+	fastExpose = 1;
+	/*
+	 * clip the source; if regions extend beyond the source size,
+ 	 * make sure exposure events get sent
+	 */
+	if (fastBox.x1 < pSrcDrawable->x)
+	{
+	    fastBox.x1 = pSrcDrawable->x;
+	    fastExpose = 0;
+	}
+	if (fastBox.y1 < pSrcDrawable->y)
+	{
+	    fastBox.y1 = pSrcDrawable->y;
+	    fastExpose = 0;
+	}
+	if (fastBox.x2 > pSrcDrawable->x + (int) pSrcDrawable->width)
+	{
+	    fastBox.x2 = pSrcDrawable->x + (int) pSrcDrawable->width;
+	    fastExpose = 0;
+	}
+	if (fastBox.y2 > pSrcDrawable->y + (int) pSrcDrawable->height)
+	{
+	    fastBox.y2 = pSrcDrawable->y + (int) pSrcDrawable->height;
+	    fastExpose = 0;
+	}
+    }
+    else
+    {
+	(*pGC->pScreen->RegionInit)(&rgnDst, &fastBox, 1);
 	(*pGC->pScreen->Intersect)(&rgnDst, &rgnDst, prgnSrcClip);
     }
-    
+
     dstx += pDstDrawable->x;
     dsty += pDstDrawable->y;
 
@@ -259,7 +279,7 @@ int dstx, dsty;
         if (REGION_NUM_RECTS(cclip) == 1)
         {
 	    BoxPtr pBox = REGION_RECTS(cclip);
-	  
+
 	    if (fastBox.x1 < pBox->x1) fastBox.x1 = pBox->x1;
 	    if (fastBox.x2 > pBox->x2) fastBox.x2 = pBox->x2;
 	    if (fastBox.y1 < pBox->y1) fastBox.y1 = pBox->y1;
@@ -294,7 +314,7 @@ int dstx, dsty;
 
     /* Do bit blitting */
     numRects = REGION_NUM_RECTS(&rgnDst);
-    if (numRects)
+    if (numRects && width && height)
     {
 	if(!(pptSrc = (DDXPointPtr)ALLOCATE_LOCAL(numRects *
 						  sizeof(DDXPointRec))))
@@ -319,7 +339,8 @@ int dstx, dsty;
     }
 
     prgnExposed = NULL;
-    if (((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->fExpose) {
+    if (((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->fExpose) 
+    {
         /* Pixmap sources generate a NoExposed (we return NULL to do this) */
         if (!fastExpose)
 	    prgnExposed =
@@ -328,7 +349,7 @@ int dstx, dsty;
 				  (int)origSource.width,
 				  (int)origSource.height,
 				  origDest.x, origDest.y, (unsigned long)0);
-	}
+    }
     (*pGC->pScreen->RegionUninit)(&rgnDst);
     if (freeSrcClip)
 	(*pGC->pScreen->RegionDestroy)(prgnSrcClip);
