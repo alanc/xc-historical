@@ -1,4 +1,4 @@
-/* $XConsortium: a2x.c,v 1.83 92/08/06 17:54:01 rws Exp $ */
+/* $XConsortium: a2x.c,v 1.84 92/08/06 18:57:59 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -600,6 +600,8 @@ do_keysym(buf, len)
     key = parse_keysym(buf, len);
     if (key)
 	do_key(key, 0);
+    else
+	XBell(dpy, 0);
 }
 
 void
@@ -1296,13 +1298,9 @@ parse_class(buf, rec)
     char *buf;
     MatchRec *rec;
 {
-    char *endptr;
     char *cptr;
 
-    cptr = index(buf, '.');
-    endptr = index(buf, ' ');
-    if (endptr)
-	*endptr = '\0';
+    cptr = rindex(buf, '.');
     if (cptr) {
 	bcopy(buf, rec->name, cptr - buf);
 	rec->name[cptr - buf + 1] = '\0';
@@ -1313,11 +1311,7 @@ parse_class(buf, rec)
     }
     rec->namelen = strlen(rec->name);
     rec->classlen = strlen(rec->class);
-    if (endptr) {
-	*endptr = ' ';
-	buf = endptr - 1;
-    } else
-	buf += strlen(buf) - 1;
+    buf += strlen(buf) - 1;
     return buf;
 }
 
@@ -1326,18 +1320,9 @@ parse_name(buf, rec)
     char *buf;
     MatchRec *rec;
 {
-    char *endptr;
-
-    endptr = index(buf, ' ');
-    if (endptr)
-	*endptr = '\0';
     strcpy(rec->name, buf);
     rec->namelen = strlen(rec->name);
-    if (endptr) {
-	*endptr = ' ';
-	buf = endptr - 1;
-    } else
-	buf += strlen(buf) - 1;
+    buf += strlen(buf) - 1;
     return buf;
 }
 
@@ -1449,6 +1434,8 @@ do_jump(buf)
     XUnionRectWithRegion(&rect, univ, univ);
     if (find_closest(root, &wa, univ, 0))
 	generate_warp(screen, jump.bestx, jump.besty);
+    else
+	XBell(dpy, 0);
     if (jump.overlap)
 	XDestroyRegion(jump.overlap);
     XDestroyRegion(univ);
