@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: man.h,v 1.3 89/01/06 18:42:18 kit Exp $
+ * $XConsortium: man.h,v 1.4 89/02/14 16:08:04 kit Exp $
  * $Athena: man.h,v 4.6 89/01/06 12:17:38 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
@@ -113,8 +113,7 @@ typedef struct _ManpageGlobals{
     both_shown;			/* If true then both the manpage and
 				   the directory are to be shown.*/
   Widget label,			/* The label widget at the top of the page. */
-    standby1,			/* The two please standby widgets with text */
-    standby2,			/*   in them that need to be painted. */
+    standby,			/* The please standby widget. */
     both_shown_button,		/* The both_shown widget itself. */
     help_button,		/* The help button. */
     put_up_manpage,		/* The button that puts up the manpage. */
