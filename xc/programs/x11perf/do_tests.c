@@ -9,106 +9,97 @@
 
 extern void DoAtom();
 
-extern void InitGetProp();
+extern Bool InitGetProp();
 extern void DoGetProp();
 
-extern void InitRects();
+extern Bool InitRects();
 extern void DoRects();
 extern void EndRects();
 
-extern void InitValGC();
+extern Bool InitValGC();
 extern void DoValGC();
 extern void EndValGC();
 
-extern void InitSegs1();
-extern void InitSegs10();
-extern void InitSegs100();
-extern void InitSegs500();
+extern Bool InitSegs();
+extern Bool InitDashedSegs();
 extern void DoSegs();
 extern void EndSegs();
 
-extern void InitLines1();
-extern void InitLines10();
-extern void InitLines100();
-extern void InitLines500();
-extern void InitDashedLines100();
+extern Bool InitLines();
+extern Bool InitDashedLines();
 extern void DoLines();
 extern void EndLines();
 
-extern void InitCircles1();
-extern void InitCircles10();
-extern void InitCircles100();
-extern void InitCircles500();
-extern void InitEllipses1();
-extern void InitEllipses10();
-extern void InitEllipses100();
-extern void InitEllipses500();
+extern Bool InitCircles();
+extern Bool InitEllipses();
 extern void DoArcs();
 extern void EndArcs();
 
-extern void InitDots();
+extern Bool InitDots();
 extern void DoDots();
 extern void EndDots();
 
-extern void InitWins();
-extern void DoWins();
-extern void DeleteSubs();
-extern void EndWins();
+extern Bool InitCreate();
+extern void CreateChildren();
+extern void DeleteChildren();
+extern void EndCreate();
 
-extern void InitWins2();
-extern void DoWins2();
-extern void UnmapWin();
+extern Bool InitMap();
+extern void MapParents();
+extern void UnmapParents();
 
-extern void InitMoveWins();
+extern Bool InitMoveWins();
 extern void DoMoveWins();
 extern void EndMoveWins();
 
-extern void InitCircWins();
+extern void DoResizeWins();
+
+extern Bool InitCircWins();
 extern void DoCircWins();
 
-extern void InitText();
+extern Bool InitText();
 extern void DoText();
 extern void DoImageText();
 extern void DoPolyText();
 extern void ClearTextWin();
 extern void EndText();
 
-extern void InitCopyPlane();
+extern Bool InitCopyPlane();
 extern void DoCopyPlane();
 extern void EndCopyPlane();
 
-extern void InitPopups();
+extern Bool InitPopups();
 extern void DoPopUps();
 extern void EndPopups();
 
-extern void InitScrolling();
+extern Bool InitScrolling();
 extern void DoScrolling();
 extern void MidScroll();
 extern void EndScrolling();
 
-extern void InitCopyArea();
+extern Bool InitCopyArea();
 extern void DoCopyArea();
 extern void MidCopyArea();
 extern void EndCopyArea();
 
-extern void InitCopyArea2();
+extern Bool InitCopyArea2();
 extern void DoCopyArea2();
 extern void MidCopyArea2();
 extern void EndCopyArea2();
 
-extern void InitTriangles();
+extern Bool InitTriangles();
 extern void DoTriangles();
 extern void EndTriangles();
 
-extern void InitTraps();
-extern void DoTraps();
-extern void EndTraps();
+extern Bool InitTrapezoids();
+extern void DoTrapezoids();
+extern void EndTrapezoids();
 
-extern void InitComplexPoly();
+extern Bool InitComplexPoly();
 extern void DoComplexPoly();
 extern void EndComplexPoly();
 
-extern void InitTileWins();
+extern Bool InitTileWins();
 extern void DoTileWins();
 extern void EndTileWins();
 
@@ -120,196 +111,241 @@ extern void EndTileWins();
 int subs[] = {4, 16, 25, 50, 75, 100, 200, 0};
 
 Test test[] = {
-  {"-atoms", "GetAtomName",
-		NullProc, DoAtom, NullProc, NullProc, False, False,
-		{2000, 1}},
-  {"-props", "GetProperty",
-		InitGetProp, DoGetProp, NullProc, NullProc, False, False,
-		{2000, 1}},
-  {"-gc", "Graphics context validation",
-		InitValGC, DoValGC, NullProc, EndValGC, False, False,
-		{5000, 4}},
   {"-dots", "Dot",
-		InitDots, DoDots, NullProc, EndDots, False, False,
+		InitDots, DoDots, NullProc, EndDots,    False, 0,
 		{500, POLY}},
-  {"-smallrects", "1x1 Rectangle",
-		InitRects, DoRects, NullProc, EndRects, False, False,
-		{200, POLY, 1, NULL, NULL, FillSolid}},
-  {"-rects", "10x10 Rectangle",
-		InitRects, DoRects, NullProc, EndRects, False, False,
-		{100, POLY, 10, NULL, NULL, FillSolid}},
-  {"-bigrects", "50x50 Rectangle",
-		InitRects, DoRects, NullProc, EndRects, False, False,
-		{100, POLY/10, 50, NULL, NULL, FillSolid}},
-  {"-smalltsrects", "1x1 Transparent Stippled Rectangle",
-		InitRects, DoRects, NullProc, EndRects, False, False,
-		{200, POLY, 1, NULL, NULL, FillStippled}},
-  {"-tsrects", "10x10 Transparent Stippled Rectangle",
-		InitRects, DoRects, NullProc, EndRects, False, False,
-		{100, POLY, 10, NULL, NULL, FillStippled}},
-  {"-bigtsrects", "50x50 Transparent Stippled Rectangle",
-		InitRects, DoRects, NullProc, EndRects, False, False,
-		{100, POLY/10, 50, NULL, NULL, FillStippled}},
-  {"-smallosrects", "1x1 Opaque Stippled Rectangle",
-		InitRects, DoRects, NullProc, EndRects, False, False,
-		{100, POLY, 1, NULL, NULL, FillOpaqueStippled}},
-  {"-osrects", "10x10 Opaque Stippled Rectangle",
-		InitRects, DoRects, NullProc, EndRects, False, False,
-		{50, POLY, 10, NULL, NULL, FillOpaqueStippled}},
-  {"-bigosrects", "50x50 Opaque Stippled Rectangle",
-		InitRects, DoRects, NullProc, EndRects, False, False,
-		{50, POLY/10, 50, NULL, NULL, FillOpaqueStippled}},
-  {"-smalltilerects", "1x1 4x4 Tiled Rectangle",
-		InitRects, DoRects, NullProc, EndRects, False, False,
-		{100, POLY, 1, NULL, NULL, FillTiled}},
-  {"-tilerects", "10x10 4x4 Tiled Rectangle",
-		InitRects, DoRects, NullProc, EndRects, False, False,
-		{50, POLY, 10, NULL, NULL, FillTiled}},
-  {"-bigtilerects", "50x50 4x4 Tiled Rectangle",
-		InitRects, DoRects, NullProc, EndRects, False, False,
-		{50, POLY/10, 50, NULL, NULL, FillTiled}},
+  {"-rects1", "1x1 Rectangle",
+		InitRects, DoRects, NullProc, EndRects, False, 0,
+		{500, POLY, 1, NULL, NULL, FillSolid}},
+  {"-rects10", "10x10 Rectangle",
+		InitRects, DoRects, NullProc, EndRects, False, 0,
+		{200, POLY, 10, NULL, NULL, FillSolid}},
+  {"-rects50", "50x50 Rectangle",
+		InitRects, DoRects, NullProc, EndRects, False, 0,
+		{200, POLY/10, 50, NULL, NULL, FillSolid}},
+  {"-tsrects1", "1x1 Transparent Stippled Rectangle",
+		InitRects, DoRects, NullProc, EndRects, False, 0,
+		{500, POLY, 1, NULL, NULL, FillStippled}},
+  {"-tsrects10", "10x10 Transparent Stippled Rectangle",
+		InitRects, DoRects, NullProc, EndRects, False, 0,
+		{200, POLY, 10, NULL, NULL, FillStippled}},
+  {"-tsrects50", "50x50 Transparent Stippled Rectangle",
+		InitRects, DoRects, NullProc, EndRects, False, 0,
+		{200, POLY/10, 50, NULL, NULL, FillStippled}},
+  {"-osrects1", "1x1 Opaque Stippled Rectangle",
+		InitRects, DoRects, NullProc, EndRects, False, 0,
+		{500, POLY, 1, NULL, NULL, FillOpaqueStippled}},
+  {"-osrects10", "10x10 Opaque Stippled Rectangle",
+		InitRects, DoRects, NullProc, EndRects, False, 0,
+		{200, POLY, 10, NULL, NULL, FillOpaqueStippled}},
+  {"-osrects50", "50x50 Opaque Stippled Rectangle",
+		InitRects, DoRects, NullProc, EndRects, False, 0,
+		{200, POLY/10, 50, NULL, NULL, FillOpaqueStippled}},
+  {"-tilerects1", "1x1 4x4 Tiled Rectangle",
+		InitRects, DoRects, NullProc, EndRects, False, 0,
+		{500, POLY, 1, NULL, NULL, FillTiled}},
+  {"-tilerects10", "10x10 4x4 Tiled Rectangle",
+		InitRects, DoRects, NullProc, EndRects, False, 0,
+		{200, POLY, 10, NULL, NULL, FillTiled}},
+  {"-tilerects50", "50x50 4x4 Tiled Rectangle",
+		InitRects, DoRects, NullProc, EndRects, False, 0,
+		{200, POLY/10, 50, NULL, NULL, FillTiled}},
+  {"-tilerects500", "500x500 4x4 Tiled Rectangle",
+		InitRects, DoRects, NullProc, EndRects, False, 0,
+		{200, 1, 500, NULL, NULL, FillTiled}},
   {"-segs1", "1-pixel line segment",
-		InitSegs1, DoSegs, NullProc, EndSegs, False, False,
-		{100, POLY, 0}},
+		InitSegs, DoSegs, NullProc, EndSegs,    False, 0,
+		{200, POLY, 1}},
   {"-segs10", "10-pixel line segment",
-		InitSegs10, DoSegs, NullProc, EndSegs, False, False,
-		{100, POLY, 0}},
+		InitSegs, DoSegs, NullProc, EndSegs,    False, 0,
+		{200, POLY, 10}},
   {"-segs100", "100-pixel line segment",
-		InitSegs100, DoSegs, NullProc, EndSegs, False, False,
-		{50, POLY, 0}},
+		InitSegs, DoSegs, NullProc, EndSegs,    False, 0,
+		{100, POLY, 100}},
   {"-segs500", "500-pixel line segment",
-		InitSegs500, DoSegs, NullProc, EndSegs, False, False,
-		{20, POLY, 0}},
-  {"-segs100c1", "100-pixel line segment (1 occluding window)",
-		InitSegs100, DoSegs, NullProc, EndSegs, False, False,
-		{50, POLY, 1}},
-  {"-segs100c2", "100-pixel line segment (2 occluding windows)",
-		InitSegs100, DoSegs, NullProc, EndSegs, False, False,
-		{50, POLY, 2}},
-  {"-segs100c3", "100-pixel line segment (3 occluding windows)",
-		InitSegs100, DoSegs, NullProc, EndSegs, False, False,
-		{50, POLY, 3}},
+		InitSegs, DoSegs, NullProc, EndSegs,    False, 0,
+		{20, POLY, 500}},
+  {"-segs100c1", "100-pixel line segment (1 clipping window)",
+		InitSegs, DoSegs, NullProc, EndSegs,    False, 1,
+		{100, POLY, 100}},
+  {"-segs100c2", "100-pixel line segment (2 clipping windows)",
+		InitSegs, DoSegs, NullProc, EndSegs,    False, 2,
+		{100, POLY, 100}},
+  {"-segs100c3", "100-pixel line segment (3 clipping windows)",
+		InitSegs, DoSegs, NullProc, EndSegs,    False, 3,
+		{100, POLY, 100}},
+  {"-dsegs100", "100-pixel dashed segment",
+		InitDashedSegs, DoSegs, NullProc, EndSegs, False, 0,
+		{10, POLY, 100}},
   {"-lines1", "1-pixel line",
-		InitLines1, DoLines, NullProc, EndLines, False, False,
-		{100, POLY, 0}},
+		InitLines, DoLines, NullProc, EndLines, False, 0,
+		{200, POLY, 1}},
   {"-lines10", "10-pixel line",
-		InitLines10, DoLines, NullProc, EndLines, False, False,
-		{100, POLY, 0}},
+		InitLines, DoLines, NullProc, EndLines, False, 0,
+		{200, POLY, 10}},
   {"-lines100", "100-pixel line",
-		InitLines100, DoLines, NullProc, EndLines, False, False,
-		{50, POLY, 0}},
+		InitLines, DoLines, NullProc, EndLines, False, 0,
+		{100, POLY, 100}},
   {"-lines500", "500-pixel line",
-		InitLines500, DoLines, NullProc, EndLines, False, False,
-		{20, POLY, 0}},
-  {"-dlines", "100-pixel dashed line",
-		InitDashedLines100, DoLines, NullProc, EndLines, False, False,
-		{10, POLY, 0}},
+		InitLines, DoLines, NullProc, EndLines, False, 0,
+		{20, POLY, 500}},
+  {"-dlines100", "100-pixel dashed line",
+		InitDashedLines, DoLines, NullProc, EndLines, False, 0,
+		{10, POLY, 100}},
   {"-circles1", "1-pixel diameter circle",
-		InitCircles1, DoArcs, NullProc, EndArcs, False, False,
-		{20, POLY/2, 0}},
+		InitCircles, DoArcs, NullProc, EndArcs, False, 0,
+		{20, POLY, 1}},
   {"-circles10", "10-pixel diameter circle",
-		InitCircles10, DoArcs, NullProc, EndArcs, False, False,
-		{20, POLY/4, 0}},
+		InitCircles, DoArcs, NullProc, EndArcs, False, 0,
+		{10, POLY, 10}},
   {"-circles100", "100-pixel diameter circle",
-		InitCircles100, DoArcs, NullProc, EndArcs, False, False,
-		{20, POLY/40, 0}},
+		InitCircles, DoArcs, NullProc, EndArcs, False, 0,
+		{40, POLY/40, 100}},
   {"-circles500", "500-pixel diameter circle",
-		InitCircles500, DoArcs, NullProc, EndArcs, False, False,
-		{20, POLY/100, 0}},
+		InitCircles, DoArcs, NullProc, EndArcs, False, 0,
+		{20, POLY/100, 500}},
   {"-ellipses1", "1-pixel major-axis diameter ellipse",
-		InitEllipses1, DoArcs, NullProc, EndArcs, False, False,
-		{20, POLY/2, 0}},
+		InitEllipses, DoArcs, NullProc, EndArcs, False, 0,
+		{20, POLY, 1}},
   {"-ellipses10", "10-pixel major-axis diameter ellipse",
-		InitEllipses10, DoArcs, NullProc, EndArcs, False, False,
-		{20, POLY/4, 0}},
+		InitEllipses, DoArcs, NullProc, EndArcs, False, 0,
+		{20, POLY/4, 10}},
   {"-ellipses100", "100-pixel major-axis diameter ellipse",
-		InitEllipses100, DoArcs, NullProc, EndArcs, False, False,
-		{20, POLY/40, 0}},
+		InitEllipses, DoArcs, NullProc, EndArcs, False, 0,
+		{20, POLY/40, 100}},
   {"-ellipses500", "500-pixel major-axis diameter ellipse",
-		InitEllipses500, DoArcs, NullProc, EndArcs, False, False,
-		{10, POLY/100, 0}},
-  {"-ftext", "100-character line/'fixed'",
-		InitText, DoText, ClearTextWin, EndText, False, False,
-		{100, 1, False, "fixed", NULL}},
+		InitEllipses, DoArcs, NullProc, EndArcs, False, 0,
+		{10, POLY/100, 500}},
+  {"-ftext", "100-character line/'6x13'",
+		InitText, DoText, ClearTextWin, EndText, False, 0,
+		{2000, 1, False, "6x13", NULL}},
   {"-tr10text", "100 character line/'Times Roman 10'",
-		InitText, DoText, ClearTextWin, EndText, False, False,
-		{100, 1, False, "times_roman10", NULL}},
+		InitText, DoText, ClearTextWin, EndText, False, 0,
+		{2000, 1, False, "times_roman10", NULL}},
   {"-tr24text", "100 character line/'Times Roman 24'",
-		InitText, DoText, ClearTextWin, EndText, False, False,
-		{100, 1, False, "times_roman24", NULL}},
-  {"-fitext", "100 character image line/'fixed'",
-		InitText, DoImageText, ClearTextWin, EndText, False, False,
-		{100, 1, False, "fixed", NULL}},
+		InitText, DoText, ClearTextWin, EndText, False, 0,
+		{2000, 1, False, "times_roman24", NULL}},
+  {"-polytext", "poly text/'6x13', '6x13'",
+		InitText, DoPolyText, ClearTextWin, EndText, False, 0,
+		{2000, 1, True, "6x13", "6x13"}},
+  {"-fitext", "100 character image line/'6x13'",
+		InitText, DoImageText, ClearTextWin, EndText, False, 0,
+		{2000, 1, False, "6x13", NULL}},
   {"-tr10itext", "100 character image line/'Times Roman 10'",
-		InitText, DoImageText, ClearTextWin, EndText, False, False,
-		{100, 1, False, "times_roman10", NULL}},
+		InitText, DoImageText, ClearTextWin, EndText, False, 0,
+		{2000, 1, False, "times_roman10", NULL}},
   {"-tr24itext", "100 character image line/'Times Roman 24'",
-		InitText, DoImageText, ClearTextWin, EndText, False, False,
-		{100, 1, False, "times_roman24", NULL}},
-  {"-polytext1", "poly text/'8x13', '8x13bold'",
-		InitText, DoPolyText, ClearTextWin, EndText, False, False,
-		{100, 1, True, "8x13", "8x13bold"}},
-  {"-polytext2", "poly text/'6x10', '9x15'",
-		InitText, DoPolyText, ClearTextWin, EndText, False, False,
-		{100, 1, True, "6x10", "9x15"}},
-  {"-polytext3", "poly text/'times_roman24', 'times_bold24'",
-		InitText, DoPolyText, ClearTextWin, EndText, False, False,
-		{100, 1, True, "times_roman24", "times_bold24"}},
-  {"-copyplane", "Copy 1-bit plane",
-		InitCopyPlane, DoCopyPlane, NULL, EndCopyPlane, False, False,
-		{50, 1, False, "fixed", NULL}},
-  {"-scroll", "Scrolling",
+		InitText, DoImageText, ClearTextWin, EndText, False, 0,
+		{2000, 1, False, "times_roman24", NULL}},
+  {"-copyplane", "Copy 800x600 1-bit deep plane",
+		InitCopyPlane, DoCopyPlane, NULL, EndCopyPlane, False, 0,
+		{50, 1, False, "6x13", NULL}},
+  {"-scroll", "Scroll 600x590 pixels",
 		InitScrolling, DoScrolling, MidScroll,
-		EndScrolling, False, False,
-		{50, 1, False}},
-  {"-copyarea", "Copyarea",
+		EndScrolling, False, 0,
+		{100, 1, False}},
+  {"-copyarea10", "Copyarea 10x10 square",
 		InitCopyArea, DoCopyArea, MidCopyArea,
-		EndCopyArea, False, False,
-		{200, 1, False}},
-  {"-copyarea2", "Copyarea from pixmap",
+		EndCopyArea, False, 0,
+		{2500, 4, 10}},
+  {"-copyarea50", "Copyarea 50x50 square",
+		InitCopyArea, DoCopyArea, MidCopyArea,
+		EndCopyArea, False, 0,
+		{1250, 4, 50}},
+  {"-copyarea100", "Copyarea 100x100 square",
+		InitCopyArea, DoCopyArea, MidCopyArea,
+		EndCopyArea, False, 0,
+		{500, 4, 100}},
+  {"-copyarea500", "Copyarea 500x500 square",
+		InitCopyArea, DoCopyArea, MidCopyArea,
+		EndCopyArea, False, 0,
+		{25, 4, 500}},
+  {"-copypix10", "Copyarea 10x10 square from pixmap",
 		InitCopyArea2, DoCopyArea2, MidCopyArea2,
-		EndCopyArea2, False, False,
-		{200, 1, False}},
-  {"-triangle", "Fill Polygon, triangles",
+		EndCopyArea2, False, 0,
+		{2500, 4, 10}},
+  {"-copypix50", "Copyarea 50x50 square from pixmap",
+		InitCopyArea2, DoCopyArea2, MidCopyArea2,
+		EndCopyArea2, False, 0,
+		{150, 4, 50}},
+  {"-copypix100", "Copyarea 100x100 square from pixmap",
+		InitCopyArea2, DoCopyArea2, MidCopyArea2,
+		EndCopyArea2, False, 0,
+		{500, 4, 100}},
+  {"-copypix500", "Copyarea 500x500 square from pixmap",
+		InitCopyArea2, DoCopyArea2, MidCopyArea2,
+		EndCopyArea2, False, 0,
+		{25, 4, 500}},
+  {"-triangle1", "Fill 1x1x1 equilateral triangle",
 		InitTriangles, DoTriangles, NullProc, EndTriangles, 
-                False, False,
-		{10, 100, 0}},
-  {"-trap", "Fill Polygon, trapezoids",
-		InitTraps, DoTraps, NullProc, EndTraps, False, False,
-		{10, 100, 0}},
-  {"-complex", "Fill Random Complex Polygons",
+                False, 0,
+		{50, POLY, 1}},
+  {"-triangle10", "Fill 10x10x10 equilateral triangle",
+		InitTriangles, DoTriangles, NullProc, EndTriangles, 
+                False, 0,
+		{50, POLY, 10}},
+  {"-triangle100", "Fill 100x100x100 equilateral triangle",
+		InitTriangles, DoTriangles, NullProc, EndTriangles, 
+                False, 0,
+		{50, POLY/10, 100}},
+  {"-trap10", "Fill 10x10 trapezoid",
+		InitTrapezoids, DoTrapezoids, NullProc, EndTrapezoids,
+		False, 0,
+		{50, POLY, 10}},
+  {"-trap100", "Fill 100x100 trapezoid",
+		InitTrapezoids, DoTrapezoids, NullProc, EndTrapezoids,
+		False, 0,
+		{50, POLY/10, 100}},
+  {"-complex10", "Fill 10-pixel outer edge complex polygons",
 		InitComplexPoly, DoComplexPoly, NullProc, EndComplexPoly, 
-                False, False,
-		{5, 50, 0}},
-  {"-tile", 	"Fill 4x4 Tiled windows",
-		InitTileWins, DoTileWins, NullProc, EndTileWins, 
-                False, False,
-		{100, 0, 0}},
-  {"-windows", "Create Window, MapSubwindows",
-		InitWins, DoWins, DeleteSubs, EndWins, True, False,
-		{1, 4, True}},
-  {"-windows2", "Create Window, Map Parent",
-		InitWins2, DoWins2, UnmapWin, EndWins, True, False,
-		{1, 4, True}},
-  {"-uwindows", "Create Unmapped Window",
-		InitWins, DoWins, DeleteSubs, EndWins, True, False,
-		{1, 4, False}},
-  {"-move", "Move Window",
-		InitMoveWins, DoMoveWins, NullProc, EndMoveWins, True, False,
-		{400, 4, True}},
-  {"-umove", "Moved Unmapped Window",
-		InitMoveWins, DoMoveWins, NullProc, EndMoveWins, True, False,
-		{400, 4, False}},
-  {"-circulate", "Circulate Window",
-		InitCircWins, DoCircWins, NullProc, EndMoveWins, True, False,
-		{400, 4, True}},
-  {"-ucirculate", "Circulate Unmapped Window",
-		InitCircWins, DoCircWins, NullProc, EndMoveWins, True, False,
-		{400, 4, False}},
+                False, 0,
+		{20, POLY, 10}},
+  {"-complex100", "Fill 100-pixel outer edge complex polygons",
+		InitComplexPoly, DoComplexPoly, NullProc, EndComplexPoly, 
+                False, 0,
+		{20, POLY/10, 100}},
+  {"-atoms", "GetAtomName",
+		NULL, DoAtom, NullProc, NullProc, False, 0,
+		{5000, 1}},
+  {"-props", "GetProperty",
+		InitGetProp, DoGetProp, NullProc, NullProc, False, 0,
+		{5000, 1}},
+  {"-gc", "Graphics context validation",
+		InitValGC, DoValGC, NullProc, EndValGC, False, 0,
+		{125000, 4}},
+  {"-create", "Create and map subwindows",
+		InitCreate, CreateChildren, DeleteChildren, EndCreate,
+		True, 0,
+		{0, 0, True}},
+  {"-map",  "Map window by mapping parent",
+		InitMap, MapParents, UnmapParents, EndCreate, True, 0,
+		{0, 0, True}},
+  {"-ucreate", "Create Unmapped Window",
+		InitCreate, CreateChildren, DeleteChildren, EndCreate,
+		True, 0,
+		{0, 0, False}},
   {"-popup", "Popup Window",
-		InitPopups, DoPopUps, NULL, EndPopups, True, False,
-		{10, 4, True}},
+		InitPopups, DoPopUps, NULL, EndPopups, True, 0,
+		{6000, 0, True}},
+  {"-move", "Move Window",
+		InitMoveWins, DoMoveWins, NullProc, EndMoveWins, True, 0,
+		{1200, 0, True}},
+  {"-umove", "Moved Unmapped Window",
+		InitMoveWins, DoMoveWins, NullProc, EndMoveWins, True, 0,
+		{12000, 0, False}},
+  {"-resize", "Resize Window",
+		InitMoveWins, DoResizeWins, NullProc, EndMoveWins, True, 0,
+		{1200, 4, True}},
+  {"-uresize", "Resize Unmapped Window",
+		InitMoveWins, DoResizeWins, NullProc, EndMoveWins, True, 0,
+		{12000, 4, False}},
+  {"-circulate", "Circulate Window",
+		InitCircWins, DoCircWins, NullProc, EndMoveWins, True, 0,
+		{1200, 4, True}},
+  {"-ucirculate", "Circulate Unmapped Window",
+		InitCircWins, DoCircWins, NullProc, EndMoveWins, True, 0,
+		{12000, 4, False}},
   { NULL, NULL,
-		NULL, NULL, NULL, NULL, False, False,
+		NULL, NULL, NULL, NULL, False, 0,
 		{0, 0, False, NULL, NULL}}
 };

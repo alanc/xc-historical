@@ -14,6 +14,16 @@ static char *foreground = NULL;
 static char *background = NULL;
 int fgPixel, bgPixel;
 
+static Bool *doit;
+
+static XRectangle ws[] = {
+    {150, 150, 90, 90},
+    {300, 180, 90, 90},
+    {450, 210, 90, 90}
+  };
+#define MAXCLIP     (sizeof(ws) / sizeof(ws[0]))
+static Window clipWindows[MAXCLIP];
+
 #ifdef VMS
 
 typedef struct _vms_time {
@@ -318,6 +328,33 @@ void CreatePerfStuff(d, count, width, height, w, bggc, fggc)
     }
 }
 
+void CreateClipWindows(display, clips)
+    Display *display;
+    int     clips;
+{
+    int j;
+
+    if (clips > MAXCLIP) clips = MAXCLIP;
+    for (j = 0; j < clips; j++) {
+	clipWindows[j] = CreatePerfWindow(display,
+	    ws[j].x, ws[j].y, ws[j].width, ws[j].height);
+    }
+} /* CreateClipWindows */
+
+void DestroyClipWindows(display, clips)
+    Display *display;
+    int     clips;
+{
+    int j;
+
+    if (clips > MAXCLIP) clips = MAXCLIP;
+    for (j = 0; j < clips; j++) {
+	XDestroyWindow(display, clipWindows[j]);
+    }
+} /* DestroyClipWindows */
+
+
+
 Window root;
 main(argc, argv)
     int argc;
@@ -325,6 +362,7 @@ main(argc, argv)
 
 {
     int     i, j;
+    int     numTests;       /* Even though the linker knows, we don't. */
     char    hostname[100];
     char   *displayName;
     Display * display;
@@ -332,12 +370,15 @@ main(argc, argv)
     Bool foundOne = False;
     Bool synchronous = False;
 
+    ForEachTest(numTests);
+    doit = (Bool *)calloc(numTests, sizeof(Bool));
+
     program_name = argv[0];
     displayName = Get_Display_Name (&argc, argv);
     for (i = 1; i < argc; i++) {
 	if (strcmp (argv[i], "-all") == 0) {
 	    ForEachTest (j)
-		test[j].doit = True;
+		doit[j] = True;
 	    foundOne = True;
 	} else if (strcmp (argv[i], "-sync") == 0) {
 	    synchronous = True;
@@ -362,7 +403,7 @@ main(argc, argv)
 	} else {
 	    ForEachTest (j) {
 		if (strcmp (argv[i], test[j].option) == 0) {
-		    test[j].doit = True;
+		    doit[j] = True;
 		    goto LegalOption;
 		}
 	    }
@@ -419,7 +460,7 @@ main(argc, argv)
     if (synchronous)
 	XSynchronize (display, True);
     ForEachTest (i) {
-	if (test[i].doit) {
+	if (doit[i]) {
 	    int     child = 0;
 	    char    label[100];
 	    int     reps = test[i].parms.reps;
@@ -432,16 +473,26 @@ main(argc, argv)
 			test[i].parms.reps = reps/test[i].parms.objects;
 		    sprintf (label, "%s (%d children)",
 			    test[i].label, test[i].parms.objects);
-		}
-		else
+		} else {
 		    strcpy (label, test[i].label);
+		}
 		perfWindow = NULL;
-		if (test[i].init != NullProc)
-		    (*test[i].init) (display, &test[i].parms);
-		for (j = 0; j < repeat; j++)
-		    DoTest (display, &test[i], label);
-		if (test[i].cleanup != NullProc)
-		    (*test[i].cleanup) (display, &test[i].parms);
+		if (test[i].init == NULL ||
+			((*test[i].init) (display, &test[i].parms))) {
+		    /* Create clip windows if requested */
+		    if (perfWindow != NULL) {
+			CreateClipWindows(display, test[i].clips);
+		    }
+		    for (j = 0; j < repeat; j++)
+			DoTest (display, &test[i], label);
+		    if (test[i].cleanup != NullProc)
+			(*test[i].cleanup) (display, &test[i].parms);
+		    if (perfWindow != NULL) {
+			DestroyClipWindows(display, test[i].clips);
+		    }
+		} else {
+		    /* Test failed to initialize properly */
+		}
 		printf ("\n");
 		if (!test[i].children)
 		    break;

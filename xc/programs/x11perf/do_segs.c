@@ -1,19 +1,14 @@
 #include "x11perf.h"
 
+static Window   w;
 static XSegment *segments;
 static GC bggc, fggc;
-static Window w[4];
-static XRectangle ws[3] = {
-    {150, 150, 90, 90},
-    {300, 180, 90, 90},
-    {450, 210, 90, 90}
-  };
 
-void InitSizedSegs(d, p, size)
+Bool InitSegs(d, p)
     Display *d;
     Parms   p;
-    int     size;
 {
+    int     size;
     int i;
     int x, y;		/* base of square to draw in			*/
     int x1, y1;		/* offsets into square				*/
@@ -21,9 +16,8 @@ void InitSizedSegs(d, p, size)
     int minorphase;     /* # iterations left with current x1inc, y1inc  */
     int majorphase;     /* count 0..3 for which type of x1inc, y1inc    */
 
-    for (i = 0; i < 4; i++)
-	w[i] = None;
-    i = 0;
+    size = p->special;
+
     segments = (XSegment *)malloc((p->objects) * sizeof(XSegment));
 
     size--;		/* Because endcap counts as 1 pixel		*/
@@ -76,44 +70,27 @@ void InitSizedSegs(d, p, size)
 	    }
 	}
     }
-    CreatePerfStuff(d, 1, WIDTH, HEIGHT, w, &bggc, &fggc);
-    for (i = 0; i < p->special; i++)
-	w[i+1] = CreatePerfWindow(
-	    d, ws[i].x, ws[i].y, ws[i].width, ws[i].height);
-    
+    CreatePerfStuff(d, 1, WIDTH, HEIGHT, &w, &bggc, &fggc);
+    return True;
 }
    
-void InitSegs1(d, p)
+
+Bool InitDashedSegs(d, p)
     Display *d;
-    Parms p;
+    Parms   p;
 {
-    InitSizedSegs(d, p, 1);
+    char dashes[2];
+
+    (void)InitSegs(d, p);
+
+    /* Modify GCs to draw dashed */
+    XSetLineAttributes(d, bggc, 0, LineOnOffDash, CapButt, JoinMiter);
+    XSetLineAttributes(d, fggc, 0, LineOnOffDash, CapButt, JoinMiter);
+    dashes[0] = 1;   dashes[1] = 3;
+    XSetDashes(d, fggc, 0, dashes, 2);
+    XSetDashes(d, bggc, 0, dashes, 2);
+    return True;
 }
-
-
-void InitSegs10(d, p)
-    Display *d;
-    Parms p;
-{
-    InitSizedSegs(d, p, 10);
-}
-
-
-void InitSegs100(d, p)
-    Display *d;
-    Parms p;
-{
-    InitSizedSegs(d, p, 100);
-}
-
-
-void InitSegs500(d, p)
-    Display *d;
-    Parms p;
-{
-    InitSizedSegs(d, p, 500);
-}
-
 
 void DoSegs(d, p)
     Display *d;
@@ -125,7 +102,7 @@ void DoSegs(d, p)
     pgc = bggc;
     for (i=0; i<p->reps; i++)
     {
-        XDrawSegments(d, w[0], pgc, segments, p->objects);
+        XDrawSegments(d, w, pgc, segments, p->objects);
         if (pgc == bggc)
             pgc = fggc;
         else
@@ -137,10 +114,7 @@ void EndSegs(d, p)
     Display *d;
     Parms p;
 {
-    int i;
-    for (i = 0; i < 4; i++)
-	if (w[i] != None)
-	    XDestroyWindow(d, w[i]);
+    XDestroyWindow(d, w);
     XFreeGC(d, bggc);
     XFreeGC(d, fggc);
     free(segments);

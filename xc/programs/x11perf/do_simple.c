@@ -20,7 +20,7 @@ void DoAtom(d, p)
     }
 }
 
-void InitGetProp(d, p)
+Bool InitGetProp(d, p)
     Display *d;
     Parms p;
 {
@@ -30,6 +30,7 @@ void InitGetProp(d, p)
     XChangeProperty (
 	    d, root, XA_PK_TEMP, XA_INTEGER, 32,
 	    PropModeReplace, &foo, sizeof (int));
+    return True;
 }
 
 void DoGetProp(d, p)

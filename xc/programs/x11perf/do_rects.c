@@ -16,7 +16,7 @@ static unsigned char bitmap4x4[] = {
 };
 
 
-void InitRects(d, p)
+Bool InitRects(d, p)
     Display *d;
     Parms p;
 {
@@ -24,10 +24,11 @@ void InitRects(d, p)
     int width = p->special;
     int cols = COLS;
 
-
-    if (width == 50) 
-    {
+	/* ||| This has to be changed */
+    if (width == 50) {
         cols = 10;
+    } else if (width == 500) {
+	cols = 1;
     }
     rects = (XRectangle *)malloc(p->objects * sizeof(XRectangle));
     i = 0;
@@ -46,23 +47,6 @@ void InitRects(d, p)
 	    i++;
 	}
     CreatePerfStuff(d, 1, WIDTH, HEIGHT, &w, &bggc, &fggc);
-
-#ifdef testclipping
-{
-static Window w[4];
-static XRectangle ws[3] = {
-    {100, 100, 200, 200},
-    {150, 150, 200, 200},
-    {200, 200, 200, 200}
-};
-    for (i = 0; i < 4; i++)
-	w[i] = None;
-    for (i = 0; i < 3; i++)
-	w[i+1] = CreatePerfWindow(
-	    d, ws[i].x, ws[i].y, ws[i].width, ws[i].height);
-
-}
-#endif
 
     if (p->fillStyle == FillStippled || p->fillStyle == FillOpaqueStippled) {
 	Pixmap  stipple;
@@ -92,6 +76,7 @@ static XRectangle ws[3] = {
 	XChangeGC(d, bggc, GCFillStyle | GCTile, &gcv);
 	XFreePixmap(d, tile);
     }
+    return True;
 }
 
 void DoRects(d, p)

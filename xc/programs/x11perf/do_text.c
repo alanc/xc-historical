@@ -12,7 +12,7 @@ static XTextItem *items;
 #define STARTBOLD 20
 #define NUMBOLD 20
 
-void InitText(d, p)
+Bool InitText(d, p)
     Display *d;
     Parms p;
 {
@@ -20,10 +20,20 @@ void InitText(d, p)
     XGCValues gcv;
 
     font = XLoadQueryFont (d, p->font);
-    if (p->bfont != NULL)
+    if (font == NULL) {
+	printf("Could not load font '%s', benchmark omitted\n", p->font);
+	return False;
+    }
+
+    if (p->bfont != NULL) {
 	bfont = XLoadQueryFont (d, p->bfont);
-    else
+	if (bfont == NULL) {
+	    printf("Could not load font '%s', benchmark omitted\n", p->bfont);
+	    return False;
+	}
+    } else {
 	bfont = NULL;
+    }
     ypos = XPOS;
     height = (font->max_bounds.ascent + font->max_bounds.descent) + 1;
     if (bfont != NULL) {
@@ -63,6 +73,7 @@ void InitText(d, p)
 	    }
 	}
     }
+    return True;
 }
 
 void DoText(d, p)

@@ -4,7 +4,7 @@ static XPoint *points;
 static GC bggc, fggc;
 static Window w;
 
-void InitDots(d, p)
+Bool InitDots(d, p)
     Display *d;
     Parms p;
 {
@@ -19,6 +19,7 @@ void InitDots(d, p)
 	    i++;
 	}
     CreatePerfStuff(d, 1, WIDTH, HEIGHT, &w, &bggc, &fggc);
+    return True;
 }
 
 void DoDots(d, p)

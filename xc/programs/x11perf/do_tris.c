@@ -3,34 +3,53 @@
 #define NUM_POINTS 3   /* 3 points to a triangle */
 static XPoint *points;
 static GC bggc, fggc;
-static Window w[4];
-static XRectangle ws[3] = {
-    {100, 100, 200, 200},
-    {150, 150, 200, 200},
-    {200, 200, 200, 200}
-  };
+static Window w;
 
-void InitTriangles(d, p)
+extern double sin();
+extern double cos();
+extern double sqrt();
+#define PI  3.14159265357989
+
+Bool InitTriangles(d, p)
     Display *d;
     Parms p;
 {
-    int i, numPoints;
+    int i, j, numPoints;
+    int x, y;
+    int size, iradius;
+    double phi, radius, delta, phi2;
+    XPoint *curPoint;
 
-    for (i = 0; i < 4; i++)
-	w[i] = None;
-    i = 0;
+    size = p->special;
+    phi = 0.0;
+    radius = ((double) size) * sqrt(3.0)/2.0;
+    iradius = (int) radius + 1;
+    delta = 2.0 * PI / ((double) NUM_POINTS);
+
     numPoints = (p->objects) * NUM_POINTS;  
     points = (XPoint *)malloc(numPoints * sizeof(XPoint));
-    for (i = 0; i < numPoints; i++)
-    {    
-        points[i].x = rand() % WIDTH;
-        points[i].y = rand() % HEIGHT;
+    curPoint = points;
+    x = iradius;
+    y = iradius;
+    for (i = 0; i < p->objects; i++) {
+	for (j = 0; j < NUM_POINTS; j++) {
+	    phi2 = phi + ((double) j) * delta;
+	    curPoint->x = (int) ((double)x + (radius * cos(phi2)) + 0.5);
+	    curPoint->y = (int) ((double)y + (radius * sin(phi2)) + 0.5);
+	    curPoint++;
+	}
+	phi += delta/10.0;
+	y += 2 * iradius;
+	if (y + iradius >= HEIGHT) {
+	    y = iradius;
+	    x += 2 * iradius;
+	    if (x + iradius >= WIDTH) {
+		x = iradius;
+	    }
+	}
     }
-    CreatePerfStuff(d, 1, WIDTH, HEIGHT, w, &bggc, &fggc);
-    for (i = 0; i < p->special; i++)
-	w[i+1] = CreatePerfWindow(
-	    d, ws[i].x, ws[i].y, ws[i].width, ws[i].height);
-    
+    CreatePerfStuff(d, 1, WIDTH, HEIGHT, &w, &bggc, &fggc);
+    return True;
 }
 
 void DoTriangles(d, p)
@@ -46,7 +65,7 @@ void DoTriangles(d, p)
     {
         curPoint = points;
         for (j=0; j < p->objects; j++) {
-            XFillPolygon(d, w[0], pgc, curPoint, NUM_POINTS, Convex, 
+            XFillPolygon(d, w, pgc, curPoint, NUM_POINTS, Convex, 
 			 CoordModeOrigin);
             curPoint += NUM_POINTS;
 	  }
@@ -61,10 +80,7 @@ void EndTriangles(d, p)
     Display *d;
     Parms p;
 {
-    int i;
-    for (i = 0; i < 4; i++)
-	if (w[i] != None)
-	    XDestroyWindow(d, w[i]);
+    XDestroyWindow(d, w);
     XFreeGC(d, bggc);
     XFreeGC(d, fggc);
     free(points);

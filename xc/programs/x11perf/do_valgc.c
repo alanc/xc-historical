@@ -8,7 +8,7 @@
 static GC gc;
 static Window win[2];
 
-void InitValGC(d, p)
+Bool InitValGC(d, p)
     Display *d;
     Parms p;
 {
@@ -16,6 +16,7 @@ void InitValGC(d, p)
 
     CreatePerfStuff(d, 2, width, height, win, &gc, NULL);
     XDrawPoint(d, win[1], gc, 5, 5);    
+    return True;
 }
 
 void DoValGC(d, p)
@@ -34,13 +35,13 @@ void DoValGC(d, p)
         XChangeGC(d, gc, GCForeground , &gcv);
         XDrawPoint(d, win[1], gc, 5, 5);       
 
-        gcv.foreground = fgPixel;
-        XChangeGC(d, gc, GCForeground , &gcv);
-        XDrawPoint(d, win[1], gc, 5, 5);       
-
         gcv.foreground = bgPixel;
         XChangeGC(d, gc, GCForeground , &gcv);
         XDrawPoint(d, win[0], gc, 5, 5);       
+
+        gcv.foreground = fgPixel;
+        XChangeGC(d, gc, GCForeground , &gcv);
+        XDrawPoint(d, win[1], gc, 5, 5);       
     }
 }
 

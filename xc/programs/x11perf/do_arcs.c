@@ -2,25 +2,18 @@
 
 static XArc *arcs;
 static GC bggc, fggc;
-static Window w[4];
-static XRectangle ws[3] = {
-    {100, 100, 200, 200},
-    {150, 150, 200, 200},
-    {200, 200, 200, 200}
-  };
+static Window w;
 
-void InitSizedCircles(d, p, size)
+Bool InitCircles(d, p)
     Display *d;
     Parms   p;
-    int     size;
 {
     int i;
     int x, y;		/* base of square to draw the circle in		    */
     int xorg, yorg;     /* Used to get from column to column or row to row  */
+    int     size;
 
-    for (i = 0; i < 4; i++)
-	w[i] = None;
-    i = 0;
+    size = p->special;
     arcs = (XArc *)malloc((p->objects) * sizeof(XArc));
     xorg = 0; yorg = 0;
     x    = 0; y    = 0;
@@ -52,56 +45,20 @@ void InitSizedCircles(d, p, size)
 	    }
 	}
     }
-    CreatePerfStuff(d, 1, WIDTH, HEIGHT, w, &bggc, &fggc);
-    for (i = 0; i < p->special; i++)
-	w[i+1] = CreatePerfWindow(
-	    d, ws[i].x, ws[i].y, ws[i].width, ws[i].height);
+    CreatePerfStuff(d, 1, WIDTH, HEIGHT, &w, &bggc, &fggc);
+    return True;
 }
 
-void InitCircles1(d, p)
-    Display *d;
-    Parms p;
-{
-    InitSizedCircles(d, p, 1);
-}
-
-
-void InitCircles10(d, p)
-    Display *d;
-    Parms p;
-{
-    InitSizedCircles(d, p, 10);
-}
-
-
-void InitCircles100(d, p)
-    Display *d;
-    Parms p;
-{
-    InitSizedCircles(d, p, 100);
-}
-
-
-void InitCircles500(d, p)
-    Display *d;
-    Parms p;
-{
-    InitSizedCircles(d, p, 500);
-}
-
-
-void InitSizedEllipses(d, p, size)
+Bool InitEllipses(d, p)
     Display *d;
     Parms   p;
-    int     size;
 {
+    int     size;
     int i;
     int x, y;		/* base of square to draw ellipse in		*/
     int vsize, vsizeinc;
 
-    for (i = 0; i < 4; i++)
-	w[i] = None;
-    i = 0;
+    size = p->special;
     vsize = 1;
     vsizeinc = size / p->objects;
     if (vsizeinc == 0) vsizeinc = 1;
@@ -138,44 +95,9 @@ void InitSizedEllipses(d, p, size)
 	vsize += vsizeinc;
 	if (vsize > size) vsize -= size;
     }
-    CreatePerfStuff(d, 1, WIDTH, HEIGHT, w, &bggc, &fggc);
-    for (i = 0; i < p->special; i++)
-	w[i+1] = CreatePerfWindow(
-	    d, ws[i].x, ws[i].y, ws[i].width, ws[i].height);
+    CreatePerfStuff(d, 1, WIDTH, HEIGHT, &w, &bggc, &fggc);
+    return True;
 }
-
-void InitEllipses1(d, p)
-    Display *d;
-    Parms p;
-{
-    InitSizedEllipses(d, p, 1);
-}
-
-
-void InitEllipses10(d, p)
-    Display *d;
-    Parms p;
-{
-    InitSizedEllipses(d, p, 10);
-}
-
-
-void InitEllipses100(d, p)
-    Display *d;
-    Parms p;
-{
-    InitSizedEllipses(d, p, 100);
-}
-
-
-void InitEllipses500(d, p)
-    Display *d;
-    Parms p;
-{
-    InitSizedEllipses(d, p, 500);
-}
-
-
 
 void DoArcs(d, p)
     Display *d;
@@ -187,7 +109,7 @@ void DoArcs(d, p)
     pgc = bggc;
     for (i=0; i<p->reps; i++)
     {
-        XDrawArcs(d, w[0], pgc, arcs, p->objects);
+        XDrawArcs(d, w, pgc, arcs, p->objects);
         if (pgc == bggc)
             pgc = fggc;
         else
@@ -199,10 +121,7 @@ void EndArcs(d, p)
     Display *d;
     Parms p;
 {
-    int i;
-    for (i = 0; i < 4; i++)
-	if (w[i] != None)
-	    XDestroyWindow(d, w[i]);
+    XDestroyWindow(d, w);
     XFreeGC(d, bggc);
     XFreeGC(d, fggc);
     free(arcs);

@@ -1,127 +1,188 @@
 #include "x11perf.h"
 
+static Window *parents;
+static int childrows, childcolumns, childwindows;
+static int parentrows, parentcolumns, parentwindows;
+static int parentwidth, parentheight;
 static Window w;
 static Window popup;
-static rows, columns;
 
-void InitWins(d, p)
+void ComputeSizes(d, p)
     Display *d;
     Parms p;
 {
-    int i, x, y;
-
-    if (p->objects < 50) {
-	rows = 1;
-	columns = p->objects;
+    childwindows = p->objects;
+    if (childwindows < 50) {
+	childcolumns = childwindows;
+	childrows = 1;
+    } else {
+	childcolumns = COLS;
+	childrows = childwindows/COLS;
     }
-    else {
-	columns = COLS;
-	rows = p->objects/COLS;
-    }
-    p->objects = rows * columns;
-    CreatePerfStuff(d, 1, WIDTH, HEIGHT, &w, NULL, NULL);
-
+    parentwidth = (CHILDSIZE+CHILDSPACE) * childcolumns;
+    parentheight = (CHILDSIZE+CHILDSPACE) * childrows;
 }
 
-void DoWins(d, p)
+void CreateParents(d, p)
     Display *d;
     Parms p;
 {
-    int     x, y, i;
-    int     child;
+    Window isolate;
+    int i, x, y;
 
-    child = 0;
-    for (x = 0; x < COLS; x++)
-	for (y = 0; y < rows; y++) {
-	    (void) XCreateSimpleWindow (
-		    d, w, x*20 + 10, y*20 + 10, 10, 10, 0, bgPixel, fgPixel);
-	    if ((++child) == p->objects)
+    ComputeSizes(d, p);
+
+    parentcolumns = WIDTH / parentwidth;
+    parentrows = HEIGHT / parentheight;
+    parentwindows = parentcolumns * parentrows;
+    parents = (Window *)malloc(parentwindows * sizeof(Window));
+
+    /* We will do parentwindows sets of childwindows, in order to get better
+       timing accuracy.  Creating 4 windows at a millisecond apiece or so
+       is a bit faster than the 60 Hz clock. */
+    p->reps = parentwindows;
+
+    CreatePerfStuff(d, 1, WIDTH, HEIGHT, &w, NULL, NULL);
+
+    /*
+     *  Create isolation windows for the parents, and then the parents
+     *  themselves.  These isolation windows ensure that parent and children
+     *  windows created/mapped in DoWins and DoWin2 all see the same local
+     *  environment...the parent is an only child, and each parent contains
+     *  the number of children we are trying to get benchmarks on.
+     */
+
+    i = 0;
+    for (x = 0; x < parentcolumns; x++) {
+	for (y = 0; y < parentrows; y++) {
+	    isolate = XCreateSimpleWindow(d, w,
+		x*parentwidth, y*parentheight, parentwidth, parentheight,
+		0, bgPixel, bgPixel);
+	    parents[i] = XCreateSimpleWindow(d, isolate,
+		0, 0, parentwidth, parentheight,
+		0, bgPixel, bgPixel);
+	    i++;
+	}
+    }
+    XMapSubwindows(d, w);
+} /* CreateParents */
+
+void MapParents(d, p)
+    Display *d;
+    Parms p;
+{
+    int i;
+
+    for (i = 0; i < parentwindows; i++) {
+	XMapWindow(d, parents[i]);
+    }
+}
+
+
+Bool InitCreate(d, p)
+    Display *d;
+    Parms p;
+{
+    CreateParents(d, p);
+    MapParents(d, p);
+    return True;
+}
+
+void CreateChildGroup(d, p, parent)
+    Display *d;
+    Parms p;
+    Window  parent;
+{
+    int j, x, y;
+
+    j = 0;
+    for (x = 0; x < childcolumns; x++) {
+	for (y = 0; y < childrows; y++) {
+	    (void) XCreateSimpleWindow (d, parent,
+		(CHILDSIZE+CHILDSPACE) * x + CHILDSPACE/2,
+		(CHILDSIZE+CHILDSPACE) * y + CHILDSPACE/2,
+		CHILDSIZE, CHILDSIZE, 0, bgPixel, fgPixel);
+	    j++;
+	    if (j == childwindows)
 		goto Enough;
 	}
+    }
 Enough: 
     if (p->special)
-	XMapSubwindows (d, w);
+	XMapSubwindows (d, parent);
 }
 
-static void CreateSubs(d, p, rows, cols)
-    Display *d;
-    Parms p;
-    int rows, cols;
-{
-    int     x, y, i;
-    int     child;
-
-    child = 0;
-    for (x = 0; x < cols; x++)
-	for (y = 0; y < rows; y++) {
-	    (void) XCreateSimpleWindow (
-		    d, w, x*20 + 10, y*20 + 10, 10, 10, 0, bgPixel, fgPixel);
-	    if ((++child) == p->objects)
-	        goto Enough ;
-	}
-Enough:
-    XMapSubwindows (d, w);
-}
-
-void InitWins2(d, p)
+void CreateChildren(d, p)
     Display *d;
     Parms p;
 {
-    int i, x, y;
+    int     i;
 
-    if (p->objects < 50) {
-	rows = 1;
-	columns = p->objects;
+    for (i = 0; i < parentwindows; i++) {
+	CreateChildGroup(d, p, parents[i]);
+    } /* end i */
+}
+
+void DeleteChildren(d, p)
+    Display *d;
+    Parms p;
+{
+    int i;
+
+    for (i = 0; i < parentwindows; i++) {
+	XDestroySubwindows(d, parents[i]);
     }
-    else {
-	columns = COLS;
-	rows = p->objects/COLS;
+}
+
+void EndCreate(d, p)
+    Display *d;
+    Parms p;
+{
+    XDestroyWindow(d, w);
+}
+
+
+Bool InitMap(d, p)
+    Display *d;
+    Parms p;
+{
+    int i;
+
+    CreateParents(d, p);
+    CreateChildren(d, p);
+    return True;
+}
+
+void UnmapParents(d, p)
+    Display *d;
+    Parms p;
+{
+    int i;
+
+    for (i = 0; i < parentwindows; i++) {
+	XUnmapWindow(d, parents[i]);
     }
-    p->objects = rows * columns;
-    CreatePerfStuff(d, 1, WIDTH, HEIGHT, &w, NULL, NULL);
-    XUnmapWindow(d, w);
-    CreateSubs(d, p, rows, columns);
 }
 
-void DoWins2(d, p)
+
+Bool InitPopups(d, p)
     Display *d;
     Parms p;
 {
-    XMapWindow (d, w);
-}
-
-void UnmapWin(d, p)
-    Display *d;
-    Parms p;
-{
-    XUnmapWindow(d, w);
-}
-
-void InitPopups(d, p)
-    Display *d;
-    Parms p;
-{
-#define POPUPCOLS 8
     int i, x, y;
     XSetWindowAttributes xswa;
 
-    if (p->objects < 10) {
-	rows = 1;
-	columns = p->objects;
-    }
-    else {
-	columns = POPUPCOLS;
-	rows = p->objects/POPUPCOLS;
-    }
-    p->objects = rows * columns;
+    ComputeSizes(d, p);
     CreatePerfStuff(d, 1, WIDTH, HEIGHT, &w, NULL, NULL);
-    CreateSubs(d, p, rows, columns);
+    CreateChildGroup(d, p, w);
 
+    /* Now create simple window to pop up over children */
     xswa.override_redirect = True;
     popup =  XCreateSimpleWindow (
-	    d, RootWindow(d, 0), 30, 40, 500, 500, 0, fgPixel, bgPixel);
+	    d, RootWindow(d, 0), 50, 50, parentwidth, parentheight,
+	    0, fgPixel, bgPixel);
     XChangeWindowAttributes (d, popup, CWOverrideRedirect, &xswa);
-#undef POPUPCOLS
+    return True;
 }
 
 void DoPopUps(d, p)
@@ -142,19 +203,5 @@ void EndPopups(d, p)
 {
     XDestroyWindow(d, w);
     XDestroyWindow(d, popup);
-}
-
-void DeleteSubs(d, p)
-    Display *d;
-    Parms p;
-{
-    XDestroySubwindows(d, w);
-}
-
-void EndWins(d, p)
-    Display *d;
-    Parms p;
-{
-    XDestroyWindow(d, w);
 }
 
