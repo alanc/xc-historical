@@ -4,7 +4,7 @@
 
 /**/###########################################################################
 /**/# Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-/**/# $XConsortium: Imake.tmpl,v 1.73 89/12/06 20:20:53 jim Exp $
+/**/# $XConsortium: Imake.tmpl,v 1.74 89/12/08 15:35:12 jim Exp $
 /**/#
 /**/# Platform-specific parameters may be set in the appropriate .cf
 /**/# configuration files.  Site-wide parameters may be set in the file
@@ -286,6 +286,12 @@
 #endif
 #ifndef HasDESLibrary
 #define HasDESLibrary		NO	/* if you have any DES library */
+#endif
+#ifndef NeedFunctionPrototypes
+#define NeedFunctionPrototypes NO
+#endif
+#ifndef NeedWidePrototypes
+#define NeedWidePrototypes	NO	/* ANSI-C apps but pcc libs */
 #endif
 
 #ifndef HasSunOSSharedLibraries
@@ -581,6 +587,22 @@
 #if !HasVoidSignalReturn
    SIGNAL_DEFINES = -DSIGNALRETURNSINT
 #endif
+/*
+ * The following crap is necessary to support forcing of function prototypes
+ */
+#if NeedFunctionPrototypes
+#define _funcprotodef -DFUNCPROTO
+#else
+#define _funcprotodef /**/
+#endif
+#if NeedWidePrototypes
+#define _wideprotodef -DWIDEPROTO
+#else
+#define _wideprotodef /**/
+#endif
+    PROTO_DEFINES = _funcprotodef _wideprotodef 
+#undef _funcprotodef
+#undef _wideprotodef
 
 #if StripInstalledPrograms
      INSTPGMFLAGS = InstPgmFlags	/* install flags for stripping */
@@ -611,7 +633,7 @@
  * INCLUDES contains client-specific includes set in Imakefile
  */
       ALLINCLUDES = $(STD_INCLUDES) $(TOP_INCLUDES) $(INCLUDES) $(EXTRA_INCLUDES) 
-       ALLDEFINES = $(ALLINCLUDES) $(STD_DEFINES) $(DEFINES) $(COMPATFLAGS)
+       ALLDEFINES = $(ALLINCLUDES) $(STD_DEFINES) $(PROTO_DEFINES) $(DEFINES) $(COMPATFLAGS)
            CFLAGS = $(CDEBUGFLAGS) $(CCOPTIONS) $(ALLDEFINES)
         LINTFLAGS = $(LINTOPTS) -DLINT $(ALLDEFINES)
            LDLIBS = $(SYS_LIBRARIES) $(EXTRA_LIBRARIES)
