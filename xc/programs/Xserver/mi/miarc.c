@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: miarc.c,v 1.67 88/12/09 13:25:56 keith Exp $ */
+/* $XConsortium: miarc.c,v 1.68 89/01/11 17:37:57 keith Exp $ */
 /* Author: Keith Packard */
 
 #include "X.h"
@@ -1012,6 +1012,7 @@ miComputeArcs (parcs, narcs, isDashed, isDoubleDash, pDash, nDashes, dashOffset)
 			prevDashAngle = startAngle;
 			selfJoin = data[i].selfJoin &&
  				    (iphase == 0 || isDoubleDash);
+			arc = 0;
 			while (prevDashAngle != endAngle) {
 				dashAngle = computeAngleFromPath
  						(prevDashAngle, endAngle,
@@ -1056,6 +1057,16 @@ miComputeArcs (parcs, narcs, isDashed, isDoubleDash, pDash, nDashes, dashOffset)
 					arc->selfJoin = 0;
 					if (dashAngle == endAngle)
 						arc->selfJoin = selfJoin;
+				}
+				/*
+				 * make sure a place exists for the position data
+				 */
+				if (!arc) {
+					arc = addArc (&arcs[iphase].arcs, &arcs[iphase].narcs,
+ 				      	      	      &arcSize[iphase], parcs[i]);
+					arc->join = arcs[iphase].njoins;
+					arc->cap = arcs[iphase].ncaps;
+					arc->selfJoin = data[i].selfJoin;
 				}
 				prevphase = iphase;
 				if (dashRemaining <= 0) {
