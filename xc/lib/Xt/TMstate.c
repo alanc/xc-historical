@@ -1,4 +1,4 @@
-/* $XConsortium: TMstate.c,v 1.134 91/02/05 19:11:14 converse Exp $ */
+/* $XConsortium: TMstate.c,v 1.135 91/02/07 17:47:18 converse Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -553,18 +553,20 @@ static void HandleActions(w, event, stateTree, accelWidget, procs, actions)
     while (actions != NULL) {
 	/* perform any actions */
 	if (procs[actions->index] != NULL) {
-	    ActionHook hook;
-	    String procName =
-	      XrmQuarkToString(stateTree->quarkTbl[actions->index] );
+	    if (actionHookList) {
+		ActionHook hook;
+		String procName =
+		    XrmQuarkToString(stateTree->quarkTbl[actions->index] );
 	    
-	    for (hook = actionHookList; hook != NULL; hook = hook->next) {
-		(*hook->proc)(bindWidget,
-			      hook->closure,
-			      procName,
-			      event,
-			      actions->params,
-			      &actions->num_params
-			      );
+		for (hook = actionHookList; hook != NULL; hook = hook->next) {
+		    (*hook->proc)(bindWidget,
+				  hook->closure,
+				  procName,
+				  event,
+				  actions->params,
+				  &actions->num_params
+				  );
+		}
 	    }
 	    (*(procs[actions->index]))
 	      (bindWidget, event, 
