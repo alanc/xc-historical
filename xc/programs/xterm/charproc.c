@@ -1,5 +1,5 @@
 /*
- * $XConsortium: charproc.c,v 1.61 88/11/16 13:45:47 rws Exp $
+ * $XConsortium: charproc.c,v 1.62 88/11/16 18:15:34 rws Exp $
  */
 
 
@@ -134,7 +134,7 @@ static void VTallocbuf();
 #define	doinput()		(bcnt-- > 0 ? *bptr++ : in_put())
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: charproc.c,v 1.61 88/11/16 13:45:47 rws Exp $";
+static char rcs_id[] = "$XConsortium: charproc.c,v 1.62 88/11/16 18:15:34 rws Exp $";
 #endif	/* lint */
 
 static long arg;
@@ -2908,5 +2908,6 @@ static void HandleIgnore(w, event, params, param_count)
     String *params;		/* unused */
     Cardinal *param_count;	/* unused */
 {
-    /* do nothing */
+    /* do nothing, but check for funny escape sequences */
+    (void) SendMousePosition(w, event);
 }

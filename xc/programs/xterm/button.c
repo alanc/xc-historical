@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: button.c,v 1.23 88/11/07 11:16:26 jim Exp $
+ *	$XConsortium: button.c,v 1.24 88/11/16 13:48:39 rws Exp $
  */
 
 
@@ -35,7 +35,7 @@ button.c	Handles button events in the terminal emulator.
 				J. Gettys.
 */
 #ifndef lint
-static char rcs_id[] = "$XConsortium: button.c,v 1.23 88/11/07 11:16:26 jim Exp $";
+static char rcs_id[] = "$XConsortium: button.c,v 1.24 88/11/16 13:48:39 rws Exp $";
 #endif	/* lint */
 #include <X11/Xos.h>
 #include <X11/Xlib.h>
@@ -130,7 +130,7 @@ static SelectUnit selectUnit;
 static int replyToEmacs;
 
 
-static Boolean SendMousePosition(w, event)
+Boolean SendMousePosition(w, event)
 Widget w;
 XEvent* event;			/* must be XButtonEvent* */
 {
@@ -149,9 +149,15 @@ XEvent* event;			/* must be XButtonEvent* */
     switch (screen->send_mouse_pos) {
       case 1: /* X10 compatibility sequences */
 
-	if (event->type == ButtonPress && KeyModifiers == 0) {
-	    EditorButton(event);
-	    return True;
+	if (KeyModifiers == 0) {
+	    if (event->type == ButtonPress) {
+		EditorButton(event);
+		return True;
+	    }
+	    else if (event->type == ButtonRelease &&
+		     event->xbutton.button == Button2 ) {
+		return True;
+	    }
 	}
 	return False;
 
@@ -344,6 +350,7 @@ XEvent *event;			/* assumed to be XButtonEvent* */
 String *params;			/* selections in precedence order */
 Cardinal *num_params;
 {
+    if (SendMousePosition(w, event)) return;
     _GetSelection(w, event->xbutton.time, params, *num_params);
 }
 
@@ -503,6 +510,7 @@ Cardinal *num_params;		/* unused */
 	TScreen *screen = &((XtermWidget)w)->screen;
 	int row, col, coord;
 
+	if (SendMousePosition(w, event)) return;
 	firstValidRow = 0;
 	lastValidRow  = screen->max_row;
 	SetSelectUnit(event->xbutton.time, selectUnit);
