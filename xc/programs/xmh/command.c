@@ -1,4 +1,4 @@
-/* $XConsortium: command.c,v 2.40 91/04/15 19:53:06 rws Exp $ */
+/* $XConsortium: command.c,v 2.41 91/04/16 18:31:12 rws Exp $ */
 
 /*
  *			  COPYRIGHT 1987, 1989
@@ -369,7 +369,8 @@ DEBUG("read.\n")}
     } else {			/* We're the child process. */
 	(void) execv(FullPathOfCommand(argv[0]), argv);
 	(void) execvp(argv[0], argv);
-	Punt("Execvp failed!");
+        progName = argv[0];	/* for Punt message */
+	Punt("(cannot execvp it)");
 	return_status = -1;
     }
     return return_status;
