@@ -1,4 +1,4 @@
-/* $XConsortium: Intrinsic.h,v 1.161 91/05/04 18:42:29 converse Exp $ */
+/* $XConsortium: Intrinsic.h,v 1.162 91/05/05 20:39:33 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -374,11 +374,11 @@ typedef void (*XtResourceDefaultProc)(
 #endif
 );
 
-typedef String (*XtLangProc)(
+typedef String (*XtLanguageProc)(
 #if NeedFunctionPrototypes
     Display*	/* dpy */,
     String	/* xnl */,
-    XtPointer	/* closure */   /* data the application registered */
+    XtPointer	/* client_data */
 #endif
 );
 
@@ -1655,19 +1655,11 @@ extern void XtToolkitInitialize(
 #endif
 );
 
-extern XtLangProc XtSetLanguageProc(
+extern XtLanguageProc XtSetLanguageProc(
 #if NeedFunctionPrototypes
-    XtAppContext	/* app */,
-    XtLangProc		/* proc */,
-    XtPointer		/* closure */
-#endif
-);
-
-extern String XtDefaultLanguageProc(
-#if NeedFunctionPrototypes
-    Display*		/* dpy */,
-    String		/* xnl */,
-    XtPointer		/* closure */
+    XtAppContext	/* app_context */,
+    XtLanguageProc	/* proc */,
+    XtPointer		/* client_data */
 #endif
 );
 
