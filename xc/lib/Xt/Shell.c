@@ -1,4 +1,4 @@
-/* $XConsortium: Shell.c,v 1.109 91/07/20 17:06:44 rws Exp $ */
+/* $XConsortium: Shell.c,v 1.110 91/07/20 17:42:35 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -910,10 +910,11 @@ static void Resize(w)
     Widget childwid;
     int i;
     for(i = 0; i < sw->composite.num_children; i++) {
-        if(sw->composite.children[i]->core.managed) {
+        if (XtIsManaged(sw->composite.children[i])) {
              childwid = sw->composite.children[i];
              XtResizeWidget(childwid, sw->core.width, sw->core.height,
                            childwid->core.border_width);
+	     break;
         }
     }
 }
