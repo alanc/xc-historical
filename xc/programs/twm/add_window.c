@@ -25,7 +25,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: add_window.c,v 1.79 89/07/14 13:55:01 jim Exp $
+ * $XConsortium: add_window.c,v 1.80 89/07/14 14:12:58 jim Exp $
  *
  * Add a new window, put the titlbar and other stuff around
  * the window
@@ -36,7 +36,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: add_window.c,v 1.79 89/07/14 13:55:01 jim Exp $";
+"$XConsortium: add_window.c,v 1.80 89/07/14 14:12:58 jim Exp $";
 #endif /* lint */
 
 #include <stdio.h>
@@ -153,7 +153,7 @@ IconMgr *iconp;
 #endif
 
     /* allocate space for the twm window */
-    tmp_win = (TwmWindow *)malloc(sizeof(TwmWindow));
+    tmp_win = (TwmWindow *)calloc(1, sizeof(TwmWindow));
     tmp_win->w = w;
     tmp_win->zoomed = ZOOM_NONE;
     tmp_win->iconmgr = iconm;
@@ -602,6 +602,8 @@ IconMgr *iconp;
 	if (tmp_win->title_w)
 	    XSetWindowBorderPixmap(dpy, tmp_win->title_w, tmp_win->gray);
     }
+    else
+	tmp_win->gray = None;
 
     CreateTitleButtons(tmp_win);
 	

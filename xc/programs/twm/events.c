@@ -25,7 +25,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.77 89/07/14 11:10:31 jim Exp $
+ * $XConsortium: events.c,v 1.78 89/07/14 12:26:05 jim Exp $
  *
  * twm event handling
  *
@@ -35,7 +35,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: events.c,v 1.77 89/07/14 11:10:31 jim Exp $";
+"$XConsortium: events.c,v 1.78 89/07/14 12:26:05 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -820,6 +820,8 @@ HandleDestroyNotify()
 	    XDeleteContext(dpy, Tmp_win->hilite_w, ScreenContext);
 	}
     }
+
+    if (Tmp_win->gray) XFreePixmap (dpy, Tmp_win->gray);
 
     XDestroyWindow(dpy, Tmp_win->frame);
     if (Tmp_win->icon_w) {
