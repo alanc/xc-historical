@@ -1,4 +1,4 @@
-/* $XConsortium: gfx.c,v 1.3 94/03/27 14:06:51 dpw Exp mor $ */
+/* $XConsortium: gfx.c,v 1.4 94/09/12 20:27:09 mor Exp mor $ */
 /*
  * Copyright 1994 Network Computing Devices, Inc.
  *
@@ -354,23 +354,25 @@ ProcLBXPolyFillArc(client)
 
 
 int
-ProcLBXPutImage(client)
-    ClientPtr   client;
+ProcLBXPutImage (client)
+
+ClientPtr   client;
+
 {
-    REQUEST(xPutImageReq);
-    XServerPtr  server = client->server;
-    int         len = stuff->length << 2;
-    xLbxPutImageReq *newreq = NULL;
-    int         method, bytes = 0;
-    int		compressIt = 1;
-    float	percentCompression;
+    REQUEST		(xPutImageReq);
+    XServerPtr  	server = client->server;
+    int         	len = stuff->length << 2;
+    xLbxPutImageReq	*newreq = NULL;
+    int         	method, bytes = 0;
+    int			compressIt = 1;
+    float		percentCompression;
 
     /* If it's delta compressible, don't try to reencode */
 
-    if (DELTA_CACHEABLE(&server->outdeltas, len) ||
+    if (DELTA_CACHEABLE (&server->outdeltas, len) ||
         !((stuff->format == ZPixmap && stuff->depth == 8) ||
 	   stuff->depth == 1) ||
-	((newreq = (xLbxPutImageReq *) xalloc(len*5)) == NULL))
+	((newreq = (xLbxPutImageReq *) xalloc (len * 5)) == NULL))
     {
 	compressIt = 0;
     }
@@ -385,7 +387,7 @@ ProcLBXPutImage(client)
 
 	    method = LbxImageCompressFaxG42D;
 	}
-	else
+	else /* depth 8 and ZPixmap format */
 	{
 	    bytes = ImageEncodePackBits ((char *) &stuff[1],
 		      (char *) newreq + sz_xLbxPutImageReq,
