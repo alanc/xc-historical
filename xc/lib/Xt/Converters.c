@@ -250,8 +250,8 @@ static void CvtStringToCursor(args, num_args, fromVal, toVal)
     XrmValuePtr	toVal;
 {
     static struct _CursorName {
-	char		*name;
-	unsigned int	shape;
+	char	*name;
+	int	shape;
     } cursor_names[] = {
 			{"X_cursor",		XC_X_cursor},
 			{"arrow",		XC_arrow},
@@ -556,10 +556,10 @@ static void CvtDefaultColorToPixel(args, num_args, fromVal, toVal)
     if (*num_args != 1)
         XtWarning("DefaultColor to Pixel conversion needs screen argument");
     screen = *((Screen **) args[0].addr);
-    if (*fromVal->addr == 0)
-        done(&screen->black_pixel,int)
-    else if (*fromVal->addr == 1)
-        done(&screen->white_pixel,int)
+    if (*(Pixel*)fromVal->addr == 0)
+        done(&screen->black_pixel, Pixel)
+    else if (*(Pixel*)fromVal->addr == 1)
+        done(&screen->white_pixel, Pixel)
 
 
 };
