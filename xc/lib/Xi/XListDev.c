@@ -1,4 +1,4 @@
-/* $XConsortium: XListDev.c,v 1.10 90/05/18 11:23:39 rws Exp $ */
+/* $XConsortium: XListDev.c,v 1.11 90/05/18 11:24:11 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -127,6 +127,7 @@ XDeviceInfo
 	clist = (XDeviceInfoPtr) Xmalloc (size);
         if (!clist)
 	    {
+	    XFree (slist);
 	    UnlockDisplay(dpy);
 	    SyncHandle();
 	    return (XDeviceInfo *) NULL;
@@ -156,7 +157,6 @@ XDeviceInfo
 			K->min_keycode = k->min_keycode;
 			K->max_keycode = k->max_keycode;
 			K->num_keys = k->num_keys;
-			Any = (XAnyClassPtr) ((char *) Any + Any->length); 
 			break;
 			}
 		    case ButtonClass:
@@ -166,7 +166,6 @@ XDeviceInfo
 			B->class = ButtonClass;
 			B->length = sizeof (XButtonInfo);
 			B->num_buttons = b->num_buttons;
-			Any = (XAnyClassPtr) ((char *) Any + Any->length); 
 			break;
 			}
 		    case ValuatorClass:
@@ -182,7 +181,7 @@ XDeviceInfo
 			V->num_axes = v->num_axes;
 			V->motion_buffer = v->motion_buffer_size;
 			V->mode = v->mode;
-			A = (XAxisInfoPtr) ((char *) Any + Any->length); 
+			A = (XAxisInfoPtr) ((char *) V + sizeof(XValuatorInfo));
 			V->axes = A;
 			a = (xAxisInfoPtr) ((char *) any + 
 				sizeof (xValuatorInfo)); 
@@ -192,14 +191,13 @@ XDeviceInfo
 			    A->max_value = a->max_value;
 			    A->resolution = a->resolution;
 			    }
-			Any = (XAnyClassPtr) ((char *) Any + Any->length + 
-				(V->num_axes * sizeof (XAxisInfo)));
 			break;
 			}
 		    default:
 			break;
 		    }
 		any = (xAnyClassPtr) ((char *) any + any->length); 
+		Any = (XAnyClassPtr) ((char *) Any + Any->length); 
 		}
 	    }
 
