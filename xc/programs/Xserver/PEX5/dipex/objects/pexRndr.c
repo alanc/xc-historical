@@ -1,4 +1,4 @@
-/* $XConsortium: pexRndr.c,v 5.21 92/12/01 17:18:06 hersh Exp $ */
+/* $XConsortium: pexRndr.c,v 5.22 92/12/02 10:31:49 mor Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -431,6 +431,10 @@ pexCreateRendererReq    *strmPtr;
     }
     else						/* default */
       prend->echoMode = PEXNoEcho;
+
+    /* set the default echoColour */
+    prend->echoColour.colourType = PEXIndexedColour;
+    prend->echoColour.colour.indexed.index = 0;
 
     err = InitRenderer(prend);
     if (err) {
