@@ -12,18 +12,18 @@
  * software for any purpose.  It is provided "as is" without
  * express or implied warranty.
  *
- *	"$XConsortium: mibstore.h,v 1.4 89/06/09 14:52:55 keith Exp $ SPRITE (Berkeley)"
+ *	"$XConsortium: mibstore.h,v 5.0 89/06/09 15:00:32 keith Exp $ SPRITE (Berkeley)"
  */
 
 #ifndef _MIBSTORE_H
 #define _MIBSTORE_H
 
 typedef struct {
-    void	    (*SaveAreas)();
-    void	    (*RestoreAreas)();
-    void	    (*SetClipmaskRgn)();
-    PixmapPtr	    (*GetImagePixmap)();
-    PixmapPtr	    (*GetSpansPixmap)();
+    void	    (*SaveAreas)(/* pPixmap, pObscured, x, y, pWin */);
+    void	    (*RestoreAreas)(/* pPixmap, pExposed, x, y, pWin */);
+    void	    (*SetClipmaskRgn)(/* pGC, pRegion */);
+    PixmapPtr	    (*GetImagePixmap)(); /* unused */
+    PixmapPtr	    (*GetSpansPixmap)(); /* unused */
 } miBSFuncRec, *miBSFuncPtr;
 
 extern void miInitBackingStore();

@@ -1,4 +1,4 @@
-/* $XConsortium: mibstore.c,v 5.44 90/10/23 18:21:33 keith Exp $ */
+/* $XConsortium: mibstore.c,v 5.45 91/04/26 17:09:10 keith Exp $ */
 /***********************************************************
 Copyright 1987 by the Regents of the University of California
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -2719,7 +2719,7 @@ miBSSaveDoomedAreas(pWin, pObscured, dx, dy)
 		    y += pBackingStore->y;
 		}
 		(* pScreenPriv->funcs->SaveAreas) (pBackingStore->pBackingPixmap,
-						   pObscured, x - dx, y - dy);
+						   pObscured, x - dx, y - dy, pWin);
 	    }
 	}
 	(*pScreen->TranslateRegion) (pObscured, x, y);
@@ -2798,7 +2798,7 @@ miBSRestoreAreas(pWin, prgnExposed)
 	    (* pScreenPriv->funcs->RestoreAreas) (pBackingPixmap,
 					  prgnRestored,
 					  pWin->drawable.x + pBackingStore->x,
-					  pWin->drawable.y + pBackingStore->y);
+					  pWin->drawable.y + pBackingStore->y, pWin);
 	    /*
 	     * if the saved region is completely empty, dispose of the
 	     * backing pixmap, otherwise, retranslate the saved
