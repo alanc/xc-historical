@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: puzzle.c,v 1.12 93/08/22 11:13:58 rws Exp $
+ *	$XConsortium: puzzle.c,v 1.13 94/03/28 15:28:56 gildea Exp $
  */
 
 /* Puzzle - (C) Copyright 1987, 1988 Don Bennett.
@@ -438,7 +438,7 @@ initialize()
    int sp_x, sp_y;
    struct timeval tv;
 
-   GETTIMEOFDAY (&tv);
+   X_GETTIMEOFDAY (&tv);
    srand ((int) tv.tv_usec);
    layers = PuzzleSize / 2;
 
@@ -504,7 +504,7 @@ Scramble()
    old_output_state = OutputLogging;
    OutputLogging = 0;
 
-   GETTIMEOFDAY (&tv);
+   X_GETTIMEOFDAY (&tv);
    srand ((int) tv.tv_usec);
 
    for (i=0; i<10*PuzzleWidth*PuzzleHeight; i++) {

@@ -23,7 +23,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE
 OR PERFORMANCE OF THIS SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: utils.c,v 1.141 94/02/10 15:51:09 dpw Exp $ */
+/* $XConsortium: utils.c,v 1.142 94/03/28 14:31:13 gildea Exp $ */
 #include "Xos.h"
 #include <stdio.h>
 #include "misc.h"
@@ -197,7 +197,7 @@ GetTimeInMillis()
 {
     struct timeval  tp;
 
-    GETTIMEOFDAY(&tp);
+    X_GETTIMEOFDAY(&tp);
     return(tp.tv_sec * 1000) + (tp.tv_usec / 1000);
 }
 #endif

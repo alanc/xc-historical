@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: genauth.c,v 1.15 94/01/17 19:12:01 rws Exp $
+ * $XConsortium: genauth.c,v 1.16 94/03/28 15:06:05 gildea Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -110,7 +110,7 @@ int	len;
     {
 	struct timeval  now;
 
-	GETTIMEOFDAY (&now);
+	X_GETTIMEOFDAY (&now);
 	ldata[0] = now.tv_sec;
 	ldata[1] = now.tv_usec;
     }

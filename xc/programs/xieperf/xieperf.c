@@ -1,4 +1,4 @@
-/* $XConsortium: xieperf.c,v 1.35 94/03/26 19:43:37 rws Exp $ */
+/* $XConsortium: xieperf.c,v 1.36 94/03/28 15:09:24 gildea Exp $ */
 
 /**** module xieperf.c ****/
 /****************************************************************************
@@ -201,7 +201,7 @@ void PrintTime()
 
 void InitTimes ()
 {
-    GETTIMEOFDAY(&start);
+    X_GETTIMEOFDAY(&start);
 }
 
 double ElapsedTime(correction)
@@ -209,7 +209,7 @@ double ElapsedTime(correction)
 {
     struct timeval stop;
 
-    GETTIMEOFDAY(&stop);
+    X_GETTIMEOFDAY(&stop);
     if (stop.tv_usec < start.tv_usec) {
         stop.tv_usec += 1000000;
 	stop.tv_sec -= 1;

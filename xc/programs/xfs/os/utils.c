@@ -1,4 +1,4 @@
-/* $XConsortium: utils.c,v 1.17 94/03/16 18:48:38 gildea Exp $ */
+/* $XConsortium: utils.c,v 1.18 94/03/28 15:11:09 gildea Exp $ */
 /*
  * misc os utilities
  */
@@ -160,7 +160,7 @@ GetTimeInMillis()
 {
     struct timeval tp;
 
-    GETTIMEOFDAY(&tp);
+    X_GETTIMEOFDAY(&tp);
     return ((tp.tv_sec * 1000) + (tp.tv_usec / 1000));
 }
 

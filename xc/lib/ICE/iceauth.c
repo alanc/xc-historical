@@ -1,4 +1,4 @@
-/* $XConsortium: iceauth.c,v 1.16 94/03/18 15:59:16 mor Exp $ */
+/* $XConsortium: iceauth.c,v 1.17 94/03/28 14:21:47 gildea Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -57,7 +57,7 @@ int len;
 #ifdef ITIMER_REAL
     {
 	struct timeval  now;
-	GETTIMEOFDAY (&now);
+	X_GETTIMEOFDAY (&now);
 	ldata[0] = now.tv_sec;
 	ldata[1] = now.tv_usec;
     }

@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: InitOutput.c,v 1.9 94/03/28 15:00:27 gildea Exp $ */
 /*
  * Copyright 1993 Massachusetts Institute of Technology
  *
@@ -339,7 +339,7 @@ GetTimeInMillis()
 {
     struct timeval  tp;
 
-    GETTIMEOFDAY(&tp);
+    X_GETTIMEOFDAY(&tp);
     return(tp.tv_sec * 1000) + (tp.tv_usec / 1000);
 }
 #endif

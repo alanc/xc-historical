@@ -1,4 +1,4 @@
-/* $XConsortium: x11perf.c,v 2.51 94/03/27 13:42:14 rws Exp $ */
+/* $XConsortium: x11perf.c,v 2.52 94/03/28 15:08:00 gildea Exp $ */
 /*****************************************************************************
 Copyright 1988, 1989 by Digital Equipment Corporation, Maynard, Massachusetts.
 
@@ -189,7 +189,7 @@ void PrintTime()
 
 void InitTimes ()
 {
-    GETTIMEOFDAY(&start);
+    X_GETTIMEOFDAY(&start);
 }
 
 double ElapsedTime(correction)
@@ -197,7 +197,7 @@ double ElapsedTime(correction)
 {
     struct timeval stop;
 
-    GETTIMEOFDAY(&stop);
+    X_GETTIMEOFDAY(&stop);
     if (stop.tv_usec < start.tv_usec) {
         stop.tv_usec += 1000000;
 	stop.tv_sec -= 1;

@@ -1,4 +1,4 @@
-/* $XConsortium: main.c,v 1.17 93/08/22 11:16:22 rws Exp $ */
+/* $XConsortium: main.c,v 1.18 94/03/28 15:31:56 gildea Exp $ */
 
 /* Puzzle - (C) Copyright 1987, 1988 Don Bennett.
  *
@@ -727,7 +727,7 @@ CalculateSpeed()
     timePerTile = (long)(1000/TilesPerSecond);
 
     XSync(dpy,0);
-    GETTIMEOFDAY(&tv1);
+    X_GETTIMEOFDAY(&tv1);
     tv2 = tv1;
 
     MoveSteps = 0;
@@ -736,7 +736,7 @@ CalculateSpeed()
 	MoveArea(TileWindow,x,y,x+1,y,TileWidth,TileHeight);
 	RectSet(TileWindow,x,y,1,TileHeight,FgPixel);
 	XSync(dpy,0);
-	GETTIMEOFDAY(&tv2);
+	X_GETTIMEOFDAY(&tv2);
 	delta = DeltaT(tv2,tv1);
 	delta = max(MIN_DELTA_T, delta);
 	if (delta >= 0) MoveSteps++;	/* crock for broken systems */
@@ -748,13 +748,13 @@ CalculateSpeed()
      */
 
     XSync(dpy,0);
-    GETTIMEOFDAY(&tv1);
+    X_GETTIMEOFDAY(&tv1);
     for (i=0; i<MoveSteps; i++) {
 	MoveArea(TileWindow,x,y,x+1,y,TileWidth,TileHeight);
 	RectSet(TileWindow,x,y,1,TileHeight,FgPixel);
     }
     XFlush(dpy);
-    GETTIMEOFDAY(&tv2);
+    X_GETTIMEOFDAY(&tv2);
     delta = DeltaT(tv2, tv1);
     delta = max(MIN_DELTA_T, delta);
     MoveSteps = (((long)MoveSteps) * timePerTile)/(delta ? delta : 1L);

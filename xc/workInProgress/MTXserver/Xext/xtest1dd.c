@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: xtest1dd.c,v 1.3 94/03/28 15:13:29 gildea Exp $ */
 /*
  *	File: xtest1dd.c
  *
@@ -360,7 +360,7 @@ CARD32		mode;
 	/*
 	 * find out what time it is
 	 */
-	GETTIMEOFDAY(&current_time);
+	X_GETTIMEOFDAY(&current_time);
 	/*
 	 * jump to the initial position of the mouse, using a device type of 0.
 	 */
@@ -518,7 +518,7 @@ struct timeval	*otime;
 	/*
 	 * get the current time
 	 */
-	GETTIMEOFDAY(&tval);
+	X_GETTIMEOFDAY(&tval);
 	if (tval.tv_usec < otime->tv_usec)
 	{
 		/*
@@ -1334,7 +1334,7 @@ ClientPtr	client;
 static void
 start_play_clock()
 {
-	GETTIMEOFDAY(&play_time);
+	X_GETTIMEOFDAY(&play_time);
 	/*
 	 * flag that play_time is valid
 	 */
@@ -1396,7 +1396,7 @@ struct timeval	*rtime;
 	/*
 	 * get the current time in btime
 	 */
-	GETTIMEOFDAY(&btime);
+	X_GETTIMEOFDAY(&btime);
 	/*
 	 * compute the number of microseconds in the sum of the dtime value
 	 * and the current usec value
@@ -1454,7 +1454,7 @@ struct timeval	*rtime;
 	/*
 	 * get the current time in btime
 	 */
-	GETTIMEOFDAY(&btime);
+	X_GETTIMEOFDAY(&btime);
 	/*
 	 * get the current time in seconds and microseconds
 	 */
@@ -1520,7 +1520,7 @@ struct timeval	*rtime;
 		 * if don't need to wait, set the playback time
 		 * to the current time
 		 */
-		GETTIMEOFDAY(&play_time);
+		X_GETTIMEOFDAY(&play_time);
 		/*
 		 * set the time to wait to 0
 		 */

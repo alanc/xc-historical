@@ -1,4 +1,4 @@
-/* $XConsortium: sunKbd.c,v 5.40 94/03/16 16:46:13 kaleb Exp $ */
+/* $XConsortium: sunKbd.c,v 5.41 94/03/28 14:36:37 kaleb Exp $ */
 /*-
  * Copyright (c) 1987 by the Regents of the University of California
  *
@@ -95,7 +95,7 @@ void sunKbdWait()
     struct timeval lastChngKbdDeltaTv;
     int lastChngKbdDelta;
 
-    GETTIMEOFDAY(&tv);
+    X_GETTIMEOFDAY(&tv);
     if (!lastChngKbdTransTv.tv_sec)
 	lastChngKbdTransTv = tv;
     tvminus(lastChngKbdDeltaTv, tv, lastChngKbdTransTv);
@@ -108,7 +108,7 @@ void sunKbdWait()
 	 */
 	wait = (750L - lastChngKbdDelta) * 1000L;
         usleep (wait);
-        GETTIMEOFDAY(&tv);
+        X_GETTIMEOFDAY(&tv);
     }
     lastChngKbdTransTv = tv;
 }
@@ -852,7 +852,7 @@ void sunWakeupHandler(nscreen, pbdata, err, pReadmask)
 	return;
 
     if (autoRepeatKeyDown) {
-	GETTIMEOFDAY(&tv);
+	X_GETTIMEOFDAY(&tv);
 	tvminus(autoRepeatDeltaTv, tv, autoRepeatLastKeyDownTv);
 	if (autoRepeatDeltaTv.tv_sec > 0 ||
 			(!autoRepeatFirst && autoRepeatDeltaTv.tv_usec >
