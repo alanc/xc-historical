@@ -45,7 +45,8 @@ int			nMods,nVMods;
     if (!_XkbInitReadBuffer(dpy,&buf,rep->length*4)) 
 	return False;
 
-    if ((!xkb->compat)&&(!XkbAllocCompatMap(xkb,XkbAllCompatMask,rep->nSI)))
+    if ((!xkb->compat)&&
+	(!XkbAllocCompatMap(xkb,XkbAllCompatMask,rep->firstSI+rep->nSI-1)))
 	return False;
 
     if (rep->nSI!=0) {
@@ -53,28 +54,6 @@ int			nMods,nVMods;
 	xkbSymInterpretWireDesc *wire;
 
 	int lastSI= rep->firstSI+rep->nSI-1;
-	if (xkb->compat->size_si==0) {
-	    syms=(XkbSymInterpretRec *)Xcalloc(xkb->compat->num_si,sizeof(XkbSymInterpretRec));
-	    if (!syms)
-		goto BAILOUT;
-	    xkb->compat->num_si= 0;
-	    xkb->compat->size_si= lastSI+1;
-	    xkb->compat->sym_interpret= syms;
-	}
-	else if (lastSI>=(int)xkb->compat->size_si) {
-	    syms= (XkbSymInterpretRec *)
-			Xcalloc(lastSI+1,sizeof(XkbSymInterpretRec));
-	    if (!syms)
-		goto BAILOUT;
-	    if (xkb->compat->sym_interpret) {
-		memcpy(syms,xkb->compat->sym_interpret,
-		    xkb->compat->num_si*sizeof(XkbSymInterpretRec));
-		Xfree(xkb->compat->sym_interpret);
-	    }
-	    xkb->compat->size_si= lastSI+1;
-	    xkb->compat->sym_interpret= syms;
-	}
-
 	wire= (xkbSymInterpretWireDesc *)_XkbGetReadBufferPtr(&buf,
 				   rep->nSI*SIZEOF(xkbSymInterpretWireDesc));
 	if (wire==NULL)
@@ -321,14 +300,23 @@ XkbCompatPtr	compat;
     if (!xkb)
 	return False;
     if (xkb->compat) {
-	i= nInterpret+xkb->compat->num_si;
-	if (xkb->compat->size_si>i)
+	if (xkb->compat->size_si>=nInterpret)
 	    return True;
 	compat= xkb->compat;
-	compat->size_si= i;
-	i*= sizeof(XkbSymInterpretRec);
-	compat->sym_interpret= (XkbSymInterpretPtr)
+	compat->size_si= nInterpret;
+	i= nInterpret*sizeof(XkbSymInterpretRec);
+	if (compat->sym_interpret==NULL) {
+	    compat->num_si= 0;
+	    compat->sym_interpret= (XkbSymInterpretPtr)
+				Xcalloc(nInterpret,sizeof(XkbSymInterpretRec));
+	}
+	else {
+	    compat->sym_interpret= (XkbSymInterpretPtr)
 				Xrealloc(compat->sym_interpret,i);
+	    if (compat->sym_interpret!=NULL)
+		bzero(&compat->sym_interpret[compat->num_si],
+		      (nInterpret-compat->size_si)*sizeof(XkbSymInterpretRec));
+	}
 	if (compat->sym_interpret==NULL) {
 	    compat->size_si= compat->num_si= 0;
 	    return False;
