@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Geometry.c,v 1.31 89/01/18 12:17:19 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Geometry.c,v 1.32 89/01/18 12:38:04 swick Exp $";
 /* $oHeader: Geometry.c,v 1.3 88/08/23 11:37:50 asente Exp $ */
 #endif lint
 
@@ -318,8 +318,11 @@ void XtTranslateCoords(w, x, y, rootx, rooty)
                 "Widget has no shell ancestor",
 		(String *)NULL, (Cardinal *)NULL);
     else {
-	*rootx += w->core.x + w->core.border_width;
-	*rooty += w->core.y + w->core.border_width;
+	Position x, y;
+	extern void _XtShellGetCoordinates();
+	_XtShellGetCoordinates( w, &x, &y );
+	*rootx += x + w->core.border_width;
+	*rooty += y + w->core.border_width;
     }
 }
 
