@@ -1,4 +1,4 @@
-/* $XConsortium: miRender.c,v 5.6 92/04/23 16:05:30 hersh Exp $ */
+/* $XConsortium: miRender.c,v 5.6 92/04/23 16:08:07 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -314,6 +314,8 @@ RenderOCs(pRend, numOCs, pOCs)
     ErrorF( " RenderOCs\n");
 #endif
 
+    ValidateRenderer(pRend);
+
     for ( poc=pOCs; numOCs>0; numOCs-- )
     {
 	switch( poc->elementType ) {
@@ -443,6 +445,8 @@ RenderElements(pRend, pStr, range)
     miGenericElementPtr pel;
     ddULONG             offset1, offset2, i;
     int                 eltype;
+
+    ValidateRenderer(pRend);
 
     pstruct = (miStructPtr) pStr->deviceData;
 
