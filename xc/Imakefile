@@ -33,7 +33,7 @@ MakeLintLibSubdirs($(LINTLIBDIRS))
 # before depending, be sure that include has everything in it.
 #
 depend::
-	cd include; $(MAKE)
+	cd $(INCLUDESRC); $(MAKE)
 
 DependSubdirs($(SUBDIRS))
 
