@@ -3,7 +3,7 @@
 
 SUBDIRS = bitmap uwm x10tox11 xbiff xcalc xclock xdpyinfo xedit xev xfd \
 	xhost xinit xkill xload xlogo xlsfonts xmag xmh xmodmap xpr xprop \
-	xrdb xrefresh xset xsetroot xterm xwd xwininfo xwud
+	xpseudoroot xrdb xrefresh xset xsetroot xterm xwd xwininfo xwud
 
 MakeSubdirs($(SUBDIRS))
 DependSubdirs($(SUBDIRS))
