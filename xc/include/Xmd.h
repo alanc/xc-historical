@@ -23,7 +23,7 @@ SOFTWARE.
 ******************************************************************/
 #ifndef XMD_H
 #define XMD_H 1
-/* $XConsortium: Xmd.h,v 1.39 91/03/05 18:56:42 rws Exp $ */
+/* $XConsortium: Xmd.h,v 1.40 91/03/23 11:16:12 rws Exp $ */
 /*
  *  Xmd.h: MACHINE DEPENDENT DECLARATIONS.
  */
@@ -82,7 +82,7 @@ SOFTWARE.
 
 typedef long           INT32;
 typedef short          INT16;
-#if __STDC__ || defined(sgi)
+#if __STDC__ || defined(sgi) || defined(AIXV3)
 typedef signed char    INT8;
 #else
 typedef char           INT8;
