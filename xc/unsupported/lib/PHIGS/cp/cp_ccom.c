@@ -1,4 +1,4 @@
-/* $XConsortium: cp_ccom.c,v 5.11 91/04/17 10:10:06 rws Exp $ */
+/* $XConsortium: cp_ccom.c,v 5.12 91/05/10 19:44:29 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -37,6 +37,9 @@ SOFTWARE.
 #include <sys/ipc.h>
 #include <sys/shm.h>
 #endif /* ! PEX_API_SOCKET_IPC */
+#ifdef AIXV3
+#include <sys/ioctl.h>
+#endif
 
 #ifndef X_NOT_POSIX
 #ifdef _POSIX_SOURCE
@@ -1379,6 +1382,11 @@ fork_monitor( cph, argv )
     }
 #endif
     {
+#ifdef AIXV3
+        int     fdflags;
+        fdflags = 1;
+        (void)ioctl (cph->erh->data.client.sfd, FIONBIO, &fdflags);
+#else /* AIXV3 */
 	/* ultrix reads hang on Unix sockets, hpux reads fail */
 #if defined(O_NONBLOCK) && (!defined(ultrix) && !defined(hpux))
 	(void)fcntl(cph->erh->data.client.sfd, F_SETFL, O_NONBLOCK);
@@ -1391,6 +1399,7 @@ fork_monitor( cph, argv )
 	(void)fcntl(cph->erh->data.client.sfd, F_SETFL, FNDELAY);
 #endif
 #endif
+#endif /* AIXV3 */
     }
     if (   handshake_child( cph, cph->data.client.sfd, pid )
 	    && (*attach_buf)( cph, cph->data.client.sfd ) ) {
