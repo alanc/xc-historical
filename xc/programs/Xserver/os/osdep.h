@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: osdep.h,v 1.21 90/03/19 18:09:04 keith Exp $ */
+/* $XConsortium: osdep.h,v 1.22 91/02/22 12:11:09 rws Exp $ */
 
 #ifndef NULL
 #define NULL 0
@@ -115,15 +115,15 @@ SOFTWARE.
 #define CLEARBITS(buf) bzero((caddr_t) buf, mskcnt*sizeof(long))
 #define MASKANDSETBITS(dst, b1, b2)  \
 		      { int cri;			\
-			for (cri=0; cri<mskcnt; cri++)	\
+			for (cri=mskcnt; --cri>=0; )	\
 		          dst[cri] = (b1[cri] & b2[cri]); }
 #define ORBITS(dst, b1, b2)  \
 		      { int cri;			\
-		      for (cri=0; cri<mskcnt; cri++)	\
+		      for (cri=mskcnt; --cri>=0; )	\
 		          dst[cri] = (b1[cri] | b2[cri]); }
 #define UNSETBITS(dst, b1) \
 		      { int cri;			\
-		      for (cri=0; cri<mskcnt; cri++)	\
+		      for (cri=mskcnt; --cri>=0; )	\
 		          dst[cri] &= ~b1[cri];  }
 #if (mskcnt==8)
 #define ANYSET(src) (src[0] || src[1] || src[2] || src[3] || \
