@@ -1,4 +1,4 @@
-/* $Header: ico.c,v 1.3 88/02/04 14:42:43 jim Locked $ */
+/* $Header: ico.c,v 1.4 88/02/09 13:15:08 jim Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -237,7 +237,7 @@ char **argv;
 		if (geom) 
 			XParseGeometry(geom, &winX, &winY, &winW, &winH);
 
-		xswa.event_mask = 0;
+		xswa.event_mask = ExposureMask;
 		xswa.background_pixel = bg;
 		xswa.border_pixel = fg;
 		win = XCreateWindow(dpy, DefaultRootWindow(dpy), 
@@ -248,6 +248,11 @@ char **argv;
 		XChangeProperty(dpy, win, XA_WM_NAME, XA_STRING, 8, 
 				PropModeReplace, "Ico", 3);
 		XMapWindow(dpy, win);
+		while (1) {
+		    XNextEvent(dpy, &xev);
+		    if (xev.type == Expose)
+			break;
+		}
 		if (XGetWindowAttributes(dpy,win,&xwa)==0) {
 			icoFatal("cant get window attributes (size)");
 		}
