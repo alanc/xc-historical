@@ -150,7 +150,8 @@ main(argc, argv)
 
     /* Check for multiple use of exclusive options */
     if (excl > 1) {
-	fprintf(stderr, "%s: choose only one of {solid, gray, bitmap, mod}\n");
+	fprintf(stderr, "%s: choose only one of {solid, gray, bitmap, mod}\n",
+		program_name);
 	usage();
     }
 
@@ -241,7 +242,8 @@ FixupState()
 	    (length == 1) && (after == 0))
 	    XKillClient(dpy, *((Pixmap *)data));
 	else if (type != None)
-	    fprintf(stderr, "%s: warning: _XSETROOT_ID property is garbage\n");
+	    fprintf(stderr, "%s: warning: _XSETROOT_ID property is garbage\n",
+		    program_name);
     }
     if (save_colors) {
 	if (!save_pixmap)
@@ -312,7 +314,9 @@ CreateCursorFromFiles(cursor_file, mask_file)
     mask_bitmap = ReadBitmapFile(mask_file, &ww, &hh, (int *)NULL, (int *)NULL);
 
     if (width != ww || height != hh) {
-	fprintf(stderr, "%s: dimensions of cursor bitmap and cursor mask bitmap are different\n", program_name);
+	fprintf(stderr, 
+"%s: dimensions of cursor bitmap and cursor mask bitmap are different\n", 
+		program_name);
 	exit(1);
 	/*NOTREACHED*/
     }
@@ -323,7 +327,7 @@ CreateCursorFromFiles(cursor_file, mask_file)
     }
     if ((x_hot < 0) || (x_hot >= width) ||
 	(y_hot < 0) || (y_hot >= height)) {
-	fprintf(stderr, "%s: hotspot is outside cursor bounds\n");
+	fprintf(stderr, "%s: hotspot is outside cursor bounds\n", program_name);
 	exit(1);
 	/*NOTREACHED*/
     }
@@ -397,7 +401,7 @@ unsigned long NameToPixel(name, pixel)
     if (!XAllocNamedColor(dpy, DefaultColormap(dpy, screen), name,
 			  &scolor, &ecolor)) {
 	fprintf(stderr, "%s: unknown color, or allocation failure: %s\n",
-			name);
+			program_name, name);
 	exit(1);
 	/*NOTREACHED*/
     }
