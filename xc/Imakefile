@@ -134,6 +134,6 @@ checkfilenames::  $(CHECKFNSRC)/checkfn
 
 /**/# clean out link tree looking for stuff that should get checked in
 flushlinks::
-	make clean
+	make -k clean
 	find . -type l -exec rm {} \;
 	find . \( \! \( -type d -o -name Makefile \) \) -print
