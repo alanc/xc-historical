@@ -7,7 +7,7 @@
 #endif
 XCOMM -------------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-XCOMM $XConsortium: Imake.tmpl,v 1.129 91/06/29 19:00:24 rws Exp $
+XCOMM $XConsortium: Imake.tmpl,v 1.130 91/07/09 14:33:01 rws Exp $
 XCOMM
 XCOMM Platform-specific parameters may be set in the appropriate .cf
 XCOMM configuration files.  Site-wide parameters may be set in the file
@@ -100,7 +100,17 @@ XCOMM
 #define MacroIncludeFile <sony.cf>
 #define MacroFile sony.cf
 #undef sony
+#undef sony_news
 #define SonyArchitecture
+#ifdef mc68020
+#undef mc68020
+#undef mc68030
+#define Mc68020Architecture
+#endif
+#ifdef mips
+#undef mips
+#define MipsArchitecture
+#endif
 #endif /* sony */
 
 #ifdef M4310
