@@ -1,4 +1,4 @@
-/* $XConsortium: dispatch.c,v 5.18 90/03/20 11:56:53 keith Exp $ */
+/* $XConsortium: dispatch.c,v 5.19 90/03/27 18:04:59 rws Exp $ */
 /************************************************************
 Copyright 1987, 1989 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -2079,7 +2079,7 @@ ProcPolyText(client)
 	    pNextElt = pElt + TextEltHeader + (*pElt)*itemSize;
 	    if ( pNextElt > endReq)
 		return( BadLength);
-	    xorg += *((char *)(pElt + 1));	/* must be signed */
+	    xorg += *((INT8 *)(pElt + 1));	/* must be signed */
 	    xorg = (* polyText)(pDraw, pGC, xorg, stuff->y, *pElt,
 		pElt + TextEltHeader);
 	    pElt = pNextElt;
