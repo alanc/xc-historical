@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: dm.c,v 1.37 90/02/12 17:56:21 keith Exp $
+ * $XConsortium: dm.c,v 1.38 90/03/12 16:43:54 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -338,7 +338,7 @@ WaitForChild ()
 		else
 		    RestartDisplay (d, TRUE);
 		break;
-	    case SIGTERM * 256 + 1:
+	    case waitCompose (SIGTERM,0,0):
 		Debug ("Display exited on SIGTERM\n");
 		if (d->displayType.origin == FromXDMCP ||
 		    d->status == zombie)
@@ -379,7 +379,7 @@ WaitForChild ()
 		if (d->pid != -1)
 		{
 		    Debug ("Terminating session pid %d\n", d->pid);
-		    TerminateProcess (d->pid);
+		    TerminateProcess (d->pid, SIGTERM);
 		}		
 		break;
 	    case notRunning:
@@ -424,18 +424,16 @@ StartDisplay (d)
 struct display	*d;
 {
     int	pid;
-    int	ResourcesLoaded = FALSE;
 
     Debug ("StartDisplay %s\n", d->name);
     d->startTries = 0;
+    LoadServerResources (d);
     if (d->displayType.location == Local)
     {
-	LoadDisplayResources (d);
 	/* don't bother pinging local displays; we'll
 	 * certainly notice when they exit
 	 */
 	d->pingInterval = 0;
-	ResourcesLoaded = TRUE;
     	if (d->authorize)
     	{
 	    Debug ("SetLocalAuthorization %s, auth %s\n",
@@ -447,8 +445,8 @@ struct display	*d;
 	     * servers which read auth file only on reset instead of
 	     * at first connection)
 	     */
-	    if (d->serverPid != -1 && d->resetForAuth)
-		kill (d->serverPid, SIGHUP);
+	    if (d->serverPid != -1 && d->resetForAuth && d->resetSignal)
+		kill (d->serverPid, d->resetSignal);
     	}
 	if (d->serverPid == -1 && !StartServer (d))
 	{
@@ -459,6 +457,7 @@ struct display	*d;
     }
     else
     {
+	/* this will only happen when using XDMCP */
 	if (d->authorization)
 	    SaveServerAuthorization (d, d->authorization);
     }
@@ -467,8 +466,7 @@ struct display	*d;
     case 0:
 	CleanUpChild ();
 	signal (SIGPIPE, SIG_IGN);
-	if (!ResourcesLoaded)
-	    LoadDisplayResources (d);
+	LoadSessionResources (d);
 	SetAuthorization (d);
 	if (!WaitForServer (d))
 	    exit (OPENFAILED_DISPLAY);
@@ -484,9 +482,9 @@ struct display	*d;
     }
 }
 
-TerminateProcess (pid)
+TerminateProcess (pid, signal)
 {
-    kill (pid, SIGTERM);
+    kill (pid, signal);
 #ifdef SIGCONT
     kill (pid, SIGCONT);
 #endif
@@ -503,9 +501,9 @@ StopDisplay (d)
     if (d->serverPid != -1)
 	d->status = zombie; /* be careful about race conditions */
     if (d->pid != -1)
-	TerminateProcess (d->pid);
+	TerminateProcess (d->pid, SIGTERM);
     if (d->serverPid != -1)
-	TerminateProcess (d->serverPid);
+	TerminateProcess (d->serverPid, d->termSignal);
     else
 	RemoveDisplay (d);
 }
@@ -521,7 +519,7 @@ RestartDisplay (d, forceReserver)
 {
     if (d->serverPid != -1 && (forceReserver || d->terminateServer))
     {
-	TerminateProcess (d->serverPid);
+	TerminateProcess (d->serverPid, d->termSignal);
 	d->status = phoenix;
     }
     else
