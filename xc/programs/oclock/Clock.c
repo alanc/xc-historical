@@ -43,8 +43,6 @@ static XtResource resources[] = {
 #undef goffset
 
 static void Initialize(), Realize(), Destroy(), Redisplay(), Resize();
-static int repaint_window();
-static int draw_it ();
 
 # define BORDER_WIDTH	(0.1)
 # define WINDOW_WIDTH	(2.0 - BORDER_WIDTH*2)
