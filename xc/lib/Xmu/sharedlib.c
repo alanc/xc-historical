@@ -1,12 +1,12 @@
 /*
- * $XConsortium: sharedlib.c,v 1.1 89/10/09 13:49:45 jim Exp $
+ * $XConsortium: sharedlib.c,v 1.2 89/10/09 14:13:10 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
  * This file is used to force shared libraries to get the right routines.
  */
 
-#if !defined(SHAREDCODE) && defined(SUNSHLIB)
+#if defined(SUNSHLIB) && !defined(SHAREDCODE)
 #include <X11/IntrinsicP.h>
 
 /*
