@@ -28,7 +28,7 @@ fi
 if [ "$topdir" = "" ]; then
     args="-DUseInstalled "CONFIGDIRSPEC
 else
-    args="-DTOPDIR=$topdir -DCURDIR=$curdir -I$topdir/config"
+    args="-I$topdir/config -DTOPDIR=$topdir -DCURDIR=$curdir"
 fi
 
 echo imake $args
