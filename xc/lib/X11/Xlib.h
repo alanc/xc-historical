@@ -1,4 +1,4 @@
-/* $XConsortium: Xlib.h,v 11.227 93/09/21 22:56:49 rws Exp $ */
+/* $XConsortium: Xlib.h,v 11.228 93/09/22 09:32:41 rws Exp $ */
 /* 
  * Copyright 1985, 1986, 1987, 1991 by the Massachusetts Institute of Technology
  *
@@ -100,7 +100,11 @@ typedef char *XPointer;
 #define BitmapBitOrder(dpy) 	(((_XPrivDisplay)dpy)->bitmap_bit_order)
 #define BitmapPad(dpy) 		(((_XPrivDisplay)dpy)->bitmap_pad)
 #define ImageByteOrder(dpy) 	(((_XPrivDisplay)dpy)->byte_order)
+#ifdef CRAY /* unable to get WORD64 without pulling in other symbols */
+#define NextRequest(dpy)	XNextRequest(dpy)
+#else
 #define NextRequest(dpy)	(((_XPrivDisplay)dpy)->request + 1)
+#endif
 #define LastKnownRequestProcessed(dpy)	(((_XPrivDisplay)dpy)->last_request_read)
 
 /* macros for screen oriented applications (toolkit) */
