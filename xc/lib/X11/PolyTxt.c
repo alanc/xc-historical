@@ -1,4 +1,4 @@
-/* $XConsortium: XPolyTxt.c,v 11.18 89/01/10 11:45:13 rws Exp $ */
+/* $XConsortium: XPolyTxt.c,v 11.19 91/01/06 11:47:20 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -48,7 +48,7 @@ XDrawText(dpy, d, gc, x, y, items, nitems)
 	    }
             else
             {
-   	      length += SIZEOF(xTextElt) * ((abs(item->delta) + 127) / 128);
+   	      length += SIZEOF(xTextElt) * ((-item->delta + 127) / 128);
  	    }
         }
 	if (item->nchars > 0)
