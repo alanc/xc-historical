@@ -1,5 +1,5 @@
 /*
- * $XConsortium: choose.c,v 1.3 91/02/04 19:17:49 gildea Exp $
+ * $XConsortium: choose.c,v 1.4 91/05/06 23:53:51 gildea Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -138,36 +138,40 @@ IsIndirectClient (clientAddress, connectionType)
     return 0;
 }
 
+extern char *NetaddrPort();
+
 static
 FormatChooserArgument (buf, len)
     char    *buf;
     int	    len;
 {
-    struct sockaddr *addr;
     char	    addr_buf[1024];
     int		    addr_len = sizeof (addr_buf);
     char	    result_buf[1024];
     int		    result_len = 0;
-    int		    i;
+    int		    netfamily;
 
     if (GetChooserAddr ((struct sockaddr *) addr_buf, &addr_len) == -1)
     {
 	Debug ("Cannot get chooser socket address\n");
 	return 0;
     }
-    addr = (struct sockaddr *) addr_buf;
-    switch (addr->sa_family) {
+    netfamily = NetaddrFamily((XdmcpNetaddr *)addr_buf);
+    switch (netfamily) {
     case AF_INET:
 	{
-	    struct sockaddr_in	*in_addr = (struct sockaddr_in *) addr;
-	    ARRAY8Ptr		localAddress, getLocalAddress ();
+	    char *port;
+	    int portlen;
+	    ARRAY8Ptr localAddress, getLocalAddress ();
 
-	    addr_buf[0] = AF_INET >> 8;
-	    addr_buf[1] = AF_INET & 0xFF;
-	    bcopy (&in_addr->sin_port, addr_buf+2, 2);
+	    port = NetaddrPort((XdmcpNetaddr *)addr_buf, &portlen);
+	    result_buf[0] = netfamily >> 8;
+	    result_buf[1] = netfamily & 0xFF;
+	    result_buf[2] = port[0];
+	    result_buf[3] = port[1];
 	    localAddress = getLocalAddress ();
-	    bcopy (localAddress->data, addr_buf+4, 4);
-	    addr_len = 8;
+	    bcopy (localAddress->data, result_buf+4, 4);
+	    result_len = 8;
 	}
 	break;
 #ifdef AF_DECnet
@@ -175,11 +179,11 @@ FormatChooserArgument (buf, len)
 	break;
 #endif
     default:
-	Debug ("Chooser family %d isn't known\n", addr->sa_family);
+	Debug ("Chooser family %d isn't known\n", netfamily);
 	return 0;
     }
 
-    return FormatBytes (addr_buf, addr_len, buf, len);
+    return FormatBytes (result_buf, result_len, buf, len);
 }
 
 typedef struct _Choices {
@@ -230,6 +234,7 @@ IndirectChoice (clientAddress, connectionType)
 static int
 RegisterIndirectChoice (clientAddress, connectionType, choice)
     ARRAY8Ptr	clientAddress, choice;
+    CARD16 connectionType;
 {
     ChoicePtr	c;
     int		insert;
@@ -320,6 +325,7 @@ AddChooserHost (connectionType, addr, closure)
 }
 
 ProcessChooserSocket (fd)
+    int fd;
 {
     int client_fd;
     char	buf[1024];
