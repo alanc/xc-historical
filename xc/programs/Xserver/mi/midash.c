@@ -21,11 +21,11 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: midash.c,v 1.6 87/09/10 09:35:18 rws Locked $ */
+/* $Header: midash.c,v 1.7 87/09/10 09:48:55 rws Exp $ */
 #include "miscstruct.h"
 #include "mistruct.h"
 
-miDashPtr CheckDashStorage();
+static miDashPtr CheckDashStorage();
 
 /* return a list of DashRec.  there will be an extra
 entry at the end holding the last point of the polyline.
