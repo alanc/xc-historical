@@ -1,4 +1,4 @@
-/* $XConsortium: dispatch.c,v 5.20 90/06/07 11:22:33 rws Exp $ */
+/* $XConsortium: dispatch.c,v 5.21 90/06/10 14:44:55 keith Exp $ */
 /************************************************************
 Copyright 1987, 1989 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -789,8 +789,8 @@ ProcSetSelectionOwner(client)
             if (CompareTimeStamps(time, CurrentSelections[i].lastTimeChanged)
 		== EARLIER)
 		return Success;
-	    if ((CurrentSelections[i].window != None) &&
-		(CurrentSelections[i].client != client))
+	    if (CurrentSelections[i].client &&
+		(!pWin || (CurrentSelections[i].client != client)))
 	    {
 		event.u.u.type = SelectionClear;
 		event.u.selectionClear.time = time.milliseconds;
@@ -822,7 +822,7 @@ ProcSetSelectionOwner(client)
         CurrentSelections[i].lastTimeChanged = time;
 	CurrentSelections[i].window = stuff->window;
 	CurrentSelections[i].pWin = pWin;
-	CurrentSelections[i].client = client;
+	CurrentSelections[i].client = (pWin ? client : NullClient);
 	return (client->noClientException);
     }
     else 
