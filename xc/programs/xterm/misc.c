@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: misc.c,v 1.76 91/04/02 14:16:56 gildea Exp $
+ *	$XConsortium: misc.c,v 1.77 91/04/14 12:24:13 rws Exp $
  */
 
 /*
@@ -303,6 +303,7 @@ register int flag;
     }
 }
 
+static long lastBellTime;	/* in milliseconds */
 
 Bell()
 {
@@ -311,6 +312,28 @@ Bell()
 	register Pixel xorPixel = screen->foreground ^ term->core.background_pixel;
 	XGCValues gcval;
 	GC visualGC;
+	struct timeval curtime;
+	long now_msecs;
+
+	/* has enough time gone by that we are allowed to ring
+	   the bell again? */
+	if(screen->bellSuppressTime) {
+	    if(screen->bellInProgress) {
+		if (QLength(screen->display) > 0 ||
+		    GetBytesAvailable (ConnectionNumber(screen->display)) > 0)
+		    xevents();
+		if(screen->bellInProgress) { /* even after new events? */
+		    return;
+		}
+	    }
+	    gettimeofday(&curtime, NULL);
+	    now_msecs = 1000*curtime.tv_sec + curtime.tv_usec/1000;
+	    if(lastBellTime != 0  &&  now_msecs - lastBellTime >= 0  &&
+	       now_msecs - lastBellTime < screen->bellSuppressTime) {
+		return;
+	    }
+	    lastBellTime = now_msecs;
+	}
 
 	if(screen->visualbell) {
 		gcval.function = GXxor;
@@ -351,6 +374,30 @@ Bell()
 		}
 	} else
 		XBell(screen->display, 0);
+
+	if(screen->bellSuppressTime) {
+	    /* now we change a property and wait for the notify event to come
+	       back.  If the server is suspending operations while the bell
+	       is being emitted (problematic for audio bell), this lets us
+	       know when the previous bell has finished */
+	    XChangeProperty(XtDisplay(term), XtWindow(term),
+			    XA_NOTICE, XA_NOTICE, 8, PropModeAppend, NULL, 0);
+	    screen->bellInProgress = TRUE;
+	}
+}
+
+/* ARGSUSED */
+void HandleBellPropertyChange(w, data, ev, more)
+    Widget w;
+    XtPointer data;
+    XEvent *ev;
+    Boolean *more;
+{
+    TScreen *screen = &((XtermWidget)w)->screen;
+
+    if (ev->xproperty.atom == XA_NOTICE) {
+	screen->bellInProgress = FALSE;
+    }
 }
 
 Redraw()
