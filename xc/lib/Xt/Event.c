@@ -1,4 +1,4 @@
-/* $XConsortium: Event.c,v 1.131 91/07/02 18:39:21 converse Exp $ */
+/* $XConsortium: Event.c,v 1.132 91/07/05 15:04:37 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -462,6 +462,7 @@ Widget XtWindowToWidget(display, window)
     register Widget entry;
     WWPair pair;
 
+    if (!window) return NULL;
     tab = WWTABLE(display);
     idx = WWHASH(tab, window);
     if ((entry = tab->entries[idx]) && XtWindow(entry) != window) {
