@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: events.c,v 5.62 93/02/26 11:35:28 rws Exp $ */
+/* $XConsortium: events.c,v 5.63 93/07/12 09:24:13 dpw Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -1666,10 +1666,14 @@ CheckPassiveGrabsOnWindow(pWin, device, xE, count)
 
 	    if (device->sync.state == FROZEN_NO_EVENT)
 	    {
-		Must_have_memory = TRUE; /* XXX */
-	    	device->sync.event = (xEvent *)xrealloc(device->sync.event,
-							count*sizeof(xEvent));
-		Must_have_memory = FALSE; /* XXX */
+		if (device->sync.evcount < count)
+		{
+		    Must_have_memory = TRUE; /* XXX */
+		    device->sync.event = (xEvent *)xrealloc(device->sync.event,
+							    count*
+							    sizeof(xEvent));
+		    Must_have_memory = FALSE; /* XXX */
+		}
 		device->sync.evcount = count;
 		for (dxE = device->sync.event; --count >= 0; dxE++, xE++)
 		    *dxE = *xE;
@@ -1844,10 +1848,13 @@ DeliverGrabbedEvent(xE, thisDev, deactivateGrab, count)
 	case FREEZE_NEXT_EVENT:
 	    thisDev->sync.state = FROZEN_WITH_EVENT;
 	    FreezeThaw(thisDev, TRUE);
-	    Must_have_memory = TRUE; /* XXX */
-	    thisDev->sync.event = (xEvent *)xrealloc(thisDev->sync.event,
-						     count*sizeof(xEvent));
-	    Must_have_memory = FALSE; /* XXX */
+	    if (thisDev->sync.evcount < count)
+	    {
+		Must_have_memory = TRUE; /* XXX */
+		thisDev->sync.event = (xEvent *)xrealloc(thisDev->sync.event,
+							 count*sizeof(xEvent));
+		Must_have_memory = FALSE; /* XXX */
+	    }
 	    thisDev->sync.evcount = count;
 	    for (dxE = thisDev->sync.event; --count >= 0; dxE++, xE++)
 		*dxE = *xE;
