@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: OMWrap.c,v 1.1 94/01/20 17:55:00 rws Exp $ */
 /*
  * Copyright 1992, 1993 by TOSHIBA Corp.
  *
@@ -67,7 +67,7 @@ XCloseOM(om)
 	(*oc->methods->destroy)(oc);
     }
 
-    om->core.oc_list == NULL;
+    om->core.oc_list = NULL;
 
     _XCloseLC(lcd);
 
