@@ -1,13 +1,15 @@
-/* $XConsortium: opaque.h,v 1.11 93/09/03 08:36:28 dpw Exp $ */
+/* $XConsortium: opaque.h,v 1.12 93/09/05 10:52:05 rws Exp $ */
 
 #ifndef OPAQUE_H
 #define OPAQUE_H
+
+#include <X11/Xmd.h>
 
 extern char *defaultFontPath;
 extern char *defaultTextFont;
 extern char *defaultCursorFont;
 extern char *rgbPath;
-extern long MaxClients;
+extern int MaxClients;
 extern char isItTimeToYield;
 extern char dispatchException;
 
@@ -16,9 +18,9 @@ extern char dispatchException;
 #define DE_TERMINATE 2
 #define DE_PRIORITYCHANGE 4  /* set when a client's priority changes */
 
-extern long TimeOutValue;
-extern long ScreenSaverTime;
-extern long ScreenSaverInterval;
+extern CARD32 TimeOutValue;
+extern CARD32 ScreenSaverTime;
+extern CARD32 ScreenSaverInterval;
 extern int  ScreenSaverBlanking;
 extern int  ScreenSaverAllowExposures;
 extern int argcGlobal;
