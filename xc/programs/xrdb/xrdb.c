@@ -1,7 +1,7 @@
 /*
  * xrdb - X resource manager database utility
  *
- * $XConsortium: xrdb.c,v 11.74 93/09/20 17:53:10 hersh Exp $
+ * $XConsortium: xrdb.c,v 11.75 94/03/27 14:42:02 rws Exp mor $
  */
 
 /*
@@ -46,6 +46,7 @@
 #include <X11/Xos.h>
 #include <stdio.h>
 #include <ctype.h>
+#include <errno.h>
 
 #ifdef X_NOT_STDC_ENV
 extern int errno;
@@ -1255,7 +1256,6 @@ fatal(msg, x1, x2, x3, x4, x5, x6)
     int x1, x2, x3, x4, x5, x6;
 #endif
 {
-    extern int errno;
 #if NeedVarargsPrototypes
     va_list args;
 #endif
