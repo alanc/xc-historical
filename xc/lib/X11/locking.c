@@ -1,5 +1,5 @@
 /*
- * $XConsortium: locking.c,v 1.1 93/06/21 17:27:07 gildea Exp $
+ * $XConsortium: locking.c,v 1.2 93/06/25 16:27:06 gildea Exp $
  *
  * Copyright 1992 Massachusetts Institute of Technology
  *
@@ -27,15 +27,25 @@
 
 #ifdef XTHREADS
 
-#include "Xlibint.h"
-#include <stdio.h>		/* for debugging stuff */
-#include "locking.h"
+/* check for internal Xlib deadlocks and other bogosities? */
+#ifndef TWARN
+#define TWARN 1			/* default to warning checks ON */
+#endif
 
- 
+#ifdef TDEBUG
+#undef TWARN
+#define TWARN 1
+#endif
+
+#include "Xlibint.h"
+#include "locking.h"
+#if TWARN
+#include <stdio.h>		/* for warn/debug stuff */
+#endif
+
 /* in XOpenDis.c */
 extern int  (*_XInitDisplayLock_fn)();
 extern void (*_XFreeDisplayLock_fn)();
-
 
 
 static mutex_t _Xglobal_lock;
@@ -69,16 +79,31 @@ void _XUnlockMutex()
     mutex_unlock(_Xglobal_lock);
 }
 
+#if TWARN
 static char *locking_file;
 static int locking_line;
 static cthread_t locking_thread = NULL;
 static Bool xlibint_unlock = False; /* XlibInt.c may Unlock and re-Lock */
+
+/* history that is useful to examine in a debugger */
+#define LOCK_HIST_SIZE 21
+
+static struct {
+    Bool lockp;			/* True for lock, False for unlock */
+    cthread_t thread;
+    char *file;
+    int line;
+} locking_history[LOCK_HIST_SIZE];
+
+int lock_hist_loc = 0;		/* next slot to fill */
+#endif /* TWARN */
 
 void _XLockDisplay(dpy,file,line)
     Display *dpy;
     char *file;			/* source file, from macro */
     int line;
 {
+#if TWARN
     cthread_t self = cthread_self();
     cthread_t old_locker = locking_thread;
 
@@ -91,11 +116,13 @@ void _XLockDisplay(dpy,file,line)
 	    printf("%s line %d: thread %x waiting on lock held by %s line %d thread %x\n",
 		   file, line, self,
 		   locking_file, locking_line, old_locker);
-#endif
+#endif /* TDEBUG */
     }
+#endif /* TWARN */
 
     mutex_lock(dpy->lock->mutex);
 
+#if TWARN
     if (strcmp(file, "XlibInt.c") == 0) {
 	if (!xlibint_unlock)
 	    printf("Xlib ERROR: XlibInt.c line %d thread %x locking display it did not unlock\n",
@@ -107,13 +134,21 @@ void _XLockDisplay(dpy,file,line)
     /* if (old_locker  &&  old_locker != self) */
     if (strcmp("XClearArea.c", file) && strcmp("XDrSegs.c", file)) /* ico */
 	printf("%s line %d: thread %x got display lock\n", file, line, self);
-#endif
+#endif /* TDEBUG */
 
     locking_thread = self;
     if (strcmp(file, "XlibInt.c") != 0) {
 	locking_file = file;
 	locking_line = line;
     }
+    locking_history[lock_hist_loc].file = file;
+    locking_history[lock_hist_loc].line = line;
+    locking_history[lock_hist_loc].thread = self;
+    locking_history[lock_hist_loc].lockp = True;
+    lock_hist_loc++;
+    if (lock_hist_loc >= LOCK_HIST_SIZE)
+	lock_hist_loc = 0;
+#endif /* TWARN */
 }
 
 static void _XUnlockDisplay(dpy,file,line)
@@ -121,23 +156,35 @@ static void _XUnlockDisplay(dpy,file,line)
     char *file;
     int line;
 {
+#if TWARN
     cthread_t self = cthread_self();
 
 #ifdef TDEBUG
     if (strcmp("XClearArea.c", file) && strcmp("XDrSegs.c", file)) /* ico */
 	printf("%s line %d: thread %x unlocking display\n", file, line, self);
-#endif
+#endif /* TDEBUG */
 
     if (!locking_thread)
 	printf("Xlib ERROR: %s line %d thread %x: unlocking display that is not locked\n",
 	       file, line, self);
     else if (strcmp(file, "XlibInt.c") == 0)
 	xlibint_unlock = True;
+#ifdef TDEBUG
     else if (strcmp(file, locking_file) != 0)
 	/* not always an error because locking_file is not per-thread */
-	printf("%s line %d: unlocking display locked from a different file: %s line %d\n",
+	printf("%s line %d: unlocking display locked from %s line %d (probably okay)\n",
 	       file, line, locking_file, locking_line);
+#endif /* TDEBUG */
     locking_thread = NULL;
+
+    locking_history[lock_hist_loc].file = file;
+    locking_history[lock_hist_loc].line = line;
+    locking_history[lock_hist_loc].thread = self;
+    locking_history[lock_hist_loc].lockp = False;
+    lock_hist_loc++;
+    if (lock_hist_loc >= LOCK_HIST_SIZE)
+	lock_hist_loc = 0;
+#endif /* TWARN */
     mutex_unlock(dpy->lock->mutex);
 }
 
@@ -198,6 +245,7 @@ void _XConditionWait(cv, mutex,file,line)
     char *file;
     int line;
 {
+#if TWARN
     cthread_t self = cthread_self();
     char *old_file = locking_file;
     int old_line = locking_line;
@@ -206,13 +254,34 @@ void _XConditionWait(cv, mutex,file,line)
     printf("line %d thread %x in condition wait\n", line, self);
 #endif
     locking_thread = NULL;
+
+    locking_history[lock_hist_loc].file = file;
+    locking_history[lock_hist_loc].line = line;
+    locking_history[lock_hist_loc].thread = self;
+    locking_history[lock_hist_loc].lockp = False;
+    lock_hist_loc++;
+    if (lock_hist_loc >= LOCK_HIST_SIZE)
+	lock_hist_loc = 0;
+#endif /* TWARN */
+
     condition_wait(cv, mutex);
+
+#if TWARN
     locking_thread = self;
     locking_file = old_file;
     locking_line = old_line;
+
+    locking_history[lock_hist_loc].file = file;
+    locking_history[lock_hist_loc].line = line;
+    locking_history[lock_hist_loc].thread = self;
+    locking_history[lock_hist_loc].lockp = True;
+    lock_hist_loc++;
+    if (lock_hist_loc >= LOCK_HIST_SIZE)
+	lock_hist_loc = 0;
 #ifdef TDEBUG
     printf("line %d thread %x was signaled\n", line, self);
-#endif
+#endif /* TDEBUG */
+#endif /* TWARN */
 }
 
 void _XConditionSignal(cv,file,line)
@@ -221,8 +290,7 @@ void _XConditionSignal(cv,file,line)
     int line;
 {
 #ifdef TDEBUG
-    cthread_t self = cthread_self();
-    printf("line %d thread %x is signalling\n", line, self);
+    printf("line %d thread %x is signalling\n", line, cthread_self());
 #endif
     condition_signal(cv);
 }
