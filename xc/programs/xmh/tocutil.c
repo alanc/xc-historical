@@ -160,18 +160,25 @@ int TUGetMsgPosition(toc, msg)
 {
     int msgid, h, l, m;
     char str[100];
+    static Boolean ordered = True;
     msgid = msg->msgid;
-    l = 0;
-    h = toc->nummsgs - 1;
-    while (l < h - 1) {
-	m = (l + h) / 2;
-	if (toc->msgs[m]->msgid > msgid)
-	    h = m;
-	else
-	    l = m;
+    if (ordered) {
+	l = 0;
+	h = toc->nummsgs - 1;
+	while (l < h - 1) {
+	    m = (l + h) / 2;
+	    if (toc->msgs[m]->msgid > msgid)
+		h = m;
+	    else
+		l = m;
+	}
+	if (toc->msgs[l] == msg) return l;
+	if (toc->msgs[h] == msg) return h;
     }
-    if (toc->msgs[l] == msg) return l;
-    if (toc->msgs[h] == msg) return h;
+    ordered = False;
+    for (l = 0; l < toc->nummsgs; l++) {
+	if (msgid == toc->msgs[l]->msgid) return l;
+    }
     (void) sprintf(str,
 		   "TUGetMsgPosition search failed! hi=%d, lo=%d, msgid=%d",
 		   h, l, msgid);
@@ -366,7 +373,8 @@ void TULoadTocFile(toc)
 	TocSetCurMsg(toc, (Msg)NULL);
     } else origcurmsgid = 0;  /* The "default" current msg; 0 means none */
     fid = FOpenAndCheck(toc->scanfile, "r");
-    maxmsgs = orignummsgs = toc->nummsgs;
+    maxmsgs = 10;
+    orignummsgs = toc->nummsgs;
     toc->nummsgs = 0;
     origmsgs = toc->msgs;
     toc->msgs = (Msg *) XtMalloc((Cardinal) maxmsgs * sizeof(Msg));
@@ -417,21 +425,18 @@ void TULoadTocFile(toc)
     for (i=0 ; i<numScrns ; i++) {
 	msg = scrnList[i]->msg;
 	if (msg && msg->toc == toc) {
-	    Msg* tmsgP;
-	    for (j=toc->nummsgs, tmsgP=toc->msgs ; j ; j--, tmsgP++) {
-		if (SeemsIdentical((*tmsgP), msg)) {
-		    msg->position = (*tmsgP)->position;
+	    for (j=0 ; j<toc->nummsgs ; j++) {
+		if (SeemsIdentical(toc->msgs[j], msg)) {
+		    msg->position = toc->msgs[j]->position;
 		    msg->visible = TRUE;
-		    ptr = (*tmsgP)->buf;
-		    l = (*tmsgP)->length;
-		    **tmsgP = *msg;
-		    (*tmsgP)->buf = ptr;
-		    (*tmsgP)->length = l;
-		    scrnList[i]->msg = *tmsgP;
+		    ptr = toc->msgs[j]->buf;
+		    *(toc->msgs[j]) = *msg;
+		    toc->msgs[j]->buf = ptr;
+		    scrnList[i]->msg = toc->msgs[j];
 		    break;
 		}
 	    }
-	    if (j == 0) {
+	    if (j >= toc->nummsgs) {
 		msg->temporary = FALSE;	/* Don't try to auto-delete msg. */
 		MsgSetScrnForce(msg, (Scrn) NULL);
 	    }
