@@ -54,6 +54,7 @@
   (:module keysyms "keysyms")
   (:module manager "manager")
   (:module image "image")
+  (:module resource "resource")
   (:module doc "doc")
 
   (:compile-load depdefs)
@@ -94,6 +95,7 @@
    (:fasload depdefs clx dependent macros bufmac buffer display))
   (:compile-load image
    (:fasload depdefs clx dependent macros bufmac buffer display))
+  (:compile-load resource)
   (:auxiliary doc)
   )
 
@@ -168,6 +170,7 @@
 	   (:in-order-to :compile (:load macros))
 	   (:in-order-to :compile (:load bufmac))
 	   (:uses-definitions-from display))
+  (:module resource ("resource"))
   )
 
 #+lucid
@@ -240,6 +243,8 @@
     (load "manager")
     (compile-file "image")
     (load "image")
+    (compile-file "resource")
+    (load "resource")
     ))
 
 #-lispm
@@ -272,4 +277,5 @@
     (load "keysyms")
     (load "manager")
     (load "image")
+    (load "resource")
     ))
