@@ -1,7 +1,7 @@
 /* 
  * $Locker: rws $ 
  */ 
-static char	*rcsid = "$Header: xwud.c,v 1.13 87/09/11 16:55:38 rws Locked $";
+static char	*rcsid = "$Header: xwud.c,v 1.14 87/09/11 19:01:19 rws Locked $";
 #include <X11/copyright.h>
 
 /* Copyright 1985, 1986, Massachusetts Institute of Technology */
@@ -32,14 +32,13 @@ static char	*rcsid = "$Header: xwud.c,v 1.13 87/09/11 16:55:38 rws Locked $";
  */
 
 #ifndef lint
-static char *rcsid_xwud_c = "$Header: xwud.c,v 1.13 87/09/11 16:55:38 rws Locked $";
+static char *rcsid_xwud_c = "$Header: xwud.c,v 1.14 87/09/11 19:01:19 rws Locked $";
 #endif
 
+#include <X11/Xos.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <stdio.h>
-#include <strings.h>
-#include <sys/types.h>
 extern char *calloc();
 #include "dsimple.h"
 

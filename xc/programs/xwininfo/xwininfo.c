@@ -11,10 +11,10 @@
  *		16-Jun-87
  */
 
+#include <X11/Xos.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <stdio.h>
-#include <strings.h>
 
 /* Include routines to handle parsing defaults */
 #include "dsimple.h"
