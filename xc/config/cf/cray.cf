@@ -1,4 +1,4 @@
-/**/# platform:  $XConsortium: cray.cf,v 1.9 89/07/21 11:35:44 jim Exp $
+/**/# platform:  $XConsortium: cray.cf,v 1.10 89/07/21 11:49:06 jim Exp $
 
 
 /*
@@ -7,23 +7,21 @@
 
 #define SystemV			YES
 
-#define OSName			UNICOS 4.0
-#define OSMajorVersion		4
-#define OSMinorVersion		0
+#define OSName			UNICOS 5.1
+#define OSMajorVersion		5
+#define OSMinorVersion		1
 
 #define InstallCmd sh $(SCRIPTSRC)/install.sh
 #define RemoveTargetProgramByMoving YES
-#define StandardDefines		-DSYSV -DUSG
+#define LibraryDefines 		-DWORD64 -DSYSV  -DUSG
+#define StandardDefines		-DSYSV  -DUSG
 #define StandardCppDefines	-DSYSV -DUSG
 #define ExecableScripts		NO
 #define BuildServer		NO
 #define HasVoidSignalReturn	YES
-#define NeedBerklibInXlib	YES
+#define NeedBerklibInXlib	NO
+#define CcCmd			scc
 
-
-/*
- * #define UNICOS4		YES
- */
 
 #if UNICOS4
 #define ConnectionFlags -DTCPCONN -DOLDTCP
@@ -31,25 +29,14 @@
 #define ConnectionFlags -DTCPCONN 
 #endif
 
-#ifdef CRAY1
+#define ExtraLoadFlags        -lnet
 #define ArCmd                 bld cr
-#define DefaultCDebugFlags    -halign -Wl,-Ddupentry=ignore
+
+#ifdef CRAY1
+#define DefaultCDebugFlags    -halign
 #define Cray1Architecture
-#define ExtraLoadFlags        -lnet -lbsd
-/*
- *      CCPATH = /syssup/cgrp/4.0x
- */
 #else /* CRAY 2 */
-#define DefaultCDebugFlags    -hnocache -hsharelm
+#define DefaultCDebugFlags    
 #define Cray2Architecture
-/*
- *      CCPATH = /lp/tam/4.1
- */
 #endif
 
-/*
- * XXX - no clue what the following is; was in bug #1309 from John Freeman
- *
-#define MakefileAdditions()						@\
--L::
-*/
