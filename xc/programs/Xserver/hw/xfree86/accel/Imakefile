@@ -1,0 +1,8 @@
+XCOMM $XConsortium$
+#include <Server.tmpl>
+#define IHaveSubdirs
+
+SUBDIRS = XF86AccelServerDirs cache
+
+MakeSubdirs($(SUBDIRS))
+DependSubdirs($(SUBDIRS))

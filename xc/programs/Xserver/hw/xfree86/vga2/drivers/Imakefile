@@ -1,0 +1,27 @@
+XCOMM $XConsortium$
+#include <Server.tmpl>
+#define IHaveSubdirs
+
+SUBDIRS = XF86Vga2Drivers
+
+SRCS = */?*.c 
+
+OBJS = */?*_drv.o 
+
+all:: subdirs libdriver2.a
+
+NormalLibraryObjectRule()
+
+NamedMakeSubdirs(subdirs,$(SUBDIRS))
+
+InstallLinkKitLibrary(driver2,$(LINKKITDIR)/drivers)
+
+NormalDepLibraryTarget(driver2,$(SUBDIRS),$(OBJS))
+
+DependSubdirs($(SUBDIRS))
+
+InstallLinkKitNonExecFile(Imakefile,$(LINKKITDIR)/drivers/vga2)
+
+#if XF86LinkKit
+#include <LinkKit.tmpl>
+#endif
