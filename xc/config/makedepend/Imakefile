@@ -1,4 +1,4 @@
-XCOMM $XConsortium$
+XCOMM $XConsortium: Imakefile,v 1.14 91/07/16 23:07:25 gildea Exp $
 /*
  * NOTE: CppSourcesPresent IS NO LONGER TESTED OR SUPPORTED,
  * and is nearly guaranteed to not work.
@@ -27,6 +27,10 @@ XCOMM $XConsortium$
 INCLUDES = -I$(CONFIGSRC)
  DEFINES = $(CPPDEFS) '-DINCLUDEDIR="/usr/include"' $(SIGNAL_DEFINES)
  DEPLIBS =
+
+#ifdef MacIIArchitecture
+ XBSDLIB = /**/
+#endif
 
 all:: makedepend
 
