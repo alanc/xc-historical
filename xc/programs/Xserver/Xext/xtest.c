@@ -1,4 +1,4 @@
-/* $XConsortium: xtest.c,v 1.12 92/04/20 13:15:13 rws Exp $ */
+/* $XConsortium: xtest.c,v 1.13 92/12/17 11:45:05 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -28,6 +28,10 @@ without express or implied warranty.
 #define _XTEST_SERVER_
 #include "XTest.h"
 #include "xteststr.h"
+#ifdef XINPUT
+#include "XIproto.h"
+#define EXTENSION_EVENT_BASE	64
+#endif /* XINPUT */
 
 static unsigned char XTestReqCode;
 static int ProcXTestDispatch(), SProcXTestDispatch();
@@ -35,6 +39,13 @@ static void XTestResetProc();
 static int XTestSwapFakeInput();
 CursorPtr GetSpriteCursor();
 WindowPtr GetCurrentRootWindow();
+#ifdef XINPUT
+extern int DeviceKeyPress, DeviceKeyRelease;
+extern int DeviceButtonPress, DeviceButtonRelease;
+extern int DeviceMotionNotify, DeviceValuator;
+extern int ProximityIn, ProximityOut;
+DeviceIntPtr LookupDeviceIntRec();
+#endif /* XINPUT */
 
 void
 XTestExtensionInit()
@@ -117,32 +128,71 @@ static int
 ProcXTestFakeInput(client)
     register ClientPtr client;
 {
-    REQUEST(xReq);
+    REQUEST(xXTestFakeInputReq);
     int nev;
     int	n;
     xEvent *ev;
     DeviceIntPtr dev;
     WindowPtr root;
+    int type;
+#ifdef XINPUT
+    Bool extension = FALSE;
+#endif /* XINPUT */
 
     nev = (stuff->length << 2) - sizeof(xReq);
-    if (nev % sizeof(xEvent))
+    if ((nev % sizeof(xEvent)) || !nev)
 	return BadLength;
     nev /= sizeof(xEvent);
-    if (nev != 1)
-	return BadLength; /* for now */
     UpdateCurrentTime();
-    ev = (xEvent *)&stuff[1];
-    switch (ev->u.u.type & 0177)
+    ev = (xEvent *)&((xReq *)stuff)[1];
+    type = ev->u.u.type & 0177;
+#ifdef XINPUT
+    if (type >= EXTENSION_EVENT_BASE)
     {
-    case KeyPress:
-    case KeyRelease:
-    case MotionNotify:
-    case ButtonPress:
-    case ButtonRelease:
-	break;
-    default:
-	client->errorValue = ev->u.u.type;
-	return BadValue;
+	if (nev > 2)
+	    return BadLength;
+	if (type != DeviceKeyPress && type != DeviceKeyRelease &&
+	    type != DeviceButtonPress && type != DeviceButtonRelease &&
+	    type != DeviceMotionNotify &&
+	    type != ProximityIn && type != ProximityOut)
+	{
+	    client->errorValue = ev->u.u.type;
+	    return BadValue;
+	}
+	if (nev > 1)
+	{
+	    if (ev[1].u.u.type != DeviceValuator)
+	    {
+		client->errorValue = ev[1].u.u.type;
+		return BadValue;
+	    }
+	    if (((deviceValuator *)(ev+1))->first_valuator)
+	    {
+		client->errorValue =
+		    ((deviceValuator *)(ev+1))->first_valuator;
+		return BadValue;
+	    }
+	}
+	type = type - DeviceKeyPress + KeyPress;
+	extension = TRUE;
+    }
+    else
+#endif /* XINPUT */
+    {
+	if (nev != 1)
+	    return BadLength;
+	switch (type)
+	{
+	case KeyPress:
+	case KeyRelease:
+	case MotionNotify:
+	case ButtonPress:
+	case ButtonRelease:
+	    break;
+	default:
+	    client->errorValue = ev->u.u.type;
+	    return BadValue;
+	}
     }
     if (ev->u.keyButtonPointer.time)
     {
@@ -158,7 +208,7 @@ ProcXTestFakeInput(client)
 	/* swap the request back so we can simply re-execute it */
 	if (client->swapped)
 	{
-    	    (void) XTestSwapFakeInput(client, stuff);
+    	    (void) XTestSwapFakeInput(client, (xReq *)stuff);
 	    swaps(&stuff->length, n);
 	}
 	ResetCurrentRequest (client);
@@ -177,11 +227,34 @@ ProcXTestFakeInput(client)
 	}
 	return Success;
     }
-    switch (ev->u.u.type & 0177)
+#ifdef XINPUT
+    if (extension)
+    {
+	dev = LookupDeviceIntRec(stuff->deviceid & 0177);
+	if (!dev)
+	{
+	    client->errorValue = stuff->deviceid & 0177;
+	    return BadValue;
+	}
+	if ((nev > 1 && (!dev->valuator || !dev->valuator->numAxes)) ||
+	    (nev == 1 && dev->valuator && dev->valuator->numAxes))
+	    return BadLength;
+	if (nev > 1 && (((deviceValuator *)(ev+1))->num_valuators !=
+			dev->valuator->numAxes))
+	{
+	    client->errorValue = ((deviceValuator *)(ev+1))->num_valuators;
+	    return BadValue;
+	}
+    }
+#endif /* XINPUT */
+    switch (type)
     {
     case KeyPress:
     case KeyRelease:
-	dev = (DeviceIntPtr)LookupKeyboardDevice();
+#ifdef XINPUT
+	if (!extension)
+#endif /* XINPUT */
+	    dev = (DeviceIntPtr)LookupKeyboardDevice();
 	if (ev->u.u.detail < dev->key->curKeySyms.minKeyCode ||
 	    ev->u.u.detail > dev->key->curKeySyms.maxKeyCode)
 	{
@@ -190,6 +263,10 @@ ProcXTestFakeInput(client)
 	}
 	break;
     case MotionNotify:
+#ifdef XINPUT
+	if (extension)
+	    break;
+#endif /* XINPUT */
 	dev = (DeviceIntPtr)LookupPointerDevice();
 	if (ev->u.keyButtonPointer.root == None)
 	    root = GetCurrentRootWindow();
@@ -238,7 +315,10 @@ ProcXTestFakeInput(client)
 	break;
     case ButtonPress:
     case ButtonRelease:
-	dev = (DeviceIntPtr)LookupPointerDevice();
+#ifdef XINPUT
+	if (!extension)
+#endif /* XINPUT */
+	    dev = (DeviceIntPtr)LookupPointerDevice();
 	if (!ev->u.u.detail || ev->u.u.detail > dev->button->numButtons)
 	{
 	    client->errorValue = ev->u.u.detail;
@@ -249,7 +329,7 @@ ProcXTestFakeInput(client)
     if (screenIsSaved == SCREEN_SAVER_ON)
 	SaveScreens(SCREEN_SAVER_OFF, ScreenSaverReset);
     ev->u.keyButtonPointer.time = currentTime.milliseconds;
-    (*dev->public.processInputProc)(ev, (DevicePtr)dev, 1); 
+    (*dev->public.processInputProc)(ev, (DevicePtr)dev, nev);
     return client->noClientException;
 }
 
