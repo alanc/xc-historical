@@ -1,5 +1,5 @@
 /*
- * $XConsortium: init.c,v 2.50 91/01/10 12:14:53 converse Exp $
+ * $XConsortium: init.c,v 2.51 91/02/07 15:23:59 rws Exp $
  *
  *
  *		        COPYRIGHT 1987, 1989
@@ -387,16 +387,16 @@ char **argv;
 
     app_resources.toc_geometry =
 	FixUpGeometry(app_resources.toc_geometry,
-		      rootwidth / 2, 3 * rootheight / 4);
+		      (unsigned)rootwidth / 2, 3 * (unsigned)rootheight / 4);
     app_resources.view_geometry =
 	FixUpGeometry(app_resources.view_geometry,
-		      rootwidth / 2, rootheight / 2);
+		      (unsigned)rootwidth / 2, (unsigned)rootheight / 2);
     app_resources.comp_geometry =
 	FixUpGeometry(app_resources.comp_geometry,
-		      rootwidth / 2, rootheight / 2);
+		      (unsigned)rootwidth / 2, (unsigned)rootheight / 2);
     app_resources.pick_geometry =
 	FixUpGeometry(app_resources.pick_geometry,
-		      rootwidth / 2, rootheight / 2);
+		      (unsigned)rootwidth / 2, (unsigned)rootheight / 2);
 
     numScrns = 0;
     scrnList = (Scrn *) NULL;
