@@ -254,7 +254,7 @@ char *name;
 	struct passwd *pw;
 	char filename[1024];
 	FILE *f;
-	static int first = 0;
+	static Boolean first = TRUE;
 	
 	if(name != NULL) { /* application provided a file */
 		f = fopen(name, "r");
@@ -266,9 +266,8 @@ char *name;
 			(void) fclose(f);
 		}
 	} 
-	first = 1;
-	
-	if(! first) {
+	if (first) {
+		first = FALSE;
 		/*
 		  MERGE server defaults
 		 */
@@ -757,7 +756,7 @@ char *argv[];
 	 */
 	(void) strcpy(
 	    ((TopLevelClassRec *)(topLevelWidgetClass))->core_class.class_name
-	        = (String)XtMalloc((unsigned)strlen(classname)),
+	        = (String)XtMalloc((unsigned)strlen(classname)+1),
 	       classname);
 	root = TopLevelCreate(name, topLevelWidgetClass,
 			      &(dpy->screens[dpy->default_screen]),
@@ -766,7 +765,7 @@ char *argv[];
 	w = (TopLevelWidget) root;
 	w->top.argc = saved_argc;
 	w->top.argv = saved_argv;
-	(void) strcpy(w->top.classname = (char *)XtMalloc((unsigned)strlen(classname))
+	(void) strcpy(w->top.classname = (char *)XtMalloc((unsigned)strlen(classname)+1)
 	       ,classname);
 
 	init_atoms(dpy);
