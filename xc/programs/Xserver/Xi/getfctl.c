@@ -1,4 +1,4 @@
-/* $XConsortium: xgetfctl.c,v 1.7 90/05/18 13:50:40 rws Exp $ */
+/* $XConsortium: xgetfctl.c,v 1.8 90/05/18 15:19:21 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -144,6 +144,12 @@ ProcXGetFeedbackControl(client)
 	}
 
     buf = (char *) Xalloc (total_length);
+    if (!buf)
+	{
+	SendErrorToClient(client, IReqCode, X_GetFeedbackControl, 0, 
+		BadAlloc);
+	return Success;
+	}
     savbuf=buf;
 
     for (k=dev->kbdfeed; k; k=k->next)
@@ -162,6 +168,7 @@ ProcXGetFeedbackControl(client)
     rep.length = (total_length+3) >> 2;
     WriteReplyToClient(client, sizeof(xGetFeedbackControlReply), &rep);
     WriteToClient(client, total_length, savbuf);
+    Xfree (savbuf);
     return Success;
     }
 

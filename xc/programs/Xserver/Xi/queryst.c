@@ -1,4 +1,4 @@
-/* $XConsortium: xqueryst.c,v 1.3 89/10/10 16:10:48 gms Exp $ */
+/* $XConsortium: xqueryst.c,v 1.4 89/12/02 15:21:26 rws Exp $ */
 
 /***********************************************************************
  *
@@ -101,6 +101,12 @@ ProcXQueryDeviceState(client)
 	num_classes++;
 	}
     buf = (char *) Xalloc (total_length);
+    if (!buf)
+	{
+	SendErrorToClient(client, IReqCode, X_QueryDeviceState, 0, 
+		BadAlloc);
+	return Success;
+	}
     savbuf = buf;
 
     if (k != NULL)
@@ -151,6 +157,7 @@ ProcXQueryDeviceState(client)
     WriteReplyToClient (client, sizeof(xQueryDeviceStateReply), &rep);
     if (total_length > 0)
 	WriteToClient (client, total_length, savbuf);
+    Xfree (savbuf);
     return Success;
     }
 
