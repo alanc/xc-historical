@@ -346,7 +346,7 @@ XSetWindowAttributes *attr;
 	w->top.hints.y = w->core.y;
 	w->top.hints.width = w->core.width;
 	w->top.hints.height = w->core.height;
-	XSetNormalHints(dpy, win, w->top.hints);
+	XSetNormalHints(dpy, win, &w->top.hints);
 }
 
 static void
