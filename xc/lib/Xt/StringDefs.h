@@ -1,5 +1,5 @@
 /*
-* $XConsortium: StringDefs.h,v 1.40 88/09/26 11:54:39 swick Exp $
+* $XConsortium: StringDefs.h,v 1.41 88/09/26 15:59:23 swick Exp $
 * $oHeader: StringDefs.h,v 1.3 88/08/19 16:39:44 asente Exp $
 */
 
@@ -78,6 +78,7 @@ SOFTWARE.
 #define XtNnotify		"notify"
 #define XtNorientation		"orientation"
 #define XtNparameter		"parameter"
+#define XtNpixmap		"pixmap"
 #define XtNpopupCallback	"popupCallback"
 #define XtNpopdownCallback	"popdownCallback"
 #define XtNreverseVideo		"reverseVideo"
