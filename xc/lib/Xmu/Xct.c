@@ -1,5 +1,5 @@
 /* 
- * $XConsortium: Xct.c,v 1.1 89/05/09 08:51:00 rws Exp $
+ * $XConsortium: Xct.c,v 1.2 89/05/09 09:16:21 rws Exp $
  * Copyright 1989 by the Massachusetts Institute of Technology
  *
  * Permission to use, copy, modify, and distribute this software and its
@@ -514,7 +514,7 @@ XctNextItem(data)
 		c = *priv->ptr;
 	    }
 	    if (data->item_length) {
-		if ((bits == HasGL|HasGR) ||
+		if ((bits == (HasGL|HasGR)) ||
 		    (data->GLGR_encoding && !(bits & HasC))) {
 		    data->encoding = data->GLGR_encoding;
 		    if (data->GL_char_size == data->GR_char_size)
