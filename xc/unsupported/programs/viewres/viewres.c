@@ -1,5 +1,5 @@
 /*
- * $XConsortium: viewres.c,v 1.37 90/02/13 11:52:33 jim Exp $
+ * $XConsortium: viewres.c,v 1.38 90/02/13 12:45:31 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -556,11 +556,7 @@ static void panner_callback (gw, closure, data)
     XawPannerReport *rep = (XawPannerReport *) data;
 
     if (viewportWidget)
-      XawViewportSetLocation (viewportWidget,
-			      (((float) rep->slider_x) /
-			       ((float) rep->canvas_width)),
-			      (((float) rep->slider_y) /
-			       ((float) rep->canvas_height)));
+      XawViewportSetCoordinates (viewportWidget, rep->inner_x, rep->inner_y);
 }
 
 /* ARGSUSED */
@@ -569,17 +565,22 @@ static void viewport_callback (gw, closure, data)
     caddr_t closure;			/* undefined */
     caddr_t data;			/* report */
 {
-    XawViewportReport *rep = (XawViewportReport *) data;
-    Arg args[6];
+    XawPannerReport *rep = (XawPannerReport *) data;
 
     if (pannerWidget) {
-	XtSetArg (args[0], XtNsliderX, -rep->child_x);
-	XtSetArg (args[1], XtNsliderY, -rep->child_y);
-	XtSetArg (args[2], XtNsliderWidth, rep->clip_width);
-	XtSetArg (args[3], XtNsliderHeight, rep->clip_height);
-	XtSetArg (args[4], XtNcanvasWidth, rep->child_width);
-	XtSetArg (args[5], XtNcanvasHeight, rep->child_height);
-	XtSetValues (pannerWidget, args, SIX);
+	Arg args[6];
+	Cardinal n = TWO;
+
+	XtSetArg (args[0], XtNsliderX, rep->inner_x);
+	XtSetArg (args[1], XtNsliderY, rep->inner_y);
+	if (rep->changed != (XawPRInnerX | XawPRInnerY)) {
+	    XtSetArg (args[2], XtNsliderWidth, rep->inner_width);
+	    XtSetArg (args[3], XtNsliderHeight, rep->inner_height);
+	    XtSetArg (args[4], XtNcanvasWidth, rep->outer_width);
+	    XtSetArg (args[5], XtNcanvasHeight, rep->outer_height);
+	    n = SIX;
+	}
+	XtSetValues (pannerWidget, args, n);
     }
 }
 
@@ -700,7 +701,7 @@ main (argc, argv)
     dummy = XtCreateManagedWidget ("pannerbox", boxWidgetClass, pane,
 				   NULL, ZERO);
 
-    XtSetArg (args[0], XtNcallback, callback_rec);
+    XtSetArg (args[0], XtNreportCallback, callback_rec);
     callback_rec[0].callback = (XtCallbackProc) panner_callback;
     callback_rec[0].closure = (caddr_t) NULL;
     XtSetArg (args[1], XtNallowResize, TRUE);
@@ -708,7 +709,6 @@ main (argc, argv)
     pannerWidget = XtCreateManagedWidget ("panner", pannerWidgetClass, dummy,
 					  args, THREE);
 
-    XtSetArg (args[0], XtNnotifyCallback, callback_rec);
     callback_rec[0].callback = (XtCallbackProc) viewport_callback;
     callback_rec[0].closure = (caddr_t) NULL;
     viewportWidget = XtCreateManagedWidget ("viewport", viewportWidgetClass,
