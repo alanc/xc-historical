@@ -2,11 +2,11 @@
 
 #include "copyright.h"
 
+#include <X11/Xos.h>
 #include "Xlib.h"
 #include "Xutil.h"
 #include "Xlibint.h"
 #include <stdio.h>
-#include <strings.h>
 
 #define MAX_LINE 1000
 
