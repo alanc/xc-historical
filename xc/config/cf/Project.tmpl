@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM X Window System Build Parameters and Rules
-XCOMM $XConsortium: Project.tmpl,v 1.219 94/02/10 15:26:09 rws Exp $
+XCOMM $XConsortium: Project.tmpl,v 1.220 94/02/10 17:09:46 rws Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -1025,10 +1025,10 @@ clean::									@@\
 all:: file.PS								@@\
 									@@\
 file.PS:								@@\
-	$(TBL) $(XDOCMACROS) srcs | $(TROFF) $(MSMACROS) 2> index.raw | col > $@ @@\
+	$(TBL) $(XDOCMACROS) srcs | $(TROFF) $(MSMACROS) 2> index.raw > $@ @@\
 									@@\
 file.txt:								@@\
-	$(TBL) $(XDOCMACROS) srcs | nroff $(MSMACROS) 2> index.raw > $@	@@\
+	$(TBL) $(XDOCMACROS) srcs | nroff $(MSMACROS) 2> index.raw | col > $@	@@\
 									@@\
 clean::									@@\
 	$(RM) index.raw file.PS file.txt
