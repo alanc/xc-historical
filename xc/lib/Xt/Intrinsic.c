@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Intrinsic.c,v 1.135 89/09/29 13:54:45 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Intrinsic.c,v 1.136 89/10/02 15:30:34 swick Exp $";
 /* $oHeader: Intrinsic.c,v 1.4 88/08/18 15:40:35 asente Exp $ */
 #endif /* lint */
 
@@ -80,8 +80,9 @@ static void ComputeWindowAttributes(widget,value_mask,values)
     XtValueMask		 *value_mask;
     XSetWindowAttributes *values;
 {
-    *value_mask = CWEventMask;
+    *value_mask = CWEventMask | CWColormap;
     (*values).event_mask = XtBuildEventMask(widget);
+    (*values).colormap = widget->core.colormap;
     if (widget->core.background_pixmap != XtUnspecifiedPixmap) {
 	*value_mask |= CWBackPixmap;
 	(*values).background_pixmap = widget->core.background_pixmap;
