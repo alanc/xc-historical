@@ -1,4 +1,4 @@
-/* $XConsortium: pl_escape.c,v 1.1 92/05/08 15:12:52 mor Exp $ */
+/* $XConsortium: pl_escape.c,v 1.2 92/05/20 20:30:15 mor Exp $ */
 
 /************************************************************************
 Copyright 1992 by the Massachusetts Institute of Technology,
@@ -10,9 +10,9 @@ Permission to use, copy, modify, and distribute this software and its
 documentation for any purpose and without fee is hereby granted, 
 provided that the above copyright notice appear in all copies and that
 both that copyright notice and this permission notice appear in 
-supporting documentation, and that the names of Digital or MIT not be
-used in advertising or publicity pertaining to distribution of the
-software without specific, written prior permission.  
+supporting documentation, and that the name of MIT not be used in
+advertising or publicity pertaining to distribution of the software
+without specific, written prior permission.  
 
 *************************************************************************/
 
