@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
-XCOMM rules:  $XConsortium: Imake.rules,v 1.102 91/03/26 14:28:35 rws Exp $
+XCOMM rules:  $XConsortium: Imake.rules,v 1.103 91/04/01 09:18:30 rws Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -751,7 +751,7 @@ BuildMakefileTarget(Imakefile, /**/)
 #ifndef NormalLibraryObjectRule
 #define	NormalLibraryObjectRule()					@@\
 .c.o:									@@\
-	ObjectCompile( /**/)
+	ObjectCompile($(_NOOP_))
 #endif /* NormalLibraryObjectRule */
 
 
