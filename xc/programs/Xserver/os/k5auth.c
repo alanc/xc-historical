@@ -1,7 +1,7 @@
 /*
  * Kerberos V5 authentication scheme
  *
- * $XConsortium: k5auth.c,v 1.3 93/09/29 19:11:15 gildea Exp $
+ * $XConsortium: k5auth.c,v 1.4 93/09/30 15:24:38 gildea Exp $
  *
  * Copyright 1993 Massachusetts Institute of Technology
  *
@@ -446,7 +446,7 @@ int k5_stage1(client)
 	{
 	    client->requestVector = InitialVector;
 	    strcpy(kerror, "krb5_rc_close failed (2): ");
-	    strncat(kerror, error_message(retval2), 238);
+	    strncat(kerror, error_message(retval2), 230);
 	    return(SendConnSetup(client, kerror));
 	}
 	free(rcache);
@@ -454,8 +454,8 @@ int k5_stage1(client)
     if (retval)
     {
 	client->requestVector = InitialVector;
-	strcpy(kerror, "krb5_rd_req failed: ");
-	strncat(kerror, error_message(retval), 235);
+	strcpy(kerror, "Krb5: Bad application request: ");
+	strncat(kerror, error_message(retval), 224);
 	return(SendConnSetup(client, kerror));
     }
     cprinc = authdat->ticket->enc_part2->client;
@@ -525,11 +525,22 @@ int k5_stage1(client)
     }
     else
     {
+	char *kname;
+	
 	krb5_free_tkt_authent(authdat);
 	client->requestVector = InitialVector;
 	free(buf.data);
-	return(SendConnSetup(client,
-			     "Principal is not authorized to connect to Server"));
+	retval = krb5_unparse_name(cprinc, &kname);
+	if (retval == 0)
+	{
+	    sprintf(kerror, "Principal \"%s\" is not authorized to connect",
+		    kname);
+	    if (kname)
+		free(kname);
+	    return(SendConnSetup(client, kerror));
+	}
+	else
+	    return(SendConnSetup(client,"Principal is not authorized to connect to Server"));
     }
 }
 
@@ -621,6 +632,8 @@ int K5Add(data_length, data, id)
     {
 	if (retval = krb5_cc_resolve(nbuf, &cc))
 	{
+	    ErrorF("K5Add: krb5_cc_resolve of \"%s\" failed: %s\n",
+		   nbuf, error_message(retval));
 	    free(nbuf);
 	    return 0;
 	}
@@ -641,6 +654,11 @@ int K5Add(data_length, data, id)
 	    ccname = nbuf;
 	    krb5_id = id;
 	    return 1;
+	}
+	else
+	{
+	    ErrorF("K5Add: getting principal from cache \"%s\" failed: %s\n",
+		   nbuf, error_message(retval));
 	}
     }
     else if (!strncmp(data, "CS:", 3))
@@ -698,6 +716,11 @@ int K5Add(data_length, data, id)
 	AddHost(NULL, FamilyKrb5Principal, kbuf.length, kbuf.data);
 	krb5_id = id;
 	return 1;
+    }
+    else
+    {
+	ErrorF("K5Add: credentials cache name \"%.*s\" in auth file: unknown type\n",
+	       data_length, data);
     }
     return 0;
 }
