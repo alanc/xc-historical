@@ -1,4 +1,4 @@
-$XConsortium: README,v 1.26 92/06/28 17:40:47 rws Exp $
+$XConsortium: README,v 1.27 92/08/22 11:56:36 rws Exp $
 
 The easiest way to write an Imakefile is to find another one that does
 something similar and copy/modify it!
@@ -42,6 +42,7 @@ Imake.tmpl provides defaults for the following variables:
 	HasSharedLibraries	boolean for system has shared libraries
 	HasShm			boolean for System V shared memory
 	HasSockets		boolean for system has BSD sockets
+	HasSymLinks		boolean for system has symbolic links
 	HasBSD44Sockets		boolean for system has BSD4.4 sockets
 	HasVFork		boolean for system has vfork()
 	HasVoidSignalReturn	boolean for POSIX signal() procs

@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: x386.cf,v 1.7 91/08/16 19:30:10 gildea Exp $
+XCOMM platform:  $XConsortium: x386.cf,v 1.8 92/05/29 17:31:33 rws Exp $
 
 /*****************************************************************************
  *			  Site-specfic parameters                            *
@@ -32,6 +32,7 @@ XCOMM platform:  $XConsortium: x386.cf,v 1.7 91/08/16 19:30:10 gildea Exp $
 #define SystemV			YES
 
 #define NeedBerklib		YES
+#define HasSymLinks		NO
 
 /*
  * V/386 Release 3.2
