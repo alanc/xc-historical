@@ -111,7 +111,7 @@ open_tcp_socket()
 #ifdef SO_REUSEADDR
 
 #ifdef hpux
-    set_sockt_option(request, SO_REUSEADDR);
+    set_socket_option(request, SO_REUSEADDR);
 #else
     {
 	int         one = 1;
