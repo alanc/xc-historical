@@ -1,5 +1,5 @@
 /*
- * $XConsortium: CvtCache.c,v 1.4 89/08/18 13:03:20 jim Exp $
+ * $XConsortium: CvtCache.c,v 1.5 89/11/30 18:21:32 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -42,7 +42,7 @@ static int _CloseDisplay(), _FreeCCDQ();
 static int _FreeCCDQ (q)
     XmuDisplayQueue *q;
 {
-    XmuDQDestroy (dq);
+    XmuDQDestroy (dq, False);
     dq = NULL;
 }
 
