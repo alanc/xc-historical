@@ -1,3 +1,4 @@
+.\" $XConsortium$
 .TH XTERM 1 "Release 5" "X Version 11"
 .SH NAME
 xterm \- terminal emulator for X
@@ -515,6 +516,10 @@ The default is ``false.''
 If ``true,'' the keypad keys are initially in application mode.
 The default is ``false.''
 .TP 8
+.B "autoWrap (\fPclass\fB AutoWrap)"
+Specifies whether or not auto-wraparound should be enabled.  The
+default is ``true.''
+.TP 8
 .B "bellSuppressTime (\fPclass\fB BellSuppressTime)"
 Number of milliseconds after a bell command is sent during which additional
 bells will be suppressed.  Default is 200.  If set non-zero,
@@ -660,10 +665,6 @@ Specifies whether or not reverse video should be simulated.  The default is
 .B "reverseWrap (\fPclass\fB ReverseWrap)"
 Specifies whether or not reverse-wraparound should be enabled.  The default is
 ``false.''
-.TP 8
-.B "autoWrap (\fPclass\fB AutoWrap)"
-Specifies whether or not auto-wraparound should be enabled.  The
-default is ``true.''
 .TP 8
 .B "saveLines (\fPclass\fB SaveLines)"
 Specifies the number of lines to save beyond the top of the screen when a
