@@ -1,4 +1,4 @@
-/* $XConsortium: resource.c,v 1.3 91/05/13 16:56:06 gildea Exp $ */
+/* $XConsortium: resource.c,v 1.4 91/06/21 18:23:50 keith Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -137,6 +137,7 @@ InitClientResources(client)
 
     if (client == serverClient) {
 	extern int  CloseClientFont();
+	extern int  DeleteAuthCont ();
 
 	lastResourceType = RT_LASTPREDEF;
 	lastResourceClass = RC_LASTPREDEF;
@@ -149,6 +150,7 @@ InitClientResources(client)
 	    return FALSE;
 	DeleteFuncs[RT_NONE & TypeMask] = NoneDeleteFunc;
 	DeleteFuncs[RT_FONT & TypeMask] = CloseClientFont;
+	DeleteFuncs[RT_AUTHCONT & TypeMask] = DeleteAuthCont;
     }
     clientTable[i = client->index].resources =
 	(ResourcePtr *) fsalloc(INITBUCKETS * sizeof(ResourcePtr));
