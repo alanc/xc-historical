@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: utils.c,v 1.68 89/01/04 08:45:16 rws Exp $ */
+/* $XConsortium: utils.c,v 1.69 89/01/10 14:59:59 rws Exp $ */
 #include <stdio.h>
 #include "Xos.h"
 #include "misc.h"
@@ -309,7 +309,8 @@ char	*argv[];
 	else if ( strcmp( argv[i], "-p") == 0)
 	{
 	    if(++i < argc)
-	        defaultScreenSaverInterval = atoi(argv[i]) * MILLI_PER_MIN;
+	        defaultScreenSaverInterval = ((long)atoi(argv[i])) *
+					     MILLI_PER_MIN;
 	    else
 		UseMsg();
 	}
@@ -320,7 +321,7 @@ char	*argv[];
 	else if ( strcmp( argv[i], "-s") == 0)
 	{
 	    if(++i < argc)
-	        defaultScreenSaverTime = atoi(argv[i]) * MILLI_PER_MIN;
+	        defaultScreenSaverTime = ((long)atoi(argv[i])) * MILLI_PER_MIN;
 	    else
 		UseMsg();
 	}
@@ -336,7 +337,7 @@ char	*argv[];
 	else if ( strcmp( argv[i], "-to") == 0)
 	{
 	    if(++i < argc)
-		TimeOutValue = atoi(argv[i]);
+		TimeOutValue = ((long)atoi(argv[i])) * MILLI_PER_SECOND;
 	    else
 		UseMsg();
 	}
