@@ -4,7 +4,7 @@
 
 /**/###########################################################################
 /**/# Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-/**/# $XConsortium: Imake.tmpl,v 1.36 89/06/01 12:00:46 rws Exp $
+/**/# $XConsortium: Imake.tmpl,v 1.37 89/06/02 09:19:20 rws Exp $
 /**/#
 /**/# Platform-specific parameters may be set in the appropriate .cf
 /**/# configuration files.  Site-wide parameters may be set in the file
@@ -85,6 +85,13 @@
 #undef hpux
 #define HPArchitecture
 #endif /* hpux */
+
+#ifdef att
+#define MacroIncludeFile "att.cf"
+#define MacroFile att.cf
+#undef att
+#define ATTArchitecture
+#endif /* att */
 
 #ifdef apollo
 #define MacroIncludeFile "apollo.cf"
