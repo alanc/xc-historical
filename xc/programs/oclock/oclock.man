@@ -43,11 +43,20 @@ its border around quite a bit, this is most usefully set to zero.
 .B \-noshape
 causes the clock to not reshape itself and ancestors to exactly
 fit the outline of the clock.
+.TP 8
+.B \-transparent
+causes the clock to consist only of the jewel, the hands, and the border.
 .SH COLORS
-Although the default colors for the Clock widget are black and white, the
-widget was designed in color; unfortunately, the toolkit makes specifying
-these colors in a device-independent manner difficult.  If you want to
-see the correct colors, add the following lines to your resource file:
+If you would like your clock to be viewable in color, include the following 
+in your resource database:
+.sp 1
+*customization:                 -color
+.sp 1
+.br
+This will cause oclock to pick up the colors in the app-defaults color
+customization file:
+/usr/lib/X11/app-defaults/Clock-color.
+Below are the default colors:
 .sp 1
 Clock*Background: grey
 .br
