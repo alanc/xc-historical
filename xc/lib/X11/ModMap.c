@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XModMap.c,v 11.2 87/08/19 12:40:45 toddb Locked $ */
+/* $Header: XModMap.c,v 11.3 87/09/13 00:32:22 jim Locked $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #define NEED_REPLIES
@@ -12,17 +12,17 @@ XGetModifierMapping(dpy)
 {       
     xGetModifierMappingReply rep;
     register xReq *req;
-    unsigned int nbytes;
+    unsigned long nbytes;
     XModifierKeymap *res;
 
     LockDisplay(dpy);
     GetEmptyReq(GetModifierMapping, req);
     (void) _XReply (dpy, (xReply *)&rep, 0, xFalse);
 
-    nbytes = (long)rep.length << 2;
+    nbytes = (unsigned long)rep.length << 2;
     res = (XModifierKeymap *) Xmalloc(sizeof (XModifierKeymap));
     res->modifiermap = (KeyCode *) Xmalloc (nbytes);
-    _XReadPad(dpy, res->modifiermap, nbytes);
+    _XReadPad(dpy, (char *) res->modifiermap, nbytes);
     res->max_keypermod = rep.numKeyPerModifier;
 
     UnlockDisplay(dpy);
