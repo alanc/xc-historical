@@ -23,13 +23,14 @@ SOFTWARE.
 ******************************************************************/
 #ifndef XMD_H
 #define XMD_H 1
-/* $Header: Xmd.h,v 1.24 88/06/29 15:35:48 swick Exp $ */
+/* $Header: Xmd.h,v 1.25 88/08/11 10:50:13 jim Exp $ */
 /*
  *  Xmd.h: MACHINE DEPENDENT DECLARATIONS.
  */
 
 #ifdef CRAY
 #define WORD64
+#define UNSIGNEDBITFIELDS
 #endif
 
 
@@ -43,7 +44,8 @@ pragma off(char_default_unsigned);
 
 /*
  * Bitfield suffixes for the protocol structure elements, if you
- * need them.
+ * need them.  Note that bitfields are not guarranteed to be signed
+ * (or even unsigned) according to ANSI C.
  */
 #ifdef WORD64
 #define B32 :32
@@ -52,6 +54,24 @@ pragma off(char_default_unsigned);
 #define B32
 #define B16
 #endif /* WORD64 */
+
+#if defined(WORD64) && defined(UNSIGNEDBITFIELDS)
+#define bitExtend(val,bit,mask) (((val) & (bit)) ? ((val) | (mask)) : (val))
+#define cvtINT8toInt(val)   bitExtend (val, 0x0080, 0xffffffffffffff00)
+#define cvtINT16toInt(val)  bitExtend (val, 0x8000, 0xffffffffffff0000)
+#define cvtINT32toInt(val)  bitExtend (val, 0x8000, 0xffffffff00000000)
+#define cvtINT8toLong(val)  cvtINT8ToInt(val)
+#define cvtINT16toLong(val) cvtINT16ToInt(val)
+#define cvtINT32toLong(val) cvtINT32ToInt(val)
+#undef bitExtend
+#else
+#define cvtINT8toInt(val) (val)
+#define cvtINT16toInt(val) (val)
+#define cvtINT32toInt(val) (val)
+#define cvtINT8toLong(val) (val)
+#define cvtINT16toLong(val) (val)
+#define cvtINT32toLong(val) (val)
+#endif /* UNSIGNEDBITFIELDS */
 
 
 typedef long           INT32;
