@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xmh.h,v 2.29 89/12/15 11:44:52 kit Exp $
+ * $XConsortium: xmh.h,v 2.30 91/01/09 17:33:20 rws Exp $
  *
  *
  *			  COPYRIGHT 1987
@@ -28,15 +28,13 @@
 #ifndef _xmh_h
 #define _xmh_h
 
-#include <stdio.h>
-#include <X11/Xlib.h>
+#include <X11/Intrinsic.h>
+#include <X11/StringDefs.h>
+#include <X11/Shell.h>
 #include <X11/Xos.h>
 #include <X11/Xfuncs.h>
 #include <X11/Xutil.h>
 #include <X11/cursorfont.h>
-#include <X11/Intrinsic.h>
-#include <X11/StringDefs.h>
-#include <X11/Shell.h>
 #include <X11/Xaw/AsciiText.h>
 #include <X11/Xaw/SmeBSB.h>
 #include <X11/Xaw/Box.h>
@@ -50,6 +48,7 @@
 #include <X11/Xaw/Toggle.h>
 #include <X11/Xaw/Viewport.h>
 #include <X11/Xaw/Paned.h>
+#include <stdio.h>
 
 #define DELETEABORTED	-1
 #define NEEDS_CONFIRMATION	-1
