@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: gc.c,v 1.93 87/09/03 13:37:14 toddb Locked $ */
+/* $Header: gc.c,v 1.94 87/09/03 14:41:26 toddb Locked $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -350,6 +350,8 @@ DoChangeGC(pGC, mask, pval, fPointer)
    returns status of non-default fields in pStatus
 BUG:
    should check for failure to create default tile and stipple
+   should be able to set the tile before the call the (pScreen->ChangeGC)
+	as it is, we must call ChangeGC twice.
 
 */
 
@@ -453,7 +455,14 @@ CreateGC(pDrawable, mask, pval, pStatus)
 					 1, &rect);
 	/* Always remember to free the scratch graphics context after use. */
 	FreeScratchGC(pgcScratch);
-	pGC->tile = pTile;
+
+	/*
+	 * Unfortunately, we must call ChangeGC a second time to get
+	 * the tile installed.  This would be nice to do before the first
+	 * call to ChangeGC, but we don't know the value of the
+	 * foreground pixel until afterwards.
+	 */
+	DoChangeGC(pGC, GCTile, (CARD32 *)&pTile, TRUE);
     }
     return (pGC);
 }
