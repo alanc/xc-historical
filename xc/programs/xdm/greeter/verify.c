@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: $
+ * $XConsortium: verify.c,v 1.3 88/09/23 14:21:35 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -24,12 +24,18 @@
  * typical unix verification routine.
  */
 
-# include	<pwd.h>
 # include	"dm.h"
+
+# include	<pwd.h>
+# ifdef NGROUPS
+# include	<grp.h>
+# endif
 
 struct passwd joeblow = {
 	"Nobody", "***************"
 };
+
+static int * parseGroups ();
 
 Verify (d, greet, verify)
 struct display		*d;
@@ -53,14 +59,19 @@ struct verify_info	*verify;
 	Debug ("verify succeeded\n");
 	verify->uid = p->pw_uid;
 #ifdef NGROUPS
-	verify->groups = parseGroups (greet->name, p->pw_gid);
+	getGroups (greet->name, verify, p->pw_gid);
 #else
 	verify->gid = p->pw_gid;
 #endif
 	home = p->pw_dir;
 	shell = p->pw_shell;
-	argv = parseArgs ((char **) 0, d->session);
-	argv = parseArgs (argv, greet->string);
+	argv = 0;
+	if (d->session)
+		argv = parseArgs (argv, d->session);
+	if (greet->string)
+		argv = parseArgs (argv, greet->string);
+	if (!argv)
+		argv = parseArgs (argv, "xsession");
 	verify->argv = argv;
 	verify->environ = setEnv (d, greet->name, home, shell);
 	return 1;
@@ -141,20 +152,31 @@ char	**members;
 	return 0;
 }
 
-getGroups (name, verify)
+getGroups (name, verify, gid)
 char			*name;
 struct verify_info	*verify;
+int			gid;
 {
 	int		ngroups;
 	struct group	*g;
+	int		i;
 
 	ngroups = 0;
 	verify->groups[ngroups++] = gid;
 	setgrent ();
 	while (g = getgrent()) {
+		/*
+		 * make the list unique
+		 */
+		for (i = 0; i < ngroups; i++)
+			if (verify->groups[i] == g->gr_gid)
+				break;
+		if (i != ngroups)
+			continue;
 		if (groupMember (name, g->gr_mem)) {
 			if (ngroups >= NGROUPS)
-				error ("too many groups");
+				LogError ("%s belongs to more than %d groups, %s ignored\n",
+					name, NGROUPS, g->gr_name);
 			else
 				verify->groups[ngroups++] = g->gr_gid;
 		}
