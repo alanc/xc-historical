@@ -1,4 +1,4 @@
-/* $XConsortium: XPutImage.c,v 11.58 91/04/04 18:57:55 gildea Exp $ */
+/* $XConsortium: XPutImage.c,v 11.59 91/06/07 10:37:15 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -517,13 +517,34 @@ static int Const HalfOrder[12] = {
 	LSBFirst, /* 4Mm */
 	LSBFirst, /* 1Ml */
 	MSBFirst, /* 2Ml */
-	MSBFirst, /* 4Ml; */
+	MSBFirst, /* 4Ml */
 	LSBFirst, /* 1Lm */
 	MSBFirst, /* 2Lm */
 	MSBFirst, /* 4Lm */
 	LSBFirst, /* 1Ll */
 	LSBFirst, /* 2Ll */
 	LSBFirst  /* 4Ll */
+	};
+
+/* Finally, for SwapWords cases, the half order depends not just on the source
+ * but also on the destination scanline unit.  Use of this table changes some
+ * MSBFirsts to LSBFirsts that are "do not care" (because the function will be
+ * NoSwap or SwapBits) in addition to changing the desired ones.
+ */
+
+static int Const HalfOrderWord[12] = {
+	MSBFirst, /* 1Mm */
+	MSBFirst, /* 2Mm */
+	MSBFirst, /* 4Mm */
+	MSBFirst, /* 1Ml */
+	MSBFirst, /* 2Ml */
+	LSBFirst, /* 4Ml */
+	MSBFirst, /* 1Lm */
+	MSBFirst, /* 2Lm */
+	LSBFirst, /* 4Lm */
+	MSBFirst, /* 1Ll */
+	MSBFirst, /* 2Ll */
+	MSBFirst  /* 4Ll */
 	};
 
 /*
@@ -588,6 +609,10 @@ SendXYImage(dpy, req, image, req_xoffset, req_yoffset)
     half_order = HalfOrder[ComposeIndex(image->bitmap_unit,
 					image->bitmap_bit_order,
 					image->byte_order)];
+    if (half_order == MSBFirst)
+	half_order = HalfOrderWord[ComposeIndex(dpy->bitmap_unit,
+						dpy->bitmap_bit_order,
+						dpy->byte_order)];
 
     src = image->data + (image->bytes_per_line * req_yoffset) + total_xoffset;
 
