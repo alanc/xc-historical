@@ -261,6 +261,12 @@ can be set easily and quickly.  Users of color displays will frequently
 want to set Background and Foreground classes to particular defaults.
 Particular color instances such as text cursors can then be overrided
 without having to define all other resources.
+.PP
+When a resource (such as a color, font, file, cursor) specified
+as a string in the resource database cannot be located, no error
+is printed unless the resource ``StringConversionWarnings'' is
+set to True.  Whether or not useful results ensue when such an
+error occurs is dependent on the particular application.
 .SH DIAGNOSTICS
 The default error handler uses the Resource Manager to build diagnostic
 messages when error conditions arise.  The default error database is
@@ -269,21 +275,23 @@ parameter (/usr/lib/X11 in the standard release).  If this file is not
 installed, error messages will tend to be somewhat cryptic.
 .SH "SEE ALSO"
 .PP
-Xserver(8c), xterm(1), bitmap(1), xwm(1), xhost(1), xclock(1), xload(1), 
-xset(1), xsetroot(1), xmodmap(1),
-keycomp(1), biff(1), init(8), ttys(5), uwm(1), 
-xrefresh(1), xwininfo(1), xdvi(1), xwd(1), xwud(1), 
-xinit(1), Xqvss(8c), Xsun(8c), Xapollo(8c), Xapa16(8c),
+xterm(1), bitmap(1), ico(1), muncher(1), plaid(1), puzzle(1),
+resize(1), uwm(1), wm(1), x10tox11(1), xbiff(1), xcalc(1),
+xclock(1), xedit(1), xfd(1), xhost(1), xinit(1), xload(1),
+xlogo(1), xlsfonts(1), xmh(1), xmodmap(1), xpr(1), xprkbd(1),
+xprop(1), xrdb(1), xrefresh(1), xset(1), xsetroot(1), xwd(1),
+xwininfo(1), xwud(1), Xserver(1), Xapollo(1), Xqvss(1), Xsun(1),
+kbd_mode(1), todm(1), tox(1), biff(1), init(8), ttys(5)
 .I "Xlib \- C Language X Interface"
 .SH AUTHORS
 .PP
 It is no longer feasible to list all people who have contributed
-something to X; see the Protocol Specification and Xlib Manual
-for lists of contributors.
+something to X, but see doc/contributors in the standard sources.
 .SH COPYRIGHT
 The following copyright and permission notice outlines the rights and
-restrictions covering all parts of the standard release of the X Window
-System from MIT:
+restrictions covering most parts of the standard release of the X Window
+System from MIT.  Other parts have additional or different copyrights
+and permissions; see the individual source files.
 .sp 2
 Copyright 1984, 1985, 1986, 1987, 1988, Massachusetts Institute of 
 Technology.
