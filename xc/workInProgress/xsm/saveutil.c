@@ -1,4 +1,4 @@
-/* $XConsortium: saveutil.c,v 1.19 94/08/10 14:59:28 mor Exp mor $ */
+/* $XConsortium: saveutil.c,v 1.20 94/08/17 18:17:03 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -89,10 +89,10 @@ char **sm_id;
     getline(&buf, &buflen, f);
     if(p = strchr(buf, '\n')) *p = '\0';
     version_number = atoi (buf);
-    if (version_number != SAVEFILE_VERSION)
+    if (version_number > SAVEFILE_VERSION)
     {
 	if (verbose)
-	    printf("Incompatible version of session save file.\n");
+	    printf("Unsupported version number of session save file.\n");
 	*sm_id = NULL;
 	return 0;
     }
@@ -101,6 +101,14 @@ char **sm_id;
     getline(&buf, &buflen, f);
     if(p = strchr(buf, '\n')) *p = '\0';
     *sm_id = XtNewString(buf);
+
+    /* Read number of clients running in the last session */
+    if (version_number >= 2)
+    {
+	getline(&buf, &buflen, f);
+	if(p = strchr(buf, '\n')) *p = '\0';
+	num_clients_in_last_session = atoi (buf);
+    }
 
     state = 0;
     while(getline(&buf, &buflen, f)) {
@@ -260,6 +268,8 @@ char *sm_id;
     {
 	fprintf (f, "%d\n", SAVEFILE_VERSION);
 	fprintf (f, "%s\n", sm_id);
+	fprintf (f, "%d\n", ListCount (RunningList) +
+	    ListCount (RestartAnywayList));
 
 	for (cl = ListFirst (RunningList); cl; cl = ListNext (cl))
 	{
@@ -321,16 +331,19 @@ char *session_name;
     getline(&buf, &buflen, f);
     if(p = strchr(buf, '\n')) *p = '\0';
     version_number = atoi (buf);
-    if (version_number != SAVEFILE_VERSION)
+    if (version_number > SAVEFILE_VERSION)
     {
 	if (verbose)
 	    printf("Can't delete session save file - incompatible version.\n");
 	return;
     }
 
-    /* Read SM's id */
+    /* Skip SM's id */
     getline(&buf, &buflen, f);
-    if(p = strchr(buf, '\n')) *p = '\0';
+
+    /* Skip number of clients running in the last session */
+    if (version_number >= 2)
+	getline(&buf, &buflen, f);
 
     state = 0;
     foundDiscard = 0;
