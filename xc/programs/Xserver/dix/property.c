@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: property.c,v 5.5 91/05/09 16:00:36 rws Exp $ */
+/* $XConsortium: property.c,v 5.6 92/04/20 17:07:39 rws Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -172,7 +172,7 @@ ProcChangeProperty(client)
         return BadValue;
     }
     len = stuff->nUnits;
-    if (len > 0xffff)
+    if (len > ((0xffffffff - sizeof(xChangePropertyReq)) >> 2))
 	return BadLength;
     sizeInBytes = format>>3;
     totalSize = len * sizeInBytes;
