@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: handler.c,v 1.11 89/05/16 13:54:39 kit Exp $
+ * $XConsortium: handler.c,v 1.12 89/08/30 18:24:15 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -38,61 +38,37 @@ static void PutUpManpage();
 
 /* ARGSUSED */
 void
-OptionCallback(w,pointer,junk)
+OptionCallback(w, pointer, junk)
 Widget w;
 caddr_t pointer,junk;
 {
   static void ToggleBothShownState();
-  ManpageGlobals * man_globals; 
-  MenuStruct * menu_struct;
-  register XrmQuark quark;
-  Cardinal num_params = 1;
+  ManpageGlobals * man_globals = (ManpageGlobals *) pointer;
   String params;
+  Cardinal num_params = 1;
 
-  static XrmQuark search_quark, directory_quark, manpage_quark, help_quark;
-  static XrmQuark both_screens_quark, remove_quark, open_quark, quit_quark;
-  static XrmQuark version_quark;
-  static Boolean quark_initialized = FALSE;
-
-  if (!quark_initialized) {
-    both_screens_quark = XrmStringToQuark(BOTH_SCREENS);
-    directory_quark    = XrmStringToQuark(DIRECTORY);
-    help_quark         = XrmStringToQuark(HELP);
-    manpage_quark      = XrmStringToQuark(MANPAGE);
-    open_quark         = XrmStringToQuark(OPEN_MANPAGE);
-    quit_quark         = XrmStringToQuark(QUIT);
-    remove_quark       = XrmStringToQuark(REMOVE_MANPAGE);
-    search_quark       = XrmStringToQuark(SEARCH);
-    version_quark      = XrmStringToQuark(SHOW_VERSION);
-    quark_initialized  = TRUE;
-  }
-  
-  menu_struct = (MenuStruct *) pointer;
-  man_globals = (ManpageGlobals *) menu_struct->data;
-  quark = menu_struct->quark;
-
-  if (quark == search_quark )
-    PopupSearch(w, NULL, NULL, NULL);
-  else if (quark == directory_quark) {         /* Put Up Directory */
+  if ( w == man_globals->search_entry )
+    PopupSearch(XtParent(w), NULL, NULL, NULL);
+  else if (w == man_globals->dir_entry) {       /* Put Up Directory */
     params = "Directory";
-    GotoPage(w, NULL, &params, &num_params);
+    GotoPage(XtParent(w), NULL, &params, &num_params);
   }
-  else if (quark == manpage_quark) {           /* Put Up Man Page */
+  else if (w == man_globals->manpage_entry ) {  /* Put Up Man Page */
     params = "ManualPage";
-    GotoPage(w, NULL, &params, &num_params);
+    GotoPage(XtParent(w), NULL, &params, &num_params);
   }
-  else if (quark == help_quark)               /* Help */
-    PopupHelp(w, NULL, NULL, NULL);
-  else if (quark == both_screens_quark)        /* Toggle Both_Shown State. */
+  else if ( w == man_globals->help_entry )      /* Help */
+    PopupHelp(XtParent(w), NULL, NULL, NULL);
+  else if ( w == man_globals->both_screens_entry ) /*Toggle Both_Shown State.*/
     ToggleBothShownState(man_globals);
-  else if (quark == remove_quark)             /* Kill the manpage */
-    RemoveThisManpage(w, NULL, NULL, NULL);
-  else if (quark == open_quark)                /* Open new manpage */
-    CreateNewManpage(w, NULL, NULL, NULL);
-  else if (quark == version_quark)             /* Get version */
-    ShowVersion(w, NULL, NULL, NULL);
-  else if (quark == quit_quark)                /* Quit. */
-    Quit(w, NULL, NULL, NULL);
+  else if ( w == man_globals->remove_entry)     /* Kill the manpage */
+    RemoveThisManpage(XtParent(w), NULL, NULL, NULL);
+  else if ( w == man_globals->open_entry)       /* Open new manpage */
+    CreateNewManpage(XtParent(w), NULL, NULL, NULL);
+  else if ( w == man_globals->version_entry)    /* Get version */
+    ShowVersion(XtParent(w), NULL, NULL, NULL);
+  else if ( w == man_globals->quit_entry)      /* Quit. */
+    Quit(XtParent(w), NULL, NULL, NULL);
 }
 
 /*      Function Name: ToggleBothShownState;
@@ -144,16 +120,13 @@ ManpageGlobals * man_globals;
     ChangeLabel(man_globals->label, man_globals->manpage_title);
   
   XtSetArg(arglist[0], XtNlabel, label_str);
-  XawSimpleMenuSetEntryValues(man_globals->option_menu, BOTH_SCREENS,
-			   arglist, (Cardinal) 1);
+  XtSetValues(man_globals->both_screens_entry, arglist, ONE);
   
   /* if both are shown there is no need to switch between the two. */
 
   XtSetArg(arglist[0], XtNsensitive, !man_globals->both_shown);
-  XawSimpleMenuSetEntryValues(man_globals->option_menu, MANPAGE,
-			   arglist, (Cardinal) 1);
-  XawSimpleMenuSetEntryValues(man_globals->option_menu, DIRECTORY,
-			   arglist, (Cardinal) 1);
+  XtSetValues(man_globals->manpage_entry, arglist, ONE);
+  XtSetValues(man_globals->dir_entry, arglist, ONE);
 }
 
 /*	Function Name: Popup
@@ -209,10 +182,8 @@ FILE * file;
   if (!man_globals->both_shown) {
     Arg arglist[1];
     XtSetArg(arglist[0], XtNsensitive, TRUE);
-    XawSimpleMenuSetEntryValues(man_globals->option_menu, MANPAGE,
-			     arglist, (Cardinal) 1);
-    XawSimpleMenuSetEntryValues(man_globals->option_menu, BOTH_SCREENS,
-			     arglist, (Cardinal) 1);
+    XtSetValues(man_globals->manpage_entry, arglist, ONE);
+    XtSetValues(man_globals->both_screens_entry, arglist, ONE);
   }
   GotoPage(man_globals->manpagewidgets.manpage, NULL, &params, &num_params);
 }
@@ -416,8 +387,7 @@ Cardinal * num_params;
   case 'M':
   case 'm':
     XtSetArg(arglist[0], XtNsensitive, &sensitive);
-    XawSimpleMenuGetEntryValues(man_globals->option_menu, MANPAGE,
-			   arglist, (Cardinal) 1);
+    XtGetValues(man_globals->manpage_entry, arglist, ONE);
     if (sensitive) {
       ChangeLabel(man_globals->label,man_globals->manpage_title);
       XtUnmanageChild(man_globals->manpagewidgets.directory);

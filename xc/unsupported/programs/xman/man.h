@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: man.h,v 1.13 89/08/30 18:24:31 kit Exp $
+ * $XConsortium: man.h,v 1.14 89/08/30 19:20:06 kit Exp $
  * $Athena: man.h,v 4.6 89/01/06 12:17:38 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
@@ -35,9 +35,12 @@
 #include <X11/StringDefs.h>
 #include <X11/Shell.h>
 
+#include <X11/Xaw/Cardinals.h>
+
 /* Widget header files. */
 
 #include <X11/Xaw/AsciiText.h>
+#include <X11/Xaw/BSBMenuEnt.h>
 #include <X11/Xaw/Box.h>
 #include <X11/Xaw/Command.h>
 #include <X11/Xaw/Dialog.h>
@@ -45,9 +48,9 @@
 #include <X11/Xaw/List.h>
 #include <X11/Xaw/MenuButton.h>
 #include <X11/Xaw/Scroll.h>
+#include <X11/Xaw/SimpleMenu.h>
 #include <X11/Xaw/VPaned.h>
 #include <X11/Xaw/Viewport.h>
-#include <X11/Xaw/SimpleMenu.h>
 
 /* program specific header files. */
 
@@ -115,7 +118,15 @@ typedef struct _ManpageGlobals{
     help_button,		/* The help button. */
     option_menu,		/* The option menu. */
     text_widget;		/* text widget containing search string. */
-  char manpage_title[80];	/* The label to use for the current manpage. */
+
+  /* Widgets (Objects really) for the command menu entries. */
+
+  Widget dir_entry, manpage_entry, help_entry,
+    search_entry, both_screens_entry, remove_entry, open_entry,
+    version_entry, quit_entry;
+
+  char manpage_title[80];       /* The label to use for the current manpage. */
+
   char save_file[80];		/* the name of the file to save fomatted 
 				   page into. */
   char tmpfile[80];		/* the name of the file to copy the formatted

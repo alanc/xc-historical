@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: search.c,v 1.9 89/05/16 13:54:41 kit Exp $
+ * $XConsortium: search.c,v 1.10 89/08/30 18:24:39 kit Exp $
  * $oHeader: search.c,v 4.0 88/08/31 22:13:19 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
@@ -183,7 +183,6 @@ int type;
 
   if (type == APROPOS) {
     char label[BUFSIZ];
-    char * ptr, * temp_path;
 
     sprintf(label,"Results of apropos search on: %s", search_string);
 

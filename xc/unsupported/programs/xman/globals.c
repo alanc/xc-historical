@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: globals.c,v 1.4 89/02/14 16:07:58 kit Exp $
+ * $XConsortium: globals.c,v 1.5 89/04/28 15:05:32 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -45,8 +45,3 @@ int man_pages_shown;		/* The current number of manual
 Widget initial_widget;		/* The initial widget, never realized. */
 
 XContext manglobals_context;	/* The context for man_globals. */
-
-char * option_names[] = {	/* Names of the buttons. */
-  DIRECTORY, MANPAGE, HELP, SEARCH, BOTH_SCREENS, 
-  REMOVE_MANPAGE, OPEN_MANPAGE, SHOW_VERSION, QUIT};
-

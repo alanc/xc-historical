@@ -1,8 +1,8 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: buttons.c,v 1.14 89/05/16 13:54:37 kit Exp $
- * $Header: buttons.c,v 1.14 89/05/16 13:54:37 kit Exp $
+ * $XConsortium: buttons.c,v 1.15 89/08/30 18:24:02 kit Exp $
+ * $Header: buttons.c,v 1.15 89/08/30 18:24:02 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -233,21 +233,19 @@ Boolean full_instance;
 				   hpane, arglist, num_args);
 
   XtSetArg(arglist[0], XtNlabel, SHOW_BOTH);
-  XawSimpleMenuSetEntryValues(man_globals->option_menu, BOTH_SCREENS,
-			   arglist, (Cardinal) 1);
+  XtSetValues(man_globals->both_screens_entry, arglist, (Cardinal) 1);
 
   if (full_instance) {
     CreateSectionMenu(man_globals, top);
     MakeSaveWidgets(man_globals, top);
   } else {
-    Widget menu = man_globals->option_menu;
     XtSetSensitive(sections, FALSE);       
     XtSetArg(arglist[0], XtNsensitive, FALSE);
-    XawSimpleMenuSetEntryValues(menu, DIRECTORY,    arglist, (Cardinal) 1);
-    XawSimpleMenuSetEntryValues(menu, MANPAGE,      arglist, (Cardinal) 1);
-    XawSimpleMenuSetEntryValues(menu, HELP,         arglist, (Cardinal) 1);
-    XawSimpleMenuSetEntryValues(menu, SEARCH,       arglist, (Cardinal) 1);
-    XawSimpleMenuSetEntryValues(menu, BOTH_SCREENS, arglist, (Cardinal) 1);
+    XtSetValues(man_globals->dir_entry, arglist, ONE);
+    XtSetValues(man_globals->manpage_entry, arglist, ONE);
+    XtSetValues(man_globals->help_entry, arglist, ONE);
+    XtSetValues(man_globals->search_entry, arglist, ONE);
+    XtSetValues(man_globals->both_screens_entry, arglist, ONE);
   }
 
   man_globals->label = XtCreateManagedWidget(MANNAME, labelWidgetClass,
@@ -310,14 +308,11 @@ Boolean help, page;
       XtSetValues(dir, arglist, (Cardinal) 1);
 
       XtSetArg(arglist[0], XtNsensitive, FALSE);
-      XawSimpleMenuSetEntryValues(man_globals->option_menu, MANPAGE,
-			       arglist, (Cardinal) 1);
-      XawSimpleMenuSetEntryValues(man_globals->option_menu, DIRECTORY,
-			       arglist, (Cardinal) 1);
+      XtSetValues(man_globals->manpage_entry, arglist, ONE);
+      XtSetValues(man_globals->dir_entry, arglist, ONE);
 
       XtSetArg(arglist[0], XtNlabel, SHOW_ONE);
-      XawSimpleMenuSetEntryValues(man_globals->option_menu, BOTH_SCREENS,
-			       arglist, (Cardinal) 1);
+      XtSetValues(man_globals->both_screens_entry, arglist, ONE);
       ChangeLabel(label,
 		  man_globals->section_name[man_globals->current_directory]);
     }
@@ -335,12 +330,9 @@ Boolean help, page;
     XtManageChild(dir);
     man_globals->dir_shown = TRUE;
     XtSetArg(arglist[0], XtNsensitive, FALSE);
-    XawSimpleMenuSetEntryValues(man_globals->option_menu, MANPAGE,
-			     arglist, (Cardinal) 1);
-    XawSimpleMenuSetEntryValues(man_globals->option_menu, HELP,
-			     arglist, (Cardinal) 1);
-    XawSimpleMenuSetEntryValues(man_globals->option_menu, BOTH_SCREENS,
-			     arglist, (Cardinal) 1);
+    XtSetValues(man_globals->manpage_entry,        arglist, ONE);
+    XtSetValues(man_globals->help_entry,           arglist, ONE);
+    XtSetValues(man_globals->both_screens_entry,   arglist, ONE);
     man_globals->both_shown = FALSE;
     ChangeLabel(label,
 		man_globals->section_name[man_globals->current_directory]);
@@ -386,26 +378,61 @@ CreateOptionMenu(man_globals, parent)
 ManpageGlobals * man_globals;
 Widget parent;
 {
-  Widget menu;
+  Widget menu, entry;
   int i;
-  MenuStruct * menu_struct;
+  static char * option_names[] = {	/* Names of the buttons. */
+    DIRECTORY,
+    MANPAGE,
+    HELP,
+    SEARCH,
+    BOTH_SCREENS, 
+    REMOVE_MANPAGE,
+    OPEN_MANPAGE,
+    SHOW_VERSION,
+    QUIT
+  };
 
   menu = XtCreatePopupShell(OPTION_MENU, simpleMenuWidgetClass, parent,
 			    NULL, (Cardinal) 0);
   man_globals->option_menu = menu;
   
   for (i = 0 ; i < NUM_OPTIONS ; i++) {
-    XawSimpleMenuAddEntry(menu, option_names[i], NULL, (Cardinal) 0);
-    menu_struct = (MenuStruct *) XtMalloc(sizeof(MenuStruct));
-    menu_struct->data = (caddr_t) man_globals;
-    menu_struct->quark = XrmStringToQuark(option_names[i]);
-    XawSimpleMenuAddEntryCallback(menu, option_names[i], OptionCallback,
-			     (caddr_t) menu_struct);
-    XtAddCallback(menu, XtNdestroyCallback, 
-		  MenuDestroy, (caddr_t) menu_struct);
+    entry = XtCreateManagedWidget(option_names[i], bSBMenuEntryObjectClass,
+				  menu, NULL, ZERO);
+    XtAddCallback(entry, XtNcallback, OptionCallback, (caddr_t) man_globals);
+    switch (i) {
+    case 0:
+	man_globals->dir_entry = entry;
+	break;
+    case 1:
+	man_globals->manpage_entry = entry;
+	break;
+    case 2:
+	man_globals->help_entry = entry;
+	break;
+    case 3:
+	man_globals->search_entry = entry;
+	break;
+    case 4:
+	man_globals->both_screens_entry = entry;
+	break;
+    case 5:
+	man_globals->remove_entry = entry;
+	break;
+    case 6:
+	man_globals->open_entry = entry;
+	break;
+    case 7:
+	man_globals->version_entry = entry;
+	break;
+    case 8:
+	man_globals->quit_entry = entry;
+	break;
+    default:
+	break;
+    }
   }
 }
-
 
 /*      Function Name: CreateSectionMenu
  *      Description: Create the Section menu.
@@ -419,7 +446,7 @@ CreateSectionMenu(man_globals, parent)
 ManpageGlobals * man_globals;
 Widget parent;
 {
-  Widget menu;
+  Widget menu, entry;
   int i;
   MenuStruct * menu_struct;
 
@@ -427,14 +454,14 @@ Widget parent;
 			    NULL, (Cardinal) 0);
 
   for (i = 0 ; i < sections ; i ++) {
-    XawSimpleMenuAddEntry(menu, manual[i].blabel, NULL, (Cardinal) 0);
+    entry = XtCreateManagedWidget(manual[i].blabel, bSBMenuEntryObjectClass,
+				  menu, NULL, ZERO);
     menu_struct = (MenuStruct *) XtMalloc(sizeof(MenuStruct));
     menu_struct->data = (caddr_t) man_globals;
     menu_struct->number = i;
-    XawSimpleMenuAddEntryCallback(menu, manual[i].blabel, DirPopupCallback, 
-			     (caddr_t) menu_struct);
-    XtAddCallback(menu, XtNdestroyCallback, 
-		  MenuDestroy, (caddr_t) menu_struct);
+    XtAddCallback(entry, XtNcallback, DirPopupCallback, (caddr_t) menu_struct);
+    XtAddCallback(entry, XtNdestroyCallback,MenuDestroy, (caddr_t)menu_struct);
+
   }
 }
 
