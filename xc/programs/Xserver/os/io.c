@@ -1,5 +1,5 @@
 /***********************************************************
-Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
+Copyright 1987, 1989 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
 
                         All Rights Reserved
@@ -21,11 +21,12 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: io.c,v 1.49 88/09/06 15:50:44 jim Exp $ */
+/* $XConsortium: io.c,v 1.50 89/01/03 08:31:00 rws Exp $ */
 /*****************************************************************
  * i/o functions
  *
  *   WriteToClient, ReadRequestFromClient
+ *   InsertFakeRequest, ResetCurrentRequest
  *
  *****************************************************************/
 
@@ -98,164 +99,86 @@ extern int errno;
 
 ConnectionInput inputBuffers[MAXSOCKS];    /* buffers for clients */
 
-/*ARGSUSED*/
-char *
-ReadRequestFromClient(who, status, oldbuf)
-    ClientPtr who;
-    int *status;          /* read at least n from client */
-    char *oldbuf;
-{
 #define YieldControl()				\
         { isItTimeToYield = TRUE;		\
 	  timesThisConnection = 0; }
 #define YieldControlNoInput()			\
         { YieldControl();			\
-	  BITCLEAR(ClientsWithInput, client); }
+	  BITCLEAR(ClientsWithInput, fd); }
 #define YieldControlAndReturnNull()		\
         { YieldControlNoInput();		\
 	  return((char *) NULL ); }
 
-    OsCommPtr oc = (OsCommPtr)who->osPrivate;
-    int client = oc->fd;
+/*ARGSUSED*/
+char *
+ReadRequestFromClient(client, status, oldbuf)
+    ClientPtr client;
+    int *status;          /* read at least n from client */
+    char *oldbuf;
+{
+    OsCommPtr oc = (OsCommPtr)client->osPrivate;
+    int fd = oc->fd;
     int result, gotnow, needed;
     register ConnectionInput *pBuff;
     register xReq *request;
 
-        /* ignore oldbuf, just assume we're done with prev. buffer */
+    /* ignore oldbuf, just assume we're done with prev. buffer */
 
-    if (client == -1) 
-    {
-	ErrorF( "OH NO, %d translates to -1\n", who);
-	return((char *)NULL);
-    }
-
-    pBuff = &inputBuffers[client];
+    pBuff = &inputBuffers[fd];
     pBuff->bufptr += pBuff->lenLastReq;
-    pBuff->lenLastReq = 0;
-
-            /* handle buffer empty or full case first */
-
-    if ((pBuff->bufptr - pBuff->buffer) >= pBuff->bufcnt)
-    {
-        result = read(client, pBuff->buffer, pBuff->size);
-	if (result < 0) 
-	{
-	    if (errno == EWOULDBLOCK)
-	        *status = 0;
-	    else
-	        *status = -1;
-	    YieldControlAndReturnNull();
-	}
-	else if (result == 0)
-        {
-	    *status = -1;
-	    YieldControlAndReturnNull();
-	}
-	else 
-	{
-	    pBuff->bufcnt = result; 
-	    /* free up some space after huge requests */
-	    if ((pBuff->size > BUFWATERMARK) && (result < BUFSIZE))
-	    {
-		pBuff->size = BUFSIZE;
-		pBuff->buffer = (char *)xrealloc(pBuff->buffer, pBuff->size);
-	    }
-	    pBuff->bufptr = pBuff->buffer;
-	}
-    }
-              /* now look if there is enough in the buffer */
 
     request = (xReq *)pBuff->bufptr;
     gotnow = pBuff->bufcnt + pBuff->buffer - pBuff->bufptr;
-
-    if (gotnow < sizeof(xReq))
-       needed = sizeof(xReq) - gotnow;
-    else
+    if ((gotnow < sizeof(xReq)) ||
+	(gotnow < (needed = request_length(request, client))))
     {
-        needed = request_length(request, who);
-        if (needed > MAXBUFSIZE)
-        {
-    	    *status = -1;
+	pBuff->lenLastReq = 0;
+	if ((gotnow < sizeof(xReq)) || (needed == 0))
+	   needed = sizeof(xReq);
+	else if (needed > MAXBUFSIZE)
+	{
+	    *status = -1;
 	    YieldControlAndReturnNull();
-        }
-	if (needed <= 0)
-            needed = sizeof(xReq);
-    }
-        /* if the needed amount won't fit in what's remaining,
-	   move everything to the front of the buffer.  If the
-	   entire header isn't available, move what's there too */
-    if ((pBuff->bufptr + needed - pBuff->buffer > pBuff->size) ||
-		(gotnow < sizeof(xReq)))
-    {
-        bcopy(pBuff->bufptr, pBuff->buffer, gotnow);
-	pBuff->bufcnt = gotnow;
-        if (needed > pBuff->size)
-        {
-	    pBuff->size = needed;
-    	    pBuff->buffer = (char *)xrealloc(pBuff->buffer, needed);
-        }
-        pBuff->bufptr = pBuff->buffer;
-    }
-               /* don't have a full header */
-    if (gotnow < sizeof(xReq))
-    {
-        while (pBuff->bufcnt + pBuff->buffer - pBuff->bufptr < sizeof(xReq))
-	{
-	    result = read(client, pBuff->buffer + pBuff->bufcnt, 
-		      pBuff->size - pBuff->bufcnt); 
-	    if (result < 0)
-	    {
-		if (errno == EWOULDBLOCK)
-		    *status = 0;
-		else
-		    *status = -1;
-		YieldControlAndReturnNull();
-	    }
-	    if (result == 0)
-	    {
-		*status = -1;
-		YieldControlAndReturnNull();
-	    }
-            pBuff->bufcnt += result;        
 	}
-        request = (xReq *)pBuff->bufptr;
-        gotnow = pBuff->bufcnt + pBuff->buffer - pBuff->bufptr;
-        needed = request_length(request, who);
-	if (needed <= 0)
-            needed = sizeof(xReq);
-        if (needed > pBuff->size)
-        {
-	    pBuff->size = needed;
-    	    pBuff->buffer = (char *)xrealloc(pBuff->buffer, needed);
-        }
-        pBuff->bufptr = pBuff->buffer;
-    }	
-
-    if (gotnow < needed )   
-    {
-	int i, wanted;
-
-	wanted = needed - gotnow;
-	i = 0;
-	while (i < wanted) 
+	if ((gotnow == 0) ||
+	    ((pBuff->bufptr - pBuff->buffer + needed) > pBuff->size))
 	{
-	    result = read(client, pBuff->buffer + pBuff->bufcnt, 
-			  pBuff->size - pBuff->bufcnt); 
-	    if (result < 0) 
+	    if ((gotnow > 0) && (pBuff->bufptr != pBuff->buffer))
+		bcopy(pBuff->bufptr, pBuff->buffer, gotnow);
+	    if (needed > pBuff->size)
 	    {
-		if (errno == EWOULDBLOCK)
-		    *status = 0;
-		else
-		    *status = -1;
-		YieldControlAndReturnNull();
+		pBuff->size = needed;
+		pBuff->buffer = (char *)xrealloc(pBuff->buffer, pBuff->size);
 	    }
-	    else if (result == 0)
-	    {
+	    pBuff->bufptr = pBuff->buffer;
+	    pBuff->bufcnt = gotnow;
+	}
+	result = read(fd, pBuff->buffer + pBuff->bufcnt, 
+		      pBuff->size - pBuff->bufcnt); 
+	if (result <= 0)
+	{
+	    if ((result < 0) && (errno == EWOULDBLOCK))
+		*status = 0;
+	    else
 		*status = -1;
-		YieldControlAndReturnNull();
-	    }
-	    i += result;
-    	    pBuff->bufcnt += result;
+	    YieldControlAndReturnNull();
+	}
+	pBuff->bufcnt += result;
+	gotnow += result;
+	/* free up some space after huge requests */
+	if ((pBuff->size > BUFWATERMARK) &&
+	    (pBuff->bufcnt < BUFSIZE) && (needed < BUFSIZE))
+	{
+	    pBuff->size = BUFSIZE;
+	    pBuff->buffer = (char *)xrealloc(pBuff->buffer, pBuff->size);
+	    pBuff->bufptr = pBuff->buffer + pBuff->bufcnt - gotnow;
+	}
+	request = (xReq *)pBuff->bufptr;
+	if ((gotnow < sizeof(xReq)) ||
+	    (gotnow < (needed = request_length(request, client))))
+	{
+	    *status = 0;
+	    YieldControlAndReturnNull();
 	}
     }
     *status = needed;
@@ -268,26 +191,94 @@ ReadRequestFromClient(who, status, oldbuf)
      *  can get into the queue.   
      */
 
-    timesThisConnection++;
-    if (pBuff->bufcnt + pBuff->buffer >= pBuff->bufptr + needed + sizeof(xReq)) 
+    if (gotnow >= needed + sizeof(xReq)) 
     {
 	request = (xReq *)(pBuff->bufptr + needed);
-        if ((pBuff->bufcnt + pBuff->buffer) >= 
-            ((char *)request + request_length(request, who)))
-	    BITSET(ClientsWithInput, client);
+        if (gotnow >= needed + request_length(request, client))
+	    BITSET(ClientsWithInput, fd);
         else
 	    YieldControlNoInput();
     }
     else
 	YieldControlNoInput();
-    if (timesThisConnection == MAX_TIMES_PER)
+    if (++timesThisConnection >= MAX_TIMES_PER)
 	YieldControl();
 
-    return((char *)pBuff->bufptr);
+    return(pBuff->bufptr);
+}
 
-#undef YieldControlAndReturnNull
-#undef YieldControlNoInput
-#undef YieldControl
+/*****************************************************************
+ * InsertFakeRequest
+ *    Splice a consed up (possibly partial) request in as the next request.
+ *
+ **********************/
+
+InsertFakeRequest(client, data, count)
+    ClientPtr client;
+    char *data;
+    int count;
+{
+    OsCommPtr oc = (OsCommPtr)client->osPrivate;
+    int fd = oc->fd;
+    register ConnectionInput *pBuff;
+    register xReq *request;
+    int gotnow, moveup;
+
+    pBuff = &inputBuffers[fd];
+    pBuff->lenLastReq = 0;
+    gotnow = pBuff->bufcnt + pBuff->buffer - pBuff->bufptr;
+    if ((gotnow + count) > pBuff->size)
+    {
+	pBuff->size = gotnow + count;
+	pBuff->buffer = (char *)xrealloc(pBuff->buffer, pBuff->size);
+	pBuff->bufptr = pBuff->buffer + pBuff->bufcnt - gotnow;
+    }
+    moveup = count - (pBuff->bufptr - pBuff->buffer);
+    if (moveup > 0)
+    {
+	if (gotnow > 0)
+	    bcopy(pBuff->bufptr, pBuff->bufptr + moveup, gotnow);
+	pBuff->bufptr += moveup;
+	pBuff->bufcnt += moveup;
+    }
+    bcopy(data, pBuff->bufptr - count, count);
+    pBuff->bufptr -= count;
+    request = (xReq *)pBuff->bufptr;
+    gotnow += count;
+    if ((gotnow >= sizeof(xReq)) &&
+	(gotnow >= request_length(request, client)))
+	BITSET(ClientsWithInput, fd);
+    else
+	YieldControlNoInput();
+}
+
+/*****************************************************************
+ * ResetRequestFromClient
+ *    Reset to reexecute the current request, and yield.
+ *
+ **********************/
+
+ResetCurrentRequest(client)
+    ClientPtr client;
+{
+    OsCommPtr oc = (OsCommPtr)client->osPrivate;
+    int fd = oc->fd;
+    register ConnectionInput *pBuff;
+    register xReq *request;
+    int gotnow;
+
+    pBuff = &inputBuffers[fd];
+    pBuff->lenLastReq = 0;
+    request = (xReq *)pBuff->bufptr;
+    gotnow = pBuff->bufcnt + pBuff->buffer - pBuff->bufptr;
+    if ((gotnow >= sizeof(xReq)) &&
+	(gotnow >= request_length(request, client)))
+    {
+	BITSET(ClientsWithInput, fd);
+	YieldControl();
+    }
+    else
+	YieldControlNoInput();
 }
 
     /* lookup table for adding padding bytes to data that is read from
@@ -304,7 +295,7 @@ static int padlength[4] = {0, 3, 2, 1};
  *
  **********************/
 
-static int
+int
 FlushClient(who, oc, extraBuf, extraCount)
     ClientPtr who;
     OsCommPtr oc;
@@ -497,7 +488,7 @@ FlushAllOutput()
 		NewOutputPending = TRUE;
 	    }
 	    else
-		FlushClient(client, oc, (char *)NULL, 0);
+		(void)FlushClient(client, oc, (char *)NULL, 0);
 	}
     }
 
@@ -535,20 +526,6 @@ WriteToClient (who, count, buf)
 {
     OsCommPtr oc = (OsCommPtr)who->osPrivate;
     int padBytes;
-
-    if (oc->fd == -1) 
-    {
-	ErrorF( "OH NO, %d translates to -1\n", oc->fd);
-	return(-1);
-    }
-
-    if (oc->fd == -2) 
-    {
-#ifdef notdef
-	ErrorF( "CONNECTION %d ON ITS WAY OUT\n", oc->fd);
-#endif
-	return(-1);
-    }
 
     padBytes =  padlength[count & 3];
 
