@@ -9,7 +9,7 @@
  * LibName, SoRev, HasSharedData, and optionally HugLibrary and IncSubdir
  */
 
-XCOMM $XConsortium: Library.tmpl,v 1.22 93/09/05 17:22:57 rws Exp $
+XCOMM $XConsortium: Library.tmpl,v 1.23 93/09/06 10:22:56 rws Exp $
 
 #ifndef LibraryCcCmd
 #if DoSharedLib && defined(SharedLibraryCcCmd)
@@ -177,7 +177,7 @@ BuildIncludes($(HEADERS),IncSubdir,..)
 InstallMultiple($(HEADERS),$(INCDIR)/IncSubdir)
 #else
 #if !defined(LibHeaders) || LibHeaders
-BuildIncludes($(HEADERS),.,.)
+BuildIncludesTop($(HEADERS))
 InstallMultiple($(HEADERS),$(INCDIR))
 #endif
 #endif
