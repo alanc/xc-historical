@@ -1,4 +1,4 @@
-/* $XConsortium: convReq.c,v 5.2 91/03/15 18:37:10 hersh Exp $ */
+/* $XConsortium: convReq.c,v 5.3 91/05/04 23:16:57 keith Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -2013,6 +2013,7 @@ unsigned char	*pdata;
     int len, i;
 
     if (im & PEXPDPickStatus) {
+	SWAP_CARD16 ((*((CARD16 *)ptr)));
 	ptr += sizeof(CARD32);
     };
 
@@ -2026,6 +2027,7 @@ unsigned char	*pdata;
     };
 
     if (im & PEXPDPickPathOrder) {
+	SWAP_CARD16 ((*((CARD16 *)ptr)));
 	ptr += sizeof(CARD32);
     };
 
@@ -2048,12 +2050,16 @@ unsigned char	*pdata;
 
     if (im & PEXPDPickPromptEchoType) {
 	SWAP_ENUM_TYPE_INDEX ((*ptr));
-	ptr += sizeof(pexEnumTypeIndex);
+	ptr += sizeof(CARD32);
     };
 
     if (im & PEXPDPickEchoVolume) {
 	SwapViewport(swapPtr, (pexViewport *)ptr);
 	ptr += sizeof(pexViewport);	
+    }
+
+    if (im & PEXPDPickEchoSwitch) {
+	SWAP_CARD16 ((*((CARD16 *)ptr)));
     }
 }
 
