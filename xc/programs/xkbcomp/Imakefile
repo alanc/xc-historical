@@ -1,25 +1,24 @@
-XCOMM $XConsortium$
+XCOMM $XConsortium: Imakefile,v 1.4 94/04/05 22:01:05 rws Exp $
 
 #define IHaveSubdirs
 #define PassCDebugFlags
 
-       SUBDIRS = utils
+       SUBDIRS = utils xkbfile
 
-          SRCS = xkbcomp.c xkbio.c xkbscan.c expr.c vmod.c misc.c \
+          SRCS = xkbcomp.c xkbscan.c expr.c vmod.c indicators.c misc.c \
 		 keymap.c keycodes.c keytypes.c compat.c action.c \
 		 symbols.c \
-		 xkmout.c xkbout.c cout.c xkbparse.c
-          OBJS = xkbcomp.o xkbio.o xkbscan.o expr.o vmod.o misc.o \
+		 xkbparse.c
+          OBJS = xkbcomp.o xkbscan.o expr.o vmod.o indicators.o misc.o \
 		 keymap.o keycodes.o keytypes.o compat.o action.o \
 		 symbols.o \
-		 xkmout.o xkbout.o cout.o \
 		 xkbparse.o
-        DEPLIBS = $(DEPXLIBONLY) utils/libutils.a
-LOCAL_LIBRARIES = $(XLIB) utils/libutils.a
+        DEPLIBS = $(DEPXLIBONLY) utils/libutils.a xkbfile/libxkbfile.a
+LOCAL_LIBRARIES = $(XLIB) utils/libutils.a xkbfile/libxkbfile.a
 
 ROOT_DEFINES = -DDFLT_XKB_CONFIG_ROOT=\"$(LIBDIR)/xkb\"
 
-EXTRA_INCLUDES = -Iutils -I$(EXTINCSRC)
+EXTRA_INCLUDES = -Iutils -Ixkbfile -I$(EXTINCSRC)
 
 MakeSubdirs($(SUBDIRS))
 
@@ -39,5 +38,5 @@ clean::
 DependSubdirs($(SUBDIRS))
 
 clean::
-	RemoveFiles(test.h *.xkm)
+	RemoveFiles(test.h *.xkm *.xkb)
 
