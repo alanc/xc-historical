@@ -1,4 +1,4 @@
-/* $XConsortium: micphoto.c,v 1.1 93/10/26 09:44:50 rws Exp $ */
+/* $XConsortium: micphoto.c,v 1.2 93/10/26 14:11:38 rws Exp $ */
 /**** module micphoto.c ****/
 /******************************************************************************
 				NOTICE
@@ -519,7 +519,7 @@ static int InitializeICPhotoUncomByPixel(flo,ped)
 	pvt->shift     = 0; 
       }
     } else if (depth1 + depth2 + depth3 <= 8) {
-      CARD8 ones = ~0,smask1,smask2,smask3,shift1,shift2,shift3;
+      CARD8 ones = 0xff,smask1,smask2,smask3,shift1,shift2,shift3;
       if (tec->fillOrder == xieValMSFirst) {
 	smask1 = ~(ones>>depth1);
 	smask2 = ~(ones>>(depth1 + depth2) | smask1);
