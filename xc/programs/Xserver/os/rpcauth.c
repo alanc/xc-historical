@@ -1,7 +1,7 @@
 /*
  * SUN-DES-1 authentication mechanism
  *
- * $XConsortium: rpcauth.c,v 1.2 91/02/12 17:43:04 keith Exp $
+ * $XConsortium: rpcauth.c,v 1.3 91/02/28 09:36:18 rws Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -19,15 +19,18 @@
  */
 
 #ifdef SECURE_RPC
+
+#include "X.h"
+#include "Xauth.h"
+#include "misc.h"
+#include "os.h"
+
 #include <rpc/rpc.h>
+
 #ifdef ultrix
 #include <time.h>
 #include <rpc/auth_des.h>
 #endif
-#include "Xauth.h"
-#include "misc.h"
-#include "X.h"
-#include "os.h"
 
 static char * 
 authdes_ezdecode(inmsg, len)
@@ -47,8 +50,8 @@ int  len;
     temp_inmsg = (char *) xalloc(len);
     bcopy(inmsg, temp_inmsg, len);
 
-    memset(&msg, 0, sizeof(msg));
-    memset(&r, 0, sizeof(r));
+    memset((char *)&msg, 0, sizeof(msg));
+    memset((char *)&r, 0, sizeof(r));
     memset(cred_area, 0, sizeof(cred_area));
     memset(verf_area, 0, sizeof(verf_area));
 
@@ -159,5 +162,4 @@ SecureRPCRemove (data_length, data)
 {
     return 0;
 }
-#endif SECURE_RPC
-
+#endif /* SECURE_RPC */
