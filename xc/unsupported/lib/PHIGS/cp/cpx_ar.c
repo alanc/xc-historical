@@ -1,4 +1,4 @@
-/* $XConsortium: cpx_ar.c,v 5.4 91/05/05 15:45:34 rws Exp $ */
+/* $XConsortium: cpx_ar.c,v 5.5 91/07/12 20:34:39 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -168,7 +168,7 @@ Cp_handle cph;
 Phg_args *cp_args;
 {
     Pint	ar_id = cp_args->data.idata;
-    Ar_handle	arh, arp;
+    Ar_handle	arh, arp, tmp_arp = NULL;
 
     GET_ARH(cph, ar_id, arh);
     if ( (phg_ar_write_toc(arh)) ||
@@ -181,9 +181,13 @@ Phg_args *cp_args;
     
     for (arp = cph->ar_list; arp; arp = arp->next) {
 	if (arp == arh) {
-	    arp = arp->next;
+	    if (tmp_arp) 
+		tmp_arp = arp->next;
+	    else
+		cph->ar_list = arh->next;
 	    break;
 	}
+	tmp_arp = arp;
     }
     free((char *)arh);
 }
