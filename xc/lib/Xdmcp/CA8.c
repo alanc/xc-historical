@@ -1,5 +1,5 @@
 /*
- * $XConsortium: CA8.c,v 1.2 90/12/26 16:30:38 rws Exp $
+ * $XConsortium: CA8.c,v 1.3 91/01/23 22:13:10 gildea Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -37,6 +37,6 @@ XdmcpCopyARRAY8 (src, dst)
     dst->data = (CARD8 *) Xalloc (dst->length * sizeof (CARD8));
     if (!dst->data)
 	return FALSE;
-    bcopy (src->data, dst->data, src->length * sizeof (CARD8));
+    memmove (dst->data, src->data, src->length * sizeof (CARD8));
     return TRUE;
 }
