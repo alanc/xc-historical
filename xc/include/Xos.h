@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xos.h,v 1.39 91/04/15 21:57:57 rws Exp $
+ * $XConsortium: Xos.h,v 1.40 91/04/16 09:02:34 rws Exp $
  * 
  * Copyright 1987 by the Massachusetts Institute of Technology
  *
@@ -37,9 +37,6 @@
 #endif /* CRAY */
 #include <sys/types.h>			/* forgot to protect it... */
 #define __TYPES__
-#ifdef CRAY
-#undef word
-#endif /* CRAY */
 #endif /* __TYPES__ */
 #else /* USG */
 #include <sys/types.h>
@@ -93,6 +90,9 @@
 
 #include <sys/time.h>
 #include <time.h>
+#ifdef CRAY
+#undef word
+#endif /* CRAY */
 #if defined(USG) && !defined(CRAY)
 struct timeval {
     long tv_sec;
@@ -106,19 +106,13 @@ struct timezone {
 
 #else /* not SYSV */
 
-/* need to omit _POSIX_SOURCE in order to get what we want in SVR4 */
-#ifdef SVR4
-#ifdef _POSIX_SOURCE
-#undef _POSIX_SOURCE
-#define _XposixDEF
-#endif
-#endif
-
+#if !defined(SVR4) || !defined(_POSIX_SOURCE)
 #include <sys/time.h>
-
-#ifdef _XposixDEF
+#else
+/* need to omit _POSIX_SOURCE in order to get what we want in SVR4 */
+#undef _POSIX_SOURCE
+#include <sys/time.h>
 #define _POSIX_SOURCE
-#undef _XposixDEF
 #endif
 
 #endif /* SYSV */
