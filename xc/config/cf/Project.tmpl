@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM X Window System Build Parameters
-XCOMM $XConsortium: Project.tmpl,v 1.77 90/12/21 16:10:03 rws Exp $
+XCOMM $XConsortium: Project.tmpl,v 1.78 90/12/26 11:30:55 rws Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -20,7 +20,7 @@ XCOMM $XConsortium: Project.tmpl,v 1.77 90/12/21 16:10:03 rws Exp $
 #define BuildServer		YES	/* go ahead and build server */
 #endif
 #ifndef BuildExamples
-#define BuildExamples		YES	/* but they do take a lot of space */
+#define BuildExamples		NO	/* they take a lot of space */
 #endif
 #ifndef InstallXinitConfig
 #define InstallXinitConfig	NO	/* install sample xinit config */
@@ -117,13 +117,30 @@ XCOMM $XConsortium: Project.tmpl,v 1.77 90/12/21 16:10:03 rws Exp $
 #define FontCompilerFlags -t
 #endif
 #ifndef ConnectionFlags
+#if SystemV || SystemV4
+#define ConnectionFlags -DSTREAMSCONN
+#else
 #define ConnectionFlags -DTCPCONN -DUNIXCONN
 #endif
+#endif
+#ifndef FontOSDefines
+#define FontOSDefines /**/
+#endif
 #ifndef FontDefines
-#define FontDefines -DFONT_SNF -DFONT_BDF -DCOMPRESSED_FONTS
+#define FontDefines -DFONT_SNF -DFONT_BDF -DCOMPRESSED_FONTS FontOSDefines
+#endif
+#ifndef ExtensionOSDefines
+#define ExtensionOSDefines /**/
 #endif
 #ifndef ExtensionDefines
-#define ExtensionDefines /* check site.def for defaults */
+#if HasShm
+#define ExtensionDefines -DSHAPE -DMULTIBUFFER -DMITMISC -DMITSHM ExtensionOSDefines
+#else
+#define ExtensionDefines -DSHAPE -DMULTIBUFFER -DMITMISC ExtensionOSDefines
+#endif
+#endif
+#ifndef ServerExtraDefines
+#define ServerExtraDefines -DXDMCP
 #endif
 #ifndef ServerCDebugFlags
 #define ServerCDebugFlags OptimizedCDebugFlags
@@ -131,8 +148,11 @@ XCOMM $XConsortium: Project.tmpl,v 1.77 90/12/21 16:10:03 rws Exp $
 #ifndef LibraryDefines
 #define LibraryDefines StandardDefines
 #endif
+#ifndef ServerOSDefines
+#define ServerOSDefines /**/
+#endif
 #ifndef ServerDefines
-#define ServerDefines StandardDefines ExtensionDefines
+#define ServerDefines StandardDefines ServerExtraDefines ExtensionDefines ServerOSDefines
 #endif
 #ifndef CppSourcesPresent
 #define CppSourcesPresent	NO	/* only works with BSD sources */
@@ -289,7 +309,7 @@ XCOMM $XConsortium: Project.tmpl,v 1.77 90/12/21 16:10:03 rws Exp $
 #endif
 #ifndef SharedLibXext
 #if HasSunOSSharedLibraries
-#define SharedLibXext YES
+#define SharedLibXext NO	/* XXX - haven't made it sharable yet */
 #else
 #define SharedLibXext NO
 #endif
@@ -335,7 +355,7 @@ XCOMM $XConsortium: Project.tmpl,v 1.77 90/12/21 16:10:03 rws Exp $
 
 XCOMM -------------------------------------------------------------------------
 XCOMM X Window System make variables; this need to be coordinated with rules
-XCOMM $XConsortium: Project.tmpl,v 1.77 90/12/21 16:10:03 rws Exp $
+XCOMM $XConsortium: Project.tmpl,v 1.78 90/12/26 11:30:55 rws Exp $
 
 /*
  * This list must be reflected in the DIRS_TO_BUILD list in the top-level
