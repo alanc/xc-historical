@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfb.h,v 5.19 92/12/23 18:55:19 rws Exp $ */
+/* $XConsortium: mfb.h,v 5.20 92/12/24 09:27:08 rws Exp $ */
 /* Monochrome Frame Buffer definitions 
    written by drewry, september 1986
 */
@@ -35,110 +35,985 @@ SOFTWARE.
 
 extern int InverseAlu[];
 
-extern Bool mfbScreenInit();
-extern Bool mfbCloseScreen();
-extern Bool mfbCreateDefColormap();
-extern void mfbQueryBestSize();
-extern Bool mfbCreateWindow();
-extern Bool mfbPositionWindow();
-extern Bool mfbChangeWindowAttributes();
-extern Bool mfbMapWindow();
-extern Bool mfbUnmapWindow();
-extern Bool mfbDestroyWindow();
+/* mfbbitblt.c */
 
-extern Bool mfbRealizeFont();
-extern Bool mfbUnrealizeFont();
-extern Bool mfbScreenSaver();
-extern Bool mfbCreateGC();
-extern int  mfbReduceRop();
+extern void mfbDoBitblt(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pSrc*/,
+    DrawablePtr /*pDst*/,
+    int /*alu*/,
+    RegionPtr /*prgnDst*/,
+    DDXPointPtr /*pptSrc*/
+#endif
+);
 
-extern void mfbValidateGC(), mfbChangeGC(), mfbCopyGC();
-extern void mfbDestroyGC();
-extern void mfbChangeClip(), mfbDestroyClip(), mfbCopyClip();
+extern RegionPtr mfbCopyArea(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pSrcDrawable*/,
+    DrawablePtr /*pDstDrawable*/,
+    GCPtr/*pGC*/,
+    int /*srcx*/,
+    int /*srcy*/,
+    int /*width*/,
+    int /*height*/,
+    int /*dstx*/,
+    int /*dsty*/
+#endif
+);
 
-extern PixmapPtr mfbCreatePixmap();
-extern Bool mfbDestroyPixmap();
+extern Bool mfbRegisterCopyPlaneProc(
+#if NeedFunctionPrototypes
+    ScreenPtr /*pScreen*/,
+    RegionPtr (*/*proc*/)()
+#endif
+);
 
-extern void mfbCopyWindow();
+extern RegionPtr mfbCopyPlane(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pSrcDrawable*/,
+    DrawablePtr /*pDstDrawable*/,
+    GCPtr/*pGC*/,
+    int /*srcx*/,
+    int /*srcy*/,
+    int /*width*/,
+    int /*height*/,
+    int /*dstx*/,
+    int /*dsty*/,
+    unsigned long /*plane*/
+#endif
+);
+/* mfbbltC.c */
 
-extern void mfbSaveAreas();
-extern void mfbRestoreAreas();
+extern void mfbDoBitbltCopy(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pSrc*/,
+    DrawablePtr /*pDst*/,
+    int /*alu*/,
+    RegionPtr /*prgnDst*/,
+    DDXPointPtr /*pptSrc*/
+#endif
+);
+/* mfbbltCI.c */
 
-/* window painter */
-extern void mfbPaintWindow();
+extern void mfbDoBitbltCopyInverted(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pSrc*/,
+    DrawablePtr /*pDst*/,
+    int /*alu*/,
+    RegionPtr /*prgnDst*/,
+    DDXPointPtr /*pptSrc*/
+#endif
+);
+/* mfbbltG.c */
 
-/* rectangle painters */
-extern void mfbSolidWhiteArea();
-extern void mfbStippleWhiteArea();
-extern void mfbSolidBlackArea();
-extern void mfbStippleBlackArea();
-extern void mfbSolidInvertArea();
-extern void mfbStippleInvertArea();
-extern void mfbTileArea32();
+extern void mfbDoBitbltGeneral(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pSrc*/,
+    DrawablePtr /*pDst*/,
+    int /*alu*/,
+    RegionPtr /*prgnDst*/,
+    DDXPointPtr /*pptSrc*/
+#endif
+);
+/* mfbbltO.c */
 
-extern void mfbPolyFillRect();
-extern RegionPtr mfbCopyArea();
-extern void mfbPolyPoint();
-extern RegionPtr mfbCopyPlane();
-extern void mfbPolyFillArcSolid();
-extern void mfbFillPolyWhite();
-extern void mfbFillPolyBlack();
-extern void mfbFillPolyInvert();
+extern void mfbDoBitbltOr(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pSrc*/,
+    DrawablePtr /*pDst*/,
+    int /*alu*/,
+    RegionPtr /*prgnDst*/,
+    DDXPointPtr /*pptSrc*/
+#endif
+);
+/* mfbbltX.c */
 
-extern void mfbSetSpans();
-extern void mfbGetSpans();
-extern void mfbWhiteSolidFS();
-extern void mfbBlackSolidFS();
-extern void mfbInvertSolidFS();
-extern void mfbWhiteStippleFS();
-extern void mfbBlackStippleFS();
-extern void mfbInvertStippleFS();
-extern void mfbTileFS();
-extern void mfbUnnaturalTileFS();
-extern void mfbUnnaturalStippleFS();
+extern void mfbDoBitbltXor(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pSrc*/,
+    DrawablePtr /*pDst*/,
+    int /*alu*/,
+    RegionPtr /*prgnDst*/,
+    DDXPointPtr /*pptSrc*/
+#endif
+);
+/* mfbbres.c */
 
-extern void mfbGetImage();
-extern void mfbPutImage();
+extern int mfbBresS(
+#if NeedFunctionPrototypes
+    int /*rop*/,
+    unsigned int */*addrl*/,
+    int /*nlwidth*/,
+    int /*signdx*/,
+    int /*signdy*/,
+    int /*axis*/,
+    int /*x1*/,
+    int /*y1*/,
+    int /*e*/,
+    int /*e1*/,
+    int /*e2*/,
+    int /*len*/
+#endif
+);
+/* mfbbresd.c */
 
-extern void mfbLineSS();	/* solid single-pixel wide line */
-				/* calls mfb{Bres|Horz|Vert}S() */
-extern void mfbLineSD();
-extern void mfbSegmentSS();
-extern void mfbSegmentSD();
-extern void mfbZeroPolyArcSS();
-extern void mfbImageText8();
-extern void mfbImageText16();
-extern int mfbPolyText16();
-extern int mfbPolyText8();
-extern PixmapPtr mfbCopyPixmap();
-extern RegionPtr mfbPixmapToRegion();
-extern void mfbSolidPP();
-extern void mfbPushPixels();
+extern int mfbBresD(
+#if NeedFunctionPrototypes
+    int /*fgrop*/,
+    int /*bgrop*/,
+    int */*pdashIndex*/,
+    unsigned char */*pDash*/,
+    int /*numInDashList*/,
+    int */*pdashOffset*/,
+    int /*isDoubleDash*/,
+    unsigned int */*addrl*/,
+    int /*nlwidth*/,
+    int /*signdx*/,
+    int /*signdy*/,
+    int /*axis*/,
+    int /*x1*/,
+    int /*y1*/,
+    int /*e*/,
+    int /*e1*/,
+    int /*e2*/,
+    int /*len*/
+#endif
+);
+/* mfbbstore.c */
 
-/* text for glyphs <= 32 bits wide */
-extern void mfbImageGlyphBltWhite();
-extern void mfbImageGlyphBltBlack();
-extern void mfbPolyGlyphBltWhite();
-extern void mfbPolyGlyphBltBlack();
-extern void mfbPolyGlyphBltInvert();
+extern void mfbSaveAreas(
+#if NeedFunctionPrototypes
+    PixmapPtr /*pPixmap*/,
+    RegionPtr /*prgnSave*/,
+    int /*xorg*/,
+    int /*yorg*/
+#endif
+);
 
-/* text for terminal emulator fonts */
-extern void mfbTEGlyphBltWhite();	/* fg = 1, bg = 0 */
-extern void mfbTEGlyphBltBlack();	/* fg = 0, bg = 1 */
+extern void mfbRestoreAreas(
+#if NeedFunctionPrototypes
+    PixmapPtr /*pPixmap*/,
+    RegionPtr /*prgnRestore*/,
+    int /*xorg*/,
+    int /*yorg*/
+#endif
+);
+/* mfbclip.c */
 
-extern int mfbListInstalledColormaps();
-extern void mfbInstallColormap();
-extern void mfbUninstallColormap();
-extern Bool mfbCreateColormap();
-extern void mfbDestroyColormap();
-extern void mfbResolveColor();
+extern RegionPtr mfbPixmapToRegion(
+#if NeedFunctionPrototypes
+    PixmapPtr /*pPix*/
+#endif
+);
+/* mfbcmap.c */
 
-extern void mfbCopyGCDest();
+extern int mfbListInstalledColormaps(
+#if NeedFunctionPrototypes
+    ScreenPtr /*pScreen*/,
+    Colormap */*pmaps*/
+#endif
+);
 
-extern void mfbCopyRotatePixmap();
-extern void mfbYRotatePixmap();
-extern void mfbXRotatePixmap();
-extern void mfbPadPixmap();
+extern void mfbInstallColormap(
+#if NeedFunctionPrototypes
+    ColormapPtr /*pmap*/
+#endif
+);
+
+extern void mfbUninstallColormap(
+#if NeedFunctionPrototypes
+    ColormapPtr /*pmap*/
+#endif
+);
+
+extern void mfbResolveColor(
+#if NeedFunctionPrototypes
+    unsigned short */*pred*/,
+    unsigned short */*pgreen*/,
+    unsigned short */*pblue*/,
+    VisualPtr /*pVisual*/
+#endif
+);
+
+extern Bool mfbCreateColormap(
+#if NeedFunctionPrototypes
+    ColormapPtr /*pMap*/
+#endif
+);
+
+extern void mfbDestroyColormap(
+#if NeedFunctionPrototypes
+    ColormapPtr /*pMap*/
+#endif
+);
+
+extern Bool mfbCreateDefColormap(
+#if NeedFunctionPrototypes
+    ScreenPtr /*pScreen*/
+#endif
+);
+/* mfbfillarc.c */
+
+extern void mfbPolyFillArcSolid(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDraw*/,
+    GCPtr /*pGC*/,
+    int /*narcs*/,
+    xArc */*parcs*/
+#endif
+);
+/* mfbfillrct.c */
+
+extern void mfbPolyFillRect(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDrawable*/,
+    GCPtr /*pGC*/,
+    int /*nrectFill*/,
+    xRectangle */*prectInit*/
+#endif
+);
+/* mfbfillsp.c */
+
+extern void mfbBlackSolidFS(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDrawable*/,
+    GCPtr /*pGC*/,
+    int /*nInit*/,
+    DDXPointPtr /*pptInit*/,
+    int */*pwidthInit*/,
+    int /*fSorted*/
+#endif
+);
+
+extern void mfbWhiteSolidFS(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDrawable*/,
+    GCPtr /*pGC*/,
+    int /*nInit*/,
+    DDXPointPtr /*pptInit*/,
+    int */*pwidthInit*/,
+    int /*fSorted*/
+#endif
+);
+
+extern void mfbInvertSolidFS(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDrawable*/,
+    GCPtr /*pGC*/,
+    int /*nInit*/,
+    DDXPointPtr /*pptInit*/,
+    int */*pwidthInit*/,
+    int /*fSorted*/
+#endif
+);
+
+extern void mfbWhiteStippleFS(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDrawable*/,
+    GCPtr/*pGC*/,
+    int /*nInit*/,
+    DDXPointPtr /*pptInit*/,
+    int */*pwidthInit*/,
+    int /*fSorted*/
+#endif
+);
+
+extern void mfbBlackStippleFS(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDrawable*/,
+    GCPtr/*pGC*/,
+    int /*nInit*/,
+    DDXPointPtr /*pptInit*/,
+    int */*pwidthInit*/,
+    int /*fSorted*/
+#endif
+);
+
+extern void mfbInvertStippleFS(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDrawable*/,
+    GCPtr/*pGC*/,
+    int /*nInit*/,
+    DDXPointPtr /*pptInit*/,
+    int */*pwidthInit*/,
+    int /*fSorted*/
+#endif
+);
+
+extern void mfbTileFS(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDrawable*/,
+    GCPtr/*pGC*/,
+    int /*nInit*/,
+    DDXPointPtr /*pptInit*/,
+    int */*pwidthInit*/,
+    int /*fSorted*/
+#endif
+);
+
+extern void mfbUnnaturalTileFS(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDrawable*/,
+    GCPtr/*pGC*/,
+    int /*nInit*/,
+    DDXPointPtr /*pptInit*/,
+    int */*pwidthInit*/,
+    int /*fSorted*/
+#endif
+);
+
+extern void mfbUnnaturalStippleFS(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDrawable*/,
+    GCPtr/*pGC*/,
+    int /*nInit*/,
+    DDXPointPtr /*pptInit*/,
+    int */*pwidthInit*/,
+    int /*fSorted*/
+#endif
+);
+/* mfbfont.c */
+
+extern Bool mfbRealizeFont(
+#if NeedFunctionPrototypes
+    ScreenPtr /*pscr*/,
+    FontPtr /*pFont*/
+#endif
+);
+
+extern Bool mfbUnrealizeFont(
+#if NeedFunctionPrototypes
+    ScreenPtr /*pscr*/,
+    FontPtr /*pFont*/
+#endif
+);
+/* mfbgc.c */
+
+extern Bool mfbCreateGC(
+#if NeedFunctionPrototypes
+    GCPtr /*pGC*/
+#endif
+);
+
+extern void mfbChangeGC(
+#if NeedFunctionPrototypes
+    GCPtr /*pGC*/,
+    BITS32 /*mask*/
+#endif
+);
+
+extern void mfbCopyGC(
+#if NeedFunctionPrototypes
+    GCPtr /*pGCSrc*/,
+    Mask /*changes*/,
+    GCPtr /*pGCDst*/
+#endif
+);
+
+extern void mfbDestroyGC(
+#if NeedFunctionPrototypes
+    GCPtr /*pGC*/
+#endif
+);
+
+extern void mfbValidateGC(
+#if NeedFunctionPrototypes
+    GCPtr /*pGC*/,
+    Mask /*changes*/,
+    DrawablePtr /*pDrawable*/
+#endif
+);
+
+extern int mfbReduceRop(
+#if NeedFunctionPrototypes
+    int /*alu*/,
+    Pixel /*src*/
+#endif
+);
+
+extern void mfbDestroyClip(
+#if NeedFunctionPrototypes
+    GCPtr /*pGC*/
+#endif
+);
+
+extern void mfbChangeClip(
+#if NeedFunctionPrototypes
+    GCPtr /*pGC*/,
+    int /*type*/,
+    pointer /*pvalue*/,
+    int /*nrects*/
+#endif
+);
+
+extern void mfbCopyClip(
+#if NeedFunctionPrototypes
+    GCPtr /*pgcDst*/,
+    GCPtr /*pgcSrc*/
+#endif
+);
+/* mfbgetsp.c */
+
+extern void mfbGetSpans(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDrawable*/,
+    int /*wMax*/,
+    DDXPointPtr /*ppt*/,
+    int */*pwidth*/,
+    int /*nspans*/,
+    unsigned int */*pdstStart*/
+#endif
+);
+/* mfbhrzvert.c */
+
+extern int mfbHorzS(
+#if NeedFunctionPrototypes
+    int /*rop*/,
+    unsigned int */*addrl*/,
+    int /*nlwidth*/,
+    int /*x1*/,
+    int /*y1*/,
+    int /*len*/
+#endif
+);
+
+extern int mfbVertS(
+#if NeedFunctionPrototypes
+    int /*rop*/,
+    unsigned int */*addrl*/,
+    int /*nlwidth*/,
+    int /*x1*/,
+    int /*y1*/,
+    int /*len*/
+#endif
+);
+/* mfbigbblak.c */
+
+extern void mfbImageGlyphBltBlack(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDrawable*/,
+    GCPtr/*pGC*/,
+    int /*x*/,
+    int /*y*/,
+    unsigned int /*nglyph*/,
+    CharInfoPtr */*ppci*/,
+    char */*pglyphBase*/
+#endif
+);
+/* mfbigbwht.c */
+
+extern void mfbImageGlyphBltWhite(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDrawable*/,
+    GCPtr/*pGC*/,
+    int /*x*/,
+    int /*y*/,
+    unsigned int /*nglyph*/,
+    CharInfoPtr */*ppci*/,
+    char */*pglyphBase*/
+#endif
+);
+/* mfbimage.c */
+
+extern void mfbPutImage(
+#if NeedFunctionPrototypes
+    DrawablePtr /*dst*/,
+    GCPtr /*pGC*/,
+    int /*depth*/,
+    int /*x*/,
+    int /*y*/,
+    int /*w*/,
+    int /*h*/,
+    int /*leftPad*/,
+    int /*format*/,
+    char */*pImage*/
+#endif
+);
+
+extern void mfbGetImage(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDrawable*/,
+    int /*sx*/,
+    int /*sy*/,
+    int /*w*/,
+    int /*h*/,
+    unsigned int /*format*/,
+    unsigned long /*planeMask*/,
+    pointer /*pdstLine*/
+#endif
+);
+/* mfbline.c */
+
+extern void mfbLineSS(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDrawable*/,
+    GCPtr /*pGC*/,
+    int /*mode*/,
+    int /*npt*/,
+    DDXPointPtr /*pptInit*/
+#endif
+);
+
+extern void mfbLineSD(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDrawable*/,
+    GCPtr /*pGC*/,
+    int /*mode*/,
+    int /*npt*/,
+    DDXPointPtr /*pptInit*/
+#endif
+);
+
+extern int mfbClipLine(
+#if NeedFunctionPrototypes
+    BoxPtr /*pbox*/,
+    BoxRec /*box*/,
+    DDXPointPtr /*ppt1Orig*/,
+    DDXPointPtr /*ppt1*/,
+    DDXPointPtr /*ppt2*/,
+    int /*adx*/,
+    int /*ady*/,
+    int /*signdx*/,
+    int /*signdy*/,
+    int /*axis*/,
+    int */*pclip1*/,
+    int */*pclip2*/
+#endif
+);
+/* mfbmisc.c */
+
+extern void mfbQueryBestSize(
+#if NeedFunctionPrototypes
+    int /*class*/,
+    unsigned short */*pwidth*/,
+    unsigned short */*pheight*/,
+    ScreenPtr /*pScreen*/
+#endif
+);
+/* mfbpablack.c */
+
+extern void mfbSolidBlackArea(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDraw*/,
+    int /*nbox*/,
+    BoxPtr /*pbox*/,
+    int /*alu*/,
+    PixmapPtr /*nop*/
+#endif
+);
+
+extern void mfbStippleBlackArea(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDraw*/,
+    int /*nbox*/,
+    BoxPtr /*pbox*/,
+    int /*alu*/,
+    PixmapPtr /*pstipple*/
+#endif
+);
+/* mfbpainv.c */
+
+extern void mfbSolidInvertArea(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDraw*/,
+    int /*nbox*/,
+    BoxPtr /*pbox*/,
+    int /*alu*/,
+    PixmapPtr /*nop*/
+#endif
+);
+
+extern void mfbStippleInvertArea(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDraw*/,
+    int /*nbox*/,
+    BoxPtr /*pbox*/,
+    int /*alu*/,
+    PixmapPtr /*pstipple*/
+#endif
+);
+/* mfbpawhite.c */
+
+extern void mfbSolidWhiteArea(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDraw*/,
+    int /*nbox*/,
+    BoxPtr /*pbox*/,
+    int /*alu*/,
+    PixmapPtr /*nop*/
+#endif
+);
+
+extern void mfbStippleWhiteArea(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDraw*/,
+    int /*nbox*/,
+    BoxPtr /*pbox*/,
+    int /*alu*/,
+    PixmapPtr /*pstipple*/
+#endif
+);
+/* mfbpgbblak.c */
+
+extern void mfbPolyGlyphBltBlack(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDrawable*/,
+    GCPtr /*pGC*/,
+    int /*x*/,
+    int /*y*/,
+    unsigned int /*nglyph*/,
+    CharInfoPtr */*ppci*/,
+    char */*pglyphBase*/
+#endif
+);
+/* mfbpgbinv.c */
+
+extern void mfbPolyGlyphBltInvert(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDrawable*/,
+    GCPtr /*pGC*/,
+    int /*x*/,
+    int /*y*/,
+    unsigned int /*nglyph*/,
+    CharInfoPtr */*ppci*/,
+    char */*pglyphBase*/
+#endif
+);
+/* mfbpgbwht.c */
+
+extern void mfbPolyGlyphBltWhite(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDrawable*/,
+    GCPtr /*pGC*/,
+    int /*x*/,
+    int /*y*/,
+    unsigned int /*nglyph*/,
+    CharInfoPtr */*ppci*/,
+    char */*pglyphBase*/
+#endif
+);
+/* mfbpixmap.c */
+
+extern PixmapPtr mfbCreatePixmap(
+#if NeedFunctionPrototypes
+    ScreenPtr /*pScreen*/,
+    int /*width*/,
+    int /*height*/,
+    int /*depth*/
+#endif
+);
+
+extern Bool mfbDestroyPixmap(
+#if NeedFunctionPrototypes
+    PixmapPtr /*pPixmap*/
+#endif
+);
+
+extern PixmapPtr mfbCopyPixmap(
+#if NeedFunctionPrototypes
+    PixmapPtr /*pSrc*/
+#endif
+);
+
+extern void mfbPadPixmap(
+#if NeedFunctionPrototypes
+    PixmapPtr /*pPixmap*/
+#endif
+);
+
+extern void mfbXRotatePixmap(
+#if NeedFunctionPrototypes
+    PixmapPtr /*pPix*/,
+    int /*rw*/
+#endif
+);
+
+extern void mfbYRotatePixmap(
+#if NeedFunctionPrototypes
+    PixmapPtr /*pPix*/,
+    int /*rh*/
+#endif
+);
+
+extern void mfbCopyRotatePixmap(
+#if NeedFunctionPrototypes
+    PixmapPtr /*psrcPix*/,
+    PixmapPtr */*ppdstPix*/,
+    int /*xrot*/,
+    int /*yrot*/
+#endif
+);
+/* mfbplyblack.c */
+
+extern void mfbFillPolyBlack(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDrawable*/,
+    GCPtr /*pGC*/,
+    int /*shape*/,
+    int /*mode*/,
+    int /*count*/,
+    DDXPointPtr /*ptsIn*/
+#endif
+);
+/* mfbplyinv.c */
+
+extern void mfbFillPolyInvert(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDrawable*/,
+    GCPtr /*pGC*/,
+    int /*shape*/,
+    int /*mode*/,
+    int /*count*/,
+    DDXPointPtr /*ptsIn*/
+#endif
+);
+/* mfbplywhite.c */
+
+extern void mfbFillPolyWhite(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDrawable*/,
+    GCPtr /*pGC*/,
+    int /*shape*/,
+    int /*mode*/,
+    int /*count*/,
+    DDXPointPtr /*ptsIn*/
+#endif
+);
+/* mfbpntwin.c */
+
+extern void mfbPaintWindow(
+#if NeedFunctionPrototypes
+    WindowPtr /*pWin*/,
+    RegionPtr /*pRegion*/,
+    int /*what*/
+#endif
+);
+/* mfbpolypnt.c */
+
+extern void mfbPolyPoint(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDrawable*/,
+    GCPtr /*pGC*/,
+    int /*mode*/,
+    int /*npt*/,
+    xPoint */*pptInit*/
+#endif
+);
+/* mfbpushpxl.c */
+
+extern void mfbSolidPP(
+#if NeedFunctionPrototypes
+    GCPtr /*pGC*/,
+    PixmapPtr /*pBitMap*/,
+    DrawablePtr /*pDrawable*/,
+    int /*dx*/,
+    int /*dy*/,
+    int /*xOrg*/,
+    int /*yOrg*/
+#endif
+);
+
+extern void mfbPushPixels(
+#if NeedFunctionPrototypes
+    GCPtr /*pGC*/,
+    PixmapPtr /*pBitMap*/,
+    DrawablePtr /*pDrawable*/,
+    int /*dx*/,
+    int /*dy*/,
+    int /*xOrg*/,
+    int /*yOrg*/
+#endif
+);
+/* mfbscrclse.c */
+
+extern Bool mfbCloseScreen(
+#if NeedFunctionPrototypes
+    int /*index*/,
+    ScreenPtr /*pScreen*/
+#endif
+);
+/* mfbscrinit.c */
+
+extern Bool mfbAllocatePrivates(
+#if NeedFunctionPrototypes
+    ScreenPtr /*pScreen*/,
+    int */*pWinIndex*/,
+    int */*pGCIndex*/
+#endif
+);
+
+extern Bool mfbScreenInit(
+#if NeedFunctionPrototypes
+    ScreenPtr /*pScreen*/,
+    pointer /*pbits*/,
+    int /*xsize*/,
+    int /*ysize*/,
+    int /*dpix*/,
+    int /*dpiy*/,
+    int /*width*/
+#endif
+);
+/* mfbseg.c */
+
+extern void mfbSegmentSS(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDrawable*/,
+    GCPtr /*pGC*/,
+    int /*nseg*/,
+    xSegment */*pSeg*/
+#endif
+);
+
+extern void mfbSegmentSD(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDrawable*/,
+    GCPtr /*pGC*/,
+    int /*nseg*/,
+    xSegment */*pSeg*/
+#endif
+);
+/* mfbsetsp.c */
+
+extern int mfbSetScanline(
+#if NeedFunctionPrototypes
+    int /*y*/,
+    int /*xOrigin*/,
+    int /*xStart*/,
+    int /*xEnd*/,
+    unsigned int */*psrc*/,
+    int /*alu*/,
+    unsigned int */*pdstBase*/,
+    int /*widthDst*/
+#endif
+);
+
+extern void mfbSetSpans(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDrawable*/,
+    GCPtr /*pGC*/,
+    unsigned int */*psrc*/,
+    DDXPointPtr /*ppt*/,
+    int */*pwidth*/,
+    int /*nspans*/,
+    int /*fSorted*/
+#endif
+);
+/* mfbteblack.c */
+
+extern void mfbTEGlyphBltBlack(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDrawable*/,
+    GCPtr/*pGC*/,
+    int /*x*/,
+    int /*y*/,
+    unsigned int /*nglyph*/,
+    CharInfoPtr */*ppci*/,
+    char */*pglyphBase*/
+#endif
+);
+/* mfbtewhite.c */
+
+extern void mfbTEGlyphBltWhite(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDrawable*/,
+    GCPtr/*pGC*/,
+    int /*x*/,
+    int /*y*/,
+    unsigned int /*nglyph*/,
+    CharInfoPtr */*ppci*/,
+    char */*pglyphBase*/
+#endif
+);
+/* mfbtileC.c */
+
+extern void mfbTileArea32Copy(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDraw*/,
+    int /*nbox*/,
+    BoxPtr /*pbox*/,
+    int /*alu*/,
+    PixmapPtr /*ptile*/
+#endif
+);
+/* mfbtileG.c */
+
+extern void mfbTileArea32General(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDraw*/,
+    int /*nbox*/,
+    BoxPtr /*pbox*/,
+    int /*alu*/,
+    PixmapPtr /*ptile*/
+#endif
+);
+
+extern void mfbTileArea32(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDraw*/,
+    int /*nbox*/,
+    BoxPtr /*pbox*/,
+    int /*alu*/,
+    PixmapPtr /*ptile*/
+#endif
+);
+/* mfbwindow.c */
+
+extern Bool mfbCreateWindow(
+#if NeedFunctionPrototypes
+    WindowPtr /*pWin*/
+#endif
+);
+
+extern Bool mfbDestroyWindow(
+#if NeedFunctionPrototypes
+    WindowPtr /*pWin*/
+#endif
+);
+
+extern Bool mfbMapWindow(
+#if NeedFunctionPrototypes
+    WindowPtr /*pWindow*/
+#endif
+);
+
+extern Bool mfbPositionWindow(
+#if NeedFunctionPrototypes
+    WindowPtr /*pWin*/,
+    int /*x*/,
+    int /*y*/
+#endif
+);
+
+extern Bool mfbUnmapWindow(
+#if NeedFunctionPrototypes
+    WindowPtr /*pWindow*/
+#endif
+);
+
+extern void mfbCopyWindow(
+#if NeedFunctionPrototypes
+    WindowPtr /*pWin*/,
+    DDXPointRec /*ptOldOrg*/,
+    RegionPtr /*prgnSrc*/
+#endif
+);
+
+extern Bool mfbChangeWindowAttributes(
+#if NeedFunctionPrototypes
+    WindowPtr /*pWin*/,
+    unsigned long /*mask*/
+#endif
+);
+/* mfbzerarc.c */
+
+extern void mfbZeroPolyArcSS(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDraw*/,
+    GCPtr /*pGC*/,
+    int /*narcs*/,
+    xArc */*parcs*/
+#endif
+);
 
 /*
    private filed of pixmap

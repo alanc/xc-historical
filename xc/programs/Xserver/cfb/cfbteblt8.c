@@ -17,7 +17,7 @@ representations about the suitability of this software for any
 purpose.  It is provided "as is" without express or implied warranty.
 */
 
-/* $XConsortium: cfbteblt8.c,v 5.17 92/01/27 19:12:22 eswu Exp $ */
+/* $XConsortium: cfbteblt8.c,v 5.18 92/05/04 16:34:02 rws Exp $ */
 
 #if PSZ == 8
 
@@ -302,7 +302,6 @@ extern long endtab[];
 #define FirstStep	c = BitLeft (c, 2);
 #endif
 
-extern void cfbImageGlyphBlt8();
 
 void
 CFBTEGBLT8 (pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
@@ -311,7 +310,7 @@ CFBTEGBLT8 (pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
     int 	xInit, yInit;
     unsigned int nglyph;
     CharInfoPtr *ppci;		/* array of character info */
-    unsigned char *pglyphBase;	/* start of array of glyphs */
+    char *pglyphBase;	/* start of array of glyphs */
 {
     register unsigned long  c;
     register unsigned long  *dst;

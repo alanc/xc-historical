@@ -50,7 +50,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: cfbfillsp.c,v 5.19 91/12/19 18:36:32 keith Exp $ */
+/* $XConsortium: cfbfillsp.c,v 5.20 93/07/12 16:28:29 dpw Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -123,10 +123,6 @@ int fSorted;
     register DDXPointPtr ppt;	/* pointer to list of start points */
     register int *pwidth;	/* pointer to list of n widths */
     void    (*fill)();
-    extern void	cfbFillSpanTileOddCopy ();
-    extern void	cfbFillSpanTileOddGeneral ();
-    extern void	cfbFillSpanTile32sCopy ();
-    extern void cfbFillSpanTile32sGeneral ();
     int	xrot, yrot;
 
     if (!(pGC->planemask))

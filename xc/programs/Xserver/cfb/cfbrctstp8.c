@@ -18,7 +18,7 @@ Author: Keith Packard, MIT X Consortium
 
 */
 
-/* $XConsortium: cfbrctstp8.c,v 1.13 91/04/10 11:41:33 keith Exp $ */
+/* $XConsortium: cfbrctstp8.c,v 1.14 91/12/19 18:36:29 keith Exp $ */
 
 #if PSZ == 8
 
@@ -224,7 +224,7 @@ cfb8FillRectOpaqueStippled32 (pDrawable, pGC, nBox, pBox)
     }
 }
 
-
+void
 cfb8FillRectTransparentStippled32 (pDrawable, pGC, nBox, pBox)
     DrawablePtr	    pDrawable;
     GCPtr	    pGC;

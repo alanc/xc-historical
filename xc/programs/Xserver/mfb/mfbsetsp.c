@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbsetsp.c,v 5.3 89/09/13 18:58:28 rws Exp $ */
+/* $XConsortium: mfbsetsp.c,v 5.4 92/12/23 17:49:32 rws Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -128,7 +128,7 @@ void
 mfbSetSpans(pDrawable, pGC, psrc, ppt, pwidth, nspans, fSorted)
     DrawablePtr		pDrawable;
     GCPtr		pGC;
-    int			*psrc;
+    unsigned int	*psrc;
     register DDXPointPtr ppt;
     int			*pwidth;
     int			nspans;

@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbimggblt.c,v 5.8 92/12/23 19:00:52 rws Exp $ */
+/* $XConsortium: mfbimggblt.c,v 5.9 92/12/24 09:26:27 rws Exp $ */
 #include	"X.h"
 #include	"Xmd.h"
 #include	"Xproto.h"
@@ -81,7 +81,7 @@ MFBIMAGEGLYPHBLT(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     int 	x, y;
     unsigned int nglyph;
     CharInfoPtr *ppci;		/* array of character info */
-    unsigned char *pglyphBase;	/* start of array of glyphs */
+    char *pglyphBase;	/* start of array of glyphs */
 {
     ExtentInfoRec info;	/* used by QueryGlyphExtents() */
     BoxRec bbox;	/* string's bounding box */

@@ -17,7 +17,7 @@ representations about the suitability of this software for any
 purpose.  It is provided "as is" without express or implied warranty.
 */
 
-/* $XConsortium: cfbtileodd.c,v 1.12 91/06/28 12:44:19 keith Exp $ */
+/* $XConsortium: cfbtileodd.c,v 1.13 91/07/10 17:26:10 keith Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -500,6 +500,7 @@ MROP_NAME(cfbFillSpanTileOdd) (pDrawable, n, ppt, pwidth, tile, xrot, yrot, alu,
 
 #define IncSrcPtr   psrc++; if (!--srcRemaining) { srcRemaining = widthSrc; psrc = psrcStart; }
 
+void
 MROP_NAME(cfbFillBoxTile32s) (pDrawable, nBox, pBox, tile, xrot, yrot, alu, planemask)
     DrawablePtr	    pDrawable;
     int		    nBox;	/* number of boxes to fill */
@@ -793,6 +794,7 @@ psrc += UNROLL;
     }
 }
 
+void
 MROP_NAME(cfbFillSpanTile32s) (pDrawable, n, ppt, pwidth, tile, xrot, yrot, alu, planemask)
     DrawablePtr	pDrawable;
     int		n;

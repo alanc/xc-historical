@@ -1,4 +1,4 @@
-/* $XConsortium: cfbglblt8.c,v 5.24 91/12/19 14:16:27 keith Exp $ */
+/* $XConsortium: cfbglblt8.c,v 5.25 93/07/12 16:28:37 dpw Exp $ */
 /*
 Copyright 1989 by the Massachusetts Institute of Technology
 
@@ -98,7 +98,7 @@ cfbPolyGlyphBlt8 (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     int 	x, y;
     unsigned int nglyph;
     CharInfoPtr *ppci;		/* array of character info */
-    unsigned char *pglyphBase;	/* start of array of glyphs */
+    char *pglyphBase;	/* start of array of glyphs */
 {
     register unsigned long  c;
 #ifndef GLYPHROP

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: cfb8cppl.c,v 1.9 92/12/24 10:37:24 rws Exp $
+ * $XConsortium: cfb8cppl.c,v 1.10 92/12/24 13:31:20 rws Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -54,18 +54,20 @@
     } \
 }
 
+void
 cfbCopyImagePlane (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, planemask)
     DrawablePtr pSrcDrawable;
     DrawablePtr pDstDrawable;
     int	rop;
-    unsigned long planemask;
     RegionPtr prgnDst;
     DDXPointPtr pptSrc;
+    unsigned long planemask;
 {
     cfbCopyPlane8to1 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc,
 		      (unsigned long) ~0L, planemask);
 }
 
+void
 cfbCopyPlane8to1 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, planemask, bitPlane)
     DrawablePtr pSrcDrawable;
     DrawablePtr pDstDrawable;

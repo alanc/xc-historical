@@ -18,7 +18,7 @@ purpose.  It is provided "as is" without express or implied warranty.
 Author: Keith Packard
 
 */
-/* $XConsortium: cfbblt.c,v 1.9 91/12/19 18:36:53 keith Exp $ */
+/* $XConsortium: cfbblt.c,v 1.10 93/07/17 09:54:08 dpw Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -44,7 +44,7 @@ Author: Keith Packard
 #define DO_MEMCPY
 #endif
 
-
+void
 MROP_NAME(cfbDoBitblt)(pSrc, pDst, alu, prgnDst, pptSrc, planemask)
     DrawablePtr	    pSrc, pDst;
     int		    alu;

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: cfb8line.c,v 1.22 92/05/04 15:38:21 keith Exp $
+ * $XConsortium: cfb8line.c,v 1.23 92/10/01 12:24:25 rws Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -516,14 +516,7 @@ FUNC_NAME(cfb8LineSS1Rect) (pDrawable, pGC, mode, npt, pptInit)
 
 #ifdef INCLUDE_OTHERS
 
-extern void cfb8ClippedLineCopy(), cfb8ClippedLineXor(), cfb8ClippedLineGeneral(); 
-
 #ifdef POLYSEGMENT
-
-extern int cfb8SegmentSS1RectCopy(), cfb8SegmentSS1RectXor(), cfb8SegmentSS1RectGeneral(); 
-#ifdef FAST_MUL
-extern int cfb8SegmentSS1RectShiftCopy();
-#endif
 
 void
 cfb8SegmentSS1Rect (pDrawable, pGC, nseg, pSegInit)
@@ -573,9 +566,6 @@ cfb8SegmentSS1Rect (pDrawable, pGC, nseg, pSegInit)
 }
 
 #else /* POLYSEGMENT */
-
-extern int cfb8LineSS1RectCopy(), cfb8LineSS1RectXor(), cfb8LineSS1RectGeneral(); 
-extern int cfb8LineSS1RectPreviousCopy();
 
 void
 cfb8LineSS1Rect (pDrawable, pGC, mode, npt, pptInit)

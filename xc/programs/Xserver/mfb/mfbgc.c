@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbgc.c,v 5.27 92/05/05 13:30:04 keith Exp $ */
+/* $XConsortium: mfbgc.c,v 5.28 93/07/12 09:29:58 dpw Exp $ */
 #include "X.h"
 #include "Xmd.h"
 #include "Xproto.h"
@@ -1065,8 +1065,6 @@ mfbValidateGC(pGC, changes, pDrawable)
 	    }
 	    else /* deal with tiles */
 	    {
-		extern void mfbTileArea32Copy(), mfbTileArea32General();
-
 		switch (pGC->alu)
 		{
 		  case GXcopy:
@@ -1103,7 +1101,7 @@ int InverseAlu[16] = {
 
 int
 mfbReduceRop(alu, src)
-    register unsigned char alu;
+    register int alu;
     register Pixel src;
 {
     int rop;

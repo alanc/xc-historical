@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: cfbline.c,v 1.18 91/07/05 11:04:44 rws Exp $ */
+/* $XConsortium: cfbline.c,v 1.19 91/08/13 18:48:42 keith Exp $ */
 #include "X.h"
 
 #include "gcstruct.h"
@@ -226,7 +226,7 @@ cfbLineSS (pDrawable, pGC, mode, npt, pptInit)
 			if (y1t != y2t)
 			{
 			    cfbVertS (alu, and, xor,
-				      addrl, nlwidth, 
+				      (int *)addrl, nlwidth, 
 				      x1, y1t, y2t-y1t);
 			}
 		    }
@@ -296,7 +296,7 @@ cfbLineSS (pDrawable, pGC, mode, npt, pptInit)
 		    if (x1t != x2t)
 		    {
 			cfbHorzS (alu, and, xor,
-				  addrl, nlwidth, 
+				  (int *)addrl, nlwidth, 
 				  x1t, y1, x2t-x1t);
 		    }
 		    nbox--;

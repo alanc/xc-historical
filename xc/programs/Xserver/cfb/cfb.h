@@ -1,4 +1,4 @@
-/* $XConsortium: cfb.h,v 5.26 92/03/13 16:23:48 eswu Exp $ */
+/* $XConsortium: cfb.h,v 5.27 93/07/12 16:28:36 dpw Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -38,81 +38,6 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include "mfb.h"
 
 #include "cfbmap.h"
-
-extern Bool cfbScreenInit();
-extern void cfbQueryBestSize();
-extern Bool cfbCreateWindow();
-extern Bool cfbPositionWindow();
-extern Bool cfbChangeWindowAttributes();
-extern Bool cfbMapWindow();
-extern Bool cfbUnmapWindow();
-extern Bool cfbDestroyWindow();
-
-extern Bool cfbRealizeFont();
-extern Bool cfbUnrealizeFont();
-extern Bool cfbRealizeCursor();
-extern Bool cfbUnrealizeCursor();
-extern Bool cfbScreenSaver();
-extern Bool cfbCreateGC();
-
-extern PixmapPtr cfbCreatePixmap();
-extern Bool cfbDestroyPixmap();
-
-extern void cfbCopyWindow();
-extern void cfbPaintWindow();
-
-extern void cfbPolyFillRect();
-extern void cfbZeroPolyArcSS8Copy(), cfbZeroPolyArcSS8Xor();
-extern void cfbZeroPolyArcSS8General();
-extern void cfbLineSS(), cfbLineSD(), cfbSegmentSS(), cfbSegmentSD();
-extern void cfb8LineSS1Rect(), cfb8SegmentSS1Rect ();
-extern RegionPtr cfbCopyPlane();
-extern void cfbPolyFillArcSolidCopy(),cfbPolyFillArcSolidXor();
-extern void cfbPolyFillArcSolidGeneral();
-extern RegionPtr cfbCopyArea(), cfbBitBlt();
-extern void cfbFillPoly1RectCopy(), cfbFillPoly1RectGeneral();
-
-extern void cfbPushPixels8();
-extern void cfbSetSpans();
-extern void cfbGetSpans();
-extern void cfbSolidSpansCopy(), cfbSolidSpansXor(), cfbSolidSpansGeneral();
-extern void cfbUnnaturalTileFS();
-extern void cfbUnnaturalStippleFS();
-extern void cfbTile32FSCopy(), cfbTile32FSGeneral();
-extern void cfb8Stipple32FS(), cfb8OpaqueStipple32FS();
-extern void cfbFillBoxTileOdd();
-extern void cfbFillBoxTile32();
-extern void cfbFillBoxSolid();
-
-extern void cfbTEGlyphBlt();
-extern void cfbTEGlyphBlt8();
-extern void cfbPolyGlyphBlt8();
-extern void cfbPolyGlyphRop8();
-extern void cfbImageGlyphBlt8();
-
-extern void cfbSaveAreas();
-extern void cfbRestoreAreas();
-
-extern PixmapPtr cfbCopyPixmap();
-extern void  cfbConvertRects();
-
-extern void cfbPutImage();
-extern void cfbGetImage();
-extern void cfbPolyPoint();
-
-#ifdef	STATIC_COLOR
-extern void cfbInstallColormap();
-extern void cfbUninstallColormap();
-extern int cfbListInstalledColormaps();
-#endif
-extern void cfbResolveColor();
-extern Bool cfbInitializeColormap();
-extern Bool cfbCreateDefColormap();
-
-extern void cfbCopyRotatePixmap();
-extern void cfbYRotatePixmap();
-extern void cfbXRotatePixmap();
-extern void cfbPadPixmap();
 
 /*
    private filed of pixmap
@@ -157,6 +82,1349 @@ typedef struct {
     PixmapPtr	pRotatedBackground;
     PixmapPtr	pRotatedBorder;
     } cfbPrivWin;
+
+/* cfb8bit.c */
+
+extern int cfbSetStipple(
+#if NeedFunctionPrototypes
+    int /*alu*/,
+    unsigned long /*fg*/,
+    unsigned long /*planemask*/
+#endif
+);
+
+extern int cfbSetOpaqueStipple(
+#if NeedFunctionPrototypes
+    int /*alu*/,
+    unsigned long /*fg*/,
+    unsigned long /*bg*/,
+    unsigned long /*planemask*/
+#endif
+);
+
+extern int cfbComputeClipMasks32(
+#if NeedFunctionPrototypes
+    BoxPtr /*pBox*/,
+    int /*numRects*/,
+    int /*x*/,
+    int /*y*/,
+    int /*w*/,
+    int /*h*/,
+    unsigned long */*clips*/
+#endif
+);
+/* cfb8cppl.c */
+
+extern void cfbCopyImagePlane(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pSrcDrawable*/,
+    DrawablePtr /*pDstDrawable*/,
+    int /*rop*/,
+    RegionPtr /*prgnDst*/,
+    DDXPointPtr /*pptSrc*/,
+    unsigned long /*planemask*/
+#endif
+);
+
+extern void cfbCopyPlane8to1(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pSrcDrawable*/,
+    DrawablePtr /*pDstDrawable*/,
+    int /*rop*/,
+    RegionPtr /*prgnDst*/,
+    DDXPointPtr /*pptSrc*/,
+    unsigned long /*planemask*/,
+    unsigned long /*bitPlane*/
+#endif
+);
+/* cfb8lineCO.c */
+
+extern int cfb8LineSS1RectCopy(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDrawable*/,
+    GCPtr /*pGC*/,
+    int /*mode*/,
+    int /*npt*/,
+    DDXPointPtr /*pptInit*/
+#endif
+);
+
+extern void cfb8LineSS1Rect(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDrawable*/,
+    GCPtr /*pGC*/,
+    int /*mode*/,
+    int /*npt*/,
+    DDXPointPtr /*pptInit*/
+#endif
+);
+
+extern int cfbClipPoint(
+#if NeedFunctionPrototypes
+    int /*oc*/,
+    int */*xp*/,
+    int */*yp*/,
+    int /*dx*/,
+    int /*dy*/,
+    BoxPtr /*boxp*/,
+    Bool /*first*/
+#endif
+);
+
+extern void cfb8ClippedLineCopy(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDrawable*/,
+    GCPtr /*pGC*/,
+    int /*x1*/,
+    int /*y1*/,
+    int /*x2*/,
+    int /*y2*/,
+    BoxPtr /*boxp*/,
+    Bool /*shorten*/
+#endif
+);
+/* cfb8lineCP.c */
+
+extern int cfb8LineSS1RectPreviousCopy(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDrawable*/,
+    GCPtr /*pGC*/,
+    int /*mode*/,
+    int /*npt*/,
+    DDXPointPtr /*pptInit*/
+#endif
+);
+/* cfb8lineG.c */
+
+extern int cfb8LineSS1RectGeneral(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDrawable*/,
+    GCPtr /*pGC*/,
+    int /*mode*/,
+    int /*npt*/,
+    DDXPointPtr /*pptInit*/
+#endif
+);
+
+extern void cfb8ClippedLineGeneral(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDrawable*/,
+    GCPtr /*pGC*/,
+    int /*x1*/,
+    int /*y1*/,
+    int /*x2*/,
+    int /*y2*/,
+    BoxPtr /*boxp*/,
+    Bool /*shorten*/
+#endif
+);
+/* cfb8lineX.c */
+
+extern int cfb8LineSS1RectXor(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDrawable*/,
+    GCPtr /*pGC*/,
+    int /*mode*/,
+    int /*npt*/,
+    DDXPointPtr /*pptInit*/
+#endif
+);
+
+extern void cfb8ClippedLineXor(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDrawable*/,
+    GCPtr /*pGC*/,
+    int /*x1*/,
+    int /*y1*/,
+    int /*x2*/,
+    int /*y2*/,
+    BoxPtr /*boxp*/,
+    Bool /*shorten*/
+#endif
+);
+/* cfb8segC.c */
+
+extern int cfb8SegmentSS1RectCopy(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDrawable*/,
+    GCPtr /*pGC*/,
+    int /*nseg*/,
+    xSegment */*pSegInit*/
+#endif
+);
+/* cfb8segCS.c */
+
+extern int cfb8SegmentSS1RectShiftCopy(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDrawable*/,
+    GCPtr /*pGC*/,
+    int /*nseg*/,
+    xSegment */*pSegInit*/
+#endif
+);
+
+extern void cfb8SegmentSS1Rect(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDrawable*/,
+    GCPtr /*pGC*/,
+    int /*nseg*/,
+    xSegment */*pSegInit*/
+#endif
+);
+/* cfb8segG.c */
+
+extern int cfb8SegmentSS1RectGeneral(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDrawable*/,
+    GCPtr /*pGC*/,
+    int /*nseg*/,
+    xSegment */*pSegInit*/
+#endif
+);
+/* cfbsegX.c */
+
+extern int cfb8SegmentSS1RectXor(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDrawable*/,
+    GCPtr /*pGC*/,
+    int /*nseg*/,
+    xSegment */*pSegInit*/
+#endif
+);
+/* cfballpriv.c */
+
+extern Bool cfbAllocatePrivates(
+#if NeedFunctionPrototypes
+    ScreenPtr /*pScreen*/,
+    int */*window_index*/,
+    int */*gc_index*/
+#endif
+);
+/* cfbbitblt.c */
+
+extern RegionPtr cfbBitBlt(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pSrcDrawable*/,
+    DrawablePtr /*pDstDrawable*/,
+    GCPtr/*pGC*/,
+    int /*srcx*/,
+    int /*srcy*/,
+    int /*width*/,
+    int /*height*/,
+    int /*dstx*/,
+    int /*dsty*/,
+    void (*/*doBitBlt*/)(),
+    unsigned long /*bitPlane*/
+#endif
+);
+
+extern void cfbDoBitblt(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pSrc*/,
+    DrawablePtr /*pDst*/,
+    int /*alu*/,
+    RegionPtr /*prgnDst*/,
+    DDXPointPtr /*pptSrc*/,
+    unsigned long /*planemask*/
+#endif
+);
+
+extern RegionPtr cfbCopyArea(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pSrcDrawable*/,
+    DrawablePtr /*pDstDrawable*/,
+    GCPtr/*pGC*/,
+    int /*srcx*/,
+    int /*srcy*/,
+    int /*width*/,
+    int /*height*/,
+    int /*dstx*/,
+    int /*dsty*/
+#endif
+);
+
+extern void cfbCopyPlane1to8(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pSrcDrawable*/,
+    DrawablePtr /*pDstDrawable*/,
+    int /*rop*/,
+    RegionPtr /*prgnDst*/,
+    DDXPointPtr /*pptSrc*/,
+    unsigned long /*planemask*/,
+    unsigned long /*bitPlane*/
+#endif
+);
+
+extern RegionPtr cfbCopyPlane(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pSrcDrawable*/,
+    DrawablePtr /*pDstDrawable*/,
+    GCPtr /*pGC*/,
+    int /*srcx*/,
+    int /*srcy*/,
+    int /*width*/,
+    int /*height*/,
+    int /*dstx*/,
+    int /*dsty*/,
+    unsigned long /*bitPlane*/
+#endif
+);
+/* cfbbltC.c */
+
+extern void cfbDoBitbltCopy(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pSrc*/,
+    DrawablePtr /*pDst*/,
+    int /*alu*/,
+    RegionPtr /*prgnDst*/,
+    DDXPointPtr /*pptSrc*/,
+    unsigned long /*planemask*/
+#endif
+);
+/* cfbbltG.c */
+
+extern void cfbDoBitbltGeneral(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pSrc*/,
+    DrawablePtr /*pDst*/,
+    int /*alu*/,
+    RegionPtr /*prgnDst*/,
+    DDXPointPtr /*pptSrc*/,
+    unsigned long /*planemask*/
+#endif
+);
+/* cfbbltO.c */
+
+extern void cfbDoBitbltOr(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pSrc*/,
+    DrawablePtr /*pDst*/,
+    int /*alu*/,
+    RegionPtr /*prgnDst*/,
+    DDXPointPtr /*pptSrc*/,
+    unsigned long /*planemask*/
+#endif
+);
+/* cfbbltX.c */
+
+extern void cfbDoBitbltXor(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pSrc*/,
+    DrawablePtr /*pDst*/,
+    int /*alu*/,
+    RegionPtr /*prgnDst*/,
+    DDXPointPtr /*pptSrc*/,
+    unsigned long /*planemask*/
+#endif
+);
+/* cfbbres.c */
+
+extern int cfbBresS(
+#if NeedFunctionPrototypes
+    int /*rop*/,
+    unsigned long /*and*/,
+    unsigned long /*xor*/,
+    unsigned long */*addrl*/,
+    int /*nlwidth*/,
+    int /*signdx*/,
+    int /*signdy*/,
+    int /*axis*/,
+    int /*x1*/,
+    int /*y1*/,
+    int /*e*/,
+    int /*e1*/,
+    int /*e2*/,
+    int /*len*/
+#endif
+);
+/* cfbbresd.c */
+
+extern int cfbBresD(
+#if NeedFunctionPrototypes
+    cfbRRopPtr /*rrops*/,
+    int */*pdashIndex*/,
+    unsigned char */*pDash*/,
+    int /*numInDashList*/,
+    int */*pdashOffset*/,
+    int /*isDoubleDash*/,
+    unsigned long */*addrl*/,
+    int /*nlwidth*/,
+    int /*signdx*/,
+    int /*signdy*/,
+    int /*axis*/,
+    int /*x1*/,
+    int /*y1*/,
+    int /*e*/,
+    int /*e1*/,
+    int /*e2*/,
+    int /*len*/
+#endif
+);
+/* cfbbstore.c */
+
+extern void cfbSaveAreas(
+#if NeedFunctionPrototypes
+    PixmapPtr /*pPixmap*/,
+    RegionPtr /*prgnSave*/,
+    int /*xorg*/,
+    int /*yorg*/
+#endif
+);
+
+extern void cfbRestoreAreas(
+#if NeedFunctionPrototypes
+    PixmapPtr /*pPixmap*/,
+    RegionPtr /*prgnRestore*/,
+    int /*xorg*/,
+    int /*yorg*/
+#endif
+);
+/* cfbcmap.c */
+
+extern int cfbListInstalledColormaps(
+#if NeedFunctionPrototypes
+    ScreenPtr	/*pScreen*/,
+    Colormap	* /*pmaps*/
+#endif
+);
+
+extern void cfbInstallColormap(
+#if NeedFunctionPrototypes
+    ColormapPtr	/*pmap*/
+#endif
+);
+
+extern void cfbUninstallColormap(
+#if NeedFunctionPrototypes
+    ColormapPtr	/*pmap*/
+#endif
+);
+
+extern void cfbResolveColor(
+#if NeedFunctionPrototypes
+    unsigned short */*pred*/,
+    unsigned short */*pgreen*/,
+    unsigned short */*pblue*/,
+    VisualPtr /*pVisual*/
+#endif
+);
+
+extern Bool cfbInitializeColormap(
+#if NeedFunctionPrototypes
+    ColormapPtr /*pmap*/
+#endif
+);
+
+extern int cfbExpandDirectColors(
+#if NeedFunctionPrototypes
+    ColormapPtr /*pmap*/,
+    int /*ndef*/,
+    xColorItem */*indefs*/,
+    xColorItem */*outdefs*/
+#endif
+);
+
+extern Bool cfbCreateDefColormap(
+#if NeedFunctionPrototypes
+    ScreenPtr /*pScreen*/
+#endif
+);
+
+extern Bool cfbSetVisualTypes(
+#if NeedFunctionPrototypes
+    int /*depth*/,
+    int /*visuals*/,
+    int /*bitsPerRGB*/
+#endif
+);
+
+extern Bool cfbInitVisuals(
+#if NeedFunctionPrototypes
+    VisualPtr */*visualp*/,
+    DepthPtr */*depthp*/,
+    int */*nvisualp*/,
+    int */*ndepthp*/,
+    int */*rootDepthp*/,
+    VisualID */*defaultVisp*/,
+    unsigned long /*sizes*/,
+    int /*bitsPerRGB*/
+#endif
+);
+/* cfbfillarcC.c */
+
+extern void cfbPolyFillArcSolidCopy(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDraw*/,
+    GCPtr /*pGC*/,
+    int /*narcs*/,
+    xArc */*parcs*/
+#endif
+);
+/* cfbfillarcG.c */
+
+extern void cfbPolyFillArcSolidGeneral(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDraw*/,
+    GCPtr /*pGC*/,
+    int /*narcs*/,
+    xArc */*parcs*/
+#endif
+);
+/* cfbfillrct.c */
+
+extern void cfbFillBoxTileOdd(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDrawable*/,
+    int /*n*/,
+    BoxPtr /*rects*/,
+    PixmapPtr /*tile*/,
+    int /*xrot*/,
+    int /*yrot*/
+#endif
+);
+
+extern void cfbFillRectTileOdd(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDrawable*/,
+    GCPtr /*pGC*/,
+    int /*nBox*/,
+    BoxPtr /*pBox*/
+#endif
+);
+
+extern void cfbPolyFillRect(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDrawable*/,
+    GCPtr /*pGC*/,
+    int /*nrectFill*/,
+    xRectangle */*prectInit*/
+#endif
+);
+/* cfbfillsp.c */
+
+extern void cfbUnnaturalTileFS(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDrawable*/,
+    GCPtr/*pGC*/,
+    int /*nInit*/,
+    DDXPointPtr /*pptInit*/,
+    int */*pwidthInit*/,
+    int /*fSorted*/
+#endif
+);
+
+extern void cfbUnnaturalStippleFS(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDrawable*/,
+    GCPtr/*pGC*/,
+    int /*nInit*/,
+    DDXPointPtr /*pptInit*/,
+    int */*pwidthInit*/,
+    int /*fSorted*/
+#endif
+);
+
+extern void cfb8Stipple32FS(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDrawable*/,
+    GCPtr /*pGC*/,
+    int /*nInit*/,
+    DDXPointPtr /*pptInit*/,
+    int */*pwidthInit*/,
+    int /*fSorted*/
+#endif
+);
+
+extern void cfb8OpaqueStipple32FS(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDrawable*/,
+    GCPtr /*pGC*/,
+    int /*nInit*/,
+    DDXPointPtr /*pptInit*/,
+    int */*pwidthInit*/,
+    int /*fSorted*/
+#endif
+);
+/* cfbgc.c */
+
+extern GCOpsPtr cfbMatchCommon(
+#if NeedFunctionPrototypes
+    GCPtr /*pGC*/,
+    cfbPrivGCPtr /*devPriv*/
+#endif
+);
+
+extern Bool cfbCreateGC(
+#if NeedFunctionPrototypes
+    GCPtr /*pGC*/
+#endif
+);
+
+extern void cfbChangeGC(
+#if NeedFunctionPrototypes
+    GCPtr/*pGC*/,
+    BITS32 /*mask*/
+#endif
+);
+
+extern void cfbDestroyGC(
+#if NeedFunctionPrototypes
+    GCPtr/*pGC*/
+#endif
+);
+
+extern GCOpsPtr cfbCreateOps(
+#if NeedFunctionPrototypes
+    GCOpsPtr /*prototype*/
+#endif
+);
+
+extern int cfbDestroyOps(
+#if NeedFunctionPrototypes
+    GCOpsPtr /*ops*/
+#endif
+);
+
+extern void cfbValidateGC(
+#if NeedFunctionPrototypes
+    GCPtr /*pGC*/,
+    Mask /*changes*/,
+    DrawablePtr /*pDrawable*/
+#endif
+);
+
+extern void cfbDestroyClip(
+#if NeedFunctionPrototypes
+    GCPtr /*pGC*/
+#endif
+);
+
+extern void cfbChangeClip(
+#if NeedFunctionPrototypes
+    GCPtr /*pGC*/,
+    int /*type*/,
+    pointer /*pvalue*/,
+    int /*nrects*/
+#endif
+);
+
+extern void cfbCopyClip(
+#if NeedFunctionPrototypes
+    GCPtr /*pgcDst*/,
+    GCPtr /*pgcSrc*/
+#endif
+);
+
+extern void cfbCopyGC(
+#if NeedFunctionPrototypes
+    GCPtr /*pGCSrc*/,
+    Mask /*changes*/,
+    GCPtr /*pGCDst*/
+#endif
+);
+/* cfbgetsp.c */
+
+extern void cfbGetSpans(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDrawable*/,
+    int /*wMax*/,
+    DDXPointPtr /*ppt*/,
+    int */*pwidth*/,
+    int /*nspans*/,
+    unsigned int */*pdstStart*/
+#endif
+);
+/* cfbglblt8.c */
+
+extern void cfbPolyGlyphBlt8(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDrawable*/,
+    GCPtr /*pGC*/,
+    int /*x*/,
+    int /*y*/,
+    unsigned int /*nglyph*/,
+    CharInfoPtr */*ppci*/,
+    char */*pglyphBase*/
+#endif
+);
+/* cfbglrop8.c */
+
+extern void cfbPolyGlyphRop8(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDrawable*/,
+    GCPtr /*pGC*/,
+    int /*x*/,
+    int /*y*/,
+    unsigned int /*nglyph*/,
+    CharInfoPtr */*ppci*/,
+    char */*pglyphBase*/
+#endif
+);
+/* cfbhrzvert.c */
+
+extern int cfbHorzS(
+#if NeedFunctionPrototypes
+    int /*rop*/,
+    unsigned long /*and*/,
+    unsigned long /*xor*/,
+    int */*addrl*/,
+    int /*nlwidth*/,
+    int /*x1*/,
+    int /*y1*/,
+    int /*len*/
+#endif
+);
+
+extern int cfbVertS(
+#if NeedFunctionPrototypes
+    int /*rop*/,
+    unsigned long /*and*/,
+    unsigned long /*xor*/,
+    int */*addrl*/,
+    int /*nlwidth*/,
+    int /*x1*/,
+    int /*y1*/,
+    int /*len*/
+#endif
+);
+/* cfbigblt8.c */
+
+extern void cfbImageGlyphBlt8(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDrawable*/,
+    GCPtr /*pGC*/,
+    int /*x*/,
+    int /*y*/,
+    unsigned int /*nglyph*/,
+    CharInfoPtr */*ppci*/,
+    char */*pglyphBase*/
+#endif
+);
+/* cfbimage.c */
+
+extern void cfbPutImage(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDraw*/,
+    GCPtr /*pGC*/,
+    int /*depth*/,
+    int /*x*/,
+    int /*y*/,
+    int /*w*/,
+    int /*h*/,
+    int /*leftPad*/,
+    int /*format*/,
+    char */*pImage*/
+#endif
+);
+
+extern void cfbGetImage(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDrawable*/,
+    int /*sx*/,
+    int /*sy*/,
+    int /*w*/,
+    int /*h*/,
+    unsigned int /*format*/,
+    unsigned long /*planeMask*/,
+    pointer /*pdstLine*/
+#endif
+);
+/* cfbline.c */
+
+extern void cfbLineSS(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDrawable*/,
+    GCPtr /*pGC*/,
+    int /*mode*/,
+    int /*npt*/,
+    DDXPointPtr /*pptInit*/
+#endif
+);
+
+extern void cfbLineSD(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDrawable*/,
+    GCPtr /*pGC*/,
+    int /*mode*/,
+    int /*npt*/,
+    DDXPointPtr /*pptInit*/
+#endif
+);
+/* cfbmskbits.c */
+/* cfbpixmap.c */
+
+extern PixmapPtr cfbCreatePixmap(
+#if NeedFunctionPrototypes
+    ScreenPtr /*pScreen*/,
+    int /*width*/,
+    int /*height*/,
+    int /*depth*/
+#endif
+);
+
+extern Bool cfbDestroyPixmap(
+#if NeedFunctionPrototypes
+    PixmapPtr /*pPixmap*/
+#endif
+);
+
+extern PixmapPtr cfbCopyPixmap(
+#if NeedFunctionPrototypes
+    PixmapPtr /*pSrc*/
+#endif
+);
+
+extern void cfbPadPixmap(
+#if NeedFunctionPrototypes
+    PixmapPtr /*pPixmap*/
+#endif
+);
+
+extern void cfbXRotatePixmap(
+#if NeedFunctionPrototypes
+    PixmapPtr /*pPix*/,
+    int /*rw*/
+#endif
+);
+
+extern void cfbYRotatePixmap(
+#if NeedFunctionPrototypes
+    PixmapPtr /*pPix*/,
+    int /*rh*/
+#endif
+);
+
+extern void cfbCopyRotatePixmap(
+#if NeedFunctionPrototypes
+    PixmapPtr /*psrcPix*/,
+    PixmapPtr */*ppdstPix*/,
+    int /*xrot*/,
+    int /*yrot*/
+#endif
+);
+/* cfbply1rctC.c */
+
+extern void cfbFillPoly1RectCopy(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDrawable*/,
+    GCPtr /*pGC*/,
+    int /*shape*/,
+    int /*mode*/,
+    int /*count*/,
+    DDXPointPtr /*ptsIn*/
+#endif
+);
+/* cfbply1rctG.c */
+
+extern void cfbFillPoly1RectGeneral(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDrawable*/,
+    GCPtr /*pGC*/,
+    int /*shape*/,
+    int /*mode*/,
+    int /*count*/,
+    DDXPointPtr /*ptsIn*/
+#endif
+);
+/* cfbpntwin.c */
+
+extern void cfbPaintWindow(
+#if NeedFunctionPrototypes
+    WindowPtr /*pWin*/,
+    RegionPtr /*pRegion*/,
+    int /*what*/
+#endif
+);
+
+extern void cfbFillBoxSolid(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDrawable*/,
+    int /*nBox*/,
+    BoxPtr /*pBox*/,
+    unsigned long /*pixel*/
+#endif
+);
+
+extern void cfbFillBoxTile32(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDrawable*/,
+    int /*nBox*/,
+    BoxPtr /*pBox*/,
+    PixmapPtr /*tile*/
+#endif
+);
+/* cfbpolypnt.c */
+
+extern void cfbPolyPoint(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDrawable*/,
+    GCPtr /*pGC*/,
+    int /*mode*/,
+    int /*npt*/,
+    xPoint */*pptInit*/
+#endif
+);
+/* cfbpush8.c */
+
+extern void cfbPushPixels8(
+#if NeedFunctionPrototypes
+    GCPtr /*pGC*/,
+    PixmapPtr /*pBitmap*/,
+    DrawablePtr /*pDrawable*/,
+    int /*dx*/,
+    int /*dy*/,
+    int /*xOrg*/,
+    int /*yOrg*/
+#endif
+);
+/* cfbrctstp8.c */
+
+extern void cfb8FillRectOpaqueStippled32(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDrawable*/,
+    GCPtr /*pGC*/,
+    int /*nBox*/,
+    BoxPtr /*pBox*/
+#endif
+);
+
+extern void cfb8FillRectTransparentStippled32(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDrawable*/,
+    GCPtr /*pGC*/,
+    int /*nBox*/,
+    BoxPtr /*pBox*/
+#endif
+);
+
+extern void cfb8FillRectStippledUnnatural(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDrawable*/,
+    GCPtr /*pGC*/,
+    int /*nBox*/,
+    BoxPtr /*pBox*/
+#endif
+);
+/* cfbrrop.c */
+
+extern int cfbReduceRasterOp(
+#if NeedFunctionPrototypes
+    int /*rop*/,
+    unsigned long /*fg*/,
+    unsigned long /*pm*/,
+    unsigned long */*andp*/,
+    unsigned long */*xorp*/
+#endif
+);
+/* cfbscrinit.c */
+
+extern Bool cfbCloseScreen(
+#if NeedFunctionPrototypes
+    int /*index*/,
+    ScreenPtr /*pScreen*/
+#endif
+);
+
+extern Bool cfbSetupScreen(
+#if NeedFunctionPrototypes
+    ScreenPtr /*pScreen*/,
+    pointer /*pbits*/,
+    int /*xsize*/,
+    int /*ysize*/,
+    int /*dpix*/,
+    int /*dpiy*/,
+    int /*width*/
+#endif
+);
+
+extern int cfbFinishScreenInit(
+#if NeedFunctionPrototypes
+    ScreenPtr /*pScreen*/,
+    pointer /*pbits*/,
+    int /*xsize*/,
+    int /*ysize*/,
+    int /*dpix*/,
+    int /*dpiy*/,
+    int /*width*/
+#endif
+);
+
+extern Bool cfbScreenInit(
+#if NeedFunctionPrototypes
+    ScreenPtr /*pScreen*/,
+    pointer /*pbits*/,
+    int /*xsize*/,
+    int /*ysize*/,
+    int /*dpix*/,
+    int /*dpiy*/,
+    int /*width*/
+#endif
+);
+/* cfbseg.c */
+
+extern void cfbSegmentSS(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDrawable*/,
+    GCPtr /*pGC*/,
+    int /*nseg*/,
+    xSegment */*pSeg*/
+#endif
+);
+
+extern void cfbSegmentSD(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDrawable*/,
+    GCPtr /*pGC*/,
+    int /*nseg*/,
+    xSegment */*pSeg*/
+#endif
+);
+/* cfbsetsp.c */
+
+extern int cfbSetScanline(
+#if NeedFunctionPrototypes
+    int /*y*/,
+    int /*xOrigin*/,
+    int /*xStart*/,
+    int /*xEnd*/,
+    unsigned int */*psrc*/,
+    int /*alu*/,
+    int */*pdstBase*/,
+    int /*widthDst*/,
+    unsigned long /*planemask*/
+#endif
+);
+
+extern void cfbSetSpans(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDrawable*/,
+    GCPtr /*pGC*/,
+    unsigned int */*psrc*/,
+    DDXPointPtr /*ppt*/,
+    int */*pwidth*/,
+    int /*nspans*/,
+    int /*fSorted*/
+#endif
+);
+/* cfbsolidC.c */
+
+extern void cfbFillRectSolidCopy(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDrawable*/,
+    GCPtr /*pGC*/,
+    int /*nBox*/,
+    BoxPtr /*pBox*/
+#endif
+);
+
+extern void cfbSolidSpansCopy(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDrawable*/,
+    GCPtr /*pGC*/,
+    int /*nInit*/,
+    DDXPointPtr /*pptInit*/,
+    int */*pwidthInit*/,
+    int /*fSorted*/
+#endif
+);
+/* cfbsolidG.c */
+
+extern void cfbFillRectSolidGeneral(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDrawable*/,
+    GCPtr /*pGC*/,
+    int /*nBox*/,
+    BoxPtr /*pBox*/
+#endif
+);
+
+extern void cfbSolidSpansGeneral(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDrawable*/,
+    GCPtr /*pGC*/,
+    int /*nInit*/,
+    DDXPointPtr /*pptInit*/,
+    int */*pwidthInit*/,
+    int /*fSorted*/
+#endif
+);
+/* cfbsolidX.c */
+
+extern void cfbFillRectSolidXor(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDrawable*/,
+    GCPtr /*pGC*/,
+    int /*nBox*/,
+    BoxPtr /*pBox*/
+#endif
+);
+
+extern void cfbSolidSpansXor(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDrawable*/,
+    GCPtr /*pGC*/,
+    int /*nInit*/,
+    DDXPointPtr /*pptInit*/,
+    int */*pwidthInit*/,
+    int /*fSorted*/
+#endif
+);
+/* cfbteblt8.c */
+
+extern void cfbTEGlyphBlt8(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDrawable*/,
+    GCPtr/*pGC*/,
+    int /*xInit*/,
+    int /*yInit*/,
+    unsigned int /*nglyph*/,
+    CharInfoPtr */*ppci*/,
+    char */*pglyphBase*/
+#endif
+);
+/* cfbtegblt.c */
+
+extern void cfbTEGlyphBlt(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDrawable*/,
+    GCPtr/*pGC*/,
+    int /*x*/,
+    int /*y*/,
+    unsigned int /*nglyph*/,
+    CharInfoPtr */*ppci*/,
+    char */*pglyphBase*/
+#endif
+);
+/* cfbtile32C.c */
+
+extern void cfbFillRectTile32Copy(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDrawable*/,
+    GCPtr /*pGC*/,
+    int /*nBox*/,
+    BoxPtr /*pBox*/
+#endif
+);
+
+extern void cfbTile32FSCopy(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDrawable*/,
+    GCPtr /*pGC*/,
+    int /*nInit*/,
+    DDXPointPtr /*pptInit*/,
+    int */*pwidthInit*/,
+    int /*fSorted*/
+#endif
+);
+/* cfbtile32G.c */
+
+extern void cfbFillRectTile32General(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDrawable*/,
+    GCPtr /*pGC*/,
+    int /*nBox*/,
+    BoxPtr /*pBox*/
+#endif
+);
+
+extern void cfbTile32FSGeneral(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDrawable*/,
+    GCPtr /*pGC*/,
+    int /*nInit*/,
+    DDXPointPtr /*pptInit*/,
+    int */*pwidthInit*/,
+    int /*fSorted*/
+#endif
+);
+/* cfbtileoddC.c */
+
+extern void cfbFillBoxTileOddCopy(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDrawable*/,
+    int /*nBox*/,
+    BoxPtr /*pBox*/,
+    PixmapPtr /*tile*/,
+    int /*xrot*/,
+    int /*yrot*/,
+    int /*alu*/,
+    unsigned long /*planemask*/
+#endif
+);
+
+extern void cfbFillSpanTileOddCopy(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDrawable*/,
+    int /*n*/,
+    DDXPointPtr /*ppt*/,
+    int */*pwidth*/,
+    PixmapPtr /*tile*/,
+    int /*xrot*/,
+    int /*yrot*/,
+    int /*alu*/,
+    unsigned long /*planemask*/
+#endif
+);
+
+extern void cfbFillBoxTile32sCopy(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDrawable*/,
+    int /*nBox*/,
+    BoxPtr /*pBox*/,
+    PixmapPtr /*tile*/,
+    int /*xrot*/,
+    int /*yrot*/,
+    int /*alu*/,
+    unsigned long /*planemask*/
+#endif
+);
+
+extern void cfbFillSpanTile32sCopy(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDrawable*/,
+    int /*n*/,
+    DDXPointPtr /*ppt*/,
+    int */*pwidth*/,
+    PixmapPtr /*tile*/,
+    int /*xrot*/,
+    int /*yrot*/,
+    int /*alu*/,
+    unsigned long /*planemask*/
+#endif
+);
+/* cfbtileoddG.c */
+
+extern void cfbFillBoxTileOddGeneral(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDrawable*/,
+    int /*nBox*/,
+    BoxPtr /*pBox*/,
+    PixmapPtr /*tile*/,
+    int /*xrot*/,
+    int /*yrot*/,
+    int /*alu*/,
+    unsigned long /*planemask*/
+#endif
+);
+
+extern void cfbFillSpanTileOddGeneral(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDrawable*/,
+    int /*n*/,
+    DDXPointPtr /*ppt*/,
+    int */*pwidth*/,
+    PixmapPtr /*tile*/,
+    int /*xrot*/,
+    int /*yrot*/,
+    int /*alu*/,
+    unsigned long /*planemask*/
+#endif
+);
+
+extern void cfbFillBoxTile32sGeneral(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDrawable*/,
+    int /*nBox*/,
+    BoxPtr /*pBox*/,
+    PixmapPtr /*tile*/,
+    int /*xrot*/,
+    int /*yrot*/,
+    int /*alu*/,
+    unsigned long /*planemask*/
+#endif
+);
+
+extern void cfbFillSpanTile32sGeneral(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDrawable*/,
+    int /*n*/,
+    DDXPointPtr /*ppt*/,
+    int */*pwidth*/,
+    PixmapPtr /*tile*/,
+    int /*xrot*/,
+    int /*yrot*/,
+    int /*alu*/,
+    unsigned long /*planemask*/
+#endif
+);
+/* cfbwindow.c */
+
+extern Bool cfbCreateWindow(
+#if NeedFunctionPrototypes
+    WindowPtr /*pWin*/
+#endif
+);
+
+extern Bool cfbDestroyWindow(
+#if NeedFunctionPrototypes
+    WindowPtr /*pWin*/
+#endif
+);
+
+extern Bool cfbMapWindow(
+#if NeedFunctionPrototypes
+    WindowPtr /*pWindow*/
+#endif
+);
+
+extern Bool cfbPositionWindow(
+#if NeedFunctionPrototypes
+    WindowPtr /*pWin*/,
+    int /*x*/,
+    int /*y*/
+#endif
+);
+
+extern Bool cfbUnmapWindow(
+#if NeedFunctionPrototypes
+    WindowPtr /*pWindow*/
+#endif
+);
+
+extern void cfbCopyWindow(
+#if NeedFunctionPrototypes
+    WindowPtr /*pWin*/,
+    DDXPointRec /*ptOldOrg*/,
+    RegionPtr /*prgnSrc*/
+#endif
+);
+
+extern Bool cfbChangeWindowAttributes(
+#if NeedFunctionPrototypes
+    WindowPtr /*pWin*/,
+    unsigned long /*mask*/
+#endif
+);
+/* cfbzerarcC.c */
+
+extern void cfbZeroPolyArcSS8Copy(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDraw*/,
+    GCPtr /*pGC*/,
+    int /*narcs*/,
+    xArc */*parcs*/
+#endif
+);
+/* cfbzerarcG.c */
+
+extern void cfbZeroPolyArcSS8General(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDraw*/,
+    GCPtr /*pGC*/,
+    int /*narcs*/,
+    xArc */*parcs*/
+#endif
+);
+/* cfbzerarcX.c */
+
+extern void cfbZeroPolyArcSS8Xor(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDraw*/,
+    GCPtr /*pGC*/,
+    int /*narcs*/,
+    xArc */*parcs*/
+#endif
+);
 
 /*
  * This is the only completely portable way to

@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbimage.c,v 5.5 93/06/24 10:22:43 dpw Exp $ */
+/* $XConsortium: mfbimage.c,v 5.6 93/07/12 09:29:55 dpw Exp $ */
 
 #include "X.h"
 
@@ -67,8 +67,8 @@ mfbPutImage(dst, pGC, depth, x, y, w, h, leftPad, format, pImage)
     GCPtr	pGC;
     int		depth, x, y, w, h;
     int leftPad;
-    unsigned int format;
-    int 	*pImage;
+    int format;
+    char 	*pImage;
 {
     PixmapPtr	pPixmap;
 

@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbplygblt.c,v 5.6 92/12/24 09:26:34 rws Exp $ */
+/* $XConsortium: mfbplygblt.c,v 5.7 92/12/24 09:40:32 rws Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -85,7 +85,7 @@ MFBPOLYGLYPHBLT(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     int 	x, y;
     unsigned int nglyph;
     CharInfoPtr *ppci;		/* array of character info */
-    unsigned char *pglyphBase;	/* start of array of glyphs (unused in R5) */
+    char *pglyphBase;	/* start of array of glyphs (unused in R5) */
 {
     ExtentInfoRec info;	/* used by QueryGlyphExtents() */
     BoxRec bbox;		/* string's bounding box */

@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: cfbimage.c,v 1.11 93/07/12 09:31:42 dpw Exp $ */
+/* $XConsortium: cfbimage.c,v 1.12 93/07/12 16:28:32 dpw Exp $ */
 
 #include "X.h"
 #include "windowstr.h"
@@ -38,7 +38,7 @@ cfbPutImage(pDraw, pGC, depth, x, y, w, h, leftPad, format, pImage)
     GCPtr	pGC;
     int		depth, x, y, w, h;
     int		leftPad;
-    unsigned int format;
+    int		format;
     char 	*pImage;
 {
     int		bitsPerPixel;

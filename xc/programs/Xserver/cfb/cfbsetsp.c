@@ -48,7 +48,7 @@ cfbSetScanline(y, xOrigin, xStart, xEnd, psrc, alu, pdstBase, widthDst, planemas
     int			xOrigin;	/* where this scanline starts */
     int			xStart;		/* first bit to use from scanline */
     int			xEnd;		/* last bit to use from scanline + 1 */
-    register int	*psrc;
+    register unsigned int *psrc;
     register int	alu;		/* raster op */
     int			*pdstBase;	/* start of the drawable */
     int			widthDst;	/* width of drawable in words */
@@ -129,7 +129,7 @@ void
 cfbSetSpans(pDrawable, pGC, psrc, ppt, pwidth, nspans, fSorted)
     DrawablePtr		pDrawable;
     GCPtr		pGC;
-    unsigned long	*psrc;
+    unsigned int	*psrc;
     register DDXPointPtr ppt;
     int			*pwidth;
     int			nspans;
@@ -198,7 +198,7 @@ cfbSetSpans(pDrawable, pGC, psrc, ppt, pwidth, nspans, fSorted)
 		xStart = max(pbox->x1, ppt->x);
 		xEnd = min(ppt->x + *pwidth, pbox->x2);
 		cfbSetScanline(ppt->y, ppt->x, xStart, xEnd, psrc, alu,
-		    pdstBase, widthDst, pGC->planemask);
+		    (int *)pdstBase, widthDst, pGC->planemask);
 		if(ppt->x + *pwidth <= pbox->x2)
 		{
 		    /* End of the line, as it were */
@@ -242,7 +242,7 @@ cfbSetSpans(pDrawable, pGC, psrc, ppt, pwidth, nspans, fSorted)
 			xStart = max(pbox->x1, ppt->x);
 			xEnd = min(pbox->x2, ppt->x + *pwidth);
 			cfbSetScanline(ppt->y, ppt->x, xStart, xEnd, psrc, alu,
-			    pdstBase, widthDst, pGC->planemask);
+			    (int *)pdstBase, widthDst, pGC->planemask);
 		    }
 
 		}

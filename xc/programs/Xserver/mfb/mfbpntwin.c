@@ -1,4 +1,4 @@
-/* $XConsortium: mfbpntwin.c,v 5.7 90/05/15 18:38:46 keith Exp $ */
+/* $XConsortium: mfbpntwin.c,v 5.8 91/12/26 20:19:31 rws Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -61,7 +61,7 @@ mfbPaintWindow(pWin, pRegion, what)
 	case BackgroundPixmap:
 	    if (pPrivWin->fastBackground)
 	    {
-		mfbTileArea32Copy(pWin, REGION_NUM_RECTS(pRegion),
+		mfbTileArea32Copy((DrawablePtr)pWin, REGION_NUM_RECTS(pRegion),
 				  REGION_RECTS(pRegion), GXcopy,
 				  pPrivWin->pRotatedBackground);
 		return;
@@ -69,10 +69,10 @@ mfbPaintWindow(pWin, pRegion, what)
 	    break;
 	case BackgroundPixel:
 	    if (pWin->background.pixel & 1)
-		mfbSolidWhiteArea(pWin, REGION_NUM_RECTS(pRegion),
+		mfbSolidWhiteArea((DrawablePtr)pWin, REGION_NUM_RECTS(pRegion),
 				  REGION_RECTS(pRegion), GXset, NullPixmap);
 	    else
-		mfbSolidBlackArea(pWin, REGION_NUM_RECTS(pRegion),
+		mfbSolidBlackArea((DrawablePtr)pWin, REGION_NUM_RECTS(pRegion),
 				  REGION_RECTS(pRegion), GXclear, NullPixmap);
 	    return;
     	}
@@ -81,16 +81,16 @@ mfbPaintWindow(pWin, pRegion, what)
 	if (pWin->borderIsPixel)
 	{
 	    if (pWin->border.pixel & 1)
-		mfbSolidWhiteArea(pWin, REGION_NUM_RECTS(pRegion),
+		mfbSolidWhiteArea((DrawablePtr)pWin, REGION_NUM_RECTS(pRegion),
 				  REGION_RECTS(pRegion), GXset, NullPixmap);
 	    else
-		mfbSolidBlackArea(pWin, REGION_NUM_RECTS(pRegion),
+		mfbSolidBlackArea((DrawablePtr)pWin, REGION_NUM_RECTS(pRegion),
 				  REGION_RECTS(pRegion), GXclear, NullPixmap);
 	    return;
 	}
 	else if (pPrivWin->fastBorder)
 	{
-	    mfbTileArea32Copy(pWin, REGION_NUM_RECTS(pRegion),
+	    mfbTileArea32Copy((DrawablePtr)pWin, REGION_NUM_RECTS(pRegion),
 				  REGION_RECTS(pRegion), GXcopy,
 				  pPrivWin->pRotatedBorder);
 	    return;

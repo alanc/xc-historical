@@ -1,4 +1,4 @@
-/* $XConsortium: cfbtegblt.c,v 5.3 91/04/10 11:41:31 keith Exp $ */
+/* $XConsortium: cfbtegblt.c,v 5.4 91/05/04 11:52:53 keith Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -63,7 +63,7 @@ cfbTEGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     int 	x, y;
     unsigned int nglyph;
     CharInfoPtr *ppci;		/* array of character info */
-    unsigned char *pglyphBase;	/* start of array of glyphs */
+    char *pglyphBase;	/* start of array of glyphs */
 {
     FontPtr	pfont = pGC->font;
     int widthDst;

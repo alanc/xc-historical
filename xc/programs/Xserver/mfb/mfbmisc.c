@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbmisc.c,v 5.1 91/03/30 11:13:39 rws Exp $ */
+/* $XConsortium: mfbmisc.c,v 5.2 91/06/08 15:07:28 rws Exp $ */
 #include "X.h"
 #include "misc.h"
 #include "cursor.h"
@@ -33,8 +33,8 @@ SOFTWARE.
 void
 mfbQueryBestSize(class, pwidth, pheight, pScreen)
 int class;
-short *pwidth;
-short *pheight;
+unsigned short *pwidth;
+unsigned short *pheight;
 ScreenPtr pScreen;
 {
     unsigned width, test;

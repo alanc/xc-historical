@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: cfbgetsp.c,v 5.10 92/02/11 15:04:21 keith Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -49,7 +49,7 @@ cfbGetSpans(pDrawable, wMax, ppt, pwidth, nspans, pdstStart)
     register DDXPointPtr ppt;		/* points to start copying from */
     int			*pwidth;	/* list of number of bits to copy */
     int			nspans;		/* number of scanlines to copy */
-    unsigned long	*pdstStart;	/* where to put the bits */
+    unsigned int	*pdstStart;	/* where to put the bits */
 {
     register unsigned long	*pdst;		/* where to put the bits */
     register unsigned long	*psrc;		/* where to get the bits */
@@ -90,7 +90,7 @@ cfbGetSpans(pDrawable, wMax, ppt, pwidth, nspans, pdstStart)
 	return;
     }
 #endif
-    pdst = pdstStart;
+    pdst = (unsigned long *)pdstStart;
     pptLast = ppt + nspans;
     while(ppt < pptLast)
     {

@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbbitblt.c,v 5.20 91/05/25 16:52:53 rws Exp $ */
+/* $XConsortium: mfbbitblt.c,v 5.21 91/07/02 19:54:31 keith Exp $ */
 #include "X.h"
 #include "Xprotostr.h"
 
@@ -70,12 +70,7 @@ destination.  this is a simple translation.
  ** and much less overhead.  Nice for drawing lots of small pixmaps.
  */
  
-extern int  mfbDoBitbltCopy();
-extern int  mfbDoBitbltXor();
-extern int  mfbDoBitbltCopyInverted();
-extern int  mfbDoBitbltOr();
-extern int  mfbDoBitbltGeneral();
-
+void
 mfbDoBitblt (pSrc, pDst, alu, prgnDst, pptSrc)
     DrawablePtr	    pSrc, pDst;
     int		    alu;
@@ -85,15 +80,20 @@ mfbDoBitblt (pSrc, pDst, alu, prgnDst, pptSrc)
     switch (alu)
     {
     case GXcopy:
-	return mfbDoBitbltCopy (pSrc, pDst, alu, prgnDst, pptSrc);
+	mfbDoBitbltCopy (pSrc, pDst, alu, prgnDst, pptSrc);
+	break;
     case GXxor:
-	return mfbDoBitbltXor (pSrc, pDst, alu, prgnDst, pptSrc);
+	mfbDoBitbltXor (pSrc, pDst, alu, prgnDst, pptSrc);
+	break;
     case GXcopyInverted:
-	return mfbDoBitbltCopyInverted (pSrc, pDst, alu, prgnDst, pptSrc);
+	mfbDoBitbltCopyInverted (pSrc, pDst, alu, prgnDst, pptSrc);
+	break;
     case GXor:
-	return mfbDoBitbltOr (pSrc, pDst, alu, prgnDst, pptSrc);
+	mfbDoBitbltOr (pSrc, pDst, alu, prgnDst, pptSrc);
+	break;
     default:
-	return mfbDoBitbltGeneral (pSrc, pDst, alu, prgnDst, pptSrc);
+	mfbDoBitbltGeneral (pSrc, pDst, alu, prgnDst, pptSrc);
+	break;
     }
 }
 
@@ -124,7 +124,7 @@ int dstx, dsty;
     BoxRec fastBox;
     int fastClip = 0;		/* for fast clipping with pixmap source */
     int fastExpose = 0;		/* for fast exposures with pixmap source */
-    int (*localDoBitBlt)();
+    void (*localDoBitBlt)();
 
     origSource.x = srcx;
     origSource.y = srcy;

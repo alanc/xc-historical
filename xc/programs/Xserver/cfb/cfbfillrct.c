@@ -16,7 +16,7 @@ representations about the suitability of this software for any
 purpose.  It is provided "as is" without express or implied warranty.
 */
 
-/* $XConsortium: cfbfillrct.c,v 5.13 90/05/15 18:40:19 keith Exp $ */
+/* $XConsortium: cfbfillrct.c,v 5.14 91/12/19 18:36:18 keith Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -31,20 +31,6 @@ purpose.  It is provided "as is" without express or implied warranty.
 #include "cfbmskbits.h"
 #include "mergerop.h"
 
-#if PSZ == 8
-extern void cfb8FillRectOpaqueStippled32();
-extern void cfb8FillRectTransparentStippled32();
-extern void cfb8FillRectStippledUnnatural();
-#endif
-
-extern void cfbFillRectSolidCopy(), cfbFillRectSolidXor (), cfbFillRectSolidGeneral ();
-
-extern void cfbFillRectTile32Copy (), cfbFillRectTile32General ();
-
-extern void cfbFillBoxTileOddCopy ();
-extern void cfbFillBoxTileOddGeneral ();
-extern void cfbFillBoxTile32sCopy ();
-extern void cfbFillBoxTile32sGeneral ();
 
 void
 cfbFillBoxTileOdd (pDrawable, n, rects, tile, xrot, yrot)

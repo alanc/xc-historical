@@ -18,7 +18,7 @@ purpose.  It is provided "as is" without express or implied warranty.
 Author: Keith Packard
 
 */
-/* $XConsortium: mfbblt.c,v 1.6 92/12/23 17:37:13 rws Exp $ */
+/* $XConsortium: mfbblt.c,v 1.7 92/12/24 09:26:11 rws Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -33,6 +33,7 @@ Author: Keith Packard
 #include	"fastblt.h"
 #include	"mergerop.h"
 
+void
 MROP_NAME(mfbDoBitblt)(pSrc, pDst, alu, prgnDst, pptSrc)
     DrawablePtr	    pSrc, pDst;
     int		    alu;

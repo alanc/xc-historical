@@ -18,7 +18,7 @@ purpose.  It is provided "as is" without express or implied warranty.
 Author: Keith Packard
 
 */
-/* $XConsortium: cfbbitblt.c,v 5.45 91/12/19 18:36:43 keith Exp $ */
+/* $XConsortium: cfbbitblt.c,v 5.46 93/08/30 07:49:51 dpw Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -281,10 +281,6 @@ cfbBitBlt (pSrcDrawable, pDstDrawable,
     return prgnExposed;
 }
 
-extern void cfbDoBitbltCopy();
-extern void cfbDoBitbltXor();
-extern void cfbDoBitbltOr();
-extern void cfbDoBitbltGeneral();
 
 void
 cfbDoBitblt (pSrc, pDst, alu, prgnDst, pptSrc, planemask)
@@ -665,7 +661,6 @@ RegionPtr cfbCopyPlane(pSrcDrawable, pDstDrawable,
     void		(*doBitBlt)();
 
 #if PSZ == 8
-    extern cfbCopyPlane8to1();
 
     if (pSrcDrawable->bitsPerPixel == 1 && pDstDrawable->bitsPerPixel == 8)
     {
