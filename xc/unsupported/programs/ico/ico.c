@@ -1,4 +1,4 @@
-/* $XConsortium: ico.c,v 1.19 89/10/05 18:39:39 jim Exp $ */
+/* $XConsortium: ico.c,v 1.20 89/10/05 20:54:31 jim Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -115,6 +115,7 @@ int nplanesets;
 int dsync = 0;
 int softdbl = 0, dblbuf = 0;
 int sleepcount = 0;
+int msleepcount = 0;
 int numcolors = 0;
 char **colornames;	/* points into argv */
 int dofaces = 0;
@@ -136,7 +137,6 @@ static char *help_message[] = {
 "    -dbl                         use double buffering (extension if present)",
 "    -softdbl                     use software double buffering",
 "    -noedges                     don't draw wire frame edges",
-"    -move                        use a moving subwindow for double buffering",
 "    -faces                       draw faces",
 "    -lw number                   line width to use",
 "    -i                           invert",
@@ -158,7 +158,6 @@ char **argv;
 	char *display = NULL;
 	char *geom = NULL;
 	int useRoot = 0;
-	int moveico = 0;
 	int fg, bg;
 	int invert = 0;
 	int dash = 0;
@@ -224,8 +223,6 @@ char **argv;
 			background_colorname = *++argv;
 		else if (!strcmp(*argv, "-noedges"))
 			doedges = 0;
-		else if (!strcmp(*argv, "-move"))
-			moveico = 1;
 		else if (!strcmp(*argv, "-faces"))
 			dofaces = 1;
 		else if (!strcmp(*argv, "-i"))
@@ -234,9 +231,12 @@ char **argv;
 			ico_geom = *++argv;
 		else if (!strcmp(*argv, "-delta"))
 			delta_geom = *++argv;
-		else if (!strcmp (*argv, "-sleep"))
-			sleepcount = atoi(*++argv);
-		else if (!strcmp (*argv, "-obj"))
+		else if (!strcmp (*argv, "-sleep")) {
+			float f = 0.0;
+			sscanf (*++argv, "%f", &f);
+			msleepcount = (int) (f * 1000.0);
+			sleepcount = msleepcount / 1000;
+		} else if (!strcmp (*argv, "-obj"))
 			poly = findpoly(*++argv);
 		else if (!strcmp(*argv, "-dsync"))
 			dsync = 1;
@@ -355,24 +355,11 @@ char **argv;
 #ifdef MULTIBUFFER
 	if (multibuf) {
 	    if (XmbufQueryExtension (dpy, &mbevbase, &mberrbase)) {
-		Window w;
-
-		if (useRoot || !moveico) 
-		  icowin = None;
-		else {
-		    xswa.background_pixel = bg;
-		    icowin = XCreateWindow (dpy, draw_window, 0, 0, 
-					    icoW, icoH, 0, CopyFromParent,
-					    InputOutput, CopyFromParent,
-					    CWBackPixel, &xswa);
-		    XMapWindow (dpy, icowin);
-		}
-		w = icowin ? icowin : draw_window;
-		if (XmbufCreateBuffers (dpy, w, 2,
+		if (XmbufCreateBuffers (dpy, draw_window, 2,
 					MultibufferUpdateActionBackground,
 					MultibufferUpdateHintFrequent,
 					multibuffers) == 2) {
-                    XCopyArea (dpy, w, multibuffers[1],
+                    XCopyArea (dpy, draw_window, multibuffers[1],
                                DefaultGC(dpy, DefaultScreen(dpy)),
                                0, 0, winW, winH, 0, 0);
 		    win = multibuffers[1];
@@ -474,7 +461,7 @@ char **argv;
 			icodeltay2 = icoDeltaY * 2;
 			}
 
-		drawPoly(poly, win, gc, icoX, icoY, icoW, icoH, prevX, prevY);
+		drawPoly(poly, gc, icoX, icoY, icoW, icoH, prevX, prevY);
 		}
 	}
 
@@ -529,7 +516,6 @@ int x,y,w,h;
  *
  * Input
  *	poly		the polyhedron to draw
- *	w		window on which to draw
  *	gc		X11 graphics context to be used for drawing
  *	icoX, icoY	position of upper left of bounding-box
  *	icoW, icoH	size of bounding-box
@@ -537,9 +523,8 @@ int x,y,w,h;
  *****************************************************************************/
 char drawn[MAXNV][MAXNV];
 
-drawPoly(poly, w, gc, icoX, icoY, icoW, icoH, prevX, prevY)
+drawPoly(poly, gc, icoX, icoY, icoW, icoH, prevX, prevY)
 Polyinfo *poly;
-Window w;
 GC gc;
 int icoX, icoY, icoW, icoH;
 int prevX, prevY;
@@ -597,13 +582,6 @@ int prevX, prevY;
 	buffer = !buffer;
 	PartialNonHomTransform(NV, xform, xv[!buffer], xv[buffer]);
 
-
-#ifdef MULTIBUFFER
-	if (icowin) {
-	    XMoveWindow (dpy, icowin, icoX, icoY);
-	    icoX = icoY = 0;
-	}
-#endif
 
 	/* Convert 3D coordinates to 2D window coordinates: */
 
@@ -880,7 +858,7 @@ int n;
     if (multibuf) {
 	static int firsttime = 1;
 
-	XmbufDisplayBuffers (dpy, 1, &multibuffers[n], sleepcount*1000, 0);
+	XmbufDisplayBuffers (dpy, 1, &multibuffers[n], msleepcount, 0);
 	if (firsttime) {
 	    firsttime = 0;
 	    n = 0;
