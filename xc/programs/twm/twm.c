@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: twm.c,v 1.84 89/11/16 17:09:06 jim Exp $
+ * $XConsortium: twm.c,v 1.85 89/11/19 15:34:21 jim Exp $
  *
  * twm - "Tom's Window Manager"
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: twm.c,v 1.84 89/11/16 17:09:06 jim Exp $";
+"$XConsortium: twm.c,v 1.85 89/11/19 15:34:21 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -59,6 +59,7 @@ static char RCSinfo[] =
 #include "gram.h"
 #include "screen.h"
 #include "iconmgr.h"
+#include <X11/Xproto.h>
 
 #include "gray.bm"
 
@@ -75,7 +76,10 @@ ScreenInfo **ScreenList;	/* structures for each screen */
 ScreenInfo *Scr = NULL, *PrevScr = NULL;  /* the cur and prev screens */
 int PreviousScreen;		/* last screen that we were on */
 int FirstScreen;		/* TRUE ==> first screen of display */
+Bool PrintErrorMessages = False;	/* controls error messages */
 static int RedirectError;	/* TRUE ==> another window manager running */
+static int CatchRedirectError();	/* for settting RedirectError */
+static int TwmErrorHandler();	/* for everything else */
 char Info[INFO_LINES][INFO_SIZE];		/* info strings to print */
 int InfoLines;
 char *InitFile = NULL;
@@ -111,6 +115,7 @@ int JunkDepth;			/* junk variable */
 int JunkBW;			/* junk variable */
 int JunkMask;			/* junk variable */
 
+char *ProgramName;
 int Argc;
 char **Argv;
 char **Environ;
@@ -134,7 +139,7 @@ main(argc, argv, environ)
 {
     Window root, parent, *children;
     int nchildren, i, j;
-    char *display_name;
+    char *display_name = NULL;
     unsigned long valuemask;	/* mask for create windows */
     XSetWindowAttributes attributes;	/* attributes for create windows */
     SigProc old_handler;
@@ -154,26 +159,38 @@ main(argc, argv, environ)
 	fprintf(stderr, "twm: process locked\n");
 #endif /* REAL_TIME */
 
-    display_name = NULL;
-
+    ProgramName = argv[0];
     Argc = argc;
     Argv = argv;
     Environ = environ;
 
-    for (i = 1; i < argc; i++)
-    {
-	if (strncmp(argv[i], "-d", 2) == 0)
-	    display_name = argv[++i];
-	else if (strncmp(argv[i], "-s", 2) == 0)
-	    MultiScreen = FALSE;
-	else if (strncmp(argv[i], "-f", 2) == 0)
-	    InitFile = argv[++i];
-	else
-	{
-	    fprintf(stderr,
-	     "Usage:  twm [-display display] [-f file] [-s]\n");
-	    exit(1);
+    for (i = 1; i < argc; i++) {
+	if (argv[i][0] == '-') {
+	    switch (argv[i][1]) {
+	      case 'd':				/* -display dpy */
+		if (++i >= argc) goto usage;
+		display_name = argv[i];
+		continue;
+	      case 's':				/* -single */
+		MultiScreen = FALSE;
+		continue;
+	      case 'f':				/* -file twmrcfilename */
+		if (++i >= argc) goto usage;
+		InitFile = argv[i];
+		continue;
+	      case 'v':				/* -verbose */
+		PrintErrorMessages = True;
+		continue;
+	      case 'q':				/* -quiet */
+		PrintErrorMessages = False;
+		continue;
+	    }
 	}
+      usage:
+	fprintf (stderr,
+		 "usage:  %s [-display dpy] [-f file] [-s] [-q] [-v]\n",
+		 ProgramName);
+	exit (1);
     }
 
     old_handler = signal(SIGINT, SIG_IGN);
@@ -250,13 +267,13 @@ main(argc, argv, environ)
 	XWindowAttributes attr;
 
 	RedirectError = FALSE;
-	XSetErrorHandler(Other);
+	XSetErrorHandler(CatchRedirectError);
 	XSelectInput(dpy, RootWindow (dpy, scrnum),
 	    ColormapChangeMask | EnterWindowMask | PropertyChangeMask | 
 	    SubstructureRedirectMask | KeyPressMask |
 	    ButtonPressMask | ButtonReleaseMask | ExposureMask);
 	XSync(dpy, 0);
-	XSetErrorHandler(Error);
+	XSetErrorHandler(TwmErrorHandler);
 
 	if (RedirectError)
 	{
@@ -734,43 +751,33 @@ Done()
     exit(0);
 }
 
-/***********************************************************************
- *
- *  Procedure:
- *	Error - X error handler.  If we got here it is probably,
- *		because the client window went away and we haven't 
- *		got the DestroyNotify yet.
- *
- *  Inputs:
- *	dpy	- the connection to the X server
- *	event	- the error event structure
- *
- ***********************************************************************
+
+/*
+ * Error Handlers.  If a client dies, we'll get a BadWindow error (except for
+ * GetGeometry which returns BadDrawable) for most operations that we do before
+ * manipulating the client's window.
  */
 
 Bool ErrorOccurred = False;
 XErrorEvent LastErrorEvent;
 
-int Error(dpy, event)
+static int TwmErrorHandler(dpy, event)
     Display *dpy;
     XErrorEvent *event;
 {
     LastErrorEvent = *event;
     ErrorOccurred = True;
+
+    if (PrintErrorMessages && 			/* don't be too obnoxious */
+	event->error_code != BadWindow &&	/* watch for dead puppies */
+	(event->request_code != X_GetGeometry &&	 /* of all styles */
+	 event->error_code != BadDrawable))
+      XmuPrintDefaultErrorMessage (dpy, event, stderr);
     return 0;
 }
 
-/***********************************************************************
- *
- *  Procedure:
- *	Other - error handler called if something else has set 
- *		the attributes on the root window.  Typically
- *		another window manager.
- *
- ***********************************************************************
- */
 
-int Other(dpy, event)
+static int CatchRedirectError(dpy, event)
     Display *dpy;
     XErrorEvent *event;
 {
@@ -799,5 +806,3 @@ InternUsefulAtoms ()
     _XA_WM_SAVE_YOURSELF = XInternAtom (dpy, "WM_SAVE_YOURSELF", False);
     _XA_WM_DELETE_WINDOW = XInternAtom (dpy, "WM_DELETE_WINDOW", False);
 }
-
-
