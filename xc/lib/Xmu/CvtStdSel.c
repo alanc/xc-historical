@@ -1,4 +1,4 @@
-/* $XConsortium: CvtStdSel.c,v 1.8 88/11/14 18:40:08 jim Exp $
+/* $XConsortium: CvtStdSel.c,v 1.9 89/06/16 18:34:45 jim Exp $
  *
  * Copyright 1988 by the Massachusetts Institute of Technology
  *
@@ -31,12 +31,10 @@
 
 static char *get_os_name ()
 {
-	char *os_name = NULL;
-	FILE *f = NULL;
-
 #ifdef OS_NAME
 	return XtNewString(OS_NAME);
 #else
+	FILE *f = NULL;
 
 #if !defined(X_OS_FILE)
 #ifdef SYSV			/* keep separate until makedepend fixed */
@@ -56,6 +54,7 @@ static char *get_os_name ()
 	struct utsname uts;
 
 	if (uname (&uts) == 0) {
+	    char *os_name;
 	    int len = strlen(uts.sysname);
 #ifndef hpux				/* because of hostname length crock */
 	    len += 1 + strlen(uts.release);
