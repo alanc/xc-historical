@@ -53,7 +53,7 @@ in this Software without prior written authorization from the X Consortium.
 
 /**********************************************************************
  *
- * $XConsortium: add_window.c,v 1.160 94/08/25 20:13:30 mor Exp mor $
+ * $XConsortium: add_window.c,v 1.161 94/08/25 20:54:48 mor Exp mor $
  *
  * Add a new window, put the titlbar and other stuff around
  * the window
@@ -169,8 +169,8 @@ IconMgr *iconp;
     int gravx, gravy;			/* gravity signs for positioning */
     int namelen;
     int bw2;
-    unsigned short saved_x, saved_y, saved_width, saved_height;
-    unsigned short restore_icon_x, restore_icon_y;
+    short saved_x, saved_y, restore_icon_x, restore_icon_y;
+    unsigned short saved_width, saved_height;
     Bool restore_iconified = 0;
     Bool restore_icon_info_present = 0;
     int restoredFromPrevSession;
