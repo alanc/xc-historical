@@ -1,5 +1,5 @@
 /*
-* $XConsortium: TextP.h,v 1.26 88/10/04 16:08:33 swick Exp $
+* $XConsortium: TextP.h,v 1.27 88/10/18 12:24:25 swick Exp $
 */
 
 
@@ -33,6 +33,7 @@ SOFTWARE.
 
 #include <X11/Text.h>
 #include <X11/SimpleP.h>
+#include <X11/TextSrcP.h>
 
 /****************************************************************
  *
@@ -49,48 +50,10 @@ SOFTWARE.
 #define DEL	0x7f
 #define BSLASH	'\\'
 
-/* for backwards compatibility only */
-
-#define EditDone	XawEditDone
-#define EditError	XawEditError
-#define PositionError	XawPositionError
-
 /* constants that subclasses may want to know */
 #define DEFAULT_TEXT_HEIGHT ((Dimension)~0)
 #define  yMargin 2
 
-typedef enum {XtsdLeft, XtsdRight} XtTextScanDirection;
-typedef enum {XtstPositions, XtstWhiteSpace, XtstEOL, XtstParagraph, XtstAll}
-    XtTextScanType;
-
-typedef struct _XtTextSource {
-    XtTextPosition	(*Read)();
-    int			(*Replace)();
-    XtTextPosition	(*GetLastPos)();
-    int			(*SetLastPos)();
-    XtTextPosition	(*Scan)();
-    void		(*AddWidget)( /* source, widget */ );
-    void		(*RemoveWidget)( /* source, widget */ );
-    void		(*SetSelection)( /* source, left, right, selection */);
-    Boolean		(*ConvertSelection)( /* Display*, source, ... */ );
-    XtTextEditType	edit_mode;
-    caddr_t		data;	    
-    };
-
-typedef struct _XtTextSink {
-    XFontStruct	*font;
-    int foreground;
-    int (*Display)();
-    int (*InsertCursor)();
-    int (*ClearToBackground)();
-    int (*FindPosition)();
-    int (*FindDistance)();
-    int (*Resolve)();
-    int (*MaxLines)();
-    int (*MaxHeight)();
-    void (*SetTabs)();		/* widget, offset, tab_count, *tabs */
-    caddr_t data;
-    };
 
 /* displayable text management data structures */
 
@@ -105,21 +68,6 @@ typedef struct {
     int			 lines;	/* How many lines in this table.	*/
     XtTextLineTableEntry *info;	/* A dynamic array, one entry per line  */
     } XtTextLineTable, *XtTextLineTablePtr;
-
-typedef enum {XtisOn, XtisOff} XtTextInsertState;
-
-typedef enum {XtsmTextSelect, XtsmTextExtend} XtTextSelectionMode;
-
-typedef enum {XtactionStart, XtactionAdjust, XtactionEnd}
-    XtTextSelectionAction;
-
-typedef struct {
-    XtTextPosition   left, right;
-    XtTextSelectType type;
-    Atom*	     selections;
-    int		     atom_count;
-    int		     array_size;
-} XtTextSelection;
 
 #define IsPositionVisible(ctx, pos) \
 		(pos >= ctx->text.lt.info[0].position && \
