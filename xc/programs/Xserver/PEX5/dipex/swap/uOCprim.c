@@ -1,4 +1,4 @@
-/* $XConsortium: uOCprim.c,v 5.1 91/02/16 09:57:06 rws Exp $ */
+/* $XConsortium: uOCprim.c,v 5.2 91/03/15 18:31:59 keith Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -147,7 +147,6 @@ pexModelClipVolume	*strmPtr;
     int i;
     pexHalfSpace *ph;
 
-    SWAP_ELEMENT_INFO (strmPtr->head);
     SWAP_ENUM_TYPE_INDEX (strmPtr->modelClipOperator);
 
     for (i=0, ph=(pexHalfSpace *)(strmPtr+1); i<strmPtr->numHalfSpaces; i++,ph++)
@@ -165,7 +164,6 @@ pexModelClipVolume2D	*strmPtr;
     int i;
     pexHalfSpace2D *ph;
 
-    SWAP_ELEMENT_INFO (strmPtr->head);
     SWAP_ENUM_TYPE_INDEX (strmPtr->modelClipOperator);
 
     for (i=0, ph=(pexHalfSpace2D *)(strmPtr+1); i<strmPtr->numHalfSpaces; i++,ph++)
@@ -188,8 +186,6 @@ pexAddToNameSet	*strmPtr;
     for (i=0, pn=(pexName *)(strmPtr+1); i<num; i++, pn++)
 	SWAP_NAME ((*pn));
 
-    SWAP_ELEMENT_INFO (strmPtr->head);
-
 }
 
 
@@ -205,8 +201,6 @@ pexMarker	*strmPtr;
 
     num = (CARD32)(((sizeof (CARD32) * strmPtr->head.length) - sizeof(pexMarker))
 	/sizeof(pexCoord3D));
-
-    SWAP_ELEMENT_INFO (strmPtr->head);
 
     SwapCoord3DList(swapPtr, pc, num);
 }
@@ -224,7 +218,6 @@ pexMarker2D	*strmPtr;
 
     SwapCoord2DList(swapPtr, pc, num);
 
-    SWAP_ELEMENT_INFO (strmPtr->head);
 }
 
 
@@ -241,7 +234,6 @@ pexPolyline	*strmPtr;
 
     SwapCoord3DList(swapPtr, pc, num);
 
-    SWAP_ELEMENT_INFO (strmPtr->head);
 }
 
 ErrorCode
@@ -257,7 +249,6 @@ pexPolyline2D	*strmPtr;
 
     SwapCoord2DList(swapPtr, pc, num);
 
-    SWAP_ELEMENT_INFO (strmPtr->head);
 }
 
 ErrorCode
@@ -269,15 +260,14 @@ pexPolylineSet	*strmPtr;
     CARD32 *pj;
     pexVertex *pv;
     
-    SWAP_ELEMENT_INFO (strmPtr->head);
 
     pj = (CARD32 *)(strmPtr+1);
     for (i=0; i<strmPtr->numLists; i++, pj = (CARD32 *)pv) {
 
-	k = *pj++;
+	k = *pj;
 	SWAP_CARD32 ((*pj));
-	for (j=0, pv = (pexVertex *)pj; j<k; j++, pv++) {
-	    SwapVertex (swapPtr, pv, strmPtr->vertexAttribs, strmPtr->colourType);
+	for (j=0, pv = (pexVertex *)(pj + 1); j<k; j++) {
+	    pv = (pexVertex *) SwapVertex (swapPtr, pv, strmPtr->vertexAttribs, strmPtr->colourType);
 	}
 
     }
@@ -295,7 +285,6 @@ pexNurbCurve	*strmPtr;
     int i;
     FLOAT *pf;
 
-    SWAP_ELEMENT_INFO (strmPtr->head);
     SWAP_CARD16 (strmPtr->curveOrder);
     SWAP_COORD_TYPE (strmPtr->coordType);
     SWAP_FLOAT (strmPtr->tmin);
@@ -324,11 +313,9 @@ pexFillArea	*strmPtr;
 	/sizeof(pexCoord3D));
 
     SWAP_CARD16 (strmPtr->shape);
-    SWAP_CARD16 (strmPtr->ignoreEdges);
 
     SwapCoord3DList(swapPtr, (pexCoord3D *)(strmPtr+1), num);
 
-    SWAP_ELEMENT_INFO (strmPtr->head);
 }
 
 ErrorCode
@@ -342,11 +329,9 @@ pexFillArea2D	*strmPtr;
 	    /sizeof(pexCoord2D));
 
     SWAP_CARD16 (strmPtr->shape);
-    SWAP_CARD16 (strmPtr->ignoreEdges);
 
     SwapCoord2DList(swapPtr, (strmPtr+1), num);
 
-    SWAP_ELEMENT_INFO (strmPtr->head);
 
 }
 
@@ -360,9 +345,7 @@ pexExtFillArea	*strmPtr;
 				    strmPtr->vertexAttribs, strmPtr->colourType,
 				    (CARD8 *)(strmPtr+1));
 
-    SWAP_ELEMENT_INFO (strmPtr->head);
     SWAP_CARD16 (strmPtr->shape);
-    SWAP_CARD16 (strmPtr->ignoreEdges);
     SWAP_COLOUR_TYPE (strmPtr->colourType);
     SWAP_CARD16 (strmPtr->facetAttribs);
     SWAP_CARD16 (strmPtr->vertexAttribs);
@@ -379,21 +362,19 @@ pexFillAreaSet	*strmPtr;
     CARD32 *pj;
     pexCoord3D *pc;
 
-    SWAP_ELEMENT_INFO (strmPtr->head);
-    SWAP_CARD16 (strmPtr->shape);
-    SWAP_CARD32 (strmPtr->numLists);
-
     pj = (CARD32 *)(strmPtr+1);
 
     for (i=0; i<strmPtr->numLists; i++, pj = (CARD32 *)pc ) {
 
-	k = *pj++;
+	k = *pj;
 	SWAP_CARD32 ((*pj));
-	for (j=0, pc = (pexCoord3D *)pj; j<k; j++, pc++) {
+	for (j=0, pc = (pexCoord3D *)(pj + 1); j<k; j++, pc++) {
 	    SWAP_COORD3D ((*pc));
 	}
     }
 
+    SWAP_CARD16 (strmPtr->shape);
+    SWAP_CARD32 (strmPtr->numLists);
 }
 
 ErrorCode
@@ -405,20 +386,19 @@ pexFillAreaSet2D	*strmPtr;
     CARD32 *pj;
     pexCoord2D *pc;
 
-    SWAP_ELEMENT_INFO (strmPtr->head);
-    SWAP_CARD16 (strmPtr->shape);
-    SWAP_CARD32 (strmPtr->numLists);
     pj = (CARD32 *)(strmPtr+1);
 
     for (i=0; i<strmPtr->numLists; i++, pj = (CARD32 *)pc ) {
 
-	k = *pj++;
+	k = *pj;
 	SWAP_CARD32 ((*pj));
-	for (j=0, pc = (pexCoord2D *)pj; j<k; j++, pc++) {
+	for (j=0, pc = (pexCoord2D *)(pj + 1); j<k; j++, pc++) {
 	    SWAP_COORD2D ((*pc));
 	}
     }
 
+    SWAP_CARD16 (strmPtr->shape);
+    SWAP_CARD32 (strmPtr->numLists);
 }
 
 
@@ -432,23 +412,19 @@ pexExtFillAreaSet	*strmPtr;
     pexVertex *pv;
     unsigned char *ptr = 0;
 
-    ptr = SWAP_FUNC_PREFIX(SwapFacet)(	swapPtr, strmPtr->facetAttribs,
-					strmPtr->vertexAttribs,
-					strmPtr->colourType,
-					(CARD8 *)(strmPtr+1));
+    ptr = SwapOptData (swapPtr, (CARD8 *) (strmPtr+1),
+		       strmPtr->facetAttribs, strmPtr->colourType);
 
-    for (i=0; i<strmPtr->numLists, pj = (CARD32 *)ptr; i++, pj = (CARD32 *)pv) {
+    for (i=0, pj = (CARD32 *)ptr; i<strmPtr->numLists; i++, pj = (CARD32 *)pv) {
 	k = *pj;
 	SWAP_CARD32 ((*pj));
-	pj++;
-	for (j=0, pv = (pexVertex *)pj; j<k; j++) {
+	for (j=0, pv = (pexVertex *)(pj + 1); j<k; j++) {
 	    pv = (pexVertex *) SwapVertex(  swapPtr, pv, strmPtr->vertexAttribs,
 					    strmPtr->colourType);
 	}
 
     }
 
-    SWAP_ELEMENT_INFO (strmPtr->head);
     SWAP_CARD16 (strmPtr->shape);
     SWAP_COLOUR_TYPE (strmPtr->colourType);
     SWAP_CARD16 (strmPtr->facetAttribs);
@@ -465,7 +441,6 @@ pexTriangleStrip	*strmPtr;
     CARD32 i;
     unsigned char *ptr = (unsigned char *)(strmPtr+1);
 
-    SWAP_ELEMENT_INFO (strmPtr->head);
 
     for (i=0; i<(strmPtr->numVertices-2); i++)
 	ptr = SwapOptData(  swapPtr, ptr, strmPtr->facetAttribs,
@@ -490,7 +465,6 @@ pexQuadrilateralMesh	*strmPtr;
     int i;
     unsigned char *ptr = (unsigned char *)(strmPtr+1);
 
-    SWAP_ELEMENT_INFO (strmPtr->head);
 
     for (i=0; i<((strmPtr->mPts -1) * (strmPtr->nPts -1)); i++)
 	ptr = SwapOptData(  swapPtr, ptr, strmPtr->facetAttribs,
@@ -518,7 +492,6 @@ pexSOFAS	*strmPtr;
     unsigned char *ptr = (unsigned char *)(strmPtr+1);
     CARD16 numList, numSubList;
 
-    SWAP_ELEMENT_INFO (strmPtr->head);
     for (i=0; i<strmPtr->numFAS; i++)
 	ptr = SwapOptData(  swapPtr, ptr, strmPtr->FAS_Attributes,
 			    strmPtr->colourType);
@@ -569,7 +542,6 @@ pexNurbSurface	*strmPtr;
     CARD16 curveType;
     pexTrimCurve *pTC = 0;
 
-    SWAP_ELEMENT_INFO (strmPtr->head);
 
     for (i=0, pf=(FLOAT *)(strmPtr+1); i<strmPtr->numUknots; i++, pf++)
 	SWAP_FLOAT((*pf));
@@ -617,7 +589,6 @@ pexCellArray	*strmPtr;
     int i;
     CARD16 *pc;
 
-    SWAP_ELEMENT_INFO (strmPtr->head);
     SWAP_COORD3D (strmPtr->point1);
     SWAP_COORD3D (strmPtr->point2);
     SWAP_COORD3D (strmPtr->point3);
@@ -637,7 +608,6 @@ pexCellArray2D	*strmPtr;
     int i;
     CARD16 *pc;
 
-    SWAP_ELEMENT_INFO (strmPtr->head);
     SWAP_COORD2D (strmPtr->point1);
     SWAP_COORD2D (strmPtr->point2);
 
@@ -662,7 +632,6 @@ pexExtCellArray	*strmPtr;
 	ptr = SwapColour(swapPtr, (pexColour *)ptr, strmPtr->colourType);
     }
 
-    SWAP_ELEMENT_INFO (strmPtr->head);
     SWAP_COLOUR_TYPE (strmPtr->colourType);
     SWAP_COORD3D (strmPtr->point1);
     SWAP_COORD3D (strmPtr->point2);
@@ -678,7 +647,6 @@ pexSwap	*swapPtr;
 pexGdp	*strmPtr;
 {
     pexCoord3D *pc = (pexCoord3D *)(strmPtr+1);
-    SWAP_ELEMENT_INFO (strmPtr->head);
     SWAP_CARD32 (strmPtr->gdpId);
     SWAP_CARD32 (strmPtr->numBytes);
 
@@ -694,7 +662,6 @@ pexGdp2D	*strmPtr;
 {
     pexCoord2D *pc = (pexCoord2D *)(strmPtr+1);
 
-    SWAP_ELEMENT_INFO (strmPtr->head);
     SWAP_CARD32 (strmPtr->gdpId);
     SWAP_CARD32 (strmPtr->numBytes);
 
@@ -708,7 +675,6 @@ SWAP_FUNC_PEX_PFX(Text) (swapPtr, strmPtr)
 pexSwap	*swapPtr;
 pexText	*strmPtr;
 {
-    SWAP_ELEMENT_INFO (strmPtr->head);
     SWAP_COORD3D (strmPtr->origin);
     SWAP_VECTOR3D (strmPtr->vector1);
     SWAP_VECTOR3D (strmPtr->vector2);
@@ -722,7 +688,6 @@ SWAP_FUNC_PEX_PFX(Text2D) (swapPtr, strmPtr)
 pexSwap	*swapPtr;
 pexText2D	*strmPtr;
 {
-    SWAP_ELEMENT_INFO (strmPtr->head);
     SWAP_COORD2D (strmPtr->origin);
     SWAP_FUNC_PREFIX(SwapMonoEncoding) (swapPtr, (pexMonoEncoding *)(strmPtr+1),
 					(CARD32)(strmPtr->numEncodings));
@@ -735,7 +700,6 @@ SWAP_FUNC_PEX_PFX(AnnotationText) (swapPtr, strmPtr)
 pexSwap	*swapPtr;
 pexAnnotationText	*strmPtr;
 {
-    SWAP_ELEMENT_INFO (strmPtr->head);
     SWAP_COORD3D (strmPtr->origin);
     SWAP_COORD3D (strmPtr->offset);
     SWAP_FUNC_PREFIX(SwapMonoEncoding) (swapPtr, (pexMonoEncoding *)(strmPtr+1),
@@ -749,7 +713,6 @@ SWAP_FUNC_PEX_PFX(AnnotationText2D) (swapPtr, strmPtr)
 pexSwap	*   swapPtr;
 pexAnnotationText2D *strmPtr;
 {
-    SWAP_ELEMENT_INFO (strmPtr->head);
     SWAP_COORD2D (strmPtr->origin);
     SWAP_COORD2D (strmPtr->offset);
     SWAP_FUNC_PREFIX(SwapMonoEncoding) (swapPtr, (pexMonoEncoding *)(strmPtr+1),
