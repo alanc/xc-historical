@@ -1,7 +1,5 @@
-#ifndef lint
-static char Xrcsid[] = "$XConsortium: Vendor.c,v 1.36 89/04/27 17:49:06 kit Exp $";
+/* $XConsortium: Vendor.c,v 1.37 89/06/16 19:35:45 jim Exp $ */
 /* $oHeader: Vendor.c,v 1.3 88/08/19 13:11:01 asente Exp $ */
-#endif /* lint */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -31,11 +29,6 @@ SOFTWARE.
 
 #include <pwd.h>
 #include <stdio.h>
-#include <sys/param.h>
-
-#ifdef pegasus
-#undef dirty			/* some bozo put this in sys/param.h */
-#endif /* pegasus */
 
 #include "IntrinsicI.h"
 #include "StringDefs.h"
