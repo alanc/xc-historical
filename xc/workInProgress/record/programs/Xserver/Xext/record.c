@@ -1,4 +1,4 @@
-/* $XConsortium: record.c,v 1.5 94/01/30 19:11:03 rws Exp $ */
+/* $XConsortium: record.c,v 1.6 94/01/30 23:43:56 rws Exp $ */
 /***************************************************************************
  * Copyright 1994 Network Computing Devices;
  * Portions Copyright 1988 by Digital Equipment Corporation and the
@@ -323,7 +323,7 @@ RecordSelectForIntercept(pConfig, client_id, flags, addtolist)
 	client = clients[CLIENT_ID(client_id)];
         if (client && client->requestVector != InitialVector)
 	{
-	    if (!InitIntercept(client, pCur, pConfig))
+	    if (InitIntercept(client, pCur, pConfig) != Success)
 		return BadAlloc;
 	}
         return Success;
