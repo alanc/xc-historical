@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: WaitFor.c,v 1.58 93/08/07 11:31:21 rws Exp $ */
+/* $XConsortium: WaitFor.c,v 1.59 93/08/07 11:31:48 rws Exp $ */
 
 /*****************************************************************
  * OS Depedent input routines:
@@ -254,11 +254,45 @@ WaitForSomething(pClientsReady)
     {
 	for (i=0; i<mskcnt; i++)
 	{
+	    int highest_priority;
+
 	    while (clientsReadable[i])
 	    {
+	        int client_priority, client_index;
+
 		curclient = ffs (clientsReadable[i]) - 1;
-		pClientsReady[nready++] = 
-			ConnectionTranslation[curclient + (i << 5)];
+		client_index = ConnectionTranslation[curclient + (i << 5)];
+#ifdef SYNC
+		/*  We implement "strict" priorities.
+		 *  Only the highest priority client is returned to
+		 *  dix.  If multiple clients at the same priority are
+		 *  ready, they are all returned.  This means that an
+		 *  aggressive client could take over the server.
+		 *  This was not considered a big problem because
+		 *  aggressive clients can hose the server in so many 
+		 *  other ways :)
+		 */
+		client_priority = clients[client_index]->priority;
+		if (nready == 0 || client_priority > highest_priority)
+		{
+		    /*  Either we found the first client, or we found
+		     *  a client whose priority is greater than all others
+		     *  that have been found so far.  Either way, we want 
+		     *  to initialize the list of clients to contain just
+		     *  this client.
+		     */
+		    pClientsReady[0] = client_index;
+		    highest_priority = client_priority;
+		    nready = 1;
+		}
+		/*  the following if makes sure that multiple same-priority 
+		 *  clients get batched together
+		 */
+		else if (client_priority == highest_priority)
+#endif
+		{
+		    pClientsReady[nready++] = client_index;
+		}
 		clientsReadable[i] &= ~(1 << curclient);
 	    }
 	}	
