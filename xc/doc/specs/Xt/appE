@@ -1,4 +1,4 @@
-.\" $XConsortium$
+.\" $XConsortium: appE,v 1.4 91/07/31 20:25:03 swick Exp $
 .\"
 .\" Copyright 1985, 1986, 1987, 1988, 1991
 .\" Massachusetts Institute of Technology, Cambridge, Massachusetts,
@@ -351,5 +351,3 @@ XtExtdefaultfont	"xtdefaultfont"
 _
 .TE
 .IN "String Constants" "miscellaneous"
-.TC
-
