@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: osf1.cf,v 1.26 94/02/06 18:27:53 rws Exp $
+XCOMM platform:  $XConsortium: osf1.cf,v 1.27 94/03/26 17:10:05 kaleb Exp $
 /* only tested with Digital OSF/1 V1.0 */
 
 #ifdef AlphaArchitecture
@@ -41,7 +41,7 @@ XCOMM operating system:  OSName
 /* no shared -lpthreads, so we have to play really ugly games */
 #define ForceNormalLib		YES
 #define SeparateSharedCompile	YES
-#define XMTDefines /**/
+#define XThreadsDefines /**/
 #ifdef MipsArchitecture
 #define UnsharedLibObjCompile(options) $(RM) $@ $*.os unshared/$@ \	@@\
 	&& $(CC) -c options -DXTHREADS SystemMTDefines $(CFLAGS) $*.c \	@@\
