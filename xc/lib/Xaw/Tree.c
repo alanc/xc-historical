@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Tree.c,v 1.8 90/02/02 14:41:06 jim Exp $
+ * $XConsortium: Tree.c,v 1.9 90/02/02 14:51:29 jim Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  * Copyright 1989 Prentice Hall
@@ -445,7 +445,7 @@ static void Redisplay (tw, event, region)
 			 * right center to left center
 			 */
 			XDrawLine (dpy, w, gc, srcx, srcy,
-				   k->core.x + k->core.border_width,
+				   k->core.x,
 				   (k->core.y + k->core.border_width +
 				    k->core.height / 2));
 		    } else {
@@ -455,7 +455,7 @@ static void Redisplay (tw, event, region)
 			XDrawLine (dpy, w, gc, srcx, srcy,
 				   (k->core.x + k->core.border_width +
 				    k->core.width / 2),
-				   k->core.y + k->core.border_width);
+				   k->core.y);
 		    }
 		}
 	    }
@@ -585,9 +585,15 @@ static void compute_bounding_box_subtree (tree, w, depth)
     }
 
 
+#ifdef padparallelsubtrees
     /*
      * Add a little bit of padding to make parallel subtrees stand out a
      * little bit.  Make sure to do similar adjustments in second pass.
+     * 
+     * Unfortunately, this algorithm leaves an uneven amount of room around
+     * the edges of the tree.  There will probably need to be an additional
+     * variable to keep track of the padding on the top-, right-, left-, and 
+     * bottom-most children.
      */
     if (tc->tree.n_children > 1) {
 	if (horiz) {
@@ -596,7 +602,7 @@ static void compute_bounding_box_subtree (tree, w, depth)
 	    newwidth += tree->tree.hpad;
 	}
     }
-
+#endif
 
     /*
      * Now fit parent onto side (or top) of bounding box and correct for
@@ -627,6 +633,7 @@ static void arrange_subtree (tree, w, depth, x, y)
     Bool horiz = IsHorizontal (tree);
     Widget child = NULL;
 
+#ifdef padparallelsubtrees
     if (tc->tree.n_children > 1) {
 	if (horiz) {
 	    y += tree->tree.vpad / 2;
@@ -634,6 +641,7 @@ static void arrange_subtree (tree, w, depth, x, y)
 	    x += tree->tree.hpad / 2;
 	}
     }
+#endif
 
     tc->tree.x = x;
     tc->tree.y = y;
