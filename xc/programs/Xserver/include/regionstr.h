@@ -1,4 +1,4 @@
-/* $XConsortium: regionstr.h,v 1.3 88/09/06 15:48:28 jim Exp $ */
+/* $XConsortium: regionstr.h,v 1.4 89/03/22 09:12:42 rws Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -31,81 +31,26 @@ SOFTWARE.
  *   clip region
  */
 
-typedef struct _Region {
+typedef struct _RegData {
     long	size;
     long 	numRects;
-    BoxPtr	rects;
+/*  BoxRec	rects[size];   in memory but not explicitly declared */
+} RegDataRec, *RegDataPtr;
+
+typedef struct _Region {
     BoxRec 	extents;
+    RegDataPtr	data;
 } RegionRec;
 
-/*
- *   Check to see if there is enough memory in the present region.
- */
-#define MEMCHECK(reg, rect, firstrect){\
-        if ((reg)->numRects >= ((reg)->size - 1)){\
-          (firstrect) = (BoxPtr) xrealloc \
-          ((firstrect), (2 * (sizeof(BoxRec)) * ((reg)->size)));\
-          (reg)->size *= 2;\
-          (rect) = &(firstrect)[(reg)->numRects];\
-         }\
-       }
-
-/*  this routine checks to see if the previous rectangle is the same
- *  or subsumes the new rectangle to add.
- */
-
-#define CHECK_PREVIOUS(Reg, R, Rx1, Ry1, Rx2, Ry2)\
-               (!(((Reg)->numRects > 0)&&\
-                  ((R-1)->y1 == (Ry1)) &&\
-                  ((R-1)->y2 == (Ry2)) &&\
-                  ((R-1)->x1 <= (Rx1)) &&\
-                  ((R-1)->x2 >= (Rx2))))
-
-/*  add a rectangle to the given Region */
-#define ADDRECT(reg, r, rx1, ry1, rx2, ry2){\
-    if (((rx1) < (rx2)) && ((ry1) < (ry2)) &&\
-        CHECK_PREVIOUS((reg), (r), (rx1), (ry1), (rx2), (ry2))){\
-              (r)->x1 = (rx1);\
-              (r)->y1 = (ry1);\
-              (r)->x2 = (rx2);\
-              (r)->y2 = (ry2);\
-              EXTENTS((r), (reg));\
-              (reg)->numRects++;\
-              (r)++;\
-            }\
-        }
-
-
-/*
- *  update region extents
- */
-#define EXTENTS(r,idRect){\
-            if((r)->x1 < (idRect)->extents.x1)\
-              (idRect)->extents.x1 = (r)->x1;\
-            if((r)->y1 < (idRect)->extents.y1)\
-              (idRect)->extents.y1 = (r)->y1;\
-            if((r)->x2 > (idRect)->extents.x2)\
-              (idRect)->extents.x2 = (r)->x2;\
-            if((r)->y2 > (idRect)->extents.y2)\
-              (idRect)->extents.y2 = (r)->y2;\
-        }
-
-
-#define EMPTY_REGION(pReg) (pReg->numRects = 0)
-
-#define REGION_NOT_EMPTY(pReg) (pReg->numRects)
-
-extern RegionPtr miRegionCreate();
-extern void miprintRects();
-extern void miRegionCopy();
-extern int miInverse();
-extern int miIntersect();
-extern int miUnion();
-extern int miSubtract();
-extern int miRectIn();
-extern void miTranslateRegion();
-extern void miRegionDestroy();
-extern void miRegionReset();
-extern Bool miPointInRegion();
+#define REGION_NIL(reg) ((reg)->data && !(reg)->data->numRects)
+#define REGION_NUM_RECTS(reg) ((reg)->data ? (reg)->data->numRects : 1)
+#define REGION_SIZE(reg) ((reg)->data ? (reg)->data->size : 0)
+#define REGION_RECTS(reg) ((reg)->data ? (BoxPtr)((reg)->data + 1) \
+			               : &(reg)->extents)
+#define REGION_BOXPTR(reg) ((BoxPtr)((reg)->data + 1))
+#define REGION_BOX(reg,i) (&REGION_BOXPTR(reg)[i])
+#define REGION_TOP(reg) REGION_BOX(reg, (reg)->data->numRects)
+#define REGION_END(reg) REGION_BOX(reg, (reg)->data->numRects - 1)
+#define REGION_SZOF(n) (sizeof(RegDataRec) + ((n) * sizeof(BoxRec)))
 
 #endif /* REGIONSTRUCT_H */
