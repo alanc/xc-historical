@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: session.c,v 1.60 92/12/16 22:52:04 gildea Exp $
+ * $XConsortium: session.c,v 1.62 93/09/30 15:12:38 gildea Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -402,17 +402,36 @@ StartClient (verify, d, pidp, name, passwd)
 	 */
 	if (setpcred(name, NULL) == -1)
 	{
-	    LogError("can't start session, setpcred for \"%s\" failed, errno=%d\n", name, errno);
+	    LogError("setpcred for \"%s\" failed, errno=%d\n", name, errno);
 	    return (0);
 	}
 #else /* AIXV3 */
 #ifdef NGROUPS_MAX
-	setgid (verify->groups[0]);
-	setgroups (verify->ngroups, verify->groups);
+	if (setgid(verify->groups[0]) < 0)
+	{
+	    LogError("setgid %d (user \"%s\") failed, errno=%d\n",
+		     verify->groups[0], name, errno);
+	    return (0);
+	}
+	if (setgroups(verify->ngroups, verify->groups) < 0)
+	{
+	    LogError("setgroups for \"%s\" failed, errno=%d\n", name, errno);
+	    return (0);
+	}
 #else
-	setgid (verify->gid);
+	if (setgid(verify->gid) < 0)
+	{
+	    LogError("setgid %d (user \"%s\") failed, errno=%d\n",
+		     verify->gid, name, errno);
+	    return (0);
+	}
 #endif
-	setuid (verify->uid);
+	if (setuid(verify->uid) < 0)
+	{
+	    LogError("setuid %d (user \"%s\") failed, errno=%d\n",
+		     verify->uid, name, errno);
+	    return (0);
+	}
 #endif /* AIXV3 */
 
 #ifdef SECURE_RPC
