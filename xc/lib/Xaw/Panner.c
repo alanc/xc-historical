@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Panner.c,v 1.44 91/10/16 21:38:24 eswu Exp $
+ * $XConsortium: Panner.c,v 1.45 92/03/03 13:52:26 converse Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -29,6 +29,7 @@
 #include <X11/Xaw/XawInit.h>		/* for XawInitializeWidgetSet */
 #include <X11/Xaw/PannerP.h>		/* us */
 #include <X11/Xmu/Misc.h>		/* for Min */
+#include <X11/Xos.h>
 #include <ctype.h>			/* for isascii() etc. */
 #include <math.h>			/* for atof() */
 
