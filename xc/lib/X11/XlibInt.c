@@ -1149,9 +1149,10 @@ int _XError (dpy, rep)
     /*NOTREACHED*/
 }
     
-int _XDefaultError(dpy, event)
-	Display *dpy;
-	XErrorEvent *event;
+int _XPrintDefaultError (dpy, event, fp)
+    Display *dpy;
+    XErrorEvent *event;
+    FILE *fp;
 {
     char buffer[BUFSIZ];
     char mesg[BUFSIZ];
@@ -1184,6 +1185,14 @@ int _XDefaultError(dpy, event)
     (void) fprintf(stderr, mesg, dpy->request);
     fputs("\n", stderr);
     if (event->error_code == BadImplementation) return 0;
+    return 1;
+}
+
+int _XDefaultError(dpy, event)
+	Display *dpy;
+	XErrorEvent *event;
+{
+    if (_XPrintDefaultError (dpy, event, stderr) == 0) return 0;
     exit(1);
     /*NOTREACHED*/
 }
