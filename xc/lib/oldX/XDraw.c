@@ -1,4 +1,4 @@
-/* $Header: XDraw.c,v 1.4 88/04/29 14:05:59 jim Exp $ */
+/* $Header: XDraw.c,v 1.5 88/04/29 14:12:12 jim Exp $ */
 #include "copyright.h"
 
 /* Copyright    Massachusetts Institute of Technology    1987	*/
@@ -609,7 +609,6 @@ Status XDrawFilled (dpy, d, gc, vlist, vcount)
   int newvcount;
   XPoint *p;
   int pcount;
-  int closed;
 
   /* If less than 2 vertices, we don't have to do anything (no lines) */
   if (vcount<2)
@@ -637,7 +636,6 @@ Status XDrawFilled (dpy, d, gc, vlist, vcount)
   while (newvcount>0) {
     p = XDraw_points;               /* Put points in buffer */
     pcount = 0;
-    closed = newvlist->flags & VertexStartClosed;
     p->x = newvlist->x;             /* Copy first point */
     (p++)->y = (newvlist++)->y;
     newvcount--; pcount++;
@@ -651,8 +649,7 @@ Status XDrawFilled (dpy, d, gc, vlist, vcount)
      * must be the first vertex in its XDrawLines call to get joining
      * to work correctly.
      */
-    while (newvcount > 0 && !(newvlist->flags & (VertexDontDraw |
-						 VertexStartClosed |
+    while (newvcount > 0 && !(newvlist->flags & (VertexStartClosed |
 						 VertexEndClosed))) {
       p->x = newvlist->x;
       (p++)->y = (newvlist++)->y;
@@ -663,7 +660,7 @@ Status XDrawFilled (dpy, d, gc, vlist, vcount)
      * If stopped only because of need to start a new XDrawLines, copy
      * next point but don't advance pointer so two XdrawLines act like one.
      */
-    if ( newvcount > 0 && !(newvlist->flags & VertexDontDraw) ) {
+    if ( newvcount > 0 ) {
       p->x = newvlist->x;
       (p++)->y = newvlist->y;
       pcount++;
@@ -671,11 +668,8 @@ Status XDrawFilled (dpy, d, gc, vlist, vcount)
 
     /* Do the XDrawLines if there are any lines to draw */
     if (pcount>1) {
-	if (closed)
 	  XFillPolygon(dpy, d, gc, XDraw_points, pcount, Complex,
 		       CoordModeOrigin);
-	else
-	  XDrawLines(dpy, d, gc, XDraw_points, pcount, CoordModeOrigin);
     }
   }
 
