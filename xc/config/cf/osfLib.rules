@@ -1,4 +1,4 @@
-XCOMM $XConsortium: osfLib.rules,v 1.5 93/09/04 16:00:52 rws Exp $
+XCOMM $XConsortium: osfLib.rules,v 1.6 93/09/05 17:46:25 rws Exp $
 
 /*
  * OSF/1 shared library rules
@@ -68,6 +68,7 @@ Concat(lib,libname.so.rev):  solist					@@\
 	$(RM) Concat(lib,libname.so)					@@\
 	$(LN) $@ Concat(lib,libname.so)					@@\
 	LinkBuildLibrary($@)						@@\
+	LinkBuildLibrary(Concat(lib,libname.so))			@@\
 									@@\
 clean::									@@\
 	$(RM) Concat(lib,libname.so.rev) Concat(lib,libname.so)
@@ -83,6 +84,7 @@ Concat(lib,libname.so.rev):  solist					@@\
 	$(RM) Concat(lib,libname.so)					@@\
 	$(LN) $@ Concat(lib,libname.so)					@@\
 	LinkBuildLibrary($@)						@@\
+	LinkBuildLibrary(Concat(lib,libname.so))			@@\
 									@@\
 clean::									@@\
 	$(RM) Concat(lib,libname.so.rev) Concat(lib,libname.so)
