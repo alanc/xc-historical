@@ -1,6 +1,6 @@
 /*
  * $Source: /usr/expo/X/src/clients/xterm.new/RCS/charproc.c,v $
- * $Header: charproc.c,v 1.12 88/02/16 18:59:33 jim Exp $
+ * $Header: charproc.c,v 1.13 88/02/16 19:23:43 jim Exp $
  */
 
 
@@ -58,7 +58,7 @@ extern void exit(), bcopy();
 #define	doinput()		(bcnt-- > 0 ? *bptr++ : in_put())
 
 #ifndef lint
-static char rcs_id[] = "$Header: charproc.c,v 1.12 88/02/16 18:59:33 jim Exp $";
+static char rcs_id[] = "$Header: charproc.c,v 1.13 88/02/16 19:23:43 jim Exp $";
 #endif	/* lint */
 
 static long arg;
@@ -1446,9 +1446,8 @@ VTRun()
 	if (!screen->Vshow) {
 	    XtRealizeWidget (term);
 	    screen->Vshow = TRUE;
-	    XMapRaised (screen->display, VWindow (screen));
-	} else
-	  XRaiseWindow (screen->display, VWindow (screen));
+	    XMapWindow (screen->display, VWindow (screen));
+	} 
 
 	screen->cursor_state = OFF;
 	screen->cursor_set = ON;
@@ -2317,8 +2316,7 @@ int item;
 			}
 			screen->TekEmu = TRUE;
 			longjmp(VTend, 1);
-		} else
-			XRaiseWindow(screen->display, TWindow(screen));
+		} 
 		break;
 
 	case MMENU_TEKWIN:
