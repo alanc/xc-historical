@@ -1,4 +1,4 @@
-/* $XConsortium: TranslateI.h,v 1.33 91/02/07 20:14:27 converse Exp $ */
+/* $XConsortium: TranslateI.h,v 1.34 91/02/07 21:27:14 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -32,9 +32,6 @@ SOFTWARE.
  * 		Western Research Laboratory
  * Date:	Sat Aug 29 1987
  */
-
-#ifndef _TranslateI_h
-#define _TranslateI_h
 
 /*#define REFCNT_TRANSLATIONS*/
 #define CACHE_TRANSLATIONS
@@ -330,15 +327,11 @@ extern TMGlobalRec _XtGlobalTM;
  * Internal Functions
  */
 
-#if NeedWidePrototypes
-#define Boolean int
-#endif
-
 extern void _XtPopup(
 #if NeedFunctionPrototypes
     Widget      /* widget */,
     XtGrabKind  /* grab_kind */,
-    Boolean     /* spring_loaded */
+    _XtBoolean	/* spring_loaded */
 #endif
 );
 
@@ -347,7 +340,7 @@ extern String _XtPrintXlations(
     Widget		/* w */,
     XtTranslations 	/* xlations */,
     Widget		/* accelWidget */,
-    Boolean		/* includeRHS */
+    _XtBoolean		/* includeRHS */
 #endif
 );
 
@@ -361,11 +354,9 @@ extern XtPointer _XtInitializeActionData(
 #if NeedFunctionPrototypes
     struct _XtActionsRec *	/* actions */,
     Cardinal 			/* count */,
-    Boolean			/* inPlace */
+    _XtBoolean			/* inPlace */
 #endif
 );
-
-#undef Boolean
 
 extern void _XtAddEventSeqToStateTree(
 #if NeedFunctionPrototypes
@@ -623,5 +614,3 @@ extern void _XtUnmergeTranslations(
     XtTranslations 	/* xlations */
 #endif
 );
-
-#endif /* TranslateI_h */
