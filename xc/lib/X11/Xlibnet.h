@@ -1,4 +1,4 @@
-/* $XConsortium: Xlibnet.h,v 1.25 93/08/14 19:11:51 rws Exp $ */
+/* $XConsortium: Xlibnet.h,v 1.26 93/08/15 13:38:51 rws Exp $ */
 
 /*
 Copyright 1991 Massachusetts Institute of Technology
@@ -270,7 +270,6 @@ extern Xstream _XsStream[];
 #define BOOL wBOOL
 #undef Status
 #define Status wStatus
-#include <windows.h>
 #include <winsock.h>
 #undef Status
 #define Status int
