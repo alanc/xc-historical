@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: xsm.h,v 1.1 94/02/22 14:35:01 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -99,4 +99,4 @@ extern void fprintfhex ();
 extern char *Strstr();
 #endif
 
-extern char *strbw ();
+extern strbw ();
