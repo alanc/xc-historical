@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: commands.c,v 1.16 88/09/16 14:31:45 swick Exp $";
+static char rcs_id[] = "$XConsortium: commands.c,v 1.17 88/09/16 14:42:40 swick Exp $";
 #endif
 
 /*
@@ -401,6 +401,7 @@ DoLoad()
     }
     else {
 	XeditPrintf("\nLoad: couldn't access file ` %s '", filename);
+	setLoadedFile("");
 	Feep();
     }
 }
