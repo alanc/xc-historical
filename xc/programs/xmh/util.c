@@ -1,6 +1,6 @@
-#if !defined lint && !defined SABER
+#if !defined(lint) && !defined(SABER)
 static char rcs_id[] =
-    "$XConsortium: util.c,v 2.22 89/05/11 19:24:43 converse Exp $";
+    "$XConsortium: util.c,v 2.23 89/06/13 10:36:30 converse Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -407,7 +407,13 @@ int GetWidth(w)
 Toc SelectedToc(scrn)
 Scrn scrn;
 {
-    return TocGetNamed(BBoxGetRadioName(scrn->folderbuttons));
+    Toc	toc;
+    char	*foldername = GetCurrentFolderName(scrn);
+
+    /* tocs of subfolders are created upon the first reference */
+    if ((toc = TocGetNamed(foldername)) == NULL) 
+        toc = TocCreate(foldername);
+    return toc;
 }
 
 
