@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.21 93/09/04 17:44:39 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.22 93/09/04 19:14:14 rws Exp $
 #undef ServerDefines
 #include <Server.tmpl>
 #define	IHaveSubdirs
@@ -25,7 +25,7 @@ FSERRORS = $(FSLIBDIR)/fs-errors
 DEFAULTFONTPATH = DefaultFontPath
 SITE_CONFIG = -DDEFAULTFONTPATH=$(DEFAULTFONTPATH) -DFSERRORS=$(FSERRORS)
 
-all:: xfs config $(MFSDIRS)
+all:: ProgramTargetName(xfs) config $(MFSDIRS)
 
 ServerTarget(xfs,$(FSDIRS),NullParameter,$(FSLIBS),$(SYSLIBS))
 
@@ -61,8 +61,4 @@ debug_xfs:
 
 DependSubdirs($(SUBDIRS))
 
-$(SUBDIRS):	FRC
-	@cd $@; echo "making $@" ;	\
-	$(MAKE) $(MFLAGS) PassCDebugFlags all
-
-FRC:
+ForceSubdirs($(SUBDIRS))
