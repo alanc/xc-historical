@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xrm.c,v 1.19 88/09/19 13:56:07 jim Exp $
+ * $XConsortium: Xrm.c,v 1.20 89/03/24 15:01:31 jim Exp $
  */
 
 /***********************************************************
@@ -696,7 +696,7 @@ static void PutLineResources(pdb, get_line, closure)
 	    have_entire_value = False;					   \
     }
 
-
+    if (*pdb == NULL) *pdb = NewDatabase();
     for (;;) {
 	s = (char *)(*get_line)(pbuf, pbuf_size, closure);
 	if (s == NULL) break;
