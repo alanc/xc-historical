@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.125 89/12/14 14:52:09 jim Exp $
+ * $XConsortium: events.c,v 1.126 90/03/05 16:29:07 jim Exp $
  *
  * twm event handling
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: events.c,v 1.125 89/12/14 14:52:09 jim Exp $";
+"$XConsortium: events.c,v 1.126 90/03/05 16:29:07 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -307,7 +307,7 @@ HandleEvents()
 		    enter_flag = FALSE;
 		}
 	    }
-	    if (ColortableThrashing && !QLength(dpy)) {
+	    if (ColortableThrashing && !QLength(dpy) && Scr) {
 		InstallWindowColormaps(ColormapNotify, (TwmWindow *) NULL);
 	    }
 	    WindowMoved = FALSE;
