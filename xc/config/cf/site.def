@@ -1,4 +1,4 @@
-/**/# site:  $XConsortium: site.def,v 1.16 89/10/17 12:43:21 jim Exp $
+/**/# site:  $XConsortium: site.def,v 1.17 89/10/19 11:44:29 jim Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -35,6 +35,16 @@
  */
 
 /*
+ * Set ContribDir to wherever you've placed your sources; the R4 tape comes
+ * with the core tree in ./mit and the contrib tree in ./contrib, so to get
+ * to contrib, go up from TOP:
+ */
+#ifndef ContribDir
+#define ContribDir $(TOP)/../contrib
+#endif
+
+
+/*
  * If your /tmp space is less than a 1meg, you should probably set this to NO
  */
 #ifndef HasLargeTmp
@@ -65,10 +75,6 @@
 #endif
 #endif
 
-#ifndef NeedDefaultDepLibs
-#define NeedDefaultDepLibs YES
-#endif
-
 #ifdef ATHENA
 #ifndef DoInstallExtensionsIntoXlib
 #define DoInstallExtensionsIntoXlib YES		/* for Makefile hosers */
@@ -93,6 +99,10 @@
 #endif
 #endif
 
+
+/*
+ * XXX - remove in R4
+ */
 #ifndef SharedLibXext
 #define SharedLibXext NO
 #endif

@@ -1,6 +1,6 @@
 /**/###########################################################################
 /**/# X Window System Build Parameters
-/**/# $XConsortium: Project.tmpl,v 1.48 89/10/20 08:26:37 jim Exp $
+/**/# $XConsortium: Project.tmpl,v 1.49 89/10/24 18:43:26 converse Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -228,6 +228,9 @@
 #define DependDir $(UTILSRC)/makedepend
 #endif
 #endif
+#ifndef ContribDir
+#define ContribDir $(TOP)/../contrib	/* R4 contrib is outside core tree */
+#endif
 #ifndef DependCmd
 #define DependCmd $(DEPENDSRC)/makedepend
 #endif
@@ -322,7 +325,7 @@ Berklib.c: sysV/Berklib.c					@@\
 
 /**/###########################################################################
 /**/# X Window System make variables; this need to be coordinated with rules
-/**/# $XConsortium: Project.tmpl,v 1.48 89/10/20 08:26:37 jim Exp $
+/**/# $XConsortium: Project.tmpl,v 1.49 89/10/24 18:43:26 converse Exp $
 
 /*
  * This list must be reflected in the DIRS_TO_BUILD list in the top-level
@@ -390,7 +393,7 @@ Berklib.c: sysV/Berklib.c					@@\
           UTILSRC = $(TOP)/util
         SCRIPTSRC = $(UTILSRC)/scripts
        EXAMPLESRC = $(TOP)/examples
-       CONTRIBSRC = $(TOP)/contrib
+       CONTRIBSRC = ContribDir
            DOCSRC = $(TOP)/doc
            RGBSRC = $(TOP)/rgb
         DEPENDSRC = DependDir
@@ -469,7 +472,7 @@ Berklib.c: sysV/Berklib.c					@@\
  * the following may be removed in R4{alpha,beta,?}
  */
 #ifndef NeedDefaultDepLibs
-#define NeedDefaultDepLibs NO
+#define NeedDefaultDepLibs YES
 #endif
 
 #if NeedDefaultDepLibs
