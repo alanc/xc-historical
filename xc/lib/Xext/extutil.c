@@ -1,5 +1,5 @@
 /*
- * $XConsortium: extutil.c,v 1.5 89/10/06 11:29:13 jim Exp $
+ * $XConsortium: extutil.c,v 1.6 89/10/08 16:23:06 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -248,7 +248,7 @@ int XMissingExtension (dpy, ext_name)
     char *ext_name;
 {
     int (*func)() = (_XExtensionErrorFunction ?
-		     (*_XExtensionErrorFunction) : _default_exterror);
+		     _XExtensionErrorFunction : _default_exterror);
 
     if (!ext_name) ext_name = X_EXTENSION_UNKNOWN;
     return (*func) (dpy, ext_name, X_EXTENSION_MISSING);
