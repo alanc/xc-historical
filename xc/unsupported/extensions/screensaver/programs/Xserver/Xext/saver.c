@@ -1,5 +1,5 @@
 /*
- * $XConsortium: saver.c,v 1.5 92/02/28 18:08:24 keith Exp $
+ * $XConsortium: saver.c,v 1.6 92/02/28 18:55:28 keith Exp $
  *
  * Copyright 1992 Massachusetts Institute of Technology
  *
@@ -623,7 +623,7 @@ ProcScreenSaverQueryInfo (client)
     pPriv = GetScreenPrivate (pDraw->pScreen);
 
     UpdateCurrentTime ();
-    lastInput = TimeSinceLastInputEvent();
+    lastInput = GetTimeInMillis() - lastDeviceEventTime.milliseconds;
 
     rep.type = X_Reply;
     rep.length = 0;
