@@ -1,4 +1,4 @@
-/* $XConsortium: Initialize.c,v 1.170 90/12/28 14:42:32 gildea Exp $ */
+/* $XConsortium: Initialize.c,v 1.170 90/12/28 16:43:13 gildea Exp $ */
 /* $oHeader: Initialize.c,v 1.7 88/08/31 16:33:39 asente Exp $ */
 
 /***********************************************************
@@ -279,7 +279,6 @@ static XrmDatabase GetUserDefaults(dpy)
 static void CombineEnvironmentDefaults(pdb)
     XrmDatabase *pdb;
 {
-	XrmDatabase rdb;
 	extern char *getenv();
 	char	filenamebuf[PATH_MAX];
 	char	*filename;
@@ -449,7 +448,7 @@ static Boolean _GetResource(dpy, list, name, class, type, value)
     return False;
 }
 
-
+/*ARGSUSED*/
 void _XtDisplayInitialize(dpy, pd, name, class, urlist, num_urs, argc, argv)
 	Display *dpy;
         XtPerDisplay pd;
