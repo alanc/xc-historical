@@ -16,7 +16,7 @@ without specific, written prior permission.  M.I.T. makes no
 representations about the suitability of this software for any
 purpose.  It is provided "as is" without express or implied warranty.
 */
-/* $XConsortium: cfbglblt8.c,v 5.20 91/06/02 09:48:51 rws Exp $ */
+/* $XConsortium: cfbglblt8.c,v 5.21 91/06/12 15:15:22 rws Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -343,7 +343,7 @@ cfbPolyGlyphBlt8Clipped (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 		    	    dst++;
 	    	    	}
 		    }
-	    	} while (hTmp--);
+	    	} while (--hTmp);
 	    	break;
 #else
 	    	{
@@ -351,8 +351,10 @@ cfbPolyGlyphBlt8Clipped (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     
 		    h = hTmp;
 		    do
+		    {
+			--h;
 		    	clips[h] = clips[h] & glyphBits[h];
-		    while (h--);
+		    } while (h);
 	    	}
 	    	glyphBits = clips;
 	    	/* fall through */
@@ -380,7 +382,7 @@ cfbPolyGlyphBlt8Clipped (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 		    	    dst++;
 	    	    	}
 		    }
-	    	} while (hTmp--);
+	    	} while (--hTmp);
 #endif /* USE_STIPPLE_CODE else */
 #endif /* STIPPLE else */
 	    	break;
