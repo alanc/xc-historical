@@ -1,6 +1,6 @@
 
 
-/* $XConsortium: debugger.c,v 5.1 91/02/16 09:59:51 rws Exp $ */
+/* $XConsortium: debugger.c,v 5.2 91/07/01 08:57:16 rws Exp $ */
 
 /*****************************************************************
 Copyright (c) 1989,1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -366,7 +366,7 @@ N_debugger(currentln)
 static run()
 {
 	int done=0;
-#ifdef SYSV
+#if defined(SYSV) || defined(__convex__)
 	int childstatus;
 #else
 	union wait childstatus;
@@ -386,7 +386,7 @@ static run()
 			wait (&childstatus);
                         if (close(pfd[0]) == -1)
                                 fatal("close system call 2",0);
-#ifdef SYSV
+#if defined(SYSV) || defined(__convex__)
 #ifndef WEXITSTATUS
 #define WEXITSTATUS(s) ( ((s)>>8) & 0377 )
 #endif
