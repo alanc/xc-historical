@@ -1,8 +1,6 @@
 /*
- *	$XConsortium: ptyx.h,v 1.42 90/06/06 09:18:33 jim Exp $
+ *	$XConsortium: ptyx.h,v 1.43 90/06/07 15:49:49 jim Exp $
  */
-
-#include <X11/copyright.h>
 
 /*
  * Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
