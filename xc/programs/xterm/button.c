@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: button.c,v 1.22 88/10/17 20:10:47 swick Exp $
+ *	$XConsortium: button.c,v 1.23 88/11/07 11:16:26 jim Exp $
  */
 
 
@@ -35,7 +35,7 @@ button.c	Handles button events in the terminal emulator.
 				J. Gettys.
 */
 #ifndef lint
-static char rcs_id[] = "$XConsortium: button.c,v 1.22 88/10/17 20:10:47 swick Exp $";
+static char rcs_id[] = "$XConsortium: button.c,v 1.23 88/11/07 11:16:26 jim Exp $";
 #endif	/* lint */
 #include <X11/Xos.h>
 #include <X11/Xlib.h>
@@ -1246,8 +1246,9 @@ register XButtonEvent *event;
 	TrackMenu(menu, event); /* MenuButtonReleased calls FinishModeMenu */
 }
 
-FinishModeMenu(item)
+FinishModeMenu(item, time)
 register int item;
+Time time;
 {
 	TScreen *screen = &term->screen;
 
@@ -1262,7 +1263,7 @@ register int item;
 	}
 	switch(type) {
 	 case XTERMMENU:
-		xdomenufunc(item);
+		xdomenufunc(item, time);
 		break;
 	 case VTMENU:
 		domenufunc(item);
@@ -1281,7 +1282,8 @@ menusync()
 		xevents();
 }
 
-#define	XMENU_VISUALBELL 0
+#define XMENU_GRABKBD	0
+#define	XMENU_VISUALBELL (XMENU_GRABKBD+1)
 #define	XMENU_LOG	(XMENU_VISUALBELL+1)
 #define	XMENU_REDRAW	(XMENU_LOG+1)
 #define	XMENU_LINE	(XMENU_REDRAW+1)
@@ -1295,6 +1297,7 @@ menusync()
 #define XMENU_EXIT	(XMENU_LINE2+1)
 
 static char *xtext[] = {
+	"Secure Keyboard",
 	"Visual Bell",
 	"Logging",
 	"Redraw",
@@ -1312,6 +1315,7 @@ static char *xtext[] = {
 
 static int xbell;
 static int xlog;
+static int xkgrab;
 
 Menu *xsetupmenu(menu)
 register Menu **menu;
@@ -1325,6 +1329,8 @@ register Menu **menu;
 			return(NULL);
 		for(cp = xtext ; *cp ; cp++)
 			AddMenuItem(*menu, *cp);
+		if(xkgrab = screen->grabbedKbd)
+			CheckItem(*menu, XMENU_GRABKBD);
 		if(xbell = screen->visualbell)
 			CheckItem(*menu, XMENU_VISUALBELL);
 		if(xlog = screen->logging)
@@ -1346,6 +1352,9 @@ register Menu **menu;
 	/* if login window, check for completed login */
 	if (!(L_flag && !checklogin()) && !(screen->inhibit & I_LOG))
 		EnableItem(*menu, XMENU_LOG);
+	if (xkgrab != screen->grabbedKbd)
+		SetItemCheck(*menu, XMENU_GRABKBD, (xkgrab =
+		 screen->grabbedKbd));
 	if (xbell != screen->visualbell)
 		SetItemCheck(*menu, XMENU_VISUALBELL, (xbell =
 		 screen->visualbell));
@@ -1354,12 +1363,31 @@ register Menu **menu;
 	return(*menu);
 }
 
-xdomenufunc(item)
+xdomenufunc(item, time)
 int item;
+Time time;
 {
 	register TScreen *screen = &term->screen;
 
 	switch (item) {
+	case XMENU_GRABKBD:
+		if (screen->grabbedKbd) {
+		    XUngrabKeyboard(screen->display, time);
+		    ReverseVideo(term);
+		    screen->grabbedKbd = FALSE;
+		} else {
+		    if (XGrabKeyboard(screen->display,
+				      term->core.parent->core.window,
+				      True, GrabModeAsync, GrabModeAsync, time)
+			  != GrabSuccess) {
+		        XBell(screen->display, 100);
+		    } else {
+			ReverseVideo(term);
+			screen->grabbedKbd = TRUE;
+		    }
+		}
+		break;
+
 	case XMENU_VISUALBELL:
 		screen->visualbell = !screen->visualbell;
 		break;
@@ -1489,4 +1517,22 @@ Bogus(event)
 XButtonEvent *event;
 {
 	Bell();
+}
+
+/* ARGSUSED */
+void HandleSecure(w, event, params, param_count)
+    Widget w;
+    XEvent *event;		/* unused */
+    String *params;		/* [0] = volume */
+    Cardinal *param_count;	/* 0 or 1 */
+{
+    Time time = CurrentTime;
+
+    if ((event->xany.type == KeyPress) ||
+	(event->xany.type == KeyRelease))
+	time = event->xkey.time;
+    else if ((event->xany.type == ButtonPress) ||
+	     (event->xany.type == ButtonRelease))
+      time = event->xbutton.time;
+    xdomenufunc(XMENU_GRABKBD, time);
 }
