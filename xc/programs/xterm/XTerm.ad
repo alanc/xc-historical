@@ -1,21 +1,21 @@
 XTerm*SimpleMenu*BackingStore: NotUseful
-XTerm*SimpleMenu*labelFont: -adobe-helvetica-bold-r-normal--*-120-*-*-*-*-iso*-*
+XTerm*SimpleMenu*menuLabel.font: -adobe-helvetica-bold-r-normal--*-120-*-*-*-*-iso*-*
+XTerm*SimpleMenu*menuLabel.vertSpace: 	100
 XTerm*SimpleMenu*HorizontalMargins: 16
-XTerm*SimpleMenu*Cursor: left_ptr
+XTerm*SimpleMenu*MenuEntry*height:	16
 
+XTerm*SimpleMenu*Cursor: left_ptr
 XTerm*mainMenu.Label:  Main Options
 XTerm*mainMenu*securekbd*Label:  Secure Keyboard
 XTerm*mainMenu*allowsends*Label:  Allow SendEvents
 XTerm*mainMenu*logging*Label:  Log to File
 XTerm*mainMenu*redraw*Label:  Redraw Window
-XTerm*mainMenu*line1*Type:  separator
 XTerm*mainMenu*suspend*Label:  Send STOP Signal
 XTerm*mainMenu*continue*Label:  Send CONT Signal
 XTerm*mainMenu*interrupt*Label:  Send INT Signal
 XTerm*mainMenu*hangup*Label:  Send HUP Signal
 XTerm*mainMenu*terminate*Label:  Send TERM Signal
 XTerm*mainMenu*kill*Label:  Send KILL Signal
-XTerm*mainMenu*line2*Type:  separator
 XTerm*mainMenu*quit*Label:  Quit
 
 XTerm*vtMenu.Label:  VT Options
@@ -34,10 +34,8 @@ XTerm*vtMenu*cursesemul*Label:  Enable Curses Emulation
 XTerm*vtMenu*visualbell*Label:  Enable Visual Bell
 XTerm*vtMenu*marginbell*Label:  Enable Margin Bell
 XTerm*vtMenu*altscreen*Label:  Show Alternate Screen
-XTerm*vtMenu*line1*Type:  separator
 XTerm*vtMenu*softreset*Label:  Do Soft Reset
 XTerm*vtMenu*hardreset*Label:  Do Full Reset
-XTerm*vtMenu*line2*Type:  separator
 XTerm*vtMenu*tekshow*Label:  Show Tek Window
 XTerm*vtMenu*tekmode*Label:  Switch to Tek Mode
 XTerm*vtMenu*vthide*Label:  Hide VT Window
@@ -47,11 +45,9 @@ XTerm*tekMenu*tektextlarge*Label:  Large Characters
 XTerm*tekMenu*tektext2*Label:  #2 Size Characters
 XTerm*tekMenu*tektext3*Label:  #3 Size Characters
 XTerm*tekMenu*tektextsmall*Label:  Small Characters
-XTerm*tekMenu*line1*Type:  separator
 XTerm*tekMenu*tekpage*Label:  PAGE
 XTerm*tekMenu*tekreset*Label:  RESET
 XTerm*tekMenu*tekcopy*Label:  COPY
-XTerm*tekMenu*line2*Type:  separator
 XTerm*tekMenu*vtshow*Label:  Show VT Window
 XTerm*tekMenu*vtmode*Label:  Switch to VT Mode
 XTerm*tekMenu*tekhide*Label:  Hide Tek Window
