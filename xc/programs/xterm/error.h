@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: error.h,v 1.7 91/01/06 12:47:37 rws Exp $
+ *	$XConsortium: error.h,v 1.8 91/07/17 17:43:54 rws Exp $
  */
 
 
@@ -77,7 +77,11 @@
 #define	ERROR_BMALLOC2	71	/* SaltTextAway: malloc() failed */
 
 /* misc.c */
+#ifdef ALLOWLOGGING
+#ifdef ALLOWLOGFILEEXEC
 #define	ERROR_LOGEXEC	80	/* StartLog: exec() failed */
+#endif
+#endif
 #define	ERROR_XERROR	83	/* xerror: XError event */
 #define	ERROR_XIOERROR	84	/* xioerror: X I/O error */
 #define ERROR_WINNAME   85      /* get_terminal: malloc failed */

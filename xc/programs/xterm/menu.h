@@ -1,4 +1,4 @@
-/* $XConsortium: menu.h,v 1.22 91/05/31 19:47:15 gildea Exp $ */
+/* $XConsortium: menu.h,v 1.23 91/06/25 19:49:44 gildea Exp $ */
 
 /* Copyright 1989 Massachusetts Institute of Technology */
 
@@ -26,7 +26,9 @@ extern Arg menuArgs[];
 
 extern void HandleAllowSends();
 extern void HandleSetVisualBell();
+#ifdef ALLOWLOGGING
 extern void HandleLogging();
+#endif
 extern void HandleRedraw();
 extern void HandleSendSignal();
 extern void HandleQuit();
@@ -65,7 +67,9 @@ extern void DoSecureKeyboard();
  */
 #define mainMenu_securekbd 0
 #define mainMenu_allowsends 1
+#ifdef ALLOWLOGGING
 #define mainMenu_logging 2
+#endif
 #define mainMenu_redraw 3
 #define mainMenu_line1 4
 #define mainMenu_suspend 5
@@ -169,11 +173,12 @@ extern void DoSecureKeyboard();
 		    mainMenuEntries[mainMenu_allowsends].widget, \
 		    term->screen.allowSendEvents)
 
+#ifdef ALLOWLOGGING
 #define update_logging() \
   update_menu_item (term->screen.mainMenu, \
 		    mainMenuEntries[mainMenu_logging].widget, \
 		    term->screen.logging)
-
+#endif
 
 #define update_scrollbar() \
   update_menu_item (term->screen.vtMenu, \

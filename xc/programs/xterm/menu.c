@@ -1,4 +1,4 @@
-/* $XConsortium: menu.c,v 1.60 91/06/25 19:49:28 gildea Exp $ */
+/* $XConsortium: menu.c,v 1.61 92/04/20 18:46:39 rws Exp $ */
 /*
 Copyright 1989 Massachusetts Institute of Technology
 
@@ -32,7 +32,10 @@ Arg menuArgs[2] = {{ XtNleftBitmap, (XtArgVal) 0 },
 
 void do_hangup();
 
-static void do_securekbd(), do_allowsends(), do_visualbell(), do_logging(),
+static void do_securekbd(), do_allowsends(), do_visualbell(),
+#ifdef ALLOWLOGGING
+    do_logging(),
+#endif
     do_redraw(), do_suspend(), do_continue(), do_interrupt(), 
     do_terminate(), do_kill(), do_quit(), do_scrollbar(), do_jumpscroll(),
     do_reversevideo(), do_autowrap(), do_reversewrap(), do_autolinefeed(),
@@ -51,7 +54,9 @@ static void do_securekbd(), do_allowsends(), do_visualbell(), do_logging(),
 MenuEntry mainMenuEntries[] = {
     { "securekbd",	do_securekbd, NULL },		/*  0 */
     { "allowsends",	do_allowsends, NULL },		/*  1 */
+#ifdef ALLOWLOGGING
     { "logging",	do_logging, NULL },		/*  2 */
+#endif
     { "redraw",		do_redraw, NULL },		/*  3 */
     { "line1",		NULL, NULL },			/*  4 */
     { "suspend",	do_suspend, NULL },		/*  5 */
@@ -155,7 +160,9 @@ static Bool domenu (w, event, params, param_count)
 					    XtNumber(mainMenuEntries));
 	    update_securekbd();
 	    update_allowsends();
+#ifdef ALLOWLOGGING
 	    update_logging();
+#endif
 #ifndef SIGTSTP
 	    set_sensitivity (screen->mainMenu,
 			     mainMenuEntries[mainMenu_suspend].widget, FALSE);
@@ -358,6 +365,7 @@ static void do_visualbell (gw, closure, data)
     update_visualbell();
 }
 
+#ifdef ALLOWLOGGING
 static void do_logging (gw, closure, data)
     Widget gw;
     caddr_t closure, data;
@@ -371,7 +379,7 @@ static void do_logging (gw, closure, data)
     }
     /* update_logging done by CloseLog and StartLog */
 }
-
+#endif
 
 static void do_redraw (gw, closure, data)
     Widget gw;
@@ -879,6 +887,7 @@ void HandleSetVisualBell(w, event, params, param_count)
 		   params, *param_count, w, NULL, NULL);
 }
 
+#ifdef ALLOWLOGGING
 void HandleLogging(w, event, params, param_count)
     Widget w;
     XEvent *event;
@@ -888,6 +897,7 @@ void HandleLogging(w, event, params, param_count)
     handle_toggle (do_logging, (int) term->screen.logging,
 		   params, *param_count, w, NULL, NULL);
 }
+#endif
 
 /* ARGSUSED */
 void HandleRedraw(w, event, params, param_count)

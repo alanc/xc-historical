@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: data.c,v 1.9 91/01/06 12:47:31 rws Exp $
+ *	$XConsortium: data.c,v 1.10 91/02/06 14:23:58 gildea Exp $
  */
 
 /*
@@ -89,7 +89,9 @@ int Select_mask;
 int X_mask;
 char *ptydev;
 char *ttydev;
+#ifdef ALLOWLOGGING
 char log_def_name[] = "XtermLog.XXXXX";
+#endif
 int T_lastx = -1;
 int T_lasty = -1;
 

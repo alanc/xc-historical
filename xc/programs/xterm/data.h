@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: data.h,v 1.8 91/01/06 12:47:35 rws Exp $
+ *	$XConsortium: data.h,v 1.9 91/02/05 19:44:30 gildea Exp $
  */
 /*
  * Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
@@ -35,7 +35,9 @@ extern Char *Tbuffer;
 extern Char *Tpushb;
 extern Char *Tpushback;
 extern Char *bptr;
+#ifdef ALLOWLOGGING
 extern char log_def_name[];
+#endif
 extern char *ptydev;
 extern char *ttydev;
 extern char *xterm_name;

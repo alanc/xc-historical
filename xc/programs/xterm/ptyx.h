@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: ptyx.h,v 1.60 91/06/24 20:45:02 gildea Exp $
+ *	$XConsortium: ptyx.h,v 1.61 92/09/15 15:29:07 gildea Exp $
  */
 
 /*
@@ -216,12 +216,14 @@ typedef struct {
 					/* and position information	*/
 	int		select;		/* xterm selected		*/
 	Boolean		visualbell;	/* visual bell mode		*/
-	int		logging;	/* logging mode			*/
 	Boolean		allowSendEvents;/* SendEvent mode		*/
 	Boolean		grabbedKbd;	/* keyboard is grabbed		*/
+#ifdef ALLOWLOGGING
+	int		logging;	/* logging mode			*/
 	int		logfd;		/* file descriptor of log	*/
 	char		*logfile;	/* log file name		*/
 	unsigned char	*logstart;	/* current start of log buffer	*/
+#endif
 	int		inhibit;	/* flags for inhibiting changes	*/
 
 /* VT window parameters */
@@ -381,7 +383,9 @@ typedef struct _Misc {
     char *T_geometry;
     char *f_n;
     char *f_b;
+#ifdef ALLOWLOGGING
     Boolean log_on;
+#endif
     Boolean login_shell;
     Boolean re_verse;
     int resizeGravity;
@@ -523,7 +527,9 @@ typedef struct Tek_Link
 #define	TOGGLE		1
 
 /* flags for inhibit */
+#ifdef ALLOWLOGGING
 #define	I_LOG		0x01
+#endif
 #define	I_SIGNAL	0x02
 #define	I_TEK		0x04
 
