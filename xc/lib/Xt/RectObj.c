@@ -1,4 +1,4 @@
-/* $XConsortium: RectObj.c,v 1.11 90/12/31 16:56:29 rws Exp $ */
+/* $XConsortium: RectObj.c,v 1.12 91/01/06 13:32:38 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -36,20 +36,22 @@ SOFTWARE.
 static XtResource resources[] = {
 
     {XtNancestorSensitive, XtCSensitive, XtRBoolean, sizeof(Boolean),
-      XtOffset(RectObj,rectangle.ancestor_sensitive),XtRCallProc,
+      XtOffsetOf(RectObjRec,rectangle.ancestor_sensitive),XtRCallProc,
       (XtPointer)XtCopyAncestorSensitive},
     {XtNx, XtCPosition, XtRPosition, sizeof(Position),
-         XtOffset(RectObj,rectangle.x), XtRImmediate, (XtPointer)0},
+         XtOffsetOf(RectObjRec,rectangle.x), XtRImmediate, (XtPointer)0},
     {XtNy, XtCPosition, XtRPosition, sizeof(Position),
-         XtOffset(RectObj,rectangle.y), XtRImmediate, (XtPointer)0},
+         XtOffsetOf(RectObjRec,rectangle.y), XtRImmediate, (XtPointer)0},
     {XtNwidth, XtCWidth, XtRDimension, sizeof(Dimension),
-         XtOffset(RectObj,rectangle.width), XtRImmediate, (XtPointer)0},
+         XtOffsetOf(RectObjRec,rectangle.width), XtRImmediate, (XtPointer)0},
     {XtNheight, XtCHeight, XtRDimension, sizeof(Dimension),
-         XtOffset(RectObj,rectangle.height), XtRImmediate, (XtPointer)0},
+         XtOffsetOf(RectObjRec,rectangle.height), XtRImmediate, (XtPointer)0},
     {XtNborderWidth, XtCBorderWidth, XtRDimension, sizeof(Dimension),
-         XtOffset(RectObj,rectangle.border_width), XtRImmediate, (XtPointer)1},
+         XtOffsetOf(RectObjRec,rectangle.border_width), XtRImmediate,
+	 (XtPointer)1},
     {XtNsensitive, XtCSensitive, XtRBoolean, sizeof(Boolean),
-         XtOffset(RectObj,rectangle.sensitive), XtRImmediate, (XtPointer)True}
+         XtOffsetOf(RectObjRec,rectangle.sensitive), XtRImmediate,
+	 (XtPointer)True}
     };
 
 static void RectObjInitialize();

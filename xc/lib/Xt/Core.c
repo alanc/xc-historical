@@ -1,4 +1,4 @@
-/* $XConsortium: Core.c,v 1.48 91/02/04 16:18:28 rws Exp $ */
+/* $XConsortium: Core.c,v 1.49 91/02/06 21:14:36 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -45,33 +45,35 @@ extern String XtCXtToolkitError; /* from IntrinsicI.h */
 
 static XtResource resources[] = {
     {XtNscreen, XtCScreen, XtRScreen, sizeof(Screen*),
-      XtOffset(CoreWidget,core.screen), XtRCallProc, (XtPointer)XtCopyScreen},
+      XtOffsetOf(CoreRec,core.screen), XtRCallProc, (XtPointer)XtCopyScreen},
 /*XtCopyFromParent does not work for screen because the Display
 parameter is not passed through to the XtRCallProc routines */
     {XtNdepth, XtCDepth, XtRInt,sizeof(int),
-         XtOffset(CoreWidget,core.depth), XtRCallProc, (XtPointer)XtCopyFromParent},
+         XtOffsetOf(CoreRec,core.depth),
+	 XtRCallProc, (XtPointer)XtCopyFromParent},
     {XtNcolormap, XtCColormap, XtRColormap, sizeof(Colormap),
-      XtOffset(CoreWidget,core.colormap), XtRCallProc,(XtPointer)XtCopyFromParent},
+	 XtOffsetOf(CoreRec,core.colormap),
+	 XtRCallProc,(XtPointer)XtCopyFromParent},
     {XtNbackground, XtCBackground, XtRPixel,sizeof(Pixel),
-         XtOffset(CoreWidget,core.background_pixel),
+         XtOffsetOf(CoreRec,core.background_pixel),
 	 XtRString, (XtPointer)"XtDefaultBackground"},
     {XtNbackgroundPixmap, XtCPixmap, XtRPixmap, sizeof(Pixmap),
-         XtOffset(CoreWidget,core.background_pixmap),
+         XtOffsetOf(CoreRec,core.background_pixmap),
 	 XtRImmediate, (XtPointer)XtUnspecifiedPixmap},
     {XtNborderColor, XtCBorderColor, XtRPixel,sizeof(Pixel),
-         XtOffset(CoreWidget,core.border_pixel),
+         XtOffsetOf(CoreRec,core.border_pixel),
          XtRString,(XtPointer)"XtDefaultForeground"},
     {XtNborderPixmap, XtCPixmap, XtRPixmap, sizeof(Pixmap),
-         XtOffset(CoreWidget,core.border_pixmap),
+         XtOffsetOf(CoreRec,core.border_pixmap),
 	 XtRImmediate, (XtPointer)XtUnspecifiedPixmap},
     {XtNmappedWhenManaged, XtCMappedWhenManaged, XtRBoolean, sizeof(Boolean),
-         XtOffset(CoreWidget,core.mapped_when_managed),
+         XtOffsetOf(CoreRec,core.mapped_when_managed),
 	 XtRImmediate, (XtPointer)True},
     {XtNtranslations, XtCTranslations, XtRTranslationTable,
-        sizeof(XtTranslations), XtOffset(CoreWidget,core.tm.translations),
+        sizeof(XtTranslations), XtOffsetOf(CoreRec,core.tm.translations),
         XtRTranslationTable, (XtPointer)NULL},
     {XtNaccelerators, XtCAccelerators, XtRAcceleratorTable,
-        sizeof(XtTranslations), XtOffset(CoreWidget,core.accelerators),
+        sizeof(XtTranslations), XtOffsetOf(CoreRec,core.accelerators),
         XtRTranslationTable, (XtPointer)NULL}
     };
 

@@ -1,4 +1,4 @@
-/* $XConsortium: Object.c,v 1.15 90/12/31 16:57:18 rws Exp $ */
+/* $XConsortium: Object.c,v 1.16 91/01/06 13:32:24 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -30,7 +30,8 @@ SOFTWARE.
 
 static XtResource resources[] = {
         {XtNdestroyCallback, XtCCallback, XtRCallback,sizeof(XtPointer),
-         XtOffset(Object,object.destroy_callbacks), XtRCallback, (XtPointer)NULL}
+         XtOffsetOf(ObjectRec,object.destroy_callbacks),
+	 XtRCallback, (XtPointer)NULL}
     };
 
 static void ObjectClassPartInitialize();
