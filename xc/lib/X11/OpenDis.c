@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XOpenDis.c,v 11.97 90/12/12 09:18:45 rws Exp $
+ * $XConsortium: XOpenDis.c,v 11.98 90/12/13 15:49:07 rws Exp $
  */
 
 #include "copyright.h"
@@ -157,6 +157,7 @@ Display *XOpenDisplay (display)
 	char *conn_auth_name, *conn_auth_data;
 	int conn_auth_namelen, conn_auth_datalen;
 	int conn_family;
+	unsigned long mask;
 	extern int _XSendClientPrefix();
 	extern int _XConnectDisplay();
 	extern char *getenv();
@@ -400,7 +401,12 @@ Display *XOpenDisplay (display)
 	    dpy->wire_vec[i] 	= _XUnknownNativeEvent;
 	}
 	dpy->resource_id	= 0;
-	dpy->resource_shift	= ffs(dpy->resource_mask) - 1;
+	mask = dpy->resource_mask;
+	dpy->resource_shift	= 0;
+	while (!(mask & 1)) {
+	    dpy->resource_shift++;
+	    mask = mask >> 1;
+	}
 	dpy->db 		= (struct _XrmHashBucketRec *)NULL;
 	dpy->cursor_font	= None;
 	dpy->flags		= 0;
