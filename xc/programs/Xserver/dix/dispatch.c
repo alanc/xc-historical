@@ -1,4 +1,4 @@
-/* $XConsortium: dispatch.c,v 5.15 89/11/29 13:57:05 keith Exp $ */
+/* $XConsortium: dispatch.c,v 5.16 89/12/05 17:53:53 rws Exp $ */
 /************************************************************
 Copyright 1987, 1989 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -2067,6 +2067,10 @@ ProcPolyText(client)
 	    {
 		DoChangeGC( pGC, GCFont, &fid, 0);
 		ValidateGC(pDraw, pGC);
+		if (stuff->reqType == X_PolyText8)
+		    polyText = pGC->ops->PolyText8;
+		else
+		    polyText = pGC->ops->PolyText16;
 	    }
 	    pElt += FontShiftSize;
 	}
