@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlibInt.c,v 11.189 93/09/26 20:18:01 rws Exp $
+ * $XConsortium: XlibInt.c,v 11.190 93/10/13 14:28:33 rws Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986, 1987 */
@@ -134,6 +134,8 @@ typedef union {
 
 static char *_XAsyncReply();
 static void _XProcessInternalConnection();
+extern int _XSyncFunction();
+#define SEQLIMIT (65535 - (BUFSIZE / SIZEOF(xReq)) - 10)
 
 /*
  * The following routines are internal routines used by Xlib for protocol
@@ -526,6 +528,11 @@ static _XFlushInt (dpy, cv)
 	    }
 	}
 	dpy->last_req = (char *)&_dummy_request;
+	if (!dpy->savedsynchandler &&
+	    (dpy->request - dpy->last_request_read) >= SEQLIMIT) {
+	    dpy->savedsynchandler = dpy->synchandler;
+	    dpy->synchandler = _XSyncFunction;
+	}
 }
 
 int
@@ -1240,6 +1247,11 @@ _XSend (dpy, data, size)
 
 	dpy->bufptr = dpy->buffer;
 	dpy->last_req = (char *) & _dummy_request;
+	if (!dpy->savedsynchandler &&
+	    (dpy->request - dpy->last_request_read) >= SEQLIMIT) {
+	    dpy->savedsynchandler = dpy->synchandler;
+	    dpy->synchandler = _XSyncFunction;
+	}
 }
 
 /*
@@ -1267,12 +1279,13 @@ register Display *dpy;
 }
 
 /*
- * The hard part about this is that we only get 16 bits from a reply.  Well,
- * then, we have three values that will march along, with the following
- * invariant:
+ * The hard part about this is that we only get 16 bits from a reply.
+ * We have three values that will march along, with the following invariant:
  *	dpy->last_request_read <= rep->sequenceNumber <= dpy->request
- * The right choice for rep->sequenceNumber is the largest that
- * still meets these constraints.
+ * We have to keep
+ *	dpy->request - dpy->last_request_read < 2^16
+ * or else we won't know for sure what value to use in events.  We do this
+ * by forcing syncs when we get close.
  */
 
 unsigned long
@@ -1282,18 +1295,18 @@ _XSetLastRequestRead(dpy, rep)
 {
     register unsigned long	newseq, lastseq;
 
+    lastseq = dpy->last_request_read;
     /*
      * KeymapNotify has no sequence number, but is always guaranteed
      * to immediately follow another event, except when generated via
      * SendEvent (hmmm).
      */
     if ((rep->type & 0x7f) == KeymapNotify)
-	return(dpy->last_request_read);
+	return(lastseq);
 
-    newseq = (dpy->last_request_read & ~((unsigned long)0xffff)) |
-	     rep->sequenceNumber;
-    lastseq = dpy->last_request_read;
-    while (newseq < lastseq) {
+    newseq = (lastseq & ~((unsigned long)0xffff)) | rep->sequenceNumber;
+
+    if (newseq < lastseq) {
 	newseq += 0x10000;
 	if (newseq > dpy->request) {
 	    (void) fprintf (stderr, 
@@ -1301,7 +1314,6 @@ _XSetLastRequestRead(dpy, rep)
 			    newseq, dpy->request, 
 			    (unsigned int) rep->type);
 	    newseq -= 0x10000;
-	    break;
 	}
     }
 
