@@ -1,5 +1,5 @@
 /*
- * $XConsortium: CutPaste.c,v 1.3 91/02/08 18:13:55 dave Exp $
+ * $XConsortium: CutPaste.c,v 1.4 91/04/16 09:04:45 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -173,7 +173,7 @@ void SelectionCallback(w, cldat, selection, type, val, length, format)
 	DestroyBitmapImage(&BW->bitmap.storage);
 	pixmap = (Pixmap *) value;
 	BW->bitmap.storage = GetImage(BW, *pixmap);
-	XFreePixmap(XtDisplay(w), *pixmap);
+	XFree((char *)pixmap);
 	break;
 	
     default:
