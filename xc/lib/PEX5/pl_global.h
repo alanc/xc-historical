@@ -1,4 +1,4 @@
-/* $XConsortium: pl_global_def.h,v 1.3 92/06/12 12:47:00 mor Exp $ */
+/* $XConsortium: pl_global_def.h,v 1.4 92/07/16 11:04:23 mor Exp $ */
 
 /******************************************************************************
 Copyright 1987,1991 by Digital Equipment Corporation, Maynard, Massachusetts
@@ -39,44 +39,6 @@ PEXDisplayInfo 	*PEXDisplayInfoHeader = NULL;
 PEXPickPath	*PEXPickCache = NULL;
 unsigned int	PEXPickCacheSize = 0;
 int		PEXPickCacheInUse = 0;
-
-
-/*
- * PEX error messages.
- */
-
-char *PEXErrorList[(PEXMaxError + 1)] = {
-    /* ColorType */
-    "PEXColorTypeError, specified color type not supported",
-    /* RendererState */
-    "PEXRendererStateError, renderer not in proper state for operation",
-    /* FloatingPointFormat */
-    "PEXFloatingPointFormatError, specified fp format not supported",
-    /* Label */
-    "PEXLabelError, specified label not in structure",
-    /* LookupTable */
-    "LookupTableError, specified lookup table ID invalid",
-    /* NameSet */
-    "PEXNameSetError, specified nameset ID invalid",
-    /* Path */
-    "PEXPathError, illegal or invalid values in path",
-    /* PEXFont */
-    "PEXFontError, specified font ID invalid",
-    /* PhigsWKS */
-    "PhigsWKSError, specified PHIGS workstation ID invalid", 
-    /* PickMeasure */
-    "PEXPickMeasureError, specified pick measure ID invalid",
-    /* PipelineContext */
-    "PEXPipelineContextError, specified pipeline context ID invalid",
-    /* Renderer */
-    "PEXRendererError, specified renderer ID invalid",
-    /* SearchContext */
-    "PEXSearchContextError, specified search context ID invalid",
-    /* Structure */
-    "PEXStructureError, specified structure ID invalid",
-    /* OutputCommand */
-    "PEXOutputCommandError, illegal value in output commands",
-};
 
 
 /*
