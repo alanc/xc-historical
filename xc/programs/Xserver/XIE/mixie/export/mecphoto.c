@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: mecphoto.c,v 1.1 93/07/19 10:13:46 rws Exp $ */
 /**** module mecphoto.c ****/
 /******************************************************************************
 				NOTICE
@@ -163,8 +163,9 @@ int miAnalyzeECPhoto(flo,ped)
   case xieValEncodeUncompressedTriple:
 
     switch(((xieTecEncodeUncompressedTriple *) &raw[1])->interleave) {
-    ped->ddVec = ECPhotoUncomByPlaneVec;
-    break;
+    case xieValBandByPlane:
+      ped->ddVec = ECPhotoUncomByPlaneVec;
+      break;
 
     case xieValBandByPixel:
       if(ped->inFloLst[SRCtag].format[0].stride !=  8  &&
