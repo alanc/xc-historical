@@ -1,5 +1,5 @@
 /*
- * $XConsortium: defaults.c,v 1.1 91/02/22 15:41:24 keith Exp $
+ * $XConsortium: defaults.c,v 1.1 91/05/10 14:46:27 keith Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -25,7 +25,7 @@
 
 #include    <X11/X.h>
 #include    <X11/Xproto.h>
-#include    <server/include/servermd.h>
+#include    <servermd.h>
 
 #ifndef DEFAULT_BIT_ORDER
 #ifdef BITMAP_BIT_ORDER
