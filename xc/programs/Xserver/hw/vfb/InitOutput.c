@@ -35,33 +35,68 @@
 #include "input.h"
 #include "mipointer.h"
 #include <sys/types.h>
+#ifdef HAS_MMAP
 #include <sys/mman.h>
+#ifndef MAP_FILE
+#define MAP_FILE 0
+#endif
+#endif /* HAS_MMAP */
 #include <sys/stat.h>
 #include <errno.h>
 #include <sys/param.h>
+#include <X11/XWDFile.h>
+#ifdef HAS_SHM
+#include <sys/ipc.h>
+#include <sys/shm.h>
+#endif /* HAS_SHM */
+#include "dix.h"
+
+extern char *display;
 
 #define FFB_DEFAULT_WIDTH  1280
 #define FFB_DEFAULT_HEIGHT 1024
 #define FFB_DEFAULT_DEPTH  8
+#define XWD_WINDOW_NAME_LEN 64
 
 typedef struct
 {
+    int scrnum;
     int width;
     int paddedWidth;
     int height;
     int depth;
     int bitsPerPixel;
-    char *pfbMemory;
     int sizeInBytes;
+    char *pfbMemory;
+    XWDColor *pXWDCmap;
+    XWDFileHeader *pXWDHeader;
+
+#ifdef HAS_MMAP
     int mmap_fd;
     char mmap_file[MAXPATHLEN];
+#endif
+
+#ifdef HAS_SHM
+    int shmid;
+#endif
 } ffbScreenInfo, *ffbScreenInfoPtr;
 
 static int ffbNumScreens;
 static ffbScreenInfo ffbScreens[MAXSCREENS];
 static Bool ffbPixmapDepths[33];
 static char *pfbdir = NULL;
-static char scrinfo_filename[MAXPATHLEN];
+typedef enum { NORMAL_MEMORY_FB, SHARED_MEMORY_FB, MMAPPED_FILE_FB } fbMemType;
+static fbMemType fbmemtype = NORMAL_MEMORY_FB;
+static char needswap = 0;
+
+#define swapcopy16(_dst, _src) \
+    if (needswap) { CARD16 _s = _src; cpswaps(_s, _dst); } \
+    else _dst = _src;
+
+#define swapcopy32(_dst, _src) \
+    if (needswap) { CARD32 _s = _src; cpswapl(_s, _dst); } \
+    else _dst = _src;
+
 
 static void
 ffbInitializePixmapDepths()
@@ -79,6 +114,7 @@ ffbInitializeDefaultScreens()
 
     for (i = 0; i < MAXSCREENS; i++)
     {
+	ffbScreens[i].scrnum = i;
 	ffbScreens[i].width  = FFB_DEFAULT_WIDTH;
 	ffbScreens[i].height = FFB_DEFAULT_HEIGHT;
 	ffbScreens[i].depth  = FFB_DEFAULT_DEPTH;
@@ -100,17 +136,14 @@ ffbBitsPerPixel(depth)
 void
 ddxGiveUp()
 {
-    /* clean up mmaped files for framebuffers */
-    if (pfbdir)
+    int i;
+
+    /* clean up the framebuffers */
+
+    switch (fbmemtype)
     {
-	int i;
-
-	if (-1 == unlink(scrinfo_filename))
-	{
-	    perror("unlink");
-	    ErrorF("unlink %s failed, errno %d", scrinfo_filename, errno);
-	}
-
+#ifdef HAS_MMAP
+    case MMAPPED_FILE_FB: 
 	for (i = 0; i < ffbNumScreens; i++)
 	{
 	    if (-1 == unlink(ffbScreens[i].mmap_file))
@@ -120,6 +153,28 @@ ddxGiveUp()
 		       ffbScreens[i].mmap_file, errno);
 	    }
 	}
+	break;
+#endif /* HAS_MMAP */
+	
+#ifdef HAS_SHM
+    case SHARED_MEMORY_FB:
+	for (i = 0; i < ffbNumScreens; i++)
+	{
+	    if (-1 == shmdt((char *)ffbScreens[i].pXWDHeader))
+	    {
+		perror("shmdt");
+		ErrorF("shmdt failed, errno %d", errno);
+	    }
+	}
+	break;
+#endif /* HAS_SHM */
+	
+    case NORMAL_MEMORY_FB:
+	for (i = 0; i < ffbNumScreens; i++)
+	{
+	    Xfree(ffbScreens[i].pXWDHeader);
+	}
+	break;
     }
 }
 
@@ -137,9 +192,16 @@ OsVendorInit()
 void
 ddxUseMsg()
 {
-    ErrorF("-screen scrn WxHxD  set screen's width, height, depth\n");
-    ErrorF("-pixdepths list-of-int  support given pixmap depths\n");
-    ErrorF("-fbdir directory        put framebuffers in mmap'ed files in directory\n");
+    ErrorF("-screen scrn WxHxD     set screen's width, height, depth\n");
+    ErrorF("-pixdepths list-of-int support given pixmap depths\n");
+
+#ifdef HAS_MMAP
+    ErrorF("-fbdir directory       put framebuffers in mmap'ed files in directory\n");
+#endif
+
+#ifdef HAS_SHM
+    ErrorF("-shmem                 put framebuffers in shared memory\n");
+#endif
 }
 
 int
@@ -199,12 +261,23 @@ ddxProcessArgument (argc, argv, i)
 	return ret;
     }
 
+#ifdef HAS_MMAP
     if (strcmp (argv[i], "-fbdir") == 0)	/* -fbdir directory */
     {
 	if (++i >= argc) UseMsg();
 	pfbdir = argv[i];
+	fbmemtype = MMAPPED_FILE_FB;
 	return 2;
     }
+#endif /* HAS_MMAP */
+
+#ifdef HAS_SHM
+    if (strcmp (argv[i], "-shmem") == 0)	/* -shmem */
+    {
+	fbmemtype = SHARED_MEMORY_FB;
+	return 1;
+    }
+#endif
 
     return 0;
 }
@@ -307,15 +380,55 @@ ffbInstallColormap(pmap)
     int index = pmap->pScreen->myNum;
     ColormapPtr oldpmap = InstalledMaps[index];
 
-    if(pmap != oldpmap)
+    if (pmap != oldpmap)
     {
-	/* Uninstall pInstalledMap. No hardware changes required, just
-	 * notify all interested parties. */
+	int entries;
+	XWDFileHeader *pXWDHeader;
+	XWDColor *pXWDCmap;
+	VisualPtr pVisual;
+	Pixel *     ppix;
+	xrgb *      prgb;
+	xColorItem *defs;
+	int i;
+
 	if(oldpmap != (ColormapPtr)None)
 	    WalkTree(pmap->pScreen, TellLostMap, (char *)&oldpmap->mid);
 	/* Install pmap */
 	InstalledMaps[index] = pmap;
 	WalkTree(pmap->pScreen, TellGainedMap, (char *)&pmap->mid);
+
+	entries = pmap->pVisual->ColormapEntries;
+	pXWDHeader = ffbScreens[pmap->pScreen->myNum].pXWDHeader;
+	pXWDCmap = ffbScreens[pmap->pScreen->myNum].pXWDCmap;
+	pVisual = pmap->pVisual;
+
+	swapcopy32(pXWDHeader->visual_class, pVisual->class);
+	swapcopy32(pXWDHeader->red_mask, pVisual->redMask);
+	swapcopy32(pXWDHeader->green_mask, pVisual->greenMask);
+	swapcopy32(pXWDHeader->blue_mask, pVisual->blueMask);
+	swapcopy32(pXWDHeader->bits_per_rgb, pVisual->bitsPerRGBValue);
+	swapcopy32(pXWDHeader->colormap_entries, pVisual->ColormapEntries);
+
+	ppix = (Pixel *)ALLOCATE_LOCAL(entries * sizeof(Pixel));
+	prgb = (xrgb *)ALLOCATE_LOCAL(entries * sizeof(xrgb));
+	defs = (xColorItem *)ALLOCATE_LOCAL(entries * sizeof(xColorItem));
+
+	for (i = 0; i < entries; i++)  ppix[i] = i;
+
+	QueryColors(pmap, entries, ppix, prgb);
+
+	for (i = 0; i < entries; i++) { /* convert xrgbs to xColorItems */
+	    defs[i].pixel = ppix[i] & 0xff; /* change pixel to index */
+	    defs[i].red = prgb[i].red;
+	    defs[i].green = prgb[i].green;
+	    defs[i].blue = prgb[i].blue;
+	    defs[i].flags =  DoRed|DoGreen|DoBlue;
+	}
+	(*pmap->pScreen->StoreColors)(pmap, entries, defs);
+
+	DEALLOCATE_LOCAL(ppix);
+	DEALLOCATE_LOCAL(prgb);
+	DEALLOCATE_LOCAL(defs);
     }
 }
 
@@ -336,21 +449,164 @@ ffbUninstallColormap(pmap)
     }
 }
 
+void
+ffbStoreColors(pmap, ndef, pdefs)
+    ColormapPtr pmap;
+    int         ndef;
+    xColorItem  *pdefs;
+{
+    XWDColor *pXWDCmap;
+    int i;
+
+    if (pmap != InstalledMaps[pmap->pScreen->myNum]) return;
+
+    pXWDCmap = ffbScreens[pmap->pScreen->myNum].pXWDCmap;
+
+    /* XXX direct color doesn't work here yet */
+
+    for (i = 0; i < ndef; i++)
+    {
+	if (pdefs[i].flags & DoRed)
+	    swapcopy16(pXWDCmap[pdefs[i].pixel].red, pdefs[i].red);
+	if (pdefs[i].flags & DoGreen)
+	    swapcopy16(pXWDCmap[pdefs[i].pixel].green, pdefs[i].green);
+	if (pdefs[i].flags & DoBlue)
+	    swapcopy16(pXWDCmap[pdefs[i].pixel].blue, pdefs[i].blue);
+    }
+}
+
 static Bool
-ffbNoopReturnsTrue()
+ffbSaveScreen(pScreen, on)
+    ScreenPtr pScreen;
+    int on;
 {
     return TRUE;
 }
 
+#ifdef HAS_MMAP
+
+void *
+ffbBlockHandler(blockData, pTimeout, pReadmask)
+    pointer   blockData;
+    OSTimePtr pTimeout;
+    pointer   pReadmask;
+{
+    int i;
+
+    for (i = 0; i < ffbNumScreens; i++)
+    {
+	if (-1 == msync((caddr_t)ffbScreens[i].pXWDHeader,
+			(size_t)ffbScreens[i].sizeInBytes, MS_ASYNC))
+	{
+	    perror("msync");
+	    ErrorF("msync failed, errno %d", errno);
+	}
+    }
+}
+
+
+void *
+ffbWakeupHandler(blockData, result, pReadmask)
+    pointer blockData;
+    int     result;
+    pointer pReadmask;
+{
+}
+
+
+void *
+ffbAllocateMmappedFramebuffer(pffb)
+    ffbScreenInfoPtr pffb;
+{
 #define DUMMY_BUFFER_SIZE 65536
+    char dummyBuffer[DUMMY_BUFFER_SIZE];
+    int currentFileSize, writeThisTime;
+
+    sprintf(pffb->mmap_file, "%s/Xffb_screen%d", pfbdir, pffb->scrnum);
+    if (-1 == (pffb->mmap_fd = open(pffb->mmap_file, O_CREAT|O_RDWR, 0666)))
+    {
+	perror("open");
+	ErrorF("open %s failed, errno %d", pffb->mmap_file, errno);
+	return;
+    }
+
+    /* Extend the file to be the proper size */
+
+    bzero(dummyBuffer, DUMMY_BUFFER_SIZE);
+    for (currentFileSize = 0;
+	 currentFileSize < pffb->sizeInBytes;
+	 currentFileSize += writeThisTime)
+    {
+	writeThisTime = min(DUMMY_BUFFER_SIZE,
+			    pffb->sizeInBytes - currentFileSize);
+	if (-1 == write(pffb->mmap_fd, dummyBuffer, writeThisTime))
+	{
+	    perror("write");
+	    ErrorF("write %s failed, errno %d", pffb->mmap_file, errno);
+	    return;
+	}
+    }
+
+    /* try to mmap the file */
+
+    pffb->pXWDHeader = (XWDFileHeader *)mmap((caddr_t)NULL, pffb->sizeInBytes,
+				    PROT_READ|PROT_WRITE,
+				    MAP_FILE|MAP_SHARED,
+				    pffb->mmap_fd, 0);
+    if (-1 == (int)pffb->pXWDHeader)
+    {
+	perror("mmap");
+	ErrorF("mmap %s failed, errno %d", pffb->mmap_file, errno);
+	pffb->pXWDHeader = NULL;
+	return;
+    }
+
+    if (!RegisterBlockAndWakeupHandlers(ffbBlockHandler, ffbWakeupHandler,
+					NULL))
+    {
+	pffb->pXWDHeader = NULL;
+    }
+}
+#endif /* HAS_MMAP */
+
+
+#ifdef HAS_SHM
+void *
+ffbAllocateSharedMemoryFramebuffer(pffb)
+    ffbScreenInfoPtr pffb;
+{
+    /* create the shared memory segment */
+
+    pffb->shmid = shmget(IPC_PRIVATE, pffb->sizeInBytes, IPC_CREAT|0777);
+    if (pffb->shmid < 0)
+    {
+	perror("shmget");
+	ErrorF("shmget %d bytes failed, errno %d", pffb->sizeInBytes, errno);
+	return;
+    }
+
+    /* try to attach it */
+
+    pffb->pXWDHeader = (XWDFileHeader *)shmat(pffb->shmid, 0, 0);
+    if (-1 == (int)pffb->pXWDHeader)
+    {
+	perror("shmat");
+	ErrorF("shmat failed, errno %d", errno);
+	pffb->pXWDHeader = NULL; 
+	return;
+    }
+
+    ErrorF("screen %d shmid %d\n", pffb->scrnum, pffb->shmid);
+}
+#endif /* HAS_SHM */
 
 static char *
-ffbAllocateFramebufferMemory(screennum)
-    int screennum;
+ffbAllocateFramebufferMemory(pffb)
+    ffbScreenInfoPtr pffb;
 {
-    ffbScreenInfoPtr pffb = &ffbScreens[screennum];
+    int ncolors;
 
-    if (pffb->pfbMemory) return pffb->pfbMemory;
+    if (pffb->pfbMemory) return pffb->pfbMemory; /* already done */
 
     if (pffb->bitsPerPixel == 1)
 	pffb->sizeInBytes = (pffb->paddedWidth * pffb->height) / 8;
@@ -358,54 +614,118 @@ ffbAllocateFramebufferMemory(screennum)
 	pffb->sizeInBytes = pffb->paddedWidth * pffb->height *
 			    (pffb->bitsPerPixel/8);
 
-    if (pfbdir)
+    /* XXX calculate how many entries in colormap */
+
+    if (pffb->depth <= 10)
     {
-	char dummyBuffer[DUMMY_BUFFER_SIZE];
-	int currentFileSize, writeThisTime;
-
-	sprintf(pffb->mmap_file, "%s/Xffb_screen%d", pfbdir, screennum);
-	if (-1 == (pffb->mmap_fd = open(pffb->mmap_file, O_CREAT|O_RDWR, 0666)))
-	{
-	    perror("open");
-	    ErrorF("open %s failed, errno %d", pffb->mmap_file, errno);
-	    return NULL;
-	}
-
-	bzero(dummyBuffer, DUMMY_BUFFER_SIZE);
-	for (currentFileSize = 0;
-	     currentFileSize < pffb->sizeInBytes;
-	     currentFileSize += writeThisTime)
-	{
-	    writeThisTime = min(DUMMY_BUFFER_SIZE,
-				pffb->sizeInBytes - currentFileSize);
-	    if (-1 == write(pffb->mmap_fd, dummyBuffer, writeThisTime))
-	    {
-		perror("write");
-		ErrorF("write %s failed, errno %d %s", pffb->mmap_file, errno);
-		return NULL;
-	    }
-
-	}
-
-	pffb->pfbMemory = (char *)mmap((caddr_t)NULL, pffb->sizeInBytes,
-				       PROT_READ|PROT_WRITE, MAP_SHARED,
-				       pffb->mmap_fd, 0);
-	if (-1 == (int)pffb->pfbMemory)
-	{
-	    perror("mmap");
-	    ErrorF("mmap %s failed, errno %d %s", pffb->mmap_file, errno);
-	    return NULL;
-	}
+	ncolors = 1 << pffb->depth;
     }
-    else /* !pfbdir */
+    else
     {
-	pffb->mmap_fd = 0;
-	sprintf(pffb->mmap_file, "screen %d", screennum);
-	pffb->pfbMemory = (char *)Xalloc(pffb->sizeInBytes);
+	int nplanes = pffb->depth / 3;
+	if (pffb->depth % 3) nplanes++;
+	ncolors = 3 * (1 << nplanes);
     }
 
-    return pffb->pfbMemory;
+    /* add extra bytes for XWDFileHeader, window name, and colormap */
+
+    pffb->sizeInBytes += SIZEOF(XWDheader) + XWD_WINDOW_NAME_LEN +
+		    ncolors * SIZEOF(XWDColor);
+
+    pffb->pXWDHeader = NULL; 
+    switch (fbmemtype)
+    {
+#ifdef HAS_MMAP
+    case MMAPPED_FILE_FB:  ffbAllocateMmappedFramebuffer(pffb); break;
+#endif
+
+#ifdef HAS_SHM
+    case SHARED_MEMORY_FB: ffbAllocateSharedMemoryFramebuffer(pffb); break;
+#endif
+
+    case NORMAL_MEMORY_FB:
+	pffb->pXWDHeader = (XWDFileHeader *)Xalloc(pffb->sizeInBytes);
+	break;
+    }
+
+    if (pffb->pXWDHeader)
+    {
+	pffb->pXWDHeader->ncolors = ncolors;
+	pffb->pXWDCmap = (XWDColor *)((char *)pffb->pXWDHeader
+				+ SIZEOF(XWDheader) + XWD_WINDOW_NAME_LEN);
+	pffb->pfbMemory = (char *)(pffb->pXWDCmap + ncolors);
+	return pffb->pfbMemory;
+    }
+    else
+	return NULL;
 }
+
+
+void
+ffbWriteXWDFileHeader(pScreen)
+    ScreenPtr pScreen;
+{
+    ffbScreenInfoPtr pffb = &ffbScreens[pScreen->myNum];
+    XWDFileHeader *pXWDHeader = pffb->pXWDHeader;
+    char hostname[XWD_WINDOW_NAME_LEN];
+    VisualPtr	pVisual;
+    unsigned long swaptest = 1;
+    int i;
+
+    needswap = *(char *) &swaptest;
+
+    pXWDHeader->header_size = (char *)pffb->pXWDCmap - (char *)pffb->pXWDHeader;
+    pXWDHeader->file_version = XWD_FILE_VERSION;
+
+    pXWDHeader->pixmap_format = ZPixmap;
+    pXWDHeader->pixmap_depth = pffb->depth;
+    pXWDHeader->pixmap_width = pXWDHeader->window_width = pffb->width;
+    pXWDHeader->pixmap_height = pXWDHeader->window_height = pffb->height;
+    pXWDHeader->xoffset = 0;
+    pXWDHeader->byte_order = IMAGE_BYTE_ORDER;
+    pXWDHeader->bitmap_unit = BITMAP_SCANLINE_UNIT;
+    pXWDHeader->bitmap_bit_order = BITMAP_BIT_ORDER;
+    pXWDHeader->bitmap_pad = BITMAP_SCANLINE_PAD;
+    pXWDHeader->bits_per_pixel = pffb->bitsPerPixel;
+    pXWDHeader->bytes_per_line = pffb->paddedWidth;
+
+    /* pXWDHeader->ncolors was filled in by ffbAllocateFramebufferMemory */
+
+    /* visual related fields are written when colormap is installed */
+
+    pXWDHeader->window_x = pXWDHeader->window_y = 0;
+    pXWDHeader->window_bdrwidth = 0;
+
+    /* write xwd "window" name: Xffb hostname:server.screen */
+
+    if (-1 == gethostname(hostname, sizeof(hostname)))
+	hostname[0] = 0;
+    else
+	hostname[XWD_WINDOW_NAME_LEN-1] = 0;
+    sprintf((char *)(pXWDHeader+1), "Xffb %s:%s.%d", hostname, display,
+	    pScreen->myNum);
+
+    /* write colormap pixel slot values */
+
+    for (i = 0; i < pXWDHeader->ncolors; i++)
+    {
+	pffb->pXWDCmap[i].pixel = i;
+	/* XXX direct/true color different? */
+    }
+
+    /* byte swap to most significant byte first */
+
+    if (needswap)
+    {
+	SwapLongs((CARD32 *)pXWDHeader, SIZEOF(XWDheader)/4);
+	for (i = 0; i < pXWDHeader->ncolors; i++)
+	{
+	    register char n;
+	    swapl(&pffb->pXWDCmap[i].pixel, n);
+	}
+    }
+}
+
 
 static Bool
 ffbCursorOffScreen (ppScreen, x, y)
@@ -443,7 +763,7 @@ ffbScreenInit(index, pScreen, argc, argv)
 
     pffb->paddedWidth = PixmapBytePad(pffb->width, pffb->depth);
     pffb->bitsPerPixel = ffbBitsPerPixel(pffb->depth);
-    pbits = ffbAllocateFramebufferMemory(index);
+    pbits = ffbAllocateFramebufferMemory(pffb);
     if (!pbits) return FALSE;
 
     switch (pffb->bitsPerPixel)
@@ -476,10 +796,12 @@ ffbScreenInit(index, pScreen, argc, argv)
     pScreen->UninstallColormap = ffbUninstallColormap;
     pScreen->ListInstalledColormaps = ffbListInstalledColormaps;
 
-    pScreen->SaveScreen = (SaveScreenProcPtr)ffbNoopReturnsTrue;
-    pScreen->StoreColors = (StoreColorsProcPtr)ffbNoopReturnsTrue;
+    pScreen->SaveScreen = (SaveScreenProcPtr)ffbSaveScreen;
+    pScreen->StoreColors = ffbStoreColors;
 
     miDCInitialize(pScreen, &ffbPointerCursorFuncs);
+
+    ffbWriteXWDFileHeader(pScreen);
 
     return cfbCreateDefColormap(pScreen);
 } /* end ffbScreenInit */
@@ -531,33 +853,6 @@ InitOutput(screenInfo, argc, argv)
 	    FatalError("Couldn't add screen %d", i);
 	}
     }
-
-    /* write screen info stats to file */
-
-    if (pfbdir)
-    {
-	sprintf(scrinfo_filename, "%s/Xffb_scrinfo", pfbdir);
-	if (!(pf = fopen(scrinfo_filename, "w")))
-	{
-	    FatalError("Couldn't open screen info file %s", scrinfo_filename);
-	}
-    }
-
-    for (i = 0; i < ffbNumScreens; i++)
-    {
-	fprintf(pf, "%s w %d padW %d h %d d %d bpp %d sz %d ibo %d bbo %d\n",
-		ffbScreens[i].mmap_file,
-		ffbScreens[i].width,
-		ffbScreens[i].paddedWidth,
-		ffbScreens[i].height,
-		ffbScreens[i].depth,
-		ffbScreens[i].bitsPerPixel,
-		ffbScreens[i].sizeInBytes,
-		IMAGE_BYTE_ORDER,
-		BITMAP_BIT_ORDER);
-    }
-    fflush(pf);
-    if (pfbdir) fclose(pf);
 
 } /* end InitOutput */
 
