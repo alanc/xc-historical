@@ -1,5 +1,5 @@
 /*
- * $XConsortium: imakemdep.h,v 1.63 94/01/01 14:51:40 rws Exp $
+ * $XConsortium: imakemdep.h,v 1.64 94/01/18 19:23:07 rws Exp $
  * 
  * This file contains machine-dependent constants for the imake utility.
  * When porting imake, read each of the steps below and add in any necessary
@@ -439,6 +439,12 @@ struct symtab	predefs[] = {
 #endif
 #ifdef __alpha
 	{"__alpha", "1"},
+#endif
+#ifdef __DECC
+	{"__DECC",  "1"},
+#endif
+#ifdef __decc
+	{"__decc",  "1"},
 #endif
 	/* add any additional symbols before this line */
 	{NULL, NULL}
