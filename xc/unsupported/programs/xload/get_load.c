@@ -1,7 +1,7 @@
 /*
  * get_load - get system load
  *
- * $XConsortium: get_load.c,v 1.15 91/02/02 18:08:40 rws Exp $
+ * $XConsortium: get_load.c,v 1.16 91/02/02 18:25:46 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -52,7 +52,7 @@
 #    endif /* i386 */
 #endif
 
-#ifdef mips
+#if defined(umips) || (defined(ultrix) && defined(mips))
 #include <sys/fixpoint.h>
 #endif
 
@@ -86,6 +86,12 @@ struct lavnum {
 
 #ifdef sequent
 #define FSCALE	1000.0
+#endif
+
+#ifdef SVR4
+#ifndef FSCALE
+#define FSCALE	(1 << 8)
+#endif
 #endif
 
 extern long lseek();
@@ -238,13 +244,13 @@ void GetLoadPoint( w, closure, call_data )
 #define KERNEL_FILE "/unix"
 #endif /* macII */
 
-#ifdef mips
+#ifdef umips
 # ifdef SYSTYPE_SYSV
 # define KERNEL_FILE "/unix"
 # else
 # define KERNEL_FILE "/vmunix"
 # endif /* SYSTYPE_SYSV */
-#endif /* mips */
+#endif /* umips */
 
 #ifdef sequent
 #define KERNEL_FILE "/dynix"
@@ -287,13 +293,13 @@ void GetLoadPoint( w, closure, call_data )
 #        endif /* hp9000s800 */
 #    endif /* hpux */
 
-#    ifdef mips
+#    ifdef umips
 #        ifdef SYSTYPE_SYSV
 #            define KERNEL_LOAD_VARIABLE "avenrun"
 #        else
 #            define KERNEL_LOAD_VARIABLE "_avenrun"
 #        endif /* SYSTYPE_SYSV */
-#    endif /* mips */
+#    endif /* umips */
 
 #endif /* KERNEL_LOAD_VARIABLE */
 
@@ -375,9 +381,9 @@ InitLoadPoint()
 	exit(-1);
     }
     loadavg_seek = namelist[LOADAV].n_value;
-#if defined(mips) && defined(SYSTYPE_SYSV)
+#if defined(umips) && defined(SYSTYPE_SYSV)
     loadavg_seek &= 0x7fffffff;
-#endif /* mips && SYSTYPE_SYSV */
+#endif /* umips && SYSTYPE_SYSV */
 #if (defined(CRAY) && defined(SYSINFO))
     loadavg_seek += ((char *) (((struct sysinfo *)NULL)->avenrun)) -
 	((char *) NULL);
@@ -402,28 +408,28 @@ void GetLoadPoint( w, closure, call_data )
 	(void) lseek(kmem, loadavg_seek, 0);
 #endif
 
-#if defined(sun) || defined (UTEK) || defined(sequent) || defined(alliant)
+#if defined(sun) || defined (UTEK) || defined(sequent) || defined(alliant) || defined(SVR4)
 	{
 		long temp;
 		(void) read(kmem, (char *)&temp, sizeof(long));
 		*loadavg = (double)temp/FSCALE;
 	}
-#else /* else not sun */
+#else /* else not sun or UTEK or sequent or alliant */
 # ifdef macII
         {
                 read(kmem, vec, 3*sizeof(struct lavnum));
                 *loadavg = fxtod(0);
         }
 # else /* else not macII */
-#  ifdef mips
+#  if defined(umips) || (defined(ultrix) && defined(mips))
 	{
 		fix temp;
 		(void) read(kmem, (char *)&temp, sizeof(fix));
 		*loadavg = FIX_TO_DBL(temp);
 	}
-#  else /* not mips */
+#  else /* not umips or ultrix risc */
 	(void) read(kmem, (char *)loadavg, sizeof(double));
-#  endif /* mips else */
+#  endif /* umips else */
 # endif /* macII else */
 #endif /* sun else */
 	return;
