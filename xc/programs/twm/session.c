@@ -1,4 +1,4 @@
-/* $XConsortium: session.c,v 1.9 94/08/02 20:05:53 mor Exp mor $ */
+/* $XConsortium: session.c,v 1.10 94/08/10 19:51:21 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1994  X Consortium
@@ -39,6 +39,8 @@ XtInputId iceInputId;
 char *twm_clientId;
 TWMWinConfigEntry *winConfigHead = NULL;
 Bool gotFirstSave = 0;
+
+#define SAVEFILE_VERSION 1
 
 
 
@@ -244,6 +246,11 @@ char	**stringp;
  *      arg				LIST of bytes
  *
  * Iconified bool			1
+ *
+ * if iconified
+ *	icon x				2
+ *	icon y				2
+ *
  * Geom x				2
  * Geom y				2
  * Geom width				2
@@ -313,6 +320,20 @@ char *windowRole;
 
     if (!write_byte (configFile, theWindow->icon ? 1 : 0))
 	return 0;
+
+    if (theWindow->icon)
+    {
+	int icon_x, icon_y;
+
+	XGetGeometry (dpy, theWindow->icon_w, &JunkRoot, &icon_x,
+	    &icon_y, &JunkWidth, &JunkHeight, &JunkBW, &JunkDepth);
+
+	if (!write_short (configFile, (unsigned short) icon_x))
+	    return 0;
+	if (!write_short (configFile, (unsigned short) icon_y))
+	    return 0;
+    }
+
     if (!write_short (configFile, (unsigned short) theWindow->frame_x))
 	return 0;
     if (!write_short (configFile, (unsigned short) theWindow->frame_y))
@@ -390,6 +411,14 @@ TWMWinConfigEntry **pentry;
 	goto give_up;
     entry->iconified = byte;
 
+    if (entry->iconified)
+    {
+	if (!read_short (configFile, &entry->icon_x))
+	    goto give_up;
+	if (!read_short (configFile, &entry->icon_y))
+	    goto give_up;
+    }
+
     if (!read_short (configFile, &entry->x))
 	goto give_up;
     if (!read_short (configFile, &entry->y))
@@ -438,10 +467,17 @@ char *filename;
     FILE *configFile;
     TWMWinConfigEntry *entry;
     int done = 0;
+    short version;
 
     configFile = fopen (filename, "rb");
     if (!configFile)
 	return;
+
+    if (!read_short (configFile, &version) ||
+	version > SAVEFILE_VERSION)
+    {
+	done = 1;
+    }
 
     while (!done)
     {
@@ -460,11 +496,12 @@ char *filename;
 
 
 int
-GetWindowConfig (theWindow, x, y, width, height, iconified)
+GetWindowConfig (theWindow, x, y, width, height, iconified, icon_x, icon_y)
 
 TwmWindow *theWindow;
 unsigned short *x, *y, *width, *height;
 Bool *iconified;
+unsigned short *icon_x, *icon_y;
 
 {
     char *clientId, *windowRole;
@@ -565,6 +602,11 @@ Bool *iconified;
 	*width = ptr->width;
 	*height = ptr->height;
 	*iconified = ptr->iconified;
+	if (*iconified)
+	{
+	    *icon_x = ptr->icon_x;
+	    *icon_y = ptr->icon_y;
+	}
 	ptr->tag = 1;
     }
     else
@@ -612,6 +654,9 @@ SmPointer clientData;
 
     filename = tempnam (path, ".twm");
     configFile = fopen (filename, "wb");
+
+    if (!write_short (configFile, SAVEFILE_VERSION))
+	success = False;
 
     for (scrnum = 0; scrnum < NumScreens && success; scrnum++)
     {
