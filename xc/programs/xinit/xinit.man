@@ -90,7 +90,6 @@ then choose the ``Exit'' menu item to shut down X.
 .in +8
 .nf
 #!/bin/sh
-DISPLAY=:0 ; export DISPLAY
 xrdb -load $HOME/.Xres
 xsetroot -solid gray &
 xclock -g 50x50-0+0 -bw 0 &
@@ -119,15 +118,20 @@ novice users:
 .in +8
 .nf
 #!/bin/sh
-xinit /usr/local/bin/startx -- /usr/bin/X11/Xhp :0
+xinit /usr/local/bin/startx -- /usr/bin/X11/Xhp :1
 .fi
 .in -8
 .sp
 .SH "ENVIRONMENT VARIABLES"
 .TP 8
+.B DISPLAY
+This variable gets set to the name of the display to which clients should
+connect.
+.TP 8
 .B XINITRC
-Specifies an init file containing shell commands to start up the initial
-windows.  By default, \fI\.xinitrc\fP in the home directory will be used.
+This variable specifies an init file containing shell commands to start up the
+initial windows.  By default, \fI\.xinitrc\fP in the home directory will be 
+used.
 .SH "SEE ALSO"
 X(1), Xserver(1), xterm(1), xrdb(1)
 .SH COPYRIGHT
