@@ -1,4 +1,4 @@
-/* $XConsortium: TMstate.c,v 1.145 91/05/06 20:36:39 rws Exp $ */
+/* $XConsortium: TMstate.c,v 1.146 91/05/08 21:02:40 converse Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -1118,18 +1118,18 @@ static EventMask EventToMask(typeMatch, modMatch)
 
 /*ARGSUSED*/
 static void DispatchMappingNotify(widget, closure, call_data)
-    Widget widget;
-    XtPointer closure;		/* XtTM */
+    Widget widget;		/* will be NULL from _RefreshMapping */
+    XtPointer closure;		/* real Widget */
     XtPointer call_data;	/* XEvent* */
 {
-    _XtTranslateEvent( widget, (XEvent*)call_data);
+    _XtTranslateEvent( (Widget)closure, (XEvent*)call_data);
 }
 
   
 /*ARGSUSED*/
 static void RemoveFromMappingCallbacks(widget, closure, call_data)
     Widget widget;
-    XtPointer closure;		/* XtTM */
+    XtPointer closure;		/* target widget */
     XtPointer call_data;
 {
     _XtRemoveCallback( &_XtGetPerDisplay(XtDisplay(widget))->mapping_callbacks,
@@ -1194,26 +1194,27 @@ void _XtInstallTranslations(widget)
       xlations->eventMask |= ButtonPressMask;
 
     if (mappingNotifyInterest) {
-	InternalCallbackList mappingCallbacks = 
-	    _XtGetPerDisplay(XtDisplay(widget))->mapping_callbacks;
-	if (mappingCallbacks)
-	    _XtAddCallbackOnce(&mappingCallbacks, DispatchMappingNotify,
-			       (XtPointer)&widget->core.tm);
+	XtPerDisplay pd = _XtGetPerDisplay(XtDisplay(widget));
+	if (pd->mapping_callbacks)
+	    _XtAddCallbackOnce(&(pd->mapping_callbacks),
+			       DispatchMappingNotify,
+			       (XtPointer)widget);
 	else
-	    _XtAddCallback(&mappingCallbacks, DispatchMappingNotify,
-			   (XtPointer)&widget->core.tm);
+	    _XtAddCallback(&(pd->mapping_callbacks),
+			   DispatchMappingNotify,
+			   (XtPointer)widget);
 
 	if (widget->core.destroy_callbacks != NULL)
 	    _XtAddCallbackOnce( (InternalCallbackList *)
 			        &widget->core.destroy_callbacks,
 				RemoveFromMappingCallbacks,
-				(XtPointer)&widget->core.tm
+				(XtPointer)widget
 			       );
 	else
 	    _XtAddCallback((InternalCallbackList *)
 			   &widget->core.destroy_callbacks,
 			   RemoveFromMappingCallbacks,
-			   (XtPointer)&widget->core.tm
+			   (XtPointer)widget
 			  );
     }
     _XtBindActions(widget, (XtTM)&widget->core.tm);
@@ -1239,7 +1240,7 @@ void _XtRemoveTranslations(widget)
 	  mappingNotifyInterest |= stateTree->mappingNotifyInterest;
       }
     if (mappingNotifyInterest)
-      RemoveFromMappingCallbacks(widget, (XtPointer)&widget->core.tm, NULL);
+      RemoveFromMappingCallbacks(widget, (XtPointer)widget, NULL);
 }
 
 static void _XtUninstallTranslations(widget)
