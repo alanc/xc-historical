@@ -7,13 +7,13 @@ and 3.1.
      There are three steps to compile and install CLX.  The first is simply
 moving files around.  In this directory, execute (assuming you using csh):
 
+% foreach i (*.l)
+? mv $i $i:r.cl
+? end
 % mkdir MIT
 % mv defsystem.cl MIT
 % mv excldefsys.cl defsystem.cl
 % mv exclMakefile Makefile
-% foreach i (*.l)
-? mv $i $i:r.cl
-? end
 
      The second is compiling the source files into fasl files.  The fasl files
 will be combined into one big fasl file, CLX.fasl.  This file is then installed
