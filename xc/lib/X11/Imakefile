@@ -1,4 +1,4 @@
-XCOMM $XConsortium$
+XCOMM $XConsortium: Imakefile,v 1.117 91/07/16 22:50:15 gildea Exp $
 #define DoNormalLib NormalLibX
 #define DoSharedLib SharedLibX
 #define DoDebugLib DebugLibX
@@ -481,7 +481,6 @@ LinkSourceFile(XInitCT.c,Xsi)						@@\
 LinkSourceFile(XLocalIM.c,Xsi)						@@\
 LinkSourceFile(XOpenIM.c,Xsi)						@@\
 LinkSourceFile(XParseCT.c,Xsi)						@@\
-LinkSourceFile(XSetLocale.c,Xsi)					@@\
 LinkSourceFile(XlcAccess.c,Xsi)						@@\
 LinkSourceFile(XlcDefLd.c,Xsi)						@@\
 LinkSourceFile(XlcLoad.c,Xsi)						@@\
