@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: scrollbar.c,v 1.26 89/06/22 19:06:38 jim Exp $
+ *	$XConsortium: scrollbar.c,v 1.27 89/10/17 17:04:28 jim Exp $
  */
 
 #include <X11/copyright.h>
@@ -46,7 +46,7 @@
 extern void bcopy();
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: scrollbar.c,v 1.26 89/06/22 19:06:38 jim Exp $";
+static char rcs_id[] = "$XConsortium: scrollbar.c,v 1.27 89/10/17 17:04:28 jim Exp $";
 #endif	/* lint */
 
 /* Event handlers */
@@ -201,10 +201,25 @@ static void RealizeScrollBar (sbw, screen)
 ScrollBarReverseVideo(scrollWidget)
 	register Widget scrollWidget;
 {
-	Arg argList[1];
+	Arg args[4];
+	int nargs = XtNumber(args);
+	unsigned long bg, fg, bdr;
+	Pixmap bdpix;
 
-	XtSetArg(argList[0], XtNreverseVideo, term->misc.re_verse);
-	XtSetValues(scrollWidget, argList, XtNumber(argList));
+	XtSetArg(args[0], XtNbackground, &bg);
+	XtSetArg(args[1], XtNforeground, &fg);
+	XtSetArg(args[2], XtNborderColor, &bdr);
+	XtSetArg(args[3], XtNborderPixmap, &bdpix);
+	XtGetValues (scrollWidget, args, nargs);
+	args[0].value = (XtArgVal) fg;
+	args[1].value = (XtArgVal) bg;
+	nargs--;				/* don't set border_pixmap */
+	if (bdpix == XtUnspecifiedPixmap) {	/* if not pixmap then pixel */
+	    args[2].value = args[1].value;	/* set border to new fg */
+	} else {				/* ignore since pixmap */
+	    nargs--;				/* don't set border pixel */
+	}
+	XtSetValues (scrollWidget, args, nargs);
 }
 
 
