@@ -493,7 +493,7 @@ int	i,m;
 			if (type->preserve[m].vmods!=0) {
 			     printf("+%s)]",vmodsText(dpy,desc,vmods));
 			}
-			else printf("]");
+			else printf(")]");
 		    }
 		    else if (vmods!=0) {
 			printf(" [preserve %s (%s)]",stateText(mask),
@@ -505,7 +505,7 @@ int	i,m;
 	}
 	if (type->lvl_names!=NULL) {
 	    for (m=0;m<type->group_width;m++) {
-		printf("        level %d:  %s\n",type->group_width,
+		printf("        level %d:  %s\n",m,
 					atomText(dpy,type->lvl_names[m]));
 	    }
 	}
@@ -723,7 +723,7 @@ unsigned	 query;
 	    if (desc->names->vmods[i1]!=None)
 		 printf("%2d: %12s",i1,atomText(dpy,names->vmods[i1]));
 	    else if (desc->server->vmods[i1]!=XkbNoModifier)
-		 printf("%2d: %12s","(no name)");
+		 printf("%2d: %12s",i1,"(no name)");
 	    else continue;
 	    printf(" = %s\n",modIndexText(desc->server->vmods[i1]));
 	}
@@ -734,7 +734,7 @@ unsigned	 query;
 		    been_here=1;
 		    printf("indicator names:\n");
 		}
-		printf("%2d: %s\n",i1,
+		printf("%2d: %s\n",i1+1,
 				atomText(dpy,desc->names->indicators[i1]));
 	    }
 	}
