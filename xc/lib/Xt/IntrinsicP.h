@@ -1,4 +1,4 @@
-/* $XConsortium: IntrinsicP.h,v 1.58 93/08/27 16:22:46 kaleb Exp $ */
+/* $XConsortium: IntrinsicP.h,v 1.59 93/09/11 16:02:12 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -48,7 +48,7 @@ typedef unsigned long XtVersionType;
 
 #define XT_VERSION 11
 #ifndef XT_REVISION
-#define XT_REVISION 5
+#define XT_REVISION 6
 #endif
 #define XtVersion (XT_VERSION * 1000 + XT_REVISION)
 #define XtVersionDontCheck 0
