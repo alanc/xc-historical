@@ -60,8 +60,3 @@ InstallMultiple($(BUTTONPICTURES),$(INCDIR)/bitmaps)
 
 InstallProgramWithFlags(bmtoa,$(BINDIR), /**/)
 InstallProgramWithFlags(atobm,$(BINDIR), /**/)
-
-#ifdef notdef
-ComplexProgramTarget_2(bmtoa,$(XMULIB), /**/)
-ComplexProgramTarget_3(atobm, /**/, /**/)
-#endif
