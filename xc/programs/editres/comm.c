@@ -32,7 +32,7 @@ extern char * HandleGetResources(),  *PrintSetValuesError();
 char * GetFailureMessage(), * ProtocolFailure();
 extern int HandleXErrors();
 
-static void TellUserAboutMessage();
+static void TellUserAboutMessage(), BuildHeader(), FreeEvent();
 static Event * BuildEvent();
 static char * DispatchEvent();
 
@@ -351,7 +351,7 @@ int * format;
 
     stream = &alloc_stream;	/* easier to think of it this way... */
 
-    stream->current = stream->top = value;
+    stream->current = stream->top = (unsigned char *) value;
     stream->size = HEADER_SIZE;		/* size of header. */
 
     /*
@@ -430,7 +430,7 @@ BuildHeader(client_data)
 CurrentClient * client_data;
 {
     unsigned long old_alloc, old_size;
-    XtPointer old_current;
+    unsigned char * old_current;
     EditresCommand command;
     ProtocolStream * stream = &(client_data->stream);
 

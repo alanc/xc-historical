@@ -14,7 +14,7 @@ extern ScreenData global_screen_data;
 extern void SetMessage();
 
 static Boolean IsActiveNode();
-static void AddChild();
+static void AddChild(), FillNode();
 
 extern void PrepareToLayoutTree(), LayoutTree();
 

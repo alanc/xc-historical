@@ -1,5 +1,5 @@
 /*
- * $XConsortium: actions.c,v 1.4 90/06/25 18:09:12 kit Exp $
+ * $XConsortium: actions.c,v 1.5 90/06/28 12:10:53 kit Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -43,24 +43,24 @@ extern void PrepareToLayoutTree(), LayoutTree(), _PopdownFileDialog();
 
 struct ActionValues {
     String name;
-    SelectTypes type;
+    int type;
 };
 
 static struct ActionValues select_values[] = {
-    { "all", SelectAll },
-    { "nothing", SelectNone },
-    { "invert", SelectInvert },
-    { "children", SelectChildren },
-    { "descendants", SelectDescendants },
-    { "parent", SelectParent },
-    { "ancestors", SelectAncestors },
+    { "all", (int) SelectAll },
+    { "nothing", (int) SelectNone },
+    { "invert", (int) SelectInvert },
+    { "children", (int) SelectChildren },
+    { "descendants", (int) SelectDescendants },
+    { "parent", (int) SelectParent },
+    { "ancestors", (int) SelectAncestors },
 };
 
 static struct  ActionValues label_values[] = {
-    { "name", NameLabel },
-    { "class", ClassLabel },
-    { "id", IDLabel },
-    { "window", WindowLabel },
+    { "name", (int) NameLabel },
+    { "class", (int) ClassLabel },
+    { "id", (int) IDLabel },
+    { "window", (int) WindowLabel },
 };
 
 static WNode * FindTreeNodeFromWidget();

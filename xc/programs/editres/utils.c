@@ -11,11 +11,11 @@
 
 static WidgetResources * ParseResources();
 static int CompareResourceEntries();
+static void FreeResources(), AddResource();
+
+void CreateResourceBox();
 
 extern void PopupCentered(), PerformTreeToFileDump();
-
-Boolean ParseOutWidgetInfo();
-void 	CreateResourceBox();
 
 /*	Function Name: ShowMessage(w, str)
  *	Description: shows the message to the user.
@@ -765,7 +765,7 @@ char * ptr;
 void
 ExecuteOverAllNodes(top_node, func, data)
 WNode * top_node;
-void (func)();
+void (*func)();
 XtPointer data;
 {
     int i;

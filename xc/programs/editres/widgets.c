@@ -28,8 +28,9 @@
  * functions.
  */
 
+static void CreateResourceNameForm(), SetToggleGroupLeaders(), CreateLists();
 static void CreateCommandMenu(), CreateTreeCommandMenu(), FreeClientData();
-static void FreeResBox();
+static void FreeResBox(), CreateValueWidget(), PopupOnNode();
 static Widget CreateTopArea();
 
 extern void GetResourceList(), AnyChosen(), SetResourceString();
