@@ -1,4 +1,4 @@
-/* $XConsortium: XIproto.h,v 1.20 91/07/24 15:50:02 rws Exp $ */
+/* $XConsortium: XIproto.h,v 1.21 92/12/30 18:55:50 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -1192,7 +1192,7 @@ typedef struct {
     CARD16 	length B16;
     CARD16      control B16;
     CARD8       deviceid;
-    CARD8       num_valuators;
+    BYTE        pad0;
 } xChangeDeviceControlReq;
 
 typedef struct {
