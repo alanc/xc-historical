@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: connection.c,v 1.139 91/07/03 15:08:03 keith Exp $ */
+/* $XConsortium: connection.c,v 1.140 91/07/19 23:22:17 keith Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -51,6 +51,10 @@ SOFTWARE.
 
 #ifdef hpux
 #include <sys/utsname.h>
+#include <sys/ioctl.h>
+#endif
+
+#ifdef AIXV3
 #include <sys/ioctl.h>
 #endif
 
@@ -626,8 +630,8 @@ EstablishNewConnections()
 	    }
 	}
 #endif /* TCP_NODELAY */
-    /* ultrix reads hang on Unix sockets, hpux reads fail */
-#if defined(O_NONBLOCK) && (!defined(ultrix) && !defined(hpux))
+    /* ultrix reads hang on Unix sockets, hpux reads fail, AIX fails too */
+#if defined(O_NONBLOCK) && (!defined(ultrix) && !defined(hpux) && !defined(AIXV3))
 	(void) fcntl (newconn, F_SETFL, O_NONBLOCK);
 #else
 #ifdef FIOSNBIO
@@ -637,7 +641,15 @@ EstablishNewConnections()
 	    ioctl(newconn, FIOSNBIO, &arg);
 	}
 #else
+#if defined(AIXV3) && defined(FIONBIO)
+	{
+	    int arg;
+	    arg = 1;
+	    ioctl(newconn, FIONBIO, &arg);
+	}
+#else
 	fcntl (newconn, F_SETFL, FNDELAY);
+#endif
 #endif
 #endif
 	oc = (OsCommPtr)xalloc(sizeof(OsCommRec));
