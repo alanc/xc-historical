@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Grip.c,v 1.9 88/01/22 20:29:38 swick Locked $";
+static char rcsid[] = "$Header: Grip.c,v 1.10 88/02/05 23:14:55 swick Locked $";
 #endif lint
 
 /*
@@ -34,7 +34,7 @@ static char rcsid[] = "$Header: Grip.c,v 1.9 88/01/22 20:29:38 swick Locked $";
 #include <X/Atoms.h>
 #include "GripP.h"
 
-static int defDim = 6;
+static int defDim = 8;
 static int defBorder = 0;
 
 static XtResource resources[] = {
