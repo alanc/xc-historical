@@ -26,7 +26,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: resize.c,v 1.18 89/05/02 09:49:07 jim Exp $
+ * $XConsortium: resize.c,v 1.19 89/05/03 14:37:16 jim Exp $
  *
  * window resizing borrowed from the "wm" window manager
  *
@@ -36,7 +36,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: resize.c,v 1.18 89/05/02 09:49:07 jim Exp $";
+"$XConsortium: resize.c,v 1.19 89/05/03 14:37:16 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -412,27 +412,27 @@ TwmWindow *tmp_win;
 /***********************************************************************
  *
  *  Procedure:
- *      ConstrainSize - adjust dragWidth and dragHeight to account for
+ *      FixSize - adjust the given width and height to account for the
  *              constraints imposed by size hints
  *
  *      The general algorithm, especially the aspect ratio stuff, is
  *      borrowed from uwm's CheckConsistency routine.
- *
- ***********************************************************************
- */
+ * 
+ ***********************************************************************/
 
-static void
-ConstrainSize(tmp_win)
-TwmWindow *tmp_win;
+FixSize (tmp_win, widthp, heightp)
+    TwmWindow *tmp_win;
+    int *widthp, *heightp;
 {
 #define MAXSIZE 32767
 #define makemult(a,b) ((b==1) ? (a) : (((int)((a)/(b))) * (b)) )
 
     int minWidth, minHeight, maxWidth, maxHeight, xinc, yinc, delta;
+    int dwidth = *widthp, dheight = *heightp;
 
 
-    dragHeight -= tmp_win->title_height + 2*tmp_win->bw;
-    dragWidth -= 2*tmp_win->bw;
+    dheight -= tmp_win->title_height + 2*tmp_win->bw;
+    dwidth -= 2*tmp_win->bw;
 
     if (tmp_win->hints.flags & PMinSize) {
         minWidth = tmp_win->hints.min_width;
@@ -452,14 +452,14 @@ TwmWindow *tmp_win;
     } else
         xinc = yinc = 1;
 
-    if (dragWidth < minWidth) dragWidth = minWidth;
-    if (dragHeight < minHeight) dragHeight = minHeight;
+    if (dwidth < minWidth) dwidth = minWidth;
+    if (dheight < minHeight) dheight = minHeight;
 
-    if (dragWidth > maxWidth) dragWidth = maxWidth;
-    if (dragHeight > maxHeight) dragHeight = maxHeight;
+    if (dwidth > maxWidth) dwidth = maxWidth;
+    if (dheight > maxHeight) dheight = maxHeight;
 
-    dragWidth = ((dragWidth - minWidth) / xinc * xinc) + minWidth;
-    dragHeight = ((dragHeight - minHeight) / yinc * yinc) + minHeight;
+    dwidth = ((dwidth - minWidth) / xinc * xinc) + minWidth;
+    dheight = ((dheight - minHeight) / yinc * yinc) + minHeight;
 
 #define maxAspectX tmp_win->hints.max_aspect.x
 #define maxAspectY tmp_win->hints.max_aspect.y
@@ -468,36 +468,54 @@ TwmWindow *tmp_win;
 
     if (tmp_win->hints.flags & PAspect)
     {
-        if (dragWidth * maxAspectX > dragHeight * maxAspectY)
+        if (dwidth * maxAspectX > dheight * maxAspectY)
         {
-            delta = makemult(dragWidth * maxAspectY / maxAspectX - dragHeight,
+            delta = makemult(dwidth * maxAspectY / maxAspectX - dheight,
                              yinc);
-            if (dragHeight + delta <= maxHeight) dragHeight += delta;
+            if (dheight + delta <= maxHeight) dheight += delta;
             else
             {
-                delta = makemult(dragWidth - maxAspectX*dragHeight/maxAspectY,
+                delta = makemult(dwidth - maxAspectX*dheight/maxAspectY,
                                  xinc);
-                if (dragWidth - delta >= minWidth) dragWidth -= delta;
+                if (dwidth - delta >= minWidth) dwidth -= delta;
             }
         }
 
-        if (dragWidth * minAspectX < dragHeight * minAspectY)
+        if (dwidth * minAspectX < dheight * minAspectY)
         {
-            delta = makemult(minAspectX * dragHeight / minAspectY - dragWidth,
+            delta = makemult(minAspectX * dheight / minAspectY - dwidth,
                              xinc);
-            if (dragWidth + delta <= maxWidth) dragWidth += delta;
+            if (dwidth + delta <= maxWidth) dwidth += delta;
             else
             {
-                delta = makemult(dragHeight - dragWidth*minAspectY/minAspectX,
+                delta = makemult(dheight - dwidth*minAspectY/minAspectX,
                                  yinc);
-                if (dragHeight - delta >= minHeight) dragHeight -= delta;
+                if (dheight - delta >= minHeight) dheight -= delta;
             }
         }
     }
 
-    dragHeight += tmp_win->title_height + 2*tmp_win->bw;
-    dragWidth += 2*tmp_win->bw;
+    *widthp = dwidth + 2*tmp_win->bw;
+    *heightp = dheight + tmp_win->title_height + 2*tmp_win->bw;
 }
+
+
+/***********************************************************************
+ *
+ *  Procedure:
+ *      ConstrainSize - adjust dragWidth and dragHeight to account for
+ *              constraints imposed by size hints
+ *
+ ***********************************************************************
+ */
+
+static void
+ConstrainSize(tmp_win)
+TwmWindow *tmp_win;
+{
+    FixSize (tmp_win, &dragWidth, &dragHeight);
+}
+
 
 /***********************************************************************
  *

@@ -25,7 +25,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: add_window.c,v 1.44 89/05/31 12:17:58 jim Exp $
+ * $XConsortium: add_window.c,v 1.45 89/05/31 16:09:10 jim Exp $
  *
  * Add a new window, put the titlbar and other stuff around
  * the window
@@ -36,7 +36,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: add_window.c,v 1.44 89/05/31 12:17:58 jim Exp $";
+"$XConsortium: add_window.c,v 1.45 89/05/31 16:09:10 jim Exp $";
 #endif /* lint */
 
 #include <stdio.h>
@@ -359,6 +359,18 @@ IconMgr *iconp;
 			break;
 		    }
 		}
+	    } 
+	    else if (event.xbutton.button == Button3)
+	    {
+		int maxw = Scr->MyDisplayWidth - AddingX;
+		int maxh = Scr->MyDisplayHeight - AddingY;
+
+		if (AddingW > maxw) AddingW = maxw;
+		if (AddingH > maxh) AddingH = maxh;
+
+		/* includes any border */
+		FixSize (tmp_win, &AddingW, &AddingH);
+
 	    }
 
 	    MoveOutline(Scr->Root, 0, 0, 0, 0);
