@@ -1,3 +1,7 @@
+/*
+ * $XConsortium$
+ */
+
 #include "naming.h"
 #include <X11/Fresco/Ox/env.h>
 #include <X11/Fresco/Ox/schema.h>
@@ -7,7 +11,7 @@
 #include <dirent.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <strings.h>
+#include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 
