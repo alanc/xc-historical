@@ -1,5 +1,5 @@
-XCOMM $XConsortium$
-# Imakefile to build device dependent machine independent import element objects
+XCOMM $XConsortium: Imakefile,v 1.1 93/07/19 10:15:58 rws Exp $
+XCOMM build device dependent machine independent import element objects
 #include <Server.tmpl>
 
        SRCS = 	mig4.c \
@@ -21,10 +21,7 @@ XCOMM $XConsortium$
 		miphoto.o \
 		miroi.o
 
-   INCLUDES = -I../include -I../../include -I../../../../../include/xie \
-              -I../../../include -I../../../../../include  \
-              -I../../../../../../include -I../../../../../../server/include \
-              -I$(INCLUDESRC)
+   INCLUDES = -I../include -I../../../include -I$(SERVERSRC)/include -I$(INCLUDESRC) -I$(INCLUDESRC)/extensions
 
 SubdirLibraryRule($(OBJS))
 NormalLibraryObjectRule()
