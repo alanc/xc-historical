@@ -164,6 +164,14 @@ wide variety of "standard" interfaces precludes any system-independent
 implementation.  This file also contains any output directed to stderr
 by \fIXstartup, Xsession and Xreset\fP, so it will contain descriptions
 of problems in those scripts as well.
+.IP "\fBDisplayManager.debugLevel\fP"
+A non-zero value specified for this intger resource will enable reams of
+debugging information to be printed.  It also disables daemon mode which
+would redirect the information into the bit-bucket.
+.IP "\fBDisplayManager.pidFile\fP"
+The filename specified will be created to contain an ascii
+representation of the process-id of the main \fBxdm\fP process.  This is
+quite useful when reinitializing the system.
 .IP "\fBDisplayManager.DISPLAY.resources\fP"
 This resource specifies the name of the file to be loaded by \fIxrdb (1)\fP
 as the resource data-base onto the root window of screen 0 of the display.
@@ -173,6 +181,11 @@ section below on the authentication widget which describes the various
 resources which are appropriate to place in this file.  There is no
 default value for this resource, but the conventional name is
 \fBXresources\fP.
+.IP "\fBDisplayManager.DISPLAY.authGen\fP"
+This specifies the program to use to generate authorization packets.  By
+default,
+.I xdm
+uses \fI/usr/lib/X11/xdm/xdmauthgen\fP.
 .IP "\fBDisplayManager.DISPLAY.xrdb\fP"
 Specifies the program used to load the resources.  By default,
 .I xdm
@@ -228,6 +241,14 @@ when a session terminates (instead of resetting it).  This option
 can be used when the server tends to grow without bound over time
 in order to
 limit the amount of time the server is run.  The default value is "FALSE".
+.IP \fBDisplayManager.DISPLAY.authorize\fP"
+A boolean resource which controls whether authorization should be used with
+this server.  By default, it is "true".
+.IP \fBDisplayManager.DISPLAY.authFile\fP"
+This file is used to communicate the authorization data from \fBxdm\fP to
+the server, using the \fI-auth\fP server command line option.  It should be
+kept in a directory which is not world-writable as it could easily be
+removed, disabling the authorization mechanism in the server.
 .IP "\fBDisplayManager.DISPLAY.userPath\fP"
 .I Xdm
 sets the PATH environment variable for the session to this value.  It should
