@@ -1,15 +1,17 @@
-/* $XConsortium: Berklib.c,v 1.5 90/12/24 14:44:05 rws Exp $ */
+/* $XConsortium: Berklib.c,v 1.6 91/01/10 11:23:38 rws Exp $ */
 
 #include <sys/types.h>
 
 /*
  * These are routines found in BSD but not on all other systems.  The core
- * MIT distribution does not use them, but they are provided in case you do.
- * Enable only the ones that you need for your system, and include this .o
- * file in ExtraLoadFlags in your config file.
+ * MIT distribution does not use them except for ffs in the server.  You
+ * should enable only the ones that you need for your system.  Use Xfuncs.h
+ * in clients to avoid using the slow versions of bcopy, bcmp, and bzero
+ * provided here.
  */
 
-#ifdef SYSV
+/* you should use Xfuncs.h instead of this in most cases */
+#if 0
 bcopy (b1, b2, length)
     register char *b1, *b2;
     register length;
@@ -59,7 +61,7 @@ bzero (b, length)
  * 4 => 3
  */
 
-#if 0
+#if defined(hpux)
 int
 ffs(mask)
 unsigned int	mask;
