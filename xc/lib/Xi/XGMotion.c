@@ -1,4 +1,4 @@
-/* $Header: XGMotion.c,v 1.9 91/01/26 13:35:12 rws Exp $ */
+/* $Header: XGMotion.c,v 1.10 91/07/23 12:27:22 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -75,6 +75,12 @@ XDeviceTimeCoord
     *mode = rep.mode;
     *axis_count = rep.axes;
     *nEvents = rep.nEvents;
+    if (!rep.nEvents)
+	{
+	UnlockDisplay(dpy);
+        SyncHandle();
+	return (NULL);
+	}
     size = rep.length << 2;
     size2 = rep.nEvents * 
 	(sizeof (XDeviceTimeCoord) + (rep.axes * sizeof (int)));
