@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mibitblt.c,v 5.12 89/11/21 19:02:16 rws Exp $ */
+/* $XConsortium: mibitblt.c,v 5.13 89/11/22 17:02:56 rws Exp $ */
 /* Author: Todd Newman  (aided and abetted by Mr. Drewry) */
 
 #include "X.h"
@@ -258,12 +258,18 @@ miGetPlane(pDraw, planeNum, sx, sy, w, h, result)
     unsigned long	pixel;
     unsigned long	bit;
     unsigned char	*pCharsOut;
+
+#if BITMAP_SCANLINE_UNIT == 8
+#define OUT_TYPE unsigned char
+#endif
 #if BITMAP_SCANLINE_UNIT == 16
-    CARD16		*pShortsOut;
+#define OUT_TYPE CARD16
 #endif
 #if BITMAP_SCANLINE_UNIT == 32
-    CARD32		*pLongsOut;
+#define OUT_TYPE CARD32
 #endif
+
+    OUT_TYPE		*pOut;
     int			delta;
 
     sx += pDraw->x;
@@ -275,19 +281,11 @@ miGetPlane(pDraw, planeNum, sx, sy, w, h, result)
 	return (unsigned long *)NULL;
     bitsPerPixel = pDraw->bitsPerPixel;
     bzero((char *)result, h * widthInBytes);
-#if BITMAP_SCANLINE_UNIT == 8
-	pCharsOut = (unsigned char *) result;
-#endif
-#if BITMAP_SCANLINE_UNIT == 16
-	pShortsOut = (CARD16 *) result;
-#endif
-#if BITMAP_SCANLINE_UNIT == 32
-	pLongsOut = (CARD32 *) result;
-#endif
+    pOut = (OUT_TYPE *) result;
     if(bitsPerPixel == 1)
     {
 	pCharsOut = (unsigned char *) result;
-	width = w;
+    	width = w;
     }
     else
     {
@@ -320,49 +318,21 @@ miGetPlane(pDraw, planeNum, sx, sy, w, h, result)
 		 * Now get the bit and insert into a bitmap in XY format.
 		 */
 		bit = (pixel >> planeNum) & 1;
+		if (k == BITMAP_SCANLINE_UNIT)
+		{
+		    pOut++;
+		    k = 0;
+		}
 		/* XXX assuming bit order == byte order */
 #if BITMAP_BIT_ORDER == LSBFirst
 		bit <<= k;
 #else
 		bit <<= ((BITMAP_SCANLINE_UNIT - 1) - k);
 #endif
-#if BITMAP_SCANLINE_UNIT == 8
-		*pCharsOut |= (unsigned char) bit;
+		*pOut |= (OUT_TYPE) bit;
 		k++;
-		if (k == 8)
-		{
-		    pCharsOut++;
-		    k = 0;
-		}
-#endif
-#if BITMAP_SCANLINE_UNIT == 16
-		*pShortsOut |= (CARD16) bit;
-		k++;
-		if (k == 16)
-		{
-		    pShortsOut++;
-		    k = 0;
-		}
-#endif
-#if BITMAP_SCANLINE_UNIT == 32
-		*pLongsOut |= (CARD32) bit;
-		k++;
-		if (k == 32)
-		{
-		    pLongsOut++;
-		    k = 0;
-		}
-#endif
 	    }
-#if BITMAP_SCANLINE_UNIT == 8
-	    pCharsOut += delta;
-#endif
-#if BITMAP_SCANLINE_UNIT == 16
-	    pShortsOut += delta;
-#endif
-#if BITMAP_SCANLINE_UNIT == 32
-	    pLongsOut += delta;
-#endif
+	    pOut += delta;
 	}
     }
     return(result);    
