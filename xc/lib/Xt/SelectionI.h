@@ -1,4 +1,4 @@
-/* $XConsortium: SelectionI.h,v 1.28 90/08/27 20:47:36 swick Exp $ */
+/* $XConsortium: SelectionI.h,v 1.29 90/11/10 12:18:56 rws Exp $ */
 /* $oHeader: SelectionI.h,v 1.3 88/08/19 14:02:44 asente Exp $ */
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -76,9 +76,9 @@ typedef struct _SelectRec {
     PropList prop_list;
     Request req;			/* state for local non-incr xfer */
     int ref_count;			/* of active transfers */
-    int incremental:1;
-    int free_when_done:1;
-    int was_disowned:1;
+    unsigned int incremental:1;
+    unsigned int free_when_done:1;
+    unsigned int was_disowned:1;
 } SelectRec;
 
 typedef struct {
