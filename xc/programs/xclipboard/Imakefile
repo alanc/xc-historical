@@ -10,7 +10,7 @@
         DEPLIBS = $(DEPXAWLIB) $(DEPXMULIB) $(DEPXTOOLLIB) $(DEPXLIB)
 LOCAL_LIBRARIES = $(XAWLIB) $(XMULIB) $(XTOOLLIB) $(XLIB)
 
-ComplexProgramTarget_1(xclipboard,$(LOCAL_LIBRARIES),)
-ComplexProgramTarget_2(xcutsel,$(LOCAL_LIBRARIES),)
+ComplexProgramTarget_1(xclipboard,$(LOCAL_LIBRARIES),/**/)
+ComplexProgramTarget_2(xcutsel,$(LOCAL_LIBRARIES),/**/)
 
 InstallAppDefaults(XClipboard)
