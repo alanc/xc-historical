@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Command.c,v 1.46 88/11/01 16:57:33 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Command.c,v 1.47 89/01/12 18:45:48 kit Exp $";
 #endif lint
 
 /***********************************************************
@@ -223,7 +223,8 @@ static void Set(w,event,params,num_params)
   if (!ComWset) {
       ComWset = TRUE;
       ComWlabelGC = ComWinverseGC;
-      Redisplay(w, event, NULL);
+      if (XtIsRealized(w))
+	Redisplay(w, (XEvent *) NULL, (Region) NULL);
   }
 }
 
@@ -238,8 +239,9 @@ static void Unset(w,event,params,num_params)
   if (ComWset) {
       ComWset = FALSE;
       ComWlabelGC = ComWnormalGC;
-      XClearWindow( XtDisplay(w), XtWindow(w) );
-      Redisplay(w, event, NULL);
+      if (XtIsRealized(w))
+	XClearArea(XtDisplay(w), XtWindow(w), 0, 0, 
+		   w->core.width, w->core.height, TRUE);
   }
 }
 
@@ -284,7 +286,8 @@ static void Highlight(w,event,params,num_params)
     }
   }
 
-  Redisplay(w, event, HighlightRegion(cbw));
+  if (XtIsRealized(w))
+    Redisplay(w, (XEvent *) NULL, HighlightRegion(cbw));
 }
 
 /* ARGSUSED */
@@ -296,7 +299,8 @@ static void Unhighlight(w,event,params,num_params)
 {
   CommandWidget cbw = (CommandWidget)w;
   ComWhighlighted = HighlightNone;
-  Redisplay(w, event, HighlightRegion(cbw));
+  if (XtIsRealized(w))
+    Redisplay(w, (XEvent *) NULL, HighlightRegion(cbw));
 }
 
 /* ARGSUSED */
