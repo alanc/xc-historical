@@ -228,13 +228,13 @@
   #+(or kcl ibcl) (:shadow rational)
   #+allegro (:import-from excl without-interrupts)
   #+excl (:import-from excl arglist)
-  #+Genera (:import-from lisp char-bit)
   #+Genera (:import-from sys array-register)
   #+Genera (:import-from zwei indentation)
   #+lcl3.0 (:import-from lcl arglist)
   #+lcl3.0 (:import-from sys underlying-simple-vector)
-  #+lispm (:import-from sys
-	   arglist downward-funarg with-stack-list with-stack-list*)
+  #+lispm (:import-from lisp char-bit)
+  #+lispm (:import-from sys arglist downward-funarg with-stack-list
+			with-stack-list*)
   (:export
     *version* access-control access-error access-hosts
     activate-screen-saver add-access-host add-resource add-to-save-set
