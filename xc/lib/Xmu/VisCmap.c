@@ -1,4 +1,4 @@
-/* $XConsortium: VisCmap.c,v 1.3 89/03/24 16:30:02 converse Exp $ */
+/* $XConsortium: VisCmap.c,v 1.4 89/04/03 17:23:04 converse Exp $ */
 
 /* 
  * Copyright 1989 by the Massachusetts Institute of Technology
@@ -55,6 +55,11 @@ unsigned long	*rmax, *gmax, *bmax;
 	best_allocation(vinfo, rmax, gmax, bmax);
 	break;
       case XA_RGB_GRAY_MAP:
+	*rmax = (vinfo->colormap_size * 30) / 100;
+	*gmax = (vinfo->colormap_size * 59) / 100; 
+	*bmax = (vinfo->colormap_size * 11) / 100; 
+	*gmax += ((vinfo->colormap_size - 1) - (*rmax + *gmax + *bmax));
+	break;
       case XA_RGB_RED_MAP:
 	*rmax = vinfo->colormap_size - 1;
 	*gmax = *bmax = 0;

@@ -1,4 +1,4 @@
-/* $XConsortium: StdCmap.c,v 1.4 89/04/03 17:21:56 converse Exp $ */
+/* $XConsortium: StdCmap.c,v 1.5 89/05/02 18:39:25 rws Exp $ */
 
 /* 
  * Copyright 1989 by the Massachusetts Institute of Technology
@@ -85,7 +85,10 @@ Status XmuStandardColormap(dpy, screen, visualid, depth, red_max,
 	return 0;
 
     /* determine that the number of colors requested is <= map size */
-    ncolors = (red_max + 1) * (green_max + 1) * (blue_max + 1);
+    if (property == XA_RGB_GRAY_MAP)
+	ncolors = red_max + green_max + blue_max + 1;
+    else
+	ncolors = (red_max + 1) * (green_max + 1) * (blue_max + 1);
     if ((vinfo->class == DirectColor) || (vinfo->class == TrueColor))
     {
 	unsigned long mask;
@@ -158,12 +161,11 @@ bad:	XFree((char *) vinfo);
 	break;
       case XA_RGB_GRAY_MAP:
 	if (vinfo->class == StaticColor || vinfo->class == TrueColor ||
-	    red_max == 0)
+	    red_max == 0 || blue_max == 0 || green_max == 0)
 	{
 	    XFree((char *) vinfo);
 	    return 0;
 	}
-	green_max = blue_max = 0;
 	break;
       default:
 	XFree((char *) vinfo);
@@ -175,11 +177,17 @@ bad:	XFree((char *) vinfo);
      ? DefaultColormap(dpy, screen)
      : XCreateColormap(dpy, RootWindow(dpy, screen), vinfo->visual, AllocNone);
     colormap.red_max = red_max;
-    colormap.red_mult = (red_max > 0) ? (green_max + 1) * (blue_max + 1) : 1;
     colormap.green_max = green_max;
-    colormap.green_mult = (green_max > 0) ? blue_max + 1 : 1;
     colormap.blue_max = blue_max;
-    colormap.blue_mult = 1;
+    if (property == XA_RGB_GRAY_MAP) {
+	colormap.red_mult = 1;
+	colormap.green_mult = 1;
+	colormap.blue_mult = 1;
+    } else {
+	colormap.red_mult = (red_max > 0) ? (green_max + 1) * (blue_max + 1) : 1;
+	colormap.green_mult = (green_max > 0) ? blue_max + 1 : 1;
+	colormap.blue_mult = 1;
+    }
     colormap.base_pixel = 0;	/* base pixel may change for RGB_DEFAULT_MAP */
     colormap.visualid = vinfo->visualid;
 
@@ -403,7 +411,6 @@ static Status rgb_map(dpy, vinfo, colormap, property)
     XColor		color;
     unsigned long	*pixels, pixel;
     unsigned int	npixels;
-    int			*val;
 
     /* allocate the entire map so that we can free individual pixels */
     npixels = vinfo->colormap_size;
@@ -427,19 +434,9 @@ static Status rgb_map(dpy, vinfo, colormap, property)
      * ncolors <= npixels, because we tested upon determining ncolors
      */
     
-    ncolors = (colormap->red_max + 1) * (colormap->green_max + 1) *
-	(colormap->blue_max + 1);
-    limit = (colormap->red_max > colormap->green_max)
-	? colormap->red_max : colormap->green_max;
-    limit = (colormap->blue_max > limit) ? colormap->blue_max : limit;
-    if ((val = (int *) calloc((unsigned int) limit, sizeof(int))) == NULL)
-    {
-	free((char *) pixels);
-	return 0;
-    }
-    val[0] = 0;
-    for (i=1; i <= limit; i++)
-	val[i] = val[i-1] + 65535;
+    ncolors = colormap->red_max * colormap->red_mult +
+	      colormap->green_max * colormap->green_mult +
+	      colormap->blue_max * colormap->blue_mult + 1;
     
     r = colormap->red_mult;
     g = colormap->green_mult;
@@ -452,26 +449,26 @@ static Status rgb_map(dpy, vinfo, colormap, property)
 	switch (property)
 	{
 	  case XA_RGB_BEST_MAP:
-	    color.red = (unsigned short) (val[i/r] / colormap->red_max);
-	    color.green = (unsigned short) (val[(i/g)%gg] /
+	    color.red = (unsigned short) (((i/r) * 65535) / colormap->red_max);
+	    color.green = (unsigned short) ((((i/g)%gg) * 65535) /
 					    colormap->green_max);
-	    color.blue = (unsigned short) (val[i%g] / colormap->blue_max);
+	    color.blue = (unsigned short) (((i%g) * 65535) / colormap->blue_max);
 	    break;
 	  case XA_RGB_RED_MAP:
-	    color.red = (unsigned short) (val[i] / colormap->red_max);
+	    color.red = (unsigned short) (((i) * 65535) / colormap->red_max);
 	    color.green = color.blue = 0;
 	    break;
 	  case XA_RGB_GREEN_MAP:
-	    color.green = (unsigned short) (val[i] / colormap->green_max);
+	    color.green = (unsigned short) (((i) * 65535) / colormap->green_max);
 	    color.red = color.blue = 0;
 	    break;
 	  case XA_RGB_BLUE_MAP:
-	    color.blue = (unsigned short) (val[i] / colormap->blue_max);
+	    color.blue = (unsigned short) (((i) * 65535) / colormap->blue_max);
 	    color.red = color.green = 0;
 	    break;
 	  case XA_RGB_GRAY_MAP:
-	    color.blue = color.green = color.red =
-		(unsigned short) (val[i] / colormap->red_max);
+	    color.blue = color.green = color.red = (unsigned short) (((i) * 65535) /
+		(colormap->red_max + colormap->green_max + colormap->blue_max));
 	    break;
 	}
 	
@@ -479,7 +476,6 @@ static Status rgb_map(dpy, vinfo, colormap, property)
 	if (status == 0 || color.pixel != (unsigned long) n)
 	{
 	    free((char *) pixels);
-	    free((char *) val);
 	    return 0;
 	}
     }
