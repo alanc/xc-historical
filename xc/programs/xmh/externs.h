@@ -1,5 +1,5 @@
 /*
- * $XConsortium: externs.h,v 2.31 89/12/10 20:20:41 converse Exp $
+ * $XConsortium: externs.h,v 2.32 89/12/14 21:11:03 converse Exp $
  *
  *
  *		       COPYRIGHT 1987, 1989
@@ -30,8 +30,15 @@
 	 * Functions which begin with `Do' are the corresponding callbacks.
          */
 
+#ifndef X_NOT_STDC_ENV
+#include <errno.h>
+#include <stdlib.h>
+#else
 extern int errno;
 extern char *getenv();
+extern void exit();
+extern void free();
+#endif
 
 	/* from command.c */
 
