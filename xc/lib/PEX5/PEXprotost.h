@@ -1,4 +1,4 @@
-/* $XConsortium: PEXprotost.h,v 1.1 92/05/07 19:13:04 mor Exp $ */
+/* $XConsortium: PEXprotost.h,v 1.1 92/05/08 15:12:49 mor Exp $ */
 
 
 /***********************************************************
@@ -64,7 +64,7 @@ typedef CARD16	pexTableType;	/* could be smaller if it ever helps */
 typedef CARD16	pexTextHAlignment;
 typedef CARD16	pexTextVAlignment;
 typedef CARD16	pexTypeOrTableIndex;
-typedef pexEnumTypeIndex	pexColourType; 	/* ColourType */
+typedef pexEnumTypeIndex	pexColorType; 	/* ColorType */
 
 /* included in others */
 typedef struct {
@@ -109,73 +109,73 @@ typedef struct {
 } pexCoord4D;
 
 
-/* Colour structures */
+/* Color structures */
 typedef struct {
     PEXFLOAT	red;
     PEXFLOAT	green;
     PEXFLOAT	blue;
-} pexRgbFloatColour;
+} pexRgbFloatColor;
 
 typedef struct {
     PEXFLOAT	hue;
     PEXFLOAT	saturation;
     PEXFLOAT	value;
-} pexHsvColour;
+} pexHsvColor;
 
 typedef struct {
     PEXFLOAT	hue;
     PEXFLOAT	lightness;
     PEXFLOAT	saturation;
-} pexHlsColour;
+} pexHlsColor;
 
 typedef struct {
     PEXFLOAT	x;
     PEXFLOAT	y;
     PEXFLOAT	z;
-} pexCieColour;
+} pexCieColor;
 
 typedef struct {
     CARD8	red;
     CARD8	green;
     CARD8	blue;
     CARD8	pad;
-} pexRgb8Colour;
+} pexRgb8Color;
 
 typedef struct {
     CARD16	red B16;
     CARD16	green B16;
     CARD16	blue B16;
     CARD16	pad B16;
-} pexRgb16Colour;
+} pexRgb16Color;
 
 typedef struct {
     pexTableIndex	index B16;
     CARD16		pad B16;
-} pexIndexedColour;
+} pexIndexedColor;
 
 typedef struct {
     union {
-	pexIndexedColour	indexed;
-	pexRgb8Colour		rgb8;
-	pexRgb16Colour		rgb16;
-	pexRgbFloatColour	rgbFloat;
-	pexHsvColour		hsvFloat;
-	pexHlsColour		hlsFloat;
-	pexCieColour		cieFloat;
+	pexIndexedColor		indexed;
+	pexRgb8Color		rgb8;
+	pexRgb16Color		rgb16;
+	pexRgbFloatColor	rgbFloat;
+	pexHsvColor		hsvFloat;
+	pexHlsColor		hlsFloat;
+	pexCieColor		cieFloat;
     } format;
-} pexColour;
+} pexColor;
 
 typedef struct {
     PEXFLOAT   first;
     PEXFLOAT   second;
     PEXFLOAT   third;
-} pexFloatColour;
+} pexFloatColor;
 
 typedef struct {
-    pexColourType	colourType B16;	/* ColourType enumerated type */
+    pexColorType	colorType B16;	/* ColorType enumerated type */
     CARD16		unused B16;
-    /* SINGLE COLOUR(colourType) */
-} pexColourSpecifier;
+    /* SINGLE COLOR(colorType) */
+} pexColorSpecifier;
 
 
 typedef struct {
@@ -328,8 +328,8 @@ typedef struct {
     PEXFLOAT		specular;
     PEXFLOAT		specularConc;
     PEXFLOAT		transmission;  /* 0.0 = opaque, 1.0 = transparent */
-    pexColourSpecifier  specularColour;
-    /* SINGLE COLOUR() */
+    pexColorSpecifier  specularColor;
+    /* SINGLE COLOR() */
 } pexReflectionAttr;
 
 typedef struct {
@@ -383,16 +383,16 @@ typedef struct {
     pexEnumTypeIndex	polylineInterp B16;
     pexCurveApprox	curveApprox;
     PEXFLOAT		lineWidth;
-    pexColourSpecifier	lineColour;
-    /* SINGLE COLOUR() */
+    pexColorSpecifier	lineColor;
+    /* SINGLE COLOR() */
 } pexLineBundleEntry;
 
 typedef struct {
     pexEnumTypeIndex	markerType B16;
     INT16		unused B16;
     PEXFLOAT		markerScale;
-    pexColourSpecifier	markerColour;
-    /* SINGLE COLOUR() */
+    pexColorSpecifier	markerColor;
+    /* SINGLE COLOR() */
 } pexMarkerBundleEntry;
 
 typedef struct {
@@ -400,14 +400,14 @@ typedef struct {
     CARD16		textPrecision B16;
     PEXFLOAT		charExpansion;
     PEXFLOAT		charSpacing;
-    pexColourSpecifier	textColour;
-    /* SINGLE COLOUR() */
+    pexColorSpecifier	textColor;
+    /* SINGLE COLOR() */
 } pexTextBundleEntry;
 
 
 /*
     Note that since an InteriorBundleEntry contains 4 embedded instances of 
-    pexColourSpecifier, a variable-sized item, a data structure cannot be
+    pexColorSpecifier, a variable-sized item, a data structure cannot be
     defined for it.
 */
 typedef struct {
@@ -420,10 +420,10 @@ typedef struct {
     pexEnumTypeIndex    bfReflectionModel B16;
     pexEnumTypeIndex    bfSurfaceInterp B16;
     pexSurfaceApprox    surfaceApprox;
-    /* SINGLE pexColourSpecifier		surfaceColour    */
-    /* SINGLE pexReflectionAttr			reflectionAttr   */
-    /* SINGLE pexColourSpecifier		bfSurfaceColour  */
-    /* SINGLE pexReflectionAttr			bfReflectionAttr */
+    /* SINGLE pexColorSpecifier		surfaceColor    */
+    /* SINGLE pexReflectionAttr		reflectionAttr   */
+    /* SINGLE pexColorSpecifier		bfSurfaceColor  */
+    /* SINGLE pexReflectionAttr		bfReflectionAttr */
 } pexInteriorBundleEntry;
 
 typedef struct {
@@ -431,19 +431,19 @@ typedef struct {
     CARD8		unused;
     pexEnumTypeIndex	edgeType B16;
     PEXFLOAT		edgeWidth;
-    pexColourSpecifier	edgeColour;
-    /* SINGLE COLOUR() */
+    pexColorSpecifier	edgeColor;
+    /* SINGLE COLOR() */
 } pexEdgeBundleEntry;
 
 typedef struct {
-    pexColourType	colourType B16; 
+    pexColorType	colorType B16; 
     CARD16		numx B16;
     CARD16		numy B16;
     CARD16		unused B16;
-    /* LISTof Colour(numx, numy) 2D array of colours */
+    /* LISTof Color(numx, numy) 2D array of colors */
 } pexPatternEntry;
 
-/* a pexColourEntry is just a pexColourSpecifier
+/* a pexColorEntry is just a pexColorSpecifier
 */
 
 typedef struct {
@@ -462,8 +462,8 @@ typedef struct {
     PEXFLOAT		spreadAngle;
     PEXFLOAT		attenuation1;
     PEXFLOAT		attenuation2;
-    pexColourSpecifier	lightColour;
-    /* SINGLE COLOUR() */
+    pexColorSpecifier	lightColor;
+    /* SINGLE COLOR() */
 } pexLightEntry;
 
 typedef struct {
@@ -474,8 +474,8 @@ typedef struct {
     PEXFLOAT		backPlane;
     PEXFLOAT		frontScaling;
     PEXFLOAT		backScaling;
-    pexColourSpecifier	depthCueColour;
-    /* SINGLE COLOUR() */
+    pexColorSpecifier	depthCueColor;
+    /* SINGLE COLOR() */
 } pexDepthCueEntry;
 
 typedef struct {
@@ -493,7 +493,7 @@ typedef struct {
     PEXFLOAT	weight2;
     PEXFLOAT	weight3;
     CARD32	basePixel B32;
-} pexColourApproxEntry;
+} pexColorApproxEntry;
 
 
 /*  Font structures */
@@ -584,7 +584,7 @@ typedef struct {
     INT16	fpFormat B16;
     CARD8	unused[2];
     CARD32	rdr B32;	    /* renderer ID */
-    /* SINGLE ColourSpecifier()  */
-} pexEscapeSetEchoColourData;
+    /* SINGLE ColorSpecifier()  */
+} pexEscapeSetEchoColorData;
 
 #endif /* PEXPROTOSTR_H */
