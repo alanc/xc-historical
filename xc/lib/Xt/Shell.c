@@ -1,7 +1,5 @@
-#ifndef lint
-static char Xrcsid[] = "$XConsortium: Shell.c,v 1.91 90/06/26 11:36:17 swick Exp $";
+/* $XConsortium: Shell.c,v 1.92 90/12/27 09:47:26 rws Exp $ */
 /* $oHeader: Shell.c,v 1.7 88/09/01 11:57:00 asente Exp $ */
-#endif /* lint */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -35,11 +33,6 @@ SOFTWARE.
 
 #include <pwd.h>
 #include <stdio.h>
-#include <sys/param.h>
-
-#ifdef pegasus
-#undef dirty			/* some bozo put this in sys/param.h */
-#endif /* pegasus */
 
 #include <X11/Xatom.h>
 
@@ -886,6 +879,7 @@ static void Resize(w)
     }
 }
 
+static void GetGeometry();
 
 static void Realize(wid, vmask, attr)
 	Widget wid;
@@ -901,7 +895,6 @@ static void Realize(wid, vmask, attr)
 	       and then re-Realized, we probably don't want to
 	       re-evaluate the defaults anyway.
 	     */
-	    static void GetGeometry();
 	    GetGeometry(wid, (Widget)NULL);
 	}
 	else if (w->core.background_pixmap == XtUnspecifiedPixmap) {
