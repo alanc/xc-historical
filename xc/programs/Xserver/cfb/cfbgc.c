@@ -513,12 +513,27 @@ cfbValidateGC(pGC, pQ, changes, pDrawable)
 	}
     }
 
-    if (new_text && pGC->font) {
-	pGC->PolyGlyphBlt = miPolyGlyphBlt;
-	pGC->ImageGlyphBlt = miImageGlyphBlt;
-	pGC->PolyGlyphBlt = miPolyGlyphBlt;
-	pGC->ImageGlyphBlt = miImageGlyphBlt;
-    }
+    if (new_text && (pGC->font))
+    {
+        if ((pGC->font->pFI->maxbounds.metrics.rightSideBearing -
+             pGC->font->pFI->maxbounds.metrics.leftSideBearing) > 32)
+        {
+            pGC->PolyGlyphBlt = miPolyGlyphBlt;
+            pGC->ImageGlyphBlt = miImageGlyphBlt;
+        }
+        else
+        {
+            /* special case ImageGlyphBlt for terminal emulator fonts */
+            if ((pGC->font->pFI->terminalFont) &&
+                (pGC->fgPixel != pGC->bgPixel))
+	    {
+                pGC->ImageGlyphBlt = cfbTEGlyphBlt;
+	    }
+            else
+                pGC->ImageGlyphBlt = miImageGlyphBlt;
+        }
+    }    
+
 
     if (new_fillspans) {
 	switch (pGC->fillStyle) {
