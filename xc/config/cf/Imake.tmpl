@@ -4,7 +4,7 @@
 
 XCOMM -------------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-XCOMM $XConsortium: Imake.tmpl,v 1.179 93/08/09 14:50:04 rws Exp $
+XCOMM $XConsortium: Imake.tmpl,v 1.180 93/08/14 13:16:58 rws Exp $
 XCOMM
 XCOMM Platform-specific parameters may be set in the appropriate <vendor>.cf
 XCOMM configuration files.  Site-specific parameters should be set in the file
@@ -832,6 +832,9 @@ XCOMM the platform-specific parameters - edit site.def to change
 #ifndef PathSeparator
 #define PathSeparator /
 #endif
+#ifndef Osuf
+#define Osuf o
+#endif
 #ifndef ManSuffix
 #define ManSuffix	n		/* use just one tab or cpp will die */
 #endif
@@ -858,7 +861,7 @@ XCOMM the platform-specific parameters - edit site.def to change
 #define ExtraFilesToClean /**/
 #endif
 #ifndef FilesToClean
-#define FilesToClean *.CKP *.ln *.BAK *.bak *.o core errs ,* *~ *.a .emacs_* tags TAGS make.log MakeOut 
+#define FilesToClean *.CKP *.ln *.BAK *.bak *.Osuf core errs ,* *~ *.a .emacs_* tags TAGS make.log MakeOut 
 #endif
 
           PATHSEP = PathSeparator
