@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: error.c,v 5.1 91/02/16 09:48:50 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -126,7 +126,7 @@ phg_err_x( display, error )
     fprintf( stderr, "X Error: error code = %d, request code = %d,\
 minor code = %d\nresource id = %d, serial = %d, last request = %d\n",
     error->error_code, error->request_code, error->minor_code,
-    error->resourceid, error->serial, display->request );
+    error->resourceid, error->serial, NextRequest(display)-1 );
     return 1; /* ? */
 }
 
