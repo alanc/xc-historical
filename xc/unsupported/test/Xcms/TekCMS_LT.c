@@ -1,4 +1,4 @@
-/* $XConsortium: TekCMS_LT.c,v 1.3 91/02/17 17:17:43 rws Exp $ */
+/* $XConsortium: TekCMS_LT.c,v 1.5 91/05/14 15:02:53 dave Exp $ */
 
 /*
  * (c) Copyright 1990, Tektronix Inc.
@@ -82,14 +82,21 @@
 #define NO_COMP_FLAG 0
 #define COMP_FLAG    1
 
-extern void exit();
-extern char *calloc();
+#ifndef X_NOT_STDC_ENV
+#include <stdlib.h>
+#else
+extern int atoi();
+extern double atof();
+char *calloc();
+void exit();
+#endif
+#if defined(macII) && !defined(__STDC__)  /* stdlib.h fails to define these */
+char *calloc();
+#endif /* macII */
 extern XcmsColorSpace XcmsCIELabColorSpace;
 extern XcmsColorSpace XcmsCIELuvColorSpace;
 extern XcmsColorSpace XcmsTekHVCColorSpace;
 extern int EchoInput;
-extern int atoi();
-extern double atof();
 extern void TestInit();
 Status Cmd_AddDIColorSpace();
 Status Cmd_AdjustValue();
