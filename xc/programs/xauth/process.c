@@ -1,5 +1,5 @@
 /*
- * $XConsortium: process.c,v 1.10 88/12/09 18:38:49 jim Exp $
+ * $XConsortium: process.c,v 1.11 88/12/11 18:05:09 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -61,17 +61,27 @@ typedef struct _CommandTable {		/* commands that are understood */
 struct _extract_data {
     FILE *fp;
     char *filename;
+    Bool used_stdout;
+    Bool numeric;
     int nwritten;
+    char *cmd;
 };
 
+struct _list_data {
+    FILE *fp;
+    Bool numeric;
+};
 
 
 /*
  * private data
  */
 
+static char *stdin_filename = "(stdin)";
+static char *stdout_filename = "(stdout)";
+
 static int do_list(), do_merge(), do_extract(), do_add(), do_remove();
-static int do_help(), do_source(), do_set(), do_info(), do_exit();
+static int do_help(), do_source(), do_info(), do_exit();
 static int do_quit(), do_questionmark();
 
 CommandTable command_table[] = {
@@ -90,14 +100,6 @@ CommandTable command_table[] = {
     { "source",   1, 6, do_source },	/* source filename */
     { "?",        1, 1, do_questionmark },  /* print xauth commands */
     { NULL,       0, 0, NULL },
-};
-
-
-static int do_set_numeric();
-
-CommandTable set_table[] = {
-    { "numeric", 1, 7, do_set_numeric },  /* set numeric {on,off} */
-    { NULL,      0, 0, NULL },
 };
 
 #define COMMAND_NAMES_PADDED 10		/* widget than anything above */
@@ -170,12 +172,6 @@ static void badcommandline (cmd)
     char *cmd;
 {
     fprintf (stderr, "bad \"%s\" command line\n", cmd);
-}
-
-static void badset (cmd)
-    char *cmd;
-{
-    fprintf (stderr, "bad \"%s\" parameter to set command\n", cmd);
 }
 
 static int parse_boolean (s)
@@ -261,6 +257,43 @@ static char **split_into_words (src, argcp)
     return argv;
 }
 
+
+static FILE *open_file (filenamep, mode, usedstdp, srcfn, srcln, cmd)
+    char **filenamep;
+    char *mode;
+    Bool *usedstdp;
+    char *srcfn;
+    int srcln;
+    char *cmd;
+{
+    FILE *fp;
+
+    if (strcmp (*filenamep, "-") == 0) {
+	*usedstdp = True;
+					/* select std descriptor to use */
+	if (mode[0] == 'r') {
+	    if (okay_to_use_stdin) {
+		okay_to_use_stdin = False;
+		*filenamep = stdin_filename;
+		return stdin;
+	    } else {
+		prefix (srcfn, srcln);
+		fprintf (stderr, "%s:  stdin already in use\n", cmd);
+		return NULL;
+	    }
+	} else {
+	    *filenamep = stdout_filename;
+	    return stdout;		/* always okay to use stdout */
+	}
+    }
+
+    fp = fopen (*filenamep, mode);
+    if (!fp) {
+	prefix (srcfn, srcln);
+	fprintf (stderr, "%s:  unable to open file %s\n", cmd, *filenamep);
+    }
+    return fp;
+}
 
 static int getinput (fp)
     FILE *fp;
@@ -371,42 +404,35 @@ static Xauth *read_numeric (fp)
     return NULL;
 }
 
-static int read_auth_entries (fp, allownumeric, headp, tailp)
+static int read_auth_entries (fp, numeric, headp, tailp)
     FILE *fp;
-    Bool allownumeric;
+    Bool numeric;
     AuthList **headp, **tailp;
 {
-    static Xauth *((*readfunc)())[] = { XauReadAuth, read_numeric };
+    Xauth *((*readfunc)()) = (numeric ? read_numeric : XauReadAuth);
     Xauth *auth;
     AuthList *head, *tail;
     int n;
-    int i;
-    long foff = ftell (fp);
 
     head = tail = NULL;
     n = 0;
 					/* put all records into linked list */
-    for (i = 0; i < 2; i++) {
-	while ((auth = ((readfunc[i]) (fp))) != NULL) {
-	    AuthList *l = (AuthList *) malloc (sizeof (AuthList));
-	    if (!l) {
-		fprintf (stderr,
-			 "%s:  unable to alloc entry reading auth file\n",
-			 ProgramName);
-		exit (1);
-	    }
-	    l->next = NULL;
-	    l->auth = auth;
-	    if (tail) 			/* if not first time through append */
-	      tail->next = l;
-	    else
-	      head = l;			/* first time through, so assign */
-	    tail = l;
-	    n++;
+    while ((auth = ((*readfunc) (fp))) != NULL) {
+	AuthList *l = (AuthList *) malloc (sizeof (AuthList));
+	if (!l) {
+	    fprintf (stderr,
+		     "%s:  unable to alloc entry reading auth file\n",
+		     ProgramName);
+	    exit (1);
 	}
-	if (n != 0 || !allownumeric)
-	  break;
-	fseek (fp, foff, 0);		/* go back and try again */
+	l->next = NULL;
+	l->auth = auth;
+	if (tail) 			/* if not first time through append */
+	  tail->next = l;
+	else
+	  head = l;			/* first time through, so assign */
+	tail = l;
+	n++;
     }
     *headp = head;
     *tailp = tail;
@@ -611,6 +637,14 @@ int auth_initialize (authfilename)
     hexvalues['e'] = hexvalues['E'] = 0xe;
     hexvalues['f'] = hexvalues['F'] = 0xf;
 
+    if (break_locks) {
+	if (verbose) {
+	    printf ("Attempting to break locks on authority file %s\n",
+		    authfilename);
+	}
+	XauUnlockAuth (authfilename);
+    }
+
     if (!ignore_locks) {
 	n = XauLockAuth (authfilename, XAUTH_DEFAULT_RETRIES,
 			 XAUTH_DEFAULT_TIMEOUT, XAUTH_DEFAULT_DEADTIME);
@@ -660,6 +694,11 @@ int auth_initialize (authfilename)
     xauth_filename = malloc (n + 1);
     if (xauth_filename) strcpy (xauth_filename, authfilename);
     xauth_modified = False;
+
+    if (verbose) {
+	printf ("%s authorization file %s\n", 
+		ignore_locks ? "Ignoring locks on" : "Using", authfilename);
+    }
     return 0;
 }
 
@@ -696,7 +735,9 @@ int auth_finalize ()
 
     if (xauth_modified) {
 	if (verbose) {
-	    printf ("Writing authority file %s\n", xauth_filename);
+	    printf ("%s authority file %s\n", 
+		    ignore_locks ? "Ignoring locks and writing" :
+		    "Writing", xauth_filename);
 	}
 	tmpnam[0] = '\0';
 	if (write_auth_file (tmpnam) == -1) {
@@ -761,24 +802,34 @@ static void fprintfhex (fp, len, cp)
     return;
 }
 
+dump_numeric (fp, auth)
+    register FILE *fp;
+    register Xauth *auth;
+{
+    fprintf (fp, "%04x", auth->family);  /* unsigned short */
+    fprintf (fp, " %04x ", auth->address_length);  /* short */
+    fprintfhex (fp, auth->address_length, auth->address);
+    fprintf (fp, " %04x ", auth->number_length);  /* short */
+    fprintfhex (fp, auth->number_length, auth->number);
+    fprintf (fp, " %04x ", auth->name_length);  /* short */
+    fprintfhex (fp, auth->name_length, auth->name);
+    fprintf (fp, " %04x ", auth->data_length);  /* short */
+    fprintfhex (fp, auth->data_length, auth->data);
+    putc ('\n', fp);
+    return;
+}
+
 static int dump_entry (inputfilename, lineno, auth, data)
     char *inputfilename;
     int lineno;
     Xauth *auth;
     char *data;
 {
-    FILE *fp = (FILE *) data;
+    struct _list_data *ld = (struct _list_data *) data;
+    FILE *fp = ld->fp;
 
-    if (format_numeric) {
-	fprintf (fp, "%04x", auth->family);  /* unsigned short */
-	fprintf (fp, " %04x ", auth->address_length);  /* short */
-	fprintfhex (fp, auth->address_length, auth->address);
-	fprintf (fp, " %04x ", auth->number_length);  /* short */
-	fprintfhex (fp, auth->number_length, auth->number);
-	fprintf (fp, " %04x ", auth->name_length);  /* short */
-	fprintfhex (fp, auth->name_length, auth->name);
-	fprintf (fp, " %04x ", auth->data_length);  /* short */
-	fprintfhex (fp, auth->data_length, auth->data);
+    if (ld->numeric) {
+	dump_numeric (fp, auth);
     } else {
 	char *dpyname = NULL;
 	char numbuf[10];
@@ -809,20 +860,9 @@ static int dump_entry (inputfilename, lineno, auth, data)
 	putc (' ', fp);
 	putc (' ', fp);
 	fprintfhex (fp, auth->data_length, auth->data);
+	putc ('\n', fp);
     }
-    putc ('\n', fp);
     return 0;
-}
-
-static void dumpauthlist (inputfilename, lineno, l)
-    char *inputfilename;
-    int lineno;
-    register AuthList *l;
-{
-    for (; l; l = l->next) {
-	dump_entry (inputfilename, lineno, l->auth, (char *) stdout);
-    }
-    return;
 }
 
 static int extract_entry (inputfilename, lineno, auth, data)
@@ -834,7 +874,8 @@ static int extract_entry (inputfilename, lineno, auth, data)
     struct _extract_data *ed = (struct _extract_data *) data;
 
     if (!ed->fp) {
-	ed->fp = fopen (ed->filename, "w");
+	ed->fp = open_file (&ed->filename, "w", &ed->used_stdout,
+			    inputfilename, lineno, ed->cmd);
 	if (!ed->fp) {
 	    prefix (inputfilename, lineno);
 	    fprintf (stderr,
@@ -843,7 +884,7 @@ static int extract_entry (inputfilename, lineno, auth, data)
 	    return -1;
 	}
     }
-    XauWriteAuth (ed->fp, auth);
+    (*(ed->numeric ? dump_numeric : XauWriteAuth)) (ed->fp, auth);
     ed->nwritten++;
 
     return 0;
@@ -1085,13 +1126,24 @@ static int do_list (inputfilename, lineno, argc, argv)
     int argc;
     char **argv;
 {
+    struct _list_data ld;
+
+    ld.fp = stdout;
+    ld.numeric = (argv[0][0] == 'n');
+
     if (argc == 1) {
-	dumpauthlist (inputfilename, lineno, xauth_head);
+	register AuthList *l;
+
+	if (xauth_head) {
+	    for (l = xauth_head; l; l = l->next) {
+		dump_entry (inputfilename, lineno, l->auth, (char *) &ld);
+	    }
+	}
 	return 0;
     }
 
     return iterdpy (inputfilename, lineno, 1, argc, argv,
-		    dump_entry, NULL, (char *) stdout);
+		    dump_entry, NULL, (char *) &ld);
 }
 
 /*
@@ -1123,26 +1175,9 @@ static int do_merge (inputfilename, lineno, argc, argv)
 	FILE *fp;
 	Bool used_stdin = False;
 
-	if (strcmp (filename, "-") == 0) {
-	    if (okay_to_use_stdin) {
-		fp = stdin;
-		okay_to_use_stdin = False;
-		used_stdin = True;
-		filename = "(stdin)";
-	    } else {
-		prefix (inputfilename, lineno);
-		fprintf (stderr, "%s:  stdin already in use\n", argv[0]);
-		errors++;
-		continue;
-	    }
-	} else {
-	    fp = fopen (filename, "r");
-	}
-
+	fp = open_file (&filename, "r", &used_stdin, inputfilename, lineno,
+			argv[0]);
 	if (!fp) {
-	    prefix (inputfilename, lineno);
-	    fprintf (stderr, "unable to open file \"%s\" for merging\n",
-		     filename);
 	    errors++;
 	    continue;
 	}
@@ -1193,7 +1228,9 @@ static int do_extract (inputfilename, lineno, argc, argv)
 
     ed.fp = NULL;
     ed.filename = argv[1];
+    ed.numeric = (argv[0][0] == 'n');
     ed.nwritten = 0;
+    ed.cmd = argv[0];
 
     errors = iterdpy (inputfilename, lineno, 2, argc, argv, 
 		      extract_entry, NULL, (char *) &ed);
@@ -1203,7 +1240,9 @@ static int do_extract (inputfilename, lineno, argc, argv)
 		ed.filename);
     } else {
 	printf ("%d entries written to \"%s\"\n", ed.nwritten, ed.filename);
-	(void) fclose (ed.fp);
+	if (!ed.used_stdout) {
+	    (void) fclose (ed.fp);
+	}
     }
 
     return errors;
@@ -1355,61 +1394,6 @@ static int do_info (inputfilename, lineno, argc, argv)
     return 0;
 }
 
-/*
- * set ...
- */
-static int do_set (inputfilename, lineno, argc, argv)
-    char *inputfilename;
-    int lineno;
-    int argc;
-    char **argv;
-{
-    int status;
-
-    if (argc < 2) {
-	prefix (inputfilename, lineno);
-	badcommandline (argv[0]);
-	return 1;
-    }
-
-    if (dispatch_command (inputfilename, lineno, argc - 1, argv + 1,
-			  set_table, &status))
-      return status;
-
-    prefix (inputfilename, lineno);
-    fprintf (stderr, "unknown set parameter \"%s\"\n", argv[1]);
-    return 1;
-}
-
-static int do_set_numeric (inputfilename, lineno, argc, argv)
-    char *inputfilename;
-    int lineno;
-    int argc;
-    char **argv;
-{
-    if (argc != 2) {
-	prefix (inputfilename, lineno);
-	badset (argv[0]);
-	return 1;
-    }
-
-    switch (parse_boolean (argv[1])) {
-      case 0:
-	format_numeric = False;
-	break;
-      case 1:
-	format_numeric = True;
-	break;
-      default:
-	prefix (inputfilename, lineno);
-	fprintf (stderr, "numeric takes \"on\" or \"off\"\n");
-	return 1;
-    }
-
-    printf ("Numeric mode turned %s\n", format_numeric ? "on" : "off");
-    return 0;
-}
-
 
 /*
  * exit
@@ -1470,24 +1454,9 @@ static int do_source (inputfilename, lineno, argc, argv)
 
     script = argv[1];
 
-    if (strcmp (script, "-") == 0) {
-	if (okay_to_use_stdin) {
-	    fp = stdin;
-	    okay_to_use_stdin = False;
-	    used_stdin = True;
-	    script = "(stdin)";
-	} else {
-	    prefix (inputfilename, lineno);
-	    fprintf (stderr, "%s:  stdin already in use\n", argv[0]);
-	    return 1;
-	}
-    } else {
-	fp = fopen (script, "r");
-	if (!fp) {
-	    prefix (inputfilename, lineno);
-	    fprintf (stderr, "unable to open script file \"%s\"\n", script);
-	    return 1;
-	}
+    fp = open_file (&script, "r", &used_stdin, inputfilename, lineno, argv[0]);
+    if (!fp) {
+	return 1;
     }
 
     if (verbose && isatty (fileno (fp))) prompt = True;
