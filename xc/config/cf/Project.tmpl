@@ -1,6 +1,6 @@
 XCOMM -----------------------------------------------------------------------
 XCOMM X Window System Build Parameters and Rules
-XCOMM $XConsortium: Project.tmpl,v 1.241 94/04/09 15:43:51 rws Exp $
+XCOMM $XConsortium: Project.tmpl,v 1.242 94/04/13 14:58:40 rws Exp $
 
 /****************************************************************************
  *                                                                          *
@@ -324,6 +324,9 @@ XCOMM $XConsortium: Project.tmpl,v 1.241 94/04/09 15:43:51 rws Exp $
 #ifndef TwmDir
 #define TwmDir $(LIBDIR)/twm
 #endif
+#ifndef XsmDir
+#define XsmDir $(LIBDIR)/xsm
+#endif
 #ifndef NlsDir
 #define NlsDir $(LIBDIR)/nls
 #endif
@@ -404,6 +407,7 @@ XCOMM X Window System make variables; these need to be coordinated with rules
          XINITDIR = XinitDir		/* xinit config files */
            XDMDIR = XdmDir		/* xdm config files */
            TWMDIR = TwmDir		/* twm config files */
+           XSMDIR = XsmDir		/* xsm config files */
            NLSDIR = NlsDir		/* nls files */
        XLOCALEDIR = XLocaleDir		/* locale files */
         PEXAPIDIR = PexApiDir		/* PEX support files */
