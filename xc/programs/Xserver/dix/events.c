@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: events.c,v 5.41 91/07/11 20:50:09 rws Exp $ */
+/* $XConsortium: events.c,v 5.42 91/07/11 20:57:38 keith Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -2151,9 +2151,10 @@ CommonAncestor(a, b)
 }
 
 static void
-EnterLeaveEvent(type, mode, detail, pWin)
+EnterLeaveEvent(type, mode, detail, pWin, child)
     int type, mode, detail;
     register WindowPtr pWin;
+    Window child;
 {
     xEvent		event;
     register DeviceIntPtr keybd = inputInfo.keyboard;
@@ -2183,7 +2184,9 @@ EnterLeaveEvent(type, mode, detail, pWin)
 	event.u.enterLeave.rootX = sprite.hot.x;
 	event.u.enterLeave.rootY = sprite.hot.y;
 	/* Counts on the same initial structure of crossing & button events! */
-	FixUpEventFromWindow(&event, pWin, None, TRUE);		
+	FixUpEventFromWindow(&event, pWin, None, FALSE);
+	/* Enter/Leave events always set child */
+	event.u.enterLeave.child = child;
 	event.u.enterLeave.flags = event.u.keyButtonPointer.sameScreen ?
 					    ELFlagSameScreen : 0;
 	event.u.enterLeave.state = keybd->key->state | mouse->button->state;
@@ -2219,24 +2222,28 @@ EnterNotifies(ancestor, child, mode, detail)
     WindowPtr ancestor, child;
     int mode, detail;
 {
-    if (!child || (ancestor == child))
+    WindowPtr	parent = child->parent;
+
+    if (ancestor == parent)
 	return;
-    EnterNotifies(ancestor, child->parent, mode, detail);
-    EnterLeaveEvent(EnterNotify, mode, detail, child);
+    EnterNotifies(ancestor, parent, mode, detail);
+    EnterLeaveEvent(EnterNotify, mode, detail, parent, child->drawable.id);
 }
 
-/* dies horribly if ancestor is not an ancestor of child */
 static void
 LeaveNotifies(child, ancestor, mode, detail)
     WindowPtr child, ancestor;
     int detail, mode;
 {
-    register WindowPtr  pWin;
+    register WindowPtr  pWin, prev;
 
     if (ancestor == child)
 	return;
     for (pWin = child->parent; pWin != ancestor; pWin = pWin->parent)
-	EnterLeaveEvent(LeaveNotify, mode, detail, pWin);
+    {
+	EnterLeaveEvent(LeaveNotify, mode, detail, pWin, child->drawable.id);
+	child = pWin;
+    }
 }
 
 static void
@@ -2248,24 +2255,24 @@ DoEnterLeaveEvents(fromWin, toWin, mode)
 	return;
     if (IsParent(fromWin, toWin))
     {
-	EnterLeaveEvent(LeaveNotify, mode, NotifyInferior, fromWin);
-	EnterNotifies(fromWin, toWin->parent, mode, NotifyVirtual);
-	EnterLeaveEvent(EnterNotify, mode, NotifyAncestor, toWin);
+	EnterLeaveEvent(LeaveNotify, mode, NotifyInferior, fromWin, None);
+	EnterNotifies(fromWin, toWin, mode, NotifyVirtual);
+	EnterLeaveEvent(EnterNotify, mode, NotifyAncestor, toWin, None);
     }
     else if (IsParent(toWin, fromWin))
     {
-	EnterLeaveEvent(LeaveNotify, mode, NotifyAncestor, fromWin);
+	EnterLeaveEvent(LeaveNotify, mode, NotifyAncestor, fromWin, None);
 	LeaveNotifies(fromWin, toWin, mode, NotifyVirtual);
-	EnterLeaveEvent(EnterNotify, mode, NotifyInferior, toWin);
+	EnterLeaveEvent(EnterNotify, mode, NotifyInferior, toWin, None);
     }
     else
     { /* neither fromWin nor toWin is descendent of the other */
 	WindowPtr common = CommonAncestor(toWin, fromWin);
 	/* common == NullWindow ==> different screens */
-	EnterLeaveEvent(LeaveNotify, mode, NotifyNonlinear, fromWin);
+	EnterLeaveEvent(LeaveNotify, mode, NotifyNonlinear, fromWin, None);
 	LeaveNotifies(fromWin, common, mode, NotifyNonlinearVirtual);
-	EnterNotifies(common, toWin->parent, mode, NotifyNonlinearVirtual);
-	EnterLeaveEvent(EnterNotify, mode, NotifyNonlinear, toWin);
+	EnterNotifies(common, toWin, mode, NotifyNonlinearVirtual);
+	EnterLeaveEvent(EnterNotify, mode, NotifyNonlinear, toWin, None);
     }
 }
 
