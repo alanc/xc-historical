@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Clock.c,v 1.31 88/05/18 16:02:04 keith Exp $";
+static char rcsid[] = "$Header: Clock.c,v 1.32 88/07/11 12:04:45 jim Exp $";
 #endif lint
 
 
@@ -72,7 +72,7 @@ static XtResource resources[] = {
         offset(fgpixel), XtRString, "Black"},
     {XtNhand, XtCForeground, XtRPixel, sizeof(Pixel),
         offset(Hdpixel), XtRString, "Black"},
-    {XtNhigh, XtCForeground, XtRPixel, sizeof(Pixel),
+    {XtNhighlight, XtCForeground, XtRPixel, sizeof(Pixel),
         offset(Hipixel), XtRString, "Black"},
     {XtNanalog, XtCBoolean, XtRBoolean, sizeof(Boolean),
         offset(analog), XtRString, "TRUE"},

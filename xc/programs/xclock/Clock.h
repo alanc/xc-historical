@@ -1,5 +1,5 @@
 /*
-* $Header: Clock.h,v 1.10 88/02/14 15:24:33 jim Exp $
+* $Header: Clock.h,v 1.11 88/02/25 16:24:19 swick Exp $
 */
 
 
@@ -50,7 +50,7 @@ SOFTWARE.
  foreground	     Foreground		Pixel		Black
  hand		     Foreground		Pixel		Black
  height		     Height		int		164
- high		     Foreground		Pixel		Black
+ highlight	     Foreground		Pixel		Black
  mappedWhenManaged   MappedWhenManaged	Boolean		True
  padding	     Margin		int		8
  reverseVideo	     ReverseVideo	Boolean		False
@@ -68,7 +68,7 @@ SOFTWARE.
 		/* Int: how often to update hands? */
 #define XtNhand			"hands"
 		/* color of hands */
-#define XtNhigh			"highlight"
+#define XtNhighlight			"highlight"
 		/* color of hand outline */
 #define XtNanalog		"analog"
 		/* Boolean: digital if FALSE */
