@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM X Window System Build Parameters and Rules
-XCOMM $XConsortium: Project.tmpl,v 1.196 93/09/21 11:17:23 rws Exp $
+XCOMM $XConsortium: Project.tmpl,v 1.197 93/09/26 15:40:47 gildea Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -57,6 +57,9 @@ XCOMM $XConsortium: Project.tmpl,v 1.196 93/09/21 11:17:23 rws Exp $
 #endif
 #ifndef BuildXIE
 #define BuildXIE		YES
+#endif
+#ifndef BuildXKB
+#define BuildXKB		NO
 #endif
 #ifndef InstallLibManPages
 #define InstallLibManPages	YES
@@ -165,18 +168,25 @@ XCOMM $XConsortium: Project.tmpl,v 1.196 93/09/21 11:17:23 rws Exp $
 #define XInputDefines /**/
 #endif
 #endif
-#ifndef XIEdefines
+#ifndef XieDefines
 #if BuildXIE
-#define XIEdefines -DXIE
+#define XieDefines -DXIE
 #else
-#define XIEdefines /**/
+#define XieDefines /**/
+#endif
+#endif
+#ifndef XkbDefines
+#if BuildXKB
+#define XkbDefines -DXKB
+#else
+#define XkbDefines /**/
 #endif
 #endif
 #ifndef PervasiveExtensionDefines
-#define PervasiveExtensionDefines -DSHAPE XInputDefines
+#define PervasiveExtensionDefines -DSHAPE XInputDefines XkbDefines
 #endif
 #ifndef BaseExtensionDefines
-#define BaseExtensionDefines PervasiveExtensionDefines -DMULTIBUFFER -DMITMISC -DXTEST -DBIGREQS -DXSYNC -DSCREENSAVER PexDefines ShmDefines XIEdefines
+#define BaseExtensionDefines -DMULTIBUFFER -DMITMISC -DXTEST -DBIGREQS -DXSYNC -DSCREENSAVER PexDefines ShmDefines XieDefines
 #endif
 #define ExtensionDefines BaseExtensionDefines ExtensionOSDefines
 #endif
