@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: property.c,v 5.1 89/07/06 13:25:20 rws Exp $ */
+/* $XConsortium: property.c,v 5.2 89/09/11 18:25:40 rws Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -154,6 +154,7 @@ ProcChangeProperty(client)
     PropertyPtr pProp;
     xEvent event;
     int sizeInBytes;
+    int totalSize;
     pointer data;
     REQUEST(xChangePropertyReq);
 
@@ -174,7 +175,8 @@ ProcChangeProperty(client)
     }
     len = stuff->nUnits;
     sizeInBytes = format>>3;
-    REQUEST_FIXED_SIZE(xChangePropertyReq, len * sizeInBytes);
+    totalSize = len * sizeInBytes;
+    REQUEST_FIXED_SIZE(xChangePropertyReq, totalSize);
 
     pWin = (WindowPtr)LookupWindow(stuff->window, client);
     if (!pWin)
@@ -206,7 +208,7 @@ ProcChangeProperty(client)
         pProp = (PropertyPtr)xalloc(sizeof(PropertyRec));
 	if (!pProp)
 	    return(BadAlloc);
-        data = (pointer)xalloc(sizeInBytes  * len);
+        data = (pointer)xalloc(totalSize);
 	if (!data && len)
 	{
 	    xfree(pProp);
@@ -217,7 +219,7 @@ ProcChangeProperty(client)
         pProp->format = format;
         pProp->data = data;
 	if (len)
-	    bcopy((char *)&stuff[1], (char *)data, (int)(len * sizeInBytes));
+	    bcopy((char *)&stuff[1], (char *)data, totalSize);
 	pProp->size = len;
         pProp->next = pWin->optional->userProps;
         pWin->optional->userProps = pProp;
@@ -236,13 +238,15 @@ ProcChangeProperty(client)
             return(BadMatch);
         if (mode == PropModeReplace) 
         {
-	    data = (pointer)xrealloc(pProp->data, sizeInBytes * len);
-	    if (!data && len)
-		return(BadAlloc);
-            pProp->data = data;
+	    if (totalSize != pProp->size * (pProp->format >> 3))
+	    {
+	    	data = (pointer)xrealloc(pProp->data, totalSize);
+	    	if (!data && len)
+		    return(BadAlloc);
+            	pProp->data = data;
+	    }
 	    if (len)
-		bcopy((char *)&stuff[1], (char *)data,
-		      (int)(len * sizeInBytes));
+		bcopy((char *)&stuff[1], (char *)pProp->data, totalSize);
 	    pProp->size = len;
     	    pProp->type = stuff->type;
 	    pProp->format = stuff->format;
@@ -260,7 +264,7 @@ ProcChangeProperty(client)
             pProp->data = data;
 	    bcopy((char *)&stuff[1],
 		  &((char *)data)[pProp->size * sizeInBytes], 
-		  (int)(len * sizeInBytes));
+		  totalSize);
             pProp->size += len;
 	}
         else if (mode == PropModePrepend)
@@ -268,9 +272,9 @@ ProcChangeProperty(client)
             data = (pointer)xalloc(sizeInBytes * (len + pProp->size));
 	    if (!data)
 		return(BadAlloc);
-	    bcopy((char *)pProp->data, &((char *)data)[len * sizeInBytes], 
+	    bcopy((char *)pProp->data, &((char *)data)[totalSize], 
 		  (int)(pProp->size * sizeInBytes));
-            bcopy((char *)&stuff[1], (char *)data, (int)(len * sizeInBytes));
+            bcopy((char *)&stuff[1], (char *)data, totalSize);
 	    xfree(pProp->data);
             pProp->data = data;
             pProp->size += len;
