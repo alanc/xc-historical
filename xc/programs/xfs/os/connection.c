@@ -1,4 +1,4 @@
-/* $XConsortium: connection.c,v 1.16 91/07/29 16:10:41 keith Exp $ */
+/* $XConsortium: connection.c,v 1.17 91/09/09 18:56:03 rws Exp $ */
 /*
  * handles connections
  */
@@ -23,9 +23,6 @@
  * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
  * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
- *
- * $NCDId: @(#)connection.c,v 4.10 1991/07/03 17:19:22 lemke Exp $
- *
  */
 
 /* sorry, streams support not here yet */
@@ -471,7 +468,7 @@ CloseDownConnection(client)
     OsCommPtr   oc = (OsCommPtr) client->osPrivate;
 
     if (oc->output && oc->output->count)
-	FlushClient(client, oc, (char *) NULL, 0);
+	FlushClient(client, oc);
     ConnectionTranslation[oc->fd] = 0;
     close_fd(oc);
     client->osPrivate = (pointer) NULL;
