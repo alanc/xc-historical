@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: main.c,v 5.25 93/09/18 13:37:35 dpw Exp $ */
+/* $XConsortium: main.c,v 5.26 94/01/21 21:59:49 dpw Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -167,6 +167,9 @@ main(argc, argv)
 	FatalError("server restarted. Jumped through uninitialized pointer?\n");
     else
 	restart = 1;
+
+    ExpandCommandLine(&argc, &argv);
+
     /* These are needed by some routines which are called from interrupt
      * handlers, thus have no direct calling path back to main and thus
      * can't be passed argc, argv as parameters */
@@ -248,6 +251,7 @@ main(argc, argv)
 	ResetPixmapPrivates();
 #endif
 	ResetFontPrivateIndex();
+	InitCallbackManager();
 	InitOutput(&screenInfo, argc, argv);
 	if (screenInfo.numScreens < 1)
 	    FatalError("no screens found");
