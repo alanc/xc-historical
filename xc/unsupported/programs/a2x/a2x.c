@@ -1,4 +1,4 @@
-/* $XConsortium: a2x.c,v 1.97 92/09/30 16:24:23 rws Exp $ */
+/* $XConsortium: a2x.c,v 1.98 92/10/01 19:25:08 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -135,13 +135,12 @@ released automatically at next button or non-modifier key.
 #include <ctype.h>
 #ifndef MSDOS
 #include <termios.h>
-#endif
-#define _POSIX_SOURCE
-#include <signal.h>
-#ifdef MSDOS
+#else
 #include <sys/time.h>
 #include <sys/socket.h>
 #endif
+#define _POSIX_SOURCE
+#include <signal.h>
 
 #define control_char '\024' /* control T */
 #define control_end '\224'
@@ -484,6 +483,31 @@ ioerror(Dpy)
 {
     reset();
     return (*oldioerror)(Dpy);
+}
+
+int
+ddread(buf, len)
+    char *buf;
+    int len;
+{
+    int n;
+
+#ifndef MSDOS
+    n = read(0, buf, len);
+    if (fakeecho)
+	write(1, "\177", 1);
+#else
+    n = getch();
+    if (!noecho) {
+	if (iscntrl(n))
+	    printf("^%c", n + 'A' - 1);
+	else
+	    putchar(n);
+    }
+    *buf = n;
+    n = 1;
+#endif
+    return n;
 }
 
 void
@@ -2370,15 +2394,7 @@ process(buf, n, len)
 		    return;
 		if (n == len)
 		    break;
-#ifndef MSDOS
-		n = read(0, buf+j, len-j);
-		if (fakeecho)
-		    write(1, "\177", 1);
-#else
-		buf[j] = /*i16*/getch();
-		if (!noecho) echo(buf[j]);
-		n = 1;
-#endif
+		n = ddread(buf+j, len-j);
 		if (n < 0)
 		    quit(n);
 		n += j;
@@ -2628,29 +2644,10 @@ main(argc, argv)
 	    process_events();
 	if (!FD_ISSET(0, &fdmask))
 	    continue;
-#ifndef MSDOS
-	n = read(0, buf, sizeof(buf));
-	if (fakeecho)
-	    write(1, "\177", 1);
-#else
-	buf[0] = /*i16*/getch();
-	if (!noecho) echo(buf[0]);
-	n = 1;
-#endif
+	n = ddread(buf, sizeof(buf));
 	if (n <= 0)
 	    quit(n);
 	process(buf, n, sizeof(buf));
 	reflect_modifiers(0);
     }
 }
-
-#ifdef MSDOS
-echo(c)
-    int c;
-{
-    if (iscntrl(c))
-	printf("^%c", c + 'A' - 1);
-    else
-	putchar(c);
-}
-#endif
