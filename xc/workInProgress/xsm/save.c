@@ -1,4 +1,4 @@
-/* $XConsortium: save.c,v 1.16 94/12/16 17:33:20 mor Exp mor $ */
+/* $XConsortium: save.c,v 1.17 94/12/21 16:58:04 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -28,6 +28,7 @@ in this Software without prior written authorization from the X Consortium.
 #include "xsm.h"
 #include "save.h"
 #include "saveutil.h"
+#include "popup.h"
 
 #include <X11/Shell.h>
 #include <X11/Xaw/Form.h>
@@ -325,6 +326,65 @@ DoSave ()
 
 
 static void
+SaveOkAction (w, event, params, num_params)
+
+Widget	 w;
+XEvent	 *event;
+String	 *params;
+Cardinal *num_params;
+
+{
+    XtCallCallbacks (saveOkButton, XtNcallback, NULL);
+}
+
+
+
+static void
+DelSaveWinAction (w, event, params, num_params)
+
+Widget w;
+XEvent *event;
+String *params;
+Cardinal *num_params;
+
+{
+    XtCallCallbacks (saveCancelButton, XtNcallback, NULL);
+}
+
+
+
+static void
+DelNameInUseWinAction (w, event, params, num_params)
+
+Widget w;
+XEvent *event;
+String *params;
+Cardinal *num_params;
+
+{
+    XtCallCallbacks (nameInUseCancelButton, XtNcallback, NULL);
+}
+
+
+
+static void
+DelBadSaveWinAction (w, event, params, num_params)
+
+Widget w;
+XEvent *event;
+String *params;
+Cardinal *num_params;
+
+{
+    if (XtIsManaged (badSaveCancelButton))
+	XtCallCallbacks (badSaveCancelButton, XtNcallback, NULL);
+    else
+	XtCallCallbacks (badSaveOkButton, XtNcallback, NULL);
+}
+
+
+
+static void
 SaveOkXtProc (w, client_data, callData)
 
 Widget		w;
@@ -332,10 +392,10 @@ XtPointer 	client_data;
 XtPointer 	callData;
 
 {
-    Position x, y, rootx, rooty;
     String name = NULL;
     char label[256];
     int	status;
+    static int first_time = 1;
 
     if ((status = GetSaveName (&name)) != NAME_OK)
     {
@@ -343,11 +403,6 @@ XtPointer 	callData;
 
 	if (status == NAME_EXISTS || status == NAME_LOCKED)
 	{
-	    XtVaGetValues (mainWindow, XtNx, &x, XtNy, &y, NULL);
-	    XtTranslateCoords (mainWindow, x, y, &rootx, &rooty);
-	    XtVaSetValues (nameInUsePopup,
-		XtNx, rootx + 25, XtNy, rooty + 100, NULL);
-
 	    name_in_use = name;
 
 	    if (status == NAME_LOCKED)
@@ -382,27 +437,18 @@ XtPointer 	callData;
 		NULL);
 
 	    XtPopdown (savePopup);
-	    XtPopup (nameInUsePopup, XtGrabNone);
+
+	    PopupPopup (mainWindow, nameInUsePopup,
+		True, first_time, 25, 100, "DelNameInUseWinAction()");
+
+	    if (first_time)
+		first_time = 0;
 	}
 
 	return;
     }
 
     DoSave ();
-}
-
-
-
-void
-SaveOkAction (w, event, params, num_params)
-
-Widget	 w;
-XEvent	 *event;
-String	 *params;
-Cardinal *num_params;
-
-{
-    XtCallCallbacks (saveOkButton, XtNcallback, NULL);
 }
 
 
@@ -787,8 +833,11 @@ create_save_popup ()
 {
     XtTranslations translations;
 
-    static XtActionsRec save_actions[] = {
-        {"SaveOkAction", SaveOkAction}
+    static XtActionsRec actions[] = {
+        {"SaveOkAction", SaveOkAction},
+        {"DelSaveWinAction", DelSaveWinAction},
+	{"DelNameInUseWinAction", DelNameInUseWinAction},
+	{"DelBadSaveWinAction", DelBadSaveWinAction}
     };
 
 
@@ -922,7 +971,7 @@ create_save_popup ()
 
     XtSetKeyboardFocus (saveForm, saveName);
 
-    XtAppAddActions (appContext, save_actions, XtNumber (save_actions));
+    XtAppAddActions (appContext, actions, XtNumber (actions));
 
     translations = XtParseTranslationTable
 	("<Key>Return: SaveOkAction()\n");
@@ -1048,11 +1097,7 @@ void
 PopupSaveDialog ()
 
 {
-    Position x, y, rootx, rooty;
-
-    XtVaGetValues (mainWindow, XtNx, &x, XtNy, &y, NULL);
-    XtTranslateCoords (mainWindow, x, y, &rootx, &rooty);
-    XtVaSetValues (savePopup, XtNx, rootx + 25, XtNy, rooty + 100, NULL);
+    static int first_time = 1;
 
     XtSetSensitive (mainWindow, 0);
     XtSetSensitive (clientInfoPopup, 0);
@@ -1075,7 +1120,11 @@ PopupSaveDialog ()
 	XtNlabel, wantShutdown ? "Shutdown" : "Checkpoint",
 	NULL);
 
-    XtPopup (savePopup, XtGrabNone);
+    PopupPopup (mainWindow, savePopup,
+	True, first_time, 25, 100, "DelSaveWinAction()");
+
+    if (first_time)
+	first_time = 0;
 }
 
 
@@ -1120,9 +1169,9 @@ PopupBadSave ()
     int maxlen1, maxlen2;
     char extraBuf1[80], extraBuf2[80];
     char *restart_service_prop;
-    Position x, y, rootx, rooty;
     List *cl, *pl;
     int i, k;
+    static int first_time = 1;
 
     if (failedNames)
     {
@@ -1267,11 +1316,11 @@ PopupBadSave ()
     else
 	XtUnmanageChild (badSaveCancelButton);
 
-    XtVaGetValues (mainWindow, XtNx, &x, XtNy, &y, NULL);
-    XtTranslateCoords (mainWindow, x, y, &rootx, &rooty);
-    XtVaSetValues (badSavePopup, XtNx, rootx + 25, XtNy, rooty + 100, NULL);
+    PopupPopup (mainWindow, badSavePopup,
+	True, first_time, 25, 100, "DelBadSaveWinAction()");
 
-    XtPopup (badSavePopup, XtGrabNone);
+    if (first_time)
+	first_time = 0;
 }
 
 

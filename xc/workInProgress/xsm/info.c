@@ -1,4 +1,4 @@
-/* $XConsortium: info.c,v 1.22 94/12/16 17:28:49 mor Exp mor $ */
+/* $XConsortium: info.c,v 1.23 94/12/21 16:56:57 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -27,6 +27,7 @@ in this Software without prior written authorization from the X Consortium.
 
 #include "xsm.h"
 #include "restart.h"
+#include "popup.h"
 
 #include <X11/Shell.h>
 #include <X11/Xaw/Form.h>
@@ -135,11 +136,11 @@ DisplayProps (client)
 ClientRec *client;
 
 {
-    Position x, y, rootx, rooty;
     int index;
     List *pl, *pj, *vl;
     PropValue *pval;
     Buffer buffer;
+    static int first_time = 1;
 
     for (index = 0; index < numClientListNames; index++)
 	if (clientListRecs[index] == client)
@@ -242,19 +243,13 @@ ClientRec *client;
 
 	if (!client_prop_visible)
 	{
-	    char geom[16];
-
-	    XtVaGetValues (mainWindow, XtNx, &x, XtNy, &y, NULL);
-	    XtTranslateCoords (mainWindow, x, y, &rootx, &rooty);
-
-	    sprintf (geom, "+%d+%d", rootx + 50, rooty + 150);
-	    XtVaSetValues (clientPropPopup,
-		XtNgeometry, geom,
-	        NULL);
-
-	    XtPopup (clientPropPopup, XtGrabNone);
+	    PopupPopup (mainWindow, clientPropPopup,
+		False, first_time, 50, 150, "DelPropWinAction()");
 
 	    client_prop_visible = 1;
+
+	    if (first_time)
+		first_time = 0;
 	}
     }
 
@@ -733,9 +728,7 @@ ClientInfoXtProc (w, client_data, callData)
     XtPointer 	callData;
 
 {
-    Position x, y, rootx, rooty;
     static int first_time = 1;
-    char geom[16];
 
     if (!client_info_visible)
     {
@@ -752,29 +745,20 @@ ClientInfoXtProc (w, client_data, callData)
 	else
 	    current_client_selected = -1;
 
-	XtVaGetValues (mainWindow, XtNx, &x, XtNy, &y, NULL);
-	XtTranslateCoords (mainWindow, x, y, &rootx, &rooty);
-
-	sprintf (geom, "+%d+%d", rootx + 100, rooty + 50);
-	XtVaSetValues (clientInfoPopup,
-	    XtNgeometry, geom,
-	    NULL);
-
-	if (first_time)
+	if (first_time && num_clients_in_last_session > 0 &&
+	    num_clients_in_last_session != numClientListNames)
 	{
-	    if (num_clients_in_last_session > 0 &&
-		num_clients_in_last_session != numClientListNames)
-	    {
-		XtAddEventHandler (clientInfoPopup, StructureNotifyMask, False,
-	            ClientInfoStructureNotifyXtHandler, NULL);
-	    }
-
-	    first_time = 0;
+	    XtAddEventHandler (clientInfoPopup, StructureNotifyMask, False,
+	        ClientInfoStructureNotifyXtHandler, NULL);
 	}
 
-	XtPopup (clientInfoPopup, XtGrabNone);
+	PopupPopup (mainWindow, clientInfoPopup,
+	    False, first_time, 100, 50, "DelClientInfoWinAction()");
 
 	client_info_visible = 1;
+
+	if (first_time)
+	    first_time = 0;
     }
 }
 
@@ -787,11 +771,52 @@ static unsigned char check_bits[] = {
    0x31, 0x00, 0x1b, 0x00, 0x0e, 0x00, 0x04, 0x00
 };
 
+
+
+static void
+DelClientInfoWinAction (w, event, params, num_params)
+
+Widget w;
+XEvent *event;
+String *params;
+Cardinal *num_params;
+
+{
+    XtCallCallbacks (clientInfoDoneButton, XtNcallback, NULL);
+}
+
+
+
+static void
+DelPropWinAction (w, event, params, num_params)
+
+Widget w;
+XEvent *event;
+String *params;
+Cardinal *num_params;
+
+{
+    XtCallCallbacks (clientPropDoneButton, XtNcallback, NULL);
+}
+
+
 
 void
 create_client_info_popup ()
 
 {
+    /*
+     * Install actions for WM_DELETE_WINDOW
+     */
+
+    static XtActionsRec actions[] = {
+        {"DelClientInfoWinAction", DelClientInfoWinAction},
+        {"DelPropWinAction", DelPropWinAction}
+    };
+
+    XtAppAddActions (appContext, actions, XtNumber (actions));
+
+
     /*
      * Make checkmark bitmap
      */
