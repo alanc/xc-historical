@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: sun.cf,v 1.77 92/05/29 18:37:21 rws Exp $
+XCOMM platform:  $XConsortium: sun.cf,v 1.78 92/11/20 19:03:20 rws Exp $
 
 #ifdef SVR4
 #define OSName            SunOS 5.0
@@ -35,9 +35,10 @@ XCOMM operating system:  OSName
 #define YaccCmd		  /usr/ccs/bin/yacc
 #define SystemV4	  YES
 #define HasSockets	  YES
-
+#define InstKmemFlags	  -g sys -m 2755
 #include <sv4Lib.rules>
 #else
+#define InstKmemFlags	  -g kmem -m 2755
 #include <sunLib.rules>
 #endif
 
@@ -50,7 +51,6 @@ XCOMM operating system:  OSName
 #define XsunServer	  YES		/* has color and mono support */
 #define XsunMonoServer	  YES		/* monochrome only */
 #define BuildPexExt	  XsunServer
-#define InstKmemFlags	  -g kmem -m 2755
 
 #if HasGcc
 #if HasGcc2
