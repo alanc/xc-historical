@@ -1,5 +1,5 @@
 /*
- * $XConsortium: cfb8line.c,v 1.15 91/04/10 11:42:14 keith Exp $
+ * $XConsortium: cfb8line.c,v 1.16 91/05/03 17:02:14 keith Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -455,8 +455,11 @@ FUNC_NAME(cfb8LineSS1Rect) (pDrawable, pGC, mode, npt, pptInit)
 	    addrb = addrb - y1_or_e1;
 	    if (y1_or_e1 + x1_or_len <= PPW)
 	    {
-		maskpartialbits(y1_or_e1, x1_or_len, e)
-		RROP_SOLID_MASK((int *) addrb, e);
+		if (x1_or_len)
+		{
+		    maskpartialbits(y1_or_e1, x1_or_len, e)
+		    RROP_SOLID_MASK((int *) addrb, e);
+		}
 	    }
 	    else
 	    {
