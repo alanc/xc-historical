@@ -1,4 +1,4 @@
-/* $Header: dispatch.c,v 1.49 88/05/05 11:45:58 rws Exp $ */
+/* $Header: dispatch.c,v 1.50 88/05/05 13:24:06 rws Exp $ */
 /************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -3274,7 +3274,7 @@ SendConnectionSetupInfo(client)
     ((xConnSetup *)ConnectionInfo)->ridMask = 0xfffff;
         /* fill in the "currentInputMask" */
     root = (xWindowRoot *)(ConnectionInfo + connBlockScreenStart);
-    for (i=0; i<screenInfo.numScreens; root += sizeof(xWindowRoot), i++) 
+    for (i=0; i<screenInfo.numScreens; root++, i++) 
         root->currentInputMask = WindowTable[i].allEventMasks;
 
     if (client->swapped) {
