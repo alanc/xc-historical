@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xthreads.h,v 1.4 93/08/26 09:19:25 rws Exp $
+ * $XConsortium: Xthreads.h,v 1.5 93/08/26 09:23:12 rws Exp $
  *
  * Copyright 1993 Massachusetts Institute of Technology
  *
@@ -95,6 +95,7 @@ typedef struct _xcondition_t {
     xthread_t waiters;
 } *xcondition_t;
 typedef CRITICAL_SECTION *xmutex_t;
+#define xthread_init() _Xthread_init()
 extern xthread_t _Xthread_self();
 #define xthread_self() _Xthread_self()
 #define xthread_fork(func,closure) { \
