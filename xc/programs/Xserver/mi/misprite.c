@@ -4,7 +4,7 @@
  * machine independent software sprite routines
  */
 
-/* $XConsortium: misprite.c,v 5.24 89/10/29 14:46:48 rws Exp $ */
+/* $XConsortium: misprite.c,v 5.25 89/11/10 14:48:40 keith Exp $ */
 
 /*
 Copyright 1989 by the Massachusetts Institute of Technology
@@ -1344,10 +1344,10 @@ miSpriteFillPolygon(pDrawable, pGC, shape, mode, count, pPts)
 	}
 	else
 	{
-	    minx += x;
-	    miny += y;
-	    maxx = minx;
-	    maxy = miny;
+	    x += minx;
+	    y += miny;
+	    minx = maxx = x;
+	    miny = maxy = y;
 	    for (; n--; pts++)
 	    {
 		x += pts->x;
