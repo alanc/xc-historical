@@ -1,4 +1,4 @@
-/* $Header: xextinit.c,v 1.4 90/09/27 10:46:19 gms ic1C-80 $ */
+/* $Header: xextinit.c,v 1.5 91/01/18 15:41:59 gms Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -432,23 +432,44 @@ SEventIDispatch (from, to)
     if (type == DeviceValuator)
 	SEventDeviceValuator (from, to);
     else if (type == DeviceKeyPress)
+	{
         SKeyButtonPtrEvent (from, to);
+	to->u.keyButtonPointer.pad1 = from->u.keyButtonPointer.pad1;
+	}
     else if (type == DeviceKeyRelease)
+	{
         SKeyButtonPtrEvent (from, to);
+	to->u.keyButtonPointer.pad1 = from->u.keyButtonPointer.pad1;
+	}
     else if (type == DeviceButtonPress)
+	{
         SKeyButtonPtrEvent (from, to);
+	to->u.keyButtonPointer.pad1 = from->u.keyButtonPointer.pad1;
+	}
     else if (type == DeviceButtonRelease)
+	{
         SKeyButtonPtrEvent (from, to);
+	to->u.keyButtonPointer.pad1 = from->u.keyButtonPointer.pad1;
+	}
     else if (type == DeviceMotionNotify)
+	{
         SKeyButtonPtrEvent (from, to);
+	to->u.keyButtonPointer.pad1 = from->u.keyButtonPointer.pad1;
+	}
     else if (type == DeviceFocusIn)
         SEventFocus (from, to);
     else if (type == DeviceFocusOut)
         SEventFocus (from, to);
     else if (type == ProximityIn)
+	{
         SKeyButtonPtrEvent (from, to);
+	to->u.keyButtonPointer.pad1 = from->u.keyButtonPointer.pad1;
+	}
     else if (type == ProximityOut)
+	{ 
         SKeyButtonPtrEvent (from, to);
+	to->u.keyButtonPointer.pad1 = from->u.keyButtonPointer.pad1;
+	}
     else if (type == DeviceStateNotify)
         SDeviceStateNotifyEvent (from, to);
     else if (type == DeviceKeyStateNotify)

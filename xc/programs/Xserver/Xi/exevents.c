@@ -308,22 +308,22 @@ DeviceFocusEvent(dev, type, mode, detail, pWin)
 	ButtonClassPtr b;
 	ValuatorClassPtr v;
 
-	if ((k=dev->key) != NULL)
-	    {
-	    if (k->curKeySyms.maxKeyCode > 32)
-		evcount++;
-	    }
 	if ((b=dev->button) != NULL)
 	    {
 	    if (b->numButtons > 32)
-		evcount++;
-	    if (k != NULL)
 		evcount++;
 	    }
 	if ((v=dev->valuator) != NULL)
 	    {
 	    if (v->numAxes > 3)
 		evcount += ((v->numAxes-4) / 3) + 1;
+	    }
+	if ((k=dev->key) != NULL)
+	    {
+	    if (k->curKeySyms.maxKeyCode > 32)
+		evcount++;
+	    if (b->numButtons != NULL)
+		evcount++;
 	    }
 
 	ev = (deviceStateNotify *) xalloc(evcount * sizeof(xEvent));
@@ -390,16 +390,22 @@ DeviceFocusEvent(dev, type, mode, detail, pWin)
 	    {
 	    deviceStateNotify 	*tev;
 
-	    for (tev=sev; 
-		 tev->type!=DeviceStateNotify || 
-		 (tev->classes_reported & (1<<ButtonClass)); 
-		 tev++)
-		;
+	    for (tev=sev; tev <= (deviceStateNotify *) ev; tev++)
+		if (tev->type==DeviceStateNotify && 
+		 !(tev->classes_reported & (1<<ButtonClass))) 
+		break;
+	    if (tev > (deviceStateNotify *) ev)
+		{
+		tev->type = DeviceStateNotify;
+		tev->deviceid = dev->id;
+        	tev->time = currentTime.milliseconds;
+		ev++;
+		}
 	    tev->classes_reported |= (1 << KeyClass);
 	    tev->num_keys = k->curKeySyms.maxKeyCode - k->curKeySyms.minKeyCode;
 
 	    bcopy((char *) k->down, (char *) &tev->keys[0], 4);
-	    if (k->curKeySyms.maxKeyCode - k->curKeySyms.minKeyCode > 32)
+	    if (tev->num_keys > 32)
 		{
 		ev->deviceid |= MORE_EVENTS;
 		kev = (deviceKeyStateNotify *) ++ev; 

@@ -1,4 +1,4 @@
-/* $XConsortium: xgetprop.c,v 1.5 89/10/10 16:10:16 gms Exp $ */
+/* $Header: xgetprop.c,v 1.2 91/01/18 15:38:10 gms Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -71,6 +71,7 @@ SProcXGetDeviceDontPropagateList(client)
 ProcXGetDeviceDontPropagateList (client)
     register ClientPtr client;
     {
+    CARD16				count = 0;
     int					i;
     XEventClass				*buf, *tbuf;
     WindowPtr 				pWin;
@@ -101,23 +102,27 @@ ProcXGetDeviceDontPropagateList (client)
 	{
 	for (i=0; i<EMASKSIZE; i++)
 	    tbuf = ClassFromMask (NULL, others->dontPropagateMask[i], i, 
-		&rep.count, COUNT);
-	buf = (XEventClass *) Xalloc (rep.count * sizeof(XEventClass));
-	rep.length = (rep.count * sizeof (XEventClass) + 3) >> 2;
+		&count, COUNT);
+	if (count)
+	    {
+	    rep.count = count;
+	    buf = (XEventClass *) Xalloc (rep.count * sizeof(XEventClass));
+	    rep.length = (rep.count * sizeof (XEventClass) + 3) >> 2;
 
-	tbuf = buf;
-	for (i=0; i<EMASKSIZE; i++)
-	    tbuf = ClassFromMask (tbuf, others->dontPropagateMask[i], i, NULL,
-		CREATE);
+	    tbuf = buf;
+	    for (i=0; i<EMASKSIZE; i++)
+		tbuf = ClassFromMask (tbuf, others->dontPropagateMask[i], i, 
+		    NULL, CREATE);
+	    }
 	}
 
     WriteReplyToClient (client, sizeof (xGetDeviceDontPropagateListReply), 
 	&rep);
 
-    if (others)
+    if (count)
 	{
 	client->pSwapReplyFunc = Swap32Write;
-	WriteSwappedDataToClient( client, rep.count * sizeof(XEventClass), buf);
+	WriteSwappedDataToClient( client, count * sizeof(XEventClass), buf);
 	Xfree (buf);
 	}
     return Success;

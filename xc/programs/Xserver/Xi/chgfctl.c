@@ -1,4 +1,4 @@
-/* $Header: xchgfctl.c,v 1.3 90/11/26 09:30:48 gms Exp $ */
+/* $Header: xchgfctl.c,v 1.4 91/01/18 15:28:04 gms Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -72,6 +72,7 @@ SProcXChangeFeedbackControl(client)
 ProcXChangeFeedbackControl(client)
     ClientPtr client;
     {
+    int len;
     DeviceIntPtr dev;
     KbdFeedbackPtr k;
     PtrFeedbackPtr p;
@@ -83,6 +84,7 @@ ProcXChangeFeedbackControl(client)
     REQUEST(xChangeFeedbackControlReq);
     REQUEST_AT_LEAST_SIZE(xChangeFeedbackControlReq);
 
+    len = stuff->length - (sizeof(xChangeFeedbackControlReq) >>2);
     dev = LookupDeviceIntRec (stuff->deviceid);
     if (dev == NULL)
 	{
@@ -94,6 +96,12 @@ ProcXChangeFeedbackControl(client)
     switch (stuff->feedbackid)
 	{
 	case KbdFeedbackClass:
+	    if (len != (sizeof(xKbdFeedbackCtl)>>2))
+		{
+		SendErrorToClient (client, IReqCode, X_ChangeFeedbackControl, 
+			0, BadLength);
+		return Success;
+		}
 	    for (k=dev->kbdfeed; k; k=k->next)
 		if (k->id == ((xKbdFeedbackCtl *) &stuff[1])->id)
 		    {
@@ -102,6 +110,12 @@ ProcXChangeFeedbackControl(client)
 		    }
 	    break;
 	case PtrFeedbackClass:
+	    if (len != (sizeof(xPtrFeedbackCtl)>>2))
+		{
+		SendErrorToClient (client, IReqCode, X_ChangeFeedbackControl, 
+			0, BadLength);
+		return Success;
+		}
 	    for (p=dev->ptrfeed; p; p=p->next)
 		if (p->id == ((xPtrFeedbackCtl *) &stuff[1])->id)
 		    {
@@ -110,6 +124,19 @@ ProcXChangeFeedbackControl(client)
 		    }
 	    break;
 	case StringFeedbackClass:
+	    {
+	    register char n;
+	    xStringFeedbackCtl *f = ((xStringFeedbackCtl *) &stuff[1]);
+	    if (client->swapped)
+		{
+		swaps(&f->num_keysyms,n);
+		}
+	    if (len != ((sizeof(xStringFeedbackCtl)>>2) + f->num_keysyms))
+		{
+		SendErrorToClient (client, IReqCode, X_ChangeFeedbackControl, 
+			0, BadLength);
+		return Success;
+		}
 	    for (s=dev->stringfeed; s; s=s->next)
 		if (s->id == ((xStringFeedbackCtl *) &stuff[1])->id)
 		    {
@@ -117,7 +144,14 @@ ProcXChangeFeedbackControl(client)
 		    return Success;
 		    }
 	    break;
+	    }
 	case IntegerFeedbackClass:
+	    if (len != (sizeof(xIntegerFeedbackCtl)>>2))
+		{
+		SendErrorToClient (client, IReqCode, X_ChangeFeedbackControl, 
+			0, BadLength);
+		return Success;
+		}
 	    for (i=dev->intfeed; i; i=i->next)
 		if (i->id == ((xIntegerFeedbackCtl *) &stuff[1])->id)
 		    {
@@ -126,6 +160,12 @@ ProcXChangeFeedbackControl(client)
 		    }
 	    break;
 	case LedFeedbackClass:
+	    if (len != (sizeof(xLedFeedbackCtl)>>2))
+		{
+		SendErrorToClient (client, IReqCode, X_ChangeFeedbackControl, 
+			0, BadLength);
+		return Success;
+		}
 	    for (l=dev->leds; l; l=l->next)
 		if (l->id == ((xLedFeedbackCtl *) &stuff[1])->id)
 		    {
@@ -134,6 +174,12 @@ ProcXChangeFeedbackControl(client)
 		    }
 	    break;
 	case BellFeedbackClass:
+	    if (len != (sizeof(xBellFeedbackCtl)>>2))
+		{
+		SendErrorToClient (client, IReqCode, X_ChangeFeedbackControl, 
+			0, BadLength);
+		return Success;
+		}
 	    for (b=dev->bell; b; b=b->next)
 		if (b->id == ((xBellFeedbackCtl *) &stuff[1])->id)
 		    {
@@ -426,8 +472,20 @@ ChangeStringFeedback (client, dev, mask, s, f)
     {
     register char n;
     register long *p;
-    int		i, j;
+    int		i, j, len;
     KeySym	*syms, *sup_syms;
+
+    syms = (KeySym *) (f+1);
+    if (client->swapped)
+	{
+	swaps(&f->length,n);	/* swapped num_keysyms in calling proc */
+	p = (long *) (syms);
+	for (i=0; i<f->num_keysyms; i++)
+	    {
+	    swapl(p, n);
+	    p++;
+	    }
+	}
 
     if (f->num_keysyms > s->ctrl.max_symbols)
 	{
@@ -435,7 +493,6 @@ ChangeStringFeedback (client, dev, mask, s, f)
 	    BadValue);
 	return Success;
 	}
-    syms = (KeySym *) (f+1);
     sup_syms = s->ctrl.symbols_supported;
     for (i=0; i<f->num_keysyms; i++)
 	{
@@ -447,18 +504,6 @@ ChangeStringFeedback (client, dev, mask, s, f)
 	    SendErrorToClient(client, IReqCode, X_ChangeFeedbackControl, 0, 
 		BadMatch);
 	    return Success;
-	    }
-	}
-
-    if (client->swapped)
-	{
-	swaps(&f->length,n);
-	swaps(&f->num_keysyms,n);
-	p = (long *) (f+1);
-	for (i=0; i<f->num_keysyms; i++)
-	    {
-	    swapl(p, n);
-	    p++;
 	    }
 	}
 
@@ -561,7 +606,7 @@ ChangeLedFeedback (client, dev, mask, l, f)
 
     if (client->swapped)
 	{
-	swapl(&f->length,n);
+	swaps(&f->length,n);
 	swapl(&f->led_values,n);
 	swapl(&f->led_mask,n);
 	}

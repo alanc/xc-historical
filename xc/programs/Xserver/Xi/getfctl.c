@@ -1,4 +1,4 @@
-/* $Header: xgetfctl.c,v 1.2 90/11/13 13:21:39 gms Exp $ */
+/* $Header: xgetfctl.c,v 1.3 91/01/18 15:34:49 gms Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -267,7 +267,7 @@ CopySwapIntegerFeedback (client, i, buf)
     i2->max_value = i->ctrl.max_value;
     if (client->swapped)
 	{
-	swapl(&i2->length,n);
+	swaps(&i2->length,n);
 	swapl(&i2->resolution,n);
 	swapl(&i2->min_value,n);
 	swapl(&i2->max_value,n);
@@ -310,7 +310,9 @@ CopySwapStringFeedback (client, s, buf)
 	swaps(&s2->num_syms_supported,n);
         kptr = (KeySym *) (*buf);
 	for (i=0; i<s->ctrl.num_symbols_supported; i++,kptr++)
+	    {
 	    swapl(kptr,n);
+	    }
 	}
     *buf += (s->ctrl.num_symbols_supported * sizeof (KeySym));
     }
@@ -338,7 +340,7 @@ CopySwapLedFeedback (client, l, buf)
     l2->led_mask = l->ctrl.led_mask;
     if (client->swapped)
 	{
-	swapl(&l2->length,n);
+	swaps(&l2->length,n);
 	swapl(&l2->led_values,n);
 	swapl(&l2->led_mask,n);
 	}
