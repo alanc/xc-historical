@@ -419,5 +419,6 @@ function.
 .OH ''''
 .EF ''''
 .OF ''''
+.bp
+.tm .pn \n%
 .TC
-
