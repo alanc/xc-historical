@@ -1,4 +1,4 @@
-/* $XConsortium: xhost.c,v 11.39 91/02/11 20:51:02 keith Exp $ */
+/* $XConsortium: xhost.c,v 11.40 91/02/12 13:36:35 rws Exp $ */
  
 /*
 
@@ -75,6 +75,20 @@ extern unsigned long inet_makeaddr();
 extern char _XsTypeOfStream[];
 #endif /* STREAMSCONN */
 
+#ifdef SECURE_RPC
+#include <pwd.h>
+#include <rpc/rpc.h>
+#ifdef SVR4
+#include <limits.h>
+#else
+#ifdef _POSIX_SOURCE
+#include <limits.h>
+#else
+#include <sys/param.h>
+#define NGROUPS_MAX NGROUPS
+#endif
+#endif
+#endif
  
 static int local_xerror();
 static char *get_hostname();
@@ -242,10 +256,10 @@ int change_host (dpy, name, add)
   struct hostent *hp;
   XHostAddress ha;
   static struct in_addr addr;	/* so we can point at it */
+  char *cp;
 #ifdef DNETCONN
   struct dn_naddr *dnaddrp;
   struct nodeent *np;
-  char *cp;
   static struct dn_naddr dnaddr;
 #endif /* DNETCONN */
   static char *add_msg = "being added to access control list";
@@ -281,17 +295,40 @@ int change_host (dpy, name, add)
     /*
      * If it has an '@',  its a netname
      */
-    if (index(name, '@')) {
-        ha.family = FamilySecureRPC;
-        ha.length = strlen(name);
-        ha.address = name;
-        if (add) {
-            XAddHost (dpy, &ha);
-            printf ("%s %s\n", name, add_msg);
-        } else {
-            XRemoveHost (dpy, &ha);
-            printf ("%s %s\n", name, remove_msg);
-        }
+    if (cp = index(name, '@')) {
+	char *netname = name;
+#ifdef SECURE_RPC
+	static char username[MAXNETNAMELEN];
+
+	if (!cp[1]) {
+	    struct passwd *pwd;
+	    static char domainname[128];
+
+	    *cp = '\0';
+	    pwd = getpwnam(name);
+	    if (!pwd) {
+		fprintf(stderr, "no such user \"%s\"\n", name);
+		return 0;
+	    }
+	    getdomainname(domainname, sizeof(domainname));
+	    if (!user2netname(username, pwd->pw_uid, domainname)) {
+		fprintf(stderr, "failed to get netname for \"%s\"\n", name);
+		return 0;
+	    }
+	    netname = username;
+	}
+#endif
+	ha.family = FamilySecureRPC;
+	ha.length = strlen(netname);
+	ha.address = netname;
+	if (add)
+	    XAddHost (dpy, &ha);
+	else
+	    XRemoveHost (dpy, &ha);
+	if (netname != name)
+	    printf ("%s@ (%s) %s\n", name, netname, add ? add_msg : remove_msg);
+	else
+	    printf ("%s %s\n", netname, add ? add_msg : remove_msg);
         return 1;
     }
 #ifdef STREAMSCONN
@@ -402,8 +439,11 @@ static char *get_hostname (ha)
   }
 #endif
   if (ha->family == FamilySecureRPC) {
-    static char netname[120];
+    static char netname[512];
     int len;
+#ifdef SECURE_RPC
+    int uid, gid, gidlen, gidlist[NGROUPS_MAX];
+#endif
 
     if (ha->length < sizeof(netname) - 1)
         len = ha->length;
@@ -411,6 +451,17 @@ static char *get_hostname (ha)
         len = sizeof(netname) - 1;
     bcopy(ha->address, netname, len);
     netname[len] = '\0';
+#ifdef SECURE_RPC
+    if (netname2user(netname, &uid, &gid, &gidlen, gidlist)) {
+	struct passwd *pwd;
+	char *cp;
+
+	pwd = getpwuid(uid);
+	if (pwd)
+	    sprintf(netname, "%s@ (%*.*s)", pwd->pw_name,
+		    ha->length, ha->length, ha->address);
+    }
+#endif
     return (netname);
   }
 #ifdef DNETCONN
