@@ -1,4 +1,4 @@
-/* $XConsortium: Selection.c,v 1.64 91/05/02 20:09:16 converse Exp $ */
+/* $XConsortium: Selection.c,v 1.65 91/05/02 20:23:02 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -99,7 +99,12 @@ static PropList GetPropList(dpy)
 	sarray->indirect_atom = XInternAtom(dpy, "MULTIPLE", FALSE);
 	sarray->timestamp_atom = XInternAtom(dpy, "TIMESTAMP", FALSE);
 #ifdef DRAFT_ICCCM_COMPATIBILITY
-	sarray->incremental_atom = XInternAtom(dpy, "INCREMENTAL", FALSE);
+/*	Should have been INCREMENTAL all along, but Xt has always used
+ *	INCR to implement draft ICCCM incremental protocol.  So it stays 
+ *	as INCR, in violation of the ICCCM, for historical reasons.  
+ *	This code will be removed in a future release.
+ */
+ 	sarray->incremental_atom = XInternAtom(dpy, "INCR", FALSE);
 #endif
 	sarray->propCount = 1;
 	sarray->list = (SelectionProp)XtMalloc((unsigned) sizeof(SelectionPropRec));
@@ -995,8 +1000,16 @@ Boolean *cont;
       } else {
           if ((BYTELENGTH(length,info->format)+info->offset) 
 			> info->bytelength) {
-  	    info->value = XtRealloc(info->value, 
-				    (unsigned) (info->bytelength *= 2));
+  	    info->value = XtRealloc(info->value, (unsigned)
+#ifdef DRAFT_ICCCM_COMPATIBILITY 
+	    /* Handle Incremental can be called with a size of 0 */
+	        ((info->bytelength) 
+		 ? (info->bytelength *= 2)
+		 : (info->bytelength = 
+		    BYTELENGTH(length, info->format) + info->offset)));
+#else
+				    (info->bytelength *= 2));
+#endif
           }
           bcopy(value, &info->value[info->offset], 
 		(int) BYTELENGTH(length, info->format));
