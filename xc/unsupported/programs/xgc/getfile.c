@@ -17,9 +17,9 @@
 extern XStuff X;
 extern Widget topform;
 
-static Widget popupshell;	/* popup dialog box */
-char filename[60];		/* the name of the file the user
-				   has selected */
+static Widget popupshell = NULL;	/* popup dialog box */
+Widget filename_text_widget;	/* Widget containing the name of
+				   the file the user has selected */
 extern XtAppContext appcontext;
 
 void kill_popup_shell();
@@ -33,7 +33,6 @@ get_filename(success,failure)
 {
   static Widget popupform;	/* form inside shell */
   static Widget label;		/* "Filename :" */
-  static Widget text;		/* where the user edits filename */
   static Widget cancel;		/* command, select to cancel */
 
   Window dummy1, dummy2;
@@ -77,12 +76,9 @@ get_filename(success,failure)
 
   static Arg textargs[] = {	/* ArgList for the text widget */
     {XtNeditType,       (XtArgVal) XawtextEdit},
-    {XtNstring,         (XtArgVal) NULL},
-    {XtNlength,         (XtArgVal) NULL},
-    {XtNwidth,          (XtArgVal) NULL},
+    {XtNwidth,          (XtArgVal) 200},
     {XtNhorizDistance,  (XtArgVal) 10},
     {XtNfromHoriz,      (XtArgVal) NULL},
-    {XtNinsertPosition, (XtArgVal) NULL}
   };
 
   static Arg cancelargs[] = {	/* ArgList for the cancel button */
@@ -96,6 +92,11 @@ get_filename(success,failure)
     {NULL, NULL},
     {NULL, NULL}
   };
+
+  if (popupshell != NULL) {
+      XtPopup(popupshell,XtGrabExclusive);
+      return;
+  }
 
   /* Find out where the pointer is, so we can put the popup window there */
 
@@ -114,14 +115,11 @@ get_filename(success,failure)
   label = XtCreateManagedWidget("Filename: ",labelWidgetClass,popupform,
 			       labelargs,XtNumber(labelargs));
 
-  textargs[1].value = (XtArgVal) filename;
-  textargs[2].value = (XtArgVal) 40;
-  textargs[3].value = (XtArgVal) 200;
-  textargs[5].value = (XtArgVal) label;
-  textargs[6].value = (XtArgVal) strlen(filename);
+  textargs[3].value = (XtArgVal) label;
 
-  text = XtCreateManagedWidget("text",asciiStringWidgetClass,popupform,
-			    textargs,XtNumber(textargs));
+  filename_text_widget = XtCreateManagedWidget("text",asciiTextWidgetClass,
+					       popupform,
+					       textargs,XtNumber(textargs));
 
   /* Complete the action table.  We have to do it here because success
   ** isn't known at compile time. */
@@ -131,10 +129,11 @@ get_filename(success,failure)
   /* Register actions, translations, callbacks */
 
   XtAppAddActions(appcontext,actiontable,XtNumber(actiontable));
-  XtOverrideTranslations(text,XtParseTranslationTable(translationtable));
+  XtOverrideTranslations(filename_text_widget,
+			 XtParseTranslationTable(translationtable));
   cancelcallbacklist[1].callback = (XtCallbackProc) failure;
 
-  cancelargs[0].value = (XtArgVal) text;
+  cancelargs[0].value = (XtArgVal) filename_text_widget;
   cancelargs[1].value = (XtArgVal) cancelcallbacklist;
 
   cancel = XtCreateManagedWidget("Cancel",commandWidgetClass,popupform,
@@ -155,5 +154,4 @@ static void
 kill_popup_shell()
 {
   XtPopdown(popupshell);
-  XtDestroyWidget(popupshell);
 }

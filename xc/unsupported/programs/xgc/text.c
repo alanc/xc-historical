@@ -74,7 +74,8 @@ create_text_choice(w,type,length,width)
     {XtNwidth,      (XtArgVal) NULL},
     {XtNhorizDistance, (XtArgVal) 10},
     {XtNfromHoriz,  (XtArgVal) NULL},
-    {XtNinsertPosition, (XtArgVal) NULL}
+    {XtNinsertPosition, (XtArgVal) NULL},
+    {XtNuseStringInPlace, (XtArgVal) True}
   };
 
   static Widget text;		/* the text widget */
@@ -124,7 +125,7 @@ create_text_choice(w,type,length,width)
   textargs[5].value = (XtArgVal) label;
   textargs[6].value = (XtArgVal) strlen(textstrings[type]);
 
-  text = XtCreateManagedWidget("text",asciiStringWidgetClass,w,
+  text = XtCreateManagedWidget("text", asciiTextWidgetClass,w,
 			       textargs,XtNumber(textargs));
 
   /* Register the actions and translations */

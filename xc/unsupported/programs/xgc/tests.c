@@ -524,20 +524,10 @@ set_text(w,string)
      Widget w;
      char *string;
 {
-  static Arg args[] = {
-    {XtNstring,  (XtArgVal) NULL}
-  };
-  XawTextSource source;
-  char *current_string;
+  static Arg args[1];
 
-  args[0].value = (XtArgVal) &current_string;
-  XtGetValues(w,args,XtNumber(args));
-
-  strcpy(current_string,string);
-
-  args[0].value = (XtArgVal) current_string;
-  source = XawStringSourceCreate(w,args,XtNumber(args));
-  XawTextSetSource(w,source,(XawTextPosition) 0);
+  XtSetArg(args[0], XtNstring, string);
+  XtSetValues(w, args, (Cardinal) 1 );
 }
 
 void

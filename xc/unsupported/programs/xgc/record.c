@@ -33,9 +33,7 @@ extern XgcStuff ArcmodeStuff;
 
 extern XStuff X;
 extern Boolean recording;
-extern Widget recordbutton;
-
-extern char filename[];		/* name of the file we're recording to */
+extern Widget filename_text_widget, recordbutton;
 
 void cancel_record();
 void done_choosing_filename();
@@ -126,9 +124,12 @@ done_choosing_filename()
     {XtNlabel,        (XtArgVal) NULL},
     {XtNresize,       (XtArgVal) True}
   };
-  
-  char tmp[20];
-  
+  Arg args[1];
+  char tmp[20], *filename;
+
+  XtSetArg(args[0], XtNstring, &filename);
+  XtGetValues(filename_text_widget, args, (Cardinal) 1);
+
   if (recordfile = fopen(filename,"w")) {
     recording = TRUE;
     sprintf(tmp,"End Record");
@@ -271,6 +272,12 @@ cancel_playback()
 static void
 chose_playback_filename()
 {
+  Arg args[1];
+  char *filename;
+
+  XtSetArg(args[0], XtNstring, &filename);
+  XtGetValues(filename_text_widget, args, (Cardinal) 1);
+
   if (playbackfile = fopen(filename,"r")) {
     yyin = playbackfile;
     yyparse();

@@ -46,7 +46,6 @@ FILE *outend;
 #endif
 
 XStuff X;			/* GC stuff plus some global variables */
-char resultstring[80] = "";
 Boolean recording = FALSE;	/* Whether we're recording into a file */
 XtAppContext appcontext;	/* To make Xt happy */
 
@@ -112,8 +111,7 @@ main(argc,argv)
     {XtNheight,     (XtArgVal) 50},
     {XtNwidth,      (XtArgVal) 400},
     {XtNfromHoriz,  (XtArgVal) NULL}, /* put it to the right of GCform */
-    {XtNfromVert,   (XtArgVal) NULL}, /* and under test */
-    {XtNstring,     (XtArgVal) NULL}
+    {XtNfromVert,   (XtArgVal) NULL} /* and under test */
   };
 
   static Arg gcchoiceargs[] = {
@@ -249,8 +247,7 @@ main(argc,argv)
 
   resultargs[2].value = (XtArgVal) GCform; /* to the right of */
   resultargs[3].value = (XtArgVal) test; /* under */
-  resultargs[4].value = (XtArgVal) resultstring;
-  result = XtCreateManagedWidget("result",asciiStringWidgetClass,topform,
+  result = XtCreateManagedWidget("result",asciiTextWidgetClass,topform,
 				 resultargs,XtNumber(resultargs));
 
   /* Now realize all the widgets */
