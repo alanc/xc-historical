@@ -1,0 +1,24 @@
+all:: PHIGSerr.txt PHIGSfnc.txt phigsmon
+
+LinkSourceFile(phigsmon,../cp)
+
+../cp/phigsmon:
+	@cd ../cp; echo "making phigsmon in ../cp..."; \
+	$(MAKE) $(MFLAGS) PassCDebugFlags phigsmon
+
+LinkSourceFile(PHIGSerr.txt,../include)
+
+../include/PHIGSerr.txt:
+	@cd ../include; echo "making PHIGSerr.txt in ../include..."; \
+	$(MAKE) $(MFLAGS) PassCDebugFlags PHIGSerr.txt
+
+LinkSourceFile(PHIGSfnc.txt,../include)
+
+InstallProgram(phigsmon,$(PEXAPIDIR))
+InstallNonExecFile(PHIGSerr.txt,$(PEXAPIDIR))
+InstallNonExecFile(PHIGSfnc.txt,$(PEXAPIDIR))
+
+depend::
+
+clean::
+	$(RM) phigsmon PHIGSerr.txt PHIGSfnc.txt
