@@ -811,7 +811,7 @@
   ;; for button-press and button-release, code is the button number
   (data code)
   (card16 sequence)
-  (card32 time)
+  ((or null card32) time)
   (window root (window event-window))
   ((or null window) child)
   (int16 root-x root-y x y)
@@ -822,7 +822,7 @@
 (declare-event :motion-notify
   ((data boolean) hint-p)
   (card16 sequence)
-  (card32 time)
+  ((or null card32) time)
   (window root (window event-window))
   ((or null window) child)
   (int16 root-x root-y x y)
@@ -832,7 +832,7 @@
 (declare-event (:enter-notify :leave-notify)
   ((data (member8 :ancestor :virtual :inferior :nonlinear :nonlinear-virtual)) kind)
   (card16 sequence)
-  (card32 time)
+  ((or null card32) time)
   (window root (window event-window))
   ((or null window) child)
   (int16 root-x root-y x y)
@@ -948,19 +948,19 @@
   (card16 sequence)
   (window (window event-window))
   (keyword atom) ;; keyword
-  (card32 time)
+  ((or null card32) time)
   ((member16 :new-value :deleted) state))
 
 (declare-event :selection-clear
   (card16 sequence)
-  (card32 time)
+  ((or null card32) time)
   (window (window event-window)) 
   (keyword selection) ;; keyword
   )
 
 (declare-event :selection-request
   (card16 sequence)
-  (card32 time)
+  ((or null card32) time)
   (window (window event-window) requestor)
   (keyword selection target)
   ((or null keyword) property)
@@ -968,7 +968,7 @@
 
 (declare-event :selection-notify
   (card16 sequence)
-  (card32 time)
+  ((or null card32) time)
   (window (window event-window))
   (keyword selection target)
   ((or null keyword) property)

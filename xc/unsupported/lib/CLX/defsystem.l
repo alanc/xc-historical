@@ -291,6 +291,35 @@
 ;;;   lucid2.0/hp9000s300
 ;;;     must uudecode the file make-sequence-patch.uu
 
+#+(or lucid kcl ibcl)
+(defun clx-foreign-files (binary-path)
+
+  #+(and lucid (not lcl3.0) (or mc68000 mc68020))
+  (load (merge-pathnames "make-sequence-patch" binary-path))
+
+  #+(and lucid apollo)
+  (lucid::load-foreign-file
+    (namestring (merge-pathnames "socket" binary-path))
+    :preserve-pathname t)
+
+  #+(and lucid (not apollo))
+  (lucid::load-foreign-files
+    (list (namestring (merge-pathnames "socket.o" binary-path)))
+    '("-lc"))
+
+  #+(or kcl ibcl)
+  (progn
+    (let ((pathname (merge-pathnames "sockcl.o" binary-path))
+	  (options
+	    (concatenate
+	      'string
+	      (namestring (merge-pathnames "socket.o" binary-path))
+	      " -lc")))
+      (format t "~&Faslinking ~A with ~A.~%" pathname options)
+      (si:faslink (namestring pathname) options)
+      (format t "~&Finished faslinking ~A.~%" pathname)))
+  )
+
 #-(or lispm allegro)
 (defun compile-clx (&optional
 		    (source-pathname-defaults "")
@@ -381,40 +410,12 @@
       (#+clx-ansi-common-lisp with-compilation-unit
        #+lcl3.0 lucid::with-deferred-warnings
        #-(or lcl3.0 clx-ansi-common-lisp) progn
-
        ()
        
-       #+(and lucid (not lcl3.0) (or mc68000 mc68020))
-       (load (merge-pathnames "make-sequence-patch" binary-path))
-
-       #+(or lucid kcl ibcl)
-       (compile-c "socket")
-
-       #+(and lucid apollo)
-       (lucid::load-foreign-file
-	 (namestring (merge-pathnames "socket" binary-path))
-	 :preserve-pathname t)
-
-       #+(and lucid (not apollo))
-       (lucid::load-foreign-files
-	 (list (namestring (merge-pathnames "socket.o" binary-path)))
-	 '("-lc"))
-       
        (compile-and-load "package")
-
-       #+(or kcl ibcl)
-       (progn
-	 (compile-lisp "sockcl")
-	 (let ((pathname (merge-pathnames "sockcl.o" binary-path))
-	       (options
-		 (concatenate
-		   'string
-		   (namestring (merge-pathnames "socket.o" binary-path))
-		   " -lc")))
-	   (format t "~&Faslinking ~A with ~A.~%" pathname options)
-	   (si:faslink (namestring pathname) options)
-	   (format t "~&Finished faslinking ~A.~%" pathname)))
-
+       #+(or lucid kcl ibcl) (when compile-c (compile-c "socket"))
+       #+(or kcl ibcl) (compile-lisp "sockcl")
+       #+(or lucid kcl ibcl) (clx-foreign-files binary-path)
        #+excl (compile-and-load "excldep")
        (compile-and-load "depdefs")
        (compile-and-load "clx")
@@ -477,31 +478,8 @@
 	     (let ((binary (merge-pathnames filename binary-path)))
 	       (load binary))))
 
-      #+(and lucid (not lcl3.0) (or mc68000 mc68020))
-      (load (merge-pathnames "make-sequence-patch" binary-path))
-
-      #+(and lucid apollo)
-      (lucid::load-foreign-file
-	(namestring (merge-pathnames "socket" binary-path))
-	:preserve-pathname t)
-
-      #+(and lucid (not apollo))
-      (lucid::load-foreign-files
-	(list (namestring (merge-pathnames "socket.o" binary-path)))
-	'("-lc"))
-       
       (load-binary "package")
-
-      #+(or kcl ibcl)
-      (let ((pathname (merge-pathnames "sockcl.o" binary-path))
-	    (options (concatenate
-		       'string
-		       (namestring (merge-pathnames "socket.o" binary-path))
-		       " -lc")))
-	(format t "~&Faslinking ~A with ~A.~%" pathname options)
-	(si:faslink (namestring pathname) options)
-	(format t "~&Finished faslinking ~A.~%" pathname))
-
+      #+(or lucid kcl ibcl) (clx-foreign-files binary-path)
       #+excl (load-binary "excldep")
       (load-binary "depdefs")
       (load-binary "clx")

@@ -128,9 +128,7 @@
   (declare (type xatom atom)
 	   (type display display))
   (declare (values (or null resource-id)))
-  (gethash (if (keywordp atom)
-	       atom
-	       (kintern atom))
+  (gethash (if (or (null atom) (keywordp atom)) atom (kintern atom))
 	   (display-atom-cache display)))
 
 (defun set-atom-id (atom display id)
@@ -139,8 +137,7 @@
 	   (type display display)
 	   (type resource-id id))
   (declare (values resource-id))
-  (let ((atom (if (keywordp atom) atom (kintern atom))))
-    (declare (type keyword atom))
+  (let ((atom (if (or (null atom) (keywordp atom)) atom (kintern atom))))
     (setf (gethash id (display-atom-id-map display)) atom)
     (setf (gethash atom (display-atom-cache display)) id)
     id))
@@ -148,9 +145,7 @@
 (defsetf atom-id set-atom-id)
 
 (defun initialize-predefined-atoms (display)
-  (do ((i 1 (1+ i))
-       (end (length *predefined-atoms*)))
-      ((>= i end))
+  (dotimes (i (length *predefined-atoms*))
     (declare (type resource-id i))
     (setf (atom-id (svref *predefined-atoms* i) display) i)))
 

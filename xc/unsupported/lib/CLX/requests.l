@@ -200,10 +200,12 @@
   (declare (type display display)
 	   (type xatom name))
   (declare (values resource-id))
-  (let ((keyword (if (keywordp name) name (kintern (string name)))))
-    (declare (type keyword keyword))
-    (or (atom-id keyword display)
-	(let ((string (symbol-name keyword)))
+  (let ((name (if (or (null name) (keywordp name))
+		  name
+		(kintern (string name)))))
+    (declare (type symbol name))
+    (or (atom-id name display)
+	(let ((string (symbol-name name)))
 	  (declare (type string string))
 	  (multiple-value-bind (id)
 	      (with-buffer-request-and-reply (display *x-internatom* 12 :sizes 32)
@@ -214,7 +216,7 @@
 		(values
 		  (resource-id-get 8)))
 	    (declare (type resource-id id))
-	    (setf (atom-id keyword display) id)
+	    (setf (atom-id name display) id)
 	    id)))))
 
 (defun find-atom (display name)
@@ -222,10 +224,12 @@
   (declare (type display display)
 	   (type xatom name))
   (declare (values (or null resource-id)))
-  (let ((keyword (if (keywordp name) name (kintern (string name)))))
-    (declare (type keyword keyword))
-    (or (atom-id keyword display)
-	(let ((string (symbol-name keyword)))
+  (let ((name (if (or (null name) (keywordp name))
+		  name
+		(kintern (string name)))))
+    (declare (type symbol name))
+    (or (atom-id name display)
+	(let ((string (symbol-name name)))
 	  (declare (type string string))
 	  (multiple-value-bind (id)
 	      (with-buffer-request-and-reply (display *x-internatom* 12 :sizes 32)
@@ -237,23 +241,26 @@
 		  (or-get 8 null resource-id)))
 	    (declare (type (or null resource-id) id))
 	    (when id 
-	      (setf (atom-id keyword display) id))
+	      (setf (atom-id name display) id))
 	    id)))))
 
 (defun atom-name (display atom-id)
   (declare (type display display)
 	   (type resource-id atom-id))
   (declare (values keyword))
-  (or (id-atom atom-id display)
-      (let ((keyword
-	      (kintern
-		(with-buffer-request-and-reply (display *x-getatomname* nil :sizes (16))
-		     ((resource-id atom-id))
-		  (values
-		    (string-get (card16-get 8) *replysize*))))))
-	(declare (type keyword keyword))
-	(setf (atom-id keyword display) atom-id)
-	keyword)))
+  (if (zerop atom-id)
+      nil
+    (or (id-atom atom-id display)
+	(let ((keyword
+		(kintern
+		  (with-buffer-request-and-reply
+		       (display *x-getatomname* nil :sizes (16))
+		       ((resource-id atom-id))
+		    (values
+		      (string-get (card16-get 8) *replysize*))))))
+	  (declare (type keyword keyword))
+	  (setf (atom-id keyword display) atom-id)
+	  keyword))))
 
 ;;; For binary compatibility with older code
 (defun lookup-xatom (display atom-id)

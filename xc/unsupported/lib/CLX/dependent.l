@@ -2302,7 +2302,7 @@
 	   (type t object)
 	   (values t)
 	   (special left-meta-keysym right-meta-keysym
-		    left-super-keysym right-meta-keysym
+		    left-super-keysym right-super-keysym
 		    left-hyper-keysym right-hyper-keysym))
   (when (characterp object)
     (when (logbitp (position :control *state-mask-vector*) state)
@@ -2311,7 +2311,7 @@
 	      (state-keysymp display state right-meta-keysym))
       (setf (char-bit object :meta) 1))
     (when (or (state-keysymp display state left-super-keysym)
-	      (state-keysymp display state right-meta-keysym))
+	      (state-keysymp display state right-super-keysym))
       (setf (char-bit object :super) 1))
     (when (or (state-keysymp display state left-hyper-keysym)
 	      (state-keysymp display state right-hyper-keysym))
@@ -3044,7 +3044,6 @@
 	   (type (member 1 4 8 16 24 32) bits-per-pixel)
 	   (type (member 8 16 32) unit)
 	   (type boolean byte-lsb-first-p bit-lsb-first-p))
-  #+(or Genera lcl3.0 excl)
   (unless (index= bits-per-pixel 24)
     (let ((pixarray-padded-bits-per-line
 	    (if (index= height 1) 0

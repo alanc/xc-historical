@@ -96,3 +96,12 @@ o The lcl3.0 io code has been sped up a bit by using read-array instead of
 
 o READ-RESOURCES now handles any lines that start with # and don't start with
   #include as comments.
+
+R4.4 changes:
+
+o Fixed typo in DEFAULT-KEYSYM-TRANSLATE.
+
+o In events, CurrentTime (encoded as 0 in the protocol) decodes to NIL instead 
+  of 0.
+
+o NIL now translates to and from the atom-id of 0.

@@ -1960,7 +1960,7 @@
   (boolean same-screen-p)
   (int16 x y root-x root-y)
   (card16 state)
-  (card32 time)
+  ((or null card32) time)
   ;; for key-press and key-release, code is the keycode
   ;; for button-press and button-release, code is the button number
   (card8 code))
@@ -1972,7 +1972,7 @@
   (boolean same-screen-p)
   (int16 x y root-x root-y)
   (card16 state)
-  (card32 time)
+  ((or null card32) time)
   (boolean hint-p))
 
 (declare-event (:enter-notify :leave-notify)
@@ -1982,7 +1982,7 @@
   (boolean same-screen-p)
   (int16 x y root-x root-y)
   (card16 state)
-  (card32 time)
+  ((or null card32) time)
   ((member :normal :grab :ungrab) mode)
   ((member :ancestor :virtual :inferior :nonlinear :nonlinear-virtual) kind)
   (boolean focus-p))
@@ -2094,27 +2094,27 @@
   (window (window event-window))
   (keyword atom)
   ((member :new-value :deleted) state)
-  (card32 time))
+  ((or null card32) time))
 
 (declare-event :selection-clear
   (card16 sequence)
   (window (window event-window))
   (keyword selection)
-  (card32 time))
+  ((or null card32) time))
 
 (declare-event :selection-request
   (card16 sequence)
   (window (window event-window) requestor)
   (keyword selection target)
   ((or null keyword) property)
-  (card32 time))
+  ((or null card32) time))
 
 (declare-event :selection-notify
   (card16 sequence)
   (window (window event-window))
   (keyword selection target)
   ((or null keyword) property)
-  (card32 time))
+  ((or null card32) time))
 
 (declare-event :colormap-notify
   (card16 sequence)
