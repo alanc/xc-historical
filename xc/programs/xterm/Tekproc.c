@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Tekproc.c,v 1.50 89/03/02 12:04:51 jim Exp $
+ * $XConsortium: Tekproc.c,v 1.51 89/03/06 10:41:10 jim Exp $
  *
  * Warning, there be crufty dragons here.
  */
@@ -121,7 +121,7 @@ extern long time();
 #define	unput(c)	*Tpushback++ = c
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: Tekproc.c,v 1.50 89/03/02 12:04:51 jim Exp $";
+static char rcs_id[] = "$XConsortium: Tekproc.c,v 1.51 89/03/06 10:41:10 jim Exp $";
 #endif	/* lint */
 
 static XPoint *T_box[TEKNUMFONTS] = {
@@ -1023,12 +1023,6 @@ TekRun()
 
 	if(screen->select || screen->always_highlight)
 		TekSelect();
-	if (L_flag > 0) {
-		XWarpPointer (screen->display, None, TWindow(screen),
-			    0, 0, 0, 0,
-			    TFullWidth(screen) >> 1, TFullHeight(screen) >> 1);
-		L_flag = -1;
-	}
 	Tpushback = Tpushb;
 	Tbptr = Tbuffer;
 	for(i = Tbcnt = bcnt ; i > 0 ; i--)

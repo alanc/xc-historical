@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: data.h,v 1.3 88/09/06 17:08:02 jim Exp $
+ *	$XConsortium: data.h,v 1.4 89/03/01 20:00:33 jim Exp $
  */
 
 
@@ -49,7 +49,6 @@ extern char *ptydev;
 extern char *ttydev;
 extern char *xterm_name;
 extern Char buffer[];
-extern int L_flag;
 extern int Select_mask;
 extern int T_lastx;
 extern int T_lasty;

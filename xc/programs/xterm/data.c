@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: data.c,v 1.4 88/09/06 17:08:01 jim Exp $
+ *	$XConsortium: data.c,v 1.5 89/03/01 20:00:31 jim Exp $
  */
 
 #include <X11/copyright.h>
@@ -34,7 +34,7 @@
 #include "data.h"
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: data.c,v 1.4 88/09/06 17:08:01 jim Exp $";
+static char rcs_id[] = "$XConsortium: data.c,v 1.5 89/03/01 20:00:31 jim Exp $";
 #endif	/* lint */
 
 XPoint T_boxlarge[NBOX] = {
@@ -98,7 +98,6 @@ int debug = 0; 		/* true causes error messages to be displayed */
 XtermWidget term;		/* master data structure for client */
 char *xterm_name;	/* argv[0] */
 int am_slave = 0;	/* set to 1 if running as a slave process */
-int L_flag;
 int max_plus1;
 int pty_mask;
 int Select_mask;

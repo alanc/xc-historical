@@ -1,5 +1,5 @@
 /*
- * $XConsortium: charproc.c,v 1.68 89/03/02 11:25:41 keith Exp $
+ * $XConsortium: charproc.c,v 1.69 89/03/02 12:04:58 jim Exp $
  */
 
 
@@ -138,7 +138,7 @@ static void VTallocbuf();
 #define	doinput()		(bcnt-- > 0 ? *bptr++ : in_put())
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: charproc.c,v 1.68 89/03/02 11:25:41 keith Exp $";
+static char rcs_id[] = "$XConsortium: charproc.c,v 1.69 89/03/02 12:04:58 jim Exp $";
 #endif	/* lint */
 
 static long arg;
@@ -1774,12 +1774,7 @@ VTRun()
 	screen->cursor_set = ON;
 	if(screen->select || screen->always_highlight)
 		VTSelect();
-	if (L_flag > 0) {
-		XWarpPointer (screen->display, None, VWindow(screen),
-			    0, 0, 0, 0,
-			    FullWidth(screen) >> 1, FullHeight(screen) >>1);
-		L_flag = -1;
-	}
+
 	bcnt = 0;
 	bptr = buffer;
 	while(Tpushb > Tpushback) {
