@@ -1,4 +1,4 @@
-/* $XConsortium: sm_manager.c,v 1.22 94/04/17 20:16:56 mor Exp $ */
+/* $XConsortium: sm_manager.c,v 1.23 94/05/02 11:16:15 mor Exp $ */
 
 /*
 
@@ -108,6 +108,20 @@ char	   **failureReasonRet;
     SmsConn  		smsConn;
     unsigned long 	mask;
     Status		status;
+
+    /*
+     * vendor/release are undefined for ProtocolSetup in XSMP.
+     */
+
+    if (vendor)
+	free (vendor);
+    if (release)
+	free (release);
+
+
+    /*
+     * Allocate new SmsConn.
+     */
 
     if ((smsConn = (SmsConn) malloc (sizeof (struct _SmsConn))) == NULL)
     {
