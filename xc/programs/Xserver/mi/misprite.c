@@ -4,7 +4,7 @@
  * machine independent software sprite routines
  */
 
-/* $XConsortium: misprite.c,v 5.21 89/09/25 16:14:58 keith Exp $ */
+/* $XConsortium: misprite.c,v 5.22 89/10/03 19:45:05 keith Exp $ */
 
 /*
 Copyright 1989 by the Massachusetts Institute of Technology
@@ -421,7 +421,7 @@ miSpriteCreateGC (pGC)
     GCPtr   pGC;
 {
     ScreenPtr	    pScreen = pGC->pScreen;
-    Bool	    ret = FALSE;
+    Bool	    ret;
     miSpriteGCPtr   pPriv;
 
     SCREEN_PROLOGUE (pScreen, CreateGC);
