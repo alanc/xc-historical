@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $Header: events.c,v 1.136 88/01/19 07:31:24 rws Exp $ */
+/* $Header: events.c,v 1.137 88/01/30 10:06:07 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -740,8 +740,11 @@ TryClientEvents (client, pEvents, count, mask, filter, grab)
 		pEvents->u.u.detail = NotifyNormal;
 	    }
 	}
-	for (i = 0; i < count; i++)
-	    pEvents[i].u.u.sequenceNumber = client->sequence;
+	if (pEvents->u.u.type != KeymapNotify)
+	{
+	    for (i = 0; i < count; i++)
+		pEvents[i].u.u.sequenceNumber = client->sequence;
+	}
 	WriteEventsToClient(client, count, pEvents);
 	if (debug_events) ErrorF(  " delivered\n");
 	return 1;
@@ -1712,7 +1715,8 @@ EnterLeaveEvent(type, mode, detail, pWin)
 	xKeymapEvent ke;
 	ke.type = KeymapNotify;
 	bcopy((char *)&keybd->down[1], (char *)&ke.map[0], 31);
-	(void)DeliverEventsToWindow(pWin, &ke, 1, KeymapStateMask, grab);
+	(void)DeliverEventsToWindow(pWin, (xEvent *)&ke, 1,
+				    KeymapStateMask, grab);
     }
 }
 
@@ -1803,7 +1807,8 @@ FocusEvent(type, mode, detail, pWin)
 	xKeymapEvent ke;
 	ke.type = KeymapNotify;
 	bcopy((char *)keybd->down, (char *)&ke.map[0], 31);
-	(void)DeliverEventsToWindow(pWin, &event, 1, KeymapStateMask, NullGrab);
+	(void)DeliverEventsToWindow(pWin, (xEvent *)&ke, 1,
+				    KeymapStateMask, NullGrab);
     }
 }
 
