@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Shell.c,v 1.76 89/11/14 14:51:34 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Shell.c,v 1.77 89/12/05 14:14:17 swick Exp $";
 /* $oHeader: Shell.c,v 1.7 88/09/01 11:57:00 asente Exp $ */
 #endif /* lint */
 
@@ -42,8 +42,6 @@ SOFTWARE.
 #endif /* pegasus */
 
 #include <X11/Xatom.h>
-
-extern void XSetTransientForHint(); /* this was not declared in Xlib.h... */
 
 #include "IntrinsicI.h"
 #include "StringDefs.h"
