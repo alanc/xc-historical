@@ -1,16 +1,30 @@
-.\" $XConsortium: xcmsdb.man,v 1.6 94/02/07 23:21:01 rws Exp $
+.\" $XConsortium: xcmsdb.man,v 1.7 94/04/11 14:28:54 gildea Exp $
+.\" Copyright 1990, Tektronix Inc.
+.\" Copyright 1993 Massachusetts Institute of Technology
+.\"
+.\" Permission to use, copy, modify, distribute, and sell this software and
+.\" its documentation for any purpose is hereby granted without fee, provided
+.\" that the above copyright notice appear in all copies and that both that
+.\" copyright notice and this permission notice appear in supporting
+.\" documentation, and that the name of M.I.T. not be used in advertising or
+.\" publicity pertaining to distribution of the software without specific,
+.\" written prior permission.  M.I.T. makes no representations about the
+.\" suitability of this software for any purpose.  It is provided "as is"
+.\" without express or implied warranty.
 .TH XCMSDB 1 "Release 6" "X Version 11"
 .SH NAME
-xcmsdb \- Xlib Screen Color Characterization Data utility
+xcmsdb \- Device Color Characterization utility for X Color Management System
 .SH SYNOPSIS
 .B xcmsdb
-[\-option ...] [\fIfilename\fP]
+[ \fB\-query\fP ] [ \fB\-remove\fP ]
+[ \fB\-format\032\fP|\fB16\fP|\fB8\fP ]
+[ \fIfilename\fP ]
 .SH DESCRIPTION
 .I xcmsdb
 is used to load, query, or remove Device Color Characterization data 
 stored in properties on the root window of the screen as specified
 in section 7, Device Color Characterization, of the ICCCM.
-Device Color Characterization data (also called the  Device Drofile)
+Device Color Characterization data (also called the Device Profile)
 is an integral part of Xlib's X Color Management System (Xcms), necessary
 for proper conversion of color specification between device-independent
 and device-dependent forms.
@@ -21,7 +35,8 @@ Xcms then uses display gamma information stored in the
 XDCCC_LINEAR_RGB_CORRECTION property to convert color specifications between
 RGBi and RGB device (XcmsRGB, also referred to as device RGB).
 .LP
-Note that Xcms allows clients to register \fIfunction sets\fp in addition to its
+Note that Xcms allows clients to register \fIfunction sets\fP
+in addition to its
 built-in function set for CRT color monitors.  Additional function sets
 may store their device profile information in other properties in function
 set specific format.
@@ -36,7 +51,6 @@ or
 .B \-remove 
 options are not specified.
 .SH "OPTIONS"
-.PP
 .I xcmsdb
 program accepts the following options:
 .TP 8
@@ -50,7 +64,7 @@ sends the data to standard out.
 This option attempts to remove the XDCCC properties on the screen's root
 window.
 .TP 8
-.B \-format 32 | 16 | 8
+\fB\-format\032\fP|\fB16\fP|\fB8\fP
 Specifies the property format (32, 16, or 8 bits per entry) for the
 XDCCC_LINEAR_RGB_CORRECTION property.
 Precision of encoded floating point values increases with the increase
@@ -62,11 +76,6 @@ xprop(1), Xlib documentation
 .TP 8
 .B DISPLAY
 to figure out which display and screen to use.
-.SH BUGS
-.PP
-Unknown
-.SH COPYRIGHT
-Copyright 1990, Tektronix Inc.
 .SH AUTHOR
 Chuck Adams, Tektronix Inc.
 Al Tabayoyon, SynChromatics Inc. (added multi-visual support)
