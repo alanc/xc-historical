@@ -2,7 +2,7 @@
 /* Copyright    Massachusetts Institute of Technology    1985, 1986, 1987 */
 
 #ifndef lint
-static char rcsid[] = "$Header: XlibInt.c,v 11.62 88/02/11 09:49:20 rws Exp $";
+static char rcsid[] = "$Header: XlibInt.c,v 11.63 88/02/20 20:21:11 rws Exp $";
 #endif
 
 /*
@@ -1011,7 +1011,7 @@ int _XDefaultError(dpy, event)
     XGetErrorDatabaseText(dpy, mtype, "CurrentSerial", "Current Serial #%d",
 	mesg, BUFSIZ);
     (void) fprintf(stderr, mesg, dpy->request);
-    fputs("\n  ", stderr);
+    fputs("\n", stderr);
     if (event->error_code == BadImplementation) return 0;
     exit(1);
     /*NOTREACHED*/
