@@ -1,4 +1,4 @@
-.\" $XConsortium: X11.protocol,v 1.39 94/04/14 12:20:56 rws Exp $
+.\" $XConsortium: X11.protocol,v 1.40 94/04/16 19:08:07 rws Exp $
 .EH ''''
 .OH ''''
 .EF ''''
@@ -264,7 +264,7 @@ Common Types
 \*(SN Common Types
 .XE
 .LP
-.TS
+.TS H
 lw(1.25i) lw(4.5i).
 _
 .sp 6p
@@ -2471,6 +2471,7 @@ _
 Direction	Deltas
 .sp 6p
 _
+.TH
 .R
 .sp 6p
 T{
