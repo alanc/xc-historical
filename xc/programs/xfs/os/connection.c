@@ -1,4 +1,4 @@
-/* $XConsortium: connection.c,v 1.26 94/02/09 16:20:33 gildea Exp $ */
+/* $XConsortium: connection.c,v 1.27 94/03/02 12:17:08 mor Exp $ */
 /*
  * handles connections
  */
@@ -135,7 +135,7 @@ StopListening()
     for (i = 0; i < ListenTransCount; i++)
     {
 	BITCLEAR (AllSockets, ListenTransFds[i]);
-	_FONTTransCloseForCloning (ListenTransConns[i]);
+	_FontTransCloseForCloning (ListenTransConns[i]);
     }
 
     free ((char *) ListenTransFds);
@@ -203,7 +203,7 @@ OldListenRec *old_listen;
 		sprintf (portnum, "%d", old_listen[i].portnum);
 
 	    if ((ListenTransConns[ListenTransCount] =
-		_FONTTransReopenCOTSServer (old_listen[i].trans_id,
+		_FontTransReopenCOTSServer (old_listen[i].trans_id,
 		old_listen[i].fd, portnum)) != NULL)
 	    {
 		ListenTransFds[ListenTransCount] = old_listen[i].fd;
@@ -221,7 +221,7 @@ OldListenRec *old_listen;
 
 	sprintf (port, "%d", ListenPort);
 
-	if ((_FONTTransMakeAllCOTSServerListeners (port, &partial,
+	if ((_FontTransMakeAllCOTSServerListeners (port, &partial,
 	    &ListenTransCount, &ListenTransConns) >= 0) &&
 	    (ListenTransCount >= 1))
 	{
@@ -229,7 +229,7 @@ OldListenRec *old_listen;
 
 	    for (i = 0; i < ListenTransCount; i++)
 	    {
-		int fd = _FONTTransGetConnectionNumber (ListenTransConns[i]);
+		int fd = _FontTransGetConnectionNumber (ListenTransConns[i]);
 
 		ListenTransFds[i] = fd;
 		WellKnownConnections |= (1L << fd);
@@ -291,6 +291,7 @@ MakeNewConnections()
 
     while (readyconnections) {
 	XtransConnInfo trans_conn, new_trans_conn;
+	int status;
 
 	curconn = ffs(readyconnections) - 1;
 	readyconnections &= ~(1 << curconn);
@@ -298,18 +299,18 @@ MakeNewConnections()
 	if ((trans_conn = lookup_trans_conn (curconn)) == NULL)
 	    continue;
 
-	if ((new_trans_conn = _FONTTransAccept (trans_conn)) == NULL)
+	if ((new_trans_conn = _FontTransAccept (trans_conn, &status)) == NULL)
 	    continue;
 
-	newconn = _FONTTransGetConnectionNumber (new_trans_conn);
+	newconn = _FontTransGetConnectionNumber (new_trans_conn);
 
-	_FONTTransSetOption(new_trans_conn, TRANS_NONBLOCKING, 1);
+	_FontTransSetOption(new_trans_conn, TRANS_NONBLOCKING, 1);
 
 	oc = (OsCommPtr) fsalloc(sizeof(OsCommRec));
 	if (!oc) {
 	    fsfree(oc);
 	    error_conn_max(new_trans_conn);
-	    _FONTTransClose(new_trans_conn);
+	    _FontTransClose(new_trans_conn);
 	    continue;
 	}
 	BITSET(AllClients, newconn);
@@ -338,7 +339,7 @@ error_conn_max(trans_conn)
 XtransConnInfo trans_conn;
 
 {
-    int fd = _FONTTransGetConnectionNumber (trans_conn);
+    int fd = _FontTransGetConnectionNumber (trans_conn);
     fsConnSetup conn;
     char        pad[3];
     char        byteOrder = 0;
@@ -354,7 +355,7 @@ XtransConnInfo trans_conn;
     BITSET(mask, fd);
     (void) select(fd + 1, (int *) mask, (int *) NULL, (int *) NULL, &waittime);
     /* try to read the byteorder of the connection */
-    (void) _FONTTransRead(trans_conn, &byteOrder, 1);
+    (void) _FontTransRead(trans_conn, &byteOrder, 1);
     if ((byteOrder == 'l') || (byteOrder == 'B')) {
 	int         num_alts;
 	AlternateServerPtr altservers,
@@ -382,18 +383,18 @@ XtransConnInfo trans_conn;
 	    conn.minor_version = lswaps(conn.minor_version);
 	    conn.alternate_len = lswaps(conn.alternate_len);
 	}
-	(void) _FONTTransWrite(trans_conn,
+	(void) _FontTransWrite(trans_conn,
 	    (char *) &conn, SIZEOF(fsConnSetup));
 	/* dump alternates */
 	for (i = 0, as = altservers; i < num_alts; i++, as++) {
-	    (void) _FONTTransWrite(trans_conn,
+	    (void) _FontTransWrite(trans_conn,
 		(char *) as, 2);  /* XXX */
-	    (void) _FONTTransWrite(trans_conn,
+	    (void) _FontTransWrite(trans_conn,
 		(char *) as->name, as->namelen);
 	    altlen = 2 + as->namelen;
 	    /* pad it */
 	    if (altlen & 3)
-		(void) _FONTTransWrite(trans_conn,
+		(void) _FontTransWrite(trans_conn,
 		(char *) pad, ((4 - (altlen & 3)) & 3));
 	}
 	if (num_alts)
@@ -408,7 +409,7 @@ close_fd(oc)
     int         fd = oc->fd;
 
     if (oc->trans_conn)
-	_FONTTransClose(oc->trans_conn);
+	_FontTransClose(oc->trans_conn);
     FreeOsBuffers(oc);
     BITCLEAR(AllSockets, fd);
     BITCLEAR(AllClients, fd);
