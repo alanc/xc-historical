@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: main.c,v 1.47 88/07/12 11:08:16 jim Exp $";
+static char rcs_id[] = "$Header: main.c,v 1.48 88/07/12 11:20:50 jim Exp $";
 #endif	/* lint */
 
 /*
@@ -1171,11 +1171,15 @@ spawn ()
 		/* copy the environment before Setenving */
 		for (i = 0 ; environ [i] != NULL ; i++) ;
 		/*
-		 * The `4' is the number of Setenv() calls which may add
-		 * a new entry to the environment.  The `1' is for the
-		 * NULL terminating entry.
+		 * The `4' (`5' for SYSV) is the number of Setenv()
+		 * calls which may add a new entry to the environment.
+		 * The `1' is for the NULL terminating entry.
 		 */
+#ifdef SYSV
+		envnew = (char **) calloc ((unsigned) i + (5 + 1), sizeof(char *));
+#else	/* !SYSV */
 		envnew = (char **) calloc ((unsigned) i + (4 + 1), sizeof(char *));
+#endif	/* SYSV */
 		Bcopy((char *)environ, (char *)envnew, i * sizeof(char *));
 		environ = envnew;
 		Setenv ("TERM=", TermName);
