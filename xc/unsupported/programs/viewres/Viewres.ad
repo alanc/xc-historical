@@ -37,8 +37,10 @@
 <Btn2Down>,<Btn2Up>: set() notify() Resources(toggle) \n\
 <Key>q: Quit() \n\
 <Key>space: Select(nothing) \n\
-<Key>p: Select(parents) \n\
+<Key>p: Select(parent) \n\
+<Key>a: Select(ancestors) \n\
 <Key>c: Select(children) \n\
+<Key>d: Select(descendants) \n\
 
 
 *Viewport.Translations: #override \n\
@@ -52,9 +54,10 @@ Shift<Key>c: SetLabelType(class) \n\
 Shift<Key>v: SetLabelType(variable) \n\
 <Key>space: Select(nothing) \n\
 <Key>i: Select(invert) \n\
-<Key>p: Select(parents) \n\
+<Key>p: Select(parent) \n\
+<Key>a: Select(ancestors) \n\
 <Key>c: Select(children) \n\
-<Key>a: Select(all) \n\
+<Key>d: Select(descendants) \n\
 <Key>r: Select(resources) \n\
 <Key>s: Select(shown) \n\
 
@@ -69,8 +72,10 @@ Shift<Key>v: SetLabelType(variable) \n\
 *buttonbox.select.Label: Select
 *buttonbox.select.selectMenu.unselect.Label: Unselect
 *buttonbox.select.selectMenu.selectInvert.Label: Invert Selection
-*buttonbox.select.selectMenu.selectParents.Label: Select Parents
+*buttonbox.select.selectMenu.selectParent.Label: Select Parent
+*buttonbox.select.selectMenu.selectAncestors.Label: Select Ancestors
 *buttonbox.select.selectMenu.selectChildren.Label: Select Children
+*buttonbox.select.selectMenu.selectDescendants.Label: Select Descendants
 *buttonbox.select.selectMenu.selectAll.Label: Select All
 *buttonbox.select.selectMenu.selectHasResources.Label: Select Has Resources
 *buttonbox.select.selectMenu.selectShownResources.Label: Select Shown Resource Boxes
