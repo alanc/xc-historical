@@ -85,7 +85,6 @@ OBJS = \
 	AsciiText.o \
 	Box.o \
 	Callback.o \
-	Cascade.o \
 	Clock.o \
 	Command.o \
 	Composite.o \
