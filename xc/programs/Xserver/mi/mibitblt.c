@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: mibitblt.c,v 1.59 88/07/20 14:18:25 keith Exp $ */
+/* $Header: mibitblt.c,v 1.60 88/07/28 14:24:36 rws Exp $ */
 /* Author: Todd Newman  (aided and abetted by Mr. Drewry) */
 
 #include "X.h"
@@ -669,7 +669,7 @@ miGetImage(pDraw, sx, sy, w, h, format, planeMask, pdstLine)
     long		gcv[2];
     PixmapPtr		pPixmap = (PixmapPtr)NULL;
     GCPtr		pGC;
-    unsigned long *     pDst = (unsigned long *)pdstLine;
+    pointer		pDst = pdstLine;
 
     depth = pDraw->depth;
     if(format == ZPixmap)
@@ -713,7 +713,7 @@ miGetImage(pDraw, sx, sy, w, h, format, planeMask, pdstLine)
 		  (*pDraw->pScreen->GetSpans)(pPixmap, w, &pt, &width, 1);
 	    }
 	    bcopy(pbits, (char *)pDst, linelength);
-	    pDst += linelength / sizeof(long);
+	    pDst += linelength;
 	    Xfree(pbits);
 	}
 	if (pPixmap)
