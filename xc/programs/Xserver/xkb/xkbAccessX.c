@@ -1,4 +1,4 @@
-/* $XConsortium: xkbAccessX.c,v 1.2 93/09/28 00:00:21 rws Exp $ */
+/* $XConsortium: xkbAccessX.c,v 1.3 93/09/28 19:47:32 rws Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -123,8 +123,9 @@ static void AccessXKRGTurnOn(keybd,KRGControl,pCN)
 {
     XkbSrvInfoRec	*xkbInfo = keybd->key->xkbInfo;
     XkbControlsRec	*ctrls = xkbInfo->desc.controls;
-    XkbControlsRec	old= *ctrls;
+    XkbControlsRec	old;
 
+    old= *ctrls;
     ctrls->enabledControls |= (KRGControl&KRG_MASK);
     if (XkbComputeControlsNotify(keybd,&old,ctrls,pCN))
 	XkbSendControlsNotify(keybd,pCN);
@@ -151,8 +152,9 @@ static void AccessXKRGTurnOff(keybd,pCN)
 {
     XkbSrvInfoRec	*xkbInfo = keybd->key->xkbInfo;
     XkbControlsRec	*ctrls = xkbInfo->desc.controls;
-    XkbControlsRec	 old = *ctrls;
+    XkbControlsRec	 old;
 
+    old = *ctrls;
     ctrls->enabledControls &= ~KRG_MASK;
     if (XkbComputeControlsNotify(keybd,&old,ctrls,pCN))
 	XkbSendControlsNotify(keybd,pCN);
@@ -179,8 +181,9 @@ static void AccessXStickyKeysTurnOn(keybd,pCN)
 {
     XkbSrvInfoRec	*xkbInfo = keybd->key->xkbInfo;
     XkbControlsRec	*ctrls = xkbInfo->desc.controls;
-    XkbControlsRec	 old = *ctrls;
+    XkbControlsRec	 old;
     
+    old = *ctrls;
     ctrls->enabledControls |= XkbStickyKeysMask;
     xkbInfo->shiftKeyCount = 0;
     if (XkbComputeControlsNotify(keybd,&old,ctrls,pCN)) 
@@ -208,9 +211,10 @@ static void AccessXStickyKeysTurnOff(keybd,pCN)
 {
     XkbSrvInfoRec	*xkbInfo = keybd->key->xkbInfo;
     XkbControlsRec	*ctrls = xkbInfo->desc.controls;
-    XkbControlsRec	 old = *ctrls;
+    XkbControlsRec	 old;
     unsigned ledUpdate;
 
+    old = *ctrls;
     ctrls->enabledControls &= ~XkbStickyKeysMask;
     xkbInfo->shiftKeyCount = 0;
     if (XkbComputeControlsNotify(keybd,&old,ctrls,pCN))
@@ -330,9 +334,10 @@ AccessXTimeoutExpire(timer,now,arg)
 DeviceIntPtr	 keybd = (DeviceIntPtr)arg;
 XkbSrvInfoRec	*xkbInfo= keybd->key->xkbInfo;
 XkbControlsRec	*ctrls= xkbInfo->desc.controls;
-XkbControlsRec	 old= *ctrls;
+XkbControlsRec	 old;
 xkbControlsNotify	cn;
 
+    old= *ctrls;
     if (xkbInfo->lastPtrEventTime) {
 	unsigned timeLeft;
 	timeLeft= (xkbInfo->desc.controls->accessXTimeout*1000);
