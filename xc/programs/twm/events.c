@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.180 91/05/31 17:39:27 dave Exp $
+ * $XConsortium: events.c,v 1.181 91/07/09 09:45:42 dave Exp $
  *
  * twm event handling
  *
@@ -1899,8 +1899,10 @@ HandleButtonPress()
 	    Context = C_WINDOW;
 	}
 
-	ExecuteFunction(RootFunction, Action, Event.xany.window,
-	    Tmp_win, &Event, Context, FALSE);
+	/* make sure we are not trying to move an identify window */
+	if (Event.xany.window != Scr->InfoWindow)
+	  ExecuteFunction(RootFunction, Action, Event.xany.window,
+			  Tmp_win, &Event, Context, FALSE);
 
 	RootFunction = NULL;
 	return;

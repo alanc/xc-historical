@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.184 91/07/10 15:34:27 dave Exp $
+ * $XConsortium: menus.c,v 1.185 91/07/16 13:22:23 dave Exp $
  *
  * twm menu code
  *
@@ -1582,6 +1582,7 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
 	    DragY = eventp->xbutton.y;
 	    moving_icon = TRUE;
 	}
+
 	else if (w != tmp_win->icon_w)
 	{
 	    XTranslateCoordinates(dpy, w, tmp_win->frame,
