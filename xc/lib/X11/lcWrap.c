@@ -1,4 +1,4 @@
-/* $XConsortium: lcWrap.c,v 11.19 94/04/01 17:48:30 rws Exp $ */
+/* $XConsortium: lcWrap.c,v 11.20 94/04/17 20:22:12 rws Exp kaleb $ */
 /*
 
 Copyright (c) 1991  X Consortium
@@ -462,6 +462,10 @@ _XlcCopyFromArg(src, dst, size)
 {
     if (size == sizeof(long))
 	*((long *) dst) = (long) src;
+#ifdef LONG64
+    else if (size == sizeof(int))
+	*((int *) dst) = (int) src;
+#endif
     else if (size == sizeof(short))
 	*((short *) dst) = (short) src;
     else if (size == sizeof(char))
