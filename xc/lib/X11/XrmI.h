@@ -1,4 +1,4 @@
-/* $XConsortium: XrmI.h,v 1.3 90/06/15 17:19:01 rws Exp $ */
+/* $XConsortium: XrmI.h,v 1.4 90/07/21 17:37:38 rws Exp $ */
 /*
 
 Copyright 1990 by the Massachusetts Institute of Technology
@@ -33,7 +33,7 @@ without express or implied warranty.
 #define STRING_TERMINATOR ('\0')
 #define ZERO		('0')
 
-#define get_next_char(ch, str)		(_xrmtypes[(ch) = *((str)++)])
+#define get_next_char(ch, str) (_xrmtypes[(unsigned char)((ch) = *((str)++))])
 
 #define xrm_is_space(bits) 		((bits) & SPACE)
 #define xrm_is_end_of_quark(bits)     ((bits)&(LOOSE|TIGHT|SEP|SPACE|_EOF|EOL))
