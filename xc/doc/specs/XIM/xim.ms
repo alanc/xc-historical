@@ -19,9 +19,7 @@
 .TL
 \s+3\fBThe Input Method Protocol\fP\s-3
 .sp
-\fBPublic Review Draft\fR
-.sp
-\fBX Consortium Draft Standard\fR
+\fBX Consortium Standard\fR
 .sp 3
 .AU
 Masahiko Narita
@@ -35,12 +33,12 @@ SunSoft, Inc.
 .AB
 .LP
 This specifies a protocol between IM library and IM (Input Method) 
-Server for internationalized text input, which is independent from a 
-specific-language, a specific-input method and the transport layer 
+Server for internationalized text input, which is independent from  
+any specific language, any specific input method and the transport layer 
 used in communication between the IM library and the IM Server, and uses 
-the Client/Server model. 
-This protocol allows user to use his/her favorite input operation for all 
-applications within the stand-alone environment or the distributed environment.
+a client-server model. 
+This protocol allows user to use his/her favorite input method for all 
+applications within the stand-alone distributed environment.
 .AE
 .ce 0
 .br
@@ -57,11 +55,11 @@ applications within the stand-alone environment or the distributed environment.
 .DS C
 X Window System is a trademark of M.I.T.
 .sp
-Copyright \(co 1993 by X Consortium, Inc.
+Copyright \(co 1993, 1994 by X Consortium, Inc.
 .sp
-Copyright \(co 1993 by FUJITSU LIMITED
+Copyright \(co 1993, 1994 by FUJITSU LIMITED
 .sp
-Copyright \(co 1993 by Sun Microsystems, Inc.
+Copyright \(co 1993, 1994 by Sun Microsystems, Inc.
 .DE
 .sp 3
 .LP 
@@ -72,13 +70,11 @@ notice appear in all copies.
 X Consortium, Fujitsu and Sun Microsystems make no representations 
 about the suitability for any purpose of the information in this document. 
 This documentation is provided as is without express or implied warranty. 
-This document is only a draft standard of the X Consortium and is therefore
-subject to change.
 .ps 11
 .nr PS 11
 .bp 1
-.EH '\fBX Input Method Protocol\fP''\fBPublic Review Draft\fP'
-.OH '\fBX Input Method Protocol\fP''\fBPublic Review Draft\fP'
+.EH '\fBX Input Method Protocol\fP''
+.OH '\fBX Input Method Protocol\fP'''
 .EF ''\fB % \fP''
 .OF ''\fB % \fP''
 .NH 1
@@ -102,14 +98,14 @@ developers can use to create portable internationalized programs and to
 adapt them to the requirements of different native languages, local customs,
 and character string encodings (this is called ``localization'').  
 As one of its internationalization mechanisms X11R5 has defined a functional 
-interface for internationalized text input, called X Input Method.  
+interface for internationalized text input, called XIM (X Input Method).  
 .LP
-When the Client/Server model is used with an IM (Input Method) implementation,
-a protocol had to be established between the client and the server. 
+When a client-server model is used with an IM (Input Method) implementation,
+a protocol must be established between the client and the server. 
 However, the protocol used to interface Input Method Servers (IM Servers) 
 with the Input Method libraries (IM libraries) to which applications are 
 linked was not addressed in X11R5. 
-This caused application developers to depend on vendor-specific input methods, 
+This led application developers to depend on vendor-specific input methods, 
 decreased the user's choice of available input methods, and made it more 
 difficult for developers to create portable applications. This paper describes 
 the Input Method Protocol developed for X11R6 to resolve the above problems 
@@ -118,7 +114,7 @@ and to address the requirements of existing and future input methods.
 The Input Method Protocol is independent from the transport layer used in 
 communication between the IM library and the IM Server. 
 Thus, the input method protocol can be built on any inter-process 
-communication mechanism, such as TCP/IP or X protocol.
+communication mechanism, such as TCP/IP or the X protocol.
 .LP
 In addition, the protocol provides for future extensions such as differing 
 input model types.
@@ -142,9 +138,9 @@ which, when followed by different combinations of key strokes,
 generate different characters.
 .LP
 Text input for ideographic languages is much less simple.  In these
-languages, characters represent the actual objects rather than the
-phonetic sounds in pronouncing a word, and the number of characters
-in the language may continue to grow.  In Japanese, for instance, most
+languages, characters represent actual objects rather than phonetic 
+sounds used in pronouncing a word, and the number of characters
+in these languages may continue to grow.  In Japanese, for instance, most
 text input methods involve entering characters in a phonetic alphabet,
 after which the input method searches a dictionary for possible
 ideographic equivalents (of which there may be many).  The input method then
@@ -222,7 +218,7 @@ process may not be required.
 .RE
 .LP
 Most languages which need complex preediting, such as Asian languages,
-are implemented using Client/Server IM model.  Other languages
+are implemented using the Client/Server IM model.  Other languages
 which need only dead key or compose key processing, such as European
 languages, are implemented using the Library model.
 .LP
@@ -240,26 +236,27 @@ When the client connects or disconnects to the IM Server, an open or close
 operation occurs between the client and the IM Server.
 .LP
 The IM can be specified at the time of XOpenIM() by setting the locale 
-of the client and a locale modifier. Since the IM remembers each locale 
-at the time of each XOpenIM() can be called multiple times (with the 
+of the client and a locale modifier. Since the IM remembers 
+the locale at the time of creation XOpenIM() can be called
+multiple times (with the 
 setting for the locale and the locale modifier changed) to support 
 multiple languages.
 .LP
-In addition, the supported IM type can be obtained by XGetIMValues().
+In addition, the supported IM type can be obtained using XGetIMValues().
 .LP
 The client usually holds multiple input (text) fields. Xlib provides a
 value type called the ``Input Context'' (IC) to manage each individual 
 input field.  An IC can be created by specifying XIM using XCreateIC(), 
-and it can be destroyed by XDestroyIC().
+and it can be destroyed using XDestroyIC().
 .LP
 The IC can specify the type of IM which is supported by XIM for each 
 input field, so each input field can handle a different type of IM.
 .LP
-And most of all, the information, such as the committed string sent from
+Most importantly information such as the committed string sent from
 the IM Server to the client, is exchanged based on each IC.
 .LP
-Since each IC corresponds to each input field, the focused input field 
-should be announced to the IM Server by XSetICFocus(). (XUnsetICFocus() 
+Since each IC corresponds to an input field, the focused input field 
+should be announced to the IM Server using XSetICFocus(). (XUnsetICFocus() 
 can also be used to change the focus.)
 .LP
 .NH 2
@@ -268,7 +265,7 @@ Event Handling Model
 \*(SN Event Handling Model
 .XE
 .LP
-Existing input methods support either FrontEnd method, BackEnd method, 
+Existing input methods support either the FrontEnd method, the BackEnd method, 
 or both.  This protocol specifically supports the BackEnd method as 
 the default method, but also supports the FrontEnd method as an optional 
 IM Server extension.
@@ -288,9 +285,9 @@ handled serially in the order delivered, and therefore there is no
 synchronization problem between the IM library and the IM Server.
 .LP
 Using this method, the IM library forwards all KeyPress and KeyRelease
-events to the IM Server (as required by the Event Flow Control type),
-and synchronizes with the IM Server (as described in section 4.16.
-``Filtering Events'').
+events to the IM Server (as required by the Event Flow Control model 
+described in section 2.4. ``Event Flow Control''), and synchronizes 
+with the IM Server (as described in section 4.16.  ``Filtering Events'').
 .LP
 .NH 3
 FrontEnd Method
@@ -306,7 +303,7 @@ the user's workstation and the client application is running on another
 workstation over a relatively slow network).
 .LP
 However, the FrontEnd model may have synchronization problems between
-the key events handled in IM Server and the other events handled in the
+the key events handled in the IM Server and other events handled in the
 client, and these problems could possibly cause the loss or duplication
 of key events.  For this reason, the BackEnd method is the core method
 supported, and the FrontEnd method is made available as an extension for
@@ -441,7 +438,7 @@ Default Preconnection Convention
 IM Servers are strongly encouraged to register their symbolic
 names as the ATOM names into the IM Server directory property, 
 .PN XIM_SERVERS,
-on the screen_number 0.
+on the root window of the screen_number 0.
 This property can contain a list of ATOMs, and the each ATOM represents
 each possible IM Server.
 IM Server names are restricted to POSIX Portable Filename Character Set.
@@ -502,8 +499,9 @@ The basic request packet header format is as follows.
 .RE
 The MAJOR-OPCODE specifies which core request or extension package this 
 packet represents.  If the MAJOR-OPCODE corresponds to a core request, 
-the MINOR-OPCODE contains 8 bits of request-specific data.  Otherwise, 
-the MAJOR-OPCODE and the MINOR-OPCODE are specified by
+the MINOR-OPCODE contains 8 bits of request-specific data.  
+(If the MINOR-OPCODE is not used, it is 0.)
+Otherwise, the MAJOR-OPCODE and the MINOR-OPCODE are specified by
 .PN XIM_QUERY_EXTENSION
 message.  (Refer to 4.7. Query the supported extension protocol list.)
 The LENGTH field specifies the number of 4 bytes elements following the 
@@ -528,15 +526,18 @@ BITMASK32
 .sp
 PADDING FORMAT
 	Where N is some expression, and Pad(N) is the number of bytes needed to round N up to a 
-	multiple two.
+	multiple of four.
 		Pad(N) = (4 - (N mod 4)) mod 4
 .sp
-XPCS
+LPCE
+	1		A character from the4 X Portable Character Set in Latin Portable 
+			Character Encoding
+.bp
+STRING
 	2	n	length of string in bytes
-	n	LISTofCHAR	string
+	n	LISTofLPCE	string
 	p		unused, p=Pad(2+n)
 .sp
-.bp
 STR
 	1	n	length of name in bytes
 	n	STRING8	name
@@ -567,9 +568,6 @@ The value types are defined as follows:
 .TS H
 tab(:);
 l l l s s
-l l l l l
-l l l l l
-l l l l l
 l l l l l
 l l l l l
 l l l l l
@@ -624,21 +622,16 @@ _
 #13:XFontSet:2:n:length of Base font name
 ::n:STRING8:Base font name list
 ::p::unused, p = Pad(2+n)
-#14:XIMOptions:2:n:number of XIMOption list
-::2::unused
-::n:CARD32:XIMOption list
 #15:XIMHotKeyTriggers:4:n:T{
 number of XIMTRIGGERKEY list (*4)
 T}
 ::n:XIMTRIGGERKEY:XIMHotkeyTrigger list
-#16:XIMHotKeyState:4:XIMHOTKEYSTATE:T{
+#16:XIMHotKeyState::XIMHOTKEYSTATE:T{
 HotKey processing state
 T}
 #17:XIMStringConversion:XIMSTRCONVTEXT
 #18:XIMPreeditState:XIMPREEDITSTATE
 #19:XIMResetState:XIMRESETSTATE
-#20:XIMResetReturn:XIMRESETRETURN
-#21:XIMStringText:XIMSTRINGTEXT
 #x7fff:NestedList:-----	
 .sp 6p
 _
@@ -697,58 +690,50 @@ XICATTRIBUTE
 .ta .2i .5i 3.0i
 XIMSTRCONVTEXT
 	2	CARD16	XIMStringConversionFeedback
-		#00000001	XIMStringConversionLeftEdge
-		#00000002	XIMStringConversionRightEdge
-		#00000004	XIMStringConversionTopEdge
-		#00000008	XIMStringConversionBottomEdge
-		#00000010	XIMStringConversionConvealed
-		#00000020	XIMStringConversionWrapped
+		#x0000001	XIMStringConversionLeftEdge
+		#x0000002	XIMStringConversionRightEdge
+		#x0000004	XIMStringConversionTopEdge
+		#x0000008	XIMStringConversionBottomEdge
+		#x0000010	XIMStringConversionConvealed
+		#x0000020	XIMStringConversionWrapped
 	2	n	byte length of the retrieved string
 	n	STRING8	retrieved string
 	p		unused, p = Pad(n)
 	2	m	byte length of feedback array
 	2		unused
-	m	LISTofXIMSTRCONVFEEDBACK	feedback array
+	m	LISTofXIMSTRCONVFEEDBACK	feedback array(*1)
+.IP (*1)
+This field is reserved for future use.
 .sp
+.LP
+.nf
 .ta .2i .5i 2.0i
 XIMFEEDBACK
 	4	CARD32	XIMFeedback
-		#1	XIMReverse
-		#2	XIMUnderline
-		#4	XIMHighlight
-		#32	XIMPrimary
-		#64	XIMSecondary
-		#128	XIMTertiary
-.sp
-XIMSTRCONVFEEDBACK
-	4	CARD32	XIMStringConversionFeedback
-		#00000001	XIMStringConversionLeftEdge
-		#00000002	XIMStringConversionRightEdge
-		#00000004	XIMStringConversionTopEdge
-		#00000008	XIMStringConversionBottomEdge
-		#00000010	XIMStringConversionConvealed
-		#00000020	XIMStringConversionWrapped
+		#x000001	XIMReverse
+		#x000002	XIMUnderline
+		#x000004	XIMHighlight
+		#x000008	XIMPrimary
+		#x000010	XIMSecondary
+		#x000020	XIMTertiary
+		#x000040	XIMVisibleToForward
+		#x000080	XIMVisibleToBackward
+		#x000100	XIMVisibleCenter
 .sp
 XIMHOTKEYSTATE
 	4	CARD32	XIMHotKeyState
-		#00000001	XIMHotKeyStateON
-		#00000002	XIMHotKeyStateOFF
+		#x0000001	XIMHotKeyStateON
+		#x0000002	XIMHotKeyStateOFF
 .sp
 XIMPREEDITSTATE
 	4	CARD32	XIMPreeditState
-		#00000001	XIMPreeditEnable
-		#00000002	XIMPreeditDisable
+		#x0000001	XIMPreeditEnable
+		#x0000002	XIMPreeditDisable
 .sp
 XIMRESETSTATE
 	4	CARD32	XIMResetState
-		#00000001	XIMInitialState
-		#00000002	XIMPreserveState
-.sp
-XIMRESETRETURN
-	2	CARD16	XIMResetReturn
-		#0000	XIMReturnNULL
-		#0001	XIMReturnPreedit
-	2		unused
+		#x0000001	XIMInitialState
+		#x0000002	XIMPreserveState
 .LP
 .NH 2
 Error Notification
@@ -775,6 +760,7 @@ XIM_ERROR (IM Server \(<-\(-> IM library)
 :2:CARD16:input-method-ID
 :2:CARD16:input-context-ID
 :2:BITMASK16:flag (*1)
+::#0000:Both Input-Method-ID and Input-Context-ID are invalid
 ::#0001:Input-Method-ID is valid
 ::#0002:Input-Context-ID is valid
 :2:CARD16:Error Code
@@ -802,18 +788,16 @@ XIM_ERROR (IM Server \(<-\(-> IM library)
 .TE
 .LP
 .IP (*1)
-Specify input-method-ID or input-context-ID of packet header.
-If the error is for 
-.PN XIM_CONNECT
-or
-.PN XIM_OPEN
-message, neither input-method-ID nor input-context-ID is valid.
+Before an IM is created, both Input-Method-ID and 
+Input-Context-ID are invalid.
+Before an IC is created, only Input-Method-ID is valid. 
+After that, both of Input-Method-ID and Input-Context-ID are valid.
 .IP (*2) 
 Unspecific error, for example ``language engine died''
 .IP (*3)
-Specify the type of the core request or extension protocol that caused the error.
+This field is reserved for future use.
 .IP (*4)
-Vendor defined detail error number
+Vendor defined detail error message
 .RE
 .LP
 .NH 2
@@ -836,12 +820,16 @@ XIM_CONNECT (IM library \(-> IM Server)
 ::#x42 MSB first
 ::#x6c LSB first
 :1::unused
-:2:CARD16:client-major-protocol-version
-:2:CARD16:client-minor-protocol-version
+:2:CARD16:client-major-protocol-version (*1)
+:2:CARD16:client-minor-protocol-version (*1)
 :2:CARD16:number of client-auth-protocol-names
-:n:LISTofXPCS:client-auth-protocol-names
+:n:LISTofSTRING:client-auth-protocol-names
 .TE
+.LP
+.IP (*1)
+Specify the version of IM Protocol that the client supports.
 .RE
+.sp
 .LP
 A client must send 
 .PN XIM_CONNECT
@@ -861,9 +849,11 @@ lw(.25i) lw(.25i) lw(1.75i) lw(3.5i).
 XIM_AUTH_REQUIRED (IM library \(<-\(-> IM Server)
 .sp 6p
 :1:CARD8:auth-protocol-index
-:1:<varies>:auth-data1 
-:n:<varies>:auth-data2
-:p::unused, p = Pad(n+2)
+:3::unused
+:2:n:length of authentication data
+:2::unused
+:n:<varies>:data 
+:p::unused, p = Pad(n)
 .TE
 .RE
 .LP
@@ -886,9 +876,12 @@ lfB s s s
 lw(.25i) lw(.25i) lw(1.75i) lw(3.5i).
 XIM_AUTH_REPLY (IM library \(-> IM Server)
 .sp 6p
-:1:<varies>:auth-data1 
-:n:<varies>:auth-data2
-:p::unused, p = Pad(n+1)
+:2:n:length of authentication data
+:2::unused
+:2:n:length of authentication data
+:2::unused
+:n:<varies>:data
+:p::unused, p = Pad(n)
 .TE
 .RE
 .LP
@@ -903,9 +896,10 @@ lfB s s s
 lw(.25i) lw(.25i) lw(1.75i) lw(3.5i).
 XIM_AUTH_NEXT (IM library \(<-\(-> IM Server)
 .sp 6p
-:1:<varies>:auth-data1 
-:n:<varies>:auth-data2
-:p::unused, p = Pad(n+1)
+:2:n:length of authentication data
+:2::unused
+:n:<varies>:data
+:p::unused, p = Pad(n)
 .TE
 .RE
 .LP	
@@ -923,7 +917,7 @@ XIM_AUTH_SETUP (IM Server \(-> IM library)
 .sp 6p
 :2:CARD16:number of client-auth-protocol-names
 :2::unused
-:n:LISTofXPCS:server-auth-protocol-names
+:n:LISTofSTRING:server-auth-protocol-names
 .TE
 .RE
 .LP
@@ -955,10 +949,14 @@ lfB s s s
 lw(.25i) lw(.25i) lw(1.75i) lw(3.5i).
 XIM_CONNECT_REPLY (IM Server \(-> IM library)
 .sp 6p
-:2:CARD16:server-major-protocol-version
-:2:CARD16:server-minor-protocol-version
+:2:CARD16:server-major-protocol-version (*1)
+:2:CARD16:server-minor-protocol-version (*1)
 .TE
+.LP
+.IP (*1)
+Specify the version of IM Protocol that the IM Server supports.
 .RE
+.sp
 .LP	
 Here are the state diagrams for the client and the IM Server.
 .sp
@@ -1365,7 +1363,7 @@ XIM_TRIGGER_NOTIFY (IM library \(-> IM Server)
 .TE
 .LP
 .IP (*1) 
-Specify the events to be selected by the IM library with XSelectInput.
+Specify the events currently selected by the IM library with XSelectInput.
 .RE
 .sp
 .LP
@@ -1397,14 +1395,14 @@ Encoding Negotiation
 .LP
 .PN XIM_ENCODING_NEGOTIATION
 message requests to decide which encoding to be sent across the wire.
-The fallback default encoding is Compound Text.
+When the negotiation fails, the fallback default encoding is Portable 
+Character Encoding.
 .RS
 .TS
 tab(:);
 lfB s s s
 lw(.25i) lw(.25i) lw(1.75i) lw(3.5i).
-XIM_ENCODING_NEGOTIATION (IM library \(-> IM Server)
-.sp 6p
+XIM_ENCODING_NEGOTIATION (IM library \(-> IM Server).sp 6p
 :2:CARD16:input-method-ID
 :2:n:byte length of encodings listed by name
 :n:LISTofSTR:list of encodings supported in the IM library.
@@ -1415,9 +1413,12 @@ XIM_ENCODING_NEGOTIATION (IM library \(-> IM Server)
 .TE
 .RE
 .LP
-The IM Server chooses one encoding from the list sent by the IM library. 
-In this case, index of the encording determined is -1 to indicate that 
-the fallback default encoding is used. The message is issued via XOpenIM. 
+The IM Server must choose one encoding from the list sent by the IM library.
+If index of the encording determined is -1 to indicate that the negotiation
+is failed, the fallback default encoding is used. 
+The message must be issued after sending 
+.PN XIM_OPEN
+message via XOpenIM().
 The name of encoding may be registered with X Consortium.
 .LP
 .PN XIM_ENCODING_NEGOTIATION
@@ -1470,6 +1471,9 @@ T}
 .RE
 .LP
 An example of a supported extension is FrontEnd.
+The message must be issued after sending 
+.PN XIM_OPEN 
+message via XOpenIM().
 .LP
 If n is 0, the IM library queries the IM Server for all extensions.
 .LP
@@ -2514,8 +2518,8 @@ If flag is XLookupKeySym, the arguments continue as follows:
 .TS
 tab(:);
 lw(.25i) lw(.25i) lw(1.75i) lw(3.5i).
-:2:n:byte length of KeySym
-:n:LISTofKEYSYM:KeySym
+:2::unused
+:4:KEYSYM:KeySym
 .TE
 .LP
 If flag is XLookupChars, the arguments continue as follows:
@@ -2531,16 +2535,16 @@ If flag is XLookupBoth, the arguments continue as follows:
 .TS
 tab(:);
 lw(.25i) lw(.25i) lw(1.75i) lw(3.5i).
-:2:n:byte length of KeySym
-:n:LISTofKEYSYM:KeySym
-:2:m:byte length of committed string
-:m:LISTofBYTE:committed string
-:p::unused, p = Pad(2+m)
+:2::unused
+:4:KEYSYM:KeySym
+:2:n:byte length of committed string
+:n:LISTofBYTE:committed string
+:p::unused, p = Pad(2+n)
 .TE
 .RE
 .LP
 The IM Server which receives 
-.PN XIM_FORWARD_EVENT
+.PN XIM_COMMIT
 message without synchronous bit should set synchronous bit.
 .LP
 .NH 2
@@ -2638,9 +2642,6 @@ Converting a string
 \*(SN Converting a string
 .XE
 .LP
-The IM Server sends
-.PN XIM_STR_CONVERSION 
-message to start a string conversion.
 .RS
 .TS
 tab(:);
@@ -2650,38 +2651,48 @@ XIM_STR_CONVERSION (IM Server \(-> IM library)
 .sp 6p
 :2:CARD16:input-method-ID
 :2:CARD16:input-context-ID
-:4:CARD16:XIMStringConversionPosition
-:4:CARD16:XIMStringConversionType
-::#00000001:XIMStringConversionBuffer
-::#00000002:XIMStringConversionLine
-::#00000004:XIMStringConversionWord
-::#00000008:XIMStringConversionChar
-:4:CARD16:XIMStringConversionOperation
-::#00000001:XIMStringConversionSubstitution
-::#00000002:XIMStringConversionRetrieval
+:2:CARD16:XIMStringConversionPosition
+:2::unused
+:4:CARD32:XIMCaretDirection
+::#0:XIMForwardChar
+::#1:XIMBackwardChar
+::#2:XIMForwardWord
+::#3:XIMBackwardWord
+::#4:XIMCaretUp
+::#5:XIMCaretDown
+::#6:XIMNextLine
+::#7:XIMCPreviousLine
+::#8:XIMLineStart
+::#9:XIMLineEnd
+::#10:XIMAbsolutePosition
+::#11:XIMDontChange
+:2:CARD16:factor
+:2:CARD16:XIMStringConversionOperation
+::#0001:XIMStringConversionSubstitution
+::#0002:XIMStringConversionRetrieval
 :2:INT16:T{
 byte length to multiply the XIMStringConversionType
 T}
 .TE
 .RE
+.SP
 .LP
-.PN XIM_STR_CONVERSION
-is a synchronous request. The IM Server should wait until it receives 
-either an 
-.PN XIM_STR_CONVERSION_REPLY
-packet or an 
-.PN XIM_ERROR
-packet.  
+.PN XIM_STR_CONVERSION 
+message may be used to start the string conversion from the IM 
+Server.
+.LP
 .RS
 .TS
 tab(:);
 lfB s s s
 lw(.25i) lw(.25i) lw(1.75i) lw(3.5i).
-XIM_STR_CONVERSION_REPLY (library \(-> IM Server)
+XIM_STR_CONVERSION_REPLY (IM library \(-> IM Server)
 .sp 6p
 :2:CARD16:input-method-ID
 :2:CARD16:input-context-ID
+:4:CARD32:XIMStringConversionFeedback
 ::XIMSTRCONVTEXT:XIMStringConversionText
+.SP
 .TE
 .RE
 .LP
@@ -2716,7 +2727,7 @@ the return value from the callback function to the IM Server.
 tab(:);
 lfB s s s
 lw(.25i) lw(.25i) lw(1.75i) lw(3.5i).
-XIM_PREEDIT_START_REPLY (library \(-> IM Server)
+XIM_PREEDIT_START_REPLY (IM library \(-> IM Server)
 .sp 6p
 :2:CARD16:input-method-ID
 :2:CARD16:input-context-ID
@@ -2725,7 +2736,7 @@ XIM_PREEDIT_START_REPLY (library \(-> IM Server)
 .RE
 .LP
 .PN XIM_PREEDIT_START_REPLY
-returns the input-context-ID to distinguish replies from multiple 
+message returns the input-context-ID to distinguish replies from multiple 
 IC's.  The return value contains the return value of the function 
 XIMPreeditStartCallback.
 .LP
@@ -2745,8 +2756,8 @@ XIM_PREEDIT_DRAW (IM Server \(-> IM library)
 :4:INT32:chg_first
 :4:INT32:chg_length
 :4:BITMASK32:status
-::#00000001:no string
-::#00000002:no feedback
+::#x0000001:no string
+::#x0000002:no feedback
 :2:n:length of preedit string
 :n:STRING8:preedit string
 :p::unused, p = Pad(2+n)
@@ -2833,6 +2844,32 @@ XIM_PREEDIT_DONE (IM Server \(-> IM library)
 .RE
 .LP
 .NH 3
+Preedit state notify
+.XS
+\*(SN Preedit state notify
+.XE
+.RS
+.TS
+tab(:);
+lfB s s s
+lw(.25i) lw(.25i) lw(1.75i) lw(3.5i).
+XIM_PREEDITSTATE (IM Server \(-> IM Library)
+.sp 6p
+:2:CARD16:input-method-ID
+:2:CARD16:input-context-ID
+:4:BITMASK32:XIMPreeditState
+::#x0000000:XIMPreeditUnknown
+::#x0000001:XIMPreeditEnable
+::#x0000002:XIMPreeditDisable
+.TE
+.SP
+.TE
+.RE
+.LP
+.PN XIM_PREEDITSTATE
+message is used to call the XIMPreeditStateNotifyCallback function.
+.LP
+.NH 3
 Status Callbacks
 .XS
 \*(SN Status Callbacks
@@ -2875,8 +2912,8 @@ If type is XIMTextType, the arguments continue as follows.
 tab(:);
 lw(.25i) lw(.25i) lw(1.75i) lw(3.5i).
 :4:BITMASK32:status
-::#00000001:no string
-::#00000002:no feedback
+::#x0000001:no string
+::#x0000002:no feedback
 :2:n:length of status string
 :n:STRING8:status string
 :p::unused, p = Pad(2+n)
@@ -2927,10 +2964,10 @@ And we would like to make special thanks to the following people
 (in alphabetical order) for their participation in the IM Protocol 
 design,
 Hector Chan, Takashi Fujiwara, Yoshio Horiuchi, Makoto Inada, 
-Hiromu Inukai, Seiji Kuwari, Franky Ling, Hiroyuki Machida, 
-Hiroyuki Miyamoto, Bob Scheifler, Makiko Shimamura, Hidetoshi Tajima, 
-Masaki Takeuchi, Makoto Wakamatsu, Masaki Wakao, Nobuyuki Tanaka, 
-Shigeru Yamada, Katsuhisa Yano, Jinsoo Yoon.
+Hiromu Inukai, Mickael Kung, Seiji Kuwari, Franky Ling, Hiroyuki Machida, 
+Hiroyuki Miyamoto, Frank Rojas, Bob Scheifler, Makiko Shimamura, 
+Shoji Sugiyama, Hidetoshi Tajima, Masaki Takeuchi, Makoto Wakamatsu, 
+Masaki Wakao, Nobuyuki Tanaka, Shigeru Yamada, Katsuhisa Yano, Jinsoo Yoon.
 .LP
 .NH 1
 References
@@ -3024,12 +3061,17 @@ XIM_EXT_FORWARD_KEYEVENT (IM Server \(<-\(-> IM library)
 :1:BYTE:keycode
 :2:CARD16:state
 :4:CARD32:time
+:4:CARD32:window
 .TE
 .RE
 .LP
+.bp
 .PN XIM_EXT_MOVE
-message may be used to move the preedit window, and it is effective only if 
-the client specified XIMPreeditPosition.
+message may be used to change the spot location instead of
+.PN
+XIM_SET_IC_VALUES
+message.
+It is effective only if the client specified XIMPreeditPosition.
 .RS
 .TS
 tab(:);
@@ -3059,9 +3101,10 @@ Appendix B \- The list of transport specific IM Server names registered
 .ce 0
 .sp
 .LP
-The following ATOMs should be contained in 
+The following format represents the ATOM contained in
 .PN XIM_SERVERS
-property:
+property and the string returned from the request converting 
+selection target LOCALES and TRANSPORT.
 .DS 
 	``{@\^\fIcategory\fP\^=[\^\fIvalue\fP,...]}...''
 .DE
@@ -3071,9 +3114,9 @@ The following categories are currently registered.
 .TS
 tab(;);
 l l.
-\fBserver\fP;: IM Server name
-\fBlocale\fP;: XPG4 locale name
-\fBtransport\fP;: transport-specific name
+\fBserver\fP;: IM Server name (used for XIM_SERVERS)
+\fBlocale\fP;: XPG4 locale name (LOCALES)
+\fBtransport\fP;: transport-specific name (TRANSPORT)
 .TE
 .RE
 .LP
@@ -3210,6 +3253,7 @@ XIM_PREEDIT_DONE:#078
 XIM_STATUS_START:#079
 XIM_STATUS_DRAW:#080
 XIM_STATUS_DONE:#081
+XIM_PREEDITSTATE:#082
 .TE
 .sp
 (*) The IM Server's extension protocol number should be more than #128.
@@ -3248,9 +3292,101 @@ how the IM Server utilize
 .PN XIM_EXT_SET_EVENT_MASK
 message.
 .LP
+One approach is to update both of the input mask and the filter-event-mask 
+depending on the preeidting state. The sample protocol sequence using the 
+static event flow is as follows:
+.LP
+.\"===================================================================
+.sp
+... 1.675 6.888 6.237 10.296
+... 0.000i 3.408i 4.562i 0.000i
+.nr 00 \n(.u
+.nf
+.PS 3.408i 4.562i 
+.br
+.ps 11
+\h'3.750i'\v'0.034i'\v'-.13m'\L'3.374i\(br'\v'.13m'
+.sp -1
+\h'3.912i'\v'1.384i'\D'l-0.100i 0.025i'
+.sp -1
+\h'3.912i'\v'1.434i'\D'l-0.100i -0.025i'
+.sp -1
+\h'3.812i'\v'1.409i'\l'0.750i'
+.sp -1
+\h'3.750i'\h'-0.0m'\v'0.2m'\s12\fRIM Server\fP
+.sp -1
+\h'3.812i'\v'0.818i'\h'-0.0m'\v'0.2m'\s10\fRevent mask is changed\fP
+.sp -1
+\h'3.812i'\v'1.006i'\h'-0.0m'\v'0.2m'\s10\fRto select the event\fP
+.sp -1
+\h'3.875i'\v'2.381i'\h'-0.0m'\v'0.2m'\s10\fRevent mask is changed\fP
+.sp -1
+\h'3.875i'\v'2.568i'\h'-0.0m'\v'0.2m'\s10\fRto deselect the event\fP
+.sp -1
+\h'3.875i'\v'1.631i'\h'-0.0m'\v'0.2m'\s10\fRX events directly come\fP
+.sp -1
+\h'3.875i'\v'1.756i'\h'-0.0m'\v'0.2m'\s10\fRto the IM Server.\fP
+.sp -1
+\h'3.875i'\v'2.006i'\h'-0.0m'\v'0.2m'\s10\fRwhen preediting is turning off\fP
+.sp -1
+\h'0.625i'\v'0.284i'\l'0.875i'
+.sp -1
+\h'1.400i'\v'0.309i'\D'l0.100i -0.025i'
+.sp -1
+\h'1.400i'\v'0.259i'\D'l0.100i 0.025i'
+.sp -1
+\h'1.750i'\v'0.346i'\l'1.687i'
+.sp -1
+\h'3.337i'\v'0.371i'\D'l0.100i -0.025i'
+.sp -1
+\h'3.337i'\v'0.321i'\D'l0.100i 0.025i'
+.sp -1
+\h'1.850i'\v'2.134i'\D'l-0.100i 0.025i'
+.sp -1
+\h'1.850i'\v'2.184i'\D'l-0.100i -0.025i'
+.sp -1
+\h'1.750i'\v'2.159i'\l'1.687i'
+.sp -1
+\h'1.562i'\v'0.034i'\v'-.13m'\L'3.374i\(br'\v'.13m'
+.sp -1
+\h'1.850i'\v'0.446i'\D'l-0.100i 0.025i'
+.sp -1
+\h'1.850i'\v'0.496i'\D'l-0.100i -0.025i'
+.sp -1
+\h'1.750i'\v'0.471i'\l'1.687i'
+.sp -1
+\h'1.687i'\v'0.631i'\h'-0.0m'\v'0.2m'\s10\fRXIM_EXT_SET_EVENT_MASK\fP
+.sp -1
+\h'1.875i'\v'0.818i'\h'-0.0m'\v'0.2m'\s10\fRintercept-event-mask is set\fP
+.sp -1
+\h'1.687i'\v'2.318i'\h'-0.0m'\v'0.2m'\s10\fRXIM_EXT_SET_EVENT_MASK\fP
+.sp -1
+\h'1.875i'\v'2.443i'\h'-0.0m'\v'0.2m'\s10\fRselect-event-mask is set\fP
+.sp -1
+\h'0.937i'\h'-0.0m'\v'0.2m'\s12\fRIM library\fP
+.sp -1
+\v'0.193i'\h'-0.0m'\v'0.2m'\s10\fRKeys in the on-key-list\fP
+.sp -1
+\h'0.250i'\v'2.318i'\h'-0.0m'\v'0.2m'\s10\fRevent mask is changed\fP
+.sp -1
+\h'0.250i'\v'2.506i'\h'-0.0m'\v'0.2m'\s10\fRto select the event\fP
+.sp -1
+\h'0.250i'\v'1.006i'\h'-0.0m'\v'0.2m'\s10\fRto deselect the event\fP
+.sp -1
+\h'0.250i'\v'0.818i'\h'-0.0m'\v'0.2m'\s10\fRevent mask is changed\fP
+.sp -1
+\h'1.812i'\v'0.256i'\h'-0.0m'\v'0.2m'\s10\fRXIM_FORWARD_EVENT\fP
+.sp -1
+.sp 1+3.408i
+.PE
+.if \n(00 .fi
+.sp
+.\"===================================================================
+.LP
 To pursuit a maximum performance regardless of the preediting mode,
 the IM Server may use the dynamic event flow with the following 
 sample protocol sequence.
+.bp
 .LP
 .\"===================================================================
 ... 1.675 6.888 6.237 10.296
@@ -3370,7 +3506,110 @@ In this method, Both the IM Server and the IM client select the same
 events on the same client's window, so that the events are delivered
 to both of the IM Server and the client. The preediting on and off 
 states are expressed by whether the key events are filtered or not.
-The sample protocol sequence is as follow:
+The sample protocol sequence are as follows:
+.LP
+.bp
+<<Using static event flow>>
+.LP
+.\"====================================================================
+.sp
+... 1.488 7.325 6.487 10.358
+... 0.000i 3.033i 4.999i 0.000i
+.nr 00 \n(.u
+.nf
+.PS 3.033i 4.999i 
+.br
+.ps 11
+\h'4.099i'\v'0.383i'\D'l-0.100i 0.025i'
+.sp -1
+\h'4.099i'\v'0.433i'\D'l-0.100i -0.025i'
+.sp -1
+\h'3.999i'\v'0.408i'\l'1.000i'
+.sp -1
+\h'4.099i'\v'1.696i'\D'l-0.100i 0.025i'
+.sp -1
+\h'4.099i'\v'1.746i'\D'l-0.100i -0.025i'
+.sp -1
+\h'3.999i'\v'1.721i'\l'1.000i'
+.sp -1
+\h'3.937i'\v'0.096i'\v'-.13m'\L'2.937i\(br'\v'.13m'
+.sp -1
+\h'3.937i'\v'0.062i'\h'-0.0m'\v'0.2m'\s12\fRIM Server\fP
+.sp -1
+\h'4.062i'\v'0.755i'\h'-0.0m'\v'0.2m'\s10\fRthe specified events\fP
+.sp -1
+\h'4.062i'\v'0.943i'\h'-0.0m'\v'0.2m'\s10\fRare being processed\fP
+.sp -1
+\h'4.062i'\v'2.255i'\h'-0.0m'\v'0.2m'\s10\fRthe specified events\fP
+.sp -1
+\h'4.062i'\v'2.443i'\h'-0.0m'\v'0.2m'\s10\fRare being discarded\fP
+.sp -1
+\h'4.249i'\v'1.568i'\h'-0.0m'\v'0.2m'\s10\fRKeys in the off-key-list\fP
+.sp -1
+\h'4.187i'\v'0.318i'\h'-0.0m'\v'0.2m'\s10\fRKeys in the on-key-list\fP
+.sp -1
+\h'0.812i'\v'0.346i'\l'0.875i'
+.sp -1
+\h'1.587i'\v'0.371i'\D'l0.100i -0.025i'
+.sp -1
+\h'1.587i'\v'0.321i'\D'l0.100i 0.025i'
+.sp -1
+\h'1.937i'\v'0.408i'\l'1.687i'
+.sp -1
+\h'3.524i'\v'0.433i'\D'l0.100i -0.025i'
+.sp -1
+\h'3.524i'\v'0.383i'\D'l0.100i 0.025i'
+.sp -1
+\h'1.749i'\v'0.096i'\v'-.13m'\L'2.937i\(br'\v'.13m'
+.sp -1
+\h'2.037i'\v'0.508i'\D'l-0.100i 0.025i'
+.sp -1
+\h'2.037i'\v'0.558i'\D'l-0.100i -0.025i'
+.sp -1
+\h'1.937i'\v'0.533i'\l'1.687i'
+.sp -1
+\h'0.812i'\v'1.721i'\l'0.875i'
+.sp -1
+\h'1.587i'\v'1.746i'\D'l0.100i -0.025i'
+.sp -1
+\h'1.587i'\v'1.696i'\D'l0.100i 0.025i'
+.sp -1
+\h'2.099i'\v'1.758i'\D'l-0.100i 0.025i'
+.sp -1
+\h'2.099i'\v'1.808i'\D'l-0.100i -0.025i'
+.sp -1
+\h'1.999i'\v'1.783i'\l'1.688i'
+.sp -1
+\h'1.874i'\v'0.693i'\h'-0.0m'\v'0.2m'\s10\fRXIM_EXT_SET_EVENT_MASK\fP
+.sp -1
+\v'0.255i'\h'-0.0m'\v'0.2m'\s10\fRKeys in the on-key-list\fP
+.sp -1
+\h'2.062i'\v'0.880i'\h'-0.0m'\v'0.2m'\s10\fRfilter-event-mask is set\fP
+.sp -1
+\h'0.624i'\v'0.755i'\h'-0.0m'\v'0.2m'\s10\fRthe specified events\fP
+.sp -1
+\h'0.624i'\v'0.943i'\h'-0.0m'\v'0.2m'\s10\fRare being filtered\fP
+.sp -1
+\h'1.937i'\v'1.943i'\h'-0.0m'\v'0.2m'\s10\fRXIM_EXT_SET_EVENT_MASK\fP
+.sp -1
+\h'2.124i'\v'2.068i'\h'-0.0m'\v'0.2m'\s10\fRfilter-event-mask is set\fP
+.sp -1
+\h'0.062i'\v'1.568i'\h'-0.0m'\v'0.2m'\s10\fRKeys in the off-key-list\fP
+.sp -1
+\h'1.062i'\h'-0.0m'\v'0.2m'\s12\fRIM library\fP
+.sp -1
+\h'0.624i'\v'2.255i'\h'-0.0m'\v'0.2m'\s10\fRthe specified events\fP
+.sp -1
+\h'0.624i'\v'2.443i'\h'-0.0m'\v'0.2m'\s10\fRare being processed\fP
+.sp -1
+\h'1.999i'\v'0.318i'\h'-0.0m'\v'0.2m'\s10\fRXIM_FORWARD_EVENT\fP
+.sp -1
+.sp 1+3.033i
+.PE
+.if \n(00 .fi
+.\"====================================================================
+.LP
+<<Using the dynamic event flow>>
 .LP
 .\"====================================================================
 ... 1.488 7.325 6.487 10.358
@@ -3493,403 +3732,525 @@ between the IM clients and the IM Server.
 .IP \fB(2) 
 Transport Layer\fP 
 .LP
-The following is a sample connection mechanism between the IM library and 
-the IM Server via X and Socket Transport.
-.LP
-.sp
-.B
-X Transport
-.LP
-In order to connect between the IM library and the IM Server with X 
-Transport, the client communication window is created, and the 
-X Protocol's ClientMessage or Property is used to communicate 
-between the window and the IM Server communication window.
-.LP
-.RS
-.B
-Connection 
-.LP
-.RS
-The communication window is created to communicate via X Transport. 
-In order to establish a connection, the following ClientMessage 
-event is sent to the selection owner's window of the IM Server 
-atom registered in 
-.PN XIM_SERVERS
-(IM Server window).
-.LP
-Refer to ``The Input Method Protocol'' for 
-.PN XIM_SERVERS.
-.TS H
-tab(|);
-l s l
-l l l.
-_
-.sp 6p
-.B
-Structure Member|Contents
-.sp 6p
-_
-.sp 6p
-.TH
-.R
-int|type|ClientMessage
-u_long|serial|Set by the X Window System
-Bool|send_event|Set by the X Window System
-Display|*display|The display to which connects
-Window|window|IM Server Window ID
-Atom|message_type|XInternAtom(display, ``_XIM_XCONNECT'', False)
-int|format|32
-long|l[0]|client communication window ID
-long|l[1]|client-major-transport-version 
-long|l[2]|client-minor-transport-version 
-.sp 6p
-_
-.TE
-.LP
-In order to establish the connection (to notify the IM Server communication 
-window), the IM Server sends the following ClientMessage to the client 
-communication window.
-.TS H
-tab(|);
-l s l
-l l l.
-_
-.sp 6p
-.B
-Structure Member|Contents
-.sp 6p
-_
-.sp 6p
-.TH
-.R
-int|type|ClientMessage
-u_long|serial|Set by the X Window System
-Bool|send_event|Set by the X Window System
-Display|*display|The display to which connects
-Window|window|client communication window ID
-Atom|message_type|XInternAtom(display, ``_XIM_XCONNECT'', False)
-int|format|32
-long|l[0]|IM Server communication window ID
-long|l[1]|server-major-transport-version 
-long|l[2]|server-minor-transport-version 
-.sp 6p
-_
-.TE
+The Xlib XIM implementation is layered into three functions, a protocol
+layer, an interface layer and a transport layer. The purpose of this
+layering is to make the protocol independent of transport implementation.
+Each function of these layers are:
+.RS 3
+.IP "\f6The protocol layer\fP"
+.br
+implements overall function of XIM and calls the interface layer
+functions when it needs to communicate to IM Server. 
+.IP "\f6The interface layer\fP"
+.br
+separates the implementation of the transport layer from the protocol
+layer, in other words, it provides implementation independent hook for
+the transport layer functions.
+.IP "\f6The transport layer\fP"
+.br
+handles actual data communication with IM Server. It is done by a set
+of several functions named transporters.
 .RE
 .LP
-.sp
+The interface layer and the transport layer make various communication
+channels usable such as X Protocol, TCP/IP, DECnet or STREAM. 
+The following is a sample implementation for the transporter using 
+the X connection.
+Refer to "xtrans" for the transporter using Socket Transport.
+.LP
+At the beginning of the X Transport connection for the XIM transport
+mechanism, two different windows must be created either in an Xlib XIM
+or in an IM Server, with which the Xlib and the IM Server exchange the
+XIM transports by using the ClientMessage events and Window Properties.
+In the following, the window created by the Xlib is referred as the
+"client communication window", and on the other hand, the window created
+by the IM Server is referred as the "IMS communication window".
+.LP
 .B
-Read/write
+Connection
 .LP
 .RS
-The data is sent/received with X Protocol's ClientMessage or
-WindowProperty.
+In order to establish a connection, a communication window is created.
+A ClientMessage in the following event's format is sent to the owner 
+window of XIM_SERVER selection, which the IM Server has created.
+.LP
+Refer to "The Input Method Protocol" for the XIM_SERVER atom.
+.LP
+.ce
+Table D-1; The ClientMessage sent to the IMS window.
+.TS H
+tab(:);
+l s|l
+l l|l.
+_
+.sp 6p
+.B
+Structure Member:Contents
+.sp 6p
+_
+.sp 6p
+.TH
+.R
+int:type:ClientMessage  
+u_long:serial:Set by the X Window System  
+Bool:send_event:Set by the X Window System  
+Display:*display:The display to which connects
+Window:window:IMS Window ID
+Atom:message_type:XInternAtom(display, ``_XIM_XCONNECT'', False)
+int:format:32  
+long:data.l[0]:client communication window ID  
+long:data.l[1]:client-major-transport-version (*1)
+long:data.l[2]:client-major-transport-version (*1)
+.sp 6p
+_
+.TE
+.LP
+In order to establish the connection (to notify the IM Server communication
+window), the IM Server sends a ClientMessage in the following event's
+format to the client communication window.
 .LP
 .bp
+.ce
+Table D-2; The ClientMessage sent by IM Server.
+.TS H
+tab(:);
+l s | l
+l l | l.
+_
+.sp 6p
 .B
-Format from the Client to the IM Server
+Structure Member:Contents
+.sp 6p
+_
+.sp 6p
+.TH
+.R
+int:type:ClientMessage  
+u_long:serial:Set by the X Window System  
+Bool:send_event:Set by the X Window System  
+Display:*display:The display to which connects
+Window:window:client communication window ID  
+Atom:message_type:XInternAtom(display, ``_XIM_XCONNECT'', False)
+int:format:32  
+long:data.l[0]:IMS communication window ID  
+long:data.l[1]:server-major-transport-version (*1)
+long:data.l[2]:server-minor-transport-version (*1)
+long:data.l[3]:dividing size between ClientMessage and Property (*2)
+.sp 6p
+_
+.TE
+.LP
+.IP (*1) 
+major/minor-transport-version
+.RS
+The read/write method is decided by the combination of 
+major/minor-transport-version, as follows:
+.LP
+.ce
+Table D-3; The read/write method and the major/minor-transport-version
+.TS
+center, tab(:);
+| c s | l |
+| c | c | l |.
+_
+.sp 6p
+.B
+Transport-version:read/write 
+.sp 6p
+_
+.sp 6p
+major:minor:
+.sp 6p
+_
+.sp 6p
+.R
+0:0:only-CM & Property-with-CM
+:1:only-CM & multi-CM
+:2:only-CM & multi-CM & Property-with-CM
+.sp 6p
+_
+.sp 6p
+1:0:PropertyNotify
+.sp 6p
+_
+.sp 6p
+2:0:only-CM & PropertyNotify
+:1:only-CM & multi-CM & PropertyNotify
+.sp 6p
+_
+.TE
+.LP
+.RS
+.TS
+center, tab(;);
+l n l.
+only-CM;:;data is sent via a ClientMessage
+multi-CM;:;data is sent via multiple ClientMessages 
+Property-with-CM;:;T{
+data is written in Property, and its Atom is send via ClientMessage
+T}
+PropertyNotify;:;T{
+data is written in Property, and its Atom is send via PropertyNotify
+T}
+.TE
+.RE
+.LP
+The method to decide major/minor-transport-version is as follows:
+.LP
+.IP (1)
+The client sends 0 as major/minor-transport-version to the IM Server.
+The client must support all methods in Table D-3.
+The client may send another number as major/minor-transport-version to
+use other method than the above in the future.
+.IP (2)
+The IM Server sends its major/minor-transport-version number to
+the client. The client sends data using the method specified by the 
+IM Server.
+.IP (3)
+If major/minor-transport-version number is not available, it is regarded
+as 0.
+.RE
+.LP
+.IP (*2) 
+dividing size between ClientMessage and Property
+.RS
+If data is sent via both of multi-CM and Property, specify the dividing
+size between ClientMessage and Property. The data, which is smaller than
+this size, is sent via multi-CM (or only-CM), and the data, which is 
+lager than this size, is sent via Property. 
+.RE
+.RE
+.LP
+.sp
+.LP
+.B
+read/write
+.LP  
+.RS
+The data is transferred via either ClientMessage or Window Property in
+the X Window System.
+.LP
+.B
+Format for the data from the Client to the IM Server
 .LP
 .RS
 .B
 ClientMessage
 .LP
-The ClientMessage event's format is as follows:
-.TS H
-tab(|);
-l s l
-l l l.
+If data is sent via ClientMessage event, the format is as follows:
+.LP
+.ce
+Table D-4; The ClientMessage event's format (first or middle)
+.TS
+tab(;);
+l s | l
+l l | l.
 _
 .sp 6p
 .B
-Structure Member|Contents
-.R
+Structure Member;Contents
 .sp 6p
 _
 .sp 6p
-.TH
-int|type|ClientMessage
-u_long|serial|Set by the X Window System
-Bool|send_event|Set by the X Window System
-Display|*display|The display to which connects
-Window|window|IM Server communication window ID
-Atom|message_type|XInternAtom(display, ``_XIM_PROTOCOL'', False)
-int|format|8
-char|data[20]|(read/write DATA : 20 byte)
+.R
+int;type;ClientMessage  
+u_long;serial;Set by the X Window System  
+Bool;send_event;Set by the X Window System  
+Display;*display;The display to which connects  
+Window;window;IMS communication window ID  
+Atom;message_type;XInternAtom(display, ``_XIM_MOREDATA'', False)
+int;format;8  
+char;data.b[20];(read/write DATA : 20 byte)  
 .sp 6p
 _
 .TE
 .LP
+.ce
+Table D-5; The ClientMessage event's format (only or last)
+.TS H
+tab(;);
+l s | l
+l l | l.
+_
+.sp 6p
+.B
+Structure Member;Contents
+.sp 6p
+_
+.sp 6p
+.TH
+.R
+int;type;ClientMessage  
+u_long;serial;Set by the X Window System  
+Bool;send_event;Set by the X Window System  
+Display;*display;The display to which connects  
+Window;window;IMS communication window ID  
+Atom;message_type;XInternAtom(display, ``_XIM_PROTOCOL'', False)
+int;format;8  
+char;data.b[20];(read/write DATA : MAX 20 byte)  (*1)
+.sp 6p
+_
+.TE
+.IP (*1)
+If the data is smaller than 20 byte, all data other than available data
+must be 0.
+.RE
+.LP
+.RS
 .B
 Property
 .LP
-In the case of big data, sending data with the WindowProperty is 
-more efficient. The XChangeProperty function is used to store data 
-to the client communication window, and ATOM of the stored data is 
-sent by the ClientMessage.
+In the case of large data, data will be sent via the Window Property 
+for the efficiency.  There are the following two methods to notify 
+Property, and transport-version is decided which method is used.
+.LP
+.IP (1)
+The XChangeProperty function is used to store data in the client 
+communication window, and Atom of the stored data is notified to the 
+IM Server via ClientMessage event.
+.IP (2)
+The XChangeProperty function is used to store data in the client 
+communication window, and Atom of the stored data is notified to the 
+IM Server via PropertyNotify event.
 .LP
 The arguments of the XChangeProperty are as follows:
+.LP
+.bp
+.ce
+Table D-6; The XChangeProperty event's format
 .TS H
-tab(|);
-l s l
-l l l.
+tab(:);
+l s | l
+l l | l.
 _
 .sp 6p
 .B
-Argument|Contents
+Argument:Contents
 .sp 6p
 _
 .sp 6p
 .TH
 .R
-Display|*display|The display to which connects
-Window|window|IM Server communication window ID
-Atom|property|read/write property ATOM
-Atom|type|XA_STRING
-int|format|8
-int|mode|PropModeAppend
-u_char|*data|read/write DATA
-int|nelements|length of DATA
+Display:*display:The display to which connects
+Window:window:IMS communication window ID  
+Atom:property:read/write property Atom (*1) 
+Atom:type:XA_STRING  
+int:format:8  
+int:mode:PropModeAppend  
+u_char:*data:read/write DATA 
+int:nelements:length of DATA
 .sp 6p
 _
 .TE
 .LP
-The client changes the property with the mode of PropModeAppend and 
-the IM Server reads it with the delete mode (delete == True).
+.IP (*1)
+The read/write property ATOM allocates the following strings by
+\fBXInternAtom\fP.
+.RS
+``_clientXXX''
+.RE
 .LP
-The ClientMessage event's format is as follows:
+The client changes the property with the mode of PropModeAppend and
+the IM Server will read it with the delete mode i.e. (delete = True).
+.LP
+If Atom is notified via ClientMessage event, the format of the ClientMessage 
+is as follows:
+.LP
+.ce 
+Table D-7; The ClientMessage event's format to send Atom of property
 .TS H
-tab(|);
-l s l
-l l l.
+tab(:);
+l s | l 
+l l | l.
 _
 .sp 6p
 .B
-Structure Member|Contents
+Structure Member:Contents
 .sp 6p
 _
 .sp 6p
 .TH
 .R
-int|type|ClientMessage
-u_long|serial|Set by the X Window System
-Bool|send_event|Set by the X Window System
-Display|*display|The display to which connects
-Window|window|IM Server communication window ID
-Atom|message_type|XInternAtom(display, ``_XIM_PROTOCOL'', False)
-int|format|32
-long|data[0]|length of read/write property ATOM
-long|data[1]|read/write property ATOM
+int:type:ClientMessage  
+u_long:serial:Set by the X Window System  
+Bool:send_event:Set by the X Window System  
+Display:*display:The display to which connects
+Window:window:IMS communication window ID  
+Atom:message_type:XInternAtom(display, ``_XIM_PROTOCOL'', False)
+int:format:32  
+long:data.l[0]:length of read/write property Atom  
+long:data.l[1]:read/write property Atom
 .sp 6p
 _
 .TE
 .RE
 .LP
 .B
-Format from the IM Server to the Client
+Format for the data from the IM Server to the Client
 .LP
 .RS
 .B
 ClientMessage
 .LP
-The ClientMessage event's format is as follows:
+The format of the ClientMessage is as follows:
+.LP
+.ce
+Table D-8; The ClientMessage event's format (first or middle)
 .TS H
-tab(|);
-l s l
-l l l.
+tab(;);
+l s | l
+l l | l.
 _
 .sp 6p
 .B
-Structure Member|Contents
+Structure Member;Contents
 .sp 6p
 _
 .sp 6p
 .TH
 .R
-int|type|ClientMessage
-u_long|serial|Set by the X Window System
-Bool|send_event|Set by the X Window System
-Display|*display|The display to which connects
-Window|window|client communication window ID
-Atom|message_type|XInternAtom(display, ``_XIM_PROTOCOL'', False)
-int|format|8
-char|data[20]|(read/write DATA : 20 byte)
+int;type;ClientMessage  
+u_long;serial;Set by the X Window System  
+Bool;send_event ;Set by the X Window System  
+Display;*display;The display to which connects
+Window;window;client communication window ID  
+Atom;message_type;XInternAtom(display, ``_XIM_MOREDATA'', False)
+int;format;8  
+char;data.b[20];(read/write DATA : 20 byte)  
 .sp 6p
 _
 .TE
+.LP
+.bp
+.ce
+Table D-9; The ClientMessage event's format (only or last)
+.TS
+tab(;);
+l s | l
+l l | l.
+_
+.sp 6p
+.B
+Structure Member;Contents
+.sp 6p
+_
+.sp 6p
+.R
+int;type;ClientMessage  
+u_long;serial;Set by the X Window System  
+Bool;send_event ;Set by the X Window System  
+Display;*display;The display to which connects
+Window;window;client communication window ID  
+Atom;message_type;XInternAtom(display, ``_XIM_PROTOCOL'', False)
+int;format;8  
+char;data.b[20];(read/write DATA : MAX 20 byte) (*1) 
+.sp 6p
+_
+.TE
+.LP
+.IP (*1)
+If the data size is smaller than 20 bytes, all data other than available 
+data must be 0.
 .LP
 .B
 Property
 .LP
-In the case of big data, sending data with the WindowProperty is more 
-efficient. The XChangeProperty function is used to store data to the IM 
-Server communication window, and ATOM of the stored data is sent by the 
-ClientMessage.
+In the case of large data, data will be sent via the Window Property
+for the efficiency. There are the following two methods to notify 
+Property, and transport-version is decided which method is used.
+.LP
+.IP (1)
+The XChangeProperty function is used to store data in the IMS 
+communication window, and Atom of the property is sent via the 
+ClientMessage event.
+.IP (2)
+The XChangeProperty function is used to store data in the IMS 
+communication window, and Atom of the property is sent via 
+PropertyNotify event.
 .LP
 The arguments of the XChangeProperty are as follows:
+.LP
+.ce
+Table D-10; The XChangeProperty event's format
 .TS H
-tab(|);
-l s l
-l l l.
+tab(:);
+l s | l
+l l | l.
 _
 .sp 6p
 .B
-Argument|Contents
+Argument:Contents
 .sp 6p
 _
 .sp 6p
 .TH
 .R
-Display|*display|The display to which connects
-Window|window|client communication window ID
-Atom|property|read/write property ATOM
-Atom|type|XA_STRING
-int|format|8
-int|mode|PropModeAppend
-u_char|*data|read/write DATA
-int|nelements|length of DATA
+Display:*display:The display which to connects
+Window:window:client communication window ID  
+Atom:property:read/write property Atom (*1)
+Atom:type:XA_STRING  
+int:format:8  
+int:mode:PropModeAppend  
+u_char:*data:read/write DATA  
+int:nelements:length of DATA  
 .sp 6p
 _
 .TE
+.LP  
+.IP (*1)
+The read/write property ATOM allocates some strings, which are not
+allocated by the client, by \fBXInternAtom\fP.
 .LP
-The IM Server changes the property with the mode of PropModeAppend 
-and the client reads it with the delete mode (delete == True).
+The IM Server changes the property with the mode of PropModeAppend and
+the client reads it with the delete mode, i.e. (delete = True).
 .LP
-The ClientMessage event's format
+If Atom is notified via ClientMessage event, the format of the ClientMessage 
+is as follows:
+.LP
+.bp
+.ce
+Table D-11; The ClientMessage event's format to send Atom of property 
 .TS H
-tab(|);
-l s l
-l l l.
+tab(:);
+l s | l
+l l | l.
 _
 .sp 6p
 .B
-Structure Member|Contents
+Structure Member:Contents
 .sp 6p
 _
 .sp 6p
 .TH
 .R
-int|type|ClientMessage
-u_long|serial|Set by the X Window System
-Bool|send_event|Set by the X Window System
-Display|*display|The display to which connects
-Window|window|client communication window ID
-Atom|message_type|XInternAtom(display, ``_XIM_PROTOCOL'', False)
-int|format|32
-long|data[0]|length of read/write property ATOM
-long|data[1]|read/write property ATOM
+int:type:ClientMessage  
+u_long:serial:Set by the X Window System  
+Bool:send_event:Set by the X Window System  
+Display:*display:The display to which connects  
+Window:window:client communication window ID  
+Atom:message_type:XInternAtom(display, ``_XIM_PROTOCOL'', False)
+int:format:32  
+long:data.l[0]:length of read/write property ATOM  
+long:data.l[1]:read/write property ATOM  
 .sp 6p
 _
 .TE
 .RE
 .RE
-.sp
+.RE
 .LP
 .B
 Closing Connection
-.LP
 .RS
-As X Protocol is used, the special communication is not needed. 
-However, if the IM Server is closed (the IM Server window is closed), 
-(*shutdown)() function should free the communication window, 
-properties and etc..
-.RE
+.LP
+If the client disconnect with the IM Server, shutdown function should 
+free the communication window properties and etc..
 .RE
 .LP
-.B
-Socket Transport
-.LP
-Socket Transport supports UNIX, TCP/IP and DECnet transport.
-.LP
-.sp
-.RS
-.B
-Connection Request
-.LP
-.RS
-.B
-UNIX, TCP/IP 
-.LP
-.RS
-Socket is created using socket() system call. The arguments are as follows.
-.LP
-.IP "\fBUNIX domain\fR"
-socket(AF_UNIX, SOCK_STREAM, 0)
-.IP "\fBTCP/IP domain\fR"
-socket(AF_INET, SOCK_STREAM, 0)
-.LP
-The client sends the connection request to the IM Server using connect ()
-system call. The second argument (address) is the pointer of the 
-following structure.
-.LP
-.IP "\fBUNIX domain\fR"
-.nf
-sockaddr_un struct{
-	sun_family = AF_UNIX
-	sun_path = (path name of IM Server)
-}
-.IP "\fBTCP/IP domain\fR"
-.nf
-sockaddr_in struct{
-	sin_family = AF_UNIX
-	sin_port = (port number of IM Server)
-	sin_addr = (network number of the host which IM Server is running)
-}
-.LP
-.RE
-.B
-DECnet
-.LP
-.RS
-Socket is created using dnet_conn() system call. The arguments are as follows.
-.DS I 5
-dnet_conn((node name of IM Server),
-	  (object name of IM Server),
-	  SOCK_STREAM,
-	  NULL, NULL, NULL, NULL);
-.DE
-.LP
-This function returns socket fd.
-.RE
-.RE
-.LP
-.B
-Connection Accept (server) (UNIX, TCP/IP, DECnet)
-.LP
-.RS
-Socket is created in the same way as the client. Using DECnet, the arguments
-are as follows:
-.DS
-socket(AF_DECnet, SOCK_STREAM, 0);
-.DE
-.LP
-The IM Server calls bind() and listen() system call. If the connection request 
-from the Client is received, the IM Server establishes the connection using
-accept() system call.
-.RE
-.LP
-.sp
-.B
-Read/write
-.LP
-.RS
-The data which defined by the XIM Protocol specification is received/sent
-using read()/write() system call.
-.RE
-.LP
-.sp
-.B
-Closing Connection
-.LP
-.RS
-After closing the protocol level's connection, the IM Server closes the 
-connection using shutdown() system call. Before calling shutdown() system 
-call, if the IM Server is received close signal, the IM Server should free
-the connection, and notice it the upper layer.
-.RE
-.RE
 .bp
 .EH ''''
 .OH ''''
 .EF ''''
 .OF ''''
 .TC
+
