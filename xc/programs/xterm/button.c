@@ -1,9 +1,4 @@
-/* $XConsortium: button.c,v 1.53 91/01/06 12:14:51 rws Exp $ */
-/*
- *	$XConsortium: button.c,v 1.53 91/01/06 12:14:51 rws Exp $
- */
-
-
+/* $XConsortium: button.c,v 1.54 91/01/24 19:31:29 gildea Exp $ */
 /*
  * Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
  *
@@ -63,7 +58,6 @@ extern char *malloc();
 #define SHIFTS 8		/* three keys, so eight combinations */
 #define	Coordinate(r,c)		((r) * (term->screen.max_col+1) + (c))
 
-char *SaveText();
 extern EditorButton();
 
 extern char *xterm_name;
@@ -72,6 +66,9 @@ extern Bogus();
 static void PointToRowCol();
 static void SelectionReceived();
 static void TrackDown();
+static void ComputeSelect();
+static int Length();
+static char *SaveText();
 
 extern XtermWidget term;
 
@@ -190,6 +187,7 @@ Cardinal *num_params;		/* unused */
 	}
 }
 
+static void EndExtend();
 
 /*ARGSUSED*/
 static void do_select_end (w, event, params, num_params, use_cursor_loc)
@@ -469,11 +467,12 @@ int startrow, startcol;
 
 }
 
+static void
 EndExtend(event, params, num_params, use_cursor_loc)
-XEvent *event;			/* must be XButtonEvent */
-String *params;			/* selections */
-Cardinal num_params;
-Bool use_cursor_loc;
+    XEvent *event;			/* must be XButtonEvent */
+    String *params;			/* selections */
+    Cardinal num_params;
+    Bool use_cursor_loc;
 {
 	int	row, col;
 	TScreen *screen = &term->screen;
@@ -522,6 +521,8 @@ Cardinal *num_params;
 {
 	SelectSet (event, params, *num_params);
 }
+
+static void SaltTextAway();
 
 SelectSet (event, params, num_params)
 XEvent	*event;
@@ -745,8 +746,9 @@ PointToRowCol(y, x, r, c)
 	*c = col;
 }
 
-int LastTextCol(row)
-register int row;
+static int
+LastTextCol(row)
+    register int row;
 {
 	register TScreen *screen =  &term->screen;
 	register int i;
@@ -846,10 +848,15 @@ int SetCharacterClassRange (low, high, value)
     return (0);
 }
 
+/*
+ * sets startSRow startSCol endSRow endSCol
+ * ensuring that they have legal values
+ */
 
+static void
 ComputeSelect(startRow, startCol, endRow, endCol, extend)
-int startRow, startCol, endRow, endCol;
-Bool extend;
+    int startRow, startCol, endRow, endCol;
+    Bool extend;
 {
 	register TScreen *screen = &term->screen;
 	register Char *ptr;
@@ -1028,12 +1035,13 @@ register int frow, fcol, trow, tcol;
 
 static _OwnSelection();
 
+static void
 SaltTextAway(crow, ccol, row, col, params, num_params)
-/*register*/ int crow, ccol, row, col;
-String *params;			/* selections */
-Cardinal num_params;
-/* Guaranteed that (crow, ccol) <= (row, col), and that both points are valid
-   (may have row = screen->max_row+1, col = 0) */
+    /*register*/ int crow, ccol, row, col;
+    String *params;			/* selections */
+    Cardinal num_params;
+    /* Guaranteed that (crow, ccol) <= (row, col), and that both points are valid
+       (may have row = screen->max_row+1, col = 0) */
 {
 	register TScreen *screen = &term->screen;
 	register int i, j = 0;
@@ -1303,25 +1311,26 @@ register XtermWidget term;
 
 
 /* returns number of chars in line from scol to ecol out */
-int Length(screen, row, scol, ecol)
-register int row, scol, ecol;
-register TScreen *screen;
+static int
+Length(screen, row, scol, ecol)
+    register int row, scol, ecol;
+    register TScreen *screen;
 {
-	register Char *ch;
+        register int lastcol = LastTextCol(row);
 
-	ch = screen->buf[2 * (row + screen->topline)];
-	while (ecol >= scol && (ch[ecol] == ' ' || ch[ecol] == 0))
-	    ecol--;
+	if (ecol > lastcol)
+	    ecol = lastcol;
 	return (ecol - scol + 1);
 }
 
 /* copies text into line, preallocated */
-char *SaveText(screen, row, scol, ecol, lp, eol)
-int row;
-int scol, ecol;
-TScreen *screen;
-register char *lp;		/* pointer to where to put the text */
-int *eol;
+static char *
+SaveText(screen, row, scol, ecol, lp, eol)
+    int row;
+    int scol, ecol;
+    TScreen *screen;
+    register char *lp;		/* pointer to where to put the text */
+    int *eol;
 {
 	register int i = 0;
 	register Char *ch = screen->buf[2 * (row + screen->topline)];
