@@ -1,5 +1,5 @@
 /*
- * $XConsortium: tocutil.c,v 2.50 91/06/14 18:17:51 converse Exp $
+ * $XConsortium: tocutil.c,v 2.51 91/07/09 12:03:04 converse Exp $
  *
  *
  *			COPYRIGHT 1987, 1989
@@ -221,7 +221,7 @@ void TURedisplayToc(scrn)
   Scrn scrn;
 {
     Toc toc;
-/*    Widget source; */
+    Widget source;
     if (scrn != NULL && scrn->tocwidget != NULL) {
 	toc = scrn->toc;
  	if (toc) {
@@ -230,10 +230,8 @@ void TURedisplayToc(scrn)
 		return;
 	    }
 	    XawTextDisableRedisplay(scrn->tocwidget);
-/* %%% dmc 8/14/89 
- *	    source = XawTextGetSource(scrn->tocwidget);
- *	    if (source != toc->source)
- */
+	    source = XawTextGetSource(scrn->tocwidget);
+	    if (source != toc->source)
 		XawTextSetSource(scrn->tocwidget, toc->source,
 				 (XawTextPosition) 0);
 	    TocSetCurMsg(toc, TocGetCurMsg(toc));
