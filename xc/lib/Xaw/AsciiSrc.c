@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: AsciiSrc.c,v 1.10 89/07/16 18:07:27 kit Exp $";
+static char Xrcsid[] = "$XConsortium: AsciiSrc.c,v 1.11 89/07/17 18:05:50 kit Exp $";
 #endif /* lint && SABER */
 
 /*
@@ -298,6 +298,10 @@ XawTextPosition lastPos;
  *                 include - whether or not to include the character found in
  *                           the position that is returned. 
  *	Returns: the position of the item found.
+ *
+ * Note: While there are only 'n' characters in the file there are n+1 
+ *       possible cursor positions (one before the first character and
+ *       one after the last character.
  */
 
 static 
@@ -322,17 +326,20 @@ Boolean	              include;
     return(0);			/* else. */
   }
 
-  if ( dir == XawsdRight )
+  if (position > data->length)
+    position = data->length;
+
+  if ( dir == XawsdRight ) {
+    if (position == data->length) /* Scanning right from data->length??? */
+      return(data->length);
     inc = 1;
+  }
   else {
-    inc = -1;
     if (position == 0)
-      return(0);		/* scanning left from 0??? */
+      return(0);		/* Scanning left from 0??? */
+    inc = -1;
     position--;
   }
-
-  if (position >= data->length)
-    position = data->length;
 
   piece = FindPiece(data, position, &first);
 
@@ -392,10 +399,11 @@ Boolean	              include;
   if ( dir == XawsdLeft )
     position++;
 
+  if (position >= data->length)
+    return(data->length);
   if (position < 0)
     return(0);
-  if (position > data->length)
-    return(data->length);
+
   return(position);
 }
 
