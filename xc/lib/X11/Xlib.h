@@ -1,4 +1,4 @@
-/* $XConsortium: Xlib.h,v 11.203 91/05/05 20:54:59 rws Exp $ */
+/* $XConsortium: Xlib.h,v 11.204 91/05/11 23:27:21 rws Exp $ */
 /* 
  * Copyright 1985, 1986, 1987, 1991 by the Massachusetts Institute of Technology
  *
@@ -33,12 +33,12 @@
 #define __TYPES__
 #endif /* __TYPES__ */
 #else
-#if !defined(_POSIX_SOURCE) || !defined(MOTOROLA)
-#include <sys/types.h>
-#else
+#if defined(_POSIX_SOURCE) && defined(MOTOROLA)
 #undef _POSIX_SOURCE
 #include <sys/types.h>
 #define _POSIX_SOURCE
+#else
+#include <sys/types.h>
 #endif
 #endif /* USG */
 
