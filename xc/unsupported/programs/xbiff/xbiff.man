@@ -1,10 +1,21 @@
-.\" $XConsortium: xbiff.man,v 1.19 94/04/11 14:29:28 gildea Exp $
+.\" $XConsortium: xbiff.man,v 1.20 94/04/11 16:03:30 matt Exp $
+.\" Copyright 1988 Massachusetts Institute of Technology
+.\"
+.\" Permission to use, copy, modify, distribute, and sell this software and
+.\" its documentation for any purpose is hereby granted without fee, provided
+.\" that the above copyright notice appear in all copies and that both that
+.\" copyright notice and this permission notice appear in supporting
+.\" documentation, and that the name of M.I.T. not be used in advertising or
+.\" publicity pertaining to distribution of the software without specific,
+.\" written prior permission.  M.I.T. makes no representations about the
+.\" suitability of this software for any purpose.  It is provided "as is"
+.\" without express or implied warranty.
 .TH XBIFF 1 "Release 6" "X Version 11"
 .SH NAME
-xbiff - mailbox flag for X
+xbiff \- mailbox flag for X
 .SH SYNOPSIS
 .B xbiff
-[-\fItoolkitoption\fP ...] [-option ...]
+[ \-\fItoolkitoption\fP ... ] [ \fI\-option\fP ... ]
 .SH DESCRIPTION
 The
 .I xbiff
@@ -14,9 +25,6 @@ By default,
 pressing any mouse button in the image forces \fIxbiff\fP to remember the
 current size of the mail file as being the ``empty'' size and to lower
 the flag.
-.PP
-This program is nothing more than a wrapper around the Athena \fIMailbox\fP
-widget.
 .SH OPTIONS
 .I Xbiff
 accepts all of the standard X Toolkit command line options along with the
@@ -77,7 +85,8 @@ useful for setting resources that do not have separate command line options.
 The application class name is XBiff.
 This program uses the 
 .I Mailbox
-widget in the Athena widget set.  It understands all of the core resource names and
+widget.
+It understands all of the core resource names and
 classes as well as:
 .PP
 .TP 8
@@ -176,10 +185,6 @@ xrdb(1),
 stat(2)
 .SH BUGS
 The mailbox bitmaps are ugly.
-.SH COPYRIGHT
-Copyright 1988, Massachusetts Institute of Technology.
-.br
-See \fIX(1)\fP for a full statement of rights and permissions.
 .SH AUTHOR
 Jim Fulton, MIT X Consortium
 .br
