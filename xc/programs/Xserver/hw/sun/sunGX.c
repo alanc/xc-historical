@@ -1,5 +1,5 @@
 /*
- * $XConsortium: sunGX.c,v 1.4 91/07/18 22:56:05 keith Exp $
+ * $XConsortium: sunGX.c,v 1.5 91/07/26 19:17:25 keith Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
