@@ -1076,7 +1076,7 @@
 	  (do ((j 0 (index+ j 1)))
 	      ((index>= j keysyms-per-keycode))
 	    (declare (type array-index j))
-	    (card32-put (index* w 4) (aref keysyms i j))
+	    (card29-put (index* w 4) (aref keysyms i j))
 	    (index-incf w)))))))
 
 (defun keyboard-mapping (display &key first-keycode start end data)
@@ -1111,6 +1111,6 @@
 	   ((zerop keycode-count) (setq data result))
 	(buffer-input display buffer-bbuf 0 bytes-per-keycode)
 	(dotimes (j keysyms-per-keycode)
-	  (setf (aref result i j) (card32-get (* j 4)))))))
+	  (setf (aref result i j) (card29-get (* j 4)))))))
   (display-invoke-after-function display)
   data)

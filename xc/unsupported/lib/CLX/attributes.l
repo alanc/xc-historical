@@ -170,7 +170,7 @@
   ;; number is the change-attributes request mask bit number
   (declare (type window window)
 	   (type card8 number)
-	   (type integer value))
+	   (type card32 value))
   (let ((state-entry nil)
 	(changes nil))
     (if (and *window-attributes*
@@ -215,7 +215,7 @@
       (with-buffer-request ((drawable-display drawable) *x-configurewindow*)
 	(drawable drawable)
 	(card16 (ash 1 number))
-	(card32 value)))))
+	(card29 value)))))
 
 (defun get-window-attributes-buffer (window)
   (declare (type window window))
@@ -334,7 +334,7 @@
 		   (type fixnum request-size)
 		   (type array-index i))
 	  (when (oddp bits)
-	    (card32-put (* (incf request-size) 4) (aref changes i))))))))
+	    (card29-put (* (incf request-size) 4) (aref changes i))))))))
 
 (defmacro with-attributes ((window &rest options) &body body)
   (let ((buffer (gensym)))
