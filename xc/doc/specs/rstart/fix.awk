@@ -1,4 +1,6 @@
 #! /bin/awk -f
+# $XConsortium$
+#
 
 BEGIN {
 	ignore = 1;

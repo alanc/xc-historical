@@ -1,4 +1,6 @@
 #! /bin/nawk -f
+# $XConsortium$
+#
 
 BEGIN {
 	ignore = 1;
