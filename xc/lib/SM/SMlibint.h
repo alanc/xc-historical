@@ -1,4 +1,4 @@
-/* $XConsortium: SMlibint.h,v 1.12 94/01/31 11:05:35 mor Exp $ */
+/* $XConsortium: SMlibint.h,v 1.13 94/03/07 15:23:07 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -139,6 +139,34 @@ Author: Ralph Mor, X Consortium
             EXTRACT_ARRAY8 (_pBuf, _swap, _props[_i]->vals[_j].length, _temp);\
 	    _props[_i]->vals[_j].value = (SmPointer) _temp; \
 	} \
+    } \
+}
+
+
+#define SKIP_ARRAY8(_pBuf, _swap) \
+{ \
+    CARD32 _len; \
+    EXTRACT_CARD32 (_pBuf, _swap, _len); \
+    _pBuf += _len; \
+    if (PAD64 (4 + _len)) \
+        _pBuf += PAD64 (4 + _len); \
+}
+
+#define SKIP_LISTOF_PROPERTY(_pBuf, _swap) \
+{ \
+    int _i, _j; \
+    CARD32 _count; \
+    EXTRACT_CARD32 (_pBuf, _swap, _count); \
+    _pBuf += 4; \
+    for (_i = 0; _i < _count; _i++) \
+    { \
+        CARD32 _numvals; \
+        SKIP_ARRAY8 (_pBuf, _swap); \
+        SKIP_ARRAY8 (_pBuf, _swap); \
+        EXTRACT_CARD32 (_pBuf, _swap, _numvals); \
+        _pBuf += 4; \
+        for (_j = 0; _j < _numvals; _j++) \
+            SKIP_ARRAY8 (_pBuf, _swap);\
     } \
 }
 
