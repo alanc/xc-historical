@@ -8,13 +8,11 @@ range of computing and graphics machines.  The core distribution from MIT
 has both client and server support for the following operating systems:
 .sp
 .ce 7
-4.3+tahoe
-Ultrix 3.0 FT2 (also compiles under Ultrix 2.0)
-SunOS 3.4
+Ultrix 3.0
+SunOS 4.0.1
 HP-UX 6.01
-Apollo Domain/IX 9.7 (and 9.6 according to its developers)
-IBM AOS 4.3 (according to its developers)
-A/UX 1.0
+Apollo Domain/IX 10.1
+A/UX 1.1
 .sp
 Commercial implementations are also available for a much wider range
 of platforms.
@@ -783,8 +781,8 @@ restrictions covering most parts of the standard distribution of the X Window
 System from MIT.  Other parts have additional or different copyrights
 and permissions; see the individual source files.
 .sp
-Copyright 1984, 1985, 1986, 1987, 1988, Massachusetts Institute of 
-Technology.
+Copyright 1984, 1985, 1986, 1987, 1988, and 1989, by the Massachusetts 
+Institute of Technology.
 .sp
 Permission to use, copy, modify, and distribute this
 software and its documentation for any purpose and without
