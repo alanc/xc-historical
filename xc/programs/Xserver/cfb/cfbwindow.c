@@ -203,20 +203,15 @@ cfbChangeWindowAttributes(pWin, mask)
 	      else if (((width = (pWin->background.pixmap->drawable.width * PSZ)) <= 32) &&
 		       !(width & (width - 1)))
 	      {
-		  if (pPrivWin->pRotatedBackground)
-		      cfbDestroyPixmap(pPrivWin->pRotatedBackground);
-		  pPrivWin->pRotatedBackground =
-		    cfbCopyPixmap(pWin->background.pixmap);
+		  cfbCopyRotatePixmap(pWin->background.pixmap,
+				      &pPrivWin->pRotatedBackground,
+				      pWin->drawable.x,
+				      pWin->drawable.y);
 		  if (pPrivWin->pRotatedBackground)
 		  {
 		      pPrivWin->fastBackground = TRUE;
 		      pPrivWin->oldRotate.x = pWin->drawable.x;
 		      pPrivWin->oldRotate.y = pWin->drawable.y;
-		      (void)cfbPadPixmap(pPrivWin->pRotatedBackground);
-		      cfbXRotatePixmap(pPrivWin->pRotatedBackground,
-				       pWin->drawable.x);
-		      cfbYRotatePixmap(pPrivWin->pRotatedBackground,
-				       pWin->drawable.y);
 		  }
 		  else
 		  {
@@ -237,20 +232,15 @@ cfbChangeWindowAttributes(pWin, mask)
 	      if (((width = (pWin->border.pixmap->drawable.width * PSZ)) <= 32) &&
 		  !(width & (width - 1)))
 	      {
-		  if (pPrivWin->pRotatedBorder)
-		      cfbDestroyPixmap(pPrivWin->pRotatedBorder);
-		  pPrivWin->pRotatedBorder =
-		    cfbCopyPixmap(pWin->border.pixmap);
+		  cfbCopyRotatePixmap(pWin->border.pixmap,
+				      &pPrivWin->pRotatedBorder,
+				      pWin->drawable.x,
+				      pWin->drawable.y);
 		  if (pPrivWin->pRotatedBorder)
 		  {
 		      pPrivWin->fastBorder = TRUE;
 		      pPrivWin->oldRotate.x = pWin->drawable.x;
 		      pPrivWin->oldRotate.y = pWin->drawable.y;
-		      (void)cfbPadPixmap(pPrivWin->pRotatedBorder);
-		      cfbXRotatePixmap(pPrivWin->pRotatedBorder,
-				       pWin->drawable.x);
-		      cfbYRotatePixmap(pPrivWin->pRotatedBorder,
-				       pWin->drawable.y);
 		  }
 		  else
 		  {
