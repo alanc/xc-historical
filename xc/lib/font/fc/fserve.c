@@ -1,4 +1,4 @@
-/* $XConsortium: fserve.c,v 1.29 93/09/20 15:56:46 gildea Exp $ */
+/* $XConsortium: fserve.c,v 1.30 93/09/22 16:59:22 gildea Exp $ */
 /*
  * Copyright 1990 Network Computing Devices
  *
@@ -35,7 +35,7 @@
 #include	"fontmisc.h"
 #include	"fontstruct.h"
 #include	"fservestr.h"
-#include	"FSlibos.h"
+#include	"fslibos.h"
 #include	<errno.h>
 #ifdef X_NOT_STDC_ENV
 extern int errno;

@@ -1,4 +1,4 @@
-/* $XConsortium: fsio.c,v 1.29 93/09/20 15:56:48 gildea Exp $ */
+/* $XConsortium: fsio.c,v 1.30 93/09/22 16:59:24 gildea Exp $ */
 /*
  * Copyright 1990 Network Computing Devices
  *
@@ -48,7 +48,7 @@
 #ifdef X_NOT_STDC_ENV
 extern int errno;
 #endif 
-#include	"FSlibos.h"
+#include	"fslibos.h"
 #include	"fontmisc.h"
 #include	"fsio.h"
 #ifdef WIN32

@@ -1,5 +1,5 @@
-/* $XConsortium: FSlibos.h,v 1.8 93/09/12 20:08:43 rws Exp $ */
-/* @(#)FSlibos.h	4.1	91/05/02
+/* $XConsortium: fslibos.h,v 1.9 93/09/20 15:56:44 gildea Exp $ */
+/*
  * Copyright 1990 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
  * Massachusetts Institute of Technology
