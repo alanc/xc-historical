@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.13 94/11/30 17:55:33 mor Exp mor $
+XCOMM $XConsortium: Imakefile,v 1.14 94/12/12 19:52:37 mor Exp mor $
 #if !defined(RshCmd)
 #if SystemV
 #ifdef HPArchitecture
@@ -18,11 +18,11 @@ LOCAL_LIBRARIES = XawClientLibs
 
            SRCS1 = auth.c choose.c info.c list.c lock.c log.c \
 		   mainwin.c misc.c printhex.c prop.c remote.c \
-		   restart.c save.c saveutil.c xsm.c xtwatch.c
+		   restart.c save.c saveutil.c signals.c xsm.c xtwatch.c
                    
            OBJS1 = auth.o choose.o info.o list.o lock.o log.o \
 		   mainwin.o misc.o printhex.o prop.o remote.o \
-	           restart.o save.o saveutil.o xsm.o xtwatch.o
+	           restart.o save.o saveutil.o signals.o xsm.o xtwatch.o
 
           PROGS1 = xsm
 
@@ -41,5 +41,6 @@ SpecialCObjectRule(remote,NullParameter,'-DRSHCMD="$(RSHCMD)"')
 SpecialCObjectRule(misc,NullParameter,-DNOPUTENV)
 #endif
 SpecialCObjectRule(restart,$(_NOOP_),'-DSYSTEM_INIT_FILE="'$(XSMDIR)'/system.xsm"')
+SpecialCObjectRule(signals,NullParameter,$(SIGNAL_DEFINES))
 InstallNonExecFile(system.xsm,$(XSMDIR))
 InstallAppDefaults(XSm)
