@@ -1,4 +1,4 @@
-.TH X 1 "16 October 1988"  "X Version 11"
+.TH X 1 "26 October 1988"  "X Version 11"
 .SH NAME
 X - a portable, network transparent window system
 .SH SYNOPSIS
@@ -95,7 +95,8 @@ asking for your username and password.  Simply type them in as you would at
 a normal terminal, pressing the Return key after each.  If you make a mistake,
 \fIxdm\fP will display an error message and ask you to try again.  After you
 have successfully logged in, \fIxdm\fP will start up your X environment.  By
-default, if you have a file named \fI.xsession\fP in your home directory,
+default, if you have an executable file named \fI.xsession\fP in your
+home directory,
 \fIxdm\fP will treat it as a program (or shell script) to run to start up 
 your initial clients (such as terminal emulators, clocks, a window manager,
 user settings for things like the background, the speed of the pointer, etc.).
@@ -291,7 +292,7 @@ example).
 .PP
 Since window managers are regular (albeit complex) client programs,
 a variety of different user interfaces can be built.  The core distribution
-comes with a window manager named \fIuwm\fP will supports overlapping windows,
+comes with a window manager named \fIuwm\fP which supports overlapping windows,
 popup menus, point-and-click or click-to-type input models, and minimal use
 of screen real estate (i.e. it doesn't provide title bars around windows).  
 It tries to stay out of the way as much as possible, but can be
@@ -474,7 +475,7 @@ the various shift, control, and shift lock keys on the keyboard.
 Applications translate event keycodes and modifier masks into keysyms
 using a \fIkeysym table\fP which contains one row for each keycode and one
 column for each of the modifiers.  This table is initialized by the server
-to correspond to normal typewriter conventions, but is only ever used by
+to correspond to normal typewriter conventions, but is only used by
 client programs.  
 .PP
 Although most programs deal with keysyms directly (such as those written with
@@ -570,7 +571,7 @@ obtain resources from the following sources:
 Any global resources that should be available to clients on all machines 
 should be stored in the RESOURCE_MANAGER property on the
 root window using the \fIxrdb\fP program.  This is frequently taken care
-when the user starts up X through the display manager or \fIxinit\fP.
+of when the user starts up X through the display manager or \fIxinit\fP.
 .TP 8
 .B "application-specific files"
 Any application- or machine-specific resources can be stored in
@@ -714,7 +715,8 @@ please refer to that command's manual page.
 .SH DIAGNOSTICS
 A wide variety of error messages are generated from various programs.  Various
 toolkits are encouraged to provide a common mechanism for locating error 
-text so that applications can be tailored easily.  Programs written directly
+text so that applications can be tailored easily.  Programs written
+to interface directly
 to the \fIXlib\fP C language library are expected to do their own error
 checking.
 .PP
@@ -727,8 +729,8 @@ When the X Toolkit encounters errors converting resource strings to the
 appropriate internal format, no error messages are usually printed.  This is
 convenient when it is desirable to have one set of resources across a variety
 of displays (e.g. color vs. monochrome, lots of fonts vs. very few, etc.),
-although can pose problems for trying to determine why an application might
-be failing.  This behavior can be overrided by the setting 
+although it can pose problems for trying to determine why an application might
+be failing.  This behavior can be overridden by the setting the
 \fIStringConversionsWarning\fP resource.
 .PP
 To force the Toolkit to always print string conversion error messages,
@@ -757,7 +759,7 @@ mkfontdir(1),
 bitmap(1), uwm(1), x10tox11(1), xbiff(1), xcalc(1), xclock(1),
 xdpyinfo(1), xedit(1), xev(1), xfd(1), xhost(1), xinit(1), xkill(1), xload(1),
 xlogo(1), xlsfonts(1), xlswins(1), xmag(1), xman(1), xmh(1), xmodmap(1),
-xdpr(1), xpr(1), xprop(1), xrdb(1), xrefresh(1), xset(1), xsetroot(1),
+xpr(1), xprop(1), xrdb(1), xrefresh(1), xset(1), xsetroot(1),
 resize(1), xterm(1), xwd(1), xwininfo(1), xwud(1),
 Xapollo(1), Xqdss(1), Xqvss(1), Xsun(1), XmacII(1), Xplx(1), bdftosnf(1),
 kbd_mode(1), todm(1), tox(1), biff(1), init(8), ttys(5),
