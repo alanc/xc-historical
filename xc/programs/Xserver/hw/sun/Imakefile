@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 5.15 92/12/03 10:37:37 rws Exp $
+XCOMM $XConsortium: Imakefile,v 5.16 92/12/03 10:40:08 rws Exp $
 #include <Server.tmpl>
 
 #ifdef SparcArchitecture
@@ -47,7 +47,11 @@ NormalLibraryTarget(sun,$(OBJS))
 NormalLintTarget($(SRCS1) $(SRCS2))
 
 #if !HasMITGXSource
+#if SystemV4
+LinkFile(sunGX.o,solGX.o.dist)
+#else
 LinkFile(sunGX.o,sunGX.o.dist)
+#endif
 #endif
 
 #if Xsun24Server
