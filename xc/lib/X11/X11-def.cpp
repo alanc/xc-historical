@@ -625,7 +625,7 @@ EXPORTS
  _XDeqAsyncHandler
  _XEatData
  _XError
- _XFlush
+ _XFlushIt
  _XFlushGCCache
  _XGetAsyncData
  _XGetAsyncReply
