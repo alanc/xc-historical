@@ -96,26 +96,20 @@
 
 (defsetf wm-command set-wm-command)
 (defun set-wm-command (window command)
-  ;; Uses PRIN1 to a string-stream with the following bindings:
-  ;; (*print-length* nil) (*print-level* nil) (*print-radix* nil)
-  ;; (*print-base* 10.) (*print-array* t) (*package* (find-package 'lisp))
-  ;; each element of command is seperated with NULL characters.
-  ;; This enables (mapcar #'read-from-string (wm-command window))
+  ;; Uses PRIN1 inside the ANSI common lisp form WITH-STANDARD-IO-SYNTAX (or
+  ;; equivalent), with elements of command separated by NULL characters.  This
+  ;; enables 
+  ;;   (with-standard-io-syntax (mapcar #'read-from-string (wm-command window)))
   ;; to recover a lisp command.
   (declare (type window window)
 	   (type list command))
-  (set-string-property window :WM_COMMAND
-		       (with-output-to-string (stream)
-			 (let ((*print-length* nil)
-			       (*print-level* nil)
-			       (*print-radix* nil)
-			       (*print-base* 10.)
-			       (*print-array* t)
-			       (*package* (find-package 'lisp))
-			       #+ti (ticl:*print-structure* t))
-			   (dolist (c command)
-			     (prin1 c stream)
-			     (write-char #.(card8->char 0) stream)))))
+  (set-string-property
+    window :WM_COMMAND
+    (with-output-to-string (stream)
+      (with-standard-io-syntax 
+	(dolist (c command)
+	  (prin1 c stream)
+	  (write-char #.(card8->char 0) stream)))))
   command)
 
 ;;-----------------------------------------------------------------------------

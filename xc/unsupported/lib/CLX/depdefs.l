@@ -369,12 +369,12 @@
 
 ;; These are here because.
 
-(defparameter *xlib-package* (find-package 'xlib))
+(defparameter *xlib-package* (find-package :xlib))
 
 (defun xintern (&rest parts)
   (intern (apply #'concatenate 'string (mapcar #'string parts)) *xlib-package*))
 
-(defparameter *keyword-package* (find-package 'keyword))
+(defparameter *keyword-package* (find-package :keyword))
 
 (defun kintern (name)
   (intern (string name) *keyword-package*))
@@ -382,9 +382,12 @@
 ;;; Pseudo-class mechanism.
 
 (defmacro def-clx-class ((name &rest options) &body slots)
-  (let ((clos-package (or (find-package 'clos)
-			  (find-package 'pcl)
-			  (let ((lisp-pkg (find-package 'lisp)))
+  (let ((clos-package (or (find-package :clos)
+			  (find-package :pcl)
+			  (let ((lisp-pkg
+				  (find-package
+				    #-ansi-common-lisp :lisp
+				    #+ansi-common-lisp :common-lisp)))
 			    (and (find-symbol (string 'defclass) lisp-pkg)
 				 lisp-pkg)))))
     (if clos-package
@@ -412,7 +415,7 @@
 				  (mapcar #'symbol-name symbols))
 			   *package*))
 		 (kintern (symbol)
-		   (intern (symbol-name symbol) (find-package 'keyword)))
+		   (intern (symbol-name symbol) (find-package :keyword)))
 		 (closintern (symbol)
 		   (intern (symbol-name symbol) clos-package)))
 	    (when (eq constructor t)
@@ -593,7 +596,7 @@
   (princ "#<" stream)
   (when type
     (let ((type (type-of object))
-	  (pcl-package (find-package 'pcl)))
+	  (pcl-package (find-package :pcl)))
       ;; Handle pcl type-of lossage
       (when (and pcl-package
 		 (symbolp type)
@@ -614,9 +617,36 @@
 #-(or ansi-common-lisp Genera)
 (defmacro print-unreadable-object
 	  ((object stream &key type identity) &body body)
-  `(print-unreadable-object-function
-     ,object ,stream ,type ,identity
-     ,(and body `#'(lambda () ,@body))))
+  (if body
+      `(flet ((.print-unreadable-object-body. () ,@body))
+	 (print-unreadable-object-function
+	   ,object ,stream ,type ,identity #'.print-unreadable-object-body.))
+    `(print-unreadable-object-function ,object ,stream ,type ,identity nil)))
+
+#-(or ansi-common-lisp Genera)
+(defun with-standard-io-syntax-function (function)
+  (let ((*package* (find-package :user))
+	(*print-array* t)
+	(*print-base* 10)
+	(*print-case* :upcase)
+	(*print-circle* nil)
+	(*print-escape* t)
+	(*print-gensym* t)
+	(*print-length* nil)
+	(*print-level* nil)
+	(*print-pretty* nil)
+	(*print-radix* nil)
+	(*read-base* 10)
+	(*read-default-float-format* 'single-float)
+	(*read-suppress* nil)
+	#+ticl (ticl:*print-structure* t)
+	#+lucid (lucid::*print-structure* t))
+    (funcall function)))
+
+#-(or ansi-common-lisp Genera)
+(defmacro with-standard-io-syntax (&body body)
+  `(flet ((.with-standard-io-syntax-body. () ,@body))
+     (with-standard-io-syntax-function #'.with-standard-io-syntax-body.)))
 
 
 ;;-----------------------------------------------------------------------------
