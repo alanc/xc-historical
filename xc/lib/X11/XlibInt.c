@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlibInt.c,v 11.156 91/11/08 15:15:12 eswu Exp $
+ * $XConsortium: XlibInt.c,v 11.157 92/01/02 15:30:56 rws Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986, 1987 */
@@ -723,7 +723,6 @@ Status _XReply (dpy, rep, extra, discard)
 			switch ((int)err->errorCode) {
 			case BadName:
 			    switch (err->majorCode) {
-				case X_OpenFont:
 				case X_LookupColor:
 				case X_AllocNamedColor:
 				    return(0);
@@ -737,6 +736,13 @@ Status _XReply (dpy, rep, extra, discard)
 			case BadAccess:
 				return (0);
 			}
+		else if ((dpy->flags & XlibDisplayIgnoreFont) &&
+			 (err->errorCode == BadName) &&
+			 (err->majorCode == X_OpenFont) &&
+			 (serial == (cur_request -
+				     ((dpy->flags & XlibDisplayAddNoOp)
+				      ? 2 : 1))))
+		    break; /* pretend it didn't happen */
 		/* 
 		 * we better see if there is an extension who may
 		 * want to suppress the error.
