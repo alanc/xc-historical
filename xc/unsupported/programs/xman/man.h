@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: man.h,v 1.22 91/02/13 16:20:26 converse Exp $
+ * $XConsortium: man.h,v 1.23 91/03/19 15:11:19 gildea Exp $
  * $Athena: man.h,v 4.6 89/01/06 12:17:38 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
@@ -178,8 +178,12 @@ typedef struct _Xman_Resources {
 
 /* Standard library function definitions. */
 
-char * mktemp(), * getenv(), * malloc(), * realloc();
+#ifndef X_NOT_STDC_ENV
+#include <stdlib.h>
+#else
+char *getenv(), *malloc(), *realloc();
 void exit();
+#endif
 
 /* Toolkit standard definitions. */
 
