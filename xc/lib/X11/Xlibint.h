@@ -1,4 +1,4 @@
-/* $XConsortium: Xlibint.h,v 11.92 92/01/03 13:56:32 rws Exp $ */
+/* $XConsortium: Xlibint.h,v 11.93 92/01/09 18:45:49 rws Exp $ */
 /* Copyright 1984, 1985, 1987, 1989  Massachusetts Institute of Technology */
 
 /*
@@ -14,8 +14,8 @@ without express or implied warranty.
 */
 
 /*
- *	XlibInternal.h - Header definition and support file for the internal
- *	support routines (XlibInternal) used by the C subroutine interface
+ *	Xlibint.h - Header definition and support file for the internal
+ *	support routines used by the C subroutine interface
  *	library (Xlib) to the X Window System.
  *
  *	Warning, there be dragons here....
@@ -412,21 +412,11 @@ extern int errno;			/* Internal system error number. */
 }
 
 
-
-
-
 #ifdef MUSTCOPY
 
-/* a little bit of magic */
+/* for when 32-bit alignment is not good enough */
 #define OneDataCard32(dpy,dstaddr,srcvar) \
   { dpy->bufptr -= 4; Data32 (dpy, (char *) &(srcvar), 4); }
-
-#define STARTITERATE(tpvar,type,start,endcond,decr) \
-  { register char *cpvar; \
-  for (cpvar = (char *) start; endcond; cpvar = NEXTPTR(cpvar,type), decr) { \
-    type dummy; bcopy (cpvar, (char *) &dummy, SIZEOF(type)); \
-    tpvar = (type *) cpvar;
-#define ENDITERATE }}
 
 #else
 
@@ -434,19 +424,15 @@ extern int errno;			/* Internal system error number. */
 #define OneDataCard32(dpy,dstaddr,srcvar) \
   { *(unsigned long *)(dstaddr) = (srcvar); }
 
-#define STARTITERATE(tpvar,type,start,endcond,decr) \
-  for (tpvar = (type *) start; endcond; tpvar++, decr) {
-#define ENDITERATE }
+#endif /* MUSTCOPY */
 
-#endif /* MUSTCOPY - used machines whose C structs don't line up with proto */
-
-typedef struct _XInternalError {
-    struct _XInternalError *next;
+typedef struct _XInternalAsync {
+    struct _XInternalAsync *next;
     Bool (*handler)();
     XPointer data;
-} _XInternalErrorHandler;
+} _XAsyncHandler;
 
-typedef struct _XInternalEState {
+typedef struct _XAsyncEState {
     unsigned long min_sequence_number;
     unsigned long max_sequence_number;
     unsigned char error_code;
@@ -454,13 +440,13 @@ typedef struct _XInternalEState {
     unsigned short minor_opcode;
     unsigned char last_error_received;
     int error_count;
-} _XInternalErrorState;
+} _XAsyncErrorState;
 
-#define _XDeqErrorHandler(dpy,handler) { \
+#define DeqAsyncHandler(dpy,handler) { \
     if (dpy->async_handlers == (handler)) \
 	dpy->async_handlers = (handler)->next; \
     else \
-	_XDeqInternalErrorHandler(dpy, handler); \
+	_XDeqAsyncHandler(dpy, handler); \
     }
 
 /*
