@@ -1,4 +1,4 @@
-/* $XConsortium: Xregistry,v 1.84 93/05/26 18:36:38 rws Exp $ */
+/* $XConsortium: Xregistry,v 1.85 93/07/06 10:57:20 rws Exp $ */
 
 1. ORGANIZATION NAMES
 
@@ -48,6 +48,7 @@ Name						Reference
 "TEK"						[43]
 "visual"					[5]
 "VIT"						[46]
+"WN"						[103]
 "WRI"						[102]
 "WYSE"						[68]
 "X3D"						[8]
@@ -596,6 +597,7 @@ Name						Reference
 "omron_CNS11643-1"				[45]
 "omron_BIG5-0"					[45]
 "omron_BIG5-1"					[45]
+"wn.tamil.1993"					[103]
 
 
 15. FONT PROPERTY NAMES
@@ -1302,3 +1304,6 @@ REFERENCES
 	Wolfram Research, Inc.
 	100 Trade Center Drive
 	Champaign IL, 61820-7237
+
+[103]	University of Washington
+	for WM Tamil fonts
