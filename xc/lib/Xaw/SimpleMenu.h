@@ -2,7 +2,7 @@
 Copyright 1989 by the Massachusetts Institute of Technology,
 Cambridge, Massachusetts.
 
- "$XConsortium: SimpleMenu.h,v 1.10 89/07/21 14:23:42 jim Exp $";
+ "$XConsortium: SimpleMenu.h,v 1.11 89/08/10 13:47:34 kit Exp $";
 
                         All Rights Reserved
 
@@ -176,7 +176,7 @@ extern WidgetClass simpleMenuWidgetClass;
  */
 
 void 
-XawSimpleMenuAddGlobalActions(/* app_con */)
+XawSimpleMenuAddGlobalActions(/* app_con */);
 /*
 XtAppContext app_con;
 */
