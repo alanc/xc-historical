@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbscrinit.c,v 5.10 90/01/23 15:39:27 rws Exp $ */
+/* $XConsortium: mfbscrinit.c,v 5.11 90/09/24 09:20:17 rws Exp $ */
 
 #include "X.h"
 #include "Xproto.h"	/* for xColorItem */
@@ -96,9 +96,6 @@ mfbScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
 {
     if 	(!mfbAllocatePrivates(pScreen, (int *)NULL, (int *)NULL))
 	return FALSE;
-    if (!miScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width,
-		      1, 1, &depth, VID, 1, &visual, &mfbBSFuncRec))
-	return FALSE;
     pScreen->defColormap = (Colormap) FakeClientID(0);
     /* whitePixel, blackPixel */
     pScreen->QueryBestSize = mfbQueryBestSize;
@@ -127,5 +124,6 @@ mfbScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
     pScreen->StoreColors = NoopDDA;
     pScreen->ResolveColor = mfbResolveColor;
     pScreen->BitmapToRegion = mfbPixmapToRegion;
-    return TRUE;
+    return miScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width,
+			1, 1, &depth, VID, 1, &visual, &mfbBSFuncRec);
 }

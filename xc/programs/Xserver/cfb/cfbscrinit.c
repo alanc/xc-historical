@@ -135,11 +135,6 @@ cfbScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
 	if (i >= NUMVISUALS)
 	    i = 0;
     }
-    if (!miScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width,
-		      8, NUMDEPTHS, depths,
-		      visuals[i].vid, NUMVISUALS, visuals,
-		      &cfbBSFuncRec))
-	return FALSE;
     pScreen->defColormap = FakeClientID(0);
     /* let CreateDefColormap do whatever it wants for pixels */ 
     pScreen->blackPixel = pScreen->whitePixel = (Pixel) 0;
@@ -172,5 +167,8 @@ cfbScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
     pScreen->ResolveColor = cfbResolveColor;
     pScreen->BitmapToRegion = mfbPixmapToRegion;
     mfbRegisterCopyPlaneProc (pScreen, cfbCopyPlane);
-    return TRUE;
+    return miScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width,
+			8, NUMDEPTHS, depths,
+			visuals[i].vid, NUMVISUALS, visuals,
+			&cfbBSFuncRec);
 }
