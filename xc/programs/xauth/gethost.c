@@ -1,5 +1,5 @@
 /*
- * $XConsortium: gethost.c,v 1.9 89/12/06 20:54:35 jim Exp $
+ * $XConsortium: gethost.c,v 1.10 89/12/10 19:58:51 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -216,7 +216,7 @@ char *get_address_info (family, fulldpyname, prefix, host, lenp)
 #ifdef TCPCONN
 	if (!get_inet_address (host, &hostinetaddr)) return NULL;
 	src = (char *) &hostinetaddr;
-	len = (sizeof inaddr.sin_addr);
+	len = 4; /* sizeof inaddr.sin_addr, would fail on Cray */
 	break;
 #else
 	return NULL;
