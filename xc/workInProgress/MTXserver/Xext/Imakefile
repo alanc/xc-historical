@@ -1,0 +1,13 @@
+# $Header$
+       SRCS = zoid.c
+       OBJS = zoid.o
+CDEBUGFLAGS = ServerCDebugFlags
+   INCLUDES = -I../include -I$(INCLUDESRC) -I$(SERVERSRC)/include
+
+NormalLibraryObjectRule()
+NormalLibraryTarget(zoid,$(OBJS))
+
+DependTarget()
+
+lint:
+	lint -Czoid $(INCLUDES) $(SRCS) > lint.out

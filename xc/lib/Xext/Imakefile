@@ -1,0 +1,40 @@
+# $Header$
+       INCLUDES = -I$(TOP) -I$(INCLUDESRC) -I$(XLIBSRC) -I../include
+           SRCS = XFillZoids.c
+           OBJS = XFillZoids.o
+
+#if DebugLibXZoid && ProfileLibXZoid
+DebuggedAndProfiledLibraryObjectRule()
+#else
+# if DebugLibXZoid
+DebuggedLibraryObjectRule()
+# else
+#  if ProfileLibXZoid
+ProfiledLibraryObjectRule()
+#  else
+NormalLibraryObjectRule()
+#  endif
+# endif
+#endif
+
+NormalLibraryTarget(XZoid,$(OBJS))
+LintLibraryTarget(XZoid,$(SRCS))
+InstallLibrary(XZoid,$(USRLIBDIR))
+InstallLintLibrary(XZoid,$(USRLIBDIR))
+
+#if ProfileLibXZoid
+ProfiledLibraryTarget(XZoid,$(OBJS))
+InstallLibrary(XZoid_p,$(USRLIBDIR))
+#endif
+
+#if DebugLibXZoid
+DebuggedLibraryTarget(XZoid,$(OBJS))
+#endif
+
+DependTarget()
+
+lint:
+	$(LINT) -buz ${INCLUDES} \
+		-DLIBDIR=\"${LIBDIR}\" \
+		${SRCS} \
+		$(XLIBSRC)/llib-lX.ln

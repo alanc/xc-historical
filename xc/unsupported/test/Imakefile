@@ -1,0 +1,9 @@
+# $Header$
+       SRCS = zoidclient.c
+       OBJS = zoidclient.o
+   INCLUDES = -I$(TOP)  -I../include
+CDEBUGFLAGS = -g
+
+SingleProgramTarget(zoidclient,$(OBJS),$(BEZIERLIB) $(XLIB),)
+
+DependTarget()
