@@ -2,14 +2,14 @@
 LOCAL_LIBRARIES = $(XLIB)
           SRCS1 = xinit.c 
           OBJS1 = xinit.o 
-       PROGRAMS = xinit xstartup
+       PROGRAMS = xinit startx
 
 ComplexProgramTarget_1(xinit,$(XLIB),)
 
-xstartup:  xstartup.cpp
-	$(RM) xstartup
-	$(CPP) $(STD_SYS_DEFINES) <xstartup.cpp | \
-		sed '/^#  *[0-9][0-9]*  *.*$$/d' >xstartup
-	chmod a+x xstartup
+startx:  startx.cpp
+	$(RM) startx
+	$(CPP) $(STD_SYS_DEFINES) <startx.cpp | \
+		sed '/^#  *[0-9][0-9]*  *.*$$/d' >startx
+	chmod a+x startx
 
-InstallProgram(xstartup,$(BINDIR))
+InstallProgram(startx,$(BINDIR))
