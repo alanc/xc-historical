@@ -1,4 +1,4 @@
-/* $XConsortium: VarGet.c,v 1.14 90/12/12 14:53:52 rws Exp $ */
+/* $XConsortium: VarGet.c,v 1.15 91/01/06 13:32:54 rws Exp $ */
 /*
 
 Copyright 1985, 1986, 1987, 1988, 1989 by the
@@ -18,9 +18,9 @@ without express or implied warranty.
 
 */
 
-#include <X11/StringDefs.h>
 #include "IntrinsicI.h"
 #include "VarargsI.h"
+#include "StringDefs.h"
 
 static String XtNxtGetTypedArg = "xtGetTypedArg";
 

@@ -1,4 +1,4 @@
-/* $XConsortium: Resources.c,v 1.97 91/02/03 18:31:12 rws Exp $ */
+/* $XConsortium: Resources.c,v 1.98 91/02/04 21:52:20 rws Exp $ */
 
 /*LINTLIBRARY*/
 
@@ -26,12 +26,12 @@ SOFTWARE.
 
 ******************************************************************/
 
-#include <stdio.h>
 #include "IntrinsicI.h"
 #include "VarargsI.h"
 #include "Shell.h"
 #include "ShellP.h"
 #include "StringDefs.h"
+#include <stdio.h>
 
 static XrmClass	QBoolean, QString, QCallProc, QImmediate;
 static XrmName QinitialResourcesPersistent, QInitialResourcesPersistent;

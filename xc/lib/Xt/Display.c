@@ -1,4 +1,4 @@
-/* $XConsortium: Display.c,v 1.63 91/01/09 20:11:46 gildea Exp $ */
+/* $XConsortium: Display.c,v 1.64 91/02/03 18:30:26 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -24,7 +24,6 @@ SOFTWARE.
 
 ******************************************************************/
 
-#include <X11/Xlib.h>
 #include "IntrinsicI.h"
 
 static String XtNnoPerDisplay = "noPerDisplay";

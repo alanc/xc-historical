@@ -1,4 +1,4 @@
-/* $XConsortium: ArgList.c,v 1.18 90/04/04 10:32:21 swick Exp $ */
+/* $XConsortium: ArgList.c,v 1.19 90/08/29 13:05:13 swick Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -24,9 +24,8 @@ SOFTWARE.
 
 ******************************************************************/
 
-#include	<X11/Xlib.h>
-#include	<stdio.h>
 #include	"IntrinsicI.h"
+#include	<stdio.h>
 
 /*
  * This routine merges two arglists. It does NOT check for duplicate entries.

@@ -1,5 +1,4 @@
-/* $XConsortium: Shell.c,v 1.93 90/12/28 16:29:24 gildea Exp $ */
-/* $oHeader: Shell.c,v 1.7 88/09/01 11:57:00 asente Exp $ */
+/* $XConsortium: Shell.c,v 1.94 91/02/05 14:11:42 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -31,17 +30,15 @@ SOFTWARE.
 #define DEFAULT_WM_TIMEOUT 5000
 #endif
 
-#include <pwd.h>
-#include <stdio.h>
-
-#include <X11/Xatom.h>
-
 #include "IntrinsicI.h"
 #include "StringDefs.h"
 #include "Shell.h"
 #include "ShellP.h"
 #include "Vendor.h"
 #include "VendorP.h"
+#include <X11/Xatom.h>
+#include <pwd.h>
+#include <stdio.h>
 
 #define WM_CONFIGURE_DENIED(w) (((WMShellWidget) (w))->wm.wm_configure_denied)
 #define WM_MOVED(w) (((WMShellWidget) (w))->wm.wm_moved)

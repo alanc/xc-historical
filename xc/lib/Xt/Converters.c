@@ -1,4 +1,4 @@
-/* "$XConsortium: Converters.c,v 1.61 90/12/28 13:55:00 gildea Exp $"; */
+/* "$XConsortium: Converters.c,v 1.62 91/01/10 21:20:25 converse Exp $"; */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -27,12 +27,12 @@ SOFTWARE.
 
 /* Conversion.c - implementations of resource type conversion procs */
 
+#include	"IntrinsicI.h"
 #include	"StringDefs.h"
+#include	"Quarks.h"
 #include	<stdio.h>
 #include        <X11/cursorfont.h>
 #include	<X11/keysym.h>
-#include	"IntrinsicI.h"
-#include	"Quarks.h"
 
 #if __STDC__
 #define Const const

@@ -1,5 +1,4 @@
-/* $XConsortium: Vendor.c,v 1.38 90/12/28 17:47:08 gildea Exp $ */
-/* $oHeader: Vendor.c,v 1.3 88/08/19 13:11:01 asente Exp $ */
+/* $XConsortium: Vendor.c,v 1.39 90/12/31 16:56:00 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -27,15 +26,15 @@ SOFTWARE.
 
 /* Make sure all wm properties can make it out of the resource manager */
 
-#include <pwd.h>
-#include <stdio.h>
-
 #include "IntrinsicI.h"
 #include "StringDefs.h"
 #include "Shell.h"
 #include "ShellP.h"
 #include "Vendor.h"
 #include "VendorP.h"
+
+#include <pwd.h>
+#include <stdio.h>
 
 
 /***************************************************************************

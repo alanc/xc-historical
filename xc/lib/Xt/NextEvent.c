@@ -1,4 +1,4 @@
-/* $XConsortium: NextEvent.c,v 1.98 90/12/29 12:15:11 rws Exp $ */
+/* $XConsortium: NextEvent.c,v 1.99 91/01/10 21:01:06 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -24,10 +24,9 @@ SOFTWARE.
 
 ******************************************************************/
 
+#include "IntrinsicI.h"
 #include <stdio.h>
 #include <errno.h>
-#include <X11/Xlib.h>
-#include "IntrinsicI.h"
 
 extern int errno;
 

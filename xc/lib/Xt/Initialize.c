@@ -1,5 +1,4 @@
-/* $XConsortium: Initialize.c,v 1.174 91/02/03 18:31:58 rws Exp $ */
-/* $oHeader: Initialize.c,v 1.7 88/08/31 16:33:39 asente Exp $ */
+/* $XConsortium: Initialize.c,v 1.175 91/02/04 08:22:35 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -27,14 +26,13 @@ SOFTWARE.
 
 /* Make sure all wm properties can make it out of the resource manager */
 
-#include <pwd.h>
-
-#include <stdio.h>
 #include "IntrinsicI.h"
 #include "StringDefs.h"
 #include "CoreP.h"
 #include "ShellP.h"
 #include "Quarks.h"
+#include <pwd.h>
+#include <stdio.h>
 
 #if __STDC__
 #define Const const

@@ -1,4 +1,4 @@
-/* $XConsortium: Error.c,v 1.28 90/09/26 13:10:33 swick Exp $ */
+/* $XConsortium: Error.c,v 1.29 90/12/12 14:51:13 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -24,9 +24,8 @@ SOFTWARE.
 
 ******************************************************************/
 
-#include <X11/Xlib.h>
-#include <stdio.h>
 #include "IntrinsicI.h"
+#include <stdio.h>
 
 /* The error handlers in the application context aren't used since we can't
    come up with a uniform way of using them.  If you can, define

@@ -1,4 +1,4 @@
-/* $XConsortium: Varargs.c,v 1.21 90/12/12 14:53:57 rws Exp $ */
+/* $XConsortium: Varargs.c,v 1.22 90/12/28 17:43:13 gildea Exp $ */
 
 /*
 
@@ -19,9 +19,9 @@ without express or implied warranty.
 
 */
 
-#include <X11/StringDefs.h>
 #include "IntrinsicI.h"
 #include "VarargsI.h"
+#include "StringDefs.h"
 
 static String XtNxtConvertVarToArgList = "xtConvertVarToArgList";
 

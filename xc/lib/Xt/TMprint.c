@@ -1,4 +1,4 @@
-/* $XConsortium: TMprint.c,v 1.2 91/01/10 17:16:25 converse Exp $ */
+/* $XConsortium: TMprint.c,v 1.3 91/01/10 20:52:19 converse Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -25,8 +25,8 @@ SOFTWARE.
 
 ******************************************************************/
 
-#include <stdio.h>
 #include "IntrinsicI.h"
+#include <stdio.h>
 
 typedef struct _TMStringBufRec{
     String	start;

@@ -1,4 +1,4 @@
-/* $XConsortium: TMkey.c,v 1.3 91/01/10 20:20:49 converse Exp $ */
+/* $XConsortium: TMkey.c,v 1.4 91/01/11 16:33:49 converse Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -27,8 +27,9 @@ SOFTWARE.
 
 #define XK_MISCELLANY
 #define XK_LATIN1
-#include <X11/keysymdef.h>
+
 #include "IntrinsicI.h"
+#include <X11/keysymdef.h>
 
 #ifdef __STDC__
 #define Const const
