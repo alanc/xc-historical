@@ -1,6 +1,6 @@
 #! /bin/csh -f
 # Copyright 1985,1988 Massacusetts Institute of Technology.
-# $XConsortium: xdpr.script,v 1.5 91/06/30 18:32:18 rws Exp $
+# $XConsortium: xdpr.script,v 1.6 91/06/30 18:36:31 rws Exp $
 # origin: paul 4/12/88
 	set xwdv=()
 	set xprv=() noglob
@@ -93,6 +93,11 @@
 # ...arguments to lpr...
 
 		case -P?*:
+		case -#?*:
+		case -C?*:
+		case -J?*:
+		case -h:
+		case -m:
 			set lprv = "$lprv $i"
 			breaksw
 
