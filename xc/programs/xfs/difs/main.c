@@ -1,3 +1,4 @@
+/* $XConsortium$ */
 /*
  * Font server main routine
  */

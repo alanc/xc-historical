@@ -1,3 +1,4 @@
+/* $XConsortium$ */
 /*
  * all the dispatch, error, event and reply vectors
  */

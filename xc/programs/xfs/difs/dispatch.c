@@ -1,3 +1,4 @@
+/* $XConsortium$ */
 /*
  * protocol dispatcher
  */

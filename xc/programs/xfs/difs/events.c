@@ -1,3 +1,4 @@
+/* $XConsortium$ */
 /*
  * event handling stuff
  */

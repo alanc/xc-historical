@@ -1,3 +1,4 @@
+/* $XConsortium$ */
 /*
  * waits for input
  */

@@ -1,3 +1,4 @@
+/* $XConsortium$ */
 /*
  * i/o functions
  *

@@ -1,3 +1,4 @@
+/* $XConsortium$ */
 /*
  * font data query
  */

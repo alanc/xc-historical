@@ -1,3 +1,4 @@
+/* $XConsortium$ */
 /*
  * handles connections
  */

@@ -1,3 +1,4 @@
+/* $XConsortium$ */
 /*
  * WARNING:  PROTOTYPE SOFTWARE, NOT FOR REDISTRIBUTION
  *

@@ -1,3 +1,4 @@
+/* $XConsortium$ */
 /*
  * os init code
  */

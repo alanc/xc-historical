@@ -1,3 +1,4 @@
+/* $XConsortium$ */
 /*
  * misc os utilities
  */

@@ -1,3 +1,4 @@
+/* $XConsortium$ */
 /*
  * font server atom manipulations
  */

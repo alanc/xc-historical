@@ -1,3 +1,4 @@
+/* $XConsortium$ */
 /*
  * Copyright 1990 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the

@@ -1,3 +1,4 @@
+/* $XConsortium$ */
 /*
  * various font server globals
  */
