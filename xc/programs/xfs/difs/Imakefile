@@ -1,13 +1,13 @@
-XCOMM $XConsortium$
+XCOMM $XConsortium: Imakefile,v 1.8 91/07/17 16:06:01 gildea Exp $
 #undef ServerDefines
 #include <Server.tmpl>
 
 SRCS =	main.c dispatch.c extensions.c globals.c events.c tables.c \
-	fontinfo.c swapreq.c swaprep.c resource.c \
+	fontinfo.c charinfo.c swapreq.c swaprep.c resource.c \
 	fonts.c difsutils.c cache.c initfonts.c atom.c
 
 OBJS =  main.o dispatch.o extensions.o globals.o events.o tables.o \
-	fontinfo.o swapreq.o swaprep.o resource.o \
+	fontinfo.o charinfo.o swapreq.o swaprep.o resource.o \
 	fonts.o difsutils.o cache.o initfonts.o atom.o
 
 
