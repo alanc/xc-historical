@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XGetDflt.c,v 1.14 88/09/19 13:55:55 jim Exp $
+ * $XConsortium: XGetDflt.c,v 1.15 89/03/29 15:26:03 jim Exp $
  */
 
 /***********************************************************
@@ -66,8 +66,8 @@ static char *GetHomeDir (dest)
 static XrmDatabase InitDefaults (dpy)
     Display *dpy;			/* display for defaults.... */
 {
-    XrmDatabase userdb = NULL;
-    XrmDatabase xdb = NULL;
+    XrmDatabase userdb;
+    XrmDatabase xdb;
     char fname[BUFSIZ];                 /* longer than any conceivable size */
     char *getenv();
     char *xenv;
