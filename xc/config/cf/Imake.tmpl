@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-XCOMM $XConsortium: Imake.tmpl,v 1.193 93/09/13 19:35:58 rws Exp $
+XCOMM $XConsortium: Imake.tmpl,v 1.194 93/09/13 19:48:19 rws Exp $
 XCOMM
 
 /*
@@ -499,7 +499,7 @@ _NULLCMD_ = @ echo -n
 #if !defined(UseInstalled)
 #define LdPreLib -L$(BUILDLIBDIR)
 #else
-#if AlternateUsrLibDir && !HasLdRunPath
+#if AlternateUsrLibDir
 #define LdPreLib -L$(USRLIBDIR)
 #else
 #define LdPreLib /**/
