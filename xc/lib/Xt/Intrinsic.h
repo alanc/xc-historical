@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Intrinsic.h,v 1.102 89/09/21 17:55:28 swick Exp $
+* $XConsortium: Intrinsic.h,v 1.103 89/09/26 10:54:43 swick Exp $
 * $oHeader: Intrinsic.h,v 1.10 88/09/01 10:33:34 asente Exp $
 */
 
@@ -309,6 +309,13 @@ extern void XtRegisterGrabAction();
     /* unsigned int	event_mask;			*/
     /* int		pointer_mode, keyboard_mode;	*/
 
+extern void XtSetMultiClickTime();
+    /* Display *dpy;	*/
+    /* int time;	*/
+
+extern int XtGetMultiClickTime();
+    /* Display *dpy;	*/
+
 /***************************************************************
  *
  * Keycode and Keysym procedures for translation management
@@ -584,25 +591,25 @@ extern Boolean XtIsObject();
 extern Boolean _XtCheckSubclassFlag(); /* implementation-private */
 extern Boolean _XtIsSubclassOf(); /* implementation-private */
 
-#define XtIsRectObj(object)		(_XtCheckSubclassFlag(object, 0x02))
-#define XtIsWidget(object)		(_XtCheckSubclassFlag(object, 0x04))
-#define XtIsComposite(widget)		(_XtCheckSubclassFlag(widget, 0x08))
-#define XtIsConstraint(widget)		(_XtCheckSubclassFlag(widget, 0x10))
-#define XtIsShell(widget)		(_XtCheckSubclassFlag(widget, 0x20))
+#define XtIsRectObj(object)	(_XtCheckSubclassFlag(object, (XtEnum)0x02))
+#define XtIsWidget(object)	(_XtCheckSubclassFlag(object, (XtEnum)0x04))
+#define XtIsComposite(widget)	(_XtCheckSubclassFlag(widget, (XtEnum)0x08))
+#define XtIsConstraint(widget)	(_XtCheckSubclassFlag(widget, (XtEnum)0x10))
+#define XtIsShell(widget)	(_XtCheckSubclassFlag(widget, (XtEnum)0x20))
 #define XtIsOverrideShell(widget) \
     (_XtIsSubclassOf(widget, (WidgetClass)overrideShellWidgetClass, \
-		     (WidgetClass)shellWidgetClass, 0x20))
-#define XtIsWMShell(widget)		(_XtCheckSubclassFlag(widget, 0x40))
+		     (WidgetClass)shellWidgetClass, (XtEnum)0x20))
+#define XtIsWMShell(widget)	(_XtCheckSubclassFlag(widget, (XtEnum)0x40))
 #define XtIsVendorShell(widget)	\
     (_XtIsSubclassOf(widget, (WidgetClass)vendorShellWidgetClass, \
-		     (WidgetClass)wmShellWidgetClass, 0x40))
+		     (WidgetClass)wmShellWidgetClass, (XtEnum)0x40))
 #define XtIsTransientShell(widget) \
     (_XtIsSubclassOf(widget, (WidgetClass)transientShellWidgetClass, \
-		     (WidgetClass)wmShellWidgetClass, 0x40))
-#define XtIsTopLevelShell(widget)	(_XtCheckSubclassFlag(widget, 0x80))
+		     (WidgetClass)wmShellWidgetClass, (XtEnum)0x40))
+#define XtIsTopLevelShell(widget) (_XtCheckSubclassFlag(widget, (XtEnum)0x80))
 #define XtIsApplicationShell(widget) \
     (_XtIsSubclassOf(widget, (WidgetClass)applicationShellWidgetClass, \
-		     (WidgetClass)topLevelShellWidgetClass, 0x80))
+		     (WidgetClass)topLevelShellWidgetClass, (XtEnum)0x80))
 
 extern void XtRealizeWidget();
     /* Widget	 widget	     */
