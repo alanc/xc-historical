@@ -2,7 +2,7 @@
  *  Hacked from Tony Della Fera's much hacked clock program.
  */
 #ifndef lint
-static char rcsid[] = "$XConsortium: xclock.c,v 1.25 89/10/09 16:48:24 jim Exp $";
+static char rcsid[] = "$XConsortium: xclock.c,v 1.26 89/12/08 17:57:07 jim Exp $";
 #endif /* lint */
 
 #include <X11/Xatom.h>
@@ -70,6 +70,11 @@ void main(argc, argv)
     if (argc != 1) Syntax(argv[0]);
 
     XtAppAddActions (app_con, xclock_actions, XtNumber(xclock_actions));
+
+    /*
+     * This is a hack so that f.delete will do something useful in this
+     * single-window application.
+     */
     XtSetArg (arg, XtNtranslations,
 	      XtParseTranslationTable ("<Message>WM_PROTOCOLS: quit()"));
     XtSetValues (toplevel, &arg, ONE);
