@@ -52,6 +52,7 @@ extern LabelClassRec labelClassRec;
 
 /* New fields for the Label widget record */
 typedef struct {
+    /* resources */
     Pixel	foreground;
     XFontStruct	*font;
     char	*label;
@@ -59,6 +60,7 @@ typedef struct {
     Dimension	internal_width;
     Dimension	internal_height;
 
+    /* private state */
     GC		normal_GC;
     GC          gray_GC;
     Pixmap      gray_pixmap;
