@@ -1,5 +1,5 @@
 /*
-* $Header: Intrinsic.h,v 1.69 88/02/03 22:38:15 swick Locked $
+* $Header: Intrinsic.h,v 1.70 88/02/05 15:52:48 swick Locked $
 */
 
 /*
@@ -442,6 +442,15 @@ extern void XtTransformCoords();
  *
  ****************************************************************/
 
+typedef struct _XtResource {
+    String     resource_name;	/* Resource name			    */
+    String     resource_class;	/* Resource class			    */
+    String     resource_type;	/* Representation type desired		    */
+    Cardinal    resource_size;	/* Size in bytes of representation	    */
+    Cardinal    resource_offset;/* Offset from base to put resource value   */
+    String     default_type;	/* representation type of specified default */
+    caddr_t     default_addr;   /* Address of default resource		    */
+} XtResource;
 
 extern void XtGetSubresources();
     /* Widget		widget;		*/
