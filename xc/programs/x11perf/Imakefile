@@ -34,11 +34,9 @@ install:: $(PERFLIB)
 CppScriptTarget(x11perfcomp,x11pcomp.cpp,-DLIBPATH=$(PERFLIB),$(ICONFIGFILE))
 
 InstallNamedProg(x11perfcomp,x11perfcomp,$(BINDIR))
-InstallNamedProg(getlabel.sh,getlabel,$(PERFLIB))
-InstallNamedProg(getavg.sh,getavg,$(PERFLIB))
 InstallNamedProg(fillblnk.sh,fillblnk,$(PERFLIB))
-InstallNamedProg(getrel.sh,getrel,$(PERFLIB))
-InstallNamedProg(getrate.sh,getrate,$(PERFLIB))
+InstallNamedProg(perfboth.sh,perfboth,$(PERFLIB))
+InstallNamedProg(perfratio.sh,perfratio,$(PERFLIB))
 InstallManPageLong(x11pcomp,$(MANDIR),x11perfcomp)
 
 x11perf_labels: x11perf
