@@ -1,5 +1,5 @@
 /*
- * $XConsortium: EditresCom.c,v 1.22 91/04/04 21:35:54 gildea Exp $
+ * $XConsortium: EditresCom.c,v 1.23 91/04/10 19:18:12 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -917,6 +917,28 @@ ProtocolStream * stream;
  *	Returns: none.
  */
 
+/* This is a trick/kludge.  To make shared libraries happier (linking
+ * against Xmu but not linking against Xt, and apparently even work
+ * as we desire on SVR4, we need to avoid an explicit data reference
+ * to applicationShellWidgetClass.  XtIsTopLevelShell is known
+ * (implementation dependent assumption!) to use a bit flag.  So we
+ * go that far.  Then, we test whether it is an applicationShellWidget
+ * class by looking for an explicit class name.  Seems pretty safe.
+ */
+static Bool isApplicationShell(w)
+    Widget w;
+{
+    register WidgetClass c;
+
+    if (!XtIsTopLevelShell(w))
+	return False;
+    for (c = XtClass(w); c; c = c->core_class.superclass) {
+	if (!strcmp(c->core_class.class_name, "ApplicationShell"))
+	    return True;
+    }
+    return False;
+}
+
 static void
 DumpChildren(w, stream, count)
 Widget w;
@@ -934,27 +956,10 @@ unsigned short *count;
 
     _XEditResPutString8(stream, XtName(w)); /* Insert name */
 
-    /* This is a trick/kludge.  To make shared libraries happier (linking
-     * against Xmu but not linking against Xt, and apparently even work
-     * as we desire on SVR4, we need to avoid an explicit data reference
-     * to applicationShellWidgetClass.  XtIsTopLevelShell is known
-     * (implementation dependent assumption!) to use a bit flag.  So we
-     * go that far.  Then, we guess at whether it is an
-     * applicationShellWidget class by testing whether it has an "argc"
-     * resource with a reasonable value.  Seems pretty safe.
-     */
-    if (XtIsTopLevelShell(w)) {
-	int argc = -1;
-	Arg arg;
-	XtSetArg(arg, XtNargc, &argc);
-	XtGetValues(w, &arg, 1);
-	if (argc >= 0)
-	    class = ((ApplicationShellWidget) w)->application.class;
-	else
-	    class = XtClass(w)->core_class.class_name;
-    } else {
+    if (isApplicationShell(w))
+	class = ((ApplicationShellWidget) w)->application.class;
+    else
 	class = XtClass(w)->core_class.class_name;
-    }
 
     _XEditResPutString8(stream, class); /* Insert class */
 

@@ -1,4 +1,4 @@
-/* $XConsortium: CvtStdSel.c,v 1.21 91/03/20 17:05:42 gildea Exp $
+/* $XConsortium: CvtStdSel.c,v 1.22 91/04/10 19:17:33 rws Exp $
  *
  * Copyright 1988 by the Massachusetts Institute of Technology
  *
@@ -132,6 +132,27 @@ static char *get_os_name ()
 #endif /*OS_NAME*/
 }
 
+/* This is a trick/kludge.  To make shared libraries happier (linking
+ * against Xmu but not linking against Xt, and apparently even work
+ * as we desire on SVR4, we need to avoid an explicit data reference
+ * to applicationShellWidgetClass.  XtIsTopLevelShell is known
+ * (implementation dependent assumption!) to use a bit flag.  So we
+ * go that far.  Then, we test whether it is an applicationShellWidget
+ * class by looking for an explicit class name.  Seems pretty safe.
+ */
+static Bool isApplicationShell(w)
+    Widget w;
+{
+    register WidgetClass c;
+
+    if (!XtIsTopLevelShell(w))
+	return False;
+    for (c = XtClass(w); c; c = c->core_class.superclass) {
+	if (!strcmp(c->core_class.class_name, "ApplicationShell"))
+	    return True;
+    }
+    return False;
+}
 
 Boolean XmuConvertStandardSelection(w, time, selection, target,
 				    type, value, length, format)
@@ -200,31 +221,14 @@ Boolean XmuConvertStandardSelection(w, time, selection, target,
 	Widget parent = XtParent(w);
 	char *class;
 	int len;
-	/* This is a trick/kludge.  To make shared libraries happier (linking
-	 * against Xmu but not linking against Xt, and apparently even work
-	 * as we desire on SVR4, we need to avoid an explicit data reference
-	 * to applicationShellWidgetClass.  XtIsTopLevelShell is known
-	 * (implementation dependent assumption!) to use a bit flag.  So we
-	 * go that far.  Then, we guess at whether it is an
-	 * applicationShellWidget class by testing whether it has an "argc"
-	 * resource with a reasonable value.  Seems pretty safe.
-	 */
-	while (parent != NULL && !XtIsTopLevelShell(w)) {
+	while (parent != NULL && !isApplicationShell(w)) {
 	    w = parent;
 	    parent = XtParent(w);
 	}
-	if (XtIsTopLevelShell(w)) {
-	    int argc = -1;
-	    Arg arg;
-	    XtSetArg(arg, XtNargc, &argc);
-	    XtGetValues(w, &arg, 1);
-	    if (argc >= 0)
-		class = ((ApplicationShellWidget) w)->application.class;
-	    else
-		class = XtClass(w)->core_class.class_name;
-	} else {
+	if (isApplicationShell(w))
+	    class = ((ApplicationShellWidget) w)->application.class;
+	else
 	    class = XtClass(w)->core_class.class_name;
-	}
 	*length = (len=strlen(w->core.name)) + strlen(class) + 2;
 	*value = XtMalloc(*length);
 	strcpy( (char*)*value, w->core.name );
