@@ -1,4 +1,4 @@
-/* $XConsortium: mfbwindow.c,v 5.5 89/07/17 10:24:33 rws Exp $ */
+/* $XConsortium: mfbwindow.c,v 5.6 89/07/18 18:03:37 rws Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -113,19 +113,10 @@ mfbPositionWindow(pWin, x, y)
 	pPrivWin->oldRotate.y = pWin->drawable.y;
     }
 
-    /* XXX  THIS IS THE WRONG FIX TO THE RIGHT PROBLEM   XXX
-     * When the window is moved, we need to invalidate any RotatedTile or
-     * RotatedStipple that exists in any GC currently validated against
-     * this window.  Bumping the serialNumber here is an expensive way to
-     * accomplish this.  A better fix is to have the rotated versions
-     * computed on demand by the routines that need them.  Have ValidateGC
-     * simply destroy the rotated versions when invalidated, add a flag to
-     * mfbPrivWin to indicate that the position has changed, set that flag
-     * here, and have routines that need to get the rotated versions check
-     * for a null pixmap or for the flag being set, and if so call a routine
-     * to recompute the correct rotations.  However, it is unknown how many
-     * ddx layers not under our control would break as a result, so for the
-     * moment we play it safe (and slow).
+    /* This is the "wrong" fix to the right problem, but it doesn't really
+     * cost very much.  When the window is moved, we need to invalidate any
+     * RotatedPixmap that exists in any GC currently validated against this
+     * window.
      */
     pWin->drawable.serialNumber = NEXT_SERIAL_NUMBER;
 
@@ -249,18 +240,13 @@ mfbChangeWindowAttributes(pWin, mask)
 		       !(pWin->background.pixmap->drawable.width &
 			 (pWin->background.pixmap->drawable.width - 1)))
 	      {
-		  if (pPrivWin->pRotatedBackground)
-		      mfbDestroyPixmap(pPrivWin->pRotatedBackground);
-		  pPrivWin->pRotatedBackground =
-		    mfbCopyPixmap(pWin->background.pixmap);
+		  mfbCopyRotatePixmap(pWin->background.pixmap,
+				      &pPrivWin->pRotatedBackground,
+				      pWin->drawable.x,
+				      pWin->drawable.y);
 		  if (pPrivWin->pRotatedBackground)
 		  {
 		      pPrivWin->fastBackground = TRUE;
-		      (void)mfbPadPixmap(pPrivWin->pRotatedBackground);
-		      mfbXRotatePixmap(pPrivWin->pRotatedBackground,
-				       pWin->drawable.x);
-		      mfbYRotatePixmap(pPrivWin->pRotatedBackground,
-				       pWin->drawable.y);
 		      pPrivWin->oldRotate.x = pWin->drawable.x;
 		      pPrivWin->oldRotate.y = pWin->drawable.y;
 		  }
@@ -284,19 +270,15 @@ mfbChangeWindowAttributes(pWin, mask)
 		  !(pWin->border.pixmap->drawable.width &
 		    (pWin->border.pixmap->drawable.width - 1)))
 	      {
-		  if (pPrivWin->pRotatedBorder)
-		      mfbDestroyPixmap(pPrivWin->pRotatedBorder);
-		  pPrivWin->pRotatedBorder = mfbCopyPixmap(pWin->border.pixmap);
+		  mfbCopyRotatePixmap(pWin->border.pixmap,
+				      &pPrivWin->pRotatedBorder,
+				      pWin->drawable.x,
+				      pWin->drawable.y);
 		  if (pPrivWin->pRotatedBorder)
 		  {
 		      pPrivWin->fastBorder = TRUE;
 		      pPrivWin->oldRotate.x = pWin->drawable.x;
 		      pPrivWin->oldRotate.y = pWin->drawable.y;
-		      (void)mfbPadPixmap(pPrivWin->pRotatedBorder);
-		      mfbXRotatePixmap(pPrivWin->pRotatedBorder,
-				       pWin->drawable.x);
-		      mfbYRotatePixmap(pPrivWin->pRotatedBorder,
-				       pWin->drawable.y);
 		  }
 		  else
 		  {
