@@ -1,5 +1,5 @@
 /*
- * $XConsortium: chooser.c,v 1.4 91/02/04 19:17:53 gildea Exp $
+ * $XConsortium: chooser.c,v 1.5 91/02/14 13:40:12 rws Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -95,7 +95,7 @@ static struct _app_resources {
     int		connectionType;
 } app_resources;
 
-#define offset(field) XtOffset(struct _app_resources*, field)
+#define offset(field) XtOffsetOf(struct _app_resources, field)
 
 #define XtRARRAY8   "ARRAY8"
 
@@ -105,7 +105,7 @@ static XtResource  resources[] = {
     {"clientAddress",	"ClientAddress",  XtRARRAY8,	sizeof (ARRAY8Ptr),
 	offset (clientAddress),	    XtRString,	NULL },
     {"connectionType",	"ConnectionType",   XtRInt,	sizeof (int),
-	offset (connectionType),    XtRString,	"0" }
+	offset (connectionType),    XtRImmediate,	(XtPointer) 0 }
 };
 #undef offset
 
