@@ -1,6 +1,7 @@
-#ifndef lint
-static char rcs_id[] = "$XConsortium: tsource.c,v 2.13 88/10/23 12:56:40 swick Exp $";
-#endif lint
+#if !defined(lint) && !defined(SABER)
+static char rcs_id[] =
+    "$XConsortium: tsource.c,v 2.14 89/05/11 19:24:21 converse Exp $";
+#endif
 /*
  *			  COPYRIGHT 1987
  *		   DIGITAL EQUIPMENT CORPORATION
@@ -128,7 +129,7 @@ TextWidget widget;
     if (toc->hasselection && toc->numwidgets == 1)
 	XtSelectionGrab((Widget) toc->widgets[0], XA_PRIMARY,
 			Convert, LoseSelection);
-#endif notdef
+#endif /*notdef*/
 }
 
 static void RemoveWidget(source, widget)
@@ -145,7 +146,7 @@ TextWidget widget;
 #ifdef notdef
 		XtSelectionGrab((Widget) toc->widgets[0], XA_PRIMARY,
 				Convert, LoseSelection);
-#endif notdef
+#endif /*notdef*/
 	    return;
 	}
     }
@@ -331,7 +332,7 @@ XawTextPosition left, right;
 	else
 	    XtSelectionUngrab(widget, XA_PRIMARY);
     }
-#endif notdef
+#endif /*notdef*/
 }
 
 
@@ -343,8 +344,10 @@ XawTextSource TSourceCreate(toc)
     XawTextSource source;
     source = XtNew(XawTextSourceRec);
     source->data = (caddr_t) toc;
+#ifdef notdef /* Donna Converse 7/7/89 - fields no longer exist %%% */
     source->AddWidget = AddWidget;
     source->RemoveWidget = RemoveWidget;
+#endif /*notdef*/
     source->Read = Read;
     source->Replace = Replace;
     source->Scan = Scan;
@@ -353,7 +356,7 @@ XawTextSource TSourceCreate(toc)
     source->SetSelection = SetSelection;
 #else
     source->SetSelection = NULL;
-#endif
+#endif 
     source->ConvertSelection = NULL;
     source->edit_mode = XawtextRead;
     toc->numwidgets = 0;
