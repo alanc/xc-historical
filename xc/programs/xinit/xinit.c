@@ -1,5 +1,5 @@
 #ifndef lint
-static char *rcsid_xinit_c = "$XConsortium: xinit.c,v 11.36 89/05/30 19:01:24 rws Exp $";
+static char *rcsid_xinit_c = "$XConsortium: xinit.c,v 11.37 89/12/07 16:32:26 jim Exp $";
 #endif /* lint */
 #include <X11/copyright.h>
 
@@ -104,6 +104,8 @@ sigCatch(sig)
 {
 	signal(SIGQUIT, SIG_IGN);
 	signal(SIGINT, SIG_IGN);
+	signal(SIGHUP, SIG_IGN);
+	signal(SIGPIPE, SIG_IGN);
 	Error("unexpected signal %d\r\n", sig);
 	shutdown(serverpid, clientpid);
 	exit(1);
@@ -281,6 +283,8 @@ register char **argv;
 	 */
 	signal(SIGQUIT, sigCatch);
 	signal(SIGINT, sigCatch);
+	signal(SIGHUP, sigCatch);
+	signal(SIGPIPE, sigCatch);
 	signal(SIGALRM, sigAlarm);
 	signal(SIGUSR1, sigUsr1);
 	if ((serverpid = startServer(server)) > 0
@@ -291,6 +295,8 @@ register char **argv;
 	}
 	signal(SIGQUIT, SIG_IGN);
 	signal(SIGINT, SIG_IGN);
+	signal(SIGHUP, SIG_IGN);
+	signal(SIGPIPE, SIG_IGN);
 
 	shutdown(serverpid, clientpid);
 
