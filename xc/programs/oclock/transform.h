@@ -1,4 +1,5 @@
-/* $XConsortium$ *//*
+/* $XConsortium: transform.h,v 1.2 94/04/13 17:57:55 gildea Exp $ */
+/*
  * Copyright 1993 Massachusetts Institute of Technology
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
