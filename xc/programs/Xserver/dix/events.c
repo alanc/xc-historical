@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $Header: events.c,v 1.107 87/09/08 13:35:59 swick Exp $ */
+/* $Header: events.c,v 1.108 87/09/09 10:18:23 rws Locked $ */
 
 #include "X.h"
 #include "misc.h"
@@ -1071,12 +1071,6 @@ ProcWarpPointer(client)
     REQUEST(xWarpPointerReq);
 
     REQUEST_SIZE_MATCH(xWarpPointerReq);
-    dest = LookupWindow(stuff->dstWid, client);
-    if (!dest)
-    {
-	client->errorValue = stuff->dstWid;
-	return BadWindow;
-    }
     if (stuff->dstWid != None)
     {
 	dest = LookupWindow(stuff->dstWid, client);
