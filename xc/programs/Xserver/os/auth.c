@@ -1,7 +1,7 @@
 /*
  * authorization hooks for the server
  *
- * $XConsortium: auth.c,v 1.15 93/09/28 01:34:21 gildea Exp $
+ * $XConsortium: auth.c,v 1.16 93/11/13 10:04:30 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -183,7 +183,9 @@ ClientPtr client;
     }
     if (ShouldLoadAuth)
     {
-	if (!LoadAuthorization())
+	if (LoadAuthorization())
+	    DisableLocalHost(); /* got at least one */
+	else
 	    EnableLocalHost ();
     }
     if (name_length)
