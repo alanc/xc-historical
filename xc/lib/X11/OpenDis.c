@@ -1,5 +1,5 @@
 /*
- * $XConsortium: OpenDis.c,v 11.146 93/12/27 18:02:00 gildea Exp $
+ * $XConsortium: OpenDis.c,v 11.147 94/01/11 12:34:37 mor Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986	*/
@@ -26,6 +26,12 @@ without express or implied warranty.
 
 #ifdef X_NOT_STDC_ENV
 extern char *getenv();
+#endif
+
+#ifdef X_NOT_POSIX
+#define Size_t unsigned int
+#else
+#define Size_t size_t
 #endif
 
 #define bignamelen (sizeof(XBigReqExtensionName) - 1)
@@ -308,8 +314,8 @@ Display *XOpenDisplay (display)
 		fprintf (stderr, 
 		      "Xlib: connection to \"%s\" refused by server\r\nXlib: ",
 			 fullname);
-		(void) fwrite (u.failure, sizeof(char),
-			(int)prefix.lengthReason, stderr);
+		(void) fwrite (u.failure, (Size_t)sizeof(char),
+			       (Size_t)prefix.lengthReason, stderr);
 		(void) fwrite ("\r\n", sizeof(char), 2, stderr);
 		OutOfMemory(dpy, setup);
 		return (NULL);
