@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Keyboard.c,v 1.13 90/04/03 16:10:39 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Keyboard.c,v 1.14 90/04/03 17:03:54 swick Exp $";
 #endif
 
 /********************************************************
@@ -457,10 +457,11 @@ static ActiveType InActiveSubtree(widget)
 
 
 /* ARGSUSED */
-void _XtHandleFocus(widget, client_data, event)
+void _XtHandleFocus(widget, client_data, event, cont)
     Widget widget;
     XtPointer client_data;	/* child who wants focus */
     XEvent *event;
+    Boolean *cont;		/* unused */
 {
     XtPerDisplayInput 	pdi = _XtGetPerDisplayInput(XtDisplay(widget));
     XtPerWidgetInput	pwi = (XtPerWidgetInput)client_data;
