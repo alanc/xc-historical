@@ -1,4 +1,4 @@
-/* $XConsortium: TMgrab.c,v 1.1 91/01/09 19:22:16 converse Exp $ */
+/* $XConsortium: TMgrab.c,v 1.1 91/01/10 14:13:26 converse Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -25,20 +25,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-#include <X11/Xlib.h>
-#define XK_MISCELLANY
-#define XK_LATIN1
-#include <X11/keysymdef.h>
-#include "StringDefs.h"
-#include <stdio.h>
 #include "IntrinsicI.h"
-
-#ifdef __STDC__
-#define Const const
-#else
-#define Const /**/
-#endif
-
 
 typedef struct _GrabActionRec {
     struct _GrabActionRec* next;

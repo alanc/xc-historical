@@ -1,4 +1,4 @@
-/* $XConsortium: TMstate.c,v 1.1 91/01/09 19:22:29 converse Exp $ */
+/* $XConsortium: TMstate.c,v 1.129 91/01/10 14:12:20 converse Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -29,19 +29,8 @@ SOFTWARE.
  *              manager.
  */
 
-#include <X11/Xlib.h>
-#define XK_MISCELLANY
-#define XK_LATIN1
-#include <X11/keysymdef.h>
-#include "StringDefs.h"
-#include <stdio.h>
 #include "IntrinsicI.h"
-
-#ifdef __STDC__
-#define Const const
-#else
-#define Const /**/
-#endif
+#include "StringDefs.h"
 
 #ifndef TM_NO_MATCH
 #define TM_NO_MATCH (-2)

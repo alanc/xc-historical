@@ -1,4 +1,4 @@
-/* $XConsortium: TMparse.c,v 1.5 91/01/09 21:29:17 converse Exp $ */
+/* $XConsortium: TMparse.c,v 1.102 91/01/10 14:11:45 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -24,11 +24,8 @@ SOFTWARE.
 
 ******************************************************************/
 
-#include <X11/Xos.h>
-#include <X11/Xlib.h>
-#include "StringDefs.h"
-#include <stdio.h>
 #include "IntrinsicI.h"
+#include "StringDefs.h"
 #include <ctype.h>
 #ifndef NOTASCII
 #define XK_LATIN1

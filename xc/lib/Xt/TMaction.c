@@ -1,5 +1,4 @@
-/* $XConsortium: TMaction.c,v 1.1 91/01/09 19:22:09 converse Exp $ */
-/* $oXConsortium: TMstate.c,v 1.106 90/07/03 17:27:49 swick Exp $ */
+/* $XConsortium: TMaction.c,v 1.1 91/01/10 14:13:47 converse Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -30,13 +29,8 @@ SOFTWARE.
  *              manager.
  */
 
-#include <X11/Xlib.h>
-#define XK_MISCELLANY
-#define XK_LATIN1
-#include <X11/keysymdef.h>
-#include "StringDefs.h"
-#include <stdio.h>
 #include "IntrinsicI.h"
+#include "StringDefs.h"
 
 #if __STDC__ && !defined(VMS)
 #define RConst const
