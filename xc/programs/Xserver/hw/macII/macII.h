@@ -12,7 +12,7 @@
  * software for any purpose.  It is provided "as is" without
  * express or implied warranty.
  *
- *	"$Header: macII.h,v 1.6 88/03/07 19:20:47 x Locked $ SPRITE (Berkeley)"
+ *	"$Header: macII.h,v 1.7 88/06/02 18:59:32 x Locked $ SPRITE (Berkeley)"
  */
 #ifndef _MACII_H_
 #define _MACII_H_
@@ -66,12 +66,10 @@
 
 /*
  * Data private to any macII keyboard.
- *	GetEvents reads any events which are available for the keyboard
  *	ProcessEvent processes a single event and gives it to DIX
  *	DoneEvents is called when done handling a string of keyboard
  *	    events or done handling all events.
  *	devPrivate is private to the specific keyboard.
- *	map_q is TRUE if the event queue for the keyboard is memory mapped.
  */
 #define KEY_DETAIL(e) 	((e) & 0x7f)
 #define KEY_UP(e)     	((e) & 0x80)
@@ -88,12 +86,10 @@
 
 typedef struct kbPrivate {
     int	    	  type;           	/* Type of keyboard */
-    int	    	  fd;	    	    	/* Descriptor open to device */
     void    	  (*ProcessEvent)();	/* Function to process an event */
     void    	  (*DoneEvents)();  	/* Function called when all events */
 					/* have been handled. */
     pointer 	  devPrivate;	    	/* Private to keyboard device */
-    Bool	  map_q;		/* TRUE if fd has a mapped event queue */
     int		  offset;		/* to be added to device keycodes */
     KeybdCtrl     *ctrl;                /* Current control structure (for
                                          * keyclick, bell duration, auto-
@@ -104,14 +100,13 @@ typedef struct kbPrivate {
 
 /*
  * Data private to any macII pointer device.
- *	GetEvents, ProcessEvent and DoneEvents have uses similar to the
+ *	ProcessEvent and DoneEvents have uses similar to the
  *	    keyboard fields of the same name.
  *	pScreen is the screen the pointer is on (only valid if it is the
  *	    main pointer device).
  *	x and y are absolute coordinates on that screen (they may be negative)
  */
 typedef struct ptrPrivate {
-    int	    	  fd;	    	    	/* Descriptor to device */
     void    	  (*ProcessEvent)();	/* Function to process an event */
     void    	  (*DoneEvents)();  	/* When all the events have been */
 					/* handled, this function will be */
@@ -177,9 +172,10 @@ typedef struct crPrivate {
  *	ChangeWindowAttributes	Original function
  *	GetSpans  	GC function which needs to be here b/c GetSpans isn't
  *	    	  	called with the GC as an argument...
- *	mapped	  	flag set true by the driver when the frame buffer has
- *	    	  	been mapped in.
  *	fd  	  	file opened to the frame buffer device.
+ *	slot
+ *	default_depth
+ *	installedMap
  *	info	  	description of the frame buffer -- type, height, depth,
  *	    	  	width, etc.
  *	fbPriv	  	Data private to the frame buffer type.
@@ -199,8 +195,10 @@ typedef struct {
     Bool	      	(*CreateWindow)();
     Bool		(*ChangeWindowAttributes)();
     unsigned int  	*(*GetSpans)();
-    Bool    	  	mapped;	    /* TRUE if frame buffer already mapped */
     int	    	  	fd; 	    /* Descriptor open to frame buffer */
+    int			slot;
+    int			default_depth;
+    ColormapPtr		installedMap;
     fbtype 		info;	    /* Frame buffer characteristics */
     pointer 	  	fbPriv;	    /* Frame-buffer-dependent data */
 } fbFd;
@@ -210,8 +208,7 @@ extern fbFd 	  macIIFbs[];
 /*
  * Data describing each type of frame buffer. The probeProc is called to
  * see if such a device exists and to do what needs doing if it does. devName
- * is the expected name of the device in the file system. Note that this only
- * allows one of each type of frame buffer. This may need changing later.
+ * is the expected name of the device in the file system. 
  */
 typedef enum {
 	neverProbed, probedAndSucceeded, probedAndFailed
@@ -274,8 +271,8 @@ extern void 	  SetTimeSinceLastInputEvent();
 extern int	autoRepeatKeyDown;		/* TRUE if key down */
 extern int	autoRepeatReady;		/* TRUE if time out */
 extern int	autoRepeatDebug;		/* TRUE if debugging */
-extern long autoRepeatLastKeyDownTv;
-extern long autoRepeatDeltaTv;
+extern long 	autoRepeatLastKeyDownTv;
+extern long 	autoRepeatDeltaTv;
 
 #ifdef USE_TOD_CLOCK
 /*-
