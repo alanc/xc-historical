@@ -337,7 +337,7 @@ DEC Private Mode Set (DECSET)
   \*(Ps = \*4\*6 \(-> Start Logging
   \*(Ps = \*4\*7 \(-> Use Alternate Screen Buffer
   \*(Ps = \*1\*0\*0\*0 \(-> Send VT200 Mouse Row & Column on Button Press
-  \*(Ps = \*1\*0\*0\*3 \(-> Send VT200 Hilite Mouse Row & Column on Button Press
+  \*(Ps = \*1\*0\*0\*1 \(-> Send VT200 Hilite Mouse Row & Column on Button Press
 .IP \\*(Es\\*([[\\*?\\*(Ps\|\\*l
 DEC Private Mode Reset (DECRST)
   \*(Ps = \*1 \(-> Normal Cursor Keys (DECCKM)
@@ -355,7 +355,7 @@ DEC Private Mode Reset (DECRST)
   \*(Ps = \*4\*6 \(-> Stop Logging
   \*(Ps = \*4\*7 \(-> Use Normal Screen Buffer
   \*(Ps = \*1\*0\*0\*0 \(-> Don't Send Mouse Row & Column on Button Press
-  \*(Ps = \*1\*0\*0\*3 \(-> Don't Send Mouse Row & Column on Button Press
+  \*(Ps = \*1\*0\*0\*1 \(-> Don't Send Mouse Row & Column on Button Press
 .IP \\*(Es\\*([[\\*?\\*(Ps\|\\*r
 Restore DEC Private Mode
   \*(Ps = \*1 \(-> Normal/Application Cursor Keys (DECCKM)
@@ -373,7 +373,7 @@ Restore DEC Private Mode
   \*(Ps = \*4\*6 \(-> Stop/Start Logging
   \*(Ps = \*4\*7 \(-> Use Normal/Alternate Screen Buffer
   \*(Ps = \*1\*0\*0\*0 \(-> Don't Send/Send VT220 Mouse Row & Column on Button Press
-  \*(Ps = \*1\*0\*0\*3 \(-> Don't Send/Send VT220 Hilite Mouse Row & Column on Button Press
+  \*(Ps = \*1\*0\*0\*1 \(-> Don't Send/Send VT220 Hilite Mouse Row & Column on Button Press
 .IP \\*(Es\\*([[\\*?\\*(Ps\|\\*s
 Save DEC Private Mode
   \*(Ps = \*1 \(-> Normal/Application Cursor Keys (DECCKM)
@@ -391,13 +391,14 @@ Save DEC Private Mode
   \*(Ps = \*4\*6 \(-> Stop/Start Logging
   \*(Ps = \*4\*7 \(-> Use Normal/Alternate Screen Buffer
   \*(Ps = \*1\*0\*0\*0 \(-> Don't Send/Send VT220 Mouse Row & Column on Button Press
-  \*(Ps = \*1\*0\*0\*3 \(-> Don't Send/Send VT220 Hilite Mouse Row & Column on Button Press
+  \*(Ps = \*1\*0\*0\*1 \(-> Don't Send/Send VT220 Hilite Mouse Row & Column on Button Press
 .IP \\*(Es\\*]\\*(Ps\|\\*;\\*(Pt\|\\*(Be
 Set Text Parameters
   \*(Ps = \*0 \(-> Change Icon Name and Window Title to \*(Pt
   \*(Ps = \*1 \(-> Change Icon Name to \*(Pt
   \*(Ps = \*2 \(-> Change Window Title to \*(Pt
   \*(Ps = \*4\*6 \(-> Change Log File to \*(Pt
+  \*(Ps = \*5\*0 \(-> Set Font to \*(Pt
 .IP \\*(Es\\*c
 Full Reset (RIS)
 .IP \\*(Es\\*n
