@@ -1,8 +1,8 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: buttons.c,v 1.15 89/08/30 18:24:02 kit Exp $
- * $Header: buttons.c,v 1.15 89/08/30 18:24:02 kit Exp $
+ * $XConsortium: buttons.c,v 1.16 89/10/03 15:57:44 kit Exp $
+ * $Header: buttons.c,v 1.16 89/10/03 15:57:44 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -213,7 +213,7 @@ Boolean full_instance;
   num_args++;
   XtSetValues(top, arglist, num_args);
 
-  pane = XtCreateManagedWidget("Manpage_Vpane", vPanedWidgetClass, top, NULL, 
+  pane = XtCreateManagedWidget("Manpage_Vpane", panedWidgetClass, top, NULL, 
 			       (Cardinal) 0);
 
 /* Create menu bar. */
