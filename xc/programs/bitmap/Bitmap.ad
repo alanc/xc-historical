@@ -1,6 +1,6 @@
 *TransientShell.allowShellResize:	True
-*font:				variable
-*shapeStyle:			oval
+*font:					variable
+*shapeStyle:				oval
 *cursor:				left_ptr
 !*highlight:				magenta
 !*frame:				lightBlue
@@ -8,9 +8,9 @@
 *paned.orientation:			horizontal
 
 *form*top:				ChainTop
-*form*bottom:			ChainTop
+*form*bottom:				ChainTop
 *form*left:				ChainLeft
-*form*right:			ChainLeft
+*form*right:				ChainLeft
 
 *form*width:              		120
 *form*height:             		15
@@ -29,24 +29,24 @@
 *bitmap.bitmapWidth:			32
 *bitmap.bitmapHeight:			32
 *bitmap.squareSize:			15
-*bitmap.dashes:		Dashes
+*bitmap.dashes:				Dashes
 *bitmap.dashed:				on
-*bitmap.cursor:           			tcross
-*bitmap.stipple:		Stipple
+*bitmap.cursor:           		tcross
+*bitmap.stipple:			Stipple
 
 *info*label.font:-adobe-helvetica-bold-r-normal--*-100-*-*-p-*-iso8859-1
-*info*icon:					xlogo64
-*info*label.height:				150
+*info*icon:				xlogo64
+*info*label.height:			150
 
 *TransientShell.width:			300
 
-*input*icon:		Term
-*quit*icon:			Term
-*error*icon:		Excl
-*Dialog.value.borderWidth:			0
-*Dialog.yes.label:				Yes
-*Dialog.no.label:				No
-*Dialog.okay.label:				OK
+*input*icon:				Term
+*quit*icon:				Term
+*error*icon:				Excl
+*Dialog.value.borderWidth:		0
+*Dialog.yes.label:			Yes
+*Dialog.no.label:			No
+*Dialog.okay.label:			OK
 *Dialog.abort.label:			Abort
 *Dialog.cancel.label:			Cancel
 *Dialog.retry.label:			Retry
@@ -54,142 +54,142 @@
 *form.infoButton.width:			36
 *form.infoButton.label:			Info
 
-*infoPopup.width:				300
-*infoPopup.height:				100
+*infoPopup.width:			300
+*infoPopup.height:			100
 
 *form.MenuButton.width:			36
 
 *form.SimpleMenu.width:			0
-*form.SimpleMenu.height:			0
-*form.SimpleMenu.cursor:			hand2
+*form.SimpleMenu.height:		0
+*form.SimpleMenu.cursor:		hand2
 *form.SimpleMenu.line.height:		0
 
 *form.fileButton.label:			File
 *form.fileButton.fromHoriz: 		infoButton
-*form.fileButton.menuName:			fileMenu
+*form.fileButton.menuName:		fileMenu
 
 *form.editButton.label:			Edit
 *form.editButton.fromHoriz: 		fileButton
-*form.editButton.menuName:			editMenu
+*form.editButton.menuName:		editMenu
 
-*SmeBSB.HorizontalMargins:			32
+*SmeBSB.HorizontalMargins:		32
 
-*fileMenu.load.label:			Load
-*fileMenu.insert.label:			Insert
+*fileMenu.load.label:			Load...
+*fileMenu.insert.label:			Insert...
 *fileMenu.save.label:			Save
-*fileMenu.saveAs.label:			Save As
-*fileMenu.basename.label:			Basename
-*fileMenu.quit.label:			Quit
+*fileMenu.saveAs.label:			Save As...
+*fileMenu.resize.label:			Resize...
+*fileMenu.filename.label:		Filename...
+*fileMenu.basename.label:		Basename...
+*fileMenu.quit.label:			Quit...
 
 *editMenu.image.label:			Image
 *editMenu.grid.label:			Grid
 *editMenu.dashed.label:			Dashed
 *editMenu.axes.label:			Axes
-*editMenu.stippled.label:			Stippled
+*editMenu.stippled.label:		Stippled
 *editMenu.proportional.label:		Proportional
 *editMenu.zoom.label:			Zoom
-*editMenu.resize.label:			Resize
-*editMenu.copy.label:			Copy
 *editMenu.cut.label:			Cut
+*editMenu.copy.label:			Copy
 *editMenu.paste.label:			Paste
-*editMenu.remotePaste.label:		Remote Paste
 
-*form.clear.vertDistance:			10
+*form.clear.vertDistance:		10
 *form.clear.fromVert: 			infoButton
-*form.clear.label:				Clear
+*form.clear.label:			Clear
 *form.set.fromVert: 			clear
-*form.set.label:				Set
+*form.set.label:			Set
 *form.invert.fromVert: 			set
-*form.invert.label:				Invert
+*form.invert.label:			Invert
 
-*form.copy.vertDistance:			10
+*form.copy.vertDistance:		10
 *form.copy.fromVert: 			invert
-*form.copy.label:				Copy
+*form.copy.label:			Copy
 *form.move.fromVert: 			copy
 *form.move.radioGroup:			copy
-*form.move.label:				Move
+*form.move.label:			Move
 
 *form.flipHoriz.vertDistance:		10
 *form.flipHoriz.width:			36
 *form.flipHoriz.height:			36
-*form.flipHoriz.fromVert: 			move
-*form.flipHoriz.bitmap:	FlipHoriz
+*form.flipHoriz.fromVert: 		move
+*form.flipHoriz.bitmap:			FlipHoriz
 *form.up.vertDistance:			10
 *form.up.width:				36
-*form.up.height:				36
-*form.up.fromVert: 				move
-*form.up.fromHoriz:				flipHoriz
-*form.up.bitmap:		Up
+*form.up.height:			36
+*form.up.fromVert: 			move
+*form.up.fromHoriz:			flipHoriz
+*form.up.bitmap:			Up
 *form.flipVert.vertDistance:		10
 *form.flipVert.width:			36
 *form.flipVert.height:			36
-*form.flipVert.fromVert: 			move
-*form.flipVert.fromHoriz:			up
-*form.flipVert.bitmap:	FlipVert
-*form.left.width:				36
-*form.left.height:				36
+*form.flipVert.fromVert: 		move
+*form.flipVert.fromHoriz:		up
+*form.flipVert.bitmap:			FlipVert
+*form.left.width:			36
+*form.left.height:			36
 *form.left.fromVert: 			flipHoriz
-*form.left.bitmap:		Left
-*form.fold.width:				36
-*form.fold.height:				36
+*form.left.bitmap:			Left
+*form.fold.width:			36
+*form.fold.height:			36
 *form.fold.fromVert: 			up
 *form.fold.fromHoriz: 			left
-*form.fold.bitmap:		Fold
-*form.right.width:				36
-*form.right.height:				36
+*form.fold.bitmap:			Fold
+*form.right.width:			36
+*form.right.height:			36
 *form.right.fromVert: 			flipVert
 *form.right.fromHoriz: 			fold
-*form.right.bitmap:		Right
+*form.right.bitmap:			Right
 *form.rotateLeft.width:			36
-*form.rotateLeft.height:			36
-*form.rotateLeft.fromVert:			left
-*form.rotateLeft.bitmap:	RotateLeft
-*form.down.width:				36
-*form.down.height:				36
+*form.rotateLeft.height:		36
+*form.rotateLeft.fromVert:		left
+*form.rotateLeft.bitmap:		RotateLeft
+*form.down.width:			36
+*form.down.height:			36
 *form.down.fromVert: 			fold
 *form.down.fromHoriz: 			rotateLeft
-*form.down.bitmap:		Down
-*form.rotateRight.width:			36
-*form.rotateRight.height:			36
-*form.rotateRight.fromVert:			right
+*form.down.bitmap:			Down
+*form.rotateRight.width:		36
+*form.rotateRight.height:		36
+*form.rotateRight.fromVert:		right
 *form.rotateRight.fromHoriz:		down
-*form.rotateRight.bitmap:	RotateRight
+*form.rotateRight.bitmap:		RotateRight
 
-*form.point.vertDistance:			10
+*form.point.vertDistance:		10
 *form.point.fromVert: 			rotateLeft
-*form.point.radioGroup:  			move
-*form.point.label:				Point
+*form.point.radioGroup:  		move
+*form.point.label:			Point
 *form.curve.fromVert: 			point
-*form.curve.radioGroup:  			point
-*form.curve.label:				Curve
+*form.curve.radioGroup:  		point
+*form.curve.label:			Curve
 *form.line.fromVert: 			curve
 *form.line.radioGroup: 			curve
-*form.line.label:				Line
-*form.rectangle.fromVert: 			line
+*form.line.label:			Line
+*form.rectangle.fromVert: 		line
 *form.rectangle.radioGroup:  		line
 *form.rectangle.label:			Rectangle
-*form.filledRectangle.fromVert: 		rectangle
-*form.filledRectangle.radioGroup:  		rectangle
+*form.filledRectangle.fromVert: 	rectangle
+*form.filledRectangle.radioGroup:  	rectangle
 *form.filledRectangle.label:		Filled Rectangle
 *form.circle.fromVert: 			filledRectangle
-*form.circle.radioGroup:  			filledRectangle
-*form.circle.label:				Circle
+*form.circle.radioGroup:  		filledRectangle
+*form.circle.label:			Circle
 *form.filledCircle.fromVert: 		circle
-*form.filledCircle.radioGroup:  		circle
-*form.filledCircle.label:			Filled Circle
-*form.floodFill.fromVert:			filledCircle
+*form.filledCircle.radioGroup:  	circle
+*form.filledCircle.label:		Filled Circle
+*form.floodFill.fromVert:		filledCircle
 *form.floodFill.radioGroup:  		filledCircle
 *form.floodFill.label:			Flood Fill
 
 *form.setHotSpot.vertDistance:		10
-*form.setHotSpot.fromVert: 			floodFill
+*form.setHotSpot.fromVert: 		floodFill
 *form.setHotSpot.radioGroup:  		floodFill
 *form.setHotSpot.label:			Set Hot Spot
 *form.clearHotSpot.fromVert: 		setHotSpot
-*form.clearHotSpot.label:			Clear Hot Spot
+*form.clearHotSpot.label:		Clear Hot Spot
 
-*form.undo.vertDistance:			10
+*form.undo.vertDistance:		10
 *form.undo.fromVert:			clearHotSpot
-*form.undo.label:				Undo
+*form.undo.label:			Undo
 
 
