@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: bbox.c,v 1.11 88/01/08 10:57:51 swick Exp $";
+static char rcs_id[] = "$Header: bbox.c,v 1.12 88/01/12 14:54:25 swick Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -90,14 +90,14 @@ ButtonBox BBoxRadioCreate(scrn, position, name, radio)
 	{XtNinnerWidth, NULL},
 	{XtNallowVert, (XtArgVal)TRUE},
     };
-    static Arg arglist2[] = {
-	{XtNwidth, NULL},
+    static Arg bbox_args[] = {
+	{XtNskipAdjust, True},
     };
     int width;
     ButtonBox buttonbox;
 
-    width = GetWidth((Widget)scrn->widget);
-    arglist[0].value = arglist[1].value = arglist2[0].value = (XtArgVal) width;
+    width = GetWidth(scrn->widget);
+    arglist[0].value = arglist[1].value = (XtArgVal) width;
     buttonbox = XtNew(ButtonBoxRec);
     bzero((char *)buttonbox, sizeof(ButtonBoxRec));
     buttonbox->updatemode = TRUE;
@@ -105,8 +105,8 @@ ButtonBox BBoxRadioCreate(scrn, position, name, radio)
 /*    buttonbox->outer = XtScrolledWindowCreate(theDis, scrn->widget, arglist,
 					      XtNumber(arglist)); %%% */
     buttonbox->outer = buttonbox->inner =
-	XtCreateWidget(name, buttonBoxWidgetClass, (Widget) scrn->widget,
-		       arglist2, XtNumber(arglist2));
+	XtCreateManagedWidget(name, buttonBoxWidgetClass, scrn->widget,
+			      bbox_args, XtNumber(bbox_args));
 /*    XtScrolledWindowSetChild(theDis, buttonbox->outer, buttonbox->inner);
 */
     buttonbox->numbuttons = 0;
@@ -168,7 +168,7 @@ ButtonBox buttonbox;
     for (i=0 ; i<buttonbox->numbuttons ; i++) {
 	button = buttonbox->button[i]; /* %%% position? */
 	if (button->needsadding) {
-	    *ptr++ = (Widget) button->widget;
+	    *ptr++ = button->widget;
 	    button->needsadding = FALSE;
 	}
     }
@@ -209,8 +209,8 @@ char **extra;			/* Extra translation bindings. */
     button->buttonbox = buttonbox;
     button->name = MallocACopy(name);
     button->widget = XtCreateWidget(name, commandWidgetClass,
-				    (Widget) buttonbox->inner, arglist,
-				     XtNumber(arglist));
+				    buttonbox->inner, arglist,
+				    XtNumber(arglist));
 /*    if (extra) XtAugmentTranslations(button->widget,
 				     XtParseTranslationTable(extra));*/
     button->func = func;
@@ -277,7 +277,7 @@ Button button;
 {
     if (!button->enabled) {
 	button->enabled = TRUE;
-	SendEnableMsg((Widget) button->widget, TRUE);
+	SendEnableMsg(button->widget, TRUE);
     }
 }
 
@@ -290,7 +290,7 @@ Button button;
 {
     if (button->enabled) {
 	button->enabled = FALSE;
-	SendEnableMsg((Widget) button->widget, FALSE);
+	SendEnableMsg(button->widget, FALSE);
     }
 }
 
@@ -374,7 +374,6 @@ ButtonBox buttonbox;
 {
     buttonbox->maxheight = GetHeight(buttonbox->inner);
     XtPanedSetMinMax(buttonbox->outer, 5, buttonbox->maxheight);
-    XtManageChild(buttonbox->inner);
     buttonbox->fullsized = FALSE;
 }
 
@@ -401,5 +400,5 @@ unsigned int borderWidth;
 {
     static Arg arglist[] = {XtNborderWidth, NULL};
     arglist[0].value = (XtArgVal) borderWidth;
-    XtSetValues((Widget) button->widget, arglist, XtNumber(arglist));
+    XtSetValues(button->widget, arglist, XtNumber(arglist));
 }
