@@ -1,21 +1,4 @@
 .TH XCLIPBOARD 1 "Release 5" "X Version 11"
-.de Ds
-.nf
-.\\$1D \\$2 \\$1
-.ft 1
-.ps \\n(PS
-.\".if \\n(VS>=40 .vs \\n(VSu
-.\".if \\n(VS<=39 .vs \\n(VSp
-..
-.de De
-.ce 0
-.if \\n(BD .DF
-.nr BD 0
-.in \\n(OIu
-.if \\n(TM .ls 2
-.sp \\n(DDu
-.fi
-..
 .SH NAME
 xclipboard - X clipboard client
 .SH SYNOPSIS
@@ -91,7 +74,7 @@ client requests the contents of the \fBCLIPBOARD\fP selection.  Examples of
 event bindings that a user may wish to include in a resource configuration
 file to use the clipboard are:
 .sp
-.Ds 5
+.nf
 .TA .5i
 .ta .5i 3.0i
 *VT100.Translations: #override \\
@@ -99,7 +82,7 @@ file to use the clipboard are:
 	<Btn2Up>:	insert-selection(PRIMARY,CLIPBOARD) \\n\\
 	<Btn2Down>:	ignore ()
 
-.De
+.fi
 .sp
 .SH "SEE ALSO"
 X(1), xcutsel(1), xterm(1), individual client documentation for how to make a 
