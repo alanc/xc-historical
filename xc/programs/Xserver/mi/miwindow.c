@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: miwindow.c,v 1.14 87/06/15 01:10:45 sue Exp $ */
+/* $Header: miwindow.c,v 1.14 87/09/11 07:20:06 toddb Exp $ */
 #include "X.h"
 #include "miscstruct.h"
 #include "region.h"
@@ -50,9 +50,6 @@ miClearToBackground(pWin, x, y, w, h, generateExposures)
     BoxRec box;
     RegionPtr pReg;
 
-    if ((pWin->backgroundTile == (PixmapPtr)None) ||
-	(pWin->class == InputOnly))
-        return ;
     box.x1 = pWin->absCorner.x + x;
     box.y1 = pWin->absCorner.y + y;
     if (w)
@@ -70,7 +67,7 @@ miClearToBackground(pWin, x, y, w, h, generateExposures)
         (* pWin->drawable.pScreen->Intersect)(pWin->exposed, pReg, pWin->clipList);
         HandleExposures(pWin);
     }
-    else
+    else if (pWin->backgroundTile != (PixmapPtr)None)
     {
         (* pWin->drawable.pScreen->Intersect)(pReg, pReg, pWin->clipList);
         (*pWin->PaintWindowBackground)(pWin, pReg, PW_BACKGROUND);
