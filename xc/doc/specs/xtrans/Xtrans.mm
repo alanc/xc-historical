@@ -54,7 +54,12 @@ Designed by Stuart Anderson (NCR) with help from Ralph Mor (X Consortium)
 .sp
 .ce
 \fIDraft Version 0.6\fR
-.sp 3
+.sp
+NOTE: This documentation does not completely match the implementation in R6
+(as a result of some late changes made in the code).  Specifically, support
+was added for font server cloning, and conditional compliation was introduced
+for client vs. server code.
+.bp
 .H 1 "Purposes and Goals"
 .P
 The X Transport Interface is intended to combine all system and transport
