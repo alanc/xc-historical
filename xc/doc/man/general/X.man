@@ -1,4 +1,4 @@
-.\" $XConsortium: X.man,v 1.60 91/09/09 17:27:25 rws Exp $
+.\" $XConsortium: X.man,v 1.61 94/02/10 14:00:54 rws Exp $
 .TH X 1 "Release 6" "X Version 11"
 .SH NAME
 X \- a portable, network-transparent window system
@@ -206,7 +206,7 @@ in Release 6 are:
     MIT-MAGIC-COOKIE-1	Shared plain-text "cookies".
     XDM-AUTHORIZATION-1	Secure DES based private-keys.
     SUN-DES-1	Based on Sun's secure rpc system.
-    MIT-KERBEROS-5	Kerberos V5 user-to-user.
+    MIT-KERBEROS-5	Kerberos Version 5 user-to-user.
 .fi
 .PP
 \fIXdm\fP initializes access control for the server, and also places
@@ -356,38 +356,6 @@ directories in the font path, the font path can be changed at any time
 with the \fIxset\fP program.
 However, it is important to remember that the directory names are
 on the \fBserver\fP's machine, not on the application's.
-The most common fonts use by X servers and font servers can be found
-in four directories:
-.TP 8
-.I /usr/lib/X11/fonts/misc
-This directory contains many miscellaneous bitmap fonts that are useful on all
-systems.  It contains a family of fixed-width fonts,
-a family of fixed-width fonts from Dale Schumacher,
-several Kana fonts from Sony Corporation,
-two JIS Kanji fonts,
-two Hangul fonts from Daewoo Electronics,
-two Hebrew fonts from Joseph Friedman,
-the standard cursor font, two cursor fonts from
-Digital Equipment Corporation, and cursor and glyph fonts
-from Sun Microsystems.
-It also has various font name aliases for the fonts, including
-\fBfixed\fP and \fBvariable\fP.
-.TP 8
-.I /usr/lib/X11/fonts/Speedo
-This directory contains outline fonts for Bitstream's Speedo rasterizer.
-A single font face, in normal, bold, italic, and bold italic, is provided,
-contributed by Bitstream, Inc.
-.TP 8
-.I /usr/lib/X11/fonts/75dpi
-This directory contains bitmap fonts contributed by Adobe Systems, Inc.,
-Digital Equipment Corporation, Bitstream, Inc.,
-Bigelow and Holmes, and Sun Microsystems, Inc.
-for 75 dots per inch displays.  An integrated selection of sizes, styles, 
-and weights are provided for each family.
-.TP 8
-.I /usr/lib/X11/fonts/100dpi
-This directory contains 100 dots per inch versions of some of the fonts in the 
-\fI75dpi\fP directory.  
 .PP
 Bitmap font files are usually created by compiling a textual font description
 into binary form, using \fIbdftopcf\fP.
@@ -1051,8 +1019,8 @@ xman(1), xmh(1), xmkmf(1), xmodmap(1), xon(1),
 xpr(1), xprop(1), xrdb(1), xrefresh(1),
 xset(1), xsetroot(1), xstdcmap(1), xterm(1), xwd(1), xwininfo(1), xwud(1),
 .\" servers
-Xserver(1), Xdec(1), XmacII(1), Xmips(1),
-Xqdss(1), Xqvss(1), Xsun(1), X386(1),
+Xserver(1), Xdec(1), XmacII(1), Xsun(1), Xnest(1), Xvfb(1),
+XF86_Acc(1), XF86_Mono(1), XF86_SVGA(1), XF86_VGA16(1), XFree86(1),
 kbd_mode(1),
 .\" specifications
 .I "Xlib \- C Language X Interface\fR,\fP"
