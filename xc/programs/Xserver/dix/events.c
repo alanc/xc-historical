@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: events.c,v 5.43 91/07/19 23:18:22 keith Exp $ */
+/* $XConsortium: events.c,v 5.44 91/07/20 22:49:14 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -2964,6 +2964,15 @@ ProcSendEvent(client)
 	     stuff->event.u.u.type < lastEvent)))
     {
 	client->errorValue = stuff->event.u.u.type;
+	return BadValue;
+    }
+    if (stuff->event.u.u.type == ClientMessage &&
+	stuff->event.u.u.detail != 8 &&
+	stuff->event.u.u.detail != 16 &&
+	stuff->event.u.u.detail != 32 &&
+	!permitOldBugs)
+    {
+	client->errorValue = stuff->event.u.u.detail;
 	return BadValue;
     }
     if ((stuff->eventMask & ~AllEventMasks) && !permitOldBugs)
