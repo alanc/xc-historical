@@ -1,5 +1,5 @@
 XCOMM
-XCOMM $XConsortium: Imakefile,v 5.2 91/02/18 11:25:36 rws Exp $
+XCOMM $XConsortium: Imakefile,v 5.3 91/07/24 16:56:57 rws Exp $
 XCOMM
 XCOMM 
 XCOMM Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium
@@ -57,13 +57,13 @@ SRCS = miDDCtoGC.c \
 	miPck1Prim.c
 
 OBJS = miDDCtoGC.o \
-	miListUtil.o \ 
+	miListUtil.o \
 	miLvl1Tab.o \
 	miRndFArea.o \
 	miRndPLine.o \
 	miRndMarkr.o \
 	miRndText.o \
-	miRndTStrip.o \ 
+	miRndTStrip.o \
 	miPck1Prim.o
 
 NormalLibraryObjectRule()
