@@ -72,6 +72,11 @@ exactly which resources can be set for the widget that is currently
 selected in the widget tree display.  Only one widget may be currently
 selected, if greater or fewer are selected editres will refuse to
 pop up the resource box, and put an error message in the \fBMessage Area\fP.
+.IP "Set Resource"
+This command will popup a simple dialog box for setting an arbitrary
+resource on all selected widgets.  You must type in the resource name,
+as well as the value.  You can use the Tab key to switch between the
+resource name field the resource value field.
 .IP "Quit"
 Exits editres.
 .SH TREE COMMANDS
