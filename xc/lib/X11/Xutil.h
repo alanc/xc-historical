@@ -1,4 +1,4 @@
-/* $XConsortium: Xutil.h,v 11.53 89/12/10 21:39:45 jim Exp $ */
+/* $XConsortium: Xutil.h,v 11.54 89/12/10 22:13:35 jim Exp $ */
 
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -222,7 +222,11 @@ typedef struct {
   VisualID visualid;
   int screen;
   int depth;
+#if defined(__cplusplus) || defined(c_plusplus)
+  int c_class;					/* C++ */
+#else
   int class;
+#endif
   unsigned long red_mask;
   unsigned long green_mask;
   unsigned long blue_mask;

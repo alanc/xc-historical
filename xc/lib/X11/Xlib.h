@@ -1,4 +1,4 @@
-/* $XConsortium: Xlib.h,v 11.172 89/12/10 21:31:07 jim Exp $ */
+/* $XConsortium: Xlib.h,v 11.173 89/12/10 22:13:22 jim Exp $ */
 /* 
  * Copyright 1985, 1986, 1987 by the Massachusetts Institute of Technology
  *
@@ -222,7 +222,11 @@ typedef struct _XGC {
 typedef struct {
 	XExtData *ext_data;	/* hook for extension to hang data */
 	VisualID visualid;	/* visual id of this visual */
+#if defined(__cplusplus) || defined(c_plusplus)
+	int c_class;		/* C++ class of screen (monochrome, etc.) */
+#else
 	int class;		/* class of screen (monochrome, etc.) */
+#endif
 	unsigned long red_mask, green_mask, blue_mask;	/* mask values */
 	int bits_per_rgb;	/* log base 2 of distinct color values */
 	int map_entries;	/* color map entries */
@@ -302,7 +306,11 @@ typedef struct {
     int depth;          	/* depth of window */
     Visual *visual;		/* the associated visual structure */
     Window root;        	/* root of screen containing window */
+#if defined(__cplusplus) || defined(c_plusplus)
+    int c_class;		/* C++ InputOutput, InputOnly*/
+#else
     int class;			/* InputOutput, InputOnly*/
+#endif
     int bit_gravity;		/* one of bit gravity values */
     int win_gravity;		/* one of the window gravity values */
     int backing_store;		/* NotUseful, WhenMapped, Always */
@@ -900,7 +908,11 @@ typedef struct {
 	Display *display;	/* Display the event was read from */
 	Window window;
 	Colormap colormap;	/* COLORMAP or None */
+#if defined(__cplusplus) || defined(c_plusplus)
+	Bool c_new;		/* C++ */
+#else
 	Bool new;
+#endif
 	int state;		/* ColormapInstalled, ColormapUninstalled */
 } XColormapEvent;
 
@@ -2275,7 +2287,7 @@ extern XDrawImageString16(
     GC			/* gc */,
     int			/* x */,
     int			/* y */,
-    XChar2b*		/* string */,
+    const XChar2b*	/* string */,
     int			/* length */
 #endif
 );
@@ -2375,7 +2387,7 @@ extern XDrawString16(
     GC			/* gc */,
     int			/* x */,
     int			/* y */,
-    XChar2b*		/* string */,
+    const XChar2b*	/* string */,
     int			/* length */
 #endif
 );
@@ -3139,7 +3151,7 @@ extern XQueryTextExtents16(
 #if NeedFunctionPrototypes
     Display*		/* display */,
     XID			/* font_ID */,
-    XChar2b*		/* string */,
+    const XChar2b*	/* string */,
     int			/* nchars */,
     int*		/* direction_return */,
     int*		/* font_ascent_return */,
@@ -3671,7 +3683,7 @@ extern XTextExtents(
 extern XTextExtents16(
 #if NeedFunctionPrototypes
     XFontStruct*	/* font_struct */,
-    XChar2b*		/* string */,
+    const XChar2b*	/* string */,
     int			/* nchars */,
     int*		/* direction_return */,
     int*		/* font_ascent_return */,
@@ -3691,7 +3703,7 @@ extern int XTextWidth(
 extern int XTextWidth16(
 #if NeedFunctionPrototypes
     XFontStruct*	/* font_struct */,
-    XChar2b*		/* string */,
+    const XChar2b*	/* string */,
     int			/* count */
 #endif
 );
