@@ -1,7 +1,7 @@
 /*
  * O/S-dependent (mis)feature macro definitions
  *
- * $XConsortium: Xosdefs.h,v 1.5 91/04/26 19:41:33 keith Exp $
+ * $XConsortium: Xosdefs.h,v 1.6 91/07/13 22:53:17 rws Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -40,9 +40,10 @@
 #define X_NOT_STDC_ENV
 #endif
 
-#ifdef bsd43
+#ifdef sony
+#ifndef SYSTYPE_SYSV
 #define X_NOT_POSIX
-#define X_NOT_STDC_ENV
+#endif
 #endif
 
 #ifdef UTEK
@@ -69,6 +70,13 @@
 #ifdef Mips
 #define X_NOT_POSIX
 #define X_NOT_STDC_ENV
+#endif
+  
+#ifdef USL
+#ifdef SYSV /* (release 3.2) */
+#define X_NOT_POSIX
+#define X_NOT_STDC_ENV
+#endif
 #endif
 
 #ifdef SYSV386
