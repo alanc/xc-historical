@@ -10,7 +10,17 @@
 /**/#                                                                         #
 /**/###########################################################################
 
-        DEFINES = -DMODEMENU -DUTMP -DBcopy=bcopy
+/*
+ * The configuration parameter GettyProgramName may be found in the
+ * appropriate .macros in the directory $(TOP)/util/imake.includes/.
+ */
+
+#ifdef GettyProgramName
+          GETTY = -DGETTY_EXE=GettyProgramName
+#else
+          GETTY = 
+#endif
+        DEFINES = -DMODEMENU -DUTMP -DBcopy=bcopy $(GETTY)
           SRCS1 = button.c charproc.c cursor.c data.c input.c \
 		  main.c menu.c misc.c screen.c scrollbar.c tabs.c \
 		  TekPrsTbl.c Tekproc.c util.c VTPrsTbl.c

@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: main.c,v 1.60 88/07/28 19:18:55 jim Exp $";
+static char rcs_id[] = "$Header: main.c,v 1.61 88/08/08 12:49:50 jim Exp $";
 #endif	/* lint */
 
 /*
@@ -186,6 +186,12 @@ static char *icon_geometry;
 static char *title;
 static Boolean utmpInhibit = FALSE;
 Boolean sunFunctionKeys = FALSE;
+
+#ifndef GETTY_EXE
+#define GETTY_EXE "/etc/getty"
+#endif /* GETTY_EXE */
+
+static char *getty_program = GETTY_EXE;
 
 /* used by VT (charproc.c) */
 
@@ -1410,11 +1416,11 @@ spawn ()
 
 #ifdef SYSV				/* macII does NOT want this */
 			ioctl (0, TIOCTTY, &zero);
-			execlp ("/etc/getty", "getty", get_ty, "Xwindow", 0);
+			execlp (getty_program, "getty", get_ty, "Xwindow", 0);
 
 #else	/* !SYSV */
 			ioctl (0, TIOCNOTTY, (char *) NULL);
-			execlp ("/etc/getty", "+", "Xwindow", get_ty, 0);
+			execlp (getty_program, "+", "Xwindow", get_ty, 0);
 #endif	/* !SYSV */
 		}
 		signal(SIGHUP, SIG_DFL);
