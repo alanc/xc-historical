@@ -1,4 +1,4 @@
-/* $XConsortium: EventI.h,v 1.9 89/06/16 18:09:02 jim Exp $ */
+/* $XConsortium: EventI.h,v 1.10 89/09/12 16:46:52 swick Exp $ */
 /* $oHeader: EventI.h,v 1.3 88/08/24 09:21:11 asente Exp $ */
 
 /***********************************************************
@@ -37,7 +37,7 @@ SOFTWARE.
 #ifndef _Event_h_
 #define _Event_h_
 
-typedef struct _GrabRec  *GrabList;
+typedef struct _XtGrabRec  *XtGrabList;
 
 extern void _XtEventInitialize();
 
@@ -60,13 +60,13 @@ typedef struct _XtEventRec {
      XtPointer		closure;
 } XtEventRec;
 
-typedef struct _GrabRec {
-    GrabList next;
+typedef struct _XtGrabRec {
+    XtGrabList next;
     Widget   widget;
-    Widget   keyboard_focus;
     Boolean  exclusive;
     Boolean  spring_loaded;
-}GrabRec;
+}XtGrabRec;
+
 
 extern void _XtFreeEventTable(); /* event_table */
     /* XtEventTable *event_table; */
