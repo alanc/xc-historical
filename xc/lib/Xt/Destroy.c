@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Destroy.c,v 1.19 89/09/11 17:42:49 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Destroy.c,v 1.20 89/09/12 16:46:46 swick Exp $";
 /* $oHeader: Destroy.c,v 1.3 88/09/01 11:27:27 asente Exp $ */
 #endif /* lint */
 
@@ -155,8 +155,13 @@ void XtDestroyWidget (widget)
     _XtAddCallback(widget, _XtDestroyList, XtPhase2Destroy, (XtPointer)NULL);
 
     if (_XtDestroyList == &tempDestroyList) {
-        _XtCallCallbacks(_XtDestroyList, (XtPointer)NULL);
-	_XtRemoveAllCallbacks(_XtDestroyList);
+	while (tempDestroyList != NULL) {
+	    CallbackList newList = NULL;
+	    _XtDestroyList = &newList;
+	    _XtCallCallbacks(&tempDestroyList, (XtPointer)NULL);
+	    _XtRemoveAllCallbacks(&tempDestroyList);
+	    tempDestroyList = newList;
+	}
 	_XtDestroyList = NULL;
     }
 	
