@@ -13,7 +13,7 @@
                   ddx/hp/hp ddx/hp/mfb ddx/hp/cfb ddx/hp/gbx ddx/hp/mob \
                   ddx/hp/topcat ddx/hp/catseye ddx/hp/ren \
                   ddx/ndx ddx/tek \
-                  ddx/macII
+                  ddx/macII ddx/plx
       ALLOSDIRS = os/sysV os/4.2bsd os/hpux
         SUBDIRS = dix $(ALLDDXDIRS) $(ALLOSDIRS)
            UNIX = os/4.2bsd/libos.a
@@ -29,8 +29,9 @@
             SUN = ddx/sun/libsun.a
              HP = ddx/hp/hp/libhp.a
           MACII = ddx/macII/libmacII.a
+            PLX = ddx/plx/libplx.a
         SYSLIBS = -lm -ldbm
-    ALLPOSSIBLE = Xqvss Xsm Xqdss Xsun Xibm Xapollo Xhp Xpeg XmacII
+    ALLPOSSIBLE = Xqvss Xsm Xqdss Xsun Xibm Xapollo Xhp Xpeg XmacII Xplx
 
 #ifndef	XqvssServer
 #define	XqvssServer /* as nothing */
@@ -46,6 +47,10 @@
 
 #ifndef	XsunServer
 #define	XsunServer /* as nothing */
+#endif
+
+#ifndef XplxServer
+#define XplxServer /* as nothing */
 #endif
 
 #ifndef	XHPServer
@@ -73,7 +78,7 @@
 #endif
 
 # don't split this across lines, because imake will keep a trailing slash
-ALL = XqvssServer XsmServer XqdssServer XsunServer XapolloServer XibmServer XHPServer XndxServer XpegServer XmacIIServer
+ALL = XqvssServer XsmServer XqdssServer XsunServer XapolloServer XibmServer XHPServer XndxServer XpegServer XmacIIServer XplxServer
 
 #
 # This turns off the default rule for compiling .c files because
@@ -131,6 +136,17 @@ SUNSYSLIBS = $(SYSLIBS) $(SUNWINDOWSLIBS)
 XsunDIRS = $(SUNDIRS)
 
 ServerTarget(Xsun,$(EXTDIR) $(SUNDIRS),$(SUNOBJS),$(SUNLIBS),$(SUNSYSLIBS))
+
+#
+# plx server
+#
+PLXDIRS = dix ddx/snf ddx/mi ddx/mfb ddx/plx ddx/dec/lk201 os/4.2bsd
+PLXOBJS = ddx/plx/plxInit.o ddx/plx/plxEvents.o
+PLXLIBS = $(PLX) ddx/dec/lk201/lk201.o $(DIX) $(SNF) $(UNIX) $(MFB) $(MI) $(EXTENSIONS)
+PLXSYSLIBS = $(SYSLIBS) -lplx
+XplxDIRS = $(PLXDIRS)
+
+ServerTarget(Xplx,$(EXTDIR) $(PLXDIRS),$(PLXOBJS),$(PLXLIBS),$(PLXSYSLIBS))
 
 #
 # HP server
