@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: events.c,v 1.187 89/04/26 09:10:01 rws Exp $ */
+/* $XConsortium: events.c,v 1.188 89/04/29 18:14:11 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -292,17 +292,22 @@ ConfineToShape(shape, px, py)
 #endif
 
 static void
-CheckPhysLimits(cursor, generateEvents)
+CheckPhysLimits(cursor, generateEvents, pScreen)
     CursorPtr cursor;
     Bool generateEvents;
+    ScreenPtr pScreen;
 {
     HotSpot new;
 
     if (!cursor)
 	return;
     new = sprite.hotPhys;
-    (*new.pScreen->CursorLimits) (
-	new.pScreen, cursor, &sprite.hotLimits, &sprite.physLimits);
+    if (pScreen)
+	new.pScreen = pScreen;
+    else
+	pScreen = new.pScreen;
+    (*pScreen->CursorLimits) (pScreen, cursor, &sprite.hotLimits,
+			      &sprite.physLimits);
     if (new.x < sprite.physLimits.x1)
 	new.x = sprite.physLimits.x1;
     else
@@ -317,10 +322,12 @@ CheckPhysLimits(cursor, generateEvents)
     if (sprite.hotShape)
 	ConfineToShape(sprite.hotShape, &new.x, &new.y);
 #endif
-    if ((new.x != sprite.hotPhys.x) || (new.y != sprite.hotPhys.y))
+    if ((pScreen != sprite.hotPhys.pScreen) ||
+	(new.x != sprite.hotPhys.x) || (new.y != sprite.hotPhys.y))
     {
-	(*new.pScreen->SetCursorPosition) (new.pScreen, new.x, new.y,
-					   generateEvents);
+	if (pScreen != sprite.hotPhys.pScreen)
+	    sprite.hotPhys = new;
+	(*pScreen->SetCursorPosition) (pScreen, new.x, new.y, generateEvents);
 	if (!generateEvents)
 	    SyntheticMotion(new.x, new.y);
     }
@@ -383,36 +390,16 @@ ConfineCursorToWindow(pWin, generateEvents)
     {
 	CheckVirtualMotion((QdEventPtr)NULL, pWin);
 	SyntheticMotion(sprite.hot.x, sprite.hot.y);
-	return;
     }
-    sprite.hotLimits = *(* pScreen->RegionExtents)(pWin->borderSize);
-#ifdef SHAPE
-    sprite.hotShape = pWin->boundingShape ? pWin->borderSize : NullRegion;
-#endif
-    if (sprite.hotPhys.pScreen != pScreen)
+    else
     {
-	sprite.hotPhys.pScreen = pScreen;
-	if (sprite.hotPhys.x < sprite.hotLimits.x1)
-	    sprite.hotPhys.x = sprite.hotLimits.x1;
-	else if (sprite.hotPhys.x >= sprite.hotLimits.x2)
-	    sprite.hotPhys.x = sprite.hotLimits.x2 - 1;
-	if (sprite.hotPhys.y < sprite.hotLimits.y1)
-	    sprite.hotPhys.y = sprite.hotLimits.y1;
-	else if (sprite.hotPhys.y >= sprite.hotLimits.y2)
-	    sprite.hotPhys.y = sprite.hotLimits.y2 - 1;
+	sprite.hotLimits = *(* pScreen->RegionExtents)(pWin->borderSize);
 #ifdef SHAPE
-	if (sprite.hotShape)
-	    ConfineToShape(sprite.hotShape,
-			   &sprite.hotPhys.x, &sprite.hotPhys.y);
+	sprite.hotShape = pWin->boundingShape ? pWin->borderSize : NullRegion;
 #endif
-	(* pScreen->SetCursorPosition)(pScreen,
-				       sprite.hotPhys.x, sprite.hotPhys.y,
-				       generateEvents);
-	if (!generateEvents)
-	    SyntheticMotion(sprite.hotPhys.x, sprite.hotPhys.y);
+	CheckPhysLimits(sprite.current, generateEvents, pScreen);
+	(* pScreen->ConstrainCursor)(pScreen, &sprite.physLimits);
     }
-    CheckPhysLimits(sprite.current, generateEvents);
-    (* pScreen->ConstrainCursor)(pScreen, &sprite.physLimits);
 }
 
 Bool
@@ -431,7 +418,7 @@ ChangeToCursor(cursor)
     {
 	if ((sprite.current->xhot != cursor->xhot) ||
 		(sprite.current->yhot != cursor->yhot))
-	    CheckPhysLimits(cursor, FALSE);
+	    CheckPhysLimits(cursor, FALSE, (ScreenPtr)NULL);
 	(*sprite.hotPhys.pScreen->DisplayCursor) (sprite.hotPhys.pScreen,
 						  cursor);
 	sprite.current = cursor;
