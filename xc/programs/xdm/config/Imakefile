@@ -1,16 +1,8 @@
-XCOMM $XConsortium: Imakefile,v 1.10 91/07/20 15:09:16 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.11 91/07/21 15:45:45 rws Exp $
       XDMCONFIG = xdm-config
    XDMRESOURCES = Xresources
      XDMSERVERS = Xservers
      XDMSESSION = Xsession
-
-#ifndef XdmServersType
-#if BuildServer
-#define XdmServersType ws
-#else
-#define XdmServersType fs
-#endif
-#endif
 
 all:: Xservers.ws xdm-config Xservers
 
