@@ -1,4 +1,4 @@
-/* $XConsortium: NextEvent.c,v 1.139 94/03/30 15:22:35 kaleb Exp $ */
+/* $XConsortium: NextEvent.c,v 1.140 94/03/30 21:14:09 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -292,15 +292,24 @@ static void FindInputs (app, wf, nfds, ignoreEvents, ignoreInputs, dpy_no, found
     InputEvent *ep;
     int ii;
 #ifndef USE_POLL /* { check ready file descriptors block */
+#ifdef XTHREADS
+    Fd_set rmask;
+#endif
     int dd;
     *dpy_no = -1;
     *found_input = False;
+
+#ifdef XTHREADS
+    rmask = app->fds.rmask;
+    for (dd = app->count; dd-- > 0; )
+	FD_SET (ConnectionNumber (app->list[dd]), &rmask);
+#endif
 
     for (ii = 0; ii < wf->nfds && nfds > 0; ii++) {
 	condition = 0;
 	if (FD_ISSET (ii, &wf->rmask)
 #ifdef XTHREADS
-	    && FD_ISSET (ii, &app->fds.rmask)
+	    && FD_ISSET (ii, &rmask)
 #endif
 	) {
 	    nfds--;
