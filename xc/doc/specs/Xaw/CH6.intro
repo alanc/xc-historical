@@ -23,8 +23,7 @@ These widgets may contain arbitrary widget children.  They implement a
 policy for the size and location of their children.  
 .IP \fBBox\fP 1i
 This widget will pack its children as tightly as possible in
-non-overlapping rows.  The packing algorithm gives preference to
-vertical stacking, by default.  
+non-overlapping rows.  
 .IP \fBDialog\fP 1i
 An implementation of a commonly used interaction semantic to prompt for
 auxiliary input from the user, such as a filename.
@@ -58,12 +57,13 @@ If the application wishes to change the size or location of
 any widget it should make a call to \fBXtSetValues\fP.  This will
 allow the widget to ask its parent for the new size or location.
 As noted above the parent is allowed to refuse this request,
-and in this case the child must live with the results.  If the
-application cannot get the desired semantics then perhaps it should use
-a different composite widget.  Under no circumstances should an
-application programmer resort to \fBXtMoveWidget\fP or
+and the child must live with the result.  If the
+application is unable to acheive the desired semantics then perhaps it
+should use a different composite widget.  Under no circumstances
+should an application programmer resort to \fBXtMoveWidget\fP or
 \fBXtResizeWidget\fP; these functions are exclusively for the use of
 Composite widget implementors.
 .LP
 For more information on geometry management consult the \fI\*(xT\fP.
 
+ 

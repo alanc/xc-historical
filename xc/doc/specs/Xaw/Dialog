@@ -72,7 +72,7 @@ numChildren	ReadOnly	Cardinal	R	0
 screen	Screen	Pointer	R	Parent's Screen
 sensitive	Sensitive	Boolean		True
 translations	Translations	TranslationTable		NULL
-value	Value	String		NULL (no value widget)
+value	Value	String		no value widget
 width	Width	Dimension	A	Enough space to contain all children
 x	X	Position		0
 y	Y	Position		0
@@ -101,7 +101,7 @@ A pixmap image to be displayed immediately to the left of the
 Dialog widget's label.
 .Ip
 .IP \fBlabel\fP 1.5i
-A one-line Latin1 string to be displayed at the top of the Dialog widget.
+A Latin1 string to be displayed at the top of the Dialog widget.
 .Mm
 .Nc
 .Sc
@@ -245,7 +245,7 @@ remain valid and unchanged until another call to
 \fBXawDialogGetValueString\fP or an \fBXtGetValues\fP call on the
 \fBvalue\fP widget, when the string will be automatically freed, and
 a new string is returned.  This string may be freed earlier by calling
-the Text widget function \fBXawAsciiSourceFreeString\fP.
+the function \fBXawAsciiSourceFreeString\fP.
 .LP
 .sp
 To add a new button to the Dialog widget use

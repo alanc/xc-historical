@@ -18,7 +18,8 @@ Superclass	Form
 .De
 .LP
 The Viewport widget consists of a frame window, one or two Scrollbars, and
-an inner window.  The frame window is determined by the viewing size of the
+an inner window.  The size of the frame window is determined by the
+viewing size of the  
 data that is to be displayed and the dimensions to which the Viewport is
 created.  The inner window is the full size of the data that is to be
 displayed and is clipped by the frame window.  The Viewport widget controls
@@ -27,8 +28,8 @@ for scrolling.
 .LP
 When the geometry of the frame window is equal in size to the inner window,
 or when the data does not require scrolling, the Viewport widget
-automatically removes any scroll bars.  The \fBforceBars\fP option causes
-the Viewport widget to display any scroll bar permanently.
+automatically removes any scrollbars.  The \fBforceBars\fP option causes
+the Viewport widget to display all scrollbars permanently.
 .LP
 When creating a Viewport widget instance, the following resources are
 retrieved from the argument list or the resource database: 
@@ -126,18 +127,18 @@ child is larger than the size of the Viewport, the user can interactively
 move the child within the Viewport by repositioning the scrollbars.
 .LP
 The default size of the Viewport before it is realized is the width and/or
-height of the child.  After it is realized, the viewport will allow its
+height of the child.  After it is realized, the Viewport will allow its
 child to grow vertically or horizontally if \fBallowVert\fP or
 \fBallowHoriz\fP are set, respectively.  If the corresponding vertical
-or horizontal scrolling were not enabled, the viewport will propagate the
+or horizontal scrollbar is not enabled, the Viewport will propagate the
 geometry request to its own parent and the child will be allowed to change
 size only if the Viewport's parent allows it.  Regardless of whether or not
-scrolling was enabled in the corresponding direction, if the child requests
-a new size smaller than the viewport size, the change will be allowed only
-if the parent of the viewport allows the viewport to shrink to the
+scrollbars are enabled in the corresponding direction, if the child requests
+a new size smaller than the Viewport size, the change will be allowed only
+if the parent of the Viewport allows the Viewport to shrink to the
 appropriate dimension.
 .LP
-The scrollbar children of the viewport are named \fBhorizontal\fP and
+The scrollbar children of the Viewport are named \fBhorizontal\fP and
 \fBvertical\fP.  By using these names the programmer can specify resources
 for the individual scrollbars.  \fBXtSetvalues\fP can be used to modify
 the resources dynamically once the widget ID has been obtained with

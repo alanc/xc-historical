@@ -284,8 +284,8 @@ upper neighbor.
 .de Rl \"Resizable
 .ie 'Bold'\\$1' .IP \fBresizable\fP 1.5i
 .el .IP resizable 1.5i
-If this resource is \fBFalse\fP then the Dialog widget will ignore all
-geometry request made by this child.  The Dialog may still resize this
+If this resource is \fBFalse\fP then the parent widget will ignore all
+geometry request made by this child.  The parent may still resize this
 child itself, however.
 ..
 
@@ -295,7 +295,7 @@ used when initially laying out the buttons.  The other is used when
 the \\$1 is resized. 
 .LP
 The first layout method uses the \fBfromVert\fP and \fPfromHoriz\fP
-resources to place the children of the form.  A single pass is made
+resources to place the children of the \\$1.  A single pass is made
 through the \\$1 widget's children in the order that they were created.
 Each child is then placed in the \\$1 widget below or to the right of
 the widget specified by the \fBfromVert\fP and \fBfromHoriz\fP resources.
@@ -307,13 +307,13 @@ possible placement of the children.
 The second layout method is used when the \\$1 is resized.  It does
 not matter what causes this resize, and it is possible for a resize to
 happen before the widget becomes visible (due to constraints imposed
-by the parent of the \\$1 widget).  This layout method uses the
+by the parent of the \\$1).  This layout method uses the
 \fBbottom\fP, \fBtop\fP, \fBleft\fP, and \fBright\fP resources.  These 
-are used to determine what will happen to each edge of the child when
-the \\$1 is resized.  If a value of \fBXawChain\fP\fI<something>\fP is
-specified, the 
+resources are used to determine what will happen to each edge of the 
+child when the \\$1 is resized.  If a value of 
+\fBXawChain\fP\fI<something>\fP is specified, the 
 the edge of the child will remain a fixed distance from the
-\fIchain\fP edge of the form.  For example if \fBXawChainLeft\fP is
+\fIchain\fP edge of the \\$1.  For example if \fBXawChainLeft\fP is
 specified for the \fBright\fP resource of a child then the right
 edge of that child will remain a fixed distance from the left edge of
 the \\$1 widget.  If a value of \fBXawRubber\fP is specified, that
@@ -376,11 +376,11 @@ scroll the text display to a certain character position.
 .el .IP resize 1.5i
 Controls whether or not the Text widget attempts to resize itself when it is
 no longer able to display the full text buffer in the associated window.
-Any attempt by the Text widget to resize itself is always subjec to
+Any attempt by the Text widget to resize itself is always subject to
 the consraints imposed by its parent.  The values \fBXawtextResizeNever\fP,
 \fBXawtextResizeWidth\fP, \fBXawtextResizeHeight\fP, and
 \fBXawtextResizeBoth\fP are all acceptable for this resource.  
-.Rs "height, width, \fPand\fB both"
+.Rs "never, height, width, \fPand\fB both"
 ..
 .de Ts \"Text Scroll
 .ie 'Bold'\\$1' .IP \fBscrollHorizontal\fP 1.5i
@@ -418,13 +418,13 @@ the resource manager.
 .el .IP textSource 1.5i
 These are the TextSink or TextSource objects used by this widget.
 .ie 'Bold'\\$1' When using the Text widget these MUST be set by the \
-applicat programmer
+application programmer
 .el The AsciiText widget initializes these resources to point \
 to an AsciiSink and AsciiSource respectively.
 ..
 .de Tw \"Text Wrapping
 .ie 'Bold'\\$1' .IP \fBwrap\fP 1.5i
-.IP wrap 1.5i
+.el .IP wrap 1.5i
 When the text in any one line is wider than the window there are several
 possible actions.  This resource allows the user to decide what will
 happen.  The accepted values for this resource are
@@ -452,7 +452,8 @@ font (see the X Logical Font Desctiption).
 .de Sg \" Sink Foreground
 .ie 'Bold'\\$1' .IP \fBforeground\fP 1.5i
 .el .IP foreground 1.5i
-The foreground color of all text displayed in this widget.  
+A pixel value which indexes the Text widget's colormap to derive the
+foreground color by the text sink.
 .Sk \\$1
 ..
 
@@ -481,13 +482,13 @@ in the text buffer.
 .ie 'Bold'\\$1' .IP \fBuseStringInPlace\fP 1.5i
 .el .IP useStringInPlace 1.5i
 Setting this resource to \fBTrue\fP will disable the memory managment 
-provided by the Text widget, updating the string passed to the Text widget
-in the \fBstring\fP resource in place.  Using the string in place can
+provided by the Text widget, updating the \fBstring\fP resource in
+place.  Using the string in place can
 be much more efficient for text widgets that display static data, or
-where the programmer whishes to impose strict constraint on the
+where the programmer whishes to impose strict constraints on the
 contents of the \fBstring\fP.  When using the string in place be sure that:
 the length of the string is specified by setting the \fBlength\fP resource,
-the \fBtype\fP of the text widget is be \fBXawAsciiString\fP, and that
+the \fBtype\fP of the Text widget is \fBXawAsciiString\fP, and that
 the \fBstring\fP exists for the lifetime of the text widget, or until it has been reset.
 .So \\$1
 ..
@@ -505,11 +506,16 @@ this resource and accepts the values \fBstring\fP and \fBfile\fP.
 .ie 'Bold'\\$1' .IP \fBstring\fP 1.5i
 .el .IP string 1.5i
 If \fBtype\fP is \fBXawAsciiString\fP then this string contains the
-buffer to be displayed in the widget.  If \fNtype\fP is
+buffer to be displayed in the widget.  If \fBtype\fP is
 \fBXawAsciiFile\fP then the string contains the name of the file to be
 displayed.  This string is normally copied by the text widget into
 internal memory, but may be used in place by setting the
 \fBuseStringInPlace\fP resource.  As of X11R4 this is a settable resource.
+.LP
+.NT
+When this resource is queried - using \fBXtGetValues - and
+\fBuseStringInPlace\fP is \fBFalse\fP the string is only valid until
+the next time the \fBstring\fP is queried (see Section 5.6.1.1).
 .So \\$1
 ..
 .de Op \" Source Piece Size
@@ -547,7 +553,7 @@ Legal values are \fBXawtextRead\fP, \fBXawtextEdit\fP, and
 .el .IP dataCompression 1.5i
 The AsciiSource uses an algorithm that may cause the text buffer to grow
 to about twice the size of the actual text over time, as the text is
-edited.  On systems where CPU cycles is cheaper than memory, it is helpful to
+edited.  On systems where CPU cycles are cheaper than memory, it is helpful to
 spend some extra time to compress this buffer back to its minimum size.
 If this resource is \fBTrue\fP, the AsciiSource will compress its data
 to the minimum size required every time the text string is saved, or the
@@ -555,7 +561,7 @@ value of the string is queried.  This is an AsciiSource resource.
 .So \\$1
 ..
 .de Oc \" Source Callback
-.ie 'Bold'\\$1' .IP callback 1.5i
+.ie 'Bold'\\$1' .IP \fBcallback\fP 1.5i
 .el .IP callback 1.5i
 The callbacks registered on this resource will be called every time the
 text buffer changes.
