@@ -1,5 +1,5 @@
 /*
- * $Header: Tekproc.c,v 1.14 88/02/17 13:26:33 jim Exp $
+ * $Header: Tekproc.c,v 1.15 88/02/17 16:59:29 jim Exp $
  *
  * Warning, there be crufty dragons here.
  */
@@ -115,7 +115,7 @@ char *curs_color;
 #define	unput(c)	*Tpushback++ = c
 
 #ifndef lint
-static char rcs_id[] = "$Header: Tekproc.c,v 1.14 88/02/17 13:26:33 jim Exp $";
+static char rcs_id[] = "$Header: Tekproc.c,v 1.15 88/02/17 16:59:29 jim Exp $";
 #endif	/* lint */
 
 static XPoint *T_box[TEKNUMFONTS] = {
@@ -208,15 +208,15 @@ static short Tfailed = FALSE;
 TekWidget CreateTekWidget ()
 {
     Widget tekshellwidget;
-    Arg Args[1];
     char *tek_name = "xterm_tek";	/* should be a resource */
-
-    XtSetArg (Args[0], XtNallowShellResize, TRUE);
+    extern Arg ourTopLevelShellArgs[];
+    extern int number_ourTopLevelShellArgs;
 
     /* this causes the Initialize method to be called */
     tekshellwidget = XtCreateApplicationShell ("Xterm Tek",
 					       topLevelShellWidgetClass,
-					       Args, XtNumber (Args));
+					       ourTopLevelShellArgs, 
+					       number_ourTopLevelShellArgs);
     /* this causes the Realize method to be called */
     tekWidget = (TekWidget) XtCreateManagedWidget (tek_name, tekWidgetClass,
 						   tekshellwidget, NULL, 0);

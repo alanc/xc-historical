@@ -1,5 +1,5 @@
 /*
- *	$Header: main.c,v 1.11 88/02/17 13:02:23 jim Exp $
+ *	$Header: main.c,v 1.12 88/02/17 18:06:50 jim Exp $
  *
  * WARNING:  This code (particularly, the tty setup code) is a historical
  * relic and should not be confused with a real toolkit application or a
@@ -34,7 +34,7 @@
 /* main.c */
 
 #ifndef lint
-static char rcs_id[] = "$Header: main.c,v 1.11 88/02/17 13:02:23 jim Exp $";
+static char rcs_id[] = "$Header: main.c,v 1.12 88/02/17 18:06:50 jim Exp $";
 #endif	/* lint */
 
 #include <X11/Xos.h>
@@ -408,6 +408,12 @@ struct timeval startT, initT, endT;
 struct timezone tz;
  */
 
+Arg ourTopLevelShellArgs[] = {
+	{ XtNallowShellResize, (XtArgVal) TRUE },	
+	{ XtNinput, (XtArgVal) TRUE },
+};
+int number_ourTopLevelShellArgs = 2;
+	
 main (argc, argv)
 int argc;
 char **argv;
@@ -419,7 +425,6 @@ char **argv;
 	char *basename();
 	int xerror(), xioerror();
         Widget toplevel;
-        Arg Args[1];
 	int fd1 = -1;
 	int fd2 = -1;
 	int fd3 = -1;
@@ -506,8 +511,8 @@ gettimeofday(&startT, &tz);
 	/* Init the Toolkit. */
 	toplevel = XtInitialize(xterm_name, "XTerm",
 		optionDescList, XtNumber(optionDescList), &argc, argv);
-	XtSetArg(Args[0], XtNallowShellResize, TRUE);
-	XtSetValues(toplevel, Args, XtNumber(Args));
+	XtSetValues (toplevel, ourTopLevelShellArgs, 
+		     number_ourTopLevelShellArgs);
 	/* Now that we are in control again, close any uglies. */
 	if (fd1 >= 0)
 	    (void)close(fd1);
