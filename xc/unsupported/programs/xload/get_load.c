@@ -22,6 +22,8 @@
  */
 
 #include <stdio.h>
+#include <X11/Xos.h>
+#include <X11/Intrinsic.h>
 
 #ifdef apollo
 #include <apollo/base.h>
@@ -92,13 +94,6 @@ struct lavnum {
 #ifdef sequent
 #define FSCALE	1000.0
 #endif
-
-/*
- * Toolkit includes.
- */
-
-#include <X11/Xos.h>
-#include <X11/Intrinsic.h>
 
 extern long lseek();
 extern void exit();
@@ -202,6 +197,7 @@ void GetLoadPoint( w, closure, call_data )
 #    define KERNEL_LOAD_VARIABLE "avenrun"
 #  else
 #    define KERNEL_LOAD_VARIABLE "sysinfo"
+#    define SYSINFO
 #  endif /* defined(CRAY2) && OSMAJORVERSION == 4 */
 #endif /* CRAY */
 
@@ -227,7 +223,9 @@ void GetLoadPoint( w, closure, call_data )
  * provide default for everyone else
  */
 
+#ifndef KERNEL_LOAD_VARIABLE
 #define KERNEL_LOAD_VARIABLE "_avenrun"
+#endif
 
 #endif /* KERNEL_LOAD_VARIABLE */
 
