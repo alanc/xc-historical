@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$XConsortium: xcutsel.c,v 1.1 88/10/14 17:42:41 swick Exp $";
+static char rcsid[] = "$XConsortium: xcutsel.c,v 1.2 88/10/14 17:50:33 jim Exp $";
 #endif	lint
 
 #include <stdio.h>
@@ -17,7 +17,7 @@ static XrmOptionDescRec options[] = {
     {"-select",    "selection",	XrmoptionSepArg, NULL},
     {"-sel",	   "selection",	XrmoptionSepArg, NULL},
     {"-s",	   "selection",	XrmoptionSepArg, NULL},
-    {"-buffer",	   "buffer",	XrmoptionSepArg, NULL},
+    {"-cutbuffer", "cutBuffer",	XrmoptionSepArg, NULL},
 };
 
 
@@ -32,7 +32,7 @@ struct _app_resources {
 static XtResource resources[] = {
     {"selection", "Selection", XtRString, sizeof(String),
        XtOffset(struct _app_resources*, selection_name), XtRString, "PRIMARY"},
-    {"buffer", "Buffer", XtRInt, sizeof(int),
+    {"cutBuffer", "CutBuffer", XtRInt, sizeof(int),
        XtOffset(struct _app_resources*, buffer), XtRImmediate, (caddr_t)0},
 };
 
@@ -202,10 +202,12 @@ void main(argc, argv)
     unsigned int argc;
     char **argv;
 {
+    char label[100];
     Widget box, button;
     Widget shell =
 	XtInitialize( "xcutsel", "XCutsel", options, XtNumber(options),
 		      &argc, argv );
+    XrmDatabase rdb = XtDatabase(XtDisplay(shell));
 
     if (argc != 1) Syntax(argv[0]);
 
@@ -223,12 +225,23 @@ void main(argc, argv)
 	XtCreateManagedWidget("quit", commandWidgetClass, box, NULL, ZERO);
 	XtAddCallback( button, XtNcallback, Quit, NULL );
 
-    button =
-	XtCreateManagedWidget("cut->sel", commandWidgetClass, box, NULL, ZERO);
-	XtAddCallback( button, XtNcallback, GetSelection, NULL );
+    /* %%% hack alert... */
+    sprintf(label, "*label:copy %s to %d",
+	    app_resources.selection_name,
+	    app_resources.buffer);
+    XrmPutLineResource( &rdb, label );
 
     button =
-	XtCreateManagedWidget("sel->cut", commandWidgetClass, box, NULL, ZERO);
+	XtCreateManagedWidget("sel-cut", commandWidgetClass, box, NULL, ZERO);
+	XtAddCallback( button, XtNcallback, GetSelection, NULL );
+
+    sprintf(label, "*label:copy %d to %s",
+	    app_resources.buffer,
+	    app_resources.selection_name);
+    XrmPutLineResource( &rdb, label );
+
+    button =
+	XtCreateManagedWidget("cut-sel", commandWidgetClass, box, NULL, ZERO);
 	XtAddCallback( button, XtNcallback, GetBuffer, NULL );
     
     XtRealizeWidget(shell);
