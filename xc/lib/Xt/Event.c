@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Event.c,v 1.103 89/10/11 13:18:41 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Event.c,v 1.104 89/12/07 12:39:46 swick Exp $";
 /* $oHeader: Event.c,v 1.9 88/09/01 11:33:51 asente Exp $ */
 #endif /* lint */
 
@@ -901,6 +901,8 @@ static Boolean DecideToDispatch(event)
       case LeaveNotify:		time = event->xcrossing.time; break;
 
       case PropertyNotify:	time = event->xproperty.time; break;
+
+      case SelectionClear:	time = event->xselectionclear.time; break;
     }
 
     if (time) _XtGetPerDisplay(event->xany.display)->last_timestamp = time;
