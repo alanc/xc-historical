@@ -1,18 +1,18 @@
-XCOMM $XConsortium: Imakefile,v 1.2 93/07/19 13:25:38 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.3 93/07/19 14:41:49 rws Exp $
 
-   SRCS = xieperf.c do_tests.c do_simpleflo.c do_simpleflomap.c \
-	  do_constrain.c do_dither.c do_point.c do_import.c \
-	  do_importclient.c do_logical.c do_createdestroy.c \
-	  do_query.c do_modify.c do_redefine.c do_purgecolorlist.c \
-	  do_abort.c do_await.c do_exportclient.c do_unconstrain.c \
-	  do_blend.c do_pasteup.c do_geometry.c do_converttoindex.c
+   SRCS = xieperf.c tests.c flo.c flomap.c \
+	  constrain.c dither.c point.c import.c \
+	  importcl.c logical.c creatdstry.c \
+	  query.c modify.c redefine.c purgecolst.c \
+	  abort.c await.c exportcl.c uconstrain.c \
+	  blend.c pasteup.c geometry.c cvttoindex.c
 
-   OBJS = xieperf.o do_tests.o do_simpleflo.o do_simpleflomap.o \
-	  do_constrain.o do_dither.o do_point.o do_import.o \
-	  do_importclient.o do_logical.o do_createdestroy.o \
-	  do_query.o do_modify.o do_redefine.o do_purgecolorlist.o \
-	  do_abort.o do_await.o do_exportclient.o do_unconstrain.o \
-	  do_blend.o do_pasteup.o do_geometry.o do_converttoindex.o
+   OBJS = xieperf.o tests.o flo.o flomap.o \
+	  constrain.o dither.o point.o import.o \
+	  importcl.o logical.o creatdstry.o \
+	  query.o modify.o redefine.o purgecolst.o \
+	  abort.o await.o exportcl.o uconstrain.o \
+	  blend.o pasteup.o geometry.o cvttoindex.o
 
    LOCAL_LIBRARIES = $(XIELIB) $(XLIB)
            DEPLIBS = $(DEPXIELIB) $(DEPXLIB)
