@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Intrinsic.h,v 1.3 89/07/20 14:37:55 swick Exp $
+* $XConsortium: Intrinsic.h,v 1.91 89/07/21 12:06:23 swick Exp $
 * $oHeader: Intrinsic.h,v 1.10 88/09/01 10:33:34 asente Exp $
 */
 
@@ -138,7 +138,8 @@ typedef enum {
     XtBaseOffset,   	/* offset		    */
     XtImmediate,    	/* constant		    */
     XtResourceString,	/* resource name string     */
-    XtResourceQuark	/* resource name quark      */
+    XtResourceQuark,	/* resource name quark      */
+    XtWidgetBaseOffset	/* offset from ancestor     */
 } XtAddressMode;
 
 typedef struct {
@@ -474,9 +475,10 @@ extern Boolean XtIsSubclass ();
     /* Widget       widget;	    */
     /* WidgetClass  widgetClass;    */
 
-#define XtIsComposite(widget)       XtIsSubclass(widget, (WidgetClass) compositeWidgetClass)
-#define XtIsConstraint(widget)      XtIsSubclass(widget, (WidgetClass) constraintWidgetClass)
-#define XtIsShell(widget)	    XtIsSubclass(widget, (WidgetClass) shellWidgetClass)
+#define XtIsComposite(widget)	XtIsSubclass(widget, (WidgetClass)compositeWidgetClass)
+#define XtIsConstraint(widget)	XtIsSubclass(widget, (WidgetClass)constraintWidgetClass)
+#define XtIsShell(widget)	XtIsSubclass(widget, (WidgetClass)shellWidgetClass)
+#define XtIsWidget(object)	XtIsSubclass(object, (WidgetClass)coreWidgetClass)
 
 extern void XtRealizeWidget ();
     /* Widget    widget      */
@@ -541,6 +543,9 @@ extern Screen *XtScreen();
 
 extern Window XtWindow();
     /*	Widget widget;		*/
+
+extern String XtName();
+    /*  Widget object;		*/
 
 extern WidgetClass XtSuperclass();
     /*	Widget widget;		*/
