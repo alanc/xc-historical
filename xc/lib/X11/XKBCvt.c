@@ -1,4 +1,4 @@
-/* "$XConsortium: XKBCvt.c,v 1.7 93/09/29 20:29:31 rws Exp $"; */
+/* "$XConsortium: XKBCvt.c,v 1.8 93/09/29 22:28:18 rws Exp $"; */
 
 /*
  * Copyright 1988, 1989 by the Massachusetts Institute of Technology
@@ -31,6 +31,7 @@
 #include <X11/extensions/XKBstr.h>
 #include "XKBlibint.h"
 #include <X11/Xlocale.h>
+#include <ctype.h>
 
 #ifdef X_NOT_STDC_ENV
 extern char *getenv();
