@@ -1,4 +1,4 @@
-/* $XConsortium: sm_client.c,v 1.4 93/09/12 14:33:35 mor Exp $ */
+/* $XConsortium: sm_client.c,v 1.5 93/09/12 16:23:06 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -37,7 +37,7 @@ SmcCallbacks	*callbacks;
     {
 	if ((_SmcOpcode = IceRegisterForProtocolSetup ("XSMP",
 	    SmVendorString, SmReleaseString, _SmVersionCount, _SmcVersions,
-            _SmAuthCount, _SmcAuthRecs)) < 0)
+            _SmAuthCount, _SmcAuthRecs, NULL)) < 0)
 	{
 	   return (0);
 	}
@@ -66,6 +66,11 @@ char 		*errorStringRet;
     SmcConn			smcConn;
     IceConn			iceConn;
     char 			*ids;
+    IceProtocolSetupStatus	setupstat;
+    int				majorVersion;
+    int				minorVersion;
+    char			*vendor = NULL;
+    char			*release = NULL;
     smRegisterClientMsg 	*pMsg;
     char 			*pData;
     int				extra;
@@ -77,6 +82,12 @@ char 		*errorStringRet;
 
     if (errorStringRet && errorLength > 0)
 	*errorStringRet = '\0';
+
+    if (!_SmcOpcode)
+    {
+	strncpy (errorStringRet, "SmcInitialize was not called", errorLength);
+	return (NULL);
+    }
 
     if (networkIdsList == NULL || *networkIdsList == '\0')
     {
@@ -94,32 +105,62 @@ char 		*errorStringRet;
 	ids = networkIdsList;
     }
 
+    if ((iceConn = IceOpenConnection (
+	ids, errorLength, errorStringRet)) == NULL)
+    {
+	return (NULL);
+    }
+
+    setupstat = IceProtocolSetup (iceConn,
+	_SmcOpcode, _SmAuthCount, NULL,	&majorVersion, &minorVersion,
+	&vendor, &release, errorLength, errorStringRet);
+
+    if (setupstat == IceProtocolSetupFailure)
+    {
+	IceCloseConnection (iceConn);
+	return (NULL);
+    }
+    else if (setupstat == IceProtocolAlreadyActive)
+    {
+	/*
+	 * The protocol is already active on this connection.
+	 * Return the previously opened connection object.
+	 */
+
+	int i;
+
+	for (i = 0; i < _SmcConnectionCount; i++)
+	    if (_SmcConnectionObjs[i]->iceConn == iceConn)
+		return (_SmcConnectionObjs[i]);
+
+	/*
+	 * If we get here, there is an error.
+	 */
+
+	IceProtocolShutdown (iceConn, _SmcOpcode);
+	IceCloseConnection (iceConn);
+	return (NULL);
+    }
+
     if ((smcConn = (SmcConn) malloc (sizeof (struct _SmcConn))) == NULL)
     {
 	strncpy (errorStringRet, "Can't malloc", errorLength);
+	IceProtocolShutdown (iceConn, _SmcOpcode);
+	IceCloseConnection (iceConn);
+	free (vendor);
+	free (release);
 	return (NULL);
     }
 
-    if ((smcConn->iceConn = iceConn = IceOpenConnection (
-	ids, errorLength, errorStringRet)) == NULL)
-    {
-	free ((char *) smcConn);
-	return (NULL);
-    }
-
+    smcConn->iceConn = iceConn;
+    smcConn->proto_major_version = majorVersion;
+    smcConn->proto_minor_version = minorVersion;
+    smcConn->vendor = vendor;
+    smcConn->release = release;
     smcConn->client_data = clientData;
     smcConn->client_id = NULL;
     smcConn->interact_cb = NULL;
     smcConn->prop_reply_waits = NULL;
-
-    if (!IceProtocolSetup (iceConn, _SmcOpcode,	_SmAuthCount, NULL,
-	&smcConn->proto_major_version, &smcConn->proto_minor_version,
-	&smcConn->vendor, &smcConn->release, errorLength, errorStringRet))
-    {
-	IceCloseConnection (iceConn);
-	free ((char *) smcConn);
-	return (NULL);
-    }
 
     _SmcConnectionObjs[_SmcConnectionCount++] = smcConn;
 
