@@ -1,5 +1,5 @@
-/* $XConsortium: xf86fcache.c,v 1.2 94/10/12 19:48:30 kaleb Exp kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/cache/xf86fcache.c,v 3.4 1994/09/08 14:25:35 dawes Exp $ */
+/* $XConsortium: xf86fcache.c,v 1.3 94/11/01 10:26:20 kaleb Exp kaleb $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/cache/xf86fcache.c,v 3.5 1994/11/26 12:40:20 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * 

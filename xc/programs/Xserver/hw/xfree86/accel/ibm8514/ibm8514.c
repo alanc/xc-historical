@@ -1,5 +1,5 @@
-/* $XConsortium: ibm8514.c,v 1.1 94/10/05 13:30:48 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/ibm8514.c,v 3.7 1994/09/23 10:07:54 dawes Exp $ */
+/* $XConsortium: ibm8514.c,v 1.2 94/10/12 19:52:10 kaleb Exp kaleb $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/ibm8514.c,v 3.8 1994/10/23 12:57:17 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -103,6 +103,8 @@ ScrnInfoRec ibm8514InfoRec = {
     0,			/* int COPbase */
     0,			/* int POSbase */
     0,			/* int instance */
+    0,			/* int s3Madjust */
+    0,			/* int s3Nadjust */
 };
 
 short ibm8514alu[16] = {

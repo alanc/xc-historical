@@ -1,5 +1,5 @@
-/* $XConsortium: mach32frect.c,v 1.3 94/10/12 19:59:09 kaleb Exp kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32frect.c,v 3.5 1994/09/11 00:48:55 dawes Exp $ */
+/* $XConsortium: mach32frect.c,v 1.4 94/10/14 13:11:59 kaleb Exp kaleb $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32frect.c,v 3.6 1994/11/26 12:41:43 dawes Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium

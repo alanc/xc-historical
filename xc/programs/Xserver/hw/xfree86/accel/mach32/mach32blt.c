@@ -1,5 +1,5 @@
-/* $XConsortium: mach32blt.c,v 1.3 94/10/12 19:59:09 kaleb Exp kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32blt.c,v 3.4 1994/09/11 00:48:45 dawes Exp $ */
+/* $XConsortium: mach32blt.c,v 1.4 94/10/14 17:24:16 kaleb Exp kaleb $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32blt.c,v 3.5 1994/11/26 12:41:41 dawes Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium

@@ -1,5 +1,5 @@
-/* $XConsortium: mach8.c,v 1.3 94/10/14 13:25:08 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8.c,v 3.10 1994/09/23 10:09:14 dawes Exp $ */
+/* $XConsortium: mach8.c,v 1.4 94/10/14 19:01:31 kaleb Exp kaleb $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8.c,v 3.12 1994/11/26 12:43:21 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -111,6 +111,8 @@ ScrnInfoRec mach8InfoRec = {
     0,			/* int COPbase */
     0,			/* int POSbase */
     0,			/* int instance */
+    0,			/* int s3Madjust */
+    0,			/* int s3Nadjust */
 };
 
 short mach8alu[16] = {
@@ -433,6 +435,12 @@ mach8Probe()
 		pModeSv=pMode->next;
 		xf86DeleteMode(&mach8InfoRec, pMode);
 		pMode = pModeSv; 
+	  } else if (pMode->HDisplay > 1024) {
+		pModeSv=pMode->next;
+		ErrorF("%s %s: Width to large for mode %s (max 1024)\n", 
+			XCONFIG_PROBED, mach8InfoRec.name, pMode->name);
+		xf86DeleteMode(&mach8InfoRec, pMode);
+		pMode = pModeSv;
 	  } else if (pMode->HDisplay * pMode->VDisplay > memavail) {
 		pModeSv=pMode->next;
 		ErrorF("%s %s: Too little memory for mode %s\n", 
@@ -553,9 +561,6 @@ mach8Initialize (scr_index, pScreen, argc, argv)
     AlreadyInited = TRUE;
 
     xf86InitCache( mach8CacheMoveBlock );
-#ifdef PIXPRIV
-    mach8CacheInit();
-#endif
     mach8FontCache8Init();
     if( mach8DramUsed ) {
 	mach8ImageWriteFunc = mach8ImageWriteDram;
@@ -624,9 +629,6 @@ mach8EnterLeaveVT(enter, screen_idx)
 	mach8Init(&mach8ScreenMode);
 	mach8InitEnvironment();
         mach8RestoreDACvalues();
-#ifdef PIXPRIV
-        mach8CacheInit();
-#endif
         mach8FontCache8Init();
 	AlreadyInited = TRUE;
 

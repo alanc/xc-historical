@@ -1,5 +1,5 @@
-/* $XConsortium: mach8.h,v 1.3 94/10/14 13:25:08 kaleb Exp kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8.h,v 3.1 1994/07/24 11:46:16 dawes Exp $ */
+/* $XConsortium: mach8.h,v 1.4 94/10/14 19:01:31 kaleb Exp kaleb $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8.h,v 3.2 1994/11/26 12:43:23 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  *

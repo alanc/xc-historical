@@ -1,5 +1,5 @@
-/* $XConsortium: mach32.h,v 1.2 94/10/12 19:59:09 kaleb Exp kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32.h,v 3.5 1994/09/11 00:48:42 dawes Exp $ */
+/* $XConsortium: mach32.h,v 1.3 94/10/14 17:24:16 kaleb Exp kaleb $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32.h,v 3.7 1994/11/26 12:41:39 dawes Exp $ */
 /*
  * Copyright 1992,1993 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -64,6 +64,7 @@ extern pointer vgaBase;
 extern Bool xf86VTSema;
 extern short mach32MaxX, mach32MaxY;
 extern short mach32VirtX, mach32VirtY;
+extern short mach32DisplayWidth;
 extern Bool mach32Use4MbAperture;
 extern Bool mach32DAC8Bit;
 
