@@ -1,4 +1,4 @@
-/* $XConsortium: Display.c,v 1.106 93/09/27 13:54:29 kaleb Exp $ */
+/* $XConsortium: Display.c,v 1.107 93/10/06 17:20:13 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -434,7 +434,6 @@ static void DestroyAppContext(app)
 {
 	XtAppContext* prev_app;
 
-	LOCK_PROCESS;
 	prev_app = &app->process->appContextList;
 	while (app->count-- > 0) XtCloseDisplay(app->list[app->count]);
 	if (app->list != NULL) XtFree((char *)app->list);
@@ -461,7 +460,6 @@ static void DestroyAppContext(app)
 	XtFree((char *)app->fds.fdlist);
 #endif
 	if (app->free_bindings) _XtDoFreeBindings (app);
-	UNLOCK_PROCESS;
 	FREE_APP_LOCK(app);
 	XtFree((char *)app);
 }
@@ -478,9 +476,11 @@ void XtDestroyApplicationContext(app)
 	    return;
 	}
 
-	if (_XtSafeToDestroy(app)) 
+	if (_XtSafeToDestroy(app)) {
+	    LOCK_PROCESS;
 	    DestroyAppContext(app);
-	else {
+	    UNLOCK_PROCESS;
+	} else {
 	    app->being_destroyed = TRUE;
 	    LOCK_PROCESS;
 	    _XtAppDestroyCount++;
@@ -500,11 +500,9 @@ void _XtDestroyAppContexts()
 	for (i = 0; i < _XtAppDestroyCount; i++) {
 	    DestroyAppContext(appDestroyList[i]);
 	}
-	LOCK_PROCESS;
 	_XtAppDestroyCount = 0;
 	XtFree((char *) appDestroyList);
 	appDestroyList = NULL;
-	UNLOCK_PROCESS;
 }
 
 XrmDatabase XtDatabase(dpy)
