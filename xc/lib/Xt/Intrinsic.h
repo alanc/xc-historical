@@ -1,4 +1,4 @@
-/* $XConsortium: Intrinsic.h,v 1.153 91/03/11 15:25:27 converse Exp $ */
+/* $XConsortium: Intrinsic.h,v 1.154 91/03/20 13:15:37 gildea Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -31,6 +31,9 @@ SOFTWARE.
 #include	<X11/Xutil.h>
 #include	<X11/Xresource.h>
 #include	<X11/Xfuncproto.h>
+#ifdef XT_BC
+#include <X11/Xos.h>		/* for R4 compatibility */
+#endif
 
 #define XtSpecificationRelease 4
 
