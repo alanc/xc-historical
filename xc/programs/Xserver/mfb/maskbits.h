@@ -1,7 +1,6 @@
 /* Combined Purdue/PurduePlus patches, level 2.1, 1/24/89 */
 /***********************************************************
-Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
-and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
+Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
 
                         All Rights Reserved
 
@@ -9,7 +8,7 @@ Permission to use, copy, modify, and distribute this software and its
 documentation for any purpose and without fee is hereby granted,
 provided that the above copyright notice appear in all copies and that
 both that copyright notice and this permission notice appear in
-supporting documentation, and that the names of Digital or MIT not be
+supporting documentation, and that the name of Digital not be
 used in advertising or publicity pertaining to distribution of the
 software without specific, written prior permission.
 
@@ -22,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: maskbits.h,v 1.31 94/01/21 22:01:37 dpw Exp $ */
+/* $XConsortium: maskbits.h,v 1.32 94/03/16 15:11:38 dpw Exp $ */
 #include "X.h"
 #include "Xmd.h"
 #include "servermd.h"

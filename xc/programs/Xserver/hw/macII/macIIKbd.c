@@ -1,4 +1,4 @@
-/* $XConsortium: mfbplygblt.c,v 5.11 94/01/12 18:05:14 dpw Exp $ */
+/* $XConsortium: macIIKbd.c,v 1.23 94/02/23 15:55:35 dpw Exp $ */
 /*****************************************************************************
 Copyright 1988-1993 by Apple Computer, Inc, Cupertino, California
 			All Rights Reserved
@@ -47,12 +47,13 @@ software  and  its documentation for any purpose and without
 fee is hereby granted, provided that the above copyright no-
 tice  appear  in all copies and that both that copyright no-
 tice and this permission notice appear in  supporting  docu-
-mentation,  and  that the names of Sun or MIT not be used in
-advertising or publicity pertaining to distribution  of  the
-software  without specific prior written permission. Sun and
-M.I.T. make no representations about the suitability of this
-software for any purpose. It is provided "as is" without any
-express or implied warranty.
+mentation,  and  that the names of Sun or X Consortium
+not be used in advertising or publicity pertaining to 
+distribution  of  the software  without specific prior 
+written permission. Sun and X Consortium make no 
+representations about the suitability of this software for 
+any purpose. It is provided "as is" without any express or 
+implied warranty.
 
 SUN DISCLAIMS ALL WARRANTIES WITH REGARD TO  THIS  SOFTWARE,
 INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FIT-

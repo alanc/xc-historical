@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: mach32scrin.c,v 1.1 94/03/28 21:09:12 dpw Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -10,10 +10,10 @@ software  and  its documentation for any purpose and without
 fee is hereby granted, provided that the above copyright no-
 tice  appear  in all copies and that both that copyright no-
 tice and this permission notice appear in  supporting  docu-
-mentation,  and  that the names of Sun or MIT not be used in
+mentation,  and  that the name of Sun not be used in
 advertising or publicity pertaining to distribution  of  the
-software  without specific prior written permission. Sun and
-M.I.T. make no representations about the suitability of this
+software  without specific prior written permission. Sun
+makes no representations about the suitability of this
 software for any purpose. It is provided "as is" without any
 express or implied warranty.
 
@@ -41,8 +41,6 @@ Modified for the Mach32 by Kevin E. Martin (martin@cs.unc.edu)
 
 ********************************************************/
 
-
-/* $XConsortium: cfbscrinit.c,v 5.18 90/09/24 17:46:11 rws Exp $ */
 
 #include "X.h"
 #include "Xmd.h"

@@ -1,4 +1,4 @@
-/* $XConsortium: s3fs.c,v 1.1 94/03/28 21:15:15 dpw Exp $ */
+/* $XConsortium: s3fs.c,v 1.2 94/04/04 13:24:40 dpw Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -9,12 +9,13 @@ software  and  its documentation for any purpose and without
 fee is hereby granted, provided that the above copyright no-
 tice  appear  in all copies and that both that copyright no-
 tice and this permission notice appear in  supporting  docu-
-mentation,  and  that the names of Sun or MIT not be used in
-advertising or publicity pertaining to distribution  of  the
-software  without specific prior written permission. Sun and
-M.I.T. make no representations about the suitability of this
-software for any purpose. It is provided "as is" without any
-express or implied warranty.
+mentation,  and  that the names of Sun or X Consortium
+not be used in advertising or publicity pertaining to 
+distribution  of  the software  without specific prior 
+written permission. Sun and X Consortium make no 
+representations about the suitability of this software for 
+any purpose. It is provided "as is" without any express or 
+implied warranty.
 
 SUN DISCLAIMS ALL WARRANTIES WITH REGARD TO  THIS  SOFTWARE,
 INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FIT-
@@ -28,8 +29,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 ********************************************************/
 
 /***********************************************************
-Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
-and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
+Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
 
                         All Rights Reserved
 
@@ -37,7 +37,7 @@ Permission to use, copy, modify, and distribute this software and its
 documentation for any purpose and without fee is hereby granted,
 provided that the above copyright notice appear in all copies and that
 both that copyright notice and this permission notice appear in
-supporting documentation, and that the names of Digital or MIT not be
+supporting documentation, and that the name of Digital not be
 used in advertising or publicity pertaining to distribution of the
 software without specific, written prior permission.
 
