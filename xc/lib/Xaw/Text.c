@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: Text.c,v 1.126 89/11/13 15:02:09 kit Exp $";
+static char Xrcsid[] = "$XConsortium: Text.c,v 1.127 89/11/17 10:48:08 kit Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -461,8 +461,10 @@ TextWidget ctx;
 
 /* ARGSUSED */
 static void 
-Initialize(request, new)
+Initialize(request, new, args, num_args)
 Widget request, new;
+ArgList args;			/* unused */
+Cardinal *num_args;		/* unused */
 {
   TextWidget ctx = (TextWidget) new;
   char error_buf[BUFSIZ];
@@ -2388,8 +2390,10 @@ Widget w;
 
 /*ARGSUSED*/
 static Boolean 
-SetValues(current, request, new)
+SetValues(current, request, new, args, num_args)
 Widget current, request, new;
+ArgList args;
+Cardinal *num_args;
 {
   TextWidget oldtw = (TextWidget) current;
   TextWidget newtw = (TextWidget) new;
@@ -2445,11 +2449,16 @@ Widget current, request, new;
   if ( oldtw->text.source != newtw->text.source )
     XawTextSetSource( (Widget) newtw, newtw->text.source, newtw->text.lt.top);
 
+  newtw->text.redisplay_needed = False;
+  XtSetValues( (Widget)newtw->text.source, args, *num_args );
+  XtSetValues( (Widget)newtw->text.sink, args, *num_args );
+
   if ( oldtw->text.wrap != newtw->text.wrap ||
        oldtw->text.lt.top != newtw->text.lt.top ||
        oldtw->text.r_margin.right != newtw->text.r_margin.right ||
        oldtw->text.r_margin.top != newtw->text.r_margin.top ||
-       oldtw->text.sink != newtw->text.sink) 
+       oldtw->text.sink != newtw->text.sink ||
+       newtw->text.redisplay_needed )
   {
     _XawTextBuildLineTable(newtw, newtw->text.lt.top, TRUE);
     redisplay = TRUE;
@@ -2463,26 +2472,6 @@ Widget current, request, new;
     _XawTextSetScrollBars(newtw);
 
   return redisplay;
-}
-
-/*	Function Name: SetValuesHook
- *	Description: This is a get values hook routine that sets the
- *                   values in the text source and sink.
- *	Arguments: w - the Text Widget.
- *                 args - the argument list.
- *                 num_args - the number of args.
- *	Returns: none.
- */
-
-static Boolean
-SetValuesHook(w, args, num_args)
-Widget w;
-ArgList args;
-Cardinal * num_args;
-{
-  XtSetValues( ((TextWidget) w)->text.source, args, *num_args );
-  XtSetValues( ((TextWidget) w)->text.sink, args, *num_args );
-  return(FALSE);
 }
 
 /*	Function Name: GetValuesHook
@@ -2835,7 +2824,7 @@ TextClassRec textClassRec = {
     /* resize           */      Resize,
     /* expose           */      ProcessExposeRegion,
     /* set_values       */      SetValues,
-    /* set_values_hook  */	SetValuesHook,
+    /* set_values_hook  */	NULL,
     /* set_values_almost*/	XtInheritSetValuesAlmost,
     /* get_values_hook  */	GetValuesHook,
     /* accept_focus     */      NULL,
