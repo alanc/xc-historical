@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: resource.c,v 1.20 89/08/31 11:34:58 keith Exp $
+ * $XConsortium: resource.c,v 1.21 89/09/08 14:34:18 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -26,8 +26,11 @@
 # include <X11/Xlib.h>
 # include <X11/Xresource.h>
 # include <X11/Xmu/CharSet.h>
+# include <X11/Xdmcp/Xdmcp.h>
 
 /* XtOffset() hack for ibmrt BandAidCompiler */
+
+char	*config;
 
 char	*servers;
 int	request_port;
@@ -36,6 +39,7 @@ char	*errorLogFile;
 int	daemonMode;
 char	*pidFile;
 char	*remoteAuthDir;
+int	autoRescan;
 
 # define DM_STRING	0
 # define DM_INT		1
@@ -47,7 +51,7 @@ char	*remoteAuthDir;
  * if it is server-specific).  DO NOT CHANGE THESE DEFINITIONS!
  */
 #ifndef DEF_SERVER_LINE 
-#define DEF_SERVER_LINE ":0 secure /usr/bin/X11/X :0"
+#define DEF_SERVER_LINE ":0 local /usr/bin/X11/X :0"
 #endif
 #ifndef XRDB_PROGRAM
 #define XRDB_PROGRAM "/usr/bin/X11/xrdb"
@@ -88,6 +92,7 @@ char	*remoteAuthDir;
 #ifndef DEF_AUTH_DIR
 #define DEF_AUTH_DIR	"/tmp"
 #endif
+#define DEF_UDP_PORT	"177"	    /* registered XDMCP port, dont change */
 
 struct dmResources {
 	char	*name, *class;
@@ -98,7 +103,7 @@ struct dmResources {
 "servers",	"Servers", 	DM_STRING,	&servers,
 				DEF_SERVER_LINE,
 "requestPort",	"RequestPort",	DM_INT,		(char **) &request_port,
-				"0",
+				DEF_UDP_PORT,
 "debugLevel",	"DebugLevel",	DM_INT,		(char **) &debugLevel,
 				"0",
 "errorLogFile",	"ErrorLogFile",	DM_STRING,	&errorLogFile,
@@ -109,6 +114,8 @@ struct dmResources {
 				"",
 "remoteAuthDir","RemoteAuthDir",DM_STRING,	&remoteAuthDir,
 				DEF_REMOTE_AUTH_DIR,
+"autoRescan",	"AutoRescan",	DM_BOOL,	(char **) &autoRescan,
+				"true",
 };
 
 # define NUM_DM_RESOURCES	(sizeof DmResources / sizeof DmResources[0])
@@ -261,48 +268,46 @@ char	**argv;
 
 ReinitResources ()
 {
-	int	argc;
-	char	**a;
-	char	**argv;
-	char	*config;
-	XrmDatabase newDB;
+    int	argc;
+    char	**a;
+    char	**argv;
+    XrmDatabase newDB;
 
-	argv = (char **) malloc ((originalArgc + 1) * sizeof (char *));
-	if (!argv)
-		LogPanic ("no space for argument realloc\n");
-	for (argc = 0; argc < originalArgc; argc++)
-		argv[argc] = originalArgv[argc];
-	argv[argc] = 0;
-	/*
- 	 * XXX As there is no way to release the old database,
-	 * it is dropped on the floor here.
-	 */
-	DmResourceDB = XrmGetStringDatabase ("");
-	/* pre-parse the command line to get the -config option, if any */
-	XrmParseCommand (&DmResourceDB, configTable,
- 			 sizeof (configTable) / sizeof (configTable[0]),
-			 "DisplayManager", &argc, argv);
-	GetResource ("DisplayManager.configFile", "DisplayManager.ConfigFile",
-		     DM_STRING, &config, DEF_XDM_CONFIG);
-	newDB = XrmGetFileDatabase ( config );
-	/*
- 	 * XXX As there is no way to release the old database,
-	 * it is dropped on the floor here.
-	 */
-	if (newDB)
-		DmResourceDB = newDB;
-	else if (argc != originalArgc)
-		LogError ("Can't open configuration file %s\n", config );
-	XrmParseCommand (&DmResourceDB, optionTable,
- 			 sizeof (optionTable) / sizeof (optionTable[0]),
-			 "DisplayManager", &argc, argv);
-	if (argc > 1) {
-		LogError ("extra arguments on command line:");
-		for (a = argv + 1; *a; a++)
-			LogError (" \"%s\"", *a);
-		LogError ("\n");
-	}
-	free (argv);
+    argv = (char **) malloc ((originalArgc + 1) * sizeof (char *));
+    if (!argv)
+	LogPanic ("no space for argument realloc\n");
+    for (argc = 0; argc < originalArgc; argc++)
+	argv[argc] = originalArgv[argc];
+    argv[argc] = 0;
+    if (DmResourceDB)
+	XrmDestroyDatabase (DmResourceDB);
+    DmResourceDB = XrmGetStringDatabase ("");
+    /* pre-parse the command line to get the -config option, if any */
+    XrmParseCommand (&DmResourceDB, configTable,
+		     sizeof (configTable) / sizeof (configTable[0]),
+		     "DisplayManager", &argc, argv);
+    GetResource ("DisplayManager.configFile", "DisplayManager.ConfigFile",
+		 DM_STRING, &config, DEF_XDM_CONFIG);
+    newDB = XrmGetFileDatabase ( config );
+    if (newDB)
+    {
+	if (DmResourceDB)
+	    XrmDestroyDatabase (DmResourceDB);
+	DmResourceDB = newDB;
+    }
+    else if (argc != originalArgc)
+	LogError ("Can't open configuration file %s\n", config );
+    XrmParseCommand (&DmResourceDB, optionTable,
+		     sizeof (optionTable) / sizeof (optionTable[0]),
+		     "DisplayManager", &argc, argv);
+    if (argc > 1)
+    {
+	LogError ("extra arguments on command line:");
+	for (a = argv + 1; *a; a++)
+		LogError (" \"%s\"", *a);
+	LogError ("\n");
+    }
+    free (argv);
 }
 
 LoadDMResources ()
