@@ -37,7 +37,7 @@
  */
 
 #ifndef lint
-static char *rcsid_xwd_c = "$Header: xwd.c,v 1.22 87/07/02 15:03:27 toddb Locked $";
+static char *rcsid_xwd_c = "$Header: xwd.c,v 1.23 87/07/16 22:50:27 chariot Locked $";
 #endif
 
 /*%
@@ -56,8 +56,7 @@ static char *rcsid_xwd_c = "$Header: xwd.c,v 1.22 87/07/02 15:03:27 toddb Locked
 #define FEEP_VOLUME 0
 
 /* Include routines to do parsing */
-#include "jdisplay.h"
-#include "ostuff.h"
+#include "dsimple.h"
 
 /* Setable Options */
 
