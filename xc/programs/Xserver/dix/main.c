@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: main.c,v 1.115 87/08/06 17:16:08 todd Exp $ */
+/* $Header: main.c,v 1.115 87/08/06 17:16:08 toddb Locked $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -73,7 +73,7 @@ static int answer[6][3] = {
 	/*  8     16    32 */
 
 	{   3,     4,    5 },	/* 1 bit per pixel */
-	{   1,     2,    4 },	/* 4 bits per pixel */
+	{   1,     2,    3 },	/* 4 bits per pixel */
 	{   0,     1,    2 },	/* 8 bits per pixel */
 	{   ~0,    0,    1 },	/* 16 bits per pixel */
 	{   ~0,    ~0,   0 },	/* 24 bits per pixel */
