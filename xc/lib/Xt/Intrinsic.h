@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Intrinsic.h,v 1.138 90/07/26 17:21:01 swick Exp $
+* $XConsortium: Intrinsic.h,v 1.139 90/08/22 14:21:01 swick Exp $
 * $oHeader: Intrinsic.h,v 1.10 88/09/01 10:33:34 asente Exp $
 */
 
@@ -2174,10 +2174,6 @@ extern void XtGetErrorDatabaseText(
  *
  ****************************************************************/
 
-#define XtNew(type) ((type *) XtMalloc((unsigned) sizeof(type)))
-#define XtNewString(str) \
-    ((str) != NULL ? (strcpy(XtMalloc((unsigned)strlen(str) + 1), str)) : NULL)
-
 extern char *XtMalloc(
 #if NeedFunctionPrototypes
     Cardinal 		/* size */
@@ -2204,6 +2200,60 @@ extern void XtFree(
 #endif
 );
 
+#ifdef XTTRACEMEMORY
+
+extern char *_XtMalloc(
+#if NeedFunctionPrototypes
+    Cardinal	/* size */,
+    char *	/* file */,
+    int	        /* line */
+#endif		       
+);
+
+extern char *_XtRealloc(
+#if NeedFunctionPrototypes
+    char *	/* ptr */,
+    Cardinal    /* size */,
+    char *	/* file */,
+    int		/* line */
+#endif
+);
+
+extern char *_XtCalloc(
+#if NeedFunctionPrototypes
+    Cardinal	/* num */,
+    Cardinal 	/* size */,
+    char *	/* file */,
+    int		/* line */
+#endif
+);
+
+extern void _XtFree(
+#if NeedFunctionPrototypes
+    char *	/* ptr */
+#endif
+);
+
+extern char *_XtHeapMalloc(
+#if NeedFunctionPrototypes
+    XtPointer	/* heap */,
+    unsigned	/* size */,
+    char *	/* file */,
+    int		/* line */
+#endif
+);
+
+#define XtMalloc(size) _XtMalloc(size, __FILE__, __LINE__)
+#define XtRealloc(ptr,size) _XtRealloc(ptr, size, __FILE__, __LINE__)
+#define XtCalloc(num,size) _XtCalloc(num, size, __FILE__, __LINE__)
+#define XtFree(ptr) _XtFree(ptr)
+#define _XtHeapAlloc(heap,bytes) _XtHeapMalloc(heap, bytes, __FILE__, __LINE__)
+
+#endif /* ifdef XTTRACEMEMORY */
+
+#define XtNew(type) ((type *) XtMalloc((unsigned) sizeof(type)))
+#define XtNewString(str) \
+    ((str) != NULL ? (strcpy(XtMalloc((unsigned)strlen(str) + 1), str)) : NULL)
 
 /*************************************************************
  *
