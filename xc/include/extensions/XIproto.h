@@ -1,4 +1,4 @@
-/* $XConsortium: XIproto.h,v 1.6 89/10/10 16:22:48 gms Exp $ */
+/* $XConsortium: XIproto.h,v 1.1 89/10/13 17:10:51 jim Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -695,6 +695,7 @@ typedef struct {
     CARD32  led_mask;
     CARD32  led_values;
     BOOL    global_auto_repeat;
+    BYTE    pad1, pad2, pad3;
     BYTE    auto_repeats[32];
 } xKbdFeedbackState;
 
@@ -1062,10 +1063,10 @@ typedef struct
     BYTE 	type;
     CARD8       deviceid;
     CARD16 	sequenceNumber B16;
-    CARD32 	valuators[6] B32;
-    CARD8       first_valuator;
+    KeyButMask  device_state B16;
     CARD8	num_valuators;
-    BYTE  	pad1, pad2;
+    CARD8       first_valuator;
+    CARD32 	valuators[6] B32;
     }  deviceValuator;
 
 /**********************************************************
