@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: miexpose.c,v 5.7 89/07/16 17:24:04 rws Exp $ */
+/* $XConsortium: miexpose.c,v 5.8 89/07/17 10:39:24 rws Exp $ */
 
 #include "X.h"
 #define NEED_EVENTS
@@ -185,7 +185,7 @@ miHandleExposures(pSrcDrawable, pDstDrawable,
 	box.x2 = pDstDrawable->width;
 	box.y2 = pDstDrawable->height;
 	prgnDstClip = &rgnDstRec;
-	(*pscr->RegionInit)(&prgnDstClip, &box, 1);
+	(*pscr->RegionInit)(prgnDstClip, &box, 1);
     }
 
     /* drawable-relative source region */
