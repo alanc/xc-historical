@@ -1,5 +1,5 @@
 /* 
- * $Header: xset.c,v 1.2 87/05/07 17:23:58 dkk Locked $ 
+ * $Header: xset.c,v 1.4 87/05/08 18:51:42 dkk Locked $ 
  * $Locker: dkk $ 
  */
 #include <X11/copyright.h>
@@ -7,7 +7,7 @@
 /* Copyright    Massachusetts Institute of Technology    1985	*/
 
 #ifndef lint
-static char *rcsid_xset_c = "$Header: xset.c,v 1.2 87/05/07 17:23:58 dkk Locked $";
+static char *rcsid_xset_c = "$Header: xset.c,v 1.4 87/05/08 18:51:42 dkk Locked $";
 #endif
 
 #include <X11/X.h>      /*  Should be transplanted to X11/Xlibwm.h     %*/
@@ -51,6 +51,11 @@ char **argv;
 	int discard = TRUE;
 	int pixels[512];
 	caddr_t colors[512];
+/*
+ *  These next two are for mouse (pointer) control.
+ */
+	unsigned char map[];
+	int nmap;
 	int numpixels = 0;
 	XColor def;  /* was Color, but only XColor, Colormap exist %%*/
 	value_mask = 0;          /*  initialize mask  %*/
@@ -151,9 +156,10 @@ char **argv;
 			        i++;
 			}
 		}
-/*		else if (strcmp(arg, "m") == 0 || strcmp(arg, "mouse") == 0) {
- *        	        value_mask |= ?????%%*
- *			acc = 4;
+		else if (strcmp(arg, "m") == 0 || strcmp(arg, "mouse") == 0) {
+		        nmap = 6;
+		}
+/*			acc = 4;
  *			thresh = 2;
  *			if (i >= argc)
  *				break;
@@ -179,8 +185,8 @@ char **argv;
 		    strcmp(arg, "v") == 0 || strcmp(arg, "video") == 0) {
 			timeout = 10;
 			interval = 60;
-			blank = (*arg == 's' ? DontPreferBlanking :
-				 PreferBlanking);
+			blank = (*arg == ('s' ? DontPreferBlanking :
+				 PreferBlanking));
 			dosaver = TRUE;
 			if (i >= argc)
 				break;
@@ -246,12 +252,13 @@ char **argv;
 	
 	if (dpy == NULL) {
 		fprintf(stderr, "%s: Can't open display '%s'\n",
-		argv[0], XDisplayName(argc ? argv[1] : "\0"));
+		argv[0], XDisplayName(disp ? disp : "\0"));
 		exit(1);
 	}
 
 	XChangeKeyboardControl(dpy, value_mask, &values);
 
+	if (value_mask){
 	XGetKeyboardControl(dpy, &values);
 
 	printf ("Display: %d \n", *dpy);
@@ -263,6 +270,14 @@ char **argv;
 	printf ("LED Mode: %d \n", values.led_mode);
 	printf ("Key: %d \n", values.key);
 	printf ("Auto Repeat: %d \n", values.auto_repeat_mode);
+        }
+
+	if (nmap){
+	  XGetPointerMapping(dpy, map, nmap);
+	  printf ("nmap: %d \n", nmap);
+	  printf ("map: %c, %c, %c, %c, %c, %c, %c", map[0], map[1],
+		  map[2], map[3], map[4], map[5], map[6]);
+	}
 
 /*
  *      OBSOLETE -- TO BE DELETED
