@@ -1,123 +1,148 @@
+/*****************************************************************************
+Copyright 1988, 1989 by Digital Equipment Corporation, Maynard, Massachusetts.
+
+                        All Rights Reserved
+
+Permission to use, copy, modify, and distribute this software and its 
+documentation for any purpose and without fee is hereby granted, 
+provided that the above copyright notice appear in all copies and that
+both that copyright notice and this permission notice appear in 
+supporting documentation, and that the name of Digital not be
+used in advertising or publicity pertaining to distribution of the
+software without specific, written prior permission.  
+
+DIGITAL DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING
+ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL
+DIGITAL BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR
+ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS,
+WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION,
+ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
+SOFTWARE.
+
+******************************************************************************/
+
 #include "x11perf.h"
 
-static Window w;
 static Window *children;
-static rows, columns, x_offset, y_offset;
-#define INIT_OFFSET 10
+static XPoint *positions;
+static int rows;
+static x_offset, y_offset;  /* Private global data for DoMoveWins */
+static int xmax, ymax;
+static delta1;		    /* Private global data for DoResizeWins */
+
 #define STACK (4*(HEIGHT-10)/CHILDSIZE)
 
-Bool InitMoveWins(d, p)
-    Display *d;
-    Parms p;
+Bool InitMoveWins(xp, p)
+    XParms  xp;
+    Parms   p;
 {
     int     i = 0;
-    int     x, y;
 
-    if (p->objects < 50) {
-	rows = 1;
-	columns = p->objects;
-    }
-    else {
-	columns = COLS;
-	rows = p->objects/COLS;
-    }
-    p->objects = rows*columns;
-    x_offset = INIT_OFFSET;
-    y_offset = INIT_OFFSET;
+    rows = (p->objects + MAXCOLS - 1) / MAXCOLS;
+    
+    x_offset = 0;
+    y_offset = 0;
+    delta1   = 1;
 
-    CreatePerfStuff (d, 1, WIDTH, HEIGHT, &w, NULL, NULL);
     children = (Window *) malloc (p->objects*sizeof (Window));
-    for (x = 0; x < columns; x++)
-	for (y = 0; y < rows; y++) {
-	    children[i++] = XCreateSimpleWindow (d, w, 
-		(CHILDSIZE+CHILDSPACE) * x + CHILDSPACE/2,
-		(CHILDSIZE+CHILDSPACE) * y + CHILDSPACE/2,
-		CHILDSIZE, CHILDSIZE, 0, fgPixel, fgPixel);
-	    if (i == p->objects)
-		goto Enough;
-	}
-Enough:
-    if (p->special)
-	XMapSubwindows (d, w);
-    return True;
-}
+    positions = (XPoint *) malloc(p->objects*sizeof(XPoint));
 
-Bool InitCircWins(d, p)
-    Display *d;
-    Parms p;
-{
-    int     i;
+    xmax = (CHILDSIZE+CHILDSPACE) * (rows > 1 ? MAXCOLS : p->objects);
+    ymax = rows * (CHILDSIZE+CHILDSPACE);
 
-    CreatePerfStuff (d, 1, WIDTH, HEIGHT, &w, NULL, NULL);
-    children = (Window *) malloc (p -> objects * sizeof (Window));
-    for (i = 0; i < p->objects; i++) {
-	register int pos = i % STACK;
-	children[i] = XCreateSimpleWindow (d, w, 
-	pos*CHILDSIZE/4 + (i/STACK)*2*CHILDSIZE, pos*CHILDSIZE/4,
-	CHILDSIZE, CHILDSIZE, 1, bgPixel, fgPixel);
+    for (i = 0; i != p->objects; i++) {
+	positions[i].x = (CHILDSIZE+CHILDSPACE) * (i/rows) + CHILDSPACE/2;
+	positions[i].y = (CHILDSIZE+CHILDSPACE) * (i%rows) + CHILDSPACE/2;
+	children[i] = XCreateSimpleWindow(xp->d, xp->w,
+	    positions[i].x, positions[i].y,
+	    CHILDSIZE, CHILDSIZE, 0, xp->foreground, xp->foreground);
     }
-    if (p -> special)
-	XMapSubwindows (d, w);
+    if (p->special)
+	XMapSubwindows (xp->d, xp->w);
     return True;
 }
 
-void DoMoveWins(d, p)
-    Display *d;
+void DoMoveWins(xp, p)
+    XParms  xp;
     Parms p;
 {
-    int     child, i, x, y;
+    int     i, j, x, y;
 
-    for (i = 0; i < p -> reps; i++) {
+    for (i = 0; i != p->reps; i++) {
 	x_offset += 1;
 	y_offset += 3;
-	if (y_offset >= HEIGHT - rows*(CHILDSIZE+CHILDSPACE))
-	    y_offset = INIT_OFFSET;
-	if (x_offset >= WIDTH - columns*(CHILDSIZE+CHILDSPACE))
-	    x_offset = INIT_OFFSET;
-	child = p -> objects - 1;
-	for (x = columns - 1; x >= 0; x--)
-	    for (y = rows - 1; y >= 0; y--) {
-		XMoveWindow (d, children[child],
-		    x*(CHILDSIZE+CHILDSPACE) + x_offset, 
-		    y*(CHILDSIZE+CHILDSPACE) + y_offset);
-		child--;
-	    }
-    }
-}
-
-void DoResizeWins(d, p)
-    Display *d;
-    Parms p;
-{
-    int     i, j, delta1, delta2;
-
-    delta1 = 1;
-    for (i = 0; i < p -> reps; i++) {
-	delta1 = -delta1;
-	delta2 = delta1;
-	for (j = 0; j < p -> objects; j++) {
-	    delta2 = -delta2;
-	    XResizeWindow(d, children[j], CHILDSIZE+delta2, CHILDSIZE-delta2);
+	if (y_offset + ymax > HEIGHT)
+	    y_offset = 0;
+	if (x_offset + xmax > WIDTH)
+	    x_offset = 0;
+	for (j = 0; j != p->objects; j++) {
+	    XMoveWindow(xp->d, children[j],
+	    positions[j].x + x_offset, positions[j].y + y_offset);
 	}
     }
 }
 
-void DoCircWins(d, p)
-    Display *d;
-    Parms p;
+void EndMoveWins(xp, p)
+    XParms  xp;
+    Parms   p;
+{
+    free(children);
+    free(positions);
+}
+
+void DoResizeWins(xp, p)
+    XParms  xp;
+    Parms   p;
+{
+    int     i, j, delta2;
+
+    for (i = 0; i != p->reps; i++) {
+	delta1 = -delta1;
+	delta2 = delta1;
+	for (j = 0; j != p->objects; j++) {
+	    delta2 = -delta2;
+	    XResizeWindow(xp->d, children[j],
+		CHILDSIZE+delta2, CHILDSIZE-delta2);
+	}
+    }
+}
+
+Bool InitCircWins(xp, p)
+    XParms  xp;
+    Parms   p;
+{
+    int     i;
+    int     pos;
+    int     color;
+
+    children = (Window *) malloc (p->objects * sizeof (Window));
+    for (i = 0; i != p->objects; i++) {
+	pos = i % STACK;
+	color = (i & 1 ? xp->foreground : xp->background);
+	children[i] = XCreateSimpleWindow (xp->d, xp->w, 
+	    pos*CHILDSIZE/4 + (i/STACK)*2*CHILDSIZE, pos*CHILDSIZE/4,
+	    CHILDSIZE, CHILDSIZE, 0, color, color);
+    }
+    if (p->special)
+	XMapSubwindows (xp->d, xp->w);
+    return True;
+}
+
+void DoCircWins(xp, p)
+    XParms  xp;
+    Parms   p;
 {
     int     i, j;
 
-    for (i = 0; i < p -> reps; i++)
-	for (j = 0; j < p -> objects; j++)
-	    XCirculateSubwindows (d, w, RaiseLowest);
+    for (i = 0; i != p->reps; i++)
+	for (j = 0; j != p->objects; j++)
+	    XCirculateSubwindows (xp->d, xp->w, RaiseLowest);
 }
 
-void EndMoveWins(d, p)
-    Display *d;
-    Parms p;
+void EndCircWins(xp, p)
+    XParms  xp;
+    Parms   p;
 {
-    XDestroyWindow(d, w);
     free(children);
 }
 

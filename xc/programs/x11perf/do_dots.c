@@ -1,52 +1,66 @@
+/*****************************************************************************
+Copyright 1988, 1989 by Digital Equipment Corporation, Maynard, Massachusetts.
+
+                        All Rights Reserved
+
+Permission to use, copy, modify, and distribute this software and its 
+documentation for any purpose and without fee is hereby granted, 
+provided that the above copyright notice appear in all copies and that
+both that copyright notice and this permission notice appear in 
+supporting documentation, and that the name of Digital not be
+used in advertising or publicity pertaining to distribution of the
+software without specific, written prior permission.  
+
+DIGITAL DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING
+ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL
+DIGITAL BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR
+ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS,
+WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION,
+ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
+SOFTWARE.
+
+******************************************************************************/
+
 #include "x11perf.h"
 
 static XPoint *points;
-static GC bggc, fggc;
-static Window w;
 
-Bool InitDots(d, p)
-    Display *d;
-    Parms p;
+Bool InitDots(xp, p)
+    XParms  xp;
+    Parms   p;
 {
-    int i, x, y;
+    int i;
 
-    i = 0;
     points = (XPoint *)malloc(p->objects * sizeof(XPoint));
-    for (x = 0; x < COLS; x++)
-	for (y = 0; y < p->objects/COLS; y++) {
-	    points[i].x = 2*x;
-	    points[i].y = 2*y;
-	    i++;
-	}
-    CreatePerfStuff(d, 1, WIDTH, HEIGHT, &w, &bggc, &fggc);
+
+    for (i = 0; i != p->objects; i++) {
+	points[i].x = 2 * (i/MAXROWS);
+	points[i].y = 2 * (i%MAXROWS);
+    }
     return True;
 }
 
-void DoDots(d, p)
-    Display *d;
-    Parms p;
+void DoDots(xp, p)
+    XParms  xp;
+    Parms   p;
 {
-    GC pgc;
-    int i;
+    GC      pgc;
+    int     i;
 
-    pgc = bggc;
-    for (i=0; i < p->reps; i++)
-    {
-        XDrawPoints(d, w, pgc, points, p->objects, CoordModeOrigin);
-        if (pgc == bggc)
-            pgc = fggc;
+    pgc = xp->fggc;
+    for (i = 0; i != p->reps; i++) {
+        XDrawPoints(xp->d, xp->w, pgc, points, p->objects, CoordModeOrigin);
+        if (pgc == xp->bggc)
+            pgc = xp->fggc;
         else
-            pgc = bggc;
+            pgc = xp->bggc;
     }
 }
 
-void EndDots(d, p)
-    Display *d;
-    Parms p;
+void EndDots(xp, p)
+    XParms  xp;
+    Parms   p;
 {
-    XDestroyWindow(d, w);
-    XFreeGC(d, bggc);
-    XFreeGC(d, fggc);
     free(points);
 }
 

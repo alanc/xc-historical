@@ -1,18 +1,40 @@
+/*****************************************************************************
+Copyright 1988, 1989 by Digital Equipment Corporation, Maynard, Massachusetts.
+
+                        All Rights Reserved
+
+Permission to use, copy, modify, and distribute this software and its 
+documentation for any purpose and without fee is hereby granted, 
+provided that the above copyright notice appear in all copies and that
+both that copyright notice and this permission notice appear in 
+supporting documentation, and that the name of Digital not be
+used in advertising or publicity pertaining to distribution of the
+software without specific, written prior permission.  
+
+DIGITAL DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING
+ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL
+DIGITAL BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR
+ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS,
+WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION,
+ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
+SOFTWARE.
+
+******************************************************************************/
+
 #include "x11perf.h"
 
 #define NUM_POINTS 4   /* 4 points to a trapezoid */
 static XPoint *points;
-static GC bggc, fggc;
-static Window w;
 
-Bool InitTrapezoids(d, p)
-    Display *d;
-    Parms p;
+Bool InitTrapezoids(xp, p)
+    XParms  xp;
+    Parms   p;
 {
-    int i, numPoints;
-    int x, y;
-    int size, skew;
-    XPoint *curPoint;
+    int     i, numPoints;
+    int     rows;
+    int     x, y;
+    int     size, skew;
+    XPoint  *curPoint;
 
     size = p->special;
     numPoints = (p->objects) * NUM_POINTS;  
@@ -20,8 +42,10 @@ Bool InitTrapezoids(d, p)
     curPoint = points;
     x = size;
     y = 0;
+    rows = 0;
     skew = size;
-    for (i = 0; i < p->objects; i++, curPoint += NUM_POINTS) {
+
+    for (i = 0; i != p->objects; i++, curPoint += NUM_POINTS) {
 	curPoint[0].x = x - skew;
 	curPoint[0].y = y;
 	curPoint[1].x = x - skew + size;
@@ -35,7 +59,9 @@ Bool InitTrapezoids(d, p)
 	if (skew < 0) skew = size;
 
 	y += size;
-	if (y + size > HEIGHT) {
+	rows++;
+	if (y + size > HEIGHT || rows == MAXROWS) {
+	    rows = 0;
 	    y = 0;
 	    x += 2 * size;
 	    if (x + size > WIDTH) {
@@ -43,41 +69,36 @@ Bool InitTrapezoids(d, p)
 	    }
 	}
     }
-    CreatePerfStuff(d, 1, WIDTH, HEIGHT, &w, &bggc, &fggc);
     return True;
 }
 
-void DoTrapezoids(d, p)
-    Display *d;
-    Parms p;
+void DoTrapezoids(xp, p)
+    XParms  xp;
+    Parms   p;
 {
-    GC pgc;
-    int i, j;
-    XPoint *curPoint;
+    GC      pgc;
+    int     i, j;
+    XPoint  *curPoint;
 
-    pgc = bggc;
-    for (i=0; i<p->reps; i++)
-    {
+    pgc = xp->fggc;
+    for (i = 0; i != p->reps; i++) {
         curPoint = points;
-        for (j=0; j < p->objects; j++) {
-            XFillPolygon(d, w, pgc, curPoint, NUM_POINTS, Convex, 
+        for (j = 0; j != p->objects; j++) {
+            XFillPolygon(xp->d, xp->w, pgc, curPoint, NUM_POINTS, Convex, 
 			 CoordModeOrigin);
             curPoint += NUM_POINTS;
-	  }
-        if (pgc == bggc)
-            pgc = fggc;
+	}
+        if (pgc == xp->bggc)
+            pgc = xp->fggc;
         else
-            pgc = bggc;
+            pgc = xp->bggc;
     }
 }
 
-void EndTrapezoids(d, p)
-    Display *d;
-    Parms p;
+void EndTrapezoids(xp, p)
+    XParms  xp;
+    Parms   p;
 {
-    XDestroyWindow(d, w);
-    XFreeGC(d, bggc);
-    XFreeGC(d, fggc);
     free(points);
 }
 

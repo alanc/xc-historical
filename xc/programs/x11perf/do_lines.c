@@ -1,17 +1,40 @@
+/*****************************************************************************
+Copyright 1988, 1989 by Digital Equipment Corporation, Maynard, Massachusetts.
+
+                        All Rights Reserved
+
+Permission to use, copy, modify, and distribute this software and its 
+documentation for any purpose and without fee is hereby granted, 
+provided that the above copyright notice appear in all copies and that
+both that copyright notice and this permission notice appear in 
+supporting documentation, and that the name of Digital not be
+used in advertising or publicity pertaining to distribution of the
+software without specific, written prior permission.  
+
+DIGITAL DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING
+ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL
+DIGITAL BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR
+ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS,
+WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION,
+ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
+SOFTWARE.
+
+******************************************************************************/
+
 #include "x11perf.h"
 
 static XPoint *points;
-static GC bggc, fggc;
-static Window w;
 
-Bool InitLines(d, p)
-    Display *d;
+Bool InitLines(xp, p)
+    XParms  xp;
     Parms   p;
 {
-    int     size;
+    int size;
     int i;
+    int     rows;       /* Number of rows filled in current column      */
     int x, y;		/* Next point					*/
     int xdir, ydir;	/* Which direction x, y are going		*/
+    int bigxdir;	
     int x1, y1;		/* offsets to compute next point from current	*/
     int x1inc, y1inc;   /* How to get to next x1, y1			*/
     int minorphase;     /* # iterations left with current x1inc, y1inc  */
@@ -28,39 +51,57 @@ Bool InitLines(d, p)
 
 	(3) bounces off bottom and top of window as needed
 
+	(4) moves left or right at each bounce to make things less boring
     */
 
-    x     = (WIDTH-size)/2;     y     = 0;
+    x     = 0;     y     = 0;
     xdir  = 1;     ydir  = 1;
+    bigxdir = 1;
     x1    = size;  y1    = 0;
     x1inc = 0;     y1inc = 1;
-
     minorphase = size;
     majorphase = 0;
+
+    rows = 0;
 
     points[0].x = x;
     points[0].y = y;
 
-    for (i = 1; i < (p->objects+1); i++) {    
-	/* Move x left or right by x1 */
-	x += (xdir * x1);
-	xdir = -xdir;
-
-	/* Update x1 by 0 or 1 */
-	x1 += x1inc;
-
+    for (i = 1; i != (p->objects+1); i++) {    
 	/* Move on down or up the screen */
 	y += (ydir * y1);
 
 	/* If off either top or bottom, backtrack to previous position and go
-	   the other way instead */
-	if (y < 0 || y >= HEIGHT) {
+	   the other way instead.  Also move in bigxdir if not already. */
+	rows++;
+	if (y < 0 || y >= HEIGHT || rows > MAXROWS) {
+	    rows = 0;
+	    if (bigxdir > 0) {
+		if (x + size < WIDTH) {
+		    xdir = 1;
+		} else {
+		    bigxdir = -1;
+		}
+	    } else {
+		if (x - size > 0) {
+		    xdir = -1;
+		} else {
+		    bigxdir = 1;
+		}
+	    }
 	    ydir = -ydir;
 	    y += (2 * ydir * y1);
 	}
 
 	/* Update y1 by 0 or 1 */
 	y1 += y1inc;
+
+	/* Move x left or right by x1 */
+	x += (xdir * x1);
+	xdir = -xdir;
+
+	/* Update x1 by 0 or 1 */
+	x1 += x1inc;
 
 	points[i].x = x;
 	points[i].y = y;
@@ -78,52 +119,48 @@ Bool InitLines(d, p)
 	    }
 	}
     }
-    CreatePerfStuff(d, 1, WIDTH, HEIGHT, &w, &bggc, &fggc);
     return True;
 }
  
-Bool InitDashedLines(d, p)
-    Display *d;
+Bool InitDashedLines(xp, p)
+    XParms  xp;
     Parms   p;
 {
     char dashes[2];
 
-    (void)InitLines(d, p);
+    (void)InitLines(xp, p);
 
     /* Modify GCs to draw dashed */
-    XSetLineAttributes(d, bggc, 0, LineOnOffDash, CapButt, JoinMiter);
-    XSetLineAttributes(d, fggc, 0, LineOnOffDash, CapButt, JoinMiter);
-    dashes[0] = 1;   dashes[1] = 3;
-    XSetDashes(d, fggc, 0, dashes, 2);
-    XSetDashes(d, bggc, 0, dashes, 2);
+    XSetLineAttributes(xp->d, xp->bggc, 0, LineOnOffDash, CapButt, JoinMiter);
+    XSetLineAttributes(xp->d, xp->fggc, 0, LineOnOffDash, CapButt, JoinMiter);
+    dashes[0] = 3;   dashes[1] = 2;
+    XSetDashes(xp->d, xp->fggc, 0, dashes, 2);
+    XSetDashes(xp->d, xp->bggc, 0, dashes, 2);
     return True;
 }
 
-void DoLines(d, p)
-    Display *d;
-    Parms p;
+void DoLines(xp, p)
+    XParms  xp;
+    Parms   p;
 {
     GC pgc;
     int i;
 
-    pgc = bggc;
-    for (i=0; i<p->reps; i++)
+    pgc = xp->fggc;
+    for (i = 0; i != p->reps; i++)
     {
-        XDrawLines(d, w, pgc, points, p->objects+1, CoordModeOrigin);
-        if (pgc == bggc)
-            pgc = fggc;
+        XDrawLines(xp->d, xp->w, pgc, points, p->objects+1, CoordModeOrigin);
+        if (pgc == xp->bggc)
+            pgc = xp->fggc;
         else
-            pgc = bggc;
+            pgc = xp->bggc;
     }
 }
 
-void EndLines(d, p)
-    Display *d;
-    Parms p;
+void EndLines(xp, p)
+    XParms  xp;
+    Parms   p;
 {
-    XDestroyWindow(d, w);
-    XFreeGC(d, bggc);
-    XFreeGC(d, fggc);
     free(points);
 }
 

@@ -1,15 +1,37 @@
+/*****************************************************************************
+Copyright 1988, 1989 by Digital Equipment Corporation, Maynard, Massachusetts.
+
+                        All Rights Reserved
+
+Permission to use, copy, modify, and distribute this software and its 
+documentation for any purpose and without fee is hereby granted, 
+provided that the above copyright notice appear in all copies and that
+both that copyright notice and this permission notice appear in 
+supporting documentation, and that the name of Digital not be
+used in advertising or publicity pertaining to distribution of the
+software without specific, written prior permission.  
+
+DIGITAL DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING
+ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL
+DIGITAL BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR
+ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS,
+WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION,
+ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
+SOFTWARE.
+
+******************************************************************************/
+
 #include "x11perf.h"
 
-static Window   w;
 static XSegment *segments;
-static GC bggc, fggc;
 
-Bool InitSegs(d, p)
-    Display *d;
+Bool InitSegs(xp, p)
+    XParms  xp;
     Parms   p;
 {
-    int     size;
+    int size;
     int i;
+    int     rows;       /* Number of rows filled in current column      */
     int x, y;		/* base of square to draw in			*/
     int x1, y1;		/* offsets into square				*/
     int x1inc, y1inc;   /* How to get to next x1, y1			*/
@@ -36,16 +58,20 @@ Bool InitSegs(d, p)
     minorphase = size;
     majorphase = 0;
 
-    for (i = 0; i < (p->objects); i++) {    
+    rows = 0;
+
+    for (i = 0; i != p->objects; i++) {    
 	segments[i].x1 = x + x1;
 	segments[i].y1 = y + y1;
 	segments[i].x2 = x + size - x1;
 	segments[i].y2 = y + size - y1;
 
 	/* Change square to draw segment in */
+	rows++;
 	y += size + 1;
-	if (y >= HEIGHT - size) {
+	if (y >= HEIGHT - size || rows == MAXROWS) {
 	    /* Go to next column */
+	    rows = 0;
 	    y = 0;
 	    x += size + 1;
 	    if (x >= WIDTH - size) {
@@ -70,53 +96,48 @@ Bool InitSegs(d, p)
 	    }
 	}
     }
-    CreatePerfStuff(d, 1, WIDTH, HEIGHT, &w, &bggc, &fggc);
     return True;
 }
    
 
-Bool InitDashedSegs(d, p)
-    Display *d;
+Bool InitDashedSegs(xp, p)
+    XParms  xp;
     Parms   p;
 {
     char dashes[2];
 
-    (void)InitSegs(d, p);
+    (void)InitSegs(xp, p);
 
     /* Modify GCs to draw dashed */
-    XSetLineAttributes(d, bggc, 0, LineOnOffDash, CapButt, JoinMiter);
-    XSetLineAttributes(d, fggc, 0, LineOnOffDash, CapButt, JoinMiter);
-    dashes[0] = 1;   dashes[1] = 3;
-    XSetDashes(d, fggc, 0, dashes, 2);
-    XSetDashes(d, bggc, 0, dashes, 2);
+    XSetLineAttributes(xp->d, xp->bggc, 0, LineOnOffDash, CapButt, JoinMiter);
+    XSetLineAttributes(xp->d, xp->fggc, 0, LineOnOffDash, CapButt, JoinMiter);
+    dashes[0] = 3;   dashes[1] = 2;
+    XSetDashes(xp->d, xp->fggc, 0, dashes, 2);
+    XSetDashes(xp->d, xp->bggc, 0, dashes, 2);
     return True;
 }
 
-void DoSegs(d, p)
-    Display *d;
-    Parms p;
+void DoSegs(xp, p)
+    XParms  xp;
+    Parms   p;
 {
     GC pgc;
     int i;
 
-    pgc = bggc;
-    for (i=0; i<p->reps; i++)
-    {
-        XDrawSegments(d, w, pgc, segments, p->objects);
-        if (pgc == bggc)
-            pgc = fggc;
+    pgc = xp->fggc;
+    for (i = 0; i != p->reps; i++) {
+        XDrawSegments(xp->d, xp->w, pgc, segments, p->objects);
+        if (pgc == xp->bggc)
+            pgc = xp->fggc;
         else
-            pgc = bggc;
+            pgc = xp->bggc;
     }
 }
 
-void EndSegs(d, p)
-    Display *d;
+void EndSegs(xp, p)
+    XParms  xp;
     Parms p;
 {
-    XDestroyWindow(d, w);
-    XFreeGC(d, bggc);
-    XFreeGC(d, fggc);
     free(segments);
 }
 
