@@ -1,5 +1,5 @@
 /*
- * $XConsortium: EditResCom.c,v 1.4 90/03/09 12:08:43 kit Exp $
+ * $XConsortium: EditResCom.c,v 1.5 90/03/14 16:59:27 kit Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -241,7 +241,7 @@ char * command, *value;
 	bzero((char *) &error_message, sizeof(Message));
 
 	if (set_values) {
-	    ret_val = TRUE;	/* Do not send error message back 
+	    ret_val = FALSE;	/* Do not send error message back 
 				   as acceptable value. */
 	    DoSetValues(w, value, &error_message);
 	}
@@ -253,7 +253,7 @@ char * command, *value;
 	    SendReturnCommand(w, sel, ident, msg);
 	}
 	else {
-	    if (!ret_val) 
+	    if (ret_val) 
 		SendReturnCommand(w, sel, ident, error_message.str);
 	    else {
 		SendCommand(w, sel, ident, 
@@ -439,7 +439,7 @@ FindAllChildren(parent, children)
 Widget parent, **children;
 {
     CompositeWidget cw = (CompositeWidget) parent;
-    int i, current, num_children;
+    int i, num_children, current = 0;
 #ifdef TEXT_WIDGET
     Arg args[2];
     Widget sink, source;
@@ -471,7 +471,7 @@ Widget parent, **children;
     *children =(Widget*) XtMalloc((Cardinal) sizeof(Widget) * num_children);
 
     if (XtIsComposite(parent))
-	for (i = 0, current= 0; i < cw->composite.num_children; i++,current++) 
+	for (i = 0; i < cw->composite.num_children; i++,current++) 
 	    (*children)[current] = cw->composite.children[i]; 
 
     for ( i = 0; i < parent->core.num_popups; i++, current++) 
@@ -793,10 +793,13 @@ Cardinal *end, *bytes;
 
     sprintf(id, "%ld", (long) w);
 
-    if (XtIsWidget(w))
-	sprintf(window, "%ld", (long) XtWindow(w));
+    if (XtIsWidget(w)) 
+	if (XtIsRealized(w))
+	    sprintf(window, "%ld", (long) XtWindow(w));
+	else
+	    sprintf(window, "%d", EDITRES_IS_UNREALIZED);	    
     else
-	strcpy(window, "0");
+	sprintf(window, "%d", EDITRES_IS_OBJECT);
 
     name = XtName(w);
 
@@ -1054,8 +1057,6 @@ Message * msg;
 
     XtSetArg(args[num_args], XtNwidth, &width); num_args++;
     XtSetArg(args[num_args], XtNheight, &height); num_args++;
-    XtSetArg(args[num_args], XtNx, &x); num_args++;
-    XtSetArg(args[num_args], XtNy, &y); num_args++;
     XtSetArg(args[num_args], XtNborderWidth, &border_width); num_args++;
     XtSetArg(args[num_args], XtNmappedWhenManaged, &mapped_when_man);
     num_args++;
@@ -1081,8 +1082,11 @@ Message * msg;
 	    }
     }
 
-    sprintf(buf, "%dx%d%+d%+d%c%d", (int) width, (int) height, (int) x,
-	    (int) y, EDITRES_BORDER_WIDTH_SEPARATOR, (int) border_width);
+    XtTranslateCoords(w, -((int) border_width), -((int) border_width), &x, &y);
+
+    sprintf(buf, "%dx%d%c%d%c%d%c%d", (int) width, (int) height, 
+	    ((x < 0) ? '-' : '+'), (int) x, ((y < 0) ? '-' : '+'), (int) y,
+	    EDITRES_BORDER_WIDTH_SEPARATOR, (int) border_width);
     
     AddReturnMessage(msg, 0, command, buf);
     return(TRUE);
