@@ -17,7 +17,7 @@ int *XListDepths (dpy, scrnum, countp)
     int count;
     int *depths;
 
-    if (scrnum < 0 || scrnum > dpy->nscreens) return NULL;
+    if (scrnum < 0 || scrnum >= dpy->nscreens) return NULL;
 
     scr = &dpy->screens[scrnum];
     if ((count = scr->ndepths) > 0) {
