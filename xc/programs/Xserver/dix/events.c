@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: events.c,v 5.59 92/04/11 17:23:07 rws Exp $ */
+/* $XConsortium: events.c,v 5.60 92/12/30 18:38:57 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -1631,7 +1631,7 @@ CheckPassiveGrabsOnWindow(pWin, device, xE, count)
     for (; grab; grab = grab->next)
     {
 	tempGrab.modifierDevice = grab->modifierDevice;
-	tempGrab.modifiersDetail.exact = xE->u.keyButtonPointer.state;
+	tempGrab.modifiersDetail.exact = grab->modifierDevice->key->state;
 	if (GrabMatchesSecond(&tempGrab, grab) &&
 	    (!grab->confineTo ||
 	     (grab->confineTo->realized &&
