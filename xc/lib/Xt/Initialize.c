@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Initialize.c,v 6.16 88/01/29 12:28:27 asente Exp $";
+static char rcsid[] = "$Header: Initialize.c,v 1.98 88/02/02 15:13:15 swick Locked $";
 #endif lint
 
 /*
@@ -65,6 +65,7 @@ static XrmOptionDescRec opTable[] = {
 {"-foreground",	"*foreground",	XrmoptionSepArg,	(caddr_t) NULL},
 {"-fn",		"*font",	XrmoptionSepArg,	(caddr_t) NULL},
 {"-font",	"*font",	XrmoptionSepArg,	(caddr_t) NULL},
+{"-iconic",	".iconic",	XrmOptionNoArg,		(caddr_t) "on"},
 {"-rv",		"*reverseVideo", XrmoptionNoArg,	(caddr_t) "on"},
 {"-reverse",	"*reverseVideo", XrmoptionNoArg,	(caddr_t) "on"},
 {"+rv",		"*reverseVideo", XrmoptionNoArg,	(caddr_t) "off"},
