@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.52 91/09/10 11:12:25 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.53 91/09/17 09:43:13 rws Exp $
 XCOMM
 XCOMM                         Attention xterm porters
 XCOMM
@@ -66,12 +66,17 @@ NormalProgramTarget(xterm,$(OBJS1),$(DEPLIBS1),XawClientLibs,$(TERMCAPLIB) $(PTY
 
 #if InstallXtermSetUID && defined(SunArchitecture) && HasSharedLibraries
 #if AlternateUsrLibDir
+#if OSMajorVersion > 4 || (OSMajorVersion == 4 && OSMinorVersion >= 1)
 LDOVERRIDE = -L$(DESTDIR)$(USRLIBDIR)
+#else
+LDOVERRIDE = -Bstatic -L$(DESTDIR)$(USRLIBDIR)
+LDRESUME = -Bdynamic
+#endif
 #endif
 install:: xterm
 	MakeDir($(DESTDIR)$(BINDIR))
 	$(RM) xterm.inst
-	$(CC) -o xterm.inst $(OBJS1) $(LDOPTIONS) $(LDOVERRIDE) -lXaw -lXmu -lXt -lXext -lX11 $(LDLIBS) $(TERMCAPLIB) $(PTYLIB) $(EXTRA_LOAD_FLAGS)
+	$(CC) -o xterm.inst $(OBJS1) $(LDOPTIONS) $(LDOVERRIDE) -lXaw -lXmu -lXt -lXext -lX11 $(LDRESUME) $(LDLIBS) $(TERMCAPLIB) $(PTYLIB) $(EXTRA_LOAD_FLAGS)
 	$(INSTALL) -c $(INSTPGMFLAGS) $(INSTUIDFLAGS) xterm.inst $(DESTDIR)$(BINDIR)/xterm
 	$(RM) xterm.inst
 #else
