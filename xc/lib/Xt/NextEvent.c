@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: NextEvent.c,v 1.36 88/02/03 22:04:42 swick Exp $";
+static char rcsid[] = "$Header: NextEvent.c,v 1.37 88/02/07 13:58:30 rws Exp $";
 #endif lint
 
 /*
@@ -473,13 +473,12 @@ Boolean XtPending()
 {
 	struct timeval cur_time;
 	struct timezone curzone;
-	Boolean ret;
 	struct InputEvent *ie_ptr;
 	TimerEventRec *te_ptr;
 
 	for(;;) {
-		if(ret = (Boolean) XPending(toplevelDisplay)) {
-			return(ret);
+		if(XPending(toplevelDisplay) != 0) {
+			return TRUE;
 		}
 		for (ie_ptr = outstanding_queue ; ie_ptr != NULL;
 		     outstanding_queue = ie_ptr->ie_oq ) {
