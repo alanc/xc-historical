@@ -488,7 +488,7 @@
 		   (display-event-queue display))))
     (if (cdr queue)
 	(length (cdr queue))
-      (progn
+      (wrap-event-listen
 	(wait-for-event display timeout nil)
 	(and (cdr queue) (length (cdr queue)))))))
 
