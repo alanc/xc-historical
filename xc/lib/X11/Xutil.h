@@ -1,4 +1,4 @@
-/* $XConsortium: Xutil.h,v 11.46 89/05/10 09:48:57 jim Exp $ */
+/* $XConsortium: Xutil.h,v 11.47 89/05/30 15:31:46 jim Exp $ */
 
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -46,8 +46,8 @@ SOFTWARE.
  */
 typedef struct {
     	long flags;	/* marks which fields in this structure are defined */
-	int x, y;
-	int width, height;
+	int x, y;		/* obsolete for new window mgrs, but clients */
+	int width, height;	/* should set so old wm's don't mess up */
 	int min_width, min_height;
 	int max_width, max_height;
     	int width_inc, height_inc;
