@@ -1,5 +1,5 @@
 .\"
-.\" $XConsortium$
+.\" $XConsortium: p103,v 5.1 91/02/16 09:38:37 rws Exp $
 .\"
 .\" 
 .\" Copyright (c) 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -22,7 +22,7 @@
 .\" USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
 .\" OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 .\" PERFORMANCE OF THIS SOFTWARE.
-.TH "INQUIRE CURRENT ELEMENT CONTENT" 3P "29 February 1991"
+.TH "INQUIRE CURRENT ELEMENT CONTENT" 3P "15 August 1991"
 .SH NAME
 INQUIRE CURRENT ELEMENT CONTENT \- inquire the contents of the current element
 .SH SYNOPSIS
@@ -74,6 +74,8 @@ typedef union {
 	Pfloat		float_data;	/* float valued data */
 	Ppoint_list3	point_list3;	/* list of 3d points */
 	Ppoint_list	point_list;	/* list of 2d points */
+	Ppoint_list_list3   point_list_list3;       /* list of 3d point lists */
+	Ppoint_list_list    point_list_list;        /* list of 2d point lists */
 	struct {
 		Ppoint3	pos;	/* text pt */
 		Pvec3   	dir[2];	/* direction vectors */
@@ -94,22 +96,12 @@ typedef union {
 		char	*char_string;	/* text string */
 	} anno_text_rel;
 	struct {
-		Pint	num_point_lists;	/* number of sets */
-		Ppoint_list3	*point_lists;	/* list of sets */
-	} fill_area_set3;
-	struct {
-		Pint	num_point_lists;	/* number of sets */
-		Ppoint_list	*point_lists;	/* list of sets */
-	} fill_area_set;
-	struct {
 		Pparal	paral;	/* parallelogram */
-		Pint_size	dim;	/* dimension */
-		Pint	*colr;	/* colour array */
+                Ppat_rep        colr_array;     /* colour array */
 	} cell_array3;
 	struct {
 		Prect	rect;	/* rectangle */
-		Pint_size	dim;	/* dimension */
-		Pint	*colr;	/* colour array */
+                Ppat_rep        colr_array;     /* colour array */
 	} cell_array;
 	struct {
 		Pint	id;	/* GDP3 id */
@@ -127,8 +119,8 @@ typedef union {
 	Ptext_align	text_align;	/* text alignment */
 	Pint_style	int_style;	/* interior style */
 	Pedge_flag	edge_flag;	/* edge flag */
-	Ppoint		point;	/* pat ref pt */
-	Pvec		pat_size;	/* pattern size */
+	Ppoint		pat_ref_point;	/* pat ref pt */
+	Pfloat_size	pat_size;	/* pattern size */
 	struct {
 		Ppoint3	ref_point;	/* pattern ref. pt */
 		Pvec3	ref_vec[2];	/* vectors */
@@ -139,12 +131,12 @@ typedef union {
 		Pasf	source;	/* asf */
 	} asf;
 	struct {
-		Pcompose_type	comp;	/* composition type */
-		Pmatrix3	tran;	/* matrix */
+		Pcompose_type	compose_type;	/* composition type */
+		Pmatrix3	matrix;	/* matrix */
 	} local_tran3;
 	struct {
-		Pcompose_type	comp;	/* composition type */
-		Pmatrix	tran;	/* matrix */
+		Pcompose_type	compose_type;	/* composition type */
+		Pmatrix	        matrix;	/* matrix */
 	} local_tran;
 	Pmatrix3	global_tran3;	/* global transform3 */
 	Pmatrix		global_tran;	/* global transform */
@@ -234,9 +226,7 @@ typedef union {
 	} sofas3;		/* set of fill area set */
 	struct {
 		Pparal	paral;	/* parallelogram */
-		Pint_size	dim;	/* dimension */
-		Pint	colr_model;	/* colour model */
-		Pcoval	*colr;	/* colour array */
+		Ppat_rep_plus   colr_array;     /* colour array */
 	} cell_array_plus;
 	Pgcolr		colr;
 	Prefl_props	props;	/*surface relectance properties */
@@ -295,8 +285,8 @@ where
 .ta .5i +1i +1.25i
 typedef struct {
 .sp .2
-	Phor_align	hor;	/* horizontal component */
-	Pvert_align	vert;	/* vertical component */
+	Phor_text_align	hor;	/* horizontal component */
+	Pvert_text_align	vert;	/* vertical component */
 .sp .2
 } Ptext_align;
 .fi
@@ -883,8 +873,8 @@ typedef enum {
     PASPECT_LINETYPE,
     PASPECT_LINEWIDTH,
     PASPECT_LINE_COLR_IND,
-    PASPECT_MARKERTYPE,
-    PASPECT_MARKERSIZE,
+    PASPECT_MARKER_TYPE,
+    PASPECT_MARKER_SIZE,
     PASPECT_MARKER_COLR_IND,
     PASPECT_TEXT_FONT,
     PASPECT_TEXT_PREC,
@@ -1531,8 +1521,8 @@ where
 typedef struct {
 .sp .2
 .ta .5i +1i +1.25i
-	Phor_align	hor;	/* horizontal component */
-	Pvert_align	vert;	/* vertical component */
+	Phor_text_align	hor;	/* horizontal component */
+	Pvert_text_align	vert;	/* vertical component */
 .sp .2
 } Ptext_align;
 .fi

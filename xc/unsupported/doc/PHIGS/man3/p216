@@ -1,5 +1,5 @@
 .\"##
-.\" $XConsortium$
+.\" $XConsortium: p216,v 5.1 91/02/16 09:40:52 rws Exp $
 .\"##
 .\"## 
 .\"## Copyright (c) 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -39,8 +39,8 @@ Pfloat	exp;	\fIchar expansion factor\fP
 Pfloat	sp;	\fIchar spacing\fP
 Pfloat	ht;	\fIchar height\fP
 Ptext_path	path;	\fItext path\fP
-Phor_align	hor;	\fIhorizontal alignment\fP
-Pvert_align	ver;	\fIvertical alignment\fP
+Phor_text_align	hor;	\fIhorizontal alignment\fP
+Pvert_text_align	ver;	\fIvertical alignment\fP
 char	*str;	\fItext string\fP
 Pint	*error_ind;	\fIOUT error indicator\fP
 Prect	*rect;	\fIOUT extent rectangle\fP
@@ -104,7 +104,7 @@ typedef enum {
 	PHOR_CTR,	/* Center */
 	PHOR_RIGHT	/* Right */
 .sp .2
-} Phor_align;
+} Phor_text_align;
 .fi
 .IP \fIver\fP
 The vertical alignment.  This is an enumerated value
@@ -121,7 +121,7 @@ typedef enum {
 	PVERT_BASE,	/* Base */
 	PVERT_BOTTOM,	/* Bottom */
 .sp .2
-} Pvert_align;
+} Pvert_text_align;
 .fi
 .IP \fIstr\fP
 A pointer to the text string.

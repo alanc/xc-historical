@@ -1,5 +1,5 @@
 .\"##
-.\" $XConsortium$
+.\" $XConsortium: p375,v 5.1 91/02/16 09:44:24 rws Exp $
 .\"##
 .\"## 
 .\"## Copyright (c) 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -69,8 +69,8 @@ A pointer to the \fItext alignment\fP structure, defined as follows:
 .ta .5i +\w'Pvert_slign  'u +\w'vert;    'u
 typedef struct {
 .sp .2
-	Phor_align	 hor;		/* horizontal component */
-	Pvert_align	 vert;		/* vertical component */
+	Phor_text_align	 hor;		/* horizontal component */
+	Pvert_text_align	 vert;		/* vertical component */
 .sp .2
 } Ptext_align;
 .fi
