@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: misc.c,v 1.47 89/09/07 10:49:07 jim Exp $
+ *	$XConsortium: misc.c,v 1.48 89/09/22 12:30:25 jim Exp $
  */
 
 
@@ -54,8 +54,11 @@ extern void exit();
 extern void perror();
 extern void abort();
 
+static void DoSpecialEnterNotify();
+static void DoSpecialLeaveNotify();
+
 #ifndef lint
-static char rcs_id[] = "$XConsortium: misc.c,v 1.47 89/09/07 10:49:07 jim Exp $";
+static char rcs_id[] = "$XConsortium: misc.c,v 1.48 89/09/22 12:30:25 jim Exp $";
 #endif	/* lint */
 
 xevents()
@@ -70,6 +73,24 @@ xevents()
 		if (waitingForTrackInfo)
 			return;
 		XNextEvent (screen->display, &event);
+		/*
+		 * Hack to get around problems with the toolkit throwing away
+		 * eventing during the exclusive grab of the menu popup.  By
+		 * looking at the event ourselves we make sure that we can
+		 * do the right thing.
+		 */
+		if (event.type == EnterNotify &&
+		    (event.xcrossing.window == XtWindow(XtParent(term))) ||
+		    (tekWidget &&
+		     event.xcrossing.window == XtWindow(XtParent(tekWidget))))
+		  DoSpecialEnterNotify (&event);
+		else 
+		if (event.type == LeaveNotify &&
+		    (event.xcrossing.window == XtWindow(XtParent(term))) ||
+		    (tekWidget &&
+		     event.xcrossing.window == XtWindow(XtParent(tekWidget))))
+		  DoSpecialLeaveNotify (&event);
+
 		if (!event.xany.send_event ||
 		    screen->allowSendEvents ||
 		    ((event.xany.type != KeyPress) &&
@@ -161,22 +182,46 @@ void HandleStringEvent(w, event, params, nparams)
     }
 }
 
+static void DoSpecialEnterNotify (ev)
+    register XEnterWindowEvent *ev;
+{
+    register TScreen *screen = &term->screen;
+
+#ifdef ACTIVEWINDOWINPUTONLY
+    if (ev->window == XtWindow(XtParent(screen->TekEmu ?
+					(Widget)tekWidget : (Widget)term)))
+#endif
+      if (((ev->detail) != NotifyInferior) &&
+	  ev->focus &&
+	  !(screen->select & FOCUS))
+	selectwindow(screen, INWINDOW);
+}
+
 /*ARGSUSED*/
 void HandleEnterWindow(w, eventdata, event)
 Widget w;
 register XEnterWindowEvent *event;
 caddr_t eventdata;
 {
+    /* NOP since we handled it above */
+}
+
+
+static void DoSpecialLeaveNotify (ev)
+    register XEnterWindowEvent *ev;
+{
     register TScreen *screen = &term->screen;
 
 #ifdef ACTIVEWINDOWINPUTONLY
-    if (w == XtParent(screen->TekEmu ? (Widget)tekWidget : (Widget)term)) 
+    if (ev->window == XtWindow(XtParent(screen->TekEmu ?
+					(Widget)tekWidget : (Widget)term)))
 #endif
-      if (((event->detail) != NotifyInferior) &&
-	  event->focus &&
+      if (((ev->detail) != NotifyInferior) &&
+	  ev->focus &&
 	  !(screen->select & FOCUS))
-	selectwindow(screen, INWINDOW);
+	unselectwindow(screen, INWINDOW);
 }
+
 
 /*ARGSUSED*/
 void HandleLeaveWindow(w, eventdata, event)
@@ -184,16 +229,7 @@ Widget w;
 register XEnterWindowEvent *event;
 caddr_t eventdata;
 {
-    register TScreen *screen = &term->screen;
-
-#ifdef ACTIVEWINDOWINPUTONLY
-    if (w == XtParent(screen->TekEmu ? (Widget)tekWidget : (Widget)term)) 
-#endif
-      if (((event->detail) != NotifyInferior) &&
-	  event->focus &&
-	  !(screen->select & FOCUS))
-	unselectwindow(screen, INWINDOW);
-
+    /* NOP since we handled it above */
 }
 
 
