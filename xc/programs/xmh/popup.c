@@ -1,4 +1,4 @@
-/* $XConsortium: popup.c,v 2.7 89/05/11 19:26:33 converse Exp $ */
+/* $XConsortium: popup.c,v 2.8 89/05/31 10:35:25 swick Exp $ */
 /* popup.c -- Handle pop-up widgets. */
 
 #include "xmh.h"
@@ -219,7 +219,7 @@ PopupNotice( message, callback, closure )
     dialog =
 	XtCreateManagedWidget( "dialog", dialogWidgetClass,
 			       popup_status->popup, args, TWO );
-    XtDialogAddButton( dialog, "confirm",
+    XawDialogAddButton( dialog, "confirm",
 		       (callback != (XtCallbackProc)NULL)
 		          ? callback : FreePopupStatus,
 		       (Pointer)popup_status
