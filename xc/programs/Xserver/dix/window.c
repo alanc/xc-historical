@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: window.c,v 1.184 87/11/28 14:55:47 rws Locked $ */
+/* $Header: window.c,v 1.185 87/12/05 12:44:32 rws Locked $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -2706,6 +2706,9 @@ HandleSaveSet(client)
 	                    SEND_NOTIFICATION, client);
 	}
     }
+    Xfree((pointer)client->saveSet);
+    client->numSaved = 0;
+    client->saveSet = (pointer *)NULL;
 }
     
 Bool
