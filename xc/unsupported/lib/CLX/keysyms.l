@@ -156,6 +156,11 @@
   (define-keysym #\backspace (keysym 255 008))	; :tty
   )
 
+#+(or lispm excl lcl3.0)
+(progn   ;; Nonstandard characters 
+  (define-keysym #\escape (keysym 255 027))	; :tty
+  )
+
 #+ti
 (progn
   (define-keysym #\Inverted-exclamation-mark 161)
@@ -312,7 +317,6 @@
   (define-keysym #\abort (keysym 255 105))	; :function
   (define-keysym #\resume (keysym 255 098))	; :function
   (define-keysym #\end (keysym 255 087))	; :cursor
-  (define-keysym #\escape (keysym 255 027))	; :tty
 ;;#\universal-quantifier
 ;;#\existential-quantifier
 ;;#\circle-plus
