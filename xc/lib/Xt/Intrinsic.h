@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Intrinsic.h,v 1.144 90/12/12 18:58:31 rws Exp $
+* $XConsortium: Intrinsic.h,v 1.145 90/12/17 12:00:21 rws Exp $
 * $oHeader: Intrinsic.h,v 1.10 88/09/01 10:33:34 asente Exp $
 */
 
@@ -78,16 +78,16 @@ typedef char *String;
 /* _Xt names are private to Xt implementation, do not use in client code */
 #if NeedWidePrototypes
 #define _XtBoolean	int
-#define _XtDimension	int
-#define _XtKeyCode	int
+#define _XtDimension	unsigned int
+#define _XtKeyCode	unsigned int
 #define _XtPosition	int
-#define _XtXtEnum	int
+#define _XtXtEnum	unsigned int
 #else
-#define _XtBoolean	int
-#define _XtDimension	int
-#define _XtKeyCode	int
-#define _XtPosition	int
-#define _XtXtEnum	int
+#define _XtBoolean	Boolean
+#define _XtDimension	Dimension
+#define _XtKeyCode	KeyCode
+#define _XtPosition	Position
+#define _XtXtEnum	XtEnum
 #endif /* NeedWidePrototypes */
 
 #ifndef NULL
