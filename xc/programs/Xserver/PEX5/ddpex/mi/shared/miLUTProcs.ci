@@ -1,4 +1,4 @@
-/* $XConsortium: miLUTProcs.ci,v 5.2 91/02/16 09:56:35 rws Exp $ */
+/* $XConsortium: miLUTProcs.ci,v 5.3 91/05/03 15:19:27 hersh Exp $ */
 
 /***********************************************************
 Copyright (c) 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -408,6 +408,12 @@ LUT_DEL_ENTRIES (pLUT, start, numEntries)
 
     pentry = FIRST_ENTRY(pheader);
     plast = pentry + MILUT_DEF_ENTS(pheader);
+   
+    /* invoke the call back before deleting the entries and changing
+       start and numEntries
+    */
+    err =  pheader->ops[MILUT_REQUEST_OP(milut_mod_call_back)](pLUT,
+  	 start, numEntries, MILUT_DEL_MOD);
 
     /* loop through and set each entry to undefined
      * this works most efficiently if the entries are stored
@@ -437,10 +443,6 @@ LUT_DEL_ENTRIES (pLUT, start, numEntries)
 	else
 		pentry = psave;
     }
-    err = Success;
-
-   err =  pheader->ops[MILUT_REQUEST_OP(milut_mod_call_back)](pLUT,
-  	 start, numEntries, MILUT_DEL_MOD);
 
    /* check err here if your call back proc can return an error */
 
