@@ -1,5 +1,5 @@
 /*
- * $XConsortium: viewres.c,v 1.15 90/02/05 17:08:11 jim Exp $
+ * $XConsortium: viewres.c,v 1.16 90/02/05 17:16:58 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -101,17 +101,24 @@ static XtActionsRec viewres_actions[] = {
 #define FORMAT_HORIZONTAL 2
 #define FORMAT_VERTICAL 3
 #define FORMAT_number 4
-#define SELECT_PARENTS 0
-#define SELECT_ALL 1
-#define SELECT_WITH_RESOURCES 2
-#define SELECT_WITHOUT_RESOURCES 3
-#define SELECT_number 4
+#define SELECT_NOTHING 0
+#define SELECT_PARENTS 1
+#define SELECT_ALL 2
+#define SELECT_WITH_RESOURCES 3
+#define SELECT_WITHOUT_RESOURCES 4
+#define SELECT_number 5
 
 static Widget treeWidget;
 static Widget quitButton, formatButton, formatMenu, selectButton, selectMenu;
 static Widget format_widgets[FORMAT_number];
-static Widget select_widgets[SELECT_number], unselectEntry;
+static Widget select_widgets[SELECT_number];
 static WidgetNode *topnode;
+
+struct {
+    int n_elements;
+    int max_elements;
+    WidgetNode **elements;
+} selected_list = { 0, 0, NULL };
 
 
 /*
@@ -128,6 +135,29 @@ static void usage ()
     fprintf(stderr, "\n");
     exit (1);
 }
+
+static void initialize_widgetnode_list (listp, sizep, n)
+    WidgetNode ***listp;
+    int *sizep;
+    int n;
+{
+    register int i;
+    register WidgetNode **l;
+
+    if (!*listp) {
+        *listp = (WidgetNode **) XtCalloc (n, sizeof(WidgetNode **));
+        *sizep = ((*listp) ? n : 0);
+        return;
+    }
+    if (n > *sizep) {
+        *listp = (WidgetNode **) XtRealloc (*listp, n * sizeof(WidgetNode **));
+        *sizep = ((*listp) ? n : 0);
+        if (!*listp) return;
+    }
+    for (i = *sizep, l = (*listp) + i; i < n; i++, l++) *l = NULL;
+    return;
+}
+
 
 
 static void variable_labeltype_callback (gw, closure, data)
@@ -146,20 +176,112 @@ static void horizontal_orientation_callback (gw, closure, data)
     set_orientation_menu ((Boolean) closure, True);
 }
 
+
+static Boolean add_allowed = TRUE;
+static Boolean remove_allowed = TRUE;
+
+static void add_to_selected_list (node, updatewidget)
+    WidgetNode *node;
+    Boolean updatewidget;
+{
+    if (!add_allowed) return;
+
+    if (selected_list.n_elements >= selected_list.max_elements) {
+	initialize_widgetnode_list (&selected_list.elements,
+				    &selected_list.max_elements, 
+				    (selected_list.max_elements * 3) / 2);
+    }
+    selected_list.elements[selected_list.n_elements++] = node;
+    if (updatewidget) {
+	Widget w = (Widget) node->data;
+	Arg args[1];
+
+	XtSetArg (args[0], XtNstate, TRUE);
+	add_allowed = FALSE;
+	XtSetValues (w, args, ONE);
+	add_allowed = TRUE;
+    }
+}
+
+static Boolean remove_from_selected_list (node, updatewidget)
+    WidgetNode *node;
+    Boolean updatewidget;
+{
+    int i;
+    WidgetNode **wn;
+
+    if (!remove_allowed) return FALSE;
+
+    for (i = 0; i < selected_list.n_elements; i++) {
+	if (selected_list.elements[i] == node) break;
+    }
+    if (i == selected_list.n_elements) return FALSE;
+
+    /* copy down */
+    if (selected_list.n_elements > 1) {
+	for (wn = &selected_list.elements[i++]; i < selected_list.n_elements; 
+	     i++, wn++) {
+	    wn[0] = wn[1];
+	}
+    }
+    selected_list.n_elements--;
+    if (updatewidget) {
+	Widget w = (Widget) node->data;
+	Arg args[1];
+
+	XtSetArg (args[0], XtNstate, FALSE);
+	remove_allowed = FALSE;
+	XtSetValues (w, args, ONE);
+	remove_allowed = TRUE;
+    }
+}
+
 static void select_callback (gw, closure, data)
     Widget gw;
     caddr_t closure;			/* TRUE or FALSE */
     caddr_t data;
 {
+    Arg args[1];
+    int i;
+
+    switch ((int) closure) {
+      case SELECT_NOTHING:		/* clear selection_list */
+	remove_allowed = FALSE;
+	XtSetArg (args[0], XtNstate, FALSE);
+	for (i = 0; i < selected_list.n_elements; i++) {
+	    XtSetValues (selected_list.elements[i], args, ONE);
+	    selected_list.elements[i] = NULL;
+	}
+	selected_list.n_elements = 0;
+	break;
+      case SELECT_PARENTS:		/* chain up adding to selection_list */
+	break;
+      case SELECT_ALL:			/* put everything on selection_list */
+	break;
+      case SELECT_WITH_RESOURCES:	/* put all w/ rescnt > 0 on sel_list */
+	break;
+      case SELECT_WITHOUT_RESOURCES:	/* put all w recnt == 0 on sel_list */
+	break;
+      default:				/* error!!! */
+	XBell (XtDisplay(gw), 0);
+	return;
+    }
 }
 
-static void unselect_callback (gw, closure, data)
+static void toggle_callback (gw, closure, data)
     Widget gw;
-    caddr_t closure;			/* TRUE or FALSE */
-    caddr_t data;
+    caddr_t closure;			/* WidgetNode for this widget */
+    caddr_t data;			/* on or off */
 {
-}
+    WidgetNode *node = (WidgetNode *) closure;
+    Boolean selected = (Boolean) data;
 
+    if (selected) {
+	add_to_selected_list (node, FALSE);
+    } else {
+	remove_from_selected_list (node, FALSE);
+    }
+}
 
 main (argc, argv)
     int argc;
@@ -179,6 +301,9 @@ main (argc, argv)
 				NULL, ZERO);
     if (argc != 1) usage ();
     XtAppAddActions (app_con, viewres_actions, XtNumber (viewres_actions));
+
+    initialize_widgetnode_list (&selected_list.elements,
+				&selected_list.max_elements, 10);
 
     XtGetApplicationResources (toplevel, (caddr_t) &Appresources,
 			       Resources, XtNumber(Resources), NULL, ZERO);
@@ -233,17 +358,14 @@ main (argc, argv)
     callback_rec[0].closure = (caddr_t) n; \
     select_widgets[n] = XtCreateManagedWidget (name, smeBSBObjectClass, \
 					       selectMenu, args, ONE)
+    MAKE_SELECT (SELECT_NOTHING, "unselect");
+    (void) XtCreateManagedWidget ("line", smeLineObjectClass, selectMenu,
+				  NULL, ZERO);
     MAKE_SELECT (SELECT_PARENTS, "selectParents");
     MAKE_SELECT (SELECT_ALL, "selectAll");
     MAKE_SELECT (SELECT_WITH_RESOURCES, "selectWithResources");
     MAKE_SELECT (SELECT_WITHOUT_RESOURCES, "selectWithoutResources");
 #undef MAKE_SELECT
-
-    (void) XtCreateManagedWidget ("line", smeLineObjectClass, selectMenu,
-				  NULL, ZERO);
-    callback_rec[0].callback = (XtCallbackProc) unselect_callback;
-    unselectEntry = XtCreateManagedWidget ("unselect", smeBSBObjectClass,
-					   selectMenu, args, ONE);
 
 
     XtSetArg (args[0], XtNbackgroundPixmap, None);
@@ -361,14 +483,18 @@ static void build_tree (node, tree, super)
 {
     Widget w;				/* widget for this Class */
     WidgetNode *child;			/* iterator over children */
-    Arg args[2];			/* need to set super node */
+    Arg args[3];			/* need to set super node */
     Cardinal n;				/* count of args */
+    static XtCallbackRec callback_rec[2] = {{ toggle_callback, NULL },
+					     { NULL, NULL }};
 
     n = 0;
     XtSetArg (args[n], XtNparent, super); n++;
     XtSetArg (args[n], XtNlabel, (Appresources.show_variable ?
 				  node->label : WnClassname(node))); n++;
+    XtSetArg (args[n], XtNcallback, callback_rec);
 
+    callback_rec[0].closure = (caddr_t) node;
     w = XtCreateManagedWidget (node->label, toggleWidgetClass, tree, args, n);
     node->data = (char *) w;
 
