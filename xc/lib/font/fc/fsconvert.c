@@ -1,4 +1,4 @@
-/* $XConsortium: fsconvert.c,v 1.9 92/05/12 18:07:31 gildea Exp $ */
+/* $XConsortium: fsconvert.c,v 1.10 92/05/29 18:02:06 gildea Exp $ */
 /*
  * Copyright 1990 Network Computing Devices
  *
@@ -17,8 +17,8 @@
  * IN NO EVENT SHALL NETWORK COMPUTING DEVICES BE LIABLE FOR ANY SPECIAL,
  * INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
  * LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE
- * OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
- * PERFORMANCE OF THIS SOFTWARE.
+ * OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE
+ * OR PERFORMANCE OF THIS SOFTWARE.
  *
  * Author:  	Dave Lemke, Network Computing Devices, Inc
  */
@@ -366,14 +366,6 @@ _fs_get_metrics(pFont, count, chars, charEncoding, glyphCount, glyphs)
 			 glyphCount, (CharInfoPtr *) glyphs);
     fsfont->encoding = encoding;
 
-    if (ret == Successful) {
-	if (fsfont->pDefault == &junkDefault) {
-	    for (i = 0; i < *glyphCount; i++) {
-		if (glyphs[i] == (xCharInfo *) & junkDefault)
-		    glyphs[i] = 0;
-	    }
-	}
-    }
     if (fsfont->pDefault == &junkDefault)
 	fsfont->pDefault = 0;
     return ret;
