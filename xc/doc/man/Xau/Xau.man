@@ -1,8 +1,8 @@
-.\" $XConsortium: Xau.man,v 1.7 93/12/06 16:51:18 mor Exp $
-.TH XAUTH 1 "Release 6" "X Version 11"
+.\" $XConsortium: Xau.man,v 1.8 94/04/11 14:25:48 gildea Exp $
+.TH XAU 3 "Release 6" "X Version 11"
 .SH NAME
 XauFileName, XauReadAuth, XauLockAuth, XauUnlockAuth, XauWriteAuth,
-XauGetAuthByAddr \- X authority database routines
+XauGetAuthByAddr, XauGetBestAuthByAddr \- X authority database routines
 .SH SYNOPSIS
 .B "#include <X11/Xauth.h>"
 .PP
@@ -45,6 +45,21 @@ Xauth *XauGetAuthByAddr (\kAfamily,
 	unsigned short number_length;
 	char *number;
 
+.ft B 
+Xauth *XauGetBestAuthByAddr (\kAfamily,
+\h'|\nAu'address_length, address,
+\h'|\nAu'number_length, number,
+\h'|\nAu'types_length, types, type_lengths)
+.ft I
+	unsigned short family;
+	unsigned short address_length;
+	char *address;
+	unsigned short number_length;
+	char *number;
+	int types_length;
+	char **types;
+	int *type_lengths;
+
 .ft B
 int XauLockAuth (file_name, retries, timeout, dead)
 .ft I
@@ -80,10 +95,19 @@ returns 1 on success, 0 on failure.
 .PP
 \fBXauGetAuthByAddr\fP searches for an entry which matches the given network
 address/display number pair.  The entry is \fBnot\fP statically allocated
-and should be freed by calling \fIXauDisposeAuth\fP
+and should be freed by calling \fIXauDisposeAuth\fP.
+.PP
+\fBXauGetBestAuthByAddr\fP is similar to \fBXauGetAuthByAddr\fP, except
+that a list of acceptable authentication methods is specified.  Xau will
+choose the file entry which matches the earliest entry in this list (e.g., the
+most secure authentication method).  The \fItypes\fP argument is an array of
+strings, one string for each authentication method.  \fItypes_length\fP
+specifies how many elements are in the \fItypes\fP array.
+\fItypes_lengths\fP is an array of integers representing the length
+of each string.
 .PP
 \fBXauLockAuth\fP does the work necessary to synchronously update an
-authorization file.  First it makes to file names, one with ``-c'' appended
+authorization file.  First it makes two file names, one with ``-c'' appended
 to \fIfile_name\fP, the other with ``-l'' appended.  If the ``-c'' file
 already exists and is more than \fIdead\fP seconds old, \fIXauLockAuth\fP
 removes it and the associated ``-l'' file.  To prevent possible
