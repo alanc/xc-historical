@@ -1,4 +1,4 @@
-.\" $XConsortium: Xtk.intr.front,v 1.4 91/07/31 20:25:16 swick Exp $
+.\" $XConsortium: Xtk.intr.front,v 1.5 91/08/26 13:23:54 swick Exp $
 .\" MIT header page and copyright notice
 .\" MIT page header and footers
 .\"
@@ -16,7 +16,10 @@
 \s+1\fBX Window System\fP\s-1
 
 \s+1\fBX Version 11, Release \*(Rn\fP\s-1
-.sp 6
+
+
+First Revision - August, 1991
+.sp 5
 .ce 4
 \s-1Joel McCormack
 .sp 6p
@@ -34,7 +37,7 @@ Ralph R. Swick
 .sp 6p
 Digital Equipment Corporation
 External Research Group
-MIT Project Athena\s+1
+MIT X Consortium\s+1
 .bp
 \&
 .ps 9
