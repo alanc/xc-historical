@@ -51,7 +51,8 @@ HEADERS = \
 	Toggle.h \
 	ToggleP.h \
 	Viewport.h \
-	ViewportP.h 
+	ViewportP.h \
+	VPaned.h
 
 SRCS = \
 	AsciiSink.c \
