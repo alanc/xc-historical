@@ -1,4 +1,4 @@
-/* $XConsortium: cb_ws.c,v 5.4 92/12/23 10:34:21 mor Exp $ */
+/* $XConsortium: cb_ws.c,v 5.5 93/01/05 14:31:21 mor Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -2586,10 +2586,8 @@ pinq_hlhsr_mode( ws, error_ind, state, cur_mode, req_mode )
 
     } else {
 	dt = &((Wst*)wsinfo->wstype)->desc_tbl.phigs_dt;
-	if ( !(dt->ws_category == PCAT_OUT || 
-	       dt->ws_category == PCAT_OUTIN ||
-	       dt->ws_category == PCAT_MO) ) {
-	    *error_ind = ERR59;
+	if ( dt->ws_category == PCAT_MI) {
+	    *error_ind = ERR57;
 
 	} else {
 	    cp_args.data.idata = ws;
