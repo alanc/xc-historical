@@ -1,4 +1,4 @@
-/* $XConsortium: SetValues.c,v 1.10 90/07/19 10:48:55 swick Exp $ */
+/* $XConsortium: SetValues.c,v 1.11 91/01/06 13:32:45 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -131,7 +131,7 @@ void XtSetValues(w, args, num_args)
     double	    oldwCache[100], reqwCache[100];
     double	    oldcCache[20], reqcCache[20];
     Cardinal	    widgetSize, constraintSize;
-    Boolean	    redisplay, cleared_rect_obj = False, reconfigured = False;
+    Boolean	    redisplay, cleared_rect_obj = False;
     XtGeometryResult result;
     XtWidgetGeometry geoReq, geoReply;
     WidgetClass     wc = XtClass(w);
@@ -225,10 +225,8 @@ void XtSetValues(w, args, num_args)
 	    do {
 		result = _XtMakeGeometryRequest(w, &geoReq, &geoReply, 
 						&cleared_rect_obj);
-		if (result == XtGeometryYes) {
-		    reconfigured = TRUE;
+		if (result == XtGeometryYes)
 		    break;
-		}
 
 		/* An Almost or No reply.  Call widget and let it munge
 		   request, reply */
@@ -245,8 +243,8 @@ void XtSetValues(w, args, num_args)
 		    (oldw, w, &geoReq, &geoReply);
 	    } while (geoReq.request_mode != 0);
 	    /* call resize proc if we changed size */
-	    if (reconfigured
-		&& (geoReq.request_mode & (CWWidth | CWHeight))
+	    if ((w->core.width != oldw->core.width ||
+		 w->core.height != oldw->core.height)
 		&& wc->core_class.resize != (XtWidgetProc) NULL) {
 		(*(wc->core_class.resize))(w);
 	    }
