@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM X Window System Build Parameters and Rules
-XCOMM $XConsortium: Project.tmpl,v 1.176 93/08/25 15:04:51 rws Exp $
+XCOMM $XConsortium: Project.tmpl,v 1.177 93/08/25 15:27:08 rws Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -129,28 +129,12 @@ XCOMM $XConsortium: Project.tmpl,v 1.176 93/08/25 15:04:51 rws Exp $
 #define ConnectionFlags -DTCPCONN -DUNIXCONN
 #endif
 #endif
-#ifndef SystemMTDefines
-#define SystemMTDefines /**/
-#endif
 #ifndef XMTDefines
 #if ThreadedX
 #define XMTDefines -DXTHREADS SystemMTDefines
 #else
 #define XMTDefines /**/
 #endif
-#endif
-#ifndef ThreadTypeDefines
-#if HasCThreads
-#define ThreadTypeDefines -DCTHREADS
-#else
-#define ThreadTypeDefines /**/
-#endif
-#endif
-#ifndef ThreadsLibraries
-#define ThreadsLibraries /**/
-#endif
-#ifndef ThreadsLoadFlags
-#define ThreadsLoadFlags /**/
 #endif
 #ifndef FontOSDefines
 #define FontOSDefines /**/
