@@ -7,7 +7,7 @@
 #endif /* macII */
 
 #ifdef att
-#define ccflags "-DSYSV"
+#define ccflags "-DSYSV -DUSG"
 #endif /* att */
 
 #ifdef CRAY

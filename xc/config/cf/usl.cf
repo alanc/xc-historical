@@ -1,4 +1,4 @@
-/**/# platform:  $XConsortium$
+/**/# platform:  $XConsortium: att.cf,v 1.1 89/06/13 18:41:56 jim Exp $
 
 
 /*
@@ -13,8 +13,8 @@
 #define OSMinorVersion		2
 #define RemoveTargetProgramByMoving YES
 #define BootstrapCFlags		-Datt
-#define StandardDefines		-Datt -DSYSV
-#define StandardCppDefines	-Datt -DSYSV
+#define StandardDefines		-Datt -DSYSV -DUSG
+#define StandardCppDefines	-Datt -DSYSV -DUSG
 #define ExecableScripts		NO
 #define BuildServer		NO
 
