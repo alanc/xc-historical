@@ -1,4 +1,4 @@
-/* $XConsortium: XIntAtom.c,v 11.18 91/02/04 10:06:11 rws Exp $ */
+/* $XConsortium: XIntAtom.c,v 11.19 91/08/14 09:52:08 rws Exp $ */
 /*
 
 Copyright 1986, 1990 by the Massachusetts Institute of Technology
@@ -43,7 +43,8 @@ _XFreeAtomTable(dpy)
     register int i;
     register Entry e;
 
-    if (table = dpy->atoms->table) {
+    if (dpy->atoms) {
+	table = dpy->atoms->table;
 	for (i = TABLESIZE; --i >= 0; ) {
 	    if (e = *table++)
 		Xfree((char *)e);
