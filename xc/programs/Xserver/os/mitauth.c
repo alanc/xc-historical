@@ -1,7 +1,7 @@
 /*
  * MIT-MAGIC-COOKIE-1 authorization scheme
  *
- * $XConsortium: mitauth.c,v 1.5 93/09/26 15:41:10 gildea Exp $
+ * $XConsortium: mitauth.c,v 1.6 94/02/08 14:55:11 gildea Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -67,6 +67,7 @@ MitCheckCookie (data_length, data, client, reason)
 	   memcmp (data, auth->data, (int) data_length) == 0)
 	    return auth->id;
     }
+    *reason = "Invalid MIT-MAGIC-COOKIE-1 key";
     return (XID) -1;
 }
 
@@ -81,6 +82,7 @@ MitResetCookie ()
 	xfree (auth);
     }
     mit_auth = 0;
+    return 0;
 }
 
 XID

@@ -2,7 +2,7 @@
  * XDM-AUTHENTICATION-1 (XDMCP authentication) and
  * XDM-AUTHORIZATION-1 (client authorization) protocols
  *
- * $XConsortium: xdmauth.c,v 1.9 94/02/08 14:55:12 gildea Exp $
+ * $XConsortium: xdmauth.c,v 1.10 94/02/16 11:41:45 dpw Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -155,7 +155,7 @@ typedef struct _XdmAuthorization {
     XID				id;
 } XdmAuthorizationRec, *XdmAuthorizationPtr;
 
-XdmAuthorizationPtr xdmAuth;
+static XdmAuthorizationPtr xdmAuth;
 
 typedef struct _XdmClientAuth {
     struct _XdmClientAuth   *next;
@@ -164,7 +164,7 @@ typedef struct _XdmClientAuth {
     long		    time;
 } XdmClientAuthRec, *XdmClientAuthPtr;
 
-XdmClientAuthPtr    xdmClients;
+static XdmClientAuthPtr    xdmClients;
 static long	    clockOffset;
 static Bool	    gotClock;
 
@@ -210,7 +210,7 @@ XdmClientAuthDecode (plain, auth)
     }
 }
 
-void
+static void
 XdmClientAuthTimeout (now)
     long	now;
 {
@@ -234,16 +234,20 @@ XdmClientAuthTimeout (now)
 }
 
 static XdmClientAuthPtr
-XdmAuthorizationValidate (plain, length, rho)
+XdmAuthorizationValidate (plain, length, rho, reason)
     char		*plain;
     int			length;
     XdmAuthKeyPtr	rho;
+    char		**reason;
 {
     XdmClientAuthPtr	client, existing;
     long		now;
 
-    if (length != (192 / 8))
+    if (length != (192 / 8)) {
+	if (reason)
+	    *reason = "Bad XDM authorization key length";
 	return NULL;
+    }
     client = (XdmClientAuthPtr) xalloc (sizeof (XdmClientAuthRec));
     if (!client)
 	return NULL;
@@ -251,6 +255,8 @@ XdmAuthorizationValidate (plain, length, rho)
     if (!XdmcpCompareKeys (&client->rho, rho))
     {
 	xfree (client);
+	if (reason)
+	    *reason = "Invalid XDM-AUTHORIZATION-1 key value";
 	return NULL;
     }
     now = time(0);
@@ -264,6 +270,8 @@ XdmAuthorizationValidate (plain, length, rho)
     if (abs (client->time - now) > TwentyMinutes)
     {
 	xfree (client);
+	if (reason)
+	    *reason = "Bad XDM authorization time offset!";
 	return NULL;
     }
     for (existing = xdmClients; existing; existing=existing->next)
@@ -271,6 +279,8 @@ XdmAuthorizationValidate (plain, length, rho)
 	if (XdmClientAuthCompare (existing, client))
 	{
 	    xfree (client);
+	    if (reason)
+		*reason = "XDM authorization key matches an existing client!";
 	    return NULL;
 	}
     }
@@ -343,7 +353,7 @@ XdmCheckCookie (cookie_length, cookie, xclient, reason)
 	return (XID) -1;
     for (auth = xdmAuth; auth; auth=auth->next) {
 	XdmcpUnwrap (cookie, &auth->key, plain, cookie_length);
-	if (client = XdmAuthorizationValidate (plain, cookie_length, &auth->rho))
+	if (client = XdmAuthorizationValidate (plain, cookie_length, &auth->rho, reason))
 	{
 	    client->next = xdmClients;
 	    xdmClients = client;
@@ -390,7 +400,7 @@ char	*cookie;
 	return (XID) -1;
     for (auth = xdmAuth; auth; auth=auth->next) {
 	XdmcpUnwrap (cookie, &auth->key, plain, cookie_length);
-	if (client = XdmAuthorizationValidate (plain, cookie_length, &auth->rho))
+	if (client = XdmAuthorizationValidate (plain, cookie_length, &auth->rho, NULL))
 	{
 	    xfree (client);
 	    xfree (cookie);
