@@ -4,7 +4,9 @@
  * xwininfo.c	- MIT Project Athena, X Window system window
  *		  information utility.
  *
- *	This program will report all relavent information
+ * $XConsortium$
+ *
+ *	This program will report all relevant information
  *	about a specific window.
  *
  *  Author:	Mark Lillibridge, MIT Project Athena
@@ -48,9 +50,9 @@ usage()
     fprintf (stderr,
 	"    -id windowid         use the window with the specified id\n");
     fprintf (stderr,
-	"    -name windowname     use the window with the specifed name\n");
+	"    -name windowname     use the window with the specified name\n");
     fprintf (stderr,
-	"    -int                 print window id's in decimal\n");
+	"    -int                 print window id in decimal\n");
     fprintf (stderr,
 	"    -tree                print out parent and child identifiers\n");
     fprintf (stderr,
@@ -181,8 +183,22 @@ char *bscale(b)
   return(nscale(b, bp, bmm, bbuf));
 }
 
-
 /* end of pixel to inch, metric converter */
+
+/* This handler is enabled when we are checking
+   to see if the -id the user specified is valid. */
+
+bad_window_handler(disp, err)
+    Display *disp;
+    XErrorEvent *err;
+{
+    char badid[20];
+
+    sprintf(badid, window_id_format, err->resourceid);
+    Fatal_Error("No such window with id%s.", badid);
+    exit (1);
+}
+
 
 main(argc, argv)
      int argc;
@@ -286,9 +302,12 @@ main(argc, argv)
     Window root;
     int x, y;
     unsigned width, height, bw, depth;
+    int (*old_handler)();
 
+    old_handler = XSetErrorHandler(bad_window_handler);
     XGetGeometry (dpy, window, &root, &x, &y, &width, &height, &bw, &depth);
-    XSync (dpy, 0);
+    XSync (dpy, False);
+    (void) XSetErrorHandler(old_handler);
   }
 
   printf("\nxwininfo ==> Window id:");
@@ -579,10 +598,10 @@ Display_Events_Info(window)
   printf("\n         ==> Someone wants these events:\n");
   Display_Event_Mask(win_attributes.all_event_masks);
 
-  printf("         ==> Do not prograte these events:\n");
+  printf("         ==> Do not propagate these events:\n");
   Display_Event_Mask(win_attributes.do_not_propagate_mask);
 
-  printf("         ==> Overide redirection?: %s\n",
+  printf("         ==> Override redirection?: %s\n",
 	 Lookup(win_attributes.override_redirect, _bool));
 }
 
@@ -593,7 +612,7 @@ Display_Events_Info(window)
 
 
 /*
- * Display root, parent, and children window id's of window
+ * Display root, parent, and children window IDs of window
  */
 Display_Tree_Info(window)
      Window window;
