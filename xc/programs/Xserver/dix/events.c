@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: events.c,v 5.14 89/11/06 18:19:43 rws Exp $ */
+/* $XConsortium: events.c,v 5.15 89/11/06 19:20:25 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -1548,7 +1548,8 @@ CheckPassiveGrabsOnWindow(pWin, device, xE, count)
  
 	    FixUpEventFromWindow(xE, grab->window, None, TRUE);
 
-	    (void) TryClientEvents(rClient(grab), xE, 1, filters[xE->u.u.type],
+	    (void) TryClientEvents(rClient(grab), xE, count,
+				   filters[xE->u.u.type],
 				   filters[xE->u.u.type],  grab);
 
 	    if (device->sync.state == FROZEN_NO_EVENT)
@@ -1684,7 +1685,7 @@ DeliverGrabbedEvent(xE, thisDev, deactivateGrab, count)
     if (!deliveries)
     {
 	FixUpEventFromWindow(xE, grab->window, None, TRUE);
-	deliveries = TryClientEvents(rClient(grab), xE, 1,
+	deliveries = TryClientEvents(rClient(grab), xE, count,
 				     (Mask)grab->eventMask,
 				     filters[xE->u.u.type], grab);
 	if (deliveries && (xE->u.u.type == MotionNotify))
