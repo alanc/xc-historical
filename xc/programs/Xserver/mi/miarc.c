@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: miarc.c,v 5.2 89/07/20 15:33:11 keith Exp $ */
+/* $XConsortium: miarc.c,v 5.3 89/07/20 19:16:20 keith Exp $ */
 /* Author: Keith Packard */
 
 #include <math.h>
@@ -69,7 +69,7 @@ double	miDsin(), miDcos(), miDasin(), miDatan2();
 #ifndef X_AXIS
 # define X_AXIS 0
 # define Y_AXIS 1
-#endif X_AXIS
+#endif
 
 /* 360 degrees * 64 sub-degree positions */
 #define FULLCIRCLE (64 * 360)

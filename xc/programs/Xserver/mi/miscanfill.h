@@ -1,4 +1,4 @@
-/* $XConsortium: miscanfill.h,v 1.1 87/09/11 07:20:22 toddb Exp $ */
+/* $XConsortium: miscanfill.h,v 1.2 88/09/06 14:50:15 jim Exp $ */
 #ifndef SCANFILLINCLUDED
 #define SCANFILLINCLUDED
 /*
@@ -112,4 +112,4 @@ typedef struct {
         BRESINCRPGON(bres.d, bres.minor, bres.m, bres.m1, bres.incr1, bres.incr2)
 
 
-#endif SCANFILLINCLUDED
+#endif

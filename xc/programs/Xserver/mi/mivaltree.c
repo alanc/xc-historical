@@ -39,8 +39,8 @@
 
 #ifndef lint
 static char rcsid[] =
-"$Header: mivaltree.c,v 5.14 89/07/17 16:11:41 keith Exp $ SPRITE (Berkeley)";
-#endif lint
+"$Header: mivaltree.c,v 5.15 89/07/17 19:18:22 rws Exp $ SPRITE (Berkeley)";
+#endif
 
 #include    "X.h"
 #include    "scrnintstr.h"

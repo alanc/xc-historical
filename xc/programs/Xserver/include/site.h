@@ -73,4 +73,4 @@ SOFTWARE.
 #define DEFAULT_ACCESS_CONTROL TRUE
 #endif
 
-#endif SITE_H
+#endif /* SITE_H */

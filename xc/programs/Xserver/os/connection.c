@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: connection.c,v 1.104 89/04/21 08:52:22 rws Exp $ */
+/* $XConsortium: connection.c,v 1.105 89/05/20 17:55:11 rws Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -488,7 +488,7 @@ EstablishNewConnections()
 #endif /* DNETCONN */
     } from;
     int	fromlen;
-#endif TCP_NODELAY
+#endif /* TCP_NODELAY */
 
     readyconnections = (LastSelectMask[0] & WellKnownConnections);
     if (!readyconnections)

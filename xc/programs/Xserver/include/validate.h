@@ -1,4 +1,4 @@
-/* $XConsortium: windowstr.h,v 5.0 89/07/13 17:34:40 rws Exp $ */
+/* $XConsortium: validate.h,v 5.0 89/07/16 11:42:49 rws Exp $ */
 
 /*
 Copyright 1989 by the Massachusetts Institute of Technology
@@ -37,4 +37,4 @@ typedef union _Validate {
 
 #define UnmapValData ((ValidatePtr)1)
 
-#endif VALIDATE_H
+#endif /* VALIDATE_H */

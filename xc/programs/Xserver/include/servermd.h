@@ -23,7 +23,7 @@ SOFTWARE.
 ******************************************************************/
 #ifndef SERVERMD_H
 #define SERVERMD_H 1
-/* $XConsortium: servermd.h,v 1.40 89/07/03 14:59:52 rws Exp $ */
+/* $XConsortium: servermd.h,v 1.41 89/07/19 11:40:16 keith Exp $ */
 
 /*
  * The vendor string identifies the vendor responsible for the
@@ -31,7 +31,7 @@ SOFTWARE.
  */
 #ifndef VENDOR_STRING
 #define VENDOR_STRING "MIT X Consortium"
-#endif	VENDOR_STRING
+#endif
 
 /*
  * The vendor release number identifies, for the purpose of submitting
@@ -40,7 +40,7 @@ SOFTWARE.
  */
 #ifndef VENDOR_RELEASE
 #define VENDOR_RELEASE	4
-#endif	VENDOR_RELEASE
+#endif
 
 /*
  * Machine dependent values:
@@ -202,4 +202,4 @@ extern PaddingInfo PixmapWidthPaddingInfo[];
 #define PixmapBytePad(w, d) \
     (PixmapWidthInPadUnits(w, d) << PixmapWidthPaddingInfo[d].padBytesLog2)
 
-#endif SERVERMD_H
+#endif /* SERVERMD_H */

@@ -296,7 +296,7 @@ static cfbdumppixmap(pPix)
 	ErrorF( "%s", line);
     }
 }
-#endif notdef
+#endif /* notdef */
 
 /* Rotates pixmap pPix by w pixels to the right on the screen. Assumes that
  * words are 32 bits wide, and that the least significant bit appears on the

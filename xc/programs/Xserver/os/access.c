@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: access.c,v 1.34 89/06/21 17:47:46 rws Exp $ */
+/* $XConsortium: access.c,v 1.35 89/07/14 16:25:56 rws Exp $ */
 
 #include "Xos.h"
 #include "X.h"
@@ -226,7 +226,7 @@ DefineSelf (fd)
 	}
     }
 }
-#endif hpux
+#endif /* hpux */
 
 /* Reset access control list to initial hosts */
 ResetHosts (display)

@@ -151,7 +151,7 @@ cfbGetSpans(pDrawable, wMax, ppt, pwidth, nspans)
 	    }
 #else
 	    pdst = pdstNext;
-#endif notdef
+#endif
 	} 
         ppt++;
 	pwidth++;

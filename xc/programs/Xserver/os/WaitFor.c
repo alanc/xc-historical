@@ -67,7 +67,7 @@ extern int errno;
 #ifdef MULTI_X_HACK
 extern int XMulti;
 extern int sigwindow_handler();
-#endif MULTI_X_HACK
+#endif /* MULTI_X_HACK */
 
 #ifdef XTESTEXT1
 /*
@@ -126,7 +126,7 @@ WaitForSomething(pClientsReady)
 
 #ifdef	hpux
 	long	ready_inputs;  /* to tell HIL drivers about input */
-#endif	hpux
+#endif /* hpux */
 
     CLEARBITS(clientsReadable);
     if (! (ANYSET(ClientsWithInput)))
@@ -181,7 +181,7 @@ WaitForSomething(pClientsReady)
 		ipc_block_handler();
 		signal(SIGWINDOW,sigwindow_handler);
 	    }
-#endif MULTI_X_HACK
+#endif /* MULTI_X_HACK */
 	    COPYBITS(AllSockets, LastSelectMask);
 	    BlockHandler((pointer)&wt, (pointer)LastSelectMask);
 	    if (NewOutputPending)
@@ -244,7 +244,7 @@ WaitForSomething(pClientsReady)
 
 		if (ready_inputs > 0)  store_inputs (ready_inputs);
 			/* call the HIL driver to gather inputs. 	*/
-#endif	hpux
+#endif /* hpux */
 
  		MASKANDSETBITS(clientsReadable, LastSelectMask, AllClients); 
 		if (LastSelectMask[0] & WellKnownConnections) 

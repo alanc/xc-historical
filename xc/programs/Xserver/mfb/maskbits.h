@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: maskbits.h,v 1.16 89/07/16 21:59:37 keith Exp $ */
+/* $XConsortium: maskbits.h,v 1.17 89/07/20 18:03:55 keith Exp $ */
 #include "X.h"
 #include "Xmd.h"
 #include "servermd.h"
@@ -332,7 +332,7 @@ else \
 	 : "=m" (*(char *)(pdst)) \
 	 : "g" (x), "g" (w), "g" (src))
 #define putbits(src, x, w, pdst) FASTPUTBITS(src, x, w, pdst)
-#endif vax
+#endif /* vax */
 #ifdef mc68020
 #define FASTGETBITS(psrc, x, w, dst) \
     asm ("bfextu %3{%1:%2},%0" \
@@ -351,8 +351,8 @@ else \
 
 #define putbits(src, x, w, pdst) FASTPUTBITS(SHR((src),32-(w)), x, w, pdst)
 
-#endif mc68020
-#endif __GNUC__
+#endif /* mc68020
+#endif /* __GNUC__ */
 
 /*  The following flag is used to override a bugfix for sun 3/60+CG4 machines,
  */
