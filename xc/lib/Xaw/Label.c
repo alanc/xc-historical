@@ -176,26 +176,6 @@ static void SetTextWidthAndHeight(lw)
     lw->label.labelHeight = fs->max_bounds.ascent + fs->max_bounds.descent;
     lw->label.labelWidth = XTextWidth(
 	fs, lw->label.label, lw->label.labelLen);
-
-    /* Calculate text position within window given window width and height  */
-    switch (lw->label.justify) {
-
-	case XtjustifyLeft   :
-	    lw->label.labelX = lw->label.internalWidth;
-	    break;
-
-	case XtjustifyRight  :
-	    lw->label.labelX = lw->core.width -
-		(lw->label.labelWidth + lw->label.internalWidth);
-	    break;
-
-	case XtjustifyCenter :
-	    lw->label.labelX = (lw->core.width - lw->label.labelWidth) / 2;
-	    break;
-    }
-    if (lw->label.labelX < 0) lw->label.labelX = 0;
-    lw->label.labelY = (lw->core.height - lw->label.labelHeight) / 2
-	+ lw->label.font->max_bounds.ascent;
 }
 
 static void GetGC(lw)
@@ -224,6 +204,7 @@ static void Initialize(w)
     GetGC(lw);
 
     SetTextWidthAndHeight(lw);
+    Resize(lw);
 
     if (lw->core.width == 0)
         lw->core.width = lw->label.labelWidth + 2 * lw->label.internalWidth;
@@ -275,9 +256,27 @@ static void Redisplay(w)
 }
 
 
-static void Resize()
+static void Resize(lw)
+    LabelWidget	lw;
 {
-/* !!! */
+    switch (lw->label.justify) {
+
+	case XtjustifyLeft   :
+	    lw->label.labelX = lw->label.internalWidth;
+	    break;
+
+	case XtjustifyRight  :
+	    lw->label.labelX = lw->core.width -
+		(lw->label.labelWidth + lw->label.internalWidth);
+	    break;
+
+	case XtjustifyCenter :
+	    lw->label.labelX = (lw->core.width - lw->label.labelWidth) / 2;
+	    break;
+    }
+    if (lw->label.labelX < 0) lw->label.labelX = 0;
+    lw->label.labelY = (lw->core.height - lw->label.labelHeight) / 2
+	+ lw->label.font->max_bounds.ascent;
 }
 
 /*
@@ -346,7 +345,9 @@ void SetValues(old, new)
     }
 
     if (reqGeo.request_mode != NULL) {
-	if (XtMakeGeometryRequest(newlw, reqGeo, NULL) != XtgeometryNo) {
+	/* this will automatically call "Resize" if it succeeds */
+	if (XtMakeGeometryRequest(newlw, reqGeo, NULL) != XtgeometryYes) {
+	    /* punt, undo requested change */
 	    newlw->core.x = oldlw->core.x;
 	    newlw->core.y = oldlw->core.y;
 	    newlw->core.width = oldlw->core.width;

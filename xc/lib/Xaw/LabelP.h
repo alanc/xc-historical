@@ -1,4 +1,4 @@
-/* $Header$ */
+/* $Header: LabelPrivate.h,v 1.1 87/08/27 16:55:13 haynes Exp $ */
 
 /*
  *	sccsid:	%W%	%G%
@@ -45,6 +45,16 @@
  *
  ***********************************************************************/
 
+/* New fields for the Label widget class record */
+
+typedef struct {int foo;} LabelClass;
+
+/* Full class record declaration */
+typedef struct _LabelWidgetClassData {
+    CoreClass	core_class;
+    LabelClass	label_class;
+} *LabelWidgetClass;
+
 /* New fields for the Label widget record */
 typedef struct {
     Pixel	foreground;
@@ -62,7 +72,10 @@ typedef struct {
     unsigned int labelLen;
 } Label;
 
-/* $Log$ */
+/* $Log:	LabelPrivate.h,v $
+ * Revision 1.1  87/08/27  16:55:13  haynes
+ * Initial revision
+ *  */
 
 
 #endif _XtLabelPrivate_h

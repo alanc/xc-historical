@@ -51,19 +51,12 @@ typedef enum {
 #define XtNinternalWidth	"internalWidth"
 #define XtNinternalHeight	"internalHeight"
  
-/* New fields for the Label widget class record */
-
-typedef struct {int foo;} LabelClass;
-
-/* Full class record declaration */
-typedef struct {
-    CoreClass	core_class;
-    LabelClass	label_class;
-} LabelWidgetClassData, *LabelWidgetClass;
-
 /* Class record constants */
 
+typedef struct _LabelWidgetClassData LabelWidgetClassData;
+
 extern LabelWidgetClassData labelWidgetClassData;
+
 #define labelWidgetClass	(&labelWidgetClassData)
 
 #endif _XtLabel_h
