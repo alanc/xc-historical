@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: TMstate.c,v 1.88 89/10/02 16:07:23 swick Exp $";
+static char Xrcsid[] = "$XConsortium: TMstate.c,v 1.89 89/10/05 19:11:28 rws Exp $";
 /* $oHeader: TMstate.c,v 1.5 88/09/01 17:17:29 asente Exp $ */
 #endif /* lint */
 /*LINTLIBRARY*/
@@ -2599,8 +2599,8 @@ void XtTranslateKey(dpy, keycode, modifiers,
 	    (*pd->defaultCaseConverter)(dpy, syms[0], keysym_return, &usym);
 	else
 	    *keysym_return = syms[0];
-    } else if ((modifiers & ShiftMask) ||
-	       (pd->lock_meaning == XK_Shift_Lock)) {
+    } else if (!(modifiers & LockMask) ||
+	       (dpy->lock_meaning != XK_Caps_Lock)) {
 	if ((per == 1) || ((usym = syms[1]) == NoSymbol))
 	    (*pd->defaultCaseConverter)(dpy, syms[0], &lsym, &usym);
 	*keysym_return = usym;
@@ -2608,7 +2608,8 @@ void XtTranslateKey(dpy, keycode, modifiers,
 	if ((per == 1) || ((sym = syms[1]) == NoSymbol))
 	    sym = syms[0];
 	(*pd->defaultCaseConverter)(dpy, sym, &lsym, &usym);
-	if (((sym != usym) || (lsym == usym)) && (sym != syms[0]))
+	if (!(modifiers & ShiftMask) && (sym != syms[0]) &&
+	    ((sym != usym) || (lsym == usym)))
 	    (*pd->defaultCaseConverter)(dpy, syms[0], &lsym, &usym);
 	*keysym_return = usym;
     }
@@ -2622,11 +2623,8 @@ void XtSetKeyTranslator(dpy, translator)
     XtKeyProc translator;
 
 {
-    XtPerDisplay perDisplay;
-    perDisplay = _XtGetPerDisplay(dpy);
-    perDisplay->defaultKeycodeTranslator = translator;
-    if (perDisplay->keysyms)
-	_XtBuildKeysymTables(dpy, perDisplay);
+    _XtGetPerDisplay(dpy)->defaultKeycodeTranslator = translator;
+    /* XXX should now redo grabs */
 }
 
 /* ARGSUSED */
@@ -2638,11 +2636,8 @@ void XtRegisterCaseConverter(dpy, proc, start, stop)
     KeySym stop;
 
 {
-    XtPerDisplay perDisplay;
-    perDisplay = _XtGetPerDisplay(dpy);
-    perDisplay->defaultCaseConverter = proc;
-    if (perDisplay->keysyms)
-	_XtBuildKeysymTables(dpy, perDisplay);
+    _XtGetPerDisplay(dpy)->defaultCaseConverter = proc;
+    /* XXX should now redo grabs */
 }
 
 /* This code should match XConvertCase (internal, sigh) in Xlib */
