@@ -1,4 +1,4 @@
-/* $XConsortium: Xlibint.h,v 11.85 90/12/26 11:10:30 rws Exp $ */
+/* $XConsortium: Xlibint.h,v 11.86 91/02/11 18:58:04 rws Exp $ */
 /* Copyright 1984, 1985, 1987, 1989  Massachusetts Institute of Technology */
 
 /*
@@ -419,6 +419,7 @@ typedef struct _XFreeFuncs {
     void (*context_db)();	/* _XFreeContextDB */
     void (*defaultCCCs)();	/* _XcmsFreeDefaultCCCs */
     void (*clientCmaps)();	/* _XcmsFreeClientCmaps */
+    void (*im_filters)();	/* _XFreeIMFilters */
 } _XFreeFuncRec;
 
 /*
