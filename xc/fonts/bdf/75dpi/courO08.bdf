@@ -1,34 +1,9 @@
+
 STARTFONT 2.1
-COMMENT 
-COMMENT  Copyright 1984, 1987 Adobe Systems, Inc.
-COMMENT  Portions Copyright 1988 Digital Equipment Corporation
-COMMENT 
-COMMENT  Permission to use, copy, modify, and distribute this software and
-COMMENT  its documentation for any purpose and without fee is hereby granted,
-COMMENT  provided that the above copyright notices appear in all copies and
-COMMENT  that both those copyright notices and this permission notice appear
-COMMENT  in supporting documentation, and that the names of Adobe Systems and
-COMMENT  Digital Equipment Corporation not be used in advertising or
-COMMENT  publicity pertaining to distribution of the software without
-COMMENT  specific, written prior permission.  Adobe Systems and Digital
-COMMENT  Equipment Corporation make no representations about the suitability
-COMMENT  of this software for any purpose.  It is provided "as is" without
-COMMENT  express or implied warranty.
-COMMENT 
-COMMENT  ADOBE SYSTEMS AND DIGITAL EQUIPMENT CORPORATION DISCLAIM ALL
-COMMENT  WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING ALL IMPLIED
-COMMENT  WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL ADOBE
-COMMENT  SYSTEMS AND DIGITAL EQUIPMENT CORPORATION BE LIABLE FOR ANY SPECIAL,
-COMMENT  INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER
-COMMENT  RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF
-COMMENT  CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
-COMMENT  CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-COMMENT 
-COMMENT 
 FONT -Adobe-Courier-Medium-O-Normal--8-80-75-75-M-50-ISO8859-1
 SIZE 8 75 75
 FONTBOUNDINGBOX 7 11 0 -2
-STARTPROPERTIES 23
+STARTPROPERTIES 22
 COMMENT Begin LogicalFontDescription
 FONTNAME_REGISTRY ""
 FAMILY_NAME "Courier"
@@ -45,9 +20,8 @@ SPACING "M"
 AVERAGE_WIDTH 50
 CHARSET_REGISTRY "ISO8859"
 CHARSET_ENCODING "1"
-DEVICE_FONT_NAME "Courier-Oblique"
 COMMENT END LogicalFontDescription
-CHARSET_COLLECTIONS "ASCII ISOLATIN1 ADOBESTANDARD"
+CHARSET_COLLECTIONS "ASCII ISO8859-1 ADOBE-STANDARD"
 FULL_NAME "Courier Oblique"
 COPYRIGHT "Copyright (c) 1985,1987 Adobe Systems, Inc., Portions Copyright 1988 Digital Equipment Corp."
 COMMENT ***** end of inserted font properties
@@ -55,7 +29,7 @@ FONT_ASCENT 8
 FONT_DESCENT 2
 CAP_HEIGHT 6
 X_HEIGHT 5
-ENDPROPERTIES 
+ENDPROPERTIES
 CHARS 228
 STARTCHAR space
 ENCODING 32
@@ -109,9 +83,9 @@ BBX 5 7 0 -2
 BITMAP
 10
 38
-60
+40
 70
-30
+10
 E0
 40
 ENDCHAR
@@ -190,8 +164,9 @@ STARTCHAR plus
 ENCODING 43
 SWIDTH 600 0
 DWIDTH 5 0
-BBX 4 4 1 0
+BBX 4 5 1 -1
 BITMAP
+20
 20
 F0
 40
@@ -210,7 +185,7 @@ STARTCHAR minus
 ENCODING 45
 SWIDTH 600 0
 DWIDTH 5 0
-BBX 4 1 1 2
+BBX 4 1 1 1
 BITMAP
 F0
 ENDCHAR
@@ -392,7 +367,7 @@ STARTCHAR less
 ENCODING 60
 SWIDTH 600 0
 DWIDTH 5 0
-BBX 3 4 1 -1
+BBX 3 4 1 0
 BITMAP
 20
 40
@@ -413,7 +388,7 @@ STARTCHAR greater
 ENCODING 62
 SWIDTH 600 0
 DWIDTH 5 0
-BBX 3 4 1 -1
+BBX 3 4 1 0
 BITMAP
 40
 20
@@ -768,8 +743,8 @@ BITMAP
 60
 40
 40
-40
-40
+80
+80
 C0
 ENDCHAR
 STARTCHAR backslash
@@ -793,7 +768,7 @@ BBX 3 6 1 -1
 BITMAP
 60
 20
-40
+20
 40
 40
 C0
@@ -932,7 +907,7 @@ BITMAP
 10
 00
 60
-40
+20
 40
 E0
 ENDCHAR
@@ -1370,11 +1345,12 @@ STARTCHAR plusminus
 ENCODING 177
 SWIDTH 600 0
 DWIDTH 5 0
-BBX 4 4 1 0
+BBX 4 5 1 -1
 BITMAP
 20
 F0
 40
+00
 E0
 ENDCHAR
 STARTCHAR twosuperior
@@ -1876,7 +1852,7 @@ STARTCHAR multiply
 ENCODING 215
 SWIDTH 600 0
 DWIDTH 5 0
-BBX 5 4 0 0
+BBX 5 4 0 -1
 BITMAP
 48
 30
@@ -1975,13 +1951,12 @@ STARTCHAR Thorn
 ENCODING 222
 SWIDTH 600 0
 DWIDTH 5 0
-BBX 5 6 0 -1
+BBX 5 5 0 -1
 BITMAP
-20
-30
-28
+60
+38
+48
 70
-40
 C0
 ENDCHAR
 STARTCHAR germandbls

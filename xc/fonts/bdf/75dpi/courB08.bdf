@@ -1,34 +1,9 @@
+
 STARTFONT 2.1
-COMMENT 
-COMMENT  Copyright 1984, 1987 Adobe Systems, Inc.
-COMMENT  Portions Copyright 1988 Digital Equipment Corporation
-COMMENT 
-COMMENT  Permission to use, copy, modify, and distribute this software and
-COMMENT  its documentation for any purpose and without fee is hereby granted,
-COMMENT  provided that the above copyright notices appear in all copies and
-COMMENT  that both those copyright notices and this permission notice appear
-COMMENT  in supporting documentation, and that the names of Adobe Systems and
-COMMENT  Digital Equipment Corporation not be used in advertising or
-COMMENT  publicity pertaining to distribution of the software without
-COMMENT  specific, written prior permission.  Adobe Systems and Digital
-COMMENT  Equipment Corporation make no representations about the suitability
-COMMENT  of this software for any purpose.  It is provided "as is" without
-COMMENT  express or implied warranty.
-COMMENT 
-COMMENT  ADOBE SYSTEMS AND DIGITAL EQUIPMENT CORPORATION DISCLAIM ALL
-COMMENT  WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING ALL IMPLIED
-COMMENT  WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL ADOBE
-COMMENT  SYSTEMS AND DIGITAL EQUIPMENT CORPORATION BE LIABLE FOR ANY SPECIAL,
-COMMENT  INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER
-COMMENT  RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF
-COMMENT  CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
-COMMENT  CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-COMMENT 
-COMMENT 
 FONT -Adobe-Courier-Bold-R-Normal--8-80-75-75-M-50-ISO8859-1
 SIZE 8 75 75
 FONTBOUNDINGBOX 7 11 -1 -2
-STARTPROPERTIES 23
+STARTPROPERTIES 22
 COMMENT Begin LogicalFontDescription
 FONTNAME_REGISTRY ""
 FAMILY_NAME "Courier"
@@ -45,9 +20,8 @@ SPACING "M"
 AVERAGE_WIDTH 50
 CHARSET_REGISTRY "ISO8859"
 CHARSET_ENCODING "1"
-DEVICE_FONT_NAME "Courier-Bold"
 COMMENT END LogicalFontDescription
-CHARSET_COLLECTIONS "ASCII ISOLATIN1 ADOBESTANDARD"
+CHARSET_COLLECTIONS "ASCII ISO8859-1 ADOBE-STANDARD"
 FULL_NAME "Courier Bold"
 COPYRIGHT "Copyright (c) 1985,1987 Adobe Systems, Inc., Portions Copyright 1988 Digital Equipment Corp."
 COMMENT ***** end of inserted font properties
@@ -55,7 +29,7 @@ FONT_ASCENT 8
 FONT_DESCENT 2
 CAP_HEIGHT 6
 X_HEIGHT 5
-ENDPROPERTIES 
+ENDPROPERTIES
 CHARS 228
 STARTCHAR space
 ENCODING 32
@@ -768,9 +742,10 @@ STARTCHAR bracketleft
 ENCODING 91
 SWIDTH 600 0
 DWIDTH 5 0
-BBX 2 6 1 -1
+BBX 2 7 1 -2
 BITMAP
 C0
+80
 80
 80
 80
@@ -795,9 +770,10 @@ STARTCHAR bracketright
 ENCODING 93
 SWIDTH 600 0
 DWIDTH 5 0
-BBX 2 6 1 -1
+BBX 2 7 1 -2
 BITMAP
 C0
+40
 40
 40
 40
@@ -1145,11 +1121,12 @@ STARTCHAR braceleft
 ENCODING 123
 SWIDTH 600 0
 DWIDTH 5 0
-BBX 3 6 1 -1
+BBX 3 7 1 -2
 BITMAP
 60
 40
-C0
+40
+80
 40
 40
 60
@@ -1172,11 +1149,12 @@ STARTCHAR braceright
 ENCODING 125
 SWIDTH 600 0
 DWIDTH 5 0
-BBX 3 6 1 -1
+BBX 3 7 1 -2
 BITMAP
 C0
 40
-60
+40
+20
 40
 40
 C0
@@ -1245,13 +1223,12 @@ STARTCHAR yen
 ENCODING 165
 SWIDTH 600 0
 DWIDTH 5 0
-BBX 5 6 0 -1
+BBX 5 5 0 -1
 BITMAP
-50
+D8
+70
 F8
-50
-F8
-10
+20
 70
 ENDCHAR
 STARTCHAR brokenbar
@@ -1379,10 +1356,11 @@ STARTCHAR plusminus
 ENCODING 177
 SWIDTH 600 0
 DWIDTH 5 0
-BBX 4 4 0 0
+BBX 4 5 0 -1
 BITMAP
 40
 F0
+40
 00
 F0
 ENDCHAR

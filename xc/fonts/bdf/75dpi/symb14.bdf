@@ -1,30 +1,4 @@
 STARTFONT 2.1
-COMMENT 
-COMMENT  Copyright 1984, 1987 Adobe Systems, Inc.
-COMMENT  Portions Copyright 1988 Digital Equipment Corporation
-COMMENT 
-COMMENT  Permission to use, copy, modify, and distribute this software and
-COMMENT  its documentation for any purpose and without fee is hereby granted,
-COMMENT  provided that the above copyright notices appear in all copies and
-COMMENT  that both those copyright notices and this permission notice appear
-COMMENT  in supporting documentation, and that the names of Adobe Systems and
-COMMENT  Digital Equipment Corporation not be used in advertising or
-COMMENT  publicity pertaining to distribution of the software without
-COMMENT  specific, written prior permission.  Adobe Systems and Digital
-COMMENT  Equipment Corporation make no representations about the suitability
-COMMENT  of this software for any purpose.  It is provided "as is" without
-COMMENT  express or implied warranty.
-COMMENT 
-COMMENT  ADOBE SYSTEMS AND DIGITAL EQUIPMENT CORPORATION DISCLAIM ALL
-COMMENT  WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING ALL IMPLIED
-COMMENT  WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL ADOBE
-COMMENT  SYSTEMS AND DIGITAL EQUIPMENT CORPORATION BE LIABLE FOR ANY SPECIAL,
-COMMENT  INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER
-COMMENT  RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF
-COMMENT  CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
-COMMENT  CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-COMMENT 
-COMMENT 
 FONT -ADOBE-Symbol-Medium-R-Normal--14-140-75-75-P-85-ADOBE-FONTSPECIFIC
 SIZE 14 75 75
 FONTBOUNDINGBOX 16 20 -1 -6
@@ -55,7 +29,7 @@ FULL_NAME "Symbol"
 DEVICE_FONT_NAME "Symbol"
 COPYRIGHT "Copyright (c) 1984 Adobe Systems, Inc., Portions Copyright 1988 Digital Equipment Corp."
 COMMENT ***** end of inserted font properties
-ENDPROPERTIES
+ENDPROPERTIES 
 CHARS 189
 STARTCHAR space
 ENCODING 32
@@ -438,7 +412,7 @@ BITMAP
 70
 D8
 88
-D8
+88
 70
 88
 88
@@ -456,7 +430,7 @@ BITMAP
 CC
 84
 84
-CC
+C4
 78
 18
 10
@@ -535,7 +509,7 @@ STARTCHAR question
 ENCODING 63
 SWIDTH 444 0
 DWIDTH 6 0
-BBX 5 10 1 0
+BBX 5 10 0 0
 BITMAP
 70
 88
@@ -605,11 +579,11 @@ BITMAP
 E380
 4100
 2200
-1400
-0800
+3600
+1C00
 1400
 2200
-2200
+6300
 4100
 E380
 ENDCHAR
@@ -758,10 +732,10 @@ BITMAP
 0800
 0800
 1400
-1400
+3600
 2200
 2200
-2200
+6300
 4100
 4100
 E380
@@ -1295,16 +1269,16 @@ STARTCHAR mu
 ENCODING 109
 SWIDTH 576 0
 DWIDTH 8 0
-BBX 8 9 0 -2
+BBX 7 9 1 -2
 BITMAP
-44
-44
-44
-44
-44
-4D
-7B
-40
+88
+88
+88
+88
+88
+9A
+F6
+80
 C0
 ENDCHAR
 STARTCHAR nu
@@ -1857,7 +1831,7 @@ STARTCHAR second
 ENCODING 178
 SWIDTH 411 0
 DWIDTH 6 0
-BBX 7 3 0 7
+BBX 7 3 -1 7
 BITMAP
 36
 6C
@@ -1978,7 +1952,7 @@ STARTCHAR approxequal
 ENCODING 187
 SWIDTH 549 0
 DWIDTH 8 0
-BBX 7 5 0 2
+BBX 7 5 0 1
 BITMAP
 72
 9C
@@ -2109,7 +2083,7 @@ BITMAP
 1000
 2300
 4580
-4880
+8880
 9080
 D480
 6900
