@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.7 94/03/24 11:22:16 matt Exp $
+XCOMM $XConsortium: Imakefile,v 1.8 94/03/28 15:38:16 gildea Exp $
 #define IHaveSubdirs
 #define PassCDebugFlags CDEBUGFLAGS="$(CDEBUGFLAGS)"
 
@@ -7,12 +7,13 @@ PHIGSDIRS = auto_box beach_ball gpc
 #endif
 
 /*
- * The ixx translator does not build on some System-V machines 
- * because of limitations the System V yacc.  
+ * The ixx translator does not build under Sony NEWS-OS because of  
+ * limitations in Sony's yacc.  Ixx also fails to build with the 
+ * Sun C++ 4.0 compiler because it tickles compiler bugs.
  */
 
 #if BuildFresco
-#ifdef SonyArchitecture
+#if defined(SonyArchitecture) || (HasSunCplusplus && CplusplusCompilerMajorVersion == 4)
 FRESCODIRS = dish i2mif fdraw
 #else
 FRESCODIRS = dish i2mif ixx fdraw
