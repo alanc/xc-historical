@@ -4,7 +4,7 @@
  * machine independent software sprite routines
  */
 
-/* $XConsortium: misprite.c,v 5.10 89/07/16 10:47:35 rws Exp $ */
+/* $XConsortium: misprite.c,v 5.11 89/07/16 21:03:17 keith Exp $ */
 
 /*
 Copyright 1989 by the Massachusetts Institute of Technology
@@ -1147,8 +1147,9 @@ miSpritePolylines (pDrawable, pGC, mode, npt, pptInit)
     GC_SETUP (pDrawable, pGC);
 
     if (GC_CHECK((WindowPtr) pDrawable) &&
-	miSpritePointOverlap (pDrawable->x, pDrawable->y, mode, pGC->lineWidth,
-			      pptInit, npt, &pScreenPriv->saved))
+	miSpritePointOverlap (pDrawable->x, pDrawable->y, mode,
+			      (int)pGC->lineWidth, pptInit, npt,
+			      &pScreenPriv->saved))
     {
 	miSpriteRemoveCursor (pDrawable->pScreen);
     }
@@ -1215,7 +1216,6 @@ miSpritePolyRectangle(pDrawable, pGC, nrects, pRects)
     xRectangle	*pRects;
 {
     BoxPtr  cursor;
-    int	    x, y, w, h;
     int	    lw;
     int	    i;
     
@@ -1253,7 +1253,6 @@ miSpritePolyArc(pDrawable, pGC, narcs, parcs)
     xArc	*parcs;
 {
     BoxPtr  cursor;
-    int	    x, y, w, h;
     int	    lw;
     int	    i;
     
@@ -1460,7 +1459,7 @@ miSpriteText (pDraw, pGC, x, y, count, chars, fontEncoding, imageblt, cursorBox)
     GCPtr	    pGC;
     int		    x,
 		    y;
-    int		    count;
+    unsigned long    count;
     char	    *chars;
     FontEncoding    fontEncoding;
     Bool	    imageblt;
@@ -1475,7 +1474,7 @@ miSpriteText (pDraw, pGC, x, y, count, chars, fontEncoding, imageblt, cursorBox)
     if (!charinfo)
 	return x;
 
-    GetGlyphs(pGC->font, (unsigned long)count, (unsigned char *)chars,
+    GetGlyphs(pGC->font, count, (unsigned char *)chars,
 	      fontEncoding, &n, charinfo);
     w = 0;
     if (!imageblt)
@@ -1508,7 +1507,8 @@ miSpritePolyText8(pDrawable, pGC, x, y, count, chars)
     GC_OP_PROLOGUE (pGC);
 
     if (GC_CHECK((WindowPtr) pDrawable))
-	ret = miSpriteText (pDrawable, pGC, x, y, count, chars, Linear8Bit, FALSE, &pScreenPriv->saved);
+	ret = miSpriteText (pDrawable, pGC, x, y, (unsigned long)count, chars,
+			    Linear8Bit, FALSE, &pScreenPriv->saved);
     else
 	ret = (*pGC->ops->PolyText8) (pDrawable, pGC, x, y, count, chars);
 
@@ -1531,7 +1531,8 @@ miSpritePolyText16(pDrawable, pGC, x, y, count, chars)
     GC_OP_PROLOGUE (pGC);
 
     if (GC_CHECK((WindowPtr) pDrawable))
-	ret = miSpriteText (pDrawable, pGC, x, y, count, (char *)chars,
+	ret = miSpriteText (pDrawable, pGC, x, y, (unsigned long)count,
+			    (char *)chars,
 			    pGC->font->pFI->lastRow == 0 ?
 			    Linear16Bit : TwoD16Bit, FALSE, &pScreenPriv->saved);
     else
@@ -1588,7 +1589,7 @@ miSpriteImageGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     DrawablePtr pDrawable;
     GC 		*pGC;
     int 	x, y;
-    unsigned int nglyph;
+    unsigned long nglyph;
     CharInfoPtr *ppci;		/* array of character info */
     pointer 	pglyphBase;	/* start of array of glyphs */
 {
@@ -1611,7 +1612,7 @@ miSpritePolyGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     DrawablePtr pDrawable;
     GCPtr	pGC;
     int 	x, y;
-    unsigned int nglyph;
+    unsigned long nglyph;
     CharInfoPtr *ppci;		/* array of character info */
     char 	*pglyphBase;	/* start of array of glyphs */
 {
