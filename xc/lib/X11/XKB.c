@@ -1,4 +1,4 @@
-/* $XConsortium: XKB.c,v 1.3 93/09/28 19:48:24 rws Exp $ */
+/* $XConsortium: XKB.c,v 1.4 93/09/28 21:40:02 rws Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -395,6 +395,20 @@ XkbQueryExtension(dpy,opcodeReturn,eventBaseReturn,errorBaseReturn,majorReturn,m
     *minorReturn = dpy->xkb_info->srv_minor;
 }
 
+static void
+_XkbFreeInfo(dpy)
+    Display *dpy;
+{
+    XkbInfoPtr xkbi = dpy->xkb_info;
+    if (xkbi) {
+	if (xkbi->desc)
+	    Xfree(xkbi->desc);
+	if (xkbi->modmap)
+	    Xfree(xkbi->modmap);
+	Xfree(xkbi);
+      }
+}
+
 Bool
 XkbUseExtension(dpy)
     Display *dpy;
@@ -445,6 +459,7 @@ XkbUseExtension(dpy)
     xkbi->srv_major= rep.serverMajor;
     xkbi->srv_minor= rep.serverMinor;
     dpy->xkb_info = xkbi;
+    dpy->free_funcs->xkb = _XkbFreeInfo;
     ev_base = codes->first_event;
     XESetWireToEvent(dpy,ev_base+XkbEventCode,wire_to_event);
     UnlockDisplay(dpy);
