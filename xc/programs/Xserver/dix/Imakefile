@@ -50,7 +50,7 @@ NormalLibraryTarget(dix,$(OBJS))
 LintLibraryTarget(dix,$(SRCS))
 NormalLintTarget($(SRCS))
 
-SpecialObjectRule(globals.o, $(IRULESRC)/Imake.tmpl, $(SITE_DEFINES))
+SpecialObjectRule(globals.o, $(ICONFIGFILES), $(SITE_DEFINES))
 
 #if HasSaberC
 saber_src:
