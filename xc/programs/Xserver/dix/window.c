@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: window.c,v 5.85 92/03/13 15:58:31 eswu Exp $ */
+/* $XConsortium: window.c,v 5.86 92/03/19 16:30:05 rws Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -3167,6 +3167,8 @@ SetShape(pWin)
 	bsExposed = (* pScreen->TranslateBackingStore)
 			     (pWin, 0, 0, pOldClip,
  			      pWin->drawable.x, pWin->drawable.y);
+	if (WasViewable)
+	    (*pScreen->RegionDestroy) (pOldClip);
     	if (bsExposed)
     	{
 	    RegionPtr	valExposed = NullRegion;
