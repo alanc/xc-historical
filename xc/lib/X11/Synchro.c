@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XSynchro.c,v 11.5 87/09/11 08:07:45 toddb Exp $ */
+/* $XConsortium: XSynchro.c,v 11.6 88/09/06 16:11:04 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
@@ -10,6 +10,7 @@ int _XSyncFunction(dpy)
 register Display *dpy;
 {
 	XSync(dpy,0);
+	return 0;
 }
 
 int (*XSynchronize(dpy,onoff))()
