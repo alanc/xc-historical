@@ -1,4 +1,4 @@
-/* $XConsortium: ICElibint.h,v 1.34 94/03/16 15:44:56 mor Exp $ */
+/* $XConsortium: ICElibint.h,v 1.35 94/03/17 15:36:56 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -17,8 +17,8 @@ purpose.  It is provided "as is" without express or implied warranty.
 Author: Ralph Mor, X Consortium
 ******************************************************************************/
 
-#ifndef ICELIBINT_H
-#define ICELIBINT_H
+#ifndef _ICELIBINT_H_
+#define _ICELIBINT_H_
 
 #include <X11/Xos.h>
 #include <X11/Xfuncs.h>
@@ -526,11 +526,15 @@ typedef struct {
 
 #ifndef WORD64
 
-#define IceReadData16(_iceConn, _bytes, _pData) \
+#define IceReadData16(_iceConn, _swap, _bytes, _pData) \
+{ \
     _IceRead (_iceConn, (unsigned long) (_bytes), (char *) _pData); \
+}
 
-#define IceReadData32(_iceConn, _bytes, _pData) \
+#define IceReadData32(_iceConn, _swap, _bytes, _pData) \
+{ \
     _IceRead (_iceConn, (unsigned long) (_bytes), (char *) _pData); \
+}
 
 #else /* WORD64 */
 
@@ -1039,4 +1043,4 @@ extern void _IceGetPaValidAuthIndices (
 #endif
 );
 
-#endif /* ICELIBINT */
+#endif /* _ICELIBINT_H_ */
