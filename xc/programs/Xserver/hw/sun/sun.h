@@ -12,7 +12,7 @@
  * software for any purpose.  It is provided "as is" without
  * express or implied warranty.
  *
- *	"$XConsortium: sun.h,v 5.7 89/12/06 09:37:35 rws Exp $ SPRITE (Berkeley)"
+ *	"$XConsortium: sun.h,v 5.8 90/08/22 11:25:22 rws Exp $ SPRITE (Berkeley)"
  */
 #ifndef _SUN_H_
 #define _SUN_H_
@@ -54,25 +54,14 @@ extern int  errno;
 
 #include    "X.h"
 #include    "Xproto.h"
+#include    "misc.h"
 #include    "scrnintstr.h"
-#include    "screenint.h"
 #ifdef NEED_EVENTS
 #include    "inputstr.h"
 #endif /* NEED_EVENTS */
 #include    "input.h"
-#include    "cursorstr.h"
-#include    "cursor.h"
-#include    "pixmapstr.h"
-#include    "pixmap.h"
-#include    "windowstr.h"
-#include    "gc.h"
-#include    "gcstruct.h"
-#include    "regionstr.h"
-#include    "colormap.h"
-#include    "miscstruct.h"
+#include    "colormapst.h"
 #include    "dix.h"
-#include    "mfb.h"
-#include    "mi.h"
 
 /*
  * MAXEVENTS is the maximum number of events the mouse and keyboard functions
