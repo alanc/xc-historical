@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: TMparse.c,v 1.49 87/11/01 16:43:04 haynes BL5 $";
+static char rcsid[] = "$Header: TMparse.c,v 1.49 87/11/01 16:43:04 swick Locked $";
 #endif lint
 
 /*
@@ -63,6 +63,8 @@ typedef struct _EventKey {
     ParseProc	parseDetail;
     Opaque	closure;
 }EventKey, *EventKeys;
+
+static char *currentProduction;
 
 static NameValueRec modifiers[] = {
     {"Shift",	0,	ShiftMask},
@@ -139,6 +141,7 @@ static String ParseKeyAndModifiers();
 static String ParseTable();
 static String ParseImmed();
 static String ParseNone();
+static String ParseModImmed();
 
 static EventKey events[] = {
 
@@ -176,6 +179,18 @@ static EventKey events[] = {
 {"PtrMoved", 	    NULL, MotionNotify,	ParseNone,	NULL},
 {"Motion", 	    NULL, MotionNotify,	ParseNone,	NULL},
 {"MouseMoved", 	    NULL, MotionNotify,	ParseNone,	NULL},
+{"ButtonMotion", NULL, MotionNotify, ParseModImmed, (Opaque)AnyButtonModifier},
+{"BtnMotion",    NULL, MotionNotify, ParseModImmed, (Opaque)AnyButtonModifier},
+{"Button1Motion",   NULL, MotionNotify, ParseModImmed,	(Opaque)Button1Mask},
+{"Btn1Motion",      NULL, MotionNotify, ParseModImmed,	(Opaque)Button1Mask},
+{"Button2Motion",   NULL, MotionNotify, ParseModImmed,	(Opaque)Button2Mask},
+{"Btn2Motion",      NULL, MotionNotify, ParseModImmed,	(Opaque)Button2Mask},
+{"Button3Motion",   NULL, MotionNotify, ParseModImmed,	(Opaque)Button3Mask},
+{"Btn3Motion",      NULL, MotionNotify, ParseModImmed,	(Opaque)Button3Mask},
+{"Button4Motion",   NULL, MotionNotify, ParseModImmed,	(Opaque)Button4Mask},
+{"Btn4Motion",      NULL, MotionNotify, ParseModImmed,	(Opaque)Button4Mask},
+{"Button5Motion",   NULL, MotionNotify, ParseModImmed,	(Opaque)Button5Mask},
+{"Btn5Motion",      NULL, MotionNotify, ParseModImmed,	(Opaque)Button5Mask},
 
 {"EnterNotify",     NULL, EnterNotify,    ParseTable,(Opaque)notifyModes},
 {"Enter",	    NULL, EnterNotify,    ParseTable,(Opaque)notifyModes},
@@ -323,6 +338,8 @@ static Syntax(str)
 {
     (void) fprintf(stderr,
      "Translation table syntax error: %s\n", str);
+
+    (void) fprintf(stderr, "Found while parsing '%s'.\n", currentProduction);
 }
 
 
@@ -532,6 +549,17 @@ static String ParseImmed(str, closure, event)
 {
     event->event.eventCode = (unsigned long)closure;
     event->event.eventCodeMask = (unsigned long)~0L;
+
+    return str;
+}
+
+static String ParseModImmed(str, closure, event)
+    String str;
+    Opaque closure;
+    EventPtr event;
+{
+    event->event.modifiers = (unsigned long)closure;
+    event->event.modifierMask = (unsigned long)closure;
 
     return str;
 }
@@ -1194,8 +1222,17 @@ static String ParseAction(str, actionP)
     if (*str == '(') {
 	str++;
 	str = ParseParamSeq(str, &actionP->params, &actionP->num_params);
-    } else { Syntax("Missing '('"); }
-    if (*str == ')') str++; else Syntax("Missing ')'");
+    } else {
+        Syntax("Missing '('");
+        str = ")";		/* ignore rest of sequence */
+    }
+
+    if (*str == ')')
+        str++;
+    else {
+        Syntax("Missing ')'");
+	str = "";		/* ignore rest of sequence */
+    }
 
     return str;
 }
@@ -1241,6 +1278,8 @@ static void ParseTranslationTableProduction(stateTable, str)
     EventSeqPtr	eventSeq = NULL;
     ActionPtr	*actionsP;
     EventPtr	event;
+
+    currentProduction = str;
 
     str = ParseEventSeq(str, &eventSeq, &actionsP);
     str = ScanWhitespace(str);
