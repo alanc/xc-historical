@@ -1,4 +1,4 @@
-.\" $XConsortium: ddx.tbl.ms,v 1.19 89/03/28 14:01:10 rws Exp $
+.\" $XConsortium: ddx.tbl.ms,v 1.20 89/04/05 11:32:18 rws Exp $
 .EF 'Porting Layer Definition'- % -'March 1, 1988'
 .OF 'Porting Layer Definition'- % -'March 1, 1988'
 .EH '''
@@ -22,6 +22,12 @@ minor revisions by
 Bob Scheifler
 .AI
 Massachusetts Institute of Technology
+.sp
+revisions for release 4 by
+.AU
+Keith Packard
+.AI
+MIT X Consortium
 
 .LP
 The following document explains the
@@ -91,10 +97,9 @@ Some of it will require
 modification.
 Other parts may have to be completely written from scratch.
 .LP
-The tape also includes source for a sample implementation of a display server on a
-Digital Equipment Corporation QVSS workstation.  Although it has a monochrome
-display, the sample server demonstrates many techniques that you will find useful
-for implementing any type of X server.
+The tape also includes source for a sample implementation of a display
+server which runs on a variety of color and monochrome displayes which you
+will find useful for implementing any type of X server.
 
 
 .NH 1
@@ -107,19 +112,11 @@ The X Window System, or simply "X," is a
 windowing system that provides high-performance, high-level,
 device-independent graphics.
 
-X is a windowing system designed for workstations with a lot of CPU power.
-This means Digital's MicroVAX, Motorola's 68000, 
-Intel's 80386, National Semiconductor's 32032 or a similarly powerful CPU with
-1 Mbyte or more of main memory,
-probably a hard disk,
-and a display with with 
-150,000 to 2 million  or more pixels on
-the screen.
-The workstation can have a simple, monochrome display or it can
-have a color display with up to 32 bits per pixel with a special graphics processor
-doing the work.
-(In this document, monochrome means a black and white display with
-one bit per pixel.
+X is a windowing system designed for bitmaped graphic displays.  with with
+150,000 to 2 million or more pixels on the screen.  The display can have a
+simple, monochrome display or it can have a color display with up to 32 bits
+per pixel with a special graphics processor doing the work.  (In this
+document, monochrome means a black and white display with one bit per pixel.
 Even though the usual meaning of monochrome is more general, this special
 case is so common that we decided to reserve the word for this purpose.)
 
@@ -245,11 +242,13 @@ Three kinds of fields are in these structs:
 .IP \(bu 5
 Attribute fields - struct fields that contain values like normal structs
 .IP \(bu 5
-Pointers to procedures that operate on the object
+Pointers to procedures, or structures of procedures, that operate on the
+object
 .IP \(bu 5
 A private field (or two) used by your DDX code to keep private data
 (probably a pointer
-to another data structure)
+to another data structure), or an array of private fields, which are
+sized as the server initializes.
 .LP
 DIX calls through
 the struct's procedure pointers to do its tasks.
@@ -416,6 +415,34 @@ its BlockHandler.  A BlockHandler is declared thus:
 The arguments are the index of the Screen,  the BlockData field
 of the Screen,  and the arguments to the DIX BlockHandler().
 .LP
+In addition to the per-screen BlockHandlers, any module may register
+block and wakeup handlers (only together) using:
+.nf
+	Bool RegisterBlockAndWakeupHandlers (blockHandler, wakeupHandler, blockData)
+		void    (*blockHandler)();
+		void    (*wakeupHandler)();
+		pointer blockData;
+.fi
+A FALSE return code indicates that the registration failed for lack of
+memory.  To remove a registerd Block handler at other than server reset time
+(when they are all removed automatically), use:
+.nf
+	RemoveBlockAndWakeupHandlers (blockHandler, wakeupHandler, blockData)
+		void    (*blockHandler)();
+		void    (*wakeupHandler)();
+		pointer blockData;
+.fi
+All three arguments must match the values passed to
+RegisterBlockAndWakeupHandlers.
+.LP
+These registered block handlers are called after the per-screen handlers:
+.nf
+	void (*BlockHandler) (blockData, pptv, pReadmask)
+		pointer	blockData;
+		pointer	pptv;
+		pointer	pReadmask;
+.fi
+.LP
 The DIX WakeupHandler() does the same thing,  calling each Screen's
 WakeupHandler.  A WakeupHandler is declared thus:
 .nf
@@ -428,6 +455,15 @@ WakeupHandler.  A WakeupHandler is declared thus:
 .fi
 The arguments are the index of the Screen,  the BlockData field
 of the Screen,  and the arguments to the DIX BlockHandler().
+.LP
+Any wakeup handlers registered with RegisterBlockAndWakeupHandlers will
+be called before the Screen handlers:
+.nf
+	void (*WakeupHandler) (blockData, err, pReadmask)
+		pointer	blockData;
+		unsigned long err;
+		pointer pReadmask;
+.fi
 .LP
 The WaitForSomething on the sample server also has a built
 in screen saver that darkens the screen if no input happens for a period of time.
@@ -655,10 +691,8 @@ Each request carries with it length information.
 It is the responsibility of the following routine to break it up into request blocks.
 .nf
 
-	char *ReadRequestFromClient(who, status, oldpointer)
+	int ReadRequestFromClient(who)
 		ClientPtr who;
-		int *status;
-		char *oldpointer;
 .fi
 .LP
 You must write
@@ -678,21 +712,15 @@ assumed NOT to be correctly swapped for internal
 use, because that is the responsibility of DIX.
 .LP
 'who' is the ClientPtr returned from WaitForSomething.
-The status should be set to the (positive) byte count if the read is successful, 
+The return value indicating status should be set to the (positive) byte count if the read is successful, 
 0 if the read was blocked, or a negative error code if an error happened.
 .LP
-You must then return a pointer to
-the bytes of the request.
-This can simply be a pointer into your buffer;
+You must then store a pointer to
+the bytes of the request in the client request buffer field;
+who->requestBuffer.  This can simply be a pointer into your buffer;
 DIX may modify it in place but will not otherwise cause damage.
 Of course, the request must be contiguous; you must 
 shuffle it around in your buffers if not.
-.LP
-oldpointer is a pointer that was returned by you on a previous
-call to ReadRequestFromClient() (probably the last).
-You can consider the memory it points to
-to be free buffer space that DIX no longer needs; you can put another request there.
-The sample server, however, ignores this.
 
 The sample server implementation is in server/os/4.2bsd/io.c.
 
@@ -780,7 +808,8 @@ You can put them
 anywhere you want as long as your scheme follows the rules described 
 in this section.
 
-The sample server implementation is in fileio.c and filenames.c.
+The sample server implementation is in os/4.2bsd/osfonts.c,fonttype.c and
+ddx/snf
 
 .NH 3
 Font Support Data Structures
@@ -792,8 +821,10 @@ A font is identified by a font name, which is a counted character string.
 A font name is sent over the network and its length is 
 kept as a separate integer (and it is NOT null terminated).
 X assigns no format rules for font names, although 
-some groups of fonts follow conventions.
-Typical font names are "Fixed," "Times 12," "Avant Garde Demi 24."
+some groups of fonts follow conventions such as the X Logical Font
+Description Conventions.
+Typical font names are "Fixed," "Times 12,"
+"-Adobe-Times-Medium-R-Normal--10-100-75-75-P-54-ISO8859-1."
 .LP
 Given a font name, your OS code must generate
 a "font file name" for that font.
@@ -838,23 +869,11 @@ In the sample server, it is "fixed," a simple fixed-width font
 that is supplied as one of the fonts in bdf format.
 
 .NH 3
-Font Names and Filenames
+Font Names
 .XS
-Font Names and Filenames
+Font Names
 .XE
 .LP
-.nf
-
-	int ExpandFontName( ppFilename, lenFontname, pFontname)
-		char **ppFilename;
-		int lenFontname;
-		char *pFontname;
-.fi
-This routine translates a font name into the corresponding filename.
-pFontname points to the bytes of the font name, and lenFontname is the
-length - pFontname is NOT null terminated.
-ppFilename is a pointer to a char * variable belonging to the caller.
-
 .nf
 
 	FontPathPtr
@@ -883,26 +902,37 @@ Font Files
 .LP
 .nf
 
-	FID FiOpenForRead( lenFilename, filename)
-		int lenFilename;
-		char *name;
+	FontPtr FontFileLoad(fontname, length)
+		char *fontname;
+		unsigned length;
 
-	int FiRead( buf, itemsize, nitems, fid)
+	Bool FontFilePropLoad(fontname, length, font, fi, props)
+		char *fontname;
+		unsigned length;
+		FontInfoPtr fi;		/* return */
+		DIXFontPropPtr *props;	/* return */
+		FontPtr	*font;		/* return */
+
+	void FontUnload (font)
+		FontPtr font;
+
+	int FontFileRead ( buf, itemsize, nitems, fid)
 		char *buf;
 		unsigned itemsize;
 		unsigned nitems;
 		FID fid;
 
-	int FiClose(fid)
+	int FontFileSkip (bytes, fid)
+		unsigned bytes;
 		FID fid;
+
 .fi
-These routines are analogous to DDX SNF runtime library routines.
-FID is an OS specific type.  
-The open routine takes a font filename, as returned by ExpandFontName().
-In other words, if font filenames really are not filenames, then these routines
-should not open real files.
-You must supply them if you use the DDX SNF library.
-Refer to a C runtime library reference manual for more details.
+FontFileLoad and FontFilePropLoad are used by DIX to load fonts and/or font
+properties, returning FALSE if the requested font does not exist.  Both of
+these use sample implementations use a list of registered font readers to
+actually read the fonts, the basic SNF reader sample implementation can be
+found in DDX/SNF.  The font readers use FontFileRead and FontFileSkip to
+actually extract the bits from the font files
 .nf
 
 	int SetFontPath( client, npaths, countedStrings)
@@ -922,7 +952,12 @@ as BadAlloc.
 .LP
 The default font path is set in DIX to the string that is a defined
 constant COMPILEDDEFAULTFONTPATH, in the file site.h.
-In the sample server, it is "/usr/src/x11/fonts/snf/."
+In the sample server, it is either
+"/usr/lib/X11/fonts/misc,/usr/lib/X11/fonts/75dpi,/usr/lib/X11/fonts/100dpi"
+or
+"/usr/lib/X11/fonts/misc,/usr/lib/X11/fonts/100dpi,/usr/lib/X11/fonts/75dpi",
+depending on the resolution of the primary screen for which the server is
+being built.
 .nf
 
 	FontPathPtr GetFontPath()
@@ -960,8 +995,8 @@ Consult a C runtime library reference manual for more details.
 The macros ALLOCATE_LOCAL and DEALLOCATE_LOCAL are provided in
 server/include/os.h.  These are useful if
 your compiler supports alloca() (or some
-method of allocating memory from the stack).  The sample server
-just calls Xalloc() and Xfree().
+method of allocating memory from the stack); and are defined appropriately
+on systems which support it.
 
 Treat memory allocation carefully in your implementation.
 Memory leaks can be very hard to find and are frustrating
@@ -1044,15 +1079,15 @@ INPUT
 In this document "input" refers to input from the user, 
 such as mouse, keyboard, and
 bar code readers.
-X input devices are of three kinds: keyboard, pointing device, and
-"other."
-Other is
-used for extensions; there is no support for other devices in the
-core X server.
-In fact, there is no support for other keyboards or 
-pointing devices is available
-beyond the one keyboard and pointing device that you register during initialization.
-See the Extension document for more details.
+X input devices are of several: keyboard, pointing device, and
+many others.  The core server has support for extension devices as
+described by the X Input Extension document; the interfaces used by
+that extension are described elsewhere.  The core devices are actually
+implemented as two collections of devices, the mouse is a ButtonDevice,
+a ValuatorDevice and a PtrFeedbackDevice while the keyboard is a KeyDevice,
+a FocusDevice and a KbdFeedbackDevice.  Each part implements a portion of
+the functionality of the device.  This abstraction is hidden from view for
+core devices by DIX.
 
 You, the DDX programmer, are
 responsible for some of the routines in this section.
@@ -1101,14 +1136,17 @@ To deliver the events to DIX, you should call the following
 routine:
 .nf
 
-	void DevicePtr->processInputProc(pEvent, device)
+	void DevicePtr->processInputProc(pEvent, device, count)
 .fi
 This is the "input proc" for the device, a DIX procedure.
 DIX will fill in this procedure pointer to one of its own routines by 
 the time ProcessInputEvents() is called the first time.
 Call this input proc routine as many times as needed to
 deliver as many events as should be delivered.
-DIX will buffer them up and send them out as needed.
+DIX will buffer them up and send them out as needed.  Count is set
+to the number of event records which make up one atomic device event and
+is always 1 for the core devices (see the X Input Extension for descriptions
+of devices which may use count > 1).
 
 For example, your ProcessInputEvents() routine might check the mouse and the
 keyboard.
@@ -1150,7 +1188,8 @@ if the pointing device has moved since the last notify.
 Intermediate pointing device moves are stored in a special GetMotionEvents buffer,
 because most client programs are not interested in them.
 
-The sample server implementation is in server/ddx/dec/qvss/qvss_io.c.
+There are quite a collection of sample implementations of this routine,
+one for each supported device.
 
 .NH 3
 Telling DIX When Input is Pending
@@ -1242,7 +1281,7 @@ have times (32-bit count of
 milliseconds) between time start and time stop.
 It should return the number of motion events returned.
 If there is no motion events support, this routine should do nothing and return zero.
-The maximum size is set in RegisterPointerDevice(), below.
+The maximum size is set in InitPointerDeviceStruct(), below.
 
 When the user drags the pointing device,
 the cursor position theoretically sweeps through an infinite
@@ -1330,20 +1369,13 @@ Note also that except for the main keyboard and pointing device,
 an extension is needed to provide for a client interface to a device.
 .nf
 
-	void RegisterPointerDevice(device, numMotionEvents)
+	void RegisterPointerDevice(device)
 		DevicePtr device;
-		int numMotionEvents;
 .fi
 .LP
 RegisterPointerDevice is a DIX routine that your DDX code calls that
 makes that device the main pointing device.  
 This routine is called once upon initialization and cannot be called again.
-
-numMotionEvents is for the motion-buffer-size for the GetMotionEvents
-request.
-A typical length for a motion buffer would be 100 events.
-A server that does not implement this capability should set 
-numMotionEvents to zero.
 .nf
 
 	void RegisterKeyboardDevice(device)
@@ -1410,18 +1442,26 @@ The sample server implementations for keyboard and mouse are in
 server/ddx/dec/qvss/qvss_io.c.
 .nf
 
-	void InitPointerDeviceStruct(device, map, mapLength, GetMotionEvents, ControlProc)
+	void InitPointerDeviceStruct(device, map, mapLength,
+			GetMotionEvents, ControlProc, numMotionEvents)
 		DevicePtr device;
 		BYTE *map;
 		int mapLength;
 		void (*ControlProc)();
 		int (*GetMotionEvents)();
+		int numMotionEvents;
 .fi
 InitPointerDeviceStruct is a DIX routine you call at DEVICE_INIT time to declare
 some operating routines and data structures for a pointing device.
 map and mapLength are as described in the X Window 
 System protocol specification.
 ControlProc and GetMotionEvents are DDX routines, see above.
+
+numMotionEvents is for the motion-buffer-size for the GetMotionEvents
+request.
+A typical length for a motion buffer would be 100 events.
+A server that does not implement this capability should set 
+numMotionEvents to zero.
 .nf
 
 	void InitKeyboardDeviceStruct(device, pKeySyms, pModifiers, Bell, ControlProc)
@@ -1563,8 +1603,8 @@ Serious WYSIWYG (what you see is what you get) applications for
 publishing and drawing programs will adjust for
 different screen resolutions automatically.
 Considerable work
-is involved in compensating for non-square pixels (both in the mfb
-code for the sample server and the client applications).
+is involved in compensating for non-square pixels (a bit in the DDX
+code for the sample server but quite a bit in the client applications).
 
 .NH 3
 Data Structures
@@ -1601,7 +1641,7 @@ Pixmap images are transferred to the server in one of two ways:
 XYPixmap or ZPimap.
 XYPixmaps are a series of bitmaps, one for each bit plane of the image,
 using the bitmap padding rules from the connection setup.
-ZPixmaps are a series of nibbles, bytes or words, one for each pixel, 
+ZPixmaps are a series of bits, nibbles, bytes or words, one for each pixel, 
 using the format rules (padding and so on) for the appropriate depth.
 .LP
 All screens in a given server must agree on a set of
@@ -1655,7 +1695,7 @@ the pixmap and scanline padding rules for all screens in the server.
 .nf
 
 	int AddScreen(scrInitProc, argc, argv)
-		int (*scrInitProc)();
+		Bool (*scrInitProc)();
 		int argc;
 		char **argv;
 .fi
@@ -1670,7 +1710,7 @@ or -1 if there is insufficient memory to add the screen.
 The scrInitProc should be of the following form:
 .nf
 
-	int scrInitProc(iScreen, pScreen, argc, argv)
+	Bool scrInitProc(iScreen, pScreen, argc, argv)
 		int iScreen;
 		ScreenPtr pScreen;
 		int argc;
@@ -1680,8 +1720,8 @@ iScreen is the index for this screen; 0 for the first one initialized,
 1 for the second, etc.
 pScreen is the pointer to the screen's new ScreenRec.
 argc and argv are as before.
-Your screen initialize procedure should return non-zero upon success or
-zero if the screen
+Your screen initialize procedure should return TRUE upon success or
+FALSE if the screen
 cannot be initialized (for instance, if the screen hardware does not exist on
 this machine).
 
@@ -1754,13 +1794,23 @@ Your region procedures are then on their own in
 estimating how big the region will get.
 Your implementation might ignore size, if applicable.
 .nf
+	void pScreen->RegionInit (pRegion, rect, size)
+		RegionPtr	pRegion;
+		BoxPtr		rect;
+		int		size;
+.fi
+Given an existing raw region structure (such as an local variable), this
+routine fills in the appropriate fields to make this region as usable as
+one returned from RegionCreate.  This avoids the additional dynamic memory
+allocation overhead for the region structure itself.
+.nf
 
-	void  pScreen->RegionCopy(dstrgn, srcrgn)
+	Bool pScreen->RegionCopy(dstrgn, srcrgn)
 		RegionPtr dstrgn, srcrgn;
 .fi
 RegionCopy copies the description of one region, srcrgn, to another 
 already-created region,
-dstrgn.
+dstrgn; returning TRUE if the copy succeeded, and FALSE otherwise.
 .nf
 
 	void pScreen->RegionDestroy( pRegion)
@@ -1768,17 +1818,25 @@ dstrgn.
 .fi
 RegionDestroy destroys a region and frees all allocated memory.
 .nf
+	void pScreen->RegionUninit (pRegion)
+		RegionPtr pRegion;
+.fi
+Frees everything except the region structure itself, useful when the
+region was originally passed to RegionInit instead of received from
+RegionCreate.  When this call returns, pRegion must not be reused until
+it has been RegionInit'ed again.
+.nf
 
-	int pScreen->Intersect(newReg, reg1, reg2)
+	Bool pScreen->Intersect(newReg, reg1, reg2)
 		RegionPtr newReg, reg1, reg2;
 
-	int  pScreen->Union(newReg, reg1, reg2)
+	Bool  pScreen->Union(newReg, reg1, reg2)
 		RegionPtr newReg, reg1, reg2;
 
-	int  pScreen->Subtract(newReg, regMinuend, regSubtrahend)
+	Bool  pScreen->Subtract(newReg, regMinuend, regSubtrahend)
 		RegionPtr newReg, regMinuend, regSubtrahend;
 
-	int pScreen->Inverse(newReg, pReg,  pBox)
+	Bool pScreen->Inverse(newReg, pReg,  pBox)
 		RegionPtr newReg, pReg;
 		BoxPtr pBox;
 .fi
@@ -1870,6 +1928,41 @@ possible superset of the entire region.
 The caller will not modify this rectangle, so it can be the one
 in your region struct.
 .nf
+	Bool pScreen->RegionAppend (pDstRgn, pRegion)
+		RegionPtr pDstRgn;
+		RegionPtr pRegion;
+
+	Bool pScreen->RegionValidate (pRegion, pOverlap)
+		RegionPtr pRegion;
+		Bool *pOverlap;
+.fi
+These functions provide an optimization for clip list generation and
+must be used in conjunction.  The combined effect is to produce the
+union of a collection of regions, by using RegionAppend several times,
+and finally calling RegionValidate which takes the intermediate
+representation (which needn't be a valid region) and produces the
+desired union.  pOverlap is set to TRUE if any of the original
+regions overlap; FALSE otherwise.
+.nf
+	RegionPtr pScreen->BitmapToRegion (pPixmap)
+		PixmapPtr pPixmap;
+.fi
+Given a depth-1 pixmap, this routine must create a valid region which
+includes all the areas of the pixmap filled with 1's and excludes the
+areas filled with 0's.  The sample implementation is in mfbclip.c.  This
+routine returns NULL if out of memory.
+.nf
+	RegionPtr pScreen->RectsToRegion (nrects, pRects, ordering)
+		int nrects;
+		xRectangle *pRects;
+		int ordering;
+.fi
+Given a client-supplied list of rectangles, produces a region which includes
+the union of all the rectangles.  Ordering may be used as a hint which
+describes how the rectangles are sorted.  As the hint is provided by a
+client, it must not be required to be correct, but the results when it is
+not correct are not defined (core dump is not an option here).
+.nf
 	void pScreen->SendGraphicsExpose(client,pRegion,drawable,major,minor)
 		ClientPtr client;
 		RegionPtr pRegion;
@@ -1891,44 +1984,42 @@ The default cursor is an "X" shape, but the cursor can have any shape.
 When a client creates a window, it declares what shape the cursor will be when it
 strays into that window on the screen.
 
-For each possible shape the cursor assumes, there is a CursorRec data structure.
-This data structure contains a bitmap for the image of the cursor and a 
-bitmap for a mask
-behind the cursor, in addition to foreground and background colors for the 
-cursor.
-The cursor image is applied to the screen by applying the mask first, 
-clearing 1 bits in its
+For each possible shape the cursor assumes, there is a CursorRec data
+structure.  This data structure contains a pointer to a CursorBits data
+structure which containts a bitmap for the image of the cursor and a bitmap
+for a mask behind the cursor, in addition, the CursorRec data structure
+contains foreground and background colors for the cursor.  The CursorBits
+data structure is shared among multiple CursorRec structures which use the
+same font and glyph to describe both source and mask.  The cursor image
+is applied to the screen by applying the mask first, clearing 1 bits in its
 form to the background color, and then overwriting on the source image, in
-the foreground color.
-(One bits of the source image that fall on top of zero bits of the mask image
-are undefined.)
-This way, a cursor can have transparent parts, and opaque parts
-in two colors.
-X allows any cursor size, but some hardware cursor schemes allow a maximum
-of N pixels by M pixels.
-Therefore, you are allowed to transform the cursor to a smaller size, but be
-sure to include the hot-spot.
+the foreground color.  (One bits of the source image that fall on top of
+zero bits of the mask image are undefined.)  This way, a cursor can have
+transparent parts, and opaque parts in two colors.  X allows any cursor
+size, but some hardware cursor schemes allow a maximum of N pixels by M
+pixels.  Therefore, you are allowed to transform the cursor to a smaller
+size, but be sure to include the hot-spot.
 
-CursorRec in server/include/cursorstr.h
+CursorBits in server/include/cursorstr.h
 is a device-independent structure containing a device-independent
 representation of the bits for the source and mask.  
 (This is possible because the bitmap representation is the same
 for all screens.)
 
-When a cursor is created, it is "realized" for
-each screen.  At realization time, each screen has the chance to convert
-the bits into some other representation that may be more convenient 
-(for instance, putting the cursor
-into off-screen memory) and
-set up its device-private area in the cursor data structure to possibly point to 
-whatever data
-structures are needed.
-For instance, the following
-is the
-device private entry for a particular screen and cursor:
+When a cursor is created, it is "realized" for each screen.  At realization
+time, each screen has the chance to convert the bits into some other
+representation that may be more convenient (for instance, putting the cursor
+into off-screen memory) and set up its device-private area in either the
+CursorRec data structure or CursorBits data structure as appropriate to
+possibly point to whatever data structures are needed.  It is more
+memory-conservative to share realizations by using the CursorBits private
+field, but this makes the asumption that the realization is independent of
+the colors used (which is typically true).  For instance, the
+following are the device private entries for a particular screen and cursor:
 .nf
 
-	pCursor->devPrivate[pScreen->myNum]
+	pCursor->devPriv[pScreen->myNum]
+	pCursor->bits->devPriv[pScreen->myNum]
 
 .fi
 This is done because the change from one cursor shape to another must
@@ -1986,7 +2077,9 @@ indicates whether this is the cursor currently being displayed.  If it
 is, the cursor hardware state may have to be updated.  Whether
 displayed or not, state created at RealizeCursor time may have to be
 updated.  A generic version, miRecolorCursor, may be used that 
-does an unrealize, a realize, and possibly a display (in micursor.c).
+does an unrealize, a realize, and possibly a display (in micursor.c);
+however this constrains UnrealizeCursor and RealizeCursor to always return
+TRUE as no error indication is returned here.
 .nf
 
 	void pScreen->ConstrainCursor( pScr, pBox)
@@ -2234,13 +2327,12 @@ Colormap Routines
 Colormap Routines
 .XE
 .LP
-You need to implement the following routines to
-handle the device-dependent aspects of color maps.
-You will end up placing pointers to these procedures
-in your ScreenRec data structure(s).
-The sample server implementations of many of these routines are in mfbcmap.c;
-since mfb does not do very much with color, many of these routines are
-set to no-op procedures.
+You need to implement the following routines to handle the device-dependent
+aspects of color maps.  You will end up placing pointers to these procedures
+in your ScreenRec data structure(s).  The sample server implementations of
+many of these routines are in both cfbcmap.c and mfbcmap.c; since mfb does
+not do very much with color, the cfb versions are typically more useful
+prototypes.
 .nf
 
 	Bool pScreen->CreateColormap(pColormap)
@@ -2356,7 +2448,11 @@ For example, if you had a pseudocolor display
 with any number of bits per pixel
 that had a lookup table supplying 6 bits for each color gun
 (a total of 256K different colors), you would
-round off each value to 6 bits.
+round off each value to 6 bits.  Please don't simply truncate these values
+to the upper 6 bits, scale the result so that the maximum value seen
+by the client will be 65535 for each primary.  This makes color values
+more portable between different depth displays (a 6-bit truncated white
+will not look white on an 8-bit display).
 .NH 4
 Initializing a Colormap
 .XS
@@ -2485,7 +2581,8 @@ not draw correctly.
 The fonts included with the tape are stored in fonts/bdf.  The
 font compiler is found in fonts/compiler.
 
-Server Natural Format font files consist of five parts. All of the data
+Server Natural Format font files consist of five parts (and, possibly a
+sixth part as well). All of the data
 structures in the file are declared in server/include/font.h. Each part begins
 on a 32-bit (4 byte) boundary in the file.   The structures in
 server/include/font.h are shared by the font compiler and server.
@@ -2534,6 +2631,15 @@ beginning.
 
 The strings array is NOT padded to a 4-byte boundary.
 
+Finally, there may be an array of Ink Information following the Property
+Strings.  The Protocol requires that the character metrics described to the
+client exactly fit the actual bits painted on the screen; but there are some
+fonts for which the bitmaps have been artificially enlarged to simplify (and
+speed up) the glyph painting code.  The Character Information part will
+contain metrics which describe the sizes of the various bitmaps, while this
+optional final section of Ink Information will contain the metrics which are
+sent to the client.  The presence of this information is indicated by
+the inkMetrics bit in the FontInfoRec.
 .NH 4
 Font Loading and Manipulation
 .XS
@@ -2541,53 +2647,15 @@ Font Loading and Manipulation
 .XE
 .LP
 
-There are a number of routines used by the server to deal with loading
-and manipulating fonts.
-.nf
-
-	SetDefaultFont(defaultfontname)
-		char *defaultfontname;
-.fi
-SetDefaultFont establishes the default font in graphics contexts.
-.nf
-
-	FontPtr FontFileLoad(pfontname, lenfname);
-		char *pfontname;
-		unsigned lenfname;
-.fi
-FontFileLoad is the primary routine for loading a font.
-It should call ExpandFontName, and should try to share
-any existing font structure for the font.  DIX is responsible for
-calling RealizeFont for each screen.
-.nf
-
-	int FontUnload(pfont)
-		FontPtr pfont;
-.fi
-FontUnload is used to unload a font.  It should free the
-storage for the font.  DIX will have already called
-UnrealizeFont for each screen.
-.nf
-
-	Bool FontFilePropLoad(fontname, length, font, fi, props)
-		char *fontname;
-		unsigned int length;
-		FontInfoPtr fi;
-		DIXFontPropPtr *props;
-		FontPtr	*font;
-.fi
-FontFilePropLoad gets used by ListFontsWithInfo to extract
-metric and property information from the font.  It should
-return False if the font does not exist.  The font name
-should be expanded with ExpandFontName.
-
-Routines to deal with SNF format are
-supplied (in server/ddx/snf), but you can replace or augment these if you want
-to do conversion from other formats.  For each format, the OS layer needs to
-know the file extension for the format (e.g. "snf"), an optional filter program
-(given as a command line) to execute to convert the format to a usable format
-(e.g., to uncompress a compressed file, or to compile a BDF file on the fly),
-plus routines to load the font, load the font properties, and free the font.
+There are a number of routines used by the server to deal with loading and
+manipulating fonts.  The sample OS implementation uses routines that deal
+with SNF format which are supplied (in server/ddx/snf), but you can replace
+or augment these if you want to do conversion from other formats.  For each
+format, the OS layer needs to know the file extension for the format (e.g.
+"snf"), an optional filter program (given as a command line) to execute to
+convert the format to a usable format (e.g., to uncompress a compressed
+file, or to compile a BDF file on the fly), plus routines to load the font,
+load the font properties, and free the font.
 .nf
 
 	FontPtr FontFileReader->loadFont(fp)
@@ -2640,7 +2708,7 @@ RealizeFont and UnrealizeFont should calculate and allocate these extra data str
 dispose of them when no longer needed.
 These are called in response to OpenFont and CloseFont requests from 
 the client.
-The sample server implementation is in mfbfont.c.
+The sample server implementation is in mfbfont.c (which does very little).
 
 .NH 3
 Other Screen Routines
@@ -2654,12 +2722,14 @@ Some of these are described in other sections:
 .IP \(bu 5
 GetImage() is described in the Drawing Primitives section.
 .IP \(bu 5
-GetSpan() is described in the Pixblit routine section.
+GetSpans() is described in the Pixblit routine section.
 .IP \(bu 5
 Several window and pixmap manipulation procedures are 
 described in the Window section under Drawables.
 .IP \(bu 5
 The CreateGC() routine is described under Graphics Contexts.
+.IP \(bu 5
+SourceValidate is described in the Pixblit routine as well.
 .LP
 .nf
 
@@ -2733,8 +2803,8 @@ Drawables
 A drawable is a descriptor of a surface that graphics are drawn into, either
 a window on the screen or a pixmap in memory.
 
-Each drawable has a type,
-ScreenPtr for the screen it is associated with, depth,
+Each drawable has a type, class,
+ScreenPtr for the screen it is associated with, depth, position, size,
 and serial number.
 The type is one of the defined constants DRAWABLE_PIXMAP,
 DRAWABLE_WINDOW and UNDRAWABLE_WINDOW.
@@ -2743,17 +2813,23 @@ The serial number is guaranteed to be unique across drawables, and
 is used in determining
 the validity of the clipping information in a GC.
 The screen selects the set of procedures used to manipulate and draw into the
-drawable.
+drawable.  Position is used (currently) only by windows; pixmaps must
+set these fields to 0,0 as this reduces the amount of conditional code
+executed throught the mi code.  Size indicates the actual client-specified
+size of the drawable.
 There are, in fact, no other fields that a window drawable and pixmap
 drawable have in common besides those mentioned here.
 
-Both PixmapRecs and WindowRecs are  structs that start with a
-drawable and continue on with more fields.
-They have devPrivate pointers, which are assumed to point to everything else needed.
-This is done because different graphics hardware has different requirements for
-management;
-if the graphics is always handled by a processor with an independent address space, there
-is no point having a pointer to the bit image itself.
+Both PixmapRecs and WindowRecs are structs that start with a drawable and
+continue on with more fields.  Pixmaps have devPrivate pointers, which are
+assumed to point to DDX specific data, while windows have an array of
+devPrivates unions, one entry of which will probably be used for DDX
+specific data.  Entries in this array are allocated using
+AllocateWindowPrivateIndex() (see Wrappers and Privates below).  This is
+done because different graphics hardware has different requirements for
+management; if the graphics is always handled by a processor with an
+independent address space, there is no point having a pointer to the bit
+image itself.
 
 The definition of a drawable and a pixmap can be found in the file
 server/include/pixmapstr.h.
@@ -2765,17 +2841,15 @@ Pixmaps
 Pixmaps
 .XE
 .LP
-A pixmap is a three-dimensional array of bits stored in memory, rather
-than in the screen's display frame buffer.  It can
-be used as a source or destination in graphics operations.
-There is no implied interpretation of the pixel values in a pixmap, because it
-has no associated visual or colormap.
-There is only a depth that indicates the number
-of significant bits per pixel.
-Also, there is no implied physical size for each pixel; 
-all graphic units are in numbers of pixels.
-Therefore, a pixmap alone does not constitute a complete image;
-it represents only a rectangular array of pixel values.
+A pixmap is a three-dimensional array of bits stored somewhere offscreen,
+rather than in the visible portion of the screen's display frame buffer.  It
+can be used as a source or destination in graphics operations.  There is no
+implied interpretation of the pixel values in a pixmap, because it has no
+associated visual or colormap.  There is only a depth that indicates the
+number of significant bits per pixel.  Also, there is no implied physical
+size for each pixel; all graphic units are in numbers of pixels.  Therefore,
+a pixmap alone does not constitute a complete image; it represents only a
+rectangular array of pixel values.
 
 Note that the pixmap data structure is reference-counted.
 
@@ -2834,8 +2908,9 @@ Sibling windows constitute a doubly-linked list; the parent window has a pointer
 to the head and tail of this list.
 Each child also has a pointer to its parent.
 
-The border of a window is drawn by a DDX procedure when DIX requests that it be drawn.
-The contents of the window is drawn by the client through requests to the server.
+The border of a window is drawn by a DDX procedure when DIX requests that it
+be drawn.  The contents of the window is drawn by the client through
+requests to the server.
 
 Window painting is orchestrated through an expose event system.
 When a region is exposed, 
@@ -2918,9 +2993,6 @@ the routine NotClippedByChildren(pWin) returns the unclipped region.
 borderClip is the region used by CopyWindow and 
 includes the area of the window, its children, and the border, but with the
 overlapping areas of sibling children removed.
-.IP \(bu 5
-absCorner is the absolute screen coordinate
-of the upper-left corner of this window.
 .LP
 Most of the other fields are for DIX use only.
 
@@ -3036,22 +3108,22 @@ This routine must be provided. The sample
 server has a machine-independent version in server/ddx/mi/miexpose.c.
 
 .NH 4
-Window Procedures in the WindowRec
+Window Painting Procedures
 .XS
-Window Procedures in the WindowRec
+Window Painting Procedures
 .XE
 .LP
-In addition to the procedures stored in the ScreenRec, several routines
-are kept in the WindowRec itself.
+In addition to the procedures listed above, there are four routines which
+manipulate the actual window image directly.
 In the sample server, mi implementations will work for 
-most purposes and mfb routines speed up situations, such
+most purposes and mfb/cfb routines speed up situations, such
 as solid backgrounds/borders or tiles that are 8, 16 or 32 pixels square.
 
 These three routines are used for systems that implement a backing-store scheme for it to
 know when to stash away areas of pixels and to restore or reposition them.
 .nf
 
-	void pWindow->ClearToBackground(pWin, x, y, w, h, generateExposures);
+	void pScreen->ClearToBackground(pWin, x, y, w, h, generateExposures);
 		WindowPtr pWin;
 		int x, y, w, h;
 		Bool generateExposures;
@@ -3076,12 +3148,12 @@ If w or h is zero, it clears all the way to the right or lower edge of the windo
 The sample server implementation is in server/ddx/mi/miwindow.c.
 .nf
 
-	void pWindow->PaintWindowBackground(pWin, region, kind)
+	void pScreen->PaintWindowBackground(pWin, region, kind)
 		WindowPtr pWin;
 		RegionPtr region;
 		int kind;	/* must be PW_BACKGROUND */
 
-	void pWindow->PaintWindowBorder(pWin, region, kind)
+	void pScreen->PaintWindowBorder(pWin, region, kind)
 		WindowPtr pWin;
 		RegionPtr region;
 		int kind;	/* must be PW_BORDER */
@@ -3093,12 +3165,17 @@ or PW_BORDER, as shown.
 Therefore, you can use the same routine for both.
 The defined constant tells the routine whether to use the window's 
 border fill style or its background fill style to paint the given region.
-Both fill styles consist of a tile pointer and a pixel value. 
-If the tile pointer is USE_PIXEL_VALUE, 
-the background is the solid pixel value.
+Both fill styles consist of a union which holds a tile pointer and a pixel
+value, along with a separate variable which indicates which entry is valid.
+For PW_BORDER, borderIsPixel != 0 indicates that the border PixUnion
+contains a pixel value, else a tile.  For PW_BACKGROUND there are four
+values, contained in backgroundState; None, ParentRelative, BackgroundPixmap
+and BackgroundPixel.  None indicates that the region should be left
+unfilled, while ParentRelative indicates that the background of the parent is
+inherited (see the Protocol document for the exact semantics).
 .nf
 
-	void pWindow->CopyWindow(pWin, oldpt, oldRegion);
+	void pScreen->CopyWindow(pWin, oldpt, oldRegion);
 		WindowPtr pWin;
 		POINT oldpt;
 		RegionPtr oldRegion;
@@ -3129,51 +3206,54 @@ directly from the window, rather than passing it as a parameter.
 The sample server implementation is in server/ddx/mfb/mfbwindow.c.
 
 .NH 4
-Window Operations for Backing Store
+Screen Operations for Backing Store
 .XS
-Window Operations for Backing Store
+Screen Operations for Backing Store
 .XE
 .LP
-Each WindowRec has a pointer to a struct of type BackingStoreRec.
-For windows not supporting backing store, this pointer is null.
-Servers that implement some backing store scheme must allocate 
-a BackingStoreRec, must fill in the procedure pointers for the procedures below,
-and must maintain a few fields in the WindowRec specifically for backing store.
-
-These three routines are used for systems that 
-implement a backing store scheme for it to
-know when to stash away areas of pixels and to restore or reposition them.
+Each ScreenRec has six functions which provide the backing store
+interface.  For screens not supporting backing store, these pointers
+may be nul.  Servers that implement some backing store scheme 
+must fill in the procedure pointers for the procedures below,
+and must maintain the backStorage field in each window struct.
+The sample implementation is in ddx/mi/mibstore.c.
 .nf
 
-	void pBackingStore->SaveDoomedAreas(pWin);
+	void pScreen->SaveDoomedAreas(pWin, pRegion, dx, dy)
 		WindowPtr pWin;
-.fi
-
-This routine looks at the obscured region of the window and tries to save
-those pixels somewhere.
-.nf
-
-	RegionPtr pBackingStore->RestoreAreas(pWin);
-		WindowPtr pWin;
-.fi
-This looks at the exposed region of the window.  
-It tries to restore to the screen the parts that have been saved.
-It removes the restored parts from the backing storage (because
-they are now on the screen) and subtracts the areas from
-the exposed region.  The returned region is the area of the window
-which should have expose events generated for and can be either a new
-region, pWin->exposed, or NULL.  The region left in pWin->exposed
-is set to the area of the window which should be painted with
-the backgroundTile.
-.nf
-
-	void pBackingStore->TranslateBackingStore(pWin, dx, dy);
-		WindowPtr pWin;
+		RegionPtr pRegion;
 		int dx, dy;
 .fi
-This is called when the window is moved or resized so that the backing
-store can be translated if necessary.
+This routine saves the newly obscured region, pRegion, in backing store.
+dx, dy indicate how far the window is being moved, useful as the obscured
+region is relative to the window as it will appear in the new location,
+rather then relative to the bits as the are on the screen when the function
+is invoked.
+.nf
 
+	RegionPtr pBackingStore->RestoreAreas(pWin, pRegion)
+		WindowPtr pWin;
+		RegionPtr pRegion;
+.fi
+This looks at the exposed region of the window, pRegion, and tries to
+restore to the screen the parts that have been saved.  It removes the
+restored parts from the backing storage (because they are now on the screen)
+and subtracts the areas from the exposed region.  The returned region is the
+area of the window which should have expose events generated for and can be
+either a new region, pWin->exposed, or NULL.  The region left in
+pRegion is set to the area of the window which should be painted with
+the window background.
+.nf
+
+	void pBackingStore->TranslateBackingStore(pWin, dx, dy, oldClip)
+		WindowPtr pWin;
+		int dx, dy;
+		RegionPtr oldClip;
+.fi
+This is called when the window is moved or resized so that the backing
+store can be translated if necessary.  oldClip is the old cliplist for
+the window, which is used to save doomed areas if the window is moved
+underneath its parent as a result of bitgravity.
 
 .NH 2
 Graphics Contexts and Validation
@@ -3197,27 +3277,35 @@ A GC is like a piece of chalk.
 Unlike many similar systems, there is no "current pen location."
 Every graphic operation is accompanied by the coordinates where it is to happen.
 
-The GC also includes procedure pointers
-that carry out the fundamental graphic operations
+The GC also includes two vectors of procedure pointers, the first
+operate on the GC itself and are called GC funcs.  The second, called
+GC ops,
+contains the functions that carry out the fundamental graphic operations
 such as drawing lines, polygons, arcs, text, and copying bitmaps.
 The DDX graphic software can, if it
-wants to be smart, change these procedure pointers
+wants to be smart, change these two vectors of procedure pointers
 to take advantage of hardware/firmware in the server machine, which can do
-a better job under certain circumstances.
+a better job under certain circumstances.  To reduce the amount of memory
+consumed by each GC, it is wise to create a few "boilerplate" GC ops vectors
+which can be shared by every GC which matches the constraints for that set.
+Also, it is usually reasonable to have every GC created by a particular
+module to share a common set of GC funcs.  Samples of this sort of
+sharing can be seen in ddx/cfb/cfbgc.c and ddx/mfb/mfbgc.c.
 
 The DDX software is notified any time the client (or DIX) uses a changed GC.
-For instance, if the hardware has special support for drawing fixed-width fonts,
-DDX can intercept changes to the current font in a GC just before drawing is done.
-It can plug into either a fixed-width procedure
-that makes the hardware draw characters, or a variable-width procedure that carefully
-lays out glyphs by hand in software, depending upon the new font that is selected.
+For instance, if the hardware has special support for drawing fixed-width
+fonts, DDX can intercept changes to the current font in a GC just before
+drawing is done.  It can plug into either a fixed-width procedure that makes
+the hardware draw characters, or a variable-width procedure that carefully
+lays out glyphs by hand in software, depending upon the new font that is
+selected.
 
-A definition of this block can be found in the file 
+A definition of these structures can be found in the file 
 server/include/gcstruct.h.
 
-Also included in this block is a device-private field.
-DDX can load this pointer at GC creation with a pointer to
-a device-private context block.
+Also included in each GC is an array of devPrivates which portions of the
+DDX can use for any reason.  Entries in this array are allocated with
+AllocateGCPrivateIndex() (see Wrappers and Privates below).
 
 .NH 3
 Details of operation
@@ -3226,34 +3314,26 @@ Details of operation
 .XE
 .LP
 At screen initialization, a screen must supply a GC creation procedure.
-At GC creation, the screen must fill in a GCInterestRec
-(server/include/gcstruct.h) and
-specify a list of entry points
-to be called when that GC is modified or deleted.
-The screen may also register an entry point to be called when
-the GC, just prior to a drawing operation if the state
-of the drawable (i.e., it's clipList) or the GC is different.
-It also indicates for what state changes
-it wishes to be called for modification and validation.
+At GC creation, the screen must fill in GC funcs and GC ops vectors
+(server/include/gcstruct.h).  For any particular GC, the func vector
+must remain constant, while the op vector may vary.  This invarient is to
+ensure that Wrappers work correctly.
 
 When a client request is processed that results in a change
 to the GC, the device-independent state of the GC is updated.
 This includes a record of the state that changed.
-If DDX has requested notification at GC-modify time, the ChangeGC routine is called.
+Then the ChangeGC GC func is called.
 This is useful for graphics subsystems that are able to process
 state changes in parallel with the server CPU.
 DDX may opt not to take any action at GC-modify time.
 This is more efficient if multiple GC-modify requests occur
 between draws using a given GC.
 
-Validation occurs at the first draw operation that specifies
-the GC after that GC was modified.
-If there are GC field changes that DDX has expressed interest in,
-the validation procedure is called.
-DDX should then update its internal state.
-DDX internal state may be stored as one or more of the following:
-1) device private block on the GC; 2) hardware state; 3) changes to
-the GC vectors.
+Validation occurs at the first draw operation that specifies the GC after
+that GC was modified.  DIX calls then the ValidateGC GC func.  DDX should
+then update its internal state.  DDX internal state may be stored as one or
+more of the following:  1) device private block on the GC; 2) hardware
+state; 3) changes to the GC ops.
 
 The GC contains a serial number, which is loaded with a number fetched from
 the window that was drawn into the last time the GC was used.  The serial
@@ -3288,53 +3368,33 @@ a dynamically allocated GC that is passed in.
 It does NOT allocate the GC record itself or fill
 in the defaults; DIX does that.
 
-This must fill in all the functions in the GC; none of the drawing
+This must fill in both the GC funcs and ops; none of the drawing
 functions will be called before the GC has been validated,
 but the others (dealing with allocating of clip regions,
 changing and destroying the GC, etc.) might be.
-It must also dynamically allocate and fill in the first GCInterestRec.
-(The default font is set elsewhere; see the section on Fonts.)
 
-The GCInterestRec is a struct used as part of a GC.
-Every GC has a minimum of one GCInterestRec; they form a
-doubly linked list hanging off of a GC.
-Each GCInterestRec indicates some piece of code that is interested in
-what happens to the GC.
-The first GCInterestRec to be attached should belong to the server's DDX code.
-Additional GCInterestRec's are usually the work of server extensions 
-(see the extensions document for more details).
-They can be attached on-the-fly, and may come before or after the server's;
-they each get their own destroy routine to clean up after themselves.
-
-Each GCInterestRec contains pointers to five
-routines:
+The GC funcs vector contains pointers to 7
+routines and a devPrivate field:
 .nf
 
-	pGCInterest->ChangeGC(pGC, pGCI, changes)
+	pGC->funcs->ChangeGC(pGC, changes)
 		GCPtr pGC;
-		GCInterestPtr pGCI;
 		Mask changes;
 .fi
 
-This GC Interest routine is called
+This GC func is called
 immediately after a field in the GC is changed.
-The pointer to this routine can be NULL in the GCInterestRec
-if there is no routine to be called.
 changes is a bit mask indicating the
 changed fields of the GC in this request.
-pGCI points to this GCInterestRec (handy if you need it).
 
 The ChangeGC routine is useful if you have a system where state-changes to the
 GC can be swallowed immediately by your graphics system,
 and a validate is not necessary.
 
-You can control what changes the ChangeGC routine gets called for by
-setting the ChangeInterestMask in the GCInterestRec.
 .nf
 
-	pGCInterest->ValidateGC(pGC, pGCI, changes, pDraw)
+	pGC->funcs->ValidateGC(pGC, changes, pDraw)
 		GCPtr pGC;
-		GCInterestPtr pGCI;
 		Mask changes;
 		DrawablePtr pDraw;
 .fi
@@ -3343,8 +3403,8 @@ ValidateGC is called by DIX
 just before the GC will be used when one of many possible changes to the GC
 or the graphics system
 has happened. 
-It can modify the devPrivate
-field of the GC or its contents, change the procedure vectors,
+It can modify a devPrivates
+field of the GC or its contents, change the op vector,
 or change hardware according to the values in the GC.
 It may not
 change the device-independent portion of the GC itself.
@@ -3364,41 +3424,27 @@ intended; you should not rely on algorithms that will break under such circumsta
 See the Strategies document for more information on creatively using 
 this routine.
 
-You can control what changes the ValidateGC routine gets called for by
-setting the ValInterestMask in the GCInterestRec.
 .nf
 
-	pGCInterest->CopyGCSource(pGC, pGCI, mask, destGC)
-		GCPtr pGC;
-		GCInterestPtr pGCI;
+	pGC->funcs->CopyGC(pGCSrc, mask, pGCDst)
+		GCPtr pGCSrc;
 		Mask mask;
-		GCPtr destGC;
+		GCPtr pGCDst;
 
-	pGCInterest->CopyGCDest(pGC, pGCI, mask, srcGC)
-		GCPtr pGC;
-		GCInterestPtr pGCI;
-		Mask mask;
-		GCPtr srcGC;
 .fi
 
-These routines are called by DIX 
+This routine is called by DIX 
 when a GC is being copied to another GC.
-After a new GC is allocated, CopyGCSource is called for the source GC;
-then CopyGCDest is called for the destination GC.
 This is for situations where dynamically allocated chunks of memory are hanging
-off the GCInterestRec's extPriv component, and they need to be duplicated when
-the GC and GCInterestRec's are duplicated.
+off a GC devPrivates field which need to be transfered to the destination GC.
 .nf
 
-	pGCInterest->DestroyGC(pGC, pGCI)
+	pGC->funcs->DestroyGC(pGC)
 		GCPtr pGC;
-		GCInterestPtr pGCI;
 .fi
 This routine is called before the GC is destroyed for the
 entity interested in this GC to clean up after itself.
-This routine is responsible for detaching its GCInterestRec
-and freeing it, in addition to any auxiliary storage allocated
-by the interested entity.
+This routine is responsible for freeing any auxiliary storage allocated.
 
 .NH 3
 GC Clip Region Routines
@@ -3406,20 +3452,18 @@ GC Clip Region Routines
 GC Clip Region Routines
 .XE
 .LP
-The GC clientClip field requires three procedures to manage it.
-These procedures are in the GC.  The underlying principle is that
-dix knows nothing about the internals of the clipping information,
-(except when it has come from the client), and so calls ddX whenever
-it needs to copy, set, or destroy such information.  It could have been
-possible for dix not to allow ddX to touch the field in the GC,
-and require it to keep its own copy in devPriv,
-but since clip masks can be very large, this seems like a bad
-idea.  Thus, the server allows ddX to do whatever it wants
-to the clientClip field of the GC, but requires it to do all
-manipulation itself.
+The GC clientClip field requires three procedures to manage it.  These
+procedures are in the GC funcs vector.  The underlying principle is that dix
+knows nothing about the internals of the clipping information, (except when
+it has come from the client), and so calls ddX whenever it needs to copy,
+set, or destroy such information.  It could have been possible for dix not
+to allow ddX to touch the field in the GC, and require it to keep its own
+copy in devPriv, but since clip masks can be very large, this seems like a
+bad idea.  Thus, the server allows ddX to do whatever it wants to the
+clientClip field of the GC, but requires it to do all manipulation itself.
 .nf
 
-	void pGC->ChangeClip(pGC, type, pValue, nrects)
+	void pGC->funcs->ChangeClip(pGC, type, pValue, nrects)
 		GCPtr pGC;
 		int type;
 		char *pValue;
@@ -3455,7 +3499,7 @@ with other regions to arrive at a composite clip region before any drawing
 is done.)
 .nf
 
-	void pGC->DestroyClip(pGC)
+	void pGC->funcs->DestroyClip(pGC)
 		GCPtr pGC;
 .fi
 This routine is called whenever the client clip region must be destroyed.
@@ -3465,7 +3509,7 @@ In the sample server, the pointer to the client clip region is set to NULL
 by this routine after destroying the region, so that other software
 (including ChangeClip() above) will recognize that there is no client clip region.
 .nf
-	void pGC->CopyClip(pgcDst, pgcSrc)
+	void pGC->funcs->CopyClip(pgcDst, pgcSrc)
 		GCPtr pgcDst, pgcSrc;
 .fi
 This routine makes a copy of the clipMask and clipType from pgcSrc
@@ -3490,7 +3534,7 @@ to perform these on your hardware.
 (The number 16 is arbitrary.)
 
 More specifically, 16 procedure pointers are in each
-GC.
+GC op vector.
 At any given time, ALL of them MUST point to a valid procedure that
 attempts to do the operation assigned, although
 the procedure pointers may change and may
@@ -3532,7 +3576,7 @@ appropriate regions in the drawable.
 Since there are many regions to clip to simultaneously, 
 your ValidateGC routine should combine these into a unified 
 clip region to which your drawing routines can quickly refer.
-This is exactly what the mfb routines supplied with the sample server
+This is exactly what the cfb and mfb routines supplied with the sample server
 do.
 The mi implementation passes responsibility for clipping while drawing
 down to the Pixblit routines.
@@ -3607,7 +3651,7 @@ The Drawing Primitives are as follows:
 
 .nf
 
-	RegionPtr pGC->CopyArea(src, dst, pGC, srcx, srcy, w, h, dstx, dsty)
+	RegionPtr pGC->ops->CopyArea(src, dst, pGC, srcx, srcy, w, h, dstx, dsty)
 		DrawablePtr dst, src;
 		GCPtr pGC;
 		int srcx, srcy, w, h, dstx, dsty;
@@ -3627,7 +3671,7 @@ returned instead).  Furthermore, the invalid bits of the source are
 not copied to the destination and (when the destination is a window)
 are filled with the background tile.  The sample routine
 miHandleExposures generates the appropriate return value and fills the
-invalid area using pWindow->PaintWindowBackground.
+invalid area using pScreen->PaintWindowBackground.
 
 For instance, imagine a window that is partially obscured by other
 windows in front of it.  As text is scrolled on your window, the pixels
@@ -3640,7 +3684,7 @@ without resorting to exposure events.
 An example implementation is mfbCopyArea() in server/ddx/mfb/mfbbitblt.c.
 .nf
 
-	RegionPtr pGC->CopyPlane(src, dst, pGC, srcx, srcy, w, h, dstx, dsty, plane)
+	RegionPtr pGC->ops->CopyPlane(src, dst, pGC, srcx, srcy, w, h, dstx, dsty, plane)
 		DrawablePtr dst, src;
 		GCPtr pGC;
 		int srcx, srcy, w, h, dstx, dsty;
@@ -3659,7 +3703,7 @@ An example implementation is mfbCopyPlane() in
 server/ddx/mfb/mfbbitblt.c.
 .nf
 
-	pGC->PolyPoint(dst, pGC, mode, n, pPoint)
+	pGC->ops->PolyPoint(dst, pGC, mode, n, pPoint)
 		DrawablePtr dst;
 		GCPtr pGC;
 		int mode;
@@ -3676,7 +3720,7 @@ Example implementations are mfbPolyPoint() in server/ddx/mfb/mfbpolypnt.c and
 miPolyPoint in server/ddx/mi/mipolypnt.c.
 .nf
 
-	pGC->Polylines(dst, pGC, mode, n, pPoint)
+	pGC->ops->Polylines(dst, pGC, mode, n, pPoint)
 		DrawablePtr dst;
 		GCPtr pGC;
 		int mode;
@@ -3690,15 +3734,11 @@ the end caps and joins.
 mode is one of the defined constants Previous or Origin, depending upon
 whether the points are each relative to the last or are absolute.
 
-Example implementations are the mi routines miZeroLine() in 
-server/ddx/mi/mizerline.c, miWideLine() 
-in server/ddx/mi/milines.c, 
-miWideDash() in server/ddx/mi/miwidedash.c, and the mfb routines 
-mfbLineSS() and mfbDashLine() 
-in server/ddx/mfb/mfbline.c.
+Example implementations are miWideLine() and miWideDash() in
+ddx/mi/miwideline.c and miZeroLine() in ddx/mi/mizerline.c.
 .nf
 
-	pGC->PolySegment(dst, pGC, n, pPoint)
+	pGC->ops->PolySegment(dst, pGC, n, pPoint)
 		DrawablePtr dst;
 		GCPtr pGC;
 		int n;
@@ -3711,7 +3751,7 @@ even size; no interconnecting lines are drawn.
 An example implementation is miPolySegment() in mipolyseg.c.
 .nf
 
-	pGC->PolyRectangle(dst, pGC, n, pRect)
+	pGC->ops->PolyRectangle(dst, pGC, n, pRect)
 		DrawablePtr dst;
 		GCPtr pGC;
 		int n;
@@ -3722,7 +3762,7 @@ PolyRectangle draws outlines of rectangles for each rectangle in the array.
 An example implementation is miPolyRectangle() in server/ddx/mi/mipolyrect.c.
 .nf
 
-	pGC->PolyArc(dst, pGC, n, pArc)
+	pGC->ops->PolyArc(dst, pGC, n, pArc)
 		DrawablePtr dst;
 		GCPtr pGC;
 		int n;
@@ -3731,10 +3771,11 @@ An example implementation is miPolyRectangle() in server/ddx/mi/mipolyrect.c.
 PolyArc draws connected conic arcs according to the descriptions in the array.
 See the protocol specification for more details.
 
-An example implementation is miPolyArc() in server/ddx/mi/miarc.c.
+Example implementations are miZeroPolyArc in server/ddx/mi/mizerarc. and
+miPolyArc() in server/ddx/mi/miarc.c.
 .nf
 
-	pGC->FillPolygon(dst, pGC, shape, mode, count, pPoint)
+	pGC->ops->FillPolygon(dst, pGC, shape, mode, count, pPoint)
 		DrawablePtr dst;
 		GCPtr pGC;
 		int shape;
@@ -3756,7 +3797,7 @@ whether the points are each relative to the last or are absolute.
 An example implementation is miFillPolygon() in server/ddx/mi/mipoly.c.
 .nf
 
-	pGC->PolyFillRect(dst, pGC, n, pRect)
+	pGC->ops->PolyFillRect(dst, pGC, n, pRect)
 		DrawablePtr dst;
 		GCPtr pGC;
 		int n;
@@ -3768,7 +3809,7 @@ Example implementations are mfbPolyFillRect() in server/ddx/mfb/mfbfillrct.c and
 miPolyFillRect() in server/ddx/mi/mifillrct.c.
 .nf
 
-	pGC->PolyFillArc(dst, pGC, n, pArc)
+	pGC->ops->PolyFillArc(dst, pGC, n, pArc)
 		DrawablePtr dst;
 		GCPtr pGC;
 		int n;
@@ -3778,10 +3819,10 @@ PolyFillArc fills a shape for each arc in the
 list that is bounded by the arc and one or two
 line segments with the current fill style.
 
-An example implementation is miPolyFillArc() in server/ddx/mi/miarc.c.
+An example implementation is miPolyFillArc() in server/ddx/mi/mifillarc.c.
 .nf
 
-	pGC->PutImage(dst, pGC, depth, x, y, w, h, leftPad, format, pBinImage)
+	pGC->ops->PutImage(dst, pGC, depth, x, y, w, h, leftPad, format, pBinImage)
 		DrawablePtr dst;
 		GCPtr pGC;
 		int x, y, w, h;
@@ -3801,8 +3842,7 @@ pixmap image must be a Bitmap.
 If a Bitmap, the foreground and background colors will be applied 
 to the destination.
 
-Example implementations are mfbPutImage() in server/ddx/mfb/mfbimage.c and 
-miPutImage() in server/ddx/mfb/mibitblt.c.
+An example implementation is miPutImage() in server/ddx/mfb/mibitblt.c.
 .nf
 
 	pScreen->GetImage(src, x, y, w, h, format, planeMask, pBinImage)
@@ -3828,11 +3868,10 @@ If format is XYPixmap, planemask is guaranteed to have a single
 bit set; the bits should be written in Bitmap format, which
 is the format for a single plane of an XYPixmap.
 
-Example implementations are mfbGetImage() in server/ddx/mfb/mfbimage.c and 
-miGetImage() in server/ddx/mi/mibitblt.c.
+An example implementation is miGetImage() in server/ddx/mi/mibitblt.c.
 .nf
 
-	pGC->ImageText8(pDraw, pGC, x, y, count, chars)
+	pGC->ops->ImageText8(pDraw, pGC, x, y, count, chars)
 		DrawablePtr pDraw;
 		GCPtr pGC;
 		int x, y;
@@ -3847,7 +3886,7 @@ The coordinates specify the baseline and start of the text.
 An example implementation is miImageText8() in server/ddx/mi/mipolytext.c.
 .nf
 
-	pGC->PolyText8(pDraw, pGC, x, y, count, chars)
+	pGC->ops->PolyText8(pDraw, pGC, x, y, count, chars)
 		DrawablePtr pDraw;
 		GCPtr pGC;
 		int x, y;
@@ -3862,14 +3901,14 @@ See the X protocol specification for more details.
 An example implementation is miPolyText8() in server/ddx/mi/mipolytext.c.
 .nf
 
-	pGC->PolyText16(pDraw, pGC, x, y, count, chars)
+	pGC->ops->PolyText16(pDraw, pGC, x, y, count, chars)
 		DrawablePtr pDraw;
 		GCPtr pGC;
 		int x, y;
 		int count;
 		unsigned short *chars;
 
-	pGC->ImageText16(pDraw, pGC, x, y, count, chars)
+	pGC->ops->ImageText16(pDraw, pGC, x, y, count, chars)
 		DrawablePtr pDraw;
 		GCPtr pGC;
 		int x, y;
@@ -3900,41 +3939,9 @@ miImageText16() in server/ddx/mi/mipolytext.c.
 
 See the X protocol specification for more details on these graphic operations.
 .LP
-There is a hook in the GC, called LineHelper, that is used in the
-sample implementation by the code for wide lines and arcs, both
-dashed and undashed.  It draws a polyline of the proper width with
-the property join style and applies the appropriate end styles if
-asked.   In the sample, there are two different routines that
-might get hooked in; one draws lines with mitered joints and the
-other handles bevel and round joints.  
-.LP
-Even though this hook is stored in the GC, it is not intended to be of 
-general utility.  It is only to be called by the PolyLine code.  In
-specific, this routine is not intended for use by extensions.
-.nf
-
-	void pGC->LineHelper(pDrawable, pGC, docaps, nPoints, pPoints, xOrg, yOrg)
-		DrawablePtr pDrawable;
-		GCPtr pGC;
-		Bool docaps;
-		int nPoints;
-		SppPointPtr *pPoints;
-		int xOrg, yOrg;
-.fi
-The polyline consists of the nPoints points pointed to by pPoints.
-(The type of nPoints is that of an SPP point; in the sample server
-the coordinates are double, but you may want to optimize it
-to use fixed point numbers.  See the Strategies document, section on 
-optimizing, for more details.)
-xOrg and yOrg are offsets that should be added to all coordinates.
-docaps is TRUE if you should draw caps on the ends of the segments
-and FALSE if you should not.
-
-The LineHelper is called once for normal wide lines and once for each
-segment of a wide dashed line.
-
-The two implementations of this routine, miMiter() and miNotMiter(), are
-in server/ddx/mi/milines.c.
+There is a hook in the GC ops, called LineHelper, that used to be used in the
+sample implementation by the code for wide lines.  It no longer servers any
+purpose
 
 .NH 2
 Pixblit Procedures
@@ -3950,8 +3957,9 @@ These routines read and write pixel values
 and deal directly with the image data.
 
 The Pixblit routines for the sample server are part of the
-"mfb" routines for Monochrome Frame Buffer.
-As with the mi routines, the mfb routines
+"mfb" routines (for Monochrome Frame Buffer), and "cfb" routines
+(for Color Frame Buffer).
+As with the mi routines, the mfb and cfb routines
 are portable but are not as portable
 as the mi routines.
 
@@ -3960,10 +3968,13 @@ buffers, the simplest type of display.
 Furthermore, they only work for screens that organize their
 bits in rows of pixels on the screen.
 (See the Strategies document for more details on porting mfb.)
+The cfb routines work for packed-pixel displays from 2 to 32 bits
+in depth, although they have a bit of code which has been tuned
+to run on 8-bit (1 pixel per byte) displays.
 
-In other words, if you have a "normal" 1-deep display, you can probably
-use both the mfb and the mi code.
-If you have a deeper frame buffer, you will have to supply
+In other words, if you have a "normal" frame buffer type display, you can probably
+use either the mfb or cfb code, and the mi code.
+If you have a stranger hardware, you will have to supply
 your own Pixblit routines, but you can use the mi routines
 on top of them.
 If you have better ways of doing some of the Drawing Primitive functions,
@@ -4040,19 +4051,6 @@ machine-independent implementation that depends upon the Span routines.
 If you are really pressed for time, you can use these 
 versions, although they are quite slow.
 
-If you use the miGetImage() code, you need to supply a
-macro (or function) called GetBitFromPixel.
-.nf
-
-	GetBitFromPixel(pixel, plane, depth)
-	    CARD32 pixel;
-	    int plane, depth;
-.fi
-Pixel is a pixel value of the specified depth; this returns
-the bit corresponding to plane from the pixel.  The returned value is
-cast to be (unsigned char).  0 is the least significant plane, depth-1
-the most significant.
-
 .NH 3
 Span Routines
 .XS
@@ -4061,7 +4059,7 @@ Span Routines
 .LP
 For these routines, all graphic operations have been reduced to "spans."
 A span is a horizontal row of pixels.
-If you can design these routines to write into and read from
+If you can design these routines which write into and read from
 rows of pixels at a time, you can use the mi routines.
 
 Each routine takes
@@ -4070,7 +4068,7 @@ the number of spans to do, and two pointers to arrays that indicate the list
 of starting points and the list of widths of spans.
 .nf
 
-	pGC->FillSpans(dst, pGC, nSpans, pPoints, pWidths, sorted)
+	pGC->ops->FillSpans(dst, pGC, nSpans, pPoints, pWidths, sorted)
 		DrawablePtr dst;
 		GCPtr pGC;
 		int nSpans;
@@ -4091,13 +4089,9 @@ GC mode-dependent components: fgPixel (for fillStyle Solid); tile, patOrg
 (for fillStyle Tile); stipple, patOrg, fgPixel (for fillStyle Stipple);
 and stipple, patOrg, fgPixel and bgPixel (for fillStyle OpaqueStipple).
 
-Example implementations are mfbSolidFS(), mfbTileFS(), mfbUnnaturalTileFS(),
-mfbStippleFS() and mfbUnnaturalStippleFS(), all in server/ddx/mfb/mfbfillsp.c.
-Validate routines like mfbValidateGC() switch between them.
-
 .nf
 
-	void pGC->SetSpans(pDrawable, pGC, pSrc, ppt, pWidths, nSpans, sorted)
+	void pGC->ops->SetSpans(pDrawable, pGC, pSrc, ppt, pWidths, nSpans, sorted)
 		DrawablePtr pDrawable;
 		GCPtr pGC;
 		unsigned int *pSrc;
@@ -4118,7 +4112,6 @@ use the tile and stipple.
 .LP
 GC components: alu, clipOrg, and clientClip
 .LP
-An example implementation is mfbSetSpans() in server/ddx/mfb/mfbsetsp.c.
 
 The above functions are expected to handle all modifiers in the current
 GC.  Therefore, it is expedient to have
@@ -4159,8 +4152,6 @@ negligible, and code that wants to call GetSpans() is greatly
 simplified, both for extensions and the machine-independent
 core implementation.
 
-An example implementation is mfbGetSpans() in server/ddx/mfb/mfbgetsp.c.
-
 .NH 4
 Glyph Routines
 .XS
@@ -4174,11 +4165,9 @@ You can use the mi versions;
 they depend ultimately upon the span routines.
 Although text drawing will work, it will be very slow.
 
-If you use mfb, you can use the mfb versions of the Glyph routines.
-Otherwise, you will have to write your own.
 .nf
 
-	void pGC->PolyGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
+	void pGC->ops->PolyGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 		DrawablePtr pDrawable;
 		GCPtr pGC;
 		int x , y;
@@ -4195,7 +4184,7 @@ GC mode-dependent components: fgPixel (for fillStyle Solid); tile, patOrg
 and stipple, patOrg, fgPixel and bgPixel (for fillStyle OpaqueStipple).
 .nf
 
-	void pGC->ImageGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
+	void pGC->ops->ImageGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 		DrawablePtr pDrawable;
 		GCPtr pGC;
 		int x , y;
@@ -4232,19 +4221,6 @@ Both of these routines must clip themselves to the overall clipping region.
 Example implementations in mi are miPolyGlyphBlt() and 
 miImageGlyphBlt() in server/ddx/mi/miglblt.c.
 
-The mfb implementations are a bit harder to find.
-The file server/ddx/mfb/mfbimggblt.c defines a routine named MFBIMAGEGLYPHBLT.
-This source file is compiled twice by the Makefile, once with
-MFBIMAGEGLYPHBLT defined to "mfbImageGlyphBltWhite" and 
-once defined to "mfbImageGlyphBltBlack."
-(The -D option of the cc command in the Makefile does this.)
-In this way, one source defines both procedures.
-Similarly, in the file server/ddx/mfb/mfbplygblt.c, the routine MFBPOLYGLYPHBLT
-really defines three procedures simultaneously:  
-"mfbPolyGlyphBltWhite," "mfbPolyGlyphBltBlack," 
-and "mfbPolyGlyphBltInvert."
-See all of these files for more details.
-
 .NH 4
 PushPixels routine
 .XS
@@ -4264,14 +4240,12 @@ through the stencil which is built by milines and miarcs.
 .fi
 .LP
 You have a choice in implementing this routine.
-You can use the mi version which depends ultimately upon FillSpan().
+You can use the mi version which depends ultimately upon FillSpans().
 Although it will work, it will be slow.
 .LP
-If you use mfb, you can use the mfb version of the PushPixels routine.
-Otherwise, you will have to write your own.
 .nf
 
-	void pGC->PushPixels(pGC, pBitMap, pDrawable, dx, dy, xOrg, yOrg)
+	void pGC->ops->PushPixels(pGC, pBitMap, pDrawable, dx, dy, xOrg, yOrg)
 		GC *pGC;
 		PixmapPtr pBitMap;
 		DrawablePtr pDrawable;
@@ -4297,8 +4271,7 @@ in the bitmap, the destination is left the way it is.
 
 This routine must clip to the overall clipping region.
 
-Example implementations are mfbPushPixels() in server/ddx/mfb/mfbpushpxl.c and 
-miPushPixels() in server/ddx/mi/mipushpxl.c.
+An Example implementation is miPushPixels() in server/ddx/mi/mipushpxl.c.
 
 .NH 2
 Shutdown Procedures
@@ -4368,7 +4341,7 @@ mi and mfb implementations.
 l l.
 dix	portable to all systems; do not attempt to rewrite (server/dix)
 4.2	written for 4.2/4.3bsd Unix or equivalent (server/os/4.2bsd)
-mfb	routine provided in server/ddx/mfb
+ddx	frame buffer dependent (examples in server/ddx/mfb,server/ddx/cfb)
 mi	routine provided in server/ddx/mi
 snf	routine provided in server/ddx/snf
 hd	hardware dependent (example in server/ddx/dec/qvss)
@@ -4386,39 +4359,38 @@ AddEnabledDevice	4.2
 AddInputDevice	dix
 AddScreen	dix
 Bell	hd	Device
-ChangeClip	mi	GC
-ChangeGC	mfb	GCInterest
-ChangeWindowAttributes	mfb	Screen
-ClearToBackground	mfb	Window
+ChangeClip	mi	GC func
+ChangeGC		GC func
+ChangeWindowAttributes	ddx	Screen
+ClearToBackground	ddx	Window
 ClientAuthorized	4.2
 CloseFont	snf
 CloseScreen	hd
 ConstrainCursor	hd	Screen
-CopyArea	mi, mfb	GC
-CopyGCDest	mfb	GCInterest
-CopyGCSource	none	GCInterest
-CopyPlane	mi,mfb	GC
-CopyWindow	mfb	Window
-CreateGC	mfb	Screen
-CreatePixmap	mfb	Screen
+CopyArea	mi	GC op
+CopyGCDest	ddx	GC func
+CopyGCSource	none	GC func
+CopyPlane	mi	GC op
+CopyWindow	ddx	Window
+CreateGC	ddx	Screen
+CreatePixmap	ddx	Screen
 CreateWellKnowSockets	4.2
-CreateWindow	mfb	Screen
+CreateWindow	ddx	Screen
 CursorLimits	hd	Screen
 DEALLOCATE_LOCAL	4.2
 DescribeFont	snf
-DestroyClip	mi	GC
-DestroyGC	mfb	GCInterest
-DestroyPixmap	mfb	Screen
-DestroyWindow	mfb	Screen
+DestroyClip	ddx	GC func
+DestroyGC	ddx	GC func
+DestroyPixmap	ddx	Screen
+DestroyWindow	ddx	Screen
 DisplayCursor	hd	Screen
 Error	4.2
 ErrorF	4.2
-ExpandFontName	4.2
 ExpandFontNamePattern	4.2
 FatalError	4.2
 FiClose	4.2
-FillPolygon	mi	GC
-FillSpans	mfb	GC
+FillPolygon	mi	GC op
+FillSpans	ddx	GC op
 FiOpenForRead	4.2
 .TE
 .bp
@@ -4434,47 +4406,47 @@ FlushIfCriticalOutputPending	4.2
 FreeFontRecord	4.2
 GetFontPath	4.2
 GetGlyphs	snf
-GetImage	mi,mfb	GC
+GetImage	mi	Screen
 GetMotionEvents	hd	Device
-GetSpans	mfb	GC
-GetStaticColormap	mfb	Screen
-ImageGlyphBlt	mi,mfb	GC
-ImageText16	mi	GC
-ImageText8	mi	GC
+GetSpans	ddx	Screen
+GetStaticColormap	ddx	Screen
+ImageGlyphBlt	mi	GC op
+ImageText16	mi	GC op
+ImageText8	mi	GC op
 InitInput	hd	
 InitKeyboardDeviceStruct	dix	
 InitOutput	hd	
 InitPointerDeviceStruct	dix	
 InsertFakeRequest	4.2
-InstallColormap	mfb	Screen
+InstallColormap	ddx	Screen
 Intersect	mi	Screen
 Inverse	mi	Screen
 LegalModifier	hd
-LineHelper	mi	GC
-ListInstalledColormaps	mfb	Screen
+LineHelper	mi	GC op
+ListInstalledColormaps	ddx	Screen
 LookupKeyboardDevice	dix	
 LookupPointerDevice	dix	
 NextAvailableClient	dix
 OpenFont	snf
 OsInit	4.2	
-PaintWindowBackground	mi,mfb	Window
-PaintWindowBorder	mi,mfb	Window
+PaintWindowBackground	mi	Window
+PaintWindowBorder	mi	Window
 PointerNonInterestBox	hd	Screen
 PointInRegion	mi	Screen
-PolyArc	mi	GC
-PolyFillArc	mi	GC
-PolyFillRect	mi,mfb	GC
-PolyGlyphBlt	mi,mfb	GC
-Polylines	mi,mfb	GC
-PolyPoint	mi,mfb	GC
-PolyRectangle	mi	GC
-PolySegment	mi	GC
-PolyText16	mi	GC
-PolyText8	mi	GC
-PositionWindow	mfb	Screen
+PolyArc	mi	GC op
+PolyFillArc	mi	GC op
+PolyFillRect	mi	GC op
+PolyGlyphBlt	mi	GC op
+Polylines	mi	GC op
+PolyPoint	mi	GC op
+PolyRectangle	mi	GC op
+PolySegment	mi	GC op
+PolyText16	mi	GC op
+PolyText8	mi	GC op
+PositionWindow	ddx	Screen
 ProcessInputEvents	hd	
-PushPixels	mi,mfb	GC
-PutImage	mi,mfb	GC
+PushPixels	mi	GC op
+PutImage	mi	GC op
 QueryBestSize	hd	Screen
 QueryFont	snf
 QueryGlyphExtents	snf
@@ -4489,8 +4461,8 @@ c c c
 l c l.
 Procedure	Port	Struct
 _
-RealizeFont	mfb	Screen
-RealizeWindow	mfb	Screen
+RealizeFont	ddx	Screen
+RealizeWindow	ddx	Screen
 RecolorCursor	hd	Screen
 RectIn	mi	Screen
 RegionCopy	mi	Screen
@@ -4500,32 +4472,32 @@ RegionEmpty	mi	Screen
 RegionExtents	mi	Screen
 RegionNotEmpty	mi	Screen
 RegionReset	mi	Screen
-ResolveColor	mfb	Screen
+ResolveColor	ddx	Screen
 RegisterKeyboardDevice	dix	
 RegisterPointerDevice	dix	
 RemoveEnabledDevice	4.2
 ResetCurrentRequest	4.2
 RestoreAreas	none	BackingStore
 SaveDoomedAreas	none	BackingStore
-SaveScreen	mfb	Screen
+SaveScreen	ddx	Screen
 SetCriticalOutputPending	4.2
 SetCursorPosition	hd	Screen
 SetDefaultFont	snf
 SetDefaultFontPath	4.2
 SetFontPath	4.2
 SetInputCheck	dix	
-SetSpans	mfb	GC
-StoreColors	mfb	Screen
+SetSpans	ddx	GC op
+StoreColors	ddx	Screen
 Subtract	mi	Screen
 TimeSinceLastInputEvent	hd
 TranslateBackingStore	none	BackingStore
 TranslateRegion	mi	Screen
-UninstallColormap	mfb	Screen
+UninstallColormap	ddx	Screen
 Union	mi	Screen
 UnrealizeCursor	hd	Screen
-UnrealizeFont	mfb	Screen
-UnrealizeWindow	mfb	Screen
-ValidateGC	mfb	GCInterest
+UnrealizeFont	ddx	Screen
+UnrealizeWindow	ddx	Screen
+ValidateGC	ddx	GC func
 ValidateTree	mi	Screen
 WaitForSomething	4.2
 WindowExposures	mi	Window
