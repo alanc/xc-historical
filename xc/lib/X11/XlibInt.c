@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlibInt.c,v 11.198 93/10/24 15:51:27 rws Exp $
+ * $XConsortium: XlibInt.c,v 11.199 93/10/24 16:38:35 rws Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986, 1987 */
@@ -954,7 +954,7 @@ _XRead32 (dpy, data, len)
 	buf = (int *)data + i;
 	data += i;
 	while (--i >= 0)
-	    *data-- = *buf--;
+	    *--data = *--buf;
     }
 }
 #endif /* LONG64 */
