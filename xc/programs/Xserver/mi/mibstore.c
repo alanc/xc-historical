@@ -1,4 +1,4 @@
-/* $XConsortium: mibstore.c,v 1.22 89/01/11 17:39:34 keith Exp $ */
+/* $XConsortium: mibstore.c,v 1.23 89/03/18 12:54:31 keith Exp $ */
 /***********************************************************
 Copyright 1987 by the Regents of the University of California
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -1832,7 +1832,7 @@ miBSPolyFillArc(pDraw, pGC, narcs, parcs)
  *
  *-----------------------------------------------------------------------
  */
- int
+int
 miBSPolyText8(pDraw, pGC, x, y, count, chars)
     DrawablePtr pDraw;
     GCPtr	pGC;
@@ -1840,20 +1840,23 @@ miBSPolyText8(pDraw, pGC, x, y, count, chars)
     int 	count;
     char	*chars;
 {
+    int	    result;
+
     PROLOGUE(pDraw);
 
     if (!pPriv->inUse)
     {
 	pPriv->inUse = TRUE;
-        (* pPriv->PolyText8)(pDraw, pGC, x, y, count, chars);
+        result = (* pPriv->PolyText8)(pDraw, pGC, x, y, count, chars);
 	(* pBackingGC->PolyText8)(pBackingStore->pBackingPixmap,
 				  pBackingGC, x, y, count, chars);
 	pPriv->inUse = FALSE;
     }
     else
     {
-        (* pPriv->PolyText8)(pDraw, pGC, x, y, count, chars);
+        result = (* pPriv->PolyText8)(pDraw, pGC, x, y, count, chars);
     }
+    return result;
 }
 
 /*-
@@ -1875,20 +1878,23 @@ miBSPolyText16(pDraw, pGC, x, y, count, chars)
     int		count;
     unsigned short *chars;
 {
+    int	result;
+
     PROLOGUE(pDraw);
 
     if (!pPriv->inUse)
     {
 	pPriv->inUse = TRUE;
-        (* pPriv->PolyText16)(pDraw, pGC, x, y, count, chars);
+        result = (* pPriv->PolyText16)(pDraw, pGC, x, y, count, chars);
 	(* pBackingGC->PolyText16)(pBackingStore->pBackingPixmap,
 				   pBackingGC, x, y, count, chars);
 	pPriv->inUse = FALSE;
     }
     else
     {
-        (* pPriv->PolyText16)(pDraw, pGC, x, y, count, chars);
+        result = (* pPriv->PolyText16)(pDraw, pGC, x, y, count, chars);
     }
+    return result;
 }
 
 /*-
