@@ -1,5 +1,5 @@
 /*
- *	rcs_id[] = "$Header: xmh.h,v 2.10 88/02/15 16:06:09 swick Exp $";
+ *	rcs_id[] = "$Header: xmh.h,v 2.11 88/03/07 11:23:39 swick Exp $";
  */
 
 /*
@@ -103,6 +103,7 @@ typedef struct _ScrnRec {
    Toc		toc;		/* The table of contents. */
    Msg		msg;		/* The message being viewed. */
    Pick		pick;		/* Pick in this screen. */
+   Msg		assocmsg;	/* Associated message for reply, etc. */
 } ScrnRec, *Scrn;
 
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: tocfuncs.c,v 2.10 88/02/26 18:59:25 swick Exp $";
+static char rcs_id[] = "$Header: tocfuncs.c,v 2.11 88/03/24 13:10:07 swick Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -331,6 +331,7 @@ Scrn scrn;
     mlist = CurMsgListOrCurMsg(toc);
     if (mlist->nummsgs) {
 	nscrn = NewCompScrn();
+	ScreenSetAssocMsg(nscrn, mlist->msglist[0]);
 	msg = TocMakeNewMsg(DraftsFolder);
 	MsgSetTemporary(msg);
 	MsgLoadReply(msg, mlist->msglist[0]);

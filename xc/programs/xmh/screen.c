@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: screen.c,v 2.21 88/02/26 18:58:38 swick Exp $";
+static char rcs_id[] = "$Header: screen.c,v 2.22 88/04/01 14:59:26 swick Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -62,6 +62,7 @@ Scrn scrn;
     extern void ExecComposeMessage();
     extern void ExecSaveDraft();
     extern void ExecSendDraft();
+    extern void ExecMsgInsertAssoc();
     ButtonBox buttonbox = scrn->viewbuttons;
     BBoxStopUpdate(buttonbox);
     if (scrn->tocwidget == NULL)
@@ -70,6 +71,7 @@ Scrn scrn;
     BBoxAddButton(buttonbox, "reset", ExecCompReset, 999, TRUE, NULL);
     BBoxAddButton(buttonbox, "compose", ExecComposeMessage, 999, TRUE, NULL);
     BBoxAddButton(buttonbox, "save", ExecSaveDraft, 999, TRUE, NULL);
+    BBoxAddButton(buttonbox, "insert", ExecMsgInsertAssoc, 999, TRUE, NULL);
     BBoxStartUpdate(buttonbox);
 }
 
@@ -109,6 +111,8 @@ Scrn scrn;
 		reapable = MsgGetReapable(scrn->msg);
 		SetButton(scrn->viewbuttons, "send", changed || !reapable);
 		SetButton(scrn->viewbuttons, "save", changed || reapable);
+		SetButton(scrn->viewbuttons, "insert",
+			  scrn->assocmsg != NULL ? TRUE : FALSE);
 		if (!changed) MsgSetCallOnChange(scrn->msg,
 						 EnableProperButtons,
 						 (caddr_t) scrn);
@@ -116,6 +120,7 @@ Scrn scrn;
 	    } else {
 		SetButton(scrn->viewbuttons, "send", FALSE);
 		SetButton(scrn->viewbuttons, "save", FALSE);
+		SetButton(scrn->viewbuttons, "insert", FALSE);
 	    }
 	    break;
 	}
@@ -350,6 +355,12 @@ Scrn NewCompScrn()
     return CreateNewScrn(STcomp);
 }
 
+void ScreenSetAssocMsg(scrn, msg)
+  Scrn scrn;
+  Msg msg;
+{
+    scrn->assocmsg = msg;
+}
 
 /* Destroy the screen.  If unsaved changes are in a msg, too bad. */
 

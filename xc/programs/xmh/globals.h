@@ -1,5 +1,5 @@
 /*
- *	rcs_id[] = "$Header: globals.h,v 2.9 87/12/24 10:15:25 swick Locked $";
+ *	rcs_id[] = "$Header: globals.h,v 2.10 88/02/23 20:06:29 swick Exp $";
  */
 
 /*
@@ -59,6 +59,7 @@ ext char	*defMhPath;		/* Path for mh commands. */
 ext int		defSendLineWidth;	/* How long to break lines on send. */
 ext int		defBreakSendLineWidth;	/* Minimum length of a line before
 					   we'll break it. */
+ext char	*defInsertFilter; /* Insert message filter command */
 ext char	*defPrintCommand; /* Printing command. */
 
 ext int		defTocWidth;	/* How many characters wide to use in tocs */

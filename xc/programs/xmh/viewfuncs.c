@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: viewfuncs.c,v 2.7 87/10/09 14:02:03 swick Locked $";
+static char rcs_id[] = "$Header: viewfuncs.c,v 2.8 88/02/24 15:37:24 swick Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -46,6 +46,7 @@ Scrn scrn;
     Scrn nscrn;
     if (scrn->msg == NULL) return;
     nscrn = NewCompScrn();
+    ScreenSetAssocMsg(nscrn, scrn->msg);
     msg = TocMakeNewMsg(DraftsFolder);
     MsgSetTemporary(msg);
     MsgLoadReply(msg, scrn->msg);
