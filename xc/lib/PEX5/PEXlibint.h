@@ -1,4 +1,4 @@
-/* $XConsortium: PEXlibint.h,v 1.8 92/08/26 13:05:15 mor Exp $ */
+/* $XConsortium: PEXlibint.h,v 1.9 93/02/08 10:56:25 rws Exp $ */
 
 /******************************************************************************
 Copyright 1987,1991 by Digital Equipment Corporation, Maynard, Massachusetts
@@ -168,24 +168,25 @@ extern PEXDisplayInfo *PEXDisplayInfoHeader;
 #define PEXGetDisplayInfo(_display, _info) \
 \
 { \
-    _info = PEXDisplayInfoHeader; \
-\
-    if (PEXDisplayInfoHeader->display != _display) \
+    if (_info = PEXDisplayInfoHeader) \
     { \
-	PEXDisplayInfo	*prev = PEXDisplayInfoHeader; \
+        if (PEXDisplayInfoHeader->display != _display) \
+        { \
+	    PEXDisplayInfo	*prev = PEXDisplayInfoHeader; \
 \
-	_info = _info->next; \
-	while (_info && _info->display != _display) \
-	{ \
-	    prev = _info; \
 	    _info = _info->next; \
-	} \
+	    while (_info && _info->display != _display) \
+	    { \
+	        prev = _info; \
+	        _info = _info->next; \
+	    } \
 \
-	if (_info) \
-	{ \
-	    prev->next = _info->next; \
-	    _info->next = PEXDisplayInfoHeader; \
-	    PEXDisplayInfoHeader = _info; \
+	    if (_info) \
+	    { \
+	        prev->next = _info->next; \
+	        _info->next = PEXDisplayInfoHeader; \
+	        PEXDisplayInfoHeader = _info; \
+	    } \
 	} \
     } \
 }
