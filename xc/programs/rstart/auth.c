@@ -25,9 +25,10 @@
 #include <stdio.h>
 #include <X11/Xos.h>
 #include <errno.h>
-#ifdef X_NOT_STDC_ENV
+#ifndef X_NOT_STDC_ENV
 #include <stdlib.h>
-extern int	errno;
+#else
+extern int errno;
 #endif
 #include <ctype.h>
 
