@@ -1,4 +1,4 @@
-/* $XConsortium: TMaction.c,v 1.5 91/01/30 21:12:30 converse Exp $ */
+/* $XConsortium: TMaction.c,v 1.6 91/02/06 21:16:56 converse Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -295,10 +295,18 @@ static XtActionProc  *TryBindCache(widget, stateTree)
  * The class record actions field will point to the bind cache header
  * after this call is made out of coreClassPartInit.
  */
+#if NeedFunctionPrototypes
+XtPointer _XtInitializeActionData(
+    register struct _XtActionsRec	*actions,
+    register Cardinal			count,
+    _XtBoolean				inPlace
+    )
+#else
 XtPointer _XtInitializeActionData(actions, count, inPlace)
-    register struct _XtActionsRec *actions;
-    register Cardinal count;
-    Boolean inPlace;
+    register struct _XtActionsRec	*actions;
+    register Cardinal			count;
+    Boolean				inPlace;
+#endif
 {
     TMClassCache	classCache;
 
