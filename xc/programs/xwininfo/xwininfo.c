@@ -54,7 +54,7 @@ main(argc, argv)
   Setup_Display_And_Screen(&argc, argv);
 
   /* Get window selected on command line, if any */
-  window = Select_Window_Args(&argc, &argv);
+  window = Select_Window_Args(&argc, argv);
 
   /* Handle our command line arguments */
   for (i = 1; i < argc; i++) {
