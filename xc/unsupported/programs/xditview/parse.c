@@ -146,6 +146,7 @@ ParseInput(dw)
 		case 's':	/* ignore fractional sizes */
 			n = GetNumber(dw);
 			dw->dvi.state->font_size = n;
+			dw->dvi.state->line_width = FontSizeInDevice(dw, n / 10.0);
 			break;
 		case 'f':
 			n = GetNumber(dw);
@@ -211,7 +212,7 @@ push_env(dw)
 		new->font_size = 10;
 		new->font_number = 1;
 		new->line_style = 0;
-		new->line_width = 1;
+		new->line_width = FontSizeInDevice(dw, 10/10);
 		new->x = 0;
 		new->y = 0;
 	}
@@ -338,73 +339,82 @@ ParseDrawFunction(dw, buf)
 	DviWidget	dw;
 	char		*buf;
 {
-	int	n, m, n1, m1;
+    int	n, m, n1, m1;
 
-	switch (buf[0]) {
-	case 'l':				/* draw a line */
-		sscanf(buf+1, "%d %d", &n, &m);
-		DrawLine(dw, n, m);
-		break;
-	case 'c':				/* circle */
-		sscanf(buf+1, "%d", &n);
-		DrawCircle(dw, n);
-		break;
-	case 'e':				/* ellipse */
-		sscanf(buf+1, "%d %d", &m, &n);
-		DrawEllipse(dw, m, n);
-		break;
-	case 'a':				/* arc */
-		sscanf(buf+1, "%d %d %d %d", &n, &m, &n1, &m1);
-		DrawArc(dw, n, m, n1, m1);
-		break;
-	case '~':				/* wiggly line */
-		DrawSpline(dw, buf+1,1);
-		break;
-	default:
-/*		warning("unknown drawing function %s", buf); */
-		break;
-	}
+    SetGCForDraw (dw);
+    switch (buf[0]) {
+    case 'l':				/* draw a line */
+	sscanf(buf+1, "%d %d", &n, &m);
+	DrawLine(dw, n, m);
+	break;
+    case 'c':				/* circle */
+	sscanf(buf+1, "%d", &n);
+	DrawCircle(dw, n);
+	break;
+    case 'e':				/* ellipse */
+	sscanf(buf+1, "%d %d", &m, &n);
+	DrawEllipse(dw, m, n);
+	break;
+    case 'a':				/* arc */
+	sscanf(buf+1, "%d %d %d %d", &n, &m, &n1, &m1);
+	DrawArc(dw, n, m, n1, m1);
+	break;
+    case '~':				/* wiggly line */
+	DrawSpline(dw, buf+1,1);
+	break;
+    case 't':				/* line width */
+	sscanf(buf+1, "%d", &n);
+	dw->dvi.state->line_width = n;
+	break;
+    case 's':				/* line style */
+	sscanf(buf+1, "%d", &n);
+	/* XXX */
+	break;
+    default:
+	/* warning("unknown drawing function %s", buf); */
+	break;
+    }
 } 
 
 static
 ParseDeviceControl(dw)				/* Parse the x commands */
 	DviWidget	dw;
 {
-        char str[20], str1[50];
-	int c, n;
-	extern int LastPage, CurrentPage;
+    char str[20], str1[50];
+    int c, n;
+    extern int LastPage, CurrentPage;
 
-	GetWord (dw, str, 20);
-	switch (str[0]) {			/* crude for now */
-	case 'T':				/* output device */
-		GetWord(dw, str, 20);
-		break;
-	case 'i':				/* initialize */
-		InitTypesetter (dw);
-		break;
-	case 't':				/* trailer */
-		break;
-	case 'p':				/* pause -- can restart */
-		break;
-	case 's':				/* stop */
-		StopSeen = 1;
-		return;
-	case 'r':				/* resolution when prepared */
-		SetDeviceResolution (dw, GetNumber (dw));
-		break;
-	case 'f':				/* font used */
-		n = GetNumber(dw);
-		GetWord(dw, str, 20);
-		GetLine(dw, str1, 50);
-		SetFontPosition(dw, n, str, str1);
-		break;
-	case 'H':				/* char height */
-		break;
-	case 'S':				/* slant */
-		break;
-	}
-	while (DviGetC(dw,&c) != '\n')		/* skip rest of input line */
-		if (c == EOF)
-			return;
+    GetWord (dw, str, 20);
+    switch (str[0]) {			/* crude for now */
+    case 'T':				/* output device */
+	GetWord(dw, str, 20);
+	break;
+    case 'i':				/* initialize */
+	InitTypesetter (dw);
+	break;
+    case 't':				/* trailer */
+	break;
+    case 'p':				/* pause -- can restart */
+	break;
+    case 's':				/* stop */
+	StopSeen = 1;
 	return;
+    case 'r':				/* resolution when prepared */
+	SetDeviceResolution (dw, GetNumber (dw));
+	break;
+    case 'f':				/* font used */
+	n = GetNumber(dw);
+	GetWord(dw, str, 20);
+	GetLine(dw, str1, 50);
+	SetFontPosition(dw, n, str, str1);
+	break;
+    case 'H':				/* char height */
+	break;
+    case 'S':				/* slant */
+	break;
+    }
+    while (DviGetC(dw,&c) != '\n')		/* skip rest of input line */
+	    if (c == EOF)
+		    return;
+    return;
 }

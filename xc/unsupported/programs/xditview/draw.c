@@ -117,15 +117,32 @@ FlushCharCache (dw)
 }
 
 ClearPage (dw)
-	DviWidget	dw;
+    DviWidget	dw;
 {
     if (dw->dvi.display_enable)
 	XClearWindow (XtDisplay (dw), XtWindow (dw));
 }
 
+SetGCForDraw (dw)
+    DviWidget	dw;
+{
+    int	lw;
+    if (dw->dvi.state->line_style != dw->dvi.line_style ||
+	dw->dvi.state->line_width != dw->dvi.line_width)
+    {
+	lw = ToX(dw, dw->dvi.state->line_width);
+	if (lw <= 1)
+	    lw = 0;
+	XSetLineAttributes (XtDisplay (dw), dw->dvi.normal_GC,
+			    lw, LineSolid, CapButt, JoinMiter);
+	dw->dvi.line_style = dw->dvi.state->line_style;
+	dw->dvi.line_width = dw->dvi.state->line_width;
+    }
+}
+
 DrawLine (dw, x, y)
-	DviWidget	dw;
-	int		x, y;
+    DviWidget	dw;
+    int		x, y;
 {
     if (dw->dvi.display_enable)
 	XDrawLine (XtDisplay (dw), XtWindow (dw), dw->dvi.normal_GC,

@@ -1,4 +1,4 @@
-/* $XConsortium: Dvi.c,v 1.15 91/07/25 21:33:21 keith Exp $ */
+/* $XConsortium: Dvi.c,v 1.16 91/07/26 00:40:07 keith Exp $ */
 /*
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -286,48 +286,51 @@ static Boolean
 SetValues (current, request, new)
 	DviWidget current, request, new;
 {
-	Boolean		redisplay = FALSE;
-	char		*new_map;
-	int		cur, req;
+    Boolean		redisplay = FALSE;
+    char		*new_map;
+    int		cur, req;
 
-	req = request->dvi.requested_page;
-	cur = current->dvi.requested_page;
-	if (cur != req) {
-		if (req < 1)
-		    req = 1;
-		if (request->dvi.file)
-		{
-		    if (current->dvi.last_page != 0 &&
-			req > current->dvi.last_page)
-			    req = current->dvi.last_page;
-		}
-		if (cur != req)
-	    	    redisplay = TRUE;
-		new->dvi.requested_page = req;
-	}
-	
-	if (current->dvi.font_map_string != request->dvi.font_map_string) {
-		new_map = XtMalloc (strlen (request->dvi.font_map_string) + 1);
-		if (new_map) {
-			redisplay = TRUE;
-			strcpy (new_map, request->dvi.font_map_string);
-			new->dvi.font_map_string = new_map;
-			if (current->dvi.font_map_string)
-				XtFree (current->dvi.font_map_string);
-			current->dvi.font_map_string = 0;
-			ParseFontMap (new);
-		}
-	}
-	request->dvi.scale = ((double) request->dvi.screen_resolution) /
+    req = request->dvi.requested_page;
+    cur = current->dvi.requested_page;
+    if (cur != req) {
+	    if (req < 1)
+		req = 1;
+	    if (request->dvi.file)
+	    {
+		if (current->dvi.last_page != 0 &&
+		    req > current->dvi.last_page)
+			req = current->dvi.last_page;
+	    }
+	    if (cur != req)
+		redisplay = TRUE;
+	    new->dvi.requested_page = req;
+    }
+    
+    if (current->dvi.font_map_string != request->dvi.font_map_string) {
+	    new_map = XtMalloc (strlen (request->dvi.font_map_string) + 1);
+	    if (new_map) {
+		    redisplay = TRUE;
+		    strcpy (new_map, request->dvi.font_map_string);
+		    new->dvi.font_map_string = new_map;
+		    if (current->dvi.font_map_string)
+			    XtFree (current->dvi.font_map_string);
+		    current->dvi.font_map_string = 0;
+		    ParseFontMap (new);
+	    }
+    }
+    if (current->dvi.screen_resolution != request->dvi.screen_resolution)
+	ResetFonts (new);
+    if (request->dvi.device_resolution)
+	new->dvi.scale = ((double) request->dvi.screen_resolution) /
 			     ((double) request->dvi.device_resolution);
-	if (current->dvi.page_width !=  request->dvi.page_width ||
-	    current->dvi.page_height != request->dvi.page_height ||
-	    current->dvi.screen_resolution != request->dvi.screen_resolution)
-	{
-	    RequestDesiredSize (request);
-	    redisplay = TRUE;
-	}
-	return redisplay;
+    if (current->dvi.page_width !=  request->dvi.page_width ||
+	current->dvi.page_height != request->dvi.page_height ||
+	current->dvi.screen_resolution != request->dvi.screen_resolution)
+    {
+	RequestDesiredSize (new);
+	redisplay = TRUE;
+    }
+    return redisplay;
 }
 
 /*
@@ -356,8 +359,6 @@ SetValuesHook (dw, args, num_argsp)
 static void CloseFile (dw)
 	DviWidget	dw;
 {
-    if (dw->dvi.file_map)
-	dw->dvi.requested_page = 1;
     if (dw->dvi.tmpFile)
 	fclose (dw->dvi.tmpFile);
     ForgetPagePositions (dw);
@@ -406,6 +407,9 @@ SetDeviceResolution (dw, resolution)
 	dw->dvi.device_resolution = resolution;
 	dw->dvi.scale = ((double)  dw->dvi.screen_resolution) /
 			((double) resolution);
+	if (dw->dvi.state)
+	    dw->dvi.state->line_width =
+		FontSizeInDevice(dw, dw->dvi.state->line_width/10.0);
     }
 }
 

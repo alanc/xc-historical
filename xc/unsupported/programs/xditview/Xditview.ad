@@ -15,7 +15,8 @@
 *fileMenuButton.menuName:	fileMenu
 
 *fileMenu.openFile.label:	Open File
-*fileMenu.revisitFile.label:	Revisit File
+*fileMenu.revisitFile.label:	Reopen File
+*fileMenu.setResolution.label:	Set Screen Resolution
 *fileMenu.quit.label:		Quit
 
 *pageLabel.label:		Page:
@@ -78,7 +79,9 @@
 	<Key>Find:	OpenFile()
 *popupMenu.nextPage.label:	Next Page
 *popupMenu.previousPage.label:	Previous Page
-*popupMenu.openFile.label:	Open
+*popupMenu.setResolution.label:	Set Screen Resolution
+*popupMenu.openFile.label:	Open File
+*popupMenu.revisitFile.label:	Reopen File
 *popupMenu.quit.label:		Quit
 
 *promptShell.allowShellResize:	true

@@ -66,6 +66,7 @@ typedef struct _dviFontList {
 	char			*dvi_name;
 	char			*x_name;
 	int			dvi_number;
+	Boolean			initialized;
 	Boolean			scalable;
 	DviFontSizeList		*sizes;
 	DviCharNameMap		*char_map;
@@ -189,6 +190,7 @@ typedef struct {
 #define ToX(dw,device)		    ((int) ((device) * (dw)->dvi.scale + 0.5))
 #define ToDevice(dw,x)		    ((int) ((x) / (dw)->dvi.scale + 0.5))
 #define FontSizeInPixels(dw,size)   ((int) ((size) * (dw)->dvi.screen_resolution / 72))
+#define FontSizeInDevice(dw,size)   ((int) ((size) * (dw)->dvi.device_resolution / 72))
 
 /*
  * Full widget declaration

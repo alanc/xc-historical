@@ -1,4 +1,4 @@
-/* $XConsortium: xditview.c,v 1.25 91/07/25 21:34:47 keith Exp $ */
+/* $XConsortium: xditview.c,v 1.26 91/07/26 00:40:00 keith Exp $ */
 /*
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -84,15 +84,18 @@ Syntax(call)
 	exit(1);
 }
 
+static void	NewResolution ();
 static void	NewFile ();
 static void	DisplayPageNumber ();
+static void	VisitFile ();
 static Widget	toplevel, paned, form, panner, porthole, dvi;
 static Widget	popupMenu;
 static Widget	menuBar;
 static Widget	fileMenuButton, fileMenu;
 static Widget	pageLabel, prevButton, pageNumber, nextButton;
 
-static void	NextPage(), PreviousPage(), OpenFile(), RevisitFile (), Quit();
+static void	NextPage(), PreviousPage(), SetResolution ();
+static void	OpenFile(), RevisitFile (), Quit();
 
 struct menuEntry {
     char    *name;
@@ -102,6 +105,7 @@ struct menuEntry {
 static struct menuEntry popupMenuEntries[] = {
     "nextPage",	    NextPage,
     "previousPage", PreviousPage,
+    "setResolution",SetResolution,
     "openFile",	    OpenFile,
     "revisitFile",  RevisitFile,
     "quit",	    Quit,
@@ -110,10 +114,11 @@ static struct menuEntry popupMenuEntries[] = {
 static struct menuEntry fileMenuEntries[] = {
     "openFile",	    OpenFile,
     "revisitFile",  RevisitFile,
+    "setResolution",SetResolution,
     "quit",	    Quit,
 };
 
-static void	NextPageAction(), PreviousPageAction();
+static void	NextPageAction(), PreviousPageAction(), SetResolutionAction();
 static void	OpenFileAction(), RevisitFileAction (), QuitAction();
 static void	AcceptAction(), CancelAction();
 static void	UpdatePageNumber (), Noop ();
@@ -121,6 +126,7 @@ static void	UpdatePageNumber (), Noop ();
 XtActionsRec xditview_actions[] = {
     "NextPage",	    NextPageAction,
     "PreviousPage", PreviousPageAction,
+    "SetResolution",SetResolutionAction,
     "OpenFile",	    OpenFileAction,
     "Quit",	    QuitAction,
     "Accept",	    AcceptAction,
@@ -274,7 +280,7 @@ void main(argc, argv)
 
     dvi = XtCreateManagedWidget ("dvi", dviWidgetClass, porthole, NULL, 0);
     if (file_name)
-	NewFile (file_name);
+	VisitFile (file_name, FALSE);
     XtRealizeWidget (toplevel);
     wm_delete_window = XInternAtom(XtDisplay(toplevel), "WM_DELETE_WINDOW",
 				   False);
@@ -334,13 +340,29 @@ UpdatePageNumber ()
 }
 
 static void
-NewFile (name)
-char	*name;
+NewResolution(resString)
+char	*resString;
 {
-    Arg	    arg[2];
+    int	res;
+    Arg	arg[1];
+    
+    res = atoi (resString);
+    if (res <= 0)
+	return;
+    XtSetArg (arg[0], XtNscreenResolution, res);
+    XtSetValues (dvi, arg, 1);
+}
+
+static void
+VisitFile (name, resetPage)
+char	    *name;
+Boolean	    resetPage;
+{
+    Arg	    arg[3];
     char    *n;
     FILE    *new_file;
     Boolean seek = 0;
+    int	    i;
 
     if (current_file) {
 	if (!strcmp (current_file_name, "-"))
@@ -362,9 +384,13 @@ char	*name;
 	/* XXX display error message */
 	return;
     }
-    XtSetArg (arg[0], XtNfile, new_file);
-    XtSetArg (arg[1], XtNseek, seek);
-    XtSetValues (dvi, arg, 2);
+    i = 0;
+    XtSetArg (arg[i], XtNfile, new_file); i++;
+    XtSetArg (arg[i], XtNseek, seek); i++;
+    if (resetPage) {
+	XtSetArg (arg[i], XtNpageNumber, 1); i++;
+    }
+    XtSetValues (dvi, arg, i);
     XtSetArg (arg[0], XtNtitle, name);
     if (name[0] != '/' && (n = rindex (name, '/')))
 	n = n + 1;
@@ -377,7 +403,15 @@ char	*name;
     DisplayPageNumber ();
 }
 
+static void
+NewFile (name)
+char	*name;
+{
+    VisitFile (name, TRUE);
+}
+
 static char fileBuf[1024];
+static char resolutionBuf[1024];
 
 ResetMenuEntry (entry)
     Widget  entry;
@@ -432,6 +466,28 @@ PreviousPageAction ()
 
 /*ARGSUSED*/
 static void
+SetResolution (entry, name, data)
+    Widget  entry;
+    caddr_t name, data;
+{
+    SetResolutionAction ();
+    ResetMenuEntry (entry);
+}
+
+static void
+SetResolutionAction ()
+{
+    Arg	    args[1];
+    int	    cur;
+
+    XtSetArg (args[0], XtNscreenResolution, &cur);
+    XtGetValues (dvi, args, 1);
+    sprintf (resolutionBuf, "%d", cur);
+    MakePrompt (toplevel, "Screen resolution:", NewResolution, resolutionBuf);
+}
+
+/*ARGSUSED*/
+static void
 OpenFile (entry, name, data)
     Widget  entry;
     caddr_t name, data;
@@ -464,7 +520,7 @@ static void
 RevisitFileAction ()
 {
     if (current_file_name[0])
-	NewFile (current_file_name);
+	VisitFile (current_file_name, FALSE);
 }
 
 /*ARGSUSED*/

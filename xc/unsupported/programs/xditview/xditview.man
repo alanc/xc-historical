@@ -3,13 +3,17 @@
 xditview \(em display ditroff DVI files
 .SH SYNOPSIS
 .B xditview
-[-\fItoolkitoption\fP ...] [-option ...]
+[-\fItoolkitoption\fP ...] [-option ...] [file-name]
 .SH DESCRIPTION
 The
 .I xditview 
-program displays ditroff output on an X display.  It uses special
-font metrics which match the font set distributed with X11vR3, so
-it does not require access to the server machine for font loading.
+program displays ditroff output on an X display.  It uses no special
+metrics and automatically converts the printer coordinates into screen
+coordinates; using the user-specified screen resolution, rather than the
+actual resolution so that the appropriate fonts can be found.  If the
+special file name ``-'' is  given,
+.I xditview
+reads from standard input.
 .SH OPTIONS
 .I Xditview
 accepts all of the standard X Toolkit command line options along with the 
@@ -19,9 +23,14 @@ additional options listed below:
 This option indicates that a brief summary of the allowed options should be
 printed.
 .TP 8
-.B \-page
-This option specifies the page number of the document to be displayed.
+.B "\-page <page-number>"
+This option specifies the page number of the document to be displayed at
+start up time.
 .TP 8
+.B "\-resolution <screen-resolution>"
+.TP 8
+This specifies the desired screen resolution to use; fonts will be opened by
+requesting this resolution field in the XLFD names.
 .B \-backingStore \fIbacking-store-type\fP
 Redisplay of the DVI window can take upto a second or so, this option causes
 the server to save the window contents so that when it is scrolled around the
@@ -81,25 +90,50 @@ Specifies the default foreground color.
 .TP 8
 .B font (\fPclass\fB Font)
 Specifies the font to be used for error messages.
+.TP 8
+.B FontMap (\fBclass\fB FontMap)
+To associate the ditroff fonts with appropriate X fonts, this string
+resource contains a set of new-line separated specifications, each of which
+consists of a ditroff name, some white space and an XLFD pattern with *
+characters in appropriate places to allow all sizes to be listed.  The
+default fontMap is:
+.nf
+.sp
+R	-*-times-medium-r-normal--*-*-*-*-*-*-iso8859-1\en\e
+I	-*-times-medium-i-normal--*-*-*-*-*-*-iso8859-1\en\e
+B	-*-times-bold-r-normal--*-*-*-*-*-*-iso8859-1\en\e
+F	-*-times-bold-i-normal--*-*-*-*-*-*-iso8859-1\en\e
+BI	-*-times-bold-i-normal--*-*-*-*-*-*-iso8859-1\en\e
+C	-*-courier-medium-r-normal--*-*-*-*-*-*-iso8859-1\en\e
+CO	-*-courier-medium-o-normal--*-*-*-*-*-*-iso8859-1\en\e
+CB	-*-courier-bold-r-normal--*-*-*-*-*-*-iso8859-1\en\e
+CF	-*-courier-bold-o-normal--*-*-*-*-*-*-iso8859-1\en\e
+H	-*-helvetica-medium-r-normal--*-*-*-*-*-*-iso8859-1\en\e
+HO	-*-helvetica-medium-o-normal--*-*-*-*-*-*-iso8859-1\en\e
+HB	-*-helvetica-bold-r-normal--*-*-*-*-*-*-iso8859-1\en\e
+HF	-*-helvetica-bold-o-normal--*-*-*-*-*-*-iso8859-1\en\e
+N	-*-new century schoolbook-medium-r-normal--*-*-*-*-*-*-iso8859-1\en\e
+NI	-*-new century schoolbook-medium-i-normal--*-*-*-*-*-*-iso8859-1\en\e
+NB	-*-new century schoolbook-bold-r-normal--*-*-*-*-*-*-iso8859-1\en\e
+NF	-*-new century schoolbook-bold-i-normal--*-*-*-*-*-*-iso8859-1\en\e
+A	-*-charter-medium-r-normal--*-*-*-*-*-*-iso8859-1\en\e
+AI	-*-charter-medium-i-normal--*-*-*-*-*-*-iso8859-1\en\e
+AB	-*-charter-bold-r-normal--*-*-*-*-*-*-iso8859-1\en\e
+AF	-*-charter-bold-i-normal--*-*-*-*-*-*-iso8859-1\en\e
+S	-*-symbol-medium-r-normal--*-*-*-*-*-*-adobe-fontspecific\en\e
+S2	-*-symbol-medium-r-normal--*-*-*-*-*-*-adobe-fontspecific\en\e
+.sp
+.fi
 .SH "USING XDITVIEW WITH DITROFF"
 .PP
-To build a DVI file suitable for use with xditview, use the device
-description in devX75:
-.br
-.nf
-	$ cd devX75
-	$ makedev DESC
-	$ mkdir /usr/lib/font/devX75
-	$ cp *.out /usr/lib/font/devX75
-	$ ditroff -TX75 \fIditroff-input\fP | xditview
-.fi
-.br
+You can use any DVI file with xditview, although DVI files which use
+the fonts appropriate to the fontMap will look more accurate on the screen.
+On servers which support scaled fonts, all requested font sizes will be
+accurately reflected on the screen; for servers which do not support scaled
+.I xditview
+will use the closest font from the same family.
 .SH "SEE ALSO"
-X(1), xrdb(1), ditroff(1)
-.SH BUGS
-.I Xditview
-can be easily confused by attempting to display a DVI file constructed
-for the wrong device.  Support for pic is not yet implemented.
+X(1), xrdb(1), ditroff(1), X Logical Font Description Conventions.
 .SH ORIGIN
 Portions of this program originated in xtroff which was derived
 from suntroff.  
