@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: lcDB.c,v 1.6 94/03/26 17:01:07 rws Exp $ */
 /*
  *
  * Copyright IBM Corporation 1993
@@ -144,23 +144,21 @@ static DBParseInfo parse_info;
 static void
 clear_parse_info()
 {
+    int i;
     parse_info.pre_state = S_NULL;
     if(parse_info.category != NULL){
 	Xfree(parse_info.category);
     }
-    if(parse_info.nest_depth > 0){
-	int i;
-	for(i = 0; i <= parse_info.nest_depth; ++i){
-	    if(parse_info.name[i]){
-		Xfree(parse_info.name[i]);
-	    }
+    for(i = 0; i <= parse_info.nest_depth; ++i){
+	if(parse_info.name[i]){
+	    Xfree(parse_info.name[i]);
 	}
     }
     if(parse_info.value){
 	if(*parse_info.value){
 	    Xfree(*parse_info.value);
 	}
-	Xfree((char **)parse_info.value);
+	Xfree((char *)parse_info.value);
     }
     bzero(&parse_info, sizeof(DBParseInfo));
 }
