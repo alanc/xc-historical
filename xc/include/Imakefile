@@ -1,6 +1,7 @@
 #define IHaveSubdirs
 #define PassCDebugFlags /**/
 
+INSTALLFLAGS = $(INSTINCFLAGS)
 SUBDIRS = bitmaps
 
 HEADERS = DECkeysym.h \
