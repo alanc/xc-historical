@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: miLUT.h,v 5.1 91/02/16 09:54:46 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -409,6 +409,11 @@ typedef struct _miLUTHeader {
 #define MILUT_INIT_COLOUR(Colour) \
     (Colour).colourType = PEXIndexedColour; \
     (Colour).colour.indexed.index = 1
+
+/* modification types passed to call back procedure */
+#define	MILUT_COPY_MOD	0
+#define	MILUT_SET_MOD	1
+#define	MILUT_DEL_MOD	2
 
 #endif /* MILUT_H */
 
