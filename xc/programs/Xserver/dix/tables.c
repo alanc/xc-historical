@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: tables.c,v 1.12 87/07/17 16:58:51 todd Exp $ */
+/* $Header: tables.c,v 1.12 87/08/01 15:06:21 toddb Locked $ */
 
 extern int    ProcBadRequest(), ProcCreateWindow(),
     ProcChangeWindowAttributes(), ProcGetWindowAttributes(),
@@ -152,127 +152,127 @@ int (* ProcVector[256]) () =
     ProcChangeWindowAttributes,
     ProcGetWindowAttributes,
     ProcDestroyWindow,
-    ProcDestroySubwindows,
+    ProcDestroySubwindows,		/* 5 */
     ProcChangeSaveSet,
     ProcReparentWindow,
     ProcMapWindow,
     ProcMapSubwindows,
-    ProcUnmapWindow,
+    ProcUnmapWindow,			/* 10 */
     ProcUnmapSubwindows,
     ProcConfigureWindow,
     ProcCirculateWindow,
     ProcGetGeometry,
-    ProcQueryTree,
+    ProcQueryTree,			/* 15 */
     ProcInternAtom,
     ProcGetAtomName,
     ProcChangeProperty,
     ProcDeleteProperty,
-    ProcGetProperty,
+    ProcGetProperty,			/* 20 */
     ProcListProperties,
     ProcSetSelectionOwner,
     ProcGetSelectionOwner,
     ProcConvertSelection,
-    ProcSendEvent,
+    ProcSendEvent,			/* 25 */
     ProcGrabPointer,
     ProcUngrabPointer,
     ProcGrabButton,
     ProcUngrabButton,
-    ProcChangeActivePointerGrab,
+    ProcChangeActivePointerGrab,	/* 30 */
     ProcGrabKeyboard,
     ProcUngrabKeyboard,
     ProcGrabKey,
     ProcUngrabKey,
-    ProcAllowEvents,
+    ProcAllowEvents,			/* 35 */
     ProcGrabServer,
     ProcUngrabServer,
     ProcQueryPointer,
     ProcGetMotionEvents,
-    ProcTranslateCoords,
+    ProcTranslateCoords,		/* 40 */
     ProcWarpPointer,
     ProcSetInputFocus,
     ProcGetInputFocus,
     ProcQueryKeymap,
-    ProcOpenFont,
+    ProcOpenFont,			/* 45 */
     ProcCloseFont,
     ProcQueryFont,
     ProcQueryTextExtents,
     ProcListFonts,
-    ProcListFontsWithInfo,
+    ProcListFontsWithInfo,		/* 50 */
     ProcSetFontPath,
     ProcGetFontPath,
     ProcCreatePixmap,
     ProcFreePixmap,
-    ProcCreateGC,
+    ProcCreateGC,			/* 55 */
     ProcChangeGC,
     ProcCopyGC,
     ProcSetDashes,
     ProcSetClipRectangles,
-    ProcFreeGC,
+    ProcFreeGC,				/* 60 */
     ProcClearToBackground,
     ProcCopyArea,
     ProcCopyPlane,
     ProcPolyPoint,
-    ProcPolyLine,
+    ProcPolyLine,			/* 65 */
     ProcPolySegment,
     ProcPolyRectangle,
     ProcPolyArc,
     ProcFillPoly,
-    ProcPolyFillRectangle,
+    ProcPolyFillRectangle,		/* 70 */
     ProcPolyFillArc,
     ProcPutImage,
     ProcGetImage,
     ProcPolyText,
-    ProcPolyText,
+    ProcPolyText,			/* 75 */
     ProcImageText,
     ProcImageText,
     ProcCreateColormap,
     ProcFreeColormap,
-    ProcCopyColormapAndFree,
+    ProcCopyColormapAndFree,		/* 80 */
     ProcInstallColormap,
     ProcUninstallColormap,
     ProcListInstalledColormaps,
     ProcAllocColor,
-    ProcAllocNamedColor,
+    ProcAllocNamedColor,		/* 85 */
     ProcAllocColorCells,
     ProcAllocColorPlanes,
     ProcFreeColors,
     ProcStoreColors,
-    ProcStoreNamedColor,
+    ProcStoreNamedColor,		/* 90 */
     ProcQueryColors,
     ProcLookupColor,
     ProcCreateCursor,
     ProcCreateGlyphCursor,
-    ProcFreeCursor,
+    ProcFreeCursor,			/* 95 */
     ProcRecolorCursor,
     ProcQueryBestSize,
     ProcQueryExtension,
     ProcListExtensions,
-    ProcChangeKeyboardMapping,
+    ProcChangeKeyboardMapping,		/* 100 */
     ProcGetKeyboardMapping,
     ProcChangeKeyboardControl,
     ProcGetKeyboardControl,
     ProcBell,
-    ProcChangePointerControl,
+    ProcChangePointerControl,		/* 105 */
     ProcGetPointerControl,
     ProcSetScreenSaver,
     ProcGetScreenSaver,
     ProcChangeHosts,
-    ProcListHosts,
+    ProcListHosts,			/* 110 */
     ProcChangeAccessControl,
     ProcChangeCloseDownMode,
     ProcKillClient,
     ProcRotateProperties,
-    ProcForceScreenSaver,
+    ProcForceScreenSaver,		/* 115 */
     ProcSetPointerMapping,
     ProcGetPointerMapping,
     ProcSetModifierMapping,
     ProcGetModifierMapping,
+    0,					/* 120 */
     0,
     0,
     0,
     0,
-    0,
-    0,
+    0,					/* 125 */
     0,
     ProcNoOperation    
 };
@@ -283,128 +283,128 @@ int (* SwappedProcVector[256]) () =
     SProcCreateWindow,
     SProcChangeWindowAttributes,
     SProcResourceReq,			/* GetWindowAttributes */
-    SProcResourceReq,			/* 5, DestroyWindow */
-    SProcResourceReq,			/* DestroySubwindows */
+    SProcResourceReq,			/* DestroyWindow */
+    SProcResourceReq,			/* 5 DestroySubwindows */
     SProcChangeSaveSet,
     SProcReparentWindow,
     SProcResourceReq,			/* MapWindow */
-    SProcResourceReq,			/* 10 MapSubwindows */
-    SProcResourceReq,			/* UnmapWindow */
+    SProcResourceReq,			/* MapSubwindows */
+    SProcResourceReq,			/* 10 UnmapWindow */
     SProcResourceReq,			/* UnmapSubwindows */
     SProcConfigureWindow,
     SProcCirculateWindow,
-    SProcResourceReq,			/* 15 GetGeometry */
-    SProcResourceReq,			/* QueryTree */
+    SProcResourceReq,			/* GetGeometry */
+    SProcResourceReq,			/* 15 QueryTree */
     SProcInternAtom,
     SProcResourceReq,			/* SProcGetAtomName, */
     SProcChangeProperty,
-    SProcDeleteProperty,		/* 20 */
-    SProcGetProperty,
+    SProcDeleteProperty,
+    SProcGetProperty,			/* 20 */
     SProcResourceReq,			/* SProcListProperties, */
     SProcSetSelectionOwner,
     SProcResourceReq, 			/* SProcGetSelectionOwner, */
-    SProcConvertSelection,		/* 25 */
-    SProcSendEvent,
+    SProcConvertSelection,
+    SProcSendEvent,			/* 25 */
     SProcGrabPointer,
     SProcResourceReq, 			/* SProcUngrabPointer, */
     SProcGrabButton,
-    SProcUngrabButton,			/* 30 */
-    SProcChangeActivePointerGrab,
+    SProcUngrabButton,
+    SProcChangeActivePointerGrab,	/* 30 */
     SProcGrabKeyboard,
     SProcResourceReq,			/* SProcUngrabKeyboard, */
     SProcGrabKey,
-    SProcUngrabKey,			/* 35 */
-    SProcAllowEvents,
+    SProcUngrabKey,
+    SProcAllowEvents,			/* 35 */
     SProcResourceReq,			/* SProcGrabServer, */
     SProcResourceReq,			/* SProcUngrabServer, */
     SProcResourceReq,			/* SProcQueryPointer, */
-    SProcGetMotionEvents,		/*40 */
-    SProcTranslateCoords,
+    SProcGetMotionEvents,
+    SProcTranslateCoords,		/*40 */
     SProcWarpPointer,
     SProcSetInputFocus,
     SProcGetInputFocus,
-    SProcQueryKeymap,			/* 45 */
-    SProcOpenFont,
+    SProcQueryKeymap,
+    SProcOpenFont,			/* 45 */
     SProcResourceReq,			/* SProcCloseFont, */
     SProcResourceReq, 			/* SProcQueryFont, */
     SProcQueryTextExtents, 
-    SProcListFonts,			/* 50 */
-    SProcListFontsWithInfo,
+    SProcListFonts,
+    SProcListFontsWithInfo,		/* 50 */
     SProcSetFontPath,
     SProcGetFontPath,
     SProcCreatePixmap,
     SProcResourceReq,			/* SProcFreePixmap, */
-    SProcCreateGC,
+    SProcCreateGC,			/* 55 */
     SProcChangeGC,
     SProcCopyGC,
     SProcSetDashes,
     SProcSetClipRectangles,
-    SProcResourceReq,			/* SProcFreeGC, */
+    SProcResourceReq,			/* 60 SProcFreeGC, */
     SProcClearToBackground,
     SProcCopyArea,
     SProcCopyPlane,
     SProcPolyPoint,
-    SProcPolyLine,
+    SProcPolyLine,			/* 65 */
     SProcPolySegment,
     SProcPolyRectangle,
     SProcPolyArc,
     SProcFillPoly,
-    SProcPolyFillRectangle,
+    SProcPolyFillRectangle,		/* 70 */
     SProcPolyFillArc,
     SProcPutImage,
     SProcGetImage,
     SProcPolyText,
-    SProcPolyText,
+    SProcPolyText,			/* 75 */
     SProcImageText,
     SProcImageText,
     SProcCreateColormap,
     SProcResourceReq,			/* SProcFreeColormap, */
-    SProcCopyColormapAndFree,
+    SProcCopyColormapAndFree,		/* 80 */
     SProcResourceReq,			/* SProcInstallColormap, */
     SProcResourceReq,			/* SProcUninstallColormap, */
     SProcResourceReq, 			/* SProcListInstalledColormaps,
     SProcAllocColor,
-    SProcAllocNamedColor,
+    SProcAllocNamedColor,		/* 85 */
     SProcAllocColorCells,
     SProcAllocColorPlanes,
     SProcFreeColors,
     SProcStoreColors,
-    SProcStoreNamedColor,
+    SProcStoreNamedColor,		/* 90 */
     SProcQueryColors,
     SProcLookupColor,
     SProcCreateCursor,
     SProcCreateGlyphCursor,
-    SProcResourceReq,			/* SProcFreeCursor, */
+    SProcResourceReq,			/* 95 SProcFreeCursor, */
     SProcRecolorCursor,
     SProcQueryBestSize,
     SProcQueryExtension,
     SProcListExtensions,
-    SProcChangeKeyboardMapping,
+    SProcChangeKeyboardMapping,		/* 100 */
     SProcGetKeyboardMapping,
     SProcChangeKeyboardControl,
     SProcGetKeyboardControl,
     SProcBell,
-    SProcChangePointerControl,
+    SProcChangePointerControl,		/* 105 */
     SProcGetPointerControl,
     SProcSetScreenSaver,
     SProcGetScreenSaver,
     SProcChangeHosts,
-    SProcListHosts,
+    SProcListHosts,			/* 110 */
     SProcResourceReq,			/* SProcChangeAccessControl, */
     SProcResourceReq,			/* SProcChangeCloseDownMode, */
     SProcResourceReq,			/* SProcKillClient, */
     SProcRotateProperties,
-    SProcForceScreenSaver,
+    SProcForceScreenSaver,		/* 115 */
     SProcSetPointerMapping,
     SProcGetPointerMapping,
     SProcSetModifierMapping,
     SProcGetModifierMapping,
+    0,					/* 120 */
     0,
     0,
     0,
     0,
-    0,
-    0,
+    0,					/* 125 */
     0,
     SProcNoOperation
 };
@@ -416,32 +416,32 @@ void (* EventSwapVector[128]) () =
     SKeyButtonPtrEvent,
     SKeyButtonPtrEvent,
     SKeyButtonPtrEvent,
-    SKeyButtonPtrEvent,
+    SKeyButtonPtrEvent,			/* 5 */
     SKeyButtonPtrEvent,
     SEnterLeaveEvent,
     SEnterLeaveEvent,
     SFocusEvent,
-    SFocusEvent,
+    SFocusEvent,			/* 10 */
     SKeymapNotifyEvent,
     SExposeEvent,
     SGraphicsExposureEvent,
     SNoExposureEvent,
-    SVisibilityEvent,
+    SVisibilityEvent,			/* 15 */
     SCreateNotifyEvent,
     SDestroyNotifyEvent,
     SUnmapNotifyEvent,
     SMapNotifyEvent,
-    SMapRequestEvent,
+    SMapRequestEvent,			/* 20 */
     SReparentEvent,
     SConfigureNotifyEvent,
     SConfigureRequestEvent,
     SGravityEvent,
-    SResizeRequestEvent,
+    SResizeRequestEvent,		/* 25 */
     SCirculateEvent,
     SCirculateEvent,
     SPropertyEvent,
     SSelectionClearEvent,
-    SSelectionRequestEvent,
+    SSelectionRequestEvent,		/* 30 */
     SSelectionNotifyEvent,
     SColormapEvent,
     SClientMessageEvent
@@ -455,127 +455,128 @@ void (* ReplySwapVector[256]) () =
     NotImplemented,
     SGetWindowAttributesReply,
     NotImplemented,
+    NotImplemented,			/* 5 */
     NotImplemented,
     NotImplemented,
     NotImplemented,
     NotImplemented,
-    NotImplemented,
-    NotImplemented,
+    NotImplemented,			/* 10 */
     NotImplemented,
     NotImplemented,
     NotImplemented,
     SGetGeometryReply,
-    SQueryTreeReply,
+    SQueryTreeReply,			/* 15 */
     SInternAtomReply,
     SGetAtomNameReply,
     NotImplemented,
     NotImplemented,
-    SGetPropertyReply,
+    SGetPropertyReply,			/* 20 */
     SListPropertiesReply,
     NotImplemented,
     SGetSelectionOwnerReply,
     NotImplemented,
-    NotImplemented,
+    NotImplemented,			/* 25 */
     SGrabPointerReply,
     NotImplemented,
     NotImplemented,
     NotImplemented,
-    NotImplemented,
+    NotImplemented,			/* 30 */
     SGrabKeyboardReply,
     NotImplemented,
     NotImplemented,
     NotImplemented,
-    NotImplemented,
+    NotImplemented,			/* 35 */
     NotImplemented,
     NotImplemented,
     SQueryPointerReply,
     SGetMotionEventsReply,
-    STranslateCoordsReply,
+    STranslateCoordsReply,		/* 40 */
     NotImplemented,
     NotImplemented,
     SGetInputFocusReply,
     SQueryKeymapReply,
-    NotImplemented,
+    NotImplemented,			/* 45 */
     NotImplemented,
     SQueryFontReply,
     SQueryTextExtentsReply,
     SListFontsReply,
-    SListFontsWithInfoReply,
+    SListFontsWithInfoReply,		/* 50 */
     NotImplemented,
     SGetFontPathReply,
     NotImplemented,
     NotImplemented,
+    NotImplemented,			/* 55 */
     NotImplemented,
     NotImplemented,
     NotImplemented,
     NotImplemented,
+    NotImplemented,			/* 60 */
     NotImplemented,
     NotImplemented,
     NotImplemented,
     NotImplemented,
+    NotImplemented,			/* 65 */
     NotImplemented,
     NotImplemented,
     NotImplemented,
     NotImplemented,
-    NotImplemented,
-    NotImplemented,
-    NotImplemented,
-    NotImplemented,
+    NotImplemented,			/* 70 */
     NotImplemented,
     NotImplemented,
     SGetImageReply,
     NotImplemented,
+    NotImplemented,			/* 75 */
     NotImplemented,
     NotImplemented,
     NotImplemented,
     NotImplemented,
-    NotImplemented,
-    NotImplemented,
+    NotImplemented,			/* 80 */
     NotImplemented,
     NotImplemented,
     SListInstalledColormapsReply,
     SAllocColorReply,
-    SAllocNamedColorReply,
+    SAllocNamedColorReply,		/* 85 */
     SAllocColorCellsReply,
     SAllocColorPlanesReply,
     NotImplemented,
     NotImplemented,
-    NotImplemented,
+    NotImplemented,			/* 90 */
     SQueryColorsReply,
     SLookupColorReply,
     NotImplemented,
     NotImplemented,
-    NotImplemented,
+    NotImplemented,			/* 95 */
     NotImplemented,
     SQueryBestSizeReply,
     SQueryExtensionReply,
     SListExtensionsReply,
+    NotImplemented,			/* 100 */
     SGetKeyboardMappingReply,
     NotImplemented,
     SGetKeyboardControlReply,
     NotImplemented,
-    NotImplemented,
+    NotImplemented,			/* 105 */
     SGetPointerControlReply,
     NotImplemented,
     SGetScreenSaverReply,
     NotImplemented,
-    SListHostsReply,
-    NotImplemented,		/* ChangeAccessControl */
-    NotImplemented,		/* ChangeCloseDownMode */
-    NotImplemented,		/* KillClient */
-    NotImplemented,		/* RotateProperties */
-    NotImplemented,		/* ForceScreenSaver */
+    SListHostsReply,			/* 110 */
+    NotImplemented,
+    NotImplemented,
+    NotImplemented,
+    NotImplemented,
+    NotImplemented,			/* 115 */
     NotImplemented,
     SGetPointerMappingReply,
-    NotImplemented,		/* 118 */
-    SGetModifierMappingReply,	/* 119 */
-    NotImplemented,		/* 120 */
-    NotImplemented,		/* 121 */
-    NotImplemented,		/* 122 */
-    NotImplemented,		/* 123 */
-    NotImplemented,		/* 124 */
-    NotImplemented,		/* 125 */
-    NotImplemented,		/* 126 */
-    NotImplemented,		/* NoOperation */
+    NotImplemented,			/* 118 */
+    SGetModifierMappingReply,		/* 119 */
+    NotImplemented,			/* 120 */
+    NotImplemented,			/* 121 */
+    NotImplemented,			/* 122 */
+    NotImplemented,			/* 123 */
+    NotImplemented,			/* 124 */
+    NotImplemented,			/* 125 */
+    NotImplemented,			/* 126 */
+    NotImplemented,			/* NoOperation */
     NotImplemented
 };
