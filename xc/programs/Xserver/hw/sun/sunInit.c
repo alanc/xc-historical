@@ -1,4 +1,4 @@
-/* $XConsortium: sunInit.c,v 5.33 93/08/06 14:38:38 kaleb Exp $ */
+/* $XConsortium: sunInit.c,v 5.34 93/08/13 14:34:14 kaleb Exp $ */
 /*
  * sunInit.c --
  *	Initialization functions for screen/keyboard/mouse, etc.
@@ -91,9 +91,7 @@ extern Bool sunCG6Init();
 static Bool	sunDevsInited = FALSE;
 
 Bool sunAutoRepeatHandlersInstalled;	/* FALSE each time InitOutput called */
-Bool sunSupportsDepth8 = FALSE;
-Bool sunSupportsDepth24 = FALSE;
-Bool sunDoF11 = TRUE;
+Bool sunSwapLkeys = FALSE;
 Bool FlipPixels = FALSE;
 Bool FbInfo = FALSE;
 
@@ -102,26 +100,26 @@ Bool FbInfo = FALSE;
  * FBTYPE_??? macros defined in /usr/include/sun/fbio.h file
  */
 sunFbDataRec sunFbData[FBTYPE_LASTPLUSONE] = {
-  { NULL, "SUN1BW (bwone)" },
-  { NULL, "SUN1COLOR (cgone)" },
-  { BW2I, "SUN2BW (bwtwo)" },	
-  { CG2I, "SUN2COLOR (cgtwo)" },
-  { NULL, "SUN2GP (gpone/gptwo)" },
-  { NULL, "SUN5COLOR (RR accel)" },
-  { CG3I, "SUN3COLOR (cgthree)" },
-  { NULL, "MEMCOLOR" },
-  { CG4I, "SUN4COLOR (cgfour)" },
+  { NULL, "SUN1BW        (bwone)" },
+  { NULL, "SUN1COLOR     (cgone)" },
+  { BW2I, "SUN2BW        (bwtwo)" },	
+  { CG2I, "SUN2COLOR     (cgtwo)" },
+  { NULL, "SUN2GP        (gpone/gptwo)" },
+  { NULL, "SUN5COLOR     (RR accel)" },
+  { CG3I, "SUN3COLOR     (cgthree)" },
+  { NULL, "MEMCOLOR      (cgeight)" },
+  { CG4I, "SUN4COLOR     (cgfour)" },
   { NULL, "NOTSUN1" },
   { NULL, "NOTSUN2" },
   { NULL, "NOTSUN3" }	
 #ifndef i386 /* { */
  ,{ CG6I, "SUNFAST_COLOR (cgsix/GX)" },
-  { NULL, "SUNROP_COLOR (cgeight/cgnine)" },
+  { NULL, "SUNROP_COLOR  (cgnine)" },
   { NULL, "SUNFB_VIDEO" },
   { NULL, "SUNGIFB" },
   { NULL, "SUNPLAS" },
-  { NULL, "SUNGP3 (cgtwelve/GS)" },
-  { NULL, "SUNGT (gt)" },
+  { NULL, "SUNGP3        (cgtwelve/GS)" },
+  { NULL, "SUNGT         (gt)" },
   { NULL, "RESERVED1" }
 #endif /* } */
 };
@@ -159,7 +157,8 @@ fbFd sunFbs[MAXSCREENS];
 
 static PixmapFormatRec	formats[] = {
     { 1, 1, BITMAP_SCANLINE_PAD	}, /* 1-bit deep */
-    { 8, 8, BITMAP_SCANLINE_PAD	}  /* 8-bit deep */
+    { 8, 8, BITMAP_SCANLINE_PAD	}, /* 8-bit deep */
+    { 24, 32, BITMAP_SCANLINE_PAD } /* 24-bit deep */
 };
 #define NUMFORMATS	(sizeof formats)/(sizeof formats[0])
 
@@ -174,7 +173,7 @@ static PixmapFormatRec	formats[] = {
  *	The fd of the framebuffer.
  */
 static 
-int sunOpenFrameBuffer(device, screen)
+int OpenFrameBuffer(device, screen)
     char		*device;	/* e.g. "/dev/cgtwo0" */
     int			screen;    	/* what screen am I going to be */
 {
@@ -297,7 +296,7 @@ void sunNonBlockConsoleOff(arg)
 }
 
 static
-char **sunGetDeviceList (argc, argv)
+char **GetDeviceList (argc, argv)
     int		argc;
     char	**argv;
 {
@@ -415,29 +414,17 @@ void InitOutput(pScreenInfo, argc, argv)
 	/* first time ever */
 	for (scr = 0; scr < MAXSCREENS; scr++)
 	    sunFbs[scr].fd = -1;
-	devList = sunGetDeviceList (argc, argv);
+	devList = GetDeviceList (argc, argv);
 	for (i = 0, scr = 0; devList[i] != NULL && scr < MAXSCREENS; i++)
-	    if (sunOpenFrameBuffer (devList[i], scr)) {
-		(void) AddScreen (sunFbData[sunFbs[scr].info.fb_type].init, 
-				argc, argv);
+	    if (OpenFrameBuffer (devList[i], scr))
 		scr++;
-	    }
 	sunDevsInited = TRUE;
 	xfree (devList);
-    } else {
-	/* 
-	    xdm SIGHUP'd rather than SIGKILL'd between sessions, 
-	    server low-level has reset and deleted the screens.  
-	    Now re-add the screens that are already open'd and mmap'd
-	*/
-	for (scr = 0; scr < MAXSCREENS; scr++)
-	    if (sunFbs[scr].fd != -1)
-		(void) AddScreen (sunFbData[sunFbs[scr].info.fb_type].init, 
-				argc, argv);
     }
-
-    if (!sunSupportsDepth8)
-	pScreenInfo->numPixmapFormats--;
+    for (scr = 0; scr < MAXSCREENS; scr++)
+	if (sunFbs[scr].fd != -1)
+	    (void) AddScreen (sunFbData[sunFbs[scr].info.fb_type].init, 
+			      argc, argv);
     signal(SIGWINCH, SIG_IGN);
 }
 
@@ -464,15 +451,6 @@ void InitInput(argc, argv)
     DevicePtr	p, k;
     extern Bool mieqInit();
 
-    for (i = 1; i < argc; i++) {
-	if ((strcmp(argv[i],"-kbd") == 0) && (i+1 < argc)) {
-	    i++;
-	    if (!strcmp(argv[i],"f11"))
-		sunDoF11 = TRUE;
-	    else if (!strcmp(argv[i],"f36"))
-		sunDoF11 = FALSE;
-	}
-    }
     p = AddInputDevice(sunMouseProc, TRUE);
     k = AddInputDevice(sunKbdProc, TRUE);
     if (!p || !k)
