@@ -1,5 +1,5 @@
 /*
-* $Header: Intrinsic.h,v 1.75 88/02/23 10:07:20 swick Exp $
+* $Header: Intrinsic.h,v 1.76 88/02/26 12:40:57 swick Exp $
 */
 
 /***********************************************************
@@ -419,7 +419,7 @@ typedef enum  {
     XtGeometryYes,        /* Request accepted. */
     XtGeometryNo,         /* Request denied. */
     XtGeometryAlmost,     /* Request denied, but willing to take replyBox. */
-    XtGeometryDone,	  /* Request accepted and done. */
+    XtGeometryDone	  /* Request accepted and done. */
 } XtGeometryResult;
 
 extern XtGeometryResult XtMakeGeometryRequest();

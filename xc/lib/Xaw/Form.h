@@ -1,4 +1,4 @@
-/* $Header: Form.h,v 1.8 88/02/14 13:59:24 rws Exp $ */
+/* $Header: Form.h,v 1.9 88/02/26 09:11:09 swick Exp $ */
 
 
 /***********************************************************
@@ -96,7 +96,7 @@ typedef enum {
 				   the left of the form */
     XtChainRight,		/* Keep this edge a constant distance from
 				   the right of the form */
-    XtRubber,			/* Keep this edge a proportional distance
+    XtRubber			/* Keep this edge a proportional distance
 				   from the edges of the form*/
 } XtEdgeType;
 #endif  _XtEdgeType_e
