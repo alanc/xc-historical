@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: connection.c,v 1.135 91/05/14 16:06:01 rws Exp $ */
+/* $XConsortium: connection.c,v 1.136 91/06/29 16:12:49 keith Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -39,8 +39,6 @@ SOFTWARE.
  *
  *****************************************************************/
 
-#include <dbm.h>
-#undef NULL
 #include "X.h"
 #include "Xproto.h"
 #include <sys/param.h>
