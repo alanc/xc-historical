@@ -1,5 +1,5 @@
 /*
- * $XConsortium: globals.c,v 1.6 89/06/16 14:48:13 jim Exp $
+ * $XConsortium: globals.c,v 1.7 89/06/16 16:57:00 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -8,8 +8,8 @@
  *
  * This file should contain only those objects which must be predefined.
  */
-#include "Xlib.h"
-#include <sys/param.h>			/* for definition of NULL */
+#define NEED_EVENTS
+#include "Xlibint.h"
 
 
 /*
