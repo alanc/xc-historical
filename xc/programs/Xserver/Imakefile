@@ -360,13 +360,14 @@ IBMALLOCLIB =
 
 #define need_dix
 #define need_ddx_mi
+#define need_ddx_cfb
 #define need_ddx_mfb
 #define need_ddx_ibm
 #define need_os
-IBMDIRS = dix ddx/mi ddx/mfb ddx/ibm os
+IBMDIRS = dix ddx/mi ddx/mfb ddx/cfb ddx/ibm os
 IBMOBJS = ddx/ibm/common/ibmcomm.o ddx/ibm/common/ibmDate.o
-IBMLIBS = ddx/ibm/libibm.a $(IBMALLOCLIB) \
-		$(DIX) $(OS) $(FONT) $(MFB) $(MI) $(EXTENSIONS)
+IBMLIBS = ddx/ibm/AIX/hft.o ddx/ibm/libibm.a $(IBMALLOCLIB) \
+		$(DIX) $(CFB) $(OS) $(FONT) $(MFB) $(MI) $(EXTENSIONS)
 IBMSYSLIBS = $(SYSLIBS)
 XibmDIRS = $(IBMDIRS)
 
