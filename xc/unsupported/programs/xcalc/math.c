@@ -1,4 +1,4 @@
-/* $XConsortium: math.c,v 1.6 89/12/18 15:46:57 rws Exp $ 
+/* $XConsortium: math.c,v 1.7 90/12/17 10:40:40 rws Exp $ 
  *
  *  math.c  -  mathematics functions for a hand calculator under X
  *
@@ -22,7 +22,9 @@
 #include <setjmp.h>
 #include "xcalc.h"
 
+#ifndef PI
 #define PI          3.14159265358979
+#endif
 #define E           2.71828182845904
 #define MAXDISP     11
 #define DEG 0		/* DRG mode.  used for trig calculations */
