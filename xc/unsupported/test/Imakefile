@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.22 91/08/22 12:26:06 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.23 92/01/27 10:35:10 rws Exp $
 
 #if BuildXInputLib
 #define IHaveSubdirs
@@ -6,8 +6,6 @@ XCOMM $XConsortium: Imakefile,v 1.22 91/08/22 12:26:06 rws Exp $
       SUBDIRS = xinput
 #endif
 
-    DEFINES = ExtensionDefines
-IMAKE_DEFINES = $(DEFINES)
   SHAPESRCS = shapetest.c
   SHAPEOBJS = shapetest.o
 #if HasShm
