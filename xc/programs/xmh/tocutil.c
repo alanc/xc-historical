@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: tocutil.c,v 2.14 88/02/26 10:51:07 swick Exp $";
+static char rcs_id[] = "$Header: tocutil.c,v 2.15 88/03/28 13:32:20 swick Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -456,12 +456,7 @@ void TUSaveTocFile(toc)
 	(void) ftruncate(fid, toc->length);
 	toc->origlength = toc->length;
 	(void) myclose(fid);
-    } else
-#ifndef SYSV
-	(void) utimes(toc->scanfile, (struct timeval *)NULL);
-#else
-	(void) utime(toc->scanfile, (time_t *)NULL);
-#endif /* SYSV */
+    }
     toc->needscachesave = FALSE;
     toc->lastreaddate = LastModifyDate(toc->scanfile);
 }
