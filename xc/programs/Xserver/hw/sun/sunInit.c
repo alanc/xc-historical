@@ -54,7 +54,7 @@ static char sccsid[] = "%W %G Copyright 1987 Sun Micro";
 #include    "opaque.h"
 
 extern int sunMouseProc();
-extern void sunKbdProc();
+extern int sunKbdProc();
 extern Bool sunBW2Probe();
 extern Bool sunCG2CProbe();
 extern Bool sunCG3CProbe();
@@ -265,6 +265,8 @@ InitInput(argc, argv)
     
     p = AddInputDevice(sunMouseProc, TRUE);
     k = AddInputDevice(sunKbdProc, TRUE);
+    if (!p || !k)
+	FatalError("failed to create input devices in InitInput");
 
     RegisterPointerDevice(p, MOTION_BUFFER_SIZE);
     RegisterKeyboardDevice(k);
@@ -325,7 +327,7 @@ short *pheight;
  *	Should be called last of all.
  *
  * Results:
- *	None.
+ *	TRUE if successful, else FALSE
  *
  * Side Effects:
  *	The graphics context for the screen is created. The CreateGC,
@@ -338,7 +340,7 @@ short *pheight;
  *
  *-----------------------------------------------------------------------
  */
-void
+Bool
 sunScreenInit (pScreen)
     ScreenPtr	  pScreen;
 {
@@ -358,6 +360,8 @@ sunScreenInit (pScreen)
     pDrawable = (DrawablePtr)(pScreen->devPrivate);
 
     fb->pGC = CreateScratchGC (pDrawable->pScreen, pDrawable->depth);
+    if (!fb->pGC)
+	return FALSE;
 
     /*
      * By setting graphicsExposures false, we prevent any expose events
@@ -409,7 +413,7 @@ sunScreenInit (pScreen)
         pScreen->BlockHandler = sunBlockHandler;
         pScreen->WakeupHandler = sunWakeupHandler;
     }
-
+    return TRUE;
 }
 
 extern char *getenv();

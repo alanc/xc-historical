@@ -71,6 +71,8 @@ static char sccsid[] = "%W %G Copyright 1987 Sun Micro";
 
 #include    <servermd.h>
 
+extern void ProcessInputEvents();
+
 static CursorPtr  currentCursor = NullCursor;	/* Cursor being displayed */
 static BoxRec  	  currentLimits;		/* Box w/in which the hot spot
 						 * must stay. */
@@ -198,11 +200,11 @@ sunStencil (source, mask, w, h, invert)
     register int  nbytes;
 
     nbytes = h * PixmapBytePad (w, 1);
-    result = (u_char *)Xalloc(nbytes);
-
-    for (r = result; nbytes--; source++, r++) {
-	*r = (invert ? ~ *source : *source) & (mask ? *mask++ : ~0);
-    }
+    result = (u_char *)xalloc(nbytes);
+    if (result)
+	for (r = result; nbytes--; source++, r++) {
+	    *r = (invert ? ~ *source : *source) & (mask ? *mask++ : ~0);
+	}
 
     return (result);
 }
@@ -265,12 +267,12 @@ sunRealizeCursor (pScreen, pCursor)
     GC         *pGC = (GC *)NULL;	/* GC for initializing the source and */
     GC		*tGC1 = (GC *)NULL, *tGC2 = (GC *)NULL;
     /* invSource pixmaps... */
-    u_char     *stencil;
+    u_char     *stencil, *invStencil;
     BITS32      status;
 
     if (!(pGC = GetScratchGC(1, pScreen)))
 	goto cleanup1;
-    if (!(pPriv = (CrPrivPtr) Xalloc(sizeof(CrPrivRec))))
+    if (!(pPriv = (CrPrivPtr) xalloc(sizeof(CrPrivRec))))
 	goto cleanup2;
 
     pPriv->fg = sunGetPixel(pScreen, pCursor->foreRed,
@@ -281,15 +283,16 @@ sunRealizeCursor (pScreen, pCursor)
 			    pCursor->backBlue);
 
     tGC1 = sunCreatePrivGC((DrawablePtr)pScreen->devPrivate,
-	GCForeground, &pPriv->fg, &status);
+			   GCForeground, (long *)&pPriv->fg, &status);
     if (!tGC1)
 	goto cleanup3;
     tGC2 = sunCreatePrivGC((DrawablePtr)pScreen->devPrivate,
-	GCForeground, &pPriv->bg, &status);
+			   GCForeground, (long *)&pPriv->bg, &status);
     if (!tGC2) {
+cleanup4:
 	FreeScratchGC(tGC1);
 cleanup3:
-	Xfree(pPriv);
+	xfree(pPriv);
 	/* XXX - free up the pixels,  too */
 cleanup2:
 	FreeScratchGC(pGC);
@@ -313,14 +316,12 @@ cleanup1:
      * in. Both are made the same depth as the screen, for obvious
      * reasons. 
      */
-    pPriv->screenBits =
-	(PixmapPtr) (*pScreen->CreatePixmap) (pScreen, bufWidth,
-					      2 * pCursor->height,
-					      pScreen->rootDepth);
-    pPriv->temp =
-	(PixmapPtr) (*pScreen->CreatePixmap) (pScreen, bufWidth,
-					      2 * pCursor->height,
-					      pScreen->rootDepth);
+    pPriv->screenBits = (*pScreen->CreatePixmap) (pScreen, bufWidth,
+						  2 * pCursor->height,
+						  pScreen->rootDepth);
+    pPriv->temp = (*pScreen->CreatePixmap) (pScreen, bufWidth,
+					    2 * pCursor->height,
+					    pScreen->rootDepth);
 
     /*
      * The source and invSource bitmaps are a bit trickier. The idea is to
@@ -331,38 +332,48 @@ cleanup1:
      * This must, sadly, be done by hand b/c the ddx interface isn't quite
      * rich enough to push a tile through a bitmap. 
      */
-    pPriv->source =
-	(PixmapPtr) (*pScreen->CreatePixmap) (pScreen, pCursor->width,
+    pPriv->source = (*pScreen->CreatePixmap) (pScreen, pCursor->width,
 					      pCursor->height, 1);
+    pPriv->invSource = (*pScreen->CreatePixmap) (pScreen, pCursor->width,
+						 pCursor->height, 1);
 
-    ValidateGC(pPriv->source, pGC);
     stencil = sunStencil(pCursor->source, pCursor->mask,
-			 pCursor->width, pCursor->height,
+			 (int)pCursor->width, (int)pCursor->height,
 			 FALSE);
+    invStencil = sunStencil(pCursor->source, pCursor->mask,
+			    (int)pCursor->width, (int)pCursor->height,
+			    TRUE);
+    if (!pPriv->screenBits || !pPriv->temp || !pPriv->source ||
+	!pPriv->invSource || !stencil || !invStencil)
+    {
+	(*pScreen->DestroyPixmap)(pPriv->screenBits);
+	(*pScreen->DestroyPixmap)(pPriv->temp);
+	(*pScreen->DestroyPixmap)(pPriv->source);
+	(*pScreen->DestroyPixmap)(pPriv->invSource);
+	xfree(stencil);
+	xfree(invStencil);
+	FreeScratchGC(tGC2);
+	goto cleanup4;
+    }
+    ValidateGC(pPriv->source, pGC);
     (*pGC->PutImage) (pPriv->source, pGC, 1,
 		      0, 0,
 		      pCursor->width, pCursor->height,
 		      0,
 		      XYPixmap,
 		      stencil);
-    Xfree(stencil);
+    xfree(stencil);
 
     ValidateGC((DrawablePtr) pScreen->devPrivate, pPriv->srcGC);
 
-    pPriv->invSource =
-	(PixmapPtr) (*pScreen->CreatePixmap) (pScreen, pCursor->width,
-					      pCursor->height, 1);
     ValidateGC(pPriv->invSource, pGC);
-    stencil = sunStencil(pCursor->source, pCursor->mask,
-			 pCursor->width, pCursor->height,
-			 TRUE);
     (*pGC->PutImage) (pPriv->invSource, pGC, 1,
 		      0, 0,
 		      pCursor->width, pCursor->height,
 		      0,
 		      XYPixmap,
-		      stencil);
-    Xfree(stencil);
+		      invStencil);
+    xfree(invStencil);
 
     ValidateGC((DrawablePtr) pScreen->devPrivate, pPriv->invSrcGC);
 
@@ -407,7 +418,7 @@ sunUnrealizeCursor (pScreen, pCursor)
     FreeScratchGC(pPriv->srcGC);
     FreeScratchGC(pPriv->invSrcGC);
 
-    Xfree(pPriv);
+    xfree(pPriv);
 
     return TRUE;
 }
@@ -494,6 +505,7 @@ sunSetCursorPosition (pScreen, hotX, hotY, generateEvent)
  *
  *-----------------------------------------------------------------------
  */
+/*ARGSUSED*/
 void
 sunCursorLimits (pScreen, pCursor, pHotBox, pResultBox)
     ScreenPtr	  pScreen;  	/* Screen on which limits are desired */
@@ -526,8 +538,9 @@ sunDisplayCursor (pScreen, pCursor)
     ScreenPtr	  pScreen;  	/* Screen on which to display cursor */
     CursorPtr	  pCursor;  	/* Cursor to display */
 {
+#ifdef notdef
     DevicePtr		  pDev;
-
+#endif
     if (currentCursor) {
 	sunRemoveCursor();
     }
@@ -1226,7 +1239,9 @@ sunCreateWindow (pWin)
 
     (* sunFbs[((DrawablePtr)pWin)->pScreen->myNum].CreateWindow) (pWin);
 
-    pPriv = (WinPrivPtr) Xalloc (sizeof (WinPrivRec));
+    pPriv = (WinPrivPtr) xalloc (sizeof (WinPrivRec));
+    if (!pPriv)
+	return FALSE;
     pPriv->PaintWindowBackground =  pWin->PaintWindowBackground;
     pPriv->PaintWindowBorder = 	    pWin->PaintWindowBorder;
     pPriv->CopyWindow =     	    pWin->CopyWindow;
@@ -1244,8 +1259,8 @@ sunCreateWindow (pWin)
 	pWin->backStorage->RestoreAreas = sunRestoreAreas;
 	pWin->backStorage->DrawGuarantee = sunDrawGuarantee;
     }
-    AddResource (pWin->wid, RT_WINDOW, (pointer)pPriv, Xfree, 
-		 wPrivClass);
+    return AddResource (pWin->wid, RT_WINDOW, (pointer)pPriv, Xfree,
+			wPrivClass);
 }
 
 /*-

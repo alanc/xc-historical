@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbclip.c,v 1.16 88/06/06 18:52:51 rws Exp $ */
+/* $XConsortium: mfbclip.c,v 1.17 88/09/06 14:53:28 jim Exp $ */
 #include "X.h"
 #include "miscstruct.h"
 #include "pixmapstr.h"
@@ -29,6 +29,8 @@ SOFTWARE.
 #include "regionstr.h"
 #include "gc.h"
 #include "maskbits.h"
+
+extern Bool Must_have_memory;
 
 /* Convert bitmap clip mask into clipping region. 
  * First, goes through each line and makes boxes by noting the transitions
@@ -53,9 +55,16 @@ mfbPixmapToRegion(pPix)
     Bool		fInBox, fSame;
 
 
-    if((pReg = (*pPix->drawable.pScreen->RegionCreate)(NULL, 1)) == NullRegion)
+    pReg = (*pPix->drawable.pScreen->RegionCreate)(NULL, 1);
+    if(!pReg)
 	return NullRegion;
     rects = (BoxPtr) xalloc(sizeof(BoxRec));
+    if (!rects)
+    {
+	(*pPix->drawable.pScreen->RegionDestroy)(pReg);
+	return NullRegion;
+    }
+    Must_have_memory = TRUE; /* XXX */
     FirstRect = rects;
     width = pPix->width;
     pw = (unsigned int  *)pPix->devPrivate;
@@ -193,6 +202,7 @@ mfbPixmapToRegion(pPix)
 	xfree(FirstRect);
 	pReg->size = 1;
     }
+    Must_have_memory = FALSE; /* XXX */
 
     return(pReg);
 }
