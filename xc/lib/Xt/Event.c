@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Event.c,v 1.83 88/09/26 08:56:02 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Event.c,v 1.84 88/10/10 18:17:19 swick Exp $";
 /* $oHeader: Event.c,v 1.9 88/09/01 11:33:51 asente Exp $ */
 #endif lint
 
@@ -64,7 +64,7 @@ static void RemoveEventHandler(widget, eventMask, other, proc, closure, raw,
     EventMask   eventMask;
     Boolean	other;
     XtEventHandler proc;
-    Opaque	closure;
+    caddr_t	closure;
     Boolean	raw;
     Boolean	check_closure;
 {
@@ -117,7 +117,7 @@ static void AddEventHandler(widget, eventMask, other, proc, closure, raw,
     EventMask   eventMask;
     Boolean         other;
     XtEventHandler  proc;
-    Opaque	closure;
+    caddr_t	closure;
     Boolean	raw;
     Boolean	check_closure;
 {
@@ -181,7 +181,7 @@ void XtRemoveEventHandler(widget, eventMask, other, proc, closure)
     EventMask   eventMask;
     Boolean	other;
     XtEventHandler proc;
-    Opaque	closure;
+    caddr_t	closure;
 {
     RemoveEventHandler(widget, eventMask, other, proc, closure, FALSE, TRUE);
 }
@@ -192,7 +192,7 @@ void XtAddEventHandler(widget, eventMask, other, proc, closure)
     EventMask   eventMask;
     Boolean         other;
     XtEventHandler  proc;
-    Opaque	closure;
+    caddr_t	closure;
 {
     AddEventHandler(widget, eventMask, other, proc, closure, FALSE, TRUE);
 }
@@ -203,7 +203,7 @@ void XtRemoveRawEventHandler(widget, eventMask, other, proc, closure)
     EventMask   eventMask;
     Boolean	other;
     XtEventHandler proc;
-    Opaque	closure;
+    caddr_t	closure;
 {
     RemoveEventHandler(widget, eventMask, other, proc, closure, TRUE, TRUE);
 }
@@ -214,7 +214,7 @@ void XtAddRawEventHandler(widget, eventMask, other, proc, closure)
     EventMask   eventMask;
     Boolean         other;
     XtEventHandler  proc;
-    Opaque	closure;
+    caddr_t	closure;
 {
     AddEventHandler(widget, eventMask, other, proc, closure, TRUE, TRUE);
 }
@@ -365,7 +365,7 @@ static void DispatchEvent(event, widget, mask)
 {
     XtEventRec *p;   
     XtEventHandler proc[100];
-    Opaque closure[100];
+    caddr_t closure[100];
     int numprocs, i;
     XEvent nextEvent;
 
@@ -721,7 +721,7 @@ void XtDispatchEvent (event)
     while (destroyList != NULL) {
 	CallbackList newList = NULL;
 	_XtDestroyList = &newList;
-	_XtCallCallbacks (&destroyList, (Opaque) NULL);
+	_XtCallCallbacks (&destroyList, (caddr_t) NULL);
 	_XtRemoveAllCallbacks (&destroyList);
 	destroyList = newList;
     }
@@ -794,7 +794,7 @@ void XtAddGrab(widget, exclusive, spring_loaded)
     grabList = gl;
 
     XtAddCallback (widget, XtNdestroyCallback, 
-	    GrabDestroyCallback, (Opaque) NULL);
+	    GrabDestroyCallback, (caddr_t) NULL);
 }
 
 /* add a focus record to the list, or replace the focus widget in an
@@ -881,7 +881,7 @@ static void RemoveGrab(widget, keyboard_focus)
 	done = (gl->widget == widget);
 	grabList = gl->next;
 	XtRemoveCallback(gl->widget, XtNdestroyCallback,
-		GrabDestroyCallback, (Opaque)NULL);
+		GrabDestroyCallback, (caddr_t)NULL);
 	XtFree((char *)gl);
     } while (! done);
 }
@@ -961,7 +961,7 @@ void _XtFreeEventTable(event_table)
 
 /*ARGSUSED*/
 void _XtAsyncMainLoop(closure)
-    Opaque closure;
+    caddr_t closure;
 {
     XEvent event;
 
@@ -971,13 +971,13 @@ void _XtAsyncMainLoop(closure)
 }
 
 void XtMakeToolkitAsync() {
-    XtSetAsyncEventHandler(_XtAsyncMainLoop, (Opaque) NULL);
+    XtSetAsyncEventHandler(_XtAsyncMainLoop, (caddr_t) NULL);
 }
 
 
 void XtSetAsyncEventHandler(handler, closure)
     XtAsyncHandler handler;
-    Opaque closure;
+    caddr_t closure;
 {
     asyncHandler = handler;
     asyncClosure = closure;
