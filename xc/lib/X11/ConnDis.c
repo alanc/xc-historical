@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XConnDis.c,v 11.54 89/07/18 11:06:14 jim Exp $
+ * $XConsortium: XConnDis.c,v 11.55 89/08/15 14:31:45 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -490,6 +490,8 @@ static int MakeTCPConnection (phostname, idisplay, retries,
     int fd;				/* file descriptor to return */
     int len;				/* length tmp variable */
 
+#define INVALID_INETADDR ((unsigned long) -1)
+
     if (!phostname) {
 	hostnamebuf[0] = '\0';
 	(void) _XGetHostname (hostnamebuf, sizeof hostnamebuf);
@@ -497,18 +499,19 @@ static int MakeTCPConnection (phostname, idisplay, retries,
     }
 
     /*
-     * if numeric host name then try to parse it as such
+     * if numeric host name then try to parse it as such; do the number
+     * first because some systems return garbage instead of INVALID_INETADDR
      */
     if (isascii(phostname[0]) && isdigit(phostname[0])) {
 	hostinetaddr = inet_addr (phostname);
     } else {
-	hostinetaddr = -1;
+	hostinetaddr = INVALID_INETADDR;
     }
 
     /*
      * try numeric
      */
-    if (hostinetaddr == -1) {
+    if (hostinetaddr == INVALID_INETADDR) {
 	if ((hp = gethostbyname(phostname)) == NULL) {
 	    /* No such host! */
 	    errno = EINVAL;
