@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: os.h,v 1.53 93/09/26 18:16:41 rws Exp $ */
+/* $XConsortium: os.h,v 1.54 93/12/08 19:41:23 rob Exp $ */
 
 #ifndef OS_H
 #define OS_H
@@ -131,11 +131,21 @@ extern int WaitForSomething(
 #endif
 );
 
+#ifndef MTX
 extern int ReadRequestFromClient(
 #if NeedFunctionPrototypes
     ClientPtr /*client*/
 #endif
 );
+#else
+extern int ReadRequestFromClient(
+#if NeedFunctionPrototypes
+    ClientPtr /*client*/,
+    int /*gotnow*/,
+    int /*needed*/
+#endif
+);
+#endif /* !MTX */
 
 extern Bool InsertFakeRequest(
 #if NeedFunctionPrototypes
