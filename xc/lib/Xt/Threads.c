@@ -1,4 +1,4 @@
-/* $XConsortium: Threads.c,v 1.10 93/09/11 14:19:22 rws Exp $ */
+/* $XConsortium: Threads.c,v 1.11 93/09/11 14:45:30 kaleb Exp $ */
 
 /************************************************************
 Copyright 1993 by Sun Microsystems, Inc. Mountain View, CA.
@@ -51,7 +51,10 @@ typedef struct _LockRec {
 typedef struct _ThreadStack {
     unsigned int size;
     int sp;
-    xthread_t *p;
+    struct _Tstack {
+	xthread_t t;
+	xcondition_t c;
+    } *st;
 } ThreadStack;
 
 #define STACK_INCR 16
@@ -277,6 +280,7 @@ FreeAppLock(app)
     XtAppContext app;
 #endif
 {
+    int ii;
     LockPtr app_lock = app->lock_info;
 
     if(app_lock) {
@@ -288,8 +292,13 @@ FreeAppLock(app)
 #endif
 	XtFree((char *)app_lock);
 	app->lock_info = NULL;
-	if(app->stack->p != (xthread_t *)NULL)
-	    XtFree((char *)app->stack->p);
+	if(app->stack->st != (struct _Tstack *)NULL) {
+	    for (ii = 0; ii < app->stack->size; ii++) {
+		xcondition_clear(app->stack->st[ii].c);
+		xcondition_free(app->stack->st[ii].c);
+	    }
+	    XtFree((char *)app->stack->st);
+	}
 	if(app->stack != (ThreadStackPtr)NULL)
 	    XtFree((char *)app->stack);
 	app->stack = NULL;
@@ -309,12 +318,22 @@ PushThread(app)
     XtAppContext app;
 #endif
 {
+    unsigned int ii;
     ThreadStackPtr s = app->stack;
 
     assert(xthread_equal((app->lock_info->holder), (xthread_self()) ) );
-    if(s->sp == s->size - 1) 
-	s->p = (xthread_t *) XtRealloc((char *)s->p, (s->size += STACK_INCR));
-    s->p[++(s->sp)] = xthread_self();
+    if(s->sp == s->size - 1) {
+	s->st = (struct _Tstack *) 
+	    XtRealloc ((char *)s->st, 
+		(s->size + STACK_INCR) * sizeof (struct _Tstack));
+	ii = s->size;
+	s->size += STACK_INCR;
+	for ( ; ii < s->size; ii++) {
+	    s->st[ii].c = xcondition_malloc();
+	    xcondition_init(s->st[ii].c);
+	}
+    }
+    s->st[++(s->sp)].t = xthread_self();
 }
 
 /*
@@ -334,6 +353,8 @@ PopThread(app)
     assert(app->stack->sp >= 0);
 
     (app->stack->sp)--;
+    if (app->stack->sp >= 0)
+	xcondition_signal (app->stack->st[app->stack->sp].c);
 }
 
 /*
@@ -352,8 +373,30 @@ IsTopThread(app)
     assert(xthread_equal((app->lock_info->holder), (xthread_self()) ) );
     assert(app->stack->sp >= 0);
 
-    return ( (xthread_equal( (app->stack->p[app->stack->sp]), 
+    return ( (xthread_equal( (app->stack->st[app->stack->sp].t), 
 			(xthread_self()) )) ? TRUE : FALSE);
+}
+
+static void
+#if NeedFunctionPrototypes
+WaitThread(
+    XtAppContext app)
+#else
+WaitThread(app)
+    XtAppContext app;
+#endif
+{
+    int ii;
+    LockPtr app_lock = app->lock_info;
+    xthread_t self = xthread_self();
+
+    xmutex_lock(app_lock->mutex);
+    for (ii = 0; ii < app->stack->sp; ii++)
+	if (xthread_equal (app->stack->st[ii].t, self)) {
+	    xcondition_wait (app->stack->st[ii].c, app_lock->mutex);
+	    break;
+	}
+    xmutex_unlock(app_lock->mutex);
 }
 
 static void
@@ -365,6 +408,8 @@ InitAppLock(app)
     XtAppContext app;
 #endif
 {
+    int ii;
+
     app->lock = AppLock;
     app->unlock = AppUnlock;
     app->yield_lock = YieldAppLock;
@@ -374,6 +419,7 @@ InitAppLock(app)
     app->push_thread = PushThread;
     app->pop_thread = PopThread;
     app->is_top_thread = IsTopThread;
+    app->wait_thread = WaitThread;
 
     app->lock_info = XtNew(LockRec);
     app->lock_info->mutex = xmutex_malloc();
@@ -387,7 +433,12 @@ InitAppLock(app)
     app->stack = XtNew(ThreadStack);
     app->stack->size = STACK_INCR;
     app->stack->sp = -1;
-    app->stack->p = (xthread_t *)XtMalloc(sizeof(xthread_t)*STACK_INCR);
+    app->stack->st = 
+	(struct _Tstack *)XtMalloc(sizeof(struct _Tstack)*STACK_INCR);
+    for (ii = 0; ii < STACK_INCR; ii++) {
+	app->stack->st[ii].c = xcondition_malloc();
+	xcondition_init(app->stack->st[ii].c);
+    }
 }
 
 #endif /* defined(XTHREADS) */

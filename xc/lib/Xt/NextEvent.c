@@ -1,4 +1,4 @@
-/* $XConsortium: NextEvent.c,v 1.122 93/09/09 10:14:45 kaleb Exp $ */
+/* $XConsortium: NextEvent.c,v 1.123 93/09/11 16:52:43 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -374,10 +374,12 @@ int _XtWaitForSomething(app,
 #else /* }{ */
 		    nfound = poll (app->fds.fdlist, fdlistlen, poll_wait);
 #endif /* } */
-		    RESTORE_APP_LOCK(app, yield);
 
-		    if (!IS_TOP_THREAD(app))
+		    if (!IS_TOP_THREAD(app)) {
+			WAIT_THREAD(app);
 			goto WaitLoop;
+		    } else
+			RESTORE_APP_LOCK(app, yield);
 
 		    POP_THREAD(app);
 		    push_thread = TRUE;

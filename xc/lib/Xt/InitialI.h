@@ -1,4 +1,4 @@
-/* $XConsortium: InitialI.h,v 1.75 93/09/09 10:14:41 kaleb Exp $ */
+/* $XConsortium: InitialI.h,v 1.76 93/09/13 15:56:19 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -179,6 +179,7 @@ typedef struct _XtAppStruct {
     ThreadAppProc push_thread;
     ThreadAppProc pop_thread;
     ThreadAppTopProc is_top_thread;
+    ThreadAppProc wait_thread;
 #endif
 } XtAppStruct;
 
