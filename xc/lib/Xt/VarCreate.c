@@ -1,4 +1,4 @@
-/* $XConsortium: VarCreate.c,v 1.24 91/12/10 18:57:25 converse Exp $ */
+/* $XConsortium: VarCreate.c,v 1.25 92/06/12 17:30:39 converse Exp $ */
 
 /*
 
@@ -297,7 +297,6 @@ Widget _XtVaAppInitialize(app_context_return, application_class, options,
     va_list var_args;
 #endif
 {
-    va_list var;
     XtAppContext app_con;
     Display * dpy;
     register int saved_argc = *argc_in_out;
@@ -311,23 +310,28 @@ Widget _XtVaAppInitialize(app_context_return, application_class, options,
     dpy = _XtAppInit(&app_con, (String)application_class, options, num_options,
 		     argc_in_out, &argv_in_out, fallback_resources);
 
-    var = var_args;
-    for(attr = va_arg(var,String); attr != NULL; attr = va_arg(var,String)) {
-        ++count;
+    typed_args = (XtTypedArgList) XtMalloc((unsigned) sizeof(XtTypedArg));
+    attr = va_arg (var_args, String);
+    for(; attr != NULL; attr = va_arg (var_args, String)) {
         if (strcmp(attr, XtVaTypedArg) == 0) {
-            va_arg(var, String);
-            va_arg(var, String);
-            va_arg(var, XtArgVal);
-            va_arg(var, int);
+            typed_args[count].name = va_arg(var_args, String);
+            typed_args[count].type = va_arg(var_args, String);
+            typed_args[count].value = va_arg(var_args, XtArgVal);
+            typed_args[count].size = va_arg(var_args, int);
         } else {
-            va_arg(var, XtArgVal);
+	    typed_args[count].name = attr;
+	    typed_args[count].type = NULL;
+	    typed_args[count].value = va_arg(var_args, XtArgVal);
+	    typed_args[count].size = 0;
         }
+	count++;
+	typed_args = (XtTypedArgList) 
+	    XtRealloc((char *) typed_args, 
+		       (unsigned) (count + 1) * sizeof(XtTypedArg));
     }
-    va_end(var);
+    typed_args[count].name = NULL;
 
-    var = var_args;
-    typed_args = _XtVaCreateTypedArgList(var, count);
-    va_end(var);
+    va_end (var_args);
 
     root =
 	XtVaAppCreateShell( NULL, application_class, 
