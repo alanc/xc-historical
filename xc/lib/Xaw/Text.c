@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Text.c,v 1.60 88/09/22 14:07:54 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Text.c,v 1.61 88/09/22 15:05:32 swick Exp $";
 #endif
 
 
@@ -173,7 +173,7 @@ static void CreateScrollbar(w)
     w->text.sbar = sbar =
 	    XtCreateWidget("scrollbar", scrollbarWidgetClass, w, args, ONE);
     XtAddCallback( sbar, XtNscrollProc, ScrollUpDownProc, (caddr_t)w );
-    XtAddCallback( sbar, XtNthumbProc, ThumbProc, (caddr_t)w );
+    XtAddCallback( sbar, XtNjumpProc, ThumbProc, (caddr_t)w );
     w->text.leftmargin += sbar->core.width + (bw = sbar->core.border_width);
     XtMoveWidget( sbar, -(Position)bw, -(Position)bw );
 }
@@ -617,7 +617,7 @@ static void ScrollUpDownProc (w, closure, callData)
 static void ThumbProc (w, closure, callData)
     Widget w;
     caddr_t closure;		/* TextWidget */
-    float callData;
+    float *callData;
   /* BUG/deficiency: The normalize to line portion of this routine will
    * cause thumbing to always position to the start of the source.
    */
@@ -627,7 +627,7 @@ static void ThumbProc (w, closure, callData)
     _XtTextPrepareToUpdate(ctx);
     old_top = ctx->text.lt.top;
     old_bot = ctx->text.lt.info[ctx->text.lt.lines-1].position;
-    position = callData * ctx->text.lastPos;
+    position = *callData * ctx->text.lastPos;
     position = (*ctx->text.source->
 		Scan)(ctx->text.source, position, XtstEOL, XtsdLeft, 1, FALSE);
     if (position >= old_top && position <= old_bot) {

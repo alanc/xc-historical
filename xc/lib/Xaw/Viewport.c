@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Viewport.c,v 1.25 88/09/06 16:42:46 jim Exp $";
+static char Xrcsid[] = "$XConsortium: Viewport.c,v 1.26 88/09/12 14:19:58 swick Exp $";
 #endif lint
 
 
@@ -156,7 +156,7 @@ static void CreateScrollbar(w, horizontal)
 			  scrollbarWidgetClass, (Widget)w,
 			  barArgs, XtNumber(barArgs) );
     XtAddCallback( bar, XtNscrollProc, ScrollUpDownProc, (caddr_t)w );
-    XtAddCallback( bar, XtNthumbProc, ThumbProc, (caddr_t)w );
+    XtAddCallback( bar, XtNjumpProc, ThumbProc, (caddr_t)w );
 
     if (horizontal) {
 	Dimension bw = bar->core.border_width;
@@ -548,7 +548,7 @@ static void ScrollUpDownProc(widget, closure, call_data)
 static void ThumbProc(widget, closure, percent)
     Widget widget;
     caddr_t closure;
-    float percent;
+    float *percent;
 {
     ViewportWidget w = (ViewportWidget)closure;
     register Widget child = w->viewport.child;
@@ -556,18 +556,18 @@ static void ThumbProc(widget, closure, percent)
 
     if (widget == w->viewport.horiz_bar)
 #ifdef macII				/* bug in the macII A/UX 1.0 cc */
-	x = (int)(-percent * child->core.width);
+	x = (int)(-*percent * child->core.width);
 #else /* else not macII */
-	x = -(int)(percent * child->core.width);
+	x = -(int)(*percent * child->core.width);
 #endif /* macII */
     else
 	x = child->core.x;
 
     if (widget == w->viewport.vert_bar)
 #ifdef macII				/* bug in the macII A/UX 1.0 cc */
-	y = (int)(-percent * child->core.height);
+	y = (int)(-*percent * child->core.height);
 #else /* else not macII */
-	y = -(int)(percent * child->core.height);
+	y = -(int)(*percent * child->core.height);
 #endif /* macII */
     else
 	y = child->core.y;
