@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XIMWrap.c,v 11.1 91/04/01 18:13:55 gildea Exp $
+ * $XConsortium: XIMWrap.c,v 11.1 91/04/06 13:18:48 rws Exp $
  */
 
 /*
@@ -58,11 +58,11 @@ XCloseIM(im)
     XIM im;
 {
     Status s;
-    int i;
+    XIC ic;
   
     s = (im->methods->close) (im);
-    for (i = im->core.num_ic; --i >= 0; )
-	im->core.ic_list[i]->core.im = (XIM)NULL;
+    for (ic = im->core.ic_chain; ic; ic = ic->next)
+	ic->core.im = (XIM)NULL;
     Xfree ((char *) im);
     return (s);
 }
@@ -85,4 +85,28 @@ XLocaleOfIM(im)
     XIM im;
 {
     return im->core.lcd->core.name;
+}
+
+void
+_XAddIC(im, ic)
+    XIM im;
+    XIC ic;
+{
+    ic->core.next = im->core.ic_chain;
+    im->core.ic_chain = ic;
+}
+
+void
+_XRemoveIC(im, ic)
+    XIM im;
+    XIC ic;
+{
+    XIC *prev;
+
+    for (prev = &im->core.ic_chain; *prev; prev = &(*prev)->next) {
+	if (*prev == ic) {
+	    *prev = ic->core.next;
+	    break;
+	}
+    }
 }
