@@ -1,5 +1,5 @@
 /*
- * $XConsortium: utils.c,v 1.15 91/04/04 21:35:32 gildea Exp $
+ * $XConsortium: utils.c,v 1.16 91/07/03 09:46:13 converse Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -283,7 +283,7 @@ char * filename;
     if ( (fp = fopen(filename, "w")) == NULL ) {
 	char buf[BUFSIZ];
 
-	sprintf(buf, "Unable to open the file `%s' for writing.");
+	sprintf(buf, "Unable to open the file `%s' for writing.", filename);
 	SetMessage(global_screen_data.info_label, buf);
 	return;
     }
