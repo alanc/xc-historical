@@ -67,8 +67,7 @@ only defined if the default visual's type is one of the color options.
 Lines that begin with a "!" character are discarded.
 .SH "OPTIONS"
 .PP
-The 
-.B xrdb
+.I xrdb
 program accepts the following options:
 .TP
 .B \-help
@@ -81,7 +80,7 @@ This option specifies the server to be used.
 .B -cpp \fIfilename\fP
 This option specifies the pathname of the C preprocessor program to be used.
 Although 
-.B xrdb
+.I xrdb
 was designed to use CPP, any program that acts as a filter
 and accepts the -D, -I, and -U options may be used.
 .TP
@@ -115,7 +114,7 @@ the old contents are deleted).  This is the default action.
 .B \-merge
 This option indicates that the input should be merged with, instead of
 replacing, the current contents of the RESOURCE_MANAGER property.  Since
-.B xrdb
+.I xrdb
 can read the standard input, this option can be used to
 the change the contents of the RESOURCE_MANAGER property directly from
 a terminal or from a shell script.
