@@ -7,7 +7,7 @@
 #endif
 XCOMM -------------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-XCOMM $XConsortium: Imake.tmpl,v 1.106 91/03/25 10:30:42 rws Exp $
+XCOMM $XConsortium: Imake.tmpl,v 1.107 91/03/25 10:48:47 rws Exp $
 XCOMM
 XCOMM Platform-specific parameters may be set in the appropriate .cf
 XCOMM configuration files.  Site-wide parameters may be set in the file
@@ -567,6 +567,9 @@ XCOMM site-specific configuration parameters - edit site.def to change
 #define StandardDefines /**/
 #endif
 #endif
+#endif
+#ifndef Malloc0ReturnsNull
+#define Malloc0ReturnsNull NO
 #endif
 #ifndef NdbmDefines
 #if HasNdbm
