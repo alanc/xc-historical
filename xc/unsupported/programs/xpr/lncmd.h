@@ -1,8 +1,18 @@
-#include <X11/copyright.h>
-
+/* $XConsortium: lncmd.h,v 10.6 88/09/06 17:20:22 jim Exp $ */
 /* Copyright Massachusetts Institute of Technology 1985 */
 
-/* $XConsortium: lncmd.h,v 10.5 88/05/16 11:00:29 swick Exp $ */
+/*
+Permission to use, copy, modify, distribute, and sell this software and its
+documentation for any purpose is hereby granted without fee, provided that
+the above copyright notice appear in all copies and that both that
+copyright notice and this permission notice appear in supporting
+documentation, and that the name of M.I.T. not be used in advertising or
+publicity pertaining to distribution of the software without specific,
+written prior permission.  M.I.T. makes no representations about the
+suitability of this software for any purpose.  It is provided "as is"
+without express or implied warranty.
+*/
+
 /* lncmd.h - Command sequences DEC printers, in particular LN0x laser
    printers */
 

@@ -1,4 +1,4 @@
-#include <X11/copyright.h>
+/* $XConsortium: xwd.c,v 1.53 90/11/10 16:11:27 rws Exp $ */
 
 /* Copyright 1987 Massachusetts Institute of Technology */
 
@@ -35,10 +35,6 @@
  *      all color-related code is commented out until color support
  *      becomes practical.)
  */
-
-#ifndef lint
-static char *rcsid_xwd_c = "$XConsortium: xwd.c,v 1.52 90/05/14 11:07:24 rws Exp $";
-#endif
 
 /*%
  *%    This is the format for commenting out color-related code until

@@ -1,8 +1,18 @@
-#include <X11/copyright.h>
-
+/* $XConsortium: XWDFile.h,v 1.13 91/01/06 11:59:54 rws Exp $ */
 /* Copyright 1985, 1986, Massachusetts Institute of Technology */
 
-/* $XConsortium: XWDFile.h,v 1.12 89/10/08 16:33:57 rws Exp $ */
+/*
+Permission to use, copy, modify, distribute, and sell this software and its
+documentation for any purpose is hereby granted without fee, provided that
+the above copyright notice appear in all copies and that both that
+copyright notice and this permission notice appear in supporting
+documentation, and that the name of M.I.T. not be used in advertising or
+publicity pertaining to distribution of the software without specific,
+written prior permission.  M.I.T. makes no representations about the
+suitability of this software for any purpose.  It is provided "as is"
+without express or implied warranty.
+*/
+
 /*
  * XWDFile.h	MIT Project Athena, X Window system window raster
  *		image dumper, dump file format header file.

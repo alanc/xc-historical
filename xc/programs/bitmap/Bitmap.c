@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Bitmap.c,v 1.18 90/12/08 17:29:16 dmatic Exp $
+ * $XConsortium: Bitmap.c,v 1.19 91/01/04 13:22:30 dmatic Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -25,7 +25,6 @@
 
 
 
-#include <X11/copyright.h>
 #include <X11/IntrinsicP.h>
 #include <X11/Xaw/XawInit.h>
 #include <X11/Xmu/Converters.h>

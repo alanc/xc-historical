@@ -1,9 +1,20 @@
 #ifndef lint
-static char *rcsid_xinit_c = "$XConsortium: xinit.c,v 11.42 90/03/01 15:21:36 rws Exp $";
+static char *rcsid_xinit_c = "$XConsortium: xinit.c,v 11.43 90/09/12 17:23:14 rws Exp $";
 #endif /* lint */
-#include <X11/copyright.h>
 
 /* Copyright    Massachusetts Institute of Technology    1986	*/
+
+/*
+Permission to use, copy, modify, distribute, and sell this software and its
+documentation for any purpose is hereby granted without fee, provided that
+the above copyright notice appear in all copies and that both that
+copyright notice and this permission notice appear in supporting
+documentation, and that the name of M.I.T. not be used in advertising or
+publicity pertaining to distribution of the software without specific,
+written prior permission.  M.I.T. makes no representations about the
+suitability of this software for any purpose.  It is provided "as is"
+without express or implied warranty.
+*/
 
 #include <X11/Xos.h>
 #include <X11/Xlib.h>

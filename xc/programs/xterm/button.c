@@ -1,9 +1,8 @@
+/* $XConsortium: button.c,v 1.52 90/06/08 14:28:51 jim Exp $ */
 /*
- *	$XConsortium: button.c,v 1.51 90/06/06 09:18:28 jim Exp $
+ *	$XConsortium: button.c,v 1.52 90/06/08 14:28:51 jim Exp $
  */
 
-
-#include <X11/copyright.h>
 
 /*
  * Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
@@ -34,9 +33,6 @@ button.c	Handles button events in the terminal emulator.
 		passes button events through to some applications.
 				J. Gettys.
 */
-#ifndef lint
-static char rcs_id[] = "$XConsortium: button.c,v 1.51 90/06/06 09:18:28 jim Exp $";
-#endif	/* lint */
 
 #include "ptyx.h"		/* Xlib headers included here. */
 #include <X11/Xatom.h>

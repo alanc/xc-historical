@@ -1,13 +1,22 @@
 /* 
- * $XConsortium: xset.c,v 1.54 89/12/10 17:40:29 rws Exp $ 
+ * $XConsortium: xset.c,v 1.55 90/07/21 14:07:37 rws Exp $ 
  */
-#include <X11/copyright.h>
 
 /* Copyright    Massachusetts Institute of Technology    1985	*/
 
-#ifndef lint
-static char *rcsid_xset_c = "$XConsortium: xset.c,v 1.54 89/12/10 17:40:29 rws Exp $";
-#endif
+/*
+Permission to use, copy, modify, distribute, and sell this software and its
+documentation for any purpose is hereby granted without fee, provided that
+the above copyright notice appear in all copies and that both that
+copyright notice and this permission notice appear in supporting
+documentation, and that the name of M.I.T. not be used in advertising or
+publicity pertaining to distribution of the software without specific,
+written prior permission.  M.I.T. makes no representations about the
+suitability of this software for any purpose.  It is provided "as is"
+without express or implied warranty.
+*/
+
+/* $XConsortium: xset.c,v 1.55 90/07/21 14:07:37 rws Exp $ */
 
 #include <stdio.h>
 #include <ctype.h>

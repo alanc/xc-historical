@@ -1,11 +1,20 @@
+/* $XConsortium: xwud.c,v 1.38 90/12/05 14:44:34 dave Exp $ */
 /* Copyright 1985, 1986, 1988 Massachusetts Institute of Technology */
-#include <X11/copyright.h>
+
+/*
+Permission to use, copy, modify, distribute, and sell this software and its
+documentation for any purpose is hereby granted without fee, provided that
+the above copyright notice appear in all copies and that both that
+copyright notice and this permission notice appear in supporting
+documentation, and that the name of M.I.T. not be used in advertising or
+publicity pertaining to distribution of the software without specific,
+written prior permission.  M.I.T. makes no representations about the
+suitability of this software for any purpose.  It is provided "as is"
+without express or implied warranty.
+*/
 
 /* xwud - marginally useful raster image undumper */
 
-#ifndef lint
-static char *rcsid = "$XConsortium: xwud.c,v 1.37 90/11/10 16:10:56 rws Exp $";
-#endif
 
 #include <X11/Xos.h>
 #include <X11/Xlib.h>
