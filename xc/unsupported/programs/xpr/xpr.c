@@ -33,7 +33,7 @@
  */
 
 #ifndef lint
-static char *rcsid_xpr_c = "$Header: xpr.c,v 1.17 87/09/05 23:10:53 toddb Locked $";
+static char *rcsid_xpr_c = "$Header: xpr.c,v 1.18 87/09/11 20:02:55 toddb Exp $";
 #endif
 
 #include <sys/types.h>
@@ -43,12 +43,19 @@ static char *rcsid_xpr_c = "$Header: xpr.c,v 1.17 87/09/05 23:10:53 toddb Locked
 #include <pwd.h>
 #include "lncmd.h"
 #include <X11/Xlib.h>
-#include "X11/XWDFile.h"
+#include <X11/XWDFile.h>
 
 int debug = 0;
 
-enum device {LN01, LN03, LA100, PS};
-enum orientation {PORTRAIT, LANDSCAPE};
+enum device {LN01, LN03, LA100, PS, PP};
+/* be sure to change pmp.h if you change the following */
+enum orientation {
+    UNSPECIFIED = -1,
+    PORTRAIT = 0,
+    LANDSCAPE = 1,
+    UPSIDE_DOWN = 2,
+    LANDSCAPE_LEFT = 3,
+  };
 
 #define W_MAX 2400
 #define H_MAX 3150
@@ -70,7 +77,15 @@ enum orientation {PORTRAIT, LANDSCAPE};
 #define F_REPORT 64
 #define F_COMPACT 128
 
-char *infilename = "stdin";
+/* 3812 PagePrinter macros, copied from pmp.h; change there, too */
+#define PPI	240
+#define inch2pel(inches)	((int) ((inches) * PPI))
+#define DEFAULT_WIDTH	8.5
+#define X_MAX_PELS	inch2pel(DEFAULT_WIDTH)
+#define DEFAULT_LENGTH	11
+#define Y_MAX_PELS	inch2pel(DEFAULT_LENGTH)
+
+char *infilename = "stdin", *whoami;
 
 main(argc, argv)
 char **argv;
@@ -85,7 +100,7 @@ char **argv;
     char *w_name;
     char *filename;
     char *output_filename;
-    int scale, width, height, flags, split;
+    int scale = 0, width, height, flags, split;
     int left, top;
     int top_margin, left_margin;
     int hpad;
@@ -95,6 +110,18 @@ char **argv;
     
     parse_args (argc, argv, &scale, &width, &height, &left, &top, &device, 
 		&flags, &split, &header, &trailer);
+    
+    if (device == PP) {
+	x2pmp(stdin, stdout, scale,
+	      width >= 0? inch2pel((float)width/300.0): X_MAX_PELS,
+	      height >= 0? inch2pel((float)height/300.0): Y_MAX_PELS,
+	      left >= 0? inch2pel((float)left/300.0): inch2pel(0.60),
+	      top >= 0? inch2pel((float)top/300.0): inch2pel(0.70),
+	      header, trailer,
+	      (flags & F_PORTRAIT)? PORTRAIT:
+	      ((flags & F_LANDSCAPE)? LANDSCAPE: UNSPECIFIED));
+	exit(0);
+    }
 
     /* read in window header */
     read(0, &win, sizeof win);
@@ -209,6 +236,8 @@ char **trailer;
     *left = -1;
     *header = NULL;
     *trailer = NULL;
+    if (!(whoami = argv[0]))
+      whoami = "xpr";
     
     argc--;
     argv++;
@@ -240,6 +269,8 @@ char **trailer;
 		    *device = PS;
 		} else if (!bcmp(*argv, "lw", len)) {
 		    *device = PS;
+		} else if (!bcmp(*argv, "pp", len)) {
+		    *device = PP;
 		} else {
 		    fprintf(stderr, 
 			    "xpr: device \"%s\" not supported\n", *argv);
