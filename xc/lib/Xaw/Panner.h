@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Panner.h,v 1.16 90/03/01 17:05:05 jim Exp $
+ * $XConsortium: Panner.h,v 1.17 90/03/07 18:38:36 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -49,9 +49,8 @@
  *  internalSpace	InternalSpace	Dimension	4
  *  lineWidth		LineWidth	Dimension	0
  *  reportCallback	ReportCallback	XtCallbackList	NULL
- *  resize		Boolean		Boolean		TRUE
+ *  resize		Resize		Boolean		TRUE
  *  rubberBand		RubberBand	Boolean		FALSE
- *  shadow		Shadow		Boolean		TRUE
  *  shadowColor		ShadowColor	Pixel		XtDefaultForeground
  *  shadowThickness	ShadowThickness	Dimension	2
  *  sliderX		SliderX		Position	0
@@ -77,10 +76,9 @@
 #define XtNlineWidth "lineWidth"
 #define XtCLineWidth "LineWidth"
 #define XtNresize "resize"
+#define XtCResize "Resize"
 #define XtNrubberBand "rubberBand"
 #define XtCRubberBand "RubberBand"
-#define XtNshadow "shadow"
-#define XtCShadow "Shadow"
 #define XtNshadowThickness "shadowThickness"
 #define XtCShadowThickness "ShadowThickness"
 #define XtNshadowColor "shadowColor"

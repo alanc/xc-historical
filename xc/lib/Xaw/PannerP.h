@@ -1,5 +1,5 @@
 /*
- * $XConsortium: PannerP.h,v 1.13 90/02/28 13:35:36 jim Exp $
+ * $XConsortium: PannerP.h,v 1.14 90/03/07 18:38:38 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -41,7 +41,6 @@ typedef struct _PannerClassRec {	/* Panner widget class */
 typedef struct {			/* new fields in widget */
     /* resources... */
     XtCallbackList report_callbacks;	/* callback/Callback */
-    Boolean shadow;			/* shadow/Shadow */
     Boolean allow_off;			/* allowOff/AllowOff */
     Boolean resize_to_pref;		/* resizeToPreferred/Boolean */
     Pixel foreground;			/* foreground/Foreground */

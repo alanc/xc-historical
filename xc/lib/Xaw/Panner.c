@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Panner.c,v 1.31 90/03/07 18:44:56 jim Exp $
+ * $XConsortium: Panner.c,v 1.32 90/03/07 18:55:57 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -70,7 +70,7 @@ static XtResource resources[] = {
 #define poff(field) XtOffset(PannerWidget, panner.field)
     { XtNallowOff, XtCAllowOff, XtRBoolean, sizeof(Boolean),
 	poff(allow_off), XtRImmediate, (XtPointer) FALSE },
-    { XtNresize, XtCBoolean, XtRBoolean, sizeof(Boolean),
+    { XtNresize, XtCResize, XtRBoolean, sizeof(Boolean),
 	poff(resize_to_pref), XtRImmediate, (XtPointer) TRUE },
     { XtNreportCallback, XtCReportCallback, XtRCallback, sizeof(XtPointer),
 	poff(report_callbacks), XtRCallback, (XtPointer) NULL },
@@ -96,8 +96,6 @@ static XtResource resources[] = {
 	poff(slider_width), XtRImmediate, (XtPointer) 0 },
     { XtNsliderHeight, XtCSliderHeight, XtRDimension, sizeof(Dimension),
 	poff(slider_height), XtRImmediate, (XtPointer) 0 },
-    { XtNshadow, XtCShadow, XtRBoolean, sizeof(Boolean),
-	poff(shadow), XtRImmediate, (XtPointer) TRUE },
     { XtNshadowColor, XtCShadowColor, XtRPixel, sizeof(Pixel),
 	poff(shadow_color), XtRString, (XtPointer) "XtDefaultForeground" },
     { XtNshadowThickness, XtCShadowThickness, XtRDimension, sizeof(Dimension),
@@ -260,28 +258,30 @@ static void check_knob (pw, knob)
 
 
 static void move_shadow (pw)
-    PannerWidget pw;
+    register PannerWidget pw;
 {
-    XRectangle *r = pw->panner.shadow_rects;
-    int lw = (pw->panner.shadow_thickness +
-	      (pw->panner.line_width < 1 ? 1 : pw->panner.line_width) * 2);
-    int pad = pw->panner.internal_border;
+    if (pw->panner.shadow_thickness > 0) {
+	int lw = (pw->panner.shadow_thickness +
+		  (pw->panner.line_width < 1 ? 1 : pw->panner.line_width) * 2);
+	int pad = pw->panner.internal_border;
 
-    if (pw->panner.knob_height > lw && pw->panner.knob_width > lw) {
-	r->x = (short) (pw->panner.knob_x + pad + pw->panner.knob_width);
-	r->y = (short) (pw->panner.knob_y + pad + lw);
-	r->width = pw->panner.shadow_thickness;
-	r->height = (unsigned short) (pw->panner.knob_height - lw);
-	r++;
-	r->x = (short) (pw->panner.knob_x + pad + lw);
-	r->y = (short) (pw->panner.knob_y + pad + pw->panner.knob_height);
-	r->width = (unsigned short) (pw->panner.knob_width - lw +
-				     pw->panner.shadow_thickness);
-	r->height = pw->panner.shadow_thickness;
-	pw->panner.shadow_valid = TRUE;
-    } else {
-	pw->panner.shadow_valid = FALSE;
+	if (pw->panner.knob_height > lw && pw->panner.knob_width > lw) {
+	    register XRectangle *r = pw->panner.shadow_rects;
+	    r->x = (short) (pw->panner.knob_x + pad + pw->panner.knob_width);
+	    r->y = (short) (pw->panner.knob_y + pad + lw);
+	    r->width = pw->panner.shadow_thickness;
+	    r->height = (unsigned short) (pw->panner.knob_height - lw);
+	    r++;
+	    r->x = (short) (pw->panner.knob_x + pad + lw);
+	    r->y = (short) (pw->panner.knob_y + pad + pw->panner.knob_height);
+	    r->width = (unsigned short) (pw->panner.knob_width - lw +
+					 pw->panner.shadow_thickness);
+	    r->height = pw->panner.shadow_thickness;
+	    pw->panner.shadow_valid = TRUE;
+	    return;
+	}
     }
+    pw->panner.shadow_valid = FALSE;
 }
 
 static void scale_knob (pw, location, size)  /* set knob size and/or loc */
@@ -308,7 +308,7 @@ static void scale_knob (pw, location, size)  /* set knob size and/or loc */
 	pw->panner.knob_height = (Dimension) PANNER_VSCALE (pw, height);
     }
     if (!pw->panner.allow_off) check_knob (pw, TRUE);
-    if (pw->panner.shadow) move_shadow (pw);
+    move_shadow (pw);
 }
 
 static void rescale (pw)
@@ -479,6 +479,7 @@ static void Initialize (greq, gnew)
     reset_xor_gc (new);			/* foreground ^ background */
 
     rescale (new);			/* does a position check */
+    new->panner.shadow_valid = FALSE;
     new->panner.tmp.doing = FALSE;
     new->panner.tmp.showing = FALSE;
 }
@@ -559,7 +560,7 @@ static void Redisplay (gw, event, region)
 		    (unsigned int) (pw->panner.knob_width - 1), 
 		    (unsigned int) (pw->panner.knob_height - 1));
 
-    if (pw->panner.shadow && pw->panner.shadow_valid) {
+    if (pw->panner.shadow_valid) {
 	XFillRectangles (dpy, w, pw->panner.shadow_gc,
 			 pw->panner.shadow_rects, 2);
     }
@@ -591,7 +592,7 @@ static Boolean SetValues (gcur, greq, gnew)
 	  reset_xor_gc (new);
 	redisplay = TRUE;
     }
-    if (cur->panner.shadow != new->panner.shadow && new->panner.shadow) {
+    if (cur->panner.shadow_thickness != new->panner.shadow_thickness) {
 	move_shadow (new);
 	redisplay = TRUE;
     }
@@ -835,7 +836,7 @@ static void ActionNotify (gw, event, params, num_params)
     if (!pw->panner.allow_off) check_knob (pw, FALSE);
     pw->panner.knob_x = pw->panner.tmp.x;
     pw->panner.knob_y = pw->panner.tmp.y;
-    if (pw->panner.shadow) move_shadow (pw);
+    move_shadow (pw);
 
     pw->panner.slider_x = (Position) (((double) pw->panner.knob_x) /
 				      pw->panner.haspect + 0.5);
