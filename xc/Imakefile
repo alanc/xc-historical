@@ -55,6 +55,7 @@ install::
 # before making the makefiles, be sure that imake exists.
 #
 Makefiles:: $(IMAKE)
+Makefile:: $(IMAKE)
 
 $(IMAKE):
 	@echo "making $(IMAKESRC)"; \
