@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: cfbgc.c,v 5.22 89/09/08 14:24:47 keith Exp $ */
+/* $XConsortium: cfbgc.c,v 5.23 89/09/09 19:03:01 rws Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -409,12 +409,16 @@ cfbValidateGC(pGC, changes, pDrawable)
 	switch (index) {
 	case GCFunction:
 	    new_fillrct = TRUE;
+	    if (!pGC->lineWidth)
+		new_line = TRUE;
 	case GCForeground:
 	    new_text = TRUE;
 	    break;
 	case GCPlaneMask:
 	    new_text = TRUE;
 	    new_fillrct = TRUE;
+	    if (!pGC->lineWidth)
+		new_line = TRUE;
 	    break;
 	case GCBackground:
 	    new_fillspans = TRUE;
