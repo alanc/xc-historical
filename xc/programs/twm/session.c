@@ -1,4 +1,4 @@
-/* $XConsortium: session.c,v 1.10 94/08/10 19:51:21 mor Exp mor $ */
+/* $XConsortium: session.c,v 1.11 94/08/25 20:18:02 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1994  X Consortium
@@ -246,8 +246,9 @@ char	**stringp;
  *      arg				LIST of bytes
  *
  * Iconified bool			1
+ * Icon info present bool		1
  *
- * if iconified
+ * if icon info present
  *	icon x				2
  *	icon y				2
  *
@@ -318,10 +319,13 @@ char *windowRole;
 	}
     }
 
-    if (!write_byte (configFile, theWindow->icon ? 1 : 0))
+    if (!write_byte (configFile, theWindow->icon ? 1 : 0))    /* iconified */
 	return 0;
 
-    if (theWindow->icon)
+    if (!write_byte (configFile, theWindow->icon_w ? 1 : 0))  /* icon exists */
+	return 0;
+
+    if (theWindow->icon_w)
     {
 	int icon_x, icon_y;
 
@@ -411,7 +415,11 @@ TWMWinConfigEntry **pentry;
 	goto give_up;
     entry->iconified = byte;
 
-    if (entry->iconified)
+    if (!read_byte (configFile, &byte))
+	goto give_up;
+    entry->icon_info_present = byte;
+
+    if (entry->icon_info_present)
     {
 	if (!read_short (configFile, &entry->icon_x))
 	    goto give_up;
@@ -496,11 +504,13 @@ char *filename;
 
 
 int
-GetWindowConfig (theWindow, x, y, width, height, iconified, icon_x, icon_y)
+GetWindowConfig (theWindow, x, y, width, height,
+    iconified, icon_info_present, icon_x, icon_y)
 
 TwmWindow *theWindow;
 unsigned short *x, *y, *width, *height;
 Bool *iconified;
+Bool *icon_info_present;
 unsigned short *icon_x, *icon_y;
 
 {
@@ -602,7 +612,8 @@ unsigned short *icon_x, *icon_y;
 	*width = ptr->width;
 	*height = ptr->height;
 	*iconified = ptr->iconified;
-	if (*iconified)
+	*icon_info_present = ptr->icon_info_present;
+	if (*icon_info_present)
 	{
 	    *icon_x = ptr->icon_x;
 	    *icon_y = ptr->icon_y;

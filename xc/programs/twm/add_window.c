@@ -53,7 +53,7 @@ in this Software without prior written authorization from the X Consortium.
 
 /**********************************************************************
  *
- * $XConsortium: add_window.c,v 1.159 94/08/10 19:52:12 mor Exp mor $
+ * $XConsortium: add_window.c,v 1.160 94/08/25 20:13:30 mor Exp mor $
  *
  * Add a new window, put the titlbar and other stuff around
  * the window
@@ -172,6 +172,7 @@ IconMgr *iconp;
     unsigned short saved_x, saved_y, saved_width, saved_height;
     unsigned short restore_icon_x, restore_icon_y;
     Bool restore_iconified = 0;
+    Bool restore_icon_info_present = 0;
     int restoredFromPrevSession;
 
 #ifdef DEBUG
@@ -204,7 +205,8 @@ IconMgr *iconp;
 
     if (GetWindowConfig (tmp_win,
 	&saved_x, &saved_y, &saved_width, &saved_height,
-	&restore_iconified, &restore_icon_x, &restore_icon_y))
+	&restore_iconified, &restore_icon_info_present,
+	&restore_icon_x, &restore_icon_y))
     {
 	tmp_win->attr.x = saved_x;
 	tmp_win->attr.y = saved_y;
@@ -228,13 +230,20 @@ IconMgr *iconp;
 
     tmp_win->wmhints = XGetWMHints(dpy, tmp_win->w);
 
-    if (tmp_win->wmhints && restore_iconified)
+    if (tmp_win->wmhints)
     {
-	tmp_win->wmhints->initial_state = IconicState;
-	tmp_win->wmhints->flags |= StateHint;
-	tmp_win->wmhints->icon_x = restore_icon_x;
-	tmp_win->wmhints->icon_y = restore_icon_y;
-	tmp_win->wmhints->flags |= IconPositionHint;
+	if (restore_iconified)
+	{
+	    tmp_win->wmhints->initial_state = IconicState;
+	    tmp_win->wmhints->flags |= StateHint;
+	}
+
+	if (restore_icon_info_present)
+	{
+	    tmp_win->wmhints->icon_x = restore_icon_x;
+	    tmp_win->wmhints->icon_y = restore_icon_y;
+	    tmp_win->wmhints->flags |= IconPositionHint;
+	}
     }
 
     if (tmp_win->wmhints && (tmp_win->wmhints->flags & WindowGroupHint)) 

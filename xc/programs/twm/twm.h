@@ -55,7 +55,7 @@ from the X Consortium.
 
 /***********************************************************************
  *
- * $XConsortium: twm.h,v 1.80 94/07/21 17:45:45 mor Exp mor $
+ * $XConsortium: twm.h,v 1.81 94/08/25 20:10:31 mor Exp mor $
  *
  * twm include file
  *
@@ -321,8 +321,9 @@ typedef struct TWMWinConfigEntry
     char *wm_name;
     int wm_command_count;
     char **wm_command;
-    int iconified;
     unsigned short x, y, width, height;
+    Bool iconified;
+    Bool icon_info_present;
     unsigned short icon_x, icon_y;
 } TWMWinConfigEntry;
 
