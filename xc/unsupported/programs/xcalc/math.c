@@ -1,4 +1,4 @@
-/* $XConsortium: math.c,v 1.12 91/02/16 17:07:32 rws Exp $ 
+/* $XConsortium: math.c,v 1.13 91/02/16 18:01:26 rws Exp $ 
  *
  *  math.c  -  mathematics functions for a hand calculator under X
  *
@@ -120,6 +120,7 @@ void parse_double (src, fmt, dp)
     return;
 }
 
+
 /*********************************/
 int pre_op(keynum)
      int keynum;
@@ -174,6 +175,34 @@ void fail_op()
     DrawDisplay();
     return;
 }
+
+
+/* keep SVR4 compiler from complaining about scope of arg declaration below */
+typedef struct sigcontext * sigcontextstructp;
+/*ARGSUSED*/
+signal_t fperr(sig,code,scp)
+  int sig,code;
+  sigcontextstructp scp;
+{
+#ifdef SYSV
+    signal(SIGFPE,(signal_t (*)())fperr);
+#endif
+    SignalCode = code;
+    longjmp(env,1);
+}
+
+/*ARGSUSED*/
+signal_t illerr(sig,code,scp)
+  int sig,code;
+  sigcontextstructp scp;
+{
+#ifdef SYSV
+    signal(SIGILL,(signal_t (*)())illerr);
+#endif
+    SignalCode = code;
+    longjmp(env,1);
+}
+
 #endif	/* not IEEE */
 
 
@@ -897,21 +926,3 @@ ResetCalc()
     drg2rad=PI/180.0;
     rad2drg=180.0/PI;
 }
-
-#ifndef IEEE
-/******************/
-/* keep SVR4 compiler from complaining about scope of arg declaration below */
-typedef struct sigcontext * sigcontextstructp;
-/*ARGSUSED*/
-signal_t fperr(sig,code,scp)
-  int sig,code;
-  sigcontextstructp scp;
-/******************/
-{
-#ifdef SYSV
-    signal(SIGFPE,(signal_t (*)())fperr);
-#endif
-    SignalCode = code;
-    longjmp(env,1);
-}
-#endif
