@@ -1,6 +1,6 @@
 #if ( !defined(lint) && !defined(SABER))
-  static char rcsid_module_c[] = "$Header: List.c,v 1.4 88/08/30 16:36:03 kit Exp $";
-  static char rcs_version[] = "$Athena: List.c,v 1.4 88/08/30 16:36:03 kit Exp $";
+  static char rcs_id[] = "$XConsortium: List.c,v 1.4 88/08/30 16:36:03 kit Exp $";
+  static char rcsid_module_c[] = "$oHeader: List.c,v 1.4 88/08/30 16:36:03 kit Exp $";
 #endif
 
 /*  This is the List widget, it is useful to display a list, without the
@@ -12,7 +12,7 @@
  *	By:		Chris D. Peterson
  *                      MIT - Project Athena
  *
- *      $Source: /mit/vtk/List/RCS/List.c,v $
+ *      $Source: /usr/expo/X/src/lib/Xaw/RCS/List.c,v $
  *      $Author: kit $
  *      $Header: List.c,v 1.4 88/08/30 16:36:03 kit Exp $
  *	
