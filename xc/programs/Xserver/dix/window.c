@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: window.c,v 1.208 88/08/25 10:43:38 keith Exp $ */
+/* $Header: window.c,v 1.209 88/08/28 11:51:45 rws Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -1608,7 +1608,7 @@ MoveWindow(pWin, x, y, pNextSib)
     WindowPtr pNextSib;
 {
     WindowPtr pParent;
-    Bool WasMapped = (Bool)(pWin->realized);
+    Bool WasViewable = (Bool)(pWin->viewable);
     short oldx, oldy, bw;
     RegionPtr oldRegion;
     DDXPointRec oldpt;
@@ -1627,7 +1627,7 @@ MoveWindow(pWin, x, y, pNextSib)
     oldy = pWin->absCorner.y;
     oldpt.x = oldx;
     oldpt.y = oldy;
-    if (WasMapped) 
+    if (WasViewable)
     {
         oldRegion = (* pScreen->RegionCreate)(NULL, 1);
         (* pScreen->RegionCopy)(oldRegion, pWin->borderClip);
@@ -1659,7 +1659,7 @@ MoveWindow(pWin, x, y, pNextSib)
     windowToValidate = MoveWindowInStack(pWin, pNextSib);
 
     ResizeChildrenWinSize(pWin, 0, 0, 0, 0);
-    if (WasMapped) 
+    if (WasViewable)
     {
 
         anyMarked = MarkSiblingsBelowMe(windowToValidate, pBox) || anyMarked;
@@ -1847,7 +1847,7 @@ RecomputeExposures (pWin, pValid)
 {
     ScreenPtr	pScreen;
 
-    if (pWin->realized)
+    if (pWin->viewable)
     {
 	pScreen = pWin->drawable.pScreen;
 	/*
@@ -1875,7 +1875,7 @@ SlideAndSizeWindow(pWin, x, y, w, h, pSib)
     WindowPtr pSib;
 {
     WindowPtr pParent;
-    Bool WasMapped = (Bool)(pWin->realized);
+    Bool WasViewable = (Bool)(pWin->viewable);
     unsigned short width = pWin->clientWinSize.width,
                    height = pWin->clientWinSize.height;    
     short oldx = pWin->absCorner.x,
@@ -1901,7 +1901,7 @@ SlideAndSizeWindow(pWin, x, y, w, h, pSib)
         return ;
 
     pScreen = pWin->drawable.pScreen;
-    if (WasMapped) 
+    if (WasViewable)
     {
 	/*
 	 * save the visible region of the window
@@ -1964,7 +1964,7 @@ SlideAndSizeWindow(pWin, x, y, w, h, pSib)
 
     pFirstChange = MoveWindowInStack(pWin, pSib);
 
-    if (WasMapped) 
+    if (WasViewable)
     {
 	pRegion = (*pScreen->RegionCreate) (NULL, 1);
 	if (pWin->backStorage && (pWin->backingStore != NotUseful))
@@ -2138,7 +2138,7 @@ ChangeBorderWidth(pWin, width)
     int oldwidth;
     Bool anyMarked;
     register ScreenPtr pScreen;
-    Bool WasMapped = (Bool)(pWin->realized);
+    Bool WasViewable = (Bool)(pWin->viewable);
 
     oldwidth = pWin->borderWidth;
     if (oldwidth == width) 
@@ -2155,7 +2155,7 @@ ChangeBorderWidth(pWin, width)
     else
         (* pScreen->RegionCopy)(pWin->borderSize, pWin->winSize);
 
-    if (WasMapped)
+    if (WasViewable)
     {
         if (width < oldwidth)
             pBox = (* pScreen->RegionExtents)(pWin->borderClip);
@@ -2427,7 +2427,7 @@ ReflectStackChange(pWin, pSib)
 {
 /* Note that pSib might be NULL */
 
-    Bool doValidation = (Bool)pWin->realized;
+    Bool doValidation = (Bool)pWin->viewable;
     WindowPtr pParent;
     Bool anyMarked;
     BoxPtr box;
@@ -3114,29 +3114,37 @@ UnrealizeChildren(pWin)
     }
     while (pSib)
     {
+	Bool wasRealized = (Bool)pSib->realized;
+	Bool wasViewable = (Bool)pSib->viewable;
+
 	pSib->realized = pSib->viewable = FALSE;
 	pSib->visibility = VisibilityNotViewable;
-        (* Unrealize)(pSib);
-
-	if (pSib->backStorage && (pSib->backingStore != NotUseful))
+	if (wasRealized)
 	{
-	    /*
-	     * Allow backing-store to grab stuff off the screen before
-	     * the bits go away
-	     */
-	    (* Union) (pSib->backStorage->obscured,
-		       pSib->backStorage->obscured,
-		       pSib->clipList);
+	    (* Unrealize)(pSib);
+	    DeleteWindowFromAnyEvents(pSib, FALSE);
+	    if (pSib->firstChild) 
+		UnrealizeChildren(pSib->firstChild);
 	}
-	        /* to force exposures later */
-        (* RegionEmpty)(pSib->clipList);    
-        (* RegionEmpty)(pSib->borderClip);
-        (* RegionEmpty)(pSib->borderExposed);
-	(* RegionEmpty)(pSib->exposed);
-	pWin->drawable.serialNumber = NEXT_SERIAL_NUMBER;
-        DeleteWindowFromAnyEvents(pSib, FALSE);
-        if (pSib->firstChild) 
-            UnrealizeChildren(pSib->firstChild);
+	if (wasViewable)
+	{
+	    if (pSib->backStorage && (pSib->backingStore != NotUseful))
+	    {
+		/*
+		 * Allow backing-store to grab stuff off the screen before
+		 * the bits go away
+		 */
+		(* Union) (pSib->backStorage->obscured,
+			   pSib->backStorage->obscured,
+			   pSib->clipList);
+	    }
+		    /* to force exposures later */
+	    (* RegionEmpty)(pSib->clipList);    
+	    (* RegionEmpty)(pSib->borderClip);
+	    (* RegionEmpty)(pSib->borderExposed);
+	    (* RegionEmpty)(pSib->exposed);
+	    pWin->drawable.serialNumber = NEXT_SERIAL_NUMBER;
+	}
         pSib = pSib->nextSib;
     }
 }
@@ -3155,7 +3163,8 @@ UnmapWindow(pWin, SendExposures, SendNotification, fromConfigure)
     WindowPtr pParent;
     xEvent event;
     Bool anyMarked;
-    Bool wasMapped = (Bool)pWin->realized;
+    Bool wasRealized = (Bool)pWin->realized;
+    Bool wasViewable = (Bool)pWin->viewable;
     BoxPtr box;
 
     if ((!pWin->mapped) || (!(pParent = pWin->parent))) 
@@ -3167,7 +3176,7 @@ UnmapWindow(pWin, SendExposures, SendNotification, fromConfigure)
 	event.u.unmapNotify.fromConfigure = fromConfigure;
 	DeliverEvents(pWin, &event, 1, NullWindow);
     }
-    if (wasMapped)
+    if (wasViewable)
     {
         box = (* pWin->drawable.pScreen->RegionExtents)(pWin->borderSize);
         anyMarked = MarkSiblingsBelowMe(pWin, box);
@@ -3175,13 +3184,16 @@ UnmapWindow(pWin, SendExposures, SendNotification, fromConfigure)
     pWin->mapped = FALSE;
     pWin->realized = pWin->viewable = FALSE;
     pWin->visibility = VisibilityNotViewable;
-    if (wasMapped)
+    if (wasRealized)
     {
     	/* We SHOULD check for an error value here XXX */
         (* pWin->drawable.pScreen->UnrealizeWindow)(pWin);
         DeleteWindowFromAnyEvents(pWin, FALSE);
         if (pWin->firstChild)
             UnrealizeChildren(pWin->firstChild);
+    }
+    if (wasViewable)
+    {
         (* pWin->drawable.pScreen->ValidateTree)(pParent, pWin, 
 						 TRUE, anyMarked);
 	/*
@@ -3221,11 +3233,12 @@ UnmapSubwindows(pWin, sendExposures)
     xEvent event;
     Bool (*UnrealizeWindow)();
     int (*Union)();
-    Bool wasMapped = (Bool)pWin->realized;
+    Bool wasRealized = (Bool)pWin->realized;
+    Bool wasViewable = (Bool)pWin->viewable;
     Bool anyMarked;
     BoxPtr box;
 
-    if (wasMapped)
+    if (wasViewable)
     {
 	box = (* pWin->drawable.pScreen->RegionExtents)(pWin->winSize);
 	anyMarked = MarkSiblingsBelowMe(pWin->firstChild, box);
@@ -3243,13 +3256,18 @@ UnmapSubwindows(pWin, sendExposures)
 	    event.u.unmapNotify.fromConfigure = xFalse;
 	    DeliverEvents(pChild, &event, 1, NullWindow);
 	    pChild->mapped = FALSE;
-            if (wasMapped)
+            if (wasRealized)
 	    {
     	        pChild->realized = pChild->viewable = FALSE;
 		pChild->visibility = VisibilityNotViewable;
     		/* We SHOULD check for an error value here XXX */
                 (* UnrealizeWindow)(pChild);
                 DeleteWindowFromAnyEvents(pChild, FALSE);
+	        if (pChild->firstChild)
+                    UnrealizeChildren(pChild->firstChild);
+	    }
+	    if (wasViewable)
+	    {
 #ifdef DO_SAVE_UNDERS
 		pChild->backingStore &= ~SAVE_UNDER_BIT;
 		pChild->backingStore |= SAVE_UNDER_CHANGE_BIT;
@@ -3264,12 +3282,10 @@ UnmapSubwindows(pWin, sendExposures)
 			       pChild->backStorage->obscured,
 			       pChild->clipList);
 		}
-	        if (pChild->firstChild)
-                    UnrealizeChildren(pChild->firstChild);
 	    }
 	}
     }
-    if (wasMapped)
+    if (wasViewable)
     {
 	(* pWin->drawable.pScreen->ValidateTree)(pWin, pHead,
 						 TRUE, anyMarked);
@@ -3278,13 +3294,13 @@ UnmapSubwindows(pWin, sendExposures)
 	    DoObscures(pWin);
 	    HandleExposures(pWin);
 	}
-    }
 #ifdef DO_SAVE_UNDERS
-    if (DO_SAVE_UNDERS(pWin))
-    {
-	DoChangeSaveUnder(pWin->firstChild);
-    }
+	if (DO_SAVE_UNDERS(pWin))
+	{
+	    DoChangeSaveUnder(pWin->firstChild);
+	}
 #endif /* DO_SAVE_UNDERS */
+    }
 }
 
 
