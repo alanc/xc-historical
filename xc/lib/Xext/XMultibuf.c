@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XMultibuf.c,v 1.8 89/10/04 16:12:06 jim Exp $
+ * $XConsortium: XMultibuf.c,v 1.9 89/10/05 11:13:42 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -25,7 +25,7 @@
 
 #define NEED_EVENTS
 #define NEED_REPLIES
-#include "Xlibint.h"
+#include <X11/Xlibint.h>
 #include "../include/Xext.h"
 #include "../include/extutil.h"
 #include "../include/multibufst.h"
