@@ -1,10 +1,12 @@
-# $Header: Imakefile,v 1.2 87/09/02 17:10:43 toddb Locked $
+# $Header: Imakefile,v 1.3 87/09/03 12:19:39 toddb Locked $
    ZOIDSRCS = zoidtest.c
    ZOIDOBJS = zoidtest.o
  BEZIERSRCS = beziertest.c
  BEZIEROBJS = beziertest.o
    INCLUDES = -I$(TOP)  -I../include
 CDEBUGFLAGS = -g
+
+all: zoidtest beziertest
 
 SingleProgramTarget(zoidtest,$(ZOIDOBJS),$(EXTENSIONLIB) $(XLIB),)
 SingleProgramTarget(beziertest,$(BEZIEROBJS),$(EXTENSIONLIB) $(XLIB),)
