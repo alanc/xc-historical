@@ -105,7 +105,7 @@ int readcount;
 
 	gc = DefaultGC(dpy, screen);
 	image = XCreateImage(dpy, DefaultVisual(dpy,screen),
-			     8, ZPixmap, 0, data, *width, *height,
+			     8, ZPixmap, 0, (char *)data, *width, *height,
 			     8, *width);
 
 	PicturePixmap = XCreatePixmap(dpy,RootWindow(dpy,screen),
@@ -121,7 +121,6 @@ XColor *colorMap;
 int numColors;
 {
     int i;
-    XColor color;
 
     if (CreateNewColormap)
 	PuzzleColormap = XCreateColormap(dpy,RootWindow(dpy,screen),

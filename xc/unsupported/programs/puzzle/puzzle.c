@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: puzzle.c,v 1.6 89/04/11 11:56:54 jim Exp $
+ *	$XConsortium: puzzle.c,v 1.7 89/12/08 11:22:15 jim Exp $
  */
 
 /* Puzzle - (C) Copyright 1987, 1988 Don Bennett.
@@ -12,7 +12,7 @@
  */
 
 #ifndef lint
-static char *rcsid_puzzle_c = "$XConsortium: puzzle.c,v 1.6 89/04/11 11:56:54 jim Exp $";
+static char *rcsid_puzzle_c = "$XConsortium: puzzle.c,v 1.7 89/12/08 11:22:15 jim Exp $";
 #endif	/* lint */
 
 /**
@@ -347,7 +347,6 @@ move_space(dir,dist)
 int dir,dist;
 {
    int i, step, count;
-   int min_x,max_x,min_y,max_y;
    int first_x,first_y;
    int last_x,last_y, shift_dir;
 
