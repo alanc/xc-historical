@@ -167,3 +167,38 @@ void XtMoveWidget(w, x, y)
     }
 } /* XtMoveWidget */
 
+XtGeometryResult XtSetValuesGeometryRequest(current, new, reply)
+    Widget current,		/* widget as it is */
+           new;			/* widget as it wants to be */
+    XtWidgetGeometry *reply;	/* allowed geometry if XtGeometryAlmost */
+{
+    XtWidgetGeometry req;
+
+    req.request_mode = NULL;
+
+    if (current->core.x != new->core.x) {
+	req.request_mode |= CWX;
+	req.x = new->core.x;
+    }
+    if (current->core.y != new->core.y) {
+	req.request_mode |= CWY;
+	req.y = new->core.y;
+    }
+    if (current->core.width != new->core.width) {
+	req.request_mode |= CWWidth;
+	req.width = new->core.width;
+    }
+    if (current->core.height != new->core.height) {
+	req.request_mode |= CWHeight;
+	req.height = new->core.height;
+    }
+    if (current->core.border_width != new->core.border_width) {
+	req.request_mode |= CWBorderWidth;
+	req.border_width = new->core.border_width;
+    }
+
+    if (req.request_mode == NULL)
+        return XtGeometryNo;
+    else
+        return XtMakeGeometryRequest( current, &req, reply );
+}
