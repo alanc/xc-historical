@@ -448,6 +448,7 @@ DDXPointPtr pptSrc;
     int nlMiddle;		/* whole longwords in dst */
     register int nl;		/* temp copy of nlMiddle */
     register int tmpSrc;	/* place to store full source word */
+    int careful;
 
     if (pSrcDrawable->type == DRAWABLE_WINDOW)
     {
@@ -477,6 +478,13 @@ DDXPointPtr pptSrc;
 	widthDst = (int)(((PixmapPtr)pDstDrawable)->devKind) >> 2;
     }
 
+    /* XXX we have to err on the side of safety when both are windows,
+     * because we don't know if IncludeInferiors is being used.
+     */
+    careful = ((pSrcDrawable == pDstDrawable) ||
+	       ((pSrcDrawable->type == DRAWABLE_WINDOW) &&
+		(pDstDrawable->type == DRAWABLE_WINDOW)));
+
     pbox = prgnDst->rects;
     nbox = prgnDst->numRects;
 
@@ -484,7 +492,7 @@ DDXPointPtr pptSrc;
     pboxNewY = NULL;
     pptNewX = NULL;
     pptNewY = NULL;
-    if (pptSrc->y < pbox->y1) 
+    if (careful && (pptSrc->y < pbox->y1))
     {
         /* walk source botttom to top */
 	ydir = -1;
@@ -530,7 +538,7 @@ DDXPointPtr pptSrc;
 	ydir = 1;
     }
 
-    if (pptSrc->x < pbox->x1)
+    if (careful && (pptSrc->x < pbox->x1))
     {
 	/* walk source right to left */
         xdir = -1;
