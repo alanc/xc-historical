@@ -1,4 +1,4 @@
-/* $Header: dispatch.c,v 1.4 87/08/14 22:23:39 toddb Locked $ */
+/* $Header: dispatch.c,v 2.3 87/08/19 13:36:27 newman Locked $ */
 /************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -61,7 +61,7 @@ extern int (* ProcVector[256]) ();
 extern int (* SwappedProcVector[256]) ();
 extern void (* EventSwapVector[128]) ();
 extern void (* ReplySwapVector[256]) ();
-
+extern void Swap32Write(), SLHostsExtend(), SQColorsExtend(), WriteSConnectionInfo();
 void KillAllClients();
 
 /* buffers for clients. legal values below */
@@ -670,6 +670,7 @@ ProcQueryTree(client)
     WriteReplyToClient(client, sizeof(xQueryTreeReply), &reply);
     if (numChildren)
     {
+    	client->pSwapReplyFunc = Swap32Write;
 	WriteSwappedDataToClient(client, numChildren * sizeof(Window), childIDs);
 	Xfree(childIDs);
     }
@@ -1163,7 +1164,7 @@ ProcListFonts(client)
         bufptr += fpr->length[i];
     }
     WriteReplyToClient(client, sizeof(xListFontsReply), &reply);
-    WriteToClient(client, reply.length << 2, bufferStart);
+    WriteToClient(client, stringLens + fpr->npaths, bufferStart);
     FreeFontRecord(fpr);
     DEALLOCATE_LOCAL(bufferStart);
     
@@ -2036,6 +2037,7 @@ ProcListInstalledColormaps(client)
     preply->nColormaps = nummaps;
     preply->length = nummaps;
     WriteReplyToClient(client, sizeof (xListInstalledColormapsReply), preply);
+    client->pSwapReplyFunc = Swap32Write;
     WriteSwappedDataToClient(client, nummaps * sizeof(Colormap), &preply[1]);
     DEALLOCATE_LOCAL(preply);
     return(client->noClientException);
@@ -2165,6 +2167,7 @@ ProcAllocColorCells           (client)
 	accr.nPixels = npixels;
 	accr.nMasks = nmasks;
         WriteReplyToClient(client, sizeof (xAllocColorCellsReply), &accr);
+	client->pSwapReplyFunc = Swap32Write;
         WriteSwappedDataToClient(client, (npixels + nmasks) * sizeof (long), ppixels);
 	DEALLOCATE_LOCAL(ppixels);
         return (client->noClientException);        
@@ -2211,6 +2214,7 @@ ProcAllocColorPlanes(client)
 	}
 	acpr.length = npixels >> 2;
 	WriteReplyToClient(client, sizeof(xAllocColorPlanesReply), &acpr);
+	client->pSwapReplyFunc = Swap32Write;
 	WriteSwappedDataToClient(client, npixels, ppixels);
 	DEALLOCATE_LOCAL(ppixels);
         return (client->noClientException);        
@@ -2354,6 +2358,7 @@ ProcQueryColors(client)
 	qcr.sequenceNumber = client->sequence;
 	qcr.nColors = count;
 	WriteReplyToClient(client, sizeof(xQueryColorsReply), &qcr);
+	client->pSwapReplyFunc = SQColorsExtend;
 	WriteSwappedDataToClient(client, count * sizeof(xrgb), prgbs);
 	DEALLOCATE_LOCAL(prgbs);
 	return(client->noClientException);
@@ -2652,6 +2657,7 @@ extern int GetHosts();
     reply.nHosts = nHosts;
     reply.length = len >> 2;
     WriteReplyToClient(client, sizeof(xListHostsReply), &reply);
+    client->pSwapReplyFunc = SLHostsExtend;
     WriteSwappedDataToClient(client, len, pdata);
     Xfree(pdata);
     return (client->noClientException);
@@ -2743,7 +2749,7 @@ ProcGetFontPath(client)
         bufptr += pFP->length[i];
     }
     WriteReplyToClient(client, sizeof(xGetFontPathReply), &reply);
-    WriteToClient(client, reply.length << 2, bufferStart);
+    WriteToClient(client, stringLens + pFP->npaths, bufferStart);
     DEALLOCATE_LOCAL(bufferStart);
     return(client->noClientException);
 }
@@ -2982,11 +2988,14 @@ SendConnectionSetupInfo(client)
     for (i=0; i<screenInfo.numScreens; root += sizeof(xWindowRoot), i++) 
         root->currentInputMask = WindowTable[i].allEventMasks;
 
-    if (client->swapped)
-	WriteSConnSetupPrefix (client, &connSetupPrefix);
-    else
+    if (client->swapped) {
+	WriteSConnSetupPrefix(client, &connSetupPrefix);
+        WriteSConnectionInfo(client, connSetupPrefix.length << 2, ConnectionInfo);
+	}
+    else {
         WriteToClient(client, sizeof(xConnSetupPrefix), (char *) &connSetupPrefix);
-    WriteSwappedDataToClient(client, connSetupPrefix.length << 2, ConnectionInfo);
+        WriteToClient(client, connSetupPrefix.length << 2, ConnectionInfo);
+	}
 }
 
 /*****************
