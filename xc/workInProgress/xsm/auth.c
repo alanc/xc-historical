@@ -1,4 +1,4 @@
-/* $XConsortium: auth.c,v 1.7 94/08/17 17:43:05 mor Exp mor $ */
+/* $XConsortium: auth.c,v 1.8 94/09/14 16:24:34 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -26,6 +26,9 @@ in this Software without prior written authorization from the X Consortium.
 ******************************************************************************/
 
 #include "xsm.h"
+
+static char *remAuthFile;
+
 
 
 /*
@@ -91,15 +94,32 @@ IceAuthDataEntry	**authDataEntries;
 {
     FILE	*addfp;
     FILE	*removefp;
+    char	*path;
     int		original_umask;
+    char	*addAuthFile;
+    char	command[256];
     int		i;
 
     original_umask = umask (0077);	/* disallow non-owner access */
 
-    if (!(addfp = fopen (".xsm-add-auth", "w")))
+    path = getenv ("SM_SAVE_DIR");
+    if (!path)
+    {
+	path = getenv ("HOME");
+	if (!path)
+	    path = ".";
+    }
+
+    if ((addAuthFile = (char *) XtNewString (tempnam (path, ".xsm"))) == NULL)
 	return (0);
 
-    if (!(removefp = fopen (".xsm-rem-auth", "w")))
+    if ((remAuthFile = (char *) XtNewString (tempnam (path, ".xsm"))) == NULL)
+	return (0);
+
+    if (!(addfp = fopen (addAuthFile, "w")))
+	return (0);
+
+    if (!(removefp = fopen (remAuthFile, "w")))
 	return (0);
 
     *authDataEntries = (IceAuthDataEntry *) XtMalloc (
@@ -138,7 +158,13 @@ IceAuthDataEntry	**authDataEntries;
 
     umask (original_umask);
 
-    system ("iceauth source .xsm-add-auth");
+    sprintf (command, "iceauth source %s", addAuthFile);
+    system (command);
+
+    sprintf (command, "rm %s", addAuthFile);
+    system (command);
+
+    XtFree (addAuthFile);
 
     return (1);
 }
@@ -158,6 +184,7 @@ IceAuthDataEntry 	*authDataEntries;
 {
     /* Each transport has entries for ICE and XSMP */
 
+    char command[256];
     int i;
 
     for (i = 0; i < count * 2; i++)
@@ -168,5 +195,11 @@ IceAuthDataEntry 	*authDataEntries;
 
     XtFree ((char *) authDataEntries);
 
-    system ("iceauth source .xsm-rem-auth");
+    sprintf (command, "iceauth source %s", remAuthFile);
+    system (command);
+
+    sprintf (command, "rm %s", remAuthFile);
+    system (command);
+
+    XtFree (remAuthFile);
 }
