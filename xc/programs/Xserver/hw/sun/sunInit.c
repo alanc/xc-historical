@@ -72,7 +72,6 @@ extern GCPtr CreateScratchGC();
 #define	XDEVICE	"XDEVICE"
 #define	PARENT	"WINDOW_GFX"
 
-int sunSigIO = 0;	 /* For use with SetInputCheck */
 static int autoRepeatHandlersInstalled;	/* FALSE each time InitOutput called */
 
 static Bool sunDevsProbed = FALSE;
@@ -101,7 +100,7 @@ SigIOHandler(sig, code, scp)
     int		sig;
     struct sigcontext *scp;
 {
-    sunSigIO = 1;
+    sunEnqueueEvents ();
 }
 
 sunFbDataRec sunFbData[] = {
@@ -272,9 +271,9 @@ InitInput(argc, argv)
     RegisterPointerDevice(p);
     RegisterKeyboardDevice(k);
     miRegisterPointerDevice(screenInfo.screens[0], p);
+    if (!mieqInit (k, p))
+	return FALSE;
     signal(SIGIO, SigIOHandler);
-
-    SetInputCheck (&zero, &sunSigIO);
 }
 
 
@@ -286,6 +285,7 @@ sunCloseScreen (i, pScreen)
     SetupScreen(pScreen);
     Bool    ret;
 
+    signal (SIGIO, SIG_IGN);
     pScreen->CloseScreen = pPrivate->CloseScreen;
     ret = (*pScreen->CloseScreen) (i, pScreen);
     (void) (*pScreen->SaveScreen) (pScreen, SCREEN_SAVER_OFF);
@@ -355,8 +355,7 @@ sunScreenInit (pScreen)
     extern void   sunBlockHandler();
     extern void   sunWakeupHandler();
     static ScreenPtr autoRepeatScreen;
-    extern miPointerCursorFuncRec   sunPointerCursorFuncs;
-    extern miPointerSpriteFuncRec   sunPointerSpriteFuncs;
+    extern miPointerScreenFuncRec   sunPointerScreenFuncs;
 
     pPrivate->installedMap = 0;
     pPrivate->CloseScreen = pScreen->CloseScreen;
@@ -377,9 +376,7 @@ sunScreenInit (pScreen)
     }
 
     if (!sunCursorInitialize (pScreen))
-    {
-	miDCInitialize (pScreen, &sunPointerCursorFuncs);
-    }
+	miDCInitialize (pScreen, &sunPointerScreenFuncs);
 
 #ifdef SUN_WINDOWS
     /*

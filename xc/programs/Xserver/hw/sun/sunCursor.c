@@ -76,37 +76,14 @@ sunUnrealizeCursor (pScreen, pCursor)
     ScreenPtr	pScreen;
     CursorPtr	pCursor;
 {
-    SetupCursor(pScreen);
-
-    if (pCursor == pCurPriv->pCursor)
-	pCurPriv->pCursor = 0;
     return TRUE;
 }
 
 static void
-sunComputeColors (pCurPriv, pCursor, pfbcursor, r,g,b)
-    sunCursorPtr    pCurPriv;
-    CursorPtr	    pCursor;
-    struct fbcursor *pfbcursor;
-    unsigned char   r[2], g[2], b[2];
-{
-    r[0] = (pCurPriv->backRed = pCursor->backRed) >> 8;
-    g[0] = (pCurPriv->backGreen = pCursor->backGreen) >> 8;
-    b[0] = (pCurPriv->backBlue = pCursor->backBlue) >> 8;
-    r[1] = (pCurPriv->foreRed = pCursor->foreRed) >> 8;
-    g[1] = (pCurPriv->foreGreen = pCursor->foreGreen) >> 8;
-    b[1] = (pCurPriv->foreBlue = pCursor->foreBlue) >> 8;
-    pfbcursor->cmap.index = 0;
-    pfbcursor->cmap.count = 2;
-    pfbcursor->cmap.red = r;
-    pfbcursor->cmap.green = g;
-    pfbcursor->cmap.blue = b;
-}
-
-static void
-sunLoadCursor (pScreen, pCursor)
+sunLoadCursor (pScreen, pCursor, x, y)
     ScreenPtr	pScreen;
     CursorPtr	pCursor;
+    int		x, y;
 {
     SetupCursor(pScreen);
     struct fbcursor fbcursor;
@@ -115,42 +92,61 @@ sunLoadCursor (pScreen, pCursor)
 
     w = pCursor->bits->width;
     h = pCursor->bits->height;
-    fbcursor.set = FB_CUR_SETSHAPE|FB_CUR_SETCUR|FB_CUR_SETHOT|FB_CUR_SETCMAP;
+    fbcursor.set = FB_CUR_SETALL;
     fbcursor.enable = 1;
-    fbcursor.image = (char *) pCursor->bits->source;
-    fbcursor.mask = (char *) pCursor->bits->mask;
+    fbcursor.pos.x = x;
+    fbcursor.pos.y = y;
     fbcursor.hot.x = pCursor->bits->xhot;
     fbcursor.hot.y = pCursor->bits->yhot;
+    r[0] = pCursor->backRed >> 8;
+    g[0] = pCursor->backGreen >> 8;
+    b[0] = pCursor->backBlue >> 8;
+    r[1] = pCursor->foreRed >> 8;
+    g[1] = pCursor->foreGreen >> 8;
+    b[1] = pCursor->foreBlue >> 8;
+    fbcursor.cmap.index = 0;
+    fbcursor.cmap.count = 2;
+    fbcursor.cmap.red = r;
+    fbcursor.cmap.green = g;
+    fbcursor.cmap.blue = b;
     if (w > pCurPriv->width)
 	w = pCurPriv->width;
     if (h > pCurPriv->height)
 	h = pCurPriv->height;
     fbcursor.size.x = w;
     fbcursor.size.y = h;
-    sunComputeColors (pCurPriv, pCursor, &fbcursor, r, g, b);
+    fbcursor.image = (char *) pCursor->bits->source;
+    fbcursor.mask = (char *) pCursor->bits->mask;
     (void) ioctl (sunFbs[pScreen->myNum].fd, FBIOSCURSOR, &fbcursor);
-    pCurPriv->pCursor = pCursor;
 }
 
-#ifdef NOTDEF
-/* This routine isn't needed - we just do the work in LoadCursor above */
 static void
-sunColorCursor (pScreen, pCursor)
+sunDisableCursor (pScreen)
     ScreenPtr	pScreen;
-    CursorPtr	pCursor;
 {
-    SetupCursor(pScreen);
-    unsigned char   r[2], g[2], b[2];
     struct fbcursor fbcursor;
 
-    fbcursor.set = FB_CUR_SETCMAP;
-    sunComputeColors (pCurPriv, pCursor, &fbcursor, r, g, b);
+    fbcursor.set = FB_CUR_SETCUR;
+    fbcursor.enable = 0;
     (void) ioctl (sunFbs[pScreen->myNum].fd, FBIOSCURSOR, &fbcursor);
 }
-#endif
 
 static void
-sunPositionCursor (pScreen, x, y)
+sunSetCursor (pScreen, pCursor, x, y)
+    ScreenPtr	pScreen;
+    CursorPtr	pCursor;
+    int		x, y;
+{
+    SetupCursor(pScreen);
+
+    if (pCursor)
+    	sunLoadCursor (pScreen, pCursor, x, y);
+    else
+	sunDisableCursor (pScreen);
+}
+
+static void
+sunMoveCursor (pScreen, x, y)
     ScreenPtr	pScreen;
     int		x, y;
 {
@@ -161,48 +157,13 @@ sunPositionCursor (pScreen, x, y)
     pos.x = x;
     pos.y = y;
     ioctl (sunFbs[pScreen->myNum].fd, FBIOSCURPOS, &pos);
-    pCurPriv->x = x;
-    pCurPriv->y = y;
-}
-
-static void
-sunDisplayCursor (pScreen, pCursor, x, y)
-    ScreenPtr	pScreen;
-    CursorPtr	pCursor;
-    int		x, y;
-{
-    SetupCursor(pScreen);
-
-    if (pCurPriv->pCursor != pCursor)
-	sunLoadCursor (pScreen, pCursor);
-    /* a check for cursor color change could be made here,
-     * instead we rely on using miRecolorCursor which unrealizes
-     * and rerealizes the cursor, setting pCurPriv->pCursor = 0 in
-     * unrealize above solves the recoloring problem!
-     */
-    if (pCurPriv->x != x || pCurPriv->y != y)
-	sunPositionCursor (pScreen, x, y);
-}
-
-static void
-sunUndisplayCursor (pScreen, pCursor)
-    ScreenPtr	pScreen;
-    CursorPtr	pCursor;
-{
-    SetupCursor (pScreen);
-    struct fbcursor fbcursor;
-
-    fbcursor.set = FB_CUR_SETCUR;
-    fbcursor.enable = 0;
-    (void) ioctl (sunFbs[pScreen->myNum].fd, FBIOSCURSOR, &fbcursor);
-    return;
 }
 
 miPointerSpriteFuncRec sunPointerSpriteFuncs = {
     sunRealizeCursor,
     sunUnrealizeCursor,
-    sunDisplayCursor,
-    sunUndisplayCursor,
+    sunSetCursor,
+    sunMoveCursor,
 };
 
 static ScreenPtr    pQueryBestSizeScreen;
@@ -228,7 +189,7 @@ sunQueryBestSize (class, pwidth, pheight)
     }
 }
 
-extern miPointerCursorFuncRec	sunPointerCursorFuncs;
+extern miPointerScreenFuncRec	sunPointerScreenFuncs;
 
 Bool
 sunCursorInitialize (pScreen)
@@ -246,15 +207,12 @@ sunCursorInitialize (pScreen)
 	return FALSE;
     pCurPriv->width = maxsize.x;
     pCurPriv->height= maxsize.y;
-    pCurPriv->pCursor = 0;
-    pCurPriv->x = -1;
-    pCurPriv->y = -1;
     pScreen->QueryBestSize = sunQueryBestSize;
     pQueryBestSizeScreen = pScreen;
     miPointerInitialize (pScreen,
 			 &sunPointerSpriteFuncs,
-			 &sunPointerCursorFuncs);
-    
+			 &sunPointerScreenFuncs,
+			 FALSE);
 }
 
 /*

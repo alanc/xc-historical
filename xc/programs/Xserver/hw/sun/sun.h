@@ -83,9 +83,7 @@ typedef struct kbPrivate {
     int	    	  type;           	/* Type of keyboard */
     int	    	  fd;	    	    	/* Descriptor open to device */
     Firm_event	  *(*GetEvents)();  	/* Function to read events */
-    void    	  (*ProcessEvent)();	/* Function to process an event */
-    void    	  (*DoneEvents)();  	/* Function called when all events */
-					/* have been handled. */
+    void    	  (*EnqueueEvent)();	/* Function to process an event */
     pointer 	  devPrivate;	    	/* Private to keyboard device */
     Bool	  map_q;		/* TRUE if fd has a mapped event queue */
     int		  offset;		/* to be added to device keycodes */
@@ -113,12 +111,7 @@ typedef struct kbPrivate {
 typedef struct ptrPrivate {
     int	    	  fd;	    	    	/* Descriptor to device */
     Firm_event 	  *(*GetEvents)(); 	/* Function to read events */
-    void    	  (*ProcessEvent)();	/* Function to process an event */
-    void    	  (*DoneEvents)();  	/* When all the events have been */
-					/* handled, this function will be */
-					/* called. */
-    short   	  dx,	    	    	/* Current X coordinate of pointer */
-		  dy;	    	    	/* Current Y coordinate */
+    void    	  (*EnqueueEvent)();	/* Function to process an event */
     pointer    	  devPrivate;	    	/* Field private to device */
 } PtrPrivRec, *PtrPrivPtr;
 
@@ -168,10 +161,6 @@ typedef struct crPrivate {
 extern int  sunScreenIndex;
 
 typedef struct {
-    CursorPtr	    pCursor;
-    unsigned short foreRed, foreGreen, foreBlue;
-    unsigned short backRed, backGreen, backBlue;
-    int		    x, y;
     int		    width, height;
 } sunCursorRec, *sunCursorPtr;
 

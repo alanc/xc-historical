@@ -67,10 +67,8 @@ extern void	miPointerPosition();
 static void 	  sunBell();
 static void 	  sunKbdCtrl();
 static Firm_event *sunKbdGetEvents();
-static void 	  sunKbdProcessEvent();
-static void 	  sunKbdDoneEvents();
+static void 	  sunKbdEnqueueEvent();
 int	  	  autoRepeatKeyDown = 0;
-int	  	  autoRepeatDebug = 0;
 int	  	  autoRepeatReady;
 long	  	  autoRepeatInitiate = 1000 * AUTOREPEAT_INITIATE;
 long	  	  autoRepeatDelay = 1000 * AUTOREPEAT_DELAY;
@@ -84,9 +82,7 @@ static KbPrivRec  	sysKbPriv = {
     -1,				/* Type of keyboard */
     -1,				/* Descriptor open to device */
     sunKbdGetEvents,		/* Function to read events */
-    sunKbdProcessEvent,		/* Function to process an event */
-    sunKbdDoneEvents,		/* Function called when all events */
-				/* have been handled. */
+    sunKbdEnqueueEvent,		/* Function to enqueue an event */
     (pointer)&sunKbPriv,	/* Private to keyboard device */
     (Bool)0,			/* Mapped queue */
     0,				/* offset for device keycodes */
@@ -486,11 +482,6 @@ sunKbdLockLight (pKeyboard, on)
  *	A pointer to an array of Firm_events or (Firm_event *)0 if no events
  *	The number of events contained in the array.
  *	A boolean as to whether more events might be available.
- *	If there are no keyboard events ready and autoRepeatKeyDown > 0,
- *	then *pNumEvents is set to 1 and Firm_event id is set to
- *	AUTOREPEAT_EVENTID.  In sunKbdProcessEvent, if autoRepeatKeyDown > 0
- *	and Firm_event id == AUTOREPEAT_EVENTID, then the event buffer is
- *	ignored and the	event is generated from the last KeyPress event.
  *
  * Side Effects:
  *	None.
@@ -521,22 +512,12 @@ sunKbdGetEvents (pKeyboard, pNumEvents, pAgain)
 	*pNumEvents = nBytes / sizeof (Firm_event);
 	*pAgain = (nBytes == sizeof (evBuf));
     }
-
-    if (autoRepeatKeyDown && autoRepeatReady &&
-	     pPriv->ctrl->autoRepeat == AutoRepeatModeOn && *pNumEvents == 0) {
-	*pNumEvents = 1;			/* Fake the event */
-	evBuf[0].id = AUTOREPEAT_EVENTID;	/* Flags autoRepeat event */
-	if (autoRepeatDebug)
-	    ErrorF("sunKbdGetEvents: autoRepeatKeyDown = %d event\n",
-				autoRepeatKeyDown);
-    }
-
     return (evBuf);
 }
 
 /*-
  *-----------------------------------------------------------------------
- * sunKbdProcessEvent --
+ * sunKbdEnqueueEvent --
  *
  * Results:
  *
@@ -544,64 +525,28 @@ sunKbdGetEvents (pKeyboard, pNumEvents, pAgain)
  *
  * Caveat:
  *      To reduce duplication of code and logic (and therefore bugs), the
- *      sunwindows version of kbd processing (sunKbdProcessEventSunWin())
+ *      sunwindows version of kbd processing (sunKbdEnqueueEventSunWin())
  *      counterfeits a firm event and calls this routine.  This
  *      couunterfeiting relies on the fact this this routine only looks at the
  *      id, time, and value fields of the firm event which it is passed.  If
- *      this ever changes, the sunKbdProcessEventSunWin will also have to
+ *      this ever changes, the sunKbdEnqueueEventSunWin will also have to
  *      change.
  *
  *-----------------------------------------------------------------------
  */
+
+static xEvent	autoRepeatEvent;
+
 static void
-sunKbdProcessEvent (pKeyboard, fe)
+sunKbdEnqueueEvent (pKeyboard, fe)
     DevicePtr	  pKeyboard;
     Firm_event	  *fe;
 {
     xEvent		xE;
     KbPrivPtr		pPriv;
     int			delta;
-    static xEvent	autoRepeatEvent;
     BYTE		key;
     CARD8		keyModifiers;
-
-    if (autoRepeatKeyDown && fe->id == AUTOREPEAT_EVENTID) {
-	pPriv = (KbPrivPtr) pKeyboard->devicePrivate;
-	if (pPriv->ctrl->autoRepeat != AutoRepeatModeOn) {
-		autoRepeatKeyDown = 0;
-		return;
-	}
-	/*
-	 * Generate auto repeat event.	XXX one for now.
-	 * Update time & pointer location of saved KeyPress event.
-	 */
-	if (autoRepeatDebug)
-	    ErrorF("sunKbdProcessEvent: autoRepeatKeyDown = %d\n",
-			autoRepeatKeyDown);
-
-	delta = TVTOMILLI(autoRepeatDeltaTv);
-	autoRepeatFirst = FALSE;
-
-	/*
-	 * Fake a key up event and a key down event
-	 * for the last key pressed.
-	 */
-	autoRepeatEvent.u.keyButtonPointer.time += delta;
-	miPointerPosition (screenInfo.screens[0],
-			   &autoRepeatEvent.u.keyButtonPointer.rootX,
-			   &autoRepeatEvent.u.keyButtonPointer.rootY);
-	autoRepeatEvent.u.u.type = KeyRelease;
-	(* pKeyboard->processInputProc) (&autoRepeatEvent, pKeyboard, 1);
-
-	autoRepeatEvent.u.u.type = KeyPress;
-	(* pKeyboard->processInputProc) (&autoRepeatEvent, pKeyboard, 1);
-
-	/* Update time of last key down */
-	tvplus(autoRepeatLastKeyDownTv, autoRepeatLastKeyDownTv, 
-			autoRepeatDeltaTv);
-
-	return;
-    }
 
     key = (fe->id & 0x7F) + sysKbPriv.offset;
     keyModifiers = ((DeviceIntPtr)pKeyboard)->key->modifierMap[key];
@@ -611,14 +556,9 @@ sunKbdProcessEvent (pKeyboard, fe)
 	 * Kill AutoRepeater on any real non-modifier key down, or auto key up
 	 */
 	autoRepeatKeyDown = 0;
-	if (autoRepeatDebug)
-	    ErrorF("sunKbdProcessEvent: autoRepeat off\n");
     }
 
     xE.u.keyButtonPointer.time = TVTOMILLI(fe->time);
-    miPointerPosition (screenInfo.screens[0],
-		       &xE.u.keyButtonPointer.rootX,
-		       &xE.u.keyButtonPointer.rootY);
     xE.u.u.type = ((fe->value == VKEY_UP) ? KeyRelease : KeyPress);
     xE.u.u.detail = key;
 
@@ -632,33 +572,47 @@ sunKbdProcessEvent (pKeyboard, fe)
 
     if ((xE.u.u.type == KeyPress) && (keyModifiers == 0)) {
 	/* initialize new AutoRepeater event & mark AutoRepeater on */
-	if (autoRepeatDebug)
-            ErrorF("sunKbdProcessEvent: VKEY_DOWN\n");
 	autoRepeatEvent = xE;
 	autoRepeatFirst = TRUE;
 	autoRepeatKeyDown++;
 	autoRepeatLastKeyDownTv = fe->time;
     }
 
-    (* pKeyboard->processInputProc) (&xE, pKeyboard, 1);
+    mieqEnqueue (&xE);
 }
 
-/*-
- *-----------------------------------------------------------------------
- * sunDoneEvents --
- *	Nothing to do, here...
- *
- * Results:
- *
- * Side Effects:
- *
- *-----------------------------------------------------------------------
- */
-/*ARGSUSED*/
-static void
-sunKbdDoneEvents (pKeyboard)
-    DevicePtr	  pKeyboard;
+sunEnqueueAutoRepeat ()
 {
+    int	oldmask;
+    int	delta;
+
+    if (sysKbPriv.ctrl->autoRepeat != AutoRepeatModeOn) {
+	autoRepeatKeyDown = 0;
+	return;
+    }
+    /*
+     * Generate auto repeat event.	XXX one for now.
+     * Update time & pointer location of saved KeyPress event.
+     */
+
+    delta = TVTOMILLI(autoRepeatDeltaTv);
+    autoRepeatFirst = FALSE;
+
+    /*
+     * Fake a key up event and a key down event
+     * for the last key pressed.
+     */
+    autoRepeatEvent.u.keyButtonPointer.time += delta;
+    autoRepeatEvent.u.u.type = KeyRelease;
+    oldmask = sigblock (sigmask(SIGIO));
+    mieqEnqueue (&autoRepeatEvent);
+    autoRepeatEvent.u.u.type = KeyPress;
+    mieqEnqueue (&autoRepeatEvent);
+    sigsetmask (oldmask);
+    /* Update time of last key down */
+    tvplus(autoRepeatLastKeyDownTv, autoRepeatLastKeyDownTv, 
+		    autoRepeatDeltaTv);
+
 }
 
 /*-
@@ -838,7 +792,7 @@ sunSetUpKbdSunWin(windowFd, onoff)
 
 /*-
  *-----------------------------------------------------------------------
- * sunKbdProcessEventSunWin
+ * sunKbdEnqueueEventSunWin
  *	Process sunwindows event destined for the keyboard.
  *      Rather than replicate the logic (and therefore replicate
  * 	bug fixes, etc), this code counterfeits a vuid 
@@ -852,7 +806,7 @@ sunSetUpKbdSunWin(windowFd, onoff)
  */
 
 void
-sunKbdProcessEventSunWin(pKeyboard,se)
+sunKbdEnqueueEventSunWin(pKeyboard,se)
     DeviceRec *pKeyboard;
     register struct inputevent *se;
 {   
@@ -862,7 +816,7 @@ sunKbdProcessEventSunWin(pKeyboard,se)
     fe.id = event_id(se);
     fe.value = (event_is_up(se) ? VKEY_UP : VKEY_DOWN);
 
-    sunKbdProcessEvent (pKeyboard, &fe);
+    sunKbdEnqueueEvent (pKeyboard, &fe);
 }
 #endif SUN_WINDOWS
 
@@ -900,8 +854,6 @@ sunBlockHandler(nscreen, pbdata, pptv, pReadmask)
 	artv.tv_usec = autoRepeatDelay;
     *pptv = &artv;
 
-    if (autoRepeatDebug)
-	ErrorF("sunBlockHandler(%d,%d): \n", artv.tv_sec, artv.tv_usec);
 }
 
 /*ARGSUSED*/
@@ -913,9 +865,6 @@ sunWakeupHandler(nscreen, pbdata, err, pReadmask)
     pointer pReadmask;
 {
     struct timeval tv;
-
-    if (autoRepeatDebug)
-	ErrorF("sunWakeupHandler(ar=%d, err=%d):\n", autoRepeatKeyDown, err);
 
     if (pKbdCtrl == (KeybdCtrl *) 0)
 	pKbdCtrl = ((KbPrivPtr) LookupKeyboardDevice()->devicePrivate)->ctrl;
@@ -935,6 +884,8 @@ sunWakeupHandler(nscreen, pbdata, err, pReadmask)
     }
     
     if (autoRepeatReady)
-	ProcessInputEvents();
-    autoRepeatReady = 0;
+    {
+	sunEnqueueAutoRepeat ();
+	autoRepeatReady = 0;
+    }
 }

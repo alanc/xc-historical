@@ -50,44 +50,33 @@ static char sccsid[] = "%W %G Copyright 1987 Sun Micro";
 #define NEED_EVENTS
 #include    "sun.h"
 #include    "mipointer.h"
-#include    "misprite.h"
 
 Bool ActiveZaphod = TRUE;
 
-static long sunEventTime();
 static Bool sunCursorOffScreen();
 static void sunCrossScreen();
-extern void miPointerQueueEvent();
+static void sunWarpCursor();
 
-miPointerCursorFuncRec sunPointerCursorFuncs = {
-    sunEventTime,
+miPointerScreenFuncRec sunPointerScreenFuncs = {
     sunCursorOffScreen,
     sunCrossScreen,
-    miPointerQueueEvent,
+    sunWarpCursor,
 };
 
 typedef struct {
     int	    bmask;	    /* Current button state */
-    Bool    mouseMoved;	    /* Mouse has moved */
 } SunMsPrivRec, *SunMsPrivPtr;
 
 static void 	  	sunMouseCtrl();
-static int 	  	sunMouseGetMotionEvents();
 static Firm_event 	*sunMouseGetEvents();
-static void 	  	sunMouseProcessEvent();
-static void 	  	sunMouseDoneEvents();
+static void 	  	sunMouseEnqueueEvent();
 
 static SunMsPrivRec	sunMousePriv;
 
 static PtrPrivRec 	sysMousePriv = {
     -1,				/* Descriptor to device */
     sunMouseGetEvents,		/* Function to read events */
-    sunMouseProcessEvent,	/* Function to process an event */
-    sunMouseDoneEvents,		/* When all the events have been */
-				/* handled, this function will be */
-				/* called. */
-    0,				/* Current x movement of pointer */
-    0,				/* Current y movement */
+    sunMouseEnqueueEvent,	/* Function to process an event */
     (pointer)&sunMousePriv,	/* Field private to device */
 };
 
@@ -147,9 +136,6 @@ sunMouseProc (pMouse, what)
 	    }
 
 	    sunMousePriv.bmask = 0;
-	    sunMousePriv.mouseMoved = FALSE;
-	    sysMousePriv.dx = 0;
-	    sysMousePriv.dy = 0;
 
 	    pMouse->devicePrivate = (pointer) &sysMousePriv;
 	    pMouse->on = FALSE;
@@ -157,7 +143,8 @@ sunMouseProc (pMouse, what)
 	    map[2] = 2;
 	    map[3] = 3;
 	    InitPointerDeviceStruct(
-		pMouse, map, 3, sunMouseGetMotionEvents, sunMouseCtrl, 0);
+		pMouse, map, 3, miPointerGetMotionEvents,
+ 		sunMouseCtrl, miPointerGetMotionBufferSize());
 	    break;
 
 	case DEVICE_ON:
@@ -218,30 +205,6 @@ static void
 sunMouseCtrl (pMouse)
     DevicePtr	  pMouse;
 {
-}
-
-/*-
- *-----------------------------------------------------------------------
- * sunMouseGetMotionEvents --
- *	Return the (number of) motion events in the "motion history
- *	buffer" (snicker) between the given times.
- *
- * Results:
- *	The number of events stuffed.
- *
- * Side Effects:
- *	The relevant xTimecoord's are stuffed in the passed memory.
- *
- *-----------------------------------------------------------------------
- */
-/*ARGSUSED*/
-static int
-sunMouseGetMotionEvents (buff, start, stop, pScreen)
-    CARD32 start, stop;
-    xTimecoord *buff;
-    ScreenPtr pScreen;
-{
-    return 0;
 }
 
 /*-
@@ -323,7 +286,7 @@ MouseAccelerate (pMouse, delta)
 
 /*-
  *-----------------------------------------------------------------------
- * sunMouseProcessEvent --
+ * sunMouseEnqueueEvent --
  *	Given a Firm_event for a mouse, pass it off the the dix layer
  *	properly converted...
  *
@@ -336,7 +299,7 @@ MouseAccelerate (pMouse, delta)
  *-----------------------------------------------------------------------
  */
 static void
-sunMouseProcessEvent (pMouse, fe)
+sunMouseEnqueueEvent (pMouse, fe)
     DevicePtr	  pMouse;   	/* Mouse from which the event came */
     Firm_event	  *fe;	    	/* Event to process */
 {
@@ -344,11 +307,12 @@ sunMouseProcessEvent (pMouse, fe)
     register PtrPrivPtr	pPriv;	/* Private data for pointer */
     register SunMsPrivPtr pSunPriv; /* Private data for mouse */
     register int  	bmask;	/* Temporary button mask */
+    register unsigned long  time;
 
     pPriv = (PtrPrivPtr)pMouse->devicePrivate;
     pSunPriv = (SunMsPrivPtr) pPriv->devPrivate;
 
-    xE.u.keyButtonPointer.time = TVTOMILLI(fe->time);
+    time = xE.u.keyButtonPointer.time = TVTOMILLI(fe->time);
 
     switch (fe->id)
     {
@@ -379,40 +343,10 @@ sunMouseProcessEvent (pMouse, fe)
 		return;
 	    }
 	}
-	/*
-	 * If the mouse has moved, we must update any interested client
-	 * as well as DIX before sending a button event along.
-	 */
-	if (pSunPriv->mouseMoved) {
-	    sunMouseDoneEvents (pMouse, FALSE);
-	}
-    
-	miPointerPosition (screenInfo.screens[0],
-			   &xE.u.keyButtonPointer.rootX,
-			   &xE.u.keyButtonPointer.rootY);
-    
-	(* pMouse->processInputProc) (&xE, pMouse, 1);
+	mieqEnqueue (&xE);
 	break;
     case LOC_X_DELTA:
-	/*
-	 * When we detect a change in the mouse coordinates, we call
-	 * the cursor module to move the cursor. It has the option of
-	 * simply removing the cursor or just shifting it a bit.
-	 * If it is removed, DIX will restore it before we goes to sleep...
-	 *
-	 * What should be done if it goes off the screen? Move to another
-	 * screen? For now, we just force the pointer to stay on the
-	 * screen...
-	 */
-	pPriv->dx += MouseAccelerate (pMouse, fe->value);
-
-#ifdef	SUN_ALL_MOTION
-	miPointerDeltaCursor (screenInfo.screens[0], pPriv->dx, pPriv->dy, TRUE);
-	pPriv->dx = 0;
-	pPriv->dy = 0;
-#else
-	((SunMsPrivPtr)pPriv->devPrivate)->mouseMoved = TRUE;
-#endif
+	miPointerDeltaCursor (MouseAccelerate(pMouse,fe->value),0,time);
 	break;
     case LOC_Y_DELTA:
 	/*
@@ -420,17 +354,10 @@ sunMouseProcessEvent (pMouse, fe)
 	 * and motion down a negative delta, so we must subtract
 	 * here instead of add...
 	 */
-	pPriv->dy -= MouseAccelerate (pMouse, fe->value);
-#ifdef SUN_ALL_MOTION
-	miPointerDeltaCursor (screenInfo.screens[0], pPriv->dx, pPriv->dy, TRUE);
-	pPriv->dx = 0;
-	pPriv->dy = 0;
-#else
-	((SunMsPrivPtr)pPriv->devPrivate)->mouseMoved = TRUE;
-#endif SUN_ALL_MOTION
+	miPointerDeltaCursor (0,-MouseAccelerate(pMouse,fe->value),time);
 	break;
     default:
-	FatalError ("sunMouseProcessEvent: unrecognized id\n");
+	FatalError ("sunMouseEnqueueEvent: unrecognized id\n");
 	break;
     }
 }
@@ -470,14 +397,6 @@ sunCursorOffScreen (pScreen, x, y)
     return FALSE;
 }
 
-/*ARGSUSED*/
-static long
-sunEventTime (pScreen)
-    ScreenPtr	pScreen;
-{
-    return lastEventTime;
-}
-
 static void
 sunCrossScreen (pScreen, entering)
     ScreenPtr	pScreen;
@@ -492,49 +411,23 @@ sunCrossScreen (pScreen, entering)
 	(*sunFbs[pScreen->myNum].EnterLeave) (pScreen, select);
 }
 
-/*-
- *-----------------------------------------------------------------------
- * sunMouseDoneEvents --
- *	Finish off any mouse motions we haven't done yet. (At the moment
- *	this code is unused since we never save mouse motions as I'm
- *	unsure of the effect of getting a keystroke at a given [x,y] w/o
- *	having gotten a motion event to that [x,y])
- *
- * Results:
- *	None.
- *
- * Side Effects:
- *	A MotionNotify event may be generated.
- *
- *-----------------------------------------------------------------------
- */
-/*ARGSUSED*/
 static void
-sunMouseDoneEvents (pMouse,final)
-    DevicePtr	  pMouse;
-    Bool	  final;
+sunWarpCursor (pScreen, x, y)
+    ScreenPtr	pScreen;
+    int		x, y;
+    Bool	generateEvents;
 {
-    PtrPrivPtr	  pPriv;
-    SunMsPrivPtr  pSunPriv;
-    int		  dx, dy;
+    int	    oldmask;
 
-    pPriv = (PtrPrivPtr) pMouse->devicePrivate;
-    pSunPriv = (SunMsPrivPtr) pPriv->devPrivate;
-
-    if (pSunPriv->mouseMoved) {
-	dx = pPriv->dx;
-	dy = pPriv->dy;
-	pPriv->dx = 0;
-	pPriv->dy = 0;
-	pSunPriv->mouseMoved = FALSE;
-	miPointerDeltaCursor (screenInfo.screens[0], dx, dy, TRUE);
-    }
+    oldmask = sigblock (sigmask(SIGIO));
+    miPointerWarpCursor (pScreen, x, y);
+    sigsetmask (oldmask);
 }
 
 #ifdef SUN_WINDOWS
 
 /*
- * Process a sunwindows mouse event.  The possible events are
+ * Enqueue a sunwindows mouse event.  The possible events are
  *   LOC_MOVE
  *   MS_LEFT
  *   MS_MIDDLE
@@ -542,7 +435,7 @@ sunMouseDoneEvents (pMouse,final)
  */
 
 void
-sunMouseProcessEventSunWin(pMouse,se)
+sunMouseEnqueueEventSunWin(pMouse,se)
     DeviceRec *pMouse;
     register struct inputevent *se;
 {   
@@ -551,8 +444,10 @@ sunMouseProcessEventSunWin(pMouse,se)
     register PtrPrivPtr		pPriv;	/* Private data for pointer */
     register SunMsPrivPtr	pSunPriv; /* Private data for mouse */
     short			x, y;
+    unsigned long		time;
 
     pPriv = (PtrPrivPtr)pMouse->devicePrivate;
+    time = xE.u.keyButtonPointer.time = TVTOMILLI(event_time(se));
 
     switch (event_id(se)) {
         case MS_LEFT:
@@ -566,7 +461,6 @@ sunMouseProcessEventSunWin(pMouse,se)
 	     * Mouse buttons start at 1.
 	     */
 	    pSunPriv = (SunMsPrivPtr) pPriv->devPrivate;
-	    xE.u.keyButtonPointer.time = TVTOMILLI(event_time(se));
 	    xE.u.u.detail = (event_id(se) - MS_LEFT) + 1;
 	    bmask = 1 << xE.u.u.detail;
 	    if (win_inputnegevent(se)) {
@@ -584,22 +478,11 @@ sunMouseProcessEventSunWin(pMouse,se)
 		    return;
 		}
 	    }
-	    miPointerPosition (screenInfo.screens[0],
-	        &xE.u.keyButtonPointer.rootX, &xE.u.keyButtonPointer.rootY);
-            (* pMouse->processInputProc) (&xE, pMouse, 1);
+	    mieqEnqueue (&xE);
     	    break;
         case LOC_MOVE:
-	    /*
-	     * Tell mi to go ahead and generate the event.
-	     */
-	    miPointerMoveCursor(screenInfo.screens[0], event_x(se),
-		event_y(se), TRUE);
-
-	    /*
-	     * Find out if the mouse got constrained. If it did
-	     * then we have to tell SunWindows about it.
-	     */
-	    miPointerPosition (screenInfo.screens[0], &x, &y);
+	    miPointerAbsoluteCursor(event_x(se),event_y(se),time);
+	    miPointerPosition (&x, &y);
 	    if (x != event_x(se) || y != event_y(se))
 	        /*
                  * Tell SunWindows that X is constraining the mouse
@@ -608,7 +491,7 @@ sunMouseProcessEventSunWin(pMouse,se)
 	        win_setmouseposition(windowFd, x, y);
 	    break;
 	default:
-	    FatalError ("sunMouseProcessEventSunWin: unrecognized id\n");
+	    FatalError ("sunMouseEnqueueEventSunWin: unrecognized id\n");
 	    break;
     }
 }

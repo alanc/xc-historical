@@ -51,7 +51,6 @@ static char sccsid[] = "%W %G Copyright 1987 Sun Micro";
 #include    "opaque.h"
 
 int	    	lastEventTime = 0;
-extern int	sunSigIO;
 extern int      screenIsSaved;
 extern void	SaveScreens();
 
@@ -106,6 +105,19 @@ TimeSinceLastInputEvent()
 void
 ProcessInputEvents ()
 {
+    mieqProcessInputEvents ();
+    miPointerUpdate ();
+}
+
+/*
+ *-----------------------------------------------------------------------
+ * sunEnqueueEvents
+ *	When a SIGIO is received, read device hard events and
+ *	enqueue them using the mi event queue
+ */
+
+sunEnqueueEvents ()
+{
     register Firm_event    *ptrEvents,    	/* Current pointer event */
 			   *kbdEvents;	    	/* Current keyboard event */
     register int	    numPtrEvents, 	/* Number of remaining pointer
@@ -133,9 +145,10 @@ ProcessInputEvents ()
     int         n;
 #endif SUN_WINDOWS
 
-    sunSigIO = 0;
     pPointer = LookupPointerDevice();
     pKeyboard = LookupKeyboardDevice();
+    if (!pPointer->on || !pKeyboard->on)
+	return;
 
     if ( sunUseSunWindows() ) {
 #ifdef SUN_WINDOWS
@@ -149,19 +162,7 @@ ProcessInputEvents ()
 	    return;
 	}
 
-	if (autoRepeatKeyDown && autoRepeatReady && n <= 0) {
-		/* fake a sunwindows kbd event */
-		n = sizeof(struct inputevent);
-		se->ie_code = AUTOREPEAT_EVENTID;
-		tvplus(event_time(se), autoRepeatLastKeyDownTv,
-							autoRepeatDeltaTv);
-		if (autoRepeatDebug)
-		    ErrorF("ProcessInputEvents: sw auto event\n");
-	}
-
 	for (seL = sunevents + (n/(sizeof sunevents[0]));  se < seL; se++) {
-	    if (screenIsSaved == SCREEN_SAVER_ON)
-		SaveScreens(SCREEN_SAVER_OFF, ScreenSaverReset);
 	    lastEventTime = TVTOMILLI(event_time(se));
 
 	    /*
@@ -195,7 +196,7 @@ ProcessInputEvents ()
 		case MS_LEFT:
 		case MS_MIDDLE:
 		case MS_RIGHT:
-		    sunMouseProcessEventSunWin(pPointer,se);
+		    sunMouseEnqueueEventSunWin(pPointer,se);
 		    break;
 		case LOC_WINEXIT:
 		case LOC_WINENTER:
@@ -203,7 +204,7 @@ ProcessInputEvents ()
 		case KBD_USE:
 		    break;
 		default:
-		    sunKbdProcessEventSunWin(pKeyboard,se);
+		    sunKbdEnqueueEventSunWin(pKeyboard,se);
 		    break;
 	    }
 	}
@@ -243,53 +244,31 @@ ProcessInputEvents ()
 		break;
 	    if (numPtrEvents && numKbdEvents) {
 		if (timercmp (&kbdEvents->time, &ptrEvents->time, <)) {
-		    if (lastType == Ptr) {
-			(* ptrPriv->DoneEvents) (pPointer, FALSE);
-		    }
-		    (* kbdPriv->ProcessEvent) (pKeyboard, kbdEvents);
+		    (* kbdPriv->EnqueueEvent) (pKeyboard, kbdEvents);
 		    numKbdEvents--;
 		    lastEvent = kbdEvents++;
 		    lastType = Kbd;
 		} else {
-		    if (lastType == Kbd) {
-			(* kbdPriv->DoneEvents) (pKeyboard, FALSE);
-		    }
-		    (* ptrPriv->ProcessEvent) (pPointer, ptrEvents);
+		    (* ptrPriv->EnqueueEvent) (pPointer, ptrEvents);
 		    numPtrEvents--;
 		    lastEvent = ptrEvents++;
 		    lastType = Ptr;
 		}
 	    } else if (numKbdEvents) {
-		if (lastType == Ptr) {
-		    (* ptrPriv->DoneEvents) (pPointer, FALSE);
-		}
-		(* kbdPriv->ProcessEvent) (pKeyboard, kbdEvents);
+		(* kbdPriv->EnqueueEvent) (pKeyboard, kbdEvents);
 		numKbdEvents--;
 		lastEvent = kbdEvents++;
 		lastType = Kbd;
 	    } else {
-		if (lastType == Kbd) {
-		    (* kbdPriv->DoneEvents) (pKeyboard, FALSE);
-		}
-		(* ptrPriv->ProcessEvent) (pPointer, ptrEvents);
+		(* ptrPriv->EnqueueEvent) (pPointer, ptrEvents);
 		numPtrEvents--;
 		lastEvent = ptrEvents++;
 		lastType = Ptr;
 	    }
 	}
-
-	if (lastEvent) {
+	if (lastEvent)
 	    lastEventTime = TVTOMILLI(lastEvent->time);
-	    if (screenIsSaved == SCREEN_SAVER_ON) {
-		SaveScreens(SCREEN_SAVER_OFF, ScreenSaverReset);
-	    }
-	}
-	
-	(* kbdPriv->DoneEvents) (pKeyboard, TRUE);
-	(* ptrPriv->DoneEvents) (pPointer, TRUE);
-
     }
-
 }
 
 
