@@ -1,30 +1,37 @@
-XCOMM $XConsortium: sunLib.tmpl,v 1.32 94/02/07 21:24:50 rws Exp $
+XCOMM $XConsortium: sunLib.tmpl,v 1.33 94/03/21 18:55:28 gildea Exp $
 
 /*
  * SunOS shared library template
  */
 
 #ifndef SharedX11Rev
-#define SharedX11Rev 4.10
+#define SharedX11Rev 4.20
 #endif
 #ifndef SharedOldXRev
-#define SharedOldXRev 4.10
+#define SharedOldXRev 4.20
 #endif
 #ifndef SharedXtRev
 #define SharedXtRev 4.20
 #endif
 #ifndef SharedXmuRev
-#define SharedXmuRev 4.10
+#define SharedXmuRev 4.20
 #endif
 #if SunPost411FCSLd
 #define SharedXmuReqs $(LDPRELIB) $(XTOOLLIB) $(XLIB)
 #endif
 #ifndef SharedXextRev
-#define SharedXextRev 4.10
+#define SharedXextRev 4.20
 #endif
 #ifndef SharedXiRev
-#define SharedXiRev 4.10
+#define SharedXiRev 4.20
 #endif
+#ifndef SharedXtstRev
+#define SharedXtstRev 1.10
+#endif
+#ifndef SharedPexRev
+#define SharedPexRev 1.10
+#endif
+
 #if OSMajorVersion > 4
 #include <sv4Lib.tmpl>
 #endif
