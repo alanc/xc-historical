@@ -1,5 +1,5 @@
 
-.\" $XConsortium: ddx.tbl.ms,v 1.22 89/12/04 17:00:18 keith Exp $
+.\" $XConsortium: ddx.tbl.ms,v 1.23 89/12/04 17:11:23 keith Exp $
 .EF 'Porting Layer Definition'- % -'March 1, 1988'
 .OF 'Porting Layer Definition'- % -'March 1, 1988'
 .EH '''
@@ -64,10 +64,6 @@ for a view of what the client programmer sees.
 "X Window System Protocol"
 for a terse description of the byte stream protocol
 between the client and server.
-.IP \(bu 5
-"X11 Server Extensions Engineering Specification"
-for a description of how to add features to your X server
-in an agreeable way.
 .LP
 UNIX is a trademark of AT&T.
 QVSS, LK201, ULTRIX, VMS, DEC, MicroVAX and VAX are trademarks of Digital Equipment Corporation.
@@ -183,14 +179,15 @@ without change to target systems and is not
 detailed here, although several routines 
 in DIX that are called by DDX are
 documented.
-Extensions incorporate new functionality into the server.
-The interface to extensions is described in "X11 Server Extensions Engineering Specification."
+Extensions incorporate new functionality into the server; and require
+additional functionality over a simple DDX.
 .LP
 The following sections outline the functions of the layers.
 Section 2 briefly tells what you need to know about the DIX layer.
 The OS layer is explained in Section 3.
 Section 4 gives the theory of operation and procedural interface for the
 DDX layer.
+Section 5 describes the functions which exist for the extension writer.
 
 .NH 2
 Notes On Resources and Large Structs
@@ -4528,6 +4525,74 @@ vector and not have it lost when your wrapper routine rewraps the GC.  This
 occurs when the wrapped op revalidates the GC with new entries (many mi
 routines do this for opaque stipples or double dashes).  The corollary to
 this rule is:  Never change the func vector after CreateGC.
+.NH 1
+Extension Interfaces
+.XS
+Extension Interfaces
+.XE
+.LP
+This section describes the functions which exist in DDX for extension
+writers to use.
+.NH 2
+Extension initialization
+.LP
+This function should be called from your extensionInitProc which
+should be called by InitExtensions.
+.nf
+	ExtensionEntry *AddExtension(name, NumEvents,NumErrors,
+		MainProc, SwappedMainProc, CloseDownProc, MinorOpcodeProc)
+
+		char *name;  /*Null terminate string; case matters*/
+		int NumEvents;                
+		int NumErrors;                
+		int (* MainProc)();/*Called if client matches server order*/
+		int (* SwappedMainProc)();/*Called if client differs from server*/
+		void (* CloseDownProc)();  
+		unsigned short (*MinorOpcodeProc)();
+
+.fi
+name is the name used by clients to refer to the extension.  NumEvents is the
+number of event types used by the extension, NumErrors is the number of
+error codes needed by the extension.  MainProc is called whenever a client
+accesses the major opcode assigned to the extension.  SwappedMainProc is
+identical, except the client using the extension has reversed byte-sex.
+CloseDownProc is called at server reset time to deallocate any private
+storage used by the extension.  MinorOpcodeProc is used by DIX to place the
+appropriate value into errors.  The DIX routine StandardMinorOpcode can be
+used here which takes the minor opcode from the normal place in the request
+(i.e. just after the major opcode).
+.NH 2
+Resource type allocation.
+.LP
+These functions should also be called from your extensionInitProc to
+allocate all of the various resource classes and types required for
+the extension.  Each time the server resets, these types must be reallocated
+as the old allocations will have been discarded.
+Resource types are integer values starting at 1.  Get
+a resource type by calling
+.nf
+
+    RESTYPE CreateNewResourceType(deleteFunc)
+
+.fi
+deleteFunc will be called to destroy all resources with this
+type.
+
+Resource classes are masks starting at 1 << 31 which can
+be or'ed with any resource type to provide attributes for the
+type.  To allocate a new class bit, call
+.nf
+
+    RESTYPE CreateNewResourceClass()
+
+.fi
+There are two ways of looking up resources, by type or 
+by class.  Classes are non-exclusive subsets of the space of
+all resources, so you can lookup the union of multiple classes.
+(RC_ANY is the union of all classes).
+.LP
+Note that the appropriate class bits must be or'ed into the value returned
+by CreateNewResourceType when calling resource lookup functions.
 .NH 1
 Summary of Routines
 .XS
