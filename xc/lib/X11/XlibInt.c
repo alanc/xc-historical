@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlibInt.c,v 11.143 91/04/04 18:57:25 gildea Exp $
+ * $XConsortium: XlibInt.c,v 11.144 91/04/17 11:13:00 rws Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986, 1987 */
@@ -1183,6 +1183,7 @@ register xEvent *event;	/* wire protocol event */
 	      case MappingNotify:
 		{
 		   register XMappingEvent *ev = (XMappingEvent *)re;
+		   ev->window		= 0;
 		   ev->first_keycode 	= event->u.mappingNotify.firstKeyCode;
 		   ev->request 		= event->u.mappingNotify.request;
 		   ev->count 		= event->u.mappingNotify.count;
