@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: DAofA8.c,v 1.1 89/09/14 17:11:11 keith Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -34,7 +34,7 @@ XdmcpDisposeARRAYofARRAY8 (array)
 {
     int	i;
 
-    for (i = 0; i < array->length; i++)
+    for (i = 0; i < (int)array->length; i++)
 	XdmcpDisposeARRAY8 (&array->data[i]);
     Xfree (array->data);
     array->length = 0;

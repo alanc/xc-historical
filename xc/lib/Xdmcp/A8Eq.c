@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: A8Eq.c,v 1.1 89/09/14 17:10:59 keith Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -36,7 +36,7 @@ XdmcpARRAY8Equal (array1, array2)
 
     if (array1->length != array2->length)
 	return FALSE;
-    for (i = 0; i < array1->length; i++)
+    for (i = 0; i < (int)array1->length; i++)
 	if (array1->data[i] != array2->data[i])
 	    return FALSE;
     return TRUE;
