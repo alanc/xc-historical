@@ -1,5 +1,5 @@
 /*
- * $XConsortium: fontgrid.c,v 1.3 89/06/05 14:22:39 jim Exp $
+ * $XConsortium: fontgrid.c,v 1.4 89/06/05 16:31:47 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -30,11 +30,6 @@
 #include <X11/SimpleP.h>
 #include "fontgridP.h"
 
-#define CellWidth(fgw) (((fgw)->fontgrid.text_font->max_bounds.width) + \
-			((fgw)->fontgrid.internal_pad * 2))
-#define CellHeight(fgw) ((fgw)->fontgrid.text_font->ascent + \
-			 (fgw)->fontgrid.text_font->descent + \
-			 ((fgw)->fontgrid.internal_pad * 2))
 
 #define Bell(w) XBell(XtDisplay(w), 50)
 
@@ -48,7 +43,7 @@ static XtResource resources[] = {
 #define offset(field) XtOffset(FontGridWidget, fontgrid.field)
     { XtNfont, XtCFont, XtRFontStruct, sizeof(XFontStruct *),
 	offset(text_font), XtRString, (caddr_t) NULL },
-    { XtNfirstChar, XtCFirstChar, XtRInt, sizeof(int),
+    { XtNstartChar, XtCStartChar, XtRInt, sizeof(int),
 	offset(start_char), XtRString, (caddr_t) "0" },
     { XtNforeground, XtCForeground, XtRPixel, sizeof(Pixel),
 	offset(foreground_pixel), XtRString, (caddr_t) "XtDefaultForeground" },
@@ -115,6 +110,25 @@ FontGridClassRec fontgridClassRec = {
 WidgetClass fontgridWidgetClass = (WidgetClass) &fontgridClassRec;
 
 
+/*
+ * public routine
+ */
+
+void GetFontGridCellDimensions (fgw, sp, wp, hp)
+    FontGridWidget fgw;
+    int *sp, *wp, *hp;
+{
+    *sp = fgw->fontgrid.start_char;
+    *wp = fgw->fontgrid.cell_width;
+    *hp = fgw->fontgrid.cell_height;
+}
+
+
+/*
+ * private routines and methods
+ */
+
+
 static GC get_gc (fgw, fore)
     FontGridWidget fgw;
     Pixel fore;
@@ -179,6 +193,8 @@ static void Realize (gw, valueMask, attributes)
 
     p->text_gc = get_gc (fgw, p->foreground_pixel);
     p->box_gc = get_gc (fgw, p->box_pixel);
+    p->cell_cols = CellColumns (fgw);
+    p->cell_rows = CellRows (fgw);
 
     (*(XtSuperclass(gw)->core_class.realize)) (gw, valueMask, attributes);
     return;
@@ -196,6 +212,10 @@ static void Redisplay (gw, event, region)
     XRectangle rect;			/* bounding rect for region */
     int left, right, top, bottom;	/* which cells were damaged */
     int cw, ch;				/* cell size */
+
+    /* recompute in case we've changed size */
+    fgw->fontgrid.cell_cols = CellColumns (fgw);
+    fgw->fontgrid.cell_rows = CellRows (fgw);
 
     if (!fgw->fontgrid.text_font) {
 	Bell (gw);
@@ -228,8 +248,8 @@ static void paint_grid (fgw, col, row, ncols, nrows)
     Window wind = XtWindow(fgw);
     int cw = p->cell_width;
     int ch = p->cell_height;
-    int tcols = fgw->core.width / cw;
-    int trows = fgw->core.height / ch;
+    int tcols = p->cell_cols;
+    int trows = p->cell_rows;
     int x1, y1, x2, y2, x, y;
     unsigned maxn = ((p->text_font->max_byte1 << 8) |
 		     p->text_font->max_char_or_byte2);
@@ -334,6 +354,8 @@ static Boolean SetValues (current, request, new)
 	curfg->fontgrid.internal_pad != newfg->fontgrid.internal_pad) {
 	newfg->fontgrid.cell_width = CellWidth (newfg);
 	newfg->fontgrid.cell_height = CellHeight (newfg);
+	newfg->fontgrid.cell_cols = CellColumns (newfg);
+	newfg->fontgrid.cell_rows = CellRows (newfg);
 	redisplay = TRUE;
     }
 
@@ -353,6 +375,19 @@ static Boolean SetValues (current, request, new)
     if (curfg->fontgrid.center_chars != newfg->fontgrid.center_chars ||
 	curfg->fontgrid.box_chars != newfg->fontgrid.box_chars)
       redisplay = TRUE;
+
+    if (curfg->fontgrid.start_char != newfg->fontgrid.start_char) {
+	XFontStruct *fs = newfg->fontgrid.text_font;
+	unsigned int maxn = ((fs->max_byte1 << 8) | fs->max_char_or_byte2);
+	unsigned int page = (newfg->fontgrid.cell_cols * 
+			     newfg->fontgrid.cell_rows);
+	unsigned int lastpage = ((maxn <= page) ? 0 : maxn - page);
+
+	if (newfg->fontgrid.start_char > lastpage)
+	  newfg->fontgrid.start_char = lastpage;
+
+	redisplay = (curfg->fontgrid.start_char != newfg->fontgrid.start_char);
+    }
 
     return redisplay;
 }
@@ -397,15 +432,15 @@ static void Notify (gw, event, params, nparams)
      */
     {
 	int cw = fgw->fontgrid.cell_width, ch = fgw->fontgrid.cell_height;
-        int tcols = fgw->core.width / cw;
 	unsigned n;
 
-	if (x > (tcols * cw)) {
+	if (x > (fgw->fontgrid.cell_cols * cw)) {
 	    Bell (gw);
 	    return;
 	}
 
-	n= (fgw->fontgrid.start_char + ((y / ch) * tcols) + (x / cw));
+	n= (fgw->fontgrid.start_char + ((y / ch) * fgw->fontgrid.cell_cols) +
+	    (x / cw));
 
 	rec.thefont = fgw->fontgrid.text_font;
 	rec.thechar.byte1 = (n >> 8);
@@ -414,3 +449,4 @@ static void Notify (gw, event, params, nparams)
 
     XtCallCallbacks (gw, XtNcallback, (caddr_t) &rec);
 }
+

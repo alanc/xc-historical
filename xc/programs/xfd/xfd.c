@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xfd.c,v 1.4 89/06/05 14:22:37 jim Exp $
+ * $XConsortium: xfd.c,v 1.5 89/06/05 16:31:45 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -69,13 +69,13 @@ usage()
 }
 
 
-static Widget chardesc1Label, charlabel2Label;
+static Widget chardesc1Label, charlabel2Label, fontGrid;
 
 main (argc, argv) 
     int argc;
     char **argv;
 {
-    Widget toplevel, pane, toplabel, box, form, grid;
+    Widget toplevel, pane, toplabel, box, form;
     Arg av[10];
     Cardinal i;
     char **cpp;
@@ -117,32 +117,21 @@ main (argc, argv)
     /* form in which to draw */
     form = XtCreateManagedWidget ("form", formWidgetClass, pane, NULL, ZERO);
     
-    /*
-     * set the sucker to expand; really ought to compute this according to 
-     * the font being displayed...
-     */
-
-#define DEFAULT_DRAWING_WIDTH 200
-#define DEFAULT_DRAWING_HEIGHT 200
-
     i = 0;
-/*
-    XtSetArg (av[i], XtNtop, XtChainTop); i++;
-    XtSetArg (av[i], XtNbottom, XtChainBottom); i++;
- */
     XtSetArg (av[i], XtNcallback, cb); i++;
-    grid = XtCreateManagedWidget ("grid", fontgridWidgetClass, form, av, i);
+    fontGrid = XtCreateManagedWidget ("grid", fontgridWidgetClass, form,
+				      av, i);
 
     /* set the label at the top to tell us which font this is */
     i = 0;
     XtSetArg (av[i], XtNfont, &fs); i++;
-    XtGetValues (grid, av, i);
+    XtGetValues (fontGrid, av, i);
     fontname = get_font_name (XtDisplay(toplevel), fs);
     if (!fontname) fontname = "unknown font!";
     i = 0;
     XtSetArg (av[i], XtNlabel, fontname); i++;
     XtSetValues (toplabel, av, i);
-    initialize_description_labels (fs);
+    initialize_description_labels (fs, 0, False);
 
     XtRealizeWidget (toplevel);
     XtMainLoop ();
@@ -167,7 +156,7 @@ static void SelectChar (w, closure, data)
     Arg arg;
 
     if (n < minn || n > maxn) {
-	initialize_description_labels (fs);
+	initialize_description_labels (fs, n, True);
 	return;
     }
 
@@ -237,22 +226,50 @@ static void do_quit (w, event, params, num_params)
     exit (0);
 }
 
+change_page (page)
+    int page;
+{
+    unsigned int start, ncols, nrows;
+    unsigned delta;
+    Arg arg;
+
+    GetFontGridCellDimensions (fontGrid, &start, &ncols, &nrows);
+
+    if (page < 0) {
+	delta = ncols * nrows * ((unsigned) -page);
+
+	if (start <= delta) 
+	  start = 0;
+	else
+	  start -= delta;
+    } else {
+	delta = ncols * nrows * (unsigned) page;
+	start += delta;
+    }
+    XtSetArg (arg, XtNstartChar, start);
+    XtSetValues (fontGrid, &arg, ONE);
+}
+
+
+/* ARGSUSED */
 static void do_prev (w, event, params, num_params)
     Widget w;
     XEvent *event;
     String *params;
     Cardinal *num_params;
 {
-    printf ("goto prev page\n");
+    change_page (-1);
 }
 
+
+/* ARGSUSED */
 static void do_next (w, event, params, num_params)
     Widget w;
     XEvent *event;
     String *params;
     Cardinal *num_params;
 {
-    printf ("goto next page\n");
+    change_page (1);
 }
 
 
@@ -273,15 +290,24 @@ static char *get_font_name (dpy, fs)
 }
 
 
-static void initialize_description_labels (fs)
+static void initialize_description_labels (fs, charnum, valid)
     XFontStruct *fs;
+    unsigned int charnum;
+    Bool valid;
 {
     char buf[256];
     Arg arg;
 
     XtSetArg (arg, XtNlabel, buf);
 
-    sprintf (buf, "Select a character in the range");
+    if (valid) {
+	unsigned low = (charnum & 0xff), hi = ((charnum >> 8) & 0xff);
+
+	sprintf (buf, "Character 0x%02x%02x (%u,%u) is out of the range",
+		 hi, low, hi, low);
+    } else {
+    	sprintf (buf, "Select a character in the range");
+    }
     XtSetValues (chardesc1Label, &arg, ONE);
 
     sprintf (buf, "0x%02x%02x (%u,%u) through 0x%02x%02x (%u,%u).",

@@ -13,8 +13,8 @@ extern WidgetClass fontgridWidgetClass;
 #define XtNboxColor "boxColor"
 #define XtCBoxColor "BoxColor"
 
-#define XtNfirstChar "firstChar"
-#define XtCFirstChar "FirstChar"
+#define XtNstartChar "startChar"
+#define XtCStartChar "StartChar"
 
 #define XtNinternalPad "internalPad"
 #define XtCInternalPad "InternalPad"
@@ -26,5 +26,7 @@ typedef struct _FontGridCharRec {
     XFontStruct *	thefont;
     XChar2b		thechar;
 } FontGridCharRec;
+
+void GetFontGridCellDimensions();
 
 #endif _FontGrid_h_
