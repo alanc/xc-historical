@@ -1,4 +1,4 @@
-/* $XConsortium: ICElibint.h,v 1.22 93/11/22 17:43:38 mor Exp $ */
+/* $XConsortium: ICElibint.h,v 1.23 93/11/24 15:27:50 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -546,6 +546,9 @@ extern char		*_IceAuthNames[];
 extern IcePoAuthProc	_IcePoAuthProcs[];
 extern IcePaAuthProc	_IcePaAuthProcs[];
 
+extern int		_IcePaAuthDataEntryCount;
+extern IceAuthDataEntry _IcePaAuthDataEntries[];
+
 extern int		_IceVersionCount;
 extern _IceVersion	_IceVersions[];
 
@@ -737,10 +740,21 @@ extern void _IceConnectionClosed (
 #endif
 );
 
-extern void _IceGetValidAuthIndices (
+extern void _IceGetPoValidAuthIndices (
 #if NeedFunctionPrototypes
-    IceListenObj	/* listen_obj */,
     char *		/* protocol_name */,
+    char *		/* address */,
+    int			/* num_auth_names */,
+    char **		/* auth_names */,
+    int	*		/* num_indices_ret */,
+    int	*		/* indices_ret */
+#endif
+);
+
+extern void _IceGetPaValidAuthIndices (
+#if NeedFunctionPrototypes
+    char *		/* protocol_name */,
+    char *		/* address */,
     int			/* num_auth_names */,
     char **		/* auth_names */,
     int	*		/* num_indices_ret */,
