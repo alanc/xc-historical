@@ -399,9 +399,8 @@ static void PrintProperty (prop)
     char *atom, *value;
     char nosuch[40];
     int i;
-    int (*oldhandler)() = NULL /* XSetErrorHandler(IgnoreError) */;
+    int (*oldhandler)() = XSetErrorHandler (IgnoreError);
 
-    /* oldhandler = */ XSetErrorHandler(IgnoreError);
     atom = XGetAtomName(dpy, prop->name);
     if (!atom) {
 	atom = nosuch;
@@ -412,13 +411,13 @@ static void PrintProperty (prop)
     for (i = strlen(atom); i < 22; i++) printf (" ");
     for (i = 0; ; i++) {
 	if (stringValued[i] == NULL) {
-	    printf ("%4d\n", prop->card32);
+	    printf ("%d\n", prop->card32);
 	    break;
 	}
 	if (strcmp(stringValued[i], atom) == 0) {
 	    value = XGetAtomName(dpy, prop->card32);
 	    if (value == NULL)
-		printf ("%4d (expected string value)\n", prop->card32);
+		printf ("%d (expected string value)\n", prop->card32);
 	    else {
 		printf ("%s\n", value);
 		XFree (value);
@@ -428,6 +427,68 @@ static void PrintProperty (prop)
     } 
     if (atom != nosuch) XFree (atom);
     XSetErrorHandler (oldhandler);
+}
+
+
+ComputeFontType (fs)
+    XFontStruct *fs;
+{
+    int i;
+    Bool char_cell = True;
+    char *reason = NULL;
+    XCharStruct *cs;
+    Atom awatom = XInternAtom (dpy, "AVERAGE_WIDTH", False);
+
+    printf ("  Font type:\t\t");
+    if (awatom) {
+	for (i = 0; i < fs->n_properties; i++) {
+	    if (fs->properties[i].name == awatom &&
+		(fs->max_bounds.width * 10) != fs->properties[i].card32) {
+		char_cell = False;
+		reason = "font width not equal to AVERAGE_WIDTH";
+		break;
+	    }
+	}
+    }
+
+    if (fs->per_char) {
+	for (i = fs->min_char_or_byte2, cs = fs->per_char;
+	     i <= fs->max_char_or_byte2; i++, cs++) {
+	    if (cs->width == 0) continue;
+	    if (cs->width != fs->max_bounds.width) {
+		printf ("Proportional (characters not all the same width)\n");
+		return;
+	    }
+	    if (char_cell) {
+		if (cs->width < 0) {
+		    if (!(cs->width <= cs->lbearing &&
+			  cs->lbearing <= cs->rbearing &&
+			  cs->rbearing <= 0)) {
+			char_cell = False;
+			reason = "ink outside bounding box";
+		    }
+		} else {
+		    if (!(0 <= cs->lbearing &&
+			  cs->lbearing <= cs->rbearing &&
+			  cs->rbearing <= cs->width)) {
+			char_cell = False;
+			reason = "ink outside bounding box";
+		    }
+		}
+		if (!(cs->ascent <= fs->ascent &&
+		      cs->descent <= fs->descent)) {
+		    char_cell  = False;
+		    reason = "characters not all same ascent or descent";
+		}
+	    }
+	}
+    }
+
+    printf ("%s", char_cell ? "Character Cell" : "Monospaced");
+    if (reason) printf (" (%s)", reason);
+    printf ("\n");
+	
+    return;
 }
 
 
@@ -474,6 +535,7 @@ do_query_font (dpy, name)
 	    info->default_char, info->default_char);
     printf ("  ascent:\t\t%d\n", info->ascent);
     printf ("  descent:\t\t%d\n", info->descent);
+    ComputeFontType (info);
     printf ("  bounds:             %s", bounds_metrics_title);
     PrintBounds ("min", &info->min_bounds);
     PrintBounds ("max", &info->max_bounds);
