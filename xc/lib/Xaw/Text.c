@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Text.c,v 1.79 89/02/01 11:29:22 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Text.c,v 1.80 89/02/22 12:07:00 swick Exp $";
 #endif
 
 
@@ -500,7 +500,7 @@ static void BuildLineTable (ctx, position)
 	XtTextLineTableEntry *lt;
 	int options = ctx->text.options;
 	int (*FindPosition)() = ctx->text.sink->FindPosition;
-	int (*Scan)() = ctx->text.source->Scan;
+	XtTextPosition (*Scan)() = ctx->text.source->Scan;
 	ctx->text.lt.top = position;
 	ctx->text.lt.lines = lines;
 	startPos = position;
@@ -946,7 +946,7 @@ int ReplaceText (ctx, pos1, pos2, text)
     Position x, y;
     int realW, realH, width;
     XtTextPosition startPos, endPos, updateFrom;
-    int (*Scan)() = ctx->text.source->Scan;
+    XtTextPosition (*Scan)() = ctx->text.source->Scan;
 
     /* the insertPos may not always be set to the right spot in XttextAppend */
     if ((pos1 == ctx->text.insertPos) &&
@@ -3041,7 +3041,7 @@ static void InsertString(w, event, params, paramCount)
    int     keycode;
    XtTextBlock text;
    int	   i;
-   int (*Scan)() = ctx->text.source->Scan;
+   XtTextPosition (*Scan)() = ctx->text.source->Scan;
    text.firstPos = 0;
    StartAction(ctx, event);
    for (i = *paramCount; i; i--, params++) {
