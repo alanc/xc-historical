@@ -1,4 +1,4 @@
-/* $XConsortium: miStruct.c,v 5.7 92/03/17 15:41:19 hersh Exp $ */
+/* $XConsortium: miStruct.c,v 5.8 92/04/23 18:49:52 hersh Exp $ */
 
 
 /***********************************************************
@@ -1611,27 +1611,19 @@ StoreElements(pStruct, numOCs, pOCs, ppErr)
 
 		/*
 		 * replace iff
-		 * 
 		 * we're not at the end
+		 * * and the types match
+		 * * and we're not at the beginning
+		 * * * and elements are the same size 
 		 */
 
 		if ((preplel != MISTR_LAST_EL(pstruct))
-
-		/*
-		 * * and the types match
-		 */
-
 		    && (poc->elementType == MISTR_EL_TYPE(preplel))
-
-		/*
-		 * * and we're not at the beginning
-		 */
-
-		    && (preplel != MISTR_ZERO_EL(pstruct))) {
+		    && (preplel != MISTR_ZERO_EL(pstruct)) 
+		    && (MISTR_EL_LENGTH(preplel) == poc->length)) {
 
 		      /*
-		       * *  Replace calls Parse functions which now 
-		       * *  do size checking via Xrealloc
+		       * *  Replace calls Parse functions 
 		       */
 
 			/* Propreitary OC (and OCNil) through 0th Table Entry */
