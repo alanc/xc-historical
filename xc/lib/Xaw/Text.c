@@ -1,4 +1,4 @@
-/* $XConsortium: Text.c,v 1.192 94/03/30 21:28:38 kaleb Exp $ */
+/* $XConsortium: Text.c,v 1.193 94/04/17 20:13:03 kaleb Exp $ */
 
 /***********************************************************
 
@@ -729,7 +729,7 @@ XawTextPosition left, right;
     left = SrcRead(ctx->text.source, left, &text, (int)(right - left));
     if (!text.length)
 	break;
-    (void) strncpy(tempResult, text.ptr, text.length * bytes);
+    memmove(tempResult, text.ptr, text.length * bytes);
     tempResult += text.length * bytes;
   }
 
