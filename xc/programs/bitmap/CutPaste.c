@@ -1,5 +1,5 @@
 /*
- * $XConsortium: CutAndPaste.c,v 1.6 91/01/19 16:16:12 dmatic Exp $
+ * $XConsortium: CutPaste.c,v 1.1 91/01/23 15:59:59 dave Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -49,13 +49,14 @@ extern Boolean DEBUG;
  *****************************************************************************/
 
 /* ARGSUSED */
-Boolean ConvertSelection(w, selection, target, type, value, length, format)
+Boolean ConvertSelection(w, selection, target, type, val_ret, length, format)
     Widget w;
     Atom *selection, *target, *type;
-    caddr_t *value;
+    XtPointer *val_ret;
     unsigned long *length;
     int *format;
 {
+    caddr_t *value = (caddr_t *)val_ret;
     BitmapWidget BW = (BitmapWidget) w;
     Pixmap *pixmap;
     char *data;
@@ -151,14 +152,16 @@ void BWGrabSelection(w, btime)
 XImage *GetImage();
 
 /* ARGSUSED */
-void SelectionCallback(w, client_data, selection, type, value, length, format)
+void SelectionCallback(w, cldat, selection, type, val, length, format)
     Widget w;
-    caddr_t client_data;
+    XtPointer cldat;
     Atom *selection, *type;
-    caddr_t value;
+    XtPointer val;
     unsigned long *length;
     int *format;
 {
+    caddr_t client_data = (caddr_t)cldat;
+    caddr_t value = (caddr_t)val;
     BitmapWidget BW = (BitmapWidget) w;
     Pixmap *pixmap;
 
