@@ -1,4 +1,4 @@
-/* $XConsortium: pl_pc.c,v 1.7 92/07/16 11:00:44 mor Exp $ */
+/* $XConsortium: pl_pc.c,v 1.8 92/10/22 17:48:54 mor Exp $ */
 
 /******************************************************************************
 Copyright 1987,1991 by Digital Equipment Corporation, Maynard, Massachusetts
@@ -29,7 +29,6 @@ SOFTWARE.
 #include "PEXlibint.h"
 
 static void _PEXGeneratePCList();
-static void _PEXGeneratePCAttr();
 
 
 PEXPipelineContext
@@ -40,9 +39,13 @@ INPUT unsigned long	*valueMask;
 INPUT PEXPCAttributes	*values;
 
 {
-    pexCreatePipelineContextReq		*req;
-    PEXPipelineContext			pc;
-    int					convertFP;
+    register pexCreatePipelineContextReq	*req;
+    char					*pBuf;
+    PEXPipelineContext				pc;
+    int						size = 0;
+    char					*pList;
+    int						fpConvert;
+    int						fpFormat;
 
 
     /*
@@ -63,7 +66,12 @@ INPUT PEXPCAttributes	*values;
      * Put the request in the X request buffer.
      */
 
-    PEXGetFPReq (CreatePipelineContext, req, convertFP);
+    PEXGetReq (CreatePipelineContext, pBuf);
+
+    BEGIN_REQUEST_HEADER (CreatePipelineContext, pBuf, req);
+    CHECK_FP (fpConvert, fpFormat);
+
+    PEXStoreFPReqHead (CreatePipelineContext, fpFormat, req);
     req->pc = pc;
     req->itemMask0 = valueMask[0];
     req->itemMask1 = valueMask[1];
@@ -71,8 +79,22 @@ INPUT PEXPCAttributes	*values;
 
     if (valueMask[0] != 0 || valueMask[1] != 0 || valueMask[2] != 0)
     {
-	_PEXGeneratePCList (display, (pexReq *) req, valueMask, values);
+	_PEXGeneratePCList (display, fpConvert, fpFormat,
+	    valueMask, values, &size, &pList);
+
+	req->length += NUMWORDS (size);
     }
+
+    END_REQUEST_HEADER (CreatePipelineContext, pBuf, req);
+
+
+    /*
+     * Send the list of values.
+     */
+
+    if (size > 0)
+	Data (display, pList, size);
+
 
     /*
      * Done, so unlock and check for synchronous-ness.
@@ -92,7 +114,8 @@ INPUT Display			*display;
 INPUT PEXPipelineContext	pc;
 
 {
-    pexFreePipelineContextReq		*req;
+    register pexFreePipelineContextReq	*req;
+    char				*pBuf;
 
 
     /*
@@ -106,8 +129,14 @@ INPUT PEXPipelineContext	pc;
      * Put the request in the X request buffer.
      */
 
-    PEXGetReq (FreePipelineContext, req);
+    PEXGetReq (FreePipelineContext, pBuf);
+
+    BEGIN_REQUEST_HEADER (FreePipelineContext, pBuf, req);
+
+    PEXStoreReqHead (FreePipelineContext, req);
     req->id = pc;
+
+    END_REQUEST_HEADER (FreePipelineContext, pBuf, req);
 
 
     /*
@@ -128,7 +157,8 @@ INPUT PEXPipelineContext	srcPc;
 INPUT PEXPipelineContext	destPc;
 
 {
-    pexCopyPipelineContextReq		*req;
+    register pexCopyPipelineContextReq	*req;
+    char				*pBuf;
 
 
     /*
@@ -142,12 +172,18 @@ INPUT PEXPipelineContext	destPc;
      * Put the request in the X request buffer.
      */
 
-    PEXGetReq (CopyPipelineContext, req);
+    PEXGetReq (CopyPipelineContext, pBuf);
+
+    BEGIN_REQUEST_HEADER (CopyPipelineContext, pBuf, req);
+
+    PEXStoreReqHead (CopyPipelineContext, req);
     req->src = srcPc;
     req->dst = destPc;
     req->itemMask0 = valueMask[0];
     req->itemMask1 = valueMask[1];
     req->itemMask2 = valueMask[2];
+
+    END_REQUEST_HEADER (CopyPipelineContext, pBuf, req);
 
 
     /*
@@ -167,11 +203,19 @@ INPUT PEXPipelineContext	pc;
 INPUT unsigned long		*valueMask;
 
 {
-    pexGetPipelineContextReq	*req;
-    pexGetPipelineContextReply	rep;
-    unsigned long		*pv;
-    PEXPCAttributes		*ppca;
-    int				convertFP;
+    register pexGetPipelineContextReq	*req;
+    char				*pBuf;
+    pexGetPipelineContextReply		rep;
+    PEXPCAttributes			*pAttr;
+    Bool				bitSet;
+    unsigned int			size;
+    CARD32				count;
+    int					n;
+    INT16				pscType;
+    INT16				paramSize;
+    int					fpConvert;
+    int					fpFormat;
+
 
 
     /*
@@ -185,11 +229,18 @@ INPUT unsigned long		*valueMask;
      * Put the request in the X request buffer and get a reply.
      */
 
-    PEXGetFPReq (GetPipelineContext, req, convertFP);
+    PEXGetReq (GetPipelineContext, pBuf);
+
+    BEGIN_REQUEST_HEADER (GetPipelineContext, pBuf, req);
+    CHECK_FP (fpConvert, fpFormat);
+
+    PEXStoreFPReqHead (GetPipelineContext, fpFormat, req);
     req->pc = pc;
     req->itemMask0 = valueMask[0];
     req->itemMask1 = valueMask[1];
     req->itemMask2 = valueMask[2];
+
+    END_REQUEST_HEADER (GetPipelineContext, pBuf, req);
 
     if (_XReply (display, &rep, 0, xFalse) == 0)
     {
@@ -198,23 +249,436 @@ INPUT unsigned long		*valueMask;
 	return (NULL);         /* return an error */
     }
 
+
     /*
-     * Allocate a scratch buffer and copy the reply data to the buffer.
+     * Read the reply data into a scratch buffer.
      */
 
-    pv = (unsigned long *) _XAllocScratch (display,
-	(unsigned long) (rep.length << 2));
-    _XRead (display, (char *) pv, (long) (rep.length << 2));
+    XREAD_INTO_SCRATCH (display, pBuf, (long) (rep.length << 2));
 
 
     /*
      * Allocate a buffer for the replies to pass back to the client.
      */
 
-    ppca = (PEXPCAttributes *)
-	PEXAllocBuf ((unsigned) (sizeof (PEXPCAttributes)));
+    pAttr = (PEXPCAttributes *) PEXAllocBuf (sizeof (PEXPCAttributes));
 
-    _PEXGeneratePCAttr (pv, valueMask, ppca);
+    pAttr->model_clip_volume.count = 0;
+    pAttr->model_clip_volume.half_spaces = NULL;
+    pAttr->light_state.count = 0;
+    pAttr->light_state.indices = NULL;
+    pAttr->para_surf_char.type = 0;
+
+
+    /*
+     * Fill in the PC attributes.
+     */
+
+    for (n = 0; n < (PEXPCMaxShift + 1); n++)
+    {
+	bitSet = valueMask[n >> 5] & (1L << (n & 0x1f));
+
+	if (bitSet != 0)
+        {
+            switch (n)
+	    {
+            case PEXPCMarkerType:
+
+		EXTRACT_LOV_INT16 (pBuf, pAttr->marker_type);
+		break;
+
+            case PEXPCMarkerScale:
+
+		EXTRACT_FLOAT32 (pBuf, pAttr->marker_scale,
+		    fpConvert, fpFormat);
+		break;
+
+            case PEXPCMarkerColor:
+
+		EXTRACT_COLOR_SPEC (pBuf, pAttr->marker_color,
+		    fpConvert, fpFormat);
+		break;
+
+            case PEXPCMarkerBundleIndex:
+
+		EXTRACT_LOV_CARD16 (pBuf, pAttr->marker_bundle_index);
+		break;
+
+            case PEXPCTextFont:
+
+		EXTRACT_LOV_CARD16 (pBuf, pAttr->text_font);
+		break;
+
+            case PEXPCTextPrecision:
+
+		EXTRACT_LOV_CARD16 (pBuf, pAttr->text_precision);
+		break;
+
+            case PEXPCCharExpansion:
+
+	  	EXTRACT_FLOAT32 (pBuf, pAttr->char_expansion,
+		    fpConvert, fpFormat);
+		break;
+
+            case PEXPCCharSpacing:
+
+		EXTRACT_FLOAT32 (pBuf, pAttr->char_spacing,
+		    fpConvert, fpFormat);
+		break;
+
+            case PEXPCTextColor:
+
+		EXTRACT_COLOR_SPEC (pBuf, pAttr->text_color,
+		    fpConvert, fpFormat);
+		break;
+
+            case PEXPCCharHeight:
+
+		EXTRACT_FLOAT32 (pBuf, pAttr->char_height,
+		    fpConvert, fpFormat);
+		break;
+
+            case PEXPCCharUpVector:
+
+		EXTRACT_VECTOR2D (pBuf, pAttr->char_up_vector,
+		    fpConvert, fpFormat);
+		break;
+
+            case PEXPCTextPath:
+
+		EXTRACT_LOV_CARD16 (pBuf, pAttr->text_path);
+		break;
+
+            case PEXPCTextAlignment:
+
+		EXTRACT_TEXTALIGN (pBuf, pAttr->text_alignment);
+		break;
+
+            case PEXPCATextHeight:
+
+		EXTRACT_FLOAT32 (pBuf, pAttr->atext_height,
+		    fpConvert, fpFormat);
+		break;
+
+            case PEXPCATextUpVector:
+
+		EXTRACT_VECTOR2D (pBuf, pAttr->atext_up_vector,
+		    fpConvert, fpFormat);
+		break;
+
+            case PEXPCATextPath:
+
+		EXTRACT_LOV_CARD16 (pBuf, pAttr->atext_path);
+		break;
+
+            case PEXPCATextAlignment:
+
+		EXTRACT_TEXTALIGN (pBuf, pAttr->atext_alignment);
+		break;
+
+            case PEXPCATextStyle:
+
+		EXTRACT_LOV_INT16 (pBuf, pAttr->atext_style);
+		break;
+
+            case PEXPCTextBundleIndex:
+
+		EXTRACT_LOV_CARD16 (pBuf, pAttr->text_bundle_index);
+		break;
+
+            case PEXPCLineType:
+
+		EXTRACT_LOV_INT16 (pBuf, pAttr->line_type);
+		break;
+
+            case PEXPCLineWidth:
+
+		EXTRACT_FLOAT32 (pBuf, pAttr->line_width,
+		    fpConvert, fpFormat);
+		break;
+
+            case PEXPCLineColor:
+
+		EXTRACT_COLOR_SPEC (pBuf, pAttr->line_color,
+		    fpConvert, fpFormat);
+		break;
+
+            case PEXPCCurveApprox:
+
+		EXTRACT_LOV_INT16 (pBuf, pAttr->curve_approx.method);
+		EXTRACT_FLOAT32 (pBuf, pAttr->curve_approx.tolerance,
+		    fpConvert, fpFormat);
+		break;
+
+            case PEXPCPolylineInterp:
+
+		EXTRACT_LOV_INT16 (pBuf, pAttr->polyline_interp);
+		break;
+
+            case PEXPCLineBundleIndex:
+
+		EXTRACT_LOV_CARD16 (pBuf, pAttr->line_bundle_index);
+		break;
+
+            case PEXPCInteriorStyle:
+
+		EXTRACT_LOV_INT16 (pBuf, pAttr->interior_style);
+		break;
+
+            case PEXPCInteriorStyleIndex:
+
+		EXTRACT_LOV_CARD16 (pBuf, pAttr->interior_style_index);
+		break;
+
+            case PEXPCSurfaceColor:
+
+		EXTRACT_COLOR_SPEC (pBuf, pAttr->surface_color,
+		    fpConvert, fpFormat);
+		break;
+
+            case PEXPCReflectionAttr:
+
+		EXTRACT_REFLECTION_ATTR (pBuf, pAttr->reflection_attr,
+		    fpConvert, fpFormat);
+		break;
+
+            case PEXPCReflectionModel:
+
+		EXTRACT_LOV_INT16 (pBuf, pAttr->reflection_model);
+		break;
+
+            case PEXPCSurfaceInterp:
+
+		EXTRACT_LOV_INT16 (pBuf, pAttr->surface_interp);
+		break;
+
+            case PEXPCBFInteriorStyle:
+
+		EXTRACT_LOV_INT16 (pBuf, pAttr->bf_interior_style);
+		break;
+
+            case PEXPCBFInteriorStyleIndex:
+
+		EXTRACT_LOV_CARD16 (pBuf, pAttr->bf_interior_style_index);
+		break;
+
+            case PEXPCBFSurfaceColor:
+
+		EXTRACT_COLOR_SPEC (pBuf, pAttr->bf_surface_color,
+		    fpConvert, fpFormat);
+		break;
+
+            case PEXPCBFReflectionAttr:
+
+		EXTRACT_REFLECTION_ATTR (pBuf, pAttr->bf_reflection_attr,
+		    fpConvert, fpFormat);
+		break;
+
+            case PEXPCBFReflectionModel:
+
+		EXTRACT_LOV_INT16 (pBuf, pAttr->bf_reflection_model);
+		break;
+
+            case PEXPCBFSurfaceInterp:
+
+		EXTRACT_LOV_INT16 (pBuf, pAttr->bf_surface_interp);
+		break;
+
+            case PEXPCSurfaceApprox:
+
+		EXTRACT_LOV_INT16 (pBuf, pAttr->surface_approx.method);
+		EXTRACT_FLOAT32 (pBuf, pAttr->surface_approx.u_tolerance,
+		    fpConvert, fpFormat);
+		EXTRACT_FLOAT32 (pBuf, pAttr->surface_approx.v_tolerance,
+		    fpConvert, fpFormat);
+		break;
+
+            case PEXPCCullingMode:
+
+		EXTRACT_LOV_CARD16 (pBuf, pAttr->culling_mode);
+		break;
+
+            case PEXPCDistinguishFlag:
+
+		EXTRACT_LOV_CARD8 (pBuf, pAttr->distinguish);
+		break;
+
+            case PEXPCPatternSize:
+
+		EXTRACT_COORD2D (pBuf, pAttr->pattern_size,
+		    fpConvert, fpFormat);
+		break;
+
+            case PEXPCPatternRefPoint:
+
+		EXTRACT_COORD3D (pBuf, pAttr->pattern_ref_point,
+		    fpConvert, fpFormat);
+		break;
+
+            case PEXPCPatternRefVec1:
+
+		EXTRACT_VECTOR3D (pBuf, pAttr->pattern_ref_vec1,
+		    fpConvert, fpFormat);
+		break;
+
+            case PEXPCPatternRefVec2:
+
+		EXTRACT_VECTOR3D (pBuf, pAttr->pattern_ref_vec2,
+		    fpConvert, fpFormat);
+		break;
+
+            case PEXPCInteriorBundleIndex:
+
+		EXTRACT_LOV_CARD16 (pBuf, pAttr->interior_bundle_index);
+		break;
+
+            case PEXPCSurfaceEdgeFlag:
+
+		EXTRACT_LOV_CARD16 (pBuf, pAttr->surface_edges);
+		break;
+
+            case PEXPCSurfaceEdgeType:
+
+		EXTRACT_LOV_INT16 (pBuf, pAttr->surface_edge_type);
+		break;
+
+            case PEXPCSurfaceEdgeWidth:
+
+		EXTRACT_FLOAT32 (pBuf, pAttr->surface_edge_width,
+		    fpConvert, fpFormat);
+		break;
+
+            case PEXPCSurfaceEdgeColor:
+
+		EXTRACT_COLOR_SPEC (pBuf, pAttr->surface_edge_color,
+		    fpConvert, fpFormat);
+		break;
+
+            case PEXPCEdgeBundleIndex:
+
+		EXTRACT_LOV_CARD16 (pBuf, pAttr->edge_bundle_index);
+		break;
+
+            case PEXPCLocalTransform:
+
+		EXTRACT_LISTOF_FLOAT32 (16, pBuf, pAttr->local_transform,
+		    fpConvert, fpFormat);
+		break;
+
+            case PEXPCGlobalTransform:
+
+		EXTRACT_LISTOF_FLOAT32 (16, pBuf, pAttr->global_transform,
+		    fpConvert, fpFormat);
+		break;
+
+            case PEXPCModelClip:
+
+		EXTRACT_LOV_CARD16 (pBuf, pAttr->model_clip);
+		break;
+
+            case PEXPCModelClipVolume:
+
+		EXTRACT_CARD32 (pBuf, count);
+		pAttr->model_clip_volume.count = count;
+
+		size = count * sizeof (PEXHalfSpace);
+		pAttr->model_clip_volume.half_spaces =
+		    (PEXHalfSpace *) PEXAllocBuf (size);
+
+		EXTRACT_LISTOF_HALFSPACE3D (count, pBuf,
+		    pAttr->model_clip_volume.half_spaces,
+		    fpConvert, fpFormat);
+		break;
+
+            case PEXPCViewIndex:
+
+		EXTRACT_LOV_CARD16 (pBuf, pAttr->view_index);
+		break;
+
+            case PEXPCLightState:
+
+		EXTRACT_CARD32 (pBuf, count);
+		pAttr->light_state.count = count;
+
+		size = count * sizeof (PEXTableIndex);
+		pAttr->light_state.indices =
+		    (PEXTableIndex *) PEXAllocBuf (size);
+
+		EXTRACT_LISTOF_CARD16 (count, pBuf,
+		    pAttr->light_state.indices);
+		if (count & 1)
+		    pBuf += SIZEOF (CARD16);
+		break;
+
+            case PEXPCDepthCueIndex:
+
+		EXTRACT_LOV_CARD16 (pBuf, pAttr->depth_cue_index);
+		break;
+
+            case PEXPCPickID:
+
+		EXTRACT_CARD32 (pBuf, pAttr->pick_id);
+		break;
+
+            case PEXPCHLHSRIdentifier:
+
+		EXTRACT_CARD32 (pBuf, pAttr->hlhsr_id);
+		break;
+
+            case PEXPCNameSet:
+
+		EXTRACT_CARD32 (pBuf, pAttr->name_set);
+		break;
+
+            case PEXPCASFValues:
+
+		EXTRACT_CARD32 (pBuf, pAttr->asf_enables);
+		EXTRACT_CARD32 (pBuf, pAttr->asf_values);
+		break;
+
+	    case PEXPCColorApproxIndex:
+
+		EXTRACT_LOV_CARD16 (pBuf, pAttr->color_approx_index);
+		break;
+
+	    case PEXPCRenderingColorModel:
+
+		EXTRACT_LOV_INT16 (pBuf, pAttr->rendering_color_model);
+		break;
+
+	    case PEXPCParaSurfCharacteristics:
+
+		EXTRACT_INT16 (pBuf, pscType);
+		EXTRACT_INT16 (pBuf, paramSize);
+
+		pAttr->para_surf_char.type = pscType;
+
+		if (pscType == PEXPSCIsoCurves)
+		{
+		    EXTRACT_PSC_ISOCURVES (pBuf,
+			pAttr->para_surf_char.psc.iso_curves);
+		}
+		else if (pscType == PEXPSCMCLevelCurves ||
+		    pscType == PEXPSCWCLevelCurves)
+		{
+		    count = (paramSize - SIZEOF (pexPSC_LevelCurves)) /
+			SIZEOF (float);
+
+		    EXTRACT_PSC_LEVELCURVES (pBuf,
+			pAttr->para_surf_char.psc.level_curves,
+		        fpConvert, fpFormat);
+
+		    pAttr->para_surf_char.psc.level_curves.parameters = 
+		        (float *) PEXAllocBuf (count * sizeof (float));
+
+		    EXTRACT_LISTOF_FLOAT32 (count, pBuf,
+			pAttr->para_surf_char.psc.level_curves.parameters,
+			fpConvert, fpFormat);
+		}
+		break;
+	    }
+	}
+    }
 
 
     /*
@@ -224,7 +688,7 @@ INPUT unsigned long		*valueMask;
     UnlockDisplay (display);
     PEXSyncHandle (display);
 
-    return (ppca);
+    return (pAttr);
 }
 
 
@@ -237,8 +701,12 @@ INPUT unsigned long		*valueMask;
 INPUT PEXPCAttributes		*pcAttributes;
 
 {
-    pexChangePipelineContextReq		*req;
-    int					convertFP;
+    register pexChangePipelineContextReq	*req;
+    char					*pBuf;
+    int						size = 0;
+    char					*pList;
+    int						fpConvert;
+    int						fpFormat;
 
 
     /*
@@ -252,13 +720,34 @@ INPUT PEXPCAttributes		*pcAttributes;
      * Put the request in the X request buffer.
      */
 
-    PEXGetFPReq (ChangePipelineContext, req, convertFP);
+    PEXGetReq (ChangePipelineContext, pBuf);
+
+    BEGIN_REQUEST_HEADER (ChangePipelineContext, pBuf, req);
+    CHECK_FP (fpConvert, fpFormat);
+
+    PEXStoreFPReqHead (ChangePipelineContext, fpFormat, req);
     req->pc = pc;
     req->itemMask0 = valueMask[0];
     req->itemMask1 = valueMask[1];
     req->itemMask2 = valueMask[2];
 
-    _PEXGeneratePCList (display, (pexReq *) req, valueMask, pcAttributes);
+    if (valueMask[0] != 0 || valueMask[1] != 0 || valueMask[2] != 0)
+    {
+	_PEXGeneratePCList (display, fpConvert, fpFormat,
+	    valueMask, pcAttributes, &size, &pList);
+
+	req->length += NUMWORDS (size);
+    }
+
+    END_REQUEST_HEADER (ChangePipelineContext, pBuf, req);
+
+
+    /*
+     * Send the list of values.
+     */
+
+    if (size > 0)
+	Data (display, pList, size);
 
 
     /*
@@ -276,40 +765,41 @@ INPUT PEXPCAttributes		*pcAttributes;
  */
 
 static void
-_PEXGeneratePCList (display, req, valueMask, values)
+_PEXGeneratePCList (display, fpConvert, fpFormat,
+    valueMask, values, sizeRet, listRet)
 
-INPUT Display             *display;
-INPUT pexReq              *req;
-INPUT unsigned long       *valueMask;
-INPUT PEXPCAttributes	  *values;
+INPUT Display		*display;
+INPUT int		fpConvert;
+INPUT int		fpFormat;
+INPUT unsigned long    	*valueMask;
+INPUT PEXPCAttributes	*values;
+OUTPUT int		*sizeRet;
+OUTPUT char		**listRet;
 
 {
-    long		*pv;
-    long		*pvSend;
-    unsigned long       f;
-    int			length, n;
-    int			sizeColor;
-    long		size;
+    register char	*pBuf;
+    unsigned long       size;
+    CARD32		count;
     Bool		bitSet;
-    int 		pscType;
-    INT16		*pint;
+    int			pscType, n;
 
 
     /*
-     * f is the maximum size we might need to store the PC list.  Just
+     * size is the maximum size we might need to store the PC list.  Just
      * use 2*sizeof(PEXPCAttributes) to account for padding between shorts.
      */
 
-    f = 2 * sizeof (PEXPCAttributes);
+    size = 2 * sizeof (PEXPCAttributes);
 
     if (valueMask[1] &
 	1L << (PEXPCModelClipVolume - PEXPCBFInteriorStyleIndex))
-	f += values->model_clip_volume.count * sizeof (pexHalfSpace);
+	size += values->model_clip_volume.count * SIZEOF (pexHalfSpace);
 
     if (valueMask[1] & 1L << (PEXPCLightState - PEXPCBFInteriorStyleIndex))
-	f += PADDED_BYTES (values->light_state.count * sizeof (pexTableIndex));
+	size += PADDED_BYTES (values->light_state.count *
+	    SIZEOF (pexTableIndex));
 
-    pv = pvSend = (long *) _XAllocScratch (display, (unsigned long) f);
+    *listRet = pBuf = (char *) _XAllocScratch (display, size);
 
     for (n = 0; n < (PEXPCMaxShift + 1); n++)
     {
@@ -318,783 +808,391 @@ INPUT PEXPCAttributes	  *values;
         {
             switch (n)
 	    {
-	    /* note that there are 2 bytes of pad between 2 byte items */
             case PEXPCMarkerType:
-		*pv = values->marker_type;
-		pv++;
+
+		STORE_CARD32 (values->marker_type, pBuf);
 		break;
+
             case PEXPCMarkerScale:
-		*((float *) pv) = values->marker_scale;
-		pv++;
+
+		STORE_FLOAT32 (values->marker_scale, pBuf,
+		    fpConvert, fpFormat);
 		break;
+
             case PEXPCMarkerColor:
-		PackColorSpecifier (&(values->marker_color), pv, sizeColor);
-		pv += NUMWORDS (sizeof (pexColorSpecifier) + sizeColor); 
+
+		STORE_COLOR_SPEC (values->marker_color, pBuf,
+		    fpConvert, fpFormat);
 		break;
+
             case PEXPCMarkerBundleIndex:
-		*pv = values->marker_bundle_index;
-		pv++;
+
+		STORE_CARD32 (values->marker_bundle_index, pBuf);
 		break;
+
             case PEXPCTextFont:
-		*pv = values->text_font;
-		pv++;
+
+		STORE_CARD32 (values->text_font, pBuf);
 		break;
+
             case PEXPCTextPrecision:
-		*pv = values->text_precision;
-		pv++;
+
+		STORE_CARD32 (values->text_precision, pBuf);
 		break;
+
             case PEXPCCharExpansion:
-		*((float *) pv) = values->char_expansion;
-		pv++;
+
+		STORE_FLOAT32 (values->char_expansion, pBuf,
+		    fpConvert, fpFormat);
 		break;
+
             case PEXPCCharSpacing:
-		*((float *) pv) = values->char_spacing;
-		pv++;
+
+		STORE_FLOAT32 (values->char_spacing, pBuf,
+		    fpConvert, fpFormat);
 		break;
+
             case PEXPCTextColor:
-		PackColorSpecifier (&(values->text_color), pv, sizeColor);
-		pv += NUMWORDS (sizeof (pexColorSpecifier) + sizeColor); 
+
+		STORE_COLOR_SPEC (values->text_color, pBuf,
+		    fpConvert, fpFormat);
 		break;
+
             case PEXPCCharHeight:
-		*((float *) pv) = values->char_height;
-		pv++;
+
+		STORE_FLOAT32 (values->char_height, pBuf,
+		    fpConvert, fpFormat);
 		break;
+
             case PEXPCCharUpVector:
-#ifdef WORD64
-#else
-		*((pexVector2D *) pv) = *(pexVector2D *)
-		    &(values->char_up_vector);
-#endif
-		pv += LENOF (pexVector2D); 
+
+		STORE_VECTOR2D (values->char_up_vector, pBuf,
+		    fpConvert, fpFormat);
 		break;
+
             case PEXPCTextPath:
-		*pv = values->text_path;
-		pv++;
+
+		STORE_CARD32 (values->text_path, pBuf);
 		break;
+
             case PEXPCTextAlignment:
-#ifdef WORD64
-#else
-		*((pexTextAlignmentData *) pv) =
-		    *(pexTextAlignmentData *) &(values->text_alignment);
-#endif
-		pv += LENOF (pexTextAlignmentData); 
+
+		STORE_TEXTALIGN (values->text_alignment, pBuf);
 		break;
+
             case PEXPCATextHeight:
-		*((float *) pv) = values->atext_height;
-		pv++;
+
+		STORE_FLOAT32 (values->atext_height, pBuf,
+		    fpConvert, fpFormat);
 		break;
+
             case PEXPCATextUpVector:
-#ifdef WORD64
-#else
-		*((pexVector2D *) pv) = *(pexVector2D *)
-		    &(values->atext_up_vector);
-#endif
-		pv += LENOF (pexVector2D); 
+
+		STORE_VECTOR2D (values->atext_up_vector, pBuf,
+		    fpConvert, fpFormat);
 		break;
+
             case PEXPCATextPath:
-		*pv = values->atext_path;
-		pv++;
+
+		STORE_CARD32 (values->atext_path, pBuf);
 		break;
+
             case PEXPCATextAlignment:
-#ifdef WORD64
-#else
-		*((pexTextAlignmentData *) pv) =
-		    *(pexTextAlignmentData *) &(values->atext_alignment);
-#endif
-		pv += LENOF (pexTextAlignmentData); 
+
+		STORE_TEXTALIGN (values->atext_alignment, pBuf);
 		break;
+
             case PEXPCATextStyle:
-		*pv = values->atext_style;
-		pv++;
+
+		STORE_CARD32 (values->atext_style, pBuf);
 		break;
+
             case PEXPCTextBundleIndex:
-		*pv = values->text_bundle_index;
-		pv++;
+
+		STORE_CARD32 (values->text_bundle_index, pBuf);
 		break;
+
             case PEXPCLineType:
-		*pv = values->line_type;
-		pv++;
+
+		STORE_CARD32 (values->line_type, pBuf);
 		break;
+
             case PEXPCLineWidth:
-		*((float *) pv) = values->line_width;
-		pv++;
+
+		STORE_FLOAT32 (values->line_width, pBuf,
+		    fpConvert, fpFormat);
 		break;
+
             case PEXPCLineColor:
-		PackColorSpecifier (&(values->line_color), pv, sizeColor);
-		pv += NUMWORDS (sizeof (pexColorSpecifier) + sizeColor); 
+
+		STORE_COLOR_SPEC (values->line_color, pBuf,
+		    fpConvert, fpFormat);
 		break;
+
             case PEXPCCurveApprox:
-		*pv = values->curve_approx.method;
-		pv++;
-		*((float *) pv) = values->curve_approx.tolerance;
-		pv++;
+
+		STORE_CARD32 (values->curve_approx.method, pBuf);
+		STORE_FLOAT32 (values->curve_approx.tolerance, pBuf,
+		    fpConvert, fpFormat);
 		break;
+
             case PEXPCPolylineInterp:
-		*pv = values->polyline_interp;
-		pv++;
+
+		STORE_CARD32 (values->polyline_interp, pBuf);
 		break;
+
             case PEXPCLineBundleIndex:
-		*pv = values->line_bundle_index;
-		pv++;
+
+		STORE_CARD32 (values->line_bundle_index, pBuf);
 		break;
+
             case PEXPCInteriorStyle:
-		*pv = values->interior_style;
-		pv++;
+
+		STORE_CARD32 (values->interior_style, pBuf);
 		break;
+
             case PEXPCInteriorStyleIndex:
-		*pv = values->interior_style_index;
-		pv++;
+
+		STORE_CARD32 (values->interior_style_index, pBuf);
 		break;
+
             case PEXPCSurfaceColor:
-		PackColorSpecifier (&(values->surface_color), pv, sizeColor);
-		pv += NUMWORDS (sizeof (pexColorSpecifier) + sizeColor); 
+
+		STORE_COLOR_SPEC (values->surface_color, pBuf,
+		    fpConvert, fpFormat);
 		break;
+
             case PEXPCReflectionAttr:
-		((pexReflectionAttr *) pv)->ambient = 
-		    values->reflection_attr.ambient;
-		((pexReflectionAttr *) pv)->diffuse = 
-		    values->reflection_attr.diffuse;
-		((pexReflectionAttr *) pv)->specular = 
-		    values->reflection_attr.specular;
-		((pexReflectionAttr *) pv)->specularConc = 
-		    values->reflection_attr.specular_conc;
-		((pexReflectionAttr *) pv)->transmission = 
-		    values->reflection_attr.transmission;
-		PackColorSpecifier (&(values->reflection_attr.specular_color), 
-		    &(((pexReflectionAttr *) pv)->specularColor), 
-		    sizeColor);
-		pv += NUMWORDS (sizeof (pexReflectionAttr) + sizeColor); 
+
+		STORE_REFLECTION_ATTR (values->reflection_attr, pBuf,
+		    fpConvert, fpFormat);
 		break;
+
             case PEXPCReflectionModel:
-		*pv = values->reflection_model;
-		pv++;
+
+		STORE_CARD32 (values->reflection_model, pBuf);
 		break;
+
             case PEXPCSurfaceInterp:
-		*pv = values->surface_interp;
-		pv++;
+
+		STORE_CARD32 (values->surface_interp, pBuf);
 		break;
+
             case PEXPCBFInteriorStyle:
-		*pv = values->bf_interior_style;
-		pv++;
+
+		STORE_CARD32 (values->bf_interior_style, pBuf);
 		break;
+
             case PEXPCBFInteriorStyleIndex:
-		*pv = values->bf_interior_style_index;
-		pv++;
+
+		STORE_CARD32 (values->bf_interior_style_index, pBuf);
 		break;
+
             case PEXPCBFSurfaceColor:
-		PackColorSpecifier (&(values->bf_surface_color),
-		    pv, sizeColor);
-		pv += NUMWORDS (sizeof (pexColorSpecifier) + sizeColor); 
+
+		STORE_COLOR_SPEC (values->bf_surface_color, pBuf,
+		    fpConvert, fpFormat);
 		break;
+
             case PEXPCBFReflectionAttr:
-		((pexReflectionAttr *) pv)->ambient = 
-		    values->bf_reflection_attr.ambient;
-		((pexReflectionAttr *) pv)->diffuse = 
-		    values->bf_reflection_attr.diffuse;
-		((pexReflectionAttr *) pv)->specular = 
-		    values->bf_reflection_attr.specular;
-		((pexReflectionAttr *) pv)->specularConc = 
-		    values->bf_reflection_attr.specular_conc;
-		((pexReflectionAttr *) pv)->transmission = 
-		    values->bf_reflection_attr.transmission;
-		PackColorSpecifier (
-		    &(values->bf_reflection_attr.specular_color), 
-		    &(((pexReflectionAttr *) pv)->specularColor), 
-		    sizeColor);
-		pv += NUMWORDS (sizeof (pexReflectionAttr) + sizeColor); 
+
+		STORE_REFLECTION_ATTR (values->bf_reflection_attr, pBuf,
+		    fpConvert, fpFormat);
 		break;
+
             case PEXPCBFReflectionModel:
-		*pv = values->bf_reflection_model;
-		pv++;
+
+		STORE_CARD32 (values->bf_reflection_model, pBuf);
 		break;
+
             case PEXPCBFSurfaceInterp:
-		*pv = values->bf_surface_interp;
-		pv++;
+
+		STORE_CARD32 (values->bf_surface_interp, pBuf);
 		break;
+
             case PEXPCSurfaceApprox:
-		*pv = values->surface_approx.method;
-		pv++;
-		*((float *) pv) = values->surface_approx.u_tolerance;
-		pv++;
-		*((float *) pv) = values->surface_approx.v_tolerance;
-		pv++;
+
+		STORE_CARD32 (values->surface_approx.method, pBuf);
+		STORE_FLOAT32 (values->surface_approx.u_tolerance, pBuf,
+		    fpConvert, fpFormat);
+		STORE_FLOAT32 (values->surface_approx.v_tolerance, pBuf,
+		    fpConvert, fpFormat);
 		break;
+
             case PEXPCCullingMode:
-		*pv = values->culling_mode;
-		pv++;
+
+		STORE_CARD32 (values->culling_mode, pBuf);
 		break;
+
             case PEXPCDistinguishFlag:
-		*pv = values->distinguish;
-		pv++;
+
+		STORE_CARD32 (values->distinguish, pBuf);
 		break;
+
             case PEXPCPatternSize:
-#ifdef WORD64
-#else
-		*((pexCoord2D *) pv) = *(pexCoord2D *) &(values->pattern_size);
-#endif
-		pv += LENOF (pexCoord2D);
+
+		STORE_COORD2D (values->pattern_size, pBuf,
+		    fpConvert, fpFormat);
 		break;
+
             case PEXPCPatternRefPoint:
-#ifdef WORD64
-#else
-		*((pexCoord3D *) pv) =
-		    *(pexCoord3D *) &(values->pattern_ref_point);
-#endif
-		pv += LENOF (pexCoord3D);
+
+		STORE_COORD3D (values->pattern_ref_point, pBuf,
+		    fpConvert, fpFormat);
 		break;
+
             case PEXPCPatternRefVec1:
-#ifdef WORD64
-#else
-		*((pexVector3D *) pv) =
-		    *(pexVector3D *) &(values->pattern_ref_vec1);
-#endif
-		pv += LENOF (pexVector3D);
+
+		STORE_VECTOR3D (values->pattern_ref_vec1, pBuf,
+		    fpConvert, fpFormat);
 		break;
+
             case PEXPCPatternRefVec2:
-#ifdef WORD64
-#else
-		*((pexVector3D *) pv) =
-		    *(pexVector3D *) &(values->pattern_ref_vec2);
-#endif
-		pv += LENOF (pexVector3D);
+
+		STORE_VECTOR3D (values->pattern_ref_vec2, pBuf,
+		    fpConvert, fpFormat);
 		break;
+
             case PEXPCInteriorBundleIndex:
-		*pv = values->interior_bundle_index;
-		pv++;
+
+		STORE_CARD32 (values->interior_bundle_index, pBuf);
 		break;
+
             case PEXPCSurfaceEdgeFlag:
-		*pv = values->surface_edges;
-		pv++;
+
+		STORE_CARD32 (values->surface_edges, pBuf);
 		break;
+
             case PEXPCSurfaceEdgeType:
-		*pv = values->surface_edge_type;
-		pv++;
+
+		STORE_CARD32 (values->surface_edge_type, pBuf);
 		break;
+
             case PEXPCSurfaceEdgeWidth:
-		*((float *) pv) = values->surface_edge_width;
-		pv++;
+
+		STORE_FLOAT32 (values->surface_edge_width, pBuf,
+		    fpConvert, fpFormat);
 		break;
+
             case PEXPCSurfaceEdgeColor:
-		PackColorSpecifier (&(values->surface_edge_color), pv, 
-		    sizeColor);
-		pv += NUMWORDS (sizeof (pexColorSpecifier) + sizeColor); 
+
+		STORE_COLOR_SPEC (values->surface_edge_color, pBuf,
+		    fpConvert, fpFormat);
 		break;
+
             case PEXPCEdgeBundleIndex:
-		*pv = values->edge_bundle_index;
-		pv++;
+
+		STORE_CARD32 (values->edge_bundle_index, pBuf);
 		break;
+
             case PEXPCLocalTransform:
-		COPY_AREA ((char *) values->local_transform,
-		    (char *) pv, sizeof (pexMatrix));
-		pv += LENOF (pexMatrix);
+
+		STORE_LISTOF_FLOAT32 (16, values->local_transform, pBuf,
+		    fpConvert, fpFormat);
 		break;
+
             case PEXPCGlobalTransform:
-		COPY_AREA ((char *) values->global_transform,
-		    (char *) pv, sizeof (pexMatrix));
-		pv += LENOF (pexMatrix);
+
+		STORE_LISTOF_FLOAT32 (16, values->global_transform, pBuf,
+		    fpConvert, fpFormat);
 		break;
+
             case PEXPCModelClip:
-		*pv = values->model_clip;
-		pv++;
+
+		STORE_CARD32 (values->model_clip, pBuf);
 		break;
+
             case PEXPCModelClipVolume:
-		size = values->model_clip_volume.count;
-		*((long *) pv) = size;
-		pv++;
-		size *= sizeof (pexHalfSpace);
-		COPY_AREA ((char *) values->model_clip_volume.half_spaces,
-		    (char *) pv, size);
-		pv += NUMWORDS (size);
+
+		count = values->model_clip_volume.count;
+		STORE_CARD32 (count, pBuf);
+		STORE_LISTOF_HALFSPACE3D (count,
+		    values->model_clip_volume.half_spaces, pBuf,
+		    fpConvert, fpFormat);
 		break;
+
             case PEXPCViewIndex:
-		*pv = values->view_index;
-		pv++;
+
+		STORE_CARD32 (values->view_index, pBuf);
 		break;
+
             case PEXPCLightState:
-		size = values->light_state.count;
-		*((long *) pv) = size;
-		pv++;
-		size *= sizeof (pexTableIndex);
-		COPY_AREA ((char *) values->light_state.indices,
-		    (char *) pv, size);
-		pv += NUMWORDS (size);
+
+		count = values->light_state.count;
+		STORE_CARD32 (count, pBuf);
+		STORE_LISTOF_CARD16 (count, values->light_state.indices, pBuf);
+		if (count & 1)
+		    pBuf += SIZEOF (CARD16);
 		break;
+
             case PEXPCDepthCueIndex:
-		*pv = values->depth_cue_index;
-		pv++;
+
+		STORE_CARD32 (values->depth_cue_index, pBuf);
 		break;
+
             case PEXPCPickID:
-		*((CARD32 *) pv) = values->pick_id;
-		pv++;
+
+		STORE_CARD32 (values->pick_id, pBuf);
 		break;
+
             case PEXPCHLHSRIdentifier:
-		*((CARD32 *) pv) = values->hlhsr_id;
-		pv++;
+
+		STORE_CARD32 (values->hlhsr_id, pBuf);
 		break;
+
             case PEXPCNameSet:
-		*((pexNameSet *) pv) = values->name_set;
-		pv += LENOF (pexNameSet);
+
+		STORE_CARD32 (values->name_set, pBuf);
 		break;
+
             case PEXPCASFValues:
-		*((unsigned long *) pv) = values->asf_enables;
-		pv++;
-		*((unsigned long *) pv) = values->asf_values;
-		pv++;
+
+		STORE_CARD32 (values->asf_enables, pBuf);
+		STORE_CARD32 (values->asf_values, pBuf);
 		break;
+
 	    case PEXPCColorApproxIndex:
-		*pv = values->color_approx_index;
-		pv++;
+
+		STORE_CARD32 (values->color_approx_index, pBuf);
 		break;
+
 	    case PEXPCRenderingColorModel:
-		*pv = values->rendering_color_model;
-		pv++;
+
+		STORE_CARD32 (values->rendering_color_model, pBuf);
 		break;
+
 	    case PEXPCParaSurfCharacteristics:
+
 		pscType = values->para_surf_char.type;
-		pint = (INT16 *) pv;
-
 		if (pscType == PEXPSCIsoCurves)
 		{
-		    size = sizeof (PEXPSCIsoparametricCurves);
-		    *(pint++) = PEXPSCIsoCurves;
-		    *(pint++) = size;
-		    pv = (long *) pint;
-
-		    COPY_AREA (&(values->para_surf_char.psc.iso_curves),
-		       (char *) pv, sizeof (PEXPSCIsoparametricCurves));
-		    pv = (long *) ((char *) pv +
-			sizeof (PEXPSCIsoparametricCurves));
+		    size = SIZEOF (pexPSC_IsoparametricCurves);
+	    
+		    STORE_INT16 (PEXPSCIsoCurves, pBuf);
+		    STORE_INT16 (size, pBuf);
+		    STORE_PSC_ISOCURVES (
+			values->para_surf_char.psc.iso_curves, pBuf);
 		}
 		else if (pscType == PEXPSCMCLevelCurves ||
 		    pscType == PEXPSCWCLevelCurves)
 		{
-		    int param_size = sizeof (float) *
-			 values->para_surf_char.psc.level_curves.count;
-		    size = sizeof (pexPSC_LevelCurves) + param_size;
-
-		    *(pint++) = pscType;
-		    *(pint++) = size;
-		    pv = (long *) pint;
-
-		    COPY_AREA (&(values->para_surf_char.psc.level_curves),
-		       (char *) pv, sizeof (pexPSC_LevelCurves));
-		    pv = (long *) ((char *) pv + sizeof (pexPSC_LevelCurves));
-		    COPY_AREA ((char *)
+		    size = SIZEOF (pexPSC_LevelCurves) + (SIZEOF (float) *
+			 values->para_surf_char.psc.level_curves.count);
+	    
+		    STORE_INT16 (pscType, pBuf);
+		    STORE_INT16 (size, pBuf);
+		    STORE_PSC_LEVELCURVES (
+			values->para_surf_char.psc.level_curves, pBuf,
+			fpConvert, fpFormat);
+		    STORE_LISTOF_FLOAT32 (
+			values->para_surf_char.psc.level_curves.count,
 			values->para_surf_char.psc.level_curves.parameters,
-			(char *) pv, param_size);
-		    pv = (long *) ((char *) pv + param_size);
-		}
+			pBuf, fpConvert, fpFormat);
+		}      
 		break;
 	    }
 	}
     }
 
-    length = pv - pvSend;
-    req->length += length;
-
-    Data (display, (char *) pvSend, (length << 2));
-}
-
-
-/*
- * Routine to fill in a PEXPCAttributes structure from the PC attributes
- * part of a Get PC reply.
- */
-
-static void
-_PEXGeneratePCAttr (pv, valueMask, ppca)
-
-INPUT unsigned long			*pv;
-INPUT unsigned long			valueMask[3];
-OUTPUT PEXPCAttributes			*ppca;
-
-{
-    Bool			bitSet;
-    int				sizeColor;
-    int				size, n, pscType;
-    INT16			*pint;
-
-
-    /*
-     * PEXFreePCAttributes will check for NULL before freeing.
-     */
-
-    ppca->model_clip_volume.count = 0;
-    ppca->model_clip_volume.half_spaces = NULL;
-    ppca->light_state.count = 0;
-    ppca->light_state.indices = NULL;
-    ppca->para_surf_char.type = 0;
-
-
-    /*
-     * Fill in the PC attributes.
-     */
-
-    for (n = 0; n < (PEXPCMaxShift + 1); n++)
-    {
-	bitSet = valueMask[n >> 5] & (1L << (n & 0x1f));
-
-	if (bitSet != 0)
-        {
-            switch (n)
-	    {
-	    /* note:  2 bytes of pad between 2 byte items */
-            case PEXPCMarkerType:
-		ppca->marker_type = *pv;
-		pv++;
-		break;
-            case PEXPCMarkerScale:
-		ppca->marker_scale = *((float *) pv);
-		pv++;
-		break;
-            case PEXPCMarkerColor:
-		PackColorSpecifier (pv, &(ppca->marker_color), sizeColor);
-		pv += NUMWORDS (sizeof (pexColorSpecifier) + sizeColor); 
-		break;
-            case PEXPCMarkerBundleIndex:
-		ppca->marker_bundle_index = *pv;
-		pv++;
-		break;
-            case PEXPCTextFont:
-		ppca->text_font = *pv;
-		pv++;
-		break;
-            case PEXPCTextPrecision:
-		ppca->text_precision = *pv;
-		pv++;
-		break;
-            case PEXPCCharExpansion:
-	  	ppca->char_expansion = *((float *) pv);
-		pv++;
-		break;
-            case PEXPCCharSpacing:
-		ppca->char_spacing = *((float *) pv);
-		pv++;
-		break;
-            case PEXPCTextColor:
-		PackColorSpecifier (pv, &(ppca->text_color), sizeColor);
-		pv += NUMWORDS (sizeof (pexColorSpecifier) + sizeColor); 
-		break;
-            case PEXPCCharHeight:
-		ppca->char_height = *((float *) pv);
-		pv++;
-		break;
-            case PEXPCCharUpVector:
-#ifdef WORD64
-#else
-		ppca->char_up_vector = *((PEXVector2D *) pv);
-#endif
-		pv += LENOF (pexVector2D); 
-		break;
-            case PEXPCTextPath:
-		ppca->text_path = *pv;
-		pv++;
-		break;
-            case PEXPCTextAlignment:
-#ifdef WORD64
-#else
-		ppca->text_alignment = *((PEXTextAlignment *)pv);
-#endif
-		pv += LENOF (pexTextAlignmentData);
-		break;
-            case PEXPCATextHeight:
-		ppca->atext_height = *((float *) pv);
-		pv++;
-		break;
-            case PEXPCATextUpVector:
-#ifdef WORD64
-#else
-		ppca->atext_up_vector = *((PEXVector2D *) pv);
-#endif
-		pv += LENOF (pexVector2D); 
-		break;
-            case PEXPCATextPath:
-		ppca->atext_path = *pv;
-		pv++;
-		break;
-            case PEXPCATextAlignment:
-#ifdef WORD64
-#else
-		ppca->atext_alignment = *((PEXTextAlignment *) pv);
-#endif
-		pv += LENOF (pexTextAlignmentData);
-		break;
-            case PEXPCATextStyle:
-		ppca->atext_style = *pv;
-		pv++;
-		break;
-            case PEXPCTextBundleIndex:
-		ppca->text_bundle_index = *pv;
-		pv++;
-		break;
-            case PEXPCLineType:
-		ppca->line_type = *pv;
-		pv++;
-		break;
-            case PEXPCLineWidth:
-		ppca->line_width = *((float *) pv);
-		pv++;
-		break;
-            case PEXPCLineColor:
-		PackColorSpecifier (pv, &(ppca->line_color), sizeColor);
-		pv += NUMWORDS (sizeof (pexColorSpecifier) + sizeColor); 
-		break;
-            case PEXPCCurveApprox:
-		ppca->curve_approx.method = *pv;
-		pv++;
-		ppca->curve_approx.tolerance = *((float *) pv);
-		pv++;
-		break;
-            case PEXPCPolylineInterp:
-		ppca->polyline_interp = *pv;
-		pv++;
-		break;
-            case PEXPCLineBundleIndex:
-		ppca->line_bundle_index = *pv;
-		pv++;
-		break;
-            case PEXPCInteriorStyle:
-		ppca->interior_style = *pv;
-		pv++;
-		break;
-            case PEXPCInteriorStyleIndex:
-		ppca->interior_style_index = *pv;
-		pv++;
-		break;
-            case PEXPCSurfaceColor:
-		PackColorSpecifier (pv, &(ppca->surface_color), sizeColor);
-		pv += NUMWORDS (sizeof (pexColorSpecifier) + sizeColor); 
-		break;
-            case PEXPCReflectionAttr:
-		ppca->reflection_attr.ambient = 
-		    ((pexReflectionAttr *) pv)->ambient;
-		ppca->reflection_attr.diffuse = 
-		    ((pexReflectionAttr *) pv)->diffuse;
-		ppca->reflection_attr.specular = 
-		    ((pexReflectionAttr *) pv)->specular;
-		ppca->reflection_attr.specular_conc = 
-		    ((pexReflectionAttr *) pv)->specularConc;
-		ppca->reflection_attr.transmission = 
-		    ((pexReflectionAttr *) pv)->transmission;
-		PackColorSpecifier ( 
-		    &(((pexReflectionAttr *) pv)->specularColor), 
-		    &(ppca->reflection_attr.specular_color), sizeColor);
-		pv += NUMWORDS (sizeof (pexReflectionAttr) + sizeColor); 
-		break;
-            case PEXPCReflectionModel:
-		ppca->reflection_model = *pv;
-		pv++;
-		break;
-            case PEXPCSurfaceInterp:
-		ppca->surface_interp = *pv;
-		pv++;
-		break;
-            case PEXPCBFInteriorStyle:
-		ppca->bf_interior_style = *pv;
-		pv++;
-		break;
-            case PEXPCBFInteriorStyleIndex:
-		ppca->bf_interior_style_index = *pv;
-		pv++;
-		break;
-            case PEXPCBFSurfaceColor:
-		PackColorSpecifier (pv, &(ppca->bf_surface_color), sizeColor);
-		pv += NUMWORDS (sizeof (pexColorSpecifier) + sizeColor); 
-		break;
-            case PEXPCBFReflectionAttr:
-		ppca->bf_reflection_attr.ambient = 
-		    ((pexReflectionAttr *) pv)->ambient;
-		ppca->bf_reflection_attr.diffuse = 
-		    ((pexReflectionAttr *) pv)->diffuse;
-		ppca->bf_reflection_attr.specular = 
-		    ((pexReflectionAttr *) pv)->specular;
-		ppca->bf_reflection_attr.specular_conc = 
-		    ((pexReflectionAttr *) pv)->specularConc;
-		ppca->bf_reflection_attr.transmission = 
-		    ((pexReflectionAttr *) pv)->transmission;
-		PackColorSpecifier ( 
-		    &(((pexReflectionAttr *) pv)->specularColor), 
-		    &(ppca->bf_reflection_attr.specular_color), sizeColor);
-		pv += NUMWORDS (sizeof (pexReflectionAttr) + sizeColor); 
-		break;
-            case PEXPCBFReflectionModel:
-		ppca->bf_reflection_model = *pv;
-		pv++;
-		break;
-            case PEXPCBFSurfaceInterp:
-		ppca->bf_surface_interp = *pv;
-		pv++;
-		break;
-            case PEXPCSurfaceApprox:
-		ppca->surface_approx.method = *pv;
-		pv++;
-		ppca->surface_approx.u_tolerance = *((float *) pv);
-		pv++;
-		ppca->surface_approx.v_tolerance = *((float *) pv);
-		pv++;
-		break;
-            case PEXPCCullingMode:
-		ppca->culling_mode = *pv;
-		pv++;
-		break;
-            case PEXPCDistinguishFlag:
-		ppca->distinguish = *pv;
-		pv++;
-		break;
-            case PEXPCPatternSize:
-#ifdef WORD64
-#else
-		ppca->pattern_size = *((PEXCoord2D *) pv);
-#endif
-		pv += LENOF (pexCoord2D);
-		break;
-            case PEXPCPatternRefPoint:
-#ifdef WORD64
-#else
-		ppca->pattern_ref_point = *((PEXCoord *) pv);
-#endif
-		pv += LENOF (pexCoord3D);
-		break;
-            case PEXPCPatternRefVec1:
-#ifdef WORD64
-#else
-		ppca->pattern_ref_vec1 = *((PEXVector *) pv);
-#endif
-		pv += LENOF (pexVector3D); 
-		break;
-            case PEXPCPatternRefVec2:
-#ifdef WORD64
-#else
-		ppca->pattern_ref_vec2 = *((PEXVector *) pv);
-#endif
-		pv += LENOF (pexVector3D); 
-		break;
-            case PEXPCInteriorBundleIndex:
-		ppca->interior_bundle_index = *pv;
-		pv++;
-		break;
-            case PEXPCSurfaceEdgeFlag:
-		ppca->surface_edges = *pv;
-		pv++;
-		break;
-            case PEXPCSurfaceEdgeType:
-		ppca->surface_edge_type = *pv;
-		pv++;
-		break;
-            case PEXPCSurfaceEdgeWidth:
-		ppca->surface_edge_width = *((float *) pv);
-		pv++;
-		break;
-            case PEXPCSurfaceEdgeColor:
-		PackColorSpecifier (pv, &(ppca->surface_edge_color),
-		    sizeColor);
-		pv += NUMWORDS (sizeof (pexColorSpecifier) + sizeColor); 
-		break;
-            case PEXPCEdgeBundleIndex:
-		ppca->edge_bundle_index = *pv;
-		pv++;
-		break;
-            case PEXPCLocalTransform:
-		COPY_AREA ((char *) pv, (char *) ppca->local_transform,
-		    sizeof (PEXMatrix));
-		pv += LENOF (pexMatrix);
-		break;
-            case PEXPCGlobalTransform:
-		COPY_AREA ((char *) pv, (char *) ppca->global_transform,
-		    sizeof (PEXMatrix));
-		pv += LENOF (pexMatrix);
-		break;
-            case PEXPCModelClip:
-		ppca->model_clip = *pv;
-		pv++;
-		break;
-            case PEXPCModelClipVolume:
-		size = *pv;
-		pv++;
-		ppca->model_clip_volume.count = size;
-		size *= sizeof (PEXHalfSpace);
-		ppca->model_clip_volume.half_spaces =
-		    (PEXHalfSpace *) PEXAllocBuf ((unsigned) size);
-		COPY_AREA ((char *)pv,
-		    (char *) (ppca->model_clip_volume.half_spaces), size);
-		pv += NUMWORDS (size);
-		break;
-            case PEXPCViewIndex:
-		ppca->view_index = *pv;
-		pv++;
-		break;
-            case PEXPCLightState:
-		size = *pv;
-		pv++;
-		ppca->light_state.count = size;
-		size *= sizeof (PEXTableIndex);
-		ppca->light_state.indices =
-		    (PEXTableIndex *) PEXAllocBuf ((unsigned) size);
-		COPY_AREA ((char *) pv,
-		    (char *) (ppca->light_state.indices), size);
-		pv += NUMWORDS (size);
-		break;
-            case PEXPCDepthCueIndex:
-		ppca->depth_cue_index = *pv;
-		pv++;
-		break;
-            case PEXPCPickID:
-		ppca->pick_id = *((INT32 *) pv);
-		pv++;
-		break;
-            case PEXPCHLHSRIdentifier:
-		ppca->hlhsr_id = *((CARD32 *) pv);
-		pv++;
-		break;
-            case PEXPCNameSet:
-		ppca->name_set = *((PEXNameSet *) pv);
-		pv += LENOF (pexNameSet);
-		break;
-            case PEXPCASFValues:
-		ppca->asf_enables = *((CARD32 *) pv);
-		pv++;
-		ppca->asf_values = *((CARD32 *) pv);
-		pv++;
-		break;
-	    case PEXPCColorApproxIndex:
-		ppca->color_approx_index = *pv;
-		pv++;
-		break;
-	    case PEXPCRenderingColorModel:
-		ppca->rendering_color_model = *pv;
-		pv++;
-		break;
-	    case PEXPCParaSurfCharacteristics:
-		pint = (INT16 *) pv;
-		ppca->para_surf_char.type = pscType = *(pint++);
-		pv++;
-		if (pscType == PEXPSCIsoCurves)
-		{
-		    COPY_AREA ((char *) pv,
-			(char *) &(ppca->para_surf_char.psc.iso_curves),
-			sizeof (PEXPSCIsoparametricCurves));
-		    pv = (unsigned long *) ((char *) pv +
-			sizeof (PEXPSCIsoparametricCurves));
-		}
-		else if (pscType == PEXPSCMCLevelCurves ||
-		    pscType == PEXPSCWCLevelCurves)
-		{
-		    int param_size = *pint - sizeof (pexPSC_LevelCurves);
-
-		    COPY_AREA ((char *) pv,
-		        (char *) &(ppca->para_surf_char.psc.level_curves),
-		        sizeof (pexPSC_LevelCurves));
-		    pv = (unsigned long *) ((char *) pv +
-			sizeof (pexPSC_LevelCurves));
-		    ppca->para_surf_char.psc.level_curves.parameters = 
-		        (float *) PEXAllocBuf ((unsigned) param_size);
-		    COPY_AREA ((char *) pv, (char *)
-			(ppca->para_surf_char.psc.level_curves.parameters),
-		        param_size);
-		    pv = (unsigned long *) ((char *) pv + *pint);
-		}
-		break;
-	    }
-	}
-    }
+    *sizeRet = pBuf - *listRet;
 }

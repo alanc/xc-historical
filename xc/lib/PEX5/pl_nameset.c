@@ -1,4 +1,4 @@
-/* $XConsortium: pl_nameset.c,v 1.3 92/07/24 13:55:58 mor Exp $ */
+/* $XConsortium: pl_nameset.c,v 1.4 92/10/09 10:35:02 mor Exp $ */
 
 /******************************************************************************
 Copyright 1987,1991 by Digital Equipment Corporation, Maynard, Massachusetts
@@ -35,8 +35,9 @@ PEXCreateNameSet (display)
 INPUT Display		*display;
 
 {
-    pexCreateNameSetReq	*req;
-    PEXNameSet		ns;
+    register pexCreateNameSetReq	*req;
+    char				*pBuf;
+    PEXNameSet				ns;
 
 
     /*
@@ -57,8 +58,14 @@ INPUT Display		*display;
      * Put the request in the X request buffer.
      */
 
-    PEXGetReq (CreateNameSet, req);
+    PEXGetReq (CreateNameSet, pBuf);
+
+    BEGIN_REQUEST_HEADER (CreateNameSet, pBuf, req);
+
+    PEXStoreReqHead (CreateNameSet, req);
     req->id = ns;
+
+    END_REQUEST_HEADER (CreateNameSet, pBuf, req);
 
 
     /*
@@ -79,7 +86,8 @@ INPUT Display		*display;
 INPUT PEXNameSet	ns;
 
 {
-    pexFreeNameSetReq	*req;
+    register pexFreeNameSetReq	*req;
+    char			*pBuf;
 
 
     /*
@@ -93,8 +101,14 @@ INPUT PEXNameSet	ns;
      * Put the request in the X request buffer.
      */
 
-    PEXGetReq (FreeNameSet, req);
+    PEXGetReq (FreeNameSet, pBuf);
+
+    BEGIN_REQUEST_HEADER (FreeNameSet, pBuf, req);
+
+    PEXStoreReqHead (FreeNameSet, req);
     req->id = ns;
+
+    END_REQUEST_HEADER (FreeNameSet, pBuf, req);
 
 
     /*
@@ -114,7 +128,8 @@ INPUT PEXNameSet	srcNs;
 INPUT PEXNameSet	destNs;
 
 {
-    pexCopyNameSetReq	*req;
+    register pexCopyNameSetReq	*req;
+    char			*pBuf;
 
 
     /*
@@ -128,9 +143,15 @@ INPUT PEXNameSet	destNs;
      * Put the request in the X request buffer.
      */
 
-    PEXGetReq (CopyNameSet, req);
+    PEXGetReq (CopyNameSet, pBuf);
+
+    BEGIN_REQUEST_HEADER (CopyNameSet, pBuf, req);
+
+    PEXStoreReqHead (CopyNameSet, req);
     req->src = srcNs;
     req->dst = destNs;
+
+    END_REQUEST_HEADER (CopyNameSet, pBuf, req);
 
 
     /*
@@ -151,8 +172,9 @@ OUTPUT unsigned long	*numNamesReturn;
 OUTPUT PEXName		**namesReturn;
 
 {
-    pexGetNameSetReq	*req;
-    pexGetNameSetReply	rep;
+    register pexGetNameSetReq	*req;
+    char			*pBuf;
+    pexGetNameSetReply		rep;
 
 
     /*
@@ -166,8 +188,14 @@ OUTPUT PEXName		**namesReturn;
      * Put the request in the X request buffer and get a reply.
      */
 
-    PEXGetReq (GetNameSet, req);
+    PEXGetReq (GetNameSet, pBuf);
+
+    BEGIN_REQUEST_HEADER (GetNameSet, pBuf, req);
+
+    PEXStoreReqHead (GetNameSet, req);
     req->id = ns;
+
+    END_REQUEST_HEADER (GetNameSet, pBuf, req);
 
     if (_XReply (display,  &rep, 0, xFalse) == 0)
     {
@@ -185,10 +213,9 @@ OUTPUT PEXName		**namesReturn;
      * Allocate a buffer for the replies to pass back to the user.
      */
 
-    *namesReturn = (PEXName *) PEXAllocBuf ((unsigned) (rep.length << 2));
+    *namesReturn = (PEXName *) PEXAllocBuf (sizeof (PEXName) * rep.numNames);
 
-    if (rep.numNames)
-        _XRead (display, (char *) *namesReturn, (long) (rep.length << 2));
+    XREAD_LISTOF_CARD32 (display, rep.numNames, *namesReturn);
 
 
    /*
@@ -212,8 +239,9 @@ INPUT unsigned long	numValues;
 INPUT PEXName		*values;
 
 {
-    pexChangeNameSetReq	*req;
-    int			size;
+    register pexChangeNameSetReq	*req;
+    char				*pBuf;
+    int					size;
 
 
     /*
@@ -227,13 +255,18 @@ INPUT PEXName		*values;
      * Put the request in the X request buffer.
      */
 
-    size = numValues * sizeof (PEXName);
+    size = numValues * SIZEOF (pexName);
+    PEXGetReqExtra (ChangeNameSet, size, pBuf);
 
-    PEXGetReqExtra (ChangeNameSet, size, req);
+    BEGIN_REQUEST_HEADER (ChangeNameSet, pBuf, req);
+
+    PEXStoreReqExtraHead (ChangeNameSet, size, req);
     req->ns = ns;
     req->action = action;
 
-    COPY_AREA ((char *) values, ((char *) &req[1]), size);
+    END_REQUEST_HEADER (ChangeNameSet, pBuf, req);
+
+    STORE_LISTOF_CARD32 (numValues, values, pBuf);
 
 
     /*

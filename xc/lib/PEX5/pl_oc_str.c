@@ -1,4 +1,4 @@
-/* $XConsortium: pl_oc_struct.c,v 1.4 92/07/16 11:21:44 mor Exp $ */
+/* $XConsortium: pl_oc_struct.c,v 1.5 92/10/21 16:13:13 mor Exp $ */
 
 /******************************************************************************
 Copyright 1987,1991 by Digital Equipment Corporation, Maynard, Massachusetts
@@ -29,8 +29,6 @@ SOFTWARE.
 #include "PEXlibint.h"
 #include "pl_oc_util.h"
 
-extern void _PEXCopyPaddedBytesToOC();
-
 
 void
 PEXExecuteStructure (display, resource_id, req_type, structure)
@@ -41,8 +39,11 @@ INPUT PEXOCRequestType	req_type;
 INPUT PEXStructure	structure;
 
 {
-    PEXAddSimpleOC (display, resource_id, req_type, PEXOCExecuteStructure,
-	sizeof (PEXStructure), &structure);
+    register pexExecuteStructure	*req;
+
+    BEGIN_SIMPLE_OC (ExecuteStructure, resource_id, req_type, req);
+    req->id = structure;
+    END_SIMPLE_OC (ExecuteStructure, resource_id, req_type, req);
 }
 
 
@@ -55,8 +56,11 @@ INPUT PEXOCRequestType	req_type;
 INPUT long		label;
 
 {
-    PEXAddSimpleOC (display, resource_id, req_type, PEXOCLabel,
-	sizeof (INT32), &label);
+    register pexLabel	*req;
+
+    BEGIN_SIMPLE_OC (Label, resource_id, req_type, req);
+    req->label = label;
+    END_SIMPLE_OC (Label, resource_id, req_type, req);
 }
 
 
@@ -68,7 +72,11 @@ INPUT XID		resource_id;
 INPUT PEXOCRequestType	req_type;
 
 {
-    PEXAddSimpleOC (display, resource_id, req_type, PEXOCNoop, 0, NULL);
+    register pexNoop	*req;
+
+    BEGIN_SIMPLE_OC (Noop, resource_id, req_type, req);
+    /* no data */
+    END_SIMPLE_OC (Noop, resource_id, req_type, req);
 }
 
 
@@ -82,9 +90,42 @@ INPUT int		length;
 INPUT char		*data;
 
 {
-    PEXAddListOC (display, resource_id, req_type, PEXOCApplicationData,
-	True /* count needed */,
-	length, sizeof (char), data);
+    register pexApplicationData	*req;
+    char			*pBuf;
+    int				dataLength;
+
+
+    /*
+     * Initialize the OC request.
+     */
+
+    dataLength = NUMWORDS (length);
+
+    PEXInitOC (display, resource_id, req_type,
+	LENOF (pexApplicationData), dataLength, pBuf);
+
+    if (pBuf == NULL) return;
+
+
+    /* 
+     * Store the request header data. 
+     */
+
+    BEGIN_OC_HEADER (ApplicationData, dataLength, pBuf, req);
+
+    req->numElements = length;
+
+    END_OC_HEADER (ApplicationData, pBuf, req);
+
+
+    /*
+     * Copy the oc data.
+     */
+
+    OC_LISTOF_CARD8_PAD (length, data);
+
+    PEXFinishOC (display);
+    PEXSyncHandle (display);
 }
 
 
@@ -99,32 +140,40 @@ INPUT int		length;
 INPUT char		*data;
 
 {
-    pexGse		*pReq;
+    register pexGSE	*req;
+    char		*pBuf;
+    int			dataLength;
 
 
     /*
      * Initialize the OC request.
      */
 
-    PEXInitOC (display, resource_id, req_type, PEXOCGSE,
-	LENOF (pexGse), NUMWORDS (length), pexGse, pReq);
+    dataLength = NUMWORDS (length);
 
-    if (pReq == NULL) return;
+    PEXInitOC (display, resource_id, req_type,
+	LENOF (pexGSE), dataLength, pBuf);
+
+    if (pBuf == NULL) return;
 
 
     /* 
      * Store the GSE request header data. 
      */
 
-    pReq->id = id;
-    pReq->numElements = length;
+    BEGIN_OC_HEADER (GSE, dataLength, pBuf, req);
+
+    req->id = id;
+    req->numElements = length;
+
+    END_OC_HEADER (GSE, pBuf, req);
 
 
     /*
      * Copy the GSE data to the oc.
      */
 
-    _PEXCopyPaddedBytesToOC (display, length, (char *) data);
+    OC_LISTOF_CARD8_PAD (length, data);
 
     PEXFinishOC (display);
     PEXSyncHandle (display);

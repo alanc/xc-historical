@@ -1,4 +1,4 @@
-/* $XConsortium: pl_oc_attr.c,v 1.6 92/07/24 13:31:44 mor Exp $ */
+/* $XConsortium: pl_oc_attr.c,v 1.8 92/10/21 15:23:10 mor Exp $ */
 
 /******************************************************************************
 Copyright 1987,1991 by Digital Equipment Corporation, Maynard, Massachusetts
@@ -29,8 +29,6 @@ SOFTWARE.
 #include "PEXlibint.h"
 #include "pl_oc_util.h"
 
-extern void _PEXCopyPaddedBytesToOC();
-
 
 void
 PEXSetMarkerType (display, resource_id, req_type, type)
@@ -41,10 +39,11 @@ INPUT PEXOCRequestType	req_type;
 INPUT int		type;
 
 {
-    pexEnumTypeIndex	t = type;
+    register pexMarkerType	*req;
 
-    PEXAddSimpleOC (display, resource_id, req_type, PEXOCMarkerType,
-	sizeof (pexEnumTypeIndex), &t);
+    BEGIN_SIMPLE_OC (MarkerType, resource_id, req_type, req);
+    req->markerType = type;
+    END_SIMPLE_OC (MarkerType, resource_id, req_type, req);
 }
 
 
@@ -57,10 +56,21 @@ INPUT PEXOCRequestType	req_type;
 INPUT double		scale;
 
 {
-    float		s = scale;
+    register pexMarkerScale	*req;
+    int				fpConvert;
+    int				fpFormat;
 
-    PEXAddSimpleOC (display, resource_id, req_type, PEXOCMarkerScale,
-	sizeof (float), &s);
+    BEGIN_SIMPLE_OC (MarkerScale, resource_id, req_type, req);
+    CHECK_FP (fpConvert, fpFormat);
+
+    if (fpConvert)
+    {
+	FP_CONVERT_DHTON (scale, req->scale, fpFormat);
+    }
+    else
+	req->scale = scale;
+
+    END_SIMPLE_OC (MarkerScale, resource_id, req_type, req);
 }
 
 
@@ -73,10 +83,11 @@ INPUT PEXOCRequestType	req_type;
 INPUT unsigned int	index;
 
 {
-    pexTableIndex	i = index;
+    register pexMarkerColorIndex	*req;
 
-    PEXAddSimpleOC (display, resource_id, req_type, PEXOCMarkerColorIndex,
-	sizeof (pexTableIndex), &i);
+    BEGIN_SIMPLE_OC (MarkerColorIndex, resource_id, req_type, req);
+    req->index = index;
+    END_SIMPLE_OC (MarkerColorIndex, resource_id, req_type, req);
 }
 
 
@@ -90,12 +101,32 @@ INPUT int		colorType;
 INPUT PEXColor		*color;
 
 {
-    PEXColorSpecifier	pcs;
+    register pexMarkerColor	*req;
+    char			*pBuf;
+    int				lenofColor;
+    int				fpConvert;
+    int				fpFormat;
 
-    InitializeColorSpecifier (pcs, color, colorType);
+    lenofColor = GetColorLength (colorType);
 
-    PEXAddSimpleOC (display, resource_id, req_type, PEXOCMarkerColor,
-	sizeof (PEXColorSpecifier) - AdjustSizeFromType (colorType), &pcs);
+    PEXInitOC (display, resource_id, req_type,
+	LENOF (pexMarkerColor), lenofColor, pBuf);
+
+    if (pBuf == NULL) return;
+
+    CHECK_FP (fpConvert, fpFormat);
+
+    BEGIN_OC_HEADER (MarkerColor, lenofColor, pBuf, req);
+
+    req->colorType = colorType;
+
+    END_OC_HEADER (MarkerColor, pBuf, req);
+
+    pBuf = PEXGetOCAddr (display, NUMBYTES (lenofColor));
+    STORE_COLOR_VAL (colorType, (*color), pBuf, fpConvert, fpFormat);
+
+    PEXFinishOC (display);
+    PEXSyncHandle (display);
 }
 
 
@@ -108,10 +139,11 @@ INPUT PEXOCRequestType	req_type;
 INPUT unsigned int	index;
 
 {
-    pexTableIndex	i = index;
+    register pexMarkerBundleIndex	*req;
 
-    PEXAddSimpleOC (display, resource_id, req_type, PEXOCMarkerBundleIndex,
-	sizeof (pexTableIndex), &i);
+    BEGIN_SIMPLE_OC (MarkerBundleIndex, resource_id, req_type, req);
+    req->index = index;
+    END_SIMPLE_OC (MarkerBundleIndex, resource_id, req_type, req);
 }
 
 
@@ -124,10 +156,11 @@ INPUT PEXOCRequestType	req_type;
 INPUT unsigned int	index;
 
 {
-    pexTableIndex	i = index;
+    register pexTextFontIndex	*req;
 
-    PEXAddSimpleOC (display, resource_id, req_type, PEXOCTextFontIndex,
-	sizeof (pexTableIndex), &i);
+    BEGIN_SIMPLE_OC (TextFontIndex, resource_id, req_type, req);
+    req->index = index;
+    END_SIMPLE_OC (TextFontIndex, resource_id, req_type, req);
 }
 
 
@@ -140,10 +173,11 @@ INPUT PEXOCRequestType	req_type;
 INPUT int		precision;
 
 {
-    CARD16		p = precision;
+    register pexTextPrecision	*req;
 
-    PEXAddSimpleOC (display, resource_id, req_type, PEXOCTextPrecision,
-	sizeof (CARD16), &p);
+    BEGIN_SIMPLE_OC (TextPrecision, resource_id, req_type, req);
+    req->precision = precision;
+    END_SIMPLE_OC (TextPrecision, resource_id, req_type, req);
 }
 
 
@@ -156,10 +190,21 @@ INPUT PEXOCRequestType	req_type;
 INPUT double		expansion;
 
 {
-    float		e = expansion;
+    register pexCharExpansion	*req;
+    int				fpConvert;
+    int				fpFormat;
 
-    PEXAddSimpleOC (display, resource_id, req_type, PEXOCCharExpansion,
-	sizeof (float), &e);
+    BEGIN_SIMPLE_OC (CharExpansion, resource_id, req_type, req);
+    CHECK_FP (fpConvert, fpFormat);
+
+    if (fpConvert)
+    {
+	FP_CONVERT_DHTON (expansion, req->expansion, fpFormat);
+    }
+    else
+	req->expansion = expansion;
+
+    END_SIMPLE_OC (CharExpansion, resource_id, req_type, req);
 }
 
 
@@ -172,10 +217,21 @@ INPUT PEXOCRequestType	req_type;
 INPUT double		spacing;
 
 {
-    float		s = spacing;
+    register pexCharSpacing	*req;
+    int				fpConvert;
+    int				fpFormat;
 
-    PEXAddSimpleOC (display, resource_id, req_type, PEXOCCharSpacing,
-	sizeof (float), &s);
+    BEGIN_SIMPLE_OC (CharSpacing, resource_id, req_type, req);
+    CHECK_FP (fpConvert, fpFormat);
+
+    if (fpConvert)
+    {
+	FP_CONVERT_DHTON (spacing, req->spacing, fpFormat);
+    }
+    else
+	req->spacing = spacing;
+
+    END_SIMPLE_OC (CharSpacing, resource_id, req_type, req);
 }
 
 
@@ -188,10 +244,11 @@ INPUT PEXOCRequestType	req_type;
 INPUT unsigned int	index;
 
 {
-    pexTableIndex	i = index;
+    register pexTextColorIndex	*req;
 
-    PEXAddSimpleOC (display, resource_id, req_type, PEXOCTextColorIndex,
-	sizeof (pexTableIndex), &i);
+    BEGIN_SIMPLE_OC (TextColorIndex, resource_id, req_type, req);
+    req->index = index;
+    END_SIMPLE_OC (TextColorIndex, resource_id, req_type, req);
 }
 
 
@@ -205,12 +262,32 @@ INPUT int		colorType;
 INPUT PEXColor		*color;
 
 {
-    PEXColorSpecifier	pcs;
+    register pexTextColor	*req;
+    char			*pBuf;
+    int				lenofColor;
+    int				fpConvert;
+    int				fpFormat;
 
-    InitializeColorSpecifier (pcs, color, colorType);
+    lenofColor = GetColorLength (colorType);
 
-    PEXAddSimpleOC (display, resource_id, req_type, PEXOCTextColor,
-	sizeof (PEXColorSpecifier) - AdjustSizeFromType (colorType), &pcs);
+    PEXInitOC (display, resource_id, req_type,
+	LENOF (pexTextColor), lenofColor, pBuf);
+
+    if (pBuf == NULL) return;
+
+    CHECK_FP (fpConvert, fpFormat);
+
+    BEGIN_OC_HEADER (TextColor, lenofColor, pBuf, req);
+
+    req->colorType = colorType;
+
+    END_OC_HEADER (TextColor, pBuf, req);
+
+    pBuf = PEXGetOCAddr (display, NUMBYTES (lenofColor));
+    STORE_COLOR_VAL (colorType, (*color), pBuf, fpConvert, fpFormat);
+
+    PEXFinishOC (display);
+    PEXSyncHandle (display);
 }
 
 
@@ -223,10 +300,21 @@ INPUT PEXOCRequestType	req_type;
 INPUT double		height;
 
 {
-    float		h = height;
+    register pexCharHeight	*req;
+    int				fpConvert;
+    int				fpFormat;
 
-    PEXAddSimpleOC (display, resource_id, req_type, PEXOCCharHeight,
-	sizeof (float), &h);
+    BEGIN_SIMPLE_OC (CharHeight, resource_id, req_type, req);
+    CHECK_FP (fpConvert, fpFormat);
+
+    if (fpConvert)
+    {
+	FP_CONVERT_DHTON (height, req->height, fpFormat);
+    }
+    else
+	req->height = height;
+
+    END_SIMPLE_OC (CharHeight, resource_id, req_type, req);
 }
 
 
@@ -239,8 +327,25 @@ INPUT PEXOCRequestType	req_type;
 INPUT PEXVector2D	*vector;
 
 {
-    PEXAddSimpleOC (display, resource_id, req_type, PEXOCCharUpVector,
-	sizeof (PEXVector2D), vector);
+    register pexCharUpVector	*req;
+    int				fpConvert;
+    int				fpFormat;
+
+    BEGIN_SIMPLE_OC (CharUpVector, resource_id, req_type, req);
+    CHECK_FP (fpConvert, fpFormat);
+
+    if (fpConvert)
+    {
+	FP_CONVERT_HTON (vector->x, req->up_x, fpFormat);
+	FP_CONVERT_HTON (vector->y, req->up_y, fpFormat);
+    }
+    else
+    {
+	req->up_x = vector->x;
+	req->up_y = vector->y;
+    }
+
+    END_SIMPLE_OC (CharUpVector, resource_id, req_type, req);
 }
 
 
@@ -253,10 +358,11 @@ INPUT PEXOCRequestType	req_type;
 INPUT int		path;
 
 {
-    CARD16		p = path;
+    register pexTextPath	*req;
 
-    PEXAddSimpleOC (display, resource_id, req_type, PEXOCTextPath,
-	sizeof (CARD16), &p);
+    BEGIN_SIMPLE_OC (TextPath, resource_id, req_type, req);
+    req->path = path;
+    END_SIMPLE_OC (TextPath, resource_id, req_type, req);
 }
 
 
@@ -270,13 +376,12 @@ INPUT int		halignment;
 INPUT int		valignment;
 
 {
-    pexTextAlignmentData	a;
+    register pexTextAlignment	*req;
 
-    a.vertical = valignment;
-    a.horizontal = halignment;
-
-    PEXAddSimpleOC (display, resource_id, req_type, PEXOCTextAlignment,
-	sizeof (pexTextAlignmentData), &a);
+    BEGIN_SIMPLE_OC (TextAlignment, resource_id, req_type, req);
+    req->alignment_vertical = valignment;
+    req->alignment_horizontal = halignment;
+    END_SIMPLE_OC (TextAlignment, resource_id, req_type, req);
 }
 
 
@@ -289,10 +394,21 @@ INPUT PEXOCRequestType	req_type;
 INPUT double		height;
 
 {
-    float		h = height;
+    register pexATextHeight	*req;
+    int				fpConvert;
+    int				fpFormat;
 
-    PEXAddSimpleOC (display, resource_id, req_type, PEXOCATextHeight,
-	sizeof (float), &h);
+    BEGIN_SIMPLE_OC (ATextHeight, resource_id, req_type, req);
+    CHECK_FP (fpConvert, fpFormat);
+
+    if (fpConvert)
+    {
+	FP_CONVERT_DHTON (height, req->height, fpFormat);
+    }
+    else
+	req->height = height;
+
+    END_SIMPLE_OC (ATextHeight, resource_id, req_type, req);
 }
 
 
@@ -305,8 +421,25 @@ INPUT PEXOCRequestType	req_type;
 INPUT PEXVector2D	*vector;
 
 {
-    PEXAddSimpleOC (display, resource_id, req_type, PEXOCATextUpVector,
-	sizeof (PEXVector2D), vector);
+    register pexATextUpVector	*req;
+    int				fpConvert;
+    int				fpFormat;
+
+    BEGIN_SIMPLE_OC (ATextUpVector, resource_id, req_type, req);
+    CHECK_FP (fpConvert, fpFormat);
+
+    if (fpConvert)
+    {
+	FP_CONVERT_HTON (vector->x, req->up_x, fpFormat);
+	FP_CONVERT_HTON (vector->y, req->up_y, fpFormat);
+    }
+    else
+    {
+	req->up_x = vector->x;
+	req->up_y = vector->y;
+    }
+
+    END_SIMPLE_OC (ATextUpVector, resource_id, req_type, req);
 }
 
 
@@ -319,10 +452,11 @@ INPUT PEXOCRequestType	req_type;
 INPUT int		path;
 
 {
-    CARD16		p = path;
+    register pexATextPath	*req;
 
-    PEXAddSimpleOC (display, resource_id, req_type, PEXOCATextPath,
-	sizeof (CARD16), &p);
+    BEGIN_SIMPLE_OC (ATextPath, resource_id, req_type, req);
+    req->path = path;
+    END_SIMPLE_OC (ATextPath, resource_id, req_type, req);
 }
 
 
@@ -336,13 +470,12 @@ INPUT int		halignment;
 INPUT int		valignment;
 
 {
-    pexTextAlignmentData	a;
+    register pexATextAlignment	*req;
 
-    a.vertical = valignment;
-    a.horizontal = halignment;
-
-    PEXAddSimpleOC (display, resource_id, req_type, PEXOCATextAlignment,
-	sizeof (pexTextAlignmentData), &a);
+    BEGIN_SIMPLE_OC (ATextAlignment, resource_id, req_type, req);
+    req->alignment_vertical = valignment;
+    req->alignment_horizontal = halignment;
+    END_SIMPLE_OC (ATextAlignment, resource_id, req_type, req);
 }
 
 
@@ -355,10 +488,11 @@ INPUT PEXOCRequestType	req_type;
 INPUT int		style;
 
 {
-    pexEnumTypeIndex	s = style;
+    register pexATextStyle	*req;
 
-    PEXAddSimpleOC (display, resource_id, req_type, PEXOCATextStyle,
-	sizeof (pexEnumTypeIndex), &s);
+    BEGIN_SIMPLE_OC (ATextStyle, resource_id, req_type, req);
+    req->style = style;
+    END_SIMPLE_OC (ATextStyle, resource_id, req_type, req);
 }
 
 
@@ -371,10 +505,11 @@ INPUT PEXOCRequestType	req_type;
 INPUT unsigned int	index;
 
 {
-    pexTableIndex	i = index;
+    register pexTextBundleIndex	*req;
 
-    PEXAddSimpleOC (display, resource_id, req_type, PEXOCTextBundleIndex,
-	sizeof (pexTableIndex), &i);
+    BEGIN_SIMPLE_OC (TextBundleIndex, resource_id, req_type, req);
+    req->index = index;
+    END_SIMPLE_OC (TextBundleIndex, resource_id, req_type, req);
 }
 
 
@@ -387,10 +522,11 @@ INPUT PEXOCRequestType	req_type;
 INPUT int		type;
 
 {
-    pexEnumTypeIndex	t = type;
+    register pexLineType	*req;
 
-    PEXAddSimpleOC (display, resource_id, req_type, PEXOCLineType,
-	sizeof (pexEnumTypeIndex), &t);
+    BEGIN_SIMPLE_OC (LineType, resource_id, req_type, req);
+    req->lineType = type;
+    END_SIMPLE_OC (LineType, resource_id, req_type, req);
 }
 
 
@@ -403,10 +539,21 @@ INPUT PEXOCRequestType	req_type;
 INPUT double		width;
 
 {
-    float		w = width;
+    register pexLineWidth	*req;
+    int				fpConvert;
+    int				fpFormat;
 
-    PEXAddSimpleOC (display, resource_id, req_type, PEXOCLineWidth,
-	sizeof (float), &w);
+    BEGIN_SIMPLE_OC (LineWidth, resource_id, req_type, req);
+    CHECK_FP (fpConvert, fpFormat);
+
+    if (fpConvert)
+    {
+	FP_CONVERT_DHTON (width, req->width, fpFormat);
+    }
+    else
+	req->width = width;
+
+    END_SIMPLE_OC (LineWidth, resource_id, req_type, req);
 }
 
 
@@ -419,10 +566,11 @@ INPUT PEXOCRequestType	req_type;
 INPUT unsigned int	index;
 
 {
-    pexTableIndex	i = index;
+    register pexLineColorIndex	*req;
 
-    PEXAddSimpleOC (display, resource_id, req_type, PEXOCLineColorIndex,
-	sizeof (pexTableIndex), &i);
+    BEGIN_SIMPLE_OC (LineColorIndex, resource_id, req_type, req);
+    req->index = index;
+    END_SIMPLE_OC (LineColorIndex, resource_id, req_type, req);
 }
 
 
@@ -436,12 +584,32 @@ INPUT int		colorType;
 INPUT PEXColor		*color;
 
 {
-    PEXColorSpecifier	pcs;
+    register pexLineColor	*req;
+    char			*pBuf;
+    int				lenofColor;
+    int				fpConvert;
+    int				fpFormat;
 
-    InitializeColorSpecifier (pcs, color, colorType);
+    lenofColor = GetColorLength (colorType);
 
-    PEXAddSimpleOC (display, resource_id, req_type, PEXOCLineColor,
-	sizeof (PEXColorSpecifier) - AdjustSizeFromType (colorType), &pcs);
+    PEXInitOC (display, resource_id, req_type,
+	LENOF (pexLineColor), lenofColor, pBuf);
+
+    if (pBuf == NULL) return;
+
+    CHECK_FP (fpConvert, fpFormat);
+
+    BEGIN_OC_HEADER (LineColor, lenofColor, pBuf, req);
+
+    req->colorType = colorType;
+
+    END_OC_HEADER (LineColor, pBuf, req);
+
+    pBuf = PEXGetOCAddr (display, NUMBYTES (lenofColor));
+    STORE_COLOR_VAL (colorType, (*color), pBuf, fpConvert, fpFormat);
+
+    PEXFinishOC (display);
+    PEXSyncHandle (display);
 }
 
 
@@ -455,13 +623,23 @@ INPUT int		approxMethod;
 INPUT double		tolerance;
 
 {
-    pexCurveApprox	c;
+    register pexCurveApprox	*req;
+    int				fpConvert;
+    int				fpFormat;
 
-    c.approxMethod = approxMethod;
-    c.tolerance = tolerance;
+    BEGIN_SIMPLE_OC (CurveApprox, resource_id, req_type, req);
+    CHECK_FP (fpConvert, fpFormat);
 
-    PEXAddSimpleOC (display, resource_id, req_type, PEXOCCurveApprox,
-	sizeof (pexCurveApprox), &c);
+    req->approxMethod = approxMethod;
+
+    if (fpConvert)
+    {
+	FP_CONVERT_DHTON (tolerance, req->tolerance, fpFormat);
+    }
+    else
+	req->tolerance = tolerance;
+
+    END_SIMPLE_OC (CurveApprox, resource_id, req_type, req);
 }
 
 
@@ -474,10 +652,11 @@ INPUT PEXOCRequestType	req_type;
 INPUT int		method;
 
 {
-    CARD16		m = method;
+    register pexPolylineInterpMethod	*req;
 
-    PEXAddSimpleOC (display, resource_id, req_type, PEXOCPolylineInterpMethod,
-	sizeof (CARD16), &m);
+    BEGIN_SIMPLE_OC (PolylineInterpMethod, resource_id, req_type, req);
+    req->polylineInterp = method;
+    END_SIMPLE_OC (PolylineInterpMethod, resource_id, req_type, req);
 }
 
 
@@ -490,10 +669,11 @@ INPUT PEXOCRequestType	req_type;
 INPUT unsigned int	index;
 
 {
-    pexTableIndex	i = index;
+    register pexLineBundleIndex	*req;
 
-    PEXAddSimpleOC (display, resource_id, req_type, PEXOCLineBundleIndex,
-	sizeof (pexTableIndex), &i);
+    BEGIN_SIMPLE_OC (LineBundleIndex, resource_id, req_type, req);
+    req->index = index;
+    END_SIMPLE_OC (LineBundleIndex, resource_id, req_type, req);
 }
 
 
@@ -506,10 +686,11 @@ INPUT PEXOCRequestType	req_type;
 INPUT int		style;
 
 {
-    pexEnumTypeIndex	s = style;
+    register pexInteriorStyle	*req;
 
-    PEXAddSimpleOC (display, resource_id, req_type, PEXOCInteriorStyle,
-	sizeof (pexEnumTypeIndex), &s);
+    BEGIN_SIMPLE_OC (InteriorStyle, resource_id, req_type, req);
+    req->interiorStyle = style;
+    END_SIMPLE_OC (InteriorStyle, resource_id, req_type, req);
 }
 
 
@@ -522,10 +703,11 @@ INPUT PEXOCRequestType	req_type;
 INPUT int		index;
 
 {
-    pexTableIndex	i = index;
+    register pexInteriorStyleIndex	*req;
 
-    PEXAddSimpleOC (display, resource_id, req_type, PEXOCInteriorStyleIndex,
-	sizeof (pexTableIndex), &i);
+    BEGIN_SIMPLE_OC (InteriorStyleIndex, resource_id, req_type, req);
+    req->index = index;
+    END_SIMPLE_OC (InteriorStyleIndex, resource_id, req_type, req);
 }
 
 
@@ -538,10 +720,11 @@ INPUT PEXOCRequestType	req_type;
 INPUT unsigned int	index;
 
 {
-    pexTableIndex	i = index;
+    register pexSurfaceColorIndex	*req;
 
-    PEXAddSimpleOC (display, resource_id, req_type, PEXOCSurfaceColorIndex,
-	sizeof (pexTableIndex), &i);
+    BEGIN_SIMPLE_OC (SurfaceColorIndex, resource_id, req_type, req);
+    req->index = index;
+    END_SIMPLE_OC (SurfaceColorIndex, resource_id, req_type, req);
 }
 
 
@@ -555,12 +738,32 @@ INPUT int		colorType;
 INPUT PEXColor		*color;
 
 {
-    PEXColorSpecifier	pcs;
+    register pexSurfaceColor	*req;
+    char			*pBuf;
+    int				lenofColor;
+    int				fpConvert;
+    int				fpFormat;
 
-    InitializeColorSpecifier (pcs, color, colorType);
+    lenofColor = GetColorLength (colorType);
 
-    PEXAddSimpleOC (display, resource_id, req_type, PEXOCSurfaceColor,
-	sizeof (PEXColorSpecifier) - AdjustSizeFromType (colorType), &pcs);
+    PEXInitOC (display, resource_id, req_type,
+	LENOF (pexSurfaceColor), lenofColor, pBuf);
+
+    if (pBuf == NULL) return;
+
+    CHECK_FP (fpConvert, fpFormat);
+
+    BEGIN_OC_HEADER (SurfaceColor, lenofColor, pBuf, req);
+
+    req->colorType = colorType;
+
+    END_OC_HEADER (SurfaceColor, pBuf, req);
+
+    pBuf = PEXGetOCAddr (display, NUMBYTES (lenofColor));
+    STORE_COLOR_VAL (colorType, (*color), pBuf, fpConvert, fpFormat);
+
+    PEXFinishOC (display);
+    PEXSyncHandle (display);
 }
 
 
@@ -573,10 +776,52 @@ INPUT PEXOCRequestType		req_type;
 INPUT PEXReflectionAttributes	*reflectionAttr;
 
 {
-    PEXAddSimpleOC (display, resource_id, req_type, PEXOCReflectionAttributes,
-	sizeof (PEXReflectionAttributes) -
-	AdjustSizeFromType (reflectionAttr->specular_color.type),
-    	reflectionAttr);
+    register pexReflectionAttributes	*req;
+    char				*pBuf;
+    int					lenofColor;
+    int					fpConvert;
+    int					fpFormat;
+
+    lenofColor = GetColorLength (reflectionAttr->specular_color.type);
+
+    PEXInitOC (display, resource_id, req_type,
+	LENOF (pexReflectionAttributes), lenofColor, pBuf);
+
+    if (pBuf == NULL) return;
+
+    CHECK_FP (fpConvert, fpFormat);
+
+    BEGIN_OC_HEADER (ReflectionAttributes, lenofColor, pBuf, req);
+
+    if (fpConvert)
+    {
+	FP_CONVERT_HTON (reflectionAttr->ambient, req->ambient, fpFormat);
+	FP_CONVERT_HTON (reflectionAttr->diffuse, req->diffuse, fpFormat);
+	FP_CONVERT_HTON (reflectionAttr->specular, req->specular, fpFormat);
+	FP_CONVERT_HTON (reflectionAttr->specular_conc,
+	    req->specularConc, fpFormat);
+	FP_CONVERT_HTON (reflectionAttr->transmission,
+	    req->transmission, fpFormat);
+    }
+    else
+    {
+	req->ambient = reflectionAttr->ambient;
+	req->diffuse = reflectionAttr->diffuse;
+	req->specular = reflectionAttr->specular;
+	req->specularConc = reflectionAttr->specular_conc;
+	req->transmission = reflectionAttr->transmission;
+    }
+
+    req->specular_colorType = reflectionAttr->specular_color.type;
+
+    END_OC_HEADER (ReflectionAttributes, pBuf, req);
+
+    pBuf = PEXGetOCAddr (display, NUMBYTES (lenofColor));
+    STORE_COLOR_VAL (reflectionAttr->specular_color.type,
+	reflectionAttr->specular_color.value, pBuf, fpConvert, fpFormat);
+
+    PEXFinishOC (display);
+    PEXSyncHandle (display);
 }
 
 
@@ -589,10 +834,11 @@ INPUT PEXOCRequestType	req_type;
 INPUT int		model;
 
 {
-    pexEnumTypeIndex	m = model;
+    register pexReflectionModel	*req;
 
-    PEXAddSimpleOC (display, resource_id, req_type, PEXOCReflectionModel,
-	sizeof (pexEnumTypeIndex), &m);
+    BEGIN_SIMPLE_OC (ReflectionModel, resource_id, req_type, req);
+    req->reflectionModel = model;
+    END_SIMPLE_OC (ReflectionModel, resource_id, req_type, req);
 }
 
 
@@ -605,10 +851,11 @@ INPUT PEXOCRequestType	req_type;
 INPUT int		method;
 
 {
-    pexEnumTypeIndex	m = method;
+    register pexSurfaceInterpMethod	*req;
 
-    PEXAddSimpleOC (display, resource_id, req_type, PEXOCSurfaceInterpMethod,
-	sizeof (pexEnumTypeIndex), &m);
+    BEGIN_SIMPLE_OC (SurfaceInterpMethod, resource_id, req_type, req);
+    req->surfaceInterp = method;
+    END_SIMPLE_OC (SurfaceInterpMethod, resource_id, req_type, req);
 }
 
 
@@ -621,10 +868,11 @@ INPUT PEXOCRequestType	req_type;
 INPUT int		style;
 
 {
-    pexEnumTypeIndex	s = style;
+    register pexBFInteriorStyle	*req;
 
-    PEXAddSimpleOC (display, resource_id, req_type, PEXOCBFInteriorStyle,
-	sizeof (pexEnumTypeIndex), &s);
+    BEGIN_SIMPLE_OC (BFInteriorStyle, resource_id, req_type, req);
+    req->interiorStyle = style;
+    END_SIMPLE_OC (BFInteriorStyle, resource_id, req_type, req);
 }
 
 
@@ -637,10 +885,11 @@ INPUT PEXOCRequestType	req_type;
 INPUT int		index;
 
 {
-    pexTableIndex	i = index;
+    register pexBFInteriorStyleIndex	*req;
 
-    PEXAddSimpleOC (display, resource_id, req_type, PEXOCBFInteriorStyleIndex,
-	sizeof (pexTableIndex), &i);
+    BEGIN_SIMPLE_OC (BFInteriorStyleIndex, resource_id, req_type, req);
+    req->index = index;
+    END_SIMPLE_OC (BFInteriorStyleIndex, resource_id, req_type, req);
 }
 
 
@@ -653,10 +902,11 @@ INPUT PEXOCRequestType	req_type;
 INPUT unsigned int	index;
 
 {
-    pexTableIndex	i = index;
+    register pexBFSurfaceColorIndex	*req;
 
-    PEXAddSimpleOC (display, resource_id, req_type, PEXOCBFSurfaceColorIndex,
-	sizeof (pexTableIndex), &i);
+    BEGIN_SIMPLE_OC (BFSurfaceColorIndex, resource_id, req_type, req);
+    req->index = index;
+    END_SIMPLE_OC (BFSurfaceColorIndex, resource_id, req_type, req);
 }
 
 
@@ -670,12 +920,32 @@ INPUT int		colorType;
 INPUT PEXColor		*color;
 
 {
-    PEXColorSpecifier	pcs;
+    register pexBFSurfaceColor	*req;
+    char			*pBuf;
+    int				lenofColor;
+    int				fpConvert;
+    int				fpFormat;
 
-    InitializeColorSpecifier (pcs, color, colorType);
+    lenofColor = GetColorLength (colorType);
 
-    PEXAddSimpleOC (display, resource_id, req_type, PEXOCBFSurfaceColor,
-        sizeof (PEXColorSpecifier) - AdjustSizeFromType (colorType), &pcs);
+    PEXInitOC (display, resource_id, req_type,
+	LENOF (pexBFSurfaceColor), lenofColor, pBuf);
+
+    if (pBuf == NULL) return;
+
+    CHECK_FP (fpConvert, fpFormat);
+
+    BEGIN_OC_HEADER (BFSurfaceColor, lenofColor, pBuf, req);
+
+    req->colorType = colorType;
+
+    END_OC_HEADER (BFSurfaceColor, pBuf, req);
+
+    pBuf = PEXGetOCAddr (display, NUMBYTES (lenofColor));
+    STORE_COLOR_VAL (colorType, (*color), pBuf, fpConvert, fpFormat);
+
+    PEXFinishOC (display);
+    PEXSyncHandle (display);
 }
 
 
@@ -688,10 +958,52 @@ INPUT PEXOCRequestType		req_type;
 INPUT PEXReflectionAttributes	*reflectionAttr;
 
 {
-    PEXAddSimpleOC (display, resource_id, req_type,
-	PEXOCBFReflectionAttributes, sizeof (PEXReflectionAttributes) -
- 	AdjustSizeFromType (reflectionAttr->specular_color.type),
-     	reflectionAttr);
+    register pexBFReflectionAttributes	*req;
+    char				*pBuf;
+    int					lenofColor;
+    int					fpConvert;
+    int					fpFormat;
+
+    lenofColor = GetColorLength (reflectionAttr->specular_color.type);
+
+    PEXInitOC (display, resource_id, req_type,
+	LENOF (pexBFReflectionAttributes), lenofColor, pBuf);
+
+    if (pBuf == NULL) return;
+
+    CHECK_FP (fpConvert, fpFormat);
+
+    BEGIN_OC_HEADER (BFReflectionAttributes, lenofColor, pBuf, req);
+
+    if (fpConvert)
+    {
+	FP_CONVERT_HTON (reflectionAttr->ambient, req->ambient, fpFormat);
+	FP_CONVERT_HTON (reflectionAttr->diffuse, req->diffuse, fpFormat);
+	FP_CONVERT_HTON (reflectionAttr->specular, req->specular, fpFormat);
+	FP_CONVERT_HTON (reflectionAttr->specular_conc,
+	    req->specularConc, fpFormat);
+	FP_CONVERT_HTON (reflectionAttr->transmission,
+	    req->transmission, fpFormat);
+    }
+    else
+    {
+	req->ambient = reflectionAttr->ambient;
+	req->diffuse = reflectionAttr->diffuse;
+	req->specular = reflectionAttr->specular;
+	req->specularConc = reflectionAttr->specular_conc;
+	req->transmission = reflectionAttr->transmission;
+    }
+
+    req->specular_colorType = reflectionAttr->specular_color.type;
+
+    END_OC_HEADER (BFReflectionAttributes, pBuf, req);
+
+    pBuf = PEXGetOCAddr (display, NUMBYTES (lenofColor));
+    STORE_COLOR_VAL (reflectionAttr->specular_color.type,
+	reflectionAttr->specular_color.value, pBuf, fpConvert, fpFormat);
+
+    PEXFinishOC (display);
+    PEXSyncHandle (display);
 }
 
 
@@ -704,10 +1016,11 @@ INPUT PEXOCRequestType	req_type;
 INPUT int		model;
 
 {
-    pexEnumTypeIndex	m = model;
+    register pexBFReflectionModel	*req;
 
-    PEXAddSimpleOC (display, resource_id, req_type, PEXOCBFReflectionModel,
-	sizeof (pexEnumTypeIndex), &m);
+    BEGIN_SIMPLE_OC (BFReflectionModel, resource_id, req_type, req);
+    req->reflectionModel = model;
+    END_SIMPLE_OC (BFReflectionModel, resource_id, req_type, req);
 }
 
 
@@ -720,10 +1033,11 @@ INPUT PEXOCRequestType	req_type;
 INPUT int		method;
 
 {
-    pexEnumTypeIndex	m = method;
+    register pexBFSurfaceInterpMethod	*req;
 
-    PEXAddSimpleOC (display, resource_id, req_type, PEXOCBFSurfaceInterpMethod,
-	sizeof (pexEnumTypeIndex), &m);
+    BEGIN_SIMPLE_OC (BFSurfaceInterpMethod, resource_id, req_type, req);
+    req->surfaceInterp = method;
+    END_SIMPLE_OC (BFSurfaceInterpMethod, resource_id, req_type, req);
 }
 
 
@@ -739,14 +1053,27 @@ INPUT double		uTolerance;
 INPUT double		vTolerance;
 
 {
-    pexSurfaceApprox	a;
+    register pexSurfaceApprox	*req;
+    int				fpConvert;
+    int				fpFormat;
 
-    a.approxMethod = approxMethod;
-    a.uTolerance = uTolerance;
-    a.vTolerance = vTolerance;
+    BEGIN_SIMPLE_OC (SurfaceApprox, resource_id, req_type, req);
+    CHECK_FP (fpConvert, fpFormat);
 
-    PEXAddSimpleOC (display, resource_id, req_type, PEXOCSurfaceApprox,
-	sizeof (pexSurfaceApprox), &a);
+    req->approxMethod = approxMethod;
+
+    if (fpConvert)
+    {
+	FP_CONVERT_DHTON (uTolerance, req->uTolerance, fpFormat);
+	FP_CONVERT_DHTON (vTolerance, req->vTolerance, fpFormat);
+    }
+    else
+    {
+	req->uTolerance = uTolerance;
+	req->vTolerance = vTolerance;
+    }
+
+    END_SIMPLE_OC (SurfaceApprox, resource_id, req_type, req);
 }
 
 
@@ -759,10 +1086,11 @@ INPUT PEXOCRequestType	req_type;
 INPUT int		mode;
 
 {
-    pexCullMode		m = mode;
+    register pexFacetCullingMode	*req;
 
-    PEXAddSimpleOC (display, resource_id, req_type, PEXOCFacetCullingMode,
-	sizeof (pexCullMode), &m);
+    BEGIN_SIMPLE_OC (FacetCullingMode, resource_id, req_type, req);
+    req->cullMode = mode;
+    END_SIMPLE_OC (FacetCullingMode, resource_id, req_type, req);
 }
 
 
@@ -775,10 +1103,11 @@ INPUT PEXOCRequestType	req_type;
 INPUT int		flag;
 
 {
-    pexSwitch		f = flag;
+    register pexFacetDistinguishFlag	*req;
 
-    PEXAddSimpleOC (display, resource_id, req_type, PEXOCFacetDistinguishFlag,
-	sizeof (pexSwitch), &f);
+    BEGIN_SIMPLE_OC (FacetDistinguishFlag, resource_id, req_type, req);
+    req->distinguish = flag;
+    END_SIMPLE_OC (FacetDistinguishFlag, resource_id, req_type, req);
 }
 
 
@@ -792,13 +1121,25 @@ INPUT double		width;
 INPUT double		height;
 
 {
-    pexVector2D		vec;
+    register pexPatternSize	*req;
+    int				fpConvert;
+    int				fpFormat;
 
-    vec.x = width;
-    vec.y = height;
+    BEGIN_SIMPLE_OC (PatternSize, resource_id, req_type, req);
+    CHECK_FP (fpConvert, fpFormat);
 
-    PEXAddSimpleOC (display, resource_id, req_type, PEXOCPatternSize,
-	sizeof (pexVector2D), &vec);
+    if (fpConvert)
+    {
+	FP_CONVERT_DHTON (width, req->size_x, fpFormat);
+	FP_CONVERT_DHTON (height, req->size_y, fpFormat);
+    }
+    else
+    {
+	req->size_x = width;
+	req->size_y = height;
+    }
+
+    END_SIMPLE_OC (PatternSize, resource_id, req_type, req);
 }
 
 
@@ -811,8 +1152,25 @@ INPUT PEXOCRequestType	req_type;
 INPUT PEXCoord2D	*ref_point;
 
 {
-    PEXAddSimpleOC (display, resource_id, req_type, PEXOCPatternAttributes2D,
-	sizeof (PEXCoord2D), ref_point);
+    register pexPatternAttributes2D	*req;
+    int					fpConvert;
+    int					fpFormat;
+
+    BEGIN_SIMPLE_OC (PatternAttributes2D, resource_id, req_type, req);
+    CHECK_FP (fpConvert, fpFormat);
+
+    if (fpConvert)
+    {
+	FP_CONVERT_HTON (ref_point->x, req->point_x, fpFormat);
+	FP_CONVERT_HTON (ref_point->y, req->point_y, fpFormat);
+    }
+    else
+    {
+	req->point_x = ref_point->x;
+	req->point_y = ref_point->y;
+    }
+
+    END_SIMPLE_OC (PatternAttributes2D, resource_id, req_type, req);
 }
 
 
@@ -827,20 +1185,39 @@ INPUT PEXVector 	*vec1;
 INPUT PEXVector 	*vec2;
 
 {
-    pexCoord3D		attr[3];
+    register pexPatternAttributes	*req;
+    int					fpConvert;
+    int					fpFormat;
 
-    attr[0].x = refPt->x;
-    attr[0].y = refPt->y;
-    attr[0].z = refPt->z;
-    attr[1].x = vec1->x;
-    attr[1].y = vec1->y;
-    attr[1].z = vec1->z;
-    attr[2].x = vec2->x;
-    attr[2].y = vec2->y;
-    attr[2].z = vec2->z;
+    BEGIN_SIMPLE_OC (PatternAttributes, resource_id, req_type, req);
+    CHECK_FP (fpConvert, fpFormat);
 
-    PEXAddSimpleOC (display, resource_id, req_type, PEXOCPatternAttributes,
-	sizeof (attr), attr);
+    if (fpConvert)
+    {
+	FP_CONVERT_HTON (refPt->x, req->refPt_x, fpFormat);
+	FP_CONVERT_HTON (refPt->y, req->refPt_y, fpFormat);
+	FP_CONVERT_HTON (refPt->z, req->refPt_z, fpFormat);
+	FP_CONVERT_HTON (vec1->x, req->vector1_x, fpFormat);
+	FP_CONVERT_HTON (vec1->y, req->vector1_y, fpFormat);
+	FP_CONVERT_HTON (vec1->z, req->vector1_z, fpFormat);
+	FP_CONVERT_HTON (vec2->x, req->vector2_x, fpFormat);
+	FP_CONVERT_HTON (vec2->y, req->vector2_y, fpFormat);
+	FP_CONVERT_HTON (vec2->z, req->vector2_z, fpFormat);
+    }
+    else
+    {
+	req->refPt_x = refPt->x;
+	req->refPt_y = refPt->y;
+	req->refPt_z = refPt->z;
+	req->vector1_x = vec1->x;
+	req->vector1_y = vec1->y;
+	req->vector1_z = vec1->z;
+	req->vector2_x = vec2->x;
+	req->vector2_y = vec2->y;
+	req->vector2_z = vec2->z;
+    }
+
+    END_SIMPLE_OC (PatternAttributes, resource_id, req_type, req);
 }
 
 
@@ -853,10 +1230,11 @@ INPUT PEXOCRequestType	req_type;
 INPUT unsigned int	index;
 
 {
-    pexTableIndex	i = index;
+    register pexInteriorBundleIndex	*req;
 
-    PEXAddSimpleOC (display, resource_id, req_type, PEXOCInteriorBundleIndex,
-	sizeof (pexTableIndex), &i);
+    BEGIN_SIMPLE_OC (InteriorBundleIndex, resource_id, req_type, req);
+    req->index = index;
+    END_SIMPLE_OC (InteriorBundleIndex, resource_id, req_type, req);
 }
 
 
@@ -869,10 +1247,11 @@ INPUT PEXOCRequestType	req_type;
 INPUT int		flag;
 
 {
-    pexSwitch		f = flag;
+    register pexSurfaceEdgeFlag	*req;
 
-    PEXAddSimpleOC (display, resource_id, req_type, PEXOCSurfaceEdgeFlag,
-	sizeof (pexSwitch), &f);
+    BEGIN_SIMPLE_OC (SurfaceEdgeFlag, resource_id, req_type, req);
+    req->onoff = flag;
+    END_SIMPLE_OC (SurfaceEdgeFlag, resource_id, req_type, req);
 }
 
 
@@ -885,10 +1264,11 @@ INPUT PEXOCRequestType	req_type;
 INPUT int		type;
 
 {
-    pexEnumTypeIndex	t = type;
+    register pexSurfaceEdgeType	*req;
 
-    PEXAddSimpleOC (display, resource_id, req_type, PEXOCSurfaceEdgeType,
-	sizeof (pexEnumTypeIndex), &t);
+    BEGIN_SIMPLE_OC (SurfaceEdgeType, resource_id, req_type, req);
+    req->edgeType = type;
+    END_SIMPLE_OC (SurfaceEdgeType, resource_id, req_type, req);
 }
 
 
@@ -901,10 +1281,21 @@ INPUT PEXOCRequestType	req_type;
 INPUT double		width;
 
 {
-    float		w = width;
+    register pexSurfaceEdgeWidth	*req;
+    int					fpConvert;
+    int					fpFormat;
 
-    PEXAddSimpleOC (display, resource_id, req_type, PEXOCSurfaceEdgeWidth,
-	sizeof (float), &w);
+    BEGIN_SIMPLE_OC (SurfaceEdgeWidth, resource_id, req_type, req);
+    CHECK_FP (fpConvert, fpFormat);
+
+    if (fpConvert)
+    {
+	FP_CONVERT_DHTON (width, req->width, fpFormat);
+    }
+    else
+	req->width = width;
+
+    END_SIMPLE_OC (SurfaceEdgeWidth, resource_id, req_type, req);
 }
 
 
@@ -917,10 +1308,11 @@ INPUT PEXOCRequestType	req_type;
 INPUT unsigned int	index;
 
 {
-    pexTableIndex	i = index;
+    register pexSurfaceEdgeColorIndex	*req;
 
-    PEXAddSimpleOC (display, resource_id, req_type, PEXOCSurfaceEdgeColorIndex,
-	sizeof (pexTableIndex), &i);
+    BEGIN_SIMPLE_OC (SurfaceEdgeColorIndex, resource_id, req_type, req);
+    req->index = index;
+    END_SIMPLE_OC (SurfaceEdgeColorIndex, resource_id, req_type, req);
 }
 
 
@@ -934,12 +1326,32 @@ INPUT int		colorType;
 INPUT PEXColor		*color;
 
 {
-    PEXColorSpecifier	pcs;
+    register pexSurfaceEdgeColor	*req;
+    char				*pBuf;
+    int					lenofColor;
+    int					fpConvert;
+    int					fpFormat;
 
-    InitializeColorSpecifier (pcs, color, colorType);
+    lenofColor = GetColorLength (colorType);
 
-    PEXAddSimpleOC (display, resource_id, req_type, PEXOCSurfaceEdgeColor,
-	sizeof (PEXColorSpecifier) - AdjustSizeFromType (colorType), &pcs);
+    PEXInitOC (display, resource_id, req_type,
+	LENOF (pexSurfaceEdgeColor), lenofColor, pBuf);
+
+    if (pBuf == NULL) return;
+
+    CHECK_FP (fpConvert, fpFormat);
+
+    BEGIN_OC_HEADER (SurfaceEdgeColor, lenofColor, pBuf, req);
+
+    req->colorType = colorType;
+
+    END_OC_HEADER (SurfaceEdgeColor, pBuf, req);
+
+    pBuf = PEXGetOCAddr (display, NUMBYTES (lenofColor));
+    STORE_COLOR_VAL (colorType, (*color), pBuf, fpConvert, fpFormat);
+
+    PEXFinishOC (display);
+    PEXSyncHandle (display);
 }
 
 
@@ -952,10 +1364,11 @@ INPUT PEXOCRequestType	req_type;
 INPUT unsigned int	index;
 
 {
-    pexTableIndex	i = index;
+    register pexEdgeBundleIndex	*req;
 
-    PEXAddSimpleOC (display, resource_id, req_type, PEXOCEdgeBundleIndex,
-	sizeof (pexTableIndex), &i);
+    BEGIN_SIMPLE_OC (EdgeBundleIndex, resource_id, req_type, req);
+    req->index = index;
+    END_SIMPLE_OC (EdgeBundleIndex, resource_id, req_type, req);
 }
 
 
@@ -969,13 +1382,12 @@ INPUT unsigned long	attribute;
 INPUT int		value;
 
 {
-    PEXASFData		asf;
+    register pexIndividualASF	*req;
 
-    asf.attribute = attribute;
-    asf.value = value;
-    
-    PEXAddSimpleOC (display, resource_id, req_type, PEXOCIndividualASF,
-        sizeof (PEXASFData), &asf);
+    BEGIN_SIMPLE_OC (IndividualASF, resource_id, req_type, req);
+    req->attribute = attribute;
+    req->source = value;
+    END_SIMPLE_OC (IndividualASF, resource_id, req_type, req);
 }
 
 
@@ -989,18 +1401,20 @@ INPUT int		compType;
 INPUT PEXMatrix		transform;
 
 {
-    pexLocalTransform	*pReq;
+    register pexLocalTransform	*req;
+    char			*ptr;
+    int				fpConvert;
+    int				fpFormat;
 
-    PEXInitOC (display, resource_id, req_type, PEXOCLocalTransform, 
-	LENOF (pexLocalTransform), 0, pexLocalTransform, pReq);
+    BEGIN_SIMPLE_OC (LocalTransform, resource_id, req_type, req);
+    CHECK_FP (fpConvert, fpFormat);
 
-    if (pReq == NULL) return;
+    req->compType = compType;
 
-    pReq->compType = compType;
-    COPY_AREA (transform, pReq->matrix, sizeof (pexMatrix));
+    ptr = (char *) req->matrix;
+    STORE_LISTOF_FLOAT32 (16, transform, ptr, fpConvert, fpFormat);
 
-    PEXFinishOC (display);
-    PEXSyncHandle (display);
+    END_SIMPLE_OC (LocalTransform, resource_id, req_type, req);
 }
 
 
@@ -1014,18 +1428,20 @@ INPUT int		compType;
 INPUT PEXMatrix3x3	transform;
 
 {
-    pexLocalTransform2D	*pReq;
+    register pexLocalTransform2D	*req;
+    char				*ptr;
+    int					fpConvert;
+    int					fpFormat;
 
-    PEXInitOC (display, resource_id, req_type, PEXOCLocalTransform2D, 
-	LENOF (pexLocalTransform2D), 0, pexLocalTransform2D, pReq);
+    BEGIN_SIMPLE_OC (LocalTransform2D, resource_id, req_type, req);
+    CHECK_FP (fpConvert, fpFormat);
 
-    if (pReq == NULL) return;
+    req->compType = compType;
 
-    pReq->compType = compType;
-    COPY_AREA (transform, pReq->matrix3X3, sizeof (pexMatrix3X3));
+    ptr = (char *) req->matrix3X3;
+    STORE_LISTOF_FLOAT32 (9, transform, ptr, fpConvert, fpFormat);
 
-    PEXFinishOC (display);
-    PEXSyncHandle (display);
+    END_SIMPLE_OC (LocalTransform2D, resource_id, req_type, req);
 }
 
 
@@ -1038,8 +1454,18 @@ INPUT PEXOCRequestType	req_type;
 INPUT PEXMatrix		transform;
 
 {
-    PEXAddSimpleOC (display, resource_id, req_type, PEXOCGlobalTransform,
-	sizeof (PEXMatrix), transform);
+    register pexGlobalTransform	*req;
+    char			*ptr;
+    int				fpConvert;
+    int				fpFormat;
+
+    BEGIN_SIMPLE_OC (GlobalTransform, resource_id, req_type, req);
+    CHECK_FP (fpConvert, fpFormat);
+
+    ptr = (char *) req->matrix;
+    STORE_LISTOF_FLOAT32 (16, transform, ptr, fpConvert, fpFormat);
+
+    END_SIMPLE_OC (GlobalTransform, resource_id, req_type, req);
 }
 
 
@@ -1052,8 +1478,18 @@ INPUT PEXOCRequestType	req_type;
 INPUT PEXMatrix3x3	transform;
 
 {
-    PEXAddSimpleOC (display, resource_id, req_type, PEXOCGlobalTransform2D,
-	sizeof (PEXMatrix3x3), transform);
+    register pexGlobalTransform2D	*req;
+    char				*ptr;
+    int					fpConvert;
+    int					fpFormat;
+
+    BEGIN_SIMPLE_OC (GlobalTransform2D, resource_id, req_type, req);
+    CHECK_FP (fpConvert, fpFormat);
+
+    ptr = (char *) req->matrix3X3;
+    STORE_LISTOF_FLOAT32 (9, transform, ptr, fpConvert, fpFormat);
+
+    END_SIMPLE_OC (GlobalTransform2D, resource_id, req_type, req);
 }
 
 
@@ -1066,10 +1502,11 @@ INPUT PEXOCRequestType	req_type;
 INPUT int		flag;
 
 {
-    pexSwitch		f = flag;
+    register pexModelClipFlag	*req;
 
-    PEXAddSimpleOC (display, resource_id, req_type, PEXOCModelClipFlag,
-	sizeof (pexSwitch), &f);
+    BEGIN_SIMPLE_OC (ModelClipFlag, resource_id, req_type, req);
+    req->onoff = flag;
+    END_SIMPLE_OC (ModelClipFlag, resource_id, req_type, req);
 }
 
 
@@ -1085,35 +1522,43 @@ INPUT unsigned int	numHalfSpaces;
 INPUT PEXHalfSpace	*halfSpaces;
 
 {
-    pexModelClipVolume 	*pReq;
-    int			lenofData;
-
+    register pexModelClipVolume *req;
+    char			*pBuf;
+    int				dataLength;
+    int				fpConvert;
+    int				fpFormat;
 
     /*
      * Initialize the OC request.
      */
 
-    lenofData = NUMWORDS (numHalfSpaces * sizeof (PEXHalfSpace));
+    dataLength = NUMWORDS (numHalfSpaces * SIZEOF (pexHalfSpace));
 
-    PEXInitOC (display, resource_id, req_type, PEXOCModelClipVolume, 
-	LENOF (pexModelClipVolume), lenofData, pexModelClipVolume, pReq);
+    PEXInitOC (display, resource_id, req_type,
+	LENOF (pexModelClipVolume), dataLength, pBuf);
 
-    if (pReq == NULL) return;
+    if (pBuf == NULL) return;
 
 
     /* 
      * Store the request header data. 
      */
 
-    pReq->modelClipOperator = op; 
-    pReq->numHalfSpaces = numHalfSpaces;
+    CHECK_FP (fpConvert, fpFormat);
+
+    BEGIN_OC_HEADER (ModelClipVolume, dataLength, pBuf, req);
+
+    req->modelClipOperator = op; 
+    req->numHalfSpaces = numHalfSpaces;
+
+    END_OC_HEADER (ModelClipVolume, pBuf, req);
 
 
     /*
      * Copy the oc data.
      */
 
-    PEXCopyWordsToOC (display, lenofData, (char *) halfSpaces);
+    OC_LISTOF_HALFSPACE3D (numHalfSpaces, halfSpaces, fpConvert, fpFormat);
 
     PEXFinishOC (display);
     PEXSyncHandle (display);
@@ -1132,35 +1577,43 @@ INPUT unsigned int	numHalfSpaces;
 INPUT PEXHalfSpace2D	*halfSpaces;
 
 {
-    pexModelClipVolume2D 	*pReq;
-    int				lenofData;
-
+    register pexModelClipVolume2D	*req;
+    char				*pBuf;
+    int					dataLength;
+    int					fpConvert;
+    int					fpFormat;
 
     /*
      * Initialize the OC request.
      */
 
-    lenofData = NUMWORDS (numHalfSpaces * sizeof (PEXHalfSpace2D));
+    dataLength = NUMWORDS (numHalfSpaces * SIZEOF (pexHalfSpace2D));
 
-    PEXInitOC (display, resource_id, req_type, PEXOCModelClipVolume2D, 
-	LENOF (pexModelClipVolume2D), lenofData, pexModelClipVolume2D, pReq);
+    PEXInitOC (display, resource_id, req_type,
+	LENOF (pexModelClipVolume2D), dataLength, pBuf);
 
-    if (pReq == NULL) return;
+    if (pBuf == NULL) return;
 
 
     /* 
      * Store the request header data. 
      */
 
-    pReq->modelClipOperator = op; 
-    pReq->numHalfSpaces = numHalfSpaces;
+    CHECK_FP (fpConvert, fpFormat);
+
+    BEGIN_OC_HEADER (ModelClipVolume2D, dataLength, pBuf, req);
+
+    req->modelClipOperator = op; 
+    req->numHalfSpaces = numHalfSpaces;
+
+    END_OC_HEADER (ModelClipVolume2D, pBuf, req);
 
 
     /*
      * Copy the oc data.
      */
 
-    PEXCopyWordsToOC (display, lenofData, (char *) halfSpaces);
+    OC_LISTOF_HALFSPACE2D (numHalfSpaces, halfSpaces, fpConvert, fpFormat);
 
     PEXFinishOC (display);
     PEXSyncHandle (display);
@@ -1175,8 +1628,11 @@ INPUT XID		resource_id;
 INPUT PEXOCRequestType	req_type;
 
 {
-    PEXAddSimpleOC (display, resource_id, req_type,
-	PEXOCRestoreModelClipVolume, 0, (char *) NULL);
+    register pexRestoreModelClipVolume	*req;
+
+    BEGIN_SIMPLE_OC (RestoreModelClipVolume, resource_id, req_type, req);
+    /* no data */
+    END_SIMPLE_OC (RestoreModelClipVolume, resource_id, req_type, req);
 }
 
 
@@ -1189,10 +1645,11 @@ INPUT PEXOCRequestType	req_type;
 INPUT unsigned int	index;
 
 {
-    pexTableIndex	i = index;
+    register pexViewIndex	*req;
 
-    PEXAddSimpleOC (display, resource_id, req_type, PEXOCViewIndex,
-	sizeof (pexTableIndex), &i);
+    BEGIN_SIMPLE_OC (ViewIndex, resource_id, req_type, req);
+    req->index = index;
+    END_SIMPLE_OC (ViewIndex, resource_id, req_type, req);
 }
 
 
@@ -1209,37 +1666,42 @@ INPUT unsigned int	numDisable;
 INPUT PEXTableIndex	*disable;
 
 {
-    pexLightState	*pReq;
-    int			sizofEnableList = numEnable * sizeof (CARD16);
-    int			sizofDisableList = numDisable * sizeof (CARD16);
-
+    register pexLightSourceState	*req;
+    char				*pBuf;
+    int					dataLength;
 
     /*
      * Initialize the OC request.
      */
 
-    PEXInitOC (display, resource_id, req_type, PEXOCLightSourceState,
-	LENOF (pexLightState),
-	NUMWORDS (sizofEnableList) + NUMWORDS (sizofDisableList),
-	pexLightState, pReq);
+    dataLength = NUMWORDS (numEnable * SIZEOF (CARD16)) +
+	NUMWORDS (numDisable * SIZEOF (CARD16));
 
-    if (pReq == NULL) return;
+    PEXInitOC (display, resource_id, req_type,
+	LENOF (pexLightSourceState), dataLength, pBuf);
+
+    if (pBuf == NULL) return;
 
 
     /* 
      * Store the request header data. 
      */
 
-    pReq->numEnable = numEnable;
-    pReq->numDisable = numDisable;
+    BEGIN_OC_HEADER (LightSourceState, dataLength, pBuf, req);
+
+    req->numEnable = numEnable;
+    req->numDisable = numDisable;
+
+    END_OC_HEADER (LightSourceState, pBuf, req);
 
 
     /*
      * Copy the oc data.
      */
 
-    _PEXCopyPaddedBytesToOC (display, sizofEnableList, (char *) enable); 
-    _PEXCopyPaddedBytesToOC (display, sizofDisableList, (char *) disable); 
+    OC_LISTOF_CARD16_PAD (numEnable, enable);
+    OC_LISTOF_CARD16_PAD (numDisable, disable);
+
 
     PEXFinishOC (display);
     PEXSyncHandle (display);
@@ -1255,10 +1717,11 @@ INPUT PEXOCRequestType	req_type;
 INPUT unsigned int	index;
 
 {
-    pexTableIndex	i = index;
+    register pexDepthCueIndex	*req;
 
-    PEXAddSimpleOC (display, resource_id, req_type, PEXOCDepthCueIndex,
-	sizeof (pexTableIndex), &i);
+    BEGIN_SIMPLE_OC (DepthCueIndex, resource_id, req_type, req);
+    req->index = index;
+    END_SIMPLE_OC (DepthCueIndex, resource_id, req_type, req);
 }
 
 
@@ -1271,8 +1734,11 @@ INPUT PEXOCRequestType	req_type;
 INPUT unsigned long	id;
 
 {
-    PEXAddSimpleOC (display, resource_id, req_type, PEXOCPickID,
-	sizeof (CARD32), &id);
+    register pexPickID	*req;
+
+    BEGIN_SIMPLE_OC (PickID, resource_id, req_type, req);
+    req->pickId = id;
+    END_SIMPLE_OC (PickID, resource_id, req_type, req);
 }
 
 
@@ -1285,8 +1751,11 @@ INPUT PEXOCRequestType	req_type;
 INPUT unsigned long	id;
 
 {
-    PEXAddSimpleOC (display, resource_id, req_type, PEXOCHLHSRID,
-	sizeof (CARD32), &id);
+    register pexHLHSRID	*req;
+
+    BEGIN_SIMPLE_OC (HLHSRID, resource_id, req_type, req);
+    req->hlhsrID = id;
+    END_SIMPLE_OC (HLHSRID, resource_id, req_type, req);
 }
 
 
@@ -1299,10 +1768,11 @@ INPUT PEXOCRequestType	req_type;
 INPUT unsigned int	index;
 
 {
-    pexTableIndex	i = index;
+    register pexColorApproxIndex	*req;
 
-    PEXAddSimpleOC (display, resource_id, req_type, PEXOCColorApproxIndex,
-	sizeof (pexTableIndex), &i);
+    BEGIN_SIMPLE_OC (ColorApproxIndex, resource_id, req_type, req);
+    req->index = index;
+    END_SIMPLE_OC (ColorApproxIndex, resource_id, req_type, req);
 }
 
 
@@ -1317,59 +1787,64 @@ INPUT int		pscType;
 INPUT PEXPSCData	*pscData;
 
 {
-    pexParaSurfCharacteristics 	*pReq;
-    int                 	lenofData;
-
+    register pexParaSurfCharacteristics *req;
+    char				*pBuf;
+    int					dataLength = 0;
+    int					fpConvert;
+    int					fpFormat;
 
     /*
      * Initialize the OC request.
      */
 
-    lenofData = 0; 
     if (pscType == PEXPSCIsoCurves)
     {
-	lenofData = LENOF (PEXPSCIsoparametricCurves);
+	dataLength = LENOF (pexPSC_IsoparametricCurves);
     }
     else if (pscType == PEXPSCMCLevelCurves || pscType == PEXPSCWCLevelCurves)
     {
-	lenofData = NUMWORDS (sizeof (pexPSC_LevelCurves) +
-		(pscData->level_curves.count * sizeof (float)));
+	dataLength = NUMWORDS (SIZEOF (pexPSC_LevelCurves) +
+		(pscData->level_curves.count * SIZEOF (float)));
     }
 
-    PEXInitOC (display, resource_id, req_type, PEXOCParaSurfCharacteristics,
-	LENOF (pexParaSurfCharacteristics), lenofData,
-	pexParaSurfCharacteristics, pReq);
+    PEXInitOC (display, resource_id, req_type,
+	LENOF (pexParaSurfCharacteristics), dataLength, pBuf);
 
-    if (pReq == NULL) return;
+    if (pBuf == NULL) return;
 
 
     /* 
      * Store the request header data. 
      */
 
-    pReq->characteristics = pscType;
-    pReq->length = NUMBYTES (lenofData);
+    CHECK_FP (fpConvert, fpFormat);
+
+    BEGIN_OC_HEADER (ParaSurfCharacteristics, dataLength, pBuf, req);
+
+    req->characteristics = pscType;
+    req->length = NUMBYTES (dataLength);
+
+    END_OC_HEADER (ParaSurfCharacteristics, pBuf, req);
 
 
     /*
      * Copy the oc data.
      */
 
-    if (lenofData > 0)
+    if (pBuf = PEXGetOCAddr (display, req->length))
     {
 	if (pscType == PEXPSCIsoCurves)
 	{
-	    PEXCopyWordsToOC (display, lenofData, (char *) pscData);
+	    STORE_PSC_ISOCURVES (pscData->iso_curves, pBuf);
 	}
 	else if (pscType == PEXPSCMCLevelCurves ||
 	    pscType == PEXPSCWCLevelCurves)
 	{
-	    PEXCopyBytesToOC (display,  sizeof (pexPSC_LevelCurves),
-		(char *) pscData);
+	    STORE_PSC_LEVELCURVES (pscData->level_curves, pBuf,
+		fpConvert, fpFormat);
 
-	    PEXCopyBytesToOC (display,
-		pscData->level_curves.count * sizeof (float),
-		(char *) (pscData->level_curves.parameters));
+	    STORE_LISTOF_FLOAT32 (pscData->level_curves.count,
+		pscData->level_curves.parameters, pBuf, fpConvert, fpFormat);
 	}
     }
 
@@ -1387,10 +1862,11 @@ INPUT PEXOCRequestType	req_type;
 INPUT int		model;
 
 {
-    pexEnumTypeIndex	m = model;
+    register pexRenderingColorModel	*req;
 
-    PEXAddSimpleOC (display, resource_id, req_type, PEXOCRenderingColorModel,
-	sizeof (pexEnumTypeIndex), &m);
+    BEGIN_SIMPLE_OC (RenderingColorModel, resource_id, req_type, req);
+    req->model = model;
+    END_SIMPLE_OC (RenderingColorModel, resource_id, req_type, req);
 }
 
 
@@ -1404,9 +1880,38 @@ INPUT unsigned long	numNames;
 INPUT PEXName		*names;
 
 {
-    PEXAddListOC (display, resource_id, req_type, PEXOCAddToNameSet,
-	False /* count needed */,
-	numNames, sizeof (PEXName), (char *) names);
+    register pexAddToNameSet	*req;
+    char			*pBuf;
+    int				dataLength;
+
+    /*
+     * Initialize the OC request.
+     */
+
+    dataLength = NUMWORDS (numNames * SIZEOF (pexName));
+
+    PEXInitOC (display, resource_id, req_type,
+	LENOF (pexAddToNameSet), dataLength, pBuf);
+
+    if (pBuf == NULL) return;
+
+
+    /* 
+     * Store the request header data. 
+     */
+
+    BEGIN_OC_HEADER (AddToNameSet, dataLength, pBuf, req);
+    END_OC_HEADER (AddToNameSet, pBuf, req);
+
+
+    /*
+     * Copy the oc data.
+     */
+
+    OC_LISTOF_CARD32 (numNames, names);
+
+    PEXFinishOC (display);
+    PEXSyncHandle (display);
 }
 
 
@@ -1420,7 +1925,36 @@ INPUT unsigned long	numNames;
 INPUT PEXName		*names;
 
 {
-    PEXAddListOC (display, resource_id, req_type, PEXOCRemoveFromNameSet,
-	False /* count needed */, 
-	numNames, sizeof (PEXName), (char *) names);
+    register pexRemoveFromNameSet	*req;
+    char				*pBuf;
+    int					dataLength;
+
+    /*
+     * Initialize the OC request.
+     */
+
+    dataLength = NUMWORDS (numNames * SIZEOF (pexName));
+
+    PEXInitOC (display, resource_id, req_type,
+	LENOF (pexRemoveFromNameSet), dataLength, pBuf);
+
+    if (pBuf == NULL) return;
+
+
+    /* 
+     * Store the request header data. 
+     */
+
+    BEGIN_OC_HEADER (RemoveFromNameSet, dataLength, pBuf, req);
+    END_OC_HEADER (RemoveFromNameSet, pBuf, req);
+
+
+    /*
+     * Copy the oc data.
+     */
+
+    OC_LISTOF_CARD32 (numNames, names);
+
+    PEXFinishOC (display);
+    PEXSyncHandle (display);
 }

@@ -1,4 +1,4 @@
-/* $XConsortium: pl_lut.c,v 1.7 92/08/26 13:06:07 mor Exp $ */
+/* $XConsortium: pl_lut.c,v 1.8 92/10/27 10:40:19 mor Exp $ */
 
 /******************************************************************************
 Copyright 1987,1991 by Digital Equipment Corporation, Maynard, Massachusetts
@@ -27,23 +27,20 @@ SOFTWARE.
 
 #include "PEXlib.h"
 #include "PEXlibint.h"
-
-static PEXPointer _PEXRepackLUTEntries();
-
-#define GetLUTEntryBuffer(_numEntries, _entryType, _buf) \
-    (_buf) = (char *) PEXAllocBuf ((_numEntries) * (sizeof (_entryType)));
+#include "pl_lut.h"
 
 
 PEXLookupTable
-PEXCreateLookupTable (display, d, type)
+PEXCreateLookupTable (display, drawable, type)
 
 INPUT Display	*display;
-INPUT Drawable	d;
+INPUT Drawable	drawable;
 INPUT int	type;
 
 {
-    PEXLookupTable		id;
-    pexCreateLookupTableReq	*req;
+    register pexCreateLookupTableReq	*req;
+    char				*pBuf;
+    PEXLookupTable			id;
 
 
     /*
@@ -64,10 +61,16 @@ INPUT int	type;
      * Put the request in the X request buffer.
      */
 
-    PEXGetReq (CreateLookupTable, req);
-    req->drawableExample = d;
+    PEXGetReq (CreateLookupTable, pBuf);
+
+    BEGIN_REQUEST_HEADER (CreateLookupTable, pBuf, req);
+
+    PEXStoreReqHead (CreateLookupTable, req);
+    req->drawableExample = drawable;
     req->lut = id;
     req->tableType = type;
+
+    END_REQUEST_HEADER (CreateLookupTable, pBuf, req);
 
 
     /*
@@ -88,7 +91,8 @@ INPUT Display		*display;
 INPUT PEXLookupTable	lut;
 
 {
-    pexFreeLookupTableReq     *req;
+    register pexFreeLookupTableReq     	*req;
+    char				*pBuf;
 
 
     /*
@@ -102,8 +106,14 @@ INPUT PEXLookupTable	lut;
      * Put the request in the X request buffer.
      */
 
-    PEXGetReq (FreeLookupTable, req);
+    PEXGetReq (FreeLookupTable, pBuf);
+
+    BEGIN_REQUEST_HEADER (FreeLookupTable, pBuf, req);
+
+    PEXStoreReqHead (FreeLookupTable, req);
     req->id = lut;
+
+    END_REQUEST_HEADER (FreeLookupTable, pBuf, req);
 
 
     /*
@@ -123,7 +133,8 @@ INPUT PEXLookupTable	srcLut;
 INPUT PEXLookupTable	destLut;
 
 {
-    pexCopyLookupTableReq     *req;
+    register pexCopyLookupTableReq	*req;
+    char				*pBuf;
 
 
     /*
@@ -137,9 +148,15 @@ INPUT PEXLookupTable	destLut;
      * Put the request in the X request buffer.
      */
 
-    PEXGetReq (CopyLookupTable, req);
+    PEXGetReq (CopyLookupTable, pBuf);
+
+    BEGIN_REQUEST_HEADER (CopyLookupTable, pBuf, req);
+
+    PEXStoreReqHead (CopyLookupTable, req);
     req->src = srcLut;
     req->dst = destLut;
+
+    END_REQUEST_HEADER (CopyLookupTable, pBuf, req);
 
 
     /*
@@ -152,16 +169,17 @@ INPUT PEXLookupTable	destLut;
 
 
 Status
-PEXGetTableInfo (display, d, type, info)
+PEXGetTableInfo (display, drawable, type, info)
 
 INPUT Display		*display;
-INPUT Drawable		d;
+INPUT Drawable		drawable;
 INPUT int		type;
 INPUT PEXTableInfo	*info;
 
 {
-    pexGetTableInfoReq     	*req;
-    pexGetTableInfoReply   	rep;
+    register pexGetTableInfoReq     	*req;
+    char				*pBuf;
+    pexGetTableInfoReply   		rep;
 
 
     /*
@@ -175,9 +193,15 @@ INPUT PEXTableInfo	*info;
      * Put the request in the X request buffer and get a reply.
      */
 
-    PEXGetReq (GetTableInfo, req);
-    req->drawableExample = d;
+    PEXGetReq (GetTableInfo, pBuf);
+
+    BEGIN_REQUEST_HEADER (GetTableInfo, pBuf, req);
+
+    PEXStoreReqHead (GetTableInfo, req);
+    req->drawableExample = drawable;
     req->tableType = type;
+
+    END_REQUEST_HEADER (GetTableInfo, pBuf, req);
 
     if (_XReply (display, &rep, 0, xTrue) == 0)
     {
@@ -204,20 +228,21 @@ INPUT PEXTableInfo	*info;
 
 
 Status
-PEXGetPredefinedEntries (display, d, type, start, count, entriesReturn)
+PEXGetPredefinedEntries (display, drawable, type, start, count, entriesReturn)
 
 INPUT Display		*display;
-INPUT Drawable		d;
+INPUT Drawable		drawable;
 INPUT int		type;
 INPUT unsigned int	start;
 INPUT unsigned int	count;
 OUTPUT PEXPointer	*entriesReturn;
 
 {
-    pexGetPredefinedEntriesReq		*req;
-    pexGetPredefinedEntriesReply	rep;
-    char				*pt;
-    int					convertFP;
+    register pexGetPredefinedEntriesReq		*req;
+    char					*pBuf;
+    pexGetPredefinedEntriesReply		rep;
+    int						fpConvert;
+    int						fpFormat;
 
 
     /*
@@ -231,11 +256,18 @@ OUTPUT PEXPointer	*entriesReturn;
      * Put the request in the X request buffer and get a reply.
      */
 
-    PEXGetFPReq (GetPredefinedEntries, req, convertFP);
-    req->drawableExample = d;
+    PEXGetReq (GetPredefinedEntries, pBuf);
+
+    BEGIN_REQUEST_HEADER (GetPredefinedEntries, pBuf, req);
+    CHECK_FP (fpConvert, fpFormat);
+
+    PEXStoreFPReqHead (GetPredefinedEntries, fpFormat, req);
+    req->drawableExample = drawable;
     req->tableType = type;
     req->start = start;
     req->count = count;
+
+    END_REQUEST_HEADER (GetPredefinedEntries, pBuf, req);
 
     if (_XReply (display, &rep, 0, xFalse) == 0)
     {
@@ -247,16 +279,18 @@ OUTPUT PEXPointer	*entriesReturn;
 
 
     /*
-     * Read the reply into a scratch buffer, then repack the entries
-     * into a buffer allocated for the application.
+     * Read the reply data into a scratch buffer.
      */
 
-    pt = (char *) _XAllocScratch (display, (unsigned long) (rep.length << 2));
+    XREAD_INTO_SCRATCH (display, pBuf, (long) (rep.length << 2));
 
-    _XRead (display, (char *) pt, (long) (rep.length << 2));
 
-    *entriesReturn = _PEXRepackLUTEntries (
-	(char *) pt, (int) rep.numEntries, type);
+    /*
+     * Repack the entries into a buffer allocated for the application.
+     */
+
+    *entriesReturn = _PEXRepackLUTEntries (pBuf, (int) rep.numEntries,
+	type, fpConvert, fpFormat);
 
 
     /*
@@ -279,8 +313,10 @@ OUTPUT unsigned long	*numIndicesReturn;
 OUTPUT PEXTableIndex	**indicesReturn;
 
 {
-    pexGetDefinedIndicesReq	*req;
-    pexGetDefinedIndicesReply	rep;
+    register pexGetDefinedIndicesReq	*req;
+    char				*pBuf;
+    pexGetDefinedIndicesReply		rep;
+    int					count;
 
 
     /*
@@ -294,8 +330,14 @@ OUTPUT PEXTableIndex	**indicesReturn;
      * Put the request in the X request buffer and get a reply.
      */
 
-    PEXGetReq (GetDefinedIndices, req);
+    PEXGetReq (GetDefinedIndices, pBuf);
+
+    BEGIN_REQUEST_HEADER (GetDefinedIndices, pBuf, req);
+
+    PEXStoreReqHead (GetDefinedIndices, req);
     req->id = lut;
+
+    END_REQUEST_HEADER (GetDefinedIndices, pBuf, req);
 
     if (_XReply (display, &rep, 0, xFalse) == 0)
     {
@@ -313,10 +355,11 @@ OUTPUT PEXTableIndex	**indicesReturn;
      * Allocate a buffer for the replies to pass back to the user.
      */
 
+    count = (rep.numIndices & 1) ? (rep.numIndices + 1) : rep.numIndices;
     *indicesReturn = (PEXTableIndex *) PEXAllocBuf (
-	(unsigned) (rep.length << 2));
+	count * sizeof (PEXTableIndex));
 
-    _XRead (display, (char *) *indicesReturn, (long) (rep.length << 2));
+    XREAD_LISTOF_CARD16 (display, count, *indicesReturn);
 
 
     /*
@@ -342,11 +385,12 @@ OUTPUT int		*statusReturn;
 OUTPUT int		*table_type_return;
 
 {
-    pexGetTableEntryReq		*req;
-    pexGetTableEntryReply	rep;
-    char			*pt;
-    int				convertFP;
-    PEXPointer			entryReturn;
+    register pexGetTableEntryReq	*req;
+    char				*pBuf;
+    pexGetTableEntryReply		rep;
+    int					fpConvert;
+    int					fpFormat;
+    PEXPointer				entryReturn;
 
 
     /*
@@ -360,10 +404,17 @@ OUTPUT int		*table_type_return;
      * Put the request in the X request buffer and get a reply.
      */
 
-    PEXGetFPReq (GetTableEntry, req, convertFP);
+    PEXGetReq (GetTableEntry, pBuf);
+
+    BEGIN_REQUEST_HEADER (GetTableEntry, pBuf, req);
+    CHECK_FP (fpConvert, fpFormat);
+
+    PEXStoreFPReqHead (GetTableEntry, fpFormat, req);
     req->valueType = valueType;
     req->lut = lut;
     req->index = index;
+
+    END_REQUEST_HEADER (GetTableEntry, pBuf, req);
 
     if (_XReply (display, &rep, 0, xFalse) == 0)
     {
@@ -377,15 +428,18 @@ OUTPUT int		*table_type_return;
 
 
     /*
-     * Read the reply into a scratch buffer, then repack the entries
-     * into a buffer allocated for the application.
+     * Read the reply data into a scratch buffer.
      */
 
-    pt = (char *) _XAllocScratch (display, (unsigned long) (rep.length << 2));
+    XREAD_INTO_SCRATCH (display, pBuf, (long) (rep.length << 2));
 
-    _XRead (display, (char *) pt, (long) (rep.length << 2));
 
-    entryReturn = _PEXRepackLUTEntries ((char *) pt, 1, (int) rep.tableType);
+    /*
+     * Repack the entries into a buffer allocated for the application.
+     */
+
+    entryReturn = _PEXRepackLUTEntries (pBuf, 1,
+	(int) rep.tableType, fpConvert, fpFormat);
 
 
     /*
@@ -412,10 +466,11 @@ OUTPUT int		*table_type_return;
 OUTPUT PEXPointer	*entriesReturn;
 
 {
-    pexGetTableEntriesReq	*req;
-    pexGetTableEntriesReply	rep;
-    char			*pt;
-    int				convertFP;
+    register pexGetTableEntriesReq	*req;
+    char				*pBuf;
+    pexGetTableEntriesReply		rep;
+    int					fpConvert;
+    int					fpFormat;
 
 
     /*
@@ -429,11 +484,18 @@ OUTPUT PEXPointer	*entriesReturn;
      * Put the request in the X request buffer and get a reply.
      */
 
-    PEXGetFPReq (GetTableEntries, req, convertFP);
+    PEXGetReq (GetTableEntries, pBuf);
+
+    BEGIN_REQUEST_HEADER (GetTableEntries, pBuf, req);
+    CHECK_FP (fpConvert, fpFormat);
+
+    PEXStoreFPReqHead (GetTableEntries, fpFormat, req);
     req->valueType = valueType;
     req->lut = lut;
     req->start = start;
     req->count = count;
+
+    END_REQUEST_HEADER (GetTableEntries, pBuf, req);
 
     if (_XReply (display, &rep, 0, xFalse) == 0)
     {
@@ -447,16 +509,18 @@ OUTPUT PEXPointer	*entriesReturn;
 
 
     /*
-     * Read the reply into a scratch buffer, then repack the entries
-     * into a buffer allocated for the application.
+     * Read the reply data into a scratch buffer.
      */
 
-    pt = (char *) _XAllocScratch (display, (unsigned long) (rep.length << 2));
+    XREAD_INTO_SCRATCH (display, pBuf, (long) (rep.length << 2));
 
-    _XRead (display, (char *) pt, (long) (rep.length << 2));
 
-    *entriesReturn = _PEXRepackLUTEntries ((char *) pt, (int) rep.numEntries,
-	(int) rep.tableType);
+    /*
+     * Repack the entries into a buffer allocated for the application.
+     */
+
+    *entriesReturn = _PEXRepackLUTEntries (pBuf, (int) rep.numEntries,
+	(int) rep.tableType, fpConvert, fpFormat);
 
 
     /*
@@ -481,9 +545,13 @@ INPUT int		type;
 INPUT PEXPointer	entries;
 
 {
-    pexSetTableEntriesReq	*req;
-    int				sizeColor, size, i;
-    int				convertFP;
+    register pexSetTableEntriesReq	*req;
+    char				*pBuf;
+    char				*scratch;
+    char				*firstEntry;
+    int					fpConvert;
+    int					fpFormat;
+    int					size, i;
 
 
     /*
@@ -497,7 +565,12 @@ INPUT PEXPointer	entries;
      * Put the request in the X request buffer.
      */
 
-    PEXGetFPReq (SetTableEntries, req, convertFP);
+    PEXGetReq (SetTableEntries, pBuf);
+
+    BEGIN_REQUEST_HEADER (SetTableEntries, pBuf, req);
+    CHECK_FP (fpConvert, fpFormat);
+
+    PEXStoreFPReqHead (SetTableEntries, fpFormat, req);
     req->lut = lut;
     req->start = start;
     req->count = count;
@@ -506,402 +579,470 @@ INPUT PEXPointer	entries;
     {
     case PEXLUTLineBundle:
     {
-	pexLineBundleEntry *dst, *dstStart;
 	PEXLineBundleEntry *src = (PEXLineBundleEntry *) entries;
+	pexLineBundleEntry *dst;
 	
-	dstStart = dst = (pexLineBundleEntry *)
-	    _XAllocScratch (display, count * sizeof (PEXLineBundleEntry));
+	scratch = firstEntry = (char *) _XAllocScratch (display,
+	    count * sizeof (PEXLineBundleEntry));
 
 	for (i = 0; i < count; i++, src++)
 	{
+	    BEGIN_LUTENTRY_HEADER (pexLineBundleEntry, scratch, dst);
+
 	    dst->lineType = src->type;
 	    dst->polylineInterp = src->interp_method;
-#ifdef WORD64
-#else
-	    dst->curveApprox = *(pexCurveApprox *) &(src->curve_approx);
-#endif
-	    dst->lineWidth = src->width;
-	    
-	    PackColorSpecifier (&(src->color), &(dst->lineColor), sizeColor);
+	    dst->curveApprox_method = src->curve_approx.method;
+	    dst->lineColorType = src->color.type;
 
-	    dst = (pexLineBundleEntry *) ((char *) dst + 
-		sizeof (pexLineBundleEntry) + sizeColor);
+	    if (fpConvert)
+	    {
+		FP_CONVERT_HTON (src->curve_approx.tolerance,
+		    dst->curveApprox_tolerance, fpFormat);
+		FP_CONVERT_HTON (src->width, dst->lineWidth, fpFormat);
+	    }
+	    else
+	    {
+		dst->curveApprox_tolerance = src->curve_approx.tolerance;
+		dst->lineWidth = src->width;
+	    }
+
+	    END_LUTENTRY_HEADER (pexLineBundleEntry, scratch, dst);
+
+	    STORE_COLOR_VAL (src->color.type, src->color.value, scratch,
+		fpConvert, fpFormat);
 	}
-
-	/* update the request length */
-	size = (char *) dst - (char *) dstStart;
-	req->length += (size + 3) >> 2;
-	
-	/* add the table entry data to the end of the X request */
-	Data (display, (char *) dstStart, size);
-
 	break;
     }
 
     case PEXLUTMarkerBundle:
     {
-	pexMarkerBundleEntry *dst, *dstStart;
 	PEXMarkerBundleEntry *src = (PEXMarkerBundleEntry *) entries;
+	pexMarkerBundleEntry *dst;
 
-	dstStart = dst = (pexMarkerBundleEntry *) _XAllocScratch (
-	    display, count * sizeof (PEXMarkerBundleEntry));
+	scratch = firstEntry = (char *) _XAllocScratch (display,
+	    count * sizeof (PEXMarkerBundleEntry));
 
 	for (i = 0; i < count; i++, src++)
 	{
+	    BEGIN_LUTENTRY_HEADER (pexMarkerBundleEntry, scratch, dst);
+
 	    dst->markerType = src->type;
-	    dst->markerScale = src->scale;
+	    dst->markerColorType = src->color.type;
+
+	    if (fpConvert)
+	    {
+		FP_CONVERT_HTON (src->scale, dst->markerScale, fpFormat);
+	    }
+	    else
+		dst->markerScale = src->scale;
 	    
-	    PackColorSpecifier (&(src->color), &(dst->markerColor), sizeColor);
+	    END_LUTENTRY_HEADER (pexMarkerBundleEntry, scratch, dst);
 
-	    dst = (pexMarkerBundleEntry *) ((char *) dst + 
-		sizeof (pexMarkerBundleEntry) + sizeColor);
+	    STORE_COLOR_VAL (src->color.type, src->color.value, scratch,
+		fpConvert, fpFormat);
 	}
-
-	/* update the request length */
-	size = (char *) dst - (char *) dstStart;
-	req->length += (size + 3) >> 2;
-	
-	/* add the table entry data to the end of the X request */
-	Data (display, (char *) dstStart, size);
-	
 	break;
     }
 
     case PEXLUTTextBundle:
     {
-	pexTextBundleEntry *dst, *dstStart;
 	PEXTextBundleEntry *src = (PEXTextBundleEntry *) entries;
+	pexTextBundleEntry *dst;
 
-	dstStart = dst = (pexTextBundleEntry *)
-	    _XAllocScratch (display, count * sizeof (PEXTextBundleEntry));
+	scratch = firstEntry = (char *) _XAllocScratch (display,
+	    count * sizeof (PEXTextBundleEntry));
 
 	for (i = 0; i < count; i++, src++)
 	{
+	    BEGIN_LUTENTRY_HEADER (pexTextBundleEntry, scratch, dst);
+
 	    dst->textFontIndex = src->font_index;
 	    dst->textPrecision = src->precision;
-	    dst->charExpansion = src->char_expansion;
-	    dst->charSpacing = src->char_spacing;
-	    
-	    PackColorSpecifier (&(src->color), &(dst->textColor), sizeColor);
+	    dst->textColorType = src->color.type;
 
-	    dst = (pexTextBundleEntry *) ((char *) dst + 
-		sizeof (pexTextBundleEntry) + sizeColor);
+	    if (fpConvert)
+	    {
+		FP_CONVERT_HTON (src->char_expansion,
+		    dst->charExpansion, fpFormat);
+		FP_CONVERT_HTON (src->char_spacing,
+		    dst->charSpacing, fpFormat);
+	    }
+	    else
+	    {
+		dst->charExpansion = src->char_expansion;
+		dst->charSpacing = src->char_spacing;
+	    }
+
+	    END_LUTENTRY_HEADER (pexTextBundleEntry, scratch, dst);
+
+	    STORE_COLOR_VAL (src->color.type, src->color.value, scratch,
+		fpConvert, fpFormat);
 	}
-
-	/* update the request length */
-	size = (char *) dst - (char *) dstStart;
-	req->length += (size + 3) >> 2;
-
-	/* add the table entry data to the end of the X request */
-	Data (display, (char *) dstStart, size);
-
 	break;
     }
 
     case PEXLUTInteriorBundle:
     {
-	char *dst, *dstStart;
 	PEXInteriorBundleEntry *src = (PEXInteriorBundleEntry *) entries;
+	pexInteriorBundleEntry *dst;
 
-	dstStart = dst = (char *) _XAllocScratch (display,
+	scratch = firstEntry = (char *) _XAllocScratch (display,
 	    count * sizeof (PEXInteriorBundleEntry));
 
 	for (i = 0; i < count; i++, src++)
 	{
-	    ((pexInteriorBundleEntry *) dst)->interiorStyle =
-		src->style;
-	    ((pexInteriorBundleEntry *) dst)->interiorStyleIndex =
-		src->style_index;
-	    ((pexInteriorBundleEntry *) dst)->reflectionModel =
-		src->reflection_model;
-	    ((pexInteriorBundleEntry *) dst)->surfaceInterp =
-		src->interp_method;
-	    ((pexInteriorBundleEntry *) dst)->bfInteriorStyle =
-		src->bf_style;
-	    ((pexInteriorBundleEntry *) dst)->bfInteriorStyleIndex =
-		src->bf_style_index;
-	    ((pexInteriorBundleEntry *) dst)->bfReflectionModel =
-		src->bf_reflection_model;
-	    ((pexInteriorBundleEntry *) dst)->bfSurfaceInterp =
-		src->bf_interp_method;
-#ifdef WORD64
-#else
-	    ((pexInteriorBundleEntry *) dst)->surfaceApprox =
-		*(pexSurfaceApprox *) &(src->surface_approx);
-#endif
-	    dst += sizeof (pexInteriorBundleEntry);
+	    BEGIN_LUTENTRY_HEADER (pexInteriorBundleEntry, scratch, dst);
+
+	    dst->interiorStyle = src->style;
+	    dst->interiorStyleIndex = src->style_index;
+	    dst->reflectionModel = src->reflection_model;
+	    dst->surfaceInterp = src->interp_method;
+	    dst->bfInteriorStyle = src->bf_style;
+	    dst->bfInteriorStyleIndex =	src->bf_style_index;
+	    dst->bfReflectionModel = src->bf_reflection_model;
+	    dst->bfSurfaceInterp = src->bf_interp_method;
+	    dst->surfaceApprox_method = src->surface_approx.method;
+
+	    if (fpConvert)
+	    {
+		FP_CONVERT_HTON (src->surface_approx.u_tolerance,
+		    dst->surfaceApproxuTolerance, fpFormat);
+		FP_CONVERT_HTON (src->surface_approx.v_tolerance,
+		    dst->surfaceApproxvTolerance, fpFormat);
+	    }
+	    else
+	    {
+		dst->surfaceApproxuTolerance = src->surface_approx.u_tolerance;
+		dst->surfaceApproxvTolerance = src->surface_approx.v_tolerance;
+	    }
+
+	    END_LUTENTRY_HEADER (pexInteriorBundleEntry, scratch, dst);
 
 	    /* copy surfaceColor */
-	    PackColorSpecifier (&(src->color), dst, sizeColor);
-	    dst += sizeof (pexColorSpecifier) + sizeColor;
+
+	    STORE_COLOR_SPEC (src->color, scratch, fpConvert, fpFormat);
 
 	    /* copy reflectionAttr */
-	    ((pexReflectionAttr *) dst)->ambient =
-		src->reflection_attr.ambient;
-	    ((pexReflectionAttr *) dst)->diffuse = 
-		src->reflection_attr.diffuse;
-	    ((pexReflectionAttr *) dst)->specular =
-		src->reflection_attr.specular;
-	    ((pexReflectionAttr *) dst)->specularConc = 
-		src->reflection_attr.specular_conc;
-	    ((pexReflectionAttr *) dst)->transmission = 
-		src->reflection_attr.transmission;
-	    PackColorSpecifier ( 
-		&(src->reflection_attr.specular_color),
-		&(((pexReflectionAttr *) dst)->specularColor), sizeColor);
-	    dst += sizeof (pexReflectionAttr) + sizeColor;
+
+	    STORE_REFLECTION_ATTR (src->reflection_attr, scratch,
+		fpConvert, fpFormat);
 
 	    /* copy bfSurfaceColor */
-	    PackColorSpecifier (&(src->bf_color), dst, sizeColor);
-	    dst += sizeof (pexColorSpecifier) + sizeColor;
+
+	    STORE_COLOR_SPEC (src->bf_color, scratch, fpConvert, fpFormat);
 
 	    /* copy bfReflectionAttr */
-	    ((pexReflectionAttr *) dst)->ambient =
-		src->bf_reflection_attr.ambient;
-	    ((pexReflectionAttr *) dst)->diffuse =
-		src->bf_reflection_attr.diffuse;
-	    ((pexReflectionAttr *) dst)->specular = 
-		src->bf_reflection_attr.specular;
-	    ((pexReflectionAttr *) dst)->specularConc = 
-		src->bf_reflection_attr.specular_conc;
-	    ((pexReflectionAttr *) dst)->transmission = 
-		src->bf_reflection_attr.transmission;
-	    PackColorSpecifier ( 
-		&(src->bf_reflection_attr.specular_color),
-		&(((pexReflectionAttr *) dst)->specularColor), sizeColor);
-	    dst += sizeof (pexReflectionAttr) + sizeColor;
-	}
-	
-	/* update the request length */
-	size = (char *) dst - (char *) dstStart;
-	req->length += (size + 3) >> 2;
-	
-	/* add the table entry data to the end of the X request */
-	Data (display, (char *) dstStart, size);
 
+	    STORE_REFLECTION_ATTR (src->bf_reflection_attr, scratch,
+		fpConvert, fpFormat);
+	}
 	break;
     }
 
     case PEXLUTEdgeBundle:
     {
-	pexEdgeBundleEntry *dst, *dstStart;
 	PEXEdgeBundleEntry *src = (PEXEdgeBundleEntry *) entries;
+	pexEdgeBundleEntry *dst;
 
-	dstStart = dst = (pexEdgeBundleEntry *)
-	    _XAllocScratch (display, count * sizeof (PEXEdgeBundleEntry));
+	scratch = firstEntry = (char *) _XAllocScratch (display,
+	    count * sizeof (PEXEdgeBundleEntry));
 
 	for (i = 0; i < count; i++, src++)
 	{
+	    BEGIN_LUTENTRY_HEADER (pexEdgeBundleEntry, scratch, dst);
+
 	    dst->edges = src->edge_flag;
 	    dst->edgeType = src->type;
-	    dst->edgeWidth = src->width;
-	    
-	    PackColorSpecifier (&(src->color), &(dst->edgeColor), sizeColor);
+	    dst->edgeColorType = src->color.type;
 
-	    dst = (pexEdgeBundleEntry *) ((char *) dst + 
-		sizeof (pexEdgeBundleEntry) + sizeColor);
+	    if (fpConvert)
+	    {		
+		FP_CONVERT_HTON (src->width, dst->edgeWidth, fpFormat);
+	    }
+	    else
+		dst->edgeWidth = src->width;
+
+	    END_LUTENTRY_HEADER (pexEdgeBundleEntry, scratch, dst);
+
+	    STORE_COLOR_VAL (src->color.type, src->color.value, scratch,
+		fpConvert, fpFormat);
 	}
-
-	/* update the request length */
-	size = (char *) dst - (char *) dstStart;
-	req->length += (size + 3) >> 2;
-	
-	/* add the table entry data to the end of the X request */
-	Data (display, (char *) dstStart, size);
-
 	break;
     }
 
     case PEXLUTPattern:
     {
-	pexPatternEntry *dst, *dstStart;
-	PEXPatternEntry *src = (PEXPatternEntry *)entries;
+	PEXPatternEntry *src = (PEXPatternEntry *) entries;
+	pexPatternEntry *dst;
 
-	size = count * sizeof (pexPatternEntry);
+	size = count * sizeof (PEXPatternEntry);
 	for (i = 0; i < count; i++)
-	{
-	    size += (src[i].col_count *
-		src[i].row_count * sizeof (PEXColor));
-	}
+	    size += (src[i].col_count *	src[i].row_count * sizeof (PEXColor));
 
-	dstStart = dst = (pexPatternEntry *)
-	    _XAllocScratch (display, (unsigned long) size);
+	scratch = firstEntry = (char *) _XAllocScratch (display, size);
 
 	for (i = 0; i < count; i++, src++)
 	{
+	    BEGIN_LUTENTRY_HEADER (pexPatternEntry, scratch, dst);
+
 	    dst->colorType = src->color_type;
 	    dst->numx = src->col_count;
 	    dst->numy = src->row_count;
 
-	    sizeColor = GetColorSize (src->color_type);
-	    sizeColor *= (src->col_count * src->row_count);
-	    COPY_AREA ((char *) src->colors.indexed, &dst[1], sizeColor);
+	    END_LUTENTRY_HEADER (pexPatternEntry, scratch, dst);
 
-	    dst = (pexPatternEntry *) ((char *) dst + 
-		sizeof (pexPatternEntry) + sizeColor);
+	    STORE_LISTOF_COLOR_VAL (src->col_count * src->row_count,
+		src->color_type, src->colors, scratch, fpConvert, fpFormat);
 	}
-
-	/* update the request length */
-	size = (char *) dst - (char *) dstStart;
-	req->length += (size + 3) >> 2;
-
-	/* add the table entry data to the end of the X request */
-	Data (display, (char *) dstStart, size);
-
 	break;
     }
 
     case PEXLUTTextFont:
     {
-	pexTextFontEntry *dst, *dstStart;
-	PEXTextFontEntry *src = (PEXTextFontEntry *)entries;
+	PEXTextFontEntry *src = (PEXTextFontEntry *) entries;
+	pexTextFontEntry *dst;
 
-	size = count * sizeof (pexTextFontEntry);
+	size = count * sizeof (PEXTextFontEntry);
 	for (i = 0; i < count; i++)
-	{
-	    size += src[i].count * sizeof (pexFont);
-	}
+	    size += src[i].count * sizeof (PEXFont);
 
-	dstStart = dst = (pexTextFontEntry *)
-	    _XAllocScratch (display, (unsigned long) size);
+	scratch = firstEntry = (char *) _XAllocScratch (display, size);
 
 	for (i = 0; i < count; i++, src++)
 	{
+	    BEGIN_LUTENTRY_HEADER (pexTextFontEntry, scratch, dst);
+
 	    dst->numFonts = src->count;
-	    
-	    COPY_AREA (src->fonts, &dst[1], src->count * sizeof (pexFont));
 
-	    dst = (pexTextFontEntry *) ((char *) dst + 
-		sizeof (pexTextFontEntry) + (src->count * sizeof (pexFont)));
+	    END_LUTENTRY_HEADER (pexTextFontEntry, scratch, dst);
+
+	    STORE_LISTOF_CARD32 (src->count, src->fonts, scratch);
 	}
-
-	/* update the request length */
-	size = (char *) dst - (char *) dstStart;
-	req->length += (size + 3) >> 2;
-
-	/* add the table entry data to the end of the X request */
-	Data (display, (char *) dstStart, size);
-	
 	break;
     }
 
     case PEXLUTColor:
     {
-	pexColorSpecifier *dst, *dstStart;
-	PEXColorEntry *src = (PEXColorEntry *) entries;
+	PEXColorEntry 	  *src = (PEXColorEntry *) entries;
 
-	dstStart = dst = (pexColorSpecifier *)
-	    _XAllocScratch (display, count * sizeof (PEXColorEntry));
+	scratch = firstEntry = (char *) _XAllocScratch (display,
+	    count * sizeof (PEXColorEntry));
 
-	for (i = 0; i < count; i++, src++)
-	{
-	    PackColorSpecifier (src, dst, sizeColor);
-	    
-	    dst = (pexColorSpecifier *) ((char *) dst + 
-		sizeof (pexColorSpecifier) + sizeColor);
-	}
-
-	/* update the request length */
-	size = (char *) dst - (char *) dstStart;
-	req->length += (size + 3) >> 2;
-
-	/* add the table entry data to the end of the X request */
-	Data (display, (char *) dstStart, size);
-
+	STORE_LISTOF_COLOR_SPEC (count, src, scratch, fpConvert, fpFormat);
 	break;
     }
 
     case PEXLUTView:
-        size = count * sizeof (PEXViewEntry);
+    {
+	PEXViewEntry *src = (PEXViewEntry *) entries;
+	pexViewEntry *dst;
+	char	     *tPtr;
 
-        /* update the request length */
-	req->length += (size + 3) >> 2;
+	scratch = firstEntry = (char *) _XAllocScratch (display,
+	    count * sizeof (PEXViewEntry));
 
-	/* add the table entry data to the end of the X request */
-	Data (display, (char *) entries, size);
+	for (i = 0; i < count; i++, src++)
+	{
+	    BEGIN_LUTENTRY_HEADER (pexViewEntry, scratch, dst);
 
-	break;
+	    dst->clipFlags = src->clip_flags;
 
-     case PEXLUTLight:
-     {
-	 pexLightEntry *dst, *dstStart;
-	 PEXLightEntry *src = (PEXLightEntry *) entries;
+	    if (fpConvert)
+	    {
+		FP_CONVERT_HTON (src->clip_limits.min.x,
+		    dst->clipLimits_xmin, fpFormat);
+		FP_CONVERT_HTON (src->clip_limits.min.y,
+		    dst->clipLimits_ymin, fpFormat);
+		FP_CONVERT_HTON (src->clip_limits.min.z,
+		    dst->clipLimits_zmin, fpFormat);
+		FP_CONVERT_HTON (src->clip_limits.max.x,
+		    dst->clipLimits_xmax, fpFormat);
+		FP_CONVERT_HTON (src->clip_limits.max.y,
+		    dst->clipLimits_ymax, fpFormat);
+		FP_CONVERT_HTON (src->clip_limits.max.z,
+		    dst->clipLimits_zmax, fpFormat);
+	    }
+	    else
+	    {
+		dst->clipLimits_xmin = src->clip_limits.min.x;
+		dst->clipLimits_ymin = src->clip_limits.min.y;
+		dst->clipLimits_zmin = src->clip_limits.min.z;
+		dst->clipLimits_xmax = src->clip_limits.max.x;
+		dst->clipLimits_ymax = src->clip_limits.max.y;
+		dst->clipLimits_zmax = src->clip_limits.max.z;
+	    }
 
-	 dstStart = dst = (pexLightEntry *)
-	     _XAllocScratch (display, count * sizeof (PEXLightEntry));
+	    tPtr = (char *) dst->orientation;
+	    STORE_LISTOF_FLOAT32 (16, src->orientation, tPtr,
+		fpConvert, fpFormat);
 
-	 for (i = 0; i < count; i++, src++)
-	 {
-	     dst->lightType = src->type;
-#ifdef WORD64
-#else
-	     dst->direction = *(pexVector3D *) &(src->direction);
-	     dst->point = *(pexCoord3D *) &(src->point);
-#endif
-	     dst->concentration = src->concentration;
-	     dst->spreadAngle = src->spread_angle;
-	     dst->attenuation1 = src->attenuation1;
-	     dst->attenuation2 = src->attenuation2;
-		
-	     PackColorSpecifier (&(src->color), &(dst->lightColor), sizeColor);
-
-	     dst = (pexLightEntry *) ((char *) dst + 
-		 sizeof (pexLightEntry) + sizeColor);
-	 }
-
-	 /* update the request length */
-	 size = (char *) dst - (char *) dstStart;
-	 req->length += (size + 3) >> 2;
-
-	 /* add the table entry data to the end of the X request */
-	 Data (display, (char *) dstStart, size);
-	 
-	 break;
-     }
-
-     case PEXLUTDepthCue:
-     {
-	 pexDepthCueEntry *dst, *dstStart;
-	 PEXDepthCueEntry *src = (PEXDepthCueEntry *) entries;
-
-	 dstStart = dst = (pexDepthCueEntry *)
-	     _XAllocScratch (display, count * sizeof (PEXDepthCueEntry));
-
-	 for (i = 0; i < count; i++, src++)
-	 {
-	     dst->mode = src->mode;
-	     dst->frontPlane = src->front_plane;
-	     dst->backPlane = src->back_plane;
-	     dst->frontScaling = src->front_scaling;
-	     dst->backScaling = src->back_scaling;
-	     
-	     PackColorSpecifier (&(src->color), &(dst->depthCueColor), 
-		 sizeColor);
-
-	     dst = (pexDepthCueEntry *) ((char *) dst + 
-		 sizeof (pexDepthCueEntry) + sizeColor);
-	 }
-
-	 /* update the request length */
-	 size = (char *) dst - (char *) dstStart;
-	 req->length += (size + 3) >> 2;
-	 
-	 /* add the table entry data to the end of the X request */
-	 Data (display, (char *) dstStart, size);
-
-	 break;
-     }
-
-     case PEXLUTColorApprox:
-	size = count * sizeof (PEXColorApproxEntry);
-
-	/* update the request length */
-	req->length += (size + 3) >> 2;
-
-	/* add the table entry data to the end of the X request */
-	Data (display, (char *) entries, size);
+	    tPtr = (char *) dst->mapping;
+	    STORE_LISTOF_FLOAT32 (16, src->mapping, tPtr,
+		fpConvert, fpFormat);
+	    
+	    END_LUTENTRY_HEADER (pexViewEntry, scratch, dst);
+	}
 	break;
     }
+
+    case PEXLUTLight:
+    {
+	PEXLightEntry *src = (PEXLightEntry *) entries;
+	pexLightEntry *dst;
+
+	scratch = firstEntry = (char *) _XAllocScratch (display,
+	    count * sizeof (PEXLightEntry));
+
+	for (i = 0; i < count; i++, src++)
+	{
+	    BEGIN_LUTENTRY_HEADER (pexLightEntry, scratch, dst);
+
+	    dst->lightType = src->type;
+	    dst->lightColorType = src->color.type;
+
+	    if (fpConvert)
+	    {
+		FP_CONVERT_HTON (src->direction.x, dst->direction_x, fpFormat);
+		FP_CONVERT_HTON (src->direction.y, dst->direction_y, fpFormat);
+		FP_CONVERT_HTON (src->direction.z, dst->direction_z, fpFormat);
+
+		FP_CONVERT_HTON (src->point.x, dst->point_x, fpFormat);
+		FP_CONVERT_HTON (src->point.y, dst->point_y, fpFormat);
+		FP_CONVERT_HTON (src->point.z, dst->point_z, fpFormat);
+
+		FP_CONVERT_HTON (src->concentration,
+		    dst->concentration, fpFormat);
+		FP_CONVERT_HTON (src->spread_angle,
+		    dst->spreadAngle, fpFormat);
+		FP_CONVERT_HTON (src->attenuation1,
+		    dst->attenuation1, fpFormat);
+		FP_CONVERT_HTON (src->attenuation2,
+		    dst->attenuation2, fpFormat);
+	    }
+	    else
+	    {
+		dst->direction_x = src->direction.x;
+		dst->direction_y = src->direction.y;
+		dst->direction_z = src->direction.z;
+
+		dst->point_x = src->point.x;
+		dst->point_y = src->point.y;
+		dst->point_z = src->point.z;
+
+		dst->concentration = src->concentration;
+		dst->spreadAngle = src->spread_angle;
+		dst->attenuation1 = src->attenuation1;
+		dst->attenuation2 = src->attenuation2;
+	    }
+
+	    END_LUTENTRY_HEADER (pexLightEntry, scratch, dst);
+
+	    STORE_COLOR_VAL (src->color.type, src->color.value, scratch,
+	        fpConvert, fpFormat);
+	}
+	break;
+    }
+
+    case PEXLUTDepthCue:
+    {
+	PEXDepthCueEntry *src = (PEXDepthCueEntry *) entries;
+	pexDepthCueEntry *dst;
+
+	scratch = firstEntry = (char *) _XAllocScratch (display,
+	    count * sizeof (PEXDepthCueEntry));
+
+	for (i = 0; i < count; i++, src++)
+	{
+	    BEGIN_LUTENTRY_HEADER (pexDepthCueEntry, scratch, dst);
+
+	    dst->mode = src->mode;
+	    dst->depthCueColorType = src->color.type;
+
+	    if (fpConvert)
+	    {
+		FP_CONVERT_HTON (src->front_plane, dst->frontPlane, fpFormat);
+		FP_CONVERT_HTON (src->back_plane, dst->backPlane, fpFormat);
+
+		FP_CONVERT_HTON (src->front_scaling,
+		    dst->frontScaling, fpFormat);
+		FP_CONVERT_HTON (src->back_scaling,
+		    dst->backScaling, fpFormat);
+	    }
+	    else
+	    {
+		dst->frontPlane = src->front_plane;
+		dst->backPlane = src->back_plane;
+
+		dst->frontScaling = src->front_scaling;
+		dst->backScaling = src->back_scaling;
+	    }
+	     
+	    END_LUTENTRY_HEADER (pexDepthCueEntry, scratch, dst);
+
+	    STORE_COLOR_VAL (src->color.type, src->color.value, scratch,
+		fpConvert, fpFormat);
+	}
+	break;
+    }
+
+    case PEXLUTColorApprox:
+    {
+	PEXColorApproxEntry *src = (PEXColorApproxEntry *) entries;
+	pexColorApproxEntry *dst;
+
+	scratch = firstEntry = (char *) _XAllocScratch (display,
+	    count * sizeof (PEXColorApproxEntry));
+
+	for (i = 0; i < count; i++, src++)
+	{
+	    BEGIN_LUTENTRY_HEADER (pexColorApproxEntry, scratch, dst);
+
+	    dst->approxType = src->type;
+	    dst->approxModel = src->model;
+	    dst->max1 = src->max1;
+	    dst->max2 = src->max2;
+	    dst->max3 = src->max3;
+	    dst->dither = src->dither;
+	    dst->mult1 = src->mult1;
+	    dst->mult2 = src->mult2;
+	    dst->mult3 = src->mult3;
+	    dst->basePixel = src->base_pixel;
+
+	    if (fpConvert)
+	    {
+		FP_CONVERT_HTON (src->weight1, dst->weight1, fpFormat);
+		FP_CONVERT_HTON (src->weight2, dst->weight2, fpFormat);
+		FP_CONVERT_HTON (src->weight3, dst->weight3, fpFormat);
+	    }
+	    else
+	    {
+		dst->weight1 = src->weight1;
+		dst->weight2 = src->weight2;
+		dst->weight3 = src->weight3;
+	    }
+
+	    END_LUTENTRY_HEADER (pexColorApproxEntry, scratch, dst);
+	}
+	break;
+    }
+    }
+
+
+    /*
+     * Update the request length.
+     */
+
+    size = scratch - firstEntry;
+    req->length += NUMWORDS (size);
+
+    END_REQUEST_HEADER (SetTableEntries, pBuf, req);
+
+
+    /*
+     * Add the table entry data to the end of the X request.
+     */
+
+    Data (display, firstEntry, size);
 
 
     /*
@@ -922,7 +1063,8 @@ INPUT unsigned int	start;
 INPUT unsigned int	count;
 
 {
-    pexDeleteTableEntriesReq	*req;
+    register pexDeleteTableEntriesReq	*req;
+    char				*pBuf;
 
 
     /*
@@ -936,10 +1078,16 @@ INPUT unsigned int	count;
      * Put the request in the X request buffer.
      */
 
-    PEXGetReq (DeleteTableEntries, req);
+    PEXGetReq (DeleteTableEntries, pBuf);
+
+    BEGIN_REQUEST_HEADER (DeleteTableEntries, pBuf, req);
+
+    PEXStoreReqHead (DeleteTableEntries, req);
     req->lut = lut;
     req->start = start;
     req->count = count;
+
+    END_REQUEST_HEADER (DeleteTableEntries, pBuf, req);
 
 
     /*
@@ -952,344 +1100,467 @@ INPUT unsigned int	count;
 
 
 
-/* This routine repacks the lut entries returned by PEXGetTableEntry,
+/*
+ * This routine repacks the lut entries returned by PEXGetTableEntry,
  * PEXGetTableEntries, and PEXGetPredefinedEntries.  This is mostly to
- * change the colors, which may be of different sizes, to a fixed size
- * to make it easier for application programs.  This isn't the fastest
- * way to process replies that have no colors, but it's not expected to
- * be used a whole lot.
+ * change the colors from fixed size to the PEXColor union format,
+ * as well as to do floating point conversion.
 */
 
 static PEXPointer
-_PEXRepackLUTEntries (pt, numEntries, type)
+_PEXRepackLUTEntries (pBuf, numEntries, tableType, fpConvert, fpFormat)
 
-INPUT  char		*pt;
-INPUT  int		numEntries;
-INPUT  int		type;
+INPUT char	*pBuf;
+INPUT int	numEntries;
+INPUT int	tableType;
+INPUT int	fpConvert;
+INPUT int	fpFormat;
 
 {
-    int			sizeColor, i;
-    char		*buf;
+    PEXPointer	lutBuf;
+    int		i;
 
-
-    switch (type)
+    switch (tableType)
     {
     case PEXLUTLineBundle:
     {
+	pexLineBundleEntry *src;
 	PEXLineBundleEntry *dst;
-	pexLineBundleEntry *src = (pexLineBundleEntry *) pt;
 
-	GetLUTEntryBuffer (numEntries, PEXLineBundleEntry, buf);
-	dst = (PEXLineBundleEntry *) buf;
+	GetLUTEntryBuffer (numEntries, PEXLineBundleEntry, lutBuf);
+	dst = (PEXLineBundleEntry *) lutBuf;
 
 	for (i = 0; i < numEntries; i++, dst++)
 	{
+	    GET_STRUCT_PTR (pexLineBundleEntry, pBuf, src);
+	    pBuf += SIZEOF (pexLineBundleEntry);
+
 	    dst->type = src->lineType;
 	    dst->interp_method = src->polylineInterp;
-#ifdef WORD64
-#else
-	    dst->curve_approx = *(PEXCurveApprox *) &(src->curveApprox);
-#endif
-	    dst->width = src->lineWidth;
+	    dst->curve_approx.method = src->curveApprox_method;
+	    dst->color.type = src->lineColorType;
 
-	    PackColorSpecifier (&(src->lineColor), &(dst->color), sizeColor);
+	    if (fpConvert)
+	    {
+		FP_CONVERT_NTOH (src->curveApprox_tolerance,
+		    dst->curve_approx.tolerance, fpFormat);
+		FP_CONVERT_NTOH (src->lineWidth, dst->width, fpFormat);
+	    }
+	    else
+	    {
+		dst->curve_approx.tolerance = src->curveApprox_tolerance;
+		dst->width = src->lineWidth;
+	    }
 
-	    src = (pexLineBundleEntry *) ((char *) src +
-		sizeof (pexLineBundleEntry) + sizeColor);
+	    EXTRACT_COLOR_VAL (pBuf, dst->color.type, dst->color.value,
+		fpConvert, fpFormat);
 	}
-
 	break;
     }
 
     case PEXLUTMarkerBundle:
     {
+	pexMarkerBundleEntry *src;
 	PEXMarkerBundleEntry *dst;
-	pexMarkerBundleEntry *src = (pexMarkerBundleEntry *) pt;
 
-	GetLUTEntryBuffer (numEntries, PEXMarkerBundleEntry, buf);
-	dst = (PEXMarkerBundleEntry *) buf;
+	GetLUTEntryBuffer (numEntries, PEXMarkerBundleEntry, lutBuf);
+	dst = (PEXMarkerBundleEntry *) lutBuf;
 
 	for (i = 0; i < numEntries; i++, dst++)
 	{
+	    GET_STRUCT_PTR (pexMarkerBundleEntry, pBuf, src);
+	    pBuf += SIZEOF (pexMarkerBundleEntry);
+
 	    dst->type = src->markerType;
-	    dst->scale = src->markerScale;
+	    dst->color.type = src->markerColorType;
 	    
-	    PackColorSpecifier (&(src->markerColor), &(dst->color), sizeColor);
+	    if (fpConvert)
+	    {
+		FP_CONVERT_NTOH (src->markerScale, dst->scale, fpFormat);
+	    }
+	    else
+		dst->scale = src->markerScale;
 
-	    src = (pexMarkerBundleEntry *) ((char *) src +
-		sizeof (pexMarkerBundleEntry) + sizeColor);
+	    EXTRACT_COLOR_VAL (pBuf, dst->color.type, dst->color.value,
+		fpConvert, fpFormat);
 	}
-
 	break;
     }
 
     case PEXLUTTextBundle:
     {
+	pexTextBundleEntry *src;
 	PEXTextBundleEntry *dst;
-	pexTextBundleEntry *src = (pexTextBundleEntry *) pt;
 	    
-	GetLUTEntryBuffer (numEntries, PEXTextBundleEntry, buf);
-	dst = (PEXTextBundleEntry *) buf;
+	GetLUTEntryBuffer (numEntries, PEXTextBundleEntry, lutBuf);
+	dst = (PEXTextBundleEntry *) lutBuf;
 
 	for (i = 0; i < numEntries; i++, dst++)
 	{
+	    GET_STRUCT_PTR (pexTextBundleEntry, pBuf, src);
+	    pBuf += SIZEOF (pexTextBundleEntry);
+
 	    dst->font_index = src->textFontIndex;
 	    dst->precision = src->textPrecision;
-	    dst->char_expansion = src->charExpansion;
-	    dst->char_spacing = src->charSpacing;
+	    dst->color.type = src->textColorType;
 	    
-	    PackColorSpecifier (&(src->textColor), &(dst->color), sizeColor);
+	    if (fpConvert)
+	    {
+		FP_CONVERT_NTOH (src->charExpansion,
+		    dst->char_expansion, fpFormat);
+		FP_CONVERT_NTOH (src->charSpacing,
+		    dst->char_spacing, fpFormat);
+	    }
+	    else
+	    {
+		dst->char_expansion = src->charExpansion;
+		dst->char_spacing = src->charSpacing;
+	    }
 
-	    src = (pexTextBundleEntry *) ((char *) src +
-		sizeof (pexTextBundleEntry) + sizeColor);
+	    EXTRACT_COLOR_VAL (pBuf, dst->color.type, dst->color.value,
+		fpConvert, fpFormat);
 	}
-
 	break;
     }
 
     case PEXLUTInteriorBundle:
     {
+	pexInteriorBundleEntry *src;
 	PEXInteriorBundleEntry *dst;
-	char *src = (char *) pt;
 
-	GetLUTEntryBuffer (numEntries, PEXInteriorBundleEntry, buf);
-	dst = (PEXInteriorBundleEntry *) buf;
+	GetLUTEntryBuffer (numEntries, PEXInteriorBundleEntry, lutBuf);
+	dst = (PEXInteriorBundleEntry *) lutBuf;
 
 	for (i = 0; i < numEntries; i++, dst++)
 	{
-	    dst->style =
-		((pexInteriorBundleEntry *) src)->interiorStyle;
-	    dst->style_index =
-		((pexInteriorBundleEntry *) src)->interiorStyleIndex;
-	    dst->reflection_model =
-		((pexInteriorBundleEntry *) src)->reflectionModel;
-	    dst->interp_method =
-		((pexInteriorBundleEntry *) src)->surfaceInterp;
-	    dst->bf_style =
-		((pexInteriorBundleEntry *) src)->bfInteriorStyle;
-	    dst->bf_style_index =
-		((pexInteriorBundleEntry *) src)->bfInteriorStyleIndex;
-	    dst->bf_reflection_model =
-		((pexInteriorBundleEntry *) src)->bfReflectionModel;
-	    dst->bf_interp_method =
-		((pexInteriorBundleEntry *) src)->bfSurfaceInterp;
-#ifdef WORD64
-#else
-	    dst->surface_approx = *(PEXSurfaceApprox *)
-		&(((pexInteriorBundleEntry *) src)->surfaceApprox);
-#endif
-	    src += sizeof (pexInteriorBundleEntry);
+	    GET_STRUCT_PTR (pexInteriorBundleEntry, pBuf, src);
+	    pBuf += SIZEOF (pexInteriorBundleEntry);
+
+	    dst->style = src->interiorStyle;
+	    dst->style_index = src->interiorStyleIndex;
+	    dst->reflection_model = src->reflectionModel;
+	    dst->interp_method = src->surfaceInterp;
+	    dst->bf_style = src->bfInteriorStyle;
+	    dst->bf_style_index = src->bfInteriorStyleIndex;
+	    dst->bf_reflection_model = src->bfReflectionModel;
+	    dst->bf_interp_method = src->bfSurfaceInterp;
+	    dst->surface_approx.method = src->surfaceApprox_method;
+
+	    if (fpConvert)
+	    {
+		FP_CONVERT_NTOH (src->surfaceApproxuTolerance,
+		    dst->surface_approx.u_tolerance, fpFormat);
+		FP_CONVERT_NTOH (src->surfaceApproxvTolerance,
+		    dst->surface_approx.v_tolerance, fpFormat);
+	    }
+	    else
+	    {
+		dst->surface_approx.u_tolerance = src->surfaceApproxuTolerance;
+		dst->surface_approx.v_tolerance = src->surfaceApproxvTolerance;
+	    }
 
 	    /* copy surfaceColor */
-	    PackColorSpecifier (src, &(dst->color), sizeColor);
-	    src += sizeof (pexColorSpecifier) + sizeColor;
+
+	    EXTRACT_COLOR_SPEC (pBuf, dst->color, fpConvert, fpFormat);
 
 	    /* copy reflectionAttr */
-	    dst->reflection_attr.ambient = 
-		((pexReflectionAttr *) src)->ambient;
-	    dst->reflection_attr.diffuse =
-		((pexReflectionAttr *) src)->diffuse;
-	    dst->reflection_attr.specular =
-		((pexReflectionAttr *) src)->specular;
-	    dst->reflection_attr.specular_conc =
-		((pexReflectionAttr *) src)->specularConc;
-	    dst->reflection_attr.transmission =
-		((pexReflectionAttr *) src)->transmission;
-	    PackColorSpecifier (
-                &(((pexReflectionAttr *)src)->specularColor),
-                &(dst->reflection_attr.specular_color), sizeColor);
-	    src += sizeof (pexReflectionAttr) + sizeColor;
+
+	    EXTRACT_REFLECTION_ATTR (pBuf, dst->reflection_attr,
+		fpConvert, fpFormat);
 
 	    /* copy bfSurfaceColor */
-	    PackColorSpecifier (src, &(dst->bf_color), sizeColor);
-	    src += sizeof (pexColorSpecifier) + sizeColor;
+
+	    EXTRACT_COLOR_SPEC (pBuf, dst->bf_color, fpConvert, fpFormat);
 
 	    /* copy bfReflectionAttr */
-	    dst->bf_reflection_attr.ambient =
-		((pexReflectionAttr *) src)->ambient;
-	    dst->bf_reflection_attr.diffuse =
-		((pexReflectionAttr *) src)->diffuse;
-	    dst->bf_reflection_attr.specular =
-		((pexReflectionAttr *) src)->specular;
-	    dst->bf_reflection_attr.specular_conc =
-		((pexReflectionAttr *) src)->specularConc;
-	    dst->bf_reflection_attr.transmission =
-		((pexReflectionAttr *) src)->transmission;
-	    PackColorSpecifier (
-                &(((pexReflectionAttr *) src)->specularColor),
-                &(dst->bf_reflection_attr.specular_color), sizeColor);
-	    src += sizeof (pexReflectionAttr) + sizeColor;
-	}
 
+	    EXTRACT_REFLECTION_ATTR (pBuf, dst->bf_reflection_attr,
+		fpConvert, fpFormat);
+	}
 	break;
     }
 
     case PEXLUTEdgeBundle:
     {
+	pexEdgeBundleEntry *src;
 	PEXEdgeBundleEntry *dst;
-	pexEdgeBundleEntry *src = (pexEdgeBundleEntry *) pt;
          
-	GetLUTEntryBuffer (numEntries, PEXEdgeBundleEntry, buf);
-	dst = (PEXEdgeBundleEntry *) buf;
+	GetLUTEntryBuffer (numEntries, PEXEdgeBundleEntry, lutBuf);
+	dst = (PEXEdgeBundleEntry *) lutBuf;
 
 	for (i = 0; i < numEntries; i++, dst++)
 	{
+	    GET_STRUCT_PTR (pexEdgeBundleEntry, pBuf, src);
+	    pBuf += SIZEOF (pexEdgeBundleEntry);
+
 	    dst->edge_flag = src->edges;
 	    dst->type = src->edgeType;
-	    dst->width = src->edgeWidth;
+	    dst->color.type = src->edgeColorType;
 
-	    PackColorSpecifier (&(src->edgeColor), &(dst->color), sizeColor);
+	    if (fpConvert)
+	    {
+		FP_CONVERT_NTOH (src->edgeWidth, dst->width, fpFormat);
+	    }
+	    else
+		dst->width = src->edgeWidth;
 
-	    src = (pexEdgeBundleEntry *) ((char *) src +
-		sizeof (pexEdgeBundleEntry) + sizeColor);
+	    EXTRACT_COLOR_VAL (pBuf, dst->color.type, dst->color.value,
+		fpConvert, fpFormat);
 	}
-
 	break;
     }
 
     case PEXLUTPattern:
     {
+	pexPatternEntry *src;
 	PEXPatternEntry *dst;
-	pexPatternEntry *src = (pexPatternEntry *)pt;
     
-	GetLUTEntryBuffer (numEntries, PEXPatternEntry, buf);
-	dst = (PEXPatternEntry *) buf;
+	GetLUTEntryBuffer (numEntries, PEXPatternEntry, lutBuf);
+	dst = (PEXPatternEntry *) lutBuf;
 
 	for (i = 0; i < numEntries; i++, dst++)
 	{
+	    GET_STRUCT_PTR (pexPatternEntry, pBuf, src);
+	    pBuf += SIZEOF (pexPatternEntry);
+
 	    dst->color_type = src->colorType;
 	    dst->col_count = src->numx;
 	    dst->row_count = src->numy;
 
-	    sizeColor = GetColorSize (src->colorType);
-	    sizeColor *= (src->numx * src->numy);
-	    dst->colors.indexed =
-		(PEXColorIndexed *) PEXAllocBuf ((unsigned) sizeColor);
-	    COPY_AREA (&src[1], (char *) dst->colors.indexed, sizeColor);
+	    dst->colors.indexed = (PEXColorIndexed *) PEXAllocBuf (
+		GetClientColorSize (dst->color_type) *
+		dst->row_count * dst->col_count);
 
-	    src = (pexPatternEntry *) ((char *) src +
-		sizeof (pexPatternEntry) + sizeColor);
+	    EXTRACT_LISTOF_COLOR_VAL (dst->row_count * dst->col_count,
+		pBuf, dst->color_type, dst->colors, fpConvert, fpFormat);
 	}
 	break;
     }
 
     case PEXLUTTextFont:
     {
+	pexTextFontEntry *src;
 	PEXTextFontEntry *dst;
-	pexTextFontEntry *src = (pexTextFontEntry *) pt;
 
-	GetLUTEntryBuffer (numEntries, PEXTextFontEntry, buf);
-	dst = (PEXTextFontEntry *) buf;
+	GetLUTEntryBuffer (numEntries, PEXTextFontEntry, lutBuf);
+	dst = (PEXTextFontEntry *) lutBuf;
 
 	for (i = 0; i < numEntries; i++, dst++)
 	{
-	    dst->count = src->numFonts;
-	    dst->fonts = (pexFont *)
-		PEXAllocBuf (src->numFonts * sizeof (pexFont));
-	    
-	    COPY_AREA (&src[1], dst->fonts,
-		src->numFonts * sizeof (pexFont));
+	    GET_STRUCT_PTR (pexTextFontEntry, pBuf, src);
+	    pBuf += SIZEOF (pexTextFontEntry);
 
-	    src = (pexTextFontEntry *) ((char *) src + 
-		sizeof (pexTextFontEntry) +
-		(src->numFonts * sizeof (pexFont)));
+	    dst->count = src->numFonts;
+
+	    dst->fonts = (PEXFont *)
+		PEXAllocBuf (dst->count * sizeof (PEXFont));
+	    
+	    EXTRACT_LISTOF_CARD32 (dst->count, pBuf, dst->fonts);
 	}
-	
 	break;
     }
 
     case PEXLUTColor:
     {
-	PEXColorEntry *dst;
-	pexColorSpecifier *src = (pexColorSpecifier *) pt;
+	PEXColorEntry     *dst;
     
-	GetLUTEntryBuffer (numEntries, PEXColorEntry, buf);
-	dst = (PEXColorEntry *) buf;
+	GetLUTEntryBuffer (numEntries, PEXColorEntry, lutBuf);
+	dst = (PEXColorEntry *) lutBuf;
 
-	for (i = 0; i < numEntries; i++, dst++)
-	{
-	    PackColorSpecifier (src, dst, sizeColor);
-
-	    src = (pexColorSpecifier *) ((char *) src +
-		sizeof (pexColorSpecifier) + sizeColor);
-	}
-    
+	EXTRACT_LISTOF_COLOR_SPEC (numEntries, pBuf, dst, fpConvert, fpFormat);
 	break;
     }
 
     case PEXLUTView:
-	GetLUTEntryBuffer (numEntries, PEXViewEntry, buf);
-
-	COPY_AREA ((char *) pt, (char *) buf,
-	    numEntries * sizeof (pexViewEntry));
-
-	break;
-
-    case PEXLUTLight:
     {
-	PEXLightEntry *dst;
-	pexLightEntry *src = (pexLightEntry *) pt;
-	
-	GetLUTEntryBuffer (numEntries, PEXLightEntry, buf);
-	dst = (PEXLightEntry *) buf;
+	pexViewEntry *src;
+	PEXViewEntry *dst;
+	char	     *tPtr;
+         
+	GetLUTEntryBuffer (numEntries, PEXViewEntry, lutBuf);
+	dst = (PEXViewEntry *) lutBuf;
 
 	for (i = 0; i < numEntries; i++, dst++)
 	{
-	    dst->type = src->lightType;
-#ifdef WORD64
-#else
-	    dst->direction = *(PEXVector *) &(src->direction);
-	    dst->point = *(PEXCoord *) &(src->point);
-#endif
-	    dst->concentration = src->concentration;
-	    dst->spread_angle = src->spreadAngle;
-	    dst->attenuation1 = src->attenuation1;
-	    dst->attenuation2 = src->attenuation2;
-	    
-	    PackColorSpecifier (&(src->lightColor), &(dst->color), sizeColor);
+	    GET_STRUCT_PTR (pexViewEntry, pBuf, src);
+	    pBuf += SIZEOF (pexViewEntry);
 
-	    src = (pexLightEntry *) ((char *) src +
-		sizeof (pexLightEntry) + sizeColor);
+	    dst->clip_flags = src->clipFlags;
+
+	    if (fpConvert)
+	    {
+		FP_CONVERT_NTOH (src->clipLimits_xmin,
+		    dst->clip_limits.min.x, fpFormat);
+		FP_CONVERT_NTOH (src->clipLimits_ymin,
+		    dst->clip_limits.min.y, fpFormat);
+		FP_CONVERT_NTOH (src->clipLimits_zmin,
+		    dst->clip_limits.min.z, fpFormat);
+		FP_CONVERT_NTOH (src->clipLimits_xmax,
+		    dst->clip_limits.max.x, fpFormat);
+		FP_CONVERT_NTOH (src->clipLimits_ymax,
+		    dst->clip_limits.max.y, fpFormat);
+		FP_CONVERT_NTOH (src->clipLimits_zmax,
+		    dst->clip_limits.max.z, fpFormat);
+	    }
+	    else
+	    {
+		dst->clip_limits.min.x = src->clipLimits_xmin;
+		dst->clip_limits.min.y = src->clipLimits_ymin;
+		dst->clip_limits.min.z = src->clipLimits_zmin;
+		dst->clip_limits.max.x = src->clipLimits_xmax;
+		dst->clip_limits.max.y = src->clipLimits_ymax;
+		dst->clip_limits.max.z = src->clipLimits_zmax;
+	    }
+
+	    tPtr = (char *) src->orientation;
+	    EXTRACT_LISTOF_FLOAT32 (16, tPtr, dst->orientation,
+		fpConvert, fpFormat);
+
+	    tPtr = (char *) src->mapping;
+	    EXTRACT_LISTOF_FLOAT32 (16, tPtr, dst->mapping,
+		fpConvert, fpFormat);
 	}
+	break;
+    }
 
+    case PEXLUTLight:
+    {
+	pexLightEntry *src;
+	PEXLightEntry *dst;
+	
+	GetLUTEntryBuffer (numEntries, PEXLightEntry, lutBuf);
+	dst = (PEXLightEntry *) lutBuf;
+
+	for (i = 0; i < numEntries; i++, dst++)
+	{
+	    GET_STRUCT_PTR (pexLightEntry, pBuf, src);
+	    pBuf += SIZEOF (pexLightEntry);
+
+	    dst->type = src->lightType;
+	    dst->color.type = src->lightColorType;
+
+	    if (fpConvert)
+	    {
+		FP_CONVERT_NTOH (src->direction_x, dst->direction.x, fpFormat);
+		FP_CONVERT_NTOH (src->direction_y, dst->direction.y, fpFormat);
+		FP_CONVERT_NTOH (src->direction_z, dst->direction.z, fpFormat);
+
+		FP_CONVERT_NTOH (src->point_x, dst->point.x, fpFormat);
+		FP_CONVERT_NTOH (src->point_y, dst->point.y, fpFormat);
+		FP_CONVERT_NTOH (src->point_z, dst->point.z, fpFormat);
+
+		FP_CONVERT_NTOH (src->concentration,
+		    dst->concentration, fpFormat);
+		FP_CONVERT_NTOH (src->spreadAngle,
+		    dst->spread_angle, fpFormat);
+		FP_CONVERT_NTOH (src->attenuation1,
+		    dst->attenuation1, fpFormat);
+		FP_CONVERT_NTOH (src->attenuation2,
+		    dst->attenuation2, fpFormat);
+	    }
+	    else
+	    {
+		dst->direction.x = src->direction_x;
+		dst->direction.y = src->direction_y;
+		dst->direction.z = src->direction_z;
+
+		dst->point.x = src->point_x;
+		dst->point.y = src->point_y;
+		dst->point.z = src->point_z;
+
+		dst->concentration = src->concentration;
+		dst->spread_angle = src->spreadAngle;
+		dst->attenuation1 = src->attenuation1;
+		dst->attenuation2 = src->attenuation2;
+	    }
+
+	    EXTRACT_COLOR_VAL (pBuf, dst->color.type, dst->color.value,
+		fpConvert, fpFormat);
+	}
 	break;
     }
 
     case PEXLUTDepthCue:
     {
+	pexDepthCueEntry *src;
 	PEXDepthCueEntry *dst;
-	pexDepthCueEntry *src = (pexDepthCueEntry *) pt;
     
-	GetLUTEntryBuffer (numEntries, PEXDepthCueEntry, buf);
-	dst = (PEXDepthCueEntry *) buf;
+	GetLUTEntryBuffer (numEntries, PEXDepthCueEntry, lutBuf);
+	dst = (PEXDepthCueEntry *) lutBuf;
 	
 	for (i = 0; i < numEntries; i++, dst++)
 	{
+	    GET_STRUCT_PTR (pexDepthCueEntry, pBuf, src);
+	    pBuf += SIZEOF (pexDepthCueEntry);
+
 	    dst->mode = src->mode;
-	    dst->front_plane = src->frontPlane;
-	    dst->back_plane = src->backPlane;
-	    dst->front_scaling = src->frontScaling;
-	    dst->back_scaling = src->backScaling;
-	    
-	    PackColorSpecifier (&(src->depthCueColor), &(dst->color),
-                sizeColor);
+	    dst->color.type = src->depthCueColorType;
 
-	    src = (pexDepthCueEntry *) ((char *) src +
-		sizeof (pexDepthCueEntry) + sizeColor);
+	    if (fpConvert)
+	    {
+		FP_CONVERT_NTOH (src->frontPlane, dst->front_plane, fpFormat);
+		FP_CONVERT_NTOH (src->backPlane, dst->back_plane, fpFormat);
+
+		FP_CONVERT_NTOH (src->frontScaling,
+		    dst->front_scaling, fpFormat);
+		FP_CONVERT_NTOH (src->backScaling,
+		    dst->back_scaling, fpFormat);
+	    }
+	    else
+	    {
+		dst->front_plane = src->frontPlane;
+		dst->back_plane = src->backPlane;
+
+		dst->front_scaling = src->frontScaling;
+		dst->back_scaling = src->backScaling;
+	    }
+
+	    EXTRACT_COLOR_VAL (pBuf, dst->color.type, dst->color.value,
+		fpConvert, fpFormat);
 	}
-
 	break;
     }
 
     case PEXLUTColorApprox:
-	GetLUTEntryBuffer (numEntries, PEXColorApproxEntry, buf);
+    {
+	pexColorApproxEntry *src;
+	PEXColorApproxEntry *dst;
+    
+	GetLUTEntryBuffer (numEntries, PEXColorApproxEntry, lutBuf);
+	dst = (PEXColorApproxEntry *) lutBuf;
+	
+	for (i = 0; i < numEntries; i++, dst++)
+	{
+	    GET_STRUCT_PTR (pexColorApproxEntry, pBuf, src);
+	    pBuf += SIZEOF (pexColorApproxEntry);
 
-	COPY_AREA ((char *) pt, (char *) buf,
-	    numEntries * sizeof (pexColorApproxEntry));
+	    dst->type = src->approxType;
+	    dst->model = src->approxModel;
+	    dst->max1 = src->max1;
+	    dst->max2 = src->max2;
+	    dst->max3 = src->max3;
+	    dst->dither = src->dither;
+	    dst->mult1 = src->mult1;
+	    dst->mult2 = src->mult2;
+	    dst->mult3 = src->mult3;
+	    dst->base_pixel = src->basePixel;
 
-        break;
+	    if (fpConvert)
+	    {
+		FP_CONVERT_NTOH (src->weight1, dst->weight1, fpFormat);
+		FP_CONVERT_NTOH (src->weight2, dst->weight2, fpFormat);
+		FP_CONVERT_NTOH (src->weight3, dst->weight3, fpFormat);
+	    }
+	    else
+	    {
+		dst->weight1 = src->weight1;
+		dst->weight2 = src->weight2;
+		dst->weight3 = src->weight3;
+	    }
+	}
+	break;
+    }
     }
 
-    return ((PEXPointer) buf);
+    return (lutBuf);
 }
-

@@ -1,4 +1,4 @@
-/* $XConsortium: pl_struct.c,v 1.6 92/07/24 13:43:11 mor Exp $ */
+/* $XConsortium: pl_struct.c,v 1.9 92/11/05 15:21:30 mor Exp $ */
 
 /******************************************************************************
 Copyright 1987,1991 by Digital Equipment Corporation, Maynard, Massachusetts
@@ -36,15 +36,16 @@ PEXCreateStructure (display)
 INPUT Display		*display;
 
 {
-    pexCreateStructureReq	*req;
-    pexStructure		s;
+    register pexCreateStructureReq	*req;
+    char				*pBuf;
+    PEXStructure			sid;
 
 
     /*
      * Get a structure resource id from X.
      */
 
-    s = XAllocID (display);
+    sid = XAllocID (display);
 
 
     /*
@@ -58,8 +59,14 @@ INPUT Display		*display;
      * Put the request in the X request buffer.
      */
 
-    PEXGetReq (CreateStructure, req);
-    req->id = s;
+    PEXGetReq (CreateStructure, pBuf);
+
+    BEGIN_REQUEST_HEADER (CreateStructure, pBuf, req);
+
+    PEXStoreReqHead (CreateStructure, req);
+    req->id = sid;
+
+    END_REQUEST_HEADER (CreateStructure, pBuf, req);
 
 
     /*
@@ -69,7 +76,7 @@ INPUT Display		*display;
     UnlockDisplay (display);
     PEXSyncHandle (display);
 
-    return (s);
+    return (sid);
 }
 
 
@@ -81,8 +88,9 @@ INPUT unsigned long	numStructures;
 INPUT PEXStructure	*structures;
 
 {
-    pexDestroyStructuresReq	*req;
-    int 			size;
+    register pexDestroyStructuresReq	*req;
+    char				*pBuf;
+    int 				size;
 
 
     /*
@@ -96,12 +104,17 @@ INPUT PEXStructure	*structures;
      * Put the request in the X request buffer.
      */
 
-    size = numStructures * sizeof (pexStructure);
+    size = numStructures * SIZEOF (pexStructure);
+    PEXGetReqExtra (DestroyStructures, size, pBuf);
 
-    PEXGetReqExtra (DestroyStructures, size, req);
+    BEGIN_REQUEST_HEADER (DestroyStructures, pBuf, req);
+
+    PEXStoreReqExtraHead (DestroyStructures, size, req);
     req->numStructures = numStructures;
 
-    COPY_AREA ((char *) structures, ((char *) &req[1]), size);
+    END_REQUEST_HEADER (DestroyStructures, pBuf, req);
+
+    STORE_LISTOF_CARD32 (numStructures, structures, pBuf);
 
 
     /*
@@ -121,7 +134,8 @@ INPUT PEXStructure	srcStructure;
 INPUT PEXStructure	destStructure;
 
 {
-    pexCopyStructureReq	*req;
+    register pexCopyStructureReq	*req;
+    char				*pBuf;
 
 
     /*
@@ -135,9 +149,15 @@ INPUT PEXStructure	destStructure;
      * Put the request in the X request buffer.
      */
 
-    PEXGetReq (CopyStructure, req);
+    PEXGetReq (CopyStructure, pBuf);
+
+    BEGIN_REQUEST_HEADER (CopyStructure, pBuf, req);
+
+    PEXStoreReqHead (CopyStructure, req);
     req->src = srcStructure;
     req->dst = destStructure;
+
+    END_REQUEST_HEADER (CopyStructure, pBuf, req);
 
 
     /*
@@ -160,8 +180,9 @@ INPUT unsigned long		value_mask;
 OUTPUT PEXStructureInfo		*info_return;
 
 {
-    pexGetStructureInfoReq	*req;
-    pexGetStructureInfoReply	rep;
+    register pexGetStructureInfoReq	*req;
+    char				*pBuf;
+    pexGetStructureInfoReply		rep;
 
 
     /*
@@ -175,10 +196,16 @@ OUTPUT PEXStructureInfo		*info_return;
      * Put the request in the X request buffer and get a reply.
      */
 
-    PEXGetReq (GetStructureInfo, req);
+    PEXGetReq (GetStructureInfo, pBuf);
+
+    BEGIN_REQUEST_HEADER (GetStructureInfo, pBuf, req);
+
+    PEXStoreReqHead (GetStructureInfo, req);
     req->fpFormat = float_format;
     req->sid = structure;
     req->itemMask = value_mask;
+
+    END_REQUEST_HEADER (GetStructureInfo, pBuf, req);
 
     if (_XReply (display, &rep, 0, xTrue) == 0)
     {
@@ -226,8 +253,9 @@ OUTPUT unsigned long	*numElementInfoReturn;
 OUTPUT PEXElementInfo	**infoReturn;
 
 {
-    pexGetElementInfoReq	*req;
-    pexGetElementInfoReply	rep;
+    register pexGetElementInfoReq	*req;
+    char				*pBuf;
+    pexGetElementInfoReply		rep;
 
 
     /*
@@ -241,13 +269,19 @@ OUTPUT PEXElementInfo	**infoReturn;
      * Put the request in the X request buffer and get a reply.
      */
 
-    PEXGetReq (GetElementInfo, req);
+    PEXGetReq (GetElementInfo, pBuf);
+
+    BEGIN_REQUEST_HEADER (GetElementInfo, pBuf, req);
+
+    PEXStoreReqHead (GetElementInfo, req);
     req->fpFormat = float_format;
     req->sid = structure;
-    req->range.position1.whence = whence1;
-    req->range.position1.offset = offset1;
-    req->range.position2.whence = whence2;
-    req->range.position2.offset = offset2;
+    req->position1_whence = whence1;
+    req->position1_offset = offset1;
+    req->position2_whence = whence2;
+    req->position2_offset = offset2;
+
+    END_REQUEST_HEADER (GetElementInfo, pBuf, req);
 
     if (_XReply (display, &rep, 0, xFalse) == 0)
     {
@@ -266,9 +300,9 @@ OUTPUT PEXElementInfo	**infoReturn;
      */
 
     *infoReturn = (PEXElementInfo *) PEXAllocBuf (
-	(unsigned) (rep.length << 2));
+        sizeof (PEXElementInfo) * rep.numInfo);
 
-    _XRead (display, (char *) *infoReturn, (long) (rep.length << 2));
+    XREAD_LISTOF_ELEMINFO (display, rep.numInfo, (*infoReturn));
 
 
     /*
@@ -291,9 +325,10 @@ INPUT int		which;
 OUTPUT unsigned long	*numStructuresReturn;
 
 {
-    pexGetStructuresInNetworkReq	*req;
-    pexGetStructuresInNetworkReply	rep;
-    pexStructure			*ps;
+    register pexGetStructuresInNetworkReq	*req;
+    char					*pBuf;
+    pexGetStructuresInNetworkReply		rep;
+    PEXStructure				*structsRet;
 
 
     /*
@@ -307,9 +342,15 @@ OUTPUT unsigned long	*numStructuresReturn;
      * Put the request in the X request buffer and get a reply.
      */
 
-    PEXGetReq (GetStructuresInNetwork, req);
+    PEXGetReq (GetStructuresInNetwork, pBuf);
+
+    BEGIN_REQUEST_HEADER (GetStructuresInNetwork, pBuf, req);
+
+    PEXStoreReqHead (GetStructuresInNetwork, req);
     req->sid = structure;
     req->which = which;
+
+    END_REQUEST_HEADER (GetStructuresInNetwork, pBuf, req);
 
     if (_XReply (display, &rep, 0, xFalse) == 0)
     {
@@ -326,9 +367,10 @@ OUTPUT unsigned long	*numStructuresReturn;
      * Allocate a buffer for the replies to pass back to the client.
      */
 
-    ps = (pexStructure *) PEXAllocBuf ((unsigned) (rep.length << 2));
+    structsRet = (PEXStructure *) PEXAllocBuf (
+        sizeof (PEXStructure) * rep.numStructures);
 
-    _XRead (display, (char *) ps, (long) (rep.length << 2));
+    XREAD_LISTOF_CARD32 (display, rep.numStructures, structsRet);
 
 
     /*
@@ -338,7 +380,7 @@ OUTPUT unsigned long	*numStructuresReturn;
     UnlockDisplay (display);
     PEXSyncHandle (display);
 
-    return ((PEXStructure *) ps);
+    return (structsRet);
 }
 
 
@@ -352,12 +394,13 @@ INPUT unsigned long	pathDepth;
 OUTPUT unsigned long	*numPathsReturn;
 
 {
-    pexGetAncestorsReq		*req;
-    pexGetAncestorsReply	rep;
-    PEXStructurePath		*psp, *pathsReturn;
-    pexElementRef		*per;
-    char			*prep;
-    int				numElements, size, i;
+    register pexGetAncestorsReq		*req;
+    char				*pBuf;
+    pexGetAncestorsReply		rep;
+    PEXStructurePath			*pStrucPath;
+    PEXElementRef			*pElemRef;
+    int					numElements;
+    int					i;
 
 
     /*
@@ -371,10 +414,16 @@ OUTPUT unsigned long	*numPathsReturn;
      * Put the request in the X request buffer and get a reply.
      */
 
-    PEXGetReq (GetAncestors, req);
+    PEXGetReq (GetAncestors, pBuf);
+
+    BEGIN_REQUEST_HEADER (GetAncestors, pBuf, req);
+
+    PEXStoreReqHead (GetAncestors, req);
     req->sid = structure;
     req->pathOrder = pathPart;
     req->pathDepth = pathDepth;
+
+    END_REQUEST_HEADER (GetAncestors, pBuf, req);
 
     if (_XReply (display, &rep, 0, xFalse) == 0)
     {
@@ -388,32 +437,30 @@ OUTPUT unsigned long	*numPathsReturn;
 
 
     /*
-     * Allocate a scratch buffer and copy the reply data to the buffer.
+     * Read the reply data into a scratch buffer.
      */
 
-    prep = _XAllocScratch (display, (unsigned long) (rep.length << 2));
-
-    _XRead (display, (char *) prep, (long) (rep.length << 2));
+    XREAD_INTO_SCRATCH (display, pBuf, (long) (rep.length << 2));
 
 
     /*
      * Allocate a buffer for the replies to pass back to the client.
      */
 
-    pathsReturn = psp = (PEXStructurePath *) PEXAllocBuf
-	((unsigned) (rep.numPaths * sizeof (PEXStructurePath)));
+    pStrucPath = (PEXStructurePath *) PEXAllocBuf (
+	rep.numPaths * sizeof (PEXStructurePath));
 
     for (i = 0; i < rep.numPaths; i++)
     {
-	numElements = *((CARD32 *) prep);
-	prep += sizeof (CARD32);
-	size = numElements * sizeof (pexElementRef);
-	per = (pexElementRef *) PEXAllocBuf ((unsigned) size);
-	COPY_AREA ((char *) prep, (char *) per, size);
-	psp->count = numElements;
-	psp->elements = (PEXElementRef *) per;
-	psp++;
-	prep += size;
+	EXTRACT_CARD32 (pBuf, numElements);
+
+	pElemRef = (PEXElementRef *) PEXAllocBuf (
+	    numElements * sizeof (PEXElementRef));
+
+	EXTRACT_LISTOF_ELEMREF (numElements, pBuf, pElemRef);
+
+	pStrucPath[i].count = numElements;
+	pStrucPath[i].elements = pElemRef;
     }
 
 
@@ -424,7 +471,7 @@ OUTPUT unsigned long	*numPathsReturn;
     UnlockDisplay (display);
     PEXSyncHandle (display);
 
-    return (pathsReturn);
+    return (pStrucPath);
 }
 
 
@@ -439,12 +486,13 @@ INPUT unsigned long	pathDepth;
 OUTPUT unsigned long	*numPathsReturn;
 
 {
-    pexGetDescendantsReq	*req;
-    pexGetDescendantsReply	rep;
-    PEXStructurePath		*psp, *pathsReturn;
-    pexElementRef		*per;
-    char			*prep;
-    int				numElements, size, i;
+    register pexGetDescendantsReq	*req;
+    char				*pBuf;
+    pexGetDescendantsReply		rep;
+    PEXStructurePath			*pStrucPath;
+    PEXElementRef			*pElemRef;
+    int					numElements;
+    int					i;
 
 
     /*
@@ -458,10 +506,16 @@ OUTPUT unsigned long	*numPathsReturn;
      * Put the request in the X request buffer and get a reply.
      */
 
-    PEXGetReq (GetDescendants, req);
+    PEXGetReq (GetDescendants, pBuf);
+
+    BEGIN_REQUEST_HEADER (GetDescendants, pBuf, req);
+
+    PEXStoreReqHead (GetDescendants, req);
     req->sid = structure;
     req->pathOrder = pathPart;
     req->pathDepth = pathDepth;
+
+    END_REQUEST_HEADER (GetDescendants, pBuf, req);
 
     if (_XReply (display, &rep, 0, xFalse) == 0)
     {
@@ -475,32 +529,30 @@ OUTPUT unsigned long	*numPathsReturn;
 
 
     /*
-     * Allocate a scratch buffer and copy the reply data to the buffer.
+     * Read the reply data into a scratch buffer.
      */
 
-    prep = _XAllocScratch (display, (unsigned long) (rep.length << 2));
-
-    _XRead (display, (char *) prep, (long)(rep.length << 2));
+    XREAD_INTO_SCRATCH (display, pBuf, (long) (rep.length << 2));
 
 
     /*
      * Allocate a buffer to pass the replies back to the client.
      */
 
-    pathsReturn = psp = (PEXStructurePath *) PEXAllocBuf
-	((unsigned) (rep.numPaths * sizeof (PEXStructurePath)));
+    pStrucPath = (PEXStructurePath *) PEXAllocBuf (
+	rep.numPaths * sizeof (PEXStructurePath));
 
     for (i = 0; i < rep.numPaths; i++)
     {
-	numElements = *((CARD32 *) prep);
-	prep += sizeof (CARD32);
-	size = numElements * sizeof (pexElementRef);
-	per = (pexElementRef *) PEXAllocBuf ((unsigned) size);
-	COPY_AREA ((char *) prep, (char *) per, size);
-	psp->count = numElements;
-	psp->elements = (PEXElementRef *) per;
-	psp++;
-	prep += size;
+	EXTRACT_CARD32 (pBuf, numElements);
+
+	pElemRef = (PEXElementRef *) PEXAllocBuf (
+	    numElements * sizeof (PEXElementRef));
+
+	EXTRACT_LISTOF_ELEMREF (numElements, pBuf, pElemRef);
+
+	pStrucPath[i].count = numElements;
+	pStrucPath[i].elements = pElemRef;
     }
 
 
@@ -511,7 +563,7 @@ OUTPUT unsigned long	*numPathsReturn;
     UnlockDisplay (display);
     PEXSyncHandle (display);
 
-    return (pathsReturn);
+    return (pStrucPath);
 }
 
 
@@ -531,10 +583,12 @@ OUTPUT unsigned long	*sizeReturn;
 OUTPUT char		**ocsReturn;
 
 {
-    pexFetchElementsReq		*req;
-    pexFetchElementsReply	rep;
-    long			repSize;
-    int				server_float_format;
+    register pexFetchElementsReq	*req;
+    char				*pBuf;
+    pexFetchElementsReply		rep;
+    long				repSize;
+    PEXOCData				*oc_data;
+    int					server_float_format;
 
 
     /*
@@ -550,13 +604,19 @@ OUTPUT char		**ocsReturn;
 
     server_float_format = PEXGetProtocolFloatFormat (display);
 
-    PEXGetReq (FetchElements, req);
+    PEXGetReq (FetchElements, pBuf);
+
+    BEGIN_REQUEST_HEADER (FetchElements, pBuf, req);
+
+    PEXStoreReqHead (FetchElements, req);
     req->fpFormat = server_float_format;
     req->sid = structure;
-    req->range.position1.whence = whence1;
-    req->range.position1.offset = offset1;
-    req->range.position2.whence = whence2;
-    req->range.position2.offset = offset2;
+    req->position1_whence = whence1;
+    req->position1_offset = offset1;
+    req->position2_whence = whence2;
+    req->position2_offset = offset2;
+
+    END_REQUEST_HEADER (FetchElements, pBuf, req);
 
     if (_XReply (display, &rep, 0, xFalse) == 0)
     {
@@ -576,8 +636,15 @@ OUTPUT char		**ocsReturn;
 	 * specified by the application.
 	 */
 
-	*sizeReturn = 0;
-	*ocsReturn = NULL;
+	XREAD_INTO_SCRATCH (display, pBuf, (long) (rep.length << 2));
+
+	oc_data = PEXDecodeOCs (server_float_format, rep.numElements,
+            rep.length << 2, pBuf);
+
+	*ocsReturn = PEXEncodeOCs (float_format, rep.numElements,
+            oc_data, sizeReturn);
+
+	PEXFreeOCData (rep.numElements, oc_data);
     }
     else
     {
@@ -586,8 +653,7 @@ OUTPUT char		**ocsReturn;
 	 */
 
 	*sizeReturn = repSize = rep.length << 2;
-	*ocsReturn = (char *) PEXAllocBuf (repSize);
-	if (*ocsReturn != NULL)
+	if (*ocsReturn = (char *) PEXAllocBuf (repSize))
 	    _XRead (display, *ocsReturn, (long) repSize);
     }
 
@@ -618,14 +684,22 @@ INPUT XID		resID;
 INPUT PEXOCRequestType	reqType;
 
 {
-    PEXDisplayInfo 		*srcDisplayInfo, *dstDisplayInfo;
-    pexFetchElementsReq		*req;
-    pexFetchElementsReply	rep;
-    char	 		*ocAddr;
-    PEXEnumTypeDesc		*srcFloats, *dstFloats;
-    long			bytesLeft;
-    int				getSize, size, i, j;
-    int				fp_match, float_format;
+    register pexFetchElementsReq	*req;
+    char				*pBuf;
+    pexFetchElementsReply		rep;
+    PEXDisplayInfo 			*srcDisplayInfo;
+    PEXDisplayInfo			*dstDisplayInfo;
+    char	 			*ocAddr;
+    PEXOCData				*oc_data;
+    PEXEnumTypeDesc			*srcFloats;
+    PEXEnumTypeDesc			*dstFloats;
+    long				bytesLeft;
+    int					getSize;
+    int					size;
+    unsigned long			oc_size;
+    int					i, j;
+    int					fp_match;
+    int					float_format;
 
 
     /*
@@ -642,7 +716,7 @@ INPUT PEXOCRequestType	reqType;
     PEXGetDisplayInfo (display, srcDisplayInfo);
     PEXGetDisplayInfo (dstDisplay, dstDisplayInfo);
 
-    if (display == dstDisplay)
+    if (srcDisplayInfo->fpFormat == dstDisplayInfo->fpFormat)
     {
 	float_format = dstDisplayInfo->fpFormat;
 	fp_match = 1;
@@ -680,13 +754,19 @@ INPUT PEXOCRequestType	reqType;
      * Put the request in the X request buffer and get a reply.
      */
 
-    PEXGetReq (FetchElements, req)
+    PEXGetReq (FetchElements, pBuf);
+
+    BEGIN_REQUEST_HEADER (FetchElements, pBuf, req);
+
+    PEXStoreReqHead (FetchElements, req);
     req->fpFormat = float_format;
     req->sid = structure;
-    req->range.position1.whence = whence1;
-    req->range.position1.offset = offset1;
-    req->range.position2.whence = whence2;
-    req->range.position2.offset = offset2;
+    req->position1_whence = whence1;
+    req->position1_offset = offset1;
+    req->position2_whence = whence2;
+    req->position2_offset = offset2;
+
+    END_REQUEST_HEADER (FetchElements, pBuf, req);
 
     if (_XReply (display, &rep, 0, xFalse) == 0)
     {
@@ -714,23 +794,13 @@ INPUT PEXOCRequestType	reqType;
 
 	    while (bytesLeft > 0)
 	    {
-		size = min (bytesLeft, getSize);
-
-		if (ocAddr = PEXGetOCAddr (dstDisplay, size))
-		    _XRead (display, ocAddr, (long) size);
-		else
-		{
-		    PEXFinishOC (dstDisplay);
-		    if (display != dstDisplay)
-			UnlockDisplay (display);
-		    PEXSyncHandle (dstDisplay);
-		    return (0);
-		}
-
+		size = bytesLeft < getSize ? bytesLeft : getSize;
+		ocAddr = PEXGetOCAddr (dstDisplay, size);
+		_XRead (display, ocAddr, (long) size);
 		bytesLeft -= size;
 	    }
 
-	    PEXFinishOC (dstDisplay);
+	    PEXFinishOCs (dstDisplay);
 	}
 
 	if (display != dstDisplay)
@@ -742,6 +812,24 @@ INPUT PEXOCRequestType	reqType;
 	 * Floating point conversion necessary.
 	 */
 
+	XREAD_INTO_SCRATCH (display, pBuf, (long) (rep.length << 2));
+
+	oc_data = PEXDecodeOCs (float_format, rep.numElements,
+            rep.length << 2, pBuf);
+
+	pBuf = PEXEncodeOCs (dstDisplayInfo->fpFormat, rep.numElements,
+            oc_data, &oc_size);
+
+	PEXFreeOCData (rep.numElements, oc_data);
+
+	if (display == dstDisplay)
+	    UnlockDisplay (display);
+
+	PEXSendOCs (dstDisplay, resID, reqType, dstDisplayInfo->fpFormat,
+	    rep.numElements, oc_size, pBuf);
+
+	if (display != dstDisplay)
+	    UnlockDisplay (display);
     }
 
     PEXSyncHandle (dstDisplay);
@@ -758,7 +846,8 @@ INPUT PEXStructure	structure;
 INPUT int		mode;
 
 {
-    pexSetEditingModeReq	*req;
+    register pexSetEditingModeReq	*req;
+    char				*pBuf;
 
 
     /*
@@ -772,9 +861,15 @@ INPUT int		mode;
      * Put the request in the X request buffer.
      */
 
-    PEXGetReq (SetEditingMode, req);
+    PEXGetReq (SetEditingMode, pBuf);
+
+    BEGIN_REQUEST_HEADER (SetEditingMode, pBuf, req);
+
+    PEXStoreReqHead (SetEditingMode, req);
     req->sid = structure;
     req->mode = mode;
+
+    END_REQUEST_HEADER (SetEditingMode, pBuf, req);
 
 
     /*
@@ -795,7 +890,8 @@ INPUT int		whence;
 INPUT long		offset;
 
 {
-    pexSetElementPointerReq	*req;
+    register pexSetElementPointerReq	*req;
+    char				*pBuf;
 
 
     /*
@@ -809,10 +905,16 @@ INPUT long		offset;
      * Put the request in the X request buffer.
      */
 
-    PEXGetReq (SetElementPointer, req);
+    PEXGetReq (SetElementPointer, pBuf);
+
+    BEGIN_REQUEST_HEADER (SetElementPointer, pBuf, req);
+
+    PEXStoreReqHead (SetElementPointer, req);
     req->sid = structure;
-    req->position.whence = whence;
-    req->position.offset = offset;
+    req->position_whence = whence;
+    req->position_offset = offset;
+
+    END_REQUEST_HEADER (SetElementPointer, pBuf, req);
 
 
     /*
@@ -833,7 +935,8 @@ INPUT long		label;
 INPUT long		offset;
 
 {
-    pexSetElementPointerAtLabelReq	*req;
+    register pexSetElementPointerAtLabelReq	*req;
+    char					*pBuf;
 
 
     /*
@@ -847,10 +950,16 @@ INPUT long		offset;
      * Put the request in the X request buffer.
      */
 
-    PEXGetReq (SetElementPointerAtLabel, req);
+    PEXGetReq (SetElementPointerAtLabel, pBuf);
+
+    BEGIN_REQUEST_HEADER (SetElementPointerAtLabel, pBuf, req);
+
+    PEXStoreReqHead (SetElementPointerAtLabel, req);
     req->sid = structure;
     req->label = label;
     req->offset = offset;
+
+    END_REQUEST_HEADER (SetElementPointerAtLabel, pBuf, req);
 
 
     /*
@@ -878,9 +987,10 @@ INPUT unsigned short	*exclList;
 OUTPUT unsigned long	*offsetReturn;
 
 {
-    pexElementSearchReq		*req;
-    pexElementSearchReply	rep;
-    char			*ptr;
+    register pexElementSearchReq	*req;
+    char				*pBuf;
+    pexElementSearchReply		rep;
+    int 				size;
 
 
     /*
@@ -894,19 +1004,26 @@ OUTPUT unsigned long	*offsetReturn;
      * Put the request in the X request buffer and get a reply.
      */
 
-    PEXGetReqExtra (ElementSearch,  sizeof (CARD16) *
-	(numIncl + (numIncl & 1) + numExcl + (numExcl & 1)), req);
+    size = SIZEOF (CARD16) *
+	(numIncl + (numIncl & 1) + numExcl + (numExcl & 1));
+
+    PEXGetReqExtra (ElementSearch, size, pBuf);
+
+    BEGIN_REQUEST_HEADER (ElementSearch, pBuf, req);
+
+    PEXStoreReqExtraHead (ElementSearch, size, req);
     req->sid = structure;
-    req->position.whence = whence;
-    req->position.offset = offset;
+    req->position_whence = whence;
+    req->position_offset = offset;
     req->direction = direction;
     req->numIncls = numIncl;
     req->numExcls = numExcl;
 
-    ptr = (char *) &req[1];
-    COPY_AREA ((char *) inclList, ptr, numIncl * sizeof (CARD16));
-    ptr += ((numIncl + (numIncl & 1)) * sizeof (CARD16));
-    COPY_AREA ((char *) exclList, ptr, numExcl * sizeof (CARD16));
+    END_REQUEST_HEADER (ElementSearch, pBuf, req);
+
+    STORE_LISTOF_CARD16 (numIncl, inclList, pBuf);
+    pBuf += ((numIncl & 1) * SIZEOF (CARD16));
+    STORE_LISTOF_CARD16 (numExcl, exclList, pBuf);
 
     if (_XReply (display, &rep, 0, xTrue) == 0)
     {
@@ -941,7 +1058,8 @@ INPUT int		whence2;
 INPUT long		offset2;
 
 {
-    pexDeleteElementsReq	*req;
+    register pexDeleteElementsReq	*req;
+    char				*pBuf;
 
 
     /*
@@ -955,12 +1073,18 @@ INPUT long		offset2;
      * Put the request in the X request buffer.
      */
 
-    PEXGetReq (DeleteElements, req);
+    PEXGetReq (DeleteElements, pBuf);
+
+    BEGIN_REQUEST_HEADER (DeleteElements, pBuf, req);
+
+    PEXStoreReqHead (DeleteElements, req);
     req->sid =  structure;
-    req->range.position1.whence = whence1;
-    req->range.position1.offset = offset1;
-    req->range.position2.whence = whence2;
-    req->range.position2.offset = offset2;
+    req->position1_whence = whence1;
+    req->position1_offset = offset1;
+    req->position2_whence = whence2;
+    req->position2_offset = offset2;
+
+    END_REQUEST_HEADER (DeleteElements, pBuf, req);
 
 
     /*
@@ -982,7 +1106,8 @@ INPUT long		offset;
 INPUT long		label;
 
 {
-    pexDeleteElementsToLabelReq	*req;
+    register pexDeleteElementsToLabelReq	*req;
+    char					*pBuf;
 
 
     /*
@@ -996,11 +1121,17 @@ INPUT long		label;
      * Put the request in the X request buffer.
      */
 
-    PEXGetReq (DeleteElementsToLabel, req);
+    PEXGetReq (DeleteElementsToLabel, pBuf);
+
+    BEGIN_REQUEST_HEADER (DeleteElementsToLabel, pBuf, req);
+
+    PEXStoreReqHead (DeleteElementsToLabel, req);
     req->sid =  structure;
-    req->position.whence = whence;
-    req->position.offset = offset;
+    req->position_whence = whence;
+    req->position_offset = offset;
     req->label = label;
+
+    END_REQUEST_HEADER (DeleteElementsToLabel, pBuf, req);
 
 
     /*
@@ -1021,7 +1152,8 @@ INPUT long		label1;
 INPUT long		label2;
 
 {
-    pexDeleteBetweenLabelsReq	*req;
+    register pexDeleteBetweenLabelsReq	*req;
+    char				*pBuf;
 
 
     /*
@@ -1035,10 +1167,16 @@ INPUT long		label2;
      * Put the request in the X request buffer.
      */
 
-    PEXGetReq (DeleteBetweenLabels, req);
+    PEXGetReq (DeleteBetweenLabels, pBuf);
+
+    BEGIN_REQUEST_HEADER (DeleteBetweenLabels, pBuf, req);
+
+    PEXStoreReqHead (DeleteBetweenLabels, req);
     req->sid =  structure;
     req->label1 = label1;
     req->label2 = label2;
+
+    END_REQUEST_HEADER (DeleteBetweenLabels, pBuf, req);
 
 
     /*
@@ -1065,7 +1203,8 @@ INPUT int		destWhence;
 INPUT long		destOffset;
 
 {
-    pexCopyElementsReq	*req;
+    register pexCopyElementsReq		*req;
+    char				*pBuf;
 
 
     /*
@@ -1079,15 +1218,21 @@ INPUT long		destOffset;
      * Put the request in the X request buffer.
      */
 
-    PEXGetReq (CopyElements, req);
+    PEXGetReq (CopyElements, pBuf);
+
+    BEGIN_REQUEST_HEADER (CopyElements, pBuf, req);
+
+    PEXStoreReqHead (CopyElements, req);
     req->src = srcStructure;
-    req->srcRange.position1.whence = srcWhence1;
-    req->srcRange.position1.offset = srcOffset1;
-    req->srcRange.position2.whence = srcWhence2;
-    req->srcRange.position2.offset = srcOffset2;
+    req->srcPosition1_whence = srcWhence1;
+    req->srcPosition1_offset = srcOffset1;
+    req->srcPosition2_whence = srcWhence2;
+    req->srcPosition2_offset = srcOffset2;
     req->dst = destStructure;
-    req->dstPosition.whence = destWhence;
-    req->dstPosition.offset = destOffset;
+    req->dstPosition_whence = destWhence;
+    req->dstPosition_offset = destOffset;
+
+    END_REQUEST_HEADER (CopyElements, pBuf, req);
 
 
     /*
@@ -1107,7 +1252,8 @@ INPUT PEXStructure	oldStructure;
 INPUT PEXStructure	newStructure;
 
 {
-    pexChangeStructureRefsReq	*req;
+    register pexChangeStructureRefsReq	*req;
+    char				*pBuf;
 
 
     /*
@@ -1121,9 +1267,15 @@ INPUT PEXStructure	newStructure;
      * Put the request in the X request buffer.
      */
 
-    PEXGetReq (ChangeStructureRefs, req);
+    PEXGetReq (ChangeStructureRefs, pBuf);
+
+    BEGIN_REQUEST_HEADER (ChangeStructureRefs, pBuf, req);
+
+    PEXStoreReqHead (ChangeStructureRefs, req);
     req->old_id = oldStructure;
     req->new_id = newStructure;
+
+    END_REQUEST_HEADER (ChangeStructureRefs, pBuf, req);
 
 
     /*

@@ -1,4 +1,4 @@
-/* $XConsortium: pl_pick.c,v 1.6 92/07/16 11:00:16 mor Exp $ */
+/* $XConsortium: pl_pick.c,v 1.10 92/11/04 11:40:53 mor Exp $ */
 
 /******************************************************************************
 Copyright 1987,1991 by Digital Equipment Corporation, Maynard, Massachusetts
@@ -35,8 +35,8 @@ SOFTWARE.
 *************************************************************************/
 
 /*
- *  NEED EVENTS needs to be defined when including Xproto.h so xEvent can be
- *  sucked in.  Turn it on here in case Xproto.h is grabbed earlier
+ *  NEED EVENTS needs to be defined when including Xproto.h so xEvent
+ *  can be sucked in.
  */ 
 
 #define NEED_EVENTS
@@ -49,6 +49,11 @@ SOFTWARE.
 #include "PEXlib.h"
 #include "PEXlibint.h"
 
+#define GetPickRecordSize(_pickType) \
+    (_pickType == PEXPickDeviceNPCHitVolume ? SIZEOF (pexPD_NPC_HitVolume) : \
+    (_pickType == PEXPickDeviceDCHitBox ? SIZEOF (pexPD_DC_HitBox) : 0))
+
+
 
 PEXPickMeasure
 PEXCreatePickMeasure (display, wks, devType)
@@ -58,8 +63,9 @@ INPUT PEXWorkstation	wks;
 INPUT int		devType;
 
 {
-    pexCreatePickMeasureReq	*req;
-    PEXPickMeasure		pm;
+    register pexCreatePickMeasureReq	*req;
+    char				*pBuf;
+    PEXPickMeasure			pm;
 
 
     /*
@@ -80,10 +86,16 @@ INPUT int		devType;
      * Put the request in the X request buffer.
      */
 
-    PEXGetReq (CreatePickMeasure, req);
+    PEXGetReq (CreatePickMeasure, pBuf);
+
+    BEGIN_REQUEST_HEADER (CreatePickMeasure, pBuf, req);
+
+    PEXStoreReqHead (CreatePickMeasure, req);
     req->wks = wks;
     req->pm = pm;
     req->devType = devType;
+
+    END_REQUEST_HEADER (CreatePickMeasure, pBuf, req);
 
 
     /*
@@ -104,7 +116,8 @@ INPUT Display		*display;
 INPUT PEXPickMeasure	pm;
 
 {
-    pexFreePickMeasureReq	*req;
+    register pexFreePickMeasureReq	*req;
+    char				*pBuf;
 
 
     /*
@@ -118,8 +131,14 @@ INPUT PEXPickMeasure	pm;
      * Put the request in the X request buffer.
      */
 
-    PEXGetReq (FreePickMeasure, req);
+    PEXGetReq (FreePickMeasure, pBuf);
+
+    BEGIN_REQUEST_HEADER (FreePickMeasure, pBuf, req);
+
+    PEXStoreReqHead (FreePickMeasure, req);
     req->id = pm;
+
+    END_REQUEST_HEADER (FreePickMeasure, pBuf, req);
 
 
     /*
@@ -139,12 +158,13 @@ INPUT PEXPickMeasure		pm;
 INPUT unsigned long		valueMask;
 
 {
-    pexGetPickMeasureReq	*req;
-    pexGetPickMeasureReply	rep;
-    PEXPMAttributes		*ppmi;
-    unsigned long		*pv;
-    unsigned long		f;
-    int				i, tmp;
+    register pexGetPickMeasureReq	*req;
+    char				*pBuf;
+    pexGetPickMeasureReply		rep;
+    PEXPMAttributes			*ppmi;
+    unsigned long			f;
+    int					i;
+    int					count;
 
 
     /*
@@ -158,9 +178,15 @@ INPUT unsigned long		valueMask;
      * Put the request in the X request buffer and get a reply.
      */
 
-    PEXGetReq (GetPickMeasure, req);
+    PEXGetReq (GetPickMeasure, pBuf);
+
+    BEGIN_REQUEST_HEADER (GetPickMeasure, pBuf, req);
+
+    PEXStoreReqHead (GetPickMeasure, req);
     req->pm = pm;
     req->itemMask = valueMask;
+
+    END_REQUEST_HEADER (GetPickMeasure, pBuf, req);
 
     if (_XReply (display, &rep, 0, xFalse) == 0)
     {
@@ -171,21 +197,17 @@ INPUT unsigned long		valueMask;
 
 
     /*
-     * Allocate a scratch buffer and copy the reply data to the buffer.
+     * Read the reply data into a scratch buffer.
      */
 
-    pv = (unsigned long *) _XAllocScratch (display,
-	(unsigned long) (rep.length << 2));
-
-    _XRead (display, (char *) pv, (long) (rep.length << 2));
+    XREAD_INTO_SCRATCH (display, pBuf, (long) (rep.length << 2));
 
 
     /*
      * Allocate a buffer for the replies to pass back to the client.
      */
 
-    ppmi = (PEXPMAttributes *)
-	PEXAllocBuf ((unsigned) (sizeof (PEXPMAttributes)));
+    ppmi = (PEXPMAttributes *) PEXAllocBuf (sizeof (PEXPMAttributes));
 
     ppmi->pick_path.count = 0;
     ppmi->pick_path.elements = NULL;
@@ -198,19 +220,20 @@ INPUT unsigned long		valueMask;
 	    switch (f)
 	    {
 	    case PEXPMStatus:
-		ppmi->status = *pv;
-		pv++;
+
+		EXTRACT_LOV_CARD16 (pBuf, ppmi->status);
 		break;
+
 	    case PEXPMPath:
-		tmp = *(int *) pv;
-		pv++;
-		ppmi->pick_path.count = tmp;
-		tmp *= sizeof (PEXPickElementRef);
-		ppmi->pick_path.elements =
-		    (PEXPickElementRef *) PEXAllocBuf ((unsigned) tmp);
-		COPY_AREA ((char *) pv,
-		    (char *) (ppmi->pick_path.elements), tmp);
-		pv += NUMWORDS (tmp);
+
+		EXTRACT_CARD32 (pBuf, count);
+		ppmi->pick_path.count = count;
+
+		ppmi->pick_path.elements = (PEXPickElementRef *)
+		    PEXAllocBuf (count * sizeof (PEXPickElementRef));
+
+		EXTRACT_LISTOF_PICKELEMREF (count,
+		    pBuf, ppmi->pick_path.elements);
 		break;
 	    }
 	}
@@ -237,8 +260,11 @@ INPUT int		pick_device_type;
 INPUT PEXPickRecord	*pick_record;
 
 {
-    pexUpdatePickMeasureReq	*req;
-    int				numBytes;
+    register pexUpdatePickMeasureReq	*req;
+    char				*pBuf;
+    int					numBytes;
+    int					fpConvert;
+    int					fpFormat;
 
 
     /*
@@ -252,14 +278,21 @@ INPUT PEXPickRecord	*pick_record;
      * Put the request in the X request buffer.
      */
 
-    numBytes = (pick_device_type == PEXPickDeviceDCHitBox) ?
-	sizeof (PEXPDDCHitBox) : sizeof (PEXPDNPCHitVolume);
+    numBytes = GetPickRecordSize (pick_device_type);
 
-    PEXGetReqExtra (UpdatePickMeasure, numBytes, req);
+    PEXGetReqExtra (UpdatePickMeasure, numBytes, pBuf);
+
+    BEGIN_REQUEST_HEADER (UpdatePickMeasure, pBuf, req);
+    CHECK_FP (fpConvert, fpFormat);
+
+    PEXStoreReqHead (UpdatePickMeasure, req);
     req->pm = pick_measure;
     req->numBytes = numBytes;
 
-    COPY_AREA (pick_record, ((char *) &req[1]), numBytes);
+    END_REQUEST_HEADER (UpdatePickMeasure, pBuf, req);
+
+    STORE_PICK_RECORD (pick_device_type, numBytes, pick_record, pBuf,
+	fpConvert, fpFormat);
 
 
     /*
@@ -280,13 +313,16 @@ INPUT int			devType;
 INPUT unsigned long		valueMask;
 
 {
-    pexGetPickDeviceReq		*req;
-    pexGetPickDeviceReply	rep;
-    PEXPDAttributes		*ppdi;
-    unsigned long		*pv;
-    unsigned long		f;
-    int				i, tmp;
-    int				convertFP;
+    register pexGetPickDeviceReq	*req;
+    char				*pBuf;
+    pexGetPickDeviceReply		rep;
+    PEXPDAttributes			*ppdi;
+    unsigned long			f;
+    int					i;
+    int					count;
+    int					size;
+    int					fpConvert;
+    int					fpFormat;
 
 
     /*
@@ -300,10 +336,17 @@ INPUT unsigned long		valueMask;
      * Put the request in the X request buffer and get a reply.
      */
 
-    PEXGetFPReq (GetPickDevice, req, convertFP);
+    PEXGetReq (GetPickDevice, pBuf);
+
+    BEGIN_REQUEST_HEADER (GetPickDevice, pBuf, req);
+    CHECK_FP (fpConvert, fpFormat);
+
+    PEXStoreFPReqHead (GetPickDevice, fpFormat, req);
     req->wks = wks;
     req->itemMask = valueMask;
     req->devType = devType;
+
+    END_REQUEST_HEADER (GetPickDevice, pBuf, req);
 
     if (_XReply (display, &rep, 0, xFalse) == 0)
     {
@@ -312,22 +355,19 @@ INPUT unsigned long		valueMask;
 	return (NULL);		  /* return an error */
     }
 
+
     /*
-     * Allocate a scratch buffer and copy the reply data to the buffer.
+     * Read the reply data into a scratch buffer.
      */
 
-    pv = (unsigned long *) _XAllocScratch (display,
-	(unsigned long) (rep.length << 2));
-
-    _XRead (display, (char *) pv, (long) (rep.length << 2));
+    XREAD_INTO_SCRATCH (display, pBuf, (long) (rep.length << 2));
 
 
     /*
      * Allocate a buffer for the replies to pass back to the client.
      */
 
-    ppdi = (PEXPDAttributes *)
-	PEXAllocBuf ((unsigned) (sizeof (PEXPDAttributes)));
+    ppdi = (PEXPDAttributes *) PEXAllocBuf (sizeof (PEXPDAttributes));
 
     ppdi->path.count = 0;
     ppdi->path.elements = NULL;
@@ -340,48 +380,57 @@ INPUT unsigned long		valueMask;
 	    switch (f)
 	    {
 	    case PEXPDPickStatus:
-		ppdi->status = *pv;
-		pv++;
+
+		EXTRACT_LOV_CARD16 (pBuf, ppdi->status);
 		break;
+
 	    case PEXPDPickPath:
-		tmp = *(int *) pv;
-		pv++;
-		ppdi->path.count = tmp;
-		tmp *= sizeof (PEXPickElementRef);
+
+		EXTRACT_CARD32 (pBuf, count);
+		ppdi->path.count = count;
+
 		ppdi->path.elements = (PEXPickElementRef *)
-		    PEXAllocBuf ((unsigned) tmp);
-		COPY_AREA ((char *) pv, (char *) (ppdi->path.elements), tmp);
-		pv += NUMWORDS (tmp);
+		    PEXAllocBuf (count * sizeof (PEXPickElementRef));
+
+		EXTRACT_LISTOF_PICKELEMREF (count, pBuf, ppdi->path.elements);
 		break;
+
 	    case PEXPDPickPathOrder:
-		ppdi->path_order = *pv;
-		pv++;
+
+		EXTRACT_LOV_CARD16 (pBuf, ppdi->path_order);
 		break;
+
 	    case PEXPDPickIncl:
-		ppdi->inclusion = *((PEXNameSet *) pv);
-		pv++;
+
+		EXTRACT_CARD32 (pBuf, ppdi->inclusion);
 		break;
+
 	    case PEXPDPickExcl:
-		ppdi->exclusion = *((PEXNameSet *) pv);
-		pv++;
+
+		EXTRACT_CARD32 (pBuf, ppdi->exclusion);
 		break;
+
 	    case PEXPDPickDataRec:
-		tmp = *(int *) pv;
-		pv++;
-		COPY_AREA ((char *) pv, (char *) &(ppdi->pick_record), tmp);
-		pv += NUMWORDS (tmp);
+
+		EXTRACT_CARD32 (pBuf, size);
+		EXTRACT_PICK_RECORD (pBuf, devType, size, ppdi->pick_record,
+		    fpConvert, fpFormat);
 		break;
+
 	    case PEXPDPromptEchoType:
-		ppdi->prompt_echo_type = *pv;
-		pv++;
+
+		EXTRACT_LOV_INT16 (pBuf, ppdi->prompt_echo_type);
 		break;
+
 	    case PEXPDEchoVolume:
-		ppdi->echo_volume = *((PEXViewport *) pv);
-		pv += LENOF (PEXViewport);
+
+		EXTRACT_VIEWPORT (pBuf, ppdi->echo_volume,
+		    fpConvert, fpFormat);
 		break;
+
 	    case PEXPDEchoSwitch:
-		ppdi->echo_switch = *pv;
-		pv++;
+
+		EXTRACT_LOV_CARD16 (pBuf, ppdi->echo_switch);
 		break;
 	    }
 	}
@@ -409,11 +458,15 @@ INPUT unsigned long	valueMask;
 INPUT PEXPDAttributes	*values;
 
 {
-    pexChangePickDeviceReq	*req;
-    unsigned long		*pv, *pvSend;
-    unsigned long		f, size;
-    int				i, tmp, length;
-    int				convertFP;
+    register pexChangePickDeviceReq	*req;
+    char				*pBuf;
+    char				*pSend;
+    unsigned long			f;
+    unsigned long			size;
+    PEXPickRecord			*pick_record;
+    int					i;
+    int					fpConvert;
+    int					fpFormat;
 
 
     /*
@@ -427,7 +480,12 @@ INPUT PEXPDAttributes	*values;
      * Put the request in the X request buffer.
      */
 
-    PEXGetFPReq (ChangePickDevice, req, convertFP);
+    PEXGetReq (ChangePickDevice, pBuf);
+
+    BEGIN_REQUEST_HEADER (ChangePickDevice, pBuf, req);
+    CHECK_FP (fpConvert, fpFormat);
+
+    PEXStoreFPReqHead (ChangePickDevice, fpFormat, req);
     req->wks = wks;
     req->itemMask = valueMask;
     req->devType = devType;
@@ -439,14 +497,13 @@ INPUT PEXPDAttributes	*values;
      * worse case.
      */
 
-    size = 6 * sizeof (CARD32) +
-	(sizeof (PEXPickElementRef) * ((valueMask & PEXPDPickPath) ?
+    size = 8 * SIZEOF (CARD32) +
+	(SIZEOF (pexPickElementRef) * ((valueMask & PEXPDPickPath) ?
 	    values->path.count : 0)) +
-	sizeof (PEXNameSet) * 2 +
 	sizeof (PEXPickRecord) +
-	sizeof (PEXViewport);
+	SIZEOF (pexViewport);
 
-    pv = pvSend = (CARD32 *) _XAllocScratch (display, (unsigned long) size);
+    pBuf = pSend = (char *) _XAllocScratch (display, size);
 
     for (i = 0; i < (PEXPDMaxShift + 1); i++)
     {
@@ -456,56 +513,68 @@ INPUT PEXPDAttributes	*values;
 	    switch (f)
 	    {
 	    case PEXPDPickStatus:
-		*pv = values->status;
-		pv++;
+
+		STORE_CARD32 (values->status, pBuf);
 		break;
+
 	    case PEXPDPickPath:
-		tmp = *((unsigned long *) pv) = values->path.count;
-		pv++;
-		tmp *= sizeof (PEXPickElementRef);
-		COPY_AREA ((char *) (values->path.elements), (char *) pv, tmp);
-		pv += NUMWORDS (tmp);
+
+		STORE_CARD32 (values->path.count, pBuf);
+		STORE_LISTOF_PICKELEMREF (values->path.count,
+		    values->path.elements, pBuf);
 		break;
+
 	    case PEXPDPickPathOrder:
-		*pv = values->path_order;
-		pv++;
+
+		STORE_CARD32 (values->path_order, pBuf);
 		break;
+
 	    case PEXPDPickIncl:
-		*((PEXNameSet *) pv) = values->inclusion;
-		pv += LENOF (PEXNameSet);
+
+		STORE_CARD32 (values->inclusion, pBuf);
 		break;
+
 	    case PEXPDPickExcl:
-		*((PEXNameSet *) pv) = values->exclusion;
-		pv += LENOF (PEXNameSet);
+
+		STORE_CARD32 (values->exclusion, pBuf);
 		break;
+
 	    case PEXPDPickDataRec:
-		tmp = *((unsigned long *) pv) =
-		    (devType == PEXPickDeviceDCHitBox) ?
-		    sizeof (PEXPDDCHitBox) : sizeof (PEXPDNPCHitVolume);
-		pv++;
-		COPY_AREA ((char *) &(values->pick_record), (char *) pv, tmp);
-		pv += NUMWORDS (tmp);
+
+		size = GetPickRecordSize (devType);
+		STORE_CARD32 (size, pBuf);
+
+		pick_record = (PEXPickRecord *) &(values->pick_record);
+		STORE_PICK_RECORD (devType, size, pick_record, pBuf,
+		    fpConvert, fpFormat);
 		break;
+
 	    case PEXPDPromptEchoType:
-		*pv = values->prompt_echo_type;
-		pv++;
+
+		STORE_CARD32 (values->prompt_echo_type, pBuf);
 		break;
+
 	    case PEXPDEchoVolume:
-		*((PEXViewport *) pv) = values->echo_volume;
-		pv += LENOF (PEXViewport);
+
+		STORE_VIEWPORT (values->echo_volume, pBuf,
+		    fpConvert, fpFormat);
 		break;
+
 	    case PEXPDEchoSwitch:
-		*pv = values->echo_switch;
-		pv++;
+
+		STORE_CARD32 (values->echo_switch, pBuf);
 		break;
 	    }
 	}
     }
 
-    length = pv - pvSend;
-    req->length += length;
+    size = pBuf - pSend;
+    req->length += NUMWORDS (size);
 
-    Data (display, (char *) pvSend, (length << 2));
+    END_REQUEST_HEADER (ChangePickDevice, pBuf, req);
+
+    if (size > 0)
+	Data (display, pSend, size);
 
 
     /*
@@ -570,11 +639,6 @@ INPUT	xEvent		*wire;
 }
 
 
-#define GetPickRecordSize(_pickType) \
-    (_pickType == PEXPickDeviceNPCHitVolume ? \
-    sizeof (PEXPDNPCHitVolume) : sizeof (PEXPDDCHitBox));
-
-
 void
 PEXBeginPickOne (display, drawable, renderer, structure_id,
     method, pick_device_type, pick_record)
@@ -587,10 +651,11 @@ INPUT int		method;
 INPUT int		pick_device_type;
 INPUT PEXPickRecord	*pick_record;
 {
-    pexBeginPickOneReq	*req;
-    unsigned int 	rec_size;
-    int			convertFP;
-    PEXEnumTypeIndex	*ptr;
+    register pexBeginPickOneReq		*req;
+    char				*pBuf;
+    unsigned int 			rec_size;
+    int					fpConvert;
+    int					fpFormat;
 
 
     /*
@@ -606,17 +671,25 @@ INPUT PEXPickRecord	*pick_record;
 
     rec_size = GetPickRecordSize (pick_device_type);
 
-    PEXGetFPReqExtra (BeginPickOne, (4 + rec_size), req, convertFP);
+    PEXGetReqExtra (BeginPickOne, (4 + rec_size), pBuf);
+
+    BEGIN_REQUEST_HEADER (BeginPickOne, pBuf, req);
+    CHECK_FP (fpConvert, fpFormat);
+
+    PEXStoreFPReqExtraHead (BeginPickOne, fpFormat, (4 + rec_size), req);
+
     req->method = method;
     req->rdr = renderer;
     req->drawable = drawable;
     req->sid = structure_id;
 
-    ptr = (PEXEnumTypeIndex *) &req[1];
-    *ptr = pick_device_type;
-    ptr += 2;
+    END_REQUEST_HEADER (BeginPickOne, pBuf, req);
 
-    COPY_AREA ((char *) pick_record, (char *) ptr, rec_size);
+    STORE_INT16 (pick_device_type, pBuf);
+    pBuf += 2;					/* pad */
+
+    STORE_PICK_RECORD (pick_device_type, rec_size,
+	pick_record, pBuf, fpConvert, fpFormat);
 
 
     /*
@@ -637,7 +710,8 @@ OUTPUT int			*status_return;
 OUTPUT int			*undetectable_return;
 
 {
-    pexEndPickOneReq		*req;
+    register pexEndPickOneReq	*req;
+    char			*pBuf;
     pexEndPickOneReply		rep;
     PEXPickPath			*pathRet;
     unsigned int		size;
@@ -654,8 +728,14 @@ OUTPUT int			*undetectable_return;
      * Put the request in the X request buffer and get a reply.
      */
 
-    PEXGetReq (EndPickOne, req);
+    PEXGetReq (EndPickOne, pBuf);
+
+    BEGIN_REQUEST_HEADER (EndPickOne, pBuf, req);
+
+    PEXStoreReqHead (EndPickOne, req);
     req->rdr = renderer;
+
+    END_REQUEST_HEADER (EndPickOne, pBuf, req);
 
     if (_XReply (display, &rep, 0, xFalse) == 0)
     {
@@ -682,12 +762,12 @@ OUTPUT int			*undetectable_return;
 	PEXPickCacheInUse = 1;
     }
     else
-	pathRet = (PEXPickPath *) PEXAllocBuf ((unsigned) size);
+	pathRet = (PEXPickPath *) PEXAllocBuf (size);
 
     pathRet->elements = (PEXPickElementRef *) (pathRet + 1);
     pathRet->count = rep.numPickElRefs;
 
-    _XRead (display, (char *) (pathRet->elements), (long) (rep.length << 2));
+    XREAD_LISTOF_PICKELEMREF (display, rep.numPickElRefs, pathRet->elements);
 
 
     /*
@@ -716,12 +796,14 @@ OUTPUT int			*status_return;
 OUTPUT int			*undetectable_return;
 
 {
-    pexPickOneReq	*req;
-    pexPickOneReply	rep;
-    unsigned int 	rec_size, size;
-    int			convertFP;
-    PEXEnumTypeIndex	*ptr;
-    PEXPickPath		*pathRet;
+    register pexPickOneReq	*req;
+    char			*pBuf;
+    pexPickOneReply		rep;
+    unsigned int 		rec_size;
+    unsigned int 		size;
+    int				fpConvert;
+    int				fpFormat;
+    PEXPickPath			*pathRet;
 
 
     /*
@@ -737,17 +819,25 @@ OUTPUT int			*undetectable_return;
 
     rec_size = GetPickRecordSize (pick_device_type);
 
-    PEXGetFPReqExtra (PickOne, (4 + rec_size), req, convertFP);
+    PEXGetReqExtra (PickOne, (4 + rec_size), pBuf);
+
+    BEGIN_REQUEST_HEADER (PickOne, pBuf, req);
+    CHECK_FP (fpConvert, fpFormat);
+
+    PEXStoreFPReqExtraHead (PickOne, fpFormat, (4 + rec_size), req);
+
     req->method = method;
     req->rdr = renderer;
     req->drawable = drawable;
     req->sid = structure;
 
-    ptr = (PEXEnumTypeIndex *) &req[1];
-    *ptr = pick_device_type;
-    ptr += 2;
+    END_REQUEST_HEADER (PickOne, pBuf, req);
 
-    COPY_AREA ((char *) pick_record, (char *) ptr, rec_size);
+    STORE_INT16 (pick_device_type, pBuf);
+    pBuf += 2;					/* pad */
+
+    STORE_PICK_RECORD (pick_device_type, rec_size,
+	pick_record, pBuf, fpConvert, fpFormat);
 
     if (_XReply (display, &rep, 0, xFalse) == 0)
     {
@@ -774,12 +864,12 @@ OUTPUT int			*undetectable_return;
 	PEXPickCacheInUse = 1;
     }
     else
-	pathRet = (PEXPickPath *) PEXAllocBuf ((unsigned) size);
+	pathRet = (PEXPickPath *) PEXAllocBuf (size);
 
     pathRet->elements = (PEXPickElementRef *) (pathRet + 1);
     pathRet->count = rep.numPickElRefs;
 
-    _XRead (display, (char *) (pathRet->elements), (long) (rep.length << 2));
+    XREAD_LISTOF_PICKELEMREF (display, rep.numPickElRefs, pathRet->elements);
 
 
     /*
@@ -807,10 +897,11 @@ INPUT int		max_hits;
 INPUT int		pick_device_type;
 INPUT PEXPickRecord	*pick_record;
 {
-    pexBeginPickAllReq	*req;
-    unsigned int	rec_size;
-    int			convertFP;
-    PEXEnumTypeIndex	*ptr;
+    register pexBeginPickAllReq		*req;
+    char				*pBuf;
+    unsigned int			rec_size;
+    int					fpConvert;
+    int					fpFormat;
 
 
     /*
@@ -826,7 +917,13 @@ INPUT PEXPickRecord	*pick_record;
 
     rec_size = GetPickRecordSize (pick_device_type);
 
-    PEXGetFPReqExtra (BeginPickAll, (4 + rec_size), req, convertFP);
+    PEXGetReqExtra (BeginPickAll, (4 + rec_size), pBuf);
+
+    BEGIN_REQUEST_HEADER (BeginPickAll, pBuf, req);
+    CHECK_FP (fpConvert, fpFormat);
+
+    PEXStoreFPReqExtraHead (BeginPickAll, fpFormat, (4 + rec_size), req);
+
     req->method = method;
     req->rdr = renderer;
     req->drawable = drawable;
@@ -834,11 +931,13 @@ INPUT PEXPickRecord	*pick_record;
     req->sendEvent = send_event;
     req->pickMaxHits = max_hits;
 
-    ptr = (PEXEnumTypeIndex *) &req[1];
-    *ptr = pick_device_type;
-    ptr += 2;
+    END_REQUEST_HEADER (BeginPickAll, pBuf, req);
 
-    COPY_AREA ((char *) pick_record, (char *) ptr, rec_size);
+    STORE_INT16 (pick_device_type, pBuf);
+    pBuf += 2;					/* pad */
+
+    STORE_PICK_RECORD (pick_device_type, rec_size,
+	pick_record, pBuf, fpConvert, fpFormat);
 
 
     /*
@@ -860,14 +959,15 @@ OUTPUT int		*more_return;
 OUTPUT unsigned long	*count_return;
 
 {
-    pexEndPickAllReq		*req;
+    register pexEndPickAllReq	*req;
+    char			*pBuf;
     pexEndPickAllReply		rep;
-    PEXPickPath			*psp, *pspRet;
-    char			*prep, *prep_save;
-    PEXPickElementRef		*per;
-    int				i;
-    int				numElements;
-    unsigned int		total_size, size;
+    PEXPickPath			*pPath;
+    PEXPickPath			*pPathRet;
+    PEXPickElementRef		*pElemRef;
+    char			*pBufSave;
+    int				numElements, i;
+    unsigned int		total_size;
 
 
     /*
@@ -881,8 +981,14 @@ OUTPUT unsigned long	*count_return;
      * Put the request in the X request buffer and get a reply.
      */
 
-    PEXGetReq (EndPickAll, req);
+    PEXGetReq (EndPickAll, pBuf);
+
+    BEGIN_REQUEST_HEADER (EndPickAll, pBuf, req);
+
+    PEXStoreReqHead (EndPickAll, req);
     req->rdr = renderer;
+
+    END_REQUEST_HEADER (EndPickAll, pBuf, req);
 
     if (_XReply (display, &rep, 0, xFalse) == 0)
     {
@@ -898,12 +1004,10 @@ OUTPUT unsigned long	*count_return;
 
 
     /*
-     * Allocate a scratch buffer and copy the reply data to the buffer.
+     * Read the reply data into a scratch buffer.
      */
 
-    prep = _XAllocScratch (display, (unsigned long) (rep.length << 2));
-
-    _XRead (display, (char *) prep, (long) (rep.length << 2));
+    XREAD_INTO_SCRATCH (display, pBuf, (long) (rep.length << 2));
 
 
     /*
@@ -911,42 +1015,38 @@ OUTPUT unsigned long	*count_return;
      * If possible, use the pick path cache.
      */
 
-    prep_save = prep;
+    pBufSave = pBuf;
     total_size = rep.numPicked * sizeof (PEXPickPath);
 
     for (i = 0; i < rep.numPicked; i++)
     {
-	numElements = *((CARD32 *) prep);
-	prep += sizeof (CARD32);
-	size = numElements * sizeof (PEXPickElementRef);
-	prep += size;
-	total_size += size;
+	EXTRACT_CARD32 (pBuf, numElements);
+	total_size += (numElements * sizeof (PEXPickElementRef));
+	pBuf += (numElements * SIZEOF (pexPickElementRef));
     }
 
     if (!PEXPickCacheInUse && total_size <= PEXPickCacheSize)
     {
-	pspRet = PEXPickCache;
+	pPathRet = PEXPickCache;
 	PEXPickCacheInUse = 1;
     }
     else
-	pspRet = (PEXPickPath *) PEXAllocBuf ((unsigned) total_size);
+	pPathRet = (PEXPickPath *) PEXAllocBuf (total_size);
 
-    psp = pspRet;
-    prep = prep_save;
-    per = (PEXPickElementRef *) ((char *) psp +
+    pPath = pPathRet;
+    pBuf = pBufSave;
+    pElemRef = (PEXPickElementRef *) ((char *) pPath +
 	rep.numPicked * sizeof (PEXPickPath));
 
     for (i = 0; i < rep.numPicked; i++)
     {
-	numElements = *((CARD32 *) prep);
-	prep += sizeof (CARD32);
-	size = numElements * sizeof (PEXPickElementRef);
-	COPY_AREA (prep, (char *) per, size);
-	psp->count = numElements;
-	psp->elements = per;
-	psp++;
-	per += numElements;
-	prep += size;
+	EXTRACT_CARD32 (pBuf, numElements);
+	EXTRACT_LISTOF_PICKELEMREF (numElements, pBuf, pElemRef);
+
+	pPath->count = numElements;
+	pPath->elements = pElemRef;
+	pPath++;
+	pElemRef += numElements;
     }
 
 
@@ -957,7 +1057,7 @@ OUTPUT unsigned long	*count_return;
     UnlockDisplay (display);
     PEXSyncHandle (display);
 
-    return (pspRet);
+    return (pPathRet);
 }
 
 
@@ -978,15 +1078,18 @@ OUTPUT unsigned long	*count_return;
 
 
 {
-    pexPickAllReq		*req;
+    register pexPickAllReq	*req;
+    char			*pBuf;
     pexPickAllReply		rep;
-    PEXPickPath			*psp, *pspRet;
-    char			*prep, *prep_save;
-    PEXPickElementRef		*per;
+    PEXPickPath			*pPath;
+    PEXPickPath			*pPathRet;
+    PEXPickElementRef		*pElemRef;
+    char			*pBufSave;
     int				numElements, i;
-    unsigned int		rec_size, total_size, size;
-    int				convertFP;
-    PEXEnumTypeIndex		*ptr;
+    unsigned int		rec_size;
+    unsigned int		total_size;
+    int				fpConvert;
+    int				fpFormat;
 
 
     /*
@@ -1002,17 +1105,25 @@ OUTPUT unsigned long	*count_return;
 
     rec_size = GetPickRecordSize (pick_device_type);
 
-    PEXGetFPReqExtra (PickAll, (4 + rec_size), req, convertFP);
+    PEXGetReqExtra (PickAll, (4 + rec_size), pBuf);
+
+    BEGIN_REQUEST_HEADER (PickAll, pBuf, req);
+    CHECK_FP (fpConvert, fpFormat);
+
+    PEXStoreFPReqExtraHead (PickAll, fpFormat, (4 + rec_size), req);
+
     req->method = method;
     req->rdr = renderer;
     req->drawable = drawable;
     req->pickMaxHits = max_hits;
 
-    ptr = (PEXEnumTypeIndex *) &req[1];
-    *ptr = pick_device_type;
-    ptr += 2;
+    END_REQUEST_HEADER (PickAll, pBuf, req);
 
-    COPY_AREA ((char *) pick_record, (char *) ptr, rec_size);
+    STORE_INT16 (pick_device_type, pBuf);
+    pBuf += 2;					/* pad */
+
+    STORE_PICK_RECORD (pick_device_type, rec_size,
+	pick_record, pBuf, fpConvert, fpFormat);
 
     if (_XReply (display, &rep, 0, xFalse) == 0)
     {
@@ -1028,12 +1139,10 @@ OUTPUT unsigned long	*count_return;
 
 
     /*
-     * Allocate a scratch buffer and copy the reply data to the buffer.
+     * Read the reply data into a scratch buffer.
      */
 
-    prep = _XAllocScratch (display, (unsigned long) (rep.length << 2));
-
-    _XRead (display, (char *) prep, (long) (rep.length << 2));
+    XREAD_INTO_SCRATCH (display, pBuf, (long) (rep.length << 2));
 
 
     /*
@@ -1041,42 +1150,38 @@ OUTPUT unsigned long	*count_return;
      * If possible, use the pick path cache.
      */
 
-    prep_save = prep;
+    pBufSave = pBuf;
     total_size = rep.numPicked * sizeof (PEXPickPath);
 
     for (i = 0; i < rep.numPicked; i++)
     {
-	numElements = *((CARD32 *) prep);
-	prep += sizeof (CARD32);
-	size = numElements * sizeof (PEXPickElementRef);
-	prep += size;
-	total_size += size;
+	EXTRACT_CARD32 (pBuf, numElements);
+	total_size += (numElements * sizeof (PEXPickElementRef));
+	pBuf += (numElements * SIZEOF (pexPickElementRef));
     }
 
     if (!PEXPickCacheInUse && total_size <= PEXPickCacheSize)
     {
-	pspRet = PEXPickCache;
+	pPathRet = PEXPickCache;
 	PEXPickCacheInUse = 1;
     }
     else
-	pspRet = (PEXPickPath *) PEXAllocBuf ((unsigned) total_size);
+	pPathRet = (PEXPickPath *) PEXAllocBuf (total_size);
 
-    psp = pspRet;
-    prep = prep_save;
-    per = (PEXPickElementRef *) ((char *) psp +
+    pPath = pPathRet;
+    pBuf = pBufSave;
+    pElemRef = (PEXPickElementRef *) ((char *) pPath +
 	rep.numPicked * sizeof (PEXPickPath));
 
     for (i = 0; i < rep.numPicked; i++)
     {
-	numElements = *((CARD32 *) prep);
-	prep += sizeof (CARD32);
-	size = numElements * sizeof (PEXPickElementRef);
-	COPY_AREA (prep, (char *) per, size);
-	psp->count = numElements;
-	psp->elements = per;
-	psp++;
-	per += numElements;
-	prep += size;
+	EXTRACT_CARD32 (pBuf, numElements);
+	EXTRACT_LISTOF_PICKELEMREF (numElements, pBuf, pElemRef);
+
+	pPath->count = numElements;
+	pPath->elements = pElemRef;
+	pPath++;
+	pElemRef += numElements;
     }
 
 
@@ -1087,5 +1192,5 @@ OUTPUT unsigned long	*count_return;
     UnlockDisplay (display);
     PEXSyncHandle (display);
 
-    return (pspRet);
+    return (pPathRet);
 }

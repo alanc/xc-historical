@@ -1,4 +1,4 @@
-/* $XConsortium: pl_oc_prim.c,v 1.10 92/10/26 11:05:21 mor Exp $ */
+/* $XConsortium: pl_oc_prim.c,v 1.13 92/12/07 19:42:17 mor Exp $ */
 
 /******************************************************************************
 Copyright 1987,1991 by Digital Equipment Corporation, Maynard, Massachusetts
@@ -29,8 +29,6 @@ SOFTWARE.
 #include "PEXlibint.h"
 #include "pl_oc_util.h"
 
-extern void _PEXCopyPaddedBytesToOC();
-
 
 void
 PEXMarkers (display, resource_id, req_type, numPoints, points)
@@ -42,9 +40,42 @@ INPUT unsigned int	numPoints;
 INPUT PEXCoord 		*points;
 
 {
-    PEXAddListOC (display, resource_id, req_type, PEXOCMarkers,
-    	False /* count needed */,
-	numPoints, sizeof (PEXCoord), (char *) points);
+    register pexMarkers	*req;
+    char		*pBuf;
+    int			dataLength;
+    int			fpConvert;
+    int			fpFormat;
+
+    /*
+     * Initialize the OC request.
+     */
+
+    dataLength = NUMWORDS (numPoints * SIZEOF (pexCoord3D));
+
+    PEXInitOC (display, resource_id, req_type,
+	LENOF (pexMarkers), dataLength, pBuf);
+
+    if (pBuf == NULL) return;
+
+
+    /* 
+     * Store the request header data. 
+     */
+
+    CHECK_FP (fpConvert, fpFormat);
+
+    BEGIN_OC_HEADER (Markers, dataLength, pBuf, req);
+    END_OC_HEADER (Markers, pBuf, req);
+
+
+    /*
+     * Copy the oc data.
+     */
+
+    OC_LISTOF_COORD3D (numPoints, points, fpConvert, fpFormat);
+
+    PEXFinishOC (display);
+    PEXSyncHandle (display);
 }
 
 
@@ -58,9 +89,42 @@ INPUT unsigned int	numPoints;
 INPUT PEXCoord2D	*points;
 
 {
-    PEXAddListOC (display, resource_id, req_type, PEXOCMarkers2D,
-	False /* count needed */,
-	numPoints, sizeof (PEXCoord2D), (char *) points);
+    register pexMarkers2D	*req;
+    char			*pBuf;
+    int				dataLength;
+    int				fpConvert;
+    int				fpFormat;
+
+    /*
+     * Initialize the OC request.
+     */
+
+    dataLength = NUMWORDS (numPoints * SIZEOF (pexCoord2D));
+
+    PEXInitOC (display, resource_id, req_type,
+	LENOF (pexMarkers2D), dataLength, pBuf);
+
+    if (pBuf == NULL) return;
+
+
+    /* 
+     * Store the request header data. 
+     */
+
+    CHECK_FP (fpConvert, fpFormat);
+
+    BEGIN_OC_HEADER (Markers2D, dataLength, pBuf, req);
+    END_OC_HEADER (Markers2D, pBuf, req);
+
+
+    /*
+     * Copy the oc data.
+     */
+
+    OC_LISTOF_COORD2D (numPoints, points, fpConvert, fpFormat);
+
+    PEXFinishOC (display);
+    PEXSyncHandle (display);
 }
 
 
@@ -77,36 +141,68 @@ INPUT int		count;
 INPUT char		*string;
 
 {
-    pexText	*pReq;
+    register pexText	*req;
+    char		*pBuf;
+    int			fpConvert;
+    int			fpFormat;
+    int			dataLength;
 
 
     /*
      * Initialize the OC request.
      */
 
-    PEXInitOC (display, resource_id, req_type, PEXOCText,
-	LENOF (pexText), 
-	LENOF (pexMonoEncoding) + NUMWORDS (count),
-	pexText, pReq);
+    dataLength = LENOF (pexMonoEncoding) + NUMWORDS (count);
 
-    if (pReq == NULL) return;
+    PEXInitOC (display, resource_id, req_type,
+	LENOF (pexText), dataLength, pBuf);
+
+    if (pBuf == NULL) return;
 
 
     /* 
      * Store the text request header data. 
      */
 
-    pReq->origin = *(pexCoord3D *) origin;
-    pReq->vector1 = *(pexVector3D *) vec1;
-    pReq->vector2 = *(pexVector3D *) vec2;
-    pReq->numEncodings = (CARD16) 1;
+    CHECK_FP (fpConvert, fpFormat);
+
+    BEGIN_OC_HEADER (Text, dataLength, pBuf, req);
+
+    if (fpConvert)
+    {
+	FP_CONVERT_HTON (origin->x, req->origin_x, fpFormat);
+	FP_CONVERT_HTON (origin->y, req->origin_y, fpFormat);
+	FP_CONVERT_HTON (origin->z, req->origin_z, fpFormat);
+	FP_CONVERT_HTON (vec1->x, req->vector1_x, fpFormat);
+	FP_CONVERT_HTON (vec1->y, req->vector1_y, fpFormat);
+	FP_CONVERT_HTON (vec1->z, req->vector1_z, fpFormat);
+	FP_CONVERT_HTON (vec2->x, req->vector2_x, fpFormat);
+	FP_CONVERT_HTON (vec2->y, req->vector2_y, fpFormat);
+	FP_CONVERT_HTON (vec2->z, req->vector2_z, fpFormat);
+    }
+    else
+    {
+	req->origin_x = origin->x;
+	req->origin_y = origin->y;
+	req->origin_z = origin->z;
+	req->vector1_x = vec1->x;
+	req->vector1_y = vec1->y;
+	req->vector1_z = vec1->z;
+	req->vector2_x = vec2->x;
+	req->vector2_y = vec2->y;
+	req->vector2_z = vec2->z;
+    }
+
+    req->numEncodings = (CARD16) 1;
+
+    END_OC_HEADER (Text, pBuf, req);
 
 
     /*
      * Store the mono-encoded string.
      */
 
-    StoreDefaultMonoString (display, count, string);
+    OC_DEFAULT_MONO_STRING (count, string);
 
     PEXFinishOC (display);
     PEXSyncHandle (display);
@@ -124,34 +220,54 @@ INPUT int		count;
 INPUT char		*string;
 
 {
-    pexText2D	*pReq;
+    register pexText2D	*req;
+    char		*pBuf;
+    int			fpConvert;
+    int			fpFormat;
+    int			dataLength;
 
 
     /*
      * Initialize the OC request.
      */
 
-    PEXInitOC (display, resource_id, req_type, PEXOCText2D,
-	LENOF (pexText2D), 
-	LENOF (pexMonoEncoding) + NUMWORDS (count),
-	pexText2D, pReq);
+    dataLength = LENOF (pexMonoEncoding) + NUMWORDS (count);
 
-    if (pReq == NULL) return;
+    PEXInitOC (display, resource_id, req_type,
+	LENOF (pexText2D), dataLength, pBuf);
+
+    if (pBuf == NULL) return;
 
 
     /* 
      * Store the text header request data. 
      */
 
-    pReq->origin = *(pexCoord2D *) origin;
-    pReq->numEncodings = (CARD16) 1;
+    CHECK_FP (fpConvert, fpFormat);
+
+    BEGIN_OC_HEADER (Text2D, dataLength, pBuf, req);
+
+    if (fpConvert)
+    {
+	FP_CONVERT_HTON (origin->x, req->origin_x, fpFormat);
+	FP_CONVERT_HTON (origin->y, req->origin_y, fpFormat);
+    }
+    else
+    {
+	req->origin_x = origin->x;
+	req->origin_y = origin->y;
+    }
+
+    req->numEncodings = (CARD16) 1;
+
+    END_OC_HEADER (Text2D, pBuf, req);
 
 
     /*
      * Store the mono-encoded string.
      */
 
-    StoreDefaultMonoString (display, count, string);
+    OC_DEFAULT_MONO_STRING (count, string);
 
     PEXFinishOC (display);
     PEXSyncHandle (display);
@@ -171,35 +287,62 @@ INPUT int		count;
 INPUT char		*string;
 
 {
-    pexAnnotationText	*pReq;
+    register pexAnnotationText	*req;
+    char			*pBuf;
+    int				fpConvert;
+    int				fpFormat;
+    int				dataLength;
 
 
     /*
      * Initialize the OC request.
      */
 
-    PEXInitOC (display, resource_id, req_type, PEXOCAnnotationText,
-	LENOF (pexAnnotationText),
-	LENOF (pexMonoEncoding) + NUMWORDS (count),
-	pexAnnotationText, pReq);
+    dataLength = LENOF (pexMonoEncoding) + NUMWORDS (count);
 
-    if (pReq == NULL) return;
+    PEXInitOC (display, resource_id, req_type,
+	LENOF (pexAnnotationText), dataLength, pBuf);
+
+    if (pBuf == NULL) return;
 
 
     /* 
      * Store the atext request header data. 
      */
 
-    pReq->origin = *(pexCoord3D *) origin;
-    pReq->offset = *(pexCoord3D *) offset;
-    pReq->numEncodings = (CARD16) 1;
+    CHECK_FP (fpConvert, fpFormat);
+
+    BEGIN_OC_HEADER (AnnotationText, dataLength, pBuf, req);
+
+    if (fpConvert)
+    {
+	FP_CONVERT_HTON (origin->x, req->origin_x, fpFormat);
+	FP_CONVERT_HTON (origin->y, req->origin_y, fpFormat);
+	FP_CONVERT_HTON (origin->z, req->origin_z, fpFormat);
+	FP_CONVERT_HTON (offset->x, req->offset_x, fpFormat);
+	FP_CONVERT_HTON (offset->y, req->offset_y, fpFormat);
+	FP_CONVERT_HTON (offset->z, req->offset_z, fpFormat);
+    }
+    else
+    {
+	req->origin_x = origin->x;
+	req->origin_y = origin->y;
+	req->origin_z = origin->z;
+	req->offset_x = offset->x;
+	req->offset_y = offset->y;
+	req->offset_z = offset->z;
+    }
+
+    req->numEncodings = (CARD16) 1;
+
+    END_OC_HEADER (AnnotationText, pBuf, req);
 
 
     /*
      * Store the mono-encoded string.
      */
 
-    StoreDefaultMonoString (display, count, string);
+    OC_DEFAULT_MONO_STRING (count, string);
 
     PEXFinishOC (display);
     PEXSyncHandle (display);
@@ -219,35 +362,58 @@ INPUT int		count;
 INPUT char		*string;
 
 {
-    pexAnnotationText2D	*pReq;
+    register pexAnnotationText2D	*req;
+    char				*pBuf;
+    int					fpConvert;
+    int					fpFormat;
+    int					dataLength;
 
 
     /*
      * Initialize the OC request.
      */
 
-    PEXInitOC (display, resource_id, req_type, PEXOCAnnotationText2D,
-	LENOF (pexAnnotationText2D), 
-	LENOF (pexMonoEncoding) + NUMWORDS (count),
-	pexAnnotationText2D, pReq);
+    dataLength = LENOF (pexMonoEncoding) + NUMWORDS (count);
 
-    if (pReq == NULL) return;
+    PEXInitOC (display, resource_id, req_type,
+	LENOF (pexAnnotationText2D), dataLength, pBuf);
+
+    if (pBuf == NULL) return;
 
 
     /*
      * Store the atext request header data. 
      */
 
-    pReq->origin = *(pexCoord2D *) origin;
-    pReq->offset = *(pexCoord2D *) offset;
-    pReq->numEncodings = (CARD16) 1;
+    CHECK_FP (fpConvert, fpFormat);
+
+    BEGIN_OC_HEADER (AnnotationText2D, dataLength, pBuf, req);
+
+    if (fpConvert)
+    {
+	FP_CONVERT_HTON (origin->x, req->origin_x, fpFormat);
+	FP_CONVERT_HTON (origin->y, req->origin_y, fpFormat);
+	FP_CONVERT_HTON (offset->x, req->offset_x, fpFormat);
+	FP_CONVERT_HTON (offset->y, req->offset_y, fpFormat);
+    }
+    else
+    {
+	req->origin_x = origin->x;
+	req->origin_y = origin->y;
+	req->offset_x = offset->x;
+	req->offset_y = offset->y;
+    }
+
+    req->numEncodings = (CARD16) 1;
+
+    END_OC_HEADER (AnnotationText2D, pBuf, req);
 
 
     /*
      * Store the mono-encoded string.
      */
 
-    StoreDefaultMonoString (display, count, string);
+    OC_DEFAULT_MONO_STRING (count, string);
 
     PEXFinishOC (display);
     PEXSyncHandle (display);
@@ -268,9 +434,11 @@ INPUT unsigned int		numEncodings;
 INPUT PEXEncodedTextData	*encodedTextList;
 
 {
-    pexText		*pReq;
-    int 		lenofStrings, i;
-    PEXEncodedTextData  *nextString;
+    register pexText		*req;
+    char			*pBuf;
+    int				fpConvert;
+    int				fpFormat;
+    int				lenofStrings;
 
 
     /*
@@ -284,27 +452,55 @@ INPUT PEXEncodedTextData	*encodedTextList;
      * Initialize the OC request.
      */
 
-    PEXInitOC (display, resource_id, req_type, PEXOCText,
-	LENOF (pexText), lenofStrings, pexText, pReq);
+    PEXInitOC (display, resource_id, req_type,
+	LENOF (pexText), lenofStrings, pBuf);
 
-    if (pReq == NULL) return;
+    if (pBuf == NULL) return;
 
 
     /* 
      * Store the text request header data. 
      */
 
-    pReq->origin = *(pexCoord3D *) origin;
-    pReq->vector1 = *(pexVector3D *) vec1;
-    pReq->vector2 = *(pexVector3D *) vec2;
-    pReq->numEncodings = (CARD16) numEncodings;
+    CHECK_FP (fpConvert, fpFormat);
+
+    BEGIN_OC_HEADER (Text, lenofStrings, pBuf, req);
+
+    if (fpConvert)
+    {
+	FP_CONVERT_HTON (origin->x, req->origin_x, fpFormat);
+	FP_CONVERT_HTON (origin->y, req->origin_y, fpFormat);
+	FP_CONVERT_HTON (origin->z, req->origin_z, fpFormat);
+	FP_CONVERT_HTON (vec1->x, req->vector1_x, fpFormat);
+	FP_CONVERT_HTON (vec1->y, req->vector1_y, fpFormat);
+	FP_CONVERT_HTON (vec1->z, req->vector1_z, fpFormat);
+	FP_CONVERT_HTON (vec2->x, req->vector2_x, fpFormat);
+	FP_CONVERT_HTON (vec2->y, req->vector2_y, fpFormat);
+	FP_CONVERT_HTON (vec2->z, req->vector2_z, fpFormat);
+    }
+    else
+    {
+	req->origin_x = origin->x;
+	req->origin_y = origin->y;
+	req->origin_z = origin->z;
+	req->vector1_x = vec1->x;
+	req->vector1_y = vec1->y;
+	req->vector1_z = vec1->z;
+	req->vector2_x = vec2->x;
+	req->vector2_y = vec2->y;
+	req->vector2_z = vec2->z;
+    }
+
+    req->numEncodings = (CARD16) numEncodings;
+
+    END_OC_HEADER (Text, pBuf, req);
 
 
     /*
      * Store the mono-encoded string.
      */
 
-    StoreMonoStrings (display, numEncodings, encodedTextList);
+    OC_LISTOF_MONO_STRING (numEncodings, encodedTextList);
 
     PEXFinishOC (display);
     PEXSyncHandle (display);
@@ -323,9 +519,11 @@ INPUT unsigned int		numEncodings;
 INPUT PEXEncodedTextData	*encodedTextList;
 
 {
-    pexText2D		*pReq;
-    PEXEncodedTextData	*nextString;
-    int 		lenofStrings, i;
+    register pexText2D		*req;
+    char			*pBuf;
+    int				fpConvert;
+    int				fpFormat;
+    int				lenofStrings;
 
 
     /*
@@ -339,25 +537,41 @@ INPUT PEXEncodedTextData	*encodedTextList;
      * Initialize the OC request.
      */
 
-    PEXInitOC (display, resource_id, req_type, PEXOCText2D,
-	LENOF (pexText2D), lenofStrings, pexText2D, pReq);
+    PEXInitOC (display, resource_id, req_type,
+	LENOF (pexText2D), lenofStrings, pBuf);
 
-    if (pReq == NULL) return;
+    if (pBuf == NULL) return;
 
 
     /* 
      * Store the text header request data. 
      */
 
-    pReq->origin = *(pexCoord2D *) origin;
-    pReq->numEncodings = (CARD16) numEncodings;
+    CHECK_FP (fpConvert, fpFormat);
+
+    BEGIN_OC_HEADER (Text2D, lenofStrings, pBuf, req);
+
+    if (fpConvert)
+    {
+	FP_CONVERT_HTON (origin->x, req->origin_x, fpFormat);
+	FP_CONVERT_HTON (origin->y, req->origin_y, fpFormat);
+    }
+    else
+    {
+	req->origin_x = origin->x;
+	req->origin_y = origin->y;
+    }
+
+    req->numEncodings = (CARD16) numEncodings;
+
+    END_OC_HEADER (Text2D, pBuf, req);
 
 
     /*
      * Store the mono-encoded string.
      */
 
-    StoreMonoStrings (display, numEncodings, encodedTextList);
+    OC_LISTOF_MONO_STRING (numEncodings, encodedTextList);
 
     PEXFinishOC (display);
     PEXSyncHandle (display);
@@ -377,9 +591,11 @@ INPUT unsigned int		numEncodings;
 INPUT PEXEncodedTextData 	*encodedTextList;
 
 {
-    pexAnnotationText	*pReq;
-    PEXEncodedTextData	*nextString;
-    int 		lenofStrings, i;
+    register pexAnnotationText	*req;
+    char			*pBuf;
+    int				fpConvert;
+    int				fpFormat;
+    int				lenofStrings;
 
 
     /*
@@ -393,26 +609,49 @@ INPUT PEXEncodedTextData 	*encodedTextList;
      * Initialize the OC request.
      */
 
-    PEXInitOC (display, resource_id, req_type, PEXOCAnnotationText,
-	LENOF (pexAnnotationText), lenofStrings, pexAnnotationText, pReq);
+    PEXInitOC (display, resource_id, req_type,
+	LENOF (pexAnnotationText), lenofStrings, pBuf);
 
-    if (pReq == NULL) return;
+    if (pBuf == NULL) return;
 
 
     /* 
      * Store the atext request header data. 
      */
 
-    pReq->origin = *(pexCoord3D *) origin;
-    pReq->offset = *(pexCoord3D *) offset;
-    pReq->numEncodings = (CARD16) numEncodings;
+    CHECK_FP (fpConvert, fpFormat);
+
+    BEGIN_OC_HEADER (AnnotationText, lenofStrings, pBuf, req);
+
+    if (fpConvert)
+    {
+	FP_CONVERT_HTON (origin->x, req->origin_x, fpFormat);
+	FP_CONVERT_HTON (origin->y, req->origin_y, fpFormat);
+	FP_CONVERT_HTON (origin->z, req->origin_z, fpFormat);
+	FP_CONVERT_HTON (offset->x, req->offset_x, fpFormat);
+	FP_CONVERT_HTON (offset->y, req->offset_y, fpFormat);
+	FP_CONVERT_HTON (offset->z, req->offset_z, fpFormat);
+    }
+    else
+    {
+	req->origin_x = origin->x;
+	req->origin_y = origin->y;
+	req->origin_z = origin->z;
+	req->offset_x = offset->x;
+	req->offset_y = offset->y;
+	req->offset_z = offset->z;
+    }
+
+    req->numEncodings = (CARD16) numEncodings;
+
+    END_OC_HEADER (AnnotationText, pBuf, req);
 
 
     /*
      * Store the mono-encoded string.
      */
 
-    StoreMonoStrings (display, numEncodings, encodedTextList);
+    OC_LISTOF_MONO_STRING (numEncodings, encodedTextList);
 
     PEXFinishOC (display);
     PEXSyncHandle (display);
@@ -432,9 +671,11 @@ INPUT unsigned int		numEncodings;
 INPUT PEXEncodedTextData 	*encodedTextList;
 
 {
-    pexAnnotationText2D	*pReq;
-    PEXEncodedTextData	*nextString;
-    int 		lenofStrings, i;
+    register pexAnnotationText2D	*req;
+    char				*pBuf;
+    int					fpConvert;
+    int					fpFormat;
+    int					lenofStrings;
 
 
     /*
@@ -448,26 +689,45 @@ INPUT PEXEncodedTextData 	*encodedTextList;
      * Initialize the OC request.
      */
 
-    PEXInitOC (display, resource_id, req_type, PEXOCAnnotationText2D,
-	LENOF (pexAnnotationText2D), lenofStrings, pexAnnotationText2D, pReq);
+    PEXInitOC (display, resource_id, req_type,
+	LENOF (pexAnnotationText2D), lenofStrings, pBuf);
 
-    if (pReq == NULL) return;
+    if (pBuf == NULL) return;
 
 
     /* 
      * Store the atext request header data. 
      */
 
-    pReq->origin = *(pexCoord2D *) origin;
-    pReq->offset = *(pexCoord2D *) offset;
-    pReq->numEncodings = (CARD16) numEncodings;
+    CHECK_FP (fpConvert, fpFormat);
+
+    BEGIN_OC_HEADER (AnnotationText2D, lenofStrings, pBuf, req);
+
+    if (fpConvert)
+    {
+	FP_CONVERT_HTON (origin->x, req->origin_x, fpFormat);
+	FP_CONVERT_HTON (origin->y, req->origin_y, fpFormat);
+	FP_CONVERT_HTON (offset->x, req->offset_x, fpFormat);
+	FP_CONVERT_HTON (offset->y, req->offset_y, fpFormat);
+    }
+    else
+    {
+	req->origin_x = origin->x;
+	req->origin_y = origin->y;
+	req->offset_x = offset->x;
+	req->offset_y = offset->y;
+    }
+
+    req->numEncodings = (CARD16) numEncodings;
+
+    END_OC_HEADER (AnnotationText2D, pBuf, req);
 
 
     /*
      * Store the mono-encoded string.
      */
 
-    StoreMonoStrings (display, numEncodings, encodedTextList);
+    OC_LISTOF_MONO_STRING (numEncodings, encodedTextList);
 
     PEXFinishOC (display);
     PEXSyncHandle (display);
@@ -484,9 +744,42 @@ INPUT unsigned int	numVertices;
 INPUT PEXCoord		*vertices;
 
 {
-    PEXAddListOC (display, resource_id, req_type, PEXOCPolyline,
-	False /* count needed */,
-	numVertices, sizeof (PEXCoord), (char *) vertices);
+    register pexPolyline	*req;
+    char			*pBuf;
+    int				dataLength;
+    int				fpConvert;
+    int				fpFormat;
+
+    /*
+     * Initialize the OC request.
+     */
+
+    dataLength = NUMWORDS (numVertices * SIZEOF (pexCoord3D));
+
+    PEXInitOC (display, resource_id, req_type,
+	LENOF (pexPolyline), dataLength, pBuf);
+
+    if (pBuf == NULL) return;
+
+
+    /* 
+     * Store the request header data. 
+     */
+
+    CHECK_FP (fpConvert, fpFormat);
+
+    BEGIN_OC_HEADER (Polyline, dataLength, pBuf, req);
+    END_OC_HEADER (Polyline, pBuf, req);
+
+
+    /*
+     * Copy the oc data.
+     */
+
+    OC_LISTOF_COORD3D (numVertices, vertices, fpConvert, fpFormat);
+
+    PEXFinishOC (display);
+    PEXSyncHandle (display);
 }
 
 
@@ -500,9 +793,42 @@ INPUT unsigned int	numVertices;
 INPUT PEXCoord2D	*vertices;
 
 {
-    PEXAddListOC (display, resource_id, req_type, PEXOCPolyline2D,
-	False /* count needed */,
-	numVertices, sizeof (PEXCoord2D), (char *) vertices);
+    register pexPolyline2D	*req;
+    char			*pBuf;
+    int				dataLength;
+    int				fpConvert;
+    int				fpFormat;
+
+    /*
+     * Initialize the OC request.
+     */
+
+    dataLength = NUMWORDS (numVertices * SIZEOF (pexCoord2D));
+
+    PEXInitOC (display, resource_id, req_type,
+	LENOF (pexPolyline2D), dataLength, pBuf);
+
+    if (pBuf == NULL) return;
+
+
+    /* 
+     * Store the request header data. 
+     */
+
+    CHECK_FP (fpConvert, fpFormat);
+
+    BEGIN_OC_HEADER (Polyline2D, dataLength, pBuf, req);
+    END_OC_HEADER (Polyline2D, pBuf, req);
+
+
+    /*
+     * Copy the oc data.
+     */
+
+    OC_LISTOF_COORD2D (numVertices, vertices, fpConvert, fpFormat);
+
+    PEXFinishOC (display);
+    PEXSyncHandle (display);
 }
 
 
@@ -519,10 +845,14 @@ INPUT unsigned int	numPolylines;
 INPUT PEXListOfVertex	*polylines;
 
 {
-    pexPolylineSet	*pReq;
-    CARD32 		*pData;
-    int			numPoints, i;
-    int			lenofVertex;
+    register pexPolylineSetWithData	*req;
+    char				*pBuf;
+    int					fpConvert;
+    int					fpFormat;
+    int					lenofVertex;
+    int					numPoints, i;
+    int					dataLength;
+    char				*pData;
 
 
     /* 
@@ -537,7 +867,7 @@ INPUT PEXListOfVertex	*polylines;
      * Calculate how big each vertex is.
      */
 
-    lenofVertex = LENOF (PEXCoord) +
+    lenofVertex = LENOF (pexCoord3D) +
 	((vertexAttributes & PEXGAColor) ? GetColorLength (colorType) : 0); 
 
 
@@ -545,21 +875,27 @@ INPUT PEXListOfVertex	*polylines;
      * Initialize the OC request.
      */
 
-    PEXInitOC (display, resource_id, req_type, PEXOCPolylineSetWithData, 
-	LENOF (pexPolylineSet), 
-	numPolylines + (numPoints * lenofVertex),
-	pexPolylineSet, pReq);
+    dataLength = numPolylines + (numPoints * lenofVertex);
 
-    if (pReq == NULL) return;
+    PEXInitOC (display, resource_id, req_type,
+	LENOF (pexPolylineSetWithData), dataLength, pBuf);
+
+    if (pBuf == NULL) return;
 
 
     /* 
      * Store the polyline request header data. 
      */
 
-    pReq->colorType = colorType;
-    pReq->vertexAttribs = vertexAttributes;
-    pReq->numLists = numPolylines;
+    CHECK_FP (fpConvert, fpFormat);
+
+    BEGIN_OC_HEADER (PolylineSetWithData, dataLength, pBuf, req);
+
+    req->colorType = colorType;
+    req->vertexAttribs = vertexAttributes;
+    req->numLists = numPolylines;
+
+    END_OC_HEADER (PolylineSetWithData, pBuf, req);
 
 
     /* 
@@ -567,13 +903,15 @@ INPUT PEXListOfVertex	*polylines;
      * Note that the vertices are padded to end on a word boundary
      */
 
+    vertexAttributes &= PEXGAColor;	   /* only color allowed at vertices */
+
     for (i = 0; i < numPolylines; i++)
     {
-	pData = (CARD32 *) PEXGetOCAddr (display, sizeof (CARD32));
-	*pData = polylines[i].count;  
+	pData = (char *) PEXGetOCAddr (display, SIZEOF (CARD32));
+	PUT_CARD32 (polylines[i].count, pData);
 
-	PEXCopyWordsToOC (display, polylines[i].count * lenofVertex, 
-	    (char *) polylines[i].vertices.no_data);
+	OC_LISTOF_VERTEX (polylines[i].count, lenofVertex, colorType,
+	    vertexAttributes, polylines[i].vertices, fpConvert, fpFormat);
     }
 
     PEXFinishOC (display);
@@ -597,9 +935,13 @@ INPUT double		tmin;
 INPUT double		tmax;
 
 {
-    pexNurbCurve 	*pReq;
-    int			lenofVertexList;
-    int			lenofKnotList;
+    register pexNURBCurve 	*req;
+    char			*pBuf;
+    int				fpConvert;
+    int				fpFormat;
+    int				dataLength;
+    int				lenofVertexList;
+    int				lenofKnotList;
 
 
     /* 
@@ -608,7 +950,7 @@ INPUT double		tmax;
      */
 
     lenofVertexList = numPoints * ((rationality == PEXRational) ?
-	LENOF (PEXCoord4D) : LENOF (PEXCoord));
+	LENOF (pexCoord4D) : LENOF (pexCoord3D));
     lenofKnotList = order + numPoints;
 
 
@@ -616,32 +958,57 @@ INPUT double		tmax;
      * Initialize the OC request.
      */
 
-    PEXInitOC (display, resource_id, req_type, PEXOCNURBCurve,
-	LENOF (pexNurbCurve),
-	lenofKnotList + lenofVertexList,
-	pexNurbCurve, pReq);
+    dataLength = lenofKnotList + lenofVertexList;
 
-    if (pReq == NULL) return;
+    PEXInitOC (display, resource_id, req_type,
+	LENOF (pexNURBCurve), dataLength, pBuf);
+
+    if (pBuf == NULL) return;
 
 
     /* 
      * Store the nurb request header data. 
      */
 
-    pReq->curveOrder = order;
-    pReq->coordType = rationality;
-    pReq->tmin = tmin;
-    pReq->tmax = tmax;
-    pReq->numKnots = order + numPoints;
-    pReq->numPoints = numPoints;
+    CHECK_FP (fpConvert, fpFormat);
+
+    BEGIN_OC_HEADER (NURBCurve, dataLength, pBuf, req);
+
+    if (fpConvert)
+    {
+	FP_CONVERT_DHTON (tmin, req->tmin, fpFormat);
+	FP_CONVERT_DHTON (tmax, req->tmax, fpFormat);
+    }
+    else
+    {
+	req->tmin = tmin;
+	req->tmax = tmax;
+    }
+
+    req->curveOrder = order;
+    req->coordType = rationality;
+    req->numKnots = order + numPoints;
+    req->numPoints = numPoints;
+
+    END_OC_HEADER (NURBCurve, pBuf, req);
 
 
     /*
      * Store the knot list and the vertex list.
      */
 
-    PEXCopyWordsToOC (display, lenofKnotList, (char *) knots);
-    PEXCopyWordsToOC (display, lenofVertexList, (char *) points.point);
+    OC_LISTOF_FLOAT32 (lenofKnotList, knots, fpConvert, fpFormat);
+
+    if (rationality == PEXRational)
+    {
+	OC_LISTOF_COORD4D (numPoints, points.point_4d,
+            fpConvert, fpFormat);
+    }
+    else
+    {
+	OC_LISTOF_COORD3D (numPoints, points.point,
+            fpConvert, fpFormat);
+    }
 
     PEXFinishOC (display);
     PEXSyncHandle (display);
@@ -661,35 +1028,44 @@ INPUT unsigned int	numPoints;
 INPUT PEXCoord 		*points;
 
 {
-    pexFillArea		*pReq;
-    int			lenofVertexList;
+    register pexFillArea	*req;
+    char			*pBuf;
+    int				fpConvert;
+    int				fpFormat;
+    int				dataLength;
 
 
     /*
      * Initialize the OC request.
      */
 
-    lenofVertexList = numPoints * LENOF (PEXCoord);
+    dataLength = numPoints * LENOF (pexCoord3D);
 
-    PEXInitOC (display, resource_id, req_type, PEXOCFillArea,
-	LENOF (pexFillArea), lenofVertexList, pexFillArea, pReq);
+    PEXInitOC (display, resource_id, req_type,
+	LENOF (pexFillArea), dataLength, pBuf);
 
-    if (pReq == NULL) return;
+    if (pBuf == NULL) return;
 
 
     /* 
      * Store the fill area request data. 
      */
 
-    pReq->shape = shape;
-    pReq->ignoreEdges = ignoreEdges;
+    CHECK_FP (fpConvert, fpFormat);
+
+    BEGIN_OC_HEADER (FillArea, dataLength, pBuf, req);
+
+    req->shape = shape;
+    req->ignoreEdges = ignoreEdges;
+
+    END_OC_HEADER (FillArea, pBuf, req);
 
 
     /*
      * Copy the vertex data to the oc.
      */
 
-    PEXCopyWordsToOC (display, lenofVertexList, (char *) points);
+    OC_LISTOF_COORD3D (numPoints, points, fpConvert, fpFormat);
 
     PEXFinishOC (display);
     PEXSyncHandle (display);
@@ -709,35 +1085,44 @@ INPUT unsigned int	numPoints;
 INPUT PEXCoord2D	*points;
 
 {
-    pexFillArea2D	*pReq;
-    int			lenofVertexList;
+    register pexFillArea2D	*req;
+    char			*pBuf;
+    int				fpConvert;
+    int				fpFormat;
+    int				dataLength;
 
 
     /*
      * Initialize the OC request.
      */
 
-    lenofVertexList = numPoints * LENOF (PEXCoord2D);
+    dataLength = numPoints * LENOF (pexCoord2D);
 
-    PEXInitOC (display, resource_id, req_type, PEXOCFillArea2D,
-        LENOF (pexFillArea2D), lenofVertexList, pexFillArea2D, pReq);
+    PEXInitOC (display, resource_id, req_type,
+	LENOF (pexFillArea2D), dataLength, pBuf);
 
-    if (pReq == NULL) return;
+    if (pBuf == NULL) return;
 
 
     /* 
      * Store the fill area request data. 
      */
 
-    pReq->shape = shape;
-    pReq->ignoreEdges = ignoreEdges;
+    CHECK_FP (fpConvert, fpFormat);
+
+    BEGIN_OC_HEADER (FillArea2D, dataLength, pBuf, req);
+
+    req->shape = shape;
+    req->ignoreEdges = ignoreEdges;
+
+    END_OC_HEADER (FillArea2D, pBuf, req);
 
 
     /*
      * Copy the vertex data to the oc.
      */
 
-    PEXCopyWordsToOC (display, lenofVertexList, (char *) points);
+    OC_LISTOF_COORD2D (numPoints, points, fpConvert, fpFormat);
 
     PEXFinishOC (display);
     PEXSyncHandle (display);
@@ -762,11 +1147,15 @@ INPUT unsigned int	numVertices;
 INPUT PEXArrayOfVertex	vertices;
 
 {
-    pexExtFillArea 	*pReq;
-    CARD32		*pData;
-    int			lenofFacetData;
-    int			lenofVertex;
-    int			lenofColor;
+    register pexFillAreaWithData 	*req;
+    char				*pBuf;
+    int					fpConvert;
+    int					fpFormat;
+    int					dataLength;
+    int					lenofFacet;
+    int					lenofVertex;
+    int					lenofColor;
+    char				*pData;
 
 
     /* 
@@ -775,7 +1164,7 @@ INPUT PEXArrayOfVertex	vertices;
      */
 
     lenofColor = GetColorLength (colorType);
-    lenofFacetData = GetFacetDataLength (facetAttributes, lenofColor); 
+    lenofFacet = GetFacetDataLength (facetAttributes, lenofColor); 
     lenofVertex = GetVertexWithDataLength (vertexAttributes, lenofColor);
 
 
@@ -783,37 +1172,50 @@ INPUT PEXArrayOfVertex	vertices;
      * Initialize the OC request.
      */
 
-    PEXInitOC (display, resource_id, req_type, PEXOCFillAreaWithData,
-	LENOF (pexExtFillArea),
-	lenofFacetData + 1 /* count */ + numVertices * lenofVertex,
-        pexExtFillArea, pReq);
+    dataLength = lenofFacet + 1 /* count */ + numVertices * lenofVertex;
+  
+    PEXInitOC (display, resource_id, req_type,
+	LENOF (pexFillAreaWithData), dataLength, pBuf);
 
-    if (pReq == NULL) return;
+    if (pBuf == NULL) return;
 
 
     /* 
      * Store the fill area request header data. 
      */
 
-    pReq->shape = shape;
-    pReq->ignoreEdges = ignoreEdges;
-    pReq->colorType = colorType;
-    pReq->facetAttribs = facetAttributes;
-    pReq->vertexAttribs = vertexAttributes;
+    CHECK_FP (fpConvert, fpFormat);
+
+    BEGIN_OC_HEADER (FillAreaWithData, dataLength, pBuf, req);
+
+    req->shape = shape;
+    req->ignoreEdges = ignoreEdges;
+    req->colorType = colorType;
+    req->facetAttribs = facetAttributes;
+    req->vertexAttribs = vertexAttributes;
+
+    END_OC_HEADER (FillAreaWithData, pBuf, req);
 
 
     /*
-     * Copy the facet data and vertices to the oc.
+     * Copy the facet data.
      */
 
     if (facetAttributes)
-        PEXCopyWordsToOC (display, lenofFacetData, (char *) facetData);
+    {
+	OC_FACET (colorType, facetAttributes, facetData, fpConvert, fpFormat);
+    }
 
-    pData = (CARD32 *) PEXGetOCAddr (display, sizeof (CARD32));
-    *pData = numVertices;
 
-    PEXCopyWordsToOC (display, lenofVertex * numVertices,
-	(char *) vertices.no_data);
+    /*
+     * Copy the vertex data.
+     */
+
+    pData = (char *) PEXGetOCAddr (display, SIZEOF (CARD32));
+    PUT_CARD32 (numVertices, pData);
+
+    OC_LISTOF_VERTEX (numVertices, lenofVertex, colorType,
+	vertexAttributes, vertices, fpConvert, fpFormat);
 
     PEXFinishOC (display);
     PEXSyncHandle (display);
@@ -834,9 +1236,13 @@ INPUT unsigned int	numFillAreas;
 INPUT PEXListOfCoord	*vertices;
 
 {
-    pexFillAreaSet	*pReq;
-    CARD32		*pData;
-    int			numPoints, i;
+    register pexFillAreaSet	*req;
+    char			*pBuf;
+    int				fpConvert;
+    int				fpFormat;
+    int				dataLength;
+    int				numPoints, i;
+    char			*pData;
 
 
     /* 
@@ -851,36 +1257,42 @@ INPUT PEXListOfCoord	*vertices;
      * Initialize the OC request.
      */
 
-    PEXInitOC (display, resource_id, req_type, PEXOCFillAreaSet,
-	LENOF (pexFillAreaSet),
-	numFillAreas /* counts */ + (numPoints * LENOF (PEXCoord)),
-	pexFillAreaSet, pReq);
+    dataLength = numFillAreas /* counts */ + (numPoints * LENOF (pexCoord3D));
 
-    if (pReq == NULL) return;
+    PEXInitOC (display, resource_id, req_type,
+	LENOF (pexFillAreaSet), dataLength, pBuf);
+
+    if (pBuf == NULL) return;
 
 
     /* 
      * Store the fill area set request header data. 
      */
 
-    pReq->shape = shape; 
-    pReq->ignoreEdges = ignoreEdges;
-    pReq->contourHint = contourHint;
-    pReq->numLists = numFillAreas;
+    CHECK_FP (fpConvert, fpFormat);
+
+    BEGIN_OC_HEADER (FillAreaSet, dataLength, pBuf, req);
+
+    req->shape = shape; 
+    req->ignoreEdges = ignoreEdges;
+    req->contourHint = contourHint;
+    req->numLists = numFillAreas;
+
+    END_OC_HEADER (FillAreaSet, pBuf, req);
 
 
     /*
      * Now store the fill area set.  Each fill area in the set consists of
-     * a vertex count followed a polygon.
+     * a vertex count followed by a polygon.
      */
 
     for (i = 0; i < numFillAreas; i++)
     {
-	pData = (CARD32 *) PEXGetOCAddr (display, sizeof (CARD32));
-	*pData = vertices[i].count;
+	pData = (char *) PEXGetOCAddr (display, SIZEOF (CARD32));
+	PUT_CARD32 (vertices[i].count, pData);
 
-	PEXCopyWordsToOC (display, vertices[i].count * LENOF (PEXCoord), 
-	    (char *) vertices[i].points);
+	OC_LISTOF_COORD3D (vertices[i].count, vertices[i].points,
+	    fpConvert, fpFormat);
     }
 
     PEXFinishOC (display);
@@ -902,9 +1314,13 @@ INPUT unsigned int	numFillAreas;
 INPUT PEXListOfCoord2D	*vertices;
 
 {
-    pexFillAreaSet2D	*pReq;
-    CARD32		*pData;
-    int			numPoints, i;
+    register pexFillAreaSet2D	*req;
+    char			*pBuf;
+    int				fpConvert;
+    int				fpFormat;
+    int				dataLength;
+    int				numPoints, i;
+    char			*pData;
 
 
     /* 
@@ -919,36 +1335,42 @@ INPUT PEXListOfCoord2D	*vertices;
      * Initialize the OC request.
      */
 
-    PEXInitOC (display, resource_id, req_type, PEXOCFillAreaSet2D,
-	LENOF (pexFillAreaSet2D),
-	numFillAreas /* counts */ + (numPoints * LENOF (PEXCoord2D)), 
-	pexFillAreaSet2D, pReq);
+    dataLength = numFillAreas /* counts */ + (numPoints * LENOF (pexCoord2D));
 
-    if (pReq == NULL) return;
+    PEXInitOC (display, resource_id, req_type,
+	LENOF (pexFillAreaSet2D), dataLength, pBuf);
+
+    if (pBuf == NULL) return;
 
 
     /* 
      * Store the fill area set request header data. 
      */
 
-    pReq->shape = shape;
-    pReq->ignoreEdges = ignoreEdges;
-    pReq->contourHint = contourHint;
-    pReq->numLists = numFillAreas;
+    CHECK_FP (fpConvert, fpFormat);
+
+    BEGIN_OC_HEADER (FillAreaSet2D, dataLength, pBuf, req);
+
+    req->shape = shape;
+    req->ignoreEdges = ignoreEdges;
+    req->contourHint = contourHint;
+    req->numLists = numFillAreas;
+
+    END_OC_HEADER (FillAreaSet2D, pBuf, req);
 
 
     /*
      * Now store the fill area set.  Each fill area in the set consists of
-     * a vertex count followed a polygon.
+     * a vertex count followed by a polygon.
      */
 
     for (i = 0; i < numFillAreas; i++)
     {
-	pData = (CARD32 *) PEXGetOCAddr (display, sizeof (CARD32));
-	*pData = vertices[i].count;  
+	pData = (char *) PEXGetOCAddr (display, SIZEOF (CARD32));
+	PUT_CARD32 (vertices[i].count, pData);
 
-	PEXCopyWordsToOC (display, vertices[i].count * LENOF (PEXCoord2D), 
-	   (char *) vertices[i].points);
+	OC_LISTOF_COORD2D (vertices[i].count, vertices[i].points,
+	    fpConvert, fpFormat);
     }
 
     PEXFinishOC (display);
@@ -975,12 +1397,16 @@ INPUT PEXFacetData	*facetData;
 INPUT PEXListOfVertex	*vertices;
 
 {
-    pexExtFillAreaSet		*pReq;
-    CARD32			*pData;
-    int				lenofColor;
-    int				lenofFacetData;
-    int				lenofVertex;
-    int				numVertices, j;
+    register pexFillAreaSetWithData	*req;
+    char				*pBuf;
+    int					fpConvert;
+    int					fpFormat;
+    int					dataLength;
+    int					lenofColor;
+    int					lenofFacet;
+    int					lenofVertex;
+    int					numVertices, i;
+    char				*pData;
 
 
     /* 
@@ -988,39 +1414,45 @@ INPUT PEXListOfVertex	*vertices;
      */
 
     lenofColor = GetColorLength (colorType);
-    lenofFacetData = GetFacetDataLength (facetAttributes, lenofColor); 
+    lenofFacet = GetFacetDataLength (facetAttributes, lenofColor); 
     lenofVertex = GetVertexWithDataLength (vertexAttributes, lenofColor);
 
     if (vertexAttributes & PEXGAEdges)
 	lenofVertex++; 			/* edge switch is CARD32 */
 
-    for (j = 0, numVertices = 0; j < numFillAreas; j++)
-	numVertices += vertices[j].count;
+    for (i = 0, numVertices = 0; i < numFillAreas; i++)
+	numVertices += vertices[i].count;
 
 
     /*
      * Initialize the OC request.
      */
 
-    PEXInitOC (display, resource_id, req_type, PEXOCFillAreaSetWithData, 
-	LENOF (pexExtFillAreaSet), 
-	lenofFacetData + numFillAreas + numVertices * lenofVertex,
-	pexExtFillAreaSet, pReq);
+    dataLength = lenofFacet + numFillAreas + numVertices * lenofVertex;
 
-    if (pReq == NULL) return;
+    PEXInitOC (display, resource_id, req_type,
+	LENOF (pexFillAreaSetWithData), dataLength, pBuf);
+
+    if (pBuf == NULL) return;
 
 
     /* 
      * Store the fill area set request header data. 
      */
 
-    pReq->shape = shape;
-    pReq->ignoreEdges = ignoreEdges;
-    pReq->contourHint = contourHint;
-    pReq->colorType = colorType;
-    pReq->facetAttribs = facetAttributes;
-    pReq->vertexAttribs = vertexAttributes;
-    pReq->numLists = numFillAreas;
+    CHECK_FP (fpConvert, fpFormat);
+
+    BEGIN_OC_HEADER (FillAreaSetWithData, dataLength, pBuf, req);
+
+    req->shape = shape;
+    req->ignoreEdges = ignoreEdges;
+    req->contourHint = contourHint;
+    req->colorType = colorType;
+    req->facetAttribs = facetAttributes;
+    req->vertexAttribs = vertexAttributes;
+    req->numLists = numFillAreas;
+
+    END_OC_HEADER (FillAreaSetWithData, pBuf, req);
 
 
     /*
@@ -1028,7 +1460,9 @@ INPUT PEXListOfVertex	*vertices;
      */
 
     if (facetAttributes)
-	PEXCopyWordsToOC (display, lenofFacetData, (char *) facetData);
+    {
+	OC_FACET (colorType, facetAttributes, facetData, fpConvert, fpFormat);
+    }
 
 
     /*
@@ -1036,13 +1470,13 @@ INPUT PEXListOfVertex	*vertices;
      * Note that the vertices are padded to end on a word boundary.
      */
 
-    for (j = 0; j < numFillAreas; j++)
+    for (i = 0; i < numFillAreas; i++)
     {
-	pData = (CARD32 *) PEXGetOCAddr (display, sizeof (CARD32));
-	*pData = vertices[j].count; 
+	pData = (char *) PEXGetOCAddr (display, SIZEOF (CARD32));
+	PUT_CARD32 (vertices[i].count, pData);
 
-	PEXCopyWordsToOC (display, vertices[j].count * lenofVertex,
-	    (char *) vertices[j].vertices.no_data);
+	OC_LISTOF_VERTEX (vertices[i].count, lenofVertex, colorType,
+	    vertexAttributes, vertices[i].vertices, fpConvert, fpFormat);
     }
 
     PEXFinishOC (display);
@@ -1075,18 +1509,22 @@ INPUT PEXSwitch			*edgeFlags;
 INPUT PEXConnectivityData	*connectivity;
 
 {
-    pexSOFAS		*pReq;
-    PEXConnectivityData *pConnectivity;
-    PEXListOfUShort 	*pList;
-    int 		lenofColor;
-    int 		lenofFacet;
-    int 		lenofVertex;
-    int 		sizeofEdge;
-    int			totLength;
-    int 		numContours;
-    int 		count = 0;
-    int			i, j, cbytes;
-    CARD16		*pData;
+    register pexSetOfFillAreaSets	*req;
+    char				*pBuf;
+    int					fpConvert;
+    int					fpFormat;
+    int					dataLength;
+    PEXConnectivityData 		*pConnectivity;
+    PEXListOfUShort 			*pList;
+    int 				lenofColor;
+    int 				lenofFacet;
+    int 				lenofVertex;
+    int 				sizeofEdge;
+    int 				numContours;
+    int 				count, scount;
+    int					cbytes;
+    int					i, j;
+    char				*pData;
 
 
     /* 
@@ -1106,55 +1544,75 @@ INPUT PEXConnectivityData	*connectivity;
     lenofColor = GetColorLength (colorType);
     lenofFacet = GetFacetDataLength (facetAttributes, lenofColor); 
     lenofVertex = GetVertexWithDataLength (vertexAttributes, lenofColor);
-    sizeofEdge = edgeAttributes ? sizeof (CARD8) : 0;
+    sizeofEdge = edgeAttributes ? SIZEOF (CARD8) : 0;
 
-    cbytes = sizeof (CARD16) * (numFillAreaSets + numContours + numIndices);
-
-    totLength = (lenofFacet * numFillAreaSets) + (lenofVertex * numVertices) + 
-	NUMWORDS (sizeofEdge * numIndices) + NUMWORDS (cbytes);
+    cbytes = SIZEOF (CARD16) * (numFillAreaSets + numContours + numIndices);
 
 
     /*
      * Initialize the OC request.
      */
 
-    PEXInitOC (display, resource_id, req_type, PEXOCSetOfFillAreaSets,
-	LENOF (pexSOFAS), totLength, pexSOFAS, pReq);
+    dataLength = (lenofFacet * numFillAreaSets) +
+	(lenofVertex * numVertices) + 
+	NUMWORDS (sizeofEdge * numIndices) + NUMWORDS (cbytes);
 
-    if (pReq == NULL) return;
+    PEXInitOC (display, resource_id, req_type,
+	LENOF (pexSetOfFillAreaSets), dataLength, pBuf);
+
+    if (pBuf == NULL) return;
 
 
     /* 
      * Store the SOFA request header data. 
      */
 
-    pReq->shape = shape;
-    pReq->colorType = colorType;
-    pReq->FAS_Attributes = facetAttributes;
-    pReq->vertexAttributes = vertexAttributes;
-    pReq->edgeAttributes = edgeAttributes ? PEXOn : PEXOff;
-    pReq->contourHint = contourHint;
-    pReq->contourCountsFlag = contoursAllOne;
-    pReq->numFAS = numFillAreaSets;
-    pReq->numVertices = numVertices;
-    pReq->numEdges = numIndices;
-    pReq->numContours = numContours;
+    CHECK_FP (fpConvert, fpFormat);
+
+    BEGIN_OC_HEADER (SetOfFillAreaSets, dataLength, pBuf, req);
+
+    req->shape = shape;
+    req->colorType = colorType;
+    req->FAS_Attributes = facetAttributes;
+    req->vertexAttributes = vertexAttributes;
+    req->edgeAttributes = edgeAttributes ? PEXOn : PEXOff;
+    req->contourHint = contourHint;
+    req->contourCountsFlag = contoursAllOne;
+    req->numFAS = numFillAreaSets;
+    req->numVertices = numVertices;
+    req->numEdges = numIndices;
+    req->numContours = numContours;
+
+    END_OC_HEADER (SetOfFillAreaSets, pBuf, req);
 
 
     /*
-     * Copy the facet and vertex data to the oc.
+     * Copy the facet data.
      */
 
-    if (facetAttributes )
-	PEXCopyWordsToOC (display, lenofFacet * numFillAreaSets,
-            (char *) facetData.index);
+    if (facetAttributes)
+    {
+	OC_LISTOF_FACET (numFillAreaSets, lenofFacet, colorType,
+	    facetAttributes, facetData, fpConvert, fpFormat);
+    }
 
-    PEXCopyWordsToOC (display, lenofVertex * numVertices,
-            (char *) vertices.no_data);
+
+    /*
+     * Copy the vertex data.
+     */
+
+    OC_LISTOF_VERTEX (numVertices, lenofVertex, colorType,
+	vertexAttributes, vertices, fpConvert, fpFormat);
+
+
+    /*
+     * Copy the edge data.
+     */
 
     if (edgeAttributes)
-	_PEXCopyPaddedBytesToOC (display, numIndices * sizeof (CARD8),
-	    (char *) edgeFlags);
+    {
+	OC_LISTOF_CARD8_PAD (numIndices, edgeFlags);
+    }
 
 
     /*
@@ -1165,16 +1623,17 @@ INPUT PEXConnectivityData	*connectivity;
 
     for (i = 0 ; i < numFillAreaSets; i++)
     {
-	pData = (CARD16 *) PEXGetOCAddr (display, sizeof (CARD16));
-	*pData = count = pConnectivity->count;
+	count = pConnectivity->count;
+	pData = (char *) PEXGetOCAddr (display, SIZEOF (CARD16));
+	PUT_CARD16 (count, pData);
 
 	for (j = 0, pList = pConnectivity->lists; j < count; j++, pList++)
 	{
-	    pData = (CARD16 *) PEXGetOCAddr (display, sizeof (CARD16));
-	    *pData = pList->count;
+	    scount = pList->count;
+	    pData = (char *) PEXGetOCAddr (display, SIZEOF (CARD16));
+	    PUT_CARD16 (scount, pData);
 
-	    PEXCopyBytesToOC (display, pList->count * sizeof (CARD16),
-		(char *) pList->shorts);
+	    OC_LISTOF_CARD16 (scount, pList->shorts);
 	}
 
 	pConnectivity++;
@@ -1204,10 +1663,14 @@ INPUT unsigned int		numVertices;
 INPUT PEXArrayOfVertex		vertices;
 
 {
-    pexTriangleStrip	*pReq;
-    int			lenofColor;
-    int			lenofFacetDataList;
-    int			lenofVertexList;
+    register pexTriangleStrip	*req;
+    char			*pBuf;
+    int				fpConvert;
+    int				fpFormat;
+    int				dataLength;
+    int				lenofColor;
+    int				lenofFacet;
+    int				lenofVertex;
 
 
     /* 
@@ -1215,43 +1678,55 @@ INPUT PEXArrayOfVertex		vertices;
      */
 
     lenofColor = GetColorLength (colorType);
-    lenofFacetDataList = (numVertices - 2) *
-	GetFacetDataLength (facetAttributes, lenofColor); 
-    lenofVertexList = numVertices *
-	GetVertexWithDataLength (vertexAttributes, lenofColor);
+    lenofFacet = GetFacetDataLength (facetAttributes, lenofColor); 
+    lenofVertex = GetVertexWithDataLength (vertexAttributes, lenofColor);
 
 
     /*
      * Initialize the OC request.
      */
 
-    PEXInitOC (display, resource_id, req_type, PEXOCTriangleStrip, 
-	LENOF (pexTriangleStrip),
-	lenofFacetDataList + lenofVertexList,
-	pexTriangleStrip, pReq);
+    dataLength = (numVertices - 2) * lenofFacet + numVertices * lenofVertex;
 
-    if (pReq == NULL) return;
+    PEXInitOC (display, resource_id, req_type,
+	LENOF (pexTriangleStrip), dataLength, pBuf);
+
+    if (pBuf == NULL) return;
 
 
     /* 
      * Store the triangle strip request header data. 
      */
 
-    pReq->colorType = colorType;
-    pReq->facetAttribs = facetAttributes;
-    pReq->vertexAttribs = vertexAttributes;
-    pReq->numVertices = numVertices;
+    CHECK_FP (fpConvert, fpFormat);
+
+    BEGIN_OC_HEADER (TriangleStrip, dataLength, pBuf, req);
+
+    req->colorType = colorType;
+    req->facetAttribs = facetAttributes;
+    req->vertexAttribs = vertexAttributes;
+    req->numVertices = numVertices;
+
+    END_OC_HEADER (TriangleStrip, pBuf, req);
 
 
     /*
-     * Copy the facet data and vertices to the oc.
+     * Copy the facet data.
      */
 
     if (facetAttributes)
-        PEXCopyWordsToOC (display, lenofFacetDataList,
-	    (char *) facetData.index);
+    {
+	OC_LISTOF_FACET (numVertices - 2, lenofFacet, colorType,
+	    facetAttributes, facetData, fpConvert, fpFormat);
+    }
 
-    PEXCopyWordsToOC (display, lenofVertexList, (char *) vertices.no_data);
+
+    /*
+     * Copy the vertex data.
+     */
+
+    OC_LISTOF_VERTEX (numVertices, lenofVertex, colorType,
+	vertexAttributes, vertices, fpConvert, fpFormat);
 
     PEXFinishOC (display);
     PEXSyncHandle (display);
@@ -1276,10 +1751,14 @@ INPUT unsigned int		rowCount;
 INPUT PEXArrayOfVertex		vertices;
 
 {
-    pexQuadrilateralMesh 	*pReq;
-    int				lenofColor;
-    int				lenofFacetDataList;
-    int				lenofVertexList;
+    register pexQuadrilateralMesh 	*req;
+    char				*pBuf;
+    int					fpConvert;
+    int					fpFormat;
+    int					dataLength;
+    int					lenofColor;
+    int					lenofFacet;
+    int					lenofVertex;
 
 
     /* 
@@ -1287,45 +1766,58 @@ INPUT PEXArrayOfVertex		vertices;
      */
 
     lenofColor = GetColorLength (colorType);
-    lenofFacetDataList = ((rowCount - 1) * (colCount - 1)) *
-	GetFacetDataLength (facetAttributes, lenofColor); 
-    lenofVertexList = rowCount * colCount *
-	GetVertexWithDataLength (vertexAttributes, lenofColor);
+    lenofFacet = GetFacetDataLength (facetAttributes, lenofColor); 
+    lenofVertex = GetVertexWithDataLength (vertexAttributes, lenofColor);
 
 
     /*
      * Initialize the OC request.
      */
 
-    PEXInitOC (display, resource_id, req_type, PEXOCQuadrilateralMesh, 
-	LENOF (pexQuadrilateralMesh),
-	lenofFacetDataList + lenofVertexList,
-	pexQuadrilateralMesh, pReq);
+    dataLength = (((rowCount - 1) * (colCount - 1)) * lenofFacet) +
+	(rowCount * colCount * lenofVertex);
 
-    if (pReq == NULL) return;
+    PEXInitOC (display, resource_id, req_type,
+	LENOF (pexQuadrilateralMesh), dataLength, pBuf);
+
+    if (pBuf == NULL) return;
 
 
     /* 
      * Store the quad mesh request header data. 
      */
 
-    pReq->colorType = colorType;
-    pReq->mPts = colCount;
-    pReq->nPts = rowCount;
-    pReq->facetAttribs = facetAttributes;
-    pReq->vertexAttribs = vertexAttributes;
-    pReq->shape = shape;
+    CHECK_FP (fpConvert, fpFormat);
+
+    BEGIN_OC_HEADER (QuadrilateralMesh, dataLength, pBuf, req);
+
+    req->colorType = colorType;
+    req->mPts = colCount;
+    req->nPts = rowCount;
+    req->facetAttribs = facetAttributes;
+    req->vertexAttribs = vertexAttributes;
+    req->shape = shape;
+
+    END_OC_HEADER (QuadrilateralMesh, pBuf, req);
 
 
     /*
-     * Copy the facet data and vertices to the oc.
+     * Copy the facet data.
      */
 
     if (facetAttributes)
-        PEXCopyWordsToOC (display, lenofFacetDataList,
-            (char *) facetData.index);
+    {
+	OC_LISTOF_FACET ((rowCount - 1) * (colCount - 1), lenofFacet,
+	    colorType, facetAttributes, facetData, fpConvert, fpFormat);
+    }
 
-    PEXCopyWordsToOC (display, lenofVertexList, (char *) vertices.no_data);
+
+    /*
+     * Copy the vertex data.
+     */
+
+    OC_LISTOF_VERTEX (rowCount * colCount, lenofVertex, colorType,
+	vertexAttributes, vertices, fpConvert, fpFormat);
 
     PEXFinishOC (display);
     PEXSyncHandle (display);
@@ -1351,17 +1843,22 @@ INPUT unsigned int		numTrimLoops;
 INPUT PEXListOfTrimCurve 	*trimLoops;
 
 {
-    pexNurbSurface	*pReq;
-    pexTrimCurve	*pTCHead;
-    PEXTrimCurve	*ptrimCurve;
-    PEXListOfTrimCurve	*ptrimLoop;
-    CARD32		*pData;
-    int			lenofVertexList;
-    int			lenofUKnotList;
-    int			lenofVKnotList;
-    int			lenofTrimData;
-    int			thisLength, i;
-    int			count = 0;
+    register pexNURBSurface	*req;
+    char			*pBuf;
+    int				fpConvert;
+    int				fpFormat;
+    int				dataLength;
+    int				lenofVertexList;
+    int				lenofUKnotList;
+    int				lenofVKnotList;
+    int				lenofTrimData;
+    int				thisLength, i;
+    int				count;
+    pexTrimCurve		*pTCHead;
+    PEXTrimCurve		*ptrimCurve;
+    PEXListOfTrimCurve		*ptrimLoop;
+    char			*pData;
+    char			*ocAddr;
 
 
     /* 
@@ -1369,7 +1866,8 @@ INPUT PEXListOfTrimCurve 	*trimLoops;
      */
 
     lenofVertexList = numMPoints * numNPoints *
-        ((rationality == PEXRational) ? LENOF (PEXCoord4D) : LENOF (PEXCoord));
+        ((rationality == PEXRational) ?
+	LENOF (pexCoord4D) : LENOF (pexCoord3D));
     lenofUKnotList = uorder + numMPoints;
     lenofVKnotList = vorder + numNPoints;
 
@@ -1403,35 +1901,52 @@ INPUT PEXListOfTrimCurve 	*trimLoops;
      * Initialize the OC request.
      */
 
-    PEXInitOC (display, resource_id, req_type, PEXOCNURBSurface,
-	LENOF (pexNurbSurface),
-	(lenofUKnotList + lenofVKnotList + lenofVertexList + lenofTrimData), 
-	pexNurbSurface, pReq);
+    dataLength = lenofUKnotList + lenofVKnotList +
+	lenofVertexList + lenofTrimData;
 
-    if (pReq == NULL) return;
+    PEXInitOC (display, resource_id, req_type,
+	LENOF (pexNURBSurface), dataLength, pBuf);
+
+    if (pBuf == NULL) return;
 
 
     /*
      * Store the nurb surface request header data.
      */
 
-    pReq->type = rationality;
-    pReq->uOrder = uorder;
-    pReq->vOrder = vorder;
-    pReq->numUknots = uorder + numMPoints;
-    pReq->numVknots = vorder + numNPoints;
-    pReq->mPts = numMPoints;
-    pReq->nPts = numNPoints;
-    pReq->numLists = numTrimLoops;
+    CHECK_FP (fpConvert, fpFormat);
+
+    BEGIN_OC_HEADER (NURBSurface, dataLength, pBuf, req);
+
+    req->type = rationality;
+    req->uOrder = uorder;
+    req->vOrder = vorder;
+    req->numUknots = uorder + numMPoints;
+    req->numVknots = vorder + numNPoints;
+    req->mPts = numMPoints;
+    req->nPts = numNPoints;
+    req->numLists = numTrimLoops;
+
+    END_OC_HEADER (NURBSurface, pBuf, req);
 
 
     /*
      * Now copy the knot lists and the vertex list.
      */
 
-    PEXCopyWordsToOC (display, lenofUKnotList, (char *) uknots);
-    PEXCopyWordsToOC (display, lenofVKnotList, (char *) vknots);
-    PEXCopyWordsToOC (display, lenofVertexList, (char *) points.point);
+    OC_LISTOF_FLOAT32 (lenofUKnotList, uknots, fpConvert, fpFormat);
+    OC_LISTOF_FLOAT32 (lenofVKnotList, vknots, fpConvert, fpFormat);
+
+    if (rationality == PEXRational)
+    {
+	OC_LISTOF_COORD4D (numMPoints * numNPoints,
+            points.point_4d, fpConvert, fpFormat);
+    }
+    else
+    {
+	OC_LISTOF_COORD3D (numMPoints * numNPoints,
+	    points.point, fpConvert, fpFormat);
+    }
 
 
     /* 
@@ -1441,8 +1956,9 @@ INPUT PEXListOfTrimCurve 	*trimLoops;
 
     for (i = 0, ptrimLoop = trimLoops; i < numTrimLoops; i++, ptrimLoop++)
     {
-	pData = (CARD32 *) PEXGetOCAddr (display, sizeof (CARD32));
-	*pData = count = ptrimLoop->count;
+	count = ptrimLoop->count;
+	pData = (char *) PEXGetOCAddr (display, SIZEOF (CARD32));
+	PUT_CARD32 (count, pData);
 
 	ptrimCurve = ptrimLoop->curves;
 
@@ -1453,34 +1969,53 @@ INPUT PEXListOfTrimCurve 	*trimLoops;
 	     */
 
 	    thisLength = ptrimCurve->order + ptrimCurve->count;
+	    ocAddr = (char *) PEXGetOCAddr (display, SIZEOF (pexTrimCurve));
 
-	    pTCHead = (pexTrimCurve *)
-		PEXGetOCAddr (display, sizeof (pexTrimCurve));
+	    BEGIN_TRIMCURVE_HEAD (ocAddr, pTCHead);
 
 	    pTCHead->visibility = (pexSwitch) ptrimCurve->visibility;
 	    pTCHead->order = (CARD16) ptrimCurve->order;
 	    pTCHead->type = (pexCoordType) ptrimCurve->rationality;
 	    pTCHead->approxMethod = (INT16) ptrimCurve->approx_method;
-	    pTCHead->tolerance = (float) ptrimCurve->tolerance;
-	    pTCHead->tMin = (float) ptrimCurve->tmin;
-	    pTCHead->tMax = (float) ptrimCurve->tmax;
 	    pTCHead->numKnots = thisLength;
 	    pTCHead->numCoord = ptrimCurve->count;
+
+	    if (fpConvert)
+	    {
+		FP_CONVERT_HTON (ptrimCurve->tolerance,
+		    pTCHead->tolerance, fpFormat);
+		FP_CONVERT_HTON (ptrimCurve->tmin,
+		    pTCHead->tMin, fpFormat);
+		FP_CONVERT_HTON (ptrimCurve->tmax,
+		    pTCHead->tMax, fpFormat);
+	    }
+	    else
+	    {
+		pTCHead->tolerance = (float) ptrimCurve->tolerance;
+		pTCHead->tMin = (float) ptrimCurve->tmin;
+		pTCHead->tMax = (float) ptrimCurve->tmax;
+	    }
+
+	    END_TRIMCURVE_HEAD (ocAddr, pTCHead);
 
 
 	    /*
 	     * Add the trim curve knot list and vertex list.
 	     */
 
-    	    PEXCopyWordsToOC (display, thisLength,
-		(char *) ptrimCurve->knots.floats);
+	    OC_LISTOF_FLOAT32 (thisLength,
+		ptrimCurve->knots.floats, fpConvert, fpFormat);
 
-	    thisLength = ptrimCurve->count *
-		((ptrimCurve->rationality == PEXRational) ?
-		LENOF (PEXCoord) : LENOF (PEXCoord2D));
-
-    	    PEXCopyWordsToOC (display, thisLength,
-		(char *) ptrimCurve->control_points.point);
+	    if (ptrimCurve->rationality == PEXRational)
+	    {
+		OC_LISTOF_COORD3D (ptrimCurve->count,
+		    ptrimCurve->control_points.point, fpConvert, fpFormat);
+	    }
+	    else
+	    {
+		OC_LISTOF_COORD2D (ptrimCurve->count,
+		    ptrimCurve->control_points.point_2d, fpConvert, fpFormat);
+	    }
 
 	    ptrimCurve++;
 	}
@@ -1505,38 +2040,69 @@ INPUT unsigned int	dy;
 INPUT PEXTableIndex 	*icolors;
 
 {
-    pexCellArray	*pReq;
+    register pexCellArray	*req;
+    char			*pBuf;
+    int				fpConvert;
+    int				fpFormat;
+    int				dataLength;
 
 
     /*
      * Initialize the OC request.
      */
 
-    PEXInitOC (display, resource_id, req_type, PEXOCCellArray,
-	LENOF (pexCellArray),
-	NUMWORDS (dx * dy * sizeof (pexTableIndex)),
-        pexCellArray, pReq);
+    dataLength = NUMWORDS (dx * dy * SIZEOF (pexTableIndex));
 
-    if (pReq == NULL) return;
+    PEXInitOC (display, resource_id, req_type,
+	LENOF (pexCellArray), dataLength, pBuf);
+
+    if (pBuf == NULL) return;
 
 
     /*
      * Store the cell array header data.
      */
 
-    pReq->point1 = *(pexCoord3D *) pt1;
-    pReq->point2 = *(pexCoord3D *) pt2;
-    pReq->point3 = *(pexCoord3D *) pt3;
-    pReq->dx = dx;
-    pReq->dy = dy;
+    CHECK_FP (fpConvert, fpFormat);
+
+    BEGIN_OC_HEADER (CellArray, dataLength, pBuf, req);
+
+    if (fpConvert)
+    {
+	FP_CONVERT_HTON (pt1->x, req->point1_x, fpFormat);
+	FP_CONVERT_HTON (pt1->y, req->point1_y, fpFormat);
+	FP_CONVERT_HTON (pt1->z, req->point1_z, fpFormat);
+	FP_CONVERT_HTON (pt2->x, req->point2_x, fpFormat);
+	FP_CONVERT_HTON (pt2->y, req->point2_y, fpFormat);
+	FP_CONVERT_HTON (pt2->z, req->point2_z, fpFormat);
+	FP_CONVERT_HTON (pt3->x, req->point3_x, fpFormat);
+	FP_CONVERT_HTON (pt3->y, req->point3_y, fpFormat);
+	FP_CONVERT_HTON (pt3->z, req->point3_z, fpFormat);
+    }
+    else
+    {
+	req->point1_x = pt1->x;
+	req->point1_y = pt1->y;
+	req->point1_z = pt1->z;
+	req->point2_x = pt2->x;
+	req->point2_y = pt2->y;
+	req->point2_z = pt2->z;
+	req->point3_x = pt3->x;
+	req->point3_y = pt3->y;
+	req->point3_z = pt3->z;
+    }
+
+    req->dx = dx;
+    req->dy = dy;
+
+    END_OC_HEADER (CellArray, pBuf, req);
 
 
     /*
      * Copy the color data to the oc.
      */
 
-    _PEXCopyPaddedBytesToOC (display, dx * dy * sizeof (pexTableIndex),
-	(char *) icolors);
+    OC_LISTOF_CARD16_PAD (dx * dy, icolors);
 
     PEXFinishOC (display);
     PEXSyncHandle (display);
@@ -1556,37 +2122,59 @@ INPUT unsigned int	dy;
 INPUT PEXTableIndex	*icolors;
 
 {
-    pexCellArray2D	*pReq;
+    register pexCellArray2D	*req;
+    char			*pBuf;
+    int				fpConvert;
+    int				fpFormat;
+    int				dataLength;
 
 
     /*
      * Initialize the OC request.
      */
 
-    PEXInitOC (display, resource_id, req_type, PEXOCCellArray2D,
-	LENOF (pexCellArray2D), 
-	NUMWORDS (dx * dy * sizeof (pexTableIndex)),
-	pexCellArray2D,	pReq);
+    dataLength = NUMWORDS (dx * dy * SIZEOF (pexTableIndex));
 
-    if (pReq == NULL) return;
+    PEXInitOC (display, resource_id, req_type,
+	LENOF (pexCellArray2D), dataLength, pBuf);
+
+    if (pBuf == NULL) return;
 
 
     /*
      * Store the cell array header data.
      */
 
-    pReq->point1 = *(pexCoord2D *) pt1;
-    pReq->point2 = *(pexCoord2D *) pt2;
-    pReq->dx = dx;
-    pReq->dy = dy;
+    CHECK_FP (fpConvert, fpFormat);
+
+    BEGIN_OC_HEADER (CellArray2D, dataLength, pBuf, req);
+
+    if (fpConvert)
+    {
+	FP_CONVERT_HTON (pt1->x, req->point1_x, fpFormat);
+	FP_CONVERT_HTON (pt1->y, req->point1_y, fpFormat);
+	FP_CONVERT_HTON (pt2->x, req->point2_x, fpFormat);
+	FP_CONVERT_HTON (pt2->y, req->point2_y, fpFormat);
+    }
+    else
+    {
+	req->point1_x = pt1->x;
+	req->point1_y = pt1->y;
+	req->point2_x = pt2->x;
+	req->point2_y = pt2->y;
+    }
+
+    req->dx = dx;
+    req->dy = dy;
+
+    END_OC_HEADER (CellArray2D, pBuf, req);
 
 
     /*
      * Copy the color data to the oc.
      */
 
-    _PEXCopyPaddedBytesToOC (display, dx * dy * sizeof (pexTableIndex),
-	(char *) icolors);
+    OC_LISTOF_CARD16_PAD (dx * dy, icolors);
 
     PEXFinishOC (display);
     PEXSyncHandle (display);
@@ -1609,39 +2197,73 @@ INPUT int		colorType;
 INPUT PEXArrayOfColor 	colors;
 
 {
-    pexExtCellArray 	*pReq;
-    int			lenofColorList;
+    register pexExtendedCellArray 	*req;
+    char				*pBuf;
+    int					lenofColor;
+    int					dataLength;
+    int					fpConvert;
+    int					fpFormat;
 
 
     /*
      * Initialize the OC request.
      */
 
-    lenofColorList = dx * dy * GetColorLength (colorType);
+    lenofColor = GetColorLength (colorType);
+    dataLength = dx * dy * lenofColor;
 
-    PEXInitOC (display, resource_id, req_type, PEXOCExtendedCellArray,
-	LENOF (pexExtCellArray), lenofColorList, pexExtCellArray, pReq);
+    PEXInitOC (display, resource_id, req_type,
+	LENOF (pexExtendedCellArray), dataLength, pBuf);
 
-    if (pReq == NULL) return;
+    if (pBuf == NULL) return;
 
 
     /*
      * Store the cell array header data.
      */
 
-    pReq->colorType = colorType;
-    pReq->point1 = *(pexCoord3D *) pt1;
-    pReq->point2 = *(pexCoord3D *) pt2;
-    pReq->point3 = *(pexCoord3D *) pt3;
-    pReq->dx = dx;
-    pReq->dy = dy;
+    CHECK_FP (fpConvert, fpFormat);
+
+    BEGIN_OC_HEADER (ExtendedCellArray, dataLength, pBuf, req);
+
+    if (fpConvert)
+    {
+	FP_CONVERT_HTON (pt1->x, req->point1_x, fpFormat);
+	FP_CONVERT_HTON (pt1->y, req->point1_y, fpFormat);
+	FP_CONVERT_HTON (pt1->z, req->point1_z, fpFormat);
+	FP_CONVERT_HTON (pt2->x, req->point2_x, fpFormat);
+	FP_CONVERT_HTON (pt2->y, req->point2_y, fpFormat);
+	FP_CONVERT_HTON (pt2->z, req->point2_z, fpFormat);
+	FP_CONVERT_HTON (pt3->x, req->point3_x, fpFormat);
+	FP_CONVERT_HTON (pt3->y, req->point3_y, fpFormat);
+	FP_CONVERT_HTON (pt3->z, req->point3_z, fpFormat);
+    }
+    else
+    {
+	req->point1_x = pt1->x;
+	req->point1_y = pt1->y;
+	req->point1_z = pt1->z;
+	req->point2_x = pt2->x;
+	req->point2_y = pt2->y;
+	req->point2_z = pt2->z;
+	req->point3_x = pt3->x;
+	req->point3_y = pt3->y;
+	req->point3_z = pt3->z;
+    }
+
+    req->colorType = colorType;
+    req->dx = dx;
+    req->dy = dy;
+
+    END_OC_HEADER (ExtendedCellArray, pBuf, req);
 
 
     /*
      * Copy the color data to the oc.
      */
 
-    PEXCopyWordsToOC (display, lenofColorList, (char *) colors.indexed);
+    OC_LISTOF_COLOR (dx * dy, lenofColor, colorType,
+	colors, fpConvert, fpFormat);
 
     PEXFinishOC (display);
     PEXSyncHandle (display);
@@ -1661,38 +2283,47 @@ INPUT unsigned long	numBytes;
 INPUT char		*data;
 
 {
-    pexGdp	*pReq;
-    int		lenofVertexList;
+    register pexGDP	*req;
+    char		*pBuf;
+    int			fpConvert;
+    int			fpFormat;
+    int			dataLength;
 
 
     /*
      * Initialize the OC request.
      */
 
-    lenofVertexList = numPoints * LENOF (PEXCoord);
+    dataLength = numPoints * LENOF (pexCoord3D) + NUMWORDS (numBytes);
 
-    PEXInitOC (display, resource_id, req_type, PEXOCGDP, LENOF (pexGdp), 
-	lenofVertexList + NUMWORDS (numBytes), pexGdp, pReq);
+    PEXInitOC (display, resource_id, req_type,
+	LENOF (pexGDP), dataLength, pBuf);
 
-    if (pReq == NULL) return;
+    if (pBuf == NULL) return;
 
 
     /*
      * Store the gdp header data.
      */
 
-    pReq->gdpId = id; 
-    pReq->numPoints = numPoints; 
-    pReq->numBytes = numBytes;
+    CHECK_FP (fpConvert, fpFormat);
+
+    BEGIN_OC_HEADER (GDP, dataLength, pBuf, req);
+
+    req->gdpId = id; 
+    req->numPoints = numPoints; 
+    req->numBytes = numBytes;
+
+    END_OC_HEADER (GDP, pBuf, req);
 
 
     /*
      * Copy the vertices and GDP data to the oc.
      */
 
-    PEXCopyWordsToOC (display, lenofVertexList, (char *) points);
+    OC_LISTOF_COORD3D (numPoints, points, fpConvert, fpFormat);
 
-    _PEXCopyPaddedBytesToOC (display, numBytes, (char *) data);
+    OC_LISTOF_CARD8_PAD (numBytes, data);
 
     PEXFinishOC (display);
     PEXSyncHandle (display);
@@ -1713,38 +2344,47 @@ INPUT unsigned long	numBytes;
 INPUT char		*data;
 
 {
-    pexGdp2D	*pReq;
-    int		lenofVertexList;
+    register pexGDP2D	*req;
+    char		*pBuf;
+    int			fpConvert;
+    int			fpFormat;
+    int			dataLength;
 
 
     /*
      * Initialize the OC request.
      */
 
-    lenofVertexList = numPoints * LENOF (PEXCoord2D);
+    dataLength = numPoints * LENOF (pexCoord2D) + NUMWORDS (numBytes);
 
-    PEXInitOC (display, resource_id, req_type, PEXOCGDP2D, LENOF (pexGdp2D), 
-	lenofVertexList + NUMWORDS (numBytes), pexGdp2D, pReq);
+    PEXInitOC (display, resource_id, req_type,
+	LENOF (pexGDP2D), dataLength, pBuf);
 
-    if (pReq == NULL) return;
+    if (pBuf == NULL) return;
 
 
     /*
      * Store the gdp header data.
      */
 
-    pReq->gdpId = id; 
-    pReq->numPoints = numPoints; 
-    pReq->numBytes = numBytes;
+    CHECK_FP (fpConvert, fpFormat);
+
+    BEGIN_OC_HEADER (GDP2D, dataLength, pBuf, req);
+
+    req->gdpId = id; 
+    req->numPoints = numPoints; 
+    req->numBytes = numBytes;
+
+    END_OC_HEADER (GDP2D, pBuf, req);
 
 
     /*
      * Copy the vertices and GDP data to the oc.
      */
 
-    PEXCopyWordsToOC (display, lenofVertexList, (char *) points);
+    OC_LISTOF_COORD2D (numPoints, points, fpConvert, fpFormat);
 
-    _PEXCopyPaddedBytesToOC (display, numBytes, (char *) data);
+    OC_LISTOF_CARD8_PAD (numBytes, data);
 
     PEXFinishOC (display);
     PEXSyncHandle (display);

@@ -1,4 +1,4 @@
-/* $XConsortium: pl_startup.c,v 1.9 92/08/26 13:06:22 mor Exp $ */
+/* $XConsortium: pl_startup.c,v 1.12 93/02/11 16:39:17 mor Exp $ */
 
 /******************************************************************************
 Copyright 1987,1991 by Digital Equipment Corporation, Maynard, Massachusetts
@@ -41,6 +41,7 @@ OUTPUT char		*error_string;
 
 {
     pexGetExtensionInfoReq	*req;
+    char			*pBuf;
     pexGetExtensionInfoReply	rep;
     PEXExtensionInfo		*extInfo;
     XExtCodes			*pExtCodes;
@@ -50,7 +51,6 @@ OUTPUT char		*error_string;
     unsigned long		*numReturn;
     char			*string;
 
-    extern XExtCodes		*XInitExtension();
     extern Status		_PEXConvertMaxHitsEvent();
     Bool			_PEXConvertOCError();
     void			_PEXPrintOCError();
@@ -108,8 +108,7 @@ OUTPUT char		*error_string;
      * most recently referenced display always at the beginning.
      */
 
-    pexDisplayInfo = (PEXDisplayInfo *)
-	PEXAllocBuf ((unsigned) (sizeof (PEXDisplayInfo)));
+    pexDisplayInfo = (PEXDisplayInfo *)	PEXAllocBuf (sizeof (PEXDisplayInfo));
 
     if (!pexDisplayInfo)
     {
@@ -154,7 +153,7 @@ OUTPUT char		*error_string;
             error_string, length);
 
 	PEXRemoveDisplayInfo (display, pexDisplayInfo);
-	
+
 	return (PEXBadFloatConversion);
     }
 
@@ -231,9 +230,15 @@ OUTPUT char		*error_string;
      * Get information about the PEX server extension.
      */
 
-    PEXGetReq (GetExtensionInfo, req);
+    PEXGetReq (GetExtensionInfo, pBuf);
+
+    BEGIN_REQUEST_HEADER (GetExtensionInfo, pBuf, req);
+
+    PEXStoreReqHead (GetExtensionInfo, req);
     req->clientProtocolMajor = PEX_PROTO_MAJOR;
     req->clientProtocolMinor = PEX_PROTO_MINOR;
+
+    END_REQUEST_HEADER (GetExtensionInfo, pBuf, req);
 
     if (_XReply (display,  &rep, 0, xFalse) == 0)
     {
@@ -254,7 +259,7 @@ OUTPUT char		*error_string;
      * Get the vendor name string and null terminate it.
      */
 
-    if (!(string = (char *) PEXAllocBuf ((unsigned) (rep.lengthName + 1))))
+    if (!(string = (char *) PEXAllocBuf (rep.lengthName + 1)))
     {
         UnlockDisplay (display);
 	PEXSyncHandle (display);
@@ -268,7 +273,7 @@ OUTPUT char		*error_string;
 	return (PEXBadLocalAlloc);
     }
 
-    _XReadPad (display, (char *) string, (long) (rep.lengthName));
+    _XReadPad (display, string, (long) (rep.lengthName));
     string[rep.lengthName] = '\0';
 
 
@@ -285,7 +290,7 @@ OUTPUT char		*error_string;
      */
 
     extInfo = *info_return = pexDisplayInfo->extInfo = (PEXExtensionInfo *)
-	PEXAllocBuf ((unsigned) (sizeof (PEXExtensionInfo)));
+	PEXAllocBuf (sizeof (PEXExtensionInfo));
 
     if (!extInfo)
     {
@@ -374,15 +379,19 @@ OUTPUT unsigned long		**numReturn;
 OUTPUT PEXEnumTypeDesc		**enumInfoReturn;
 
 {
-    pexGetEnumTypeInfoReq	*req;
-    pexGetEnumTypeInfoReply	rep;
-    char			*prepbuf, *pstartrep;
-    PEXEnumTypeDesc		*penum;
-    unsigned long		*pcounts;
-    char			*pstring;
-    CARD16			*dstEnumType;
-    int				*srcEnumType;
-    int				numDescs, totDescs, length, i, j;
+    register pexGetEnumTypeInfoReq	*req;
+    char				*pBuf;
+    pexGetEnumTypeInfoReply		rep;
+    char				*pstartrep;
+    PEXEnumTypeDesc			*penum;
+    unsigned long			*pcounts;
+    char				*pstring;
+    int					numDescs;
+    int					totDescs;
+    int					*srcEnumType;
+    unsigned int			length;
+    int					size;
+    int					i, j;
 
 
     /*
@@ -396,17 +405,22 @@ OUTPUT PEXEnumTypeDesc		**enumInfoReturn;
      * Put the request in the X request buffer and get a reply.
      */
 
-    PEXGetReqExtra (GetEnumTypeInfo, numEnumTypes * sizeof (CARD16), req);
+    size = numEnumTypes * SIZEOF (CARD16);
+    PEXGetReqExtra (GetEnumTypeInfo, size, pBuf);
 
+    BEGIN_REQUEST_HEADER (GetEnumTypeInfo, pBuf, req);
+
+    PEXStoreReqExtraHead (GetEnumTypeInfo, size, req);
     req->drawable = drawable;
     req->itemMask = itemMask;
     req->numEnums = numEnumTypes;
 
-    for (i = 0, dstEnumType = (CARD16 *) &req[1], srcEnumType = enumTypes;
-	 i < numEnumTypes;
-	 i++, dstEnumType++, srcEnumType++)
+    END_REQUEST_HEADER (GetEnumTypeInfo, pBuf, req);
+
+    for (i = 0, srcEnumType = enumTypes; i < numEnumTypes; i++)
     {
-	*dstEnumType = (CARD16) *srcEnumType;
+	STORE_CARD16 (*srcEnumType, pBuf);
+	srcEnumType++;
     }
 
     if (_XReply (display, &rep, 0, xFalse) == 0)
@@ -434,49 +448,45 @@ OUTPUT PEXEnumTypeDesc		**enumInfoReturn;
 
 
     /*
-     * Allocate a scratch buffer and copy the reply data to the buffer.
+     * Read the reply data into a scratch buffer.
      */
 
-    pstartrep = (char *) _XAllocScratch (display,
-	(unsigned long) (rep.length << 2));
-
-    _XRead (display, pstartrep, (long) (rep.length << 2));
+    XREAD_INTO_SCRATCH (display, pstartrep, (long) (rep.length << 2));
 
 
     /*
      * Count total number of enums returned.
      */
 
-    for (i = 0, totDescs = 0, prepbuf = pstartrep; i < rep.numLists; i++)
+    for (i = 0, totDescs = 0, pBuf = pstartrep; i < rep.numLists; i++)
     { 
-         numDescs = *((CARD32 *) prepbuf);
-	 totDescs += numDescs; 
+	EXTRACT_CARD32 (pBuf, numDescs);
+	totDescs += numDescs; 
 
-         prepbuf += sizeof (CARD32);
-         if (i == rep.numLists - 1)
-	     break;
+	if (i == rep.numLists - 1)
+	    break;
 
-	 if (itemMask == PEXETIndex)
-	 {
-	     prepbuf += PADDED_BYTES (numDescs * sizeof (INT16));
-	 }
-	 else if (itemMask == PEXETMnemonic)
-	 {
-	     for (j = 0; j < numDescs; j++)
-	     {
-	        length = *((CARD16 *) prepbuf);
-	        prepbuf += PADDED_BYTES (sizeof (CARD16) + length);
-	     }
-	 }
-	 else if (itemMask == PEXETAll)
-	 {
-	     for (j = 0; j < numDescs; j++)
-	     {
-	        prepbuf += sizeof (INT16);
-	        length = *((CARD16 *) prepbuf);
-	        prepbuf += (sizeof (CARD16) + PADDED_BYTES (length));
-	     }
-	 }
+	if (itemMask == PEXETIndex)
+	{
+	    pBuf += PADDED_BYTES (numDescs * SIZEOF (INT16));
+	}
+	else if (itemMask == PEXETMnemonic)
+	{
+	    for (j = 0; j < numDescs; j++)
+	    {
+		GET_CARD16 (pBuf, length);
+	        pBuf += PADDED_BYTES (SIZEOF (CARD16) + length);
+	    }
+	}
+	else if (itemMask == PEXETAll)
+	{
+	    for (j = 0; j < numDescs; j++)
+	    {
+	        pBuf += SIZEOF (INT16);
+	        EXTRACT_CARD16 (pBuf, length);
+	        pBuf += PADDED_BYTES (length);
+	    }
+	}
     }
 
 
@@ -484,8 +494,13 @@ OUTPUT PEXEnumTypeDesc		**enumInfoReturn;
      * Allocate storage for enum data to be returned to the client.
      */
 
-    *enumInfoReturn = penum = (PEXEnumTypeDesc *)
-	PEXAllocBuf ((unsigned) (totDescs * sizeof (PEXEnumTypeDesc)));
+    if (itemMask == PEXETCounts)
+	*enumInfoReturn = NULL;
+    else
+    {
+	*enumInfoReturn = penum = (PEXEnumTypeDesc *)
+	    PEXAllocBuf (totDescs * sizeof (PEXEnumTypeDesc));
+    }
 
 
     /*
@@ -493,62 +508,58 @@ OUTPUT PEXEnumTypeDesc		**enumInfoReturn;
      */
 
     *numReturn = pcounts = (unsigned long *)
-       PEXAllocBuf ((unsigned) (numEnumTypes * sizeof (unsigned long)));
+       PEXAllocBuf (numEnumTypes * sizeof (unsigned long));
 
 
     /*
      * Retrieve the lists of enum info.
      */
 
-    for (i = 0, prepbuf = pstartrep; i < rep.numLists; i++, pcounts++)
+    for (i = 0, pBuf = pstartrep; i < rep.numLists; i++, pcounts++)
     {
-        *pcounts = numDescs = *((CARD32 *) prepbuf);
-        prepbuf += sizeof (CARD32);
+	EXTRACT_CARD32 (pBuf, numDescs);
+        *pcounts = numDescs;
 
 	if (itemMask == PEXETIndex)
 	{
 	    for (j = 0; j < numDescs; j++, penum++)
 	    {
 		penum->descriptor = NULL;
-	        penum->index = *((INT16 *) prepbuf);
-	        prepbuf += sizeof (INT16);
+		EXTRACT_INT16 (pBuf, penum->index);
 	    }
 
 	    if (numDescs & 1)
-	        prepbuf += sizeof (INT16);
+	        pBuf += SIZEOF (INT16);
 	}
 	else if (itemMask == PEXETMnemonic)
 	{
 	    for (j = 0; j < numDescs; j++, penum++)
 	    {
 		penum->index = 0;
+		EXTRACT_CARD16 (pBuf, length);
 
-		length = *((CARD16 *) prepbuf);
-		prepbuf += sizeof (CARD16);
 		penum->descriptor = pstring =
-		    (char *) PEXAllocBuf ((unsigned) (length + 1));
-		COPY_AREA ((char *) prepbuf, (char *) pstring, length);
+		    (char *) PEXAllocBuf (length + 1);
+		COPY_AREA (pBuf, pstring, length);
 		pstring[length] = '\0';       /* null terminate */
 
-		prepbuf += (PADDED_BYTES (sizeof (CARD16) + length) - 
-		    sizeof (CARD16));
+		pBuf += (PADDED_BYTES (SIZEOF (CARD16) + length) - 
+		    SIZEOF (CARD16));
 	    }
 	}
 	else if (itemMask == PEXETAll)
 	{
 	    for (j = 0; j < numDescs; j++, penum++)
 	    {
-		penum->index = *((INT16 *) prepbuf);
-		prepbuf += sizeof (INT16);
-		
-		length = *((CARD16 *) prepbuf);
-		prepbuf += sizeof (CARD16);
+		EXTRACT_INT16 (pBuf, penum->index);
+		EXTRACT_CARD16 (pBuf, length);
+
 		penum->descriptor = pstring =
-		    (char *) PEXAllocBuf ((unsigned) (length + 1));
-		COPY_AREA ((char *) prepbuf, (char *) pstring, length);
+		    (char *) PEXAllocBuf (length + 1);
+		COPY_AREA (pBuf, pstring, length);
 		pstring[length] = '\0';       /* null terminate */
 
-		prepbuf += PADDED_BYTES (length);
+		pBuf += PADDED_BYTES (length);
 	    }
 	}
     }
@@ -575,9 +586,15 @@ INPUT unsigned short		*names;
 OUTPUT PEXImpDepConstant	**constantsReturn;
 
 {
-    pexGetImpDepConstantsReq	*req;
-    pexGetImpDepConstantsReply	rep;
-    int				convertFP;
+    register pexGetImpDepConstantsReq	*req;
+    char				*pBuf;
+    pexGetImpDepConstantsReply		rep;
+    long				size;
+    CARD32				*c32list;
+    float				*flist;
+    int					i;
+    int					fpConvert;
+    int					fpFormat;
 
 
     /*
@@ -591,13 +608,19 @@ OUTPUT PEXImpDepConstant	**constantsReturn;
      * Put the request in the X request buffer and get a reply.
      */
 
-    PEXGetFPReqExtra (GetImpDepConstants,
-	numNames * sizeof (CARD16), req, convertFP);
+    size = numNames * SIZEOF (CARD16);
+    PEXGetReqExtra (GetImpDepConstants, size, pBuf);
 
+    BEGIN_REQUEST_HEADER (GetImpDepConstants, pBuf, req);
+    CHECK_FP (fpConvert, fpFormat);
+
+    PEXStoreFPReqExtraHead (GetImpDepConstants, fpFormat, size, req);
     req->drawable = drawable;
     req->numNames = numNames;
 
-    COPY_AREA ((char *) names, (char *) &req[1], numNames * sizeof (CARD16));
+    END_REQUEST_HEADER (GetImpDepConstants, pBuf, req);
+
+    STORE_LISTOF_CARD16 (numNames, names, pBuf);
 
     if (_XReply (display, &rep, 0, xFalse) == 0)
     {
@@ -613,15 +636,73 @@ OUTPUT PEXImpDepConstant	**constantsReturn;
      */
 
     *constantsReturn = (PEXImpDepConstant *) PEXAllocBuf (
-	(unsigned) (numNames * sizeof (PEXImpDepConstant)));
+	numNames * sizeof (PEXImpDepConstant));
 
 
     /*
-     * Copy the values into the buffer.
+     * Read the values into the buffer.
      */
 
-    _XRead (display, (char *) *constantsReturn,
-	(long) (numNames * sizeof (CARD32)));
+    c32list = (CARD32 *) (*constantsReturn);
+    flist = (float *) (*constantsReturn);
+
+    if (!fpConvert)
+    {
+	XREAD_LISTOF_CARD32 (display, numNames, c32list);
+    }
+    else
+    {
+	for (i = 0; i < numNames; i++)
+	{
+	    switch (names[i])
+	    {
+	    case PEXIDDitheringSupported:
+	    case PEXIDMaxEdgeWidth:
+	    case PEXIDMaxLineWidth:
+	    case PEXIDMaxMarkerSize:
+	    case PEXIDMaxModelClipPlanes:
+	    case PEXIDMaxNameSetNames:
+	    case PEXIDMaxNonAmbientLights:
+	    case PEXIDMaxNURBOrder:
+	    case PEXIDMaxTrimCurveOrder:
+	    case PEXIDMinEdgeWidth:
+	    case PEXIDMinLineWidth:
+	    case PEXIDMinMarkerSize:
+	    case PEXIDNominalEdgeWidth:
+	    case PEXIDNominalLineWidth:
+	    case PEXIDNominalMarkerSize:
+	    case PEXIDNumSupportedEdgeWidths:
+	    case PEXIDNumSupportedLineWidths:
+	    case PEXIDNumSupportedMarkerSizes:
+	    case PEXIDBestColorApprox:
+	    case PEXIDTransparencySupported:
+	    case PEXIDDoubleBufferingSupported:
+	    case PEXIDMaxHitsEventSupported:
+
+		_XRead (display, (char *) &c32list[i], SIZEOF (CARD32));
+		break;
+
+	    case PEXIDChromaticityRedU:
+	    case PEXIDChromaticityRedV:
+	    case PEXIDLuminanceRed:
+	    case PEXIDChromaticityGreenU:
+	    case PEXIDChromaticityGreenV:
+	    case PEXIDLuminanceGreen:
+	    case PEXIDChromaticityBlueU:
+	    case PEXIDChromaticityBlueV:
+	    case PEXIDLuminanceBlue:
+	    case PEXIDChromaticityWhiteU:
+	    case PEXIDChromaticityWhiteV:
+	    case PEXIDLuminanceWhite:
+		
+	    {
+		char temp[4];
+		_XRead (display, temp, SIZEOF (float));
+		FP_CONVERT_NTOH_BUFF  (temp, flist[i], fpFormat);
+	    }
+	    }
+	}
+    }
 
 
     /*
@@ -649,11 +730,12 @@ OUTPUT unsigned long		*numTargets;
 OUTPUT PEXRenderingTarget	**targets;
 
 {
-    pexMatchRenderingTargetsReq		*req;
-    pexMatchRenderingTargetsReply       rep;
-    PEXRenderingTarget			*info;
-    pexRendererTarget			*matchRec;
-    int					i;
+    register pexMatchRenderingTargetsReq	*req;
+    char					*pBuf;
+    pexMatchRenderingTargetsReply       	rep;
+    PEXRenderingTarget				*info;
+    pexRendererTarget				*matchRec;
+    int						i;
 
 
     /*
@@ -667,13 +749,18 @@ OUTPUT PEXRenderingTarget	**targets;
      * Put the request in the X request buffer and get a reply.
      */
 
-    PEXGetReq (MatchRenderingTargets, req);
+    PEXGetReq (MatchRenderingTargets, pBuf);
 
+    BEGIN_REQUEST_HEADER (MatchRenderingTargets, pBuf, req);
+
+    PEXStoreReqHead (MatchRenderingTargets, req);
     req->drawable = drawable;
     req->depth = depth;
     req->type = type;
     req->visualID = visual ? visual->visualid : 0;
     req->maxTriplets = maxTargets;
+
+    END_REQUEST_HEADER (MatchRenderingTargets, pBuf, req);
 
     if (_XReply (display, &rep, 0, xFalse) == 0)
     {
@@ -688,13 +775,18 @@ OUTPUT PEXRenderingTarget	**targets;
 
 
     /*
-     * Allocate a scratch buffer and copy the reply data to the buffer.
+     * Read the reply data into a scratch buffer.
      */
 
-    matchRec = (pexRendererTarget *) _XAllocScratch (display,
-	(unsigned long) (rep.length << 2));
+    XREAD_INTO_SCRATCH (display, pBuf, (long) (rep.length << 2));
 
-    _XRead (display, (char *) matchRec, (long) (rep.length << 2));
+
+    /*
+     * The total size of pexRendererTarget is 8 bytes, so it's safe
+     * to have matchRec point to pBuf on 64 bit machines.
+     */
+
+    matchRec = (pexRendererTarget *) pBuf;
 
 
     /*
@@ -702,7 +794,7 @@ OUTPUT PEXRenderingTarget	**targets;
      */
 
     *targets = info = (PEXRenderingTarget *) PEXAllocBuf (
-	(unsigned) (*numTargets * sizeof (PEXRenderingTarget)));
+	*numTargets * sizeof (PEXRenderingTarget));
 
     for (i = 0; i < *numTargets; i++)
     {

@@ -1,4 +1,4 @@
-/* $XConsortium: pl_rdr.c,v 1.5 92/07/16 10:59:44 mor Exp $ */
+/* $XConsortium: pl_rdr.c,v 1.7 92/10/22 15:22:24 mor Exp $ */
 
 /******************************************************************************
 Copyright 1987,1991 by Digital Equipment Corporation, Maynard, Massachusetts
@@ -32,17 +32,21 @@ static void _PEXGenerateRendererList();
 
 
 PEXRenderer
-PEXCreateRenderer (display, d, valueMask, values)
+PEXCreateRenderer (display, drawable, valueMask, values)
 
 INPUT Display			*display;
-INPUT Drawable			d;
+INPUT Drawable			drawable;
 INPUT unsigned long		valueMask;
 INPUT PEXRendererAttributes 	*values;
 
 {
-    pexCreateRendererReq	*req;
-    PEXRenderer			rdr;
-    int				convertFP;
+    register pexCreateRendererReq	*req;
+    char				*pBuf;
+    PEXRenderer				rdr;
+    int					size = 0;
+    char				*pList;
+    int					fpConvert;
+    int					fpFormat;
 
 
     /*
@@ -60,19 +64,40 @@ INPUT PEXRendererAttributes 	*values;
 
 
     /*
-     * Put the request in the X request buffer.
-     * For the value mask, turn off the Current Path and Renderer State bits,
-     * since these attributes are not modifiable.
+     * Put the request in the X request buffer.  For the value mask,
+     * turn off the Current Path and Renderer State bits, since these
+     * attributes are not modifiable.
      */
 
     valueMask &= ~(PEXRACurrentPath | PEXRARendererState);
 
-    PEXGetFPReq (CreateRenderer, req, convertFP);
-    req->drawable = d;
+    PEXGetReq (CreateRenderer, pBuf);
+
+    BEGIN_REQUEST_HEADER (CreateRenderer, pBuf, req);
+    CHECK_FP (fpConvert, fpFormat);
+
+    PEXStoreFPReqHead (CreateRenderer, fpFormat, req);
+    req->drawable = drawable;
     req->rdr = rdr;
     req->itemMask = valueMask;
 
-    _PEXGenerateRendererList (display, (pexReq *) req, valueMask, values);
+    if (valueMask != 0)
+    {
+	_PEXGenerateRendererList (display, fpConvert, fpFormat,
+	    valueMask, values, &size, &pList);
+
+	req->length += NUMWORDS (size);
+    }
+
+    END_REQUEST_HEADER (CreateRenderer, pBuf, req);
+
+
+    /*
+     * Send the list of values.
+     */
+
+    if (size > 0)
+	Data (display, pList, size);
 
 
     /*
@@ -93,7 +118,8 @@ INPUT Display		*display;
 INPUT PEXRenderer	renderer;
 
 {
-    pexFreeRendererReq	*req;
+    register pexFreeRendererReq		*req;
+    char				*pBuf;
 
 
     /*
@@ -107,8 +133,14 @@ INPUT PEXRenderer	renderer;
      * Put the request in the X request buffer.
      */
 
-    PEXGetReq (FreeRenderer, req);
+    PEXGetReq (FreeRenderer, pBuf);
+
+    BEGIN_REQUEST_HEADER (FreeRenderer, pBuf, req);
+
+    PEXStoreReqHead (FreeRenderer, req);
     req->id = renderer;
+
+    END_REQUEST_HEADER (FreeRenderer, pBuf, req);
 
 
     /*
@@ -128,14 +160,15 @@ INPUT PEXRenderer		renderer;
 INPUT unsigned long		valueMask;
 
 {
-    pexGetRendererAttributesReq		*req;
-    pexGetRendererAttributesReply	rep;
-    PEXRendererAttributes		*prdra;
-    unsigned long			*pv;
-    unsigned long			f;
-    int					size, i, n;
-    int					sizeColor;
-    int					convertFP;
+    register pexGetRendererAttributesReq	*req;
+    register PEXRendererAttributes		*pAttr;
+    register char				*pBuf;
+    pexGetRendererAttributesReply		rep;
+    unsigned long				f;
+    int						i;
+    int						count;
+    int						fpConvert;
+    int						fpFormat;
 
 
     /*
@@ -149,9 +182,16 @@ INPUT unsigned long		valueMask;
      * Put the request in the X request buffer and get a reply.
      */
 
-    PEXGetFPReq (GetRendererAttributes, req, convertFP);
+    PEXGetReq (GetRendererAttributes, pBuf);
+
+    BEGIN_REQUEST_HEADER (GetRendererAttributes, pBuf, req);
+    CHECK_FP (fpConvert, fpFormat);
+
+    PEXStoreFPReqHead (GetRendererAttributes, fpFormat, req);
     req->rdr = renderer;
     req->itemMask = valueMask;
+
+    END_REQUEST_HEADER (GetRendererAttributes, pBuf, req);
 
     if (_XReply (display, &rep, 0, xFalse) == 0)
     {
@@ -162,28 +202,25 @@ INPUT unsigned long		valueMask;
 
 
     /*
-     * Allocate a scratch buffer and copy the reply data to the buffer.
+     * Read the reply data into a scratch buffer.
      */
 
-    pv = (unsigned long *) _XAllocScratch (display,
-	(unsigned long) (rep.length << 2));
-
-    _XRead (display, (char *) pv, (long) (rep.length << 2));
+    XREAD_INTO_SCRATCH (display, pBuf, (long) (rep.length << 2));
 
 
     /*
      * Allocate a buffer for the replies to pass back to the client.
      */
 
-    prdra = (PEXRendererAttributes *)
-        PEXAllocBuf ((unsigned) (sizeof (PEXRendererAttributes)));
+    pAttr = (PEXRendererAttributes *)
+	PEXAllocBuf (sizeof (PEXRendererAttributes));
 
-    prdra->current_path.count = 0;
-    prdra->current_path.elements = NULL;
-    prdra->clip_list.count = 0;
-    prdra->clip_list.rectangles = NULL;
-    prdra->pick_start_path.count = 0;
-    prdra->pick_start_path.elements = NULL;
+    pAttr->current_path.count = 0;
+    pAttr->current_path.elements = NULL;
+    pAttr->clip_list.count = 0;
+    pAttr->clip_list.rectangles = NULL;
+    pAttr->pick_start_path.count = 0;
+    pAttr->pick_start_path.elements = NULL;
 
     for (i = 0; i < (PEXRAMaxShift + 1); i++)
     {
@@ -193,146 +230,176 @@ INPUT unsigned long		valueMask;
             switch (f)
 	    {
 	    case PEXRACurrentPath:
-		n = *pv;
-		pv++;
-		prdra->current_path.count = n;
-		size = n * sizeof (PEXElementRef);
-		prdra->current_path.elements =
-		    (PEXElementRef *) PEXAllocBuf ((unsigned) size);
-		COPY_AREA ((char *) pv,
-		    (char *) prdra->current_path.elements, size);
-		pv += NUMWORDS (size);
+
+		EXTRACT_CARD32 (pBuf, count);
+		pAttr->current_path.count = count;
+
+		pAttr->current_path.elements = (PEXElementRef *)
+		    PEXAllocBuf (count * sizeof (PEXElementRef));
+
+		EXTRACT_LISTOF_ELEMREF (count,
+		    pBuf, pAttr->current_path.elements);
 		break;
+
 	    case PEXRAPipelineContext:
-		prdra->pipeline_context = *((PEXPipelineContext *) pv);
-		pv++;
+
+		EXTRACT_CARD32 (pBuf, pAttr->pipeline_context);
 		break;
+
 	    case PEXRAMarkerBundle:
-		prdra->marker_bundle = *((PEXLookupTable *) pv);
-		pv++;
+
+		EXTRACT_CARD32 (pBuf, pAttr->marker_bundle);
 		break;
+
 	    case PEXRATextBundle:
-		prdra->text_bundle = *((PEXLookupTable *) pv);
-		pv++;
+
+		EXTRACT_CARD32 (pBuf, pAttr->text_bundle);
 		break;
+
 	    case PEXRALineBundle:
-		prdra->line_bundle = *((PEXLookupTable *) pv);
-		pv++;
+
+		EXTRACT_CARD32 (pBuf, pAttr->line_bundle);
 		break;
+
 	    case PEXRAInteriorBundle:
-		prdra->interior_bundle = *((PEXLookupTable *) pv);
-		pv++;
+
+		EXTRACT_CARD32 (pBuf, pAttr->interior_bundle);
 		break;
+
 	    case PEXRAEdgeBundle:
-		prdra->edge_bundle = *((PEXLookupTable *) pv);
-		pv++;
+
+		EXTRACT_CARD32 (pBuf, pAttr->edge_bundle);
 		break;
+
 	    case PEXRAViewTable:
-		prdra->view_table = *((PEXLookupTable *) pv);
-		pv++;
+
+		EXTRACT_CARD32 (pBuf, pAttr->view_table);
 		break;
+
 	    case PEXRAColorTable:
-		prdra->color_table = *((PEXLookupTable *) pv);
-		pv++;
+
+		EXTRACT_CARD32 (pBuf, pAttr->color_table);
 		break;
+
 	    case PEXRADepthCueTable:
-		prdra->depth_cue_table = *((PEXLookupTable *) pv);
-		pv++;
+
+		EXTRACT_CARD32 (pBuf, pAttr->depth_cue_table);
 		break;
+
 	    case PEXRALightTable:
-		prdra->light_table = *((PEXLookupTable *) pv);
-		pv++;
+
+		EXTRACT_CARD32 (pBuf, pAttr->light_table);
 		break;
+
 	    case PEXRAColorApproxTable:
-		prdra->color_approx_table = *((PEXLookupTable *) pv);
-		pv++;
+
+		EXTRACT_CARD32 (pBuf, pAttr->color_approx_table);
 		break;
+
 	    case PEXRAPatternTable:
-		prdra->pattern_table = *((PEXLookupTable *) pv);
-		pv++;
+
+		EXTRACT_CARD32 (pBuf, pAttr->pattern_table);
 		break;
+
 	    case PEXRATextFontTable:
-		prdra->text_font_table = *((PEXLookupTable *) pv);
-		pv++;
+
+		EXTRACT_CARD32 (pBuf, pAttr->text_font_table);
 		break;
+
 	    case PEXRAHighlightIncl:
-		prdra->highlight_incl = *((PEXNameSet *) pv);
-		pv++;
+
+		EXTRACT_CARD32 (pBuf, pAttr->highlight_incl);
 		break;
+
 	    case PEXRAHighlightExcl:
-		prdra->highlight_excl = *((PEXNameSet *) pv);
-		pv++;
+
+		EXTRACT_CARD32 (pBuf, pAttr->highlight_excl);
 		break;
+
 	    case PEXRAInvisibilityIncl:
-		prdra->invisibility_incl = *((PEXNameSet *) pv);
-		pv++;
+
+		EXTRACT_CARD32 (pBuf, pAttr->invisibility_incl);
 		break;
+
 	    case PEXRAInvisibilityExcl:
-		prdra->invisibility_excl = *((PEXNameSet *) pv);
-		pv++;
+
+		EXTRACT_CARD32 (pBuf, pAttr->invisibility_excl);
 		break;
+
 	    case PEXRARendererState:
-		prdra->renderer_state = *pv;
-		pv++;
+
+		EXTRACT_LOV_CARD16 (pBuf, pAttr->renderer_state);
 		break;
+
 	    case PEXRAHLHSRMode:
-		prdra->hlhsr_mode = *pv;
-		pv++;
+
+		EXTRACT_LOV_INT16 (pBuf, pAttr->hlhsr_mode);
 		break;
+
 	    case PEXRANPCSubVolume:
-		prdra->npc_subvolume = *((PEXNPCSubVolume *) pv);
-		pv += LENOF (pexNpcSubvolume);
+
+		EXTRACT_NPC_SUBVOLUME (pBuf, pAttr->npc_subvolume,
+		    fpConvert, fpFormat);
 		break;
+		
 	    case PEXRAViewport:
-		prdra->viewport = *((PEXViewport *) pv);
-		pv += LENOF (pexViewport);
+
+		EXTRACT_VIEWPORT (pBuf, pAttr->viewport, fpConvert, fpFormat);
 		break;
+
 	    case PEXRAClipList:
-		n = *pv;
-		pv++;
-		prdra->clip_list.count = n;
-		size = n * sizeof (PEXDeviceRect);
-		prdra->clip_list.rectangles =
-		    (PEXDeviceRect *) PEXAllocBuf ((unsigned) size);
-		COPY_AREA ((char *) pv,
-		    (char *) (prdra->clip_list.rectangles), size);
-		pv += NUMWORDS (size);
+
+		EXTRACT_CARD32 (pBuf, count);
+		pAttr->clip_list.count = count;
+
+		pAttr->clip_list.rectangles = (PEXDeviceRect *)
+		    PEXAllocBuf (count * sizeof (PEXDeviceRect));
+
+		EXTRACT_LISTOF_DEVRECT (count,
+		    pBuf, pAttr->clip_list.rectangles);
 		break;
+
 	    case PEXRAPickIncl:
-		prdra->pick_incl = *((PEXNameSet *) pv);
-		pv++;
+
+		EXTRACT_CARD32 (pBuf, pAttr->pick_incl);
 		break;
+
 	    case PEXRAPickExcl:
-		prdra->pick_excl = *((PEXNameSet *) pv);
-		pv++;
+
+		EXTRACT_CARD32 (pBuf, pAttr->pick_excl);
 		break;
+
 	    case PEXRAPickStartPath:
-		n = *pv;
-		pv++;
-		prdra->pick_start_path.count = n;
-		size = n * sizeof (PEXElementRef);
-		prdra->pick_start_path.elements =
-		    (PEXElementRef *) PEXAllocBuf ((unsigned) size);
-		COPY_AREA ((char *) pv,
-		    (char *) prdra->pick_start_path.elements, size);
-		pv += NUMWORDS (size);
+
+		EXTRACT_CARD32 (pBuf, count);
+		pAttr->pick_start_path.count = count;
+
+		pAttr->pick_start_path.elements = (PEXElementRef *)
+		    PEXAllocBuf (count * sizeof (PEXElementRef));
+
+		EXTRACT_LISTOF_ELEMREF (count,
+		    pBuf, pAttr->pick_start_path.elements);
 		break;
+
 	    case PEXRABackgroundColor:
-		PackColorSpecifier (pv, &(prdra->background_color),
-		    sizeColor);
-		pv += NUMWORDS (sizeof (pexColorSpecifier) + sizeColor); 
+
+		EXTRACT_COLOR_SPEC (pBuf, pAttr->background_color,
+		    fpConvert, fpFormat);
 		break;
+
 	    case PEXRAClearImage:
-		prdra->clear_image = *pv;
-		pv++;
+
+		EXTRACT_LOV_CARD8 (pBuf, pAttr->clear_image);
 		break;
+
 	    case PEXRAClearZ:
-		prdra->clear_z = *pv;
-		pv++;
+
+		EXTRACT_LOV_CARD8 (pBuf, pAttr->clear_z);
 		break;
+
 	    case PEXRAEchoMode:
-		prdra->echo_mode = *pv;
-		pv++;
+
+		EXTRACT_LOV_CARD16 (pBuf, pAttr->echo_mode);
 		break;
 	    }
 	}
@@ -346,7 +413,7 @@ INPUT unsigned long		valueMask;
     UnlockDisplay (display);
     PEXSyncHandle (display);
 
-    return (prdra);
+    return (pAttr);
 }
 
 
@@ -361,7 +428,8 @@ OUTPUT unsigned long		*namesetsReturn;
 OUTPUT unsigned long		*attributesReturn;
 
 {
-    pexGetRendererDynamicsReq		*req;
+    register pexGetRendererDynamicsReq	*req;
+    char				*pBuf;
     pexGetRendererDynamicsReply		rep;
 
 
@@ -376,8 +444,14 @@ OUTPUT unsigned long		*attributesReturn;
      * Put the request in the X request buffer and get a reply.
      */
 
-    PEXGetReq (GetRendererDynamics, req);
+    PEXGetReq (GetRendererDynamics, pBuf);
+
+    BEGIN_REQUEST_HEADER (GetRendererDynamics, pBuf, req);
+
+    PEXStoreReqHead (GetRendererDynamics, req);
     req->id = renderer;
+
+    END_REQUEST_HEADER (GetRendererDynamics, pBuf, req);
 
     if (_XReply (display, &rep, 0, xFalse) == 0)
     {
@@ -412,8 +486,12 @@ INPUT unsigned long		valueMask;
 INPUT PEXRendererAttributes 	*values;
 
 {
-    pexChangeRendererReq	*req;
-    int				convertFP;
+    register pexChangeRendererReq	*req;
+    char				*pBuf;
+    int					size = 0;
+    char				*pList;
+    int					fpConvert;
+    int					fpFormat;
 
 
     /*
@@ -424,18 +502,39 @@ INPUT PEXRendererAttributes 	*values;
 
 
     /*
-     * Put the request in the X request buffer.
-     * For the item mask, turn off the Current Path and Renderer State
-     * attributes, since these are not modifiable.
+     * Put the request in the X request buffer.  For the item mask,
+     * turn off the Current Path and Renderer State attributes, since
+     * these are not modifiable.
      */
 
     valueMask &= ~(PEXRACurrentPath | PEXRARendererState);
 
-    PEXGetFPReq (ChangeRenderer, req, convertFP);
+    PEXGetReq (ChangeRenderer, pBuf);
+
+    BEGIN_REQUEST_HEADER (ChangeRenderer, pBuf, req);
+    CHECK_FP (fpConvert, fpFormat);
+
+    PEXStoreFPReqHead (ChangeRenderer, fpFormat, req);
     req->rdr = renderer;
     req->itemMask = valueMask;
 
-    _PEXGenerateRendererList (display, (pexReq *) req, valueMask, values);
+    if (valueMask != 0)
+    {
+	_PEXGenerateRendererList (display, fpConvert, fpFormat,
+	    valueMask, values, &size, &pList);
+
+	req->length += NUMWORDS (size);
+    }
+
+    END_REQUEST_HEADER (ChangeRenderer, pBuf, req);
+
+
+    /*
+     * Send the list of values.
+     */
+
+    if (size > 0)
+	Data (display, pList, size);
 
 
     /*
@@ -448,14 +547,15 @@ INPUT PEXRendererAttributes 	*values;
 
 
 void
-PEXBeginRendering (display, d, renderer)
+PEXBeginRendering (display, drawable, renderer)
 
 INPUT Display		*display;
-INPUT Drawable		d;
+INPUT Drawable		drawable;
 INPUT PEXRenderer	renderer;
 
 {
-    pexBeginRenderingReq	*req;
+    register pexBeginRenderingReq	*req;
+    char				*pBuf;
 
 
     /*
@@ -469,9 +569,15 @@ INPUT PEXRenderer	renderer;
      * Put the request in the X request buffer.
      */
 
-    PEXGetReq (BeginRendering, req);
+    PEXGetReq (BeginRendering, pBuf);
+
+    BEGIN_REQUEST_HEADER (BeginRendering, pBuf, req);
+
+    PEXStoreReqHead (BeginRendering, req);
     req->rdr = renderer;
-    req->drawable = d;
+    req->drawable = drawable;
+
+    END_REQUEST_HEADER (BeginRendering, pBuf, req);
 
 
     /*
@@ -491,7 +597,8 @@ INPUT PEXRenderer	renderer;
 INPUT int		flush;
 
 {
-    pexEndRenderingReq	*req;
+    register pexEndRenderingReq		*req;
+    char				*pBuf;
 
 
     /*
@@ -505,9 +612,15 @@ INPUT int		flush;
      * Put the request in the X request buffer.
      */
 
-    PEXGetReq (EndRendering, req);
+    PEXGetReq (EndRendering, pBuf);
+
+    BEGIN_REQUEST_HEADER (EndRendering, pBuf, req);
+
+    PEXStoreReqHead (EndRendering, req);
     req->rdr = renderer;
     req->flushFlag = flush;
+
+    END_REQUEST_HEADER (EndRendering, pBuf, req);
 
 
     /*
@@ -527,7 +640,8 @@ INPUT PEXRenderer	renderer;
 INPUT long		id;
 
 {
-    pexBeginStructureReq	*req;
+    register pexBeginStructureReq	*req;
+    char				*pBuf;
 
 
     /*
@@ -541,9 +655,15 @@ INPUT long		id;
      * Put the request in the X request buffer.
      */
 
-    PEXGetReq (BeginStructure, req);
+    PEXGetReq (BeginStructure, pBuf);
+
+    BEGIN_REQUEST_HEADER (BeginStructure, pBuf, req);
+
+    PEXStoreReqHead (BeginStructure, req);
     req->rdr = renderer;
     req->sid = id;
+
+    END_REQUEST_HEADER (BeginStructure, pBuf, req);
 
 
     /*
@@ -562,7 +682,8 @@ INPUT Display		*display;
 INPUT PEXRenderer	renderer;
 
 {
-    pexEndStructureReq	*req;
+    register pexEndStructureReq		*req;
+    char				*pBuf;
 
 
     /*
@@ -576,8 +697,14 @@ INPUT PEXRenderer	renderer;
      * Put the request in the X request buffer.
      */
 
-    PEXGetReq (EndStructure, req);
+    PEXGetReq (EndStructure, pBuf);
+
+    BEGIN_REQUEST_HEADER (EndStructure, pBuf, req);
+
+    PEXStoreReqHead (EndStructure, req);
     req->id = renderer;
+
+    END_REQUEST_HEADER (EndStructure, pBuf, req);
 
 
     /*
@@ -590,15 +717,16 @@ INPUT PEXRenderer	renderer;
 
 
 void
-PEXRenderNetwork (display, d, renderer, structure)
+PEXRenderNetwork (display, drawable, renderer, structure)
 
 INPUT Display		*display;
-INPUT Drawable		d;
+INPUT Drawable		drawable;
 INPUT PEXRenderer	renderer;
 INPUT PEXStructure	structure;
 
 {
-    pexRenderNetworkReq	*req;
+    register pexRenderNetworkReq	*req;
+    char				*pBuf;
 
 
     /*
@@ -612,10 +740,16 @@ INPUT PEXStructure	structure;
      * Put the request in the X request buffer.
      */
 
-    PEXGetReq (RenderNetwork, req);
+    PEXGetReq (RenderNetwork, pBuf);
+
+    BEGIN_REQUEST_HEADER (RenderNetwork, pBuf, req);
+
+    PEXStoreReqHead (RenderNetwork, req);
     req->rdr = renderer;
-    req->drawable = d;
+    req->drawable = drawable;
     req->sid = structure;
+
+    END_REQUEST_HEADER (RenderNetwork, pBuf, req);
 
 
     /*
@@ -639,7 +773,8 @@ INPUT int		whence2;
 INPUT long		offset2;
 
 {
-    pexRenderElementsReq	*req;
+    register pexRenderElementsReq	*req;
+    char				*pBuf;
 
 
     /*
@@ -653,13 +788,19 @@ INPUT long		offset2;
      * Put the request in the X request buffer.
      */
 
-    PEXGetReq (RenderElements, req);
+    PEXGetReq (RenderElements, pBuf);
+
+    BEGIN_REQUEST_HEADER (RenderElements, pBuf, req);
+
+    PEXStoreReqHead (RenderElements, req);
     req->rdr = renderer;
     req->sid = sid;
-    req->range.position1.whence = whence1;
-    req->range.position1.offset = offset1;
-    req->range.position2.whence = whence2;
-    req->range.position2.offset = offset2;
+    req->position1_whence = whence1;
+    req->position1_offset = offset1;
+    req->position2_whence = whence2;
+    req->position2_offset = offset2;
+
+    END_REQUEST_HEADER (RenderElements, pBuf, req);
 
 
     /*
@@ -680,8 +821,9 @@ INPUT unsigned long	numElements;
 INPUT PEXElementRef	*elements;
 
 {
-    pexAccumulateStateReq	*req;
-    unsigned int		size;
+    register pexAccumulateStateReq	*req;
+    char				*pBuf;
+    unsigned int			size;
 
 
     /*
@@ -695,13 +837,18 @@ INPUT PEXElementRef	*elements;
      * Put the request in the X request buffer.
      */
 
-    size = numElements * sizeof (PEXElementRef);
+    size = numElements * SIZEOF (pexElementRef);
+    PEXGetReqExtra (AccumulateState, size, pBuf);
 
-    PEXGetReqExtra (AccumulateState, size, req);
+    BEGIN_REQUEST_HEADER (AccumulateState, pBuf, req);
+
+    PEXStoreReqExtraHead (AccumulateState, size, req);
     req->rdr = renderer;
     req->numElRefs = numElements;
 
-    COPY_AREA (elements, ((char *) &req[1]), size);
+    END_REQUEST_HEADER (AccumulateState, pBuf, req);
+
+    STORE_LISTOF_ELEMREF (numElements, elements, pBuf);
 
 
     /*
@@ -719,19 +866,24 @@ INPUT PEXElementRef	*elements;
  * transport buffer.
  */
 
+
 static void
-_PEXGenerateRendererList (display, req, valueMask, values)
+_PEXGenerateRendererList (display, fpConvert, fpFormat,
+    valueMask, values, sizeRet, listRet)
 
 INPUT Display             	*display;
-INPUT pexReq		    	*req;
+INPUT int			fpConvert;
+INPUT int			fpFormat;
 INPUT unsigned long       	valueMask;
 INPUT PEXRendererAttributes 	*values;
+OUTPUT int			*sizeRet;
+OUTPUT char			**listRet;
 
 {
-    CARD32		*pv, *pvSend;
-    int			i, n, length;
-    int			sizeColor;
-    unsigned long	size, f;
+    register char	*pBuf;
+    int			size;
+    int			i, n;
+    unsigned long	f;
 
 
     /*
@@ -742,22 +894,22 @@ INPUT PEXRendererAttributes 	*values;
      */
 
     CountOnes (valueMask, n);
-    size =  n * sizeof (CARD32) + 
-	sizeof (pexNpcSubvolume) +
-	sizeof (pexViewport) +
-	sizeof (pexColorSpecifier);
+    size =  n * SIZEOF (CARD32) + 
+	SIZEOF (pexNpcSubvolume) +
+	SIZEOF (pexViewport) +
+	SIZEOF (pexColorSpecifier);
 
     if (valueMask & PEXRAClipList)
     {
-	size += values->clip_list.count * sizeof (pexDeviceRect);
+	size += (values->clip_list.count * SIZEOF (pexDeviceRect));
     }
 
     if (valueMask & PEXRAPickStartPath)
     {
-	size += values->pick_start_path.count * sizeof (pexElementRef);
+	size += (values->pick_start_path.count * SIZEOF (pexElementRef));
     }
 
-    pv = pvSend = (CARD32 *) _XAllocScratch (display, (unsigned long) size);
+    pBuf = *listRet = (char *) _XAllocScratch (display, size);
 
 
     /*
@@ -772,153 +924,171 @@ INPUT PEXRendererAttributes 	*values;
             switch (f)
 	    {
 	    case PEXRACurrentPath:
+
 		/*
 		 * Current path doesn't make sense in a new or changed
 		 * renderer, so ignore it.
 		 */
 		break;
+
 	    case PEXRAPipelineContext:
-		*((pexPC *) pv) = values->pipeline_context;
-		pv++;
+
+		STORE_CARD32 (values->pipeline_context, pBuf);
 		break;
+
 	    case PEXRAMarkerBundle:
-		*((pexLookupTable *) pv) = values->marker_bundle;
-		pv++;
+
+		STORE_CARD32 (values->marker_bundle, pBuf);
 		break;
+
 	    case PEXRATextBundle:
-		*((pexLookupTable *) pv) = values->text_bundle;
-		pv++;
+
+		STORE_CARD32 (values->text_bundle, pBuf);
 		break;
+
 	    case PEXRALineBundle:
-		*((pexLookupTable *) pv) = values->line_bundle;
-		pv++;
+
+		STORE_CARD32 (values->line_bundle, pBuf);
 		break;
+
 	    case PEXRAInteriorBundle:
-		*((pexLookupTable *) pv) = values->interior_bundle;
-		pv++;
+
+		STORE_CARD32 (values->interior_bundle, pBuf);
 		break;
+
 	    case PEXRAEdgeBundle:
-		*((pexLookupTable *) pv) = values->edge_bundle;
-		pv++;
+
+		STORE_CARD32 (values->edge_bundle, pBuf);
 		break;
+
 	    case PEXRAViewTable:
-		*((pexLookupTable *) pv) = values->view_table;
-		pv++;
+
+		STORE_CARD32 (values->view_table, pBuf);
 		break;
+
 	    case PEXRAColorTable:
-		*((pexLookupTable *) pv) = values->color_table;
-		pv++;
+
+		STORE_CARD32 (values->color_table, pBuf);
 		break;
+
 	    case PEXRADepthCueTable:
-		*((pexLookupTable *) pv) = values->depth_cue_table;
-		pv++;
+
+		STORE_CARD32 (values->depth_cue_table, pBuf);
 		break;
+
 	    case PEXRALightTable:
-		*((pexLookupTable *) pv) = values->light_table;
-		pv++;
+
+		STORE_CARD32 (values->light_table, pBuf);
 		break;
+
 	    case PEXRAColorApproxTable:
-		*((pexLookupTable *) pv) = values->color_approx_table;
-		pv++;
+
+		STORE_CARD32 (values->color_approx_table, pBuf);
 		break;
+
 	    case PEXRAPatternTable:
-		*((pexLookupTable *) pv) = values->pattern_table;
-		pv++;
+
+		STORE_CARD32 (values->pattern_table, pBuf);
 		break;
+
 	    case PEXRATextFontTable:
-		*((pexLookupTable *) pv) = values->text_font_table;
-		pv++;
+
+		STORE_CARD32 (values->text_font_table, pBuf);
 		break;
+
 	    case PEXRAHighlightIncl:
-		*((pexNameSet *) pv) = values->highlight_incl;
-		pv++;
+
+		STORE_CARD32 (values->highlight_incl, pBuf);
 		break;
+
 	    case PEXRAHighlightExcl:
-		*((pexNameSet *) pv) = values->highlight_excl;
-		pv++;
+
+		STORE_CARD32 (values->highlight_excl, pBuf);
 		break;
+
 	    case PEXRAInvisibilityIncl:
-		*((pexNameSet *) pv) = values->invisibility_incl;
-		pv++;
+
+		STORE_CARD32 (values->invisibility_incl, pBuf);
 		break;
+
 	    case PEXRAInvisibilityExcl:
-		*((pexNameSet *) pv) = values->invisibility_excl;
-		pv++;
+
+		STORE_CARD32 (values->invisibility_excl, pBuf);
 		break;
+
 	    case PEXRARendererState:
+
 		/*
 		 * Renderer state doesn't make sense in a new or changed
 		 * renderer, so ignore it.
 		 */
 		break;
+
 	    case PEXRAHLHSRMode:
-		*pv = values->hlhsr_mode;
-		pv++;
+
+		STORE_CARD32 (values->hlhsr_mode, pBuf);
 		break;
+
 	    case PEXRANPCSubVolume:
-#ifdef WORD64
-#else
-		*((pexNpcSubvolume *) pv) =
-		    *(pexNpcSubvolume *) &(values->npc_subvolume);
-#endif
-		pv += LENOF (pexNpcSubvolume);
+
+		STORE_NPC_SUBVOLUME (values->npc_subvolume, pBuf,
+		    fpConvert, fpFormat);
 		break;
+
 	    case PEXRAViewport:
-#ifdef WORD64
-#else
-		*((pexViewport *) pv) =
-		    *(pexViewport *) &(values->viewport);
-#endif
-		pv += LENOF (pexViewport);
+
+		STORE_VIEWPORT (values->viewport, pBuf, fpConvert, fpFormat);
 		break;
+
 	    case PEXRAClipList:
-		length = values->clip_list.count;
-		*pv = length;
-		pv++;
-		length *= sizeof (pexDeviceRect);
-		COPY_AREA ((char *) values->clip_list.rectangles,
-		    (char *) pv, length);
-		pv += NUMWORDS (length);
+
+		STORE_CARD32 (values->clip_list.count, pBuf);
+
+		STORE_LISTOF_DEVRECT (values->clip_list.count,
+		    values->clip_list.rectangles, pBuf);
 		break;
+
 	    case PEXRAPickIncl:
-		*((pexNameSet *) pv) = values->pick_incl;
-		pv++;
+
+		STORE_CARD32 (values->pick_incl, pBuf);
 		break;
+
 	    case PEXRAPickExcl:
-		*((pexNameSet *) pv) = values->pick_excl;
-		pv++;
+
+		STORE_CARD32 (values->pick_excl, pBuf);
 		break;
+
 	    case PEXRAPickStartPath:
-		length = values->pick_start_path.count;
-		*pv = length;
-		pv++;
-		length *= sizeof (pexElementRef);
-		COPY_AREA (values->pick_start_path.elements, pv, length);
-		pv = (CARD32 *) ((char *) pv + length);
+
+		STORE_CARD32 (values->pick_start_path.count, pBuf);
+
+		STORE_LISTOF_ELEMREF (values->pick_start_path.count,
+		    values->pick_start_path.elements, pBuf);
 		break;
+
 	    case PEXRABackgroundColor:
-		PackColorSpecifier (&(values->background_color),
-		    pv, sizeColor);
-		pv += NUMWORDS (sizeof (pexColorSpecifier) + sizeColor); 
+
+		STORE_COLOR_SPEC (values->background_color, pBuf,
+		    fpConvert, fpFormat);
 		break;
+
 	    case PEXRAClearImage:
-		*pv = values->clear_image;
-		pv++;
+
+		STORE_CARD32 (values->clear_image, pBuf);
 		break;
+
 	    case PEXRAClearZ:
-		*pv = values->clear_z;
-		pv++;
+
+		STORE_CARD32 (values->clear_z, pBuf);
 		break;
+
 	    case PEXRAEchoMode:
-		*pv = values->echo_mode;
-		pv++;
+
+		STORE_CARD32 (values->echo_mode, pBuf);
 		break;
 	    }
 	}
     }
 
-    length = pv - pvSend;
-    req->length += length;
-
-    Data (display, (char *) pvSend, (length << 2));
+    *sizeRet = pBuf - *listRet;
 }

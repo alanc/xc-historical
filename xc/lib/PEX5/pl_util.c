@@ -1,4 +1,4 @@
-/* $XConsortium: pl_util.c,v 1.6 92/09/09 14:09:05 mor Exp $ */
+/* $XConsortium: pl_util.c,v 1.7 92/12/07 19:48:43 mor Exp $ */
 
 /******************************************************************************
 Copyright 1987,1991 by Digital Equipment Corporation, Maynard, Massachusetts
@@ -29,6 +29,7 @@ SOFTWARE.
 #include "PEXlib.h"
 #include "PEXlibint.h"
 #include "pl_util.h"
+#include "pl_oc_util.h"
 
 
 int
@@ -2270,8 +2271,7 @@ OUTPUT PEXCoord		*points_return;
      * Fill in the Z value for each XC point.
      */
 
-    xc_wz_points = (PEXCoord *) PEXAllocBuf (
-	(unsigned) (point_count * sizeof (PEXCoord)));
+    xc_wz_points = (PEXCoord *) PEXAllocBuf (point_count * sizeof (PEXCoord));
 
     for (i = 0; i < point_count; i++)
     {
@@ -2389,8 +2389,7 @@ OUTPUT PEXCoord2D	*points_return;
      * Fill in the XC point.
      */
 
-    xc_points = (PEXCoord2D *) PEXAllocBuf (
-	(unsigned) (point_count * sizeof (PEXCoord2D)));
+    xc_points = (PEXCoord2D *) PEXAllocBuf (point_count * sizeof (PEXCoord2D));
 
     for (i = 0; i < point_count; i++)
     {
@@ -2755,7 +2754,7 @@ INPUT PEXArrayOfVertex	vertices;
     PEXCoord	*v1, *v2, *v3;
     int		found_v2, found_v3;
     float	dx, dy, dz, length;
-    int		lenofColor, vert_size;
+    int		vert_size;
     PEXVector	*normal;
     char	*ptr;
 
@@ -2780,12 +2779,10 @@ INPUT PEXArrayOfVertex	vertices;
      * Get a pointer to the normal data structure.
      */
 
-    lenofColor = GetColorLength (color_type);
-
     if (facet_attributes & PEXGAColor)
     {
 	normal = (PEXVector *) ((char *) facet_data +
-	    NUMBYTES (lenofColor));
+	    GetClientColorSize (color_type));
     }
     else
 	normal = (PEXVector *) facet_data;
@@ -2796,8 +2793,7 @@ INPUT PEXArrayOfVertex	vertices;
      * cross product to get the normal.
      */
 
-    vert_size = NUMBYTES (GetVertexWithDataLength (
-	vertex_attributes, lenofColor));
+    vert_size = GetClientVertexSize (color_type, vertex_attributes);
 
     ptr = (char *) vertices.no_data;
     v1 = (PEXCoord *) ptr;
@@ -2858,7 +2854,7 @@ INPUT PEXListOfVertex	*vertex_lists;
 
 {
     PEXCoord	*v1, *v2, *v3;
-    int		lenofColor, vert_size, vcount;
+    int		vert_size, vcount;
     int		found_v2, done, i;
     float	dx, dy, dz, length;
     PEXVector	*normal;
@@ -2877,12 +2873,10 @@ INPUT PEXListOfVertex	*vertex_lists;
      * Get a pointer to the normal data structure.
      */
 
-    lenofColor = GetColorLength (color_type);
-
     if (facet_attributes & PEXGAColor)
     {
 	normal = (PEXVector *) ((char *) facet_data +
-	    NUMBYTES (lenofColor));
+	    GetClientColorSize (color_type));
     }
     else
 	normal = (PEXVector *) facet_data;
@@ -2893,8 +2887,7 @@ INPUT PEXListOfVertex	*vertex_lists;
      * of the set, and take their cross product to get the normal.
      */
 
-    vert_size = NUMBYTES (GetVertexWithDataLength (
-	vertex_attributes, lenofColor));
+    vert_size = GetClientVertexSize (color_type, vertex_attributes);
 
     for (i = done = 0; i < count && !done; i++)
     {
@@ -2960,8 +2953,8 @@ INPUT PEXArrayOfVertex		vertices;
 
 {
     PEXCoord	*v1, *v2, *v3;
-    int		vert_size, facet_size;
-    int		lenofColor, i;
+    int		vert_size;
+    int		facet_size, i;
     PEXVector	*normal;
     float	length;
     char	*ptr;
@@ -2988,12 +2981,10 @@ INPUT PEXArrayOfVertex		vertices;
      * Get a pointer to the first normal.
      */
 
-    lenofColor = GetColorLength (color_type);
-
     if (facet_attributes & PEXGAColor)
     {
 	normal = (PEXVector *) ((char *) facet_data.index +
-	    NUMBYTES (lenofColor));
+	    GetClientColorSize (color_type));
     }
     else
 	normal = (PEXVector *) facet_data.normal;
@@ -3003,11 +2994,8 @@ INPUT PEXArrayOfVertex		vertices;
      * Now compute all of the normals in the strip.
      */
 
-    vert_size = NUMBYTES (GetVertexWithDataLength (
-	vertex_attributes, lenofColor));
-
-    facet_size = NUMBYTES (GetFacetDataLength (
-	facet_attributes, lenofColor));
+    vert_size = GetClientVertexSize (color_type, vertex_attributes);
+    facet_size = GetClientFacetSize (color_type, facet_attributes);
 
     ptr = (char *) vertices.no_data;
 
@@ -3063,7 +3051,7 @@ INPUT PEXArrayOfVertex		vertices;
 {
     PEXCoord	*v1, *v2, *v3, *v4;
     int		vert_size, facet_size;
-    int		lenofColor, row, col;
+    int		row, col;
     PEXVector	*normal;
     float	length;
     int		status = 0;
@@ -3089,12 +3077,10 @@ INPUT PEXArrayOfVertex		vertices;
      * Get a pointer to the first normal.
      */
 
-    lenofColor = GetColorLength (color_type);
-
     if (facet_attributes & PEXGAColor)
     {
 	normal = (PEXVector *) ((char *) facet_data.index +
-	    NUMBYTES (lenofColor));
+	    GetClientColorSize (color_type));
     }
     else
 	normal = (PEXVector *) facet_data.normal;
@@ -3104,11 +3090,8 @@ INPUT PEXArrayOfVertex		vertices;
      * Now compute all of the normals in the quad mesh.
      */
 
-    vert_size = NUMBYTES (GetVertexWithDataLength (
-	vertex_attributes, lenofColor));
-
-    facet_size = NUMBYTES (GetFacetDataLength (
-	facet_attributes, lenofColor));
+    vert_size = GetClientVertexSize (color_type, vertex_attributes);
+    facet_size = GetClientFacetSize (color_type, facet_attributes);
 
     for (row = 0; row < row_count - 1; row++)
 	for (col = 0; col < col_count - 1; col++)
@@ -3167,8 +3150,8 @@ INPUT PEXConnectivityData	*connectivity;
     PEXCoord		*v1, *v2, *v3;
     int			vert_size, facet_size;
     float		dx, dy, dz, length;
-    int			lenofColor, done;
-    int			index, found_v2, i, j;
+    int			index, done;
+    int			found_v2, i, j;
     PEXVector		*normal;
     int			status = 0;
 
@@ -3193,12 +3176,10 @@ INPUT PEXConnectivityData	*connectivity;
      * Get a pointer to the first normal.
      */
 
-    lenofColor = GetColorLength (color_type);
-
     if (facet_attributes & PEXGAColor)
     {
 	normal = (PEXVector *) ((char *) facet_data.index +
-	    NUMBYTES (lenofColor));
+	    GetClientColorSize (color_type));
     }
     else
 	normal = (PEXVector *) facet_data.normal;
@@ -3208,11 +3189,8 @@ INPUT PEXConnectivityData	*connectivity;
      * Now compute a normal for each fill area set.
      */
 
-    vert_size = NUMBYTES (GetVertexWithDataLength (
-	vertex_attributes, lenofColor));
-
-    facet_size = NUMBYTES (GetFacetDataLength (
-	facet_attributes, lenofColor));
+    vert_size = GetClientVertexSize (color_type, vertex_attributes);
+    facet_size = GetClientFacetSize (color_type, facet_attributes);
 
     pConnectivity = connectivity;
 

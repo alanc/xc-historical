@@ -1,4 +1,4 @@
-/* $XConsortium: pl_oc_util.c,v 1.12 92/11/02 14:37:28 mor Exp $ */
+/* $XConsortium: pl_oc_util.c,v 1.13 92/12/07 19:41:41 mor Exp $ */
 
 /******************************************************************************
 Copyright 1987,1991 by Digital Equipment Corporation, Maynard, Massachusetts
@@ -41,8 +41,9 @@ INPUT int		numOCs;
 INPUT int		numWords;
 
 {
-    PEXDisplayInfo 	*pexDisplayInfo;
-    pexOCRequestHeader 	*currentReq;
+    register PEXDisplayInfo 	*pexDisplayInfo;
+    register pexOCRequestHeader *pReq;
+    char			*currentReq;
 
 
     /*
@@ -59,12 +60,11 @@ INPUT int		numWords;
      * otherwise start a new request.
      */
     
-    PEXGetDisplayInfo (display, pexDisplayInfo);
     LockDisplay (display);
+    PEXGetDisplayInfo (display, pexDisplayInfo);
 
-    currentReq = (XBufferFlushed (display)) ? 
-	(NULL) : ((pexOCRequestHeader *) (display->last_req));
-    
+    currentReq = (XBufferFlushed (display)) ? (NULL) : (display->last_req);
+
     if (currentReq == NULL ||
 	pexDisplayInfo->lastReqNum != display->request ||
 	pexDisplayInfo->lastResID != resource_id ||
@@ -73,30 +73,35 @@ INPUT int		numWords;
 	display->synchandler ||
 	(LENOF (pexOCRequestHeader) + numWords > WordsLeftInXBuffer (display)))
     {
-	PEXGetOCReq (display,
-	    sizeof (pexOCRequestHeader) + NUMBYTES (numWords));
+	PEXGetOCReq (SIZEOF (pexOCRequestHeader) + NUMBYTES (numWords));
 	
 	pexDisplayInfo->lastResID = resource_id;
 	pexDisplayInfo->lastReqType = req_type;
 	pexDisplayInfo->lastReqNum = display->request;
 	
-	currentReq = (pexOCRequestHeader *) (display->bufptr);
+	BEGIN_NEW_OCREQ_HEADER (display->bufptr, pReq);
 
-	currentReq->extOpcode = pexDisplayInfo->extOpcode;
-	currentReq->pexOpcode =
+	pReq->extOpcode = pexDisplayInfo->extOpcode;
+	pReq->pexOpcode =
 	    (req_type == PEXOCStore || req_type == PEXOCStoreSingle) ?
 	    PEXRCStoreElements : PEXRCRenderOutputCommands;
-	currentReq->reqLength = LENOF (pexOCRequestHeader) + numWords;
-	currentReq->fpFormat = float_format;
-	currentReq->target = resource_id;
-	currentReq->numCommands = numOCs;
+	pReq->reqLength = LENOF (pexOCRequestHeader) + numWords;
+	pReq->fpFormat = float_format;
+	pReq->target = resource_id;
+	pReq->numCommands = numOCs;
 
-        display->bufptr += sizeof (pexOCRequestHeader);
+	END_NEW_OCREQ_HEADER (display->bufptr, pReq);
+
+        display->bufptr += SIZEOF (pexOCRequestHeader);
     }
     else
     {
-	currentReq->reqLength += numWords;
-	currentReq->numCommands += numOCs;
+	BEGIN_UPDATE_OCREQ_HEADER (currentReq, pReq);
+
+	pReq->reqLength += numWords;
+	pReq->numCommands += numOCs;
+
+	END_UPDATE_OCREQ_HEADER (currentReq, pReq);
     }
     
     return (1);
@@ -113,49 +118,11 @@ INPUT Display	*display;
 }
 
 
-void
-_PEXSendBytesToOC (display, numBytes, data) 
+ /*
+  * PEXlib uses an internal macro called PEXCopyBytesToOC, so undef here.
+  * The macro does the same work as this function, but avoids a function call.
+  */
 
-INPUT Display		*display;
-INPUT int		numBytes;
-INPUT char		*data;
-
-{
-    PEXDisplayInfo 	*pexDisplayInfo;
-    int			mod4bytes;
-
-
-    /*
-     * _XSend will take care of splitting the buffer into chunks
-     * small enough to fit in the transport buffer.  _XSend will
-     * only copy a multiple of 4 bytes, so we must do some extra
-     * work if numBytes % 4 != 0.
-     */
-	
-    if (mod4bytes = numBytes % 4)
-    {
-	if (mod4bytes > BytesLeftInXBuffer (display))
-	    _XFlush (display);
-
-	COPY_SMALL_AREA (data, display->bufptr, mod4bytes);
-	display->bufptr += mod4bytes;
-
-	data += mod4bytes;
-	numBytes -= mod4bytes;
-    }
-
-    _XSend (display, data, numBytes);
-
-
-    /*
-     * Make sure that the next oc starts a new request.
-     */
-	
-    PEXGetDisplayInfo (display, pexDisplayInfo);
-    pexDisplayInfo->lastReqNum = -1;
-}
-
-
 #ifdef PEXCopyBytesToOC
 #undef PEXCopyBytesToOC
 #endif
@@ -185,50 +152,6 @@ INPUT char		*data;
 	 */
 
 	_PEXSendBytesToOC (display, numBytes, data);
-    }
-}
-
-
-/* INTERNAL */
-
-void
-_PEXCopyPaddedBytesToOC (display, numBytes, data) 
-
-INPUT Display		*display;
-INPUT int		numBytes;
-INPUT char		*data;
-
-{
-    PEXDisplayInfo 	*pexDisplayInfo;
-    int			paddedBytes = PADDED_BYTES (numBytes);
-
-
-    if (paddedBytes <= BytesLeftInXBuffer (display))
-    {
-	/*
-	 * There is room in the X buffer to do the copy.
-	 */
-
-	COPY_AREA (data, display->bufptr, numBytes);
-	display->bufptr += paddedBytes;
-    }
-    else
-    {
-	/*
-	 * Copying this OC will overflow the transport buffer.  Using
-	 * _XSend will take care of splitting the buffer into chunks
-	 * small enough to fit in the transport buffer.
-	 */
-	
-	_XSend (display, data, numBytes);
-
-
-	/*
-	 * Make sure that the next oc starts a new request.
-	 */
-	
-	PEXGetDisplayInfo (display, pexDisplayInfo);
-	pexDisplayInfo->lastReqNum = -1;
     }
 }
 
@@ -294,50 +217,7 @@ INPUT char		*encoded_ocs;
 
     _PEXCopyPaddedBytesToOC (display, numBytes, encoded_ocs);
 
-    PEXFinishOC (display);
-}
-
-
-void _PEXGenOCBadLengthError (display, resource_id, req_type)
-
-INPUT Display		*display;
-INPUT XID		resource_id;
-INPUT PEXOCRequestType	req_type;
-
-{
-    PEXDisplayInfo 	*pexDisplayInfo;
-    pexOCRequestHeader 	*req;
-
-
-    /*
-     * Generate an OC request with a zero request length.
-     */
-
-    LockDisplay (display);
-
-    PEXGetDisplayInfo (display, pexDisplayInfo);
-    PEXGetOCReq (display, 0);
-    req = (pexOCRequestHeader *) (display->bufptr);
-
-    req->extOpcode = pexDisplayInfo->extOpcode;
-    req->pexOpcode =
-	(req_type == PEXOCStore || req_type == PEXOCStoreSingle) ?
-	PEXRCStoreElements : PEXRCRenderOutputCommands;
-    req->reqLength = 0;
-    req->fpFormat = pexDisplayInfo->fpFormat;
-    req->target = resource_id;
-    req->numCommands = 1;
-
-
-    /*
-     * Make sure that the next oc starts a new request.
-     */
-
-    pexDisplayInfo->lastReqNum = -1;
-    pexDisplayInfo->lastResID = resource_id;
-    pexDisplayInfo->lastReqType = req_type;
-	
-    UnlockDisplay (display);
+    PEXFinishOCs (display);
 }
 
 
@@ -369,7 +249,7 @@ INPUT PEXOCData		*oc_data;
 	case PEXOCSurfaceEdgeType:
 	case PEXOCSurfaceInterpMethod:
 
-	    totalSize += sizeof (pexMarkerType);
+	    totalSize += SIZEOF (pexMarkerType);
 	    break;
 
 	case PEXOCMarkerColorIndex:
@@ -390,7 +270,7 @@ INPUT PEXOCData		*oc_data;
 	case PEXOCDepthCueIndex:
 	case PEXOCColorApproxIndex:
 
-	    totalSize += sizeof (pexMarkerColorIndex);
+	    totalSize += SIZEOF (pexMarkerColorIndex);
 	    break;
 
 	case PEXOCMarkerColor:
@@ -400,7 +280,7 @@ INPUT PEXOCData		*oc_data;
 	case PEXOCBFSurfaceColor:
 	case PEXOCSurfaceEdgeColor:
 
-	    totalSize += (sizeof (pexMarkerColor) +
+	    totalSize += (SIZEOF (pexMarkerColor) +
 	        GetColorSize (oc_data->data.SetMarkerColor.color_type));
 	    break;
 
@@ -412,114 +292,114 @@ INPUT PEXOCData		*oc_data;
 	case PEXOCLineWidth:
 	case PEXOCSurfaceEdgeWidth:
 
-	    totalSize += sizeof (pexMarkerScale);
+	    totalSize += SIZEOF (pexMarkerScale);
 	    break;
 
 	case PEXOCTextPrecision:
 	case PEXOCTextPath:
 	case PEXOCATextPath:
 
-	    totalSize += sizeof (pexTextPrecision);
+	    totalSize += SIZEOF (pexTextPrecision);
 	    break;
 
 	case PEXOCCharUpVector:
 	case PEXOCATextUpVector:
 
-	    totalSize += sizeof (pexCharUpVector);
+	    totalSize += SIZEOF (pexCharUpVector);
 	    break;
 
 	case PEXOCTextAlignment:
 	case PEXOCATextAlignment:
 
-	    totalSize += sizeof (pexTextAlignment);
+	    totalSize += SIZEOF (pexTextAlignment);
 	    break;
 
 	case PEXOCCurveApprox:
 
-	    totalSize += sizeof (pexCurveApproximation);
+	    totalSize += SIZEOF (pexCurveApprox);
 	    break;
 
 	case PEXOCReflectionAttributes:
 	case PEXOCBFReflectionAttributes:
 
-	    totalSize += (sizeof (pexSurfaceReflAttr) + GetColorSize (
+	    totalSize += (SIZEOF (pexReflectionAttributes) + GetColorSize (
                 oc_data->data.SetReflectionAttributes.attributes.specular_color.type));
 	    break;
 
 	case PEXOCSurfaceApprox:
 
-	    totalSize += sizeof (pexSurfaceApproximation);
+	    totalSize += SIZEOF (pexSurfaceApprox);
 	    break;
 
 	case PEXOCFacetCullingMode:
 
-	    totalSize += sizeof (pexCullingMode);
+	    totalSize += SIZEOF (pexFacetCullingMode);
 	    break;
 
 	case PEXOCFacetDistinguishFlag:
 	case PEXOCSurfaceEdgeFlag:
 	case PEXOCModelClipFlag:
 
-	    totalSize += sizeof (pexDistinguishFlag);
+	    totalSize += SIZEOF (pexFacetDistinguishFlag);
 	    break;
 
 	case PEXOCPatternSize:
 
-	    totalSize += sizeof (pexPatternSize);
+	    totalSize += SIZEOF (pexPatternSize);
 	    break;
 
 	case PEXOCPatternAttributes2D:
 
-	    totalSize += sizeof (pexPatternRefPt);
+	    totalSize += SIZEOF (pexPatternAttributes2D);
 	    break;
 
 	case PEXOCPatternAttributes:
 
-	    totalSize += sizeof (pexPatternAttr);
+	    totalSize += SIZEOF (pexPatternAttributes);
 	    break;
 
 	case PEXOCIndividualASF:
 
-	    totalSize += sizeof (pexSetAsfValues);
+	    totalSize += SIZEOF (pexIndividualASF);
 	    break;
 
 	case PEXOCLocalTransform:
 
-	    totalSize += sizeof (pexLocalTransform);
+	    totalSize += SIZEOF (pexLocalTransform);
 	    break;
 
 	case PEXOCLocalTransform2D:
 
-	    totalSize += sizeof (pexLocalTransform2D);
+	    totalSize += SIZEOF (pexLocalTransform2D);
 	    break;
 
 	case PEXOCGlobalTransform:
 
-	    totalSize += sizeof (pexGlobalTransform);
+	    totalSize += SIZEOF (pexGlobalTransform);
 	    break;
 
 	case PEXOCGlobalTransform2D:
 
-	    totalSize += sizeof (pexGlobalTransform2D);
+	    totalSize += SIZEOF (pexGlobalTransform2D);
 	    break;
 
 	case PEXOCModelClipVolume:
 
-	    totalSize += (sizeof (pexModelClipVolume) +
-    	        sizeof (pexHalfSpace) *
+	    totalSize += (SIZEOF (pexModelClipVolume) +
+    	        SIZEOF (pexHalfSpace) *
 	        oc_data->data.SetModelClipVolume.count);
 	    break;
 
 	case PEXOCModelClipVolume2D:
 
-	    totalSize += (sizeof (pexModelClipVolume2D) +
-    	        sizeof (pexHalfSpace2D) *
+	    totalSize += (SIZEOF (pexModelClipVolume2D) +
+    	        SIZEOF (pexHalfSpace2D) *
 	        oc_data->data.SetModelClipVolume2D.count);
 	    break;
 
 	case PEXOCRestoreModelClipVolume:
 
-	    totalSize += sizeof (pexRestoreModelClip);
+	    totalSize += SIZEOF (pexRestoreModelClipVolume);
 	    break;
 
 	case PEXOCLightSourceState:
@@ -527,13 +407,13 @@ INPUT PEXOCData		*oc_data;
 	{
     	    int	sizeofEnableList, sizeofDisableList;
 
-    	    sizeofEnableList = sizeof (CARD16) *
+    	    sizeofEnableList = SIZEOF (CARD16) *
 	        oc_data->data.SetLightSourceState.enable_count;
 
-    	    sizeofDisableList = sizeof (CARD16) *
+    	    sizeofDisableList = SIZEOF (CARD16) *
 	        oc_data->data.SetLightSourceState.disable_count;
 	    
-	    totalSize += (sizeof (pexLightState) +
+	    totalSize += (SIZEOF (pexLightSourceState) +
 	        PADDED_BYTES (sizeofEnableList) +
 	        PADDED_BYTES (sizeofDisableList));
 	    break;
@@ -542,7 +422,7 @@ INPUT PEXOCData		*oc_data;
 	case PEXOCPickID:
 	case PEXOCHLHSRID:
 
-	    totalSize += sizeof (pexPickId);
+	    totalSize += SIZEOF (pexPickID);
 	    break;
 
 	case PEXOCParaSurfCharacteristics:
@@ -553,12 +433,12 @@ INPUT PEXOCData		*oc_data;
 	    switch (oc_data->data.SetParaSurfCharacteristics.psc_type)
 	    {
 	    case PEXPSCIsoCurves:
-	        pscDataSize = sizeof (PEXPSCIsoparametricCurves);
+	        pscDataSize = SIZEOF (pexPSC_IsoparametricCurves);
 	        break;
 
 	    case PEXPSCMCLevelCurves:
 	    case PEXPSCWCLevelCurves:
-	        pscDataSize = sizeof (pexPSC_LevelCurves) + sizeof (float) *
+	        pscDataSize = SIZEOF (pexPSC_LevelCurves) + SIZEOF (float) *
 	    	oc_data->data.SetParaSurfCharacteristics.characteristics.level_curves.count;
 	        break;
 
@@ -566,51 +446,51 @@ INPUT PEXOCData		*oc_data;
 	        break;
 	    }
 
-	    totalSize += (sizeof (pexParaSurfCharacteristics) + pscDataSize);
+	    totalSize += (SIZEOF (pexParaSurfCharacteristics) + pscDataSize);
 	    break;
   	}
 
 	case PEXOCAddToNameSet:
 	case PEXOCRemoveFromNameSet:
 
-	    totalSize += (sizeof (pexAddToNameSet) + 
-	        oc_data->data.AddToNameSet.count * sizeof (pexName));
+	    totalSize += (SIZEOF (pexAddToNameSet) + 
+	        oc_data->data.AddToNameSet.count * SIZEOF (pexName));
 	    break;
 
 	case PEXOCExecuteStructure:
 
-	    totalSize += sizeof (pexExecuteStructure);
+	    totalSize += SIZEOF (pexExecuteStructure);
 	    break;
 
 	case PEXOCLabel:
 
-	    totalSize += sizeof (pexLabel);
+	    totalSize += SIZEOF (pexLabel);
 	    break;
 
 	case PEXOCApplicationData:
 
-	    totalSize += (sizeof (pexApplicationData) +
+	    totalSize += (SIZEOF (pexApplicationData) +
 	        PADDED_BYTES (oc_data->data.ApplicationData.length));
 	    break;
 
 	case PEXOCGSE:
 
-	    totalSize += (sizeof (pexGse) +
+	    totalSize += (SIZEOF (pexGSE) +
 	        PADDED_BYTES (oc_data->data.GSE.length));
 	    break;
 
 	case PEXOCMarkers:
 	case PEXOCPolyline:
 
-	    totalSize += (sizeof (pexMarker) +
-	        oc_data->data.Markers.count * sizeof (pexCoord3D));
+	    totalSize += (SIZEOF (pexMarkers) +
+	        oc_data->data.Markers.count * SIZEOF (pexCoord3D));
 	    break;
 
 	case PEXOCMarkers2D:
 	case PEXOCPolyline2D:
 
-	    totalSize += (sizeof (pexMarker2D) +
-	        oc_data->data.Markers2D.count * sizeof (pexCoord2D));
+	    totalSize += (SIZEOF (pexMarkers2D) +
+	        oc_data->data.Markers2D.count * SIZEOF (pexCoord2D));
 	    break;
 
 	case PEXOCText:
@@ -618,13 +498,12 @@ INPUT PEXOCData		*oc_data;
 	{
 	    /* Text is always mono encoded */
 
-	    PEXEncodedTextData  	*nextString;
-	    int 			lenofStrings, i;
+	    int	lenofStrings;
 
 	    GetStringsLength (oc_data->data.EncodedText.count,
 	        oc_data->data.EncodedText.encoded_text, lenofStrings)
 
-	    totalSize += (sizeof (pexText) + NUMBYTES (lenofStrings));
+	    totalSize += (SIZEOF (pexText) + NUMBYTES (lenofStrings));
 	    break;
 	}
 
@@ -633,13 +512,12 @@ INPUT PEXOCData		*oc_data;
 	{
 	    /* Text is always mono encoded */
 
-	    PEXEncodedTextData  	*nextString;
-	    int 			lenofStrings, i;
+	    int	lenofStrings;
 
 	    GetStringsLength (oc_data->data.EncodedText2D.count,
 	        oc_data->data.EncodedText2D.encoded_text, lenofStrings)
 
-	    totalSize += (sizeof (pexText2D) + NUMBYTES (lenofStrings));
+	    totalSize += (SIZEOF (pexText2D) + NUMBYTES (lenofStrings));
 	    break;
 	}
 
@@ -648,13 +526,13 @@ INPUT PEXOCData		*oc_data;
 	{
 	    /* Anno Text is always mono encoded */
 
-	    PEXEncodedTextData  	*nextString;
-	    int 			lenofStrings, i;
+	    int	lenofStrings;
 
 	    GetStringsLength (oc_data->data.EncodedAnnoText.count,
 	        oc_data->data.EncodedAnnoText.encoded_text, lenofStrings)
 
-	    totalSize += (sizeof (pexAnnotationText) + NUMBYTES (lenofStrings));
+	    totalSize += (SIZEOF (pexAnnotationText) +
+		NUMBYTES (lenofStrings));
 	    break;
 	}
 
@@ -663,13 +541,12 @@ INPUT PEXOCData		*oc_data;
 	{
 	    /* Anno Text is always mono encoded */
 
-	    PEXEncodedTextData  	*nextString;
-	    int 			lenofStrings, i;
+	    int	lenofStrings;
 
 	    GetStringsLength (oc_data->data.EncodedAnnoText2D.count,
 	        oc_data->data.EncodedAnnoText2D.encoded_text, lenofStrings)
 
-	    totalSize += (sizeof (pexAnnotationText2D) +
+	    totalSize += (SIZEOF (pexAnnotationText2D) +
 		NUMBYTES (lenofStrings));
 	    break;
 	}
@@ -689,7 +566,7 @@ INPUT PEXOCData		*oc_data;
 	         PEXGAColor) ? GetColorLength (
 	         oc_data->data.PolylineSetWithData.color_type) : 0);
 
-	    totalSize += (sizeof (pexPolylineSet) + NUMBYTES (
+	    totalSize += (SIZEOF (pexPolylineSetWithData) + NUMBYTES (
 	        oc_data->data.PolylineSetWithData.count +
 	        numPoints * lenofVertex));
 	    break;
@@ -703,27 +580,27 @@ INPUT PEXOCData		*oc_data;
     	    sizeofVertexList =
 	        oc_data->data.NURBCurve.count *
 	        ((oc_data->data.NURBCurve.rationality == PEXRational) ?
-	        sizeof (pexCoord4D) : sizeof (pexCoord3D));
+	        SIZEOF (pexCoord4D) : SIZEOF (pexCoord3D));
 
 	    sizeofKnotList = NUMBYTES (
 	        oc_data->data.NURBCurve.order +
 	        oc_data->data.NURBCurve.count);
 
-	    totalSize += (sizeof (pexNurbCurve) +
+	    totalSize += (SIZEOF (pexNURBCurve) +
 	        sizeofVertexList + sizeofKnotList);
 	    break;
 	}
 
 	case PEXOCFillArea:
 
-	    totalSize += (sizeof (pexFillArea) +
-	        oc_data->data.FillArea.count * sizeof (pexCoord3D));
+	    totalSize += (SIZEOF (pexFillArea) +
+	        oc_data->data.FillArea.count * SIZEOF (pexCoord3D));
 	    break;
 
 	case PEXOCFillArea2D:
 
-	    totalSize += (sizeof (pexFillArea2D) +
-	        oc_data->data.FillArea2D.count * sizeof (pexCoord2D));
+	    totalSize += (SIZEOF (pexFillArea2D) +
+	        oc_data->data.FillArea2D.count * SIZEOF (pexCoord2D));
 	    break;
 
 	case PEXOCFillAreaWithData:
@@ -736,15 +613,13 @@ INPUT PEXOCData		*oc_data;
 
 	    lenofFacet =
 	        GetFacetDataLength (
-	    	oc_data->data.FillAreaWithData.facet_attributes,
-	    	lenofColor); 
+	    	oc_data->data.FillAreaWithData.facet_attributes, lenofColor); 
 
 	    lenofVertex =
 	        GetVertexWithDataLength (
-	    	oc_data->data.FillAreaWithData.vertex_attributes,
-	    	lenofColor);
+	    	oc_data->data.FillAreaWithData.vertex_attributes, lenofColor);
 
-	    totalSize += (sizeof (pexExtFillArea) +
+	    totalSize += (SIZEOF (pexFillAreaWithData) +
 	        NUMBYTES (lenofFacet + 1 +
 	        oc_data->data.FillAreaWithData.count * lenofVertex));
 	    break;
@@ -760,9 +635,9 @@ INPUT PEXOCData		*oc_data;
 	        numPoints +=
 	        oc_data->data.FillAreaSet.point_lists[i].count;
 
-	    totalSize += (sizeof (pexFillAreaSet) +
+	    totalSize += (SIZEOF (pexFillAreaSet) +
 	        NUMBYTES (oc_data->data.FillAreaSet.count) +
-	        numPoints * sizeof (pexCoord3D));
+	        numPoints * SIZEOF (pexCoord3D));
 	    break;
 	}
 
@@ -776,9 +651,9 @@ INPUT PEXOCData		*oc_data;
 	        numPoints +=
 	        oc_data->data.FillAreaSet2D.point_lists[i].count;
 
-	    totalSize += (sizeof (pexFillAreaSet2D) +
+	    totalSize += (SIZEOF (pexFillAreaSet2D) +
 	        NUMBYTES (oc_data->data.FillAreaSet2D.count) +
-	        numPoints * sizeof (pexCoord2D));
+	        numPoints * SIZEOF (pexCoord2D));
 	    break;
 	}
 
@@ -810,7 +685,7 @@ INPUT PEXOCData		*oc_data;
 	        numVertices +=
 	        oc_data->data.FillAreaSetWithData.vertex_lists[i].count;
 
-	    totalSize += (sizeof (pexExtFillAreaSet) +
+	    totalSize += (SIZEOF (pexFillAreaSetWithData) +
 	        NUMBYTES (lenofFacet +
 	        oc_data->data.FillAreaSetWithData.count +
 	        numVertices * lenofVertex));
@@ -833,7 +708,7 @@ INPUT PEXOCData		*oc_data;
 	        GetVertexWithDataLength (
 	        oc_data->data.TriangleStrip.vertex_attributes, lenofColor);
 
-	    totalSize += (sizeof (pexTriangleStrip) +
+	    totalSize += (SIZEOF (pexTriangleStrip) +
 	        NUMBYTES (lenofFacetList + lenofVertexList));
 	    break;
 	}
@@ -860,7 +735,7 @@ INPUT PEXOCData		*oc_data;
 	            oc_data->data.QuadrilateralMesh.vertex_attributes,
 	            lenofColor);
 
-	    totalSize += (sizeof (pexQuadrilateralMesh) +
+	    totalSize += (SIZEOF (pexQuadrilateralMesh) +
 	        NUMBYTES (lenofFacetList + lenofVertexList));
 	    break;
 	}
@@ -893,22 +768,23 @@ INPUT PEXOCData		*oc_data;
 	        lenofColor);
 
 	    sizeofEdge = oc_data->data.SetOfFillAreaSets.edge_attributes ?
-		sizeof (CARD8) : 0;
+	        SIZEOF (CARD8) : 0;
 
 	    sofaLength = (lenofFacet * numFillAreaSets) +
 	        (lenofVertex * numVertices) + 
 	        NUMWORDS (sizeofEdge * numIndices) +
-	        NUMWORDS (sizeof (CARD16) *
+	        NUMWORDS (SIZEOF (CARD16) *
 	        (numFillAreaSets + numContours + numIndices));
 
-	    totalSize += (sizeof (pexSOFAS) + NUMBYTES (sofaLength));
+	    totalSize += (SIZEOF (pexSetOfFillAreaSets) +
+		NUMBYTES (sofaLength));
 	    break;
 	}
 
 	case PEXOCNURBSurface:
 	{
-	    PEXListOfTrimCurve *ptrimLoop;
-	    PEXTrimCurve	   *ptrimCurve;
+	    PEXListOfTrimCurve	*ptrimLoop;
+	    PEXTrimCurve	*ptrimCurve;
 	    int 	numMPoints, numNPoints, numTrimLoops;
 	    int 	uorder, vorder;
 	    int 	lenofVertexList, lenofUKnotList, lenofVKnotList;
@@ -936,8 +812,8 @@ INPUT PEXOCData		*oc_data;
 	    
 	        while (count--)
 	        {
-	    	lenofTrimData += (LENOF (pexTrimCurve) +
-	    	    ptrimCurve->count + ptrimCurve->order +
+		    lenofTrimData += (LENOF (pexTrimCurve) +
+	    	        ptrimCurve->count + ptrimCurve->order +
 	                ptrimCurve->count *
 	                (ptrimCurve->rationality == PEXRational ?
 	                LENOF (pexCoord3D) : LENOF (pexCoord2D)));
@@ -945,7 +821,7 @@ INPUT PEXOCData		*oc_data;
 	        }
 	    }
 
-	    totalSize += (sizeof (pexNurbSurface) +
+	    totalSize += (SIZEOF (pexNURBSurface) +
 	        NUMBYTES (lenofUKnotList + lenofVKnotList +
 	        lenofVertexList + lenofTrimData));
 	    break;
@@ -957,8 +833,8 @@ INPUT PEXOCData		*oc_data;
 	    int bytes;
 
 	    bytes = oc_data->data.CellArray.col_count *
-	        oc_data->data.CellArray.row_count * sizeof (pexTableIndex);
-	    totalSize += (sizeof (pexCellArray) + PADDED_BYTES (bytes));
+	        oc_data->data.CellArray.row_count * SIZEOF (pexTableIndex);
+	    totalSize += (SIZEOF (pexCellArray) + PADDED_BYTES (bytes));
 	    break;
 	}
 
@@ -968,9 +844,8 @@ INPUT PEXOCData		*oc_data;
 	    int bytes;
 
 	    bytes = oc_data->data.CellArray2D.col_count *
-	        oc_data->data.CellArray2D.row_count *
-	        sizeof (pexTableIndex);
-	    totalSize += (sizeof (pexCellArray2D) + PADDED_BYTES (bytes));
+	        oc_data->data.CellArray2D.row_count * SIZEOF (pexTableIndex);
+	    totalSize += (SIZEOF (pexCellArray2D) + PADDED_BYTES (bytes));
 	    break;
 	}
 
@@ -983,28 +858,28 @@ INPUT PEXOCData		*oc_data;
 	        oc_data->data.ExtendedCellArray.row_count * GetColorLength (
 	        oc_data->data.ExtendedCellArray.color_type);
 
-	    totalSize += (sizeof (pexExtCellArray) +
+	    totalSize += (SIZEOF (pexExtendedCellArray) +
 	        NUMBYTES (lenofColorList));
 	    break;
 	}
 
 	case PEXOCGDP:
 
-	    totalSize += (sizeof (pexGdp) +
-	        oc_data->data.GDP.count * sizeof (pexCoord3D) +
+	    totalSize += (SIZEOF (pexGDP) +
+	        oc_data->data.GDP.count * SIZEOF (pexCoord3D) +
 	        PADDED_BYTES (oc_data->data.GDP.length));
 	    break;
 
 	case PEXOCGDP2D:
 
-	    totalSize += (sizeof (pexGdp2D) +
-	        oc_data->data.GDP2D.count * sizeof (pexCoord2D) +
+	    totalSize += (SIZEOF (pexGDP2D) +
+	        oc_data->data.GDP2D.count * SIZEOF (pexCoord2D) +
 	        PADDED_BYTES (oc_data->data.GDP2D.length));
 	    break;
 
 	case PEXOCNoop:
 
-	    totalSize += sizeof (pexNoop);
+	    totalSize += SIZEOF (pexNoop);
 	    break;
 
 	default:
@@ -1032,7 +907,8 @@ INPUT unsigned long     length;
 INPUT char		*encoded_ocs;
 
 {
-    char		*ptr = encoded_ocs;
+    char		*pBuf = encoded_ocs;
+    char		*pBufStart;
     unsigned long	oc_count = 0;
     int			totalSize = 0;
     pexElementInfo	*elemInfo;
@@ -1045,7 +921,9 @@ INPUT char		*encoded_ocs;
 
     while (totalSize < length)
     {
-	elemInfo = (pexElementInfo *) ptr;
+	GET_STRUCT_PTR (pexElementInfo, pBuf, elemInfo);
+
+	pBufStart = pBuf;
 
 	switch (elemInfo->elementType)
 	{
@@ -1062,7 +940,7 @@ INPUT char		*encoded_ocs;
 	case PEXOCSurfaceEdgeType:
 	case PEXOCSurfaceInterpMethod:
 
-	    ptr += sizeof (pexMarkerType);
+	    pBuf += SIZEOF (pexMarkerType);
 	    break;
 
 	case PEXOCMarkerColorIndex:
@@ -1083,7 +961,7 @@ INPUT char		*encoded_ocs;
 	case PEXOCDepthCueIndex:
 	case PEXOCColorApproxIndex:
 
-	    ptr += sizeof (pexMarkerColorIndex);
+	    pBuf += SIZEOF (pexMarkerColorIndex);
 	    break;
 
 	case PEXOCMarkerColor:
@@ -1094,10 +972,11 @@ INPUT char		*encoded_ocs;
 	case PEXOCSurfaceEdgeColor:
 
 	{
-	    pexMarkerColor *oc = (pexMarkerColor *) ptr;
-    
-	    ptr += (sizeof (pexMarkerColor) +
-		GetColorSize (oc->colorSpec.colorType));
+	    pexMarkerColor *oc;
+
+	    GET_STRUCT_PTR (pexMarkerColor, pBuf, oc);
+
+	    pBuf += (SIZEOF (pexMarkerColor) + GetColorSize (oc->colorType));
 	    break;
 	}
 
@@ -1109,169 +988,182 @@ INPUT char		*encoded_ocs;
 	case PEXOCLineWidth:
 	case PEXOCSurfaceEdgeWidth:
 
-	    ptr += sizeof (pexMarkerScale);
+	    pBuf += SIZEOF (pexMarkerScale);
 	    break;
 
 	case PEXOCTextPrecision:
 	case PEXOCTextPath:
 	case PEXOCATextPath:
 
-	    ptr += sizeof (pexTextPrecision);
+	    pBuf += SIZEOF (pexTextPrecision);
 	    break;
 
 	case PEXOCCharUpVector:
 	case PEXOCATextUpVector:
 
-	    ptr += sizeof (pexCharUpVector);
+	    pBuf += SIZEOF (pexCharUpVector);
 	    break;
 
 	case PEXOCTextAlignment:
 	case PEXOCATextAlignment:
 
-	    ptr += sizeof (pexTextAlignment);
+	    pBuf += SIZEOF (pexTextAlignment);
 	    break;
 
 	case PEXOCCurveApprox:
 
-	    ptr += sizeof (pexCurveApproximation);
+	    pBuf += SIZEOF (pexCurveApprox);
 	    break;
 
 	case PEXOCReflectionAttributes:
 	case PEXOCBFReflectionAttributes:
 
 	{
-	    pexSurfaceReflAttr *oc = (pexSurfaceReflAttr *) ptr;
+	    pexReflectionAttributes *oc;
+
+	    GET_STRUCT_PTR (pexReflectionAttributes, pBuf, oc);
     
-	    ptr += (sizeof (pexSurfaceReflAttr) +
-		GetColorSize (oc->reflectionAttr.specularColor.colorType));
+	    pBuf += (SIZEOF (pexReflectionAttributes) +
+		GetColorSize (oc->specular_colorType));
 	    break;
 	}
 
 	case PEXOCSurfaceApprox:
 
-	    ptr += sizeof (pexSurfaceApproximation);
+	    pBuf += SIZEOF (pexSurfaceApprox);
 	    break;
 
 	case PEXOCFacetCullingMode:
 
-	    ptr += sizeof (pexCullingMode);
+	    pBuf += SIZEOF (pexFacetCullingMode);
 	    break;
 
 	case PEXOCFacetDistinguishFlag:
 	case PEXOCSurfaceEdgeFlag:
 	case PEXOCModelClipFlag:
 
-	    ptr += sizeof (pexDistinguishFlag);
+	    pBuf += SIZEOF (pexFacetDistinguishFlag);
 	    break;
 
 	case PEXOCPatternSize:
 
-	    ptr += sizeof (pexPatternSize);
+	    pBuf += SIZEOF (pexPatternSize);
 	    break;
 
 	case PEXOCPatternAttributes2D:
 
-	    ptr += sizeof (pexPatternRefPt);
+	    pBuf += SIZEOF (pexPatternAttributes2D);
 	    break;
 
 	case PEXOCPatternAttributes:
 
-	    ptr += sizeof (pexPatternAttr);
+	    pBuf += SIZEOF (pexPatternAttributes);
 	    break;
 
 	case PEXOCIndividualASF:
 
-	    ptr += sizeof (pexSetAsfValues);
+	    pBuf += SIZEOF (pexIndividualASF);
 	    break;
 
 	case PEXOCLocalTransform:
 
-	    ptr += sizeof (pexLocalTransform);
+	    pBuf += SIZEOF (pexLocalTransform);
 	    break;
 
 	case PEXOCLocalTransform2D:
 
-	    ptr += sizeof (pexLocalTransform2D);
+	    pBuf += SIZEOF (pexLocalTransform2D);
 	    break;
 
 	case PEXOCGlobalTransform:
 
-	    ptr += sizeof (pexGlobalTransform);
+	    pBuf += SIZEOF (pexGlobalTransform);
 	    break;
 
 	case PEXOCGlobalTransform2D:
 
-	    ptr += sizeof (pexGlobalTransform2D);
+	    pBuf += SIZEOF (pexGlobalTransform2D);
 	    break;
 
 	case PEXOCModelClipVolume:
 
 	{
-	    pexModelClipVolume 	*oc = (pexModelClipVolume *) ptr;
+	    pexModelClipVolume 	*oc;
+
+	    GET_STRUCT_PTR (pexModelClipVolume, pBuf, oc);
     
-	    ptr += (sizeof (pexModelClipVolume) +
-		oc->numHalfSpaces * sizeof (pexHalfSpace));
+	    pBuf += (SIZEOF (pexModelClipVolume) +
+		oc->numHalfSpaces * SIZEOF (pexHalfSpace));
 	    break;
 	}
 
 	case PEXOCModelClipVolume2D:
 
 	{
-	    pexModelClipVolume2D *oc = (pexModelClipVolume2D *) ptr;
+	    pexModelClipVolume2D *oc;
+
+	    GET_STRUCT_PTR (pexModelClipVolume2D, pBuf, oc);
     
-	    ptr += (sizeof (pexModelClipVolume2D) +
-		oc->numHalfSpaces * sizeof (pexHalfSpace2D));
+	    pBuf += (SIZEOF (pexModelClipVolume2D) +
+		oc->numHalfSpaces * SIZEOF (pexHalfSpace2D));
 	    break;
 	}
 
 	case PEXOCRestoreModelClipVolume:
 
-	    ptr += sizeof (pexRestoreModelClip);
+	    pBuf += SIZEOF (pexRestoreModelClipVolume);
 	    break;
 
 	case PEXOCLightSourceState:
 
 	{
-	    pexLightState 	*oc = (pexLightState *) ptr;
+	    pexLightSourceState *oc;
 	    int			size;
+
+	    GET_STRUCT_PTR (pexLightSourceState, pBuf, oc);
     
-	    size = oc->numEnable * sizeof (PEXTableIndex);
-	    ptr += (sizeof (pexLightState) + PADDED_BYTES (size));
+	    size = oc->numEnable * SIZEOF (pexTableIndex);
+	    pBuf += (SIZEOF (pexLightSourceState) + PADDED_BYTES (size));
     
-	    size = oc->numDisable * sizeof (PEXTableIndex);
-	    ptr += PADDED_BYTES (size);
+	    size = oc->numDisable * SIZEOF (pexTableIndex);
+	    pBuf += PADDED_BYTES (size);
 	    break;
 	}
 
 	case PEXOCPickID:
 	case PEXOCHLHSRID:
 
-	    ptr += sizeof (pexPickId);
+	    pBuf += SIZEOF (pexPickID);
 	    break;
 
 	case PEXOCParaSurfCharacteristics:
 
 	{
-	    pexParaSurfCharacteristics *oc = (pexParaSurfCharacteristics *) ptr;
+	    pexParaSurfCharacteristics *oc;
+
+	    GET_STRUCT_PTR (pexParaSurfCharacteristics, pBuf, oc);
+	    pBuf += SIZEOF (pexParaSurfCharacteristics);
 
 	    switch (oc->characteristics)
 	    {
 	    case PEXPSCIsoCurves:
-		ptr = (char *) (oc + 1) + sizeof (pexPSC_IsoparametricCurves);
+		pBuf += SIZEOF (pexPSC_IsoparametricCurves);
 		break;
 	
 	    case PEXPSCMCLevelCurves:
 	    case PEXPSCWCLevelCurves:
 	    {
-		pexPSC_LevelCurves *level = (pexPSC_LevelCurves *) (oc + 1);
+		pexPSC_LevelCurves *level;
 
-		ptr = (char *) (level + 1) +
-		    sizeof (float) * level->numberIntersections;
+		GET_STRUCT_PTR (pexPSC_LevelCurves, pBuf, level);
+
+		pBuf += (SIZEOF (pexPSC_LevelCurves) +
+		    SIZEOF (float) * level->numberIntersections);
 		break;
 	    }
 	
 	    default:
-		ptr = (char *) (oc + 1) + PADDED_BYTES (oc->length);
+		pBuf += PADDED_BYTES (oc->length);
 		break;
 	    }
 
@@ -1281,26 +1173,28 @@ INPUT char		*encoded_ocs;
 	case PEXOCAddToNameSet:
 	case PEXOCRemoveFromNameSet:
 
-	    ptr += (sizeof (pexAddToNameSet) +
-		(elemInfo->length - 1) * sizeof (PEXName));
+	    pBuf += (SIZEOF (pexAddToNameSet) +
+		(elemInfo->length - 1) * SIZEOF (pexName));
 	    break;
 
 	case PEXOCExecuteStructure:
 
-	    ptr += sizeof (pexExecuteStructure);
+	    pBuf += SIZEOF (pexExecuteStructure);
 	    break;
 
 	case PEXOCLabel:
 
-	    ptr += sizeof (pexLabel);
+	    pBuf += SIZEOF (pexLabel);
 	    break;
 
 	case PEXOCApplicationData:
 
 	{
-	    pexApplicationData *oc = (pexApplicationData *) ptr;
+	    pexApplicationData *oc;
 
-	    ptr += (sizeof (pexApplicationData) +
+	    GET_STRUCT_PTR (pexApplicationData, pBuf, oc);
+
+	    pBuf += (SIZEOF (pexApplicationData) +
 		PADDED_BYTES (oc->numElements));
 	    break;
 	}
@@ -1308,24 +1202,28 @@ INPUT char		*encoded_ocs;
 	case PEXOCGSE:
 
 	{
-	    pexGse *oc = (pexGse *) ptr;
+	    pexGSE *oc;
 
-	    ptr += (sizeof (pexGse) + PADDED_BYTES (oc->numElements));
+	    GET_STRUCT_PTR (pexGSE, pBuf, oc);
+
+	    pBuf += (SIZEOF (pexGSE) + PADDED_BYTES (oc->numElements));
 	    break;
 	}
 
 	case PEXOCMarkers:
 	case PEXOCPolyline:
 
-	    ptr += (sizeof (pexMarker) + sizeof (pexCoord3D) *
-	    	(sizeof (CARD32) * (elemInfo->length-1)) / sizeof (pexCoord3D));
+	    pBuf += (SIZEOF (pexMarkers) + SIZEOF (pexCoord3D) *
+	    	(SIZEOF (CARD32) * ((int) elemInfo->length - 1)) /
+                SIZEOF (pexCoord3D));
 	    break;
 
 	case PEXOCMarkers2D:
 	case PEXOCPolyline2D:
 
-	    ptr += (sizeof (pexMarker2D) + sizeof (pexCoord2D) *
-	    	(sizeof (CARD32) * (elemInfo->length-1)) / sizeof (pexCoord2D));
+	    pBuf += (SIZEOF (pexMarkers2D) + SIZEOF (pexCoord2D) *
+	    	(SIZEOF (CARD32) * ((int) elemInfo->length - 1)) /
+                SIZEOF (pexCoord2D));
 	    break;
 
 	case PEXOCText:
@@ -1333,14 +1231,17 @@ INPUT char		*encoded_ocs;
 	{
 	    /* Text is always mono encoded */
 
-	    pexText 		*oc = (pexText *) ptr;
+	    pexText 		*oc;
 	    pexMonoEncoding	*enc;
 	    int			size, i;
 
-	    enc = (pexMonoEncoding *) (oc + 1);
+	    GET_STRUCT_PTR (pexText, pBuf, oc);
+	    pBuf += SIZEOF (pexText);
 
 	    for (i = 0; i < (int) oc->numEncodings; i++)
 	    {
+		GET_STRUCT_PTR (pexMonoEncoding, pBuf, enc);
+
 		if (enc->characterSetWidth == PEXCSLong)
 		    size = enc->numChars * sizeof (long);
 		else if (enc->characterSetWidth == PEXCSShort)
@@ -1348,11 +1249,8 @@ INPUT char		*encoded_ocs;
 		else /* enc->characterSetWidth == PEXCSByte) */
 		    size = enc->numChars;
 
-		enc = (pexMonoEncoding *) ((char *) enc +
-	            sizeof (pexMonoEncoding) + PADDED_BYTES (size));
+		pBuf += (SIZEOF (pexMonoEncoding) + PADDED_BYTES (size));
 	    }
-
-	    ptr = (char *) enc;
 	    break;
 	}
 
@@ -1361,14 +1259,17 @@ INPUT char		*encoded_ocs;
 	{
 	    /* Text is always mono encoded */
 
-	    pexText2D 		*oc = (pexText2D *) ptr;
+	    pexText2D 		*oc;
 	    pexMonoEncoding	*enc;
 	    int			size, i;
 
-	    enc = (pexMonoEncoding *) (oc + 1);
+	    GET_STRUCT_PTR (pexText2D, pBuf, oc);
+	    pBuf += SIZEOF (pexText2D);
 
 	    for (i = 0; i < (int) oc->numEncodings; i++)
 	    {
+		GET_STRUCT_PTR (pexMonoEncoding, pBuf, enc);
+
 		if (enc->characterSetWidth == PEXCSLong)
 		    size = enc->numChars * sizeof (long);
 		else if (enc->characterSetWidth == PEXCSShort)
@@ -1376,11 +1277,8 @@ INPUT char		*encoded_ocs;
 		else /* enc->characterSetWidth == PEXCSByte) */
 		    size = enc->numChars;
 
-		enc = (pexMonoEncoding *) ((char *) enc +
-	            sizeof (pexMonoEncoding) + PADDED_BYTES (size));
+		pBuf += (SIZEOF (pexMonoEncoding) + PADDED_BYTES (size));
 	    }
-
-	    ptr = (char *) enc;
 	    break;
 	}
 
@@ -1389,14 +1287,17 @@ INPUT char		*encoded_ocs;
 	{
 	    /* Anno Text is always mono encoded */
 
-	    pexAnnotationText 	*oc = (pexAnnotationText *) ptr;
+	    pexAnnotationText 	*oc;
 	    pexMonoEncoding	*enc;
 	    int			size, i;
 
-	    enc = (pexMonoEncoding *) (oc + 1);
+	    GET_STRUCT_PTR (pexAnnotationText, pBuf, oc);
+	    pBuf += SIZEOF (pexAnnotationText);
 
 	    for (i = 0; i < (int) oc->numEncodings; i++)
 	    {
+		GET_STRUCT_PTR (pexMonoEncoding, pBuf, enc);
+
 		if (enc->characterSetWidth == PEXCSLong)
 		    size = enc->numChars * sizeof (long);
 		else if (enc->characterSetWidth == PEXCSShort)
@@ -1404,11 +1305,8 @@ INPUT char		*encoded_ocs;
 		else /* enc->characterSetWidth == PEXCSByte) */
 		    size = enc->numChars;
 
-		enc = (pexMonoEncoding *) ((char *) enc +
-	            sizeof (pexMonoEncoding) + PADDED_BYTES (size));
+		pBuf += (SIZEOF (pexMonoEncoding) + PADDED_BYTES (size));
 	    }
-
-	    ptr = (char *) enc;
 	    break;
 	}
 
@@ -1417,14 +1315,17 @@ INPUT char		*encoded_ocs;
 	{
 	    /* Anno Text is always mono encoded */
 
-	    pexAnnotationText2D	*oc = (pexAnnotationText2D *) ptr;
+	    pexAnnotationText2D	*oc;
 	    pexMonoEncoding	*enc;
 	    int			size, i;
 
-	    enc = (pexMonoEncoding *) (oc + 1);
+	    GET_STRUCT_PTR (pexAnnotationText2D, pBuf, oc);
+	    pBuf += SIZEOF (pexAnnotationText2D);
 
 	    for (i = 0; i < (int) oc->numEncodings; i++)
 	    {
+		GET_STRUCT_PTR (pexMonoEncoding, pBuf, enc);
+
 		if (enc->characterSetWidth == PEXCSLong)
 		    size = enc->numChars * sizeof (long);
 		else if (enc->characterSetWidth == PEXCSShort)
@@ -1432,30 +1333,30 @@ INPUT char		*encoded_ocs;
 		else /* enc->characterSetWidth == PEXCSByte) */
 		    size = enc->numChars;
 
-		enc = (pexMonoEncoding *) ((char *) enc +
-	            sizeof (pexMonoEncoding) + PADDED_BYTES (size));
+		pBuf += (SIZEOF (pexMonoEncoding) + PADDED_BYTES (size));
 	    }
-
-	    ptr = (char *) enc;
 	    break;
 	}
 
 	case PEXOCPolylineSetWithData:
 
 	{
-	    pexPolylineSet 	*oc = (pexPolylineSet *) ptr;
-	    int			lenofVertex, count, i;
+	    pexPolylineSetWithData 	*oc;
+	    int				lenofVertex, i;
+	    CARD32			count;
+
+	    GET_STRUCT_PTR (pexPolylineSetWithData, pBuf, oc);
 
 	    lenofVertex = LENOF (pexCoord3D) +
 		((oc->vertexAttribs & PEXGAColor) ?
 		GetColorLength (oc->colorType) : 0); 
 
-	    ptr = (char *) (oc + 1);
+	    pBuf += SIZEOF (pexPolylineSetWithData);
 
 	    for (i = 0; i < oc->numLists; i++)
 	    {
-		count = *((CARD32 *) ptr);
-		ptr += (sizeof (CARD32) + NUMBYTES (count * lenofVertex));
+		EXTRACT_CARD32 (pBuf, count);
+		pBuf += NUMBYTES (count * lenofVertex);
 	    }
 	    break;
 	}
@@ -1463,11 +1364,13 @@ INPUT char		*encoded_ocs;
 	case PEXOCNURBCurve:
 
 	{
-	    pexNurbCurve	*oc = (pexNurbCurve *) ptr;
+	    pexNURBCurve	*oc;
 
-	    ptr += (sizeof (pexNurbCurve) + oc->numKnots * sizeof (float) +
+	    GET_STRUCT_PTR (pexNURBCurve, pBuf, oc);
+
+	    pBuf += (SIZEOF (pexNURBCurve) + oc->numKnots * SIZEOF (float) +
 	        (oc->numPoints * ((oc->coordType == PEXRational) ?
-		sizeof (pexCoord4D) : sizeof (pexCoord3D))));
+		SIZEOF (pexCoord4D) : SIZEOF (pexCoord3D))));
 	    break;
 	}
 
@@ -1476,10 +1379,10 @@ INPUT char		*encoded_ocs;
 	{
 	    int 		count;
     
-	    count = (sizeof (CARD32) * (elemInfo->length - 2)) /
-		sizeof (pexCoord3D);
+	    count = (SIZEOF (CARD32) * ((int) elemInfo->length - 2)) /
+		SIZEOF (pexCoord3D);
     
-	    ptr += (sizeof (pexFillArea) + count * sizeof (pexCoord3D));
+	    pBuf += (SIZEOF (pexFillArea) + count * SIZEOF (pexCoord3D));
 	    break;
 	}
 
@@ -1488,48 +1391,54 @@ INPUT char		*encoded_ocs;
 	{
 	    int 		count;
     
-	    count = (sizeof (CARD32) * (elemInfo->length - 2)) /
-		sizeof (pexCoord2D);
+	    count = (SIZEOF (CARD32) * ((int) elemInfo->length - 2)) /
+		SIZEOF (pexCoord2D);
     
-	    ptr += (sizeof (pexFillArea2D) + count * sizeof (pexCoord2D));
+	    pBuf += (SIZEOF (pexFillArea2D) + count * SIZEOF (pexCoord2D));
 	    break;
 	}
 
 	case PEXOCFillAreaWithData:
 
 	{
-	    pexExtFillArea 	*oc = (pexExtFillArea *) ptr;
+	    pexFillAreaWithData	*oc;
 	    int			lenofFacetData;
 	    int			lenofVertex;
-	    int			lenofColor, count;
+	    int			lenofColor;
+	    CARD32		count;
+
+	    GET_STRUCT_PTR (pexFillAreaWithData, pBuf, oc);
     
 	    lenofColor = GetColorLength (oc->colorType);
-	    lenofFacetData = GetFacetDataLength (oc->facetAttribs, lenofColor); 
+	    lenofFacetData = GetFacetDataLength (oc->facetAttribs, lenofColor);
 	    lenofVertex = GetVertexWithDataLength (
 		oc->vertexAttribs, lenofColor);
 
-	    ptr = (char *) (oc + 1);
+	    pBuf += SIZEOF (pexFillAreaWithData);
 
 	    if (oc->facetAttribs)
-		ptr += NUMBYTES (lenofFacetData);
+		pBuf += NUMBYTES (lenofFacetData);
 
-	    count = *((CARD32 *) ptr);
-	    ptr += (sizeof (CARD32) + count * NUMBYTES (lenofVertex));
+	    EXTRACT_CARD32 (pBuf, count);
+	    pBuf += (count * NUMBYTES (lenofVertex));
 	    break;
 	}
 
 	case PEXOCFillAreaSet:
 
 	{
-	    pexFillAreaSet 	*oc = (pexFillAreaSet *) ptr;
-	    int			count, i;
+	    pexFillAreaSet 	*oc;
+	    int			i;
+	    CARD32		count;
 
-	    ptr = (char *) (oc + 1);
+	    GET_STRUCT_PTR (pexFillAreaSet, pBuf, oc);
+
+	    pBuf += SIZEOF (pexFillAreaSet);
 
 	    for (i = 0; i < oc->numLists; i++)
 	    {
-		count = *((CARD32 *) ptr);
-		ptr += (sizeof (CARD32) + count * sizeof (pexCoord3D));
+		EXTRACT_CARD32 (pBuf, count);
+		pBuf += (count * SIZEOF (pexCoord3D));
 	    }
 	    break;
 	}
@@ -1537,15 +1446,18 @@ INPUT char		*encoded_ocs;
 	case PEXOCFillAreaSet2D:
 
 	{
-	    pexFillAreaSet2D 	*oc = (pexFillAreaSet2D *) ptr;
-	    int			count, i;
+	    pexFillAreaSet2D 	*oc;
+	    int			i;
+	    CARD32		count;
 
-	    ptr = (char *) (oc + 1);
+	    GET_STRUCT_PTR (pexFillAreaSet2D, pBuf, oc);
+
+	    pBuf += SIZEOF (pexFillAreaSet2D);
 
 	    for (i = 0; i < oc->numLists; i++)
 	    {
-		count = *((CARD32 *) ptr);
-		ptr += (sizeof (CARD32) + count * sizeof (pexCoord2D));
+		EXTRACT_CARD32 (pBuf, count);
+		pBuf += (count * SIZEOF (pexCoord2D));
 	    }
 	    break;
 	}
@@ -1553,28 +1465,31 @@ INPUT char		*encoded_ocs;
 	case PEXOCFillAreaSetWithData:
 
 	{
-	    pexExtFillAreaSet 	*oc = (pexExtFillAreaSet *) ptr;
-	    int			lenofFacetData;
-	    int			lenofVertex;
-	    int			lenofColor, count, i;
+	    pexFillAreaSetWithData 	*oc;
+	    int				lenofFacetData;
+	    int				lenofVertex;
+	    int				lenofColor, i;
+	    CARD32			count;
+
+	    GET_STRUCT_PTR (pexFillAreaSetWithData, pBuf, oc);
 
 	    lenofColor = GetColorLength (oc->colorType);
-	    lenofFacetData = GetFacetDataLength (oc->facetAttribs, lenofColor); 
+	    lenofFacetData = GetFacetDataLength (oc->facetAttribs, lenofColor);
 	    lenofVertex = GetVertexWithDataLength (
 		oc->vertexAttribs, lenofColor);
     
 	    if (oc->vertexAttribs & PEXGAEdges)
 		lenofVertex++; 			/* edge switch is CARD32 */
 
-	    ptr = (char *) (oc + 1);
+	    pBuf += SIZEOF (pexFillAreaSetWithData);
 
 	    if (oc->facetAttribs)
-		ptr += NUMBYTES (lenofFacetData);
+		pBuf += NUMBYTES (lenofFacetData);
 
 	    for (i = 0; i < oc->numLists; i++)
 	    {
-		count = *((CARD32 *) ptr);
-		ptr += (sizeof (CARD32) + count * NUMBYTES (lenofVertex));
+		EXTRACT_CARD32 (pBuf, count);
+		pBuf += (count * NUMBYTES (lenofVertex));
 	    }
 	    break;
 	}
@@ -1582,10 +1497,12 @@ INPUT char		*encoded_ocs;
 	case PEXOCTriangleStrip:
 
 	{
-	    pexTriangleStrip 	*oc = (pexTriangleStrip *) ptr;
+	    pexTriangleStrip 	*oc;
 	    int			lenofColor;
 	    int			lenofFacetDataList;
 	    int			lenofVertexList;
+
+	    GET_STRUCT_PTR (pexTriangleStrip, pBuf, oc);
 
 	    lenofColor = GetColorLength (oc->colorType);
 	    lenofFacetDataList = (oc->numVertices - 2) *
@@ -1593,22 +1510,24 @@ INPUT char		*encoded_ocs;
 	    lenofVertexList = oc->numVertices *
 		GetVertexWithDataLength (oc->vertexAttribs, lenofColor);
 
-	    ptr = (char *) (oc + 1);
+	    pBuf += SIZEOF (pexTriangleStrip);
 
 	    if (oc->facetAttribs)
-		ptr += NUMBYTES (lenofFacetDataList);
+		pBuf += NUMBYTES (lenofFacetDataList);
 
-	    ptr += NUMBYTES (lenofVertexList);
+	    pBuf += NUMBYTES (lenofVertexList);
 	    break;
 	}
 
 	case PEXOCQuadrilateralMesh:
 
 	{
-	    pexQuadrilateralMesh 	*oc = (pexQuadrilateralMesh *) ptr;
+	    pexQuadrilateralMesh 	*oc;
 	    int				lenofColor;
 	    int				lenofFacetDataList;
 	    int				lenofVertexList;
+
+	    GET_STRUCT_PTR (pexQuadrilateralMesh, pBuf, oc);
 
 	    lenofColor = GetColorLength (oc->colorType);
 	    lenofFacetDataList = ((oc->mPts - 1) * (oc->nPts - 1)) *
@@ -1616,89 +1535,94 @@ INPUT char		*encoded_ocs;
 	    lenofVertexList = oc->mPts * oc->nPts *
 		GetVertexWithDataLength (oc->vertexAttribs, lenofColor);
 
-	    ptr = (char *) (oc + 1);
+	    pBuf += SIZEOF (pexQuadrilateralMesh);
 
 	    if (oc->facetAttribs)
-		ptr += NUMBYTES (lenofFacetDataList);
+		pBuf += NUMBYTES (lenofFacetDataList);
 
-	    ptr += NUMBYTES (lenofVertexList);
+	    pBuf += NUMBYTES (lenofVertexList);
 	    break;
 	}
 
 	case PEXOCSetOfFillAreaSets:
 
 	{
-	    pexSOFAS		*oc = (pexSOFAS *) ptr;
-	    int 		lenofColor;
-	    int 		lenofFacet;
-	    int 		lenofVertex;
-	    int			count, scount, cbytes, i, j;
+	    pexSetOfFillAreaSets	*oc;
+	    int 			lenofColor;
+	    int 			lenofFacet;
+	    int 			lenofVertex;
+	    int				cbytes, i, j;
+	    CARD16			count, scount;
+
+	    GET_STRUCT_PTR (pexSetOfFillAreaSets, pBuf, oc);
 
 	    lenofColor = GetColorLength (oc->colorType);
 	    lenofFacet = GetFacetDataLength (oc->FAS_Attributes, lenofColor); 
 	    lenofVertex = GetVertexWithDataLength (
 		oc->vertexAttributes, lenofColor);
 
-	    ptr = (char *) (oc + 1);
+	    pBuf += SIZEOF (pexSetOfFillAreaSets);
 
 	    if (oc->FAS_Attributes)
-		ptr += (NUMBYTES (lenofFacet) * oc->numFAS);
+		pBuf += (NUMBYTES (lenofFacet) * oc->numFAS);
 
-	    ptr += (NUMBYTES (lenofVertex) * oc->numVertices);
+	    pBuf += (NUMBYTES (lenofVertex) * oc->numVertices);
 
 	    if (oc->edgeAttributes)
-		ptr += PADDED_BYTES (oc->numEdges * sizeof (CARD8));
+		pBuf += PADDED_BYTES (oc->numEdges * SIZEOF (CARD8));
 	
 	    for (i = 0; i < (int) oc->numFAS; i++)
 	    {
-		count = *((CARD16 *) ptr);
-		ptr += sizeof (CARD16);
+		EXTRACT_CARD16 (pBuf, count);
 
-		for (j = 0; j < count; j++)
+		for (j = 0; j < (int) count; j++)
 		{
-		    scount = *((CARD16 *) ptr);
-		    ptr += (sizeof (CARD16) + (scount * sizeof (CARD16)));
+		    EXTRACT_CARD16 (pBuf, scount);
+		    pBuf += (scount * SIZEOF (CARD16));
 		}
 	    }
 	
-	    cbytes = sizeof (CARD16) *
+	    cbytes = SIZEOF (CARD16) *
 		(oc->numFAS + oc->numContours + oc->numEdges);
 
-	    ptr += PAD (cbytes);
+	    pBuf += PAD (cbytes);
 	    break;
 	}
 
 	case PEXOCNURBSurface:
 
 	{
-	    pexNurbSurface	*oc = (pexNurbSurface *) ptr;
+	    pexNURBSurface	*oc;
 	    int			sizeofVertexList;
 	    int			sizeofUKnotList;
 	    int			sizeofVKnotList;
 	    pexTrimCurve	*trim;
-	    int			count, i, j;
+	    int			i, j;
+	    CARD32		count;
+
+	    GET_STRUCT_PTR (pexNURBSurface, pBuf, oc);
 
 	    sizeofVertexList = oc->mPts * oc->nPts *
 		((oc->type == PEXRational) ?
-		sizeof (pexCoord4D) : sizeof (pexCoord3D));
+		SIZEOF (pexCoord4D) : SIZEOF (pexCoord3D));
 	    sizeofUKnotList = NUMBYTES (oc->uOrder + oc->mPts);
 	    sizeofVKnotList = NUMBYTES (oc->vOrder + oc->nPts);
 
-	    ptr += (sizeof (pexNurbSurface) +
+	    pBuf += (SIZEOF (pexNURBSurface) +
 		sizeofUKnotList + sizeofVKnotList + sizeofVertexList);
 
 	    for (i = 0; i < oc->numLists; i++)
 	    {
-		count = *((CARD32 *) ptr);
-		ptr += sizeof (CARD32);
+		EXTRACT_CARD32 (pBuf, count);
 
 		for (j = 0; j < count; j++)
 		{
-		    trim = (pexTrimCurve *) ptr;
-		    ptr += (sizeof (pexTrimCurve) +
+		    GET_STRUCT_PTR (pexTrimCurve, pBuf, trim);
+
+		    pBuf += (SIZEOF (pexTrimCurve) +
 		        NUMBYTES (trim->order + trim->numCoord) +
 		        trim->numCoord * ((trim->type == PEXRational) ?
-		        sizeof (pexCoord3D) : sizeof (pexCoord2D)));
+		        SIZEOF (pexCoord3D) : SIZEOF (pexCoord2D)));
 		}
 	    }
 	    break;
@@ -1707,31 +1631,37 @@ INPUT char		*encoded_ocs;
 	case PEXOCCellArray:
 
 	{
-	    pexCellArray	*oc = (pexCellArray *) ptr;
+	    pexCellArray	*oc;
 	    int			size;
 
-	    size = oc->dx * oc->dy * sizeof (pexTableIndex);
-	    ptr += (sizeof (pexCellArray) + PADDED_BYTES (size));
+	    GET_STRUCT_PTR (pexCellArray, pBuf, oc);
+
+	    size = oc->dx * oc->dy * SIZEOF (pexTableIndex);
+	    pBuf += (SIZEOF (pexCellArray) + PADDED_BYTES (size));
 	    break;
 	}
 
 	case PEXOCCellArray2D:
 
 	{
-	    pexCellArray2D	*oc = (pexCellArray2D *) ptr;
+	    pexCellArray2D	*oc;
 	    int			size;
 
-	    size = oc->dx * oc->dy * sizeof (pexTableIndex);
-	    ptr += (sizeof (pexCellArray2D) + PADDED_BYTES (size));
+	    GET_STRUCT_PTR (pexCellArray2D, pBuf, oc);
+
+	    size = oc->dx * oc->dy * SIZEOF (pexTableIndex);
+	    pBuf += (SIZEOF (pexCellArray2D) + PADDED_BYTES (size));
 	    break;
 	}
 
 	case PEXOCExtendedCellArray:
 
 	{
-	    pexExtCellArray	*oc = (pexExtCellArray *) ptr;
+	    pexExtendedCellArray	*oc;
 
-	    ptr += (sizeof (pexExtCellArray) + 
+	    GET_STRUCT_PTR (pexExtendedCellArray, pBuf, oc);
+
+	    pBuf += (SIZEOF (pexExtendedCellArray) + 
 		oc->dx * oc->dy * NUMBYTES (GetColorLength (oc->colorType)));
 	    break;
 	}
@@ -1739,9 +1669,11 @@ INPUT char		*encoded_ocs;
 	case PEXOCGDP:
 
 	{
-	    pexGdp	*oc = (pexGdp *) ptr;
+	    pexGDP	*oc;
 
-	    ptr += (sizeof (pexGdp) + oc->numPoints * sizeof (pexCoord3D) +
+	    GET_STRUCT_PTR (pexGDP, pBuf, oc);
+
+	    pBuf += (SIZEOF (pexGDP) + oc->numPoints * SIZEOF (pexCoord3D) +
 	        PADDED_BYTES (oc->numBytes));
 	    break;
 	}
@@ -1749,23 +1681,25 @@ INPUT char		*encoded_ocs;
 	case PEXOCGDP2D:
 
 	{
-	    pexGdp2D	*oc = (pexGdp2D *) ptr;
+	    pexGDP2D	*oc;
 
-	    ptr += (sizeof (pexGdp2D) + oc->numPoints * sizeof (pexCoord2D) +
+	    GET_STRUCT_PTR (pexGDP2D, pBuf, oc);
+
+	    pBuf += (SIZEOF (pexGDP2D) + oc->numPoints * SIZEOF (pexCoord2D) +
 	        PADDED_BYTES (oc->numBytes));
 	    break;
 	}
 
 	case PEXOCNoop:
 
-	    ptr += sizeof (pexNoop);
+	    pBuf += SIZEOF (pexNoop);
 	    break;
 
 	default:
 	    break;
 	}
 
-	totalSize += (ptr - (char *) elemInfo);
+	totalSize += (pBuf - pBufStart);
 	oc_count++;
     }
 
@@ -1778,4 +1712,1231 @@ INPUT char		*encoded_ocs;
 #endif
 
     return (oc_count);
+}
+
+
+/*
+ *       INTERNAL FUNCTIONS
+ */
+
+void
+_PEXCopyPaddedBytesToOC (display, numBytes, data) 
+
+INPUT Display		*display;
+INPUT int		numBytes;
+INPUT char		*data;
+
+{
+    PEXDisplayInfo 	*pexDisplayInfo;
+    int			paddedBytes = PADDED_BYTES (numBytes);
+
+
+    if (paddedBytes <= BytesLeftInXBuffer (display))
+    {
+	/*
+	 * There is room in the X buffer to do the copy.
+	 */
+
+	COPY_AREA (data, display->bufptr, numBytes);
+	display->bufptr += paddedBytes;
+    }
+    else
+    {
+	/*
+	 * Copying this OC will overflow the transport buffer.  Using
+	 * _XSend will take care of splitting the buffer into chunks
+	 * small enough to fit in the transport buffer.
+	 */
+	
+	_XSend (display, data, numBytes);
+
+
+	/*
+	 * Make sure that the next oc starts a new request.
+	 */
+	
+	PEXGetDisplayInfo (display, pexDisplayInfo);
+	pexDisplayInfo->lastReqNum = -1;
+    }
+}
+
+
+void
+_PEXSendBytesToOC (display, numBytes, data) 
+
+INPUT Display		*display;
+INPUT int		numBytes;
+INPUT char		*data;
+
+{
+    PEXDisplayInfo 	*pexDisplayInfo;
+    int			mod4bytes;
+
+
+    /*
+     * _XSend will take care of splitting the buffer into chunks
+     * small enough to fit in the transport buffer.  _XSend will
+     * only copy a multiple of 4 bytes, so we must do some extra
+     * work if numBytes % 4 != 0.
+     */
+	
+    if (mod4bytes = numBytes % 4)
+    {
+	if (mod4bytes > BytesLeftInXBuffer (display))
+	    _XFlush (display);
+
+	COPY_SMALL_AREA (data, display->bufptr, mod4bytes);
+	display->bufptr += mod4bytes;
+
+	data += mod4bytes;
+	numBytes -= mod4bytes;
+    }
+
+    _XSend (display, data, numBytes);
+
+
+    /*
+     * Make sure that the next oc starts a new request.
+     */
+	
+    PEXGetDisplayInfo (display, pexDisplayInfo);
+    pexDisplayInfo->lastReqNum = -1;
+}
+
+
+void _PEXOCFacet (display, colorType, facetAttr, facetData, fpFormat)
+
+INPUT Display		*display;
+INPUT int		colorType;
+INPUT unsigned int	facetAttr;
+INPUT PEXFacetData	*facetData;
+INPUT int		fpFormat;
+
+{
+    int 	lenofFacet;
+    char 	*ocAddr;
+    PEXVector 	*normal;
+
+    if (!facetData)
+	return;
+
+    lenofFacet = GetFacetDataLength (facetAttr, GetColorLength (colorType));
+    ocAddr = PEXGetOCAddr (display, NUMBYTES (lenofFacet));
+
+    if (!(facetAttr & PEXGAColor))
+    {
+        normal = &(facetData->normal);
+    }
+    else
+    {
+        switch (colorType)
+        {
+        case PEXColorTypeIndexed:
+
+            STORE_CARD16 (facetData->index.index, ocAddr);
+	    ocAddr += 2;
+    	    normal = &(facetData->index_normal.normal);
+	    break;
+
+        case PEXColorTypeRGB:
+        case PEXColorTypeCIE:
+        case PEXColorTypeHSV:
+        case PEXColorTypeHLS:
+
+	    FP_CONVERT_HTON_BUFF (facetData->rgb.red, ocAddr, fpFormat);
+	    ocAddr += SIZEOF (float);
+	    FP_CONVERT_HTON_BUFF (facetData->rgb.green, ocAddr, fpFormat);
+	    ocAddr += SIZEOF (float);
+	    FP_CONVERT_HTON_BUFF (facetData->rgb.blue, ocAddr, fpFormat);
+	    ocAddr += SIZEOF (float);
+    	    normal = &(facetData->rgb_normal.normal);
+            break;
+
+        case PEXColorTypeRGB8:
+
+            COPY_SMALL_AREA ((char *) &(facetData->rgb8), ocAddr, 4);
+            ocAddr += 4;
+    	    normal = &(facetData->rgb8_normal.normal);
+            break;
+
+        case PEXColorTypeRGB16:
+
+            STORE_CARD16 (facetData->rgb16.red, ocAddr);
+            STORE_CARD16 (facetData->rgb16.green, ocAddr);
+            STORE_CARD16 (facetData->rgb16.blue, ocAddr);
+            ocAddr += 2;
+    	    normal = &(facetData->rgb16_normal.normal);
+            break;
+        }
+    }
+
+    if (facetAttr & PEXGANormal)
+    {
+	FP_CONVERT_HTON_BUFF (normal->x, ocAddr, fpFormat);
+	ocAddr += SIZEOF (float);
+	FP_CONVERT_HTON_BUFF (normal->y, ocAddr, fpFormat);
+	ocAddr += SIZEOF (float);
+	FP_CONVERT_HTON_BUFF (normal->z, ocAddr, fpFormat);
+    }
+}
+
+
+void _PEXOCListOfFacet (display, count, colorType,
+    facetAttr, facetData, fpFormat)
+
+INPUT Display			*display;
+INPUT int			count;
+INPUT int			colorType;
+INPUT unsigned int		facetAttr;
+INPUT PEXArrayOfFacetData	facetData;
+INPUT int			fpFormat;
+
+{
+    int 		lenofFacet;
+    int 		maxWords;
+    int 		wordsLeft;
+    int 		copyWords, i;
+    char		*ocAddr;
+    char		*data;
+    PEXVector		*normal;
+    
+    if (!(data = (char *) facetData.index))
+	return;
+
+    lenofFacet = GetFacetDataLength (facetAttr, GetColorLength (colorType));
+    
+    maxWords = NUMWORDS (PEXGetOCAddrMaxSize (display));
+    wordsLeft = count * lenofFacet;
+    copyWords = (wordsLeft < maxWords) ?
+	wordsLeft : (maxWords - maxWords % lenofFacet);
+
+    while (copyWords > 0)
+    {
+	ocAddr = PEXGetOCAddr (display, NUMBYTES (copyWords));
+	for (i = 0; i < (copyWords / lenofFacet); i++)
+	{
+	    if (facetAttr & PEXGAColor)
+	    {
+		switch (colorType)
+		{
+		case PEXColorTypeIndexed:
+		    {
+		    PEXColorIndexed *col = (PEXColorIndexed *) data;
+		    data += sizeof (PEXColorIndexed);
+
+		    STORE_CARD16 (col->index, ocAddr);
+		    ocAddr += 2;
+		    break;
+		    }
+
+		case PEXColorTypeRGB:
+		case PEXColorTypeCIE:
+		case PEXColorTypeHSV:
+		case PEXColorTypeHLS:
+		    {
+		    PEXColorRGB *col = (PEXColorRGB *) data;
+		    data += sizeof (PEXColorRGB);
+
+		    FP_CONVERT_HTON_BUFF (col->red, ocAddr, fpFormat);
+		    ocAddr += SIZEOF (float);
+		    FP_CONVERT_HTON_BUFF (col->green, ocAddr, fpFormat);
+		    ocAddr += SIZEOF (float);
+		    FP_CONVERT_HTON_BUFF (col->blue, ocAddr, fpFormat);
+		    ocAddr += SIZEOF (float);
+		    break;
+		    }
+
+		case PEXColorTypeRGB8:
+
+		    COPY_SMALL_AREA (data, ocAddr, 4);
+		    ocAddr += 4;
+		    data += sizeof (PEXColorRGB8);
+		    break;
+
+		case PEXColorTypeRGB16:
+		    {
+		    PEXColorRGB16 *col = (PEXColorRGB16 *) data;
+		    data += sizeof (PEXColorRGB16);
+
+		    STORE_CARD16 (col->red, ocAddr);
+		    STORE_CARD16 (col->green, ocAddr);
+		    STORE_CARD16 (col->blue, ocAddr);
+		    ocAddr += 2;
+		    break;
+		    }
+		}
+	    }
+
+	    if (facetAttr & PEXGANormal)
+	    {
+		normal = (PEXVector *) data;
+		data += sizeof (PEXVector);
+
+		FP_CONVERT_HTON_BUFF (normal->x, ocAddr, fpFormat);
+		ocAddr += SIZEOF (float);
+		FP_CONVERT_HTON_BUFF (normal->y, ocAddr, fpFormat);
+		ocAddr += SIZEOF (float);
+		FP_CONVERT_HTON_BUFF (normal->z, ocAddr, fpFormat);
+		ocAddr += SIZEOF (float);
+	    }
+	}
+
+	wordsLeft -= copyWords;
+	copyWords = (wordsLeft < maxWords) ?
+	    wordsLeft : (maxWords - maxWords % lenofFacet);
+    }	
+}
+
+
+void _PEXOCListOfVertex (display, count, colorType,
+    vertAttr, vertData, fpFormat)
+
+INPUT Display			*display;
+INPUT int			count;
+INPUT int			colorType;
+INPUT unsigned int		vertAttr;
+INPUT PEXArrayOfVertex		vertData;
+INPUT int			fpFormat;
+
+{
+    int 		lenofVert;
+    int 		maxWords;
+    int 		wordsLeft;
+    int 		copyWords, i;
+    char		*ocAddr;
+    char		*data;
+    PEXVector		*normal;
+    unsigned int	*edge;
+    
+    if (!(data = (char *) vertData.index))
+	return;
+
+    lenofVert = GetVertexWithDataLength (vertAttr, GetColorLength (colorType));
+    
+    maxWords = NUMWORDS (PEXGetOCAddrMaxSize (display));
+    wordsLeft = count * lenofVert;
+    copyWords = (wordsLeft < maxWords) ?
+	wordsLeft : (maxWords - maxWords % lenofVert);
+
+    while (copyWords > 0)
+    {
+	ocAddr = PEXGetOCAddr (display, NUMBYTES (copyWords));
+	for (i = 0; i < (copyWords / lenofVert); i++)
+	{
+	    PEXCoord *coord = (PEXCoord *) data;
+	    data += sizeof (PEXCoord);
+
+	    FP_CONVERT_HTON_BUFF (coord->x, ocAddr, fpFormat);
+	    ocAddr += SIZEOF (float);
+	    FP_CONVERT_HTON_BUFF (coord->y, ocAddr, fpFormat);
+	    ocAddr += SIZEOF (float);
+	    FP_CONVERT_HTON_BUFF (coord->z, ocAddr, fpFormat);
+	    ocAddr += SIZEOF (float);
+
+	    if (vertAttr & PEXGAColor)
+	    {
+		switch (colorType)
+		{
+		case PEXColorTypeIndexed:
+		    {
+		    PEXColorIndexed *col = (PEXColorIndexed *) data;
+		    data += sizeof (PEXColorIndexed);
+
+		    STORE_CARD16 (col->index, ocAddr);
+		    ocAddr += 2;
+		    break;
+		    }
+
+		case PEXColorTypeRGB:
+		case PEXColorTypeCIE:
+		case PEXColorTypeHSV:
+		case PEXColorTypeHLS:
+		    {
+		    PEXColorRGB *col = (PEXColorRGB *) data;
+		    data += sizeof (PEXColorRGB);
+
+		    FP_CONVERT_HTON_BUFF (col->red, ocAddr, fpFormat);
+		    ocAddr += SIZEOF (float);
+		    FP_CONVERT_HTON_BUFF (col->green, ocAddr, fpFormat);
+		    ocAddr += SIZEOF (float);
+		    FP_CONVERT_HTON_BUFF (col->blue, ocAddr, fpFormat);
+		    ocAddr += SIZEOF (float);
+		    break;
+		    }
+
+		case PEXColorTypeRGB8:
+
+		    COPY_SMALL_AREA (data, ocAddr, 4);
+		    ocAddr += 4;
+		    data += sizeof (PEXColorRGB8);
+		    break;
+
+		case PEXColorTypeRGB16:
+		    {
+		    PEXColorRGB16 *col = (PEXColorRGB16 *) data;
+		    data += sizeof (PEXColorRGB16);
+
+		    STORE_CARD16 (col->red, ocAddr);
+		    STORE_CARD16 (col->green, ocAddr);
+		    STORE_CARD16 (col->blue, ocAddr);
+		    ocAddr += 2;
+		    break;
+		    }
+		}
+	    }
+
+	    if (vertAttr & PEXGANormal)
+	    {
+		normal = (PEXVector *) data;
+		data += sizeof (PEXVector);
+
+		FP_CONVERT_HTON_BUFF (normal->x, ocAddr, fpFormat);
+		ocAddr += SIZEOF (float);
+		FP_CONVERT_HTON_BUFF (normal->y, ocAddr, fpFormat);
+		ocAddr += SIZEOF (float);
+		FP_CONVERT_HTON_BUFF (normal->z, ocAddr, fpFormat);
+		ocAddr += SIZEOF (float);
+	    }
+
+	    if (vertAttr & PEXGAEdges)
+	    {
+		edge = (unsigned int *) data;
+		data += sizeof (unsigned int);
+		STORE_CARD32 (*edge, ocAddr);
+	    }
+	}
+
+	wordsLeft -= copyWords;
+	copyWords = (wordsLeft < maxWords) ?
+	    wordsLeft : (maxWords - maxWords % lenofVert);
+    }	
+}
+
+
+void _PEXOCListOfColor (display, count, colorType, colors, fpFormat)
+
+INPUT Display			*display;
+INPUT int			count;
+INPUT int			colorType;
+INPUT PEXArrayOfColor		colors;
+INPUT int			fpFormat;
+
+{
+    int 		lenofColor;
+    int 		maxWords;
+    int 		wordsLeft;
+    int 		copyWords, i;
+    char		*ocAddr;
+    char		*data;
+    
+    if (!(data = (char *) colors.indexed))
+	return;
+
+    lenofColor = GetColorLength (colorType);
+
+    maxWords = NUMWORDS (PEXGetOCAddrMaxSize (display));
+    wordsLeft = count * lenofColor;
+    copyWords = (wordsLeft < maxWords) ?
+        wordsLeft : (maxWords - maxWords % lenofColor);
+
+    while (copyWords > 0)
+    {
+        ocAddr = PEXGetOCAddr (display, NUMBYTES (copyWords));
+        for (i = 0; i < (copyWords / lenofColor); i++)
+        {
+	    switch (colorType)
+	    {
+	    case PEXColorTypeIndexed:
+	        {
+		PEXColorIndexed *col = (PEXColorIndexed *) data;
+		data += sizeof (PEXColorIndexed);
+
+		STORE_CARD16 (col->index, ocAddr);
+		ocAddr += 2;
+		break;
+	        }
+
+	    case PEXColorTypeRGB:
+	    case PEXColorTypeCIE:
+	    case PEXColorTypeHSV:
+	    case PEXColorTypeHLS:
+    	        {
+		PEXColorRGB *col = (PEXColorRGB *) data;
+		data += sizeof (PEXColorRGB);
+
+		FP_CONVERT_HTON_BUFF (col->red, ocAddr, fpFormat);
+		ocAddr += SIZEOF (float);
+		FP_CONVERT_HTON_BUFF (col->green, ocAddr, fpFormat);
+		ocAddr += SIZEOF (float);
+		FP_CONVERT_HTON_BUFF (col->blue, ocAddr, fpFormat);
+		ocAddr += SIZEOF (float);
+		break;
+    	        }
+
+    	    case PEXColorTypeRGB8:
+
+    	        COPY_SMALL_AREA (data, ocAddr, 4);
+    	        ocAddr += 4;
+    	        data += sizeof (PEXColorRGB8);
+    	        break;
+
+    	    case PEXColorTypeRGB16:
+	        {
+		PEXColorRGB16 *col = (PEXColorRGB16 *) data;
+		data += sizeof (PEXColorRGB16);
+
+		STORE_CARD16 (col->red, ocAddr);
+		STORE_CARD16 (col->green, ocAddr);
+		STORE_CARD16 (col->blue, ocAddr);
+		ocAddr += 2;
+		break;
+    	        }
+    	    }
+	}
+
+	wordsLeft -= copyWords;
+	copyWords = (wordsLeft < maxWords) ?
+	    wordsLeft : (maxWords - maxWords % lenofColor);
+    }	
+}
+
+
+void _PEXStoreFacet (colorType, facetAttr, facetData, bufPtr, fpFormat)
+
+INPUT int		colorType;
+INPUT unsigned int	facetAttr;
+INPUT PEXFacetData	*facetData;
+INPUT char		**bufPtr;
+INPUT int		fpFormat;
+
+{
+    PEXVector 	*normal;
+    char	*pBuf = *bufPtr;
+
+    if (!facetData)
+	return;
+
+    if (!(facetAttr & PEXGAColor))
+    {
+        normal = &(facetData->normal);
+    }
+    else
+    {
+        switch (colorType)
+        {
+        case PEXColorTypeIndexed:
+
+            STORE_CARD16 (facetData->index.index, pBuf);
+	    pBuf += 2;
+    	    normal = &(facetData->index_normal.normal);
+	    break;
+
+        case PEXColorTypeRGB:
+        case PEXColorTypeCIE:
+        case PEXColorTypeHSV:
+        case PEXColorTypeHLS:
+
+	    FP_CONVERT_HTON_BUFF (facetData->rgb.red, pBuf, fpFormat);
+	    pBuf += SIZEOF (float);
+	    FP_CONVERT_HTON_BUFF (facetData->rgb.green, pBuf, fpFormat);
+	    pBuf += SIZEOF (float);
+	    FP_CONVERT_HTON_BUFF (facetData->rgb.blue, pBuf, fpFormat);
+	    pBuf += SIZEOF (float);
+    	    normal = &(facetData->rgb_normal.normal);
+            break;
+
+        case PEXColorTypeRGB8:
+
+            COPY_SMALL_AREA ((char *) &(facetData->rgb8), pBuf, 4);
+            pBuf += 4;
+    	    normal = &(facetData->rgb8_normal.normal);
+            break;
+
+        case PEXColorTypeRGB16:
+
+            STORE_CARD16 (facetData->rgb16.red, pBuf);
+            STORE_CARD16 (facetData->rgb16.green, pBuf);
+            STORE_CARD16 (facetData->rgb16.blue, pBuf);
+            pBuf += 2;
+    	    normal = &(facetData->rgb16_normal.normal);
+            break;
+        }
+    }
+
+    if (facetAttr & PEXGANormal)
+    {
+	FP_CONVERT_HTON_BUFF (normal->x, pBuf, fpFormat);
+	pBuf += SIZEOF (float);
+	FP_CONVERT_HTON_BUFF (normal->y, pBuf, fpFormat);
+	pBuf += SIZEOF (float);
+	FP_CONVERT_HTON_BUFF (normal->z, pBuf, fpFormat);
+	pBuf += SIZEOF (float);
+    }
+
+    *bufPtr = pBuf;
+}
+
+
+void _PEXStoreListOfFacet (count, colorType,
+    facetAttr, facetData, bufPtr, fpFormat)
+
+INPUT int			count;
+INPUT int			colorType;
+INPUT unsigned int		facetAttr;
+INPUT PEXArrayOfFacetData	facetData;
+INPUT char			**bufPtr;
+INPUT int			fpFormat;
+
+{
+    int 	i;
+    char	*data;
+    PEXVector	*normal;
+    char	*pBuf = *bufPtr;
+    
+    if (!(data = (char *) facetData.index))
+	return;
+
+    for (i = 0; i < count; i++)
+    {
+	if (facetAttr & PEXGAColor)
+	{
+	    switch (colorType)
+	    {
+	    case PEXColorTypeIndexed:
+	    {
+		PEXColorIndexed *col = (PEXColorIndexed *) data;
+		data += sizeof (PEXColorIndexed);
+
+		STORE_CARD16 (col->index, pBuf);
+		pBuf += 2;
+		break;
+	    }
+
+	    case PEXColorTypeRGB:
+	    case PEXColorTypeCIE:
+	    case PEXColorTypeHSV:
+	    case PEXColorTypeHLS:
+	    {
+		PEXColorRGB *col = (PEXColorRGB *) data;
+		data += sizeof (PEXColorRGB);
+
+		FP_CONVERT_HTON_BUFF (col->red, pBuf, fpFormat);
+		pBuf += SIZEOF (float);
+		FP_CONVERT_HTON_BUFF (col->green, pBuf, fpFormat);
+		pBuf += SIZEOF (float);
+		FP_CONVERT_HTON_BUFF (col->blue, pBuf, fpFormat);
+		pBuf += SIZEOF (float);
+		break;
+	    }
+
+	    case PEXColorTypeRGB8:
+
+		COPY_SMALL_AREA (data, pBuf, 4);
+	        pBuf += 4;
+		data += sizeof (PEXColorRGB8);
+		break;
+
+	    case PEXColorTypeRGB16:
+	    {
+		PEXColorRGB16 *col = (PEXColorRGB16 *) data;
+		data += sizeof (PEXColorRGB16);
+
+		STORE_CARD16 (col->red, pBuf);
+		STORE_CARD16 (col->green, pBuf);
+		STORE_CARD16 (col->blue, pBuf);
+		pBuf += 2;
+		break;
+	    }
+	    }
+	}
+
+	if (facetAttr & PEXGANormal)
+	{
+	    normal = (PEXVector *) data;
+	    data += sizeof (PEXVector);
+
+	    FP_CONVERT_HTON_BUFF (normal->x, pBuf, fpFormat);
+	    pBuf += SIZEOF (float);
+	    FP_CONVERT_HTON_BUFF (normal->y, pBuf, fpFormat);
+	    pBuf += SIZEOF (float);
+	    FP_CONVERT_HTON_BUFF (normal->z, pBuf, fpFormat);
+	    pBuf += SIZEOF (float);
+	}
+    }
+
+    *bufPtr = pBuf;
+}
+
+
+void _PEXStoreListOfVertex (count, colorType,
+    vertAttr, vertData, bufPtr, fpFormat)
+
+INPUT int			count;
+INPUT int			colorType;
+INPUT unsigned int		vertAttr;
+INPUT PEXArrayOfVertex		vertData;
+INPUT char			**bufPtr;
+INPUT int			fpFormat;
+
+{
+    int 		i;
+    char		*data;
+    PEXVector		*normal;
+    unsigned int	*edge;
+    char		*pBuf = *bufPtr;
+
+    if (!(data = (char *) vertData.index))
+	return;
+
+    for (i = 0; i < count; i++)
+    {
+	PEXCoord *coord = (PEXCoord *) data;
+	data += sizeof (PEXCoord);
+
+	FP_CONVERT_HTON_BUFF (coord->x, pBuf, fpFormat);
+	pBuf += SIZEOF (float);
+	FP_CONVERT_HTON_BUFF (coord->y, pBuf, fpFormat);
+	pBuf += SIZEOF (float);
+	FP_CONVERT_HTON_BUFF (coord->z, pBuf, fpFormat);
+	pBuf += SIZEOF (float);
+
+	if (vertAttr & PEXGAColor)
+	{
+	    switch (colorType)
+	    {
+	    case PEXColorTypeIndexed:
+	    {
+		PEXColorIndexed *col = (PEXColorIndexed *) data;
+		data += sizeof (PEXColorIndexed);
+
+		STORE_CARD16 (col->index, pBuf);
+		pBuf += 2;
+		break;
+	    }
+
+	    case PEXColorTypeRGB:
+	    case PEXColorTypeCIE:
+	    case PEXColorTypeHSV:
+	    case PEXColorTypeHLS:
+	    {
+		PEXColorRGB *col = (PEXColorRGB *) data;
+		data += sizeof (PEXColorRGB);
+
+		FP_CONVERT_HTON_BUFF (col->red, pBuf, fpFormat);
+		pBuf += SIZEOF (float);
+		FP_CONVERT_HTON_BUFF (col->green, pBuf, fpFormat);
+		pBuf += SIZEOF (float);
+		FP_CONVERT_HTON_BUFF (col->blue, pBuf, fpFormat);
+		pBuf += SIZEOF (float);
+		break;
+	    }
+
+	    case PEXColorTypeRGB8:
+
+		COPY_SMALL_AREA (data, pBuf, 4);
+		pBuf += 4;
+	        data += sizeof (PEXColorRGB8);
+		break;
+
+	    case PEXColorTypeRGB16:
+	    {
+		PEXColorRGB16 *col = (PEXColorRGB16 *) data;
+		data += sizeof (PEXColorRGB16);
+
+		STORE_CARD16 (col->red, pBuf);
+		STORE_CARD16 (col->green, pBuf);
+		STORE_CARD16 (col->blue, pBuf);
+		pBuf += 2;
+		break;
+	    }
+	    }
+	}
+
+	if (vertAttr & PEXGANormal)
+	{
+	    normal = (PEXVector *) data;
+	    data += sizeof (PEXVector);
+
+	    FP_CONVERT_HTON_BUFF (normal->x, pBuf, fpFormat);
+	    pBuf += SIZEOF (float);
+	    FP_CONVERT_HTON_BUFF (normal->y, pBuf, fpFormat);
+	    pBuf += SIZEOF (float);
+	    FP_CONVERT_HTON_BUFF (normal->z, pBuf, fpFormat);
+	    pBuf += SIZEOF (float);
+	}
+
+	if (vertAttr & PEXGAEdges)
+	{
+	    edge = (unsigned int *) data;
+	    data += sizeof (unsigned int);
+	    STORE_CARD32 (*edge, pBuf);
+	}
+    }	
+
+    *bufPtr = pBuf;
+}
+
+
+void _PEXStoreListOfColor (count, colorType, colors, bufPtr, fpFormat)
+
+INPUT int			count;
+INPUT int			colorType;
+INPUT PEXArrayOfColor		colors;
+INPUT char			**bufPtr;
+INPUT int			fpFormat;
+
+{
+    int 	i;
+    char	*data;
+    char	*pBuf = *bufPtr;
+    
+    if (!(data = (char *) colors.indexed))
+	return;
+
+    for (i = 0; i < count; i++)
+    {
+	switch (colorType)
+	{
+	case PEXColorTypeIndexed:
+	{
+	    PEXColorIndexed *col = (PEXColorIndexed *) data;
+	    data += sizeof (PEXColorIndexed);
+
+	    STORE_CARD16 (col->index, pBuf);
+	    pBuf += 2;
+	    break;
+	}
+
+        case PEXColorTypeRGB:
+	case PEXColorTypeCIE:
+	case PEXColorTypeHSV:
+	case PEXColorTypeHLS:
+        {
+	    PEXColorRGB *col = (PEXColorRGB *) data;
+	    data += sizeof (PEXColorRGB);
+
+	    FP_CONVERT_HTON_BUFF (col->red, pBuf, fpFormat);
+	    pBuf += SIZEOF (float);
+	    FP_CONVERT_HTON_BUFF (col->green, pBuf, fpFormat);
+	    pBuf += SIZEOF (float);
+	    FP_CONVERT_HTON_BUFF (col->blue, pBuf, fpFormat);
+	    pBuf += SIZEOF (float);
+	    break;
+	}
+
+        case PEXColorTypeRGB8:
+
+    	    COPY_SMALL_AREA (data, pBuf, 4);
+    	    pBuf += 4;
+    	    data += sizeof (PEXColorRGB8);
+    	    break;
+
+         case PEXColorTypeRGB16:
+         {
+	     PEXColorRGB16 *col = (PEXColorRGB16 *) data;
+	     data += sizeof (PEXColorRGB16);
+
+	     STORE_CARD16 (col->red, pBuf);
+	     STORE_CARD16 (col->green, pBuf);
+	     STORE_CARD16 (col->blue, pBuf);
+	     pBuf += 2;
+	     break;
+	 }
+         }
+    }
+
+    *bufPtr = pBuf;
+}
+
+
+void _PEXExtractFacet (bufPtr, colorType, facetAttr, facetData, fpFormat)
+
+INPUT char		**bufPtr;
+INPUT int		colorType;
+INPUT unsigned int	facetAttr;
+INPUT PEXFacetData	*facetData;
+INPUT int		fpFormat;
+
+{
+    PEXVector 	*normal;
+    char	*pBuf = *bufPtr;
+
+    if (!facetData)
+	return;
+
+    if (!(facetAttr & PEXGAColor))
+    {
+        normal = &(facetData->normal);
+    }
+    else
+    {
+        switch (colorType)
+        {
+        case PEXColorTypeIndexed:
+
+            EXTRACT_CARD16 (pBuf, facetData->index.index);
+	    pBuf += 2;
+    	    normal = &(facetData->index_normal.normal);
+	    break;
+
+        case PEXColorTypeRGB:
+        case PEXColorTypeCIE:
+        case PEXColorTypeHSV:
+        case PEXColorTypeHLS:
+
+	    FP_CONVERT_NTOH_BUFF (pBuf, facetData->rgb.red, fpFormat);
+	    pBuf += SIZEOF (float);
+	    FP_CONVERT_NTOH_BUFF (pBuf, facetData->rgb.green, fpFormat);
+	    pBuf += SIZEOF (float);
+	    FP_CONVERT_NTOH_BUFF (pBuf, facetData->rgb.blue, fpFormat);
+	    pBuf += SIZEOF (float);
+    	    normal = &(facetData->rgb_normal.normal);
+            break;
+
+        case PEXColorTypeRGB8:
+
+            COPY_SMALL_AREA (pBuf, (char *) &(facetData->rgb8), 4);
+            pBuf += 4;
+    	    normal = &(facetData->rgb8_normal.normal);
+            break;
+
+        case PEXColorTypeRGB16:
+
+            EXTRACT_CARD16 (pBuf, facetData->rgb16.red);
+            EXTRACT_CARD16 (pBuf, facetData->rgb16.green);
+            EXTRACT_CARD16 (pBuf, facetData->rgb16.blue);
+            pBuf += 2;
+    	    normal = &(facetData->rgb16_normal.normal);
+            break;
+        }
+    }
+
+    if (facetAttr & PEXGANormal)
+    {
+	FP_CONVERT_NTOH_BUFF (pBuf, normal->x, fpFormat);
+	pBuf += SIZEOF (float);
+	FP_CONVERT_NTOH_BUFF (pBuf, normal->y, fpFormat);
+	pBuf += SIZEOF (float);
+	FP_CONVERT_NTOH_BUFF (pBuf, normal->z, fpFormat);
+	pBuf += SIZEOF (float);
+    }
+
+    *bufPtr = pBuf;
+}
+
+
+void _PEXExtractListOfFacet (count, bufPtr, colorType,
+    facetAttr, facetData, fpFormat)
+
+INPUT int			count;
+INPUT char			**bufPtr;
+INPUT int			colorType;
+INPUT unsigned int		facetAttr;
+INPUT PEXArrayOfFacetData	facetData;
+INPUT int			fpFormat;
+
+{
+    int 	i;
+    char	*data;
+    PEXVector	*normal;
+    char	*pBuf = *bufPtr;
+    
+    if (!(data = (char *) facetData.index))
+	return;
+
+    for (i = 0; i < count; i++)
+    {
+	if (facetAttr & PEXGAColor)
+	{
+	    switch (colorType)
+	    {
+	    case PEXColorTypeIndexed:
+	    {
+		PEXColorIndexed *col = (PEXColorIndexed *) data;
+		data += sizeof (PEXColorIndexed);
+
+		EXTRACT_CARD16 (pBuf, col->index);
+		pBuf += 2;
+		break;
+	    }
+
+	    case PEXColorTypeRGB:
+	    case PEXColorTypeCIE:
+	    case PEXColorTypeHSV:
+	    case PEXColorTypeHLS:
+	    {
+		PEXColorRGB *col = (PEXColorRGB *) data;
+		data += sizeof (PEXColorRGB);
+
+		FP_CONVERT_NTOH_BUFF (pBuf, col->red, fpFormat);
+		pBuf += SIZEOF (float);
+		FP_CONVERT_NTOH_BUFF (pBuf, col->green, fpFormat);
+		pBuf += SIZEOF (float);
+		FP_CONVERT_NTOH_BUFF (pBuf, col->blue, fpFormat);
+		pBuf += SIZEOF (float);
+		break;
+	    }
+
+	    case PEXColorTypeRGB8:
+
+		COPY_SMALL_AREA (pBuf, data, 4);
+	        pBuf += 4;
+		data += sizeof (PEXColorRGB8);
+		break;
+
+	    case PEXColorTypeRGB16:
+	    {
+		PEXColorRGB16 *col = (PEXColorRGB16 *) data;
+		data += sizeof (PEXColorRGB16);
+
+		EXTRACT_CARD16 (pBuf, col->red);
+		EXTRACT_CARD16 (pBuf, col->green);
+		EXTRACT_CARD16 (pBuf, col->blue);
+		pBuf += 2;
+		break;
+	    }
+	    }
+	}
+
+	if (facetAttr & PEXGANormal)
+	{
+	    normal = (PEXVector *) data;
+	    data += sizeof (PEXVector);
+
+	    FP_CONVERT_NTOH_BUFF (pBuf, normal->x, fpFormat);
+	    pBuf += SIZEOF (float);
+	    FP_CONVERT_NTOH_BUFF (pBuf, normal->y, fpFormat);
+	    pBuf += SIZEOF (float);
+	    FP_CONVERT_NTOH_BUFF (pBuf, normal->z, fpFormat);
+	    pBuf += SIZEOF (float);
+	}
+    }
+
+    *bufPtr = pBuf;
+}
+
+
+void _PEXExtractListOfVertex (count, bufPtr, colorType,
+    vertAttr, vertData, fpFormat)
+
+INPUT int			count;
+INPUT char			**bufPtr;
+INPUT int			colorType;
+INPUT unsigned int		vertAttr;
+INPUT PEXArrayOfVertex		vertData;
+INPUT int			fpFormat;
+
+{
+    int 		i;
+    char		*data;
+    PEXVector		*normal;
+    unsigned int	*edge;
+    char		*pBuf = *bufPtr;
+
+    if (!(data = (char *) vertData.index))
+	return;
+
+    for (i = 0; i < count; i++)
+    {
+	PEXCoord *coord = (PEXCoord *) data;
+	data += sizeof (PEXCoord);
+
+	FP_CONVERT_NTOH_BUFF (pBuf, coord->x, fpFormat);
+	pBuf += SIZEOF (float);
+	FP_CONVERT_NTOH_BUFF (pBuf, coord->y, fpFormat);
+	pBuf += SIZEOF (float);
+	FP_CONVERT_NTOH_BUFF (pBuf, coord->z, fpFormat);
+	pBuf += SIZEOF (float);
+
+	if (vertAttr & PEXGAColor)
+	{
+	    switch (colorType)
+	    {
+	    case PEXColorTypeIndexed:
+	    {
+		PEXColorIndexed *col = (PEXColorIndexed *) data;
+		data += sizeof (PEXColorIndexed);
+
+		EXTRACT_CARD16 (pBuf, col->index);
+		pBuf += 2;
+		break;
+	    }
+
+	    case PEXColorTypeRGB:
+	    case PEXColorTypeCIE:
+	    case PEXColorTypeHSV:
+	    case PEXColorTypeHLS:
+	    {
+		PEXColorRGB *col = (PEXColorRGB *) data;
+		data += sizeof (PEXColorRGB);
+
+		FP_CONVERT_NTOH_BUFF (pBuf, col->red, fpFormat);
+		pBuf += SIZEOF (float);
+		FP_CONVERT_NTOH_BUFF (pBuf, col->green, fpFormat);
+		pBuf += SIZEOF (float);
+		FP_CONVERT_NTOH_BUFF (pBuf, col->blue, fpFormat);
+		pBuf += SIZEOF (float);
+		break;
+	    }
+
+	    case PEXColorTypeRGB8:
+
+		COPY_SMALL_AREA (pBuf, data, 4);
+		pBuf += 4;
+	        data += sizeof (PEXColorRGB8);
+		break;
+
+	    case PEXColorTypeRGB16:
+	    {
+		PEXColorRGB16 *col = (PEXColorRGB16 *) data;
+		data += sizeof (PEXColorRGB16);
+
+		EXTRACT_CARD16 (pBuf, col->red);
+		EXTRACT_CARD16 (pBuf, col->green);
+		EXTRACT_CARD16 (pBuf, col->blue);
+		pBuf += 2;
+		break;
+	    }
+	    }
+	}
+
+	if (vertAttr & PEXGANormal)
+	{
+	    normal = (PEXVector *) data;
+	    data += sizeof (PEXVector);
+
+	    FP_CONVERT_NTOH_BUFF (pBuf, normal->x, fpFormat);
+	    pBuf += SIZEOF (float);
+	    FP_CONVERT_NTOH_BUFF (pBuf, normal->y, fpFormat);
+	    pBuf += SIZEOF (float);
+	    FP_CONVERT_NTOH_BUFF (pBuf, normal->z, fpFormat);
+	    pBuf += SIZEOF (float);
+	}
+
+	if (vertAttr & PEXGAEdges)
+	{
+	    edge = (unsigned int *) data;
+	    data += sizeof (unsigned int);
+	    EXTRACT_CARD32 (pBuf, *edge);
+	}
+    }	
+
+    *bufPtr = pBuf;
+}
+
+
+void _PEXExtractListOfColor (count, bufPtr, colorType, colors, fpFormat)
+
+INPUT int			count;
+INPUT char			**bufPtr;
+INPUT int			colorType;
+INPUT PEXArrayOfColor		colors;
+INPUT int			fpFormat;
+
+{
+    int 	i;
+    char	*data;
+    char	*pBuf = *bufPtr;
+    
+    if (!(data = (char *) colors.indexed))
+	return;
+
+    for (i = 0; i < count; i++)
+    {
+	switch (colorType)
+	{
+	case PEXColorTypeIndexed:
+	{
+	    PEXColorIndexed *col = (PEXColorIndexed *) data;
+	    data += sizeof (PEXColorIndexed);
+
+	    EXTRACT_CARD16 (pBuf, col->index);
+	    pBuf += 2;
+	    break;
+	}
+
+        case PEXColorTypeRGB:
+	case PEXColorTypeCIE:
+	case PEXColorTypeHSV:
+	case PEXColorTypeHLS:
+        {
+	    PEXColorRGB *col = (PEXColorRGB *) data;
+	    data += sizeof (PEXColorRGB);
+
+	    FP_CONVERT_NTOH_BUFF (pBuf, col->red, fpFormat);
+	    pBuf += SIZEOF (float);
+	    FP_CONVERT_NTOH_BUFF (pBuf, col->green, fpFormat);
+	    pBuf += SIZEOF (float);
+	    FP_CONVERT_NTOH_BUFF (pBuf, col->blue, fpFormat);
+	    pBuf += SIZEOF (float);
+	    break;
+	}
+
+        case PEXColorTypeRGB8:
+
+    	    COPY_SMALL_AREA (pBuf, data, 4);
+    	    pBuf += 4;
+    	    data += sizeof (PEXColorRGB8);
+    	    break;
+
+         case PEXColorTypeRGB16:
+         {
+	     PEXColorRGB16 *col = (PEXColorRGB16 *) data;
+	     data += sizeof (PEXColorRGB16);
+
+	     EXTRACT_CARD16 (pBuf, col->red);
+	     EXTRACT_CARD16 (pBuf, col->green);
+	     EXTRACT_CARD16 (pBuf, col->blue);
+	     pBuf += 2;
+	     break;
+	 }
+         }
+    }
+
+    *bufPtr = pBuf;
+}
+
+
+void _PEXGenOCBadLengthError (display, resource_id, req_type)
+
+INPUT Display		*display;
+INPUT XID		resource_id;
+INPUT PEXOCRequestType	req_type;
+
+{
+    PEXDisplayInfo 	*pexDisplayInfo;
+    pexOCRequestHeader 	*req;
+
+
+    /*
+     * Generate an OC request with a zero request length.
+     */
+
+    LockDisplay (display);
+
+    PEXGetDisplayInfo (display, pexDisplayInfo);
+    PEXGetOCReq (0);
+
+    BEGIN_NEW_OCREQ_HEADER (display->bufptr, req);
+
+    req->extOpcode = pexDisplayInfo->extOpcode;
+    req->pexOpcode =
+	(req_type == PEXOCStore || req_type == PEXOCStoreSingle) ?
+	PEXRCStoreElements : PEXRCRenderOutputCommands;
+    req->reqLength = 0;
+    req->fpFormat = pexDisplayInfo->fpFormat;
+    req->target = resource_id;
+    req->numCommands = 1;
+
+    END_NEW_OCREQ_HEADER (display->bufptr, req);
+
+    /*
+     * Make sure that the next oc starts a new request.
+     */
+
+    pexDisplayInfo->lastReqNum = -1;
+    pexDisplayInfo->lastResID = resource_id;
+    pexDisplayInfo->lastReqType = req_type;
+	
+    UnlockDisplay (display);
 }

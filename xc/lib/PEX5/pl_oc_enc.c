@@ -1,4 +1,4 @@
-/* $XConsortium: pl_oc_enc.c,v 1.5 92/11/02 14:36:45 mor Exp $ */
+/* $XConsortium: pl_oc_enc.c,v 1.9 92/12/07 19:39:54 mor Exp $ */
 
 /******************************************************************************
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -41,7 +41,7 @@ OUTPUT unsigned long	*length_return;
      */
 
     *length_return = PEXGetSizeOCs (float_format, oc_count, oc_data);
-    ocRet = ocDest = (char *) PEXAllocBuf ((unsigned ) *length_return);
+    ocRet = ocDest = (char *) PEXAllocBuf (*length_return);
 
 
     /*
@@ -64,742 +64,1094 @@ OUTPUT unsigned long	*length_return;
 }
 
 
-void _PEXEncodeEnumType (float_format, ocSrc, ocDest)
+void _PEXEncodeEnumType (fpFormat, ocSrc, ocDest)
 
-int		float_format;
+int		fpFormat;
 PEXOCData	*ocSrc;
 char		**ocDest;
 
 {
-    pexEnumTypeIndex enumIndex = ocSrc->data.SetMarkerType.marker_type;
-    
-    PEXEncodeSimpleOC (*ocDest, ocSrc->oc_type,
-	sizeof (pexEnumTypeIndex), &enumIndex);
+    pexMarkerType *oc;
+
+    BEGIN_SIMPLE_ENCODE (MarkerType, ocSrc->oc_type, *ocDest, oc);
+
+    oc->markerType = ocSrc->data.SetMarkerType.marker_type;
+
+    END_SIMPLE_ENCODE (MarkerType, *ocDest, oc);
 }
 
 
-void _PEXEncodeTableIndex (float_format, ocSrc, ocDest)
+void _PEXEncodeTableIndex (fpFormat, ocSrc, ocDest)
 
-int		float_format;
+int		fpFormat;
 PEXOCData	*ocSrc;
 char		**ocDest;
 
 {
-    pexTableIndex tableIndex = ocSrc->data.SetMarkerColorIndex.index;
-    
-    PEXEncodeSimpleOC (*ocDest, ocSrc->oc_type,
-	sizeof (pexTableIndex), &tableIndex);
+    pexMarkerColorIndex *oc;
+
+    BEGIN_SIMPLE_ENCODE (MarkerColorIndex, ocSrc->oc_type, *ocDest, oc);
+
+    oc->index = ocSrc->data.SetMarkerColorIndex.index;
+
+    END_SIMPLE_ENCODE (MarkerColorIndex, *ocDest, oc);
 }
 
 
-void _PEXEncodeColor (float_format, ocSrc, ocDest)
+void _PEXEncodeColor (fpFormat, ocSrc, ocDest)
 
-int		float_format;
+int		fpFormat;
 PEXOCData	*ocSrc;
 char		**ocDest;
 
 {
-    PEXColorSpecifier	pcs;
-    
-    InitializeColorSpecifier (pcs, &(ocSrc->data.SetMarkerColor.color),
-	ocSrc->data.SetMarkerColor.color_type);
-    
-    PEXEncodeSimpleOC (*ocDest, ocSrc->oc_type,
-	sizeof (PEXColorSpecifier) -
-	AdjustSizeFromType (ocSrc->data.SetMarkerColor.color_type), &pcs);
+    pexMarkerColor	*oc;
+    int			lenofColor;
+    int			fpConvert = (fpFormat != NATIVE_FP_FORMAT);
+
+    lenofColor = GetColorLength (ocSrc->data.SetMarkerColor.color_type);
+
+    BEGIN_ENCODE_OCHEADER (MarkerColor, ocSrc->oc_type,
+	lenofColor, *ocDest, oc);
+
+    oc->colorType = ocSrc->data.SetMarkerColor.color_type;
+
+    END_ENCODE_OCHEADER (MarkerColor, *ocDest, oc);
+
+    STORE_COLOR_VAL (ocSrc->data.SetMarkerColor.color_type,
+	ocSrc->data.SetMarkerColor.color,
+	*ocDest, fpConvert, fpFormat)
 }
 
 
-void _PEXEncodeFloat (float_format, ocSrc, ocDest)
+void _PEXEncodeFloat (fpFormat, ocSrc, ocDest)
 
-int		float_format;
+int		fpFormat;
 PEXOCData	*ocSrc;
 char		**ocDest;
 
 {
-    float f = ocSrc->data.SetMarkerScale.scale;
-    
-    PEXEncodeSimpleOC (*ocDest, ocSrc->oc_type, sizeof (float), &f);
+    pexMarkerScale	*oc;
+    int			fpConvert = (fpFormat != NATIVE_FP_FORMAT);
+
+    BEGIN_SIMPLE_ENCODE (MarkerScale, ocSrc->oc_type, *ocDest, oc);
+
+    if (fpConvert)
+    {
+	FP_CONVERT_HTON (ocSrc->data.SetMarkerScale.scale,
+	    oc->scale, fpFormat);
+    }
+    else
+	oc->scale = ocSrc->data.SetMarkerScale.scale;
+
+    END_SIMPLE_ENCODE (MarkerScale, *ocDest, oc);
 }
 
 
-void _PEXEncodeCARD16 (float_format, ocSrc, ocDest)
+void _PEXEncodeCARD16 (fpFormat, ocSrc, ocDest)
 
-int		float_format;
+int		fpFormat;
 PEXOCData	*ocSrc;
 char		**ocDest;
 
 {
-    CARD16 c16 = ocSrc->data.SetTextPrecision.precision;
-    
-    PEXEncodeSimpleOC (*ocDest, ocSrc->oc_type, sizeof (CARD16), &c16);
+    pexTextPrecision	*oc;
+
+    BEGIN_SIMPLE_ENCODE (TextPrecision, ocSrc->oc_type, *ocDest, oc);
+
+    oc->precision = ocSrc->data.SetTextPrecision.precision;
+
+    END_SIMPLE_ENCODE (TextPrecision, *ocDest, oc);
 }
 
 
-void _PEXEncodeVector2D (float_format, ocSrc, ocDest)
+void _PEXEncodeVector2D (fpFormat, ocSrc, ocDest)
 
-int		float_format;
+int		fpFormat;
 PEXOCData	*ocSrc;
 char		**ocDest;
 
 {
-    pexVector2D vec;
-    
-    vec.x = ocSrc->data.SetCharUpVector.vector.x;
-    vec.y = ocSrc->data.SetCharUpVector.vector.y;
-    
-    PEXEncodeSimpleOC (*ocDest, ocSrc->oc_type, sizeof (pexVector2D), &vec);
+    pexCharUpVector	*oc;
+    int			fpConvert = (fpFormat != NATIVE_FP_FORMAT);
+
+    BEGIN_SIMPLE_ENCODE (CharUpVector, ocSrc->oc_type, *ocDest, oc);
+
+    if (fpConvert)
+    {
+	FP_CONVERT_HTON (ocSrc->data.SetCharUpVector.vector.x,
+	    oc->up_x, fpFormat);
+	FP_CONVERT_HTON (ocSrc->data.SetCharUpVector.vector.y,
+	    oc->up_y, fpFormat);
+    }
+    else
+    {
+	oc->up_x = ocSrc->data.SetCharUpVector.vector.x;
+	oc->up_y = ocSrc->data.SetCharUpVector.vector.y;
+    }
+
+    END_SIMPLE_ENCODE (CharUpVector, *ocDest, oc);
 }
 
 
-void _PEXEncodeTextAlignment (float_format, ocSrc, ocDest)
+void _PEXEncodeTextAlignment (fpFormat, ocSrc, ocDest)
 
-int		float_format;
+int		fpFormat;
 PEXOCData	*ocSrc;
 char		**ocDest;
 
 {
-    pexTextAlignmentData align;
+    pexTextAlignment *oc;
+
+    BEGIN_SIMPLE_ENCODE (TextAlignment, ocSrc->oc_type, *ocDest, oc);
+
+    oc->alignment_horizontal = ocSrc->data.SetTextAlignment.halignment;
+    oc->alignment_vertical = ocSrc->data.SetTextAlignment.valignment;
     
-    align.horizontal = ocSrc->data.SetTextAlignment.halignment;
-    align.vertical = ocSrc->data.SetTextAlignment.valignment;
-    
-    PEXEncodeSimpleOC (*ocDest, ocSrc->oc_type,
-        sizeof (pexTextAlignmentData), &align);
+    END_SIMPLE_ENCODE (TextAlignment, *ocDest, oc);
 }
 
 
-void _PEXEncodeCurveApprox (float_format, ocSrc, ocDest)
+void _PEXEncodeCurveApprox (fpFormat, ocSrc, ocDest)
 
-int		float_format;
+int		fpFormat;
 PEXOCData	*ocSrc;
 char		**ocDest;
 
 {
-    pexCurveApprox approx;
-    
-    approx.approxMethod = ocSrc->data.SetCurveApprox.method;
-    approx.tolerance = ocSrc->data.SetCurveApprox.tolerance;
-    
-    PEXEncodeSimpleOC (*ocDest, PEXOCCurveApprox,
-	sizeof (pexCurveApprox), &approx);
+    pexCurveApprox	*oc;
+    int			fpConvert = (fpFormat != NATIVE_FP_FORMAT);
+
+    BEGIN_SIMPLE_ENCODE (CurveApprox, ocSrc->oc_type, *ocDest, oc);
+
+    oc->approxMethod = ocSrc->data.SetCurveApprox.method;
+
+    if (fpConvert)
+    {
+	FP_CONVERT_HTON (ocSrc->data.SetCurveApprox.tolerance,
+	    oc->tolerance, fpFormat);
+    }	    
+    else
+	oc->tolerance = ocSrc->data.SetCurveApprox.tolerance;
+
+    END_SIMPLE_ENCODE (CurveApprox, *ocDest, oc);
 }
 
 
-void _PEXEncodeReflectionAttr (float_format, ocSrc, ocDest)
+void _PEXEncodeReflectionAttr (fpFormat, ocSrc, ocDest)
 
-int		float_format;
+int		fpFormat;
 PEXOCData	*ocSrc;
 char		**ocDest;
 
 {
-    PEXEncodeSimpleOC (*ocDest, ocSrc->oc_type,
-	sizeof (PEXReflectionAttributes) -
-	AdjustSizeFromType (ocSrc->data.SetReflectionAttributes.attributes.specular_color.type),
-	&(ocSrc->data.SetReflectionAttributes.attributes));
+    pexReflectionAttributes	*oc;
+    PEXReflectionAttributes	*reflectionAttr;
+    int				lenofColor;
+    int				fpConvert = (fpFormat != NATIVE_FP_FORMAT);
+
+    reflectionAttr = &(ocSrc->data.SetReflectionAttributes.attributes);
+    lenofColor = GetColorLength (reflectionAttr->specular_color.type);
+
+    BEGIN_ENCODE_OCHEADER (ReflectionAttributes, ocSrc->oc_type,
+	lenofColor, *ocDest, oc);
+
+    if (fpConvert)
+    {
+	FP_CONVERT_HTON (reflectionAttr->ambient, oc->ambient, fpFormat);
+	FP_CONVERT_HTON (reflectionAttr->diffuse, oc->diffuse, fpFormat);
+	FP_CONVERT_HTON (reflectionAttr->specular, oc->specular, fpFormat);
+	FP_CONVERT_HTON (reflectionAttr->specular_conc,
+	    oc->specularConc, fpFormat);
+	FP_CONVERT_HTON (reflectionAttr->transmission,
+	    oc->transmission, fpFormat);
+    }
+    else
+    {
+	oc->ambient = reflectionAttr->ambient;
+	oc->diffuse = reflectionAttr->diffuse;
+	oc->specular = reflectionAttr->specular;
+	oc->specularConc = reflectionAttr->specular_conc;
+	oc->transmission = reflectionAttr->transmission;
+    }
+
+    oc->specular_colorType = reflectionAttr->specular_color.type;
+
+    END_ENCODE_OCHEADER (ReflectionAttributes, *ocDest, oc);
+
+    STORE_COLOR_VAL (reflectionAttr->specular_color.type,
+	reflectionAttr->specular_color.value, *ocDest, fpConvert, fpFormat);
 }
 
 
-void _PEXEncodeSurfaceApprox (float_format, ocSrc, ocDest)
+void _PEXEncodeSurfaceApprox (fpFormat, ocSrc, ocDest)
 
-int		float_format;
+int		fpFormat;
 PEXOCData	*ocSrc;
 char		**ocDest;
 
 {
-    pexSurfaceApprox approx;
-    
-    approx.approxMethod = ocSrc->data.SetSurfaceApprox.method;
-    approx.uTolerance = ocSrc->data.SetSurfaceApprox.utolerance;
-    approx.vTolerance = ocSrc->data.SetSurfaceApprox.vtolerance;
-    
-    PEXEncodeSimpleOC (*ocDest, PEXOCSurfaceApprox,
-        sizeof (pexSurfaceApprox), &approx);
+    pexSurfaceApprox	*oc;
+    int			fpConvert = (fpFormat != NATIVE_FP_FORMAT);
+
+    BEGIN_SIMPLE_ENCODE (SurfaceApprox, ocSrc->oc_type, *ocDest, oc);
+
+    oc->approxMethod = ocSrc->data.SetSurfaceApprox.method;
+
+    if (fpConvert)
+    {
+	FP_CONVERT_HTON (ocSrc->data.SetSurfaceApprox.utolerance,
+	    oc->uTolerance, fpFormat);
+	FP_CONVERT_HTON (ocSrc->data.SetSurfaceApprox.vtolerance,
+	    oc->vTolerance, fpFormat);
+    }
+    else
+    {
+	oc->uTolerance = ocSrc->data.SetSurfaceApprox.utolerance;
+	oc->vTolerance = ocSrc->data.SetSurfaceApprox.vtolerance;
+    }
+
+    END_SIMPLE_ENCODE (SurfaceApprox, *ocDest, oc);
 }
 
 
-void _PEXEncodeCullMode (float_format, ocSrc, ocDest)
+void _PEXEncodeCullMode (fpFormat, ocSrc, ocDest)
 
-int		float_format;
+int		fpFormat;
 PEXOCData	*ocSrc;
 char		**ocDest;
 
 {
-    pexCullMode mode = ocSrc->data.SetFacetCullingMode.mode;
-    
-    PEXEncodeSimpleOC (*ocDest, PEXOCFacetCullingMode,
-        sizeof (pexCullMode), &mode);
+    pexFacetCullingMode *oc;
+
+    BEGIN_SIMPLE_ENCODE (FacetCullingMode, ocSrc->oc_type, *ocDest, oc);
+
+    oc->cullMode = ocSrc->data.SetFacetCullingMode.mode;
+
+    END_SIMPLE_ENCODE (FacetCullingMode, *ocDest, oc);
 }
 
 
-void _PEXEncodeSwitch (float_format, ocSrc, ocDest)
+void _PEXEncodeSwitch (fpFormat, ocSrc, ocDest)
 
-int		float_format;
+int		fpFormat;
 PEXOCData	*ocSrc;
 char		**ocDest;
 
 {
-    pexSwitch flag = ocSrc->data.SetFacetDistinguishFlag.flag;
-    
-    PEXEncodeSimpleOC (*ocDest, ocSrc->oc_type, sizeof (pexSwitch), &flag);
+    pexFacetDistinguishFlag *oc;
+
+    BEGIN_SIMPLE_ENCODE (FacetDistinguishFlag, ocSrc->oc_type, *ocDest, oc);
+
+    oc->distinguish = ocSrc->data.SetFacetDistinguishFlag.flag;
+
+    END_SIMPLE_ENCODE (FacetDistinguishFlag, *ocDest, oc);
 }
 
 
-void _PEXEncodePatternSize (float_format, ocSrc, ocDest)
+void _PEXEncodePatternSize (fpFormat, ocSrc, ocDest)
 
-int		float_format;
+int		fpFormat;
 PEXOCData	*ocSrc;
 char		**ocDest;
 
 {
-    pexVector2D size;
-    
-    size.x = ocSrc->data.SetPatternSize.width;
-    size.y = ocSrc->data.SetPatternSize.height;
-    
-    PEXEncodeSimpleOC (*ocDest, PEXOCPatternSize, sizeof (pexVector2D), &size);
+    pexPatternSize 	*oc;
+    int			fpConvert = (fpFormat != NATIVE_FP_FORMAT);
+
+    BEGIN_SIMPLE_ENCODE (PatternSize, ocSrc->oc_type, *ocDest, oc);
+
+    if (fpConvert)
+    {
+	FP_CONVERT_HTON (ocSrc->data.SetPatternSize.width,
+	    oc->size_x, fpFormat);
+	FP_CONVERT_HTON (ocSrc->data.SetPatternSize.height,
+	    oc->size_y, fpFormat);
+    }
+    else
+    {
+	oc->size_x = ocSrc->data.SetPatternSize.width;
+	oc->size_y = ocSrc->data.SetPatternSize.height;
+    }
+
+    END_SIMPLE_ENCODE (PatternSize, *ocDest, oc);
 }
 
 
-void _PEXEncodePatternAttr2D (float_format, ocSrc, ocDest)
+void _PEXEncodePatternAttr2D (fpFormat, ocSrc, ocDest)
 
-int		float_format;
+int		fpFormat;
 PEXOCData	*ocSrc;
 char		**ocDest;
 
 {
-    pexCoord2D coord;
-    
-    coord.x = ocSrc->data.SetPatternAttributes2D.ref_point.x;
-    coord.y = ocSrc->data.SetPatternAttributes2D.ref_point.y;
-    
-    PEXEncodeSimpleOC (*ocDest, PEXOCPatternAttributes2D,
-	sizeof (pexCoord2D), &coord);
+    pexPatternAttributes2D 	*oc;
+    int				fpConvert = (fpFormat != NATIVE_FP_FORMAT);
+
+    BEGIN_SIMPLE_ENCODE (PatternAttributes2D, ocSrc->oc_type, *ocDest, oc);
+
+    if (fpConvert)
+    {
+	FP_CONVERT_HTON (ocSrc->data.SetPatternAttributes2D.ref_point.x,
+	    oc->point_x, fpFormat);
+	FP_CONVERT_HTON (ocSrc->data.SetPatternAttributes2D.ref_point.y,
+	    oc->point_y, fpFormat);
+    }
+    else
+    {
+	oc->point_x = ocSrc->data.SetPatternAttributes2D.ref_point.x;
+	oc->point_y = ocSrc->data.SetPatternAttributes2D.ref_point.y;
+    }
+
+    END_SIMPLE_ENCODE (PatternAttributes2D, *ocDest, oc);
 }
 
 
-void _PEXEncodePatternAttr (float_format, ocSrc, ocDest)
+void _PEXEncodePatternAttr (fpFormat, ocSrc, ocDest)
 
-int		float_format;
+int		fpFormat;
 PEXOCData	*ocSrc;
 char		**ocDest;
 
 {
-    pexCoord3D attr[3];
-    
-    attr[0].x = ocSrc->data.SetPatternAttributes.ref_point.x;
-    attr[0].y = ocSrc->data.SetPatternAttributes.ref_point.y;
-    attr[0].z = ocSrc->data.SetPatternAttributes.ref_point.z;
-    attr[1].x = ocSrc->data.SetPatternAttributes.vector1.x;
-    attr[1].y = ocSrc->data.SetPatternAttributes.vector1.y;
-    attr[1].z = ocSrc->data.SetPatternAttributes.vector1.z;
-    attr[2].x = ocSrc->data.SetPatternAttributes.vector2.x;
-    attr[2].y = ocSrc->data.SetPatternAttributes.vector2.y;
-    attr[2].z = ocSrc->data.SetPatternAttributes.vector2.z;
-    
-    PEXEncodeSimpleOC (*ocDest, PEXOCPatternAttributes, sizeof (attr), attr);
+    pexPatternAttributes 	*oc;
+    int				fpConvert = (fpFormat != NATIVE_FP_FORMAT);
+
+    BEGIN_SIMPLE_ENCODE (PatternAttributes, ocSrc->oc_type, *ocDest, oc);
+
+    if (fpConvert)
+    {
+	FP_CONVERT_HTON (ocSrc->data.SetPatternAttributes.ref_point.x,
+	    oc->refPt_x, fpFormat);
+	FP_CONVERT_HTON (ocSrc->data.SetPatternAttributes.ref_point.y,
+	    oc->refPt_y, fpFormat);
+	FP_CONVERT_HTON (ocSrc->data.SetPatternAttributes.ref_point.z,
+	    oc->refPt_z, fpFormat);
+	FP_CONVERT_HTON (ocSrc->data.SetPatternAttributes.vector1.x,
+	    oc->vector1_x, fpFormat);
+	FP_CONVERT_HTON (ocSrc->data.SetPatternAttributes.vector1.y,
+	    oc->vector1_y, fpFormat);
+	FP_CONVERT_HTON (ocSrc->data.SetPatternAttributes.vector1.z,
+	    oc->vector1_z, fpFormat);
+	FP_CONVERT_HTON (ocSrc->data.SetPatternAttributes.vector2.x,
+	    oc->vector2_x, fpFormat);
+	FP_CONVERT_HTON (ocSrc->data.SetPatternAttributes.vector2.y,
+	    oc->vector2_y, fpFormat);
+	FP_CONVERT_HTON (ocSrc->data.SetPatternAttributes.vector2.z,
+	    oc->vector2_z, fpFormat);
+    }
+    else
+    {
+	oc->refPt_x = ocSrc->data.SetPatternAttributes.ref_point.x;
+	oc->refPt_y = ocSrc->data.SetPatternAttributes.ref_point.y;
+	oc->refPt_z = ocSrc->data.SetPatternAttributes.ref_point.z;
+	oc->vector1_x = ocSrc->data.SetPatternAttributes.vector1.x;
+	oc->vector1_y = ocSrc->data.SetPatternAttributes.vector1.y;
+	oc->vector1_z = ocSrc->data.SetPatternAttributes.vector1.z;
+	oc->vector2_x = ocSrc->data.SetPatternAttributes.vector2.x;
+	oc->vector2_y = ocSrc->data.SetPatternAttributes.vector2.y;
+	oc->vector2_z = ocSrc->data.SetPatternAttributes.vector2.z;
+    }
+
+    END_SIMPLE_ENCODE (PatternAttributes, *ocDest, oc);
 }
 
 
-void _PEXEncodeASF (float_format, ocSrc, ocDest)
+void _PEXEncodeASF (fpFormat, ocSrc, ocDest)
 
-int		float_format;
+int		fpFormat;
 PEXOCData	*ocSrc;
 char		**ocDest;
 
 {
-    PEXASFData asf;
+    pexIndividualASF *oc;
     
-    asf.attribute = ocSrc->data.SetIndividualASF.attribute;
-    asf.value = ocSrc->data.SetIndividualASF.asf;
-    
-    PEXEncodeSimpleOC (*ocDest, PEXOCIndividualASF, sizeof (PEXASFData), &asf);
+    BEGIN_SIMPLE_ENCODE (IndividualASF, ocSrc->oc_type, *ocDest, oc);
+
+    oc->attribute = ocSrc->data.SetIndividualASF.attribute;
+    oc->source = ocSrc->data.SetIndividualASF.asf;
+
+    END_SIMPLE_ENCODE (IndividualASF, *ocDest, oc);
 }
 
 
-void _PEXEncodeLocalTransform (float_format, ocSrc, ocDest)
+void _PEXEncodeLocalTransform (fpFormat, ocSrc, ocDest)
 
-int		float_format;
+int		fpFormat;
 PEXOCData	*ocSrc;
 char		**ocDest;
 
 {
-    pexLocalTransform *pInfo;
-    
-    PEXInitEncodeOC (*ocDest, PEXOCLocalTransform,
-        LENOF (pexLocalTransform), 0, pexLocalTransform, pInfo);
-    
-    pInfo->compType = ocSrc->data.SetLocalTransform.composition;
-    COPY_AREA (ocSrc->data.SetLocalTransform.transform,
-	pInfo->matrix, sizeof (pexMatrix));
+    pexLocalTransform	*oc;
+    char		*ptr;
+    int			fpConvert = (fpFormat != NATIVE_FP_FORMAT);
+
+    BEGIN_SIMPLE_ENCODE (LocalTransform, ocSrc->oc_type, *ocDest, oc);
+
+    oc->compType = ocSrc->data.SetLocalTransform.composition;
+
+    ptr = (char *) oc->matrix;
+    STORE_LISTOF_FLOAT32 (16, ocSrc->data.SetLocalTransform.transform, ptr,
+	fpConvert, fpFormat);
+
+    END_SIMPLE_ENCODE (LocalTransform, *ocDest, oc);
 }
 
 
-void _PEXEncodeLocalTransform2D (float_format, ocSrc, ocDest)
+void _PEXEncodeLocalTransform2D (fpFormat, ocSrc, ocDest)
 
-int		float_format;
+int		fpFormat;
 PEXOCData	*ocSrc;
 char		**ocDest;
 
 {
-    pexLocalTransform2D *pInfo;
-    
-    PEXInitEncodeOC (*ocDest, PEXOCLocalTransform2D,
-        LENOF (pexLocalTransform2D), 0, pexLocalTransform2D, pInfo);
-    
-    pInfo->compType = ocSrc->data.SetLocalTransform2D.composition;
-    COPY_AREA (ocSrc->data.SetLocalTransform2D.transform,
-	pInfo->matrix3X3, sizeof (pexMatrix3X3));
+    pexLocalTransform2D	*oc;
+    char		*ptr;
+    int			fpConvert = (fpFormat != NATIVE_FP_FORMAT);
+
+    BEGIN_SIMPLE_ENCODE (LocalTransform2D, ocSrc->oc_type, *ocDest, oc);
+
+    oc->compType = ocSrc->data.SetLocalTransform2D.composition;
+
+    ptr = (char *) oc->matrix3X3;
+    STORE_LISTOF_FLOAT32 (9, ocSrc->data.SetLocalTransform2D.transform, ptr,
+	fpConvert, fpFormat);
+
+    END_SIMPLE_ENCODE (LocalTransform2D, *ocDest, oc);
 }
 
 
-void _PEXEncodeGlobalTransform (float_format, ocSrc, ocDest)
+void _PEXEncodeGlobalTransform (fpFormat, ocSrc, ocDest)
 
-int		float_format;
+int		fpFormat;
 PEXOCData	*ocSrc;
 char		**ocDest;
 
 {
-    PEXEncodeSimpleOC (*ocDest, PEXOCGlobalTransform,
-        sizeof (pexMatrix), ocSrc->data.SetGlobalTransform.transform);
+    pexGlobalTransform	*oc;
+    char		*ptr;
+    int			fpConvert = (fpFormat != NATIVE_FP_FORMAT);
+
+    BEGIN_SIMPLE_ENCODE (GlobalTransform, ocSrc->oc_type, *ocDest, oc);
+
+    ptr = (char *) oc->matrix;
+    STORE_LISTOF_FLOAT32 (16, ocSrc->data.SetGlobalTransform.transform, ptr,
+	fpConvert, fpFormat);
+
+    END_SIMPLE_ENCODE (GlobalTransform, *ocDest, oc);
 }
 
 
-void _PEXEncodeGlobalTransform2D (float_format, ocSrc, ocDest)
+void _PEXEncodeGlobalTransform2D (fpFormat, ocSrc, ocDest)
 
-int		float_format;
+int		fpFormat;
 PEXOCData	*ocSrc;
 char		**ocDest;
 
 {
-    PEXEncodeSimpleOC (*ocDest, PEXOCGlobalTransform2D,
-        sizeof (pexMatrix3X3), ocSrc->data.SetGlobalTransform2D.transform);
+    pexGlobalTransform2D	*oc;
+    char			*ptr;
+    int				fpConvert = (fpFormat != NATIVE_FP_FORMAT);
+
+    BEGIN_SIMPLE_ENCODE (GlobalTransform2D, ocSrc->oc_type, *ocDest, oc);
+
+    ptr = (char *) oc->matrix3X3;
+    STORE_LISTOF_FLOAT32 (9, ocSrc->data.SetGlobalTransform2D.transform, ptr,
+	fpConvert, fpFormat);
+
+    END_SIMPLE_ENCODE (GlobalTransform2D, *ocDest, oc);
 }
 
 
-void _PEXEncodeModelClipVolume (float_format, ocSrc, ocDest)
+void _PEXEncodeModelClipVolume (fpFormat, ocSrc, ocDest)
 
-int		float_format;
+int		fpFormat;
 PEXOCData	*ocSrc;
 char		**ocDest;
 
 {
-    pexModelClipVolume	*pInfo;
-    int			lenofData;
+    pexModelClipVolume	*oc;
+    int			dataLength;
+    int			fpConvert = (fpFormat != NATIVE_FP_FORMAT);
     
-    lenofData = NUMWORDS (sizeof (PEXHalfSpace) *
+    dataLength = NUMWORDS (SIZEOF (pexHalfSpace) *
 	ocSrc->data.SetModelClipVolume.count);
     
-    PEXInitEncodeOC (*ocDest, PEXOCModelClipVolume,
-	LENOF (pexModelClipVolume), lenofData, pexModelClipVolume, pInfo);
-    
-    pInfo->modelClipOperator = ocSrc->data.SetModelClipVolume.op;
-    pInfo->numHalfSpaces = ocSrc->data.SetModelClipVolume.count;
-    
-    PEXEncodeWords ((char *) ocSrc->data.SetModelClipVolume.half_spaces,
-	*ocDest, lenofData);
+    BEGIN_ENCODE_OCHEADER (ModelClipVolume, ocSrc->oc_type,
+	dataLength, *ocDest, oc);
+
+    oc->modelClipOperator = ocSrc->data.SetModelClipVolume.op;
+    oc->numHalfSpaces = ocSrc->data.SetModelClipVolume.count;
+
+    END_ENCODE_OCHEADER (ModelClipVolume, *ocDest, oc);
+
+    STORE_LISTOF_HALFSPACE3D (ocSrc->data.SetModelClipVolume.count,
+	ocSrc->data.SetModelClipVolume.half_spaces, *ocDest,
+ 	fpConvert, fpFormat);
 }
 
 
-void _PEXEncodeModelClipVolume2D (float_format, ocSrc, ocDest)
+void _PEXEncodeModelClipVolume2D (fpFormat, ocSrc, ocDest)
 
-int		float_format;
+int		fpFormat;
 PEXOCData	*ocSrc;
 char		**ocDest;
 
 {
-    pexModelClipVolume2D	*pInfo;
-    int				lenofData;
+    pexModelClipVolume2D	*oc;
+    int				dataLength;
+    int				fpConvert = (fpFormat != NATIVE_FP_FORMAT);
     
-    lenofData = NUMWORDS (sizeof (PEXHalfSpace2D) *
+    dataLength = NUMWORDS (SIZEOF (pexHalfSpace2D) *
 	ocSrc->data.SetModelClipVolume2D.count);
     
-    PEXInitEncodeOC (*ocDest, PEXOCModelClipVolume2D,
-	LENOF (pexModelClipVolume2D), lenofData, pexModelClipVolume2D, pInfo);
-    
-    pInfo->modelClipOperator = ocSrc->data.SetModelClipVolume2D.op;
-    pInfo->numHalfSpaces = ocSrc->data.SetModelClipVolume2D.count;
-    
-    PEXEncodeWords ((char *) ocSrc->data.SetModelClipVolume2D.half_spaces,
-	*ocDest, lenofData);
+    BEGIN_ENCODE_OCHEADER (ModelClipVolume2D, ocSrc->oc_type,
+	dataLength, *ocDest, oc);
+
+    oc->modelClipOperator = ocSrc->data.SetModelClipVolume2D.op;
+    oc->numHalfSpaces = ocSrc->data.SetModelClipVolume2D.count;
+
+    END_ENCODE_OCHEADER (ModelClipVolume2D, *ocDest, oc);
+
+    STORE_LISTOF_HALFSPACE2D (ocSrc->data.SetModelClipVolume2D.count,
+	ocSrc->data.SetModelClipVolume2D.half_spaces, *ocDest,
+ 	fpConvert, fpFormat);
 }
 
 
-void _PEXEncodeRestoreModelClip (float_format, ocSrc, ocDest)
+void _PEXEncodeRestoreModelClip (fpFormat, ocSrc, ocDest)
 
-int		float_format;
+int		fpFormat;
 PEXOCData	*ocSrc;
 char		**ocDest;
 
 {
-    PEXEncodeSimpleOC (*ocDest, PEXOCRestoreModelClipVolume, 0, (char *) NULL);
+    pexRestoreModelClipVolume *oc;
+
+    BEGIN_SIMPLE_ENCODE (RestoreModelClipVolume, ocSrc->oc_type, *ocDest, oc);
+    /* no data */
+    END_SIMPLE_ENCODE (RestoreModelClipVolume, *ocDest, oc);
 }
 
 
-void _PEXEncodeLightSourceState (float_format, ocSrc, ocDest)
+void _PEXEncodeLightSourceState (fpFormat, ocSrc, ocDest)
 
-int		float_format;
+int		fpFormat;
 PEXOCData	*ocSrc;
 char		**ocDest;
 
 {
-    int 		sizeofEnableList, sizeofDisableList;
-    pexLightState	*pInfo;
-    
-    sizeofEnableList = sizeof (CARD16) *
-	ocSrc->data.SetLightSourceState.enable_count;
-    sizeofDisableList = sizeof (CARD16) *
-	ocSrc->data.SetLightSourceState.disable_count;
-    
-    PEXInitEncodeOC (*ocDest, PEXOCLightSourceState,
-	LENOF (pexLightState),
-	NUMWORDS (sizeofEnableList) + NUMWORDS (sizeofDisableList),
-	pexLightState, pInfo);
-    
-    pInfo->numEnable = ocSrc->data.SetLightSourceState.enable_count;
-    pInfo->numDisable =	ocSrc->data.SetLightSourceState.disable_count;
-    
-    PEXEncodeBytes ((char *) ocSrc->data.SetLightSourceState.enable,
-	*ocDest, sizeofEnableList);
+    pexLightSourceState	*oc;
+    int			dataLength;
 
-    PEXEncodeBytes ((char *) ocSrc->data.SetLightSourceState.disable,
-	*ocDest, sizeofDisableList);
+    dataLength =
+	NUMWORDS (SIZEOF (CARD16) * 
+	ocSrc->data.SetLightSourceState.enable_count) + 
+	NUMWORDS (SIZEOF (CARD16) * 
+	ocSrc->data.SetLightSourceState.disable_count);
+
+    BEGIN_ENCODE_OCHEADER (LightSourceState, ocSrc->oc_type,
+	dataLength, *ocDest, oc);
+
+    oc->numEnable = ocSrc->data.SetLightSourceState.enable_count;
+    oc->numDisable = ocSrc->data.SetLightSourceState.disable_count;
+
+    END_ENCODE_OCHEADER (LightSourceState, *ocDest, oc);
+
+    STORE_LISTOF_CARD16 (ocSrc->data.SetLightSourceState.enable_count,
+	ocSrc->data.SetLightSourceState.enable, *ocDest);
+
+    if (ocSrc->data.SetLightSourceState.enable_count & 1)
+	*ocDest += 2;
+
+    STORE_LISTOF_CARD16 (ocSrc->data.SetLightSourceState.disable_count,
+	ocSrc->data.SetLightSourceState.disable, *ocDest);
+
+    if (ocSrc->data.SetLightSourceState.disable_count & 1)
+	*ocDest += 2;
 }
 
 
-void _PEXEncodeID (float_format, ocSrc, ocDest)
+void _PEXEncodeID (fpFormat, ocSrc, ocDest)
 
-int		float_format;
+int		fpFormat;
 PEXOCData	*ocSrc;
 char		**ocDest;
 
 {
-    CARD32 id = ocSrc->data.SetPickID.pick_id;
-    
-    PEXEncodeSimpleOC (*ocDest, ocSrc->oc_type, sizeof (CARD32), &id);
+    pexPickID *oc;
+
+    BEGIN_SIMPLE_ENCODE (PickID, ocSrc->oc_type, *ocDest, oc);
+
+    oc->pickId = ocSrc->data.SetPickID.pick_id;
+
+    END_SIMPLE_ENCODE (PickID, *ocDest, oc);
 }
 
 
-void _PEXEncodePSC (float_format, ocSrc, ocDest)
+void _PEXEncodePSC (fpFormat, ocSrc, ocDest)
 
-int		float_format;
+int		fpFormat;
 PEXOCData	*ocSrc;
 char		**ocDest;
 
 {
-    pexParaSurfCharacteristics 	*pInfo;
+    pexParaSurfCharacteristics 	*oc;
     PEXPSCData			*pscData;
     int				pscType;
-    int				lenofData = 0;
+    int				dataLength = 0;
+    int				fpConvert = (fpFormat != NATIVE_FP_FORMAT);
     
     pscType = ocSrc->data.SetParaSurfCharacteristics.psc_type;
     pscData = &(ocSrc->data.SetParaSurfCharacteristics.characteristics);
     
-    switch (pscType)
+    if (pscType == PEXPSCIsoCurves)
     {
-    case PEXPSCIsoCurves:
-	lenofData = LENOF (PEXPSCIsoparametricCurves);
-	break;
-	
-    case PEXPSCMCLevelCurves:
-    case PEXPSCWCLevelCurves:
-	lenofData = NUMWORDS (sizeof (pexPSC_LevelCurves) +
-	    sizeof (float) * pscData->level_curves.count);
-	break;
-	
-    default:
-	break;
+	dataLength = LENOF (pexPSC_IsoparametricCurves);
     }
+    else if (pscType == PEXPSCMCLevelCurves || pscType == PEXPSCWCLevelCurves)
+    {
+	dataLength = NUMWORDS (SIZEOF (pexPSC_LevelCurves) +
+		(pscData->level_curves.count * SIZEOF (float)));
+    }
+
+    BEGIN_ENCODE_OCHEADER (ParaSurfCharacteristics, ocSrc->oc_type,
+	dataLength, *ocDest, oc);
     
-    PEXInitEncodeOC (*ocDest, PEXOCParaSurfCharacteristics,
-	LENOF (pexParaSurfCharacteristics), lenofData,
-	pexParaSurfCharacteristics, pInfo);
-    
-    pInfo->characteristics = pscType;
-    pInfo->length = NUMBYTES (lenofData);
-    
-    if (lenofData > 0)
+    oc->characteristics = pscType;
+    oc->length = NUMBYTES (dataLength);
+
+    END_ENCODE_OCHEADER (ParaSurfCharacteristics, *ocDest, oc);
+
+    if (dataLength > 0)
     {
 	if (pscType == PEXPSCIsoCurves)
 	{
-	    PEXEncodeWords ((char *) pscData, *ocDest, lenofData);
+	    STORE_PSC_ISOCURVES (pscData->iso_curves, *ocDest);
 	}
 	else if (pscType == PEXPSCMCLevelCurves ||
 	    pscType == PEXPSCWCLevelCurves)
 	{
-	    PEXEncodeBytes ((char *) pscData, *ocDest,
-		sizeof (pexPSC_LevelCurves));
-	    
-	    PEXEncodeBytes ((char *) pscData->level_curves.parameters,
-		*ocDest, pscData->level_curves.count * sizeof (float));
+	    STORE_PSC_LEVELCURVES (pscData->level_curves, *ocDest,
+		fpConvert, fpFormat);
+
+	    STORE_LISTOF_FLOAT32 (pscData->level_curves.count,
+		pscData->level_curves.parameters, *ocDest,
+		fpConvert, fpFormat);
 	}
     }
 }
 
 
-void _PEXEncodeNameSet (float_format, ocSrc, ocDest)
+void _PEXEncodeNameSet (fpFormat, ocSrc, ocDest)
 
-int		float_format;
+int		fpFormat;
 PEXOCData	*ocSrc;
 char		**ocDest;
 
 {
-    PEXEncodeListOC (*ocDest, ocSrc->oc_type, False,
-	ocSrc->data.AddToNameSet.count, sizeof (PEXName),
-	(char *) ocSrc->data.AddToNameSet.names);
+    pexAddToNameSet	*oc;
+    int			dataLength;
+
+    dataLength = NUMWORDS (ocSrc->data.AddToNameSet.count * SIZEOF (pexName));
+
+    BEGIN_ENCODE_OCHEADER (AddToNameSet, ocSrc->oc_type,
+	dataLength, *ocDest, oc);
+
+    END_ENCODE_OCHEADER (AddToNameSet, *ocDest, oc);
+
+    STORE_LISTOF_CARD32 (ocSrc->data.AddToNameSet.count,
+	ocSrc->data.AddToNameSet.names, *ocDest);
 }
 
 
-void _PEXEncodeExecuteStructure (float_format, ocSrc, ocDest)
+void _PEXEncodeExecuteStructure (fpFormat, ocSrc, ocDest)
 
-int		float_format;
+int		fpFormat;
 PEXOCData	*ocSrc;
 char		**ocDest;
 
 {
-    PEXEncodeSimpleOC (*ocDest, PEXOCExecuteStructure,
-	sizeof (PEXStructure), &(ocSrc->data.ExecuteStructure.structure));
+    pexExecuteStructure *oc;
+
+    BEGIN_SIMPLE_ENCODE (ExecuteStructure, ocSrc->oc_type, *ocDest, oc);
+
+    oc->id = ocSrc->data.ExecuteStructure.structure;
+
+    END_SIMPLE_ENCODE (ExecuteStructure, *ocDest, oc);
 }
 
 
-void _PEXEncodeLabel (float_format, ocSrc, ocDest)
+void _PEXEncodeLabel (fpFormat, ocSrc, ocDest)
 
-int		float_format;
+int		fpFormat;
 PEXOCData	*ocSrc;
 char		**ocDest;
 
 {
-    INT32 label = ocSrc->data.Label.label;
+    pexLabel *oc;
+
+    BEGIN_SIMPLE_ENCODE (Label, ocSrc->oc_type, *ocDest, oc);
+
+    oc->label = ocSrc->data.Label.label;
+
+    END_SIMPLE_ENCODE (Label, *ocDest, oc);
+}
+
+
+void _PEXEncodeApplicationData (fpFormat, ocSrc, ocDest)
+
+int		fpFormat;
+PEXOCData	*ocSrc;
+char		**ocDest;
+
+{
+    pexApplicationData  *oc;
+    int			dataLength;
+
+    dataLength = NUMWORDS (ocSrc->data.ApplicationData.length);
+
+    BEGIN_ENCODE_OCHEADER (ApplicationData, ocSrc->oc_type,
+	dataLength, *ocDest, oc);
+
+    oc->numElements = ocSrc->data.ApplicationData.length;
+
+    END_ENCODE_OCHEADER (ApplicationData, *ocDest, oc);
+
+    COPY_AREA (ocSrc->data.ApplicationData.data, *ocDest,
+	ocSrc->data.ApplicationData.length);
+
+    *ocDest += PADDED_BYTES (ocSrc->data.ApplicationData.length);
+}
+
+
+void _PEXEncodeGSE (fpFormat, ocSrc, ocDest)
+
+int		fpFormat;
+PEXOCData	*ocSrc;
+char		**ocDest;
+
+{
+    pexGSE 	*oc;
+    int		dataLength;
     
-    PEXEncodeSimpleOC (*ocDest, PEXOCLabel, sizeof (INT32), &label);
+    dataLength = NUMWORDS (ocSrc->data.GSE.length);
+
+    BEGIN_ENCODE_OCHEADER (GSE, ocSrc->oc_type, dataLength, *ocDest, oc);
+
+    oc->id = ocSrc->data.GSE.id;
+    oc->numElements = ocSrc->data.GSE.length;
+
+    END_ENCODE_OCHEADER (GSE, *ocDest, oc);
+
+    COPY_AREA (ocSrc->data.GSE.data, *ocDest, ocSrc->data.GSE.length);
+    *ocDest += PADDED_BYTES (ocSrc->data.GSE.length);
 }
 
 
-void _PEXEncodeApplicationData (float_format, ocSrc, ocDest)
+void _PEXEncodeMarkers (fpFormat, ocSrc, ocDest)
 
-int		float_format;
+int		fpFormat;
 PEXOCData	*ocSrc;
 char		**ocDest;
 
 {
-    PEXEncodeListOC (*ocDest, PEXOCApplicationData, True,
-	ocSrc->data.ApplicationData.length, sizeof (char),
-	(char *) ocSrc->data.ApplicationData.data);
+    pexMarkers 		*oc;
+    int			dataLength;
+    int			fpConvert = (fpFormat != NATIVE_FP_FORMAT);
+
+    dataLength = NUMWORDS (ocSrc->data.Markers.count * SIZEOF (pexCoord3D));
+
+    BEGIN_ENCODE_OCHEADER (Markers, ocSrc->oc_type, dataLength, *ocDest, oc);
+    END_ENCODE_OCHEADER (Markers, *ocDest, oc);
+
+    STORE_LISTOF_COORD3D (ocSrc->data.Markers.count,
+	ocSrc->data.Markers.points, *ocDest, fpConvert, fpFormat);
 }
 
 
-void _PEXEncodeGSE (float_format, ocSrc, ocDest)
+void _PEXEncodePolyline (fpFormat, ocSrc, ocDest)
 
-int		float_format;
+int		fpFormat;
 PEXOCData	*ocSrc;
 char		**ocDest;
 
 {
-    pexGse *pInfo;
-    
-    PEXInitEncodeOC (*ocDest, PEXOCGSE, LENOF (pexGse),
-	NUMWORDS (ocSrc->data.GSE.length), pexGse, pInfo);
-    
-    pInfo->id = ocSrc->data.GSE.id;
-    pInfo->numElements = ocSrc->data.GSE.length;
-    
-    PEXEncodeBytes ((char *) ocSrc->data.GSE.data,
-        *ocDest, ocSrc->data.GSE.length);
+    pexPolyline		*oc;
+    int			dataLength;
+    int			fpConvert = (fpFormat != NATIVE_FP_FORMAT);
+
+    dataLength = NUMWORDS (ocSrc->data.Polyline.count * SIZEOF (pexCoord3D));
+
+    BEGIN_ENCODE_OCHEADER (Polyline, ocSrc->oc_type, dataLength, *ocDest, oc);
+    END_ENCODE_OCHEADER (Polyline, *ocDest, oc);
+
+    STORE_LISTOF_COORD3D (ocSrc->data.Polyline.count,
+	ocSrc->data.Polyline.points, *ocDest, fpConvert, fpFormat);
 }
 
 
-void _PEXEncodeMarkers (float_format, ocSrc, ocDest)
+void _PEXEncodeMarkers2D (fpFormat, ocSrc, ocDest)
 
-int		float_format;
+int		fpFormat;
 PEXOCData	*ocSrc;
 char		**ocDest;
 
 {
-    PEXEncodeListOC (*ocDest, PEXOCMarkers, False,
-	ocSrc->data.Markers.count, sizeof (pexCoord3D),
-	(char *) ocSrc->data.Markers.points);
+    pexMarkers2D	*oc;
+    int			dataLength;
+    int			fpConvert = (fpFormat != NATIVE_FP_FORMAT);
+
+    dataLength = NUMWORDS (ocSrc->data.Markers2D.count * SIZEOF (pexCoord2D));
+
+    BEGIN_ENCODE_OCHEADER (Markers2D, ocSrc->oc_type,
+	dataLength, *ocDest, oc);
+    END_ENCODE_OCHEADER (Markers2D, *ocDest, oc);
+
+    STORE_LISTOF_COORD2D (ocSrc->data.Markers2D.count,
+	ocSrc->data.Markers2D.points, *ocDest, fpConvert, fpFormat);
 }
 
 
-void _PEXEncodePolyline (float_format, ocSrc, ocDest)
+void _PEXEncodePolyline2D (fpFormat, ocSrc, ocDest)
 
-int		float_format;
+int		fpFormat;
 PEXOCData	*ocSrc;
 char		**ocDest;
 
 {
-    PEXEncodeListOC (*ocDest, PEXOCPolyline, False,
-	ocSrc->data.Polyline.count, sizeof (pexCoord3D),
-	(char *) ocSrc->data.Polyline.points);
+    pexPolyline2D	*oc;
+    int			dataLength;
+    int			fpConvert = (fpFormat != NATIVE_FP_FORMAT);
+
+    dataLength = NUMWORDS (ocSrc->data.Polyline2D.count * SIZEOF (pexCoord2D));
+
+    BEGIN_ENCODE_OCHEADER (Polyline2D, ocSrc->oc_type,
+	dataLength, *ocDest, oc);
+    END_ENCODE_OCHEADER (Polyline2D, *ocDest, oc);
+
+    STORE_LISTOF_COORD2D (ocSrc->data.Polyline2D.count,
+	ocSrc->data.Polyline2D.points, *ocDest, fpConvert, fpFormat);
 }
 
 
-void _PEXEncodeMarkers2D (float_format, ocSrc, ocDest)
+void _PEXEncodeText (fpFormat, ocSrc, ocDest)
 
-int		float_format;
-PEXOCData	*ocSrc;
-char		**ocDest;
-
-{
-    PEXEncodeListOC (*ocDest, PEXOCMarkers2D, False,
-	ocSrc->data.Markers2D.count, sizeof (pexCoord2D),
-	(char *) ocSrc->data.Markers2D.points);
-}
-
-
-void _PEXEncodePolyline2D (float_format, ocSrc, ocDest)
-
-int		float_format;
-PEXOCData	*ocSrc;
-char		**ocDest;
-
-{
-    PEXEncodeListOC (*ocDest, PEXOCPolyline2D, False,
-	ocSrc->data.Polyline2D.count, sizeof (pexCoord2D),
-	(char *) ocSrc->data.Polyline2D.points);
-}
-
-
-void _PEXEncodeText (float_format, ocSrc, ocDest)
-
-int		float_format;
+int		fpFormat;
 PEXOCData	*ocSrc;
 char		**ocDest;
 
 {
     /* Text is always mono encoded */
     
-    pexText		*pInfo;
-    PEXEncodedTextData  *nextString;
-    int 		lenofStrings, i;
+    pexText		*oc;
+    int 		lenofStrings;
+    int			fpConvert = (fpFormat != NATIVE_FP_FORMAT);
     
     GetStringsLength (ocSrc->data.EncodedText.count,
 	ocSrc->data.EncodedText.encoded_text, lenofStrings);
     
-    PEXInitEncodeOC (*ocDest, PEXOCText,
-	LENOF (pexText), lenofStrings, pexText, pInfo);
+    BEGIN_ENCODE_OCHEADER (Text, ocSrc->oc_type, lenofStrings, *ocDest, oc);
+
+    if (fpConvert)
+    {
+	FP_CONVERT_HTON (ocSrc->data.EncodedText.origin.x,
+	    oc->origin_x, fpFormat);
+	FP_CONVERT_HTON (ocSrc->data.EncodedText.origin.y,
+	    oc->origin_y, fpFormat);
+	FP_CONVERT_HTON (ocSrc->data.EncodedText.origin.z,
+	    oc->origin_z, fpFormat);
+	FP_CONVERT_HTON (ocSrc->data.EncodedText.vector1.x,
+	    oc->vector1_x, fpFormat);
+	FP_CONVERT_HTON (ocSrc->data.EncodedText.vector1.y,
+	    oc->vector1_y, fpFormat);
+	FP_CONVERT_HTON (ocSrc->data.EncodedText.vector1.z,
+	    oc->vector1_z, fpFormat);
+	FP_CONVERT_HTON (ocSrc->data.EncodedText.vector2.x,
+	    oc->vector2_x, fpFormat);
+	FP_CONVERT_HTON (ocSrc->data.EncodedText.vector2.y,
+	    oc->vector2_y, fpFormat);
+	FP_CONVERT_HTON (ocSrc->data.EncodedText.vector2.z,
+	    oc->vector2_z, fpFormat);
+    }
+    else
+    {
+	oc->origin_x = ocSrc->data.EncodedText.origin.x;
+	oc->origin_y = ocSrc->data.EncodedText.origin.y;
+	oc->origin_z = ocSrc->data.EncodedText.origin.z;
+	oc->vector1_x = ocSrc->data.EncodedText.vector1.x;
+	oc->vector1_y = ocSrc->data.EncodedText.vector1.y;
+	oc->vector1_z = ocSrc->data.EncodedText.vector1.z;
+	oc->vector2_x = ocSrc->data.EncodedText.vector2.x;
+	oc->vector2_y = ocSrc->data.EncodedText.vector2.y;
+	oc->vector2_z = ocSrc->data.EncodedText.vector2.z;
+    }
+
+    oc->numEncodings = ocSrc->data.EncodedText.count;
     
-    pInfo->origin.x = ocSrc->data.EncodedText.origin.x;
-    pInfo->origin.y = ocSrc->data.EncodedText.origin.y;
-    pInfo->origin.z = ocSrc->data.EncodedText.origin.z;
-    pInfo->vector1.x = ocSrc->data.EncodedText.vector1.x;
-    pInfo->vector1.y = ocSrc->data.EncodedText.vector1.y;
-    pInfo->vector1.z = ocSrc->data.EncodedText.vector1.z;
-    pInfo->vector2.x = ocSrc->data.EncodedText.vector2.x;
-    pInfo->vector2.y = ocSrc->data.EncodedText.vector2.y;
-    pInfo->vector2.z = ocSrc->data.EncodedText.vector2.z;
-    pInfo->numEncodings = (CARD16) ocSrc->data.EncodedText.count;
-    
-    EncodeMonoStrings (*ocDest, ocSrc->data.EncodedText.count,
-	ocSrc->data.EncodedText.encoded_text);
+    END_ENCODE_OCHEADER (Text, *ocDest, oc);
+
+    STORE_LISTOF_MONOENCODING (ocSrc->data.EncodedText.count,
+	ocSrc->data.EncodedText.encoded_text, *ocDest);
 }
 
 
-void _PEXEncodeText2D (float_format, ocSrc, ocDest)
+void _PEXEncodeText2D (fpFormat, ocSrc, ocDest)
 
-int		float_format;
+int		fpFormat;
 PEXOCData	*ocSrc;
 char		**ocDest;
 
 {
     /* Text is always mono encoded */
     
-    pexText2D		*pInfo;
-    PEXEncodedTextData  *nextString;
-    int 		lenofStrings, i;
+    pexText2D		*oc;
+    int 		lenofStrings;
+    int			fpConvert = (fpFormat != NATIVE_FP_FORMAT);
     
     GetStringsLength (ocSrc->data.EncodedText2D.count,
 	ocSrc->data.EncodedText2D.encoded_text, lenofStrings);
     
-    PEXInitEncodeOC (*ocDest, PEXOCText2D,
-	LENOF (pexText2D), lenofStrings, pexText2D, pInfo);
+    BEGIN_ENCODE_OCHEADER (Text2D, ocSrc->oc_type, lenofStrings, *ocDest, oc);
+
+    if (fpConvert)
+    {
+	FP_CONVERT_HTON (ocSrc->data.EncodedText2D.origin.x,
+	    oc->origin_x, fpFormat);
+	FP_CONVERT_HTON (ocSrc->data.EncodedText2D.origin.y,
+	    oc->origin_y, fpFormat);
+    }
+    else
+    {
+	oc->origin_x = ocSrc->data.EncodedText2D.origin.x;
+	oc->origin_y = ocSrc->data.EncodedText2D.origin.y;
+    }
+
+    oc->numEncodings = ocSrc->data.EncodedText2D.count;
     
-    pInfo->origin.x = ocSrc->data.EncodedText2D.origin.x;
-    pInfo->origin.y = ocSrc->data.EncodedText2D.origin.y;
-    pInfo->numEncodings = (CARD16) ocSrc->data.EncodedText2D.count;
-    
-    EncodeMonoStrings (*ocDest, ocSrc->data.EncodedText2D.count,
-	ocSrc->data.EncodedText2D.encoded_text);
+    END_ENCODE_OCHEADER (Text2D, *ocDest, oc);
+
+    STORE_LISTOF_MONOENCODING (ocSrc->data.EncodedText2D.count,
+	ocSrc->data.EncodedText2D.encoded_text, *ocDest);
 }
 
 
-void _PEXEncodeAnnoText (float_format, ocSrc, ocDest)
+void _PEXEncodeAnnoText (fpFormat, ocSrc, ocDest)
 
-int		float_format;
+int		fpFormat;
 PEXOCData	*ocSrc;
 char		**ocDest;
 
 {
     /* Anno Text is always mono encoded */
     
-    pexAnnotationText	*pInfo;
-    PEXEncodedTextData  *nextString;
-    int 		lenofStrings, i;
+    pexAnnotationText	*oc;
+    int 		lenofStrings;
+    int			fpConvert = (fpFormat != NATIVE_FP_FORMAT);
     
     GetStringsLength (ocSrc->data.EncodedAnnoText.count,
 	ocSrc->data.EncodedAnnoText.encoded_text, lenofStrings);
     
-    PEXInitEncodeOC (*ocDest, PEXOCAnnotationText,
-	LENOF (pexAnnotationText), lenofStrings, pexAnnotationText, pInfo);
+    BEGIN_ENCODE_OCHEADER (AnnotationText, ocSrc->oc_type,
+	lenofStrings, *ocDest, oc);
+
+    if (fpConvert)
+    {
+	FP_CONVERT_HTON (ocSrc->data.EncodedAnnoText.origin.x,
+	    oc->origin_x, fpFormat);
+	FP_CONVERT_HTON (ocSrc->data.EncodedAnnoText.origin.y,
+	    oc->origin_y, fpFormat);
+	FP_CONVERT_HTON (ocSrc->data.EncodedAnnoText.origin.z,
+	    oc->origin_z, fpFormat);
+	FP_CONVERT_HTON (ocSrc->data.EncodedAnnoText.offset.x,
+	    oc->offset_x, fpFormat);
+	FP_CONVERT_HTON (ocSrc->data.EncodedAnnoText.offset.y,
+	    oc->offset_y, fpFormat);
+	FP_CONVERT_HTON (ocSrc->data.EncodedAnnoText.offset.z,
+	    oc->offset_z, fpFormat);
+    }
+    else
+    {
+	oc->origin_x = ocSrc->data.EncodedAnnoText.origin.x;
+	oc->origin_y = ocSrc->data.EncodedAnnoText.origin.y;
+	oc->origin_z = ocSrc->data.EncodedAnnoText.origin.z;
+	oc->offset_x = ocSrc->data.EncodedAnnoText.offset.x;
+	oc->offset_y = ocSrc->data.EncodedAnnoText.offset.y;
+	oc->offset_z = ocSrc->data.EncodedAnnoText.offset.z;
+    }
+
+    oc->numEncodings = ocSrc->data.EncodedAnnoText.count;
     
-    pInfo->origin.x = ocSrc->data.EncodedAnnoText.origin.x;
-    pInfo->origin.y = ocSrc->data.EncodedAnnoText.origin.y;
-    pInfo->origin.z = ocSrc->data.EncodedAnnoText.origin.z;
-    pInfo->offset.x = ocSrc->data.EncodedAnnoText.offset.x;
-    pInfo->offset.y = ocSrc->data.EncodedAnnoText.offset.y;
-    pInfo->offset.z = ocSrc->data.EncodedAnnoText.offset.z;
-    pInfo->numEncodings = (CARD16) ocSrc->data.EncodedAnnoText.count;
-    
-    EncodeMonoStrings (*ocDest, ocSrc->data.EncodedAnnoText.count,
-	ocSrc->data.EncodedAnnoText.encoded_text);
+    END_ENCODE_OCHEADER (AnnotationText, *ocDest, oc);
+
+    STORE_LISTOF_MONOENCODING (ocSrc->data.EncodedAnnoText.count,
+	ocSrc->data.EncodedAnnoText.encoded_text, *ocDest);
 }
 
 
-void _PEXEncodeAnnoText2D (float_format, ocSrc, ocDest)
+void _PEXEncodeAnnoText2D (fpFormat, ocSrc, ocDest)
 
-int		float_format;
+int		fpFormat;
 PEXOCData	*ocSrc;
 char		**ocDest;
 
 {
     /* Anno Text is always mono encoded */
     
-    pexAnnotationText2D	*pInfo;
-    PEXEncodedTextData	*nextString;
-    int 		lenofStrings, i;
+    pexAnnotationText2D	*oc;
+    int 		lenofStrings;
+    int			fpConvert = (fpFormat != NATIVE_FP_FORMAT);
     
     GetStringsLength (ocSrc->data.EncodedAnnoText2D.count,
 	ocSrc->data.EncodedAnnoText2D.encoded_text, lenofStrings);
     
-    PEXInitEncodeOC (*ocDest, PEXOCAnnotationText2D,
-	LENOF (pexAnnotationText2D), lenofStrings, pexAnnotationText2D, pInfo);
+    BEGIN_ENCODE_OCHEADER (AnnotationText2D, ocSrc->oc_type,
+	lenofStrings, *ocDest, oc);
+
+    if (fpConvert)
+    {
+	FP_CONVERT_HTON (ocSrc->data.EncodedAnnoText2D.origin.x,
+	    oc->origin_x, fpFormat);
+	FP_CONVERT_HTON (ocSrc->data.EncodedAnnoText2D.origin.y,
+	    oc->origin_y, fpFormat);
+	FP_CONVERT_HTON (ocSrc->data.EncodedAnnoText2D.offset.x,
+	    oc->offset_x, fpFormat);
+	FP_CONVERT_HTON (ocSrc->data.EncodedAnnoText2D.offset.y,
+	    oc->offset_y, fpFormat);
+    }
+    else
+    {
+	oc->origin_x = ocSrc->data.EncodedAnnoText2D.origin.x;
+	oc->origin_y = ocSrc->data.EncodedAnnoText2D.origin.y;
+	oc->offset_x = ocSrc->data.EncodedAnnoText2D.offset.x;
+	oc->offset_y = ocSrc->data.EncodedAnnoText2D.offset.y;
+    }
+
+    oc->numEncodings = ocSrc->data.EncodedAnnoText2D.count;
     
-    pInfo->origin.x = ocSrc->data.EncodedAnnoText2D.origin.x;
-    pInfo->origin.y = ocSrc->data.EncodedAnnoText2D.origin.y;
-    pInfo->offset.x = ocSrc->data.EncodedAnnoText2D.offset.x;
-    pInfo->offset.y = ocSrc->data.EncodedAnnoText2D.offset.y;
-    pInfo->numEncodings = (CARD16) ocSrc->data.EncodedAnnoText2D.count;
-    
-    EncodeMonoStrings (*ocDest, ocSrc->data.EncodedAnnoText2D.count,
-	ocSrc->data.EncodedAnnoText2D.encoded_text);
+    END_ENCODE_OCHEADER (AnnotationText2D, *ocDest, oc);
+
+    STORE_LISTOF_MONOENCODING (ocSrc->data.EncodedAnnoText2D.count,
+	ocSrc->data.EncodedAnnoText2D.encoded_text, *ocDest);
 }
 
 
-void _PEXEncodePolylineSet (float_format, ocSrc, ocDest)
+void _PEXEncodePolylineSet (fpFormat, ocSrc, ocDest)
 
-int		float_format;
+int		fpFormat;
 PEXOCData	*ocSrc;
 char		**ocDest;
 
 {
-    pexPolylineSet	*pInfo;
-    CARD32 		*pData;
-    int			numPoints, i;
-    int			lenofVertex;
-    unsigned int	vertexAttributes;
-    unsigned int	numPolylines;
-    int			colorType;
-    PEXListOfVertex	*polylines;
+    pexPolylineSetWithData	*oc;
+    int				numPoints, i;
+    int				dataLength;
+    int				lenofVertex;
+    unsigned int		vertexAttributes;
+    unsigned int		numPolylines;
+    int				colorType;
+    PEXListOfVertex		*polylines;
+    int				fpConvert = (fpFormat != NATIVE_FP_FORMAT);
     
     numPolylines = ocSrc->data.PolylineSetWithData.count;
     polylines = ocSrc->data.PolylineSetWithData.vertex_lists;
@@ -812,39 +1164,41 @@ char		**ocDest;
     lenofVertex = LENOF (pexCoord3D) + ((vertexAttributes & PEXGAColor) ?
 	GetColorLength (colorType) : 0); 
     
-    PEXInitEncodeOC (*ocDest, PEXOCPolylineSetWithData,
-	LENOF (pexPolylineSet),
-	numPolylines + (numPoints * lenofVertex),
-	pexPolylineSet, pInfo);
+    dataLength = numPolylines + (numPoints * lenofVertex);
+
+    BEGIN_ENCODE_OCHEADER (PolylineSetWithData, ocSrc->oc_type,
+	dataLength, *ocDest, oc);
+
+    oc->colorType = colorType;
+    oc->vertexAttribs = vertexAttributes;
+    oc->numLists = numPolylines;
     
-    pInfo->colorType = colorType;
-    pInfo->vertexAttribs = vertexAttributes;
-    pInfo->numLists = numPolylines;
-    
+    END_ENCODE_OCHEADER (PolylineSetWithData, *ocDest, oc);
+
     for (i = 0; i < numPolylines; i++)
     {
-	pData = (CARD32 *) *ocDest;
-	*ocDest += sizeof (CARD32);
-	*pData = polylines[i].count;  
+	STORE_CARD32 (polylines[i].count, *ocDest);
 	
-	PEXEncodeWords ((char *) polylines[i].vertices.no_data,
-	    *ocDest, polylines[i].count * lenofVertex);
+	STORE_LISTOF_VERTEX (polylines[i].count, NUMBYTES (lenofVertex),
+	    colorType, vertexAttributes, polylines[i].vertices,
+	    *ocDest, fpConvert, fpFormat);
     }
 }
 
 
-void _PEXEncodeNURBCurve (float_format, ocSrc, ocDest)
+void _PEXEncodeNURBCurve (fpFormat, ocSrc, ocDest)
 
-int		float_format;
+int		fpFormat;
 PEXOCData	*ocSrc;
 char		**ocDest;
 
 {
-    pexNurbCurve 	*pInfo;
+    pexNURBCurve 	*oc;
     int			lenofVertexList;
     int			lenofKnotList;
     unsigned int	numPoints;
     int			rationality, order;
+    int			fpConvert = (fpFormat != NATIVE_FP_FORMAT);
     
     numPoints = ocSrc->data.NURBCurve.count;
     rationality = ocSrc->data.NURBCurve.rationality;
@@ -854,86 +1208,111 @@ char		**ocDest;
 	LENOF (pexCoord4D) : LENOF (pexCoord3D));
     lenofKnotList = order + numPoints;
     
-    PEXInitEncodeOC (*ocDest, PEXOCNURBCurve,
-	LENOF (pexNurbCurve), lenofKnotList + lenofVertexList,
-	pexNurbCurve, pInfo);
-    
-    pInfo->curveOrder = order;
-    pInfo->coordType = rationality;
-    pInfo->tmin = ocSrc->data.NURBCurve.tmin;
-    pInfo->tmax = ocSrc->data.NURBCurve.tmax;
-    pInfo->numKnots = order + numPoints;
-    pInfo->numPoints = numPoints;
-    
-    PEXEncodeWords ((char *) ocSrc->data.NURBCurve.knots,
-	*ocDest, lenofKnotList);
+    BEGIN_ENCODE_OCHEADER (NURBCurve, ocSrc->oc_type,
+	lenofKnotList + lenofVertexList, *ocDest, oc);
 
-    PEXEncodeWords ((char *) ocSrc->data.NURBCurve.points.point,
-	*ocDest, lenofVertexList);
+    oc->curveOrder = order;
+    oc->coordType = rationality;
+    oc->numKnots = order + numPoints;
+    oc->numPoints = numPoints;
+    
+    if (fpConvert)
+    {
+	FP_CONVERT_HTON (ocSrc->data.NURBCurve.tmin, oc->tmin, fpFormat);
+	FP_CONVERT_HTON (ocSrc->data.NURBCurve.tmax, oc->tmax, fpFormat);
+    }
+    else
+    {
+	oc->tmin = ocSrc->data.NURBCurve.tmin;
+	oc->tmax = ocSrc->data.NURBCurve.tmax;
+    }
+
+    END_ENCODE_OCHEADER (NURBCurve, *ocDest, oc);
+
+    STORE_LISTOF_FLOAT32 (lenofKnotList, ocSrc->data.NURBCurve.knots, *ocDest,
+	fpConvert, fpFormat);
+
+    if (rationality == PEXRational)
+    {
+	STORE_LISTOF_COORD4D (numPoints, ocSrc->data.NURBCurve.points.point_4d,
+            *ocDest, fpConvert, fpFormat);
+    }
+    else
+    {
+	STORE_LISTOF_COORD3D (numPoints, ocSrc->data.NURBCurve.points.point,
+            *ocDest, fpConvert, fpFormat);
+    }
 }
 
 
-void _PEXEncodeFillArea (float_format, ocSrc, ocDest)
+void _PEXEncodeFillArea (fpFormat, ocSrc, ocDest)
 
-int		float_format;
+int		fpFormat;
 PEXOCData	*ocSrc;
 char		**ocDest;
 
 {
-    pexFillArea	*pInfo;
-    int		lenofVertexList;
+    pexFillArea		*oc;
+    int			dataLength;
+    int			fpConvert = (fpFormat != NATIVE_FP_FORMAT);
     
-    lenofVertexList = ocSrc->data.FillArea.count * LENOF (pexCoord3D);
+    dataLength = ocSrc->data.FillArea.count * LENOF (pexCoord3D);
     
-    PEXInitEncodeOC (*ocDest, PEXOCFillArea,
-	LENOF (pexFillArea), lenofVertexList, pexFillArea, pInfo);
+    BEGIN_ENCODE_OCHEADER (FillArea, ocSrc->oc_type, dataLength, *ocDest, oc);
+
+    oc->shape = ocSrc->data.FillArea.shape_hint;
+    oc->ignoreEdges = ocSrc->data.FillArea.ignore_edges;
     
-    pInfo->shape = ocSrc->data.FillArea.shape_hint;
-    pInfo->ignoreEdges = ocSrc->data.FillArea.ignore_edges;
-    
-    PEXEncodeWords ((char *) ocSrc->data.FillArea.points,
-	*ocDest, lenofVertexList);
+    END_ENCODE_OCHEADER (FillArea, *ocDest, oc);
+
+    STORE_LISTOF_COORD3D (ocSrc->data.FillArea.count,
+	ocSrc->data.FillArea.points, *ocDest, fpConvert, fpFormat);
 }
 
 
-void _PEXEncodeFillArea2D (float_format, ocSrc, ocDest)
+void _PEXEncodeFillArea2D (fpFormat, ocSrc, ocDest)
 
-int		float_format;
+int		fpFormat;
 PEXOCData	*ocSrc;
 char		**ocDest;
 
 {
-    pexFillArea2D	*pInfo;
-    int			lenofVertexList;
+    pexFillArea2D	*oc;
+    int			dataLength;
+    int			fpConvert = (fpFormat != NATIVE_FP_FORMAT);
     
-    lenofVertexList = ocSrc->data.FillArea2D.count * LENOF (pexCoord2D);
+    dataLength = ocSrc->data.FillArea2D.count * LENOF (pexCoord2D);
     
-    PEXInitEncodeOC (*ocDest, PEXOCFillArea2D,
-	LENOF (pexFillArea2D), lenofVertexList, pexFillArea2D, pInfo);
+    BEGIN_ENCODE_OCHEADER (FillArea2D, ocSrc->oc_type,
+	dataLength, *ocDest, oc);
+
+    oc->shape = ocSrc->data.FillArea2D.shape_hint;
+    oc->ignoreEdges = ocSrc->data.FillArea2D.ignore_edges;
     
-    pInfo->shape = ocSrc->data.FillArea2D.shape_hint;
-    pInfo->ignoreEdges = ocSrc->data.FillArea2D.ignore_edges;
-    
-    PEXEncodeWords ((char *) ocSrc->data.FillArea2D.points,
-	*ocDest, lenofVertexList);
+    END_ENCODE_OCHEADER (FillArea2D, *ocDest, oc);
+
+    STORE_LISTOF_COORD2D (ocSrc->data.FillArea2D.count,
+	ocSrc->data.FillArea2D.points, *ocDest, fpConvert, fpFormat);
 }
 
 
-void _PEXEncodeFillAreaWithData (float_format, ocSrc, ocDest)
+void _PEXEncodeFillAreaWithData (fpFormat, ocSrc, ocDest)
 
-int		float_format;
+int		fpFormat;
 PEXOCData	*ocSrc;
 char		**ocDest;
 
 {
-    pexExtFillArea 	*pInfo;
-    CARD32		*pData;
-    int			lenofFacetData;
+    pexFillAreaWithData	*oc;
+    int			dataLength;
+    int			lenofFacet;
     int			lenofVertex;
     int			lenofColor;
-    unsigned int	facetAttributes, vertexAttributes;
+    unsigned int	facetAttributes;
+    unsigned int	vertexAttributes;
     int			colorType;
     unsigned int	numVertices;
+    int			fpConvert = (fpFormat != NATIVE_FP_FORMAT);
     
     colorType = ocSrc->data.FillAreaWithData.color_type;
     facetAttributes = ocSrc->data.FillAreaWithData.facet_attributes;
@@ -941,47 +1320,50 @@ char		**ocDest;
     numVertices = ocSrc->data.FillAreaWithData.count;
     
     lenofColor = GetColorLength (colorType);
-    lenofFacetData = GetFacetDataLength (facetAttributes, lenofColor); 
+    lenofFacet = GetFacetDataLength (facetAttributes, lenofColor); 
     lenofVertex = GetVertexWithDataLength (vertexAttributes, lenofColor);
     
-    PEXInitEncodeOC (*ocDest, PEXOCFillAreaWithData,
-	LENOF (pexExtFillArea),
-	lenofFacetData + 1 /* count */ + numVertices * lenofVertex,
-	pexExtFillArea, pInfo);
+    dataLength = lenofFacet + 1 /* count */ + numVertices * lenofVertex;
+
+    BEGIN_ENCODE_OCHEADER (FillAreaWithData, ocSrc->oc_type,
+	dataLength, *ocDest, oc);
+
+    oc->shape = ocSrc->data.FillAreaWithData.shape_hint;
+    oc->ignoreEdges = ocSrc->data.FillAreaWithData.ignore_edges;
+    oc->colorType = colorType;
+    oc->facetAttribs = facetAttributes;
+    oc->vertexAttribs = vertexAttributes;
     
-    pInfo->shape = ocSrc->data.FillAreaWithData.shape_hint;
-    pInfo->ignoreEdges = ocSrc->data.FillAreaWithData.ignore_edges;
-    pInfo->colorType = colorType;
-    pInfo->facetAttribs = facetAttributes;
-    pInfo->vertexAttribs = vertexAttributes;
-    
+    END_ENCODE_OCHEADER (FillAreaWithData, *ocDest, oc);
+
     if (facetAttributes)
     {
-	PEXEncodeWords ((char *) &(ocSrc->data.FillAreaWithData.facet_data),
-	    *ocDest, lenofFacetData);
+	STORE_FACET (colorType, facetAttributes,
+	    ocSrc->data.FillAreaWithData.facet_data, *ocDest,
+	    fpConvert, fpFormat);
     }
     
-    pData = (CARD32 *) *ocDest;
-    *ocDest += sizeof (CARD32);
-    *pData = numVertices;
+    STORE_CARD32 (numVertices, *ocDest);
     
-    PEXEncodeWords ((char *) ocSrc->data.FillAreaWithData.vertices.no_data,
-	*ocDest, lenofVertex * numVertices);
+    STORE_LISTOF_VERTEX (numVertices, NUMBYTES (lenofVertex), colorType,
+	vertexAttributes, ocSrc->data.FillAreaWithData.vertices, *ocDest,
+	fpConvert, fpFormat);
 }
 
 
-void _PEXEncodeFillAreaSet (float_format, ocSrc, ocDest)
+void _PEXEncodeFillAreaSet (fpFormat, ocSrc, ocDest)
 
-int		float_format;
+int		fpFormat;
 PEXOCData	*ocSrc;
 char		**ocDest;
 
 {
-    pexFillAreaSet	*pInfo;
-    CARD32		*pData;
+    pexFillAreaSet	*oc;
+    int			dataLength;
     int			numPoints, i;
     unsigned int	numFillAreas;
     PEXListOfCoord	*vertices;
+    int			fpConvert = (fpFormat != NATIVE_FP_FORMAT);
     
     numFillAreas = ocSrc->data.FillAreaSet.count;
     vertices = ocSrc->data.FillAreaSet.point_lists;
@@ -989,40 +1371,41 @@ char		**ocDest;
     for (i = 0, numPoints = 0; i < numFillAreas; i++)
 	numPoints += vertices[i].count;
     
-    PEXInitEncodeOC (*ocDest, PEXOCFillAreaSet,
-	LENOF (pexFillAreaSet),
-	numFillAreas + (numPoints * LENOF (pexCoord3D)),
-	pexFillAreaSet, pInfo);
+    dataLength = numFillAreas + (numPoints * LENOF (pexCoord3D));
+
+    BEGIN_ENCODE_OCHEADER (FillAreaSet, ocSrc->oc_type,
+	dataLength, *ocDest, oc);
+
+    oc->shape = ocSrc->data.FillAreaSet.shape_hint; 
+    oc->ignoreEdges = ocSrc->data.FillAreaSet.ignore_edges;
+    oc->contourHint = ocSrc->data.FillAreaSet.contour_hint;
+    oc->numLists = numFillAreas;
     
-    pInfo->shape = ocSrc->data.FillAreaSet.shape_hint; 
-    pInfo->ignoreEdges = ocSrc->data.FillAreaSet.ignore_edges;
-    pInfo->contourHint = ocSrc->data.FillAreaSet.contour_hint;
-    pInfo->numLists = numFillAreas;
-    
+    END_ENCODE_OCHEADER (FillAreaSet, *ocDest, oc);
+
     for (i = 0; i < numFillAreas; i++)
     {
-	pData = (CARD32 *) *ocDest;
-	*ocDest += sizeof (CARD32);
-	*pData = vertices[i].count;
+	STORE_CARD32 (vertices[i].count, *ocDest);
 	
-	PEXEncodeWords ((char *) vertices[i].points, *ocDest,
-	    vertices[i].count * LENOF (pexCoord3D));
+	STORE_LISTOF_COORD3D (vertices[i].count, vertices[i].points, *ocDest,
+	    fpConvert, fpFormat);
     }
 }
 
 
-void _PEXEncodeFillAreaSet2D (float_format, ocSrc, ocDest)
+void _PEXEncodeFillAreaSet2D (fpFormat, ocSrc, ocDest)
 
-int		float_format;
+int		fpFormat;
 PEXOCData	*ocSrc;
 char		**ocDest;
 
 {
-    pexFillAreaSet2D	*pInfo;
-    CARD32		*pData;
+    pexFillAreaSet2D	*oc;
+    int			dataLength;
     int			numPoints, i;
     unsigned int	numFillAreas;
     PEXListOfCoord2D	*vertices;
+    int			fpConvert = (fpFormat != NATIVE_FP_FORMAT);
     
     numFillAreas = ocSrc->data.FillAreaSet2D.count;
     vertices = ocSrc->data.FillAreaSet2D.point_lists;
@@ -1030,45 +1413,47 @@ char		**ocDest;
     for (i = 0, numPoints = 0; i < numFillAreas; i++)
 	numPoints += vertices[i].count;
     
-    PEXInitEncodeOC (*ocDest, PEXOCFillAreaSet2D,
-	LENOF (pexFillAreaSet2D),
-	numFillAreas /* counts */ + (numPoints * LENOF (pexCoord2D)),
-	pexFillAreaSet2D, pInfo);
+    dataLength = numFillAreas /* counts */ + (numPoints * LENOF (pexCoord2D));
+
+    BEGIN_ENCODE_OCHEADER (FillAreaSet2D, ocSrc->oc_type,
+	dataLength, *ocDest, oc);
+
+    oc->shape = ocSrc->data.FillAreaSet2D.shape_hint; 
+    oc->ignoreEdges = ocSrc->data.FillAreaSet2D.ignore_edges;
+    oc->contourHint = ocSrc->data.FillAreaSet2D.contour_hint;
+    oc->numLists = numFillAreas;
     
-    pInfo->shape = ocSrc->data.FillAreaSet2D.shape_hint; 
-    pInfo->ignoreEdges = ocSrc->data.FillAreaSet2D.ignore_edges;
-    pInfo->contourHint = ocSrc->data.FillAreaSet2D.contour_hint;
-    pInfo->numLists = numFillAreas;
-    
+    END_ENCODE_OCHEADER (FillAreaSet2D, *ocDest, oc);
+
     for (i = 0; i < numFillAreas; i++)
     {
-	pData = (CARD32 *) *ocDest;
-	*ocDest += sizeof (CARD32);
-	*pData = vertices[i].count;
+	STORE_CARD32 (vertices[i].count, *ocDest);
 	
-	PEXEncodeWords ((char *) vertices[i].points, *ocDest,
-	    vertices[i].count * LENOF (pexCoord2D));
+	STORE_LISTOF_COORD2D (vertices[i].count, vertices[i].points, *ocDest,
+	    fpConvert, fpFormat);
     }
 }
 
 
-void _PEXEncodeFillAreaSetWithData (float_format, ocSrc, ocDest)
+void _PEXEncodeFillAreaSetWithData (fpFormat, ocSrc, ocDest)
 
-int		float_format;
+int		fpFormat;
 PEXOCData	*ocSrc;
 char		**ocDest;
 
 {
-    pexExtFillAreaSet	*pInfo;
-    CARD32		*pData;
-    int			lenofColor;
-    int			lenofFacetData;
-    int			lenofVertex;
-    int			numVertices, i;
-    int			colorType;
-    unsigned int	numFillAreas;
-    unsigned int	facetAttributes, vertexAttributes;
-    PEXListOfVertex	*vertices;
+    pexFillAreaSetWithData	*oc;
+    int				dataLength;
+    int				lenofColor;
+    int				lenofFacet;
+    int				lenofVertex;
+    int				numVertices, i;
+    int				colorType;
+    unsigned int		numFillAreas;
+    unsigned int		facetAttributes;
+    unsigned int		vertexAttributes;
+    PEXListOfVertex		*vertices;
+    int				fpConvert = (fpFormat != NATIVE_FP_FORMAT);
     
     colorType = ocSrc->data.FillAreaSetWithData.color_type;
     numFillAreas = ocSrc->data.FillAreaSetWithData.count;
@@ -1077,7 +1462,7 @@ char		**ocDest;
     vertices = ocSrc->data.FillAreaSetWithData.vertex_lists;
     
     lenofColor = GetColorLength (colorType);
-    lenofFacetData = GetFacetDataLength (facetAttributes, lenofColor); 
+    lenofFacet = GetFacetDataLength (facetAttributes, lenofColor); 
     lenofVertex = GetVertexWithDataLength (vertexAttributes, lenofColor);
     
     if (vertexAttributes & PEXGAEdges)
@@ -1086,52 +1471,56 @@ char		**ocDest;
     for (i = 0, numVertices = 0; i < numFillAreas; i++)
 	numVertices += vertices[i].count;
     
-    PEXInitEncodeOC (*ocDest, PEXOCFillAreaSetWithData, 
-	LENOF (pexExtFillAreaSet), 
-	lenofFacetData + numFillAreas + numVertices * lenofVertex,
-	pexExtFillAreaSet, pInfo);
+    dataLength = lenofFacet + numFillAreas + numVertices * lenofVertex;
+
+    BEGIN_ENCODE_OCHEADER (FillAreaSetWithData, ocSrc->oc_type,
+	dataLength, *ocDest, oc);
+
+    oc->shape = ocSrc->data.FillAreaSetWithData.shape_hint;
+    oc->ignoreEdges = ocSrc->data.FillAreaSetWithData.ignore_edges;
+    oc->contourHint = ocSrc->data.FillAreaSetWithData.contour_hint;
+    oc->colorType = colorType;
+    oc->facetAttribs = facetAttributes;
+    oc->vertexAttribs = vertexAttributes;
+    oc->numLists = numFillAreas;
     
-    pInfo->shape = ocSrc->data.FillAreaSetWithData.shape_hint;
-    pInfo->ignoreEdges = ocSrc->data.FillAreaSetWithData.ignore_edges;
-    pInfo->contourHint = ocSrc->data.FillAreaSetWithData.contour_hint;
-    pInfo->colorType = colorType;
-    pInfo->facetAttribs = facetAttributes;
-    pInfo->vertexAttribs = vertexAttributes;
-    pInfo->numLists = numFillAreas;
-    
+    END_ENCODE_OCHEADER (FillAreaSetWithData, *ocDest, oc);
+
     if (facetAttributes)
     {
-	PEXEncodeWords (
-	    (char *) &(ocSrc->data.FillAreaSetWithData.facet_data),
-	    *ocDest, lenofFacetData);
+	STORE_FACET (colorType, facetAttributes,
+	    ocSrc->data.FillAreaSetWithData.facet_data, *ocDest,
+	    fpConvert, fpFormat);
     }
     
     for (i = 0; i < numFillAreas; i++)
     {
-	pData = (CARD32 *) *ocDest;
-	*ocDest += sizeof (CARD32);
-	*pData = vertices[i].count; 
+	STORE_CARD32 (vertices[i].count, *ocDest);
 	
-	PEXEncodeWords ((char *) vertices[i].vertices.no_data,
-	    *ocDest, vertices[i].count * lenofVertex);
+	STORE_LISTOF_VERTEX (vertices[i].count, NUMBYTES (lenofVertex),
+	    colorType, vertexAttributes, vertices[i].vertices, *ocDest,
+	    fpConvert, fpFormat);
     }
 }
 
 
-void _PEXEncodeTriangleStrip (float_format, ocSrc, ocDest)
+void _PEXEncodeTriangleStrip (fpFormat, ocSrc, ocDest)
 
-int		float_format;
+int		fpFormat;
 PEXOCData	*ocSrc;
 char		**ocDest;
 
 {
-    pexTriangleStrip	*pInfo;
+    pexTriangleStrip	*oc;
+    int			dataLength;
     int			lenofColor;
-    int			lenofFacetDataList;
-    int			lenofVertexList;
+    int			lenofFacet;
+    int			lenofVertex;
     int			colorType;
     unsigned long	numVertices;
-    unsigned int	facetAttributes, vertexAttributes;
+    unsigned int	facetAttributes;
+    unsigned int	vertexAttributes;
+    int			fpConvert = (fpFormat != NATIVE_FP_FORMAT);
     
     colorType = ocSrc->data.TriangleStrip.color_type;
     numVertices = ocSrc->data.TriangleStrip.count;
@@ -1139,47 +1528,52 @@ char		**ocDest;
     vertexAttributes = ocSrc->data.TriangleStrip.vertex_attributes;
     
     lenofColor = GetColorLength (colorType);
-    lenofFacetDataList = (numVertices - 2) *
-	GetFacetDataLength (facetAttributes, lenofColor); 
-    lenofVertexList = numVertices *
-	GetVertexWithDataLength (vertexAttributes, lenofColor);
+    lenofFacet = GetFacetDataLength (facetAttributes, lenofColor); 
+    lenofVertex = GetVertexWithDataLength (vertexAttributes, lenofColor);
+
+    dataLength = (numVertices - 2) * lenofFacet + numVertices * lenofVertex;
+
+    BEGIN_ENCODE_OCHEADER (TriangleStrip, ocSrc->oc_type,
+	dataLength, *ocDest, oc);
+
+    oc->colorType = colorType;
+    oc->facetAttribs = facetAttributes;
+    oc->vertexAttribs = vertexAttributes;
+    oc->numVertices = numVertices;
     
-    PEXInitEncodeOC (*ocDest, PEXOCTriangleStrip, 
-	LENOF (pexTriangleStrip),
-	lenofFacetDataList + lenofVertexList,
-	pexTriangleStrip, pInfo);
-    
-    pInfo->colorType = colorType;
-    pInfo->facetAttribs = facetAttributes;
-    pInfo->vertexAttribs = vertexAttributes;
-    pInfo->numVertices = numVertices;
-    
+    END_ENCODE_OCHEADER (TriangleStrip, *ocDest, oc);
+
     if (facetAttributes)
     {
-	PEXEncodeWords (
-	    (char *) ocSrc->data.TriangleStrip.facet_data.index,
-	    *ocDest, lenofFacetDataList);
+	STORE_LISTOF_FACET (numVertices - 2, NUMBYTES (lenofFacet), colorType,
+	    facetAttributes, ocSrc->data.TriangleStrip.facet_data,
+	    *ocDest, fpConvert, fpFormat);
     }
     
-    PEXEncodeWords ((char *) ocSrc->data.TriangleStrip.vertices.no_data,
-	*ocDest, lenofVertexList);
+    STORE_LISTOF_VERTEX (numVertices, NUMBYTES (lenofVertex), colorType,
+	vertexAttributes, ocSrc->data.TriangleStrip.vertices, *ocDest,
+	fpConvert, fpFormat);
 }
 
 
-void _PEXEncodeQuadMesh (float_format, ocSrc, ocDest)
+void _PEXEncodeQuadMesh (fpFormat, ocSrc, ocDest)
 
-int		float_format;
+int		fpFormat;
 PEXOCData	*ocSrc;
 char		**ocDest;
 
 {
-    pexQuadrilateralMesh 	*pInfo;
+    pexQuadrilateralMesh 	*oc;
+    int				dataLength;
     int				lenofColor;
-    int				lenofFacetDataList;
-    int				lenofVertexList;
+    int				lenofFacet;
+    int				lenofVertex;
     int				colorType;
-    unsigned int		rowCount, colCount;
-    unsigned int		facetAttributes, vertexAttributes;
+    unsigned int		rowCount;
+    unsigned int		colCount;
+    unsigned int		facetAttributes;
+    unsigned int		vertexAttributes;
+    int				fpConvert = (fpFormat != NATIVE_FP_FORMAT);
     
     colorType = ocSrc->data.QuadrilateralMesh.color_type;
     rowCount = ocSrc->data.QuadrilateralMesh.row_count;
@@ -1188,62 +1582,64 @@ char		**ocDest;
     vertexAttributes = ocSrc->data.QuadrilateralMesh.vertex_attributes;
     
     lenofColor = GetColorLength (colorType);
-    lenofFacetDataList = ((rowCount - 1) * (colCount - 1)) *
-	GetFacetDataLength (facetAttributes, lenofColor); 
-    lenofVertexList = rowCount * colCount *
-	GetVertexWithDataLength (vertexAttributes, lenofColor);
+    lenofFacet = GetFacetDataLength (facetAttributes, lenofColor); 
+    lenofVertex = GetVertexWithDataLength (vertexAttributes, lenofColor);
+
+    dataLength = (((rowCount - 1) * (colCount - 1)) * lenofFacet) +
+	(rowCount * colCount * lenofVertex);
+
+    BEGIN_ENCODE_OCHEADER (QuadrilateralMesh, ocSrc->oc_type,
+	dataLength, *ocDest, oc);
     
-    PEXInitEncodeOC (*ocDest, PEXOCQuadrilateralMesh, 
-	LENOF (pexQuadrilateralMesh),
-	lenofFacetDataList + lenofVertexList,
-	pexQuadrilateralMesh, pInfo);
+    oc->colorType = colorType;
+    oc->mPts = colCount;
+    oc->nPts = rowCount;
+    oc->facetAttribs = facetAttributes;
+    oc->vertexAttribs = vertexAttributes;
+    oc->shape = ocSrc->data.QuadrilateralMesh.shape_hint;
     
-    pInfo->colorType = colorType;
-    pInfo->mPts = colCount;
-    pInfo->nPts = rowCount;
-    pInfo->facetAttribs = facetAttributes;
-    pInfo->vertexAttribs = vertexAttributes;
-    pInfo->shape = ocSrc->data.QuadrilateralMesh.shape_hint;
-    
+    END_ENCODE_OCHEADER (QuadrilateralMesh, *ocDest, oc);
+
     if (facetAttributes)
     {
-	PEXEncodeWords (
-	    (char *) ocSrc->data.QuadrilateralMesh.facet_data.index,
-	    *ocDest, lenofFacetDataList);
+	STORE_LISTOF_FACET ((rowCount - 1) * (colCount - 1),
+	    NUMBYTES (lenofFacet), colorType, facetAttributes,
+	    ocSrc->data.QuadrilateralMesh.facet_data,
+	    *ocDest, fpConvert, fpFormat);
     }
     
-    PEXEncodeWords (
-	(char *) ocSrc->data.QuadrilateralMesh.vertices.no_data,
-	*ocDest, lenofVertexList);
+    STORE_LISTOF_VERTEX (rowCount * colCount, NUMBYTES (lenofVertex),
+	colorType, vertexAttributes, ocSrc->data.QuadrilateralMesh.vertices,
+	*ocDest, fpConvert, fpFormat);
 }
 
 
-void _PEXEncodeSOFA (float_format, ocSrc, ocDest)
+void _PEXEncodeSOFA (fpFormat, ocSrc, ocDest)
 
-int		float_format;
+int		fpFormat;
 PEXOCData	*ocSrc;
 char		**ocDest;
 
 {
-    pexSOFAS		*pInfo;
-    PEXConnectivityData *pConnectivity;
-    PEXListOfUShort 	*pList;
-    int 		lenofColor;
-    int 		lenofFacet;
-    int 		lenofVertex;
-    int 		sizeofEdge;
-    int			totLength;
-    int 		numContours;
-    int 		count = 0;
-    int			i, j;
-    CARD16		*pData;
-    unsigned int	facetAttributes;
-    unsigned int	vertexAttributes;
-    unsigned int	edgeAttributes;
-    int			colorType, cbytes;
-    unsigned int	numFillAreaSets;
-    unsigned int	numVertices;
-    unsigned int	numIndices;
+    pexSetOfFillAreaSets	*oc;
+    PEXConnectivityData 	*pConnectivity;
+    PEXListOfUShort 		*pList;
+    int 			lenofColor;
+    int 			lenofFacet;
+    int 			lenofVertex;
+    int 			sizeofEdge;
+    int				totLength;
+    int 			numContours;
+    int 			count;
+    int				i, j;
+    unsigned int		facetAttributes;
+    unsigned int		vertexAttributes;
+    unsigned int		edgeAttributes;
+    int				colorType, cbytes;
+    unsigned int		numFillAreaSets;
+    unsigned int		numVertices;
+    unsigned int		numIndices;
+    int				fpConvert = (fpFormat != NATIVE_FP_FORMAT);
     
     colorType = ocSrc->data.SetOfFillAreaSets.color_type;
     facetAttributes = ocSrc->data.SetOfFillAreaSets.facet_attributes;
@@ -1261,61 +1657,61 @@ char		**ocDest;
     lenofColor = GetColorLength (colorType);
     lenofFacet = GetFacetDataLength (facetAttributes, lenofColor); 
     lenofVertex = GetVertexWithDataLength (vertexAttributes, lenofColor);
-    sizeofEdge = edgeAttributes ? sizeof (CARD8) : 0;
+    sizeofEdge = edgeAttributes ? SIZEOF (CARD8) : 0;
     
-    cbytes = sizeof (CARD16) * (numFillAreaSets + numContours + numIndices);
+    cbytes = SIZEOF (CARD16) * (numFillAreaSets + numContours + numIndices);
 
     totLength = (lenofFacet * numFillAreaSets) + (lenofVertex * numVertices) + 
 	NUMWORDS (sizeofEdge * numIndices) + NUMWORDS (cbytes);
     
-    PEXInitEncodeOC (*ocDest, PEXOCSetOfFillAreaSets,
-	LENOF (pexSOFAS), totLength, pexSOFAS, pInfo);
+    BEGIN_ENCODE_OCHEADER (SetOfFillAreaSets, ocSrc->oc_type,
+	totLength, *ocDest, oc);
+
+    oc->shape = ocSrc->data.SetOfFillAreaSets.shape_hint;
+    oc->colorType = colorType;
+    oc->FAS_Attributes = facetAttributes;
+    oc->vertexAttributes = vertexAttributes;
+    oc->edgeAttributes = edgeAttributes ? PEXOn : PEXOff;
+    oc->contourHint = ocSrc->data.SetOfFillAreaSets.contour_hint;
+    oc->contourCountsFlag = ocSrc->data.SetOfFillAreaSets.contours_all_one;
+    oc->numFAS = numFillAreaSets;
+    oc->numVertices = numVertices;
+    oc->numEdges = numIndices;
+    oc->numContours = numContours;
     
-    pInfo->shape = ocSrc->data.SetOfFillAreaSets.shape_hint;
-    pInfo->colorType = colorType;
-    pInfo->FAS_Attributes = facetAttributes;
-    pInfo->vertexAttributes = vertexAttributes;
-    pInfo->edgeAttributes = edgeAttributes ? PEXOn : PEXOff;
-    pInfo->contourHint = ocSrc->data.SetOfFillAreaSets.contour_hint;
-    pInfo->contourCountsFlag = ocSrc->data.SetOfFillAreaSets.contours_all_one;
-    pInfo->numFAS = numFillAreaSets;
-    pInfo->numVertices = numVertices;
-    pInfo->numEdges = numIndices;
-    pInfo->numContours = numContours;
-    
+    END_ENCODE_OCHEADER (SetOfFillAreaSets, *ocDest, oc);
+
     if (facetAttributes)
     {
-	PEXEncodeWords (
-	    (char *) ocSrc->data.SetOfFillAreaSets.facet_data.index,
-	    *ocDest, lenofFacet * numFillAreaSets);
+	STORE_LISTOF_FACET (numFillAreaSets, NUMBYTES (lenofFacet), colorType,
+	    facetAttributes, ocSrc->data.SetOfFillAreaSets.facet_data,
+	    *ocDest, fpConvert, fpFormat);
     }
     
-    PEXEncodeWords ((char *) ocSrc->data.SetOfFillAreaSets.vertices.no_data,
-	*ocDest, lenofVertex * numVertices);
-    
+    STORE_LISTOF_VERTEX (numVertices, NUMBYTES (lenofVertex), colorType,
+	vertexAttributes, ocSrc->data.SetOfFillAreaSets.vertices,
+	*ocDest, fpConvert, fpFormat);
+
     if (edgeAttributes)
     {
-	PEXEncodeBytes ((char *) ocSrc->data.SetOfFillAreaSets.edge_flags,
-	    *ocDest, numIndices * sizeof (CARD8));
+	COPY_AREA (ocSrc->data.SetOfFillAreaSets.edge_flags,
+	    *ocDest, numIndices);
+
+	*ocDest += PADDED_BYTES (numIndices);
     }
     
     pConnectivity = ocSrc->data.SetOfFillAreaSets.connectivity;
     
     for (i = 0 ; i < numFillAreaSets; i++)
     {
-	pData = (CARD16 *) *ocDest;
-	*ocDest += sizeof (CARD16);
-	*pData = count = pConnectivity->count;
-	
+	count = pConnectivity->count;
+	STORE_CARD16 (count, *ocDest);
+
 	for (j = 0, pList = pConnectivity->lists; j < count; j++, pList++)
 	{
-	    pData = (CARD16 *) *ocDest;
-	    *ocDest += sizeof (CARD16);
-	    *pData = pList->count;
-	    
-	    COPY_AREA ((char *) pList->shorts,
-	        *ocDest, pList->count * sizeof (CARD16));
-	    *ocDest += (pList->count * sizeof (CARD16));
+	    STORE_CARD16 (pList->count, *ocDest);
+
+	    STORE_LISTOF_CARD16 (pList->count, pList->shorts, *ocDest);
 	}
 	
 	pConnectivity++;
@@ -1325,27 +1721,28 @@ char		**ocDest;
 }
 
 
-void _PEXEncodeNURBSurface (float_format, ocSrc, ocDest)
+void _PEXEncodeNURBSurface (fpFormat, ocSrc, ocDest)
 
-int		float_format;
+int		fpFormat;
 PEXOCData	*ocSrc;
 char		**ocDest;
 
 {
-    pexNurbSurface	*pInfo;
+    pexNURBSurface	*oc;
     pexTrimCurve	*pTCHead;
     PEXTrimCurve	*ptrimCurve;
     PEXListOfTrimCurve	*ptrimLoop;
-    CARD32		*pData;
+    int			dataLength;
     int			lenofVertexList;
     int			lenofUKnotList;
     int			lenofVKnotList;
     int			lenofTrimData;
     int			thisLength, i;
-    int			count = 0;
+    int			count;
     unsigned int	numMPoints, numNPoints; 
     int			rationality, uorder, vorder;
     unsigned long	numTrimLoops;
+    int			fpConvert = (fpFormat != NATIVE_FP_FORMAT);
     
     numMPoints = ocSrc->data.NURBSurface.col_count;
     numNPoints = ocSrc->data.NURBSurface.row_count;
@@ -1380,35 +1777,47 @@ char		**ocDest;
 	}
     }
     
-    PEXInitEncodeOC (*ocDest, PEXOCNURBSurface,
-	LENOF (pexNurbSurface),
-	(lenofUKnotList + lenofVKnotList + lenofVertexList + lenofTrimData), 
-	pexNurbSurface, pInfo);
-    
-    pInfo->type = rationality;
-    pInfo->uOrder = uorder;
-    pInfo->vOrder = vorder;
-    pInfo->numUknots = uorder + numMPoints;
-    pInfo->numVknots = vorder + numNPoints;
-    pInfo->mPts = numMPoints;
-    pInfo->nPts = numNPoints;
-    pInfo->numLists = numTrimLoops;
-    
-    PEXEncodeWords ((char *) ocSrc->data.NURBSurface.uknots,
-	*ocDest, lenofUKnotList);
+    dataLength = lenofUKnotList + lenofVKnotList +
+	lenofVertexList + lenofTrimData;
 
-    PEXEncodeWords ((char *) ocSrc->data.NURBSurface.vknots,
-	*ocDest, lenofVKnotList);
+    BEGIN_ENCODE_OCHEADER (NURBSurface, ocSrc->oc_type,
+	dataLength, *ocDest, oc);
 
-    PEXEncodeWords ((char *) ocSrc->data.NURBSurface.points.point,
-	*ocDest, lenofVertexList);
+    oc->type = rationality;
+    oc->uOrder = uorder;
+    oc->vOrder = vorder;
+    oc->numUknots = uorder + numMPoints;
+    oc->numVknots = vorder + numNPoints;
+    oc->mPts = numMPoints;
+    oc->nPts = numNPoints;
+    oc->numLists = numTrimLoops;
+    
+    END_ENCODE_OCHEADER (NURBSurface, *ocDest, oc);
+
+    STORE_LISTOF_FLOAT32 (lenofUKnotList, ocSrc->data.NURBSurface.uknots,
+	*ocDest, fpConvert, fpFormat);
+
+    STORE_LISTOF_FLOAT32 (lenofVKnotList, ocSrc->data.NURBSurface.vknots,
+	*ocDest, fpConvert, fpFormat);
+
+    if (rationality == PEXRational)
+    {
+	STORE_LISTOF_COORD4D (numMPoints * numNPoints,
+            ocSrc->data.NURBSurface.points.point_4d, *ocDest,
+	    fpConvert, fpFormat);
+    }
+    else
+    {
+	STORE_LISTOF_COORD3D (numMPoints * numNPoints,
+	    ocSrc->data.NURBSurface.points.point, *ocDest,
+	    fpConvert, fpFormat);
+    }
     
     ptrimLoop = ocSrc->data.NURBSurface.trim_curves;
     for (i = 0; i < numTrimLoops; i++, ptrimLoop++)
     {
-	pData = (CARD32 *) *ocDest;
-	*ocDest += sizeof (CARD32);
-	*pData = count = ptrimLoop->count;
+	count = ptrimLoop->count;
+	STORE_CARD32 (count, *ocDest);
 	
 	ptrimCurve = ptrimLoop->curves;
 	
@@ -1416,28 +1825,49 @@ char		**ocDest;
 	{
 	    thisLength = ptrimCurve->order + ptrimCurve->count;
 	    
-	    pTCHead = (pexTrimCurve *) *ocDest;
-	    *ocDest += sizeof (pexTrimCurve);
+	    BEGIN_TRIMCURVE_HEAD (*ocDest, pTCHead);
 	    
 	    pTCHead->visibility = (pexSwitch) ptrimCurve->visibility;
 	    pTCHead->order = (CARD16) ptrimCurve->order;
 	    pTCHead->type = (pexCoordType) ptrimCurve->rationality;
 	    pTCHead->approxMethod = (INT16) ptrimCurve->approx_method;
-	    pTCHead->tolerance = (float) ptrimCurve->tolerance;
-	    pTCHead->tMin = (float) ptrimCurve->tmin;
-	    pTCHead->tMax = (float) ptrimCurve->tmax;
 	    pTCHead->numKnots = thisLength;
 	    pTCHead->numCoord = ptrimCurve->count;
-	
-	    PEXEncodeWords ((char *) ptrimCurve->knots.floats,
-	        *ocDest, thisLength);
-	
-	    thisLength = ptrimCurve->count *
-	        ((ptrimCurve->rationality == PEXRational) ?
-	        LENOF (pexCoord3D) : LENOF (pexCoord2D));
-	
-	    PEXEncodeWords ((char *) ptrimCurve->control_points.point,
-	        *ocDest, thisLength);
+
+	    if (fpConvert)
+	    {
+		FP_CONVERT_HTON (ptrimCurve->tolerance,
+		    pTCHead->tolerance, fpFormat);
+		FP_CONVERT_HTON (ptrimCurve->tmin,
+		    pTCHead->tMin, fpFormat);
+		FP_CONVERT_HTON (ptrimCurve->tmax,
+		    pTCHead->tMax, fpFormat);
+	    }
+	    else
+	    {
+		pTCHead->tolerance = (float) ptrimCurve->tolerance;
+		pTCHead->tMin = (float) ptrimCurve->tmin;
+		pTCHead->tMax = (float) ptrimCurve->tmax;
+	    }
+
+	    END_TRIMCURVE_HEAD (*ocDest, pTCHead);
+	    *ocDest += SIZEOF (pexTrimCurve);
+
+	    STORE_LISTOF_FLOAT32 (thisLength,
+		ptrimCurve->knots.floats, *ocDest, fpConvert, fpFormat);
+
+	    if (ptrimCurve->rationality == PEXRational)
+	    {
+		STORE_LISTOF_COORD3D (ptrimCurve->count,
+		    ptrimCurve->control_points.point, *ocDest,
+		    fpConvert, fpFormat);
+	    }
+	    else
+	    {
+		STORE_LISTOF_COORD2D (ptrimCurve->count,
+		    ptrimCurve->control_points.point_2d, *ocDest,
+		    fpConvert, fpFormat);
+	    }
 	
 	    ptrimCurve++;
 	}
@@ -1445,164 +1875,257 @@ char		**ocDest;
 }
 
 
-void _PEXEncodeCellArray (float_format, ocSrc, ocDest)
+void _PEXEncodeCellArray (fpFormat, ocSrc, ocDest)
 
-int		float_format;
+int		fpFormat;
 PEXOCData	*ocSrc;
 char		**ocDest;
 
 {
-    pexCellArray	*pInfo;
-    int			bytes;
+    pexCellArray	*oc;
+    int			dataLength;
+    int			count;
+    int			fpConvert = (fpFormat != NATIVE_FP_FORMAT);
     
-    bytes = ocSrc->data.CellArray.col_count *
-	ocSrc->data.CellArray.row_count * sizeof (pexTableIndex);
+    count = ocSrc->data.CellArray.col_count * ocSrc->data.CellArray.row_count;
+    dataLength = NUMWORDS (count * SIZEOF (pexTableIndex));
     
-    PEXInitEncodeOC (*ocDest, PEXOCCellArray,
-	LENOF (pexCellArray), NUMWORDS (bytes), pexCellArray, pInfo);
+    BEGIN_ENCODE_OCHEADER (CellArray, ocSrc->oc_type, dataLength, *ocDest, oc);
+
+    if (fpConvert)
+    {
+	FP_CONVERT_HTON (ocSrc->data.CellArray.point1.x,
+	    oc->point1_x, fpFormat);
+	FP_CONVERT_HTON (ocSrc->data.CellArray.point1.y,
+	    oc->point1_y, fpFormat);
+	FP_CONVERT_HTON (ocSrc->data.CellArray.point1.z,
+	    oc->point1_z, fpFormat);
+	FP_CONVERT_HTON (ocSrc->data.CellArray.point2.x,
+	    oc->point2_x, fpFormat);
+	FP_CONVERT_HTON (ocSrc->data.CellArray.point2.y,
+	    oc->point2_y, fpFormat);
+	FP_CONVERT_HTON (ocSrc->data.CellArray.point2.z,
+	    oc->point2_z, fpFormat);
+	FP_CONVERT_HTON (ocSrc->data.CellArray.point3.x,
+	    oc->point3_x, fpFormat);
+	FP_CONVERT_HTON (ocSrc->data.CellArray.point3.y,
+	    oc->point3_y, fpFormat);
+	FP_CONVERT_HTON (ocSrc->data.CellArray.point3.z,
+	    oc->point3_z, fpFormat);
+    }
+    else
+    {
+	oc->point1_x = ocSrc->data.CellArray.point1.x;
+	oc->point1_y = ocSrc->data.CellArray.point1.y;
+	oc->point1_z = ocSrc->data.CellArray.point1.z;
+	oc->point2_x = ocSrc->data.CellArray.point2.x;
+	oc->point2_y = ocSrc->data.CellArray.point2.y;
+	oc->point2_z = ocSrc->data.CellArray.point2.z;
+	oc->point3_x = ocSrc->data.CellArray.point3.x;
+	oc->point3_y = ocSrc->data.CellArray.point3.y;
+	oc->point3_z = ocSrc->data.CellArray.point3.z;
+    }
+
+    oc->dx = ocSrc->data.CellArray.col_count;
+    oc->dy = ocSrc->data.CellArray.row_count;
+
+    END_ENCODE_OCHEADER (CellArray, *ocDest, oc);
     
-    pInfo->point1.x = ocSrc->data.CellArray.point1.x;
-    pInfo->point1.y = ocSrc->data.CellArray.point1.y;
-    pInfo->point1.z = ocSrc->data.CellArray.point1.z;
-    pInfo->point2.x = ocSrc->data.CellArray.point2.x;
-    pInfo->point2.y = ocSrc->data.CellArray.point2.y;
-    pInfo->point2.z = ocSrc->data.CellArray.point2.z;
-    pInfo->point3.x = ocSrc->data.CellArray.point3.x;
-    pInfo->point3.y = ocSrc->data.CellArray.point3.y;
-    pInfo->point3.z = ocSrc->data.CellArray.point3.z;
-    pInfo->dx = ocSrc->data.CellArray.col_count;
-    pInfo->dy = ocSrc->data.CellArray.row_count;
-    
-    PEXEncodeBytes ((char *) ocSrc->data.CellArray.color_indices,
-	*ocDest, bytes);
+    STORE_LISTOF_CARD16 (count, ocSrc->data.CellArray.color_indices, *ocDest);
+
+    if (count & 1)
+	*ocDest += 2;
 }
 
 
-void _PEXEncodeCellArray2D (float_format, ocSrc, ocDest)
+void _PEXEncodeCellArray2D (fpFormat, ocSrc, ocDest)
 
-int		float_format;
+int		fpFormat;
 PEXOCData	*ocSrc;
 char		**ocDest;
 
 {
-    pexCellArray2D	*pInfo;
-    int			bytes;
+    pexCellArray2D	*oc;
+    int			dataLength;
+    int			count;
+    int			fpConvert = (fpFormat != NATIVE_FP_FORMAT);
     
-    bytes = ocSrc->data.CellArray2D.col_count *
-	ocSrc->data.CellArray2D.row_count * sizeof (pexTableIndex);
+    count = ocSrc->data.CellArray2D.col_count *
+	ocSrc->data.CellArray2D.row_count;
+
+    dataLength = NUMWORDS (count * SIZEOF (pexTableIndex));
     
-    PEXInitEncodeOC (*ocDest, PEXOCCellArray2D,
-	LENOF (pexCellArray2D), NUMWORDS (bytes), pexCellArray2D, pInfo);
+    BEGIN_ENCODE_OCHEADER (CellArray2D, ocSrc->oc_type,
+	dataLength, *ocDest, oc);
+
+    if (fpConvert)
+    {
+	FP_CONVERT_HTON (ocSrc->data.CellArray2D.point1.x,
+	    oc->point1_x, fpFormat);
+	FP_CONVERT_HTON (ocSrc->data.CellArray2D.point1.y,
+	    oc->point1_y, fpFormat);
+	FP_CONVERT_HTON (ocSrc->data.CellArray2D.point2.x,
+	    oc->point2_x, fpFormat);
+	FP_CONVERT_HTON (ocSrc->data.CellArray2D.point2.y,
+	    oc->point2_y, fpFormat);
+    }
+    else
+    {
+	oc->point1_x = ocSrc->data.CellArray2D.point1.x;
+	oc->point1_y = ocSrc->data.CellArray2D.point1.y;
+	oc->point2_x = ocSrc->data.CellArray2D.point2.x;
+	oc->point2_y = ocSrc->data.CellArray2D.point2.y;
+    }
+
+    oc->dx = ocSrc->data.CellArray2D.col_count;
+    oc->dy = ocSrc->data.CellArray2D.row_count;
+
+    END_ENCODE_OCHEADER (CellArray2D, *ocDest, oc);
     
-    pInfo->point1.x = ocSrc->data.CellArray2D.point1.x;
-    pInfo->point1.y = ocSrc->data.CellArray2D.point1.y;
-    pInfo->point2.x = ocSrc->data.CellArray2D.point2.x;
-    pInfo->point2.y = ocSrc->data.CellArray2D.point2.y;
-    pInfo->dx = ocSrc->data.CellArray2D.col_count;
-    pInfo->dy = ocSrc->data.CellArray2D.row_count;
-    
-    PEXEncodeBytes ((char *) ocSrc->data.CellArray2D.color_indices,
-	*ocDest, bytes);
+    STORE_LISTOF_CARD16 (count,
+	ocSrc->data.CellArray2D.color_indices, *ocDest);
+
+    if (count & 1)
+	*ocDest += 2;
 }
 
 
-void _PEXEncodeExtendedCellArray (float_format, ocSrc, ocDest)
+void _PEXEncodeExtendedCellArray (fpFormat, ocSrc, ocDest)
 
-int		float_format;
+int		fpFormat;
 PEXOCData	*ocSrc;
 char		**ocDest;
 
 {
-    pexExtCellArray	*pInfo;
-    int			lenofColorList;
-    
-    lenofColorList = ocSrc->data.ExtendedCellArray.col_count *
-	ocSrc->data.ExtendedCellArray.row_count *
+    pexExtendedCellArray	*oc;
+    int				count;
+    int				dataLength;
+    int				fpConvert = (fpFormat != NATIVE_FP_FORMAT);
+
+    count = ocSrc->data.ExtendedCellArray.col_count *
+	ocSrc->data.ExtendedCellArray.row_count;
+
+    dataLength = count *
 	GetColorLength (ocSrc->data.ExtendedCellArray.color_type);
     
-    PEXInitEncodeOC (*ocDest, PEXOCExtendedCellArray,
-	LENOF (pexExtCellArray), lenofColorList, pexExtCellArray, pInfo);
+    BEGIN_ENCODE_OCHEADER (ExtendedCellArray, ocSrc->oc_type,
+	dataLength, *ocDest, oc);
+
+    if (fpConvert)
+    {
+	FP_CONVERT_HTON (ocSrc->data.ExtendedCellArray.point1.x,
+	    oc->point1_x, fpFormat);
+	FP_CONVERT_HTON (ocSrc->data.ExtendedCellArray.point1.y,
+	    oc->point1_y, fpFormat);
+	FP_CONVERT_HTON (ocSrc->data.ExtendedCellArray.point1.z,
+	    oc->point1_z, fpFormat);
+	FP_CONVERT_HTON (ocSrc->data.ExtendedCellArray.point2.x,
+	    oc->point2_x, fpFormat);
+	FP_CONVERT_HTON (ocSrc->data.ExtendedCellArray.point2.y,
+	    oc->point2_y, fpFormat);
+	FP_CONVERT_HTON (ocSrc->data.ExtendedCellArray.point2.z,
+	    oc->point2_z, fpFormat);
+	FP_CONVERT_HTON (ocSrc->data.ExtendedCellArray.point3.x,
+	    oc->point3_x, fpFormat);
+	FP_CONVERT_HTON (ocSrc->data.ExtendedCellArray.point3.y,
+	    oc->point3_y, fpFormat);
+	FP_CONVERT_HTON (ocSrc->data.ExtendedCellArray.point3.z,
+	    oc->point3_z, fpFormat);
+    }
+    else
+    {
+	oc->point1_x = ocSrc->data.ExtendedCellArray.point1.x;
+	oc->point1_y = ocSrc->data.ExtendedCellArray.point1.y;
+	oc->point1_z = ocSrc->data.ExtendedCellArray.point1.z;
+	oc->point2_x = ocSrc->data.ExtendedCellArray.point2.x;
+	oc->point2_y = ocSrc->data.ExtendedCellArray.point2.y;
+	oc->point2_z = ocSrc->data.ExtendedCellArray.point2.z;
+	oc->point3_x = ocSrc->data.ExtendedCellArray.point3.x;
+	oc->point3_y = ocSrc->data.ExtendedCellArray.point3.y;
+	oc->point3_z = ocSrc->data.ExtendedCellArray.point3.z;
+    }
     
-    pInfo->colorType = ocSrc->data.ExtendedCellArray.color_type;
-    pInfo->point1.x = ocSrc->data.ExtendedCellArray.point1.x;
-    pInfo->point1.y = ocSrc->data.ExtendedCellArray.point1.y;
-    pInfo->point1.z = ocSrc->data.ExtendedCellArray.point1.z;
-    pInfo->point2.x = ocSrc->data.ExtendedCellArray.point2.x;
-    pInfo->point2.y = ocSrc->data.ExtendedCellArray.point2.y;
-    pInfo->point2.z = ocSrc->data.ExtendedCellArray.point2.z;
-    pInfo->point3.x = ocSrc->data.ExtendedCellArray.point3.x;
-    pInfo->point3.y = ocSrc->data.ExtendedCellArray.point3.y;
-    pInfo->point3.z = ocSrc->data.ExtendedCellArray.point3.z;
-    pInfo->dx = ocSrc->data.ExtendedCellArray.col_count;
-    pInfo->dy = ocSrc->data.ExtendedCellArray.row_count;
-    
-    PEXEncodeWords ((char *) ocSrc->data.ExtendedCellArray.colors.indexed,
-	*ocDest, lenofColorList);
+    oc->colorType = ocSrc->data.ExtendedCellArray.color_type;
+    oc->dx = ocSrc->data.ExtendedCellArray.col_count;
+    oc->dy = ocSrc->data.ExtendedCellArray.row_count;
+
+    END_ENCODE_OCHEADER (ExtendedCellArray, *ocDest, oc);
+
+    STORE_LISTOF_COLOR_VAL (count, ocSrc->data.ExtendedCellArray.color_type,
+	ocSrc->data.ExtendedCellArray.colors, *ocDest, fpConvert, fpFormat);
 }
 
 
-void _PEXEncodeGDP (float_format, ocSrc, ocDest)
+void _PEXEncodeGDP (fpFormat, ocSrc, ocDest)
 
-int		float_format;
+int		fpFormat;
 PEXOCData	*ocSrc;
 char		**ocDest;
 
 {
-    pexGdp	*pInfo;
-    int		lenofVertexList;
+    pexGDP	*oc;
+    int		dataLength;
+    int		fpConvert = (fpFormat != NATIVE_FP_FORMAT);
     
-    lenofVertexList = LENOF (pexCoord3D) * ocSrc->data.GDP.count;
+    dataLength = ocSrc->data.GDP.count * LENOF (pexCoord3D) +
+	NUMWORDS (ocSrc->data.GDP.length);
     
-    PEXInitEncodeOC (*ocDest, PEXOCGDP,
-	LENOF (pexGdp), lenofVertexList + NUMWORDS (ocSrc->data.GDP.length),
-	pexGdp, pInfo);
-    
-    pInfo->gdpId = ocSrc->data.GDP.gdp_id;
-    pInfo->numPoints = ocSrc->data.GDP.count;
-    pInfo->numBytes = ocSrc->data.GDP.length;
-    
-    PEXEncodeWords ((char *) ocSrc->data.GDP.points, *ocDest, lenofVertexList);
+    BEGIN_ENCODE_OCHEADER (GDP, ocSrc->oc_type, dataLength, *ocDest, oc);
 
-    PEXEncodeBytes ((char *) ocSrc->data.GDP.data,
-	*ocDest, ocSrc->data.GDP.length);
+    oc->gdpId = ocSrc->data.GDP.gdp_id;
+    oc->numPoints = ocSrc->data.GDP.count;
+    oc->numBytes = ocSrc->data.GDP.length;
+    
+    END_ENCODE_OCHEADER (GDP, *ocDest, oc);
+
+    STORE_LISTOF_COORD3D (ocSrc->data.GDP.count, ocSrc->data.GDP.points,
+	*ocDest, fpConvert, fpFormat);
+
+    COPY_AREA (ocSrc->data.GDP.data, *ocDest, ocSrc->data.GDP.length);
+    *ocDest += PADDED_BYTES (ocSrc->data.GDP.length);
 }
 
 
-void _PEXEncodeGDP2D (float_format, ocSrc, ocDest)
+void _PEXEncodeGDP2D (fpFormat, ocSrc, ocDest)
 
-int		float_format;
+int		fpFormat;
 PEXOCData	*ocSrc;
 char		**ocDest;
 
 {
-    pexGdp2D	*pInfo;
-    int		lenofVertexList;
+    pexGDP2D	*oc;
+    int		dataLength;
+    int		fpConvert = (fpFormat != NATIVE_FP_FORMAT);
     
-    lenofVertexList = LENOF (pexCoord2D) *
-	ocSrc->data.GDP2D.count;
+    dataLength = ocSrc->data.GDP2D.count * LENOF (pexCoord2D) +
+	NUMWORDS (ocSrc->data.GDP2D.length);
     
-    PEXInitEncodeOC (*ocDest, PEXOCGDP2D,
-	LENOF (pexGdp2D), lenofVertexList + NUMWORDS (ocSrc->data.GDP2D.length),
-	pexGdp2D, pInfo);
-    
-    pInfo->gdpId = ocSrc->data.GDP2D.gdp_id;
-    pInfo->numPoints = ocSrc->data.GDP2D.count;
-    pInfo->numBytes = ocSrc->data.GDP2D.length;
-    
-    PEXEncodeWords ((char *) ocSrc->data.GDP2D.points,
-	*ocDest, lenofVertexList);
+    BEGIN_ENCODE_OCHEADER (GDP2D, ocSrc->oc_type, dataLength, *ocDest, oc);
 
-    PEXEncodeBytes ((char *) ocSrc->data.GDP2D.data,
-	*ocDest, ocSrc->data.GDP2D.length);
+    oc->gdpId = ocSrc->data.GDP2D.gdp_id;
+    oc->numPoints = ocSrc->data.GDP2D.count;
+    oc->numBytes = ocSrc->data.GDP2D.length;
+    
+    END_ENCODE_OCHEADER (GDP2D, *ocDest, oc);
+
+    STORE_LISTOF_COORD2D (ocSrc->data.GDP2D.count, ocSrc->data.GDP2D.points,
+	*ocDest, fpConvert, fpFormat);
+
+    COPY_AREA (ocSrc->data.GDP2D.data, *ocDest, ocSrc->data.GDP2D.length);
+    *ocDest += PADDED_BYTES (ocSrc->data.GDP2D.length);
 }
 
 
-void _PEXEncodeNoop (float_format, ocSrc, ocDest)
+void _PEXEncodeNoop (fpFormat, ocSrc, ocDest)
 
-int		float_format;
+int		fpFormat;
 PEXOCData	*ocSrc;
 char		**ocDest;
 
 {
-    PEXEncodeSimpleOC (*ocDest, PEXOCNoop, 0, (char *) NULL);
+    pexNoop *oc;
+
+    BEGIN_SIMPLE_ENCODE (Noop, ocSrc->oc_type, *ocDest, oc);
+    /* no data */
+    END_SIMPLE_ENCODE (Noop, *ocDest, oc);
 }

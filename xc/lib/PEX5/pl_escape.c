@@ -1,4 +1,4 @@
-/* $XConsortium: pl_escape.c,v 1.3 92/06/12 10:41:12 mor Exp $ */
+/* $XConsortium: pl_escape.c,v 1.5 92/10/22 18:12:26 mor Exp $ */
 
 /************************************************************************
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -29,7 +29,8 @@ INPUT int		escapeDataSize;
 INPUT char		*escapeData;
 
 {
-    pexEscapeReq		*req;
+    register pexEscapeReq	*req;
+    char			*pBuf;
 
 
     /*
@@ -43,10 +44,16 @@ INPUT char		*escapeData;
      * Put the request in the X request buffer.
      */
 
-    PEXGetReqExtra (Escape, escapeDataSize, req);
+    PEXGetReqExtra (Escape, escapeDataSize, pBuf);
+
+    BEGIN_REQUEST_HEADER (Escape, pBuf, req);
+
+    PEXStoreReqExtraHead (Escape, escapeDataSize, req);
     req->escapeID = escapeID;
 
-    COPY_AREA ((char *) escapeData, ((char *) &req[1]), escapeDataSize);
+    END_REQUEST_HEADER (Escape, pBuf, req);
+
+    COPY_AREA (escapeData, pBuf, escapeDataSize);
 
 
     /*
@@ -69,9 +76,11 @@ INPUT char		*escapeData;
 OUTPUT unsigned long	*escapeOutDataSize;
 
 {
-    pexEscapeWithReplyReq		*req;
+    register pexEscapeWithReplyReq	*req;
+    char				*pBuf;
     pexEscapeWithReplyReply		rep;
-    char				*escRepData, *pescRepData;
+    char				*escRepData;
+    char				*escRepDataRet;
 
 
     /*
@@ -85,10 +94,16 @@ OUTPUT unsigned long	*escapeOutDataSize;
      * Put the request in the X request buffer and get a reply.
      */
 
-    PEXGetReqExtra (EscapeWithReply, escapeDataSize, req);
+    PEXGetReqExtra (EscapeWithReply, escapeDataSize, pBuf);
+
+    BEGIN_REQUEST_HEADER (EscapeWithReply, pBuf, req);
+
+    PEXStoreReqExtraHead (EscapeWithReply, escapeDataSize, req);
     req->escapeID = escapeID;
 
-    COPY_AREA ((char *) escapeData, ((char *) &req[1]), escapeDataSize);
+    END_REQUEST_HEADER (EscapeWithReply, pBuf, req);
+
+    COPY_AREA (escapeData, pBuf, escapeDataSize);
 
     if (_XReply (display, &rep, 0, xFalse) == 0)
     {
@@ -105,13 +120,13 @@ OUTPUT unsigned long	*escapeOutDataSize;
      * Allocate a buffer for the reply escape data
      */
 
-    escRepData = pescRepData = PEXAllocBuf ((unsigned) *escapeOutDataSize);
+    escRepData = escRepDataRet = PEXAllocBuf (*escapeOutDataSize);
 
     COPY_AREA ((char *) rep.escape_specific, escRepData, 20);
     escRepData += 20;
 
     if (rep.length)
-	_XRead (display, escRepData, (long) (rep.length << 2));
+	_XRead (display, (char *) escRepData, (long) (rep.length << 2));
 
 
     /*
@@ -121,7 +136,7 @@ OUTPUT unsigned long	*escapeOutDataSize;
     UnlockDisplay (display);
     PEXSyncHandle (display);
 
-    return (pescRepData);
+    return (escRepDataRet);
 }
 
 
@@ -133,28 +148,41 @@ INPUT int		color_type;
 INPUT PEXColor		*color;
 
 {
-    PEXEchoColorData	escapeData;
-    int			escapeSize;
+    char			*escapeData;
+    int				escapeSize;
+    pexEscapeSetEchoColorData	*header;
+    char			*ptr;
+    int				fpConvert;
+    int				fpFormat;
 
 
     /*
      * Fill in the escape record.
      */
 
-    escapeData.fp_format = PEXGetProtocolFloatFormat (display);
-    escapeData.renderer = renderer;
-    escapeData.echo_color.type = color_type;
+    escapeSize = SIZEOF (pexEscapeSetEchoColorData) +
+	SIZEOF (pexColorSpecifier) + GetColorSize (color_type);
 
-    COPY_AREA ((char *) color, (char *) &(escapeData.echo_color.value),
-	GetColorSize (color_type));
+    escapeData = PEXAllocBuf (escapeSize);
+
+    fpFormat = PEXGetProtocolFloatFormat (display);
+    fpConvert = (fpFormat != NATIVE_FP_FORMAT);
+
+    header = (pexEscapeSetEchoColorData *) escapeData;
+    header->fpFormat = fpFormat;
+    header->rdr = renderer;
+
+    ptr = escapeData + SIZEOF (pexEscapeSetEchoColorData);
+    STORE_INT16 (color_type, ptr);
+    ptr += 2;
+    STORE_COLOR_VAL (color_type, (*color), ptr, fpConvert, fpFormat);
 
 
     /*
      * Generate the escape.
      */
 
-    escapeSize = sizeof (PEXEchoColorData) - AdjustSizeFromType (color_type);
+    PEXEscape (display, PEXEscapeSetEchoColor, escapeSize, escapeData);
 
-    PEXEscape (display, PEXEscapeSetEchoColor, escapeSize,
-        (char *) &escapeData);
+    PEXFreeBuf (escapeData);
 }

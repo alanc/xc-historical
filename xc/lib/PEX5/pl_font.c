@@ -1,4 +1,4 @@
-/* $XConsortium: pl_font.c,v 1.6 92/09/09 14:07:35 mor Exp $ */
+/* $XConsortium: pl_font.c,v 1.9 92/12/07 19:47:47 mor Exp $ */
 
 /******************************************************************************
 Copyright 1987,1991 by Digital Equipment Corporation, Maynard, Massachusetts
@@ -36,8 +36,9 @@ INPUT Display	*display;
 INPUT char	*fontname;
 
 {
-    pexLoadFontReq	*req;
-    pexFont		id;
+    register pexLoadFontReq	*req;
+    char			*pBuf;
+    PEXFont			id;
 
 
     /*
@@ -51,12 +52,18 @@ INPUT char	*fontname;
      * Put the request in the X request buffer.
      */
 
-    PEXGetReq (LoadFont, req);
+    PEXGetReq (LoadFont, pBuf);
+
+    BEGIN_REQUEST_HEADER (LoadFont, pBuf, req);
+
+    PEXStoreReqHead (LoadFont, req);
     req->numBytes = strlen (fontname);
     req->font = id = XAllocID (display);
     req->length += (req->numBytes + 3) >> 2;
 
-    Data (display, (char *) fontname, req->numBytes);
+    END_REQUEST_HEADER (LoadFont, pBuf, req);
+
+    Data (display, fontname, req->numBytes);
 
 
     /*
@@ -77,7 +84,8 @@ INPUT Display	*display;
 INPUT PEXFont	font;
 
 {
-    pexResourceReq *req;
+    register pexResourceReq 	*req;
+    char			*pBuf;
 
 
     /*
@@ -91,8 +99,14 @@ INPUT PEXFont	font;
      * Put the request in the X request buffer.
      */
 
-    PEXGetReq (UnloadFont, req);
+    PEXGetReq (UnloadFont, pBuf);
+
+    BEGIN_REQUEST_HEADER (Resource, pBuf, req);
+
+    PEXStoreReqHead (UnloadFont, req);
     req->id = font;
+
+    END_REQUEST_HEADER (Resource, pBuf, req);
 
 
     /*
@@ -111,11 +125,10 @@ INPUT Display		*display;
 INPUT PEXFont		font;
 
 {
-    pexQueryFontReply 	rep;
-    pexQueryFontReq	*req;
-    pexFontInfo		*buf;
-    int 		prop_size;
-    PEXFontInfo		*fontInfoReturn;
+    register pexQueryFontReq	*req;
+    char			*pBuf;
+    pexQueryFontReply 		rep;
+    PEXFontInfo			*fontInfo;
 
 
     /*
@@ -129,8 +142,14 @@ INPUT PEXFont		font;
      * Put the request in the X request buffer and get a reply.
      */
 
-    PEXGetReq (QueryFont, req);
+    PEXGetReq (QueryFont, pBuf);
+
+    BEGIN_REQUEST_HEADER (QueryFont, pBuf, req);
+
+    PEXStoreReqHead (QueryFont, req);
     req->font = font;
+
+    END_REQUEST_HEADER (QueryFont, pBuf, req);
 
     if (_XReply (display, &rep, 0, xFalse) == 0)
     {
@@ -141,33 +160,24 @@ INPUT PEXFont		font;
 
 
     /*
-     * Allocate a scratch buffer and copy the reply data to the buffer.
+     * Read the reply data into a scratch buffer.
      */
 
-    buf = (pexFontInfo *) _XAllocScratch (display,
-	(unsigned long) (rep.length << 2));
-
-    _XRead (display, (char *) buf, (long) (rep.length << 2));
+    XREAD_INTO_SCRATCH (display, pBuf, (long) (rep.length << 2));
 
 
     /*
      * Allocate a buffer for the replies to pass back to the client.
      */
 
-    fontInfoReturn = (PEXFontInfo *)
-	PEXAllocBuf ((unsigned) sizeof (PEXFontInfo));
+    fontInfo = (PEXFontInfo *) PEXAllocBuf (sizeof (PEXFontInfo));
 
-    fontInfoReturn->first_glyph = buf->firstGlyph;
-    fontInfoReturn->last_glyph = buf->lastGlyph;
-    fontInfoReturn->default_glyph = buf->defaultGlyph;
-    fontInfoReturn->all_exist = buf->allExist;
-    fontInfoReturn->stroke = buf->strokeFont;
-    fontInfoReturn->count = buf->numProps;
+    EXTRACT_FONTINFO (pBuf, (*fontInfo));
 
-    prop_size = buf->numProps * sizeof (PEXFontProp);
-    fontInfoReturn->props = (PEXFontProp *) PEXAllocBuf ((unsigned ) prop_size);
-    buf++;
-    COPY_AREA ((char *) buf, (char *) fontInfoReturn->props, prop_size);
+    fontInfo->props = (PEXFontProp *) PEXAllocBuf (
+	fontInfo->count * sizeof (PEXFontProp));
+
+    EXTRACT_LISTOF_FONTPROP (fontInfo->count, pBuf, fontInfo->props);
 
 
     /*
@@ -177,7 +187,7 @@ INPUT PEXFont		font;
     UnlockDisplay (display);
     PEXSyncHandle (display);
 
-    return (fontInfoReturn);
+    return (fontInfo);
 }
 
 
@@ -190,12 +200,10 @@ INPUT unsigned int	maxNames;
 OUTPUT unsigned long	*countReturn;
 
 {
-    pexListFontsReply 	rep;
-    pexListFontsReq   	*req;
-    long		numChars;
-    pexString 		*repStrings;
-    char		**names;
-    int			i;
+    register pexListFontsReq   	*req;
+    char			*pBuf;
+    pexListFontsReply 		rep;
+    char			**names;
 
 
     /*
@@ -209,12 +217,18 @@ OUTPUT unsigned long	*countReturn;
      * Put the request in the X request buffer and get a reply.
      */
 
-    PEXGetReq (ListFonts, req);
-    req->maxNames = maxNames;
-    numChars = req->numChars = strlen (pattern);
-    req->length += (numChars + 3) >> 2;
+    PEXGetReq (ListFonts, pBuf);
 
-    Data (display, (char *) pattern, numChars);
+    BEGIN_REQUEST_HEADER (ListFonts, pBuf, req);
+
+    PEXStoreReqHead (ListFonts, req);
+    req->maxNames = maxNames;
+    req->numChars = strlen (pattern);
+    req->length += ((int) req->numChars + 3) >> 2;
+
+    END_REQUEST_HEADER (ListFonts, pBuf, req);
+
+    Data (display, pattern, req->numChars);
 
     if (_XReply (display, &rep, 0, xFalse) == 0)
     {
@@ -228,13 +242,10 @@ OUTPUT unsigned long	*countReturn;
 
 
     /*
-     * Allocate a scratch buffer and copy the reply data to the buffer.
+     * Read the reply data into a scratch buffer.
      */
 
-    repStrings = (pexString *)
-	_XAllocScratch (display, (unsigned long) (rep.length << 2));
-
-    _XRead (display, (char *) repStrings, (long) (rep.length << 2));
+    XREAD_INTO_SCRATCH (display, pBuf, (long) (rep.length << 2));
 
 
     /*
@@ -243,17 +254,7 @@ OUTPUT unsigned long	*countReturn;
 
     names = (char **) PEXAllocBuf (rep.numStrings * sizeof (char *));
 
-    for (i = 0; i < rep.numStrings; i++)
-    {
-	names[i] = (char *) PEXAllocBuf ((unsigned) repStrings->length + 1);
-
-	COPY_AREA ((char *) &repStrings[1], names[i],
-	    (unsigned) repStrings->length);
-	names[i][repStrings->length] = '\0';	/* null terminate string */
-
-	repStrings = (pexString *) ((char *) repStrings +
-	    PADDED_BYTES (sizeof (pexString) + repStrings->length));
-    }
+    EXTRACT_LISTOF_STRING (rep.numStrings, pBuf, names);
 
 
     /*
@@ -277,14 +278,13 @@ OUTPUT unsigned long	*countReturn;
 OUTPUT PEXFontInfo	**fontInfoReturn;
 
 {
-    pexListFontsWithInfoReq	*req;
-    pexListFontsWithInfoReply	rep;
-    long			numChars;
-    int				font_info_size, prop_size;
-    int				numFontInfoReturn, i;
-    char			*buf, **names;
-    pexString			*repStrings;
-    PEXFontInfo			*pFontInfo;
+    register pexListFontsWithInfoReq	*req;
+    char				*pBuf;
+    pexListFontsWithInfoReply		rep;
+    PEXFontInfo				*pInfoRet;
+    char				**names;
+    CARD32				count;
+    int					i;
 
 
     /*
@@ -298,12 +298,18 @@ OUTPUT PEXFontInfo	**fontInfoReturn;
      * Put the request in the X request buffer and get a reply.
      */
 
-    PEXGetReq (ListFontsWithInfo, req);
-    req->maxNames = maxNames;
-    numChars = req->numChars = strlen (pattern);
-    req->length += (numChars + 3) >> 2;
+    PEXGetReq (ListFontsWithInfo, pBuf);
 
-    Data (display, (char *) pattern, numChars);
+    BEGIN_REQUEST_HEADER (ListFontsWithInfo, pBuf, req);
+
+    PEXStoreReqHead (ListFontsWithInfo, req);
+    req->maxNames = maxNames;
+    req->numChars = strlen (pattern);
+    req->length += ((int) req->numChars + 3) >> 2;
+
+    END_REQUEST_HEADER (ListFontsWithInfo, pBuf, req);
+
+    Data (display, (char *) pattern, req->numChars);
 
     if (_XReply (display, &rep, 0, xFalse) == 0)
     {
@@ -317,12 +323,10 @@ OUTPUT PEXFontInfo	**fontInfoReturn;
 
 
     /*
-     * Allocate a scratch buffer and copy the reply data to the buffer.
+     * Read the reply data into a scratch buffer.
      */
 
-    buf = (char *) _XAllocScratch (display, (unsigned long) (rep.length << 2));
-
-    _XRead (display, (char *) buf, (long) (rep.length << 2));
+    XREAD_INTO_SCRATCH (display, pBuf, (long) (rep.length << 2));
 
 
     /*
@@ -331,45 +335,26 @@ OUTPUT PEXFontInfo	**fontInfoReturn;
 
     names = (char **) PEXAllocBuf (rep.numStrings * sizeof (char *));
 
-    repStrings = (pexString *) buf;
-    for (i = 0; i < rep.numStrings; i++)
-    {
-        names[i] = (char *) PEXAllocBuf ((unsigned) repStrings->length + 1);
-
-        COPY_AREA ((char *) &repStrings[1], names[i],
-            (unsigned) repStrings->length);
-	names[i][repStrings->length] = '\0';	/* null terminate string */
-
-        repStrings = (pexString *) ((char *) repStrings +
-            PADDED_BYTES (sizeof (pexString) + repStrings->length));
-    }
+    EXTRACT_LISTOF_STRING (rep.numStrings, pBuf, names);
 
 
     /*
      * Allocate a buffer for the font info to pass back to the client.
      */
 
-    buf = (char *) repStrings;
-    numFontInfoReturn = (int) *((CARD32 *) buf); 
-    buf += sizeof (CARD32);
+    EXTRACT_CARD32 (pBuf, count);
 
-    font_info_size = numFontInfoReturn * sizeof (PEXFontInfo);
-    *fontInfoReturn = pFontInfo = (PEXFontInfo *) PEXAllocBuf (font_info_size);
+    *fontInfoReturn = pInfoRet = (PEXFontInfo *)
+	PEXAllocBuf (count * sizeof (PEXFontInfo));
 
-    for (i = 0; i < numFontInfoReturn; i++, pFontInfo++)
+    for (i = 0; i < count; i++, pInfoRet++)
     {
-	pFontInfo->first_glyph = ((pexFontInfo *) buf)->firstGlyph;
-	pFontInfo->last_glyph = ((pexFontInfo *) buf)->lastGlyph;
-	pFontInfo->default_glyph = ((pexFontInfo *) buf)->defaultGlyph;
-	pFontInfo->all_exist = ((pexFontInfo *) buf)->allExist;
-	pFontInfo->stroke = ((pexFontInfo *) buf)->strokeFont;
-	pFontInfo->count = ((pexFontInfo *) buf)->numProps;
+        EXTRACT_FONTINFO (pBuf, (*pInfoRet));
 
-	prop_size = ((pexFontInfo *) buf)->numProps * sizeof (PEXFontProp);
-	pFontInfo->props = (PEXFontProp *) PEXAllocBuf ((unsigned ) prop_size);
-	buf += sizeof (pexFontInfo);
-    	COPY_AREA ((char *) buf, (char *) pFontInfo->props, prop_size);
-	buf += prop_size;
+	pInfoRet->props = (PEXFontProp *)
+	    PEXAllocBuf (pInfoRet->count * sizeof (PEXFontProp));
+
+        EXTRACT_LISTOF_FONTPROP (pInfoRet->count, pBuf, pInfoRet->props);
     }
 
 
@@ -400,12 +385,14 @@ INPUT int			valign;
 INPUT unsigned long		count;
 INPUT PEXStringData		*text;
 {
-    pexQueryTextExtentsReq	*req;
-    pexQueryTextExtentsReply 	rep;
-    char			*ch;
-    pexMonoEncoding 		pMonoEncoding;
-    int				convertFP, numEncodings, i;
-    PEXTextExtent		*textExtent, *ptextExtents;
+    register pexQueryTextExtentsReq	*req;
+    char				*pBuf;
+    pexQueryTextExtentsReply 		rep;
+    pexMonoEncoding 			monoEncoding;
+    int					numEncodings, i;
+    PEXTextExtent			*textExtents;
+    int					fpConvert;
+    int					fpFormat;
 
 
     /*
@@ -419,33 +406,55 @@ INPUT PEXStringData		*text;
      * Put the request in the X request buffer and get a reply.
      */
 
-    PEXGetFPReq (QueryTextExtents, req, convertFP);
+    PEXGetReq (QueryTextExtents, pBuf);
+
+    BEGIN_REQUEST_HEADER (QueryTextExtents, pBuf, req);
+    CHECK_FP (fpConvert, fpFormat);
+
+    PEXStoreFPReqHead (QueryTextExtents, fpFormat, req);
     req->textPath = path;
     req->id = id;
     req->fontGroupIndex = (pexTableIndex) fontGroup;
-    req->charExpansion = expansion;
-    req->charSpacing = spacing;
-    req->charHeight = height;
-    req->textAlignment.vertical = valign;
-    req->textAlignment.horizontal = halign;
+    req->alignment_vertical = valign;
+    req->alignment_horizontal = halign;
     req->numStrings = count;
 
-    req->length += count * (LENOF (CARD32) + LENOF (pexMonoEncoding));
+    if (fpConvert)
+    {
+	FP_CONVERT_DHTON (expansion, req->charExpansion, fpFormat);
+	FP_CONVERT_DHTON (spacing, req->charSpacing, fpFormat);
+	FP_CONVERT_DHTON (height, req->charHeight, fpFormat);
+    }
+    else
+    {
+	req->charExpansion = expansion;
+	req->charSpacing = spacing;
+	req->charHeight = height;
+    }
+
+    req->length += (count * (LENOF (CARD32) + LENOF (pexMonoEncoding)));
     for (i = 0; i < count; i++)
 	req->length += (((int) text[i].length + 3) >> 2);
 
-    pMonoEncoding.characterSet = (INT16) 1;
-    pMonoEncoding.characterSetWidth = (CARD8) PEXCSByte;
-    pMonoEncoding.encodingState = 0;  
+    END_REQUEST_HEADER (QueryTextExtents, pBuf, req);
+
+
+    /*
+     * Put the text in the request.
+     */
+
+    monoEncoding.characterSet = (INT16) 1;
+    monoEncoding.characterSetWidth = (CARD8) PEXCSByte;
+    monoEncoding.encodingState = 0;  
 
     numEncodings = 1;
 
     for (i = 0; i < count; i++)
     {
-	Data (display, (char *) &numEncodings, sizeof (CARD32));
-	pMonoEncoding.numChars = (CARD16) (text[i].length);
-	Data (display, (char *) &pMonoEncoding, sizeof (pexMonoEncoding));
-	Data (display, (char *) text[i].ch, text[i].length);
+	XDATA_CARD32 (display, numEncodings);
+	monoEncoding.numChars = (CARD16) (text[i].length);
+	Data (display, (char *) &monoEncoding, SIZEOF (pexMonoEncoding));
+	Data (display, text[i].ch, text[i].length);
     }
 
     if (_XReply (display, &rep, 0, xFalse) == 0)
@@ -457,31 +466,20 @@ INPUT PEXStringData		*text;
 
 
     /*
-     * Allocate a scratch buffer and copy the reply data to the buffer.
+     * Read the reply data into a scratch buffer.
      */
 
-    ch = (char *) _XAllocScratch (display, (unsigned long) (rep.length << 2));
-
-    _XRead (display, ch, (long) (rep.length << 2));
+    XREAD_INTO_SCRATCH (display, pBuf, (long) (rep.length << 2));
 
 
     /*
      * Allocate a buffer for the replies to pass back to the client.
      */
 
-    textExtent = ptextExtents =
-	(PEXTextExtent *) PEXAllocBuf (count * sizeof (PEXTextExtent));
+    textExtents = (PEXTextExtent *) PEXAllocBuf (
+	count * sizeof (PEXTextExtent));
 
-    for (i = 0; i < count; i++, textExtent++)
-    {
-	textExtent->lower_left = *(PEXCoord2D *) ch;
-	ch += sizeof (PEXCoord2D);
-	textExtent->upper_right = *(PEXCoord2D *) ch;
-	ch += sizeof (PEXCoord2D);
-	textExtent->concat_point = *(PEXCoord2D *) ch;
-	ch += sizeof (PEXCoord2D);
-    }
-
+    EXTRACT_LISTOF_EXTENT_INFO (count, pBuf, textExtents, fpConvert, fpFormat)
 
     /*
      * Done, so unlock and check for synchronous-ness.
@@ -490,7 +488,7 @@ INPUT PEXStringData		*text;
     UnlockDisplay (display);
     PEXSyncHandle (display);
 
-    return (ptextExtents);
+    return (textExtents);
 }
 
 
@@ -511,13 +509,14 @@ INPUT unsigned long		count;
 INPUT PEXListOfEncodedText    	*encoded_text;
 
 {
-    pexQueryTextExtentsReq	*req;
-    pexQueryTextExtentsReply 	rep;
-    PEXEncodedTextData      	*string;
-    char			*ch;
-    int				i, j;
-    int				convertFP;
-    PEXTextExtent		*textExtent, *ptextExtents;
+    register pexQueryTextExtentsReq	*req;
+    char				*pBuf;
+    pexQueryTextExtentsReply 		rep;
+    PEXEncodedTextData      		*string;
+    PEXTextExtent			*textExtents;
+    int					i, j;
+    int					fpConvert;
+    int					fpFormat;
 
 
     /*
@@ -531,21 +530,31 @@ INPUT PEXListOfEncodedText    	*encoded_text;
      * Put the request in the X request buffer.
      */
 
-    PEXGetFPReq (QueryTextExtents, req, convertFP);
+    PEXGetReq (QueryTextExtents, pBuf);
+
+    BEGIN_REQUEST_HEADER (QueryTextExtents, pBuf, req);
+    CHECK_FP (fpConvert, fpFormat);
+
+    PEXStoreFPReqHead (QueryTextExtents, fpFormat, req);
     req->textPath = path;
     req->id = id;
     req->fontGroupIndex = (pexTableIndex) fontGroup;
-    req->charExpansion = expansion;
-    req->charSpacing = spacing;
-    req->charHeight = height;
-    req->textAlignment.vertical = valign;
-    req->textAlignment.horizontal = halign;
+    req->alignment_vertical = valign;
+    req->alignment_horizontal = halign;
     req->numStrings = count;
 
-
-    /*
-     * Update the request length header.
-     */
+    if (fpConvert)
+    {
+	FP_CONVERT_DHTON (expansion, req->charExpansion, fpFormat);
+	FP_CONVERT_DHTON (spacing, req->charSpacing, fpFormat);
+	FP_CONVERT_DHTON (height, req->charHeight, fpFormat);
+    }
+    else
+    {
+	req->charExpansion = expansion;
+	req->charSpacing = spacing;
+	req->charHeight = height;
+    }
 
     req->length += (count * LENOF (CARD32));
     for (i = 0; i < count; i++)
@@ -563,6 +572,8 @@ INPUT PEXListOfEncodedText    	*encoded_text;
 	} 
     }
 
+    END_REQUEST_HEADER (QueryTextExtents, pBuf, req);
+
 
     /*
      * Put the encoded text in the request.
@@ -573,19 +584,19 @@ INPUT PEXListOfEncodedText    	*encoded_text;
 	unsigned long numEncodings = encoded_text[i].count;
 	string = encoded_text[i].encoded_text;
 
-	Data (display, (char *) &numEncodings, sizeof (CARD32));
+	XDATA_CARD32 (display, numEncodings);
 
 	for (j = 0; j < (int) numEncodings; j++, string++)
 	{
-	    Data (display, (char *) string, sizeof (pexMonoEncoding));
+	    XDATA_MONOENCODING (display, string);
 
 	    if (string->character_set_width == PEXCSLong) 
 	    {
-		Data (display, string->ch, string->length * sizeof (long));
+		Data (display, string->ch, string->length * SIZEOF (long));
 	    }
 	    else if (string->character_set_width == PEXCSShort) 
 	    {
-		Data (display, string->ch, string->length * sizeof (short));
+		Data (display, string->ch, string->length * SIZEOF (short));
 	    }
 	    else /* string->character_set_width == PEXCSByte) */ 
 	    {
@@ -608,30 +619,20 @@ INPUT PEXListOfEncodedText    	*encoded_text;
 
 
     /*
-     * Allocate a scratch buffer and copy the reply data to the buffer.
+     * Read the reply data into a scratch buffer.
      */
 
-    ch = (char *) _XAllocScratch (display, (unsigned long) (rep.length << 2));
-
-    _XRead (display, ch, (long) (rep.length << 2));
+    XREAD_INTO_SCRATCH (display, pBuf, (long) (rep.length << 2));
 
 
     /*
      * Allocate a buffer for the replies to pass back to the client.
      */
 
-    textExtent = ptextExtents =
-	(PEXTextExtent *) PEXAllocBuf (count * sizeof (PEXTextExtent));
+    textExtents = (PEXTextExtent *) PEXAllocBuf (
+	count * sizeof (PEXTextExtent));
 
-    for (i = 0; i < count; i++, textExtent++)
-    {
-	textExtent->lower_left = *(PEXCoord2D *) ch;
-	ch += sizeof (PEXCoord2D);
-	textExtent->upper_right = *(PEXCoord2D *) ch;
-	ch += sizeof (PEXCoord2D);
-	textExtent->concat_point = *(PEXCoord2D *) ch;
-	ch += sizeof (PEXCoord2D);
-    }
+    EXTRACT_LISTOF_EXTENT_INFO (count, pBuf, textExtents, fpConvert, fpFormat)
 
 
     /*
@@ -641,5 +642,5 @@ INPUT PEXListOfEncodedText    	*encoded_text;
     UnlockDisplay (display);
     PEXSyncHandle (display);
 
-    return (ptextExtents);
+    return (textExtents);
 }

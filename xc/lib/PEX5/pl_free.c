@@ -1,4 +1,4 @@
-/* $XConsortium: pl_free.c,v 1.6 92/07/16 11:04:44 mor Exp $ */
+/* $XConsortium: pl_free.c,v 1.8 92/11/05 15:19:29 mor Exp $ */
 
 /******************************************************************************
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -33,12 +33,13 @@ INPUT PEXEnumTypeDesc 	*enumInfo;
     int			i, j;
 
 
-    for (i = 0; i < numCounts; i++)
-	for (j = 0; j < infoCount[i]; j++)
-	{
-	    CHECK_AND_FREE ((char *) desc->descriptor);
-	    desc++;
-	}
+    if (enumInfo)
+	for (i = 0; i < numCounts; i++)
+	    for (j = 0; j < infoCount[i]; j++)
+	    {
+		CHECK_AND_FREE ((char *) desc->descriptor);
+		desc++;
+	    }
 
     CHECK_AND_FREE ((char *) infoCount);
     CHECK_AND_FREE ((char *) enumInfo);
