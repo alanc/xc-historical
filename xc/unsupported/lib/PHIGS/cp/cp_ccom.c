@@ -1,4 +1,4 @@
-/* $XConsortium: cp_ccom.c,v 5.7 91/03/29 14:51:06 rws Exp $ */
+/* $XConsortium: cp_ccom.c,v 5.8 91/03/29 15:51:37 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -37,6 +37,7 @@ SOFTWARE.
 #include <sys/ipc.h>
 #include <sys/shm.h>
 #endif /* ! PEX_API_SOCKET_IPC */
+
 #ifndef X_NOT_POSIX
 #include <sys/wait.h>
 # define waitSig(w)	WTERMSIG(w)
@@ -50,6 +51,12 @@ typedef int		waitType;
 # define waitSig(w)	((w).w_T.w_Termsig)
 typedef union wait	waitType;
 #endif
+#endif
+
+#ifndef X_NOT_STDC_ENV
+#include <stdlib.h>
+#else
+extern char *getenv();
 #endif
 
 /* check for both EAGAIN and EWOULDBLOCK, because some supposedly POSIX
@@ -1184,8 +1191,6 @@ handshake_child( cph, fd, pid )
     struct timeval	waittime;
     unsigned long	rmask[MSKCNT];
     char		*env_var_value;
-
-    extern char *getenv();
 
     waittime.tv_sec = NORMAL_WAIT_FOR_CHILD; waittime.tv_usec = 0;
 #ifdef	DEBUG

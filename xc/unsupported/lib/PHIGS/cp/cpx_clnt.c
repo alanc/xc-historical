@@ -1,4 +1,4 @@
-/* $XConsortium: cpx_clnt.c,v 5.1 91/02/16 09:48:19 rws Exp $ */
+/* $XConsortium: cpx_clnt.c,v 5.2 91/04/04 21:04:54 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -36,7 +36,14 @@ SOFTWARE.
 #include "PEXmacs.h"
 #include "PEXfuncs.h"
 #include "phigspex.h"
-#include "X11/Xatom.h"
+#include <X11/Xatom.h>
+
+#ifndef X_NOT_STDC_ENV
+#include <stdlib.h>
+#else
+extern char *getenv();
+#endif
+
 
 
 static void
@@ -272,8 +279,6 @@ phg_cpxc_open( err_file, open_info )
     Cpx_css_srvr	*css_srvr = (Cpx_css_srvr *)NULL;
     char		*name, *class;
     Err_handle		(*err_init)();
-
-    extern char		*getenv();
 
     name = open_info && open_info->appl_id.name
 	? open_info->appl_id.name : "phigs";
