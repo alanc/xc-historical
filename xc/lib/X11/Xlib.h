@@ -1,4 +1,4 @@
-/* $XConsortium: Xlib.h,v 11.208 91/06/05 08:46:17 rws Exp $ */
+/* $XConsortium: Xlib.h,v 11.209 91/06/05 08:49:07 rws Exp $ */
 /* 
  * Copyright 1985, 1986, 1987, 1991 by the Massachusetts Institute of Technology
  *
@@ -1090,15 +1090,15 @@ typedef struct {
     XIMStyle *supported_styles;
 } XIMStyles;
 
-#define XIMPreeditArea		0x0001
-#define XIMPreeditCallbacks	0x0002
-#define XIMPreeditPosition	0x0004
-#define XIMPreeditNothing	0x0008
-#define XIMPreeditNone		0x0010
-#define XIMStatusArea		0x0100
-#define XIMStatusCallbacks	0x0200
-#define XIMStatusNothing	0x0400
-#define XIMStatusNone		0x0800
+#define XIMPreeditArea		0x0001L
+#define XIMPreeditCallbacks	0x0002L
+#define XIMPreeditPosition	0x0004L
+#define XIMPreeditNothing	0x0008L
+#define XIMPreeditNone		0x0010L
+#define XIMStatusArea		0x0100L
+#define XIMStatusCallbacks	0x0200L
+#define XIMStatusNothing	0x0400L
+#define XIMStatusNone		0x0800L
 
 #define XNVaNestedList "XNVaNestedList"
 #define XNQueryInputStyle "queryInputStyle"
@@ -1170,7 +1170,7 @@ typedef struct _XIMPreeditDrawCallbackStruct {
     int caret;		/* Cursor offset within pre-edit string */
     int chg_first;	/* Starting change position */
     int chg_length;	/* Length of the change in character count */
-    XIMText text;
+    XIMText *text;
 } XIMPreeditDrawCallbackStruct;
 
 typedef enum {
@@ -1203,7 +1203,7 @@ typedef enum {
 typedef struct _XIMStatusDrawCallbackStruct {
     XIMStatusDataType type;
     union {
-	XIMText text;
+	XIMText *text;
 	Pixmap  bitmap;
     } data;
 } XIMStatusDrawCallbackStruct;
