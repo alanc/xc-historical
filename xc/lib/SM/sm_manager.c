@@ -1,4 +1,4 @@
-/* $XConsortium: sm_manager.c,v 1.19 94/03/18 10:55:51 mor Exp $ */
+/* $XConsortium: sm_manager.c,v 1.20 94/03/18 16:03:14 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -49,12 +49,18 @@ char 		 		*errorStringRet;
 
     if (!_SmsOpcode)
     {
-	void _SmsProtocolSetupNotifyProc ();
+	Status _SmsProtocolSetupProc ();
 
 	if ((_SmsOpcode = IceRegisterForProtocolReply ("XSMP",
 	    vendor, release, _SmVersionCount, _SmsVersions,
-	    _SmAuthCount, _SmAuthNames, _SmsAuthProcs,
-            hostBasedAuthProc, _SmsProtocolSetupNotifyProc, NULL)) < 0)
+	    _SmAuthCount, _SmAuthNames, _SmsAuthProcs, hostBasedAuthProc,
+	    _SmsProtocolSetupProc,
+	    NULL,	/* IceProtocolActivateProc - we don't care about
+			   when the Protocol Reply is sent, because the
+			   session manager can not immediately send a
+			   message - it must wait for RegisterClient. */
+	    NULL	/* IceIOErrorProc */
+            )) < 0)
 	{
 	    strncpy (errorStringRet,
 	        "Could not register XSMP protocol with ICE", errorLength);
@@ -71,9 +77,10 @@ char 		 		*errorStringRet;
 
 
 
-void
-_SmsProtocolSetupNotifyProc (iceConn,
-    majorVersion, minorVersion, vendor, release, clientDataRet)
+Status
+_SmsProtocolSetupProc (iceConn,
+    majorVersion, minorVersion, vendor, release,
+    clientDataRet, failureReasonRet)
 
 IceConn    iceConn;
 int	   majorVersion;
@@ -81,17 +88,26 @@ int	   minorVersion;
 char  	   *vendor;
 char 	   *release;
 IcePointer *clientDataRet;
+char	   **failureReasonRet;
 
 {
-    SmsConn  	smsConn;
+    SmsConn  		smsConn;
+    unsigned long 	mask;
+    Status		status;
 
-    smsConn = (SmsConn) malloc (sizeof (struct _SmsConn));
+    if ((smsConn = (SmsConn) malloc (sizeof (struct _SmsConn))) == NULL)
+    {
+	char *str = "Memory allocation failed";
+
+	if ((*failureReasonRet = (char *) malloc (strlen (str) + 1)) != NULL)
+	    strcpy (*failureReasonRet, str);
+
+	return (0);
+    }
 
     smsConn->iceConn = iceConn;
     smsConn->proto_major_version = majorVersion;
     smsConn->proto_minor_version = minorVersion;
-    smsConn->vendor = vendor;
-    smsConn->release = release;
     smsConn->client_id = NULL;
 
     smsConn->save_yourself_in_progress = False;
@@ -105,9 +121,17 @@ IcePointer *clientDataRet;
     /*
      * Now give the session manager the new smsConn and get back the
      * callbacks to invoke when messages arrive from the client.
+     *
+     * In the future, we can use the mask return value to check
+     * if the SM is expecting an older rev of SMlib.
      */
 
-    (*_SmsNewClientProc) (smsConn, _SmsNewClientData, &smsConn->callbacks);
+    bzero ((char *) &smsConn->callbacks, sizeof (SmsCallbacks));
+
+    status = (*_SmsNewClientProc) (smsConn, _SmsNewClientData,
+	&mask, &smsConn->callbacks, failureReasonRet);
+
+    return (status);
 }
 
 
@@ -142,7 +166,7 @@ SmsConn smsConn;
 
 
 
-void
+Status
 SmsRegisterClientReply (smsConn, clientId)
 
 SmsConn smsConn;
@@ -154,6 +178,13 @@ char	*clientId;
     smRegisterClientReplyMsg 	*pMsg;
     char 			*pData;
 
+    if ((smsConn->client_id = (char *) malloc (strlen (clientId) + 1)) == NULL)
+    {
+	return (0);
+    }
+
+    strcpy (smsConn->client_id, clientId);
+
     extra = ARRAY8_BYTES (strlen (clientId));
 
     IceGetHeaderExtra (iceConn, _SmsOpcode, SM_RegisterClientReply,
@@ -164,8 +195,7 @@ char	*clientId;
 
     IceFlush (iceConn);
 
-    smsConn->client_id = (char *) malloc (strlen (clientId) + 1);
-    strcpy (smsConn->client_id, clientId);
+    return (1);
 }
 
 
@@ -214,6 +244,20 @@ Bool	fast;
 
 
 void
+SmsSaveYourselfPhase2 (smsConn)
+
+SmsConn smsConn;
+
+{
+    IceConn	iceConn = smsConn->iceConn;
+
+    IceSimpleMessage (iceConn, _SmsOpcode, SM_SaveYourselfPhase2);
+    IceFlush (iceConn);
+}
+
+
+
+void
 SmsInteract (smsConn)
 
 SmsConn smsConn;
@@ -238,6 +282,20 @@ SmsConn smsConn;
     IceConn	iceConn = smsConn->iceConn;
 
     IceSimpleMessage (iceConn, _SmsOpcode, SM_Die);
+    IceFlush (iceConn);
+}
+
+
+
+void
+SmsSaveComplete (smsConn)
+
+SmsConn smsConn;
+
+{
+    IceConn	iceConn = smsConn->iceConn;
+
+    IceSimpleMessage (iceConn, _SmsOpcode, SM_SaveComplete);
     IceFlush (iceConn);
 }
 
@@ -296,12 +354,6 @@ SmsConn smsConn;
 
 {
     IceProtocolShutdown (smsConn->iceConn, _SmsOpcode);
-
-    if (smsConn->vendor)
-	free (smsConn->vendor);
-
-    if (smsConn->release)
-	free (smsConn->release);
 
     if (smsConn->client_id)
 	free (smsConn->client_id);
