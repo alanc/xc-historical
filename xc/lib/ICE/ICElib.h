@@ -1,4 +1,4 @@
-/* $XConsortium: ICElib.h,v 1.24 93/12/30 11:03:20 mor Exp $ */
+/* $XConsortium: ICElib.h,v 1.25 94/01/31 10:53:35 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -22,7 +22,6 @@ Author: Ralph Mor, X Consortium
 
 #include <X11/ICE/ICE.h>
 #include <X11/Xfuncproto.h>
-#include <stdio.h>
 
 #define Bool int
 #define Status int
@@ -187,21 +186,6 @@ typedef void (*IceIOErrorHandler) (
 
 
 /*
- * An entry in the ICE authority file.
- */
-
-typedef struct {
-    char    	    *protocol_name;
-    unsigned short  protocol_data_length;
-    char   	    *protocol_data;
-    char    	    *address;
-    char    	    *auth_name;
-    unsigned short  auth_data_length;
-    char   	    *auth_data;
-} IceAuthFileEntry;
-
-
-/*
  * Authentication data maintained in memory.
  */
 
@@ -212,15 +196,6 @@ typedef struct {
     unsigned short  auth_data_length;
     char   	    *auth_data;
 } IceAuthDataEntry;
-
-
-/*
- * Return values from IceLockAuthFile
- */
-
-#define IceAuthLockSuccess	0   /* lock succeeded */
-#define IceAuthLockError	1   /* lock unexpectely failed, check errno */
-#define IceAuthLockTimeout	2   /* lock failed, timeouts expired */
 
 
 /*
@@ -509,59 +484,6 @@ extern void IceLockConn (
 extern void IceUnlockConn (
 #if NeedFunctionPrototypes
     IceConn		/* iceConn */
-#endif
-);
-
-
-/*
- * ICE Authority File Utils
- */
-
-extern char *IceAuthFileName (
-#if NeedFunctionPrototypes
-    void
-#endif
-);
-
-extern int IceLockAuthFile (
-#if NeedFunctionPrototypes
-    char *		/* file_name */,
-    int			/* retries */,
-    int			/* timeout */,
-    long		/* dead */
-#endif
-);
-
-extern void IceUnlockAuthFile (
-#if NeedFunctionPrototypes
-    char *		/* file_name */
-#endif
-);
-
-extern IceAuthFileEntry *IceReadAuthFileEntry (
-#if NeedFunctionPrototypes
-    FILE *		/* auth_file */
-#endif
-);
-
-extern void IceFreeAuthFileEntry (
-#if NeedFunctionPrototypes
-    IceAuthFileEntry *	/* auth */
-#endif
-);
-
-extern Status IceWriteAuthFileEntry (
-#if NeedFunctionPrototypes
-    FILE *		/* auth_file */,
-    IceAuthFileEntry *	/* auth */
-#endif
-);
-
-extern IceAuthFileEntry *IceGetAuthFileEntry (
-#if NeedFunctionPrototypes
-    char *		/* protocol_name */,
-    char *		/* address */,
-    char *		/* auth_name */
 #endif
 );
 
