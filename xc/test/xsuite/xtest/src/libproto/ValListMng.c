@@ -12,7 +12,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: ValueListMng.c,v 1.7 92/06/11 15:53:38 rws Exp $
+ * $XConsortium: ValListMng.c,v 1.8 92/06/12 09:43:36 rws Exp $
  */
 /*
  *	Purpose:  routines to edit value lists in requests
@@ -215,25 +215,20 @@ static xReq *
 _Add_Masked_Value(reqp,nominal_size,rmaskp32,rmaskp16,mask,value)
 xReq *reqp;
 unsigned long nominal_size;
-unsigned long *rmaskp32;
-unsigned short *rmaskp16;
+CARD32 *rmaskp32;
+CARD16 *rmaskp16;
 unsigned long mask;
 unsigned long value;
 {
     unsigned long rmask;
     unsigned long new_size;
-    unsigned long *valuePtr;
+    CARD32 *valuePtr;
     int before;		/* number of values before this one */
     int after;		/* number of values after this one */
-    int thisindex;	/* index of this mask value */
-    int numvals;	/* total number of values */
     unsigned long bmask;	/* mask for the values before */
     unsigned long amask;	/* mask for the values after */
 
-    rmask = (rmaskp32 != NULL) ? *rmaskp32 : (unsigned long) *rmaskp16;
-
-    numvals = Ones(rmask);	/* how many are there already? */
-    thisindex = ffs(mask);
+    rmask = (rmaskp32 != NULL) ? *rmaskp32 : (CARD32) *rmaskp16;
 
     bmask = mask - 1;
     before = Ones(rmask&bmask);
@@ -244,16 +239,16 @@ unsigned long value;
     if ((rmask&mask)==0) { /* this mask not there now */
 	reqp->length += 1;	/* we're adding a new value */
 	if (rmaskp32 != NULL)	*rmaskp32 |= mask;
-	else			*rmaskp16 |= (unsigned short) mask;
+	else			*rmaskp16 |= (CARD16) mask;
 
 	reqp = (xReq *) Xstrealloc((char *)reqp,reqp->length<<2);
 
-	valuePtr = (unsigned long *) (((char *) reqp) + nominal_size);
+	valuePtr = (CARD32 *) (((char *) reqp) + nominal_size);
 	valuePtr += before;		/* index down to this position */
 	bcopy((char *)valuePtr,(char *)(valuePtr+1),(after<<2));
     }
 
-    valuePtr = (unsigned long *) (((char *) reqp) + nominal_size);
+    valuePtr = (CARD32 *) (((char *) reqp) + nominal_size);
     valuePtr += before;		/* index down to this position */
     *valuePtr = value;
     return(reqp);
@@ -353,28 +348,23 @@ static xReq *
 _Del_Masked_Value(reqp,nominal_size,rmaskp32,rmaskp16,mask)
 xReq *reqp;
 unsigned long nominal_size;
-unsigned long *rmaskp32;
-unsigned short *rmaskp16;
+CARD32 *rmaskp32;
+CARD16 *rmaskp16;
 unsigned long mask;
 {
     unsigned long rmask;
     unsigned long   new_size;
-    unsigned long *valuePtr;
+    CARD32 *valuePtr;
     int before;		/* number of values before this one */
     int after;		/* number of values after this one */
-    int thisindex;	/* index of this mask value */
-    int numvals;	/* total number of values */
     unsigned long bmask;	/* mask for the values before */
     unsigned long amask;	/* mask for the values after */
 
-    rmask = (rmaskp32 != NULL) ? *rmaskp32 : (unsigned long) *rmaskp16;
+    rmask = (rmaskp32 != NULL) ? *rmaskp32 : (CARD32) *rmaskp16;
 
     if ((rmask&mask)==0) {	/* not there to zap */
 	return(reqp);
     }
-
-    numvals = Ones(rmask);	/* how many are there already? */
-    thisindex = ffs(mask);
 
     bmask = mask - 1;
     before = Ones(rmask&bmask);
@@ -384,9 +374,9 @@ unsigned long mask;
 
     reqp->length -= 1;	/* we're deleting a value */
     if (rmaskp32 != NULL)	*rmaskp32 &= ~mask;
-    else			*rmaskp16 &= ~((unsigned short) mask);
+    else			*rmaskp16 &= ~((CARD16) mask);
 
-    valuePtr = (unsigned long *) (((char *) reqp) + nominal_size);
+    valuePtr = (CARD32 *) (((char *) reqp) + nominal_size);
     valuePtr += before;		/* index down to this position */
     bcopy((char *)(valuePtr+1),(char *)valuePtr,(after<<2));
     reqp = (xReq *) Xstrealloc((char *)reqp,reqp->length<<2);
