@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Bitmap.c,v 1.26 91/01/25 11:05:08 dave Exp $
+ * $XConsortium: Bitmap.c,v 1.27 91/01/26 18:10:06 dmatic Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -53,7 +53,7 @@ Boolean DEBUG;
 #define DefaultStippled      TRUE
 #define DefaultProportional  TRUE
 #define DefaultAxes          FALSE
-#define DefaultDistance      16
+#define DefaultMargin        16
 #define DefaultSquareWidth   16
 #define DefaultSquareHeight  16
 #define DefaultFilename      ""
@@ -84,8 +84,8 @@ static XtResource resources[] = {
      offset(squareW), XtRImmediate, (XtPointer) DefaultSquareWidth},
 {XtNsquareHeight, XtCSquareHeight, XtRDimension, sizeof(Dimension),
      offset(squareH), XtRImmediate, (XtPointer) DefaultSquareHeight},
-{XtNdistance, XtCDistance, XtRDimension, sizeof(Dimension),
-     offset(distance), XtRImmediate, (XtPointer) DefaultDistance},
+{XtNmargin, XtCMargin, XtRDimension, sizeof(Dimension),
+     offset(margin), XtRImmediate, (XtPointer) DefaultMargin},
 {XtNxHot, XtCXHot, XtRPosition, sizeof(Position),
      offset(hot.x), XtRImmediate, (XtPointer) NotSet},
 {XtNyHot, XtCYHot, XtRPosition, sizeof(Position),
@@ -755,9 +755,9 @@ static void Initialize(request, new, argv, argc)
     SetSizeFromSizeResource(new);
 
     new->core.width = new->bitmap.width * new->bitmap.squareW + 
-	2 * new->bitmap.distance;
+	2 * new->bitmap.margin;
     new->core.height = new->bitmap.height * new->bitmap.squareH + 
-	2 * new->bitmap.distance;
+	2 * new->bitmap.margin;
   
     new->bitmap.hot.x = new->bitmap.hot.y = NotSet;
     new->bitmap.buffer_hot.x = new->bitmap.buffer_hot.y = NotSet;
@@ -1458,9 +1458,9 @@ static void Resize(BW)
 {
     Dimension squareW, squareH;
 
-    squareW = max(1, ((int)BW->core.width - 2 * (int)BW->bitmap.distance) / 
+    squareW = max(1, ((int)BW->core.width - 2 * (int)BW->bitmap.margin) / 
 		  (int)BW->bitmap.width);
-    squareH = max(1, ((int)BW->core.height - 2 * (int)BW->bitmap.distance) / 
+    squareH = max(1, ((int)BW->core.height - 2 * (int)BW->bitmap.margin) / 
 		  (int)BW->bitmap.height);
 
     if (BW->bitmap.proportional)
@@ -1470,11 +1470,11 @@ static void Resize(BW)
 	BW->bitmap.squareH = squareH;
     }
     
-    BW->bitmap.horizOffset = max((Position)BW->bitmap.distance, 
+    BW->bitmap.horizOffset = max((Position)BW->bitmap.margin, 
 				 (Position)(BW->core.width - 
 					    BW->bitmap.width * 
 					    BW->bitmap.squareW) / 2);
-    BW->bitmap.vertOffset = max((Position)BW->bitmap.distance, 
+    BW->bitmap.vertOffset = max((Position)BW->bitmap.margin, 
 				(Position)(BW->core.height - 
 					   BW->bitmap.height * 
 					   BW->bitmap.squareH) / 2);
@@ -1767,7 +1767,7 @@ static Boolean SetValues(old, request, new, args, num_args) /* ARGSUSED */
     }
   }
   
-  if (NE(bitmap.distance) || 
+  if (NE(bitmap.margin) || 
       NE(bitmap.grid_tolerance) ||
       NE(bitmap.squareW) ||
       NE(bitmap.squareH) ||
