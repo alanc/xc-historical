@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: Text.c,v 1.120 89/11/01 17:00:32 kit Exp $";
+static char Xrcsid[] = "$XConsortium: Text.c,v 1.121 89/11/01 18:35:04 kit Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -386,6 +386,7 @@ TextWidget ctx;
 
   PositionVScrollBar(ctx);
   PositionHScrollBar(ctx);	/* May modify location of Horiz. Bar. */
+
   if (XtIsRealized(ctx)) {
     XtRealizeWidget(vbar);
     XtMapWidget(vbar);
@@ -427,11 +428,6 @@ TextWidget ctx;
     XtCreateWidget("hScrollbar", scrollbarWidgetClass, ctx, args, ONE);
   XtAddCallback( hbar, XtNscrollProc, HScroll, (caddr_t)ctx );
   XtAddCallback( hbar, XtNjumpProc, HJump, (caddr_t)ctx );
-
-/*
-  ctx->text.r_margin.bottom += hbar->core.height + hbar->core.border_width;
-  ctx->text.margin.bottom = ctx->text.r_margin.bottom;
-*/
 
   PositionHScrollBar(ctx);
   if (XtIsRealized(ctx)) {
@@ -2073,7 +2069,6 @@ Cardinal	*num_params;
     ctx->text.search->selection_changed = TRUE;
 
   position = PositionForXY (ctx, (int) ctx->text.ev_x, (int) ctx->text.ev_y);
-/*  printf("Position: %ld\n", position); */
 
   flag = (action != XawactionStart);
   if (mode == XawsmTextSelect)
@@ -2096,10 +2091,10 @@ static Boolean
 RectanglesOverlap(rect1, rect2)
 XRectangle *rect1, *rect2;
 {
-  return ( (rect1->x < rect2->x + rect2->width) &&
-	   (rect2->x < rect1->x + rect1->width) &&
-	   (rect1->y < rect2->y + rect2->height) &&
-	   (rect2->y < rect1->y + rect1->height) );
+  return ( (rect1->x < rect2->x + (short) rect2->width) &&
+	   (rect2->x < rect1->x + (short) rect1->width) &&
+	   (rect1->y < rect2->y + (short) rect2->height) &&
+	   (rect2->y < rect1->y + (short) rect1->height) );
 }
 
 /*	Function Name: UpdateTextInRectangle.
@@ -2224,23 +2219,46 @@ TextWidget ctx;
 /*
  * This is a private utility routine used by _XawTextExecuteUpdate. This
  * routine worries about edits causing new data or the insertion point becoming
- * invisible (off the screen). Currently it always makes it visible by
- * scrolling. It probably needs generalization to allow more options.
+ * invisible (off the screen, or under the horiz. scrollbar). Currently 
+ * it always makes it visible by scrolling. It probably needs 
+ * generalization to allow more options.
  */
 
 _XawTextShowPosition(ctx)
 TextWidget ctx;
 {
-  int number, lines = ctx->text.lt.lines;
+  int x, y, number, lines;
   XawTextPosition max_pos, top, first, second;
 
   if ( (!XtIsRealized((Widget)ctx)) || (ctx->text.lt.lines <= 0) )
     return;
   
-  if ( IsValidLine(ctx, lines))
+#ifdef notdef
+  lines = ctx->text.lt.lines;
+  if ( IsValidLine(ctx, lines)) 
     max_pos = ctx->text.lt.info[lines].position;
   else
     max_pos = ctx->text.lastPos + 1;
+#else				/* Using this code now... */
+
+/*
+ * Find out the bottom the visable window, and make sure that the
+ * cursor does not go past the end of this space.  
+ *
+ * This makes sure that the cursor does not go past the end of the 
+ * visable window. 
+ */
+
+  x = ctx->text.margin.left;
+  y = ctx->core.height - ctx->text.margin.left;
+  if (ctx->text.hbar != NULL)
+    y -= ctx->text.hbar->core.height - 2 * ctx->text.hbar->core.border_width;
+  
+  max_pos = PositionForXY (ctx, x, y);
+  max_pos = SrcScan(ctx->text.source, max_pos, XawstEOL, XawsdRight, 1, TRUE);
+
+  lines = LineForPosition(ctx, max_pos); /* number of visable lines. */
+#endif
   
   if ( (ctx->text.insertPos >= ctx->text.lt.top) &&
        ((ctx->text.insertPos < max_pos) || ( max_pos > ctx->text.lastPos)) ) 
