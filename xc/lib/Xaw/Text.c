@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: Text.c,v 1.139 90/03/07 15:26:10 jim Exp $";
+static char Xrcsid[] = "$XConsortium: Text.c,v 1.140 90/03/19 11:15:01 converse Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -1987,9 +1987,14 @@ Boolean motion;
   XawTextScanDirection dir;
 
   if (!motion) {		/* setup for extending selection */
+    if (ctx->text.s.left == ctx->text.s.right) /* no current selection. */
+      ctx->text.s.left = ctx->text.s.right = ctx->text.insertPos;   
+    else {
+      ctx->text.origSel.left = ctx->text.s.left;
+      ctx->text.origSel.right = ctx->text.s.right;
+    }
+      
     ctx->text.origSel.type = ctx->text.s.type;
-    ctx->text.origSel.left = ctx->text.s.left;
-    ctx->text.origSel.right = ctx->text.s.right;
     if (pos >= ctx->text.s.left + ((ctx->text.s.right - ctx->text.s.left) / 2))
       ctx->text.extendDir = XawsdRight;
     else
@@ -2237,7 +2242,7 @@ Cardinal	*num_params;
   if (mode == XawsmTextSelect)
     DoSelection (ctx, position, ctx->text.time, flag);
   else			/* mode == XawsmTextExtend */
-    ExtendSelection (ctx, position, flag);
+   ExtendSelection (ctx, position, flag);
 
   if (action == XawactionEnd) 
     _XawTextSetSelection(ctx, ctx->text.s.left, ctx->text.s.right,
@@ -2745,6 +2750,7 @@ XawTextPosition position;
   _XawTextPrepareToUpdate(ctx);
   ctx->text.insertPos = FindGoodPosition(ctx, position);
   ctx->text.showposition = TRUE;
+
   _XawTextExecuteUpdate(ctx);
 }
 
