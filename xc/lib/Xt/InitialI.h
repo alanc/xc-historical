@@ -1,4 +1,4 @@
-/* $XConsortium: InitialI.h,v 1.40 90/12/12 14:51:38 rws Exp $ */
+/* $XConsortium: InitialI.h,v 1.41 90/12/27 14:34:51 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -123,6 +123,7 @@ typedef struct _XtAppStruct {
     short count;			/* num of assigned entries in list */
     short max;				/* allocate size of list */
     short last;
+    short input_max;			/* elts input_list init'd with */
     Boolean sync, being_destroyed, error_inited;
 #ifndef NO_IDENTIFY_WINDOWS
     Boolean identify_windows;		/* debugging hack */
