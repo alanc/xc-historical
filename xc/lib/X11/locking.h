@@ -1,5 +1,5 @@
 /*
- * $XConsortium: locking.h,v 1.11 94/01/29 18:30:06 gildea Exp $
+ * $XConsortium: locking.h,v 1.12 94/02/09 23:19:51 rws Exp $
  *
  * Copyright 1992 Massachusetts Institute of Technology
  *
@@ -69,17 +69,74 @@ struct _XLockInfo {
 	xthread_t conni_thread;	/* thread in XProcessInternalConnection */
 	xcondition_t writers;	/* wait for writable */
 	/* used only in XlibInt.c */
-	void (*pop_reader)();
-	struct _XCVList *(*push_reader)();
-	void (*condition_wait)();
-	void (*internal_lock_display)();
+	void (*pop_reader)(
+#if NeedNestedPrototypes
+			   Display* /* dpy */,
+			   struct _XCVList* /* cvl */,
+			   struct _XCVList** /* list */,
+			   struct _XCVList*** /* tail */
+#endif
+			   );
+	struct _XCVList *(*push_reader)(
+#if NeedNestedPrototypes
+					struct _XCVList*** /* tail */
+#endif
+					);
+	void (*condition_wait)(
+#if NeedNestedPrototypes
+			       xcondition_t /* cv */,
+			       xmutex_t /* mutex */
+#if defined(XTHREADS_WARN) || defined(XTHREADS_FILE_LINE)
+			       , char* /* file */,
+			       int /* line */
+#endif
+#endif
+			       );
+	void (*internal_lock_display)(
+#if NeedNestedPrototypes
+				      Display* /* dpy */,
+				      Bool /* wskip */
+#if defined(XTHREADS_WARN) || defined(XTHREADS_FILE_LINE)
+				      , char* /* file */,
+				      int /* line */
+#endif
+#endif
+				      );
 	/* used in XlibInt.c and locking.c */
-	void (*condition_signal)();
-	void (*condition_broadcast)();
+	void (*condition_signal)(
+#if NeedNestedPrototypes
+				 xcondition_t /* cv */
+#if defined(XTHREADS_WARN) || defined(XTHREADS_FILE_LINE)
+				 , char* /* file */,
+				 int /* line */
+#endif
+#endif
+				 );
+	void (*condition_broadcast)(
+#if NeedNestedPrototypes
+				 xcondition_t /* cv */
+#if defined(XTHREADS_WARN) || defined(XTHREADS_FILE_LINE)
+				 , char* /* file */,
+				 int /* line */
+#endif
+#endif
+				    );
 	/* used in XlibInt.c and XLockDis.c */
-	void (*lock_wait)();
-	void (*user_lock_display)();
-	void (*user_unlock_display)();
+	void (*lock_wait)(
+#if NeedNestedPrototypes
+			  Display* /* dpy */
+#endif
+			  );
+	void (*user_lock_display)(
+#if NeedNestedPrototypes
+				  Display* /* dpy */
+#endif
+				  );
+	void (*user_unlock_display)(
+#if NeedNestedPrototypes
+				    Display* /* dpy */
+#endif
+				    );
 };
 
 #define UnlockNextEventReader(d,c) if ((d)->lock) \
