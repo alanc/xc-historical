@@ -1,4 +1,4 @@
-.\" $XConsortium: CH07,v 1.11 94/01/07 19:36:26 converse Exp $
+.\" $XConsortium: CH07,v 1.12 94/04/17 14:14:43 kaleb Exp $
 .\"
 .\" Copyright 1985, 1986, 1987, 1988, 1991, 1994
 .\" Massachusetts Institute of Technology, Cambridge, Massachusetts,
@@ -361,9 +361,9 @@ Please refer to Section 7.12 for information regarding the use of
 in multiple threads.
 
 .NH 3
-Adding and Removing Signals
+Adding and Removing Signal Callbacks
 .XS
-\fB\*(SN Adding and Removing Signals\fP
+\fB\*(SN Adding and Removing Signal Callbacks\fP
 .XE
 .LP
 The signal facility notifies the application or the widget
@@ -504,7 +504,7 @@ In this case,
 user events may be delivered to one of several modal widgets in the cascade.
 .LP
 Display-related events should be delivered outside the modal cascade so that
-exposure events and the like keep the application's display up-todate.
+exposure events and the like keep the application's display up-to-date.
 Any event that occurs within the cascade is delivered as usual.
 The user events delivered to the most recent spring-loaded shell 
 in the cascade when they occur outside the cascade are called remap events 
@@ -1828,7 +1828,7 @@ the newly added one has lower priority than the current one.
 To remove a work procedure, either return 
 .PN True 
 from the procedure when it is called or use
-.PN XtRemoveWorkProc .
+.PN XtRemoveWorkProc outside of the procedure.
 .IN "XtRemoveWorkProc" "" "@DEF@"
 .FD 0
 void XtRemoveWorkProc(\fIid\fP)
@@ -1922,9 +1922,10 @@ optionally ORed with any combination of the following flags (all with
 implementation-defined values):
 
 .PN XtExposeGraphicsExpose ,
-.PN XtExposeGraphicsExposeMerged
+.PN XtExposeGraphicsExposeMerged ,
+.PN XtExposeNoExpose
 and
-.PN XtExposeNoExpose .
+.PN XtExposeNoRegion .
 
 .LP
 If the \fIcompress_exposure\fP field in the widget class structure does not
@@ -1941,7 +1942,9 @@ When the final event is received,
 the event manager replaces the rectangle in the event with the
 bounding box for the region
 and calls the widget's expose procedure,
-passing the modified exposure event and the region.
+passing the modified exposure event and (unless 
+.PN XtExposeNoRegion
+is specified) the region.
 For more information on regions, see Section 16.5 in \fI\*(xL\fP.)
 .LP
 The values have the following interpretation:
@@ -2027,6 +2030,15 @@ events are also to be dispatched to the expose procedure.
 .PN NoExpose
 events are never coalesced with
 other exposure events or with each other.
+.sp
+.LP
+.PN XtExposeNoRegion
+.IN "XtExposeNoRegion" "" "@DEF"
+.IP
+Specifies that the final region argument passed to the expose
+procedure will be NULL.  The rectangle in the event will still
+contain bounding box information for the entire series of
+compressed exposure events.
 
 .NH 2
 Widget Exposure and Visibility
@@ -2082,13 +2094,18 @@ before it calls the widget's realize procedure.
 .LP
 If the widget's \fIcompress_exposure\fP class field specifies
 .PN XtExposeNoCompress
-or the event type is
+or 
+.PN XtExposeNoRegion ,
+or if the event type is
 .PN NoExpose
 (see Section 7.9.3),
-\fIregion\fP is NULL; otherwise, the event
-is the final event in the compressed series but \fIx\fP, \fIy\fP, \fIwidth\fP,
-and
-\fIheight\fP contain the bounding box for \fIregion\fP.
+\fIregion\fP is NULL.  If
+.PN XtExposeNoCompress
+is not specified and the event type is not
+.PN NoExpose ,
+the event is the final event in the compressed series
+but \fIx\fP, \fIy\fP, \fIwidth\fP, and \fIheight\fP contain
+the bounding box for all the compressed events.
 The region is created and destroyed by the \*(xI, but
 the widget is permitted to modify the region contents.
 .LP
@@ -2662,8 +2679,7 @@ mechanism according to an event type, use
 .IN "XtInsertEventTypeHandler" "" "@DEF"
 .FD 0
 void XtInsertEventTypeHandler(\fIwidget\fP, \fIevent_type\fP, \
-\fIselect_data\fP, \fIproc\fP, \fIclient_data\fP,
-                                                    \fIposition\fP)
+\fIselect_data\fP, \fIproc\fP, \fIclient_data\fP, \fIposition\fP)
 .br
       Widget \fIwidget\fP;
 .br
@@ -2692,9 +2708,8 @@ Specifies additional data to be passed to the event handler.
 Specifies when the event handler is to be called relative to other
 previously registered handlers.
 .LP
-The 
-XtInsertEventTypeHandler
-function registers a procedure with the
+.PN XtInsertEventTypeHandler
+registers a procedure with the
 dispatch mechanism that is to be called when an event that matches the
 specified \fIevent_type\fP is dispatched to the specified \fIwidget\fP.  
 .LP
@@ -2749,8 +2764,7 @@ use
 .IN "XtRemoveEventTypeHandler" "" "@DEF"
 .FD 0
 void XtRemoveEventTypeHandler(\fIwidget\fP, \fIevent_type\fP, \
-\fIselect_data\fP,
-                              \fIproc\fP, \fIclosure\fP)
+\fIselect_data\fP, \fIproc\fP, \fIclosure\fP)
 .br
       Widget \fIwidget\fP;
 .br
@@ -2771,7 +2785,7 @@ Specifies data used to deselect events of the specified type
 from the server, or NULL.
 .IP \fIproc\fP 1i
 Specifies the event handler to be removed.
-.IP \fIclient_data\fP 1i
+.IP \fIclosure\fP 1i
 Specifies the additional client data with which the procedure was registered.
 .LP
 The
@@ -2780,8 +2794,8 @@ function unregisters an event handler
 registered with
 .PN XtInsertEventTypeHandler
 for the specified event type.
-The request is ignored if \fIclient_data\fP does not match the value given
-when the handler was registered.  
+The request is ignored if \fIclosure\fP does not match the value given
+when the handler was registered.
 .LP
 If \fIevent_type\fP specifies one of the core X protocol events,
 \fIselect_data\fP must be a pointer to a value of type 
@@ -2837,8 +2851,8 @@ for the delivery of extension events to widgets.
 .LP
 If \fImin_event_type\fP and \fImax_event_type\fP match the parameters
 to a previous call to
-.PN XtRegisterExtensionSelectorProc
-for the same display, the proc and client_data replace the previously
+.PN XtRegisterExtensionSelector
+for the same display, \fIproc\fP and \fIclient_data\fP replace the previously
 registered values.  If the range specified by \fImin_event_type\fP
 and \fImax_event_type\fP overlaps the range of the parameters to a
 previous call for the same display in any other way, an error results.
@@ -2931,9 +2945,7 @@ to which to dispatch the event.
 .LP
 The default dispatcher handles the \*(xI modal cascade and keyboard
 focus mechanisms, handles the semantics of \fIcompress_enterleave\fP
-and \fIcompress_motion\fP, /- updates the Intrinsics' internal state
-when MappingNotify events arrive, -/ [why is this marked as elided? -- ed.]
-and discards all extension events.
+and \fIcompress_motion\fP, and discards all extension events.
 .sp
 .LP
 An event dispatcher procedure pointer is of type
@@ -2974,7 +2986,7 @@ and
 otherwise.
 .LP
 If the event should not be dispatched to a widget, the event
-dispatcher procedure should attempt to dispatch the event as
+dispatcher procedure should attempt to dispatch the event elsewhere as
 appropriate and return
 .PN True
 if it successfully dispatched the event and
