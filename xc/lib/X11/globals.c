@@ -1,5 +1,5 @@
 /*
- * $XConsortium: globals.c,v 1.11 91/01/06 11:49:00 rws Exp $
+ * $XConsortium: globals.c,v 1.12 91/01/08 14:42:07 gildea Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -38,7 +38,7 @@ without express or implied warranty.
 #define SetZero(t,var,z) t var
 #endif
 
-#ifdef ATTSHAREDLIB			/* then need extra variables */
+#ifdef USL_SHAREDLIB			/* then need extra variables */
 /*
  * If we need to define extra variables for each global
  */
@@ -52,13 +52,13 @@ without express or implied warranty.
   SetZero (void *, _libX_/**/var/**/Ptr, NULL)
 #endif /* concat ANSI C vs. pcc */
 
-#else /* else not ATTSHAREDLIB */
+#else /* else not USL_SHAREDLIB */
 /*
  * no extra crud
  */
 #define ZEROINIT(t,var,val) SetZero (t, var, val)
 
-#endif /* ATTSHAREDLIB */
+#endif /* USL_SHAREDLIB */
 
 
 /*
@@ -80,13 +80,31 @@ ZEROINIT (Display *, _XHeadOfDisplayList, NULL);
 
 
 #ifdef STREAMSCONN
+
+
+/* The following are how the Xstream connections are used:              */
+/*      1)      Local connections over pseudo-tty ports.                */
+/*      2)      SVR4 local connections using named streams or SVR3.2    */
+/*              local connections using streams.                        */
+/*      3)      SVR4 stream pipe code. This code is proprietary and     */
+/*              the actual code is not included in the MIT distribution.*/
+/*      4)      remote connections using tcp                            */
+/*      5)      remote connections using StarLan                        */
+
 /*
  * descriptor block for streams connections
  */
+
 #include "Xstreams.h"
 
 char _XsTypeOfStream[100] = { 0 };
 
+extern int write();
+extern int close();
+#ifdef SVR4
+extern int _XsSetupSpStream();
+extern int _XsSetupNamedStream();
+#endif 
 extern int _XsSetupLocalStream();
 extern int _XsConnectLocalClient();
 extern int _XsCallLocalServer();
@@ -101,69 +119,83 @@ extern int _XsReadTliStream();
 extern int _XsWriteTliStream();
 extern int _XsCloseTliStream();
 
+
 Xstream _XsStream[] = {
+
     { 
+	/* local connections using pseudo-ttys */
+
 	_XsSetupLocalStream,
 	_XsConnectLocalClient,
 	_XsCallLocalServer,
 	_XsReadLocalStream,
 	_XsErrorCall,
-	_XsWriteLocalStream,
-	_XsCloseLocalStream,
+	write,
+	close,
 	NULL
     },
     { 
-	_XsSetupTliStream,
-	_XsConnectTliClient,
-	_XsCallTliServer, 
-	_XsReadTliStream, 
-	_XsErrorCall, 
-	_XsWriteTliStream,
-	_XsCloseTliStream,
+#ifdef SVR4
+	/* local connections using named streams */
+
+        _XsSetupNamedStream,
+#else
+	/* local connections using streams */
+        _XsSetupLocalStream,
+#endif
+        _XsConnectLocalClient,
+        _XsCallLocalServer,
+        _XsReadLocalStream,
+        _XsErrorCall,
+        write,
+        close,
+        NULL
+    },
+    /* Enhanced Application Compatibility Support */
+    {
+#ifdef SVR4
+	/* SVR4 stream pipe code */
+	_XsSetupSpStream,
+#else
+	_XsSetupLocalStream,
+#endif
+	_XsConnectLocalClient,
+	_XsCallLocalServer,
+	_XsReadLocalStream,
+	_XsErrorCall,
+	write,
+	close,
 	NULL
     },
-    { 
-	_XsSetupTliStream,
-	_XsConnectTliClient,
-	_XsCallTliServer, 
-	_XsReadTliStream, 
-	_XsErrorCall, 
-	_XsWriteTliStream,
-	_XsCloseTliStream,
+    /* End Enhanced Application Compatibility Support */
+
+    {
+	/* remote connections using tcp */
+        _XsSetupTliStream,
+        _XsConnectTliClient,
+        _XsCallTliServer,
+        _XsReadLocalStream,
+        _XsErrorCall,
+	write,
+	close,
 	NULL
     },
-    { 
-	NULL,
-	NULL, 
-	NULL, 
-	NULL, 
-	NULL,
-	NULL,
-	NULL,
-	NULL
-    },
-    { 
-	NULL,
-	NULL,
-	NULL,
-	NULL,
-	NULL, 
-	NULL, 
-	NULL,
-	NULL
-    },
-    { 
-	NULL,
-	NULL,
-	NULL,
-	NULL,
-	NULL,
-	NULL, 
-	NULL, 
-	NULL
+    {
+	/* remote connections using StarLan */
+        _XsSetupTliStream,
+        _XsConnectTliClient,
+        _XsCallTliServer,
+        _XsReadLocalStream,
+        _XsErrorCall,
+        write,
+        close,
+        NULL
     }
 };
+
+
 #endif /* STREAMSCONN */
+
 
 #ifdef XTEST1
 /*
@@ -190,4 +222,9 @@ int			XTestFakeAckType   = 1;
  * NOTE: any additional external definition NEED
  * to be inserted ABOVE this point!!!
  */
+
+
+ _XQEvent * _qfree = NULL;
+ long _qfreeFlag = 0;
+ void * _qfreePtr = NULL;
 
