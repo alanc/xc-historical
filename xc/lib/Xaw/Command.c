@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Command.c,v 1.63 89/10/09 16:20:02 jim Exp $";
+static char Xrcsid[] = "$XConsortium: Command.c,v 1.64 89/11/28 11:58:37 swick Exp $";
 #endif /* lint */
 
 /***********************************************************
@@ -192,6 +192,7 @@ Pixel fg, bg;
   values.foreground   = fg;
   values.background	= bg;
   values.font		= cbw->label.font->fid;
+  values.cap_style = CapProjecting;
   
   if (cbw->command.highlight_thickness > 1 )
     values.line_width   = cbw->command.highlight_thickness;
@@ -199,7 +200,7 @@ Pixel fg, bg;
     values.line_width   = 0;
   
   return XtGetGC((Widget)cbw,
-		 GCForeground | GCBackground | GCFont | GCLineWidth,
+		 (GCForeground|GCBackground|GCFont|GCLineWidth|GCCapStyle),
 		 &values);
 }
 
