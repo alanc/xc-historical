@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xfd.c,v 1.5 89/06/05 16:31:45 jim Exp $
+ * $XConsortium: xfd.c,v 1.6 89/06/05 17:30:27 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -179,44 +179,6 @@ static void SelectChar (w, closure, data)
 
 
 
-#ifdef comment
-/*
- * Go_Back: Routine to page back a gridful of characters.
- */
-Go_Back()
-{
-	/* If try and page back past first 0th character, beep */
-	if (xfd_resources.start_char == 0) {
-		Beep();
-		return;
-	}
-
-	xfd_resources.start_char -= x_boxes*y_boxes;
-	if (xfd_resources.start_char<0)
-	  xfd_resources.start_char = 0;
-
-	Display_Contents();
-}
-
-/*
- * Go_Forward: Routine to page forward a gridful of characters.
- */
-Go_Forward()
-{
-	int delta = x_boxes*y_boxes;
-
-	if (xfd_resources.start_char + delta > max_char) {
-		Beep ();
-		return;
-	}
-
-	xfd_resources.start_char += delta;
-
-	Display_Contents();
-}
-#endif /* comment */
-
-
 static void do_quit (w, event, params, num_params)
     Widget w;
     XEvent *event;
@@ -229,23 +191,13 @@ static void do_quit (w, event, params, num_params)
 change_page (page)
     int page;
 {
-    unsigned int start, ncols, nrows;
-    unsigned delta;
+    long start;
+    unsigned int ncols, nrows;
     Arg arg;
 
     GetFontGridCellDimensions (fontGrid, &start, &ncols, &nrows);
+    start += ((long) ncols) * ((long) nrows) * ((long) page);
 
-    if (page < 0) {
-	delta = ncols * nrows * ((unsigned) -page);
-
-	if (start <= delta) 
-	  start = 0;
-	else
-	  start -= delta;
-    } else {
-	delta = ncols * nrows * (unsigned) page;
-	start += delta;
-    }
     XtSetArg (arg, XtNstartChar, start);
     XtSetValues (fontGrid, &arg, ONE);
 }

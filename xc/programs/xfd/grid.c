@@ -1,5 +1,5 @@
 /*
- * $XConsortium: fontgrid.c,v 1.4 89/06/05 16:31:47 jim Exp $
+ * $XConsortium: fontgrid.c,v 1.5 89/06/05 17:30:29 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -28,13 +28,14 @@
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
 #include <X11/SimpleP.h>
+#include <X11/Xmu/Xmu.h>
 #include "fontgridP.h"
 
 
 #define Bell(w) XBell(XtDisplay(w), 50)
 
 
-static void Initialize(), Realize(), Redisplay(), Notify();
+static void ClassInitialize(), Initialize(), Realize(), Redisplay(), Notify();
 static void paint_grid();
 static Boolean SetValues();
 
@@ -43,8 +44,8 @@ static XtResource resources[] = {
 #define offset(field) XtOffset(FontGridWidget, fontgrid.field)
     { XtNfont, XtCFont, XtRFontStruct, sizeof(XFontStruct *),
 	offset(text_font), XtRString, (caddr_t) NULL },
-    { XtNstartChar, XtCStartChar, XtRInt, sizeof(int),
-	offset(start_char), XtRString, (caddr_t) "0" },
+    { XtNstartChar, XtCStartChar, XtRLong, sizeof(long),
+	offset(start_char), XtRString, (caddr_t) "-1" },
     { XtNforeground, XtCForeground, XtRPixel, sizeof(Pixel),
 	offset(foreground_pixel), XtRString, (caddr_t) "XtDefaultForeground" },
     { XtNcenterChars, XtCCenterChars, XtRBoolean, sizeof(Boolean),
@@ -75,7 +76,7 @@ FontGridClassRec fontgridClassRec = {
     /* superclass               */      (WidgetClass) &simpleClassRec,
     /* class_name               */      "FontGrid",
     /* widget_size              */      sizeof(FontGridRec),
-    /* class_initialize         */      NULL,
+    /* class_initialize         */      ClassInitialize,
     /* class_part_initialize    */      NULL,
     /* class_inited             */      FALSE,
     /* initialize               */      Initialize,
@@ -116,7 +117,8 @@ WidgetClass fontgridWidgetClass = (WidgetClass) &fontgridClassRec;
 
 void GetFontGridCellDimensions (fgw, sp, wp, hp)
     FontGridWidget fgw;
-    int *sp, *wp, *hp;
+    long *sp;
+    int *wp, *hp;
 {
     *sp = fgw->fontgrid.start_char;
     *wp = fgw->fontgrid.cell_width;
@@ -150,6 +152,12 @@ static GC get_gc (fgw, fore)
 }
 
 
+static void ClassInitialize ()
+{
+    XtAddConverter (XtRString, XtRLong, XmuCvtStringToLong, NULL, 0);
+}
+
+
 static void Initialize (request, new)
     Widget request, new;
 {
@@ -178,6 +186,12 @@ static void Initialize (request, new)
 	}
 	newfg->core.height = (newfg->fontgrid.cell_height * nrows +
 			      newfg->fontgrid.grid_width);
+    }
+
+    if (newfg->fontgrid.start_char == -1L) {
+	newfg->fontgrid.start_char = 
+	  (long) ((newfg->fontgrid.text_font->min_byte1 << 8) | 
+		  newfg->fontgrid.text_font->min_char_or_byte2);
     }
 
     return;
@@ -288,7 +302,7 @@ static void paint_grid (fgw, col, row, ncols, nrows)
      * fonts.  Store the high eight bits in byte1 and the low eight bits in 
      * byte2.
      */
-    prevn = p->start_char + col + row * tcols;
+    prevn = ((unsigned) p->start_char) + col + row * tcols;
     startx = col * cw + p->internal_pad;
     for (j = 0, y = row * ch + p->internal_pad + p->text_font->ascent;
 	 j < nrows; j++, y += ch) {
@@ -308,12 +322,6 @@ static void paint_grid (fgw, col, row, ncols, nrows)
 		XTextExtents16 (p->text_font, &thechar, 1, &direction,
 				&fontascent, &fontdescent, &metrics);
 
-		if (p->box_chars) {
-		    XDrawRectangle (dpy, wind, p->box_gc,
-				    x, y - p->text_font->ascent, 
-				    metrics.width - 1,
-				    fontascent + fontdescent - 1);
-		}
 		if (p->center_chars) {
 		    /*
 		     * We want to move the origin by enough to center the ink
@@ -328,6 +336,12 @@ static void paint_grid (fgw, col, row, ncols, nrows)
 			      (metrics.descent + metrics.ascent)) / 2) -
 			    p->internal_pad -
 			    p->text_font->ascent + metrics.ascent);
+		}
+		if (p->box_chars) {
+		    XDrawRectangle (dpy, wind, p->box_gc,
+				    x + xoff, y + yoff - p->text_font->ascent, 
+				    metrics.width - 1,
+				    fontascent + fontdescent - 1);
 		}
 	    }
 	    XDrawString16 (dpy, wind, p->text_gc, x + xoff, y + yoff,
@@ -381,7 +395,7 @@ static Boolean SetValues (current, request, new)
 	unsigned int maxn = ((fs->max_byte1 << 8) | fs->max_char_or_byte2);
 	unsigned int page = (newfg->fontgrid.cell_cols * 
 			     newfg->fontgrid.cell_rows);
-	unsigned int lastpage = ((maxn <= page) ? 0 : maxn - page);
+	long lastpage = (long) ((maxn <= page) ? 0 : maxn - page);
 
 	if (newfg->fontgrid.start_char > lastpage)
 	  newfg->fontgrid.start_char = lastpage;
@@ -439,8 +453,8 @@ static void Notify (gw, event, params, nparams)
 	    return;
 	}
 
-	n= (fgw->fontgrid.start_char + ((y / ch) * fgw->fontgrid.cell_cols) +
-	    (x / cw));
+	n= (((unsigned) fgw->fontgrid.start_char) + 
+	    ((y / ch) * fgw->fontgrid.cell_cols) + (x / cw));
 
 	rec.thefont = fgw->fontgrid.text_font;
 	rec.thechar.byte1 = (n >> 8);
