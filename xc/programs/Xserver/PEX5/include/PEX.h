@@ -1,4 +1,4 @@
-/* $XConsortium: PEX.h,v 5.2 91/06/18 13:57:22 hersh Exp $ */
+/* $XConsortium: PEX.h,v 5.3 91/08/26 12:29:34 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -583,18 +583,18 @@ SOFTWARE.
 #define PEXDynColourApproxTable			 (1L<<9)
 #define PEXDynPatternTable			(1L<<10)
 #define PEXDynTextFontTable			(1L<<11)
-#define PEXDynMarkerBundleContents		(1L<<12)
-#define PEXDynTextBundleContents		(1L<<13)
-#define PEXDynLineBundleContents		(1L<<14)
-#define PEXDynInteriorBundleContents		(1L<<15)
-#define PEXDynEdgeBundleContents		(1L<<16)
-#define PEXDynViewTableContents			(1L<<17)
-#define PEXDynColourTableContents		(1L<<18)
-#define PEXDynDepthCueTableContents		(1L<<19)
-#define PEXDynLightTableContents		(1L<<20)
-#define PEXDynColourApproxContents		(1L<<21)
-#define PEXDynPatternTableContents		(1L<<22)
-#define PEXDynTextFontTableContents		(1L<<23)
+#define PEXDynMarkerBundleContents		(1L<<16)
+#define PEXDynTextBundleContents		(1L<<17)
+#define PEXDynLineBundleContents		(1L<<18)
+#define PEXDynInteriorBundleContents		(1L<<19)
+#define PEXDynEdgeBundleContents		(1L<<20)
+#define PEXDynViewTableContents			(1L<<21)
+#define PEXDynColourTableContents		(1L<<22)
+#define PEXDynDepthCueTableContents		(1L<<23)
+#define PEXDynLightTableContents		(1L<<24)
+#define PEXDynColourApproxContents		(1L<<25)
+#define PEXDynPatternTableContents		(1L<<26)
+#define PEXDynTextFontTableContents		(1L<<27)
 /*	namesets	      */
 #define PEXDynHighlightNameset			 (1L<<0)
 #define PEXDynInvisibilityNameset		 (1L<<1)
