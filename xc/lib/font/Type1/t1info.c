@@ -1,4 +1,4 @@
-/* $XConsortium: t1info.c,v 1.7 91/12/16 18:35:48 keith Exp $ */
+/* $XConsortium: t1info.c,v 1.8 92/02/04 21:36:48 keith Exp $ */
 /* Copyright International Business Machines,Corp. 1991
  * All Rights Reserved
  *
@@ -53,7 +53,8 @@
  * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
- 
+
+#include <stdio.h> 
 #include "fontfilest.h"
 #include "FSproto.h"
 #include "t1intf.h"
@@ -74,7 +75,7 @@ typedef struct _fontProp {
     enum scaleType type;
 }           fontProp;
  
-static fontProp fontNamePropTable[] = {  /* Example:
+static fontProp fontNamePropTable[] = {  /* Example: */
     "FOUNDRY", 0, atom,                  /* adobe */
     "FAMILY_NAME", 0, atom,              /* times roman */
     "WEIGHT_NAME", 0, atom,              /* bold */
