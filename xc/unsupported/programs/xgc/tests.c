@@ -3,12 +3,16 @@
 **
 */
 
-#include <stdio.h>
-#include <math.h>
-#include <X11/Xos.h>
+#ifdef SVR4
+#define SYSV
+#endif
+
 #include <X11/Intrinsic.h>
 #include <X11/StringDefs.h>
 #include <X11/Xaw/AsciiText.h>
+#include <X11/Xos.h>
+#include <stdio.h>
+#include <math.h>
 #include "xgc.h"
 #ifndef SYSV
 #include <sys/timeb.h>
@@ -19,7 +23,7 @@
 #define PI 3.14159265
 #endif
 
-#if defined(SYSV) || defined(SVR4)
+#ifdef SYSV
 #define random lrand48
 #endif
 
