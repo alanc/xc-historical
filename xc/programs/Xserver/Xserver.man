@@ -1,4 +1,4 @@
-.TH XSERVER 1 "26 October 1988"  "X Version 11"
+.TH XSERVER 1 "Release 4"  "X Version 11"
 .SH NAME
 X - X Window System server
 .SH SYNOPSIS
@@ -399,6 +399,6 @@ Copyright 1984, 1985, 1986, 1987, 1988, 1989, Massachusetts Institute of Technol
 See \fIX(1)\fP for a full statement of rights and permissions.
 .SH AUTHORS
 The sample server was originally written by Susan Angebranndt, Raymond
-Drewry, Philip Karlton, and Todd Newman, with support from a cast of
-thouands.  See also the file \fIdoc/contributors\fP in the sample
-distribution for a more complete list.
+Drewry, Philip Karlton, and Todd Newman, from Digital Equipment
+Corporation, with support from a large cast.  It has since been
+extensively rewritten by Keith Packard and Bob Scheifler, from MIT.
