@@ -1,4 +1,4 @@
-/* $XConsortium: Label.c,v 1.90 91/07/12 11:18:25 converse Exp $ */
+/* $XConsortium: Label.c,v 1.91 91/07/13 15:38:27 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -29,13 +29,13 @@ SOFTWARE.
  *
  */
 
-#define XtStrlen(s)		((s) ? strlen(s) : 0)
-
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
 #include <X11/Xos.h>
 #include <X11/Xaw/XawInit.h>
 #include <X11/Xaw/LabelP.h>
+#include <X11/Xmu/Converters.h>
+#include <X11/Xmu/Drawing.h>
 #include <stdio.h>
 #include <ctype.h>
 
