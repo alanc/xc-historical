@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbclip.c,v 5.0 89/06/09 15:06:17 keith Exp $ */
+/* $XConsortium: mfbclip.c,v 5.1 89/07/09 16:01:44 rws Exp $ */
 #include "X.h"
 #include "miscstruct.h"
 #include "pixmapstr.h"
@@ -71,7 +71,7 @@ mfbPixmapToRegion(pPix)
     register unsigned	*pw, w;
     register int	ib;
     int			width, h, base, rx1, crects;
-    unsigned int	*pwLineStart;
+    unsigned int	*pwLineEnd;
     int			irectPrevStart, irectLineStart;
     register BoxPtr	prectO, prectN;
     BoxPtr		FirstRect, rects, prectLineStart;
@@ -92,7 +92,6 @@ mfbPixmapToRegion(pPix)
     for(h = 0; h < pPix->drawable.height; h++)
     {
 	irectLineStart = rects - FirstRect;
-	pwLineStart = pw;
 	/* If the Screen left most bit of the word is set, we're starting in
 	 * a box */
 	if(*pw & mask0)
@@ -103,18 +102,18 @@ mfbPixmapToRegion(pPix)
 	else
 	    fInBox = FALSE;
 	/* Process all words which are fully in the pixmap */
-	while(pw  < pwLineStart + width/32)
+	pwLineEnd = pw + (width >> 5);
+	for (base = 0; pw < pwLineEnd; base += 32)
 	{
-	    base = (pw - pwLineStart) * 32;
 	    w = *pw++;
 	    if (fInBox)
 	    {
-		if (w == 0xFFFFFFFF)
+		if (!~w)
 		    continue;
 	    }
 	    else
 	    {
-		if (w == 0)
+		if (!w)
 		    continue;
 	    }
 	    for(ib = 0; ib < 32; ib++)
@@ -147,7 +146,6 @@ mfbPixmapToRegion(pPix)
 	if(width & 0x1F)
 	{
 	    /* Process final partial word on line */
-	    base = (pw - pwLineStart) * 32;
 	    w = *pw++;
 	    for(ib = 0; ib < (width & 0x1F); ib++)
 	    {
@@ -179,7 +177,8 @@ mfbPixmapToRegion(pPix)
 	/* If scanline ended with last bit set, end the box */
 	if(fInBox)
 	{
-	    ADDRECT(pReg, rects, FirstRect, rx1, h, base + ib, h + 1);
+	    ADDRECT(pReg, rects, FirstRect,
+		    rx1, h, base + (width & 0x1f), h + 1);
 	}
 	/* if all rectangles on this line have the same x-coords as
 	 * those on the previous line, then add 1 to all the previous  y2s and 
