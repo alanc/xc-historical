@@ -1,4 +1,4 @@
-/* $XConsortium: ICElib.h,v 1.14 93/11/08 16:33:12 mor Exp $ */
+/* $XConsortium: ICElib.h,v 1.15 93/11/18 14:21:15 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -134,6 +134,12 @@ typedef IcePaAuthStatus (*IcePaAuthProc) (
 #endif
 );
 
+typedef Bool (*IceHostBasedAuthProc) (
+#if NeedFunctionPrototypes
+    char *		/* hostName */
+#endif
+);
+
 typedef struct {
     char		*auth_name;
     IcePoAuthProc	auth_proc;
@@ -220,7 +226,6 @@ typedef struct {
  */
 
 #define MAX_ICE_AUTH_NAMES 32
-
 
 
 /*
@@ -381,9 +386,12 @@ struct _IceConn {
 
 
     /*
-     * iceConn_type = 1 if this iceConn was created using IceOpenConnection.
-     * iceConn_type = 2 if this iceConn was created using IceAcceptConnection.
+     * Keep track of how this connection was created.
      */
+
+#define ICE_CONN_FROM_CONNECT		1
+#define ICE_CONN_FROM_ACCEPT		2
+#define ICE_CONN_FROM_LOCAL_ACCEPT	3
 
     char			iceConn_type;
 
@@ -473,6 +481,7 @@ extern int IceRegisterForProtocolReply (
 extern IceConn IceOpenConnection (
 #if NeedFunctionPrototypes
     char *		/* networkIdsList */,
+    Bool		/* mustAuthenticate */,
     int			/* errorLength */,
     char *		/* errorStringRet */
 #endif
@@ -492,6 +501,13 @@ extern void IceSetAuthenticationData (
 #if NeedFunctionPrototypes
     int			/* numEntries */,
     IceAuthDataEntry *	/* entries */
+#endif
+);
+
+extern void IceSetHostBasedAuthProc (
+#if NeedFunctionPrototypes
+    IceHostBasedAuthProc   /* proc */,
+    IcePointer		   /* clientData */
 #endif
 );
 
@@ -540,6 +556,7 @@ extern IceProtocolSetupStatus IceProtocolSetup (
     int 		/* myOpcode */,
     int			/* authCount */,
     int	*		/* authIndices */,
+    Bool		/* mustAuthenticate */,
     int	*		/* majorVersionRet */,
     int	*		/* minorVersionRet */,
     char **		/* vendorRet */,
