@@ -1,4 +1,4 @@
-/* $XConsortium: TextPop.c,v 1.23 93/08/17 15:26:55 rws Exp $ */
+/* $XConsortium: TextPop.c,v 1.24 93/09/17 11:04:34 rws Exp $ */
 
 /***********************************************************
 Copyright 1989 by the Massachusetts Institute of Technology,
@@ -48,6 +48,11 @@ SOFTWARE.
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
 #include <X11/Shell.h> 
+#include <stdio.h>
+#include <X11/Xos.h>		/* for O_RDONLY */
+#ifndef X_NOT_STDC_ENV
+#include <stdlib.h>
+#endif
 
 #include <X11/Xaw/TextP.h>
 #include <X11/Xaw/AsciiText.h>
@@ -56,14 +61,14 @@ SOFTWARE.
 #include <X11/Xaw/Form.h>
 #include <X11/Xaw/Toggle.h>
 #include <X11/Xmu/CharSet.h>
-#include <stdio.h>
-#include <X11/Xos.h>		/* for O_RDONLY */
 #include <errno.h>
 #ifdef X_NOT_STDC_ENV
 extern int errno;
 #endif
+#ifndef WIN32
 extern int sys_nerr;
 extern char* sys_errlist[];
+#endif
 
 #define INSERT_FILE ("Enter Filename:")
 

@@ -1,4 +1,4 @@
-/* $XConsortium: AsciiSrc.c,v 1.58 93/08/17 21:12:45 rws Exp $ */
+/* $XConsortium: AsciiSrc.c,v 1.59 93/09/17 11:03:46 rws Exp $ */
 
 /*
  * Copyright 1989 Massachusetts Institute of Technology
@@ -36,6 +36,9 @@
 #include <errno.h>
 #include <X11/StringDefs.h>
 #include <X11/Xos.h>
+#ifndef X_NOT_STDC_ENV
+#include <stdlib.h>
+#endif
 #include <X11/Xfuncs.h>
 #include <X11/Xaw/XawInit.h>
 #include <X11/Xaw/AsciiSrcP.h>
@@ -94,8 +97,10 @@ static Boolean SetValues(), WriteToFile();
 #ifdef X_NOT_STDC_ENV
 extern int errno;
 #endif
+#ifndef WIN32
 extern int sys_nerr;
 extern char* sys_errlist[];
+#endif
 
 #define superclass		(&textSrcClassRec)
 AsciiSrcClassRec asciiSrcClassRec = {
