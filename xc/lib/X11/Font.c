@@ -1,4 +1,4 @@
-/* $XConsortium: XFont.c,v 11.38 91/12/19 18:14:14 rws Exp $ */
+/* $XConsortium: XFont.c,v 11.39 92/01/03 13:59:23 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -32,22 +32,16 @@ XFontStruct *XLoadQueryFont(dpy, name)
     register long nbytes;
     Font fid;
     xOpenFontReq *req;
-    int seqadj = 1;
+    unsigned long seq;
 
     LockDisplay(dpy);
     GetReq(OpenFont, req);
+    seq = dpy->request;
     nbytes = req->nbytes  = name ? strlen(name) : 0;
     req->fid = fid = XAllocID(dpy);
     req->length += (nbytes+3)>>2;
     Data (dpy, name, nbytes);
-#ifdef WORD64
-    /* 
-     *  If a NoOp is generated, the sequence number will be off
-     *  by one, so this temporarily adjusts the sequence number.
-     */
-    if ((long)dpy->bufptr >> 61) seqadj = 2;
-#endif
-    font_result = _XQueryFont(dpy, fid, seqadj);
+    font_result = _XQueryFont(dpy, fid, seq);
     UnlockDisplay(dpy);
     SyncHandle();
     return font_result;
@@ -77,31 +71,40 @@ XFreeFont(dpy, fs)
 }
 
 static XFontStruct *
-_XQueryFont (dpy, fid, seqadj)
+_XQueryFont (dpy, fid, seq)
     register Display *dpy;
     Font fid;
-    int seqadj; /* 0, 1, 2 */
+    unsigned long seq;
 {
     register XFontStruct *fs;
     register long nbytes;
     xQueryFontReply reply;
     register xResourceReq *req;
     register _XExtension *ext;
+    _XInternalErrorHandler async;
+    _XInternalErrorState async_state;
 
-    if (seqadj) {
-	dpy->flags |= XlibDisplayIgnoreFont;
-#ifdef WORD64
-	if (seq > 1)
-	    dpy->flags |= XlibDisplayAddNoOp;
-#endif
+    if (seq) {
+	async_state.min_sequence_number = seq;
+	async_state.max_sequence_number = seq;
+	async_state.error_code = BadName;
+	async_state.major_opcode = X_OpenFont;
+	async_state.minor_opcode = 0;
+	async_state.error_count = 0;
+	async.next = dpy->async_handlers;
+	async.handler = _XAsyncErrorHandler;
+	async.data = (XPointer)&async_state;
+	dpy->async_handlers = &async;
     }
     GetResReq(QueryFont, fid, req);
     if (!_XReply (dpy, (xReply *) &reply,
        ((SIZEOF(xQueryFontReply) - SIZEOF(xReply)) >> 2), xFalse)) {
-	dpy->flags &= ~(XlibDisplayIgnoreFont|XlibDisplayAddNoOp);
+	if (seq)
+	    _XDeqErrorHandler(dpy, &async);
 	return (XFontStruct *)NULL;
     }
-    dpy->flags &= ~(XlibDisplayIgnoreFont|XlibDisplayAddNoOp);
+    if (seq)
+	_XDeqErrorHandler(dpy, &async);
     if (! (fs = (XFontStruct *) Xmalloc (sizeof (XFontStruct)))) {
 	_XEatData(dpy, (unsigned long)(reply.nFontProps * SIZEOF(xFontProp) +
 				       reply.nCharInfos * SIZEOF(xCharInfo)));
@@ -219,7 +222,7 @@ XFontStruct *XQueryFont (dpy, fid)
     XFontStruct *font_result;
 
     LockDisplay(dpy);
-    font_result = _XQueryFont(dpy, fid, 0);
+    font_result = _XQueryFont(dpy, fid, 0L);
     UnlockDisplay(dpy);
     SyncHandle();
     return font_result;
