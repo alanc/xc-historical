@@ -9,7 +9,8 @@ EXPORTS = \
 	copyright.h \
 	keysym.h \
 	keysymdef.h \
-	DECkeysym.h
+	DECkeysym.h \
+	JUSkeysym.h
 
 IMPORTS1 = \
 	$(OLDXLIBSRC)/X10.h \
