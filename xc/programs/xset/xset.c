@@ -284,7 +284,7 @@ for (i = 1; i < argc; ) {
 	j = 0;
 	do {
 	    arg = argv[i];
-	    if (!isnumber (arg)) break;	/* all done */
+	    if (!isnumber (arg, 255)) break;	/* all done */
 	    pmap[j++] = atoi (arg);
 	    i++;
 	} while (j < 256 && i < argc);
