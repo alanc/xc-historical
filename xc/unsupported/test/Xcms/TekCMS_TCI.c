@@ -274,37 +274,27 @@ TC_CompareResults(tc_id, vfile, rfile)
  *
  */
 {
-    FILE *fp1, *fp2;
+    FILE *fp1 = NULL;
+    FILE *fp2 = NULL;
     int retval = -1;
 
-    if ((fp1 = fopen(vfile, "r")) == NULL) {
-	retval = -1 ;
-	goto TC_CompareResults_Error;
-    }
-    if ((fp2 = fopen(rfile, "r")) == NULL) {
-	fclose(fp1);
-	retval = -1 ;
-	goto TC_CompareResults_Error;
-    }
-    switch (retval = filecmp(fp1, fp2)) {
+    if ((fp1 = fopen(vfile, "r")) && (fp2 = fopen(rfile, "r")))
+	retval = filecmp(fp1, fp2);
+    switch (retval) {
       case 0:
 	printf("%s:  FAILED\n", tc_id);
-	return(0);
 	break;
       case 1:
 	printf("%s:  passed\n", tc_id);
-	return(1);
 	break;
       default:
-	retval = -1 ;
-	goto TC_CompareResults_Error;
+	printf("%s:  unable to verify results\n", tc_id);
 	break;
     }
-    fclose(fp1);
-    fclose(fp2);
-
-TC_CompareResults_Error:
-    printf("%s:  unable to verify results\n", tc_id);
+    if (fp1)
+	fclose(fp1);
+    if (fp2)
+	fclose(fp2);
     return(retval);
 }
 
