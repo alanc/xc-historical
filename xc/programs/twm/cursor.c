@@ -1,6 +1,6 @@
 /***********************************************************************
  *
- * $XConsortium: cursor.c,v 1.2 89/04/07 11:57:30 toml Exp $
+ * $XConsortium: cursor.c,v 1.2 89/04/12 18:55:32 jim Exp $
  *
  * cursor creation code
  *
@@ -103,7 +103,7 @@ Cursor *cp, str;
 {
     int i;
 
-    for (i = 0; i < sizeof(cursor_names); i++)
+    for (i = 0; i < sizeof(cursor_names)/sizeof(struct _CursorName); i++)
     {
 	if (strcmp(str, cursor_names[i].name) == 0)
 	{
