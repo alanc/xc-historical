@@ -1,4 +1,4 @@
-/* $XConsortium: XPutImage.c,v 11.55 91/01/06 11:47:25 rws Exp $ */
+/* $XConsortium: XPutImage.c,v 11.56 91/02/01 16:34:39 gildea Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -274,22 +274,32 @@ SwapNibbles (src, dest, srclen, srcinc, destinc, height)
 }
 
 static int
-ShiftNibblesLeft (src, dest, srclen, srcinc, destinc, height)
+ShiftNibblesLeft (src, dest, srclen, srcinc, destinc, height, nibble_order)
     register unsigned char *src, *dest;
     long srclen, srcinc, destinc;
     unsigned int height;
+    int nibble_order;
 {
     register long h, n;
     register unsigned char c1, c2;
 
     srcinc -= srclen;
     destinc -= srclen;
-    for (h = height; --h >= 0; src += srcinc, dest += destinc)
-	for (n = srclen; --n >= 0; ) {
-	    c1 = *src++;
-	    c2 = *src;
-	    *dest++ = ((c1 & 0x0f) << 4) | ((c2 & (unsigned)0xf0) >> 4);
-	}
+    if (nibble_order == MSBFirst) {
+	for (h = height; --h >= 0; src += srcinc, dest += destinc)
+	    for (n = srclen; --n >= 0; ) {
+		c1 = *src++;
+		c2 = *src;
+		*dest++ = ((c1 & 0x0f) << 4) | ((c2 & (unsigned)0xf0) >> 4);
+	    }
+    } else {
+	for (h = height; --h >= 0; src += srcinc, dest += destinc)
+	    for (n = srclen; --n >= 0; ) {
+		c1 = *src++;
+		c2 = *src;
+		*dest++ = ((c2 & 0x0f) << 4) | ((c1 & (unsigned)0xf0) >> 4);
+	    }
+    }
 }
 
 /*ARGSUSED*/
@@ -702,7 +712,8 @@ SendZImage(dpy, req, image, req_xoffset, req_yoffset,
 
 	ShiftNibblesLeft(src, shifted_src, bytes_per_src,
 			 (long) image->bytes_per_line,
-			 (long) image->bytes_per_line, req->height);
+			 (long) image->bytes_per_line, req->height,
+			 image->byte_order);
 	src = shifted_src;
     }
 
