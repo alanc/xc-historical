@@ -1,4 +1,4 @@
-/* $XConsortium: XExtInt.c,v 1.30 94/02/07 23:47:55 rws Exp $ */
+/* $XConsortium: XExtInt.c,v 1.31 94/02/07 23:49:49 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -91,7 +91,7 @@ static XEXT_GENERATE_ERROR_STRING (XInputError, xinput_extension_name,
  *
  */
 
-XExtensionVersion versions[] = {{XI_Absent,0,0},
+static XExtensionVersion versions[] = {{XI_Absent,0,0},
 	{XI_Present, XI_Initial_Release_Major, XI_Initial_Release_Minor},
 	{XI_Present, XI_Add_XDeviceBell_Major, XI_Add_XDeviceBell_Minor},
 	{XI_Present, XI_Add_XSetDeviceValuators_Major, 
@@ -152,7 +152,7 @@ _xidevicebusy (dpy, error)
  *
  */
 
-CheckExtInit(dpy, version_index)
+_XiCheckExtInit(dpy, version_index)
     register	Display *dpy;
     register	int	version_index;
     {
