@@ -1,10 +1,9 @@
-XCOMM $XConsortium: Imakefile,v 1.26 93/07/29 12:17:23 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.27 93/07/29 13:03:31 rws Exp $
         RGB_DB = DefaultRGBDatabase
    SITE_RGB_DB = -DRGB_DB=\"$(RGB_DB)\"
       DEPLIBS = 
       DEFINES = NdbmDefines $(SITE_RGB_DB)
      INCLUDES = -I$(SERVERSRC)/include
- INSTALLFLAGS = $(INSTLIBFLAGS)
         SRCS1 = rgb.c
         OBJS1 = rgb.o
         SRCS2 = showrgb.c
