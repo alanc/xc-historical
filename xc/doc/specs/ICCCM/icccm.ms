@@ -25,11 +25,11 @@ Problem:
 .DE
 ..
 .TL
-X Window System,  Version 11
-.sp
 Inter-Client Communication Conventions Manual
 .sp
 Version 1.0
+.sp
+MIT X Consortium Standard
 .AU
 David S. H. Rosenthal
 .AI
