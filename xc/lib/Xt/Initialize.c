@@ -576,7 +576,7 @@ XtWidgetGeometry *reply;
 }
 
 static void SetValues(old,new)
-Widget *old, *new;
+Widget old, new;
 {
 	XWMHints wmhints, *oldhints;
 	TopLevelWidget nw = (TopLevelWidget) new;

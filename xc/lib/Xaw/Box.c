@@ -242,7 +242,7 @@ static Boolean TryNewLayout(bbw)
     }
 
     /* let's see if our parent will go for a new size. */
-    switch (XtMakeResizeRequest(bbw, width, height, &width, &height)) {
+    switch (XtMakeResizeRequest((Widget) bbw, width, height, &width, &height)) {
 
 	case XtGeometryYes:
 	    return (TRUE);
@@ -253,7 +253,8 @@ static Boolean TryNewLayout(bbw)
 	case XtGeometryAlmost:
 	    if (! PreferredSize(bbw, width, height, &width, &height))
 	        return (FALSE);
-	    (void) XtMakeResizeRequest(bbw, width, height, &width, &height);
+	    (void) XtMakeResizeRequest((Widget) bbw, width, height, 
+					&width, &height);
 	    return (TRUE);
     }
 }
