@@ -1,4 +1,4 @@
-/* $XConsortium: Xregistry,v 1.46 91/06/18 13:38:39 rws Exp $ */
+/* $XConsortium: Xregistry,v 1.47 91/07/24 11:47:18 rws Exp $ */
 
 1. ORGANIZATION NAMES
 
@@ -11,6 +11,7 @@ Name						Reference
 "Apple"						[22]
 "ARDENT"					[2]
 "BBN"						[61]
+"CRAB"						[84]
 "CRUC"						[30]
 "DG"						[48]
 "FXD"						[55]
@@ -214,6 +215,7 @@ String						Reference
 "Apollo Computer Inc."				[1]
 "Apple Computer, Inc."				[22]
 "Ardent Computer Corporation"			[2]
+"Crab Advanced Technologies Ltd"		[84]
 "Crucible"					[30]
 "Data General Corporation"			[48]
 "International Business Machines"		[33]
@@ -658,6 +660,7 @@ Name						Reference
 Name						Reference
 ----						---------
 "Acorn"						[49]
+"CRAB"						[84]
 "HDS"						[70]
 "TD"						[63]
 "MIT"						[8]
@@ -1089,3 +1092,8 @@ REFERENCES
 	Snitily Graphics Consulting Services
 	894 Brookgrove Lane
 	Cupertino, CA 95014
+
+[84]	Paul Verey
+	Crab Advanced Technologies Ltd.
+	First Base, Beacontree Plaza, Gillette Way
+	Reading, RG2 0BP
