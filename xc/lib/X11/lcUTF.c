@@ -1,4 +1,4 @@
-/* $XConsortium: lcUTF.c,v 1.3 93/09/19 09:19:04 rws Exp $ */
+/* $XConsortium: lcUTF.c,v 1.4 93/09/23 12:31:35 rws Exp $ */
 /******************************************************************
 
               Copyright 1993 by SunSoft, Inc.
@@ -267,7 +267,7 @@ static UtfData
 make_entry()
 {
     UtfData tmp = (UtfData)Xmalloc(sizeof(UtfDataRec));
-    memset(tmp, 0, sizeof(UtfDataRec));
+    bzero(tmp, sizeof(UtfDataRec));
     return tmp;
 }
 
