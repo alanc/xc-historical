@@ -22,8 +22,11 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: mkfontdir.c,v 1.8 93/06/14 15:31:46 dpw Exp $ */
+/* $XConsortium: mkfontdir.c,v 1.9 93/08/20 15:53:02 rws Exp $ */
 
+#ifdef WIN32
+#define _WILLWINSOCK_
+#endif
 #include <X11/Xos.h>
 #include <X11/Xfuncs.h>
 #include <stdio.h>
@@ -52,6 +55,13 @@ SOFTWARE.
 #endif
 #endif
 
+#ifdef WIN32
+#define BOOL wBOOL
+#include <windows.h>
+#undef BOOL
+#define FileName(file) file.cFileName
+#else
+#define FileName(file) file->d_name
 #ifndef X_NOT_POSIX
 #include <dirent.h>
 #else
@@ -64,6 +74,7 @@ SOFTWARE.
 #include <sys/dir.h>
 #ifndef dirent
 #define dirent direct
+#endif
 #endif
 #endif
 #endif
@@ -265,8 +276,13 @@ LoadDirectory (dirName, table)
     char	    *dirName;
     FontTablePtr    table;
 {
+#ifdef WIN32
+    HANDLE		dirh;
+    WIN32_FIND_DATA	file;
+#else
     DIR			*dirp;
     struct dirent	*file;
+#endif
     FontRendererPtr	renderer;
     char		fileName[PATH_MAX];
     int			hash;
@@ -274,20 +290,30 @@ LoadDirectory (dirName, table)
     NameBucketPtr	*hashTable, bucket, *prev, next;
     Bool		status;
     
+#ifdef WIN32
+    if ((dirh = FindFirstFile("*.*", &file)) == INVALID_HANDLE_VALUE)
+	return FALSE;
+#else
     if ((dirp = opendir (dirName)) == NULL)
 	return FALSE;
+#endif
     hashTable = New (NameBucketPtr, HASH_SIZE);
     bzero((char *)hashTable, HASH_SIZE * sizeof(NameBucketPtr));
-    while ((file = readdir (dirp)) != NULL) {
-	renderer = FontFileMatchRenderer (file->d_name);
+#ifdef WIN32
+    do
+#else
+    while ((file = readdir (dirp)) != NULL)
+#endif
+    {
+	renderer = FontFileMatchRenderer (FileName(file));
 	if (renderer)
 	{
 	    extension = renderer->fileSuffix;
-	    Estrip (extension, file->d_name);
-	    hash = Hash (file->d_name);
+	    Estrip (extension, FileName(file));
+	    hash = Hash (FileName(file));
 	    prev = &hashTable[hash];
 	    bucket = *prev;
-	    while (bucket && strcmp (bucket->name, file->d_name))
+	    while (bucket && strcmp (bucket->name, FileName(file)))
 	    {
 		prev = &bucket->next;
 		bucket = *prev;
@@ -302,7 +328,7 @@ LoadDirectory (dirName, table)
 		bucket = New (NameBucketRec, 1);
 		if (!bucket)
 		    return FALSE;
-		if (!(bucket->name = MakeName (file->d_name)))
+		if (!(bucket->name = MakeName (FileName(file))))
 		    return FALSE;
 		bucket->next = 0;
 		bucket->renderer = renderer;
@@ -310,6 +336,9 @@ LoadDirectory (dirName, table)
 	    }
 	}
     }
+#ifdef WIN32
+    while (FindNextFile(dirh, &file));
+#endif
     for (hash = 0; hash < HASH_SIZE; hash++)
     {
 	for (bucket = hashTable[hash]; bucket; bucket = next)
