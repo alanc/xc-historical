@@ -1,4 +1,4 @@
-/* $XConsortium: TMstate.c,v 1.135 91/02/07 17:47:18 converse Exp $ */
+/* $XConsortium: TMstate.c,v 1.136 91/02/18 18:41:28 converse Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -1816,7 +1816,6 @@ static Boolean ComposeTranslations(dest, operation, source, newXlations)
     XtTranslations 	newTable, oldXlations;
     TMBindData		bindData;
     TMComplexBindProcs	oldBindings = NULL;
-    TMShortCard		numOldBindings = 0;
     TMShortCard		numNewBindings = 0, numBytes;
     TMComplexBindProcsRec stackBindings[16], *newBindings;
 
@@ -1875,7 +1874,6 @@ static Boolean ComposeTranslations(dest, operation, source, newXlations)
 
     if (bindData = (TMBindData)dest->core.tm.proc_table ) {
 	TMComplexBindData cBindData = (TMComplexBindData)bindData;
-	numOldBindings = oldXlations->numStateTrees;
 	oldBindings = &cBindData->bindTbl[0];
     }
 
@@ -1885,6 +1883,8 @@ static Boolean ComposeTranslations(dest, operation, source, newXlations)
     XtBZero((char *)newBindings, numBytes);
 
     if (operation == XtTableUnmerge) {
+	TMShortCard numOldBindings;
+	numOldBindings = (oldXlations ? oldXlations->numStateTrees : 0);
 	newTable = UnmergeTranslations(dest, 
 				       oldXlations,
 				       newXlations,
