@@ -1,6 +1,6 @@
 /**/###########################################################################
 /**/# X Window System Build Parameters
-/**/# $XConsortium: Project.tmpl,v 1.34 89/08/23 15:04:23 jim Exp $
+/**/# $XConsortium: Project.tmpl,v 1.35 89/08/23 16:53:37 jim Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -310,7 +310,7 @@ Berklib.c: sysV/Berklib.c					@@\
 
 /**/###########################################################################
 /**/# X Window System make variables; this need to be coordinated with rules
-/**/# $XConsortium: Project.tmpl,v 1.34 89/08/23 15:04:23 jim Exp $
+/**/# $XConsortium: Project.tmpl,v 1.35 89/08/23 16:53:37 jim Exp $
 
 /*
  * This list must be reflected in the DIRS_TO_BUILD list in the top-level
@@ -429,7 +429,7 @@ Berklib.c: sysV/Berklib.c					@@\
 #endif
 #if SharedLibXt
       DEPXTOOLLIB = dirtouse($(USRLIBDIR),$(TOOLKITSRC))/libXt.so.$(SOXTREV)
-         XTOOLLIB = dirtouse(-lXt,-L$(TOOLKITSRC) -u __XtInherit -lXt)
+         XTOOLLIB = dirtouse(-lXt,-L$(TOOLKITSRC) -lXt)
 #else
       DEPXTOOLLIB = dirtouse($(USRLIBDIR),$(TOOLKITSRC))/libXt.a
          XTOOLLIB = $(DEPXTOOLLIB)
