@@ -1,5 +1,5 @@
 .\" Use -ms
-.\" $XConsortium: a2x.ms,v 1.22 92/09/10 10:50:43 rws Exp $
+.\" $XConsortium: a2x.ms,v 1.23 92/09/17 19:34:37 rws Exp $
 .de Ds
 .RS
 .nf
@@ -65,8 +65,8 @@ Digital Equipment Corp., and public versions are available for both R4 and R5.
 The XTestExtension1 extension was originally developed for an old test suite
 done by an informal group known as the X Testing Consortium; the client-side
 library and some device-independent code exists in both the R4 and R5 core
-distributions, but only the HP sample server in the MIT distribution supports
-the extension (other product servers might).
+distributions, but only a couple sample servers (HP and X386) in the MIT
+distribution supports the extension (some product servers might though).
 .LP
 \fBa2x\fP was originally written for the XTEST extension, but both DEC-XTRAP
 and XTestExtension1 should also work.  The main difference as far as \fBa2x\fP
