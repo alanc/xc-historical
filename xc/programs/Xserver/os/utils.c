@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: utils.c,v 1.40 88/02/20 08:43:10 rws Exp $ */
+/* $Header: utils.c,v 1.41 88/02/21 18:26:44 rws Exp $ */
 #include <stdio.h>
 #include <sys/time.h>
 #include "misc.h"
@@ -34,6 +34,9 @@ extern char *display;
 extern long defaultScreenSaverTime;	/* for parsing command line */
 extern long defaultScreenSaverInterval;
 extern int defaultScreenSaverBlanking;
+#ifndef NOLOGOHACK
+extern int logoScreenSaver;
+#endif
 
 extern long ScreenSaverTime;		/* for forcing reset */
 
@@ -199,6 +202,16 @@ char	*argv[];
 	    UseMsg();
 	    exit(0);
 	}
+#ifndef NOLOGOHACK
+	else if ( strcmp( argv[i], "-logo") == 0)
+	{
+	    logoScreenSaver = 1;
+	}
+	else if ( strcmp( argv[i], "nologo") == 0)
+	{
+	    logoScreenSaver = 0;
+	}
+#endif
 	else if ( strcmp( argv[i], "-p") == 0)
 	{
 	    if(++i < argc)
@@ -260,6 +273,10 @@ UseMsg()
     ErrorF("-fc string             cursor font\n");
     ErrorF("-fn string             default text font name\n");
     ErrorF("-fp string             default text font path\n");
+#ifndef NOLOGOHACK
+    ErrorF("-logo                  enable logo in screen saver\n");
+    ErrorF("nologo                 disable logo in screen saver\n");
+#endif
     ErrorF("-p #                   screen-saver pattern duration (seconds)\n");
     ErrorF("-r                     turns off auto-repeat\n");
     ErrorF("r                      turns on auto-repeat \n");

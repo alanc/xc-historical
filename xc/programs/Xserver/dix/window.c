@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: window.c,v 1.197 88/02/04 11:23:59 rws Exp $ */
+/* $Header: window.c,v 1.198 88/02/04 17:54:28 rws Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -2768,6 +2768,10 @@ SendVisibilityNotify(pWin)
 
 #define RANDOM_WIDTH 32
 
+#ifndef NOLOGOHACK
+extern int logoScreenSaver;
+#endif
+
 void
 SaveScreens(on, mode)
     int on;
@@ -2812,14 +2816,21 @@ SaveScreens(on, mode)
         {
             if (screenIsSaved == SCREEN_SAVER_ON)  /* rotate pattern */
             {
-	        int new_x, new_y;
-
 		if (savedScreenInfo[i].blanked == SCREEN_IS_TILED)
 	        {
-	            new_x = random() % RANDOM_WIDTH;
-	            new_y = random() % RANDOM_WIDTH;
-	            MoveWindow(savedScreenInfo[i].pWindow, -new_x, -new_y, 
-		               savedScreenInfo[i].pWindow->nextSib);
+		    WindowPtr pWin = savedScreenInfo[i].pWindow;
+#ifndef NOLOGOHACK
+		    if (logoScreenSaver)
+			(*pWin->ClearToBackground)(pWin, 0, 0, 0, 0, FALSE);
+#endif
+	            MoveWindow(pWin,
+			       -(random() % RANDOM_WIDTH),
+			       -(random() % RANDOM_WIDTH), 
+		               pWin->nextSib);
+#ifndef NOLOGOHACK
+		    if (logoScreenSaver)
+			DrawLogo(pWin);
+#endif
 		}
 		continue;
 	    }
@@ -2885,6 +2896,10 @@ SaveScreens(on, mode)
  		pWin->cursor->refcnt++; 
 	        pWin->overrideRedirect = TRUE;
                 MapWindow(pWin, TRUE, FALSE, FALSE, (ClientPtr)NULL);
+#ifndef NOLOGOHACK
+		if (logoScreenSaver)
+		    DrawLogo(pWin);
+#endif
 	        savedScreenInfo[i].blanked = SCREEN_IS_TILED;
 	    }
             else
@@ -2894,3 +2909,165 @@ SaveScreens(on, mode)
     screenIsSaved = what; 
 }
 
+#ifndef NOLOGOHACK
+DrawLogo(pWin)
+    WindowPtr pWin;
+{
+    DrawablePtr pDraw;
+    ScreenPtr pScreen;
+    int x, y;
+    unsigned int width, height, size;
+    GC *pGC;
+    int d11, d21, d31;
+    xRectangle rect;
+    xPoint poly[4];
+    XID fore[2], back[2];
+    xrgb rgb[2];
+    BITS32 fmask, bmask;
+    ColormapPtr cmap;
+
+    pDraw = (DrawablePtr)pWin;
+    pScreen = pDraw->pScreen;
+    x = -pWin->clientWinSize.x;
+    y = -pWin->clientWinSize.y;
+    width = pScreen->width;
+    height = pScreen->height;
+    pGC = GetScratchGC(pScreen->rootDepth, pScreen);
+
+    if (random() & 1)
+	fore[0] = pScreen->blackPixel;
+    else
+	fore[0] = pScreen->whitePixel;
+    if ((pWin->backgroundTile == (PixmapPtr)USE_BACKGROUND_PIXEL) &&
+	(cmap = (ColormapPtr)LookupID(pWin->colormap, RT_COLORMAP, RC_CORE))) {
+	fore[1] = pWin->backgroundPixel;
+	QueryColors(cmap, 2, fore, rgb);
+	if ((rgb[0].red == rgb[1].red) &&
+	    (rgb[0].green == rgb[1].green) &&
+	    (rgb[0].blue == rgb[1].blue)) {
+	    if (fore[0] == pScreen->blackPixel)
+		fore[0] = pScreen->whitePixel;
+	    else
+		fore[0] = pScreen->blackPixel;
+	}
+    }
+    fore[1] = FillSolid;
+    fmask = GCForeground|GCFillStyle;
+    if (pWin->backgroundTile == (PixmapPtr)USE_BACKGROUND_PIXEL) {
+	back[0] = pWin->backgroundPixel;
+	back[1] = FillSolid;
+	bmask = GCForeground|GCFillStyle;
+    } else {
+	back[0] = 0;
+	back[1] = 0;
+	DoChangeGC(pGC, GCTileStipXOrigin|GCTileStipYOrigin, back, 0);
+	back[0] = FillTiled;
+	back[1] = (XID)pWin->backgroundTile;
+	bmask = GCFillStyle|GCTile;
+    }
+
+    size = width;
+    if (height < width)
+	 size = height;
+    size = RANDOM_WIDTH + random() % (size - RANDOM_WIDTH);
+    size &= ~1;
+    x += random() % (width - size);
+    y += random() % (height - size);
+
+/*    
+ *           ----- 
+ *          /    /
+ *         /    /
+ *        /    /
+ *       /    /
+ *      /____/
+ */
+
+    d11 = (size / 11);
+    if (d11 < 1) d11 = 1;
+    d21 = (d11+3) / 4;
+    d31 = d11 + d11 + d21;
+    poly[0].x = x + size;              poly[0].y = y;
+    poly[1].x = x + size-d31;          poly[1].y = y;
+    poly[2].x = x + 0;                 poly[2].y = y + size;
+    poly[3].x = x + d31;               poly[3].y = y + size;
+    DoChangeGC(pGC, fmask, fore, 1);
+    ValidateGC(pDraw, pGC);
+    (*pGC->FillPolygon)(pDraw, pGC, Convex, CoordModeOrigin, 4, poly);
+
+/*    
+ *           ------ 
+ *          /     /
+ *         /  __ /
+ *        /  /  /
+ *       /  /  /
+ *      /__/__/
+ */
+
+    poly[0].x = x + d31/2;                       poly[0].y = y + size;
+    poly[1].x = x + size / 2;                    poly[1].y = y + size/2;
+    poly[2].x = x + (size/2)+(d31-(d31/2));      poly[2].y = y + size/2;
+    poly[3].x = x + d31;                         poly[3].y = y + size;
+    DoChangeGC(pGC, bmask, back, 1);
+    ValidateGC(pDraw, pGC);
+    (*pGC->FillPolygon)(pDraw, pGC, Convex, CoordModeOrigin, 4, poly);
+
+/*    
+ *           ------ 
+ *          /  /  /
+ *         /--/  /
+ *        /     /
+ *       /     /
+ *      /_____/
+ */
+
+    poly[0].x = x + size - d31/2;                poly[0].y = y;
+    poly[1].x = x + size / 2;                    poly[1].y = y + size/2;
+    poly[2].x = x + (size/2)-(d31-(d31/2));      poly[2].y = y + size/2;
+    poly[3].x = x + size - d31;                  poly[3].y = y;
+    ValidateGC(pDraw, pGC);
+    (*pGC->FillPolygon)(pDraw, pGC, Convex, CoordModeOrigin, 4, poly);
+
+    poly[0].x = x + size - poly[0].x;            poly[0].y = y;
+    poly[1].x = x + size - poly[1].x;            poly[1].y = y + size/2;
+    poly[2].x = x + size - poly[2].x;            poly[2].y = y + size/2;
+    poly[3].x = x + size - poly[3].x;            poly[3].y = y;
+    ValidateGC(pDraw, pGC);
+    (*pGC->FillPolygon)(pDraw, pGC, Convex, CoordModeOrigin, 4, poly);
+
+/*
+ * -----
+ * \    \
+ *  \    \
+ *   \    \
+ *    \    \
+ *     \____\
+ */
+
+    poly[0].x = x;                     poly[0].y = y;
+    poly[1].x = x + size/4;            poly[1].y = y;
+    poly[2].x = x + size;              poly[2].y = y + size;
+    poly[3].x = x + size - size/4;     poly[3].y = y + size;
+    DoChangeGC(pGC, fmask, fore, 1);    
+    ValidateGC(pDraw, pGC);
+    (*pGC->FillPolygon)(pDraw, pGC, Convex, CoordModeOrigin, 4, poly);
+
+/*    
+ *          /
+ *         /
+ *        /
+ *       /
+ *      /
+ */
+
+    poly[0].x = x + size- d11;        poly[0].y = y;
+    poly[1].x = x + size-( d11+d21);  poly[1].y = y;
+    poly[2].x = x + d11;              poly[2].y = y + size;
+    poly[3].x = x + d11 + d21;        poly[3].y = y + size;
+    DoChangeGC(pGC, bmask, back, 1);    
+    ValidateGC(pDraw, pGC);
+    (*pGC->FillPolygon)(pDraw, pGC, Convex, CoordModeOrigin, 4, poly);
+
+    FreeScratchGC(pGC);
+}
+#endif

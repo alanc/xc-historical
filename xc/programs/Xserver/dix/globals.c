@@ -22,7 +22,7 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $Header: globals.c,v 1.37 87/09/07 12:53:20 swick Exp $ */
+/* $Header: globals.c,v 1.38 88/02/21 18:24:21 rws Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -68,6 +68,9 @@ long defaultScreenSaverTime = DEFAULT_SCREEN_SAVER_TIME;
 long defaultScreenSaverInterval = DEFAULT_SCREEN_SAVER_INTERVAL;
 int  defaultScreenSaverBlanking = DEFAULT_SCREEN_SAVER_BLANKING;
 int  defaultScreenSaverAllowExposures = DEFAULT_SCREEN_SAVER_EXPOSURES;
+#ifndef NOLOGOHACK
+int  logoScreenSaver = DEFAULT_LOGO_SCREEN_SAVER;
+#endif
 
 char *defaultFontPath = COMPILEDDEFAULTFONTPATH;
 char *defaultTextFont = COMPILEDDEFAULTFONT;
