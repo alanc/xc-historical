@@ -277,7 +277,7 @@ be greater than the length of the Scrollbar.
 .LP
 .sp
 The calling interface to the \fBjumpProc\fP callback procedure is:
-.IN "JumpProc" "" "@DEF@"
+.IN "jumpProc" "" "@DEF@"
 .FD 0
 void JumpProc(\fIscrollbar\fP, \fIclient_data\fP, \fIpercent\fP)
 .br

@@ -266,7 +266,7 @@ Changing the Toggle's Radio Group.
 To enable an application to change the Toggle's radio group, add
 the Toggle to a radio group, or remove the Toggle from a radio group, use 
 .PN XawToggleChangeRadioGroup.
-.IN ""XawToggleChangeRadioGroup"" "@DEF@"
+.IN "XawToggleChangeRadioGroup" "" "@DEF@"
 .sp 6p
 void XawToggleChangeRadioGroup(\fIw\fP, \fIradio_group\fP)
 .br
@@ -288,7 +288,7 @@ Finding the Currently selected Toggle in a radio group of Toggles
 To find the currently selected Toggle in a radio group of Toggle widgets
 use 
 .PN XawToggleGetCurrent.
-.IN ""XawToggleGetCurrent"" "@DEF@"
+.IN "XawToggleGetCurrent" "" "@DEF@"
 .sp 6p
 caddr_t XawToggleGetCurrent(\fIradio_group\fP);
 .br
@@ -309,7 +309,7 @@ Changing the Toggle that is set in a radio group.
 .LP
 To change the Toggle that is currently set in a radio group use 
 .PN XawToggleSetCurrent.
-.IN ""XawToggleSetCurrent"" "@DEF@"
+.IN "XawToggleSetCurrent" "" "@DEF@"
 .sp 6p
 void XawToggleSetCurrent(\fIradio_group\fP, \fIradio_data\fP);
 .br
@@ -337,7 +337,7 @@ Unsetting all Toggles in a radio group.
 .LP
 To unset all Toggle widgets in a radio group use
 .PN XawToggleUnsetCurrent.
-.IN ""XawToggleUnsetCurrent"" "@DEF@"
+.IN "XawToggleUnsetCurrent" "" "@DEF@"
 .sp 6p
 void XawToggleUnsetCurrent(\fIradio_group\fP);
 .br
