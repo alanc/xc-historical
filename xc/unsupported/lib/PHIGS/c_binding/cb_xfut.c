@@ -1,4 +1,4 @@
-/* $XConsortium: cb_xfut.c,v 5.4 91/07/22 19:14:52 hersh Exp $ */
+/* $XConsortium: cb_xfut.c,v 5.5 92/01/29 17:25:30 mor Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -243,9 +243,39 @@ ptran_point3( p, m, error_ind, r)
     } else {
 	*error_ind = 0;
 	w = 1.0 / w;
-	r->x = w * (m[0][0] * p->x + m[0][1] * p->y + m[0][2] * p->z + m[0][3]);
-	r->y = w * (m[1][0] * p->x + m[1][1] * p->y + m[1][2] * p->z + m[1][3]);
-	r->z = w * (m[2][0] * p->x + m[2][1] * p->y + m[2][2] * p->z + m[2][3]);
+	if (r != p) {
+	    r->x = w * (m[0][0] * p->x +
+			m[0][1] * p->y +
+			m[0][2] * p->z +
+			m[0][3]);
+	    r->y = w * (m[1][0] * p->x +
+			m[1][1] * p->y +
+			m[1][2] * p->z +
+			m[1][3]);
+	    r->z = w * (m[2][0] * p->x +
+			m[2][1] * p->y +
+			m[2][2] * p->z +
+			m[2][3]);
+	} else {
+	    Ppoint3 t;
+
+	    t.x =  w * (m[0][0] * p->x +
+			m[0][1] * p->y +
+			m[0][2] * p->z +
+			m[0][3]);
+	    t.y =  w * (m[1][0] * p->x +
+			m[1][1] * p->y +
+			m[1][2] * p->z +
+			m[1][3]);
+	    t.z =  w * (m[2][0] * p->x +
+			m[2][1] * p->y +
+			m[2][2] * p->z +
+			m[2][3]);
+
+	    r->x = t.x;
+	    r->y = t.y;
+	    r->z = t.z;
+	}
     }
 }
 
@@ -268,8 +298,22 @@ ptran_point( p, m, error_ind, r)
     } else {
 	*error_ind = 0;
 	w = 1.0 / w;
-	r->x = w * (m[0][0] * p->x + m[0][1] * p->y + m[0][2]);
-	r->y = w * (m[1][0] * p->x + m[1][1] * p->y + m[1][2]);
+	if (p != r) {
+	    r->x = w * (m[0][0] * p->x +
+			m[0][1] * p->y + m[0][2]);
+	    r->y = w * (m[1][0] * p->x +
+			m[1][1] * p->y + m[1][2]);
+	} else {
+	    Ppoint t;
+
+	    t.x =  w * (m[0][0] * p->x +
+		        m[0][1] * p->y + m[0][2]);
+	    t.y =  w * (m[1][0] * p->x +
+		        m[1][1] * p->y + m[1][2]);
+
+	    r->x = t.x;
+	    r->y = t.y;
+	}
     }
 }
 
