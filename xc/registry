@@ -1,4 +1,4 @@
-/* $XConsortium: Xregistry,v 1.23 91/03/21 16:18:10 rws Exp $ */
+/* $XConsortium: Xregistry,v 1.24 91/03/25 11:52:37 rws Exp $ */
 
 1. ORGANIZATION NAMES
 
@@ -211,7 +211,7 @@ String						Reference
 "Matsushita Electric Industrial Co., Ltd."	[52]
 "MIT X Consortium"				[8]
 "Network Computing Devices Inc."		[66]
-"OMRON TATEISI ELECTRONICS CO."			[45]
+"OMRON Corporation"				[45]
 "PFU Limited"					[32]
 "Silicon Graphics Computer Systems"		[6]
 "Sony Corporation"				[37]
@@ -329,6 +329,7 @@ Name						Reference
 "_SJIS_STRING"					[37]
 "_EUC_STRING"					[37]
 "_JIS_STRING"					[37]
+"_XWNMO"					[45]
 
 9. SELECTION NAMES
 
@@ -421,6 +422,7 @@ Name						Reference
 "IBM"						[33]
 "MISC"						[8]
 "NCD"						[66]
+"omron"						[45]
 "Panasonic"					[52]
 "Sony"						[37]
 
@@ -594,7 +596,9 @@ Name						Reference
 17. APPLICATION CLASSES
 
 "Clock"						[47]
+"Exterm"					[45]
 "Listres"					[47]
+"Medit"						[45]
 "Xai"						[59]
 "Xbiff"						[47]
 "XCalc"						[47]
@@ -613,6 +617,7 @@ Name						Reference
 "Xmh"						[47]
 "Xsm"						[49]
 "XTerm"						[47]
+"Xwnmo"						[45]
 
 
 18. CLASS EXTENSION RECORD TYPES
@@ -638,6 +643,15 @@ Name						Reference
 	DEC Taiwan Supplemental Character Set
 "ILA"						[62]
 	registry prefix
+"omron_UDC"					[45]
+        omron User Defined Charset
+"omron_UDC_ja"					[45]
+        omron User Defined Charset for Japanese
+"omron_UDC_zh"					[45]
+        omron User Defined Charset for Chinese(Main land)
+"omron_UDC_tw"					[45]
+        omron User Defined Charset for Chinese(Taiwan)
+
 
 
 REFERENCES
@@ -829,9 +843,8 @@ REFERENCES
 	of the font in that graphics half is undefined.
 
 [45]	Hiroshi Kuribayashi
-	Omron Tateisi Electronics Co.
-	System R&D Laboratory
-	Section NFF; 20, Igadera
+	OMRON Corporation
+	Computer System R&D Laboratory
 	Shimokaiinji, Nagaokakyo-city
 	Kyoto, 617, Japan
 
