@@ -1,5 +1,5 @@
 .\"##
-.\" $XConsortium$
+.\" $XConsortium: p102,v 5.1 91/02/16 09:38:35 rws Exp $
 .\"##
 .\"## 
 .\"## Copyright (c) 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -58,10 +58,10 @@ The identifier of the root structure of the network.
 .IP \fIsrc\fP
 The structure network source, defined in phigs.h as:
 .nf
-.ta .5i +\w'PNET_ARCHIVE     'u
+.ta .5i +\w'PNET_AR     'u
 .sp
 	PNET_CSS	\fICentral Structure Store\fP
-	PNET_ARCHIVE	\fIArchive\fP
+	PNET_AR 	\fIArchive\fP
 .fi
 .sp
 .IP \fIlength\fP
