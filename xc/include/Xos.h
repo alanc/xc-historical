@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xos.h,v 1.42 91/05/11 23:24:53 rws Exp $
+ * $XConsortium: Xos.h,v 1.43 91/05/12 17:02:53 rws Exp $
  * 
  * Copyright 1987 by the Massachusetts Institute of Technology
  *
@@ -39,12 +39,12 @@
 #define __TYPES__
 #endif /* __TYPES__ */
 #else /* USG */
-#if !defined(_POSIX_SOURCE) || !defined(MOTOROLA)
-#include <sys/types.h>
-#else
+#if defined(_POSIX_SOURCE) && defined(MOTOROLA)
 #undef _POSIX_SOURCE
 #include <sys/types.h>
 #define _POSIX_SOURCE
+#else
+#include <sys/types.h>
 #endif
 #endif /* USG */
 
@@ -82,12 +82,12 @@
 #endif
 #include <sys/file.h>
 #else
-#if defined(_POSIX_SOURCE) || !defined(macII)
-#include <fcntl.h>
-#else
+#if !defined(_POSIX_SOURCE) && defined(macII)
 #define _POSIX_SOURCE
 #include <fcntl.h>
 #undef _POSIX_SOURCE
+#else
+#include <fcntl.h>
 #endif
 #include <unistd.h>
 #endif
@@ -116,13 +116,13 @@ struct timezone {
 
 #else /* not SYSV */
 
-#if !defined(SVR4) || !defined(_POSIX_SOURCE)
-#include <sys/time.h>
-#else
+#if defined(_POSIX_SOURCE) && defined(SVR4)
 /* need to omit _POSIX_SOURCE in order to get what we want in SVR4 */
 #undef _POSIX_SOURCE
 #include <sys/time.h>
 #define _POSIX_SOURCE
+#else
+#include <sys/time.h>
 #endif
 
 #endif /* SYSV */
