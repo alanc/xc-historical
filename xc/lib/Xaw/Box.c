@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Box.c,v 1.27.1.1 88/02/22 21:46:53 swick Exp $";
+static char rcsid[] = "$Header: Box.c,v 1.28 88/02/23 09:59:16 swick Exp $";
 #endif lint
 
 /*
@@ -184,8 +184,21 @@ static DoLayout(bbw, width, height, reply_width, reply_height, position)
 	} /* if managed */
     } /* for */
 
-    if (position && XtIsRealized((Widget)bbw))
-	XMapSubwindows( XtDisplay((Widget)bbw), XtWindow((Widget)bbw) );
+    if (position && XtIsRealized((Widget)bbw)) {
+	if (bbw->composite.num_children == bbw->composite.num_mapped_children)
+	    XMapSubwindows( XtDisplay((Widget)bbw), XtWindow((Widget)bbw) );
+	else {
+	    int i = bbw->composite.num_mapped_children;
+	    register Widget *childP = bbw->composite.children;
+	    for (; i > 0; childP++) {
+		if (XtIsManaged(*childP) &&
+		    (*childP)->core.mapped_when_managed) {
+		    XtMapWidget(*childP);
+		    i--;
+		}
+	    }
+	}
+    }
 
     /* Finish off last line */
     if (lw > h_space) {
