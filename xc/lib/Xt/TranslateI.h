@@ -1,4 +1,4 @@
-/* $XConsortium: TranslateI.h,v 1.10 89/09/29 12:11:15 swick Exp $ */
+/* $XConsortium: TranslateI.h,v 1.12 89/10/02 15:29:32 swick Exp $ */
 /* $oHeader: TranslateI.h,v 1.2 88/08/18 15:56:37 asente Exp $ */
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -164,7 +164,6 @@ typedef struct _TMContext {
     Modifiers modifiers;
 } TMContextRec, *TMContext;
 
-extern Boolean _XtLookupModifier(); /*name,lookupStyle,valueP */
 extern Boolean _XtMatchUsingStandardMods();
 extern Boolean _XtMatchUsingDontCareMods();
 extern Boolean _XtRegularMatch();
@@ -173,19 +172,12 @@ extern void _XtConvertCase();
 extern ModToKeysymTable* _XtBuildModsToKeysymTable();
 extern void  _XtBuildKeysymTable();
 extern XModifierKeymap *_XtBuildModifierTable();
-extern Boolean _XtLookupTableSym(); /* table, name, valueP */
-    /* NameValueTable	table; */
-    /* String name; */
-    /* Value *valueP; */
 
 extern void _XtPopupInitialize();
 
 extern void _XtInstallTranslations(); /* widget, stateTable */
     /* Widget widget; */
     /* XtTranslations stateTable; */
-
-extern void _XtUninstallTranslations(); /* widget */
-    /* Widget widget; */
 
 extern void _XtBindActions(); /* widget, stateTable */
     /* Widget widget; */
@@ -203,5 +195,3 @@ extern void _XtPopup(); /* widget, grab_kind, spring_loaded */
     /* Widget      widget; */
     /* XtGrabKind  grab_kind; */
     /* Boolean     spring_loaded; */
-
-extern Boolean RegularMatch();
