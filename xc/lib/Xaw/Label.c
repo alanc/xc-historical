@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Label.c,v 1.30 87/12/29 09:47:52 swick Locked $";
+static char rcsid[] = "$Header: Label.c,v 1.31 87/12/29 11:06:55 swick Locked $";
 #endif lint
 
 /*
@@ -243,18 +243,21 @@ static void Realize(w, valueMask, attributes)
     XSetWindowAttributes *attributes;
 {
     LabelWidget lw = (LabelWidget)w;
+    Pixmap border_pixmap;
 
     *valueMask |= CWBitGravity;
-    switch (((LabelWidget)w)->label.justify) {
+    switch (lw->label.justify) {
 	case XtJustifyLeft:	attributes->bit_gravity = WestGravity;   break;
 	case XtJustifyCenter:	attributes->bit_gravity = CenterGravity; break;
 	case XtJustifyRight:	attributes->bit_gravity = EastGravity;   break;
     }
     
-    if (!IsSensitive(lw))
+    if (!IsSensitive(w))
       {
-	  /* change border to gray */
-	lw->core.border_pixmap = lw->label.gray_pixmap;
+	/* change border to gray; have to remember the old one, so
+	 * XtDestroyWidget deletes the proper one */
+        border_pixmap = w->core.border_pixmap;
+	w->core.border_pixmap = lw->label.gray_pixmap;
 	attributes->border_pixmap = lw->label.gray_pixmap;
 	*valueMask |= CWBorderPixmap;
 	*valueMask &= ~CWBorderPixel;
@@ -263,6 +266,10 @@ static void Realize(w, valueMask, attributes)
 
     XtCreateWindow( w, (unsigned int)InputOutput, (Visual *)CopyFromParent,
 		    *valueMask, attributes );
+
+    if (!IsSensitive(w))
+	w->core.border_pixmap = border_pixmap;
+
 } /* Realize */
 
 
