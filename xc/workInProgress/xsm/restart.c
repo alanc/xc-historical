@@ -1,4 +1,4 @@
-/* $XConsortium: restart.c,v 1.19 94/12/12 19:58:14 mor Exp mor $ */
+/* $XConsortium: restart.c,v 1.20 94/12/13 19:33:41 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -27,10 +27,6 @@ in this Software without prior written authorization from the X Consortium.
 
 #include "xsm.h"
 #include "log.h"
-
-#if (defined(SYSV) || defined(macII)) && !defined(hpux)
-#define vfork() fork()
-#endif
 
 extern void remote_start ();
 
@@ -273,9 +269,9 @@ int flag;
 		strcat (logtext, "\n");
 		add_log_text (logtext);
 
-		switch(vfork()) {
+		switch(fork()) {
 		case -1:
-		    perror("vfork");
+		    perror("fork");
 		    break;
 		case 0:		/* kid */
 		    chdir(cwd);
@@ -451,9 +447,9 @@ Bool useSavedState;
 	     * The client is being cloned on the local machine.
 	     */
 
-	    switch(vfork()) {
+	    switch(fork()) {
 	    case -1:
-		perror("vfork");
+		perror("fork");
 		break;
 	    case 0:		/* kid */
 		chdir(cwd);
@@ -510,7 +506,7 @@ static int System (s)
     char *s;
 {
     int pid, status;
-    if ((pid = vfork ()) == 0) {
+    if ((pid = fork ()) == 0) {
 	(void) setpgrp();
 	execl ("/bin/sh", "sh", "-c", s, 0);
     } else
