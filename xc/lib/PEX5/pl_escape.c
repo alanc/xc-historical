@@ -1,4 +1,4 @@
-/* $XConsortium: pl_escape.c,v 1.5 92/10/22 18:12:26 mor Exp $ */
+/* $XConsortium: pl_escape.c,v 1.5 93/02/23 14:40:15 mor Exp $ */
 
 /************************************************************************
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -44,7 +44,7 @@ INPUT char		*escapeData;
      * Put the request in the X request buffer.
      */
 
-    PEXGetReqExtra (Escape, escapeDataSize, pBuf);
+    PEXGetReq (Escape, pBuf);
 
     BEGIN_REQUEST_HEADER (Escape, pBuf, req);
 
@@ -53,7 +53,7 @@ INPUT char		*escapeData;
 
     END_REQUEST_HEADER (Escape, pBuf, req);
 
-    COPY_AREA (escapeData, pBuf, escapeDataSize);
+    Data (display, escapeData, escapeDataSize);
 
 
     /*
@@ -94,7 +94,7 @@ OUTPUT unsigned long	*escapeOutDataSize;
      * Put the request in the X request buffer and get a reply.
      */
 
-    PEXGetReqExtra (EscapeWithReply, escapeDataSize, pBuf);
+    PEXGetReq (EscapeWithReply, pBuf);
 
     BEGIN_REQUEST_HEADER (EscapeWithReply, pBuf, req);
 
@@ -103,7 +103,7 @@ OUTPUT unsigned long	*escapeOutDataSize;
 
     END_REQUEST_HEADER (EscapeWithReply, pBuf, req);
 
-    COPY_AREA (escapeData, pBuf, escapeDataSize);
+    Data (display, escapeData, escapeDataSize);
 
     if (_XReply (display, &rep, 0, xFalse) == 0)
     {
