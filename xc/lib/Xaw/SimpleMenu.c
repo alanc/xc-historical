@@ -1,5 +1,5 @@
 #if ( !defined(lint) && !defined(SABER) )
-static char Xrcsid[] = "$XConsortium: SimpleMenu.c,v 1.22 89/09/28 16:44:37 kit Exp $";
+static char Xrcsid[] = "$XConsortium: SimpleMenu.c,v 1.23 89/09/29 19:03:39 kit Exp $";
 #endif 
 
 /***********************************************************
@@ -1224,7 +1224,7 @@ XEvent * event;
 	break;
     case EnterNotify:
     case LeaveNotify:
-	x_loc = event->xcrossing.y;
+	x_loc = event->xcrossing.x;
 	y_loc = event->xcrossing.y;
 	break;
     case ButtonPress:
