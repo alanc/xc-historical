@@ -1,5 +1,5 @@
 /*
- * $XConsortium: main.c,v 1.74 93/08/18 14:42:42 rws Exp $
+ * $XConsortium: main.c,v 1.75 93/09/12 14:04:16 rws Exp $
  */
 #include "def.h"
 #ifdef hpux
@@ -12,6 +12,10 @@
 #endif
 #endif
 #include <signal.h>
+
+#if NeedVarargsPrototypes
+#include <stdarg.h>
+#endif
 
 #ifdef DEBUG
 int	_debugmask;
@@ -598,26 +602,63 @@ redirect(line, makefile)
 #endif /* USGISH */
 }
 
+#if NeedVarargsPrototypes
+fatalerr(char *msg, ...)
+#else
 /*VARARGS*/
-fatalerr(x0,x1,x2,x3,x4,x5,x6,x7,x8,x9)
-    char *x0;
+fatalerr(msg,x1,x2,x3,x4,x5,x6,x7,x8,x9)
+    char *msg;
+#endif
 {
+#if NeedVarargsPrototypes
+	va_list args;
+#endif
 	fprintf(stderr, "%s: error:  ", ProgramName);
-	fprintf(stderr, x0,x1,x2,x3,x4,x5,x6,x7,x8,x9);
+#if NeedVarargsPrototypes
+	va_start(args, msg);
+	vfprintf(stderr, msg, args);
+	va_end(args);
+#else
+	fprintf(stderr, msg,x1,x2,x3,x4,x5,x6,x7,x8,x9);
+#endif
 	exit (1);
 }
 
+#if NeedVarargsPrototypes
+warning(char *msg, ...)
+#else
 /*VARARGS0*/
-warning(x0,x1,x2,x3,x4,x5,x6,x7,x8,x9)
+warning(msg,x1,x2,x3,x4,x5,x6,x7,x8,x9)
     char *x0;
+#endif
 {
+#if NeedVarargsPrototypes
+	va_list args;
+#endif
 	fprintf(stderr, "%s: warning:  ", ProgramName);
-	fprintf(stderr, x0,x1,x2,x3,x4,x5,x6,x7,x8,x9);
+#if NeedVarargsPrototypes
+	va_start(args, msg);
+	vfprintf(stderr, msg, args);
+	va_end(args);
+#else
+	fprintf(stderr, msg,x1,x2,x3,x4,x5,x6,x7,x8,x9);
+#endif
 }
 
+#if NeedVarargsPrototypes
+warning1(char *msg, ...)
+#else
 /*VARARGS0*/
-warning1(x0,x1,x2,x3,x4,x5,x6,x7,x8,x9)
-    char *x0;
+warning1(msg,x1,x2,x3,x4,x5,x6,x7,x8,x9)
+    char *msg;
+#endif
 {
-	fprintf(stderr, x0,x1,x2,x3,x4,x5,x6,x7,x8,x9);
+#if NeedVarargsPrototypes
+	va_list args;
+	va_start(args, msg);
+	vfprintf(stderr, msg, args);
+	va_end(args);
+#else
+	fprintf(stderr, msg,x1,x2,x3,x4,x5,x6,x7,x8,x9);
+#endif
 }
