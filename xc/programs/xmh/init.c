@@ -1,5 +1,5 @@
 /*
- * $XConsortium: init.c,v 2.61 91/07/10 19:38:26 converse Exp $
+ * $XConsortium: init.c,v 2.62 91/07/12 17:08:36 converse Exp $
  *
  *
  *		        COPYRIGHT 1987, 1989
@@ -110,13 +110,13 @@ static XtResource resources[] = {
     {"mailWaitingFlag", "MailWaitingFlag", XtRBoolean, sizeof(Boolean),
 	 Offset(mail_waiting_flag), XtRImmediate, (XtPointer)False},
     {"newMailIconBitmap", "NewMailBitmap", XtRBitmap, sizeof(Pixmap),
-	 Offset(new_mail_icon), XtRImmediate, (XtPointer)None},
+	 Offset(new_mail_icon), XtRString, (XtPointer)"flagup"},
     {"noMailIconBitmap", "NoMailBitmap", XtRBitmap, sizeof(Pixmap),
-	 Offset(no_mail_icon), XtRImmediate, (XtPointer)None},
+	 Offset(no_mail_icon), XtRString, (XtPointer)"flagdown"},
     {"newMailBitmap", "NewMailBitmap", XtRBitmap, sizeof(Pixmap),
-	 Offset(flag_up), XtRImmediate, (XtPointer)None},
+	 Offset(flag_up), XtRString, (XtPointer)"black6"},
     {"noMailBitmap", "NoMailBitmap", XtRBitmap, sizeof(Pixmap),
-	 Offset(flag_down), XtRImmediate, (XtPointer)None},
+	 Offset(flag_down), XtRString, (XtPointer)"blank6"},
     {"cursor", "Cursor", XtRCursor, sizeof(Cursor),
 	 Offset(cursor), XtRString, "left_ptr"},
     {"pointerColor", "PointerColor", XtRPixel, sizeof(Pixel),
