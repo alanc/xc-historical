@@ -26,7 +26,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: lex.l,v 1.28 89/04/18 13:34:29 jim Exp $
+ * $XConsortium: lex.l,v 1.29 89/05/02 09:48:58 jim Exp $
  *
  * .twmrc lex file
  *
@@ -35,7 +35,7 @@
  ***********************************************************************/
 
 static char RCSinfo[]=
-"$XConsortium: lex.l,v 1.28 89/04/18 13:34:29 jim Exp $";
+"$XConsortium: lex.l,v 1.29 89/05/02 09:48:58 jim Exp $";
 
 #include <stdio.h>
 #include "gram.h"
@@ -112,6 +112,7 @@ f.showiconmgr			{ return F_SHOWLIST; }
 f.hideiconmgr			{ return F_HIDELIST; }
 "!"				{ return F_EXEC; }
 "^"				{ return F_CUT; }
+f.deltastop			{ return F_DELTASTOP; }
 f.move				{ return F_MOVE; }
 f.forcemove			{ return F_FORCEMOVE; }
 f.iconify			{ return F_ICONIFY; }
@@ -160,6 +161,7 @@ t.move				{ return F_MOVE; }
 {noraise}[Mm][Oo][Vv][Ee]	{ return NO_RAISE_ON_MOVE; }
 {noraise}[Dd][Ee][Ii][Cc][Oo][Nn][Ii][Ff][Yy] { return NO_RAISE_ON_DEICONIFY; }
 {noraise}[Rr][Ee][Ss][Ii][Zz][Ee] { return NO_RAISE_ON_RESIZE; }
+
 
 [Cc][Uu][Rr][Ss][Oo][Rr][Ss]	{ return CURSORS; }
 [Ff][Rr][Aa][Mm][Ee]		{ return CUR_FRAME; }

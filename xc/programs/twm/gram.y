@@ -25,7 +25,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: gram.y,v 1.32 89/04/18 13:34:25 jim Exp $
+ * $XConsortium: gram.y,v 1.33 89/05/02 09:48:53 jim Exp $
  *
  * .twmrc command grammer
  *
@@ -35,7 +35,7 @@
 
 %{
 static char RCSinfo[]=
-"$XConsortium: gram.y,v 1.32 89/04/18 13:34:25 jim Exp $";
+"$XConsortium: gram.y,v 1.33 89/05/02 09:48:53 jim Exp $";
 
 #include <stdio.h>
 #include "twm.h"
@@ -77,8 +77,8 @@ extern int yylineno;
 %token <num> F_DESTROY F_WINREFRESH F_BEEP DONT_MOVE_OFF ZOOM ICONMGRS
 %token <num> F_SHOWLIST F_HIDELIST NO_BACKINGSTORE NO_SAVEUNDER
 %token <num> F_ZOOM F_FULLZOOM F_UPICONMGR F_DOWNICONMGR F_HORIZOOM
-%token <num> F_RIGHTZOOM F_LEFTZOOM F_TOPZOOM F_BOTTOMZOOM F_RESTART
-%token <num> F_LEFTICONMGR F_RIGHTICONMGR F_WARPTO ICONMGR_SHOW
+%token <num> F_RIGHTZOOM F_LEFTZOOM F_TOPZOOM F_BOTTOMZOOM F_RESTART 
+%token <num> F_LEFTICONMGR F_RIGHTICONMGR F_WARPTO F_DELTASTOP ICONMGR_SHOW
 %token <num> F_WARPTOICONMGR OPAQUE_MOVE ICONMGR_HIGHLIGHT SORT_ICONMGR
 %token <num> ICONMGR_FOREGROUND ICONMGR_BACKGROUND ICONMGR_FONT ICONMGR
 %token <num> ICONMGR_GEOMETRY SHOW_ICONMGR ICONMGR_NOSHOW MAKE_TITLE
@@ -592,6 +592,7 @@ action		: F_NOP			{ $$ = F_NOP; }
 		| F_REFRESH		{ $$ = F_REFRESH; }
 		| F_WINREFRESH		{ $$ = F_WINREFRESH; }
 		| F_SOURCE string	{ Action = $2; $$ = F_TWMRC; }
+		| F_DELTASTOP		{ $$ = F_DELTASTOP; }
 		| F_MOVE		{ $$ = F_MOVE; }
 		| F_FORCEMOVE		{ $$ = F_FORCEMOVE; }
 		| F_AUTORAISE		{ $$ = F_AUTORAISE; }

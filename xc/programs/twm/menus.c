@@ -25,7 +25,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.51 89/05/02 09:49:01 jim Exp $
+ * $XConsortium: menus.c,v 1.52 89/05/02 15:39:40 jim Exp $
  *
  * twm menu code
  *
@@ -35,7 +35,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: menus.c,v 1.51 89/05/02 09:49:01 jim Exp $";
+"$XConsortium: menus.c,v 1.52 89/05/02 15:39:40 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -1023,10 +1023,13 @@ int *count;
  *	context - the context in which the button was pressed
  *	pulldown- flag indicating execution from pull down menu
  *
+ *  Returns:
+ *	TRUE if should continue with remaining actions else FALSE to abort
+ *
  ***********************************************************************
  */
 
-void
+int
 ExecuteFunction(func, action, w, tmp_win, event, context, pulldown)
     int func;
     char *action;
@@ -1049,10 +1052,11 @@ ExecuteFunction(func, action, w, tmp_win, event, context, pulldown)
     int scrnum;
     Window rootw;
     int origX, origY;
+    int do_next_action = TRUE;
 
     RootFunction = NULL;
     if (Cancel)
-	return;
+	return TRUE;			/* XXX should this be FALSE? */
 
     switch (func)
     {
@@ -1066,6 +1070,7 @@ ExecuteFunction(func, action, w, tmp_win, event, context, pulldown)
     case F_PREVICONMGR:
     case F_NOP:
     case F_TITLE:
+    case F_DELTASTOP:
     case F_RAISELOWER:
 	break;
     default:
@@ -1080,6 +1085,10 @@ ExecuteFunction(func, action, w, tmp_win, event, context, pulldown)
     {
     case F_NOP:
     case F_TITLE:
+	break;
+
+    case F_DELTASTOP:
+	if (WindowMoved) do_next_action = FALSE;
 	break;
 
     case F_RESTART:
@@ -1124,7 +1133,7 @@ ExecuteFunction(func, action, w, tmp_win, event, context, pulldown)
 
     case F_SORTICONMGR:
 	if (DeferExecution(context, func, Scr->SelectCursor))
-	    return;
+	    return TRUE;
 
 	{
 	    int save_sort;
@@ -1145,14 +1154,14 @@ ExecuteFunction(func, action, w, tmp_win, event, context, pulldown)
 
     case F_IDENTIFY:
 	if (DeferExecution(context, func, Scr->SelectCursor))
-	    return;
+	    return TRUE;
 
 	Identify(tmp_win);
 	break;
 
     case F_AUTORAISE:
 	if (DeferExecution(context, func, Scr->SelectCursor))
-	    return;
+	    return TRUE;
 
 	tmp_win->auto_raise = !tmp_win->auto_raise;
 	break;
@@ -1181,7 +1190,7 @@ ExecuteFunction(func, action, w, tmp_win, event, context, pulldown)
 	EventHandler[EnterNotify] = HandleUnknown;
 	EventHandler[LeaveNotify] = HandleUnknown;
 	if (DeferExecution(context, func, Scr->MoveCursor))
-	    return;
+	    return TRUE;
 
 	if (pulldown)
 	    XWarpPointer(dpy, None, Scr->Root, 
@@ -1190,7 +1199,7 @@ ExecuteFunction(func, action, w, tmp_win, event, context, pulldown)
 	if (w != tmp_win->icon_w)
 	{
 	    StartResize(event, tmp_win);
-	    return;
+	    return TRUE;
 	}
 	break;
 
@@ -1203,14 +1212,14 @@ ExecuteFunction(func, action, w, tmp_win, event, context, pulldown)
     case F_TOPZOOM:
     case F_BOTTOMZOOM:
 	if (DeferExecution(context, func, Scr->SelectCursor))
-	    return;
+	    return TRUE;
 	fullzoom(tmp_win, func);
 	break;
 
     case F_MOVE:
     case F_FORCEMOVE:
 	if (DeferExecution(context, func, Scr->MoveCursor))
-	    return;
+	    return TRUE;
 
 	PopDownMenu();
 	rootw = event.xbutton.root;
@@ -1341,7 +1350,7 @@ ExecuteFunction(func, action, w, tmp_win, event, context, pulldown)
 		if (Cancel)
 		{
 		    WindowMoved = FALSE;
-		    return;
+		    return TRUE;	/* XXX should this be FALSE? */
 		}
 		if (Event.type == ButtonRelease)
 		{
@@ -1464,17 +1473,19 @@ ExecuteFunction(func, action, w, tmp_win, event, context, pulldown)
 	    if ((mroot = FindMenuRoot(action)) == NULL)
 	    {
 		fprintf(stderr, "twm: couldn't find function \"%s\"\n", action);
-		return;
+		return TRUE;
 	    }
 
 	    if (NeedToDefer(mroot) && DeferExecution(context, func, Scr->SelectCursor))
-		return;
+		return TRUE;
 	    else
 	    {
 		for (mitem = mroot->first; mitem != NULL; mitem = mitem->next)
 		{
-		    ExecuteFunction(mitem->func, mitem->action, w, tmp_win,
-			event, context, pulldown);
+		    if (!ExecuteFunction (mitem->func, mitem->action, w,
+					  tmp_win, event, context, pulldown)) {
+			break;
+		    }
 		}
 	    }
 	}
@@ -1483,7 +1494,7 @@ ExecuteFunction(func, action, w, tmp_win, event, context, pulldown)
     case F_DEICONIFY:
     case F_ICONIFY:
 	if (DeferExecution(context, func, Scr->SelectCursor))
-	    return;
+	    return TRUE;
 
 	if (tmp_win->icon)
 	{
@@ -1498,7 +1509,7 @@ ExecuteFunction(func, action, w, tmp_win, event, context, pulldown)
 
     case F_RAISELOWER:
 	if (DeferExecution(context, func, Scr->SelectCursor))
-	    return;
+	    return TRUE;
 
 	if (!WindowMoved)
 	{
@@ -1578,7 +1589,7 @@ ExecuteFunction(func, action, w, tmp_win, event, context, pulldown)
 	
     case F_RAISE:
 	if (DeferExecution(context, func, Scr->SelectCursor))
-	    return;
+	    return TRUE;
 
 	if (w == tmp_win->icon_w)
 	    XRaiseWindow(dpy, tmp_win->icon_w);
@@ -1589,7 +1600,7 @@ ExecuteFunction(func, action, w, tmp_win, event, context, pulldown)
 
     case F_LOWER:
 	if (DeferExecution(context, func, Scr->SelectCursor))
-	    return;
+	    return TRUE;
 
 	if (w == tmp_win->icon_w)
 	    XLowerWindow(dpy, tmp_win->icon_w);
@@ -1600,7 +1611,7 @@ ExecuteFunction(func, action, w, tmp_win, event, context, pulldown)
 
     case F_FOCUS:
 	if (DeferExecution(context, func, Scr->SelectCursor))
-	    return;
+	    return TRUE;
 
 	if (tmp_win->icon == FALSE)
 	{
@@ -1644,7 +1655,7 @@ ExecuteFunction(func, action, w, tmp_win, event, context, pulldown)
 
     case F_DESTROY:
 	if (DeferExecution(context, func, Scr->DestroyCursor))
-	    return;
+	    return TRUE;
 
 	if (tmp_win->iconmgr)
 	    XBell(dpy, 0);
@@ -1891,7 +1902,7 @@ ExecuteFunction(func, action, w, tmp_win, event, context, pulldown)
 
     case F_WINREFRESH:
 	if (DeferExecution(context, func, Scr->SelectCursor))
-	    return;
+	    return TRUE;
 
 	if (context == C_ICON && tmp_win->icon_w)
 	    w = XCreateSimpleWindow(dpy, tmp_win->icon_w,
@@ -1909,8 +1920,10 @@ ExecuteFunction(func, action, w, tmp_win, event, context, pulldown)
 	Done();
 	break;
     }
+
     if (ButtonPressed == -1)
 	XUngrabPointer(dpy, CurrentTime);
+    return do_next_action;
 }
 
 /***********************************************************************
