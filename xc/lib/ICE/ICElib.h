@@ -1,4 +1,4 @@
-/* $XConsortium: ICElib.h,v 1.6 93/09/12 14:17:06 mor Exp $ */
+/* $XConsortium: ICElib.h,v 1.7 93/09/12 16:22:10 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -51,6 +51,12 @@ typedef enum {
     IceConnectAccepted,
     IceConnectRejected
 } IceConnectStatus;
+
+typedef enum {
+    IceProtocolSetupSuccess,
+    IceProtocolSetupFailure,
+    IceProtocolAlreadyActive,
+} IceProtocolSetupStatus;
 
 typedef struct {
     unsigned long	sequence_of_request;
@@ -144,6 +150,12 @@ typedef void (*IceProtocolSetupNotifyCB) (
 #endif
 );
 
+typedef void (*IceIOErrorCB) (
+#if NeedFunctionPrototypes
+    IceConn 		/* iceConn */
+#endif
+);
+
 typedef void (*IcePingReplyCB) (
 #if NeedFunctionPrototypes
     IceConn 		/* iceConn */,
@@ -193,6 +205,7 @@ typedef struct {
     IceOCLversionRec	*version_recs;
     int			auth_count;
     IceOCLauthRec	*auth_recs;
+    IceIOErrorCB	io_error_cb;
 } _IceOCLprotocol;
 
 typedef struct {
@@ -203,6 +216,7 @@ typedef struct {
     IceProtocolSetupNotifyCB	protocol_setup_notify_cb;
     int				auth_count;
     IceACLauthRec		*auth_recs;
+    IceIOErrorCB		io_error_cb;
 } _IceACLprotocol;
 
 typedef struct {
@@ -213,6 +227,7 @@ typedef struct {
 
 typedef struct {
     Bool			in_use;
+    int				my_opcode;
     _IceProtocol		*protocol;
     Bool			accept_flag;
     union {
@@ -397,7 +412,8 @@ extern int IceRegisterForProtocolSetup (
     int				/* versionCount */,
     IceOCLversionRec *		/* versionRecs */,
     int				/* authCount */,
-    IceOCLauthRec *		/* authRecs */
+    IceOCLauthRec *		/* authRecs */,
+    IceIOErrorCB		/* IOErrorCB */
 #endif
 );
 
@@ -410,7 +426,8 @@ extern int IceRegisterForProtocolReply (
     IceACLversionRec *		/* versionRecs */,
     IceProtocolSetupNotifyCB	/* protocolSetupNotifyCB */,
     int				/* authCount */,
-    IceACLauthRec *		/* authRecs */
+    IceACLauthRec *		/* authRecs */,
+    IceIOErrorCB		/* IOErrorCB */
 #endif
 );
 
@@ -438,9 +455,10 @@ extern IceConn IceAcceptConnection (
 #endif
 );
 
-extern void IceSkipShutdownNegotiation (
+extern void IceSetShutdownNegotiation (
 #if NeedFunctionPrototypes
-    IceConn		/* iceConn */
+    IceConn		/* iceConn */,
+    Bool		/* negotiate */
 #endif
 );
 
@@ -470,7 +488,7 @@ extern void IceRemoveConnectionWatch (
 #endif
 );
 
-extern Status IceProtocolSetup (
+extern IceProtocolSetupStatus IceProtocolSetup (
 #if NeedFunctionPrototypes
     IceConn		/* iceConn */,
     int 		/* myOpcode */,
