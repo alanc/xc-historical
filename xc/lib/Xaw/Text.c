@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: Text.c,v 1.130 89/12/08 12:36:12 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Text.c,v 1.131 89/12/08 15:47:56 rws Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -1819,8 +1819,11 @@ Boolean motion;
 
       if (*sarray == XawselectNull)
 	newType = *(ctx->text.sarray);
-      else
+      else {
 	newType = *(sarray + 1);
+	if (newType == XawselectNull) 
+	  newType = *(ctx->text.sarray);
+      }
     } 
     else 			                      /* single-click event */
       newType = *(ctx->text.sarray);
@@ -1851,6 +1854,10 @@ Boolean motion;
     newLeft = SrcScan(src, pos, XawstAll, XawsdLeft, 1, FALSE);
     newRight = SrcScan(src, pos, XawstAll, XawsdRight, 1, FALSE);
     break;
+  default:
+    XtAppWarning(XtWidgetToApplicationContext((Widget) ctx),
+	       "Text Widget: empty selection array.");
+    return;
   }
 
   if ( (newLeft != ctx->text.s.left) || (newRight != ctx->text.s.right)
