@@ -1,4 +1,4 @@
-/* $XConsortium: Callback.c,v 1.30 90/12/27 09:43:42 rws Exp $ */
+/* $XConsortium: Callback.c,v 1.31 90/12/29 12:14:12 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -72,7 +72,6 @@ void _XtAddCallback(callbacks, callback, closure)
 	icl = (InternalCallbackList)
 	    XtMalloc(sizeof(InternalCallbackRec) +
 		     sizeof(XtCallbackRec) * (count + 1));
-	icl->call_state = 0;
 	bcopy((char *)ToList(*callbacks), (char *)ToList(icl),
 	      sizeof(XtCallbackRec) * count);
     } else {
@@ -83,6 +82,7 @@ void _XtAddCallback(callbacks, callback, closure)
     *callbacks = icl;
     icl->count = count + 1;
     icl->is_padded = 0;
+    icl->call_state = 0;
     cl = ToList(icl) + count;
     cl->callback = callback;
     cl->closure = closure;
@@ -148,7 +148,6 @@ static void AddCallbacks(widget, callbacks, newcallbacks)
 	icl->call_state |= _XtCBFreeAfterCalling;
 	icl = (InternalCallbackList) XtMalloc(sizeof(InternalCallbackRec) +
 					      sizeof(XtCallbackRec) * (i+j));
-	icl->call_state = 0;
 	bcopy((char *)ToList(*callbacks), (char *)ToList(icl),
 	      sizeof(XtCallbackRec) * i);
     } else {
@@ -159,6 +158,7 @@ static void AddCallbacks(widget, callbacks, newcallbacks)
     *callbacks = icl;
     icl->count = i+j;
     icl->is_padded = 0;
+    icl->call_state = 0;
     for (cl = ToList(icl) + i; --j >= 0; )
 	*cl++ = *newcallbacks++;
 } /* AddCallbacks */
@@ -216,8 +216,8 @@ void _XtRemoveCallback (callbacks, callback, closure)
 			XtMalloc(sizeof(InternalCallbackRec) +
 				 sizeof(XtCallbackRec) * (i + j));
 		    icl->count = i + j;
-		    icl->call_state = 0;
 		    icl->is_padded = 0;
+		    icl->call_state = 0;
 		    ncl = ToList(icl);
 		    while (--j >= 0)
 			*ncl++ = *ocl++;
