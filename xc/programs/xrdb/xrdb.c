@@ -1,7 +1,7 @@
 /*
  * xrdb - X resource manager database utility
  *
- * $XConsortium: xrdb.c,v 11.52 92/07/29 18:38:49 rws Exp $
+ * $XConsortium: xrdb.c,v 11.53 92/09/07 14:53:24 rws Exp $
  */
 
 /*
@@ -359,8 +359,23 @@ AddNum(buff, title, value)
 AddSimpleDef(buff, title)
     char *buff, *title;
 {
-    strcat(buff, " -D");
-    strcat(buff, title);
+    AddDef(buff, title, (char *)NULL);
+}
+
+AddDefTok(buff, prefix, title)
+    char *buff, *prefix, *title;
+{
+    char *s;
+    char name[512];
+    char c;
+
+    strcpy(name, prefix);
+    strcat(name, title);
+    for (s = name; c = *s; s++) {
+	if (!isalpha(c) && !isdigit(c) && c != '_')
+	    *s = '_';
+    }
+    AddSimpleDef(buff, name);
 }
 
 int Resolution(pixels, mm)
@@ -378,9 +393,7 @@ DoDisplayDefines(display, defs, host)
 {
 #define MAXHOSTNAME 255
     char client[MAXHOSTNAME], server[MAXHOSTNAME], *colon;
-    char extname[260];
     char **extnames;
-    char *s;
     int nexts;
     
     XmuGetHostname(client, MAXHOSTNAME);
@@ -392,19 +405,17 @@ DoDisplayDefines(display, defs, host)
 	strcpy(server, client);
     AddDef(defs, "HOST", server); /* R3 compatibility */
     AddDef(defs, "SERVERHOST", server);
+    AddDefTok(defs, "SRVR_", server);
     AddDef(defs, "CLIENTHOST", client);
+    AddDefTok(defs, "CLNT_", client);
     AddNum(defs, "VERSION", ProtocolVersion(display));
     AddNum(defs, "REVISION", ProtocolRevision(display));
     AddDefQ(defs, "VENDOR", ServerVendor(display));
+    AddDefTok(defs, "VNDR_", ServerVendor(display));
     AddNum(defs, "RELEASE", VendorRelease(display));
     extnames = XListExtensions(display, &nexts);
-    while (--nexts >= 0) {
-	strcpy(extname, "EXT_");
-	strcat(extname, extnames[nexts]);
-	for (s = extname; s = index(s, '-'); s++)
-	    *s = '_';
-	AddDef(defs, extname, (char *)NULL);
-    }
+    while (--nexts >= 0)
+	AddDefTok(defs, "EXT_", extnames[nexts]);
 }
 
 /*
@@ -423,6 +434,7 @@ DoScreenDefines(display, scrno, defs)
     
     screen = ScreenOfDisplay(display, scrno);
     visual = DefaultVisualOfScreen(screen);
+    AddNum(defs, "SCREEN_NUM", scrno);
     AddNum(defs, "WIDTH", screen->width);
     AddNum(defs, "HEIGHT", screen->height);
     AddNum(defs, "X_RESOLUTION", Resolution(screen->width,screen->mwidth));
@@ -626,7 +638,7 @@ char *editFile = NULL;
 char *cpp_program = CPP;
 char *backup_suffix = BACKUP_SUFFIX;
 Bool dont_execute = False;
-char defines[BUFSIZ];
+char defines[4096];
 int defines_base;
 Display *dpy;
 Buffer buffer;
