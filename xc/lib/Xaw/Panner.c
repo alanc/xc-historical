@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Panner.c,v 1.50 94/12/01 16:27:13 kaleb Exp kaleb $
+ * $XConsortium: Panner.c,v 1.51 95/01/05 19:42:51 kaleb Exp kaleb $
  *
 Copyright (c) 1989, 1994  X Consortium
 
@@ -40,7 +40,7 @@ in this Software without prior written authorization from the X Consortium.
 
 extern Bool XmuDistinguishablePixels(); /* not defined in any Xmu headers */
 
-#if defined(ISC) && __STDC__ && !defined(ISC30);
+#if defined(ISC) && __STDC__ && !defined(ISC30)
 extern double atof(char *);
 #endif
 
