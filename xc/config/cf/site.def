@@ -1,4 +1,4 @@
-XCOMM site:  $XConsortium: site.def,v 1.134 94/08/30 15:48:13 matt Exp matt $
+XCOMM site:  $XConsortium: site.def,v 1.135 94/09/01 14:05:58 matt Exp matt $
 
 /***************************************************************************
  *                                                                         *
@@ -152,6 +152,12 @@ XCOMM site:  $XConsortium: site.def,v 1.134 94/08/30 15:48:13 matt Exp matt $
 #endif
 #if defined(SunArchitecture) && !defined(SVR4)
 #define PreIncDir /usr/local/lib/gcc-lib/sparc-sun-sunos4.1.3/2.6.0/include
+#endif
+#endif
+
+#if HasGcc2ForCplusplus
+#ifdef AlphaArchitecture
+#define CplusplusLibC /usr/local/lib/gcc-lib/alpha-dec-osf3.0/2.6.0/libgcc.a
 #endif
 #endif
 
