@@ -1,4 +1,4 @@
-/* $XConsortium: lcEuc.c,v 1.7 94/01/23 16:37:40 kaleb Exp $ */
+/* $XConsortium: lcEuc.c,v 1.9 94/03/29 22:51:55 rws Exp kaleb $ */
 /******************************************************************
 
         Copyright 1992, 1993 by FUJITSU LIMITED
@@ -768,11 +768,11 @@ initCTptr(lcd)
     for (i = 0; i < num_codesets; i++) {
 
 	codeset = codesets[i];
-	num_charsets = codesets[i]->num_charsets;
+	num_charsets = codeset->num_charsets;
 
 	for (j = 0; j < num_charsets; j++) {
 
-	    charset = codesets[i]->charset_list[0];
+	    charset = codeset->charset_list[j];
 
 	    for (ctdp = ctdata; ctdp <= ctd_endp; ctdp++)
 
@@ -838,6 +838,7 @@ euc_ctstowcs(conv, from, from_left, to, to_left, args, num_args)
 
     for (length = ctdata[Ascii].length; *from_left > 0; (*from_left) -= length)
     {
+	ct_type = CT_STD;
 	if (*inbufptr == '\033' || *inbufptr == (char)'\233') {
 	    for (ctdp = ctdata; ctdp <= ctd_endp ; ctdp++) {
 
@@ -857,7 +858,6 @@ euc_ctstowcs(conv, from, from_left, to, to_left, args, num_args)
 		    break;
 		}
 	    }
-
 	    if (ctdp > ctd_endp) 	/* failed to match CT sequence */
 		unconv_num++;
 	}
@@ -1088,6 +1088,7 @@ euc_ctstombs(conv, from, from_left, to, to_left, args, num_args)
 
     for (length = ctdata[Ascii].length; *from_left > 0; (*from_left) -= length)
     {
+	ct_type = CT_STD;
 	if (*inbufptr == '\033' || *inbufptr == (char)'\233') {
 
 	    for (ctdp = ctdata; ctdp <= ctd_endp ; ctdp++) {
