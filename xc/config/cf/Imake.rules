@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
-XCOMM rules:  $XConsortium: Imake.rules,v 1.159 93/09/04 15:56:45 rws Exp $
+XCOMM rules:  $XConsortium: Imake.rules,v 1.160 93/09/05 13:23:52 rws Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -254,9 +254,9 @@ ProgramTargetName(target):: srclist					@@\
  */
 #ifndef CenterProgramTarget
 #define CenterProgramTarget(program,srclist,objlist,locallibs,syslibs)	@@\
-CenterLoadTarget(Concat(debug_,program),srclist,$(LDOPTIONS) locallibs $(SYS_LIBRARIES) $(EXTRA_LIBRARIES) syslibs,$(ALLDEFINES)) @@\
+CenterLoadTarget(Concat(debug_,program),srclist,$(EXTRA_LDOPTIONS) $(LOCAL_LDFLAGS) $(LDPRELIB) locallibs $(SYS_LIBRARIES) $(EXTRA_LIBRARIES) syslibs,$(ALLDEFINES)) @@\
 									@@\
-CenterLoadTarget(Concat(odebug_,program),objlist,$(LDOPTIONS) locallibs $(SYS_LIBRARIES) $(EXTRA_LIBRARIES) syslibs,$(ALLDEFINES))
+CenterLoadTarget(Concat(odebug_,program),objlist,$(EXTRA_LDOPTIONS) $(LOCAL_LDFLAGS) $(LDPRELIB) locallibs $(SYS_LIBRARIES) $(EXTRA_LIBRARIES) syslibs,$(ALLDEFINES))
 #endif /* CenterProgramTarget */
 
 #ifndef PurifyLinkTarget
