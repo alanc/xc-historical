@@ -1,4 +1,4 @@
-.\" $XConsortium: protocol.ms,v 1.9 92/07/09 18:16:13 gildea Exp $
+.\" $XConsortium: protocol.ms,v 1.10 93/12/20 16:37:55 gildea Exp $
 .\" Use tbl, -ms, and macros.t
 .EH ''''
 .OH ''''
@@ -3584,8 +3584,6 @@ implementation-dependent length of time (see Xlib's
 handling of ECONNREFUSED in XConnDis.c).
 .\"
 .\" print Table of Contents page
-.EH ''''
-.OH ''''
 .if o .bp \" blank page to make count even
 .bp 1
 .af PN i
