@@ -1,5 +1,5 @@
 /*
-* $Header: ClockP.h,v 1.8 88/02/04 20:24:42 swick Exp $
+* $Header: ClockP.h,v 1.9 88/02/14 13:58:49 rws Exp $
 */
 
 /*
@@ -45,6 +45,7 @@ typedef struct {
 /* start of graph stuff */
 	 int	update;		/* update frequence */
 	 Dimension radius;		/* radius factor */
+	 Boolean reverse_video;
 	 Boolean chime;
 	 Boolean beeped;
 	 Boolean analog;
