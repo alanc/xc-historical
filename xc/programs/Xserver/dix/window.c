@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: window.c,v 5.63 91/05/09 15:02:32 rws Exp $ */
+/* $XConsortium: window.c,v 5.64 91/05/09 18:03:58 rws Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -3956,7 +3956,7 @@ SaveScreens(on, mode)
 	    if (savedScreenInfo[i].blanked == SCREEN_IS_BLANKED)
 	    {
 	       (* screenInfo.screens[i]->SaveScreen) (screenInfo.screens[i],
-						      on);
+						      what);
 	    }
             else if (HasSaverWindow (savedScreenInfo[i].blanked))
 	    {
