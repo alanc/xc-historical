@@ -56,23 +56,34 @@
 ;;; This is here instead of in bufmac so that with-display can be
 ;;; compiled without macros and bufmac being loaded.
 
-(defmacro with-buffer ((buffer &key timeout) &body body)
+(defmacro with-buffer ((buffer &key timeout inline)
+		       &body body &environment env)
   ;; This macro is for use in a multi-process environment.  It provides
   ;; exclusive access to the local buffer object for request generation and
   ;; reply processing.
-  (let ((buf (if (or (symbolp buffer) (constantp buffer)) buffer '.buffer.)))
-    `(macrolet ((with-buffer ((buffer &key timeout) &body body)
-		  ;; Speedup hack for lexically nested with-buffers
-		  `(progn (progn ,buffer ,@(and timeout `(,timeout)) nil)
-			  ,@body)))
-       (let (,@(unless (eq buf buffer) `((,buf ,buffer))))
-	 ,@(unless (eq buf buffer) `((declare (type buffer ,buf))))
-	 ,(declare-bufmac)
-	 (when (buffer-dead ,buf)
-	   (x-error 'closed-display :display ,buf))
-	 (holding-lock ((buffer-lock ,buf) ,buf "CLX Display Lock"
-			,@(and timeout `(:timeout ,timeout)))
-	   ,@body)))))
+  (if (and (null inline) (macroexpand '(use-closures) env))
+      `(with-buffer-function ,buffer ,timeout #'(lambda () ,@body))
+    (let ((buf (if (or (symbolp buffer) (constantp buffer)) buffer '.buffer.)))
+      `(macrolet ((with-buffer ((buffer &key timeout) &body body)
+		    ;; Speedup hack for lexically nested with-buffers
+		    `(progn (progn ,buffer ,@(and timeout `(,timeout)) nil)
+			    ,@body)))
+	 (let (,@(unless (eq buf buffer) `((,buf ,buffer))))
+	   ,@(unless (eq buf buffer) `((declare (type buffer ,buf))))
+	   ,(declare-bufmac)
+	   (when (buffer-dead ,buf)
+	     (x-error 'closed-display :display ,buf))
+	   (holding-lock ((buffer-lock ,buf) ,buf "CLX Display Lock"
+			  ,@(and timeout `(:timeout ,timeout)))
+	     ,@body))))))
+
+(defun with-buffer-function (buffer timeout function)
+  (declare (type display buffer)
+	   (type (or null number) timeout)
+	   (type function function)
+	   (downward-funarg function))
+  (with-buffer (buffer :timeout timeout :inline t)
+    (funcall function)))
 
 ;;; The following are here instead of in bufmac so that event-case can
 ;;; be compiled without macros and bufmac being loaded.
@@ -264,7 +275,7 @@
 	   (type (or null gcontext) gc-force))
   (declare (type function request-function)
 	   (downward-funarg request-function))
-  (with-buffer (display)
+  (with-buffer (display :inline t)
     (multiple-value-prog1
       (progn
 	(when gc-force (force-gcontext-changes-internal gc-force))
@@ -289,7 +300,7 @@
 	     (type (or null reply-buffer) reply-buffer))
     (unwind-protect
 	(progn 
-	  (with-buffer (display)
+	  (with-buffer (display :inline t)
 	    (setq pending-command (start-pending-command display))
 	    (without-aborts (funcall request-function display))
 	    (buffer-force-output display)
