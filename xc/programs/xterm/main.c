@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: main.c,v 1.133 89/12/06 17:33:01 jim Exp $";
+static char rcs_id[] = "$XConsortium: main.c,v 1.134 89/12/06 18:24:58 jim Exp $";
 #endif	/* lint */
 
 /*
@@ -336,6 +336,18 @@ static XtResource application_resources[] = {
 /* Command line options table.  Only resources are entered here...there is a
    pass over the remaining options after XtParseCommand is let loose. */
 
+static char *fallback_resources[] = {
+    "XTerm*SimpleMenu*menuLabel.vertSpace: 100",
+    "XTerm*SimpleMenu*HorizontalMargins: 16",
+    "XTerm*SimpleMenu*Sme.height: 16",
+    "XTerm*SimpleMenu*Cursor: left_ptr",
+    "XTerm*mainMenu.Label:  Main Options (no app-defaults)",
+    "XTerm*vtMenu.Label:  VT Options (no app-defaults)",
+    "XTerm*fontMenu.Label:  VT Fonts (no app-defaults)",
+    "XTerm*tekMenu.Label:  Tek Options (no app-defaults)",
+    NULL
+};
+
 static XrmOptionDescRec optionDescList[] = {
 {"-geometry",	"*vt100.geometry",XrmoptionSepArg,	(caddr_t) NULL},
 {"-132",	"*c132",	XrmoptionNoArg,		(caddr_t) "on"},
@@ -523,6 +535,7 @@ Arg ourTopLevelShellArgs[] = {
 };
 int number_ourTopLevelShellArgs = 2;
 	
+XtAppContext app_con;
 Widget toplevel;
 Bool waiting_for_initial_map;
 
@@ -634,8 +647,10 @@ char **argv;
 #endif	/* USE_SYSV_TERMIO */
 
 	/* Init the Toolkit. */
-	toplevel = XtInitialize("xterm", "XTerm",
-		optionDescList, XtNumber(optionDescList), &argc, argv);
+	toplevel = XtAppInitialize (&app_con, "XTerm", 
+				    optionDescList, XtNumber(optionDescList), 
+				    &argc, argv, fallback_resources, 
+				    NULL, 0);
 
 	XtGetApplicationResources( toplevel, &resource, application_resources,
 				   XtNumber(application_resources), NULL, 0 );
