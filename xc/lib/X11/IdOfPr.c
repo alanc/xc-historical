@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsIdOfPr.c,v 1.3 91/02/12 16:12:58 dave Exp $" */
+/* $XConsortium: XcmsIdOfPr.c,v 1.4 91/05/13 23:22:36 rws Exp $" */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -41,7 +41,7 @@
  */
 extern XcmsColorSpace **_XcmsDIColorSpaces;
 extern XcmsColorSpace **_XcmsDDColorSpaces;
-
+void _XcmsCopyISOLatin1Lowered();
 
 
 /*
@@ -64,6 +64,19 @@ XcmsFormatOfPrefix(prefix)
  */
 {
     XcmsColorSpace	**papColorSpaces;
+    char		string_buf[64];
+    char		*string_lowered;
+    int			len;
+
+    /*
+     * While copying prefix to string_lowered, convert to lowercase
+     */
+    if ((len = strlen(prefix)) >= sizeof(string_buf)) {
+	string_lowered = (char *) Xmalloc(len+1);
+    } else {
+	string_lowered = string_buf;
+    }
+    _XcmsCopyISOLatin1Lowered(string_lowered, prefix);
 
     /*
      * First try Device-Independent color spaces
@@ -71,8 +84,9 @@ XcmsFormatOfPrefix(prefix)
     papColorSpaces = _XcmsDIColorSpaces;
     if (papColorSpaces != NULL) {
 	while (*papColorSpaces != NULL) {
-	    if (strncmp((*papColorSpaces)->prefix, prefix,
+	    if (strncmp((*papColorSpaces)->prefix, string_lowered,
 		    strlen((*papColorSpaces)->prefix)) == 0) {
+		if (len >= sizeof(string_buf)) Xfree(string_lowered);
 		return((*papColorSpaces)->id);
 	    }
 	    papColorSpaces++;
@@ -85,13 +99,15 @@ XcmsFormatOfPrefix(prefix)
     papColorSpaces = _XcmsDDColorSpaces;
     if (papColorSpaces != NULL) {
 	while (*papColorSpaces != NULL) {
-	    if (strncmp((*papColorSpaces)->prefix, prefix,
+	    if (strncmp((*papColorSpaces)->prefix, string_lowered,
 		    strlen((*papColorSpaces)->prefix)) == 0) {
+		if (len >= sizeof(string_buf)) Xfree(string_lowered);
 		return((*papColorSpaces)->id);
 	    }
 	    papColorSpaces++;
 	}
     }
 
+    if (len >= sizeof(string_buf)) Xfree(string_lowered);
     return(XcmsUndefinedFormat);
 }
