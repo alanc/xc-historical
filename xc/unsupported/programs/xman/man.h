@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: man.h,v 1.19 89/12/15 21:06:54 kit Exp $
+ * $XConsortium: man.h,v 1.20 91/01/09 17:30:53 rws Exp $
  * $Athena: man.h,v 4.6 89/01/06 12:17:38 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
@@ -20,6 +20,14 @@
  * Created:   October 22, 1987
  */
 
+/* X toolkit header files */
+
+#include <X11/Intrinsic.h>
+#include <X11/StringDefs.h>
+#include <X11/Shell.h>
+
+#include <X11/Xaw/Cardinals.h>
+
 /* Std system and C header files */
 
 #include <stdio.h>
@@ -29,15 +37,6 @@
 /* X include files */
 
 #include <X11/Xatom.h>
-
-/* X toolkit header files */
-
-#include <X11/Intrinsic.h>
-#include <sys/dir.h>		/* depends on Intrinsic.h */
-#include <X11/StringDefs.h>
-#include <X11/Shell.h>
-
-#include <X11/Xaw/Cardinals.h>
 
 /* Widget header files. */
 
