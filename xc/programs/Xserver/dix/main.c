@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: main.c,v 5.8 89/09/21 19:22:06 keith Exp $ */
+/* $XConsortium: main.c,v 5.9 89/10/03 19:57:00 rws Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -224,6 +224,10 @@ main(argc, argv)
 	InitExtensions(argc, argv);
 	for (i = 0; i < screenInfo.numScreens; i++)
 	{
+	    if (!CreateGCperDepth(i))
+		FatalError("failed to create scratch GCs");
+	    if (!CreateDefaultStipple(i))
+		FatalError("failed to create default stipple");
 	    if (!CreateRootWindow(screenInfo.screens[i]))
 		FatalError("failed to create root window");
 	}
@@ -597,19 +601,13 @@ AddScreen(pfnInit, argc, argv)
     WindowTable[i] = NullWindow;
     screenInfo.screens[i] = pScreen;
     screenInfo.numScreens++;
-    if ((*pfnInit)(i, pScreen, argc, argv))
+    if (!(*pfnInit)(i, pScreen, argc, argv))
     {
-	if (CreateGCperDepth(i))
-	{
-	    if (CreateDefaultStipple(i))
-		return i;
-	    FreeGCperDepth(i);
-	}
-	FreeResource(WindowTable[i]->drawable.id, RT_NONE);
+	FreeScreen(pScreen);
+	screenInfo.numScreens--;
+	return -1;
     }
-    FreeScreen(pScreen);
-    screenInfo.numScreens--;
-    return -1;
+    return i;
 }
 
 static void
