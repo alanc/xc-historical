@@ -1,5 +1,5 @@
 /*
-* $Header: Atoms.h,v 1.19 87/12/01 16:15:22 swick Locked $
+* $Header: Atoms.h,v 1.20 87/12/02 08:56:07 swick Locked $
 */
 
 /*
@@ -38,6 +38,7 @@
 #define XtNallowHoriz		"allowHoriz"
 #define XtNallowVert		"allowVert"
 #define XtNancestorSensitive	"ancestorSensitive"
+#define XtNautoChange		"autoChange"
 #define XtNbackground		"background"
 #define XtNborder		"border"
 #define XtNborderWidth		"borderWidth"
@@ -66,6 +67,7 @@
 #define XtNlength		"length"
 #define XtNlowerRight		"lowerRight"
 #define XtNmappedWhenManaged	"mappedWhenManaged"
+#define XtNmaximumLength	"maximumLength"
 #define XtNmenuEntry		"menuEntry"
 #define XtNname			"name"
 #define XtNnotify		"notify"
@@ -106,7 +108,6 @@
 /* Class types */ 
 
 #define XtCBackground		"Background"
-#define XtCBackground		"Background"
 #define XtCBitmap		"Bitmap"
 #define XtCBoolean		"Boolean"
 #define XtCBorderColor		"BorderColor"
@@ -136,7 +137,9 @@
 #define XtCLength		"Length"
 #define XtCMappedWhenManaged	"MappedWhenManaged"
 #define XtCMargin		"Margin"
+#define XtCMax			"Max"
 #define XtCMenuEntry		"MenuEntry"
+#define XtCMin			"Min"
 #define XtCNotify		"Notify"
 #define XtCOff			"Off"
 #define XtCOn			"On"
