@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Command.c,v 1.21 87/09/13 13:16:53 newman Locked $";
+static char rcsid[] = "$Header: Command.c,v 1.22 87/09/13 16:43:03 newman Locked $";
 #endif lint
 
 /*
@@ -205,19 +205,13 @@ static void Get_highlightGC(cbw)
 
 
 /* ARGSUSED */
-static void Initialize(w, args, num_args)
- Widget w;
+static void Initialize(request, new, args, num_args)
+ Widget request, new;
  ArgList args;
  Cardinal num_args;
 {
-    CommandWidget cbw = (CommandWidget) w;
+    CommandWidget cbw = (CommandWidget) new;
 
-      /*** MAKE SURE core_class and coreClass standardized in
-	             Label&Command   Intrinsic
-      ****/
-    XtCallParentProcedure3Args(initialize, w, args, num_args);
-        /* The above call will set all of the label fields such as
-	   label text and internal width and height. */
     Get_inverseGC(cbw);
     Get_inverseTextGC(cbw);
     Get_highlightGC(cbw);
@@ -393,13 +387,12 @@ static void Destroy(w)
 /*
  * Set specified arguments into widget
  */
-static void SetValues(old, new)
-    Widget old, new;
+static void SetValues (current, request, new, last)
+    Widget current, request, new;
+    Boolean last;
 {
-    CommandWidget cbw = (CommandWidget) old;
+    CommandWidget cbw = (CommandWidget) current;
     CommandWidget newcbw = (CommandWidget) new;
-
-    XtCallParentProcedure2Args(set_values,old,new);
 
      if (XtLField(newcbw,foreground) != ComWforeground)
        {
@@ -427,7 +420,6 @@ static void SetValues(old, new)
     /* Change Label to remove ClearWindow and Redisplay */
     /* Change Label to change GCs if foreground, etc */
 
-    *cbw = *newcbw;
     /**** how to get a redisplay without triggering redisplays
       in superclasses ****/
 }
