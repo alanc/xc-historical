@@ -81,6 +81,7 @@ MenuEntry tekMenuEntries[] = {
     { "tekhide",	do_tekhide }};		/* 11 */
 
 static Widget create_menu();
+extern Widget toplevel;
 
 
 /*
@@ -98,6 +99,14 @@ static char check_bits[] = {
  * public interfaces
  */
 
+void create_dummy_menu_hack ()
+{
+    Widget w = XtCreateWidget ("dummyMenu", simpleMenuWidgetClass, 
+			       toplevel, NULL, 0);
+    XtDestroyWidget (w);
+}
+
+#ifdef notdef
 Widget CreateMainMenu (xtw, toplevel)
     XtermWidget xtw;
     Widget toplevel;
@@ -119,6 +128,74 @@ Widget CreateTekMenu (xtw, toplevel)
 {
     return create_menu (xtw, toplevel, "tekMenu",
 			tekMenuEntries, XtNumber(tekMenuEntries));
+}
+#endif
+
+
+void HandleCreateMenu (w, event, params, param_count)
+    Widget w;
+    XEvent *event;              /* unused */
+    String *params;             /* mainMenu, vtMenu, or tekMenu */
+    Cardinal *param_count;      /* 0 or 1 */
+{
+    TScreen *screen = &term->screen;
+    int gotmenus = 0;
+
+    if (*param_count != 1) {
+	XBell (XtDisplay(w), 0);
+    } else if (gotmenus < 3) {
+	switch (params[0][0]) {
+	  case 'm':
+	    if (!screen->mainMenu) {
+		screen->mainMenu = create_menu (term, toplevel, "mainMenu",
+						mainMenuEntries,
+						XtNumber(mainMenuEntries));
+		update_securekbd();
+		update_allowsends();
+		update_visualbell();
+		update_logging();
+		gotmenus++;
+	    }
+	    break;
+	  case 'v':
+	    if (!screen->vtMenu) {
+		screen->vtMenu = create_menu (term, toplevel, "vtMenu",
+					      vtMenuEntries,
+					      XtNumber(vtMenuEntries));
+		/* and turn off the alternate screen entry */
+		set_sensitivity (screen->vtMenu,
+				 vtMenuEntries[vtMenu_altscreen].name, FALSE);
+		update_scrollbar();
+		update_jumpscroll();
+		update_reversevideo();
+		update_autowrap();
+		update_reversewrap();
+		update_autolinefeed();
+		update_appcursor();
+		update_appkeypad();
+		update_scrollkey();
+		update_scrollinput();
+		update_allow132();
+		update_cursesemul();
+		update_marginbell();
+		gotmenus++;
+	    }
+	    break;
+	  case 't':
+	    if (!screen->tekMenu) {
+		screen->tekMenu = create_menu (term, toplevel, "tekMenu",
+					       tekMenuEntries,
+					       XtNumber(tekMenuEntries));
+		set_tekfont_menu_item (screen->cur.fontsize, TRUE);
+		gotmenus++;
+	    }
+	    break;
+	  default:
+	    XBell (XtDisplay(w), 0);
+	    break;
+	}
+    }
+    return;
 }
 
 

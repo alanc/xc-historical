@@ -1,5 +1,5 @@
 /*
- * $XConsortium: charproc.c,v 1.89 89/07/27 16:52:39 jim Exp $
+ * $XConsortium: charproc.c,v 1.90 89/08/07 19:28:33 jim Exp $
  */
 
 
@@ -139,7 +139,7 @@ static void VTallocbuf();
 #define	doinput()		(bcnt-- > 0 ? *bptr++ : in_put())
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: charproc.c,v 1.89 89/07/27 16:52:39 jim Exp $";
+static char rcs_id[] = "$XConsortium: charproc.c,v 1.90 89/08/07 19:28:33 jim Exp $";
 #endif	/* lint */
 
 static long arg;
@@ -179,6 +179,7 @@ static void HandleIgnore();
 extern void HandleSecure();
 extern void HandleScrollForward();
 extern void HandleScrollBack();
+extern void HandleCreateMenu();
 
 /*
  * NOTE: VTInitialize zeros out the entire ".screen" component of the 
@@ -204,10 +205,10 @@ static char defaultTranslations[] =
   Shift <KeyPress> Insert:	insert-selection(PRIMARY, CUT_BUFFER0) \n\
        ~Meta<KeyPress>: 	insert-seven-bit()	\n\
         Meta<KeyPress>: 	insert-eight-bit()	\n\
- Ctrl ~Meta<Btn1Down>:          XawPositionSimpleMenu(mainMenu) MenuPopup(mainMenu) \n\
+ Ctrl ~Meta<Btn1Down>:          create-menu(mainMenu) XawPositionSimpleMenu(mainMenu) MenuPopup(mainMenu) \n\
       ~Meta <Btn1Down>:		select-start()	\n\
       ~Meta <Btn1Motion>:	select-extend() \n\
- Ctrl ~Meta <Btn2Down>:         XawPositionSimpleMenu(vtMenu) MenuPopup(vtMenu) \n\
+ Ctrl ~Meta <Btn2Down>:         create-menu(vtMenu) XawPositionSimpleMenu(vtMenu) MenuPopup(vtMenu) \n\
 ~Ctrl ~Meta <Btn2Down>:		ignore()	\n\
       ~Meta <Btn2Up>:		insert-selection(PRIMARY, CUT_BUFFER0) \n\
 ~Ctrl ~Meta <Btn3Down>:		start-extend()	\n\
@@ -218,6 +219,7 @@ static char defaultTranslations[] =
 
 static XtActionsRec actionsList[] = { 
     { "bell",		  HandleBell },
+    { "create-menu",	  HandleCreateMenu },
     { "ignore",		  HandleIgnore },
     { "insert",		  HandleKeyPressed },  /* alias for insert-seven-bit */
     { "insert-seven-bit", HandleKeyPressed },
@@ -1980,6 +1982,9 @@ static void VTInitialize (request, new)
 
    set_character_class (new->screen.charClass);
 
+   create_dummy_menu_hack ();		/* to initialize menu actions */
+
+#ifdef notdef
    new->screen.mainMenu = CreateMainMenu (new, toplevel);
    new->screen.vtMenu = CreateVTMenu (new, toplevel);
 
@@ -2009,6 +2014,7 @@ static void VTInitialize (request, new)
 
    XtRealizeWidget (new->screen.mainMenu);
    XtRealizeWidget (new->screen.vtMenu);
+#endif
 
    /* create it, but don't realize it */
    ScrollBarOn (new, TRUE, FALSE);

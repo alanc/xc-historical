@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Tekproc.c,v 1.60 89/07/21 16:11:20 jim Exp $
+ * $XConsortium: Tekproc.c,v 1.61 89/08/07 19:28:27 jim Exp $
  *
  * Warning, there be crufty dragons here.
  */
@@ -110,7 +110,7 @@ extern long time();
 #define	unput(c)	*Tpushback++ = c
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: Tekproc.c,v 1.60 89/07/21 16:11:20 jim Exp $";
+static char rcs_id[] = "$XConsortium: Tekproc.c,v 1.61 89/08/07 19:28:27 jim Exp $";
 #endif	/* lint */
 
 extern Widget toplevel;
@@ -161,12 +161,13 @@ extern void HandleLeaveWindow();
 extern void HandleFocusChange();
 extern void HandleSecure();
 extern void HandleGINInput();
+extern void HandleCreateMenu();
 
 static char defaultTranslations[] = "\
        ~Meta<KeyPress>: 	insert-seven-bit()	\n\
         Meta<KeyPress>: 	insert-eight-bit()\n\
- Ctrl ~Meta<Btn1Down>:          XawPositionSimpleMenu(mainMenu) MenuPopup(mainMenu) \n\
- Ctrl ~Meta <Btn2Down>:         XawPositionSimpleMenu(tekMenu) MenuPopup(tekMenu) \n\
+ Ctrl ~Meta<Btn1Down>:          create-menu(mainMenu) XawPositionSimpleMenu(mainMenu) MenuPopup(mainMenu) \n\
+ Ctrl ~Meta <Btn2Down>:         create-menu(tekMenu) XawPositionSimpleMenu(tekMenu) MenuPopup(tekMenu) \n\
  Shift ~Meta<Btn1Down>:         gin-press(L) \n\
        ~Meta<Btn1Down>:         gin-press(l) \n\
  Shift ~Meta<Btn2Down>:         gin-press(M) \n\
@@ -181,7 +182,8 @@ static XtActionsRec actionsList[] = {
     { "insert-seven-bit",	HandleKeyPressed },
     { "insert-eight-bit",	HandleEightBitKeyPressed },
     { "gin-press",		HandleGINInput },
-    { "secure", 		HandleSecure }
+    { "secure", 		HandleSecure },
+    { "create-menu",		HandleCreateMenu },
 };
 
 static Dimension defOne = 1;
@@ -1122,7 +1124,9 @@ static void TekRealize (gw, valuemaskp, values)
     char Tdefault[32];
     extern char *malloc();
 
+#ifdef notdef
     screen->tekMenu = CreateTekMenu (term, toplevel);
+#endif
     /*
      * XXX - need to set menu checkmark
      */
@@ -1340,9 +1344,12 @@ static void TekRealize (gw, valuemaskp, values)
     screen->cur_Y = TEKHOME;
     line_pt = Tline;
     Ttoggled = TRUE;
-    set_tekfont_menu_item (screen->cur.fontsize, TRUE);
     screen->page = screen->cur;
+#ifdef notdef
+    set_tekfont_menu_item (screen->cur.fontsize, TRUE);
     XtRealizeWidget (screen->tekMenu);
+#endif
+    create_dummy_menu_hack ();		/* to initialize menu actions */
     return;
 }
 
