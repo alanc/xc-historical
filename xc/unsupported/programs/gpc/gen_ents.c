@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: gen_ents.c,v 5.1 91/02/16 10:07:35 rws Exp $ */
 /***********************************************************
 Copyright(c) 1989,1990, 1991 by Sun Microsystems, Inc. and the X Consortium at M.I.T.
 
@@ -201,7 +201,6 @@ vector3 *coords, *normals, *f_norms;
 	double radx, rady, radz;
 	double nscax, nscay, nscaz;
 	static double two_pi = 6.2831853071796;
-	double sin(), cos();
 
 	/* Get the steps */
 	dlong  = two_pi / (double)numLong;
