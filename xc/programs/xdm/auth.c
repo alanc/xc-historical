@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: auth.c,v 1.34 91/02/13 19:14:52 rws Exp $
+ * $XConsortium: auth.c,v 1.35 91/02/14 13:39:45 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -87,7 +87,7 @@ static struct AuthProtocol AuthProtocols[] = {
 },
 #endif
 #ifdef SECURE_RPC
-{ (unsigned short) 10, "SECURE-RPC",
+{ (unsigned short) 9, "SUN-DES-1",
     SecureRPCInitAuth, SecureRPCGetAuth, NULL,
 },
 #endif

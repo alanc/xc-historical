@@ -1,7 +1,7 @@
 /*
  * authorization hooks for the server
  *
- * $XConsortium: auth.c,v 1.8 89/12/13 14:42:27 keith Exp $
+ * $XConsortium: auth.c,v 1.9 91/02/11 18:33:49 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -67,7 +67,7 @@ static struct protocol   protocols[] = {
 },
 #endif
 #ifdef SECURE_RPC
-{   (unsigned short) 10,    "SECURE-RPC",
+{   (unsigned short) 9,    "SUN-DES-1",
 		SecureRPCAdd,	SecureRPCCheck,	SecureRPCReset,
 		SecureRPCToID,	SecureRPCFromID,SecureRPCRemove,
 },
