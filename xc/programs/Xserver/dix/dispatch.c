@@ -1,4 +1,4 @@
-/* $Header: dispatch.c,v 1.11 87/09/03 13:06:06 toddb Locked $ */
+/* $Header: dispatch.c,v 1.12 87/09/03 18:30:54 rws Locked $ */
 /************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -276,10 +276,12 @@ StartOver:
 	        }
 	        else if (result == 0)
 	        {
+#ifdef notdef
 		    ErrorF(  "Blocked read in dispatcher\n");
 		    ErrorF(  "reqType %d %d\n", 
 			     (request ? request->reqType : -1),
 			       nready);
+#endif notdef
 		    if (nready > 0)
 			continue;
 		    else
@@ -3091,9 +3093,11 @@ Oops (client, reqCode, minorCode, status)
 
     for (i=0; i<currentMaxClients; i++)
         if (clients[i] == client) break;
+#ifdef notdef
     ErrorF(  "OOPS! => client: %x, seq: %d, err: %d, maj:%d, min: %d resID: %x\n",
     	client->index, rep.sequenceNumber, rep.errorCode,
 	rep.majorCode, rep.minorCode, rep.resourceID);
+#endif notdef
 
     WriteEventsToClient (client, 1, (xEvent *) &rep); 
 }
