@@ -1,4 +1,4 @@
-/* $XConsortium: StrToWidg.c,v 1.5 90/12/19 19:08:59 converse Exp $ */
+/* $XConsortium: StrToWidg.c,v 1.6 91/07/22 18:04:26 ackerman Exp $ */
 
 /* Copyright 1988 Massachusetts Institute of Technology
  *
@@ -30,29 +30,33 @@
  * or popup) of the parent.  If none match, compares string to classname
  * & returns first match.  Case is significant.
  */
-
+#include <X11/StringDefs.h>
 #include <X11/IntrinsicP.h>
 #include <X11/ObjectP.h>
-#include <X11/Object.h>
 
 #define	done(address, type) \
 	{ toVal->size = sizeof(type); \
-	  toVal->addr = (caddr_t) address; \
+	  toVal->addr = (XPointer) address; \
 	  return; \
 	}
 
-
-#define NewDone(where_flag,address,type) \
-{ \
-    if (where_flag) \
-	done(address,type) \
-    else \
-	{ \
-	      toVal->size = sizeof(type); \
-	      (type)*(toVal->addr) = *address; \
-	      return; \
-	} \
-}
+#define	newDone(type, value) \
+	{							\
+	    if (toVal->addr != NULL) {				\
+		if (toVal->size < sizeof(type)) {		\
+		    toVal->size = sizeof(type);			\
+		    return False;				\
+		}						\
+		*(type*)(toVal->addr) = (value);		\
+	    }							\
+	    else {						\
+		static type static_val;				\
+		static_val = (value);				\
+		toVal->addr = (XtPointer)&static_val;		\
+	    }							\
+	    toVal->size = sizeof(type);				\
+	    return True;					\
+	}
 
 
 /* ARGSUSED */
@@ -115,33 +119,25 @@ void XmuCvtStringToWidget(args, num_args, fromVal, toVal)
 }
 
 
-/* ARGSUSED */
-void XmuNewCvtStringToWidget(display, args, num_args, fromVal, toVal, 
+/*ARGSUSED*/
+Boolean XmuNewCvtStringToWidget(dpy, args, num_args, fromVal, toVal, 
 			     converter_data)
-     Display *display;
+     Display *dpy;
      XrmValue *args;		/* parent */
-     Cardinal *num_args;      /* 1 */
+     Cardinal *num_args;	/* 1 */
      XrmValue *fromVal;
      XrmValue *toVal;
      XtPointer *converter_data;
 {
-    static Widget widget, *widgetP, parent;
+    Widget *widgetP, parent;
     XrmName name = XrmStringToName(fromVal->addr);
     int i;
-    Boolean alloc_to_space;
 
     if (*num_args != 1)
-	XtErrorMsg("wrongParameters", "cvtStringToWidget", "xtToolkitError",
-		   "StringToWidget conversion needs parent arg", NULL, 0);
-
-    alloc_to_space = True;
-    if (toVal->addr != NULL)
-	{
-	    if (toVal->size < sizeof(Widget))
-		done(toVal->addr, Widget);
-	    alloc_to_space = False;
-	}
-
+	XtAppWarningMsg(XtDisplayToApplicationContext(dpy),
+			"wrongParameters","cvtStringToWidget","xtToolkitError",
+			"String To Widget conversion needs parent argument",
+			(String *)NULL, (Cardinal*)NULL);
 
     parent = *(Widget*)args[0].addr;
     /* try to match names of normal children */
@@ -149,41 +145,31 @@ void XmuNewCvtStringToWidget(display, args, num_args, fromVal, toVal,
 	i = ((CompositeWidget)parent)->composite.num_children;
 	for (widgetP = ((CompositeWidget)parent)->composite.children;
 	     i; i--, widgetP++) {
-	    if ((*widgetP)->core.xrm_name == name) {
-		widget = *widgetP;
-		NewDone(alloc_to_space,&widget, Widget);
-	    }
+	    if ((*widgetP)->core.xrm_name == name)
+		newDone(Widget, *widgetP);
 	}
     }
     /* try to match names of popup children */
     i = parent->core.num_popups;
     for (widgetP = parent->core.popup_list; i; i--, widgetP++) {
-	if ((*widgetP)->core.xrm_name == name) {
-	    widget = *widgetP;
-	    NewDone(alloc_to_space,&widget, Widget);
-	}
+	if ((*widgetP)->core.xrm_name == name)
+	    newDone(Widget, *widgetP);
     }
     /* try to match classes of normal children */
     if (XtIsComposite(parent)) {
 	i = ((CompositeWidget)parent)->composite.num_children;
 	for (widgetP = ((CompositeWidget)parent)->composite.children;
 	     i; i--, widgetP++) {
-	    if ((*widgetP)->core.widget_class->core_class.xrm_class == name) {
-		widget = *widgetP;
-		NewDone(alloc_to_space,&widget, Widget);
-	    }
+	    if ((*widgetP)->core.widget_class->core_class.xrm_class == name)
+		newDone(Widget, *widgetP);
 	}
     }
     /* try to match classes of popup children */
     i = parent->core.num_popups;
     for (widgetP = parent->core.popup_list; i; i--, widgetP++) {
-	if ((*widgetP)->core.widget_class->core_class.xrm_class == name) {
-	    widget = *widgetP;
-	    NewDone(alloc_to_space,&widget, Widget);
-	}
+	if ((*widgetP)->core.widget_class->core_class.xrm_class == name)
+		newDone(Widget, *widgetP);
     }
-    XtStringConversionWarning(fromVal->addr, "Widget");
-    toVal->addr = NULL;
-    toVal->size = 0;
+    XtDisplayStringConversionWarning(dpy, (String) fromVal->addr, XtRWidget);
+    return False;
 }
-
