@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: utils.c,v 1.71 89/03/18 13:49:34 rws Exp $ */
+/* $XConsortium: utils.c,v 1.71 89/03/18 13:56:00 rws Exp $ */
 #include <stdio.h>
 #include "Xos.h"
 #include "misc.h"
@@ -56,7 +56,9 @@ extern char *sbrk();
 #endif
 
 #ifdef MEMBUG
-pointer minfree = NULL;
+#define MEM_FAIL_SCALE 100000
+long Memory_fail = 0;
+static pointer minfree = NULL;
 static void CheckNode();
 #endif
 
@@ -163,6 +165,9 @@ void UseMsg()
 {
     ErrorF("use: X [:<display>] [option]\n");
     ErrorF("-a #                   mouse acceleration (pixels)\n");
+#ifdef MEMBUG
+    ErrorF("-alloc int             chance alloc should fail\n");
+#endif
     ErrorF("-auth string           select authorization file\n");	
     ErrorF("-bs                    disable any backing store support\n");
     ErrorF("-c                     turns off key-click\n");
@@ -232,6 +237,15 @@ char	*argv[];
 	    else
 		UseMsg();
 	}
+#ifdef MEMBUG
+	else if ( strcmp( argv[i], "-alloc") == 0)
+	{
+	    if(++i < argc)
+	        Memory_fail = atoi(argv[i]);
+	    else
+		UseMsg();
+	}
+#endif
 	else if ( strcmp( argv[i], "-auth") == 0)
 	{
 	    if(++i < argc) {
@@ -417,6 +431,9 @@ Xalloc (amount)
     /* aligned extra on long word boundary */
     amount = (amount + 3) & ~3;
 #ifdef MEMBUG
+    if (!Must_have_memory && Memory_fail &&
+	((random() % MEM_FAIL_SCALE) < Memory_fail))
+	return (unsigned long *)NULL;
     if (ptr = (pointer)malloc(amount + 12))
     {
         *(unsigned long *)ptr = FIRSTMAGIC;
@@ -451,6 +468,9 @@ Xrealloc (ptr, amount)
 	Xfree(ptr);
 	return (unsigned long *)NULL;
     }
+    if (!Must_have_memory && Memory_fail &&
+	((random() % MEM_FAIL_SCALE) < Memory_fail))
+	return (unsigned long *)NULL;
     amount = (amount + 3) & ~3;
     if (ptr)
     {
