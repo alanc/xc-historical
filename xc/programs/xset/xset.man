@@ -48,7 +48,7 @@ if possible; a preceding dash(-) disables the mode, otherwise the mode
 is enabled.  Various pre-R4 clients pass illegal values in some
 protocol requests, and pre-R4 servers did not correctly generate
 errors in these cases.  Such clients, when run against an R4 server,
-will terminate abnormally or otherwise fail operate correctly.
+will terminate abnormally or otherwise fail to operate correctly.
 Bug compatibility mode explicitly reintroduces certain bugs into the
 X server, so that many such clients can still be run.  This mode should be
 used with care; new application development should be done with this mode
@@ -74,12 +74,12 @@ The directories are interpreted by the server, not by the client, and are
 server-dependent.  Directories that do not contain font databases created by
 \fImkfontdir\fP will be ignored by the server.
 .TP 8
-.B fp \fIdefault\fP
-The \fIdefault\fP argument causes the font path to be reset to the server's
+.B fp \fBdefault\fP
+The \fBdefault\fP argument causes the font path to be reset to the server's
 default.
 .TP 8
-.B fp \fIrehash\fP
-The \fIrehash\fP argument causes the server to reread the font databases in
+.B fp \fBrehash\fP
+The \fBrehash\fP argument causes the server to reread the font databases in
 the current font path.  This is generally only used when adding new fonts to
 a font directory (after running \fImkfontdir\fP to recreate the font database).
 .PP
