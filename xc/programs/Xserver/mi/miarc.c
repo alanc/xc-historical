@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: miarc.c,v 1.70 89/03/22 10:49:19 rws Exp $ */
+/* $XConsortium: miarc.c,v 1.71 89/03/22 11:24:14 rws Exp $ */
 /* Author: Keith Packard */
 
 #include "X.h"
@@ -1136,18 +1136,6 @@ miComputeArcs (parcs, narcs, pGC)
 					if (dashAngle == endAngle)
 						arc->selfJoin = selfJoin;
 				}
-				/*
-				 * make sure a place exists for the position data
-				 */
-				if (!arc) {
-					arc = addArc (&arcs[iphase].arcs, &arcs[iphase].narcs,
- 				      	      	      &arcSize[iphase], parcs[i]);
-					if (!arc)
-					    goto arcfail;
-					arc->join = arcs[iphase].njoins;
-					arc->cap = arcs[iphase].ncaps;
-					arc->selfJoin = data[i].selfJoin;
-				}
 				prevphase = iphase;
 				if (dashRemaining <= 0) {
 					++iDash;
@@ -1157,6 +1145,21 @@ miComputeArcs (parcs, narcs, pGC)
 					dashRemaining = pGC->dash[iDash];
 				}
 				prevDashAngle = dashAngle;
+			}
+			/*
+			 * make sure a place exists for the position data
+			 */
+			if (!arc) {
+				prevphase = iphase;
+				if (!isDoubleDash && iphase == 1)
+					prevphase = 0;
+				arc = addArc (&arcs[prevphase].arcs, &arcs[prevphase].narcs,
+					      &arcSize[prevphase], parcs[i]);
+				if (!arc)
+				    goto arcfail;
+				arc->join = arcs[prevphase].njoins;
+				arc->cap = arcs[prevphase].ncaps;
+				arc->selfJoin = data[i].selfJoin;
 			}
 		} else {
 			arc = addArc (&arcs[iphase].arcs, &arcs[iphase].narcs,
