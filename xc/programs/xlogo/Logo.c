@@ -1,4 +1,4 @@
-/* $XConsortium: Logo.c,v 1.25 91/05/22 16:56:51 converse Exp $ */
+/* $XConsortium: Logo.c,v 1.26 91/10/16 21:35:53 eswu Exp $ */
 
 /*
 Copyright 1988 by the Massachusetts Institute of Technology
@@ -117,8 +117,6 @@ static void unset_shape (w)
     Display *dpy = XtDisplay ((Widget) w);
     Window win = XtWindow ((Widget) w);
 
-    if (win == None) return;
-
     if (w->core.background_pixmap != None && 
 	w->core.background_pixmap != XtUnspecifiedPixmap) {
 	attr.background_pixmap = w->core.background_pixmap;
@@ -231,7 +229,7 @@ static void Resize (gw)
 {
     LogoWidget w = (LogoWidget) gw;
 
-    if (w->logo.shape_window) set_shape (w);
+    if (w->logo.shape_window && XtIsRealized(gw)) set_shape (w);
 }
 
 /* ARGSUSED */
@@ -261,7 +259,9 @@ static Boolean SetValues (gcurrent, grequest, gnew, args, num_args)
     LogoWidget new = (LogoWidget) gnew;
     Boolean redisplay = FALSE;
 
-   check_shape (new);			/* validate shape_window */
+    if (new->logo.shape_window &&
+	new->logo.shape_window != current->logo.shape_window)
+	check_shape (new);			/* validate shape_window */
 
     if ((new->logo.fgpixel != current->logo.fgpixel) ||
 	(new->core.background_pixel != current->core.background_pixel)) {
@@ -273,10 +273,14 @@ static Boolean SetValues (gcurrent, grequest, gnew, args, num_args)
    if (new->logo.shape_window != current->logo.shape_window) {
        if (new->logo.shape_window) {
 	   Destroy (gnew);
-	   set_shape (new);
+	   if (XtIsRealized(gnew))
+	       set_shape (new);
+	   else
+	       new->logo.need_shaping = True;
 	   redisplay = FALSE;
        } else {
-	   unset_shape (new);		/* creates new GCs */
+	   if (XtIsRealized(gnew))
+	       unset_shape (new);		/* creates new GCs */
 	   redisplay = TRUE;
        }
    }
