@@ -17,7 +17,7 @@ representations about the suitability of this software for any
 purpose.  It is provided "as is" without express or implied warranty.
 */
 
-/* $XConsortium: cfbtileodd.c,v 1.6 90/01/31 12:32:40 keith Exp $ */
+/* $XConsortium: cfbtileodd.c,v 1.7 90/03/01 16:35:18 keith Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -162,8 +162,8 @@ MROP_NAME(cfbFillBoxTileOdd) (pDrawable, nBox, pBox, tile, xrot, yrot, alu, plan
     {
 	w = pBox->x2 - pBox->x1;
 	h = pBox->y2 - pBox->y1;
-	srcx = (pBox->x1 - xrot) % tileWidth;
-	srcy = (pBox->y1 - yrot) % tileHeight;
+	srcx = modulus (pBox->x1 - xrot, tileWidth);
+	srcy = modulus (pBox->y1 - yrot, tileHeight);
 	xoffDst = pBox->x1 & PIM;
 	if (xoffDst + w < PPW)
 	{
@@ -444,8 +444,8 @@ MROP_NAME(cfbFillUnnaturalTileFS) (pDrawable, n, ppt, pwidth, tile, xrot, yrot, 
     while (n--)
     {
 	w = *pwidth++;
-	srcx = (ppt->x - xrot) % tileWidth;
-	srcy = (ppt->y - yrot) % tileHeight;
+	srcx = modulus (ppt->x - xrot, tileWidth);
+	srcy = modulus (ppt->y - yrot, tileHeight);
 	xoffDst = ppt->x & PIM;
 	if (xoffDst + w < PPW)
 	{

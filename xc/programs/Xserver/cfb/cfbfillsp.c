@@ -50,7 +50,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: cfbfillsp.c,v 5.10 90/01/31 12:31:25 keith Exp $ */
+/* $XConsortium: cfbfillsp.c,v 5.11 90/03/01 16:35:21 keith Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -345,185 +345,6 @@ int fSorted;
 
     DEALLOCATE_LOCAL(ppt);
     DEALLOCATE_LOCAL(pwidth);
-
-#ifdef NOTDEF
-    int		iline;		/* first line of tile to use */
-				/* next three parameters are post-clip */
-    int n;			/* number of spans to fill */
-    register DDXPointPtr ppt;	/* pointer to list of start points */
-    register int *pwidth;	/* pointer to list of n widths */
-    int		*addrlBase;	/* pointer to start of bitmap */
-    int		 nlwidth;	/* width in longwords of bitmap */
-    register int *pdst;		/* pointer to current word in bitmap */
-    register int *psrc;		/* pointer to current word in tile */
-    register int nlMiddle;
-    register int startmask;
-    PixmapPtr	pTile;		/* pointer to tile we want to fill with */
-    int		w, width, x, tmpSrc, srcStartOver, nstart, nend;
-    int		xSrc, ySrc;
-    int 	endmask, tlwidth, rem, tileWidth, *psrcT, rop;
-    int		tileHeight;
-    int *pwidthFree;		/* copies of the pointers to free */
-    DDXPointPtr pptFree;
-
-    if (!(pGC->planemask))
-	return;
-
-    n = nInit * miFindMaxBand(((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip);
-    pwidthFree = (int *)ALLOCATE_LOCAL(n * sizeof(int));
-    pptFree = (DDXPointRec *)ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
-    if(!pptFree || !pwidthFree)
-    {
-	if (pptFree) DEALLOCATE_LOCAL(pptFree);
-	if (pwidthFree) DEALLOCATE_LOCAL(pwidthFree);
-	return;
-    }
-    pwidth = pwidthFree;
-    ppt = pptFree;
-    n = miClipSpans(((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip,
-		     pptInit, pwidthInit, nInit, 
-		     ppt, pwidth, fSorted);
-
-    if (pGC->fillStyle == FillTiled)
-    {
-	pTile = pGC->tile.pixmap;
-	tlwidth = pTile->devKind >> 2;
-	rop = pGC->alu;
-    }
-    else
-    {
-	pTile = pGC->stipple;
-	tlwidth = pTile->devKind >> 2;
-	rop = pGC->alu;
-    }
-
-    xSrc = pDrawable->x;
-    ySrc = pDrawable->y;
-
-    if (pDrawable->type == DRAWABLE_WINDOW)
-    {
-	addrlBase = (int *)
-		(((PixmapPtr)(pDrawable->pScreen->devPrivate))->devPrivate.ptr);
-	nlwidth = (int)
-		  (((PixmapPtr)(pDrawable->pScreen->devPrivate))->devKind) >> 2;
-    }
-    else
-    {
-	addrlBase = (int *)(((PixmapPtr)pDrawable)->devPrivate.ptr);
-	nlwidth = (int)(((PixmapPtr)pDrawable)->devKind) >> 2;
-    }
-
-    tileWidth = pTile->drawable.width;
-    tileHeight = pTile->drawable.height;
-
-    /* this replaces rotating the tile. Instead we just adjust the offset
-     * at which we start grabbing bits from the tile.
-     * Ensure that ppt->x - xSrc >= 0 and ppt->y - ySrc >= 0,
-     * so that iline and xrem always stay within the tile bounds.
-     */
-    xSrc += (pGC->patOrg.x % tileWidth) - tileWidth;
-    ySrc += (pGC->patOrg.y % tileHeight) - tileHeight;
-
-    while (n--)
-    {
-	iline = (ppt->y - ySrc) % tileHeight;
-        pdst = addrlBase + (ppt->y * nlwidth) + (ppt->x >> PWSH);
-        psrcT = (int *) pTile->devPrivate.ptr + (iline * tlwidth);
-	x = ppt->x;
-
-	if (*pwidth)
-	{
-	    width = *pwidth;
-	    while(width > 0)
-	    {
-		rem = (x - xSrc) % tileWidth;
-		psrc = psrcT + rem / PPW;
-	        w = min(tileWidth, width);
-		w = min(w,tileWidth-rem);
-#ifdef notdef
-		if((rem = x % tileWidth) != 0)
-		{
-		    w = min(min(tileWidth - rem, width), PPW);
-		    /* we want to grab from the end of the tile.  Figure
-		     * out where that is.  In general, the start of the last
-		     * word of data on this scanline is tlwidth -1 words 
-		     * away. But if we want to grab more bits than we'll
-		     * find on that line, we have to back up 1 word further.
-		     * On the other hand, if the whole tile fits in 1 word,
-		     * let's skip the work */ 
-		    endinc = tlwidth - 1 - (tileWidth-rem) / PPW;
-
-		    if(endinc)
-		    {
-			if((rem & PIM) + w > tileWidth % PPW)
-			    endinc--;
-		    }
-
-		    getbits(psrc + endinc, rem & PIM, w, tmpSrc);
-		    putbitsrop(tmpSrc, (x & PIM), w, pdst, 
-			pGC->planemask, rop);
-		    if((x & PIM) + w >= PPW)
-			pdst++;
-		}
-		else
-#endif /* notdef */
-		if(((x & PIM) + w) <= PPW)
-		{
-		    getbits(psrc, (rem & PIM), w, tmpSrc);
-		    putbitsrop(tmpSrc, x & PIM, w, pdst, 
-			pGC->planemask, rop);
-		    if ((x & PIM) + w == PPW) ++pdst;
-		}
-		else
-		{
-		    maskbits(x, w, startmask, endmask, nlMiddle);
-
-	            if (startmask)
-		        nstart = PPW - (x & PIM);
-	            else
-		        nstart = 0;
-	            if (endmask)
-	                nend = (x + w)  & PIM;
-	            else
-		        nend = 0;
-
-	            srcStartOver = nstart + (rem & PIM) > PLST;
-
-		    if(startmask)
-		    {
-			getbits(psrc, rem & PIM, nstart, tmpSrc);
-			putbitsrop(tmpSrc, x & PIM, nstart, pdst, 
-			    pGC->planemask, rop);
-			pdst++;
-			if(srcStartOver)
-			    psrc++;
-		    }
-		    nstart = (nstart + rem) & PIM;
-		    while(nlMiddle--)
-		    {
-			    getbits(psrc, nstart, PPW, tmpSrc);
-			    putbitsrop( tmpSrc, 0, PPW,
-				pdst, pGC->planemask, rop );
-			    pdst++;
-			    psrc++;
-		    }
-		    if(endmask)
-		    {
-			getbits(psrc, nstart, nend, tmpSrc);
-			putbitsrop(tmpSrc, 0, nend, pdst, 
-			    pGC->planemask, rop);
-		    }
-		 }
-		 x += w;
-		 width -= w;
-	    }
-	}
-	ppt++;
-	pwidth++;
-    }
-    DEALLOCATE_LOCAL(pptFree);
-    DEALLOCATE_LOCAL(pwidthFree);
-#endif
 }
 
 #if PPW == 4
@@ -634,8 +455,8 @@ int fSorted;
      * so that iline and xrem always stay within the stipple bounds.
      */
 
-    xSrc += (pGC->patOrg.x % stippleWidth) - stippleWidth;
-    ySrc += (pGC->patOrg.y % stippleHeight) - stippleHeight;
+    xSrc += modulus (pGC->patOrg.x, stippleWidth) - stippleWidth;
+    ySrc += modulus (pGC->patOrg.y, stippleHeight) - stippleHeight;
 
     bitsWhole = stippleWidth;
 
@@ -840,8 +661,8 @@ int fSorted;
      * Ensure that ppt->x - xSrc >= 0 and ppt->y - ySrc >= 0,
      * so that iline and xrem always stay within the stipple bounds.
      */
-    xSrc += (pGC->patOrg.x % stippleWidth) - stippleWidth;
-    ySrc += (pGC->patOrg.y % stippleHeight) - stippleHeight;
+    xSrc += modulus (pGC->patOrg.x, stippleWidth) - stippleWidth;
+    ySrc += modulus (pGC->patOrg.y, stippleHeight) - stippleHeight;
 
     while (n--)
     {
