@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.150 93/09/04 19:00:11 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.151 93/09/04 20:35:43 rws Exp $
 #define DoNormalLib NormalLibX
 #define DoSharedLib SharedLibX
 #define DoDebugLib DebugLibX
@@ -274,8 +274,8 @@ OBJS1 = \
 	FillArc.o \
 	FillArcs.o \
 	FillPoly.o \
-	FillRect.o \
-	FillRects.o \
+	FillRct.o \
+	FillRcts.o \
 	Flush.o \
 	Font.o \
 	FontNames.o \
