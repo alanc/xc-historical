@@ -38,7 +38,6 @@ BorderWidth 2			# width of top level windows created by twm
 NoGrabServer			# don't grab server during menus, etc.
 NoRaiseOnMove			# allow moving under other windows
 NoRaiseOnResize			# allow resizing under other windows
-NoTitleFocus			# use XSendEvent instead of XSetFocus in title
 DecorateTransients		# put titlebars on transients
 TitleFont "-adobe-helvetica-bold-r-normal--*-120-*-*-*-*-*-*"
 MenuFont "-adobe-helvetica-bold-r-normal--*-120-*-*-*-*-*-*"
