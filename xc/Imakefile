@@ -65,8 +65,9 @@ $(IMAKE):
 	cd $(IMAKESRC); $(MAKE)
 
 # don't name your log file make.log when you run this ...
-World:
-	$(MAKE) Makefile
+World: $(IMAKE)
+	-$(MV) Makefile Makefile.bak
+	$(MAKE) -f Makefile.bak Makefile
 	$(MAKE) Makefiles
 	$(MAKE) clean
 	$(MAKE) depend
