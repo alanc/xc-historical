@@ -1,4 +1,4 @@
-/* $Header$ */
+/* $Header: cursorstr.h,v 1.1 87/09/11 07:49:40 rws Locked $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -51,7 +51,7 @@ typedef struct _CursorMetric {
     int width, height, xhot, yhot;
 } CursorMetricRec;
 
-extern void		FreeCursor();
+extern int		FreeCursor();
 extern CursorPtr	AllocCursor();		/* also realizes it */
 				/* created from default cursor font */
 extern CursorPtr	CreateRootCursor();

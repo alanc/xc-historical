@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: gc.h,v 1.45 87/09/11 07:49:43 toddb Exp $ */
+/* $Header: gc.h,v 1.46 87/12/31 17:24:45 rws Locked $ */
 
 #ifndef GC_H
 #define GC_H 
@@ -58,7 +58,7 @@ extern void  ValidateGC();
 extern int ChangeGC();
 extern GCPtr CreateGC();
 extern void CopyGC();
-extern void FreeGC();
+extern int FreeGC();
 extern void SetGCMask();
 extern GCPtr GetScratchGC();
 extern void  FreeScratchGC();

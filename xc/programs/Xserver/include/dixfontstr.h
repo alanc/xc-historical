@@ -1,4 +1,4 @@
-/* $Header$ */
+/* $Header: dixfontstr.h,v 1.1 87/09/11 07:50:43 rws Locked $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -57,7 +57,7 @@ typedef struct _Font {
  */
 extern FontPtr	OpenFont();
 extern Bool	SetDefaultFont();
-extern void	CloseFont();
+extern int	CloseFont();
 extern FontPtr	ReadNFont();
 extern Bool	DescribeFont();
 extern void	ServerBitmapFromGlyph();
