@@ -1,7 +1,6 @@
-/* $XConsortium: io.c,v 1.5 91/06/21 18:19:12 keith Exp $ */
+/* $XConsortium: io.c,v 1.6 92/01/31 17:46:55 eswu Exp $ */
 /*
  * i/o functions
- *
  */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
@@ -24,9 +23,6 @@
  * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
  * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
- *
- * @(#)io.c	4.2	5/3/91
- *
  */
 
 #include	<stdio.h>
@@ -489,15 +485,19 @@ FlushAllOutput()
 	}
     }
 }
-
-WriteToClient(client, count, buf)
+   
+/*
+ * returns number of bytes written
+ */
+static int
+write_to_client_internal(client, count, buf, padBytes)
     ClientPtr   client;
     int         count;
     char       *buf;
+    int         padBytes;
 {
     OsCommPtr   oc = (OsCommPtr) client->osPrivate;
     ConnectionOutputPtr oco = oc->output;
-    int         padBytes;
 
     if (!count)
 	return 0;
@@ -512,8 +512,6 @@ WriteToClient(client, count, buf)
 	}
 	oc->output = oco;
     }
-    padBytes = padlength[count & 3];
-
     if (oco->count + count + padBytes > oco->size) {
 	BITCLEAR(OutputPending, oc->fd);
 	NewOutputPending = FALSE;
@@ -525,6 +523,22 @@ WriteToClient(client, count, buf)
     oco->count += count + padBytes;
 
     return count;
+}
+
+WriteToClientUnpadded(client, count, buf)
+    ClientPtr   client;
+    int         count;
+    char       *buf;
+{
+    write_to_client_internal(client, count, buf, 0);
+}
+
+WriteToClient(client, count, buf)
+    ClientPtr   client;
+    int         count;
+    char       *buf;
+{
+     write_to_client_internal(client, count, buf, padlength[count & 3]);
 }
 
 static      ConnectionInputPtr
