@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.135 91/09/22 10:27:51 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.136 91/11/04 16:48:19 keith Exp $
 /*
  * Server Master Makefile
  */
@@ -43,14 +43,18 @@ XCOMM $XConsortium: Imakefile,v 1.135 91/09/22 10:27:51 rws Exp $
              OS = os/libos.a $(XAULIB) $(XDMCPLIB)
         BSDEMUL = $(LIBSRC)/Berk/Berklib.o
             MFB = ddx/mfb/libmfb.a
-            CFB = ddx/cfb/libcfb.a
+            CFB = ddx/cfb.new/libcfb.a ddx/cfb16/libcfb.a ddx/cfb32/libcfb.a
              MI = ddx/mi/libmi.a
             DIX = dix/libdix.a
            FONT = $(FONTSRC)/lib/font/libfont.a
 #if SystemV4 && X386Server
         SYSLIBS = -lm /usr/ucblib/libucb.a
 #else
+#if XirisServer
+        SYSLIBS = -lm
+#else
         SYSLIBS = -lm -ldbm
+#endif
 #endif
            CBRT = ddx/mi/cbrt.o
 
@@ -131,6 +135,10 @@ ALL1 = X386
 
 #if XnonServer
 ALL2 = Xnon
+#endif
+
+#if XirisServer
+ALL1 = Xiris
 #endif
 
 /* end ALL definitions */
@@ -348,6 +356,32 @@ INSTPGMFLAGS = $(INSTUIDFLAGS)     /* server must be suid root  */
 ServerTarget(X386,$(X386DIRS),$(X386OBJS),$(X386LIBS),$(SYSLIBS))
 #endif /* X386Server */
 
+
+#if XirisServer
+XCOMM
+XCOMM SGI Iris Server
+XCOMM
+SGIDIRS = ddx/sgi/IRIX ddx/sgi/common ddx/sgi/gr1 ddx/sgi/nfb ddx/sgi/rrm \
+	ddx/sgi/sgi
+SUBDIRS0 = CFBSubdirs $(SGIDIRS)
+IRISDIRS = $(SUBDIRS0) $(DEPDIRS)
+IRISOBJS = ddx/sgi/sgi/sgiScreens.o ddx/sgi/IRIX/irixKernInit.o \
+	   ddx/mi/miinitext.o
+IRISLIBS = 	$(DIX) $(OS) \
+		ddx/sgi/common/libcomm.a \
+		ddx/sgi/sgi/libsgi.a \
+		ddx/sgi/IRIX/libirix.a \
+		ddx/sgi/gr1/re1/libre1.a \
+	   	ddx/sgi/gr1/re2/libre2.a \
+		ddx/sgi/IRIX/libirix.a \
+	   	ddx/sgi/gr1/libgr1.a \
+	   	ddx/sgi/rrm/librrm.a \
+		ddx/sgi/nfb/libnfb.a \
+		$(CFB) $(MFB) $(MI) $(FONT) $(EXTENSIONS)
+IRISSYSLIBS = $(SYSLIBS)
+ 
+ServerTarget(Xiris,$(IRISDIRS),$(IRISOBJS),$(IRISLIBS),$(IRISSYSLIBS))
+#endif
 
 #if XnonServer
 XCOMM
