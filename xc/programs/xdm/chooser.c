@@ -1,5 +1,5 @@
 /*
- * $XConsortium: chooser.c,v 1.9 91/07/18 19:01:35 rws Exp $
+ * $XConsortium: chooser.c,v 1.10 91/08/25 10:49:47 keith Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -256,7 +256,7 @@ AddHostname (hostname, status, addr, willing)
 	    	    struct hostent  *hostent;
 		    char	    *host;
     	
-	    	    hostent = gethostbyaddr (hostAddr.data, hostAddr.length, AF_INET);
+	    	    hostent = gethostbyaddr ((char *)hostAddr.data, hostAddr.length, AF_INET);
 	    	    if (hostent)
 	    	    {
 			XdmcpDisposeARRAY8 (hostname);
