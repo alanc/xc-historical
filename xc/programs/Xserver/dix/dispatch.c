@@ -1,4 +1,4 @@
-/* $Header: dispatch.c,v 1.34 88/01/24 16:45:33 rws Exp $ */
+/* $Header: dispatch.c,v 1.34 88/01/24 17:23:52 rws Locked $ */
 /************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -1706,14 +1706,14 @@ ProcPutImage(client)
     if (stuff->format == XYBitmap)
     {
         if ((stuff->depth != 1) ||
-	    (stuff->leftPad >= screenInfo.bitmapScanlineUnit))
+	    (stuff->leftPad >= screenInfo.bitmapScanlinePad))
             return BadMatch;
         length = PixmapBytePad(stuff->width + stuff->leftPad, 1);
     }
     else if (stuff->format == XYPixmap)
     {
         if ((pDraw->depth != stuff->depth) || 
-	    (stuff->leftPad >= screenInfo.bitmapScanlineUnit))
+	    (stuff->leftPad >= screenInfo.bitmapScanlinePad))
             return BadMatch;
         length = PixmapBytePad(stuff->width + stuff->leftPad, 1);
 	length *= stuff->depth;
