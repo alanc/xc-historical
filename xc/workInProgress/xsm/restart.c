@@ -1,4 +1,4 @@
-/* $XConsortium: restart.c,v 1.7 94/07/08 14:06:16 mor Exp $ */
+/* $XConsortium: restart.c,v 1.8 94/07/13 10:40:03 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -35,8 +35,11 @@ extern List *PendingList;
 extern void remote_start ();
 
 
-void
-RestartEverything()
+Status
+Restart (flag)
+
+int flag;
+
 {
     List *cl;
     List *pl;
@@ -59,6 +62,8 @@ RestartEverything()
     char	*session_env, *non_local_session_env;
     char	*audio_env;
     int		remote_allowed = 1;
+    Bool	is_manager;
+    Bool	ran_manager = 0;
 
     display_env = NULL;
     if(p = (char *) getenv(envDISPLAY)) {
@@ -156,6 +161,8 @@ RestartEverything()
 	program=NULL;
 	args=NULL;
 
+	is_manager = 0;
+
 	for(pl = ListFirst(c->props); pl; pl = ListNext(pl)) {
 	    prop = (PendingProp *)pl->thing;
 	    if(!strcmp(prop->name, "Program")) {
@@ -164,6 +171,8 @@ RestartEverything()
 	    } else if(!strcmp(prop->name, "CurrentDirectory")) {
 		vl = ListFirst(prop->values);
 		if(vl) cwd = ((PendingValue *)vl->thing)->value;
+	    } else if(!strcmp(prop->name, "_XC_IsManager")) {
+		is_manager = 1;
 	    } else if(!strcmp(prop->name, "RestartCommand")) {
 		cnt = ListCount(prop->values);
 		args = (char **)malloc((cnt+1) * sizeof(char *));
@@ -192,6 +201,17 @@ RestartEverything()
 	}
 
 	if(program && args) {
+	    if ((flag == RESTART_MANAGERS && !is_manager) ||
+	        (flag == RESTART_REST_OF_CLIENTS && is_manager))
+	    {
+		if(args) free((char *)args);
+		if(env) free((char *)env);
+		continue;
+	    }
+
+	    if (flag == RESTART_MANAGERS && is_manager)
+		ran_manager = 1;
+
 	    if (verbose) {
 		printf("\t%s\n", program);
 		printf("\t");
@@ -247,6 +267,11 @@ RestartEverything()
     if(non_local_display_env) free(non_local_display_env);
     if(non_local_session_env) free(non_local_session_env);
     if(audio_env) free(audio_env);
+
+    if (flag == RESTART_MANAGERS && !ran_manager)
+	return (0);
+    else
+	return (1);
 }
 
 
