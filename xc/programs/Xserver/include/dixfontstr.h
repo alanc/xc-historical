@@ -1,4 +1,4 @@
-/* $XConsortium: dixfontstr.h,v 1.11 93/07/12 09:44:44 dpw Exp $ */
+/* $XConsortium: dixfontstr.h,v 1.12 94/01/11 20:54:44 rob Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -29,7 +29,6 @@ SOFTWARE.
 #include "servermd.h"
 #include "dixfont.h"
 #include "fontstruct.h"
-#include "misc.h"
 #include "closure.h"
 #define NEED_REPLIES
 #include "X11/Xproto.h" /* for xQueryFontReply */
