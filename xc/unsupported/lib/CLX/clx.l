@@ -872,7 +872,7 @@
 		(setq mask (logior mask (ash 1 bit)))))))))
 
 (defun decode-mask (key-vector mask)
-  (declare (type vector key-vector)
+  (declare (type (simple-vector keyword (*)) key-vector)
 	   (type mask32 mask))
   (declare-values list)
   (do ((m mask (ash m -1))
@@ -880,6 +880,9 @@
        (len (length key-vector))
        (result nil))       
       ((or (zerop m) (>= bit len)) result)
+    (declare (type mask32 m)
+	     (fixnum bit len)
+	     (list result))
     (when (oddp m)
       (push (aref key-vector bit) result))))
 
