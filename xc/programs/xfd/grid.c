@@ -1,5 +1,5 @@
 /*
- * $XConsortium: fontgrid.c,v 1.17 89/12/10 17:10:31 rws Exp $
+ * $XConsortium: fontgrid.c,v 1.18 89/12/18 10:59:40 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -37,7 +37,7 @@
 static void ClassInitialize(), Initialize(), Realize(), Redisplay(), Notify();
 static void Destroy(), Resize(), paint_grid();
 static Boolean SetValues();
-
+static char stupidString[] = {'-','1'}; /* workaround scanf bug */
 
 static XtResource resources[] = {
 #define offset(field) XtOffset(FontGridWidget, fontgrid.field)
@@ -52,7 +52,7 @@ static XtResource resources[] = {
     { XtNcellHeight, XtCCellHeight, XtRInt, sizeof(int),
 	offset(cell_height), XtRString, (caddr_t) "0" },
     { XtNstartChar, XtCStartChar, XtRLong, sizeof(long),
-	offset(start_char), XtRString, (caddr_t) "-1" },
+	offset(start_char), XtRString, (caddr_t) stupidString },
     { XtNforeground, XtCForeground, XtRPixel, sizeof(Pixel),
 	offset(foreground_pixel), XtRString, (caddr_t) "XtDefaultForeground" },
     { XtNcenterChars, XtCCenterChars, XtRBoolean, sizeof(Boolean),
