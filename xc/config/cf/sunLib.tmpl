@@ -1,4 +1,4 @@
-XCOMM $XConsortium: sunLib.tmpl,v 1.25 93/09/04 16:01:53 rws Exp $
+XCOMM $XConsortium: sunLib.tmpl,v 1.26 93/09/04 23:14:41 rws Exp $
 
 /*
  * SunOS shared library template
@@ -17,11 +17,7 @@ XCOMM $XConsortium: sunLib.tmpl,v 1.25 93/09/04 16:01:53 rws Exp $
 #define SharedXmuRev 4.10
 #endif
 #if SunPost411FCSLd
-#if NormalLibXmu
-#define SharedXmuReqs -L../$(BUILDLIBDIR) $(XTOOLLIB) $(XLIB)
-#else
-#define SharedXmuReqs -L$(BUILDLIBDIR) $(XTOOLLIB) $(XLIB)
-#endif
+#define SharedXmuReqs $(LDPRELIB) $(XTOOLLIB) $(XLIB)
 #endif
 #ifndef SharedXextRev
 #define SharedXextRev 4.10
