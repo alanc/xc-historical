@@ -1,10 +1,9 @@
-.\" $Header: ico.man,v 1.2 88/02/04 14:24:04 jim Locked $
-.TH ICO "11 January 1988" "X Version 11"
+.TH ICO "1 March 1988" "X Version 11"
 .UC 4
 .SH NAME
 ico \- animate an icosahedron or other polyhedron
 .SH SYNOPSIS
-.B Ico
+.B ico
 [-display host:dpy] [-geometry geom]
 [-r] [-d pattern] [-i] [-dbl] [-faces] [-noedges]
 [-sleep n] [-obj object] [-objhelp] [-colors color-list]

@@ -1,12 +1,11 @@
-.TH XWININFO 1 "1 July 1987" "X Version 11"
+.TH XWININFO 1 "1 March 1988" "X Version 11"
 .SH NAME
 xwininfo - X Window System window information summarizer.
 .SH SYNOPSIS
 .B "xwininfo"
-[ -help ] [ -id \fIid\fP ] [ -root ] [ -name \fIname\fP ] [ -int ]
-[ -tree ] [ -stats ]
-[ -bits ] [ -events ] [ -size ] [ -wm  ] [ -all ]
-[ -display \fIhost\fP:\fIdisplay\fP ]
+[-help] [-id \fIid\fP] [-root] [-name \fIname\fP] [-int]
+[-tree] [-stats] [-bits] [-events] [-size] [-wm ] [-all]
+[-display \fIhost\fP:\fIdisplay\fP]
 .SH DESCRIPTION
 .PP
 .I Xwininfo
@@ -24,7 +23,7 @@ which window is desired by name.
 There is also a special \fB-root\fP argument to quickly obtain information
 on X's root window.
 .PP
-  The following is a sample summary taken with
+The following is a sample summary taken with
 no arguments specified:
 
 xwininfo ==> Please select the window you wish
@@ -136,7 +135,8 @@ To get default host and display number.
 .SH SEE ALSO
 X(1)
 .SH AUTHOR
-Mark Lillibridge, MIT Project Athena
-.br
 Copyright 1987, 1988, Massachusetts Institute of Technology.
+.br
+Mark Lillibridge, MIT Project Athena
+
 

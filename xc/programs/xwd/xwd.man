@@ -1,24 +1,22 @@
-.TH XWD 1 "21 November 1986" "X Version 10"
+.TH XWD 1 "1 March 1988" "X Version 11"
 .SH NAME
 xwd - X Window System, window image dumper.
 .SH SYNOPSIS
 .B "xwd"
-[ -debug ] [ -help ] [ -nobdrs ] [ -out \fIfile\fP ] [ -xy ]
-[ \fIhost\fP:\fIdisplay\fP ]
+[-debug] [-help] [-nobdrs] [-out \fIfile\fP] [-xy]
+[-display \fIhost\fP:\fIdisplay\fP]
 .SH DESCRIPTION
 .PP
 .I Xwd
-is an X Window System (protocol version 10) window image dumping utility.
+is an X Window System window image dumping utility.
 .I Xwd
 allows X users to store window images in a specially formated window dump
 file.  This file can then be read by various other X utilities for
 redisplay, printing, editing, formatting, archiving, image processing etc..
 The target window is selected by clicking the mouse in the desired window.
 The keyboard bell is rung once at the beginning of the dump and twice when
-the dump is completed.  The window dump file format is currently under
-development; no guarantee of upward compatibility is made: the dump file
-format will be completely different under V11.
-.SH ARGUMENT SUMMARY
+the dump is completed.
+.SH OPTIONS
 .PP
 .TP 8
 .B "-help"
@@ -43,9 +41,9 @@ instead of the default `Z' format. Monochrome displays are always dumped in
 `XY' format.
 .PP
 .TP 8
-.B "\fIhost\fP:\fIdisplay\fP"
+.B "-display \fIhost\fP:\fIdisplay\fP"
 This  argument  allow  you  to  specify the host and display number on
-which to find the target window.  For example `xwd orpheus:1'
+which to find the target window.  For example `xwd -display orpheus:1'
 would specify that the target window is on display `1' on the machine
 `orpheus'.  By default,
 .I xwd
@@ -64,9 +62,8 @@ X Window Dump File format definition file.
 .SH SEE ALSO
 xwud(1), xpr(1), xdpr(1), X(1)
 .SH AUTHOR
-.PP
 Copyright 1985, 1986, Massachusetts Institute of Technology.
-.PP
+.br
 Tony Della Fera, Digital Equipment Corp., MIT Project Athena
-.PP
+.br
 William F. Wyatt, Smithsonian Astrophysical Observatory
