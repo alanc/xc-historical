@@ -100,4 +100,4 @@ Everything::
 
 /**/# this is used to make sure the distribution is okay.
 checkfilenames::  $(CHECKFN)/checkfn
-	find . -type d -exec $(CHECKFN)/find.sh $(CHECKFN)/checkfn {} \;
+	@find . -type d -exec $(CHECKFN)/find.sh $(CHECKFN)/checkfn {} \;
