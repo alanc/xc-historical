@@ -1,4 +1,4 @@
-/* $XConsortium: TMaction.c,v 1.7 91/02/08 17:17:52 converse Exp $ */
+/* $XConsortium: TMaction.c,v 1.8 91/02/18 22:15:36 converse Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -57,27 +57,33 @@ static CompiledActionTable CompileActionTable(actions, count, stat, perm)
     Boolean stat;	/* if False, copy before compiling in place */
     Boolean perm;	/* if False, use XrmStringToQuark */
 {
-    CompiledActionTable cActions = (CompiledActionTable)actions;
+    register CompiledActionTable cActions;
     register int i;
     CompiledAction hold;
+    CompiledActionTable cTableHold;
+    XrmQuark (*func)();
 
     if (!count)
 	return (CompiledActionTable) NULL;
+    func = (perm ? XrmPermStringToQuark : XrmStringToQuark);
 
     if (! stat) {
-	cActions = (CompiledActionTable) XtMalloc(count * 
-						  sizeof(CompiledAction));
-	for (i=0; i < count; i++)
-	    cActions[i].proc = actions[i].proc;
-    }
+	cTableHold = cActions = (CompiledActionTable)
+	    XtMalloc(count * sizeof(CompiledAction));
 
-    if (perm)
-	for (i=0; i<count; i++)
-	    cActions[i].signature = XrmPermStringToQuark(actions[i].string);
-    else
-	for (i=0; i<count; i++)
-	    cActions[i].signature = XrmStringToQuark(actions[i].string);
-    
+	for (i=count; --i >= 0; cActions++, actions++) {
+	    cActions->proc = actions->proc;
+	    cActions->signature = (*func)(actions->string);
+	}
+    } else {
+	cTableHold = (CompiledActionTable) actions;
+
+	for (i=count; --i >= 0; actions++)
+	    ((CompiledActionTable) actions)->signature = 
+		(*func)(actions->string);
+    }
+    cActions = cTableHold;
+
     /* Insertion sort.  Whatever sort is used, it must be stable. */
     for (i=1; i < count - 1; i++) {
 	register int j;
