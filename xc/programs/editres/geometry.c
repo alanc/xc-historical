@@ -1,5 +1,5 @@
 /*
- * $XConsortium: geometry.c,v 1.2 90/03/14 17:20:47 kit Exp $
+ * $XConsortium: geometry.c,v 1.3 90/03/15 17:44:09 kit Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -442,7 +442,7 @@ TreeInfo * tree_info;
 	return;
 
     wait = half_flash = global_resources.flash_time/2;
-    for (i = 0; i < global_resources.num_flashes; i++) {
+    for (i = 1; i < global_resources.num_flashes; i++) {
 	XtAppAddTimeOut(ac, wait, FlashWidgetsOff,(XtPointer)tree_info);
 	wait += half_flash;
 	XtAppAddTimeOut(ac, wait, FlashWidgetsOn,(XtPointer)tree_info);
@@ -514,7 +514,16 @@ XtIntervalId * id;
 {
     int i;
     TreeInfo * tree_info = (TreeInfo *) info_ptr;
+
+/*
+ * Unmap 'em first for consistency.
+ */
     
+    for (i = 0; i < tree_info->num_flash_widgets; i++)
+	XtUnmapWidget(tree_info->flash_widgets[i]);
+
+    XFlush(XtDisplay(tree_info->tree_widget));
+
     for (i = 0; i < tree_info->num_flash_widgets; i++) 
 	XtDestroyWidget(tree_info->flash_widgets[i]);
 
