@@ -1,4 +1,4 @@
-.TH RESIZE 1 "1 Nov 1986" "X Version 10"
+.TH RESIZE 1 "26 October 1988" "X Version 11"
 .SH NAME
 resize - utility to set TERMCAP and terminal settings to current window size
 .SH SYNOPSIS
