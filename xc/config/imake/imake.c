@@ -14,7 +14,7 @@
  * this software for any purpose.  It is provided "as is"
  * without express or implied warranty.
  * 
- * $Header: imake.c,v 1.14 87/08/08 17:10:22 toddb Locked $
+ * $Header: imake.c,v 1.15 87/08/20 12:33:55 toddb Locked $
  * $Locker: toddb $
  *
  * Author:
@@ -463,7 +463,7 @@ char *CleanCppInput(Imakefile)
 	if ((infd = open(Imakefile, O_RDONLY)) < 0)
 		LogFatal("Cannot open %s for input.", Imakefile);
 	fstat(infd, &st);
-	buf = Emalloc(st.st_size);
+	buf = Emalloc(st.st_size+1);
 	if ((got = read(infd, buf, st.st_size)) != st.st_size)
 		LogFatal("Cannot read all of %s: want %d, got %d\n",
 			Imakefile, st.st_size, got);
