@@ -1,5 +1,5 @@
 #ifndef lint
-static char *rcsid_xinit_c = "$XConsortium: xinit.c,v 11.28 88/09/20 20:47:56 jim Exp $";
+static char *rcsid_xinit_c = "$XConsortium: xinit.c,v 11.29 88/09/27 10:59:53 jim Exp $";
 #endif /* lint */
 #include <X11/copyright.h>
 
@@ -126,6 +126,7 @@ register char **argv;
 	register char **cptr = client;
 	register char **ptr;
 	int pid, i;
+	int client_given = 0, server_given = 0;
 	int client_args_given = 0, server_args_given = 0;
 	int start_of_client_args, start_of_server_args;
 
@@ -168,6 +169,8 @@ register char **argv;
 		if ( getenv("WINDOW_PARENT") == NULL )
 		    *cptr++ = "-C";
 #endif /* sun */
+	} else {
+		client_given = 1;
 	}
 	start_of_client_args = (cptr - client);
 	while (argc && strcmp(*argv, "--")) {
@@ -188,6 +191,7 @@ register char **argv;
 	    (**argv != '/' && **argv != '.' && !isalpha(**argv))) {
 		*sptr++ = default_server;
 	} else {
+		server_given = 1;
 		*sptr++ = *argv++;
 		argc--;
 	}
@@ -210,7 +214,7 @@ register char **argv;
 	 * if no client arguments given, check for a startup file and copy
 	 * that into the argument list
 	 */
-	{
+	if (!client_given) {
 	    char *cp;
 	    Bool required = False;
 
@@ -245,7 +249,7 @@ register char **argv;
 	 * if no server arguments given, check for a startup file and copy
 	 * that into the argument list
 	 */
-	{
+	if (!server_given) {
 	    char *cp;
 	    Bool required = False;
 
