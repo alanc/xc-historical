@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: window.c,v 1.174 87/11/05 11:24:29 rws Locked $ */
+/* $Header: window.c,v 1.175 87/11/05 11:47:32 rws Locked $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -814,7 +814,7 @@ ChangeWindowAttributes(pWin, vmask, vlist, client)
 		if (pWin->parent == (WindowPtr) NULL)
                     MakeRootTile(pWin);
                 else
-                    pWin->backgroundTile = (PixmapPtr)NULL;
+                    pWin->backgroundTile = (PixmapPtr)None;
 	    }
 	    else if (pixID == ParentRelative)
 	    {
