@@ -1,5 +1,5 @@
 /*
- * $XConsortium: renderers.c,v 1.2 91/10/10 13:02:11 rws Exp $
+ * $XConsortium: renderers.c,v 1.3 93/09/17 18:26:47 gildea Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -24,13 +24,6 @@
  */
 
 #include "fntfilst.h"
-
-FontFileRegisterFontFileFunctions ()
-{
-    BitmapRegisterFontFileFunctions ();
-    SpeedoRegisterFontFileFunctions ();
-    Type1RegisterFontFileFunctions();
-}
 
 static FontRenderersRec	renderers;
 
