@@ -1,5 +1,5 @@
 #if ( !defined(lint) && !defined(SABER))
-  static char Xrcs_id[] = "$XConsortium: List.c,v 1.12 89/02/14 14:19:17 kit Exp $";
+  static char Xrcs_id[] = "$XConsortium: List.c,v 1.13 89/04/18 13:48:02 kit Exp $";
   static char rcsid_module_c[] = "$oHeader: List.c,v 1.4 88/08/30 16:36:03 kit Exp $";
 #endif
 
@@ -433,6 +433,8 @@ GC gc;
  *	Arguments: w - the list widget.
  *                 item - the item to draw.
  *	Returns: none.
+ *
+ *      NOTE: no action taken on an unrealized widget.
  */
 
 PaintItemName(w, item)
@@ -443,6 +445,8 @@ int item;
     GC gc;
     int x, y, str_y;
     ListWidget lw = (ListWidget) w;
+
+    if (!XtIsRealized(w)) return; /* Just in case... */
    
     if (lw->list.vertical_cols) {
 	x = lw->list.col_width * (item / lw->list.nrows)
