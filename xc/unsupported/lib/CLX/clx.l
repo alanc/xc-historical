@@ -459,7 +459,7 @@
 						; for display-local keysyms
   (extension-alist nil :type list)		; extension alist, which has elements:
 						; (name major-opcode first-event first-error)
-  (event-extensions #() :type vector)		; Vector mapping X event-codes to event keys
+  (event-extensions '#() :type vector)		; Vector mapping X event-codes to event keys
   (performance-info)				; Hook for gathering performance info
   (trace-history)				; Hook for debug trace
   (plist)					; hook for extension to hang data
