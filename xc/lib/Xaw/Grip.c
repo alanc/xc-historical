@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Knob.c,v 1.3 87/09/13 13:14:45 swick Locked $";
+static char rcsid[] = "$Header: Knob.c,v 1.4 87/11/18 14:06:23 swick Locked $";
 #endif lint
 
 /*
@@ -29,38 +29,36 @@ static char rcsid[] = "$Header: Knob.c,v 1.3 87/09/13 13:14:45 swick Locked $";
  *
  * Author:   Jeanne M. Rich
  *           Digital Equipment Corporation
- *           Western Research Laboratory
+ *           Western Software Laboratory
  * Date:     Wednesday, September 9 1987
  *
  */
 
 
-#include "Xlib.h"
+#include <X11/Xlib.h>
 #include "cursorfont.h"
 #include "Intrinsic.h"
 #include "KnobP.h"
 #include "Knob.h"
 #include "Atoms.h"
 
-extern void ClassInitialize();
-
-static Resource resources[] = {
+static XtResource resources[] = {
    {XtNbackground, XtCBackground, XrmRPixel, sizeof(Pixel),
-      Offset(KnobWidget, core.background_pixel), XtRString, "Black"},
+      XtOffset(KnobWidget, core.background_pixel), XtRString, "Black"},
    {XtNborderWidth, XtCBorderWidth, XrmRInt, sizeof(int),
-      Offset(KnobWidget, core.border_width), XtRString, "0"}
+      XtOffset(KnobWidget, core.border_width), XtRString, "0"}
 };
 
 KnobClassRec knobClassRec = {
    {
 /* core class fields */
-    /* superclass         */  (WidgetClass) &widgetClassRec,
+    /* superclass         */   (WidgetClass) &widgetClassRec,
     /* class name         */   "Knob",
     /* size               */   sizeof(KnobRec),
-    /* class initialize   */   ClassInitialize,
+    /* class initialize   */   NULL,
     /* class_inited       */   FALSE,
     /* initialize         */   NULL,
-    /* realize            */   NULL,
+    /* realize            */   XtInheritRealize,
     /* actions            */   NULL,
     /* num_actions        */   0,
     /* resourses          */   resources,
@@ -73,28 +71,12 @@ KnobClassRec knobClassRec = {
     /* resize             */   NULL,
     /* expose             */   NULL,
     /* set_values         */   NULL,
-    /* accept_focus       */   NULL
+    /* accept_focus       */   NULL,
+    /* callback_private   */   NULL,
+    /* reserved_private   */   NULL,
    }, {
     /* mumble             */   0  /* make C compiler happy */
    }
 };
 
 WidgetClass knobWidgetClass = (WidgetClass) &knobClassRec;
-
-static void ClassInitialize()
-{
-
-   WidgetClass superclass;
-   KnobWidgetClass myclass;
-
-   myclass = (KnobWidgetClass) knobWidgetClass;
-   superclass = (WidgetClass) myclass->core_class.superclass;
-
-   /* Inherit initialize and realize from Core */
-   myclass->core_class.initialize = 
-      superclass->core_class.initialize;
-   myclass->core_class.realize =
-      superclass->core_class.realize;
-}
-
-
