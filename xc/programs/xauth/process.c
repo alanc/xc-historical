@@ -1,5 +1,5 @@
 /*
- * $XConsortium: process.c,v 1.13 88/12/12 12:57:35 jim Exp $
+ * $XConsortium: process.c,v 1.14 88/12/12 14:27:42 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -645,17 +645,17 @@ int auth_initialize (authfilename)
     hexvalues['e'] = hexvalues['E'] = 0xe;
     hexvalues['f'] = hexvalues['F'] = 0xf;
 
-    if (break_locks) {
-	if (verbose) {
-	    printf ("Attempting to break locks on authority file %s\n",
-		    authfilename);
-	}
-	XauUnlockAuth (authfilename);
+    if (break_locks && verbose) {
+	printf ("Attempting to break locks on authority file %s\n",
+		authfilename);
     }
 
-    if (!ignore_locks) {
+    if (ignore_locks) {
+	if (break_locks) XauUnlockAuth (authfilename);
+    } else {
 	n = XauLockAuth (authfilename, XAUTH_DEFAULT_RETRIES,
-			 XAUTH_DEFAULT_TIMEOUT, XAUTH_DEFAULT_DEADTIME);
+			 XAUTH_DEFAULT_TIMEOUT, 
+			 (break_locks ? 0L : XAUTH_DEFAULT_DEADTIME));
 	if (n != LOCK_SUCCESS) {
 	    char *reason = "unknown error";
 	    switch (n) {
