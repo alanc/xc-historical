@@ -84,39 +84,35 @@ WindowPtr pWindow;
 or otherwise.)
    cfbChangeWindowAttributes() has already put a copy of the pixmap
 in pPrivWin->pRotated*
-
-   HACK ALERT
-   the '> 4' is a messy hack, which ought to be cleaner
 */
 Bool cfbPositionWindow(pWin, x, y)
 WindowPtr pWin;
 int x, y;
 {
     cfbPrivWin *pPrivWin;
+    int setxy = 0;
 
     pPrivWin = (cfbPrivWin *)(pWin->devPrivate);
-    if (((unsigned)(pWin->backgroundTile) > 4 ) &&
+    if (IS_VALID_PIXMAP(pWin->backgroundTile) &&
 	(pPrivWin->fastBackground != 0))
     {
 	cfbXRotatePixmap(pPrivWin->pRotatedBackground,
 		      pWin->absCorner.x - pPrivWin->oldRotate.x);
 	cfbYRotatePixmap(pPrivWin->pRotatedBackground,
 		      pWin->absCorner.y - pPrivWin->oldRotate.y);
+	setxy = 1;
     }
 
-    if (((unsigned)(pWin->borderTile) > 4 ) &&
+    if (IS_VALID_PIXMAP(pWin->borderTile) &&
 	(pPrivWin->fastBorder != 0))
     {
 	cfbXRotatePixmap(pPrivWin->pRotatedBorder,
 		      pWin->absCorner.x - pPrivWin->oldRotate.x);
 	cfbYRotatePixmap(pPrivWin->pRotatedBorder,
 		      pWin->absCorner.y - pPrivWin->oldRotate.y);
+	setxy = 1;
     }
-    if ( (((unsigned)(pWin->borderTile) > 4) && 
-	  (pPrivWin->fastBorder != 0))
-	||
-	 (((unsigned)(pWin->backgroundTile) > 4) && 
-	  (pPrivWin->fastBackground != 0)))
+    if (setxy)
     {
 	pPrivWin->oldRotate.x = pWin->absCorner.x;
 	pPrivWin->oldRotate.y = pWin->absCorner.y;
@@ -226,17 +222,18 @@ cfbChangeWindowAttributes(pWin, mask)
 	    break;
 
 	  case CWBackPixmap:
-	      switch((int)pWin->backgroundTile)
+	      if (pWin->backgroundTile == (PixmapPtr)None)
 	      {
-		case None:
 		  pWin->PaintWindowBackground = cfbPaintAreaNone;
 		  pPrivWin->fastBackground = 0;
-		  break;
-		case ParentRelative:
+	      }
+	      else if (pWin->backgroundTile == (PixmapPtr)ParentRelative)
+	      {
 		  pWin->PaintWindowBackground = cfbPaintAreaPR;
 		  pPrivWin->fastBackground = 0;
-		  break;
-		default:
+	      }
+	      else
+	      {
 		  if(cfbPadPixmap(pWin->backgroundTile))
 		  {
 		      pPrivWin->fastBackground = 1;
