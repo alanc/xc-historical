@@ -1,5 +1,5 @@
 /*
-* $Header: GripP.h,v 1.3 87/12/17 16:43:12 swick Exp $
+* $Header: GripP.h,v 1.4 88/01/22 20:30:17 swick Locked $
 */
 
 /*
@@ -27,20 +27,19 @@
 /*
  *  GripP.h - Private definitions for Grip widget (Used by VPane Widget)
  *
- *  Author:       Jeanne M. Rich
- *                Digital Equipment Corporation
- *                Western Software Laboratory
- *  Date:         Wednesday September 9, 1987
  */
 
 #ifndef _XtGripP_h
 #define _XtGripP_h
 
-/*******************************************************************************
+#include <X/Grip.h>
+#include "SimpleP.h"
+
+/*****************************************************************************
  *
- * Grip Widget Private Date (Used by VPane Widget)
+ * Grip Widget Private Data
  *
- ******************************************************************************/
+ *****************************************************************************/
 
 /* New fields for the Grip widget class record */
 typedef struct {int empty;} GripClassPart;
@@ -48,6 +47,7 @@ typedef struct {int empty;} GripClassPart;
 /* Full Class record declaration */
 typedef struct _GripClassRec {
     CoreClassPart    core_class;
+    SimpleClassPart  simple_class;
     GripClassPart    grip_class;
 } GripClassRec;
 
@@ -66,6 +66,7 @@ typedef struct {
 
 typedef struct _GripRec {
    CorePart    core;
+   SimplePart  simple;
    GripPart    grip;
 } GripRec;
 
