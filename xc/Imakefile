@@ -63,3 +63,11 @@ Makefile:: $(IMAKE)
 $(IMAKE):
 	@echo "making $(IMAKESRC)"; \
 	cd $(IMAKESRC); $(MAKE)
+
+# don't name your log file make.log when you run this ...
+World:
+	$(MAKE) Makefile
+	$(MAKE) Makefiles
+	$(MAKE) clean
+	$(MAKE) depend
+	$(MAKE) -k
