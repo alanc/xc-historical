@@ -1,6 +1,6 @@
 #ifndef lint
 static char Xrcsid[] =
-    "$XConsortium: VarGet.c,v 1.3 89/11/10 17:42:00 swick Exp $";
+    "$XConsortium: VarGet.c,v 1.4 89/11/10 17:48:21 swick Exp $";
 #endif
 /*
 
@@ -21,10 +21,9 @@ without express or implied warranty.
 
 */
 
-#include <X11/Intrinsic.h>
 #include <X11/StringDefs.h>
+#include "IntrinsicI.h"
 #include "VarargsI.h"
-#include "ResourceI.h"
 
 #if IncludePrototypes
 void
