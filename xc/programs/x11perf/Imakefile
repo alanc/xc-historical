@@ -3,8 +3,7 @@
 #endif
 
         PERFLIB = X11perfcompLib
-        HELPERS = getlabel getavg fillblnk getrel getrate
-       PROGRAMS = x11perf x11perf_labels x11perfcomp $(HELPERS)
+       PROGRAMS = x11perf x11perf_labels x11perfcomp
         HEADERS = x11perf.h bitmaps.h
            SRCS = x11perf.c bitmaps.c do_tests.c \
 		  do_simple.c do_rects.c do_valgc.c \
@@ -24,23 +23,18 @@ LOCAL_LIBRARIES = $(XLIB)
 
 ComplexProgramTarget(x11perf)
 
-all:: x11perf_labels x11perfcomp $(HELPERS)
+all:: x11perf_labels x11perfcomp
 
 install:: $(PERFLIB)
 
 CppScriptTarget(x11perfcomp,x11pcomp.cpp,-DLIBPATH=$(PERFLIB),$(ICONFIGFILE))
-CppScriptTarget(getlabel,getlabel.cpp,NullParameter,NullParameter)
-CppScriptTarget(getavg,getavg.cpp,NullParameter,NullParameter)
-CppScriptTarget(fillblnk,fillblnk.cpp,NullParameter,NullParameter)
-CppScriptTarget(getrel,getrel.cpp,NullParameter,NullParameter)
-CppScriptTarget(getrate,getrate.cpp,NullParameter,NullParameter)
 
 InstallProgram(x11perfcomp,$(BINDIR))
-InstallProgram(getlabel,$(PERFLIB))
-InstallProgram(getavg,$(PERFLIB))
-InstallProgram(fillblnk,$(PERFLIB))
-InstallProgram(getrel,$(PERFLIB))
-InstallProgram(getrate,$(PERFLIB))
+InstallNamedProg(getlabel.sh,getlabel,$(PERFLIB))
+InstallNamedProg(getavg.sh,getavg,$(PERFLIB))
+InstallNamedProg(fillblnk.sh,fillblnk,$(PERFLIB))
+InstallNamedProg(getrel.sh,getrel,$(PERFLIB))
+InstallNamedProg(getrate.sh,getrate,$(PERFLIB))
 
 x11perf_labels: x11perf
 	./x11perf -labels > x11perf_labels
