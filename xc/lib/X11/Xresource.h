@@ -1,4 +1,4 @@
-/* $XConsortium: Xresource.h,v 1.14 89/06/14 14:22:10 jim Exp $ */
+/* $XConsortium: Xresource.h,v 1.15 89/07/20 09:51:24 jim Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -252,8 +252,8 @@ typedef enum {
     XrmoptionSepArg,    /* Value is next argument in argv		    */
     XrmoptionResArg,	/* Resource and value in next argument in argv      */
     XrmoptionSkipArg,   /* Ignore this option and the next argument in argv */
-    XrmoptionSkipLine   /* Ignore this option and the rest of argv	    */
-    XrmoptionSkipNArgs,	/* Ignore this option and the next 
+    XrmoptionSkipLine,  /* Ignore this option and the rest of argv	    */
+    XrmoptionSkipNArgs	/* Ignore this option and the next 
 			   OptionDescRes.value arguments in argv */
 } XrmOptionKind;
 
