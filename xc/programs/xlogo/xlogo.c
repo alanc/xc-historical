@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$XConsortium: xlogo.c,v 1.8 89/06/19 13:55:53 jim Exp $";
+static char rcsid[] = "$XConsortium: xlogo.c,v 1.9 89/07/16 15:36:11 jim Exp $";
 #endif /* lint */
 
 #include <X11/Intrinsic.h>
@@ -35,7 +35,7 @@ void main(argc, argv)
     XGCValues  gcv;
     GC gcFore, gcBack;
 
-    toplevel = XtInitialize("main", "XLogo", NULL, 0, &argc, argv);
+    toplevel = XtInitialize(NULL, "XLogo", NULL, 0, &argc, argv);
     if (argc != 1) Syntax(argv[0]);
     icon = XCreatePixmap(XtDisplay(toplevel), XtScreen(toplevel)->root,
 			 32, 32, 1);
