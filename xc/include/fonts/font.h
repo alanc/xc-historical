@@ -4,13 +4,13 @@ and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
 
                         All Rights Reserved
 
-Permission to use, copy, modify, and distribute this software and its 
-documentation for any purpose and without fee is hereby granted, 
+Permission to use, copy, modify, and distribute this software and its
+documentation for any purpose and without fee is hereby granted,
 provided that the above copyright notice appear in all copies and that
-both that copyright notice and this permission notice appear in 
+both that copyright notice and this permission notice appear in
 supporting documentation, and that the names of Digital or MIT not be
 used in advertising or publicity pertaining to distribution of the
-software without specific, written prior permission.  
+software without specific, written prior permission.
 
 DIGITAL DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING
 ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL
@@ -21,23 +21,28 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
+
 #ifndef FONT_H
 #define FONT_H
 
-	/* data structures */
-typedef struct _Font		*FontPtr;
-typedef struct _FontInfo	*FontInfoPtr;
-typedef struct _FontProp	*FontPropPtr;
-typedef struct _ExtentInfo	*ExtentInfoPtr;
+#ifndef BitmapFormatByteOrderMask
+#include	"fsmasks.h"
+#endif
+
+/* data structures */
+typedef struct _Font *FontPtr;
+typedef struct _FontInfo *FontInfoPtr;
+typedef struct _FontProp *FontPropPtr;
+typedef struct _ExtentInfo *ExtentInfoPtr;
 typedef struct _FontPathElement *FontPathElementPtr;
-typedef struct _CharInfo	*CharInfoPtr;
-typedef struct _FontNames	*FontNamesPtr;
+typedef struct _CharInfo *CharInfoPtr;
+typedef struct _FontNames *FontNamesPtr;
 
 #define NullCharInfo	((CharInfoPtr) 0)
 #define NullFont	((FontPtr) 0)
 #define NullFontInfo	((FontInfoPtr) 0)
 
-	/* draw direction */
+ /* draw direction */
 #define LeftToRight 0
 #define RightToLeft 1
 #define BottomToTop 2
@@ -49,8 +54,15 @@ typedef int DrawDirection;
 
 #define	FontAliasType	0x1000
 
-#define	StillWorking	-2
-#define	Suspended	-1
+#define	AllocError	80
+#define	StillWorking	81
+#define	FontNameAlias	82
+#define	BadFontName	83
+#define	Suspended	84
+#define	Successful	85
+#define	BadFontPath	86
+#define	BadCharRange	87
+#define	BadFontFormat	88
 
 /* OpenFont flags */
 #define FontLoadInfo	0x0001
@@ -60,13 +72,21 @@ typedef int DrawDirection;
 #define FontLoadAll	0x000f
 #define	FontOpenSync	0x0010
 
-typedef char	*closure;
+/* Query flags */
+#define	LoadAll		0x1
+#define	FinishRamge	0x2
 
-extern int	LoadFont (/*client, lenfname, pfontname, ppfont*/);
-extern int	StartListFontsWithInfo (/*client, length, pattern, maxNames*/);
-extern int	NextListFontsWithInfo (/*closure, FontInfoP, nameP, nameLengthP*/);
-extern int	SetFontPath (/**/);
-extern unsigned char	*GetFontPath ();
-extern FontNamesPtr MakeFontNamesRecord (/* size */);
+typedef char *closure;
 
-#endif /* FONT_H */
+extern int  StartListFontsWithInfo( /* client, length, pattern, maxNames */ );
+extern int  ListFonts( /* client, length, pattern, maxNames */ );
+
+extern FontNamesPtr MakeFontNamesRecord( /* size */ );
+extern void FreeFontNames();
+extern int  AddFontNamesName();
+
+extern void CopyCharInfo();
+
+extern int  FontToFSError();
+
+#endif				/* FONT_H */
