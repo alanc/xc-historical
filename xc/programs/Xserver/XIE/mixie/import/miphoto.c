@@ -1,4 +1,4 @@
-/* $XConsortium: miphoto.c,v 1.2 93/10/26 14:12:18 rws Exp $ */
+/* $XConsortium: miphoto.c,v 1.3 93/10/31 09:45:11 dpw Exp $ */
 /**** module miphoto.c ****/
 /******************************************************************************
 				NOTICE
@@ -380,12 +380,12 @@ static int ActivateIPhotoUncomByPlane(flo,ped,pet)
     if(!bnd->final)
       if(pet->receptor[SRCtag].active & 1<<b) {
 	void (*action)() = pvt->action;
-	void *src, *dst;
+	pointer src, dst;
 	
 	nextslen = pvt->bitOff + sbnd->format->pitch + 7 >> 3;
 	dbnd = &pet->emitter[pvt->bandMap];
-	if((src = GetSrcBytes(void,flo,pet,sbnd,sbnd->current,nextslen,KEEP))
-	   && (dst = GetCurrentDst(void,flo,pet,dbnd)))
+	if((src = GetSrcBytes(pointer,flo,pet,sbnd,sbnd->current,nextslen,KEEP))
+	   && (dst = GetCurrentDst(pointer,flo,pet,dbnd)))
 	  
 	  do {
 	    (*action)(src, dst, sbnd->format->width, 
@@ -396,9 +396,9 @@ static int ActivateIPhotoUncomByPlane(flo,ped,pet)
 	    pvt->bitOff = pvt->bitOff + sbnd->format->pitch & 7;
 	    oldslen  = (pvt->bitOff) ? nextslen - 1 : nextslen;
 	    nextslen = pvt->bitOff + sbnd->format->pitch + 7 >> 3;
-	    src = GetSrcBytes(void,flo,pet,sbnd,sbnd->current+oldslen, 
+	    src = GetSrcBytes(pointer,flo,pet,sbnd,sbnd->current+oldslen, 
 			      nextslen,KEEP);
-	    dst = GetNextDst(void,flo,pet,dbnd,FLUSH);
+	    dst = GetNextDst(pointer,flo,pet,dbnd,FLUSH);
 	  } while(src && dst);
 
 	final = sbnd->strip && sbnd->strip->final;
@@ -580,9 +580,9 @@ static int InitializeIPhotoUncomByPixel(flo,ped)
 				    [depth1 <= 8 ? 0 : 1] 
 				    [depth2 <= 8 ? 0 : 1] 
 				    [depth3 <= 8 ? 0 : 1];
-    if(depth1 == 1 && !(pvt[0].buf = (void*)XieMalloc(width+7)) ||
-       depth2 == 1 && !(pvt[1].buf = (void*)XieMalloc(width+7)) ||
-       depth3 == 1 && !(pvt[2].buf = (void*)XieMalloc(width+7)))
+    if(depth1 == 1 && !(pvt[0].buf = (pointer)XieMalloc(width+7)) ||
+       depth2 == 1 && !(pvt[1].buf = (pointer)XieMalloc(width+7)) ||
+       depth3 == 1 && !(pvt[2].buf = (pointer)XieMalloc(width+7)))
       AllocError(flo,ped, return(FALSE));
   }
   return(InitReceptors(flo, ped, NO_DATAMAP, 1) && 
@@ -606,7 +606,7 @@ static int ActivateIPhotoUncomByPixel(flo,ped,pet)
   bandPtr         db1 = &pet->emitter[pvt[1].bandMap];
   bandPtr         db2 = &pet->emitter[pvt[2].bandMap];
   CARD32 final, width = db0->format->width;
-  void   *src, *dp0, *dp1, *dp2;
+  pointer src, dp0, dp1, dp2;
   
   if (pvt->unaligned) {
     CARD32 oldslen, nextslen;
@@ -617,10 +617,10 @@ static int ActivateIPhotoUncomByPixel(flo,ped,pet)
     CARD32 stride = sbnd->format->stride;
     
     nextslen = pvt->bitOff + sbnd->format->pitch + 7 >> 3;
-    if((src = GetSrcBytes(void,flo,pet,sbnd,sbnd->current,nextslen,KEEP)) &&
-       (dp0 = GetCurrentDst(void,flo,pet,db0)) &&
-       (dp1 = GetCurrentDst(void,flo,pet,db1)) &&
-       (dp2 = GetCurrentDst(void,flo,pet,db2)))
+    if((src = GetSrcBytes(pointer,flo,pet,sbnd,sbnd->current,nextslen,KEEP)) &&
+       (dp0 = GetCurrentDst(pointer,flo,pet,db0)) &&
+       (dp1 = GetCurrentDst(pointer,flo,pet,db1)) &&
+       (dp2 = GetCurrentDst(pointer,flo,pet,db2)))
       do {
 	
 	(*action)(src,
@@ -636,28 +636,28 @@ static int ActivateIPhotoUncomByPixel(flo,ped,pet)
 	pvt->bitOff = pvt->bitOff + sbnd->format->pitch & 7;
 	oldslen  = pvt->bitOff ? nextslen - 1 : nextslen;
 	nextslen = pvt->bitOff + sbnd->format->pitch + 7 >> 3;
-	src = GetSrcBytes(void,flo,pet,sbnd,sbnd->current+oldslen,
+	src = GetSrcBytes(pointer,flo,pet,sbnd,sbnd->current+oldslen,
 			  nextslen,KEEP);
-	dp0 = GetNextDst(void,flo,pet,db0,FLUSH);
-	dp1 = GetNextDst(void,flo,pet,db1,FLUSH);
-	dp2 = GetNextDst(void,flo,pet,db2,FLUSH);
+	dp0 = GetNextDst(pointer,flo,pet,db0,FLUSH);
+	dp1 = GetNextDst(pointer,flo,pet,db1,FLUSH);
+	dp2 = GetNextDst(pointer,flo,pet,db2,FLUSH);
       } while(src && dp0 && dp1 && dp2);
   } else {
     CARD32   slen = sbnd->format->pitch+7>>3;
-    if((src = GetSrcBytes(void,flo,pet,sbnd,sbnd->current,slen,KEEP)) && 
-       (dp0 = GetCurrentDst(void,flo,pet,db0)) &&
-       (dp1 = GetCurrentDst(void,flo,pet,db1)) && 
-       (dp2 = GetCurrentDst(void,flo,pet,db2)))
+    if((src = GetSrcBytes(pointer,flo,pet,sbnd,sbnd->current,slen,KEEP)) && 
+       (dp0 = GetCurrentDst(pointer,flo,pet,db0)) &&
+       (dp1 = GetCurrentDst(pointer,flo,pet,db1)) && 
+       (dp2 = GetCurrentDst(pointer,flo,pet,db2)))
       do {
 	
 	(*pvt[0].action)(src,dp0,width,&pvt[0]);
 	(*pvt[1].action)(src,dp1,width,&pvt[1]);
 	(*pvt[2].action)(src,dp2,width,&pvt[2]);
 	
-	src =GetSrcBytes(BytePixel,flo,pet,sbnd,sbnd->current+slen,slen,KEEP);
-	dp0 = GetNextDst(void,flo,pet,db0,FLUSH);
-	dp1 = GetNextDst(void,flo,pet,db1,FLUSH);
-	dp2 = GetNextDst(void,flo,pet,db2,FLUSH);
+	src =GetSrcBytes(BytePixel *,flo,pet,sbnd,sbnd->current+slen,slen,KEEP);
+	dp0 = GetNextDst(pointer,flo,pet,db0,FLUSH);
+	dp1 = GetNextDst(pointer,flo,pet,db1,FLUSH);
+	dp2 = GetNextDst(pointer,flo,pet,db2,FLUSH);
       } while(src && dp0 && dp1 && dp2);
   }
   final = sbnd->strip && sbnd->strip->final;
@@ -696,7 +696,7 @@ static int ResetIPhoto(flo,ped)
   int i;
 
   for(i = 0; i < xieValMaxBands; ++i)
-    if(pvt[i].buf) pvt[i].buf = (void*) XieFree(pvt[i].buf);
+    if(pvt[i].buf) pvt[i].buf = (pointer) XieFree(pvt[i].buf);
 
   ResetReceptors(ped);
   ResetEmitter(ped);
