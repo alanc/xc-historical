@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Converters.c,v 1.3 89/07/20 14:37:23 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Converters.c,v 1.39 89/07/21 12:07:27 swick Exp $";
 /* $oHeader: Converters.c,v 1.6 88/09/01 09:26:23 asente Exp $ */
 #endif /*lint*/
 /*LINTLIBRARY*/
@@ -256,8 +256,8 @@ static Boolean CvtStringToBool(dpy, args, num_args, fromVal, toVal, closure_ret)
 }
 
 XtConvertArgRec colorConvertArgs[] = {
-    {XtBaseOffset, (caddr_t) XtOffset(Widget, core.screen),  sizeof(Screen *)},
-    {XtBaseOffset, (caddr_t) XtOffset(Widget, core.colormap),sizeof(Colormap)}
+    {XtWidgetBaseOffset, (caddr_t)XtOffset(Widget, core.screen),  sizeof(Screen *)},
+    {XtWidgetBaseOffset, (caddr_t)XtOffset(Widget, core.colormap),sizeof(Colormap)}
 };
 
 
@@ -383,7 +383,7 @@ static void FreePixel(app, toVal, closure, args, num_args)
 
 
 XtConvertArgRec screenConvertArg[] = {
-    {XtBaseOffset, (caddr_t) XtOffset(Widget, core.screen), sizeof(Screen *)}
+    {XtWidgetBaseOffset, (caddr_t)XtOffset(Widget, core.screen), sizeof(Screen *)}
 };
 
 /*ARGSUSED*/
