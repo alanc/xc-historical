@@ -1,4 +1,4 @@
-$XConsortium: README,v 1.39 94/10/04 18:49:06 gildea Exp gildea $
+$XConsortium: README,v 1.40 95/02/09 22:53:12 gildea Exp matt $
 
 The easiest way to write an Imakefile is to find another one that does
 something similar and copy/modify it!
@@ -140,7 +140,6 @@ Project.tmpl provides defaults for the following variables:
 	BinDir			directory in which to install programs
 	BuildFontServer		build font server
 	BuildFonts		build pcf fonts
-	BuildFresco		build Fresco
 	BuildIncRoot		relative path to location of headers in build
 	BuildIncTop		path from build includes directory to top
 	BuildPexExt		build PEX server extension and fonts
