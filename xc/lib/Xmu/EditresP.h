@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Editres.h,v 1.9 91/04/04 21:35:52 gildea Exp $
+ * $XConsortium: EditresP.h,v 1.10 91/05/22 16:24:48 gildea Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -224,6 +224,7 @@
 ************************************************************/
 
 #include <X11/Intrinsic.h>
+#include <X11/Xfuncproto.h>
 
 #define XER_NBBY 8		/* number of bits in a byte */
 #define BYTE_MASK 255
@@ -280,6 +281,8 @@ typedef struct _ProtocolStream {
  *
  ************************************************************/
 
+_XFUNCPROTOBEGIN
+
 void _XEditResPutString8(), _XEditResPut8(), _XEditResPut16();
 void _XEditResPut32(), _XEditResPutWidgetInfo(), _XEditResPutWidget();
 void _XEditResResetStream();
@@ -287,3 +290,4 @@ void _XEditResResetStream();
 Boolean _XEditResGet8(), _XEditResGet16(), _XEditResGetSigned16();
 Boolean _XEditResGet32(), _XEditResGetString8(), _XEditResGetWidgetInfo();
 
+_XFUNCPROTOEND
