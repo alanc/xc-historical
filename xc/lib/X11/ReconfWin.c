@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XReconfWin.c,v 11.10 88/02/22 18:14:06 rws Exp $ */
+/* $Header: XReconfWin.c,v 11.11 88/08/10 16:08:39 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
@@ -50,12 +50,8 @@ XConfigureWindow(dpy, w, mask, changes)
 
     req->length += (nvalues = value - values);
 
-    /* note: Data is a macro that uses its arguments multiple
-       times, so "nvalues" is changed in a separate assignment
-       statement */
-
-    nvalues <<= 2;
-    Data32 (dpy, (char *) values, nvalues);
+    nvalues <<= 2;			/* watch out for macros... */
+    Data32 (dpy, (long *) values, nvalues);
     UnlockDisplay(dpy);
     SyncHandle();
 

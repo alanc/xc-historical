@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XFreeCols.c,v 11.6 87/09/11 08:03:32 toddb Exp $ */
+/* $Header: XFreeCols.c,v 11.7 88/08/10 16:08:26 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
@@ -23,12 +23,8 @@ unsigned long planes; /* CARD32 */
     /* on the VAX, each pixel is a 32-bit (unsigned) integer */
     req->length += npixels;
 
-    /* divide by 4 once; Data may be a macro and thus do it
-       multiple times if we pass it as a parameter */
-
-    nbytes = npixels << 2;
-
-    Data32 (dpy, (char *) pixels, nbytes);
+    nbytes = npixels << 2;		/* watch out for macros... */
+    Data32 (dpy, (long *) pixels, nbytes);
     UnlockDisplay(dpy);
     SyncHandle();
 }

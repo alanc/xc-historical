@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XChWindow.c,v 11.6 87/09/11 08:01:46 toddb Exp $ */
+/* $Header: XChWindow.c,v 11.7 88/08/10 16:08:09 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
@@ -23,8 +23,8 @@ unsigned int width, height;
     {
 	unsigned long lwidth = width, lheight = height;
     dpy->bufptr -= 8;
-    Data32 (dpy, (char *) &lwidth, 4);	/* order dictated by values of */
-    Data32 (dpy, (char *) &lheight, 4);	/* CWWidth and CWHeight */
+    Data32 (dpy, (long *) &lwidth, 4);	/* order dictated by values of */
+    Data32 (dpy, (long *) &lheight, 4);	/* CWWidth and CWHeight */
     }
 #else
     {

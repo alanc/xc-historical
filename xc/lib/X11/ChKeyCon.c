@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XChKeyCon.c,v 11.7 87/09/11 08:01:34 toddb Exp $ */
+/* $Header: XChKeyCon.c,v 11.8 88/08/10 16:08:06 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
@@ -53,7 +53,7 @@ XChangeKeyboardControl(dpy, mask, value_list)
        statement */
 
     nvalues <<= 2;
-    Data32 (dpy, (char *) values, nvalues);
+    Data32 (dpy, (long *) values, nvalues);
     UnlockDisplay(dpy);
     SyncHandle();
 

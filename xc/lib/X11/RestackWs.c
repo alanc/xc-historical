@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XRestackWs.c,v 1.6 87/09/11 08:09:32 toddb Exp $ */
+/* $Header: XRestackWs.c,v 1.7 88/08/10 16:09:01 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
@@ -22,8 +22,8 @@ XRestackWindows (dpy, windows, n)
 	req->mask = CWSibling | CWStackMode;
 #ifdef MUSTCOPY
 	dpy->bufptr -= 8;
-	Data32 (dpy, (char *)(windows-1), 4);
-	Data32 (dpy, (char *)&val, 4);
+	Data32 (dpy, (long *)(windows-1), 4);
+	Data32 (dpy, (long *)&val, 4);
 #else
 	{
 	    register unsigned long *values = (unsigned long *)

@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XRotProp.c,v 11.9 87/09/11 08:08:55 toddb Exp $ */
+/* $Header: XRotProp.c,v 11.10 88/08/10 16:08:57 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
@@ -24,7 +24,7 @@ XRotateWindowProperties(dpy, w, properties, nprops, npositions)
     req->length += nprops;
     nbytes = nprops << 2;
 /* XXX Cray needs packing here.... */
-    Data32 (dpy, (char *) properties, nbytes);
+    Data32 (dpy, (long *) properties, nbytes);
 
 
     UnlockDisplay(dpy);

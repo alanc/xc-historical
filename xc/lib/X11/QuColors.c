@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XQuColors.c,v 11.14 88/08/09 15:57:23 jim Exp $ */
+/* $Header: XQuColors.c,v 11.15 88/08/10 16:08:36 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #define NEED_REPLIES
@@ -26,7 +26,7 @@ XQueryColors(dpy, cmap, defs, ncolors)
     req->length += ncolors; /* each pixel is a CARD32 */
 
     for (i = 0; i < ncolors; i++)
-      Data32 (dpy, (char *)&defs[i].pixel, 4L);
+      Data32 (dpy, (long *)&defs[i].pixel, 4L);
        /* XXX this isn't very efficient */
 
     if (_XReply(dpy, (xReply *) &rep, 0, xFalse) != 0) {

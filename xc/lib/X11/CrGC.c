@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XCrGC.c,v 11.25 88/06/30 09:00:49 rws Exp $ */
+/* $Header: XCrGC.c,v 11.26 88/08/10 16:07:52 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
@@ -129,7 +129,7 @@ _XGenerateGCList (dpy, gc, req)
      */
 
     nvalues <<= 2;
-    Data32 (dpy, (char *) values, nvalues);
+    Data32 (dpy, (long *) values, nvalues);
     gc->dirty = 0L;
 
     }

@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XMoveWin.c,v 11.6 87/09/11 08:05:15 toddb Exp $ */
+/* $Header: XMoveWin.c,v 11.7 88/08/10 16:08:30 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
@@ -22,8 +22,8 @@ XMoveWindow (dpy, w, x, y)
     {
 	long lx = (long) x, ly = (long) y;
 	dpy->bufptr -= 8;
-	Data32 (dpy, (char *) &lx, 4);	/* order dictated by CWX and CWY */
-	Data32 (dpy, (char *) &ly, 4);
+	Data32 (dpy, (long *) &lx, 4);	/* order dictated by CWX and CWY */
+	Data32 (dpy, (long *) &ly, 4);
     }
 #else
     {

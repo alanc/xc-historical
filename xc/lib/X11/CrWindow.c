@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XCrWindow.c,v 11.9 87/09/11 08:02:37 toddb Exp $ */
+/* $Header: XCrWindow.c,v 11.10 88/08/10 16:08:15 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
@@ -35,8 +35,8 @@ Window XCreateSimpleWindow(dpy, parent, x, y, width, height,
     {
 	unsigned long lbackground = background, lborder = border;
 	dpy->bufptr -= 8;
-	Data32 (dpy, (char *) &lbackground, 4);
-	Data32 (dpy, (char *) &lborder, 4);
+	Data32 (dpy, (long *) &lbackground, 4);
+	Data32 (dpy, (long *) &lborder, 4);
     }
 #else
     {
