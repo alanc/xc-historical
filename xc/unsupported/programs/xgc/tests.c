@@ -3,18 +3,17 @@
 **
 */
 
+#include <stdio.h>
+#include <math.h>
+#include <X11/Xos.h>
 #include <X11/Intrinsic.h>
 #include <X11/StringDefs.h>
 #include <X11/Xaw/AsciiText.h>
 #include "xgc.h"
-#include "math.h"
-#include "stdio.h"
-#include <sys/types.h>
 #ifndef SYSV
-#include <sys/time.h>
-#endif
 #include <sys/timeb.h>
 #include <sys/resource.h>
+#endif
 
 #ifndef PI
 #define PI 3.14159265
