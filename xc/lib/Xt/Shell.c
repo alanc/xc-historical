@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Shell.c,v 1.65 89/09/21 16:39:50 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Shell.c,v 1.66 89/09/26 18:08:13 swick Exp $";
 /* $oHeader: Shell.c,v 1.7 88/09/01 11:57:00 asente Exp $ */
 #endif /* lint */
 
@@ -856,27 +856,35 @@ static void Realize(wid, vmask, attr)
 	    /* I attempt to inherit my child's background to avoid screen flash
 	     * if there is latency between when I get resized and when my child
 	     * is resized.  Background=None is not satisfactory, as I want the
-	     * user to get immediate feedback on the new dimensions.  It is
+	     * user to get immediate feedback on the new dimensions (most
+	     * particularly in the case of a non-reparenting wm).  It is
 	     * especially important to have the server clear any old cruft
 	     * from the display when I am resized larger */
 
+	    Boolean found_pixmap = False;
 	    if (w->composite.num_children > 0) {
 		Widget child;
 		int i;
 		for (i = 0; i < w->composite.num_children; i++) {
 		    child = w->composite.children[i];
-		    if (XtIsManaged(child)) /* macro uses args twice! */
+		    if (XtIsWidget(child) && XtIsManaged(child)) {
+			if (child->core.background_pixmap
+			    != XtUnspecifiedPixmap) {
+			    mask &= ~(CWBackPixel);
+			    mask |= CWBackPixmap;
+			    w->core.background_pixmap =
+				attr->background_pixmap =
+				    child->core.background_pixmap;
+			    found_pixmap = True;
+			} else {
+			    w->core.background_pixel = 
+				child->core.background_pixel;
+			}
 			break;
-		}
-		if (child->core.background_pixmap != XtUnspecifiedPixmap) {
-		    mask &= ~(CWBackPixel);
-		    mask |= CWBackPixmap;
-		    attr->background_pixmap = child->core.background_pixmap;
-		} else {
-		    attr->background_pixel = child->core.background_pixel;
+		    }
 		}
 	    }
-	    else {
+	    if (!found_pixmap) {
 		mask |= CWBackPixel;
 		mask &= ~(CWBackPixmap);
 		attr->background_pixel = w->core.background_pixel;
