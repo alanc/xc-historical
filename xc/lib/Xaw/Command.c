@@ -65,14 +65,14 @@ static char *sccsid = "@(#)Command.c	1.15	2/25/87";
 
 /* Private Data */
 
-static char *defaultTranslations[] = {
-    "<ButtonPress>:       set",
-    "<ButtonRelease>:     notify unset",
-    "<EnterWindow>:       highlight",
-    "<LeaveWindow>:       unhighlight unset",
+static char *defaultTranslation[] = {
+    "<ButtonPress>:       set\n",
+    "<ButtonRelease>:     notify unset\n",
+    "<EnterWindow>:       highlight\n",
+    "<LeaveWindow>:       unhighlight unset\n",
     NULL
 };
-
+static caddr_t defaultTranslations = (caddr_t)defaultTranslation;
 static Resource resources[] = { 
 
    {XtNfunction, XtCFunction, XtRFunction, sizeof(CallbackProc), 
@@ -85,7 +85,7 @@ static Resource resources[] = {
    {XtNtranslations, XtCTranslations, XtRTranslationTable,
       sizeof(Translations),
       Offset(CommandWidget, core.translations),XtRString,
-      (caddr_t)defaultTranslations},
+      (caddr_t)&defaultTranslations},
  };  
 
 static XtActionsRec actionsList[] =
