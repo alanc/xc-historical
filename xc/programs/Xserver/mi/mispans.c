@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: mispans.c,v 5.0 89/11/05 13:03:44 rws Exp $ */
+/* $XConsortium: mispans.c,v 5.0 89/11/05 13:52:26 rws Exp $ */
 
 #include "misc.h"
 #include "pixmapstr.h"
@@ -70,6 +70,11 @@ void miAppendSpans(spanGroup, spans)
 	if (y < spanGroup->ymin) spanGroup->ymin = y;
 	y = spans->points[spansCount - 1].y;
 	if (y > spanGroup->ymax) spanGroup->ymax = y;
+    }
+    else
+    {
+	xfree (spans->points);
+	xfree (spans->widths);
     }
 } /* AppendSpans */
 
