@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XFSWrap.c,v 11.5 91/05/01 08:33:37 rws Exp $
+ * $XConsortium: FSWrap.c,v 11.6 91/06/05 08:53:49 rws Exp $
  */
 
 /*
@@ -63,7 +63,7 @@ _XParseBaseFontNameList(str, num)
 	char	*back;
 
 	plist[*num] = ptr;
-	if ((ptr = index(ptr, ','))) {
+	if ((ptr = strchr(ptr, ','))) {
 	    back = ptr;
 	} else {
 	    back = plist[*num] + strlen(plist[*num]);

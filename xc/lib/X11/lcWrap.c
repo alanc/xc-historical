@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlcWrap.c,v 11.9 92/04/24 16:07:40 rws Exp $
+ * $XConsortium: lcWrap.c,v 11.10 93/07/09 17:01:30 gildea Exp $
  */
 
 /*
@@ -96,7 +96,7 @@ Bool _XlcValidModSyntax(mods, valid_mods)
 	    i = strlen(*ptr);
 	    if (strncmp(mods, *ptr, i) || (mods[i] != '='))
 		continue;
-	    mods = index(mods+i+1, '@');
+	    mods = strchr(mods+i+1, '@');
 	    break;
 	}
     }
