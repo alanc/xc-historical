@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xlcint.h,v 11.7 91/04/08 11:27:01 rws Exp $
+ * $XConsortium: Xlcint.h,v 11.8 91/04/13 11:23:04 rws Exp $
  */
 
 /*
@@ -428,6 +428,35 @@ typedef struct _XIC {
     XICCoreRec		core;			/* data of this IC */
 } XICRec;
 
+/*
+ * Methods for Xrm parsing
+ */
+
+typedef struct {
+    void (*mbinit)(
+#if NeedFunctionPrototypes
+	XPointer	/* state */
+#endif
+	);
+    char (*mbchar)(
+#if NeedFunctionPrototypes
+	XPointer	/* state */,
+	char*		/* str */,
+	int*		/* lenp */
+#endif
+	);
+    void (*mbfinish)(
+#if NeedFunctionPrototypes
+	XPointer /* state */
+#endif
+	);
+    char* (*lcname)(
+#if NeedFunctionPrototypes
+	XPointer /* state */
+#endif
+	);
+} XrmMethodsRec, *XrmMethods;
+
 /* current Ultrix compiler gets horribly confused */
 #if !defined(NeedFunctionPrototypes) && defined(FUNCPROTO)
 #define NeedFunctionPrototypes 1
@@ -481,6 +510,12 @@ extern char ** _XParseBaseFontNameList(
 #if NeedFunctionPrototypes
     char*		/* str */,
     int*		/* num */
+#endif
+);
+
+extern XrmMethods _XrmInitParseInfo(
+#if NeedFunctionPrototypes
+	XPointer*	/* statep */
 #endif
 );
 
