@@ -37,7 +37,7 @@
  */
 
 #ifndef lint
-static char *rcsid_xwd_c = "$Header: xwd.c,v 1.21 87/07/02 15:01:46 chariot Locked $";
+static char *rcsid_xwd_c = "$Header: xwd.c,v 1.22 87/07/02 15:03:27 toddb Locked $";
 #endif
 
 /*%
@@ -133,7 +133,7 @@ main(argc, argv)
 
 char *calloc();
 
-#include "XWDFile.h"
+#include "X11/XWDFile.h"
 
 Window_Dump(window, out)
      Window window;
