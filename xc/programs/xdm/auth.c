@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: auth.c,v 1.41 91/07/09 15:50:09 rws Exp $
+ * $XConsortium: auth.c,v 1.42 91/07/15 15:58:58 gildea Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -60,6 +60,10 @@
 # include <sys/utsname.h>
 # include <netdb.h>
 # include <sys/sockio.h>
+#endif
+#ifdef __convex__
+# include <sync/queue.h>
+# include <sync/sema.h>
 #endif
 #include <net/if.h>
 

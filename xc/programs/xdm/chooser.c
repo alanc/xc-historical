@@ -1,5 +1,5 @@
 /*
- * $XConsortium: chooser.c,v 1.6 91/02/20 19:07:53 converse Exp $
+ * $XConsortium: chooser.c,v 1.7 91/07/16 22:19:58 gildea Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -80,6 +80,10 @@
 #  include <net/if.h>
 # endif
 #else
+#ifdef __convex__
+# include <sync/queue.h>
+# include <sync/sema.h>
+#endif
 # include <net/if.h>
 #endif /* hpux */
 
