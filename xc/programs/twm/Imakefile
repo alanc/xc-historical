@@ -55,7 +55,7 @@ LOCAL_LIBRARIES = $(EXTENSIONLIB) $(XLIB)
      SIGPROCDEF = -DSIGPROCTYPE=SignalReturnProcType
         DEFINES = $(SIGPROCDEF) $(OPTIONSDEF) $(PUTENVDEF)
 
-SRCS1=	add_window.c gc.c list.c twm.c parse.c\
+SRCS1=	gram.c lex.c add_window.c gc.c list.c twm.c parse.c\
         menus.c events.c resize.c util.c version.c iconmgr.c\
 	cursor.c icons.c
 
@@ -65,7 +65,7 @@ OBJS1=	gram.o lex.o add_window.o gc.o list.o twm.o parse.o\
 
 all:: $(PROGRAMS)
 
-depend:: gram.h
+depend:: lex.c gram.c
 
 ComplexProgramTarget_1(twm,$(LOCAL_LIBRARIES),)
 
