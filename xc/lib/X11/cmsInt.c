@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsInt.c,v 1.5 91/02/15 18:33:44 dave Exp $" */
+/* $XConsortium: XcmsInt.c,v 1.6 91/05/13 23:23:03 rws Exp $" */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -25,10 +25,10 @@
  *
  *
  *	NAME
- *		XcmsInt.c - TekCMS API utility routines
+ *		XcmsInt.c - Xcms API utility routines
  *
  *	DESCRIPTION
- *		TekCMS Application Program Interface (API) utility
+ *		Xcms Application Program Interface (API) utility
  *		routines for hanging information directly onto
  *		the Display structure.
  *
@@ -41,11 +41,16 @@
 #include "Xlibint.h"
 #include "Xcmsint.h"
 
+#ifndef XCMSCOMPPROC
+#  define XCMSCOMPPROC	XcmsTekHVCClipC
+#endif
+
 /*
  *      EXTERNS
  */
 extern XcmsColorSpace **_XcmsDIColorSpaces;
 extern XcmsSCCFuncSet **_XcmsSCCFuncSets;
+extern Status XCMSCOMPPROC();
 
 static void _XcmsFreeDefaultCCCs();
 
@@ -167,7 +172,7 @@ _XcmsInitDefaultCCCs(dpy)
     Display *dpy;
 /*
  *	DESCRIPTION
- *		Initializes the TekCMS per Display Info structure
+ *		Initializes the Xcms per Display Info structure
  *		(XcmsPerDpyInfo).
  *
  *	RETURNS
@@ -210,6 +215,7 @@ _XcmsInitDefaultCCCs(dpy)
 	 * Note that the XcmsDefaultCCC routine calls _XcmsInitScrnInto
 	 * to do this.
 	 */
+	ccc->gamutCompProc = XCMSCOMPPROC;
     }
 
     return(1);
@@ -289,7 +295,7 @@ _XcmsInitScrnInfo(dpy, screenNumber)
 /*
  *	DESCRIPTION
  *		Given a display and screen number, this routine attempts
- *		to initialize the TekCMS per Screen Info structure
+ *		to initialize the Xcms per Screen Info structure
  *		(XcmsPerScrnInfo).
  *
  *	RETURNS
@@ -301,7 +307,7 @@ _XcmsInitScrnInfo(dpy, screenNumber)
 
     /*
      * Check if the XcmsCCC's for each screen has been created.
-     * Really dont need to be created until some routine uses the TekCMS
+     * Really dont need to be created until some routine uses the Xcms
      * API routines.
      */
     if ((XcmsCCC)dpy->cms.defaultCCCs == NULL) {
@@ -319,10 +325,12 @@ _XcmsInitScrnInfo(dpy, screenNumber)
 
     if (!defaultccc->pPerScrnInfo) {
 	/*
-	 * This is the only place where XcmsPerScrnInfo structures
-	 * are allocated since there is only one allocated per Screen.
-	 * It just so happens that we place its reference in the
-	 * default CCC.
+	 * This is one of two places where XcmsPerScrnInfo structures
+	 * are allocated.  There is one allocated per Screen that is
+	 * shared among visuals that do not have specific intensity
+	 * tables.  Other XcmsPerScrnInfo structures are created
+	 * for the latter (see XcmsCreateCCC).  The ones created
+	 * here are referenced by the default CCC.
 	 */
 	if (!(defaultccc->pPerScrnInfo = (XcmsPerScrnInfo *)
 		Xcalloc(1, (unsigned) sizeof(XcmsPerScrnInfo)))) {
@@ -344,4 +352,71 @@ _XcmsInitScrnInfo(dpy, screenNumber)
      * Use Default SCCData
      */
     return(_XcmsLRGB_InitScrnDefault(dpy, screenNumber, defaultccc->pPerScrnInfo));
+}
+
+
+/*
+ *	NAME
+ *		_XcmsFreeIntensityMaps
+ *
+ *	SYNOPSIS
+ */
+void
+_XcmsFreeIntensityMaps(dpy)
+    Display *dpy;
+/*
+ *	DESCRIPTION
+ *		Frees all XcmsIntensityMap structures in the linked list
+ *		and sets dpy->cms.perVisualIntensityMaps to NULL.
+ *
+ *	RETURNS
+ *		void
+ *
+ */
+{
+    XcmsIntensityMap *pNext, *pFree;
+
+    pNext = (XcmsIntensityMap *)dpy->cms.perVisualIntensityMaps;
+    while (pNext != NULL) {
+	pFree = pNext;
+	pNext = pNext->pNext;
+	(*pFree->pFreeScreenData)(pFree->screenData);
+	/* Now free the XcmsIntensityMap structure */
+	Xfree(pFree);
+    }
+    dpy->cms.perVisualIntensityMaps = (XPointer)NULL;
+}
+
+
+/*
+ *	NAME
+ *		_XcmsGetIntensityMap
+ *
+ *	SYNOPSIS
+ */
+XcmsIntensityMap *
+_XcmsGetIntensityMap(dpy, visual)
+    Display *dpy;
+    Visual *visual;
+/*
+ *	DESCRIPTION
+ *		Attempts to return a per-Visual intensity map.
+ *
+ *	RETURNS
+ *		Pointer to the XcmsIntensityMap structure if found;
+ *		otherwise NULL
+ *
+ */
+{
+    VisualID targetID = visual->visualid;
+    XcmsIntensityMap *pNext;
+
+    pNext = (XcmsIntensityMap *)dpy->cms.perVisualIntensityMaps;
+    while (pNext != NULL) {
+	if (targetID == pNext->visualID) {
+	    return(pNext);
+	}
+	pNext = pNext->pNext;
+    }
+    return((XcmsIntensityMap *)NULL);
 }
