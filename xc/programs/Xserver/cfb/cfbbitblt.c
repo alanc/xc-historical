@@ -18,7 +18,7 @@ purpose.  It is provided "as is" without express or implied warranty.
 Author: Keith Packard
 
 */
-/* $XConsortium: cfbbitblt.c,v 5.22 89/11/25 12:34:03 rws Exp $ */
+/* $XConsortium: cfbbitblt.c,v 5.23 89/11/25 13:36:00 rws Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -717,7 +717,14 @@ cfbCopyArea(pSrcDrawable, pDstDrawable,
 
     if ((pSrcDrawable != pDstDrawable) &&
 	pSrcDrawable->pScreen->SourceValidate)
+    {
+	int (*SaveDoBitBlt)();
+
+	SaveDoBitBlt = doBitBlt;
+	doBitBlt = cfbDoBitblt;
 	(*pSrcDrawable->pScreen->SourceValidate) (pSrcDrawable, srcx, srcy, width, height);
+	doBitBlt = SaveDoBitBlt;
+    }
 
     srcx += pSrcDrawable->x;
     srcy += pSrcDrawable->y;
