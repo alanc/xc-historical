@@ -21,18 +21,14 @@
  * software.
  *
  *
- *	NAME
- *		TekCMS.h
- *
  *	DESCRIPTION
- *		Public include file for TekCMS Color Extension to X
- *              This file used to be TekCMS.h and TekCMSext.h - dms.
+ *		Public include file for X Color Management System
  */
 #ifndef _XCMS_H_
 #define _XCMS_H_
 
     /*
-     * TekCMS Status Values
+     * XCMS Status Values
      */
 #define XCMS_FAILURE			0
 #define XCMS_SUCCESS			1
@@ -174,7 +170,7 @@ typedef struct {
 
 
     /*
-     * TekCMS Color Structure
+     * XCMS Color Structure
      */
 typedef struct {
     union {
@@ -193,7 +189,7 @@ typedef struct {
 } XcmsColor;
 
     /*
-     * TekCMS Per Screen related data
+     * XCMS Per Screen related data
      */
 
 typedef struct _XcmsPerScrnInfo {
@@ -207,7 +203,7 @@ typedef struct _XcmsPerScrnInfo {
 } XcmsPerScrnInfo;
 
     /*
-     * TekCMS Color Conversion Context
+     * XCMS Color Conversion Context
      */
 typedef struct _XcmsCCC {
     Display	*dpy;			/* X Display */
