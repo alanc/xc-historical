@@ -1,7 +1,7 @@
 /*
  * Xau - X Authorization Database Library
  *
- * $XConsortium: Xauth.h,v 1.10 91/02/17 13:07:25 keith Exp $
+ * $XConsortium: Xauth.h,v 1.11 91/02/28 09:28:46 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -29,19 +29,6 @@
 # define FamilyWild  (65535)
 # define FamilyNetname    (254)   /* not part of X standard */
 
-#if NeedFunctionPrototypes
-typedef struct xauth {
-    unsigned short   family;
-    unsigned short   address_length;
-    _Xconst char    *address;
-    unsigned short   number_length;
-    _Xconst char    *number;
-    unsigned short   name_length;
-    _Xconst char    *name;
-    unsigned short   data_length;
-    _Xconst char    *data;
-} Xauth;
-#else
 typedef struct xauth {
     unsigned short   family;
     unsigned short   address_length;
@@ -53,7 +40,6 @@ typedef struct xauth {
     unsigned short   data_length;
     char   	    *data;
 } Xauth;
-#endif
 
 _XFUNCPROTOBEGIN
 
