@@ -725,7 +725,7 @@ Display_Size_Hints(window)
 		hints->flags &= supplied;
 		Display_Hints(hints);
 	}
-	XFree(hints);
+	XFree((char *)hints);
 }
 
 
