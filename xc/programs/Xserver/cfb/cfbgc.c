@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: cfbgc.c,v 5.29 89/10/31 11:59:45 keith Exp $ */
+/* $XConsortium: cfbgc.c,v 5.30 89/11/05 15:14:29 rws Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -772,7 +772,8 @@ cfbCopyClip (pgcDst, pgcSrc)
 	((PixmapPtr) pgcSrc->clientClip)->refcnt++;
 	/* Fall through !! */
       case CT_NONE:
-        cfbChangeClip(pgcDst, pgcSrc->clientClipType, pgcSrc->clientClip, 0);
+        cfbChangeClip(pgcDst, (int)pgcSrc->clientClipType, pgcSrc->clientClip,
+		      0);
         break;
       case CT_REGION:
         prgnNew = (*pgcSrc->pScreen->RegionCreate)(NULL, 1);
