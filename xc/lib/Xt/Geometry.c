@@ -1,4 +1,4 @@
-/* $XConsortium: Geometry.c,v 1.47 90/07/31 10:46:54 swick Exp $ */
+/* $XConsortium: Geometry.c,v 1.48 90/08/31 14:54:23 swick Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -433,6 +433,7 @@ void XtTranslateCoords(w, x, y, rootx, rooty)
     register Position *rootx, *rooty;	/* return */
 {
     Position garbagex, garbagey;
+    Widget passed = w;
 
     if (rootx == NULL) rootx = &garbagex;
     if (rooty == NULL) rooty = &garbagey;
@@ -446,7 +447,7 @@ void XtTranslateCoords(w, x, y, rootx, rooty)
     }
 
     if (w == NULL)
-        XtAppWarningMsg(XtWidgetToApplicationContext(w),
+        XtAppWarningMsg(XtWidgetToApplicationContext(passed),
 		"invalidShell","xtTranslateCoords",XtCXtToolkitError,
                 "Widget has no shell ancestor",
 		(String *)NULL, (Cardinal *)NULL);
