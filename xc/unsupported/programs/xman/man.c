@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: man.c,v 1.14 89/12/07 16:03:43 kit Exp $
+ * $XConsortium: man.c,v 1.15 89/12/13 17:07:54 jim Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -114,7 +114,7 @@ Man()
     current_label = list->label; 
     old_list = list;
     list = list->next;
-    XtFree(old_list);		/* free what you allocate. */
+    XtFree((char *) old_list);		/* free what you allocate. */
   }
   if (manual[sect].nentries != 0)
     sect++;			/* don't forget that last section. */
