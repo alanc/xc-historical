@@ -1,11 +1,8 @@
 112 219 147		aquamarine
-112 219 147		Aquamarine
 50 204 153		medium aquamarine
 50 204 153		MediumAquamarine
 0 0 0			black
-0 0 0			Black
 0 0 255			blue
-0 0 255			Blue
 95 159 159		cadet blue
 95 159 159		CadetBlue
 66 66 111		cornflower blue
@@ -25,7 +22,6 @@
 35 35 142		navy blue
 35 35 142		NavyBlue
 35 35 142		navy
-35 35 142		Navy
 50 153 204		sky blue
 50 153 204		SkyBlue
 0 127 255		slate blue
@@ -33,23 +29,16 @@
 35 107 142		steel blue
 35 107 142		SteelBlue
 255 127 0		coral
-255 127 0		Coral
 0 255 255		cyan
-0 255 255		Cyan
 142 35 35		firebrick
-142 35 35		Firebrick
 165 42 42		brown
-165 42 42		Brown
 244 164 96		Sandy Brown
 244 164 96		sandybrown
 204 127 50		gold
-204 127 50		Gold
 219 219 112		goldenrod
-219 219 112		Goldenrod
 234 234 173		medium goldenrod
 234 234 173		MediumGoldenrod
 0 255 0			green
-0 255 0			Green
 47 79 47		dark green
 47 79 47		DarkGreen
 79 79 47		dark olive green
@@ -86,28 +75,18 @@
 168 168 168		LightGray
 192 192 192		gray
 192 192 192		grey
-192 192 192		Gray
-192 192 192		Grey
 159 159 95		khaki
-159 159 95		Khaki
 255 0 255		magenta
-255 0 255		Magenta
 142 35 107		maroon
-142 35 107		Maroon
 204 50 50		orange
-204 50 50		Orange
 219 112 219		orchid
-219 112 219		Orchid
 153 50 204		dark orchid
 153 50 204		DarkOrchid
 147 112 219		medium orchid
 147 112 219		MediumOrchid
 188 143 143		pink
-188 143 143		Pink
 234 173 234		plum
-234 173 234		Plum
 255 0 0			red
-255 0 0			Red
 79 47 47		indian red
 79 47 47		IndianRed
 219 112 147		medium violet red
@@ -117,29 +96,20 @@
 204 50 153		violet red
 204 50 153		VioletRed
 111 66 66		salmon
-111 66 66		Salmon
 142 107 35		sienna
-142 107 35		Sienna
 219 147 112		tan
-219 147 112		Tan
 216 191 216		thistle
-216 191 216		Thistle
 173 234 234		turquoise
-173 234 234		Turquoise
 112 147 219		dark turquoise
 112 147 219		DarkTurquoise
 112 219 219		medium turquoise
 112 219 219		MediumTurquoise
 79 47 79		violet
-79 47 79		Violet
 159 95 159		blue violet
 159 95 159		BlueViolet
 216 216 191		wheat
-216 216 191		Wheat
 255 255 255		white
-255 255 255		White
 255 255 0		yellow
-255 255 0		Yellow
 147 219 112		green yellow
 147 219 112		GreenYellow
 0 0 0 			gray0
