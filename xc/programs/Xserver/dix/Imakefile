@@ -25,5 +25,5 @@ SpecialObjectRule(globals.o, $(IRULESRC)/Imake.tmpl, $(SITE_DEFINES))
 
 DependTarget()
 
-../../include/Xatom.h initatoms.c:	BuiltInAtoms buildatoms
+../../X11/Xatom.h initatoms.c:	BuiltInAtoms buildatoms
 	sh buildatoms
