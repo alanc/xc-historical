@@ -1,4 +1,4 @@
-/* $XConsortium: Form.c,v 1.42 90/12/31 11:08:01 gildea Exp $ */
+/* $XConsortium: Form.c,v 1.42 90/12/31 13:33:50 gildea Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -35,7 +35,7 @@ SOFTWARE.
 
 static int default_value = -99999;
 
-#define Offset(field) XtOffset(FormWidget, form.field)
+#define Offset(field) XtOffsetOf(FormRec, form.field)
 static XtResource resources[] = {
     {XtNdefaultDistance, XtCThickness, XtRInt, sizeof(int),
 	Offset(default_spacing), XtRImmediate, (caddr_t)4}
@@ -44,7 +44,7 @@ static XtResource resources[] = {
 
 static XtEdgeType defEdge = XtRubber;
 
-#define Offset(field) XtOffset(FormConstraints, form.field)
+#define Offset(field) XtOffsetOf(FormConstraintsRec, form.field)
 static XtResource formConstraintResources[] = {
     {XtNtop, XtCEdge, XtREdgeType, sizeof(XtEdgeType),
 	Offset(top), XtREdgeType, (XtPointer)&defEdge},
@@ -191,7 +191,8 @@ static void _CvtStringToEdgeType(args, num_args, fromVal, toVal)
 static void ClassInitialize()
 {
     static XtConvertArgRec parentCvtArgs[] = {
-	{XtBaseOffset, (caddr_t)XtOffset(Widget, core.parent), sizeof(Widget)}
+	{XtBaseOffset, (caddr_t)XtOffsetOf(WidgetRec, core.parent),
+	     sizeof(Widget)}
     };
     XawInitializeWidgetSet();
     XtQChainLeft   = XrmPermStringToQuark("chainleft");
