@@ -338,6 +338,12 @@ character set).  Similarly, collections of fonts that are based on a common
 type face (the variations are usually called roman, bold, italic, bold italic, 
 oblique, and bold oblique) are called \fIfamilies\fP.  
 .PP
+Fonts come in various sizes.  The X server supports \fIscalable\fP fonts,
+meaning it is possible to create a font of arbitrary size from a single
+source for the font.  The server supports scaling from \fIoutline\fP
+fonts and \fIbitmap\fP fonts.  Scaling from outline fonts usually produces
+significantly better results than scaling from bitmap fonts.
+.PP
 An X server can obtain fonts from individual files stored in directories
 in the file system, or from one or more font servers,
 or from a mixtures of directories and font servers.
@@ -381,7 +387,7 @@ and weights are provided for each family.
 This directory contains 100 dots per inch versions of some of the fonts in the 
 \fI75dpi\fP directory.  
 .PP
-Font files are usually created by compiling a textual font description
+Bitmap font files are usually created by compiling a textual font description
 into binary form, using \fIbdftopcf\fP.
 Font databases are created by running the \fImkfontdir\fP program in the
 directory containing the source or compiled versions of the fonts.
@@ -396,9 +402,8 @@ to add a font to a private directory, the following commands could be used:
     % xset fp rehash 
 .fi
 .PP
-The \fIxlsfonts\fP program can be used to list all of the fonts that are
-found in font databases in the current font path.  
-The \fIxfontsel\fP program can be used to browse through the fonts.
+The \fIxfontsel\fP and \fIxlsfonts\fP programs can be used to browse
+through the fonts available on a server.
 Font names tend to be fairly long as they contain all of the information
 needed to uniquely identify individual fonts.  However, the X server
 supports wildcarding of font names, so the full specification
@@ -420,9 +425,26 @@ wildcarded font names should be quoted:
     % xlsfonts -fn '-*-courier-medium-r-normal--*-100-*-*-*-*-*-*'
 .fi
 .PP
-If more than one font in a given directory in the font path matches a
-wildcarded font name, the choice of which particular font to return is left
-to the server.
+The \fIxlsfonts\fP program can be used to list all of the fonts that
+match a given pattern.  With no arguments, it lists all available fonts.
+This will usually list the same font at many different sizes.  To see
+just the base scalable font names, try using one of the following patterns:
+.sp
+.nf
+    \fI-*-*-*-*-*-*-0-0-0-0-*-0-*-*\fP
+    \fI-*-*-*-*-*-*-0-0-75-75-*-0-*-*\fP
+    \fI-*-*-*-*-*-*-0-0-100-100-*-0-*-*\fP
+.fi
+.PP
+To convert one of the resulting names into a font at a specific size,
+replace one of the first two zeros with a nonzero value.
+The field containing the first zero is for the pixel size; replace it
+with a specific height in pixels to name a font at that size.
+Alternatively, the field containing the second zero is for the point size;
+replace it with a specific size in decipoints (there are 722.7 decipoints to
+the inch) to name a font at that size.
+The last zero is an average width field, measured in tenths of pixels;
+some servers will anamorphically scale if this value is specified.
 .SH "COLOR NAMES"
 Most applications provide ways of tailoring (usually through resources or
 command line arguments) the colors of various elements
@@ -469,7 +491,7 @@ and are assumed to be gamma corrected.
 .PP
 The eight primary colors can be represented as:
 .sp
-.ta 2i
+.ta 2.5i
 .nf
     black	rgb:0/0/0
     red	rgb:ffff/0/0
@@ -521,7 +543,7 @@ followed by a possibly signed integer string.
 The standard device-independent string specifications have
 the following syntax:
 .sp
-.ta 2i
+.ta 3.5i
 .nf
     CIEXYZ:\fI<X>/<Y>/<Z>\fP	(\fInone\fP, 1, \fInone\fP)
     CIEuvY:\fI<u>/<v>/<Y>\fP	(~.6, ~.6, 1)
@@ -1024,7 +1046,9 @@ X Window System is a trademark of MIT.
 .SH AUTHORS
 .PP
 A cast of thousands, literally.  The MIT Release 5 distribution is brought to
-you by the MIT X Consortium.  The staff members at MIT responsible
+you by the MIT X Consortium.  The names of all people who made it a reality
+will be found in the individual documents and source files.
+The staff members at MIT responsible
 for this release are:
 Donna Converse (MIT X Consortium),
 Stephen Gildea (MIT X Consortium),
