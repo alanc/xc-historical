@@ -1,7 +1,7 @@
 /*
  * get_load - get system load
  *
- * $XConsortium: get_load.c,v 1.22 91/06/08 18:02:44 rws Exp $
+ * $XConsortium: get_load.c,v 1.23 91/07/12 18:00:01 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -28,8 +28,8 @@
  * GetLoadPoint() is a callback for the StripChart widget.
  */
 
-#include <X11/Intrinsic.h>
 #include <X11/Xos.h>
+#include <X11/Intrinsic.h>
 #include <stdio.h>
 
 #ifdef att
