@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$XConsortium: Dialog.c,v 1.14 88/08/31 11:29:55 swick Exp $";
+static char rcsid[] = "$XConsortium: Dialog.c,v 1.15 88/09/04 12:31:34 swick Exp $";
 #endif lint
 
 
@@ -215,6 +215,20 @@ Widget request, new;
 static Boolean SetValues(current, request, new)
 Widget current, request, new;
 {
+    DialogWidget w = (DialogWidget)new;
+    DialogWidget old = (DialogWidget)current;
+
+    if (w->dialog.label != old->dialog.label
+	|| (w->dialog.label != NULL
+	    && old->dialog.label != NULL
+	    && strcmp(w->dialog.label, old->dialog.label))
+	)
+    {
+	Arg args[1];
+	XtSetArg( args[1], XtNlabel, w->dialog.label );
+	XtSetValues( w->dialog.labelW, args, XtNumber(args) );
+    }
+
     return False;
 }
 
