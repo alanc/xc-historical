@@ -1,5 +1,5 @@
 /*
- * $XConsortium: access.c,v 1.3 90/09/29 09:56:09 rws Exp $
+ * $XConsortium: access.c,v 1.4 91/01/09 17:35:54 keith Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -418,6 +418,8 @@ ScanAccessDatabase ()
 
 #define MAX_DEPTH   32
 
+static int indirectAlias ();
+
 static int
 scanHostlist (h, clientAddress, connectionType, function, closure, depth, broadcast)
     HostEntry	*h;
@@ -429,7 +431,6 @@ scanHostlist (h, clientAddress, connectionType, function, closure, depth, broadc
     int		broadcast;
 {
     int	haveLocalhost = 0;
-    static int indirectAlias ();
 
     for (; h; h = h->next)
     {
@@ -453,7 +454,7 @@ scanHostlist (h, clientAddress, connectionType, function, closure, depth, broadc
 		if (function)
 		{
 		    temp.data = (BYTE *) BROADCAST_STRING;
-		    temp.length = strlen (temp.data);
+		    temp.length = strlen ((char *)temp.data);
 		    (*function) (connectionType, &temp, closure);
 		}
 	    }
@@ -522,6 +523,8 @@ indirectAlias (alias, clientAddress, connectionType, function, closure, depth)
     return haveLocalhost;
 }
 
+ARRAY8Ptr IndirectChoice ();
+
 ForEachMatchingIndirectHost (clientAddress, connectionType, function, closure)
     ARRAY8Ptr	clientAddress;
     CARD16	connectionType;
@@ -559,7 +562,7 @@ ForEachMatchingIndirectHost (clientAddress, connectionType, function, closure)
 	    break;
 	if (d->chooser)
 	{
-	    ARRAY8Ptr	choice, IndirectChoice ();
+	    ARRAY8Ptr	choice;
 
 	    choice = IndirectChoice (clientAddress, connectionType);
 	    if (!choice || XdmcpARRAY8Equal (getLocalAddress(), choice))

@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: auth.c,v 1.25 90/09/29 16:17:58 rws Exp $
+ * $XConsortium: auth.c,v 1.26 91/01/10 10:42:00 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -442,13 +442,13 @@ doneAddrs ()
 	}
 }
 
+static checkEntry ();
+
 static
 saveEntry (auth)
 Xauth	*auth;
 {
 	struct addrList	*new;
-	char		*malloc ();
-	static		checkEntry ();
 
 	new = (struct addrList *) malloc (sizeof (struct addrList));
 	if (!new) {
@@ -714,7 +714,7 @@ setAuthNumber (auth, name)
     Xauth   *auth;
     char    *name;
 {
-    char	*colon, *malloc ();
+    char	*colon;
     char	*dot, *number;
 
     Debug ("setAuthNumber %s\n", name);

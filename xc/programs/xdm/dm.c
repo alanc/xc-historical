@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: dm.c,v 1.45 90/12/10 15:44:53 keith Exp $
+ * $XConsortium: dm.c,v 1.46 91/01/09 17:25:41 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -55,14 +55,15 @@ static char *Title;
 static int TitleLen;
 #endif
 
+#ifndef SYSV
+static SIGVAL ChildNotify ();
+#endif
+
 main (argc, argv)
 int	argc;
 char	**argv;
 {
     int	oldpid, oldumask;
-#ifndef SYSV
-    static SIGVAL	ChildNotify ();
-#endif
 
     /* make sure at least world write access is disabled */
     if (((oldumask = umask(022)) & 002) == 002)
