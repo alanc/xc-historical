@@ -1,5 +1,5 @@
 .\" Use -ms
-.\" $XConsortium: a2x.ms,v 1.44 93/12/29 20:35:46 rws Exp $
+.\" $XConsortium: a2x.ms,v 1.45 94/02/10 12:25:33 rws Exp $
 .de Ds
 .RS
 .nf
@@ -59,7 +59,7 @@ depending on the applications, it is possible to use X hands-free through
 \fBa2x\fP requires an X protocol extension to function.  The XTEST, DEC-XTRAP,
 and XTestExtension1 extensions can be used.  The XTEST extension was developed
 by the X Consortium for use in the X Test Suite, and an R5 patch to support
-the XTEST extension is available via anonymous ftp to export.lcs.mit.edu, as
+the XTEST extension is available via anonymous ftp to ftp.x.org, as
 the file /pub/XTEST/R5fix-xtest-1.  The DEC-XTRAP extension was developed by
 Digital Equipment Corp., and public versions are available for both R4 and R5.
 The XTestExtension1 extension was originally developed for an old test suite
