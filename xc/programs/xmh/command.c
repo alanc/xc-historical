@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: command.c,v 1.8 88/01/06 08:15:12 swick Exp $";
+static char rcs_id[] = "$Header: command.c,v 1.9 88/01/07 11:55:15 swick Locked $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -75,15 +75,58 @@ DoCommand(argv, inputfile, outputfile)
   char *inputfile;		/* Input file for command. */
   char *outputfile;		/* Output file for command. */
 {
-    FILEPTR fid;
+    int old_stdin, old_stdout, old_stderr;
+    FILEPTR fin, fout, ferr;
     int pid;
     fd_set readfds, fds;
     FD_ZERO(&fds);
     FD_SET(ConnectionNumber(theDisplay), &fds);
     DEBUG1("Executing %s ...", argv[0])
+
+    if (inputfile) {
+        old_stdin = dup(stdin);
+	fin = FOpenAndCheck(inputfile, "r");
+	(void) dup2(fileno(fin), fileno(stdin));
+    }
+
+    if (outputfile) {
+        old_stdout = dup(stdout);
+	fout = FOpenAndCheck(outputfile, "w");
+	(void) dup2(fileno(fout), fileno(stdout));
+    }
+
+    if (!debug) {		/* Throw away error messages. */
+        old_stderr = dup(stderr);
+	ferr = FOpenAndCheck("/dev/null", "w");
+	(void) dup2(fileno(ferr), fileno(stderr));
+	if (!outputfile) {
+	    old_stdout = dup(stdout);
+	    (void) dup2(fileno(ferr), fileno(stdout));
+	}
+    }
+
     childdone = FALSE;
     (void) signal(SIGCHLD, ChildDone);
-    pid = fork();
+    pid = vfork();
+    if (inputfile) {
+        fclose(fin);
+        dup2(old_stdin,  fileno(stdin));
+	close(old_stdin);
+    }
+    if (outputfile) {
+        fclose(fout);
+        dup2(old_stdout, fileno(stdout));
+	close(old_stdout);
+    }
+    if (!debug) {
+        fclose(ferr);
+        dup2(old_stderr, fileno(stderr));
+	close(old_stderr);
+	if (!outputfile) {
+	    dup2(old_stdout, fileno(stdout));
+	    close(old_stdout);
+	}
+    }
     if (pid == -1) Punt("Couldn't fork!");
     if (pid) {			/* We're the parent process. */
 	while (!childdone) {
@@ -102,20 +145,6 @@ DoCommand(argv, inputfile, outputfile)
 
 	DEBUG(" done\n")
     } else {			/* We're the child process. */
-	if (inputfile) {
-	    fid = FOpenAndCheck(inputfile, "r");
-	    (void) dup2(fileno(fid), fileno(stdin));
-	}
-	if (outputfile) {
-	    fid = FOpenAndCheck(outputfile, "w");
-	    (void) dup2(fileno(fid), fileno(stdout));
-	}
-	if (!debug) {		/* Throw away error messages. */
-	    fid = FOpenAndCheck("/dev/null", "w");
-	    (void) dup2(fileno(fid), fileno(stderr));
-	    if (!outputfile)
-		(void) dup2(fileno(fid), fileno(stdout));
-	}
 	(void) execv(FullPathOfCommand(argv[0]), argv);
 	(void) execvp(argv[0], argv);
 	Punt("Execvp failed!");
