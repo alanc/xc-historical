@@ -47,7 +47,8 @@ static char *names[NUMTEXTWIDGETS] = {"linewidth ","font ","foreground ",
 ** Returns the text widget which the user will edit.
 */
 
-Widget create_text_choice(w,type,length,width)
+Widget
+create_text_choice(w,type,length,width)
      Widget w;
      int type;
      int length, width;
@@ -78,10 +79,11 @@ Widget create_text_choice(w,type,length,width)
   static Widget text;		/* the text widget */
   static Widget label;		/* the label widget */
 
-  /* see the Xt Manual if you want to understand how this works... I
-     don't feel like going through the whole thing.
-     type is sent as an argument to WriteText() so it knows what string
-     to do stuff with. */
+  /* Disable keys which would cause the cursor to go off the single
+  ** line that we want to display.  If the pointer leaves the window,
+  ** update the GC accordingly.  The integer passed to WriteText is
+  ** so it knows what type of widget was just updated. */
+
   sprintf(translationtable,
      "<Leave>:      WriteText(%d)\n\
      Ctrl<Key>J:    Nothing()\n\
@@ -124,7 +126,8 @@ Widget create_text_choice(w,type,length,width)
   text = XtCreateManagedWidget("text",asciiStringWidgetClass,w,
 			       textargs,XtNumber(textargs));
 
-  /* like before, look in the Xt Manual for an explanation */
+  /* Register the actions and translations */
+
   XtAppAddActions(appcontext,actionTable,XtNumber(actionTable));
   XtOverrideTranslations(text,XtParseTranslationTable(translationtable));
 
@@ -138,10 +141,11 @@ Widget create_text_choice(w,type,length,width)
 */
 
 /*ARGSUSED*/
-static void WriteText(w,event,params,num_params)
+static void
+WriteText(w,event,params,num_params)
      Widget w;
      XEvent *event;
-     String *params;
+     String *params;		/* the type is in here */
      int *num_params;
 {
   char mbuf[80];
@@ -152,8 +156,8 @@ static void WriteText(w,event,params,num_params)
     strcpy(oldtextstrings[type],textstrings[type]);
     sprintf(mbuf,names[type]);	/* the right first half */
     strcat(mbuf,textstrings[type]); /* the right second half */
-    strcat(mbuf,"\n");		/* the right new line */
-    interpret(mbuf);
+    strcat(mbuf,"\n");		/* the right newline */
+    interpret(mbuf);		/* send it off */
   }
 }
 
@@ -162,28 +166,36 @@ static void WriteText(w,event,params,num_params)
 ** Changes the text in the text widget w of type type to newtext.
 */
 
-void change_text(w,newtext)
+void
+change_text(w,newtext)
      Widget w;
      String newtext;
 {
-  XawTextBlock text;
-  XawTextPosition first, last;
-  int length;
-  String oldtext;
+  XawTextBlock text;		/* the new text */
+  XawTextPosition first, last;	/* boundaries of the old text */
+  int length;			/* length of the old text */
+  String oldtext;		/* the old text */
+
   static Arg textargs[] = {
     {XtNstring, NULL}
   };
+
+  /* Initialize the XawTextBlock. */
 
   text.firstPos = 0;
   text.length = strlen(newtext);
   text.ptr = newtext;
   text.format = FMT8BIT;
 
+  /* Find the old text, so we can get its length, so we know how
+  ** much of it to update. */
+
   textargs[0].value = (XtArgVal) &oldtext;
   XtGetValues(w,textargs,XtNumber(textargs));
-
   first = XawTextTopPosition(w);
   last = (XawTextPosition) strlen(oldtext)+1;
+
+  /* Replace it with the new text. */
 
   XawTextReplace(w, first, last, &text);
 }

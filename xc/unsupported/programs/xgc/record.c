@@ -1,6 +1,7 @@
 /*
-** record.c
+** xgc
 **
+** record.c
 */
 
 #include <X11/Intrinsic.h>
@@ -34,26 +35,36 @@ extern XStuff X;
 extern Boolean recording;
 extern Widget recordbutton;
 
-extern char filename[40];
+extern char *filename;		/* name of the file we're recording to */
 
 void cancel_record();
 void done_choosing_filename();
 
-FILE *recordfile;
-FILE *playbackfile;
-extern FILE *yyin;
+FILE *recordfile;		/* the file we're recording to */
+FILE *playbackfile;		/* the file we're playing back from */
+extern FILE *yyin;		/* for yyparse */
+
+/* toggle_recordbutton(w,closure,call_data)
+** ----------------------------------------
+** This function is called when the user presses the "Record"
+** command button.  If we're not recording, we start; if we are,
+** we stop.  Also change the label to reflect the change in the
+** function of the button.
+*/
 
 /*ARGSUSED*/
-void toggle_recordbutton(w,closure,call_data)
+void
+toggle_recordbutton(w,closure,call_data)
      Widget w;
      caddr_t closure;
      caddr_t call_data;
 {
+  /* ArgList for changing the label */
   static Arg recordargs[] = {
     {XtNlabel,        (XtArgVal) NULL}
   };
   
-  char tmp[20];
+  char tmp[20];			/* new label */
   
   if (!recording) {
     start_recording();
@@ -68,24 +79,52 @@ void toggle_recordbutton(w,closure,call_data)
   XtSetValues(recordbutton,recordargs,XtNumber(recordargs));
 }
 
-static void start_recording() 
+/* start_recording()
+** -----------------
+** Get the name of the file the user wants to record into, and
+** start recording into it if he doesn't cancel.
+*/
+
+static void
+start_recording() 
 {
   get_filename(done_choosing_filename,cancel_record);
 }
 
-static void stop_recording() 
+/* stop_recording()
+** ----------------
+** Close the output file.
+*/
+
+static void
+stop_recording() 
 {
   fclose(recordfile);
 }
 
-static void cancel_record() 
+/* cancel_record()
+** ---------------
+** What to do if the if the user canceled recording, i.e. nothing.
+*/
+
+static void
+cancel_record() 
 {
 }
 
-static void done_choosing_filename() 
+/* done_choosing_filename()
+** ------------------------
+** What to do after the user's chosen a file.  Change the label on the
+** command button, open the file, and dump the current contents of the
+** GC into it.
+*/
+
+static void
+done_choosing_filename() 
 {
   static Arg recordargs[] = {
-    {XtNlabel,        (XtArgVal) NULL}
+    {XtNlabel,        (XtArgVal) NULL},
+    {XtNresize,       (XtArgVal) True}
   };
   
   char tmp[20];
@@ -100,20 +139,39 @@ static void done_choosing_filename()
   }
 }
 
-void print_if_recording(str)
+/* print_if_recording(str)
+** -----------------------
+** If we're recording to a file, put str in it.
+*/
+
+void
+print_if_recording(str)
      char *str;
 {
   if (recording)
     fprintf(recordfile,"%s",str);
 }
 
-void close_file_if_recording()
+/* close_file_if_recording()
+** -------------------------
+** If we're recording, stop.
+*/
+
+void 
+close_file_if_recording()
 {
   if (recording)
     fclose(recordfile);
 }
 
-static void print_out_gc_values()
+/* print_out_gc_values()
+** ---------------------
+** Dump the contents of the GC to the file, so that when the file gets
+** played back, it will be correctly initialized.
+*/
+
+static void
+print_out_gc_values()
 {
   int i;
   for (i=0;i<NUM_TESTS;++i) {
@@ -182,16 +240,36 @@ static void print_out_gc_values()
 
 /********************************************/
 
-void start_playback()
+/* start_playback()
+** ----------------
+** This gets called if the user wants to playback from a file.
+** Get the file name and do the appropriate thing.
+*/
+
+void
+start_playback()
 {
   get_filename(chose_playback_filename,cancel_playback);
 }
 
-static void cancel_playback()
+/* cancel_playback()
+** -----------------
+** What to do if the user canceled the playback request.
+*/
+
+static void
+cancel_playback()
 {
 }
 
-static void chose_playback_filename()
+/* chose_playback_filename()
+** -------------------------
+** What to do once the user's selected a filename to playback.
+** Play it back.
+*/
+
+static void
+chose_playback_filename()
 {
   if (playbackfile = fopen(filename,"r")) {
     yyin = playbackfile;
@@ -199,7 +277,13 @@ static void chose_playback_filename()
   }
 }
 
-void read_from_keyboard()
+/* read_from_keyboard()
+** --------------------
+** Do a playback from the keyboard.
+*/
+
+void
+read_from_keyboard()
 {
   yyin = stdin;
   yyparse();
