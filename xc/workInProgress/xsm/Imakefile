@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.5 94/02/18 20:05:45 converse Exp $
+XCOMM $XConsortium: Imakefile,v 1.6 94/02/22 14:33:17 mor Exp $
 #if !defined(RshCmd)
 #if SystemV
 #ifdef HPArchitecture
@@ -36,5 +36,5 @@ ComplexProgramTarget_1(xsm,$(LOCAL_LIBRARIES),NullParameter)
 ComplexProgramTarget_2(xsmclient,$(LOCAL_LIBRARIES),NullParameter)
 SpecialCObjectRule(remote,NullParameter,'-DRSHCMD="$(RSHCMD)"')
 #if !HasPutenv
-SpecialCObjectRule(xsm,NullParameter,-DNOPUTENV)
+SpecialCObjectRule(misc,NullParameter,-DNOPUTENV)
 #endif
