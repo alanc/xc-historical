@@ -23,7 +23,7 @@ SOFTWARE.
 ******************************************************************/
 
 /*
- * $XConsortium: xrefresh.c,v 1.8 88/07/07 13:36:21 jim Exp $
+ * $XConsortium: xrefresh.c,v 1.9 88/09/06 17:40:21 jim Exp $
  *
  * Kitchen sink version, useful for clearing small areas and flashing the 
  * screen.
@@ -325,11 +325,17 @@ char	*argv[];
 	    break;
     }
     xswa.override_redirect = True;
-    mask |= CWOverrideRedirect;
+    xswa.backing_store = NotUseful;
+    xswa.save_under = False;
+    mask |= (CWOverrideRedirect | CWBackingStore | CWSaveUnder);
     visual.visualid = CopyFromParent;
     win = XCreateWindow(dpy, DefaultRootWindow(dpy), x, y, width, height,
 	    0, DefaultDepth(dpy, screen), InputOutput, &visual, mask, &xswa);
 
+    /*
+     * at some point, we really ought to go walk the tree and turn off 
+     * backing store;  or do a ClearArea generating exposures on all windows
+     */
     XMapWindow (dpy, win);
     /* the following will free the color that we might have allocateded */
     XCloseDisplay (dpy);
