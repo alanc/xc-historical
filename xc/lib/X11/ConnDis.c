@@ -1,5 +1,5 @@
 #include "copyright.h"
-/* $Header: XConnDis.c,v 11.28 88/07/04 10:46:58 rws Exp $ */
+/* $Header: XConnDis.c,v 11.29 88/08/09 15:56:49 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1985, 1986	*/
 #define NEED_EVENTS
 /*
@@ -7,8 +7,8 @@
  * systems.  VMS and System V should plan to have their own version.
  */
 #include <stdio.h>
-#include "Xlibint.h"
 #include <X11/Xos.h>
+#include "Xlibint.h"
 #include <sys/socket.h>
 #ifndef hpux
 #include <netinet/tcp.h>
@@ -40,6 +40,7 @@ int _XConnectDisplay (display_name, expanded_name, screen_num)
 	char *screen_ptr;		/* Pointer for locating screen num */
 	int display_num;		/* Display number */
 	struct sockaddr_in inaddr;	/* INET socket address. */
+	unsigned long hostinetaddr;	/* result of inet_addr of arpa addr */
 #ifdef UNIXCONN
 	struct sockaddr_un unaddr;	/* UNIX socket address. */
 #endif
@@ -167,7 +168,8 @@ int _XConnectDisplay (display_name, expanded_name, screen_num)
 #endif
 	    {
 		/* Get the statistics on the specified host. */
-		if ((inaddr.sin_addr.s_addr = inet_addr(displaybuf)) == -1) {
+		hostinetaddr = inet_addr (displaybuf);
+		if (hostinetaddr == -1) {
 			if ((host_ptr = gethostbyname(displaybuf)) == NULL) {
 				/* No such host! */
 				errno = EINVAL;
@@ -182,10 +184,25 @@ int _XConnectDisplay (display_name, expanded_name, screen_num)
  
 			/* Set up the socket data. */
 			inaddr.sin_family = host_ptr->h_addrtype;
+#ifdef CRAY
+			{
+				long t;
+				bcopy((char *)host_ptr->h_addr,
+				      (char *)&t,
+				      sizeof(inaddr.sin_addr));
+				inaddr.sin_addr = t;
+			}
+#else
 			bcopy((char *)host_ptr->h_addr, 
 			      (char *)&inaddr.sin_addr, 
 			      sizeof(inaddr.sin_addr));
+#endif /* CRAY else BSD */
 		} else {
+#ifdef CRAY
+			inaddr.sin_addr = hostinetaddr;
+#else
+			inaddr.sin_addr.s_addr = hostinetaddr;
+#endif /* CRAY else BSD */
 			inaddr.sin_family = AF_INET;
 		}
 		addr = (struct sockaddr *) &inaddr;
@@ -309,7 +326,10 @@ _XWaitForWritable(dpy)
 	    pend = (pend / SIZEOF(xEvent)) * SIZEOF(xEvent);
 
 	    _XRead (dpy, buf, pend);
-	    for (ev = (xEvent *) buf; pend > 0; ev++, pend -= SIZEOF(xEvent))
+	    /* watch out for alignment on large architectures.... */
+	    for (ev = (xEvent *) buf; pend > 0;
+		 ev = (xEvent *) (((char *) ev) + SIZEOF(xEvent)),
+		 pend -= SIZEOF(xEvent)) 
 	    {
 		if (ev->u.u.type == X_Error)
 		    _XError (dpy, (xError *) ev);
