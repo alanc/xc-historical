@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: osf1.cf,v 1.10 92/07/24 16:22:43 rws Exp $
+XCOMM platform:  $XConsortium: osf1.cf,v 1.11 93/07/13 18:01:55 gildea Exp $
 /* only tested with Digital OSF/1 V1.0 */
 
 #define OSName			OSF/1 1.0
@@ -13,7 +13,6 @@ XCOMM operating system:  OSName
 #define AvoidNullMakeCommand	YES
 #define HasPosixThreads		YES
 #define ThreadedX		YES
-#define InstPgmFlags -S
 #define InstallCmd installbsd
 
 #if ThreadedX
