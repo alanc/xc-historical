@@ -1,6 +1,6 @@
 XCOMM -----------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-XCOMM $XConsortium: Imake.tmpl,v 1.214 94/03/26 18:46:25 gildea Exp $
+XCOMM $XConsortium: Imake.tmpl,v 1.215 94/03/28 15:24:39 gildea Exp $
 XCOMM
 
 /*
@@ -435,11 +435,7 @@ XCOMM the platform-specific parameters - edit site.def to change
 #if HasGcc2ForCplusplus
 #define CplusplusCmd g++
 #else
-#if HasCenterLineCplusplus
-#define CplusplusCmd clCC
-#else
 #define CplusplusCmd CC
-#endif
 #endif
 #endif
 #ifndef CplusplusStandardDefines
@@ -802,15 +798,15 @@ XCOMM the platform-specific parameters - edit site.def to change
 
 .SUFFIXES: .CCsuf
 
-              CCC = CplusplusCmd
-     CCDEBUGFLAGS = DefaultCplusplusDebugFlags
- CCEXTRA_INCLUDES = CplusplusExtraIncludes
-   CCIDL_INCLUDES = -I$(TOP)/include
-    CCSTD_DEFINES = CplusplusStandardDefines
-       CCCOPTIONS = CplusplusOptions
-       CCINCLUDES = $(INCLUDES) $(TOP_INCLUDES) $(CCEXTRA_INCLUDES) $(CCIDL_INCLUDES) 
-        CCDEFINES = $(CCINCLUDES) $(CCSTD_DEFINES) $(THREADS_CCDEFINES) $(CCEXTRA_DEFINES)
-          CCFLAGS = $(CCDEBUGFLAGS) $(CCCOPTIONS) $(THREADS_CCFLAGS) $(CCDEFINES)
+              CXX = CplusplusCmd
+    CXXDEBUGFLAGS = DefaultCplusplusDebugFlags
+CXXEXTRA_INCLUDES = CplusplusExtraIncludes
+  CXXIDL_INCLUDES = -I$(TOP)/include
+   CXXSTD_DEFINES = CplusplusStandardDefines
+       CXXOPTIONS = CplusplusOptions
+      CXXINCLUDES = $(INCLUDES) $(TOP_INCLUDES) $(CXXEXTRA_INCLUDES) $(CXXIDL_INCLUDES) 
+       CXXDEFINES = $(CXXINCLUDES) $(CXXSTD_DEFINES) $(THREADS_CXXDEFINES) $(CXXEXTRA_DEFINES)
+         CXXFLAGS = $(CXXDEBUGFLAGS) $(CXXOPTIONS) $(THREADS_CXXFLAGS) $(CXXDEFINES)
 #endif
          COMPRESS = CompressCmd
               CPP = CppCmd $(STD_CPP_DEFINES)		/* simple filters */
@@ -967,7 +963,9 @@ XCOMM the platform-specific parameters - edit site.def to change
         LINTFLAGS = $(LINTOPTS) -DLINT $(ALLDEFINES) $(DEPEND_DEFINES)
          LDPRELIB = LdPreLib
         LDPOSTLIB = LdPostLib
-        LDOPTIONS = $(CDEBUGFLAGS) $(CCOPTIONS) $(EXTRA_LDOPTIONS) $(THREADS_LDFLAGS) $(LOCAL_LDFLAGS) $(LDPRELIB)
+        LDOPTIONS = $(CDEBUGFLAGS) $(CCOPTIONS)  $(EXTRA_LDOPTIONS) $(THREADS_LDFLAGS) $(LOCAL_LDFLAGS) $(LDPRELIB)
+     CXXLDOPTIONS = $(CDEBUGFLAGS) $(CXXOPTIONS) $(EXTRA_LDOPTIONS) $(THREADS_LDFLAGS) $(LOCAL_LDFLAGS) $(LDPRELIB)
+
            LDLIBS = $(LDPOSTLIB) $(THREADS_LIBS) $(SYS_LIBRARIES) $(EXTRA_LIBRARIES)
 #if AlternateUsrLibDir && HasLdRunPath
        CCENVSETUP = LD_RUN_PATH=$(USRLIBDIR)
@@ -976,10 +974,10 @@ XCOMM the platform-specific parameters - edit site.def to change
            CCLINK = $(CC)
 #endif
 #if AlternateUsrLibDir && HasLdRunPath
-       CCENVSETUP = LD_RUN_PATH=$(USRLIBDIR)
-          CCCLINK = $(CCENVSETUP) $(CCC)
+      CXXENVSETUP = LD_RUN_PATH=$(USRLIBDIR)
+          CXXLINK = $(CXXENVSETUP) $(CXX)
 #else
-          CCCLINK = $(CCC)
+          CXXLINK = $(CXX)
 #endif
      LDSTRIPFLAGS = LdStripFlags
    LDCOMBINEFLAGS = LdCombineFlags
