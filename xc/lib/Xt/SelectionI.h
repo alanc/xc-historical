@@ -1,4 +1,4 @@
-/* $XConsortium: SelectionI.h,v 1.31 91/05/02 20:06:52 converse Exp $ */
+/* $XConsortium: SelectionI.h,v 1.31 91/05/02 20:24:14 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -129,9 +129,7 @@ typedef struct {
 #define MATCH_SELECT(event, info) ((event->time == info->time) && \
 	    (event->requestor == XtWindow(info->widget)) && \
 	    (event->selection == info->ctx->selection) && \
-	    ((event->target == *info->target) || \
-	     ((event->target == info->ctx->prop_list->incr_atom) && \
-	      (event->property == info->property))))
+	    (event->target == *info->target))
 #endif
 
 #endif /* _XtselectionI_h */
