@@ -22,7 +22,7 @@ InstallMultiple($(HEADERS),$(INCDIR))
 install:: snf/?*.snf
 	@case '${MFLAGS}' in *[i]*) set +e;; esac; \
 	cd snf; \
-	for i in *.snf; do \
+	for i in *.snf$(ZSUFFIX); do \
 		(set -x; $(INSTALL) -c $(INSTALLFLAGS) $$i $(LIBDIR)/fonts); \
 	done
 
@@ -39,12 +39,14 @@ snf/Makefile: bdf Makefile
 	rm -f $@; \
 	echo "# This makefile is created automagically by ../Makefile" > $@; \
 	echo 'FC=../$(FC)' >> $@; \
+	echo 'ZSUFFIX=$(ZSUFFIX)' >> $@; \
+	echo 'COMPRESS=$(COMPRESS)' >> $@; \
 	echo 'all: \'	>> $@; \
 	(cd bdf;ls *.bdf) \
-	| sed -e 's/\(.*\).bdf$$/\1.snf \\/' -e '$$s/..$$//' >> $@; \
+	| sed -e 's/\(.*\).bdf$$/\1.snf$$(ZSUFFIX) \\/' -e '$$s/..$$//' >> $@; \
 	echo >> $@; \
 	(cd bdf; ls *.bdf) \
-	| awk -F. '{printf "%s.snf: ../bdf/%s.bdf $$(FC)\n\t$$(FC) ../bdf/%s.bdf >$$@\n", $$1, $$1, $$1}' >> $@
+	| awk -F. '{printf "%s.snf$$(ZSUFFIX): ../bdf/%s.bdf $$(FC)\n\t$$(FC) ../bdf/%s.bdf $$(COMPRESS) >$$@\n", $$1, $$1, $$1}' >> $@
 
 snf:
 	mkdir snf
@@ -53,6 +55,6 @@ DependSubdirs($(SUBDIRS))
 
 clean::
 	(cd bdf; $(RM_CMD))
-	(cd snf; $(RM_CMD) Makefile *.snf)
+	(cd snf; $(RM_CMD) Makefile *.snf$(ZSUFFIX))
 
 FRC:
