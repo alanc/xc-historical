@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: utils.c,v 1.109 92/02/24 19:03:14 keith Exp $ */
+/* $XConsortium: utils.c,v 1.110 92/03/13 16:07:53 rws Exp $ */
 #include "Xos.h"
 #include <stdio.h>
 #include "misc.h"
@@ -90,8 +90,9 @@ extern int SelectWaitTime;
 #ifdef MEMBUG
 #define MEM_FAIL_SCALE 100000
 long Memory_fail = 0;
-static pointer minfree = NULL;
-static void CheckNode();
+
+#include <util/memleak/memleak.h>
+
 #endif
 
 Bool Must_have_memory = FALSE;
@@ -247,15 +248,6 @@ char	*argv[];
 {
     int i, skip;
 
-#ifdef MEMBUG
-#ifndef AIXV3
-    if (!minfree)
-	minfree = (pointer)sbrk(0);
-#else
-    /* segment 2 is user data space */
-    minfree = (pointer) 0x20000000;
-#endif
-#endif
     defaultKeyboardControl.autoRepeat = TRUE;
 
 #ifdef AIXV3
@@ -464,18 +456,6 @@ char	*argv[];
 	    defaultScreenSaverBlanking = PreferBlanking;
 	else if ( strcmp( argv[i], "-v") == 0)
 	    defaultScreenSaverBlanking = DontPreferBlanking;
-#ifdef MEMBUG
-	else if ( strcmp ( argv[i], "validateMemory") == 0)
-	{
-	    extern unsigned long MemoryValidate;
-	    MemoryValidate = 1;
-	}
-	else if ( strcmp ( argv[i], "neverFreeMemory") == 0)
-	{
-	    extern unsigned long MemoryNeverFree;
-	    MemoryNeverFree = 1;
-	}
-#endif
 	else if ( strcmp( argv[i], "-wm") == 0)
 	    defaultBackingStore = WhenMapped;
 	else if ( strcmp( argv[i], "-x") == 0)
@@ -523,120 +503,6 @@ char	*argv[];
     }
 }
 
-#ifndef SPECIAL_MALLOC
-
-#ifdef MEMBUG
-#define FIRSTMAGIC 0x11aaaa11
-#define SECONDMAGIC 0x22aaaa22
-#define FREEDMAGIC  0x33aaaa33
-#define BLANKMAGIC  0x44aaaa44
-#define ALLOCMAGIC  0x55aaaa55
-
-typedef struct _MallocHeader	*MallocHeaderPtr;
-
-typedef struct _MallocHeader {
-	unsigned long	amount;
-	unsigned long	time;
-	MallocHeaderPtr	prev;
-	MallocHeaderPtr	next;
-	unsigned long	magic;
-} MallocHeaderRec;
-
-typedef struct _MallocTrailer {
-	unsigned long	magic;
-} MallocTrailerRec, *MallocTrailerPtr;
-
-unsigned long	MemoryAllocTime;
-unsigned long	MemoryAllocBreakpoint = ~0;
-unsigned long	MemoryFreeBreakpoint = ~0;
-unsigned long	MemoryActive = 0;
-unsigned long	MemoryValidate;
-unsigned long	MemoryNeverFree;
-
-MallocHeaderPtr	MemoryInUse;
-MallocHeaderPtr	MemoryFreed;
-
-#define request(amount)	((amount) + sizeof (MallocHeaderRec) + sizeof (MallocTrailerRec))
-#define Header(ptr)	((MallocHeaderPtr) (((char *) ptr) - sizeof (MallocHeaderRec)))
-#define Trailer(ptr)	((MallocTrailerPtr) (((char *) ptr) + Header(ptr)->amount))
-
-static unsigned long *
-SetupBlock(ptr, amount)
-    unsigned long   *ptr;
-{
-    MallocHeaderPtr	head = (MallocHeaderPtr) ptr;
-    MallocTrailerPtr	tail = (MallocTrailerPtr) (((char *) ptr) + amount + sizeof (MallocHeaderRec));
-
-    MemoryActive += amount;
-    head->magic = FIRSTMAGIC;
-    head->amount = amount;
-    if (MemoryAllocTime == MemoryAllocBreakpoint)
-	head->amount = amount;
-    head->time = MemoryAllocTime++;
-    head->next = MemoryInUse;
-    head->prev = 0;
-    if (MemoryInUse)
-	MemoryInUse->prev = head;
-    MemoryInUse = head;
-
-    tail->magic = SECONDMAGIC;
-    
-    return (unsigned long *)(((char *) ptr) + sizeof (MallocHeaderRec));
-}
-
-ValidateAllActiveMemory ()
-{
-    MallocHeaderPtr	head;
-    MallocTrailerPtr	tail;
-
-    for (head = MemoryInUse; head; head = head->next)
-    {
-	tail = (MallocTrailerPtr) (((char *) (head + 1)) + head->amount);
-    	if (head->magic == FREEDMAGIC)
-	    FatalError("Free data on active list");
-    	if(head->magic != FIRSTMAGIC || tail->magic != SECONDMAGIC)
-	    FatalError("Garbage object on active list");
-    }
-    for (head = MemoryFreed; head; head = head->next)
-    {
-	tail = (MallocTrailerPtr) (((char *) (head + 1)) + head->amount);
-	if (head->magic != FREEDMAGIC || tail->magic != FREEDMAGIC)
-	    FatalError("Non free data on free list");
-	if (!CheckMemoryContents (head, BLANKMAGIC))
-	    FatalError("Freed data reused");
-    }
-}
-
-FillMemoryContents (head, value)
-    MallocHeaderPtr head;
-    long	    value;
-{
-    int		    count;
-    long	    *store;
-
-    count = head->amount / sizeof (long);
-    store = (long *) (head + 1);
-    while (count--)
-	*store++ = value;
-}
-
-CheckMemoryContents (head, value)
-    MallocHeaderPtr head;
-    long	    value;
-{
-    int		    count;
-    long	    *check;
-
-    count = head->amount / sizeof (long);
-    check = (long *) (head + 1);
-    while (count--)
-	if (*check++ != value)
-	    return FALSE;
-    return TRUE;
-}
-
-#endif
-
 /* XALLOC -- X's internal memory allocator.  Why does it return unsigned
  * int * instead of the more common char *?  Well, if you read K&R you'll
  * see they say that alloc must return a pointer "suitable for conversion"
@@ -661,18 +527,11 @@ Xalloc (amount)
     /* aligned extra on long word boundary */
     amount = (amount + 3) & ~3;
 #ifdef MEMBUG
-    if (MemoryValidate)
-	ValidateAllActiveMemory ();
     if (!Must_have_memory && Memory_fail &&
 	((random() % MEM_FAIL_SCALE) < Memory_fail))
 	return (unsigned long *)NULL;
-    if (ptr = (pointer)malloc(request(amount)))
-    {
-	unsigned long	*ret;
-	ret = SetupBlock (ptr, amount);
-	FillMemoryContents ((MallocHeaderPtr) ptr, ALLOCMAGIC);
-	return ret;
-    }
+    if (ptr = (pointer)fmalloc(amount))
+	return (unsigned long *) ptr;
 #else
     if (ptr = (pointer)malloc(amount))
 	return (unsigned long *)ptr;
@@ -711,29 +570,12 @@ Xrealloc (ptr, amount)
     char *realloc();
 
 #ifdef MEMBUG
+    if (!Must_have_memory && Memory_fail &&
+	((random() % MEM_FAIL_SCALE) < Memory_fail))
+	return (unsigned long *)NULL;
+    ptr = (pointer)frealloc((char *) ptr, amount);
     if (ptr)
-    {
-    	if (MemoryValidate)
-	    ValidateAllActiveMemory ();
-    	if ((long)amount <= 0)
-    	{
-	    if (!amount)
-	    	Xfree(ptr);
-	    return (unsigned long *)NULL;
-    	}
-    	if (!Must_have_memory && Memory_fail &&
-	    ((random() % MEM_FAIL_SCALE) < Memory_fail))
-	    return (unsigned long *)NULL;
-    	amount = (amount + 3) & ~3;
-	CheckNode(ptr);
-	ptr = (pointer)realloc((char *) Header (ptr), request(amount));
-	if (ptr)
-	    return SetupBlock (ptr, amount);
-    }
-    else
-    {
-	return Xalloc (amount);
-    }
+	return (unsigned long *) ptr;
 #else
     if ((long)amount <= 0)
     {
@@ -764,87 +606,26 @@ Xfree(ptr)
     register pointer ptr;
 {
 #ifdef MEMBUG
-    if (MemoryValidate)
-	ValidateAllActiveMemory ();
     if (ptr)
-    {
-	MallocHeaderPtr	    head;
-	MallocTrailerPtr    trail;
-
-	CheckNode(ptr);
-	head = Header(ptr);
-	trail = Trailer(ptr);
-	if (head->time == MemoryFreeBreakpoint)
-	    head->magic = FIRSTMAGIC;
-	head->magic = FREEDMAGIC;
-	trail->magic = FREEDMAGIC;
-	FillMemoryContents (head, BLANKMAGIC);
-	if (MemoryNeverFree)
-	{
-	    head->prev = 0;
-	    head->next = MemoryFreed;
-	    MemoryFreed = head;
-	}
-	else
-	    free ((char *) head);
-    }
+	ffree ((char *) ptr);
 #else
     if (ptr)
 	free((char *)ptr); 
 #endif
 }
 
+OsInitAllocator ()
+{
 #ifdef MEMBUG
-static void
-CheckNode(ptr)
-    pointer ptr;
-{
-    MallocHeaderPtr	head;
-    MallocHeaderPtr	f, prev;
+    static int	been_here;
 
-    if (ptr < minfree)
-	FatalError("Trying to free static storage");
-    head = Header(ptr);
-    if (((pointer) head) < minfree)
-	FatalError("Trying to free static storage");
-    if (head->magic == FREEDMAGIC)
-	FatalError("Freeing something already freed");
-    if(head->magic != FIRSTMAGIC || Trailer(ptr)->magic != SECONDMAGIC)
-	FatalError("Freeing a garbage object");
-    if(head->prev)
-	head->prev->next = head->next;
+    /* Check the memory system after each generation */
+    if (been_here)
+	CheckMemory ();
     else
-	MemoryInUse = head->next;
-    if (head->next)
-	head->next->prev = head->prev;
-    MemoryActive -= head->amount;
-}
-
-DumpMemoryInUse (time)
-    unsigned long   time;
-{
-    MallocHeaderPtr	head;
-
-    for (head = MemoryInUse; head; head = head->next)
-	if (head->time >= time)
-	    fprintf (stderr, "0x%08x %5d %6d\n", head,
-					head->amount,
-					head->time);
-}
-
-static unsigned long	MarkedTime;
-
-MarkMemoryTime ()
-{
-    MarkedTime = MemoryAllocTime;
-}
-
-DumpMemorySince ()
-{
-    DumpMemoryInUse (MarkedTime);
-}
+	been_here = 1;
 #endif
-#endif /* SPECIAL_MALLOC */
+}
 
 /*VARARGS1*/
 void
