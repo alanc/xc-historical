@@ -1,4 +1,4 @@
-/* $XConsortium: t1io.c,v 1.4 91/10/10 11:19:41 rws Exp $ */
+/* $XConsortium: t1io.c,v 1.5 93/08/22 11:52:47 rws Exp $ */
 /* Copyright International Business Machines,Corp. 1991
  * All Rights Reserved
  *
@@ -69,11 +69,16 @@ F_FILE *T1Open(fn, mode)
   char *mode;  /* Pointer to open mode string */
 {
   F_FILE *of = &TheFile;
- 
+  int oflags = O_RDONLY;	/* We know we are only reading */
+
   Decrypt = 0;
  
-  /* We know we are only reading */
-  if ((of->fd=open(fn, O_RDONLY)) < 0) return NULL;
+#ifdef O_BINARY			/* VMS or DOS */
+  oflags |= O_BINARY;
+#endif
+  of->fd = open(fn, oflags);
+  if (of->fd < 0)
+      return NULL;
  
   /* Initialize the buffer information of our file descriptor */
   of->b_base = TheBuffer;
