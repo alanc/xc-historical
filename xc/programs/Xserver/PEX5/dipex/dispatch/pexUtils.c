@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: pexUtils.c,v 5.1 91/02/16 09:56:42 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -167,11 +167,21 @@ static unsigned long obj_array_sizes[] = {
 
 #define PU_CHECK_LIST( plist )	if (!plist)	 return( PU_BAD_LIST )
 
-#define	PU_GROW_LIST( plist ) \
+/*
+ * XXX - calls abort if passed a pList which has had the objects
+ * allocated right after the header
+ */
+
+#define	PU_GROW_LIST( plist, atleast ) \
 {	\
-    register int newmax = (int)(plist->maxObj + obj_array_sizes[plist->type]);	\
+    register int newmax; \
     ddPointer pList;	\
 	\
+    newmax = obj_array_sizes[plist->type] + plist->maxObj; \
+    if (newmax < (atleast)) \
+	newmax = (atleast); \
+    if (plist->pList == (ddPointer) (plist + 1))
+	abort ();
     pList = (ddPointer)Xrealloc( (pointer)(plist->pList), 	\
 		(unsigned long)(newmax * obj_struct_sizes[plist->type] ));	\
     if (!pList ) return( BadAlloc );	\
@@ -247,12 +257,24 @@ ddListType	type;
     listofObj	*pList;
 
     /* allocate in one chunk */
-    pList = (listofObj *)Xalloc( sizeof(listofObj)
-			    + obj_array_sizes[type] * obj_struct_sizes[type]);
-    if ( !pList ) return( pList );
+    pList = (listofObj *)Xalloc( sizeof(listofObj) );
+    if ( !pList ) return NULL;
 
-    puInitList(pList, type, obj_array_sizes[type]);
-	
+    pList->type = type;
+    pList->numObj = 0;
+    pList->maxObj = obj_array_sizes[type];
+
+    if (!pList->maxObj)
+	pList->pList = (ddPointer) NULL;
+    else
+	pList->pList = (ddPointer) Xalloc (pList->maxObj * obj_struct_sizes[type]);
+
+    if (!pList->pList)
+    {
+	Xfree (pList);
+	return NULL;
+    }
+
     return( pList );
 }	/* puCreateList */
 
@@ -260,7 +282,12 @@ void
 puDeleteList( pList )
 listofObj	*pList;
 {
-    if ( pList ) Xfree( (pointer)pList );
+    if ( pList ) 
+    {
+	if (pList->pList && pList->pList != (ddPointer) (pList + 1))
+	    Xfree ((pointer) pList->pList);
+	Xfree( (pointer)pList );
+    }
     return;
 }	/* puDeleteList */
 
@@ -377,7 +404,7 @@ puAddToList( pitem, numItems, plist )
 
 	/* macro returns error if can't allocate space */
 	if ( plist->numObj + numItems > plist->maxObj )
-		PU_GROW_LIST( plist );
+		PU_GROW_LIST( plist, plist->numObj + numItems );
 
 	pi2 = &(plist->pList[ obj_struct_sizes[plist->type] * plist->numObj ]);
 	bcopy( (char *)pitem, (char *)pi2, (int)(numItems * obj_struct_sizes[plist->type]) );
@@ -521,7 +548,7 @@ puCopyList( psrc, pdest )
 	}
 
 	if ( psrc->numObj > pdest->maxObj )
-		PU_GROW_LIST( pdest );
+		PU_GROW_LIST( pdest , psrc->numObj );
 
 	PU_COPY_LIST_ELEMENTS( psrc->pList, pdest->pList, 
 			obj_struct_sizes[psrc->type] * psrc->numObj );
