@@ -5,10 +5,6 @@
 PEXDIRS = PEX
 #endif
 
-#ifndef BuildBdfFonts
-#define BuildBdfFonts YES
-#endif
-
 #if BuildBdfFonts
 BDFDIRS = bdf
 #endif
