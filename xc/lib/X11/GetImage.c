@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XGetImage.c,v 11.21 88/09/06 16:08:03 jim Exp $ */
+/* $XConsortium: XGetImage.c,v 11.22 88/12/31 16:27:38 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #define NEED_REPLIES
@@ -84,6 +84,8 @@ XImage *XGetSubImage(dpy, d, x, y, width, height, plane_mask, format,
 	XImage *temp_image;
 	temp_image = XGetImage(dpy, d, x, y, width, height, 
 				plane_mask, format);
+	if (!temp_image)
+	    return (XImage *)NULL;
 	_XSetImage(temp_image, dest_image, dest_x, dest_y);
 	XDestroyImage(temp_image);
 	return (dest_image);
