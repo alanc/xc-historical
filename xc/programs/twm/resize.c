@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: resize.c,v 1.62 89/12/10 19:20:13 jim Exp $
+ * $XConsortium: resize.c,v 1.63 89/12/14 14:52:00 jim Exp $
  *
  * window resizing borrowed from the "wm" window manager
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: resize.c,v 1.62 89/12/10 19:20:13 jim Exp $";
+"$XConsortium: resize.c,v 1.63 89/12/14 14:52:00 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -744,8 +744,8 @@ void SetupWindow (tmp_win, x, y, w, h, bw)
         client_event.xconfigure.display = dpy;
         client_event.xconfigure.event = tmp_win->w;
         client_event.xconfigure.window = tmp_win->w;
-        client_event.xconfigure.x = x;
-        client_event.xconfigure.y = y + tmp_win->title_height;
+        client_event.xconfigure.x = x+tmp_win->frame_bw;
+        client_event.xconfigure.y = y+tmp_win->frame_bw + tmp_win->title_height;
         client_event.xconfigure.width = tmp_win->frame_width;
         client_event.xconfigure.height = tmp_win->frame_height -
                 tmp_win->title_height;

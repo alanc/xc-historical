@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.124 89/12/10 19:20:27 jim Exp $
+ * $XConsortium: events.c,v 1.125 89/12/14 14:52:09 jim Exp $
  *
  * twm event handling
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: events.c,v 1.124 89/12/10 19:20:27 jim Exp $";
+"$XConsortium: events.c,v 1.125 89/12/14 14:52:09 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -2048,12 +2048,14 @@ HandleConfigureRequest()
 
     if (cre->value_mask & CWStackMode)
     {
+	/*
+	 * Warning, the raise or lower will be done in a different protocol
+	 * request from the rest of the event; this may be bad...
+	 */
 	if (cre->detail == Above)
 	    XRaiseWindow(dpy, Tmp_win->frame);
 	else if (cre->detail == Below)
 	    XLowerWindow(dpy, Tmp_win->frame);
-
-	return;
     }
 
     /* Don't modify frame_XXX fields before calling SetupWindow! */
@@ -2084,11 +2086,12 @@ HandleConfigureRequest()
 	}
 	Tmp_win->old_bw = cre->border_width;  /* for restoring */
     }
-    if (cre->value_mask & CWX) {
-	x = cre->x;			/* override even if border change */
+
+    if (cre->value_mask & CWX) {	/* override even if border change */
+	x = cre->x - bw;
     }
     if (cre->value_mask & CWY) {
-	y = cre->y - ((gravy >= 0) ? Tmp_win->title_height : 0);
+	y = cre->y - ((gravy >= 0) ? Tmp_win->title_height : 0) - bw;
     }
 
     if (cre->value_mask & CWWidth) {
