@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: auth.c,v 1.1 94/02/22 14:32:07 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -16,17 +16,6 @@ purpose.  It is provided "as is" without express or implied warranty.
 
 #include "xsm.h"
 
-#ifdef X_NOT_STDC_ENV
-#define Time_t long
-extern Time_t time ();
-#else
-#include <time.h>
-#define Time_t time_t
-#endif
-
-#define MAGIC_COOKIE_LEN 16
-
-
 
 /*
  * Host Based Authentication Callback.  This callback is invoked if
@@ -41,53 +30,6 @@ char *hostname;
 
 {
     return (0);	      /* For now, we don't support host based authentication */
-}
-
-
-
-static
-GenerateMagicCookie (auth, len)
-
-char		**auth;
-unsigned short 	*len;
-
-{
-    long    ldata[2];
-    int	    seed;
-    int	    value;
-    int	    i;
-    
-    *len = MAGIC_COOKIE_LEN;
-    *auth = (char *) malloc (MAGIC_COOKIE_LEN + 1);
-
-#ifdef ITIMER_REAL
-    {
-	struct timeval  now;
-#if defined(SVR4) || defined(WIN32) || defined(VMS)
-	gettimeofday (&now);
-#else
-	struct timezone zone;
-	gettimeofday (&now, &zone);
-#endif
-	ldata[0] = now.tv_sec;
-	ldata[1] = now.tv_usec;
-    }
-#else
-    {
-	long    time ();
-
-	ldata[0] = time ((long *) 0);
-	ldata[1] = getpid ();
-    }
-#endif
-    seed = (ldata[0]) + (ldata[1] << 16);
-    srand (seed);
-    for (i = 0; i < (int) *len; i++)
-    {
-	value = rand ();
-	(*auth)[i] = value & 0xff;
-    }
-    (*auth)[*len] = '\0';
 }
 
 
@@ -126,6 +68,8 @@ IceAuthDataEntry *entry;
  * Provide authentication data to clients that wish to connect
  */
 
+#define MAGIC_COOKIE_LEN 16
+
 Status
 set_auth (count, listenObjs, authDataEntries)
 
@@ -154,16 +98,18 @@ IceAuthDataEntry	**authDataEntries;
 	(*authDataEntries)[i].protocol_name = "ICE";
 	(*authDataEntries)[i].auth_name = "MIT-MAGIC-COOKIE-1";
 
-	GenerateMagicCookie (&(*authDataEntries)[i].auth_data,
-	    &(*authDataEntries)[i].auth_data_length);
+	(*authDataEntries)[i].auth_data =
+	    IceGenerateMagicCookie (MAGIC_COOKIE_LEN);
+	(*authDataEntries)[i].auth_data_length = MAGIC_COOKIE_LEN;
 
 	(*authDataEntries)[i+1].address =
 	    IceGetListenNetworkId (listenObjs[i/2]);
 	(*authDataEntries)[i+1].protocol_name = "XSMP";
 	(*authDataEntries)[i+1].auth_name = "MIT-MAGIC-COOKIE-1";
 
-	GenerateMagicCookie (&(*authDataEntries)[i+1].auth_data,
-	    &(*authDataEntries)[i+1].auth_data_length);
+	(*authDataEntries)[i+1].auth_data = 
+	    IceGenerateMagicCookie (MAGIC_COOKIE_LEN);
+	(*authDataEntries)[i+1].auth_data_length = MAGIC_COOKIE_LEN;
 
 	write_iceauth (addfp, removefp, &(*authDataEntries)[i]);
 	write_iceauth (addfp, removefp, &(*authDataEntries)[i+1]);
