@@ -1,4 +1,4 @@
-/* $XConsortium: Resources.c,v 1.117 94/02/21 15:31:34 kaleb Exp $ */
+/* $XConsortium: Resources.c,v 1.118 94/02/21 16:17:44 kaleb Exp $ */
 
 /*LINTLIBRARY*/
 
@@ -448,7 +448,8 @@ void _XtDependencies(class_resp, class_num_resp, super_res, super_num_res,
 		     */
 		    /* We do insist that size be identical to superclass */
 		    if (class_res[i].xrm_size != new_res[j]->xrm_size) {
-			BadSize(class_res[i].xrm_size, class_res[i].xrm_name);
+			BadSize(class_res[i].xrm_size,
+				(XrmQuark) class_res[i].xrm_name);
 			class_res[i].xrm_size = new_res[j]->xrm_size;
 		    }
 		    new_res[j] = &(class_res[i]);
