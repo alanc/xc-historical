@@ -1,4 +1,4 @@
-.\" $XConsortium: x11perf.man,v 1.20 94/04/11 14:28:39 gildea Exp $
+.\" $XConsortium: x11perf.man,v 1.21 94/04/12 18:42:33 dpw Exp $
 .\" Copyright 1989 Massachusetts Institute of Technology
 .\"
 .\" Permission to use, copy, modify, distribute, and sell this software and
@@ -121,10 +121,9 @@ window, but report on how many children windows per second the server can map,
 unmap, or move.
 .PP
 The current program is mostly the responsibility of Joel McCormack.  It is
-based upon the x11perf developed by Phil Karlton, Susan Angebranndt, and Chris
-Kent, who wanted to assess performance differences between various servers.
-Mary Walker, Todd Newman, and several tests were added 
-in order to write and tune
+based upon the x11perf developed by Phil Karlton, Susan Angebranndt, Chris
+Kent, Mary Walker, and Todd Newman, who wanted to assess performance differences between various servers.
+Several tests were added  in order to write and tune
 the PMAX (DECStation 3100) servers.  
 For a general release to the world, 
 .I x11perf 
