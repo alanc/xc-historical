@@ -37,7 +37,7 @@
  */
 
 #ifndef lint
-static char *rcsid_xwd_c = "$XConsortium: xwd.c,v 1.51 89/12/10 16:49:07 rws Exp $";
+static char *rcsid_xwd_c = "$XConsortium: xwd.c,v 1.52 90/05/14 11:07:24 rws Exp $";
 #endif
 
 /*%
@@ -431,14 +431,12 @@ int Get_XColors(win_info, colors)
     if (!win_info->colormap)
 	return(0);
 
-    if (win_info->visual->class == TrueColor)
-	return(0);    /* colormap is not needed */
-
     ncolors = win_info->visual->map_entries;
     if (!(*colors = (XColor *) malloc (sizeof(XColor) * ncolors)))
       Fatal_Error("Out of memory!");
 
-    if (win_info->visual->class == DirectColor) {
+    if (win_info->visual->class == DirectColor ||
+	win_info->visual->class == TrueColor) {
 	Pixel red, green, blue, red1, green1, blue1;
 
 	red = green = blue = 0;
