@@ -1,4 +1,4 @@
-/* $XConsortium: gfx.c,v 1.12 94/11/29 19:17:54 mor Exp mor $ */
+/* $XConsortium: gfx.c,v 1.13 94/12/01 20:55:35 mor Exp $ */
 /*
  * Copyright 1994 Network Computing Devices, Inc.
  *
@@ -749,13 +749,14 @@ ProcLBXImageText(client)
     if (bytes == 0)
 	goto bail;
     /* copy the text elements */
-    bcopy((char *) &stuff[1], after + bytes, stuff->nChars);
+    bcopy((char *) &stuff[1], after + bytes, len - sz_xImageTextReq);
+    bytes += len - sz_xImageTextReq;
     FinishLBXRequest(client, REQ_PASSTHROUGH);
     newreq->reqType = server->lbxReq;
     newreq->lbxReqType = stuff->reqType == X_ImageText8 ? X_LbxImageText8 : X_LbxImageText16;
     newreq->nChars = stuff->nChars;
     GFX_SET_DRAWABLE_AND_GC;
-    len = ((after + bytes + stuff->nChars) - ((char *) newreq));
+    len = ((after + bytes) - ((char *) newreq));
     extra = pad[len & 3];
     bzero(((char *) newreq) + len, extra);
     len += extra;
