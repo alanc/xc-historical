@@ -1,4 +1,4 @@
-XCOMM $XConsortium$
+XCOMM $XConsortium: Imakefile,v 1.71 91/07/16 22:50:36 gildea Exp $
 XCOMM
 XCOMM This library contains miscellaneous utility routines and is not part
 XCOMM of the Xlib standard.
@@ -38,6 +38,7 @@ HEADERS = \
 	DisplayQue.h \
 	Drawing.h \
 	Editres.h \
+	EditresP.h \
 	Error.h \
 	Initer.h \
 	Misc.h \
