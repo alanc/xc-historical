@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: access.c,v 1.47 91/02/12 17:42:48 keith Exp $ */
+/* $XConsortium: access.c,v 1.48 91/02/12 18:56:49 rws Exp $ */
 
 #include "Xos.h"
 #include "X.h"
@@ -408,7 +408,7 @@ ResetHosts (display)
 	if (index (hostname, '@'))
 	{
 	    SecureRPCInit ();
-	    (void) NewHost (FamilySecureRPC, hostname, strlen (hostname));
+	    (void) NewHost (FamilyNetname, hostname, strlen (hostname));
 	}
 	else
 #endif /* SECURE_RPC */
@@ -485,7 +485,7 @@ AddHost (client, family, length, pAddr)
 	return(BadAccess);
     switch (family) {
 #ifdef SECURE_RPC
-    case FamilySecureRPC:
+    case FamilyNetname:
 	len = length;
 	SecureRPCInit ();
 	break;
@@ -565,7 +565,7 @@ RemoveHost (client, family, length, pAddr)
 	return(BadAccess);
     switch (family) {
 #ifdef SECURE_RPC
-    case FamilySecureRPC:
+    case FamilyNetname:
 	len = length;
 	break;
 #endif
