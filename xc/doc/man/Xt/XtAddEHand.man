@@ -236,16 +236,6 @@ Note that the widget might already have those mask bits set
 because of other nonraw event handlers registered on it.
 .LP
 The
-.ZN XtAddRawEventHandler
-function is similar to
-.ZN XtAddEventHandler 
-except that it does not affect the widget's mask and never causes an
-.ZN XSelectInput
-for its events.
-Note that the widget might already have those mask bits set
-because of other nonraw event handlers registered on it.
-.LP
-The
 .ZN XtRemoveRawEventHandler
 function stops the specified procedure from receiving the specified events.
 Because the procedure is a raw event handler,
