@@ -1,8 +1,8 @@
-XCOMM $XConsortium: Imakefile,v 1.32 93/09/18 10:33:44 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.33 93/09/26 21:50:09 rws Exp $
 
 HEADERS = Xext.h multibuf.h shape.h XShm.h MITMisc.h XI.h XInput.h XIproto.h \
 	XTest.h xtestext1.h saver.h scrnsaver.h XIE.h XIEproto.h XIEprotost.h \
-	sync.h XKB.h XKBproto.h XKBstr.h
+	sync.h XKB.h XKBproto.h XKBstr.h record.h recordstr.h
 
 INSTALLFLAGS = $(INSTINCFLAGS)
 
