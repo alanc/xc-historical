@@ -1,4 +1,4 @@
-/* $XConsortium: pl_lut.c,v 1.2 92/05/20 20:37:43 mor Exp $ */
+/* $XConsortium: pl_lut.c,v 1.3 92/06/12 10:33:41 mor Exp $ */
 
 /************************************************************************
 Copyright 1987,1991,1992 by Digital Equipment Corporation, Maynard,
@@ -151,17 +151,17 @@ INPUT PEXLookupTable	destLut;
 }
 
 
-PEXTableInfo *
-PEXGetTableInfo (display, d, type)
+Status
+PEXGetTableInfo (display, d, type, info)
 
 INPUT Display		*display;
 INPUT Drawable		d;
 INPUT int		type;
+INPUT PEXTableInfo	*info;
 
 {
     pexGetTableInfoReq     	*req;
     pexGetTableInfoReply   	rep;
-    PEXTableInfo		*pt;
 
 
     /*
@@ -183,20 +183,13 @@ INPUT int		type;
     {
 	UnlockDisplay (display);
 	PEXSyncHandle (display);
-	return (NULL);            /* return an error */
+	return (0);            /* return an error */
     }
 
-
-    /*
-     * Allocate a buffer for the replies to pass back to the user.
-     */
-
-    pt = (PEXTableInfo *) PEXAllocBuf ((unsigned) (sizeof (PEXTableInfo)));
-
-    pt->definable_entries = rep.definableEntries;
-    pt->predefined_count = rep.numPredefined;
-    pt->predefined_min = rep.predefinedMin;
-    pt->predefined_max = rep.predefinedMax;
+    info->definable_entries = rep.definableEntries;
+    info->predefined_count = rep.numPredefined;
+    info->predefined_min = rep.predefinedMin;
+    info->predefined_max = rep.predefinedMax;
 
 
     /*
@@ -206,7 +199,7 @@ INPUT int		type;
     UnlockDisplay (display);
     PEXSyncHandle (display);
 
-    return (pt);
+    return (1);
 }
 
 
