@@ -107,32 +107,32 @@ Function "move-or-raise"	# simulate uwm action
 
 DefaultFunction f.nop		# ignore extraneous events
 
-Button1 =      : root                     : f.menu "twmops"
-Button2 =      : root                     : f.menu "windowops"
-Button3 =      : root                     : f.menu "TwmWindows"
-Button1 =      : title                    : f.function "move-or-raise"
-Button1 =      : icon                     : f.iconify
-Button1 =      : iconmgr                  : f.iconify
-Button1 = m    : window|icon|frame|title  : f.lower
-Button2 = m    : window                   : f.resize
-Button3 = m    : window|icon|frame|title  : f.function "move-or-raise"
-Button1 = c|m|s: root			  : f.refresh
-#"F20"   =      : all                      : f.warptoscreen "next"
+Button1 =	: root				: f.menu "twmops"
+Button2 =	: root				: f.menu "windowops"
+Button3 =	: root				: f.menu "TwmWindows"
+Button1 =	: title				: f.function "move-or-raise"
+Button1 =	: icon				: f.iconify
+Button1 =	: iconmgr			: f.iconify
+Button1	= m	: window|icon|frame|title	: f.lower
+Button2	= m	: window			: f.resize
+Button3	= m	: window|icon|frame|title	: f.function "move-or-raise"
+Button1	= c|m|s	: root				: f.refresh
+#"F20"	=	: all				: f.warptoscreen "next"
 
-"F24"	=      : all			  : f.warpto "xmh"
-"F25"   =      : all			  : f.warpto "[expo]"
-"F26"   =      : all                      : f.warpto "emacs"
-"KP_Subtract" = : all                     : f.colormap "next"
-"KP_Add" =     : all                      : f.colormap "default"
-"F28"   =      : all                      : f.warpring "next"
-"F30"   =      : all                      : f.warptoiconmgr ""
-"F32"   =      : all                      : f.raiselower
-"F34"   =      : all                      : f.iconify
-"Home"  =      : all                      : f.warptoiconmgr ""
-"Left"  = m    : all                      : f.backiconmgr
-"Right" = m    : all                      : f.forwiconmgr
-"Up"    = m    : all                      : f.upiconmgr
-"Down"  = m    : all                      : f.downiconmgr
+"F21"		=	: all			: f.warpring "next"
+"F22"		=	: all			: f.warptoiconmgr ""
+"F23"		=	: all			: f.raiselower
+"Num_Lock"	=	: all			: f.iconify
+"F24"		=	: all			: f.warpto "xmh"
+"F25"		=	: all			: f.warpto "[expo]"
+"F26"		=	: all			: f.warpto "emacs"
+"KP_Subtract"	=	: all			: f.colormap "next"
+"KP_Add"	=	: all			: f.colormap "default"
+"Home"		=	: all			: f.warptoiconmgr ""
+"Left"		= m	: all			: f.backiconmgr
+"Right"		= m	: all			: f.forwiconmgr
+"Up"		= m	: all			: f.upiconmgr
+"Down"		= m	: all			: f.downiconmgr
 
 
 ###############################################################################
