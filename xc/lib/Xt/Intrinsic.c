@@ -1,4 +1,4 @@
-/* $XConsortium: Intrinsic.c,v 1.153 90/08/22 12:48:37 swick Exp $ */
+/* $XConsortium: Intrinsic.c,v 1.154 90/12/12 14:51:49 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -65,7 +65,7 @@ Boolean _XtCheckSubclassFlag(object, flag)
 } /*_XtVerifySubclass */
 
 
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 Boolean _XtIsSubclassOf(
     Widget object,
     WidgetClass widgetClass,
