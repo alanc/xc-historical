@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Tekproc.c,v 1.90 91/04/03 17:47:52 gildea Exp $
+ * $XConsortium: Tekproc.c,v 1.91 91/04/15 13:57:23 gildea Exp $
  *
  * Warning, there be crufty dragons here.
  */
@@ -231,6 +231,8 @@ static XtResource resources[] = {
 };
 
 static void TekInitialize(), TekRealize(), TekConfigure();
+static int getpoint();
+static int Tinput();
 void TekExpose();
 
 WidgetClassRec tekClassRec = {
@@ -276,7 +278,7 @@ static Boolean Tfailed = FALSE;
 
 Widget tekshellwidget;
 
-TekWidget CreateTekWidget ()
+static TekWidget CreateTekWidget ()
 {
     extern Arg ourTopLevelShellArgs[];
     extern int number_ourTopLevelShellArgs;
@@ -309,7 +311,6 @@ Tekparse()
 	register TScreen *screen = &term->screen;
 	register int c, x, y;
 	char ch;
-	int Tinput();
 
 	for( ; ; )
 		switch(Tparsestate[c = input()]) {
@@ -622,7 +623,7 @@ static int rcnt;
 static char *rptr;
 static int Tselect_mask;
 
-Tinput()
+static int Tinput()
 {
 	register TScreen *screen = &term->screen;
 	register int i;
@@ -826,6 +827,7 @@ TekPage()
 #define	SHIFTLO		2
 #define	TWOBITS		03
 
+static int
 getpoint()
 {
 	register int c, x, y, e, lo_y = 0;
@@ -949,27 +951,9 @@ TCursorDown()
 	screen->cur_Y = l * t->vsize;
 }
 
-TekDraw (x, y)
-int x, y;
-{
-	register TScreen *screen = &term->screen;
-
-	if(nplot == 0 || T_lastx != screen->cur_X || T_lasty != screen->cur_Y) {
-		/*
-		 * We flush on each unconnected line segment if the line
-		 * type is not solid.  This solves a bug in X when drawing
-		 * points while the line type is not solid.
-		 */
-		if(nplot > 0 && screen->cur.linetype != SOLIDLINE)
-			TekFlush();
-	}
-	AddToDraw(screen->cur_X, screen->cur_Y, x, y);
-	T_lastx = screen->cur_X = x;
-	T_lasty = screen->cur_Y = y;
-}
-
+static void
 AddToDraw(x1, y1, x2, y2)
-int x1, y1, x2, y2;
+    int x1, y1, x2, y2;
 {
 	register TScreen *screen = &term->screen;
 	register XSegment *lp;
@@ -985,6 +969,25 @@ int x1, y1, x2, y2;
 	lp->y2 = y2 = (TEKHEIGHT + TEKTOPPAD - y2) * TekScale(screen) +
 	 screen->border;
 	nplot++;
+}
+
+TekDraw (x, y)
+    int x, y;
+{
+	register TScreen *screen = &term->screen;
+
+	if(nplot == 0 || T_lastx != screen->cur_X || T_lasty != screen->cur_Y) {
+		/*
+		 * We flush on each unconnected line segment if the line
+		 * type is not solid.  This solves a bug in X when drawing
+		 * points while the line type is not solid.
+		 */
+		if(nplot > 0 && screen->cur.linetype != SOLIDLINE)
+			TekFlush();
+	}
+	AddToDraw(screen->cur_X, screen->cur_Y, x, y);
+	T_lastx = screen->cur_X = x;
+	T_lasty = screen->cur_Y = y;
 }
 
 TekFlush ()
@@ -1167,7 +1170,10 @@ static void TekRealize (gw, valuemaskp, values)
        (Tpushb = (Char *)malloc(10)) == NULL ||
        (Tline = (XSegment *)malloc(MAX_VTX * sizeof(XSegment))) == NULL) {
 	fprintf (stderr, "%s: Not enough core for Tek mode\n", xterm_name);
-	goto mallocfailed;
+	if(Tpushb) free((char *)Tpushb);
+	if(Tbuffer) free((char *)Tbuffer);
+	Tfailed = TRUE;
+	return;
     }
 
     screen->xorplane = 1;
@@ -1255,7 +1261,7 @@ static void TekRealize (gw, valuemaskp, values)
     values->win_gravity = NorthWestGravity;
     values->background_pixel = screen->Tbackground;
 
-    if((tw->core.window = TWindow(screen) = 
+    tw->core.window = TWindow(screen) = 
 	XCreateWindow (screen->display,
 		       tw->core.parent->core.window,
 		       tw->core.x, tw->core.y,
@@ -1263,15 +1269,7 @@ static void TekRealize (gw, valuemaskp, values)
 		       (int) tw->core.depth,
 		       InputOutput, CopyFromParent,
 		       ((*valuemaskp)|CWBackPixel|CWWinGravity),
-		       values)) == NULL) {
-	fprintf(stderr, "%s: Can't create Tek window\n", xterm_name);
-	free((char *)Tline);
-      mallocfailed:
-	if(Tpushb) free((char *)Tpushb);
-	if(Tbuffer) free((char *)Tbuffer);
-	Tfailed = TRUE;
-	return;
-    }
+		       values);
 
     screen->Tbox = T_box;
 
