@@ -1,4 +1,4 @@
-/* $XConsortium: xsm.c,v 1.74 94/12/30 16:12:04 mor Exp mor $ */
+/* $XConsortium: xsm.c,v 1.75 95/01/03 17:23:56 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -74,7 +74,7 @@ static char *cmd_line_display = NULL;
 Status StartSession ();
 void NewConnectionXtProc ();
 Status NewClientProc ();
-void IoErrorHandler ();
+void InstallIOErrorHandler ();
 
 /*
  * Extern declarations
@@ -153,10 +153,11 @@ char **argv;
 
 
     /*
-     * Set my own IO error handler.
+     * Install an IO error handler.  For an explanation,
+     * see the comments for InstallIOErrorHandler().
      */
 
-    IceSetIOErrorHandler (IoErrorHandler);
+    InstallIOErrorHandler ();
 
 
     /*
@@ -1033,7 +1034,7 @@ SaveYourselfDoneProc (smsConn, managerData, success)
 
 
 
-static void
+void
 CloseDownClient (client)
 
 ClientRec *client;
@@ -1353,54 +1354,43 @@ Bool on;
 
 
 /*
- * Install IO error handler.  This will detect clients that break their
- * connection with the SM unexpectidly.
+ * The real way to handle IO errors is to check the return status
+ * of IceProcessMessages.  xsm properly does this.
+ *
+ * Unfortunately, a design flaw exists in the ICE library in which
+ * a default IO error handler is invoked if no IO error handler is
+ * installed.  This default handler exits.  We must avoid this.
+ *
+ * To get around this problem, we install an IO error handler that
+ * does a little magic.  Since a previous IO handler might have been
+ * installed, when we install our IO error handler, we do a little
+ * trick to get both the previous IO error handler and the default
+ * IO error handler.  When our IO error handler is called, if the
+ * previous handler is not the default handler, we call it.  This
+ * way, everyone's IO error handler gets called except the stupid
+ * default one which does an exit!
  */
 
-void
-IoErrorHandler (ice_conn)
+static IceIOErrorHandler prev_handler;
 
-IceConn 	ice_conn;
+void
+MyIoErrorHandler (ice_conn)
+
+IceConn ice_conn;
 
 {
-    List *cl;
-    int found = 0;
-
-    if (verbose)
-    {
-	printf ("IO error on connection (fd = %d)\n",
-	    IceConnectionNumber (ice_conn));
-	printf ("\n");
-    }
-
-    for (cl = ListFirst (RunningList); cl; cl = ListNext (cl))
-    {
-	ClientRec *client = (ClientRec *) cl->thing;
-
-	if (client->ice_conn == ice_conn)
-	{
-	    CloseDownClient (client);
-	    found = 1;
-	    break;
-	}
-    }
-	 
-    if (!found)
-    {
-	/*
-	 * The client must have disconnected before it was added
-	 * to the session manager's running list (i.e. before the
-	 * NewClientProc callback was invoked).
-	 */
-
-	IceSetShutdownNegotiation (ice_conn, False);
-	IceCloseConnection (ice_conn);
-    }
-
-
-    /*
-     * We can't return.  Must do a long jump.
-     */
-
-    longjmp (JumpHere, 1);
+    if (prev_handler)
+	(*prev_handler) (ice_conn);
 }    
+
+void
+InstallIOErrorHandler ()
+
+{
+    IceIOErrorHandler default_handler;
+
+    prev_handler = IceSetIOErrorHandler (NULL);
+    default_handler = IceSetIOErrorHandler (MyIoErrorHandler);
+    if (prev_handler == default_handler)
+	prev_handler = NULL;
+}
