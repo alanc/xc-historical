@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: tsource.c,v 2.11 88/02/15 16:05:03 swick Exp $";
+static char rcs_id[] = "$XConsortium: tsource.c,v 2.12 88/09/06 17:23:50 jim Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -348,8 +348,13 @@ XtTextSource TSourceCreate(toc)
     source->Read = Read;
     source->Replace = Replace;
     source->Scan = Scan;
+#ifdef notdef
     source->GetSelection = GetSelection;
     source->SetSelection = SetSelection;
+#else
+    source->SetSelection = NULL;
+#endif
+    source->ConvertSelection = NULL;
     source->edit_mode = XttextRead;
     toc->numwidgets = 0;
     toc->widgets = XtNew(TextWidget);
