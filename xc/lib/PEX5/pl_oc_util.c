@@ -1,4 +1,4 @@
-/* $XConsortium: pl_oc_util.c,v 1.11 92/10/27 15:49:07 mor Exp $ */
+/* $XConsortium: pl_oc_util.c,v 1.12 92/11/02 14:37:28 mor Exp $ */
 
 /******************************************************************************
 Copyright 1987,1991 by Digital Equipment Corporation, Maynard, Massachusetts
@@ -892,9 +892,8 @@ INPUT PEXOCData		*oc_data;
 	        oc_data->data.SetOfFillAreaSets.vertex_attributes,
 	        lenofColor);
 
-	    sizeofEdge =
-	        ((oc_data->data.SetOfFillAreaSets.edge_attributes == PEXOn)
-	        ? sizeof (CARD8) : 0);
+	    sizeofEdge = oc_data->data.SetOfFillAreaSets.edge_attributes ?
+		sizeof (CARD8) : 0;
 
 	    sofaLength = (lenofFacet * numFillAreaSets) +
 	        (lenofVertex * numVertices) + 

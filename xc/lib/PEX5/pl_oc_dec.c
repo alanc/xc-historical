@@ -1,4 +1,4 @@
-/* $XConsortium: pl_oc_dec.c,v 1.7 92/08/06 22:56:35 mor Exp $ */
+/* $XConsortium: pl_oc_dec.c,v 1.8 92/11/02 14:38:10 mor Exp $ */
 
 /******************************************************************************
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -1347,7 +1347,8 @@ PEXOCData	*ocDest;
     ocDest->data.SetOfFillAreaSets.shape_hint = oc->shape;
     ocDest->data.SetOfFillAreaSets.facet_attributes = oc->FAS_Attributes;
     ocDest->data.SetOfFillAreaSets.vertex_attributes = oc->vertexAttributes;
-    ocDest->data.SetOfFillAreaSets.edge_attributes = oc->edgeAttributes;
+    ocDest->data.SetOfFillAreaSets.edge_attributes =
+	(oc->edgeAttributes == PEXOn) ? PEXGAEdges : 0;
     ocDest->data.SetOfFillAreaSets.contour_hint = oc->contourHint;
     ocDest->data.SetOfFillAreaSets.contours_all_one = oc->contourCountsFlag;
     ocDest->data.SetOfFillAreaSets.color_type = oc->colorType;

@@ -1,4 +1,4 @@
-/* $XConsortium: pl_oc_prim.c,v 1.9 92/08/26 13:06:12 mor Exp $ */
+/* $XConsortium: pl_oc_prim.c,v 1.10 92/10/26 11:05:21 mor Exp $ */
 
 /******************************************************************************
 Copyright 1987,1991 by Digital Equipment Corporation, Maynard, Massachusetts
@@ -1106,7 +1106,7 @@ INPUT PEXConnectivityData	*connectivity;
     lenofColor = GetColorLength (colorType);
     lenofFacet = GetFacetDataLength (facetAttributes, lenofColor); 
     lenofVertex = GetVertexWithDataLength (vertexAttributes, lenofColor);
-    sizeofEdge = ((edgeAttributes == PEXOn) ? sizeof (CARD8) : 0);
+    sizeofEdge = edgeAttributes ? sizeof (CARD8) : 0;
 
     cbytes = sizeof (CARD16) * (numFillAreaSets + numContours + numIndices);
 
@@ -1132,7 +1132,7 @@ INPUT PEXConnectivityData	*connectivity;
     pReq->colorType = colorType;
     pReq->FAS_Attributes = facetAttributes;
     pReq->vertexAttributes = vertexAttributes;
-    pReq->edgeAttributes = edgeAttributes;
+    pReq->edgeAttributes = edgeAttributes ? PEXOn : PEXOff;
     pReq->contourHint = contourHint;
     pReq->contourCountsFlag = contoursAllOne;
     pReq->numFAS = numFillAreaSets;

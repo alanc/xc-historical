@@ -1,4 +1,4 @@
-/* $XConsortium: pl_oc_enc.c,v 1.4 92/08/06 22:56:31 mor Exp $ */
+/* $XConsortium: pl_oc_enc.c,v 1.5 92/11/02 14:36:45 mor Exp $ */
 
 /******************************************************************************
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -1261,7 +1261,7 @@ char		**ocDest;
     lenofColor = GetColorLength (colorType);
     lenofFacet = GetFacetDataLength (facetAttributes, lenofColor); 
     lenofVertex = GetVertexWithDataLength (vertexAttributes, lenofColor);
-    sizeofEdge = ((edgeAttributes == PEXOn) ? sizeof (CARD8) : 0);
+    sizeofEdge = edgeAttributes ? sizeof (CARD8) : 0;
     
     cbytes = sizeof (CARD16) * (numFillAreaSets + numContours + numIndices);
 
@@ -1275,7 +1275,7 @@ char		**ocDest;
     pInfo->colorType = colorType;
     pInfo->FAS_Attributes = facetAttributes;
     pInfo->vertexAttributes = vertexAttributes;
-    pInfo->edgeAttributes = edgeAttributes;
+    pInfo->edgeAttributes = edgeAttributes ? PEXOn : PEXOff;
     pInfo->contourHint = ocSrc->data.SetOfFillAreaSets.contour_hint;
     pInfo->contourCountsFlag = ocSrc->data.SetOfFillAreaSets.contours_all_one;
     pInfo->numFAS = numFillAreaSets;
