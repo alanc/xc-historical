@@ -1,5 +1,5 @@
 /*
- *	$Header: main.c,v 1.17 88/02/20 17:09:38 swick Exp $
+ *	$Header: main.c,v 1.18 88/02/20 17:27:53 rws Exp $
  *
  * WARNING:  This code (particularly, the tty setup code) is a historical
  * relic and should not be confused with a real toolkit application or a
@@ -34,7 +34,7 @@
 /* main.c */
 
 #ifndef lint
-static char rcs_id[] = "$Header: main.c,v 1.17 88/02/20 17:09:38 swick Exp $";
+static char rcs_id[] = "$Header: main.c,v 1.18 88/02/20 17:27:53 rws Exp $";
 #endif	/* lint */
 
 #include <X11/Xos.h>
@@ -167,7 +167,7 @@ static XtResource application_resources[] = {
 #define	XtNboldFont		"boldFont"
 #define	XtNc132			"c132"
 #define	XtNcurses		"curses"
-#define	XtNcursor		"cursor"
+#define	XtNcursorColor		"cursorColor"
 #define	XtNcursorShape		"cursorShape"
 #define XtNtekGeometry		"tekGeometry"
 #define	XtNinternalBorder	"internalBorder"
@@ -177,7 +177,7 @@ static XtResource application_resources[] = {
 #define	XtNlogInhibit		"logInhibit"
 #define	XtNloginShell		"loginShell"
 #define	XtNmarginBell		"marginBell"
-#define	XtNmouse		"mouse"
+#define	XtNpointerColor		"pointerColor"
 #define	XtNmultiScroll		"multiScroll"
 #define	XtNnMarginBell		"nMarginBell"
 #define	XtNreverseWrap		"reverseWrap"
@@ -193,24 +193,24 @@ static XtResource application_resources[] = {
 
 #define	XtCC132			"C132"
 #define	XtCCurses		"Curses"
-#define	XtCJumpscroll		"Jumpscroll"
+#define	XtCJumpScroll		"JumpScroll"
 #define	XtCLogfile		"Logfile"
 #define	XtCLogging		"Logging"
-#define	XtCLoginhibit		"Loginhibit"
-#define	XtCLoginshell		"Loginshell"
-#define	XtCMarginbell		"Marginbell"
-#define	XtCMultiscroll		"Multiscroll"
+#define	XtCLogInhibit		"LogInhibit"
+#define	XtCLoginShell		"LoginShell"
+#define	XtCMarginBell		"MarginBell"
+#define	XtCMultiScroll		"MultiScroll"
 #define	XtCColumn		"Column"
 #define	XtCReverseVideo		"ReverseVideo"
 #define	XtCReverseWrap		"ReverseWrap"
-#define	XtCRows			"Rows"
-#define	XtCScrollbar		"ScrollBar"
+#define XtCSaveLines		"SaveLines"
+#define	XtCScrollBar		"ScrollBar"
 #define XtCScrollPos     	"ScrollPos"
-#define	XtCScrollcond		"Scrollcond"
+#define	XtCScrollCond		"ScrollCond"
 #define	XtCSignalInhibit	"SignalInhibit"
 #define	XtCTekInhibit		"TekInhibit"
 #define	XtCTekStartup		"TekStartup"
-#define	XtCVisualbell		"Visualbell"
+#define	XtCVisualBell		"VisualBell"
 
 /* Defaults */
 static  Boolean	defaultFALSE	   = FALSE;
@@ -246,7 +246,7 @@ static XtResource resources[] = {
 {XtNforeground, XtCForeground, XtRPixel, sizeof(Pixel),
 	XtOffset(XtermWidget, screen.foreground),
 	XtRString, "Black"},
-{XtNcursor, XtCForeground, XtRPixel, sizeof(Pixel),
+{XtNcursorColor, XtCForeground, XtRPixel, sizeof(Pixel),
 	XtOffset(XtermWidget, screen.cursorcolor),
 	XtRString, "Black"},
 {XtNcursorShape,XtCCursor, XtRString, sizeof(Cursor),
@@ -261,7 +261,7 @@ static XtResource resources[] = {
 {XtNinternalBorder,XtCBorderWidth,XtRInt, sizeof(int),
 	XtOffset(XtermWidget, screen.border),
 	XtRInt, (caddr_t) &defaultIntBorder},
-{XtNjumpScroll, XtCJumpscroll, XtRBoolean, sizeof(Boolean),
+{XtNjumpScroll, XtCJumpScroll, XtRBoolean, sizeof(Boolean),
 	XtOffset(XtermWidget, screen.jumpscroll),
 	XtRBoolean, (caddr_t) &defaultTRUE},
 {XtNlogFile, XtCLogfile, XtRString, sizeof(char *),
@@ -270,19 +270,19 @@ static XtResource resources[] = {
 {XtNlogging, XtCLogging, XtRBoolean, sizeof(Boolean),
 	XtOffset(XtermWidget, misc.log_on),
 	XtRBoolean, (caddr_t) &defaultFALSE},
-{XtNlogInhibit, XtCLoginhibit, XtRBoolean, sizeof(Boolean),
+{XtNlogInhibit, XtCLogInhibit, XtRBoolean, sizeof(Boolean),
 	XtOffset(XtermWidget, misc.logInhibit),
 	XtRBoolean, (caddr_t) &defaultFALSE},
-{XtNloginShell, XtCLoginshell, XtRBoolean, sizeof(Boolean),
+{XtNloginShell, XtCLoginShell, XtRBoolean, sizeof(Boolean),
 	XtOffset(XtermWidget, misc.login_shell),
 	XtRBoolean, (caddr_t) &defaultFALSE},
-{XtNmarginBell, XtCMarginbell, XtRBoolean, sizeof(Boolean),
+{XtNmarginBell, XtCMarginBell, XtRBoolean, sizeof(Boolean),
 	XtOffset(XtermWidget, screen.marginbell),
 	XtRBoolean, (caddr_t) &defaultFALSE},
-{XtNmouse, XtCForeground, XtRPixel, sizeof(Pixel),
+{XtNpointerColor, XtCForeground, XtRPixel, sizeof(Pixel),
 	XtOffset(XtermWidget, screen.mousecolor),
 	XtRString, "Black"},
-{XtNmultiScroll,XtCMultiscroll, XtRBoolean, sizeof(Boolean),
+{XtNmultiScroll,XtCMultiScroll, XtRBoolean, sizeof(Boolean),
 	XtOffset(XtermWidget, screen.multiscroll),
 	XtRBoolean, (caddr_t) &defaultFALSE},
 {XtNnMarginBell,XtCColumn, XtRInt, sizeof(int),
@@ -294,16 +294,16 @@ static XtResource resources[] = {
 {XtNreverseWrap,XtCReverseWrap, XtRBoolean, sizeof(Boolean),
 	XtOffset(XtermWidget, misc.reverseWrap),
 	XtRBoolean, (caddr_t) &defaultFALSE},
-{XtNsaveLines, XtCRows, XtRInt, sizeof(int),
+{XtNsaveLines, XtCSaveLines, XtRInt, sizeof(int),
 	XtOffset(XtermWidget, screen.savelines),
 	XtRInt, (caddr_t) &defaultSaveLines},
-{XtNscrollBar, XtCScrollbar, XtRBoolean, sizeof(Boolean),
+{XtNscrollBar, XtCScrollBar, XtRBoolean, sizeof(Boolean),
 	XtOffset(XtermWidget, misc.scrollbar),
 	XtRBoolean, (caddr_t) &defaultFALSE},
-{XtNscrollInput,XtCScrollcond, XtRBoolean, sizeof(Boolean),
+{XtNscrollInput,XtCScrollCond, XtRBoolean, sizeof(Boolean),
 	XtOffset(XtermWidget, screen.scrollinput),
 	XtRBoolean, (caddr_t) &defaultTRUE},
-{XtNscrollKey, XtCScrollcond, XtRBoolean, sizeof(Boolean),
+{XtNscrollKey, XtCScrollCond, XtRBoolean, sizeof(Boolean),
 	XtOffset(XtermWidget, screen.scrollkey),
 	XtRBoolean, (caddr_t) &defaultFALSE},
 {XtNsignalInhibit,XtCSignalInhibit,XtRBoolean, sizeof(Boolean),
@@ -315,7 +315,7 @@ static XtResource resources[] = {
 {XtNtekStartup, XtCTekStartup, XtRBoolean, sizeof(Boolean),
 	XtOffset(XtermWidget, screen.TekEmu),
 	XtRBoolean, (caddr_t) &defaultFALSE},
-{XtNvisualBell, XtCVisualbell, XtRBoolean, sizeof(Boolean),
+{XtNvisualBell, XtCVisualBell, XtRBoolean, sizeof(Boolean),
 	XtOffset(XtermWidget, screen.visualbell),
 	XtRBoolean, (caddr_t) &defaultFALSE}
 };
@@ -328,7 +328,7 @@ static XrmOptionDescRec optionDescList[] = {
 {"-132",	"*c132",	XrmoptionNoArg,		(caddr_t) "on"},
 {"+132",	"*c132",	XrmoptionNoArg,		(caddr_t) "off"},
 {"-b",		"*internalBorder",XrmoptionSepArg,	(caddr_t) NULL},
-{"-cr",		"*cursor",	XrmoptionSepArg,	(caddr_t) NULL},
+{"-cr",		"*cursorColor",	XrmoptionSepArg,	(caddr_t) NULL},
 {"-cu",		"*curses",	XrmoptionNoArg,		(caddr_t) "on"},
 {"+cu",		"*curses",	XrmoptionNoArg,		(caddr_t) "off"},
 {"-e",		NULL,		XrmoptionSkipLine,	(caddr_t) NULL},
@@ -342,7 +342,7 @@ static XrmOptionDescRec optionDescList[] = {
 {"+ls",		"*loginShell",	XrmoptionNoArg,		(caddr_t) "off"},
 {"-mb",		"*marginBell",	XrmoptionNoArg,		(caddr_t) "on"},
 {"+mb",		"*marginBell",	XrmoptionNoArg,		(caddr_t) "off"},
-{"-ms",		"*mouse",	XrmoptionSepArg,	(caddr_t) NULL},
+{"-ms",		"*pointerColor",XrmoptionSepArg,	(caddr_t) NULL},
 {"-nb",		"*nMarginBell",	XrmoptionSepArg,	(caddr_t) NULL},
 {"-rw",		"*reverseWrap",	XrmoptionNoArg,		(caddr_t) "on"},
 {"+rw",		"*reverseWrap",	XrmoptionNoArg,		(caddr_t) "off"},

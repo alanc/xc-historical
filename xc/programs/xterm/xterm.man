@@ -28,7 +28,7 @@ This box is located in the upper left area of the window.
 .PP
 Both windows may be displayed at the same time, though only one window and
 mode is active at a time.
-Input will be displayed in the active window even if the mouse is in the other
+Input will be displayed in the active window even if the pointer is in the other
 window.
 Switching between the active modes is possible under manual (menu) and program
 (escape sequence) control.
@@ -171,7 +171,7 @@ will be the home directory).
 This option turns on the right margin bell.
 .TP
 .BI \-ms " color"
-On color displays, determines the color of the mouse cursor; default is the
+On color displays, determines the color of the pointer cursor; default is the
 text cursor color.
 .TP
 .BI \-n " windowname"
@@ -290,123 +290,124 @@ orpheus.
 allows you to preset defaults in a customization file in your home
 directory, called
 .BR .Xdefaults .
-The format of the file is ``programname.keyword:string''.
+The format of the file is ``programname*keyword:string''.
 See
 .IR X (1)
 for more details.
-.I Xterm
-obeys the convention for `MakeWindow' defaults.
 Keywords recognized by
 .I xterm
 are listed below.
 .TP 15
-.B Background
-Set the background color.
+.B background
+Set the window background color.
 .TP
-.B BodyFont
+.B font
 Set the default font.
 .TP
-.B BoldFont
+.B boldFont
 Specify a default bold font.
 .TP
-.B Border
+.B borderColor
 Set the border color.
 .TP
-.B BorderWidth
+.B borderWidth
 Set the border width of the window.
 .TP
-.B C132
+.B c132
 If ``on'', allow the DECCOLM escape sequence to switch between 80 and 132
 column mode.
 .TP
-.B Curses
+.B curses
 If ``on'', enable the
 .IR curses (3x)
 fix.
 .TP
-.B Cursor
+.B cursorColor
 Set the text cursor color.
 .TP
-.B CursorShape
-If ``arrow'', use the arrow mouse cursor rather than the I-beam mouse cursor.
+.B cursorShape
+If ``arrow'', use the arrow pointer cursor rather than the I-beam pointer cursor.
 .TP
-.B Foreground
+.B foreground
 Set the text color.
 .TP
-.B Geometry
+.B Foreground
+Set the text, cursor, and pointer color.
+.TP
+.B geometry
 Set the window geometry (position and size).
 .TP
-.B IconStartup
+.B iconStartup
 If ``on'', initially display the icon rather than the normal window.
 .TP
-.B InternalBorder
+.B internalBorder
 Set the space between the text and window border.
 This is called padding above.
 .TP
-.B JumpScroll
+.B jumpScroll
 If ``on'', jump scroll is enabled.
 .\"TP
 .\"B KeyBoard
 .TP
-.B LogFile
+.B logFile
 Specifies the log file or command to pipe to when logging is activated.
 .TP
-.B Logging
+.B logging
 If ``on'', turn logging on initially.
 .TP
-.B LogInhibit
+.B logInhibit
 If ``on'', totally inhibit logging from being turned on.
 .TP
-.B LoginShell
+.B loginShell
 If ``on'', make the shell executed a login shell.
 .TP
-.B MarginBell
+.B marginBell
 If ``on'', turn on the margin bell.
 .TP
-.B Mouse
-Set the mouse cursor color.
+.B pointerColor
+Set the pointer cursor color.
 .TP
-.B MultiScroll
+.B multiScroll
 Allows xterm to scroll asynchronously with the display.
 .TP
-.B NMarginBell
+.B nMarginBell
 Set the margin bell right margin distance.
 .TP
-.B ReverseVideo
+.B reverseVideo
 If ``on'', reverse the definition of foreground and background color.
 .TP
-.B ReverseWrap
+.B reverseWrap
 If ``on'', turn on the reverse wraparound mode.
 .TP
-.B SaveLines
+.B saveLines
 Set the number of lines to save when scrolled of the top of the window.
 .TP
-.B ScrollBar
+.B scrollBar
 If ``on'', show the scrollbar initially.
 .TP
-.B ScrollInput
+.B scrollInput
 If ``off'', disable repositioning the scroll region at the bottom if
 new input has arrived.
 .TP
-.B ScrollKey
+.B scrollKey
 If ``on'', reposition the scroll region at the bottom if
 a key is pressed.
 .TP
-.B SignalInhibit
+.B signalInhibit
 If ``on'', totally inhibit the sending of signals from the
 .B xterm
 menu.
 .TP
-.B StatusLine
+.B statusLine
 If ``on'', show the status line on startup.
 .TP
-.B StatusNormal
+.B statusNormal
 If ``on'', make the status line normal video.
 .TP
-.B TekInhibit
+.B tekInhibit
 If ``on'', totally inhibit going into Tektronix mode.
 .TP
-.B VisualBell
+.B visualBell
 If ``on'', turn on visual bell mode at startup.
 .SH EMULATIONS
 The VT102 emulation is fairly complete, but does not support the blinking
@@ -503,10 +504,10 @@ Clicking the mouse with the left button in the scroll region moves the
 corresponding line to the top of the display window.
 .PP
 Clicking the right button moves the top line of the display window down to the
-mouse position.
+pointer position.
 .PP
 Clicking the middle button moves the display to a position in the saved text
-that corresponds to the mouse's position in the scrollbar.
+that corresponds to the pointer's position in the scrollbar.
 .PP
 .PP
 Unlike the VT102 window, the Tektronix window dows not allow the copying of
@@ -590,10 +591,10 @@ entry in the command section clears the Tektronix window.
 .SH "OTHER FEATURES"
 .I Xterm
 automatically highlights the window border and text cursor when the
-mouse enters the window (selected) and unhighlights them when the mouse
+pointer enters the window (selected) and unhighlights them when the pointer
 leaves the window (unselected).
 If the window is the focus window, then the window is highlighted no matter
-where the mouse is.
+where the pointer is.
 .PP
 In VT102 mode, there are escape sequences to activate and deactivate
 an alternate screen buffer, which is the same size as the display area
@@ -633,7 +634,7 @@ IS BOTH PRODUCER AND CONSUMER FOR THE PTY AND SCREWS ITSELF.
 Tektronix mode is **not** working in this version.
 There is currently no way for a
 .I xterm
-window not to highlight itself when the mouse cursor enter it
+window not to highlight itself when the pointer cursor enters it
 while another window is the keyboard focus.
 There needs to be a dialog box to allow entry of log file name
 and the COPY file name.
