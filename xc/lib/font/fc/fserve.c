@@ -1,4 +1,4 @@
-/* $XConsortium: fserve.c,v 1.8 91/06/20 15:52:22 keith Exp $ */
+/* $XConsortium: fserve.c,v 1.10 91/07/15 22:41:41 keith Exp $ */
 /*
  *
  * Copyright 1990 Network Computing Devices
@@ -554,6 +554,12 @@ fs_read_query_info(fpe, blockrec)
     }
     /* move the data over */
     (void) fs_convert_header(&rep.header, &bfont->pfont->info);
+    if (bfont->pfont->info.terminalFont)
+    {
+	bfont->format =
+	    (bfont->format & ~ (BitmapFormatImageRectMask)) |
+	    BitmapFormatImageRectMax;
+    }
 
     if (_fs_read(conn, (char *) &pi, sizeof(fsPropInfo)) == -1) {
 	fs_free_font(bfont);
@@ -1872,6 +1878,8 @@ fs_read_list_info(fpe, blockrec)
 
     binfo->status = FS_LFWI_REPLY;
     binfo->errcode = Suspended;
+    /* disable this font server until we've processed this response */
+    _fs_bit_clear(fs_fd_mask, conn->fs_fd);
 
     return Successful;
 
@@ -1960,12 +1968,13 @@ fs_next_list_with_info(client, fpe, namep, namelenp, pFontInfo, numFonts,
 	return Successful;
 
     if (blockedinfo->status == FS_LFWI_WAITING)
-	return BadFontName;
+	return Suspended;
 
     *namep = blockedinfo->name;
     *namelenp = blockedinfo->namelen;
     *pFontInfo = blockedinfo->pfi;
     *numFonts = blockedinfo->remaining;
+    _fs_set_bit(fs_fd_mask, conn->fs_fd);
     if (blockedinfo->status == FS_LFWI_FINISHED) {
 	int         err = blockedinfo->errcode;
 
@@ -2001,6 +2010,13 @@ fs_client_died(client, fpe)
     }
     if (!blockrec)
 	return;
+    if (blockrec->type == FS_LIST_WITH_INFO)
+    {
+	FSBlockedListInfoPtr blockedinfo;
+	blockedinfo = (FSBlockedListInfoPtr) blockrec->data;
+	if (blockedinfo->status == FS_LFWI_REPLY)
+	    _fs_set_bit(fs_fd_mask, conn->fs_fd);
+    }
     /* replace the client pointers in this block rec with the chained one */
     if (depending = blockrec->depending) {
 	blockrec->client = depending->client;
