@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM X Window System Build Parameters
-XCOMM $XConsortium: Project.tmpl,v 1.87 91/02/13 10:34:15 rws Exp $
+XCOMM $XConsortium: Project.tmpl,v 1.88 91/02/13 11:12:55 rws Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -320,7 +320,7 @@ XCOMM $XConsortium: Project.tmpl,v 1.87 91/02/13 10:34:15 rws Exp $
 
 XCOMM -------------------------------------------------------------------------
 XCOMM X Window System make variables; this need to be coordinated with rules
-XCOMM $XConsortium: Project.tmpl,v 1.87 91/02/13 10:34:15 rws Exp $
+XCOMM $XConsortium: Project.tmpl,v 1.88 91/02/13 11:12:55 rws Exp $
 
 /*
  * This list must be reflected in the DIRS_TO_BUILD list in the top-level
@@ -459,6 +459,8 @@ XCOMM $XConsortium: Project.tmpl,v 1.87 91/02/13 10:34:15 rws Exp $
 #endif
       DEPXAUTHLIB = _UseCat($(USRLIBDIR),$(XAUTHSRC),/libXau.a)
          XAUTHLIB = LoaderLibPrefix _Use(-lXau,$(DEPXAUTHLIB))
+      DEPXDMCPLIB = _UseCat($(USRLIBDIR),$(XDMCPLIBSRC),/libXdmcp.a)
+         XDMCPLIB = LoaderLibPrefix _Use(-lXdmcp,$(DEPXDMCPLIB))
 #if !SharedLibXmu
         DEPXMULIB = _UseCat($(USRLIBDIR),$(XMUSRC),/libXmu.a)
            XMULIB = LoaderLibPrefix _Use(-lXmu,$(DEPXMULIB))
