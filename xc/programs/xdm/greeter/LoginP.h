@@ -17,21 +17,28 @@ typedef struct {
 	Pixel		textpixel;	/* foreground pixel */
 	Pixel		promptpixel;	/* prompt pixel */
 	Pixel		greetpixel;	/* greeting pixel */
+	Pixel		failpixel;	/* failure pixel */
 	GC		textGC;		/* pointer to GraphicsContext */
 	GC		bgGC;		/* pointer to GraphicsContext */
 	GC		xorGC;		/* pointer to GraphicsContext */
 	GC		promptGC;
 	GC		greetGC;
+	GC		failGC;
 	char		*greeting;	/* greeting */
 	char		*namePrompt;	/* name prompt */
 	char		*passwdPrompt;	/* password prompt */
+	char		*fail;		/* failure message */
 	XFontStruct	*font;		/* font for text */
 	XFontStruct	*promptFont;	/* font for prompts */
 	XFontStruct	*greetFont;	/* font for greeting */
+	XFontStruct	*failFont;	/* font for failure message */
 	int		state;		/* state */
 	int		cursor;		/* current cursor position */
+	int		failUp;		/* failure message displayed */
 	LoginData	data;		/* name/passwd */
 	void		(*notify_done)();/* proc to call when done */
+	int		failTimeout;	/* seconds til drop fail msg */
+	XtIntervalId	interval_id;	/* drop fail message note */
    } LoginPart;
 
 /* Full instance record declaration */

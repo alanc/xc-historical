@@ -20,11 +20,6 @@ static Widget		toplevel;
 static Widget		login;
 static Widget		loginFailedButton;
 
-failedcallback ()
-{
-	done = 1;
-}
-
 GreetDone (w, data)
     Widget	w;
     LoginData	*data;
@@ -42,8 +37,6 @@ struct display	*d;
 	int		i;
 	int		argc;
 	static char	*argv[] = { "xlogin", "-display", 0, 0 };
-	static XtCallbackRec	callback[2];
-	static XtCallbackList	callback_list;
 
 	Debug ("greet %s\n", d->name);
 	argv[2] = d->name;
@@ -56,16 +49,6 @@ struct display	*d;
 
 	login = XtCreateManagedWidget ("login", loginWidgetClass,
 					toplevel, arglist, i);
-	callback[0].callback = failedcallback;
-	callback_list = callback;
-	i = 0;
-	XtSetArg (arglist[i], XtNx, 50); i++;
-	XtSetArg (arglist[i], XtNy, 50); i++;
-	XtSetArg (arglist[i], XtNlabel, "Login Failed"); i++;
-	XtSetArg (arglist[i], XtNcallback, callback_list); i++;
-	XtSetArg (arglist[i], XtNmappedWhenManaged, FALSE); i++;
-	loginFailedButton = XtCreateManagedWidget ("login failed",
-		commandWidgetClass, toplevel, arglist, i);
 	XtRealizeWidget (toplevel);
 }
 
@@ -87,6 +70,7 @@ struct greet_info	*greet;
 		XtAppNextEvent (_XtDefaultAppContext(), &event);
 		XtDispatchEvent (&event);
 	}
+	XFlush (XtDisplay (toplevel));
 	greet->name = name;
 	greet->password = password;
 }
@@ -96,22 +80,5 @@ FailedLogin (d, greet)
 struct display	*d;
 struct greet_info	*greet;
 {
-	XEvent		event;
-
-	Debug ("failed login\n");
-	XtMapWidget (loginFailedButton);
-	XRaiseWindow (XtDisplay (loginFailedButton), XtWindow (loginFailedButton));
-/*	XtUnmapWidget (login); */
-	XtAddGrab (loginFailedButton, TRUE, FALSE);
-	Debug ("dispatching\n");
-	done = 0;
-	while (!done) {
-		XtAppNextEvent (_XtDefaultAppContext (), &event);
-		XtDispatchEvent (&event);
-	}
-	Debug ("LoginFailed pressed\n");
-	XtRemoveGrab (loginFailedButton);
-	XtUnmapWidget (loginFailedButton);
-	ResetLogin (login);
-/*	XtMapWidget (login); */
+	DrawFail (login);
 }

@@ -30,15 +30,21 @@
 # define XtNgreeting		"greeting"
 # define XtNnamePrompt		"namePrompt"
 # define XtNpasswdPrompt	"passwdPrompt"
+# define XtNfail		"fail"
 # define XtNnotifyDone		"notifyDone"
 # define XtNpromptColor		"promptColor"
 # define XtNgreetColor		"greetColor"
+# define XtNfailColor		"failColor"
 # define XtNpromptFont		"promptFont"
 # define XtNgreetFont		"greetFont"
+# define XtNfailFont		"failFont"
+# define XtNfailTimeout		"failTimeout"
 
 # define XtCGreeting		"Greeting"
 # define XtCNamePrompt		"NamePrompt"
 # define XtCPasswdPrompt	"PasswdPrompt"
+# define XtCFail		"Fail"
+# define XtCFailTimeout		"FailTimeout"
 
 #define NAME_LEN	32
 

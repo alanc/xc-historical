@@ -16,27 +16,39 @@ char	defaultLoginTranslations[];
 
 static XtResource resources[] = {
     {XtNwidth, XtCWidth, XtRDimension, sizeof(Dimension),
-	goffset(width), XtRString, "400"},
+	goffset(width), XtRString, "0"},
     {XtNheight, XtCHeight, XtRDimension, sizeof(Dimension),
-	goffset(height), XtRString, "200"},
+	goffset(height), XtRString, "0"},
+    {XtNx, XtCX, XtRPosition, sizeof (Position),
+	goffset(x), XtRString, "-1"},
+    {XtNy, XtCY, XtRPosition, sizeof (Position),
+	goffset(y), XtRString, "-1"},
     {XtNforeground, XtCForeground, XtRPixel, sizeof(Pixel),
         offset(textpixel), XtRString, "Black"},
     {XtNpromptColor, XtCForeground, XtRPixel, sizeof(Pixel),
         offset(promptpixel), XtRString, "Black"},
     {XtNgreetColor, XtCForeground, XtRPixel, sizeof(Pixel),
         offset(greetpixel), XtRString, "Black"},
+    {XtNfailColor, XtCForeground, XtRPixel, sizeof (Pixel),
+	offset(failpixel), XtRString, "Black"},
     {XtNfont, XtCFont, XtRFontStruct, sizeof (XFontStruct *),
     	offset (font), XtRString, XtDefaultFont},
     {XtNpromptFont, XtCFont, XtRFontStruct, sizeof (XFontStruct *),
     	offset (promptFont), XtRString, XtDefaultFont},
     {XtNgreetFont, XtCFont, XtRFontStruct, sizeof (XFontStruct *),
     	offset (greetFont), XtRString, XtDefaultFont},
+    {XtNfailFont, XtCFont, XtRFontStruct, sizeof (XFontStruct *),
+	offset (failFont), XtRString, XtDefaultFont},
     {XtNgreeting, XtCGreeting, XtRString, sizeof (char *),
     	offset(greeting), XtRString, "Welcome to the X Window System"},
     {XtNnamePrompt, XtCNamePrompt, XtRString, sizeof (char *),
-	offset(namePrompt), XtRString, "Login: "},
+	offset(namePrompt), XtRString, "Login:  "},
     {XtNpasswdPrompt, XtCNamePrompt, XtRString, sizeof (char *),
-	offset(passwdPrompt), XtRString, "Password: "},
+	offset(passwdPrompt), XtRString, "Password:  "},
+    {XtNfail, XtCFail, XtRString, sizeof (char *),
+	offset(fail), XtRString, "Login Failed"},
+    {XtNfailTimeout, XtCFailTimeout, XtRInt, sizeof (int),
+	offset(failTimeout), XtRString, "30"},
     {XtNnotifyDone, XtCCallback, XtRFunction, sizeof (caddr_t),
 	offset(notify_done), XtRFunction, (caddr_t) 0},
 };
@@ -44,9 +56,21 @@ static XtResource resources[] = {
 #undef offset
 #undef goffset
 
-# define X_INC(w)	((w)->login.font->max_bounds.width)
-# define Y_INC(w)	((w)->login.font->max_bounds.ascent +\
+# define TEXT_X_INC(w)	((w)->login.font->max_bounds.width)
+# define TEXT_Y_INC(w)	((w)->login.font->max_bounds.ascent +\
 			 (w)->login.font->max_bounds.descent)
+# define PROMPT_X_INC(w)	((w)->login.promptFont->max_bounds.width)
+# define PROMPT_Y_INC(w)	((w)->login.promptFont->max_bounds.ascent +\
+			 (w)->login.promptFont->max_bounds.descent)
+# define GREET_X_INC(w)	((w)->login.greetFont->max_bounds.width)
+# define GREET_Y_INC(w)	((w)->login.greetFont->max_bounds.ascent +\
+			 (w)->login.greetFont->max_bounds.descent)
+# define FAIL_X_INC(w)	((w)->login.failFont->max_bounds.width)
+# define FAIL_Y_INC(w)	((w)->login.failFont->max_bounds.ascent +\
+			 (w)->login.failFont->max_bounds.descent)
+
+# define Y_INC(w)	max (TEXT_Y_INC(w), PROMPT_Y_INC(w))
+
 # define LOGIN_PROMPT_W(w) (XTextWidth (w->login.promptFont,\
 				 w->login.namePrompt,\
 				 strlen (w->login.namePrompt)))
@@ -54,19 +78,34 @@ static XtResource resources[] = {
 				 w->login.passwdPrompt,\
 				 strlen (w->login.passwdPrompt)))
 # define PROMPT_W(w)	(max(LOGIN_PROMPT_W(w), PASS_PROMPT_W(w)))
-# define GREET_X(w)	(3 * X_INC(w))
-# define GREET_Y(w)	(w->login.greeting[0] ? 2 * Y_INC (w) : 0)
-# define LOGIN_X(w)	(3 * X_INC(w))
-# define LOGIN_Y(w)	(GREET_Y(w) + 2 * Y_INC(w))
-# define LOGIN_W(w)	(w->core.width - 6 * X_INC(w))
+# define GREET_X(w)	((w->core.width - XTextWidth (w->login.greetFont,\
+			w->login.greeting, strlen (w->login.greeting))) / 2)
+# define GREET_Y(w)	(w->login.greeting[0] ? 2 * GREET_Y_INC (w) : 0)
+# define GREET_W(w)	(XTextWidth (w->login.greetFont,\
+			 w->login.greeting, strlen (w->login.greeting)))
+# define LOGIN_X(w)	(2 * PROMPT_X_INC(w))
+# define LOGIN_Y(w)	(GREET_Y(w) + GREET_Y_INC(w) +\
+			 w->login.greetFont->max_bounds.ascent + Y_INC(w))
+# define LOGIN_W(w)	(w->core.width - 6 * TEXT_X_INC(w))
 # define LOGIN_H(w)	(3 * Y_INC(w) / 2)
 # define LOGIN_TEXT_X(w)(LOGIN_X(w) + PROMPT_W(w))
 # define PASS_X(w)	(LOGIN_X(w))
-# define PASS_Y(w)	(LOGIN_Y(w) + 2 * Y_INC(w))
+# define PASS_Y(w)	(LOGIN_Y(w) + 8 * Y_INC(w) / 5)
 # define PASS_W(w)	(LOGIN_W(w))
 # define PASS_H(w)	(LOGIN_H(w))
 # define PASS_TEXT_X(w)	(PASS_X(w) + PROMPT_W(w))
+# define FAIL_X(w)	((w->core.width - XTextWidth (w->login.failFont,\
+				w->login.fail, strlen (w->login.fail))) / 2)
+# define FAIL_Y(w)	(PASS_Y(w) + 2 * FAIL_Y_INC (w) +\
+			w->login.failFont->max_bounds.ascent)
+# define FAIL_W(w)	(XTextWidth (w->login.failFont,\
+			 w->login.fail, strlen (w->login.fail)))
 
+# define PAD_X(w)	(2 * (LOGIN_X(w) + max (GREET_X_INC(w), FAIL_X_INC(w))))
+
+# define PAD_Y(w)	(max (max (Y_INC(w), GREET_Y_INC(w)),\
+			     FAIL_Y_INC(w)))
+	
 static void Initialize(), Realize(), Destroy(), Redisplay();
 static Boolean SetValues();
 static int repaint_window();
@@ -127,9 +166,25 @@ realizeCursor (w, gc)
 	height = w->login.font->max_bounds.ascent + w->login.font->max_bounds.descent;
 	width = 1;
 	break;
+    default:
+	return;
     }
     XFillRectangle (XtDisplay (w), XtWindow (w), gc,
 		    x, y - w->login.font->max_bounds.ascent, width, height);
+}
+
+static void
+EraseFail (w)
+    LoginWidget	w;
+{
+    XSetForeground (XtDisplay (w), w->login.failGC,
+			w->core.background_pixel);
+    XDrawString (XtDisplay (w), XtWindow (w), w->login.failGC,
+		FAIL_X(w), FAIL_Y(w),
+		w->login.fail, strlen (w->login.fail));
+    w->login.failUp = 0;
+    XSetForeground (XtDisplay (w), w->login.failGC,
+			w->login.failpixel);
 }
 
 static void
@@ -137,6 +192,8 @@ XorCursor (w)
     LoginWidget	w;
 {
     realizeCursor (w, w->login.xorGC);
+    if (w->login.failUp)
+	EraseFail (w);
 }
 
 static void
@@ -144,6 +201,29 @@ EraseCursor (w)
     LoginWidget (w);
 {
     realizeCursor (w, w->login.bgGC);
+}
+
+failTimeout (client_data, id)
+    caddr_t	client_data;
+    XtIntervalId	id;
+{
+    LoginWidget	w = (LoginWidget)client_data;
+
+    EraseFail (w);
+}
+
+DrawFail (w)
+    LoginWidget	w;
+{
+    XDrawString (XtDisplay (w), XtWindow (w), w->login.failGC,
+		FAIL_X(w), FAIL_Y(w),
+		w->login.fail, strlen (w->login.fail));
+    XorCursor (w);
+    ResetLogin (w);
+    XorCursor (w);
+    w->login.failUp = 1;
+    if (w->login.failTimeout > 0)
+	XtAddTimeOut(w->login.failTimeout * 1000, failTimeout, (caddr_t) w);
 }
 
 static void
@@ -161,6 +241,8 @@ draw_it (w)
     XDrawString (XtDisplay (w), XtWindow (w), w->login.promptGC,
 		PASS_X(w), PASS_Y(w),
 		w->login.passwdPrompt, strlen (w->login.passwdPrompt));
+    if (w->login.failUp)
+	DrawFail (w);
     DrawName (w, 0);
     XorCursor (w);
     XSetInputFocus (XtDisplay (w), XtWindow (w), RevertToPointerRoot, CurrentTime);
@@ -408,6 +490,9 @@ static void Initialize (greq, gnew)
     if (w->login.greetFont == NULL)
     	w->login.greetFont = w->login.font;
 
+    if (w->login.failFont == NULL)
+	w->login.failFont = w->login.font;
+
     valuemask = GCForeground | GCBackground | GCFont;
     myXGCV.foreground = w->login.promptpixel;
     myXGCV.font = w->login.promptFont->fid;
@@ -417,10 +502,24 @@ static void Initialize (greq, gnew)
     myXGCV.font = w->login.greetFont->fid;
     w->login.greetGC = XtGetGC (gnew, valuemask, &myXGCV);
 
+    myXGCV.foreground = w->login.failpixel;
+    myXGCV.font = w->login.failFont->fid;
+    w->login.failGC = XtGetGC (gnew, valuemask, &myXGCV);
+
     w->login.data.name[0] = '\0';
     w->login.data.passwd[0] = '\0';
     w->login.state = GET_NAME;
-
+    w->login.cursor = 0;
+    w->login.failUp = 0;
+    if (w->core.width == 0)
+	w->core.width = max (GREET_W(w), FAIL_W(w)) + PAD_X(w);
+    if (w->core.height == 0)
+	w->core.height = FAIL_Y(w) + PAD_Y(w);
+    if (w->core.x == -1)
+	w->core.x = (WidthOfScreen (XtScreen (w)) - w->core.width) / 2;
+    if (w->core.y == -1)
+	w->core.y = (HeightOfScreen (XtScreen (w)) - w->core.height) / 3;
+    XtMoveWidget (XtParent (w), w->core.x, w->core.y); 
 }
 
  

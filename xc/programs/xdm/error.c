@@ -8,20 +8,20 @@
 # include "dm.h"
 # include <stdio.h>
 
-static FILE	*errorFile;
-
 InitErrorLog ()
 {
-	if (!(errorFile = freopen (errorLogFile, "w", stderr)))
-		Panic (errorLogFile);
+	if (access (errorLogFile, 2) == 0)
+		freopen (errorLogFile, "w", stderr);
+	else
+		LogError ("Cannot open errorLogFile %s\n", errorLogFile);
 }
 
 LogError (fmt, arg1, arg2, arg3, arg4, arg5)
 char	*fmt;
 int	arg1, arg2, arg3, arg4, arg5;
 {
-	fprintf (errorFile, fmt, arg1, arg2, arg3, arg4, arg5);
-	fflush (errorFile);
+	fprintf (stderr, fmt, arg1, arg2, arg3, arg4, arg5);
+	fflush (stderr);
 }
 
 LogPanic (fmt, arg1, arg2, arg3, arg4, arg5)

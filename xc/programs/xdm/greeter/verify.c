@@ -24,7 +24,7 @@ struct verify_info	*verify;
 	static char	*argv[3];
 
 	Debug ("Verify %s %s\n", greet->name, greet->password);
-	argv[0] = session;
+	argv[0] = d->session;
 	p = getpwnam (greet->name);
 	if (!p)
 		p = &joeblow;
