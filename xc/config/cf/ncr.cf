@@ -5,13 +5,15 @@ XCOMM operating system:  OSName
 
 #define SystemV4		YES
 #define BootstrapCFlags		-DNCR
+#define HasLdRunPath		YES
+#define HasStreams		YES
 
 /* Build Flags */
 
 XCOMM #define StandardDefines		-DSVR4 -DNCR -Di386 -DUSL_COMPAT -DXML -DXI18N
 #define StandardDefines		-DSVR4 -DNCR -Di386 -DXML -DXI18N
 #ifndef StrictAnsiMode
-#define StrictAnsiMode		YES
+#define StrictAnsiMode		NO
 #endif
 #if StrictAnsiMode
 #define DefaultCCOptions -Xc -Hnocopyr
@@ -26,7 +28,7 @@ XCOMM #define StandardDefines		-DSVR4 -DNCR -Di386 -DUSL_COMPAT -DXML -DXI18N
 #define ServerExtraDefines      -DSYSV386 -DXSVGA -DNO_SECONDARY
 #define ServerOSDefines         -DDDXTIME -DDDXOSINIT
 
-#define ConnectionFlags	-DTLICONN -DLOCALCONN -DUNIXCONN
+#define ConnectionFlags	-DSTREAMSCONN -DLOCALCONN -DUNIXCONN
 
 XCOMM Xsvga does not have this code, don't turn it on yet.
 XCOMM #define ExtensionOSDefines	-DXTESTEXT1
