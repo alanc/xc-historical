@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xos.h,v 1.25 90/08/22 18:04:13 rws Exp $
+ * $XConsortium: Xos.h,v 1.26 90/12/26 11:12:18 rws Exp $
  * 
  * Copyright 1987 by the Massachusetts Institute of Technology
  *
@@ -58,20 +58,9 @@
 
 
 /*
- * Just about everyone needs the strings routines.  For uniformity, we use
- * the BSD-style index() and rindex() in application code, so any systems that
- * don't provide them need to have #defines here.  Unfortunately, we can't
- * use #if defined() here since makedepend will get confused.
- *
- * The list of systems that currently needs System V stings includes:
- *
- *	hpux
- * 	macII
- *	CRAY
- *	stellar
- *	USG
- * 
- * all of which happen to define SYSV as well.
+ * Just about everyone needs the strings routines.  We provide both forms here,
+ * index/rindex and strchr/strrchr, so any systems that don't provide them all
+ * need to have #defines here.
  */
 
 #ifdef SYSV
@@ -80,6 +69,8 @@
 #define rindex strrchr
 #else
 #include <strings.h>
+#define strchr index
+#define strrchr rindex
 #endif /* SYSV */
 
 
