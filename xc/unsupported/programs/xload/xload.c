@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$XConsortium: xload.c,v 1.18 89/07/19 12:39:39 jim Exp $";
+static char rcsid[] = "$XConsortium: xload.c,v 1.19 89/07/19 12:41:10 jim Exp $";
 #endif  lint
 
 #include <stdio.h> 
@@ -79,7 +79,7 @@ void main(argc, argv)
     Pixmap icon_pixmap = None;
     
     ProgramName = argv[0];
-    toplevel = XtInitialize("main", "XLoad", options, XtNumber(options), &argc, argv);
+    toplevel = XtInitialize(NULL, "XLoad", options, XtNumber(options), &argc, argv);
       
     if (argc != 1) usage();
     
