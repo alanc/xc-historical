@@ -1,4 +1,4 @@
-/* $Header: Xlib.h,v 11.133 87/09/12 02:35:11 rws Exp $ */
+/* $Header: Xlib.h,v 11.135 88/01/30 18:44:50 rws Exp $ */
 /* 
  * Copyright 1985, 1986, 1987 by the Massachusetts Institute of Technology
  *
@@ -62,6 +62,8 @@
 #define BitmapBitOrder(dpy) 	((dpy)->bitmap_bit_order)
 #define BitmapPad(dpy) 		((dpy)->bitmap_pad)
 #define ImageByteOrder(dpy) 	((dpy)->byte_order)
+#define NextRequest(dpy)	((dpy)->request + 1)
+#define LastKnownRequestProcessed(dpy)	((dpy)->last_request_read)
 
 /* macros for screen oriented applications (toolkit) */
 #define ScreenOfDisplay(dpy, scr)(&((dpy)->screens[(scr)]))
@@ -427,8 +429,8 @@ typedef struct _XDisplay {
 	int release;		/* release of the server */
 	struct _XSQEvent *head, *tail;	/* Input event queue. */
 	int qlen;		/* Length of input event queue */
-	int last_request_read;	/* sequence number of last event read NI */
-	int request;		/* sequence number of last request. */
+	unsigned long last_request_read; /* sequence number of last event read */
+	unsigned long request;	/* sequence number of last request. */
 	char *last_req;		/* beginning of last request, or dummy */
 	char *buffer;		/* Output buffer starting address. */
 	char *bufptr;		/* Output buffer index pointer. */
@@ -487,6 +489,8 @@ typedef struct _XDisplay {
  */
 typedef struct {
 	int type;		/* of event */
+	unsigned long serial;	/* # of last request processed by server */
+	Bool send_event;	/* true if this came from a SendEvent request */
 	Display *display;	/* Display the event was read from */
 	Window window;	        /* "event" window it is reported relative to */
 	Window root;	        /* root window that the event occured on */
@@ -503,6 +507,8 @@ typedef XKeyEvent XKeyReleasedEvent;
 
 typedef struct {
 	int type;		/* of event */
+	unsigned long serial;	/* # of last request processed by server */
+	Bool send_event;	/* true if this came from a SendEvent request */
 	Display *display;	/* Display the event was read from */
 	Window window;	        /* "event" window it is reported relative to */
 	Window root;	        /* root window that the event occured on */
@@ -519,6 +525,8 @@ typedef XButtonEvent XButtonReleasedEvent;
 
 typedef struct {
 	int type;		/* of event */
+	unsigned long serial;	/* # of last request processed by server */
+	Bool send_event;	/* true if this came from a SendEvent request */
 	Display *display;	/* Display the event was read from */
 	Window window;	        /* "event" window reported relative to */
 	Window root;	        /* root window that the event occured on */
@@ -534,6 +542,8 @@ typedef XMotionEvent XPointerMovedEvent;
 
 typedef struct {
 	int type;		/* of event */
+	unsigned long serial;	/* # of last request processed by server */
+	Bool send_event;	/* true if this came from a SendEvent request */
 	Display *display;	/* Display the event was read from */
 	Window window;	        /* "event" window reported relative to */
 	Window root;	        /* root window that the event occured on */
@@ -556,6 +566,8 @@ typedef XCrossingEvent XLeaveWindowEvent;
 
 typedef struct {
 	int type;		/* FocusIn or FocusOut */
+	unsigned long serial;	/* # of last request processed by server */
+	Bool send_event;	/* true if this came from a SendEvent request */
 	Display *display;	/* Display the event was read from */
 	Window window;		/* window of event */
 	int mode;		/* NotifyNormal, NotifyGrab, NotifyUngrab */
@@ -572,6 +584,8 @@ typedef XFocusChangeEvent XFocusOutEvent;
 /* generated on EnterWindow and FocusIn  when KeyMapState selected */
 typedef struct {
 	int type;
+	unsigned long serial;	/* # of last request processed by server */
+	Bool send_event;	/* true if this came from a SendEvent request */
 	Display *display;	/* Display the event was read from */
 	Window window;
 	char key_vector[32];
@@ -579,6 +593,8 @@ typedef struct {
 
 typedef struct {
 	int type;
+	unsigned long serial;	/* # of last request processed by server */
+	Bool send_event;	/* true if this came from a SendEvent request */
 	Display *display;	/* Display the event was read from */
 	Window window;
 	int x, y;
@@ -588,6 +604,8 @@ typedef struct {
 
 typedef struct {
 	int type;
+	unsigned long serial;	/* # of last request processed by server */
+	Bool send_event;	/* true if this came from a SendEvent request */
 	Display *display;	/* Display the event was read from */
 	Drawable drawable;
 	int x, y;
@@ -599,6 +617,8 @@ typedef struct {
 
 typedef struct {
 	int type;
+	unsigned long serial;	/* # of last request processed by server */
+	Bool send_event;	/* true if this came from a SendEvent request */
 	Display *display;	/* Display the event was read from */
 	Drawable drawable;
 	int major_code;		/* core is CopyArea or CopyPlane */
@@ -607,6 +627,8 @@ typedef struct {
 
 typedef struct {
 	int type;
+	unsigned long serial;	/* # of last request processed by server */
+	Bool send_event;	/* true if this came from a SendEvent request */
 	Display *display;	/* Display the event was read from */
 	Window window;
 	int state;		/* either Obscured or UnObscured */
@@ -614,6 +636,8 @@ typedef struct {
 
 typedef struct {
 	int type;
+	unsigned long serial;	/* # of last request processed by server */
+	Bool send_event;	/* true if this came from a SendEvent request */
 	Display *display;	/* Display the event was read from */
 	Window parent;		/* parent of the window */
 	Window window;		/* window id of window created */
@@ -625,6 +649,8 @@ typedef struct {
 
 typedef struct {
 	int type;
+	unsigned long serial;	/* # of last request processed by server */
+	Bool send_event;	/* true if this came from a SendEvent request */
 	Display *display;	/* Display the event was read from */
 	Window event;
 	Window window;
@@ -632,6 +658,8 @@ typedef struct {
 
 typedef struct {
 	int type;
+	unsigned long serial;	/* # of last request processed by server */
+	Bool send_event;	/* true if this came from a SendEvent request */
 	Display *display;	/* Display the event was read from */
 	Window event;
 	Window window;
@@ -640,6 +668,8 @@ typedef struct {
 
 typedef struct {
 	int type;
+	unsigned long serial;	/* # of last request processed by server */
+	Bool send_event;	/* true if this came from a SendEvent request */
 	Display *display;	/* Display the event was read from */
 	Window event;
 	Window window;
@@ -648,6 +678,8 @@ typedef struct {
 
 typedef struct {
 	int type;
+	unsigned long serial;	/* # of last request processed by server */
+	Bool send_event;	/* true if this came from a SendEvent request */
 	Display *display;	/* Display the event was read from */
 	Window parent;
 	Window window;
@@ -655,6 +687,8 @@ typedef struct {
 
 typedef struct {
 	int type;
+	unsigned long serial;	/* # of last request processed by server */
+	Bool send_event;	/* true if this came from a SendEvent request */
 	Display *display;	/* Display the event was read from */
 	Window event;
 	Window window;
@@ -665,6 +699,8 @@ typedef struct {
 
 typedef struct {
 	int type;
+	unsigned long serial;	/* # of last request processed by server */
+	Bool send_event;	/* true if this came from a SendEvent request */
 	Display *display;	/* Display the event was read from */
 	Window event;
 	Window window;
@@ -677,6 +713,8 @@ typedef struct {
 
 typedef struct {
 	int type;
+	unsigned long serial;	/* # of last request processed by server */
+	Bool send_event;	/* true if this came from a SendEvent request */
 	Display *display;	/* Display the event was read from */
 	Window event;
 	Window window;
@@ -685,6 +723,8 @@ typedef struct {
 
 typedef struct {
 	int type;
+	unsigned long serial;	/* # of last request processed by server */
+	Bool send_event;	/* true if this came from a SendEvent request */
 	Display *display;	/* Display the event was read from */
 	Window window;
 	int width, height;
@@ -692,6 +732,8 @@ typedef struct {
 
 typedef struct {
 	int type;
+	unsigned long serial;	/* # of last request processed by server */
+	Bool send_event;	/* true if this came from a SendEvent request */
 	Display *display;	/* Display the event was read from */
 	Window parent;
 	Window window;
@@ -705,6 +747,8 @@ typedef struct {
 
 typedef struct {
 	int type;
+	unsigned long serial;	/* # of last request processed by server */
+	Bool send_event;	/* true if this came from a SendEvent request */
 	Display *display;	/* Display the event was read from */
 	Window event;
 	Window window;
@@ -713,6 +757,8 @@ typedef struct {
 
 typedef struct {
 	int type;
+	unsigned long serial;	/* # of last request processed by server */
+	Bool send_event;	/* true if this came from a SendEvent request */
 	Display *display;	/* Display the event was read from */
 	Window parent;
 	Window window;
@@ -721,6 +767,8 @@ typedef struct {
 
 typedef struct {
 	int type;
+	unsigned long serial;	/* # of last request processed by server */
+	Bool send_event;	/* true if this came from a SendEvent request */
 	Display *display;	/* Display the event was read from */
 	Window window;
 	Atom atom;
@@ -730,6 +778,8 @@ typedef struct {
 
 typedef struct {
 	int type;
+	unsigned long serial;	/* # of last request processed by server */
+	Bool send_event;	/* true if this came from a SendEvent request */
 	Display *display;	/* Display the event was read from */
 	Window window;
 	Atom selection;
@@ -738,6 +788,8 @@ typedef struct {
 
 typedef struct {
 	int type;
+	unsigned long serial;	/* # of last request processed by server */
+	Bool send_event;	/* true if this came from a SendEvent request */
 	Display *display;	/* Display the event was read from */
 	Window owner;		/* must be next after type */
 	Window requestor;
@@ -749,6 +801,8 @@ typedef struct {
 
 typedef struct {
 	int type;
+	unsigned long serial;	/* # of last request processed by server */
+	Bool send_event;	/* true if this came from a SendEvent request */
 	Display *display;	/* Display the event was read from */
 	Window requestor;	/* must be next after type */
 	Atom selection;
@@ -759,6 +813,8 @@ typedef struct {
 
 typedef struct {
 	int type;
+	unsigned long serial;	/* # of last request processed by server */
+	Bool send_event;	/* true if this came from a SendEvent request */
 	Display *display;	/* Display the event was read from */
 	Window window;
 	Colormap colormap;	/* COLORMAP or None */
@@ -768,6 +824,8 @@ typedef struct {
 
 typedef struct {
 	int type;
+	unsigned long serial;	/* # of last request processed by server */
+	Bool send_event;	/* true if this came from a SendEvent request */
 	Display *display;	/* Display the event was read from */
 	Window window;
 	Atom message_type;
@@ -781,6 +839,8 @@ typedef struct {
 
 typedef struct {
 	int type;
+	unsigned long serial;	/* # of last request processed by server */
+	Bool send_event;	/* true if this came from a SendEvent request */
 	Display *display;	/* Display the event was read from */
 	Window window;		/* unused */
 	int request;		/* one of MappingModifier, MappingKeyboard,
@@ -793,7 +853,7 @@ typedef struct {
 	int type;
 	Display *display;	/* Display the event was read from */
 	XID resourceid;		/* resource id */
-	int serial;		/* serial number of failed request */
+	unsigned long serial;	/* serial number of failed request */
 	char error_code;	/* error code of failed request */
 	char request_code;	/* Major op-code of failed request */
 	char minor_code;	/* Minor op-code of failed request */
@@ -801,6 +861,8 @@ typedef struct {
 
 typedef struct {
 	int type;
+	unsigned long serial;	/* # of last request processed by server */
+	Bool send_event;	/* true if this came from a SendEvent request */
 	Display *display;/* Display the event was read from */
 	Window window;	/* window on which event was requested in event mask */
 } XAnyEvent;
