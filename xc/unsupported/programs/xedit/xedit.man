@@ -40,7 +40,7 @@ widget will enable searching in that widget, not the edit widget.
 Both the message window and the edit window will create a scrollbar if
 the text to display is too large to fit in that window.  Horizontal scrolling
 is not allowed by default, but can be turned on through the Text
-widget's resources, see \fIX Toolkit Athena Widgets\fP for the exact
+widget's resources, see \fIAthena Widget Set\fP for the exact
 resource definition.
 .SH COMMANDS
 .IP "Quit" 8
@@ -77,7 +77,7 @@ Specifies a string that is to be appended to the backup filename.  The
 default is to append the string ".BAK".
 .SH WIDGETS
 The widgets used by xedit are listed below.  Widgets are listed by
-name and class.  Consult the \fIX Toolkit Athena Widgets\fP or the \fPX Toolkit
+name and class.  Consult the \fIAthena Widget Set\fP or the \fPX Toolkit
 Intrinsics\fP for each widget's list of settable resources.
 .sp
 .nf
@@ -108,7 +108,7 @@ stored in the RESOURCE_MANAGER property.
 .SH FILES
 /usr/lib/X11/app-defaults/Xedit - specifies required resources
 .SH SEE ALSO
-X(1), xrdb(1), X Toolkit Athena Widgets
+X(1), xrdb(1), Athena Widget Set
 .SH RESTRICTIONS
 There is no \fIundo\fP function.
 .SH COPYRIGHT
