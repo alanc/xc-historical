@@ -67,12 +67,21 @@ connection.o: $(ICONFIGFILES)
 /**/# temporary file to its proper name, and link it together with everything
 /**/# else to form the object file that we link into the server.
 /**/#
+#ifdef hp9000s300
 dbm.o:  $(DBMLIB)
 	rm -f dbm.o
 	if [ ! -d dbm ]; then $(RM) -r dbm; mkdir dbm; else /bin/true; fi
 	(cd dbm; rm -f *.o; ar -x $(DBMLIB); \
 	ld -r -o a.out.o -h _bcopy ndbm.o; \
 	mv a.out.o ndbm.o; ld -r -o ../dbm.o *.o)
+#else
+dbm.o:  $(DBMLIB)
+        rm -f dbm.o
+        if [ ! -d dbm ]; then $(RM) -r dbm; mkdir dbm; else /bin/true; fi
+        (cd dbm; rm -f *.o; ar -x $(DBMLIB); \
+        ld -r -o a.out.o -h bcopy ndbm.o; \
+        mv a.out.o ndbm.o; ld -r -o ../dbm.o *.o)
+#endif /* hp9000s300 */
 #endif /* HPArchitecture */
 
 #ifdef NEED_ALLOCA_FROM_LIBPW
