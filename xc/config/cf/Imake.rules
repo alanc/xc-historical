@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
-XCOMM rules:  $XConsortium: Imake.rules,v 1.157 93/08/26 14:41:05 rws Exp $
+XCOMM rules:  $XConsortium: Imake.rules,v 1.159 93/09/04 15:56:45 rws Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -100,6 +100,8 @@ XCOMM rules:  $XConsortium: Imake.rules,v 1.157 93/08/26 14:41:05 rws Exp $
  * NormalLibraryTarget2		(libname,objlist1,objlist2)
  * NormalLibraryTarget3		(libname,objlist1,objlist2,objlist3)
  * NormalDepLibraryTarget	(libname,deplist,objlist)
+ * UnsharedLibraryTarget	(libname,objlist,down,up)
+ * UnsharedLibraryTarget3	(libname,objlist1,objlist2,objlist3,down,up)
  * SubdirLibraryRule		(objlist)
  * ProfiledLibraryTarget	(libname,objlist)
  * DebuggedLibraryTarget	(libname,objlist)
@@ -959,15 +961,14 @@ LintLibReferences(varname,libname,libsource)
 #endif
 
 /*
- * NormalSharedLibObjCompile - compile fragment for shared object when
- * a normal library is not being built
+ * NormalSharedLibObjCompile - compile fragment for shared objects
  */
 #ifndef NormalSharedLibObjCompile
 #define NormalSharedLibObjCompile(options) NormalLibObjCompile(options $(SHLIBDEF) $(SHAREDCODEDEF) $(PICFLAGS))
 #endif
 
 /*
- * LibObjCompile - compile fragment for shared/profiled/debugged objects
+ * LibObjCompile - compile fragment for unshared/profiled/debugged objects
  */
 #ifndef LibObjCompile
 #define LibObjCompile(dir,options) RemoveFiles($@ dir/$@)		@@\
@@ -987,6 +988,13 @@ LintLibReferences(varname,libname,libsource)
  */
 #ifndef ProfiledLibObjCompile
 #define ProfiledLibObjCompile(options) LibObjCompile(profiled,ProfiledCDebugFlags options)
+#endif
+
+/*
+ * UnsharedLibObjCompile - compile fragment for unshared objects
+ */
+#ifndef UnsharedLibObjCompile
+#define UnsharedLibObjCompile(options) LibObjCompile(unshared,$(CDEBUGFLAGS) options)
 #endif
 
 /*
@@ -1148,6 +1156,39 @@ LibraryTargetName(libname): deplist					@@\
 	RanLibrary($@)							@@\
 	LinkBuildLibrary($@)
 #endif /* NormalDepLibraryTarget */
+
+
+/*
+ * UnsharedLibraryTarget - generate rules to create a library.
+ */
+#ifndef UnsharedLibraryTarget
+#define	UnsharedLibraryTarget(libname,objlist,down,up)			@@\
+AllTarget(LibraryTargetName(libname))					@@\
+									@@\
+LibraryTargetName(libname): objlist					@@\
+	RemoveFile($@)							@@\
+	(cd down; MakeLibrary(up/$@,objlist))				@@\
+	RanLibrary($@)							@@\
+	LinkBuildLibrary($@)
+#endif /* UnsharedLibraryTarget */
+
+
+/*
+ * UnsharedLibraryTarget3 - generate rules to create a library in three steps.
+ * This is used to create libraries with very large numbers of files.
+ */
+#ifndef UnsharedLibraryTarget3
+#define	UnsharedLibraryTarget3(libname,objlist1,objlist2,objlist3,down,up) @@\
+AllTarget(LibraryTargetName(libname))					@@\
+									@@\
+LibraryTargetName(libname): objlist1 objlist2 objlist3			@@\
+	RemoveFile($@)							@@\
+	(cd down; MakeLibrary(up/$@,objlist1))				@@\
+	(cd down; MakeLibrary(up/$@,objlist2))				@@\
+	(cd down; MakeLibrary(up/$@,objlist3))				@@\
+	RanLibrary($@)							@@\
+	LinkBuildLibrary($@)
+#endif /* UnsharedLibraryTarget3 */
 
 
 /*
