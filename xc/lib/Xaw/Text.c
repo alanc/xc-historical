@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Text.c,v 1.53 88/09/13 17:44:34 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Text.c,v 1.55 88/09/13 18:05:45 swick Exp $";
 #endif
 
 
@@ -196,10 +196,6 @@ static void Initialize(request, new)
     ctx->text.leftmargin = ctx->text.client_leftmargin;
     ctx->text.update_disabled = False;
     ctx->text.old_insert = -1;
-#ifdef notdef
-    if (ctx->text.sink)
-      BuildLineTable(ctx, ctx->text.lt.top);
-#endif
 
     if (ctx->text.options & scrollVertical) {
 	static Arg args[] = {
@@ -541,7 +537,7 @@ static void SetScrollBar(ctx)
 */
 _XtTextScroll(ctx, n)
   TextWidget ctx;
-  int n;
+  int n;			/* assumed <= ctx->text.lt.lines */
 {
     XtTextPosition top, target;
     if (n >= 0) {
@@ -557,7 +553,6 @@ _XtTextScroll(ctx, n)
 	    (*ctx->text.sink->ClearToBackground)(ctx, 0,
 		ctx->text.lt.info[0].y + ctx->core.height - ctx->text.lt.info[n].y,
 		(int)ctx->core.width, (int)ctx->core.height);
-	    if (n < ctx->text.lt.lines) n++;
 	    _XtTextNeedsUpdating(ctx,
 		    ctx->text.lt.info[ctx->text.lt.lines - n].position, ctx->text.lastPos);
 	    SetScrollBar(ctx);
@@ -568,12 +563,15 @@ _XtTextScroll(ctx, n)
 	target = ctx->text.lt.top;
 	top = (*ctx->text.source->Scan)(ctx->text.source, target, XtstEOL,
 				     XtsdLeft, n+1, FALSE);
-	tempHeight = ctx->text.lt.info[ctx->text.lt.lines-n].y;
 	BuildLineTable(ctx, top);
 	if (ctx->text.lt.info[n].position == target) {
+	    tempHeight = ctx->text.lt.info[ctx->text.lt.lines-n].y;
 	    XCopyArea(XtDisplay(ctx), XtWindow(ctx), XtWindow(ctx), ctx->text.gc,
 		      0, ctx->text.lt.info[0].y, (int)ctx->core.width, tempHeight,
 		      0, ctx->text.lt.info[n].y);
+	    (*ctx->text.sink->ClearToBackground)(ctx, 0,
+		ctx->text.lt.info[0].y,
+		(int)ctx->core.width, ctx->text.lt.info[n].y - 1);
 	    _XtTextNeedsUpdating(ctx, 
 		    ctx->text.lt.info[0].position, ctx->text.lt.info[n].position);
 	    SetScrollBar(ctx);
@@ -699,21 +697,22 @@ int ReplaceText (ctx, pos1, pos2, text)
 
  /* it is illegal to call this routine unless there is a valid line table!*/
 {
-    int i, line1, line2, visible, delta, error;
+    int i, line1, visible, delta, error;
     Position x, y;
     int realW, realH, width;
     XtTextPosition startPos, endPos, updateFrom;
+    int (*Scan)() = ctx->text.source->Scan;
 
     /* the insertPos may not always be set to the right spot in XttextAppend */
     if ((pos1 == ctx->text.insertPos) &&
 	(ctx->text.source->edit_mode == XttextAppend)) {
-      ctx->text.insertPos = GETLASTPOS;
+      ctx->text.insertPos = ctx->text.lastPos;
       pos2 = pos2 - pos1 + ctx->text.insertPos;
       pos1 = ctx->text.insertPos;
     }
-    updateFrom = (*ctx->text.source->Scan)(ctx->text.source, pos1, XtstWhiteSpace, XtsdLeft,
+    updateFrom = (*Scan)(ctx->text.source, pos1, XtstWhiteSpace, XtsdLeft,
 	    1, TRUE);
-    updateFrom = (*ctx->text.source->Scan)(ctx->text.source, updateFrom, XtstPositions, XtsdLeft,
+    updateFrom = (*Scan)(ctx->text.source, updateFrom, XtstPositions, XtsdLeft,
 	    1, TRUE);
     startPos = max(updateFrom, ctx->text.lt.top);
     visible = LineAndXYForPosition(ctx, startPos, &line1, &x, &y);
@@ -728,6 +727,7 @@ int ReplaceText (ctx, pos1, pos2, text)
     }
     delta = text->length - (pos2 - pos1);
     if (delta < ctx->text.lastPos) {
+	pos2 += delta;
 	for (i = 0; i < ctx->text.numranges; i++) {
 	    if (ctx->text.updateFrom[i] > pos1)
 		ctx->text.updateFrom[i] += delta;
@@ -736,17 +736,19 @@ int ReplaceText (ctx, pos1, pos2, text)
 	}
     }
 
-    line2 = LineForPosition(ctx, pos1);
     /* 
      * fixup all current line table entries to reflect edit.
-     * BUG: it is illegal to do arithmetic on positions. This code should
-     * either use scan or the source needs to provide a function for doing
-     * position arithmetic.
-    */
-    for (i = line2 + 1; i <= ctx->text.lt.lines; i++)
-	ctx->text.lt.info[i].position += delta;
+     * %%% it is not legal to do arithmetic on positions.
+     * using Scan would be more proper.
+     */
+    if (delta) {
+	XtTextLineTableEntry *lineP;
+	int line2 = LineForPosition(ctx, pos1) + 1;
+	for (i = line2, lineP = ctx->text.lt.info + line2;
+	     i <= ctx->text.lt.lines; i++, lineP++)
+	    lineP->position += delta;
+    }
 
-    endPos = pos1;
     /*
      * Now process the line table and fixup in case edits caused
      * changes in line breaks. If we are breaking on word boundaries,
@@ -757,7 +759,8 @@ int ReplaceText (ctx, pos1, pos2, text)
 	Boolean resizeable = ctx->text.options & resizeWidth;
 	Boolean wordwrap = ctx->text.options & wordBreak;
 	int (*FindPosition)() = ctx->text.sink->FindPosition;
-	int (*Scan)() = ctx->text.source->Scan;
+	int (*ClearToBackground)() = ctx->text.sink->ClearToBackground;
+	register XtTextPosition lastPos = ctx->text.lastPos;
 	for (i = line1; i < ctx->text.lt.lines; i++) {/* fixup line table */
 	    thisLine = nextLine++;
 	    width = resizeable ? BIGNUM : ctx->core.width - x;
@@ -777,16 +780,24 @@ int ReplaceText (ctx, pos1, pos2, text)
 		    break;	/* %%% why not update remaining y's? */
 		startPos = endPos;
 	    }
-	    if (startPos > ctx->text.lastPos)
+	    if (startPos > ctx->text.lastPos) {
+		if (nextLine->position <= lastPos) {
+		    (*ClearToBackground) (ctx, nextLine->x, nextLine->y,
+					  nextLine->endX,
+					  (nextLine+1)->y - nextLine->y);
+		}
 		nextLine->endX = ctx->text.leftmargin;
+	    }
 	    nextLine->position = startPos;
 	    x = nextLine->x;
 	}
+	if (delta >= ctx->text.lastPos)
+	    endPos = ctx->text.lastPos;
+	if (endPos < pos2)	/* might scroll if word wrapped off bottom */
+	    endPos = pos2;
+	if (pos2 >= ctx->text.lt.top || delta >= ctx->text.lastPos)
+	    _XtTextNeedsUpdating(ctx, updateFrom, endPos);
     }
-    if (delta >= ctx->text.lastPos)
-	endPos = ctx->text.lastPos;
-    if (delta >= ctx->text.lastPos || pos2 >= ctx->text.lt.top)
-	_XtTextNeedsUpdating(ctx, updateFrom, endPos);
     SetScrollBar(ctx);
     return error;
 }
@@ -807,21 +818,29 @@ static void DisplayText(w, pos1, pos2)
     int height;
     int line, i, visible;
     XtTextPosition startPos, endPos;
+    int lastPos = ctx->text.lastPos;
+    Boolean clear_eol;
 
     if (pos1 < ctx->text.lt.top)
 	pos1 = ctx->text.lt.top;
-    if (pos2 > ctx->text.lastPos) 
+    if (pos2 > ctx->text.lastPos)
 	pos2 = ctx->text.lastPos;
     if (pos1 >= pos2) return;
     visible = LineAndXYForPosition(ctx, pos1, &line, &x, &y);
     if (!visible)
 	return;
     startPos = pos1;
-    height = ctx->text.lt.info[1].y - ctx->text.lt.info[0].y;
     for (i = line; i < ctx->text.lt.lines; i++) {
 	endPos = ctx->text.lt.info[i + 1].position;
-	if (endPos > pos2)
+	if (endPos > pos2) {
+	    if (endPos >= lastPos)
+		clear_eol = True;
+	    else
+		clear_eol = False;
 	    endPos = pos2;
+	}
+	else clear_eol = True;
+	height = ctx->text.lt.info[i + 1].y - ctx->text.lt.info[i].y;
 	if (endPos > startPos) {
 	    if (x == ctx->text.leftmargin)
                 (*ctx->text.sink->ClearToBackground)
@@ -838,12 +857,12 @@ static void DisplayText(w, pos1, pos2)
 	    }
 	}
 	startPos = endPos;
-	height = ctx->text.lt.info[i + 1].y - ctx->text.lt.info[i].y;
-        (*ctx->text.sink->ClearToBackground)(ctx,
-	    ctx->text.lt.info[i].endX, y, (int)ctx->core.width, height);
+	if (clear_eol)
+	    (*ctx->text.sink->ClearToBackground)(ctx,
+		ctx->text.lt.info[i].endX, y, (int)ctx->core.width, height);
 	x = ctx->text.leftmargin;
 	y = ctx->text.lt.info[i + 1].y;
-	if ((endPos == pos2) && (endPos != ctx->text.lastPos))
+	if ((endPos == pos2) && (endPos != lastPos))
 	    break;
     }
 }
@@ -1089,6 +1108,7 @@ static CheckResizeOrOverflow(ctx)
 		    BuildLineTable(ctx, ctx->text.lt.top);
 		    if (!(options & wordBreak) /* if NorthEastGravity */
 			&& rbox.height < oldHeight) {
+			/* clear cruft from bottom margin */
 			(*ctx->text.sink->ClearToBackground)
 			    (ctx, ctx->text.leftmargin,
 			     ctx->text.lt.info[ctx->text.lt.lines].y,
@@ -1159,8 +1179,10 @@ static void ProcessExposeRegion(w, event)
     XtTextLineTableEntry *info;
 
    _XtTextPrepareToUpdate(ctx);
+#ifdef notdef
     if (x < ctx->text.leftmargin) /* stomp on caret tracks */
         (*ctx->text.sink->ClearToBackground)(ctx, x, y, width, height);
+#endif
    /* figure out starting line that was exposed */
     line = LineForPosition(ctx, PositionForXY(ctx, x, y));
     while (line < ctx->text.lt.lines && ctx->text.lt.info[line + 1].y < y)
@@ -1616,7 +1638,7 @@ void XtTextEnableRedisplay(w)
     Widget w;
 {
     register TextWidget ctx = (TextWidget)w;
-    register Position lastPos;
+    register XtTextPosition lastPos;
 
     if (!ctx->text.update_disabled) return;
 
