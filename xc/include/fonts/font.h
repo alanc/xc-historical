@@ -46,6 +46,20 @@ typedef int DrawDirection;
 
 #define NO_SUCH_CHAR	-1
 
+
+#define	FontAliasType	0x1000
+
+#define	StillWorking	-2
+#define	Suspended	-1
+
+/* OpenFont flags */
+#define FontLoadInfo	0x0001
+#define FontLoadProps	0x0002
+#define FontLoadMetrics	0x0004
+#define FontLoadBitmaps	0x0008
+#define FontLoadAll	0x000f
+#define	FontOpenSync	0x0010
+
 typedef char	*closure;
 
 extern int	LoadFont (/*client, lenfname, pfontname, ppfont*/);
