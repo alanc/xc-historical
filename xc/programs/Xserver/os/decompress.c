@@ -39,7 +39,7 @@ typedef long int	  count_int;
  typedef	unsigned char	char_type;
 #endif /* UCHAR */
 
-char_type magic_header[] = { "\037\235" };	/* 1F 9D */
+static char_type magic_header[] = { "\037\235" };	/* 1F 9D */
 
 /* Defines for third byte of header */
 #define BIT_MASK	0x1f
@@ -91,13 +91,7 @@ typedef struct _compressedFILE {
     unsigned short  *tab_prefix;
 } CompressedFile;
 
-writeerr ()
-{
-    fprintf (stderr, "cannot write output\n");
-    exit (1);
-}
-
-int hsize_table[] = {
+static int hsize_table[] = {
     5003,	/* 12 bits - 80% occupancy */
     9001,	/* 13 bits - 91% occupancy */
     18013,	/* 14 bits - 91% occupancy */
