@@ -1,5 +1,5 @@
 /*
- * $XConsortium: editres.c,v 1.14 92/03/20 18:11:51 dave Exp $
+ * $XConsortium: editres.c,v 1.15 92/08/12 17:49:10 converse Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -24,9 +24,6 @@
 #include <stdio.h>
 #include <X11/Intrinsic.h>
 #include <X11/StringDefs.h>
-
-/* #include "/users/dave/src/vroot/vroot.h" for virtual root window */
-
 #include <X11/Xaw/Cardinals.h>	
 
 #define THIS_IS_MAIN		/* Don't get extern definitions of global
