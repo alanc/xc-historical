@@ -1,4 +1,4 @@
-/* $XConsortium: Berklib.c,v 1.9 91/01/11 09:16:20 rws Exp $ */
+/* $XConsortium: Berklib.c,v 1.10 91/01/11 13:32:14 rws Exp $ */
 
 /*
  * These are routines found in BSD but not on all other systems.  The core
@@ -29,7 +29,9 @@
 /* you should use Xfuncs.h in code instead of relying on Berklib */
 #ifdef WANT_BFUNCS
 
-#if __STDC__ && !defined(NOSTDHDRS)
+#include <X11/Xosdefs.h>
+
+#if __STDC__ && defined(X_NOT_STDC_ENV)
 
 #include <string.h>
 
