@@ -1,4 +1,4 @@
-/* $XConsortium: keysymdef.h,v 1.8 88/02/02 09:18:20 rws Exp $ */
+/* $XConsortium: keysymdef.h,v 1.9 88/09/06 15:56:12 jim Exp $ */
 
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -192,7 +192,7 @@ SOFTWARE.
 #define XK_Super_R		0xFFEC	/* Right super */
 #define XK_Hyper_L		0xFFED	/* Left hyper */
 #define XK_Hyper_R		0xFFEE	/* Right hyper */
-#endif XK_MISCELLANY
+#endif /* XK_MISCELLANY */
 
 /*
  *  Latin 1
@@ -391,7 +391,7 @@ SOFTWARE.
 #define XK_yacute              0x0fd
 #define XK_thorn               0x0fe
 #define XK_ydiaeresis          0x0ff
-#endif XK_LATIN1
+#endif /* XK_LATIN1 */
 
 /*
  *   Latin 2
@@ -452,7 +452,7 @@ SOFTWARE.
 #define XK_uring               0x1f9
 #define XK_tcedilla            0x1fe
 #define XK_abovedot            0x1ff
-#endif XK_LATIN2
+#endif /* XK_LATIN2 */
 
 /*
  *   Latin 3
@@ -482,7 +482,7 @@ SOFTWARE.
 #define XK_gcircumflex         0x2f8
 #define XK_ubreve              0x2fd
 #define XK_scircumflex         0x2fe
-#endif XK_LATIN3
+#endif /* XK_LATIN3 */
 
 
 /*
@@ -526,7 +526,7 @@ SOFTWARE.
 #define XK_uogonek             0x3f9
 #define XK_utilde              0x3fd
 #define XK_umacron             0x3fe
-#endif XK_LATIN4
+#endif /* XK_LATIN4 */
 
 /*
  * Katakana
@@ -599,7 +599,7 @@ SOFTWARE.
 #define XK_voicedsound                                 0x4de
 #define XK_semivoicedsound                             0x4df
 #define XK_kana_switch          0xFF7E  /* Alias for mode_switch */
-#endif XK_KATAKANA
+#endif /* XK_KATAKANA */
 
 /*
  *  Arabic
@@ -656,7 +656,7 @@ SOFTWARE.
 #define XK_Arabic_shadda                               0x5f1
 #define XK_Arabic_sukun                                0x5f2
 #define XK_Arabic_switch        0xFF7E  /* Alias for mode_switch */
-#endif XK_ARABIC
+#endif /* XK_ARABIC */
 
 /*
  * Cyrillic
@@ -756,7 +756,7 @@ SOFTWARE.
 #define XK_Cyrillic_SHCHA                              0x6fd
 #define XK_Cyrillic_CHE                                0x6fe
 #define XK_Cyrillic_HARDSIGN                           0x6ff
-#endif XK_CYRILLIC
+#endif /* XK_CYRILLIC */
 
 /*
  * Greek
@@ -836,7 +836,7 @@ SOFTWARE.
 #define XK_Greek_psi                                   0x7f8
 #define XK_Greek_omega                                 0x7f9
 #define XK_Greek_switch         0xFF7E  /* Alias for mode_switch */
-#endif XK_GREEK
+#endif /* XK_GREEK */
 
 /*
  * Technical
@@ -893,7 +893,7 @@ SOFTWARE.
 #define XK_uparrow                                     0x8fc
 #define XK_rightarrow                                  0x8fd
 #define XK_downarrow                                   0x8fe
-#endif XK_TECHNICAL
+#endif /* XK_TECHNICAL */
 
 /*
  *  Special
@@ -925,7 +925,7 @@ SOFTWARE.
 #define XK_bott                                        0x9f6
 #define XK_topt                                        0x9f7
 #define XK_vertbar                                     0x9f8
-#endif XK_SPECIAL
+#endif /* XK_SPECIAL */
 
 /*
  *  Publishing
@@ -1016,7 +1016,7 @@ SOFTWARE.
 #define XK_singlelowquotemark                          0xafd
 #define XK_doublelowquotemark                          0xafe
 #define XK_cursor                                      0xaff
-#endif XK_PUBLISHING
+#endif /* XK_PUBLISHING */
 
 /*
  *  APL
@@ -1043,7 +1043,7 @@ SOFTWARE.
 #define XK_leftshoe                                    0xbda
 #define XK_lefttack                                    0xbdc
 #define XK_righttack                                   0xbfc
-#endif XK_APL
+#endif /* XK_APL */
 
 /*
  * Hebrew
@@ -1079,5 +1079,5 @@ SOFTWARE.
 #define XK_hebrew_shin                                 0xcf9
 #define XK_hebrew_taf                                  0xcfa
 #define XK_Hebrew_switch        0xFF7E  /* Alias for mode_switch */
-#endif XK_HEBREW
+#endif /* XK_HEBREW */
 
