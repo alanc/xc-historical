@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: command.c,v 2.20 89/05/31 10:24:15 swick Exp $";
+static char rcs_id[] = "$XConsortium: command.c,v 2.21 89/06/01 15:10:49 kit Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -199,6 +199,7 @@ static int _DoCommandToFileOrPipe(argv, inputfd, outputfd, bufP, lenP)
 	int num_fds = (ConnectionNumber(theDisplay) < status->error_pipe[0])
 	    ? status->error_pipe[0]+1 : ConnectionNumber(theDisplay)+1;
 	status->child_pid = pid;
+	DEBUG1( " pid=%d", pid )
 	while (!childdone) {
 	    XEvent event;
 	    while (XCheckTypedEvent( theDisplay, Expose, &event )) {
@@ -224,13 +225,11 @@ static int _DoCommandToFileOrPipe(argv, inputfd, outputfd, bufP, lenP)
 			   &status->error_output,
 			   &status->buf_size
 			  );
-#ifdef notdef
 #ifdef SYSV
 	(void) wait((int *) NULL);
 #else /* !SYSV */
 	(void) wait((union wait *) NULL);
 #endif /* !SYSV */
-#endif /*notdef*/
 
 	DEBUG(" done\n")
 	if (output_to_pipe) {
