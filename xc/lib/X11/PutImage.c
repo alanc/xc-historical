@@ -1,4 +1,4 @@
-/* $XConsortium: XPutImage.c,v 11.64 92/01/09 18:39:26 rws Exp $ */
+/* $XConsortium: XPutImage.c,v 11.65 93/02/08 10:43:16 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -21,6 +21,11 @@ without express or implied warranty.
 #define Const const
 #else
 #define Const /**/
+#endif
+#if __STDC__ && defined(sun) && defined(SVR4)
+#define RConst /**/
+#else
+#define RConst Const
 #endif
 
 /* assumes pad is a power of 2 */
@@ -470,7 +475,7 @@ legend:
 
 */
 
-static int (* Const (SwapFunction[12][12]))() = {
+static int (* RConst (SwapFunction[12][12]))() = {
 #define n NoSwap,
 #define s SwapTwoBytes,
 #define l SwapFourBytes,
