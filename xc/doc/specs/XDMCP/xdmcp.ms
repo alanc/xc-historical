@@ -1,5 +1,5 @@
 .\" Use eqn, tbl, and -ms
-.\" $XConsortium: protocol,v 1.15 89/09/06 13:21:54 keith Exp $
+.\" $XConsortium: xdmcp.ms,v 1.16 89/09/06 13:25:41 keith Exp $
 .EQ
 delim @@
 define oc % "\\fR{\\fP" %
@@ -15,30 +15,18 @@ define cc % "\\fR}\\fP" %
 .ps 10
 .nr PS 10
 \&
-.sp 8
-.ce 2
+.TL
 \s+2\fBX Display Manager Control Protocol\fP\s-2
-.sp 1
-Public Review Draft
-.sp 6
-.ce 4
+.sp
+MIT X Consortium Standard
+.sp
+Version 1.0
+.AU
 Keith Packard
-.sp 6p
+.AI
 X Consortium
 Laboratory for Computer Science
 Massachusetts Institute of Technology
-.sp 8
-.LP
-Copyright \(co 1989 by the Massachusetts Institute of Technology
-.LP
-Permission to use, copy, modify, and distribute this documentation for any
-purpose and without fee is hereby granted, provided that the above copyright
-notice and this permission notice appear in all copies.  MIT makes no
-representations about the suitability for any purpose of the information in
-this document.  This documentation is provided ``as is'' without express or
-implied warranty.  This document is only a draft standard of the MIT X
-Consortium and is therefore subject to change.
-.bp
 .AB
 .LP
 Since the X Display Manager (xdm) may be used to manage remote displays (such
@@ -49,6 +37,18 @@ datagrams and places the bulk of the burden for sequencing and retransmission
 on the display.  A standard byte order and synchronous responses reduces the
 complexity of the protocol.
 .AE
+.LP
+.DS C
+Copyright \(co 1989 by the Massachusetts Institute of Technology
+.DE
+.sp 3
+.LP
+Permission to use, copy, modify, and distribute this documentation for any
+purpose and without fee is hereby granted, provided that the above copyright
+notice and this permission notice appear in all copies.  MIT makes no
+representations about the suitability for any purpose of the information in
+this document.  This documentation is provided ``as is'' without express or
+implied warranty.
 .de PT
 .ie o .tl 'XDMCP''X Display Manager Control Protocol '
 .el .tl 'X Display Manager Control Protocol ''XDMCP'
@@ -792,7 +792,13 @@ Semantics:
 A \f8Manage\fP packet is sent by a display to ask the manager to begin a
 session on the display.  If the \f7Session ID\fP is correct the manager
 should open a connection, otherwise it should respond with a \f8Refuse\fP or
-\f8Failed\fP packet.
+\f8Failed\fP packet, unless the \f7Session ID\fP matches a currently
+running session, or a session which has not yet successfully opened the
+display but has not given up the attempt.  In this latter case, the
+\f8Manage\fP packet should be ignored.  This will work as stream connections
+give positive success indication to both halves of the stream, and positive
+failure indication to the connection initiator (which will eventually
+generate a \f8Failed\fP packet).
 .RE
 Valid Responses:
 .RS
@@ -824,11 +830,11 @@ Problem:
 .br
 Indication:
 .RS
-session already in progress.
+session already in progress with matching \f7Session ID\fP.
 .RE
 Solution:
 .RS
-\f8Refuse\fP message is sent.
+\f8Manage\fP packet ignored.
 .RE
 Indication:
 .RS
@@ -850,6 +856,24 @@ open display fails.
 Solution:
 .RS
 \f8Failed\fP message is sent including a human readable reason.
+.RE
+.RE
+Problem:
+.RS
+Display open does not succeed before a second manage packet is received
+because of a timeout occuring in the display.
+.br
+Indication:
+.RS
+\f8Manage\fP packet received with \f7Session ID\fP matching the session
+attempting to connect to the display.
+.RE
+Solution:
+.RS
+\f8Manage\fP packet is ignored.  As the stream connection will either
+succeed, which will result in an active session, or the stream will
+eventually give up hope of connecting and send a \f7Failed\fP packet, no
+response to this \f8Manage\fP packet is necessary.
 .RE
 .RE
 .RE
@@ -1361,6 +1385,9 @@ Send \f8Decline\fP packet
 \f6manage\fP:
 .RS
 If \f7Session ID\fP matches saved \f7Session ID\fP \(-> \f6run-session\fP
+.br
+If \f7Session ID\fP matches \f7Session ID\fP of session in process of
+starting up, or currently active session \(-> \f6idle\fP
 
 .br
 \(-> \f6refuse\fP
@@ -1757,7 +1784,12 @@ contain authentication information.  As an example of such a system, the
 following discussion describes the "XDM-AUTHENTICATION-1" authentication
 system.  This system uses a 56 bit shared private key, and 64 bits of
 authentication data.  An associated example X authorization protocol
-"XDM-AUTHORIZATION-1" will also be discussed.
+"XDM-AUTHORIZATION-1" will also be discussed.  The 56 bit key is represented
+as a 64 bit number in network order (big endian).  This means that the first
+octet in the representation will be zero.  When incrementing a 64 bit value,
+the 8 octets of data will be interpreted in network order (big endian). I.e.
+the last octet will be incremented, subsequent carries propogate towards the
+first octet.
 .LP
 Assumptions:
 .IP
