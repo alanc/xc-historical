@@ -1,7 +1,7 @@
 /*
  * xrdb - X resource manager database utility
  *
- * $XConsortium: xrdb.c,v 11.42 91/04/03 19:14:24 gildea Exp $
+ * $XConsortium: xrdb.c,v 11.43 91/05/11 15:45:24 gildea Exp $
  */
 
 /*
@@ -805,6 +805,25 @@ main (argc, argv)
     exit (0);
 }
 
+StoreProperty(dpy, root, res_prop)
+    Display *dpy;
+    Window root;
+    Atom res_prop;
+{
+    int len = buffer.used;
+    int mode = PropModeReplace;
+    unsigned char *buf = (unsigned char *)buffer.buff;
+    int max = (XMaxRequestSize(dpy) << 2) - 28;
+
+    while (len > max) {
+	XChangeProperty(dpy, root, res_prop, XA_STRING, 8, mode, buf, max);
+	buf += max;
+	len -= max;
+	mode = PropModeAppend;
+    }
+    XChangeProperty(dpy, root, res_prop, XA_STRING, 8, mode, buf, len);
+}
+
 Process(scrno, doScreen, execute)
     int scrno;
     Bool doScreen;
@@ -925,9 +944,7 @@ Process(scrno, doScreen, execute)
 	    }
 	} else if (execute) {
 	    if (buffer.used > 1 || !doScreen)
-		XChangeProperty (dpy, root, res_prop,
-				 XA_STRING, 8, PropModeReplace,
-				 (unsigned char *)buffer.buff, buffer.used);
+		StoreProperty (dpy, root, res_prop);
 	    else
 		XDeleteProperty (dpy, root, res_prop);
 	}
@@ -1001,9 +1018,7 @@ ReProcess(scrno, doScreen)
 	}
     } else {
 	if (buffer.used > 1 || !doScreen)
-	    XChangeProperty (dpy, root, res_prop,
-			     XA_STRING, 8, PropModeReplace,
-			     (unsigned char *)buffer.buff, buffer.used);
+	    StoreProperty (dpy, root, res_prop);
 	else
 	    XDeleteProperty (dpy, root, res_prop);
     }
