@@ -37,7 +37,7 @@
  */
 
 #ifndef lint
-static char *rcsid_xwd_c = "$Header: xwd.c,v 1.18 87/06/22 23:40:33 dkk Locked $";
+static char *rcsid_xwd_c = "$Header: xwd.c,v 1.19 87/06/23 14:37:12 chariot Locked $";
 #endif
 
 /*%
@@ -57,6 +57,7 @@ static char *rcsid_xwd_c = "$Header: xwd.c,v 1.18 87/06/22 23:40:33 dkk Locked $
 
 /* Include routines to do parsing */
 #include "jdisplay.h"
+#include "ostuff.h"
 
 /* Setable Options */
 
@@ -79,9 +80,11 @@ main(argc, argv)
     INIT_NAME;
 
     Setup_Display_And_Screen(&argc, argv);
-
     if (DisplayPlanes(dpy, 0) > 1)
         format = ZPixmap;
+
+    /* Get window select on command line, if any */
+    target_win = Select_Window_Args(&argc, &argv);
 
     for (i = 1; i < argc; i++) {
 	if (!strcmp(argv[i], "-nobdrs")) {
@@ -111,7 +114,8 @@ main(argc, argv)
     /*
      * Let the user select the target window.
      */
-    target_win = Select_Window(dpy);
+    if (!target_win)
+      target_win = Select_Window(dpy);
 
     /*
      * Dump it!
@@ -290,7 +294,8 @@ Window_Dump(window, out)
  */
 usage()
 {
-    outl("%s: %s [-debug] [-help] [-nobdrs] [-out <file>]\n", program_name);
+    outl("%s: %s [-debug] [-help] %s [-nobdrs] [-out <file>]\n", program_name,
+	 SELECT_USAGE);
     outl("                [-xy] [[host]:vs]\n");
     exit(1);
 }
