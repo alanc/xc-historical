@@ -33,7 +33,7 @@
 
 #ifndef lint
 static char rcsid[] =
-"$Header: mivaltree.c,v 1.39 88/02/08 17:34:59 rws Exp $ SPRITE (Berkeley)";
+"$Header: mivaltree.c,v 1.40 88/02/13 16:11:11 rws Exp $ SPRITE (Berkeley)";
 #endif lint
 
 #include    "X.h"
@@ -193,14 +193,17 @@ miComputeClips (pParent, pScreen, universe)
 		v = pParent->absCorner.x + (int)pParent->clientWinSize.width;
 		if (v < x1)
 		    v = x1;
-		borderBox.x1 = v;
-		borderBox.y1 = y1;
-		borderBox.x2 = x2;
-		borderBox.y2 = y2;
-		(* pScreen->RegionReset) (borderRegion, &borderBox);
-		(* pScreen->Union) (pParent->borderExposed,
-				    pParent->borderExposed,
-				    borderRegion);
+		if ((v < x2) && (y1 < y2))
+		{
+		    borderBox.x1 = v;
+		    borderBox.y1 = y1;
+		    borderBox.x2 = x2;
+		    borderBox.y2 = y2;
+		    (* pScreen->RegionReset) (borderRegion, &borderBox);
+		    (* pScreen->Union) (pParent->borderExposed,
+					pParent->borderExposed,
+					borderRegion);
+		}
 	    }
 	    if (newExtents->y2 < oldExtents->y2) 
             {
@@ -210,14 +213,17 @@ miComputeClips (pParent, pScreen, universe)
 		v = pParent->absCorner.y + (int)pParent->clientWinSize.height;
 		if (v < y1)
 		    v = y1;
-		borderBox.x1 = x1;
-		borderBox.y1 = v;
-		borderBox.x2 = x2;
-		borderBox.y2 = y2;
-		(* pScreen->RegionReset) (borderRegion, &borderBox);
-		(* pScreen->Union) (pParent->borderExposed,
-				    pParent->borderExposed,
-				    borderRegion);
+		if ((v < y2) && (x1 < x2))
+		{
+		    borderBox.x1 = x1;
+		    borderBox.y1 = v;
+		    borderBox.x2 = x2;
+		    borderBox.y2 = y2;
+		    (* pScreen->RegionReset) (borderRegion, &borderBox);
+		    (* pScreen->Union) (pParent->borderExposed,
+					pParent->borderExposed,
+					borderRegion);
+		}
 	    }
 	    (* pScreen->RegionDestroy) (borderRegion);
 
