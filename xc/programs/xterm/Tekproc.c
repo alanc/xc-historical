@@ -1,5 +1,5 @@
 /*
- * $Header: Tekproc.c,v 1.35 88/07/28 19:18:31 jim Exp $
+ * $Header: Tekproc.c,v 1.36 88/07/29 14:49:31 jim Exp $
  *
  * Warning, there be crufty dragons here.
  */
@@ -43,7 +43,13 @@
 #include "ptyx.h"
 #include "Tekparse.h"
 #include <stdio.h>
-#include <sgtty.h>
+#ifdef mips			/* !defined(mips) || !defined(SYSTYPE_SYSV) */
+# ifndef SYSTYPE_SYSV
+# include <sgtty.h>
+# endif /* not SYSTYPE_SYSV */
+#else
+# include <sgtty.h>
+#endif /* mips */
 #include <ctype.h>
 #include <errno.h>
 #include <setjmp.h>
@@ -113,7 +119,7 @@ extern long time();
 #define	unput(c)	*Tpushback++ = c
 
 #ifndef lint
-static char rcs_id[] = "$Header: Tekproc.c,v 1.35 88/07/28 19:18:31 jim Exp $";
+static char rcs_id[] = "$Header: Tekproc.c,v 1.36 88/07/29 14:49:31 jim Exp $";
 #endif	/* lint */
 
 static XPoint *T_box[TEKNUMFONTS] = {

@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: main.c,v 1.68 88/08/13 09:11:53 jim Exp $";
+static char rcs_id[] = "$Header: main.c,v 1.69 88/08/17 16:39:58 jim Exp $";
 #endif	/* lint */
 
 /*
@@ -62,11 +62,13 @@ SOFTWARE.
 #ifdef SYSV				/* note that macII is *not* SYSV */
 #include <sys/ioctl.h>
 #include <sys/termio.h>
-#include <sys/ptyio.h>
+# ifndef mips
+# include <sys/ptyio.h>
+# endif /* not mips */
 #include <sys/stat.h>
-#ifdef JOBCONTROL
-#include <sys/bsdtty.h>
-#endif	/* JOBCONTROL */
+# ifdef JOBCONTROL
+# include <sys/bsdtty.h>
+# endif	/* JOBCONTROL */
 #define USE_SYSV_TERMIO
 #define USE_SYSV_UTMP
 #define USE_SYSV_SIGNALS
@@ -835,6 +837,23 @@ int *pty, *tty;
 {
 	int devindex, letter = 0;
 
+#if defined (mips) && defined (SYSTYPE_SYSV)
+	struct stat fstat_buf;
+
+	*pty = open ("/dev/ptc", O_RDWR);
+	if (*pty < 0 || (fstat (*pty, &fstat_buf)) < 0) {
+	  fprintf (stderr, "%s: Out of ptys.\n", xterm_name);
+	  exit (ERROR_PTYS);
+	}
+	sprintf (ttydev, "/dev/ttyq%d", minor(fstat_buf.st_rdev));
+	sprintf (ptydev, "/dev/ptyq%d", minor(fstat_buf.st_rdev));
+	if ((*tty = open (ttydev, O_RDWR)) < 0) {
+	  fprintf (stderr, "%s: Unable to open tty.\n", xterm_name);
+	  close (*pty);
+	  exit (ERROR_PTYS);
+	}
+	return;
+#else /* not (mips && SYSTYPE_SYSV) */
 	while (letter < 11) {
 	    ttydev [strlen(ttydev) - 2]  = ptydev [strlen(ptydev) - 2] =
 		    PTYCHAR1 [letter++];
@@ -852,9 +871,9 @@ int *pty, *tty;
 		return;
 	    }
 	}
-	
 	fprintf (stderr, "%s: Not enough available pty's\n", xterm_name);
 	exit (ERROR_PTYS);
+#endif /* mips && SYSTYPE_SYSV */
 }
 
 get_terminal ()
@@ -1123,6 +1142,16 @@ spawn ()
 		   with minor modifications for efficiency */
 
 #ifdef USE_SYSV_TERMIO
+#ifdef mips
+		/* If the control tty had its modes screwed around with,
+		   eg. by lineedit in the shell, or emacs, etc. then tio
+		   will have bad values.  Let's just get termio from the
+		   new tty and tailor it.  */
+		if (ioctl (tty, TCGETA, &tio) == -1)
+		    SysError (ERROR_TIOCGETP);
+		tio.c_lflag |= ECHOE;
+#endif /* mips */
+
 		/* input: nl->nl, don't ignore cr, cr->nl */
 		tio.c_iflag &= ~(INLCR|IGNCR);
 		tio.c_iflag |= ICRNL;
@@ -1437,7 +1466,9 @@ spawn ()
 #endif /* TIOCCONS */
 
 #ifdef SYSV				/* macII does NOT want this */
+#ifndef mips
 			ioctl (0, TIOCTTY, &zero);
+#endif /* not mips */
 			execlp (getty_program, "getty", get_ty, "Xwindow", 0);
 
 #else	/* !SYSV */

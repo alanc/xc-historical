@@ -1,5 +1,5 @@
 /*
- * $XHeader: charproc.c,v 1.44 88/07/29 14:49:39 jim Exp $
+ * $XHeader: charproc.c,v 1.45 88/08/08 12:49:42 jim Exp $
  */
 
 
@@ -33,7 +33,13 @@
 /* charproc.c */
 
 #include <stdio.h>
-#include <sgtty.h>
+#ifdef mips			/* !defined(mips) || !defined(SYSTYPE_SYSV) */
+# ifndef SYSTYPE_SYSV
+# include <sgtty.h>
+# endif /* not SYSTYPE_SYSV */
+#else
+# include <sgtty.h>
+#endif /* mips */
 #include <ctype.h>
 #include <errno.h>
 #include <setjmp.h>
@@ -122,7 +128,7 @@ static void VTallocbuf();
 #define	doinput()		(bcnt-- > 0 ? *bptr++ : in_put())
 
 #ifndef lint
-static char rcs_id[] = "$XHeader: charproc.c,v 1.44 88/07/29 14:49:39 jim Exp $";
+static char rcs_id[] = "$XHeader: charproc.c,v 1.45 88/08/08 12:49:42 jim Exp $";
 #endif	/* lint */
 
 static long arg;
