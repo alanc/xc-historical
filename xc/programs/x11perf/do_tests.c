@@ -52,6 +52,10 @@ extern void DoPolyText();
 extern void ClearTextWin();
 extern void EndText();
 
+extern void InitCopyPlane();
+extern void DoCopyPlane();
+extern void EndCopyPlane();
+
 extern void InitPopups();
 extern void DoPopUps();
 extern void EndPopups();
@@ -183,6 +187,9 @@ Test test[] = {
   {"-polytext3", "poly text/'times_roman24', 'times_bold24'",
 		InitText, DoPolyText, ClearTextWin, EndText, False, False,
 		{100, 1, True, "times_roman24", "times_bold24"}},
+  {"-copyplane", "Copy 1-bit plane",
+		InitCopyPlane, DoCopyPlane, NULL, EndCopyPlane, False, False,
+		{50, 1, False, "fixed", NULL}},
   {"-popup", "Popup Window",
 		InitPopups, DoPopUps, NULL, EndPopups, True, False,
 		{10, 4, True}},
@@ -193,7 +200,7 @@ Test test[] = {
   {"-copyarea", "copyarea",
 		InitCopyArea, DoCopyArea, MidCopyArea,
 		EndCopyArea, False, False,
-		{50, 1, False}},
+		{200, 1, False}},
   {"-triangle", "Fill Polygon, triangles",
 		InitTriangles, DoTriangles, NullProc, EndTriangles, 
                 False, False,
