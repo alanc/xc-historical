@@ -98,7 +98,6 @@ static void
   ReplaceCB(),
   NewCB(), 
   SelectCB(),
-  Paste(),
   SetupGC(), 
   ResizeEH(), 
   DragEH(), 
