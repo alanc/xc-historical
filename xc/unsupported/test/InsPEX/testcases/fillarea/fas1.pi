@@ -1,5 +1,5 @@
 
-/* $XConsortium$ */
+/* $XConsortium: fas1.pi,v 5.1 91/02/16 10:02:23 rws Exp $ */
 
 /*****************************************************************
 Copyright (c) 1989, 1990, 1991,1990 by Sun Microsystems, Inc. and the X Consortium.
@@ -55,10 +55,15 @@ fa_self_cross = IA_Ppoint3(10, 0.0,0.5,0.0, 0.4,0.5,0.0, 0.4,0.2,0.0,
                           0.0,0.4,0.0);
 fa_n_vertexes = i_generate_n_Ppoint3(129, 0.45,0.35, 0.015);
 triangle = I_Ppoint_list3(3,fa_triangle);
+triangle_l = I_Ppoint_list_list3(1,&triangle);
 quad = I_Ppoint_list3(4,fa_quad);
+quad_l = I_Ppoint_list_list3(1,&quad);
 bowtie = I_Ppoint_list3(4,fa_bowtie);
+bowtie_l = I_Ppoint_list_list3(1,&bowtie);
 self_cross = I_Ppoint_list3(10,fa_self_cross);
+self_cross_l = I_Ppoint_list_list3(1,&self_cross);
 n_vertexes = I_Ppoint_list3(129,fa_n_vertexes);
+n_vertexes_l = I_Ppoint_list_list3(1,&n_vertexes);
 
 # setup: open phigs and a workstation, open a structure
 i_open_phigs(NULL,PDEF_MEM_SIZE); 
@@ -70,13 +75,13 @@ pset_int_style(PSTYLE_SOLID);
 pset_edge_flag(PEDGE_ON);
 pset_edgewidth(2.0);
 pset_edge_colr_ind(4);
-pfill_area_set3(1,&bowtie);
-pfill_area_set3(1,&self_cross);
-pfill_area_set3(1,&n_vertexes);
+pfill_area_set3(&bowtie_l);
+pfill_area_set3(&self_cross_l);
+pfill_area_set3(&n_vertexes_l);
 pset_int_colr_ind(2);
-pfill_area_set3(1,&triangle);
+pfill_area_set3(&triangle_l);
 pset_int_style(PSTYLE_HOLLOW);
-pfill_area_set3(1,&quad);
+pfill_area_set3(&quad_l);
 
 # close and post structure
 pclose_struct();

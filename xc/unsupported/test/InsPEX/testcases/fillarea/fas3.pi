@@ -1,6 +1,6 @@
 
 
-/* $XConsortium$ */
+/* $XConsortium: fas3.pi,v 5.1 91/02/16 10:02:24 rws Exp $ */
 
 /*****************************************************************
 Copyright (c) 1989, 1990, 1991,1990 by Sun Microsystems, Inc. and the X Consortium.
@@ -44,10 +44,15 @@ fa4 = IA_Ppoint3(3, 0.7,0.7,0.0, 0.7,0.5,0.0, 0.5,0.5,0.0);
 fa5 = IA_Ppoint3(4, 0.7,0.5,0.0, 0.7,0.3,0.0, 0.5,0.375,0.0, 0.5,0.5,0.0);
 
 fas1 = I_Ppoint_list3(4,fa1);
+fas1_l = I_Ppoint_list_list3(1,&fas1);
 fas2 = I_Ppoint_list3(4,fa2);
+fas2_l = I_Ppoint_list_list3(1,&fas2);
 fas3 = I_Ppoint_list3(3,fa3);
+fas3_l = I_Ppoint_list_list3(1,&fas3);
 fas4 = I_Ppoint_list3(3,fa4);
+fas4_l = I_Ppoint_list_list3(1,&fas4);
 fas5 = I_Ppoint_list3(4,fa5);
+fas5_l = I_Ppoint_list_list3(1,&fas5);
 
 gc1 = I_Pgcolr(PMODEL_RGB,1.0,0.0,0.0)
 gc2 = I_Pgcolr(PMODEL_RGB,0.0,0.0,1.0)
@@ -65,19 +70,19 @@ pset_edge_flag(PEDGE_ON);
 
 # draw the various fill areas with different edge colours
 pset_edge_colr_ind(1);
-pfill_area_set3(1,&fas1);
+pfill_area_set3(&fas1_l);
 
 pset_edge_colr(&gc2);
-pfill_area_set3(1,&fas2);
+pfill_area_set3(&fas2_l);
 
 pset_edge_colr_ind(3);
-pfill_area_set3(1,&fas3);
+pfill_area_set3(&fas3_l);
 
 pset_edge_colr_ind(6);
-pfill_area_set3(1,&fas4);
+pfill_area_set3(&fas4_l);
 
 pset_edge_colr_ind(5);
-pfill_area_set3(1,&fas5);
+pfill_area_set3(&fas5_l);
 
 pclose_struct();
 

@@ -1,5 +1,5 @@
 
-/* $XConsortium$ */
+/* $XConsortium: fas6.pi,v 5.1 91/02/16 10:02:26 rws Exp $ */
 
 /*****************************************************************
 Copyright (c) 1989, 1990, 1991,1990 by Sun Microsystems, Inc. and the X Consortium.
@@ -49,9 +49,13 @@ fa2 = IA_Ppoint3(3, 0.1,0.6,0.0, 0.3,0.8,0.0, 0.5,0.6,0.0);
 fa3 = IA_Ppoint3(3, 0.6,0.1,0.0, 0.8,0.3,0.0, 1.0,0.1,0.0);
 fa4 = IA_Ppoint3(3, 0.6,0.6,0.0, 0.8,0.8,0.0, 1.0,0.6,0.0);
 fset1 = I_Ppoint_list3(3,fa1);
+fset1_l = I_Ppoint_list_list3(1,&fset1);
 fset2 = I_Ppoint_list3(3,fa2);
+fset2_l = I_Ppoint_list_list3(1,&fset2);
 fset3 = I_Ppoint_list3(3,fa3);
+fset3_l = I_Ppoint_list_list3(1,&fset3);
 fset4 = I_Ppoint_list3(3,fa4);
+fset4_l = I_Ppoint_list_list3(1,&fset4);
 rep = I_Pint_bundle(PSTYLE_SOLID,1,2);
 erep = I_Pedge_bundle(PEDGE_ON,PLINE_DOT,4.0,4);
 
@@ -84,22 +88,22 @@ pset_edge_rep(1,1,&erep);
 pset_indiv_asf(PASPECT_EDGE_FLAG,PASF_BUNDLED);
 pset_indiv_asf(PASPECT_EDGETYPE,PASF_BUNDLED);
 pset_indiv_asf(PASPECT_INT_COLR_IND,PASF_BUNDLED);
-pfill_area_set3(1,&fset1);
+pfill_area_set3(&fset1_l);
 
 # in addition to above bundled attributes 
 # draw with bundled edge width 4.0  
 pset_indiv_asf(PASPECT_EDGEWIDTH,PASF_BUNDLED);
-pfill_area_set3(1,&fset2);
+pfill_area_set3(&fset2_l);
 
 # in addition to above bundled attributes 
 # bundled interior style SOLID 
 pset_indiv_asf(PASPECT_INT_STYLE,PASF_BUNDLED);
-pfill_area_set3(1,&fset3);
+pfill_area_set3(&fset3_l);
 
 # in addition to above bundled attributes 
 # bundled edge colour index 4 
 pset_indiv_asf(PASPECT_EDGE_COLR_IND,PASF_BUNDLED);
-pfill_area_set3(1,&fset4);
+pfill_area_set3(&fset4_l);
 pclose_struct();
 
 # verify image

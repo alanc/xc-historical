@@ -1,5 +1,5 @@
 
-/* $XConsortium$ */
+/* $XConsortium: fas7.pi,v 5.1 91/02/16 10:02:27 rws Exp $ */
 
 /*****************************************************************
 Copyright (c) 1989, 1990, 1991,1990 by Sun Microsystems, Inc. and the X Consortium.
@@ -53,9 +53,13 @@ fa3 = IA_Ppoint3(3, 0.1,0.6,0.0, 0.1,0.8,0.0, 0.3,0.6,0.0);
 fa4 = IA_Ppoint3(3, 0.6,0.6,0.0, 0.6,0.8,0.0, 0.8,0.6,0.0);
 
 fas1 = I_Ppoint_list3(3,fa1);
+fas1_l = I_Ppoint_list_list3(1,&fas1);
 fas2 = I_Ppoint_list3(3,fa2);
+fas2_l = I_Ppoint_list_list3(1,&fas2);
 fas3 = I_Ppoint_list3(3,fa3);
+fas3_l = I_Ppoint_list_list3(1,&fas3);
 fas4 = I_Ppoint_list3(3,fa4);
+fas4_l = I_Ppoint_list_list3(1,&fas4);
 
 
 # edit parent structure
@@ -66,20 +70,20 @@ pset_edge_colr_ind(3);
 pset_edgewidth(5.0);
 pset_int_style(PSTYLE_SOLID);
 pset_int_colr_ind(2);
-pfill_area_set3(1,&fas1);
+pfill_area_set3(&fas1_l);
 pexec_struct(2);
-pfill_area_set3(1,&fas2);
+pfill_area_set3(&fas2_l);
 pclose_struct();
 
 # edit child structure
 popen_struct(2);
-pfill_area_set3(1,&fas3);
+pfill_area_set3(&fas3_l);
 pset_edgetype(3);
 pset_edge_colr_ind(1);
 pset_edgewidth(1.0);
 pset_int_style(PSTYLE_HOLLOW);
 pset_int_colr_ind(4);
-pfill_area_set3(1,&fas4);
+pfill_area_set3(&fas4_l);
 pclose_struct();
 
 # post structure

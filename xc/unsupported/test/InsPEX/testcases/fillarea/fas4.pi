@@ -1,6 +1,6 @@
 
 
-/* $XConsortium$ */
+/* $XConsortium: fas4.pi,v 5.1 91/02/16 10:02:25 rws Exp $ */
 
 /*****************************************************************
 Copyright (c) 1989, 1990, 1991,1990 by Sun Microsystems, Inc. and the X Consortium.
@@ -48,9 +48,13 @@ fa4 = IA_Ppoint3(8, 0.7,0.9,0.0, 0.8,0.9,0.0, 0.9,0.8,0.0, 0.8,0.7,0.0,
           0.7625,0.85,0.0, 0.725,0.55,0.0, 0.525,0.6,0.0, 0.7,0.65,0.0);
 
 fas1 = I_Ppoint_list3(8,fa1);
+fas1_l = I_Ppoint_list_list3(1,&fas1);
 fas2 = I_Ppoint_list3(8,fa2);
+fas2_l = I_Ppoint_list_list3(1,&fas2);
 fas3 = I_Ppoint_list3(8,fa3);
+fas3_l = I_Ppoint_list_list3(1,&fas3);
 fas4 = I_Ppoint_list3(8,fa4);
+fas4_l = I_Ppoint_list_list3(1,&fas4);
 
 # setup: open phigs and a workstation, open and post structure
 # set edge flag ON, interior colour index to 2
@@ -71,19 +75,19 @@ pset_int_colr_ind(2);
 # draw different fillareaset primitives with different edge types and colour
 pset_edge_colr_ind(1);
 pset_edgetype(PLINE_DOT);
-pfill_area_set3(1,&fas1);
+pfill_area_set3(&fas1_l);
 
 pset_edgetype(PLINE_DASH);
 pset_edge_colr_ind(3);
-pfill_area_set3(1,&fas2);
+pfill_area_set3(&fas2_l);
 
-pset_edgetype(PLINE_DOT_DASH);
+pset_edgetype(PLINE_DASH_DOT);
 pset_edge_colr_ind(4);
-pfill_area_set3(1,&fas3);
+pfill_area_set3(&fas3_l);
 
 pset_edgetype(PLINE_SOLID);
 pset_edge_colr_ind(5);
-pfill_area_set3(1,&fas4);
+pfill_area_set3(&fas4_l);
 
 pset_elem_ptr(1);
 pset_edit_mode(PEDIT_REPLACE);

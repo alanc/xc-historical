@@ -1,6 +1,6 @@
 
 
-/* $XConsortium$ */
+/* $XConsortium: fas5.pi,v 5.1 91/02/16 10:02:26 rws Exp $ */
 
 /*****************************************************************
 Copyright (c) 1989, 1990, 1991,1990 by Sun Microsystems, Inc. and the X Consortium.
@@ -46,7 +46,7 @@ pset_int_style(PSTYLE_SOLID);
 
 foreach @edgetype @y1 @y2 (
 	PLINE_DOT; 0.05;0.25;
-	PLINE_DOT_DASH; 0.3;0.5;
+	PLINE_DASH_DOT; 0.3;0.5;
 	PLINE_DASH; 0.55;0.75;
 	PLINE_SOLID; 0.8;1.0;
 )
@@ -61,7 +61,8 @@ foreach @edgetype @y1 @y2 (
 		pset_edgewidth(@edgewidth);
 		fa = IA_Ppoint3(3, @x1,@y1,0.0, @x2,@y2,0.0, @x2,@y1,0.0);
 		fas = I_Ppoint_list3(3,fa);
-		pfill_area_set3(1,&fas);
+		fas_l = I_Ppoint_list_list3(1,&fas);
+		pfill_area_set3(&fas_l);
 
 	end
 end
