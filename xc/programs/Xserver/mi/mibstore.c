@@ -1,4 +1,4 @@
-/* $XConsortium: mibstore.c,v 5.18 89/07/19 22:26:53 keith Exp $ */
+/* $XConsortium: mibstore.c,v 5.19 89/07/20 18:04:52 keith Exp $ */
 /***********************************************************
 Copyright 1987 by the Regents of the University of California
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -308,7 +308,7 @@ miBSGetImage (pDrawable, sx, sy, w, h, format, planemask, pdstLine)
 {
     ScreenPtr		    pScreen = pDrawable->pScreen;
     BoxRec		    bounds;
-    int			    depth;
+    unsigned char	    depth;
     
     SCREEN_PROLOGUE (pScreen, GetImage);
 
@@ -362,7 +362,7 @@ miBSGetImage (pDrawable, sx, sy, w, h, format, planemask, pdstLine)
 			goto punt;
 		    }
 		    ChangeGC (pGC, GCSubwindowMode, &subWindowMode);
-		    ValidateGC (pPixmap, pGC);
+		    ValidateGC ((DrawablePtr)pPixmap, pGC);
 		    (*pScreen->RegionInit) (&Border, NullBox, 0);
 		    (*pScreen->RegionInit) (&Inside, NullBox, 0);
 		    pSrcWin = (WindowPtr) pDrawable;
@@ -416,7 +416,7 @@ miBSGetImage (pDrawable, sx, sy, w, h, format, planemask, pdstLine)
 			miBSFillVirtualBits ((DrawablePtr) pPixmap, pGC, &Inside,
 					    -xoff, -yoff,
 					    pWindowPriv->backgroundState,
-					    pWindowPriv->background, ~0);
+					    pWindowPriv->background, ~0L);
 			break;
 		    }
 		}
@@ -428,8 +428,8 @@ miBSGetImage (pDrawable, sx, sy, w, h, format, planemask, pdstLine)
 						  -pWin->drawable.y);
 		    miBSFillVirtualBits ((DrawablePtr) pPixmap, pGC, &Border,
 				    	-xoff, -yoff,
-				    	pWin->borderIsPixel ? BackgroundPixel : BackgroundPixmap,
-				    	pWin->border, ~0);
+				    	pWin->borderIsPixel ? (int)BackgroundPixel : (int)BackgroundPixmap,
+				    	pWin->border, ~0L);
 		}
 	    }
 

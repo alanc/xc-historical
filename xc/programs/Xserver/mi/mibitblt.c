@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mibitblt.c,v 5.5 89/07/17 10:38:51 rws Exp $ */
+/* $XConsortium: mibitblt.c,v 5.6 89/07/21 15:59:08 rws Exp $ */
 /* Author: Todd Newman  (aided and abetted by Mr. Drewry) */
 
 #include "X.h"
@@ -624,7 +624,8 @@ miGetImage(pDraw, sx, sy, w, h, format, planeMask, pdstLine)
     unsigned long 	planeMask;
     pointer             pdstLine;
 {
-    int			depth, i, linelength, width, srcx, srcy;
+    unsigned char	depth;
+    int			i, linelength, width, srcx, srcy;
     DDXPointRec		pt;
     unsigned long	*pbits;
     XID			gcv[2];
