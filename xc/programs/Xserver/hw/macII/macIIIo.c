@@ -93,7 +93,6 @@ int		consoleFd = 0;
 int
 TimeSinceLastInputEvent()
 {
-#ifdef USE_TOD_CLOCK
     struct timeval	now;
 
     gettimeofday (&now, (struct timezone *)0);
@@ -102,16 +101,6 @@ TimeSinceLastInputEvent()
 	lastEventTime = TVTOMILLI(now);
     }
     return TVTOMILLI(now) - lastEventTime;
-#else
-    struct tms		tms;
-    long		now;
-
-    now = times (&tms) << 4; /* XXX approximately milliseconds XXX */
-    if (lastEventTime == 0) {
-	lastEventTime = now;
-    }
-    return now - lastEventTime;
-#endif USE_TOD_CLOCK
 }
 
 /*-
@@ -136,6 +125,7 @@ ProcessInputEvents ()
     DevicePtr		    pKeyboard;
     register PtrPrivPtr	    ptrPriv;
     register KbPrivPtr      kbdPriv;
+    struct timeval          now;
     enum {
         NoneYet, Ptr, Kbd
     }                       lastType = NoneYet; /* Type of last event */
@@ -165,7 +155,7 @@ ProcessInputEvents ()
 
     while ((n = read (consoleFd, macIIevents,
 		      INPBUFSIZE*sizeof macIIevents[0])) >= 0 ||
-	   errno == EWOULDBLOCK)
+	    errno == ENODATA || errno == EWOULDBLOCK)
     {
 	if (n <= 0 && firstTime &&
 	    autoRepeatKeyDown && autoRepeatReady && 
@@ -188,18 +178,8 @@ ProcessInputEvents ()
             if (screenIsSaved == SCREEN_SAVER_ON)
             	SaveScreens(SCREEN_SAVER_OFF, ScreenSaverReset);
     
-#ifdef USE_TOD_CLOCK
-	    {
-	    	struct timeval	now;
 	    	gettimeofday (&now, (struct timezone *)0);
 	    	lastEventTime = TVTOMILLI(now);
-	    }
-#else
-            {
-	    	struct tms	tms;
-            	lastEventTime = times (&tms) << 4;
-            }
-#endif USE_TOD_CLOCK
     
             /*
              * Figure out the X device this event should be reported on.
@@ -274,14 +254,8 @@ ProcessInputEvents ()
 void
 SetTimeSinceLastInputEvent()
 {
-#ifdef USE_TOD_CLOCK
     struct timeval now;
 
     gettimeofday (&now, (struct timezone *)0);
     lastEventTime = TVTOMILLI(now);
-#else
-    struct tms	tms;
-
-    lastEventTime = times (&tms) << 4;
-#endif USE_TOD_CLOCK
 }
