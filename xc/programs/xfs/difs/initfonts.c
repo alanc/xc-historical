@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: initfonts.c,v 1.3 91/05/13 16:55:52 gildea Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -25,9 +25,25 @@
  *
  */
 
+#include        "FS.h"
+#include        "FSproto.h"
+#include	<stdio.h>
+#include	<X11/Xos.h>
+#include	"clientstr.h"
+#include	"resource.h"
+#include	"difsfontst.h"
+#include	"fontstruct.h"
+#include	"closestr.h"
+#include	"globals.h"
+
+FontPatternCachePtr fontPatternCache;
+
 void
 InitFonts()
 {
+    if (fontPatternCache)
+	FreeFontPatternCache (fontPatternCache);
+    fontPatternCache = MakeFontPatternCache ();
 
 #ifdef FONT_PCF
     FontFileRegisterFpeFunctions();
