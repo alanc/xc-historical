@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: pick.c,v 1.17 88/01/22 08:27:34 swick Exp $";
+static char rcs_id[] = "$Header: pick.c,v 1.18 88/01/25 13:54:33 swick Locked $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -253,7 +253,8 @@ static void ExecRowOr(w, closure, call_data)
     caddr_t closure;		/* FormEntry */
     caddr_t call_data;		/* unused */
 {
-    RowList row = ((FormEntry)closure)->row;
+    FormEntry entry = (FormEntry)closure;
+    RowList row = entry->row;
     FormBox form = row->group->form;
     PrepareToUpdate(form);
     DeleteWidget(entry);
@@ -657,6 +658,7 @@ static AddDetailGroup(form)
 	(void) AddRow(group, type);
     row =  AddRow(group, RTignore);
     AddButton(row, "- Or -", ExecGroupOr, FALSE);
+    XtManageChild(row->widget);
     XtManageChild(group->widget);
 }
 
