@@ -1,4 +1,4 @@
-/* $XConsortium: XTest.c,v 1.10 93/02/17 19:49:02 rws Exp $ */
+/* $XConsortium: XTest.c,v 1.11 93/02/25 18:04:09 rws Exp $ */
 /*
 
 Copyright 1990, 1991 by UniSoft Group Limited
@@ -388,9 +388,11 @@ XTestFakeProximityEvent(dpy, dev, in_prox, first_axis, axes, n_axes, delay)
     return 1;
 }
 
-XTestFakeDeviceMotionEvent(dpy, dev, first_axis, axes, n_axes, delay)
+XTestFakeDeviceMotionEvent(dpy, dev, is_relative,
+			   first_axis, axes, n_axes, delay)
     Display *dpy;
     XDevice *dev;
+    Bool is_relative;
     int first_axis;
     int *axes;
     int n_axes;
@@ -406,34 +408,7 @@ XTestFakeDeviceMotionEvent(dpy, dev, first_axis, axes, n_axes, delay)
     req->reqType = info->codes->major_opcode;
     req->xtReqType = X_XTestFakeInput;
     req->type = XI_DeviceMotionNotify + (int)info->data;
-    req->detail = False;
-    req->time = delay;
-    req->deviceid = dev->device_id;
-    send_axes(dpy, info, req, dev, first_axis, axes, n_axes);
-    UnlockDisplay(dpy);
-    SyncHandle();
-    return 1;
-}
-
-XTestFakeRelativeDeviceMotionEvent(dpy, dev, first_axis, axes, n_axes, delay)
-    Display *dpy;
-    XDevice *dev;
-    int first_axis;
-    int *axes;
-    int n_axes;
-    unsigned long delay;
-{
-    XExtDisplayInfo *info = find_display (dpy);
-    register xXTestFakeInputReq *req;
-
-    XTestICheckExtension (dpy, info, 0);
-
-    LockDisplay(dpy);
-    GetReq(XTestFakeInput, req);
-    req->reqType = info->codes->major_opcode;
-    req->xtReqType = X_XTestFakeInput;
-    req->type = XI_DeviceMotionNotify + (int)info->data;
-    req->detail = True;
+    req->detail = is_relative;
     req->time = delay;
     req->deviceid = dev->device_id;
     send_axes(dpy, info, req, dev, first_axis, axes, n_axes);
