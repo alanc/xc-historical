@@ -1,4 +1,4 @@
-/* $XConsortium: a2x.c,v 1.15 92/03/21 14:27:05 rws Exp $ */
+/* $XConsortium: a2x.c,v 1.16 92/03/21 17:15:59 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -56,6 +56,7 @@ released automatically at next button or non-modifier key.
 #define keysym_char '\024' /* control T */
 
 Display *dpy;
+unsigned char button_map[256];
 unsigned short modifiers[256];
 KeyCode keycodes[256];
 unsigned short modmask[256];
@@ -67,7 +68,6 @@ KeySym last_sym = 0;
 KeyCode last_keycode = 0;
 struct termios oldterm;
 int istty = 0;
-char buttons[5];
 int moving = 0;
 int moving_x = 0;
 int moving_y = 0;
@@ -139,7 +139,12 @@ reset_mapping()
     KeySym sym;
     register int c;
     XModifierKeymap *mmap;
+    unsigned char bmap[256];
     
+    bzero((char *)button_map, sizeof(button_map));
+    j = XGetPointerMapping(dpy, bmap, sizeof(bmap));
+    for (i = 0; i < j; i++)
+	button_map[bmap[i]] = i + 1;
     XDisplayKeycodes(dpy, &minkey, &maxkey);
     bzero((char *)modifiers, sizeof(modifiers));
     bzero((char *)keycodes, sizeof(keycodes));
@@ -356,7 +361,7 @@ do_button(button)
     XQueryPointer(dpy, DefaultRootWindow(dpy), &root, &child, &rx, &ry,
 		  &x, &y, &state);
     setup_tempmods();
-    XTestFakeButtonEvent(dpy, button,
+    XTestFakeButtonEvent(dpy, button_map[button],
 			 (state & (Button1Mask << (button - 1))) == 0, 0);
     teardown_tempmods();
 }
