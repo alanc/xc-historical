@@ -1,4 +1,4 @@
-/* $XConsortium: Convert.c,v 1.52 91/01/02 18:58:18 rws Exp $ */
+/* $XConsortium: Convert.c,v 1.53 91/02/05 16:57:56 gildea Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -30,6 +30,11 @@ SOFTWARE.
 
 /* Conversion procedure hash table */
 
+#define CONVERTHASHSIZE	((unsigned)256)
+#define CONVERTHASHMASK	255
+#define ProcHash(from_type, to_type) (2 * (from_type) + to_type)
+
+typedef struct _ConverterRec *ConverterPtr;
 typedef struct _ConverterRec {
     ConverterPtr	next;
     XrmRepresentation	from, to;
@@ -126,7 +131,21 @@ typedef CachePtr CacheHashTable[CACHEHASHSIZE];
 
 static CacheHashTable	cacheHashTable;
 
-void _XtTableAddConverter(table, from_type, to_type, converter, convert_args, num_args, new_style, cache_type, destructor)
+#if NeedFunctionPrototypes
+void _XtTableAddConverter(
+    ConverterTable	table,
+    XrmRepresentation   from_type,
+    XrmRepresentation   to_type,
+    XtTypeConverter	converter,
+    XtConvertArgList    convert_args,
+    Cardinal		num_args,
+    _XtBoolean		new_style,
+    XtCacheType		cache_type,
+    XtDestructor	destructor
+    )
+#else    			  
+void _XtTableAddConverter(table, from_type, to_type, converter, convert_args, 
+			  num_args, new_style, cache_type, destructor)
     ConverterTable	table;
     XrmRepresentation   from_type, to_type;
     XtTypeConverter	converter;
@@ -135,6 +154,7 @@ void _XtTableAddConverter(table, from_type, to_type, converter, convert_args, nu
     Boolean		new_style;
     XtCacheType		cache_type;
     XtDestructor	destructor;
+#endif
 {
     register ConverterPtr	*pp;
     register ConverterPtr	p;
@@ -641,7 +661,7 @@ XtCallConverter(dpy, converter, args, num_args, from, to, cache_ref_return)
 			    cache_ref_return, cP);
 }
 
-Boolean
+static Boolean
 _XtCallConverter(dpy, converter,
 		 args, num_args, from, to, cache_ref_return, cP)
     Display*	    dpy;
