@@ -1,4 +1,4 @@
-/* $XConsortium: toc.h,v 2.4 88/09/06 17:23:36 jim Exp $ */
+/* $XConsortium: toc.h,v 2.5 89/05/04 15:13:23 converse Exp $ */
 /*
  *			  COPYRIGHT 1987
  *		   DIGITAL EQUIPMENT CORPORATION
@@ -29,6 +29,7 @@
 
 extern void TocInit();
 extern Toc TocCreateFolder();
+extern Toc TocCreate();
 extern void TocDeleteFolder();
 extern void TocCheckForNewMail();
 extern void TocSetScrn();
