@@ -1,4 +1,4 @@
-/* $Header: dispatch.c,v 1.63 88/08/30 17:10:27 keith Exp $ */
+/* $Header: dispatch.c,v 1.64 88/09/01 19:08:22 keith Exp $ */
 /************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -1430,6 +1430,7 @@ ProcCopyGC(client)
 {
     register GC *dstGC;
     register GC *pGC;
+    int result;
     REQUEST(xCopyGCReq);
 
     REQUEST_SIZE_MATCH(xCopyGCReq);
@@ -1437,8 +1438,14 @@ ProcCopyGC(client)
     VERIFY_GC( dstGC, stuff->dstGC, client);
     if ((dstGC->pScreen != pGC->pScreen) || (dstGC->depth != pGC->depth))
         return (BadMatch);    
-    CopyGC(pGC, dstGC, stuff->mask);
-    return (client->noClientException);
+    result = CopyGC(pGC, dstGC, stuff->mask);
+    if (client->noClientException != Success)
+        return(client->noClientException);
+    else
+    {
+	client->errorValue = clientErrorValue;
+        return(result);
+    }
 }
 
 int
