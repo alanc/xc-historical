@@ -1063,14 +1063,11 @@
     (values
       progv-vars 
       (list (if (boundp current-event-symbol)
-		;; The current event is already bound, so bind it to
-		;; the next event.
+		;; The current event is already bound, so bind it to the next
+		;; event.
 		(let ((event (symbol-value current-event-symbol)))
-		  ;; If we have already discarded the current event, then we have
-		  ;; already advanced the event pointer.
-		  (if (symbol-value current-event-discarded-p-symbol)
-		      event
-		    (and event (reply-next (the reply-buffer event)))))
+		  (declare (type (or null reply-buffer) event))
+		  (and event (reply-next (the reply-buffer event))))
 	      ;; The current event isn't bound, so bind it to the head of the
 	      ;; event queue.
 	      (display-event-queue-head display))
@@ -1097,22 +1094,20 @@
     (values event nil)))
 
 (defun event-loop-step-after
-       (display event discard-p current-event-symbol current-event-discarded-p-symbol)
+       (display event discard-p current-event-symbol current-event-discarded-p-symbol
+	&optional aborted)
   (declare (type display display)
 	   (type reply-buffer event)
-	   (type boolean discard-p)
+	   (type boolean discard-p aborted)
 	   (type symbol current-event-symbol current-event-discarded-p-symbol))
-  (cond ((symbol-value current-event-discarded-p-symbol)
-	 ;; We have already done a discard, so we don't have to do
-	 ;; anything.
-	 )
-	(discard-p
-	 ;; We haven't discarded it yet, so discard it.
-	 (discard-current-event display))
-	(t
-	 ;; Just go on to the next event.
-	 (setf (symbol-value current-event-symbol) (reply-next event))))
-  (setf (symbol-value current-event-discarded-p-symbol) nil))
+  (when (and discard-p
+	     (not aborted)
+	     (not (symbol-value current-event-discarded-p-symbol)))
+    (discard-current-event display))
+  (setf (symbol-value current-event-symbol) (reply-next event))
+  (when (symbol-value current-event-discarded-p-symbol)
+    (setf (symbol-value current-event-discarded-p-symbol) nil)
+    (deallocate-event event)))
 
 (defmacro event-loop ((display event timeout force-output-p discard-p) &body body)
   ;; Bind EVENT to the events for DISPLAY.
@@ -1138,12 +1133,17 @@
 		   .current-event-symbol.)
 	       (declare (type (or null reply-buffer) .event.))
 	       (when (null .event.) (return (values nil .eof-or-timeout.)))
-	       (let ((,event .event.))
-		 (declare (type reply-buffer ,event))
-		 ,@body)
-	       (event-loop-step-after
-		 .display. .event. .discard-p.
-		 .current-event-symbol. .current-event-discarded-p-symbol.))))))))
+	       (let ((.aborted. t))
+		 (unwind-protect 
+		     (progn
+		       (let ((,event .event.))
+			 (declare (type reply-buffer ,event))
+			 ,@body)
+		       (setq .aborted. nil))
+		   (event-loop-step-after
+		     .display. .event. .discard-p.
+		     .current-event-symbol. .current-event-discarded-p-symbol.
+		     .aborted.))))))))))
 
 (defun discard-current-event (display)
   ;; Discard the current event for DISPLAY.
@@ -1152,48 +1152,46 @@
   ;; this when throwing out of event-case or process-next-event, or from
   ;; inside even-case, event-cond or process-event when :peek-p is T and
   ;; :discard-p is NIL.
-  (declare (type display display))
-  (declare (values boolean))
-  (let* ((current-event-symbol (first (display-current-event-symbol display)))
-	 (current-event (and (boundp current-event-symbol)
-			     (symbol-value current-event-symbol)))
-	 (current-event-discarded-p-symbol (second (display-current-event-symbol display))))
-    (declare (type symbol current-event-symbol current-event-discarded-p-symbol)
-	     (type (or null reply-buffer) current-event))
-    (when current-event
+  (declare (type display display)
+	   (values boolean))
+  (let* ((symbols (display-current-event-symbol display))
+	 (event
+	   (let ((current-event-symbol (first symbols)))
+	     (declare (type symbol current-event-symbol))
+	     (when (boundp current-event-symbol)
+	       (symbol-value current-event-symbol)))))
+    (declare (type list symbols)
+	     (type (or null reply-buffer) event))
+    (unless (null event)
+      ;; Remove the current event from the event queue
       (with-event-queue-internal (display)
-	(let ((next (reply-next (the reply-buffer current-event))))
+	(let ((next (reply-next (the reply-buffer event))))
 	  (declare (type (or null reply-buffer) next))
-	  (when (eq current-event (display-new-events display))
+	  (when (eq event (display-new-events display))
 	    (setf (display-new-events display) next))
-	  ;; Indicate we have done a discard.
-	  (setf (symbol-value current-event-discarded-p-symbol) t)
-	  (cond ((eq current-event (display-event-queue-head display))
+	  (cond ((eq event (display-event-queue-head display))
 		 (threaded-dequeue (display-event-queue-head display)
 				   (display-event-queue-tail display)
-				   reply-next reply-buffer)
-		 (deallocate-event (shiftf (symbol-value current-event-symbol) next))
-		 (not (null next)))
+				   reply-next reply-buffer))
 		((null (display-event-queue-head display))
-		 ;; If there's no events in the event queue, then how can we
-		 ;; be discarding an event?  Don't deallocate the current
-		 ;; event, because for all we know it could be already
-		 ;; deallocated.  Do set the current event to nil, since the
-		 ;; event queue is empty.
-		 (setf (symbol-value current-event-symbol) nil)
-		 nil)
+		 (setf (reply-next (the reply-buffer event)) nil))
 		(t
 		 (do* ((previous (display-event-queue-head display) current)
 		       (current (reply-next previous) (reply-next previous)))
-		      ((or (null current) (eq current-event current))
-		       (when (eq current-event current)
+		      ((or (null current) (eq event current))
+		       (when (eq event current)
 			 (when (eq current (display-event-queue-tail display))
 			   (setf (display-event-queue-tail display) previous))
-			 (setf (reply-next previous) next))
-		       (deallocate-event (shiftf (symbol-value current-event-symbol) next))
-		       t)
+			 (setf (reply-next previous) next)))
 		   (declare (type reply-buffer previous)
-			    (type (or null reply-buffer) current))))))))))
+			    (type (or null reply-buffer) current)))))))
+      ;; Set the discarded-p flag
+      (let ((current-event-discarded-p-symbol (second symbols)))
+	(declare (type symbol current-event-discarded-p-symbol))
+	(when (boundp current-event-discarded-p-symbol)
+	  (setf (symbol-value current-event-discarded-p-symbol) t)))
+      ;; Return whether the event queue is empty
+      (not (null (reply-next (the reply-buffer event)))))))
 
 ;;
 ;; PROCESS-EVENT
