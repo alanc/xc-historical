@@ -23,27 +23,28 @@ twm - a window manager for X11 (Tom's Window Manager)
 .PP
 .SH DESCRIPTION
 .PP
-The \fItwm\fP program is a window manager client 
-application of the window 
-server.
+\fITwm\fP is a window manager for the X Window System.  Some of its special
+features include:  title bars, several forms of icon management,
+user-defined macro functions, click-to-type and pointer-driven keyboard
+focus, and user-specified pointer and key bindings.
 .PP
-The \fItwm\fP program was written to incorporate some of the
-desirable features of both the \fBwm\fP and \fBuwm\fP window managers.
-\fItwm\fP puts a title bar on  and re-parents each window.
-The title bar contains the
-window's name and three "buttons".  When a pointer button press event
-is detected in any of these title bar "buttons" a certain action is
-performed.  The left-most title bar button that looks like a window pane
-causes the window to be iconified.  The right-most title bar button with
-the right-angles is the re-size button.  The resize function is identical
-to the window resize function of the \fBwm\fP window manager.  The other
-title bar button represents a bullseye; a button click here
-causes the input focus to stay directed to this window until the \fBf.unfocus\fP
-function is executed or another window is selected to get input focus
-(by default, the input focus follows the mouse or other pointing device).
-The title bar also becomes highlighted on the
-window that currently has the input focus.
-Why a bullseye?  You have to focus on a bullseye to hit it.
+By default, application windows are surrounded by a ``frame'' consisting of
+a title bar at the top and a special border around the window.  The title bar 
+contains the window's name, a rectangle that is lit when the window is
+receiving keyboard input, and several function ``buttons''.
+.PP
+Pressing
+the left-most button in the title bar, which looks like small window pane,
+causes the window to be iconified.
+Pressing
+the right-most button, which looks like a group 
+of nested squares, and touching one or more edges of the window while the
+button is still down causes a rubber band representing the outline of the 
+window to appear.  When the
+button is released, the window will be resized to fit the rubber band.  
+Pressing the middle button, which looks like a bullseye and is to the left
+of the resize button, focuses all keyboard input to this window (the 
+\fIf.unfocus\fP function can be invoked to make the focus follow the pointer).
 .SH OPTIONS
 .PP
 .IP "\fB-display\fP \fIdisplay\fP
@@ -54,22 +55,24 @@ default, \fItwm\fP attempts to manage each unmanaged screen of the
 specified display.
 .SH CUSTOMIZATION
 .PP
-When \fItwm\fP is invoked, it attempts to read a \fItwm\fP startup file.
-There are three possible files that may be read when \fItwm\fP starts up.
-The first file attempted is:
-.sp 0.5
-  $HOME/.twmrc.<screen number>
-.PP
-This file will initialize twm for the specific screen number.  If no
-file by that name is found, the next file attempted is:
-.sp 0.5
-  $HOME/.twmrc
-.PP
-If a file by that name is not found,
-the system default file is attempted, which
-resides in
-.sp 0.5
-  /usr/lib/X11/twm/system.twmrc
+Much of \fItwm\fP's appearance and operation may be customized.  When \fItwm\fP
+starts executing, it will use the first file that it finds in the list below
+for each screen of the display:
+.TP 8
+.B "$HOME/.twmrc.\fIscreennumber\fP"
+The \fIscreennumber\fP is a small positive number (e.g. 0, 1, etc.)
+representing the screen number (e.g. the last number in the DISPLAY environment
+variable \fIhost:displaynum.screennum\fP) that would be used to contact that 
+screen of the display.
+.TP 8
+.B "$HOME/.twmrc"
+If no special handling is desired for multi-screen displays, the user's
+startup file should be named \fI.twmrc\fP in the home directory.
+.TP 8
+.B "/usr/lib/X11/twm/system.twmrc"
+If neither of the preceeding files are found, \fItwm\fP will look for a 
+default configuration.  This is often tailored by the site administrator to
+provide convenient menus or familiar bindings for novice users.
 .PP
 The \fItwm\fP startup file has three logical
 sections: the variables section, the buttons section, and the menus
