@@ -1,5 +1,5 @@
 XCOMM
-XCOMM $XConsortium: Imakefile,v 5.15 93/08/25 09:19:33 rws Exp $
+XCOMM $XConsortium: Imakefile,v 5.16 93/08/25 10:03:27 rws Exp $
 XCOMM 
 XCOMM Copyright (c) 1989,1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
 XCOMM 
@@ -59,7 +59,7 @@ all:: ProgramTargetName(to_wfont) $(FONTS_BINARY)
 
 LexFile(lex)
 
-YaccFile(to_wfont,-d)
+YaccFile(to_wfont,$(YFLAGS))
 
 SingleProgramTarget(to_wfont,$(OBJS),$(LIBS),NullParameter)
 
