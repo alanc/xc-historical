@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM X Window System Build Parameters and Rules
-XCOMM $XConsortium: Project.tmpl,v 1.206 93/11/08 15:42:14 rws Exp $
+XCOMM $XConsortium: Project.tmpl,v 1.207 93/12/31 14:57:43 kaleb Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -420,6 +420,8 @@ XCOMM X Window System make variables; these need to be coordinated with rules
     FONTSERVERSRC = $(PROGRAMSRC)/xfs
        FONTINCSRC = $(TOP)/include/fonts
         EXTINCSRC = $(TOP)/include/extensions
+     TRANSCOMMSRC = $(LIBSRC)/xtrans
+   TRANS_INCLUDES = -I$(TRANSCOMMSRC)
 
 #ifndef ShLibIncludeFile
 /* need this to make ANSI-style preprocessors happy */
