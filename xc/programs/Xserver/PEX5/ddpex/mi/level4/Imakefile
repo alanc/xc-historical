@@ -1,5 +1,5 @@
 XCOMM
-XCOMM $XConsortium: Imakefile,v 5.4 91/07/24 16:58:42 rws Exp $
+XCOMM $XConsortium: Imakefile,v 5.5 93/09/04 17:01:02 rws Exp $
 XCOMM
 XCOMM 
 XCOMM Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium
@@ -33,6 +33,8 @@ XCOMM -D defines for ddpex:
 XCOMM	DDTEST turns on some fprintf(stderr...)s for debugging
 
     DEFINES = PexDdpexDefines
+EXT_DEFINES = ExtensionDefines
+DEPEND_DEFINES = $(EXT_DEFINES)
 CDEBUGFLAGS = PexDdpexCDebugFlags
 
   PEXSERVINC = ../../../include
@@ -70,8 +72,9 @@ NormalLibraryObjectRule()
 
 NormalLibraryTarget(ddpex4,$(OBJS))
 
-LintLibraryTarget(dp4, $(SRCS))
+LintLibraryTarget(dp4,$(SRCS))
 NormalLintTarget($(SRCS))
 
-DependTarget()
+SpecialCObjectRule(miWks,$(ICONFIGFILES),$(EXT_DEFINES))
 
+DependTarget()
