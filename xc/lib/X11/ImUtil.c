@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XImUtil.c,v 11.26 88/09/06 16:08:41 jim Exp $ */
+/* $XConsortium: XImUtil.c,v 11.27 88/09/20 23:34:23 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
@@ -51,7 +51,11 @@ static char _himask[0x09] = { 0xff, 0xfe, 0xfc, 0xf8, 0xf0, 0xe0, 0xc0, 0x80, 0x
  *	XCreateImage	Creates a default XImage data structure
  *	_XDestroyImage	Deletes an XImage data structure
  *	_XGetPixel	Reads a pixel from an image data structure
+ *	_XGetPixel8	Reads a pixel from an 8-bit Z image data structure
+ *	_XGetPixel1	Reads a pixel from an 1-bit image data structure
  *	_XPutPixel	Writes a pixel into an image data structure
+ *	_XPutPixel8	Writes a pixel into an 8-bit Z image data structure
+ *	_XPutPixel1	Writes a pixel into an 1-bit image data structure
  *	_XSubImage	Clones a new (sub)image from an existing one
  *	_XSetImage	Writes an image data pattern into another image
  *	_XAddPixel	Adds a constant value to every pixel in an image
@@ -283,6 +287,7 @@ XImage *XCreateImage (dpy, visual, depth, format, offset, data, width, height,
 
 }
 
+static int _XReportBadImage();
 
 /*
  * _DestroyImage
@@ -292,7 +297,7 @@ XImage *XCreateImage (dpy, visual, depth, format, offset, data, width, height,
  * entirely by the library.
  */
 
-int _XDestroyImage (ximage)
+static int _XDestroyImage (ximage)
     XImage *ximage;
 
 {
@@ -317,7 +322,7 @@ int _XDestroyImage (ximage)
  *
  */
 
-unsigned long _XGetPixel (ximage, x, y)
+static unsigned long _XGetPixel (ximage, x, y)
     register XImage *ximage;
     int x;
     int y;
@@ -376,6 +381,42 @@ unsigned long _XGetPixel (ximage, x, y)
 	return pixel;
 }
 
+static unsigned long _XGetPixel8 (ximage, x, y)
+    register XImage *ximage;
+    int x;
+    int y;
+{
+	if ((ximage->format == ZPixmap) && (ximage->bits_per_pixel == 8)) {
+	    return ximage->data[y * ximage->bytes_per_line + x];
+	} else {
+	    _XInitImageFuncPtrs(ximage);
+	    return XGetPixel(ximage, x, y);
+	}
+}
+
+static unsigned long _XGetPixel1 (ximage, x, y)
+    register XImage *ximage;
+    int x;
+    int y;
+{
+	unsigned char bit;
+	int xoff, yoff;
+
+	if ((ximage->depth == 1) &&
+	    (ximage->byte_order == ximage->bitmap_bit_order)) {
+	    xoff = x + ximage->xoffset;
+	    yoff = y * ximage->bytes_per_line + (xoff >> 3);
+	    xoff &= 7;
+	    if (ximage->bitmap_bit_order == MSBFirst)
+	        bit = 0x80 >> xoff;
+	    else
+		bit = 1 << xoff;
+	    return (ximage->data[yoff] & bit) ? 1 : 0;
+	} else {
+	    _XInitImageFuncPtrs(ximage);
+	    return XGetPixel(ximage, x, y);
+	}
+}
 	
 /*
  * PutPixel
@@ -393,7 +434,7 @@ unsigned long _XGetPixel (ximage, x, y)
  *
  */
 
-int _XPutPixel (ximage, x, y, pixel)
+static int _XPutPixel (ximage, x, y, pixel)
     register XImage *ximage;
     int x;
     int y;
@@ -466,6 +507,49 @@ int _XPutPixel (ximage, x, y, pixel)
 	return 1;
 }
 
+static int _XPutPixel8 (ximage, x, y, pixel)
+    register XImage *ximage;
+    int x;
+    int y;
+    unsigned long pixel;
+{
+	if ((ximage->format == ZPixmap) && (ximage->bits_per_pixel == 8)) {
+	    ximage->data[y * ximage->bytes_per_line + x] = pixel;
+	    return 1;
+	} else {
+	    _XInitImageFuncPtrs(ximage);
+	    return XPutPixel(ximage, x, y, pixel);
+	}
+}
+
+static int _XPutPixel1 (ximage, x, y, pixel)
+    register XImage *ximage;
+    int x;
+    int y;
+    unsigned long pixel;
+{
+	unsigned char bit;
+	int xoff, yoff;
+
+	if ((ximage->depth == 1) &&
+	    (ximage->byte_order == ximage->bitmap_bit_order)) {
+	    xoff = x + ximage->xoffset;
+	    yoff = y * ximage->bytes_per_line + (xoff >> 3);
+	    xoff &= 7;
+	    if (ximage->bitmap_bit_order == MSBFirst)
+		bit = 0x80 >> xoff;
+	    else
+		bit = 1 << xoff;
+	    if (pixel & 1)
+		ximage->data[yoff] |= bit;
+	    else
+		ximage->data[yoff] &= ~bit;
+	    return 1;
+	} else {
+	    _XInitImageFuncPtrs(ximage);
+	    return XPutPixel(ximage, x, y, pixel);
+	}
+}
 
 /*
  * SubImage
@@ -477,7 +561,7 @@ int _XPutPixel (ximage, x, y, pixel)
  *
  */
 
-XImage *_XSubImage (ximage, x, y, width, height)
+static XImage *_XSubImage (ximage, x, y, width, height)
     XImage *ximage;
     register int x;	/* starting x coordinate in existing image */
     register int y;	/* starting y coordinate in existing image */
@@ -537,6 +621,7 @@ XImage *_XSubImage (ximage, x, y, width, height)
 }
 
 
+#ifdef notdef
 /*
  * SetImage
  * 
@@ -581,7 +666,7 @@ int _XSetImage (srcimg, dstimg, x, y)
 	}
 	return 1;
 }
-
+#endif
 
 /*
  * AddPixel
@@ -590,16 +675,15 @@ int _XSetImage (srcimg, dstimg, x, y)
  *
  */
 
-_XAddPixel (ximage, value)
+static _XAddPixel (ximage, value)
     register XImage *ximage;
     long value;
 
 {
 	unsigned long pixel;
-	register unsigned char *dp, *src, *dst, *tmp;
+	register unsigned char *dp;
 	register int x;
 	int y;
-	long nbytes, i;
 
 	if (value != 0) {
 	  if (ximage->depth == 1) {
@@ -639,6 +723,8 @@ _XAddPixel (ximage, value)
 		 * way by calling get and put pixel.
 		 */
 		if ((ximage->bits_per_pixel & 7) == 0) {
+		    register unsigned char *src, *dst, *tmp;
+		    long nbytes, i;
 		    nbytes = ROUNDUP(ximage->bits_per_pixel, 8) >> 3;
 		    for (y = 0; y < ximage->height; y++) {
 			src = (unsigned char *) &ximage->data[ZINDEX(0, y, ximage)];
@@ -675,22 +761,34 @@ _XAddPixel (ximage, value)
  * This routine initializes the image object function pointers.  The
  * intent is to provide native (i.e. fast) routines for native format images
  * only using the generic (i.e. slow) routines when fast ones don't exist.
- * For now, just insert the generic routines.
+ * However, with the current rather botched external interface, clients may
+ * have to mung image attributes after the image gets created, so the fast
+ * routines always have to check to make sure the optimization is still
+ * valid, and reinit the functions if not.
  */
 _XInitImageFuncPtrs (image)
     register XImage *image;
 {
 	image->f.create_image = XCreateImage;
 	image->f.destroy_image = _XDestroyImage;
-	image->f.get_pixel = _XGetPixel;
-	image->f.put_pixel = _XPutPixel;
+	if ((image->format == ZPixmap) && (image->bits_per_pixel == 8)) {
+	    image->f.get_pixel = _XGetPixel8;
+	    image->f.put_pixel = _XPutPixel8;
+	} else if ((image->depth == 1) &&
+		   (image->byte_order == image->bitmap_bit_order)) {
+	    image->f.get_pixel = _XGetPixel1;
+	    image->f.put_pixel = _XPutPixel1;
+	} else {
+	    image->f.get_pixel = _XGetPixel;
+	    image->f.put_pixel = _XPutPixel;
+	}
 	image->f.sub_image = _XSubImage;
 /*	image->f.set_image = _XSetImage;*/
 	image->f.add_pixel = _XAddPixel;
 }
 
 void exit();
-int _XReportBadImage (errtype, error, routine)
+static int _XReportBadImage (errtype, error, routine)
     char errtype[];
     int error;
     char routine[];
