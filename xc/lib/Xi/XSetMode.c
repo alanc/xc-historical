@@ -1,4 +1,4 @@
-/* $XConsortium: XSetMode.c,v 1.3 89/09/25 16:21:17 gms Exp $ */
+/* $XConsortium: XSetMode.c,v 1.4 89/12/06 20:38:55 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -54,6 +54,7 @@ XSetDeviceMode (dpy, dev, mode)
     req->reqType = info->codes->major_opcode;
     req->ReqType = X_SetDeviceMode;
     req->deviceid = dev->device_id;
+    req->mode = mode;
 
     (void) _XReply (dpy, (xReply *) &rep, 0, xTrue);
     UnlockDisplay(dpy);
