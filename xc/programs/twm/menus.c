@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.166 90/10/17 11:26:49 converse Exp $
+ * $XConsortium: menus.c,v 1.167 90/12/13 11:43:42 dave Exp $
  *
  * twm menu code
  *
@@ -38,7 +38,7 @@
 
 #if !defined(lint) && !defined(SABER)
 static char RCSinfo[] =
-"$XConsortium: menus.c,v 1.166 90/10/17 11:26:49 converse Exp $";
+"$XConsortium: menus.c,v 1.167 90/12/13 11:43:42 dave Exp $";
 #endif
 
 #include <stdio.h>
@@ -96,6 +96,8 @@ static void Identify();
 
 #define SHADOWWIDTH 5			/* in pixels */
 
+
+
 /***********************************************************************
  *
  *  Procedure:
@@ -134,6 +136,8 @@ InitMenus()
     }
 
 }
+
+
 
 /***********************************************************************
  *
@@ -199,6 +203,8 @@ Bool AddFuncKey (name, cont, mods, func, win_name, action)
     return True;
 }
 
+
+
 int CreateTitleButton (name, func, action, menuroot, rightside, append)
     char *name;
     int func;
@@ -246,7 +252,8 @@ int CreateTitleButton (name, func, action, menuroot, rightside, append)
 	Scr->TBInfo.head = tb;
     } else if (append && rightside) {	/* 3 */
 	register TitleButton *t;
-	for (t = Scr->TBInfo.head; t->next; t = t->next) ;
+	for /* SUPPRESS 530 */
+	  (t = Scr->TBInfo.head; t->next; t = t->next);
 	t->next = tb;
 	tb->next = NULL;
     } else {				/* 2 */
@@ -266,6 +273,7 @@ int CreateTitleButton (name, func, action, menuroot, rightside, append)
     return 1;
 }
 
+
 
 /*
  * InitTitlebarButtons - Do all the necessary stuff to load in a titlebar
@@ -341,6 +349,7 @@ void InitTitlebarButtons ()
     }
 }
 
+
 
 PaintEntry(mr, mi, exposure)
 MenuRoot *mr;
@@ -436,6 +445,7 @@ int exposure;
     }
 }
     
+
 
 PaintMenu(mr, e)
 MenuRoot *mr;
@@ -459,6 +469,7 @@ XEvent *e;
     XSync(dpy, 0);
 }
 
+
 
 UpdateMenu()
 {
@@ -558,13 +569,15 @@ UpdateMenu()
 	    ((ActiveMenu->width - x) < (ActiveMenu->width >> 1)))
 	{
 	    MenuRoot *save = ActiveMenu;
-	    int savex = MenuOrigins[MenuDepth - 1].x;
+	    int savex = MenuOrigins[MenuDepth - 1].x; 
 	    int savey = MenuOrigins[MenuDepth - 1].y;
 
 	    if (MenuDepth < MAXMENUDEPTH) {
-		PopUpMenu (ActiveItem->sub, (savex + (ActiveMenu->width >> 1)),
-			   (savey + ActiveItem->item_num * Scr->EntryHeight +
-			    (Scr->EntryHeight >> 1)), False);
+		PopUpMenu (ActiveItem->sub, 
+			   (savex + (ActiveMenu->width >> 1)), 
+			   (savey + ActiveItem->item_num * Scr->EntryHeight)
+			   /*(savey + ActiveItem->item_num * Scr->EntryHeight +
+			    (Scr->EntryHeight >> 1))*/, False);
 	    } else if (!badItem) {
 		XBell (dpy, 0);
 		badItem = ActiveItem;
@@ -582,6 +595,8 @@ UpdateMenu()
 	XFlush(dpy);
     }
 }
+
+
 
 /***********************************************************************
  *
@@ -643,6 +658,8 @@ NewMenuRoot(name)
 
     return (tmp);
 }
+
+
 
 /***********************************************************************
  *
@@ -732,6 +749,8 @@ AddToMenu(menu, item, action, sub, func, fore, back)
     return (tmp);
 }
 
+
+
 MakeMenus()
 {
     MenuRoot *mr;
@@ -744,6 +763,8 @@ MakeMenus()
 	MakeMenu(mr);
     }
 }
+
+
 
 MakeMenu(mr)
 MenuRoot *mr;
@@ -934,6 +955,8 @@ MenuRoot *mr;
     }
 }
 
+
+
 /***********************************************************************
  *
  *  Procedure:
@@ -1038,6 +1061,8 @@ Bool PopUpMenu (menu, x, y, center)
     return True;
 }
 
+
+
 /***********************************************************************
  *
  *  Procedure:
@@ -1076,6 +1101,8 @@ PopDownMenu()
     MenuDepth = 0;
 }
 
+
+
 /***********************************************************************
  *
  *  Procedure:
@@ -1104,6 +1131,7 @@ FindMenuRoot(name)
     return NULL;
 }
 
+
 
 static Bool belongs_to_twm_window (t, w)
     register TwmWindow *t;
@@ -1124,7 +1152,7 @@ static Bool belongs_to_twm_window (t, w)
     return False;
 }
 
-
+
 
 /***********************************************************************
  *
@@ -2019,6 +2047,8 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
     return do_next_action;
 }
 
+
+
 /***********************************************************************
  *
  *  Procedure:
@@ -2054,6 +2084,7 @@ Cursor cursor;
     return (FALSE);
 }
 
+
 
 /***********************************************************************
  *
@@ -2070,6 +2101,8 @@ ReGrab()
 	GrabModeAsync, GrabModeAsync,
 	Scr->Root, LastCursor, CurrentTime);
 }
+
+
 
 /***********************************************************************
  *
@@ -2117,6 +2150,8 @@ MenuRoot *root;
     }
     return FALSE;
 }
+
+
 
 /***********************************************************************
  *
@@ -2170,6 +2205,8 @@ Execute(s)
 	putenv (buf);
     }
 }
+
+
 
 /***********************************************************************
  *
@@ -2272,6 +2309,8 @@ TwmWindow *tmp_win;
     XSync (dpy, 0);
 }
 
+
+
 Iconify(tmp_win, def_x, def_y)
 TwmWindow *tmp_win;
 int def_x, def_y;
@@ -2366,6 +2405,8 @@ int def_x, def_y;
     XSync (dpy, 0);
 }
 
+
+
 static void Identify (t)
 TwmWindow *t;
 {
@@ -2383,7 +2424,7 @@ TwmWindow *t;
     if (t) {
 	XGetGeometry (dpy, t->w, &JunkRoot, &JunkX, &JunkY,
 		      &wwidth, &wheight, &bw, &depth);
-	(void) XTranslateCoordinates (dpy, t->w, Scr->Root, JunkX, JunkY,
+	(void) XTranslateCoordinates (dpy, t->w, Scr->Root, 0, 0,
 				      &x, &y, &junk);
 	(void) sprintf(Info[n++], "Name             = \"%s\"", t->full_name);
 	(void) sprintf(Info[n++], "Class.res_name   = \"%s\"", t->class.res_name);
@@ -2429,6 +2470,8 @@ TwmWindow *t;
     InfoLines = n;
 }
 
+
+
 SetMapStateProp(tmp_win, state)
 TwmWindow *tmp_win;
 int state;
@@ -2442,6 +2485,8 @@ int state;
     XChangeProperty (dpy, tmp_win->w, _XA_WM_STATE, _XA_WM_STATE, 32, 
 		 PropModeReplace, (unsigned char *) data, 2);
 }
+
+
 
 Bool GetWMState (w, statep, iwp)
     Window w;
@@ -2469,6 +2514,7 @@ Bool GetWMState (w, statep, iwp)
     return retval;
 }
 
+
 
 WarpToScreen (n, inc)
     int n, inc;
@@ -2509,6 +2555,8 @@ WarpToScreen (n, inc)
 }
 
 
+
+
 /*
  * BumpWindowColormap - rotate our internal copy of WM_COLORMAP_WINDOWS
  */
@@ -2525,9 +2573,10 @@ BumpWindowColormap (tmp, inc)
     if (inc && tmp->cmaps.number_cwins > 0) {
 	cwins = (ColormapWindow **) malloc(sizeof(ColormapWindow *)*
 					   tmp->cmaps.number_cwins);
-	if (cwins) {
-	    if (previously_installed = (Scr->cmapInfo.cmaps == &tmp->cmaps &&
-					tmp->cmaps.number_cwins)) {
+	if (cwins) {		
+	    if (previously_installed =
+		/* SUPPRESS 560 */(Scr->cmapInfo.cmaps == &tmp->cmaps &&
+	        tmp->cmaps.number_cwins)) {
 		for (i = tmp->cmaps.number_cwins; i-- > 0; )
 		    tmp->cmaps.cwins[i]->colormap->state = 0;
 	    }
@@ -2556,6 +2605,8 @@ BumpWindowColormap (tmp, inc)
 	FetchWmColormapWindows (tmp);
 }
 
+
+
 HideIconManager ()
 {
     SetMapStateProp (Scr->iconmgr.twm_win, WithdrawnState);
@@ -2566,6 +2617,8 @@ HideIconManager ()
     Scr->iconmgr.twm_win->icon = TRUE;
 }
 
+
+
 
 SetBorder (tmp, onoroff)
     TwmWindow *tmp;
@@ -2583,6 +2636,8 @@ SetBorder (tmp, onoroff)
 	}
     }
 }
+
+
 
 DestroyMenu (menu)
     MenuRoot *menu;
@@ -2602,6 +2657,8 @@ DestroyMenu (menu)
 	free ((char *) tmp);
     }
 }
+
+
 
 /*
  * warping routines
@@ -2651,6 +2708,8 @@ void WarpAlongRing (ev, forward)
     }
 }
 
+
+
 void WarpToWindow (t)
     TwmWindow *t;
 {
@@ -2667,6 +2726,8 @@ void WarpToWindow (t)
     XWarpPointer (dpy, None, t->frame, 0, 0, 0, 0, x, y);
 }
 
+
+
 
 /*
  * ICCCM Client Messages - Section 4.2.8 of the ICCCM dictates that all

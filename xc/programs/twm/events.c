@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.165 90/12/01 13:06:05 rws Exp $
+ * $XConsortium: events.c,v 1.166 90/12/13 11:43:12 dave Exp $
  *
  * twm event handling
  *
@@ -38,7 +38,7 @@
 
 #if !defined(lint) && !defined(SABER)
 static char RCSinfo[]=
-"$XConsortium: events.c,v 1.165 90/12/01 13:06:05 rws Exp $";
+"$XConsortium: events.c,v 1.166 90/12/13 11:43:12 dave Exp $";
 #endif
 
 #include <stdio.h>
@@ -113,6 +113,7 @@ void SetRaiseWindow (tmp)
     XSync (dpy, 0);
 }
 
+
 
 /***********************************************************************
  *
@@ -158,6 +159,8 @@ InitEvents()
 }
 
 
+
+
 Time lastTimestamp = CurrentTime;	/* until Xlib does this for us */
 
 Bool StashEventTime (ev)
@@ -195,6 +198,7 @@ Bool StashEventTime (ev)
     return False;
 }
 
+
 
 /*
  * WindowOfEvent - return the window about which this event is concerned; this
@@ -247,6 +251,8 @@ Window WindowOfEvent (e)
     return None;
 }
 
+
+
 /***********************************************************************
  *
  *  Procedure:
@@ -275,6 +281,7 @@ Bool DispatchEvent ()
     return True;
 }
 
+
 
 /***********************************************************************
  *
@@ -305,6 +312,7 @@ HandleEvents()
     }
 }
 
+
 
 /***********************************************************************
  *
@@ -422,6 +430,8 @@ HandleColormapNotify()
 	cmap->state |= CM_INSTALLED;
 }
 
+
+
 /***********************************************************************
  *
  *  Procedure:
@@ -459,6 +469,8 @@ HandleVisibilityNotify()
     } else
 	cwin->visibility = vevent->state;
 }
+
+
 
 /***********************************************************************
  *
@@ -584,6 +596,8 @@ HandleKeyPress()
 
 }
 
+
+
 static void free_window_names (tmp, nukefull, nukename, nukeicon)
     TwmWindow *tmp;
     Bool nukefull, nukename, nukeicon;
@@ -602,6 +616,8 @@ static void free_window_names (tmp, nukefull, nukename, nukeicon)
 #undef isokay
     return;
 }
+
+
 
 void free_cwins (tmp)
     TwmWindow *tmp;
@@ -629,6 +645,8 @@ void free_cwins (tmp)
 	tmp->cmaps.number_cwins = 0;
     }
 }
+
+
 
 /***********************************************************************
  *
@@ -835,6 +853,8 @@ HandlePropertyNotify()
     }
 }
 
+
+
 /***********************************************************************
  *
  *  Procedure:
@@ -900,6 +920,8 @@ RedoIconName()
     }
 }
 
+
+
 /***********************************************************************
  *
  *  Procedure:
@@ -932,6 +954,7 @@ HandleClientMessage()
     }
 }
 
+
 
 /***********************************************************************
  *
@@ -1039,6 +1062,8 @@ HandleExpose()
     }
 }
 
+
+
 static void remove_window_from_ring (tmp)
     TwmWindow *tmp;
 {
@@ -1062,6 +1087,8 @@ static void remove_window_from_ring (tmp)
 
     if (!Scr->Ring || Scr->RingLeader == tmp) Scr->RingLeader = Scr->Ring;
 }
+
+
 
 /***********************************************************************
  *
@@ -1164,6 +1191,8 @@ HandleDestroyNotify()
     free((char *)Tmp_win);
 }
 
+
+
 void
 HandleCreateNotify()
 {
@@ -1175,6 +1204,7 @@ HandleCreateNotify()
 #endif
 }
 
+
 
 /***********************************************************************
  *
@@ -1253,6 +1283,8 @@ HandleMapRequest()
     }
 }
 
+
+
 void SimulateMapRequest (w)
     Window w;
 {
@@ -1260,6 +1292,7 @@ void SimulateMapRequest (w)
     HandleMapRequest ();
 }
 
+
 
 /***********************************************************************
  *
@@ -1298,7 +1331,7 @@ HandleMapNotify()
     Tmp_win->icon_on = FALSE;
 }
 
-
+
 
 /***********************************************************************
  *
@@ -1368,6 +1401,8 @@ HandleUnmapNotify()
     XFlush (dpy);
 }
 
+
+
 /***********************************************************************
  *
  *  Procedure:
@@ -1397,6 +1432,8 @@ HandleMotionNotify()
 	DoResize(Event.xmotion.x_root, Event.xmotion.y_root, Tmp_win);
     }
 }
+
+
 
 /***********************************************************************
  *
@@ -1576,6 +1613,7 @@ HandleButtonRelease()
     }
 }
 
+
 
 static do_menu (menu, w)
     MenuRoot *menu;			/* menu to pop up */
@@ -1603,6 +1641,7 @@ static do_menu (menu, w)
     }
 }
 
+
 
 /***********************************************************************
  *
@@ -1616,14 +1655,6 @@ HandleButtonPress()
 {
     unsigned int modifier;
     Cursor cur;
-
-/*****
-    if (InfoLines) { delete info box on button press other than on box 
-	XUnmapWindow(dpy, Scr->InfoWindow);
-	InfoLines = 0;
-	Context = C_NO_CONTEXT;
-      }
-*****/
 
     /* pop down the menu, if any */
     if (ActiveMenu != NULL)
@@ -1821,6 +1852,7 @@ HandleButtonPress()
     }
 }
 
+
 
 /***********************************************************************
  *
@@ -1866,6 +1898,8 @@ HENQueueScanner(dpy, ev, args)
 
     return (False);
 }
+
+
 
 /***********************************************************************
  *
@@ -2008,6 +2042,7 @@ HandleEnterNotify()
     return;
 }
 
+
 
 /***********************************************************************
  *
@@ -2042,6 +2077,8 @@ HLNQueueScanner(dpy, ev, args)
 
     return (False);
 }
+
+
 
 /***********************************************************************
  *
@@ -2121,7 +2158,7 @@ HandleLeaveNotify()
     }
 }
 
-
+
 
 /***********************************************************************
  *
@@ -2256,6 +2293,8 @@ HandleConfigureRequest()
     SetupWindow (Tmp_win, x, y, width, height, bw);
 }
 
+
+
 /***********************************************************************
  *
  *  Procedure:
@@ -2280,6 +2319,8 @@ HandleShapeNotify ()
     SetFrameShape (Tmp_win);
 }
 
+
+
 /***********************************************************************
  *
  *  Procedure:
@@ -2295,6 +2336,8 @@ HandleUnknown()
     fprintf(stderr, "type = %d\n", Event.type);
 #endif
 }
+
+
 
 /***********************************************************************
  *
@@ -2319,6 +2362,8 @@ Transient(w)
 
     return (XGetTransientForHint(dpy, w, &propw));
 }
+
+
 
 /***********************************************************************
  *
@@ -2354,15 +2399,18 @@ FindScreenInfo(w)
     return NULL;
 }
 
+
 
 static void flush_expose (w)
     Window w;
 {
     XEvent dummy;
 
+				/* SUPPRESS 530 */
     while (XCheckTypedWindowEvent (dpy, w, Expose, &dummy)) ;
 }
 
+
 
 /***********************************************************************
  *
@@ -2462,6 +2510,8 @@ InstallWindowColormaps (type, tmp)
     }
 }
 
+
+
 /***********************************************************************
  *
  *  Procedures:
@@ -2497,6 +2547,7 @@ InstallRootColormap()
     Scr->cmapInfo.root_pushes++;
 }
 
+
 
 /* ARGSUSED*/
 static Bool
@@ -2516,6 +2567,8 @@ UninstallRootColormapQScanner(dpy, ev, args)
 
     return (False);
 }
+
+
 
 UninstallRootColormap()
 {
@@ -2538,7 +2591,6 @@ UninstallRootColormap()
 	    InstallWindowColormaps(0, Scr->cmapInfo.pushed_window);
     }
 }
-
 
 #ifdef TRACE
 dumpevent (e)
