@@ -1,4 +1,4 @@
-/* $XConsortium: pl_oc_util.h,v 1.1 92/05/08 15:13:34 mor Exp $ */
+/* $XConsortium: pl_oc_util.h,v 1.2 92/05/20 21:12:25 mor Exp $ */
 
 /************************************************************************
 Copyright 1992 by the Massachusetts Institute of Technology,
@@ -190,8 +190,8 @@ software without specific, written prior permission.
  * DESCRIPTION:
  *	This macro will initialize an OC encoding in the X transport buffer.
  *	It will fill in the OC element header and return a pointer in _pReq
- *	which points directly after the header.  PEXlib will copy the rest
- *	of the data into the X transport buffer.
+ *	which points to the start of the OC.  PEXlib will copy the rest of
+ * 	the data into the X transport buffer.
  */
 
 #define PEXInitOC(_display, _resID, _reqType, _ocType, _ocHeaderLength, _ocDataLength, _pReqType, _pReq) \
@@ -319,7 +319,7 @@ software without specific, written prior permission.
  * DESCRIPTION:
  *	This macro will initialize an OC encoding in an application buffer.
  *	It will fill in the OC element header and return a pointer in _pInfo
- *	which points directly after the header.  PEXlib will fill in the rest.
+ *	which points to the start of the OC.  PEXlib will fill in the rest.
  */
 
 #define PEXInitEncodeOC(_bufPtr, _ocType, _headerLength, _dataLength, _pInfoType, _pInfo) \
@@ -327,8 +327,8 @@ software without specific, written prior permission.
     int	ocLength = _headerLength + _dataLength; \
 \
     STORE_ELEMENT_INFO (_bufPtr, _ocType, ocLength); \
-    _bufPtr += sizeof (pexElementInfo); \
     _pInfo = (_pInfoType *) _bufPtr; \
+    _bufPtr += NUMBYTES (_headerLength); \
 }
 
 
@@ -346,13 +346,36 @@ software without specific, written prior permission.
  *
  * DESCRIPTION:
  *	This macro will copy _numBytes from _src to _dest, advancing
- *	_dest by NUMWORDS (_numBytes).  This macro should be used
+ *	_dest by PADDED_BYTES (_numBytes).  This macro should be used
  *	after PEXInitEncodeOC is called.
  */
 
 #define PEXEncodeBytes(_src, _dest, _numBytes) \
     COPY_AREA (_src, _dest, _numBytes); \
     _dest += PADDED_BYTES (_numBytes);
+
+
+
+/*
+ * NAME:
+ *	PEXEncodeWords
+ *
+ * ARGUMENTS:
+ *	_src		The source buffer pointer.
+ *
+ *	_dest		The destination buffer pointer.
+ *
+ *	_numWords	The number of words to copy.
+ *
+ * DESCRIPTION:
+ *	This macro will copy _numWords from _src to _dest, advancing
+ *	_dest by NUMBYTES (_numWords).  This macro should be used after
+ *	PEXInitEncodeOC is called.
+ */
+
+#define PEXEncodeWords(_src, _dest, _numWords) \
+    COPY_AREA (_src, _dest, NUMBYTES (_numWords)); \
+    _dest += NUMBYTES (_numWords);
 
 
 
@@ -429,7 +452,7 @@ software without specific, written prior permission.
 
 /*
  * NAME:
- *	StoreEncodedStrings
+ *	StoreMonoStrings
  *
  * ARGUMENTS:
  *	_display	The display pointer.
@@ -446,7 +469,7 @@ software without specific, written prior permission.
  *    	PEXEncodedTextData	*nextString;
  */
 
-#define StoreEncodedStrings(_display, _numStrings, _stringList) \
+#define StoreMonoStrings(_display, _numStrings, _stringList) \
 { \
     nextString = (_stringList); \
     for (i = 0; i < (_numStrings); i++, nextString++) \
@@ -467,3 +490,51 @@ software without specific, written prior permission.
 		nextString->length, (char *) nextString->ch); \
     } \
 }
+
+
+
+/*
+ * NAME:
+ *	EncodeMonoStrings
+ *
+ * ARGUMENTS:
+ *	_bufPtr		The buffer pointer.
+ *
+ *	_numStrings	The number of strings in the mono encoded text.
+ *
+ *	_stringList	The mono encoded text strings.
+ *
+ * DESCRIPTION:
+ * 	Store a mono encoded string in the OC encode buffer.  For efficiency,
+ *	this macro uses the following globals:
+ *
+ *    	int	       		i;
+ *    	PEXEncodedTextData	*nextString;
+ */
+
+#define EncodeMonoStrings(_bufPtr, _numStrings, _stringList) \
+{ \
+    nextString = (_stringList); \
+    for (i = 0; i < (_numStrings); i++, nextString++) \
+    { \
+	PEXEncodeWords ((char *) nextString, _bufPtr, \
+	    LENOF (pexMonoEncoding)); \
+\
+	if (nextString->character_set_width == PEXCSLong) \
+	{ \
+	    PEXEncodeBytes ((char *) nextString->ch, _bufPtr, \
+		nextString->length * sizeof (long)); \
+	} \
+	else if (nextString->character_set_width == PEXCSShort) \
+        { \
+	    PEXEncodeBytes ((char *) nextString->ch, _bufPtr, \
+		nextString->length * sizeof (short)); \
+	} \
+	else /* nextString->character_set_width == PEXCSByte) */ \
+        { \
+	    PEXEncodeBytes ((char *) nextString->ch, _bufPtr, \
+		nextString->length); \
+	} \
+    } \
+}
+
