@@ -1,4 +1,4 @@
-/* $XConsortium: TestInit.c,v 1.1 91/02/11 19:41:03 dave Exp $ */
+/* $XConsortium: TestInit.c,v 1.2 91/02/15 18:39:29 dave Exp $ */
 
 /*
  *	Copyright (c) 1988, Tektronix, Inc.
@@ -35,7 +35,6 @@
  *              program using this package.
  */
 #include <stdio.h>
-#include <sys/types.h>
 #include <sys/stat.h>
 #include <X11/Xutil.h>
 #include <X11/Xatom.h>

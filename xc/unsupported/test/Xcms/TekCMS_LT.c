@@ -1,4 +1,4 @@
-/* $XConsortium: TekCMS_LT.c,v 1.1 91/02/11 19:40:04 dave Exp $ */
+/* $XConsortium: TekCMS_LT.c,v 1.2 91/02/15 18:39:11 dave Exp $ */
 
 /*
  * (c) Copyright 1990, Tektronix Inc.
@@ -54,9 +54,8 @@
  *              program using this package.
  */
 #include <stdio.h>
-#include <sys/types.h>
-#include <sys/stat.h>
 #include <X11/Xlib.h>
+#include <sys/stat.h>
 #include <X11/Xcms.h>
 
 #ifdef AUTOHEADER
