@@ -1,4 +1,4 @@
-/* $XConsortium: fserve.c,v 1.15 92/01/30 16:21:40 eswu Exp $ */
+/* $XConsortium: fserve.c,v 1.16 92/02/11 17:25:26 eswu Exp $ */
 /*
  *
  * Copyright 1990 Network Computing Devices
@@ -609,7 +609,13 @@ fs_read_query_info(fpe, blockrec)
 	fs_free_font(bfont);
 	return StillWorking;
     }
-    (void) fs_convert_props(&pi, po, pd, &bfont->pfont->info);
+    if (fs_convert_props(&pi, po, pd, &bfont->pfont->info) == -1)
+    {
+    	xfree(po);
+    	xfree(pd);
+	(void) fs_cleanup_font(bfont);
+	return AllocError;
+    }
     xfree(po);
     xfree(pd);
 
@@ -1857,10 +1863,16 @@ fs_read_list_info(fpe, blockrec)
     pointer     pd;
 
     /* clean up anything from the last trip */
-    if (binfo->pfi) {
+    if (binfo->name)
+    {
 	xfree(binfo->name);
+	binfo->name = NULL;
+    }
+    if (binfo->pfi) {
 	xfree(binfo->pfi->isStringProp);
 	xfree(binfo->pfi->props);
+	xfree(binfo->pfi);
+	binfo->pfi = NULL;
     }
     /* get reply header */
     bcopy((char *) &blockrec->header, (char *) &rep, sizeof(fsReplyHeader));
@@ -1883,6 +1895,7 @@ fs_read_list_info(fpe, blockrec)
     if (!name || !binfo->pfi) {
 	xfree(name);
 	xfree(binfo->pfi);
+	binfo->pfi = NULL;
 	_fs_drain_bytes(conn,
 			rep.length - (sizeof(fsListFontsWithXInfoReply) -
 				      sizeof(fsReplyHeader)));
@@ -1899,6 +1912,8 @@ fs_read_list_info(fpe, blockrec)
 	xfree(name);
 	xfree(po);
 	xfree(pd);
+	xfree (binfo->pfi);
+	binfo->pfi = NULL;
 	binfo->errcode = AllocError;
 	return AllocError;
     }
@@ -1908,9 +1923,19 @@ fs_read_list_info(fpe, blockrec)
 	xfree(name);
 	xfree(po);
 	xfree(pd);
+	xfree (binfo->pfi);
+	binfo->pfi = NULL;
 	goto done;
     }
-    fs_convert_lfwi_reply(binfo->pfi, &rep, &pi, po, pd);
+    if (fs_convert_lfwi_reply(binfo->pfi, &rep, &pi, po, pd) != Successful)
+    {
+	xfree(name);
+	xfree(po);
+	xfree(pd);
+	xfree (binfo->pfi);
+	binfo->pfi = NULL;
+	goto done;
+    }
     xfree(po);
     xfree(pd);
     binfo->name = name;
@@ -2070,10 +2095,22 @@ fs_client_died(client, fpe)
 	return;
     if (blockrec->type == FS_LIST_WITH_INFO)
     {
-	FSBlockedListInfoPtr blockedinfo;
-	blockedinfo = (FSBlockedListInfoPtr) blockrec->data;
-	if (blockedinfo->status == FS_LFWI_REPLY)
+	FSBlockedListInfoPtr binfo;
+	binfo = (FSBlockedListInfoPtr) blockrec->data;
+	if (binfo->status == FS_LFWI_REPLY)
 	    _fs_set_bit(fs_fd_mask, conn->fs_fd);
+    	if (binfo->name)
+	{
+	    xfree(binfo->name);
+	    binfo->name = NULL;
+	}
+    	if (binfo->pfi) 
+	{
+	    xfree(binfo->pfi->isStringProp);
+	    xfree(binfo->pfi->props);
+	    xfree(binfo->pfi);
+	    binfo->pfi = NULL;
+    	}
     }
     /* replace the client pointers in this block rec with the chained one */
     if (depending = blockrec->depending) {

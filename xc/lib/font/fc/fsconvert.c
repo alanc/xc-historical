@@ -1,4 +1,4 @@
-/* $XConsortium: fsconvert.c,v 1.6 91/06/16 12:40:39 keith Exp $ */
+/* $XConsortium: fsconvert.c,v 1.7 91/07/16 20:17:05 keith Exp $ */
 /*
  * Copyright 1990 Network Computing Devices
  *
@@ -112,6 +112,9 @@ fs_convert_props(pi, po, pd, pfi)
                 nprops;
     char       *is_str;
 
+/* stolen from server/include/resource.h */
+#define BAD_RESOURCE 0xe0000000
+
     nprops = pfi->nprops = pi->num_offsets;
 
     dprop = (FontPropPtr) xalloc(sizeof(FontPropRec) * nprops);
@@ -133,6 +136,14 @@ fs_convert_props(pi, po, pd, pfi)
 	    *is_str = TRUE;
 	    dprop->value = (INT32) MakeAtom(&pd[po->value.position],
 					    po->value.length, 1);
+	    if (dprop->value == BAD_RESOURCE)
+	    {
+		xfree (pfi->props);
+		xfree (pfi->isStringProp);
+		pfi->props = 0;
+		pfi->isStringProp = 0;
+		return -1;
+	    }
 	}
     }
 
@@ -150,7 +161,8 @@ fs_convert_lfwi_reply(pfi, fsrep, pi, po, pd)
     fsFontHeader *hdr = &fsrep->header;
 
     fs_convert_header(hdr, pfi);
-    fs_convert_props(pi, po, pd, pfi);
+    if (fs_convert_props(pi, po, pd, pfi) == -1)
+	return AllocError;
 
     return Successful;
 }
