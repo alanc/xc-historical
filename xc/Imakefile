@@ -56,17 +56,12 @@ DependSubdirs($(SUBDIRS))
 /**/# install stuff; create the directories that we're going to need
 /**/# 
 
-#ifdef DirectoriesToBuild
-DIRS_SYS = DirectoriesToBuild
-#endif
-
 #ifndef ClientSideOnly
-DIRS_SERVER = $(FONTDIR)
+SERVER_DIRS = $(FONTDIR)
 #endif
 
-DIRS_TO_BUILD = $(DIRS_SYS) $(DIRS_SERVER) \
-	$(USRLIBDIR) $(BINDIR) $(LIBDIR) $(XAPPLOADDIR) \
-	$(INCDIR) $(UWMDIR) $(MANPATH) $(MANDIR) $(LIBMANDIR)
+DIRS_TO_BUILD = $(SERVER_DIRS) $(USRLIBDIR) $(BINDIR) $(LIBDIR) \
+	$(XAPPLOADDIR) $(INCDIR) $(UWMDIR) $(MANPATH) $(MANDIR) $(LIBMANDIR)
 
 MakeDirectories(install, $(DIRS_TO_BUILD))
 
