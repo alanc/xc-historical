@@ -280,7 +280,7 @@ saber_src_sun:
 #define need_dix
 #define need_ddx_snf
 #define need_ddx_mi
-/* #define need_ddx_hp */
+#define need_ddx_hp
 #define need_os_42bsd
 #define need_os_bsdemul
 HPDIRS = dix ddx/snf ddx/mi ddx/hp os/4.2bsd os/bsdemul
