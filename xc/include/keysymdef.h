@@ -1,4 +1,4 @@
-/* $XConsortium: keysymdef.h,v 1.17 93/12/01 18:58:30 rws Exp $ */
+/* $XConsortium: keysymdef.h,v 1.18 94/04/01 18:38:31 erik Exp $ */
 
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -98,7 +98,7 @@ SOFTWARE.
 #define XK_Menu			0xFF67
 #define XK_Find			0xFF68	/* Find, search */
 #define XK_Cancel		0xFF69	/* Cancel, stop, abort, exit */
-#define XK_Help			0xFF6A	/* Help, ? */
+#define XK_Help			0xFF6A	/* Help */
 #define XK_Break		0xFF6B
 #define XK_Mode_switch		0xFF7E	/* Character set switch */
 #define XK_script_switch        0xFF7E  /* Alias for mode_switch */
