@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Selection.c,v 1.10 88/09/06 16:28:52 jim Exp $";
+static char Xrcsid[] = "$XConsortium: Selection.c,v 1.11 89/03/10 18:02:37 rws Exp $";
 /* $oHeader: Selection.c,v 1.8 88/09/01 11:53:42 asente Exp $ */
 #endif lint
 
@@ -972,12 +972,13 @@ XEvent *ev;
 		newinfo = (CallBackInfo) XtMalloc(
 			(unsigned) sizeof(CallBackInfoRec));
 		newinfo->callback = info->callback;
-		newinfo->req_closure = (Opaque *)XtMalloc(sizeof(Opaque));
+		newinfo->req_closure =
+		    (Opaque *)XtMalloc((unsigned)sizeof(Opaque));
 		*newinfo->req_closure = *c;
 		newinfo->property = p->property;
 		newinfo->widget = info->widget;
 		newinfo->time = info->time;
-		newinfo->target = (Atom *)XtMalloc(sizeof(Atom));
+		newinfo->target = (Atom *)XtMalloc((unsigned int)sizeof(Atom));
 		*newinfo->target = *t;
 		newinfo->ctx = info->ctx;
 		HandleIncremental(dpy, widget, p->property, newinfo, ctx);
