@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: connection.c,v 1.142 91/12/17 21:21:11 rws Exp $ */
+/* $XConsortium: connection.c,v 1.143 92/02/12 19:15:31 keith Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -552,6 +552,10 @@ ClientAuthorized(client, proto_n, auth_proto, string_n, auth_string)
     priv->auth_id = auth_id;
     priv->conn_time = 0;
 
+#ifdef XDMCP
+    /* indicate to Xdmcp protocol that we've opened new client */
+    XdmcpOpenDisplay(priv->fd);
+#endif /* XDMCP */
     /* At this point, if the client is authorized to change the access control
      * list, we should getpeername() information, and add the client to
      * the selfhosts list.  It's not really the host machine, but the
@@ -687,10 +691,6 @@ EstablishNewConnections(clientUnused, closure)
 	    ErrorConnMax(newconn);
 	    CloseDownFileDescriptor(oc);
 	}
-#ifdef XDMCP
-	/* indicate to Xdmcp protocol that we've opened new client */
-	XdmcpOpenDisplay(newconn);
-#endif /* XDMCP */
     }
     return TRUE;
 }
