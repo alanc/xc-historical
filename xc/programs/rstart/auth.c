@@ -23,8 +23,12 @@
 /************************************************************************/
 
 #include <stdio.h>
-#include <stdlib.h>
+#include <X11/Xos.h>
 #include <errno.h>
+#ifdef X_NOT_STDC_ENV
+#include <stdlib.h>
+extern int	errno;
+#endif
 #include <ctype.h>
 
 extern char *expand();
