@@ -1,4 +1,4 @@
-/* $XConsortium: XIntAtom.c,v 11.15 90/12/09 20:40:18 rws Exp $ */
+/* $XConsortium: XIntAtom.c,v 11.16 90/12/12 09:18:24 rws Exp $ */
 /*
 
 Copyright 1986, 1990 by the Massachusetts Institute of Technology
@@ -33,7 +33,7 @@ typedef struct _XDisplayAtoms {
 
 #define HASH(sig) ((sig) & (TABLESIZE-1))
 #define REHASHVAL(sig) ((((sig) % (TABLESIZE-3)) + 2) | 1)
-#define REHASH(idx,rehash) idx = ((idx + rehash) & (TABLESIZE-1))
+#define REHASH(idx,rehash) ((idx + rehash) & (TABLESIZE-1))
 
 static void
 _XFreeAtomTable(dpy)

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Quarks.c,v 1.26 90/12/09 16:28:46 rws Exp $
+ * $XConsortium: Quarks.c,v 1.27 90/12/12 09:16:49 rws Exp $
  */
 
 /***********************************************************
@@ -70,7 +70,7 @@ static XrmQuark nextUniq = -1;	/* next quark from XrmUniqueQuark */
 
 #define HASH(sig) ((sig) & quarkMask)
 #define REHASHVAL(sig) ((((sig) % quarkRehash) + 2) | 1)
-#define REHASH(idx,rehash) idx = ((idx + rehash) & quarkMask)
+#define REHASH(idx,rehash) ((idx + rehash) & quarkMask)
 #define NAME(q) stringTable[(q) >> QUANTUMSHIFT][(q) & QUANTUMMASK]
 #ifdef PERMQ
 #define BYTEREF(q) permTable[(q) >> QUANTUMSHIFT][((q) & QUANTUMMASK) >> 3]
