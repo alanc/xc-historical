@@ -53,6 +53,12 @@
 	  image-x
 	  image-xy
 	  image-z
+	  image-x-p
+	  image-xy-p
+	  image-z-p
+	  image-xy-bitmap-list
+	  image-z-bits-per-pixel
+	  image-z-pixarray
 	  create-image
 	  get-image
 	  put-image
@@ -61,7 +67,6 @@
 	  write-bitmap-file
 	  bitmap-image
 	  image-pixmap))
-
 
 (deftype bitmap () '(array bit (* *)))
 
@@ -362,7 +367,7 @@
 	  (declare (type card8 byte))
 	  (index-incf index)
 	  (dotimes (i start-pixels)
-	    (setf (aref pixarray row i) byte)
+	    (setf (aref pixarray row i) (logand byte 1))
 	    (setq byte (ash byte -1)))
 	  (index-incf col start-pixels)))
       ;; Copy whole bytes in middle
@@ -370,14 +375,14 @@
 	(let ((byte (byte-reverse (aref data index))))
 	  (declare (type card8 byte))
 	  (index-incf index)
-	  (setf (aref pixarray row col) byte)
-	  (setf (aref pixarray row (incf col)) (setq byte (ash byte -1)))
-	  (setf (aref pixarray row (incf col)) (setq byte (ash byte -1)))
-	  (setf (aref pixarray row (incf col)) (setq byte (ash byte -1)))
-	  (setf (aref pixarray row (incf col)) (setq byte (ash byte -1)))
-	  (setf (aref pixarray row (incf col)) (setq byte (ash byte -1)))
-	  (setf (aref pixarray row (incf col)) (setq byte (ash byte -1)))
-	  (setf (aref pixarray row (incf col)) (setq byte (ash byte -1)))
+	  (setf (aref pixarray row col) (logand byte 1))
+	  (setf (aref pixarray row (incf col)) (logand (setq byte (ash byte -1)) 1))
+	  (setf (aref pixarray row (incf col)) (logand (setq byte (ash byte -1)) 1))
+	  (setf (aref pixarray row (incf col)) (logand (setq byte (ash byte -1)) 1))
+	  (setf (aref pixarray row (incf col)) (logand (setq byte (ash byte -1)) 1))
+	  (setf (aref pixarray row (incf col)) (logand (setq byte (ash byte -1)) 1))
+	  (setf (aref pixarray row (incf col)) (logand (setq byte (ash byte -1)) 1))
+	  (setf (aref pixarray row (incf col)) (logand (setq byte (ash byte -1)) 1))
 	  (incf col)))
       ;; Copy partial byte at end
       (when (plusp end-pixels)
@@ -385,7 +390,7 @@
 	  (declare (type card8 byte))
 	  (index-incf index)
 	  (dotimes (i end-pixels)
-	    (setf (aref pixarray row (+ i col)) byte)
+	    (setf (aref pixarray row (+ i col)) (logand byte 1))
 	    (setq byte (ash byte -1))))))))
 
 (defun z-format-row-4 (data index pixarray row src-x width)
@@ -405,7 +410,7 @@
 	(let ((byte (aref data index)))
 	  (declare (type card8 byte))
 	  (index-incf index)
-	  (setf (aref pixarray row col) byte)
+	  (setf (aref pixarray row col) (logand byte 15))
 	  (index-incf col)))
       ;; Copy whole bytes in middle
       (dotimes (b middle-bytes)
@@ -413,7 +418,7 @@
 	  (declare (type card8 byte))
 	  (index-incf index)
 	  (setf (aref pixarray row col) (ash byte -4))
-	  (setf (aref pixarray row (incf col)) byte)
+	  (setf (aref pixarray row (incf col)) (logand byte 15))
 	  (incf col)))
       ;; Copy partial byte at end
       (when (plusp end-pixels)
@@ -573,6 +578,15 @@
 	   (let ((temp (aref (aref data sbyte))))
 	     (setf (aref data dbyte) (aref data (incf sbyte)))
 	     (setf (aref data (incf dbyte)) temp))
+	   (incf dbyte)
+	   (incf sbyte)))
+	(24					; Swap 3 bytes
+	 (dotimes (j (floor nbytes 3))
+	   (let ((temp1 (aref (aref data sbyte)))
+		 (temp2 (aref data (incf sbyte))))
+	     (setf (aref data dbyte) (aref data (incf sbyte)))
+	     (setf (aref data (incf dbyte)) temp2)
+	     (setf (aref data (incf dbyte)) temp1))
 	   (incf dbyte)
 	   (incf sbyte)))
 	(32					; Swap word
@@ -882,10 +896,17 @@
 	;; Copy scanline
 	(funcall copy-pixarray-row buffer-bbuf boffset pixarray row src-x width)
 	;; Swap bytes and bits when needed
-	(when byte-lsb-first-p
-	  (byte-swap-vector buffer-bbuf boffset scanline-length scanline-pad))
-	(when (and (= bits-per-pixel 1) bit-lsb-first-p)
-	  (bit-reverse-vector buffer-bbuf boffset scanline-length))
+	(ecase bits-per-pixel
+	  ((1)
+	   (when bit-lsb-first-p
+	     (bit-reverse-vector buffer-bbuf boffset scanline-length)))
+	  ((4)
+	   (when byte-lsb-first-p
+	     (error "Need to swap the nibbles.")))
+	  ((8))
+	  ((16 24 32)
+	   (when byte-lsb-first-p
+	     (byte-swap-vector buffer-bbuf boffset scanline-length bits-per-pixel))))
 	(index-incf row)
 	(index-incf boffset scanline-length))
       (setf (buffer-boffset display) (lround boffset)))))
@@ -916,7 +937,7 @@
 	  (declare (type card8 byte))
 	  (dotimes (i end-bits)
 	    (setq byte (logior (ash byte 1) (aref pixarray row (index-incf x)))))
-	  (setf (aref buffer index) (byte-reverse byte)))))))
+	  (setf (aref buffer index) (ash byte (- 8 end-bits))))))))
 
 (defun copy-pixarray-row-4 (buffer index pixarray row src-x width)
   ;; Copy a row of 4 bit-per-pixel pixels from from PIXARRAY to BUFFER
@@ -929,7 +950,7 @@
       (declare (type array-index x index))
       (dotimes (i (ash width -1)) ;; (FLOOR width 2)
 	(setf (aref buffer index)
-	      (logior (ash (aref pixarray row (index-incf x)) 3)
+	      (logior (ash (aref pixarray row (index-incf x)) 4)
 		      (aref pixarray row (index-incf x))))
 	(index-incf index))
       (when (oddp width)
@@ -1178,11 +1199,12 @@
   (declare (type image-x image)
 	   (type card16 x y width height))
   (declare-values image-z)
-  (let ((pixarray (if (eq (image-x-format image) :xy-pixmap)
+  (let ((pixarray (if (and (eq (image-x-format image) :xy-pixmap)
+			   (> (image-depth image) 1))
 		      (error "Conversion from :XY-PIXMAP to image-z not supported")
-		    (z-format-pixarray (image-x-data image) 0 (image-x-bytes-per-line image)
-				       (image-depth image) (image-x-bits-per-pixel image)
-				       x y width height))))
+		      (z-format-pixarray (image-x-data image) 0 (image-x-bytes-per-line image)
+					 (image-depth image) (image-x-bits-per-pixel image)
+					 x y width height))))
     (create-image :width width :height height :plist (image-plist image)
 		  :depth (image-x-depth image)
 		  :data pixarray)))
