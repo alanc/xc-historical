@@ -12,8 +12,7 @@
                   ddx/ibm \
                   ddx/hp/hp ddx/hp/mfb ddx/hp/cfb ddx/hp/gbx ddx/hp/mob \
                   ddx/hp/topcat ddx/hp/catseye ddx/hp/ren \
-                  ddx/ndx ddx/tek \
-                  ddx/macII
+		  ddx/ndx ddx/tek
       ALLOSDIRS = os/sysV os/4.2bsd os/hpux
         SUBDIRS = dix $(ALLDDXDIRS) $(ALLOSDIRS)
            UNIX = os/4.2bsd/libos.a
@@ -28,9 +27,8 @@
             APC = ddx/apollo/apc/libapc.a
             SUN = ddx/sun/libsun.a
              HP = ddx/hp/hp/libhp.a
-          MACII = ddx/macII/libmacII.a
         SYSLIBS = -lm -ldbm
-    ALLPOSSIBLE = Xqvss Xsm Xqdss Xsun Xibm Xapollo Xhp Xpeg XmacII
+    ALLPOSSIBLE = Xqvss Xsm Xqdss Xsun Xibm Xapollo Xhp Xpeg
 
 #ifndef	XqvssServer
 #define	XqvssServer /* as nothing */
@@ -68,12 +66,8 @@
 #define	XpegServer /* as nothing */
 #endif
 
-#ifndef	XmacIIServer
-#define	XmacIIServer /* as nothing */
-#endif
-
 # don't split this across lines, because imake will keep a trailing slash
-ALL = XqvssServer XsmServer XqdssServer XsunServer XapolloServer XibmServer XHPServer XndxServer XpegServer XmacIIServer
+ALL = XqvssServer XsmServer XqdssServer XsunServer XapolloServer XibmServer XHPServer XndxServer XpegServer
 
 #
 # This turns off the default rule for compiling .c files because
@@ -204,17 +198,6 @@ PEGASUSLIBS = $(MFB) $(MI) $(DIX) $(SNF) $(UNIX) $(EXTENSIONS)
 XpegDIRS = $(PEGASUSDIRS)
 
 ServerTarget(Xpeg,$(EXTDIR) $(PEGASUSDIRS),$(PEGASUSOBJS),$(PEGASUSLIBS),$(SYSLIBS))
-
-#
-# macII server
-#
-MACIIDIRS = dix ddx/snf ddx/mi ddx/mfb ddx/cfb ddx/macII os/4.2bsd os/sysV
-MACIIOBJS = ddx/macII/macIIInit.o
-MACIILIBS = $(MACII) $(CFB) $(DIX) $(SNF) $(UNIX) $(SYSV) $(MFB) $(MI) $(EXTENSIONS)
-MACIISYSLIBS = $(SYSLIBS)
-XmacIIDIRS = $(MACIIDIRS)
- 
-ServerTarget(XmacII,$(EXTDIR) $(MACIIDIRS),$(MACIIOBJS),$(MACIILIBS),$(MACIISYSLIBS))
 
 #
 # other, necessary targets
