@@ -1,4 +1,4 @@
-/* $XConsortium: Selection.c,v 1.88 94/02/05 18:21:54 kaleb Exp $ */
+/* $XConsortium: Selection.c,v 1.89 94/03/02 11:36:58 mumble Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -1724,13 +1724,13 @@ Time time;
 
     LOCK_APP(app);
     incremental = XtStackAlloc(count * sizeof(Boolean), incremental_values);
-    for(i = 0; i < count; i++) incremental[i] = FALSE;
+    for(i = 0; i < count; i++) incremental[i] = TRUE;
     if (IsGatheringRequest(widget, selection)) {
       AddSelectionRequests(widget, selection, count, &targets, &callback, 
 			   1, &closures, incremental, NULL);
     } else {
       GetSelectionValues(widget, selection, targets, count,
-			 &callback, 1, closures, time, TRUE, NULL);
+			 &callback, 1, closures, time, incremental, NULL);
     }
     XtStackFree((XtPointer) incremental, incremental_values);
     UNLOCK_APP(app);
