@@ -1,5 +1,5 @@
 /*
- * $XConsortium: bitscale.c,v 1.4 91/06/12 14:35:19 keith Exp $
+ * $XConsortium: bitscale.c,v 1.5 91/06/17 11:38:38 rws Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -247,9 +247,11 @@ FindBestToScale(fpe, entry, vals, best, dxp, dyp, fpep)
 }
 
 static int
-computeProps(pf, npf, nprops, xfactor, yfactor)
+computeProps(pf, wasStringProp, npf, isStringProp, nprops, xfactor, yfactor)
     FontPropPtr pf;
+    char	*wasStringProp;
     FontPropPtr npf;
+    char	*isStringProp;
     unsigned int nprops;
     double      xfactor,
                 yfactor;
@@ -280,18 +282,20 @@ computeProps(pf, npf, nprops, xfactor, yfactor)
 	npf->name = pf->name;
 	npf++;
 	count++;
+	*isStringProp++ = *wasStringProp++;
     }
     return count;
 }
 
 static int
-ComputeScaledProperties(sourceFontInfo, name, vals, dx, dy, pProps)
+ComputeScaledProperties(sourceFontInfo, name, vals, dx, dy, pProps, pIsStringProp)
     FontInfoPtr     sourceFontInfo;	/* the font to be scaled */
     char	    *name;		/* name of resulting font */
     FontScalablePtr vals;
     double	    dx,
 		    dy;		/* scale factors in x and y directions */
     FontPropPtr	    *pProps;	/* returns properties; preallocated */
+    char	    **pIsStringProp;  /* return booleans; preallocated */
 {
     int         n;
     char       *ptr1,
@@ -299,21 +303,30 @@ ComputeScaledProperties(sourceFontInfo, name, vals, dx, dy, pProps)
     FontPropPtr fp;
     fontProp   *fpt;
     extern int  serverGeneration;
-    FontPropPtr	tmpProps;
+    char	*isStringProp;
+    int		nProps;
 
     if (fontGeneration != serverGeneration) {
 	initFontPropTable();
 	fontGeneration = serverGeneration;
     }
-    tmpProps = (FontPropPtr)
-	xalloc(sizeof(FontPropRec) *
-	       (sizeof(fontNamePropTable) / sizeof(fontProp) +
-		sizeof(fontPropTable) / sizeof(fontProp)));
-    if (!tmpProps)
-	return 0;
-    *pProps = tmpProps;
+    nProps = NPROPS + 1 + sizeof(fontPropTable) / sizeof(fontProp);
+    fp = (FontPropPtr) xalloc(sizeof(FontPropRec) * nProps);
+    *pProps = fp;
+    if (!fp)
+	return 1;
+    isStringProp = (char *) xalloc (nProps);
+    *pIsStringProp = isStringProp;
+    if (!isStringProp)
+    {
+	xfree (fp);
+	return 1;
+    }
     ptr2 = name;
-    for (fp = tmpProps, fpt = fontNamePropTable, n = NPROPS; n; fp++, fpt++, n--) {
+    for (fpt = fontNamePropTable, n = NPROPS;
+	 n;
+ 	 fp++, fpt++, n--, isStringProp++)
+    {
 
 	ptr1 = ptr2 + 1;
 	if (*ptr1 == '-')
@@ -325,9 +338,11 @@ ComputeScaledProperties(sourceFontInfo, name, vals, dx, dy, pProps)
 		ptr2 = index(ptr1 + 1, '\0');
 	}
 
+	*isStringProp = 0;
 	switch (fpt->type) {
 	case atom:
 	    fp->value = MakeAtom(ptr1, ptr2 - ptr1, TRUE);
+	    *isStringProp = 1;
 	    break;
 	case pixel_size:
 	    fp->value = vals->pixel;
@@ -348,14 +363,14 @@ ComputeScaledProperties(sourceFontInfo, name, vals, dx, dy, pProps)
 	fp->name = fpt->atom;
     }
     n = NPROPS;
-    if (name)
-    {
-	fp->name = fpt->atom;
-	fp->value = MakeAtom(name, strlen(name), TRUE);
-	fp++;
-	n++;
-    }
-    n += computeProps(sourceFontInfo->props, fp,
+    fp->name = fpt->atom;
+    fp->value = MakeAtom(name, strlen(name), TRUE);
+    *isStringProp = 1;
+    isStringProp++;
+    fp++;
+    n++;
+    n += computeProps(sourceFontInfo->props, sourceFontInfo->isStringProp,
+		      fp, isStringProp,
 		      sourceFontInfo->nprops, dx, dy);
     return n;
 }
@@ -367,12 +382,13 @@ static void ScaleBitmap();
  *  returns a pointer to the new scaled font, or NULL (due to AllocError).
  */
 FontPtr
-ScaleFont(opf, widthMult, heightMult, props, propCount)
+ScaleFont(opf, widthMult, heightMult, props, propCount, isStringProp)
     FontPtr     opf;		/* originating font */
     double      widthMult;	/* glyphs width scale factor */
     double      heightMult;	/* glyphs height scale factor */
-    FontPropPtr props;		/* some of the new properties */
+    FontPropPtr props;		/* the new properties */
     int         propCount;	/* count of new properties */
+    char	*isStringProp;	/* booleans per new property */
 {
     FontPtr     pf;
     FontInfoPtr pfi,
@@ -421,8 +437,6 @@ ScaleFont(opf, widthMult, heightMult, props, propCount)
 
     pfi = &pf->info;
     *pfi = *opfi;
-    pfi->props = 0;
-    pfi->isStringProp = 0;
     bitmapFont = (BitmapFontPtr) xalloc(sizeof(BitmapFontRec));
     if (!bitmapFont)
 	goto bail;
@@ -509,12 +523,6 @@ ScaleFont(opf, widthMult, heightMult, props, propCount)
     bitmapFont->encoding = (CharInfoPtr *) xalloc(nchars * sizeof(CharInfoPtr));
     if (!bitmapFont->encoding)
 	goto bail;
-    pfi->props = (FontPropPtr) xalloc(propCount * sizeof(FontPropRec));
-    if (!pfi->props)
-	goto bail;
-    pfi->isStringProp = (char *) xalloc(propCount * sizeof(char));
-    if (!pfi->isStringProp)
-	goto bail;
 
     for (i = 0; i < nchars; i++)
 	if (obitmapFont->encoding[i])
@@ -525,8 +533,9 @@ ScaleFont(opf, widthMult, heightMult, props, propCount)
 
     /* Copy over the scaled XLFD properties */
 
-    bcopy((char *) props, (char *) pfi->props, propCount * sizeof(FontPropRec));
+    pfi->props = props;
     pfi->nprops = propCount;
+    pfi->isStringProp = isStringProp;
 
     /*
      * For each character, set the per-character metrics, scale the glyph, and
@@ -574,11 +583,8 @@ ScaleFont(opf, widthMult, heightMult, props, propCount)
 
     return pf;
 bail:
-    if (pf) {
-	xfree(pf->info.isStringProp);
-	xfree(pf->info.props);
+    if (pf)
 	xfree(pf);
-    }
     if (bitmapFont) {
 	xfree(bitmapFont->metrics);
 	xfree(bitmapFont->ink_metrics);
@@ -882,7 +888,8 @@ BitmapOpenScalable (fpe, pFont, flags, entry, fileName, vals, format, fmask)
     FontPtr		font = NullFont;
     double		dx,
 			dy;
-    FontPropPtr		tmpProps;
+    FontPropPtr		props;
+    char		*isStringProp;
     int			propCount;
     int			status;
 
@@ -917,23 +924,26 @@ BitmapOpenScalable (fpe, pFont, flags, entry, fileName, vals, format, fmask)
     FontParseXLFDName (fontName, vals, FONT_XLFD_REPLACE_VALUE);
 
     propCount = ComputeScaledProperties(&sourceFont->info, fontName, vals, dx, dy,
-					&tmpProps);
+					&props, &isStringProp);
 
-    if (propCount && !tmpProps)
+    if (propCount && (!props || !isStringProp))
 	return AllocError;
-
     
     /* Compute the scaled font */
 
-    font = ScaleFont(sourceFont, dx, dy, tmpProps, propCount);
-    xfree(tmpProps);
+    font = ScaleFont(sourceFont, dx, dy, props, propCount, isStringProp);
 
     /* Dispose source font */
 
     if (!sourceFont->refcnt)
 	FontFileCloseFont((FontPathElementPtr) 0, sourceFont);
+
     if (!font)
+    {
+	xfree (props);
+	xfree (isStringProp);
 	return AllocError;
+    }
     *pFont = font;
     return Successful;
 }
@@ -966,7 +976,8 @@ BitmapGetInfoScalable (fpe, pFontInfo, entry, fontName, fileName, vals)
     FontInfoRec		scaleInfo;
     int			ret;
     int			propCount;
-    FontPropPtr		tmpProps;
+    FontPropPtr		props;
+    char		*isStringProp;
 
     scaleFrom = FindBestToScale (fpe, entry, vals, &best, &dx, &dy, &scaleFPE);
     if (!scaleFrom)
@@ -979,22 +990,20 @@ BitmapGetInfoScalable (fpe, pFontInfo, entry, fontName, fileName, vals)
 	vals->width = best.width * dx;
 
     propCount = ComputeScaledProperties (&scaleInfo, fontName->name, vals, dx, dy,
-					&tmpProps);
-    if (propCount && !tmpProps)
+					&props, &isStringProp);
+    if (propCount && (!props || !isStringProp))
 	return AllocError;
 
     *pFontInfo = scaleInfo;
-    pFontInfo->props = 0;
-    pFontInfo->isStringProp = 0;
+    pFontInfo->props = props;
+    pFontInfo->isStringProp = isStringProp;
+    pFontInfo->nprops = propCount;
     pFontInfo->fontDescent *= dy;
     pFontInfo->fontAscent *= dy;
     ScaleBounds (&pFontInfo->minbounds, dx, dy);
     ScaleBounds (&pFontInfo->maxbounds, dx, dy);
     ScaleBounds (&pFontInfo->ink_minbounds, dx, dy);
     ScaleBounds (&pFontInfo->ink_minbounds, dx, dy);
-    pFontInfo->props = tmpProps;
-    pFontInfo->nprops = propCount;
-    pFontInfo->isStringProp = 0;
     return Successful;
 }
 
