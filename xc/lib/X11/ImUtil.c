@@ -1,4 +1,4 @@
-/* $XConsortium: XImUtil.c,v 11.44 91/04/10 15:45:26 rws Exp $ */
+/* $XConsortium: XImUtil.c,v 11.45 91/05/10 11:40:44 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -975,39 +975,3 @@ static int _XReportBadImage (errtype, error, routine)
 	    errtype, error, routine );
 	exit(1);
 }
-
-
-#ifdef notdef
-_getbits (src, srcoffset, numbits, dst)
-    register char *src;	/* address of source bit string */
-    int srcoffset;	/* bit offset into source; range is 0-31 */
-    register int numbits; /* number of bits to copy to destination */
-    register char *dst;	/* address of destination bit string */
-{
-	register unsigned char chlo, chhi;
-	int lobits;
-	src = src + (srcoffset >> 3);
-	srcoffset = srcoffset & 7;
-	lobits = 8 - srcoffset;
-	for (;;) {
-	    chlo = (unsigned char) (*src & _himask[srcoffset]) >> srcoffset;
-	    src++;
-	    if (numbits <= lobits) {
-		chlo = chlo & _lomask[numbits];
-		*dst = (*dst & _himask[numbits]) | chlo;
-		break;
-	    }
-	    numbits = numbits - lobits;
-	    chhi = *src & _lomask[srcoffset];
-	    if (numbits <= srcoffset) {
-		chhi = (chhi & _lomask[numbits]) << lobits;
-		*dst = (*dst & _himask[lobits + numbits]) | chlo | chhi; 
-		break;
-	    }
-	    chhi = chhi << lobits;
-	    *(dst++) = chhi | chlo;
-	    numbits = numbits - srcoffset;
-	}	
-}
-#endif
-
