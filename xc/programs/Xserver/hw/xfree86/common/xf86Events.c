@@ -1,4 +1,4 @@
-/* $XConsortium: xf86Events.c,v 1.3 94/10/12 20:33:21 kaleb Exp kaleb $ */
+/* $XConsortium: xf86Events.c,v 1.4 94/11/18 11:06:20 kaleb Exp kaleb $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.0 1994/05/08 05:20:49 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -724,7 +724,7 @@ xf86PostKbdEvent(key)
    * normal, non-keypad keys
    */
   if (scanCode < KEY_KP_7 || scanCode > KEY_KP_Decimal) {
-#if !defined(__bsdi__) && !defined(MACH386) && !defined(MINIX) && !defined(__OSF__)
+#if !defined(CSRG_BASED) && !defined(MACH386) && !defined(MINIX) && !defined(__OSF__)
     /*
      * magic ALT_L key on AT84 keyboards for multilingual support
      */
