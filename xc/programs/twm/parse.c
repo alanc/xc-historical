@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: parse.c,v 1.38 89/12/10 19:20:35 jim Exp $
+ * $XConsortium: parse.c,v 1.39 89/12/14 14:51:30 jim Exp $
  *
  * parse the .twmrc file
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: parse.c,v 1.38 89/12/10 19:20:35 jim Exp $";
+"$XConsortium: parse.c,v 1.39 89/12/14 14:51:30 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -485,6 +485,7 @@ static TwmKeyword keytable[] = {
     { "menushadowcolor",	CKEYWORD, kwc_MenuShadowColor },
     { "menutitlebackground",	CKEYWORD, kwc_MenuTitleBackground },
     { "menutitleforeground",	CKEYWORD, kwc_MenuTitleForeground },
+    { "meta",			META, 0 },
     { "monochrome",		MONOCHROME, 0 },
     { "move",			MOVE, 0 },
     { "movedelta",		NKEYWORD, kwn_MoveDelta },
