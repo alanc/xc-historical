@@ -147,7 +147,7 @@ Sets the size and location of all the Manual Pages.
 .PP
 .SH WIDGETS
 The widgets used by xman are listed below.  Widgets are listed by
-name and class.  Consult the \fIX Toolkit Athena Widgets\fP or the \fPX Toolkit
+name and class.  Consult the \fIAthena Widget Set\fP or the \fPX Toolkit
 Intrinsics\fP for the each widget's list of settable resources.
 .sp
 .nf
@@ -333,9 +333,9 @@ This action may be called from any manual page or help display window, and
 will cause the informational display line to show the current version
 of xman.
 .SH FILES
-.IP \fI<manpath directory>\fP/man<\fIcharacter\fP> 2.5i
-.IP \fI<manpath directory>\fP/cat<\fIcharacter\fP> 
-.IP \fI<manpath directory>\fP/mandesc 
+.IP "\fI<manpath directory>\fP/man<\fIcharacter\fP>" 2.5i
+.IP "\fI<manpath directory>\fP/cat<\fIcharacter\fP>" 
+.IP "\fI<manpath directory>\fP/mandesc" 
 .IP /usr/lib/X11/app-defaults/Xman
 specifies required resources
 .IP /tmp
@@ -344,7 +344,7 @@ creates temporary files in /tmp for all unformatted man pages and all apropos
 searches.
 .PP
 .SH "SEE ALSO"
-X(1), X(8C), man(1), apropos(1), catman(8), X Toolkit Athena Widgets
+X(1), X(8C), man(1), apropos(1), catman(8), Athena Widget Set
 .PP
 .SH ENVIRONMENT
 .TP 1.5i

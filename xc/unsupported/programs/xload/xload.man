@@ -52,7 +52,7 @@ In addition to the resources avaliable to each of the widgets used by
 If False then no label will be displayed.
 .SH WIDGETS
 The widgets used by xload are listed below.  Widgets are listed by
-name and class.  Consult the \fIX Toolkit Athena Widgets\fP or the \fPX Toolkit
+name and class.  Consult the \fIAthena Widget Set\fP or the \fPX Toolkit
 Intrinsics\fP for the each widget's list of settable resources.  The label
 widget is optional.
 .sp
