@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbplygblt.c,v 5.4 91/01/27 13:02:11 keith Exp $ */
+/* $XConsortium: mfbplygblt.c,v 5.5 92/12/23 17:47:31 rws Exp $ */
 
 #include "X.h"
 #include "Xmd.h"

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: mfbply1rct.c,v 1.3 92/12/23 17:47:04 rws Exp $
+ * $XConsortium: mfbply1rct.c,v 1.4 92/12/23 18:53:12 rws Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -241,12 +241,12 @@ MFBFILLPOLY1RECT (pDrawable, pGC, shape, mode, count, ptsIn)
 	    }
 	    if (!--h)
 		break;
-	    mfbScanlineInc(addrl, nlwidth, nlwidth);
+	    mfbScanlineInc(addrl, nlwidth);
 	    Step(x1,dx1,dy1,e1,sign1,step1)
 	    Step(x2,dx2,dy2,e2,sign2,step2)
 	}
 	if (y == maxy)
 	    break;
-	mfbScanlineInc(addrl, nlwidth, nlwidth);
+	mfbScanlineInc(addrl, nlwidth);
     }
 }

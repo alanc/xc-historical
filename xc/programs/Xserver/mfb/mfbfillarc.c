@@ -15,7 +15,7 @@ without any express or implied warranty.
 
 ********************************************************/
 
-/* $XConsortium: mfbfillarc.c,v 5.7 90/10/06 13:58:08 rws Exp $ */
+/* $XConsortium: mfbfillarc.c,v 5.8 92/12/23 17:40:53 rws Exp $ */
 
 #include "X.h"
 #include "Xprotostr.h"
@@ -241,8 +241,8 @@ mfbFillArcSliceSolidCopy(pDraw, pGC, arc, rop)
     slice.edge2.x += pDraw->x;
     while (y > 0)
     {
-	mfbScanlineInc(addrlt, nlwidth, nlwidth);
-	mfbScanlineInc(addrlb, -nlwidth, nlwidth);
+	mfbScanlineInc(addrlt, nlwidth);
+	mfbScanlineInc(addrlb, -nlwidth);
 	MIFILLARCSTEP(slw);
 	MIARCSLICESTEP(slice.edge1);
 	MIARCSLICESTEP(slice.edge2);

@@ -15,7 +15,7 @@ without any express or implied warranty.
 
 ********************************************************/
 
-/* $XConsortium: mfbzerarc.c,v 5.11 92/12/23 17:51:05 rws Exp $ */
+/* $XConsortium: mfbzerarc.c,v 5.12 92/12/23 18:53:48 rws Exp $ */
 
 /* Derived from:
  * "Algorithm for drawing ellipses or hyperbolae with a digital plotter"
@@ -42,15 +42,15 @@ extern void miPolyArc(), miZeroPolyArc();
 #endif
 
 #define PixelateWhite(addr,yoff,xoff) \
-    *mfbScanlineOffset(addr, (yoff)+((xoff)>>5), nlwidth) |= \
+    *mfbScanlineOffset(addr, (yoff)+((xoff)>>5)) |= \
 	SCRRIGHT (LEFTMOST, ((xoff) & 0x1f))
 #define PixelateBlack(addr,yoff,xoff) \
-    *mfbScanlineOffset(addr, (yoff)+((xoff)>>5), nlwidth) &= \
+    *mfbScanlineOffset(addr, (yoff)+((xoff)>>5)) &= \
 	~(SCRRIGHT (LEFTMOST, ((xoff) & 0x1f)))
 
 #define Pixelate(base,yoff,xoff) \
 { \
-    paddr = mfbScanlineOffset(base, (yoff) + ((xoff)>>5), nlwidth); \
+    paddr = mfbScanlineOffset(base, (yoff) + ((xoff)>>5)); \
     pmask = SCRRIGHT(LEFTMOST, (xoff) & 0x1f); \
     *paddr = (*paddr & ~pmask) | (pixel & pmask); \
 }

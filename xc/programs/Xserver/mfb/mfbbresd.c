@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbbresd.c,v 1.3 89/11/08 17:12:27 keith Exp $ */
+/* $XConsortium: mfbbresd.c,v 1.4 92/12/23 17:39:07 rws Exp $ */
 #include "X.h"
 #include "misc.h"
 #include "mfb.h"
@@ -99,11 +99,11 @@ int len;		/* length of line */
 		e += e1;
 		if (e >= 0)
 		{
-		    mfbScanlineInc(addrb, yinc, nlwidth);
+		    mfbScanlineInc(addrb, yinc);
 		    e += e3;
 		}
 		bit = SCRRIGHT(bit,1);
-		if (!bit) { bit = leftbit;mfbScanlineInc(addrb, 4, nlwidth); }
+		if (!bit) { bit = leftbit;addrb += 4; }
 		StepDash
 	    }
 	}
@@ -120,11 +120,11 @@ int len;		/* length of line */
 		e += e1;
 		if (e >= 0)
 		{
-		    mfbScanlineInc(addrb, yinc, nlwidth);
+		    mfbScanlineInc(addrb, yinc);
 		    e += e3;
 		}
 		bit = SCRLEFT(bit,1);
-		if (!bit) { bit = rightbit;mfbScanlineInc(addrb, -4, nlwidth); }
+		if (!bit) { bit = rightbit;addrb -= 4; }
 		StepDash
 	    }
 	}
@@ -145,10 +145,10 @@ int len;		/* length of line */
 		if (e >= 0)
 		{
 		    bit = SCRRIGHT(bit,1);
-		    if (!bit) { bit = leftbit;mfbScanlineInc(addrb, 4, nlwidth); }
+		    if (!bit) { bit = leftbit;addrb += 4; }
 		    e += e3;
 		}
-		mfbScanlineInc(addrb, yinc, nlwidth);
+		mfbScanlineInc(addrb, yinc);
 		StepDash
 	    }
 	}
@@ -166,10 +166,10 @@ int len;		/* length of line */
 		if (e >= 0)
 		{
 		    bit = SCRLEFT(bit,1);
-		    if (!bit) { bit = rightbit;mfbScanlineInc(addrb, -4, nlwidth); }
+		    if (!bit) { bit = rightbit;addrb -= 4; }
 		    e += e3;
 		}
-		mfbScanlineInc(addrb, yinc, nlwidth);
+		mfbScanlineInc(addrb, yinc);
 		StepDash
 	    }
 	}

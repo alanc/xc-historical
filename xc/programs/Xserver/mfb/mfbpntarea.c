@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbpntarea.c,v 5.2 89/11/24 18:06:43 rws Exp $ */
+/* $XConsortium: mfbpntarea.c,v 5.3 92/12/23 17:48:00 rws Exp $ */
 #include "X.h"
 
 #include "windowstr.h"
@@ -106,7 +106,7 @@ MFBSOLIDFILLAREA(pDraw, nbox, pbox, alu, nop)
 		    p++;
 		    Duff(nlw, *p++ EQWHOLEWORD);
 		    *p OPEQ endmask;
-		    mfbScanlineInc(p, nlwExtra, nlwidth);
+		    mfbScanlineInc(p, nlwExtra);
 		}
 	    }
 	    else if (startmask && !endmask)
@@ -118,7 +118,7 @@ MFBSOLIDFILLAREA(pDraw, nbox, pbox, alu, nop)
 		    *p OPEQ startmask;
 		    p++;
 		    Duff(nlw, *p++ EQWHOLEWORD);
-		    mfbScanlineInc(p, nlwExtra, nlwidth);
+		    mfbScanlineInc(p, nlwExtra);
 		}
 	    }
 	    else if (!startmask && endmask)
@@ -128,7 +128,7 @@ MFBSOLIDFILLAREA(pDraw, nbox, pbox, alu, nop)
 		    nlw = nlwMiddle;
 		    Duff(nlw, *p++ EQWHOLEWORD);
 		    *p OPEQ endmask;
-		    mfbScanlineInc(p, nlwExtra, nlwidth);
+		    mfbScanlineInc(p, nlwExtra);
 		}
 	    }
 	    else /* no ragged bits at either end */
@@ -137,7 +137,7 @@ MFBSOLIDFILLAREA(pDraw, nbox, pbox, alu, nop)
 		{
 		    nlw = nlwMiddle;
 		    Duff(nlw, *p++ EQWHOLEWORD);
-		    mfbScanlineInc(p, nlwExtra, nlwidth);
+		    mfbScanlineInc(p, nlwExtra);
 		}
 	    }
 	}

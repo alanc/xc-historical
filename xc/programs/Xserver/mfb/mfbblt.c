@@ -18,7 +18,7 @@ purpose.  It is provided "as is" without express or implied warranty.
 Author: Keith Packard
 
 */
-/* $XConsortium: mfbblt.c,v 1.5 91/01/27 13:02:19 keith Exp $ */
+/* $XConsortium: mfbblt.c,v 1.6 92/12/23 17:37:13 rws Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -236,8 +236,8 @@ MROP_NAME(mfbDoBitblt)(pSrc, pDst, alu, prgnDst, pptSrc)
 		{
 		    psrc = psrcLine;
 		    pdst = pdstLine;
-		    mfbScanlineInc(pdstLine, widthDst, widthDst);
-		    mfbScanlineInc(psrcLine, widthSrc, widthSrc);
+		    mfbScanlineInc(pdstLine, widthDst);
+		    mfbScanlineInc(psrcLine, widthSrc);
 		    if (startmask)
 		    {
 			*pdst = MROP_MASK(*psrc, *pdst, startmask);
@@ -318,8 +318,8 @@ psrc += UNROLL;
 		{
 		    psrc = psrcLine;
 		    pdst = pdstLine;
-		    mfbScanlineInc(pdstLine, widthDst, widthDst);
-		    mfbScanlineInc(psrcLine, widthSrc, widthSrc);
+		    mfbScanlineInc(pdstLine, widthDst);
+		    mfbScanlineInc(psrcLine, widthSrc);
 		    bits = 0;
 		    if (xoffSrc > xoffDst)
 			bits = *psrc++;
@@ -416,8 +416,8 @@ pdst++;
 		{
 		    psrc = psrcLine;
 		    pdst = pdstLine;
-		    mfbScanlineInc(pdstLine, widthDst, widthDst);
-		    mfbScanlineInc(psrcLine, widthSrc, widthSrc);
+		    mfbScanlineInc(pdstLine, widthDst);
+		    mfbScanlineInc(psrcLine, widthSrc);
 		    if (endmask)
 		    {
 			pdst--;
@@ -482,8 +482,8 @@ psrc -= UNROLL;
 		{
 		    psrc = psrcLine;
 		    pdst = pdstLine;
-		    mfbScanlineInc(pdstLine, widthDst, widthDst);
-		    mfbScanlineInc(psrcLine, widthSrc, widthSrc);
+		    mfbScanlineInc(pdstLine, widthDst);
+		    mfbScanlineInc(psrcLine, widthSrc);
 		    bits = 0;
 		    if (xoffDst > xoffSrc)
 			bits = *--psrc;

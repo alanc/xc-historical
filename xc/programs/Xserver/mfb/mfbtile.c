@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbtile.c,v 5.3 90/05/15 18:38:21 keith Exp $ */
+/* $XConsortium: mfbtile.c,v 5.4 92/12/23 17:50:31 rws Exp $ */
 #include "X.h"
 
 #include "windowstr.h"
@@ -100,7 +100,7 @@ MROP_NAME(mfbTileArea32)(pDraw, nbox, pbox, alu, ptile)
 		if (iy == tileHeight)
 		    iy = 0;
 		*p = MROP_MASK(srcpix,*p,startmask);
-		mfbScanlineInc(p, nlwExtra, nlwidth);
+		mfbScanlineInc(p, nlwExtra);
 	    }
 	}
 	else
@@ -127,7 +127,7 @@ MROP_NAME(mfbTileArea32)(pDraw, nbox, pbox, alu, ptile)
 		    }
 
 		    *p = MROP_MASK(srcpix,*p,endmask);
-		    mfbScanlineInc(p, nlwExtra, nlwidth);
+		    mfbScanlineInc(p, nlwExtra);
 		}
 	    }
 	    else if (startmask && !endmask)
@@ -147,7 +147,7 @@ MROP_NAME(mfbTileArea32)(pDraw, nbox, pbox, alu, ptile)
 			*p = MROP_SOLID(srcpix,*p);
 			p++;
 		    }
-		    mfbScanlineInc(p, nlwExtra, nlwidth);
+		    mfbScanlineInc(p, nlwExtra);
 		}
 	    }
 	    else if (!startmask && endmask)
@@ -166,7 +166,7 @@ MROP_NAME(mfbTileArea32)(pDraw, nbox, pbox, alu, ptile)
 		    }
 
 		    *p = MROP_MASK(srcpix,*p,endmask);
-		    mfbScanlineInc(p, nlwExtra, nlwidth);
+		    mfbScanlineInc(p, nlwExtra);
 		}
 	    }
 	    else /* no ragged bits at either end */
@@ -183,7 +183,7 @@ MROP_NAME(mfbTileArea32)(pDraw, nbox, pbox, alu, ptile)
 			*p = MROP_SOLID (srcpix,*p);
 			p++;
 		    }
-		    mfbScanlineInc(p, nlwExtra, nlwidth);
+		    mfbScanlineInc(p, nlwExtra);
 		}
 	    }
 	}

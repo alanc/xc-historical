@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbhrzvert.c,v 1.11 89/09/13 18:58:09 rws Exp $ */
+/* $XConsortium: mfbhrzvert.c,v 1.12 92/12/23 17:44:16 rws Exp $ */
 #include "X.h"
 
 #include "gc.h"
@@ -134,17 +134,17 @@ register int len;	/* length of line */
     if (rop == RROP_BLACK)
     {
 	bitmask = rmask[x1&0x1f];
-        Duff(len, *addrl &= bitmask; mfbScanlineInc(addrl, nlwidth, nlwidth) );
+        Duff(len, *addrl &= bitmask; mfbScanlineInc(addrl, nlwidth) );
     }
     else if (rop == RROP_WHITE)
     {
 	bitmask = mask[x1&0x1f];
-        Duff(len, *addrl |= bitmask; mfbScanlineInc(addrl, nlwidth, nlwidth) );
+        Duff(len, *addrl |= bitmask; mfbScanlineInc(addrl, nlwidth) );
     }
     else if (rop == RROP_INVERT)
     {
 	bitmask = mask[x1&0x1f];
-        Duff(len, *addrl ^= bitmask; mfbScanlineInc(addrl, nlwidth, nlwidth) );
+        Duff(len, *addrl ^= bitmask; mfbScanlineInc(addrl, nlwidth) );
     }
 }
 
