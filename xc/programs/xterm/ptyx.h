@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: ptyx.h,v 1.16 88/10/06 09:09:56 swick Exp $
+ *	$XConsortium: ptyx.h,v 1.17 88/10/07 08:18:05 swick Exp $
  */
 
 #include <X11/copyright.h>
@@ -339,6 +339,9 @@ typedef struct {
 	int		startHRow, startHCol, /* highlighted text */
 			endHRow, endHCol,
 			startHCoord, endHCoord;
+	Atom*		selection_atoms; /* which selections we own */
+	Cardinal	sel_atoms_size;	/*  how many atoms allocated */
+	Cardinal	selection_count; /* how many atoms in use */
 } TScreen;
 
 /* meaning of bits in screen.select flag */
