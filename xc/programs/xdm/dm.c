@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: dm.c,v 1.50 91/02/11 20:59:16 keith Exp $
+ * $XConsortium: dm.c,v 1.51 91/02/13 19:13:00 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -346,7 +346,7 @@ WaitForChild ()
 #else
     omask = sigblock (sigmask (SIGCHLD) | sigmask (SIGHUP));
 #endif
-    Debug ("signals blocked, mask was 0x%x\n", mask);
+    Debug ("signals blocked, mask was 0x%x\n", omask);
     if (!ChildReady && !Rescan)
 #ifdef POSIXSIG
 	sigsuspend(&omask);
