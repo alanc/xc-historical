@@ -1,5 +1,5 @@
 /*
- * $XConsortium: EditresCom.c,v 1.26 91/05/22 16:25:21 gildea Exp $
+ * $XConsortium: EditresCom.c,v 1.27 91/07/30 15:44:00 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -20,7 +20,7 @@
  * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN 
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * Author:  Chris D. Peterson, MIT X Consortium
+ * Author:  Chris D. Peterson, Dave Sternlicht, MIT X Consortium
  */
 
 #include <X11/IntrinsicP.h>	/* To get into the composite and core widget
@@ -64,6 +64,13 @@ typedef struct _SVErrorInfo {
     WidgetInfo * entry;
 } SVErrorInfo;
 
+typedef struct _GetValuesEvent {
+  EditresCommand type;		/* first field must be type */
+  WidgetInfo * widgets;
+  unsigned short num_entries;	/* number of get values requests */
+  char * name;
+} GetValuesEvent;
+
 typedef struct _FindChildEvent {
     EditresCommand type;	/* first field must be type. */
     WidgetInfo * widgets;
@@ -104,7 +111,7 @@ typedef struct _Globals {
     ProtocolStream * command_stream; /* command stream. */
 } Globals;
 
-#define CURRENT_PROTOCOL_VERSION 4L
+#define CURRENT_PROTOCOL_VERSION 5L
 
 #define streq(a,b) (strcmp( (a), (b) ) == 0)
 
@@ -121,7 +128,7 @@ static void LoadResources();
 static Boolean IsChild();
 static void DumpChildren();
 static char *DumpWidgets(), *DoSetValues(), *DoFindChild();
-static char *DoGetGeometry(), *DoGetResources();
+static char *DoGetGeometry(), *DoGetResources(), *DumpValues();
 
 /************************************************************
  *
@@ -321,6 +328,18 @@ unsigned long length;
 	    }
 	}
 	break;
+
+    case GetValues: 
+        {
+            GetValuesEvent * gv_event = (GetValuesEvent *) event;
+            _XEditResGetString8(stream, &(gv_event->name));
+            _XEditResGet16(stream, &(gv_event->num_entries));
+	    gv_event->widgets = (WidgetInfo *)
+		XtCalloc(sizeof(WidgetInfo), gv_event->num_entries);
+            _XEditResGetWidgetInfo(stream, gv_event->widgets);
+        }
+        break;	
+
     default:
 	{
 	    char buf[BUFSIZ];
@@ -442,6 +461,9 @@ EditresEvent * event;
     case GetResources:
 	func = DoGetResources;
 	break;
+    case GetValues:
+        func = DumpValues;
+    break;
     default: 
         {
 	    char buf[BUFSIZ];
@@ -877,6 +899,8 @@ unsigned short * count;
  *	Returns: NULL
  */
 
+#define TOOLKIT_TYPE ("Xt")
+
 /* ARGSUSED */
 static char * 
 DumpWidgets(w, event, stream)
@@ -896,6 +920,12 @@ ProtocolStream * stream;
     _XEditResPut16(stream, (unsigned int) 0);
 
     DumpChildren(w, stream, &count);
+
+    /*
+     * write out toolkit type (Xt, of course...). 
+     */
+
+    _XEditResPutString8(stream, TOOLKIT_TYPE);
 
     /*
      * Overwrite the first 2 bytes with the real count.
@@ -1320,6 +1350,37 @@ ProtocolStream * stream;
 	}
 	XtFree((char *) cons_list);
     }
+}
+
+/*
+ *	Function Name: DumpValues
+ *	Description: Returns resource values to the resource editor.
+ *	Arguments: event - the event that caused this action.
+ *                 stream - the protocol stream to add.
+ *	Returns: NULL
+ */
+
+static char*
+DumpValues(w, event, stream)	/* ARGSUSED */
+Widget w;
+EditresEvent* event; 
+ProtocolStream* stream;
+{
+  Arg warg[1];
+  String res_value = NULL;
+  GetValuesEvent * gv_event = (GetValuesEvent *)event; 
+
+  /* put the count in the stream. */
+
+  _XEditResPut16(stream, (unsigned int) 1); 
+
+  /* get the resource of the widget asked for by the */
+  /* resource editor and insert it into the stream */
+  XtSetArg(warg[0], gv_event->name, &res_value);
+  _XtGetStringValues(gv_event->widgets[0].ids[0], warg, 1);
+  if (!res_value) res_value = "NoValue";
+  _XEditResPutString8(stream, res_value);
+  return(NULL);
 }
 
 /************************************************************

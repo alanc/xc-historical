@@ -1,5 +1,5 @@
 /*
- * $XConsortium: EditresP.h,v 1.10 91/05/22 16:24:48 gildea Exp $
+ * $XConsortium: EditresP.h,v 1.1 92/02/13 15:49:40 dave Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -74,7 +74,8 @@
 				  SetValues = 1,
 				  GetResources = 2,
 				  GetGeometry = 3,
-				  FindChild = 4 }
+				  FindChild = 4,
+				  GetValues = 5 }
 	Length:		Card32
 	Data:		
 
@@ -120,10 +121,11 @@
 		name:		String8
 		class:		String8
 		window:		Card32
+         	toolkit:        String8
 
-	Send Widget Tree returns the fully specified list of widgets
-	for each widget in the tree.  This is enough information to completely
-	reconstruct the entire widget heirarchy.
+	Send Widget Tree returns the toolkit type, and a fuly specified list
+        of widgets for each widget in the tree.  This is enough information
+        to completely reconstruct the entire widget heirarchy.
 
 	The window return value contains the Xid of the window currently 
 	used by this widget.  If the widget is unrealized then 0 is returned,
@@ -149,6 +151,23 @@
 	widgets.  This function will return an error message if the SetValues
 	request caused an Xt error.
 	
+  GetValues:
+
+        names:                ListOfString8       
+        widget:               Widget
+
+        --->
+	novalues:             ListOfCard16
+	values:               ListOfString8
+                   
+        GetValues will allow a number of resource values to be read 
+        on a particular widget.  The request specifies the names of
+	the resources wanted and the widget id these resources are
+	from.  The reply returns a list of indices from the requests
+	name list of resources for which a value can not be returned.
+	It also returns a list of returned values, in the order of the
+        requests names list, skipping those indices present in novalues.
+
    GetResources:
 
 	Number of Entries:	Card16
@@ -221,6 +240,24 @@
 	The returned widget is undefined if the point is contained in
 	two or more mapped widgets, or in two overlapping Rect objs.
 
+  GetValues:
+
+        names:                ListOfString8       
+        widget:               Widget
+
+        --->
+	
+	values:               ListOfString8
+
+        GetValues will allow a number of resource values to be read 
+        on a particular widget.  Currently only InterViews 3.0.1 Styles 
+	and their attributes are supported.  In addition, the current
+	user interface  only supports the return of 1 resource.  The ability
+	to specify and return multiple resources is defined for future editres
+	interfaces where some or all of a widgets resource values are returned
+	and displayed at once. 
+
+
 ************************************************************/
 
 #include <X11/Intrinsic.h>
@@ -251,8 +288,13 @@
 #define EDITRES_CLIENT_VALUE "EditresClientVal"
 #define EDITRES_PROTOCOL_ATOM "EditresProtocol"
 
-typedef enum { SendWidgetTree = 0, SetValues = 1, GetResources = 2,
-	       GetGeometry = 3, FindChild = 4 } EditresCommand;
+typedef enum { SendWidgetTree = 0, 
+	       SetValues      = 1,
+	       GetResources   = 2,
+	       GetGeometry    = 3, 
+	       FindChild      = 4,
+	       GetValues      = 5
+	     } EditresCommand;
 
 typedef enum {NormalResource = 0, ConstraintResource = 1} ResourceType;
 
