@@ -1,5 +1,5 @@
 #ifndef lint
-static char *rcsid_xinit_c = "$XConsortium: xinit.c,v 11.43 90/09/12 17:23:14 rws Exp $";
+static char *rcsid_xinit_c = "$XConsortium: xinit.c,v 11.44 91/01/06 12:07:35 rws Exp $";
 #endif /* lint */
 
 /* Copyright    Massachusetts Institute of Technology    1986	*/
@@ -101,7 +101,11 @@ char *displayNum;
 char *program;
 Display *xd;			/* server connection */
 #ifndef SYSV
+#if defined(SVR4) || defined(_POSIX_SOURCE)
+int status;
+#else
 union wait	status;
+#endif
 #endif /* SYSV */
 int serverpid = -1;
 int clientpid = -1;
@@ -350,8 +354,13 @@ processTimeout(pid, timeout, string)
 			break;
 		alarm(0);
 #else /* SYSV */
+#if defined(SVR4) || defined(_POSIX_SOURCE)
+		if ((pidfound = waitpid(pid, &status, WNOHANG)) == pid)
+			break;
+#else
 		if ((pidfound = wait3(&status, WNOHANG, NULL)) == pid)
 			break;
+#endif
 #endif /* SYSV */
 		if (timeout) {
 			if (i == 0 && string != laststring)
@@ -479,9 +488,9 @@ startClient(client)
 	return (clientpid);
 }
 
-#ifdef SYSV
+#if defined(SYSV) || defined(SVR4) || defined(_POSIX_SOURCE)
 #define killpg(pgrp, sig) kill(-(pgrp), sig)
-#endif /* SYSV */
+#endif
 
 static jmp_buf close_env;
 
