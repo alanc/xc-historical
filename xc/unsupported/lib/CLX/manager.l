@@ -621,8 +621,6 @@
 		`(cut-buffer ,@options)))
     (unless (member (car option) '(:buffer :type :format :start :end :transform))
       (error "Keyword arg ~s isn't recognized" (car option)))
-    (push (car option) temps)
-    (push (car option) values)
     (let ((x (gensym)))
       (push x temps)
       (push (cadr option) values)
