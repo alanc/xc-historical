@@ -1,4 +1,4 @@
-/* $XConsortium: ICElib.h,v 1.26 94/02/06 15:22:00 mor Exp $ */
+/* $XConsortium: ICElib.h,v 1.27 94/03/07 15:19:18 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -189,31 +189,6 @@ typedef void (*IceIOErrorHandler) (
 
 
 /*
- * Authentication data maintained in memory.
- */
-
-typedef struct {
-    char    	    *protocol_name;
-    char	    *address;
-    char    	    *auth_name;
-    unsigned short  auth_data_length;
-    char   	    *auth_data;
-} IceAuthDataEntry;
-
-
-/*
- * Maxium number of ICE authentication methods allowed, and maxiumum
- * number of authentication data entries allowed to be set in the
- * IceSetPaAuthData function.
- *
- * We should use linked lists, but this is easier and should suffice.
- */
-
-#define MAX_ICE_AUTH_NAMES 32
-#define ICE_MAX_AUTH_DATA_ENTRIES 100
-
-
-/*
  * Function prototypes
  */
 
@@ -295,33 +270,6 @@ extern void IceSetHostBasedAuthProc (
 #if NeedFunctionPrototypes
     IceListenObj		/* listenObj */,
     IceHostBasedAuthProc   	/* hostBasedAuthProc */
-#endif
-);
-
-extern void IceSetPaAuthData (
-#if NeedFunctionPrototypes
-    int			/* numEntries */,
-    IceAuthDataEntry *	/* entries */
-#endif
-);
-
-extern void IceGetPoAuthData (
-#if NeedFunctionPrototypes
-    char *		/* protocol_name */,
-    char *		/* address */,
-    char *		/* auth_name */,
-    unsigned short *	/* auth_data_length_ret */,
-    char **		/* auth_data_ret */
-#endif
-);
-
-extern void IceGetPaAuthData (
-#if NeedFunctionPrototypes
-    char *		/* protocol_name */,
-    char *		/* address */,
-    char *		/* auth_name */,
-    unsigned short *	/* auth_data_length_ret */,
-    char **		/* auth_data_ret */
 #endif
 );
 

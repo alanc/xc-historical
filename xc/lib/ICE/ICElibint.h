@@ -1,4 +1,4 @@
-/* $XConsortium: ICElibint.h,v 1.30 94/02/07 18:06:48 mor Exp $ */
+/* $XConsortium: ICElibint.h,v 1.31 94/03/07 15:22:43 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -92,6 +92,17 @@ char *malloc();
 
 #define ICE_OUTBUFSIZE 1024
 
+
+/*
+ * Maxium number of ICE authentication methods allowed, and maxiumum
+ * number of authentication data entries allowed to be set in the
+ * IceSetPaAuthData function.
+ *
+ * We should use linked lists, but this is easier and should suffice.
+ */
+
+#define MAX_ICE_AUTH_NAMES 32
+#define ICE_MAX_AUTH_DATA_ENTRIES 100
 
 
 /*
@@ -787,9 +798,6 @@ extern char		*_IceAuthNames[];
 extern IcePoAuthProc	_IcePoAuthProcs[];
 extern IcePaAuthProc	_IcePaAuthProcs[];
 
-extern int		_IcePaAuthDataEntryCount;
-extern IceAuthDataEntry _IcePaAuthDataEntries[];
-
 extern int		_IceVersionCount;
 extern _IceVersion	_IceVersions[];
 
@@ -978,6 +986,26 @@ extern void _IceConnectionOpened (
 extern void _IceConnectionClosed (
 #if NeedFunctionPrototypes
     IceConn		/* iceConn */
+#endif
+);
+
+extern void _IceGetPoAuthData (
+#if NeedFunctionPrototypes
+    char *		/* protocol_name */,
+    char *		/* address */,
+    char *		/* auth_name */,
+    unsigned short *	/* auth_data_length_ret */,
+    char **		/* auth_data_ret */
+#endif
+);
+
+extern void _IceGetPaAuthData (
+#if NeedFunctionPrototypes
+    char *		/* protocol_name */,
+    char *		/* address */,
+    char *		/* auth_name */,
+    unsigned short *	/* auth_data_length_ret */,
+    char **		/* auth_data_ret */
 #endif
 );
 
