@@ -1,5 +1,5 @@
 /*
- * $XConsortium: EditResCom.c,v 1.6 90/03/16 13:58:29 kit Exp $
+ * $XConsortium: EditResCom.c,v 1.7 90/03/16 14:28:17 kit Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -426,17 +426,20 @@ char * str;
  ************************************************************/
 
 
-/*	Function Name: FindAllChildren
+/*	Function Name: FindChildren
  *	Description: Retuns all children (popup, normal and otherwise)
  *                   of this widget
  *	Arguments: parent - the parent widget.
  *                 children - the list of children.
+ *                 normal - return normal children.
+ *                 popup - return popup children.
  *	Returns: the number of children.
  */
 
 static int
-FindAllChildren(parent, children)
+FindChildren(parent, children, normal, popup)
 Widget parent, **children;
+Boolean normal, popup;
 {
     CompositeWidget cw = (CompositeWidget) parent;
     int i, num_children, current = 0;
@@ -444,16 +447,19 @@ Widget parent, **children;
     Arg args[2];
     Widget sink, source;
 #endif /* TEXT_WIDGET */
+    
+    num_children = 0;
 
-    if (!XtIsWidget(parent)) {	/* objects never have children of any kind. */
+    if (XtIsWidget(parent) && popup)
+	num_children += parent->core.num_popups;
+	
+    if (XtIsComposite(parent) && normal) 
+	num_children += cw->composite.num_children; 
+
+    if (num_children == 0) {	
 	*children = NULL; 
 	return(0);
     }
-
-    num_children = parent->core.num_popups;
-	
-    if (XtIsComposite(parent)) 
-	num_children += cw->composite.num_children; 
 
 #ifdef TEXT_WIDGET
 	if (XtIsSubclass(parent, textWidgetClass)) {
@@ -470,12 +476,13 @@ Widget parent, **children;
 
     *children =(Widget*) XtMalloc((Cardinal) sizeof(Widget) * num_children);
 
-    if (XtIsComposite(parent))
+    if (XtIsComposite(parent) && normal)
 	for (i = 0; i < cw->composite.num_children; i++,current++) 
 	    (*children)[current] = cw->composite.children[i]; 
 
-    for ( i = 0; i < parent->core.num_popups; i++, current++) 
-	(*children)[current] = parent->core.popup_list[i];
+    if (XtIsWidget(parent) && popup)
+	for ( i = 0; i < parent->core.num_popups; i++, current++) 
+	    (*children)[current] = parent->core.popup_list[i];
 
 #ifdef TEXT_WIDGET
 	if (XtIsSubclass(w, textWidgetClass)) {
@@ -561,7 +568,7 @@ Widget top, parent, child;
     if (parent == NULL)
 	return(top == child);
 
-    num_children = FindAllChildren(parent, &children);
+    num_children = FindChildren(parent, &children, TRUE, TRUE);
 
     for (i = 0; i < num_children; i++) {
 	if (children[i] == child) {
@@ -762,7 +769,7 @@ Cardinal *end, *bytes;
 	sprintf(my_name, "%s%c%s%c%ld", parent_name, NAME_SEPARATOR,
 		XtName(w), ID_SEPARATOR, (unsigned long) w);
 
-    num_children = FindAllChildren(w, &children);
+    num_children = FindChildren(w, &children, TRUE, TRUE);
 
     for (i = 0; i < num_children; i++) 
 	DumpChildren(children[i], my_name, list, end, bytes);
@@ -1070,16 +1077,17 @@ Message * msg;
 	 * to go to the server.
 	 */
 	
-	if (XGetWindowAttributes(XtDisplay(w), XtWindow(w), &attrs) != 0)
+	if (XGetWindowAttributes(XtDisplay(w), XtWindow(w), &attrs) != 0) {
 	    if (attrs.map_state != IsViewable) {
 		AddReturnMessage(msg, 0, command, NOT_VIS);
 		return(TRUE);
 	    }
-	    else {
-		AddReturnMessage(msg, 1, 
-				 command, "XGetWindowAttributes failed.");
-		return(FALSE);
-	    }
+	}
+	else {
+	    AddReturnMessage(msg, 1, 
+			     command, "XGetWindowAttributes failed.");
+	    return(FALSE);
+	}
     }
 
     XtTranslateCoords(w, -((int) border_width), -((int) border_width), &x, &y);
@@ -1200,7 +1208,7 @@ Widget parent;
 int x, y;
 {
     Widget * children;
-    int i = FindAllChildren(parent, &children);
+    int i = FindChildren(parent, &children, TRUE, FALSE);
 
     while (i > 0) {
 	i--;

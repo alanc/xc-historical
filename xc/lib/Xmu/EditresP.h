@@ -187,6 +187,9 @@ two or more mapped widgets, or in two overlapping Rect objs.
 
 ************************************************************/
 
+#define EDITRES_IS_OBJECT 2
+#define EDITRES_IS_UNREALIZED 0
+
 /*
  * Format for atoms.
  */
