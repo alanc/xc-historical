@@ -1,5 +1,5 @@
 /*
- * $XConsortium: ParseCmd.c,v 1.15 88/10/12 16:29:36 swick Exp $
+ * $XConsortium: ParseCmd.c,v 1.16 89/01/09 18:00:23 rws Exp $
  */
 
 /***********************************************************
@@ -174,6 +174,16 @@ void XrmParseCommand(pdb, options, num_options, prefix, argc, argv)
 		case XrmoptionSkipLine:
 		    for (; myargc > 0; myargc--)
 			(*argsave++) = (*argv++);
+		    break;
+
+		case XrmoptionSkipNArgs:
+		    {
+			register int j = 1 + (int) options[i].value;
+
+			if (j > myargc) j = myargc;
+			for (; j > 0; j--)
+			    (*argsave++) = (*argv++);
+		    }
 		    break;
 
 		default:
