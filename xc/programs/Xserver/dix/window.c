@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: window.c,v 1.158 87/08/11 14:54:00 swick Locked $ */
+/* $Header: window.c,v 1.159 87/08/12 08:30:52 swick Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -1566,10 +1566,10 @@ SlideAndSizeWindow(pWin, x, y, w, h, pSib)
         if ((pWin->bitGravity == ForgetGravity) ||
             (pWin->backgroundTile == (PixmapPtr)ParentRelative))
 	{
+	    (* pScreen->ValidateTree)(pParent, pFirstChange, TRUE, anyMarked);
 	    /* CopyWindow will step on borders, so re-paint them */
 	    (* pScreen->Subtract)(pWin->borderExposed, 
 			 pWin->borderClip, pWin->winSize);
-	    (* pScreen->ValidateTree)(pParent, pFirstChange, TRUE, anyMarked);
 	    TraverseTree(pWin, ExposeAll, pScreen); 
 	    DoObscures(pParent); 
 	    HandleExposures(pParent);
