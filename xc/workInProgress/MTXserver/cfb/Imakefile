@@ -30,8 +30,10 @@ LintLibraryTarget(cfb,$(SRCS))
 
 NormalLintTarget($(SRCS))
 
+#if HasSaberC
 saber_src:
-	#load $(CFLAGS) $(SRCS)
+	/**/#load $(CFLAGS) $(SRCS)
+#endif
 
 DependTarget()
 
