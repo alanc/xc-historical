@@ -1,5 +1,5 @@
 
-# $XConsortium: Makefile,v 5.3 91/02/18 21:55:54 hersh Exp $
+# $XConsortium: Makefile,v 5.4 91/02/19 16:03:20 hersh Exp $
 ###################################################################
 # Copyright (c) 1989, 1990, 1991,1990 by Sun Microsystems, Inc. and the X Consortium.
 # 
@@ -45,7 +45,7 @@ I_LDFLAGS =
 XINCDIR = $(PEXINCDIR)
 XLIBDIR = $(PEXLIBDIR)
 
-DEBUGOPT = -g
+DEBUGOPT = -g -Bstatic
 IPP = $(DESTBIN)/ipp
 SRCDIR = $$INSPEXHOME/tools/pexint
 NEWTDIR = $$INSPEXHOME/tools/newt
