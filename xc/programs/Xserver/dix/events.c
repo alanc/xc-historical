@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: events.c,v 5.25 90/03/29 11:08:22 rws Exp $ */
+/* $XConsortium: events.c,v 5.26 90/07/09 09:53:37 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -2667,7 +2667,7 @@ ProcChangeActivePointerGrab(client)
     if (!grab)
 	return Success;
     if (!SameClient(grab, client))
-	return BadAccess;
+	return Success;
     time = ClientTimeToServerTime(stuff->time);
     if ((CompareTimeStamps(time, currentTime) == LATER) ||
 	     (CompareTimeStamps(time, device->grabTime) == EARLIER))
