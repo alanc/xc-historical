@@ -11,8 +11,8 @@ program displays the X Window System logo.  This program is
 nothing more than a wrapper around the Athena Logo widget.
 .SH OPTIONS
 .I Xlogo
-accepts all of the X Toolkit command line options described in \fIX(1)\fP,
-of which the following are used most frequently:
+accepts all of the standard X Toolkit command line options, of which the
+following are used most frequently:
 .TP 8
 .B \-bg \fIcolor\fP
 This option specifies the color to use for the background of the window.  
