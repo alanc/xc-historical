@@ -1,5 +1,5 @@
 /*
- * $XConsortium: fresco.cxx,v 1.5 94/04/07 11:29:33 matt Exp $
+ * $XConsortium: fresco.cxx,v 1.6 94/06/03 21:38:54 matt Exp matt $
  */
 
 /*
@@ -298,7 +298,7 @@ Boolean Fresco::delay(Float seconds) {
 #include <sys/select.h>
 #endif
 
-#if defined(sony) || defined(__DECCXX)
+#if defined(sony) || defined(__osf__)
 /* Sony and DEC OSF/1 have select, but no prototype in /usr/include */
 extern "C" int select(int, fd_set*, fd_set*, fd_set*, struct timeval*);
 #endif
