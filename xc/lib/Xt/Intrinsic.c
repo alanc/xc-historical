@@ -53,13 +53,43 @@ WidgetClassData widgetClassData = {
           (WidgetProc)NULL      /*accept_focus*/
 };
 
+extern void CompositeInsertChild();
+static void CompositeDestroy();
+
+CompositeWidgetClassData compositeWidgetClassData = {
+         (WidgetClass)&widgetClassData,	/*superclass pointer*/
+         "Composite",		/*class_name*/
+          sizeof(CompositeWidgetData),   /*size of core data record*/
+	  (WidgetProc)NULL,     /* class initializer routine */
+	  FALSE,		/* not init'ed */
+          (WidgetProc)NULL,	/* Instance Initializer routine*/
+          (WidgetProc)NULL,	/*Realize*/
+          NULL,			/*actions*/
+          NULL,			/*resource list*/
+          0,			/*resource_count*/
+          NULL,			/*xrm_extra*/
+          NULLQUARK,		/*xrm_class*/
+          FALSE,		/*visible_interest*/
+          (WidgetProc) CompositeDestroy,	/*destroy proc*/
+          (WidgetProc) NULL,	 /*resize*/
+          (WidgetExposeProc)NULL, /*expose*/
+          NULL,			/*set_values*/
+          (WidgetProc)NULL,      /*accept_focus*/
+	  (XtGeometryHandler) NULL,	/* geometry_manager */
+	  (WidgetProc) NULL,
+	  CompositeInsertChild,
+	  (WidgetProc) NULL,
+	  (WidgetProc) NULL,
+};
+
 void ClassInit(widgetClass)
     WidgetClass widgetClass;
 {
-    if ((widgetClass->coreClass.superclass != NULL) && (!(widgetClass->coreClass.superclass->
-                         coreClass.class_inited))) ClassInit(widgetClass->coreClass.superclass);
-    if (widgetClass->coreClass.class_initialize !=NULL)
-       widgetClass->coreClass.class_initialize;
+    if ((widgetClass->coreClass.superclass != NULL) 
+            && (!(widgetClass->coreClass.superclass-> coreClass.class_inited)))
+ 	ClassInit(widgetClass->coreClass.superclass);
+    if (widgetClass->coreClass.class_initialize != NULL)
+       widgetClass->coreClass.class_initialize();
     widgetClass->coreClass.class_inited = TRUE;
     return;
 }
@@ -73,11 +103,24 @@ Widget TopLevelCreate(name,widgetClass,screen,args,argCount)
 {
    Widget widget;
     widget = (Widget)XtMalloc(widgetClass->coreClass.size);
+    widget->core.window = (Window) NULL;
     widget->core.name = (char *)strcpy(XtMalloc(strlen(name)+1), name);
     widget->core.widget_class = widgetClass;
     widget->core.parent = NULL;
     widget->core.screen = screen;
     widget->core.visible = TRUE;
+    widget->core.background_pixmap = (Pixmap) NULL;
+    widget->core.border_pixmap = (Pixmap) NULL;
+    widget->core.event_mask = 0;
+    widget->core.event_table = NULL;
+    widget->core.compress_motion = FALSE;
+    widget->core.compress_exposure = FALSE;
+    widget->core.sensitive = TRUE;
+    widget->core.ancestor_sensitive = TRUE;
+    widget->core.translations = NULL;
+    widget->core.destroy_callbacks = NULL;
+    widget->core.being_destroyed = FALSE;
+
     if(!(widget->core.widget_class->coreClass.class_inited))
 	 ClassInit(widgetClass);
    if (XtIsSubClass (widget,compositeWidgetClass)) {
@@ -88,6 +131,12 @@ Widget TopLevelCreate(name,widgetClass,screen,args,argCount)
     XtGetResources(widget,args,argCount);
    widgetClass->coreClass.initialize();
    return (widget);
+}
+
+static void CompositeDestroy(w)
+    CompositeWidget	w;
+{
+    XtFree((char *) w->composite.children);
 }
 
 void CompositeInsertChild(w)
@@ -125,25 +174,43 @@ Widget XtCreateWidget(name,widgetClass,parent,args,argCount)
     Widget    widget;
 
     if (widgetClass == NULL || parent == NULL)  {
-			XtError("invalid parameters to XtCreate");
+			XtError("invalid parameters to XtCreateWidget");
 			return;
 			}
     widget = (Widget)XtMalloc(widgetClass->coreClass.size); 
+    widget->core.window = (Window) NULL;
     widget->core.name = (char *)strcpy(XtMalloc(strlen(name)+1), name);
     widget->core.widget_class = widgetClass;
     widget->core.parent = parent;
     widget->core.screen = parent->core.screen;
     widget->core.managed = FALSE;
     widget->core.visible = TRUE;
+    widget->core.background_pixmap = (Pixmap) NULL;
+    widget->core.border_pixmap = (Pixmap) NULL;
+    widget->core.event_mask = 0;
+    widget->core.event_table = NULL;
+    widget->core.compress_motion = FALSE;
+    widget->core.compress_exposure = FALSE;
+    widget->core.sensitive = TRUE;
+    widget->core.ancestor_sensitive = TRUE;
+    widget->core.translations = NULL;
+    widget->core.destroy_callbacks = NULL;
     widget->core.being_destroyed = parent -> core.being_destroyed;
+    if(!(widget->core.widget_class->coreClass.class_inited))
+	 ClassInit(widgetClass);
     if (XtIsSubClass (widget,compositeWidgetClass)) {
 		((CompositeWidget)widget)->composite.num_children = 0;
 		((CompositeWidget)widget)->composite.num_managed_children = 0;
 		((CompositeWidget)widget)->composite.children = NULL;
                 }
     XtGetResources(widget,args,argCount);    
-    XtDefineTranslation(widget);
+    DefineTranslation(widget);
     widgetClass->coreClass.initialize();
+    if (widget->core.widget_class->coreClass.expose != NULL)
+       widget->core.event_mask |= ExposureMask;
+    if (widget->core.widget_class->coreClass.visible_interest) 
+       widget->core.event_mask |= VisibilityChangeMask;
+
     ((CompositeWidgetClass)(widget->core.parent->core.widget_class))->compositeClass.insert_child(widget);
     return (widget);
 }
@@ -159,11 +226,6 @@ void FillInParameters(widget,valuemask,values)
     return;
 }
 
-void RegisterWindow(widget,window)
-    Widget    widget;
-    Window    window;
-{
-}
 Boolean XtIsRealized (widget)
     Widget   widget;
 {
@@ -191,24 +253,105 @@ void XtRealizeWidget (widget)
    if (XtIsRealized(widget)) return;
    FillInParameters (widget,&valuemask,&values);
    widget->core.widget_class->coreClass.realize(widget,valuemask,&values);
-   RegisterWindow(widget,widget->core.window);
+   RegisterWindow(widget->core.window, widget);
    if (XtIsSubClass (widget, compositeWidgetClass)) {
         cwidget = (CompositeWidget)widget;
 	for (i= cwidget->composite.num_children;i!=0;--i) 
 		XtRealizeWidget(cwidget->composite.children[i-1]);
         if (cwidget->composite.num_children == cwidget->composite.num_managed_children)
-		XMapSubwindows(widget);
+		XMapSubwindows(XtDisplay(widget), XtWindow(widget));
 	else while (i= cwidget->composite.num_managed_children > 0) {
 		if (cwidget->composite.children[i-1]->core.managed) {
-			XMapWindow(cwidget->composite.children[i-1]);
+			XtMapWidget(cwidget->composite.children[i-1]);
 			i--;
 			} }
    }
-    if (widget->core.parent == NULL) XMapWindow(widget);
+    if (widget->core.parent == NULL) XtMapWidget(widget);
    return;
 }
 			
 		
+void XtCompositeRemoveChildren(children, childCount)
+    WidgetList children;
+    Cardinal childCount;
+{
+    CompositeWidget	parent;
+    register Widget	child;
+    Cardinal		newCount, oldCount;
+
+    if (childCount == 0) return;
+    parent = (CompositeWidget) children[0]->core.parent;
+    if (parent->core.being_destroyed) return;
+
+    newCount = 0;
+    for (oldCount = 0; oldCount < childCount; oldCount++) {
+	child = children[oldCount];
+        if ((CompositeWidget) child->core.parent != parent) {
+	    XtWarning("Not all children have same parent in XtRemoveChildren");
+	} else if ((! child->core.managed) || (child->core.being_destroyed)) {
+	    /* Do nothing */
+	} else {
+	    if (XtIsRealized(child)) {
+		XtUnmapWidget(child);
+	    }
+	    child->core.managed = FALSE;
+	    newCount++;
+	}
+    }
+    parent->composite.num_managed_children =
+    	parent->composite.num_managed_children - newCount;
+
+    ((CompositeWidgetClass)parent->core.widget_class)
+        ->compositeClass.change_managed(parent);
+}
+
+void XtCompositeRemoveChild(child)
+    Widget child;
+{
+    XtCompositeRemoveChildren(&child, 1);
+}
+
+void XtCompositeAddChildren(children, childCount)
+    WidgetList children;
+    Cardinal childCount;
+{
+    CompositeWidget	parent;
+    register Widget	child;
+    Cardinal		newCount, oldCount;
+
+    if (childCount == 0) return;
+    parent = (CompositeWidget) children[0]->core.parent;
+    if (parent->core.being_destroyed) return;
+
+    newCount = 0;
+    for (oldCount = 0; oldCount < childCount; oldCount++) {
+	child = children[oldCount];
+        if ((CompositeWidget) child->core.parent != parent) {
+	    XtWarning("Not all children have same parent in XtAddChildren");
+	} else if ((child->core.managed) || (child->core.being_destroyed)) {
+	    /* Do nothing */
+	} else {
+	    if (XtIsRealized(child)) {
+		/* ||| Do mapping after change_managed */
+		XtMapWidget(child);
+	    }
+	    child->core.managed = TRUE;
+	    newCount++;
+	}
+    }
+    parent->composite.num_managed_children =
+    	parent->composite.num_managed_children + newCount;
+
+    ((CompositeWidgetClass)parent->core.widget_class)
+        ->compositeClass.change_managed(parent);
+}
+
+void XtCompositeAddChild(child)
+    Widget child;
+{
+    XtCompositeAddChildren(&child, 1);
+}
+
 void XtSetSensitive(widget,sensitive)
     Widget    widget;
     Boolean   sensitive;

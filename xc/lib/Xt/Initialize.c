@@ -137,6 +137,8 @@ TopLevelWidgetClassData topLevelWidgetClassData = {
     /* superclass         */    (WidgetClass) &compositeWidgetClassData,
     /* class_name         */    "TopLevel",
     /* size               */    sizeof(TopLevelWidgetData),
+    /* Class Initializer  */	NULL,
+    /* Class init'ed ?    */	FALSE,
     /* initialize         */    Initialize,
     /* realize            */    Realize,
     /* actions            */    NULL,
@@ -187,8 +189,10 @@ static void
 init_atoms(dpy)
 Display *dpy;
 {
+/* |||
 	XtHasInput = XInternAtom(dpy, "XtHasInput", False);
 	XtTimerExpired = XInternAtom(dpy, "XtTimerExpired", False);
+*/
 }
 
 /*
@@ -281,8 +285,8 @@ Widget wid;
 		  |(flag & (WidthValue & HeightValue))? USSize : 0;
 	}
 
-	XtSetEventHandler(wid, EventHandler, StructureNotifyMask,
-			       FALSE, NULL);
+	XtSetEventHandler(wid, StructureNotifyMask,FALSE, EventHandler, 
+			        NULL);
 }
 
 static void
@@ -505,7 +509,7 @@ Widget *old, *new;
 		ow ->top.title = nw->top.title;
 		name = TRUE;
 	}
-	if((name || pixmap || window || title) && IsRealized(ow)) {
+	if((name || pixmap || window || title) && XtIsRealized(ow)) {
 		if(name) {
 			XSetIconName(XtDisplay(ow), ow->core.window, ow->top.icon_name);
 		}
@@ -545,7 +549,7 @@ Cardinal  *argc;
 char *argv[];
 char *name;
 char *classname;
-Widget root;
+Widget *root;
 {
 	char  displayName[256];
 	char *displayName_ptr = displayName;
@@ -601,6 +605,9 @@ Widget root;
 		strcat(buf, displayName);
 		XtError(buf);
 	}
+        toplevelDisplay = dpy;
+	XSynchronize(dpy, TRUE);
+
         XtSetArg(args[argCount], "display", dpy);
         argCount++;
         XtSetArg(args[argCount], "screen", dpy->default_screen);
@@ -634,11 +641,11 @@ Widget root;
 	/*
 	     Create the top level widget.
 	 */
-	root = TopLevelCreate(name, topLevelWidgetClass,
+	*root = TopLevelCreate(name, topLevelWidgetClass,
 			      &(dpy->screens[dpy->default_screen]),
 			       args, argCount);
 
-	w = (TopLevelWidget) root;
+	w = (TopLevelWidget) *root;
 	w->top.argc = saved_argc;
 	w->top.argv = saved_argv;
 	strcpy(w->top.classname = (char *)XtMalloc(strlen(classname))

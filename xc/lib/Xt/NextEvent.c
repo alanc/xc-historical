@@ -344,8 +344,7 @@ int condition;
  * return next event;
  */
 
-void XtNextEvent(dpy, event)
-Display *dpy;
+void XtNextEvent(event)
 XEvent *event;
 {
 	struct Select_event *se_ptr;
@@ -366,8 +365,8 @@ XEvent *event;
     }
 
     for(;;) {
-        if(XPending(dpy) || Claims_X_is_pending) {
-	    XNextEvent(dpy, event);
+        if(XPending(toplevelDisplay) || Claims_X_is_pending) {
+	    XNextEvent(toplevelDisplay, event);
 	    return;
 	}
 	if((se_ptr = outstanding_queue) != NULL) {
@@ -381,7 +380,7 @@ XEvent *event;
 	      if (ISAFTER(&Timer_next, &cur_time)){
 		  /* timer has expired */
 		  ev->type = ClientMessage;
-		  ev->display = dpy;
+		  ev->display = toplevelDisplay;
 		  ev->window =  Timer_queue->Te_wID->core.window;
 		  ev->message_type = XtTimerExpired;
 		  ev->format = 32;
@@ -396,10 +395,10 @@ XEvent *event;
 	      }
       }/* No timers ready time to wait */
 		/* should be done only once */
-	if(ConnectionNumber(dpy) +1 > composite.nfds) 
-	  composite.nfds = ConnectionNumber(dpy) + 1;
+	if(ConnectionNumber(toplevelDisplay) +1 > composite.nfds) 
+	  composite.nfds = ConnectionNumber(toplevelDisplay) + 1;
 	while(1) {
-		FD_SET(ConnectionNumber(dpy),&composite.rmask);
+		FD_SET(ConnectionNumber(toplevelDisplay),&composite.rmask);
 		if (Timer_queue) {
 			TIMEDELTA(&wait_time, &Timer_next, &cur_time);
 			wait_time_ptr = &wait_time;
@@ -425,7 +424,7 @@ XEvent *event;
 	  continue;
 	for(i = 0; i < composite.nfds && nfound > 0;i++) {
 	    if(FD_ISSET(i,&rmaskfd)) {
-	      if(i == ConnectionNumber(dpy)){
+	      if(i == ConnectionNumber(toplevelDisplay)){
 		Claims_X_is_pending= 1;
 		nfound--;
 	      } else {
@@ -449,8 +448,7 @@ XEvent *event;
 }
 
 
-XtPending(dpy)
-Display *dpy;
+XtPending()
 {
     Fd_set rmask, wmask, emask;
     struct timeval cur_time, wait_time;
@@ -459,7 +457,7 @@ Display *dpy;
 
     (void) gettimeofday(&cur_time, &curzone);
     
-    if(ret = XPending(dpy))
+    if(ret = XPending(toplevelDisplay))
       return(ret);
 
     if(outstanding_queue)
@@ -468,9 +466,9 @@ Display *dpy;
     if(ISAFTER(&cur_time, &(Timer_queue->Te_tim.ti_value)))
 	return(1);
 
-    FD_SET(ConnectionNumber(dpy),&composite.rmask); /*should be done only once */
-    if(ConnectionNumber(dpy) +1 > composite.nfds) 
-      composite.nfds = ConnectionNumber(dpy) + 1;
+    FD_SET(ConnectionNumber(toplevelDisplay),&composite.rmask); /*should be done only once */
+    if(ConnectionNumber(toplevelDisplay) +1 > composite.nfds) 
+      composite.nfds = ConnectionNumber(toplevelDisplay) + 1;
     wait_time.tv_sec = 0;
     wait_time.tv_usec = 0;
     rmask = composite.rmask;
@@ -482,8 +480,7 @@ Display *dpy;
     return(0);  
 }	
 
-XtPeekEvent(dpy, event)
-Display *dpy;
+XtPeekEvent(event)
 XEvent *event;
 {
     Fd_set rmask, wmask, emask;
@@ -493,8 +490,8 @@ XEvent *event;
     int Claims_X_is_pending = 0;
     XClientMessageEvent *ev = (XClientMessageEvent *)event;
 
-    if(XPending(dpy)){
-	XPeekEvent(dpy, event); /* Xevents */
+    if(XPending(toplevelDisplay)){
+	XPeekEvent(toplevelDisplay, event); /* Xevents */
 	return(1);
     }
     if(outstanding_queue){
@@ -504,7 +501,7 @@ XEvent *event;
     (void) gettimeofday(&cur_time, &curzone);
     if(ISAFTER(&cur_time, &(Timer_queue->Te_tim.ti_value))) {
 	ev->type = ClientMessage;
-	ev->display = dpy;
+	ev->display = toplevelDisplay;
 	ev->window =  Timer_queue->Te_wID->core.window;
 		  ev->format = 32;
 	ev->message_type = XtTimerExpired;
@@ -513,9 +510,9 @@ XEvent *event;
 	return(1);
     }
     
-    FD_SET(ConnectionNumber(dpy),&composite.rmask);/* should be done only once */
-    if(ConnectionNumber(dpy) +1 > composite.nfds) 
-      composite.nfds = ConnectionNumber(dpy) + 1;
+    FD_SET(ConnectionNumber(toplevelDisplay),&composite.rmask);/* should be done only once */
+    if(ConnectionNumber(toplevelDisplay) +1 > composite.nfds) 
+      composite.nfds = ConnectionNumber(toplevelDisplay) + 1;
     TIMEDELTA(&wait_time, &Timer_next, &cur_time);
     rmask = composite.rmask;
     wmask = composite.wmask;
@@ -524,7 +521,7 @@ XEvent *event;
     
     for(i = 0; i < composite.nfds && nfound > 0;i++) {
 	if(FD_ISSET(i,&rmask)) {
-	    if(i == ConnectionNumber(dpy)) {
+	    if(i == ConnectionNumber(toplevelDisplay)) {
 		Claims_X_is_pending= 1;
 	      } else {
 		Select_rqueue[i] -> Se_oq = outstanding_queue;
@@ -544,8 +541,8 @@ XEvent *event;
 	}
 
       }
-    if(Claims_X_is_pending && XPending(dpy)) {
-      XPeekEvent(dpy, event);
+    if(Claims_X_is_pending && XPending(toplevelDisplay)) {
+      XPeekEvent(toplevelDisplay, event);
       return(1);
     }
 

@@ -129,7 +129,7 @@ typedef struct {
     caddr_t	xrm_default_addr; /* Default resource address		*/
 } XrmResource, *XrmResourceList;
 
-XrmResourceList XrmCompileResourceList(resources, resourceCount)
+XrmCompileResourceList(resources, resourceCount)
     register ResourceList resources;
     	     Cardinal	  resourceCount;
 {
@@ -147,6 +147,7 @@ XrmResourceList XrmCompileResourceList(resources, resourceCount)
     	xrmres->xrm_default_type = XrmAtomToQuark(resources->default_type);
 	xrmres->xrm_default_addr = resources->default_addr;
     }
+
 } /* XrmCompileResourceList */
 
 /* ||| References to display should be references to screen */
@@ -193,11 +194,10 @@ void XrmGetResources(
 
     if (resourceCount != 0) {
 	/* Compile resource list if needed */
-	if (resources->resource_offset >= 0) {
-	    xrmres = XrmCompileResourceList(resources, resourceCount);
-	} else {
-	    xrmres = (XrmResourceList) resources;
-        }
+	if (((int)resources->resource_offset) >= 0) {
+	    XrmCompileResourceList(resources, resourceCount);
+	}
+	xrmres = (XrmResourceList) resources;
 
 	/* Mark each resource as not found on arg list */
 	for (j = 0; j < resourceCount; j++) {

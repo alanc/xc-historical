@@ -166,9 +166,11 @@ typedef Widget *WidgetList;
 
 /* Some macros to get frequently used components of a widget */
 
-#define XtDisplay(w) (w->core.screen->display)
-#define XtScreen(w) (w->core.screen)
-#define XtWindow(w) (w->core.window)
+#define XtDisplay(w)    (w->core.screen->display)
+#define XtScreen(w)     (w->core.screen)
+#define XtWindow(w)     (w->core.window)
+#define XtMapWidget(w)  XMapWindow(XtDisplay(w), XtWindow(w))
+#define XtUnmapWidget(w) XUnmapWindow(XtDisplay(w), XtWindow(w))
 
 /******************************************************************
  *
@@ -454,7 +456,11 @@ extern ArgList XtMergeArgLists(); /* args1, argCount1, args2, argCount2 */
  * Event Management
  *
  ****************************************************************/
+
+/* ||| These will be private */
 CallbackList DestroyList;
+Display *toplevelDisplay;
+
 typedef enum {pass,ignore,remap} GrabType;
 typedef void (*XtEventHandler)(); /* widget,event, closure */
     /* Widget  widget   */
@@ -484,12 +490,12 @@ typedef struct _MaskRec {
 #define not_sensitive FALSE
 GrabRec *grabList;
 
-extern void XtSetEventHandler(); /* widget, proc, eventMask, closure , other */
+extern void XtSetEventHandler(); /* widget, eventMask, other, proc, closure */
     /* Widget		widget      */
-    /* XtEventHandler   proc;       */
     /* EventMask        eventMask;  */
-    /* caddr_t		closure ;   */
     /* Boolean          other;      */
+    /* XtEventHandler   proc;       */
+    /* caddr_t		closure ;   */
 
 
 extern void XtRemoveEventHandler(); /* widget, proc, closure */
@@ -592,6 +598,7 @@ extern GC XtGetGC(); /* widget, valueMask, values */
     /* XGCValues *values; */
 
 extern void XtDestroyGC ();
+    /* Widget    widget */
     /* GC gc; */
 
 
@@ -659,7 +666,17 @@ extern void XtDefineTranslation ();
 
 
 extern void XtSetErrorHandler(); /* errorProc */
-  /* (*handler)(String); */
+  /* (*errorProc)(String); */
+
+extern void XtError();  /* message */
+    /* String message */
+
+extern void XtSetWarningHandler(); /* errorProc */
+  /* (*errorProc)(String); */
+
+extern void XtWarning();  /* message */
+    /* String message */
+
 
 #endif _Xtintrinsic_h
 /* DON'T ADD STUFF AFTER THIS #endif */

@@ -159,8 +159,8 @@ GC XtGetGC(widget, valueMask, values)
     cur->screen = XtScreen(widget);
     cur->depth = widget->core.depth;
     if (XtWindow(widget) == NULL)
-	drawable = XCreatePixmap(XtDisplay(widget), XtScreen(widget),
-			0,0,widget->core.depth);
+	drawable = XCreatePixmap(XtDisplay(widget), XtScreen(widget)->root,
+			1,1,widget->core.depth);
     else drawable = XtWindow(widget);
     cur->gc = XCreateGC(XtDisplay(widget), drawable, valueMask, values);
     cur->valueMask = valueMask;

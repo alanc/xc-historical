@@ -617,6 +617,8 @@ void DefineTranslation(w)
 
     CompiledActionTable	compiledActionTable;
 
+    if (w->core.widget_class->coreClass.actions == NULL) return;
+
     compiledActionTable =
 	CompileActionTable(w->core.widget_class->coreClass.actions);
     ParseTranslationTable(w, compiledActionTable);
@@ -643,5 +645,5 @@ void TranslateInitialize()
     for (i = 0; events[i].event != NULL; i++)
          events[i].signature = XrmAtomToQuark(events[i].event);
     for (i = 0; modifiers[i].name != NULL; i++)
-         modifiers[i].signature = XAtomToQuark(modifiers[i].name);
+         modifiers[i].signature = XrmAtomToQuark(modifiers[i].name);
 } 
