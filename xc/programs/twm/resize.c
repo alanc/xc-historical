@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: resize.c,v 1.61 89/12/10 17:46:46 jim Exp $
+ * $XConsortium: resize.c,v 1.62 89/12/10 19:20:13 jim Exp $
  *
  * window resizing borrowed from the "wm" window manager
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: resize.c,v 1.61 89/12/10 17:46:46 jim Exp $";
+"$XConsortium: resize.c,v 1.62 89/12/10 19:20:13 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -166,6 +166,7 @@ Bool fromtitlebar;
 		   Scr->SizeStringWidth + SIZE_HINDENT * 2, 
 		   Scr->SizeFont.height + SIZE_VINDENT * 2);
     XMapRaised(dpy, Scr->SizeWindow);
+    InstallRootColormap();
     last_width = 0;
     last_height = 0;
     DisplaySize(tmp_win, origWidth, origHeight);
@@ -443,6 +444,8 @@ EndResize()
 
     if (!Scr->NoRaiseResize)
         XRaiseWindow(dpy, tmp_win->frame);
+
+    UninstallRootColormap();
 
     ResizeWindow = NULL;
 }

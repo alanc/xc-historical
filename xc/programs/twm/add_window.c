@@ -28,7 +28,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: add_window.c,v 1.126 89/12/10 17:46:37 jim Exp $
+ * $XConsortium: add_window.c,v 1.127 89/12/10 19:20:08 jim Exp $
  *
  * Add a new window, put the titlbar and other stuff around
  * the window
@@ -39,7 +39,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: add_window.c,v 1.126 89/12/10 17:46:37 jim Exp $";
+"$XConsortium: add_window.c,v 1.127 89/12/10 19:20:08 jim Exp $";
 #endif /* lint */
 
 #include <stdio.h>
@@ -162,7 +162,7 @@ IconMgr *iconp;
     tmp_win->zoomed = ZOOM_NONE;
     tmp_win->iconmgr = iconm;
     tmp_win->iconmgrp = iconp;
-    tmp_win->number_cwins = 0;
+    tmp_win->cmaps.number_cwins = 0;
 
     XSelectInput(dpy, tmp_win->w, PropertyChangeMask);
     XGetWindowAttributes(dpy, tmp_win->w, &tmp_win->attr);
@@ -391,6 +391,7 @@ IconMgr *iconp;
 	    
 	    XResizeWindow (dpy, Scr->SizeWindow, width + SIZE_HINDENT, height);
 	    XMapRaised(dpy, Scr->SizeWindow);
+	    InstallRootColormap();
 
 	    FBF(Scr->DefaultC.fore, Scr->DefaultC.back,
 		Scr->SizeFont.font->fid);
@@ -504,6 +505,7 @@ IconMgr *iconp;
 
 	    MoveOutline(Scr->Root, 0, 0, 0, 0, 0, 0);
 	    XUnmapWindow(dpy, Scr->SizeWindow);
+	    UninstallRootColormap();
 	    XUngrabPointer(dpy, CurrentTime);
 
 	    tmp_win->attr.x = AddingX;
@@ -1312,10 +1314,10 @@ FetchWmColormapWindows (tmp)
 
     number_cmap_windows = 0;
 
-    if (previously_installed = (Scr->cmapInfo.cwins == tmp->cwins &&
-				tmp->number_cwins)) {
-	cwins = Scr->cmapInfo.cwins;
-	for (i = 0; i < Scr->cmapInfo.number_cwins; i++)
+    if (previously_installed = (Scr->cmapInfo.cmaps == &tmp->cmaps &&
+				tmp->cmaps.number_cwins)) {
+	cwins = tmp->cmaps.cwins;
+	for (i = 0; i < tmp->cmaps.number_cwins; i++)
 	    cwins[i]->colormap->state = 0;
     }
 
@@ -1331,33 +1333,34 @@ FetchWmColormapWindows (tmp)
 		/*
 		 * Copy any existing entries into new list.
 		 */
-		for (j = 0; j < tmp->number_cwins; j++) {
-		    if (tmp->cwins[j]->w == cmap_windows[i]) {
-			cwins[i] = tmp->cwins[j];
+		for (j = 0; j < tmp->cmaps.number_cwins; j++) {
+		    if (tmp->cmaps.cwins[j]->w == cmap_windows[i]) {
+			cwins[i] = tmp->cmaps.cwins[j];
 			cwins[i]->refcnt++;
-		break;
-	    }
-	}
+			break;
+		    }
+		}
 
 		/*
 		 * If the colormap window is not being pointed by
 		 * some other applications colormap window list,
 		 * create a new entry.
 		 */
-		if (j == tmp->number_cwins)
+		if (j == tmp->cmaps.number_cwins) {
 		    if (XFindContext(dpy, cmap_windows[i], ColormapContext,
 				     (caddr_t *)&cwins[i]) == XCNOENT) {
 			if ((cwins[i] = CreateColormapWindow(cmap_windows[i],
-				    (Bool) tmp->number_cwins == 0,
+				    (Bool) tmp->cmaps.number_cwins == 0,
 				    True)) == NULL) {
 			    int k;
 			    for (k = i + 1; k < number_cmap_windows; k++)
 				cmap_windows[k-1] = cmap_windows[k];
 			    i--;
 			    number_cmap_windows--;
-		}
+			}
 		    } else
 			cwins[i]->refcnt++;
+		}
 	    }
 	}
     }
@@ -1369,24 +1372,24 @@ FetchWmColormapWindows (tmp)
 	number_cmap_windows = 1;
 
 	cwins = (ColormapWindow **) malloc(sizeof(ColormapWindow *));
-	if (XFindContext(dpy, tmp->w, ColormapContext, (caddr_t *)&cwins[0]) == XCNOENT)
+	if (XFindContext(dpy, tmp->w, ColormapContext, (caddr_t *)&cwins[0]) ==
+		XCNOENT)
 	    cwins[0] = CreateColormapWindow(tmp->w,
-			    (Bool) tmp->number_cwins == 0, False);
+			    (Bool) tmp->cmaps.number_cwins == 0, False);
 	else
 	    cwins[0]->refcnt++;
     }
 
-    if (tmp->number_cwins)
+    if (tmp->cmaps.number_cwins)
 	free_cwins(tmp);
 
-    tmp->cwins = cwins;
-    tmp->number_cwins = number_cmap_windows;
-
-    if (previously_installed) {
-	Scr->cmapInfo.cwins = cwins;
-	Scr->cmapInfo.number_cwins = number_cmap_windows;
-	InstallWindowColormaps(PropertyNotify, (char *) tmp);
-    }
+    tmp->cmaps.cwins = cwins;
+    tmp->cmaps.number_cwins = number_cmap_windows;
+    if (number_cmap_windows > 1)
+	tmp->cmaps.scoreboard = (char *) calloc(1, number_cmap_windows);
+		
+    if (previously_installed)
+	InstallWindowColormaps(PropertyNotify, (TwmWindow *) NULL);
 
     return;
 }

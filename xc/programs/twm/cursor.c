@@ -21,7 +21,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: cursor.c,v 1.8 89/12/10 17:46:30 jim Exp $
+ * $XConsortium: cursor.c,v 1.9 89/12/10 19:20:07 jim Exp $
  *
  * cursor creation code
  *
@@ -150,7 +150,7 @@ char *source, *mask;
     int sx, sy, mx, my;
     unsigned int sw, sh, mw, mh;
     Pixmap spm, mpm;
-    Colormap cmap = Scr->TwmRoot.cwins[0]->colormap->c;
+    Colormap cmap = Scr->TwmRoot.cmaps.cwins[0]->colormap->c;
 
     fore.pixel = Scr->Black;
     XQueryColor(dpy, cmap, &fore);

@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.123 89/12/10 17:47:06 jim Exp $
+ * $XConsortium: events.c,v 1.124 89/12/10 19:20:27 jim Exp $
  *
  * twm event handling
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: events.c,v 1.123 89/12/10 17:47:06 jim Exp $";
+"$XConsortium: events.c,v 1.124 89/12/10 19:20:27 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -88,8 +88,6 @@ void HandleCreateNotify();
 void HandleShapeNotify ();
 extern int ShapeEventBase, ShapeErrorBase;
 #endif
-
-static void ReinstallWindowColormaps();
 
 void AutoRaiseWindow (tmp)
     TwmWindow *tmp;
@@ -310,7 +308,7 @@ HandleEvents()
 		}
 	    }
 	    if (ColortableThrashing && !QLength(dpy)) {
-		ReinstallWindowColormaps();
+		InstallWindowColormaps(ColormapNotify, (TwmWindow *) NULL);
 	    }
 	    WindowMoved = FALSE;
 	    XNextEvent(dpy, &Event);
@@ -361,85 +359,74 @@ HandleColormapNotify()
 	    cmap->state |= CM_INSTALLED;
 
 	if (cmap->state & CM_INSTALLABLE)
-	    InstallWindowColormaps(ColormapNotify, (char *) cwin);
+	    InstallWindowColormaps(ColormapNotify, (TwmWindow *) NULL);
 
 	if (cmap->refcnt == 0)
 	{
 	    XDeleteContext(dpy, cmap->c, ColormapContext);
 	    free((char *) cmap);
-	    }
+	}
 
 	return;
     }
 
     if (cevent->state == ColormapUninstalled &&
-	(cmap->state & CM_INSTALLABLE) &&
-	cevent->serial >= Scr->cmapInfo.first_req)
+	(cmap->state & CM_INSTALLABLE))
     {
 	if (!(cmap->state & CM_INSTALLED))
-	return;
+	    return;
 	cmap->state &= ~CM_INSTALLED;
 
-	number_cwins = Scr->cmapInfo.number_cwins;
-
 	if (!ColortableThrashing)
-    {
+	{
 	    ColortableThrashing = TRUE;
 	    XSync(dpy, 0);
+	}
 
-	    if (Scr->cmapInfo.first_pass)
+	if (cevent->serial >= Scr->cmapInfo.first_req)
+	{
+	    number_cwins = Scr->cmapInfo.cmaps->number_cwins;
+
+	    /*
+	     * Find out which colortables collided.
+	     */
+
+	    cwins = Scr->cmapInfo.cmaps->cwins;
+	    for (i = j = -1, n = 0;
+		 (i == -1 || j == -1) && n < number_cwins;
+		 n++)
 	    {
-		if (Scr->cmapInfo.max_cwins < number_cwins)
+		if (i == -1 && cwins[n] == cwin)
 		{
-		    Scr->cmapInfo.scoreboard = (char *)
-			realloc(Scr->cmapInfo.scoreboard,
-				number_cwins*(number_cwins-1)/2);
-		    Scr->cmapInfo.max_cwins = number_cwins;
+		    i = n;
+		    continue;
 		}
 
-		bzero(Scr->cmapInfo.scoreboard,
-		      number_cwins*(number_cwins-1)/2);
-
-		Scr->cmapInfo.first_pass = FALSE;
-	    }
-	}
-
-	/*
-	 * Find out which colortables collided.
-	 */
-
-	cwins = Scr->cmapInfo.cwins;
-	for (i = j = -1, n = 0; (i == -1 || j == -1) && n < number_cwins; n++)
-	{
-	    if (i == -1 && cwins[n] == cwin)
-	    {
-		i = n;
-		continue;
+		if (j == -1 &&
+		    cwins[n]->colormap->install_req == cevent->serial)
+		{
+		    j = n;
+		    continue; /* for symetry and later added code */
+		}
 	    }
 
-	    if (j == -1 && cwins[n]->colormap->install_req == cevent->serial)
+	    /* need if test in case client was fooling arround w/
+	     * XInstallColormap() or XUninstallColormap()
+	     */
+	    if (i != -1 && j != -1)
 	    {
-		j = n;
-		continue; /* for symetry and later added code */
-	}
-    }
-
-	/* need if test in case client was fooling arround w/
-	 * XInstallColormap() or XUninstallColormap()
-	 */
-	if (i != -1 && j != -1)
-	{
-	    /* lower diagonal index calculation */
-	    if (i > j)
-		n = i*(i-1)/2 + j;
-	    else
-		n = j*(j-1)/2 + i;
-	    Scr->cmapInfo.scoreboard[n] = 1;
-	} else {
-	    fprintf (stderr, 
-		     "%s:  client illegally changed colormap (i = %d, j = %d\n", 
-		     ProgramName, i, j);
-	    InstallWindowColormaps(ColormapNotify, (char *) cwin);
+		/* lower diagonal index calculation */
+		if (i > j)
+		    n = i*(i-1)/2 + j;
+		else
+		    n = j*(j-1)/2 + i;
+		Scr->cmapInfo.cmaps->scoreboard[n] = 1;
+	    } else {
+		fprintf (stderr, 
+	 "%s:  client illegally changed colormap (i = %d, j = %d\n", 
+			 ProgramName, i, j);
+		InstallWindowColormaps(ColormapNotify, (TwmWindow *) NULL);
+	    }
 	}
     }
 
@@ -479,7 +466,7 @@ HandleVisibilityNotify()
 	 cwin->visibility == VisibilityFullyObscured) &&
 	cmap->w == cwin->w) {
 	cwin->visibility = vevent->state;
-	InstallWindowColormaps(VisibilityNotify, (char *) cwin);
+	InstallWindowColormaps(VisibilityNotify, (TwmWindow *) NULL);
     } else
 	cwin->visibility = vevent->state;
 }
@@ -631,21 +618,22 @@ void free_cwins (tmp)
     int i;
     TwmColormap *cmap;
 
-    if (tmp->number_cwins) {
-	for (i = 0; i < tmp->number_cwins; i++) {
-	     if (--tmp->cwins[i]->refcnt == 0) {
-		cmap = tmp->cwins[i]->colormap;
+    if (tmp->cmaps.number_cwins) {
+	for (i = 0; i < tmp->cmaps.number_cwins; i++) {
+	     if (--tmp->cmaps.cwins[i]->refcnt == 0) {
+		cmap = tmp->cmaps.cwins[i]->colormap;
 		if (--cmap->refcnt == 0) {
 		    XDeleteContext(dpy, cmap->c, ColormapContext);
 		    free((char *) cmap);
+		}
+		XDeleteContext(dpy, tmp->cmaps.cwins[i]->w, ColormapContext);
+		free((char *) tmp->cmaps.cwins[i]);
+	    }
 	}
-		XDeleteContext(dpy, tmp->cwins[i]->w, ColormapContext);
-		free((char *) tmp->cwins[i]);
-    }
-	}
-	free((char *) tmp->cwins);
-	tmp->cwins = NULL;
-	tmp->number_cwins = 0;
+	free((char *) tmp->cmaps.cwins);
+	if (tmp->cmaps.number_cwins > 1)
+	    free(tmp->cmaps.scoreboard);
+	tmp->cmaps.number_cwins = 0;
     }
 }
 
@@ -1058,8 +1046,8 @@ HandleDestroyNotify()
         }
     }
 
-    if (Scr->cmapInfo.cwins == Tmp_win->cwins)
-	InstallWindowColormaps(DestroyNotify, (char *) &Scr->TwmRoot);
+    if (Scr->cmapInfo.cmaps == &Tmp_win->cmaps)
+	InstallWindowColormaps(DestroyNotify, &Scr->TwmRoot);
 
     /*
      * TwmWindows contain the following pointers
@@ -1396,13 +1384,19 @@ HandleButtonRelease()
 
 	if (!Scr->NoRaiseMove)
 	    XRaiseWindow(dpy, DragWindow);
+
+	if (!Scr->OpaqueMove)
+	    UninstallRootColormap();
+	else
+	    XSync(dpy, 0);
+
 	if (Scr->NumAutoRaises) {
-	    XSync (dpy, 0);
 	    enter_flag = TRUE;
 	    enter_win = NULL;
 	    raise_win = ((DragWindow == Tmp_win->frame && !Scr->NoRaiseMove)
 			 ? Tmp_win : NULL);
 	}
+
 	DragWindow = NULL;
 	ConstMove = FALSE;
     }
@@ -1536,6 +1530,8 @@ HandleButtonPress()
 	    MoveOutline(Scr->Root, 0, 0, 0, 0, 0, 0);
 	}
 	XUnmapWindow(dpy, Scr->SizeWindow);
+	if (!Scr->OpaqueMove)
+	    UninstallRootColormap();
 	ResizeWindow = None;
 	DragWindow = None;
 	cur = LeftButt;
@@ -1707,6 +1703,52 @@ HandleButtonPress()
     }
 }
 
+
+/***********************************************************************
+ *
+ *  Procedure:
+ *	HENQueueScanner - EnterNotify event q scanner
+ *
+ *	Looks at the queued events and determines if any matching
+ *	LeaveNotify events or EnterEvents deriving from the
+ *	termination of a grab are behind this event to allow
+ *	skipping of unnecessary processing.
+ *
+ ***********************************************************************
+ */
+
+typedef struct HENScanArgs {
+    Window w;		/* Window we are currently entering */
+    Bool leaves;	/* Any LeaveNotifies found for this window */
+    Bool inferior;	/* Was NotifyInferior the mode for LeaveNotify */
+    Bool enters;	/* Any EnterNotify events with NotifyUngrab */
+} HENScanArgs;
+
+/* ARGSUSED*/
+static Bool
+HENQueueScanner(dpy, ev, args)
+    Display *dpy;
+    XEvent *ev;
+    char *args;
+{
+    if (ev->type == LeaveNotify) {
+	if (ev->xcrossing.window == ((HENScanArgs *) args)->w &&
+	    ev->xcrossing.mode == NotifyNormal) {
+	    ((HENScanArgs *) args)->leaves = True;
+	    /*
+	     * Only the last event found matters for the Inferior field.
+	     */
+	    ((HENScanArgs *) args)->inferior =
+		(ev->xcrossing.detail == NotifyInferior);
+	}
+    } else if (ev->type == EnterNotify) {
+	if (ev->xcrossing.mode == NotifyUngrab)
+	    ((HENScanArgs *) args)->enters = True;
+    }
+
+    return (False);
+}
+
 /***********************************************************************
  *
  *  Procedure:
@@ -1715,23 +1757,40 @@ HandleButtonPress()
  ***********************************************************************
  */
 
-
 void
 HandleEnterNotify()
 {
     MenuRoot *mr;
     XEnterWindowEvent *ewp = &Event.xcrossing;
+    HENScanArgs scanArgs;
+    XEvent dummy;
 
     /*
      * if we aren't in the middle of menu processing
      */
     if (!ActiveMenu) {
 	/*
+	 * We're not interested in pseudo Enter/Leave events generated
+	 * from grab initiations.
+	 */
+	if (ewp->mode == NotifyGrab)
+	    return;
+
+	/*
+	 * Scan for Leave and Enter Notify events to see if we can avoid some
+	 * unnecessary processing.
+	 */
+	scanArgs.w = ewp->window;
+	scanArgs.leaves = scanArgs.enters = False;
+	(void) XCheckIfEvent(dpy, &dummy, HENQueueScanner, (char *) &scanArgs);
+
+	/*
 	 * if entering root window, restore twm default colormap so that 
 	 * titlebars are legible
 	 */
 	if (ewp->window == Scr->Root) {
-	    InstallWindowColormaps(EnterNotify, (char *) &Scr->TwmRoot);
+	    if (!scanArgs.leaves && !scanArgs.enters)
+		InstallWindowColormaps(EnterNotify, &Scr->TwmRoot);
 	    return;
 	}
 
@@ -1743,7 +1802,7 @@ HandleEnterNotify()
 	     * If currently in PointerRoot mode (indicated by FocusRoot), then
 	     * focus on this window
 	     */
-	    if (Scr->FocusRoot) {
+	    if (Scr->FocusRoot && (!scanArgs.leaves || scanArgs.inferior)) {
 		if (Tmp_win->list) ActiveIconManager(Tmp_win->list);
 		if (Tmp_win->mapped) {
 		    /*
@@ -1767,8 +1826,9 @@ HandleEnterNotify()
 			(Tmp_win->list && ewp->window == Tmp_win->list->w)) {
 			if (Tmp_win->hilite_w)				/* 1 */
 			  XMapWindow (dpy, Tmp_win->hilite_w);
-			InstallWindowColormaps (EnterNotify,		/* 2 */
-						(char *) &Scr->TwmRoot);
+			if (!scanArgs.leaves && !scanArgs.enters)
+			    InstallWindowColormaps (EnterNotify,	/* 2 */
+						    &Scr->TwmRoot);
 			SetBorder (Tmp_win, True);			/* 3 */
 			if (Tmp_win->title_w && Scr->TitleFocus)	/* 4 */
 			  SetFocus (Tmp_win);
@@ -1780,7 +1840,8 @@ HandleEnterNotify()
 			 * If we are entering the application window, install
 			 * its colormap(s).
 			 */
-			InstallWindowColormaps(EnterNotify, (char *) Tmp_win);
+			if (!scanArgs.leaves || scanArgs.inferior)
+			    InstallWindowColormaps(EnterNotify, Tmp_win);
 		    }
 		}			/* end if Tmp_win->mapped */
 	    }				/* end if FocusRoot */
@@ -1819,6 +1880,41 @@ HandleEnterNotify()
     return;
 }
 
+
+/***********************************************************************
+ *
+ *  Procedure:
+ *	HLNQueueScanner - LeaveNotify event q scanner
+ *
+ *	Looks at the queued events and determines if any
+ *	EnterNotify events are behind this event to allow
+ *	skipping of unnecessary processing.
+ *
+ ***********************************************************************
+ */
+
+typedef struct HLNScanArgs {
+    Window w;		/* The window getting the LeaveNotify */
+    Bool enters;	/* Any EnterNotify event at all */
+    Bool matches;	/* Any matching EnterNotify events */
+} HLNScanArgs;
+
+/* ARGSUSED*/
+static Bool
+HLNQueueScanner(dpy, ev, args)
+    Display *dpy;
+    XEvent *ev;
+    char *args;
+{
+    if (ev->type == EnterNotify && ev->xcrossing.mode != NotifyGrab) {
+	((HLNScanArgs *) args)->enters = True;
+	if (ev->xcrossing.window == ((HLNScanArgs *) args)->w)
+	    ((HLNScanArgs *) args)->matches = True;
+    }
+
+    return (False);
+}
+
 /***********************************************************************
  *
  *  Procedure:
@@ -1830,12 +1926,26 @@ HandleEnterNotify()
 void
 HandleLeaveNotify()
 {
+    HLNScanArgs scanArgs;
+    XEvent dummy;
+
     if (Tmp_win != NULL)
     {
-	Bool inicon = (Tmp_win->list &&
-		       Tmp_win->list->w == Event.xcrossing.window);
+	Bool inicon;
 
-	if (Scr->RingLeader && Scr->RingLeader == Tmp_win) {
+	/*
+	 * We're not interested in pseudo Enter/Leave events generated
+	 * from grab initiations and terminations.
+	 */
+	if (Event.xcrossing.mode != NotifyNormal)
+	    return;
+
+	inicon = (Tmp_win->list &&
+		  Tmp_win->list->w == Event.xcrossing.window);
+
+	if (Scr->RingLeader && Scr->RingLeader == Tmp_win &&
+	    (Event.xcrossing.detail != NotifyInferior &&
+	     Event.xcrossing.window != Tmp_win->w)) {
 	    if (!inicon) {
 		if (Tmp_win->mapped) {
 		    Tmp_win->ring.cursor_valid = False;
@@ -1850,8 +1960,20 @@ HandleLeaveNotify()
 	    Scr->RingLeader = (TwmWindow *) NULL;
 	}
 	if (Scr->FocusRoot) {
+
 	    if (Event.xcrossing.detail != NotifyInferior) {
-		if (Event.xcrossing.window == Tmp_win->frame || inicon) {
+
+		/*
+		 * Scan for EnterNotify events to see if we can avoid some
+		 * unnecessary processing.
+		 */
+		scanArgs.w = Event.xcrossing.window;
+		scanArgs.enters = scanArgs.matches = False;
+		(void) XCheckIfEvent(dpy, &dummy, HLNQueueScanner,
+				     (char *) &scanArgs);
+
+		if ((Event.xcrossing.window == Tmp_win->frame &&
+			!scanArgs.matches) || inicon) {
 		    if (Tmp_win->list) NotActiveIconManager(Tmp_win->list);
 		    if (Tmp_win->hilite_w)
 		      XUnmapWindow (dpy, Tmp_win->hilite_w);
@@ -1860,9 +1982,9 @@ HandleLeaveNotify()
 			Tmp_win->protocols & DoesWmTakeFocus)
 		      SetFocus ((TwmWindow *) NULL);
 		    Scr->Focus = NULL;
-		} else if (Event.xcrossing.window == Tmp_win->w) {
-		    InstallWindowColormaps (LeaveNotify,
-					    (char *) &Scr->TwmRoot);
+		} else if (Event.xcrossing.window == Tmp_win->w &&
+				!scanArgs.enters) {
+		    InstallWindowColormaps (LeaveNotify, &Scr->TwmRoot);
 		}
 	    }
 	}
@@ -2092,27 +2214,76 @@ static void flush_expose (w)
 }
 
 
-static void
-ReinstallWindowColormaps ()
+/***********************************************************************
+ *
+ *  Procedure:
+ *	InstallWindowColormaps - install the colormaps for one twm window
+ *
+ *  Inputs:
+ *	type	- type of event that caused the installation
+ *	tmp	- for a subset of event types, the address of the
+ *		  window structure, whose colormaps are to be installed.
+ *
+ ***********************************************************************
+ */
+
+InstallWindowColormaps (type, tmp)
+    int type;
+    TwmWindow *tmp;
 {
     int i, j, n, number_cwins, state;
     ColormapWindow **cwins, *cwin, **maxcwin = NULL;
     TwmColormap *cmap;
-    char *row;
+    char *row, *scoreboard;
 
-    ColortableThrashing = FALSE; /* till this pass starts thrashing */
+    switch (type) {
+    case EnterNotify:
+    case LeaveNotify:
+    case DestroyNotify:
+    default:
+	/* Save the colormap to be loaded for when force loading of
+	 * root colormap(s) ends.
+	 */
+	Scr->cmapInfo.pushed_window = tmp;
+	/* Don't load any new colormap if root colormap(s) has been
+	 * force loaded.
+	 */
+	if (Scr->cmapInfo.root_pushes)
+	    return;
+	/* Don't reload the currend window colormap list.
+	 */
+	if (Scr->cmapInfo.cmaps == &tmp->cmaps)
+	    return;
+	if (Scr->cmapInfo.cmaps)
+	    for (i = Scr->cmapInfo.cmaps->number_cwins,
+		 cwins = Scr->cmapInfo.cmaps->cwins; i-- > 0; cwins++)
+		(*cwins)->colormap->state &= ~CM_INSTALLABLE;
+	Scr->cmapInfo.cmaps = &tmp->cmaps;
+	break;
+    
+    case PropertyNotify:
+    case VisibilityNotify:
+    case ColormapNotify:
+	break;
+    }
 
-    number_cwins = Scr->cmapInfo.number_cwins;
-    cwins = Scr->cmapInfo.cwins;
+    number_cwins = Scr->cmapInfo.cmaps->number_cwins;
+    cwins = Scr->cmapInfo.cmaps->cwins;
+    scoreboard = Scr->cmapInfo.cmaps->scoreboard;
+
+    ColortableThrashing = FALSE; /* in case installation aborted */
 
     state = CM_INSTALLED;
 
-    for (i = n = 0; i < number_cwins && n < Scr->cmapInfo.maxCmaps; i++) {
+    for (i = n = 0; i < number_cwins; i++) {
 	cwin = cwins[i];
 	cmap = cwin->colormap;
-	cmap->state &= ~CM_INSTALLED;
-	if (cwin->visibility != VisibilityFullyObscured) {
-	    row = Scr->cmapInfo.scoreboard + (i*(i-1)/2);
+	cmap->state |= CM_INSTALLABLE;
+	cmap->state &= ~CM_INSTALL;
+	cmap->w = cwin->w;
+	if (cwin->visibility != VisibilityFullyObscured &&
+	    n < Scr->cmapInfo.maxCmaps) {
+	    row = scoreboard + (i*(i-1)/2);
 	    for (j = 0; j < i; j++)
 		if (row[j] && (cwins[j]->colormap->state & CM_INSTALL))
 		    break;
@@ -2123,76 +2294,9 @@ ReinstallWindowColormaps ()
 	    state &= (cmap->state & CM_INSTALLED);
 	    cmap->state |= CM_INSTALL;
 	}
-	}
-
-    if (!(state & CM_INSTALLED))
-	Scr->cmapInfo.first_req = NextRequest(dpy);
-
-    for ( ; n > 0; maxcwin--) {
-	cmap = (*maxcwin)->colormap;
-	if (cmap->state & CM_INSTALL) {
-	    cmap->state &= ~CM_INSTALL;
-	    if (!(state & CM_INSTALLED)) {
-		cmap->install_req = NextRequest(dpy);
-		XInstallColormap(dpy, cmap->c);
-    }
-	    cmap->state |= CM_INSTALLED;
-	    n--;
-	}
-    }
-}
-
-InstallWindowColormaps (type, opaque)
-    int type;
-    char *opaque;
-{
-    int i, n, number_cwins, state;
-    ColormapWindow **cwins, *cwin, **maxcwin = NULL;
-    TwmColormap *cmap;
-    TwmWindow *tmp_win;
-
-    switch (type) {
-    case EnterNotify:
-    case LeaveNotify:
-    case DestroyNotify:
-    default:
-	for (i = 0, cwins = Scr->cmapInfo.cwins; i < Scr->cmapInfo.number_cwins;
-	     i++, cwins++)
-	    (*cwins)->colormap->state &= ~CM_INSTALLABLE;
-	tmp_win = (TwmWindow *) opaque;
-	number_cwins = Scr->cmapInfo.number_cwins = tmp_win->number_cwins;
-	cwins = Scr->cmapInfo.cwins = tmp_win->cwins;
-	break;
-    
-    case PropertyNotify:
-    case VisibilityNotify:
-    case ColormapNotify:
-	number_cwins = Scr->cmapInfo.number_cwins;
-	cwins = Scr->cmapInfo.cwins;
-	break;
     }
 
-    Scr->cmapInfo.first_pass = TRUE;
-    ColortableThrashing = FALSE; /* in case installation aborted */
-
-    state = CM_INSTALLED;
-
-    for (i = n = 0; i < number_cwins; i++) {
-	cwin = cwins[i];
-	cmap = cwin->colormap;
-	cmap->state |= CM_INSTALLABLE;
-	cmap->w = cwin->w;
-	if (cwin->visibility != VisibilityFullyObscured &&
-	    n < Scr->cmapInfo.maxCmaps) {
-	    n++;
-	    maxcwin = &cwins[i];
-	    state &= (cmap->state & CM_INSTALLED);
-	    cmap->state |= CM_INSTALL;
-	}
-    }
-
-    if (!(state & CM_INSTALLED))
-	Scr->cmapInfo.first_req = NextRequest(dpy);
+    Scr->cmapInfo.first_req = NextRequest(dpy);
 
     for ( ; n > 0; maxcwin--) {
 	cmap = (*maxcwin)->colormap;
@@ -2207,6 +2311,84 @@ InstallWindowColormaps (type, opaque)
 	}
     }
 }
+
+/***********************************************************************
+ *
+ *  Procedures:
+ *	<Uni/I>nstallRootColormap - Force (un)loads root colormap(s)
+ *
+ *	   These matching routines provide a mechanism to insure that
+ *	   the root colormap(s) is installed during operations like
+ *	   rubber banding or menu display that require colors from
+ *	   that colormap.  Calls may be nested arbitrarily deeply,
+ *	   as long as there is one UninstallRootColormap call per
+ *	   InstallRootColormap call.
+ *
+ *	   The final UninstallRootColormap will cause the colormap list
+ *	   which would otherwise have be loaded to be loaded, unless
+ *	   Enter or Leave Notify events are queued, indicating some
+ *	   other colormap list would potentially be loaded anyway.
+ ***********************************************************************
+ */
+
+InstallRootColormap()
+{
+    TwmWindow *tmp;
+    if (Scr->cmapInfo.root_pushes == 0) {
+	/*
+	 * The saving and restoring of cmapInfo.pushed_window here
+	 * is a slimy way to remember the actual pushed list and
+	 * not that of the root window.
+	 */
+	tmp = Scr->cmapInfo.pushed_window;
+	InstallWindowColormaps(0, &Scr->TwmRoot);
+	Scr->cmapInfo.pushed_window = tmp;
+    }
+    Scr->cmapInfo.root_pushes++;
+}
+
+
+/* ARGSUSED*/
+static Bool
+UninstallRootColormapQScanner(dpy, ev, args)
+    Display *dpy;
+    XEvent *ev;
+    char *args;
+{
+    if (!*args)
+	if (ev->type == EnterNotify) {
+	    if (ev->xcrossing.mode != NotifyGrab)
+		*args = 1;
+	} else if (ev->type == LeaveNotify) {
+	    if (ev->xcrossing.mode == NotifyNormal)
+		*args = 1;
+	}
+
+    return (False);
+}
+
+UninstallRootColormap()
+{
+    char args;
+    XEvent dummy;
+
+    if (Scr->cmapInfo.root_pushes)
+	Scr->cmapInfo.root_pushes--;
+    
+    if (!Scr->cmapInfo.root_pushes) {
+	/*
+	 * If we have subsequent Enter or Leave Notify events,
+	 * we can skip the reload of pushed colormaps.
+	 */
+	XSync (dpy, 0);
+	args = 0;
+	(void) XCheckIfEvent(dpy, &dummy, UninstallRootColormapQScanner, &args);
+
+	if (!args)
+	    InstallWindowColormaps(0, Scr->cmapInfo.pushed_window);
+    }
+}
+
 
 #ifdef TRACE
 dumpevent (e)

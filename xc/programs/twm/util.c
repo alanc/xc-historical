@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: util.c,v 1.34 89/12/10 17:47:23 jim Exp $
+ * $XConsortium: util.c,v 1.35 89/12/10 19:20:41 jim Exp $
  *
  * utility routines for twm
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: util.c,v 1.34 89/12/10 17:47:23 jim Exp $";
+"$XConsortium: util.c,v 1.35 89/12/10 19:20:41 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -548,7 +548,7 @@ char *name;
 {
     XColor color, junkcolor;
     Status stat = 0;
-    Colormap cmap = Scr->TwmRoot.cwins[0]->colormap->c;
+    Colormap cmap = Scr->TwmRoot.cmaps.cwins[0]->colormap->c;
 
 #ifndef TOM
     if (!Scr->FirstTime)

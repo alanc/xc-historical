@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: gram.y,v 1.82 89/12/09 22:22:07 jim Exp $
+ * $XConsortium: gram.y,v 1.83 89/12/10 17:47:28 jim Exp $
  *
  * .twmrc command grammer
  *
@@ -55,9 +55,7 @@ static MenuRoot	*root, *pull = NULL;
 static MenuRoot *GetRoot();
 
 static Bool CheckWarpScreenArg(), CheckWarpRingArg();
-#ifdef comment
 static Bool CheckColormapArg();
-#endif
 static void GotButton(), GotKey(), GotTitleButton();
 static char *ptr;
 static name_list **list;
@@ -557,6 +555,17 @@ action		: FKEYWORD	{ $$ = $1; }
 					$$ = F_NOP;
 				    }
 				    break;
+				  case F_COLORMAP:
+				    if (CheckColormapArg (Action)) {
+					$$ = F_COLORMAP;
+				    } else {
+					twmrc_error_prefix();
+					fprintf (stderr,
+			"ignoring invalid f.colormap argument \"%s\"\n", 
+						 Action);
+					$$ = F_NOP;
+				    }
+				    break;
 				} /* end switch */
 				   }
 		;
@@ -791,7 +800,6 @@ static Bool CheckWarpRingArg (s)
 }
 
 
-#ifdef comment
 static Bool CheckColormapArg (s)
     register char *s;
 {
@@ -804,7 +812,7 @@ static Bool CheckColormapArg (s)
 
     return False;
 }
-#endif
+
 
 twmrc_error_prefix ()
 {

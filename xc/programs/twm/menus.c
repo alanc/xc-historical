@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.135 89/12/10 17:46:50 jim Exp $
+ * $XConsortium: menus.c,v 1.136 89/12/10 19:20:17 jim Exp $
  *
  * twm menu code
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: menus.c,v 1.135 89/12/10 17:46:50 jim Exp $";
+"$XConsortium: menus.c,v 1.136 89/12/10 19:20:17 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -739,7 +739,7 @@ MenuRoot *mr;
     int width;
     unsigned long valuemask;
     XSetWindowAttributes attributes;
-    Colormap cmap = Scr->TwmRoot.cwins[0]->colormap->c;
+    Colormap cmap = Scr->TwmRoot.cmaps.cwins[0]->colormap->c;
 
     Scr->EntryHeight = Scr->MenuFont.height + 4;
 
@@ -950,6 +950,8 @@ Bool PopUpMenu (menu, x, y, center)
 {
     if (!menu) return False;
 
+    InstallRootColormap();
+
     if (menu == Scr->Windows)
     {
 	TwmWindow *tmp_win;
@@ -1061,6 +1063,9 @@ PopDownMenu()
 	XUnmapWindow(dpy, tmp->w);
 	tmp->mapped = UNMAPPED;
     }
+
+    UninstallRootColormap();
+
     XFlush(dpy);
     ActiveMenu = NULL;
     ActiveItem = NULL;
@@ -1160,6 +1165,7 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
     case F_WARPTO:
     case F_WARPRING:
     case F_WARPTOICONMGR:
+    case F_COLORMAP:
 	break;
     default:
         XGrabPointer(dpy, Scr->Root, True,
@@ -1397,6 +1403,9 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
 	}
 	last_time = eventp->xbutton.time;
 
+	if (!Scr->OpaqueMove)
+	    InstallRootColormap();
+
 	while (TRUE)
 	{
 	    int done;
@@ -1415,6 +1424,8 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
 		if (Cancel)
 		{
 		    WindowMoved = FALSE;
+		    if (!Scr->OpaqueMove)
+			UninstallRootColormap();
 		    return TRUE;	/* XXX should this be FALSE? */
 		}
 		if (Event.type == ButtonRelease)
@@ -1535,6 +1546,10 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
 	    }
 
 	}
+
+	if (!Scr->OpaqueMove && DragWindow == None)
+	    UninstallRootColormap();
+
         break;
 
     case F_FUNCTION:
@@ -1633,7 +1648,7 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
 		      XUnmapWindow (dpy, Scr->Focus->hilite_w);
 		}
 
-		InstallWindowColormaps (0, (char *) tmp_win);
+		InstallWindowColormaps (0, tmp_win);
 		if (tmp_win->hilite_w) XMapWindow (dpy, tmp_win->hilite_w);
 		SetBorder (tmp_win, True);
 		SetFocus (tmp_win);
@@ -1734,6 +1749,18 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
 		WarpToScreen (PreviousScreen, 0);
 	    } else {
 		WarpToScreen (atoi (action), 0);
+	    }
+	}
+	break;
+
+    case F_COLORMAP:
+	{
+	    if (strcmp (action, COLORMAP_NEXT) == 0) {
+		BumpWindowColormap (tmp_win, 1);
+	    } else if (strcmp (action, COLORMAP_PREV) == 0) {
+		BumpWindowColormap (tmp_win, -1);
+	    } else {
+		BumpWindowColormap (tmp_win, 0);
 	    }
 	}
 	break;
@@ -2056,7 +2083,7 @@ FocusOnRoot()
 	SetBorder (Scr->Focus, False);
 	if (Scr->Focus->hilite_w) XUnmapWindow (dpy, Scr->Focus->hilite_w);
     }
-    InstallWindowColormaps(0, (char *) &Scr->TwmRoot);
+    InstallWindowColormaps(0, &Scr->TwmRoot);
     Scr->Focus = NULL;
     Scr->FocusRoot = TRUE;
 }
@@ -2375,6 +2402,51 @@ WarpToScreen (n, inc)
 }
 
 
+/*
+ * BumpWindowColormap - rotate our internal copy of WM_COLORMAP_WINDOWS
+ */
+
+BumpWindowColormap (tmp, inc)
+    TwmWindow *tmp;
+    int inc;
+{
+    int i, j, previously_installed, number_cwins;
+    ColormapWindow **cwins;
+
+    if (inc) {
+	cwins = (ColormapWindow **) malloc(sizeof(ColormapWindow *)*
+					   tmp->cmaps.number_cwins);
+	if (cwins) {
+	    if (previously_installed = (Scr->cmapInfo.cmaps == &tmp->cmaps &&
+					tmp->cmaps.number_cwins)) {
+		for (i = tmp->cmaps.number_cwins; i-- > 0; )
+		    tmp->cmaps.cwins[i]->colormap->state = 0;
+	    }
+
+	    for (i = 0; i < tmp->cmaps.number_cwins; i++) {
+		j = i - inc;
+		if (j >= tmp->cmaps.number_cwins)
+		    j -= tmp->cmaps.number_cwins;
+		else if (j < 0)
+		    j += tmp->cmaps.number_cwins;
+		cwins[j] = tmp->cmaps.cwins[i];
+	    }
+
+	    free((char *) tmp->cmaps.cwins);
+
+	    tmp->cmaps.cwins = cwins;
+
+	    if (tmp->cmaps.number_cwins > 1)
+		bzero(tmp->cmaps.scoreboard,
+		      tmp->cmaps.number_cwins*(tmp->cmaps.number_cwins-1)/2);
+
+	    if (previously_installed)
+		InstallWindowColormaps(PropertyNotify, (TwmWindow *) NULL);
+	}
+    } else
+	FetchWmColormapWindows (tmp);
+}
+
 HideIconManager ()
 {
     SetMapStateProp (Scr->iconmgr.twm_win, WithdrawnState);
@@ -2530,4 +2602,3 @@ SendTakeFocusMessage (tmp, timestamp)
 {
     send_clientmessage (tmp->w, _XA_WM_TAKE_FOCUS, timestamp);
 }
-

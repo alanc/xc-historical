@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: twm.h,v 1.55 89/12/10 17:46:24 jim Exp $
+ * $XConsortium: twm.h,v 1.56 89/12/10 19:20:00 jim Exp $
  *
  * twm include file
  *
@@ -182,11 +182,18 @@ typedef struct TwmColormap
 
 typedef struct ColormapWindow
 {
-    Window w;
-    TwmColormap *colormap;
-    int visibility;
+    Window w;			/* Window id */
+    TwmColormap *colormap;	/* Colormap for this window */
+    int visibility;		/* Visibility of this window */
     int refcnt;
 } ColormapWindow;
+
+typedef struct Colormaps
+{
+    ColormapWindow **cwins;	/* current list of colormap windows */
+    int number_cwins;		/* number of elements in current list */
+    char *scoreboard;		/* conflicts between installable colortables */
+} Colormaps;
 
 /* for each window that is on the display, one of these structures
  * is allocated and linked into a list 
@@ -259,8 +266,7 @@ typedef struct TwmWindow
     short wShaped;		/* this window has a bounding shape */
 #endif
     unsigned long protocols;	/* which protocols this window handles */
-    ColormapWindow **cwins;	/* WM_COLORMAP_WINDOWS list */
-    int number_cwins;		/* number of elements in cmapws */
+    Colormaps cmaps;		/* colormaps for this application */
     TBWindow *titlebuttons;
     SqueezeInfo *squeeze_info;	/* should the title be squeezed? */
     struct {
