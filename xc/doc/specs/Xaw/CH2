@@ -1,4 +1,4 @@
-.\" $XConsortium: CH2,v 1.16 91/09/30 13:46:25 converse Exp $
+.\" $XConsortium: CH2,v 1.17 94/04/14 18:16:46 kaleb Exp $
 .bp
 \&
 .sp 1
@@ -1108,9 +1108,9 @@ Example Programs
 The best way to understand how to use any programming library is by
 trying some simple examples.  A collection of example programs that
 introduces each of the widgets in that Athena widget set, as well as many
-important toolkit programming concepts, is available in the X11R5
-release as distributed by MIT.  It can be found in the distribution directory
-\fBcontrib/examples/mit/Xaw\fP, but see your site administrator for the exact
-location of these files on your system.
+important toolkit programming concepts, is available in the X11R6
+release as distributed by the X Consortium.  It can be found in the 
+distribution directory \fBcontrib/examples/mit/Xaw\fP, but see your 
+site administrator for the exact location of these files on your system.
 See the README file from that directory for a guide to the examples.
 
