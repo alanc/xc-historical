@@ -67,6 +67,7 @@ IMPORTS2 = \
 	$(AWIDGETSRC)/SimpleP.h \
 	$(AWIDGETSRC)/Text.h \
 	$(AWIDGETSRC)/TextP.h \
+	$(AWIDGETSRC)/TextSrcP.h \
 	$(AWIDGETSRC)/VPaned.h \
 	$(AWIDGETSRC)/VPanedP.h \
 	$(AWIDGETSRC)/Viewport.h \
