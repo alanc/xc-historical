@@ -1,4 +1,4 @@
-/* $XConsortium: pexOCParse.c,v 5.3 91/07/12 17:54:19 hersh Exp $ */
+/* $XConsortium: pexOCParse.c,v 5.4 91/12/26 17:59:11 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -96,12 +96,8 @@ SOFTWARE.
 	*ppExecuteOC =							\
 	    (miGenericElementPtr) Xalloc((unsigned long)((SIZE)		\
 					+ sizeof(miGenericElementStr)));\
+      if (!(*ppExecuteOC)) return (BadAlloc);	                        \
     }			                                                \
-    else {                                                              \
-	*ppExecuteOC = (miGenericElementPtr) Xrealloc(*ppExecuteOC,     \
-	        (unsigned long)((SIZE) + sizeof(miGenericElementStr))); \
-    }			                                                \
-    if (!(*ppExecuteOC)) return (BadAlloc);	                        \
     (DD_ST) = (TYPE *)((*ppExecuteOC)+1);
 
 #define GET_MORE_STORAGE(DD_ST, TYPE, SIZE)			\
