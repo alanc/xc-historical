@@ -12,7 +12,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: crtwdw.m,v 1.9 92/06/11 16:07:06 rws Exp $
+ * $XConsortium: crtwdw.m,v 1.10 92/06/29 18:47:14 rws Exp $
  */
 >>TITLE XCreateWindow CH03
 Window
@@ -337,7 +337,7 @@ int 	n;
 	atts.bit_gravity = ForgetGravity;
 	atts.win_gravity = NorthWestGravity;
 	atts.backing_store = NotUseful;
-	atts.backing_planes = ~0;
+	atts.backing_planes = 0xffffffff;
 	atts.backing_pixel = 0;
 	atts.save_under = False;
 	atts.event_mask = 0;
