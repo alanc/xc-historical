@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XPutImage.c,v 11.45 88/08/29 22:11:27 rws Exp $ */
+/* $XConsortium: XPutImage.c,v 11.46 88/09/06 16:08:05 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include <stdio.h>
@@ -51,11 +51,13 @@ unsigned char _reverse_byte[0x100] = {
  * (swapfunc == NoSwap) when void is used.
  */
 
+/*ARGSUSED*/
 static int
-NoSwap (src, dest, srclen, srcinc, destinc, height)
+NoSwap (src, dest, srclen, srcinc, destinc, height, half_order)
     register unsigned char *src, *dest;
     long srclen, srcinc, destinc;
     unsigned int height;
+    int half_order;
 {
     long h = height;
 
@@ -67,10 +69,11 @@ NoSwap (src, dest, srclen, srcinc, destinc, height)
 }
 
 static int
-SwapTwoBytes (src, dest, srclen, srcinc, destinc, height)
+SwapTwoBytes (src, dest, srclen, srcinc, destinc, height, half_order)
     register unsigned char *src, *dest;
     long srclen, srcinc, destinc;
     unsigned int height;
+    int half_order;
 {
     long length = ROUNDUP(srclen, 2);
     register long h, n;
@@ -80,7 +83,10 @@ SwapTwoBytes (src, dest, srclen, srcinc, destinc, height)
     for (h = height; --h >= 0; src += srcinc, dest += destinc) {
 	if ((h == 0) && (srclen != length)) {
 	    length -= 2;
-	    *(dest + length + 1) = *(src + length);
+	    if (half_order == MSBFirst)
+		*(dest + length) = *(src + length + 1);
+	    else
+		*(dest + length + 1) = *(src + length);
 	}
 	for (n = length; n > 0; n -= 2, src += 2) {
 	    *dest++ = *(src + 1);
@@ -90,10 +96,11 @@ SwapTwoBytes (src, dest, srclen, srcinc, destinc, height)
 }
 
 static int
-SwapThreeBytes (src, dest, srclen, srcinc, destinc, height)
+SwapThreeBytes (src, dest, srclen, srcinc, destinc, height, byte_order)
     register unsigned char *src, *dest;
     long srclen, srcinc, destinc;
     unsigned int height;
+    int byte_order;
 {
     long length = ((srclen + 2) / 3) * 3;
     register long h, n;
@@ -105,7 +112,10 @@ SwapThreeBytes (src, dest, srclen, srcinc, destinc, height)
 	    length -= 3;
 	    if ((srclen - length) == 2)
 		*(dest + length + 1) = *(src + length + 1);
-	    *(dest + length + 2) = *(src + length);
+	    if (byte_order == MSBFirst)
+		*(dest + length) = *(src + length + 2);
+	    else
+		*(dest + length + 2) = *(src + length);
 	}
 	for (n = length; n > 0; n -= 3, src += 3) {
 	    *dest++ = *(src + 2);
@@ -116,10 +126,11 @@ SwapThreeBytes (src, dest, srclen, srcinc, destinc, height)
 }
 
 static int
-SwapFourBytes (src, dest, srclen, srcinc, destinc, height)
+SwapFourBytes (src, dest, srclen, srcinc, destinc, height, half_order)
     register unsigned char *src, *dest;
     long srclen, srcinc, destinc;
     unsigned int height;
+    int half_order;
 {
     long length = ROUNDUP(srclen, 4);
     register long h, n;
@@ -129,11 +140,16 @@ SwapFourBytes (src, dest, srclen, srcinc, destinc, height)
     for (h = height; --h >= 0; src += srcinc, dest += destinc) {
 	if ((h == 0) && (srclen != length)) {
 	    length -= 4;
-	    if ((srclen - length) == 3)
+	    if (half_order == MSBFirst)
+		*(dest + length) = *(src + length + 3);
+	    if (((half_order == LSBFirst) && ((srclen - length) == 3)) ||
+		((half_order == MSBFirst) && (srclen & 2)))
 		*(dest + length + 1) = *(src + length + 2);
-	    if (srclen & 2)
+	    if (((half_order == MSBFirst) && ((srclen - length) == 3)) ||
+		((half_order == LSBFirst) && (srclen & 2)))
 		*(dest + length + 2) = *(src + length + 1);
-	    *(dest + length + 3) = *(src + length);
+	    if (half_order == LSBFirst)
+		*(dest + length + 3) = *(src + length);
 	}
 	for (n = length; n > 0; n -= 4, src += 4) {
 	    *dest++ = *(src + 3);
@@ -145,10 +161,11 @@ SwapFourBytes (src, dest, srclen, srcinc, destinc, height)
 }
 
 static int
-SwapWords (src, dest, srclen, srcinc, destinc, height)
+SwapWords (src, dest, srclen, srcinc, destinc, height, half_order)
     register unsigned char *src, *dest;
     long srclen, srcinc, destinc;
     unsigned int height;
+    int half_order;
 {
     long length = ROUNDUP(srclen, 4);
     register long h, n;
@@ -158,11 +175,16 @@ SwapWords (src, dest, srclen, srcinc, destinc, height)
     for (h = height; --h >= 0; src += srcinc, dest += destinc) {
 	if ((h == 0) && (srclen != length)) {
 	    length -= 4;
-	    if ((srclen - length) == 3)
+	    if (half_order == MSBFirst)
+		*(dest + length + 1) = *(src + length + 3);
+	    if (((half_order == LSBFirst) && ((srclen - length) == 3)) ||
+		((half_order == MSBFirst) && (srclen & 2)))
 		*(dest + length) = *(src + length + 2);
-	    if (srclen & 2)
+	    if (((half_order == MSBFirst) && ((srclen - length) == 3)) ||
+		((half_order == LSBFirst) && (srclen & 2)))
 		*(dest + length + 3) = *(src + length + 1);
-	    *(dest + length + 2) = *(src + length);
+	    if (half_order == LSBFirst)
+		*(dest + length + 2) = *(src + length);
 	}
 	for (n = length; n > 0; n -= 4, src += 2) {
 	    *dest++ = *(src + 2);
@@ -211,11 +233,13 @@ ShiftNibblesLeft (src, dest, srclen, srcinc, destinc, height)
 	}
 }
 
+/*ARGSUSED*/
 static int
-SwapBits (src, dest, srclen, srcinc, destinc, height)
+SwapBits (src, dest, srclen, srcinc, destinc, height, half_order)
     register unsigned char *src, *dest;
     long srclen, srcinc, destinc;
     unsigned int height;
+    int half_order;
 {
     register long h, n;
     register unsigned char *rev = _reverse_byte;
@@ -228,7 +252,7 @@ SwapBits (src, dest, srclen, srcinc, destinc, height)
 }
 
 static int
-SwapBitsAndTwoBytes (src, dest, srclen, srcinc, destinc, height)
+SwapBitsAndTwoBytes (src, dest, srclen, srcinc, destinc, height, half_order)
     register unsigned char *src, *dest;
     long srclen, srcinc, destinc;
     unsigned int height;
@@ -242,7 +266,10 @@ SwapBitsAndTwoBytes (src, dest, srclen, srcinc, destinc, height)
     for (h = height; --h >= 0; src += srcinc, dest += destinc) {
 	if ((h == 0) && (srclen != length)) {
 	    length -= 2;
-	    *(dest + length + 1) = rev[*(src + length)];
+	    if (half_order == MSBFirst)
+		*(dest + length) = rev[*(src + length + 1)];
+	    else
+		*(dest + length + 1) = rev[*(src + length)];
 	}
 	for (n = length; n > 0; n -= 2, src += 2) {
 	    *dest++ = rev[*(src + 1)];
@@ -252,10 +279,11 @@ SwapBitsAndTwoBytes (src, dest, srclen, srcinc, destinc, height)
 }
 
 static int
-SwapBitsAndFourBytes (src, dest, srclen, srcinc, destinc, height)
+SwapBitsAndFourBytes (src, dest, srclen, srcinc, destinc, height, half_order)
     register unsigned char *src, *dest;
     long srclen, srcinc, destinc;
     unsigned int height;
+    int half_order;
 {
     long length = ROUNDUP(srclen, 4);
     register long h, n;
@@ -266,11 +294,16 @@ SwapBitsAndFourBytes (src, dest, srclen, srcinc, destinc, height)
     for (h = height; --h >= 0; src += srcinc, dest += destinc) {
 	if ((h == 0) && (srclen != length)) {
 	    length -= 4;
-	    if ((srclen - length) == 3)
+	    if (half_order == MSBFirst)
+		*(dest + length) = rev[*(src + length + 3)];
+	    if (((half_order == LSBFirst) && ((srclen - length) == 3)) ||
+		((half_order == MSBFirst) && (srclen & 2)))
 		*(dest + length + 1) = rev[*(src + length + 2)];
-	    if (srclen & 2)
+	    if (((half_order == MSBFirst) && ((srclen - length) == 3)) ||
+		((half_order == LSBFirst) && (srclen & 2)))
 		*(dest + length + 2) = rev[*(src + length + 1)];
-	    *(dest + length + 3) = rev[*(src + length)];
+	    if (half_order == LSBFirst)
+		*(dest + length + 3) = rev[*(src + length)];
 	}
 	for (n = length; n > 0; n -= 4, src += 4) {
 	    *dest++ = rev[*(src + 3)];
@@ -282,10 +315,11 @@ SwapBitsAndFourBytes (src, dest, srclen, srcinc, destinc, height)
 }
 
 static int
-SwapBitsAndWords (src, dest, srclen, srcinc, destinc, height)
+SwapBitsAndWords (src, dest, srclen, srcinc, destinc, height, half_order)
     register unsigned char *src, *dest;
     long srclen, srcinc, destinc;
     unsigned int height;
+    int half_order;
 {
     long length = ROUNDUP(srclen, 4);
     register long h, n;
@@ -296,11 +330,16 @@ SwapBitsAndWords (src, dest, srclen, srcinc, destinc, height)
     for (h = height; --h >= 0; src += srcinc, dest += destinc) {
 	if ((h == 0) && (srclen != length)) {
 	    length -= 4;
-	    if ((srclen - length) == 3)
+	    if (half_order == MSBFirst)
+		*(dest + length + 1) = rev[*(src + length + 3)];
+	    if (((half_order == LSBFirst) && ((srclen - length) == 3)) ||
+		((half_order == MSBFirst) && (srclen & 2)))
 		*(dest + length) = rev[*(src + length + 2)];
-	    if (srclen & 2)
+	    if (((half_order == MSBFirst) && ((srclen - length) == 3)) ||
+		((half_order == LSBFirst) && (srclen & 2)))
 		*(dest + length + 3) = rev[*(src + length + 1)];
-	    *(dest + length + 2) = rev[*(src + length)];
+	    if (half_order == LSBFirst)
+		*(dest + length + 2) = rev[*(src + length)];
 	}
 	for (n = length; n > 0; n -= 4, src += 2) {
 	    *dest++ = rev[*(src + 2)];
@@ -396,6 +435,28 @@ static int (*(SwapFunction[12][12]))() = {
 
 };
 
+/* Of course, the table above is a lie.  We also need to factor in the
+ * order of the source data to cope with swapping half of a unit at the
+ * end of a scanline, since we are trying to avoid de-ref'ing off the
+ * end of the source.
+ *
+ * Defines whether the first half of a unit has the first half of the data
+ */
+static int HalfOrder[12] = {
+	LSBFirst, /* 1Mm */
+	LSBFirst, /* 2Mm */
+	LSBFirst, /* 4Mm */
+	LSBFirst, /* 1Ml */
+	MSBFirst, /* 2Ml */
+	MSBFirst, /* 4Ml; */
+	LSBFirst, /* 1Lm */
+	MSBFirst, /* 2Lm */
+	MSBFirst, /* 4Lm */
+	LSBFirst, /* 1Ll */
+	LSBFirst, /* 2Ll */
+	LSBFirst  /* 4Ll */
+	};
+
 /*
  * This macro creates a value from 0 to 11 suitable for indexing
  * into the table above.
@@ -418,6 +479,7 @@ SendXYImage(dpy, req, image, req_xoffset, req_yoffset)
     char *src, *dest, *buf;
     char *extra = (char *)NULL;
     register int (*swapfunc)();
+    int half_order;
 
     total_xoffset = image->xoffset + req_xoffset;
     req->leftPad = total_xoffset & (dpy->bitmap_unit - 1);
@@ -442,6 +504,9 @@ SendXYImage(dpy, req, image, req_xoffset, req_yoffset)
 			   [ComposeIndex(dpy->bitmap_unit,
 					 dpy->bitmap_bit_order,
 					 dpy->byte_order)];
+    half_order = HalfOrder[ComposeIndex(image->bitmap_unit,
+					image->bitmap_bit_order,
+					image->byte_order)];
 
     src = image->data + (image->bytes_per_line * req_yoffset) + total_xoffset;
 
@@ -492,13 +557,16 @@ SendXYImage(dpy, req, image, req_xoffset, req_yoffset)
 	     src += bytes_per_src_plane, dest += bytes_per_temp_plane)
 	    (*swapfunc)((unsigned char *)src, (unsigned char *)dest,
 			bytes_per_line, (long)image->bytes_per_line,
-			bytes_per_line, req->height);
+			bytes_per_line, req->height, half_order);
 	swapfunc = SwapFunction[ComposeIndex(image->bitmap_unit,
 					     dpy->byte_order,
 					     dpy->byte_order)]
 			       [ComposeIndex(dpy->bitmap_unit,
 					     dpy->bitmap_bit_order,
 					     dpy->byte_order)];
+	half_order = HalfOrder[ComposeIndex(image->bitmap_unit,
+					    dpy->byte_order,
+					    dpy->byte_order)];
 	src = temp + total_xoffset;
 	bytes_per_src_plane = bytes_per_temp_plane;
     }
@@ -508,7 +576,7 @@ SendXYImage(dpy, req, image, req_xoffset, req_yoffset)
 	 src += bytes_per_src_plane, dest += bytes_per_dest_plane)
 	(*swapfunc)((unsigned char *)src, (unsigned char *)dest,
 		    bytes_per_src, bytes_per_line,
-		    bytes_per_dest, req->height);
+		    bytes_per_dest, req->height, half_order);
 
     if (extra)
 	Xfree(extra);
@@ -573,16 +641,16 @@ SendZImage(dpy, req, image, req_xoffset, req_yoffset,
     if ((image->byte_order == dpy->byte_order) ||
 	(image->bits_per_pixel == 8))
 	NoSwap(src, dest, bytes_per_src, (long)image->bytes_per_line,
-	       bytes_per_dest, req->height);
+	       bytes_per_dest, req->height, image->byte_order);
     else if (image->bits_per_pixel == 32)
 	SwapFourBytes(src, dest, bytes_per_src, (long)image->bytes_per_line,
-		      bytes_per_dest, req->height);
+		      bytes_per_dest, req->height, image->byte_order);
     else if (image->bits_per_pixel == 24)
 	SwapThreeBytes(src, dest, bytes_per_src, (long)image->bytes_per_line,
-		       bytes_per_dest, req->height);
+		       bytes_per_dest, req->height, image->byte_order);
     else if (image->bits_per_pixel == 16)
 	SwapTwoBytes(src, dest, bytes_per_src, (long)image->bytes_per_line,
-		     bytes_per_dest, req->height);
+		     bytes_per_dest, req->height, image->byte_order);
     else
 	SwapNibbles(src, dest, bytes_per_src, (long)image->bytes_per_line,
 		    bytes_per_dest, req->height);
