@@ -22,7 +22,7 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: resource.c,v 1.83 90/09/23 15:47:19 rws Exp $ */
+/* $XConsortium: resource.c,v 1.84 90/09/24 18:32:14 rws Exp $ */
 
 /*	Routines to manage various kinds of resources:
  *
@@ -294,7 +294,7 @@ AddResource(id, type, value)
     if (!rrec->buckets)
     {
 	ErrorF("AddResource(%x, %x, %x), client=%d \n",
-		id, type, value, client);
+		id, type, (unsigned long)value, client);
         FatalError("client not in use\n");
     }
     if ((rrec->elements >= 4*rrec->buckets) &&
