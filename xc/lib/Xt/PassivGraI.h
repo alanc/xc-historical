@@ -1,5 +1,5 @@
 /*
-* $XConsortium: PassivGraI.h,v 1.6 90/12/12 14:52:47 rws Exp $
+* $XConsortium: PassivGraI.h,v 1.7 90/12/30 12:53:33 rws Exp $
 */
 
 /********************************************************
@@ -51,9 +51,9 @@ typedef struct _DetailRec {
 typedef struct _XtServerGrabRec {
     struct _XtServerGrabRec 	*next;
     Widget			widget;
-    Boolean			ownerEvents:1;
-    int	     			pointerMode:1;
-    int				keyboardMode:1;
+    unsigned int		ownerEvents:1;
+    unsigned int		pointerMode:1;
+    unsigned int		keyboardMode:1;
     DetailRec 			modifiersDetail;
     Mask			eventMask;
     DetailRec			detail;		/* key or button */
@@ -80,10 +80,10 @@ typedef struct {
     Widget		focusKid;
     XtServerGrabPtr	keyList, ptrList;
     Widget		queryEventDescendant;
-    Boolean		map_handler_added:1;
-    Boolean		realize_handler_added:1;
-    Boolean		active_handler_added:1;
-    Boolean		haveFocus:1;
+    unsigned int	map_handler_added:1;
+    unsigned int	realize_handler_added:1;
+    unsigned int	active_handler_added:1;
+    unsigned int	haveFocus:1;
     XtGeneology		focalPoint;
 }XtPerWidgetInputRec, *XtPerWidgetInput;
 

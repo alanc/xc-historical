@@ -1,4 +1,4 @@
-/* $XConsortium: EventI.h,v 1.14 90/08/20 15:26:28 swick Exp $ */
+/* $XConsortium: EventI.h,v 1.15 90/12/30 12:42:38 rws Exp $ */
 /* $oHeader: EventI.h,v 1.3 88/08/24 09:21:11 asente Exp $ */
 
 /***********************************************************
@@ -64,9 +64,9 @@ typedef struct _XtEventRec {
      EventMask		mask;
      XtEventHandler	proc;
      XtPointer		closure;
-     int		select:1;
-     int		raw:1;
-     int		async:1; /* not used, here for Digital extension? */
+     unsigned int	select:1;
+     unsigned int	raw:1;
+     unsigned int	async:1; /* not used, here for Digital extension? */
 } XtEventRec;
 
 typedef struct _XtGrabRec {
