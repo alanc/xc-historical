@@ -1,4 +1,4 @@
-/* $XConsortium: dispatch.c,v 1.82 89/03/12 16:29:37 rws Exp $ */
+/* $XConsortium: dispatch.c,v 1.83 89/03/12 17:10:01 rws Exp $ */
 /************************************************************
 Copyright 1987, 1989 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -3019,13 +3019,14 @@ ProcListHosts(client)
 {
 extern int GetHosts();
     xListHostsReply reply;
-    int	len, nHosts;
+    int	len, nHosts, result;
     pointer	pdata;
     REQUEST(xListHostsReq);
 
     REQUEST_SIZE_MATCH(xListHostsReq);
-    if((len = GetHosts(&pdata, &nHosts, &reply.enabled)) < 0)
-	return(BadImplementation);
+    result = GetHosts(&pdata, &nHosts, &len, &reply.enabled);
+    if (result != Success)
+	return(result);
     reply.type = X_Reply;
     reply.sequenceNumber = client->sequence;
     reply.nHosts = nHosts;
@@ -3036,8 +3037,7 @@ extern int GetHosts();
 	client->pSwapReplyFunc = SLHostsExtend;
 	WriteSwappedDataToClient(client, len, pdata);
     }
-    if (len != 0)
-	xfree(pdata);
+    xfree(pdata);
     return (client->noClientException);
 }
 
