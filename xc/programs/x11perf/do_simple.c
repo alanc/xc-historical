@@ -73,7 +73,7 @@ int InitGetProperty(xp, p, reps)
     XA_PK_TEMP = XInternAtom (xp->d, "_PK_TEMP", False);
     XChangeProperty (
 	    xp->d, root, XA_PK_TEMP, XA_INTEGER, 32,
-	    PropModeReplace, (unsigned char *)&foo, 4);
+	    PropModeReplace, (unsigned char *)foo, 4);
     return reps;
 }
 
