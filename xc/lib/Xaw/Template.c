@@ -1,4 +1,4 @@
-/* $XConsortium: Template.c,v 1.2 88/10/25 17:40:25 swick Exp $ */
+/* $XConsortium: Template.c,v 1.3 90/12/19 18:45:09 converse Exp $ */
 
 /* Copyright	Massachusetts Institute of Technology	1987, 1988
  *
@@ -26,10 +26,10 @@
 #include "TemplateP.h"
 
 static XtResource resources[] = {
-#define offset(field) XtOffset(TemplateWidget, template.field)
+#define offset(field) XtOffsetOf(TemplateRec, template.field)
     /* {name, class, type, size, offset, default_type, default_addr}, */
-    { XtNtemplateResource, XtCTemplateResource, XtRTemplateResource, sizeof(char*),
-	  offset(resource), XtRString, "default" },
+    { XtNtemplateResource, XtCTemplateResource, XtRTemplateResource,
+	  sizeof(char*), offset(resource), XtRString, (XtPointer) "default" },
 #undef offset
 };
 
