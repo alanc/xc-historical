@@ -1,4 +1,4 @@
-/* $XConsortium: tocutil.h,v 2.2 88/01/25 16:13:56 swick Exp $ */
+/* $XConsortium: tocutil.h,v 2.3 88/09/06 17:23:49 jim Exp $ */
 /*
  *			  COPYRIGHT 1987
  *		   DIGITAL EQUIPMENT CORPORATION
@@ -42,4 +42,4 @@ extern void TURefigureTocPositions();
 extern void TUGetFullFolderInfo();
 extern Msg TUAppendToc();
 
-#endif _tocutil_h
+#endif /* _tocutil_h */
