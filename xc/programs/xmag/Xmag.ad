@@ -2,7 +2,7 @@
 *pane2*orientation: horizontal
 *pane2*showGrip: False
 *allowShellResize: on
-*Scale.Translations:#augment\
+*Scale.baseTranslations:#augment\
 			<EnterWindow>: set-colors()\n\
 			<LeaveWindow>: unset-colors()\n\
 			<Btn1Down>:popup-pixel()\n\
