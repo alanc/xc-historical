@@ -1,5 +1,5 @@
 /*
- *	rcs_id[] = "$Header: globals.h,v 1.13 87/07/16 10:10:45 weissman Exp $";
+ *	rcs_id[] = "$Header: globals.h,v 1.13 87/08/06 13:20:07 toddb Locked $";
  */
 
 /*
@@ -50,6 +50,7 @@ ext char	*defViewGeometry;
 ext char	*defCompGeometry;
 ext char	*defPickGeometry;
 ext char	*initialFolderName; /* Initial folder to use. */
+ext char	*initialIncFile;	/* -file for inc on initial folder */
 ext char	*draftsFolderName;	/* Folder for drafts. */
 ext char	*draftFile;		/* Filename of draft. */
 ext char	*xmhDraftFile;		/* Filename for sending. */
