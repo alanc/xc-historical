@@ -1,4 +1,4 @@
-/* $Header: xchgptr.c,v 1.2 90/12/27 15:41:10 gms Exp $ */
+/* $Header: xchgptr.c,v 1.13 91/01/24 16:23:08 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -120,8 +120,6 @@ ProcXChangePointerDevice (client)
 	rep.status = GrabFrozen;
     else
 	{
-	if (dev->focus)
-	    DeleteFocusClassDeviceStruct(dev);
 	if (ChangePointerDevice (
 	    xptr, dev, stuff->xaxis, stuff->yaxis) != Success)
 	    {
@@ -129,6 +127,8 @@ ProcXChangePointerDevice (client)
 		BadDevice);
 	    return Success;
 	    }
+	if (dev->focus)
+	    DeleteFocusClassDeviceStruct(dev);
 	RegisterOtherDevice (xptr);
 	RegisterPointerDevice (dev);
 

@@ -1,4 +1,4 @@
-/* $Header: xchgkbd.c,v 1.2 90/12/27 15:43:43 gms Exp $ */
+/* $Header: xchgkbd.c,v 1.12 91/01/24 16:21:35 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -115,14 +115,14 @@ ProcXChangeKeyboardDevice (client)
 	rep.status = GrabFrozen;
     else
 	{
-	if (!dev->focus)
-	    InitFocusClassDeviceStruct (dev);
 	if (ChangeKeyboardDevice (xkbd, dev) != Success)
 	    {
 	    SendErrorToClient(client, IReqCode, X_ChangeKeyboardDevice, 0, 
 		BadDevice);
 	    return Success;
 	    }
+	if (!dev->focus)
+	    InitFocusClassDeviceStruct (dev);
 	dev->focus->win = xkbd->focus->win;
 	RegisterOtherDevice (xkbd);
 	RegisterKeyboardDevice (dev);
