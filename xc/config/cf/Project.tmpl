@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM X Window System Build Parameters
-XCOMM $XConsortium: Project.tmpl,v 1.73 90/11/30 11:17:05 rws Exp $
+XCOMM $XConsortium: Project.tmpl,v 1.74 90/12/01 12:56:21 rws Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -175,7 +175,7 @@ XCOMM $XConsortium: Project.tmpl,v 1.73 90/11/30 11:17:05 rws Exp $
 #define XdmDir $(LIBDIR)/xdm
 #endif
 #ifndef XdmConfigurationSubdirectory		/* under xdm sources */
-#define XdmConfigurationSubdirectory config/default
+#define XdmConfigurationSubdirectory config
 #endif
 #ifndef AwmDir
 #define AwmDir $(LIBDIR)/awm
@@ -343,7 +343,7 @@ Berklib.c: sysV/Berklib.c					@@\
 
 XCOMM -------------------------------------------------------------------------
 XCOMM X Window System make variables; this need to be coordinated with rules
-XCOMM $XConsortium: Project.tmpl,v 1.73 90/11/30 11:17:05 rws Exp $
+XCOMM $XConsortium: Project.tmpl,v 1.74 90/12/01 12:56:21 rws Exp $
 
 /*
  * This list must be reflected in the DIRS_TO_BUILD list in the top-level
