@@ -1,4 +1,4 @@
-/* $Header: dispatch.c,v 1.55 88/07/19 18:09:24 toddb Exp $ */
+/* $Header: dispatch.c,v 1.56 88/08/10 20:13:00 rws Exp $ */
 /************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -717,6 +717,11 @@ ProcInternAtom(client)
     REQUEST(xInternAtomReq);
 
     REQUEST_AT_LEAST_SIZE(xInternAtomReq);
+    if ((stuff->onlyIfExists != xTrue) && (stuff->onlyIfExists != xFalse))
+    {
+	client->errorValue = stuff->onlyIfExists;
+        return(BadValue);
+    }
     tchar = (char *) &stuff[1];
     atom = MakeAtom(tchar, stuff->nbytes, !stuff->onlyIfExists);
     if (atom || stuff->onlyIfExists)
