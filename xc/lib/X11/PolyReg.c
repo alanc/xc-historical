@@ -1,4 +1,4 @@
-/* $XConsortium: XPolyReg.c,v 11.19 91/01/12 11:21:52 rws Exp $ */
+/* $XConsortium: XPolyReg.c,v 11.20 91/06/08 11:31:09 rws Exp $ */
 /************************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -376,8 +376,7 @@ static int PtsToRegion(numFullPtBlocks, iCurPtBlock, FirstPtBlock, reg)
     register POINTBLOCK *CurPtBlock;
     register int i;
     register BOX *extents;
-    int numRects;
-    Bool first;
+    register int numRects;
  
     extents = &reg->extents;
  
@@ -389,7 +388,7 @@ static int PtsToRegion(numFullPtBlocks, iCurPtBlock, FirstPtBlock, reg)
     reg->size = numRects;
     CurPtBlock = FirstPtBlock;
     rects = reg->rects - 1;
-    first = True;
+    numRects = 0;
     extents->x1 = MAXSHORT,  extents->x2 = MINSHORT;
  
     for ( ; numFullPtBlocks >= 0; numFullPtBlocks--) {
@@ -398,17 +397,16 @@ static int PtsToRegion(numFullPtBlocks, iCurPtBlock, FirstPtBlock, reg)
 	if (!numFullPtBlocks)
 	    i = iCurPtBlock >> 1;
 	for (pts = CurPtBlock->pts; i--; pts += 2) {
-	    if (pts->x == pts[1].x) {
-		numRects--;
+	    if (pts->x == pts[1].x)
 		continue;
-	    }
-	    if (!first && pts->x == rects->x1 && pts->y == rects->y2 &&
-		pts[1].x == rects->x2) {
+	    if (numRects && pts->x == rects->x1 && pts->y == rects->y2 &&
+		pts[1].x == rects->x2 &&
+		(numRects == 1 || rects[-1].y1 != rects->y1) &&
+		(!i || pts[2].y > pts[1].y)) {
 		rects->y2 = pts[1].y + 1;
-		numRects--;
 		continue;
 	    }
-	    first = False;
+	    numRects++;
 	    rects++;
 	    rects->x1 = pts->x;  rects->y1 = pts->y;
 	    rects->x2 = pts[1].x;  rects->y2 = pts[1].y + 1;
