@@ -1,4 +1,4 @@
-/* $XConsortium: efaxg42d.c,v 1.1 94/11/08 19:54:29 mor Exp mor $ */
+/* $XConsortium: efaxg42d.c,v 1.2 94/11/22 22:25:29 mor Exp mor $ */
 /*
  * Copyright (c) 1988, 1989, 1990, 1991, 1992 Sam Leffler
  * Copyright (c) 1991, 1992 Silicon Graphics, Inc.
@@ -489,13 +489,14 @@ Buffer *outbuf;
 
 int
 LbxImageEncodeFaxG42D (inbuf, outbuf, outbufSize,
-    image_bytes, pixels_per_line, bytesCompressed)
+    image_bytes, pixels_per_line, reverse_bits, bytesCompressed)
 
 unsigned char *inbuf;
 unsigned char *outbuf;
 int outbufSize;
 int image_bytes;
 int pixels_per_line;
+int reverse_bits;
 int *bytesCompressed;
 
 {
@@ -519,7 +520,8 @@ int *bytesCompressed;
     for (i = 0; i < bytes_per_scanline + 1; i++)
 	refline[i] = 0xff;
 
-    LbxReverseBits (inbuf, image_bytes);
+    if (reverse_bits)
+	LbxReverseBits (inbuf, image_bytes);
 
     sp_bit = 8;
     sp_data = 0;
@@ -551,7 +553,8 @@ int *bytesCompressed;
     free ((char *) refline);
 
     /* put the bits back the way they were */
-    LbxReverseBits (save_inbuf, image_bytes);
+    if (reverse_bits)
+	LbxReverseBits (save_inbuf, image_bytes);
 
     if (status)
     {
