@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: property.c,v 5.13 94/02/20 10:39:43 dpw Exp $ */
+/* $XConsortium: property.c,v 5.14 94/03/08 20:31:15 dpw Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -35,12 +35,12 @@ extern void (*ReplySwapVector[]) ();
 extern void CopySwap16Write(), CopySwap32Write(), Swap32Write();
 
 #ifdef LBX
-int fWriteToClient(client,buf, len)
+int fWriteToClient(client, len, buf)
     ClientPtr   client;
-    char        *buf;
     int         len;
+    char        *buf;
 {
-    return WriteToClient(client, buf, len);
+    return WriteToClient(client, len, buf);
 }
 #endif
 
