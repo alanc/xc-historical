@@ -1,4 +1,4 @@
-/* $XConsortium: XExtInt.c,v 1.28 93/08/19 09:08:59 rws Exp $ */
+/* $XConsortium: XExtInt.c,v 1.29 93/09/08 10:23:27 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -164,8 +164,11 @@ CheckExtInit(dpy, version_index)
     if (info->data == NULL)
 	{
 	info->data = (XPointer) Xmalloc (sizeof (XInputData));
-	if (!info->data)
+	if (!info->data) 
+	    {
+    	    UnlockDisplay(dpy);
 	    return (-1);
+	    }
 	((XInputData *) info->data)->vers =
 	    XGetExtensionVersion (dpy, "XInputExtension");
 	}
