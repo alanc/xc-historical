@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xlcint.h,v 11.12 91/06/05 08:51:16 rws Exp $
+ * $XConsortium: Xlcint.h,v 11.13 91/06/05 09:09:43 rws Exp $
  */
 
 /*
@@ -89,6 +89,8 @@ typedef struct {
 #define	ICFontSet		12
 #define	ICLineSpace		13
 #define	ICCursor		14
+#define	ICResourceClass		26
+#define	ICResourceName		27
 
 #define	IMQueryInputStyle	0
 
