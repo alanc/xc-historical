@@ -1,4 +1,4 @@
-/* $XConsortium: pl_pc.c,v 1.4 92/05/26 11:08:11 mor Exp $ */
+/* $XConsortium: pl_pc.c,v 1.5 92/06/12 10:29:05 mor Exp $ */
 
 /************************************************************************
 Copyright 1987,1991,1992 by Digital Equipment Corporation, Maynard,
@@ -584,12 +584,12 @@ INPUT PEXPCAttributes	  *values;
 		pv++;
 		break;
             case PEXPCLocalTransform:
-		COPY_LARGE_AREA ((char *) values->local_transform,
+		COPY_AREA ((char *) values->local_transform,
 		    (char *) pv, sizeof (pexMatrix));
 		pv += LENOF (pexMatrix);
 		break;
             case PEXPCGlobalTransform:
-		COPY_LARGE_AREA ((char *) values->global_transform,
+		COPY_AREA ((char *) values->global_transform,
 		    (char *) pv, sizeof (pexMatrix));
 		pv += LENOF (pexMatrix);
 		break;
@@ -995,12 +995,12 @@ OUTPUT PEXPCAttributes			*ppca;
 		pv++;
 		break;
             case PEXPCLocalTransform:
-		COPY_LARGE_AREA ((char *) pv, (char *) ppca->local_transform,
+		COPY_AREA ((char *) pv, (char *) ppca->local_transform,
 		    sizeof (PEXMatrix));
 		pv += LENOF (pexMatrix);
 		break;
             case PEXPCGlobalTransform:
-		COPY_LARGE_AREA ((char *) pv, (char *) ppca->global_transform,
+		COPY_AREA ((char *) pv, (char *) ppca->global_transform,
 		    sizeof (PEXMatrix));
 		pv += LENOF (pexMatrix);
 		break;
