@@ -1,4 +1,4 @@
-/* $XConsortium: xsm.h,v 1.1 94/02/22 14:35:01 mor Exp $ */
+/* $XConsortium: xsm.h,v 1.2 94/02/22 15:42:55 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -29,6 +29,7 @@ purpose.  It is provided "as is" without express or implied warranty.
 #include <stdio.h>
 #endif
 #include <X11/Shell.h>
+#include <X11/ICE/ICEutil.h>
 #include <X11/SM/SMlib.h>
 #include <ctype.h>
 #ifndef X_NOT_STDC_ENV
