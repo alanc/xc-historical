@@ -12,7 +12,7 @@
 #  make no representations about the suitability of this software for any
 #  purpose.  It is provided "as is" without express or implied warranty.
 # 
-# $XConsortium$
+# $XConsortium: Makefile,v 1.4 92/06/11 15:35:45 rws Exp $
 #
 
 ##########################################################################
@@ -73,16 +73,15 @@ install: all
 # See the User Guide for more details.
 #
 
-FONTCOMP=bdftosnf
-EXTEN=.snf
-FONTDIR=/usr/lib/X11/ncd/fonts/xtest
-FONTS=xtfont0 xtfont1 xtfont2 xtfont3 xtfont4 xtfont5 xtfont6
+FONTDIR=/usr/lib/X11/fonts/xtest
+FONTSRCS=xtfont0 xtfont1 xtfont2 xtfont3 xtfont4 xtfont5 xtfont6
+FONTOBJS=*.pcf
 
-bdfcomp:
+fonts:
 	@ echo "These commands are system dependent - See User Guide"
-	- $(SHELL) ./fcomp $(FONTS)
-	- mkfontdir;
-bdfinstall:
-	@ echo "These commands are system dependent - See User Guide"
-	cp *.bdf *.snf fonts.* $(FONTDIR)
+	/bin/sh ./fcomp $(FONTSRCS)
+	mkfontdir
 
+install_fonts:
+	@ echo "These commands are system dependent - See User Guide"
+	cp $(FONTOBJS) fonts.dir fonts.alias $(FONTDIR)
