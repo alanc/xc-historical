@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: dfaxg42d.c,v 1.1 94/11/08 19:54:54 mor Exp mor $ */
 /*
  * Copyright (c) 1988, 1989, 1990, 1991, 1992 Sam Leffler
  * Copyright (c) 1991, 1992 Silicon Graphics, Inc.
@@ -167,7 +167,7 @@ register char *cp;
 register int x, count;
 
 {
-    static const unsigned char masks[] =
+    static unsigned char masks[] =
         { 0, 0x80, 0xc0, 0xe0, 0xf0, 0xf8, 0xfc, 0xfe, 0xff };
 
     if (count <= 0)
