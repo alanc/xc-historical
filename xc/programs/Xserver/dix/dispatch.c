@@ -1,4 +1,4 @@
-/* $XConsortium: dispatch.c,v 5.30 91/05/11 11:48:07 rws Exp $ */
+/* $XConsortium: dispatch.c,v 5.31 91/05/26 21:08:28 rws Exp $ */
 /************************************************************
 Copyright 1987, 1989 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -2673,6 +2673,8 @@ ProcCreateCursor( client)
 	return (BadAlloc);
     }
 
+    /* zeroing the (pad) bits helps some ddx cursor handling */
+    bzero((char *)srcbits, n);
     (* src->drawable.pScreen->GetImage)( src, 0, 0, width, height,
 					 XYPixmap, 1, srcbits);
     if ( msk == (PixmapPtr)NULL)
@@ -2682,8 +2684,12 @@ ProcCreateCursor( client)
 	    *bits++ = ~0;
     }
     else
+    {
+	/* zeroing the (pad) bits helps some ddx cursor handling */
+	bzero((char *)mskbits, n);
 	(* msk->drawable.pScreen->GetImage)( msk, 0, 0, width, height,
 					     XYPixmap, 1, mskbits);
+    }
     cm.width = width;
     cm.height = height;
     cm.xhot = stuff->x;
