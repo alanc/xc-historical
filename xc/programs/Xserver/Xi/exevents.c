@@ -67,6 +67,7 @@ extern Mask 		DeviceOwnerGrabButtonMask;
 extern Mask		PropagateMask[];
 extern WindowPtr 	GetSpriteWindow();
 extern InputInfo	inputInfo;
+extern int		RT_INPUTCLIENT;
 
 /**************************************************************************
  *
@@ -650,7 +651,6 @@ AddExtensionClient (pWin, client, mask, mskidx)
     Mask mask;
     int mskidx;
     {
-    extern int RT_INPUTCLIENT;
     InputClientsPtr others;
 
     if (!pWin->optional && !MakeWindowOptional (pWin))
