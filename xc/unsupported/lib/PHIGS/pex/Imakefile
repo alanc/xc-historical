@@ -1,5 +1,5 @@
 ##
-# $XConsortium: Imakefile,v 5.5 91/02/18 11:44:08 rws Exp $
+# $XConsortium: Imakefile,v 5.6 91/02/19 11:22:48 rws Exp $
 ##
 ## 
 ## Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -50,8 +50,6 @@ SRCS = $(CSRCS) $(HSRCS)
 LINTOPTS = -uv
 LINT_LIBS =
 XLINT_LIBS = $(LINTXLIB)
-LINT_FILTER_FILE = ../include/lint_filter_strings
-LINT_FILTER = fgrep -v -f $(LINT_FILTER_FILE) | cat
 
 all:: DONE
 
@@ -61,18 +59,18 @@ DONE: ${OBJS}
 extract : $(SRCS)
 
 lint:   $(SRCS)
-	$(LINT) $(CSRCS) $(LINTFLAGS) $(LINT_LIBS) | $(LINT_FILTER)
+	$(LINT) $(CSRCS) $(LINTFLAGS) $(LINT_LIBS) 
 
 lint-x: $(SRCS)
-	$(LINT) $(CSRCS) $(LINTFLAGS) $(LINT_LIBS) $(XLINT_LIBS) | $(LINT_FILTER)
+	$(LINT) $(CSRCS) $(LINTFLAGS) $(LINT_LIBS) $(XLINT_LIBS) 
 
 lintlib : llib-lpex.ln
 
 llib-lpex.ln : $(SRCS)
-	$(LINT) $(CSRCS) $(LINTFLAGS) -Cpex | $(LINT_FILTER)
+	$(LINT) $(CSRCS) $(LINTFLAGS) -Cpex 
 
 .c.lint:
-	$(LINT) $< $(LINTFLAGS) $(LINT_LIBS) $(XLINT_LIBS) | $(LINT_FILTER)
+	$(LINT) $< $(LINTFLAGS) $(LINT_LIBS) $(XLINT_LIBS) 
 
 #ifdef HPArchitecture
 SpecialObjectRule(hpext.o, $(IRULESRC)/$(MACROFILE), $(EXT_DEFINES))
