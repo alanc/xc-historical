@@ -264,7 +264,7 @@ depend:: ks_names.h
 DependTarget()
 
 ks_names.h: $(INCLUDESRC)/keysymdef.h
-	@echo "generathing $@"; \
+	@echo "generating $@"; \
 	awk 'BEGIN { \
 		printf("/*\n * This is a machine generated file."); \
 		printf(" * Do not put under source control.\n */\n"); \
