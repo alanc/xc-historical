@@ -1,4 +1,4 @@
-/* $XConsortium: mibstore.c,v 5.43 90/10/17 18:34:22 keith Exp $ */
+/* $XConsortium: mibstore.c,v 5.44 90/10/23 18:21:33 keith Exp $ */
 /***********************************************************
 Copyright 1987 by the Regents of the University of California
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -352,7 +352,8 @@ miBSGetImage (pDrawable, sx, sy, w, h, format, planemask, pdstLine)
     
     SCREEN_PROLOGUE (pScreen, GetImage);
 
-    if (pDrawable->type == DRAWABLE_WINDOW)
+    if (pDrawable->type == DRAWABLE_WINDOW &&
+	((WindowPtr) pDrawable)->visibility != VisibilityUnobscured)
     {
 	PixmapPtr	pPixmap;
 	miBSWindowPtr	pWindowPriv;
