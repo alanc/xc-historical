@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $Header: events.c,v 1.130 87/12/30 19:56:17 rws Exp $ */
+/* $Header: events.c,v 1.131 87/12/31 15:50:03 rws Locked $ */
 
 #include "X.h"
 #include "misc.h"
@@ -146,7 +146,7 @@ extern void WriteEventsToClient();
 extern GrabPtr CreateGrab();		/* Defined in grabs.c */
 extern void  DeleteGrab();
 extern BOOL GrabMatchesSecond();
-extern void DeletePassiveGrabsFromList();
+extern void DeletePassiveGrabFromList();
 extern void AddPassiveGrabToWindowList();
 
 static ScreenPtr currentScreen;
@@ -157,7 +157,7 @@ static ScreenPtr currentScreen;
  *	make grab processing simpler.
  */
 CARD16 keyModifiersList[MAP_LENGTH];
-static CARD16 maxKeysPerModifier;
+static CARD8 maxKeysPerModifier;
 /*
  *	We also keep a copy of the modifier map in the format
  *	used by the protocol.
@@ -359,7 +359,7 @@ EnqueueEvent(device, event)
     }
     syncEvents.num++;
     if (syncEvents.free.forw == &syncEvents.free)
-	new = (QdEventPtr)Xalloc(sizeof(QdEventRec));
+	new = (QdEventPtr)xalloc(sizeof(QdEventRec));
     else
     {
 	new = syncEvents.free.forw;
@@ -990,8 +990,8 @@ XYToWindow(x, y)
 	    if (spriteTraceGood >= spriteTraceSize)
 	    {
 		spriteTraceSize += 10;
-		spriteTrace = (WindowPtr *)Xrealloc(
-		    (pointer)spriteTrace, spriteTraceSize*sizeof(WindowPtr));
+		spriteTrace = (WindowPtr *)xrealloc(
+		    spriteTrace, spriteTraceSize*sizeof(WindowPtr));
 	    }
 	    spriteTrace[spriteTraceGood] = pWin;
 	    pWin = spriteTrace[spriteTraceGood++]->firstChild;
@@ -1283,7 +1283,7 @@ NormalKeyboardEvent(keybd, xE, window)
     }
  /* just deliver it to the focus window */
     FixUpEventFromWindow(xE, focus, None, FALSE);
-    DeliverEventsToWindow(focus, xE, 1, filters[xE->u.u.type], NullGrab);
+    (void)DeliverEventsToWindow(focus, xE, 1, filters[xE->u.u.type], NullGrab);
 }
 
 static void
@@ -1532,10 +1532,10 @@ RecalculateDeliverableEvents(pWin)
 	RecalculateDeliverableEvents(child);
 }
 
-static void
+static int
 OtherClientGone(pWin, id)
     WindowPtr pWin;
-    long   id;
+    XID   id;
 {
     register OtherClientsPtr *next;
     register OtherClientsPtr other;
@@ -1546,18 +1546,19 @@ OtherClientGone(pWin, id)
 	if ((other = *next)->resource == id)
 	{
 	    *next = other->next;
-	    Xfree((pointer)other);
+	    xfree(other);
 	    RecalculateDeliverableEvents(pWin);
-	    return;
+	    return(Success);
 	}
     }
     FatalError("client not on event list");
+    /*NOTREACHED*/
 }
 
 void
 PassiveClientGone(pWin, id)
     WindowPtr pWin;
-    long   id;
+    XID   id;
 {
     register GrabPtr *next;
     register GrabPtr grab;
@@ -1568,7 +1569,7 @@ PassiveClientGone(pWin, id)
 	if ((grab = *next)->resource == id)
 	{
 	    *next = grab->next;
-	    Xfree((pointer)grab);
+	    xfree(grab);
 	    return;
 	}
     }
@@ -1623,13 +1624,14 @@ EventSelectForWindow(pWin, client, mask)
 	    }
 	}
 	check = 0;
-	others = (OtherClients *) Xalloc(sizeof(OtherClients));
+	others = (OtherClients *) xalloc(sizeof(OtherClients));
 	others->client = client;
 	others->mask = mask;
 	others->resource = FakeClientID(client->index);
 	others->next = OTHERCLIENTS(pWin);
 	pWin->otherClients = (pointer)others;
-	AddResource(others->resource, RT_FAKE, pWin, OtherClientGone, RC_CORE);
+	AddResource(others->resource, RT_FAKE, (pointer)pWin,
+		    OtherClientGone, RC_CORE);
     }
 maskSet: 
     if ((motionHintWindow == pWin) &&
@@ -1704,13 +1706,13 @@ EnterLeaveEvent(type, mode, detail, pWin)
 	((pWin == focus) || (focus == PointerRootWin) ||
 	 IsParent(focus, pWin)))
 	event.u.enterLeave.flags |= ELFlagFocus;
-    DeliverEventsToWindow(pWin, &event, 1, filters[type], grab);
+    (void)DeliverEventsToWindow(pWin, &event, 1, filters[type], grab);
     if (type == EnterNotify)
     {
 	xKeymapEvent ke;
 	ke.type = KeymapNotify;
-	bcopy(&keybd->down[1], &ke.map[0], 31);
-	DeliverEventsToWindow(pWin, &ke, 1, KeymapStateMask, grab);
+	bcopy((char *)&keybd->down[1], (char *)&ke.map[0], 31);
+	(void)DeliverEventsToWindow(pWin, &ke, 1, KeymapStateMask, grab);
     }
 }
 
@@ -1795,13 +1797,13 @@ FocusEvent(type, mode, detail, pWin)
     event.u.u.type = type;
     event.u.u.detail = detail;
     event.u.focus.window = pWin->wid;
-    DeliverEventsToWindow(pWin, &event, 1, filters[type], NullGrab);
+    (void)DeliverEventsToWindow(pWin, &event, 1, filters[type], NullGrab);
     if (type == FocusIn)
     {
 	xKeymapEvent ke;
 	ke.type = KeymapNotify;
-	bcopy(keybd->down, &ke.map[0], 31);
-	DeliverEventsToWindow(pWin, &event, 1, KeymapStateMask, NullGrab);
+	bcopy((char *)keybd->down, (char *)&ke.map[0], 31);
+	(void)DeliverEventsToWindow(pWin, &event, 1, KeymapStateMask, NullGrab);
     }
 }
 
@@ -1886,7 +1888,7 @@ DoFocusEvents(fromWin, toWin, mode)
 	for (i=0; i<screenInfo.numScreens; i++)
 	    FocusEvent(FocusIn, mode, in, &WindowTable[i]);
 	if (toWin == PointerRootWin)
-	    FocusInEvents(
+	    (void)FocusInEvents(
 		ROOT, sprite.win, NullWindow, mode, NotifyPointer, TRUE);
     }
     else
@@ -1898,11 +1900,11 @@ DoFocusEvents(fromWin, toWin, mode)
 	    for (i=0; i<screenInfo.numScreens; i++)
 	      FocusEvent(FocusOut, mode, out, &WindowTable[i]);
 	    if (toWin->parent != NullWindow)
-	      FocusInEvents(
+	      (void)FocusInEvents(
 		ROOT, toWin, toWin, mode, NotifyNonlinearVirtual, TRUE);
 	    FocusEvent(FocusIn, mode, NotifyNonlinear, toWin);
 	    if (IsParent(toWin, sprite.win))
-    	       FocusInEvents(
+    	       (void)FocusInEvents(
 		 toWin, sprite.win, NullWindow, mode, NotifyPointer, FALSE);
 	}
 	else
@@ -1917,7 +1919,7 @@ DoFocusEvents(fromWin, toWin, mode)
 			(sprite.win != fromWin) &&
 			(!IsParent(fromWin, sprite.win)) &&
 			(!IsParent(sprite.win, fromWin)))
-		    FocusInEvents(
+		    (void)FocusInEvents(
 			toWin, sprite.win, NullWindow, mode,
 			NotifyPointer, FALSE);
 	    }
@@ -1931,7 +1933,7 @@ DoFocusEvents(fromWin, toWin, mode)
 			FocusOutEvents(
 			    sprite.win, fromWin, mode, NotifyPointer, FALSE);
 		    FocusEvent(FocusOut, mode, NotifyInferior, fromWin);
-		    FocusInEvents(
+		    (void)FocusInEvents(
 			fromWin, toWin, toWin, mode, NotifyVirtual, FALSE);
 		    FocusEvent(FocusIn, mode, NotifyAncestor, toWin);
 		}
@@ -1949,12 +1951,12 @@ DoFocusEvents(fromWin, toWin, mode)
 			fromWin->parent, common, mode, NotifyNonlinearVirtual,
 			FALSE);
 		    if (toWin->parent != NullWindow)
-		      FocusInEvents(
+		      (void)FocusInEvents(
 			common, toWin, toWin, mode, NotifyNonlinearVirtual,
 			FALSE);
 		    FocusEvent(FocusIn, mode, NotifyNonlinear, toWin);
 		    if (IsParent(toWin, sprite.win))
-			FocusInEvents(
+			(void)FocusInEvents(
 			    toWin, sprite.win, NullWindow, mode,
 			    NotifyPointer, FALSE);
 		}
@@ -2018,8 +2020,8 @@ ProcSetInputFocus(client)
         if (depth > focusTraceSize)
         {
 	    focusTraceSize = depth+1;
-	    focusTrace = (WindowPtr *)Xrealloc(
-		    (pointer)focusTrace, focusTraceSize*sizeof(WindowPtr));
+	    focusTrace = (WindowPtr *)xrealloc(
+		    focusTrace, focusTraceSize*sizeof(WindowPtr));
 	}
 
  	focusTraceGood = depth;
@@ -2301,11 +2303,11 @@ AddInputDevice(deviceProc, autoStart)
     if (inputInfo.numDevices == inputInfo.arraySize)
     {
 	inputInfo.arraySize += 5;
-	inputInfo.devices = (DeviceIntPtr *)Xrealloc(
-				(pointer)inputInfo.devices,
+	inputInfo.devices = (DeviceIntPtr *)xrealloc(
+				inputInfo.devices,
 				inputInfo.arraySize * sizeof(DeviceIntPtr));
     }
-    d = (DeviceIntPtr) Xalloc(sizeof(DeviceIntRec));
+    d = (DeviceIntPtr) xalloc(sizeof(DeviceIntRec));
     inputInfo.devices[inputInfo.numDevices++] = d;
     d->public.on = FALSE;
     d->public.processInputProc = NoopDDA;
@@ -2339,13 +2341,13 @@ InitEvents()
     if (spriteTraceSize == 0)
     {
 	spriteTraceSize = 20;
-	spriteTrace = (WindowPtr *)Xalloc(20*sizeof(WindowPtr));
+	spriteTrace = (WindowPtr *)xalloc(20*sizeof(WindowPtr));
     }
     spriteTraceGood = 0;
     if (focusTraceSize == 0)
     {
 	focusTraceSize = 20;
-	focusTrace = (WindowPtr *)Xalloc(20*sizeof(WindowPtr));
+	focusTrace = (WindowPtr *)xalloc(20*sizeof(WindowPtr));
     }
     focusTraceGood = 0;
     lastEventMask = OwnerGrabButtonMask;
@@ -2411,7 +2413,7 @@ CloseDownDevices(argc, argv)
     int     		i;
     DeviceIntPtr	d;
 
-    Xfree((pointer)curKeySyms.map);
+    xfree(curKeySyms.map);
     curKeySyms.map = (KeySym *)NULL;
 
     for (i = inputInfo.numDevices - 1; i >= 0; i--)
@@ -2420,7 +2422,7 @@ CloseDownDevices(argc, argv)
 	if (d->inited)
 	    (*d->deviceProc) (d, DEVICE_CLOSE, argc, argv);
 	inputInfo.numDevices = i;
-	Xfree((pointer)d);
+	xfree(d);
     }
    
     /* The array inputInfo.devices doesn't need to be freed here since it
@@ -2514,32 +2516,33 @@ SetKeySymsMap(pKeySyms)
         KeySym *map;
 	int bytes = sizeof(KeySym) * pKeySyms->mapWidth *
                (curKeySyms.maxKeyCode - curKeySyms.minKeyCode + 1);
-        map = (KeySym *)Xalloc(bytes);
-	bzero(map, bytes);
+        map = (KeySym *)xalloc(bytes);
+	bzero((char *)map, bytes);
         if (curKeySyms.map)
 	{
             for (i = 0; i <= curKeySyms.maxKeyCode-curKeySyms.minKeyCode; i++)
 		bcopy(
-		    &curKeySyms.map[i*curKeySyms.mapWidth],
-		    &map[i*pKeySyms->mapWidth],
+		    (char *)&curKeySyms.map[i*curKeySyms.mapWidth],
+		    (char *)&map[i*pKeySyms->mapWidth],
 		    curKeySyms.mapWidth * sizeof(KeySym));
-	    Xfree((pointer)curKeySyms.map);
+	    xfree(curKeySyms.map);
 	}
 	curKeySyms.mapWidth = pKeySyms->mapWidth;
         curKeySyms.map = map;
     }
     bcopy(
-	pKeySyms->map,
-	&curKeySyms.map[rowDif],
+	(char *)pKeySyms->map,
+	(char *)&curKeySyms.map[rowDif],
 	(pKeySyms->maxKeyCode - pKeySyms->minKeyCode + 1) *
 	    curKeySyms.mapWidth * sizeof(KeySym));
 }
 
-static int
+static CARD8
 WidthOfModifierTable(modifierMap)
     CARD8 modifierMap[];
 {
-    int         i, keysPerModifier[8], maxKeysPerMod;
+    int         i;
+    CARD8	keysPerModifier[8],maxKeysPerMod;
 
     maxKeysPerMod = 0;
     bzero((char *)keysPerModifier, sizeof keysPerModifier);
@@ -2562,8 +2565,8 @@ WidthOfModifierTable(modifierMap)
     if (debug_modifiers)
 	ErrorF("Max Keys per Modifier = %d\n", maxKeysPerMod);
     if (modifierKeyMap)
-	Xfree((pointer)modifierKeyMap);
-    modifierKeyMap = (KeyCode *)Xalloc(8*maxKeysPerMod);
+	xfree(modifierKeyMap);
+    modifierKeyMap = (KeyCode *)xalloc(8*maxKeysPerMod);
     bzero((char *)modifierKeyMap, 8*maxKeysPerMod);
     bzero((char *)keysPerModifier, sizeof keysPerModifier);
 
@@ -2693,7 +2696,8 @@ LookupPointerDevice()
 
 static int
 SendMappingNotify(request, firstKeyCode, count)
-    BYTE request, firstKeyCode, count;
+    CARD8 request, count;
+    KeyCode firstKeyCode;
 {
     int i;
     xEvent event;
@@ -2790,7 +2794,7 @@ ProcSetModifierMapping(client)
      *	modifier keys may be down while we change the mapping,  and
      *	that the DDX layer likes the choice.
      */
-    if (!AllModifierKeysAreUp(modifierKeyMap, 8*maxKeysPerModifier)
+    if (!AllModifierKeysAreUp(modifierKeyMap, 8*(int)maxKeysPerModifier)
 	    || !AllModifierKeysAreUp(inputMap, inputMapLen)) {
 	if (debug_modifiers)
 	    ErrorF("Busy\n");
@@ -2815,9 +2819,9 @@ ProcSetModifierMapping(client)
 	 *	list of keycodes.
 	 */
 	if (modifierKeyMap)
-	    Xfree((pointer)modifierKeyMap);
-	modifierKeyMap = (KeyCode *)Xalloc(inputMapLen);
-	bcopy(inputMap, modifierKeyMap, inputMapLen);
+	    xfree(modifierKeyMap);
+	modifierKeyMap = (KeyCode *)xalloc(inputMapLen);
+	bcopy((char *)inputMap, (char *)modifierKeyMap, inputMapLen);
 
 	maxKeysPerModifier = stuff->numKeyPerModifier;
 	for (i = 0; i < MAP_LENGTH; i++)
@@ -2851,7 +2855,7 @@ ProcGetModifierMapping(client)
     WriteReplyToClient(client, sizeof(xGetModifierMappingReply), &rep);
 
     /* Reply with the (modified by DDX) map that SetModifierMapping passed in */
-    WriteToClient(client, 8*maxKeysPerModifier, modifierKeyMap);
+    WriteToClient(client, 8*maxKeysPerModifier, (char *)modifierKeyMap);
     return client->noClientException;
 }
 
@@ -2860,8 +2864,7 @@ ProcChangeKeyboardMapping(client)
     ClientPtr client;
 {
     REQUEST(xChangeKeyboardMappingReq);
-    int len;
-    int count;
+    unsigned len;
     KeySymsRec keysyms;
 
     REQUEST_AT_LEAST_SIZE(xChangeKeyboardMappingReq);
@@ -2869,17 +2872,16 @@ ProcChangeKeyboardMapping(client)
     len = stuff->length - (sizeof(xChangeKeyboardMappingReq) >> 2);  
     if (len != (stuff->keyCodes * stuff->keySymsPerKeyCode))
             return BadLength;
-    count = len / stuff->keySymsPerKeyCode;
     if ((stuff->firstKeyCode < curKeySyms.minKeyCode) ||
-	(stuff->firstKeyCode + count - 1 > curKeySyms.maxKeyCode) ||
+	(stuff->firstKeyCode + stuff->keyCodes - 1 > curKeySyms.maxKeyCode) ||
         (stuff->keySymsPerKeyCode == 0))
             return BadValue;
     keysyms.minKeyCode = stuff->firstKeyCode;
-    keysyms.maxKeyCode = stuff->firstKeyCode + count - 1;
+    keysyms.maxKeyCode = stuff->firstKeyCode + stuff->keyCodes - 1;
     keysyms.mapWidth = stuff->keySymsPerKeyCode;
     keysyms.map = (KeySym *)&stuff[1];
     SetKeySymsMap(&keysyms);
-    SendMappingNotify(MappingKeyboard, stuff->firstKeyCode, count);
+    SendMappingNotify(MappingKeyboard, stuff->firstKeyCode, stuff->keyCodes);
     return client->noClientException;
 
 }
@@ -2903,7 +2905,7 @@ ProcSetPointerMapping(client)
     map = (BYTE *)&stuff[1];
     if (stuff->nElts != inputInfo.pointer->u.ptr.mapLength)
 	return BadValue;
-    if (BadDeviceMap(&map[0], stuff->nElts, 1, 255))
+    if (BadDeviceMap(&map[0], (int)stuff->nElts, 1, 255))
 	return BadValue;
     for (i=0; i < stuff->nElts; i++)
 	if ((inputInfo.pointer->u.ptr.map[i + 1] != map[i]) &&
@@ -2962,7 +2964,7 @@ ProcGetPointerMapping(client)
     rep.nElts = inputInfo.pointer->u.ptr.mapLength;
     rep.length = (rep.nElts + (4-1))/4;
     WriteReplyToClient(client, sizeof(xGetPointerMappingReply), &rep);
-    WriteToClient(client, rep.nElts, &inputInfo.pointer->u.ptr.map[1]);
+    WriteToClient(client, rep.nElts, (char *)&inputInfo.pointer->u.ptr.map[1]);
     return Success;    
 }
 
@@ -2985,9 +2987,9 @@ NoteLedState(keybd, led, on)
 {
     KeybdCtrl *ctrl = &keybd->u.keybd.ctrl;
     if (on)
-	ctrl->leds |= (1 << (led - 1));
+	ctrl->leds |= ((Leds)1 << (led - 1));
     else
-	ctrl->leds &= ~(1 << (led - 1)); /* assumes 32-bit longs XXX */
+	ctrl->leds &= ~((Leds)1 << (led - 1));
 }
 
 int
@@ -2997,7 +2999,7 @@ ProcChangeKeyboardControl (client)
 #define DO_ALL    (-1)
     KeybdCtrl ctrl;
     DeviceIntPtr keybd = inputInfo.keyboard;
-    long *vlist;
+    XID *vlist;
     int t;
     int led = DO_ALL;
     int key = DO_ALL;
@@ -3006,7 +3008,7 @@ ProcChangeKeyboardControl (client)
     REQUEST_AT_LEAST_SIZE(xChangeKeyboardControlReq);
     if (stuff->length !=(sizeof(xChangeKeyboardControlReq)>>2) + Ones(stuff->mask))
 	return BadLength;
-    vlist = (long *)&stuff[1];		/* first word of values */
+    vlist = (XID *)&stuff[1];		/* first word of values */
     ctrl = keybd->u.keybd.ctrl;
     if (stuff->mask & KBKeyClickPercent)
     {
@@ -3284,7 +3286,7 @@ ProcGetMotionEvents(client)
         stop = currentTime;
     if (inputInfo.numMotionEvents)
     {
-	coords = (xTimecoord *) Xalloc(
+	coords = (xTimecoord *) xalloc(
 		inputInfo.numMotionEvents * sizeof(xTimecoord));
 	/* XXX this needs a screen arg */
 	count = (*mouse->u.ptr.GetMotionProc) (
@@ -3310,8 +3312,9 @@ ProcGetMotionEvents(client)
     if (inputInfo.numMotionEvents)
     {
 	client->pSwapReplyFunc = SwapTimeCoordWrite;
-	WriteSwappedDataToClient(client, nEvents * sizeof(xTimecoord), coords);
-	Xfree((pointer)coords);
+	WriteSwappedDataToClient(client, nEvents * sizeof(xTimecoord),
+				 (char *)coords);
+	xfree(coords);
     }
     return Success;
 }
@@ -3446,7 +3449,7 @@ ProcSendEvent(client)
 	}
     }
     else
-	DeliverEventsToWindow(
+	(void)DeliverEventsToWindow(
 	    pWin, &stuff->event, 1, stuff->eventMask, NullGrab);
     return Success;
 }

@@ -22,7 +22,7 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $Header: inputstr.h,v 1.13 87/08/25 10:20:51 swick Exp $ */
+/* $Header: inputstr.h,v 1.14 87/08/29 16:31:44 rws Locked $ */
 
 #ifndef INPUTSTRUCT_H
 #define INPUTSTRUCT_H
@@ -34,8 +34,8 @@ SOFTWARE.
 typedef struct _OtherClients {
     OtherClientsPtr	next;
     ClientPtr		client;	  /* which client is slecting on this window */
-    int			resource; /* id for putting into resource manager */
-    long		mask;
+    XID			resource; /* id for putting into resource manager */
+    Mask		mask;
 } OtherClients;
 
 typedef struct _DeviceIntRec *DeviceIntPtr;
@@ -52,13 +52,13 @@ typedef struct _DeviceIntRec *DeviceIntPtr;
 						3 buttons. */
 
   typedef struct _DetailRec {		/* Grab details may be bit masks */
-	int exact;
+	unsigned short exact;
 	Mask *pMask;
   } DetailRec;
 
   typedef struct _GrabRec {
     GrabPtr		next;		/* for chain of passive grabs */
-    int			resource;
+    XID			resource;
     ClientPtr		client;
     DeviceIntPtr	device;
     WindowPtr		window;
