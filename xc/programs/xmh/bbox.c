@@ -1,5 +1,5 @@
 /*
- * $XConsortium: bbox.c,v 2.32 89/11/25 21:04:53 converse Exp $
+ * $XConsortium: bbox.c,v 2.33 89/12/10 20:20:04 converse Exp $
  *
  *
  *			COPYRIGHT 1987, 1989
@@ -232,7 +232,7 @@ static void SendEnableMsg(widget, value)
     Widget	widget;
     int		value;	/* TRUE for enable, FALSE for disable. */
 {
-    static Arg arglist[] = {XtNsensitive, NULL};
+    static Arg arglist[] = {XtNsensitive, (XtArgVal)False};
     arglist[0].value = (XtArgVal) value;
     XtSetValues(widget, arglist, XtNumber(arglist));
 }
