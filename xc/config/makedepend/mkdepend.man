@@ -1,4 +1,16 @@
-.\" $XConsortium: mkdepend.man,v 1.12 94/04/11 16:02:50 matt Exp $
+.\" $XConsortium: mkdepend.man,v 1.13 94/04/11 22:13:19 gildea Exp $
+r
+.\" Copyright 1993 Massachusetts Institute of Technology
+.\"
+.\" Permission to use, copy, modify, distribute, and sell this software and
+.\" its documentation for any purpose is hereby granted without fee, provided
+.\" that the above copyright notice appear in all copies and that both that
+.\" copyright notice and this permission notice appear in supporting
+.\" documentation, and that the name of M.I.T. not be used in advertising or
+.\" publicity pertaining to distribution of the software without specific,
+.\" written prior permission.  M.I.T. makes no representations about the
+.\" suitability of this software for any purpose.  It is provided "as is"
+.\" without express or implied warranty.
 .TH MAKEDEPEND 1 "Release 6" "X Version 11"
 .UC 4
 .SH NAME
