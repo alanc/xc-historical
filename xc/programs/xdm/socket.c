@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: socket.c,v 1.12 89/11/08 17:21:02 keith Exp $
+ * $XConsortium: socket.c,v 1.13 89/11/17 18:43:17 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -64,7 +64,11 @@ CreateWellKnownSockets ()
     sock_addr.sin_port = htons ((short) request_port);
     sock_addr.sin_addr.s_addr = htonl (INADDR_ANY);
     if (bind (socketFd, &sock_addr, sizeof (sock_addr)) == -1)
+    {
 	LogError ("error binding socket address %d\n", request_port);
+	close (socketFd);
+	socketFd = -1;
+    }
     else {
 	WellKnownSocketsMax = socketFd;
 	FD_SET (socketFd, &WellKnownSocketsMask);
@@ -92,7 +96,7 @@ WaitForSomething ()
     extern int Rescan, ChildReady;
 
     Debug ("WaitForSomething\n");
-    if (socketFd) {
+    if (socketFd != -1) {
 	reads = WellKnownSocketsMask;
 	nready = select (WellKnownSocketsMax + 1, &reads, 0, 0, 0);
 	Debug ("select returns %d.  Rescan: %d  ChildReady: %d\n",
@@ -754,7 +758,7 @@ manage (from, fromlen, length)
 	    if (d)
 	    {
 		Debug ("Terminating active session for %s\n", d->name);
-		TerminateDisplay (d);
+		StopDisplay (d);
 	    }
 	    class = malloc (displayClass.length + 1);
 	    if (!class)
@@ -926,20 +930,41 @@ CARD16	    displayNumber;
 	    {
 		if (!strcmp (localhost, hostent->h_name))
 		{
-		    if (!getString (name, 6))
+		    if (!getString (name, 10))
 			return 0;
 		    sprintf (name, ":%d", displayNumber);
 		}
 		else
 		{
-		    if (!getString (name, strlen (hostent->h_name) + 6))
+		    if (removeDomainname)
+		    {
+		    	char    *localDot, *remoteDot;
+    
+			/* check for a common domain name.  This
+			 * could reduce names by recognising common
+			 * super-domain names as well, but I don't think
+			 * this is as useful, and will confuse more
+			 * people
+ 			 */
+		    	if ((localDot = index (localhost, '.')) &&
+		            (remoteDot = index (hostent->h_name, '.')))
+			{
+			    /* smash the name in place; it won't
+			     * be needed later.
+			     */
+			    if (!strcmp (localDot+1, remoteDot+1))
+				*remoteDot = '\0';
+			}
+		    }
+
+		    if (!getString (name, strlen (hostent->h_name) + 10))
 			return 0;
 		    sprintf (name, "%s:%d", hostent->h_name, displayNumber);
 		}
 	    }
 	    else
 	    {
-		if (!getString (name, 21))
+		if (!getString (name, 25))
 		    return 0;
 		sprintf(name, "%d.%d.%d.%d:%d",
 			data[0], data[1], data[2], data[3], displayNumber);
@@ -963,7 +988,7 @@ localHostname ()
 {
     if (!gotLocalHostname)
     {
-	gethostname (localHostbuf, sizeof (localHostbuf) - 1);
+	XmuGetHostname (localHostbuf, sizeof (localHostbuf) - 1);
 	gotLocalHostname = 1;
     }
     return localHostbuf;
