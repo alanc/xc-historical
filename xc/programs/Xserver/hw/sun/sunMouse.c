@@ -55,11 +55,13 @@ static char sccsid[] = "%W %G Copyright 1987 Sun Micro";
 static long sunEventTime();
 static Bool sunCursorOffScreen();
 static void sunCrossScreen();
+extern void miPointerQueueEvent();
 
 miPointerCursorFuncRec sunPointerCursorFuncs = {
     sunEventTime,
     sunCursorOffScreen,
     sunCrossScreen,
+    miPointerQueueEvent,
 };
 
 typedef struct {
