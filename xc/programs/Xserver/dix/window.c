@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: window.c,v 5.3 89/07/04 21:03:55 rws Exp $ */
+/* $XConsortium: window.c,v 5.4 89/07/05 20:18:05 rws Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -3108,16 +3108,14 @@ MarkOverlappedWindows(pWin, pFirst)
 }
 
 static void
-RealizeChildren(pWin)
+RealizeTree(pWin)
     WindowPtr pWin;
 {
     register WindowPtr pChild;
     Bool (* Realize)();
 
-    pChild = pWin->firstChild;
-    if (!pChild)
-	return;
-    Realize = pChild->drawable.pScreen->RealizeWindow;
+    Realize = pWin->drawable.pScreen->RealizeWindow;
+    pChild = pWin;
     while (1)
     {
 	if (pChild->mapped)
@@ -3131,12 +3129,10 @@ RealizeChildren(pWin)
 		continue;
 	    }
 	}
-	while (!pChild->nextSib)
-	{
+	while (!pChild->nextSib && (pChild != pWin))
 	    pChild = pChild->parent;
-	    if (pChild == pWin)
-		return;
-	}
+	if (pChild == pWin)
+	    return;
 	pChild = pChild->nextSib;
     }
 }
@@ -3186,11 +3182,7 @@ MapWindow(pWin, client)
 
         if (!pParent->realized)
             return(Success);
-        pWin->realized = TRUE;
-        pWin->viewable = pWin->drawable.class == InputOutput;
-    	/* We SHOULD check for an error value here XXX */
-        (* pScreen->RealizeWindow)(pWin);
-	RealizeChildren(pWin);
+	RealizeTree(pWin);
 	if (pWin->viewable)
 	{
 	    anyMarked = MarkOverlappedWindows(pWin, pWin);
@@ -3251,18 +3243,16 @@ MapSubwindows(pWin, client)
 }
 
 static void
-UnrealizeChildren(pWin)
+UnrealizeTree(pWin)
     WindowPtr pWin;
 {
     register WindowPtr pChild;
     void (*RegionEmpty)();
     Bool (*Unrealize)();
 
-    pChild = pWin->firstChild;
-    if (!pChild)
-	return;
-    RegionEmpty = pChild->drawable.pScreen->RegionEmpty;
-    Unrealize = pChild->drawable.pScreen->UnrealizeWindow;
+    RegionEmpty = pWin->drawable.pScreen->RegionEmpty;
+    Unrealize = pWin->drawable.pScreen->UnrealizeWindow;
+    pChild = pWin;
     while (1)
     {
 	if (pChild->realized)
@@ -3277,9 +3267,11 @@ UnrealizeChildren(pWin)
 		if (pChild->backStorage)
 		    (*pChild->backStorage->funcs->SaveDoomedAreas)(
 					    pChild, pChild->clipList, 0, 0);
-		/* to force exposures later */
-		(* RegionEmpty)(pChild->clipList);
-		(* RegionEmpty)(pChild->borderClip);
+		if (pChild != pWin)
+		{
+		    (* RegionEmpty)(pChild->clipList);
+		    (* RegionEmpty)(pChild->borderClip);
+		}
 		pChild->drawable.serialNumber = NEXT_SERIAL_NUMBER;
 	    }
 	    if (pChild->firstChild)
@@ -3288,12 +3280,10 @@ UnrealizeChildren(pWin)
 		continue;
 	    }
 	}
-	while (!pChild->nextSib)
-	{
+	while (!pChild->nextSib && (pChild != pWin))
 	    pChild = pChild->parent;
-	    if (pChild == pWin)
-		return;
-	}
+	if (pChild == pWin)
+	    return;
 	pChild = pChild->nextSib;
     }
 }
@@ -3311,7 +3301,6 @@ UnmapWindow(pWin, fromConfigure)
 {
     WindowPtr pParent;
     xEvent event;
-    Bool anyMarked;
     Bool wasRealized = (Bool)pWin->realized;
     Bool wasViewable = (Bool)pWin->viewable;
 
@@ -3322,20 +3311,17 @@ UnmapWindow(pWin, fromConfigure)
     event.u.unmapNotify.fromConfigure = fromConfigure;
     DeliverEvents(pWin, &event, 1, NullWindow);
     if (wasViewable)
-	anyMarked = MarkOverlappedWindows(pWin, pWin);
-    pWin->mapped = FALSE;
-    pWin->realized = pWin->viewable = FALSE;
-    pWin->visibility = VisibilityNotViewable;
-    if (wasRealized)
     {
-    	/* We SHOULD check for an error value here XXX */
-        (* pWin->drawable.pScreen->UnrealizeWindow)(pWin);
-        DeleteWindowFromAnyEvents(pWin, FALSE);
-	UnrealizeChildren(pWin);
+	MarkWindow(pWin);
+	MarkOverlappedWindows(pWin, pWin->nextSib);
+	MarkWindow(pWin->parent);
     }
+    pWin->mapped = FALSE;
+    if (wasRealized)
+	UnrealizeTree(pWin);
     if (wasViewable)
     {
-	if (!fromConfigure && anyMarked)
+	if (!fromConfigure)
 	{
 	    (* pWin->drawable.pScreen->ValidateTree)(pParent, pWin, VTUnmap);
 	    HandleExposures(pParent);
@@ -3385,19 +3371,12 @@ UnmapSubwindows(pWin)
 	    DeliverEvents(pChild, &event, 1, NullWindow);
 	    if (pChild->viewable)
 	    {
-		MarkSubtree(pChild);
+		MarkWindow(pChild);
 		anyMarked = TRUE;
 	    }
 	    pChild->mapped = FALSE;
             if (pChild->realized)
-	    {
-    	        pChild->realized = pChild->viewable = FALSE;
-		pChild->visibility = VisibilityNotViewable;
-    		/* We SHOULD check for an error value here XXX */
-                (* UnrealizeWindow)(pChild);
-                DeleteWindowFromAnyEvents(pChild, FALSE);
-		UnrealizeChildren(pChild);
-	    }
+		UnrealizeTree(pChild);
 	    if (wasViewable)
 	    {
 #ifdef DO_SAVE_UNDERS
@@ -3413,6 +3392,7 @@ UnmapSubwindows(pWin)
     {
 	if (anyMarked)
 	{
+	    MarkWindow(pWin->parent);
 	    (* pWin->drawable.pScreen->ValidateTree)(pWin, pHead, VTUnmap);
 	    HandleExposures(pWin);
 	}
