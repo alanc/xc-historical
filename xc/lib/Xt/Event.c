@@ -1,4 +1,4 @@
-/* $XConsortium: Event.c,v 1.137 92/11/19 16:52:05 converse Exp $ */
+/* $XConsortium: Event.c,v 1.137 92/11/19 17:24:47 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -999,6 +999,8 @@ static Boolean DecideToDispatch(event)
       case SelectionClear:	time = event->xselectionclear.time; break;
     }
 
+    pd->last_event = event;
+
     if (time) pd->last_timestamp = time;
 
     if (widget == NULL) {
@@ -1257,7 +1259,19 @@ Time XtLastTimestampProcessed(dpy)
 {
     return _XtGetPerDisplay(dpy)->last_timestamp;
 }
-      
+ 
+Boolean XtLastEventProcessed(dpy, ev)
+    Display* dpy;
+    XEvent* ev;
+{
+    XEvent* le = _XtGetPerDisplay(dpy)->last_event;
+
+    if (le) {
+	(void) bcopy (_XtGetPerDisplay(dpy)->last_event, ev, sizeof (XEvent));
+	return True;
+    } else
+	return False;
+}
 
 void _XtSendFocusEvent(child, type)
     Widget child;
