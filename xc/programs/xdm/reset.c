@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: reset.c,v 1.6 89/12/10 16:17:45 rws Exp $
+ * $XConsortium: reset.c,v 1.7 91/01/31 22:03:26 gildea Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -87,8 +87,8 @@ Display	*dpy;
 	if (setjmp (resetJmp)) {
 		LogError ("pseudoReset timeout\n");
 	} else {
-		signal (SIGALRM, abortReset);
-		alarm (30);
+		(void) Signal (SIGALRM, abortReset);
+		(void) alarm (30);
 		XSetErrorHandler (ignoreErrors);
 		for (screen = 0; screen < ScreenCount (dpy); screen++) {
 			Debug ("pseudoReset screen %d\n", screen);
@@ -97,9 +97,9 @@ Display	*dpy;
 		}
 		Debug ("before XSync\n");
 		XSync (dpy, False);
-		alarm (0);
+		(void) alarm (0);
 	}
-	signal (SIGALRM, SIG_DFL);
+	Signal (SIGALRM, SIG_DFL);
 	XSetErrorHandler ((int (*)()) 0);
 	Debug ("pseudoReset done\n");
 }

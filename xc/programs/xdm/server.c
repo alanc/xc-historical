@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: server.c,v 1.10 91/01/31 22:03:29 gildea Exp $
+ * $XConsortium: server.c,v 1.11 91/02/04 19:18:25 gildea Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -30,17 +30,6 @@
 # include	<setjmp.h>
 # include	<errno.h>
 
-#ifdef SYSV
-#define SIGNALS_RESET_WHEN_CAUGHT
-#define UNRELIABLE_SIGNALS
-#endif
-
-/* SVR4 has reliable signals, but we haven't updated this to use them yet */
-#ifdef SVR4			
-#define SIGNALS_RESET_WHEN_CAUGHT
-#endif
-
-
 static receivedUsr1;
 
 extern int  errno;
@@ -54,7 +43,7 @@ CatchUsr1 (n)
     int n;
 {
 #ifdef SIGNALS_RESET_WHEN_CAUGHT
-    (void) signal (SIGUSR1, CatchUsr1);
+    (void) Signal (SIGUSR1, CatchUsr1);
 #endif
     Debug ("display manager caught SIGUSR1\n");
     ++receivedUsr1;
@@ -81,7 +70,7 @@ struct display	*d;
 
     Debug ("StartServer for %s\n", d->name);
     receivedUsr1 = 0;
-    signal (SIGUSR1, CatchUsr1);
+    (void) Signal (SIGUSR1, CatchUsr1);
     argv = d->argv;
     switch (pid = fork ()) {
     case 0:
@@ -103,7 +92,7 @@ struct display	*d;
 	 * it will notice that and send SIGUSR1
 	 * when ready
 	 */
-	signal (SIGUSR1, SIG_IGN);
+	(void) Signal (SIGUSR1, SIG_IGN);
 	(void) execv (argv[0], argv);
 	LogError ("server %s cannot be executed\n",
 			argv[0]);
@@ -174,16 +163,16 @@ int	    serverPid;
 
     serverPauseRet = 0;
     if (!setjmp (pauseAbort)) {
-	signal (SIGALRM, serverPauseAbort);
-	signal (SIGUSR1, serverPauseUsr1);
+	(void) Signal (SIGALRM, serverPauseAbort);
+	(void) Signal (SIGUSR1, serverPauseUsr1);
 #ifdef SYSV
 	if (receivedUsr1)
-	    alarm ((unsigned) 1);
+	    (void) alarm ((unsigned) 1);
 	else
-	    alarm (t);
+	    (void) alarm (t);
 #else
 	if (!receivedUsr1)
-	    alarm (t);
+	    (void) alarm (t);
 	else
 	    Debug ("Already received USR1\n");
 #endif
@@ -216,9 +205,9 @@ int	    serverPid;
 #endif
 	}
     }
-    alarm ((unsigned) 0);
-    signal (SIGALRM, SIG_DFL);
-    signal (SIGUSR1, CatchUsr1);
+    (void) alarm ((unsigned) 0);
+    (void) Signal (SIGALRM, SIG_DFL);
+    (void) Signal (SIGUSR1, CatchUsr1);
     if (serverPauseRet) {
 	Debug ("Server died\n");
 	LogError ("server unexpectedly died\n");
@@ -295,14 +284,14 @@ WaitForServer (d)
     int	    i;
 
     for (i = 0; i < (d->openRepeat > 0 ? d->openRepeat : 1); i++) {
-    	(void) signal (SIGALRM, abortOpen);
+    	(void) Signal (SIGALRM, abortOpen);
     	(void) alarm ((unsigned) d->openTimeout);
     	if (!setjmp (openAbort)) {
 	    Debug ("Before XOpenDisplay(%s)\n", d->name);
 	    errno = 0;
 	    dpy = XOpenDisplay (d->name);
 	    (void) alarm ((unsigned) 0);
-	    (void) signal (SIGALRM, SIG_DFL);
+	    (void) Signal (SIGALRM, SIG_DFL);
 	    Debug ("After XOpenDisplay(%s)\n", d->name);
 	    if (dpy) {
 #ifdef XDMCP
@@ -321,7 +310,7 @@ WaitForServer (d)
     	} else {
 	    Debug ("hung in open, aborting\n");
 	    LogError ("Hung in XOpenDisplay(%s), aborting\n", d->name);
-	    (void) signal (SIGALRM, SIG_DFL);
+	    (void) Signal (SIGALRM, SIG_DFL);
 	    break;
     	}
     }
@@ -373,8 +362,8 @@ PingServer (d, alternateDpy)
 	alternateDpy = dpy;
     oldError = XSetIOErrorHandler (PingLostIOErr);
     oldAlarm = alarm (0);
-    oldSig = signal (SIGALRM, PingLostSig);
-    alarm (d->pingTimeout * 60);
+    oldSig = Signal (SIGALRM, PingLostSig);
+    (void) alarm (d->pingTimeout * 60);
     if (!setjmp (pingTime))
     {
 	Debug ("Ping server\n");
@@ -383,14 +372,14 @@ PingServer (d, alternateDpy)
     else
     {
 	Debug ("Server dead\n");
-	alarm (0);
-	signal (SIGALRM, SIG_DFL);
+	(void) alarm (0);
+	(void) Signal (SIGALRM, SIG_DFL);
 	XSetIOErrorHandler (oldError);
 	return 0;
     }
-    alarm (0);
-    signal (SIGALRM, oldSig);
-    alarm (oldAlarm);
+    (void) alarm (0);
+    (void) Signal (SIGALRM, oldSig);
+    (void) alarm (oldAlarm);
     Debug ("Server alive\n");
     XSetIOErrorHandler (oldError);
     return 1;

@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: dm.c,v 1.49 91/02/04 19:18:04 gildea Exp $
+ * $XConsortium: dm.c,v 1.50 91/02/11 20:59:16 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -41,18 +41,6 @@
 #ifdef SVR4
 # include	<unistd.h>
 #endif
-#endif
-
-#ifdef SYSV
-#define SIGNALS_RESET_WHEN_CAUGHT
-#define UNRELIABLE_SIGNALS
-#endif
-
-/* SVR4 has reliable signals, but we haven't updated this to use them yet */
-#ifdef SVR4			
-#define SIGNALS_RESET_WHEN_CAUGHT
-#define UNRELIABLE_SIGNALS
-#define SYSV			/* so don't try to use socket code */
 #endif
 
 extern int	errno;
@@ -124,8 +112,8 @@ char	**argv;
 #ifdef XDMCP
     CreateWellKnownSockets ();
 #endif
-    (void) signal (SIGTERM, StopAll);
-    (void) signal (SIGINT, StopAll);
+    (void) Signal (SIGTERM, StopAll);
+    (void) Signal (SIGINT, StopAll);
     /*
      * Step 2 - Read /etc/Xservers and set up
      *	    the socket.
@@ -139,9 +127,9 @@ char	**argv;
 #endif
     ScanServers ();
     StartDisplays ();
-    (void) signal (SIGHUP, RescanNotify);
+    (void) Signal (SIGHUP, RescanNotify);
 #ifndef SYSV
-    (void) signal (SIGCHLD, ChildNotify);
+    (void) Signal (SIGCHLD, ChildNotify);
 #endif
     while (
 #ifdef XDMCP
@@ -171,7 +159,7 @@ RescanNotify (n)
     Debug ("Caught SIGHUP\n");
     Rescan = 1;
 #ifdef SIGNALS_RESET_WHEN_CAUGHT
-    signal (SIGHUP, RescanNotify);
+    (void) Signal (SIGHUP, RescanNotify);
 #endif
 }
 
@@ -313,8 +301,8 @@ StopAll (n)
     ForEachDisplay (StopDisplay);
 #ifdef SIGNALS_RESET_WHEN_CAUGHT
     /* to avoid another one from killing us unceremoniously */
-    (void) signal (SIGTERM, StopAll);
-    (void) signal (SIGINT, StopAll);
+    (void) Signal (SIGTERM, StopAll);
+    (void) Signal (SIGINT, StopAll);
 #endif
 }
 
@@ -340,19 +328,42 @@ WaitForChild ()
     int		pid;
     struct display	*d;
     waitType	status;
-    int		mask;
+#ifdef POSIXSIG
+    sigset_t mask, omask;
+#else
+    int		omask;
+#endif
 
 #ifdef UNRELIABLE_SIGNALS
     /* XXX classic System V signal race condition here with RescanNotify */
     if ((pid = wait (&status)) != -1)
 #else
-    mask = sigblock (sigmask (SIGCHLD) | sigmask (SIGHUP));
+#ifdef POSIXSIG
+    sigemptyset(&mask);
+    sigaddset(&mask, SIGCHLD);
+    sigaddset(&mask, SIGHUP);
+    sigprocmask(SIG_BLOCK, &mask, &omask);
+#else
+    omask = sigblock (sigmask (SIGCHLD) | sigmask (SIGHUP));
+#endif
     Debug ("signals blocked, mask was 0x%x\n", mask);
     if (!ChildReady && !Rescan)
-	sigpause (mask);
+#ifdef POSIXSIG
+	sigsuspend(&omask);
+#else
+	sigpause (omask);
+#endif
     ChildReady = 0;
-    sigsetmask (mask);
+#ifdef POSIXSIG
+    sigprocmask(SIG_SETMASK, &omask, (sigset_t *)NULL);
+#else
+    sigsetmask (omask);
+#endif
+#ifdef POSIXSIG
+    while ((pid = waitpid (-1, (int *)NULL, WNOHANG)) > 0)
+#else
     while ((pid = wait3 (&status, WNOHANG, (struct rusage *) 0)) > 0)
+#endif
 #endif
     {
 	Debug ("Manager wait returns pid: %d sig %d core %d code %d\n",
@@ -535,7 +546,7 @@ struct display	*d;
     {
     case 0:
 	CleanUpChild ();
-	signal (SIGPIPE, SIG_IGN);
+	(void) Signal (SIGPIPE, SIG_IGN);
 	LoadSessionResources (d);
 	SetAuthorization (d);
 	if (!WaitForServer (d))

@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: util.c,v 1.7 91/01/31 22:03:49 gildea Exp $
+ * $XConsortium: util.c,v 1.8 91/02/04 19:18:43 gildea Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -24,6 +24,7 @@
  * various utility routines
  */
 
+# include   "dm.h"
 # include   <signal.h>
 
 extern void	free ();
@@ -40,7 +41,7 @@ makeEnv (name, value)
 char	*name;
 char	*value;
 {
-	char	*result, *malloc (), *sprintf ();
+	char	*result;
 
 	result = malloc ((unsigned) (strlen (name) + strlen (value) + 2));
 	if (!result) {
@@ -197,12 +198,12 @@ CleanUpChild ()
 	sigsetmask (0);
 #endif
 #ifdef SIGCHLD
-	(void) signal (SIGCHLD, SIG_DFL);
+	(void) Signal (SIGCHLD, SIG_DFL);
 #endif
-	(void) signal (SIGTERM, SIG_DFL);
-	(void) signal (SIGPIPE, SIG_DFL);
-	(void) signal (SIGALRM, SIG_DFL);
-	(void) signal (SIGHUP, SIG_DFL);
+	(void) Signal (SIGTERM, SIG_DFL);
+	(void) Signal (SIGPIPE, SIG_DFL);
+	(void) Signal (SIGALRM, SIG_DFL);
+	(void) Signal (SIGHUP, SIG_DFL);
 	CloseOnFork ();
 }
 
@@ -218,4 +219,20 @@ localHostname ()
 	gotLocalHostname = 1;
     }
     return localHostbuf;
+}
+
+SIGVAL (*Signal (sig, handler))()
+    int sig;
+    SIGVAL (*handler)();
+{
+#ifdef POSIXSIG
+    struct sigaction sigact, osigact;
+    sigact.sa_handler = handler;
+    sigemptyset(&sigact.sa_mask);
+    sigact.sa_flags = 0;
+    sigaction(sig, &sigact, &osigact);
+    return osigact.sa_handler;
+#else
+    return signal(sig, handler);
+#endif
 }

@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: session.c,v 1.42 91/02/04 19:18:28 gildea Exp $
+ * $XConsortium: session.c,v 1.44 91/02/12 15:34:03 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -186,7 +186,7 @@ struct display	*d;
     }
     clientPid = 0;
     if (!setjmp (abortSession)) {
-	signal (SIGTERM, catchTerm);
+	(void) Signal (SIGTERM, catchTerm);
 	/*
 	 * Start the clients, changing uid/groups
 	 *	   setting up environment and running the session
@@ -201,14 +201,14 @@ struct display	*d;
 		{
 		    if (!setjmp (pingTime))
 		    {
-			signal (SIGALRM, catchAlrm);
-			alarm (d->pingInterval * 60);
+			(void) Signal (SIGALRM, catchAlrm);
+			(void) alarm (d->pingInterval * 60);
 			pid = wait ((waitType *) 0);
-			alarm (0);
+			(void) alarm (0);
 		    }
 		    else
 		    {
-			alarm (0);
+			(void) alarm (0);
 		    	if (!PingServer (d, (Display *) NULL))
 			    SessionPingFailed (d);
 		    }
@@ -299,27 +299,27 @@ struct display	*d;
 Display		*dpy;
 {
     Debug ("SecureDisplay %s\n", d->name);
-    signal (SIGALRM, syncTimeout);
+    (void) Signal (SIGALRM, syncTimeout);
     if (setjmp (syncJump)) {
 	LogError ("WARNING: display %s could not be secured\n",
 		   d->name);
 	SessionExit (d, RESERVER_DISPLAY, FALSE);
     }
-    alarm ((unsigned) d->grabTimeout);
+    (void) alarm ((unsigned) d->grabTimeout);
     Debug ("Before XGrabServer %s\n", d->name);
     XGrabServer (dpy);
     if (XGrabKeyboard (dpy, DefaultRootWindow (dpy), True, GrabModeAsync,
 		       GrabModeAsync, CurrentTime) != GrabSuccess)
     {
-	alarm (0);
-	signal (SIGALRM, SIG_DFL);
+	(void) alarm (0);
+	(void) Signal (SIGALRM, SIG_DFL);
 	LogError ("WARNING: keyboard on display %s could not be secured\n",
 		  d->name);
 	SessionExit (d, RESERVER_DISPLAY, FALSE);
     }
     Debug ("XGrabKeyboard succeeded %s\n", d->name);
-    alarm (0);
-    signal (SIGALRM, SIG_DFL);
+    (void) alarm (0);
+    (void) Signal (SIGALRM, SIG_DFL);
     pseudoReset (dpy);
     if (!d->grabServer)
     {
@@ -481,15 +481,15 @@ int	pid;
 	    }
 	}
 	if (!setjmp (tenaciousClient)) {
-	    (void) signal (SIGALRM, waitAbort);
+	    (void) Signal (SIGALRM, waitAbort);
 	    (void) alarm ((unsigned) 10);
 	    retId = wait ((waitType *) 0);
 	    (void) alarm ((unsigned) 0);
-	    (void) signal (SIGALRM, SIG_DFL);
+	    (void) Signal (SIGALRM, SIG_DFL);
 	    if (retId == pid)
 		break;
 	} else
-	    signal (SIGALRM, SIG_DFL);
+	    (void) Signal (SIGALRM, SIG_DFL);
 	sig = SIGKILL;
     }
 }
