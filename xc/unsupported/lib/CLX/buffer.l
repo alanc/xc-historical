@@ -60,19 +60,18 @@
   ;; This macro is for use in a multi-process environment.  It provides
   ;; exclusive access to the local buffer object for request generation and
   ;; reply processing.
-  (declare (special *within-with-buffer*))
-  (if (and (boundp '*within-with-buffer*) *within-with-buffer*)
-      `(progn ,buffer ,@body) ;; Speedup hack for lexically nested with-buffer's
+  (macrolet ((with-buffer ((buffer &key timeout) &body body)
+	       ;; Speedup hack for lexically nested with-buffers
+	       `(progn ,buffer ,@(and timeout `(,timeout)) ,@body)))
     (let ((buf (if (or (symbolp buffer) (constantp buffer)) buffer '.buffer.)))
-      `(compiler-let ((*within-with-buffer* t))
-	 (let (,@(unless (eq buf buffer) `((,buf ,buffer))))
-	   ,@(unless (eq buf buffer) `((declare (type buffer ,buf))))
-	   ,(declare-bufmac)
-	   (when (buffer-dead ,buf)
-	     (x-error 'closed-display :display ,buf))
-	   (holding-lock ((buffer-lock ,buf) ,buf "CLX Display Lock"
-			  ,@(and timeout `(:timeout ,timeout)))
-	     ,@body))))))
+      `(let (,@(unless (eq buf buffer) `((,buf ,buffer))))
+	 ,@(unless (eq buf buffer) `((declare (type buffer ,buf))))
+	 ,(declare-bufmac)
+	 (when (buffer-dead ,buf)
+	   (x-error 'closed-display :display ,buf))
+	 (holding-lock ((buffer-lock ,buf) ,buf "CLX Display Lock"
+			,@(and timeout `(:timeout ,timeout)))
+	   ,@body)))))
 
 ;;; The following are here instead of in bufmac so that event-case can
 ;;; be compiled without macros and bufmac being loaded.
