@@ -1,4 +1,4 @@
-/* $XConsortium: events.c,v 1.1 93/07/19 11:39:20 mor Exp $ */
+/* $XConsortium: events.c,v 1.2 94/01/12 19:44:28 rws Exp $ */
 
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology
@@ -37,6 +37,7 @@ xEvent		*wire;
     host_event->send_event            = (wire_event->event & 0x80) != 0;
     host_event->display               = display;
     host_event->name_space            = wire_event->instanceNameSpace;
+    host_event->time                  = wire_event->time;
     host_event->flo_id                = wire_event->instanceFloID;
     host_event->src                   = wire_event->src;
     host_event->elem_type             = wire_event->type;
@@ -64,10 +65,13 @@ xEvent		*wire;
     host_event->send_event       = (wire_event->event & 0x80) != 0;
     host_event->display          = display;
     host_event->name_space       = wire_event->instanceNameSpace;
+    host_event->time             = wire_event->time;
     host_event->flo_id           = wire_event->instanceFloID;
     host_event->src              = wire_event->src;
     host_event->elem_type        = wire_event->type;
     host_event->decode_technique = wire_event->decodeTechnique;
+    host_event->aborted          = wire_event->aborted;
+    host_event->band_number      = wire_event->bandNumber;
     host_event->width		 = wire_event->width;
     host_event->height		 = wire_event->height;
 
@@ -91,9 +95,11 @@ xEvent		*wire;
     host_event->send_event = (wire_event->event & 0x80) != 0;
     host_event->display    = display;
     host_event->name_space = wire_event->instanceNameSpace;
+    host_event->time       = wire_event->time;
     host_event->flo_id     = wire_event->instanceFloID;
     host_event->src        = wire_event->src;
     host_event->elem_type  = wire_event->type;
+    host_event->band_number = wire_event->bandNumber;
     host_event->data[0]    = wire_event->data0;
     host_event->data[1]    = wire_event->data1;
     host_event->data[2]    = wire_event->data2;
@@ -118,6 +124,7 @@ xEvent		*wire;
     host_event->send_event = (wire_event->event & 0x80) != 0;
     host_event->display    = display;
     host_event->name_space = wire_event->instanceNameSpace;
+    host_event->time       = wire_event->time;
     host_event->flo_id     = wire_event->instanceFloID;
     host_event->src        = wire_event->src;
     host_event->elem_type  = wire_event->type;
@@ -147,6 +154,7 @@ xEvent		*wire;
     host_event->send_event = (wire_event->event & 0x80) != 0;
     host_event->display    = display;
     host_event->name_space = wire_event->instanceNameSpace;
+    host_event->time       = wire_event->time;
     host_event->flo_id     = wire_event->instanceFloID;
 
     return (True);

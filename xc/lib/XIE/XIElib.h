@@ -1,4 +1,4 @@
-/* $XConsortium: XIElib.h,v 1.4 93/10/30 14:57:34 rws Exp $ */
+/* $XConsortium: XIElib.h,v 1.5 94/01/12 19:44:01 rws Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -716,6 +716,7 @@ typedef struct {
     Bool			send_event;
     Display			*display;
     unsigned long		name_space;
+    Time			time;
     unsigned long		flo_id;
     XiePhototag			src;
     unsigned int		elem_type;
@@ -730,10 +731,13 @@ typedef struct {
     Bool			send_event;
     Display			*display;
     unsigned long		name_space;
+    Time			time;
     unsigned long		flo_id;
     XiePhototag			src;
     unsigned int		elem_type;
     XieDecodeTechnique		decode_technique;
+    Bool			aborted;
+    unsigned int		band_number;
     unsigned long		width;
     unsigned long		height;
 } XieDecodeNotifyEvent;
@@ -744,9 +748,11 @@ typedef struct {
     Bool			send_event;
     Display			*display;
     unsigned long		name_space;
+    Time			time;
     unsigned long		flo_id;
     XiePhototag			src;
     unsigned int		elem_type;
+    unsigned int		band_number;
     unsigned long		data[3];
 } XieExportAvailableEvent;
 
@@ -756,6 +762,7 @@ typedef struct {
     Bool			send_event;
     Display			*display;
     unsigned long		name_space;
+    Time			time;
     unsigned long		flo_id;
     XiePhototag			src;
     unsigned int		elem_type;
@@ -772,6 +779,7 @@ typedef struct {
     Bool			send_event;
     Display			*display;
     unsigned long		name_space;
+    Time			time;
     unsigned long		flo_id;
 } XiePhotofloDoneEvent;
 
