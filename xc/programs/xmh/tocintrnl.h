@@ -1,4 +1,4 @@
-/* $Header: tocintrnl.h,v 1.3 88/01/25 16:06:27 swick Locked $ */
+/* $Header: tocintrnl.h,v 2.3 88/01/25 16:06:27 swick Locked $ */
 /*
  *			  COPYRIGHT 1987
  *		   DIGITAL EQUIPMENT CORPORATION
@@ -29,7 +29,8 @@
 #ifndef _tocinternal_h
 #define _tocinternal_h
 
-#include "TextP.h" /* %%% */
+#include "IntrinsicP.h"		/* %%% */
+#include "TextP.h"		/* %%% */
 
 typedef enum {
     unknown, valid, invalid
