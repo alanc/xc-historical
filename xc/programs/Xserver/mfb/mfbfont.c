@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 */
-/* $Header: mfbfont.c,v 1.13 87/06/15 02:34:57 sue Exp $ */
+/* $Header: mfbfont.c,v 1.13 87/06/15 02:34:57 toddb Locked $ */
 #include "X.h"
 #include "Xmd.h"
 #include "Xproto.h"
@@ -75,6 +75,7 @@ mfbRealizeFont( pscr, pFont)
 	else
 	    pFont->devPriv[ index] = (pointer)FT_SMALLPITCH;
     }
+    return (TRUE);
 }
 
 /*
@@ -85,4 +86,5 @@ mfbUnrealizeFont( pscr, pFont)
     ScreenPtr	pscr;
     FontPtr	pFont;
 {
+    return (TRUE);
 }
