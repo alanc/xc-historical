@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsColNm.c,v 1.14 91/05/14 11:09:16 rws Exp $" */
+/* $XConsortium: XcmsColNm.c,v 1.15 91/05/14 13:56:34 rws Exp $" */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -753,7 +753,7 @@ LoadColornameDB()
     struct stat txt;
     int length;
 
-    if ((pathname = (char *)getenv(XCMS_DBFILEPATH_ENV_VAR)) == NULL) {
+    if ((pathname = (char *)getenv("XCMSDB")) == NULL) {
 	pathname = XCMS_DEFAULT_DBPATH;
     }
 
