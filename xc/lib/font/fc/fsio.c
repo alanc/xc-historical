@@ -1,4 +1,4 @@
-/* $XConsortium: fsio.c,v 1.31 93/09/23 17:08:46 gildea Exp $ */
+/* $XConsortium: fsio.c,v 1.32 94/01/31 12:10:00 mor Exp $ */
 /*
  * Copyright 1990 Network Computing Devices
  *
@@ -30,14 +30,14 @@
 #ifdef WIN32
 #define _WILLWINSOCK_
 #endif
-#include	<X11/Xtrans.h>
-
-#ifdef NCD
-#include	<fcntl.h>
-#endif
 
 #include	"FS.h"
 #include	"FSproto.h"
+
+#include	"fslibos.h"
+#include	"fontmisc.h"
+#include	"fsio.h"
+
 #include	<stdio.h>
 #include	<signal.h>
 #include	<sys/types.h>
@@ -48,9 +48,6 @@
 #ifdef X_NOT_STDC_ENV
 extern int errno;
 #endif 
-#include	"fslibos.h"
-#include	"fontmisc.h"
-#include	"fsio.h"
 #ifdef WIN32
 #define EWOULDBLOCK WSAEWOULDBLOCK
 #undef EINTR
@@ -154,10 +151,11 @@ static int  generationCount;
 
 /* ARGSUSED */
 static Bool
-_fs_setup_connection(conn, servername, timeout)
+_fs_setup_connection(conn, servername, timeout, copy_name_p)
     FSFpePtr    conn;
     char       *servername;
     int         timeout;
+    Bool	copy_name_p;
 {
     fsConnClientPrefix prefix;
     fsConnSetup rep;
@@ -274,10 +272,15 @@ _fs_setup_connection(conn, servername, timeout)
     xfree(auth_data);
     xfree(vendor_string);
 
-    conn->servername = (char *) xalloc(strlen(servername) + 1);
-    if (conn->servername == NULL)
-	return FALSE;
-    strcpy(conn->servername, servername);
+    if (copy_name_p)
+    {
+        conn->servername = (char *) xalloc(strlen(servername) + 1);
+        if (conn->servername == NULL)
+	    return FALSE;
+        strcpy(conn->servername, servername);
+    }
+    else
+        conn->servername = servername;
 
     return TRUE;
 }
@@ -290,7 +293,7 @@ _fs_try_alternates(conn, timeout)
     int         i;
 
     for (i = 0; i < conn->numAlts; i++)
-	if (_fs_setup_connection(conn, conn->alts[i].name, timeout))
+	if (_fs_setup_connection(conn, conn->alts[i].name, timeout, TRUE))
 	    return TRUE;
     return FALSE;
 }
@@ -310,7 +313,7 @@ _fs_open_server(servername)
 	return (FSFpePtr) NULL;
     }
     bzero((char *) conn, sizeof(FSFpeRec));
-    if (!_fs_setup_connection(conn, servername, FS_OPEN_TIMEOUT)) {
+    if (!_fs_setup_connection(conn, servername, FS_OPEN_TIMEOUT, TRUE)) {
 	if (!_fs_try_alternates(conn, FS_OPEN_TIMEOUT)) {
 	    xfree(conn->alts);
 	    xfree(conn);
@@ -324,7 +327,7 @@ Bool
 _fs_reopen_server(conn)
     FSFpePtr    conn;
 {
-    if (_fs_setup_connection(conn, conn->servername, FS_REOPEN_TIMEOUT))
+    if (_fs_setup_connection(conn, conn->servername, FS_REOPEN_TIMEOUT, FALSE))
 	return TRUE;
     if (_fs_try_alternates(conn, FS_REOPEN_TIMEOUT))
 	return TRUE;
