@@ -25,7 +25,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: gram.y,v 1.51 89/07/07 13:06:58 jim Exp $
+ * $XConsortium: gram.y,v 1.52 89/07/07 13:13:14 jim Exp $
  *
  * .twmrc command grammer
  *
@@ -35,7 +35,7 @@
 
 %{
 static char RCSinfo[]=
-"$XConsortium: gram.y,v 1.51 89/07/07 13:06:58 jim Exp $";
+"$XConsortium: gram.y,v 1.52 89/07/07 13:13:14 jim Exp $";
 
 #include <stdio.h>
 #include <ctype.h>
@@ -61,6 +61,8 @@ static int cont = 0;
 static int color;
 int num[5], mult, indx = 0;
 int mods = 0;
+
+int ConstrainedMoveTime = 400;		/* milliseconds, event times */
 
 extern int yylineno;
 %}
@@ -106,6 +108,7 @@ extern int yylineno;
 %token <num> CUR_MOVE CUR_RESIZE CUR_WAIT CUR_SELECT CUR_KILL
 %token <num> ICON_REGION NORTH SOUTH EAST WEST RESTART_PREVIOUS_STATE
 %token <num> F_WARPTOSCREEN AUTO_RELATIVE_RESIZE FRAME_PADDING TITLE_PADDING
+%token <num> CONSTRAINED_MOVE_TIME
 %token <ptr> STRING
 
 %type <ptr> string
@@ -122,6 +125,7 @@ stmts		: /* Empty */
 		;
 
 stmt		: error
+		| CONSTRAINED_MOVE_TIME number { ConstrainedMoveTime = $2; }
 		| AUTO_RELATIVE_RESIZE	{ Scr->AutoRelativeResize = True; }
 		| FORCE_ICON		{ if (Scr->FirstTime) Scr->ForceIcon = TRUE; }
 		| ICON_REGION string grav grav number number

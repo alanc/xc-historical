@@ -25,7 +25,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.82 89/07/14 11:10:35 jim Exp $
+ * $XConsortium: menus.c,v 1.83 89/07/14 12:26:16 jim Exp $
  *
  * twm menu code
  *
@@ -35,7 +35,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: menus.c,v 1.82 89/07/14 11:10:35 jim Exp $";
+"$XConsortium: menus.c,v 1.83 89/07/14 12:26:16 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -1040,6 +1040,7 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
     Window rootw;
     int origX, origY;
     int do_next_action = TRUE;
+    extern int ConstrainedMoveTime;
 
     RootFunction = NULL;
     if (Cancel)
@@ -1252,7 +1253,12 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
 	origX = eventp->xbutton.x_root;
 	origY = eventp->xbutton.y_root;
 
-	if ((eventp->xbutton.time - last_time) < 400)
+	/*
+	 * only do the constrained move if timer is set; need to check it
+	 * in case of stupid or wicked fast servers
+	 */
+	if (ConstrainedMoveTime && 
+	    (eventp->xbutton.time - last_time) < ConstrainedMoveTime)
 	{
 	    int width, height;
 
