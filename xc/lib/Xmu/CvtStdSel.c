@@ -1,4 +1,4 @@
-/* $XConsortium: CvtStdSel.c,v 1.16 90/12/20 10:56:35 converse Exp $
+/* $XConsortium: CvtStdSel.c,v 1.17 90/12/20 15:03:56 converse Exp $
  *
  * Copyright 1988 by the Massachusetts Institute of Technology
  *
@@ -48,6 +48,7 @@
 #include "Atoms.h"
 #include "StdSel.h"
 #include "SysUtil.h"
+#include <X11/Xfuncs.h>
 
 #if defined(SUNSHLIB) && defined(SHAREDCODE)
 /*

@@ -1,5 +1,5 @@
 #if ( !defined(lint) && !defined(SABER) )
-static char Xrcsid[] = "$XConsortium: AsciiSrc.c,v 1.41 90/11/30 18:30:02 rws Exp $";
+static char Xrcsid[] = "$XConsortium: AsciiSrc.c,v 1.42 90/12/12 15:37:25 rws Exp $";
 #endif 
 
 /*
@@ -46,6 +46,8 @@ static char Xrcsid[] = "$XConsortium: AsciiSrc.c,v 1.41 90/11/30 18:30:02 rws Ex
 #  include <X11/Xaw/AsciiText.h> /* for Widget Classes. */
 #endif
 
+#include <X11/Xfuncs.h>
+
 /****************************************************************
  *
  * Full class record constant
@@ -90,7 +92,6 @@ static void ClassInitialize(), Initialize(), Destroy(), GetValuesHook();
 static String MyStrncpy(), StorePiecesInString();
 static Boolean SetValues(), WriteToFile();
 extern char *tmpnam();
-void bcopy();
 extern int errno, sys_nerr;
 extern char* sys_errlist[];
 

@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: CA8.c,v 1.1 89/09/14 17:11:07 keith Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -27,6 +27,7 @@
 #include    "X.h"
 #include    "Xmd.h"
 #include    "Xdmcp.h"
+#include    "Xfuncs.h"
 
 int
 XdmcpCopyARRAY8 (src, dst)

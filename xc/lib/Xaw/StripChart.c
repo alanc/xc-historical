@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: StripChart.c,v 1.14 90/02/08 13:49:39 jim Exp $";
+static char Xrcsid[] = "$XConsortium: StripChart.c,v 1.15 90/09/10 17:22:33 converse Exp $";
 #endif
 
 /***********************************************************
@@ -31,6 +31,7 @@ SOFTWARE.
 #include <X11/StringDefs.h>
 #include <X11/Xaw/XawInit.h>
 #include <X11/Xaw/StripCharP.h>
+#include <X11/Xfuncs.h>
 
 #define MS_PER_SEC 1000
 
@@ -291,7 +292,6 @@ int left, width;
     register int i, j;
     register int next = w->strip_chart.interval;
     int scale = w->strip_chart.scale;
-    extern void bcopy();
     int scalewidth = 0;
 
     /* Compute the minimum scale required to graph the data, but don't go

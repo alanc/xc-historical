@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: Text.c,v 1.162 90/11/30 18:30:16 rws Exp $";
+static char Xrcsid[] = "$XConsortium: Text.c,v 1.163 90/12/01 13:02:23 rws Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -43,6 +43,8 @@ SOFTWARE.
 #include <X11/Xaw/Scrollbar.h>
 #include <X11/Xaw/TextP.h>
 
+#include <X11/Xfuncs.h>
+
 Atom FMT8BIT = NULL;
 
 #define SinkClearToBG          XawTextSinkClearToBackground
@@ -54,7 +56,6 @@ Atom FMT8BIT = NULL;
 #define SrcCvtSel              XawTextSourceConvertSelection
 #define SrcSetSelection        XawTextSourceSetSelection
 
-extern void bcopy();
 extern int errno, sys_nerr;
 extern char* sys_errlist[];
 

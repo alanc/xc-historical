@@ -1,5 +1,5 @@
 /* 
- * $XConsortium: Xct.c,v 1.12 90/12/19 18:03:45 converse Exp $
+ * $XConsortium: Xct.c,v 1.13 90/12/19 19:59:49 converse Exp $
  * Copyright 1989 by the Massachusetts Institute of Technology
  *
  * Permission to use, copy, modify, and distribute this software and its
@@ -16,6 +16,7 @@
 
 #include <stdio.h>
 #include "Xct.h"
+#include <X11/Xfuncs.h>
 
 #define UsedGraphic	0x0001
 #define UsedDirection	0x0002
