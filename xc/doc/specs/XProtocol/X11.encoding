@@ -16,14 +16,14 @@
 .nr PS 9
 .vs 10
 .nr VS 10
-.EH '\s+2\fBX Protocol\fP''\fBX11, Release 2\fP\s-2'
-.OH '\s+2\fBX Protocol\fP''\fBX11, Release 2\fP\s-2'
+.EH '\s+2\fBX Protocol\fP''\fBX11, Release 3\fP\s-2'
+.OH '\s+2\fBX Protocol\fP''\fBX11, Release 3\fP\s-2'
 .EF ''\s+2\fB % \fP\s-2''
 .OF ''\s+2\fB % \fP\s-2''
-The sections in this appendix correspond to their number counterparts
-in the protocol document.
+.\"The sections in this appendix correspond to their number counterparts
+.\"in the protocol document.
 .SH
-\s+2Syntax\s-2
+\s+2Syntactic Conventions\s-2
 .LP
 All numbers are in decimal, 
 unless prefixed with #x, in which case they are in hexadecimal (base 16).
@@ -40,13 +40,13 @@ compound types is:
 .De
 Each encode-form describes a single component.
 .LP
-For components described in the protocol document as:
+For components described in the protocol as:
 .LP
 .Ds
 .R
 name: TYPE
 .De
-The encode-form is:
+the encode-form is:
 .LP
 .Ds 
 .TA 1i 1.5i 2.5i
@@ -82,8 +82,8 @@ N	value	name
 .De
 The value is always interpreted as an N-byte unsigned integer.
 For example, 
-the first two bytes of a Window error are always 0 (indicating an
-error in general) and 3 (indicating the Window error in particular):
+the first two bytes of a Window error are always zero (indicating an
+error in general) and three (indicating the Window error in particular):
 .LP
 .Ds
 .TA 1i 1.5i 2.5i
@@ -92,14 +92,15 @@ error in general) and 3 (indicating the Window error in particular):
 1	0	Error
 1	3	code
 .De
-For components described in the protocol document as:
+For components described in the protocol as:
 .RS
 .LP
 name: 
 .Pn { Name1 ,..., 
-.PN NameN }
+.PN NameI }
 .RE
-The encode-form is:
+.LP
+the encode-form is:
 .LP
 .Ds
 .TA 1i 1.5i 2.5i
@@ -108,12 +109,12 @@ The encode-form is:
 N		name
 	value1 Name1
 	...
-	valueN NameN
+	valueI NameI
 .De
 The value is always interpreted as an N-byte unsigned integer.
-Note that the size of N is sometimes larger that than strictly required 
+Note that the size of N is sometimes larger than that strictly required 
 to encode the values.
-For example,
+For example:
 .RS
 .LP
 class: 
@@ -121,7 +122,8 @@ class:
 .PN InputOnly , 
 .PN CopyFromParent }
 .RE
-Becomes:
+.LP
+becomes:
 .LP
 .Ds
 .TA 1i 1.5i 2.5i 3i
@@ -132,14 +134,15 @@ Becomes:
 	1	InputOutput
 	2	InputOnly
 .De
-For components described in the protocol document as:
+For components described in the protocol as:
 .RS
 .LP
 NAME: TYPE or 
 .PN Alternative1 ...or
-.PN AlternativeN
+.PN AlternativeI
 .RE
-The encode-form is
+.LP
+the encode-form is:
 .LP
 .Ds
 .TA 1i 1.5i 2i 2.5i 3i
@@ -152,13 +155,14 @@ N	TYPE			NAME
 .De
 The alternative values are guaranteed not to conflict with the encoding
 of TYPE.  
-For example,
+For example:
 .RS
 .LP
 destination: WINDOW or 
 .PN PointerWindow or 
 .PN InputFocus
 .RE
+.LP
 becomes:
 .LP
 .Ds
@@ -169,7 +173,7 @@ becomes:
 	0	PointerWindow
 	1	InputFocus
 .De
-For components described in the protocol document as
+For components described in the protocol as:
 .LP
 .Ds
 .TA 1i 1.5i
@@ -177,7 +181,7 @@ For components described in the protocol document as
 .R
 value-mask: BITMASK
 .De
-The encode-form is
+the encode-form is:
 .LP
 .Ds
 .TA 1i 1.5i 2i 2.5i 
@@ -190,12 +194,12 @@ N	BITMASK			value-mask
 .De
 The individual bits in the mask are specified and named, 
 and N is 2 or 4.
-The most significant bit in a BITMASK is ``reserved'' for use in defining
-chained (multi-word) bitmasks, as extensions augment existing core requests.
+The most-significant bit in a BITMASK is reserved for use in defining
+chained (multiword) bitmasks, as extensions augment existing core requests.
 The precise interpretation of this bit is not yet defined here, 
 although a probable mechanism is that a 1-bit indicates that another N bytes 
 of bitmask follows, with bits within the overall mask still interpreted 
-from least to most significant with an N-byte unit, with N-byte units 
+from least-significant to most-significant with an N-byte unit, with N-byte units 
 interpreted in stream order, and with the overall mask being byte-swapped 
 in individual N-byte units.
 .LP
@@ -210,20 +214,20 @@ VALUEs
  ...
  encode-form
 .De
-Listing an encode-form for each VALUE.
+listing an encode-form for each VALUE.
 The NAME in each encode-form keys to the corresponding BITMASK bit.
-The encoding of a VALUE always occupies 4 bytes, 
+The encoding of a VALUE always occupies four bytes, 
 but the number of bytes specified in the encoding-form indicates how
-many of the (least significant) bytes are actually used; 
+many of the least-significant bytes are actually used; 
 the remaining bytes are unused and their values do not matter.
 .LP
-In various cases the number of bytes occupied by a component will be specified
+In various cases, the number of bytes occupied by a component will be specified
 by a lowercase single-letter variable name instead of a specific numeric
 value, and often some other component will have its value specified as a
 simple numeric expression involving these variables.
-Components specified with such expressions are always interpret 
+Components specified with such expressions are always interpreted 
 as unsigned integers.
-The ``scope'' of such variables is always just the enclosing request, reply, 
+The scope of such variables is always just the enclosing request, reply, 
 error, event, or compound type structure.
 For example:
 .LP
@@ -251,9 +255,8 @@ If the number of unused bytes is variable, the encode-form typically is:
 .R
 p			unused, p=pad(E)
 .De
-Where E is some expression.  
-pad(E) is the number (of bytes) needed to round E
-up to a multiple of 4:
+where E is some expression,
+and pad(E) is the number of bytes needed to round E up to a multiple of four.
 .LP
 .Ds
 .TA 1i 1.5i 2i 2.5i
@@ -432,7 +435,7 @@ SETofKEYBUTMASK
 	#x0400	Button3
 	#x0800	Button4
 	#x1000	Button5
-	#xc000	unused but must be zero
+	#xe000	unused but must be zero
 .De
 .LP
 .Ds 0
@@ -440,7 +443,7 @@ SETofKEYBUTMASK
 .ta .75i 1.75i
 .R
 SETofKEYMASK
-	encodings are the same as for KEYBUTMASK, except with
+	encodings are the same as for SETofKEYBUTMASK, except with
 	#xff00		unused but must be zero
 .De
 .LP
@@ -520,7 +523,7 @@ STR
 .TA .2i .5i 1.5i 2.5i
 .ta .2i .5i 1.5i 2.5i
 .R
-.PN Request	
+.PN Request
 	1	0		Error
 	1	1		code
 	2	CARD16		sequence number
@@ -758,10 +761,11 @@ STR
 .LP
 KEYCODE values are always greater than 7 (and less than 256).
 .LP
-KEYSYMs with the bit #x10000000 set are reserved as ``vendor-specific''.
+KEYSYM values with the bit #x10000000 set are reserved as vendor-specific.
 .LP
-The names and encodings of the standard KEYSYMs are contained in 
-Appendix B, KEYSYM Encoding.
+The names and encodings of the standard KEYSYM values are contained in 
+.\"Appendix B, Keysym Encoding.
+appendix F.
 .SH
 \s+2Pointers\s-2
 .LP
@@ -817,7 +821,12 @@ WM_NAME	39
 .LP
 For TCP connections, 
 displays on a given host are numbered starting from 0,
-and the server for display N listens and accepts connections on port 6000+N.
+and the server for display N listens and accepts connections on port 6000 + N.
+For DECnet connections,
+displays on a given host are numbered starting from 0,
+and the server for display N listens and accepts connections on the object
+name obtained by concatenating ``X$X'' with the decimal representation of N,
+for example, X$X0 and X$X1.
 .LP
 Information sent by the client at connection setup:
 .LP
@@ -989,7 +998,7 @@ VISUALTYPE
 		2	InputOnly
 	4	VISUALID		visual
 		0	CopyFromParent
-	4	BITMASK			value-mask (has n 1-bits)
+	4	BITMASK			value-mask (has n bits set to 1)
 		#x00000001	background-pixmap
 		#x00000002	background-pixel
 		#x00000004	border-pixmap
@@ -1046,7 +1055,7 @@ VISUALTYPE
 	1			unused
 	2	3+n		request length
 	4	WINDOW		window
-	4	BITMASK		value-mask (has n 1-bits)
+	4	BITMASK		value-mask (has n bits set to 1)
 		encodings are the same as for CreateWindow
 	4n	LISTofVALUE		value-list
 		encodings are the same as for CreateWindow
@@ -1199,7 +1208,7 @@ VISUALTYPE
 	1			unused
 	2	3+n		request length
 	4	WINDOW		window
-	2	BITMASK			value-mask (has n 1-bits)
+	2	BITMASK			value-mask (has n bits set to 1)
 		#x0001	x
 		#x0002	y
 		#x0004	width
@@ -1345,7 +1354,7 @@ VISUALTYPE
 	4	(n+p)/4			reply length
 	2	n		length of name
 	22			unused
-	n			name
+	n	STRING8		name
 	p			unused, p=pad(n)
 .De
 .LP
@@ -2226,7 +2235,7 @@ VISUALTYPE
 	2	4+n		request length
 	4	GCONTEXT		cid
 	4	DRAWABLE		drawable
-	4	BITMASK		value-mask (has n 1-bits)
+	4	BITMASK		value-mask (has n bits set to 1)
 		#x00000001	function
 		#x00000002	plane-mask
 		#x00000004	foreground
@@ -2263,7 +2272,7 @@ VISUALTYPE
 	 	2	AndReverse
 	 	3	Copy
 	 	4	AndInverted
-	 	5	Noop
+	 	5	NoOp
 	 	6	Xor
 	 	7	Or
 	 	8	Nor
@@ -2328,7 +2337,7 @@ VISUALTYPE
 	1			unused
 	2	3+n		request length
 	4	GCONTEXT		gc
-	4	BITMASK		value-mask (has n 1-bits)
+	4	BITMASK		value-mask (has n bits set to 1)
 		encodings are the same as for CreateGC
 	4n	LISTofVALUE		value-list
 		encodings are the same as for CreateGC
@@ -2654,10 +2663,10 @@ VISUALTYPE
 	n	STRING8		string
   or
 	1	255		font-shift indicator
-	1			font byte 3 (most significant)
+	1			font byte 3 (most-significant)
 	1			font byte 2
 	1			font byte 1
-	1			font byte 0 (least significant)
+	1			font byte 0 (least-significant)
 .De
 .LP
 .Ds 0
@@ -2685,10 +2694,10 @@ VISUALTYPE
 	n	STRING16		string
   or
 	1	255		font-shift indicator
-	1			font byte 3 (most significant)
+	1			font byte 3 (most-significant)
 	1			font byte 2
 	1			font byte 1
-	1			font byte 0 (least significant)
+	1			font byte 0 (least-significant)
 .De
 .LP
 .Ds 0
@@ -3248,7 +3257,7 @@ VISUALTYPE
 	2	CARD16		sequence number
 	4	nm		reply length (m = count field from the request)
 	24			unused
-	4nm	LISTofKEYSYM	keysyms
+	4nm	LISTofKEYSYM		keysyms
 .De
 .LP
 .Ds 0
@@ -3259,7 +3268,7 @@ VISUALTYPE
 	1	102		opcode
 	1			unused
 	2	2+n		request length
-	4	BITMASK		value-mask (has n 1-bits)
+	4	BITMASK		value-mask (has n bits set to 1)
 		#x0001	key-click-percent
 		#x0002	bell-percent
 		#x0004	bell-pitch
@@ -3316,7 +3325,7 @@ VISUALTYPE
 	2	CARD16		bell-pitch
 	2	CARD16		bell-duration
 	2			unused
-	32	LISTofCARD8	auto-repeats
+	32	LISTofCARD8		auto-repeats
 .De
 .LP
 .Ds 0
@@ -3349,7 +3358,7 @@ VISUALTYPE
 .ta .2i .5i 1.5i 2.5i
 .R
 .PN GetPointerControl
-	1	106		GetPointerControl
+	1	106		opcode
 	1			unused
 	2	1		request length
 .De
@@ -3519,7 +3528,7 @@ VISUALTYPE
 .ta .2i .5i 1.5i 2.5i
 .R
 .PN ForceScreenSaver
-	1	115		ForceScreenSaver
+	1	115		opcode
 	1			mode
 		0	Reset
 		1	Activate
@@ -3867,7 +3876,7 @@ VISUALTYPE
 .R
 .PN KeymapNotify
 	1	11		code
-	31	LISTofCARD8		keys (byte for keycodes 0-7 is omitted)
+	31	LISTofCARD8		keys (byte for keycodes 0\-7 is omitted)
 .De
 .LP
 .Ds 0
@@ -4119,7 +4128,7 @@ VISUALTYPE
 	2	CARD16		sequence number
 	4	WINDOW		event
 	4	WINDOW		window
-	4	WINDOW		parent
+	4	WINDOW		unused
 	1			place
 		0	Top
 		1	Bottom

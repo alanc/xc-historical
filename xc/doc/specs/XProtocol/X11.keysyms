@@ -16,24 +16,24 @@
 .nr PS 9
 .vs 10
 .nr VS 10
-.EH '\s+2\fBX Protocol\fP''\fBX11, Release 2\fP\s-2'
-.OH '\s+2\fBX Protocol\fP''\fBX11, Release 2\fP\s-2'
+.EH '\s+2\fBX Protocol\fP''\fBX11, Release 3\fP\s-2'
+.OH '\s+2\fBX Protocol\fP''\fBX11, Release 3\fP\s-2'
 .EF ''\s+2\fB % \fP\s-2''
 .OF ''\s+2\fB % \fP\s-2''
-KEYSYM values are, for convenience, viewed as split into four bytes: 
+For convenience, KEYSYM values are viewed as split into four bytes: 
 .IP \(bu 5
-Byte 1 (for the purposes of this document) is the most significant 5 bits
+Byte 1 (for the purposes of this encoding) is the most-significant 5 bits
 (because of the 29-bit effective values)
 .IP \(bu 5
-Byte 2 is the next most significant 8 bits 
+Byte 2 is the next most-significant 8 bits 
 .IP \(bu 5
-Byte 3 is the next most significant 8 bits
+Byte 3 is the next most-significant 8 bits
 .IP \(bu 5
-Byte 4 is the least significant 8 bits
+Byte 4 is the least-significant 8 bits
 .LP
-The standard KEYSYMs all have the zero values for bytes 1 and 2, 
-with byte 3 indicating a character code set 
-and byte 4 indicating a particular character within that set:
+The standard KEYSYM values all have the zero values for bytes 1 and 2.
+Byte 3 indicates a character code set,
+and byte 4 indicates a particular character within that set.
 .TS
 l l.
 _
@@ -43,6 +43,7 @@ Byte 3	Byte 4
 .sp 6p
 _
 .sp 6p
+.R
 0	Latin 1
 1	Latin 2
 2	Latin 3
@@ -61,40 +62,40 @@ _
 _
 .TE
 Each character set contains gaps where codes have been removed that were
-duplicates with codes in previous (that is, with lesser byte 3 value) 
-character sets.
+duplicates with codes in previous character sets
+(that is, character sets with lesser byte 3 value).
 .LP
-The 94 and 96 character code sets have been moved to occupy the right hand
-quadrant (decimal 129 - 256), so the ASCII subset has a unique encoding across
-byte 4 which corresponds to the ASCII character code.
+The 94 and 96 character code sets have been moved to occupy the right-hand
+quadrant (decimal 129 through 256), so the ASCII subset has a unique encoding across
+byte 4, which corresponds to the ASCII character code.
 However, this cannot be guaranteed with future registrations 
 and does not apply to all of the Keyboard set.
 .LP
 To the best of our knowledge, 
-the Latin, Kana, Arabic, Cyrillic, Greek, Technical, APL, 
+the Latin, Kana, Arabic, Cyrillic, Greek, APL, 
 and Hebrew sets are from the appropriate ISO and/or ECMA international 
 standards. 
-There are no Technical, Special nor Publishing international standards,
+There are no Technical, Special, or Publishing international standards,
 so these sets are based on Digital Equipment Corporation standards.
 .LP
-The ordering between the sets (byte 3) sets is essentially arbitrary.
+The ordering between the sets (byte 3) is essentially arbitrary.
 Although the national and international standards bodies are commencing 
-deliberations regarding international two and four byte character sets, 
+deliberations regarding international 2-byte and 4-byte character sets, 
 we do not know of any proposed layouts.
 .LP
 The order may be arbitrary, 
 but it is important in dealing with duplicate coding.
 As far as possible,
-keysym codes are the same as the character code.
+KEYSYM values are the same as the character code.
 In the Latin-1 to Latin-4 sets,
-all duplicate glyphs occupy the same position.
+all duplicate glyphs occupy the same code position.
 However, duplicates between Greek and Technical do not occupy the same code
 position.  
 Thus, applications wishing to use the technical character set must
-transform the keysym via an array.
+transform the keysym by means of an array.
 .LP
 There is a difference between European and US usage of the names Pilcrow,
-Paragraph, and Section:
+Paragraph, and Section, as follows:
 .TS
 l l l.
 _
@@ -110,19 +111,19 @@ Paragraph sign	Pilcrow sign	11/06
 _
 .TE
 We have adopted the names used by both the ISO and ECMA standards.
-Thus, 11/06 is Pilcrow sign,
-and 10/07 is Paragraph sign, section sign.
-Note that this favors the European usage.
+Thus, 11/06 is the Pilcrow sign,
+and 10/07 is the Paragraph sign (Section sign).
+This favors the European usage.
 .LP
-The Keyboard set is a miscellaneous collection of commonly occuring keys on
+The Keyboard set is a miscellaneous collection of commonly occurring keys on
 keyboards.  
 Within this set, 
 the keypad symbols are generally duplicates of symbols found on keys 
-on the ``main'' part of the keyboard but are distinguished here 
+on the main part of the keyboard, but they are distinguished here 
 because they often have a distinguishable semantics associated with them.
 .LP
 Keyboards tend to be comparatively standard with respect to the alphanumeric
-keys, but they radically differ on the miscellaneous function keys.
+keys, but they differ radically on the miscellaneous function keys.
 Many function keys are left over from early timesharing days 
 or are designed for a specific application.
 Keyboard layouts from large manufacturers tend to have
@@ -131,42 +132,41 @@ whereas small workstation manufacturers often add keys that are solely
 for support of some of their unique functionality.
 There are two ways of thinking about how to define keysyms for such a world:  
 .IP \(bu 5
-The ``Engraving'' approach
+The Engraving approach
 .IP \(bu 5
-The ``Common'' approach
+The Common approach
 .LP
 The Engraving approach is to create a keysym for every unique key engraving.
 This is effectively taking the union of all key engravings on all keyboards.
 For example, some keyboards label function keys across the top as F1 through
-Fn, others label them as PF1 through PFn.
+Fn, and others label them as PF1 through PFn.
 These would be different keys under the Engraving approach.
-Likewise, ``Lock'' would differ from ``Shift Lock'', 
+Likewise, Lock would differ from Shift Lock, 
 which is different from the up-arrow symbol that has the effect of changing
-lower-case to capital.
-There are lots of other aliases such as ``Del'', ``DEL'',
-``Delete'', ``Remove'', and so forth.
+lowercase to uppercase.
+There are lots of other aliases such as Del, DEL, Delete, Remove, and so forth.
 The Engraving approach makes it easy to decide if a new entry should be added 
 to the keysym set:  if it does not exactly match an existing one, 
 then a new one is created.
-One estimate is that there would be on the order of 300-500 Keyboard keysyms 
-using this approach, not counting foreign translations and variations.
+One estimate is that there would be on the order of 300\-500 Keyboard keysyms 
+using this approach, without counting foreign translations and variations.
 .LP
 The Common approach tries to capture all of the keys present on an interesting
 number of keyboards, folding likely aliases into the same keysym.
 For example,
-``Del'', ``DEL'', and ``Delete'' are all merged into a single keysym.
+Del, DEL, and Delete are all merged into a single keysym.
 Vendors would be expected to augment the keysym set 
 (using the vendor-specific encoding space) to include all of their unique keys 
 that were not included in the standard set.
 Each vendor decides which of its keys map into the standard keysyms, 
 which presumably can be overridden by a user.
 It is more difficult to implement this approach, 
-since judgement is required on when a sufficient set
-of keyboards implement an engraving to justify making it a keysym in the
-standard set and on which engravings should be merged into a single keysym.
-Under this scheme there are an estimated 100-150 keysyms.
+because judgment is required about when a sufficient set
+of keyboards implements an engraving to justify making it a keysym in the
+standard set and about which engravings should be merged into a single keysym.
+Under this scheme there are an estimated 100\-150 keysyms.
 .LP
-While neither scheme is perfect or elegant, 
+Although neither scheme is perfect or elegant, 
 the Common approach has been selected because it makes it easier to write 
 a portable application.
 Having the Delete functionality merged into a single keysym allows 
@@ -174,16 +174,16 @@ an application to implement a deletion function and expect reasonable bindings
 on a wide set of workstations.
 Under the Common approach, 
 application writers are still free to look for and interpret vendor-specific 
-keysyms, but, because they are in the extended set, 
+keysyms, but because they are in the extended set, 
 the application developer is more conscious that they are writing
-the application in a non-portable fashion.
+the application in a nonportable fashion.
 .LP
 In the listings below, 
-Code Pos is a representation of byte4 of the KEYSYM value, 
+Code Pos is a representation of byte 4 of the KEYSYM value, 
 expressed as most-significant/least-significant 4-bit values.
 The Code Pos numbers are for reference only 
 and do not affect the KEYSYM value.
-In all cases, the KEYSYM value is
+In all cases, the KEYSYM value is:
 .LP
 .DS
 byte3 * 256 + byte4
@@ -307,7 +307,7 @@ _
 000	170	10/10	FEMININE ORDINAL INDICATOR	Latin-1
 000	171	10/11	LEFT ANGLE QUOTATION MARK	Latin-1
 000	172	10/12	NOT SIGN	Latin-1
-000	174	10/14	REGISTERED TRADE MARK SIGN	Latin-1
+000	174	10/14	REGISTERED TRADEMARK SIGN	Latin-1
 000	175	10/15	MACRON	Latin-1
 000	176	11/00	DEGREE SIGN, RING ABOVE	Latin-1
 000	177	11/01	PLUS-MINUS SIGN	Latin-1
@@ -570,10 +570,10 @@ _
 004	220	13/12	KANA LETTER WA	Kana
 004	221	13/13	KANA LETTER N	Kana
 004	222	13/14	VOICED SOUND SYMBOL	Kana
-004	223	13/15	SEMI-VOICED SOUND SYMBOL	Kana
+004	223	13/15	SEMIVOICED SOUND SYMBOL	Kana
 .sp 2
 005	172	10/12	ARABIC COMMA	Arabic
-005	187	11/11	ARABIC SEMI-COLON	Arabic
+005	187	11/11	ARABIC SEMICOLON	Arabic
 005	191	11/15	ARABIC QUESTION MARK	Arabic
 005	193	12/01	ARABIC LETTER HAMZA	Arabic
 005	194	12/02	ARABIC LETTER MADDA ON ALEF	Arabic
@@ -624,10 +624,10 @@ _
 006	161	10/01	SERBIAN SMALL LETTER DJE	Cyrillic
 006	162	10/02	MACEDONIA SMALL LETTER GJE	Cyrillic
 006	163	10/03	CYRILLIC SMALL LETTER IO	Cyrillic
-006	164	10/04	UKRANIAN SMALL LETTER JE	Cyrillic
+006	164	10/04	UKRAINIAN SMALL LETTER JE	Cyrillic
 006	165	10/05	MACEDONIA SMALL LETTER DSE	Cyrillic
-006	166	10/06	UKRANIAN SMALL LETTER I	Cyrillic
-006	167	10/07	UKRANIAN SMALL LETTER YI	Cyrillic
+006	166	10/06	UKRAINIAN SMALL LETTER I	Cyrillic
+006	167	10/07	UKRAINIAN SMALL LETTER YI	Cyrillic
 006	168	10/08	SERBIAN SMALL LETTER JE	Cyrillic
 006	169	10/09	SERBIAN SMALL LETTER LJE	Cyrillic
 006	170	10/10	SERBIAN SMALL LETTER NJE	Cyrillic
@@ -639,10 +639,10 @@ _
 006	177	11/01	SERBIAN CAPITAL LETTER DJE	Cyrillic
 006	178	11/02	MACEDONIA CAPITAL LETTER GJE	Cyrillic
 006	179	11/03	CYRILLIC CAPITAL LETTER IO	Cyrillic
-006	180	11/04	UKRANIAN CAPITAL LETTER JE	Cyrillic
+006	180	11/04	UKRAINIAN CAPITAL LETTER JE	Cyrillic
 006	181	11/05	MACEDONIA CAPITAL LETTER DSE	Cyrillic
-006	182	11/06	UKRANIAN CAPITAL LETTER I	Cyrillic
-006	183	11/07	UKRANIAN CAPITAL LETTER YI	Cyrillic
+006	182	11/06	UKRAINIAN CAPITAL LETTER I	Cyrillic
+006	183	11/07	UKRAINIAN CAPITAL LETTER YI	Cyrillic
 006	184	11/08	SERBIAN CAPITAL LETTER JE	Cyrillic
 006	185	11/09	SERBIAN CAPITAL LETTER LJE	Cyrillic
 006	186	11/10	SERBIAN CAPITAL LETTER NJE	Cyrillic
@@ -720,22 +720,22 @@ _
 007	163	10/03	GREEK CAPITAL LETTER ETA WITH ACCENT	Greek
 007	164	10/04	GREEK CAPITAL LETTER IOTA WITH ACCENT	Greek
 007	165	10/05	GREEK CAPITAL LETTER IOTA WITH DIAERESIS	Greek
-007	166	10/06	GREEK CAPITAL LETTER IOTA WITH ACCENT+DIERESIS	Greek
+007	166	10/06	GREEK CAPITAL LETTER IOTA WITH ACCENT+DIAERESIS	Greek
 007	167	10/07	GREEK CAPITAL LETTER OMICRON WITH ACCENT	Greek
 007	168	10/08	GREEK CAPITAL LETTER UPSILON WITH ACCENT	Greek
-007	169	10/09	GREEK CAPITAL LETTER UPSILON WITH DIERESIS	Greek
-007	170	10/10	GREEK CAPITAL LETTER UPSILON WITH ACCENT+DIERESIS	Greek
+007	169	10/09	GREEK CAPITAL LETTER UPSILON WITH DIAERESIS	Greek
+007	170	10/10	GREEK CAPITAL LETTER UPSILON WITH ACCENT+DIAERESIS	Greek
 007	171	10/11	GREEK CAPITAL LETTER OMEGA WITH ACCENT	Greek
 007	177	11/01	GREEK SMALL LETTER ALPHA WITH ACCENT	Greek
 007	178	11/02	GREEK SMALL LETTER EPSILON WITH ACCENT	Greek
 007	179	11/03	GREEK SMALL LETTER ETA WITH ACCENT	Greek
 007	180	11/04	GREEK SMALL LETTER IOTA WITH ACCENT	Greek
-007	181	11/05	GREEK SMALL LETTER IOTA WITH DIERESIS	Greek
-007	182	11/06	GREEK SMALL LETTER IOTA WITH ACCENT+DIERESIS	Greek
+007	181	11/05	GREEK SMALL LETTER IOTA WITH DIAERESIS	Greek
+007	182	11/06	GREEK SMALL LETTER IOTA WITH ACCENT+DIAERESIS	Greek
 007	183	11/07	GREEK SMALL LETTER OMICRON WITH ACCENT	Greek
 007	184	11/08	GREEK SMALL LETTER UPSILON WITH ACCENT	Greek
-007	185	11/09	GREEK SMALL LETTER UPSILON WITH DIERESIS	Greek
-007	186	11/10	GREEK SMALL LETTER UPSILON WITH ACCENT+DIERESIS	Greek
+007	185	11/09	GREEK SMALL LETTER UPSILON WITH DIAERESIS	Greek
+007	186	11/10	GREEK SMALL LETTER UPSILON WITH ACCENT+DIAERESIS	Greek
 007	187	11/11	GREEK SMALL LETTER OMEGA WITH ACCENT	Greek
 007	193	12/01	GREEK CAPITAL LETTER ALPHA	Greek
 007	194	12/02	GREEK CAPITAL LETTER BETA	Greek
@@ -787,55 +787,55 @@ _
 007	248	15/08	GREEK SMALL LETTER PSI	Greek
 007	249	15/09	GREEK SMALL LETTER OMEGA	Greek
 .sp 2
-008	161	10/01	LEFT RADICAL	Tech
-008	162	10/02	TOP LEFT RADICAL	Tech
-008	163	10/03	HORIZONTAL CONNECTOR	Tech
-008	164	10/04	TOP INTEGRAL	Tech
-008	165	10/05	BOTTOM INTEGRAL	Tech
-008	166	10/06	VERTICAL CONNECTOR	Tech
-008	167	10/07	TOP LEFT SQUARE BRACKET	Tech
-008	168	10/08	BOTTOM LEFT SQUARE BRACKET	Tech
-008	169	10/09	TOP RIGHT SQUARE BRACKET	Tech
-008	170	10/10	BOTTOM RIGHT SQUARE BRACKET	Tech
-008	171	10/11	TOP LEFT PARENTHESIS	Tech
-008	172	10/12	BOTTOM LEFT PARENTHESIS	Tech
-008	173	10/13	TOP RIGHT PARENTHESIS	Tech
-008	174	10/14	BOTTOM RIGHT PARENTHESIS	Tech
-008	175	10/15	LEFT MIDDLE CURLY BRACE	Tech
-008	176	11/00	RIGHT MIDDLE CURLY BRACE	Tech
-008	177	11/01	TOP LEFT SUMMATION	Tech
-008	178	11/02	BOTTOM LEFT SUMMATION	Tech
-008	179	11/03	TOP VERTICAL SUMMATION CONNECTOR	Tech
-008	180	11/04	BOTTOM VERTICAL SUMMATION CONNECTOR	Tech
-008	181	11/05	TOP RIGHT SUMMATION	Tech
-008	182	11/06	BOTTOM RIGHT SUMMATION	Tech
-008	183	11/07	RIGHT MIDDLE SUMMATION	Tech
-008	188	11/12	LESS THAN OR EQUAL SIGN	Tech
-008	189	11/13	NOT EQUAL SIGN	Tech
-008	190	11/14	GREATER THAN OR EQUAL SIGN	Tech
-008	191	11/15	INTEGRAL	Tech
-008	192	12/00	THEREFORE	Tech
-008	193	12/01	VARIATION, PROPORTIONAL TO	Tech
-008	194	12/02	INFINITY	Tech
-008	197	12/05	NABLA, DEL	Tech
-008	200	12/08	IS APPROXIMATE TO	Tech
-008	201	12/09	SIMILAR OR EQUAL TO	Tech
-008	205	12/13	IF AND ONLY IF	Tech
-008	206	12/14	IMPLIES	Tech
-008	207	12/15	IDENTICAL TO	Tech
-008	214	13/06	RADICAL	Tech
-008	218	13/10	IS INCLUDED IN	Tech
-008	219	13/11	INCLUDES	Tech
-008	220	13/12	INTERSECTION	Tech
-008	221	13/13	UNION	Tech
-008	222	13/14	LOGICAL AND	Tech
-008	223	13/15	LOGICAL OR	Tech
-008	239	14/15	PARTIAL DERIVATIVE	Tech
-008	246	15/06	FUNCTION	Tech
-008	251	15/11	LEFT ARROW	Tech
-008	252	15/12	UPWARD ARROW	Tech
-008	253	15/13	RIGHT ARROW	Tech
-008	254	15/14	DOWNWARD ARROW	Tech
+008	161	10/01	LEFT RADICAL	Technical
+008	162	10/02	TOP LEFT RADICAL	Technical
+008	163	10/03	HORIZONTAL CONNECTOR	Technical
+008	164	10/04	TOP INTEGRAL	Technical
+008	165	10/05	BOTTOM INTEGRAL	Technical
+008	166	10/06	VERTICAL CONNECTOR	Technical
+008	167	10/07	TOP LEFT SQUARE BRACKET	Technical
+008	168	10/08	BOTTOM LEFT SQUARE BRACKET	Technical
+008	169	10/09	TOP RIGHT SQUARE BRACKET	Technical
+008	170	10/10	BOTTOM RIGHT SQUARE BRACKET	Technical
+008	171	10/11	TOP LEFT PARENTHESIS	Technical
+008	172	10/12	BOTTOM LEFT PARENTHESIS	Technical
+008	173	10/13	TOP RIGHT PARENTHESIS	Technical
+008	174	10/14	BOTTOM RIGHT PARENTHESIS	Technical
+008	175	10/15	LEFT MIDDLE CURLY BRACE	Technical
+008	176	11/00	RIGHT MIDDLE CURLY BRACE	Technical
+008	177	11/01	TOP LEFT SUMMATION	Technical
+008	178	11/02	BOTTOM LEFT SUMMATION	Technical
+008	179	11/03	TOP VERTICAL SUMMATION CONNECTOR	Technical
+008	180	11/04	BOTTOM VERTICAL SUMMATION CONNECTOR	Technical
+008	181	11/05	TOP RIGHT SUMMATION	Technical
+008	182	11/06	BOTTOM RIGHT SUMMATION	Technical
+008	183	11/07	RIGHT MIDDLE SUMMATION	Technical
+008	188	11/12	LESS THAN OR EQUAL SIGN	Technical
+008	189	11/13	NOT EQUAL SIGN	Technical
+008	190	11/14	GREATER THAN OR EQUAL SIGN	Technical
+008	191	11/15	INTEGRAL	Technical
+008	192	12/00	THEREFORE	Technical
+008	193	12/01	VARIATION, PROPORTIONAL TO	Technical
+008	194	12/02	INFINITY	Technical
+008	197	12/05	NABLA, DEL	Technical
+008	200	12/08	IS APPROXIMATE TO	Technical
+008	201	12/09	SIMILAR OR EQUAL TO	Technical
+008	205	12/13	IF AND ONLY IF	Technical
+008	206	12/14	IMPLIES	Technical
+008	207	12/15	IDENTICAL TO	Technical
+008	214	13/06	RADICAL	Technical
+008	218	13/10	IS INCLUDED IN	Technical
+008	219	13/11	INCLUDES	Technical
+008	220	13/12	INTERSECTION	Technical
+008	221	13/13	UNION	Technical
+008	222	13/14	LOGICAL AND	Technical
+008	223	13/15	LOGICAL OR	Technical
+008	239	14/15	PARTIAL DERIVATIVE	Technical
+008	246	15/06	FUNCTION	Technical
+008	251	15/11	LEFT ARROW	Technical
+008	252	15/12	UPWARD ARROW	Technical
+008	253	15/13	RIGHT ARROW	Technical
+008	254	15/14	DOWNWARD ARROW	Technical
 .sp 2
 009	223	13/15	BLANK	Special
 009	224	14/00	SOLID DIAMOND	Special
