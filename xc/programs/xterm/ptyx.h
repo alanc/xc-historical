@@ -1,5 +1,5 @@
 /*
- *	$Header: ptyx.h,v 1.2 88/02/16 15:00:03 jim Exp $
+ *	$Header: ptyx.h,v 1.3 88/02/16 17:38:43 jim Exp $
  */
 
 #include <X11/copyright.h>
@@ -412,8 +412,10 @@ typedef struct _TekWidgetRec {
 #define CHAR		0177
 
 #define VWindow(screen)		(screen->fullVwin.window)
+#define VShellWindow		term->core.parent->core.window
 #define TextWindow(screen)      (screen->fullVwin.window)
 #define TWindow(screen)		(screen->fullTwin.window)
+#define TShellWindow		tekWidget->core.parent->core.window
 #define Width(screen)		(screen->fullVwin.width)
 #define Height(screen)		(screen->fullVwin.height)
 #define FullWidth(screen)	(screen->fullVwin.fullwidth)
