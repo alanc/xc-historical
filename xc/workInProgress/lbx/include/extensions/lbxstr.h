@@ -1,4 +1,4 @@
-/* $XConsortium: lbxstr.h,v 1.5 94/03/27 11:43:24 dpw Exp mor $ */
+/* $XConsortium: lbxstr.h,v 1.6 94/09/13 17:29:50 mor Exp mor $ */
 /*
  * $NCDId: @(#)lbxstr.h,v 1.19 1994/03/22 18:22:47 lemke Exp $
  *
@@ -364,7 +364,7 @@ typedef struct _LbxFillPoly {
 
 typedef struct _LbxPutImage {
     CARD8	reqType;	/* always LbxReqCode */
-    CARD8	lbxReqType;
+    CARD8	lbxReqType;	/* always X_LbxPutImage */
     CARD16	lbxLength B16;
     CARD16	xLength B16;
     CARD8	compressionMethod;
@@ -378,6 +378,38 @@ typedef struct _LbxPutImage {
     CARD8	padBytes;
 } xLbxPutImageReq;
 #define sz_xLbxPutImageReq	27
+
+typedef struct {
+    CARD8	reqType;	/* always LbxReqCode */
+    CARD8	lbxReqType;	/* always X_LbxGetImage */
+    CARD16	length B16;
+    Drawable	drawable B32;
+    INT16	x B16, y B16;
+    CARD16	width B16, height B16;
+    CARD32	planeMask B32;
+    CARD8	format;
+    CARD8	pad1;
+    CARD16	pad2 B16;
+} xLbxGetImageReq;    
+
+#define sz_xLbxGetImageReq 24
+
+typedef struct {
+    BYTE type;			/* X_Reply */
+    CARD8 depth;
+    CARD16 sequenceNumber B16;
+    CARD32 lbxLength B32;
+    CARD32 xLength B32;
+    VisualID visual B32;
+    CARD8 compressionMethod;
+    CARD8 pad1;
+    CARD16 pad2 B16;
+    CARD32 pad3 B32;
+    CARD32 pad4 B32;
+    CARD32 pad5 B32;
+} xLbxGetImageReply;
+
+#define sz_xLbxGetImageReply 32
 
 typedef struct {
     CARD8       offset;
