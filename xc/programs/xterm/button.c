@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: button.c,v 1.27 89/01/03 16:17:57 jim Exp $
+ *	$XConsortium: button.c,v 1.28 89/01/04 10:36:55 jim Exp $
  */
 
 
@@ -35,7 +35,7 @@ button.c	Handles button events in the terminal emulator.
 				J. Gettys.
 */
 #ifndef lint
-static char rcs_id[] = "$XConsortium: button.c,v 1.27 89/01/03 16:17:57 jim Exp $";
+static char rcs_id[] = "$XConsortium: button.c,v 1.28 89/01/04 10:36:55 jim Exp $";
 #endif	/* lint */
 #include <X11/Xos.h>
 #include <X11/Xlib.h>
@@ -608,6 +608,8 @@ register int amount;
     if (rawRow < minrow) rawRow = minrow;
     if (screen->startHRow < minrow) screen->startHRow = minrow;
     if (screen->endHRow < minrow) screen->endHRow = minrow;
+    screen->startHCoord = Coordinate (screen->startHRow, 0);
+    screen->endHCoord = Coordinate (screen->endHRow, 0);
 }
 
 
