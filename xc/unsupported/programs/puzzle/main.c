@@ -371,6 +371,7 @@ RepaintPictureTiles()
  **/
 
 Setup (geom,argc,argv)
+char *geom;
 int argc;
 char *argv[];
 {
