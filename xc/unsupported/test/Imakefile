@@ -1,16 +1,21 @@
-# $XConsortium: Imakefile,v 1.8 88/09/06 18:00:09 jim Exp $
+# $XConsortium: Imakefile,v 1.9 89/03/28 16:42:47 keith Exp $
+STD_DEFINES = ExtensionDefines
    ZOIDSRCS = zoidtest.c
    ZOIDOBJS = zoidtest.o
  BEZIERSRCS = beziertest.c
  BEZIEROBJS = beziertest.o
-POLYMORPHSRCS = shapetest.c
-POLYMORPHOBJS = shapetest.o
+  SHAPESRCS = shapetest.c
+  SHAPEOBJS = shapetest.o
+    SHMSRCS = shmtest.c
+    SHMOBJS = shmtest.o
    INCLUDES = -I$(TOP) -I$(INCLUDESRC) -I../include
+       SRCS = $(ZOIDSRCS) $(BEZIERSRCS) $(SHAPESRCS) $(SHMSRCS)
 
-all: zoidtest beziertest shapetest
+all: zoidtest beziertest shapetest shmtest
 
 SingleProgramTarget(zoidtest,$(ZOIDOBJS),$(EXTENSIONLIB) $(XLIB),)
 SingleProgramTarget(beziertest,$(BEZIEROBJS),$(EXTENSIONLIB) $(XLIB),)
-SingleProgramTarget(shapetest,$(POLYMORPHOBJS),$(EXTENSIONLIB) $(XLIB),)
+SingleProgramTarget(shapetest,$(SHAPEOBJS),$(EXTENSIONLIB) $(XLIB),)
+SingleProgramTarget(shmtest,$(SHMOBJS),$(EXTENSIONLIB) $(XLIB),)
 
 DependTarget()
