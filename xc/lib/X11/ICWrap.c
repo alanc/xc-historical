@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XICWrap.c,v 11.5 91/04/08 11:50:24 rws Exp $
+ * $XConsortium: XICWrap.c,v 11.6 91/04/10 20:33:08 rws Exp $
  */
 
 /*
@@ -50,18 +50,19 @@
 
 static int
 _XIMNestedListToNestedList(nlist, list)
-    XIMArg *nlist;
-    XIMArg *list;
+    XIMArg *nlist;   /* This is the new list */
+    XIMArg *list;    /* The original list */
 {
     register XIMArg *ptr = list;
 
     while (ptr->name) {
 	if (!strcmp(ptr->name, XNVaNestedList)) {
-	    ptr += _XIMNestedListToNestedList((XIMArg *)nlist->value, ptr);
+	    nlist += _XIMNestedListToNestedList(nlist, (XIMArg *)ptr->value);
 	} else {
-	    ptr->name = nlist->name;
-	    ptr->value = nlist->value;
+	    nlist->name = ptr->name;
+	    nlist->value = ptr->value;
 	    ptr++;
+	    nlist++;
 	}
     }
     return ptr - list;
@@ -129,7 +130,7 @@ _XIMVaToNestedList(var, max_count, args_return)
 
     for (attr = va_arg(var, char*); attr; attr = va_arg(var, char*)) {
 	if (!strcmp(attr, XNVaNestedList)) {
-	    args += _XIMNestedListToNestedList(va_arg(var, XIMArg*), args);
+	    args += _XIMNestedListToNestedList(args, va_arg(var, XIMArg*));
 	} else {
 	    args->name = attr;
 	    args->value = va_arg(var, XPointer);
