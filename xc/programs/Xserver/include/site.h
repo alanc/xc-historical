@@ -25,18 +25,26 @@ SOFTWARE.
 #ifndef SITE_H
 #define SITE_H
 /*
- * Site.h contains default values of all variables which can be initialized
- * on the server command line or in the environment, and only those variables
+ * The following constants are provided solely as a last line of defense.  The
+ * normal build ALWAYS overrides them using a special rule given in
+ * server/dix/Imakefile.  If you want to change either of these constants, 
+ * you should set the DefaultfontPath or DefaultRGBDatabase configuration 
+ * parameters in util/imake.includes/site.def or util/imake.includes/*.macros.
+ * DO NOT CHANGE THESE VALUES OR THE DIX IMAKEFILE!
  */
-
 #ifndef COMPILEDDEFAULTFONTPATH
-#define COMPILEDDEFAULTFONTPATH	"/usr/lib/X11/fonts/"
+#define COMPILEDDEFAULTFONTPATH	"/usr/lib/X11/fonts/misc/"
 #endif
-#define COMPILEDDEFAULTFONT	"fixed"
-#define COMPILEDCURSORFONT	"cursor"
 #ifndef RGB_DB
 #define RGB_DB			"/usr/lib/X11/rgb"
 #endif
+
+/*
+ * The following constants contain default values for all of the variables 
+ * that can be initialized on the server command line or in the environment.
+ */
+#define COMPILEDDEFAULTFONT	"fixed"
+#define COMPILEDCURSORFONT	"cursor"
 #define DEFAULT_TIMEOUT		60	/* seconds */
 #define DEFAULT_KEYBOARD_CLICK 	0
 #define DEFAULT_BELL		50
