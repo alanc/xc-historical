@@ -278,12 +278,10 @@ Widget wid;
 		w->top.hints.flags |= PPosition | PSize;
 		if(flag & XNegative) 
 			w->core.x =
-			  DisplayWidth(w->core.display, w->core.screen)
-			    - w->core.width - w->core.x;
+			  w->core.screen->width - w->core.width - w->core.x;
 		if(flag & YNegative) 
 			w->core.y = 
-			  DisplayHeight(w->core.display,w->core.screen)
-			    - w->core.height - w->core.y;
+			 w->core.screen->height - w->core.height - w->core.y;
 		w->top.hints.flags |= (flag & (XValue|YValue))? USPosition : 0
 		  |(flag & (WidthValue & HeightValue))? USSize : 0;
 	}
@@ -300,7 +298,7 @@ XSetWindowAttributes *attr;
 {
 	TopLevelWidget w = (TopLevelWidget) wid;
 	Window win;
-	Display *dpy = w->core.display;
+	Display *dpy = w->core.screen->display;
 	char hostname[1024];
 	XWMHints wmhints;
 
@@ -456,8 +454,8 @@ WidgetGeometry *reply;
 		return(XtgeometryYes);
 	}
 	values = *(XWindowChanges *) (&(request->x));
-	XGrabServer(w->core.display);
-	XGetNormalHints(w->core.display, w->core.window, &oldhints);
+	XGrabServer(w->core.screen->display);
+	XGetNormalHints(w->core.screen->display, w->core.window, &oldhints);
         if(request->request_mode & CWWidth) {
                 oldhints.flags &= ~USSize;
                 oldhints.flags |= PSize;
@@ -468,10 +466,10 @@ WidgetGeometry *reply;
                 oldhints.flags |= PSize;
                 oldhints.height = request->height;
         }
-        XSetNormalHints(w->core.display, w->core.window, &oldhints);
-	XConfigureWindow(w->core.display, w->core.window,
+        XSetNormalHints(w->core.screen->display, w->core.window, &oldhints);
+	XConfigureWindow(w->core.screen->display, w->core.window,
 		 (XWindowChanges *)&(request->x), request->request_mode);
-	XUngrabServer(w->core.display);
+	XUngrabServer(w->core.screen->display);
 	return(XtgeometryNo);
 }
 
