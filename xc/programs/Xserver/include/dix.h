@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: dix.h,v 1.58 91/04/25 20:46:14 keith Exp $ */
+/* $XConsortium: dix.h,v 1.59 91/07/27 23:40:24 keith Exp $ */
 
 #ifndef DIX_H
 #define DIX_H
@@ -74,7 +74,8 @@ SOFTWARE.
     }
 
 #define VALIDATE_DRAWABLE_AND_GC(drawID, pDraw, pGC, client)\
-    if ((client->lastGCID != stuff->gc) || (client->lastDrawableID != drawID))\
+    if ((stuff->gc == INVALID) || (client->lastGCID != stuff->gc) ||\
+	(client->lastDrawableID != drawID))\
     {\
         if (client->lastDrawableID != drawID) {\
 	    pDraw = (DrawablePtr)LookupIDByClass(drawID, RC_DRAWABLE);\
@@ -85,15 +86,7 @@ SOFTWARE.
     	    }\
         } else\
 	    pDraw = client->lastDrawable;\
-        if (client->lastGCID != stuff->gc) {\
-    	    pGC = (GC *)LookupIDByType(stuff->gc, RT_GC);\
-    	    if (!pGC)\
-    	    {\
-            	client->errorValue = stuff->gc;\
-            	return (BadGC);\
-    	    }\
-        } else\
-            pGC = client->lastGC;\
+	VERIFY_GC(pGC, stuff->gc, client);\
 	if ((pDraw->type == UNDRAWABLE_WINDOW) ||\
 	    (pGC->depth != pDraw->depth) ||\
 	    (pGC->pScreen != pDraw->pScreen))\
