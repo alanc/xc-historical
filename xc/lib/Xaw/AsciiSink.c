@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: AsciiSink.c,v 1.32 89/08/14 14:43:25 kit Exp $";
+static char Xrcsid[] = "$XConsortium: AsciiSink.c,v 1.33 89/08/15 12:43:26 kit Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -84,13 +84,15 @@ static int CharWidth (w, x, c)
     int     width, nonPrinting;
     XFontStruct *font = data->font;
 
-    x -= ((TextWidget) w)->text.margin.left; /* Compensate for left margin. */
+    if ( c == LF ) return(0);
 
-    if (c == '\t') {
+    if (c == TAB) {
 	int i;
 	Position *tab;
+	x -= ((TextWidget) w)->text.margin.left; /* Adjust for Left Margin. */
+
 	if (x >= w->core.width) return 0;
-	for (i=0, tab=data->tabs; i<data->tab_count; i++, tab++) {
+	for (i = 0, tab = data->tabs ; i < data->tab_count ; i++, tab++) {
 	    if (x < *tab) {
 		if (*tab < w->core.width)
 		    return *tab - x;
@@ -100,10 +102,8 @@ static int CharWidth (w, x, c)
 	}
 	return 0;
     }
-    if (c == LF)
-	c = SP;
-    nonPrinting = (c < SP);
-    if (nonPrinting) {
+
+    if ( (nonPrinting = (c < SP)) ) {         /* Yes, This is right. */
 	if (data->display_nonprinting)
 	    c += '@';
 	else {
@@ -124,6 +124,49 @@ static int CharWidth (w, x, c)
     return width;
 }
 
+/*	Function Name: PaintText
+ *	Description: Actually paints the text into the windoe.
+ *	Arguments: w - the text widget.
+ *                 gc - gc to paint text with.
+ *                 x, y - location to paint the text.
+ *                 buf, len - buffer and length of text to paint.
+ *	Returns: the width of the text painted, or 0.
+ *
+ * NOTE:  If this string attempts to paint past the end of the window
+ *        then this function will return zero.
+ */
+
+static Dimension
+PaintText(w, gc, x, y, buf, len)
+Widget w;
+GC gc;
+Position x, y;
+char * buf;
+int len;
+{
+    TextWidget ctx = (TextWidget) w;
+    XawTextSink sink = ctx->text.sink;
+    AsciiSinkData *data = (AsciiSinkData *) sink->data;
+    Position max_x;
+    Dimension width = XTextWidth(data->font, buf, len); 
+    max_x = (Position) ctx->core.width;
+
+    if ( ((int) width) <= -x)	           /* Don't draw if we can't see it. */
+      return(width);
+
+    XDrawImageString(XtDisplay(w), XtWindow(w), gc,(int) x, (int) y, buf, len);
+    if ( (((Position) width + x) > max_x) && (ctx->text.margin.right != 0) ) {
+	x = ctx->core.width - ctx->text.margin.right;
+	width = ctx->text.margin.right;
+	XFillRectangle(XtDisplay(w), XtWindow(w), data->normgc, (int) x,
+		       (int) y - data->font->ascent, (unsigned int) width,
+		       (unsigned int) (data->font->ascent +
+				       data->font->descent));
+	return(0);
+    }
+    return(width);
+}
+
 /* Sink Object Functions */
 
 static /*void*/ AsciiDisplayText (w, x, y, pos1, pos2, highlight)
@@ -132,22 +175,20 @@ static /*void*/ AsciiDisplayText (w, x, y, pos1, pos2, highlight)
   int highlight;
   XawTextPosition pos1, pos2;
 {
-    XawTextSink sink = ((TextWidget)w)->text.sink;
-    XawTextSource source = ((TextWidget)w)->text.source;
-    AsciiSinkData *data = (AsciiSinkData *) sink->data ;
+    TextWidget ctx = (TextWidget) w;
+    XawTextSink sink = ctx->text.sink;
+    AsciiSinkData *data = (AsciiSinkData *) sink->data;
+    XawTextSource source = ctx->text.source;
 
-    XFontStruct *font = data->font;
-    int     j, k;
-    Dimension width;
+    int j, k;
     XawTextBlock blk;
     GC gc = highlight ? data->invgc : data->normgc;
     GC invgc = highlight ? data->normgc : data->invgc;
 
     if (!data->echo) return;
 
-    y += font->ascent;
-    j = 0;
-    while (pos1 < pos2) {
+    y += data->font->ascent;
+    for ( j = 0 ; pos1 < pos2 ; ) {
 	pos1 = (*source->Read)(source, pos1, &blk, pos2 - pos1);
 	for (k = 0; k < blk.length; k++) {
 	    if (j >= bufferSize - 5) {
@@ -155,37 +196,41 @@ static /*void*/ AsciiDisplayText (w, x, y, pos1, pos2, highlight)
 		buf = XtRealloc(buf, bufferSize);
 	    }
 	    buf[j] = blk.ptr[k];
-	    if (buf[j] == LF)
-		buf[j] = ' ';
+	    if (buf[j] == LF)	/* line feeds ('\n') are not printed. */
+	        continue;
+
 	    else if (buf[j] == '\t') {
-	        XDrawImageString(XtDisplay(w), XtWindow(w),
-			gc, x, y, buf, j);
-		buf[j] = 0;
-		x += XTextWidth(data->font, buf, j);
+	        Position temp = 0;
+		Dimension width;
+
+	        if ((j != 0) && ((temp = PaintText(w, gc, x, y, buf, j)) == 0))
+		  return;
+
+	        x += temp;
 		width = CharWidth(w, x, '\t');
-		XFillRectangle(XtDisplay(w), XtWindow(w), invgc, x,
-			       y - font->ascent, width,
-			       (Dimension) (data->font->ascent +
-					    data->font->descent));
+		XFillRectangle(XtDisplay(w), XtWindow(w), invgc, (int) x,
+			       (int) y - data->font->ascent,
+			       (unsigned int) width,
+			       (unsigned int) (data->font->ascent +
+					       data->font->descent));
 		x += width;
 		j = -1;
 	    }
-	    else
-		if (buf[j] < ' ') {
-		    if (data->display_nonprinting) {
-			buf[j + 1] = buf[j] + '@';
-			buf[j] = '^';
-			j++;
-		    }
-		    else
-			buf[j] = ' ';
+	    else if (buf[j] < ' ') {
+	        if (data->display_nonprinting) {
+		    buf[j + 1] = buf[j] + '@';
+		    buf[j] = '^';
+		    j++;
 		}
+		else
+		    buf[j] = ' ';
+	    }
 	    j++;
 	}
     }
-    XDrawImageString(XtDisplay(w), XtWindow(w), gc, x, y, buf, j);
+    if (j > 0)
+        (void) PaintText(w, gc, x, y, buf, j);
 }
-
 
 #define insertCursor_width 6
 #define insertCursor_height 3
@@ -253,6 +298,13 @@ static AsciiClearToBackground (w, x, y, width, height)
   Position x, y;
   Dimension width, height;
 {
+
+/* 
+ * Don't clear in height or width are zero.
+ * XClearArea() has special semantic for these values.
+ */
+
+    if ( (height == 0) || (width == 0) ) return;
     XClearArea(XtDisplay(w), XtWindow(w), x, y, width, height, False);
 }
 
@@ -372,7 +424,6 @@ XawTextPosition pos;
 Position ref_x, x;
 {
   int resWidth, resHeight, width = x - ref_x;
-  XawTextSource src = ((TextWidget)w)->text.source;
   XawTextPosition ret_pos;
 
   AsciiFindPosition(w, pos, ref_x, width,

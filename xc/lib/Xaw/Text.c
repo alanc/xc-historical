@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: Text.c,v 1.101 89/08/14 14:43:09 kit Exp $";
+static char Xrcsid[] = "$XConsortium: Text.c,v 1.102 89/08/15 12:43:17 kit Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -60,7 +60,7 @@ extern char* sys_errlist[];
 
 static void VScroll(), VJump(), HScroll(), HJump(), ClearWindow(); 
 static void DisplayTextWindow(), ModifySelection(), SetScrollBars();
-static void UpdateTextInLine();
+static void UpdateTextInLine(), UpdateTextInRectangle();
 static Boolean LineAndXYForPosition();
 static XawTextPosition FindGoodPosition(), _BuildLineTable();
 
@@ -99,7 +99,7 @@ static XtResource resources[] = {
   {XtNleftMargin, XtCMargin, XtRPosition, sizeof (Position),
      offset(text.r_margin.left), XtRImmediate, (caddr_t)2},
   {XtNrightMargin, XtCMargin, XtRPosition, sizeof (Position),
-     offset(text.r_margin.right), XtRImmediate, (caddr_t)2},
+     offset(text.r_margin.right), XtRImmediate, (caddr_t)4},
   {XtNtopMargin, XtCMargin, XtRPosition, sizeof (Position),
      offset(text.r_margin.top), XtRImmediate, (caddr_t)2},
   {XtNbottomMargin, XtCMargin, XtRPosition, sizeof (Position),
@@ -527,9 +527,6 @@ Mask *valueMask;
 XSetWindowAttributes *attributes;
 {
   TextWidget ctx = (TextWidget)w;
-  
-  *valueMask |= CWBitGravity;
-  attributes->bit_gravity = NorthWestGravity;
   
   (*textClassRec.core_class.superclass->core_class.realize)
     (w, valueMask, attributes);
@@ -1052,8 +1049,8 @@ int n;
       height = ctx->core.height - HMargins(ctx);
     else
       height = 0;
-    if (y > (int) VMargins(ctx))
-      clear_height = y - (int) VMargins(ctx);
+    if (y > (int) ctx->text.margin.top)
+      clear_height = y - ctx->text.margin.top;
     else
       clear_height = 0;
 
@@ -1080,9 +1077,10 @@ caddr_t callData;		/* #pixels */
 {
   TextWidget ctx = (TextWidget) closure;
   Widget tw = (Widget) ctx;
-  Position left, right, old_left, pixels = (Position) callData;
-  int i, (*ClearToBG)() = ctx->text.sink->ClearToBackground;
-
+  Position old_left, pixels = (Position) callData;
+  int (*ClearToBG)() = ctx->text.sink->ClearToBackground;
+  XRectangle rect, t_rect;
+  
   _XawTextPrepareToUpdate(ctx);
 
   old_left = ctx->text.margin.left;
@@ -1093,38 +1091,58 @@ caddr_t callData;		/* #pixels */
   }
   
   if (pixels > 0) {
+    rect.width = (unsigned short) pixels + ctx->text.margin.right;
+    rect.x = (short) ctx->core.width - (short) rect.width;
+    rect.y = (short) ctx->text.margin.top;
+    rect.height = (unsigned short) ctx->core.height - rect.y;
+
     XCopyArea(XtDisplay(tw), XtWindow(tw), XtWindow(tw), ctx->text.gc,
-	      pixels, (int) ctx->text.margin.top, 
-	      (unsigned int) ctx->core.width - pixels,
-	      (unsigned int) ctx->core.height,
-	      0, (int) ctx->text.margin.top);
-    (*ClearToBG)(ctx, (int) (ctx->core.width - pixels), ctx->text.margin.top,
-		 (unsigned int) pixels, (unsigned int) ctx->core.height);
-    left = (Position) ctx->core.width - pixels;
-    right = (Position) ctx->core.width;
+	      pixels, (int) rect.y,
+	      (unsigned int) rect.x, (unsigned int) ctx->core.height,
+	      0, (int) rect.y);
   }
   else if (pixels < 0) {
-    int real_left = 0;
+    rect.x = 0;
 
     if (ctx->text.vbar != NULL)
-      real_left += (ctx->text.vbar->core.width +
-		    ctx->text.vbar->core.border_width);
+      rect.x += (short) (ctx->text.vbar->core.width +
+			 ctx->text.vbar->core.border_width);
+
+    rect.width = (Position) - pixels;
+    rect.y = ctx->text.margin.top;
+    rect.height = ctx->core.height - rect.y;
 
     XCopyArea(XtDisplay(tw), XtWindow(tw), XtWindow(tw), ctx->text.gc,
-	      real_left, (int) ctx->text.margin.top, 
-	      (unsigned int) ctx->core.width + pixels - real_left,
-	      (unsigned int) ctx->core.height, 
-	      - pixels + real_left, (int) ctx->text.margin.top);
-    (*ClearToBG)(ctx, (int) real_left, (int) ctx->text.margin.top,
-		 (unsigned int) - pixels, (unsigned int) ctx->core.height);
-    left = 0;
-    right = (Position) - pixels + real_left;
+	      (int) rect.x, (int) rect.y,
+	      (unsigned int) ctx->core.width - rect.width,
+	      (unsigned int) rect.height,
+	      (int) rect.x + rect.width, (int) rect.y);
+
+/*
+ * Redraw the line overflow marks.
+ */
+
+    t_rect.x = ctx->core.width - ctx->text.margin.right;
+    t_rect.width = ctx->text.margin.right;
+    t_rect.y = rect.y;
+    t_rect.height = rect.height;
+      
+    (*ClearToBG)(tw, (int) t_rect.x, (int) t_rect.y,
+		 (unsigned int) t_rect.width, (unsigned int) t_rect.height);
+    
+    UpdateTextInRectangle(ctx, &t_rect);
   }
 
-  if (pixels != 0) 
-    for (i = 0; IsValidLine(ctx, i) && (i < ctx->text.lt.lines) ; i++) 
-      UpdateTextInLine(ctx, i, left, right);
+/*  
+ * Put in the text that just became visable.
+ */
 
+  if ( pixels != 0 ) {
+    (*ClearToBG)(tw, (int) rect.x, (int) rect.y,
+		 (unsigned int) rect.width, (unsigned int) rect.height);
+    
+    UpdateTextInRectangle(ctx, &rect);
+  }
   SetScrollBars(ctx);
   _XawTextExecuteUpdate(ctx);
 }
@@ -1172,6 +1190,10 @@ Position left, right;
   XawTextPosition pos1, pos2; 
   int width, height, local_left, local_width;
   XawTextLineTableEntry * lt = ctx->text.lt.info + line;
+
+  if ( ((lt->textWidth + ctx->text.margin.left) < left) ||
+       ( ctx->text.margin.left > right ) )
+    return;			/* no need to update. */
 
   local_width = left - ctx->text.margin.left;
   (*ctx->text.sink->FindPosition)((Widget) ctx, lt->position,
@@ -1633,10 +1655,12 @@ XawTextPosition pos1, pos2;
 
   for ( startPos = pos1, i = line; IsValidLine(ctx, i) && 
                                    (i < ctx->text.lt.lines) ; i++) {
-    if ( (endPos = ctx->text.lt.info[i + 1].position) > pos2) 
+
+    
+    if ( (endPos = ctx->text.lt.info[i + 1].position) > pos2 )
       clear_eol = ( (endPos = pos2) >= lastPos);
     else 
-      clear_eol = True;
+      clear_eol = TRUE;
 
     height = ctx->text.lt.info[i + 1].y - ctx->text.lt.info[i].y;
 
@@ -2069,13 +2093,13 @@ XEvent *event;
   expose.height = event->xexpose.height;
 
   _XawTextPrepareToUpdate(ctx);
-  UpdateTextInRectangle(w, &expose);
+  UpdateTextInRectangle(ctx, &expose);
   (*ctx->text.sink->GetCursorBounds)(w, &cursor);
   if (RectanglesOverlap(&cursor, &expose)) {
     (*ctx->text.sink->ClearToBackground)(w, (int) cursor.x, (int) cursor.y,
 					 (unsigned int) cursor.width,
 					 (unsigned int) cursor.height);
-    UpdateTextInRectangle(w, &cursor);
+    UpdateTextInRectangle(ctx, &cursor);
   }
   _XawTextExecuteUpdate(ctx);
 }
@@ -2156,7 +2180,7 @@ TextWidget ctx;
   if ( IsValidLine(ctx, lines))
     max_pos = ctx->text.lt.info[lines].position;
   else
-    max_pos = ctx->text.lastPos;
+    max_pos = ctx->text.lastPos + 1;
   
   if ( (ctx->text.insertPos >= ctx->text.lt.top) &&
        ((ctx->text.insertPos < max_pos) || ( max_pos > ctx->text.lastPos)) ) 
@@ -2244,10 +2268,8 @@ Widget w;
   PositionVScrollBar(ctx);
   PositionHScrollBar(ctx);
 
-  _XawTextPrepareToUpdate(ctx);
   _XawTextBuildLineTable(ctx, ctx->text.lt.top, TRUE);
   SetScrollBars(ctx);
-  _XawTextExecuteUpdate(ctx);
 }
 
 /*
