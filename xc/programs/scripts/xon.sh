@@ -1,4 +1,5 @@
 #!/bin/sh
+# $XConsortium$
 # start up xterm (or any other X command) on the specified host
 # Usage: xon host [arguments] [command]
 case $# in
