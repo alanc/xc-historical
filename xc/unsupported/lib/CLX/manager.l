@@ -602,7 +602,7 @@
 		  :start start :end end :transform transform)))
 
 ;; Implement the following:
-;; (DEFSETF cut-buffer (display buffer &key (type :string) (FORMAT 8)
+;; (defsetf cut-buffer (display &key (buffer 0) (type :string) (format 8)
 ;;			        (transform #'char->card8) (start 0) end) (data)
 ;; In order to avoid having to pass positional parameters to set-cut-buffer,
 ;; We've got to do the following.  WHAT A PAIN...
