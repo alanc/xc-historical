@@ -1,4 +1,4 @@
-/* $XConsortium: XImUtil.c,v 11.52 91/12/10 20:22:09 rws Exp $ */
+/* $XConsortium: XImUtil.c,v 11.53 91/12/18 19:36:01 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -365,7 +365,7 @@ static unsigned long _XGetPixel (ximage, x, y)
 	int bits, nbytes;
 	long plane;
      
-	if (ximage->bits_per_pixel == 1) {
+	if ((ximage->bits_per_pixel | ximage->depth) == 1) {
 		src = &ximage->data[XYINDEX(x, y, ximage)];
 		dst = (char *)&pixel;
 		pixel = 0;
@@ -503,7 +503,7 @@ static unsigned long _XGetPixel1 (ximage, x, y)
 	unsigned char bit;
 	int xoff, yoff;
 
-	if ((ximage->bits_per_pixel == 1) &&
+	if (((ximage->bits_per_pixel | ximage->depth) == 1) &&
 	    (ximage->byte_order == ximage->bitmap_bit_order)) {
 	    xoff = x + ximage->xoffset;
 	    yoff = y * ximage->bytes_per_line + (xoff >> 3);
@@ -554,7 +554,7 @@ static int _XPutPixel (ximage, x, y, pixel)
         npixel = pixel;
 	for (i=0, px=pixel; i<sizeof(unsigned long); i++, px>>=8)
 	    ((unsigned char *)&pixel)[i] = px;
-	if (ximage->bits_per_pixel == 1) {
+	if ((ximage->bits_per_pixel | ximage->depth) == 1) {
 		src = &ximage->data[XYINDEX(x, y, ximage)];
 		dst = (char *)&px;
 		px = 0;
@@ -691,7 +691,7 @@ static int _XPutPixel1 (ximage, x, y, pixel)
 	unsigned char bit;
 	int xoff, yoff;
 
-	if ((ximage->bits_per_pixel == 1) &&
+	if (((ximage->bits_per_pixel | ximage->depth) == 1) &&
 	    (ximage->byte_order == ximage->bitmap_bit_order)) {
 	    xoff = x + ximage->xoffset;
 	    yoff = y * ximage->bytes_per_line + (xoff >> 3);
@@ -862,7 +862,7 @@ static _XAddPixel (ximage, value)
 
 	if (!value)
 	    return;
-	if (ximage->bits_per_pixel == 1) {
+	if ((ximage->bits_per_pixel | ximage->depth) == 1) {
 	    /* The only value that we can add here to an XYBitmap
 	     * is one.  Since 1 + value = ~value for one bit wide
 	     * data, we do this quickly by taking the ones complement
@@ -926,7 +926,7 @@ _XInitImageFuncPtrs (image)
 	if ((image->format == ZPixmap) && (image->bits_per_pixel == 8)) {
 	    image->f.get_pixel = _XGetPixel8;
 	    image->f.put_pixel = _XPutPixel8;
-	} else if ((image->bits_per_pixel == 1) &&
+	} else if (((image->bits_per_pixel | image->depth) == 1) &&
 		   (image->byte_order == image->bitmap_bit_order)) {
 	    image->f.get_pixel = _XGetPixel1;
 	    image->f.put_pixel = _XPutPixel1;
