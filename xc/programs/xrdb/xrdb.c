@@ -1,7 +1,7 @@
 /*
  * xrdb - X resource manager database utility
  *
- * $XConsortium: xrdb.c,v 11.61 92/09/14 09:39:13 rws Exp $
+ * $XConsortium: xrdb.c,v 11.62 92/09/14 18:54:49 rws Exp $
  */
 
 /*
@@ -789,7 +789,7 @@ main (argc, argv)
 	(oper == OPLOAD || oper == OPMERGE || oper == OPOVERRIDE)) {
 	need_real_defines = True;
 	strcpy(tmpname2, "/tmp/xrdbD_XXXXXX");
-	(void) mktemp(tmpname);
+	(void) mktemp(tmpname2);
     }
 #endif
 
