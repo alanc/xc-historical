@@ -1,4 +1,4 @@
-/* $XConsortium: Xcms.h,v 1.13 92/06/04 16:33:22 converse Exp $ */
+/* $XConsortium: Xcms.h,v 1.14 92/06/05 16:49:45 converse Exp $ */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -320,7 +320,7 @@ extern Status XcmsAddColorSpace (
 #endif
 );
 
-extern Status XcmsAddFunctionSett (
+extern Status XcmsAddFunctionSet (
 #if NeedFunctionPrototypes
     XcmsFunctionSet*	/* functionSet */
 #endif
