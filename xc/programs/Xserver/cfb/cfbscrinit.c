@@ -25,7 +25,7 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XConsortium: cfbscrinit.c,v 5.29 93/12/13 17:22:30 dpw Exp $ */
+/* $XConsortium: cfbscrinit.c,v 5.30 94/02/23 15:51:23 dpw Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -125,11 +125,14 @@ Bool
 cfbCreateScreenResources(pScreen)
     ScreenPtr pScreen;
 {
+    Bool retval;
+
     pointer oldDevPrivate = pScreen->devPrivate;
     pScreen->devPrivate = pScreen->devPrivates[cfbScreenPrivateIndex].ptr;
-    miCreateScreenResources(pScreen);
+    retval = miCreateScreenResources(pScreen);
     pScreen->devPrivates[cfbScreenPrivateIndex].ptr = pScreen->devPrivate;
     pScreen->devPrivate = oldDevPrivate;
+    return retval;
 }
 #endif
 
