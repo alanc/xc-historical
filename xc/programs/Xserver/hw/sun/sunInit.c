@@ -78,6 +78,7 @@ static int autoRepeatHandlersInstalled;	/* FALSE each time InitOutput called */
 static Bool sunDevsProbed = FALSE;
 Bool sunSupportsDepth8 = FALSE;
 unsigned long sunGeneration = 0;
+int sunScreenIndex;
 
 
 /*-
@@ -236,7 +237,6 @@ InitOutput(pScreenInfo, argc, argv)
 	if (sunFbData[dev].createProc)
 	    (*sunFbData[dev].createProc)(pScreenInfo, argc, argv);
     }
-    sunGeneration = serverGeneration;
     sunInitCursor();
     signal(SIGWINCH, SIG_IGN);
 }
@@ -277,6 +277,39 @@ InitInput(argc, argv)
     SetInputCheck (&zero, &sunSigIO);
 }
 
+
+static Bool
+sunCloseScreen (i, pScreen)
+    int		i;
+    ScreenPtr	pScreen;
+{
+    SetupScreen(pScreen);
+    Bool    ret;
+
+    pScreen->CloseScreen = pPrivate->CloseScreen;
+    ret = (*pScreen->CloseScreen) (i, pScreen);
+    (void) (*pScreen->SaveScreen) (pScreen, SCREEN_SAVER_OFF);
+    xfree ((pointer) pPrivate);
+    return ret;
+}
+
+Bool
+sunSaveScreen (pScreen, on)
+    ScreenPtr	pScreen;
+    Bool	on;
+{
+    int		state = on;
+
+    if (on != SCREEN_SAVER_ON) {
+	SetTimeSinceLastInputEvent();
+	state = 1;
+    } else {
+	state = 0;
+    }
+    (void) ioctl(sunFbs[pScreen->myNum].fd, FBIOSVIDEO, &state);
+    return( TRUE );
+}
+
 /*-
  *-----------------------------------------------------------------------
  * sunScreenInit --
@@ -293,14 +326,42 @@ InitInput(argc, argv)
  *
  *-----------------------------------------------------------------------
  */
+
+Bool
+sunScreenAllocate (pScreen)
+    ScreenPtr	pScreen;
+{
+    sunScreenPtr    pPrivate;
+
+    if (sunGeneration != serverGeneration)
+    {
+	sunScreenIndex = AllocateScreenPrivateIndex();
+	if (sunScreenIndex < 0)
+	    return FALSE;
+	sunGeneration = serverGeneration;
+    }
+    pPrivate = (sunScreenPtr) xalloc (sizeof (sunScreenRec));
+    if (!pPrivate)
+	return FALSE;
+
+    pScreen->devPrivates[sunScreenIndex].ptr = (pointer) pPrivate;
+}
+
 Bool
 sunScreenInit (pScreen)
-    ScreenPtr	  pScreen;
+    ScreenPtr	pScreen;
 {
+    SetupScreen(pScreen);
     extern void   sunBlockHandler();
     extern void   sunWakeupHandler();
     static ScreenPtr autoRepeatScreen;
     extern miPointerCursorFuncRec   sunPointerCursorFuncs;
+    extern miPointerSpriteFuncRec   sunPointerSpriteFuncs;
+
+    pPrivate->installedMap = 0;
+    pPrivate->CloseScreen = pScreen->CloseScreen;
+    pScreen->CloseScreen = sunCloseScreen;
+    pScreen->SaveScreen = sunSaveScreen;
 
     /*
      *	Block/Unblock handlers
@@ -315,7 +376,10 @@ sunScreenInit (pScreen)
         pScreen->WakeupHandler = sunWakeupHandler;
     }
 
-    miDCInitialize (pScreen, &sunPointerCursorFuncs);
+    if (!sunCursorInitialize (pScreen))
+    {
+	miDCInitialize (pScreen, &sunPointerCursorFuncs);
+    }
 
 #ifdef SUN_WINDOWS
     /*
@@ -324,13 +388,13 @@ sunScreenInit (pScreen)
      * with X. We still call the mi version to do the real
      * work.
      */
-    realSetCursorPosition = pScreen->SetCursorPosition;
+    pPrivate->SetCursorPosition = pScreen->SetCursorPosition;
     pScreen->SetCursorPosition = sunSetCursorPosition;
 #endif
+    sunInitCursor ();
 
     return TRUE;
 }
-
 
 extern char *getenv();
 

@@ -91,6 +91,7 @@ static KbPrivRec  	sysKbPriv = {
     (Bool)0,			/* Mapped queue */
     0,				/* offset for device keycodes */
     &sysKbCtrl,			/* Initial full duration = .25 sec. */
+    0,				/* lock state */
 };
 
 /*-
@@ -369,6 +370,41 @@ bad:
     }
 }
 
+/*
+ * The LEDs on the type-4 keyboard are in a *strange*
+ * order.  This code remaps them left-to-right, which
+ * may not be what you want, but it seems reasonable to me.
+ */
+
+#define LED_LOCK    0x08
+#define LED_1	    0x02
+#define LED_2	    0x04
+#define LED_3	    0x01
+#define LED_X	    (LED_1 | LED_2 | LED_3)
+#define LED_ALL	    (LED_LOCK | LED_X)
+
+sunKbdSetLights (pKeyboard)
+    DevicePtr	pKeyboard;
+{
+    KbPrivPtr	pPriv = (KbPrivPtr) pKeyboard->devicePrivate;
+    char	device, request;
+
+    request = pPriv->ctrl->leds;
+    device = 0;
+    if (request & 0x01)
+	device |= LED_1;
+    if (request & 0x02)
+	device |= LED_2;
+    if (request & 0x04)
+	device |= LED_3;
+    if (pPriv->lockLight)
+	device |= LED_LOCK;
+#ifdef KIOCSLED
+    if (ioctl (pPriv->fd, KIOCSLED, &device) == -1)
+	ErrorF("Failed to set keyboard lights");
+#endif
+}
+
 /*-
  *-----------------------------------------------------------------------
  * sunKbdCtrl --
@@ -382,14 +418,16 @@ bad:
  *
  *-----------------------------------------------------------------------
  */
+
 static void
 sunKbdCtrl (pKeyboard, ctrl)
     DevicePtr	  pKeyboard;	    /* Keyboard to alter */
     KeybdCtrl     *ctrl;
 {
     KbPrivPtr	  pPriv = (KbPrivPtr) pKeyboard->devicePrivate;
-    int     	  kbdClickCmd = ctrl->click ? KBD_CMD_CLICK : KBD_CMD_NOCLICK;
     int	 	  kbdOpenedHere; 
+    char	  led;
+    int		  i;
 
     kbdOpenedHere = ( pPriv->fd < 0 );
     if ( kbdOpenedHere ) {
@@ -400,18 +438,43 @@ sunKbdCtrl (pKeyboard, ctrl)
 	}
     }
 
-    if (ioctl (pPriv->fd, KIOCCMD, &kbdClickCmd) < 0) {
- 	ErrorF("Failed to set keyclick");
-	goto bad;
+    if (ctrl->click != pPriv->ctrl->click)
+    {
+    	int kbdClickCmd;
+
+	kbdClickCmd = pPriv->ctrl->click ? KBD_CMD_CLICK : KBD_CMD_NOCLICK;
+    	if (ioctl (pPriv->fd, KIOCCMD, &kbdClickCmd) < 0)
+ 	    ErrorF("Failed to set keyclick");
     }
  
-    *pPriv->ctrl = *ctrl;
+    if (ctrl->leds != pPriv->ctrl->leds)
+    {
+	pPriv->ctrl->leds = ctrl->leds & LED_X;
+	sunKbdSetLights (pKeyboard);
+    }
 
-bad:
+    pPriv->ctrl->bell = ctrl->bell;
+    pPriv->ctrl->bell_pitch = ctrl->bell_pitch;
+    pPriv->ctrl->bell_duration = ctrl->bell_duration;
+    pPriv->ctrl->autoRepeat = ctrl->autoRepeat;
+    for (i = 0; i < sizeof ctrl->autoRepeats / sizeof ctrl->autoRepeats[0]; i++)
+	pPriv->ctrl->autoRepeats[i] = ctrl->autoRepeats[i];
+
     if ( kbdOpenedHere ) {
 	(void) close(pPriv->fd);
 	pPriv->fd = -1;
     }
+}
+
+sunKbdLockLight (pKeyboard, on)
+    DevicePtr	pKeyboard;
+    Bool	on;
+{
+    KbPrivPtr	pPriv = (KbPrivPtr) pKeyboard->devicePrivate;
+    KeybdCtrl	ctrl;
+
+    pPriv->lockLight = on;
+    sunKbdSetLights (pKeyboard);
 }
 
 /*-
@@ -564,6 +627,7 @@ sunKbdProcessEvent (pKeyboard, fe)
 	    return; /* this assumes autorepeat is not desired */
 	if (BitIsOn(((DeviceIntPtr)pKeyboard)->key->down, key))
 	    xE.u.u.type = KeyRelease;
+	sunKbdLockLight (pKeyboard, xE.u.u.type == KeyPress);
     }
 
     if ((xE.u.u.type == KeyPress) && (keyModifiers == 0)) {

@@ -12,7 +12,7 @@
  * software for any purpose.  It is provided "as is" without
  * express or implied warranty.
  *
- *	"$XConsortium: sun.h,v 5.8 90/08/22 11:25:22 rws Exp $ SPRITE (Berkeley)"
+ *	"$XConsortium: sun.h,v 5.9 91/02/20 22:38:27 keith Exp $ SPRITE (Berkeley)"
  */
 #ifndef _SUN_H_
 #define _SUN_H_
@@ -62,6 +62,7 @@ extern int  errno;
 #include    "input.h"
 #include    "colormapst.h"
 #include    "dix.h"
+#include    "cursor.h"
 
 /*
  * MAXEVENTS is the maximum number of events the mouse and keyboard functions
@@ -91,8 +92,11 @@ typedef struct kbPrivate {
     KeybdCtrl	  *ctrl;    	    	/* Current control structure (for
  					 * keyclick, bell duration, auto-
  					 * repeat, etc.) */
+    char	  lockLight;		/* Caps Lock light state */
 } KbPrivRec, *KbPrivPtr;
 
+#define SUN_LOCK_LED	8	/* can't find this in an include file */
+#define SUN_LED_MASK	0x0f	/*  nor this */
 #define	MIN_KEYCODE	8	/* necessary to avoid the mouse buttons */
 #ifndef KB_SUN4
 #define KB_SUN4		0x04	/* Type 4 Sun keyboard */
@@ -161,6 +165,30 @@ typedef struct crPrivate {
     CrState		state;      /* Current state of the cursor */
 } CrPrivRec, *CrPrivPtr;
 
+extern int  sunScreenIndex;
+
+typedef struct {
+    CursorPtr	    pCursor;
+    unsigned short foreRed, foreGreen, foreBlue;
+    unsigned short backRed, backGreen, backBlue;
+    int		    x, y;
+    int		    width, height;
+} sunCursorRec, *sunCursorPtr;
+
+typedef struct {
+    ColormapPtr	    installedMap;
+    Bool	    (*CloseScreen)();
+    void	    (*UpdateColormap)();
+    sunCursorRec    hardwareCursor;
+    Bool	    hasHardwareCursor;
+#ifdef SUN_WINDOWS
+    Bool	    (*SetCursorPosition)();
+#endif
+} sunScreenRec, *sunScreenPtr;
+
+#define GetScreenPrivate(s)   ((sunScreenPtr) ((s)->devPrivates[sunScreenIndex].ptr))
+#define SetupScreen(s)	sunScreenPtr	pPrivate = GetScreenPrivate(s)
+
 /*
  * Frame-buffer-private info.
  *	fd  	  	file opened to the frame buffer device.
@@ -187,6 +215,7 @@ typedef struct {
 
 extern Bool sunSupportsDepth8;
 extern unsigned long sunGeneration;
+
 
 typedef struct _sunFbDataRec {
     Bool    (*probeProc)();	/* probe procedure for this fb */
