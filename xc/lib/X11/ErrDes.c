@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XErrDes.c,v 11.35 89/05/08 17:19:01 jim Exp $
+ * $XConsortium: XErrDes.c,v 11.36 89/10/08 14:30:50 rws Exp $
  */
 
 /***********************************************************
@@ -86,6 +86,7 @@ XGetErrorText(dpy, code, buffer, nbytes)
     return;
 }
 
+/*ARGSUSED*/
 XGetErrorDatabaseText(dpy, name, type, defaultp, buffer, nbytes)
     register char *name, *type;
     char *defaultp;
@@ -95,32 +96,28 @@ XGetErrorDatabaseText(dpy, name, type, defaultp, buffer, nbytes)
 {
 
     static XrmDatabase db;
+    static int initialized = False;
     XrmString type_str;
     XrmValue result;
-    static int initialized = False;
     char temp[BUFSIZ];
 
     if (nbytes == 0) return;
-    if (initialized == False) {
-	_XInitErrorHandling (&db);
+    if (!initialized) {
+	XrmInitialize();
+	db = XrmGetFileDatabase(ERRORDB);
 	initialized = True;
     }
-    sprintf(temp, "%s.%s", name, type);
-    XrmGetResource(db, temp, "ErrorType.ErrorNumber", &type_str, &result);
+    if (db)
+    {
+	sprintf(temp, "%s.%s", name, type);
+	XrmGetResource(db, temp, "ErrorType.ErrorNumber", &type_str, &result);
+    }
+    else
+	result.addr = (caddr_t)NULL;
     if (!result.addr) {
 	result.addr = (caddr_t) defaultp;
-	result.size = strlen(defaultp);
+	result.size = strlen(defaultp) + 1;
     }
     (void) strncpy (buffer, (char *) result.addr, nbytes);
-    if (result.size >= nbytes) buffer[nbytes-1] = '\0';
+    if (result.size > nbytes) buffer[nbytes-1] = '\0';
 }
-
-_XInitErrorHandling (db)
-    XrmDatabase *db;
-    {
-    XrmDatabase errordb;
-    XrmInitialize();
-    errordb = XrmGetFileDatabase(ERRORDB);
-    XrmMergeDatabases(errordb, db);
-     }
-
