@@ -185,6 +185,18 @@ XXX */
     CursorsInitialize();
     GCManagerInitialize();
     GeometryInitialize();
+
+
+}
+Atom XtHasInput;
+Atom XtTimerExpired;
+
+static void
+init_atom(dpy)
+Display *dpy;
+{
+	XtHasInput = XInternAtom(dpy, "XtHasInput", False);
+	XtTimerExpired = XInternAtom(dpy, "XtTimerExpired", False);
 }
 
 /*
@@ -636,6 +648,8 @@ Widget root;
 	w->top.argv = saved_argv;
 	strcpy(w->top.classname = (char *)XtMalloc(strlen(classname))
 	       ,classname);
+
+	init_atoms(dpy);
 
 	return(dpy);
 }
