@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: util.c,v 1.13 89/08/31 13:16:35 kit Exp $";
+static char Xrcsid[] = "$XConsortium: util.c,v 1.14 89/10/07 14:59:43 kit Exp $";
 #endif /* lint && SABER */
 
 /*
@@ -101,9 +101,9 @@ Widget w;
 }
 
 /*	Function Name: MaybeCreateFile
- *	Description: Checks to see if file exists, and if no creates it.
+ *	Description: Checks to see if file exists, and if not, creates it.
  *	Arguments: file - name of file to check.
- *	Returns: none.
+ *	Returns: permissions status
  */
 
 FileAccess
@@ -117,16 +117,11 @@ char * file;
  */
 
     if (access(file, F_OK) != 0) 
-	creat(file, 0777);
+	creat(file, 0666);
 
     return(CheckFilePermissions(file, &exists));
 }
 
-/*	Function Name: MaybeCreateFile
- *	Description: Checks to see if file exists, and if no creates it.
- *	Arguments: file - name of file to check.
- *	Returns: none.
- */
 
 FileAccess
 CheckFilePermissions(file, exists)
