@@ -1,4 +1,4 @@
-/* $XConsortium: xieperf.c,v 1.30 94/02/22 13:59:37 kaleb Exp $ */
+/* $XConsortium: xieperf.c,v 1.31 94/03/02 15:04:21 kaleb Exp $ */
 
 /**** module xieperf.c ****/
 /******************************************************************************
@@ -101,6 +101,7 @@ static char *background = NULL;
 
 static int  fixedReps = 0;
 
+static Bool sigBail = False;
 static Bool *doit;
 Bool WMSafe = False;
 static Bool loCal = False;
@@ -371,15 +372,10 @@ void
 Cleanup(sig)
     int sig;
 {
-    fflush(stdout);
-    /* This will screw up if Xlib is in the middle of something */
-    XSetScreenSaver(xparms.d, ssTimeout, ssInterval, ssPreferBlanking,
-	ssAllowExposures);
-    XFlush(xparms.d);
-    if ( RGB_BESTStandardColormapObtained == True )
-	XmuDeleteStandardColormap( xparms.d, DefaultScreen( xparms.d ),
-		XA_RGB_BEST_MAP );
-    exit(sig);
+    sigBail = True;
+#ifdef SIGNALRETURNSINT
+    return 0;
+#endif
 }
 
 /************************************************
@@ -831,7 +827,8 @@ void ProcessTest(xp, test, func, pm, label, locreps)
 
 	totalTime = 0.0;
 	for (j = 0; j != repeat; j++) {
-    
+	    if ( sigBail == True )
+		break;    
 	    DisplayStatus(xp->d, "Testing", label, j+1);
 	    time = DoTest(xp, test, reps);
 	    totalTime += time;
@@ -1368,6 +1365,8 @@ main(argc, argv)
 		if (doit[i] && (test[i].versions & xparms.version) && ServerIsCapable( test[ i ].parms.description ) ) {
 			strcpy (label, test[i].label);
 			ProcessTest(&xparms, &test[i], GXcopy, ~((unsigned long)0), label, -1);
+			if ( sigBail == True )
+			    break;
 		} /* if doit */
 	    } /* ForEachTest */
     }
@@ -1381,6 +1380,8 @@ main(argc, argv)
 
 	while ( done == False )
 	{
+		if ( sigBail == True )
+		    break;
 		repeattmp = repeatsave = -1;
 		if ( ( i = GetNextTest( fp, &repeattmp, &reps ) ) < 0 )
 			done = True;
