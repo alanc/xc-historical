@@ -1,4 +1,4 @@
-/* $XConsortium: mi.h,v 1.8 92/05/17 10:33:25 rws Exp $ */
+/* $XConsortium: mi.h,v 1.9 93/09/29 17:20:49 dpw Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -154,8 +154,8 @@ extern void miClearToBackground(
     WindowPtr /*pWin*/,
     int /*x*/,
     int /*y*/,
-    unsigned int /*w*/,
-    unsigned int /*h*/,
+    int /*w*/,
+    int /*h*/,
     Bool /*generateExposures*/
 #endif
 );

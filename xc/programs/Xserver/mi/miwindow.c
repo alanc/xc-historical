@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: miwindow.c,v 5.8 91/05/29 14:56:14 keith Exp $ */
+/* $XConsortium: miwindow.c,v 5.9 93/09/29 17:20:32 dpw Exp $ */
 #include "X.h"
 #include "miscstruct.h"
 #include "region.h"
@@ -35,7 +35,7 @@ void
 miClearToBackground(pWin, x, y, w, h, generateExposures)
     WindowPtr pWin;
     int x,y;
-    unsigned int w,h;
+    int w,h;
     Bool generateExposures;
 {
     BoxRec box;
@@ -119,7 +119,7 @@ miClearToBackground(pWin, x, y, w, h, generateExposures)
 
 /*-
  *-----------------------------------------------------------------------
- * CheckSubSaveUnder --
+ * miCheckSubSaveUnder --
  *	Check all the inferiors of a window for coverage by saveUnder
  *	windows. Called from ChangeSaveUnder and CheckSaveUnder.
  *	This code is very inefficient.
@@ -226,7 +226,7 @@ miCheckSubSaveUnder(pParent, pFirst, pRegion)
 
 /*-
  *-----------------------------------------------------------------------
- * ChangeSaveUnder --
+ * miChangeSaveUnder --
  *	Change the save-under state of a tree of windows. Called when
  *	a window with saveUnder TRUE is mapped/unmapped/reconfigured.
  *	
@@ -265,7 +265,7 @@ miChangeSaveUnder(pWin, first)
 
 /*-
  *-----------------------------------------------------------------------
- * PostChangeSaveUnder --
+ * miPostChangeSaveUnder --
  *	Actually turn backing-store off for those windows that no longer
  *	need to have it on.
  *

@@ -1,4 +1,4 @@
-/* $XConsortium: scrnintstr.h,v 5.18 93/09/24 12:17:48 rws Exp $ */
+/* $XConsortium: scrnintstr.h,v 5.19 93/09/29 17:08:44 dpw Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -723,7 +723,7 @@ typedef struct _Screen {
 
     void (* ResizeWindow)(
 #if NeedNestedPrototypes
-    WindowPtr /*pWin*/;
+    WindowPtr /*pWin*/,
     int /*x*/,
     int /*y*/, 
     unsigned int /*w*/,
