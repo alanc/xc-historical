@@ -1,4 +1,4 @@
-/* $Header: Xlib.h,v 11.131 87/09/08 17:35:46 toddb Locked $ */
+/* $Header: Xlib.h,v 11.132 87/09/10 16:55:59 rws Locked $ */
 /* 
  * Copyright 1985, 1986, 1987 by the Massachusetts Institute of Technology
  *
@@ -81,7 +81,7 @@
 #define PlanesOfScreen(s)	((s)->root_depth)
 #define CellsOfScreen(s)	(DefaultVisualOfScreen((s))->map_entries)
 #define MinCmapsOfScreen(s)	((s)->min_maps)
-#define MaxCmapsOfScreen(s)	((s)->min_maps)
+#define MaxCmapsOfScreen(s)	((s)->max_maps)
 #define DoesSaveUnders(s)	((s)->save_unders)
 #define DoesBackingStore(s)	((s)->backing_store)
 #define EventMaskOfScreen(s)	((s)->root_input_mask)
