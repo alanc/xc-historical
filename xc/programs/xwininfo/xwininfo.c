@@ -708,6 +708,9 @@ Display_Window_Shape (window)
 {
     int	    ws, bs, xws, yws, wws, hws, xbs, ybs, wbs, hbs;
 
+    if (!XShapeQueryExtension (dpy, &bs, &ws))
+	return;
+
     XShapeQueryExtents (dpy, window, &ws, &xws, &yws, &wws, &hws,
 				     &bs, &xbs, &ybs, &wbs, &hbs);
     if (!ws)
