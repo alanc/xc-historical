@@ -34,9 +34,22 @@ it will be updated immediately.
 This option specifies the name of the file which should be monitored.  By
 default, it watches /usr/spool/mail/\fIusername\fP, where \fIusername\fP
 is your login name.
+.TP 8
+.B \-nobell
+This option indicates that the bell should not be rung when new mail is found.
+.TP 8
+.B \-volume \fIpercentage\fP
+This option specifies how loud the bell should be rung when new mail comes in.
 .PP
 The following standard X Toolkit command line arguments are commonly used with 
 .I xbiff:
+.TP 8
+.B \-display \fIdisplay\fP
+This option specifies the X server to contact; see \fIX(1)\fP.
+.TP 8
+.B \-geometry \fIgeometry\fP
+This option specifies the prefered size and position of the mailbox window;
+see \fIX(1)\fP.
 .TP 8
 .B \-bg \fIcolor\fP
 This option specifies the color to use for the background of the window.  
@@ -56,13 +69,6 @@ The default is ``black.''
 .B \-rv
 This option indicates that reverse video should be simulated by swapping
 the foreground and background colors.
-.TP 8
-.B \-geometry \fIgeometry\fP
-This option specifies the prefered size and position of the mailbox window;
-see \fIX(1)\fP.
-.TP 8
-.B \-display \fIdisplay\fP
-This option specifies the X server to contact; see \fIX(1)\fP.
 .TP 8
 .B \-xrm \fIresourcestring\fP
 This option specifies a resource string to be used.  This is especially
@@ -92,6 +98,13 @@ Specifies the height of the mailbox.
 .TP 8
 .B update (\fPclass\fB Interval)
 Specifies the frequency in seconds at which the mail should be checked.
+.TP 8
+.B bell (\fPclass\fB Bell)
+Specifies whether or not the bell should be rung when new mail comes in.  The
+default is \fIon\fP.
+.TP 8
+.B volume (\fPclass\fB Volume)
+Specifies how load the bell should be rung.  The default is 33 percent.
 .TP 8
 .B foreground (\fPclass\fB Foreground)
 Specifies the color for the foreground.
