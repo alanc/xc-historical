@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: ut_path.c,v 5.1 91/02/16 09:50:12 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -24,8 +24,14 @@ SOFTWARE.
 
 ******************************************************************/
 
+#include "phg.h"		/* includes Intrinsic.h and Xos.h */
 #include "version.h"
-#include "phg.h"
+
+#ifndef X_NOT_STDC_ENV
+#include <stdlib.h>
+#else
+extern char *getenv();
+#endif
 
 /* The constant below is based on the max value given in access(1) */
 #define PHG_MAXPATH	1023
@@ -51,8 +57,6 @@ phg_path( fname, erh, test)
      */
 
      /* TODO: put in the correct error codes. */
-
-    extern char		*getenv();
 
     static char		dir[PHG_MAXPATH + 1];
     static int		dir_length;
