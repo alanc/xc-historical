@@ -1,4 +1,4 @@
-/* $XConsortium: TMstate.c,v 1.151 91/05/11 21:10:26 converse Exp $ */
+/* $XConsortium: TMstate.c,v 1.152 91/06/14 16:13:59 converse Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -1763,7 +1763,7 @@ static TMBindData MakeBindData(bindings, numBindings, oldBindData)
     TMShortCard		numBindings;
     TMBindData		oldBindData;
 {
-    TMShortCard		bytes;
+    TMLongCard		bytes;
     TMShortCard		i;
     Boolean		isComplex;
     TMBindData		bindData;
