@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: Login.c,v 1.29 91/05/02 14:50:27 converse Exp $
+ * $XConsortium: Login.c,v 1.30 91/05/09 23:00:01 gildea Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -644,7 +644,7 @@ InsertChar (ctxw, event, params, num_params)
 
     len = XLookupString (&event->xkey, strbuf, sizeof (strbuf), 0, 0);
     strbuf[len] = '\0';
-    if (len + strlen(ctx->login.data.name) >= NAME_LEN - 1)
+    if (len + (int)strlen(ctx->login.data.name) >= NAME_LEN - 1)
     	len = NAME_LEN - strlen(ctx->login.data.name) - 2;
     if (len == 0)
 	return;
