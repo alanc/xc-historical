@@ -1,0 +1,14 @@
+
+all:: xmkmf
+
+CppScriptTarget(xmkmf, -DCONFIGDIRSPEC=-I$(CONFIGDIR), $(ICONFIGFILES))
+
+InstallProgram(xmkmf,$(BINDIR))
+
+clean::
+	$(RM) xmkmf
+
+depend::
+
+install.man::
+
