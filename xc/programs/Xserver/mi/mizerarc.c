@@ -17,7 +17,7 @@ Author:  Bob Scheifler, MIT X Consortium
 
 ********************************************************/
 
-/* $XConsortium: mizerarc.c,v 5.24 89/11/25 12:33:17 rws Exp $ */
+/* $XConsortium: mizerarc.c,v 5.25 90/06/08 14:50:31 rws Exp $ */
 
 /* Derived from:
  * "Algorithm for drawing ellipses or hyperbolae with a digital plotter"
@@ -304,26 +304,47 @@ miZeroArcSetup(arc, info, ok360)
     if (endseg & 1)
     {
 	info->altend = end;
+	if (info->altend.x < info->end.x || info->altend.y < info->end.y)
+	{
+	    miZeroArcPtRec tmp;
+	    tmp = info->altend;
+	    info->altend = info->end;
+	    info->end = tmp;
+	}
+	else if (!info->altend.mask && info->end.mask &&
+		 info->end.y < 0 && info->altend.y >= 0)
+	{
+	    i = Dsin(startAngle) * (arc->height / 2.0);
+	    if (i < 0)
+		i = -i;
+	    if (info->h - i == info->altend.y)
+		/* handle 90 degree angle starting on a 45 degree mark */
+		info->end.mask = 0;
+	}
 	info->altstart = oob;
     }
     else
     {
 	info->altstart = end;
+	if (info->altstart.x < info->start.x ||
+	    info->altstart.y < info->start.y)
+	{
+	    miZeroArcPtRec tmp;
+	    tmp = info->altstart;
+	    info->altstart = info->start;
+	    info->start = tmp;
+	    if (info->altstart.mask && info->start.mask &&
+		info->start.y < 0 && info->altstart.y >= 0)
+	    {
+		i = Dsin(endAngle) * (arc->height / 2.0);
+		if (i < 0)
+		    i = -i;
+		if (info->h - i == info->altstart.y)
+		    /* handle 90 degree angle starting on a 45 degree mark */
+		    info->start.mask = info->altstart.mask;
+	    }
+	}
 	info->altend = oob;
-    }
-    if (info->altstart.x < info->start.x || info->altstart.y < info->start.y)
-    {
-	miZeroArcPtRec tmp;
- 	tmp = info->altstart;
-	info->altstart = info->start;
-	info->start = tmp;
-    }
-    if (info->altend.x < info->end.x || info->altend.y < info->end.y)
-    {
-	miZeroArcPtRec tmp;
- 	tmp = info->altend;
-	info->altend = info->end;
-	info->end = tmp;
     }
     if (!info->start.x || !info->start.y)
     {
