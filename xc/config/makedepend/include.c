@@ -1,7 +1,10 @@
 /*
- * $Header: include.c,v 1.1 87/04/08 16:40:43 rich Exp $
+ * $Header: include.c,v 1.1 87/08/06 17:34:55 toddb Locked $
  *
  * $Log:	include.c,v $
+ * Revision 1.1  87/08/06  17:34:55  toddb
+ * Initial revision
+ * 
  * Revision 1.1  87/04/08  16:40:43  rich
  * Initial revision
  * 
@@ -116,6 +119,7 @@ remove_dotdot(path)
 	register char	*end, *from, *to, **cp;
 	char		*components[ MAXFILES ],
 			newpath[ BUFSIZ ];
+	boolean		component_copied;
 
 	/*
 	 * slice path up into components.
@@ -140,15 +144,17 @@ remove_dotdot(path)
 	 * Now copy the path, removing all 'x/..' components.
 	 */
 	cp = components;
+	component_copied = FALSE;
 	while(*cp) {
-		if (!isdotdot(*cp) && isdotdot(*(cp+1))) {
+		if (!isdot(*cp) && !isdotdot(*cp) && isdotdot(*(cp+1))) {
 			if (issymbolic(newpath, *cp))
 				goto dont_remove;
 			cp++;
 		} else {
 		dont_remove:
-			if (cp != components)
+			if (component_copied)
 				*to++ = '/';
+			component_copied = TRUE;
 			for (from = *cp; *from; )
 				*to++ = *from++;
 			*to = '\0';
@@ -161,6 +167,14 @@ remove_dotdot(path)
 	 * copy the reconstituted path back to our pointer.
 	 */
 	strcpy(path, newpath);
+}
+
+isdot(p)
+	register char	*p;
+{
+	if(p && *p++ == '.' && *p++ == '\0')
+		return(TRUE);
+	return(FALSE);
 }
 
 isdotdot(p)
