@@ -1,4 +1,4 @@
-/* $XConsortium: Vendor.c,v 1.21 91/07/30 15:29:56 rws Exp $ */
+/* $XConsortium: Vendor.c,v 1.25 94/01/31 10:51:56 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -41,6 +41,7 @@ SOFTWARE.
 #include <X11/Xmu/Converters.h>
 #include <X11/Xmu/Atoms.h>
 #include <X11/Xmu/Editres.h>
+#include <X11/Xmu/ExtAgent.h>
 
 /* The following two headers are for the input method. */
 
@@ -67,6 +68,15 @@ static Boolean XawVendorShellSetValues();
 static void Realize(), ChangeManaged();
 static XtGeometryResult GeometryManager();
 void XawVendorShellExtResize();
+
+static CompositeClassExtensionRec vendorCompositeExt = {
+    /* next_extension     */	NULL,
+    /* record_type        */    NULLQUARK,
+    /* version            */    XtCompositeExtensionVersion,
+    /* record_size        */    sizeof (CompositeClassExtensionRec),
+    /* accepts_objects    */    TRUE,
+    /* allows_change_managed_set */ FALSE
+};
 
 #define SuperClass (&wmShellClassRec)
 externaldef(vendorshellclassrec) VendorShellClassRec vendorShellClassRec = {
@@ -108,7 +118,7 @@ externaldef(vendorshellclassrec) VendorShellClassRec vendorShellClassRec = {
     /* change_managed	  */	ChangeManaged,
     /* insert_child	  */	XtInheritInsertChild,
     /* delete_child	  */	XtInheritDeleteChild,
-    /* extension	  */	NULL
+    /* extension	  */	(XtPointer) &vendorCompositeExt
   },{
     /* extension	  */	NULL
   },{
@@ -251,15 +261,19 @@ static void XawVendorShellClassPartInit(class)
     CompositeClassExtension ext;
     VendorShellWidgetClass vsclass = (VendorShellWidgetClass) class;
 
-    if (vsclass->composite_class.extension == (XtPointer) NULL) {
-	ext = (CompositeClassExtension) 
-	    XtMalloc (sizeof(CompositeClassExtensionRec));
-	if (ext != (CompositeClassExtension) NULL) {
-	    ext->next_extension = (XtPointer) NULL;
+    if ((ext = (CompositeClassExtension) 
+	    XtGetClassExtension (class,
+				 XtOffsetOf(CompositeClassRec, 
+					    composite_class.extension),
+				 NULLQUARK, 1L, (Cardinal) 0)) == NULL) {
+	ext = (CompositeClassExtension) XtNew (CompositeClassExtensionRec);
+	if (ext != NULL) {
+	    ext->next_extension = vsclass->composite_class.extension;
 	    ext->record_type = NULLQUARK;
 	    ext->version = XtCompositeExtensionVersion;
-	    ext->record_size = sizeof(CompositeClassExtensionRec);
+	    ext->record_size = sizeof (CompositeClassExtensionRec);
 	    ext->accepts_objects = TRUE;
+	    ext->allows_change_managed_set = FALSE;
 	    vsclass->composite_class.extension = (XtPointer) ext;
 	}
     }
@@ -284,6 +298,7 @@ static void XawVendorShellInitialize(req, new, args, num_args)
 	Cardinal    *num_args;
 {
     XtAddEventHandler(new, (EventMask) 0, TRUE, _XEditResCheckMessages, NULL);
+    XtAddEventHandler(new, (EventMask) 0, TRUE, XmuRegisterExternalAgent, NULL);
     XtCreateWidget("shellext", xawvendorShellExtWidgetClass,
 		   new, args, *num_args);
 }
