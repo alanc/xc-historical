@@ -55,6 +55,8 @@ SRCS = \
 
 all::
 
+BuildIncludes($(SRCS),bitmaps,..)
+
 MakeDirectories(install,$(INCDIR)/bitmaps)
 InstallMultiple($(SRCS),$(INCDIR)/bitmaps)
 
