@@ -7,7 +7,7 @@
 \&
 .sp 8
 .ce 1
-\s+2\fBX11 NON RECTANGULAR WINDOW SHAPE EXTENSION\fP\s-2
+\s+2\fBX11 NONRECTANGULAR WINDOW SHAPE EXTENSION\fP\s-2
 .sp 3
 .ce 1
 Version 1.0
@@ -17,14 +17,11 @@ Version 1.0
 .sp 6p
 Massachusetts Institute of Technology
 Laboratory for Computer Science\s+1
-.bp
-\&
 .ps 9
 .nr PS 9
 .sp 8
 .LP
-Copyright \(co 1989
-Massachusetts Institute of Technology
+Copyright \(co 1989 by the Massachusetts Institute of Technology
 .LP
 This document is for internal use by Member and Affiliate organizations
 of the MIT X Consortium.  It may be redistributed internally within such
@@ -39,8 +36,8 @@ approved specification of the MIT X Consortium.
 .ps 12
 .nr PS 12
 .bp 1
-.EH ''X11 Non Rectangular Window Shape Extension Proposal''
-.OH ''X11 Non Rectangular Window Shape Extension Proposal''
+.EH ''X11 Nonrectangular Window Shape Extension Proposal''
+.OH ''X11 Nonrectangular Window Shape Extension Proposal''
 .EF ''\fB % \fP''
 .OF ''\fB % \fP''
 .NH 1
@@ -52,15 +49,15 @@ protocol.
 The restriction of rectangular windows within the X protocol is a significant
 limitation in the implementation of many user interface styles.  For example,
 many transient windows would like to display a ``drop shadow'' to give the
-illusion of 3 dimensions, and it may be desirable to ``stipple'' this
-shadow.  As another example, some user interface style guides call for buttons
-with rounded corners; the full simulation of a non-rectangular shape,
-particularly with respect to event distribution and cursor shape, is not
-possible within the core X protocol.  As a final example, round clocks
-and non-rectangular icons are desirable visual addition to the desktop.
+illusion of 3 dimensions.  As another example, some user interface style
+guides call for buttons with rounded corners; the full simulation of a
+nonrectangular shape, particularly with respect to event distribution and
+cursor shape, is not possible within the core X protocol.  As a final example,
+round clocks and nonrectangular icons are desirable visual addition to the
+desktop.
 .LP
 This extension provides mechanisms for changing the visible shape of a
-window to an arbitrary non-rectangular form, including a form composed
+window to an arbitrary nonrectangular form, including a form composed
 of disjoint pieces.  The intent of the extension is to supplement the
 existing semantics, not replace them.  In particular, it is desirable
 for clients which are unaware of the extension to still be able to cope
@@ -115,9 +112,9 @@ This is consistent with the specification of regions in graphics contexts in
 the core protocol, and allows a variety of different uses of the extension.
 .LP
 If a client bounding region has not been explicitly set, the client bounding
-region is defined (dynamically) to be the current default bounding region.
+region is always defined to be the current default bounding region.
 Similarly, if a client clip region has not been explicitly set, the client
-clip region is defined (dynamically) to be the current default clip region.
+clip region is always defined to be the current default clip region.
 .LP
 The actual bounding region of a window is defined to be the intersection of
 the client bounding region with the default bounding region.  Any portion of
@@ -146,12 +143,12 @@ or its bounding region is later enlarged, the actual clip region will enlarge
 to include more of the client clip region if it is included in the actual
 bounding region.
 .LP
-The actual border of a window is defined to be the difference between the
+The border of a window is defined to be the difference between the
 actual bounding region and the actual clip region.  If this region is empty,
 no border is displayed.  If this region is non-empty, the border is filled
 as usual using the border-tile or border-pixel of the window.  The border
 tile origin is precisely as defined in the core protocol.  Note that a window
-with non-zero border width will never be able to draw beyond the default clip
+with nonzero border width will never be able to draw beyond the default clip
 region of the window.  Also note that a zero border width does not prevent
 a window from having a border, since the clip shape can still be made smaller
 than the bounding shape.
@@ -168,7 +165,7 @@ bounding region are not part of the window; these areas of the screen will
 be occupied by other windows.  Input events which occur within the default
 bounding region but outside the actual bounding region will be delivered as
 if the window was not occluding the event position.  Events which occur in
-a non-rectangular border of a window will be delivered to that window, just
+a nonrectangular border of a window will be delivered to that window, just
 as for events which occur in a normal rectangular border.
 .LP
 An InputOnly window can have its bounding region set, but it is a
@@ -178,12 +175,13 @@ specify its clip region as a source to a request in this extension.
 .NH 1
 Types
 .LP
-.IN "Types" "SHAPE_KIND" "@DEF@"
+The following types are used in the request and event definitions in
+subsequent sections.
+.LP
 SHAPE_KIND:
 .Pn { Bounding ,
 .PN Clip }
 .LP
-.IN "Types" "SHAPE_OP" "@DEF@"
 SHAPE_OP:
 .Pn { ShapeSet ,
 .PN ShapeUnion ,
@@ -207,42 +205,8 @@ produce the new destination region.
 means that the destination region is subtracted from the source region to
 produce the new destination region.
 .NH 1
-Events
-.LP
-.IN "ShapeNotify" "" "@DEF@"
-.PN "ShapeNotify"
-.IP
-\fIwindow\fP\^: WINDOW
-.br
-\fIkind\fP\^: SHAPE_KIND
-.br
-\fIshaped\fP\^: BOOL
-.br
-\fIx\fP, \fIy\fP\^: INT16
-.br
-\fIwidth\fP, \fIheight\fP\^: CARD16
-.br
-\fItime\fP\^: TIMESTAMP
-.IP
-Whenever the client bounding or clip shape of a window is modified, a
-.PN ShapeNotify
-event is sent to each client which has used
-.PN ShapeSelectInput
-to request it.
-.IP
-\fIkind\fP indicates the affected region of the window.
-\fIshaped\fP is
-.PN True
-when the window has a shape of type \fIkind\fP.
-\fIx\fP, \fIy\fP, \fIwidth\fP and \fIheight\fP indicate the extents of the
-current shape.  When \fIshaped\fP is
-.PN False
-these will indicate the extents of the default region.  The timestamp
-indicates the server time when the shape was changed.
-.NH 1
 Requests
 .LP
-.IN "ShapeQueryVersion" "" "@DEF@"
 .PN "ShapeQueryVersion"
 .LP
    =>
@@ -255,7 +219,6 @@ This request can be used to ensure that the server version of the SHAPE
 extension is usable by the client.  This document defines  major version one,
 minor version zero.
 .LP
-.IN "ShapeRectangles" "" "@DEF@"
 .PN "ShapeRectangles"
 .IP
 \fIdest\fP\^: WINDOW
@@ -281,7 +244,11 @@ window plus the specified offset (\fIxOff\fP and \fIyOff\fP) which together
 define a region.  This region is combined (as specified by the operator
 \fIop\fP) with the existing client region (specified by \fIdestKind\fP) of the
 destination window, and the result is stored as the specified client region of
-the destination window.
+the destination window.  Note that the list of rectangles can be empty,
+specifying an empty region; this is not the same as passing
+.PN None
+to
+.PN ShapeMask .
 .IP
 If known by the client, 
 ordering relations on the rectangles can be specified with the ordering 
@@ -313,7 +280,6 @@ by requiring that, for every possible Y scanline,
 all rectangles that include that scanline have identical Y origins and Y
 extents.
 .LP
-.IN "ShapeMask" "" "@DEF@"
 .PN "ShapeMask"
 .IP
 \fIdest\fP\^: WINDOW
@@ -346,7 +312,6 @@ combined (as specified by the operator \fIop\fP) with the existing client
 region (specified by \fIdestKind\fP) of the destination window, and the result
 is stored as the specified client region of the destination window.
 .LP
-.IN "ShapeCombine" "" "@DEF@"
 .PN "ShapeCombine"
 .IP
 \fIdest\fP\^: WINDOW
@@ -367,12 +332,11 @@ Errors:
 .PN Value
 .IP
 The client region (specified by \fIsourceKind\fP) of the source window,
-offset as specified by \fIxOff\fP and \fIyOff\fP), is combined with the
+offset as specified by \fIxOff\fP and \fIyOff\fP, is combined with the
 client region (specified by \fIdestKind\fP) of the destination window,
 and the result is stored as the specified client region of the destination
 window.
 .LP
-.IN "ShapeOffset" "" "@DEF@"
 .PN "ShapeOffset"
 .IP
 \fIdest\fP\^: WINDOW
@@ -389,7 +353,6 @@ Errors:
 The client region (specified by \fIdestKind\fP) is moved by the specified
 amounts (\fIxOff\fP and \fIyOff\fP).
 .LP
-.IN "ShapeQueryExtents" "" "@DEF@"
 .PN "ShapeQueryExtents"
 .IP
 \fIdest\fP\^: WINDOW
@@ -428,7 +391,6 @@ The x, y, width, and height values define the extents of the client region;
 when a client region has not been specified, the extents of the default
 region are reported.
 .LP
-.IN "ShapeSelectInput" "" "@DEF@"
 .PN "ShapeSelectInput"
 .IP
 \fIwindow\fP\^: WINDOW
@@ -449,7 +411,6 @@ Specifying \fIenable\fP as
 .PN False
 causes the server to stop sending such event notifications.
 .LP
-.IN "ShapeInputSelected" "" "@DEF@"
 .PN "ShapeInputSelected"
 .IP
 \fIwindow\fP\^: WINDOW
@@ -464,7 +425,6 @@ This returns a boolean indicating whether the server will send ShapeNotify
 events to the requesting client when regions of the specified window
 are altered.
 .LP
-.IN "ShapeGetRectangles" "" "@DEF@"
 .PN "ShapeGetRectangles"
 .IP
 \fIwindow\fP\^: WINDOW
@@ -481,6 +441,40 @@ Errors:
 .IP
 This request returns the client region (specified by \fIkind\fP) as a list of
 nonintersecting rectangles.  The order of the rectangles is unspecified.
+.NH 1
+Events
+.LP
+.PN "ShapeNotify"
+.IP
+\fIwindow\fP\^: WINDOW
+.br
+\fIkind\fP\^: SHAPE_KIND
+.br
+\fIshaped\fP\^: BOOL
+.br
+\fIx\fP, \fIy\fP\^: INT16
+.br
+\fIwidth\fP, \fIheight\fP\^: CARD16
+.br
+\fItime\fP\^: TIMESTAMP
+.IP
+Whenever the client bounding or clip shape of a window is modified, a
+.PN ShapeNotify
+event is sent to each client which has used
+.PN ShapeSelectInput
+to request it.
+.IP
+\fIkind\fP indicates which client region (bounding or clip) has been modified.
+\fIshaped\fP is
+.PN True
+when the window has a client shape of type \fIkind\fP, and is
+.PN False
+when the window no longer has a client shape of this type.
+\fIx\fP, \fIy\fP, \fIwidth\fP and \fIheight\fP indicate the extents of the
+current shape.  When \fIshaped\fP is
+.PN False
+these will indicate the extents of the default region.  The timestamp
+indicates the server time when the shape was changed.
 .NH 1
 Encoding
 .LP
@@ -725,7 +719,7 @@ SHAPE_OP
 	11			unused
 .De
 .NH 1
-Xlib compatible C language Binding
+C language Binding
 .LP
 Please refer to the protocol portion of the document for a description of
 the semantics of these routines.  They are a simple veneer over the protocol
