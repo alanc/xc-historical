@@ -1,4 +1,4 @@
-/* $XConsortium: Shell.c,v 1.102 91/05/21 11:54:00 converse Exp $ */
+/* $XConsortium: Shell.c,v 1.103 91/06/11 20:14:34 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -1131,13 +1131,13 @@ static void _popup_set_prop(w)
 	window_name.value = (unsigned char*)wmshell->wm.title;
 	window_name.encoding = wmshell->wm.title_encoding;
 	window_name.format = 8;
-	window_name.nitems = strlen((char *)window_name.value) + 1;
+	window_name.nitems = strlen((char *)window_name.value);
 
 	if (XtIsTopLevelShell((Widget)w)) {
 	    icon_name.value = (unsigned char*)tlshell->topLevel.icon_name;
 	    icon_name.encoding = tlshell->topLevel.icon_name_encoding;
 	    icon_name.format = 8;
-	    icon_name.nitems = strlen((char *)icon_name.value) + 1;
+	    icon_name.nitems = strlen((char *)icon_name.value);
 	}
 
 	EvaluateWMHints(wmshell);
@@ -1868,7 +1868,7 @@ static Boolean WMSetValues(old, ref, new, args, num_args)
 	    title.value = (unsigned char*)nwmshell->wm.title;
 	    title.encoding = nwmshell->wm.title_encoding;
 	    title.format = 8;
-	    title.nitems = strlen(nwmshell->wm.title) + 1;
+	    title.nitems = strlen(nwmshell->wm.title);
 	    XSetWMName(XtDisplay(new), XtWindow(new), &title);
 	}
 
@@ -1959,7 +1959,7 @@ static Boolean TopLevelSetValues(oldW, refW, newW, args, num_args)
 	    icon_name.value = (unsigned char *)new->topLevel.icon_name;
 	    icon_name.encoding = new->topLevel.icon_name_encoding;
 	    icon_name.format = 8;
-	    icon_name.nitems = strlen((char *)icon_name.value) + 1;
+	    icon_name.nitems = strlen((char *)icon_name.value);
 	    XSetWMIconName(XtDisplay(newW), XtWindow(newW), &icon_name);
 	}
     }
