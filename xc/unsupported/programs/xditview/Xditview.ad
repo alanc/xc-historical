@@ -11,7 +11,19 @@
 	<Key>Prior:	PreviousPage()\n\
 	<Key>Select:	SelectPage()\n\
 	<Key>Find:	OpenFile()
+*paned.form.porthole.dvi.baseTranslations: #augment \
+	<Btn1Down>:	XawPositionSimpleMenu(menu) MenuPopup(menu)\n\
+	<Key>Next:	NextPage()\n\
+	<Key>Prior:	PreviousPage()\n\
+	<Key>Select:	SelectPage()\n\
+	<Key>Find:	OpenFile()
 *paned.label.translations: #augment \
+	<Btn1Down>:	XawPositionSimpleMenu(menu) MenuPopup(menu)\n\
+	<Key>Next:	NextPage()\n\
+	<Key>Prior:	PreviousPage()\n\
+	<Key>Select:	SelectPage()\n\
+	<Key>Find:	OpenFile()
+*paned.label.baseTranslations: #augment \
 	<Btn1Down>:	XawPositionSimpleMenu(menu) MenuPopup(menu)\n\
 	<Key>Next:	NextPage()\n\
 	<Key>Prior:	PreviousPage()\n\
@@ -26,11 +38,17 @@
 *promptShell.allowShellResize:	true
 *promptShell.promptDialog.value.translations: #override \
 	<Key>Return:	Accept()
+*promptShell.promptDialog.value.baseTranslations: #override \
+	<Key>Return:	Accept()
 
 *promptShell.promptDialog.accept.label: Accept
 *promptShell.promptDialog.accept.translations: #override \
 	<BtnUp>:	Accept() unset()
+*promptShell.promptDialog.accept.baseTranslations: #override \
+	<BtnUp>:	Accept() unset()
 
 *promptShell.promptDialog.cancel.label: Cancel
 *promptShell.promptDialog.cancel.translations: #override \
+	<BtnUp>:	Cancel() unset()
+*promptShell.promptDialog.cancel.baseTranslations: #override \
 	<BtnUp>:	Cancel() unset()

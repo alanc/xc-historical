@@ -28,5 +28,7 @@
 ! Keep CR in filename window from confusing the user.
 !
 
-*filename.translations:	#override \
+*filename.translations: #override \
+				<Key>Return: end-of-line()
+*filename.baseTranslations: #override \
 				<Key>Return: end-of-line()
