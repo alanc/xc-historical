@@ -1,4 +1,4 @@
-/* $XConsortium: Destroy.c,v 1.38 90/12/03 16:31:03 converse Exp $ */
+/* $XConsortium: Destroy.c,v 1.39 90/12/29 12:14:38 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -225,7 +225,7 @@ void _XtDoPhase2Destroy(app, dispatch_level)
 	    Widget w = dr->widget;
 	    if (--app->destroy_count)
 		bcopy( (char*)(dr+1), (char*)dr,
-		       app->destroy_count*sizeof(DestroyRec)
+		       (app->destroy_count - i) * sizeof(DestroyRec)
 		      );
 	    XtPhase2Destroy(w);
 	}
