@@ -1,52 +1,54 @@
+#define IHaveSubdirs
+#define PassCDebugFlags
+
 #
-# Preserve this order
+# Preserve this order: include comes first, clients and demos come last.
 #
-        SUBDIRS = \
+     DIRSTOMAKE = \
 		$(INCLUDESRC) \
+		$(LIBSRC) \
 		$(SERVERSRC) \
-		$(XLIBSRC) \
-		$(TOOLKITSRC) \
-		$(XMENUSRC) \
 		$(FONTSRC) \
-		$(CLIENTSRC)
+		$(EXTENSIONSRC) \
+		$(CLIENTSRC) \
+		$(DEMOSRC)
+        SUBDIRS = \
+		$(DIRSTOMAKE) \
+		$(UTILSRC)
+    LINTLIBDIRS = \
+		$(EXTENSIONSRC) \
+		$(LIBSRC)
 
-all:
-	@for i in $(SUBDIRS) ;\
-	do \
-		(set -x; cd $$i ; make $(MFLAGS)); \
-	done
+MakeSubdirs($(DIRSTOMAKE) $(RGBSRC))
+NamedMakeSubdirs(hacks,$(HACKSRC))
+MakeLintLibSubdirs($(LINTLIBDIRS))
 
-depend::
-	@for i in $(SUBDIRS) ;\
-	do \
-		(set -x; cd $$i ; make $(MFLAGS) depend ); \
-	done
+#
+# before doing the depend, be sure that makedepend exists.
+#
+depend:: $(DEPEND)
 
-clean::
-	@for i in $(SUBDIRS) ;\
-	do \
-		(set -x; cd $$i ; make $(MFLAGS) clean ); \
-	done
+$(DEPEND):
+	@echo "making $(DEPENDSRC)"; \
+	cd $(DEPENDSRC); $(MAKE)
+
+DependSubdirs($(SUBDIRS))
 
 install::
-	@for i in $(SUBDIRS) ;\
-	do \
-		(cd $$i ; make $(MFLAGS) install ); \
-	done
+	-mkdir $(USRLIBDIR)
+	-mkdir $(BINDIR)
+	-mkdir $(LIBDIR)
+	-mkdir $(INCDIR)
+	-mkdir $(FONTDIR)
+	-mkdir $(MANDIR)
+	ln -s $(INCDIR) $(FUTUREINCDIR)
 
-Makefiles: Makefile
-	@$(MAKE) subsubdirMakefiles NEWTOP=../../
-	@$(MAKE) subdirMakefiles NEWTOP=../
+#
+# before making the makefiles, be sure that imake exists.
+#
+Makefiles:: $(IMAKE)
 
-subdirMakefiles: 
-	@for i in $(SUBDIRS) ;\
-	do \
-		(set -x; cd $$i; $(IMAKE_CMD) -DTOPDIR=..); \
-	done; \
-	for i in $(LIBRARYSRC) $(CLIENTSRC) $(SERVERSRC) ;\
-	do \
-		(set -x; cd $$i; $(MAKE) Makefiles); \
-	done
+$(IMAKE):
+	@echo "making $(IMAKESRC)"; \
+	cd $(IMAKESRC); $(MAKE)
 
-subsubdirMakefiles: 
-	@(set -x; cd $(FONTSRC)/compiler; $(IMAKE_CMD) -DTOPDIR=../..)
