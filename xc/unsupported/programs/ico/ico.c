@@ -1,4 +1,4 @@
-/* $XConsortium: ico.c,v 1.42 94/01/17 07:28:05 gildea Exp $ */
+/* $XConsortium: ico.c,v 1.43 94/01/17 22:05:43 rws Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -518,6 +518,17 @@ void * do_ico_window(closure)
 		int prevY;
 		Bool do_event;
 
+		/*
+		 * This is not a good example of how to do event reading
+		 * in multi-threaded programs.  More commonly there would
+		 * be one thread reading all events and dispatching them
+		 * to the appropriate thread.  However, the threaded version
+		 * of ico was developed to test the MT Xlib implementation,
+		 * so it is useful to have it behave a little oddly.
+		 * For a discussion of how to write multi-threaded X programs,
+		 * see Gildea, S., "Multi-Threaded Xlib", The X Resource,
+		 * Issue 5, January 1993, pp. 159-166.
+		 */
 		if (blocking) {
 		    XWindowEvent(dpy, closure->win,
 				 ExposureMask|StructureNotifyMask,
