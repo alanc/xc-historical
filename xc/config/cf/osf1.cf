@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: osf1.cf,v 1.1 91/10/28 18:59:12 rws Exp $
+XCOMM platform:  $XConsortium: osf1.cf,v 1.2 91/10/29 08:48:16 rws Exp $
 
 #define OSName			OSF1
 XCOMM operating system:  OSName
@@ -14,7 +14,7 @@ XCOMM operating system:  OSName
 #define InstallCmd installbsd
 
 #ifdef MipsArchitecture
-#define NeedFunctionPrototypes	YES
+#define DefaultCCOptions	-Xc
 #define XdecServer YES
-#define PexCCOptions -Wf,-XNp15000,-XNd15000
+#define PexCCOptions -Xc -Wf,-XNp15000,-XNd15000
 #endif
