@@ -516,7 +516,7 @@ extern void XtMainLoop();
 extern Atom XtHasInput;
 extern Atom XtTimerExpired;
 
-extern XtIntervalId XtAddTimeout();
+extern XtIntervalId XtAddTimeOut();
     /* Widget widget; */
     /* unsigned long interval; */
 
