@@ -1,5 +1,5 @@
 /*
- * $XConsortium: process.c,v 1.5 88/12/01 16:46:57 jim Exp $
+ * $XConsortium: process.c,v 1.6 88/12/05 19:00:29 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -471,7 +471,7 @@ int auth_initialize (authfilename)
 	}				/* else ignore it */
     } else {
 	n = read_auth_entries (authfp, False, &head, &tail);
-	if (n < 1) {
+	if (n < 0) {
 	    fprintf (stderr,
 		     "%s:  unable to read auth entries from file \"%s\"\n",
 		     ProgramName, authfilename);
@@ -646,7 +646,7 @@ static int merge_entries (firstp, second)
 
     if (!*firstp) {			/* if nothing to merge into */
 	*firstp = second;
-	for (tail = *firstp, n = 0; tail->next; n++, tail = tail->next) ;
+	for (tail = *firstp, n = 1; tail->next; n++, tail = tail->next) ;
 	return n;
     }
 
@@ -677,6 +677,7 @@ static int merge_entries (firstp, second)
 		free ((char *) b);
 		b = NULL;
 		tail->next = next;
+		n--;
 		break;
 	    }
 	    if (a == tail) break;	/* if have looked at left side */
