@@ -1,4 +1,4 @@
-/* $XConsortium: Xlibnet.h,v 1.4 91/02/23 12:00:00 rws Exp $ */
+/* $XConsortium: Xlibnet.h,v 1.5 91/03/13 15:43:54 gildea Exp $ */
 
 /*
 Copyright 1991 Massachusetts Institute of Technology
@@ -35,10 +35,6 @@ without express or implied warranty.
 #define BytesReadable(fd,ptr) (_XBytesReadable ((fd), (ptr)))
 #define MALLOC_0_RETURNS_NULL
 #include <sys/ioctl.h>
-#include <sys/param.h>
-#define MAXSOCKS (NOFILES_MAX)
-#define OPEN_MAX (NOFILES_MAX)
-#define MSKCNT ((MAXSOCKS + 31) / 32)
 
 #endif /* SYSV */
 #ifdef SVR4
@@ -46,13 +42,6 @@ without express or implied warranty.
  * TLI (Streams-based) networking
  */
 #define BytesReadable(fd,ptr) (_XBytesReadable ((fd), (ptr)))
-#ifdef _POSIX_SOURCE
-#include <limits.h>
-#else
-#include <sys/param.h>
-#define OPEN_MAX NOFILE
-#endif
-#define MSKCNT ((OPEN_MAX + 31) / 32)
 #include <sys/uio.h>		/* define struct iovec */
 
 #endif /* SVR4 */
@@ -64,15 +53,29 @@ without express or implied warranty.
 #include <sys/ioctl.h>
 #include <netdb.h>
 #include <sys/uio.h>	/* needed for XlibInt.c */
-#include <sys/param.h> /* needed for XConnDis.c */
 #ifdef SVR4
 #include <sys/filio.h>
 #endif
 
 #define BytesReadable(fd, ptr) ioctl ((fd), FIONREAD, (ptr))
-#define MSKCNT ((NOFILE + 31) / 32)	/* size of bit array */
 
 #endif /* STREAMSCONN else */
+
+#ifndef X_NOT_POSIX
+#define _POSIX_SOURCE
+#include <limits.h>
+#undef _POSIX_SOURCE
+#endif
+#ifndef OPEN_MAX
+#include <sys/param.h>
+#ifdef NOFILE
+#define OPEN_MAX NOFILE
+#else
+#define OPEN_MAX NOFILES_MAX
+#endif
+#endif
+
+#define MSKCNT ((OPEN_MAX + 31) / 32)
 
 #if (MSKCNT==1)
 #define BITMASK(i) (1 << (i))
@@ -183,29 +186,16 @@ without express or implied warranty.
  *		int iov_len;
  *	};
  */
-#ifdef USG
-#if !defined(CRAY) && !defined(umips)
+#if defined(USG) && !defined(CRAY) && !defined(umips)
 struct iovec {
     caddr_t iov_base;
     int iov_len;
 };
-#ifndef __TIMEVAL__
-#define __TIMEVAL__
-struct timeval {			/* BSD has in <sys/time.h> */
-    long tv_sec;
-    long tv_usec;
-};
-#endif /* __TIMEVAL__ */
-#endif /* not CRAY or umips */
 #endif /* USG */
 
 
 #ifdef STREAMSCONN
 #include "Xstreams.h"
-
-#if (!defined(EWOULDBLOCK)) && defined(EAGAIN)
-#define EWOULDBLOCK EAGAIN
-#endif
 
 extern char _XsTypeOfStream[];
 extern Xstream _XsStream[];
