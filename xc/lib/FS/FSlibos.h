@@ -30,6 +30,9 @@
  */
 #include <netinet/in.h>
 #include <sys/ioctl.h>
+#ifdef SVR4
+#include <sys/filio.h>
+#endif
 #include <netdb.h>
 #include <sys/uio.h>		/* needed for FSlibInt.c */
 #include <sys/param.h>		/* needed for FSConnDis.c */
