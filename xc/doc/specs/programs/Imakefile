@@ -1,4 +1,7 @@
-XCOMM $XConsortium$
+XCOMM $XConsortium: Imakefile,v 1.1 94/07/22 13:43:22 gildea Exp gildea $
+
+/* does not include manual pages under util (not X programs)
+   or any of the library function manual pages under doc/man */
 
 MANUALS = \
   $(TOP)/doc/man/general/X.man \
@@ -16,6 +19,9 @@ MANUALS = \
   $(TOP)/programs/iceauth/iceauth.man \
   $(TOP)/config/imake/imake.man \
   $(TOP)/programs/Xserver/hw/sun/kbd_mode.man \
+  $(TOP)/config/util/lndir.man \
+  $(TOP)/config/makedepend/mkdepend.man \
+  $(TOP)/config/util/mkdirhier.man \
   $(TOP)/programs/mkfontdir/mkfontdir.man \
   $(TOP)/programs/oclock/oclock.man \
   $(TOP)/programs/xterm/resize.man \
@@ -56,6 +62,7 @@ MANUALS = \
   $(TOP)/programs/Xserver/hw/macII/XmacII.man \
   $(TOP)/programs/xmag/xmag.man \
   $(TOP)/programs/xmh/xmh.man \
+  $(TOP)/config/util/xmkmf.man \
   $(TOP)/programs/xmodmap/xmodmap.man \
   $(TOP)/programs/Xserver/hw/xnest/Xnest.man \
   $(TOP)/programs/scripts/xon.man \
