@@ -6,8 +6,10 @@ XCOMM $XConsortium: Imakefile,v 5.32 94/02/03 18:53:27 rws Exp $
   SHMOBJS = shm.o
 #endif
 #if BuildXKB
-  XKBSRCS = xkb.c xkbUtils.c xkbEvents.c xkbAccessX.c xkbStubs.c xkbSwap.c
-  XKBOBJS = xkb.o xkbUtils.o xkbEvents.o xkbAccessX.o xkbStubs.o xkbSwap.o
+  XKBSRCS = xkb.c xkbUtils.c xkbEvents.c xkbAccessX.c xkbStubs.c xkbSwap.c \
+            xkbInit.c xkbPrKeyEv.c
+  XKBOBJS = xkb.o xkbUtils.o xkbEvents.o xkbAccessX.o xkbStubs.o xkbSwap.o \
+            xkbInit.o xkbPrKeyEv.o
 #endif
        SRCS = shape.c $(SHMSRCS) mbuf.c mbufpx.c mbufbf.c	\
               mitmisc.c xtest.c xtest1di.c xtest1dd.c sleepuntil.c	\
