@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: utils.c,v 1.93 91/02/14 12:00:40 rws Exp $ */
+/* $XConsortium: utils.c,v 1.94 91/03/27 16:13:47 gildea Exp $ */
 #include "Xos.h"
 #include <stdio.h>
 #include "misc.h"
@@ -29,6 +29,13 @@ SOFTWARE.
 #include "input.h"
 #include "opaque.h"
 #include <signal.h>
+
+#ifdef SIGNALRETURNSINT
+#define SIGVAL int
+#else
+#define SIGVAL void
+#endif
+
 extern char *display;
 
 extern long defaultScreenSaverTime;	/* for parsing command line */
@@ -73,6 +80,7 @@ char *dev_tty_from_init = NULL;		/* since we need to parse it anyway */
 
 /* Force connections to close on SIGHUP from init */
 
+SIGVAL
 AutoResetServer ()
 {
     dispatchException |= DE_RESET;
@@ -88,6 +96,7 @@ AutoResetServer ()
 
 /* Force connections to close and then exit on SIGTERM, SIGINT */
 
+SIGVAL
 GiveUp()
 {
     dispatchException |= DE_TERMINATE;
@@ -112,11 +121,11 @@ Error(str)
     perror(str);
 }
 
-#if defined (UTEK) || defined (UTEKV)
+#if defined (UTEK) || defined (UTEKV) || defined(sgi)
 /*
  * Tektronix has a shared-memory time value which doesn't
  * match gettimeofday at all, but it is only accessible
- * inside the driver.
+ * inside the driver.  SGI has their own GetTimeInMillis.
  */
 #else
 long
