@@ -22,7 +22,7 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $Header: resource.c,v 1.61 87/08/31 19:21:56 toddb Locked $ */
+/* $Header: resource.c,v 1.62 87/09/04 11:45:57 rws Locked $ */
 
 /*	Routines to manage various kinds of resources:
  *
@@ -223,29 +223,34 @@ int id, skipDeleteFuncClass;
 {
     unsigned    cid;
     register    ResourcePtr res;
-    ResourcePtr * head;
-    Bool gotOne = FALSE;
+    register	ResourcePtr *prev, *head;
+    register	int *eltptr;
+    int		elements;
+    Bool	gotOne = FALSE;
 
     if (((cid = CLIENT_ID(id)) < MaxClients) && clientTable[cid].buckets)
     {
 	head = &clientTable[cid].resources[Hash(cid, id)];
+	eltptr = &clientTable[cid].elements;
 
-	for (res = *head; res; res = *head)
+	prev = head;
+	while (res = *prev)
 	{
 	    if (res->id == id)
 	    {
-		*head = res->next;
-		clientTable[cid].elements--;
+		*prev = res->next;
+		elements = --*eltptr;
 		if (res->type & CACHEDTYPES)
 		    FlushClientCaches(res->id);
 		if (skipDeleteFuncClass != res->class)
 		    (*res->DeleteFunc) (res->value, res->id);
 		Xfree(res);
+		if (*eltptr != elements)
+		    prev = head; /* prev may no longer be valid */
 		gotOne = TRUE;
-		break;
 	    }
 	    else
-		head = &res->next;
+		prev = &res->next;
         }
 	if(clients[cid] && (id == clients[cid]->lastDrawableID))
 	    clients[cid]->lastDrawableID = INVALID;
