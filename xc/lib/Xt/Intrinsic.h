@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Intrinsic.h,v 1.137 90/06/22 16:49:46 swick Exp $
+* $XConsortium: Intrinsic.h,v 1.138 90/07/26 17:21:01 swick Exp $
 * $oHeader: Intrinsic.h,v 1.10 88/09/01 10:33:34 asente Exp $
 */
 
@@ -157,7 +157,12 @@ typedef unsigned char	XtEnum;
 typedef unsigned int	Cardinal;
 typedef unsigned short	Dimension;  /* Size in pixels			*/
 typedef short		Position;   /* Offset from 0 coordinate		*/
+
+#ifdef __STDC__
+typedef void*		XtPointer;
+#else
 typedef char*		XtPointer;
+#endif
 
 typedef XtPointer	Opaque;
 
