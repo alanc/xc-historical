@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Shell.c,v 1.74 89/10/06 18:38:41 jim Exp $";
+static char Xrcsid[] = "$XConsortium: Shell.c,v 1.75 89/10/08 13:39:24 rws Exp $";
 /* $oHeader: Shell.c,v 1.7 88/09/01 11:57:00 asente Exp $ */
 #endif /* lint */
 
@@ -756,8 +756,10 @@ void _XtShellAncestorSensitive(widget,closure,value)
 }
 
 /* ARGSUSED */
-static void Initialize(req, new)
+static void Initialize(req, new, args, num_args)
 	Widget req, new;
+	ArgList args;		/* unused */
+	Cardinal *num_args;	/* unused */
 {
 	ShellWidget w = (ShellWidget) new;
 
@@ -778,8 +780,10 @@ static void Initialize(req, new)
 }
 
 /* ARGSUSED */
-static void WMInitialize(req, new)
+static void WMInitialize(req, new, args, num_args)
 	Widget req,new;
+	ArgList args;		/* unused */
+	Cardinal *num_args;	/* unused */
 {
 	WMShellWidget w = (WMShellWidget) new;
 	TopLevelShellWidget tls = (TopLevelShellWidget) new;	/* maybe */
@@ -815,8 +819,10 @@ static void WMInitialize(req, new)
 
 
 /* ARGSUSED */
-static void TopLevelInitialize(req, new)
+static void TopLevelInitialize(req, new, args, num_args)
 	Widget req, new;
+	ArgList args;		/* unused */
+	Cardinal *num_args;	/* unused */
 {
 	TopLevelShellWidget w = (TopLevelShellWidget) new;
 
@@ -831,8 +837,10 @@ static void TopLevelInitialize(req, new)
 }
 
 /* ARGSUSED */
-static void ApplicationInitialize(req, new)
+static void ApplicationInitialize(req, new, args, num_args)
     Widget req, new;
+    ArgList args;		/* unused */
+    Cardinal *num_args;		/* unused */
 {
     ApplicationShellWidget w = (ApplicationShellWidget)new;
     /* copy the argv if passed */
