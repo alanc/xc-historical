@@ -1,4 +1,4 @@
-/* $XConsortium: ping.c,v 1.2 93/09/03 16:31:04 mor Exp $ */
+/* $XConsortium: ping.c,v 1.3 93/09/08 20:02:35 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -18,17 +18,17 @@ purpose.  It is provided "as is" without express or implied warranty.
 #include <X11/ICE/ICElibint.h>
 
 void
-IcePing (iceConn, pingReplyCB, clientData)
+IcePing (iceConn, pingReplyProc, clientData)
 
-IceConn		iceConn;
-IcePingReplyCB	pingReplyCB;
-IcePointer	clientData;
+IceConn		 iceConn;
+IcePingReplyProc pingReplyProc;
+IcePointer	 clientData;
 
 {
     _IcePingWait *newping = (_IcePingWait *) malloc (sizeof (_IcePingWait));
     _IcePingWait *ptr = iceConn->ping_waits;
 
-    newping->ping_reply_cb = pingReplyCB;
+    newping->ping_reply_proc = pingReplyProc;
     newping->client_data = clientData;
     newping->next = NULL;
 

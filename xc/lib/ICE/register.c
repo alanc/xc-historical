@@ -1,4 +1,4 @@
-/* $XConsortium: register.c,v 1.1 93/08/19 18:25:32 mor Exp $ */
+/* $XConsortium: register.c,v 1.2 93/09/13 16:46:20 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -19,7 +19,7 @@ purpose.  It is provided "as is" without express or implied warranty.
 
 int
 IceRegisterForProtocolSetup (protocolName, vendor, release,
-    versionCount, versionRecs, authCount, authRecs, IOErrorCB)
+    versionCount, versionRecs, authCount, authRecs, IOErrorProc)
 
 char			*protocolName;
 char			*vendor;
@@ -28,7 +28,7 @@ int			versionCount;
 IceOCLversionRec	*versionRecs;
 int			authCount;
 IceOCLauthRec		*authRecs;
-IceIOErrorCB		IOErrorCB;
+IceIOErrorProc		IOErrorProc;
 
 {
     _IceOCLprotocol 	*p;
@@ -110,7 +110,7 @@ IceIOErrorCB		IOErrorCB;
 	p->auth_recs = NULL;
     }
 
-    p->io_error_cb = IOErrorCB;
+    p->io_error_proc = IOErrorProc;
 
     return (opcodeRet);
 }
@@ -119,18 +119,18 @@ IceIOErrorCB		IOErrorCB;
 
 int
 IceRegisterForProtocolReply (protocolName, vendor, release,
-    versionCount, versionRecs, protocolSetupNotifyCB,
-    authCount, authRecs, IOErrorCB)
+    versionCount, versionRecs, protocolSetupNotifyProc,
+    authCount, authRecs, IOErrorProc)
 
 char				*protocolName;
 char				*vendor;
 char				*release;
 int				versionCount;
 IceACLversionRec		*versionRecs;
-IceProtocolSetupNotifyCB	protocolSetupNotifyCB;
+IceProtocolSetupNotifyProc	protocolSetupNotifyProc;
 int				authCount;
 IceACLauthRec			*authRecs;
-IceIOErrorCB			IOErrorCB;
+IceIOErrorProc			IOErrorProc;
 
 {
     _IceACLprotocol 	*p;
@@ -194,7 +194,7 @@ IceIOErrorCB			IOErrorCB;
     bcopy (versionRecs, p->version_recs,
 	versionCount * sizeof (IceACLversionRec));
 
-    p->protocol_setup_notify_cb = protocolSetupNotifyCB;
+    p->protocol_setup_notify_proc = protocolSetupNotifyProc;
 
     if ((p->auth_count = authCount) > 0)
     {
@@ -215,7 +215,7 @@ IceIOErrorCB			IOErrorCB;
 	p->auth_recs = NULL;
     }
 
-    p->io_error_cb = IOErrorCB;
+    p->io_error_proc = IOErrorProc;
 
     return (opcodeRet);
 }

@@ -1,4 +1,4 @@
-/* $XConsortium: ICElib.h,v 1.9 93/09/13 17:54:24 mor Exp $ */
+/* $XConsortium: ICElib.h,v 1.10 93/09/14 15:32:54 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -76,7 +76,7 @@ typedef void (*IceWatchProc) (
 #endif
 );
 
-typedef Bool (*IceOCLprocessMsgCB) (
+typedef Bool (*IceOCLprocessMsgProc) (
 #if NeedFunctionPrototypes
     IceConn 		/* iceConn */,
     int			/* opcode */,
@@ -86,7 +86,7 @@ typedef Bool (*IceOCLprocessMsgCB) (
 #endif
 );
 
-typedef void (*IceACLprocessMsgCB) (
+typedef void (*IceACLprocessMsgProc) (
 #if NeedFunctionPrototypes
     IceConn 		/* iceConn */,
     int			/* opcode */,
@@ -96,15 +96,15 @@ typedef void (*IceACLprocessMsgCB) (
 );
 
 typedef struct {
-    int			major_version;
-    int			minor_version;
-    IceOCLprocessMsgCB	process_msg_cb;
+    int			 major_version;
+    int			 minor_version;
+    IceOCLprocessMsgProc process_msg_proc;
 } IceOCLversionRec;
 
 typedef struct {
-    int			major_version;
-    int			minor_version;
-    IceACLprocessMsgCB	process_msg_cb;
+    int			 major_version;
+    int			 minor_version;
+    IceACLprocessMsgProc process_msg_proc;
 } IceACLversionRec;
 
 typedef IceOCLauthStatus (*IceOCLauthProc) (
@@ -140,7 +140,7 @@ typedef struct {
     IceACLauthProc	auth_proc;
 } IceACLauthRec;
 
-typedef void (*IceProtocolSetupNotifyCB) (
+typedef void (*IceProtocolSetupNotifyProc) (
 #if NeedFunctionPrototypes
     IceConn 		/* iceConn */,
     int			/* majorVersion */,
@@ -150,13 +150,13 @@ typedef void (*IceProtocolSetupNotifyCB) (
 #endif
 );
 
-typedef void (*IceIOErrorCB) (
+typedef void (*IceIOErrorProc) (
 #if NeedFunctionPrototypes
     IceConn 		/* iceConn */
 #endif
 );
 
-typedef void (*IcePingReplyCB) (
+typedef void (*IcePingReplyProc) (
 #if NeedFunctionPrototypes
     IceConn 		/* iceConn */,
     IcePointer		/* clientData */
@@ -193,7 +193,7 @@ typedef struct _IceSavedReplyWait {
 } _IceSavedReplyWait;
 
 typedef struct _IcePingWait {
-    IcePingReplyCB		ping_reply_cb;
+    IcePingReplyProc		ping_reply_proc;
     IcePointer			client_data;
     struct _IcePingWait 	*next;
 } _IcePingWait;
@@ -205,7 +205,7 @@ typedef struct {
     IceOCLversionRec	*version_recs;
     int			auth_count;
     IceOCLauthRec	*auth_recs;
-    IceIOErrorCB	io_error_cb;
+    IceIOErrorProc	io_error_proc;
 } _IceOCLprotocol;
 
 typedef struct {
@@ -213,10 +213,10 @@ typedef struct {
     char			*release;
     int				version_count;
     IceACLversionRec		*version_recs;
-    IceProtocolSetupNotifyCB	protocol_setup_notify_cb;
+    IceProtocolSetupNotifyProc	protocol_setup_notify_proc;
     int				auth_count;
     IceACLauthRec		*auth_recs;
-    IceIOErrorCB		io_error_cb;
+    IceIOErrorProc		io_error_proc;
 } _IceACLprotocol;
 
 typedef struct {
@@ -231,9 +231,9 @@ typedef struct {
     _IceProtocol		*protocol;
     Bool			accept_flag;
     union {
-	IceACLprocessMsgCB	accept_client;
-	IceOCLprocessMsgCB	orig_client;
-    } process_msg_cb;
+	IceACLprocessMsgProc	accept_client;
+	IceOCLprocessMsgProc	orig_client;
+    } process_msg_proc;
 } _IceProcessMsgInfo;
 
 typedef struct {
@@ -411,7 +411,7 @@ extern int IceRegisterForProtocolSetup (
     IceOCLversionRec *		/* versionRecs */,
     int				/* authCount */,
     IceOCLauthRec *		/* authRecs */,
-    IceIOErrorCB		/* IOErrorCB */
+    IceIOErrorProc		/* IOErrorProc */
 #endif
 );
 
@@ -422,10 +422,10 @@ extern int IceRegisterForProtocolReply (
     char *			/* release */,
     int				/* versionCount */,
     IceACLversionRec *		/* versionRecs */,
-    IceProtocolSetupNotifyCB	/* protocolSetupNotifyCB */,
+    IceProtocolSetupNotifyProc	/* protocolSetupNotifyProc */,
     int				/* authCount */,
     IceACLauthRec *		/* authRecs */,
-    IceIOErrorCB		/* IOErrorCB */
+    IceIOErrorProc		/* IOErrorProc */
 #endif
 );
 
@@ -518,7 +518,7 @@ extern Bool IceProcessMessage (
 extern void IcePing (
 #if NeedFunctionPrototypes
    IceConn		/* iceConn */,
-   IcePingReplyCB	/* pingReplyCB */,
+   IcePingReplyProc	/* pingReplyProc */,
    IcePointer		/* clientData */
 #endif
 );
