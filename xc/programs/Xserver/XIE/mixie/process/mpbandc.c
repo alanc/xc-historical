@@ -1,4 +1,4 @@
-/* $XConsortium: mpbandc.c,v 1.1 93/10/26 09:47:54 rws Exp $ */
+/* $XConsortium: mpbandc.c,v 1.2 93/10/31 09:48:02 dpw Exp $ */
 /**** module mpbandc.c ****/
 /******************************************************************************
 				NOTICE
@@ -159,14 +159,14 @@ static int ActivateBandCom(flo,ped,pet)
    */
   for(b = 0; b < xieValMaxBands; ++rcp, ++dbnd, ++b) {
     sbnd = rcp->band;
-    if(!GetCurrentSrc(void,flo,pet,sbnd)) continue;
+    if(!GetCurrentSrc(pointer,flo,pet,sbnd)) continue;
 
     do {
       /* pass a clone of the current src strip downstream
        */
       if(!PassStrip(flo,pet,dbnd,sbnd->strip))
 	return(FALSE);
-    } while(GetSrc(void,flo,pet,sbnd,sbnd->maxLocal,FLUSH));
+    } while(GetSrc(pointer,flo,pet,sbnd,sbnd->maxLocal,FLUSH));
 
     FreeData(flo,pet,sbnd,sbnd->maxLocal);
   }
