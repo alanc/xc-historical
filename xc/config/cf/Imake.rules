@@ -1,6 +1,6 @@
 /**/###########################################################################
 /**/# Imake rules for building libraries, programs, scripts, and data files
-/**/# rules:  $XConsortium: Imake.rules,v 1.17 89/04/07 14:29:48 jim Exp $
+/**/# rules:  $XConsortium: Imake.rules,v 1.18 89/04/07 15:57:10 jim Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -55,6 +55,7 @@
  *     	DebuggedRelocatableTarget                (objname,objlist)
  *     	LintLibraryTarget                        (libname,srclist)
  *      NormalLintTarget                         (srclist)
+ *      LintTarget                               ()
  *      MakeSubdirs                              (dirs)
  *      NamedMakeSubdirs                         (name,dirs)
  *      DependSubdirs                            (dirs)
@@ -148,6 +149,8 @@ relink::								@@\
 InstallProgram(program,$(BINDIR))					@@\
 InstallManPage(program,$(MANDIR))					@@\
 DependTarget()								@@\
+LintTarget()								@@\
+									@@\
 clean::									@@\
 	$(RM) $(PROGRAM)
 #endif /* ComplexProgramTarget */
@@ -179,6 +182,7 @@ relink::								@@\
 	$(MAKE) $(MFLAGS) $(PROGRAMS)					@@\
 									@@\
 DependTarget()								@@\
+LintTarget()								@@\
 									@@\
 clean::									@@\
 	$(RM) $(PROGRAMS)
@@ -794,6 +798,15 @@ lint:									@@\
 lint1:									@@\
 	$(LINT) $(LINTFLAGS) $(FILE) $(LINTLIBS)
 #endif /* NormalLintTarget */
+
+
+/*
+ * LintTarget - generate rules to lint $(SRCS)
+ */
+#ifndef LintTarget
+#define LintTarget							@@\
+NormalLintTarget($(SRCS))
+#endif
 
 
 /*
