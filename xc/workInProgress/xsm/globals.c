@@ -1,4 +1,4 @@
-/* $XConsortium: globals.c,v 1.8 94/07/28 13:23:35 mor Exp mor $ */
+/* $XConsortium: globals.c,v 1.9 94/08/10 15:11:41 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -47,6 +47,13 @@ IceAuthDataEntry *authDataEntries = NULL;
 int		numTransports = 0;
 
 Bool		client_info_visible = False;
+Bool		client_prop_visible = False;
+
+String 		*clientListNames = NULL;
+ClientRec	**clientListRecs = NULL;
+int		numClientListNames = 0;
+
+int		current_client_selected;
 
 int		sessionNameCount = 0;
 String		*sessionNames = NULL;

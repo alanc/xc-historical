@@ -1,4 +1,4 @@
-/* $XConsortium: xsm.h,v 1.22 94/07/28 13:24:19 mor Exp mor $ */
+/* $XConsortium: xsm.h,v 1.23 94/08/10 15:12:02 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -144,6 +144,11 @@ extern ClientRec	*ClientList;
 extern List	 	*PendingList;
 extern int		numClients;
 extern Bool		client_info_visible;
+extern Bool		client_prop_visible;
+extern String 		*clientListNames;
+extern ClientRec	**clientListRecs;
+extern int		numClientListNames;
+extern int		current_client_selected;
 extern int		saveDoneCount;
 extern int		phase2RequestCount;
 
