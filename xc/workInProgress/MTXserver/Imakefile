@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.143 92/08/23 11:36:39 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.144 92/11/20 13:18:40 rws Exp $
 /*
  * Server Master Makefile
  */
@@ -107,14 +107,14 @@ ALL1 = Xcfbpmax
 #endif
 
 #if XsunMonoServer
-#if XsunServer
+#if XsunServer || Xsun24Server
 ALL2 = XsunMono
 #else
 ALL1 = XsunMono
 #endif
 #endif
 
-#if XsunServer
+#if XsunServer || Xsun24Server
 ALL1 = Xsun
 #endif
 
@@ -250,6 +250,23 @@ XCOMM
 #if UseSunWindowsInServer
 SUNWINDOWSLIBS = -lsunwindow -lpixrect
 #endif
+SUBDIRS0 = MFBSubdirs
+SUBDIRS1 = ddx/cfb
+SUBDIRS2 = ddx/sun
+SUNDIRS = $(SUBDIRS0) $(SUBDIRS1) $(SUBDIRS2) $(DEPDIRS)
+SUNOBJS = ddx/sun/sunInit.o
+SUNLIBS = ddx/sun/libsun.a CFB8Libs
+SUNSYSLIBS = $(SYSLIBS) $(SUNWINDOWSLIBS)
+
+ServerTarget(Xsun,$(SUNDIRS),$(SUNOBJS),$(SUNLIBS),$(SUNSYSLIBS))
+#else
+#if Xsun24Server
+XCOMM
+XCOMM Sun server
+XCOMM
+#if UseSunWindowsInServer
+SUNWINDOWSLIBS = -lsunwindow -lpixrect
+#endif
 #if BuildXvExt
 XVSUBDIRS = $(XVSRC)/ddx/sunrop
 XVLIBS = $(XVSRC)/ddx/sunrop/libsunrop.a
@@ -263,8 +280,8 @@ SUNLIBS = ddx/sun/libsun.a CFBLibs $(XVLIBS)
 SUNSYSLIBS = $(SYSLIBS) $(SUNWINDOWSLIBS)
 
 ServerTarget(Xsun,$(SUNDIRS),$(SUNOBJS),$(SUNLIBS),$(SUNSYSLIBS))
+#endif /* Xsun24Server */
 #endif /* XsunServer */
-
 
 #if XsunMonoServer
 XCOMM
