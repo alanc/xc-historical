@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: events.c,v 1.182 89/04/19 14:58:55 rws Exp $ */
+/* $XConsortium: events.c,v 1.183 89/04/20 16:04:27 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -94,10 +94,8 @@ static KeySymsRec curKeySyms;
 static GrabRec keybdGrab;	/* used for active grabs */
 static GrabRec ptrGrab;
 
-#define MAX_QUEUED_EVENTS 5000
 static struct {
-    unsigned int	num;
-    QdEventRec		pending, free;	/* only forw, back used */
+    QdEventPtr		pending, *pendtail, free;
     DeviceIntPtr	replayDev;	/* kludgy rock to put flag for */
     WindowPtr		replayWin;	/*   ComputeFreezes            */
     Bool		playingEvents;
@@ -372,20 +370,20 @@ EnqueueEvent(device, event)
     xEvent		*event;
     DeviceIntPtr	device;
 {
-    register QdEventPtr tail = syncEvents.pending.back;
+    register QdEventPtr tail = *syncEvents.pendtail;
     register QdEventPtr new;
-/*
- * Collapsing of mouse events does not bother to test if qdEvents.num == 0,
- * since there will never be MotionNotify in the type of the head event which
- * is what last points at when num == 0.
- */
-    if ((event->u.u.type == MotionNotify) && 
-	(tail->event.u.u.type == MotionNotify))
+
+    /* do motion compression */
+    if ((event->u.u.type == MotionNotify) &&
+	tail &&
+	(tail->event.u.u.type == MotionNotify) &&
+	(tail->device == device) &&
+	(tail->pScreen == currentScreen))
     {
 	tail->event = *event;
 	return;
     }
-    if (syncEvents.free.forw == &syncEvents.free)
+    if (!syncEvents.free)
     {
 	new = (QdEventPtr)xalloc(sizeof(QdEventRec));
 	if (!new)
@@ -393,38 +391,41 @@ EnqueueEvent(device, event)
     }
     else
     {
-	new = syncEvents.free.forw;
-	remque(new);
+	new = syncEvents.free;
+	syncEvents.free = new->next;
     }
+    new->next = (QdEventPtr)NULL;
     new->device = device;
+    new->pScreen = currentScreen;
     new->event = *event;
-    insque(new, tail);
-    syncEvents.num++;
-    if (syncEvents.num > MAX_QUEUED_EVENTS)
-    {
-	/* XXX here we send all the pending events and break the locks */
-	return;
-    }
+    if (tail)
+	syncEvents.pendtail = &tail->next;
+    *syncEvents.pendtail = new;
 }
 
 static void
 PlayReleasedEvents()
 {
-    register QdEventPtr qe = syncEvents.pending.forw;
-    QdEventPtr next;
-    while (qe != &syncEvents.pending)
+    register QdEventPtr *prev, qe;
+
+    prev = &syncEvents.pending;
+    while (qe = *prev)
     {
-	register DeviceIntPtr device = qe->device;
-	if (!device->sync.frozen)
+	if (!qe->device->sync.frozen)
 	{
-	    next = qe->forw;;
-	    remque(qe);
-	    (*device->public.processInputProc)(&qe->event, device);
-	    insque(qe, &syncEvents.free);
-	    qe = next;
+	    *prev = qe->next;
+	    if (!qe->next)
+		syncEvents.pendtail = prev;
+	    /* XXX need to handle change of screen */
+	    (*qe->device->public.processInputProc)(&qe->event, qe->device);
+	    qe->next = syncEvents.free;
+	    syncEvents.free = qe;
+	    /* Playing the event may have unfrozen another device. */
+	    /* So to play it safe, restart at the head of the queue */
+	    prev = &syncEvents.pending;
 	}
 	else
-	    qe = qe->forw;
+	    prev = &qe->next;
     } 
 }
 
@@ -1558,7 +1559,6 @@ ProcessPointerEvent (xE, mouse)
     }
     if (mouse->sync.frozen)
     {
-	/* XXX need to queue physical screen with event */
 	EnqueueEvent(mouse, xE);
 	return;
     }
@@ -2532,11 +2532,13 @@ InitEvents()
     sprite.hotLimits.y2 = 0;
     motionHintWindow = NullWindow;
     syncEvents.replayDev = (DeviceIntPtr)NULL;
-    syncEvents.pending.forw = &syncEvents.pending;
-    syncEvents.pending.back = &syncEvents.pending;
-    syncEvents.free.forw = &syncEvents.free;
-    syncEvents.free.back = &syncEvents.free;
-    syncEvents.num = 0;
+    if (syncEvents.pending)
+    {
+	*syncEvents.pendtail = syncEvents.free;
+	syncEvents.free = syncEvents.pending;
+	syncEvents.pending = (QdEventPtr)NULL;
+    }
+    syncEvents.pendtail = &syncEvents.pending;
     syncEvents.playingEvents = FALSE;
     currentTime.months = 0;
     currentTime.milliseconds = GetTimeInMillis();
