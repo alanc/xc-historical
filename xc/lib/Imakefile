@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.22 93/12/31 14:58:26 kaleb Exp $
+XCOMM $XConsortium: Imakefile,v 1.23 94/01/31 12:22:11 mor Exp $
 #define IHaveSubdirs
 #define PassCDebugFlags
 
@@ -7,7 +7,7 @@ XCOMM $XConsortium: Imakefile,v 1.22 93/12/31 14:58:26 kaleb Exp $
 #endif
 
 #if NeedBerklib
-BERKDIR = Berk
+BERKDIR = Xbsd
 #endif
 
 #if BuildFresco
