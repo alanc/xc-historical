@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Tekproc.c,v 1.83 91/01/06 12:46:50 rws Exp $
+ * $XConsortium: Tekproc.c,v 1.84 91/01/06 21:04:56 rws Exp $
  *
  * Warning, there be crufty dragons here.
  */
@@ -41,15 +41,6 @@
 #include <X11/Xmu/CharSet.h>
 #include "Tekparse.h"
 #include <stdio.h>
-#ifdef umips
-# ifndef SYSTYPE_SYSV
-# include <sgtty.h>
-# endif /* not SYSTYPE_SYSV */
-#else
-# ifndef CRAY
-#  include <sgtty.h>
-# endif
-#endif /* umips */
 #include <ctype.h>
 #include <errno.h>
 #include <setjmp.h>

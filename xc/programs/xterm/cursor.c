@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: cursor.c,v 1.9 91/01/06 12:47:27 rws Exp $
+ *	$XConsortium: cursor.c,v 1.10 91/01/09 16:52:13 rws Exp $
  */
 
 /*
@@ -29,8 +29,6 @@
 
 
 #include <X11/Xlib.h>
-#include <stdio.h>
-#include <sys/ioctl.h>
 #include "ptyx.h"
 
 static void _CheckSelection(screen)

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: charproc.c,v 1.132 91/01/09 16:51:59 rws Exp $
+ * $XConsortium: charproc.c,v 1.133 91/01/24 19:31:39 gildea Exp $
  */
 
 
@@ -34,24 +34,11 @@
 
 /* charproc.c */
 
-#ifdef att
-#ifndef STREAMSCONN
-#define STREAMSCONN
-#endif
-#endif
-
 #include <stdio.h>
 #include <X11/Xos.h>
-#ifndef CRAY
-#include <sgtty.h>
-#endif
 #include <ctype.h>
 #include <errno.h>
 #include <setjmp.h>
-#if defined(macII) || defined(CRAY)
-#undef FIOCLEX					/* redefined from sgtty.h */
-#undef FIONCLEX					/* redefined from sgtty.h */
-#endif
 #include "ptyx.h"
 #include "VTparse.h"
 #include "data.h"
