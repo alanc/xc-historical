@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Manage.c,v 6.3 88/02/01 18:42:09 swick Locked $";
+static char rcsid[] = "$Header: Manage.c,v 6.4 88/02/01 19:50:52 swick Locked $";
 #endif lint
 
 /*
@@ -48,7 +48,7 @@ void XtUnmanageChildren(children, num_children)
     }
 
     if (num_children <= MAXCHILDREN) {
-	parentP = (Widget*) unique_parents = parent_cache;
+	parentP = (Widget*) (unique_parents = parent_cache);
     } else {
 	parentP = (Widget*) unique_parents = (WidgetList) XtMalloc(num_children * sizeof(Widget));
     }
@@ -120,7 +120,7 @@ void XtManageChildren(children, num_children)
     /* Construct new list of children that really need to be operated upon. */
     if (num_children <= MAXCHILDREN) {
 	unique_children = cache;
-	parentP = (Widget*) unique_parents = parent_cache;
+	parentP = (Widget*) (unique_parents = parent_cache);
     } else {
 	unique_children = (WidgetList) XtMalloc(num_children * sizeof(Widget));
 	parentP = (Widget*) unique_parents = (WidgetList) XtMalloc(num_children * sizeof(Widget));
