@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: miwindow.c,v 5.4 89/07/14 17:14:07 keith Exp $ */
+/* $XConsortium: miwindow.c,v 5.5 89/10/06 17:28:09 keith Exp $ */
 #include "X.h"
 #include "miscstruct.h"
 #include "region.h"
@@ -38,20 +38,48 @@ miClearToBackground(pWin, x, y, w, h, generateExposures)
     Bool generateExposures;
 {
     BoxRec box;
-    RegionPtr pReg, pBSReg = NullRegion;
+    RegionRec	reg;
+    RegionPtr pBSReg = NullRegion;
+    ScreenPtr	pScreen;
+    BoxPtr  extents;
+    int	    x1, y1, x2, y2;
 
-    box.x1 = pWin->drawable.x + x;
-    box.y1 = pWin->drawable.y + y;
+    /* compute everything using ints to avoid overflow */
+
+    x1 = pWin->drawable.x + x;
+    y1 = pWin->drawable.y + y;
     if (w)
-        box.x2 = box.x1 + w;
+        x2 = x1 + (int) w;
     else
-        box.x2 = box.x1 + (int) pWin->drawable.width - x;
+        x2 = x1 + (int) pWin->drawable.width - (int) x;
     if (h)
-        box.y2 = box.y1 + h;	
+        y2 = y1 + h;	
     else
-        box.y2 = box.y1 + (int) pWin->drawable.height - y;
+        y2 = y1 + (int) pWin->drawable.height - (int) y;
 
-    pReg = (* pWin->drawable.pScreen->RegionCreate)(&box, 1);
+    extents = &pWin->clipList.extents;
+    
+    /* clip the resulting rectangle to the window clipList extents.  This
+     * makes sure that the result will fit in a box, given that the
+     * screen is < 32768 on a side.
+     */
+
+    if (x1 < extents->x1)
+	x1 = extents->x1;
+    if (x2 > extents->x2)
+	x2 = extents->x2;
+    if (y1 < extents->y1)
+	y1 = extents->y1;
+    if (y2 > extents->y2)
+	y2 = extents->y2;
+
+    box.x1 = x1;
+    box.x2 = x2;
+    box.y1 = y1;
+    box.y2 = y2;
+
+    pScreen = pWin->drawable.pScreen;
+    (*pScreen->RegionInit) (&reg, &box, 1);
     if (pWin->backStorage)
     {
 	/*
@@ -61,16 +89,16 @@ miClearToBackground(pWin, x, y, w, h, generateExposures)
 	 * an Expose event is to be generated for those areas in backing
 	 * store if generateExposures is TRUE).
 	 */
-	pBSReg = (* pWin->drawable.pScreen->ClearBackingStore)(pWin, x, y, w, h,
+	pBSReg = (* pScreen->ClearBackingStore)(pWin, x, y, w, h,
 						 generateExposures);
     }
 
-    (* pWin->drawable.pScreen->Intersect)(pReg, pReg, &pWin->clipList);
+    (* pScreen->Intersect)(&reg, &reg, &pWin->clipList);
     if (generateExposures)
-	(*pWin->drawable.pScreen->WindowExposures)(pWin, pReg, pBSReg);
+	(*pScreen->WindowExposures)(pWin, &reg, pBSReg);
     else if (pWin->backgroundState != None)
-        (*pWin->drawable.pScreen->PaintWindowBackground)(pWin, pReg, PW_BACKGROUND);
-    (* pWin->drawable.pScreen->RegionDestroy)(pReg);
+        (*pScreen->PaintWindowBackground)(pWin, &reg, PW_BACKGROUND);
+    (* pScreen->RegionUninit)(&reg);
     if (pBSReg)
-	(* pWin->drawable.pScreen->RegionDestroy)(pBSReg);
+	(* pScreen->RegionDestroy)(pBSReg);
 }
