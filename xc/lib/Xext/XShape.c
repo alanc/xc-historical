@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XShape.c,v 1.20 91/01/05 14:46:16 rws Exp $
+ * $XConsortium: XShape.c,v 1.21 91/01/11 20:50:26 converse Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -24,8 +24,9 @@
  */
 #define NEED_EVENTS
 #define NEED_REPLIES
-#define _XSHAPE_C_			/* for REGION type in shape.h */
-#include "region.h"			/* in Xlib sources, incs Xlibint.h */
+#include <X11/Xlibint.h>
+#include <X11/Xutil.h>
+#include "region.h"			/* in Xlib sources */
 #include "Xext.h"			/* in ../include */
 #include "extutil.h"			/* in ../include */
 #include "shapestr.h"			/* in ../include */
