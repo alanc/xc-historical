@@ -22,6 +22,7 @@
  *
  * Author:  Keith Packard, MIT X Consortium
  */
+/* $NCDId: @(#)fontfile.c,v 1.6 1991/07/02 17:00:46 lemke Exp $ */
 
 #include    "fontfilest.h"
 
@@ -33,7 +34,11 @@ int
 FontFileNameCheck (name)
     char    *name;
 {
+#ifndef NCD
     return *name == '/';
+#else
+    return ((strcmp(name, "built-ins") == 0) || (*name == '/'));
+#endif
 }
 
 int
@@ -57,11 +62,19 @@ FontFileInitFPE (fpe)
     return status;
 }
 
+/* ARGSUSED */
 int
 FontFileResetFPE (fpe)
     FontPathElementPtr	fpe;
 {
-    /* XXX should reread and merge in the contents of fonts.dir */
+    FontDirectoryPtr	dir;
+
+    dir = (FontDirectoryPtr) fpe->private;
+    if (FontFileDirectoryChanged (dir))
+    {
+	/* can't do it, so tell the caller to close and re-open */
+	return FPEResetFailed;	
+    }
     return Successful;
 }
 
@@ -74,6 +87,7 @@ FontFileFreeFPE (fpe)
     return Successful;
 }
 
+/* ARGSUSED */
 int
 FontFileOpenFont (client, fpe, flags, name, namelen, format, fmask,
 		  id, pFont, aliasName)
@@ -90,20 +104,16 @@ FontFileOpenFont (client, fpe, flags, name, namelen, format, fmask,
 {
     FontDirectoryPtr	dir;
     char		lowerName[MAXFONTNAMELEN];
-    char		zeroName[MAXFONTNAMELEN];
     char		fileName[MAXFONTFILENAMELEN*2 + 1];
     FontNameRec		tmpName;
-    FontNameRec		scalableName;
     FontEntryPtr	entry;
     FontScalableRec	vals;
-    FontScalableExtraPtr   extra;
     FontScalableEntryPtr   scalable;
     FontScaledPtr	scaled;
     FontBitmapEntryPtr	bitmap;
     FontAliasEntryPtr	alias;
     FontBCEntryPtr	bc;
     int			ret;
-    int			i;
     
     if (namelen >= MAXFONTNAMELEN)
 	return AllocError;
@@ -175,7 +185,7 @@ FontFileOpenFont (client, fpe, flags, name, namelen, format, fmask,
 		    /* Save the instance */
 		    if (ret == Successful)
 		    	if (!FontFileAddScaledInstance (entry, &vals,
-						    *pFont, (FontEntryPtr) 0))
+						    *pFont, (char *) 0))
 			    (*pFont)->fpePrivate = (pointer) 0;
 		}
 	    }
@@ -222,22 +232,20 @@ FontFileOpenFont (client, fpe, flags, name, namelen, format, fmask,
     return ret;
 }
 
+/* ARGSUSED */
 FontFileCloseFont (fpe, pFont)
     FontPathElementPtr	fpe;
     FontPtr		pFont;
 {
     FontEntryPtr    entry;
-    FontRendererPtr renderer;
 
     if (entry = (FontEntryPtr) pFont->fpePrivate) {
 	switch (entry->type) {
 	case FONT_ENTRY_SCALABLE:
 	    FontFileRemoveScaledInstance (entry, pFont);
-	    renderer = entry->u.scalable.renderer;
 	    break;
 	case FONT_ENTRY_BITMAP:
 	    entry->u.bitmap.pFont = 0;
-	    renderer = entry->u.bitmap.renderer;
 	    break;
 	default:
 	    /* "cannot" happen */
@@ -291,6 +299,7 @@ FontFileGetInfoBitmap (fpe, pFontInfo, entry)
     return ret;
 }
 
+/* ARGSUSED */
 FontFileListFonts (client, fpe, pat, len, max, names)
     pointer     client;
     FontPathElementPtr fpe;
@@ -307,7 +316,6 @@ FontFileListFonts (client, fpe, pat, len, max, names)
     FontScalableRec	vals, zeroVals, tmpVals;
     int			i;
     int			oldnnames;
-    int			ret;
 
     if (len >= MAXFONTNAMELEN)
 	return AllocError;
@@ -400,6 +408,7 @@ FontFileStartListFontsWithInfo(client, fpe, pat, len, max, privatep)
     return Successful;
 }
 
+/* ARGSUSED */
 static int
 FontFileListOneFontWithInfo (client, fpe, namep, namelenp, pFontInfo)
     pointer		client;
@@ -410,20 +419,15 @@ FontFileListOneFontWithInfo (client, fpe, namep, namelenp, pFontInfo)
 {
     FontDirectoryPtr	dir;
     char		lowerName[MAXFONTNAMELEN];
-    char		zeroName[MAXFONTNAMELEN];
     char		fileName[MAXFONTFILENAMELEN*2 + 1];
     FontNameRec		tmpName;
-    FontNameRec		scalableName;
     FontEntryPtr	entry;
     FontScalableRec	vals;
-    FontScalableExtraPtr   extra;
     FontScalableEntryPtr   scalable;
     FontScaledPtr	scaled;
     FontBitmapEntryPtr	bitmap;
     FontAliasEntryPtr	alias;
-    FontBCEntryPtr	bc;
     int			ret;
-    int			i;
     char		*name = *namep;
     int			namelen = *namelenp;
     
