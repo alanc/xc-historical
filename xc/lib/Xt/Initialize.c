@@ -661,6 +661,7 @@ char *argv[];
 	TopLevelWidget w;
 	Widget root;
 	int squish = -1;
+	Boolean dosync = FALSE;
 
 
 	if( name == NULL) {
@@ -701,6 +702,10 @@ char *argv[];
 		  name = argv[i];
 		  continue;
 	  }
+	  if (!strcmp("-sync", argv[i])) {
+		  dosync = TRUE;
+		  continue;
+	  }
 	}
 	if(squish != -1) {
 		(*argc)--;
@@ -716,7 +721,7 @@ char *argv[];
 		XtError(buf);
 	}
         toplevelDisplay = dpy;
-	XSynchronize(dpy, TRUE);
+	if (dosync) XSynchronize(dpy, TRUE);
 
         XtSetArg(args[num_args], "display", dpy);
         num_args++;
