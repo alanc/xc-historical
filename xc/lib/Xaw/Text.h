@@ -1,5 +1,5 @@
 /*
-* $Header: Text.h,v 1.5 88/01/06 08:50:41 swick Locked $
+* $Header: Text.h,v 1.6 88/01/08 07:41:03 swick Locked $
 */
 
 /*
@@ -32,6 +32,32 @@
  * Text widget
  *
  ****************************************************************/
+
+/* Parameters:
+
+ Name		     Class		RepType		Default Value
+ ----		     -----		-------		-------------
+ background	     Background		pixel		White
+ border		     BorderColor	pixel		Black
+ borderWidth	     BorderWidth	int		1
+ destroyCallback     Callback		Pointer		NULL
+ displayPosition     TextPosition	int		0
+ height		     Height		int		font height
+ insertPosition	     TextPosition	int		0
+ leftMargin	     Margin		int		2
+ mappedWhenManaged   MappedWhenManaged	Boolean		True
+ selectTypes	     SelectTypes	Pointer		(internal)
+ selection	     Selection		Pointer		empty selection
+ sensitive	     Sensitive		Boolean		True
+ textOptions	     TextOptions	int		0
+ textSink	     TextSink		Pointer		(none)
+ textSource	     TextSource		Pointer		(none)
+ width		     Width		int		100
+ x		     Position		int		0
+ y		     Position		int		0
+
+*/
+
 
 #define XtNtextOptions		"textOptions"
 #define XtNdisplayPosition      "displayPosition"

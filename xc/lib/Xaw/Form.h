@@ -1,4 +1,4 @@
-/* $Header: Form.h,v 1.3 87/12/23 07:45:22 swick Locked $ */
+/* $Header: Form.h,v 1.4 88/01/11 08:42:13 swick Locked $ */
 
 /*
  * Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
@@ -30,6 +30,42 @@
  * Form Widget
  *
  ***********************************************************************/
+
+/* Parameters:
+
+ Name		     Class		RepType		Default Value
+ ----		     -----		-------		-------------
+ background	     Background		pixel		White
+ border		     BorderColor	pixel		Black
+ borderWidth	     BorderWidth	int		1
+ defaultDistance     Thickness		int		4
+ destroyCallback     Callback		Pointer		NULL
+ height		     Height		int		0
+ mappedWhenManaged   MappedWhenManaged	Boolean		True
+ sensitive	     Sensitive		Boolean		True
+ width		     Width		int		0
+ x		     Position		int		0
+ y		     Position		int		0
+
+*/
+
+/* Constraint parameters:
+
+ Name		     Class		RepType		Default Value
+ ----		     -----		-------		-------------
+ bottom		     Edge		XtEdgeType	XtRubber
+ fromHoriz	     Widget		Widget		(left edge of form)
+ fromVert	     Widget		Widget		(top of form)
+ horizDistance	     Thickness		int		defaultDistance
+ left		     Edge		XtEdgeType	XtRubber
+ resizeable	     Boolean		Boolean		False
+ right		     Edge		XtEdgeType	XtRubber
+ top		     Edge		XtEdgeType	XtRubber
+ vertDistance	     Thickness		int		defaultDistance
+
+*/
+
+
 
 #define XtNdefaultDistance	"defaultDistance"
 #define XtNtop			"top"

@@ -1,5 +1,5 @@
 /*
-* $Header: Command.h,v 1.5 87/09/11 21:18:54 swick Locked $
+* $Header: Command.h,v 1.6 87/12/01 15:36:03 swick Locked $
 */
 
 /*
@@ -33,11 +33,33 @@
  *
  ***********************************************************************/
 
+/* Parameters:
+
+ Name		     Class		RepType		Default Value
+ ----		     -----		-------		-------------
+ background	     Background		pixel		White
+ border		     BorderColor	pixel		Black
+ borderWidth	     BorderWidth	int		1
+ callback	     Callback		Pointer		NULL
+ destroyCallback     Callback		Pointer		NULL
+ font		     Font		FontStruct	fixed
+ foreground	     Foreground		pixel		Black
+ height		     Height		int		text height
+ highlightThickness  Thickness		int		2
+ internalHeight	     Height		int		2
+ internalWidth	     Width		int		4
+ justify	     Justify		Justify		Center
+ label		     Label		String		NULL
+ mappedWhenManaged   MappedWhenManaged	Boolean		True
+ sensitive	     Sensitive		Boolean		True
+ width		     Width		int		text width
+ x		     Position		int		0
+ y		     Position		int		0
+
+*/
+
 #ifndef _XtJustify_e
 #define _XtJustify_e
-
-
-
 
 typedef enum {
     XtJustifyLeft,       /* justify text to left side of button   */

@@ -1,4 +1,4 @@
-/* $Header: Dialog.h,v 1.2 87/12/23 07:41:49 swick Locked $ */
+/* $Header: Dialog.h,v 1.3 88/01/07 17:26:15 swick Locked $ */
 /*
  * Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
  * 
@@ -22,12 +22,35 @@
  */
 
 
-/* NOTE: THIS IS NOT A WIDGET!  Rather, this is an interface to a widget.
-   It implements policy, and gives a (hopefully) easier-to-use interface
-   than just directly making your own form. */
-
 #ifndef _Dialog_h
 #define _Dialog_h
+
+/***********************************************************************
+ *
+ * Dialog Widget
+ *
+ ***********************************************************************/
+
+/* Parameters:
+
+ Name		     Class		RepType		Default Value
+ ----		     -----		-------		-------------
+ background	     Background		pixel		White
+ border		     BorderColor	pixel		Black
+ borderWidth	     BorderWidth	int		1
+ destroyCallback     Callback		Pointer		NULL
+ height		     Height		int		0
+ label		     Label		String		NULL
+ mappedWhenManaged   MappedWhenManaged	Boolean		True
+ maximumLength	     Max		int		256
+ sensitive	     Sensitive		Boolean		True
+ value		     Value		String		NULL
+ width		     Width		int		0
+ x		     Position		int		0
+ y		     Position		int		0
+
+*/
+
 
 #include <X/Form.h>
 

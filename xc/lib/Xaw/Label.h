@@ -1,5 +1,5 @@
 /*
-* $Header$
+* $Header: Label.h,v 1.8 87/09/11 21:21:47 swick Locked $
 */
 
 /*
@@ -31,7 +31,32 @@
  *
  * Label Widget
  *
+ *
  ***********************************************************************/
+
+/* Parameters:
+
+ Name		     Class		RepType		Default Value
+ ----		     -----		-------		-------------
+ background	     Background		pixel		White
+ border		     BorderColor	pixel		Black
+ borderWidth	     BorderWidth	int		1
+ destroyCallback     Callback		Pointer		NULL
+ font		     Font		FontStruct	fixed
+ foreground	     Foreground		pixel		Black
+ height		     Height		int		text height
+ internalHeight	     Height		int		2
+ internalWidth	     Width		int		4
+ justify	     Justify		Justify		Center
+ label		     Label		String		NULL
+ mappedWhenManaged   MappedWhenManaged	Boolean		True
+ sensitive	     Sensitive		Boolean		True
+ width		     Width		int		text width
+ x		     Position		int		0
+ y		     Position		int		0
+
+*/
+
 
 #ifndef _XtJustify_e
 #define _XtJustify_e

@@ -1,5 +1,5 @@
 /*
-* $Header$
+* $Header: ButtonBox.h,v 1.5 87/09/11 21:18:39 swick Locked $
 */
 
 /*
@@ -32,6 +32,25 @@
  * Button Box Widget (subclass of CompositeClass)
  *
  ***********************************************************************/
+
+/* Parameters:
+
+ Name		     Class		RepType		Default Value
+ ----		     -----		-------		-------------
+ background	     Background		pixel		White
+ border		     BorderColor	pixel		Black
+ borderWidth	     BorderWidth	int		1
+ destroyCallback     Callback		Pointer		NULL
+ hSpace 	     HSpace		int		4
+ height		     Height		int		0
+ mappedWhenManaged   MappedWhenManaged	Boolean		True
+ vSpace 	     VSpace		int		4
+ width		     Width		int		0
+ x		     Position		int		0
+ y		     Position		int		0
+
+*/
+
 
 /* New fields */
 #define XtNhSpace		"hSpace"

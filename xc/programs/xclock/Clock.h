@@ -1,5 +1,5 @@
 /*
-* $Header: Clock.h,v 1.7 87/10/09 13:11:00 swick Locked $
+* $Header: Clock.h,v 1.8 87/12/11 11:16:44 swick Locked $
 */
 
 /*
@@ -32,6 +32,31 @@
  * Clock Widget
  *
  ***********************************************************************/
+
+/* Parameters:
+
+ Name		     Class		RepType		Default Value
+ ----		     -----		-------		-------------
+ analog		     Boolean		Boolean		False
+ background	     Background		pixel		White
+ border		     BorderColor	pixel		Black
+ borderWidth	     BorderWidth	int		1
+ chime		     Boolean		Boolean		False
+ destroyCallback     Callback		Pointer		NULL
+ font		     Font		FontStruct*	fixed
+ foreground	     Foreground		Pixel		Black
+ hand		     Foreground		Pixel		Black
+ height		     Height		int		164
+ high		     Foreground		Pixel		Black
+ mappedWhenManaged   MappedWhenManaged	Boolean		True
+ padding	     Margin		int		8
+ update		     Interval		int		60 (seconds)
+ width		     Width		int		164
+ x		     Position		int		0
+ y		     Position		int		0
+
+*/
+
 
 /* Resource names used to the clock widget */
 

@@ -1,5 +1,5 @@
 /*
-* $Header: Knob.h,v 1.2 87/09/11 21:21:42 swick Locked $
+* $Header: Knob.h,v 1.3 87/12/17 16:42:28 swick Locked $
 */
 
 /*
@@ -27,10 +27,6 @@
 /*
  *  Knob.h - Public Definitions for Knob widget (used by VPane Widget)
  *
- *  Author:       Jeanne M. Rich
- *                Digital Equipment Corporation
- *                Western Software Laboratory
- *  Date:         Wednesday, September 9, 1987
  */
 
 #ifndef _XtKnob_h
@@ -38,9 +34,28 @@
 
 /***************************************************************************
  *
- * Knob Widget (Used by VPane Widget)
+ * Knob Widget 
  *
  **************************************************************************/
+
+/* Parameters:
+
+ Name		     Class		RepType		Default Value
+ ----		     -----		-------		-------------
+ background	     Background		pixel		Black
+ border		     BorderColor	pixel		Black
+ borderWidth	     BorderWidth	int		0
+ callback	     Callback		Pointer		KnobAction
+ destroyCallback     Callback		Pointer		NULL
+ height		     Height		int		6
+ mappedWhenManaged   MappedWhenManaged	Boolean		True
+ sensitive	     Sensitive		Boolean		True
+ width		     Width		int		6
+ x		     Position		int		0
+ y		     Position		int		0
+
+*/
+
 
 #define XtNknobTranslations	"knobTranslations"
 
