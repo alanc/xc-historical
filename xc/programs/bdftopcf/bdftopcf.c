@@ -1,5 +1,5 @@
 /*
- * $XConsortium: bdftopcf.c,v 1.4 91/05/13 15:25:06 gildea Exp $
+ * $XConsortium: bdftopcf.c,v 1.5 91/09/07 11:56:42 keith Exp $
  * 
  * Copyright 1991 by the Massachusetts Institute of Technology
  *
@@ -21,6 +21,7 @@
 #include    "fontstruct.h"
 #include    "fontfileio.h"
 #include    <stdio.h>
+#include    <X11/Xos.h>
 
 main (argc, argv)
     char    **argv;
