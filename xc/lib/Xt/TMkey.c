@@ -1,4 +1,4 @@
-/* $XConsortium: TMkey.c,v 1.8 91/04/28 14:07:25 converse Exp $ */
+/* $XConsortium: TMkey.c,v 1.9 91/04/29 16:13:09 converse Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -105,6 +105,8 @@ FM(0x1f), FM(0x9f), FM(0x5f), FM(0xdf), FM(0x3f), FM(0xbf), FM(0x7f), FM(0xff)
 
 /* usual number of expected keycodes in XtKeysymToKeycodeList */
 #define KEYCODE_ARRAY_SIZE 10
+
+static void _XtConvertCase();
 
 Boolean _XtComputeLateBindings(lateModifiers,eventSeq,computed,computedMask)
     LateBindingsPtr lateModifiers;
@@ -246,7 +248,7 @@ void XtConvertCase(dpy,keysym,lower_return,upper_return)
 	    return;
 	}
     if (keysym <= 0x3ff)	/* Latin-1 start = 0, Latin-4 stop = 0x3ff */
-	(*pd->defaultCaseConverter)(dpy, keysym, lower_return, upper_return);
+	_XtConvertCase(dpy, keysym, lower_return, upper_return);
 }
     
 Boolean _XtMatchUsingStandardMods (typeMatch, modMatch, eventSeq)
@@ -507,7 +509,7 @@ void XtRegisterCaseConverter(dpy, proc, start, stop)
 
 /* This code should match XConvertCase (internal, sigh) in Xlib */
 /* ARGSUSED */
-void _XtConvertCase(dpy, sym, lower, upper)
+static void _XtConvertCase(dpy, sym, lower, upper)
     Display *dpy;
     KeySym sym;
     KeySym *lower;
