@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: daemon.c,v 1.10 94/01/18 15:21:49 rws Exp $
+ * $XConsortium: daemon.c,v 1.11 94/02/02 08:42:17 gildea Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -47,6 +47,8 @@ extern void exit ();
 BecomeOrphan ()
 {
     Pid_t child_id;
+    int stat;
+
     /*
      * fork so that the process goes into the background automatically. Also
      * has a nice side effect of having the child process get inherited by
@@ -57,9 +59,28 @@ BecomeOrphan ()
      */
 
     child_id = fork();
-    if (child_id)
-    {
-	if (setpgrp(child_id, child_id) != 0)
+    switch (child_id) {
+    case 0:
+	/* child */
+	break;
+    case -1:
+	/* error */
+	LogError("daemon fork failed, errno = %d\n", errno);
+	break;
+
+    default:
+	/* parent */
+
+#if defined(SVR4)
+	stat = setpgid(child_id, child_id);
+#else
+#if defined(SYSV)
+	stat = 0;	/* don't know how to set child's process group */
+#else
+	stat = setpgrp(child_id, child_id);
+#endif
+#endif
+	if (stat != 0)
 	    LogError("setting process grp for daemon failed, errno = %d\n",
 		     errno);
 	exit (0);
