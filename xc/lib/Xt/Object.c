@@ -1,6 +1,6 @@
 /* LINTLIBRARY */
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Object.c,v 1.4 88/09/06 09:51:49 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Object.c,v 1.5 88/09/06 16:28:20 jim Exp $";
 /* $oHeader: Object.c,v 1.2 88/08/18 15:51:09 asente Exp $ */
 #endif lint
 
@@ -38,6 +38,7 @@ static XtResource resources[] = {
     };
 
 static void ObjectClassPartInitialize();
+static Boolean ObjectSetValues();
 static void ObjectDestroy();
 
 externaldef(objectclassrec) ObjectClassRec objectClassRec = {
@@ -63,7 +64,7 @@ externaldef(objectclassrec) ObjectClassRec objectClassRec = {
     /* destroy		  */	ObjectDestroy,
     /* pad		  */	NULL,
     /* pad		  */	NULL,
-    /* set_values	  */	NULL,
+    /* set_values	  */	ObjectSetValues,
     /* set_values_hook    */	NULL,			
     /* pad                */    NULL,
     /* get_values_hook    */	NULL,			
@@ -130,11 +131,40 @@ static void ObjectClassPartInitialize(wc)
     ConstructCallbackOffsets(wc);
     _XtResourceDependencies(wc);
 }
-    
+
+
+static Boolean ObjectSetValues(old, request, widget)
+    Widget	old, request, widget;
+{
+    register _XtOffsetList offset;
+    register CallbackStruct *oldCallbacks, **newCallbacksP;
+    extern CallbackStruct* _XtCompileCallbackList();
+    extern void _XtFreeCallbackList();
+
+    /* Compile any callback lists into internal form */
+    offset = XtClass(widget)->core_class.callback_private;
+    while (offset != NULL) {
+	oldCallbacks = *(CallbackStruct**)((char*)old - offset->offset - 1);
+	newCallbacksP = (CallbackStruct**)((char*)widget - offset->offset - 1);
+
+	if (*newCallbacksP != oldCallbacks) {
+	    if (oldCallbacks != NULL)
+		_XtFreeCallbackList(oldCallbacks);
+
+	    if (*newCallbacksP != NULL)
+		*newCallbacksP = _XtCompileCallbackList(widget,*newCallbacksP);
+	}
+	offset = offset->next;
+    }
+    return False;
+}
+
+
 static void ObjectDestroy (widget)
     register Widget    widget;
 {
     register _XtOffsetList offset;
+    extern CallbackList* _XtCallbackList();
 
     if (((Object)widget)->object.constraints != NULL)
 	    XtFree((char *) ((Object)widget)->object.constraints);
@@ -142,8 +172,11 @@ static void ObjectDestroy (widget)
     /* Remove all callbacks associated with widget */
     offset = widget->core.widget_class->core_class.callback_private;
     while (offset != NULL) {
-	_XtRemoveAllCallbacks(
-	    (CallbackList *) (((char *) widget) - offset->offset - 1));
+	register CallbackStruct *callbacks =
+	    *(CallbackStruct**)(((char *) widget) - offset->offset - 1);
+	if (callbacks != NULL) {
+	    _XtFreeCallbackList(callbacks);
+	}
 	offset = offset->next;
     }
 
