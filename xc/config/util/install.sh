@@ -3,7 +3,7 @@
 #
 # install - install a program, script, or datafile
 #
-# $XConsortium$
+# $XConsortium: install.sh,v 1.1 88/11/14 09:46:24 jim Exp $
 #
 # This script is compatible with the BSD install script, but was written
 # from scratch.
@@ -42,13 +42,16 @@ while [ x"$1" != x ]; do
 
 	-m) chmodcmd="$chmodprog $2"
 	    shift
+	    shift
 	    continue;;
 
 	-o) chowncmd="$chownprog $2"
 	    shift
+	    shift
 	    continue;;
 
 	-g) chgrpcmd="$chgrpprog $2"
+	    shift
 	    shift
 	    continue;;
 
