@@ -1,4 +1,4 @@
-XCOMM $XConsortium: sunLib.tmpl,v 1.4 91/02/13 12:06:02 rws Exp $
+XCOMM $XConsortium: sunLib.tmpl,v 1.5 91/04/11 08:49:37 rws Exp $
 
 /*
  * SunOS shared library template
@@ -21,6 +21,9 @@ XCOMM $XConsortium: sunLib.tmpl,v 1.4 91/02/13 12:06:02 rws Exp $
 #endif
 #ifndef SharedXextRev
 #define SharedXextRev 4.0
+#endif
+#ifndef SharedXinputRev
+#define SharedXinputRev 4.0
 #endif
 
 SHLIBLDFLAGS = SharedLibraryLoadFlags
@@ -53,4 +56,8 @@ PICFLAGS = PositionIndependentCFlags
 #if SharedLibXaw
         DEPXAWLIB = _UseCat($(USRLIBDIR),$(AWIDGETSRC),/libXaw.sa.$(SOXAWREV))
            XAWLIB = _Use(-lXaw,-L$(AWIDGETSRC) -lXaw)
+#endif
+#if SharedLibXinput
+        DEPXILIB = _UseCat($(USRLIBDIR),$(XILIBSRC),/libXi.sa.$(SOXINPUTREV))
+           XILIB = _Use(-lXi,-L$(XILIBSRC) -lXi)
 #endif
