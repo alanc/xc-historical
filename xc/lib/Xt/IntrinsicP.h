@@ -1,5 +1,5 @@
 /*
-* $XConsortium: IntrinsicP.h,v 1.41 89/09/13 16:27:57 swick Exp $
+* $XConsortium: IntrinsicP.h,v 1.42 89/09/14 10:35:23 swick Exp $
 * $oHeader: IntrinsicP.h,v 1.4 88/08/26 14:49:52 asente Exp $
 */
 
@@ -63,11 +63,15 @@ typedef void (*XtArgsProc)();
 typedef void (*XtInitProc)();
     /* Widget request_widget; */
     /* Widget new_widget; */
+    /* ArgList args;	  */
+    /* Cardinal *num_args; */
 
 typedef Boolean (*XtSetValuesFunc)();  /* returns TRUE if redisplay needed */
     /* Widget widget;       */
     /* Widget request;      */
     /* Widget new;	    */
+    /* ArgList args;	    */
+    /* Cardinal *num_args;  */
 
 typedef Boolean (*XtArgsFunc)();
     /* Widget   widget      */
