@@ -110,6 +110,7 @@ sunFbDataRec sunFbData[] = {
     sunCG3CProbe,  	"/dev/cgthree0",    sunCG3CCreate,
     sunCG6CProbe,	"/dev/cgsix0",	    sunCG6CCreate,
     sunCG4CProbe,  	"/dev/cgfour0",	    sunCG4CCreate,
+    sunBW2Probe,  	"/dev/bwtwo0",	    sunBW2Create,
 };
 
 /*
@@ -172,19 +173,18 @@ InitOutput(pScreenInfo, argc, argv)
     int     	  argc;
     char    	  **argv;
 {
-    int     	  i, index, ac = argc;
-    char	  **av = argv;
+    int     	  i, n, dev;
     int		  nonBlockConsole = 1;
     static int	  setup_on_exit = 0;
+    int		  devStart = 1;
 
     if (!monitorResolution)
 	monitorResolution = 90;
-    while (ac--) {
-	if (!strcmp(*av,"-debug")) {
+    for (i = 1; i < argc; i++) {
+	if (!strcmp(argv[i],"-debug"))
 	    nonBlockConsole = 0;
-	    break;
-	}
-	av++;
+	else if (!strcmp(argv[i],"-mono"))
+	    devStart = 0;
     }
     /*
      *	Writes to /dev/console can block - causing an
@@ -218,23 +218,22 @@ InitOutput(pScreenInfo, argc, argv)
 
     if (!sunDevsProbed)
     {
-	index = 0;
-	for (i = 0; i < NUMSCREENS; i++) {
-	    if ((*sunFbData[i].probeProc)(pScreenInfo, index, i, argc, argv))
-		index++;
+	n = 0;
+	for (i = NUMSCREENS, dev = devStart; --i > 0; dev++) {
+	    if ((*sunFbData[dev].probeProc)(pScreenInfo, n, dev, argc, argv))
+		n++;
 	    else
-		sunFbData[i].createProc = NULL;
+		sunFbData[dev].createProc = NULL;
 	}
 	sunDevsProbed = TRUE;
-	if (index == 0)
+	if (n == 0)
 	    return;
     }
     if (!sunSupportsDepth8)
 	pScreenInfo->numPixmapFormats--;
-    for (i = 0; i < NUMSCREENS; i++)
-    {
-	if (sunFbData[i].createProc)
-	    (*sunFbData[i].createProc)(pScreenInfo, argc, argv);
+    for (i = NUMSCREENS, dev = devStart; --i > 0; dev++) {
+	if (sunFbData[dev].createProc)
+	    (*sunFbData[dev].createProc)(pScreenInfo, argc, argv);
     }
     sunGeneration = serverGeneration;
     sunInitCursor();
