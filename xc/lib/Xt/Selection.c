@@ -1,4 +1,4 @@
-/* $XConsortium: Selection.c,v 1.59 90/12/28 16:05:11 gildea Exp $ */
+/* $XConsortium: Selection.c,v 1.60 91/02/03 17:52:35 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -828,6 +828,8 @@ static Boolean IsINCRtype(info, window, prop)
     int format;
     Atom type;
     unsigned char *value;
+
+    if (prop == None) return False;
 
     (void)XGetWindowProperty(XtDisplay(info->widget), window, prop, 0L, 0L,
 			     False, info->ctx->prop_list->incremental_atom,
