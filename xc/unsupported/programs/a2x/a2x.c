@@ -1,4 +1,4 @@
-/* $XConsortium: a2x.c,v 1.126 93/08/04 18:24:32 rws Exp $ */
+/* $XConsortium: a2x.c,v 1.127 93/08/05 19:22:28 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -247,6 +247,10 @@ KeyBindingRec pc_keys[] =
 #include "pckeys.h"
 #endif
 
+#ifndef OLDDD
+#define OLDDD False
+#endif
+Bool oldDD = OLDDD;
 char *progname;
 Display *dpy;
 Atom MIT_OBJ_CLASS;
@@ -558,6 +562,7 @@ usage()
     printf("    -f\t\t\tDOS window should not receive synthetic focus\n");
     printf("    -g <geometry>\tgeometry to make DOS window\n");
     printf("    -p\t\t\tquery pointer position before every pointer motion\n");
+    printf("    -dd <version>\tversion of DragonDictate being used\n");
     exit(1);
 }
 
@@ -2149,7 +2154,9 @@ Bool
 has_bs(c)
     char c;
 {
-    return (c != control_end) && (!iscntrl(c) || (c == '\r'));
+    return (((c != control_end) && (!iscntrl(c) || (c == '\r'))) ||
+	    (!oldDD && ((c == '\024') || (c == '\025') ||
+			(c == '\224') || (c == '\225'))));
 }
 
 void
@@ -2913,6 +2920,12 @@ main(argc, argv)
 	    if (!argc)
 		usage();
 	    hotwinname = *argv;
+	    break;
+	} else if (!strcmp(*argv, "-dd")) {
+	    argc--; argv++;
+	    if (!argc)
+		usage();
+	    oldDD = !strcmp(*argv, "1.01") || !strcmp(*argv, "1");
 	    break;
 	} else {
 	    usage();
