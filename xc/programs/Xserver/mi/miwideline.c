@@ -1,5 +1,5 @@
 /*
- * $XConsortium: miwideline.c,v 1.31 91/05/04 23:10:30 keith Exp $
+ * $XConsortium: miwideline.c,v 1.32 91/05/24 16:34:10 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -1824,9 +1824,12 @@ miWideDash (pDrawable, pGC, mode, npt, pPts)
 	if (pGC->lineStyle == LineDoubleDash || !(dashIndex & 1))
 	{
 	    if (npt == 1 && pGC->capStyle == CapRound)
+	    {
+		pixel = ((dashIndex & 1) ^ (dashOffset == 0)) ? pGC->bgPixel : pGC->fgPixel;
 	    	miLineArc (pDrawable, pGC, pixel, spanData,
 			   (LineFacePtr) NULL, &rightFace,
 			   (double)0.0, (double)0.0, TRUE);
+	    }
 	}
 	prevRightFace = rightFace;
 	first = FALSE;
