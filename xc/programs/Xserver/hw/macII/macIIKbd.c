@@ -73,25 +73,21 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 extern CARD8 *macIIModMap[];
 extern KeySymsRec macIIKeySyms[];
+extern struct timeval lastEventTimeTv;
 
 static void 	  macIIBell();
 static void 	  macIIKbdCtrl();
-void 	  	  macIIKbdProcessEvent();
-static void 	  macIIKbdDoneEvents();
-int	  	  autoRepeatKeyDown = 0;
-int	  	  autoRepeatDebug = 0;
-int	  	  autoRepeatReady;
+void 	  	  macIIKbdEnqueueEvent();
+static int	  autoRepeatKeyDown = 0;
+static int	  autoRepeatReady;
 static int	  autoRepeatFirst;
-long 		  autoRepeatLastKeyDownTv;
-long 		  autoRepeatDeltaTv;
+static struct timeval autoRepeatLastKeyDownTv;
+static struct timeval autoRepeatDeltaTv;
 static KeybdCtrl  sysKbCtrl;
 
 static KbPrivRec  	sysKbPriv = {
     -1,				/* Type of keyboard */
-    macIIKbdProcessEvent,	/* Function to process an event */
-    macIIKbdDoneEvents,		/* Function called when all events */
-				/* have been handled. */
-    (pointer) NULL,		/* Private to keyboard device */
+    macIIKbdEnqueueEvent,	/* Function to process an event */
     0,				/* offset for device keycodes */
     &sysKbCtrl,                 /* Initial full duration = .20 sec. */
 };
@@ -421,26 +417,10 @@ macIIKbdCtrl (pKeyboard, ctrl)
     *pPriv->ctrl = *ctrl;
 }
 
-/*-
- *-----------------------------------------------------------------------
- * macIIDoneEvents --
- *	Nothing to do, here...
- *
- * Results:
- *
- * Side Effects:
- *
- *-----------------------------------------------------------------------
- */
-static void
-macIIKbdDoneEvents (pKeyboard)
-    DevicePtr	  pKeyboard;
-{
-}
 
 /*-
  *-----------------------------------------------------------------------
- * macIIKbdProcessEvent
+ * macIIKbdEnqueueEvent
  *	Process macIIevent destined for the keyboard.
  * 	
  * Results:
@@ -450,8 +430,10 @@ macIIKbdDoneEvents (pKeyboard)
  *-----------------------------------------------------------------------
  */
 
+static xEvent	autoRepeatEvent;
+
 void
-macIIKbdProcessEvent(pKeyboard,me)
+macIIKbdEnqueueEvent(pKeyboard,me)
     DeviceRec *pKeyboard;
     register unsigned char *me;
 {   
@@ -459,48 +441,10 @@ macIIKbdProcessEvent(pKeyboard,me)
     PtrPrivPtr	  	ptrPriv;
     KbPrivPtr           pPriv;
     int                 delta;
-    static xEvent       autoRepeatEvent;
     BYTE		key;
     CARD16              keyModifiers;
 
     ptrPriv = (PtrPrivPtr) LookupPointerDevice()->devicePrivate;
-
-    if (autoRepeatKeyDown && *me == AUTOREPEAT_EVENTID) {
-       pPriv = (KbPrivPtr) pKeyboard->devicePrivate;
-       if (pPriv->ctrl->autoRepeat != AutoRepeatModeOn) {
-               autoRepeatKeyDown = 0;
-               return;
-       }
-
-	/*
-	 * Generate auto repeat event.	XXX one for now.
-	 * Update time & pointer location of saved KeyPress event.
-	 */
-	if (autoRepeatDebug)
-	    ErrorF("macIIKbdProcessEvent: autoRepeatKeyDown = %d\r\n",
-			autoRepeatKeyDown);
-
-	delta = autoRepeatDeltaTv;
-	autoRepeatFirst = FALSE;
-
-	/*
-	 * Fake a key up event and a key down event
-	 * for the last key pressed.
-	 */
-	autoRepeatEvent.u.keyButtonPointer.time += delta;
-	autoRepeatEvent.u.keyButtonPointer.rootX = ptrPriv->x;
-	autoRepeatEvent.u.keyButtonPointer.rootY = ptrPriv->y;
-	autoRepeatEvent.u.u.type = KeyRelease;
-	(* pKeyboard->processInputProc) (&autoRepeatEvent, pKeyboard, 1);
-
-	autoRepeatEvent.u.u.type = KeyPress;
-	(* pKeyboard->processInputProc) (&autoRepeatEvent, pKeyboard, 1);
-
-	/* Update time of last key down */
-	autoRepeatLastKeyDownTv += autoRepeatDeltaTv;
-
-	return;
-    }
 
     key = KEY_DETAIL(*me) + sysKbPriv.offset;
     if ((keyModifiers = ((DeviceIntPtr)pKeyboard)->key->modifierMap[key]) == 0) {
@@ -508,29 +452,57 @@ macIIKbdProcessEvent(pKeyboard,me)
          * Kill AutoRepeater on any real Kbd event.
          */
         autoRepeatKeyDown = 0;
-        if (autoRepeatDebug)
-            ErrorF("macIIKbdProcessEvent: autoRepeat off\r\n");
     }
 
     xE.u.keyButtonPointer.time = lastEventTime;
-    xE.u.keyButtonPointer.rootX = ptrPriv->x;
-    xE.u.keyButtonPointer.rootY = ptrPriv->y;
     xE.u.u.type = (KEY_UP(*me) ? KeyRelease : KeyPress);
     xE.u.u.detail = key;
 
     if ((xE.u.u.type == KeyPress) && (keyModifiers == 0)) {
 	  /* initialize new AutoRepeater event & mark AutoRepeater on */
-        if (autoRepeatDebug)
-            ErrorF("macIIKbdProcessEvent: KEY_DOWN\r\n");
         autoRepeatEvent = xE;
         autoRepeatFirst = TRUE;
         autoRepeatKeyDown++;
-        autoRepeatLastKeyDownTv = lastEventTime;
+        autoRepeatLastKeyDownTv = lastEventTimeTv;
     }
 
-    (* pKeyboard->processInputProc) (&xE, pKeyboard, 1);
+    mieqEnqueue (&xE);
 }
 
+static
+macIIEnqueueAutoRepeat ()
+{
+    int	oldmask;
+    int	delta;
+
+    if (sysKbPriv.ctrl->autoRepeat != AutoRepeatModeOn) {
+	autoRepeatKeyDown = 0;
+	return;
+    }
+    /*
+     * Generate auto repeat event.	XXX one for now.
+     * Update time & pointer location of saved KeyPress event.
+     */
+
+    delta = TVTOMILLI(autoRepeatDeltaTv);
+    autoRepeatFirst = FALSE;
+
+    /*
+     * Fake a key up event and a key down event
+     * for the last key pressed.
+     */
+    autoRepeatEvent.u.keyButtonPointer.time += delta;
+    autoRepeatEvent.u.u.type = KeyRelease;
+    oldmask = sigblock (sigmask(SIGIO));
+    mieqEnqueue (&autoRepeatEvent);
+    autoRepeatEvent.u.u.type = KeyPress;
+    mieqEnqueue (&autoRepeatEvent);
+    sigsetmask (oldmask);
+    /* Update time of last key down */
+    tvplus(autoRepeatLastKeyDownTv, autoRepeatLastKeyDownTv, 
+		    autoRepeatDeltaTv);
+
+}
 
 Bool
 LegalModifier(key)
@@ -566,9 +538,6 @@ macIIBlockHandler(nscreen, pbdata, pptv, pReadmask)
         artv.tv_usec = 1000 * AUTOREPEAT_DELAY;
     *pptv = &artv;
 
-    if (autoRepeatDebug)
-        ErrorF("macIIBlockHandler(%d,%d): \r\n", artv.tv_sec, artv.tv_usec);
-
 }
 
 /*ARGSUSED*/
@@ -581,9 +550,6 @@ macIIWakeupHandler(nscreen, pbdata, err, pReadmask)
 {
     long now;
 
-    if (autoRepeatDebug)
-        ErrorF("macIIWakeupHandler(ar=%d, err=%d):\r\n", autoRepeatKeyDown, err);
-
     if (pKbdCtrl == (KeybdCtrl *) 0)
       pKbdCtrl = ((KbPrivPtr) LookupKeyboardDevice()->devicePrivate)->ctrl;
     
@@ -594,16 +560,19 @@ macIIWakeupHandler(nscreen, pbdata, err, pReadmask)
 	struct timeval tv;
 
 	gettimeofday (&tv, (struct timezone *)0);
-	now = TVTOMILLI(tv);
-
-        autoRepeatDeltaTv = now - autoRepeatLastKeyDownTv;
-        if ((!autoRepeatFirst && autoRepeatDeltaTv > AUTOREPEAT_DELAY) ||
-            (autoRepeatDeltaTv > AUTOREPEAT_INITIATE))
-                autoRepeatReady++;
+	tvminus(autoRepeatDeltaTv, tv, autoRepeatLastKeyDownTv);
+	if (autoRepeatDeltaTv.tv_sec > 0 ||
+			(!autoRepeatFirst && autoRepeatDeltaTv.tv_usec >
+				(AUTOREPEAT_DELAY * 1000)) ||
+			(autoRepeatDeltaTv.tv_usec >
+				(AUTOREPEAT_INITIATE * 1000)))
+		autoRepeatReady++;
     }
 
     if (autoRepeatReady)
-        ProcessInputEvents();
-    autoRepeatReady = 0;
+    {
+        macIIEnqueueAutoRepeat();
+	autoRepeatReady = 0;
+    }
 
 }

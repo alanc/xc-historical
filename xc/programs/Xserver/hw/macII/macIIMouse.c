@@ -68,41 +68,25 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #define NEED_EVENTS
 #include    "macII.h"
 #include	"mipointer.h"
-#include	"misprite.h"
 
 Bool ActiveZaphod = TRUE;
 
-static long macIIEventTime();
 static Bool macIICursorOffScreen();
 static void macIICrossScreen();
-extern void miPointerQueueEvent();
+static void macIIWarpCursor();
 
-miPointerCursorFuncRec macIIPointerCursorFuncs = {
-    macIIEventTime,
+miPointerScreenFuncRec macIIPointerCursorFuncs = {
     macIICursorOffScreen,
     macIICrossScreen,
-    miPointerQueueEvent,
+    macIIWarpCursor
 };
 
-typedef struct {
-    Bool    mouseMoved;	    /* Mouse has moved */
-} macIIMsPrivRec, *macIIMsPrivPtr;
-
 static void 	  	macIIMouseCtrl();
-static int 	  	macIIMouseGetMotionEvents();
-void 	  		macIIMouseProcessEvent();
-static void 	  	macIIMouseDoneEvents();
+static void 	  	macIIMouseEnqueueEvent();
 
-static macIIMsPrivRec	macIIMousePriv;
 static PtrPrivRec 	sysMousePriv = {
-    macIIMouseProcessEvent,	/* Function to process an event */
-    macIIMouseDoneEvents,		/* When all the events have been */
-				/* handled, this function will be */
-				/* called. */
-    0,				/* Current X coordinate of pointer */
-    0,				/* Current Y coordinate */
-    NULL,			/* Screen pointer is on */
-    (pointer)&macIIMousePriv,	/* Field private to device */
+    macIIMouseEnqueueEvent,	/* Function to process an event */
+    NULL			/* Screen pointer is on */
 };
 
 extern BoxRec     currentLimits;
@@ -140,10 +124,6 @@ macIIMouseProc (pMouse, what)
 	    }
 
 	    sysMousePriv.pScreen = screenInfo.screens[0];
-	    sysMousePriv.x = 0;
-	    sysMousePriv.y = 0;
-
-	    macIIMousePriv.mouseMoved = FALSE;
 
 	    pMouse->devicePrivate = (pointer) &sysMousePriv;
 	    pMouse->on = FALSE;
@@ -151,7 +131,8 @@ macIIMouseProc (pMouse, what)
 	    map[2] = 2;
 	    map[3] = 3;
 	    InitPointerDeviceStruct(
-		pMouse, map, 3, macIIMouseGetMotionEvents, macIIMouseCtrl, 0);
+		pMouse, map, 3, miPointerGetMotionEvents, macIIMouseCtrl,
+				    miPointerGetMotionBufferSize());
 	    break;
 
 	case DEVICE_ON:
@@ -191,29 +172,6 @@ macIIMouseCtrl (pMouse)
 
 /*-
  *-----------------------------------------------------------------------
- * macIIMouseGetMotionEvents --
- *	Return the (number of) motion events in the "motion history
- *	buffer" (snicker) between the given times.
- *
- * Results:
- *	The number of events stuffed.
- *
- * Side Effects:
- *	The relevant xTimecoord's are stuffed in the passed memory.
- *
- *-----------------------------------------------------------------------
- */
-static int
-macIIMouseGetMotionEvents (buff, start, stop)
-    CARD32 start, stop;
-    xTimecoord *buff;
-{
-    return 0;
-}
-
-
-/*-
- *-----------------------------------------------------------------------
  * MouseAccelerate --
  *	Given a delta and a mouse, return the acceleration of the delta.
  *
@@ -244,64 +202,23 @@ MouseAccelerate (pMouse, delta)
 	return ((short) (sgn * delta));
     }
 }
-
-/*-
- *-----------------------------------------------------------------------
- * macIIMouseDoneEvents --
- *	Finish off any mouse motions we haven't done yet. (At the moment
- *	this code is unused since we never save mouse motions as I'm
- *	unsure of the effect of getting a keystroke at a given [x,y] w/o
- *	having gotten a motion event to that [x,y])
- *
- * Results:
- *	None.
- *
- * Side Effects:
- *	A MotionNotify event may be generated.
- *
- *-----------------------------------------------------------------------
- */
-/*ARGSUSED*/
-static void
-macIIMouseDoneEvents (pMouse,final)
-    DevicePtr	  pMouse;
-    Bool	  final;
-{
-    PtrPrivPtr	  pPriv;
-    macIIMsPrivPtr  pmacIIPriv;
-    int		dx, dy;
-
-    pPriv = (PtrPrivPtr) pMouse->devicePrivate;
-    pmacIIPriv = (macIIMsPrivPtr) pPriv->devPrivate;
-
-    if (pmacIIPriv->mouseMoved) {
-        dx = pPriv->x;
-        dy = pPriv->y;
-        pPriv->x = 0;
-        pPriv->y = 0;
-        pmacIIPriv->mouseMoved = FALSE;
-        miPointerDeltaCursor (screenInfo.screens[0], dx, dy, TRUE);
-    }
-}
 
-void
-macIIMouseProcessEvent(pMouse,me)
+static void
+macIIMouseEnqueueEvent(pMouse,me)
     DeviceRec *pMouse;
     register unsigned char *me;
 {   
     xEvent		xE;
     GrabPtr     	grab = ((DeviceIntPtr)pMouse)->grab;
     register PtrPrivPtr	pPriv;	/* Private data for pointer */
-    register macIIMsPrivPtr pmacIIPriv; /* Private data for mouse */
-
+    unsigned long time;
     short xpos, ypos; /* SIGNED shorts for valid comparisons */
     static short lastx, lasty;
     static unsigned char last_button = 0x80;
 
     pPriv = (PtrPrivPtr)pMouse->devicePrivate;
-    pmacIIPriv = (macIIMsPrivPtr) pPriv->devPrivate;
 
-    xE.u.keyButtonPointer.time = lastEventTime;
+    time = xE.u.keyButtonPointer.time = lastEventTime;
 
     if (IS_MIDDLE_KEY(*me)) {
 	    static int pseudo_middle_state = ButtonRelease;
@@ -319,38 +236,14 @@ macIIMouseProcessEvent(pMouse,me)
 	    else pseudo_middle_state = xE.u.u.type;
 #endif OPTION_KEY_MOUSE
 
-	    /*
-	     * If the mouse has moved, we must update any interested client
-	     * as well as DIX before sending a button event along.
-	     */
-	    if (pmacIIPriv->mouseMoved) {
-		(* pPriv->DoneEvents) (pMouse, FALSE);
-	    }
-
-            miPointerPosition (screenInfo.screens[0],
-                           &xE.u.keyButtonPointer.rootX,
-                           &xE.u.keyButtonPointer.rootY);
-
-    	    (* pMouse->processInputProc) (&xE, pMouse, 1);
+	    mieqEnqueue (&xE);
 	    return;
 	
     }
     if (IS_RIGHT_KEY(*me)) {
             xE.u.u.detail = MS_RIGHT - MS_LEFT + 1;
 	    xE.u.u.type = (KEY_UP(*me) ? ButtonRelease : ButtonPress);
-	    /*
-	     * If the mouse has moved, we must update any interested client
-	     * as well as DIX before sending a button event along.
-	     */
-	    if (pmacIIPriv->mouseMoved) {
-		(* pPriv->DoneEvents) (pMouse, FALSE);
-	    }
-
-            miPointerPosition (screenInfo.screens[0],
-                           &xE.u.keyButtonPointer.rootX,
-                           &xE.u.keyButtonPointer.rootY);
-
-    	    (* pMouse->processInputProc) (&xE, pMouse, 1);
+	    mieqEnqueue (&xE);
 	    return;
 	
     }
@@ -366,63 +259,17 @@ macIIMouseProcessEvent(pMouse,me)
      */
     xpos = *(me + 2) & 0x7f; /* DELTA: low 7 bits */
     if (xpos & 0x0040) xpos = xpos - 0x0080; /* 2's complement */
-#ifdef notdef
-    pPriv->x += MouseAccelerate (pMouse, xpos); /* type mismatch? */
-#else
-{
-    register int  sgn = sign(xpos);
-    register PtrCtrl *pCtrl;
-
-    xpos = abs(xpos);
-    pCtrl = &((DeviceIntPtr) pMouse)->ptrfeed->ctrl;
-
-    if (xpos > pCtrl->threshold) {
-	pPriv->x += ((short) (sgn * (pCtrl->threshold +
-				((xpos - pCtrl->threshold) * pCtrl->num) /
-				pCtrl->den)));
-    } else {
-	pPriv->x += ((short) (sgn * xpos));
-    }
-}
-#endif
-   
     ypos = *(me + 1) & 0x7f;
     if (ypos & 0x0040) ypos = ypos - 0x0080;
-#ifdef notdef
-    pPriv->y += MouseAccelerate (pMouse, ypos);
-#else
-{
-    register int  sgn = sign(ypos);
-    register PtrCtrl *pCtrl;
-
-    ypos = abs(ypos);
-    pCtrl = &((DeviceIntPtr) pMouse)->ptrfeed->ctrl;
-
-    if (ypos > pCtrl->threshold) {
-	pPriv->y += ((short) (sgn * (pCtrl->threshold +
-				((ypos - pCtrl->threshold) * pCtrl->num) /
-				pCtrl->den)));
-    } else {
-	pPriv->y += ((short) (sgn * ypos));
-    }
-}
-#endif
-   
-   
-    pmacIIPriv->mouseMoved = TRUE;
+    miPointerDeltaCursor (MouseAccelerate(pMouse, xpos),
+			  MouseAccelerate(pMouse, ypos),
+			  time);
 
     if (KEY_UP(*(me + 1)) != last_button) {
         xE.u.u.detail = (MS_LEFT - MS_LEFT) + 1;
         xE.u.u.type = (KEY_UP(*(me + 1)) ? ButtonRelease : ButtonPress);
         last_button = KEY_UP(*(me + 1));
-        /*
-         * If the mouse has moved, we must update any interested client
-         * as well as DIX before sending a button event along.
-         */
-        if (pmacIIPriv->mouseMoved) {
-	    (* pPriv->DoneEvents) (pMouse, FALSE);
-        }
-        (* pMouse->processInputProc) (&xE, pMouse, 1);
+	mieqEnqueue (&xE);
     }
    }
    
@@ -461,14 +308,6 @@ macIICursorOffScreen (pScreen, x, y)
     return FALSE;
 }
 
-/*ARGSUSED*/
-static long
-macIIEventTime (pScreen)
-    ScreenPtr   pScreen;
-{
-    return lastEventTime;
-}
-
 static void
 macIICrossScreen (pScreen, entering)
     ScreenPtr   pScreen;
@@ -476,3 +315,14 @@ macIICrossScreen (pScreen, entering)
 {
 }
 
+static void
+macIIWarpCursor (pScreen, x, y)
+    ScreenPtr	pScreen;
+    int		x, y;
+{
+    int	    oldmask;
+
+    oldmask = sigblock (sigmask(SIGIO));
+    miPointerWarpCursor (pScreen, x, y);
+    sigsetmask (oldmask);
+}

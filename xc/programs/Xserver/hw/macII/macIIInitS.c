@@ -93,7 +93,6 @@ static int get_all_video_data();
 
 DevicePtr pPointerDevice, pKeyboardDevice;
 
-int macIISigIO = 0;	 /* For use with SetInputCheck */
 static int autoRepeatHandlersInstalled; /* FALSE each time InitOutput called */
 
 /*-
@@ -102,7 +101,7 @@ static int autoRepeatHandlersInstalled; /* FALSE each time InitOutput called */
  *	Signal handler for SIGIO - input is available.
  *
  * Results:
- *	isItTimeToYield is set - ProcessInputEvents() will be called soon.
+ *	SigIO is set - ProcessInputEvents() will be called soon.
  *
  * Side Effects:
  *	None
@@ -116,7 +115,7 @@ SigIOHandler(sig, code, scp)
     int		sig;
     struct sigcontext *scp;
 {
-    macIISigIO++;
+    macIIEnqueueEvents ();
 }
 
 macIIFbDataRec macIIFbData[] = {
@@ -338,9 +337,9 @@ InitInput(argc, argv)
     miRegisterPointerDevice(screenInfo.screens[0], p);
 
     setcompat (getcompat() | COMPAT_BSDSIGNALS);
+    if (!mieqInit (k, p))
+	return FALSE;
     signal(SIGIO, SigIOHandler);
-
-    SetInputCheck (&zero, &macIISigIO);
 }
 
 /*-
@@ -783,7 +782,7 @@ macIIScreenInit (pScreen)
     extern void   macIIBlockHandler();
     extern void   macIIWakeupHandler();
     static ScreenPtr autoRepeatScreen;
-    extern miPointerCursorFuncRec   macIIPointerCursorFuncs;
+    extern miPointerScreenFuncRec   macIIPointerCursorFuncs;
 
     /*
      *	Block/Unblock handlers

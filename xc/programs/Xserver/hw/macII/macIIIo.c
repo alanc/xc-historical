@@ -69,7 +69,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include    "opaque.h"
 
 int	    	lastEventTime = 0;
-extern int	macIISigIO;
+struct timeval	lastEventTimeTv;
 extern int      screenIsSaved;
 extern void	SaveScreens();
 
@@ -98,6 +98,7 @@ TimeSinceLastInputEvent()
     gettimeofday (&now, (struct timezone *)0);
 
     if (lastEventTime == 0) {
+	lastEventTimeTv = now;
 	lastEventTime = TVTOMILLI(now);
     }
     return TVTOMILLI(now) - lastEventTime;
@@ -121,11 +122,23 @@ TimeSinceLastInputEvent()
 void
 ProcessInputEvents ()
 {
+    mieqProcessInputEvents ();
+    miPointerUpdate ();
+}
+
+/*
+ *-----------------------------------------------------------------------
+ * macIIEnqueueEvents
+ *	When a SIGIO is received, read device hard events and
+ *	enqueue them using the mi event queue
+ */
+
+macIIEnqueueEvents ()
+{
     DevicePtr		    pPointer;
     DevicePtr		    pKeyboard;
     register PtrPrivPtr	    ptrPriv;
     register KbPrivPtr      kbdPriv;
-    struct timeval          now;
     enum {
         NoneYet, Ptr, Kbd
     }                       lastType = NoneYet; /* Type of last event */
@@ -133,7 +146,6 @@ ProcessInputEvents ()
     unsigned char macIIevents[INPBUFSIZE];
     register unsigned char *me, *meL;
     int         n;
-    int		firstTime = 1;
 
     static int optionKeyUp = 1;
 
@@ -146,10 +158,10 @@ ProcessInputEvents ()
 	(IS_LEFT_ARROW_KEY(x) || IS_RIGHT_ARROW_KEY(x) || 	\
 	 IS_DOWN_ARROW_KEY(x) || IS_UP_ARROW_KEY(x))
 
-    macIISigIO = 0;
-
     pPointer = LookupPointerDevice();
     pKeyboard = LookupKeyboardDevice();
+    if (!pPointer->on || !pKeyboard->on)
+	return;
     ptrPriv = (PtrPrivPtr)pPointer->devicePrivate;
     kbdPriv = (KbPrivPtr)pKeyboard->devicePrivate;
 
@@ -157,29 +169,15 @@ ProcessInputEvents ()
 		      INPBUFSIZE*sizeof macIIevents[0])) >= 0 ||
 	    errno == ENODATA || errno == EWOULDBLOCK)
     {
-	if (n <= 0 && firstTime &&
-	    autoRepeatKeyDown && autoRepeatReady && 
-	    kbdPriv->ctrl->autoRepeat == AutoRepeatModeOn)
-	{
-	    /* fake a macII kbd event */
-	    n = sizeof macIIevents[0];
-	    macIIevents[0] = AUTOREPEAT_EVENTID;
-	}
-
 	if (n <= 0)
 	    break;
-
-	firstTime = 0;
 
 	meL = macIIevents + (n/(sizeof macIIevents[0]));
 
 	for (me = macIIevents; me < meL; me++)
 	{
-            if (screenIsSaved == SCREEN_SAVER_ON)
-            	SaveScreens(SCREEN_SAVER_OFF, ScreenSaverReset);
-    
-	    	gettimeofday (&now, (struct timezone *)0);
-	    	lastEventTime = TVTOMILLI(now);
+	    	gettimeofday (&lastEventTimeTv, (struct timezone *)0);
+	    	lastEventTime = TVTOMILLI(lastEventTimeTv);
     
             /*
              * Figure out the X device this event should be reported on.
@@ -210,14 +208,14 @@ ProcessInputEvents ()
 	    }
     
 	    if (KEY_DETAIL(*me) == MOUSE_ESCAPE) { 
-    	    	(* ptrPriv->ProcessEvent) (pPointer,me);
+    	    	(* ptrPriv->EnqueueEvent) (pPointer,me);
 	    	me += 2;
 	    	lastType = Ptr;
 	    }
     
 	    else if (IS_MOUSE_KEY(*me))
             {
-    	    	(* ptrPriv->ProcessEvent) (pPointer,me);
+    	    	(* ptrPriv->EnqueueEvent) (pPointer,me);
 	    	lastType = Ptr;
 	    }
     
@@ -226,15 +224,11 @@ ProcessInputEvents ()
 	    }
     
 	    else {
-	    	if (lastType == Ptr)
-    		    (* ptrPriv->DoneEvents) (pPointer, FALSE);
-    	    	(* kbdPriv->ProcessEvent) (pKeyboard,me);
+    	    	(* kbdPriv->EnqueueEvent) (pKeyboard,me);
 	    	lastType = Kbd;
             }
 	}
     }
-
-    (* ptrPriv->DoneEvents) (pPointer, FALSE);
 }
 
 
@@ -254,8 +248,6 @@ ProcessInputEvents ()
 void
 SetTimeSinceLastInputEvent()
 {
-    struct timeval now;
-
-    gettimeofday (&now, (struct timezone *)0);
-    lastEventTime = TVTOMILLI(now);
+    gettimeofday (&lastEventTimeTv, (struct timezone *)0);
+    lastEventTime = TVTOMILLI(lastEventTimeTv);
 }

@@ -34,7 +34,7 @@ IMPLIED.
  * software for any purpose.  It is provided "as is" without
  * express or implied warranty.
  *
- * $XConsortium: macII.h,v 1.15 89/12/05 15:24:22 xguest Exp $
+ * $XConsortium: macII.h,v 1.16 90/08/22 11:26:08 rws Exp $
  */
 #ifndef _MACII_H_
 #define _MACII_H_
@@ -200,10 +200,7 @@ struct AuxDCE {
 
 typedef struct kbPrivate {
     int	    	  type;           	/* Type of keyboard */
-    void    	  (*ProcessEvent)();	/* Function to process an event */
-    void    	  (*DoneEvents)();  	/* Function called when all events */
-					/* have been handled. */
-    pointer 	  devPrivate;	    	/* Private to keyboard device */
+    void    	  (*EnqueueEvent)();	/* Function to process an event */
     int		  offset;		/* to be added to device keycodes */
     KeybdCtrl     *ctrl;                /* Current control structure (for
                                          * keyclick, bell duration, auto-
@@ -221,14 +218,8 @@ typedef struct kbPrivate {
  *	x and y are absolute coordinates on that screen (they may be negative)
  */
 typedef struct ptrPrivate {
-    void    	  (*ProcessEvent)();	/* Function to process an event */
-    void    	  (*DoneEvents)();  	/* When all the events have been */
-					/* handled, this function will be */
-					/* called. */
-    short   	  x,	    	    	/* Current X coordinate of pointer */
-		  y;	    	    	/* Current Y coordinate */
+    void    	  (*EnqueueEvent)();	/* Function to process an event */
     ScreenPtr	  pScreen;  	    	/* Screen pointer is on */
-    pointer    	  devPrivate;	    	/* Field private to device */
 } PtrPrivRec, *PtrPrivPtr;
 
 /*
@@ -293,12 +284,6 @@ extern void 	  SetTimeSinceLastInputEvent();
  * We signal autorepeat events with the unique id AUTOREPEAT_EVENTID.
  */
 #define AUTOREPEAT_EVENTID      (0x7d)          /* AutoRepeat id */
-
-extern int	autoRepeatKeyDown;		/* TRUE if key down */
-extern int	autoRepeatReady;		/* TRUE if time out */
-extern int	autoRepeatDebug;		/* TRUE if debugging */
-extern long 	autoRepeatLastKeyDownTv;
-extern long 	autoRepeatDeltaTv;
 
 /*-
  * TVTOMILLI(tv)
