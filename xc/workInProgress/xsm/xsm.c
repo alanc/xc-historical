@@ -1,4 +1,4 @@
-/* $XConsortium: xsm.c,v 1.52 94/07/15 14:14:59 mor Exp $ */
+/* $XConsortium: xsm.c,v 1.53 94/07/15 15:03:03 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -256,6 +256,7 @@ Bool use_default;
 
 {
     int database_read = 0;
+    Dimension width;
     char title[256];
 
 
@@ -289,6 +290,28 @@ Bool use_default;
 	XInternAtom (XtDisplay (topLevel), "SM_CLIENT_ID", False),
 	XA_STRING, 8, PropModeReplace,
 	(unsigned char *) sm_id, strlen (sm_id));
+
+
+    /*
+     * Adjust some label widths
+     */
+
+    XtVaGetValues (clientInfoButton,
+	XtNwidth, &width,
+	NULL);
+
+    XtVaSetValues (checkPointButton,
+	XtNwidth, width,
+	NULL);
+
+    XtVaGetValues (nameSessionButton,
+	XtNwidth, &width,
+	NULL);
+
+    XtVaSetValues (shutdownButton,
+	XtNwidth, width,
+	NULL);
+    
 
     XtMapWidget (topLevel);
 
@@ -370,6 +393,14 @@ PendingClient	*pendclient;
 	    val->length = pval->length;
 	    val++;
 	}
+
+	if (strcmp (prop->name, SmDiscardCommand) == 0)
+	{
+	    if (client->discardCommand)
+		XtFree (client->discardCommand);
+	    client->discardCommand = (char *) XtNewString(prop->vals[0].value);
+	}
+
 	ListFreeAll(pprop->values);
 	free(pprop);
 	idx++;
@@ -409,6 +440,30 @@ SmProp		*prop;
     }
 
     client->props[idx] = prop;
+
+    if (strcmp (prop->name, SmDiscardCommand) == 0)
+    {
+	if (saveInProgress)
+	{
+	    /*
+	     * We are in the middle of a save yourself.  We save the
+	     * discard command we get now, and make it the current discard
+	     * command when the save is over.
+	     */
+
+	    if (client->saveDiscardCommand)
+		XtFree (client->saveDiscardCommand);
+	    client->saveDiscardCommand =
+		(char *) XtNewString (prop->vals[0].value);
+	}
+	else
+	{
+	    if (client->discardCommand)
+		XtFree (client->discardCommand);
+	    client->discardCommand =
+		(char *) XtNewString (prop->vals[0].value);
+	}
+    }
 }
 
 
@@ -429,6 +484,22 @@ char		*propname;
 		client->props[j] = client->props[client->numProps - 1];
 
 	    client->numProps--;
+
+	    if (strcmp (propname, SmDiscardCommand) == 0)
+	    {
+		if (client->discardCommand)
+		{
+		    XtFree (client->discardCommand);
+		    client->discardCommand = NULL;
+		}
+
+		if (client->saveDiscardCommand)
+		{
+		    XtFree (client->saveDiscardCommand);
+		    client->saveDiscardCommand = NULL;
+		}
+	    }
+
 	    break;
 	}
 }
@@ -832,6 +903,8 @@ char 		**failureReasonRet;
     newClient->clientHostname = NULL;
     newClient->interactPending = False;
     newClient->numProps = 0;
+    newClient->discardCommand = NULL;
+    newClient->saveDiscardCommand = NULL;
     newClient->next = ClientList;
 
     ClientList = newClient;
