@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Tree.c,v 1.20 90/02/07 15:26:22 jim Exp $
+ * $XConsortium: Tree.c,v 1.21 90/02/07 16:00:06 jim Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  * Copyright 1989 Prentice Hall
@@ -592,25 +592,6 @@ static void compute_bounding_box_subtree (tree, w, depth)
     }
 
 
-#ifdef padparallelsubtrees
-    /*
-     * Add a little bit of padding to make parallel subtrees stand out a
-     * little bit.  Make sure to do similar adjustments in second pass.
-     * 
-     * Unfortunately, this algorithm leaves an uneven amount of room around
-     * the edges of the tree.  There will probably need to be an additional
-     * variable to keep track of the padding on the top-, right-, left-, and 
-     * bottom-most children.
-     */
-    if (tc->tree.n_children > 1) {
-	if (horiz) {
-	    newheight += tree->tree.vpad;
-	} else {
-	    newwidth += tree->tree.hpad;
-	}
-    }
-#endif
-
     tc->tree.bbsubwidth = newwidth;
     tc->tree.bbsubheight = newheight;
 
@@ -645,16 +626,6 @@ static void arrange_subtree (tree, w, depth, x, y)
     Dimension tmp;
     Dimension bw2 = w->core.border_width * 2;
     Bool relayout = True;
-
-#ifdef padparallelsubtrees
-    if (tc->tree.n_children > 1) {
-	if (horiz) {
-	    y += tree->tree.vpad / 2;
-	} else {
-	    x += tree->tree.hpad / 2;
-	}
-    }
-#endif
 
 
     /*
