@@ -1,4 +1,4 @@
-/* $XConsortium: EventUtil.c,v 1.7 90/12/12 14:51:25 rws Exp $ */
+/* $XConsortium: EventUtil.c,v 1.8 91/01/10 21:14:42 converse Exp $ */
 
 /********************************************************
 
@@ -44,7 +44,7 @@ void _XtFreePerWidgetInput(w, pwi)
 }
 
 /*
- * This routine gets the passive list assiciated with the widget
+ * This routine gets the passive list associated with the widget
  * from the context manager.
  */
 #if NeedFunctionPrototypes
@@ -67,7 +67,7 @@ XtPerWidgetInput _XtGetPerWidgetInput(widget, create)
     if (XFindContext(dpy, 
 		     (Window)widget, 
 		     perWidgetInputContext, 
-		     (caddr_t *)&pwi) &&
+		     (XPointer *)&pwi) &&
 	create) 
       {
 	  pwi = (XtPerWidgetInput) 
@@ -90,7 +90,7 @@ XtPerWidgetInput _XtGetPerWidgetInput(widget, create)
 	  (void) XSaveContext(dpy, 
 			      (Window)widget, 
 			      perWidgetInputContext, 
-			      (caddr_t) pwi);
+			      (char *) pwi);
       }
     return pwi;
 }
