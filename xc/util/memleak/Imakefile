@@ -1,0 +1,65 @@
+XCOMM $XConsortium: Imakefile,v 1.18 91/07/16 22:53:38 gildea Exp $
+#define DoNormalLib YES
+#define DoSharedLib NO
+#define DoDebugLib NO
+#define DoProfileLib NO
+#include <Library.tmpl>
+
+   INSTALLFLAGS = $(INSTINCFLAGS)
+
+#ifdef MipsArchitecture
+#define TopOfStack 0x7fffbbb0
+#define BottomOfData 0x10000000
+#define HasGetReturnAddress 	YES
+GRA_OBJS = getretmips.o mipsstack.o
+GRA_SRCS = getretmips.c
+#endif
+
+#ifndef HasGetReturnAddress
+#define HasGetReturnAddress NO
+#endif
+
+#if HasGetReturnAddress
+ GRA_DEFS = -DHAS_GET_RETURN_ADDRESS
+#endif
+
+DEFINES = 	-DTOP_OF_STACK=TopOfStack -DBOTTOM_OF_DATA=BottomOfData\
+		$(GRA_DEFS)
+
+CDEBUGFLAGS = DebuggableCDebugFlags
+
+HEADERS = memleak.h
+
+SRCS =	fmalloc.c $(GRA_SRCS)
+
+OBJS =	fmalloc.o $(GRA_OBJS)
+
+LibraryObjectRule()
+
+#if DoNormalLib
+NormalLibraryTarget(memleak,$(OBJS))
+InstallLibrary(memleak,$(USRLIBDIR))
+#endif
+#if DoProfileLib
+ProfiledLibraryTarget(memleak,$(OBJS))
+InstallLibrary(memleak_p,$(USRLIBDIR))
+#endif
+#if DoDebugLib
+DebuggedLibraryTarget(memleak,$(OBJS))
+InstallLibrary(memleak_d,$(USRLIBDIR))
+#endif
+
+LintLibraryTarget(memleak,$(SRCS))
+InstallLintLibrary(memleak,$(LINTLIBDIR))
+
+BuildIncludes($(HEADERS),.,.)
+InstallMultiple($(HEADERS),$(INCDIR))
+
+#ifdef HasSaberC
+saber_src:
+	XCOMM load $(CFLAGS) $(SRCS)
+#endif
+
+DependTarget()
+
+NormalLintTarget($(SRCS))
