@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XImUtil.c,v 11.22 88/02/18 17:58:46 rws Exp $ */
+/* $Header: XImUtil.c,v 11.23 88/02/20 20:28:20 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
@@ -71,7 +71,7 @@ static _normalizeimagebits (bpt, nb, byteorder, unitsize, bitorder)
     int unitsize;	/* size of the bitmap_unit or Zpixel */
     int bitorder;	/* swap bits if bitorder == MSBFirst */
 {
-	if (byteorder==MSBFirst) {
+	if ((byteorder==MSBFirst) && (byteorder!=bitorder)) {
 	    register char c;
 	    register unsigned char *bp = bpt;
 	    register unsigned char *ep = bpt + nb;
