@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Clock.c,v 1.22 87/12/20 12:45:31 swick Locked $";
+static char rcsid[] = "$Header: Clock.c,v 1.23 88/01/22 09:53:57 swick Locked $";
 #endif lint
 
 /*
@@ -25,13 +25,11 @@ static char rcsid[] = "$Header: Clock.c,v 1.22 87/12/20 12:45:31 swick Locked $"
  * SOFTWARE.
  */
 
-#include <X11/Xos.h>
-#include "Xlib.h"
-#include "Xutil.h"
-#include "Intrinsic.h"
-#include "Clock.h"
+#include <X/Xos.h>
+#include <X/Xlib.h>
+#include <X/Atoms.h>
+#include "IntrinsicP.h"
 #include "ClockP.h"
-#include "Atoms.h"
 
 extern long time();
 static void clock_tic(), DrawHand(), DrawSecond(), SetSeg(), DrawClockFace();
@@ -60,26 +58,26 @@ static void clock_tic(), DrawHand(), DrawSecond(), SetSeg(), DrawClockFace();
 #define goffset(field) XtOffset(Widget,core.field)
 
 static XtResource resources[] = {
-    {XtNwidth, XtCWidth, XrmRInt, sizeof(int),
-	goffset(width), XrmRString, "164"},
-    {XtNheight, XtCHeight, XrmRInt, sizeof(int),
-	goffset(height), XrmRString, "164"},
-    {XtNupdate, XtCInterval, XrmRInt, sizeof(int), 
-        offset(update), XrmRString, "60" },
-    {XtNforeground, XtCForeground, XrmRPixel, sizeof(Pixel),
-        offset(fgpixel), XrmRString, "Black"},
-    {XtNhand, XtCForeground, XrmRPixel, sizeof(Pixel),
-        offset(Hdpixel), XrmRString, "Black"},
-    {XtNhigh, XtCForeground, XrmRPixel, sizeof(Pixel),
-        offset(Hipixel), XrmRString, "Black"},
-    {XtNanalog, XtCBoolean, XrmRBoolean, sizeof(Boolean),
-        offset(analog), XrmRString, "TRUE"},
-    {XtNchime, XtCBoolean, XrmRBoolean, sizeof(Boolean),
-	offset(chime), XrmRString, "FALSE" },
-    {XtNpadding, XtCMargin, XrmRInt, sizeof(int),
-        offset(padding), XrmRString, "8"},
-    {XtNfont, XtCFont, XrmRFontStruct, sizeof(XFontStruct *),
-        offset(font), XrmRString, "fixed"},
+    {XtNwidth, XtCWidth, XtRInt, sizeof(int),
+	goffset(width), XtRString, "164"},
+    {XtNheight, XtCHeight, XtRInt, sizeof(int),
+	goffset(height), XtRString, "164"},
+    {XtNupdate, XtCInterval, XtRInt, sizeof(int), 
+        offset(update), XtRString, "60" },
+    {XtNforeground, XtCForeground, XtRPixel, sizeof(Pixel),
+        offset(fgpixel), XtRString, "Black"},
+    {XtNhand, XtCForeground, XtRPixel, sizeof(Pixel),
+        offset(Hdpixel), XtRString, "Black"},
+    {XtNhigh, XtCForeground, XtRPixel, sizeof(Pixel),
+        offset(Hipixel), XtRString, "Black"},
+    {XtNanalog, XtCBoolean, XtRBoolean, sizeof(Boolean),
+        offset(analog), XtRString, "TRUE"},
+    {XtNchime, XtCBoolean, XtRBoolean, sizeof(Boolean),
+	offset(chime), XtRString, "FALSE" },
+    {XtNpadding, XtCMargin, XtRInt, sizeof(int),
+        offset(padding), XtRString, "8"},
+    {XtNfont, XtCFont, XtRFontStruct, sizeof(XFontStruct *),
+        offset(font), XtRString, "fixed"},
 };
 
 #undef offset
@@ -90,28 +88,35 @@ static Boolean SetValues();
 
 ClockClassRec clockClassRec = {
     { /* core fields */
-    /* superclass */ 	  &widgetClassRec,
-    /* class_name */      "Clock",
-    /* size */		   sizeof(ClockRec),
-    /* class_initialize */ NULL,
-    /* class_inited */     FALSE,
-    /* initialize */	   Initialize,
-    /* realize */	   Realize,
-    /* actions */	   NULL,
-    /* num_actions */      0,
-    /* resources */	   resources,
-    /* resource_count*/    XtNumber(resources),
-    /* xrm_class */        NULL,
-    /* compress_motion */  TRUE,
-    /* compress_exposure */TRUE,
-    /* visible_interest */ FALSE,
-    /* destroy */          Destroy,
-    /* resize */           Resize,
-    /* expose */	   Redisplay,
-    /* set_values */       SetValues,
-    /* accept_focus */     NULL,
-    /* callback_private */ NULL,
-    /* reserved_private */ NULL,
+    /* superclass		*/	&widgetClassRec,
+    /* class_name		*/	"Clock",
+    /* widget_size		*/	sizeof(ClockRec),
+    /* class_initialize		*/	NULL,
+    /* class_part_initialize	*/	NULL,
+    /* class_inited		*/	FALSE,
+    /* initialize		*/	Initialize,
+    /* initialize_hook		*/	NULL,
+    /* realize			*/	Realize,
+    /* actions			*/	NULL,
+    /* num_actions		*/	0,
+    /* resources		*/	resources,
+    /* resource_count		*/	XtNumber(resources),
+    /* xrm_class		*/	NULL,
+    /* compress_motion		*/	TRUE,
+    /* compress_exposure	*/	TRUE,
+    /* compress_enterleave	*/	TRUE,
+    /* visible_interest		*/	FALSE,
+    /* destroy			*/	Destroy,
+    /* resize			*/	Resize,
+    /* expose			*/	Redisplay,
+    /* set_values		*/	SetValues,
+    /* set_values_hook		*/	NULL,
+    /* set_values_almost	*/	XtInheritSetValuesAlmost,
+    /* get_values_hook		*/	NULL,
+    /* accept_focus		*/	NULL,
+    /* version			*/	XtVersion,
+    /* callback_private		*/	NULL,
+    /* tm_table			*/	NULL,
     }
 };
 
@@ -124,19 +129,9 @@ WidgetClass clockWidgetClass = (WidgetClass) &clockClassRec;
  ****************************************************************/
 
 
-static void EventHandler(gw, closure, event)
-    Widget gw;
-    caddr_t closure;
-    XEvent *event;
-{
-    if (event->type == ClientMessage && event->xclient.message_type == XtTimerExpired)
-        clock_tic((ClockWidget)gw);
-}
-
-static void Initialize (request, new, args, num_args)
+/* ARGSUSED */
+static void Initialize (request, new)
     Widget request, new;
-    ArgList args;
-    Cardinal *num_args;
 {
     ClockWidget w = (ClockWidget)new;
     XtGCMask		valuemask;
@@ -186,8 +181,6 @@ static void Initialize (request, new, args, num_args)
     myXGCV.foreground = w->clock.Hdpixel;
     w->clock.HandGC = XtGetGC((Widget)w, valuemask, &myXGCV);
 
-    XtAddEventHandler ((Widget)w, 0, TRUE, EventHandler, NULL);
-
     w->clock.show_second_hand = (w->clock.update <= SECOND_HAND_TIME);
 }
 
@@ -233,21 +226,24 @@ static void Resize (gw)
     }
 }
 
-static void Redisplay (gw, event)
+/* ARGSUSED */
+static void Redisplay (gw, event, region)
     Widget gw;
-    XEvent *event;
+    XEvent *event;		/* unused */
+    Region region;		/* unused */
 {
     ClockWidget w = (ClockWidget) gw;
     if (w->clock.analog)
         DrawClockFace(w);
-    clock_tic(w);
+    clock_tic((caddr_t)w, (XtIntervalId)NULL);
 }
 
-
-static void clock_tic(w)
-        ClockWidget w;
+/* ARGSUSED */
+static void clock_tic(client_data, id)
+        caddr_t client_data;
+        XtIntervalId *id;
 {
-    
+        ClockWidget w = (ClockWidget)client_data;    
 	struct tm *localtime();
 	struct tm tm; 
 	long	time_value;
@@ -256,7 +252,8 @@ static void clock_tic(w)
         register Display *dpy = XtDisplay(w);
         register Window win = XtWindow(w);
 
-	w->clock.interval_id = XtAddTimeOut(w, w->clock.update*1000);
+	w->clock.interval_id =
+	    XtAddTimeOut( w->clock.update*1000, clock_tic, (caddr_t)w );
 	(void) time(&time_value);
 	tm = *localtime(&time_value);
 	/*
@@ -636,9 +633,9 @@ double x;
 	return(x >= 0.0 ? (int)(x + .5) : (int)(x - .5));
 }
 
-static Boolean SetValues (gcurrent, grequest, gnew, last)
+/* ARGSUSED */
+static Boolean SetValues (gcurrent, grequest, gnew)
     Widget gcurrent, grequest, gnew;
-    Boolean last;
 {
       ClockWidget current = (ClockWidget) gcurrent;
       ClockWidget new = (ClockWidget) gnew;
@@ -651,18 +648,13 @@ static Boolean SetValues (gcurrent, grequest, gnew, last)
 
       if (new->clock.update != current->clock.update) {
 	    XtRemoveTimeOut (current->clock.interval_id);
-	    new->clock.interval_id = XtAddTimeOut(gcurrent, new->clock.update*1000);
+	    new->clock.interval_id =
+		XtAddTimeOut(new->clock.update*1000, clock_tic, (caddr_t)gnew);
 	    new->clock.show_second_hand = (new->clock.update <= SECOND_HAND_TIME);
       }
 
       if (new->clock.padding != current->clock.padding)
 	   redisplay = TRUE;
-
-      if (XtSetValuesGeometryRequest( gcurrent, gnew, (XtWidgetGeometry*)NULL )
-		== XtGeometryYes)
-           redisplay = TRUE;
-
-      if (redisplay)  Resize(gnew);
 
       if (new->clock.analog != current->clock.analog)
 	   redisplay = TRUE;
