@@ -1,4 +1,4 @@
-/* $XConsortium: init_bench.c,v 5.1 91/02/16 10:07:38 rws Exp $ */
+/* $XConsortium: init_bench.c,v 5.2 91/02/18 16:02:08 rws Exp $ */
 /***********************************************************
 Copyright(c) 1989,1990, 1991 by Sun Microsystems, Inc. and the X Consortium at M.I.T.
 
@@ -754,7 +754,8 @@ int depth;
     (void *)strcat(tmpln, ".geometry");
     if (XrmGetResource(dis_db, tmpln, (char *)NULL, &str_type, &val)) {
 	char Geometry[20];
-	int bits, x, y, width, height;
+	int bits, x, y;
+	unsigned int width, height;
 
 	(void *)strcpy(Geometry, val.addr);
 	bits = XParseGeometry(Geometry, &x, &y, &width, &height);
