@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: brf_phead.c,v 5.1 91/02/16 10:07:15 rws Exp $ */
 /***********************************************************
 Copyright(c) 1989,1990, 1991 by Sun Microsystems, Inc. and the X Consortium at M.I.T.
 
@@ -71,11 +71,7 @@ SOFTWARE.
 |
 \*--------------------------------------------------------------------*/
 #include <stdio.h>
-#ifdef SYSV
-#include <string.h>
-#else /* SYSV */
-#include <strings.h>
-#endif /* SYSV */
+#include <X11/Xos.h>
 /* #include <time.h> */
 #include "brf_prt.h"
 #include "biftypes.h"
