@@ -1,5 +1,5 @@
 /*
- * $XConsortium: toc.c,v 2.47 91/07/09 12:04:50 converse Exp $
+ * $XConsortium: toc.c,v 2.48 91/07/10 13:35:23 converse Exp $
  *
  *
  *			  COPYRIGHT 1987
@@ -1014,7 +1014,7 @@ Toc toc;
     Msg msg, firstmessage;
     FILEPTR fid;
 
-    argv = MakeArgv(toc->incfile ? 7 : 5);
+    argv = MakeArgv(toc->incfile ? 7 : 4);
     argv[0] = "inc";
     argv[1] = TocMakeFolderName(toc);
     argv[2] = "-width";
@@ -1024,7 +1024,7 @@ Toc toc;
 	argv[4] = "-file";
 	argv[5] = toc->incfile;
 	argv[6] = "-truncate";
-    } else argv[4] = "-truncate";
+    }
     if (app_resources.block_events_on_busy) ShowBusyCursor();
 
     file = DoCommandToFile(argv);
