@@ -1,4 +1,4 @@
-/* $XConsortium: xchgptr.c,v 1.8 90/05/18 11:33:52 rws Exp $ */
+/* $XConsortium: xchgptr.c,v 1.9 90/05/18 14:15:22 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -126,13 +126,15 @@ ProcXChangePointerDevice (client)
 	}
     else
 	{
-	if (ChangePointerDevice (inputInfo.pointer, dev) != Success)
+	if (ChangePointerDevice (
+	    inputInfo.pointer, dev, stuff->xaxis, stuff->yaxis) != Success)
 	    {
 	    SendErrorToClient(client, IReqCode, X_ChangePointerDevice, 0, 
 		BadDevice);
 	    return Success;
 	    }
-	inputInfo.pointer = dev;
+	RegisterOtherDevice (inputInfo.pointer);
+	RegisterPointerDevice (dev);
 	inputInfo.pointer->focus->win = NULL;
 
 	ev.type = ChangeDeviceNotify;

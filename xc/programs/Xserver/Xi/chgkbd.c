@@ -1,4 +1,4 @@
-/* $XConsortium: xchgkbd.c,v 1.8 90/05/18 11:33:45 rws Exp $ */
+/* $XConsortium: xchgkbd.c,v 1.9 90/05/18 14:14:31 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -131,7 +131,8 @@ ProcXChangeKeyboardDevice (client)
 	    return Success;
 	    }
 	dev->focus->win = inputInfo.keyboard->focus->win;
-	inputInfo.keyboard = dev;
+	RegisterOtherDevice (inputInfo.keyboard);
+	RegisterKeyboardDevice (dev);
 
 	ev.type = ChangeDeviceNotify;
 	ev.deviceid = stuff->deviceid;
