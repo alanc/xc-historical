@@ -1,7 +1,11 @@
 #define IHaveSubdirs
 #define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
 
-#ifdef NeedBerklib
+#ifndef NeedBerklib
+#define NeedBerklib NO
+#endif
+
+#if NeedBerklib
 OTHERDIRS = Berk
 #endif
 
