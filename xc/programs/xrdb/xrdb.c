@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: xrdb.c,v 11.16 88/02/02 07:31:19 jim Locked $";
+static char rcs_id[] = "$Header: xrdb.c,v 11.17 88/02/09 11:51:41 jim Exp $";
 #endif
 
 /*
@@ -240,7 +240,7 @@ void ReadFile(buffer, input)
 	register Buffer *buffer;
 	FILE *input;
 {
-    register char	buf[BUFSIZ];
+	     char	buf[BUFSIZ];
     register int	bytes;
 
     buffer->used = 0;
