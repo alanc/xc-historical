@@ -1,6 +1,6 @@
 #ifndef lint
 static char Xrcsid[] =
-    "$XConsortium: Resources.c,v 1.68 89/09/26 10:28:42 swick Exp $";
+    "$XConsortium: Resources.c,v 1.69 89/09/26 10:57:21 swick Exp $";
 /* $oHeader: Resources.c,v 1.6 88/09/01 13:39:14 asente Exp $ */
 #endif /*lint*/
 /*LINTLIBRARY*/
@@ -572,7 +572,9 @@ static XtCacheRef *GetResources(widget, base, names, classes,
 			    cache_ref_size++;
 		    } else have_value = True;
 		}
-		if (!have_value && rx->xrm_default_addr != NULL) {
+		if (!have_value
+		    && ((rx->xrm_default_type == QImmediate)
+			|| (rx->xrm_default_addr != NULL))) {
 		    /* Convert default value to proper type */
 		    xrm_default_type = rx->xrm_default_type;
 		    if (xrm_default_type == QCallProc) {
@@ -1044,7 +1046,7 @@ void XtSetValues(w, args, num_args)
     char	    oldwCache[500], reqwCache[500];
     char	    oldcCache[100], reqcCache[100];
     Cardinal	    widgetSize, constraintSize;
-    Boolean	    redisplay, reconfigured;
+    Boolean	    redisplay, reconfigured = False;
     XtGeometryResult result;
     XtWidgetGeometry geoReq, geoReply;
     WidgetClass     wc = XtClass(w);
@@ -1143,12 +1145,12 @@ void XtSetValues(w, args, num_args)
 		(*(wc->core_class.set_values_almost))
 		    (oldw, w, &geoReq, &geoReply);
 	    } while (geoReq.request_mode != 0);
-	}
-	/* call resize proc if we changed size */
-	if (reconfigured
-	    && (geoReq.request_mode & (CWWidth | CWHeight))
-	    && wc->core_class.resize != (XtWidgetProc) NULL) {
-	    (*(wc->core_class.resize))(w);
+	    /* call resize proc if we changed size */
+	    if (reconfigured
+		&& (geoReq.request_mode & (CWWidth | CWHeight))
+		&& wc->core_class.resize != (XtWidgetProc) NULL) {
+		(*(wc->core_class.resize))(w);
+	    }
 	}
 	/* Redisplay if needed */
         if (XtIsWidget(w)) {
@@ -1258,7 +1260,8 @@ void XtGetConstraintResourceList(widget_class, resources, num_resources)
 	if (   (class->core_class.class_inited &&
 		!(class->core_class.class_inited & ConstraintClassFlag))
 	    || (!class->core_class.class_inited &&
-		!ClassIsSubclassOf(widget_class, constraintWidgetClass))) {
+		!ClassIsSubclassOf(widget_class, constraintWidgetClass))
+	    || class->constraint_class.num_resources == 0) {
 
 	    *resources = NULL;
 	    *num_resources = 0;
