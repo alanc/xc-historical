@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: xdmcp.c,v 1.4 91/10/31 09:39:46 rws Exp $
+ * $XConsortium: xdmcp.c,v 1.5 92/03/20 13:34:40 gildea Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -1047,10 +1047,10 @@ NetworkAddressToHostname (connectionType, connectionAddress)
 	    else {
 		/* can't get name, so use emergency fallback */
 		sprintf(dotted, "%d.%d.%d.%d",
-			(char *)connectionAddress->data[0],
-			(char *)connectionAddress->data[1],
-			(char *)connectionAddress->data[2],
-			(char *)connectionAddress->data[3]);
+			connectionAddress->data[0],
+			connectionAddress->data[1],
+			connectionAddress->data[2],
+			connectionAddress->data[3]);
 		local_name = dotted;
 	    }
 	    if (!getString (name, strlen (local_name)))
