@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
-XCOMM rules:  $XConsortium: Imake.rules,v 1.167 93/09/11 17:41:03 rws Exp $
+XCOMM rules:  $XConsortium: Imake.rules,v 1.168 93/09/11 17:46:22 rws Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -696,7 +696,7 @@ InstallNamedTarget(install,program.script,$(INSTBINFLAGS),dest,program)
  */
 #ifndef InstallNamedProg
 #define	InstallNamedProg(srcname,dstname,dest)				@@\
-InstallNamedtarget(install,srcname,$(INSTBINFLAGS),dest,dstname)
+InstallNamedTarget(install,srcname,$(INSTBINFLAGS),dest,dstname)
 #endif /* InstallNamedProg */
 
 
