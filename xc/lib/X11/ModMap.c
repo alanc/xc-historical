@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XModMap.c,v 11.1 87/05/30 14:35:56 toddb Locked $ */
+/* $Header: XModMap.c,v 11.2 87/08/19 12:40:45 toddb Locked $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #define NEED_REPLIES
@@ -81,4 +81,59 @@ XFreeModifiermap(map)
 	    Xfree((char *) map->modifiermap);
 	Xfree((char *) map);
     }
+}
+
+XModifierKeymap *
+XInsertModifiermapEntry(map, keysym, modifier)
+    XModifierKeymap *map;
+    KeyCode keysym;
+    int modifier;
+{
+    XModifierKeymap *newmap;
+    int i,
+	row = modifier * map->max_keypermod,
+	newrow,
+	lastrow;
+
+    for (i=0; i<map->max_keypermod; i++) {
+        if (map->modifiermap[ row+i ] == keysym)
+	    return(map); /* already in the map */
+        if (map->modifiermap[ row+i ] == 0) {
+            map->modifiermap[ row+i ] = keysym;
+	    return(map); /* we added it without stretching the map */
+	}
+    }   
+
+    /* stretch the map */
+    newmap = XNewModifiermap(map->max_keypermod+1);
+    newrow = row = 0;
+    lastrow = map->max_keypermod * 8;
+    while (row < lastrow) {
+	for (i=0; i<map->max_keypermod; i++)
+	    newmap->modifiermap[ newrow+i ] = map->modifiermap[ row+i ];
+	newmap->modifiermap[ newrow+i ] = 0;
+	row += map->max_keypermod;
+	newrow += newmap->max_keypermod;
+    }
+    XFreeModifiermap(map);
+    newrow = newmap->max_keypermod * modifier + newmap->max_keypermod - 1;
+    newmap->modifiermap[ newrow ] = keysym;
+    return(newmap);
+}
+
+XModifierKeymap *
+XDeleteModifiermapEntry(map, keysym, modifier)
+    XModifierKeymap *map;
+    KeyCode keysym;
+    int modifier;
+{
+    int i,
+	row = modifier * map->max_keypermod;
+
+    for (i=0; i<map->max_keypermod; i++) {
+        if (map->modifiermap[ row+i ] == keysym)
+            map->modifiermap[ row+i ] = 0;
+    }
+    /* should we shrink the map?? */
+    return (map);
 }
