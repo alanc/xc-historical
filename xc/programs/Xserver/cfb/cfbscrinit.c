@@ -134,8 +134,8 @@ cfbScreenInit(index, pScreen, pbits, xsize, ysize, dpi)
     pScreen->ValidateTree = miValidateTree;
 
 #ifdef	STATIC_COLOR
-    pScreen->InstallColormap = NoopDDA; /* XXX */
-    pScreen->UninstallColormap = NoopDDA; /* XXX */
+    pScreen->InstallColormap = cfbInstallColormap;
+    pScreen->UninstallColormap = cfbUninstallColormap;
     pScreen->ListInstalledColormaps = cfbListInstalledColormaps;
     pScreen->StoreColors = NoopDDA;
     pScreen->ResolveColor = cfbResolveStaticColor;
