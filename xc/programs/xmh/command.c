@@ -1,4 +1,4 @@
-/* $XConsortium: command.c,v 2.34 91/01/06 21:08:48 rws Exp $ */
+/* $XConsortium: command.c,v 2.35 91/02/07 15:23:31 rws Exp $ */
 
 /*
  *			  COPYRIGHT 1987, 1989
@@ -72,7 +72,7 @@ typedef struct _CommandStatus {
 
 typedef char* Pointer;
 static void FreeStatus();
-static CheckReadFromPipe();
+static void CheckReadFromPipe();
 
 static void SystemError(text)
     char* text;
@@ -374,7 +374,7 @@ DEBUG("read.\n")}
 }
 
 
-static /*void*/
+static void
 CheckReadFromPipe( fd, bufP, lenP, waitEOF )
     int fd;
     char **bufP;
@@ -383,16 +383,16 @@ CheckReadFromPipe( fd, bufP, lenP, waitEOF )
 {
     long nread;
 #ifdef FIONREAD
-    if (ioctl( fd, FIONREAD, &nread ) /*failed*/) {
-	SystemError( "couldn't inquire bytes in pipe" );
+    if (!ioctl( fd, FIONREAD, &nread )) {
+	if (nread) {
+	    int old_end = *lenP;
+	    *bufP = XtRealloc( *bufP, (Cardinal) ((*lenP += nread) + 1) );
+	    read( fd, *bufP+old_end, nread );
+	    (*bufP)[old_end+nread] = '\0';
+	}
+	return;
     }
-    else if (nread) {
-	int old_end = *lenP;
-	*bufP = XtRealloc( *bufP, (Cardinal) ((*lenP += nread) + 1) );
-	read( fd, *bufP+old_end, nread );
-	(*bufP)[old_end+nread] = '\0';
-    }
-#else
+#endif
     do {
 	char buf[BUFSIZ];
 	int old_end = *lenP;
@@ -403,7 +403,6 @@ CheckReadFromPipe( fd, bufP, lenP, waitEOF )
 	bcopy( buf, *bufP+old_end, (int) nread );
 	(*bufP)[old_end+nread] = '\0';
     } while (waitEOF);
-#endif
 }
 
 
