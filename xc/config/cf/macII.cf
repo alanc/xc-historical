@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: macII.cf,v 1.30 91/04/14 12:28:42 rws Exp $
+XCOMM platform:  $XConsortium: macII.cf,v 1.31 91/04/15 09:48:30 rws Exp $
 
 #define OSName            A/UX 2.0.1
 #define OSMajorVersion    2
@@ -23,8 +23,8 @@ XCOMM operating system:  OSName
 #define BuildServer	  YES
 
 #if !HasGcc
-/* -A 3 is good enough if you do not compile PEX client side */
-#define DefaultCCOptions -A 4
+#define DefaultCCOptions -A 3
+#define PexCCOptions -A 4
 #endif
 
 /*
