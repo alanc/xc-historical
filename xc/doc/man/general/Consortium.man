@@ -1,4 +1,4 @@
-.\" $XConsortium: Consortium.man,v 1.25 92/06/29 11:11:28 rws Exp $
+.\" $XConsortium: Consortium.man,v 1.26 92/07/07 17:06:06 rws Exp $
 .TH XCONSORTIUM 1 "Release 5"  "X Version 11"
 .SH NAME
 MIT X Consortium \- MIT X Consortium information
@@ -155,9 +155,9 @@ KAIST - Korean Advanced Institute of Science and Technology
 Labtam Australia
 Liant Software Corporation
 Locus Computing Corporation
-Metro Link, Inc.
 University of Lowell
 Megatek Corporation
+Metro Link, Inc.
 Metheus Corporation
 MicroUnity Systems Engineering
 MITRE Corporation
