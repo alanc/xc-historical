@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: input.c,v 1.12 91/02/06 17:25:22 gildea Exp $
+ *	$XConsortium: input.c,v 1.13 91/03/26 19:09:10 gildea Exp $
  */
 
 /*
@@ -179,14 +179,13 @@ Input (keyboard, screen, event, eightbit)
 	return;
 }
 
-StringInput (screen, string)
-register TScreen	*screen;
-register char *string;
+StringInput (screen, string, nbytes)
+    register TScreen	*screen;
+    register char *string;
+    int nbytes;
 {
 	int	pty	= screen->respond;
-	int	nbytes;
 
-	nbytes = strlen(string);
 	if(nbytes && screen->TekGIN) {
 		TekEnqMouse(*string++);
 		TekGINoff();

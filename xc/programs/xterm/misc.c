@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: misc.c,v 1.73 91/03/04 14:50:41 gildea Exp $
+ *	$XConsortium: misc.c,v 1.74 91/03/28 16:28:53 gildea Exp $
  */
 
 /*
@@ -171,10 +171,10 @@ void HandleStringEvent(w, event, params, nparams)
 	    else break;
 	}
 	if (c == '\0')
-	    StringInput (screen, hexval);
+	    StringInput (screen, hexval, 1);
     }
     else {
-	StringInput (screen, *params);
+	StringInput (screen, *params, strlen(*params));
     }
 }
 
