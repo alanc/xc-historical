@@ -4,7 +4,7 @@
  * machine independent software sprite routines
  */
 
-/* $XConsortium: misprite.c,v 5.22 89/10/03 19:45:05 keith Exp $ */
+/* $XConsortium: misprite.c,v 5.23 89/10/08 15:23:21 rws Exp $ */
 
 /*
 Copyright 1989 by the Massachusetts Institute of Technology
@@ -1757,21 +1757,9 @@ miSpritePushPixels(pGC, pBitMap, pDrawable, w, h, x, y)
  */
 
 static void
-miSpriteLineHelper(pDrawable, pGC, cap, npts, pts, xOrg, yOrg)
-    DrawablePtr	pDrawable;
-    GCPtr	pGC;
-    Bool	cap;
-    int		npts;
-    pointer	pts;
-    int		xOrg, yOrg;
+miSpriteLineHelper()
 {
-    GC_SETUP_AND_CHECK(pDrawable, pGC);
-
-    GC_OP_PROLOGUE (pGC);
-
-    (*pGC->ops->LineHelper) (pDrawable, pGC, cap, npts, pts, xOrg, yOrg);
-
-    GC_OP_EPILOGUE (pGC);
+    FatalError("miSpriteLineHelper called\n");
 }
 
 /*
