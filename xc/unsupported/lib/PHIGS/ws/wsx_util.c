@@ -24,6 +24,8 @@ SOFTWARE.
 
 /* PEX/PHIGS workstation utility functions. */
 
+#define NEED_EVENTS
+
 #include <X11/Xlibint.h>
 #include "phg.h"
 #include "cp.h"
