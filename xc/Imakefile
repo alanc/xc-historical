@@ -1,8 +1,10 @@
 #define IHaveSubdirs
 #define PassCDebugFlags
 
+      WORLDOPTS = -k
+
 #if MakeContributed
-CONTRIBDIRS = $(CONTRIBSRC)
+    CONTRIBDIRS = $(CONTRIBSRC)
 #endif
 
 #
@@ -48,13 +50,12 @@ install::
 	-mkdir $(UWMDIR)
 	-mkdir $(MANDIR)
 
-World:: $(IMAKE)
-
 # don't name your log file make.log when you run this ...
 World::
+	cd $(IMAKESRC); $(MAKE) clean; $(MAKE)
 	-$(MV) Makefile Makefile.bak
 	$(MAKE) -f Makefile.bak Makefile
 	$(MAKE) Makefiles
 	$(MAKE) clean
 	$(MAKE) depend
-	$(MAKE) -k
+	$(MAKE) $(WORLDOPTS)
