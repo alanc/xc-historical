@@ -1,4 +1,4 @@
-/* $XConsortium: mfbpntwin.c,v 5.6 89/11/24 18:03:47 rws Exp $ */
+/* $XConsortium: mfbpntwin.c,v 5.7 90/05/15 18:38:46 keith Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -68,7 +68,7 @@ mfbPaintWindow(pWin, pRegion, what)
 	    }
 	    break;
 	case BackgroundPixel:
-	    if (pWin->background.pixel)
+	    if (pWin->background.pixel & 1)
 		mfbSolidWhiteArea(pWin, REGION_NUM_RECTS(pRegion),
 				  REGION_RECTS(pRegion), GXset, NullPixmap);
 	    else
@@ -80,7 +80,7 @@ mfbPaintWindow(pWin, pRegion, what)
     case PW_BORDER:
 	if (pWin->borderIsPixel)
 	{
-	    if (pWin->border.pixel)
+	    if (pWin->border.pixel & 1)
 		mfbSolidWhiteArea(pWin, REGION_NUM_RECTS(pRegion),
 				  REGION_RECTS(pRegion), GXset, NullPixmap);
 	    else
