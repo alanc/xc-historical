@@ -1,4 +1,4 @@
-/* $XConsortium: Selection.c,v 1.57 90/12/03 16:30:35 converse Exp $ */
+/* $XConsortium: Selection.c,v 1.58 90/12/26 16:39:18 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -61,6 +61,12 @@ unsigned int XtAppGetSelectionTimeout(app)
 
 
 /* General utilities */
+
+static void HandleSelectionReplies();
+static void ReqTimedOut();
+static void HandlePropertyGone();
+static void HandleGetIncrement();
+static HandleIncremental();
 
 static XContext selectPropertyContext = 0;
 
@@ -160,7 +166,6 @@ Widget widget;
 Time time;
 Boolean incremental;
 {
-    	static void HandleSelectionReplies();
     	CallBackInfo info = XtNew(CallBackInfoRec);
 
 	info->ctx = ctx;
@@ -181,8 +186,6 @@ CallBackInfo info;
 Atom selection;
 Atom target;
 {
-    static void HandleSelectionReplies();
-    static void ReqTimedOut();
 #ifndef DEBUG_WO_TIMERS
     XtAppContext app = XtWidgetToApplicationContext(info->widget);
 	info->timeout = XtAppAddTimeOut(app,
@@ -340,7 +343,6 @@ XtIntervalId   *id;
 {
     Request req = (Request)closure;
     Select ctx = req->ctx;
-    static void HandlePropertyGone();
 
     if (ctx->incremental && (ctx->owner_cancel != NULL)) {
 	(*ctx->owner_cancel)(ctx->widget, &ctx->selection, 
@@ -841,7 +843,6 @@ Boolean *cont;
     char *value;
     int format;
     Atom target;
-    static void HandleGetIncrement();
 
     if (ev->type == SelectionNotify) {
 	XSelectionEvent *event = (XSelectionEvent *) ev;
@@ -900,7 +901,7 @@ XtIntervalId   *id;
     Atom type;
     IndirectPair *pairs;
     XtPointer *c;
-    static void HandleSelectionReplies();
+
     if (*info->target == info->ctx->prop_list->indirect_atom) {
         (void) XGetWindowProperty(XtDisplay(info->widget), 
 			   XtWindow(info->widget), info->property, 0L,
@@ -1060,7 +1061,6 @@ Atom selection;
     int format;
     Atom type;
     unsigned char *value;
-    static HandleIncremental();
 
     (void) XGetWindowProperty(dpy, XtWindow(widget), property, 0L,
 			      10000000, False, AnyPropertyType,
