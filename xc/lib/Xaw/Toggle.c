@@ -1,4 +1,4 @@
-/* $XConsortium: Toggle.c,v 1.22 91/05/04 19:26:42 converse Exp $ */
+/* $XConsortium: Toggle.c,v 1.23 91/06/20 16:15:19 converse Exp $ */
 
 /*
  * Copyright 1989 Massachusetts Institute of Technology
@@ -37,8 +37,8 @@
 
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
-
 #include <X11/Xaw/XawInit.h>
+#include <X11/Xmu/Converters.h>
 #include <X11/Xmu/Misc.h>
 #include <X11/Xaw/ToggleP.h>
 
@@ -160,9 +160,15 @@ ClassInit()
   Cardinal num_actions;
   Cardinal i;
   ToggleWidgetClass class = (ToggleWidgetClass) toggleWidgetClass;
+  static XtConvertArgRec parentCvtArgs[] = {
+      {XtBaseOffset, (XtPointer)XtOffsetOf(WidgetRec, core.parent),
+	   sizeof(Widget)}
+  };
 
   XawInitializeWidgetSet();
-
+  XtSetTypeConverter(XtRString, XtRWidget, XmuNewCvtStringToWidget,
+		     parentCvtArgs, XtNumber(parentCvtArgs), XtCacheNone,
+		     NULL);
 /* 
  * Find the set and unset actions in the command widget's action table. 
  */
