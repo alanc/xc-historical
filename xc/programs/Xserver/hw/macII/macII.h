@@ -34,7 +34,7 @@ IMPLIED.
  * software for any purpose.  It is provided "as is" without
  * express or implied warranty.
  *
- *	"$Header: macII.h,v 1.8 88/06/20 21:46:20 x Locked $ SPRITE (Berkeley)"
+ *	"$Header: macII.h,v 1.12 88/08/14 01:33:05 x Exp $ SPRITE (Berkeley)"
  */
 #ifndef _MACII_H_
 #define _MACII_H_
@@ -100,9 +100,23 @@ IMPLIED.
 #define MS_MIDDLE 	2
 #define MS_RIGHT 	3
 
-#define MOUSE_ESCAPE 	0x7e	/* from <sys/video.h> */
-#define PSEUDO_MIDDLE 	0x3a 	/* Option Key */
-#define PSEUDO_RIGHT  	0x4c 	/* Enter Key */
+#define MOUSE_ESCAPE 	0x7e			/* from <sys/video.h> */
+#define PSEUDO_MIDDLE_1 0x3b 			/* Left Arrow Key */
+#define PSEUDO_RIGHT_1 	0x3c 			/* Right Arrow Key */
+#define PSEUDO_MIDDLE_2 PSEUDO_MIDDLE_1		/* extra defs just in case */
+#define PSEUDO_RIGHT_2 	PSEUDO_RIGHT_1
+
+#define IS_MIDDLE_KEY(c) 			\
+	((KEY_DETAIL(c) == PSEUDO_MIDDLE_1) || 	\
+	 (KEY_DETAIL(c) == PSEUDO_MIDDLE_2))
+
+#define IS_RIGHT_KEY(c) 			\
+      	((KEY_DETAIL(c) == PSEUDO_RIGHT_1) || 	\
+	 (KEY_DETAIL(c) == PSEUDO_RIGHT_2))
+
+#define IS_MOUSE_KEY(c)     			\
+	(IS_MIDDLE_KEY(c) || IS_RIGHT_KEY(c))
+
 
 #define KBTYPE_MACII 	0
 
@@ -194,7 +208,6 @@ typedef struct crPrivate {
  *	ChangeWindowAttributes	Original function
  *	GetSpans  	GC function which needs to be here b/c GetSpans isn't
  *	    	  	called with the GC as an argument...
- *	fd  	  	file opened to the frame buffer device.
  *	slot
  *	default_depth
  *	installedMap
@@ -217,7 +230,6 @@ typedef struct {
     Bool	      	(*CreateWindow)();
     Bool		(*ChangeWindowAttributes)();
     unsigned int  	*(*GetSpans)();
-    int	    	  	fd; 	    /* Descriptor open to frame buffer */
     int			slot;
     int			default_depth;
     ColormapPtr		installedMap;
