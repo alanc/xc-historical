@@ -1,5 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.29 92/08/01 13:07:16 rws Exp $
-INSTALLFLAGS = $(INSTINCFLAGS)
+XCOMM $XConsortium: Imakefile,v 1.30 94/02/10 16:46:02 rws Exp $
 HEADERS = \
 	1x1 \
 	2x2 \
@@ -76,4 +75,4 @@ all::
 
 BuildIncludes($(HEADERS),bitmaps,..)
 
-InstallMultiple($(HEADERS),$(INCDIR)/bitmaps)
+InstallMultipleFlags($(HEADERS),$(INCDIR)/bitmaps,$(INSTINCFLAGS))

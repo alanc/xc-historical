@@ -1,10 +1,8 @@
-XCOMM $XConsortium: Imakefile,v 1.1 93/09/04 16:22:52 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.2 94/02/10 16:46:45 rws Exp $
 
     HEADERS = FS.h FSproto.h
-
-    INSTALLFLAGS = $(INSTINCFLAGS)
 
 all::
     
 BuildIncludes($(HEADERS),fonts,..)
-InstallMultiple($(HEADERS),$(INCDIR)/fonts)
+InstallMultipleFlags($(HEADERS),$(INCDIR)/fonts,$(INSTINCFLAGS))

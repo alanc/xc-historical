@@ -1,8 +1,6 @@
-XCOMM $XConsortium: Imakefile,v 1.83 93/12/31 14:58:15 kaleb Exp $
+XCOMM $XConsortium: Imakefile,v 1.84 94/02/09 15:56:26 matt Exp $
 #define IHaveSubdirs
 #define PassCDebugFlags /**/
-
-INSTALLFLAGS = $(INSTINCFLAGS)
 
 SUBDIRS = bitmaps extensions fonts
 
@@ -28,7 +26,7 @@ all::
 
 BuildIncludes($(HEADERS),.,.)
 
-InstallMultiple($(HEADERS),$(INCDIR))
+InstallMultipleFlags($(HEADERS),$(INCDIR),$(INSTINCFLAGS))
 MakeSubdirs($(SUBDIRS))
 
 depend::
