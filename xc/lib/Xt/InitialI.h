@@ -1,4 +1,4 @@
-/* $XConsortium: InitialI.h,v 1.46 91/02/03 13:51:26 rws Exp $ */
+/* $XConsortium: InitialI.h,v 1.46 91/02/03 18:29:47 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -159,18 +159,6 @@ extern void _XtSetDefaultErrorHandlers(
 extern void _XtSetDefaultSelectionTimeout(
 #if NeedFunctionPrototypes
     unsigned long* /* timeout */
-#endif
-);
-
-extern void _XtSetDefaultConverterTable(
-#if NeedFunctionPrototypes
-    ConverterTable* /* table */
-#endif
-);
-
-extern void _XtFreeConverterTable(
-#if NeedFunctionPrototypes
-    ConverterTable /* table */
 #endif
 );
 
