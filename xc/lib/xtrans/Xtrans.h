@@ -1,4 +1,4 @@
-/* $XConsortium: Xtrans.h,v 1.18 94/03/18 11:02:14 mor Exp $ */
+/* $XConsortium: Xtrans.h,v 1.19 94/03/18 11:07:31 mor Exp $ */
 
 /* Copyright (c) 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  * Copyright 1993, 1994 by the Massachusetts Institute of Technology
@@ -54,9 +54,9 @@
 
 #ifdef XIM_t
 #if (__STDC__ && !defined(UNIXCPP)) || defined(ANSICPP)
-#define TRANS(func) _XimTrans##func
+#define TRANS(func) _XimXTrans##func
 #else
-#define TRANS(func) _XimTrans/**/func
+#define TRANS(func) _XimXTrans/**/func
 #endif
 #endif /* XIM_t */
 
