@@ -1,5 +1,5 @@
 /*
- * $Header: Tekproc.c,v 1.23 88/02/22 09:04:04 jim Exp $
+ * $Header: Tekproc.c,v 1.24 88/02/22 09:09:55 jim Exp $
  *
  * Warning, there be crufty dragons here.
  */
@@ -115,7 +115,7 @@ char *curs_color;
 #define	unput(c)	*Tpushback++ = c
 
 #ifndef lint
-static char rcs_id[] = "$Header: Tekproc.c,v 1.23 88/02/22 09:04:04 jim Exp $";
+static char rcs_id[] = "$Header: Tekproc.c,v 1.24 88/02/22 09:09:55 jim Exp $";
 #endif	/* lint */
 
 static XPoint *T_box[TEKNUMFONTS] = {
@@ -172,7 +172,7 @@ static XtResource resources[] = {
 	 XtOffset(Widget, core.height), XtRInt, (caddr_t)&defOne},
 };
 
-static void TekRealize(), TekConfigure();
+static void TekInitialize(), TekRealize(), TekConfigure();
 void TekExpose();
 
 WidgetClassRec tekClassRec = {
@@ -181,7 +181,7 @@ WidgetClassRec tekClassRec = {
     /* superclass	  */	(WidgetClass) &widgetClassRec,
     /* class_name	  */	"Tek4014",
     /* widget_size	  */	sizeof(TekWidgetRec),
-    /* class_initialize   */    NULL,
+    /* class_initialize   */    TekInitialize,
     /* class_part_initialize */ NULL,
     /* class_inited       */	FALSE,
     /* initialize	  */	NULL,
@@ -1057,6 +1057,22 @@ static unsigned char *dashes[TEKNUMLINES] = {
  * The following is called the create the tekWidget
  */
 
+static void TekInitialize(request, new)
+    Widget request, new;
+{
+    XtAddEventHandler(new, EnterWindowMask, FALSE,
+		      HandleEnterWindow, (caddr_t)NULL);
+    XtAddEventHandler(new, LeaveWindowMask, FALSE,
+		      HandleLeaveWindow, (caddr_t)NULL);
+    XtAddEventHandler(new, ButtonPressMask, FALSE,
+		      TekButtonPressed, (caddr_t)NULL);
+    XtAddEventHandler(new, FocusChangeMask, FALSE,
+		      HandleFocusChange, (caddr_t)NULL);
+    XtAddEventHandler(new, KeyPressMask, FALSE,
+		      HandleKeyPressed, (caddr_t)NULL);
+}
+
+
 static void TekRealize (gw, valuemaskp, values)
     Widget gw;
     XtValueMask *valuemaskp;
@@ -1228,17 +1244,6 @@ static void TekRealize (gw, valuemaskp, values)
 	Tfailed = TRUE;
 	return;
     }
-
-    XtAddEventHandler(gw, EnterWindowMask, FALSE,
-		      HandleEnterWindow, (caddr_t)NULL);
-    XtAddEventHandler(gw, LeaveWindowMask, FALSE,
-		      HandleLeaveWindow, (caddr_t)NULL);
-    XtAddEventHandler(gw, ButtonPressMask, FALSE,
-		      TekButtonPressed, (caddr_t)NULL);
-    XtAddEventHandler(gw, FocusChangeMask, FALSE,
-		      HandleFocusChange, (caddr_t)NULL);
-    XtAddEventHandler(gw, KeyPressMask, FALSE,
-		      HandleKeyPressed, (caddr_t)NULL);
 
     screen->Tbox = T_box;
 
