@@ -1,4 +1,4 @@
-/* $XConsortium: TextTr.c,v 1.2 88/09/27 16:39:29 jim Exp $ */
+/* $XConsortium: TextTr.c,v 1.3 88/10/04 16:13:31 swick Exp $ */
 
 char defaultTextTranslations[] =
 "\
@@ -52,7 +52,7 @@ Meta<Key>Z:	scroll-one-line-down() \n\
 <Btn1Down>:	select-start() \n\
 <Btn1Motion>:	extend-adjust() \n\
 <Btn1Up>:	extend-end(PRIMARY, CUT_BUFFER0) \n\
-<Btn2Down>:	stuff() \n\
+<Btn2Down>:	insert-selection(PRIMARY, CUT_BUFFER0) \n\
 <Btn3Down>:	extend-start() \n\
 <Btn3Motion>:	extend-adjust() \n\
 <Btn3Up>:	extend-end(PRIMARY, CUT_BUFFER0) \
