@@ -209,6 +209,19 @@ terminates and restarts the server, attempting to connect again.  Although
 this behaviour may seem arbitrary, it has been empirically developed and
 works quite well on most systems.  The default values are
 5 for \fBopenDelay\fP, 5 for \fBopenRepeat\fP and 30 for \fBopenTimeout\fP.
+.IP "\fBDisplayManager.DISPLAY.grabTimeout\fP"
+To eliminate obvious security shortcomings in the X protocol,
+.I xdm
+grabs the server and keyboard while reading the name/password.  This
+resource specifies the maximum time
+.I xdm
+will wait for the grab to succeed.  The grab may fail if some other
+client has the server grabbed, or possibly if the network latencies
+are very high.  This resource has a default value of 3 seconds; you
+should be cautious when raising it as a user can be spoofed by a
+look-alike window on the display.  If the grab fails,
+.I xdm
+kills and restarts the server.
 .IP "\fBDisplayManager.DISPLAY.terminateServer\fP"
 This boolean resource specifies whether the X server should be terminated
 when a session terminates (instead of resetting it).  This option
