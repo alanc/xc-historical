@@ -1,4 +1,4 @@
-/* $XConsortium: pl_pick.c,v 1.2 92/05/11 13:13:55 mor Exp $ */
+/* $XConsortium: pl_pick.c,v 1.3 92/05/20 22:06:01 mor Exp $ */
 
 /************************************************************************
 Copyright 1992 by ShoGraphics, Inc., Mountain View, California,
@@ -198,7 +198,7 @@ INPUT unsigned long		valueMask;
 	    switch (f)
 	    {
 	    case PEXPMStatus:
-		ppmi->status = *(CARD16 *) pv;
+		ppmi->status = *pv;
 		pv++;
 		break;
 	    case PEXPMPath:
