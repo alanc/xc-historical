@@ -1,5 +1,5 @@
-/* $XConsortium: x11perf.c,v 2.52 94/03/28 15:08:00 gildea Exp $ */
-/*****************************************************************************
+/* $XConsortium: x11perf.c,v 2.53 94/03/28 18:30:54 gildea Exp $ */
+/****************************************************************************
 Copyright 1988, 1989 by Digital Equipment Corporation, Maynard, Massachusetts.
 
                         All Rights Reserved
@@ -20,7 +20,7 @@ WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION,
 ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
-******************************************************************************/
+****************************************************************************/
 
 #include <stdio.h>
 #include <ctype.h>
