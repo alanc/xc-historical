@@ -1,4 +1,4 @@
-/* $XConsortium: lbxgfx.c,v 1.12 94/11/29 19:20:57 mor Exp mor $ */
+/* $XConsortium: lbxgfx.c,v 1.13 94/12/01 20:32:26 mor Exp $ */
 /*
  * Copyright 1993 Network Computing Devices, Inc.
  *
@@ -461,6 +461,25 @@ LbxDecodeCopyPlane (client)
     return (*ProcVector[X_CopyPlane])(client);
 }
 
+static pointer
+get_gfx_buffer(client, len)
+    ClientPtr	client;
+    int		len;
+{
+    LbxClientPtr    lbxClient = LbxClient(client);
+    pointer	tmp;
+
+    /* XXX should probably shrink this sucker too */
+    if (len > lbxClient->gb_size) {
+	tmp = (pointer) xrealloc(lbxClient->gfx_buffer, len);
+	if (!tmp)
+	    return (pointer) NULL;
+	lbxClient->gfx_buffer = tmp;
+	lbxClient->gb_size = len;
+    }
+    return lbxClient->gfx_buffer;
+}
+
 int
 LbxDecodePolyText (client)
     ClientPtr	client;
@@ -474,8 +493,8 @@ LbxDecodePolyText (client)
     GContext		gc;
     
     GFX_GET_DRAWABLE_AND_GC(xLbxPolyTextReq, in, len);
-    if ((xreq = (xPolyTextReq *) 
-	    xalloc (sizeof (xPolyTextReq) + len)) == NULL)
+    xreq = (xPolyTextReq *) get_gfx_buffer(client, sizeof (xPolyTextReq) + len);
+    if (!xreq)
 	return BadAlloc;
     xreq->reqType = stuff->lbxReqType == X_LbxPolyText8? X_PolyText8 : X_PolyText16;
     xreq->drawable = drawable;
@@ -501,10 +520,10 @@ LbxDecodeImageText (client)
     int			retval;
     Drawable		drawable;
     GContext		gc;
-    
+
     GFX_GET_DRAWABLE_AND_GC(xLbxImageTextReq, in, len);
-    if ((xreq = (xImageTextReq *) 
-	    xalloc (sizeof (xImageTextReq) + len)) == NULL)
+    xreq = (xImageTextReq *) get_gfx_buffer(client, sizeof (xImageTextReq) + len);
+    if (!xreq)
 	return BadAlloc;
     xreq->reqType = stuff->lbxReqType == X_LbxImageText8? X_ImageText8 : X_ImageText16;
     xreq->drawable = drawable;
@@ -513,8 +532,9 @@ LbxDecodeImageText (client)
     pos = in;
     DECODE_SHORT(in, xreq->x);
     DECODE_SHORT(in, xreq->y);
-    bcopy (in, (char *) (xreq + 1), stuff->nChars);
-    client->req_len = xreq->length = (sizeof (xImageTextReq) + stuff->nChars + 3) >> 2;
+    len -= (in - pos);
+    bcopy (in, (char *) (xreq + 1), len);
+    client->req_len = xreq->length = (sizeof (xImageTextReq) + len) >> 2;
     client->requestBuffer = (pointer) xreq;
     return (*ProcVector[xreq->reqType])(client);
 }
