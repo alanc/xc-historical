@@ -1,5 +1,5 @@
 /*
- * $XConsortium: OpenDis.c,v 11.135 93/08/22 17:59:25 rws Exp $
+ * $XConsortium: OpenDis.c,v 11.136 93/09/07 21:32:06 rws Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986	*/
@@ -191,6 +191,12 @@ Display *XOpenDisplay (display)
 	dpy->lock_fns		= NULL;
 	dpy->qfree		= NULL;
 	dpy->next_event_serial_num = 1;
+	dpy->im_fd_info		= NULL;
+	dpy->im_fd_length	= 0;
+	dpy->conn_watchers	= NULL;
+	dpy->watcher_count	= 0;
+	dpy->in_process_conni	= False;
+	dpy->filedes		= NULL;
 
 /*
  * Setup other information in this display structure.
@@ -208,6 +214,11 @@ Display *XOpenDisplay (display)
 	        OutOfMemory (dpy, setup);
 		return(NULL);
 	}
+
+	if (!_XPollfdCacheInit(dpy)) {
+	        OutOfMemory (dpy, setup);
+		return(NULL);
+	}	
 
 	/* Set up the output buffers. */
 	if ((dpy->bufptr = dpy->buffer = Xmalloc(BUFSIZE)) == NULL) {
@@ -683,6 +694,20 @@ _XFreeDisplayStructure(dpy)
 		qelt = qnxt;
 	    }
 	}
+	while (dpy->im_fd_info) {
+	    struct _XConnectionInfo *conni = dpy->im_fd_info;
+	    dpy->im_fd_info = conni->next;
+	    if (conni->watch_data)
+		Xfree (conni->watch_data);
+	    Xfree (conni);
+	}
+	if (dpy->conn_watchers) {
+	    struct _XConnWatchInfo *watcher = dpy->conn_watchers;
+	    dpy->conn_watchers = watcher->next;
+	    Xfree (watcher);
+	}
+	if (dpy->filedes)
+	    Xfree (dpy->filedes);
 
 	Xfree ((char *)dpy);
 }
