@@ -4,7 +4,7 @@
  * machine independent cursor display routines
  */
 
-/* $XConsortium: midispcur.c,v 5.7 89/08/04 16:43:30 rws Exp $ */
+/* $XConsortium: midispcur.c,v 5.8 89/08/04 18:23:51 rws Exp $ */
 
 /*
 Copyright 1989 by the Massachusetts Institute of Technology
@@ -65,6 +65,7 @@ typedef struct {
 static Bool	miDCRealizeCursor(),	    miDCUnrealizeCursor();
 static Bool	miDCPutUpCursor(),	    miDCSaveUnderCursor();
 static Bool	miDCRestoreUnderCursor(),   miDCMoveCursor();
+static Bool	miDCChangeSave();
 
 static miSpriteCursorFuncRec miDCFuncs = {
     miDCRealizeCursor,
@@ -73,6 +74,7 @@ static miSpriteCursorFuncRec miDCFuncs = {
     miDCSaveUnderCursor,
     miDCRestoreUnderCursor,
     miDCMoveCursor,
+    miDCChangeSave,
 };
 
 Bool
@@ -382,6 +384,153 @@ miDCRestoreUnderCursor (pScreen, x, y, w, h)
 	ValidateGC ((DrawablePtr) pWin, pGC);
     (*pGC->ops->CopyArea) ((DrawablePtr) pSave, (DrawablePtr) pWin, pGC,
 			    0, 0, w, h, x, y);
+    return TRUE;
+}
+
+static Bool
+miDCChangeSave (pScreen, x, y, w, h, dx, dy)
+    ScreenPtr	    pScreen;
+{
+    miDCScreenPtr   pScreenPriv;
+    PixmapPtr	    pSave;
+    WindowPtr	    pWin;
+    GCPtr	    pGC;
+    XID		    gcvals[2];
+    int		    status;
+    int		    sourcex, sourcey, destx, desty, copyw, copyh;
+
+    pScreenPriv = (miDCScreenPtr) pScreen->devPrivates[miDCScreenIndex].ptr;
+    pSave = pScreenPriv->pSave;
+    pWin = WindowTable[pScreen->myNum];
+    /*
+     * restore the bits which are about to get trashed
+     */
+    if (!pSave)
+	return FALSE;
+    if (!pScreenPriv->pRestoreGC)
+    {
+	gcvals[0] = IncludeInferiors;
+	gcvals[1] = FALSE;
+	pScreenPriv->pRestoreGC = CreateGC ((DrawablePtr)pWin,
+	    GCSubwindowMode|GCGraphicsExposures, gcvals, &status);
+	if (!pScreenPriv->pRestoreGC)
+	    return FALSE;
+    }
+    pGC = pScreenPriv->pRestoreGC;
+    if (pWin->drawable.serialNumber != pGC->serialNumber)
+	ValidateGC ((DrawablePtr) pWin, pGC);
+    /*
+     * copy the old bits to the screen.
+     */
+    if (dy > 0)
+    {
+	(*pGC->ops->CopyArea) ((DrawablePtr) pSave, (DrawablePtr) pWin, pGC,
+			       0, h - dy, w, dy, x + dx, y + h);
+    }
+    else if (dy < 0)
+    {
+	(*pGC->ops->CopyArea) ((DrawablePtr) pSave, (DrawablePtr) pWin, pGC,
+			       0, 0, w, -dy, x + dx, y + dy);
+    }
+    if (dy >= 0)
+    {
+	desty = y + dy;
+	sourcey = 0;
+	copyh = h - dy;
+    }
+    else
+    {
+	desty = y;
+	sourcey = - dy;
+	copyh = h + dy;
+    }
+    if (dx > 0)
+    {
+	(*pGC->ops->CopyArea) ((DrawablePtr) pSave, (DrawablePtr) pWin, pGC,
+			       w - dx, sourcey, dx, copyh, x + w, desty);
+    }
+    else if (dx < 0)
+    {
+	(*pGC->ops->CopyArea) ((DrawablePtr) pSave, (DrawablePtr) pWin, pGC,
+			       0, sourcey, -dx, copyh, x + dx, desty);
+    }
+    if (!pScreenPriv->pSaveGC)
+    {
+	gcvals[0] = IncludeInferiors;
+	gcvals[1] = FALSE;
+	pScreenPriv->pSaveGC = CreateGC ((DrawablePtr)pWin,
+	    GCSubwindowMode|GCGraphicsExposures, gcvals, &status);
+	if (!pScreenPriv->pSaveGC)
+	    return FALSE;
+    }
+    pGC = pScreenPriv->pSaveGC;
+    if (pSave->drawable.serialNumber != pGC->serialNumber)
+	ValidateGC ((DrawablePtr) pSave, pGC);
+    /*
+     * move the bits that are still valid within the pixmap
+     */
+    if (dx >= 0)
+    {
+	sourcex = 0;
+	destx = dx;
+	copyw = w - dx;
+    }
+    else
+    {
+	destx = 0;
+	sourcex = - dx;
+	copyw = w + dx;
+    }
+    if (dy >= 0)
+    {
+	sourcey = 0;
+	desty = dy;
+	copyh = h - dy;
+    }
+    else
+    {
+	desty = 0;
+	sourcey = -dy;
+	copyh = h + dy;
+    }
+    (*pGC->ops->CopyArea) ((DrawablePtr) pSave, (DrawablePtr) pSave, pGC,
+			   sourcex, sourcey, copyw, copyh, destx, desty);
+    /*
+     * copy the new bits from the screen into the remaining areas of the
+     * pixmap
+     */
+    if (dy > 0)
+    {
+	(*pGC->ops->CopyArea) ((DrawablePtr) pWin, (DrawablePtr) pSave, pGC,
+			       x, y, w, dy, 0, 0);
+    }
+    else if (dy < 0)
+    {
+	(*pGC->ops->CopyArea) ((DrawablePtr) pWin, (DrawablePtr) pSave, pGC,
+			       x, y + h + dy, w, -dy, 0, h + dy);
+    }
+    if (dy >= 0)
+    {
+	desty = dy;
+	sourcey = y + dy;
+	copyh = h - dy;
+    }
+    else
+    {
+	desty = 0;
+	sourcey = y;
+	copyh = h + dy;
+    }
+    if (dx > 0)
+    {
+	(*pGC->ops->CopyArea) ((DrawablePtr) pWin, (DrawablePtr) pSave, pGC,
+			       x, sourcey, dx, copyh, 0, desty);
+    }
+    else if (dx < 0)
+    {
+	(*pGC->ops->CopyArea) ((DrawablePtr) pWin, (DrawablePtr) pSave, pGC,
+			       x + w + dx, sourcey, -dx, copyh, w + dx, desty);
+    }
     return TRUE;
 }
 

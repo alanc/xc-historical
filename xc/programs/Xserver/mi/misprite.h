@@ -6,7 +6,7 @@
  * mi versions of these routines exist.
  */
 
-/* $XConsortium: misprite.h,v 5.0 89/06/09 15:00:42 keith Exp $ */
+/* $XConsortium: misprite.h,v 5.1 89/06/21 11:16:23 rws Exp $ */
 
 /*
 Copyright 1989 by the Massachusetts Institute of Technology
@@ -29,4 +29,5 @@ typedef struct {
     Bool	(*SaveUnderCursor)();	/* pScreen, x, y, w, h */
     Bool	(*RestoreUnderCursor)();/* pScreen, x, y, w, h */
     Bool	(*MoveCursor)();	/* pScreen, pCursor, x, y, w, h, dx, dy */
+    Bool	(*ChangeSave)();	/* pScreen, x, y, w, h, dx, dy */
 } miSpriteCursorFuncRec, *miSpriteCursorFuncPtr;

@@ -4,7 +4,7 @@
  * machine independent software sprite routines
  */
 
-/* $XConsortium: misprite.c,v 5.17 89/08/24 17:55:52 keith Exp $ */
+/* $XConsortium: misprite.c,v 5.18 89/08/24 19:52:06 keith Exp $ */
 
 /*
 Copyright 1989 by the Massachusetts Institute of Technology
@@ -59,6 +59,7 @@ static void	    miSpriteClearToBackground();
 
 static void	    miSpriteSaveDoomedAreas();
 static RegionPtr    miSpriteRestoreAreas();
+static void	    miSpriteComputeSaved();
 
 #define SCREEN_PROLOGUE(pScreen, field)\
   ((pScreen)->field = \
@@ -1772,18 +1773,43 @@ miSpriteDisplayCursor (pScreen, pCursor, x, y)
     if (pScreenPriv->isUp) {
 	int	sx, sy;
 	/*
-	 * check to see if the old saved region completely
+	 * check to see if the old saved region
 	 * encloses the new sprite, in which case we use
 	 * the flicker-free MoveCursor primitive.
 	 */
 	sx = pScreenPriv->x - (int)pCursor->bits->xhot;
 	sy = pScreenPriv->y - (int)pCursor->bits->yhot;
-	if (sx >= pScreenPriv->saved.x1 &&
-	    sx + (int)pCursor->bits->width < pScreenPriv->saved.x2 &&
-	    sy >= pScreenPriv->saved.y1 &&
-	    sy + (int)pCursor->bits->height < pScreenPriv->saved.y2)
+	if (sx + (int) pCursor->bits->width >= pScreenPriv->saved.x1 &&
+	    sx < pScreenPriv->saved.x2 &&
+	    sy + (int) pCursor->bits->height >= pScreenPriv->saved.y1 &&
+	    sy < pScreenPriv->saved.y2 &&
+	    pCursor->bits->width <= pScreenPriv->saved.x2 - pScreenPriv->saved.x1 &&
+	    pCursor->bits->height<= pScreenPriv->saved.y2 - pScreenPriv->saved.y1
+	    )
 	{
 	    pScreenPriv->isUp = FALSE;
+	    if (!(sx >= pScreenPriv->saved.x1 &&
+	      	  sx + (int)pCursor->bits->width < pScreenPriv->saved.x2 &&
+	      	  sy >= pScreenPriv->saved.y1 &&
+	      	  sy + (int)pCursor->bits->height < pScreenPriv->saved.y2))
+	    {
+		int oldx1, oldy1, dx, dy;
+
+		oldx1 = pScreenPriv->saved.x1;
+		oldy1 = pScreenPriv->saved.y1;
+		dx = oldx1 - (sx - 8);
+		dy = oldy1 - (sy - 8);
+		pScreenPriv->saved.x1 -= dx;
+		pScreenPriv->saved.y1 -= dy;
+		pScreenPriv->saved.x2 -= dx;
+		pScreenPriv->saved.y2 -= dy;
+		(void) (*pScreenPriv->funcs->ChangeSave) (pScreen,
+				pScreenPriv->saved.x1,
+ 				pScreenPriv->saved.y1,
+				pScreenPriv->saved.x2 - pScreenPriv->saved.x1,
+				pScreenPriv->saved.y2 - pScreenPriv->saved.y1,
+				dx, dy);
+	    }
 	    (void) (*pScreenPriv->funcs->MoveCursor) (pScreen, pCursor,
 				  pScreenPriv->saved.x1,
  				  pScreenPriv->saved.y1,
@@ -1850,19 +1876,14 @@ miSpriteRestoreCursor (pScreen)
     ScreenPtr	pScreen;
 {
     miSpriteScreenPtr   pScreenPriv;
-    int		    x, y, w, h;
-    CursorPtr	    pCursor;
+    int			x, y;
+    CursorPtr		pCursor;
 
+    miSpriteComputeSaved (pScreen);
     pScreenPriv = (miSpriteScreenPtr) pScreen->devPrivates[miSpriteScreenIndex].ptr;
     pCursor = pScreenPriv->pCursor;
     x = pScreenPriv->x - (int)pCursor->bits->xhot;
     y = pScreenPriv->y - (int)pCursor->bits->yhot;
-    w = pCursor->bits->width;
-    h = pCursor->bits->height;
-    pScreenPriv->saved.x1 = x - w/2;
-    pScreenPriv->saved.y1 = y - h/2;
-    pScreenPriv->saved.x2 = pScreenPriv->saved.x1 + w * 2;
-    pScreenPriv->saved.y2 = pScreenPriv->saved.y1 + h * 2;
     if ((*pScreenPriv->funcs->SaveUnderCursor) (pScreen,
 				      pScreenPriv->saved.x1,
 				      pScreenPriv->saved.y1,
@@ -1876,4 +1897,31 @@ miSpriteRestoreCursor (pScreen)
 				  pScreenPriv->colors[MASK_COLOR].pixel))
 	    pScreenPriv->isUp = TRUE;
     }
+}
+
+/*
+ * compute the desired area of the screen to save
+ */
+
+static void
+miSpriteComputeSaved (pScreen)
+    ScreenPtr	pScreen;
+{
+    miSpriteScreenPtr   pScreenPriv;
+    int		    x, y, w, h;
+    int		    wpad, hpad;
+    CursorPtr	    pCursor;
+
+    pScreenPriv = (miSpriteScreenPtr) pScreen->devPrivates[miSpriteScreenIndex].ptr;
+    pCursor = pScreenPriv->pCursor;
+    x = pScreenPriv->x - (int)pCursor->bits->xhot;
+    y = pScreenPriv->y - (int)pCursor->bits->yhot;
+    w = pCursor->bits->width;
+    h = pCursor->bits->height;
+    wpad = 8;
+    hpad = 8;
+    pScreenPriv->saved.x1 = x - wpad;
+    pScreenPriv->saved.y1 = y - hpad;
+    pScreenPriv->saved.x2 = pScreenPriv->saved.x1 + w + wpad * 2;
+    pScreenPriv->saved.y2 = pScreenPriv->saved.y1 + h + hpad * 2;
 }
