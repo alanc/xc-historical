@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XShape.c,v 1.16 89/10/08 19:23:51 jim Exp $
+ * $XConsortium: XShape.c,v 1.17 89/11/21 11:36:40 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -44,7 +44,7 @@ static /* const */ char *shape_extension_name = SHAPENAME;
  *                                                                           *
  *****************************************************************************/
 
-static int close_display(), error_string();
+static int close_display();
 static Bool wire_to_event();
 static Status event_to_wire();
 static /* const */ XExtensionHooks shape_extension_hooks = {
