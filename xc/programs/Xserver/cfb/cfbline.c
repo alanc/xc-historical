@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: cfbline.c,v 1.9 89/10/03 20:02:59 keith Exp $ */
+/* $XConsortium: cfbline.c,v 1.10 89/10/10 19:08:59 keith Exp $ */
 #include "X.h"
 
 #include "gcstruct.h"
@@ -164,7 +164,7 @@ cfbLineSS (pDrawable, pGC, mode, npt, pptInit)
     {
 	pixel = pGC->planemask;
 	alu = GXxor;
-	planemask = PIM;
+	planemask = PMSK;
     }
     xorg = pDrawable->x;
     yorg = pDrawable->y;
@@ -575,7 +575,7 @@ cfbLineSD( pDrawable, pGC, mode, npt, pptInit)
     {
 	fg = bg = pGC->planemask;
 	alu = GXxor;
-	planemask = PIM;
+	planemask = PMSK;
     }
 
     xorg = pDrawable->x;
