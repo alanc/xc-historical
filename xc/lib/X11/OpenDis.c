@@ -1,6 +1,6 @@
 #include "copyright.h"
 #ifndef lint
-static char *rcsid_xopendisplay_c = "$Header: XOpenDis.c,v 11.51 87/10/24 21:10:14 rws Locked $";
+static char *rcsid_xopendisplay_c = "$Header: XOpenDis.c,v 11.52 87/11/11 14:37:44 newman Locked $";
 #endif
 /* Copyright    Massachusetts Institute of Technology    1985, 1986	*/
 
@@ -357,8 +357,8 @@ Display *XOpenDisplay (display)
 	for (i = 0; i < dpy->nscreens; i++) {
 	    register Screen *sp = &dpy->screens[i];
 	    XGCValues values;
-	    values.foreground = sp->white_pixel;
-	    values.background = sp->black_pixel;
+	    values.foreground = sp->black_pixel;
+	    values.background = sp->white_pixel;
 	    sp->default_gc = XCreateGC (dpy, sp->root,
 			GCForeground|GCBackground, &values);
 	}
