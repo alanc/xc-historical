@@ -260,6 +260,9 @@ This variable is only meaningful if a \fBIcons\fP list is defined.
 It forces the icon bitmaps listed in the \fBIcons\fP list to be
 used as window icons even if client programs supply their own icons.
 The default is to not force icons.
+.IP "\fBFramePadding\fP \fIpixels\fP" 8
+This variable specifies the distance between the title bar decorations (the
+button and text) and the window frame.  The default is 2 pixels.
 .IP "\fBIcons\fP { \fIlist\fP }" 8
 This variable is a list of window names and bitmap filenames to be
 used as icons.
@@ -602,6 +605,9 @@ The optional \fIlist\fP is a list of window names and colors so that
 client specific colors may be specified.  See the \fBBorderColor\fP
 variable for a complete description of the \fIlist\fP.
 The default is "black".
+.IP "\fBTitlePadding\fP \fIpixels\fP" 8
+This variable specifies the distance between the various buttons, text, and
+highlight areas in the title bar.  The default is 8 pixels.
 .IP "\fBUnknownIcon\fP \fIstring\fP" 8
 This variable specifies the file name of a bitmap format file to be
 used as the default icon.  This bitmap will be used for the icon of all
@@ -1319,10 +1325,5 @@ used in advertising
 or publicity pertaining to distribution of the software without specific, 
 written prior permission.
 .SH AUTHORS
-Tom LaStrange, Solbourne Computer
-.br
-Dave Payne, Apple Computer
-.br
-Jim Fulton, MIT X Consortium
-.br
-Keith Packard, MIT X Consortium
+Tom LaStrange, Solbourne Computer; Dave Payne, Apple Computer; 
+Jim Fulton, MIT X Consortium; Keith Packard, MIT X Consortium
