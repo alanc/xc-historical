@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xmu.h,v 1.13 89/03/08 14:03:59 jim Exp $
+ * $XConsortium: Xmu.h,v 1.14 89/03/09 14:24:16 converse Exp $
  *
  * Copyright 1988 by the Massachusetts Institute of Technology
  *
@@ -70,6 +70,7 @@ typedef enum {XtorientHorizontal, XtorientVertical} XtOrientation;
 /*
  * public entry points
  */
+Status XmuAllStandardColormaps( /* Display* */ );
 Window XmuClientWindow();
 Boolean XmuConvertStandardSelection( /* Widget, Time, Atom*, ... */ );
 void XmuCopyISOLatin1Lowered();
@@ -86,12 +87,12 @@ AtomPtr XmuMakeAtom( /* char* */ );
 Atom XmuInternAtom( /* Display*, AtomPtr */ );
 void XmuInternStrings( /* Display*, String*, Cardinal, Atom* */);
 char *XmuGetAtomName( /* Display*, Atom */ );
+Status XmuGetColormapAllocation();
 char *XmuNameOfAtom( /* AtomPtr */ );
 int XmuReadBitmapData(), XmuReadBitmapDataFromFile();
 int XmuPrintDefaultErrorMessage();
-Status XmuAllStandardColormaps( /* Display* */ );
-Status XmuVisualStandardColormaps( /* Display*, int, Visual*, int */);
 Status XmuStandardColormap( /* Display*, int, Visual*, ... */);
+Status XmuVisualStandardColormaps( /* Display*, int, Visual*, int */);
 
 #ifndef _Atoms_c_
 #define XA_ATOM_PAIR(d)		XmuInternAtom(d, _XA_ATOM_PAIR)
