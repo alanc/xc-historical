@@ -1,4 +1,4 @@
-/* $XConsortium: XKBstr.h,v 1.2 93/09/27 22:49:59 rws Exp $ */
+/* $XConsortium: XKBstr.h,v 1.3 93/09/28 19:48:12 rws Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -68,7 +68,7 @@ typedef struct _XkbKeyType {
 #define	XkbKTModsToClear(cm,s)	((cm)->preserve?\
 				 ((cm->mask)&(~(cm)->preserve[(cm)->mask&(s)]))\
 				 ((cm)->mask))
-#define	XkbKTResultMods(cm,s)	((s)&(~XkbColModsToClear(cm,s)))
+#define	XkbKTResultMods(cm,s)	((s)&(~XkbTModsToClear(cm,s)))
 #define	XkbKTMapWidth(cm)		(((cm)->mask&0xff)+1)
 
 #define	XkbNumGroups(g)		((g)&0x1f)
@@ -123,7 +123,7 @@ typedef struct _XkbServerMapRec {
 
 	XkbAction		*keyBehaviors;
 	CARD16			*keyActions;
-} XkbServerMapRec, *XKbServerMapPtr;
+} XkbServerMapRec, *XkbServerMapPtr;
 
 #define	XkbSMKeyActionsPtr(m,k) (&(m)->actions[(m)->keyActions[k]])
 
