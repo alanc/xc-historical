@@ -1,4 +1,4 @@
-/* $XConsortium: miTriStrip.c,v 5.5 91/11/15 19:57:53 hersh Exp $ */
+/* $XConsortium: miTriStrip.c,v 5.6 91/12/03 16:55:03 hersh Exp $ */
 
 
 /***********************************************************
@@ -258,7 +258,7 @@ miTriangleStrip(pRend, pExecuteOC)
 	return (status);
 
       /* if nothing left after view clip, return early */
-      if (mc_list->numLists <= 0) return(Success);
+      if (clip_list->numLists <= 0) return(Success);
 
       /* Note - After View clipping, the triangle strip may have
        * decomposed into a number of separate triangle strips
