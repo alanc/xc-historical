@@ -1,4 +1,4 @@
-/* $XConsortium: midraw.c,v 1.1 93/07/19 10:16:24 rws Exp $ */
+/* $XConsortium: midraw.c,v 1.2 93/07/20 11:35:14 rws Exp $ */
 /**** module midraw.c ****/
 /******************************************************************************
 				NOTICE
@@ -197,7 +197,7 @@ static int ActivateIDraw(flo,ped,pet)
 			bnd->strip->length,	  /* height	 */
 			pixtype,		  /* data format */
 			~0,			  /* plane mask	 */
-			dstLine			  /* data buffer */
+			(char *)dstLine		  /* data buffer */
 			);
 
   PutData(flo,pet,bnd,bnd->maxLocal);
@@ -234,7 +234,7 @@ static int ActivateIDrawP(flo,ped,pet)
 			bnd->strip->length,	  /* height	 */
 			pixtype,		  /* data format */
 			raw->bitPlane,		  /* plane mask	 */
-			dstLine			  /* data buffer */
+			(char *)dstLine		  /* data buffer */
 			);
 
   PutData(flo,pet,bnd,bnd->maxLocal);
