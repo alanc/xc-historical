@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xos.h,v 1.58 94/03/28 18:20:52 gildea Exp $
+ * $XConsortium: Xos.h,v 1.59 94/03/29 15:01:28 gildea Exp $
  * 
  * Copyright 1987 by the Massachusetts Institute of Technology
  *
@@ -39,7 +39,7 @@
 #define __TYPES__
 #endif /* __TYPES__ */
 #else /* USG */
-#if defined(_POSIX_SOURCE) && defined(MOTOROLA)
+#if defined(_POSIX_SOURCE) && (defined(MOTOROLA) || defined(AMOEBA))
 #undef _POSIX_SOURCE
 #include <sys/types.h>
 #define _POSIX_SOURCE
