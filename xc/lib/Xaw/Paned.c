@@ -1,4 +1,4 @@
-/* $XConsortium: Paned.c,v 1.18 90/12/31 17:07:41 gildea Exp $ */
+/* $XConsortium: Paned.c,v 1.19 91/02/17 15:35:36 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -134,7 +134,7 @@ static XtResource resources[] = {
 
 #undef offset
 
-#define offset(field) XtOffsetOf(PanedConstraintsRec, field)
+#define offset(field) XtOffsetOf(PanedConstraintsRec, paned.field)
 
 static XtResource subresources[] = {
     {XtNallowResize, XtCBoolean, XtRBoolean, sizeof(Boolean),
