@@ -141,7 +141,7 @@ GC XtGetGC(widget, valueMask, values)
 	    return cur->gc;
 	}
     }
-    cur = (GCptr) XtMalloc(sizeof(GCrec));
+    cur = (GCptr) XtMalloc((unsigned)sizeof(GCrec));
     cur->dpy = XtDisplay(widget);
     cur->screen = XtScreen(widget);
     cur->depth = widget->core.depth;
