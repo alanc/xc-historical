@@ -1,4 +1,4 @@
-/* $XConsortium: restart.h,v 1.1 94/07/08 14:06:52 mor Exp $ */
+/* $XConsortium: restart.h,v 1.2 94/07/15 10:01:46 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -27,3 +27,4 @@ in this Software without prior written authorization from the X Consortium.
 
 extern void StartDefaultApps ();
 extern Status Restart ();
+extern void Clone ();
