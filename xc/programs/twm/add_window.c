@@ -28,7 +28,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: add_window.c,v 1.97 89/11/03 13:26:49 jim Exp $
+ * $XConsortium: add_window.c,v 1.98 89/11/03 16:15:23 jim Exp $
  *
  * Add a new window, put the titlbar and other stuff around
  * the window
@@ -39,7 +39,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: add_window.c,v 1.97 89/11/03 13:26:49 jim Exp $";
+"$XConsortium: add_window.c,v 1.98 89/11/03 16:15:23 jim Exp $";
 #endif /* lint */
 
 #include <stdio.h>
@@ -629,13 +629,11 @@ IconMgr *iconp;
     else
 	tmp_win->gray = None;
 
-    CreateTitleButtons(tmp_win);
 	
     if (tmp_win->title_height)
     {
+	CreateTitleButtons(tmp_win);
 	XDefineCursor(dpy, tmp_win->title_w, Scr->TitleCursor);
-	XDefineCursor(dpy, tmp_win->iconify_w, Scr->ButtonCursor);
-	XDefineCursor(dpy, tmp_win->resize_w, Scr->ButtonCursor);
     }
 
     valuemask = (CWEventMask | CWDontPropagate);
@@ -1117,7 +1115,9 @@ TwmWindow *tmp_win;
     attributes.border_pixel = tmp_win->title.fore;
     attributes.event_mask = (ButtonPressMask | ButtonReleaseMask |
 			     ExposureMask);
-    valuemask = (CWWinGravity | CWBackPixel | CWBorderPixel | CWEventMask);
+    attributes.cursor = Scr->ButtonCursor;
+    valuemask = (CWWinGravity | CWBackPixel | CWBorderPixel | CWEventMask |
+		 CWCursor);
     x = y = (Scr->FramePadding + Scr->ButtonIndent);
     tmp_win->iconify_w = XCreateWindow (dpy, tmp_win->title_w, x, y,
 					h, h, TITLEBUTTON_BORDERWIDTH, 0, 
