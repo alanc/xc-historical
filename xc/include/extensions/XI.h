@@ -1,4 +1,4 @@
-/* $Header: XI.h,v 1.11 91/05/05 18:26:52 rws Exp $ */
+/* $Header: XI.h,v 1.12 91/07/17 16:34:06 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -83,6 +83,10 @@ SOFTWARE.
 #define sz_xDeviceBellReq			8
 #define sz_xSetDeviceValuatorsReq		8
 #define sz_xSetDeviceValuatorsReply		32
+#define sz_xGetDeviceControlReq			8
+#define sz_xGetDeviceControlReply		32
+#define sz_xChangeDeviceControlReq		8
+#define sz_xChangeDeviceControlReply		32
 
 #define INAME 			"XInputExtension"
 
@@ -109,6 +113,7 @@ SOFTWARE.
 #define XInput_Initial_Release		1
 #define XInput_Add_XDeviceBell		2
 #define XInput_Add_XSetDeviceValuators	3
+#define XInput_Add_XChangeDeviceControl	4
 
 #define XI_Absent		0
 #define XI_Present		1
@@ -121,6 +126,11 @@ SOFTWARE.
 
 #define XI_Add_XSetDeviceValuators_Major	1
 #define XI_Add_XSetDeviceValuators_Minor	2
+
+#define XI_Add_XChangeDeviceControl_Major	1
+#define XI_Add_XChangeDeviceControl_Minor	3
+
+#define DEVICE_RESOLUTION	1
 
 #define NoSuchExtension		1
 

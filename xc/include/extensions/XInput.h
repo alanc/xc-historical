@@ -1,4 +1,4 @@
-/* $Header: XInput.h,v 1.12 91/06/06 10:24:26 rws Exp $ */
+/* $Header: XInput.h,v 1.13 91/07/17 16:34:54 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -585,6 +585,34 @@ typedef struct {
     int     led_mask;
     int     led_values;
 } XLedFeedbackControl;
+
+/*******************************************************************
+ *
+ * Device control structures.
+ *
+ */
+
+typedef struct {
+     XID            control;
+     int            length;
+} XDeviceControl;
+
+typedef struct {
+     XID            control;
+     int            length;
+     int            first_valuator;
+     int            num_valuators;
+     int            *resolutions;
+} XDeviceResolutionControl;
+
+typedef struct {
+     XID            control;
+     int            length;
+     int            num_valuators;
+     int            *resolutions;
+     int            *min_resolutions;
+     int            *max_resolutions;
+} XDeviceResolutionState;
 
 /*******************************************************************
  *
