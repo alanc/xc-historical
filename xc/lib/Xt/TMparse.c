@@ -1,4 +1,4 @@
-/* $XConsortium: TMparse.c,v 1.100 90/11/30 18:31:32 rws Exp $ */
+/* $XConsortium: TMparse.c,v 1.5 91/01/09 21:29:17 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -63,14 +63,14 @@ typedef String (*ParseProc)(); /* str, closure, event ,error */
     /* Boolean* error */
 
 typedef void (*ModifierProc)(); 
-typedef int Value;
+typedef TMShortCard	Value;
 
 typedef struct _ModifierRec {
     char*      name;
     XrmQuark   signature;
     ModifierProc modifierParseProc;
     Value      value;
-} ModifierRec,*ModifierKeys;
+} ModifierRec, *ModifierKeys;
 
 typedef struct _EventKey {
     char    	*event;
@@ -329,11 +329,12 @@ static EventKey events[] = {
 {"MappingNotify",   NULL,MappingNotify, ParseTable,	(Opaque)mappingNotify},
 {"Mapping",	    NULL,MappingNotify,	ParseTable,	(Opaque)mappingNotify},
 
-#ifdef notdef
+#ifdef DEBUG
+# ifdef notdef
 {"Timer",	    NULL, _XtTimerEventType,ParseNone,	NULL},
-
+# endif /* notdef */
 {"EventTimer",	    NULL, _XtEventTimerEventType,ParseNone,NULL},
-#endif
+#endif /* DEBUG */
 
 /* Event Name,	  Quark, Event Type,	Detail Parser, Closure */
 
@@ -477,7 +478,7 @@ static void StoreLateBindings(keysymL,notL,keysymR,notR,lateBindings)
     if (lateBindings != NULL){
         temp = *lateBindings;
         if (temp != NULL) {
-            for (count = 0; temp[count].keysym != NULL; count++){}
+            for (count = 0; temp[count].keysym != NULL; count++){/*EMPTY*/}
         }
         else count = 0;
         if (keysymR == NULL){
@@ -486,7 +487,7 @@ static void StoreLateBindings(keysymL,notL,keysymR,notR,lateBindings)
              number = 2;pair = TRUE;
         }
           
-        temp = (LateBindingsPtr)XtRealloc((XtPointer)temp,
+        temp = (LateBindingsPtr)XtRealloc((char *)temp,
             (unsigned)((count+number+1) * sizeof(LateBindings)) );
         *lateBindings = temp;
         temp[count].knot = notL;
@@ -718,7 +719,7 @@ static unsigned long StrToHex(str)
     register char   c;
     register unsigned long    val = 0;
 
-    while (c = *str) {
+    while ((c = *str) != NULL) {
 	if ('0' <= c && c <= '9') val = val*16+c-'0';
 	else if ('a' <= c && c <= 'z') val = val*16+c-'a'+10;
 	else if ('A' <= c && c <= 'Z') val = val*16+c-'A'+10;
@@ -735,7 +736,7 @@ static unsigned long StrToOct(str)
     register char c;
     register unsigned long  val = 0;
 
-    while (c = *str) {
+    while ((c = *str) != NULL) {
         if ('0' <= c && c <= '7') val = val*8+c-'0'; else return 0;
 	str++;
     }
@@ -755,7 +756,7 @@ static unsigned long StrToNum(str)
 	else return StrToOct(str);
     }
 
-    while (c = *str) {
+    while ((c = *str) != NULL) {
 	if ('0' <= c && c <= '9') val = val*10+c-'0';
 	else return 0;
 	str++;
@@ -779,9 +780,9 @@ static KeySym StringToKeySym(str, error)
     }
 #endif
 
+    if ('0' <= *str && *str <= '9') return (KeySym) StrToNum(str);
     k = XStringToKeysym(str);
     if (k != NoSymbol) return k;
-    if ('0' <= *str && *str <= '9') return (KeySym) StrToNum(str);
 
 #ifdef NOTASCII
     /* fall-back case to preserve backwards compatibility; no-one
@@ -895,10 +896,10 @@ static String ParseKeySym(str, closure, event,error)
 	event->event.eventCode = StringToKeySym(keySymName, error);
 	event->event.eventCodeMask = ~0L;
     } else if (*str == ',' || *str == ':' ||
-	       /* allow leftparen to be single char symbol,
-		* for backwards compatibility
-		*/
-	       (*str == '(' && *(str+1) >= '0' && *(str+1) <= '9')) {
+             /* allow leftparen to be single char symbol,
+              * for backwards compatibility
+              */
+             (*str == '(' && *(str+1) >= '0' && *(str+1) <= '9')) {
 	/* no detail */
 	event->event.eventCode = 0L;
         event->event.eventCodeMask = 0L;
@@ -910,7 +911,7 @@ static String ParseKeySym(str, closure, event,error)
 		&& *str != ' '
 		&& *str != '\t'
                 && *str != '\n'
-	        && (*str != '(' || *(str+1) <= '0' || *(str+1) >= '9')
+                && (*str != '(' || *(str+1) <= '0' || *(str+1) >= '9')
 		&& *str != '\0') str++;
 	(void) strncpy(keySymName, start, str-start);
 	keySymName[str-start] = '\0';
@@ -929,7 +930,7 @@ static String ParseKeySym(str, closure, event,error)
     }
     if (event->event.standard)
 	event->event.matchEvent = _XtMatchUsingStandardMods;
-    else
+    else 
 	event->event.matchEvent = _XtMatchUsingDontCareMods;
 
     return str;
@@ -1626,7 +1627,7 @@ static String ParseParamSeq(str, paramSeqP, paramNumP)
 	for (i=0; i < num_params; i++) {
 	    ParamPtr next = params->next;
 	    *paramP-- = params->param;
-	    DEALLOCATE_LOCAL( (XtPointer)params );
+	    DEALLOCATE_LOCAL( (char *)params );
 	    params = next;
 	}
     } else {
@@ -1664,16 +1665,13 @@ static String ParseAction(str, actionP, quarkP, error)
 }
 
 
-static String ParseActionSeq(stateTable,str, actionsP,acc,error)
-    StateTablePtr stateTable;
-    String str;
-    ActionPtr *actionsP;
-    Bool acc;
-    Boolean* error;
+static String ParseActionSeq(parseTree, str, actionsP, error)
+    TMParseStateTree   	parseTree;
+    String 		str;
+    ActionPtr 		*actionsP;
+    Boolean		*error;
 {
     ActionPtr *nextActionP = actionsP;
-    int index;
-    Boolean found;
 
     *actionsP = NULL;
     while (*str != '\0' && *str != '\n') {
@@ -1688,38 +1686,7 @@ static String ParseActionSeq(stateTable,str, actionsP,acc,error)
 	str = ParseAction(str, action, &quark, error);
 	if (*error) return PanicModeRecovery(str);
 
-        if (!acc) { /*regular table */
-            found = FALSE;
-            for (index=0;index<stateTable->numQuarks;index++)
-               if ((stateTable->quarkTable)[index]==quark){
-                   found = TRUE;
-                   break;
-               }
-            if (found==FALSE) {
-                index = stateTable->numQuarks++;
-                if (index==stateTable->quarkTblSize) {
-                    stateTable->quarkTblSize += 10;
-                    stateTable->quarkTable=(XrmQuark*) XtRealloc(
-                        (XtPointer)stateTable->quarkTable,
-                        stateTable->quarkTblSize*sizeof(XrmQuark));
-                }
-
-                (stateTable->quarkTable)[index] = quark;
-             }
-            action->index=index;
-        }
-        else { /*accelerator table */
-            index = stateTable->accNumQuarks++;
-            if (index == stateTable->accQuarkTblSize) {
-                stateTable->accQuarkTblSize += 10;
-                stateTable->accQuarkTable = (XrmQuark*) XtRealloc(
-                   (XtPointer)stateTable->accQuarkTable,
-                   stateTable->accQuarkTblSize*sizeof(XrmQuark));
-            }
-            stateTable->accQuarkTable[index] = quark;
-            action->index= -(index+1);
-        }
-
+	action->index = _XtGetQuarkIndex(parseTree, quark);
 	str = ScanWhitespace(str);
 	*nextActionP = action;
 	nextActionP = &action->next;
@@ -1751,16 +1718,14 @@ static void ShowProduction(currentProduction)
  * Parses one line of event bindings.
  ***********************************************************************/
 
-static String ParseTranslationTableProduction(translateData, str,acc)
-  XtTranslations translateData;
-  register String str;
-  Boolean acc;
+static String ParseTranslationTableProduction(parseTree, str)
+    TMParseStateTree	 parseTree;
+    register String str;
 {
     EventSeqPtr	eventSeq = NULL;
     ActionPtr	*actionsP;
     Boolean error = FALSE;
     String	production = str;
-    StateTablePtr stateTable = translateData->stateTable;
 
     str = ParseEventSeq(str, &eventSeq, &actionsP,&error);
     if (error == TRUE) {
@@ -1769,17 +1734,18 @@ static String ParseTranslationTableProduction(translateData, str,acc)
         return (str);
     }
     str = ScanWhitespace(str);
-    str = ParseActionSeq(stateTable, str, actionsP,acc,&error);
+    str = ParseActionSeq(parseTree, str, actionsP, &error);
     if (error) {
 	ShowProduction(production);
         FreeEventSeq(eventSeq);
         return (str);
     }
 
-    _XtAddEventSeqToStateTable(eventSeq, translateData);
+    _XtAddEventSeqToStateTree(eventSeq, parseTree);
     FreeEventSeq(eventSeq);
     return (str);
 }
+
 
 /*ARGSUSED*/
 static Boolean CvtStringToAccelerators(dpy, args, num_args, from, to, closure)
@@ -1817,37 +1783,6 @@ static Boolean CvtStringToAccelerators(dpy, args, num_args, from, to, closure)
 }
 
 
-static String CheckForPoundSign(translateData,str)
-    XtTranslations translateData;
-    String str;
-{
-    String start;
-    char operation[20];
-    StateTablePtr stateTable = translateData->stateTable;
-
-    if (*str == '#') {
-       str++;
-       start = str;
-       str = ScanIdent(str);
-       (void) strncpy(operation, start, MIN(20, str-start));
-       operation[str-start] = '\0';
-       if (!strcmp(operation,"replace"))
-            stateTable->operation = XtTableReplace;
-       else if (!strcmp(operation,"augment"))
-            stateTable->operation = XtTableAugment;
-       else if (!strcmp(operation,"override"))
-            stateTable->operation =  XtTableOverride;
-       else  stateTable->operation = XtTableReplace;
-       str = ScanWhitespace(str);
-       if (*str == '\n') {
-	   str++;
-	   str = ScanWhitespace(str);
-       }
-    }
-    else stateTable->operation = XtTableReplace;
-   return str;
-}
-
 /*ARGSUSED*/
 static Boolean
 CvtStringToTranslations(dpy, args, num_args, from, to, closure_ret)
@@ -1858,16 +1793,23 @@ CvtStringToTranslations(dpy, args, num_args, from, to, closure_ret)
     XtPointer	*closure_ret;
 {
     String str;
-
+    
     if (*num_args != 0)
-	XtAppWarningMsg(XtDisplayToApplicationContext(dpy),
-	  "invalidParameters","compileTranslations",XtCXtToolkitError,
-          "String to TranslationTable conversion needs no extra arguments",
-	  (String *)NULL, (Cardinal *)NULL);
-     str = (String)(from->addr);
-     if (str == NULL)
-         return False;
-
+      XtAppWarningMsg(XtDisplayToApplicationContext(dpy),
+		      "invalidParameters","compileTranslations",XtCXtToolkitError,
+		      "String to TranslationTable conversion needs no extra arguments",
+		      (String *)NULL, (Cardinal *)NULL);
+    str = (String)(from->addr);
+    if (str == NULL)
+      return False;
+    
+    if (to->addr != NULL) {
+	if (to->size < sizeof(XtTranslations)) {
+	    to->size = sizeof(XtTranslations);
+	    return False;
+	}
+	*(XtTranslations *)to->addr = XtParseTranslationTable(str);
+    }
     if (to->addr != NULL) {
 	if (to->size < sizeof(XtTranslations)) {
 	    to->size = sizeof(XtTranslations);
@@ -1884,11 +1826,114 @@ CvtStringToTranslations(dpy, args, num_args, from, to, closure_ret)
     return True;
 }
 
+static String CheckForPoundSign(str, defaultOp, actualOpRtn)
+    String str;
+    _XtTranslateOp defaultOp;
+    _XtTranslateOp *actualOpRtn;
+{
+    String start;
+    char operation[20];
+    _XtTranslateOp opType;
+    
+    opType = defaultOp;
+    str = ScanWhitespace(str);
+    if (*str == '#') {
+	str++;
+	start = str;
+	str = ScanIdent(str);
+	(void) strncpy(operation, start, MIN(20, str-start));
+	operation[str-start] = '\0';
+	if (!strcmp(operation,"replace"))
+	  opType = XtTableReplace;
+	else if (!strcmp(operation,"augment"))
+	  opType = XtTableAugment;
+	else if (!strcmp(operation,"override"))
+	  opType = XtTableOverride;
+	str = ScanWhitespace(str);
+	if (*str == '\n') {
+	    str++;
+	    str = ScanWhitespace(str);
+	}
+    }
+    *actualOpRtn = opType;
+    return str;
+}
+
+static XtTranslations ParseTranslationTable(source, isAccelerator, defaultOp)
+    String 	source;
+    Boolean	isAccelerator;
+    _XtTranslateOp defaultOp;
+{
+    XtTranslations		xlations;
+    TMStateTree			stateTrees[8];
+    TMParseStateTreeRec		parseTreeRec, *parseTree = &parseTreeRec;
+    XrmQuark			stackQuarks[200];
+    TMBranchHeadRec		stackBranchHeads[200];
+    StatePtr			stackComplexBranchHeads[200];
+    _XtTranslateOp		actualOp;
+
+    if (source == NULL)
+      return (XtTranslations)NULL;
+
+    source = CheckForPoundSign(source, defaultOp, &actualOp);
+
+    parseTree->isSimple = True;
+    parseTree->mappingNotifyInterest = False;
+    parseTree->isAccelerator = isAccelerator;
+    parseTree->isStackBranchHeads =
+      parseTree->isStackQuarks =
+	parseTree->isStackComplexBranchHeads = True;
+
+    parseTree->numQuarks =
+      parseTree->numBranchHeads =
+	parseTree->numComplexBranchHeads = 0;
+
+    parseTree->quarkTblSize =
+      parseTree->branchHeadTblSize =
+	parseTree->complexBranchHeadTblSize = 200;
+
+    parseTree->quarkTbl = stackQuarks;
+    parseTree->branchHeadTbl = stackBranchHeads;
+    parseTree->complexBranchHeadTbl = stackComplexBranchHeads;
+
+    while (source != NULL && *source != '\0') {
+	source =  ParseTranslationTableProduction(parseTree, source);
+    }
+    stateTrees[0] = _XtParseTreeToStateTree(parseTree);
+
+    if (!parseTree->isStackQuarks)
+      XtFree((char *)parseTree->quarkTbl);
+    if (!parseTree->isStackBranchHeads)
+      XtFree((char *)parseTree->branchHeadTbl);
+    if (!parseTree->isStackComplexBranchHeads)
+      XtFree((char *)parseTree->complexBranchHeadTbl);
+
+
+    xlations = _XtCreateXlations(stateTrees, 1, NULL, NULL);
+    _XtSetTMOperation(xlations, actualOp);
+#ifdef notdef
+    XtFree(stateTrees);
+#endif /* notdef */
+    return xlations;
+}
+
 /*** public procedures ***/
 
 /*
  * Parses a user's or applications translation table
  */
+#if NeedFunctionPrototypes
+XtAccelerators XtParseAcceleratorTable(
+    _Xconst char* source
+    )
+#else
+XtAccelerators XtParseAcceleratorTable(source)
+    String source;
+#endif
+{
+    return ((XtAccelerators)ParseTranslationTable(source, True, XtTableAugment));
+}
+
 #if NeedFunctionPrototypes
 XtTranslations XtParseTranslationTable(
     _Xconst char* source
@@ -1898,43 +1943,8 @@ XtTranslations XtParseTranslationTable(source)
     String source;
 #endif
 {
-    XtTranslations stateTable;
-
-    if (source == NULL)
-         return (XtTranslations)NULL;
-
-    _XtInitializeStateTable(&stateTable);
-
-    source = CheckForPoundSign(stateTable,source);
-    while (source != NULL && *source != '\0') {
-       source =  ParseTranslationTableProduction(stateTable,source,FALSE);
-    }
-    return stateTable;
+    return (ParseTranslationTable(source, False, XtTableReplace));
 }
-
-#if NeedFunctionPrototypes
-XtAccelerators XtParseAcceleratorTable (
-    _Xconst char*   source
-    )
-#else
-XtAccelerators XtParseAcceleratorTable (source)
-    String   source;
-#endif
-{
-    XtTranslations stateTable;
-
-    if (source == NULL)
-	return NULL;
-
-    _XtInitializeStateTable(&stateTable);
-
-    source = CheckForPoundSign(stateTable,source);
-    while (source != NULL && *source != '\0') {
-       source =  ParseTranslationTableProduction(stateTable,source,TRUE);
-    }
-    return stateTable;
-}
-
 
 void _XtTranslateInitialize()
 {
@@ -1965,6 +1975,7 @@ _XtAddTMConverters(table)
     ConverterTable table;
 {
     XrmQuark q;
+
      _XtTableAddConverter(table,
 	     q = XrmPermStringToQuark(XtRString), 
 	     XrmPermStringToQuark(XtRTranslationTable), 

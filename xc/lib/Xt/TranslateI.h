@@ -1,4 +1,4 @@
-/* $XConsortium: TranslateI.h,v 1.27 90/12/29 12:15:47 rws Exp $ */
+/* $XConsortium: TranslateI.h,v 1.1 91/01/09 19:20:45 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -33,13 +33,23 @@ SOFTWARE.
  * Date:	Sat Aug 29 1987
  */
 
+#ifndef _TranslateI_h
+#define _TranslateI_h
+
 /*#define REFCNT_TRANSLATIONS*/
 #define CACHE_TRANSLATIONS
 
+#define TM_NO_MATCH (-2)
+
 #define _XtRStateTablePair "_XtStateTablePair"
 
+typedef unsigned char TMByteCard;
+typedef unsigned short TMShortCard;
+typedef unsigned long TMLongCard;
+typedef short TMShortInt;
+
 typedef Boolean (*MatchProc)();
-	/* Event *parsed, TMEventPtr incoming */
+    /* Event *parsed, TMEventPtr incoming */
 
 typedef struct _ModToKeysymTable {
     Modifiers mask;
@@ -48,30 +58,12 @@ typedef struct _ModToKeysymTable {
 } ModToKeysymTable;
 
 typedef struct _LateBindings {
-    Boolean knot;
-    Boolean pair;
+    unsigned int knot:1;
+    unsigned int pair:1;
     KeySym keysym;
 } LateBindings, *LateBindingsPtr;
 
 typedef short ModifierMask;
-typedef struct _EventObjRec *EventObjPtr;
-typedef struct _EventRec {
-    unsigned long modifiers;
-    unsigned long modifierMask;
-    LateBindingsPtr lateModifiers;
-    unsigned long eventType;
-    unsigned long eventCode;
-    unsigned long eventCodeMask;
-    MatchProc matchEvent;
-    Boolean standard;
-} Event;
-
-typedef enum _TMkind {override,augment} TMkind;
-
-typedef struct _EventObjRec {
-    Event event;	/* X event description */
-    StatePtr state;	/* pointer to linked lists of state info */
-} EventObjRec;
 
 typedef struct _ActionsRec *ActionPtr;
 typedef struct _ActionsRec {
@@ -82,51 +74,162 @@ typedef struct _ActionsRec {
 } ActionRec;
 
 typedef struct _StateRec {
-    int index;		/* index of event into EventObj table */
-    ActionPtr actions;	/* rhs list of actions to perform */
-    StatePtr nextLevel;	/* the next level points to the next event
-			   in one event sequence */
-    StatePtr next;	/* points to other event state at same level */
-    StatePtr forw;	/* points to next state in list of all states */
-    Boolean cycle;	/* true iff nextLevel is a loop */
-}  StateRec;
-typedef enum {XtTableReplace,XtTableAugment,XtTableOverride} _XtTranslateOp;
+    unsigned int	isCycleStart:1;
+    unsigned int	isCycleEnd:1;
+    TMShortCard		typeIndex;
+    TMShortCard		modIndex;
+    ActionPtr		actions;	/* rhs list of actions to perform */
+    StatePtr 		nextLevel;
+}StateRec;
 
-typedef struct _StateTableData {
-    _XtTranslateOp	operation; /*replace,augment,override*/
-    unsigned int	numEvents;
-    unsigned int	eventTblSize;
-    EventObjPtr		eventObjTbl;
-    unsigned int	numQuarks;   /* # of entries in quarkTable */
-    unsigned int	quarkTblSize; /*total size of quarkTable */
-    XrmQuark*		quarkTable;  /* table of quarkified rhs*/
-    unsigned int	accNumQuarks;
-    unsigned int	accQuarkTblSize;
-    XrmQuark*		accQuarkTable;
-    StatePtr		head;	/* head of list of all states */
-    Boolean		mappingNotifyInterest;
-} StateTableData, *StateTablePtr;
 
-typedef struct _XtBoundAccActionRec {
-    Widget widget;    /*widgetID to pass to action Proc*/
-    XtActionProc proc; /*action procedure */
-} XtBoundAccActionRec;
+#define XtTableReplace	0
+#define XtTableAugment	1
+#define XtTableOverride	2
+#define XtTableUnmerge  3
 
-typedef struct _TranslationData {
-    StateTablePtr	 stateTable;
-    XtBoundAccActionRec* accProcTbl;
-    EventMask		 eventMask;
-} TranslationData;
+typedef unsigned int _XtTranslateOp;
+
+/*
+ * New Definitions for TMLite
+ */
+typedef struct _TMModifierMatchRec{
+    TMLongCard	 modifiers;
+    TMLongCard	 modifierMask;
+    LateBindingsPtr lateModifiers;
+    Boolean	 standard;
+}TMModifierMatchRec, *TMModifierMatch;
+
+typedef struct _TMTypeMatchRec{
+    TMLongCard	 eventType;
+    TMLongCard	 eventCode;
+    TMLongCard	 eventCodeMask;
+    MatchProc	 matchEvent;
+}TMTypeMatchRec, *TMTypeMatch;
+
+typedef struct _TMBranchHeadRec {
+    unsigned int	isSimple:1;
+    unsigned int	hasActions:1;
+    unsigned int	hasCycles:1;
+    int			more:13;
+    TMShortCard		typeIndex;
+    TMShortCard		modIndex;
+}TMBranchHeadRec, *TMBranchHead;
+
+/* NOTE: elements of this structure must match those of
+ * TMComplexStateTreeRec and TMParseStateTreeRec.
+ */
+typedef struct _TMSimpleStateTreeRec{
+    unsigned int	isSimple:1;
+    unsigned int	isAccelerator:1;
+    unsigned int	mappingNotifyInterest:1;
+    unsigned int	refCount:13;
+    TMShortCard		numBranchHeads;
+    TMShortCard		numQuarks;   /* # of entries in quarkTbl */
+    TMShortCard		unused;	     /* to ensure same alignment */
+    TMBranchHeadRec	*branchHeadTbl;
+    XrmQuark		*quarkTbl;  /* table of quarkified rhs*/
+}TMSimpleStateTreeRec, *TMSimpleStateTree;    
+
+/* NOTE: elements of this structure must match those of
+ * TMSimpleStateTreeRec and TMSimpleStateTreeRec.
+ */
+typedef struct _TMComplexStateTreeRec{
+    unsigned int	isSimple:1;
+    unsigned int	isAccelerator:1;
+    unsigned int	mappingNotifyInterest:1;
+    unsigned int	refCount:13;
+    TMShortCard		numBranchHeads;
+    TMShortCard		numQuarks;   /* # of entries in quarkTbl */
+    TMShortCard		numComplexBranchHeads;
+    TMBranchHeadRec	*branchHeadTbl;
+    XrmQuark		*quarkTbl;  /* table of quarkified rhs*/
+    StatePtr		*complexBranchHeadTbl;
+}TMComplexStateTreeRec, *TMComplexStateTree;    
+
+/* NOTE: elements of this structure must match those of
+ * TMSimpleStateTreeRec and TMComplexStateTreeRec.
+ */
+typedef struct _TMParseStateTreeRec{
+    unsigned int	isSimple:1;
+    unsigned int	isAccelerator:1;
+    unsigned int	mappingNotifyInterest:1;
+    unsigned int	isStackQuarks:1;
+    unsigned int	isStackBranchHeads:1;
+    unsigned int	isStackComplexBranchHeads:1;
+    unsigned int	unused:10; /* to ensure correct alignment */
+    TMShortCard		numBranchHeads;
+    TMShortCard		numQuarks;   /* # of entries in quarkTbl */
+    TMShortCard		numComplexBranchHeads;
+    TMBranchHeadRec	*branchHeadTbl;
+    XrmQuark		*quarkTbl;  /* table of quarkified rhs*/
+    StatePtr		*complexBranchHeadTbl;
+    TMShortCard		branchHeadTblSize;
+    TMShortCard		quarkTblSize; /*total size of quarkTbl */
+    TMShortCard		complexBranchHeadTblSize;
+    StatePtr		head;
+}TMParseStateTreeRec, *TMParseStateTree;    
+
+typedef union _TMStateTreeRec{
+    TMSimpleStateTreeRec	simple;
+    TMParseStateTreeRec		parse;
+    TMComplexStateTreeRec	complex;
+}*TMStateTree, **TMStateTreePtr, **TMStateTreeList;
+
+typedef struct _TMSimpleBindProcsRec {
+    XtActionProc	*procs;
+}TMSimpleBindProcsRec, *TMSimpleBindProcs;
+
+typedef struct _TMComplexBindProcsRec {
+    Widget	 	widget;		/*widgetID to pass to action Proc*/
+    XtTranslations	aXlations;
+    XtActionProc	*procs;
+}TMComplexBindProcsRec, *TMComplexBindProcs;
+
+/* NOTE: elements of this structure must match those of TMComplexBindDataRec */
+typedef struct _TMSimpleBindDataRec {
+    unsigned int		isComplex:1;
+    TMSimpleBindProcsRec	bindTbl[1]; /* WARNING, variable length */
+}TMSimpleBindDataRec, *TMSimpleBindData;
+
+/* NOTE: elements of this structure must match those of TMSimpleBindDataRec */
+typedef struct _TMComplexBindDataRec {
+    unsigned int		isComplex:1;
+    TMComplexBindProcsRec	bindTbl[1]; /* WARNING, variable length */
+}TMComplexBindDataRec, *TMComplexBindData;
+
+typedef union _TMBindDataRec{
+    TMSimpleBindDataRec		simple;
+    TMComplexBindDataRec	complex;
+}*TMBindData;
+
+typedef struct _TranslationData{
+    unsigned char		operation; /*replace,augment,override*/
+    TMShortCard			numStateTrees;
+    struct _TranslationData    	*composers[2];
+    EventMask			eventMask;
+    TMStateTree			stateTreeTbl[1]; /* WARNING, variable length */
+}TranslationData;
 
 typedef struct _TMConvertRec {
-   StateTablePtr old; /* table to merge into */
-   StateTablePtr new; /* table to merge from */
-   TMkind  operation; /* merge or augment     */
+    XtTranslations	old; /* table to merge into */
+    XtTranslations	new; /* table to merge from */
 } TMConvertRec;
 
-#define _XtEventTimerEventType ((unsigned long)~0L)
-#define KeysymModMask		(1<<27) /* private to TM */
-#define AnyButtonMask		(1<<28)	/* private to TM */
+#define _XtEventTimerEventType ((TMShortCard)~0)
+#define KeysymModMask		(1L<<27) /* private to TM */
+#define AnyButtonMask		(1L<<28) /* private to TM */
+
+typedef struct _EventRec {
+    TMLongCard modifiers;
+    TMLongCard modifierMask;
+    LateBindingsPtr lateModifiers;
+    TMLongCard eventType;
+    TMLongCard eventCode;
+    TMLongCard eventCodeMask;
+    MatchProc matchEvent;
+    Boolean standard;
+} Event;
 
 typedef struct _EventSeqRec *EventSeqPtr;
 typedef struct _EventSeqRec {
@@ -138,14 +241,11 @@ typedef struct _EventSeqRec {
 
 typedef EventSeqRec EventRec;
 typedef EventSeqPtr EventPtr;
+
 typedef struct _TMEventRec {
     XEvent *xev;
     Event event;
 }TMEventRec,*TMEventPtr;
-
-extern void _XtAddEventSeqToStateTable();
-extern void _XtInitializeStateTable(); /* stateTable */
-    /* _XtTranslations *stateTable; */
 
 typedef struct _ActionHookRec {
     struct _ActionHookRec* next; /* must remain first */
@@ -165,13 +265,105 @@ typedef struct _KeyCacheRec {
     KeySym keysym[TMKEYCACHESIZE];
 } TMKeyCache;
 
-typedef struct _TMContext {
+typedef struct _TMKeyContextRec {
     XEvent *event;
     unsigned long serial;
     KeySym keysym;
     Modifiers modifiers;
     TMKeyCache keycache;  /* keep this last, to keep offsets to others small */
-} TMContextRec, *TMContext;
+} TMKeyContextRec, *TMKeyContext;
+
+typedef struct _TMGlobalRec{
+    TMTypeMatchRec 		**typeMatchSegmentTbl;
+    TMShortCard			numTypeMatches;
+    TMShortCard			numTypeMatchSegments;
+    TMShortCard			typeMatchSegmentTblSize;
+    TMModifierMatchRec 		**modMatchSegmentTbl;
+    TMShortCard			numModMatches;
+    TMShortCard			numModMatchSegments;
+    TMShortCard			modMatchSegmentTblSize;
+    Boolean			newMatchSemantics;
+#ifdef TRACE_TM
+    XtTranslations		*tmTbl;
+    TMShortCard			numTms;
+    TMShortCard			tmTblSize;
+    struct _TMBindCacheRec	**bindCacheTbl;
+    TMShortCard			numBindCache;
+    TMShortCard			bindCacheTblSize;
+    TMShortCard			numLateBindings;
+    TMShortCard			numBranchHeads;
+    TMShortCard			numComplexStates;
+    TMShortCard			numComplexActions;
+#endif /* TRACE_TM */
+}TMGlobalRec;
+
+extern TMGlobalRec _XtGlobalTM;
+
+#define TM_MOD_SEGMENT_SIZE 	16
+#define TM_TYPE_SEGMENT_SIZE 	16
+
+#define TMGetTypeMatch(index) \
+  ((TMTypeMatch) \
+   &((_XtGlobalTM.typeMatchSegmentTbl[((index) >> 4)])[(index) & 15]))
+#define TMGetModifierMatch(index) \
+  ((TMModifierMatch) \
+   &((_XtGlobalTM.modMatchSegmentTbl[(index) >> 4])[(index) & 15]))
+
+/* Useful Access Macros */
+#define TMNewMatchSemantics() (_XtGlobalTM.newMatchSemantics)
+#define TMBranchMore(branch) (branch->more)
+#define TMComplexBranchHead(tree, br) \
+  (((TMComplexStateTree)tree)->complexBranchHeadTbl[TMBranchMore(br)])
+
+#define TMGetComplexBindEntry(bindData, idx) \
+  ((TMComplexBindProcs)&(((TMComplexBindData)bindData)->bindTbl[idx]))
+
+#define TMGetSimpleBindEntry(bindData, idx) \
+  ((TMSimpleBindProcs)&(((TMSimpleBindData)bindData)->bindTbl[idx]))
+
+
+#define _InitializeKeysymTables(dpy, pd) \
+    if (pd->keysyms == NULL) \
+        _XtBuildKeysymTables(dpy, pd)
+
+/* 
+ * Internal Functions
+ */
+
+#if NeedWidePrototypes
+#define Boolean int
+#endif
+
+extern void _XtPopup(
+#if NeedFunctionPrototypes
+    Widget      /* widget */,
+    XtGrabKind  /* grab_kind */,
+    Boolean     /* spring_loaded */
+#endif
+);
+
+extern String _XtPrintXlations(
+#if NeedFunctionPrototypes
+    Widget		/* w */,
+    XtTranslations 	/* xlations */,
+    Widget		/* accelWidget */,
+    Boolean		/* includeRHS */
+#endif
+);
+
+extern void _XtRegisterGrabs(
+#if NeedFunctionPrototypes
+    Widget	/* widget */
+#endif
+);
+
+#undef Boolean
+
+
+extern void _XtAddEventSeqToStateTree();
+
+extern void _XtInitializeStateTable(); /* stateTable */
+    /* _XtTranslations *stateTable; */
 
 extern Boolean _XtMatchUsingStandardMods();
 extern Boolean _XtMatchUsingDontCareMods();
@@ -179,7 +371,90 @@ extern Boolean _XtRegularMatch();
 extern Boolean _XtMatchAtom();
 extern void _XtConvertCase();
 extern void _XtBuildKeysymTables();
+#ifndef NO_MIT_HACKS
+extern void  _XtDisplayTranslations();
+extern void  _XtDisplayAccelerators();
+extern void _XtDisplayInstalledAccelerators();
+#endif
 extern void _XtPopupInitialize();
+
+extern void _XtBindActions(
+#if NeedFunctionPrototypes
+    Widget	/* widget */,
+    XtTM 	/* tm_rec */
+#endif
+);
+
+extern Boolean _XtComputeLateBindings(
+#if NeedFunctionPrototypes
+    LateBindingsPtr	/* lateModifiers */,
+    TMEventPtr		/* eventSeq */,
+    Modifiers*		/* computed */,
+    Modifiers*		/* computedMask */
+#endif
+);
+
+extern XtTranslations _XtCreateXlations(
+#if NeedFunctionPrototypes
+    TMStateTree *	/* stateTrees */,
+    TMShortCard		/* numStateTrees */,
+    XtTranslations 	/* first */,
+    XtTranslations	/* second */
+#endif
+);
+
+extern Boolean _XtCvtMergeTranslations(
+#if NeedFunctionPrototypes
+    Display*	/* dpy */,
+    XrmValuePtr	/* args */,
+    Cardinal*	/* num_args */,
+    XrmValuePtr	/* from */,
+    XrmValuePtr	/* to */,
+    XtPointer*	/* closure_ret */
+#endif
+);
+
+void _XtFreeTranslations(
+#if NeedFunctionPrototypes
+    XtAppContext	/* app */,
+    XrmValuePtr		/* toVal */,
+    XtPointer		/* closure */,
+    XrmValuePtr		/* args */,
+    Cardinal*		/* num_args */
+#endif
+);
+
+extern TMShortCard _XtGetModifierIndex(
+#if NeedFunctionPrototypes
+    Event*	/* event */
+#endif
+);
+   
+extern TMShortCard _XtGetQuarkIndex(
+#if NeedFunctionPrototypes
+    TMParseStateTree	/* stateTreePtr */,
+    XrmQuark		/* quark */
+#endif
+);
+
+extern TMShortCard _XtGetTypeIndex(
+#if NeedFunctionPrototypes
+    Event*	/* event */
+#endif
+);
+
+extern void _XtGrabInitialize(
+#if NeedFunctionPrototypes
+    XtAppContext	/* app */
+#endif
+);
+
+extern XtPointer _XtInitializeActionData(
+#if NeedFunctionPrototypes
+    struct _XtActionsRec *	/* actions */,
+    Cardinal 			/* count */
+#endif
+);
 
 extern void _XtInstallTranslations(
 #if NeedFunctionPrototypes
@@ -187,84 +462,74 @@ extern void _XtInstallTranslations(
 #endif
 );
 
-extern void _XtBindActions(
+extern void _XtMergeTranslations(
 #if NeedFunctionPrototypes
-    Widget	/* widget */,
-    XtTM	/* tm_rec */
+    Widget		/* widget */,
+    XtTranslations	/* newXlations */
 #endif
 );
 
-extern void _XtTranslateInitialize();
-
-extern XtTranslations _XtParseTranslationTable(
+extern TMStateTree _XtParseTreeToStateTree(
 #if NeedFunctionPrototypes
-    String /* source */
+    TMParseStateTree 	/* parseTree */
 #endif
 );
 
-#if NeedWidePrototypes
-#define Boolean int
-#endif
-
-extern void _XtRegisterGrabs(
+extern String _XtPrintActions(
 #if NeedFunctionPrototypes
-    Widget /* widget */,
-    Boolean /* acceleratorsOnly */
+    ActionRec*	/* actions */,
+    XrmQuark*	/* quarkTbl */
 #endif
 );
 
-extern void _XtPopup(
+extern String _XtPrintEventSeq(
 #if NeedFunctionPrototypes
-    Widget 	/* widget */,
-    XtGrabKind 	/* grab_kind */,
-    Boolean 	/* spring_loaded */
+    EventSeqPtr	/* eventSeq */,
+    Display*	/* dpy */
 #endif
 );
 
-#undef Boolean
-
-extern XtTranslations _XtCondCopyTranslations(
+typedef Boolean (*_XtTraversalProc)(
 #if NeedFunctionPrototypes
-    XtTranslations /* translations */
+    StatePtr	/* state */,
+    XtPointer	/* data */
+#endif
+);
+				    
+extern void _XtTraverseStateTree(
+#if NeedFunctionPrototypes
+    TMStateTree		/* tree */,
+    _XtTraversalProc	/* func */,				 
+    XtPointer		/* data */
 #endif
 );
 
-extern void _XtRegisterAccRemoveCallbacks(
+extern void _XtSetTMOperation(
 #if NeedFunctionPrototypes
-    Widget /* dest */
+    XtTranslations	/* xlations */,
+    _XtTranslateOp	/* operation */
 #endif
 );
 
-extern void _XtUninstallAccelerators(
+extern void _XtTranslateInitialize(
 #if NeedFunctionPrototypes
-    Widget /* w */
+    void
 #endif
 );
 
-extern Boolean _XtCvtMergeTranslations(
+extern void _XtUnbindActions(
 #if NeedFunctionPrototypes
-    Display*	/* dpy */,
-    XrmValuePtr /* args */,
-    Cardinal*	/* num_args */,
-    XrmValuePtr /* from */,
-    XrmValuePtr /* to */,
-    XtPointer*	/* closure_ret */
+    Widget		/* widget */,
+    XtTranslations	/* xlations */,
+    TMBindData		/* bindData */
 #endif
 );
 
-void _XtFreeTranslations(
+extern void _XtUnmergeTranslations(
 #if NeedFunctionPrototypes
-    XtAppContext /* app */,
-    XrmValuePtr  /* toVal */,
-    XtPointer    /* closure */,
-    XrmValuePtr  /* args */,
-    Cardinal*	 /* num_args */
+    Widget		/* widget */,
+    XtTranslations 	/* xlations */
 #endif
 );
 
-void _XtTranslateEvent (
-#if NeedFunctionPrototypes
-    Widget	/* w */,
-    XEvent*	/* event */
-#endif
-);
+#endif /* TranslateI_h */
