@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xdpyinfo.c,v 1.11 89/02/20 10:02:03 jim Exp $
+ * $XConsortium: xdpyinfo.c,v 1.12 89/03/29 13:47:51 jim Exp $
  * 
  * xdpyinfo - print information about X display connecton
  *
@@ -174,6 +174,7 @@ print_screen_info (dpy, scr)
     char eventbuf[80];			/* want 79 chars per line + nul */
     static char *yes = "YES", *no = "NO";
     double xres, yres;
+    int ndepths = 0, *depths = NULL;
 
     /*
      * there are 2.54 centimeters to an inch; so there are 25.4 millimeters.
@@ -195,6 +196,18 @@ print_screen_info (dpy, scr)
 	    DisplayWidthMM(dpy, scr), DisplayHeightMM (dpy, scr));
     printf ("  resolution:    %dx%d dots per inch\n", 
 	    (int) (xres + 0.5), (int) (yres + 0.5));
+    if (XListDepths (dpy, scr, &ndepths, &depths)) {
+	printf ("  depths (%d):    ", ndepths);
+	for (i = 0; i < ndepths; i++) {
+	    printf ("%d", depths[i]);
+	    if (i < ndepths - 1) { 
+		putchar (',');
+		putchar (' ');
+	    }
+	}
+	putchar ('\n');
+	if (depths) XFree ((char *) depths);
+    }
     printf ("  root window id:    0x%lx\n", RootWindow (dpy, scr));
     printf ("  depth of root window:    %d plane%s\n",
 	    DisplayPlanes (dpy, scr),
