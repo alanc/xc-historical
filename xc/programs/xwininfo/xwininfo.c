@@ -314,6 +314,9 @@ Display_Events_Info(window)
   XWindowAttributes win_attributes;
   char buffer[100];
 
+  if (!XGetWindowAttributes(dpy, window, &win_attributes))
+    Fatal_Error("Can't get window attributes.");
+
   printf("\n         ==> Someone wants these events:\n");
   Display_Event_Mask(win_attributes.all_event_masks);
 
@@ -458,18 +461,22 @@ Display_Size_Hints(window)
 Display_WM_Info(window)
      Window window;
 {
-        XWMHints wmhints;
+        XWMHints *wmhints;
 	long flags;
 	char *bool;
 
-	XGetWMHints(dpy, window, &wmhints);
-	flags = wmhints.flags;
+	wmhints = XGetWMHints(dpy, window);
+	if (!wmhints) {
+		printf("\n         ==> No window manager hints defined\n");
+		return;
+	}
+	flags = wmhints->flags;
 
 	printf("\n         ==> Window manager hints:\n\n");
 
 	if (flags & InputHint) {
 		bool = "no";
-		if (wmhints.input == True)
+		if (wmhints->input == True)
 		  bool = "yes";
 		printf("             ==> Application accepts input?  %s\n",
 		       bool);
@@ -477,23 +484,23 @@ Display_WM_Info(window)
 
 	if (flags & IconWindowHint) {
 		printf("             ==> Icon window id:");
-		Display_Window_Id(wmhints.icon_window);
+		Display_Window_Id(wmhints->icon_window);
 	}
 
 	if (flags & IconPositionHint)
 	  printf("             ==> Initial icon position: %d, %d\n",
-		 wmhints.icon_x, wmhints.icon_y);
+		 wmhints->icon_x, wmhints->icon_y);
 
 	if (flags & StateHint) {
-		if (wmhints.initial_state == DontCareState)
+		if (wmhints->initial_state == DontCareState)
 		  printf("             ==> Initial state is Don't care\n");
-		else if (wmhints.initial_state == NormalState)
+		else if (wmhints->initial_state == NormalState)
 		  printf("             ==> Initial state is Normal state\n");
-		else if (wmhints.initial_state == ZoomState)
+		else if (wmhints->initial_state == ZoomState)
 		  printf("             ==> Initial state is Zoomed state\n");
-		else if (wmhints.initial_state == IconicState)
+		else if (wmhints->initial_state == IconicState)
 		  printf("             ==> Initial state is Iconic state\n");
-		else if (wmhints.initial_state == InactiveState)
+		else if (wmhints->initial_state == InactiveState)
 		  printf("             ==> Initial state is Inactive state\n");
 	}
 }
