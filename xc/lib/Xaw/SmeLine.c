@@ -1,4 +1,4 @@
-/* $XConsortium: SmeLine.c,v 1.8 90/02/08 13:50:13 jim Exp $ */
+/* $XConsortium: SmeLine.c,v 1.9 91/01/02 17:26:51 gildea Exp $ */
 
 /*
  * Copyright 1989 Massachusetts Institute of Technology
@@ -56,7 +56,7 @@ static XtResource resources[] = {
  * Function definitions. 
  */
 
-static void Redisplay(), ClassInitialize(), Initialize();
+static void Redisplay(), Initialize();
 static void DestroyGC(), CreateGC();
 static Boolean SetValues();
 static XtGeometryResult QueryGeometry();
@@ -69,7 +69,7 @@ SmeLineClassRec smeLineClassRec = {
     /* superclass         */    (WidgetClass) SUPERCLASS,
     /* class_name         */    "SmeLine",
     /* size               */    sizeof(SmeLineRec),
-    /* class_initialize   */	ClassInitialize,
+    /* class_initialize   */	XawInitializeWidgetSet,
     /* class_part_initialize*/	NULL,
     /* Class init'ed      */	FALSE,
     /* initialize         */    Initialize,
@@ -118,25 +118,6 @@ WidgetClass smeLineObjectClass = (WidgetClass) &smeLineClassRec;
  * Semi-Public Functions.
  *
  ************************************************************/
-
-/*	Function Name: ClassInitialize
- *	Description: The Line Menu Entry Object's class initialization proc.
- *	Arguments: none.
- *	Returns: none.
- */
-
-static void 
-ClassInitialize()
-{
-    static XtConvertArgRec screenConvertArg[] = {
-        {XtWidgetBaseOffset, (caddr_t) XtOffset(Widget, core.screen),
-	     sizeof(Screen *)}
-    };
-
-    XawInitializeWidgetSet();
-    XtAddConverter(XtRString, XtRBitmap, XmuCvtStringToBitmap,
-		   screenConvertArg, XtNumber(screenConvertArg));
-}
 
 /*      Function Name: Initialize
  *      Description: Initializes the simple menu widget
