@@ -69,6 +69,6 @@ snf:
 DependSubdirs($(SUBDIRS))
 
 clean::
-	(cd snf; $(RM_CMD) Makefile *.snf$(ZSUFFIX))
+	(cd snf; $(RM_CMD) Makefile fonts.dir fonts.alias *.snf$(ZSUFFIX))
 
 FRC:
