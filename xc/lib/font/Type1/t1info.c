@@ -1,4 +1,4 @@
-/* $XConsortium: t1info.c,v 1.12 93/09/22 16:59:20 gildea Exp $ */
+/* $XConsortium: t1info.c,v 1.13 94/02/04 17:07:16 gildea Exp $ */
 /* Copyright International Business Machines,Corp. 1991
  * All Rights Reserved
  *
@@ -102,6 +102,7 @@ static fontProp extraProps[] = {
     "RAW_ASCENT", 0, 0,
     "RAW_DESCENT", 0, 0,
     "RAW_AVERAGE_WIDTH", 0, 0,
+    "FACE_NAME", 0, 0,
 };
  
 /* this is a bit kludgy */
@@ -112,7 +113,8 @@ static fontProp extraProps[] = {
 #define RAWASCENTPROP	4
 #define RAWDESCENTPROP	5
 #define RAWWIDTHPROP	6
- 
+#define FACE_NAMEPROP	7
+
 #define NNAMEPROPS (sizeof(fontNamePropTable) / sizeof(fontProp))
 #define NEXTRAPROPS (sizeof(extraProps) / sizeof(fontProp))
  
@@ -365,6 +367,14 @@ ComputeStdProps(pInfo, Vals, Filename, Fontname, sAscent, sDescent, sWidth)
             QueryFontLib(Filename, "Notice", &infostrP, &rc);
             if (rc || !infostrP) {
                 infostrP = "Copyright Notice not available";
+            }
+            pp->value = MakeAtom(infostrP, strlen(infostrP), TRUE);
+            break;
+         case FACE_NAMEPROP:
+            *is_str = TRUE;
+            QueryFontLib(Filename, "FontName", &infostrP, &rc);
+            if (rc || !infostrP) {
+                infostrP = "(unknown)"; 
             }
             pp->value = MakeAtom(infostrP, strlen(infostrP), TRUE);
             break;
