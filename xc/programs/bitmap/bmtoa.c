@@ -1,7 +1,7 @@
 /*
  * bmtoa - bitmap to ascii filter
  *
- * $XConsortium: bmtoa.c,v 1.2 91/02/18 15:05:44 dave Exp $
+ * $XConsortium: bmtoa.c,v 1.3 91/10/21 14:31:42 eswu Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -21,6 +21,7 @@
 #include <stdio.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
+#include <X11/Xos.h>
 
 #include <X11/Xmu/Drawing.h>
 
