@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Event.c,v 1.42 88/01/20 15:35:25 swick Locked $";
+static char rcsid[] = "$Header: Event.c,v 1.43 88/01/20 18:16:47 swick Locked $";
 #endif lint
 
 /*
@@ -281,21 +281,21 @@ typedef struct _XRegion {
 } REGION;
 
 
-Region XRectToRegion(rect)
+XUnionRectWithRegion(rect, source, dest)
     register XRectangle *rect;
+    Region source, dest;
 {
-    Region region;
-    register Box *box;
+    REGION region;
 
-    region = ( Region )Xmalloc( (unsigned) sizeof( REGION ));
-    box = region->rects = ( BOX * )Xmalloc( (unsigned) sizeof( BOX ));
-    region->numRects = 1;
-    box->x1 = region->extents.x1 = rect->x;
-    box->y1 = region->extents.y1 = rect->y;
-    box->x2 = region->extents.x2 = rect->x + rect->width;
-    box->y2 = region->extents.y2 = rect->y + rect->height;
-    region->size = 1;
-    return( region );
+    region.rects = &region.extents;
+    region.numRects = 1;
+    region.extents.x1 = rect->x;
+    region.extents.y1 = rect->y;
+    region.extents.x2 = rect->x + rect->width;
+    region.extents.y2 = rect->y + rect->height;
+    region.size = 1;
+
+    XUnionRegion(&region, source, dest);
 }
 
 
@@ -304,7 +304,6 @@ XtAddExposureToRegion(event, region)
     Region   region;
 {
     XRectangle rect;
-    Region exposeRegion;
 
     switch (event->type) {
 	case Expose:
@@ -323,9 +322,7 @@ XtAddExposureToRegion(event, region)
 		return;
     }
 
-    exposeRegion = XRectToRegion(&rect);
-    XUnionRegion(exposeRegion, region, region);
-    XDestroyRegion(exposeRegion);
+    XUnionRectWithRegion(&rect, region, region);
 }
 
 
