@@ -1,5 +1,5 @@
 /*
-* $XConsortium: IntrinsicP.h,v 1.43 89/09/21 08:34:23 swick Exp $
+* $XConsortium: IntrinsicP.h,v 1.44 89/10/04 12:21:36 swick Exp $
 * $oHeader: IntrinsicP.h,v 1.4 88/08/26 14:49:52 asente Exp $
 */
 
@@ -31,6 +31,16 @@ SOFTWARE.
 #define _XtintrinsicP_h
 
 #include <X11/Intrinsic.h>
+
+typedef struct {
+    XrmQuark	xrm_name;	  /* Resource name quark		*/
+    XrmQuark	xrm_class;	  /* Resource class quark		*/
+    XrmQuark	xrm_type;	  /* Resource representation type quark */
+    Cardinal	xrm_size;	  /* Size in bytes of representation	*/
+    long int	xrm_offset;	  /* -offset-1				*/
+    XrmQuark	xrm_default_type; /* Default representation type quark	*/
+    XtPointer	xrm_default_addr; /* Default resource address		*/
+} XrmResource, *XrmResourceList;
 
 typedef unsigned long XtVersionType;
 
