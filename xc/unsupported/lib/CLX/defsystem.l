@@ -355,7 +355,7 @@
 		      (args (list "-c" (namestring src)
 				  "-o" (namestring obj)
 				  #+mips "-G 0"
-				  #+hp "-DSYSV"
+				  #+(or hp sysv) "-DSYSV"
 				  #+(and mips (not dec)) "-I/usr/include/bsd"
 				  #-(and mips (not dec)) "-DUNIXCONN")))
 		 (format t ";;; cc~{ ~A~}~%" args)
@@ -375,10 +375,10 @@
 
       ;; Now compile and load all the files.
       ;; Defer compiler warnings until everything's compiled, if possible.
-      (#.(if (fboundp 'with-compilation-unit)
-	     'with-compilation-unit
-	   #+lcl3.0 'lucid::with-deferred-warnings
-	   #-lcl3.0 'progn)
+      (#+ansi-common-lisp with-compilation-unit
+       #+lcl3.0 lucid::with-deferred-warnings
+       #-(or lcl3.0 ansi-common-lisp) progn
+
        ()
        
        #+(and lucid (not lcl3.0) (or mc68000 mc68020))
@@ -408,9 +408,9 @@
 		   'string
 		   (namestring (merge-pathnames "socket.o" binary-path))
 		   " -lc")))
-	   (format t "~&Faslinking ~A with ~A~%" pathname options)
+	   (format t "~&Faslinking ~A with ~A.~%" pathname options)
 	   (si:faslink (namestring pathname) options)
-	   (format t "~&Finished faslinking ~A~%" pathname)))
+	   (format t "~&Finished faslinking ~A.~%" pathname)))
 
        #+excl (compile-and-load "excldep")
        (compile-and-load "depdefs")
@@ -495,9 +495,9 @@
 		       'string
 		       (namestring (merge-pathnames "socket.o" binary-path))
 		       " -lc")))
-	(format t "~&Faslinking ~A with ~A~%" pathname options)
+	(format t "~&Faslinking ~A with ~A.~%" pathname options)
 	(si:faslink (namestring pathname) options)
-	(format t "~&Finished faslinking ~A~%" pathname))
+	(format t "~&Finished faslinking ~A.~%" pathname))
 
       #+excl (load-binary "excldep")
       (load-binary "depdefs")
