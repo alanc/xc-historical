@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.36 92/06/01 18:32:20 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.37 92/11/20 13:22:47 rws Exp $
 
          YFLAGS = -d
         DEPLIBS = $(DEPXMULIB) $(DEPXLIB)
@@ -21,18 +21,17 @@ SpecialCObjectRule(parse,$(_NOOP_),'-DSYSTEM_INIT_FILE="'$(TWMDIR)'/system.twmrc
 SpecialCObjectRule(util,$(_NOOP_),-DNOPUTENV)
 #endif
 
-depend:: lex.c gram.c deftwmrc.c 
+LexFile(lex)
+
+YaccFile(gram,$(YFLAGS))
 
 ComplexProgramTarget(twm)
 InstallNonExecFile(system.twmrc,$(TWMDIR))
 
-gram.h gram.c: gram.y
-	$(YACC) $(YFLAGS) gram.y
-	$(MV) y.tab.c gram.c
-	$(MV) y.tab.h gram.h
+depend:: deftwmrc.c 
 
 clean::
-	$(RM) y.tab.h y.tab.c lex.yy.c gram.h gram.c lex.c deftwmrc.c 
+	RemoveFile(deftwmrc.c)
 
 deftwmrc.c:  system.twmrc
 	$(RM) $@
