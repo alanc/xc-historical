@@ -38,21 +38,34 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include "mi.h"
 #include "mistruct.h"
 #include "dix.h"
+#include "cfbmskbits.h"
 
 extern void miGetImageWithBS();	/* XXX should not be needed */
 
 extern int defaultColorVisualClass;
 
+#define _BP 8
+#define _RZ ((PSZ + 2) / 3)
+#define _RS 0
+#define _RM ((1 << _RZ) - 1)
+#define _GZ ((PSZ - _RS + 1) / 2)
+#define _GS _RZ
+#define _GM (((1 << _GZ) - 1) << _GS)
+#define _BZ (PSZ - _RZ - _GZ)
+#define _BS (_RZ + _GZ)
+#define _BM (((1 << _BZ) - 1) << _BS)
+#define _CE (1 << _RM)
+
 static VisualRec visuals[] = {
 /* vid screen class rMask gMask bMask oRed oGreen oBlue bpRGB cmpE nplan */
 #ifndef STATIC_COLOR
-    0,  0, PseudoColor,0,    0,    0,      0,    0,   0,    8,  256,   8,
-    0,  0, DirectColor,0x07, 0x38, 0xc0,   0,    3,   6,    8,  8,     8,
-    0,  0, GrayScale,  0,    0,    0,      0,    0,   0,    8,  256,   8,
-    0,  0, StaticGray, 0,    0,    0,      0,    0,   0,    8,  256,   8,
+    0,  0, PseudoColor, 0,   0,   0,   0,   0,   0,   _BP,  1<<PSZ,   PSZ,
+    0,  0, DirectColor, _RM, _GM, _BM, _RS, _GS, _BS, _BP, _CE,       PSZ,
+    0,  0, GrayScale,   0,   0,   0,   0,   0,   0,   _BP,  1<<PSZ,   PSZ,
+    0,  0, StaticGray,  0,   0,   0,   0,   0,   0,   _BP,  1<<PSZ,   PSZ,
 #endif
-    0,  0, StaticColor,0x07, 0x38, 0xc0,   0,    3,   6,    8,  256,   8,
-    0,  0, TrueColor,  0x07, 0x38, 0xc0,   0,    3,   6,    8,  8,     8
+    0,  0, StaticColor, _RM, _GM, _BM, _RS, _GS, _BS, _BP,  1<<PSZ,   PSZ,
+    0,  0, TrueColor,   _RM, _GM, _BM, _RS, _GS, _BS, _BP, _CE,       PSZ
 };
 
 #define	NUMVISUALS	((sizeof visuals)/(sizeof visuals[0]))
