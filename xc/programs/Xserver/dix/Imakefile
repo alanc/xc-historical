@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.41 93/09/26 21:14:00 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.42 93/09/30 15:46:09 gildea Exp $
 #include <Server.tmpl>
 
 SRCS = atom.c colormap.c cursor.c devices.c dispatch.c dixutils.c events.c \
@@ -46,6 +46,7 @@ DEFAULTDISPLAYCLASS = DefaultDisplayClass
 
 SITE_DEFINES = $(SITE_FONT_PATH) $(SITE_RGB_DB) $(SITE_DISPLAY_CLASS)
 
+EXT_DEFINES = ExtensionDefines
 
 NormalLibraryObjectRule()
 NormalLibraryTarget(dix,$(OBJS))
@@ -55,5 +56,7 @@ NormalLintTarget($(SRCS))
 SpecialCObjectRule(globals,$(ICONFIGFILES),$(SITE_DEFINES))
 SpecialCObjectRule(tables,$(ICONFIGFILES),$(K5DEFS))
 SpecialCObjectRule(dispatch,$(ICONFIGFILES),$(K5DEFS))
+SpecialCObjectRule(events,$(ICONFIGFILES),$(EXT_DEFINES))
+SpecialCObjectRule(devices,$(ICONFIGFILES),$(EXT_DEFINESS))
 
 DependTarget()
