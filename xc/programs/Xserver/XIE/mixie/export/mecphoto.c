@@ -1,4 +1,4 @@
-/* $XConsortium: mecphoto.c,v 1.1 93/07/19 10:13:46 rws Exp $ */
+/* $XConsortium: mecphoto.c,v 1.2 93/07/19 18:31:29 rws Exp $ */
 /**** module mecphoto.c ****/
 /******************************************************************************
 				NOTICE
@@ -307,7 +307,7 @@ static int InitializeECPhotoUn(flo,ped)
 	        aa->shift     = 0; 
 	    }
 	} else if (depth1 + depth2 + depth3 <= 8) {
-	    CARD8 ones = ~0,smask1,smask2,smask3,shift1,shift2,shift3;
+	    CARD8 ones = 0xff,smask1,smask2,smask3,shift1,shift2,shift3;
 	    if (tec->fillOrder == xieValMSFirst) {
 	        smask1 = ~(ones>>depth1);
 	        smask2 = ~(ones>>(depth1 + depth2) | smask1);
