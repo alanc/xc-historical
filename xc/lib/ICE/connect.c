@@ -1,4 +1,4 @@
-/* $XConsortium: connect.c,v 1.1 93/08/19 18:25:22 mor Exp $ */
+/* $XConsortium: connect.c,v 1.2 93/08/20 10:15:11 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -19,28 +19,10 @@ purpose.  It is provided "as is" without express or implied warranty.
 #include "globals.h"
 
 #include <stdio.h>
-#include <sys/types.h>
-#include <sys/socket.h>
 
-#ifdef TCPCONN
-# include <netinet/in.h>
-# ifndef hpux
-#  ifdef apollo
-#   ifndef NO_TCP_H
-#    include <netinet/tcp.h>
-#   endif
-#  else
-#   include <netinet/tcp.h>
-#  endif
-# endif
-#endif
-
-#ifdef DNETCONN
-#include <netdnet/dn.h>
-#endif
-
-#ifdef UNIXCONN
-#include <sys/un.h>
+#ifdef WIN32
+#undef close
+#define close closesocket
 #endif
 
 #define ICE_CONNECTION_RETRIES 5
