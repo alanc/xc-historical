@@ -23,7 +23,7 @@ SOFTWARE.
 ******************************************************************/
 
 /*
- * $XConsortium: xrefresh.c,v 1.9 88/09/06 17:40:21 jim Exp $
+ * $XConsortium: xrefresh.c,v 1.10 88/09/27 11:38:39 jim Exp $
  *
  * Kitchen sink version, useful for clearing small areas and flashing the 
  * screen.
@@ -34,7 +34,6 @@ SOFTWARE.
 #include <X11/Xos.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
-#include <sys/types.h>
 #include <ctype.h>
 
 char *malloc();
