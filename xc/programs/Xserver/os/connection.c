@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: connection.c,v 1.103 89/04/06 13:37:18 keith Exp $ */
+/* $XConsortium: connection.c,v 1.104 89/04/21 08:52:22 rws Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -106,7 +106,6 @@ long OutputPending[mskcnt];	/* clients with reply/event data ready to go */
 long MaxClients = MAXSOCKS ;
 long OutputBufferSize = BUFSIZ; /* output buffer size (must be > 0) */
 long NConnBitArrays = mskcnt;
-long FirstClient;
 Bool NewOutputPending;		/* not yet attempted to write some new output */
 Bool AnyClientsWriteBlocked;	/* true if some client blocked on write */
 
@@ -128,11 +127,78 @@ extern int GiveUp();
 extern XID CheckAuthorization();
 static void CloseDownFileDescriptor(), ErrorConnMax();
 
+#ifdef TCPCONN
+static int
+open_tcp_socket ()
+{
+    struct sockaddr_in insock;
+    int request;
+    int retry;
+#ifndef SO_DONTLINGER
+#ifdef SO_LINGER
+    static int linger[2] = { 0, 0 };
+#endif /* SO_LINGER */
+#endif /* SO_DONTLINGER */
+
+    if ((request = socket (AF_INET, SOCK_STREAM, 0)) < 0) 
+    {
+	Error ("Creating TCP socket");
+	return -1;
+    } 
+#ifdef SO_REUSEADDR
+    /* Necesary to restart the server without a reboot */
+#ifdef hpux
+    set_socket_option (request, SO_REUSEADDR);
+#else
+    {
+	int one = 1;
+	setsockopt(request, SOL_SOCKET, SO_REUSEADDR, &one, sizeof(int));
+    }
+#endif
+#endif /* SO_REUSEADDR */
+    bzero ((char *)&insock, sizeof (insock));
+    insock.sin_family = AF_INET;
+    insock.sin_port = htons ((unsigned short)(X_TCP_PORT + atoi (display)));
+    insock.sin_addr.s_addr = htonl(INADDR_ANY);
+    retry = 20;
+    while (bind(request, (struct sockaddr *) &insock, sizeof (insock)))
+    {
+	if (--retry == 0) {
+	    Error ("Binding TCP socket");
+	    close (request);
+	    return -1;
+	}
+#ifdef SO_REUSEADDR
+	sleep (1);
+#else
+	sleep (10);
+#endif /* SO_REUSEDADDR */
+    }
+#ifdef SO_DONTLINGER
+    if(setsockopt (request, SOL_SOCKET, SO_DONTLINGER, (char *)NULL, 0))
+	Error ("Setting TCP SO_DONTLINGER");
+#else
+#ifdef SO_LINGER
+    if(setsockopt (request, SOL_SOCKET, SO_LINGER,
+		   (char *)linger, sizeof(linger)))
+	Error ("Setting TCP SO_LINGER");
+#endif /* SO_LINGER */
+#endif /* SO_DONTLINGER */
+    if (listen (request, 5)) {
+	Error ("TCP Listening");
+	close (request);
+	return -1;
+    }
+    return request;
+}
+#endif /* TCPCONN */
+
 #ifdef UNIXCONN
 
 static struct sockaddr_un unsock;
 
-static int open_unix_socket ()
+static int
+open_unix_socket ()
 {
     int oldUmask;
     int request;
@@ -149,45 +215,66 @@ static int open_unix_socket ()
     if ((request = socket (AF_UNIX, SOCK_STREAM, 0)) < 0) 
     {
 	Error ("Creating Unix socket");
+	return -1;
     } 
-    else 
+    if (bind(request, (struct sockaddr *)&unsock, strlen(unsock.sun_path)+2))
     {
-	if(bind(request,(struct sockaddr *)&unsock, strlen(unsock.sun_path)+2))
-	    Error ("Binding Unix socket");
-	if (listen (request, 5)) Error ("Unix Listening");
+	Error ("Binding Unix socket");
+	close (request);
+	return -1;
+    }
+    if (listen (request, 5))
+    {
+	Error ("Unix Listening");
+	close (request);
+	return -1;
     }
     (void)umask(oldUmask);
     return request;
 }
 #endif /*UNIXCONN */
 
+#ifdef DNETCONN
+static int
+open_dnet_socket ()
+{
+    int request;
+    struct sockaddr_dn dnsock;
+
+    if ((request = socket (AF_DECnet, SOCK_STREAM, 0)) < 0) 
+    {
+	Error ("Creating DECnet socket");
+	return -1;
+    } 
+    bzero ((char *)&dnsock, sizeof (dnsock));
+    dnsock.sdn_family = AF_DECnet;
+    sprintf(dnsock.sdn_objname, "X$X%d", atoi (display));
+    dnsock.sdn_objnamel = strlen(dnsock.sdn_objname);
+    if (bind (request, (struct sockaddr *) &dnsock, sizeof (dnsock)))
+    {
+	Error ("Binding DECnet socket");
+	close (request);
+	return -1;
+    }
+    if (listen (request, 5))
+    {
+	Error ("DECnet Listening");
+	close (request);
+	return -1;
+    }
+    return request;
+}
+#endif /* DNETCONN */
+
 /*****************
  * CreateWellKnownSockets
  *    At initialization, create the sockets to listen on for new clients.
- *    There are potentially 4: DECnet, UNIX Domain, TCP-IP with MSB first, 
- *    with TCP-IP with LSB first.
  *****************/
 
 void
 CreateWellKnownSockets()
 {
     int		request, i;
-#ifdef TCPCONN
-    struct sockaddr_in insock;
-    int		tcpportReg;	    /* port with same byte order as server */
-
-#ifndef SO_DONTLINGER
-#ifdef SO_LINGER
-    static int linger[2] = { 0, 0 };
-#endif /* SO_LINGER */
-#endif /* SO_DONTLINGER */
-
-#endif /* TCPCONN */
-
-#ifdef DNETCONN
-    struct sockaddr_dn dnsock;
-#endif /* DNETCONN */
-    int retry;
 
     CLEARBITS(AllSockets);
     CLEARBITS(AllClients);
@@ -210,93 +297,30 @@ CreateWellKnownSockets()
     }
 
     WellKnownConnections = 0;
-
 #ifdef TCPCONN
-
-    tcpportReg = atoi (display); 
-    tcpportReg += X_TCP_PORT;
-
-    if ((request = socket (AF_INET, SOCK_STREAM, 0)) < 0) 
-    {
-	Error ("Creating TCP socket");
-    } 
-    else 
-    {
-	bzero ((char *)&insock, sizeof (insock));
-	insock.sin_family = AF_INET;
-	insock.sin_port = htons (tcpportReg);
-	insock.sin_addr.s_addr = htonl(INADDR_ANY);
-	retry = 20;
-	while (i = bind(request, (struct sockaddr *) &insock, sizeof (insock))) 
-	{
-#ifdef hpux
-	    /* Necesary to restart the server without a reboot */
-	    if (errno == EADDRINUSE)
-		set_socket_option (request, SO_REUSEADDR);
-	    if (--retry == 0)
-		Error ("Binding TCP socket");
-	    sleep (1);
-#else
-	    if (--retry == 0)
-		Error ("Binding MSB TCP socket");
-	    sleep (10);
-#endif /* hpux */
-	}
-#ifdef hpux
-	/* return the socket option to the original */
-	if (errno)
-	    unset_socket_option (request, SO_REUSEADDR);
-#endif /* hpux */
-#ifdef SO_DONTLINGER
-	if(setsockopt (request, SOL_SOCKET, SO_DONTLINGER, (char *)NULL, 0))
-	    Error ("Setting TCP SO_DONTLINGER\n");
-#else
-#ifdef SO_LINGER
-	if(setsockopt (request, SOL_SOCKET, SO_LINGER,
-		       (char *)linger, sizeof(linger)))
-	    Error ("Setting TCP SO_LINGER\n");
-#endif /* SO_LINGER */
-#endif /* SO_DONTLINGER */
-	if (listen (request, 5))
-	    Error ("Reg TCP Listening");
-	WellKnownConnections |= (1 << request);
+    if ((request = open_tcp_socket ()) != -1) {
+	WellKnownConnections |= (1L << request);
 	DefineSelf (request);
     }
-
 #endif /* TCPCONN */
-
 #ifdef UNIXCONN
     if ((request = open_unix_socket ()) != -1) {
 	WellKnownConnections |= (1L << request);
 	unixDomainConnection = request;
     }
-#endif /*UNIXCONN */
-
+#endif /* UNIXCONN */
 #ifdef DNETCONN
-    if ((request = socket (AF_DECnet, SOCK_STREAM, 0)) < 0) 
-    {
-	Error ("Creating DECnet socket");
-    } 
-    else 
-    {
-	bzero ((char *)&dnsock, sizeof (dnsock));
-	dnsock.sdn_family = AF_DECnet;
-	sprintf(dnsock.sdn_objname, "X$X%d", atoi (display));
-	dnsock.sdn_objnamel = strlen(dnsock.sdn_objname);
-	if (bind (request, (struct sockaddr *) &dnsock, sizeof (dnsock)))
-		Error ("Binding DECnet socket");
-	if (listen (request, 5)) Error ("DECnet Listening");
-	WellKnownConnections |= (1 << request);
+    if ((request = open_dnet_socket ()) != -1) {
+	WellKnownConnections |= (1L << request);
 	DefineSelf (request);
     }
 #endif /* DNETCONN */
     if (WellKnownConnections == 0)
-        Error ("No Listeners, nothing to do");
+        FatalError ("Cannot establish any listening sockets");
     signal (SIGPIPE, SIG_IGN);
     signal (SIGHUP, AutoResetServer);
     signal (SIGINT, GiveUp);
     signal (SIGTERM, GiveUp);
-    FirstClient = request + 1;
     AllSockets[0] = WellKnownConnections;
     ResetHosts(display);
     /*
