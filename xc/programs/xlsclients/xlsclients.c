@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xlsclients.c,v 1.1 89/03/07 17:24:37 jim Exp $
+ * $XConsortium: xlsclients.c,v 1.2 89/03/07 17:37:59 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -142,10 +142,8 @@ print_client_properties (dpy, w, verbose, maxcmdlen)
     Bool verbose;
     int maxcmdlen;
 {
-    Atom actual_type;
-    int actual_format;
-    unsigned long nitems, bytesafter;
-    unsigned char *data = NULL;
+    char **cliargv = NULL;
+    int i, cliargc;
     XTextProperty nametp, machtp, tp;
 
     /*
@@ -156,14 +154,8 @@ print_client_properties (dpy, w, verbose, maxcmdlen)
 	machtp.encoding = None;
     }
 
-    if (XGetWindowProperty (dpy, w, XA_WM_COMMAND, 0L, (long) maxcmdlen, False,
-			    AnyPropertyType, &actual_type, &actual_format,
-			    &nitems, &bytesafter, &data) != Success) {
-	actual_type = None;
-    }
-    if (actual_type == None) {
+    if (!XGetCommand (dpy, w, &cliargv, &cliargc)) {
 	if (machtp.value) XFree ((char *) machtp.value);
-	if (data) XFree ((char *) data);
 	return;
     }
 
@@ -198,13 +190,12 @@ print_client_properties (dpy, w, verbose, maxcmdlen)
     if (verbose) {
 	printf ("  Command:  ");
     }
-    if (actual_type == XA_STRING && actual_format == 8) {
-	print_string_list ((char *) data, (int) nitems);
-    } else {
-	unknown (dpy, actual_type, actual_format);
+    for (i = 0; i < cliargc; i++) {
+	print_quoted_word (cliargv[i]);
+	putchar (' ');
     }
     putchar ('\n');
-    if (data) XFree ((char *) data);
+    XFreeStringList (cliargv);
 
 
     /*
@@ -244,47 +235,45 @@ print_text_field (dpy, s, tp)
 }
 
 
-print_string_list (s, n)
-    register char *s;
-    register int n;
+print_quoted_word (s)
+    char *s;
 {
-    register char *start;
-    Bool quote;
+    register char *cp;
+    Bool need_quote = False, in_quote = False;
+    char quote_char = '\'', other_quote = '"';
 
-    /* walk down list, keep track of whether or not need to quote word */
-    for (start = s, quote = False; n > 0; s++, n--) {
-	if (*s == '\0') {		/* found end of word */
-	    if (s == (start + 1)) quote = True;
-#define put_quoted() \
-	    if (quote) {		/* need to quote word */ \
-		putchar ('\''); \
-		for (; start != s; start++) { \
-		    if (*start == '\'') {  /* need to quote quote */ \
-			putchar ('\''); putchar ('"'); putchar ('\''); \
-			putchar ('"'); putchar ('\''); \
-		    } else { \
-			putchar (*start); \
-		    } \
-		} \
-		putchar ('\''); \
-		quote = False;		/* be optimistic about next iter */ \
-	    } else { \
-		fwrite (start, sizeof (char), (s - start), stdout); \
-		start = s; \
-	    }
-	    put_quoted ();
-	    putchar (' ');		/* word separator */
-	} else if (!((isascii(*s) && isalnum(*s)) || 
-		     (*s == '-' || *s == '_' || *s == '.' || *s == '+' ||
-		      *s == '/' || *s == '=' || *s == ':' || *s == ','))) {
-	    quote = True;
+    /*
+     * walk down seeing whether or not we need to quote
+     */
+    for (cp = s; *cp; cp++) {
+
+	if (! ((isascii(*cp) && isalnum(*cp)) || 
+	       (*cp == '-' || *cp == '_' || *cp == '.' || *cp == '+' ||
+		*cp == '/' || *cp == '=' || *cp == ':' || *cp == ','))) {
+	    need_quote = True;
+	    break;
 	}
     }
-    /* and check for extra on the end */
-    if (s != (start + 1)) {
-	put_quoted ();
-    }
 
+    /*
+     * write out the string: if we hit a quote, then close any previous quote,
+     * emit the other quote, swap quotes and continue on.
+     */
+    in_quote = need_quote;
+    if (need_quote) putchar (quote_char);
+    for (cp = s; *cp; cp++) {
+	if (*cp == quote_char) {
+	    if (in_quote) putchar (quote_char);
+	    putchar (other_quote);
+	    { 
+		char tmp = other_quote; 
+		other_quote = quote_char; quote_char = tmp;
+	    }
+	    in_quote = True;
+	}
+	putchar (*cp);
+    }
+    if (in_quote) putchar (quote_char);
 }
 
 unknown (dpy, actual_type, actual_format)
