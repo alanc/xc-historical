@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: miarc.c,v 5.26 91/03/11 16:48:56 keith Exp $ */
+/* $XConsortium: miarc.c,v 5.27 91/05/12 16:04:47 rws Exp $ */
 /* Author: Keith Packard */
 
 #include <math.h>
@@ -421,43 +421,60 @@ correspond to the inner and outer boundaries.
 
 */
 
-static void
-miFillWideEllipse(pDraw, pGC, parc)
-    DrawablePtr	pDraw;
-    GCPtr	pGC;
+typedef struct {
+    double inx, outx;
+} miArcSpan;
+
+typedef struct {
+    miArcSpan *spans;
+    int count, k;
+    double pad; /* hack to force this record to have double alignment */
+} miArcSpanData;
+
+typedef struct {
+    unsigned long lrustamp;
+    unsigned short lw;
+    unsigned short width, height;
+    miArcSpanData *spdata;
+} arcCacheRec;
+
+#define CACHESIZE 25
+
+static arcCacheRec arcCache[CACHESIZE];
+static unsigned long lrustamp;
+
+static miArcSpanData *
+miComputeWideEllipse(lw, parc)
+    int		lw;
     xArc	*parc;
 {
-    DDXPointPtr points;
-    register DDXPointPtr pts;
-    int *widths;
-    register int *wids;
-    double w, h, r, xorg;
-    int yorg, dy, k, lw;
+    miArcSpanData *spdata;
+    register miArcSpan *span;
+    arcCacheRec *cent, *lruent;
+    double w, h, r;
+    int k;
     double Hs, Hf, WH, K, Vk, Nk, Fk, Vr, N, Nc, Z, rs;
     double A, T, b, d, x, y, t, inx, outx, hepp, hepm;
     int flip;
 
-    lw = pGC->lineWidth;
     if (!lw)
 	lw = 1;
-    dy = parc->height + lw;
-    points = (DDXPointPtr)ALLOCATE_LOCAL((sizeof(DDXPointRec) * 2) * dy);
-    if (!points)
-	return;
-    widths = (int *)ALLOCATE_LOCAL((sizeof(int) * 2) * dy);
-    if (!widths)
+    lruent = &arcCache[0];
+    for (k = CACHESIZE, cent = lruent; --k >= 0; cent++)
     {
-	DEALLOCATE_LOCAL(points);
-	return;
+	if (cent->width == parc->width &&
+	    cent->height == parc->height &&
+	    cent->lw == lw)
+	{
+	    cent->lrustamp = ++lrustamp;
+	    return cent->spdata;
+	}
+	if (cent->lrustamp < lruent->lrustamp)
+	    lruent = cent;
     }
-    pts = points;
-    wids = widths;
     w = parc->width / 2.0;
     h = parc->height / 2.0;
     r = lw / 2.0;
-    xorg = parc->x + w;
-    yorg = parc->y + (parc->height >> 1);
-    dy = parc->height & 1;
     rs = r * r;
     Hs = h * h;
     WH = w * w - Hs;
@@ -470,22 +487,30 @@ miFillWideEllipse(pDraw, pGC, parc)
     hepm = h - EPSILON;
     K = h + (lw >> 1);
     k = (parc->height >> 1) + (lw >> 1);
-    if (pGC->miTranslate)
+    if (!(lw & 1))
     {
-	xorg += pDraw->x;
-	yorg += pDraw->y;
-    }
-    if (!(lw & 1)) {
-	if (!(parc->width & 1)) {
-	    pts->x = xorg;
-	    pts->y = yorg - k;
-	    pts++;
-	    *wids++ = 1;
-	}
 	K -= 1.0;
 	k--;
     }
-    for (; K > 0.0; K -= 1.0, k--) {
+    spdata = lruent->spdata;
+    if (!spdata || spdata->k != k)
+    {
+	if (spdata)
+	    xfree(spdata);
+	spdata = (miArcSpanData *)xalloc(sizeof(miArcSpanData) +
+					 sizeof(miArcSpan) * (k + 1));
+	lruent->spdata = spdata;
+	if (!spdata)
+	    return spdata;
+	spdata->spans = (miArcSpan *)(spdata + 1);
+	spdata->k = k;
+    }
+    lruent->lrustamp = ++lrustamp;
+    lruent->lw = lw;
+    lruent->width = parc->width;
+    lruent->height = parc->height;
+    span = spdata->spans;
+    for (; K > 0.0; K -= 1.0, span++) {
 	N = (K * K + Nk) / 6.0;
 	Nc = N * N * N;
 	Vr = Vk * K;
@@ -556,11 +581,86 @@ miFillWideEllipse(pDraw, pGC, parc)
 		    outx = x + t;
 	    }
 	}
-	if (inx <= 0.0)
+	span->inx = inx;
+	span->outx = outx;
+    }
+    spdata->count = span - spdata->spans;
+    if (!(parc->height & 1)) {
+	outx = w + r;
+	if (r >= h)
+	    inx = 0.0;
+	else if (Nk < 0.0 && -Nk < Hs)
+	    inx = w * sqrt(1 + Nk / Hs) - sqrt(rs + Nk);
+	else
+	    inx = w - r;
+	span->inx = inx;
+	span->outx = outx;
+    }
+    return spdata;
+}
+
+static void
+miFillWideEllipse(pDraw, pGC, parc)
+    DrawablePtr	pDraw;
+    GCPtr	pGC;
+    xArc	*parc;
+{
+    DDXPointPtr points;
+    register DDXPointPtr pts;
+    int *widths;
+    register int *wids;
+    miArcSpanData *spdata;
+    register miArcSpan *span;
+    double xorg;
+    int yorg, dy, lw;
+    register int k, n;
+
+    lw = pGC->lineWidth;
+    if (!lw)
+	lw = 1;
+    dy = parc->height + lw;
+    points = (DDXPointPtr)ALLOCATE_LOCAL((sizeof(DDXPointRec) * 2) * dy);
+    if (!points)
+	return;
+    widths = (int *)ALLOCATE_LOCAL((sizeof(int) * 2) * dy);
+    if (!widths)
+    {
+	DEALLOCATE_LOCAL(points);
+	return;
+    }
+    spdata = miComputeWideEllipse(pGC->lineWidth, parc);
+    if (!spdata)
+    {
+	DEALLOCATE_LOCAL(widths);
+	DEALLOCATE_LOCAL(points);
+	return;
+    }
+    pts = points;
+    wids = widths;
+    span = spdata->spans;
+    xorg = parc->x + parc->width / 2.0;
+    yorg = parc->y + (parc->height >> 1);
+    dy = parc->height & 1;
+    if (pGC->miTranslate)
+    {
+	xorg += pDraw->x;
+	yorg += pDraw->y;
+    }
+    if (!(lw & 1)) {
+	if (!(parc->width & 1)) {
+	    pts->x = xorg;
+	    pts->y = yorg - k;
+	    pts++;
+	    *wids++ = 1;
+	}
+    }
+    for (k = spdata->k, n = spdata->count; --n >= 0; k--, span++)
+    {
+	if (span->inx <= 0.0)
 	{
-	    pts[0].x = ICEIL(xorg - outx);
+	    pts[0].x = ICEIL(xorg - span->outx);
 	    pts[0].y = yorg - k;
-	    wids[0] = ICEIL(xorg + outx) - pts[0].x;
+	    wids[0] = ICEIL(xorg + span->outx) - pts[0].x;
 	    pts[1].x = pts[0].x;
 	    pts[1].y = yorg + k + dy;
 	    wids[1] = wids[0];
@@ -569,12 +669,12 @@ miFillWideEllipse(pDraw, pGC, parc)
 	}
 	else
 	{
-	    pts[0].x = ICEIL(xorg - outx);
+	    pts[0].x = ICEIL(xorg - span->outx);
 	    pts[0].y = yorg - k;
-	    wids[0] = ICEIL(xorg - inx) - pts[0].x;
-	    pts[1].x = ICEIL(xorg + inx);
+	    wids[0] = ICEIL(xorg - span->inx) - pts[0].x;
+	    pts[1].x = ICEIL(xorg + span->inx);
 	    pts[1].y = pts[0].y;
-	    wids[1] = ICEIL(xorg + outx) - pts[1].x;
+	    wids[1] = ICEIL(xorg + span->outx) - pts[1].x;
 	    pts[2].x = pts[0].x;
 	    pts[2].y = yorg + k + dy;
 	    wids[2] = wids[0];
@@ -586,29 +686,22 @@ miFillWideEllipse(pDraw, pGC, parc)
 	}
     }
     if (!(parc->height & 1)) {
-	outx = w + r;
-	if (r >= h)
-	    inx = 0.0;
-	else if (Nk < 0.0 && -Nk < Hs)
-	    inx = w * sqrt(1 + Nk / Hs) - sqrt(rs + Nk);
-	else
-	    inx = w - r;
-	if (inx <= 0.0)
+	if (span->inx <= 0.0)
 	{
-	    pts[0].x = ICEIL(xorg - outx);
+	    pts[0].x = ICEIL(xorg - span->outx);
 	    pts[0].y = yorg;
-	    wids[0] = ICEIL(xorg + outx) - pts[0].x;
+	    wids[0] = ICEIL(xorg + span->outx) - pts[0].x;
 	    pts++;
 	    wids++;
 	}
 	else
 	{
-	    pts[0].x = ICEIL(xorg - outx);
+	    pts[0].x = ICEIL(xorg - span->outx);
 	    pts[0].y = yorg;
-	    wids[0] = ICEIL(xorg - inx) - pts[0].x;
-	    pts[1].x = ICEIL(xorg + inx);
+	    wids[0] = ICEIL(xorg - span->inx) - pts[0].x;
+	    pts[1].x = ICEIL(xorg + span->inx);
 	    pts[1].y = pts[0].y;
-	    wids[1] = ICEIL(xorg + outx) - pts[1].x;
+	    wids[1] = ICEIL(xorg + span->outx) - pts[1].x;
 	    pts += 2;
 	    wids += 2;
 	}
@@ -623,6 +716,7 @@ miFillWideEllipse(pDraw, pGC, parc)
  *
  * If arc is zero width and solid, we don't have to worry about the rasterop
  * or join styles.  For wide solid circles, we use a fast integer algorithm.
+ * For wide solid ellipses, we use special case floating point code.
  * Otherwise, we set up pDrawTo and pGCTo according to the rasterop, then
  * draw using pGCTo and pDrawTo.  If the raster-op was "tricky," that is,
  * if it involves the destination, then we use PushPixels to move the bits
