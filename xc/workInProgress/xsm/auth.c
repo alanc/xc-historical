@@ -1,4 +1,4 @@
-/* $XConsortium: auth.c,v 1.5 94/04/17 21:15:15 mor Exp $ */
+/* $XConsortium: auth.c,v 1.6 94/07/08 14:06:17 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -99,7 +99,7 @@ IceAuthDataEntry	**authDataEntries;
     if (!(removefp = fopen (".xsm-rem-auth", "w")))
 	return (0);
 
-    *authDataEntries = (IceAuthDataEntry *) malloc (
+    *authDataEntries = (IceAuthDataEntry *) XtMalloc (
 	count * 2 * sizeof (IceAuthDataEntry));
 
     for (i = 0; i < count * 2; i += 2)
@@ -161,7 +161,7 @@ IceAuthDataEntry 	*authDataEntries;
 	free (authDataEntries[i].auth_data);
     }
 
-    free ((char *) authDataEntries);
+    XtFree ((char *) authDataEntries);
 
     system ("iceauth source .xsm-rem-auth");
 }

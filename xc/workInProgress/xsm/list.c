@@ -1,4 +1,4 @@
-/* $XConsortium: list.c,v 1.3 94/02/22 10:47:37 mor Exp $ */
+/* $XConsortium: list.c,v 1.4 94/04/17 21:15:15 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -38,7 +38,7 @@ ListInit()
 {
 	List *l;
 
-	l = (List *)malloc(sizeof *l);
+	l = (List *)XtMalloc(sizeof *l);
 	if(!l) return l;
 	l->next = l;
 	l->prev = l;
@@ -74,7 +74,7 @@ List *l;
 		l = next;
 		next = l->next;
 		thing = l->thing;
-		free(l);
+		XtFree(l);
 	} while(thing);
 }
 
@@ -85,7 +85,7 @@ void *v;
 {
 	List *e;
 
-	e = (List *)malloc(sizeof *e);
+	e = (List *)XtMalloc(sizeof *e);
 	if(!e) return NULL;
 
 	e->thing = v;
@@ -104,7 +104,7 @@ void *v;
 {
 	List *e;
 
-	e = (List *)malloc(sizeof *e);
+	e = (List *)XtMalloc(sizeof *e);
 	if(!e) return NULL;
 
 	e->thing = v;
@@ -122,7 +122,7 @@ List *e;
 {
 	e->next->prev = e->prev;
 	e->prev->next = e->next;
-	free((char *)e);
+	XtFree((char *)e);
 }
 
 int
