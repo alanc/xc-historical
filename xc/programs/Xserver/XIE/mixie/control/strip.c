@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: strip.c,v 1.1 93/07/19 10:13:27 rws Exp $ */
 /**** module strip.c ****/
 /*****************************************************************************
 				NOTICE
@@ -278,7 +278,7 @@ static int import_data(flo,ped,band,data,len,final)
 /*------------------------------------------------------------------------
 -------------------------- Output for GetClientData ----------------------
 ------------------------------------------------------------------------*/
-static int export_data(flo,ped,band,data,bytes,maxLen,term,free)
+static int export_data(flo,ped,band,data,bytes,maxLen,term)
      floDefPtr flo;
      peDefPtr  ped;
      CARD8    band;
@@ -286,7 +286,6 @@ static int export_data(flo,ped,band,data,bytes,maxLen,term,free)
      CARD32 *bytes;
      CARD32 maxLen;
      BOOL     term;
-     BOOL    *free;
 {
   BOOL release = FALSE, final = FALSE;
   stripLstPtr lst = &ped->outFlo.export[band];
