@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: util.c,v 1.10 88/10/07 08:20:08 swick Exp $
+ *	$XConsortium: util.c,v 1.11 89/03/22 18:21:45 jim Exp $
  */
 
 #include <X11/copyright.h>
@@ -30,7 +30,7 @@
 /* util.c */
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: util.c,v 1.10 88/10/07 08:20:08 swick Exp $";
+static char rcs_id[] = "$XConsortium: util.c,v 1.11 89/03/22 18:21:45 jim Exp $";
 #endif	/* lint */
 
 #include <stdio.h>

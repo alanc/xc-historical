@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: misc.c,v 1.33 89/04/10 14:32:29 jim Exp $
+ *	$XConsortium: misc.c,v 1.34 89/04/10 14:41:54 jim Exp $
  */
 
 
@@ -54,7 +54,7 @@ extern void perror();
 extern void abort();
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: misc.c,v 1.33 89/04/10 14:32:29 jim Exp $";
+static char rcs_id[] = "$XConsortium: misc.c,v 1.34 89/04/10 14:41:54 jim Exp $";
 #endif	/* lint */
 
 xevents()
@@ -227,7 +227,6 @@ register TScreen *screen;
 register int flag;
 {
 	if(screen->TekEmu) {
-		TekSelect();
 		if(!Ttoggled)
 			TCursorToggle(TOGGLE);
 		screen->select |= flag;
@@ -235,7 +234,6 @@ register int flag;
 			TCursorToggle(TOGGLE);
 		return;
 	} else {
-		VTSelect();
 		if(screen->cursor_state &&
 		   (screen->cursor_col != screen->cur_col ||
 		    screen->cursor_row != screen->cur_row))
@@ -258,11 +256,9 @@ register int flag;
     if(screen->TekEmu) {
 	if(!Ttoggled) TCursorToggle(TOGGLE);
 	screen->select &= ~flag;
-	TekUnselect();
 	if(!Ttoggled) TCursorToggle(TOGGLE);
     } else {
 	screen->select &= ~flag;
-	VTUnselect();
 	if(screen->cursor_state &&
 	   (screen->cursor_col != screen->cur_col ||
 	    screen->cursor_row != screen->cur_row))

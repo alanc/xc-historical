@@ -1,5 +1,5 @@
 /*
- * $XConsortium: charproc.c,v 1.78 89/04/18 15:44:13 jim Exp $
+ * $XConsortium: charproc.c,v 1.79 89/04/18 17:44:05 jim Exp $
  */
 
 
@@ -140,7 +140,7 @@ static void VTallocbuf();
 #define	doinput()		(bcnt-- > 0 ? *bptr++ : in_put())
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: charproc.c,v 1.78 89/04/18 15:44:13 jim Exp $";
+static char rcs_id[] = "$XConsortium: charproc.c,v 1.79 89/04/18 17:44:05 jim Exp $";
 #endif	/* lint */
 
 static long arg;
@@ -1764,8 +1764,6 @@ VTRun()
 
 	screen->cursor_state = OFF;
 	screen->cursor_set = ON;
-	if(screen->select || screen->always_highlight)
-		VTSelect();
 
 	bcnt = 0;
 	bptr = buffer;
@@ -1781,8 +1779,6 @@ VTRun()
 		VTparse();
 	HideCursor();
 	screen->cursor_set = OFF;
-	if (!screen->always_highlight)
-	    VTUnselect ();
 	reselectwindow (screen);
 }
 
@@ -2242,7 +2238,6 @@ XSetWindowAttributes *values;
 		ScrollBarOn (term, FALSE, TRUE);
 	}
 	CursorSave (term, &screen->sc);
-	VTUnselect();
 	return;
 }
 
@@ -2391,24 +2386,6 @@ HideCursor()
 		XDrawLine(screen->display, TextWindow(screen), currentGC,
 			x, y+1, x + FontWidth(screen), y+1);
 	screen->cursor_state = OFF;
-}
-
-VTSelect()
-{
-	register TScreen *screen = &term->screen;
-
-	if (VShellWindow)
-	  XSetWindowBorder (screen->display, VShellWindow,
-			    term->core.border_pixel);
-}
-
-VTUnselect()
-{
-	register TScreen *screen = &term->screen;
-
-	if (VShellWindow)
-	  XSetWindowBorderPixmap (screen->display, VShellWindow,
-				  screen->graybordertile);
 }
 
 VTReset(full)

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Tekproc.c,v 1.53 89/03/22 15:22:50 jim Exp $
+ * $XConsortium: Tekproc.c,v 1.54 89/03/23 11:59:59 jim Exp $
  *
  * Warning, there be crufty dragons here.
  */
@@ -121,7 +121,7 @@ extern long time();
 #define	unput(c)	*Tpushback++ = c
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: Tekproc.c,v 1.53 89/03/22 15:22:50 jim Exp $";
+static char rcs_id[] = "$XConsortium: Tekproc.c,v 1.54 89/03/23 11:59:59 jim Exp $";
 #endif	/* lint */
 
 static XPoint *T_box[TEKNUMFONTS] = {
@@ -1021,8 +1021,6 @@ TekRun()
 	    set_tek_visibility (TRUE);
 	} 
 
-	if(screen->select || screen->always_highlight)
-		TekSelect();
 	Tpushback = Tpushb;
 	Tbptr = Tbuffer;
 	for(i = Tbcnt = bcnt ; i > 0 ; i--)
@@ -1036,8 +1034,6 @@ TekRun()
 		Ttoggled = TRUE;
 	}
 	screen->TekEmu = FALSE;
-	if (!screen->always_highlight)
-	    TekUnselect ();
 	reselectwindow (screen);
 }
 
@@ -1273,7 +1269,6 @@ static void TekRealize (gw, valuemaskp, values)
 
 
     XDefineCursor(screen->display, TShellWindow, screen->pointer_cursor);
-    TekUnselect ();
 
     {	/* there's gotta be a better way... */
 	static Arg args[] = {
@@ -1403,24 +1398,6 @@ int toggle;
 		    screen->Tbox[c], NBOX, CoordModePrevious);
 	   }
 	}
-}
-
-TekSelect()
-{
-	register TScreen *screen = &term->screen;
-
-	if (tekWidget && TShellWindow)
-	  XSetWindowBorder (screen->display, TShellWindow,
-			    tekWidget->core.border_pixel);
-}
-
-TekUnselect()
-{
-	register TScreen *screen = &term->screen;
-
-	if (tekWidget && TShellWindow && !screen->always_highlight)
-	  XSetWindowBorderPixmap (screen->display, TShellWindow,
-				  screen->graybordertile);
 }
 
 TekCopy()
