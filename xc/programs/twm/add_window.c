@@ -25,7 +25,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: add_window.c,v 1.54 89/06/30 18:14:19 jim Exp $
+ * $XConsortium: add_window.c,v 1.55 89/06/30 18:30:38 jim Exp $
  *
  * Add a new window, put the titlbar and other stuff around
  * the window
@@ -36,7 +36,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: add_window.c,v 1.54 89/06/30 18:14:19 jim Exp $";
+"$XConsortium: add_window.c,v 1.55 89/06/30 18:30:38 jim Exp $";
 #endif /* lint */
 
 #include <stdio.h>
@@ -1041,10 +1041,19 @@ TwmWindow *tmp_win;
 	gcBack = XCreateGC (dpy, Scr->iconifyPm, 0L, NULL);
 	XSetForeground (dpy, gcBack, 0);
 
-	XmuDrawLogo (dpy, Scr->iconifyPm, gc, gcBack, 1, 1, 
-		     Scr->TitleHeight - 2, Scr->TitleHeight - 2);
-	XDrawRectangle (dpy, Scr->iconifyPm, gc, 1, 1, Scr->TitleHeight - 3,
-			Scr->TitleHeight - 3);
+	/*
+	 * draw the logo large so that it gets as dense as possible
+	 */
+	XmuDrawLogo (dpy, Scr->iconifyPm, gc, gcBack, 0, 0,
+		     Scr->TitleHeight, Scr->TitleHeight);
+	XDrawRectangle (dpy, Scr->iconifyPm, gcBack, 0, 0,
+			Scr->TitleHeight - 1, Scr->TitleHeight - 1);
+	XDrawRectangle (dpy, Scr->iconifyPm, gcBack, 1, 1,
+			Scr->TitleHeight - 3, Scr->TitleHeight - 3);
+	XDrawRectangle (dpy, Scr->iconifyPm, gcBack, 3, 3,
+			Scr->TitleHeight - 7, Scr->TitleHeight - 7);
+	XDrawRectangle (dpy, Scr->iconifyPm, gc, 2, 2,
+			Scr->TitleHeight - 5, Scr->TitleHeight - 5);
 	XFreeGC (dpy, gcBack);
 
 #ifndef NOFOCUS
