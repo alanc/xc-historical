@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: os.h,v 1.15 87/08/02 18:45:54 susan Exp $ */
+/* $Header: os.h,v 1.15 87/08/02 18:45:54 toddb Locked $ */
 
 #ifndef OS_H
 #define OS_H
@@ -41,8 +41,14 @@ typedef struct _FontPathRec *FontPathPtr;
 typedef struct _NewClientRec *NewClientPtr;
 
 /* os-dependent definition of local allocation and deallocation */
+#ifdef ibm032 /* RT/PC */
+#define ALLOCATE_LOCAL(size) (alloca(size))
+#define DEALLOCATE_LOCAL(ptr)
+pragma on(alloca);
+#else /* !ibm32 */
 #define ALLOCATE_LOCAL(size) (malloc(size))
 #define DEALLOCATE_LOCAL(ptr) (free(ptr))
+#endif /* !ibm32 */
 
 extern WaitForSomething();
 extern char *ReadRequestFromClient();   /* should be xReq but then 
