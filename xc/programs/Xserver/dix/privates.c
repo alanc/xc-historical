@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: privates.c,v 1.1 93/06/24 10:14:05 dpw Exp $ */
 /*
 
 Copyright 1993 by the Massachusetts Institute of Technology
@@ -31,6 +31,59 @@ without express or implied warranty.
  *  Porting Layer for the X v11 Sample Server" (doc/Server/ddx.tbl.ms)
  *  for information on how to use devPrivates.
  */
+
+/*
+ *  client private machinery
+ */
+
+static int  clientPrivateCount;
+int clientPrivateLen;
+unsigned *clientPrivateSizes;
+unsigned totalClientSize;
+
+void
+ResetClientPrivates()
+{
+    clientPrivateCount = 0;
+    totalClientSize = sizeof(ClientRec);
+
+}
+
+int
+AllocateClientPrivateIndex()
+{
+    return clientPrivateCount++;
+}
+
+Bool
+AllocateClientPrivate(index, amount)
+    int index;
+    unsigned amount;
+{
+    unsigned oldamount;
+
+    if (index >= clientPrivateLen)
+    {
+	unsigned *nsizes;
+	nsizes = (unsigned *)xrealloc(clientPrivateSizes,
+				      (index + 1) * sizeof(unsigned));
+	if (!nsizes)
+	    return FALSE;
+	while (clientPrivateLen <= index)
+	{
+	    nsizes[clientPrivateLen++] = 0;
+	    totalClientSize += sizeof(DevUnion);
+	}
+	clientPrivateSizes = nsizes;
+    }
+    oldamount = clientPrivateSizes[index];
+    if (amount > oldamount)
+    {
+	clientPrivateSizes[index] = amount;
+	totalClientSize += (amount - oldamount);
+    }
+    return TRUE;
+}
 
 /*
  *  screen private machinery
