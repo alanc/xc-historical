@@ -1,3 +1,9 @@
+/*
+ * Put any special flags that will be necessary to get imake.c to compile.  Do
+ * not include the value of BOOTSTRAPCFLAGS as it will be passed to imake.c
+ * automatically.
+ */
+
 #ifdef hpux
 #define ccflags "-Wc,-Nd4000,-Ns3000 -DSYSV"
 #endif /* hpux */
