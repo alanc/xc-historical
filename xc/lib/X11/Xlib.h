@@ -1,4 +1,4 @@
-/* $XConsortium: Xlib.h,v 11.194 91/04/02 22:04:01 rws Exp $ */
+/* $XConsortium: Xlib.h,v 11.195 91/04/06 13:11:03 rws Exp $ */
 /* 
  * Copyright 1985, 1986, 1987 by the Massachusetts Institute of Technology
  *
@@ -4203,7 +4203,7 @@ extern Status XCloseIM(
 #endif
 );
 
-extern void XGetIMValues(
+extern char *XGetIMValues(
 #if NeedVarargsPrototypes
     XIM /* im */, ...
 #endif
