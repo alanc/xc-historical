@@ -360,13 +360,13 @@ DDXPointPtr pptSrc;
 	    pptNewX = (DDXPointPtr)ALLOCATE_LOCAL(sizeof(DDXPointRec) * nbox);
 	    if(!pboxNewX || !pptNewX)
 	    {
+		if (pptNewX) DEALLOCATE_LOCAL(pptNewX);
+		if (pboxNewX) DEALLOCATE_LOCAL(pboxNewX);
 		if (pboxNewY)
 		{
-		    DEALLOCATE_LOCAL(pboxNewY);
 		    DEALLOCATE_LOCAL(pptNewY);
+		    DEALLOCATE_LOCAL(pboxNewY);
 		}
-		if (pboxNewX) DEALLOCATE_LOCAL(pboxNewX);
-		if (pptNewX) DEALLOCATE_LOCAL(pptNewX);
 	        return;
 	    }
 	    pboxBase = pboxNext = pbox;
@@ -585,14 +585,14 @@ DDXPointPtr pptSrc;
 	    DOBITBLT(fnSET)
     }
 
-    if (pboxNewY)
-    {
-	DEALLOCATE_LOCAL(pboxNewY);
-	DEALLOCATE_LOCAL(pptNewY);
-    }
     if (pboxNewX)
     {
-	DEALLOCATE_LOCAL(pboxNewX);
 	DEALLOCATE_LOCAL(pptNewX);
+	DEALLOCATE_LOCAL(pboxNewX);
+    }
+    if (pboxNewY)
+    {
+	DEALLOCATE_LOCAL(pptNewY);
+	DEALLOCATE_LOCAL(pboxNewY);
     }
 }
