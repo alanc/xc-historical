@@ -1,5 +1,5 @@
 /*
- * $XConsortium: viewres.c,v 1.50 90/03/06 18:55:42 jim Exp $
+ * $XConsortium: viewres.c,v 1.51 90/03/07 15:25:37 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -842,6 +842,7 @@ main (argc, argv)
     Dimension width, height;
     static XtCallbackRec callback_rec[2] = {{ NULL, NULL }, { NULL, NULL }};
     XtOrientation orient;
+    Boolean resize;
     int i;
 
     ProgramName = argv[0];
@@ -952,9 +953,14 @@ main (argc, argv)
      * callbacks (passing the other widget each callback)
      */
     XtSetArg (args[0], XtNallowResize, TRUE);
-    XtSetArg (args[1], XtNresize, TRUE);
     panner = XtCreateManagedWidget ("panner", pannerWidgetClass, box,
-				    args, TWO);
+				    args, ONE);
+    XtSetArg (args[0], XtNresize, &resize);
+    XtGetValues (panner, args, ONE);
+    if (!resize) {
+	XtSetArg (args[0], XtNresize, TRUE);	/* so that scales properly */
+	XtSetValues (panner, args, ONE);
+    }
 
     XtSetArg (args[0], XtNbackgroundPixmap, None);  /* faster updates */
     porthole = XtCreateManagedWidget ("porthole", portholeWidgetClass,
@@ -998,13 +1004,10 @@ main (argc, argv)
     XtSetArg (args[3], XtNsliderHeight, height);
     XtSetValues (panner, args, FOUR);
 
-    /*
-     * make sure that the panner doesn't try to grow when the porthole 
-     * changes size
-     */
-    XtSetArg (args[0], XtNresize, FALSE);
-    XtSetValues (panner, args, ONE);
-
+    if (!resize) {
+	XtSetArg (args[0], XtNresize, FALSE);
+	XtSetValues (panner, args, ONE);
+    }
     XtMapWidget (toplevel);
     XtAppMainLoop (app_con);
 }
