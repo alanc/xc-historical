@@ -1,4 +1,4 @@
-/* $XConsortium: CrCmap.c,v 1.2 89/05/24 11:05:36 converse Exp $
+/* $XConsortium: CrCmap.c,v 1.3 91/04/10 16:45:46 converse Exp $
  *
  * CreateCmap.c - given a standard colormap description, make the map.
  * 
@@ -38,6 +38,11 @@ static Status 	contiguous();		/* find contiguous sequence of cells */
 static void	free_cells();		/* frees resources before quitting */
 static Status	readonly_map();		/* create a map in a RO visual type */
 static Status	readwrite_map();	/* create a map in a RW visual type */
+
+#define lowbit(x) ((x) & (~(x) + 1))
+#define TRUEMATCH(mult,max,mask) \
+    (colormap->max * colormap->mult <= vinfo->mask && \
+     lowbit(vinfo->mask) == colormap->mult)
 
 /*
  * To create any one colormap which is described by an XStandardColormap
@@ -121,6 +126,10 @@ Status XmuCreateColormap(dpy, colormap)
     if (vinfo->class == PseudoColor || vinfo->class == DirectColor ||
 	vinfo->class == GrayScale)
 	status = readwrite_map(dpy, vinfo, colormap);
+    else if (vinfo->class == TrueColor)
+	status = TRUEMATCH(red_mult, red_max, red_mask) &&
+	         TRUEMATCH(green_mult, green_max, green_mask) &&
+		 TRUEMATCH(blue_mult, blue_max, blue_mask);
     else 
 	status = readonly_map(dpy, vinfo, colormap);
     
@@ -141,14 +150,28 @@ static Status readwrite_map(dpy, vinfo, colormap)
     int			remainder;	/* first index of remainder */
     XColor		color;		/* the definition of a color */
     unsigned long	*pixels;	/* array of colormap pixels */
+    unsigned long	delta;
 
     
     /* Determine ncolors, the number of colors to be defined.
      * Insure that 1 < ncolors <= the colormap size.
      */
-    ncolors = colormap->red_max * colormap->red_mult +
-	      colormap->green_max * colormap->green_mult +
-	      colormap->blue_max * colormap->blue_mult + 1;
+    if (vinfo->class == DirectColor) {
+	ncolors = colormap->red_max;
+	if (colormap->green_max > ncolors)
+	    ncolors = colormap->green_max;
+	if (colormap->blue_max > ncolors)
+	    ncolors = colormap->blue_max;
+	ncolors++;
+	delta = lowbit(vinfo->red_mask) +
+	        lowbit(vinfo->green_mask) +
+		lowbit(vinfo->blue_mask);
+    } else {
+	ncolors = colormap->red_max * colormap->red_mult +
+		  colormap->green_max * colormap->green_mult +
+		  colormap->blue_max * colormap->blue_mult + 1;
+	delta = 1;
+    }
     if (ncolors <= 1 || ncolors > vinfo->colormap_size)	return 0;
 
     /* Allocate Read/Write as much of the colormap as we can possibly get.
@@ -181,7 +204,7 @@ static Status readwrite_map(dpy, vinfo, colormap)
 
     qsort((char *) pixels, npixels, sizeof(unsigned long), compare);
 
-    if (! contiguous(pixels, npixels, ncolors, &first_index, &remainder))
+    if (!contiguous(pixels, npixels, ncolors, delta, &first_index, &remainder))
     {
 	/* can't find enough contiguous cells, give up */
 	XFreeColors(dpy, colormap->colormap, pixels, npixels,
@@ -322,10 +345,11 @@ static int ROmap(dpy, cmap, pixels, m, n)
       
 
 /****************************************************************************/
-static Status contiguous(pixels, npixels, ncolors, first, rem)
+static Status contiguous(pixels, npixels, ncolors, delta, first, rem)
     unsigned long	pixels[];	/* specifies allocated pixels */
     int			npixels;	/* specifies count of alloc'd pixels */
     int			ncolors;	/* specifies needed sequence length */
+    unsigned long	delta;		/* between pixels */
     int			*first;		/* returns first index of sequence */
     int			*rem;		/* returns first index after sequence,
 					 * or 0, if none follow */
@@ -333,11 +357,15 @@ static Status contiguous(pixels, npixels, ncolors, first, rem)
     register int i = 1;		/* walking index into the pixel array */
     register int count = 1;	/* length of sequence discovered so far */
 
-    *rem = npixels - 1;
     *first = 0;
+    if (npixels == ncolors) {
+	*rem = 0;
+	return 1;
+    }
+    *rem = npixels - 1;
     while (count < ncolors && ncolors - count <= *rem)
     {
-	if (pixels[i-1] + 1 == pixels[i])
+	if (pixels[i-1] + delta == pixels[i])
 	    count++;
 	else {
 	    count = 1;
@@ -469,7 +497,7 @@ static Status readonly_map(dpy, vinfo, colormap)
 	color.red = (unsigned short)
 	    (((i/colormap->red_mult) * 65535) / colormap->red_max);
 
-	if (vinfo->class == StaticColor || vinfo->class == TrueColor) {
+	if (vinfo->class == StaticColor) {
 	    color.green = (unsigned short)
 		((((i/colormap->green_mult) % (colormap->green_max + 1)) *
 		  65535) / colormap->green_max);
