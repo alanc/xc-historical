@@ -21,13 +21,14 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: osdep.h,v 1.26 91/07/03 19:08:45 rws Exp $ */
+/* $XConsortium: osdep.h,v 1.27 91/07/23 19:04:22 rws Exp $ */
 
 #define BOTIMEOUT 200 /* in milliseconds */
 #define BUFSIZE 4096
 #define BUFWATERMARK 8192
 #define MAXBUFSIZE (1 << 18)
 
+#ifndef sgi	    /* SGI defines OPEN_MAX in a useless way */
 #ifndef X_NOT_POSIX
 #ifdef _POSIX_SOURCE
 #include <limits.h>
@@ -37,13 +38,15 @@ SOFTWARE.
 #undef _POSIX_SOURCE
 #endif
 #endif
+#endif
+
 #ifndef OPEN_MAX
 #ifdef SVR4
 #define OPEN_MAX 128
 #else
 #include <sys/param.h>
 #ifndef OPEN_MAX
-#ifdef NOFILE
+#if defined(NOFILE) && !defined(NOFILES_MAX)
 #define OPEN_MAX NOFILE
 #else
 #define OPEN_MAX NOFILES_MAX
