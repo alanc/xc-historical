@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.1 92/04/07 14:40:28 keith Exp $
+XCOMM $XConsortium: Imakefile,v 1.2 92/04/08 10:35:47 keith Exp $
 #define DoNormalLib YES
 #define DoSharedLib NO
 #define DoDebugLib NO
@@ -15,6 +15,15 @@ GRA_OBJS = getretmips.o mipsstack.o
 GRA_SRCS = getretmips.c
 #endif
 
+#ifdef SparcArchitecture
+#define TopOfStack 0xf7fffbdc
+#define BottomOfData \&environ
+#define HasGetReturnAddress	YES
+LOCAL_DEFS = -Datexit=on_exit
+GRA_OBJS = getretsparc.o sparcstack.o
+GRA_SRCS = getretsparc.c
+#endif
+
 #ifndef HasGetReturnAddress
 #define HasGetReturnAddress NO
 #endif
@@ -24,7 +33,7 @@ GRA_SRCS = getretmips.c
 #endif
 
 DEFINES = 	-DTOP_OF_STACK=TopOfStack -DBOTTOM_OF_DATA=BottomOfData\
-		$(GRA_DEFS)
+		$(GRA_DEFS) $(LOCAL_DEFS)
 
 CDEBUGFLAGS = DebuggableCDebugFlags
 
