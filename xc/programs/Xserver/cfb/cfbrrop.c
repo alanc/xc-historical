@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: cfbrrop.c,v 1.1 90/01/31 12:31:54 keith Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -38,8 +38,6 @@
 
 #include "cfb.h"
 #include "cfbmskbits.h"
-#include "mistruct.h"
-#include "mibstore.h"
 
 /* A description:
  *
