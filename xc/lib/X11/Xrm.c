@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xrm.c,v 1.24 89/06/08 18:00:08 swick Exp $
+ * $XConsortium: Xrm.c,v 1.25 89/07/20 10:38:50 jim Exp $
  */
 
 /***********************************************************
@@ -791,7 +791,7 @@ static void PutLineResources(pdb, get_line, closure)
 			register unsigned char *uts = (unsigned char *) ts;
 			*uts = (unsigned char) ((s[0] - '0') * 0100 + 
 						(s[1] - '0') * 010 +
-						(s[0] - '0'));
+						(s[2] - '0'));
 			ts++;
 			s += 3;
 		    } else if (*s != '\0') {
