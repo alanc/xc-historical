@@ -27,8 +27,8 @@
 
 #ifdef SYSV
 #include <string.h>
-#define index(s,c) strchr(s,c)
-#define rindex(s,c) strrchr(s,c)
+#define index strchr
+#define rindex strrchr
 #else /* SYSV */
 #include <strings.h>
 #endif /* SYSV */
