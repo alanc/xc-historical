@@ -56,7 +56,7 @@
 	 (increment (get name 'byte-width :not-found)))
     (when (eq increment :not-found)
       ;; Check for TYPE in a different package
-      (when (not (eq (symbol-package name) (find-package 'xlib)))
+      (when (not (eq (symbol-package name) *xlib-package*))
 	(setq name (xintern name))
 	(setq increment (get name 'byte-width :not-found)))
       (when (eq increment :not-found)
