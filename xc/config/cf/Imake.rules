@@ -1,6 +1,6 @@
 /**/###########################################################################
 /**/# Imake rules for building libraries, programs, scripts, and data files
-/**/# rules:  $XConsortium: Imake.rules,v 1.6 89/01/18 10:07:21 jim Exp $
+/**/# rules:  $XConsortium: Imake.rules,v 1.7 89/01/18 10:19:36 jim Exp $
 
 /*
  * MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -578,23 +578,27 @@ MakeMakeSubdirs(dirs,Makefiles)						@@\
 									@@\
 MakeNsubdirMakefiles()
 
-#if SystemV && !defined(HPArchitecture)	     /* hpux has #!/bin/sh exec'ing */
-#define MakeScriptFromCpp(name,defs)					@@\
-name::  name.cpp							@@\
+#if ExecableScripts		/* can use #! instead of colon */
+#define CppScriptTarget(name,defs,deplist)				@@\
+name::  name.cpp deplist						@@\
+	$(RM) $@							@@\
+	$(CPP) $(STD_CPP_DEFINES) defs <$@.cpp | \			@@\
+		sed -e '/^#  *[0-9][0-9]*  *.*$$/d' >$@			@@\
+	chmod a+x $@
+#else
+#define CppScriptTarget(name,defs,deplist)				@@\
+name::  name.cpp deplist						@@\
 	$(RM) $@							@@\
 	echo \: >$@							@@\
 	sed '1d' $@.cpp | \						@@\
 		$(CPP) $(STD_CPP_DEFINES) defs  | \			@@\
 		sed -e '/^#  *[0-9][0-9]*  *.*$$/d' >>$@		@@\
 	chmod a+x $@
-#else
-#define MakeScriptFromCpp(name,defs)					@@\
-name::  name.cpp							@@\
-	$(RM) $@							@@\
-	$(CPP) $(STD_CPP_DEFINES) defs <$@.cpp | \			@@\
-		sed -e '/^#  *[0-9][0-9]*  *.*$$/d' >$@			@@\
-	chmod a+x $@
 #endif
+
+#define MakeScriptFromCpp(name,defs)					@@\
+CppScriptTarget(name,defs,)
+
 
 #define MakeDirectories(step,dirs)					@@\
 step::									@@\

@@ -10,6 +10,7 @@
 #define StandardDefines        -Wc,-Nd4000,-Ns3000 -DSYSV
 #define LintOpts               -ax -Nd4000 -Ns3000 -Na25000 -DSYSV
 #define LnCmd                  ln -s
+#define ExecableScripts        YES
 
 /* This defines the server you want */
 #define XHPServer              Xhp
@@ -17,7 +18,7 @@
 #define NeedBerklibInXlib      YES		/* snag Berklib for Xlib */
 
 
-/**/# platform:  $XConsortium: hp.cf,v 1.2 89/01/11 14:58:27 jim Exp $
+/**/# platform:  $XConsortium: hp.cf,v 1.3 89/01/18 09:24:45 jim Exp $
 /**/# operating system:  OSName
 
 /*
