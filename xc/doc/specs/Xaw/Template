@@ -18,11 +18,11 @@ widget implementation can be merged into other application code.
 .LP
 .sp
 In the following example, the public header file
-.Pn < X11/Template.h >,
+.Pn < X11/Xaw/Template.h >,
 the private header file
-.Pn < X11/TemplateP.h >
+.Pn < X11/Xaw/TemplateP.h >
 and the source code file
-.Pn < X11/Template.c >
+.Pn < X11/Xaw/Template.c >
 will be modified to produce the "WindowWidget" described above.
 In each case, the files have been designed so that a global string
 replacement of ``Template'' and ``template''
@@ -38,7 +38,7 @@ an instance of the class, to perform an
 operation, or to call a public routine implemented by the widget class.
 .LP
 The contents of the Template public header file,
-.Pn < X11/Template.h >,
+.Pn < X11/Xaw/Template.h >,
 are:
 .de CB
 .sp
@@ -159,7 +159,7 @@ procedures; e.g.
 .PN XtSetValues .
 .LP
 The contents of the Template private header file,
-.Pn < X11/TemplateP.h >,
+.Pn < X11/Xaw/TemplateP.h >,
 are:
 .CB
 .\".so ../../lib/Xaw/TemplateP.h
@@ -236,7 +236,7 @@ widget class record structure and the declaration of all resources and
 action routines added by the widget class.
 .LP
 The contents of the Template implementation file,
-.Pn < X11/Template.c >,
+.Pn < X11/Xaw/Template.c >,
 are:
 .CB
 .\".so ../../lib/Xaw/Template.c
@@ -416,7 +416,4 @@ or the \fBWindowColor\fP functions.  The actual window created for the
 "WindowWidget" is available by calling the
 .PN XtWindow
 function.
-.LP
-To test the new ``WindowWidget'', you may substitute ``window'' for
-``command'' in the sample program given in Section 2.7.3.
 .TC

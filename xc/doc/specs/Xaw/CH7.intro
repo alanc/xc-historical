@@ -1,10 +1,14 @@
+.LP
 .bp
+.if e .bp  \" make sure we break on an odd page.
 \&
 .sp 1
-.ce 3
+.ce 5
 \s+1\fBChapter 7\fP\s-1
 
-\s+1\BCreating New Widgets (Subclassing)\fP\s-1
+\s+1\fBCreating New Widgets (Subclassing)\fP\s-1
+
+\s+1Written By: Ralph Swick\s-1
 .sp 2
 .nr H1 7
 .nr H2 0
