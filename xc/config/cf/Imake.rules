@@ -1,6 +1,6 @@
 /**/###########################################################################
 /**/# Imake rules for building libraries, programs, scripts, and data files
-/**/# rules:  $XConsortium: Imake.rules,v 1.47 89/08/23 14:39:03 jim Exp $
+/**/# rules:  $XConsortium: Imake.rules,v 1.48 89/08/23 15:04:18 jim Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -329,11 +329,20 @@ install:: lib/**/libname.a						@@\
  */
 #ifndef InstallSharedLibrary
 #define	InstallSharedLibrary(libname,rev,dest)				@@\
-install:: lib/**/libname.so.rev lib/**/libname.sa.rev			@@\
+install:: lib/**/libname.so.rev 					@@\
 	$(INSTALL) -c $(INSTLIBFLAGS) lib/**/libname.so.rev dest	@@\
-	$(INSTALL) -c $(INSTLIBFLAGS) lib/**/libname.so.rev dest
 
 #endif /* InstallSharedLibrary */
+
+/*
+ * InstallSharedLibraryData - generate rules to install the shared library data
+ */
+#ifndef InstallSharedLibraryData
+#define	InstallSharedLibraryData(libname,rev,dest)			@@\
+install:: lib/**/libname.sa.rev						@@\
+	$(INSTALL) -c $(INSTLIBFLAGS) lib/**/libname.sa.rev dest
+
+#endif /* InstallSharedLibraryData */
 
 
 /*
@@ -869,9 +878,8 @@ lib/**/libname.a: objlist						@@\
  * the library gone for long periods.
  */
 #ifndef NormalSharedLibraryTarget
-#if HasSunOSSharedLibraries
-#define NormalSharedLibraryTarget(libname,rev,solist,salist)		@@\
-AllTarget(lib/**/libname.so.rev lib/**/libname.sa.rev)			@@\
+#define NormalSharedLibraryTarget(libname,rev,solist)			@@\
+AllTarget(lib/**/libname.so.rev)					@@\
 									@@\
 lib/**/libname.so.rev:  solist						@@\
 	$(RM) $@~							@@\
@@ -879,19 +887,33 @@ lib/**/libname.so.rev:  solist						@@\
 	$(RM) $@ 							@@\
 	$(MV) $@~ $@							@@\
 									@@\
+clean::									@@\
+	$(RM) lib/**/libname.so.rev
+
+#endif
+
+/*
+ * NormalSharedLibraryDataTarget - generate rules to create shlib data file;
+ * build it into a different name so that the we don't hose people by having
+ * the library gone for long periods.
+ */
+#ifndef NormalSharedLibraryDataTarget
+#define NormalSharedLibraryDataTarget(libname,rev,salist)		@@\
+AllTarget(lib/**/libname.sa.rev)					@@\
+									@@\
 lib/**/libname.sa.rev:  salist						@@\
 	$(RM) $@							@@\
 	$(AR) $@ salist							@@\
 	$(RANLIB) $@							@@\
 									@@\
 clean::									@@\
-	$(RM) lib/**/libname.so.rev lib/**/libname.sa.rev
+	$(RM) lib/**/libname.sa.rev
 
-#else
-#define NormalSharedLibraryTarget(libname,rev,solist,salist)		@@\
-NormalLibraryTarget(libname,solist salist)
-#endif /* HasSunOSSharedLibraries */
 #endif /* NormalSharedLibraryTarget */
+
+
+
+
 
 /*
  * NormalLibraryTarget2 - generate rules to create a library in two steps.
