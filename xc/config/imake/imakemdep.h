@@ -1,5 +1,5 @@
 /*
- * $XConsortium: imakemdep.h,v 1.65 94/02/04 17:09:11 matt Exp $
+ * $XConsortium: imakemdep.h,v 1.66 94/02/04 18:15:40 matt Exp $
  * 
  * This file contains machine-dependent constants for the imake utility.
  * When porting imake, read each of the steps below and add in any necessary
@@ -87,6 +87,15 @@
 #ifdef WIN32
 #define imake_ccflags "-nologo -batch -D__STDC__"
 #endif
+
+#ifdef __uxp__
+#define imake_ccflags "-DSVR4 -DANSICPP"
+#endif
+
+#ifdef __sxg__
+#define imake_ccflags "-DSYSV -DUSG -DNOSTDHDRS"
+#endif
+
 #else /* not CCIMAKE */
 #ifndef MAKEDEPEND
 /*
@@ -143,6 +152,12 @@
 #endif
 #ifdef bsdi
 #define DEFAULT_CPP "/usr/bin/cpp"
+#endif
+#ifdef __uxp__
+#define DEFAULT_CPP "/usr/ccs/lib/cpp"
+#endif
+#ifdef __sxg__
+#define DEFAULT_CPP "/usr/lib/cpp"
 #endif
 
 /*
@@ -289,6 +304,12 @@ char *cpp_argv[ARGUMENTS] = {
 #endif
 #ifdef NCR
 	"-DNCR",	/* NCR */
+#endif
+#ifdef __uxp__
+	"-D__uxp__",
+#endif
+#ifdef __sxg__
+	"-D__sxg__",
 #endif
 };
 #else /* else MAKEDEPEND */
@@ -448,6 +469,12 @@ struct symtab	predefs[] = {
 #endif
 #ifdef __decc
 	{"__decc",  "1"},
+#endif
+#ifdef __uxp__
+	{"__uxp__", "1"},
+#endif
+#ifdef __sxg__
+	{"__sxg__", "1"},
 #endif
 	/* add any additional symbols before this line */
 	{NULL, NULL}
