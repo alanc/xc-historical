@@ -1,4 +1,4 @@
-/* $XConsortium: Create.c,v 1.77 90/08/31 08:07:33 swick Exp $ */
+/* $XConsortium: Create.c,v 1.78 90/09/04 10:50:33 swick Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -176,8 +176,8 @@ static Widget _XtCreate(
     ConstraintWidgetClass parent_constraint_class;
         /* NULL if not a subclass of Constraint or if child is popup shell */
 {
-    register _XtOffsetList  offsetList;
-    XtCallbackList          *pCallbacks;
+    register CallbackTable  offsets;
+    InternalCallbackList    *cl;
     /* need to use strictest alignment rules possible in next two decls. */
     double                  widget_cache[100];
     double                  constraint_cache[20];
@@ -233,20 +233,18 @@ static Widget _XtCreate(
 	}
 	num_args = num_typed_args;
     }
-
+    
     /* Compile any callback lists into internal form */
-    for (offsetList = (_XtOffsetList)widget->core.widget_class->
-				core_class.callback_private;
-	 offsetList != NULL;
-	 offsetList = offsetList->next) {
-	 pCallbacks = (XtCallbackList *)
-	     ((char *)widget - offsetList->offset - 1);
-	if (*pCallbacks != NULL) {
-	    extern CallbackStruct* _XtCompileCallbackList();
-	    *pCallbacks =
-		(XtCallbackList) _XtCompileCallbackList(widget, *pCallbacks);
-	}
+    offsets = (CallbackTable)
+	widget->core.widget_class->core_class.callback_private;
+
+    for (i = (int) *(offsets++); --i >= 0; offsets++) {
+	cl = (InternalCallbackList *)
+	    ((char *) widget - (*offsets)->xrm_offset - 1);
+	if (*cl)
+	    *cl = _XtCompileCallbackList((XtCallbackList) *cl);
     }
+
     if (cache_refs != NULL) {
 	extern void _XtCallbackReleaseCacheRefs();
 	XtAddCallback( widget, XtNdestroyCallback,

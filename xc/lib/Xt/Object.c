@@ -1,6 +1,6 @@
 /* LINTLIBRARY */
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Object.c,v 1.9 89/09/12 16:48:12 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Object.c,v 1.10 89/10/05 12:54:13 swick Exp $";
 /* $oHeader: Object.c,v 1.2 88/08/18 15:51:09 asente Exp $ */
 #endif /* lint */
 
@@ -89,29 +89,64 @@ externaldef(objectClass) WidgetClass objectClass
 static void ConstructCallbackOffsets(widgetClass)
     WidgetClass widgetClass;
 {
-    register Cardinal i;
+    static XrmQuark QCallback = NULLQUARK;
+    register int i;
+    register int tableSize;
+    register CallbackTable newTable;
+    register CallbackTable superTable;
     register XrmResourceList resourceList;
-    register _XtOffsetList newItem;
-    register XrmQuark QCallback;
     ObjectClass objectClass = (ObjectClass)widgetClass;
 
-    /* ||| Should initialize QCallback exactly once, actually */
-    QCallback = XrmStringToQuark(XtRCallback);
+    /*
+      This function builds an array of pointers to the resource
+      structures which describe the callbacks for this widget class.
+      This array is special in that the 0th entry is the number of
+      callback pointers.
+     */
 
-    if (objectClass->object_class.superclass != NULL)
-	objectClass->object_class.callback_private = 
-	   ((ObjectClass) objectClass->object_class.superclass)->
-                      object_class.callback_private;
-    for (i = objectClass->object_class.num_resources,
-	 resourceList = (XrmResourceList) objectClass->object_class.resources;
-         i != 0; i--)
-	if (resourceList[i-1].xrm_type == QCallback) {
-	    newItem = XtNew(XtOffsetRec);
-	    newItem->next   = (_XtOffsetList)objectClass->object_class.callback_private;
-	    objectClass->object_class.callback_private = (XtPointer)newItem;
-	    newItem->offset = resourceList[i-1].xrm_offset;
-	    newItem->name   = resourceList[i-1].xrm_name;
-     }
+    if (QCallback == NULLQUARK)
+	QCallback = XrmStringToQuark(XtRCallback);
+
+    if (objectClass->object_class.superclass != NULL) {
+	superTable = (CallbackTable)
+	    ((ObjectClass) objectClass->object_class.superclass)->
+		object_class.callback_private;
+	tableSize = (int) superTable[0];
+    } else { 
+	superTable = (CallbackTable) NULL;
+	tableSize = 0;
+    }
+
+    /* Count the number of callbacks */
+    resourceList = (XrmResourceList) objectClass->object_class.resources;
+    for (i = objectClass->object_class.num_resources; --i >= 0; resourceList++)
+	if (resourceList->xrm_type == QCallback)
+	    tableSize++;
+	
+    /*
+     * Allocate and load the table.  Make sure that the new callback
+     * offsets occur in the table ahead of the superclass callback
+     * offsets so that resource overrides work.
+     */
+    newTable = (CallbackTable)
+	XtMalloc(sizeof(XrmResource *) * (tableSize + 1));
+	
+    newTable[0] = (XrmResource *) tableSize;
+
+    if (superTable)
+	tableSize -= (int) superTable[0];
+    resourceList = (XrmResourceList) objectClass->object_class.resources;
+    for (i=1; tableSize > 0; resourceList++)
+	if (resourceList->xrm_type == QCallback) {
+	    newTable[i++] = resourceList;
+	    tableSize--;
+	}
+
+    if (superTable)
+	for (tableSize = (int) *superTable++; --tableSize >= 0; superTable++)
+	    newTable[i++] = *superTable;
+    
+    objectClass->object_class.callback_private = (XtPointer) newTable;
 }
 
 static void ObjectClassPartInitialize(wc)
@@ -133,27 +168,24 @@ static void ObjectClassPartInitialize(wc)
 static Boolean ObjectSetValues(old, request, widget)
     Widget	old, request, widget;
 {
-    register _XtOffsetList offset;
-    register CallbackStruct *oldCallbacks, **newCallbacksP;
-    extern CallbackStruct* _XtCompileCallbackList();
-    extern void _XtFreeCallbackList();
+    register CallbackTable offsets;
+    register int i;
+    register InternalCallbackList *ol, *nl;
 
     /* Compile any callback lists into internal form */
-    offset = (_XtOffsetList)XtClass(widget)->core_class.callback_private;
-    while (offset != NULL) {
-	oldCallbacks = *(CallbackStruct**)((char*)old - offset->offset - 1);
-	newCallbacksP = (CallbackStruct**)((char*)widget - offset->offset - 1);
+    offsets = (CallbackTable) XtClass(widget)->core_class.callback_private;
 
-	if (*newCallbacksP != oldCallbacks) {
-	    if (oldCallbacks != NULL)
-		_XtFreeCallbackList(oldCallbacks);
-
-	    if (*newCallbacksP != NULL)
-		*newCallbacksP =
-		    _XtCompileCallbackList(widget,
-					   (XtCallbackList)*newCallbacksP);
+    for (i= (int) *(offsets++); --i >= 0; offsets++) {
+	ol = (InternalCallbackList *)
+	    ((char *) old - (*offsets)->xrm_offset - 1);
+	nl = (InternalCallbackList *)
+	    ((char *) widget - (*offsets)->xrm_offset - 1);
+	if (*ol != *nl) {
+	    if (*ol != NULL)
+		XtFree((char *) *ol);
+	    if (*nl != NULL)
+		*nl = _XtCompileCallbackList((XtCallbackList) *nl);
 	}
-	offset = offset->next;
     }
     return False;
 }
@@ -162,23 +194,21 @@ static Boolean ObjectSetValues(old, request, widget)
 static void ObjectDestroy (widget)
     register Widget    widget;
 {
-    register _XtOffsetList offset;
-    extern CallbackList* _XtCallbackList();
+    register CallbackTable offsets;
+    register int i;
+    register InternalCallbackList *cl;
 
     if (((Object)widget)->object.constraints != NULL)
 	    XtFree((char *) ((Object)widget)->object.constraints);
 
     /* Remove all callbacks associated with widget */
-    offset = (_XtOffsetList)
+    offsets = (CallbackTable)
 	widget->core.widget_class->core_class.callback_private;
 
-    while (offset != NULL) {
-	register CallbackStruct *callbacks =
-	    *(CallbackStruct**)((char *)widget - offset->offset - 1);
-	if (callbacks != NULL) {
-	    _XtFreeCallbackList(callbacks);
-	}
-	offset = offset->next;
+    for (i = (int) *(offsets++); --i >= 0; offsets++) {
+	cl = (InternalCallbackList *)
+	    ((char *) widget - (*offsets)->xrm_offset - 1);
+	if (*cl) XtFree((char *) *cl);
     }
 
     XtFree((char *) widget);

@@ -1,4 +1,4 @@
-/* $XConsortium: TMstate.c,v 1.117 90/09/27 09:27:56 swick Exp $ */
+/* $XConsortium: TMstate.c,v 1.118 90/11/05 15:49:29 converse Exp $ */
 
 /*LINTLIBRARY*/
 
@@ -1188,22 +1188,20 @@ void _XtInstallTranslations(widget, translateData)
              _XtTranslateEvent, (XtPointer)&widget->core.tm);
 
     if (stateTable->mappingNotifyInterest) {
-	_XtAddCallbackOnce( widget,
-			    &_XtGetPerDisplay(XtDisplay(widget))
+	_XtAddCallbackOnce( &_XtGetPerDisplay(XtDisplay(widget))
 			       ->mapping_callbacks,
 			    DispatchMappingNotify,
 			    (XtPointer)&widget->core.tm
 			   );
 	if (widget->core.destroy_callbacks != NULL)
-	    _XtAddCallbackOnce( widget,
-				_XtCallbackList((CallbackStruct*)
-					widget->core.destroy_callbacks
-				       ),
-				RemoveFromMappingCallbacks,
+	    _XtAddCallbackOnce( (InternalCallbackList *) 
+			        &widget->core.destroy_callbacks,
+			        RemoveFromMappingCallbacks,
 				(XtPointer)&widget->core.tm
 			       );
 	else
-	    XtAddCallback( widget, XtNdestroyCallback,
+	    _XtAddCallback((InternalCallbackList *)
+			   &widget->core.destroy_callbacks,
 			   RemoveFromMappingCallbacks,
 			   (XtPointer)&widget->core.tm
 			  );
@@ -2154,15 +2152,14 @@ void _XtRegisterAccRemoveCallbacks(dest)
 	    translations->accProcTbl[i].widget != lastWidget) {
 	      lastWidget = translations->accProcTbl[i].widget;
 	      if (lastWidget->core.destroy_callbacks != NULL)
-		  _XtAddCallbackOnce( lastWidget,
-				      _XtCallbackList((CallbackStruct*)
-					    lastWidget->core.destroy_callbacks
-					   ),
+		  _XtAddCallbackOnce( (InternalCallbackList *)
+				      &lastWidget->core.destroy_callbacks,
 				      RemoveAccelerators,
 				      (XtPointer)&dest->core.tm.translations
 				     );
 	      else
-		  XtAddCallback( lastWidget, XtNdestroyCallback,
+		  _XtAddCallback( (InternalCallbackList *)
+				 &lastWidget->core.destroy_callbacks,
 				 RemoveAccelerators,
 				 (XtPointer)&dest->core.tm.translations
 				);
@@ -2233,15 +2230,14 @@ void XtInstallAccelerators(destination, source)
     }
 
     if (source->core.destroy_callbacks != NULL)
-	_XtAddCallbackOnce( source,
-			    _XtCallbackList((CallbackStruct*)
-					    source->core.destroy_callbacks
-					    ),
+	_XtAddCallbackOnce((InternalCallbackList *)
+			   &source->core.destroy_callbacks,
 			    RemoveAccelerators,
 			    (XtPointer)&destination->core.tm.translations
 			   );
     else
-	XtAddCallback(source, XtNdestroyCallback, RemoveAccelerators,
+	_XtAddCallback((InternalCallbackList *)&source->core.destroy_callbacks,
+		       RemoveAccelerators,
 		      (XtPointer)&destination->core.tm.translations);
 
     if (XtClass(source)->core_class.display_accelerator != NULL){

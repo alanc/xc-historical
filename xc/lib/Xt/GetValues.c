@@ -1,4 +1,4 @@
-/* $XConsortium: GetValues.c,v 1.3 90/06/25 12:23:55 swick Exp $ */
+/* $XConsortium: GetValues.c,v 1.4 90/07/03 17:27:06 swick Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -43,7 +43,6 @@ static void GetValues(base, res, num_resources, args, num_args)
     register XrmName		argName;
     register XrmResourceList*   xrmres;
     static XrmQuark QCallback = NULLQUARK, QTranslations;
-    extern XtCallbackList	_XtGetCallbackList();
 
     if (QCallback == NULLQUARK) {
 	QCallback = XrmStringToQuark(XtRCallback);
@@ -63,7 +62,8 @@ static void GetValues(base, res, num_resources, args, num_args)
 		 */
 		if ((*xrmres)->xrm_type == QCallback) {
 		    XtCallbackList callback = _XtGetCallbackList(
-			      base - (*xrmres)->xrm_offset - 1);
+			      *(InternalCallbackList *)
+			      (base - (*xrmres)->xrm_offset - 1));
 		    _XtCopyToArg(
 			      (char*)&callback, &arg->value,
 			      (*xrmres)->xrm_size);

@@ -1,4 +1,4 @@
-/* $XConsortium: CallbackI.h,v 1.10 90/08/23 14:41:19 swick Exp $ */
+/* $XConsortium: CallbackI.h,v 1.11 90/08/29 13:09:40 swick Exp $ */
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -29,48 +29,62 @@ SOFTWARE.
  *
  ****************************************************************/
 
-typedef struct _XtOffsetRec {
-     struct _XtOffsetRec *next;
-     XrmQuark       name;
-     int            offset;
-} XtOffsetRec, *_XtOffsetList;
+typedef XrmResource **CallbackTable;
 
-typedef struct _CallbackRec *CallbackList;
-typedef struct _CallbackStruct CallbackStruct;
+typedef struct internalCallbackRec {
+    int	count;
+    /* XtCallbackList */
+} InternalCallbackRec, *InternalCallbackList;
 
-extern void _XtRemoveAllCallbacks(
-#if NeedFunctionPrototypes
-    CallbackList*	/* callbackList */
-#endif
-);
+extern XtPointer XtGarbageCollection;
 
-extern void _XtCallCallbacks(
-#if NeedFunctionPrototypes
-    CallbackList*	/* callbacks */,
-    XtPointer 		/* callData */
-#endif
-);
 
 extern void _XtAddCallback(
 #if NeedFunctionPrototypes
-    Widget 		/* widget */,
-    CallbackList*	/* callbacks */,
-    XtCallbackProc	/* callback */,
-    XtPointer 		/* closure */
+    InternalCallbackList*	/* callbacks */,
+    XtCallbackProc		/* callback */,
+    XtPointer 			/* closure */
 #endif
 );
 
 extern void _XtAddCallbackOnce(
 #if NeedFunctionPrototypes
-    Widget 		/* widget */,
-    CallbackList*	/* callbacks */,
-    XtCallbackProc	/* callback */,
-    XtPointer 		/* closure */
+    InternalCallbackList*	/* callbacks */,
+    XtCallbackProc		/* callback */,
+    XtPointer 			/* closure */
 #endif
 );
 
-extern CallbackList* _XtCallbackList(
+extern void _XtCallCallbacks(
 #if NeedFunctionPrototypes
-    CallbackStruct*	/* callbacks */
+    Widget			/* widget */,
+    InternalCallbackList	/* callbacks */,
+    XtPointer 			/* callData */
+#endif
+);
+
+extern InternalCallbackList _XtCompileCallbackList(
+#if NeedFunctionPrototypes
+    XtCallbackList		/* xtcallbacks */
+#endif
+);
+
+extern XtCallbackList _XtGetCallbackList(
+#if NeedFunctionPrototypes
+    InternalCallbackList	/* list */
+#endif
+);
+
+extern void _XtRemoveAllCallbacks(
+#if NeedFunctionPrototypes
+    InternalCallbackList*	/* callbacks */
+#endif
+);
+
+extern void _XtRemoveCallback(
+#if NeedFunctionPrototypes
+    InternalCallbackList*	/* callbacks */,
+    XtCallbackProc		/* callback */,
+    XtPointer			/* closure */
 #endif
 );

@@ -1,4 +1,4 @@
-/* $XConsortium: ActionHook.c,v 1.2 90/04/04 11:27:21 swick Exp $ */
+/* $XConsortium: ActionHook.c,v 1.3 90/08/29 13:01:51 swick Exp $ */
 
 /*LINTLIBRARY*/
 
@@ -59,8 +59,7 @@ XtActionHookId XtAppAddActionHook( app, proc, closure )
     hook->proc = proc;
     hook->closure = closure;
     if (app->action_hook_list == NULL) {
-	_XtAddCallback( (Widget)NULL,
-		        &app->destroy_callbacks,
+	_XtAddCallback( &app->destroy_callbacks,
 		        FreeActionHookList,
 		        (XtPointer)&app->action_hook_list
 		      );

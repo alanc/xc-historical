@@ -1,4 +1,4 @@
-/* $XConsortium: Callback.c,v 1.25 90/08/22 14:37:08 swick Exp $ */
+/* $XConsortium: Callback.c,v 1.26 90/08/29 13:07:48 swick Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -26,103 +26,69 @@ SOFTWARE.
 
 #include "IntrinsicI.h"
 
-/* exported internal procedures */
-
-CallbackStruct* _XtCompileCallbackList();
-CallbackList* _XtCallbackList();
-XtCallbackList _XtGetCallbackList();
-
+XtPointer XtGarbageCollection = NULL;
 static String XtNinvalidCallbackList = "invalidCallbackList";
 static String XtNxtAddCallback = "xtAddCallback";
 static String XtNxtRemoveCallback = "xtRemoveCallback";
 static String XtNxtRemoveAllCallback = "xtRemoveAllCallback";
 static String XtNxtCallCallback = "xtCallCallback";
 
-typedef struct _CallbackRec {
-    CallbackList  next;
-    Widget	    widget;
-    XtCallbackProc  callback;
-    XtPointer	    closure;
-} CallbackRec;
+/* However it doesn't contain a final NULL record */
+#define ToList(p) ((XtCallbackList) ((p)+1))
 
-struct _CallbackStruct {
-    XtCallbackList	external_form;
-    int			array_size;
-    CallbackList	internal_form;
-};
-
-static CallbackStruct **FetchCallbackStruct(widget, name)
-    Widget widget;
-    String name;
+static InternalCallbackList* FetchInternalList(widget, name)
+    Widget	widget;
+    String	name;
 {
-    register _XtOffsetList  offsets;
-    register XrmQuark       quark;
+    register XrmQuark		quark;
+    register int 		n;
+    register CallbackTable	offsets;
 
     quark = StringToQuark(name);
-    for (offsets = (_XtOffsetList)widget->core.widget_class->
-				 core_class.callback_private;
-	 offsets != NULL;
-	 offsets = offsets->next) {
-	if (quark == offsets->name) {
-	    return (CallbackStruct**)((char *) widget - offsets->offset - 1);
-	}
-    }
+    offsets = (CallbackTable) 
+	widget->core.widget_class->core_class.callback_private;
+
+    for (n = (int) *(offsets++); --n >= 0; offsets++)
+	if (quark == (*offsets)->xrm_name)
+	    return (InternalCallbackList *) 
+		((char *) widget - (*offsets)->xrm_offset - 1);
     return NULL;
 }
 
-static CallbackList *FetchCallbackList (widget, name, create)
-    Widget  widget;
-    String  name;
-    Boolean create;		/* if False, may return a empty list */
-{
-    register CallbackStruct **callbacks = FetchCallbackStruct(widget, name);
-    if (callbacks == NULL) return NULL;
-    if (*callbacks == NULL) {
-	if (!create) {
-	    static CallbackList emptyList = NULL;
-	    return &emptyList;
-	}
-	*callbacks = XtNew(CallbackStruct);
-	(*callbacks)->external_form = NULL;
-	(*callbacks)->array_size = 0;
-	(*callbacks)->internal_form = NULL;
-    }
-    return _XtCallbackList(*callbacks);
-} /* FetchCallbackList */
 
-
-void _XtAddCallback(widget, callbacks, callback, closure)
-    Widget		    widget;
-    register CallbackList   *callbacks;
+void _XtAddCallback(callbacks, callback, closure)
+    register InternalCallbackList* callbacks;
     XtCallbackProc	    callback;
     XtPointer		    closure;
 {
-    register CallbackRec *new;
+    register XtCallbackList cl;
+    register int count;
+    
+    count = (*callbacks) ? (*callbacks)->count : 0;
 
-    new = XtNew(CallbackRec);
-    new->next = NULL;
-    new->widget = widget;
-    new->closure = closure;
-    new->callback = callback; 
+    *callbacks = (InternalCallbackList)
+	XtRealloc((char *) *callbacks, sizeof(InternalCallbackRec) +
+		  sizeof(XtCallbackRec) * (count + 1));
 
-    for ( ; *callbacks != NULL; callbacks = &(*callbacks)->next) {};
-    *callbacks = new;
+    (*callbacks)->count = count + 1;
+    cl = ToList(*callbacks) + count;
+    cl->callback = callback;
+    cl->closure = closure;
 } /* _XtAddCallback */
 
-void _XtAddCallbackOnce(widget, callbacks, callback, closure)
-    Widget		    widget;
-    register CallbackList   *callbacks;
+void _XtAddCallbackOnce(callbacks, callback, closure)
+    register InternalCallbackList*callbacks;
     XtCallbackProc	    callback;
     XtPointer		    closure;
 {
-    for ( ; *callbacks != NULL; callbacks = &(*callbacks)->next) {
-	if ((*callbacks)->widget == widget &&
-	    (*callbacks)->callback == callback &&
-	    (*callbacks)->closure == closure)
+    register XtCallbackList cl = ToList(*callbacks);
+    register int i;
+    
+    for (i=(*callbacks)->count; --i >= 0; cl++)
+	if (cl->callback == callback && cl->closure == closure)
 	    return;
-    }
 
-    _XtAddCallback(widget, callbacks, callback, closure);
+    _XtAddCallback(callbacks, callback, closure);
 } /* _XtAddCallbackOnce */
 
 void XtAddCallback(widget, name, callback, closure)
@@ -131,9 +97,9 @@ void XtAddCallback(widget, name, callback, closure)
     XtCallbackProc  callback;
     XtPointer	    closure;
 {
-    CallbackList *callbacks;
+    InternalCallbackList *callbacks;
 
-    callbacks = FetchCallbackList(widget, name, True);
+    callbacks = FetchInternalList(widget, name);
     if (callbacks == NULL) {
        XtAppWarningMsg(XtWidgetToApplicationContext(widget),
 	       XtNinvalidCallbackList,XtNxtAddCallback,XtCXtToolkitError,
@@ -141,28 +107,40 @@ void XtAddCallback(widget, name, callback, closure)
 	      (String *)NULL, (Cardinal *)NULL);
        return;
     }
-    _XtAddCallback(widget, callbacks, callback, closure);
-} /* XtAddCallbacks */
+    _XtAddCallback(callbacks, callback, closure);
+} /* XtAddCallback */
 
 /* ARGSUSED */
 static void AddCallbacks(widget, callbacks, newcallbacks)
     Widget		    widget;
-    register CallbackList   *callbacks;
-    CallbackList	    newcallbacks;
+    register InternalCallbackList *callbacks;
+    XtCallbackList	    newcallbacks;
 {
-    for ( ; *callbacks != NULL; callbacks = &(*callbacks)->next) {};
-    *callbacks = newcallbacks;
-} /* AddCallback */
+    register int i, j;
+    register XtCallbackList cl;
+
+    i = (*callbacks) ? (*callbacks)->count : 0;
+    for (j=0, cl = newcallbacks; cl->callback != NULL; cl++, j++);
+
+    *callbacks = (InternalCallbackList) XtRealloc((char *) *callbacks,
+					     sizeof(InternalCallbackRec) + 
+					     sizeof(XtCallbackRec) * (i+j));
+
+    (*callbacks)->count = i+j;
+    for (cl = ToList(*callbacks) + i; --j >= 0; cl++, newcallbacks++) {
+	cl->callback = newcallbacks->callback;
+	cl->closure =  newcallbacks->closure;
+    }
+} /* AddCallbacks */
 
 void XtAddCallbacks(widget, name, xtcallbacks)
     Widget	    widget;
     String	    name;
-    XtCallbackList     xtcallbacks;
+    XtCallbackList  xtcallbacks;
 {
-    CallbackList *callbacks;
-    CallbackStruct *add_callbacks;
+    InternalCallbackList* callbacks;
 
-    callbacks = FetchCallbackList(widget, name, True);
+    callbacks = FetchInternalList(widget, name);
     if (callbacks == NULL) {
        XtAppWarningMsg(XtWidgetToApplicationContext(widget),
 	       XtNinvalidCallbackList,XtNxtAddCallback,XtCXtToolkitError,
@@ -170,25 +148,35 @@ void XtAddCallbacks(widget, name, xtcallbacks)
 	      (String *)NULL, (Cardinal *)NULL);
        return;
     }
-    add_callbacks = _XtCompileCallbackList(widget, xtcallbacks);
-    AddCallbacks(widget, callbacks, add_callbacks->internal_form);
-    XtFree((char*)add_callbacks);
+    AddCallbacks(widget, callbacks, xtcallbacks);
 } /* XtAddCallbacks */
 
-void _XtRemoveCallback (widget, callbacks, callback, closure)
-    Widget		    widget;
-    register CallbackList   *callbacks;
+void _XtRemoveCallback (callbacks, callback, closure)
+    register InternalCallbackList *callbacks;
     XtCallbackProc	    callback;
     XtPointer		    closure;
 
 {
-    register CallbackList cl;
+    register int i;
+    register XtCallbackList cl, ncl;
 
-    for (cl = *callbacks; cl != NULL; (cl = *(callbacks = &cl->next))) {
-	if ((cl->widget == widget) && (cl->closure == closure)
-                            && (cl->callback == callback)) {
-	    *callbacks = cl->next;
-	    XtFree ((char *)cl);
+    if (*callbacks == NULL) return;
+
+    cl = ToList(*callbacks);
+    for (i=(*callbacks)->count; --i >= 0; cl++) {
+	if (cl->callback == callback && cl->closure == closure) {
+	    for (ncl = cl + 1; i > 0; ncl++, cl++, i--) {
+		cl->callback = ncl->callback;
+		cl->closure  = ncl->closure;
+	    }
+	    if (--(*callbacks)->count)
+		*callbacks = (InternalCallbackList)
+		    XtRealloc((char *) *callbacks, sizeof(InternalCallbackRec)
+			      + sizeof(XtCallbackRec) * (*callbacks)->count);
+	    else {
+		XtFree((char *) *callbacks);
+		*callbacks = NULL;
+	    }
 	    return;
 	}
     }
@@ -200,10 +188,9 @@ void XtRemoveCallback (widget, name, callback, closure)
     XtCallbackProc  callback;
     XtPointer	    closure;
 {
+    InternalCallbackList *callbacks;
 
-    CallbackList *callbacks;
-
-    callbacks = FetchCallbackList(widget, name, False);
+    callbacks = FetchInternalList(widget, name);
     if (callbacks == NULL) {
        XtAppWarningMsg(XtWidgetToApplicationContext(widget),
 	       XtNinvalidCallbackList,XtNxtRemoveCallback,XtCXtToolkitError,
@@ -211,7 +198,8 @@ void XtRemoveCallback (widget, name, callback, closure)
 	      (String *)NULL, (Cardinal *)NULL);
 	return;
     }
-    _XtRemoveCallback(widget, callbacks, callback, closure);
+
+    _XtRemoveCallback(callbacks, callback, closure);
 } /* XtRemoveCallback */
 
 
@@ -220,10 +208,9 @@ void XtRemoveCallbacks (widget, name, xtcallbacks)
     String	    name;
     register XtCallbackList  xtcallbacks;
 {
+    InternalCallbackList *callbacks;
 
-    CallbackList *callbacks;
-
-    callbacks = FetchCallbackList(widget, name, False);
+    callbacks = FetchInternalList(widget, name);
     if (callbacks == NULL) {
        XtAppWarningMsg(XtWidgetToApplicationContext(widget),
 	       XtNinvalidCallbackList,XtNxtRemoveCallback,XtCXtToolkitError,
@@ -233,43 +220,28 @@ void XtRemoveCallbacks (widget, name, xtcallbacks)
     }
 
     for (; xtcallbacks->callback != NULL; xtcallbacks++) {
-	_XtRemoveCallback(
-	    widget, callbacks, xtcallbacks->callback,
-	    xtcallbacks->closure);
+	_XtRemoveCallback(callbacks, xtcallbacks->callback,
+			  xtcallbacks->closure);
     }
 } /* XtRemoveCallbacks */
 
 
 void _XtRemoveAllCallbacks (callbacks)
-    CallbackList *callbacks;
+    InternalCallbackList *callbacks;
 {
-    register CallbackList cl, next;
-    
-    cl = *callbacks;
-    while (cl != NULL) {
-	next = cl->next;
-	XtFree((char *)cl);
-	cl = next;
+    if (*callbacks) {
+	XtFree((char *) *callbacks);
+	*callbacks = NULL;
     }
-    (*callbacks) = NULL;
 } /* _XtRemoveAllCallbacks */
-
-void _XtFreeCallbackList(callbacks)
-    CallbackStruct *callbacks;	/* may not be NULL */
-{
-    if (callbacks->internal_form != NULL)
-	_XtRemoveAllCallbacks(&callbacks->internal_form);
-    XtFree((char*)callbacks->external_form);
-    XtFree((char*)callbacks);
-} /* XtFreeCallbackList */
 
 void XtRemoveAllCallbacks(widget, name)
     Widget widget;
     String name;
 {
-    CallbackStruct **callbacks;
+    InternalCallbackList *callbacks;
 
-    callbacks = FetchCallbackStruct(widget, name);
+    callbacks = FetchInternalList(widget, name);
     if (callbacks == NULL) {
        XtAppWarningMsg(XtWidgetToApplicationContext(widget),
 	       XtNinvalidCallbackList,XtNxtRemoveAllCallback,XtCXtToolkitError,
@@ -278,125 +250,116 @@ void XtRemoveAllCallbacks(widget, name)
 
 	return;
     }
-    if (*callbacks != NULL) {
-	_XtFreeCallbackList(*callbacks);
-	*callbacks = (CallbackStruct*)NULL;
-    }
+    _XtRemoveAllCallbacks(callbacks);
 } /* XtRemoveAllCallbacks */
-
 
 
 #define CALLBACK_CACHE_SIZE	30
 
-void _XtCallCallbacks (callbacks, call_data)
-    CallbackList *callbacks;
-    XtPointer     call_data;
+void _XtCallCallbackList(widget, list, count, call_data)
+    Widget		widget;
+    XtCallbackList	list;
+    int			count;
+    XtPointer		call_data;
 {
-    register CallbackRec *cl;
-    CallbackRec		 stack_cache [CALLBACK_CACHE_SIZE];
-    CallbackList	 head;
-    register Cardinal    i;
+    register XtCallbackList cl;
+    XtCallbackRec	 stack_cache [CALLBACK_CACHE_SIZE];
+    XtCallbackList	 head;
+    register int	 i;
 
-    if ((*callbacks) == NULL ) return;
-
-    /* Get length of callback list */
-    for (i = 0, cl = *callbacks; cl != NULL; i++, cl = cl->next) {};
 
     /* If lots of entries allocate an array, otherwise use stack_cache */
-    if (i > CALLBACK_CACHE_SIZE) {
-	head = (CallbackList) XtMalloc((unsigned) (i * sizeof(CallbackRec)));
+    if (count > CALLBACK_CACHE_SIZE) {
+	head = (XtCallbackList) XtMalloc((unsigned)
+					 (count * sizeof(XtCallbackRec)));
     } else {
 	head = stack_cache;
     }
 
     /* Copy callback list into array to insulate us from callbacks that change
        the callback list */
-    for (i = 0, cl = *callbacks; cl != NULL; i++, cl = cl->next) {
+    for (cl=list, i=0; i < count; cl++, i++) {
 	head[i] = *cl;
     }
 
     /* Execute each callback in the array */
-    for (cl = head; i != 0; cl++, i--) {
-	(*(cl->callback)) (cl->widget, cl->closure, call_data);
+    
+    for (cl = head; --i >= 0; cl++) {
+	(*cl->callback) (widget, cl->closure, call_data);
     }
 
     /* If temporary array allocated, free it */
     if (head != stack_cache) {
 	XtFree((char *)head);
     }
-} /* _XtCallCallbacks */
+} /* _XtCallCallbackList */
 
 
-CallbackStruct* _XtCompileCallbackList(widget, xtcallbacks)
-    Widget		    widget;
-    register XtCallbackList xtcallbacks;
+InternalCallbackList _XtCompileCallbackList(xtcallbacks)
+    XtCallbackList xtcallbacks;
 {
-    /* Turn a public XtCallbackList into a private CallbackList */
+    register int n;
+    register XtCallbackList xtcl, cl;
+    register InternalCallbackList callbacks;
 
-    register CallbackList   new, *pLast;
-    CallbackStruct*	    callbacks;
+    for (n=0, xtcl=xtcallbacks; xtcl->callback != NULL; n++, xtcl++) {};
+    if (n == 0) return (InternalCallbackList) NULL;
 
-    if (xtcallbacks->callback == NULL) return NULL;
-
-    callbacks = XtNew(CallbackStruct);
-    callbacks->external_form = NULL;
-    callbacks->array_size = 0;
-    pLast = &callbacks->internal_form;
-    for (; xtcallbacks->callback != NULL; xtcallbacks++) {
-	new		= XtNew(CallbackRec);
-	*pLast		= new;
-	pLast		= &(new->next);
-	new->widget     = widget;
-	new->callback   = xtcallbacks->callback;
-	new->closure    = xtcallbacks->closure;
-    };
-    *pLast = NULL;
-
-    return callbacks;
+    callbacks = (InternalCallbackList) XtMalloc(sizeof(InternalCallbackRec) +
+					   sizeof(XtCallbackRec) * n);
+    callbacks->count = n;
+    cl = ToList(callbacks);
+    while (--n >= 0)
+	*(cl++) = *(xtcallbacks++);
+    return(callbacks);
 } /* _XtCompileCallbackList */
 
 
-CallbackList* _XtCallbackList(callbacks)
-    CallbackStruct*	callbacks; /* must not be NULL */
+XtCallbackList _XtGetCallbackList(callbacks)
+    InternalCallbackList callbacks;
 {
-    return &callbacks->internal_form;
-}
+    register int i;
+    register XtCallbackList xtcl, cl;
+    XtPointer garbage;
+    XtCallbackList xtcallbacks;
 
-XtCallbackList _XtGetCallbackList(list)
-    char*	list;		/* is CallbackStruct** */
-{
-    CallbackStruct *callbackstruct = *(CallbackStruct**)list;
-    int	callback_count = 0;
-    register CallbackRec* callback;
-    register XtCallbackRec* rec;
-
-    if (callbackstruct == NULL || callbackstruct->internal_form == NULL) {
+    if (callbacks == NULL) {
 	static XtCallbackRec emptyList[1] = { {NULL, NULL} };
 	return (XtCallbackList)emptyList;
     }
 
-    for (callback = callbackstruct->internal_form; callback != NULL;
-	 callback = callback->next, callback_count++);
+    for (garbage = XtGarbageCollection; garbage != (XtPointer) NULL;
+	 garbage = (XtPointer) *(XtPointer *)garbage) ;
 
-    callback_count++;		/* for list terminator */
-    if (callback_count > callbackstruct->array_size) {
-	XtFree((char*)callbackstruct->external_form);
-	callbackstruct->external_form =
-	    (XtCallbackList)XtMalloc((Cardinal)callback_count * sizeof(XtCallbackRec));
-	callbackstruct->array_size = callback_count;
+    i = callbacks->count;
+    garbage = XtMalloc(sizeof(XtCallbackRec) * (i+1) + sizeof(XtPointer));
+    xtcallbacks = (XtCallbackList) (garbage + 1);
+    *((XtPointer *)garbage) = NULL;
+
+    for(cl=ToList(callbacks), xtcl=xtcallbacks; --i >= 0; cl++,xtcl++)
+	*xtcl = *cl;
+
+    xtcl->callback = (XtCallbackProc) NULL;
+    xtcl->closure = NULL;
+    return xtcallbacks;
+}
+
+
+void _XtCallCallbacks (widget, callbacks, call_data)
+    Widget		widget;
+    InternalCallbackList callbacks;
+    XtPointer     	call_data;
+{
+    XtCallbackList	cl;
+
+    if (callbacks == NULL) return;
+    cl = ToList(callbacks);
+
+    if (callbacks->count == 1) {
+	(*cl->callback) (widget, cl->closure, call_data);
+	return;
     }
-    for (callback = callbackstruct->internal_form,
-	 rec = callbackstruct->external_form; callback != NULL;
-	 callback = callback->next, rec++) {
-	rec->callback = callback->callback;
-	rec->closure = callback->closure;
-    }
-    rec->callback = (XtCallbackProc)NULL;
-    rec->closure = NULL;
-    return callbackstruct->external_form;
-    /* %%% Garbage collection needed; this won't get freed
-     *     except by _XtFreeCallbackList in XtRemoveAllCallbacks
-     */
+    _XtCallCallbackList(widget, cl, callbacks->count, call_data);
 }
 
 
@@ -405,9 +368,9 @@ void XtCallCallbacks(widget, name, call_data)
     String   name;
     XtPointer call_data;
 {
-    CallbackList *callbacks;
+    InternalCallbackList *callbacks;
 
-    callbacks = FetchCallbackList(widget, name, False);
+    callbacks = FetchInternalList(widget, name);
     if (callbacks == NULL) {
        XtAppWarningMsg(XtWidgetToApplicationContext(widget),
 	       XtNinvalidCallbackList,XtNxtCallCallback,XtCXtToolkitError,
@@ -415,7 +378,8 @@ void XtCallCallbacks(widget, name, call_data)
 	      (String *)NULL, (Cardinal *)NULL);
 	return;
     }
-    _XtCallCallbacks(callbacks, call_data);
+
+    _XtCallCallbacks(widget, *callbacks, call_data);
 } /* XtCallCallbacks */
 
 
@@ -423,25 +387,32 @@ XtCallbackStatus XtHasCallbacks(widget, callback_name)
      Widget		widget;
      String		callback_name;
 {
-    CallbackList *callbacks;
-    callbacks = FetchCallbackList(widget, callback_name, False);
-    if (callbacks == NULL) {
+    InternalCallbackList *callbacks;
+    callbacks = FetchInternalList(widget, callback_name);
+    if (callbacks == NULL)
 	return XtCallbackNoList;
-    }    
-    if (*callbacks == NULL) return XtCallbackHasNone;
+    else if (*callbacks == NULL)
+	return XtCallbackHasNone;
     return XtCallbackHasSome;
 } /* XtHasCallbacks */
 
 
-/*ARGSUSED*/
 void XtCallCallbackList(widget, callbacks, call_data)
     Widget widget;
     XtCallbackList callbacks;
     XtPointer call_data;
 {
-    if (callbacks != NULL) {
-	_XtCallCallbacks( &((CallbackStruct*)callbacks)->internal_form,
-			  call_data
-			);
+    register int n;
+    register InternalCallbackList cl;
+
+    if (callbacks == NULL)
+	return;
+    cl = (InternalCallbackList) callbacks;
+    n = cl->count;
+    callbacks = ToList(cl);
+    if (n == 1) {
+	(*callbacks->callback) (widget, callbacks->closure, call_data);
+	return;
     }
+    _XtCallCallbackList(widget, callbacks, n, call_data);
 }

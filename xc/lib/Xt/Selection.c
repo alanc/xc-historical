@@ -1,4 +1,4 @@
-/* $XConsortium: Selection.c,v 1.55 90/09/20 14:59:41 swick Exp $ */
+/* $XConsortium: Selection.c,v 1.56 90/09/24 16:39:34 swick Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -100,7 +100,7 @@ static PropList GetPropList(dpy)
 	sarray->list[0].avail = TRUE;
 	(void) XSaveContext(dpy, DefaultRootWindow(dpy), selectPropertyContext, 
 			    (caddr_t) sarray);
-	_XtAddCallback( (Widget)NULL, &pd->destroy_callbacks,
+	_XtAddCallback( &pd->destroy_callbacks,
 			FreePropList, (XtPointer)sarray );
     }
     return sarray;

@@ -1,4 +1,4 @@
-/* $XConsortium: InitialI.h,v 1.37 90/10/20 13:40:59 rws Exp $ */
+/* $XConsortium: InitialI.h,v 1.38 90/11/05 15:48:48 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -98,7 +98,7 @@ typedef struct _DestroyRec DestroyRec;
 typedef struct _XtAppStruct {
     XtAppContext next;		/* link to next app in process context */
     ProcessContext process;	/* back pointer to our process context */
-    CallbackList destroy_callbacks;
+    InternalCallbackList destroy_callbacks;
     Display **list;
     TimerEventRec *timerQueue;
     WorkProcRec *workQueue;
@@ -210,7 +210,7 @@ extern int _XtwaitForSomething(
 );
 
 typedef struct _XtPerDisplayStruct {
-    CallbackList destroy_callbacks;
+    InternalCallbackList destroy_callbacks;
     Region region;
     XtCaseProc defaultCaseConverter;
     XtKeyProc defaultKeycodeTranslator;
@@ -237,7 +237,7 @@ typedef struct _XtPerDisplayStruct {
     Time last_timestamp;	       /* from last event dispatched */
     int multi_click_time;	       /* for XtSetMultiClickTime */
     struct _TMContext* tm_context;     /* for XtGetActionKeysym */
-    CallbackList mapping_callbacks;    /* special case for TM */
+    InternalCallbackList mapping_callbacks;  /* special case for TM */
     XtPerDisplayInputRec pdi;	       /* state for modal grabs & kbd focus */
     struct _WWTable *WWtable;	       /* window to widget table */
 } XtPerDisplayStruct, *XtPerDisplay;

@@ -1,4 +1,4 @@
-/* $XConsortium: NextEvent.c,v 1.91 90/09/28 11:51:06 swick Exp $ */
+/* $XConsortium: NextEvent.c,v 1.92 90/10/30 19:02:56 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -674,7 +674,8 @@ static void _RefreshMapping(event)
 	if (pd->keysyms != NULL)
 	    _XtBuildKeysymTables( event->xmapping.display, pd );
 	if (pd->mapping_callbacks != NULL)
-	    _XtCallCallbacks( &pd->mapping_callbacks, (XtPointer)event );
+	    _XtCallCallbacks((Widget) NULL, pd->mapping_callbacks,
+			     (XtPointer)event );
     }
     XRefreshKeyboardMapping(&event->xmapping);
 }
