@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XCopyGC.c,v 11.8 87/09/11 08:02:20 newman Locked $ */
+/* $Header: XCopyGC.c,v 11.9 87/10/19 17:40:39 newman Locked $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
@@ -16,7 +16,13 @@ XCopyGC (dpy, srcGC, mask, destGC)
     register _XExtension *ext;
 
     LockDisplay(dpy);
-    FlushGC(dpy, srcGC);
+
+    /* if some of the source values to be copied are "dirty", flush them 
+       out before sending the CopyGC request. */
+    if (srcGC->dirty & mask)
+         _XFlushGCCache(dpy, srcGC);
+
+    /* mark the copied values "not dirty" in the destination. */
     destGC->dirty &= ~mask;
 
     GetReq(CopyGC, req);
