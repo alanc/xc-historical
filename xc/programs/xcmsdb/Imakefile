@@ -1,3 +1,4 @@
+XCOMM $XConsortium$
 SRCS = xcmsdb.c loadData.c
 OBJS = xcmsdb.o loadData.o
 INCLUDES = -I$(XLIBSRC)
