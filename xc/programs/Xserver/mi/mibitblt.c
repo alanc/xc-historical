@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: mibitblt.c,v 1.50 87/09/09 20:12:22 rws Locked $ */
+/* $Header: mibitblt.c,v 1.51 87/09/11 00:27:12 toddb Locked $ */
 /* Author: Todd Newman  (aided and abetted by Mr. Drewry) */
 
 #include "X.h"
@@ -278,15 +278,8 @@ miGetPlane(pDraw, planeNum, sx, sy, w, h, result)
     CARD32		*pLongsOut;
 
     depth = pDraw->depth;
-    if(pDraw->type == DRAWABLE_PIXMAP)
+    if(pDraw->type != DRAWABLE_PIXMAP)
     {
-	w = min(w, ((PixmapPtr)pDraw)->width);
-	h = min(h, ((PixmapPtr)pDraw)->height);
-    }
-    else
-    {
-	w = min(w, ((WindowPtr)pDraw)->clientWinSize.width);
-	h = min(h, ((WindowPtr)pDraw)->clientWinSize.height);
 	sx += ((WindowPtr) pDraw)->absCorner.x;
 	sy += ((WindowPtr) pDraw)->absCorner.y;
     }
@@ -326,7 +319,6 @@ miGetPlane(pDraw, planeNum, sx, sy, w, h, result)
 		/* Fetch the next pixel */
 		pline = (*pDraw->pScreen->GetSpans)(pDraw, width, &pt,
 		                                   &width, 1);
-		/* Use a macro in Xmd.h to grab the appropriate bit */
 		bit = (unsigned int) ((*pline >> planeNum) & 1);
 		/* Now insert that bit into a bitmap in XY format */
 	        if(BITMAP_BIT_ORDER == LSBFirst)
@@ -352,7 +344,6 @@ miGetPlane(pDraw, planeNum, sx, sy, w, h, result)
 		        pShortsOut++;
 		        k = 0;
 		    }
-		    k = (++k == 16) ? pShortsOut++, 0 : k;
 		}
 		if(BITMAP_SCANLINE_UNIT == 32)
 		{
