@@ -1,6 +1,7 @@
-#ifndef lint
-static char rcs_id[] = "$XConsortium: toc.c,v 2.19 89/05/11 19:24:28 converse Exp $";
-#endif lint
+#if !defined(lint) && !defined(SABER)
+static char rcs_id[] = 
+    "$XConsortium: toc.c,v 2.20 89/05/31 10:27:22 swick Exp $";
+#endif
 /*
  *			  COPYRIGHT 1987
  *		   DIGITAL EQUIPMENT CORPORATION
@@ -46,7 +47,7 @@ struct direct *ent;
     if (ent->d_name[0] == '.')
 	return FALSE;
     (void) sprintf(str, "%s/%s", app_resources.mailDir, ent->d_name);
-    (void) stat(str, &buf);
+    if (stat(str, &buf) /* failed */) return False;
     return (buf.st_mode & S_IFMT) == S_IFDIR;
 }
 
@@ -147,26 +148,38 @@ void TocInit()
 }
 
 
+
+/* Create a toc and a a folder to the folderList.  */
+
+Toc TocCreate(foldername)
+    char	*foldername;
+{
+    register int i, j;
+    Toc		toc = TUMalloc();
+
+    toc->foldername = MallocACopy(foldername);
+    for (i=0; i < numFolders; i++)
+	if (strcmp(foldername, folderList[i]->foldername) < 0) break;
+    folderList = (Toc *) XtRealloc((char *) folderList,
+				   (unsigned) ++numFolders * sizeof(Toc));
+    for (j=numFolders - 1; j > i; j--)
+	folderList[j] = folderList[j-1];
+    folderList[i] = toc;
+    return toc;
+}
+
+
 /* Create a new folder with the given name. */
 
 Toc TocCreateFolder(foldername)
 char *foldername;
 {
     Toc toc;
-    int i, j;
     char str[500];
     if (TocGetNamed(foldername)) return NULL;
     (void) sprintf(str, "%s/%s", app_resources.mailDir, foldername);
     if (mkdir(str, 0700) < 0) return NULL;
-    toc = TUMalloc();
-    toc->foldername = MallocACopy(foldername);
-    for (i=0 ; i<numFolders ; i++)
-	if (strcmp(foldername, folderList[i]->foldername) < 0) break;
-    folderList = (Toc *) XtRealloc((char *) folderList,
-				   (unsigned) ++numFolders * sizeof(Toc));
-    for (j=numFolders - 1 ; j > i ; j--)
-	folderList[j] = folderList[j-1];
-    folderList[i] = toc;
+    toc = TocCreate(foldername);
     return toc;
 }
 
@@ -229,6 +242,7 @@ Toc toc;
 {
     Toc toc2;
     int i, j, w;
+    if (toc == NULL) return;
     TUGetFullFolderInfo(toc);
     if (TocConfirmCataclysm(toc)) return;
     TocSetScrn(toc, (Scrn) NULL);
@@ -296,10 +310,7 @@ Scrn scrn;
 	TUResetTocLabel(scrn);
 	StoreWindowName(scrn, toc->foldername);
 	TURedisplayToc(scrn);
-
-	BBoxSetRadio
-	    (BBoxFindButtonNamed(scrn->folderbuttons, toc->foldername));
-
+	SetCurFolderName(scrn, toc->foldername);
 	EnableProperButtons(scrn);
     }
 }
@@ -676,6 +687,8 @@ Toc toc;
     int i;
     int found = FALSE;
     char str[500];
+
+    if (toc == NULL) return 0;
     for (i=0 ; i<toc->nummsgs && !found ; i++)
 	if (toc->msgs[i]->fate != Fignore) found = TRUE;
     if (found) {
