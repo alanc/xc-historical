@@ -2,7 +2,11 @@
 #define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
 
 #ifndef CrayArchitecture
-OTHERSUBDIRS = xdm xhost
+RUNDIRS = xdm xhost
+#endif
+
+#if BuildPexClients
+PEXDIRS = pexscope
 #endif
 
 SUBDIRS = \
@@ -10,8 +14,8 @@ SUBDIRS = \
 	xauth xbiff xcalc xclipboard xclock xconsole \
 	xditview xdpyinfo xedit xfd xinit xkill xload xlogo \
 	xlsatoms xlsclients xlsfonts xmag xman xmh \
-	xmodmap xpr xprop xrdb xrefresh xfontsel $(OTHERSUBDIRS) \
- 	xset xsetroot xstdcmap xterm xwd xwininfo xwud
+	xmodmap xpr xprop xrdb xrefresh xfontsel $(RUNDIRS) \
+ 	xset xsetroot xstdcmap xterm xwd xwininfo xwud $(PEXDIRS)
 
 MakeSubdirs($(SUBDIRS))
 DependSubdirs($(SUBDIRS))
