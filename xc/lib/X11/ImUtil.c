@@ -1,4 +1,4 @@
-/* $XConsortium: XImUtil.c,v 11.46 91/05/10 11:43:54 rws Exp $ */
+/* $XConsortium: XImUtil.c,v 11.47 91/05/10 12:40:37 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -846,83 +846,57 @@ int _XSetImage (srcimg, dstimg, x, y)
 
 static _XAddPixel (ximage, value)
     register XImage *ximage;
-    long value;
-
+    register long value;
 {
-	unsigned long pixel;
-	register unsigned char *dp;
 	register int x;
-	int y;
+	register int y;
 
-	if (value != 0) {
-	  if (ximage->depth == 1) {
-		/* The only value that we can add here to an XYBitmap
-		 * is one.  Since 1 + value = ~value for one bit wide
-		 * data, we do this quickly by taking the ones complement
-		 * of the entire bitmap data (offset and pad included!).
-		 * Note that we don't need to be concerned with bit or
-		 * byte order at all.
-		 */
-		dp = (unsigned char *) &ximage->data[0];
-		y = ximage->bytes_per_line * ximage->height;
-		for (x=0; x < y; x++) {
-		    *dp = ~(*dp);
-		    dp++;
+	if (!value)
+	    return 1;
+	if (ximage->depth == 1) {
+	    /* The only value that we can add here to an XYBitmap
+	     * is one.  Since 1 + value = ~value for one bit wide
+	     * data, we do this quickly by taking the ones complement
+	     * of the entire bitmap data (offset and pad included!).
+	     * Note that we don't need to be concerned with bit or
+	     * byte order at all.
+	     */
+	    register unsigned char *dp = (unsigned char *) ximage->data;
+	    x = ximage->bytes_per_line * ximage->height;
+	    while (--x >= 0) {
+		*dp = ~*dp;
+		dp++;
+	    }
+	} else if ((ximage->format == ZPixmap) &&
+		   (ximage->bits_per_pixel == 8)) {
+	    register unsigned char *dp = (unsigned char *) ximage->data;
+	    x = ximage->bytes_per_line * ximage->height;
+	    while (--x >= 0)
+		*dp++ += value;
+#ifndef WORD64
+	} else if ((ximage->format == ZPixmap) &&
+		   (ximage->bits_per_pixel == 16) &&
+		   (*((char *)&byteorderpixel) == ximage->byte_order)) {
+	    register unsigned short *dp = (unsigned short *) ximage->data;
+	    x = (ximage->bytes_per_line >> 1) * ximage->height;
+	    while (--x >= 0)
+		*dp++ += value;
+	} else if ((ximage->format == ZPixmap) &&
+		   (ximage->bits_per_pixel == 32) &&
+		   (*((char *)&byteorderpixel) == ximage->byte_order)) {
+	    register unsigned long *dp = (unsigned long *) ximage->data;
+	    x = (ximage->bytes_per_line >> 2) * ximage->height;
+	    while (--x >= 0)
+		*dp++ += value;
+#endif
+	} else {
+	    for (y = ximage->height; --y >= 0; ) {
+		for (x = ximage->width; --x >= 0; ) {
+		    register unsigned long pixel = XGetPixel(ximage, x, y);
+		    pixel = pixel + value;
+		    XPutPixel(ximage, x, y, pixel);
 		}
-	  } else if (ximage->format == XYPixmap) {
-		/* this is slow, may do better later */
-		for (y = 0; y < ximage->height; y++) {
-		    for (x = 0; x < ximage->width; x++) {
-			pixel = XGetPixel(ximage, x, y);
-			pixel = pixel + value;
-			XPutPixel(ximage, x, y, pixel);
-		    }
-		}
-	  } else if (ximage->format == ZPixmap) {
-#ifdef broken
-		/* 
-		 * This has stupid little-endian assumptions; to fix it you
-		 * would need to make sure that it copies the right nbytes
-		 * into and out of the variable "pixel".  Later.
-		 */
-
-		/* If the bits_per_pixel makes the alignment occur on even
-		 * byte boundaries, perform the addition by stepping thru
-		 * the data one pixel at a time.  Otherwise, do it the slow
-		 * way by calling get and put pixel.
-		 */
-		if ((ximage->bits_per_pixel & 7) == 0) {
-		    register unsigned char *src, *dst, *tmp;
-		    long nbytes, i;
-		    nbytes = ROUNDUP(ximage->bits_per_pixel, 8) >> 3;
-		    for (y = 0; y < ximage->height; y++) {
-			src = (unsigned char *) &ximage->data[ZINDEX(0, y, ximage)];
-			dst = src;
-			for (x = 0; x < ximage->width; x++) {
-			    pixel = 0;
-			    tmp = (unsigned char *)&pixel;
-			    for (i = 0; i < nbytes; i++) *tmp++ = *src++;
-			    ZNORMALIZE(&pixel, nbytes, ximage);
-			    pixel = pixel + value;
-			    ZNORMALIZE(&pixel, nbytes, ximage);
-			    tmp = (unsigned char *)&pixel;
-			    for (i = 0; i < nbytes; i++) *dst++ = *tmp++;
-			}
-		    }			    
-		} else 
-#endif /* broken */
-		{
-		    for (y = 0; y < ximage->height; y++) {
-			for (x = 0; x < ximage->width; x++) {
-			    pixel = XGetPixel(ximage, x, y);
-			    pixel = pixel + value;
-			    XPutPixel(ximage, x, y, pixel);
-			}
-		    }
-		}
-	  } else {
-		/* bad image */
-	  }
+	    }
 	}
 }
 
