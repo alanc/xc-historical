@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XListExt.c,v 11.5 87/06/13 14:43:21 jg Exp $ */
+/* $Header: XListExt.c,v 11.5 87/08/06 23:08:57 newman Locked $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #define NEED_REPLIES
@@ -24,7 +24,7 @@ int *nextensions;
 	if(*nextensions = rep.nExtensions) {
 	    list = (char **) Xmalloc (
 		(unsigned)((long)*nextensions * sizeof (char *)));
-	    rlen = rep.length << 4;
+	    rlen = rep.length << 2;
 	    ch = (char *) Xmalloc ((unsigned) rlen + 1);
                 /* +1 to leave room for last null-terminator */
 	    _XReadPad (dpy, ch, rlen);
