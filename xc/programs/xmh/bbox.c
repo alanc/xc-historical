@@ -1,5 +1,5 @@
 /*
- * $XConsortium: bbox.c,v 2.30 89/09/27 19:14:36 converse Exp $
+ * $XConsortium: bbox.c,v 2.31 89/10/06 14:59:17 converse Exp $
  *
  *
  *			COPYRIGHT 1987, 1989
@@ -316,10 +316,9 @@ Widget	BBoxMenuOfButton(button)
 }
 
 
-/* Set maximum size for a bbox so that it cannot be resized any bigger 
- * than its total height.  Allow the user to set the minimum size.
- * The box computes it's height based on each button being in a separate
- *  row; i.e. a column of buttons.  I wonder how useful this is.
+/* Set maximum size for a bbox so that it cannot be resized any taller 
+ * than the space needed to stack all the buttons on top of each other.
+ * Allow the user to set the minimum size.
  */
 
 void BBoxLockSize(buttonbox)
@@ -334,3 +333,10 @@ void BBoxLockSize(buttonbox)
     XtSetValues(buttonbox->outer, args, (Cardinal) 1);
 }
 
+
+Boolean BBoxIsGrandparent(buttonbox, widget)
+    ButtonBox	buttonbox;
+    Widget	widget;
+{
+    return (XtParent(XtParent(widget)) == buttonbox->inner);
+}

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: tocutil.c,v 2.35 89/11/14 20:13:16 converse Exp $
+ * $XConsortium: tocutil.c,v 2.36 89/11/15 10:57:53 converse Exp $
  *
  *
  *			COPYRIGHT 1987, 1989
@@ -54,94 +54,73 @@ int TUScanFileOutOfDate(toc)
 }
 
 
-/* Make sure the shown sequence menu entries correspond exactly to the
-   sequences for this toc.  If not, then rebuild the sequence menu. */
+/* Make sure the sequence menu entries correspond exactly to the sequences 
+ * for this toc.
+ */
 
 static void CheckSequenceMenu(toc)
     Toc		toc;
 {
     Scrn	scrn;
-    int 	w, i, num_entries, stable_entry_count;
-    Boolean	rebuild;
-    Widget	menu, item;
-    WidgetList	entry_list;
-    char 	*name;
+    register int i, n;
     Arg		query_args[2];
+    char 	*name;
+    int		j, numChildren;
+    Widget	menu, item;
+    Button	button;
+    WidgetList	children;
+    Sequence	seq;
 
     static XtCallbackRec callbacks[] = {
 	{ DoSelectSequence,		(XtPointer) NULL},
 	{ (XtCallbackProc) NULL,	(XtPointer) NULL},
     };
-
     static Arg  args[] = {
 	{ XtNcallback,			(XtArgVal) callbacks},
 	{ XtNleftMargin, 		(XtArgVal) 18},
     };
 
-    for (w=0; w < toc->num_scrns; w++) {
-	scrn = toc->scrn[w];
+    for (j=0; j < toc->num_scrns; j++) {
+	scrn = toc->scrn[j];
 
 	/* Find the sequence menu and the number of entries in it. */
 
-	stable_entry_count = MenuBoxButtons[XMH_SEQUENCE].num_entries;
-
-	menu = BBoxMenuOfButton
-	    ( BBoxFindButtonNamed( scrn->mainbuttons,
-				  MenuBoxButtons[XMH_SEQUENCE].button_name));
-	XtSetArg(query_args[0], XtNnumChildren, &num_entries);
-	XtSetArg(query_args[1], XtNchildren, &entry_list);
+	name = MenuBoxButtons[XMH_SEQUENCE].button_name;
+	button = BBoxFindButtonNamed(scrn->mainbuttons, name);
+	menu = BBoxMenuOfButton(button);
+	XtSetArg(query_args[0], XtNnumChildren, &numChildren);
+	XtSetArg(query_args[1], XtNchildren, &children);
 	XtGetValues(menu, query_args, (Cardinal) 2);
+	n = MenuBoxButtons[XMH_SEQUENCE].num_entries;
+	if (strcmp(XtName(children[0]), "menuLabel") == 0)
+	    n++;
 
-	/* Assume that the label is the first entry in the list. */
+	/* Erase the current check mark. */
 
-	if (XtClass(entry_list[0]) != smeBSBObjectClass) /* a label */
-	    stable_entry_count++;
+	for (i=(n-1); i < numChildren; i++) 
+	    ToggleMenuItem(children[i], False);
 
-	/* See if the sequences in the menu need to be rebuilt. */
+	/* Delete any entries which should be deleted. */
 
-	rebuild = False;	/* subtract one for the stable "all" seq */
-	if (num_entries != toc->numsequences + stable_entry_count - 1)
-	    rebuild = True;
-	                       /* start at 1, skipping "all" */
-	else for (i=1; i < toc->numsequences && !rebuild; i++) 
-	    rebuild = (XtNameToWidget(menu, toc->seqlist[i]->name)
-		       ? False : True);
+	for (i=n; i < numChildren; i++)
+	    if (! TocGetSeqNamed(toc, XtName(children[i])))
+		XtDestroyWidget(children[i]);
 
-	/* In rebuilding, I dangerously assume that the entries in the list
-         * occur in the same order in the list as they do in the visible menu.
-         */
-
-	if (rebuild) {
-
-	    /* Since entry_list is a pointer into private widget data which
-	     * could or will change as menu entries are deleted, I make a
-	     * private copy of the list of widgets to be destroyed.
-	     */
-
-	    Widget	destroy_list[10];
-	    register int j;
-
-	    for (i=0, j=stable_entry_count; j < num_entries; i++, j++)
-		destroy_list[i] = entry_list[j];
-
-            num_entries -= stable_entry_count;
-	    for (i=0; i < num_entries; i++)
-	        XtDestroyWidget(destroy_list[i]);
-
-	    callbacks[0].closure = (XtPointer) scrn;
-	    			/* start at 1, skipping "all" */
-	    for (i=1; i < toc->numsequences; i++) 
+	/* Create any entries which should be created. */
+	
+	callbacks[0].closure = (XtPointer) scrn;
+	for (i=1; i < toc->numsequences; i++) 
+	    if (! XtNameToWidget(menu, toc->seqlist[i]->name))
 		XtCreateManagedWidget(toc->seqlist[i]->name, smeBSBObjectClass,
 				      menu, args, XtNumber(args));
-	}
 
-	/* Insure that the correct sequence is indicated in the menu. */
+	/* Set the check mark. */
 
-	if ((name = toc->viewedseq->name) == (char *) NULL)
-	    name = "all";
-	if ((item = XtNameToWidget(menu, name)) != NULL) 
-	    DoSelectSequence(item, (XtPointer) scrn, (XtPointer) NULL); 
+	name = toc->viewedseq->name;
+	if ((item = XtNameToWidget(menu, name)) != NULL)
+	    ToggleMenuItem(item, True);
     }
+    TocSetSelectedSequence(toc, toc->viewedseq);
 }
 
 
@@ -263,10 +242,12 @@ void TULoadSeqLists(toc)
 {
     Sequence seq;
     FILEPTR fid;
-    char    str[500], *ptr, *ptr2, viewed[500];
+    char    str[500], *ptr, *ptr2, viewed[500], selected[500];
     int     i;
     if (toc->viewedseq) (void) strcpy(viewed, toc->viewedseq->name);
     else *viewed = 0;
+    if (toc->selectseq) (void) strcpy(selected, toc->selectseq->name);
+    else *selected = 0;
     for (i = 0; i < toc->numsequences; i++) {
 	seq = toc->seqlist[i];
 	XtFree((char *) seq->name);
@@ -280,6 +261,7 @@ void TULoadSeqLists(toc)
     seq->name = XtNewString("all");
     seq->mlist = NULL;
     toc->viewedseq = seq;
+    toc->selectseq = seq;
     (void) sprintf(str, "%s/.mh_sequences", toc->path);
     fid = myfopen(str, "r");
     if (fid) {
@@ -302,6 +284,10 @@ void TULoadSeqLists(toc)
 			toc->viewedseq = seq;
 			*viewed = 0;
 		    }
+		    if (strcmp(seq->name, selected) == 0) {
+			toc->selectseq = seq;
+			*selected = 0;
+		    }
 		}
 	    }
 	}
@@ -311,8 +297,7 @@ void TULoadSeqLists(toc)
 
 
 
-/* Refigure what messages are visible.  Also makes sure we're displaying the
-   correct set of seq buttons. */
+/* Refigure what messages are visible. */
 
 void TURefigureWhatsVisible(toc)
 Toc toc;
@@ -326,7 +311,7 @@ Toc toc;
     TocSetCurMsg(toc, (Msg)NULL);
     w = 0;
     changed = FALSE;
-    CheckSequenceMenu(toc);
+
     for (i = 0; i < toc->nummsgs; i++) {
 	msg = toc->msgs[i];
 	msgid = msg->msgid;

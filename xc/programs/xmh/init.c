@@ -1,5 +1,5 @@
 /*
- * $XConsortium: init.c,v 2.39 89/11/15 11:03:08 converse Exp $
+ * $XConsortium: init.c,v 2.40 89/11/16 21:04:01 converse Exp $
  *
  *
  *		        COPYRIGHT 1987, 1989
@@ -270,7 +270,7 @@ char **argv;
 
 	/* actions to support easier sequence manipulation */
 
-	{"XmhOpenSequenceFromSequenceMenu", XmhOpenSequenceFromSequenceMenu},
+/*	{"XmhOpenSequenceFromSequenceMenu", XmhOpenSequenceFromSequenceMenu},*/
 	{"XmhPushSequence",		XmhPushSequence},
 	{"XmhPopSequence",		XmhPopSequence},
 
@@ -386,6 +386,7 @@ char **argv;
     numScrns = 0;
     scrnList = (Scrn *) NULL;
     NoMenuForButton = (Widget) &static_variable;
+    LastMenuButtonPressed = (Widget) NULL;
 
     TocInit();
     InitPick();

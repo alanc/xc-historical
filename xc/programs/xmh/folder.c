@@ -238,7 +238,7 @@ void XmhOpenFolderInNewWindow(w, event, params, num_params)
 /* Create a new folder with the given name. */
 
 static char *previous_label = NULL;
-/*ARGUSED*/
+/*ARGSUSED*/
 static void CreateFolder(widget, client_data, call_data)
     Widget	widget;		/* the okay button of the dialog widget */
     XtPointer	client_data;	/* the dialog widget */
@@ -714,8 +714,6 @@ static void DeleteFolderMenuEntry(button, foldername)
     }
 }
 
-static Widget LastMenuButtonPressed = NULL;	/* to `toggle' menu buttons */
-
 
 /* Function Name:	PopupFolderMenu
  * Description:		This action should alwas be taken when the user
@@ -738,8 +736,6 @@ void XmhPopupFolderMenu(w, event, vector, count)
     Button	button;
     Scrn	scrn;
 
-    if (! XtIsSubclass(w, menuButtonWidgetClass))
-	return;
     scrn = ScrnFromWidget(w);
     if ((button = BBoxFindButton(scrn->folderbuttons, w)) == NULL)
 	return;
@@ -757,13 +753,12 @@ void XmhPopupFolderMenu(w, event, vector, count)
 }
 
 
-
 /* Function Name:	XmhSetCurrentFolder
  * Description:		This action procedure allows menu buttons to 
- *	emulate toggle buttons as folder selection buttons.  Because of
- *	this, mh folders with no subfolders will not be represented by
- * 	a menu with one entry.  Sets the current folder without a menu
- *	callback.
+ *	emulate toggle widgets in their function of folder selection.
+ *	Therefore, mh folders with no subfolders can be represented
+ * 	by a button instead of a menu with one entry.  Sets the currently
+ *	selected folder.
  */
 
 /*ARGSUSED*/
@@ -777,11 +772,19 @@ void XmhSetCurrentFolder(w, event, vector, count)
     Scrn	scrn;
 
     /* The MenuButton widget has a button grab currently active; the
-     * menu entry selection callback routine will be invoked if the
-     * user selects a menu entry.
+     * currently selected folder will be updated if hte user has released
+     * the mouse button while the mouse pointer was on the same menu button
+     * widget that orginally activated the button grab.  This mechanism is
+     * insured by the XmhPopupFolderMenu action setting LastMenuButtonPressed.
+     * The action XmhLeaveFolderButton, and it's translation in the application
+     * defaults file, bound to LeaveWindow events, insures that the menu
+     * button behaves properly when the user moves the pointer out of the 
+     * menu button window.
+     *
+     * This action is for menu button widgets only.
      */
-    if (w != LastMenuButtonPressed ||
-	(! XtIsSubclass(w, menuButtonWidgetClass)))
+
+    if (w != LastMenuButtonPressed)
 	return;
     scrn = ScrnFromWidget(w);
     if ((button = BBoxFindButton(scrn->folderbuttons, w)) == NULL)

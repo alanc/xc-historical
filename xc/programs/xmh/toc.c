@@ -1,5 +1,5 @@
 /*
- * $XConsortium: toc.c,v 2.31 89/10/06 15:03:44 converse Exp $
+ * $XConsortium: toc.c,v 2.32 89/11/16 21:04:06 converse Exp $
  *
  *
  *			  COPYRIGHT 1987
@@ -580,13 +580,12 @@ Toc toc;
 
 /* Set the selected sequence in the toc */
 
-void TocSetSelectedSequence(toc, name)
+void TocSetSelectedSequence(toc, sequence)
     Toc		toc;
-    char	*name;
+    Sequence	sequence;
 {
-    if (toc && toc->prevseqname)
-	XtFree((char *) toc->prevseqname);
-    toc->prevseqname = XtNewString(name);
+    if (toc) 
+	toc->selectseq = sequence;
 }
 
 
@@ -595,9 +594,8 @@ void TocSetSelectedSequence(toc, name)
 Sequence TocSelectedSequence(toc)
     Toc	toc;
 {
-    if (toc->prevseqname) 
-	return TocGetSeqNamed(toc, toc->prevseqname);
-    return TocGetSeqNamed(toc, "all");
+    if (toc) return (toc->selectseq);
+    else return (Sequence) NULL;
 }
 
 
@@ -1096,7 +1094,9 @@ int msgid;
     return NULL;
 }
 
-/* Sequence names are put on a stack which is specific to the folder. */
+/* Sequence names are put on a stack which is specific to the folder. 
+ * Sequence names are very volatile, so we make our own copies of the strings.
+ */
 
 /*ARGSUSED*/
 void XmhPushSequence(w, event, params, count)
@@ -1110,29 +1110,44 @@ void XmhPushSequence(w, event, params, count)
     int		i;
 
     if (! (toc = scrn->toc)) return;
-
-    for (i=0; i < *count; i++) 
-	Push(&toc->sequence_stack, params[i]);
     
     if (*count == 0) {
-	if (toc->prevseqname)
-	    Push(&toc->sequence_stack, toc->prevseqname);
-	else
-	    Push(&toc->sequence_stack, "all");
+	if (toc->selectseq)
+	    Push(&toc->sequence_stack, XtNewString(toc->selectseq->name));
     }
+    else
+	for (i=0; i < *count; i++) 
+	    Push(&toc->sequence_stack, XtNewString(params[i]));
 }
 
 
 /*ARGSUSED*/
-XmhPopSequence(w, event, params, count)
-    Widget	w;
+void XmhPopSequence(w, event, params, count)
+    Widget	w;		/* any widget on the screen of interest */
     XEvent	*event;
     String	*params;
     Cardinal	*count;
 {
     Scrn	scrn = ScrnFromWidget(w);
     char	*seqname;
+    Widget	sequenceMenu, selected, original;
+    Button	button;
+    Sequence	sequence;
 
-    if ((seqname = Pop(&scrn->toc->sequence_stack)) != NULL)
-	TocSetSelectedSequence(scrn->toc, seqname);
+    if ((seqname = Pop(&scrn->toc->sequence_stack)) != NULL) {
+
+	button = BBoxFindButtonNamed(scrn->mainbuttons,
+				     MenuBoxButtons[XMH_SEQUENCE].button_name);
+	sequenceMenu = BBoxMenuOfButton(button);
+
+	if (selected = XawSimpleMenuGetActiveEntry(sequenceMenu))
+	    ToggleMenuItem(selected, False);
+
+	if (original = XtNameToWidget(sequenceMenu, seqname)) {
+	    ToggleMenuItem(original, True);
+	    sequence = TocGetSeqNamed(scrn->toc, seqname);
+	    TocSetSelectedSequence(scrn->toc, sequence);
+	}
+	XtFree(seqname);
+    }
 }

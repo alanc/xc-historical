@@ -1,5 +1,5 @@
 /*
- * $XConsortium: tocfuncs.c,v 2.25 89/10/06 15:03:55 converse Exp $
+ * $XConsortium: tocfuncs.c,v 2.26 89/11/16 21:04:16 converse Exp $
  *
  *
  *			COPYRIGHT 1987, 1989
@@ -30,6 +30,38 @@
 #include "xmh.h"
 
 #define MAX_SYSTEM_LEN 510
+
+static Boolean UserWantsAction(w, scrn) /* general action procedure "filter" */
+    Widget	w;
+    Scrn	scrn;
+{
+    /* Commands in the command menus invoke callbacks directly. 
+     * Keyboard accelerators use the command menus as source widgets.
+     * Actions can also be specified in the translations for menu buttons.
+     * Actions can also be specified in the translations for menus.
+     * In fact, the user can attach actions to any (reasonable) widget.
+     *
+     * The purpose of this check is to prevent actions specified as
+     * translations for folder menus and for folder buttons from executing
+     * after the mouse pointer has left the folder button or the when the
+     * mouse button is released outside of the folder menu.
+     *
+     * The side effect of this routine is that it restricts keyboard 
+     * accelerators from originating from folder buttons or folder menus.
+     */
+       
+    if (XtIsSubclass(w, menuButtonWidgetClass) && /* w is a menu button */
+	w != LastMenuButtonPressed)		  /* pointer left the window */
+	return False;
+
+    if (XtIsSubclass(w, simpleMenuWidgetClass) &&	/* w is a menu */
+	(! XawSimpleMenuGetActiveEntry(w)) &&	/* no entry was selected */
+	(BBoxIsGrandparent(scrn->folderbuttons, w)))  /* w is a folder menu */
+	return False;
+
+    return True;
+}
+
 
 /*ARGSUSED*/
 static void NextAndPreviousView(scrn, next)
@@ -107,7 +139,8 @@ void XmhViewNextMessage(w, event, params, num_params)
     Cardinal	*num_params;
 {
     Scrn scrn = ScrnFromWidget(w);
-    DoNextView(w, (XtPointer) scrn, (XtPointer) NULL);
+    if (UserWantsAction(w, scrn))
+	DoNextView(w, (XtPointer) scrn, (XtPointer) NULL);
 }
 
 /*ARGSUSED*/
@@ -128,7 +161,8 @@ void XmhViewPreviousMessage(w, event, params, num_params)
     Cardinal	*num_params;
 {
     Scrn scrn = ScrnFromWidget(w);
-    DoPrevView(w, (XtPointer) scrn, (XtPointer) NULL);
+    if (UserWantsAction(w, scrn))
+	DoPrevView(w, (XtPointer) scrn, (XtPointer) NULL);
 }
 
 
@@ -163,7 +197,8 @@ void XmhViewInNewWindow(w, event, params, num_params)
     Cardinal	*num_params;
 {
     Scrn scrn = ScrnFromWidget(w);
-    DoViewNew(w, (XtPointer) scrn, (XtPointer) NULL);
+    if (UserWantsAction(w, scrn))
+	DoViewNew(w, (XtPointer) scrn, (XtPointer) NULL);
 }
 
 
@@ -193,7 +228,8 @@ void XmhForward(w, event, params, num_params)
     Cardinal	*num_params;
 {
     Scrn scrn = ScrnFromWidget(w);
-    DoForward(w, (XtPointer) scrn, (XtPointer) NULL);
+    if (UserWantsAction(w, scrn))
+	DoForward(w, (XtPointer) scrn, (XtPointer) NULL);
 }
 
 
@@ -235,7 +271,8 @@ void XmhUseAsComposition(w, event, params, num_params)
     Cardinal	*num_params;
 {
     Scrn scrn = ScrnFromWidget(w);
-    DoTocUseAsComp(w, (XtPointer) scrn, (XtPointer) NULL);
+    if (UserWantsAction(w, scrn))
+	DoTocUseAsComp(w, (XtPointer) scrn, (XtPointer) NULL);
 }
 
 
@@ -285,7 +322,8 @@ void XmhMarkDelete(w, event, params, num_params)
     Cardinal	*num_params;
 {
     Scrn scrn = ScrnFromWidget(w);
-    DoDelete(w, (XtPointer) scrn, (XtPointer) NULL);
+    if (UserWantsAction(w, scrn))
+	DoDelete(w, (XtPointer) scrn, (XtPointer) NULL);
 }
 
 
@@ -319,7 +357,8 @@ void XmhMarkCopy(w, event, params, num_params)
     Cardinal	*num_params;
 {
     Scrn scrn = ScrnFromWidget(w);
-    DoCopy(w, (XtPointer) scrn, (XtPointer) NULL);
+    if (UserWantsAction(w, scrn))
+	DoCopy(w, (XtPointer) scrn, (XtPointer) NULL);
 }
 
 
@@ -342,7 +381,8 @@ void XmhMarkMove(w, event, params, num_params)
     Cardinal	*num_params;
 {
     Scrn scrn = ScrnFromWidget(w);
-    DoMove(w, (XtPointer) scrn, (XtPointer) NULL);
+    if (UserWantsAction(w, scrn))
+	DoMove(w, (XtPointer) scrn, (XtPointer) NULL);
 }
 
 
@@ -365,7 +405,8 @@ void XmhUnmark(w, event, params, num_params)
     Cardinal	*num_params;
 {
     Scrn scrn = ScrnFromWidget(w);
-    DoUnmark(w, (XtPointer) scrn, (XtPointer) NULL);
+    if (UserWantsAction(w, scrn))
+	DoUnmark(w, (XtPointer) scrn, (XtPointer) NULL);
 }
 
 
@@ -388,7 +429,8 @@ void XmhCommitChanges(w, event, params, num_params)
     Cardinal	*num_params;
 {
     Scrn scrn = ScrnFromWidget(w);
-    TocCommitChanges(w, (XtPointer) scrn->toc, (XtPointer) NULL);
+    if (UserWantsAction(w, scrn))
+	TocCommitChanges(w, (XtPointer) scrn->toc, (XtPointer) NULL);
 }
 
 
@@ -438,7 +480,8 @@ void XmhPrint(w, event, params, num_params)
     Cardinal	*num_params;
 {
     Scrn scrn = ScrnFromWidget(w);
-    DoPrint(w, (XtPointer) scrn, (XtPointer) NULL);
+    if (UserWantsAction(w, scrn))
+	DoPrint(w, (XtPointer) scrn, (XtPointer) NULL);
 }
 
 
@@ -485,7 +528,8 @@ void XmhPackFolder(w, event, params, num_params)
     Cardinal	*num_params;
 {
     Scrn scrn = ScrnFromWidget(w);
-    DoPack(w, (XtPointer) scrn, (XtPointer) NULL);
+    if (UserWantsAction(w, scrn))
+	DoPack(w, (XtPointer) scrn, (XtPointer) NULL);
 }
 
 
@@ -530,7 +574,8 @@ void XmhSortFolder(w, event, params, num_params)
     Cardinal	*num_params;
 {
     Scrn scrn = ScrnFromWidget(w);
-    DoSort(w, (XtPointer) scrn, (XtPointer) NULL);
+    if (UserWantsAction(w, scrn))
+	DoSort(w, (XtPointer) scrn, (XtPointer) NULL);
 }
 
 
@@ -542,7 +587,8 @@ void XmhForceRescan(w, event, params, num_params)
     Cardinal	*num_params;
 {
     Scrn scrn = ScrnFromWidget(w);
-    DoForceRescan(w, (XtPointer) scrn, (XtPointer) NULL);
+    if (UserWantsAction(w, scrn))
+	DoForceRescan(w, (XtPointer) scrn, (XtPointer) NULL);
 }
 
 /*ARGSUSED*/
@@ -572,8 +618,10 @@ void XmhIncorporateNewMail(w, event, params, num_params)
     Cardinal	*num_params;
 {
     Scrn scrn = ScrnFromWidget(w);
-    if (TocCanIncorporate(scrn->toc))
-	DoIncorporateNewMail(w, (XtPointer) scrn, (XtPointer) NULL);
+    if (UserWantsAction(w, scrn)) {
+	if (TocCanIncorporate(scrn->toc))
+	    DoIncorporateNewMail(w, (XtPointer) scrn, (XtPointer) NULL);
+    }
 }
 
 
@@ -625,7 +673,8 @@ void XmhReply(w, event, params, num_params)
     Cardinal	*num_params;
 {
     Scrn scrn = ScrnFromWidget(w);
-    DoReply(w, (XtPointer) scrn, (XtPointer) NULL);
+    if (UserWantsAction(w, scrn))
+	DoReply(w, (XtPointer) scrn, (XtPointer) NULL);
 }
 
 
@@ -669,35 +718,35 @@ void XmhPickMessages(w, event, params, num_params)
     Cardinal	*num_params;
 {
     Scrn scrn = ScrnFromWidget(w);
-    DoPickMessages(w, (XtPointer) scrn, (XtPointer) NULL);
+    if (UserWantsAction(w, scrn))
+	DoPickMessages(w, (XtPointer) scrn, (XtPointer) NULL);
 }
 
 
 /*ARGSUSED*/
 void DoSelectSequence(widget, client_data, call_data)
-    Widget	widget;		/* menu entry object */
+    Widget	widget;		/* sequence menu entry object */
     XtPointer	client_data;	/* the screen */
     XtPointer	call_data;
 {
     Scrn	scrn = (Scrn) client_data;
     Toc		toc  = (Toc) scrn->toc;
-    Sequence	pseq;
+    Sequence	seq;
 
-    if ((pseq = TocSelectedSequence(toc)) != NULL) {
-	Widget	pobj;
-	Widget	menu;
+    if ((seq = TocSelectedSequence(toc)) != NULL) {
+	Widget	item, menu;
+	Button	button;
+	char	*name;
 
-	menu = BBoxMenuOfButton
-	    ( BBoxFindButtonNamed(scrn->mainbuttons, 
-				  MenuBoxButtons[XMH_SEQUENCE].button_name ));
-	if ((pobj = XtNameToWidget(menu, pseq->name)) != NULL) {
-	    if (pobj != widget)
-		ToggleMenuItem(pobj, False);
-	}
+	button = BBoxFindButtonNamed
+	    (scrn->mainbuttons, MenuBoxButtons[XMH_SEQUENCE].button_name);
+	menu = BBoxMenuOfButton(button);
+	if ((item = XtNameToWidget(menu, seq->name)) != NULL)
+	    ToggleMenuItem(item, False);
     }
 
     ToggleMenuItem(widget, True);
-    TocSetSelectedSequence(toc, XtName(widget));
+    TocSetSelectedSequence(toc, TocGetSeqNamed(toc, XtName(widget)));
 }
 
 
@@ -721,63 +770,65 @@ void XmhOpenSequence(w, event, params, num_params)
     String	*params;
     Cardinal	*num_params;
 {
-    Scrn	scrn = ScrnFromWidget(w);
-    Toc		toc = scrn->toc;
-    Sequence	seq;
-
-    /* Takes an optional argument which is the name of a sequence 
-     * to be opened.
-     */
-
-    if (TocHasSequences(scrn->toc)) {
-	if (*num_params) {
-	    if (seq = TocGetSeqNamed(toc, params[0])) {
-		TocSetSelectedSequence(toc, params[0]);
-		TocChangeViewedSeq(toc, seq);
-	    }
-	}
-	else
-	    DoOpenSeq(w, (XtPointer) scrn, (XtPointer) NULL);
-    }
-}
-
-
-/*ARGSUSED*/
-void XmhOpenSequenceFromSequenceMenu(w, event, params, num_params)
-    Widget	w;		/* assumed to be the Sequence menu */
-    XEvent	*event;
-    String	*params;
-    Cardinal	*num_params;
-{
     Widget	entry_object;
-    Scrn	scrn;
+    Scrn	scrn = ScrnFromWidget(w);
     Sequence	selected_sequence;
 
-    /* The user released the mouse button.  We must distinguish between
-     * a button release on a selectable menu entry, and a button release
-     * occuring elsewhere.  The button releases occuring elsewhere are 
-     * either outside of the menu, or on unselectable menu entries.
+    /* In case this action is called from translations defined by the
+     * user on folder menu buttons or on folder menu widgets.
      */
-
-    if ((entry_object = XawSimpleMenuGetActiveEntry(w)) == NULL)
+    if (! UserWantsAction(w, scrn))
 	return;
 
-    /* Some entry in the menu was selected.  The menu entry's callback
-     * procedure has already executed.  If a sequence name was selected,
-     * the callback procedure has caused that sequence to become the
-     * currently selected sequence.  If selected menu entry object's 
-     * name matches the currently selected sequence, we should open
-     * that sequence.  Otherwise, the user must have selected a sequence
-     * manipulation command, such as Pick.  The assumptions here are that
-     * the name of a menu entry object which represents a sequence is
-     * identical to the name of the sequence, and in the translations,
-     * that the notify() action was specified before this action.
-     */
+    /* In case there is nothing to do anyway. */
+    if (! TocHasSequences(scrn->toc))
+	return;
 
-    scrn = ScrnFromWidget(w);
-    if ((selected_sequence = TocSelectedSequence(scrn->toc)) &&
-	(strcmp(XtName(entry_object), selected_sequence->name) == 0))
-	DoOpenSeq(w, (XtPointer) scrn, (XtPointer) NULL);
+    /* In case the action was given the name of a sequence to open. */
+    if (*num_params) {
+	Toc	toc = scrn->toc;
+	if (selected_sequence = TocGetSeqNamed(toc, params[0])) {
+	    TocSetSelectedSequence(toc, selected_sequence);
+	    TocChangeViewedSeq(toc, selected_sequence);
+	}
+	return;
+    }
+
+    /* In case this action is a translation on the sequence menu.  */
+
+    if ((strcmp(XtName(w), "sequenceMenu") == 0) &&
+	(event->type == ButtonRelease)) {
+
+	/* The user released the mouse button.  We must distinguish between
+	 * a button release on a selectable menu entry, and a button release
+	 * occuring elsewhere.  The button releases occuring elsewhere are 
+	 * either outside of the menu, or on unselectable menu entries.
+	 */
+
+	if ((entry_object = XawSimpleMenuGetActiveEntry(w)) == NULL)
+	    return;
+
+	/* Some entry in the menu was selected.  The menu entry's callback
+	 * procedure has already executed.  If a sequence name was selected,
+	 * the callback procedure has caused that sequence to become the
+	 * currently selected sequence.  If selected menu entry object's 
+	 * name matches the currently selected sequence, we should open
+	 * that sequence.  Otherwise, the user must have selected a sequence
+	 * manipulation command, such as Pick.  The assumptions here are that
+	 * the name of a menu entry object which represents a sequence is
+	 * identical to the name of the sequence, and in the translations,
+	 * that the notify() action was specified before this action.
+	 */
+
+	if ((selected_sequence = TocSelectedSequence(scrn->toc)) &&
+	    (strcmp(XtName(entry_object), selected_sequence->name) == 0))
+	    DoOpenSeq(w, (XtPointer) scrn, (XtPointer) NULL);
+	return;
+    }
+    
+    /* An accelerator open sequence function */
+
+    DoOpenSeq(w, (XtPointer) scrn, (XtPointer) NULL);
 }
 
 
@@ -861,6 +912,12 @@ void XmhAddToSequence(w, event, params, num_params)
     Cardinal	*num_params;
 {
     Scrn scrn = ScrnFromWidget(w);
+    if (! UserWantsAction(w, scrn))
+	return;
+    if ((strcmp(XtName(w), "sequenceMenu") == 0) &&
+	(event->type == ButtonRelease) &&
+	(XawSimpleMenuGetActiveEntry(w) == NULL))
+	return;
     if (TocHasSequences(scrn->toc))
 	TwiddleSequence(scrn, ADD);
 }
@@ -885,8 +942,9 @@ void XmhRemoveFromSequence(w, event, params, num_params)
     Cardinal	*num_params;
 {
     Scrn scrn = ScrnFromWidget(w);
-    if (TocHasSequences(scrn->toc))
-	TwiddleSequence(scrn, REMOVE);
+    if (UserWantsAction(w, scrn))
+	if (TocHasSequences(scrn->toc))
+	    TwiddleSequence(scrn, REMOVE);
 }
 
 
@@ -909,6 +967,12 @@ void XmhDeleteSequence(w, event, params, num_params)
     Cardinal	*num_params;
 {
     Scrn scrn = ScrnFromWidget(w);
+    if (! UserWantsAction(w, scrn))
+	return;
+    if ((strcmp(XtName(w), "sequenceMenu") == 0) &&
+	(event->type == ButtonRelease) &&
+	(XawSimpleMenuGetActiveEntry(w) == NULL))
+	return;
     if (TocHasSequences(scrn->toc))
 	TwiddleSequence(scrn, DELETE);
 }
