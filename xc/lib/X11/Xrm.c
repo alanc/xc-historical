@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xrm.c,v 1.72 92/01/10 14:21:12 rws Exp $
+ * $XConsortium: Xrm.c,v 1.73 92/06/27 21:53:30 rws Exp $
  */
 
 /***********************************************************
@@ -923,8 +923,8 @@ static void PutEntry(db, bindings, quarks, type, value)
     (*pprev)->entries++;
     /* this is a new leaf, need to remember it for search lists */
     if (q > maxResourceQuark) {
-	unsigned oldsize = maxResourceQuark + 1;
-	unsigned size = (q | 0x7f) + 1; /* reallocate in reasonable chunks */
+	unsigned oldsize = (maxResourceQuark + 1) >> 3;
+	unsigned size = ((q | 0x7f) + 1) >> 3; /* reallocate in chunks */
 	if (resourceQuarks)
 	    resourceQuarks = (unsigned char *)Xrealloc((char *)resourceQuarks,
 						       size);
@@ -932,7 +932,7 @@ static void PutEntry(db, bindings, quarks, type, value)
 	    resourceQuarks = (unsigned char *)Xmalloc(size);
 	if (resourceQuarks) {
 	    bzero((char *)&resourceQuarks[oldsize], size - oldsize);
-	    maxResourceQuark = size - 1;
+	    maxResourceQuark = (size << 3) - 1;
 	} else {
 	    maxResourceQuark = -1;
 	}
