@@ -25,7 +25,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.56 89/05/05 17:10:00 jim Exp $
+ * $XConsortium: events.c,v 1.57 89/05/10 01:25:48 keith Exp $
  *
  * twm event handling
  *
@@ -35,7 +35,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: events.c,v 1.56 89/05/05 17:10:00 jim Exp $";
+"$XConsortium: events.c,v 1.57 89/05/10 01:25:48 keith Exp $";
 #endif
 
 #include <stdio.h>
@@ -982,6 +982,10 @@ HandleMapNotify()
 void
 HandleUnmapNotify()
 {
+    int dstx, dsty;
+    Window dummy;
+    XDestroyWindowEvent dev;
+
 #ifdef DEBUG_EVENTS
     fprintf(stderr, "UnmapNotify\n");
 #endif
@@ -1008,20 +1012,29 @@ HandleUnmapNotify()
     /*
      * The program may have unmapped the client window, from either
      * NormalState or IconicState.  Handle the transition to WithdrawnState.
+     *
+     * We need to reparent the window back to the root (so that twm exiting 
+     * won't cause it to get mapped) and then throw away all state (pretend 
+     * that we've received a DestroyNotify).
      */
-    if (Tmp_win->mapped)
-    {
-	XUnmapWindow(dpy, Tmp_win->frame);
-	Tmp_win->mapped = FALSE;
-    }
-    else if (Tmp_win->icon)
-    {
-	if (Tmp_win->icon_w)
-	    XUnmapWindow(dpy, Tmp_win->icon_w);
-	Tmp_win->icon = FALSE;
-    }
-    RemoveIconManager(Tmp_win);
+
     SetMapStateProp(Tmp_win, WithdrawnState);
+    if (!XTranslateCoordinates (dpy, Event.xunmap.window, 
+				Tmp_win->attr.root, 0, 0,
+				&dstx, &dsty, &dummy)) {
+	dstx = dsty = 0;
+    }
+    XUnmapWindow (dpy, Event.xunmap.window);
+    XReparentWindow (dpy, Event.xunmap.window, Tmp_win->attr.root, dstx, dsty);
+    XRemoveFromSaveSet (dpy, Event.xunmap.window);
+    dev.type = DestroyNotify;
+    dev.serial = Event.xunmap.serial;
+    dev.send_event = False;
+    dev.display = dpy;
+    dev.event = Event.xunmap.event;
+    dev.window = Event.xunmap.window;
+    Event.xdestroywindow = dev;
+    HandleDestroyNotify();
 }
 
 /***********************************************************************
