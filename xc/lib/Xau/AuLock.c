@@ -1,7 +1,7 @@
 /*
  * Xau - X Authorization Database Library
  *
- * $XConsortium: AuLock.c,v 1.7 91/04/17 10:59:27 rws Exp $
+ * $XConsortium: AuLock.c,v 1.8 91/12/16 19:56:07 gildea Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -19,11 +19,13 @@
  */
 
 #include <X11/Xauth.h>
-#include <sys/types.h>
+#include <X11/Xos.h>
 #include <sys/stat.h>
 #include <errno.h>
 
 extern int errno;
+extern long time ();
+extern unsigned	sleep ();
 
 #if NeedFunctionPrototypes
 int
@@ -42,9 +44,6 @@ long	dead;
 #endif
 {
     char	creat_name[1025], link_name[1025];
-    char	*strcpy (), *strcat ();
-    long	time ();
-    unsigned	sleep ();
     struct stat	statb;
     long	now;
     int		creat_fd = -1;
