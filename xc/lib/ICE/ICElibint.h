@@ -1,4 +1,4 @@
-/* $XConsortium: ICElibint.h,v 1.21 93/11/22 16:25:41 mor Exp $ */
+/* $XConsortium: ICElibint.h,v 1.22 93/11/22 17:43:38 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -542,14 +542,9 @@ extern _IceProtocol	_IceProtocols[];
 extern int         	_IceLastMajorOpcode;
 
 extern int		_IceAuthCount;
-extern IcePoAuthRec	_IcePoAuthRecs[];
-extern IcePaAuthRec	_IcePaAuthRecs[];
-
-extern int		 _IceAuthDataEntryCount;
-extern IceAuthDataEntry *_IceAuthDataEntries;
-
-extern IceHostBasedAuthProc _IceHostBasedAuthProc;
-extern IcePointer	    _IceHostBasedAuthProcClientData;
+extern char		*_IceAuthNames[];
+extern IcePoAuthProc	_IcePoAuthProcs[];
+extern IcePaAuthProc	_IcePaAuthProcs[];
 
 extern int		_IceVersionCount;
 extern _IceVersion	_IceVersions[];
@@ -560,8 +555,7 @@ extern IceErrorHandler   _IceErrorHandler;
 extern IceIOErrorHandler _IceIOErrorHandler;
 
 
-extern void
-_IceErrorBadMinor (
+extern void _IceErrorBadMinor (
 #if NeedFunctionPrototypes
     IceConn		/* iceConn */,
     int			/* majorOpcode */,
@@ -570,8 +564,7 @@ _IceErrorBadMinor (
 #endif
 );
 
-extern void
-_IceErrorBadState (
+extern void _IceErrorBadState (
 #if NeedFunctionPrototypes
     IceConn		/* iceConn */,
     int			/* majorOpcode */,
@@ -580,8 +573,7 @@ _IceErrorBadState (
 #endif
 );
 
-extern void
-_IceErrorBadLength (
+extern void _IceErrorBadLength (
 #if NeedFunctionPrototypes
     IceConn		/* iceConn */,
     int			/* majorOpcode */,
@@ -590,8 +582,7 @@ _IceErrorBadLength (
 #endif
 );
 
-extern void
-_IceErrorBadValue (
+extern void _IceErrorBadValue (
 #if NeedFunctionPrototypes
     IceConn		/* iceConn */,
     int			/* majorOpcode */,
@@ -602,8 +593,7 @@ _IceErrorBadValue (
 #endif
 );
 
-extern void
-_IceErrorBadMajor (
+extern void _IceErrorBadMajor (
 #if NeedFunctionPrototypes
     IceConn		/* iceConn */,
     int			/* offendingMajor */,
@@ -612,24 +602,21 @@ _IceErrorBadMajor (
 #endif
 );
 
-extern void
-_IceErrorNoAuthentication (
+extern void _IceErrorNoAuthentication (
 #if NeedFunctionPrototypes
     IceConn		/* iceConn */,
     int			/* offendingMinor */
 #endif
 );
 
-extern void
-_IceErrorNoVersion (
+extern void _IceErrorNoVersion (
 #if NeedFunctionPrototypes
     IceConn		/* iceConn */,
     int			/* offendingMinor */
 #endif
 );
 
-extern void
-_IceErrorAuthenticationRejected (
+extern void _IceErrorAuthenticationRejected (
 #if NeedFunctionPrototypes
     IceConn		/* iceConn */,
     int			/* offendingMinor */,
@@ -637,8 +624,7 @@ _IceErrorAuthenticationRejected (
 #endif
 );
 
-extern void
-_IceErrorAuthenticationFailed (
+extern void _IceErrorAuthenticationFailed (
 #if NeedFunctionPrototypes
     IceConn		/* iceConn */,
     int			/* offendingMinor */,
@@ -646,32 +632,28 @@ _IceErrorAuthenticationFailed (
 #endif
 );
 
-extern void
-_IceErrorProtocolDuplicate (
+extern void _IceErrorProtocolDuplicate (
 #if NeedFunctionPrototypes
     IceConn		/* iceConn */,
     char *		/* protocolName */
 #endif
 );
 
-extern void
-_IceErrorMajorOpcodeDuplicate (
+extern void _IceErrorMajorOpcodeDuplicate (
 #if NeedFunctionPrototypes
     IceConn		/* iceConn */,
     int			/* majorOpcode */
 #endif
 );
 
-extern void
-_IceErrorUnknownProtocol (
+extern void _IceErrorUnknownProtocol (
 #if NeedFunctionPrototypes
     IceConn		/* iceConn */,
     char *		/* protocolName */
 #endif
 );
 
-extern Status
-_IceRead (
+extern Status _IceRead (
 #if NeedFunctionPrototypes
     IceConn		/* iceConn */,
     unsigned long	/* nbytes */,
@@ -679,16 +661,14 @@ _IceRead (
 #endif
 );
 
-extern void
-_IceReadSkip (
+extern void _IceReadSkip (
 #if NeedFunctionPrototypes
     IceConn		/* iceConn */,
     unsigned long	/* nbytes */
 #endif
 );
 
-extern void
-_IceWrite (
+extern void _IceWrite (
 #if NeedFunctionPrototypes
     IceConn		/* iceConn */,
     unsigned long	/* nbytes */,
@@ -696,8 +676,7 @@ _IceWrite (
 #endif
 );
 
-extern void
-_IceAddOpcodeMapping (
+extern void _IceAddOpcodeMapping (
 #if NeedFunctionPrototypes
     IceConn		/* iceConn */,
     int			/* hisOpcode */,
@@ -705,87 +684,67 @@ _IceAddOpcodeMapping (
 #endif
 );
 
-extern char *
-_IceGetPeerName (
+extern char *_IceGetPeerName (
 #if NeedFunctionPrototypes
     IceConn		/* iceConn */
 #endif
 );
 
-extern void
-_IceFreeConnection (
+extern void _IceFreeConnection (
 #if NeedFunctionPrototypes
     IceConn		/* iceConn */,
     Bool		/* ignoreWatchProcs */
 #endif
 );
 
-extern void
-_IceAddReplyWait (
+extern void _IceAddReplyWait (
 #if NeedFunctionPrototypes
     IceConn		/* iceConn */,
     IceReplyWaitInfo *	/* replyWait */
 #endif
 );
 
-extern IceReplyWaitInfo *
-_IceSearchReplyWaits (
+extern IceReplyWaitInfo *_IceSearchReplyWaits (
 #if NeedFunctionPrototypes
     IceConn		/* iceConn */,
     int			/* majorOpcode */
 #endif
 );
 
-extern void
-_IceSetReplyReady (
+extern void _IceSetReplyReady (
 #if NeedFunctionPrototypes
     IceConn		/* iceConn */,
     IceReplyWaitInfo *	/* replyWait */
 #endif
 );
 
-extern Bool
-_IceCheckReplyReady (
+extern Bool _IceCheckReplyReady (
 #if NeedFunctionPrototypes
     IceConn		/* iceConn */,
     IceReplyWaitInfo *	/* replyWait */
 #endif
 );
 
-extern void
-_IceConnectionOpened (
+extern void _IceConnectionOpened (
 #if NeedFunctionPrototypes
     IceConn		/* iceConn */
 #endif
 );
 
-extern void
-_IceConnectionClosed (
+extern void _IceConnectionClosed (
 #if NeedFunctionPrototypes
     IceConn		/* iceConn */
 #endif
 );
 
-extern void
-_IceGetAuthNames (
+extern void _IceGetValidAuthIndices (
 #if NeedFunctionPrototypes
-    unsigned		/* address_length */,
-    char *		/* address */,
-    unsigned *		/* num_names_ret */,
-    unsigned **		/* names_lengths_ret */,
-    char ***		/* names_ret */
-#endif
-);
-
-extern IceAuthDataEntry *
-_IceGetAuthDataEntry (
-#if NeedFunctionPrototypes
-    unsigned		/* protocol_name_length */,
+    IceListenObj	/* listen_obj */,
     char *		/* protocol_name */,
-    unsigned		/* address_length */,
-    char *		/* address */,
-    unsigned		/* auth_name_length */,
-    char *		/* auth_name */
+    int			/* num_auth_names */,
+    char **		/* auth_names */,
+    int	*		/* num_indices_ret */,
+    int	*		/* indices_ret */
 #endif
 );
 
