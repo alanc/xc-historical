@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.154 93/08/07 11:59:55 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.155 93/08/07 15:33:26 rws Exp $
 /*
  * Server Master Makefile
  */
@@ -453,9 +453,8 @@ ServerTarget(Xiris,$(IRISDIRS),$(IRISOBJS),$(IRISLIBS),$(IRISSYSLIBS))
 XCOMM
 XCOMM Hewlett Packard CFB Server
 XCOMM
-SUBDIRS0 = CFB32Subdirs
-SUBDIRS1 = ddx/hp
-HPSUBDIRS = $(SUBDIRS0) $(SUBDIRS1)
+SUBDIRS0 = CFB32Subdirs ddx/hp
+HPSUBDIRS = $(SUBDIRS0) $(DEPDIRS)
 HPOBJS = ddx/hp/hp.o
 HPLIBS = CFB32Libs
 HPSYSLIBS = $(CBRT) $(SYSLIBS) /usr/lib/libdbm.a -ldld
