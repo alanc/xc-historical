@@ -1,4 +1,4 @@
-/* $XConsortium: Intrinsic.c,v 1.177 93/09/09 14:03:33 kaleb Exp $ */
+/* $XConsortium: Intrinsic.c,v 1.178 93/09/11 14:01:13 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -1102,7 +1102,21 @@ String XtResolvePathname(dpy, type, filename, suffix, path, substitutions,
 #ifndef VMS
 	if (defaultPath == NULL) {
 	    defaultPath = getenv("XFILESEARCHPATH");
+#ifdef WIN32
+	    if (defaultPath == NULL) {
+		/* if you know how to pass % thru the compiler let me know */
+		static char xfilesearchpath[] = XFILESEARCHPATHDEFAULT;
+		static Bool fixed;
+		if (!fixed) {
+		    for (ch = xfilesearchpath; ch = strchr(ch, ';'); ch++)
+			*ch = '%';
+		    fixed = True;
+		}
+		defaultPath = xfilesearchpath;
+	    }
+#else
 	    if (defaultPath == NULL) defaultPath = XFILESEARCHPATHDEFAULT;
+#endif
 	}
 	path = defaultPath;
 #else
