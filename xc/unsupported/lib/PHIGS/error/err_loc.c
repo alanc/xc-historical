@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: err_loc.c,v 5.1 91/02/16 09:48:52 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -25,6 +25,19 @@ SOFTWARE.
 ******************************************************************/
 
 #include "phg.h"
+
+/* check for both EAGAIN and EWOULDBLOCK, because some supposedly POSIX
+ * systems are broken and return EWOULDBLOCK when they should return EAGAIN
+ */
+#if defined(EAGAIN) && defined(EWOULDBLOCK)
+#define ETEST(err) (err == EAGAIN || err == EWOULDBLOCK)
+#else
+#ifdef EAGAIN
+#define ETEST(err) (err == EAGAIN)
+#else
+#define ETEST(err) (err == EWOULDBLOCK)
+#endif
+#endif
 
 extern Err_handle	phg_erh_create();
 extern int		phg_err_pex_reply();
@@ -87,7 +100,7 @@ err_flush_client( erh)
 		    cnt = 0;
 		}
 	    } else if ( wc < 0 &&
-		( errno == EWOULDBLOCK && cnt || errno == EINTR)) {
+		( ETEST(errno) && cnt || errno == EINTR)) {
 		    continue;
 	    } else
 		break;
