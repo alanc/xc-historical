@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: NextEvent.c,v 1.72 89/10/05 19:01:39 rws Exp $";
+static char Xrcsid[] = "$XConsortium: NextEvent.c,v 1.73 89/10/11 10:12:59 swick Exp $";
 /* $oHeader: NextEvent.c,v 1.4 88/09/01 11:43:27 asente Exp $ */
 #endif /* lint */
 
@@ -153,6 +153,9 @@ int _XtwaitForSomething(ignoreTimers, ignoreInputs, ignoreEvents,
 	Fd_set rmaskfd, wmaskfd, emaskfd;
 	static Fd_set zero = { 0 };
 	int nfound, i, d, last_d_with_no_events = -1;
+#ifdef DEBUG_SELECT
+	int loop_count = -1;
+#endif
 	
  	if (block) {
 		(void) gettimeofday (&cur_time, &cur_timezone);
@@ -171,6 +174,9 @@ int _XtwaitForSomething(ignoreTimers, ignoreInputs, ignoreEvents,
 
       WaitLoop:
 	while (1) {
+#ifdef DEBUG_SELECT
+	        loop_count++;
+#endif
 		if (app->timerQueue != NULL && !ignoreTimers && block) {
 		    if(IS_AFTER(cur_time, app->timerQueue->te_timer_value)) {
 			TIMEDELTA (wait_time, app->timerQueue->te_timer_value, 
@@ -206,7 +212,7 @@ int _XtwaitForSomething(ignoreTimers, ignoreInputs, ignoreEvents,
 			if (errno == EINTR) {
 			    errno = 0;  /* errno is not self reseting */
 			    if(block && wait_time_ptr != NULL) {
-				(void) gettimeofday (&new_time, &cur_timezone);
+				(void)gettimeofday (&new_time, &cur_timezone);
 				TIMEDELTA(time_spent, new_time, cur_time);
 				cur_time = new_time;
 				if(IS_AFTER(time_spent, *wait_time_ptr)) {
@@ -220,13 +226,24 @@ int _XtwaitForSomething(ignoreTimers, ignoreInputs, ignoreEvents,
 				}
 			    }
 			} else {
-			    char Errno[10];
+			    char Errno[100];
 			    String param = Errno;
 			    Cardinal param_count = 1;
-			    sprintf( Errno, "%.8d", errno);
+			    sprintf( Errno, "%d", errno);
 			    XtAppWarningMsg(app, "communicationError","select",
 			       "XtToolkitError","Select failed; error code %s",
 			       &param, &param_count);
+#ifdef DEBUG_SELECT
+			    if (errno == EINVAL && wait_time_ptr != NULL) {
+				char msg[1000];
+				sprintf( msg, "howlong = %#x, wait_time = {%d, %d}, loop_count = %d",
+					 howlong ? *howlong : 0,
+					 wait_time_ptr->tv_sec,
+					 wait_time_ptr->tv_usec,
+					 loop_count );
+				XtWarning( msg );
+			    }
+#endif /*DEBUG_SELECT*/
 			    continue;
 			}
 		} /* timed out or input available */
@@ -237,16 +254,13 @@ int _XtwaitForSomething(ignoreTimers, ignoreInputs, ignoreEvents,
 		if(howlong) *howlong = (unsigned long)0;  /* Timed out */
 		return -1;
 	}
-	if(block && wait_time_ptr != NULL) { /* adjust howlong */
-		(void) gettimeofday (&new_time, &cur_timezone);
-		TIMEDELTA(time_spent, new_time, start_time);
-		if(howlong != NULL) {
-		   if(*howlong <=
-		    (time_spent.tv_sec*1000+time_spent.tv_usec/1000)){
-			*howlong = (unsigned long)0;  /* Timed out */
-		   } else *howlong -= 
-		       (time_spent.tv_sec*1000+time_spent.tv_usec/1000);
-	        }
+	if(block && howlong != NULL) { /* adjust howlong */
+	    (void) gettimeofday (&new_time, &cur_timezone);
+	    TIMEDELTA(time_spent, new_time, start_time);
+	    if(*howlong <= (time_spent.tv_sec*1000+time_spent.tv_usec/1000))
+		*howlong = (unsigned long)0;  /* Timed out */
+	    else
+		*howlong -= (time_spent.tv_sec*1000+time_spent.tv_usec/1000);
 	}
 	if(ignoreInputs) {
 	    if (ignoreEvents) return -1; /* then only doing timers */
