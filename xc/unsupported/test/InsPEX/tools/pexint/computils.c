@@ -1,4 +1,4 @@
-/* $XConsortium: computils.c,v 5.1 91/02/16 10:00:26 rws Exp $ */
+/* $XConsortium: computils.c,v 5.2 91/05/06 11:23:00 hersh Exp $ */
 
 /*****************************************************************
 Copyright (c) 1989,1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -1879,8 +1879,8 @@ i_compare_element_content(type,data,expectdata, element_name)
 	break;
 
     case PELEM_CELL_ARRAY:
-	if (!i_compare_Ppoint(&(data->cell_array.rect.p), &(expectdata->cell_array.rect.p)) ||
-	    !i_compare_Ppoint(&(data->cell_array.rect.q), &(expectdata->cell_array.rect.q)) ||
+	if (!i_compare_Ppoint(data->cell_array.rect.p, expectdata->cell_array.rect.p) ||
+	    !i_compare_Ppoint(data->cell_array.rect.q, expectdata->cell_array.rect.q) ||
 	    expectdata->cell_array.dim.size_x != data->cell_array.dim.size_x  ||
 	    expectdata->cell_array.dim.size_y != data->cell_array.dim.size_y  ||
 	    memcmp(expectdata->cell_array.colr, data->cell_array.colr,
@@ -2307,7 +2307,7 @@ i_compare_element_content(type,data,expectdata, element_name)
 	break;
     case PELEM_PAT_REF_POINT:
     case PELEM_PAT_SIZE:
-	if (!i_compare_Ppoint(&data->point, &expectdata->point)) {
+	if (!i_compare_Ppoint(data->point, expectdata->point)) {
 	    if (element_name)
 		tfprintf("failed: inquired %s (%f,%f) != expected (%f,%f)\n",
 			 element_name, data->point.x, data->point.y,
