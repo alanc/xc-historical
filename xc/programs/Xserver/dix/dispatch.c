@@ -1,4 +1,4 @@
-/* $XConsortium: dispatch.c,v 1.78 89/02/16 11:58:53 rws Exp $ */
+/* $XConsortium: dispatch.c,v 1.79 89/02/10 18:30:59 keith Exp $ */
 /************************************************************
 Copyright 1987, 1989 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -990,13 +990,38 @@ ProcTranslateCoords(client)
 	pWin = pDst->firstChild;
 	while (pWin)
 	{
+#ifdef SHAPE
+	    BoxRec  box;
+#endif
 	    if ((pWin->mapped) &&
 		(x >= pWin->absCorner.x - pWin->borderWidth) &&
 		(x < pWin->absCorner.x + (int)pWin->clientWinSize.width +
 		 pWin->borderWidth) &&
 		(y >= pWin->absCorner.y - pWin->borderWidth) &&
-		(y < pWin->absCorner.y + (int)pWin->clientWinSize.height
-		 + pWin->borderWidth))
+		(y < pWin->absCorner.y + (int)pWin->clientWinSize.height +
+		 pWin->borderWidth)
+#ifdef SHAPE
+		/* this is ugly.  x,y are in the window if
+		 * they are either in the border, or in the
+		 * window itself.  The above test already
+		 * demonstrated that the point is in the
+		 * window bounding box, the below checks
+		 * simply constrain the valid points to the
+		 * appropriate regions.
+		 */
+		&& (pWin->borderWidth > 0 &&
+		    (!pWin->borderShape ||
+		     (*pWin->drawable.pScreen->PointInRegion)
+		       (pWin->borderShape,
+			   x - pWin->absCorner.x, y - pWin->absCorner.y,
+			   &box)) ||
+		    (!pWin->windowShape ||
+		     (*pWin->drawable.pScreen->PointInRegion)
+		       (pWin->windowShape,
+			   x - pWin->absCorner.x, y - pWin->absCorner.y,
+			   &box)))
+#endif
+		)
             {
 		rep.child = pWin->wid;
 		pWin = (WindowPtr) NULL;
