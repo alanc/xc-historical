@@ -1,5 +1,5 @@
 .\" Use -ms
-.\" $XConsortium: a2x.ms,v 1.29 92/10/04 11:05:19 rws Exp $
+.\" $XConsortium: a2x.ms,v 1.30 93/02/01 18:48:56 rws Exp $
 .de Ds
 .RS
 .nf
@@ -926,6 +926,7 @@ For example, to clear the PC screen:
 .Ds
 add-word /t "[dragon clear]" "{c-t}{c-v}{Esc}[H{Esc}[2J{c-t}{Dcom}dkey {Enter}{Dcom}" invisible
 .De
+As a special case, if the string is empty a single {c\-t} is output.
 .LP
 You can generate a {c\-t} with the control sequence:
 .Ds
