@@ -1,4 +1,4 @@
-/* $XConsortium: mpuncnst.c,v 1.1 93/10/26 09:46:28 rws Exp $ */
+/* $XConsortium: mpuncnst.c,v 1.2 93/10/31 09:48:27 dpw Exp $ */
 /**** module mpuncnst.c ****/
 /******************************************************************************
 				NOTICE
@@ -196,17 +196,17 @@ static int ActivateUnconstrain(flo,ped,pet)
     for(band = 0; band < nbands; band++, iband++, oband++, pvt++) {
 	register int bw = iband->format->width;
 	register RealPixel *outp;
-	register void *voidp;
+	register pointer voidp;
 
-	if (!(voidp = GetCurrentSrc(void,flo,pet,iband)) || 
-	    !(outp  = GetCurrentDst(RealPixel,flo,pet,oband))) continue;
+	if (!(voidp = GetCurrentSrc(pointer,flo,pet,iband)) || 
+	    !(outp  = GetCurrentDst(RealPixel *,flo,pet,oband))) continue;
 
 	do {
 
 	    (*(pvt->action)) (voidp, outp, bw);
 
-	    voidp = GetNextSrc(void,flo,pet,iband,TRUE);
-	    outp  = GetNextDst(RealPixel,flo,pet,oband,TRUE);
+	    voidp = GetNextSrc(pointer,flo,pet,iband,TRUE);
+	    outp  = GetNextDst(RealPixel *,flo,pet,oband,TRUE);
 
 	} while (!ferrCode(flo) && voidp && outp) ;
 
@@ -264,7 +264,7 @@ static int DestroyUnconstrain(flo,ped)
 
 #define MakeCast(fn_name,itype)					\
 static void fn_name(voidp,outp,bw)				\
-	void * voidp; RealPixel *outp; int bw;			\
+	pointer voidp; RealPixel *outp; int bw;			\
 {								\
 	register itype *inp = (itype *) voidp;			\
 	register int ix;					\
@@ -277,7 +277,7 @@ MakeCast	(CastPair,PairPixel)
 MakeCast	(CastByte,BytePixel)
 
 static void CastBit(voidp,outp,bw)
-	void * voidp; RealPixel *outp; int bw;
+	pointer voidp; RealPixel *outp; int bw;
 {
 	register LogInt *inp	= (LogInt *) voidp;
 	register RealPixel One  = (RealPixel) 1.0;
@@ -292,7 +292,7 @@ static void CastBit(voidp,outp,bw)
 }
 
 static void CastNothing(voidp,outp,bw)
-	void * voidp; RealPixel *outp; int bw;
+	pointer voidp; RealPixel *outp; int bw;
 {
 	register RealPixel Zero = (RealPixel) 0.0;
 	register int ix;
