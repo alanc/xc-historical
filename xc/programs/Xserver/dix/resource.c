@@ -22,7 +22,7 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: resource.c,v 1.66 88/09/06 15:41:20 jim Exp $ */
+/* $XConsortium: resource.c,v 1.67 88/12/22 16:58:58 rws Exp $ */
 
 /*	Routines to manage various kinds of resources:
  *
@@ -189,27 +189,37 @@ AddResource(id, type, value, func, class)
     if ((clientTable[client].elements >= 4*clientTable[client].buckets) &&
 	(clientTable[client].hashsize < MAXHASHSIZE))
     {
-	register ResourcePtr *resources = (ResourcePtr *)
-	    xalloc(2*clientTable[client].buckets*sizeof(ResourcePtr));
-	for (j = 0; j < clientTable[client].buckets*2; j++)
-	    resources[j] = NullResource;
-	clientTable[client].hashsize++;
-	for (j = 0; j < clientTable[client].buckets; j++)
+	/*
+	 * Must preserve insertion order so that FreeResource doesn't free
+	 * "subclasses" before main resources are freed.
+	 */
+	ResourcePtr **tails, *resources;
+	register ResourcePtr **tptr, *rptr;
+
+	j = 2 * clientTable[client].buckets;
+	tails = (ResourcePtr **)ALLOCATE_LOCAL(j * sizeof(ResourcePtr *));
+	resources = (ResourcePtr *)xalloc(j * sizeof(ResourcePtr));
+	for (rptr = resources, tptr = tails; --j >= 0; rptr++, tptr++)
 	{
-	    /*
-	     * Must preserve insertion order so that FreeResource doesn't free
-	     * "subclasses" before main resources are freed.  Sigh.
-	     */
-	    for (res = clientTable[client].resources[j]; res; res = next)
+	    *rptr = NullResource;
+	    *tptr = rptr;
+	}
+	clientTable[client].hashsize++;
+	for (j = clientTable[client].buckets,
+	     rptr = clientTable[client].resources;
+	     --j >= 0;
+	     rptr++)
+	{
+	    for (res = *rptr; res; res = next)
 	    {
 		next = res->next;
-		head = &resources[Hash(client, res->id)];
-		while (*head)
-		    head = &(*head)->next;
-		*head = res;
 		res->next = NullResource;
+		tptr = &tails[Hash(client, res->id)];
+		**tptr = res;
+		*tptr = &res->next;
 	    }
 	}
+	DEALLOCATE_LOCAL(tails);
 	clientTable[client].buckets *= 2;
 	xfree(clientTable[client].resources);
 	clientTable[client].resources = resources;
