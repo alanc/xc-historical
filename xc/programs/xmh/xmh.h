@@ -1,8 +1,7 @@
 /*
- * rcs_id[] = "$XConsortium: xmh.h,v 2.16 89/05/04 15:16:17 converse Exp $";
- */
-
-/*
+ * $XConsortium: xmh.h,v 2.17 89/05/11 19:26:57 converse Exp $
+ *
+ *
  *			  COPYRIGHT 1987
  *		   DIGITAL EQUIPMENT CORPORATION
  *		       MAYNARD, MASSACHUSETTS
@@ -29,13 +28,14 @@
 
 #ifndef _xmh_h
 #define _xmh_h
+
 #include <stdio.h>
 #include <X11/Xlib.h>
 #include <X11/Xos.h>
 #include <X11/Xutil.h>
 #include <X11/cursorfont.h>
-
 #include <X11/Intrinsic.h>
+#include <X11/Shell.h>
 #include <X11/StringDefs.h>
 #include <X11/Xaw/AsciiText.h>
 #include <X11/Xaw/Box.h>
@@ -43,8 +43,9 @@
 #include <X11/Xaw/Dialog.h>
 #include <X11/Xaw/Form.h>
 #include <X11/Xaw/Label.h>
+#include <X11/Xaw/MenuButton.h>
 #include <X11/Xaw/Scroll.h>
-#include <X11/Shell.h>
+#include <X11/Xaw/SimpleMenu.h>
 #include <X11/Xaw/Toggle.h>
 #include <X11/Xaw/Viewport.h>
 #include <X11/Xaw/VPaned.h>
@@ -93,6 +94,7 @@ typedef struct _ScrnRec {
    Widget	widget;		/* The pane widget for the scrn */
    int		mapped;		/* TRUE only if we've mapped this screen. */
    ScrnKind	kind;		/* What kind of scrn we have. */
+   Widget	folderlabel;	/* Folder titlebar */
    ButtonBox	folderbuttons;	/* Folder buttons. */
    ButtonBox	mainbuttons;	/* Main xmh control buttons. */
    Widget	toclabel;	/* Toc titlebar. */
@@ -102,6 +104,7 @@ typedef struct _ScrnRec {
    Widget	viewlabel;	/* View titlebar. */
    Widget	viewwidget;	/* View text. */
    ButtonBox 	viewbuttons;	/* View control buttons. */
+   char *	curfolder;	/* Currently selected folder name */
    Toc		toc;		/* The table of contents. */
    Msg		msg;		/* The message being viewed. */
    Pick		pick;		/* Pick in this screen. */
