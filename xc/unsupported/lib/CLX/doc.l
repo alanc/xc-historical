@@ -3319,6 +3319,7 @@ WarpPointer             WARP-POINTER
 WarpPointer             WARP-POINTER-IF-INSIDE
 WarpPointer             WARP-POINTER-RELATIVE
 WarpPointer             WARP-POINTER-RELATIVE-IF-INSIDE
+NoOperation             NO-OPERATION
 
 
 
@@ -3454,6 +3455,7 @@ QueryFont               MIN-CHAR-RIGHT-BEARING
 QueryFont               MIN-CHAR-WIDTH
 GetModifierMapping      MODIFIER-MAPPING
 GetMotionEvents         MOTION-EVENTS
+NoOperation             NO-OPERATION
 OpenFont                OPEN-FONT
 GetPointerControl       POINTER-CONTROL
 GetPointerMapping       POINTER-MAPPING
