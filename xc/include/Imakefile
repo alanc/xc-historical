@@ -98,7 +98,10 @@ all:: $(IMPORTS1) $(IMPORTS2) $(SUBIMPORTS) extensions
 
 
 extensions::
-	-mkdir $@
+	-if [ ! -d $@ ]; then \
+	    if [ -f $@ ]; then $(RM) $@; fi; \
+	    mkdir $@; \
+	fi
 
 MakeDirectories(install, $(INCDIR))
 
@@ -126,4 +129,4 @@ install::
 	done
 
 depend:
-	@echo "depend: skipping X11"
+	@echo "skipping make depend in ./X11"
