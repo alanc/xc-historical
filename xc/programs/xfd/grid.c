@@ -1,5 +1,5 @@
 /*
- * $XConsortium: fontgrid.c,v 1.7 89/06/07 17:04:55 jim Exp $
+ * $XConsortium: fontgrid.c,v 1.8 89/06/08 09:23:49 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -21,7 +21,6 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  * Author:  Jim Fulton, MIT X Consortium
- *          rewritten from an Xlib version by Mark Lillibridge
  */
 
 

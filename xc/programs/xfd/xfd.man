@@ -72,5 +72,6 @@ Copyright 1989, Massachusetts Institute of Technology.
 .br
 See \fIX(1)\fP for a full statement of rights and permissions.
 .SH AUTHOR
-Jim Fulton, MIT X Consortium, rewritten from an older version by 
+Jim Fulton, MIT X Consortium; previous program of the same name by 
 Mark Lillibridge, MIT Project Athena.
+

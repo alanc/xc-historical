@@ -60,4 +60,5 @@ Copyright 1988, Massachusetts Institute of Technology.
 .br
 See \fIX(1)\fP for a full statement of rights and permissions.
 .SH AUTHOR
-Mark Lillibridge, MIT Project Athena
+Mark Lillibridge, MIT Project Athena; Jim Fulton, MIT X Consortium;
+Phil Karlton, SGI

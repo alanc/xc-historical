@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xfd.c,v 1.7 89/06/07 17:03:30 jim Exp $
+ * $XConsortium: xfd.c,v 1.8 89/06/07 18:06:21 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -21,7 +21,6 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  * Author:  Jim Fulton, MIT X Consortium
- *          rewritten from an Xlib version by Mark Lillibridge
  */
 
 #include <stdio.h>
