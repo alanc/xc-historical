@@ -1,6 +1,6 @@
 /**/###########################################################################
 /**/# X Window System Build Parameters
-/**/# $XConsortium: Project.tmpl,v 1.24 89/06/21 10:17:44 jim Exp $
+/**/# $XConsortium: Project.tmpl,v 1.25 89/07/03 12:21:29 jim Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -146,6 +146,9 @@
 #ifndef IncRoot
 #define IncRoot $(DESTDIR)/usr/include
 #endif
+#ifndef BuildIncRoot
+#define BuildIncRoot $(TOP)
+#endif
 #ifndef LibDir
 #define LibDir $(USRLIBDIR)/X11
 #endif
@@ -249,7 +252,7 @@ Berklib.c: sysV/Berklib.c					@@\
 
 /**/###########################################################################
 /**/# X Window System make variables; this need to be coordinated with rules
-/**/# $XConsortium: Project.tmpl,v 1.24 89/06/21 10:17:44 jim Exp $
+/**/# $XConsortium: Project.tmpl,v 1.25 89/07/03 12:21:29 jim Exp $
 
 /*
  * This list must be reflected in the DIRS_TO_BUILD list in the top-level
@@ -259,6 +262,8 @@ Berklib.c: sysV/Berklib.c					@@\
         USRLIBDIR = UsrLibDir		/* libraries */
            BINDIR = BinDir		/* programs */
           INCROOT = IncRoot		/* base of where to put header files */
+     BUILDINCROOT = BuildIncRoot	/* base of build loc */
+      BUILDINCDIR = $(BUILDINCROOT)/X11
            INCDIR = $(INCROOT)/X11	/* header files, must end in X11 */
            ADMDIR = AdmDir		/* server log files */
            LIBDIR = LibDir		/* rgb, XErrorDB, etc. */

@@ -1,6 +1,6 @@
 /**/###########################################################################
 /**/# Imake rules for building libraries, programs, scripts, and data files
-/**/# rules:  $XConsortium: Imake.rules,v 1.35 89/07/10 22:56:12 jim Exp $
+/**/# rules:  $XConsortium: Imake.rules,v 1.36 89/07/11 11:45:30 jim Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -10,6 +10,7 @@
  * 
  *      SaberProgramTarget          (program,srclist,objlist,locallibs,syslibs)
  *      RemoveTargetProgram                      (program)
+ *      BuildIncludes                            (srclist,dstdir)
  *     	NormalProgramTarget         (program,objects,deplibs,locallibs,syslibs)
  *     	SimpleProgramTarget                      (program)
  *     	ComplexProgramTarget                     (program)
@@ -126,6 +127,18 @@ $(RM) program; if [ -f program ]; then $(MV) program program/**/~; fi
 #define RemoveTargetProgram(program) $(RM) program
 #endif
 #endif
+
+
+#ifndef BuildIncludes
+#define BuildIncludes(srclist,dstdir)					@@\
+includes::								@@\
+	$(MKDIRHIER) dstdir						@@\
+	@(for i in srclist; do \					@@\
+		echo $(RM) dstdir/$$i; $(RM) dstdir/$$i; \		@@\
+		echo $(LN) $(TOP)/$(CURRENT_DIR)/$$i dstdir/$$i; \	@@\
+		$(LN) $(TOP)/$(CURRENT_DIR)/$$i dstdir/$$i; \		@@\
+	done)
+#endif /* BuildIncludes */
 
 /*
  * NormalProgramTarget - generate rules to compile and link the indicated 

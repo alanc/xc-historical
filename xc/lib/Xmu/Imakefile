@@ -126,11 +126,12 @@ InstallLibrary(Xmu_p,$(USRLIBDIR))
 DebuggedLibraryTarget(Xmu,$(OBJS))
 #endif
 
+BuildIncludes($(HEADERS),$(BUILDINCDIR)/Xmu)
 InstallMultiple($(HEADERS),$(INCDIR)/Xmu)
 
 #if InstallOldHeaderFiles
 /* Make links for old programs that need to be converted. */ 
-LinkFileList(install,$(HEADERS),$(INCDIR),Xmu)
+LinkFileList(install,Xmu.h,$(INCDIR),Xmu)
 
 install::
 	cd $(INCDIR); $(LN) Xmu/Misc.h XawMisc.h
