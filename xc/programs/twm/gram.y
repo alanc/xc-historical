@@ -25,7 +25,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: gram.y,v 1.41 89/06/09 13:42:13 jim Exp $
+ * $XConsortium: gram.y,v 1.42 89/06/09 13:47:16 jim Exp $
  *
  * .twmrc command grammer
  *
@@ -35,7 +35,7 @@
 
 %{
 static char RCSinfo[]=
-"$XConsortium: gram.y,v 1.41 89/06/09 13:42:13 jim Exp $";
+"$XConsortium: gram.y,v 1.42 89/06/09 13:47:16 jim Exp $";
 
 #include <stdio.h>
 #include <ctype.h>
@@ -105,7 +105,7 @@ extern int yylineno;
 %token <num> CUR_TITLE CUR_ICONMGR CUR_ICON NO_ICONMGRS F_SORTICONMGR
 %token <num> CUR_MOVE CUR_RESIZE CUR_WAIT CUR_SELECT CUR_KILL
 %token <num> ICON_REGION NORTH SOUTH EAST WEST RESTART_PREVIOUS_STATE
-%token <num> F_WARPSCREEN
+%token <num> F_WARPTOSCREEN
 %token <ptr> STRING
 
 %type <ptr> string
@@ -661,9 +661,9 @@ action		: F_NOP			{ $$ = F_NOP; }
 		| F_EXEC string		{ Action = $2; $$ = F_EXEC; }
 		| F_CUT string		{ Action = $2; $$ = F_CUT; }
 		| F_FUNCTION string	{ Action = $2; $$ = F_FUNCTION; }
-		| F_WARPSCREEN string	{ Action = $2; 
+		| F_WARPTOSCREEN string	{ Action = $2; 
 					  if (CheckWarpScreenArg (Action)) {
-					      $$ = F_WARPSCREEN;
+					      $$ = F_WARPTOSCREEN;
 					  } else {
 					      fprintf (stderr, 
 	"twm: line %d:  ignoring invalid f.warpscreen argument \"%s\"\n", 
