@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: session.c,v 1.62 93/09/30 15:12:38 gildea Exp $
+ * $XConsortium: session.c,v 1.62 93/09/30 15:27:25 gildea Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -448,9 +448,29 @@ StartClient (verify, d, pidp, name, passwd)
 	    ret = getsecretkey(netname,secretkey,passwd);
 	    Debug ("getsecretkey returns %d, key length %d\n",
 		    ret, strlen (secretkey));
-	    ret = key_setsecret(secretkey);
-	    bzero(secretkey, strlen(secretkey));
-	    Debug ("key_setsecret returns %d\n", ret);
+	    /* is there a key, and do we have the right password? */
+	    if (ret && *secretkey)
+	    {
+		ret = key_setsecret(secretkey);
+		bzero(secretkey, strlen(secretkey));
+		Debug ("key_setsecret returns %d\n", ret);
+	    }
+	    else
+	    {
+		/* remove SUN-DES-1 from authorizations list */
+		int i, j;
+		for (i = 0; i < d->authNum; i++)
+		{
+		    if (d->authorizations[i]->name_length == 9 &&
+			memcmp(d->authorizations[i]->name, "SUN-DES-1", 9) == 0)
+		    {
+			for (j = i+1; j < d->authNum; j++)
+			    d->authorizations[j-1] = d->authorizations[j];
+			d->authNum--;
+			break;
+		    }
+		}
+	    }
 	}
 #endif
 	bzero(passwd, strlen(passwd));
