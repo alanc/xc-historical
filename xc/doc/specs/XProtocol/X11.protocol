@@ -5545,8 +5545,7 @@ T}	T{
 thin
 T}	T{
 Same as 
-.PN Butt 
-thin.
+.PN Butt /thin.
 T}
 .sp 6p
 T{
@@ -5555,8 +5554,7 @@ T}	T{
 thin
 T}	T{
 Same as 
-.PN Butt
-thin.
+.PN Butt /thin.
 T}
 .sp 6p
 T{
