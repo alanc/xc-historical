@@ -31,10 +31,19 @@ SOFTWARE.
 #endif
 #include "x11perf.h"
 
-static Bool drawToFakeServer = False;
-static Pixmap tileToQuery = None;
-static Bool labels = False;
-static Bool xorMode = False;
+/* Only for working on ``fake'' servers, for hardware that doesn't exist */
+static Bool     drawToFakeServer = False;
+static Pixmap   tileToQuery     = None;
+
+
+static Bool     labels		= False;
+static Bool     xorMode		= False;
+static Bool     bothModes       = False;
+static int      repeat		= 5;
+static int	seconds		= 5;
+
+static Window   status;     /* Status window and GC */
+static GC       tgc;
 
 static double syncTime = 0.0;
 
@@ -272,6 +281,7 @@ void usage()
 "    -fg			the foreground color to use",
 "    -bg		        the background color to use",
 "    -xor			use GXxor mode to draw",
+"    -both			use both GXcopy and GXxor mode to draw",
 "    -reps <n>			fix the rep count (default = auto scale)",
 "    -subs <s0 s1 ...>		a list of the number of sub-windows to use",
 NULL};
@@ -325,20 +335,21 @@ void HardwareSync(xp)
     XDestroyImage(image);
 }
 
-void DoHardwareSync(xp, p)
+void DoHardwareSync(xp, p, reps)
     XParms  xp;
     Parms   p;
+    int     reps;
 {
     int i;
     
-    for (i = 0; i != p->reps; i++) {
+    for (i = 0; i != reps; i++) {
 	HardwareSync(xp);
     }
 }
 
 static Test syncTest = {
     "syncTime", "Internal test for finding how long HardwareSync takes",
-    NullInitProc, DoHardwareSync, NullProc, NullProc, False, 0,
+    NullInitProc, DoHardwareSync, NullProc, NullProc, NONXOR, 0,
     {5000, 1}
 };
 
@@ -402,17 +413,17 @@ void DestroyClipWindows(xp, clips)
 } /* DestroyClipWindows */
 
 
-double DoTest(xp, test, label)
+double DoTest(xp, test, reps)
     XParms  xp;
     Test    *test;
-    char    *label;
+    int     reps;
 {
     double  time;
     int     ret_width, ret_height;
 
     HardwareSync (xp);
     InitTimes ();
-    (*test->proc) (xp, &test->parms);
+    (*test->proc) (xp, &test->parms, reps);
     HardwareSync(xp);
 
     time = ElapsedTime(syncTime);
@@ -424,7 +435,7 @@ double DoTest(xp, test, label)
 }
 
 
-Bool CalibrateTest(xp, test, seconds, usecperobj)
+int CalibrateTest(xp, test, seconds, usecperobj)
     XParms  xp;
     Test    *test;
     int     seconds;
@@ -435,7 +446,8 @@ Bool CalibrateTest(xp, test, seconds, usecperobj)
 #define tick      10000.0   /* Assume clock not faster than .01 seconds     */
 
     double  usecs;
-    int     reps, exponent;
+    int     reps, didreps;  /* Reps desired, reps performed		    */
+    int     exponent;
 
     /* Attempt to get an idea how long each rep lasts by getting enough
        reps to last more tan enough.  Then scale that up to the number of
@@ -444,35 +456,34 @@ Bool CalibrateTest(xp, test, seconds, usecperobj)
        If init call to test ever fails, return False and test will be skipped.
     */
 
-    if (fixedReps) {
-	test->parms.reps = fixedReps;
-	return True;
+    if (fixedReps != 0) {
+	return fixedReps;
     }
     reps = 1;
     for (;;) {
-	test->parms.reps = reps;
 	XDestroySubwindows(xp->d, xp->w);
 	XClearWindow(xp->d, xp->w);
-	if (! ((*test->init) (xp, &test->parms))) {
-	    return False;
+	didreps = (*test->init) (xp, &test->parms, reps);
+	if (didreps == 0) {
+	    return 0;
 	}
 	/* Create clip windows if requested */
 	CreateClipWindows(xp, test->clips);
 	HardwareSync(xp);
 	InitTimes();
-	(*test->proc) (xp, &test->parms);
+	(*test->proc) (xp, &test->parms, reps);
 	HardwareSync(xp);
 	usecs = ElapsedTime(syncTime);
 	(*test->passCleanup) (xp, &test->parms);
 	(*test->cleanup) (xp, &test->parms);
 	DestroyClipWindows(xp, test->clips);
 
-	if (reps != test->parms.reps) {
+	if (didreps != reps) {
 	    /* The test can't do the number of reps as we asked for.  
 	       Give up */
 	    *usecperobj = 
-		usecs / (double)(test->parms.reps * test->parms.objects);
-	    return True;
+		usecs / (double)(didreps * test->parms.objects);
+	    return didreps;
 	}
 	/* Did we go long enough? */
 	if (usecs >= enough) break;
@@ -496,19 +507,19 @@ Bool CalibrateTest(xp, test, seconds, usecperobj)
 	exponent *= 10;
     }
     reps = (reps + 1) * exponent;
-    test->parms.reps = reps;
-    return True;
+    return reps;
 } /* CalibrateTest */
 
 
-void CreatePerfGCs(xp)
+void CreatePerfGCs(xp, func)
     XParms  xp;
+    int     func;
 {
     XGCValues gcv;
 
     gcv.graphics_exposures = False;
 
-    if (xorMode) {
+    if (func == GXxor) {
 	gcv.function = GXxor;
 	gcv.foreground = xp->background ^ xp->foreground;
 	gcv.background = xp->background;
@@ -564,21 +575,63 @@ int AllocateColor(display, name, pixel)
 } /* AllocateColor */
 
 
-void DisplayStatus(d, w, tgc, message, test)
+void DisplayStatus(d, message, test)
     Display *d;
-    Window  w;
-    GC      tgc;
     char    *message;
     char    *test;
 {
     char    s[500];
 
-    XClearWindow(d, w);
+    XClearWindow(d, status);
     sprintf(s, "%s %s", message, test);
     /* We should really look at the height, descent of the font, etc. but
        who cares.  This works. */
-    XDrawString(d, w, tgc, 10, 13, s, strlen(s));
+    XDrawString(d, status, tgc, 10, 13, s, strlen(s));
 }
+
+
+void ProcessTest(xp, test, func, label)
+    XParms  xp;
+    Test    *test;
+    int     func;
+    char    *label;
+{
+    double  time, totalTime;
+    int     reps;
+    int     j;
+
+    CreatePerfGCs(xp, func);
+    DisplayStatus(xp->d, "Calibrating", label);
+    reps = CalibrateTest(xp, test, seconds, &time);
+    if (reps != 0) {
+	DisplayStatus(xp->d, "Testing", label);
+	XDestroySubwindows(xp->d, xp->w);
+	XClearWindow(xp->d, xp->w);
+	(void)(*test->init) (xp, &test->parms, reps);
+	/* Create clip windows if requested */
+	CreateClipWindows(xp, test->clips);
+
+	totalTime = 0.0;
+	for (j = 0; j != repeat; j++) {
+	    time = DoTest(xp, test, reps);
+	    totalTime += time;
+	    ReportTimes (time, reps * test->parms.objects,
+		    label, False);
+	}
+	if (repeat > 1) {
+	    ReportTimes(totalTime,
+		repeat * reps * test->parms.objects,
+		label, True);
+	}
+	(*test->cleanup) (xp, &test->parms);
+	DestroyClipWindows(xp, test->clips);
+    } else {
+	/* Test failed to initialize properly */
+    }
+    printf ("\n");
+    fflush(stdout);
+    DestroyPerfGCs(xp);
+} /* ProcessTest */
 
 
 main(argc, argv)
@@ -591,12 +644,8 @@ main(argc, argv)
     char	hostname[100];
     char	*displayName;
     XParmRec    xparms;
-    int		repeat = 5;
-    int		seconds = 5;
     Bool	foundOne = False;
     Bool	synchronous = False;
-    Window      status;
-    GC		tgc;	    
     XGCValues	tgcv;
     int		screen;
 
@@ -668,6 +717,8 @@ main(argc, argv)
 	    background = argv[i];
 	} else if (strcmp(argv[i], "-xor") == 0) {
 	    xorMode = True;
+	} else if (strcmp(argv[i], "-both") == 0) {
+	    bothModes = True;
 	} else if (strcmp(argv[i], "-reps") == 0) {
 	    if (argc <= i)
 		usage ();
@@ -706,13 +757,26 @@ main(argc, argv)
 	   assemble data from different x11perf runs into a nice format */
 	ForEachTest (i) {
 	    int child;
-	    if (test[i].children) {
-		for (child = 0; subs[child] != 0; child++) {
-		    printf ("%s (%d kids)\n", test[i].label, subs[child]);
-		}
-	    } else {
-		printf ("%s\n", test[i].label);
-	    }
+	    switch (test[i].testType) {
+	        case NONXOR:
+		    printf ("%s\n", test[i].label);
+		    break;
+
+		case XOR:
+		    if (!xorMode || bothModes) {
+			printf ("%s\n", test[i].label);
+		    }
+		    if (xorMode || bothModes) {
+			printf("(XOR) %s\n", test[i].label);
+		    }
+		    break;
+		
+		case WINDOW:
+		    for (child = 0; subs[child] != 0; child++) {
+			printf ("%s (%d kids)\n", test[i].label, subs[child]);
+		    }
+		    break;
+	    } /* switch */
 	}
 	exit(0);
     }
@@ -774,59 +838,44 @@ main(argc, argv)
     printf("Sync time adjustment is %6.4f msecs.\n\n", syncTime/1000);
 
     ForEachTest (i) {
+	int child;
+	char label[200];
+
 	if (doit[i]) {
-	    int     child = 0;
-	    char    label[100];
-	    int     reps = test[i].parms.reps;
-	    double  time, totalTime;
-
-	    CreatePerfGCs(&xparms);
-	    while (1) {
-		if (test[i].children) {
-		    test[i].parms.objects = subs[child];
-		    if (test[i].parms.objects == 0)
-			break;
-		    sprintf (label, "%s (%d kids)",
-			    test[i].label, test[i].parms.objects);
-		} else {
+	    switch (test[i].testType) {
+	        case NONXOR:
+		    /* Simplest...just run it once */
 		    strcpy (label, test[i].label);
-		}
-		DisplayStatus(xparms.d, status, tgc, "Calibrating", label);
-		if (CalibrateTest(&xparms, &test[i], seconds, &time)) {
-		    DisplayStatus(xparms.d, status, tgc, "Testing", label);
-		    XDestroySubwindows(xparms.d, xparms.w);
-		    XClearWindow(xparms.d, xparms.w);
-		    (void)(*test[i].init) (&xparms, &test[i].parms);
-		    /* Create clip windows if requested */
-		    CreateClipWindows(&xparms, test[i].clips);
-
-		    totalTime = 0.0;
-		    for (j = 0; j != repeat; j++) {
-			time = DoTest(&xparms, &test[i], label);
-			totalTime += time;
-			ReportTimes (time, 
-				test[i].parms.reps * test[i].parms.objects,
-				label, False);
-		    }
-		    if (repeat > 1) {
-			ReportTimes(totalTime,
-			    repeat * test[i].parms.reps * test[i].parms.objects,
-			    label, True);
-		    }
-		    (*test[i].cleanup) (&xparms, &test[i].parms);
-		    DestroyClipWindows(&xparms, test[i].clips);
-		} else {
-		    /* Test failed to initialize properly */
-		}
-		printf ("\n");
-		fflush(stdout);
-		if (!test[i].children)
+		    ProcessTest(&xparms, &test[i], GXcopy, label);
 		    break;
-		child++;
-	    }
-	    DestroyPerfGCs(&xparms);
-	}
-    }
+
+		case XOR:
+		    /* Run it once or twice */
+		    if (!xorMode || bothModes) {
+			/* Copy mode */
+			strcpy (label, test[i].label);
+			ProcessTest(&xparms, &test[i], GXcopy, label);
+		    }
+		    if (xorMode || bothModes) {
+			/* Xor mode */
+			sprintf(label, "(XOR) %s", test[i].label);
+			ProcessTest(&xparms, &test[i], GXxor, label);
+		    }
+		    break;
+		
+		case WINDOW:
+		    /* Loop through number of children array */
+		    for (child = 0; subs[child] != 0; child++) {
+			test[i].parms.objects = subs[child];
+			sprintf(label, "%s (%d kids)",
+			    test[i].label, test[i].parms.objects);
+			ProcessTest(&xparms, &test[i], GXcopy, label);
+		    }
+		    break;
+	    } /* switch */
+	} /* if doit */
+    } /* ForEachTest */
+
     XDestroyWindow(xparms.d, xparms.w);
 
     /* Restore ScreenSaver to original state. */
