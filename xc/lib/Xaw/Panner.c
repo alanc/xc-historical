@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Panner.c,v 1.22 90/03/01 09:52:21 jim Exp $
+ * $XConsortium: Panner.c,v 1.23 90/03/01 14:13:52 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -29,6 +29,8 @@
 #include <X11/Xaw/XawInit.h>		/* for XawInitializeWidgetSet */
 #include <X11/Xaw/SimpleP.h>		/* parent */
 #include <X11/Xaw/PannerP.h>		/* us */
+#include <ctype.h>			/* for isascii() etc. */
+#include <math.h>			/* for atof() */
 
 #define MINIMUM(a,b) (((a) < (b)) ? (a) : (b))
 
@@ -37,16 +39,26 @@ static char defaultTranslations[] =
    <Btn1Motion>:  move() \n\
    <Btn1Up>:      notify() stop() \n\
    <Btn2Down>:    abort() \n\
-   <Key>KP_Enter: set(rubberband,toggle) ";
+   <Key>KP_Enter: set(rubberband,toggle) \n\
+   <Key>space:    page(+1p,+1p) \n\
+   <Key>Delete:   page(-1p,-1p) \n\
+   <Key>BackSpace:  page(-1p,-1p) \n\
+   <Key>Left:     page(-.5p,+0) \n\
+   <Key>Right:    page(+.5p,+0) \n\
+   <Key>Up:       page(+0,-.5p) \n\
+   <Key>Down:     page(+0,+.5p) \n\
+   <Key>Home:     page(0,0) ";
+
 
 static void ActionStart(), ActionStop(), ActionAbort(), ActionMove();
-static void ActionNotify(), ActionSet();
+static void ActionPage(), ActionNotify(), ActionSet();
 
 static XtActionsRec actions[] = {
     { "start", ActionStart },		/* start tmp graphics */
     { "stop", ActionStop },		/* stop tmp graphics */
     { "abort", ActionAbort },		/* punt */
     { "move", ActionMove },		/* move tmp graphics on Motion event */
+    { "page", ActionPage },		/* page around usually from keyboard */
     { "notify", ActionNotify },		/* callback new position */
     { "set", ActionSet },		/* set various parameters */
 };
@@ -350,6 +362,54 @@ static Boolean get_event_xy (pw, event, x, y)
 
     return FALSE;
 }
+
+static int parse_page_string (s, pagesize, canvassize, relative)
+    char *s;
+    int pagesize, canvassize;
+    Boolean *relative;
+{
+    char *cp;
+    double val = 1.0;
+    Boolean rel = FALSE;
+
+    /*
+     * syntax:    spaces [+-] number spaces [pc\0] spaces
+     */
+
+    for (s; isascii(*s) && isspace(*s); s++) ;	/* skip white space */
+
+    if (*s == '+' || *s == '-') {	/* deal with signs */
+	rel = TRUE;
+	if (*s == '-') val = -1.0;
+	s++;
+    }
+    if (!*s) {				/* if null then return nothing */
+	*relative = TRUE;
+	return 0;
+    }
+
+					/* skip over numbers */
+    for (cp = s; isascii(*s) && (isdigit(*s) || *s == '.'); s++) ;
+    val *= atof (cp);
+
+					/* skip blanks */
+    for (; isascii(*s) && isspace(*s); s++) ;
+
+    if (*s) {				/* if units */
+	switch (s[0]) {
+	  case 'p': case 'P':
+	    val *= (double) pagesize;
+	    break;
+
+	  case 'c': case 'C':
+	    val *= (double) canvassize;
+	    break;
+	}
+    }
+    *relative = rel;
+    return ((int) val);
+}
+
 
 #define DRAW_TMP(pw) \
 { \
@@ -688,6 +748,49 @@ static void ActionMove (gw, event, params, num_params)
     } else {
 	if (!pw->panner.allow_off) check_knob (pw, FALSE);
 	DRAW_TMP (pw);
+    }
+}
+
+
+/* ARGSUSED */
+static void ActionPage (gw, event, params, num_params)
+    Widget gw;
+    XEvent *event;			/* unused */
+    String *params;
+    Cardinal *num_params;		/* unused */
+{
+    PannerWidget pw = (PannerWidget) gw;
+    Cardinal zero = 0;
+    Boolean isin = pw->panner.tmp.doing;
+    int x, y;
+    Boolean relx, rely;
+    int pad = pw->panner.internal_border * 2;
+
+    if (*num_params != 2) {
+	XBell (XtDisplay(gw), 0);
+	return;
+    }
+
+    x = parse_page_string (params[0], (int) pw->panner.knob_width,
+			   ((int) pw->core.width) - pad, &relx);
+    y = parse_page_string (params[1], (int) pw->panner.knob_height,
+			   ((int) pw->core.height) - pad, &rely);
+
+    if (relx) x += pw->panner.knob_x;
+    if (rely) y += pw->panner.knob_y;
+
+    if (isin) {				/* if in, then use move */
+	XEvent ev;
+	ev.xbutton.type = ButtonPress;
+	ev.xbutton.x = x;
+	ev.xbutton.y = y;
+	ActionMove (gw, &ev, (String *) NULL, &zero);
+    } else {				/* else just do it */
+	pw->panner.tmp.doing = TRUE;
+	pw->panner.tmp.x = x;
+	pw->panner.tmp.y = y;
+	ActionNotify (gw, event, (String *) NULL, &zero);
+	pw->panner.tmp.doing = FALSE;
     }
 }
 
