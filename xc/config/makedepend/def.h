@@ -1,5 +1,5 @@
 /*
- * $XConsortium: def.h,v 1.7 89/06/02 17:29:54 jim Exp $
+ * $XConsortium: def.h,v 1.8 89/06/13 18:52:47 jim Exp $
  */
 #include <stdio.h>
 #include <ctype.h>
@@ -94,7 +94,7 @@ char			*realloc();
 char			*basename();
 char			*getline();
 struct symtab		*slookup();
-struct symtab		*defined();
+struct symtab		*isdefined();
 struct symtab		*fdefined();
 struct filepointer	*getfile();
 struct inclist		*newinclude();

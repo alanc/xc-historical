@@ -1,5 +1,5 @@
 /*
- * $XConsortium: parse.c,v 1.10 89/06/13 19:15:37 jim Exp $
+ * $XConsortium: parse.c,v 1.11 89/10/08 14:23:25 rws Exp $
  */
 #include "def.h"
 #include	<sys/signal.h>
@@ -41,8 +41,8 @@ find_includes(filep, file, file_red, recursion)
 			break;
 		case IFDEF:
 		case IFNDEF:
-			if ((type == IFDEF && defined(line, file_red))
-			 || (type == IFNDEF && !defined(line, file_red))) {
+			if ((type == IFDEF && isdefined(line, file_red))
+			 || (type == IFNDEF && !isdefined(line, file_red))) {
 				debug1(type == IFNDEF ?
 				    "line %d: %s !def'd in %s via %s%s\n" : "",
 				    filep->f_line, line,
@@ -85,9 +85,9 @@ find_includes(filep, file, file_red, recursion)
 			}
 		    {
 			struct symtab *val;
-			for(val = defined(line, file_red);
+			for(val = isdefined(line, file_red);
 			    (val && val->s_name);
-			    val = defined(line, file_red))
+			    val = isdefined(line, file_red))
 
 			    *(val->s_name) = '\0';
 		    }
@@ -261,7 +261,7 @@ deftype(line, filep, file_red, file, parse_it)
 
 		/* Support ANSI macro substitution */
 		{
-		    struct symtab *sym = defined(p, file_red);
+		    struct symtab *sym = isdefined(p, file_red);
 		    while (sym) {
 			p = sym->s_value;
 			debug3("%s : #includes SYMBOL %s = %s\n",
@@ -270,7 +270,7 @@ deftype(line, filep, file_red, file, parse_it)
 			       sym -> s_value);
 			/* mark file as having included a 'soft include' */
 			file->i_included_sym = TRUE; 
-			sym = defined(p, file_red);
+			sym = isdefined(p, file_red);
 		    }
 		}
 
@@ -314,7 +314,7 @@ deftype(line, filep, file_red, file, parse_it)
 	return(ret);
 }
 
-struct symtab *defined(symbol, file)
+struct symtab *isdefined(symbol, file)
 	register char	*symbol;
 	struct inclist	*file;
 {
