@@ -1,4 +1,4 @@
-/* $XConsortium: Xlibint.h,v 11.143 94/04/17 20:21:50 rws Exp kaleb $ */
+/* $XConsortium: Xlibint.h,v 11.144 95/04/05 19:57:54 kaleb Exp gildea $ */
 
 /*
 
@@ -311,9 +311,9 @@ extern LockInfoPtr _Xglobal_lock;
  */
 #ifdef MALLOC_0_RETURNS_NULL
 
-# define Xmalloc(size) malloc(((size) > 0 ? (size) : 1))
-# define Xrealloc(ptr, size) realloc((ptr), ((size) > 0 ? (size) : 1))
-# define Xcalloc(nelem, elsize) calloc(((nelem) > 0 ? (nelem) : 1), (elsize))
+# define Xmalloc(size) malloc(((size) == 0 ? 1 : (size)))
+# define Xrealloc(ptr, size) realloc((ptr), ((size) == 0 ? 1 : (size)))
+# define Xcalloc(nelem, elsize) calloc(((nelem) == 0 ? 1 : (nelem)), (elsize))
 
 #else
 
