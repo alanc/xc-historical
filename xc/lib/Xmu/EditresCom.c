@@ -1,5 +1,5 @@
 /*
- * $XConsortium: EditresCom.c,v 1.21 91/03/15 15:18:10 gildea Exp $
+ * $XConsortium: EditresCom.c,v 1.22 91/04/04 21:35:54 gildea Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -122,17 +122,6 @@ static Boolean IsChild();
 static void DumpChildren();
 static char *DumpWidgets(), *DoSetValues(), *DoFindChild();
 static char *DoGetGeometry(), *DoGetResources();
-
-#if defined(SUNSHLIB) && defined(SHAREDCODE)
-/*
- * hack to avoid undefined symbol errors at runtime
- */
-extern WidgetClass get_applicationShellWidgetClass();
-extern WidgetClass get_wmShellWidgetClass();
-#else
-#define get_applicationShellWidgetClass() applicationShellWidgetClass
-#define get_wmShellWidgetClass() wmShellWidgetClass
-#endif
 
 /************************************************************
  *
@@ -945,12 +934,27 @@ unsigned short *count;
 
     _XEditResPutString8(stream, XtName(w)); /* Insert name */
 
-    if (XtIsSubclass(w, get_applicationShellWidgetClass()))  { /* Class */
-	ApplicationShellWidget a = (ApplicationShellWidget) w;
-	class = a->application.class;
-    }
-    else
+    /* This is a trick/kludge.  To make shared libraries happier (linking
+     * against Xmu but not linking against Xt, and apparently even work
+     * as we desire on SVR4, we need to avoid an explicit data reference
+     * to applicationShellWidgetClass.  XtIsTopLevelShell is known
+     * (implementation dependent assumption!) to use a bit flag.  So we
+     * go that far.  Then, we guess at whether it is an
+     * applicationShellWidget class by testing whether it has an "argc"
+     * resource with a reasonable value.  Seems pretty safe.
+     */
+    if (XtIsTopLevelShell(w)) {
+	int argc = -1;
+	Arg arg;
+	XtSetArg(arg, XtNargc, &argc);
+	XtGetValues(w, &arg, 1);
+	if (argc >= 0)
+	    class = ((ApplicationShellWidget) w)->application.class;
+	else
+	    class = XtClass(w)->core_class.class_name;
+    } else {
 	class = XtClass(w)->core_class.class_name;
+    }
 
     _XEditResPutString8(stream, class); /* Insert class */
 

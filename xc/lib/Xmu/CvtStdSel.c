@@ -1,4 +1,4 @@
-/* $XConsortium: CvtStdSel.c,v 1.20 91/02/14 13:26:05 rws Exp $
+/* $XConsortium: CvtStdSel.c,v 1.21 91/03/20 17:05:42 gildea Exp $
  *
  * Copyright 1988 by the Massachusetts Institute of Technology
  *
@@ -36,7 +36,6 @@
 
 #include <X11/IntrinsicP.h>
 #include <X11/Xatom.h>
-#include <X11/Shell.h>
 #include <X11/ShellP.h>
 #include <stdio.h>
 
@@ -50,17 +49,6 @@
 #include "SysUtil.h"
 #include <X11/Xfuncs.h>
 #include <X11/Xos.h>
-
-#if defined(SUNSHLIB) && defined(SHAREDCODE)
-/*
- * hack to avoid undefined symbol errors at runtime
- */
-extern WidgetClass get_applicationShellWidgetClass();
-extern WidgetClass get_wmShellWidgetClass();
-#else
-#define get_applicationShellWidgetClass() applicationShellWidgetClass
-#define get_wmShellWidgetClass() wmShellWidgetClass
-#endif
 
 #ifndef OS_NAME
 #ifndef X_OS_FILE
@@ -212,15 +200,30 @@ Boolean XmuConvertStandardSelection(w, time, selection, target,
 	Widget parent = XtParent(w);
 	char *class;
 	int len;
-	while (parent != NULL &&
-	       !XtIsSubclass(w, get_applicationShellWidgetClass())) {
+	/* This is a trick/kludge.  To make shared libraries happier (linking
+	 * against Xmu but not linking against Xt, and apparently even work
+	 * as we desire on SVR4, we need to avoid an explicit data reference
+	 * to applicationShellWidgetClass.  XtIsTopLevelShell is known
+	 * (implementation dependent assumption!) to use a bit flag.  So we
+	 * go that far.  Then, we guess at whether it is an
+	 * applicationShellWidget class by testing whether it has an "argc"
+	 * resource with a reasonable value.  Seems pretty safe.
+	 */
+	while (parent != NULL && !XtIsTopLevelShell(w)) {
 	    w = parent;
 	    parent = XtParent(w);
 	}
-	if (XtIsSubclass(w, get_applicationShellWidgetClass()))
-	    class = ((ApplicationShellWidget) w)->application.class;
-	else {
-	    class = XrmQuarkToString( XtClass(w)->core_class.xrm_class );
+	if (XtIsTopLevelShell(w)) {
+	    int argc = -1;
+	    Arg arg;
+	    XtSetArg(arg, XtNargc, &argc);
+	    XtGetValues(w, &arg, 1);
+	    if (argc >= 0)
+		class = ((ApplicationShellWidget) w)->application.class;
+	    else
+		class = XtClass(w)->core_class.class_name;
+	} else {
+	    class = XtClass(w)->core_class.class_name;
 	}
 	*length = (len=strlen(w->core.name)) + strlen(class) + 2;
 	*value = XtMalloc(*length);
@@ -233,12 +236,11 @@ Boolean XmuConvertStandardSelection(w, time, selection, target,
     if (*target == XA_NAME(d)) {
 	Widget parent = XtParent(w);
 
-	while (parent != NULL &&
-	       !XtIsSubclass(w, get_wmShellWidgetClass())) {
+	while (parent != NULL && !XtIsWMShell(w)) {
 	    w = parent;
 	    parent = XtParent(w);
 	}
-	if (!XtIsSubclass(w, get_wmShellWidgetClass())) return False;
+	if (!XtIsWMShell(w)) return False;
 	*value = XtNewString( ((WMShellWidget) w)->wm.title );
 	*length = strlen(*value);
 	*type = XA_STRING;
