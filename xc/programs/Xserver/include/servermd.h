@@ -23,7 +23,7 @@ SOFTWARE.
 ******************************************************************/
 #ifndef SERVERMD_H
 #define SERVERMD_H 1
-/* $Header: servermd.h,v 1.25 87/09/12 23:48:09 toddb Locked $ */
+/* $Header: servermd.h,v 1.26 87/09/13 00:56:46 rws Locked $ */
 
 /*
  * The vendor string identifies the vendor responsible for the
@@ -104,6 +104,16 @@ SOFTWARE.
 #define	GLYPHPADBYTES		1
 #define GETLEFTBITS_ALIGNMENT	4
 /* ibm pcc doesn't understand pragmas. */
+
+#   else
+#    ifdef hpux
+
+#define IMAGE_BYTE_ORDER	MSBFirst        /* Values for the HP only */
+#define BITMAP_BIT_ORDER	MSBFirst
+#define	GLYPHPADBYTES		4
+#define	GETLEFTBITS_ALIGNMENT	4
+
+#    endif
 
 #   endif
 #  endif
