@@ -60,7 +60,11 @@ void proc1_$get_info(
 #endif /* macII */
 
 #ifdef sun
-#include <sys/param.h>
+#    include <sys/param.h>
+#    ifdef i386
+#        include <kvm.h>
+#        define	KVM_ROUTINES
+#    endif /* i386 */
 #endif
 
 #ifdef mips
@@ -135,6 +139,49 @@ void GetLoadPoint( w, closure, call_data )
      lastNullCpu = info.cpu_total.low32;
 }
 #else
+#ifdef KVM_ROUTINES
+/*
+ *	Sun 386i Code - abstracted to see the wood for the trees
+ */
+
+/* ARGSUSED */
+void 
+GetLoadPoint( w, closure, call_data )
+Widget	w;		/* unused */
+XtPointer closure;	/* unused */
+XtPointer call_data;	/* pointer to (double) return value */
+{
+    double *loadavg = (double *)call_data;
+    long	temp;
+    static int init = 0;
+    static struct nlist nl[2];
+    static kvm_t *kd;
+    
+    if (!init) {
+	kd = kvm_open("/vmunix", NULL, NULL, O_RDONLY, "Load Widget");
+	if (kd == (kvm_t *)0) {
+	    xload_error("cannot get access to kernel address space");
+	}
+	
+	nl[0].n_name = "avenrun";
+	nl[1].n_name = NULL;
+	
+	if (kvm_nlist(kd, nl) != 0) {
+	    xload_error("cannot get name list");
+	}
+	init = 1;
+    }
+    
+    if (nl[0].n_value == 0) {
+	xload_error("Cannot find address for avenrun in the kernel\n");
+    }
+    if (kvm_read(kd, nl[0].n_value, (char *)&temp, sizeof (temp)) != 
+	sizeof (temp)) {
+	xload_error("Kernel read error");
+    }
+    *loadavg = (double)temp/FSCALE;
+}
+#else /* KVM_ROUTINES */
 #ifdef LOADSTUB
 
 /* ARGSUSED */
@@ -312,7 +359,7 @@ void GetLoadPoint( w, closure, call_data )
 #if defined(mips) && defined(SYSTYPE_SYSV)
 	    loadavg_seek &= 0x7fffffff;
 #endif /* mips && SYSTYPE_SYSV */
-#if defined(CRAY && defined(SYSINFO)
+#if (defined(CRAY) && defined(SYSINFO))
  	    loadavg_seek += ((char *) (((struct sysinfo *)NULL)->avenrun)) -
 	                    ((char *) NULL);
 #endif /* SYSINFO */
@@ -353,6 +400,7 @@ void GetLoadPoint( w, closure, call_data )
 	return;
 }
 #endif /* LOADSTUB */
+#endif /* KVM_ROUTINES */
 #endif /* apollo */
 
 static xload_error(str1, str2)
