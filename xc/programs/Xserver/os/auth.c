@@ -1,7 +1,7 @@
 /*
  * authorization hooks for the server
  *
- * $XConsortium: auth.c,v 1.10 91/02/28 09:35:56 rws Exp $
+ * $XConsortium: auth.c,v 1.11 91/04/14 15:57:19 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -39,7 +39,7 @@ extern int  MitResetCookie ();
 extern XID  MitToID ();
 extern int  MitFromID (), MitRemoveCookie ();
 
-#ifdef HASDES
+#ifdef HASXDMAUTH
 extern int  XdmAddCookie ();
 extern XID  XdmCheckCookie ();
 extern int  XdmResetCookie ();
@@ -60,7 +60,7 @@ static struct protocol   protocols[] = {
 		MitAddCookie,	MitCheckCookie,	MitResetCookie,
 		MitToID,	MitFromID,	MitRemoveCookie,
 },
-#ifdef HASDES
+#ifdef HASXDMAUTH
 {   (unsigned short) 19,    "XDM-AUTHORIZATION-1",
 		XdmAddCookie,	XdmCheckCookie,	XdmResetCookie,
 		XdmToID,	XdmFromID,	XdmRemoveCookie,

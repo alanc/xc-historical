@@ -1,4 +1,4 @@
-XCOMM $XConsortium$
+XCOMM $XConsortium: Imakefile,v 1.47 91/07/16 23:02:24 gildea Exp $
 #include <Server.tmpl>
 
 #if (SystemV || SystemV4) && !HasSockets
@@ -33,14 +33,14 @@ FONT_DEFINES = FontDefines FontFilters
 #define OtherObjects
 #endif
 
-#if HasDESLibrary
-DESDEFS = -DHASDES
-DESOBJS = xdmauth.o
-DESSRCS = xdmauth.c
+#if HasXdmAuth
+XDMAUTHDEFS = -DHASXDMAUTH
+XDMAUTHOBJS = xdmauth.o
+XDMAUTHSRCS = xdmauth.c
 #else
-DESDEFS = 
-DESOBJS =
-DESSCRS =
+XDMAUTHDEFS = 
+XDMAUTHOBJS =
+XDMAUTHSCRS =
 #endif
 
 #if HasSecureRPC
@@ -55,10 +55,10 @@ RPCSRCS =
 
 BOOTSTRAPCFLAGS = 
            SRCS = WaitFor.c access.c connection.c io.c oscolor.c \
-                  osinit.c utils.c auth.c mitauth.c $(FONTSRCS) $(DESSRCS) \
+                  osinit.c utils.c auth.c mitauth.c $(FONTSRCS) $(XDMAUTHSRCS) \
  		  $(RPCSRCS) xdmcp.c decompress.c OtherSources
            OBJS = WaitFor.o access.o connection.o io.o oscolor.o \
-                  osinit.o utils.o auth.o mitauth.o $(FONTOBJS) $(DESOBJS) \
+                  osinit.o utils.o auth.o mitauth.o $(FONTOBJS) $(XDMAUTHOBJS) \
  		  $(RPCOBJS) xdmcp.o decompress.o OtherObjects
 #if SpecialMalloc
      OS_DEFINES = -DSPECIAL_MALLOC
@@ -67,7 +67,7 @@ BOOTSTRAPCFLAGS =
 #endif /* SpecialMalloc */
     DBM_DEFINES = NdbmDefines
     ADM_DEFINES = -DADMPATH=\"$(ADMDIR)/X\%smsgs\"
-        DEFINES = ConnectionFlags $(OS_DEFINES) $(DESDEFS) $(RPCDEFS) $(SIGNAL_DEFINES)
+        DEFINES = ConnectionFlags $(OS_DEFINES) $(XDMAUTHDEFS) $(RPCDEFS) $(SIGNAL_DEFINES)
        INCLUDES = -I.  -I../include -I$(INCLUDESRC) -I$(TOP)/lib/Xau
     EXT_DEFINES = ExtensionDefines
        LINTLIBS = ../dix/llib-ldix.ln
@@ -90,7 +90,7 @@ NormalLintTarget($(SRCS))
 access.o: $(ICONFIGFILES)
 connection.o: $(ICONFIGFILES)
 
-# these depend on HASDES
+# these depend on HASXDMAUTH
 auth.o xdmcp.o: $(ICONFIGFILES)
 
 #ifdef HPArchitecture

@@ -2,7 +2,7 @@
  * XDM-AUTHENTICATION-1 (XDMCP authentication) and
  * XDM-AUTHORIZATION-1 (client authorization) protocols
  *
- * $XConsortium: xdmauth.c,v 1.3 90/11/07 18:02:08 keith Exp $
+ * $XConsortium: xdmauth.c,v 1.4 91/04/03 10:19:34 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -22,7 +22,7 @@
 #include "X.h"
 #include "os.h"
 
-#ifdef HASDES
+#ifdef HASXDMAUTH
 
 #ifdef XDMCP
 #include "Xmd.h"
@@ -41,7 +41,7 @@ static Bool XdmAuthenticationValidator (privateData, incomingData, packet_type)
 {
     XdmAuthKeyPtr	incoming;
 
-    XdmcpDecrypt (incomingData->data, &privateKey,
+    XdmcpUnwrap (incomingData->data, &privateKey,
 			      incomingData->data,incomingData->length);
     switch (packet_type)
     {
@@ -66,7 +66,7 @@ XdmAuthenticationGenerator (privateData, outgoingData, packet_type)
     {
     case REQUEST:
 	if (XdmcpAllocARRAY8 (outgoingData, 8))
-	    XdmcpEncrypt (&rho, &privateKey, outgoingData->data, 8);
+	    XdmcpWrap (&rho, &privateKey, outgoingData->data, 8);
     }
     return TRUE;
 }
@@ -76,7 +76,7 @@ XdmAuthenticationAddAuth (name_len, name, data_len, data)
     int	    name_len, data_len;
     char    *name, *data;
 {
-    XdmcpDecrypt (data, &privateKey, data, data_len);
+    XdmcpUnwrap (data, &privateKey, data, data_len);
     AddAuthorization (name_len, name, data_len, data);
 }
 
@@ -303,23 +303,23 @@ XID	id;
 }
 
 XID
-XdmCheckCookie (crypto_length, crypto)
-unsigned short	crypto_length;
-char	*crypto;
+XdmCheckCookie (cookie_length, cookie)
+unsigned short	cookie_length;
+char	*cookie;
 {
     XdmAuthorizationPtr	auth;
     XdmClientAuthPtr	client;
     char		*plain;
 
-    /* Encrypted packets must be a multiple of 8 bytes long */
-    if (crypto_length & 7)
+    /* Auth packets must be a multiple of 8 bytes long */
+    if (cookie_length & 7)
 	return (XID) -1;
-    plain = (char *) xalloc (crypto_length);
+    plain = (char *) xalloc (cookie_length);
     if (!plain)
 	return (XID) -1;
     for (auth = xdmAuth; auth; auth=auth->next) {
-	XdmcpDecrypt (crypto, &auth->key, plain, crypto_length);
-	if (client = XdmAuthorizationValidate (plain, crypto_length, &auth->rho))
+	XdmcpUnwrap (cookie, &auth->key, plain, cookie_length);
+	if (client = XdmAuthorizationValidate (plain, cookie_length, &auth->rho))
 	{
 	    client->next = xdmClients;
 	    xdmClients = client;
@@ -352,27 +352,27 @@ XdmResetCookie ()
 }
 
 XID
-XdmToID (crypto_length, crypto)
-unsigned short	crypto_length;
-char	*crypto;
+XdmToID (cookie_length, cookie)
+unsigned short	cookie_length;
+char	*cookie;
 {
     XdmAuthorizationPtr	auth;
     XdmClientAuthPtr	client;
     char		*plain;
 
-    plain = (char *) xalloc (crypto_length);
+    plain = (char *) xalloc (cookie_length);
     if (!plain)
 	return (XID) -1;
     for (auth = xdmAuth; auth; auth=auth->next) {
-	XdmcpDecrypt (crypto, &auth->key, plain, crypto_length);
-	if (client = XdmAuthorizationValidate (plain, crypto_length, &auth->rho))
+	XdmcpUnwrap (cookie, &auth->key, plain, cookie_length);
+	if (client = XdmAuthorizationValidate (plain, cookie_length, &auth->rho))
 	{
 	    xfree (client);
-	    xfree (crypto);
+	    xfree (cookie);
 	    return auth->id;
 	}
     }
-    xfree (crypto);
+    xfree (cookie);
     return (XID) -1;
 }
 

@@ -47,7 +47,7 @@ static long		    defaultKeepaliveDormancy = XDM_DEF_DORMANCY;
 static long		    keepaliveDormancy = XDM_DEF_DORMANCY;
 static CARD16		    DisplayNumber;
 static xdmcp_states	    XDM_INIT_STATE = XDM_OFF;
-#ifdef HASDES
+#ifdef HASXDMAUTH
 static char		    *xdmAuthCookie;
 #endif
 
@@ -84,7 +84,7 @@ XdmcpUseMsg ()
     ErrorF("-port port-num         UDP port number to send messages to\n");
     ErrorF("-once                  Terminate server after one session\n");
     ErrorF("-class display-class   specify display class to send in manage\n");
-#ifdef HASDES
+#ifdef HASXDMAUTH
     ErrorF("-cookie xdm-auth-bits  specify the magic cookie for XDMCP\n");
 #endif
     ErrorF("-displayID display-id  manufacturer display ID for request\n");
@@ -126,7 +126,7 @@ XdmcpOptions(argc, argv, i)
 	defaultDisplayClass = argv[i];
 	return (i + 1);
     }
-#ifdef HASDES
+#ifdef HASXDMAUTH
     if (strcmp(argv[i], "-cookie") == 0) {
 	++i;
 	xdmAuthCookie = argv[i];
@@ -383,7 +383,7 @@ void
 XdmcpInit()
 {
     state = XDM_INIT_STATE;
-#ifdef HASDES
+#ifdef HASXDMAUTH
     if (xdmAuthCookie)
 	XdmAuthenticationInit (xdmAuthCookie, strlen (xdmAuthCookie));
 #endif
