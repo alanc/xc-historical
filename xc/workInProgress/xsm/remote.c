@@ -1,4 +1,4 @@
-/* $XConsortium: remote.c,v 1.7 94/07/27 15:54:42 mor Exp mor $ */
+/* $XConsortium: remote.c,v 1.8 94/08/08 16:12:55 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -31,7 +31,7 @@ in this Software without prior written authorization from the X Consortium.
 
 #include "xsm.h"
 
-static char 		*spaces_to_octal();
+static char 		*format_rstart_env();
 
 extern IceAuthDataEntry	*authDataEntries;
 extern int		numTransports;
@@ -115,16 +115,15 @@ char	*non_local_session_env;
 		for (i = 0; env[i]; i++)
 		{
 		    /*
-		     * There may be spaces inside some of the environment
-		     * values, and rstartd will barf on spaces.  Need
-		     * to replace space characters with their equivalent
-		     * octal escape sequences.
+		     * rstart requires that any spaces, backslashes, or
+		     * non-printable characters inside of a string be
+		     * represented by octal escape sequences.
 		     */
 
-		    char *temp = spaces_to_octal (env[i]);
+		    char *temp = format_rstart_env (env[i]);
 		    fprintf (fp, "MISC X %s\n", temp);
 		    if (temp != env[i])
-			free (temp);
+			XtFree (temp);
 		}
 
 	    fprintf (fp, "MISC X %s\n", non_local_display_env);
@@ -170,44 +169,50 @@ char	*non_local_session_env;
 
 
 /*
- * rstart requires that any spaces inside of a string be represented by
- * octal escape sequences.
+ * rstart requires that any spaces/backslashes/non-printable characters
+ * inside of a string be represented by octal escape sequences.
  */
 
 static char *
-spaces_to_octal (str)
+format_rstart_env (str)
 
 char *str;
 
 {
-    int space_count = 0;
+    int escape_count = 0, i;
     char *temp = str;
 
     while (*temp != '\0')
     {
-	if (*temp == ' ')
-	    space_count++;
+	if (!isgraph (*temp) || *temp == '\\')
+	    escape_count++;
 	temp++;
     }
 
-    if (space_count == 0)
+    if (escape_count == 0)
 	return (str);
     else
     {
-	int len = strlen (str) + 1 + (space_count * 4);
-	char *ret = (char *) malloc (len);
+	int len = strlen (str) + 1 + (escape_count * 3);
+	char *ret = (char *) XtMalloc (len);
 	char *ptr = ret;
 
 	temp = str;
 	while (*temp != '\0')
 	{
-	    if (*temp != ' ')
-		*(ptr++) = *temp;
-	    else
+	    if (!isgraph (*temp) || *temp == '\\')
 	    {
-		ptr[0] = '\\'; ptr[1] = '0'; ptr[2] = '4'; ptr[3] = '0';
-		ptr += 4;
+		char octal[3];
+		sprintf (octal, "%o", *temp);
+		*(ptr++) = '\\';
+		for (i = 0; i < (3 - strlen (octal)); i++)
+		    *(ptr++) = '0';
+		strcpy (ptr, octal);
+		ptr += strlen (octal);
 	    }
+	    else
+		*(ptr++) = *temp;
+
 	    temp++;
 	}
 
