@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: parse.c,v 1.14 89/11/13 18:23:00 jim Exp $
+ * $XConsortium: parse.c,v 1.15 89/11/13 18:32:27 jim Exp $
  *
  * parse the .twmrc file
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: parse.c,v 1.14 89/11/13 18:23:00 jim Exp $";
+"$XConsortium: parse.c,v 1.15 89/11/13 18:32:27 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -477,10 +477,6 @@ static TwmKeyword keytable[] = {
     { "squeezetitle",		KEYWORD, kw0_SqueezeTitle },
     { "starticonified",		START_ICONIFIED, 0 },
     { "t",			TITLE, 0 },
-    { "t.lower",		FKEYWORD, F_LOWER },
-    { "t.move",			FKEYWORD, F_MOVE },
-    { "t.nop",			FKEYWORD, F_NOP },
-    { "t.raise",		FKEYWORD, F_RAISE },
     { "title",			TITLE, 0 },
     { "titlebackground",	CLKEYWORD, kwcl_TitleBackground },
     { "titlebuttonborderwidth",	NKEYWORD, kwn_TitleButtonBorderWidth },
