@@ -28,6 +28,10 @@ maximum request size:  16384 longwords (65536 bytes)
 motion buffer size:  0
 bitmap unit, bit order, padding:    32, MSBFirst, 32
 image byte order:    MSBFirst
+number of supported pixmap formats:    2
+supported pixmap formats:
+    depth 1, bits_per_pixel 1, scanline_pad 32
+    depth 8, bits_per_pixel 8, scanline_pad 32
 keycode range:    minimum 8, maximum 129
 default screen number:    0
 number of screens:    2
