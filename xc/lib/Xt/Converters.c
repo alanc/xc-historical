@@ -1,4 +1,4 @@
-/* $XConsortium: Converters.c,v 1.70 91/04/19 11:35:42 converse Exp $ */
+/* $XConsortium: Converters.c,v 1.71 91/04/30 12:28:43 converse Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -61,13 +61,11 @@ static XrmQuark  XtQInitialState;
 static XrmQuark  XtQInt;
 static XrmQuark  XtQPixel;
 static XrmQuark  XtQPixmap;
-static XrmQuark  XtQPointer;	/* unused */
 static XrmQuark  XtQPosition;
 static XrmQuark  XtQShort;
 XrmQuark  XtQString;
 static XrmQuark  XtQUnsignedChar;
 static XrmQuark  XtQVisual;
-static XrmQuark  XtQWindow;	/* unused */
 
 void _XtConvertInitialize()
 {
@@ -90,13 +88,11 @@ void _XtConvertInitialize()
     XtQBool		= XrmPermStringToQuark(XtRBool);
     XtQPixel		= XrmPermStringToQuark(XtRPixel);
     XtQPixmap		= XrmPermStringToQuark(XtRPixmap);
-    XtQPointer		= XrmPermStringToQuark(XtRPointer);
     XtQPosition		= XrmPermStringToQuark(XtRPosition);
     XtQShort            = XrmPermStringToQuark(XtRShort);
     XtQString		= XrmPermStringToQuark(XtRString);
     XtQUnsignedChar     = XrmPermStringToQuark(XtRUnsignedChar);
     XtQVisual	        = XrmPermStringToQuark(XtRVisual);
-    XtQWindow		= XrmPermStringToQuark(XtRWindow);
 }
 
 #define	done(type, value) \
@@ -149,9 +145,9 @@ void XtDisplayStringConversionWarning(dpy, from, toType)
 	if (XrmQGetResource( rdb, xrm_name, xrm_class,
 			     &rep_type, &value ))
 	{
-	    if (rep_type == XrmPermStringToQuark(XtRBoolean))
+	    if (rep_type == XtQBoolean)
 		report_it = *(Boolean*)value.addr ? Report : Ignore;
-	    else if (rep_type == XrmPermStringToQuark(XtRString)) {
+	    else if (rep_type == XtQString) {
 		XrmValue toVal;
 		Boolean report;
 		toVal.addr = (caddr_t)&report; /* Xresource.h says caddr_t */
@@ -677,7 +673,7 @@ static void FreeCursor(app, toVal, closure, args, num_args)
     XtAppContext app;
     XrmValuePtr	toVal;
     XtPointer	closure;	/* unused */
-    XrmValuePtr	args;		/* unused */
+    XrmValuePtr	args;
     Cardinal	*num_args;
 {
     Display*	display;
