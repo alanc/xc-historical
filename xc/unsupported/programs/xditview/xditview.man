@@ -1,7 +1,7 @@
-.\" $XConsortium$
+.\" $XConsortium: xditview.man,v 1.7 91/07/30 18:14:36 gildea Exp $
 .TH XDITVIEW 1 "Release 5" "X Version 11"
 .SH NAME
-xditview \- display ditroff DVI files
+xditview \- display ditroff output
 .SH SYNOPSIS
 .B xditview
 [ \-\fItoolkitoption\fP .\|.\|. ] [ \-\fIoption\fP .\|.\|. ] [ \fIfilename\fP ]
@@ -44,7 +44,7 @@ per request.  This option suppesses the use of this feature in
 .I xditview.
 .TP 8
 .B \-backingStore \fIbacking-store-type\fP
-Redisplay of the DVI window can take up to a second or so, this option causes
+Redisplay can take up to a second or so; this option causes
 the server to save the window contents so that when it is scrolled around the
 viewport, the window is painted from contents saved in backing store. 
 \fIbacking-store-type\fP can be one of \fBAlways\fP, \fPWhenMapped\fP or
@@ -140,9 +140,9 @@ S2	\-*\-symbol\-medium\-r\-normal\-\^\-*\-*\-*\-*\-*\-*\-adobe\-fontspecific\en
 .fi
 .SH "USING XDITVIEW WITH DITROFF"
 .PP
-You can use any DVI file with
+You can use any ditroff output file with
 .I xditview,
-although DVI files which use
+although files which use
 the fonts appropriate to the fontMap will look more accurate on the screen.
 On servers which support scaled fonts, all requested font sizes will be
 accurately reflected on the screen; for servers which do not support scaled
