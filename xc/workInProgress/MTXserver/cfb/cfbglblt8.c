@@ -1,4 +1,4 @@
-/* $XConsortium: cfbglblt8.c,v 1.3 94/01/06 23:03:29 rob Exp $ */
+/* $XConsortium: cfbglblt8.c,v 1.4 94/01/11 20:43:01 rob Exp $ */
 /*
 Copyright 1989 by the Massachusetts Institute of Technology
 
@@ -227,7 +227,11 @@ cfbPolyGlyphBlt8 (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     }
     else
 #endif /* XTHREADS */
+#ifdef XTHREADS
+	cfb8SetStipple (pGC->alu, pGC->fgPixel, pGC->planemask, pstipple);
+#else
 	cfb8CheckStipple (pGC->alu, pGC->fgPixel, pGC->planemask);
+#endif /* !XTHREADS */
 #ifdef XTHREADS
     pstipple->change = FALSE; /* XXX */
 #endif /* XTHREADS */
@@ -337,7 +341,11 @@ cfbPolyGlyphBlt8Clipped (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     }
     else
 #endif /* XTHREADS */
+#ifdef XTHREADS
+	cfb8SetStipple (pGC->alu, pGC->fgPixel, pGC->planemask, pstipple);
+#else
 	cfb8CheckStipple (pGC->alu, pGC->fgPixel, pGC->planemask);
+#endif /* !XTHREADS */
 #ifdef XTHREADS
     pstipple->change = FALSE; /* XXX */
 #endif /* XTHREADS */

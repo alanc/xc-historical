@@ -285,8 +285,12 @@ cfbBitBlt (pSrcDrawable, pDstDrawable,
     numRects = REGION_NUM_RECTS(&rgnDst);
     if (numRects && width && height)
     {
+#ifndef XTHREADS
 	if(!(pptSrc = (DDXPointPtr)ALLOCATE_LOCAL(numRects *
 						  sizeof(DDXPointRec))))
+#else
+	if(!(pptSrc = (DDXPointPtr)xalloc(numRects * sizeof(DDXPointRec))))
+#endif /* XTHREADS */
 	{
 	    REGION_UNINIT(pGC->pScreen, &rgnDst);
 	    if (freeSrcClip)
@@ -391,7 +395,7 @@ cfbCopyArea(pSrcDrawable, pDstDrawable,
 
 #if PSZ == 8
 void
-cfbCopyPlane1to8 (pSrcDrawable, pDstDrawable, rop, prgnDst, planemask, pptSrc, bitPlane
+cfbCopyPlane1to8 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, planemask, bitPlane
 #ifdef XTHREADS
     ,pstipple
 #endif /* XTHREADS */
@@ -403,9 +407,9 @@ cfbCopyPlane1to8 (pSrcDrawable, pDstDrawable, rop, prgnDst, planemask, pptSrc, b
     RegionPtr prgnDst;		/* region in destination to draw to;
 				 * screen relative coords. if dest is a window;
 				 * drawable relative if dest is a pixmap */
-    unsigned long planemask;	/* to apply to destination writes */
     DDXPointPtr pptSrc;		/* drawable relative src coords to copy from;
 				 * must be one point for each box in prgnDst */
+    unsigned long planemask;	/* to apply to destination writes */
     unsigned long   bitPlane;	/* not used; assumed always to be 1 */
 #ifdef XTHREADS
     StippleRec *pstipple;

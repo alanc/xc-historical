@@ -39,7 +39,7 @@ OF THIS SOFTWARE.
 
 */
 
-/* $XConsortium: cfbrctstp8.c,v 1.4 94/01/23 02:03:36 rob Exp $ */
+/* $XConsortium: cfbrctstp8.c,v 1.3 94/01/11 20:43:08 rob Exp $ */
 
 #if PSZ == 8
 
@@ -59,17 +59,6 @@ OF THIS SOFTWARE.
 #define MFB_CONSTS_ONLY
 #include "maskbits.h"
 
-#ifndef XTHREADS
-
-#define MTX_STIPPLE(_a) _a
-#define MTX_STIPPLE_CHANGE(_a) /* nothing */
-
-#else /* XTHREADS */
-
-#define MTX_STIPPLE(_a) pstipple->_a
-#define MTX_STIPPLE_CHANGE(_a) pstipple->change = (_a)
-
-#endif /* XTHREADS */
 void
 cfb8FillRectOpaqueStippled32 (pDrawable, pGC, nBox, pBox)
     DrawablePtr	    pDrawable;

@@ -71,7 +71,7 @@ OF THIS SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: cfbfillsp.c,v 1.7 94/01/23 02:01:59 rob Exp $ */
+/* $XConsortium: cfbfillsp.c,v 1.6 94/01/11 20:42:54 rob Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -93,18 +93,6 @@ OF THIS SOFTWARE.
 
 #define MFB_CONSTS_ONLY
 #include "maskbits.h"
-
-#ifndef XTHREADS
-
-#define MTX_STIPPLE(_a) _a
-#define MTX_STIPPLE_CHANGE(_a) /* nothing */
-
-#else /* XTHREADS */
-
-#define MTX_STIPPLE(_a) pstipple->_a
-#define MTX_STIPPLE_CHANGE(_a) pstipple->change = (_a)
-
-#endif /* XTHREADS */
 
 /* scanline filling for color frame buffer
    written by drewry, oct 1986 modified by smarks
