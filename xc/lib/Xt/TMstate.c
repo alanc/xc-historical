@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: TMstate.c,v 1.35 87/10/29 16:54:12 swick Locked $";
+static char rcsid[] = "$Header: TMstate.c,v 1.36 87/12/08 11:02:44 rws Locked $";
 #endif lint
 
 /*
@@ -29,8 +29,8 @@ static char rcsid[] = "$Header: TMstate.c,v 1.35 87/10/29 16:54:12 swick Locked 
  */
 
 #ifndef VMS
+#include <X11/Xos.h>
 #include "Xlib.h"
-#include <strings.h>
 #else
 #include Xlib
 #include string

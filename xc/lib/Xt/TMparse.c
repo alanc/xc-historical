@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: TMparse.c,v 1.49 87/11/01 16:43:04 swick Locked $";
+static char rcsid[] = "$Header: TMparse.c,v 1.50 87/12/08 10:59:30 rws Locked $";
 #endif lint
 
 /*
@@ -27,7 +27,7 @@ static char rcsid[] = "$Header: TMparse.c,v 1.49 87/11/01 16:43:04 swick Locked 
 /* TMparse.c -- parse all X events into widget specific actions. */
 
 #ifndef VMS
-#include <strings.h>
+#include <X11/Xos.h>
 #include "Xlib.h"
 #include "Xutil.h"
 #else
