@@ -1,4 +1,4 @@
-/* $XConsortium: TMaction.c,v 1.16 91/07/31 13:12:13 swick Exp $ */
+/* $XConsortium: TMaction.c,v 1.17 92/06/27 21:55:11 rws Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -211,7 +211,7 @@ typedef struct _TMBindCacheStatusRec{
     unsigned int	boundInHierarchy:1;
     unsigned int	boundInContext:1;
     unsigned int	notFullyBound:1;
-    unsigned int	refCount:12;
+    unsigned int	refCount:28;
 }TMBindCacheStatusRec, *TMBindCacheStatus;
 
 typedef struct _TMBindCacheRec{
