@@ -1,4 +1,4 @@
-/* $XConsortium: process.c,v 1.16 93/11/02 11:02:33 mor Exp $ */
+/* $XConsortium: process.c,v 1.17 93/11/08 16:34:14 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -239,7 +239,9 @@ IcePointer	authData;
 
     IceGetHeader (iceConn, 0, ICE_AuthRequired,
 	SIZEOF (iceAuthRequiredMsg), iceAuthRequiredMsg, pMsg);
+
     pMsg->authIndex = authIndex;
+    pMsg->authDataLength = authDataLen;
     pMsg->length += WORD64COUNT (authDataLen);
 
     IceWriteData (iceConn, authDataLen, (char *) authData);
@@ -264,6 +266,8 @@ IcePointer	authData;
 
     IceGetHeader (iceConn, 0, ICE_AuthReply,
 	SIZEOF (iceAuthReplyMsg), iceAuthReplyMsg, pMsg);
+
+    pMsg->authDataLength = authDataLen;
     pMsg->length +=  WORD64COUNT (authDataLen);
 
     IceWriteData (iceConn, authDataLen, (char *) authData);
@@ -288,6 +292,8 @@ IcePointer	authData;
 
     IceGetHeader (iceConn, 0, ICE_AuthNextPhase,
 	SIZEOF (iceAuthNextPhaseMsg), iceAuthNextPhaseMsg, pMsg);
+
+    pMsg->authDataLength = authDataLen;
     pMsg->length += WORD64COUNT (authDataLen);
 
     IceWriteData (iceConn, authDataLen, (char *) authData);
@@ -567,6 +573,7 @@ IceReplyWaitInfo *replyWait;
 		    iceConn->connect_to_you->my_auth_index].auth_proc;
 
 		(*authProc) (&iceConn->connect_to_you->my_auth_state,
+		    iceConn->connection_string,
 		    True /* clean up */, False /* swap */,
 		    0, NULL, NULL, NULL, NULL);
 	    }
@@ -580,6 +587,7 @@ IceReplyWaitInfo *replyWait;
 		    protosetup_to_you->my_auth_index].auth_proc;
 
 		(*authProc) (&iceConn->protosetup_to_you->my_auth_state,
+		    iceConn->connection_string,
 		    True /* clean up */, False /* swap */,
 		    0, NULL, NULL, NULL, NULL);
 	    }
@@ -678,27 +686,50 @@ Bool			swap;
     if ((myAuthCount = _IceAuthCount) < 1)
     {
 	/*
-	 * No Authentication for this Connection Setup.  Simple accept.
+	 * The ICE library does not support any authentication for the
+	 * Connection Setup.  Simple accept.
 	 */
 
 	accept_setup_now = 1;
     }
     else
     {
-	int myAuthIndex = 0;
-	int hisAuthIndex = 0;
+	unsigned	nameCount;
+	unsigned	*namesLengths;
+	char		**usableNames;
+	char		authUsableFlags[MAX_ICE_AUTH_NAMES];
+	int 		myAuthIndex = 0;
+	int 		hisAuthIndex = 0;
+
+	_IceGetAuthNames (
+	    strlen (iceConn->connection_string), iceConn->connection_string,
+	    &nameCount, &namesLengths, &usableNames);
+
+	for (i = 0; i < _IceAuthCount; i++)
+	    for (j = 0; j < nameCount; j++)
+		authUsableFlags[i] = (strncmp (_IcePaAuthRecs[i].auth_name,
+		    usableNames[j], namesLengths[j]) == 0);
+
+	if (usableNames)
+	    IceFreeAuthNames (nameCount, usableNames);
+
+	if (namesLengths)
+	    free ((char *) namesLengths);
 
 	for (i = found = 0; i < myAuthCount && !found; i++)
 	{
-	    myAuthName = _IcePaAuthRecs[i].auth_name;
+	    if (authUsableFlags[i])
+	    {
+		myAuthName = _IcePaAuthRecs[i].auth_name;
 
-	    for (j = 0; j < hisAuthCount && !found; j++)
-		if (strcmp (myAuthName, hisAuthNames[j]) == 0)
-		{
-		    myAuthIndex = i;
-		    hisAuthIndex = j;
-		    found = 1;
-		}
+		for (j = 0; j < hisAuthCount && !found; j++)
+		    if (strcmp (myAuthName, hisAuthNames[j]) == 0)
+		    {
+			myAuthIndex = i;
+			hisAuthIndex = j;
+			found = 1;
+		    }
+	    }
 	}
 
 	if (!found)
@@ -721,8 +752,8 @@ Bool			swap;
 
 	    authState = NULL;
 
-	    status = (*authProc) (&authState, swap, 0, NULL,
-		&authDataLen, &authData, &errorString);
+	    status = (*authProc) (&authState, iceConn->connection_string,
+	        swap, 0, NULL, &authDataLen, &authData, &errorString);
 
 	    if (status == IcePaAuthContinue)
 	    {
@@ -867,9 +898,10 @@ IceReplyWaitInfo	*replyWait;
     }
 
     authState = NULL;
-    authDataLen = message->length << 3;
+    authDataLen = message->authDataLength;
 
-    status = (*authProc) (&authState, False /* don't clean up */,
+    status = (*authProc) (&authState,
+	iceConn->connection_string, False /* don't clean up */,
 	swap, authDataLen, authData, &replyDataLen, &replyData, &errorString);
 
     if (status == IcePoAuthHaveReply)
@@ -959,14 +991,15 @@ Bool		swap;
     IceReadCompleteMessage (iceConn, SIZEOF (iceAuthReplyMsg),
 	iceAuthReplyMsg, message, replyData);
 
-    replyDataLen = message->length << 3;
+    replyDataLen = message->authDataLength;
 
     if (iceConn->connect_to_me)
     {
 	IcePaAuthProc authProc = _IcePaAuthRecs[
 	    iceConn->connect_to_me->my_auth_index].auth_proc;
 	IcePaAuthStatus status =
-	    (*authProc) (&iceConn->connect_to_me->my_auth_state, swap,
+	    (*authProc) (&iceConn->connect_to_me->my_auth_state,
+	    iceConn->connection_string, swap,
 	    replyDataLen, replyData, &authDataLen, &authData, &errorString);
 
 	if (status == IcePaAuthContinue)
@@ -993,6 +1026,8 @@ Bool		swap;
 	    free ((char *) iceConn->connect_to_me);
 	    iceConn->connect_to_me = NULL;
 
+	    iceConn->connection_status = IceConnectRejected;
+
 	    if (status == IcePaAuthRejected)
 	    {
 		_IceErrorAuthenticationRejected (iceConn,
@@ -1012,7 +1047,8 @@ Bool		swap;
 	IcePaAuthProc authProc = myProtocol->auth_recs[
 	    iceConn->protosetup_to_me->my_auth_index].auth_proc;
 	IcePaAuthStatus status =
-	    (*authProc) (&iceConn->protosetup_to_me->my_auth_state, swap,
+	    (*authProc) (&iceConn->protosetup_to_me->my_auth_state,
+	    iceConn->connection_string, swap,
 	    replyDataLen, replyData, &authDataLen, &authData, &errorString);
 	int free_setup_info = 1;
 
@@ -1167,9 +1203,10 @@ IceReplyWaitInfo	*replyWait;
 	return (0);
     }
 
-    authDataLen = message->length << 3;
+    authDataLen = message->authDataLength;
 
-    status = (*authProc) (authState, False /* don't clean up */,
+    status = (*authProc) (authState,
+        iceConn->connection_string, False /* don't clean up */,
 	swap, authDataLen, authData, &replyDataLen, &replyData, &errorString);
 
     if (status == IcePoAuthHaveReply)
@@ -1262,6 +1299,7 @@ IceReplyWaitInfo 	*replyWait;
 		iceConn->connect_to_you->my_auth_index].auth_proc;
 
 	    (*authProc) (&iceConn->connect_to_you->my_auth_state,
+		iceConn->connection_string,
 		True /* clean up */, False /* swap */,
 	        0, NULL, NULL, NULL, NULL);
 	}
@@ -1472,7 +1510,8 @@ Bool			swap;
 
 	    authState = NULL;
 
-	    status = (*authProc) (&authState, swap, 0, NULL,
+	    status = (*authProc) (&authState,
+		iceConn->connection_string, swap, 0, NULL,
 	        &authDataLen, &authData, &errorString);
 
 	    if (status == IcePaAuthContinue)
@@ -1606,6 +1645,7 @@ IceReplyWaitInfo 	*replyWait;
 		iceConn->protosetup_to_you->my_auth_index].auth_proc;
 
 	    (*authProc) (&iceConn->protosetup_to_you->my_auth_state,
+		iceConn->connection_string,
 		True /* clean up */, False /* swap */,
 	        0, NULL, NULL, NULL, NULL);
 	}
