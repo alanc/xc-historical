@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Scale.c,v 1.5 91/01/23 09:47:57 dave Exp $
+ * $XConsortium: Scale.c,v 1.6 91/02/17 16:14:56 dave Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -80,13 +80,16 @@ static XtResource resources[] = {
 {XtNbufferSize, XtCBufferSize, XtRCardinal, sizeof(Cardinal),
      Offset(buffer_size), XtRImmediate, (XtPointer) DefaultBufferSize},
 {XtNuserData, XtCuserData, XtRuserData, sizeof(XtPointer),
-     Offset(userData), XtRImmediate, (XtPointer) NULL}
+     Offset(userData), XtRImmediate, (XtPointer) NULL},
+{ XtNvisual, XtCvisual, XtRVisual, sizeof(Visual*),
+     Offset(visual), XtRImmediate, CopyFromParent}
 };
 
 #undef Offset
 
 static void ClassInitialize();
 static void Initialize();
+static void Realize();
 static void Redisplay();
 static void Resize();
 static void Destroy();
@@ -124,7 +127,7 @@ ScaleClassRec scaleClassRec = {
     /* class_inited		*/	FALSE,
     /* initialize		*/	Initialize,
     /* initialize_hook		*/	NULL,
-    /* realize			*/	XtInheritRealize,
+    /* realize			*/	Realize,
     /* actions			*/	actions,
     /* num_actions		*/	XtNumber(actions),
     /* resources		*/	resources,
@@ -732,6 +735,18 @@ static void Resize(w)
     PositionImage(sw);
 }
 
+
+
+static void Realize(wid, vmask, attr)
+        Widget wid;
+        Mask *vmask;
+        XSetWindowAttributes *attr;
+{
+  ScaleWidget sw = (ScaleWidget) wid;
+  XtCreateWindow(wid, (unsigned int) InputOutput,
+		 (Visual *) sw->scale.visual, *vmask, attr);
+}
+ 
 
 
 static void Destroy(w)

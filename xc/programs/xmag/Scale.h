@@ -30,6 +30,7 @@
  scaleX              ScaleValue         Float           1.0
  scaleY              ScaleValue         Float           1.0
  userData            UserData           XtPointer       NULL
+ visual              Visual             Visual*         CopyFromParent
 */
 
 #define XtNaspectRatio "aspectRatio"
@@ -62,6 +63,9 @@
 #define XtCuserData "UserData"
 #define XtRuserData "UserData"
 #define XtRImage "Image"
+#define XtNvisual "visual"
+#define XtCvisual "Visual"
+#define XtRvisual "Visual"
 
 extern void AWSetImage();
 extern void SWSetImage();

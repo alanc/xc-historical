@@ -1,5 +1,5 @@
 /*
- * $XConsortium: ScaleP.h,v 1.1 90/06/12 11:43:49 dmatic Exp $
+ * $XConsortium: ScaleP.h,v 1.1 90/12/06 20:40:57 dave Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -71,6 +71,7 @@ typedef struct {
     Boolean     paste_buffer;
     Cardinal    buffer_size;
     XtPointer   userData;
+    Visual      *visual;
   /* private */
     float       scale_x, scale_y;
     float       aspect_ratio;
