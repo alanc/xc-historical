@@ -1,4 +1,4 @@
-.\" $XConsortium: CH03,v 1.12 94/04/18 18:48:06 rws Exp $
+.\" $XConsortium: CH03,v 1.13 94/04/18 20:20:33 rws Exp $
 .\" Copyright \(co 1985, 1986, 1987, 1988, 1991, 1994
 .\" X Consortium
 .\" 
@@ -604,18 +604,18 @@ void XtChangeManagedSet(\fIunmanage_children\fP, \fInum_unmanage_children\fP,
 .br
       Cardinal \fInum_manage_children\fP;
 .FN
-.IP \fIunmanage_children\fP 1.5i
+.IP \fIunmanage_children\fP 1.8i
 Specifies the list of widget children to initially remove from the managed set.
-.IP \fInum_unmanage_children\fP 1.5i
+.IP \fInum_unmanage_children\fP 1.8i
 Specifies the number of entries in the \fIunmanage_children\fP list.
-.IP \fIdo_change_proc\fP 1.5i
+.IP \fIdo_change_proc\fP 1.8i
 Specifies a procedure to invoke between unmanaging
 and managing the children, or NULL.
-.IP \fIclient_data\fP 1.5i
+.IP \fIclient_data\fP 1.8i
 Specifies client data to be passed to the do_change_proc.
-.IP \fImanage_children\fP 1.5i
+.IP \fImanage_children\fP 1.8i
 Specifies the list of widget children to finally add to the managed set.
-.IP \fInum_manage_children\fP 1.5i
+.IP \fInum_manage_children\fP 1.8i
 Specifies the number of entries in the \fImanage_children\fP list.
 .LP
 The 
@@ -629,7 +629,6 @@ Issues a warning and returns if the widgets specified in the
 \fImanage_children\fP and
 the \fIunmanage_children\fP lists do not all have the same parent, or if
 that parent is not a subclass of
-.br
 .PN compositeWidgetClass .
 .IP \(bu 5
 Returns immediately if the common parent is being destroyed.
@@ -694,7 +693,7 @@ for the \fIallows_change_managed_set\fP field is
 .LP
 It is not an error to include a child in both the \fIunmanage_children\fP
 and the \fImanage_children\fP lists.  The effect of such a call is that
-the child remains managed following the call but the do_change_proc is
+the child remains managed following the call but the \fIdo_change_proc\fP is
 able to affect the child while it is in an unmanaged state.
 .sp
 .LP
@@ -716,21 +715,21 @@ typedef void (XtDoChangeProc*)(Widget, WidgetList, Cardinal*, WidgetList, Cardin
 .br
       XtPointer \fIclient_data\fP;
 .FN
-.IP \fIcomposite_parent\fP 1.5i
+.IP \fIcomposite_parent\fP 1.8i
 Passes the composite parent whose managed set is being altered.
-.IP \fIunmanage_children\fP 1.5i
+.IP \fIunmanage_children\fP 1.8i
 Passes the list of children just removed from the managed set.
-.IP \fInum_unmanage_children\fP 1.5i
+.IP \fInum_unmanage_children\fP 1.8i
 Passes the number of entries in the \fIunmanage_children\fP list.
-.IP \fImanage_children\fP 1.5i
+.IP \fImanage_children\fP 1.8i
 Passes the list of children about to be added to the managed set.
-.IP \fInum_manage_children\fP 1.5i
+.IP \fInum_manage_children\fP 1.8i
 Passes the number of entries in the \fImanage_children\fP list.
-.IP \fIclient_data\fP 1.5i
+.IP \fIclient_data\fP 1.8i
 Passes the client data passed to
 .PN XtChangeManagedSet .
 .LP
-The do_change_proc procedure is used by the caller of
+The \fIdo_change_proc\fP procedure is used by the caller of
 .PN XtChangeManagedSet
 to make changes to one or more children at the point when the
 managed set contains the fewest entries.  These changes may
@@ -739,7 +738,7 @@ involve geometry requests and in this case the caller of
 may take advantage of the fact that the \*(xI internally grant
 geometry requests made by unmanaged children without invoking
 the parent's geometry manager.  To achieve this advantage, if
-the do_change_proc procedure
+the \fIdo_change_proc\fP procedure
 changes the geometry of a child or of a descendant of a child then
 that child should be included in the \fIunmanage_children\fP and
 \fImanage_children\fP lists.
