@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfb.h,v 5.16 92/02/24 19:05:55 keith Exp $ */
+/* $XConsortium: mfb.h,v 5.17 92/03/13 16:05:20 eswu Exp $ */
 /* Monochrome Frame Buffer definitions 
    written by drewry, september 1986
 */
@@ -194,9 +194,9 @@ typedef struct {
      (int) (((PixmapPtr)((pDrawable)->pScreen->devPrivate))->devKind) : \
      (int)(((PixmapPtr)pDrawable)->devKind)) / sizeof (type))
 
-#define mfbGetByteWidth(pDrawable) cbGetTypedWidth(pDrawable, char)
+#define mfbGetByteWidth(pDrawable) mfbGetTypedWidth(pDrawable, unsigned char)
 
-#define mfbGetLongWidth(pDrawable) cbGetTypedWidth(pDrawable, long)
+#define mfbGetPixelWidth(pDrawable) mfbGetTypedWidth(pDrawable, PixelType)
     
 #define mfbGetTypedWidthAndPointer(pDrawable, width, pointer, wtype, ptype) {\
     PixmapPtr   _pPix; \
@@ -209,10 +209,10 @@ typedef struct {
 }
 
 #define mfbGetByteWidthAndPointer(pDrawable, width, pointer) \
-    mfbGetTypedWidthAndPointer(pDrawable, width, pointer, char, char)
+    mfbGetTypedWidthAndPointer(pDrawable, width, pointer, unsigned char, unsigned char)
 
-#define mfbGetLongWidthAndPointer(pDrawable, width, pointer) \
-    mfbGetTypedWidthAndPointer(pDrawable, width, pointer, unsigned long, unsigned long)
+#define mfbGetPixelWidthAndPointer(pDrawable, width, pointer) \
+    mfbGetTypedWidthAndPointer(pDrawable, width, pointer, PixelType, PixelType)
 
 #define mfbGetWindowTypedWidthAndPointer(pWin, width, pointer, wtype, ptype) {\
     PixmapPtr	_pPix = (PixmapPtr) (pWin)->drawable.pScreen->devPrivate; \
@@ -220,11 +220,22 @@ typedef struct {
     (width) = ((int) _pPix->devKind) / sizeof (wtype); \
 }
 
-#define mfbGetWindowLongWidthAndPointer(pWin, width, pointer) \
-    mfbGetWindowTypedWidthAndPointer(pWin, width, pointer, unsigned long, unsigned long)
+#define mfbGetWindowPixelWidthAndPointer(pWin, width, pointer) \
+    mfbGetWindowTypedWidthAndPointer(pWin, width, pointer, PixelType, PixelType)
 
 #define mfbGetWindowByteWidthAndPointer(pWin, width, pointer) \
     mfbGetWindowTypedWidthAndPointer(pWin, width, pointer, char, char)
+
+#define mfbScanXYOffset(x, y, width) (((y) * (width)) + ((x) >> 5))
+#define mfbScanYOffset(y, width) ((y) * (width))
+
+#define mfbScanlineInc(pointer, offset, width) pointer += offset
+
+#define mfbScanlineDelta(pointer, y, width) \
+    ((pointer) + mfbScanYOffset(y, width))
+
+#define mfbScanline(pointer, x, y, width) \
+    ((pointer) + mfbScanXYOffset(x, y, width))
 
 /* precomputed information about each glyph for GlyphBlt code.
    this saves recalculating the per glyph information for each
