@@ -577,10 +577,14 @@ if (is_numeric (port))
 {
     short tmpport = (short) atoi (port);
 
+#if 0
     if( tmpport < 1024 ) /* IP_RESERVED */
+#endif
 	sprintf(portbuf,"%d", X_TCP_PORT+tmpport );
+#if 0
     else
 	strncpy(portbuf,port,PORTBUFSIZE);
+#endif
 }
 else
     strncpy(portbuf,port,PORTBUFSIZE);
@@ -859,10 +863,14 @@ if (is_numeric (port))
 {
     short tmpport = (short) atoi (port);
 
+#if 0
     if( tmpport < 1024 ) /* IP_RESERVED */
+#endif
 	sprintf(portbuf,"%d", X_TCP_PORT+tmpport );
+#if 0
     else
 	strncpy(portbuf,port,PORTBUFSIZE);
+#endif
 }
 else
 #endif
