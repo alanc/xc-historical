@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: verify.c,v 1.20 91/05/05 15:53:24 rws Exp $
+ * $XConsortium: verify.c,v 1.21 91/05/05 19:28:33 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -131,15 +131,15 @@ userEnv (d, user, home, shell)
 struct display	*d;
 char	*user, *home, *shell;
 {
-	char	**env;
-	
-	env = defaultEnv ();
-	env = setEnv (env, "DISPLAY", d->name);
-	env = setEnv (env, "HOME", home);
-	env = setEnv (env, "USER", user);
-	env = setEnv (env, "PATH", d->userPath);
-	env = setEnv (env, "SHELL", shell);
-	return env;
+    char	**env;
+    
+    env = defaultEnv ();
+    env = setEnv (env, "DISPLAY", d->name);
+    env = setEnv (env, "HOME", home);
+    env = setEnv (env, "USER", user);
+    env = setEnv (env, "PATH", d->userPath);
+    env = setEnv (env, "SHELL", shell);
+    return env;
 }
 
 char **
@@ -147,17 +147,19 @@ systemEnv (d, user, home)
 struct display	*d;
 char	*user, *home;
 {
-	char	**env;
-	
-	env = defaultEnv ();
-	env = setEnv (env, "DISPLAY", d->name);
+    char	**env;
+    
+    env = defaultEnv ();
+    env = setEnv (env, "DISPLAY", d->name);
+    if (home)
 	env = setEnv (env, "HOME", home);
+    if (user)
 	env = setEnv (env, "USER", user);
-	env = setEnv (env, "PATH", d->systemPath);
-	env = setEnv (env, "SHELL", d->systemShell);
-	if (d->authFile)
-		env = setEnv (env, "XAUTHORITY", d->authFile);
-	return env;
+    env = setEnv (env, "PATH", d->systemPath);
+    env = setEnv (env, "SHELL", d->systemShell);
+    if (d->authFile)
+	    env = setEnv (env, "XAUTHORITY", d->authFile);
+    return env;
 }
 
 #ifdef NGROUPS_MAX

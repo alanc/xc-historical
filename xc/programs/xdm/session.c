@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: session.c,v 1.49 91/03/08 10:24:04 rws Exp $
+ * $XConsortium: session.c,v 1.51 91/04/02 12:02:57 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -240,13 +240,10 @@ LoadXloginResources (d)
 struct display	*d;
 {
     char	**args, **parseArgs();
-    char	**env = 0, **setEnv(), **defaultEnv();
+    char	**env = 0, **setEnv(), **systemEnv();
 
     if (d->resources[0] && access (d->resources, 4) == 0) {
-	env = defaultEnv ();
-	env = setEnv (env, "DISPLAY", d->name);
-	if (d->authFile)
-	    env = setEnv (env, "XAUTHORITY", d->authFile);
+	env = systemEnv (d, (char *) 0, (char *) 0);
 	args = parseArgs ((char **) 0, d->xrdb);
 	args = parseArgs (args, d->resources);
 	Debug ("Loading resource file: %s\n", d->resources);
@@ -259,15 +256,11 @@ struct display	*d;
 SetupDisplay (d)
 struct display	*d;
 {
-    char	**env = 0, **setEnv(), **defaultEnv();
+    char	**env = 0, **setEnv(), **systemEnv();
 
     if (d->setup && d->setup[0])
     {
-    
-    	env = defaultEnv ();
-    	env = setEnv (env, "DISPLAY", d->name);
-    	if (d->authFile)
-	    env = setEnv (env, "XAUTHORITY", d->authFile);
+    	env = systemEnv (d, (char *) 0, (char *) 0);
     	(void) source (env, d->setup);
     	freeEnv (env);
     }
