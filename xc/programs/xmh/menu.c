@@ -1,5 +1,5 @@
 /*
- * $XConsortium: menu.c,v 1.4 89/10/06 15:02:56 converse Exp $
+ * $XConsortium: menu.c,v 1.5 89/12/14 21:10:50 converse Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -35,6 +35,7 @@ void AttachMenuToButton(button, menu, menu_name)
 
     if (button == NULL) return;
     button->menu = menu;
+    /* Yup, this is a memory leak. :-) */
     XtSetArg(args[0], XtNmenuName, XtNewString(menu_name));
     XtSetValues(button->widget, args, (Cardinal) 1);
 }
