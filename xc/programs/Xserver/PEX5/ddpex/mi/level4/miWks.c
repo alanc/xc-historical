@@ -1,4 +1,4 @@
-/* $XConsortium: miWks.c,v 5.6 91/10/01 15:31:03 hersh Exp $ */
+/* $XConsortium: miWks.c,v 5.7 92/03/04 14:10:57 hersh Exp $ */
 
 /***********************************************************
 Copyright (c) 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -1355,14 +1355,9 @@ get_view(view_table, view_index, clipflag, clips, vom, vomFlag)
 
 /* no check for z when using drawable */
 #define PT_IN_LIMIT(prend, lim, pt) 				\
-    ((prend)->viewport.useDrawable ? 				\
-     ( (pt)->x >= (prend)->pDrawable->x && 			\
-       (pt)->x <= ((prend)->pDrawable->width - (prend)->pDrawable->x) \
-    && (pt)->y >= (prend)->pDrawable->y && 			\
-       (pt)->y <= ((prend)->pDrawable->height - (prend)->pDrawable->y) ):\
      ( (pt)->x >= (lim)->minval.x && (pt)->x <= (lim)->maxval.x \
     && (pt)->y >= (lim)->minval.y && (pt)->y <= (lim)->maxval.y \
-    && (pt)->z >= (lim)->minval.z && (pt)->z <= (lim)->maxval.z ))
+    && (pt)->z >= (lim)->minval.z && (pt)->z <= (lim)->maxval.z )
 
 /*++
  |
