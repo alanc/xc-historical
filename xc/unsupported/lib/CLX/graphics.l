@@ -104,7 +104,9 @@
 	   (type int16 x1 y1 x2 y2)
 	   (type boolean relative-p))
   (let ((display (drawable-display drawable)))
-    (setq relative-p (if relative-p 1 0))
+    (when relative-p
+      (incf x2 x1)
+      (incf y2 y1))
     (with-display (display)
       (force-gcontext-changes gcontext)
       (writing-buffer-send (display)
@@ -114,34 +116,29 @@
 	  (if (and (not *inhibit-appending*)
 		   last-request-byte
 		   ;; Same request?
-		   (= (aref-card8 buffer-bbuf last-request-byte) *x-polyline*)
-		   ;; last point same as this one?
-		   (compare-request (-4)
-		     (int16 x1 y1))
+		   (= (aref-card8 buffer-bbuf last-request-byte) *x-polysegment*)
 		   (progn ;; Set buffer pointers to last request
-		     (set-buffer-offset last-request-byte)
+		     (set-buffer-offset last-request-byte :sizes (16 32))
 		     ;; same drawable and gcontext?
 		     (or (compare-request (4)
-			   (data relative-p)
 			   (drawable drawable)
 			   (gcontext gcontext))
 			 (progn ;; If failed, reset buffer pointers
-			   (set-buffer-offset current-boffset)
+			   (set-buffer-offset current-boffset :sizes (16 32))
 			   nil))))
 	      ;; Append request
 	      (progn
 		;; Set new request length
-		(card16-put 2 (index+ 1 (index-ash (index- current-boffset last-request-byte)
+		(card16-put 2 (index+ 2 (index-ash (index- current-boffset last-request-byte)
 						   -2)))
 		(set-buffer-offset current-boffset :sizes 16)
 		(put-items (0)			; Insert new point
-		  (int16 x2 y2))
-		(setf (display-boffset display) (index+ buffer-boffset 4)))
+		  (int16 x1 y1 x2 y2))
+		(setf (display-boffset display) (index+ buffer-boffset 8)))
 	    ;; New Request
 	    (progn
 	      (put-items (4)
-		(code *x-polyline*)
-		(data relative-p)
+		(code *x-polysegment*)
 		(length 5)
 		(drawable drawable)
 		(gcontext gcontext)
