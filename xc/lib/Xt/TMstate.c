@@ -1,4 +1,4 @@
-/* $XConsortium: TMstate.c,v 1.122 90/12/11 12:02:26 rws Exp $ */
+/* $XConsortium: TMstate.c,v 1.123 90/12/12 14:53:28 rws Exp $ */
 
 /*LINTLIBRARY*/
 
@@ -163,7 +163,11 @@ static String PrintEventType(buf, len, str, event)
 {
     CHECK_STR_OVERFLOW;
     switch (event) {
-#define PRINTEVENT(event) case event: (void) strcpy(str, "<event>"); break;
+#if __STDC__
+#define PRINTEVENT(event) case event: (void)strcpy(str, "<" #event ">"); break;
+#else
+#define PRINTEVENT(event) case event: (void)strcpy(str, "<event>"); break;
+#endif
 	PRINTEVENT(KeyPress)
 	PRINTEVENT(KeyRelease)
 	PRINTEVENT(ButtonPress)
@@ -2941,7 +2945,7 @@ void XtTranslateKey(dpy, keycode, modifiers,
     KeySym sym, lsym, usym;
 
     *modifiers_return = (ShiftMask|LockMask) | pd->mode_switch;
-    if ((keycode < pd->min_keycode) || (keycode > pd->max_keycode))  {
+    if (((int)keycode < pd->min_keycode) || ((int)keycode > pd->max_keycode)) {
 	*keysym_return = NoSymbol;
 	return;
     }
@@ -3111,7 +3115,7 @@ void XtKeysymToKeycodeList(dpy, keysym, keycodes_return, keycount_return)
     keycodes = NULL;
     per = pd->keysyms_per_keycode;
     for (syms = pd->keysyms, keycode = pd->min_keycode;
-	 keycode <= pd->max_keycode;
+	 (int)keycode <= pd->max_keycode;
 	 syms += per, keycode++) {
 	match = 0;
 	for (j = 0; j < per; j++) {
