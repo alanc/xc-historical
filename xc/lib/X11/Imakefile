@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.170 94/01/21 16:38:58 gildea Exp $
+XCOMM $XConsortium: Imakefile,v 1.171 94/01/21 18:13:35 rws Exp $
 #define DoNormalLib NormalLibX11
 #define DoSharedLib SharedLibX11
 #define DoDebugLib DebugLibX11
@@ -36,7 +36,9 @@ XBSDLIB = /**/
 #if HasPoll
    POLL_DEFINES = -DUSE_POLL
 #endif
-   CONN_DEFINES = ConnectionFlags -DX11
+   CONN_DEFINES = ConnectionFlags
+   XTRANS_X_DEFINES = -DX11_t
+   XTRANS_XIM_DEFINES = -DXIM_t
 #if HasBSD44Sockets
    SOCK_DEFINES = -DBSD44SOCKETS
 #endif
@@ -431,7 +433,6 @@ SRCS2 = \
 	XlibAsync.c \
 	XlibInt.c \
 	Xrm.c \
-	Xstreams.c \
 	evtomask.c \
 	globals.c \
 	GetGCVals.c \
@@ -556,7 +557,6 @@ OBJS2 = \
 	XlibAsync.o \
 	XlibInt.o \
 	Xrm.o \
-	Xstreams.o \
 	evtomask.o \
 	globals.o \
 	GetGCVals.o \
@@ -660,7 +660,8 @@ SRCS3 = \
 	RegstFlt.c \
 	locking.c \
 	LockDis.c \
-	transport.c \
+	xtrans.c \
+	ximtrans.c \
 	$(XKBSRCS) $(LCSRCS)
 
 OBJS3 = \
@@ -740,24 +741,12 @@ OBJS3 = \
 	RegstFlt.o \
 	locking.o \
 	LockDis.o \
-	transport.o \
+	xtrans.o \
+	ximtrans.o \
 	$(XKBOBJS) $(LCOBJS)
 
 #ifdef RsArchitecture
 LCDEPSYMSRCS = aixlcLoad.c
-#endif
-
-#if HasDECnet
-IMDNETSRC = imTrDnet.c
-IMDNETOBJ = imTrDnet.o
-#endif
-#if HasStreams
-IMSTRMSRC = imTrSrm.c
-IMSTRMOBJ = imTrSrm.o
-#endif
-#if HasSockets
-IMTCPSRC = imTrTcp.c
-IMTCPOBJ = imTrTcp.o
 #endif
 
 LCSRCS = \
@@ -787,12 +776,9 @@ LCSRCS = \
 	imThaiFlt.c \
 	imThaiIc.c \
 	imThaiIm.c \
-	imTrSocket.c \
 	imTrX.c \
 	imTransR.c \
-	$(IMDNETSRC) \
-	$(IMSTRMSRC) \
-	$(IMTCPSRC) \
+	imTrans.c \
 	lcCT.c \
 	lcCharSet.c \
 	lcConv.c \
@@ -857,12 +843,9 @@ LCOBJS = \
 	imThaiFlt.o \
 	imThaiIc.o \
 	imThaiIm.o \
-	imTrSocket.o \
 	imTrX.o \
 	imTransR.o \
-	$(IMDNETOBJ) \
-	$(IMSTRMOBJ) \
-	$(IMTCPOBJ) \
+	imTrans.o \
 	lcCT.o \
 	lcCharSet.o \
 	lcConv.o \
@@ -897,23 +880,22 @@ OBJS = $(OBJS1) $(OBJS2) $(OBJS3)
 
 SpecialCLibObjectRule(ErrDes,$(ICONFIGFILES),$(EDB_DEFINES))
 SpecialCLibObjectRule(StrKeysym,$(ICONFIGFILES),$(KDB_DEFINES))
-SpecialCLibObjectRule(ConnDis,$(ICONFIGFILES),$(XDMAUTHDEFS) $(RPCDEFS) $(CONN_DEFINES) $(SOCK_DEFINES) $(POLL_DEFINES) $(K5INCL) $(K5DEFS))
-SpecialCLibObjectRule(transport,$(ICONFIGFILES),$(TRANS_INCLUDES) $(CONN_DEFINES) $(SOCK_DEFINES))
-LinkSourceFile(transport.c,$(TRANSCOMMSRC))
-SpecialCLibObjectRule(OpenDis,$(ICONFIGFILES),$(BC_DEFINES) $(OPEN_DEFINES))
+SpecialCLibObjectRule(ConnDis,$(ICONFIGFILES),$(XDMAUTHDEFS) $(RPCDEFS) $(CONN_DEFINES) $(SOCK_DEFINES) $(POLL_DEFINES) $(XTRANS_X_DEFINES) $(K5INCL) $(K5DEFS))
+SpecialCLibObjectRule(xtrans,$(ICONFIGFILES),$(TRANS_INCLUDES) $(CONN_DEFINES) $(SOCK_DEFINES) $(XTRANS_X_DEFINES))
+LinkFile(xtrans.c,$(TRANSCOMMSRC)/transport.c)
+SpecialCLibObjectRule(ximtrans,$(ICONFIGFILES),$(TRANS_INCLUDES) $(CONN_DEFINES) $(SOCK_DEFINES) $(XTRANS_XIM_DEFINES))
+LinkFile(ximtrans.c,$(TRANSCOMMSRC)/transport.c)
+SpecialCLibObjectRule(OpenDis,$(ICONFIGFILES),$(BC_DEFINES) $(OPEN_DEFINES) $(XTRANS_X_DEFINES))
 SpecialCLibObjectRule(Wrap,$(ICONFIGFILES),$(XDMAUTHDEFS))
-SpecialCLibObjectRule(Xstreams,$(ICONFIGFILES),$(CONN_DEFINES))
-SpecialCLibObjectRule(XlibInt,$(ICONFIGFILES),-I$(EXTINCSRC) $(CONN_DEFINES) $(MTT_DEFINES) $(POLL_DEFINES))
+SpecialCLibObjectRule(XlibInt,$(ICONFIGFILES),-I$(EXTINCSRC) $(CONN_DEFINES) $(MTT_DEFINES) $(POLL_DEFINES) $(XTRANS_X_DEFINES))
 SpecialCLibObjectRule(cmsColNm,$(ICONFIGFILES),$(CMS_DEFINES))
 SpecialCLibObjectRule(globals,$(ICONFIGFILES),$(CONN_DEFINES))
 SpecialCLibObjectRule(Context,$(ICONFIGFILES),$(BC_DEFINES) $(MTT_DEFINES))
 SpecialCLibObjectRule(Xrm,$(_NOOP_),$(RCONST_DEFINES) $(MTT_DEFINES))
 SpecialCLibObjectRule(locking,$(ICONFIGFILES),$(MTT_DEFINES))
 SpecialCLibObjectRule(LockDis,$(ICONFIGFILES),$(MTT_DEFINES))
-SpecialCLibObjectRule(imTransR,$(ICONFIGFILES),$(CONN_DEFINES))
-SpecialCLibObjectRule(imTrDnet,$(ICONFIGFILES),$(CONN_DEFINES))
-SpecialCLibObjectRule(imTrSrm,$(ICONFIGFILES),$(CONN_DEFINES))
-SpecialCLibObjectRule(imTrTcp,$(ICONFIGFILES),$(CONN_DEFINES) $(SOCK_DEFINES))
+SpecialCLibObjectRule(imTransR,$(ICONFIGFILES),$(CONN_DEFINES) $(XTRANS_XIM_DEFINES))
+SpecialCLibObjectRule(imTrans,$(ICONFIGFILES),$(CONN_DEFINES) $(XTRANS_XIM_DEFINES))
 SpecialCLibObjectRule(lcFile,$(ICONFIGFILES),$(XLC_DEFINES))
 #if BuildXKBlib
 SpecialCLibObjectRule(XKBCvt,$(_NOOP_),$(RCONST_DEFINES))
