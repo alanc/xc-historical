@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Label.c,v 1.23 87/09/13 21:08:59 swick Locked $";
+static char rcsid[] = "$Header: Label.c,v 1.25 87/09/13 22:09:43 swick Locked $";
 #endif lint
 
 /*
@@ -100,6 +100,8 @@ LabelClassRec labelClassRec = {
     /* expose		  */	Redisplay,
     /* set_values	  */	SetValues,
     /* accept_focus	  */	NULL,
+    /* callback_private   */	NULL,
+    /* reserved_private   */	NULL,
   }
 };
 WidgetClass labelWidgetClass = (WidgetClass)&labelClassRec;
@@ -126,14 +128,14 @@ static void ClassInitialize()
 } /* ClassInitialize */
 
 /* ARGSUSED */
-static void CvtStringToJustify(display, fromVal, toVal)
-    Display     *display;
-    XrmValue    fromVal;
-    XrmValue    *toVal;
+static void CvtStringToJustify(screen, fromVal, toVal)
+    Screen	*screen;
+    XrmValuePtr fromVal;
+    XrmValuePtr toVal;
 {
     static XtJustify	e;
     XrmQuark    q;
-    char	*s = (char *) fromVal.addr;
+    char	*s = (char *) fromVal->addr;
     char        lowerName[1000];
     int		i;
 
@@ -146,15 +148,15 @@ static void CvtStringToJustify(display, fromVal, toVal)
 
     q = XrmAtomToQuark(lowerName);
 
-    (*toVal).size = sizeof(XtJustify);
-    (*toVal).addr = (caddr_t) &e;
+    toVal->size = sizeof(XtJustify);
+    toVal->addr = (caddr_t) &e;
 
     if (q == XrmQEleft)   { e = XtJustifyLeft;   return; }
     if (q == XrmQEcenter) { e = XtJustifyCenter; return; }
     if (q == XrmQEright)  { e = XtJustifyRight;  return; }
 
-    (*toVal).size = 0;
-    (*toVal).addr = NULL;
+    toVal->size = 0;
+    toVal->addr = NULL;
 };
 
 /*
@@ -207,7 +209,7 @@ static void GetgrayGC(lw)
 static void Initialize(request, new, args, num_args)
  Widget request, new;
  ArgList args;
- Cardinal num_args;
+ Cardinal *num_args;
 {
     LabelWidget lw = (LabelWidget) new;
 
@@ -236,12 +238,12 @@ static void Initialize(request, new, args, num_args)
 
 static void Realize(w, valueMask, attributes)
     register Widget w;
-    Mask valueMask;
+    Mask *valueMask;
     XSetWindowAttributes *attributes;
 {
-  LabelWidget lw = (LabelWidget)w;
+    LabelWidget lw = (LabelWidget)w;
 
-    valueMask |= CWBitGravity;
+    *valueMask |= CWBitGravity;
     switch (((LabelWidget)w)->label.justify) {
 	case XtJustifyLeft:	attributes->bit_gravity = WestGravity;   break;
 	case XtJustifyCenter:	attributes->bit_gravity = CenterGravity; break;
@@ -253,19 +255,13 @@ static void Realize(w, valueMask, attributes)
 	  /* change border to gray */
 	lw->core.border_pixmap = lw->label.gray_pixmap;
 	attributes->border_pixmap = lw->label.gray_pixmap;
-	valueMask |= CWBorderPixmap;
+	*valueMask |= CWBorderPixmap;
 	lw->label.display_sensitive = TRUE;
       }
     
 
-    w->core.window =
-	  XCreateWindow(
-		XtDisplay(w), w->core.parent->core.window,
-		w->core.x, w->core.y,
-		w->core.width, w->core.height, w->core.border_width,
-		(int) w->core.depth,
-		InputOutput, (Visual *)CopyFromParent,	
-		valueMask, attributes);
+    XtCreateWindow( w, (unsigned int)InputOutput, (Visual *)CopyFromParent,
+		    *valueMask, attributes );
 } /* Realize */
 
 
