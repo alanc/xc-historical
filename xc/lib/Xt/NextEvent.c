@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: NextEvent.c,v 1.67 89/10/03 17:34:07 swick Exp $";
+static char Xrcsid[] = "$XConsortium: NextEvent.c,v 1.68 89/10/04 15:23:12 swick Exp $";
 /* $oHeader: NextEvent.c,v 1.4 88/09/01 11:43:27 asente Exp $ */
 #endif /* lint */
 
@@ -256,8 +256,7 @@ int _XtwaitForSomething(ignoreTimers, ignoreInputs, ignoreEvents,
 		 * could have arrived without any real events.
 		 */
 		if ( FD_ISSET(ConnectionNumber(app->list[d]), &rmaskfd)
-		    && XEventsQueued( ConnectionNumber(app->list[d]),
-				      QueuedAfterReading ) ) {
+		    && XEventsQueued( app->list[d], QueuedAfterReading ) ) {
 		    return d;
 		}
 	    }
@@ -278,7 +277,8 @@ int _XtwaitForSomething(ignoreTimers, ignoreInputs, ignoreEvents,
 			     * could have arrived without any real events.
 			     */
 			    if ( ret == -1
-				&& XEventsQueued(i, QueuedAfterReading) ) {
+				&& XEventsQueued( app->list[d],
+						  QueuedAfterReading) ) {
 				ret = d;
 			    }
 			    goto ENDILOOP;
