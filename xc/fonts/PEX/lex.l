@@ -1,5 +1,5 @@
 %{
-/* $XConsortium: lex.l,v 5.1 91/02/16 09:46:35 rws Exp $ */
+/* $XConsortium: lex.l,v 5.2 91/02/16 11:37:50 rws Exp $ */
 
 /*****************************************************************
 Copyright (c) 1989,1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -37,7 +37,7 @@ SOFTWARE.
 #.*			;
 [ ,;\t\n]*              /* natural dilimters */ ;
 
-[a-zA-Z][a-zA-Z0-9_.]+	{
+[a-zA-Z][a-zA-Z0-9_.]*	{
 				int	token;
 				if (token = res_words(yytext))
 					return token;
