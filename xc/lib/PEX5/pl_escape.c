@@ -1,4 +1,4 @@
-/* $XConsortium: pl_escape.c,v 1.2 92/05/07 23:28:10 mor Exp $ */
+/* $XConsortium: pl_escape.c,v 1.1 92/05/08 15:12:52 mor Exp $ */
 
 /************************************************************************
 Copyright 1992 by the Massachusetts Institute of Technology,
@@ -59,15 +59,14 @@ INPUT char		*escapeData;
 
 
 char *
-PEXEscapeWithReply (display, escapeID, escapeDataSize, escapeData,
-    escapeOutID, escapeOutDataSize)
+PEXEscapeWithReply (display, escapeID, escapeDataSize,
+    escapeData, escapeOutDataSize)
 
 INPUT Display		*display;
 INPUT unsigned long  	escapeID;
 INPUT int		escapeDataSize;
 INPUT char		*escapeData;
-OUTPUT unsigned long  	*escapeOutID;
-OUTPUT int		*escapeOutDataSize;
+OUTPUT unsigned long	*escapeOutDataSize;
 
 {
     pexEscapeWithReplyReq		*req;
@@ -99,7 +98,6 @@ OUTPUT int		*escapeOutDataSize;
         return (NULL);               /* return an error */
     }
 
-    *escapeOutID = rep.escapeID;
     *escapeOutDataSize = 20 + (rep.length << 2);
 
 
@@ -145,9 +143,9 @@ INPUT PEXColor		*color;
 
     escapeData.fp_format = PEXGetProtocolFloatFormat (display);
     escapeData.renderer = renderer;
-    escapeData.echo_color.color_type = color_type;
+    escapeData.echo_color.type = color_type;
 
-    COPY_AREA ((char *) color, (char *) &(escapeData.echo_color.color),
+    COPY_AREA ((char *) color, (char *) &(escapeData.echo_color.value),
 	GetColorSize (color_type));
 
 
