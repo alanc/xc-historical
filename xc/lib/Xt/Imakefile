@@ -79,6 +79,7 @@ SRCS = \
 	SetValues.c \
 	SetWMCW.c \
 	Shell.c \
+	StringDefs.c \
 	TMparse.c \
 	TMstate.c \
 	VarCreate.c \
@@ -127,6 +128,7 @@ OBJS = \
 	SetValues.o \
 	SetWMCW.o \
 	Shell.o \
+	StringDefs.o \
 	TMparse.o \
 	TMstate.o \
 	VarCreate.o \
