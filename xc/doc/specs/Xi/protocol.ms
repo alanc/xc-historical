@@ -722,6 +722,8 @@ ChangeDeviceControl
 .in .5i
 device: DEVICE
 .br
+XID: controlId
+.br
 control: DeviceControl
 .br
 .sp
