@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: types.cxx,v 1.4 94/03/18 11:25:32 matt Exp $
  */
 
 /*
@@ -38,9 +38,27 @@
 #include <X11/Fresco/OS/table.h>
 #include <X11/Fresco/OS/thread.h>
 #include <ctype.h>
-#include <math.h>
 #include <stdlib.h>
 #include <string.h>
+
+/*
+ * Sony NEWS-OS 6.0 has conflicting prototypes for abs() in math.h
+ * and stdlib.h, so you cannot include both headers in any C++ source
+ * file.  Until that bug is fixed, we'll have to explicitly define 
+ * the symbols we need from math.h on the Sony.  On other platforms,
+ * we can just include math.h and be done with it.
+ */
+
+#if defined(sony)
+#define M_PI 3.14159265358979323846
+extern "C" {
+    double cos(double);
+    double sin(double);
+}
+#else
+#include <math.h>
+#endif
+
 
 /*
  * AIX lacks prototypes for strcasecmp and strncasecmp, even though they
