@@ -846,6 +846,9 @@ This entry invokes the \fBsoft-reset()\fP action.
 .B "hardreset (\fPclass\fB SmeBSB)"
 This entry invokes the \fBhard-reset()\fP action.
 .TP 8
+.B "clearsavedlines" (\fPclass\fB SmeBSB)"
+This entry invokes the \fBclear-saved-lines()\fP action.
+.TP 8
 .B "line2 (\fPclass\fB SmeLine)"
 This is a separator.
 .TP 8
@@ -1416,6 +1419,11 @@ This action resets the scrolling region and is also invoked from the
 This action resets the scrolling region, tabs, window size, and cursor keys
 and clears the screen.  It is also invoked from the \fBhardreset\fP
 entry in \fIvtMenu\fP.
+.TP 8
+.B "clear-saved-lines()"
+This action does \fBhard-reset()\fP (see above) and also clears the history
+of lines saved off the top of the screen.
+It is also invoked from the \fBclearsavedlines\fP entry in \fIvtMenu\fP.
 .TP 8
 .B "set-terminal-type(\fItype\fP)"
 This action directs output to either the \fIvt\fP or \fItek\fP windows,
