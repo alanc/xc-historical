@@ -16,14 +16,14 @@
 .de Ss	\" Begin state - .Ss <state name>
 .KS
 .LP
-\f7\\$1\fP\^:
+\fC\\$1\fP\^:
 .br
 ..
 .de St	\" Transition - .St "condition" message <new state>
 .RS
 \\$1
 .PN \\$2
-\(-> \f7\\$3\fP
+\(-> \fC\\$3\fP
 .RE
 ..
 .de Se	\" End state - .Se
@@ -1045,7 +1045,7 @@ Here are the state diagrams for the party that initiates the connection:
 connect to other end, send
 .PN ByteOrder ,
 .PN ConnectionSetup
-\(-> \f7conn_wait\fP
+\(-> \fCconn_wait\fP
 .RE
 .Se
 .Ss conn_wait
@@ -1068,7 +1068,7 @@ Here are top-level state transitions for the party that accepts connections.
 .Ss listener
 .\" .St "accept connection" "" init_wait
 .RS
-accept connection \(-> \f7init_wait\fP
+accept connection \(-> \fCinit_wait\fP
 .RE
 .Se
 .Ss init_wait
@@ -1077,7 +1077,7 @@ accept connection \(-> \f7init_wait\fP
 receive
 .PN ByteOrder ,
 .PN ConnectionSetup
-\(-> \f7auth_ask\fP
+\(-> \fCauth_ask\fP
 .RE
 .St "receive <other>, send" Error quit
 .Se
@@ -1087,7 +1087,7 @@ receive
 send
 .PN ByteOrder ,
 .PN ConnectionReply
-\(-> \f7stasis\fP
+\(-> \fCstasis\fP
 .RE
 .St "send" AuthenticationRequired auth_wait
 .St "send" Error quit
@@ -1116,7 +1116,7 @@ receive
 .PN Ping ,
 send
 .PN PingReply
-\(-> \f7stasis\fP
+\(-> \fCstasis\fP
 .RE
 .St "receive" WantToClose shutdown_attempt
 .St "receive <other>, send" Error stasis
@@ -1129,7 +1129,7 @@ send
 .RS
 receive
 .PN Error ,
-give up on this protocol \(-> \f7stasis\fP
+give up on this protocol \(-> \fCstasis\fP
 .RE
 .St "receive" WantToClose proto_wait
 .Se
@@ -1139,7 +1139,7 @@ give up on this protocol \(-> \f7stasis\fP
 .RS
 if bad auth data, send
 .PN Error ,
-give up on this protocol \(-> \f7stasis\fP
+give up on this protocol \(-> \fCstasis\fP
 .RE
 .St "receive" WantToClose give_auth1
 .Se
@@ -1150,7 +1150,7 @@ give up on this protocol \(-> \f7stasis\fP
 .RS
 receive
 .PN Error ,
-give up on this protocol \(-> \f7stasis\fP
+give up on this protocol \(-> \fCstasis\fP
 .RE
 .St "receive" WantToClose give_auth2
 .Se
@@ -1161,7 +1161,7 @@ give up on this protocol \(-> \f7stasis\fP
 .RS
 send
 .PN Error ,
-give up on this protocol \(-> \f7stasis\fP
+give up on this protocol \(-> \fCstasis\fP
 .RE
 .Se
 .Ss take_auth1
@@ -1170,19 +1170,19 @@ give up on this protocol \(-> \f7stasis\fP
 .RS
 receive
 .PN Error ,
-give up on this protocol \(-> \f7stasis\fP
+give up on this protocol \(-> \fCstasis\fP
 .RE
 .Se
 .Ss take_auth2
 .\" .St "if good auth data" take_auth3
 .RS
-if good auth data \(-> \f7take_auth3\fP
+if good auth data \(-> \fCtake_auth3\fP
 .RE
 .\" .St "if bad auth data, send Error, give up on this protocol" stasis
 .RS
 if bad auth data, send
 .PN Error ,
-give up on this protocol \(-> \f7stasis\fP
+give up on this protocol \(-> \fCstasis\fP
 .RE
 .Se
 .Ss take_auth3
@@ -1192,7 +1192,7 @@ give up on this protocol \(-> \f7stasis\fP
 .RS
 if bad auth data, send
 .PN Error ,
-give up on this protocol \(-> \f7stasis\fP
+give up on this protocol \(-> \fCstasis\fP
 .RE
 .Se
 .Ss ping_wait
@@ -1208,7 +1208,7 @@ Here are the state transitions for shutting down the connection:
 .St "if want to stay alive anyway, send" NoClose stasis
 .\" .St "else" quit
 .RS
-else \(-> \f7quit\fP
+else \(-> \fCquit\fP
 .RE
 .Se
 .Ss close_wait
@@ -1217,7 +1217,7 @@ else \(-> \f7quit\fP
 .St "receive" WantToClose quit
 .\" .St "connection close" quit
 .RS
-connection close \(-> \f7quit\fP
+connection close \(-> \fCquit\fP
 .RE
 .Se
 .nH 1 "Protocol Encoding"
