@@ -21,15 +21,8 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: osinit.c,v 1.29 90/03/03 15:38:02 rws Exp $ */
+/* $XConsortium: osinit.c,v 1.30 91/04/14 15:51:26 keith Exp $ */
 #include "os.h"
-#include "opaque.h"
-#undef NULL
-#ifdef NDBM
-#include <ndbm.h>
-#else
-#include <dbm.h>
-#endif
 #undef NULL
 #include <stdio.h>
 #include "Xos.h"
@@ -50,11 +43,6 @@ SOFTWARE.
 #define ADMPATH "/usr/adm/X%smsgs"
 #endif
 
-#ifdef NDBM
-DBM     *rgb_dbm = (DBM *)NULL;
-#else
-int	rgb_dbm = 0;
-#endif
 extern char *display;
 #ifndef SYSV
 int limitDataSpace = -1;
@@ -140,15 +128,5 @@ OsInit()
 	been_here = TRUE;
     }
 
-    if (!rgb_dbm)
-    {
-#ifdef NDBM
-	rgb_dbm = dbm_open(rgbPath, 0, 0);
-#else
-	if (dbminit(rgbPath) == 0)
-	    rgb_dbm = 1;
-#endif
-	if (!rgb_dbm)
-	    ErrorF( "Couldn't open RGB_DB '%s'\n", rgbPath );
-    }
+    OsInitColors();
 }
