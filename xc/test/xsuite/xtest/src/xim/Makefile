@@ -1,4 +1,4 @@
-# $XConsortium$
+# $XConsortium: Makefile,v 1.1 94/01/29 15:55:40 rws Exp $
 ##########################################################################
 #
 #
@@ -22,12 +22,12 @@ INSTBIN		= $(SUITE_BIN)
 ##### C compiler Directives Section
 ################################
 
-CFILES		= linklocale.c cleanlocale.c ic.c nextlocale.c nextlclmod.c \
-			nextfontset.c parse.c xim_cb.c xim_comp.c xim_response.c \
-			xim_save.c xim_stimulus.c
-OFILES		= linklocale.o cleanlocale.o ic.o nextlocale.o nextlclmod.o \
-			nextfontset.o parse.o xim_cb.o xim_comp.o xim_response.o \
-			xim_save.o xim_stimulus.o
+CFILES		= linklocale.c clnlocale.c ic.c nextlocale.c nextlclmod.c \
+			nxtfontset.c parse.c xim_cb.c xim_comp.c response.c \
+			xim_save.c stimulus.c
+OFILES		= linklocale.o clnlocale.o ic.o nextlocale.o nextlclmod.o \
+			nxtfontset.o parse.o xim_cb.o xim_comp.o response.o \
+			xim_save.o stimulus.o
 
 LIBRARY		= libximtest.a
 
