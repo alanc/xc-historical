@@ -1,4 +1,4 @@
-/* $XConsortium: miFont.c,v 5.1 91/02/16 09:56:15 rws Exp $ */
+/* $XConsortium: miFont.c,v 5.2 91/02/18 18:20:11 rws Exp $ */
 
 /***********************************************************
 Copyright (c) 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -117,7 +117,10 @@ OpenPEXFont(strLen, pName, pFont)
 
     /*	For now, let the default glyph be an asterisk */
     font->font_info.defaultGlyph = (CARD16)'*';
-    
+
+    /* It's a stroke font */
+    font->font_info.strokeFont = 1;
+
     return (Success);
 
 }				  /* OpenPEXFont */
@@ -327,7 +330,7 @@ ListPEXFontsPlus(patLen, pPattern, maxNames, pNumNames, pBuffer)
 	len = strlen(names[i]);
 	PACK_CARD16(len, pBuf);
 	PACK_LISTOF_STRUCT(len, CARD8, names[i], pBuf);
-	SKIP_PADDING(pBuf, PADDING(len)); }
+	SKIP_PADDING(pBuf, PADDING(2 + len)); }
 
 
     /* read in the font info, write it into the reply buffer */
@@ -347,7 +350,27 @@ ListPEXFontsPlus(patLen, pPattern, maxNames, pNumNames, pBuffer)
 	if (PU_BUF_TOO_SMALL(pBuffer, pBuffer->dataSize))
 	    if (puBuffRealloc(pBuffer, pBuffer->dataSize) != Success)
 		goto free_names;
-	PACK_STRUCT(pexFontInfo, ddFont.deviceData, pBuf);
+
+	/*
+	 * Now, make a pass from the first glyph to the last glyph, seeing if 
+	 * all are defined.
+	 */
+	fontData.font_info.allExist = 1;
+	ch_data = fontData.ch_data + fontData.font_info.firstGlyph;
+	for (j = fontData.font_info.firstGlyph; 
+	     j < fontData.num_ch && fontData.font_info.allExist;
+	     j++, ch_data++ ) 
+	    if (*ch_data == NULL || (*ch_data)->strokes.numLists <= 0) {
+		fontData.font_info.allExist = 0;
+		break; }
+
+	/* For now, let the default glyph be an asterisk */
+	fontData.font_info.defaultGlyph = (CARD16)'*';
+    
+	/* It's a stroke font */
+	fontData.font_info.strokeFont = 1;
+
+	PACK_STRUCT(pexFontInfo, &(fontData.font_info), pBuf);
 	if (fontData.font_info.numProps > 0) {
 	    PACK_LISTOF_STRUCT(	fontData.font_info.numProps, pexFontProp,
 				fontData.properties, pBuf);
@@ -384,13 +407,15 @@ free_names:
  * Given the extremes of all of the character sets used in composing
  * an ISTRING, and given the extremes of the ISTRING itself, along
  * with path, expansion and alignment, calculate the correct
- * concatenation point and alignment point.
+ * concatenation point and alignment point.  The updated extreme values
+ * are returned.
  */
 void
-micalc_cpt_and_align(meta_font, xmin, xmax, ymin, ymax, path, exp,
-					    pAlignment, cpt, align)
+micalc_cpt_and_align(meta_font, extent_xmin, extent_xmax,
+    extent_ymin, extent_ymax, path, exp, pAlignment, cpt, align)
 Meta_font	    *meta_font;
-register float	     xmin, xmax, ymin, ymax;
+float		    *extent_xmin, *extent_xmax;
+float		    *extent_ymin, *extent_ymax;
 ddUSHORT	     path;
 ddTextAlignmentData *pAlignment;
 ddFLOAT		     exp;
@@ -398,6 +423,10 @@ register pexCoord2D *cpt;
 register pexCoord2D *align;
 {
 
+    register float  xmin = *extent_xmin,
+                    xmax = *extent_xmax,
+                    ymin = *extent_ymin,
+                    ymax = *extent_ymax;
     pexCoord2D	    temp;
     
     /* some of the necessary info may not be calculated yet */
@@ -438,6 +467,7 @@ register pexCoord2D *align;
 	    
 	case PEXPathDown:
 	    if (ymax > 0.0) {
+		temp.y = ymax;
 		ymax = ymin;
 		ymin = temp.y;
 	    } else {
@@ -570,6 +600,11 @@ register pexCoord2D *align;
 	    break;
 	
     }
+
+    *extent_xmin = xmin;
+    *extent_xmax = xmax;
+    *extent_ymin = ymin;
+    *extent_ymax = ymax;
 }
 
 
@@ -613,7 +648,7 @@ QueryPEXTextExtents(resource, resourceType, fontIndex, path, expansion,
     ddFLOAT		     sp = spacing * FONT_COORD_HEIGHT;
     Meta_font		     meta_font;
     pexCoord2D		     cur, end, cpt, align;
-    register float	     xmin, xmax, ymin, ymax;
+    float	     	     xmin, xmax, ymin, ymax;
     float		     ht_scale = height / FONT_COORD_HEIGHT;
     extern unsigned long     PEXFontType;
     miTextFontEntry	    *miFontTable;
@@ -683,10 +718,11 @@ QueryPEXTextExtents(resource, resourceType, fontIndex, path, expansion,
 	    mono_enc = (pexMonoEncoding *)ptr;
 	    ptr += sizeof(pexMonoEncoding);
 	    
-	    if (mono_enc->characterSet > fontEntry->numFonts)
-		mono_enc->characterSet = 0;
+	    if (mono_enc->characterSet < 1 ||
+		mono_enc->characterSet > fontEntry->numFonts)
+		mono_enc->characterSet = 1;
 
-	    font_handle = fontEntry->fonts[mono_enc->characterSet];
+	    font_handle = fontEntry->fonts[mono_enc->characterSet - 1];
 	    
 	    /* this is the font that this MONO_ENCODING would be rendered
 	     * with, thus we use it to base our extents on */
@@ -758,7 +794,7 @@ QueryPEXTextExtents(resource, resourceType, fontIndex, path, expansion,
 		}
 	    }
 	    
-	    ptr += PADDING(2 + mono_enc->numChars * 
+	    ptr += PADDING(mono_enc->numChars * 
 		    ((mono_enc->characterSetWidth == PEXCSByte) 
 			? sizeof(CARD8) 
 			: ((mono_enc->characterSetWidth == PEXCSShort) 
@@ -770,8 +806,8 @@ QueryPEXTextExtents(resource, resourceType, fontIndex, path, expansion,
 	
 	if (some_characters) {
 	    
-	    micalc_cpt_and_align(   &meta_font, xmin, xmax, ymin, ymax, path, 
-				    expansion, pAlignment, &cpt, &align);
+	    micalc_cpt_and_align( &meta_font, &xmin, &xmax, &ymin, &ymax,
+				  path, expansion, pAlignment, &cpt, &align);
 						       
 	} else {
 	    /* no valid characters */
