@@ -1,9 +1,9 @@
 /*
- *	$Header: cursor.c,v 1.1 88/02/10 13:08:04 jim Exp $
+ *	$Header: cursor.c,v 1.2 88/07/12 10:41:15 jim Exp $
  */
 
 #ifndef lint
-static char *rcsid_cursor_c = "$Header: cursor.c,v 1.1 88/02/10 13:08:04 jim Exp $";
+static char *rcsid_cursor_c = "$Header: cursor.c,v 1.2 88/07/12 10:41:15 jim Exp $";
 #endif	/* lint */
 
 #include <X11/copyright.h>
@@ -35,7 +35,7 @@ static char *rcsid_cursor_c = "$Header: cursor.c,v 1.1 88/02/10 13:08:04 jim Exp
 
 
 #ifndef lint
-static char rcs_id[] = "$Header: cursor.c,v 1.1 88/02/10 13:08:04 jim Exp $";
+static char rcs_id[] = "$Header: cursor.c,v 1.2 88/07/12 10:41:15 jim Exp $";
 #endif	/* lint */
 
 #include <X11/Xlib.h>
@@ -233,7 +233,7 @@ register SavedCursor *sc;
 	Bcopy(sc->gsets, screen->gsets, sizeof(screen->gsets));
 	screen->curgl = sc->curgl;
 	screen->curgr = sc->curgr;
-	term->flags &= ~(BOLD|INVERSE|UNDERLINE);
-	term->flags |= sc->flags & (BOLD|INVERSE|UNDERLINE);
-	CursorSet(screen, sc->row, sc->col, term->flags);
+	term->flags &= ~(BOLD|INVERSE|UNDERLINE|ORIGIN);
+	term->flags |= sc->flags & (BOLD|INVERSE|UNDERLINE|ORIGIN);
+	CursorSet(screen, sc->row - screen->top_marg, sc->col, term->flags);
 }
