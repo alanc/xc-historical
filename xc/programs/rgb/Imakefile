@@ -1,4 +1,4 @@
-XCOMM $XConsortium$
+XCOMM $XConsortium: Imakefile,v 1.20 91/07/17 16:08:56 gildea Exp $
         RGB_DB = DefaultRGBDatabase
    SITE_RGB_DB = -DRGB_DB=\"$(RGB_DB)\"
       DEPLIBS = 
@@ -30,6 +30,7 @@ SpecialObjectRule(rgb.o,$(ICONFIGFILES),$(_NOOP_))
 SpecialObjectRule(showrgb.o,$(ICONFIGFILES),$(_NOOP_))
 InstallMultiple($(DATAFILES) rgb.txt,$(LIBDIR))
 InstallProgramWithFlags(showrgb,$(BINDIR),)
+InstallManPage(showrgb,$(MANDIR))
 
 $(DATADEP):  rgb rgb.txt
 	$(RM) $(DATAFILES)
