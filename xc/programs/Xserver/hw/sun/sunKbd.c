@@ -1,4 +1,4 @@
-/* $XConsortium: sunKbd.c,v 5.44 94/04/17 20:29:41 erik Exp $ */
+/* $XConsortium: sunKbd.c,v 5.45 1994/05/11 17:09:00 kaleb Exp kaleb $ */
 /*-
  * Copyright (c) 1987 by the Regents of the University of California
  *
@@ -94,7 +94,7 @@ void sunKbdWait()
     static struct timeval lastChngKbdTransTv;
     struct timeval tv;
     struct timeval lastChngKbdDeltaTv;
-    int lastChngKbdDelta;
+    unsigned int lastChngKbdDelta;
 
     X_GETTIMEOFDAY(&tv);
     if (!lastChngKbdTransTv.tv_sec)
