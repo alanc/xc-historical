@@ -1,4 +1,4 @@
-/* $XConsortium: Intrinsic.h,v 1.180 93/08/19 08:41:03 kaleb Exp $ */
+/* $XConsortium: Intrinsic.h,v 1.181 93/08/27 16:22:36 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -2557,7 +2557,7 @@ extern void XtUnregisterDrawable(
 #endif
 );
 
-extern void XtToolkitThreadInitialize(
+extern Boolean XtToolkitThreadInitialize(
 #if NeedFunctionPrototypes
     void
 #endif
