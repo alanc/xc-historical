@@ -1,6 +1,6 @@
 /**/###########################################################################
 /**/# X Window System Build Parameters
-/**/# $XConsortium: Project.tmpl,v 1.70 90/07/15 16:07:51 rws Exp $
+/**/# $XConsortium: Project.tmpl,v 1.71 90/08/29 12:38:30 swick Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -349,7 +349,7 @@ Berklib.c: sysV/Berklib.c					@@\
 
 /**/###########################################################################
 /**/# X Window System make variables; this need to be coordinated with rules
-/**/# $XConsortium: Project.tmpl,v 1.70 90/07/15 16:07:51 rws Exp $
+/**/# $XConsortium: Project.tmpl,v 1.71 90/08/29 12:38:30 swick Exp $
 
 /*
  * This list must be reflected in the DIRS_TO_BUILD list in the top-level
@@ -379,9 +379,6 @@ Berklib.c: sysV/Berklib.c					@@\
            MANDIR = ManDir		/* man pages for commands */
         LIBMANDIR = LibmanDir		/* man pages for library routines */
       XAPPLOADDIR = XAppLoadDir		/* application default resource dir */
-XFILESEARCHPATHDEFAULT = XFileSearchPathDefault /* app default resource path */
-    XTERRORPREFIX = XtErrorPrefix
-  XTWARNINGPREFIX = XtWarningPrefix
 #if HasSunOSSharedLibraries
         SOXLIBREV = SharedXlibRev
           SOXTREV = SharedXtRev

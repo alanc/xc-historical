@@ -4,6 +4,13 @@
 #include BandAidCompiler
 #endif
 
+
+/* config options */
+
+ XFILESEARCHPATHDEFAULT = XFileSearchPathDefault
+          XTERRORPREFIX = XtErrorPrefix
+        XTWARNINGPREFIX = XtWarningPrefix
+
 #if UnalignedReferencesAllowed
   ALIGN_DEFINES = -DUNALIGNED
 #endif
