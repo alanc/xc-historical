@@ -23,7 +23,7 @@ SOFTWARE.
 ******************************************************************/
 #ifndef SERVERMD_H
 #define SERVERMD_H 1
-/* $XConsortium: servermd.h,v 1.58 91/05/08 09:31:05 jap Exp $ */
+/* $XConsortium: servermd.h,v 1.59 91/05/14 11:51:31 rws Exp $ */
 
 /*
  * Machine dependent values:
@@ -250,6 +250,16 @@ SOFTWARE.
 #endif
 
 #endif /* luna */
+
+#ifdef SYSV386
+
+#define IMAGE_BYTE_ORDER	LSBFirst
+#define BITMAP_BIT_ORDER	LSBFirst
+#define GLYPHPADBYTES		4
+#define GETLEFTBITS_ALIGNMENT	1
+#define AVOID_MEMORY_READ
+
+#endif /* SYSV386 */
 
 /* size of buffer to use with GetImage, measured in bytes. There's obviously
  * a trade-off between the amount of stack (or whatever ALLOCATE_LOCAL gives
