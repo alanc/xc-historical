@@ -17,7 +17,7 @@ without express or implied warranty.
 */
 
 #ifndef lint
-static char *rcsid_xhost_c = "$XConsortium: xhost.c,v 11.24 88/08/29 17:13:32 rws Exp $";
+static char *rcsid_xhost_c = "$XConsortium: xhost.c,v 11.25 88/09/06 16:45:14 jim Exp $";
 #endif
  
 #include <signal.h>
@@ -138,7 +138,7 @@ main(argc, argv)
 	    if (*arg == '-') {
 	    
 	        if (!argv[i][1] && ((i+1) == argc)) {
-		    printf ("all hosts restricted (access control enabled).\n");
+		    printf ("all hosts being restricted (access control enabled).\n");
 		    XEnableAccessControl(dpy);
 		} else {
 		    arg = argv[i][1]? &argv[i][1] : argv[++i];
@@ -149,7 +149,7 @@ main(argc, argv)
 		}
 	    } else {
 	        if (*arg == '+' && !argv[i][1] && ((i+1) == argc)) {
-		    printf ("all hosts allowed (access control disabled).\n");
+		    printf ("all hosts being allowed (access control disabled).\n");
 		    XDisableAccessControl(dpy);
 		} else {
 		    if (*arg == '+') {
@@ -190,8 +190,8 @@ int change_host (dpy, name, add)
   char *cp;
   static struct dn_naddr dnaddr;
 #endif /* DNETCONN */
-  static char *add_msg = "added to access control list";
-  static char *remove_msg = "removed from access control list";
+  static char *add_msg = "being added to access control list";
+  static char *remove_msg = "being removed from access control list";
 
 #ifdef DNETCONN
   if ((cp = index (name, ':')) && (*(cp + 1) == ':')) {
