@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: WidgetNode.h,v 1.1 90/02/26 11:27:35 jim Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -49,9 +49,6 @@ typedef struct _XmuWidgetNode {
 #define XmuWnSuperclass(wn) ((XmuWnClass(wn))->core_class.superclass)
 
 					/* external interfaces */
-extern XmuWidgetNode XmuAthenaWidgetArray[];
-extern int           XmuAthenaWidgetCount;
-
 
 extern void XmuWnInitializeNodes (
 #if NeedFunctionPrototypes
