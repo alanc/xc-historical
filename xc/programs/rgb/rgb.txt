@@ -30,6 +30,7 @@
 35 107 142		SteelBlue
 255 127 0		coral
 0 255 255		cyan
+176 0 255		purple
 142 35 35		firebrick
 165 42 42		brown
 244 164 96		sandy brown
