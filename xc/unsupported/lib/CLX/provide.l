@@ -27,7 +27,6 @@
 ;;;
 (let ((lisp
 	(or #+lucid "lucid"
-            #+excl  "franz"
 	    #+akcl  "akcl"
 	    #+kcl   "kcl"
             #+ibcl  "ibcl"
