@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: inspector.c,v 5.1 91/02/16 09:59:39 rws Exp $ */
 
 /*****************************************************************
 Copyright (c) 1989,1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -428,7 +428,8 @@ unseen_notify()
 
     if (is_rejected(currfile_name)) {
 	/* change the filename to un-rejected version, removing trailing "-" */
-	newname = (char*)strdup(currfile_name);
+	newname = (char*)malloc(sizeof(currfile_name)+1);
+	strcpy(newname,currfile_name);
 	newname[strlen(currfile_name)-1] = '\0';
 
 	sprintf(buff, "mv %s/%s %s/%s", currdir_name, currfile_name,
