@@ -17,7 +17,7 @@ without any express or implied warranty.
 
 /* THIS IS NOT AN X CONSORTIUM STANDARD */
 
-/* $XConsortium: shm.c,v 1.19 93/07/08 14:21:37 rws Exp $ */
+/* $XConsortium: shm.c,v 1.20 94/01/21 22:09:58 dpw Exp $ */
 
 #include <sys/types.h>
 #include <sys/ipc.h>
@@ -280,6 +280,7 @@ ShmDetachSegment(value, shmseg)
 	;
     *prev = shmdesc->next;
     xfree(shmdesc);
+    return Success;
 }
 
 static int
