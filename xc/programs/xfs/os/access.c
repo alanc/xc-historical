@@ -1,4 +1,4 @@
-/* $XConsortium: access.c,v 1.3 91/05/13 16:50:23 gildea Exp $ */
+/* $XConsortium: access.c,v 1.4 91/07/16 20:22:26 keith Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -97,6 +97,9 @@ CheckClientAuthorization(client, client_auth, accept, index, size, auth_data)
 
     *size = 0;
     *accept = AuthSuccess;
-    *index = 0;
+    if (*index > 0)
+	*index = 0;
+    else
+	*index = -1;
     return FSSuccess;
 }
