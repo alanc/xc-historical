@@ -1,4 +1,4 @@
-/* $XConsortium: events.c,v 1.1 93/10/26 10:08:23 rws Exp $ */
+/* $XConsortium: events.c,v 1.2 93/10/27 21:52:12 rws Exp $ */
 /**** module events.c ****/
 /******************************************************************************
 				NOTICE
@@ -47,17 +47,21 @@ terms and conditions:
 	Syd Logan -- AGE Logic, Inc. September, 1993 - MIT Beta release
   
 *****************************************************************************/
+#ifdef WIN32
+#define _WILLWINSOCK_
+#endif
 #include <stdio.h>
 #include <ctype.h>
-#include <sys/types.h>
-#include <sys/time.h>
-#ifdef	_AIX
-#ifndef NBBY
-#define NBBY    8		/* AIX .h files are a bit inconsistent... */
-#endif
-#include <sys/select.h>
-#endif
 #include "xieperf.h"
+#ifdef WIN32
+#define BOOL wBOOL
+#undef Status
+#define Status wStatus
+#include <winsock.h>
+#undef Status
+#define Status int
+#undef BOOL
+#endif
 
 static XieExtensionInfo *xieInfo=NULL;
 static int timeout = 60;        /* in seconds */
@@ -151,7 +155,11 @@ Bool	verbose;
 	long endtime, curtime, delta;
 	struct timeval tv;
 	Bool done;
+#ifdef WIN32
 	fd_set rd;
+#else
+	unsigned int rd;
+#endif
 
 	retval = 1;
 	done = False;
@@ -159,8 +167,6 @@ Bool	verbose;
 	/* set up for the select */
 
 	Xsocket = ConnectionNumber(xp->d);	
-	FD_ZERO( &rd );
-	FD_SET( Xsocket, &rd ); 
 	endtime = time( ( long * ) NULL ) + timeout;
 	while ( done == False )
 	{
@@ -182,8 +188,13 @@ Bool	verbose;
 			tv.tv_sec = delta;  
 			tv.tv_usec = 0L;
 			XFlush( xp->d );
-			select( Xsocket + 1, &rd, ( fd_set * ) NULL, 
-				( fd_set * ) NULL, &tv );
+#ifdef WIN32
+			FD_ZERO(&rd);
+			FD_SET(Xsocket, &rd);
+#else
+			rd = 1 << Xsocket;
+#endif
+			select( Xsocket + 1, &rd, NULL, NULL, &tv );
 			continue;
 		}	
 		xie_event = event.type - xieInfo->first_event;
