@@ -1,4 +1,4 @@
-/* $XConsortium: phigsmon.c,v 5.3 91/03/28 17:10:44 rws Exp $ */
+/* $XConsortium: phigsmon.c,v 5.4 91/03/29 15:35:20 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -24,12 +24,12 @@ SOFTWARE.
 
 ******************************************************************/
 
-#include <stdio.h>
 #include "phg.h"
 #include "cp.h"
 #include "cp_priv.h"
 #include "sin.h"
-#include <sys/errno.h>
+#include <stdio.h>
+#include <errno.h>
 #include <sys/types.h>
 #ifndef PEX_API_SOCKET_IPC
 #include <sys/ipc.h>
@@ -45,7 +45,11 @@ SOFTWARE.
 /* force phg_version_string into the .o */
 static char **version = &phg_version_string;
 
-extern char*		getenv();
+#ifndef X_NOT_STDC_ENV
+#include <stdlib.h>
+#else
+extern char* getenv();
+#endif
 
 /* The CP handle for this invocation. */
 static Cp_handle	phigs_cph;
