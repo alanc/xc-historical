@@ -32,10 +32,11 @@ PERFORMANCE OF THIS SOFTWARE.
 #include "Xatomtype.h"
 #include "Xutil.h"
 
-Status XGetWMSizeHints (dpy, w, hints, property)
+Status XGetWMSizeHints (dpy, w, hints, supplied, property)
     Display *dpy;
     Window w;
     XSizeHints *hints;
+    long *supplied;
     Atom property;
 {
     xPropSizeHints *prop = NULL;
@@ -71,24 +72,24 @@ Status XGetWMSizeHints (dpy, w, hints, property)
     hints->max_aspect.x = cvtINT32toInt (prop->maxAspectX);
     hints->max_aspect.y = cvtINT32toInt (prop->maxAspectY);
 
+    *supplied = (USPosition | USSize | PAllHints);
     if (nitems >= NumPropSizeElements) {
 	hints->base_width= cvtINT32toInt (prop->baseWidth);
 	hints->base_height= cvtINT32toInt (prop->baseHeight);
 	hints->win_gravity= cvtINT32toInt (prop->winGravity);
-	hints->flags &= (USPosition|USSize|PPosition|PSize|PMinSize|PMaxSize|
-			 PResizeInc|PAspect|PBaseSize|PWinGravity);
-    } else {
-	hints->flags &= (USPosition|USSize|PAllHints);
+	*supplied |= (PBaseSize | PWinGravity);
     }
+    hints->flags &= (*supplied);	/* get rid of unwanted bits */
     Xfree((char *)prop);
     return True;
 }
 
 
-Status XGetWMNormalHints (dpy, w, hints)
+Status XGetWMNormalHints (dpy, w, hints, supplied)
     Display *dpy;
     Window w;
     XSizeHints *hints;
+    long *supplied;
 {
-    return (XGetWMSizeHints (dpy, w, hints, XA_WM_NORMAL_HINTS));
+    return (XGetWMSizeHints (dpy, w, hints, supplied, XA_WM_NORMAL_HINTS));
 }
