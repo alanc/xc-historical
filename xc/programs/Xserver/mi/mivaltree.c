@@ -1,4 +1,4 @@
-/* $XConsortium: mivaltree.c,v 5.28 91/07/10 15:19:52 keith Exp $ */
+/* $XConsortium: mivaltree.c,v 5.29 91/12/17 19:34:15 keith Exp $ */
 /*
  * mivaltree.c --
  *	Functions for recalculating window clip lists. Main function
@@ -652,6 +652,8 @@ miValidateTree (pParent, pChild, kind)
 	} else {
 	    if (pWin->valdata) {
 		(* pScreen->RegionEmpty)(&pWin->clipList);
+		if (pScreen->ClipNotify)
+		    (* pScreen->ClipNotify) (pWin, 0, 0);
 		(* pScreen->RegionEmpty)(&pWin->borderClip);
 		pWin->valdata = (ValidatePtr)NULL;
 	    }
