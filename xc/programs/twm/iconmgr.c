@@ -21,7 +21,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: iconmgr.c,v 1.40 90/03/13 15:29:28 jim Exp $
+ * $XConsortium: iconmgr.c,v 1.41 90/03/14 17:44:56 jim Exp $
  *
  * Icon Manager routines
  *
@@ -318,122 +318,49 @@ void MoveIconManager(dir)
  */
 
 void JumpIconManager(dir)
-    int dir;
+    register int dir;
 {
     IconMgr *ip, *tmp_ip = NULL;
-    int got_it;
+    int got_it = FALSE;
     ScreenInfo *sp;
     int screen;
 
+    if (!Active) return;
+
+
+#define ITER(i) (dir == F_NEXTICONMGR ? (i)->next : (i)->prev)
+#define IPOFSP(sp) (dir == F_NEXTICONMGR ? &(sp->iconmgr) : sp->iconmgr.lasti)
+#define TEST(ip) if ((ip)->count != 0 && (ip)->twm_win->mapped) \
+		 { got_it = TRUE; break; }
+
     ip = Active->iconmgr;
-    got_it = FALSE;
-    switch (dir)
-    {
-	case F_NEXTICONMGR:
-	    for (tmp_ip = ip->next; tmp_ip != NULL; tmp_ip = tmp_ip->next)
-	    {
-		if (tmp_ip->count != 0 && tmp_ip->twm_win->mapped)
-		{
-		    /* we've got one on our own screen! */
-		    got_it = TRUE;
-		    break;
-		}
-	    }
-	    if (!got_it && !MultiScreen)
-	    {
-		/* let's start from the begining of this screen's list */
-		for (tmp_ip = &(ip->scr->iconmgr); tmp_ip != NULL;
-		    tmp_ip = tmp_ip->next)
-		{
-		    if (tmp_ip->count != 0 && tmp_ip->twm_win->mapped)
-		    {
-			/* we've got one on our own screen! */
-			got_it = TRUE;
-			break;
-		    }
-		}
-	    }
-	    if (!got_it)
-	    {
-		int origscreen = ip->scr->screen;
-		/* we have to go looking for one on another screen or
-		* wrap around on this screen
-		*/
-		for (screen = origscreen + 1; ; screen++)
-		{
-		    if (screen >= NumScreens)
-			screen = 0;
-
-		    sp = ScreenList[screen];
-		    for (tmp_ip = &(sp->iconmgr); tmp_ip != NULL;
-			tmp_ip = tmp_ip->next)
-		    {
-			if (tmp_ip->count != 0 && tmp_ip->twm_win->mapped)
-			{
-			    /* we've got one */
-			    got_it = TRUE;
-			    break;
-			}
-		    }
-		    if (got_it)
-			break;
-		    if (screen == origscreen) break;
-		}
-		    }
-	    break;
-	case F_PREVICONMGR:
-	    for (tmp_ip = ip->prev; tmp_ip != NULL; tmp_ip = tmp_ip->prev)
-	    {
-		if (tmp_ip->count != 0 && tmp_ip->twm_win->mapped)
-		{
-		    /* we've got one on our own screen! */
-		    got_it = TRUE;
-		    break;
-		}
-	    }
-	    if (!got_it && !MultiScreen)
-	    {
-		/* let's start from the end of this screen's list */
-		for (tmp_ip = ip->scr->iconmgr.lasti; tmp_ip != NULL;
-		    tmp_ip = tmp_ip->prev)
-		{
-		    if (tmp_ip->count != 0 && tmp_ip->twm_win->mapped)
-		    {
-			/* we've got one on our own screen! */
-			got_it = TRUE;
-			break;
-		    }
-		}
-	    }
-	    if (!got_it)
-	    {
-		int origscreen = ip->scr->screen;
-		/* we have to go looking for one on another screen or
-		* wrap around on this screen
-		*/
-		for (screen = origscreen - 1; ; screen--)
-		{
-		    if (screen < 0)
-			screen = NumScreens-1;
-
-		    sp = ScreenList[screen];
-		    for (tmp_ip = sp->iconmgr.lasti; tmp_ip != NULL;
-			tmp_ip = tmp_ip->prev)
-		    {
-			if (tmp_ip->count != 0 && tmp_ip->twm_win->mapped)
-			{
-			    /* we've got one */
-			    got_it = TRUE;
-			    break;
-			}
-		    }
-		    if (got_it)
-			break;
-		    if (origscreen == screen) break;
-		}
-	    }
-	    break;
+    for (tmp_ip = ITER(ip); tmp_ip; tmp_ip = ITER(tmp_ip)) {
+	TEST (tmp_ip);
     }
+
+    if (!got_it) {
+	int origscreen = ip->scr->screen;
+	int inc = (dir == F_NEXTICONMGR ? 1 : -1);
+
+	for (screen = origscreen + inc; ; screen += inc) {
+	    if (screen >= NumScreens)
+	      screen = 0;
+	    else if (screen < 0)
+	      screen = NumScreens - 1;
+
+	    sp = ScreenList[screen];
+	    if (sp) {
+		for (tmp_ip = IPOFSP (sp); tmp_ip; tmp_ip = ITER(tmp_ip)) {
+		    TEST (tmp_ip);
+		}
+	    }
+	    if (got_it || screen == origscreen) break;
+	}
+    }
+
+#undef ITER
+#undef IPOFSP
+#undef TEST
 
     if (!got_it) {
 	XBell (dpy, 0);
