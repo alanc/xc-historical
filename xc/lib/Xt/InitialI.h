@@ -1,4 +1,4 @@
-/* $XConsortium: InitialI.h,v 1.69 93/08/16 14:05:02 kaleb Exp $ */
+/* $XConsortium: InitialI.h,v 1.70 93/08/17 11:58:58 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -40,7 +40,11 @@ SOFTWARE.
 #endif
 #endif
 #ifndef PATH_MAX
+#ifdef WIN32
+#define PATH_MAX 512
+#else
 #include <sys/param.h>
+#endif
 #ifndef PATH_MAX
 #ifdef MAXPATHLEN
 #define PATH_MAX MAXPATHLEN
@@ -50,7 +54,7 @@ SOFTWARE.
 #endif
 #endif
 
-#if !defined(USE_POLL)
+#ifndef USE_POLL
 #include "fd.h"
 #else
 #include <sys/poll.h>
