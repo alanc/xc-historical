@@ -15,7 +15,13 @@ without any express or implied warranty.
 
 ********************************************************/
 
-/* $XConsortium: mfbzerarc.c,v 5.0 89/09/05 20:14:45 rws Exp $ */
+/* $XConsortium: mfbzerarc.c,v 5.1 89/09/10 18:05:03 rws Exp $ */
+
+/* Derived from:
+ * "Algorithm for drawing ellipses or hyperbolae with a digital plotter"
+ * by M. L. V. Pitteway
+ * The Computer Journal, November 1967, Volume 10, Number 3, pp. 282-289
+ */
 
 #include "X.h"
 #include "Xprotostr.h"
