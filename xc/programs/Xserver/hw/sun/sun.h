@@ -1,5 +1,5 @@
 
-/* $XConsortium: sun.h,v 5.19 93/08/06 15:50:32 kaleb Exp $ */
+/* $XConsortium: sun.h,v 5.20 93/08/08 18:03:48 kaleb Exp $ */
 
 /*-
  * Copyright (c) 1987 by the Regents of the University of California
@@ -181,18 +181,12 @@ typedef struct kbPrivate {
     int	    	  fd;	    	    	/* Descriptor open to device */
     Firm_event	  *(*GetEvents)();  	/* Function to read events */
     void    	  (*EnqueueEvent)();	/* Function to process an event */
-    pointer 	  devPrivate;	    	/* Private to keyboard device */
     Bool	  map_q;		/* TRUE if fd has a mapped event queue */
     int		  offset;		/* to be added to device keycodes */
     KeybdCtrl	  *ctrl;    	    	/* Current control structure (for
  					 * keyclick, bell duration, auto-
  					 * repeat, etc.) */
 } KbPrivRec, *KbPrivPtr;
-
-typedef struct {
-    BYTE	key;
-    KeySym	sym1, sym2;
-} SunKPmapRec;
 
 typedef struct {
     BYTE	key;
@@ -244,8 +238,6 @@ typedef struct {
  */
 typedef struct {
     unsigned char *	fb;	/* Frame buffer itself */
-    Bool	notused1;	/* R5 sunGX.o.dist needs this here */
-    Bool	notused2;	/* R5 sunGX.o.dist needs this here */
     int		fd;		/* frame buffer for ioctl()s, CG2 only */
     struct fbtype info;		/* Frame buffer characteristics */
     void	(*EnterLeave)();/* screen switch, CG4 only */
@@ -262,7 +254,7 @@ extern Bool		sunSupportsDepth24;
 extern Bool		sunAutoRepeatHandlersInstalled;
 extern sunFbDataRec	sunFbData[];
 extern fbFd		sunFbs[];
-extern Bool		sunDoF11, sunDoNumlock, sunDoCompose;
+extern Bool		sunDoF11;
 extern long		sunAutoRepeatInitiate;
 extern long		sunAutoRepeatDelay;
 extern int		sunScreenIndex;

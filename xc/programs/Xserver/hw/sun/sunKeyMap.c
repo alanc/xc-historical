@@ -1,4 +1,4 @@
-/* $XConsortium: sunKeyMap.c,v 4.11 93/08/06 15:09:38 kaleb Exp $ */
+/* $XConsortium: sunKeyMap.c,v 4.12 93/08/08 18:28:13 kaleb Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -63,15 +63,17 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #define SPAINLATAM4 
 #define SWEDEN5
 #define SWEDENFIN4
-#define SWITZER_FR4
-#define SWITZER_FR5
-#define SWITZER_GE4
-#define SWITZER_GE5
+#define SWISSFR4
+#define SWISSFR5
+#define SWISSGE4
+#define SWISSGE5
 #define TAIWAN4
 #define TAIWAN5
 #define UK4
 #define UK5
-#define US101A_SUN
+#define US101A
+#define US2
+#define US3
 #define US4
 #define US5
 #define US_UNIX5
@@ -110,15 +112,9 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #define	XK_R15	NoSymbol
 #endif
 
-#ifdef	notdef
-static KeySym KlunkMap[] = {
-};
+#ifdef US2
 
-static KeySym VT100[] = {
-};
-#endif
-
-static KeySym Sun2Map[] = {
+static KeySym US2Keymap[] = {
 	XK_L1,		NoSymbol,		/* 0x01 */
 	NoSymbol,	NoSymbol,		/* 0x02 */
 	XK_L2,		NoSymbol,		/* 0x03 */
@@ -248,7 +244,24 @@ static KeySym Sun2Map[] = {
 	NoSymbol,	NoSymbol,		/* 0x7f */
 };
 
-static KeySym Sun3Map[] = {
+static SunModmapRec US2Modmap[] = {
+	106,	(ShiftMask),
+	117,	(ShiftMask),
+	83,	(ControlMask),
+	127,	(Mod1Mask),
+	0,	0
+};
+
+#else
+
+#define US2Keymap NULL
+#define US2Modmap NULL
+
+#endif /* US2 */
+
+#ifdef US3
+
+static KeySym US3Keymap[] = {
 	XK_L1,		NoSymbol,		/* 0x01 */
 	NoSymbol,	NoSymbol,		/* 0x02 */
 	XK_L2,		NoSymbol,		/* 0x03 */
@@ -378,201 +391,42 @@ static KeySym Sun3Map[] = {
 	NoSymbol,	NoSymbol,		/* 0x7f */
 };
 
+static SunModmapRec US3Modmap[] = {
+	106,	(ShiftMask),
+	117,	(ShiftMask),
+	83,	(ControlMask),
+	126,	(LockMask),
+	127,	(Mod1Mask),
+	0,	0
+};
 
+#else
+
+#define US3Keymap NULL
+#define US3Modmap NULL
+
+#endif /* US3 */
 
 KeySymsRec sunKeySyms[] = {
     /*	map	   minKeyCode	maxKC	width */
-#ifdef	notdef
-    KlunkMap,		1,	0x7a,	2,
-    VT100Map,		1,	0x7a,	2,
-#else
     (KeySym *)NULL,	0,	0,	0,
     (KeySym *)NULL,	0,	0,	0,
-#endif
-    Sun2Map,		1,	0x7a,	2,
-    Sun3Map,		1,	0x7a,	2,
+    US2Keymap,		1,	0x7a,	2,
+    US3Keymap,		1,	0x7a,	2,
+    (KeySym *)NULL,	1,	0x7d,	4,
 };
 
-#define	cT	(ControlMask)
-#define	sH	(ShiftMask)
-#define	lK	(LockMask)
-#define	mT	(Mod1Mask)
-#define	nL	(Mod4Mask)
-#define	mK	(Mod5Mask)
-static CARD8 type2modmap[MAP_LENGTH] = {
-    0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, /* 00-0f */
-    0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, /* 10-1f */
-    0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, /* 20-2f */
-    0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, /* 30-3f */
-    0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, /* 40-4f */
-    0,  0,  0,  cT, 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, /* 50-5f */
-    0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  sH, 0,  0,  0,  0,  0, /* 60-6f */
-    0,  0,  0,  0,  0,  sH, 0,  0,  0,  0,  0,  0,  0,  0,  0,  mT,/* 70-7f */
-    0,  mT, 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, /* 80-8f */
-    0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, /* 90-9f */
-    0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, /* a0-af */
-    0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, /* b0-bf */
-    0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, /* c0-cf */
-    0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, /* d0-df */
-    0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, /* e0-ef */
-    0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, /* f0-ff */
+SunModmapRec *sunModMaps[] = {
+    NULL,
+    NULL,
+    US2Modmap,
+    US3Modmap,
+    NULL
 };
-
-static CARD8 type3modmap[MAP_LENGTH] = {
-    0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, /* 00-0f */
-    0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, /* 10-1f */
-    0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, /* 20-2f */
-    0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, /* 30-3f */
-    0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, /* 40-4f */
-    0,  0,  0,  cT, 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, /* 50-5f */
-    0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  sH, 0,  0,  0,  0,  0, /* 60-6f */
-    0,  0,  0,  0,  0,  sH, 0,  0,  0,  0,  0,  0,  0,  0,  lK, mT,/* 70-7f */
-    0,  mT, 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, /* 80-8f */
-    0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, /* 90-9f */
-    0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, /* a0-af */
-    0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, /* b0-bf */
-    0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, /* c0-cf */
-    0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, /* d0-df */
-    0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, /* e0-ef */
-    0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, /* f0-ff */
-};
-
-CARD8 *sunModMap[] = {
-	NULL,
-	NULL,
-	type2modmap,
-	type3modmap,
-};
-
-/*
- * The compose codes are coded as:
- *
- *	First char	second char	result
- */
-KeySym sunType4ComposeMap[] = {
-	XK_space,	XK_space,	XK_nobreakspace,
-	XK_exclam,	XK_exclam,	XK_exclamdown,
-	XK_C,		XK_slash,	XK_cent,
-	XK_c,		XK_slash,	XK_cent,
-	XK_L,		XK_minus,	XK_sterling,
-	XK_l,		XK_minus,	XK_sterling,
-	XK_o,		XK_x,		XK_currency,
-	XK_O,		XK_X,		XK_currency,
-	XK_0,		XK_x,		XK_currency,
-	XK_0,		XK_X,		XK_currency,
-	XK_Y,		XK_minus,	XK_yen,
-	XK_y,		XK_minus,	XK_yen,
-	XK_bar,		XK_bar,		XK_brokenbar,
-	XK_S,		XK_O,		XK_section,
-	XK_s,		XK_o,		XK_section,
-	XK_quotedbl,	XK_quotedbl,	XK_diaeresis,
-	XK_C,		XK_O,		XK_copyright,
-	XK_c,		XK_o,		XK_copyright,
-	XK_minus,	XK_A,		XK_ordfeminine,
-	XK_minus,	XK_a,		XK_ordfeminine,
-	XK_less,	XK_less,	XK_guillemotleft,
-	XK_minus,	XK_bar,		XK_notsign,
-	XK_minus,	XK_comma,	XK_notsign,
-	XK_minus,	XK_minus,	XK_hyphen,
-	XK_R,		XK_O,		XK_registered,
-	XK_r,		XK_o,		XK_registered,
-	XK_asciicircum,	XK_minus,	XK_macron,
-	XK_asciicircum,	XK_asterisk,	XK_degree,
-	XK_plus,	XK_minus,	XK_plusminus,
-	XK_asciicircum,	XK_2,		XK_twosuperior,
-	XK_asciicircum,	XK_3,		XK_threesuperior,
-	XK_backslash,	XK_backslash,	XK_acute,
-	XK_slash,	XK_u,		XK_mu,
-	XK_P,		XK_exclam,	XK_paragraph,
-	XK_asciicircum,	XK_period,	XK_periodcentered,
-	XK_comma,	XK_comma,	XK_cedilla,
-	XK_asciicircum,	XK_1,		XK_onesuperior,
-	XK_underscore,	XK_O,		XK_masculine,
-	XK_underscore,	XK_o,		XK_masculine,
-	XK_greater,	XK_greater,	XK_guillemotright,
-	XK_1,		XK_4,		XK_onequarter,
-	XK_1,		XK_2,		XK_onehalf,
-	XK_3,		XK_4,		XK_threequarters,
-	XK_question,	XK_question,	XK_questiondown,
-	XK_A,		XK_grave,	XK_Agrave,
-	XK_A,		XK_apostrophe,	XK_Aacute,
-	XK_A,		XK_asciicircum,	XK_Acircumflex,
-	XK_A,		XK_asciitilde,	XK_Atilde,
-	XK_A,		XK_quotedbl,	XK_Adiaeresis,
-	XK_A,		XK_asterisk,	XK_Aring,
-	XK_A,		XK_E,		XK_AE,
-	XK_C,		XK_comma,	XK_Ccedilla,
-	XK_E,		XK_grave,	XK_Egrave,
-	XK_E,		XK_apostrophe,	XK_Eacute,
-	XK_E,		XK_asciicircum,	XK_Ecircumflex,
-	XK_E,		XK_quotedbl,	XK_Ediaeresis,
-	XK_I,		XK_grave,	XK_Igrave,
-	XK_I,		XK_apostrophe,	XK_Iacute,
-	XK_I,		XK_asciicircum,	XK_Icircumflex,
-	XK_I,		XK_quotedbl,	XK_Idiaeresis,
-	XK_D,		XK_minus,	XK_Eth,
-	XK_N,		XK_asciitilde,	XK_Ntilde,
-	XK_O,		XK_grave,	XK_Ograve,
-	XK_O,		XK_apostrophe,	XK_Oacute,
-	XK_O,		XK_asciicircum,	XK_Ocircumflex,
-	XK_O,		XK_asciitilde,	XK_Otilde,
-	XK_O,		XK_quotedbl,	XK_Odiaeresis,
-	XK_x,		XK_x,		XK_multiply,
-	XK_O,		XK_slash,	XK_Ooblique,
-	XK_U,		XK_grave,	XK_Ugrave,
-	XK_U,		XK_apostrophe,	XK_Uacute,
-	XK_U,		XK_asciicircum,	XK_Ucircumflex,
-	XK_U,		XK_quotedbl,	XK_Udiaeresis,
-	XK_Y,		XK_apostrophe,	XK_Yacute,
-	XK_P,		XK_bar,		XK_Thorn,
-	XK_T,		XK_H,		XK_Thorn,
-	XK_s,		XK_s,		XK_ssharp,
-	XK_a,		XK_grave,	XK_agrave,
-	XK_a,		XK_apostrophe,	XK_aacute,
-	XK_a,		XK_asciicircum,	XK_acircumflex,
-	XK_a,		XK_asciitilde,	XK_atilde,
-	XK_a,		XK_quotedbl,	XK_adiaeresis,
-	XK_a,		XK_asterisk,	XK_aring,
-	XK_a,		XK_e,		XK_ae,
-	XK_c,		XK_comma,	XK_ccedilla,
-	XK_e,		XK_grave,	XK_egrave,
-	XK_e,		XK_apostrophe,	XK_eacute,
-	XK_e,		XK_asciicircum,	XK_ecircumflex,
-	XK_e,		XK_quotedbl,	XK_ediaeresis,
-	XK_i,		XK_grave,	XK_igrave,
-	XK_i,		XK_apostrophe,	XK_iacute,
-	XK_i,		XK_asciicircum,	XK_icircumflex,
-	XK_i,		XK_quotedbl,	XK_idiaeresis,
-	XK_d,		XK_minus,	XK_eth,
-	XK_n,		XK_asciitilde,	XK_ntilde,
-	XK_o,		XK_grave,	XK_ograve,
-	XK_o,		XK_apostrophe,	XK_oacute,
-	XK_o,		XK_asciicircum,	XK_ocircumflex,
-	XK_o,		XK_asciitilde,	XK_otilde,
-	XK_o,		XK_quotedbl,	XK_odiaeresis,
-	XK_minus,	XK_colon,	XK_division,
-	XK_o,		XK_slash,	XK_oslash,
-	XK_u,		XK_grave,	XK_ugrave,
-	XK_u,		XK_apostrophe,	XK_uacute,
-	XK_u,		XK_asciicircum,	XK_ucircumflex,
-	XK_u,		XK_quotedbl,	XK_udiaeresis,
-	XK_y,		XK_apostrophe,	XK_yacute,
-	XK_t,		XK_h,		XK_thorn,
-	XK_p,		XK_bar,		XK_thorn,
-	XK_y,		XK_quotedbl,	XK_ydiaeresis,
-	0,		0,		0
-};
-
-/*
- * The following generic maplength is used for the undefined maps
- */
-static int genericmaplen = 0;
 
 #ifdef CANADA4
 
-static int Canada4maplen = 125 ;
-
-static KeySym Canada4Map[] = {
+static KeySym Canada4Keymap[] = {
 	XK_L1,  	XK_L1,  	SunXK_Stop,	NoSymbol,	/*  1*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  2*/
 	XK_L2,  	XK_L2,  	SunXK_Again,	NoSymbol,	/*  3*/
@@ -700,27 +554,7 @@ static KeySym Canada4Map[] = {
 	XK_KP_Add,	NoSymbol,	NoSymbol,	NoSymbol,	/*125*/
 };
 
-static SunKPmapRec Canada4KPMap[] = {
-	45,	XK_KP_Equal,	NoSymbol,
-	46,	XK_KP_Divide,	NoSymbol,
-	47,	XK_KP_Multiply,	NoSymbol,
-	50,	XK_KP_Decimal,	NoSymbol,
-	68,	XK_KP_7,	XK_Home,
-	69,	XK_KP_8,	NoSymbol,
-	70,	XK_KP_9,	XK_Prior,
-	90,	XK_KP_Enter,	NoSymbol,
-	91,	XK_KP_4,	NoSymbol,
-	92,	XK_KP_5,	NoSymbol,
-	93,	XK_KP_6,	NoSymbol,
-	94,	XK_KP_0,	NoSymbol,
-	112,	XK_KP_1,	XK_End,
-	113,	XK_KP_2,	NoSymbol,
-	114,	XK_KP_3,	XK_Next,
-	125,	XK_KP_Add,	NoSymbol,
-	0,	NoSymbol,	NoSymbol
-};
-
-static SunModmapRec Canada4modmap[] = {
+static SunModmapRec Canada4Modmap[] = {
 	99,	(ShiftMask),
 	110,	(ShiftMask),
 	76,	(LockMask),
@@ -734,19 +568,15 @@ static SunModmapRec Canada4modmap[] = {
 
 #else
 
-#define Canada4Map     	NULL
-#define Canada4maplen 	genericmaplen
-#define Canada4KPMap   	NULL
-#define Canada4modmap  	NULL
+#define Canada4Keymap NULL
+#define Canada4Modmap NULL
 
 #endif /* CANADA4 */
 
 
 #ifdef DENMARK4
 
-static int Denmark4maplen = 125 ;
-
-static KeySym Denmark4Map[] = {
+static KeySym Denmark4Keymap[] = {
 	XK_L1,  	XK_L1,  	SunXK_Stop,	NoSymbol,	/*  1*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  2*/
 	XK_L2,  	XK_L2,  	SunXK_Again,	NoSymbol,	/*  3*/
@@ -874,27 +704,7 @@ static KeySym Denmark4Map[] = {
 	XK_KP_Add,	NoSymbol,	NoSymbol,	NoSymbol,	/*125*/
 };
 
-static SunKPmapRec Denmark4KPMap[] = {
-	45,	XK_KP_Equal,	NoSymbol,
-	46,	XK_KP_Divide,	NoSymbol,
-	47,	XK_KP_Multiply,	NoSymbol,
-	50,	XK_KP_Decimal,	NoSymbol,
-	68,	XK_KP_7,	XK_Home,
-	69,	XK_KP_8,	NoSymbol,
-	70,	XK_KP_9,	XK_Prior,
-	90,	XK_KP_Enter,	NoSymbol,
-	91,	XK_KP_4,	NoSymbol,
-	92,	XK_KP_5,	NoSymbol,
-	93,	XK_KP_6,	NoSymbol,
-	94,	XK_KP_0,	NoSymbol,
-	112,	XK_KP_1,	XK_End,
-	113,	XK_KP_2,	NoSymbol,
-	114,	XK_KP_3,	XK_Next,
-	125,	XK_KP_Add,	NoSymbol,
-	0,	0,		0
-};
-
-static SunModmapRec Denmark4modmap[] = {
+static SunModmapRec Denmark4Modmap[] = {
 	99,	(ShiftMask),
 	110,	(ShiftMask),
 	76,	(LockMask),
@@ -908,19 +718,15 @@ static SunModmapRec Denmark4modmap[] = {
 
 #else
 
-#define Denmark4Map     	NULL
-#define Denmark4maplen 		genericmaplen
-#define Denmark4KPMap   	NULL
-#define Denmark4modmap  	NULL
+#define Denmark4Keymap NULL
+#define Denmark4Modmap NULL
 
 #endif /* DENMARK4 */
 
 
 #ifdef DENMARK5
 
-static int Denmark5maplen = 125 ;
-
-static KeySym Denmark5Map[] = {
+static KeySym Denmark5Keymap[] = {
 	XK_L1,  	XK_L1,  	SunXK_Stop,	NoSymbol,	/*  1*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  2*/
 	XK_L2,  	XK_L2,  	SunXK_Again,	NoSymbol,	/*  3*/
@@ -1048,27 +854,7 @@ static KeySym Denmark5Map[] = {
 	XK_KP_Add,	NoSymbol,	NoSymbol,	NoSymbol,	/*125*/
 };
 
-static SunKPmapRec Denmark5KPMap[] = {
-	46,	XK_KP_Divide,	NoSymbol,
-	47,	XK_KP_Multiply,	NoSymbol,
-	50,	XK_KP_Separator,	NoSymbol,
-	68,	XK_KP_7,	XK_Home,
-	69,	XK_KP_8,	NoSymbol,
-	70,	XK_KP_9,	XK_Prior,
-	71,	XK_KP_Subtract,	NoSymbol,
-	90,	XK_KP_Enter,	NoSymbol,
-	91,	XK_KP_4,	NoSymbol,
-	92,	XK_KP_5,	NoSymbol,
-	93,	XK_KP_6,	NoSymbol,
-	94,	XK_KP_0,	NoSymbol,
-	112,	XK_KP_1,	XK_End,
-	113,	XK_KP_2,	NoSymbol,
-	114,	XK_KP_3,	XK_Next,
-	125,	XK_KP_Add,	NoSymbol,
-	0,	0,		0
-};
-
-static SunModmapRec Denmark5modmap[] = {
+static SunModmapRec Denmark5Modmap[] = {
 	99,	(ShiftMask),
 	110,	(ShiftMask),
 	119,	(LockMask),
@@ -1082,19 +868,15 @@ static SunModmapRec Denmark5modmap[] = {
 
 #else
 
-#define Denmark5Map     	NULL
-#define Denmark5maplen		genericmaplen
-#define Denmark5KPMap   	NULL
-#define Denmark5modmap  	NULL
+#define Denmark5Keymap NULL
+#define Denmark5Modmap NULL
 
 #endif /* DENMARK5 */
 
 
 #ifdef FRANCE5
 
-static int France5maplen = 125 ;
-
-static KeySym France5Map[] = {
+static KeySym France5Keymap[] = {
 	XK_L1,  	XK_L1,  	SunXK_Stop,	NoSymbol,	/*  1*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  2*/
 	XK_L2,  	XK_L2,  	SunXK_Again,	NoSymbol,	/*  3*/
@@ -1222,27 +1004,7 @@ static KeySym France5Map[] = {
 	XK_KP_Add,	NoSymbol,	NoSymbol,	NoSymbol,	/*125*/
 };
 
-static SunKPmapRec France5KPMap[] = {
-	46,	XK_KP_Divide,	NoSymbol,
-	47,	XK_KP_Multiply,	NoSymbol,
-	50,	XK_KP_Decimal,	NoSymbol,
-	68,	XK_KP_7,	XK_Home,
-	69,	XK_KP_8,	NoSymbol,
-	70,	XK_KP_9,	XK_Prior,
-	71,	XK_KP_Subtract,	NoSymbol,
-	90,	XK_KP_Enter,	NoSymbol,
-	91,	XK_KP_4,	NoSymbol,
-	92,	XK_KP_5,	NoSymbol,
-	93,	XK_KP_6,	NoSymbol,
-	94,	XK_KP_0,	NoSymbol,
-	112,	XK_KP_1,	XK_End,
-	113,	XK_KP_2,	NoSymbol,
-	114,	XK_KP_3,	XK_Next,
-	125,	XK_KP_Add,	NoSymbol,
-	0,	0,		0
-};
-
-static SunModmapRec France5modmap[] = {
+static SunModmapRec France5Modmap[] = {
 	99,	(ShiftMask),
 	110,	(ShiftMask),
 	119,	(LockMask),
@@ -1256,19 +1018,15 @@ static SunModmapRec France5modmap[] = {
 
 #else
 
-#define France5Map     	NULL
-#define France5maplen	genericmaplen
-#define France5KPMap   	NULL
-#define France5modmap  	NULL
+#define France5Keymap NULL
+#define France5Modmap NULL
 
 #endif /* FRANCE5 */
 
 
 #ifdef FRANCEBELG4
 
-static int FranceBelg4maplen = 125 ;
-
-static KeySym FranceBelg4Map[] = {
+static KeySym FranceBelg4Keymap[] = {
 	XK_L1,  	XK_L1,  	SunXK_Stop,	NoSymbol,	/*  1*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  2*/
 	XK_L2,  	XK_L2,  	SunXK_Again,	NoSymbol,	/*  3*/
@@ -1396,27 +1154,7 @@ static KeySym FranceBelg4Map[] = {
 	XK_KP_Add,	NoSymbol,	NoSymbol,	NoSymbol,	/*125*/
 };
 
-static SunKPmapRec FranceBelg4KPMap[] = {
-	45,	XK_KP_Equal,	NoSymbol,
-	46,	XK_KP_Divide,	NoSymbol,
-	47,	XK_KP_Multiply,	NoSymbol,
-	50,	XK_KP_Decimal,	NoSymbol,
-	68,	XK_KP_7,	XK_Home,
-	69,	XK_KP_8,	NoSymbol,
-	70,	XK_KP_9,	XK_Prior,
-	90,	XK_KP_Enter,	NoSymbol,
-	91,	XK_KP_4,	NoSymbol,
-	92,	XK_KP_5,	NoSymbol,
-	93,	XK_KP_6,	NoSymbol,
-	94,	XK_KP_0,	NoSymbol,
-	112,	XK_KP_1,	XK_End,
-	113,	XK_KP_2,	NoSymbol,
-	114,	XK_KP_3,	XK_Next,
-	125,	XK_KP_Add,	NoSymbol,
-	0,	0,		0
-};
-
-static SunModmapRec FranceBelg4modmap[] = {
+static SunModmapRec FranceBelg4Modmap[] = {
 	99,	(ShiftMask),
 	110,	(ShiftMask),
 	13,	(LockMask),
@@ -1430,19 +1168,15 @@ static SunModmapRec FranceBelg4modmap[] = {
 
 #else
 
-#define FranceBelg4Map     	NULL
-#define FranceBelg4maplen 	genericmaplen
-#define FranceBelg4KPMap   	NULL
-#define FranceBelg4modmap  	NULL
+#define FranceBelg4Keymap NULL
+#define FranceBelg4Modmap NULL
 
 #endif /* FRANCEBELG4 */
 
 
 #ifdef GERMANY4
 
-static int Germany4maplen = 125 ;
-
-static KeySym Germany4Map[] = {
+static KeySym Germany4Keymap[] = {
 	XK_L1,  	XK_L1,  	SunXK_Stop,	NoSymbol,	/*  1*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  2*/
 	XK_L2,  	XK_L2,  	SunXK_Again,	NoSymbol,	/*  3*/
@@ -1570,27 +1304,7 @@ static KeySym Germany4Map[] = {
 	XK_KP_Add,	NoSymbol,	NoSymbol,	NoSymbol,	/*125*/
 };
 
-static SunKPmapRec Germany4KPMap[] = {
-	45,	XK_KP_Equal,	NoSymbol,
-	46,	XK_KP_Divide,	NoSymbol,
-	47,	XK_KP_Multiply,	NoSymbol,
-	50,	XK_KP_Decimal,	NoSymbol,
-	68,	XK_KP_7,	XK_Home,
-	69,	XK_KP_8,	NoSymbol,
-	70,	XK_KP_9,	XK_Prior,
-	90,	XK_KP_Enter,	NoSymbol,
-	91,	XK_KP_4,	NoSymbol,
-	92,	XK_KP_5,	NoSymbol,
-	93,	XK_KP_6,	NoSymbol,
-	94,	XK_KP_0,	NoSymbol,
-	112,	XK_KP_1,	XK_End,
-	113,	XK_KP_2,	NoSymbol,
-	114,	XK_KP_3,	XK_Next,
-	125,	XK_KP_Add,	NoSymbol,
-	0,	0,		0
-};
-
-static SunModmapRec Germany4modmap[] = {
+static SunModmapRec Germany4Modmap[] = {
 	99,	(ShiftMask),
 	110,	(ShiftMask),
 	76,	(LockMask),
@@ -1604,19 +1318,15 @@ static SunModmapRec Germany4modmap[] = {
 
 #else
 
-#define Germany4Map     	NULL
-#define Germany4maplen 		genericmaplen
-#define Germany4KPMap   	NULL
-#define Germany4modmap  	NULL
+#define Germany4Keymap NULL
+#define Germany4Modmap NULL
 
 #endif /* GERMANY4 */
 
 
 #ifdef GERMANY5
 
-static int Germany5maplen = 125 ;
-
-static KeySym Germany5Map[] = {
+static KeySym Germany5Keymap[] = {
 	XK_L1,  	XK_L1,  	SunXK_Stop,	NoSymbol,	/*  1*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  2*/
 	XK_L2,  	XK_L2,  	SunXK_Again,	NoSymbol,	/*  3*/
@@ -1744,27 +1454,7 @@ static KeySym Germany5Map[] = {
 	XK_KP_Add,	NoSymbol,	NoSymbol,	NoSymbol,	/*125*/
 };
 
-static SunKPmapRec Germany5KPMap[] = {
-	46,	XK_KP_Divide,	NoSymbol,
-	47,	XK_KP_Multiply,	NoSymbol,
-	50,	XK_KP_Separator,	NoSymbol,
-	68,	XK_KP_7,	XK_Home,
-	69,	XK_KP_8,	NoSymbol,
-	70,	XK_KP_9,	XK_Prior,
-	71,	XK_KP_Subtract,	NoSymbol,
-	90,	XK_KP_Enter,	NoSymbol,
-	91,	XK_KP_4,	NoSymbol,
-	92,	XK_KP_5,	NoSymbol,
-	93,	XK_KP_6,	NoSymbol,
-	94,	XK_KP_0,	NoSymbol,
-	112,	XK_KP_1,	XK_End,
-	113,	XK_KP_2,	NoSymbol,
-	114,	XK_KP_3,	XK_Next,
-	125,	XK_KP_Add,	NoSymbol,
-	0,	0,		0
-};
-
-static SunModmapRec Germany5modmap[] = {
+static SunModmapRec Germany5Modmap[] = {
 	99,	(ShiftMask),
 	110,	(ShiftMask),
 	119,	(LockMask),
@@ -1778,19 +1468,15 @@ static SunModmapRec Germany5modmap[] = {
 
 #else
 
-#define Germany5Map     	NULL
-#define Germany5maplen 		genericmaplen
-#define Germany5KPMap   	NULL
-#define Germany5modmap  	NULL
+#define Germany5Keymap NULL
+#define Germany5Modmap NULL
 
 #endif /* GERMANY5 */
 
 
 #ifdef ITALY4
 
-static int Italy4maplen = 125 ;
-
-static KeySym Italy4Map[] = {
+static KeySym Italy4Keymap[] = {
 	XK_L1,  	XK_L1,  	SunXK_Stop,	NoSymbol,	/*  1*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  2*/
 	XK_L2,  	XK_L2,  	SunXK_Again,	NoSymbol,	/*  3*/
@@ -1918,27 +1604,7 @@ static KeySym Italy4Map[] = {
 	XK_KP_Add,	NoSymbol,	NoSymbol,	NoSymbol,	/*125*/
 };
 
-static SunKPmapRec Italy4KPMap[] = {
-	45,	XK_KP_Equal,	NoSymbol,
-	46,	XK_KP_Divide,	NoSymbol,
-	47,	XK_KP_Multiply,	NoSymbol,
-	50,	XK_KP_Decimal,	NoSymbol,
-	68,	XK_KP_7,	XK_Home,
-	69,	XK_KP_8,	NoSymbol,
-	70,	XK_KP_9,	XK_Prior,
-	90,	XK_KP_Enter,	NoSymbol,
-	91,	XK_KP_4,	NoSymbol,
-	92,	XK_KP_5,	NoSymbol,
-	93,	XK_KP_6,	NoSymbol,
-	94,	XK_KP_0,	NoSymbol,
-	112,	XK_KP_1,	XK_End,
-	113,	XK_KP_2,	NoSymbol,
-	114,	XK_KP_3,	XK_Next,
-	125,	XK_KP_Add,	NoSymbol,
-	0,	0,		0
-};
-
-static SunModmapRec Italy4modmap[] = {
+static SunModmapRec Italy4Modmap[] = {
 	99,	(ShiftMask),
 	110,	(ShiftMask),
 	76,	(LockMask),
@@ -1952,19 +1618,15 @@ static SunModmapRec Italy4modmap[] = {
 
 #else
 
-#define Italy4Map     	NULL
-#define Italy4maplen 	genericmaplen
-#define Italy4KPMap   	NULL
-#define Italy4modmap  	NULL
+#define Italy4Keymap NULL
+#define Italy4Modmap NULL
 
 #endif /* ITALY4 */
 
 
 #ifdef ITALY5
 
-static int Italy5maplen = 125 ;
-
-static KeySym Italy5Map[] = {
+static KeySym Italy5Keymap[] = {
 	XK_L1,  	XK_L1,  	SunXK_Stop,	NoSymbol,	/*  1*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  2*/
 	XK_L2,  	XK_L2,  	SunXK_Again,	NoSymbol,	/*  3*/
@@ -2092,27 +1754,7 @@ static KeySym Italy5Map[] = {
 	XK_KP_Add,	NoSymbol,	NoSymbol,	NoSymbol,	/*125*/
 };
 
-static SunKPmapRec Italy5KPMap[] = {
-	46,	XK_KP_Divide,	NoSymbol,
-	47,	XK_KP_Multiply,	NoSymbol,
-	50,	XK_KP_Decimal,	NoSymbol,
-	68,	XK_KP_7,	XK_Home,
-	69,	XK_KP_8,	NoSymbol,
-	70,	XK_KP_9,	XK_Prior,
-	71,	XK_KP_Subtract,	NoSymbol,
-	90,	XK_KP_Enter,	NoSymbol,
-	91,	XK_KP_4,	NoSymbol,
-	92,	XK_KP_5,	NoSymbol,
-	93,	XK_KP_6,	NoSymbol,
-	94,	XK_KP_0,	NoSymbol,
-	112,	XK_KP_1,	XK_End,
-	113,	XK_KP_2,	NoSymbol,
-	114,	XK_KP_3,	XK_Next,
-	125,	XK_KP_Add,	NoSymbol,
-	0,	0,		0
-};
-
-static SunModmapRec Italy5modmap[] = {
+static SunModmapRec Italy5Modmap[] = {
 	99,	(ShiftMask),
 	110,	(ShiftMask),
 	119,	(LockMask),
@@ -2126,19 +1768,15 @@ static SunModmapRec Italy5modmap[] = {
 
 #else
 
-#define Italy5Map     	NULL
-#define Italy5maplen 	genericmaplen
-#define Italy5KPMap   	NULL
-#define Italy5modmap  	NULL
+#define Italy5Keymap NULL
+#define Italy5Modmap NULL
 
 #endif /* ITALY5 */
 
 
 #ifdef JAPAN4
 
-static int Japan4maplen = 125 ;
-
-static KeySym Japan4Map[] = {
+static KeySym Japan4Keymap[] = {
 	XK_L1,  	XK_L1,  	SunXK_Stop,	NoSymbol,	/*  1*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  2*/
 	XK_L2,  	XK_L2,  	SunXK_Again,	NoSymbol,	/*  3*/
@@ -2266,27 +1904,7 @@ static KeySym Japan4Map[] = {
 	XK_KP_Add,	NoSymbol,	NoSymbol,	NoSymbol,	/*125*/
 };
 
-static SunKPmapRec Japan4KPMap[] = {
-	45,	XK_KP_Equal,	NoSymbol,
-	46,	XK_KP_Divide,	NoSymbol,
-	47,	XK_KP_Multiply,	NoSymbol,
-	50,	XK_KP_Decimal,	NoSymbol,
-	68,	XK_KP_7,	XK_Home,
-	69,	XK_KP_8,	NoSymbol,
-	70,	XK_KP_9,	XK_Prior,
-	90,	XK_KP_Enter,	NoSymbol,
-	91,	XK_KP_4,	NoSymbol,
-	92,	XK_KP_5,	NoSymbol,
-	93,	XK_KP_6,	NoSymbol,
-	94,	XK_KP_0,	NoSymbol,
-	112,	XK_KP_1,	XK_End,
-	113,	XK_KP_2,	NoSymbol,
-	114,	XK_KP_3,	XK_Next,
-	125,	XK_KP_Add,	NoSymbol,
-	0,	0,		0
-};
-
-static SunModmapRec Japan4modmap[] = {
+static SunModmapRec Japan4Modmap[] = {
 	99,	(ShiftMask),
 	110,	(ShiftMask),
 	119,	(LockMask),
@@ -2300,19 +1918,15 @@ static SunModmapRec Japan4modmap[] = {
 
 #else
 
-#define Japan4Map     	NULL
-#define Japan4maplen 	genericmaplen
-#define Japan4KPMap   	NULL
-#define Japan4modmap  	NULL
+#define Japan4Keymap NULL
+#define Japan4Modmap NULL
 
 #endif /* JAPAN4 */
 
 
 #ifdef JAPAN5
 
-static int Japan5maplen = 125 ;
-
-static KeySym Japan5Map[] = {
+static KeySym Japan5Keymap[] = {
 	XK_L1,  	XK_L1,  	SunXK_Stop,	NoSymbol,	/*  1*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  2*/
 	XK_L2,  	XK_L2,  	SunXK_Again,	NoSymbol,	/*  3*/
@@ -2440,27 +2054,7 @@ static KeySym Japan5Map[] = {
 	XK_KP_Add,	NoSymbol,	NoSymbol,	NoSymbol,	/*125*/
 };
 
-static SunKPmapRec Japan5KPMap[] = {
-	46,	XK_KP_Divide,	NoSymbol,
-	47,	XK_KP_Multiply,	NoSymbol,
-	50,	XK_KP_Decimal,	NoSymbol,
-	68,	XK_KP_7,	XK_Home,
-	69,	XK_KP_8,	NoSymbol,
-	70,	XK_KP_9,	XK_Prior,
-	71,	XK_KP_Subtract,	NoSymbol,
-	90,	XK_KP_Enter,	NoSymbol,
-	91,	XK_KP_4,	NoSymbol,
-	92,	XK_KP_5,	NoSymbol,
-	93,	XK_KP_6,	NoSymbol,
-	94,	XK_KP_0,	NoSymbol,
-	112,	XK_KP_1,	XK_End,
-	113,	XK_KP_2,	NoSymbol,
-	114,	XK_KP_3,	XK_Next,
-	125,	XK_KP_Add,	NoSymbol,
-	0,	0,		0
-};
-
-static SunModmapRec Japan5modmap[] = {
+static SunModmapRec Japan5Modmap[] = {
 	99,	(ShiftMask),
 	110,	(ShiftMask),
 	119,	(LockMask),
@@ -2474,19 +2068,15 @@ static SunModmapRec Japan5modmap[] = {
 
 #else
 
-#define Japan5Map     	NULL
-#define Japan5maplen 	genericmaplen
-#define Japan5KPMap   	NULL
-#define Japan5modmap  	NULL
+#define Japan5Keymap NULL
+#define Japan5Modmap NULL
 
 #endif /* JAPAN5 */
 
 
 #ifdef KOREA4
 
-static int Korea4maplen = 125 ;
-
-static KeySym Korea4Map[] = {
+static KeySym Korea4Keymap[] = {
 	XK_L1,  	XK_L1,  	SunXK_Stop,	NoSymbol,	/*  1*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  2*/
 	XK_L2,  	XK_L2,  	SunXK_Again,	NoSymbol,	/*  3*/
@@ -2614,27 +2204,7 @@ static KeySym Korea4Map[] = {
 	XK_KP_Add,	NoSymbol,	NoSymbol,	NoSymbol,	/*125*/
 };
 
-static SunKPmapRec Korea4KPMap[] = {
-	45,	XK_KP_Equal,	NoSymbol,
-	46,	XK_KP_Divide,	NoSymbol,
-	47,	XK_KP_Multiply,	NoSymbol,
-	50,	XK_KP_Decimal,	NoSymbol,
-	68,	XK_KP_7,	XK_Home,
-	69,	XK_KP_8,	NoSymbol,
-	70,	XK_KP_9,	XK_Prior,
-	90,	XK_KP_Enter,	NoSymbol,
-	91,	XK_KP_4,	NoSymbol,
-	92,	XK_KP_5,	NoSymbol,
-	93,	XK_KP_6,	NoSymbol,
-	94,	XK_KP_0,	NoSymbol,
-	112,	XK_KP_1,	XK_End,
-	113,	XK_KP_2,	NoSymbol,
-	114,	XK_KP_3,	XK_Next,
-	125,	XK_KP_Add,	NoSymbol,
-	0,	0,		0
-};
-
-static SunModmapRec Korea4modmap[] = {
+static SunModmapRec Korea4Modmap[] = {
 	99,	(ShiftMask),
 	110,	(ShiftMask),
 	119,	(LockMask),
@@ -2648,19 +2218,15 @@ static SunModmapRec Korea4modmap[] = {
 
 #else
 
-#define Korea4Map     	NULL
-#define Korea4maplen 	genericmaplen
-#define Korea4KPMap   	NULL
-#define Korea4modmap  	NULL
+#define Korea4Keymap NULL
+#define Korea4Modmap NULL
 
 #endif /* KOREA4 */
 
 
 #ifdef KOREA5
 
-static int Korea5maplen = 125 ;
-
-static KeySym Korea5Map[] = {
+static KeySym Korea5Keymap[] = {
 	XK_L1,  	XK_L1,  	SunXK_Stop,	NoSymbol,	/*  1*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  2*/
 	XK_L2,  	XK_L2,  	SunXK_Again,	NoSymbol,	/*  3*/
@@ -2788,27 +2354,7 @@ static KeySym Korea5Map[] = {
 	XK_KP_Add,	NoSymbol,	NoSymbol,	NoSymbol,	/*125*/
 };
 
-static SunKPmapRec Korea5KPMap[] = {
-	46,	XK_KP_Divide,	NoSymbol,
-	47,	XK_KP_Multiply,	NoSymbol,
-	50,	XK_KP_Decimal,	NoSymbol,
-	68,	XK_KP_7,	XK_Home,
-	69,	XK_KP_8,	NoSymbol,
-	70,	XK_KP_9,	XK_Prior,
-	71,	XK_KP_Subtract,	NoSymbol,
-	90,	XK_KP_Enter,	NoSymbol,
-	91,	XK_KP_4,	NoSymbol,
-	92,	XK_KP_5,	NoSymbol,
-	93,	XK_KP_6,	NoSymbol,
-	94,	XK_KP_0,	NoSymbol,
-	112,	XK_KP_1,	XK_End,
-	113,	XK_KP_2,	NoSymbol,
-	114,	XK_KP_3,	XK_Next,
-	125,	XK_KP_Add,	NoSymbol,
-	0,	0,		0
-};
-
-static SunModmapRec Korea5modmap[] = {
+static SunModmapRec Korea5Modmap[] = {
 	99,	(ShiftMask),
 	110,	(ShiftMask),
 	119,	(LockMask),
@@ -2822,19 +2368,15 @@ static SunModmapRec Korea5modmap[] = {
 
 #else
 
-#define Korea5Map     	NULL
-#define Korea5maplen 	genericmaplen
-#define Korea5KPMap   	NULL
-#define Korea5modmap  	NULL
+#define Korea5Keymap NULL
+#define Korea5Modmap NULL
 
 #endif /* KOREA5 */
 
 
 #ifdef NETHERLAND4
 
-static int Netherland4maplen = 125 ;
-
-static KeySym Netherland4Map[] = {
+static KeySym Netherland4Keymap[] = {
 	XK_L1,  	XK_L1,  	SunXK_Stop,	NoSymbol,	/*  1*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  2*/
 	XK_L2,  	XK_L2,  	SunXK_Again,	NoSymbol,	/*  3*/
@@ -2962,27 +2504,7 @@ static KeySym Netherland4Map[] = {
 	XK_KP_Add,	NoSymbol,	NoSymbol,	NoSymbol,	/*125*/
 };
 
-static SunKPmapRec Netherland4KPMap[] = {
-	45,	XK_KP_Equal,	NoSymbol,
-	46,	XK_KP_Divide,	NoSymbol,
-	47,	XK_KP_Multiply,	NoSymbol,
-	50,	XK_KP_Decimal,	NoSymbol,
-	68,	XK_KP_7,	XK_Home,
-	69,	XK_KP_8,	NoSymbol,
-	70,	XK_KP_9,	XK_Prior,
-	90,	XK_KP_Enter,	NoSymbol,
-	91,	XK_KP_4,	NoSymbol,
-	92,	XK_KP_5,	NoSymbol,
-	93,	XK_KP_6,	NoSymbol,
-	94,	XK_KP_0,	NoSymbol,
-	112,	XK_KP_1,	XK_End,
-	113,	XK_KP_2,	NoSymbol,
-	114,	XK_KP_3,	XK_Next,
-	125,	XK_KP_Add,	NoSymbol,
-	0,	0,		0
-};
-
-static SunModmapRec Netherland4modmap[] = {
+static SunModmapRec Netherland4Modmap[] = {
 	99,	(ShiftMask),
 	110,	(ShiftMask),
 	13,	(LockMask),
@@ -2996,19 +2518,15 @@ static SunModmapRec Netherland4modmap[] = {
 
 #else
 
-#define Netherland4Map     	NULL
-#define Netherland4maplen 	genericmaplen
-#define Netherland4KPMap   	NULL
-#define Netherland4modmap  	NULL
+#define Netherland4Keymap NULL
+#define Netherland4Modmap NULL
 
 #endif /* NETHERLAND4 */
 
 
 #ifdef NETHERLAND5
 
-static int Netherland5maplen = 125 ;
-
-static KeySym Netherland5Map[] = {
+static KeySym Netherland5Keymap[] = {
 	XK_L1,  	XK_L1,  	SunXK_Stop,	NoSymbol,	/*  1*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  2*/
 	XK_L2,  	XK_L2,  	SunXK_Again,	NoSymbol,	/*  3*/
@@ -3136,27 +2654,7 @@ static KeySym Netherland5Map[] = {
 	XK_KP_Add,	NoSymbol,	NoSymbol,	NoSymbol,	/*125*/
 };
 
-static SunKPmapRec Netherland5KPMap[] = {
-	46,	XK_KP_Divide,	NoSymbol,
-	47,	XK_KP_Multiply,	NoSymbol,
-	50,	XK_KP_Separator,	NoSymbol,
-	68,	XK_KP_7,	XK_Home,
-	69,	XK_KP_8,	NoSymbol,
-	70,	XK_KP_9,	XK_Prior,
-	71,	XK_KP_Subtract,	NoSymbol,
-	90,	XK_KP_Enter,	NoSymbol,
-	91,	XK_KP_4,	NoSymbol,
-	92,	XK_KP_5,	NoSymbol,
-	93,	XK_KP_6,	NoSymbol,
-	94,	XK_KP_0,	NoSymbol,
-	112,	XK_KP_1,	XK_End,
-	113,	XK_KP_2,	NoSymbol,
-	114,	XK_KP_3,	XK_Next,
-	125,	XK_KP_Add,	NoSymbol,
-	0,	0,		0
-};
-
-static SunModmapRec Netherland5modmap[] = {
+static SunModmapRec Netherland5Modmap[] = {
 	99,	(ShiftMask),
 	110,	(ShiftMask),
 	119,	(LockMask),
@@ -3170,19 +2668,15 @@ static SunModmapRec Netherland5modmap[] = {
 
 #else
 
-#define Netherland5Map     	NULL
-#define Netherland5maplen 	genericmaplen
-#define Netherland5KPMap   	NULL
-#define Netherland5modmap  	NULL
+#define Netherland5Keymap NULL
+#define Netherland5Modmap NULL
 
 #endif /* NETHERLAND5 */
 
 
 #ifdef NORWAY4
 
-static int Norway4maplen = 125 ;
-
-static KeySym Norway4Map[] = {
+static KeySym Norway4Keymap[] = {
 	XK_L1,  	XK_L1,  	SunXK_Stop,	NoSymbol,	/*  1*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  2*/
 	XK_L2,  	XK_L2,  	SunXK_Again,	NoSymbol,	/*  3*/
@@ -3310,27 +2804,7 @@ static KeySym Norway4Map[] = {
 	XK_KP_Add,	NoSymbol,	NoSymbol,	NoSymbol,	/*125*/
 };
 
-static SunKPmapRec Norway4KPMap[] = {
-	45,	XK_KP_Equal,	NoSymbol,
-	46,	XK_KP_Divide,	NoSymbol,
-	47,	XK_KP_Multiply,	NoSymbol,
-	50,	XK_KP_Decimal,	NoSymbol,
-	68,	XK_KP_7,	XK_Home,
-	69,	XK_KP_8,	NoSymbol,
-	70,	XK_KP_9,	XK_Prior,
-	90,	XK_KP_Enter,	NoSymbol,
-	91,	XK_KP_4,	NoSymbol,
-	92,	XK_KP_5,	NoSymbol,
-	93,	XK_KP_6,	NoSymbol,
-	94,	XK_KP_0,	NoSymbol,
-	112,	XK_KP_1,	XK_End,
-	113,	XK_KP_2,	NoSymbol,
-	114,	XK_KP_3,	XK_Next,
-	125,	XK_KP_Add,	NoSymbol,
-	0,	0,		0
-};
-
-static SunModmapRec Norway4modmap[] = {
+static SunModmapRec Norway4Modmap[] = {
 	99,	(ShiftMask),
 	110,	(ShiftMask),
 	76,	(LockMask),
@@ -3344,19 +2818,15 @@ static SunModmapRec Norway4modmap[] = {
 
 #else
 
-#define Norway4Map     	NULL
-#define Norway4maplen 	genericmaplen
-#define Norway4KPMap   	NULL
-#define Norway4modmap  	NULL
+#define Norway4Keymap NULL
+#define Norway4Modmap NULL
 
 #endif /* NORWAY4 */
 
 
 #ifdef NORWAY5
 
-static int Norway5maplen = 125 ;
-
-static KeySym Norway5Map[] = {
+static KeySym Norway5Keymap[] = {
 	XK_L1,  	XK_L1,  	SunXK_Stop,	NoSymbol,	/*  1*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  2*/
 	XK_L2,  	XK_L2,  	SunXK_Again,	NoSymbol,	/*  3*/
@@ -3484,27 +2954,7 @@ static KeySym Norway5Map[] = {
 	XK_KP_Add,	NoSymbol,	NoSymbol,	NoSymbol,	/*125*/
 };
 
-static SunKPmapRec Norway5KPMap[] = {
-	46,	XK_KP_Divide,	NoSymbol,
-	47,	XK_KP_Multiply,	NoSymbol,
-	50,	XK_KP_Separator,	NoSymbol,
-	68,	XK_KP_7,	XK_Home,
-	69,	XK_KP_8,	NoSymbol,
-	70,	XK_KP_9,	XK_Prior,
-	71,	XK_KP_Subtract,	NoSymbol,
-	90,	XK_KP_Enter,	NoSymbol,
-	91,	XK_KP_4,	NoSymbol,
-	92,	XK_KP_5,	NoSymbol,
-	93,	XK_KP_6,	NoSymbol,
-	94,	XK_KP_0,	NoSymbol,
-	112,	XK_KP_1,	XK_End,
-	113,	XK_KP_2,	NoSymbol,
-	114,	XK_KP_3,	XK_Next,
-	125,	XK_KP_Add,	NoSymbol,
-	0,	0,		0
-};
-
-static SunModmapRec Norway5modmap[] = {
+static SunModmapRec Norway5Modmap[] = {
 	99,	(ShiftMask),
 	110,	(ShiftMask),
 	119,	(LockMask),
@@ -3518,19 +2968,15 @@ static SunModmapRec Norway5modmap[] = {
 
 #else
 
-#define Norway5Map     	NULL
-#define Norway5maplen 	genericmaplen
-#define Norway5KPMap   	NULL
-#define Norway5modmap  	NULL
+#define Norway5Keymap NULL
+#define Norway5Modmap NULL
 
 #endif /* NORWAY5 */
 
 
 #ifdef PORTUGAL4
 
-static int Portugal4maplen = 125 ;
-
-static KeySym Portugal4Map[] = {
+static KeySym Portugal4Keymap[] = {
 	XK_L1,  	XK_L1,  	SunXK_Stop,	NoSymbol,	/*  1*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  2*/
 	XK_L2,  	XK_L2,  	SunXK_Again,	NoSymbol,	/*  3*/
@@ -3658,27 +3104,7 @@ static KeySym Portugal4Map[] = {
 	XK_KP_Add,	NoSymbol,	NoSymbol,	NoSymbol,	/*125*/
 };
 
-static SunKPmapRec Portugal4KPMap[] = {
-	45,	XK_KP_Equal,	NoSymbol,
-	46,	XK_KP_Divide,	NoSymbol,
-	47,	XK_KP_Multiply,	NoSymbol,
-	50,	XK_KP_Decimal,	NoSymbol,
-	68,	XK_KP_7,	XK_Home,
-	69,	XK_KP_8,	NoSymbol,
-	70,	XK_KP_9,	XK_Prior,
-	90,	XK_KP_Enter,	NoSymbol,
-	91,	XK_KP_4,	NoSymbol,
-	92,	XK_KP_5,	NoSymbol,
-	93,	XK_KP_6,	NoSymbol,
-	94,	XK_KP_0,	NoSymbol,
-	112,	XK_KP_1,	XK_End,
-	113,	XK_KP_2,	NoSymbol,
-	114,	XK_KP_3,	XK_Next,
-	125,	XK_KP_Add,	NoSymbol,
-	0,	0,		0
-};
-
-static SunModmapRec Portugal4modmap[] = {
+static SunModmapRec Portugal4Modmap[] = {
 	99,	(ShiftMask),
 	110,	(ShiftMask),
 	76,	(LockMask),
@@ -3692,19 +3118,15 @@ static SunModmapRec Portugal4modmap[] = {
 
 #else
 
-#define Portugal4Map     	NULL
-#define Portugal4maplen 	genericmaplen
-#define Portugal4KPMap   	NULL
-#define Portugal4modmap  	NULL
+#define Portugal4Keymap NULL
+#define Portugal4Modmap NULL
 
 #endif /* PORTUGAL4 */
 
 
 #ifdef PORTUGAL5
 
-static int Portugal5maplen = 125 ;
-
-static KeySym Portugal5Map[] = {
+static KeySym Portugal5Keymap[] = {
 	XK_L1,  	XK_L1,  	SunXK_Stop,	NoSymbol,	/*  1*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  2*/
 	XK_L2,  	XK_L2,  	SunXK_Again,	NoSymbol,	/*  3*/
@@ -3832,27 +3254,7 @@ static KeySym Portugal5Map[] = {
 	XK_KP_Add,	NoSymbol,	NoSymbol,	NoSymbol,	/*125*/
 };
 
-static SunKPmapRec Portugal5KPMap[] = {
-	46,	XK_KP_Divide,	NoSymbol,
-	47,	XK_KP_Multiply,	NoSymbol,
-	50,	XK_KP_Decimal,	NoSymbol,
-	68,	XK_KP_7,	XK_Home,
-	69,	XK_KP_8,	NoSymbol,
-	70,	XK_KP_9,	XK_Prior,
-	71,	XK_KP_Subtract,	NoSymbol,
-	90,	XK_KP_Enter,	NoSymbol,
-	91,	XK_KP_4,	NoSymbol,
-	92,	XK_KP_5,	NoSymbol,
-	93,	XK_KP_6,	NoSymbol,
-	94,	XK_KP_0,	NoSymbol,
-	112,	XK_KP_1,	XK_End,
-	113,	XK_KP_2,	NoSymbol,
-	114,	XK_KP_3,	XK_Next,
-	125,	XK_KP_Add,	NoSymbol,
-	0,	0,		0
-};
-
-static SunModmapRec Portugal5modmap[] = {
+static SunModmapRec Portugal5Modmap[] = {
 	99,	(ShiftMask),
 	110,	(ShiftMask),
 	119,	(LockMask),
@@ -3866,19 +3268,15 @@ static SunModmapRec Portugal5modmap[] = {
 
 #else
 
-#define Portugal5Map     	NULL
-#define Portugal5maplen 	genericmaplen
-#define Portugal5KPMap   	NULL
-#define Portugal5modmap  	NULL
+#define Portugal5Keymap NULL
+#define Portugal5Modmap NULL
 
 #endif /* PORTUGAL5 */
 
 
 #ifdef SPAIN5
 
-static int Spain5maplen = 125 ;
-
-static KeySym Spain5Map[] = {
+static KeySym Spain5Keymap[] = {
 	XK_L1,  	XK_L1,  	SunXK_Stop,	NoSymbol,	/*  1*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  2*/
 	XK_L2,  	XK_L2,  	SunXK_Again,	NoSymbol,	/*  3*/
@@ -4006,27 +3404,7 @@ static KeySym Spain5Map[] = {
 	XK_KP_Add,	NoSymbol,	NoSymbol,	NoSymbol,	/*125*/
 };
 
-static SunKPmapRec Spain5KPMap[] = {
-	46,	XK_KP_Divide,	NoSymbol,
-	47,	XK_KP_Multiply,	NoSymbol,
-	50,	XK_KP_Decimal,	NoSymbol,
-	68,	XK_KP_7,	XK_Home,
-	69,	XK_KP_8,	NoSymbol,
-	70,	XK_KP_9,	XK_Prior,
-	71,	XK_KP_Subtract,	NoSymbol,
-	90,	XK_KP_Enter,	NoSymbol,
-	91,	XK_KP_4,	NoSymbol,
-	92,	XK_KP_5,	NoSymbol,
-	93,	XK_KP_6,	NoSymbol,
-	94,	XK_KP_0,	NoSymbol,
-	112,	XK_KP_1,	XK_End,
-	113,	XK_KP_2,	NoSymbol,
-	114,	XK_KP_3,	XK_Next,
-	125,	XK_KP_Add,	NoSymbol,
-	0,	0,		0
-};
-
-static SunModmapRec Spain5modmap[] = {
+static SunModmapRec Spain5Modmap[] = {
 	99,	(ShiftMask),
 	110,	(ShiftMask),
 	119,	(LockMask),
@@ -4040,19 +3418,15 @@ static SunModmapRec Spain5modmap[] = {
 
 #else
 
-#define Spain5Map     	NULL
-#define Spain5maplen 	genericmaplen
-#define Spain5KPMap   	NULL
-#define Spain5modmap  	NULL
+#define Spain5Keymap NULL
+#define Spain5Modmap NULL
 
 #endif /* SPAIN5 */
 
 
 #ifdef SPAINLATAM4
 
-static int SpainLatAm4maplen = 125 ;
-
-static KeySym SpainLatAm4Map[] = {
+static KeySym SpainLatAm4Keymap[] = {
 	XK_L1,  	XK_L1,  	SunXK_Stop,	NoSymbol,	/*  1*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  2*/
 	XK_L2,  	XK_L2,  	SunXK_Again,	NoSymbol,	/*  3*/
@@ -4180,27 +3554,7 @@ static KeySym SpainLatAm4Map[] = {
 	XK_KP_Add,	NoSymbol,	NoSymbol,	NoSymbol,	/*125*/
 };
 
-static SunKPmapRec SpainLatAm4KPMap[] = {
-	45,	XK_KP_Equal,	NoSymbol,
-	46,	XK_KP_Divide,	NoSymbol,
-	47,	XK_KP_Multiply,	NoSymbol,
-	50,	XK_KP_Decimal,	NoSymbol,
-	68,	XK_KP_7,	XK_Home,
-	69,	XK_KP_8,	NoSymbol,
-	70,	XK_KP_9,	XK_Prior,
-	90,	XK_KP_Enter,	NoSymbol,
-	91,	XK_KP_4,	NoSymbol,
-	92,	XK_KP_5,	NoSymbol,
-	93,	XK_KP_6,	NoSymbol,
-	94,	XK_KP_0,	NoSymbol,
-	112,	XK_KP_1,	XK_End,
-	113,	XK_KP_2,	NoSymbol,
-	114,	XK_KP_3,	XK_Next,
-	125,	XK_KP_Add,	NoSymbol,
-	0,	0,		0
-};
-
-static SunModmapRec SpainLatAm4modmap[] = {
+static SunModmapRec SpainLatAm4Modmap[] = {
 	99,	(ShiftMask),
 	110,	(ShiftMask),
 	76,	(LockMask),
@@ -4214,19 +3568,15 @@ static SunModmapRec SpainLatAm4modmap[] = {
 
 #else
 
-#define SpainLatAm4Map     	NULL
-#define SpainLatAm4maplen 	genericmaplen
-#define SpainLatAm4KPMap   	NULL
-#define SpainLatAm4modmap  	NULL
+#define SpainLatAm4Keymap NULL
+#define SpainLatAm4Modmap NULL
 
 #endif /* SPAINLATAM4 */
 
 
 #ifdef SWEDEN5
 
-static int Sweden5maplen = 125 ;
-
-static KeySym Sweden5Map[] = {
+static KeySym Sweden5Keymap[] = {
 	XK_L1,  	XK_L1,  	SunXK_Stop,	NoSymbol,	/*  1*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  2*/
 	XK_L2,  	XK_L2,  	SunXK_Again,	NoSymbol,	/*  3*/
@@ -4354,27 +3704,7 @@ static KeySym Sweden5Map[] = {
 	XK_KP_Add,	NoSymbol,	NoSymbol,	NoSymbol,	/*125*/
 };
 
-static SunKPmapRec Sweden5KPMap[] = {
-	46,	XK_KP_Divide,	NoSymbol,
-	47,	XK_KP_Multiply,	NoSymbol,
-	50,	XK_KP_Separator,	NoSymbol,
-	68,	XK_KP_7,	XK_Home,
-	69,	XK_KP_8,	NoSymbol,
-	70,	XK_KP_9,	XK_Prior,
-	71,	XK_KP_Subtract,	NoSymbol,
-	90,	XK_KP_Enter,	NoSymbol,
-	91,	XK_KP_4,	NoSymbol,
-	92,	XK_KP_5,	NoSymbol,
-	93,	XK_KP_6,	NoSymbol,
-	94,	XK_KP_0,	NoSymbol,
-	112,	XK_KP_1,	XK_End,
-	113,	XK_KP_2,	NoSymbol,
-	114,	XK_KP_3,	XK_Next,
-	125,	XK_KP_Add,	NoSymbol,
-	0,	0,		0
-};
-
-static SunModmapRec Sweden5modmap[] = {
+static SunModmapRec Sweden5Modmap[] = {
 	99,	(ShiftMask),
 	110,	(ShiftMask),
 	119,	(LockMask),
@@ -4388,19 +3718,15 @@ static SunModmapRec Sweden5modmap[] = {
 
 #else
 
-#define Sweden5Map     	NULL
-#define Sweden5maplen 	genericmaplen
-#define Sweden5KPMap   	NULL
-#define Sweden5modmap  	NULL
+#define Sweden5Keymap NULL
+#define Sweden5Modmap NULL
 
 #endif /* SWEDEN5 */
 
 
 #ifdef SWEDENFIN4
 
-static int SwedenFin4maplen = 125 ;
-
-static KeySym SwedenFin4Map[] = {
+static KeySym SwedenFin4Keymap[] = {
 	XK_L1,  	XK_L1,  	SunXK_Stop,	NoSymbol,	/*  1*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  2*/
 	XK_L2,  	XK_L2,  	SunXK_Again,	NoSymbol,	/*  3*/
@@ -4528,27 +3854,7 @@ static KeySym SwedenFin4Map[] = {
 	XK_KP_Add,	NoSymbol,	NoSymbol,	NoSymbol,	/*125*/
 };
 
-static SunKPmapRec SwedenFin4KPMap[] = {
-	45,	XK_KP_Equal,	NoSymbol,
-	46,	XK_KP_Divide,	NoSymbol,
-	47,	XK_KP_Multiply,	NoSymbol,
-	50,	XK_KP_Decimal,	NoSymbol,
-	68,	XK_KP_7,	XK_Home,
-	69,	XK_KP_8,	NoSymbol,
-	70,	XK_KP_9,	XK_Prior,
-	90,	XK_KP_Enter,	NoSymbol,
-	91,	XK_KP_4,	NoSymbol,
-	92,	XK_KP_5,	NoSymbol,
-	93,	XK_KP_6,	NoSymbol,
-	94,	XK_KP_0,	NoSymbol,
-	112,	XK_KP_1,	XK_End,
-	113,	XK_KP_2,	NoSymbol,
-	114,	XK_KP_3,	XK_Next,
-	125,	XK_KP_Add,	NoSymbol,
-	0,	0,		0
-};
-
-static SunModmapRec SwedenFin4modmap[] = {
+static SunModmapRec SwedenFin4Modmap[] = {
 	99,	(ShiftMask),
 	110,	(ShiftMask),
 	76,	(LockMask),
@@ -4562,19 +3868,15 @@ static SunModmapRec SwedenFin4modmap[] = {
 
 #else
 
-#define SwedenFin4Map     	NULL
-#define SwedenFin4maplen 	genericmaplen
-#define SwedenFin4KPMap   	NULL
-#define SwedenFin4modmap  	NULL
+#define SwedenFin4Keymap NULL
+#define SwedenFin4Modmap NULL
 
 #endif /* SWEDENFIN4 */
 
 
-#ifdef SWITZER_FR4
+#ifdef SWISSFR4
 
-static int Switzer_Fr4maplen = 125 ;
-
-static KeySym Switzer_Fr4Map[] = {
+static KeySym SwissFr4Keymap[] = {
 	XK_L1,  	XK_L1,  	SunXK_Stop,	NoSymbol,	/*  1*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  2*/
 	XK_L2,  	XK_L2,  	SunXK_Again,	NoSymbol,	/*  3*/
@@ -4702,27 +4004,7 @@ static KeySym Switzer_Fr4Map[] = {
 	XK_KP_Add,	NoSymbol,	NoSymbol,	NoSymbol,	/*125*/
 };
 
-static SunKPmapRec Switzer_Fr4KPMap[] = {
-	45,	XK_KP_Equal,	NoSymbol,
-	46,	XK_KP_Divide,	NoSymbol,
-	47,	XK_KP_Multiply,	NoSymbol,
-	50,	XK_KP_Decimal,	NoSymbol,
-	68,	XK_KP_7,	XK_Home,
-	69,	XK_KP_8,	NoSymbol,
-	70,	XK_KP_9,	XK_Prior,
-	90,	XK_KP_Enter,	NoSymbol,
-	91,	XK_KP_4,	NoSymbol,
-	92,	XK_KP_5,	NoSymbol,
-	93,	XK_KP_6,	NoSymbol,
-	94,	XK_KP_0,	NoSymbol,
-	112,	XK_KP_1,	XK_End,
-	113,	XK_KP_2,	NoSymbol,
-	114,	XK_KP_3,	XK_Next,
-	125,	XK_KP_Add,	NoSymbol,
-	0,	0,		0
-};
-
-static SunModmapRec Switzer_Fr4modmap[] = {
+static SunModmapRec SwissFr4Modmap[] = {
 	99,	(ShiftMask),
 	110,	(ShiftMask),
 	76,	(LockMask),
@@ -4736,19 +4018,15 @@ static SunModmapRec Switzer_Fr4modmap[] = {
 
 #else
 
-#define Switzer_Fr4Map     	NULL
-#define Switzer_Fr4maplen 	genericmaplen
-#define Switzer_Fr4KPMap   	NULL
-#define Switzer_Fr4modmap  	NULL
+#define SwissFr4Keymap NULL
+#define SwissFr4Modmap NULL
 
-#endif /* SWITZER_FR4 */
+#endif /* SWISSFR4 */
 
 
-#ifdef SWITZER_FR5
+#ifdef SWISSFR5
 
-static int Switzer_Fr5maplen = 125 ;
-
-static KeySym Switzer_Fr5Map[] = {
+static KeySym SwissFr5Keymap[] = {
 	XK_L1,  	XK_L1,  	SunXK_Stop,	NoSymbol,	/*  1*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  2*/
 	XK_L2,  	XK_L2,  	SunXK_Again,	NoSymbol,	/*  3*/
@@ -4876,27 +4154,7 @@ static KeySym Switzer_Fr5Map[] = {
 	XK_KP_Add,	NoSymbol,	NoSymbol,	NoSymbol,	/*125*/
 };
 
-static SunKPmapRec Switzer_Fr5KPMap[] = {
-	46,	XK_KP_Divide,	NoSymbol,
-	47,	XK_KP_Multiply,	NoSymbol,
-	50,	XK_KP_Decimal,	NoSymbol,
-	68,	XK_KP_7,	XK_Home,
-	69,	XK_KP_8,	NoSymbol,
-	70,	XK_KP_9,	XK_Prior,
-	71,	XK_KP_Subtract,	NoSymbol,
-	90,	XK_KP_Enter,	NoSymbol,
-	91,	XK_KP_4,	NoSymbol,
-	92,	XK_KP_5,	NoSymbol,
-	93,	XK_KP_6,	NoSymbol,
-	94,	XK_KP_0,	NoSymbol,
-	112,	XK_KP_1,	XK_End,
-	113,	XK_KP_2,	NoSymbol,
-	114,	XK_KP_3,	XK_Next,
-	125,	XK_KP_Add,	NoSymbol,
-	0,	0,		0
-};
-
-static SunModmapRec Switzer_Fr5modmap[] = {
+static SunModmapRec SwissFr5Modmap[] = {
 	99,	(ShiftMask),
 	110,	(ShiftMask),
 	119,	(LockMask),
@@ -4910,19 +4168,15 @@ static SunModmapRec Switzer_Fr5modmap[] = {
 
 #else
 
-#define Switzer_Fr5Map     	NULL
-#define Switzer_Fr5maplen 	genericmaplen
-#define Switzer_Fr5KPMap   	NULL
-#define Switzer_Fr5modmap  	NULL
+#define SwissFr5Keymap NULL
+#define SwissFr5Modmap NULL
 
-#endif /* SWITZER_FR5 */
+#endif /* SWISSFR5 */
 
 
-#ifdef SWITZER_GE4
+#ifdef SWISSGE4
 
-static int Switzer_Ge4maplen = 125 ;
-
-static KeySym Switzer_Ge4Map[] = {
+static KeySym SwissGe4Keymap[] = {
 	XK_L1,  	XK_L1,  	SunXK_Stop,	NoSymbol,	/*  1*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  2*/
 	XK_L2,  	XK_L2,  	SunXK_Again,	NoSymbol,	/*  3*/
@@ -5050,27 +4304,7 @@ static KeySym Switzer_Ge4Map[] = {
 	XK_KP_Add,	NoSymbol,	NoSymbol,	NoSymbol,	/*125*/
 };
 
-static SunKPmapRec Switzer_Ge4KPMap[] = {
-	45,	XK_KP_Equal,	NoSymbol,
-	46,	XK_KP_Divide,	NoSymbol,
-	47,	XK_KP_Multiply,	NoSymbol,
-	50,	XK_KP_Decimal,	NoSymbol,
-	68,	XK_KP_7,	XK_Home,
-	69,	XK_KP_8,	NoSymbol,
-	70,	XK_KP_9,	XK_Prior,
-	90,	XK_KP_Enter,	NoSymbol,
-	91,	XK_KP_4,	NoSymbol,
-	92,	XK_KP_5,	NoSymbol,
-	93,	XK_KP_6,	NoSymbol,
-	94,	XK_KP_0,	NoSymbol,
-	112,	XK_KP_1,	XK_End,
-	113,	XK_KP_2,	NoSymbol,
-	114,	XK_KP_3,	XK_Next,
-	125,	XK_KP_Add,	NoSymbol,
-	0,	0,		0
-};
-
-static SunModmapRec Switzer_Ge4modmap[] = {
+static SunModmapRec SwissGe4Modmap[] = {
 	99,	(ShiftMask),
 	110,	(ShiftMask),
 	76,	(LockMask),
@@ -5084,19 +4318,15 @@ static SunModmapRec Switzer_Ge4modmap[] = {
 
 #else
 
-#define Switzer_Ge4Map     	NULL
-#define Switzer_Ge4maplen 	genericmaplen
-#define Switzer_Ge4KPMap   	NULL
-#define Switzer_Ge4modmap  	NULL
+#define SwissGe4Keymap NULL
+#define SwissGe4Modmap NULL
 
-#endif /* SWITZER_GE4 */
+#endif /* SWISSGE4 */
 
 
-#ifdef SWITZER_GE5
+#ifdef SWISSGE5
 
-static int Switzer_Ge5maplen = 125 ;
-
-static KeySym Switzer_Ge5Map[] = {
+static KeySym SwissGe5Keymap[] = {
 	XK_L1,  	XK_L1,  	SunXK_Stop,	NoSymbol,	/*  1*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  2*/
 	XK_L2,  	XK_L2,  	SunXK_Again,	NoSymbol,	/*  3*/
@@ -5224,27 +4454,7 @@ static KeySym Switzer_Ge5Map[] = {
 	XK_KP_Add,	NoSymbol,	NoSymbol,	NoSymbol,	/*125*/
 };
 
-static SunKPmapRec Switzer_Ge5KPMap[] = {
-	46,	XK_KP_Divide,	NoSymbol,
-	47,	XK_KP_Multiply,	NoSymbol,
-	50,	XK_KP_Decimal,	NoSymbol,
-	68,	XK_KP_7,	XK_Home,
-	69,	XK_KP_8,	NoSymbol,
-	70,	XK_KP_9,	XK_Prior,
-	71,	XK_KP_Subtract,	NoSymbol,
-	90,	XK_KP_Enter,	NoSymbol,
-	91,	XK_KP_4,	NoSymbol,
-	92,	XK_KP_5,	NoSymbol,
-	93,	XK_KP_6,	NoSymbol,
-	94,	XK_KP_0,	NoSymbol,
-	112,	XK_KP_1,	XK_End,
-	113,	XK_KP_2,	NoSymbol,
-	114,	XK_KP_3,	XK_Next,
-	125,	XK_KP_Add,	NoSymbol,
-	0,	0,		0
-};
-
-static SunModmapRec Switzer_Ge5modmap[] = {
+static SunModmapRec SwissGe5Modmap[] = {
 	99,	(ShiftMask),
 	110,	(ShiftMask),
 	119,	(LockMask),
@@ -5258,19 +4468,15 @@ static SunModmapRec Switzer_Ge5modmap[] = {
 
 #else
 
-#define Switzer_Ge5Map     	NULL
-#define Switzer_Ge5maplen 	genericmaplen
-#define Switzer_Ge5KPMap   	NULL
-#define Switzer_Ge5modmap  	NULL
+#define SwissGe5Keymap NULL
+#define SwissGe5Modmap NULL
 
 #endif /* SWITZER_GE5 */
 
 
 #ifdef TAIWAN4
 
-static int Taiwan4maplen = 125 ;
-
-static KeySym Taiwan4Map[] = {
+static KeySym Taiwan4Keymap[] = {
 	XK_L1,  	XK_L1,  	SunXK_Stop,	NoSymbol,	/*  1*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  2*/
 	XK_L2,  	XK_L2,  	SunXK_Again,	NoSymbol,	/*  3*/
@@ -5398,27 +4604,7 @@ static KeySym Taiwan4Map[] = {
 	XK_KP_Add,	NoSymbol,	NoSymbol,	NoSymbol,	/*125*/
 };
 
-static SunKPmapRec Taiwan4KPMap[] = {
-	45,	XK_KP_Equal,	NoSymbol,
-	46,	XK_KP_Divide,	NoSymbol,
-	47,	XK_KP_Multiply,	NoSymbol,
-	50,	XK_KP_Decimal,	NoSymbol,
-	68,	XK_KP_7,	XK_Home,
-	69,	XK_KP_8,	NoSymbol,
-	70,	XK_KP_9,	XK_Prior,
-	90,	XK_KP_Enter,	NoSymbol,
-	91,	XK_KP_4,	NoSymbol,
-	92,	XK_KP_5,	NoSymbol,
-	93,	XK_KP_6,	NoSymbol,
-	94,	XK_KP_0,	NoSymbol,
-	112,	XK_KP_1,	XK_End,
-	113,	XK_KP_2,	NoSymbol,
-	114,	XK_KP_3,	XK_Next,
-	125,	XK_KP_Add,	NoSymbol,
-	0,	0,		0
-};
-
-static SunModmapRec Taiwan4modmap[] = {
+static SunModmapRec Taiwan4Modmap[] = {
 	99,	(ShiftMask),
 	110,	(ShiftMask),
 	119,	(LockMask),
@@ -5432,19 +4618,15 @@ static SunModmapRec Taiwan4modmap[] = {
 
 #else
 
-#define Taiwan4Map     	NULL
-#define Taiwan4maplen 	genericmaplen
-#define Taiwan4KPMap   	NULL
-#define Taiwan4modmap  	NULL
+#define Taiwan4Keymap NULL
+#define Taiwan4Modmap NULL
 
 #endif /* TAIWAN4 */
 
 
 #ifdef TAIWAN5
 
-static int Taiwan5maplen = 125 ;
-
-static KeySym Taiwan5Map[] = {
+static KeySym Taiwan5Keymap[] = {
 	XK_L1,  	XK_L1,  	SunXK_Stop,	NoSymbol,	/*  1*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  2*/
 	XK_L2,  	XK_L2,  	SunXK_Again,	NoSymbol,	/*  3*/
@@ -5572,27 +4754,7 @@ static KeySym Taiwan5Map[] = {
 	XK_KP_Add,	NoSymbol,	NoSymbol,	NoSymbol,	/*125*/
 };
 
-static SunKPmapRec Taiwan5KPMap[] = {
-	46,	XK_KP_Divide,	NoSymbol,
-	47,	XK_KP_Multiply,	NoSymbol,
-	50,	XK_KP_Decimal,	NoSymbol,
-	68,	XK_KP_7,	XK_Home,
-	69,	XK_KP_8,	NoSymbol,
-	70,	XK_KP_9,	XK_Prior,
-	71,	XK_KP_Subtract,	NoSymbol,
-	90,	XK_KP_Enter,	NoSymbol,
-	91,	XK_KP_4,	NoSymbol,
-	92,	XK_KP_5,	NoSymbol,
-	93,	XK_KP_6,	NoSymbol,
-	94,	XK_KP_0,	NoSymbol,
-	112,	XK_KP_1,	XK_End,
-	113,	XK_KP_2,	NoSymbol,
-	114,	XK_KP_3,	XK_Next,
-	125,	XK_KP_Add,	NoSymbol,
-	0,	0,		0
-};
-
-static SunModmapRec Taiwan5modmap[] = {
+static SunModmapRec Taiwan5Modmap[] = {
 	99,	(ShiftMask),
 	110,	(ShiftMask),
 	119,	(LockMask),
@@ -5606,19 +4768,15 @@ static SunModmapRec Taiwan5modmap[] = {
 
 #else
 
-#define Taiwan5Map     	NULL
-#define Taiwan5maplen 	genericmaplen
-#define Taiwan5KPMap   	NULL
-#define Taiwan5modmap  	NULL
+#define Taiwan5Keymap NULL
+#define Taiwan5Modmap NULL
 
 #endif /* TAIWAN5 */
 
 
 #ifdef UK4
 
-static int UK4maplen = 125 ;
-
-static KeySym UK4Map[] = {
+static KeySym UK4Keymap[] = {
 	XK_L1,  	XK_L1,  	SunXK_Stop,	NoSymbol,	/*  1*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  2*/
 	XK_L2,  	XK_L2,  	SunXK_Again,	NoSymbol,	/*  3*/
@@ -5746,27 +4904,7 @@ static KeySym UK4Map[] = {
 	XK_KP_Add,	NoSymbol,	NoSymbol,	NoSymbol,	/*125*/
 };
 
-static SunKPmapRec UK4KPMap[] = {
-	45,	XK_KP_Equal,	NoSymbol,
-	46,	XK_KP_Divide,	NoSymbol,
-	47,	XK_KP_Multiply,	NoSymbol,
-	50,	XK_KP_Decimal,	NoSymbol,
-	68,	XK_KP_7,	XK_Home,
-	69,	XK_KP_8,	NoSymbol,
-	70,	XK_KP_9,	XK_Prior,
-	90,	XK_KP_Enter,	NoSymbol,
-	91,	XK_KP_4,	NoSymbol,
-	92,	XK_KP_5,	NoSymbol,
-	93,	XK_KP_6,	NoSymbol,
-	94,	XK_KP_0,	NoSymbol,
-	112,	XK_KP_1,	XK_End,
-	113,	XK_KP_2,	NoSymbol,
-	114,	XK_KP_3,	XK_Next,
-	125,	XK_KP_Add,	NoSymbol,
-	0,	0,		0
-};
-
-static SunModmapRec UK4modmap[] = {
+static SunModmapRec UK4Modmap[] = {
 	99,	(ShiftMask),
 	110,	(ShiftMask),
 	119,	(LockMask),
@@ -5780,19 +4918,15 @@ static SunModmapRec UK4modmap[] = {
 
 #else
 
-#define UK4Map     	NULL
-#define UK4maplen 	genericmaplen
-#define UK4KPMap   	NULL
-#define UK4modmap  	NULL
+#define UK4Keymap NULL
+#define UK4Modmap NULL
 
 #endif /* UK4 */
 
 
 #ifdef UK5
 
-static int UK5maplen = 125 ;
-
-static KeySym UK5Map[] = {
+static KeySym UK5Keymap[] = {
 	XK_L1,  	XK_L1,  	SunXK_Stop,	NoSymbol,	/*  1*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  2*/
 	XK_L2,  	XK_L2,  	SunXK_Again,	NoSymbol,	/*  3*/
@@ -5920,27 +5054,7 @@ static KeySym UK5Map[] = {
 	XK_KP_Add,	NoSymbol,	NoSymbol,	NoSymbol,	/*125*/
 };
 
-static SunKPmapRec UK5KPMap[] = {
-	46,	XK_KP_Divide,	NoSymbol,
-	47,	XK_KP_Multiply,	NoSymbol,
-	50,	XK_KP_Decimal,	NoSymbol,
-	68,	XK_KP_7,	XK_Home,
-	69,	XK_KP_8,	NoSymbol,
-	70,	XK_KP_9,	XK_Prior,
-	71,	XK_KP_Subtract,	NoSymbol,
-	90,	XK_KP_Enter,	NoSymbol,
-	91,	XK_KP_4,	NoSymbol,
-	92,	XK_KP_5,	NoSymbol,
-	93,	XK_KP_6,	NoSymbol,
-	94,	XK_KP_0,	NoSymbol,
-	112,	XK_KP_1,	XK_End,
-	113,	XK_KP_2,	NoSymbol,
-	114,	XK_KP_3,	XK_Next,
-	125,	XK_KP_Add,	NoSymbol,
-	0,	0,		0
-};
-
-static SunModmapRec UK5modmap[] = {
+static SunModmapRec UK5Modmap[] = {
 	99,	(ShiftMask),
 	110,	(ShiftMask),
 	119,	(LockMask),
@@ -5954,19 +5068,15 @@ static SunModmapRec UK5modmap[] = {
 
 #else
 
-#define UK5Map     	NULL
-#define UK5maplen 	genericmaplen
-#define UK5KPMap   	NULL
-#define UK5modmap  	NULL
+#define UK5Keymap NULL
+#define UK5Modmap NULL
 
 #endif /* UK5 */
 
 
-#ifdef US101A_SUN
+#ifdef US101A
 
-static int US101A_Sunmaplen = 125 ;
-
-static KeySym US101A_SunMap[] = {
+static KeySym US101AKeymap[] = {
 	XK_R1,  	XK_R1,  	XK_Pause,	XK_Break,	/*  1*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  2*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  3*/
@@ -6094,27 +5204,7 @@ static KeySym US101A_SunMap[] = {
 	XK_KP_Add,	NoSymbol,	NoSymbol,	NoSymbol,	/*125*/
 };
 
-static SunKPmapRec US101A_SunKPMap[] = {
-	46,	XK_KP_Divide,	NoSymbol,
-	47,	XK_KP_Multiply,	NoSymbol,
-	50,	XK_KP_Decimal,	NoSymbol,
-	68,	XK_KP_7,	XK_Home,
-	69,	XK_KP_8,	NoSymbol,
-	70,	XK_KP_9,	XK_Prior,
-	71,	XK_KP_Subtract,	NoSymbol,
-	90,	XK_KP_Enter,	NoSymbol,
-	91,	XK_KP_4,	NoSymbol,
-	92,	XK_KP_5,	NoSymbol,
-	93,	XK_KP_6,	NoSymbol,
-	94,	XK_KP_0,	NoSymbol,
-	112,	XK_KP_1,	XK_End,
-	113,	XK_KP_2,	NoSymbol,
-	114,	XK_KP_3,	XK_Next,
-	125,	XK_KP_Add,	NoSymbol,
-	0,	0,		0
-};
-
-static SunModmapRec US101A_Sunmodmap[] = {
+static SunModmapRec US101AModmap[] = {
 	99,	(ShiftMask),
 	110,	(ShiftMask),
 	119,	(LockMask),
@@ -6126,22 +5216,18 @@ static SunModmapRec US101A_Sunmodmap[] = {
 
 #else
 
-#define US101A_SunMap     	NULL
-#define US101A_Sunmaplen 	genericmaplen
-#define US101A_SunKPMap   	NULL
-#define US101A_Sunmodmap  	NULL
+#define US101AKeymap NULL
+#define US101AModmap NULL
 
-#endif /* US101A_SUN */
+#endif /* US101A */
 
 
 #ifdef US4
 
-static int US4maplen = 125 ;
-
-static KeySym US4Map[] = {
-	XK_L1,  	XK_L1,  	SunXK_Stop,	NoSymbol,	/*  1*/
+static KeySym US4Keymap[] = {
+	SunXK_Stop,  	SunXK_Stop,  	XK_L1,		NoSymbol,	/*  1*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  2*/
-	XK_L2,  	XK_L2,  	SunXK_Again,	NoSymbol,	/*  3*/
+	SunXK_Again,  	SunXK_Again,  	XK_L2,		NoSymbol,	/*  3*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  4*/
 	XK_F1,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  5*/
 	XK_F2,  	NoSymbol,	NoSymbol,	NoSymbol,	/*  6*/
@@ -6159,12 +5245,12 @@ static KeySym US4Map[] = {
 	XK_F9,  	NoSymbol,	NoSymbol,	NoSymbol,	/* 18*/
 	XK_Alt_L,	NoSymbol,	NoSymbol,	NoSymbol,	/* 19*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 20*/
-	XK_R1,  	XK_R1,  	XK_Pause,	NoSymbol,	/* 21*/
-	XK_R2,  	XK_R2,  	XK_Print,	NoSymbol,	/* 22*/
-	XK_R3,  	XK_R3,  	XK_Scroll_Lock,	XK_Break,	/* 23*/
+	XK_Pause,  	XK_Pause,  	XK_R1,		NoSymbol,	/* 21*/
+	XK_Print,  	XK_Print,  	XK_R2,		NoSymbol,	/* 22*/
+	XK_Break,  	XK_Scroll_Lock,	XK_R3,		NoSymbol,	/* 23*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 24*/
-	XK_L3,  	XK_L3,  	SunXK_Props,	NoSymbol,	/* 25*/
-	XK_L4,  	XK_L4,  	SunXK_Undo,	NoSymbol,	/* 26*/
+	SunXK_Props,  	SunXK_Props,  	XK_L3,		NoSymbol,	/* 25*/
+	SunXK_Undo,  	SunXK_Undo,  	XK_L4,		NoSymbol,	/* 26*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 27*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 28*/
 	XK_Escape,	NoSymbol,	NoSymbol,	NoSymbol,	/* 29*/
@@ -6183,13 +5269,13 @@ static KeySym US4Map[] = {
 	XK_quoteleft,	XK_asciitilde,	NoSymbol,	NoSymbol,	/* 42*/
 	XK_BackSpace,	NoSymbol,	NoSymbol,	NoSymbol,	/* 43*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 44*/
-	XK_R4,  	XK_R4,  	XK_KP_Equal,	NoSymbol,	/* 45*/
-	XK_R5,  	XK_R5,  	XK_KP_Divide,	NoSymbol,	/* 46*/
-	XK_R6,  	XK_R6,  	XK_KP_Multiply,	NoSymbol,	/* 47*/
+	XK_KP_Equal,  	XK_KP_Equal,  	XK_R4,		NoSymbol,	/* 45*/
+	XK_KP_Divide,  	XK_KP_Divide,  	XK_R5,		NoSymbol,	/* 46*/
+	XK_KP_Multiply,	XK_KP_Multiply,	XK_R6,		NoSymbol,	/* 47*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 48*/
-	XK_L5,  	XK_L5,  	SunXK_Front,	NoSymbol,	/* 49*/
-	XK_Delete,	XK_Delete,	XK_KP_Decimal,	NoSymbol,	/* 50*/
-	XK_L6,  	XK_L6,  	SunXK_Copy,	NoSymbol,	/* 51*/
+	SunXK_Front,  	SunXK_Front,  	XK_L5,		NoSymbol,	/* 49*/
+	XK_Delete,	XK_KP_Decimal,	NoSymbol,	NoSymbol,	/* 50*/
+	SunXK_Copy,  	SunXK_Copy,  	XK_L6,		NoSymbol,	/* 51*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 52*/
 	XK_Tab, 	NoSymbol,	NoSymbol,	NoSymbol,	/* 53*/
 	XK_Q,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 54*/
@@ -6203,15 +5289,15 @@ static KeySym US4Map[] = {
 	XK_O,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 62*/
 	XK_P,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 63*/
 	XK_bracketleft,	XK_braceleft,	NoSymbol,	NoSymbol,	/* 64*/
-	XK_bracketright,	XK_braceright,	NoSymbol,	NoSymbol,	/* 65*/
+	XK_bracketright,XK_braceright,	NoSymbol,	NoSymbol,	/* 65*/
 	XK_Delete,	NoSymbol,	NoSymbol,	NoSymbol,	/* 66*/
 	SunXK_Compose,	NoSymbol,	NoSymbol,	NoSymbol,	/* 67*/
-	XK_R7,  	XK_R7,  	XK_KP_7,	XK_Home,	/* 68*/
-	XK_Up,  	XK_R8,  	XK_KP_8,	NoSymbol,	/* 69*/
-	XK_R9,  	XK_R9,  	XK_KP_9,	XK_Prior,	/* 70*/
-	XK_KP_Subtract,	NoSymbol,	NoSymbol,	NoSymbol,	/* 71*/
-	XK_L7,  	XK_L7,  	SunXK_Open,	NoSymbol,	/* 72*/
-	XK_L8,  	XK_L8,  	SunXK_Paste,	NoSymbol,	/* 73*/
+	XK_Home,  	XK_KP_7,  	XK_R7,		NoSymbol,	/* 68*/
+	XK_Up,  	XK_KP_8,  	XK_R8,		NoSymbol,	/* 69*/
+	XK_Prior,  	XK_KP_9,  	XK_R9,		NoSymbol,	/* 70*/
+	XK_KP_Subtract,	XK_KP_Subtract,	NoSymbol,	NoSymbol,	/* 71*/
+	SunXK_Open,  	SunXK_Open,  	XK_L7,		NoSymbol,	/* 72*/
+	SunXK_Paste,  	SunXK_Paste,  	XK_L8,		NoSymbol,	/* 73*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 74*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 75*/
 	XK_Control_L,	NoSymbol,	NoSymbol,	NoSymbol,	/* 76*/
@@ -6228,14 +5314,14 @@ static KeySym US4Map[] = {
 	XK_quoteright,	XK_quotedbl,	NoSymbol,	NoSymbol,	/* 87*/
 	XK_backslash,	XK_bar, 	XK_brokenbar,	NoSymbol,	/* 88*/
 	XK_Return,	NoSymbol,	NoSymbol,	NoSymbol,	/* 89*/
-	XK_KP_Enter,	NoSymbol,	NoSymbol,	NoSymbol,	/* 90*/
-	XK_Left,	XK_R10, 	XK_KP_4,	NoSymbol,	/* 91*/
-	XK_R11, 	XK_R11, 	XK_KP_5,	NoSymbol,	/* 92*/
-	XK_Right,	XK_R12, 	XK_KP_6,	NoSymbol,	/* 93*/
-	XK_Insert,	XK_Insert,	XK_KP_0,	NoSymbol,	/* 94*/
-	XK_L9,  	XK_L9,  	SunXK_Find,	NoSymbol,	/* 95*/
+	XK_KP_Enter,	XK_KP_Enter,	NoSymbol,	NoSymbol,	/* 90*/
+	XK_Left,	XK_KP_4, 	XK_R10,		NoSymbol,	/* 91*/
+	NoSymbol, 	XK_KP_5, 	XK_R11,		NoSymbol,	/* 92*/
+	XK_Right,	XK_KP_6, 	XK_R12,		NoSymbol,	/* 93*/
+	XK_Insert,	XK_KP_0,	NoSymbol,	NoSymbol,	/* 94*/
+	SunXK_Find,  	SunXK_Find,  	XK_L9,		NoSymbol,	/* 95*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 96*/
-	XK_L10, 	XK_L10, 	SunXK_Cut,	NoSymbol,	/* 97*/
+	SunXK_Cut, 	SunXK_Cut, 	XK_L10,		NoSymbol,	/* 97*/
 	XK_Num_Lock,	NoSymbol,	NoSymbol,	NoSymbol,	/* 98*/
 	XK_Shift_L,	NoSymbol,	NoSymbol,	NoSymbol,	/* 99*/
 	XK_Z,   	NoSymbol,	NoSymbol,	NoSymbol,	/*100*/
@@ -6250,43 +5336,23 @@ static KeySym US4Map[] = {
 	XK_slash,	XK_question,	NoSymbol,	NoSymbol,	/*109*/
 	XK_Shift_R,	NoSymbol,	NoSymbol,	NoSymbol,	/*110*/
 	XK_Linefeed,	NoSymbol,	NoSymbol,	NoSymbol,	/*111*/
-	XK_R13, 	XK_R13, 	XK_KP_1,	XK_End, 	/*112*/
-	XK_Down,	XK_R14, 	XK_KP_2,	NoSymbol,	/*113*/
-	XK_R15, 	XK_R15, 	XK_KP_3,	XK_Next,	/*114*/
+	XK_End, 	XK_KP_1, 	XK_R13,		NoSymbol, 	/*112*/
+	XK_Down,	XK_KP_2, 	XK_R14,		NoSymbol,	/*113*/
+	XK_Next, 	XK_KP_3, 	XK_R15,		NoSymbol,	/*114*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*115*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*116*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*117*/
-	XK_Help,	NoSymbol,	NoSymbol,	NoSymbol,	/*118*/
+	XK_Help,	XK_Help,	NoSymbol,	NoSymbol,	/*118*/
 	XK_Caps_Lock,	NoSymbol,	NoSymbol,	NoSymbol,	/*119*/
 	XK_Meta_L,	NoSymbol,	NoSymbol,	NoSymbol,	/*120*/
 	XK_space,	NoSymbol,	NoSymbol,	NoSymbol,	/*121*/
 	XK_Meta_R,	NoSymbol,	NoSymbol,	NoSymbol,	/*122*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*123*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*124*/
-	XK_KP_Add,	NoSymbol,	NoSymbol,	NoSymbol,	/*125*/
+	XK_KP_Add,	XK_KP_Add,	NoSymbol,	NoSymbol,	/*125*/
 };
 
-static SunKPmapRec US4KPMap[] = {
-	45,	XK_KP_Equal,	NoSymbol,
-	46,	XK_KP_Divide,	NoSymbol,
-	47,	XK_KP_Multiply,	NoSymbol,
-	50,	XK_KP_Decimal,	NoSymbol,
-	68,	XK_KP_7,	XK_Home,
-	69,	XK_KP_8,	NoSymbol,
-	70,	XK_KP_9,	XK_Prior,
-	90,	XK_KP_Enter,	NoSymbol,
-	91,	XK_KP_4,	NoSymbol,
-	92,	XK_KP_5,	NoSymbol,
-	93,	XK_KP_6,	NoSymbol,
-	94,	XK_KP_0,	NoSymbol,
-	112,	XK_KP_1,	XK_End,
-	113,	XK_KP_2,	NoSymbol,
-	114,	XK_KP_3,	XK_Next,
-	125,	XK_KP_Add,	NoSymbol,
-	0,	0,		0
-};
-
-static SunModmapRec US4modmap[] = {
+static SunModmapRec US4Modmap[] = {
 	99,	(ShiftMask),
 	110,	(ShiftMask),
 	119,	(LockMask),
@@ -6300,19 +5366,15 @@ static SunModmapRec US4modmap[] = {
 
 #else
 
-#define US4Map     	NULL
-#define US4maplen 	genericmaplen
-#define US4KPMap   	NULL
-#define US4modmap  	NULL
+#define US4Keymap NULL
+#define US4Modmap NULL
 
 #endif /* US4 */
 
 
 #ifdef US5
 
-static int US5maplen = 125 ;
-
-static KeySym US5Map[] = {
+static KeySym US5Keymap[] = {
 	XK_L1,  	XK_L1,  	SunXK_Stop,	NoSymbol,	/*  1*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  2*/
 	XK_L2,  	XK_L2,  	SunXK_Again,	NoSymbol,	/*  3*/
@@ -6440,27 +5502,7 @@ static KeySym US5Map[] = {
 	XK_KP_Add,	NoSymbol,	NoSymbol,	NoSymbol,	/*125*/
 };
 
-static SunKPmapRec US5KPMap[] = {
-	46,	XK_KP_Divide,	NoSymbol,
-	47,	XK_KP_Multiply,	NoSymbol,
-	50,	XK_KP_Decimal,	NoSymbol,
-	68,	XK_KP_7,	XK_Home,
-	69,	XK_KP_8,	NoSymbol,
-	70,	XK_KP_9,	XK_Prior,
-	71,	XK_KP_Subtract,	NoSymbol,
-	90,	XK_KP_Enter,	NoSymbol,
-	91,	XK_KP_4,	NoSymbol,
-	92,	XK_KP_5,	NoSymbol,
-	93,	XK_KP_6,	NoSymbol,
-	94,	XK_KP_0,	NoSymbol,
-	112,	XK_KP_1,	XK_End,
-	113,	XK_KP_2,	NoSymbol,
-	114,	XK_KP_3,	XK_Next,
-	125,	XK_KP_Add,	NoSymbol,
-	0,	0,		0
-};
-
-static SunModmapRec US5modmap[] = {
+static SunModmapRec US5Modmap[] = {
 	99,	(ShiftMask),
 	110,	(ShiftMask),
 	119,	(LockMask),
@@ -6474,19 +5516,15 @@ static SunModmapRec US5modmap[] = {
 
 #else
 
-#define US5Map     	NULL
-#define US5maplen 	genericmaplen
-#define US5KPMap   	NULL
-#define US5modmap  	NULL
+#define US5Keymap NULL
+#define US5Modmap NULL
 
 #endif /* US5 */
 
 
 #ifdef US_UNIX5
 
-static int US_UNIX5maplen = 125 ;
-
-static KeySym US_UNIX5Map[] = {
+static KeySym US_UNIX5Keymap[] = {
 	XK_L1,  	XK_L1,  	SunXK_Stop,	NoSymbol,	/*  1*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*  2*/
 	XK_L2,  	XK_L2,  	SunXK_Again,	NoSymbol,	/*  3*/
@@ -6614,27 +5652,7 @@ static KeySym US_UNIX5Map[] = {
 	XK_KP_Add,	NoSymbol,	NoSymbol,	NoSymbol,	/*125*/
 };
 
-static SunKPmapRec US_UNIX5KPMap[] = {
-	46,	XK_KP_Divide,	NoSymbol,
-	47,	XK_KP_Multiply,	NoSymbol,
-	50,	XK_KP_Decimal,	NoSymbol,
-	68,	XK_KP_7,	XK_Home,
-	69,	XK_KP_8,	NoSymbol,
-	70,	XK_KP_9,	XK_Prior,
-	71,	XK_KP_Subtract,	NoSymbol,
-	90,	XK_KP_Enter,	NoSymbol,
-	91,	XK_KP_4,	NoSymbol,
-	92,	XK_KP_5,	NoSymbol,
-	93,	XK_KP_6,	NoSymbol,
-	94,	XK_KP_0,	NoSymbol,
-	112,	XK_KP_1,	XK_End,
-	113,	XK_KP_2,	NoSymbol,
-	114,	XK_KP_3,	XK_Next,
-	125,	XK_KP_Add,	NoSymbol,
-	0,	0,		0
-};
-
-static SunModmapRec US_UNIX5modmap[] = {
+static SunModmapRec US_UNIX5Modmap[] = {
 	99,	(ShiftMask),
 	110,	(ShiftMask),
 	119,	(LockMask),
@@ -6648,223 +5666,115 @@ static SunModmapRec US_UNIX5modmap[] = {
 
 #else
 
-#define US_UNIX5Map     	NULL
-#define US_UNIX5maplen 		genericmaplen
-#define US_UNIX5KPMap   	NULL
-#define US_UNIX5modmap  	NULL
+#define US_UNIX5Keymap NULL
+#define US_UNIX5Modmap NULL
 
 #endif /* US_UNIX5 */
 
-KeySym *sunType4Maps[] = {
-	US4Map,    		/* 0x00 */
-	US4Map,    		/* 0x01 */
-	FranceBelg4Map,		/* 0x02 */
-	Canada4Map,		/* 0x03 */
-	Denmark4Map,		/* 0x04 */
-	Germany4Map,		/* 0x05 */
-	Italy4Map,    		/* 0x06 */
-	Netherland4Map,		/* 0x07 */
-	Norway4Map,		/* 0x08 */
-	Portugal4Map,		/* 0x09 */
-	SpainLatAm4Map,		/* 0x0a */
-	SwedenFin4Map,		/* 0x0b */
-	Switzer_Fr4Map,		/* 0x0c */
-	Switzer_Ge4Map,		/* 0x0d */
-	UK4Map,    		/* 0x0e */
-	NULL,    		/* 0x0f */
-	Korea4Map,    		/* 0x10 */
-	Taiwan4Map,		/* 0x11 */
-	NULL,    		/* 0x02 */
-	US101A_SunMap,		/* 0x13 */
-	NULL,    		/* 0x14 */
-	NULL,    		/* 0x15 */
-	NULL,    		/* 0x16 */
-	NULL,    		/* 0x17 */
-	NULL,    		/* 0x18 */
-	NULL,    		/* 0x19 */
-	NULL,    		/* 0x1a */
-	NULL,    		/* 0x1b */
-	NULL,    		/* 0x1c */
-	NULL,    		/* 0x1d */
-	NULL,    		/* 0x1e */
-	NULL,    		/* 0x1f */
-	Japan4Map,    		/* 0x20 */
-	US5Map,    		/* 0x21 */
-	US_UNIX5Map,		/* 0x22 */
-	France5Map,		/* 0x23 */
-	Denmark5Map,		/* 0x24 */
-	Germany5Map,		/* 0x25 */
-	Italy5Map,    		/* 0x26 */
-	Netherland5Map,		/* 0x27 */
-	Norway5Map,		/* 0x28 */
-	Portugal5Map,		/* 0x29 */
-	Spain5Map,    		/* 0x2a */
-	Sweden5Map,		/* 0x2b */
-	Switzer_Fr5Map,		/* 0x2c */
-	Switzer_Ge5Map,		/* 0x2d */
-	UK5Map,    		/* 0x2e */
-	Korea5Map,    		/* 0x2f */
-	Taiwan5Map,		/* 0x30 */
-	Japan5Map,    		/* 0x31 */
+KeySym *sunType4KeyMaps[] = {
+	US4Keymap,		/* 0x00 */
+	US4Keymap,		/* 0x01 */
+	FranceBelg4Keymap,	/* 0x02 */
+	Canada4Keymap,		/* 0x03 */
+	Denmark4Keymap,		/* 0x04 */
+	Germany4Keymap,		/* 0x05 */
+	Italy4Keymap,		/* 0x06 */
+	Netherland4Keymap,	/* 0x07 */
+	Norway4Keymap,		/* 0x08 */
+	Portugal4Keymap,	/* 0x09 */
+	SpainLatAm4Keymap,	/* 0x0a */
+	SwedenFin4Keymap,	/* 0x0b */
+	SwissFr4Keymap,		/* 0x0c */
+	SwissGe4Keymap,		/* 0x0d */
+	UK4Keymap,		/* 0x0e */
+	NULL,			/* 0x0f */
+	Korea4Keymap,		/* 0x10 */
+	Taiwan4Keymap,		/* 0x11 */
+	NULL,			/* 0x02 */
+	US101AKeymap,		/* 0x13 */
+	NULL,			/* 0x14 */
+	NULL,			/* 0x15 */
+	NULL,			/* 0x16 */
+	NULL,			/* 0x17 */
+	NULL,			/* 0x18 */
+	NULL,			/* 0x19 */
+	NULL,			/* 0x1a */
+	NULL,			/* 0x1b */
+	NULL,			/* 0x1c */
+	NULL,			/* 0x1d */
+	NULL,			/* 0x1e */
+	NULL,			/* 0x1f */
+	Japan4Keymap,		/* 0x20 */
+	US5Keymap,		/* 0x21 */
+	US_UNIX5Keymap,		/* 0x22 */
+	France5Keymap,		/* 0x23 */
+	Denmark5Keymap,		/* 0x24 */
+	Germany5Keymap,		/* 0x25 */
+	Italy5Keymap,		/* 0x26 */
+	Netherland5Keymap,	/* 0x27 */
+	Norway5Keymap,		/* 0x28 */
+	Portugal5Keymap,	/* 0x29 */
+	Spain5Keymap,		/* 0x2a */
+	Sweden5Keymap,		/* 0x2b */
+	SwissFr5Keymap,		/* 0x2c */
+	SwissGe5Keymap,		/* 0x2d */
+	UK5Keymap,		/* 0x2e */
+	Korea5Keymap,		/* 0x2f */
+	Taiwan5Keymap,		/* 0x30 */
+	Japan5Keymap,		/* 0x31 */
 };
 
-int sunType4MaxLayout = 0x31;
-
-int *sunType4MapLen[] = {
-	&US4maplen,    		/* 0x00 */
-	&US4maplen,    		/* 0x01 */
-	&FranceBelg4maplen,	/* 0x02 */
-	&Canada4maplen,		/* 0x03 */
-	&Denmark4maplen,	/* 0x04 */
-	&Germany4maplen,	/* 0x05 */
-	&Italy4maplen,    	/* 0x06 */
-	&Netherland4maplen,	/* 0x07 */
-	&Norway4maplen,		/* 0x08 */
-	&Portugal4maplen,	/* 0x09 */
-	&SpainLatAm4maplen,	/* 0x0a */
-	&SwedenFin4maplen,	/* 0x0b */
-	&Switzer_Fr4maplen,	/* 0x0c */
-	&Switzer_Ge4maplen,	/* 0x0d */
-	&UK4maplen,    		/* 0x0e */
-	NULL,    		/* 0x0f */
-	&Korea4maplen,    	/* 0x10 */
-	&Taiwan4maplen,		/* 0x11 */
-	NULL,    		/* 0x02 */
-	&US101A_Sunmaplen,	/* 0x13 */
-	NULL,    		/* 0x14 */
-	NULL,    		/* 0x15 */
-	NULL,    		/* 0x16 */
-	NULL,    		/* 0x17 */
-	NULL,    		/* 0x18 */
-	NULL,    		/* 0x19 */
-	NULL,    		/* 0x1a */
-	NULL,    		/* 0x1b */
-	NULL,    		/* 0x1c */
-	NULL,    		/* 0x1d */
-	NULL,    		/* 0x1e */
-	NULL,    		/* 0x1f */
-	&Japan4maplen,    	/* 0x20 */
-	&US5maplen,    		/* 0x21 */
-	&US_UNIX5maplen,	/* 0x22 */
-	&France5maplen,		/* 0x23 */
-	&Denmark5maplen,	/* 0x24 */
-	&Germany5maplen,	/* 0x25 */
-	&Italy5maplen,    	/* 0x26 */
-	&Netherland5maplen,	/* 0x27 */
-	&Norway5maplen,		/* 0x28 */
-	&Portugal5maplen,	/* 0x29 */
-	&Spain5maplen,    	/* 0x2a */
-	&Sweden5maplen,		/* 0x2b */
-	&Switzer_Fr5maplen,	/* 0x2c */
-	&Switzer_Ge5maplen,	/* 0x2d */
-	&UK5maplen,    		/* 0x2e */
-	&Korea5maplen,    	/* 0x2f */
-	&Taiwan5maplen,		/* 0x30 */
-	&Japan5maplen,    	/* 0x31 */
-};
-
-SunKPmapRec *sunType4KPMaps[] = {
-	US4KPMap,    		/* 0x00 */
-	US4KPMap,    		/* 0x01 */
-	FranceBelg4KPMap,	/* 0x02 */
-	Canada4KPMap,		/* 0x03 */
-	Denmark4KPMap,		/* 0x04 */
-	Germany4KPMap,		/* 0x05 */
-	Italy4KPMap,    	/* 0x06 */
-	Netherland4KPMap,	/* 0x07 */
-	Norway4KPMap,		/* 0x08 */
-	Portugal4KPMap,		/* 0x09 */
-	SpainLatAm4KPMap,	/* 0x0a */
-	SwedenFin4KPMap,	/* 0x0b */
-	Switzer_Fr4KPMap,	/* 0x0c */
-	Switzer_Ge4KPMap,	/* 0x0d */
-	UK4KPMap,    		/* 0x0e */
-	NULL,    		/* 0x0f */
-	Korea4KPMap,    	/* 0x10 */
-	Taiwan4KPMap,		/* 0x11 */
-	NULL,    		/* 0x02 */
-	US101A_SunKPMap,	/* 0x13 */
-	NULL,    		/* 0x14 */
-	NULL,    		/* 0x15 */
-	NULL,    		/* 0x16 */
-	NULL,    		/* 0x17 */
-	NULL,    		/* 0x18 */
-	NULL,    		/* 0x19 */
-	NULL,    		/* 0x1a */
-	NULL,    		/* 0x1b */
-	NULL,    		/* 0x1c */
-	NULL,    		/* 0x1d */
-	NULL,    		/* 0x1e */
-	NULL,    		/* 0x1f */
-	Japan4KPMap,    	/* 0x20 */
-	US5KPMap,    		/* 0x21 */
-	US_UNIX5KPMap,		/* 0x22 */
-	France5KPMap,		/* 0x23 */
-	Denmark5KPMap,		/* 0x24 */
-	Germany5KPMap,		/* 0x25 */
-	Italy5KPMap,    	/* 0x26 */
-	Netherland5KPMap,	/* 0x27 */
-	Norway5KPMap,		/* 0x28 */
-	Portugal5KPMap,		/* 0x29 */
-	Spain5KPMap,    	/* 0x2a */
-	Sweden5KPMap,		/* 0x2b */
-	Switzer_Fr5KPMap,	/* 0x2c */
-	Switzer_Ge5KPMap,	/* 0x2d */
-	UK5KPMap,    		/* 0x2e */
-	Korea5KPMap,    	/* 0x2f */
-	Taiwan5KPMap,		/* 0x30 */
-	Japan5KPMap,    	/* 0x31 */
-};
+int sunMaxLayout = sizeof sunType4KeyMaps / sizeof sunType4KeyMaps[0];
 
 SunModmapRec *sunType4ModMaps[] = {
-	US4modmap,    		/* 0x00 */
-	US4modmap,    		/* 0x01 */
-	FranceBelg4modmap,	/* 0x02 */
-	Canada4modmap,		/* 0x03 */
-	Denmark4modmap,		/* 0x04 */
-	Germany4modmap,		/* 0x05 */
-	Italy4modmap,    	/* 0x06 */
-	Netherland4modmap,	/* 0x07 */
-	Norway4modmap,		/* 0x08 */
-	Portugal4modmap,	/* 0x09 */
-	SpainLatAm4modmap,	/* 0x0a */
-	SwedenFin4modmap,	/* 0x0b */
-	Switzer_Fr4modmap,	/* 0x0c */
-	Switzer_Ge4modmap,	/* 0x0d */
-	UK4modmap,    		/* 0x0e */
-	NULL,    		/* 0x0f */
-	Korea4modmap,    	/* 0x10 */
-	Taiwan4modmap,		/* 0x11 */
-	NULL,    		/* 0x02 */
-	US101A_Sunmodmap,	/* 0x13 */
-	NULL,    		/* 0x14 */
-	NULL,    		/* 0x15 */
-	NULL,    		/* 0x16 */
-	NULL,    		/* 0x17 */
-	NULL,    		/* 0x18 */
-	NULL,    		/* 0x19 */
-	NULL,    		/* 0x1a */
-	NULL,    		/* 0x1b */
-	NULL,    		/* 0x1c */
-	NULL,    		/* 0x1d */
-	NULL,    		/* 0x1e */
-	NULL,    		/* 0x1f */
-	Japan4modmap,    	/* 0x20 */
-	US5modmap,    		/* 0x21 */
-	US_UNIX5modmap,		/* 0x22 */
-	France5modmap,		/* 0x23 */
-	Denmark5modmap,		/* 0x24 */
-	Germany5modmap,		/* 0x25 */
-	Italy5modmap,    	/* 0x26 */
-	Netherland5modmap,	/* 0x27 */
-	Norway5modmap,		/* 0x28 */
-	Portugal5modmap,	/* 0x29 */
-	Spain5modmap,    	/* 0x2a */
-	Sweden5modmap,		/* 0x2b */
-	Switzer_Fr5modmap,	/* 0x2c */
-	Switzer_Ge5modmap,	/* 0x2d */
-	UK5modmap,    		/* 0x2e */
-	Korea5modmap,    	/* 0x2f */
-	Taiwan5modmap,		/* 0x30 */
-	Japan5modmap,    	/* 0x31 */
+	US4Modmap,		/* 0x00 */
+	US4Modmap,		/* 0x01 */
+	FranceBelg4Modmap,	/* 0x02 */
+	Canada4Modmap,		/* 0x03 */
+	Denmark4Modmap,		/* 0x04 */
+	Germany4Modmap,		/* 0x05 */
+	Italy4Modmap,		/* 0x06 */
+	Netherland4Modmap,	/* 0x07 */
+	Norway4Modmap,		/* 0x08 */
+	Portugal4Modmap,	/* 0x09 */
+	SpainLatAm4Modmap,	/* 0x0a */
+	SwedenFin4Modmap,	/* 0x0b */
+	SwissFr4Modmap,		/* 0x0c */
+	SwissGe4Modmap,		/* 0x0d */
+	UK4Modmap,		/* 0x0e */
+	NULL,			/* 0x0f */
+	Korea4Modmap,		/* 0x10 */
+	Taiwan4Modmap,		/* 0x11 */
+	NULL,			/* 0x12 */
+	US101AModmap,		/* 0x13 */
+	NULL,			/* 0x14 */
+	NULL,			/* 0x15 */
+	NULL,			/* 0x16 */
+	NULL,			/* 0x17 */
+	NULL,			/* 0x18 */
+	NULL,			/* 0x19 */
+	NULL,			/* 0x1a */
+	NULL,			/* 0x1b */
+	NULL,			/* 0x1c */
+	NULL,			/* 0x1d */
+	NULL,			/* 0x1e */
+	NULL,			/* 0x1f */
+	Japan4Modmap,		/* 0x20 */
+	US5Modmap,		/* 0x21 */
+	US_UNIX5Modmap,		/* 0x22 */
+	France5Modmap,		/* 0x23 */
+	Denmark5Modmap,		/* 0x24 */
+	Germany5Modmap,		/* 0x25 */
+	Italy5Modmap,		/* 0x26 */
+	Netherland5Modmap,	/* 0x27 */
+	Norway5Modmap,		/* 0x28 */
+	Portugal5Modmap,	/* 0x29 */
+	Spain5Modmap,		/* 0x2a */
+	Sweden5Modmap,		/* 0x2b */
+	SwissFr5Modmap,		/* 0x2c */
+	SwissGe5Modmap,		/* 0x2d */
+	UK5Modmap,		/* 0x2e */
+	Korea5Modmap,		/* 0x2f */
+	Taiwan5Modmap,		/* 0x30 */
+	Japan5Modmap,		/* 0x31 */
 };

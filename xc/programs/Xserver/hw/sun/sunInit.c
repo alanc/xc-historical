@@ -1,4 +1,4 @@
-/* $XConsortium: sunInit.c,v 5.32 92/12/03 10:05:15 rws Exp $ */
+/* $XConsortium: sunInit.c,v 5.33 93/08/06 14:38:38 kaleb Exp $ */
 /*
  * sunInit.c --
  *	Initialization functions for screen/keyboard/mouse, etc.
@@ -93,10 +93,9 @@ static Bool	sunDevsInited = FALSE;
 Bool sunAutoRepeatHandlersInstalled;	/* FALSE each time InitOutput called */
 Bool sunSupportsDepth8 = FALSE;
 Bool sunSupportsDepth24 = FALSE;
-Bool sunDoF11 = TRUE, sunDoNumlock = TRUE, sunDoCompose = TRUE;
+Bool sunDoF11 = TRUE;
 Bool FlipPixels = FALSE;
 Bool FbInfo = FALSE;
-int* sunProtected = NULL;
 
 /*
  * The name member in the following table correspond to the 
@@ -367,7 +366,6 @@ void InitOutput(pScreenInfo, argc, argv)
     char	**devList;
     static int	setup_on_exit = 0;
     extern Bool	RunFromSmartParent;
-    extern void AddScreen();
 
     if (!monitorResolution)
 	monitorResolution = 90;
@@ -420,7 +418,7 @@ void InitOutput(pScreenInfo, argc, argv)
 	devList = sunGetDeviceList (argc, argv);
 	for (i = 0, scr = 0; devList[i] != NULL && scr < MAXSCREENS; i++)
 	    if (sunOpenFrameBuffer (devList[i], scr)) {
-		AddScreen (sunFbData[sunFbs[scr].info.fb_type].init, 
+		(void) AddScreen (sunFbData[sunFbs[scr].info.fb_type].init, 
 				argc, argv);
 		scr++;
 	    }
@@ -434,7 +432,7 @@ void InitOutput(pScreenInfo, argc, argv)
 	*/
 	for (scr = 0; scr < MAXSCREENS; scr++)
 	    if (sunFbs[scr].fd != -1)
-		AddScreen (sunFbData[sunFbs[scr].info.fb_type].init, 
+		(void) AddScreen (sunFbData[sunFbs[scr].info.fb_type].init, 
 				argc, argv);
     }
 
@@ -473,25 +471,6 @@ void InitInput(argc, argv)
 		sunDoF11 = TRUE;
 	    else if (!strcmp(argv[i],"f36"))
 		sunDoF11 = FALSE;
-	    else if (!strcmp(argv[i],"compose"))
-		sunDoCompose = TRUE;
-	    else if (!strcmp(argv[i],"numlock"))
-		sunDoNumlock = TRUE;
-	    else if (!strcmp(argv[i],"normal"))
-		sunDoCompose = sunDoNumlock = FALSE;
-	}
-	if ((strcmp(argv[i],"-protect") == 0) && (i+1 < argc)) {
-	    int j,n;
-	    i++;
-	    for(j=n=0; argv[i][j]; j++)
-		if (argv[i][j] == ',')
-		    n++;
-	    sunProtected = (int*)xalloc((n+1)*sizeof(int));
-	    for(j=n=0, sunProtected[0]=0; argv[i][j]; j++)
-		if (argv[i][j] == ',')
-		    sunProtected[++n] = 0;
-		else
-		    sunProtected[n] = sunProtected[n]*10+argv[i][j]-'0';
 	}
     }
     p = AddInputDevice(sunMouseProc, TRUE);
