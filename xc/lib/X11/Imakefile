@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.128 91/12/02 09:39:43 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.129 91/12/17 17:54:51 rws Exp $
 #define DoNormalLib NormalLibX
 #define DoSharedLib SharedLibX
 #define DoDebugLib DebugLibX
@@ -408,6 +408,7 @@ SRCS2 =\
 	XWinEvent.c \
 	XWindow.c \
 	XWrBitF.c \
+	XlibAsync.c \
 	XlibInt.c \
 	Xrm.c \
 	Xstreams.c \
@@ -531,6 +532,7 @@ OBJS2 =\
 	XWinEvent.o \
 	XWindow.o \
 	XWrBitF.o \
+	XlibAsync.o \
 	XlibInt.o \
 	Xrm.o \
 	Xstreams.o \
