@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: GCManager.c,v 1.30 88/09/06 09:50:27 swick Exp $";
+static char Xrcsid[] = "$XConsortium: GCManager.c,v 1.31 88/09/06 16:27:54 jim Exp $";
 /* $oHeader: GCManager.c,v 1.4 88/08/19 14:19:51 asente Exp $ */
 #endif lint
 
@@ -138,7 +138,7 @@ GC XtGetGC(widget, valueMask, values)
     cur->depth      = depth;
     cur->ref_count  = 1;
     cur->valueMask  = valueMask;
-    cur->values     = *values;
+    if (values != NULL) cur->values = *values;
     if (XtWindow(widget) == NULL) {
 	/* Have to create a bogus pixmap for the GC.  Stupid X protocol. */
 	if (GCparents[depth] != 0) {
