@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.135 92/08/10 20:50:59 eswu Exp $
+XCOMM $XConsortium: Imakefile,v 1.136 92/08/31 16:24:52 rws Exp $
 #define DoNormalLib NormalLibX
 #define DoSharedLib SharedLibX
 #define DoDebugLib DebugLibX
@@ -871,8 +871,12 @@ SpecialCLibObjectRule(XlcDefLd,$(_NOOP_),$(RCONST_DEFINES))
 
 #if BuildXimp
 
-XFILESEARCHPATHDEFAULT = XFileSearchPathDefault
-SRCH_DEFINES = -DXFILESEARCHPATHDEFAULT=\"$(XFILESEARCHPATHDEFAULT)\"
+#ifdef XlibI18nPath
+XLIBI18N_PATH = XlibI18nPath
+#else
+XLIBI18N_PATH = $(LIBDIR)
+#endif
+SRCH_DEFINES = -DXLIBI18N_PATH=\"$(XLIBI18N_PATH)\"
 
 LCHDRS = \
 	XIMProto.h \
@@ -894,6 +898,7 @@ LCSYMSRCS = \
 	XimpLCUtil.c \
 	XimpLCd.c \
 	XimpLkup.c \
+	XimpLocal.c \
 	XimpMCT.c \
 	XimpMDrS.c \
 	XimpMEsc.c \
@@ -901,6 +906,7 @@ LCSYMSRCS = \
 	XimpMPer.c \
 	XimpMPrTxt.c \
 	XimpMTxtPr.c \
+	XimpParser.c \
 	XimpPrTxt.c \
 	XimpTxtPr.c \
 	XimpRm.c \
@@ -938,6 +944,7 @@ LCOBJS = \
 	XimpLCUtil.o \
 	XimpLCd.o \
 	XimpLkup.o \
+	XimpLocal.o \
 	XimpMCT.o \
 	XimpMDrS.o \
 	XimpMEsc.o \
@@ -951,6 +958,7 @@ LCOBJS = \
 	XimpWDrS.o \
 	XimpWEsc.o \
 	XimpWExt.o \
+	XimpParser.o \
 	XimpWPer.o \
 	XimpWPrTxt.o \
 	XimpWTxtPr.o \
@@ -975,6 +983,7 @@ LinkSourceFile(XimpIM.c,Ximp)						@@\
 LinkSourceFile(XimpLCUtil.c,Ximp)					@@\
 LinkSourceFile(XimpLCd.c,Ximp)						@@\
 LinkSourceFile(XimpLkup.c,Ximp)						@@\
+LinkSourceFile(XimpLocal.c,Ximp)					@@\
 LinkSourceFile(XimpMCT.c,Ximp)						@@\
 LinkSourceFile(XimpMDrS.c,Ximp)						@@\
 LinkSourceFile(XimpMEsc.c,Ximp)						@@\
@@ -982,6 +991,7 @@ LinkSourceFile(XimpMExt.c,Ximp)						@@\
 LinkSourceFile(XimpMPer.c,Ximp)						@@\
 LinkSourceFile(XimpMPrTxt.c,Ximp)					@@\
 LinkSourceFile(XimpMTxtPr.c,Ximp)					@@\
+LinkSourceFile(XimpParser.c,Ximp)					@@\
 LinkSourceFile(XimpPrTxt.c,Ximp)					@@\
 LinkSourceFile(XimpRm.c,Ximp)						@@\
 LinkSourceFile(XimpSJIS.c,Ximp)						@@\
