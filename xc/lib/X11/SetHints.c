@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XSetHints.c,v 1.4 89/03/17 17:21:09 jim Exp $ */
+/* $XConsortium: XSetHints.c,v 11.30 89/03/28 18:14:16 jim Exp $ */
 
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -34,14 +34,14 @@ SOFTWARE.
 
 #define safestrlen(s) ((s) ? strlen(s) : 0)
 
-XSetSizeHints(dpy, w, hints, property)
+XSetSizeHints(dpy, w, hints, property)		/* old routine */
 	Display *dpy;
 	Window w;
 	XSizeHints *hints;
         Atom property;
 {
         xPropSizeHints prop;
-	prop.flags = hints->flags;
+	prop.flags = (hints->flags & (USPosition|USSize|PAllHints));
 	prop.x = hints->x;
 	prop.y = hints->y;
 	prop.width = hints->width;
@@ -105,7 +105,7 @@ XSetZoomHints (dpy, w, zhints)
  *	WM_NORMAL_HINTS 	type: WM_SIZE_HINTS format: 32
  */
 
-XSetNormalHints (dpy, w, hints)
+XSetNormalHints (dpy, w, hints)			/* old routine */
 	Display *dpy;
 	Window w;
 	XSizeHints *hints;
