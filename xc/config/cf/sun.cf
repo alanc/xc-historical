@@ -12,8 +12,7 @@
 #define HasNdbm		  YES
 #define XsunServer Xsun
 
-/* gcc is *VERY USEFUL*, especially for the server, on a Sun 3 */
-/* #define HasGcc YES */
+/* #define HasGcc YES */	/* VERY USEFUL for server on Sun3 */
 
 #define SystemV           NO
 #define HasPutenv YES
@@ -21,6 +20,9 @@
 
 #if OSMajorVersion >= 4
 #define HasSunOSSharedLibraries YES
+#if HasGcc
+#define LibraryCcCmd cc		/* until gcc can generate -pic code */
+#endif
 #endif
 
 #if OSMajorVersion <= 3
@@ -46,7 +48,7 @@
 /* see below for ServerDefines */
 
 
-/**/# platform:  $XConsortium: sun.cf,v 1.36 89/11/11 17:20:34 rws Exp $
+/**/# platform:  $XConsortium: sun.cf,v 1.37 89/12/22 16:02:15 rws Exp $
 /**/# operating system:  OSName
 
 #if OSMajorVersion == 3 && OSMinorVersion <= 2
