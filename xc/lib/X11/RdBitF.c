@@ -1,4 +1,4 @@
-/* $XConsortium: RdBitF.c,v 1.16 92/04/20 15:47:47 rws Exp $ */
+/* $XConsortium: RdBitF.c,v 1.17 93/09/07 20:03:22 rws Exp $ */
 /* Copyright, 1987, Massachusetts Institute of Technology */
 
 /*
@@ -108,30 +108,24 @@ static NextInt (fstream)
     return value;
 }
 
-
 #if NeedFunctionPrototypes
-int XReadBitmapFile (
-    Display *display,
-    Drawable d,
+int XReadBitmapFileData (
     _Xconst char *filename,
     unsigned int *width,                /* RETURNED */
     unsigned int *height,               /* RETURNED */
-    Pixmap *pixmap,                     /* RETURNED */
+    unsigned char **data,               /* RETURNED */
     int *x_hot,                         /* RETURNED */
     int *y_hot)                         /* RETURNED */
 #else
-int XReadBitmapFile (display, d, filename, width, height, pixmap, x_hot, y_hot)
-    Display *display;
-    Drawable d;
+int XReadBitmapFileData (filename, width, height, data, x_hot, y_hot)
     char *filename;
     unsigned int *width, *height;       /* RETURNED */
-    Pixmap *pixmap;                     /* RETURNED */
+    unsigned char **data;               /* RETURNED */
     int *x_hot, *y_hot;                 /* RETURNED */
 #endif
 {
-    Pixmap pix;				/* value to return */
     FILE *fstream;			/* handle on file  */
-    unsigned char *data = NULL;		/* working variable */
+    unsigned char *bits = NULL;		/* working variable */
     char line[MAX_SIZE];		/* input line from file */
     int size;				/* number of bytes of data */
     char name_and_type[MAX_SIZE];	/* an input line */
@@ -148,18 +142,16 @@ int XReadBitmapFile (display, d, filename, width, height, pixmap, x_hot, y_hot)
     /* first time initialization */
     if (initialized == False) initHexTable();
 
-    if ((fstream = fopen(filename, "r")) == NULL) {
+    if (!(fstream = fopen(filename, "r")))
 	return BitmapOpenFailed;
-    }
 
     /* error cleanup and return macro	*/
 #define	RETURN(code) \
-{ if (data) Xfree ((char *)data); fclose (fstream); return code; }
+{ if (bits) Xfree ((char *)bits); fclose (fstream); return code; }
 
     while (fgets(line, MAX_SIZE, fstream)) {
-	if (strlen(line) == MAX_SIZE-1) {
+	if (strlen(line) == MAX_SIZE-1)
 	    RETURN (BitmapFileInvalid);
-	}
 	if (sscanf(line,"#define %s %d",name_and_type,&value) == 2) {
 	    if (!(type = strrchr(name_and_type, '_')))
 	      type = name_and_type;
@@ -209,15 +201,15 @@ int XReadBitmapFile (display, d, filename, width, height, pixmap, x_hot, y_hot)
 	bytes_per_line = (ww+7)/8 + padding;
 
 	size = bytes_per_line * hh;
-	data = (unsigned char *) Xmalloc ((unsigned int) size);
-	if (!data) 
+	bits = (unsigned char *) Xmalloc ((unsigned int) size);
+	if (!bits) 
 	  RETURN (BitmapNoMemory);
 
 	if (version10p) {
 	    unsigned char *ptr;
 	    int bytes;
 
-	    for (bytes=0, ptr=data; bytes<size; (bytes += 2)) {
+	    for (bytes=0, ptr=bits; bytes<size; (bytes += 2)) {
 		if ((value = NextInt(fstream)) < 0)
 		  RETURN (BitmapFileInvalid);
 		*(ptr++) = value;
@@ -228,7 +220,7 @@ int XReadBitmapFile (display, d, filename, width, height, pixmap, x_hot, y_hot)
 	    unsigned char *ptr;
 	    int bytes;
 
-	    for (bytes=0, ptr=data; bytes<size; bytes++, ptr++) {
+	    for (bytes=0, ptr=bits; bytes<size; bytes++, ptr++) {
 		if ((value = NextInt(fstream)) < 0) 
 		  RETURN (BitmapFileInvalid);
 		*ptr=value;
@@ -236,19 +228,49 @@ int XReadBitmapFile (display, d, filename, width, height, pixmap, x_hot, y_hot)
 	}
     }					/* end while */
 
-    if (data == NULL) {
-	RETURN (BitmapFileInvalid);
-    }
+    fclose(fstream);
+    if (!bits)
+	return (BitmapFileInvalid);
 
-    pix = XCreateBitmapFromData (display, d, (char *) data, ww, hh);
-    if (pix == None) {
-	RETURN (BitmapNoMemory);
-    }
-    *pixmap = pix;
+    *data = bits;
     *width = ww;
     *height = hh;
     if (x_hot) *x_hot = hx;
     if (y_hot) *y_hot = hy;
 
-    RETURN (BitmapSuccess);
+    return (BitmapSuccess);
+}
+
+#if NeedFunctionPrototypes
+int XReadBitmapFile (
+    Display *display,
+    Drawable d,
+    _Xconst char *filename,
+    unsigned int *width,                /* RETURNED */
+    unsigned int *height,               /* RETURNED */
+    Pixmap *pixmap,                     /* RETURNED */
+    int *x_hot,                         /* RETURNED */
+    int *y_hot)                         /* RETURNED */
+#else
+int XReadBitmapFile (display, d, filename, width, height, pixmap, x_hot, y_hot)
+    Display *display;
+    Drawable d;
+    char *filename;
+    unsigned int *width, *height;       /* RETURNED */
+    Pixmap *pixmap;                     /* RETURNED */
+    int *x_hot, *y_hot;                 /* RETURNED */
+#endif
+{
+    Pixmap pix;				/* value to return */
+    unsigned char *data;
+    int res;
+
+    res = XReadBitmapFileData(filename, width, height, &data, x_hot, y_hot);
+    if (res != BitmapSuccess)
+	return res;
+    *pixmap = XCreateBitmapFromData(display, d, (char *)data, *width, *height);
+    Xfree((char *)data);
+    if (*pixmap == None)
+	return (BitmapNoMemory);
+    return (BitmapSuccess);
 }
