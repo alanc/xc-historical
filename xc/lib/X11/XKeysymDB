@@ -1,4 +1,4 @@
-! $XConsortium: XKeysymDB,v 1.1 91/05/07 17:26:52 rws Exp $
+! $XConsortium: XKeysymDB,v 1.2 91/06/18 13:43:07 rws Exp $
 
 hpmute_acute		:100000A8
 hpmute_grave		:100000A9
@@ -157,3 +157,6 @@ SunStop			:FF69
 SunAltGraph		:FF7E	
 
 WYSetup			:1006FF00
+
+ncdSetup		:1006FF00
+
