@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 5.37 92/05/28 13:08:18 rws Exp $
+XCOMM $XConsortium: Imakefile,v 5.39 93/09/04 17:16:33 rws Exp $
 #include <Server.tmpl>
 
 #ifndef PixelSize
@@ -22,8 +22,8 @@ STIPPLEDEF = -DHAS_STIPPLE_CODE
 
 #if PixelSize == 32
 #ifdef SparcArchitecture
-STIPPLESRC = stipsparc32.s stipsparcte32.s
-STIPPLEOBJ = stipsparc32.o stipsparcte32.o
+STIPPLESRC = stipsprc32.s stipsprcte32.s
+STIPPLEOBJ = stipsprc32.o stipsprcte32.o
 STIPPLEDEF = -DHAS_STIPPLE_CODE
 #endif
 #endif
@@ -126,7 +126,7 @@ LinkSourceFile(stipsparc.s,LinkDirectory)
 #endif
 #if PixelSize == 32
 #ifdef SparcArchitecture
-LinkSourceFile(stipsparc32.s,LinkDirectory)
+LinkSourceFile(stipsprc32.s,LinkDirectory)
 #endif
 #endif
 #endif
@@ -201,17 +201,17 @@ stipsparcte.o: stipsparcte.s
 
 #if PixelSize == 32
 #ifdef SparcArchitecture
-stipsparcte32.s: stipsparc32.s
+stipsprcte32.s: stipsprc32.s
 	$(RM) $@
-	$(LN) stipsparc32.s stipsparcte32.s
+	$(LN) stipsprc32.s stipsprcte32.s
 clean::
-	$(RM) stipsparcte32.s
+	$(RM) stipsprcte32.s
 
-stipsparc32.o: stipsparc32.s
-	$(CPP) stipsparc32.s | $(AS) -o $@ -
+stipsprc32.o: stipsprc32.s
+	$(CPP) stipsprc32.s | $(AS) -o $@ -
 
-stipsparcte32.o: stipsparcte32.s
-	$(CPP) -DTETEXT stipsparcte32.s | $(AS) -o $@ -
+stipsprcte32.o: stipsprcte32.s
+	$(CPP) -DTETEXT stipsprcte32.s | $(AS) -o $@ -
 #endif
 #endif
 
