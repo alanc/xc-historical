@@ -1,13 +1,13 @@
 /* 
  * $header: xset.c,v 1.18 87/07/11 08:47:46 dkk Locked $ 
- * $Locker: dkk $ 
+ * $Locker: toddb $ 
  */
 #include <X11/copyright.h>
 
 /* Copyright    Massachusetts Institute of Technology    1985	*/
 
 #ifndef lint
-static char *rcsid_xset_c = "$Header: xset.c,v 1.18 87/07/11 08:47:46 dkk Locked $";
+static char *rcsid_xset_c = "$Header: xset.c,v 1.19 87/07/22 05:22:24 toddb Locked $";
 #endif
 
 #include <X11/X.h>      /*  Should be transplanted to X11/Xlibwm.h     %*/
@@ -66,7 +66,9 @@ if (dpy == NULL) {
 }
 for (i = 1; i < argc; ) {
   arg = argv[i++];
-  if (*arg == '-' && *(arg + 1) == 'c') { /* Does arg start with "-c"? */
+  if (index(arg, ':')) {     /*  Set display name if given by user.  */
+	; /* forget this */
+  } else if (*arg == '-' && *(arg + 1) == 'c'){ /* Does arg start with "-c"? */
     set_click(dpy, 0);           /* If so, turn click off and  */
   } 
   else if (*arg == 'c') {         /* Well, does it start with "c", then? */
@@ -416,10 +418,14 @@ set_lock(dpy, onoff)
 Display *dpy;
 Bool onoff;
 {
-  XModifierKeys mods;
-  XGetModifierMapping(dpy, &mods);
-  mods.lock = onoff ? XK_Caps_Lock : 0;
-  XSetModifierMapping(dpy, &mods);
+  XModifierKeymap *mods;
+  mods = XGetModifierMapping(dpy);
+
+  if (onoff)
+    mods = XInsertModifiermapEntry(mods, XK_Caps_Lock, LockMapIndex);
+  else
+    mods = XDeleteModifiermapEntry(mods, XK_Caps_Lock, LockMapIndex);
+  XSetModifierMapping(dpy, mods);
   return;
 }
 
