@@ -1,4 +1,4 @@
-/* $XConsortium: pl_free.c,v 1.1 92/05/08 15:13:00 mor Exp $ */
+/* $XConsortium: pl_free.c,v 1.2 92/05/20 21:51:01 mor Exp $ */
 
 /************************************************************************
 Copyright 1992 by the Massachusetts Institute of Technology, Cambridge,
@@ -45,15 +45,6 @@ INPUT PEXEnumTypeDesc 	*enumInfo;
 }
 
 
-void PEXFreeEscapeReply (escapeReply)
-
-INPUT char		*escapeReply;
-
-{
-    PEXFreeBuf ((char *) escapeReply);
-}
-
-
 void PEXFreeFontInfo (numFontInfo, fontInfo)
 
 INPUT unsigned long	numFontInfo;
@@ -97,8 +88,17 @@ INPUT PEXPCAttributes	*pcAttr;
 {
     FreeIfNotNull ((char *) pcAttr->model_clip_volume.half_spaces);
     FreeIfNotNull ((char *) pcAttr->light_state.indices);
-    FreeIfNotNull ((char *) pcAttr->para_surf_char.psc.level_curves.parameters);
-    FreeIfNotNull ((char *) pcAttr->para_surf_char.psc.imp_dep.data);
+
+    if (pcAttr->para_surf_char.type == PEXPSCMCLevelCurves ||
+        pcAttr->para_surf_char.type == PEXPSCWCLevelCurves)
+    {
+	PEXFreeBuf ((char *)
+	    pcAttr->para_surf_char.psc.level_curves.parameters);
+    }
+    else if (pcAttr->para_surf_char.type == PEXPSCImpDep)
+    {
+	PEXFreeBuf ((char *) pcAttr->para_surf_char.psc.imp_dep.data);
+    }
 
     PEXFreeBuf ((char *) pcAttr);
 }
