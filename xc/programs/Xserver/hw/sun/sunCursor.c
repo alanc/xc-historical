@@ -74,6 +74,11 @@ static char sccsid[] = "%W %G Copyright 1987 Sun Micro";
 static CursorPtr  currentCursor = NullCursor;	/* Cursor being displayed */
 static BoxRec  	  currentLimits;		/* Box w/in which the hot spot
 						 * must stay. */
+
+#ifdef SUN_WINDOWS
+extern int 	sunIgnoreEvent;
+#endif
+
 /*
  * There are four window functions which bypass the usual GC validation
  * path (PaintWindow{Background,Border}, CopyWindow & ClearToBackground)
@@ -223,10 +228,11 @@ sunGetPixel (pScreen, r, g, b)
     ColormapPtr cmap = (ColormapPtr) LookupID(pScreen->defColormap, RT_COLORMAP, RC_CORE);
     Pixel       pix;
 
-    if (!cmap)
-	FatalError("Can't find default colormap in sunGetPixel\n");
-    if (AllocColor(cmap, &r, &g, &b, &pix, 0))
-	FatalError("Can't alloc pixel (%d,%d,%d) in sunGetPixel\n");
+    if (!cmap || AllocColor(cmap, &r, &g, &b, &pix, 0)) {
+	ErrorF("sunGetPixel: Can't alloc pixel (%d,%d,%d) in map 0x%x\n",
+	       r, g, b, pScreen->defColormap);
+	return (pScreen->blackPixel);
+    }
     return (pix);
 }
 /*-
@@ -251,20 +257,18 @@ sunRealizeCursor (pScreen, pCursor)
 				/* realized */
     CursorPtr	  pCursor;  	/* Cursor to realize */
 {
-    register CrPrivPtr pPriv;
+    register CrPrivPtr pPriv = (CrPrivPtr)NULL;
     int         bufWidth;
-    GC         *pGC;		/* GC for initializing the source and */
+    GC         *pGC = (GC *)NULL;	/* GC for initializing the source and */
+    GC		*tGC1 = (GC *)NULL, *tGC2 = (GC *)NULL;
     /* invSource pixmaps... */
     u_char     *stencil;
     BITS32      status;
 
-    pGC = GetScratchGC(1, pScreen);
-
-    pPriv = (CrPrivPtr) Xalloc(sizeof(CrPrivRec));
-    pPriv->state = CR_OUT;
-    pCursor->devPriv[pScreen->myNum] = (pointer) pPriv;
-
-    bufWidth = 2 * pCursor->width;
+    if (!(pGC = GetScratchGC(1, pScreen)))
+	goto cleanup1;
+    if (!(pPriv = (CrPrivPtr) Xalloc(sizeof(CrPrivRec))))
+	goto cleanup2;
 
     pPriv->fg = sunGetPixel(pScreen, pCursor->foreRed,
 			    pCursor->foreGreen,
@@ -272,6 +276,31 @@ sunRealizeCursor (pScreen, pCursor)
     pPriv->bg = sunGetPixel(pScreen, pCursor->backRed,
 			    pCursor->backGreen,
 			    pCursor->backBlue);
+
+    tGC1 = sunCreatePrivGC((DrawablePtr)pScreen->devPrivate,
+	GCForeground, &pPriv->fg, &status);
+    if (!tGC1)
+	goto cleanup3;
+    tGC2 = sunCreatePrivGC((DrawablePtr)pScreen->devPrivate,
+	GCForeground, &pPriv->bg, &status);
+    if (!tGC2) {
+	FreeScratchGC(tGC1);
+cleanup3:
+	Xfree(pPriv);
+	/* XXX - free up the pixels,  too */
+cleanup2:
+	FreeScratchGC(pGC);
+cleanup1:
+	return FALSE;
+    }
+
+    pPriv->srcGC = tGC1;
+    pPriv->invSrcGC = tGC2;
+
+    pPriv->state = CR_OUT;
+    pCursor->devPriv[pScreen->myNum] = (pointer) pPriv;
+
+    bufWidth = 2 * pCursor->width;
 
     /*
      * Create the two pixmaps for the off-screen manipulation of the
@@ -318,8 +347,6 @@ sunRealizeCursor (pScreen, pCursor)
 		      stencil);
     Xfree(stencil);
 
-    pPriv->srcGC = sunCreatePrivGC((DrawablePtr)pScreen->devPrivate,
-	GCForeground, &pPriv->fg, &status);
     ValidateGC((DrawablePtr) pScreen->devPrivate, pPriv->srcGC);
 
     pPriv->invSource =
@@ -338,11 +365,10 @@ sunRealizeCursor (pScreen, pCursor)
 		      stencil);
     Xfree(stencil);
 
-    pPriv->invSrcGC = sunCreatePrivGC((DrawablePtr)pScreen->devPrivate,
-	GCForeground, &pPriv->bg, &status);
     ValidateGC((DrawablePtr) pScreen->devPrivate, pPriv->invSrcGC);
 
     FreeScratchGC( pGC );
+    return TRUE;
 }
 
 /*-
@@ -436,6 +462,13 @@ sunSetCursorPosition (pScreen, hotX, hotY, generateEvent)
 	motion.u.u.type = MotionNotify;
 	(*pDev->processInputProc) (&motion, pDev);
     }
+
+#ifdef	SUN_WINDOWS
+    if ( sunUseSunWindows() )
+	if (!sunIgnoreEvent)
+   	    win_setmouseposition(windowFd, hotX, hotY);
+#endif
+
     return TRUE;
 }
 
@@ -1098,7 +1131,9 @@ sunChangeWindowAttributes (pWin, mask)
     pPriv = (WinPrivPtr) LookupID (pWin->wid, RT_WINDOW, wPrivClass);
 
     if (pPriv == (WinPrivPtr)0) {
-	FatalError ("sunChangeWindowAttributes got null private data");
+	ErrorF ("sunChangeWindowAttributes: Can't find priv data for 0x%x\n",
+		pWin->wid);
+	return (FALSE);
     }
 
     if ((void (*)())pWin->PaintWindowBackground != (void (*)())sunPaintWindowBackground){
