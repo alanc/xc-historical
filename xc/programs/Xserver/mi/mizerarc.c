@@ -15,7 +15,7 @@ without any express or implied warranty.
 
 ********************************************************/
 
-/* $XConsortium: mizerarc.c,v 5.18 89/09/19 14:29:02 rws Exp $ */
+/* $XConsortium: mizerarc.c,v 5.19 89/09/20 10:14:21 rws Exp $ */
 
 /* Derived from:
  * "Algorithm for drawing ellipses or hyperbolae with a digital plotter"
@@ -42,6 +42,20 @@ typedef struct {
 } DashInfo;
 
 static miZeroArcPtRec oob = {65536, 65536, 0};
+
+/*
+ * (x - l)^2 / (W/2)^2  + (y + H/2)^2 / (H/2)^2 = 1
+ *
+ * where l is either 0 or .5
+ *
+ * alpha = 4(W^2)
+ * beta = 4(H^2)
+ * gamma = 0
+ * u = 2(W^2)H
+ * v = 4(H^2)l
+ * k = -4(H^2)(l^2)
+ *
+ */
 
 Bool
 miZeroArcSetup(arc, info, ok360)
@@ -85,14 +99,44 @@ miZeroArcSetup(arc, info, ok360)
     }
     else
     {
+	/* initial conditions */
 	info->alpha = (arc->width * arc->width) << 2;
 	info->beta = (arc->height * arc->height) << 2;
-	info->k1 = -(info->beta << 1);
-	info->k3 = info->k1 - (info->alpha << 1);
-	info->b = info->beta * (3 - l);
-	info->a = (info->alpha * arc->height) - info->b;
-	info->d = info->b - (info->a >> 1) - ((info->beta >> 2) * (2 + l)) +
-		 (info->alpha >> 2);
+	info->k1 = info->beta << 1;
+	info->k3 = info->k1 + (info->alpha << 1);
+	info->b = l ? 0 : -info->beta;
+	info->a = info->alpha * arc->height;
+	info->d = info->b - (info->a >> 1) - (info->alpha >> 2);
+	if (l)
+	    info->d -= info->beta >> 2;
+	info->a -= info->b;
+	/* take first step, d < 0 always */
+	info->b -= info->k1;
+	info->a += info->k1;
+	info->d += info->b;
+	/* octant change, b < 0 always */
+	info->k1 = -info->k1;
+	info->k3 = -info->k3;
+	info->b = -info->b;
+	info->d = info->b - info->a - info->d;
+	info->a = info->a - (info->b << 1);
+    }
+    info->dx = 1;
+    info->dy = 0;
+    info->w = (arc->width + 1) >> 1;
+    info->h = arc->height >> 1;
+    info->xorg = arc->x + (arc->width >> 1);
+    info->yorg = arc->y;
+    info->xorgo = info->xorg + l;
+    info->yorgo = info->yorg + arc->height;
+    if (!arc->width && !arc->height)
+    {
+	info->x = 0;
+	info->y = 0;
+	info->initialMask = 1;
+	info->start = oob;
+	info->end = oob;
+	return FALSE;
     }
     if (!arc->width && arc->height)
     {
@@ -104,14 +148,6 @@ miZeroArcSetup(arc, info, ok360)
 	info->x = 1;
 	info->y = 0;
     }
-    info->dx1 = 1;
-    info->dy1 = 0;
-    info->w = (arc->width + 1) >> 1;
-    info->h = arc->height >> 1;
-    info->xorg = arc->x + (arc->width >> 1);
-    info->yorg = arc->y;
-    info->xorgo = info->xorg + l;
-    info->yorgo = info->yorg + arc->height;
     angle1 = arc->angle1;
     angle2 = arc->angle2;
     if (angle2 > FULLCIRCLE)
@@ -285,19 +321,11 @@ miZeroArcPts(arc, pts)
 {
     miZeroArcRec info;
     register int x, y, a, b, d, mask;
-    register int k1, k3, dx1, dy1;
+    register int k1, k3, dx, dy;
     Bool do360;
 
     do360 = miZeroArcSetup(arc, &info, TRUE);
-    x = info.x;
-    y = info.y;
-    k1 = info.k1;
-    k3 = info.k3;
-    a = info.a;
-    b = info.b;
-    d = info.d;
-    dx1 = info.dx1;
-    dy1 = info.dy1;
+    MIARCSETUP();
     mask = info.initialMask;
     if (!(arc->width & 1))
     {
@@ -327,19 +355,7 @@ miZeroArcPts(arc, pts)
 	    Pixelate(xorghn + y, yorgh - x);
 	    Pixelate(xorghn + y, yorgh + x);
 	    Pixelate(xorghp - y, yorgh + x);
-	    b -= k1;
-	    x++;
-	    if (d < 0)
-	    {
-		a += k1;
-		d += b;
-	    }
-	    else
-	    {
-		y++;
-		a += k3;
-		d -= a;
-	    }
+	    MIARCCIRCLESTEP( );
 	}
 	if (x > 1 && pts[-1].x == pts[-5].x && pts[-1].y == pts[-5].y)
 	    pts -= 4;
@@ -350,67 +366,19 @@ miZeroArcPts(arc, pts)
     {
 	while (y < info.h || x < info.w)
 	{
-	    if (a < 0)
-	    {
-		if (y == info.h)
-		{
-		    d = -1;
-		    a = b = k1 = 0;
-		}
-		else
-		{
-		    dx1 = 0;
-		    dy1 = 1;
-		    k1 = info.alpha << 1;
-		    k3 = -k3;
-		    b = b + a - info.alpha;
-		    d = b - (a >> 1) - d + (k3 >> 3);
-		    a = (info.alpha - info.beta) - a;
-		}
-	    }
+	    MIARCOCTANTSHIFT( );
 	    Pixelate(info.xorg + x, info.yorg + y);
 	    Pixelate(info.xorgo - x, info.yorg + y);
 	    Pixelate(info.xorgo - x, info.yorgo - y);
 	    Pixelate(info.xorg + x, info.yorgo - y);
-	    b -= k1;
-	    if (d < 0)
-	    {
-		x += dx1;
-		y += dy1;
-		a += k1;
-		d += b;
-	    }
-	    else
-	    {
-		x++;
-		y++;
-		a += k3;
-		d -= a;
-	    }
+	    MIARCSTEP( , );
 	}
     }
     else
     {
 	while (y < info.h || x < info.w)
 	{
-	    if (a < 0)
-	    {
-		if (y == info.h)
-		{
-		    d = -1;
-		    a = b = k1 = 0;
-		}
-		else
-		{
-		    dx1 = 0;
-		    dy1 = 1;
-		    k1 = info.alpha << 1;
-		    k3 = -k3;
-		    b = b + a - info.alpha;
-		    d = b - (a >> 1) - d + (k3 >> 3);
-		    a = (info.alpha - info.beta) - a;
-		}
-	    }
+	    MIARCOCTANTSHIFT( );
 	    if ((x == info.start.x) || (y == info.start.y))
 	    {
 		mask = info.start.mask;
@@ -425,21 +393,7 @@ miZeroArcPts(arc, pts)
 		mask = info.end.mask;
 		info.end = info.altend;
 	    }
-	    b -= k1;
-	    if (d < 0)
-	    {
-		x += dx1;
-		y += dy1;
-		a += k1;
-		d += b;
-	    }
-	    else
-	    {
-		x++;
-		y++;
-		a += k3;
-		d -= a;
-	    }
+	    MIARCSTEP( , );
 	}
     }
     if ((x == info.start.x) || (y == info.start.y))
@@ -473,26 +427,18 @@ miZeroArcDashPts(pGC, arc, dinfo, points, maxPts, evenPts, oddPts)
 {
     miZeroArcRec info;
     register int x, y, a, b, d, mask;
-    register int k1, k3, dx1, dy1;
+    register int k1, k3, dx, dy;
     int dashRemaining;
     DDXPointPtr arcPts[4];
     DDXPointPtr startPts[5], endPts[5];
     int deltas[5];
     DDXPointPtr startPt, pt, lastPt, pts;
-    int i, delta, ptsdelta, seg, startseg;
+    int i, j, delta, ptsdelta, seg, startseg;
 
     for (i = 0; i < 4; i++)
 	arcPts[i] = points + (i * maxPts);
     (void)miZeroArcSetup(arc, &info, FALSE);
-    x = info.x;
-    y = info.y;
-    k1 = info.k1;
-    k3 = info.k3;
-    a = info.a;
-    b = info.b;
-    d = info.d;
-    dx1 = info.dx1;
-    dy1 = info.dy1;
+    MIARCSETUP();
     mask = info.initialMask;
     startseg = info.startAngle / QUADRANT;
     startPt = arcPts[startseg];
@@ -508,24 +454,7 @@ miZeroArcDashPts(pGC, arc, dinfo, points, maxPts, evenPts, oddPts)
     }
     while (y < info.h || x < info.w)
     {
-	if (a < 0)
-	{
-	    if (y == info.h)
-	    {
-		d = -1;
-		a = b = k1 = 0;
-	    }
-	    else
-	    {
-		dx1 = 0;
-		dy1 = 1;
-		k1 = info.alpha << 1;
-		k3 = -k3;
-		b = b + a - info.alpha;
-		d = b - (a >> 1) - d + (k3 >> 3);
-		a = (info.alpha - info.beta) - a;
-	    }
-	}
+	MIARCOCTANTSHIFT( );
 	if ((x == info.firstx) || (y == info.firsty))
 	    startPt = arcPts[startseg];
 	if ((x == info.start.x) || (y == info.start.y))
@@ -542,21 +471,7 @@ miZeroArcDashPts(pGC, arc, dinfo, points, maxPts, evenPts, oddPts)
 	    mask = info.end.mask;
 	    info.end = info.altend;
 	}
-	b -= k1;
-	if (d < 0)
-	{
-	    x += dx1;
-	    y += dy1;
-	    a += k1;
-	    d += b;
-	}
-	else
-	{
-	    x++;
-	    y++;
-	    a += k3;
-	    d -= a;
-	}
+	MIARCSTEP( , );
     }
     if ((x == info.firstx) || (y == info.firsty))
 	startPt = arcPts[startseg];
@@ -634,6 +549,9 @@ miZeroArcDashPts(pGC, arc, dinfo, points, maxPts, evenPts, oddPts)
     for (i = 0; startPts[i] == endPts[i]; i++)
 	;
     pt = startPts[i];
+    for (j = 4; startPts[j] == endPts[i]; j--)
+	;
+    lastPt = endPts[j] - deltas[j];
     if ((pt->x == dinfo->endPt.x) && (pt->y == dinfo->endPt.y))
     {
 	startPts[i] += deltas[i];
@@ -643,13 +561,11 @@ miZeroArcDashPts(pGC, arc, dinfo, points, maxPts, evenPts, oddPts)
 	dinfo->dashIndex = dinfo->dashIndexInit;
 	dinfo->dashOffset = dinfo->dashOffsetInit;
     }
+    if ((lastPt->x == dinfo->startPt.x) && (lastPt->y == dinfo->startPt.y) &&
+	(lastPt != pt))
+	endPts[j] = pt;
     dinfo->startPt = *pt;
-    for (i = 4; startPts[i] == endPts[i]; i--)
-	;
-    pt = endPts[i] - deltas[i];
-    if ((pt->x == dinfo->startPt.x) && (pt->y == dinfo->startPt.y))
-	endPts[i] = pt;
-    dinfo->endPt = *pt;
+    dinfo->endPt = *lastPt;
     dashRemaining = pGC->dash[dinfo->dashIndex] - dinfo->dashOffset;
     for (i = 0; i < 5; i++)
     {

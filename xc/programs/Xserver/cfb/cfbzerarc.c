@@ -15,7 +15,7 @@ without any express or implied warranty.
 
 ********************************************************/
 
-/* $XConsortium: cfbzerarc.c,v 5.12 89/09/19 14:29:54 rws Exp $ */
+/* $XConsortium: cfbzerarc.c,v 5.13 89/09/20 10:14:41 rws Exp $ */
 
 /* Derived from:
  * "Algorithm for drawing ellipses or hyperbolae with a digital plotter"
@@ -46,7 +46,7 @@ cfbZeroArcSS8Copy(pDraw, pGC, arc)
     miZeroArcRec info;
     Bool do360;
     register int x, y, a, b, d, mask;
-    register int k1, k3, dx1, dy1;
+    register int k1, k3, dx, dy;
     char *addrb;
     register char *yorgb, *yorgob;
     unsigned long pixel = pGC->fgPixel;
@@ -69,16 +69,8 @@ cfbZeroArcSS8Copy(pDraw, pGC, arc)
     yorgob = addrb + ((info.yorgo + pDraw->y) * nlwidth);
     info.xorg += pDraw->x;
     info.xorgo += pDraw->x;
-    x = info.x;
-    y = info.y;
+    MIARCSETUP();
     yoffset = y ? nlwidth : 0;
-    k1 = info.k1;
-    k3 = info.k3;
-    a = info.a;
-    b = info.b;
-    d = info.d;
-    dx1 = info.dx1;
-    dy1 = info.dy1;
     dyoffset = 0;
     mask = info.initialMask;
     if (!(arc->width & 1))
@@ -114,21 +106,8 @@ cfbZeroArcSS8Copy(pDraw, pGC, arc)
 	    *(yorgohb - xoffset + y) = pixel;
 	    *(yorgohb + xoffset + y) = pixel;
 	    *(yorghb + xoffset - y) = pixel;
-	    b -= k1;
-	    x++;
 	    xoffset += nlwidth;
-	    if (d < 0)
-	    {
-		a += k1;
-		d += b;
-	    }
-	    else
-	    {
-		y++;
-		yoffset += nlwidth;
-		a += k3;
-		d -= a;
-	    }
+	    MIARCCIRCLESTEP(yoffset += nlwidth;);
 	}
 	yorgb -= info.xorg;
 	yorgob -= info.xorg;
@@ -139,71 +118,19 @@ cfbZeroArcSS8Copy(pDraw, pGC, arc)
     {
 	while (y < info.h || x < info.w)
 	{
-	    if (a < 0)
-	    {
-		if (y == info.h)
-		{
-		    d = -1;
-		    a = b = k1 = 0;
-		}
-		else
-		{
-		    dx1 = 0;
-		    dy1 = 1;
-		    dyoffset = nlwidth;
-		    k1 = info.alpha << 1;
-		    k3 = -k3;
-		    b = b + a - info.alpha;
-		    d = b - (a >> 1) - d + (k3 >> 3);
-		    a = (info.alpha - info.beta) - a;
-		}
-	    }
+	    MIARCOCTANTSHIFT(dyoffset = nlwidth;);
 	    *(yorgb + yoffset + info.xorg + x) = pixel;
 	    *(yorgb + yoffset + info.xorgo - x) = pixel;
 	    *(yorgob - yoffset + info.xorgo - x) = pixel;
 	    *(yorgob - yoffset + info.xorg + x) = pixel;
-	    b -= k1;
-	    if (d < 0)
-	    {
-		x += dx1;
-		y += dy1;
-		yoffset += dyoffset;
-		a += k1;
-		d += b;
-	    }
-	    else
-	    {
-		x++;
-		y++;
-		yoffset += nlwidth;
-		a += k3;
-		d -= a;
-	    }
+	    MIARCSTEP(yoffset += dyoffset;, yoffset += nlwidth;);
 	}
     }
     else
     {
 	while (y < info.h || x < info.w)
 	{
-	    if (a < 0)
-	    {
-		if (y == info.h)
-		{
-		    d = -1;
-		    a = b = k1 = 0;
-		}
-		else
-		{
-		    dx1 = 0;
-		    dy1 = 1;
-		    dyoffset = nlwidth;
-		    k1 = info.alpha << 1;
-		    k3 = -k3;
-		    b = b + a - info.alpha;
-		    d = b - (a >> 1) - d + (k3 >> 3);
-		    a = (info.alpha - info.beta) - a;
-		}
-	    }
+	    MIARCOCTANTSHIFT(dyoffset = nlwidth;);
 	    if ((x == info.start.x) || (y == info.start.y))
 	    {
 		mask = info.start.mask;
@@ -222,23 +149,7 @@ cfbZeroArcSS8Copy(pDraw, pGC, arc)
 		mask = info.end.mask;
 		info.end = info.altend;
 	    }
-	    b -= k1;
-	    if (d < 0)
-	    {
-		x += dx1;
-		y += dy1;
-		yoffset += dyoffset;
-		a += k1;
-		d += b;
-	    }
-	    else
-	    {
-		x++;
-		y++;
-		yoffset += nlwidth;
-		a += k3;
-		d -= a;
-	    }
+	    MIARCSTEP(yoffset += dyoffset;, yoffset += nlwidth;);
 	}
     }
     if ((x == info.start.x) || (y == info.start.y))

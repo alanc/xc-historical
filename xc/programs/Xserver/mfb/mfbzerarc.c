@@ -15,7 +15,7 @@ without any express or implied warranty.
 
 ********************************************************/
 
-/* $XConsortium: mfbzerarc.c,v 5.8 89/09/19 14:30:25 rws Exp $ */
+/* $XConsortium: mfbzerarc.c,v 5.9 89/09/20 10:14:53 rws Exp $ */
 
 /* Derived from:
  * "Algorithm for drawing ellipses or hyperbolae with a digital plotter"
@@ -64,7 +64,7 @@ mfbZeroArcSS(pDraw, pGC, arc)
     miZeroArcRec info;
     Bool do360;
     register int x, y, a, b, d, mask;
-    register int k1, k3, dx1, dy1;
+    register int k1, k3, dx, dy;
     int *addrl;
     int *yorgl, *yorgol;
     unsigned long pixel;
@@ -95,24 +95,16 @@ mfbZeroArcSS(pDraw, pGC, arc)
     yorgol = addrl + ((info.yorgo + pDraw->y) * nlwidth);
     info.xorg += pDraw->x;
     info.xorgo += pDraw->x;
-    x = info.x;
-    y = info.y;
+    MIARCSETUP();
     yoffset = y ? nlwidth : 0;
-    k1 = info.k1;
-    k3 = info.k3;
-    a = info.a;
-    b = info.b;
-    d = info.d;
-    dx1 = info.dx1;
-    dy1 = info.dy1;
     dyoffset = 0;
     mask = info.initialMask;
-    if (x && !(arc->width & 1))
+    if (!(arc->width & 1))
     {
 	DoPix(2, yorgl, info.xorgo);
 	DoPix(8, yorgol, info.xorgo);
     }
-    if (!info.end.x)
+    if (!info.end.x || !info.end.y)
     {
 	mask = info.end.mask;
 	info.end = info.altend;
@@ -138,21 +130,8 @@ mfbZeroArcSS(pDraw, pGC, arc)
 		PixelateWhite(yorghl - xoffset, xorghn + y);
 		PixelateWhite(yorghl + xoffset, xorghn + y);
 		PixelateWhite(yorghl + xoffset, xorghp - y);
-		b -= k1;
-		x++;
 		xoffset += nlwidth;
-		if (d < 0)
-		{
-		    a += k1;
-		    d += b;
-		}
-		else
-		{
-		    y++;
-		    yoffset += nlwidth;
-		    a += k3;
-		    d -= a;
-		}
+		MIARCCIRCLESTEP(yoffset += nlwidth;);
 	    }
 	}
 	else
@@ -169,21 +148,8 @@ mfbZeroArcSS(pDraw, pGC, arc)
 		PixelateBlack(yorghl - xoffset, xorghn + y);
 		PixelateBlack(yorghl + xoffset, xorghn + y);
 		PixelateBlack(yorghl + xoffset, xorghp - y);
-		b -= k1;
-		x++;
 		xoffset += nlwidth;
-		if (d < 0)
-		{
-		    a += k1;
-		    d += b;
-		}
-		else
-		{
-		    y++;
-		    yoffset += nlwidth;
-		    a += k3;
-		    d -= a;
-		}
+		MIARCCIRCLESTEP(yoffset += nlwidth;);
 	    }
 	}
 	x = info.w;
@@ -193,71 +159,19 @@ mfbZeroArcSS(pDraw, pGC, arc)
     {
 	while (y < info.h || x < info.w)
 	{
-	    if (a < 0)
-	    {
-		if (y == info.h)
-		{
-		    d = -1;
-		    a = b = k1 = 0;
-		}
-		else
-		{
-		    dx1 = 0;
-		    dy1 = 1;
-		    dyoffset = nlwidth;
-		    k1 = info.alpha << 1;
-		    k3 = -k3;
-		    b = b + a - info.alpha;
-		    d = b - (a >> 1) - d + (k3 >> 3);
-		    a = (info.alpha - info.beta) - a;
-		}
-	    }
+	    MIARCOCTANTSHIFT(dyoffset = nlwidth;);
 	    Pixelate(yorgl + yoffset, info.xorg + x);
 	    Pixelate(yorgl + yoffset, info.xorgo - x);
 	    Pixelate(yorgol - yoffset, info.xorgo - x);
 	    Pixelate(yorgol - yoffset, info.xorg + x);
-	    b -= k1;
-	    if (d < 0)
-	    {
-		x += dx1;
-		y += dy1;
-		yoffset += dyoffset;
-		a += k1;
-		d += b;
-	    }
-	    else
-	    {
-		x++;
-		y++;
-		yoffset += nlwidth;
-		a += k3;
-		d -= a;
-	    }
+	    MIARCSTEP(yoffset += dyoffset;, yoffset += nlwidth;);
 	}
     }
     else
     {
 	while (y < info.h || x < info.w)
 	{
-	    if (a < 0)
-	    {
-		if (y == info.h)
-		{
-		    d = -1;
-		    a = b = k1 = 0;
-		}
-		else
-		{
-		    dx1 = 0;
-		    dy1 = 1;
-		    dyoffset = nlwidth;
-		    k1 = info.alpha << 1;
-		    k3 = -k3;
-		    b = b + a - info.alpha;
-		    d = b - (a >> 1) - d + (k3 >> 3);
-		    a = (info.alpha - info.beta) - a;
-		}
-	    }
+	    MIARCOCTANTSHIFT(dyoffset = nlwidth;);
 	    if ((x == info.start.x) || (y == info.start.y))
 	    {
 		mask = info.start.mask;
@@ -272,30 +186,14 @@ mfbZeroArcSS(pDraw, pGC, arc)
 		mask = info.end.mask;
 		info.end = info.altend;
 	    }
-	    b -= k1;
-	    if (d < 0)
-	    {
-		x += dx1;
-		y += dy1;
-		yoffset += dyoffset;
-		a += k1;
-		d += b;
-	    }
-	    else
-	    {
-		x++;
-		y++;
-		yoffset += nlwidth;
-		a += k3;
-		d -= a;
-	    }
+	    MIARCSTEP(yoffset += dyoffset;, yoffset += nlwidth;);
 	}
     }
     if ((x == info.start.x) || (y == info.start.y))
 	mask = info.start.mask;
     DoPix(1, yorgl + yoffset, info.xorg + x);
     DoPix(4, yorgol - yoffset, info.xorgo - x);
-    if (!arc->height || (arc->height & 1))
+    if (arc->height & 1)
     {
 	DoPix(2, yorgl + yoffset, info.xorgo - x);
 	DoPix(8, yorgol - yoffset, info.xorg + x);
