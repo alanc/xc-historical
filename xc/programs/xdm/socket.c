@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: socket.c,v 1.27 91/07/15 15:58:55 gildea Exp $
+ * $XConsortium: socket.c,v 1.28 91/07/16 22:19:45 gildea Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -83,10 +83,18 @@ CreateWellKnownSockets ()
 }
 
 GetChooserAddr (addr, lenp)
-    struct sockaddr *addr;
-    int		    *lenp;
+    char	*addr;
+    int		*lenp;
 {
-    return getsockname (chooserFd, addr, lenp);
+    struct sockaddr_in	in_addr;
+    int			len;
+
+    len = sizeof in_addr;
+    if (getsockname (chooserFd, &in_addr, &len) < 0)
+	return -1;
+    bcopy ((char *) &in_addr, addr, len);
+    *lenp = len;
+    return 0;
 }
 
 #endif /* !STREAMSCONN */
