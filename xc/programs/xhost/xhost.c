@@ -1,4 +1,4 @@
-/* $XConsortium: xhost.c,v 11.45 91/05/14 14:51:50 rws Exp $ */
+/* $XConsortium: xhost.c,v 11.46 91/07/17 19:17:32 rws Exp $ */
  
 /*
 
@@ -27,20 +27,17 @@ without express or implied warranty.
 #ifdef DNETCONN
 #define NEEDSOCKETS
 #endif
-#ifdef STREAMSCONN
-#define NEEDSOCKETS
-#endif
 
-#include <stdio.h>
-#include <X11/Xos.h>
 #include <X11/Xlib.h>
+#include <X11/Xos.h>
 #include <X11/Xproto.h>
-#include <X11/Xmu/Error.h>
 #include <X11/Xfuncs.h>
+#include <stdio.h>
 #include <signal.h>
 #include <setjmp.h>
 #include <ctype.h>
 #include <X11/Xauth.h>
+#include <X11/Xmu/Error.h>
 
 #ifdef NEEDSOCKETS
 #ifdef att
@@ -259,7 +256,9 @@ int change_host (dpy, name, add)
 {
   struct hostent *hp;
   XHostAddress ha;
+#ifdef NEEDSOCKETS
   static struct in_addr addr;	/* so we can point at it */
+#endif
   char *cp;
 #ifdef DNETCONN
   struct dn_naddr *dnaddrp;
