@@ -1,4 +1,4 @@
-/* $XConsortium: LRGB.c,v 1.28 93/09/07 21:31:14 rws Exp $" */
+/* $XConsortium: LRGB.c,v 1.29 93/10/07 18:49:28 rws Exp $" */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -1183,7 +1183,7 @@ _XcmsTableSearch (key, bitsPerRGB, base, nel, nKeyPtrSize, compar, interpol, ans
 	    / ((1 << bitsPerRGB) - 1);
 
     /* Special case so that zero intensity always maps to zero value */
-    if ((*compar) (key,lo) == 0) {
+    if ((*compar) (key,lo) <= 0) {
 	memcpy (answer, lo, nKeyPtrSize);
 	((IntensityRec *)answer)->value &= MASK[bitsPerRGB];
 	return XcmsSuccess;
