@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: AsciiSrc.c,v 1.13 89/07/18 16:01:19 kit Exp $";
+static char Xrcsid[] = "$XConsortium: AsciiSrc.c,v 1.14 89/07/24 14:51:46 kit Exp $";
 #endif /* lint && SABER */
 
 /*
@@ -208,7 +208,8 @@ XawTextBlock *text;
 		start_piece->text + (endPos - start_first),
 		(int) (start_piece->used - (startPos - start_first)) );
 #ifdef ASCII_STRING
-      if (data->ascii_string) 
+      if ( data->ascii_string && 
+	   ((data->length - (endPos - startPos)) < data->piece_size) ) 
 	start_piece->text[data->length - (endPos - startPos)] = '\0';
 #endif
     }
@@ -1016,7 +1017,7 @@ char * string;
   
   if (data->ascii_string) {
     piece = AllocNewPiece(data, piece);
-    piece->used = data->length;
+    piece->used = Min(data->length, data->piece_size);
     piece->text = data->string;
     return;
   }
