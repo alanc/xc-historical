@@ -1,4 +1,4 @@
-/* $XConsortium: xhost.c,v 11.57 93/12/06 15:18:28 kaleb Exp $ */
+/* $XConsortium: xhost.c,v 11.58 94/01/18 19:39:29 rws Exp $ */
  
 /*
 
@@ -346,7 +346,7 @@ int change_host (dpy, name, add)
 	family = FamilyKrb5Principal;
 	name +=4;
 #else
-	fprintf (stderr, "%s: not compiled for Kerberos V5\n", ProgramName);
+	fprintf (stderr, "%s: not compiled for Kerberos 5\n", ProgramName);
 	return 0;
 #endif
     }
@@ -396,7 +396,7 @@ int change_host (dpy, name, add)
 	retval = krb5_parse_name(name, &princ);
 	if (retval) {
 	    krb5_init_ets();	/* init krb errs for error_message() */
-	    fprintf(stderr, "%s: krb5_parse_name failed: %s\n",
+	    fprintf(stderr, "%s: cannot parse Kerberos name: %s\n",
 		    ProgramName, error_message(retval));
 	    return 0;
 	}
