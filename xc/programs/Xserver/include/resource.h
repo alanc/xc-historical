@@ -1,4 +1,4 @@
-/* $Header$ */
+/* $Header: resource.h,v 1.1 87/09/11 07:49:54 rws Locked $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -24,6 +24,7 @@ SOFTWARE.
 ******************************************************************/
 #ifndef RESOURCE_H
 #define RESOURCE_H 1
+#include "misc.h"
 
 /*****************************************************************
  * STUFF FOR RESOURCES 
@@ -61,4 +62,12 @@ SOFTWARE.
 
 /* Invalid resource id */
 #define INVALID	(-1)
+
+unsigned short CreateNewResourceType();
+short CreateNewResourceClass();
+void AddResource();
+void FreeResource();
+void FreeClientResources();
+pointer LookupID();
+
 #endif /* RESOURCE_H */
