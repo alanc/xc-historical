@@ -1,6 +1,6 @@
 #ifndef lint
 static char rcsid[] =
-    "$XConsortium: Resources.c,v 1.49 88/09/03 17:05:49 swick Exp $";
+    "$XConsortium: Resources.c,v 1.50 88/09/04 15:14:08 swick Exp $";
 /* $oHeader: Resources.c,v 1.6 88/09/01 13:39:14 asente Exp $ */
 #endif lint
 /*LINTLIBRARY*/
@@ -437,7 +437,10 @@ static void GetResources(widget, base, names, classes,
     XrmValue	    value;
     XrmQuark	    rawType;
     XrmValue	    rawValue;
-    XrmHashTable    searchList[SEARCHLISTLEN];
+    XrmHashTable    stackSearchList[SEARCHLISTLEN];
+    XrmHashTable    *searchList = stackSearchList;
+    unsigned int    searchListSize = SEARCHLISTLEN;
+    Bool            status;
     Boolean	    found[400];
     Display	    *dpy;
 
@@ -492,8 +495,21 @@ static void GetResources(widget, base, names, classes,
 
     /* Ask resource manager for a list of database levels that we can
        do a single-level search on each resource */
-    (void) XrmQGetSearchList(
-	dpy->db, names, classes, searchList, SEARCHLISTLEN);
+
+    status = XrmQGetSearchList(dpy->db, names, classes,
+			       searchList, searchListSize);
+
+    if (!status) {
+	searchList = NULL;
+	do {
+	    searchList = (XrmHashTable*)
+		XtRealloc(searchList,
+			  sizeof(XrmHashTable) * (searchListSize *= 2));
+	    status = XrmQGetSearchList(dpy->db, names, classes,
+				       searchList, searchListSize);
+	} while (!status);
+    }
+
 
     
     /* go to the resource manager for those resources not found yet */
@@ -570,6 +586,7 @@ static void GetResources(widget, base, names, classes,
 	    }
 	}
     }
+    if (searchList != stackSearchList) XtFree(searchList);
 }
 
 
@@ -702,9 +719,10 @@ void XtGetApplicationResources
     /* Get full name, class of application */
     if (w == NULL) {
 	/* hack for R2 compatibility */
-	names[0] = _XtGetPerDisplay(_XtDefaultAppContext()->list[0])->name;
+	XtPerDisplay pd = _XtGetPerDisplay(_XtDefaultAppContext()->list[0]);
+	names[0] = pd->name;
 	names[1] = NULLQUARK;
-	classes[0] = _XtGetPerDisplay(_XtDefaultAppContext()->list[0])->class;
+	classes[0] = pd->class;
 	classes[1] = NULLQUARK;
     }
     else {
