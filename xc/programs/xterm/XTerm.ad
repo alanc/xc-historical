@@ -29,7 +29,7 @@ XTerm*vtMenu*appcursor*Label:  Enable Application Cursor Keys
 XTerm*vtMenu*appkeypad*Label:  Enable Application Keypad
 XTerm*vtMenu*scrollkey*Label:  Scroll to Bottom on Key Press
 XTerm*vtMenu*scrollttyoutput*Label:  Scroll to Bottom on Tty Output
-XTerm*vtMenu*allow132*Label:  Allow 80/132 switching
+XTerm*vtMenu*allow132*Label: Allow 80/132 Column Switching
 XTerm*vtMenu*cursesemul*Label:  Enable Curses Emulation
 XTerm*vtMenu*visualbell*Label:  Enable Visual Bell
 XTerm*vtMenu*marginbell*Label:  Enable Margin Bell
