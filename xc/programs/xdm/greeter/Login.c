@@ -395,9 +395,33 @@ FinishField (ctx, event)
     case GET_PASSWD:
 	ctx->login.state = DONE;
 	ctx->login.cursor = 0;
-	(*ctx->login.notify_done) (ctx, &ctx->login.data);
+	(*ctx->login.notify_done) (ctx, &ctx->login.data, NOTIFY_OK);
 	break;
     }
+    XorCursor (ctx);
+}
+
+static void
+RestartSession (ctx, event)
+    LoginWidget	ctx;
+    XEvent	*event;
+{
+    XorCursor (ctx);
+    ctx->login.state = DONE;
+    ctx->login.cursor = 0;
+    (*ctx->login.notify_done) (ctx, &ctx->login.data, NOTIFY_RESTART);
+    XorCursor (ctx);
+}
+
+static void
+AbortSession (ctx, event)
+    LoginWidget	ctx;
+    XEvent	*event;
+{
+    XorCursor (ctx);
+    ctx->login.state = DONE;
+    ctx->login.cursor = 0;
+    (*ctx->login.notify_done) (ctx, &ctx->login.data, NOTIFY_ABORT);
     XorCursor (ctx);
 }
 
@@ -569,6 +593,8 @@ Ctrl<Key>E:	move-to-end() \n\
 Ctrl<Key>K:	erase-to-end-of-line() \n\
 Ctrl<Key>U:	erase-line() \n\
 Ctrl<Key>X:	erase-line() \n\
+Ctrl<Key>C:	restart-session() \n\
+Ctrl<Key>\\\\:	abort-session() \n\
 <Key>BackSpace:	delete-previous-character() \n\
 <Key>Delete:	delete-previous-character() \n\
 <Key>Return:	finish-field() \n\
@@ -584,8 +610,10 @@ XtActionsRec loginActionsTable [] = {
   {"move-to-end",		MoveToEnd},
   {"erase-to-end-of-line",	EraseToEndOfLine},
   {"erase-line",		EraseLine},
-  {"finish-field", FinishField},
-  {"insert-char", InsertChar},
+  {"finish-field", 		FinishField},
+  {"abort-session",		AbortSession},
+  {"restart-session",		RestartSession},
+  {"insert-char", 		InsertChar},
 };
 
 LoginClassRec loginClassRec = {

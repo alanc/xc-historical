@@ -4,6 +4,21 @@
  * public interfaces for greet/verify functionality
  */
 
+# include	<X11/Xos.h>
+
+#ifdef SYSV
+# define waitCode(w)	((w) & 0xff)
+# define waitSig(w)	(((w) >> 8) & 0xff)
+typedef int		waitType;
+#else
+# include	<sys/wait.h>
+# define waitCode(w)	((w).w_T.w_Retcode)
+# define waitSig(w)	((w).w_T.w_Termsig)
+typedef union wait	waitType;
+#endif
+
+# define waitVal(w)	(waitSig(w) ? -1 : waitCode (w))
+
 #define	UDP_SOCKET
 
 typedef enum displayStatus { running, notRunning } DisplayStatus;
@@ -21,7 +36,8 @@ struct display {
 	char		*session;	/* Xsession program */
 	int		openDelay;	/* open delay time */
 	int		openRepeat;	/* open attempts to make */
-	int		terminateServer;/* restart this server */
+	int		terminateServer;/* restart for each session */
+	int		multipleSessions;/* keep a session going */
 };
 
 struct greet_info {
@@ -41,6 +57,19 @@ struct verify_info {
 	char		**argv;		/* arguments to session */
 	char		**environ;	/* environment for session */
 };
+
+/* session exit status definitions. */
+
+# define OBEYTERM_DISPLAY	0	/* obey terminateServer resource */
+# define RESTART_DISPLAY	1	/* force session restart */
+# define ABORT_DISPLAY		2	/* force server restart */
+# define DISABLE_DISPLAY	3	/* unmanage this display */
+
+/* display manager exit status definitions */
+
+# define OBEYSESS_DISPLAY	0	/* obey multipleSessions resource */
+# define REMANAGE_DISPLAY	1	/* force remanage */
+# define UNMANAGE_DISPLAY	2	/* force deletion */
 
 extern char	*servers;
 extern int	request_port;

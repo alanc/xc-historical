@@ -3,15 +3,9 @@
  */
 
 # include	<stdio.h>
-# include	<X11/Xos.h>
-#ifndef SYSV
-# include	<sys/wait.h>
-#endif
 # include	<sys/signal.h>
 # include	"dm.h"
 # include	"buf.h"
-
-# define FORK_RETRY	5
 
 main ()
 {
@@ -32,7 +26,6 @@ main ()
 	 */
 	ScanServers ();
 	CreateWellKnownSockets ();
-	LoadValidPrograms ();
 	for (;;)
 		WaitForSomething ();
 }
@@ -51,6 +44,7 @@ ScanServers ()
 	serversFile = fileOpen (fd);
 	if (servers == NULL)
 		return;
+	SetDefaults ("false", "true");
 	while (d = ReadDisplay (serversFile))
 		if (d->status == notRunning)
 			StartDisplay (d);
@@ -66,11 +60,7 @@ CleanChildren ()
 {
 	int		pid;
 	struct display	*d;
-#ifdef SYSV
-	int		status;
-#else
-	union wait	status;
-#endif
+	waitType	status;
 
 #ifdef SYSV
 	signal (SIGCHLD, CleanChildren);
@@ -81,8 +71,16 @@ CleanChildren ()
 	d = FindDisplayByPid (pid);
 	if (d) {
 		d->status = notRunning;
-		if (!d->terminateServer)
+		switch (waitVal (status)) {
+		case UNMANAGE_DISPLAY:
+			break;
+		case OBEYSESS_DISPLAY:
+			if (!d->multipleSessions)
+				break;
+		case REMANAGE_DISPLAY:
+		default:
 			StartDisplay (d);
+		}
 	}
 }
 
@@ -95,7 +93,7 @@ struct display	*d;
 	switch (pid = fork ()) {
 	case 0:
 		ManageDisplay (d);
-		exit (0);
+		exit (REMANAGE_DISPLAY);
 	case -1:
 		break;
 	default:

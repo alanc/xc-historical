@@ -37,6 +37,9 @@ struct dmResources {
 
 # define boffset(f)	((char *) &(((struct display *) 0)->f) - (char *) 0)
 
+char	terminateDefault[10] = "false";
+char	multipleDefault[10] = "true";
+
 struct displayResources {
 	char	*name, *class;
 	int	type;
@@ -58,13 +61,22 @@ struct displayResources {
 "openRepeat",	"OpenRepeat",	DM_INT,		boffset(openRepeat),
 				"5",
 "terminateServer","TerminateServer",DM_BOOL,	boffset(terminateServer),
-				"false",
+				terminateDefault,
+"multipleSessions","MultipleSessions",DM_BOOL,	boffset(multipleSessions),
+				multipleDefault,
 };
 
 # define NUM_DISPLAY_RESOURCES	(sizeof DisplayResources/\
 				 sizeof DisplayResources[0])
 
 XrmDatabase	DmResourceDB;
+
+SetDefaults (terminate, multiple)
+char	*terminate, *multiple;
+{
+	strcpy (terminateDefault, terminate);
+	strcpy (multipleDefault, multiple);
+}
 
 GetResource (name, class, valueType, valuep, default_value)
 char	*name, *class;

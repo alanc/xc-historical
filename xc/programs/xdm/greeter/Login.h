@@ -46,11 +46,17 @@
 # define XtCFail		"Fail"
 # define XtCFailTimeout		"FailTimeout"
 
+/* notifyDone interface definition */
+
 #define NAME_LEN	32
 
 typedef struct _LoginData { 
 	char	name[NAME_LEN], passwd[NAME_LEN] 
 } LoginData;
+
+# define NOTIFY_OK	0
+# define NOTIFY_ABORT	1
+# define NOTIFY_RESTART	2
 
 typedef struct _LoginRec *LoginWidget;  /* completely defined in LoginPrivate.h */
 typedef struct _LoginClassRec *LoginWidgetClass;    /* completely defined in LoginPrivate.h */

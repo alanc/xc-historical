@@ -20,14 +20,25 @@ static Widget		toplevel;
 static Widget		login;
 static Widget		loginFailedButton;
 
-GreetDone (w, data)
+GreetDone (w, data, status)
     Widget	w;
     LoginData	*data;
+    int		status;
 {
 	Debug ("GreetDone: %s, %s\n", data->name, data->passwd);
-	strcpy (name, data->name);
-	strcpy (password, data->passwd);
-	done = 1;
+	switch (status) {
+	case NOTIFY_OK:
+		strcpy (name, data->name);
+		strcpy (password, data->passwd);
+		done = 1;
+		break;
+	case NOTIFY_ABORT:
+		Debug ("ABORT_DISPLAY\n");
+		exit (ABORT_DISPLAY);
+	case NOTIFY_RESTART:
+		Debug ("RESTART_DISPLAY\n");
+		exit (RESTART_DISPLAY);
+	}
 }
 
 InitGreet (d)

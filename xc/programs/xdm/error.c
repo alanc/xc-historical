@@ -10,7 +10,8 @@
 
 InitErrorLog ()
 {
-	if (access (errorLogFile, 2) == 0)
+	if (access (errorLogFile, 2) != -1 ||
+ 	    close(creat(errorLogFile, 0666)) != -1)
 		freopen (errorLogFile, "w", stderr);
 	else
 		LogError ("Cannot open errorLogFile %s\n", errorLogFile);

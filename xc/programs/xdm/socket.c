@@ -45,6 +45,7 @@ CreateWellKnownSockets ()
 		WellKnownSocketsMax = socketFd;
 		FD_SET (socketFd, &WellKnownSocketsMask);
 	}
+	LoadValidPrograms ();
 #endif
 }
 
@@ -98,6 +99,7 @@ ntohl (from_in->sin_addr.s_addr), ntohs (from_in->sin_port));
 		return;
 	}
 	f = dataOpen (buf, len);
+	SetDefaults ("true", "false");
 	d = ReadDisplay (f);
 	bufClose (f);
 	if (!d)

@@ -59,7 +59,7 @@ struct display	*d;
 	 * Step 15: run /etc/Xreset
 	 */
 	source (d->reset);
-	exit (0);
+	exit (OBEYTERM_DISPLAY);
 }
 
 LoadXloginResources (d)
