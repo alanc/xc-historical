@@ -217,7 +217,7 @@ int XReadBitmapFile (display, d, filename, width, height, pixmap, x_hot, y_hot)
 	RETURN (BitmapFileInvalid);
     }
 
-    pix = XCreateBitmapFromData (display, d, data, ww, hh);
+    pix = XCreateBitmapFromData (display, d, (char *) data, ww, hh);
     if (pix == None) {
 	RETURN (BitmapNoMemory);
     }
