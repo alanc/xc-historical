@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: colormap.c,v 1.57 87/11/28 13:16:55 rws Locked $ */
+/* $Header: colormap.c,v 1.58 87/12/07 18:13:44 rws Locked $ */
 
 #include "X.h"
 #define NEED_EVENTS
@@ -1022,7 +1022,7 @@ AllocColorCells (client, pmap, colors, planes, contig, ppix, masks)
     class = pmap->class;
     if (!(class & DynamicClass))
     {
-	return (BadMatch); /* Shouldn't try on this type */
+	return (BadAlloc); /* Shouldn't try on this type */
     }
     if (pmap->class == DirectColor)
     {
@@ -1094,7 +1094,7 @@ AllocColorPlanes (client, pmap, colors, r, g, b, contig, pixels,
     class = pmap->class;
     if (!(class & DynamicClass))
     {
-	return (BadMatch); /* Shouldn't try on this type */
+	return (BadAlloc); /* Shouldn't try on this type */
     }
     if (class == DirectColor)
     {
