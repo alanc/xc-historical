@@ -1,4 +1,4 @@
-.\" $XConsortium: protocol.ms,v 1.8 92/05/18 14:28:12 gildea Exp $
+.\" $XConsortium: protocol.ms,v 1.9 92/07/09 18:16:13 gildea Exp $
 .\" Use tbl, -ms, and macros.t
 .EH ''''
 .OH ''''
@@ -40,8 +40,8 @@ provided ``as is'' without express or implied warranty.
 .bp 1
 .EH '\fBX Font Service Protocol\fP''\fBX11, Release 5\fP'
 .OH '\fBX Font Service Protocol\fP''\fBX11, Release 5\fP'
-.EF ''\fB % \fP''
-.OF ''\fB % \fP''
+.EF ''\fB\\\\n(PN\fP''
+.OF ''\fB\\\\n(PN\fP''
 .NH 1
 Introduction
 .XS
@@ -3586,7 +3586,7 @@ handling of ECONNREFUSED in XConnDis.c).
 .\" print Table of Contents page
 .EH ''''
 .OH ''''
-.bp
-.EF ''''
-.OF ''''
+.if o .bp \" blank page to make count even
+.bp 1
+.af PN i
 .PX
