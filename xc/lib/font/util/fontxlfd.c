@@ -1,5 +1,5 @@
 /*
- * $XConsortium: fontxlfd.c,v 1.7 93/09/05 10:42:33 rws Exp $
+ * $XConsortium: fontxlfd.c,v 1.8 93/09/17 16:02:50 dpw Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -29,7 +29,12 @@
 #include	<X11/Xos.h>
 #include	<math.h>
 #include	<stdlib.h>
+#if defined(X_NOT_STDC_ENV) || (defined(sony) && !defined(SYSTYPE_SYSV))
+#define NO_LOCALE
+#endif
+#ifndef NO_LOCALE
 #include	<locale.h>
+#endif
 #include	<ctype.h>
 
 static char *
@@ -52,7 +57,9 @@ GetInt(ptr, val)
 #define maxchar(p) ((p).max_char_low + ((p).max_char_high << 8))
 
 
+#ifndef NO_LOCALE
 static struct lconv *locale = 0;
+#endif
 static char *radix = ".", *plus = "+", *minus = "-";
 
 static char *
@@ -63,6 +70,7 @@ double *result;
     char buffer[80], *p1, *p2;
     int count;
 
+#ifndef NO_LOCALE
     /* Figure out what symbols apply in this locale */
 
     if (!locale)
@@ -75,7 +83,7 @@ double *result;
 	if (locale->negative_sign && *locale->negative_sign)
 	    minus = locale->negative_sign;
     }
-
+#endif
     /* Copy the first 80 chars of ptr into our local buffer, changing
        symbols as needed. */
     for (p1 = ptr, p2 = buffer;
@@ -93,10 +101,19 @@ double *result;
     *p2 = 0;
 
     /* Now we have something that strtod() can interpret... do it. */
+#ifndef X_NOT_STDC_ENV
     *result = strtod(buffer, &p1);
-
     /* Return NULL if failure, pointer past number if success */
     return (p1 == buffer) ? (char *)0 : (ptr + (p1 - buffer));
+#else
+    for (p1 = buffer; isspace(*p1); p1++)
+	;
+    if (sscanf(p1, "%lf", result) != 1)
+	return (char *)0;
+    while (!isspace(*p1))
+	p1++;
+    return ptr + (p1 - buffer);
+#endif
 }
 
 static char *
@@ -109,6 +126,7 @@ int sign_required;
     register char *p1;
     int ndigits, exponent;
 
+#ifndef NO_LOCALE
     if (!locale)
     {
 	locale = localeconv();
@@ -119,7 +137,7 @@ int sign_required;
 	if (locale->negative_sign && *locale->negative_sign)
 	    minus = locale->negative_sign;
     }
-
+#endif
     /* Compute a format to use to render the number */
     sprintf(formatbuf, "%%.%dle", XLFD_NDIGITS);
 
