@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlibInt.c,v 11.154 91/07/22 20:32:26 rws Exp $
+ * $XConsortium: XlibInt.c,v 11.155 91/07/23 12:14:32 rws Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986, 1987 */
@@ -1656,8 +1656,15 @@ void _XFreeQ ()
     return;
 }
 
+/* Make sure this produces the same string as DefineLocal/DefineSelf in xdm.
+ * Otherwise, Xau will not be able to find your cookies in the Xauthority file.
+ *
+ * Note: POSIX says that the ``nodename'' member of utsname does _not_ have
+ *       to have sufficient information for interfacing to the network,
+ *       and so, you may be better off using gethostname (if it exists).
+ */
 
-#if defined(_POSIX_SOURCE) || defined(hpux) || defined(USG) || defined(SVR4)
+#if (defined(_POSIX_SOURCE) && !defined(AIXV3)) || defined(hpux) || defined(USG) || defined(SVR4)
 #define NEED_UTSNAME
 #include <sys/utsname.h>
 #endif
