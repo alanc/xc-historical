@@ -37,8 +37,7 @@ CLIENTDIRSTOMAKE = \
 
 MakeSubdirs($(SUBDIRS))
 
-install.ln::
-	-mkdir $(LINTLIBDIR)
+MakeDirectories(install.ln, $(LINTLIBDIR))
 
 MakeLintSubdirs($(LNINSTALLDIRS),install.ln,install.ln)
 
