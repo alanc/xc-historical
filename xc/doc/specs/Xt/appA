@@ -16,7 +16,7 @@ application or set of applications.
 The format of resource files is defined by \fI\*(xL\fP and is reproduced here
 for convenience only. 
 .LP
-The format of a resource specification is:
+The format of a resource specification is
 .TS
 l l .
 ResourceLine	= Comment | ResourceSpec
@@ -37,7 +37,7 @@ that line is assumed to continue on the next line.
 .LP
 To include a newline character in a string, use ``\\n''.
 To include
-arbitrary octets in a string, use the 4-character sequence ``\\nnn''
+arbitrary octets in a string, use the four-character sequence ``\\nnn''
 where nnn is the numeric value of the octet specified as an octal
 constant.  For example, a value containing a NULL byte may be stored
 by including ``\\000'' in the string.
