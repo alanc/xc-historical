@@ -281,7 +281,11 @@ subprocess.
 .TP 8
 .B \-C
 This option indicates that this window should receive console output.  This
-is not supported on all systems.
+is not supported on all systems.  To obtain console output, you must be the
+owner of the console device, and you must have read and write permission
+for it.  If you are running X under \fIxdm\fP on the console screen you may
+need to have the session startup and reset programs explicitly change the
+ownership of the console device in order to get this option to work.
 .TP 8
 .B \-S\fIccn\fP
 This option specifies the last two letters of the name of a pseudoterminal
