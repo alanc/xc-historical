@@ -34,6 +34,10 @@
 #include <ctype.h>   // ispunct
 #include <X11/Fresco/OS/list.h>
 
+#if defined(AIXV3)
+extern "C" int strcasecmp(const char *, const char *);
+#endif
+
 static const char* beg_heading_tok         = "//-";
 static const char* end_interface_tok       = "};";
 static const char* beg_index_marker_tok    = "\\marker{";
