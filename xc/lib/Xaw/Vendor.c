@@ -1,4 +1,4 @@
-/* $XConsortium: Vendor.c,v 1.18 91/04/04 21:36:07 gildea Exp $ */
+/* $XConsortium: Vendor.c,v 1.19 91/05/10 20:50:46 swick Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -32,7 +32,6 @@ SOFTWARE.
 
 /* Make sure all wm properties can make it out of the resource manager */
 
-#include <pwd.h>
 #include <stdio.h>
 
 #include <X11/IntrinsicP.h>
