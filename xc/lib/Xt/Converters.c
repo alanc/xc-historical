@@ -1,4 +1,4 @@
-/* $XConsortium: Converters.c,v 1.82 91/07/19 23:21:28 rws Exp $ */
+/* $XConsortium: Converters.c,v 1.83 91/07/20 17:20:08 rws Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -1166,7 +1166,7 @@ Boolean XtCvtStringToDimension(dpy, args, num_args, fromVal, toVal, closure_ret)
 
     if (*num_args != 0)
         XtAppWarningMsg(XtDisplayToApplicationContext(dpy),
-	  XtNwrongParameters,"cvtStringToShort",XtCXtToolkitError,
+	  XtNwrongParameters,"cvtStringToDimension",XtCXtToolkitError,
           "String to Dimension conversion needs no extra arguments",
            (String *) NULL, (Cardinal *)NULL);
     if (IsInteger((String)fromVal->addr, &i)) {
@@ -1175,7 +1175,7 @@ Boolean XtCvtStringToDimension(dpy, args, num_args, fromVal, toVal, closure_ret)
 					     XtRDimension);
         done(Dimension, (Dimension)i);
     }
-    XtDisplayStringConversionWarning(dpy, (char *) fromVal->addr, XtRShort);
+    XtDisplayStringConversionWarning(dpy, (char *) fromVal->addr, XtRDimension);
     return False;
 }
 
@@ -1476,12 +1476,12 @@ _XtAddDefaultConverters(table)
     Add(XtQInt,   XtQColor,	  XtCvtIntToColor,
 	colorConvertArgs, XtNumber(colorConvertArgs), XtCacheByDisplay);
     Add(XtQInt,   XtQDimension,   XtCvtIntToShort,     NULL, 0, XtCacheNone);
+    Add(XtQInt,   XtQFloat,       XtCvtIntToFloat,     NULL, 0, XtCacheNone);
     Add(XtQInt,   XtQFont,        XtCvtIntToFont,      NULL, 0, XtCacheNone);
     Add(XtQInt,   XtQPixel,       XtCvtIntToPixel,     NULL, 0, XtCacheNone);
     Add(XtQInt,   XtQPixmap,      XtCvtIntToPixmap,    NULL, 0, XtCacheNone);
     Add(XtQInt,   XtQPosition,    XtCvtIntToShort,     NULL, 0, XtCacheNone);
     Add(XtQInt,   XtQShort,       XtCvtIntToShort,     NULL, 0, XtCacheNone);
-    Add(XtQInt,   XtQFloat,       XtCvtIntToFloat,     NULL, 0, XtCacheNone);
     Add(XtQInt,   XtQUnsignedChar,XtCvtIntToUnsignedChar,NULL, 0, XtCacheNone);
 
     Add(XtQPixel, XtQColor,	  XtCvtIntToColor,
