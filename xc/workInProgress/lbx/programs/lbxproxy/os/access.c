@@ -1,4 +1,4 @@
-/* $XConsortium: access.c,v 1.63 94/01/14 19:07:36 gildea Exp $ */
+/* $XConsortium: access.c,v 1.1 94/02/10 20:07:28 dpw Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -23,6 +23,7 @@ SOFTWARE.
 
 ******************************************************************/
 
+#include <stdio.h>
 #include "Xos.h"
 #include <X11/Xauth.h>
 #include "X.h"
@@ -74,8 +75,7 @@ SOFTWARE.
 #else
 #include <netdb.h>
 #endif
-#undef NULL
-#include <stdio.h>
+
 #include "dixstruct.h"
 #include "osdep.h"
 
@@ -142,6 +142,7 @@ static int UsingXdmcp = FALSE;
  * local host to the access list
  */
 
+void
 EnableLocalHost ()
 {
     if (!UsingXdmcp)
@@ -154,6 +155,7 @@ EnableLocalHost ()
 /*
  * called when authorization is enabled to keep us secure
  */
+void
 DisableLocalHost ()
 {
     HOST *self;
@@ -168,6 +170,7 @@ DisableLocalHost ()
  * adds local hosts manually when needed
  */
 
+void
 AccessUsingXdmcp ()
 {
     UsingXdmcp = TRUE;
@@ -178,11 +181,12 @@ AccessUsingXdmcp ()
 /* Define this host for access control.  Find all the hosts the OS knows about 
  * for this fd and add them to the selfhosts list.
  */
+void
 DefineSelf (fd)
     int fd;
 {
 #if !defined(TCPCONN) && !defined(UNIXCONN)
-    return -1;
+    return;
 #else
     register int n;
     int	len;
@@ -270,6 +274,7 @@ DefineSelf (fd)
 /* Define this host for access control.  Find all the hosts the OS knows about 
  * for this fd and add them to the selfhosts list.
  */
+void
 DefineSelf (fd)
     int fd;
 {
@@ -415,7 +420,7 @@ DefineSelf (fd)
 #ifdef XDMCP
 void
 AugmentSelf(from, len)
-    struct sockaddr *from;
+    pointer	from;
     int		    len;
 {
     int family;
@@ -441,6 +446,7 @@ AugmentSelf(from, len)
 }
 #endif
 
+void
 AddLocalHosts ()
 {
     HOST    *self;
@@ -450,6 +456,7 @@ AddLocalHosts ()
 }
 
 /* Reset access control list to initial hosts */
+void
 ResetHosts (display)
     char *display;
 {

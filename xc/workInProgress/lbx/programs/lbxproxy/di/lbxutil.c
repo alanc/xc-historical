@@ -1,4 +1,4 @@
-/* $XConsortium: lbxdix.c,v 1.2 94/02/20 10:49:24 dpw Exp $ */
+/* $XConsortium: lbxutil.c,v 1.2 94/02/20 13:30:31 dpw Exp $ */
 /*
  * Copyright 1994 Network Computing Devices, Inc.
  *
@@ -20,7 +20,7 @@
  * WHETHER IN AN ACTION IN CONTRACT, TORT OR NEGLIGENCE, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * $NCDId: @(#)lbxutil.c,v 1.2 1994/02/11 00:12:49 lemke Exp $
+ * $NCDId: @(#)lbxutil.c,v 1.10 1994/03/08 01:41:14 dct Exp $
  */
 /*
  * utility routines for LBX requests
@@ -122,6 +122,15 @@ BumpSequence(client)
     LBXSequenceLost(client) = 0;
 }
 
+void
+ForceSequenceUpdate(client)
+    ClientPtr   client;
+{
+    if (LBXSequenceLost(client)) {
+	BumpSequence(client);
+    }
+}
+
 WriteToClientPad(client, len, data)
     ClientPtr   client;
     char       *data;
@@ -178,11 +187,14 @@ GetQueryTagReply(client, data)
 
     rep = (xLbxQueryTagReply *) data;
     tdata = (pointer) &rep[1];
-    len = rep->length << 2;
+    len = rep->real_length;
 
     qtp = &(nr->request_info.lbxquerytag.info);
 
-    TagStoreData(global_cache, qtp->tag, len, qtp->tagtype, tdata);
+    if (TagStoreData(global_cache, qtp->tag, len, qtp->tagtype, tdata)) {
+    	/* lost tag again... */
+	SendInvalidateTag(client, qtp->tag);
+    }
 
     /* and now finish off request */
     /* XXX ever have a case where there isn't one to finish? */
@@ -192,19 +204,29 @@ GetQueryTagReply(client, data)
 			  qtp->typedata.modmap.keyspermod, tdata);
 	break;
     case LbxTagTypeProperty:
+	qtp->typedata.getprop.ptd.length = len;
 	FinishGetPropertyReply(client, rep->sequenceNumber,
 			       qtp->typedata.getprop.offset,
 			       qtp->typedata.getprop.length,
 			       &qtp->typedata.getprop.ptd,
 			       tdata);
+	break;
     case LbxTagTypeKeymap:
 	FinishKeymapReply(client, rep->sequenceNumber,
 			  qtp->typedata.keymap.keyspercode,
 			  qtp->typedata.keymap.first,
 			  qtp->typedata.keymap.count,
 			  tdata);
+	break;
     case LbxTagTypeFont:
 	FinishQueryFontReply(client, rep->sequenceNumber, len, tdata);
+	break;
+    case LbxTagTypeConnInfo:
+	FinishSetupReply(client, len, tdata,
+			 qtp->typedata.setup.changes,
+			 qtp->typedata.setup.majorVersion,
+			 qtp->typedata.setup.minorVersion);
+	xfree(qtp->typedata.setup.changes);
 	break;
     default:
 	assert(0);
@@ -215,34 +237,70 @@ GetQueryTagReply(client, data)
 void
 LbxFreeTag(tag, tagtype)
     XID         tag;
-    int		tagtype;
+    int         tagtype;
 {
     TagData     td;
-    PropertyTagDataPtr ptdp;
     Cache       tag_cache;
 
     switch (tagtype) {
     case LbxTagTypeProperty:
 	tag_cache = prop_cache;
-        break;
+	break;
     case LbxTagTypeFont:
     case LbxTagTypeModmap:
     case LbxTagTypeKeymap:
+    case LbxTagTypeConnInfo:
 	tag_cache = global_cache;
-        break;
+	break;
     default:
 	assert(0);
     }
     td = TagGetTag(tag_cache, tag);
+    if (!td) {
+	/* server may be trying to clear tag that the proxy never got */
+	return;
+    }
+    TagFreeData(tag_cache, tag, TRUE);
+}
 
-    /* prop tags are special */
-    if (tagtype == LbxTagTypeProperty) {
-	ptdp = (PropertyTagDataPtr) td->tdata;
-	xfree(ptdp->data);
-	TagFreeData(prop_cache, tag, FALSE);
-    } else
-	TagFreeData(global_cache, tag, FALSE);
+void
+LbxSendTagData(tag, tagtype)
+    XID	tag;
+    int	tagtype;
+{
+    TagData     td;
+    Cache       tag_cache;
+    unsigned long	len = 0;
+    pointer	tdata = NULL;
+    PropertyTagDataPtr ptdp;
 
+    switch (tagtype) {
+    case LbxTagTypeProperty:
+	tag_cache = prop_cache;
+	break;
+    case LbxTagTypeFont:
+    case LbxTagTypeModmap:
+    case LbxTagTypeKeymap:
+    case LbxTagTypeConnInfo:
+	tag_cache = global_cache;
+	break;
+    default:
+	assert(0);
+    }
+    td = TagGetTag(tag_cache, tag);
+    if (td) {
+	switch (tagtype) {
+	case LbxTagTypeProperty:
+	    ptdp = (PropertyTagDataPtr) td->tdata;
+	    tdata = ptdp->data;
+	    len = ptdp->length;
+	    break;
+	default:
+	    /* XXX none yet */
+	    break;
+	}
+    }
+    SendTagData(NULL, tag, len, tdata);
 }
 
 #ifdef LBX_STATS
@@ -263,6 +321,8 @@ int         getkeymap_tag,	/* tag only */
             getkeymap_full;
 int         queryfont_tag,	/* tag only */
             queryfont_full;
+int         getsetup_tag,	/* tag only */
+            getsetup_full;
 
 int         getprop_tag,
             getprop_full;
@@ -270,7 +330,19 @@ int         getprop_tag,
 
 int         missed_tag;		/* QueryTag required */
 
-int	    tag_bytes_unsent;	/* approx data kept off wire by tags */
+int         tag_bytes_unsent;	/* approx data kept off wire by tags */
+
+int	    delta_out_total;
+int	    delta_out_attempts;
+int	    delta_out_hits;
+int	    delta_in_total;
+int	    delta_in_attempts;
+int	    delta_in_hits;
+
+int	    lzw_out_compressed;
+int	    lzw_out_plain;
+int	    lzw_in_compressed;
+int	    lzw_in_plain;
 
 void
 DumpStats()
@@ -287,9 +359,22 @@ DumpStats()
     fprintf(stderr, "GetKeyboardMapping used tag %d, full data %d\n", getkeymap_tag, getkeymap_full);
     fprintf(stderr, "QueryFont used tag %d, full data %d\n", queryfont_tag, queryfont_full);
     fprintf(stderr, "GetProperty used tag %d, full data %d\n", getprop_tag, getprop_full);
+    fprintf(stderr, "ConnectionSetup used tag %d, full data %d\n", getsetup_tag, getsetup_full);
     fprintf(stderr, "QueryTag called %d\n", missed_tag);
 
     fprintf(stderr, "Approx bytes kept off wire by tags %d\n", tag_bytes_unsent);
+
+    fprintf(stderr, "Delta Compressor stats\n");
+    fprintf(stderr, "Sent: total msgs = %d, cacheable = %d, cache hits = %d\n",
+		delta_out_total, delta_out_attempts, delta_out_hits);
+    fprintf(stderr, "Received: total = %d, cacheable = %d, cache hits = %d\n",
+		delta_in_total, delta_in_attempts, delta_in_hits);
+
+    fprintf(stderr, "LZW Compressor stats\n");
+    fprintf(stderr, "Sent: compressed bytes = %d (plain text = %d)\n",
+		lzw_out_compressed, lzw_out_plain);
+    fprintf(stderr, "Received: compressed bytes = %d (plain text = %d)\n",
+		lzw_in_compressed, lzw_in_plain);
 }
 
 void
@@ -307,46 +392,57 @@ ZeroStats()
     getkeymap_full = 0;
     getprop_tag = 0;
     getprop_full = 0;
+    getsetup_tag = 0;
+    getsetup_full = 0;
 
     missed_tag = 0;
+
+    delta_out_total = delta_out_attempts = delta_out_hits = 0;
+    delta_in_total = delta_in_attempts = delta_in_hits = 0;
+
+    lzw_out_compressed = lzw_out_plain = lzw_in_compressed = lzw_in_plain = 0;
 }
 
 #endif
 
 SendInitLBXPackets()
 {
+
 #ifdef LBX_STATS
     ZeroStats();
 #endif
+
     AllowMotion(serverClient, NUM_MOTION_EVENTS);
 }
 
-GetConnectionInfo(client, reply, replylen)
+static      have_client_setup_info = FALSE;
+
+/*
+ * Save away some connection info.  Also apply necessary changes
+ * before sending on to the client.
+ */
+GetConnectionInfo(client, cs, changes)
     ClientPtr   client;
-    char       *reply;
-    int         replylen;
+    xConnSetup	*cs;
+    CARD32	*changes;
 {
-    xConnSetup *cs;
     xWindowRoot *root;
     xDepth     *depth;
     xVisualType *vis;
-    char       *dp;
+    char       *dp = (char *) cs;
     int         i,
                 j,
                 k;
-    static Bool first_time = TRUE;
-
-    dp = reply;
-    dp += sizeof(xConnSetupPrefix);
-    cs = (xConnSetup *) dp;
 
     /* get more as needed */
     LBXMinKeyCode(client) = cs->minKeyCode;
     LBXMaxKeyCode(client) = cs->maxKeyCode;
 
-    /* don't create the default stuff more than once */
-    if (!first_time)
+    if (have_client_setup_info && !changes)
 	return;
+
+    if (changes)
+	cs->ridBase = changes[0];
 
     dp += sizeof(xConnSetup);
 
@@ -357,26 +453,30 @@ GetConnectionInfo(client, reply, replylen)
     /* process screens */
     root = (xWindowRoot *) dp;
     for (i = 0; i < cs->numRoots; i++) {
+	if (changes)
+	    root->currentInputMask = changes[i + 1];
 	dp += sizeof(xWindowRoot);
 	for (j = 0; j < root->nDepths; j++) {
 	    depth = (xDepth *) dp;
 	    dp += sizeof(xDepth);
 	    for (k = 0; k < depth->nVisuals; k++) {
 		vis = (xVisualType *) dp;
-		CreateVisual(depth->depth, vis);
+		if (!have_client_setup_info)
+		    CreateVisual(depth->depth, vis);
 		dp += (sizeof(xVisualType));
 		vis = (xVisualType *) dp;
 	    }
 	}
-	CreateColormap(serverClient, root->defaultColormap, root->windowId,
-		       root->rootVisualID);
+	if (!have_client_setup_info)
+	    CreateColormap(serverClient, root->defaultColormap, root->windowId,
+			   root->rootVisualID);
     }
-    first_time = FALSE;
+    have_client_setup_info = TRUE;
 }
 
 Bool
 MakeLBXStuff(client)
-    ClientPtr	client;
+    ClientPtr   client;
 {
     LBXDataPtr  new;
 
@@ -388,9 +488,19 @@ MakeLBXStuff(client)
     return TRUE;
 }
 
+#ifdef DEBUG
+LBXDataPtr
+lbx_data_stuff(client)
+    ClientPtr   client;
+{
+    return (LBXDataPtr) client->screenPrivate[0];
+}
+
+#endif
+
 void
 FreeLBXStuff(client)
-    ClientPtr	client;
+    ClientPtr   client;
 {
     xfree(client->screenPrivate[0]);
 }
@@ -402,4 +512,6 @@ LbxCleanupSession()
     DumpStats();
     ZeroStats();
 #endif
+
+    have_client_setup_info = FALSE;
 }

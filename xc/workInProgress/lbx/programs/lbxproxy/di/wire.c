@@ -1,7 +1,7 @@
-/* $XConsortium: XIE.h,v 1.3 94/01/12 19:36:23 rws Exp $ */
+/* $XConsortium: wire.c,v 1.4 94/02/20 11:14:31 dpw Exp $ */
 /*
  * $NCDOr: wire.c,v 1.2 1993/11/19 21:29:10 keithp Exp keithp $
- * $NCDId: @(#)wire.c,v 1.23 1994/02/11 00:11:39 lemke Exp $
+ * $NCDId: @(#)wire.c,v 1.31 1994/03/07 19:04:55 lemke Exp $
  *
  * Copyright 1992 Network Computing Devices
  *
@@ -19,7 +19,7 @@
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL NCD.
  * BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
  * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
- * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN 
+ * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  * Author:  Keith Packard, Network Computing Devices
@@ -38,15 +38,16 @@
 #include "lbxstr.h"
 #include "lbxdata.h"
 
-extern int NewOutputPending;
+extern int  NewOutputPending;
 
 #ifndef NDEBUG
-int lbxDebug = 0;
+int         lbxDebug = 0;
+
 #endif
 
-int lbxDeltaN = 16;
-int lbxDeltaMaxLen = 64;
-int lbxLZW = 14;
+int         lbxDeltaN = 16;
+int         lbxDeltaMaxLen = 64;
+int         lbxLZW = 14;
 
 #define MAXBYTESDIFF		8
 
@@ -55,22 +56,22 @@ static unsigned char tempdeltabuf[256];
 /*
  * Any request that could be delta compressed comes through here
  */
-WriteReqToServer (client, len, buf)
-    ClientPtr	 client;
-    int		 len;
-    char	 *buf;
+WriteReqToServer(client, len, buf)
+    ClientPtr   client;
+    int         len;
+    char       *buf;
 {
-    XServerPtr	 server = client->server;
-    xLbxDeltaReq *p = (xLbxDeltaReq *)tempdeltabuf;
-    int		 diffs;
-    int		 cindex;
-    int		 newlen;
-    Bool	 written = FALSE;
+    XServerPtr  server = client->server;
+    xLbxDeltaReq *p = (xLbxDeltaReq *) tempdeltabuf;
+    int         diffs;
+    int         cindex;
+    int         newlen;
+    Bool        written = FALSE;
 
     if (DELTA_CACHEABLE(&server->outdeltas, len)) {
 	if ((diffs = LBXDeltaMinDiffs(&server->outdeltas, buf, len,
-			min(MAXBYTESDIFF, (len - sz_xLbxDeltaReq) >> 1),
-			&cindex)) >= 0) {
+			     min(MAXBYTESDIFF, (len - sz_xLbxDeltaReq) >> 1),
+				      &cindex)) >= 0) {
 	    LBXEncodeDelta(&server->outdeltas, buf, diffs, cindex,
 			   &tempdeltabuf[sz_xLbxDeltaReq]);
 	    p->reqType = server->lbxReq;
@@ -84,109 +85,108 @@ WriteReqToServer (client, len, buf)
 	}
 	LBXAddDeltaOut(&server->outdeltas, buf, len);
     }
-
     if (!written)
 	WriteToServer(client, len, buf);
 }
 
-WriteToServer (client, len, buf)
-    ClientPtr	client;
-    int	    len;
-    char    *buf;
+WriteToServer(client, len, buf)
+    ClientPtr   client;
+    int         len;
+    char       *buf;
 {
-    int	fd;
-    XServerPtr	server = client->server;
-    
+    int         fd;
+    XServerPtr  server = client->server;
+
     if (server->serverClient->clientGone)
 	return;
     fd = server->fd;
-    if (server->send != client)
-    {
-	xLbxSwitchReq	s;
+    if (server->send != client) {
+	xLbxSwitchReq s;
 
-	DBG(DBG_SWITCH,  (stderr, "switch downstream to %d\n", client->index));
+	DBG(DBG_SWITCH, (stderr, "switch downstream to %d\n", client->index));
 	s.reqType = server->lbxReq;
 	s.lbxReqType = X_LbxSwitch;
 	s.length = 2;
 	s.client = client->index;
-	WriteToClient (server->serverClient, sizeof (s), &s);
+	WriteToClient(server->serverClient, sizeof(s), &s);
 	server->send = client;
     }
-    DBG(DBG_IO,  (stderr, "downstream %d len %d\n", client->index, len));
-    WriteToClient (server->serverClient, len, buf);
+    DBG(DBG_IO, (stderr, "downstream %d len %d\n", client->index, len));
+    WriteToClient(server->serverClient, len, buf);
 }
 
-NewClient (client)
-    ClientPtr	client;
+NewClient(client, setuplen)
+    ClientPtr   client;
+    int         setuplen;
 {
-    xLbxNewClientReq	n;
-    XServerPtr		server = client->server;
+    xLbxNewClientReq n;
+    XServerPtr  server = client->server;
 
-    DBG(DBG_CLIENT,  (stderr, "new client %d\n", client->index));
+    DBG(DBG_CLIENT, (stderr, "new client %d\n", client->index));
     n.reqType = server->lbxReq;
     n.lbxReqType = X_LbxNewClient;
-    n.length = 2;
+    n.length = 2 + (setuplen >> 2);
     n.client = client->index;
-    WriteToServer (clients[0], sizeof (n), &n);
+    WriteToServer(clients[0], sizeof(n), &n);
     ++server->serverClient->sequence;
 }
 
-CloseClient (client)
-    ClientPtr	client;
+CloseClient(client)
+    ClientPtr   client;
 {
-    xLbxCloseClientReq	n;
-    XServerPtr		server = client->server;
-    
+    xLbxCloseClientReq n;
+    XServerPtr  server = client->server;
+
     if (!client->server)
-    	return;
+	return;
 
     if (client->server->serverClient == client)
 	return;
     if (client->server->serverClient->clientGone)
 	return;
     DBG(DBG_CLIENT, (stderr, "closing down client %d\n", client->index));
-    if (client->closeDownMode != DestroyAll)
-    {
+    if (client->closeDownMode != DestroyAll) {
 	n.reqType = server->lbxReq;
 	n.lbxReqType = X_LbxCloseClient;
 	n.length = 2;
 	n.client = client->index;
-	WriteToServer (client, sizeof (n), &n);
+	WriteToServer(client, sizeof(n), &n);
     }
 }
 
 ModifySequence(client, num)
-    ClientPtr	client;
-    int		num;
+    ClientPtr   client;
+    int         num;
 {
     xLbxModifySequenceReq req;
-    XServerPtr		server = client->server;
-    
+    XServerPtr  server = client->server;
+
     if (client->server->serverClient == client)
 	return;
     req.reqType = server->lbxReq;
     req.lbxReqType = X_LbxModifySequence;
     req.length = 2;
     req.adjust = num;
-    WriteToServer (client, sizeof (req), &req);
+    WriteToServer(client, sizeof(req), &req);
 }
 
 AllowMotion(client, num)
-    ClientPtr	client;
-    int		num;
+    ClientPtr   client;
+    int         num;
 {
-    XServerPtr		server = client->server;
+    XServerPtr  server = client->server;
+
     client->server->motion_allowed += num;
 }
 
 SendIncrementPixel(client, cmap, pixel)
-    ClientPtr	client;
-    XID		cmap;
+    ClientPtr   client;
+    XID         cmap;
     unsigned long pixel;
 {
     xLbxIncrementPixelReq req;
-    XServerPtr		server = client->server;
-    
+    XServerPtr  server = client->server;
+
     if (client->server->serverClient == client)
 	return;
     req.reqType = server->lbxReq;
@@ -195,35 +195,36 @@ SendIncrementPixel(client, cmap, pixel)
     req.cmap = cmap;
     req.pixel = pixel;
     req.amount = 1;
-    WriteToServer (client, sizeof (req), &req);
+    WriteToServer(client, sizeof(req), &req);
 }
 
 SendGetModifierMapping(client)
-    ClientPtr	client;
+    ClientPtr   client;
 {
-    xLbxGetModifierMappingReq	req;
-    XServerPtr		server = client->server;
-    
+    xLbxGetModifierMappingReq req;
+    XServerPtr  server = client->server;
+
     if (client->server->serverClient == client)
 	return;
 
     req.reqType = server->lbxReq;
     req.lbxReqType = X_LbxGetModifierMapping;
     req.length = 1;
-    WriteToServer (client, sizeof (req), &req);
+    WriteToServer(client, sizeof(req), &req);
 }
 
 SendGetKeyboardMapping(client)
-    ClientPtr	client;
+    ClientPtr   client;
 {
-    xLbxGetKeyboardMappingReq	req;
-    XServerPtr		server = client->server;
-    
+    xLbxGetKeyboardMappingReq req;
+    XServerPtr  server = client->server;
+
     if (client->server->serverClient == client)
 	return;
 
-    /* always ask for entire thing so tag always works, and pass on
-     * requested subset
+    /*
+     * always ask for entire thing so tag always works, and pass on requested
+     * subset
      */
     req.reqType = server->lbxReq;
     req.lbxReqType = X_LbxGetKeyboardMapping;
@@ -231,16 +232,16 @@ SendGetKeyboardMapping(client)
     req.firstKeyCode = LBXMinKeyCode(client);
     req.count = LBXMaxKeyCode(client) - LBXMinKeyCode(client) + 1;
 
-    WriteToServer (client, sizeof (req), &req);
+    WriteToServer(client, sizeof(req), &req);
 }
 
 SendQueryFont(client, fid)
-    ClientPtr	client;
-    XID		fid;
+    ClientPtr   client;
+    XID         fid;
 {
-    xLbxQueryFontReq	req;
-    XServerPtr		server = client->server;
-    
+    xLbxQueryFontReq req;
+    XServerPtr  server = client->server;
+
     if (client->server->serverClient == client)
 	return;
 
@@ -249,17 +250,17 @@ SendQueryFont(client, fid)
     req.length = 2;
     req.fid = fid;
 
-    WriteToServer (client, sizeof (req), &req);
+    WriteToServer(client, sizeof(req), &req);
 }
 
 SendChangeProperty(client, win, prop, type, format, mode, num)
-    ClientPtr	client;
-    Window	win;
-    Atom	prop, 
-    		type;
-    int		format,
-    		mode;
-    unsigned long	num;
+    ClientPtr   client;
+    Window      win;
+    Atom        prop,
+                type;
+    int         format,
+                mode;
+    unsigned long num;
 {
     xLbxChangePropertyReq req;
     XServerPtr  server = client->server;
@@ -269,7 +270,7 @@ SendChangeProperty(client, win, prop, type, format, mode, num)
 
     req.reqType = server->lbxReq;
     req.lbxReqType = X_LbxChangeProperty;
-    req.length = 2;
+    req.length = 6;
     req.window = win;
     req.property = prop;
     req.type = type;
@@ -281,12 +282,13 @@ SendChangeProperty(client, win, prop, type, format, mode, num)
 }
 
 SendGetProperty(client, win, prop, type, delete, off, len)
-    ClientPtr	client;
-    Window	win;
-    Atom	prop, type;
-    Bool	delete;
-    unsigned long	off,
-    			len;
+    ClientPtr   client;
+    Window      win;
+    Atom        prop,
+                type;
+    Bool        delete;
+    unsigned long off,
+                len;
 {
     xLbxGetPropertyReq req;
     XServerPtr  server = client->server;
@@ -307,115 +309,113 @@ SendGetProperty(client, win, prop, type, delete, off, len)
     WriteToServer(client, sizeof(req), &req);
 }
 
-SendPropertyData(client, tag, dlen, data)
-    ClientPtr	client;
-    XID		tag;
-    unsigned long dlen;
-    pointer	data;
+SendQueryTag(client, tag)
+    ClientPtr   client;
+    XID         tag;
 {
-    xLbxPropertyDataReq req;
+    xLbxQueryTagReq req;
     XServerPtr  server = client->server;
 
-    if (client->server->serverClient == client)
-	return;
-
-    req.reqType = server->lbxReq;
-    req.lbxReqType = X_LbxPropertyData;
-    req.length = 2 + (dlen >> 2);
-    req.tag = tag;
-
-    WriteToServer(client, sizeof(req), &req);
-    WriteToServer(client, dlen, data);
-}
-
-SendQueryTag(client, tag)
-    ClientPtr	client;
-    XID		tag;
-{
-    xLbxQueryTagReq	req;
-    XServerPtr		server = client->server;
-    
     req.reqType = server->lbxReq;
     req.lbxReqType = X_LbxQueryTag;
     req.length = 2;
     req.tag = tag;
-    WriteToServer (client, sizeof (req), &req);
+    WriteToServer(client, sizeof(req), &req);
 }
 
 SendInvalidateTag(client, tag)
-    ClientPtr	client;
-    XID		tag;
+    ClientPtr   client;
+    XID         tag;
 {
-    xLbxInvalidateTagReq	req;
-    XServerPtr			server;
+    xLbxInvalidateTagReq req;
+    XServerPtr  server;
 
-    if (client)
-	server = client->server;
-    else
-    	server = servers[0];	/* XXX right proxy? */
-    
+    if (!servers[0])		/* proxy resetting */
+	return;
+    if (!client)
+	client = clients[0];		/* XXX watch multi-proxy */
+    server = client->server;
+
     req.reqType = server->lbxReq;
     req.lbxReqType = X_LbxInvalidateTag;
     req.length = 2;
     req.tag = tag;
     /* need tag type ? */
-    WriteToServer (client, sizeof (req), &req);
+    WriteToServer(client, sizeof(req), &req);
 }
 
-static unsigned long	pendingServerReplySequence;
-static void		(*serverReplyFunc) ();
-
-ServerReply (server, rep)
-    XServerPtr	server;
-    xReply	*rep;
+SendTagData(client, tag, len, data)
+    ClientPtr   client;
+    XID         tag;
+    unsigned long len;
+    pointer     data;
 {
-    if (serverReplyFunc && 
-	rep->generic.sequenceNumber == pendingServerReplySequence)
-    {
+    xLbxTagDataReq req;
+    XServerPtr  server;
+
+    client = clients[0];	    /* XXX watch multi proxy */
+    server = client->server;
+
+    req.reqType = server->lbxReq;
+    req.lbxReqType = X_LbxTagData;
+    req.length = 3 + ((len + 3) >> 2);
+    req.real_length = len;
+    req.tag = tag;
+    /* need tag type ? */
+    WriteToServer(client, sizeof(req), &req);
+    if (len)
+	WriteToServer(client, len, data);
+}
+
+static unsigned long pendingServerReplySequence;
+static void (*serverReplyFunc) ();
+
+ServerReply(server, rep)
+    XServerPtr  server;
+    xReply     *rep;
+{
+    if (serverReplyFunc &&
+	    rep->generic.sequenceNumber == pendingServerReplySequence) {
 	(*serverReplyFunc) (server, rep);
 	serverReplyFunc = 0;
     }
 }
 
-ExpectServerReply (server, func)
-    XServerPtr	server;
-    void	(*func)();
+ExpectServerReply(server, func)
+    XServerPtr  server;
+    void        (*func) ();
 {
     pendingServerReplySequence = server->serverClient->sequence;
     serverReplyFunc = func;
 }
 
-extern int (*ServerVector[])();
+extern int  (*ServerVector[]) ();
 
 unsigned long
-ServerRequestLength (req, sc, gotnow, partp)
-    xReq	*req;
-    ClientPtr	sc;
-    int		gotnow;
-    Bool	*partp;
+ServerRequestLength(req, sc, gotnow, partp)
+    xReq       *req;
+    ClientPtr   sc;
+    int         gotnow;
+    Bool       *partp;
 {
-    XServerPtr		server = servers[sc->lbxIndex];
-    ClientPtr		client = server->recv;
-    xReply		*rep;
-    xConnSetupPrefix	*pre;
+    XServerPtr  server = servers[sc->lbxIndex];
+    ClientPtr   client = server->recv;
+    xReply     *rep;
+    xConnSetupPrefix *pre;
 
     if (!req)
 	req = (xReq *) sc->requestBuffer;
-    if (gotnow < sizeof(xReq))
-    {
+    if (gotnow < sizeof(xReq)) {
 	*partp = TRUE;
 	return sizeof(xReq);
     }
     if (req->reqType == server->lbxEvent &&
-	req->data == LbxDeltaEvent)
-    {
+	    req->data == LbxDeltaEvent) {
 	*partp = FALSE;
 	return req->length << 2;
     }
-    if (client->awaitingSetup)
-    {
-	if (gotnow < 8)
-	{
+    if (client->awaitingSetup) {
+	if (gotnow < 8) {
 	    *partp = TRUE;
 	    return 8;
 	}
@@ -423,8 +423,7 @@ ServerRequestLength (req, sc, gotnow, partp)
 	*partp = FALSE;
 	return (2 + pre->length) << 2;
     }
-    if (gotnow < 8)
-    {
+    if (gotnow < 8) {
 	*partp = TRUE;
 	return 8;
     }
@@ -435,100 +434,95 @@ ServerRequestLength (req, sc, gotnow, partp)
     return (8 + rep->generic.length) << 2;
 }
 
-ServerProcStandardEvent (sc)
-    ClientPtr	sc;
+ServerProcStandardEvent(sc)
+    ClientPtr   sc;
 {
-    xReply	    *rep;
-    xLbxEvent	    *lbx;
-    XServerPtr	    server = servers[sc->lbxIndex];
-    ClientPtr	    client = server->recv;
-    int		    len;
-    Bool	    part;
-    Bool	    cacheable = (server->initialized) ? TRUE : FALSE;
+    xReply     *rep;
+    xLbxEvent  *lbx;
+    XServerPtr  server = servers[sc->lbxIndex];
+    ClientPtr   client = server->recv;
+    int         len;
+    Bool        part;
+    Bool        cacheable = (server->initialized) ? TRUE : FALSE;
 
     rep = (xReply *) sc->requestBuffer;
 
     /* need to calculate length up from for Delta cache */
     if (rep->generic.type != server->lbxEvent) {
-	len = RequestLength (rep, sc, 8, &part);
+	len = RequestLength(rep, sc, 8, &part);
     } else {
 	len = sizeof(xLbxEvent);
     }
 
     if (rep->generic.type == server->lbxEvent &&
-	rep->generic.data1 == LbxDeltaEvent)
-    {
+	    rep->generic.data1 == LbxDeltaEvent) {
 	xLbxDeltaReq *delta = (xLbxDeltaReq *) rep;
 
 	/* Note that LBXDecodeDelta decodes and adds current msg to the cache */
-	len = LBXDecodeDelta(&server->indeltas, ((char *)rep) + sz_xLbxDeltaReq,
+	len = LBXDecodeDelta(&server->indeltas, ((char *) rep) + sz_xLbxDeltaReq,
 			     delta->diffs, delta->cindex, &rep);
 
 	/* Make local copy in case someone writes to the request buffer */
-	bcopy((char *)rep, tempdeltabuf, len);
+	bcopy((char *) rep, tempdeltabuf, len);
 	rep = (xReply *) tempdeltabuf;
 
 	cacheable = FALSE;
-    }
-    else if (rep->generic.type == server->lbxEvent &&
-	rep->generic.data1 == LbxSwitchEvent) {
+    } else if (rep->generic.type == server->lbxEvent &&
+	       rep->generic.data1 == LbxSwitchEvent) {
 	cacheable = FALSE;
     }
-
     /* stick in delta buffer before LBX code modified things */
     if (cacheable && DELTA_CACHEABLE(&server->indeltas, len))
-	LBXAddDeltaIn(&server->indeltas, (char *)rep, len);
+	LBXAddDeltaIn(&server->indeltas, (char *) rep, len);
 
-    if (rep->generic.type != server->lbxEvent)
-    {
-	if (!client->awaitingSetup && rep->generic.type == X_Reply)
-	{
-	    /* Xlib never sends more than one request after a
-	     * synchronous one (XGetWindowAttributes) 
+    if (rep->generic.type != server->lbxEvent) {
+	if (!client->awaitingSetup && rep->generic.type == X_Reply) {
+	    /*
+	     * Xlib never sends more than one request after a synchronous one
+	     * (XGetWindowAttributes)
 	     */
 	    if (rep->generic.sequenceNumber != client->sequence &&
-		rep->generic.sequenceNumber != client->sequence - 1)
-	    {
+		    rep->generic.sequenceNumber != client->sequence - 1) {
 		DBG(DBG_CLIENT, (stderr, "sequence number mismatch %d != %d\n",
-				     rep->generic.sequenceNumber,
-				     client->sequence));
+				 rep->generic.sequenceNumber,
+				 client->sequence));
 	    }
 	}
-	len = RequestLength (rep, sc, 8, &part);
-	DBG(DBG_IO,  (stderr, "upstream %d len %d\n", client->index, len));
-	if (client->index == 0)
-	{
-	    ServerReply (server, rep);
-	}
-	else
-	{
+	len = RequestLength(rep, sc, 8, &part);
+	DBG(DBG_IO, (stderr, "upstream %d len %d\n", client->index, len));
+	if (client->index == 0) {
+	    ServerReply(server, rep);
+	} else {
 	    if (!client->clientGone) {
 		if (DoLBXReply(client, rep, len))
-		    WriteToClient (client, len, rep);
+		    WriteToClient(client, len, rep);
 	    }
 	    client->awaitingSetup = FALSE;
 	}
-    }
-    else {
+    } else {
 	len = sizeof(xLbxEvent);
 	lbx = (xLbxEvent *) rep;
 	client = clients[lbx->client];
 	switch (lbx->lbxType) {
-        
+
 	case LbxSwitchEvent:
 	    DBG(DBG_SWITCH, (stderr, "switch upstream to %d\n", lbx->client));
 	    server->recv = client;
-	    (void) CheckPendingClientInput (sc);
+	    (void) CheckPendingClientInput(sc);
 	    break;
 	case LbxCloseEvent:
-	    DBG(DBG_CLIENT,  (stderr, "close client %d\n", lbx->client));
+	    DBG(DBG_CLIENT, (stderr, "close client %d\n", lbx->client));
 	    client->closeDownMode = DestroyAll;
-	    CloseDownClient (client);
+	    CloseDownClient(client);
 	    break;
-        case LbxInvalidateTagEvent:
-            DBG(DBG_CLIENT, (stderr, "invalidate tag %d\n", lbx->detail1));
-            LbxFreeTag((XID)lbx->detail1, lbx->detail2);
-            break;
+	case LbxInvalidateTagEvent:
+	    DBG(DBG_CLIENT, (stderr, "invalidate tag %d\n", lbx->detail1));
+	    LbxFreeTag((XID) lbx->detail1, lbx->detail2);
+	    break;
+	case LbxSendTagDataEvent:
+	    DBG(DBG_CLIENT, (stderr, "send tag data %d\n", lbx->detail1));
+	    LbxSendTagData((XID) lbx->detail1, lbx->detail2);
+	    break;
 	}
     }
 
@@ -536,18 +530,19 @@ ServerProcStandardEvent (sc)
 }
 
 Bool
-ProxyWorkProc (dummy, index)
-    pointer dummy;
-    int index;
+ProxyWorkProc(dummy, index)
+    pointer     dummy;
+    int         index;
 {
-    XServerPtr	server;
+    XServerPtr  server;
     xLbxAllowMotionReq req;
 
     if ((server = servers[index]) == 0)
 	return TRUE;
-    
-    if (server->motion_allowed)
-    {
+    if (!server->initialized)
+	return TRUE;
+
+    if (server->motion_allowed) {
 	DBG(DBG_CLIENT, (stderr, "allow %d motion events\n",
 			 server->motion_allowed));
 	req.reqType = server->lbxReq;
@@ -555,88 +550,90 @@ ProxyWorkProc (dummy, index)
 	req.length = 2;
 	req.num = server->motion_allowed;
 	server->motion_allowed = 0;
-	WriteToClient (server->serverClient, sizeof (req), &req);
+	WriteToClient(server->serverClient, sizeof(req), &req);
     }
-
     /* Need to flush the output buffers before we flush compression buffer */
     if (NewOutputPending)
 	FlushAllOutput();
 
     if (server->lzwHandle) {
-	if (LzwInputAvail (server->fd))
-	    AvailableClientInput (server->serverClient);
-	if (LzwFlush (server->fd) != 0)
-	    MarkConnectionWriteBlocked (server->serverClient);
+	if (LzwInputAvail(server->fd))
+	    AvailableClientInput(server->serverClient);
+	if (LzwFlush(server->fd) != 0)
+	    MarkConnectionWriteBlocked(server->serverClient);
     }
-
-    /* If we've got stuff remaining in the output buffers to the server,
-       then don't allow reads from any other clients */
-    if (PendingClientOutput (server->serverClient))
-	OnlyListenToOneClient (server->serverClient);
+    /*
+     * If we've got stuff remaining in the output buffers to the server, then
+     * don't allow reads from any other clients
+     */
+    if (PendingClientOutput(server->serverClient))
+	OnlyListenToOneClient(server->serverClient);
     else
-	ListenToAllClients ();
+	ListenToAllClients();
 
     return FALSE;
 }
 
-CloseServer (client)
-    ClientPtr	client;
+CloseServer(client)
+    ClientPtr   client;
 {
-    XServerPtr	server;
-    int		i;
-    
+    XServerPtr  server;
+    int         i;
+
     server = client->server;
     servers[server->index] = 0;
+    LBXFreeDeltaCache(&server->indeltas);
+    LBXFreeDeltaCache(&server->outdeltas);
     if (server->lzwHandle) {
 	LzwFree(server->lzwHandle);
     }
     /* remove all back pointers */
     for (i = 1; i < MAXCLIENTS; i++) {
-    	if (clients[i] && clients[i]->server == server)
-            clients[i]->server = 0;
+	if (clients[i] && clients[i]->server == server)
+	    clients[i]->server = 0;
     }
-    xfree (server);
+    xfree(server);
     CloseDownFileDescriptor(client);
     DBG(DBG_CLOSE, (stderr, "closing down server\n"));
     dispatchException |= DE_RESET;
     isItTimeToYield = 1;
 }
 
-extern int  LzwWriteV ();
-extern int  LzwRead ();
-extern void LzwCompressOn (), LzwCompressOff ();
+extern int  LzwWriteV();
+extern int  LzwRead();
+extern void LzwCompressOn(), LzwCompressOff();
 
-StartProxyReply (server, rep)
-    XServerPtr		server;
-    xLbxStartReply	*rep;
+StartProxyReply(server, rep)
+    XServerPtr  server;
+    xLbxStartReply *rep;
 {
     LBXInitDeltaCache(&server->indeltas, rep->deltaN, rep->deltaMaxLen);
     LBXInitDeltaCache(&server->outdeltas, rep->deltaN, rep->deltaMaxLen);
-    QueueWorkProc (ProxyWorkProc, NULL, (pointer) server->index);
+    QueueWorkProc(ProxyWorkProc, NULL, (pointer) server->index);
     if (rep->comptype == LbxCompressLZW) {
-	char *extra = (char *) rep;
-	int  maxbits = *(CARD32 *)(extra + sizeof (xReply));
-	int  len = sizeof (xReply) + (rep->length << 2);
-	int  left = BytesInClientBuffer (server->serverClient);
-	
-	server->lzwHandle = (void *)LzwInit (server->fd, maxbits);
-	SwitchConnectionFuncs (server->serverClient,
-			       LzwRead, LzwWriteV, CloseServer);
+	char       *extra = (char *) rep;
+	int         maxbits = *(CARD32 *) (extra + sizeof(xReply));
+	int         len = sizeof(xReply) + (rep->length << 2);
+	int         left = BytesInClientBuffer(server->serverClient);
+
+	server->lzwHandle = (void *) LzwInit(server->fd, maxbits);
+	SwitchConnectionFuncs(server->serverClient,
+			      LzwRead, LzwWriteV, CloseServer);
 	extra += len;
-	LzwStuffInput (server->fd, extra, left);
-	SkipInClientBuffer (server->serverClient, left + len, 0);
-	StartOutputCompression (server->serverClient,
-				LzwCompressOn, LzwCompressOff);
+	LzwStuffInput(server->fd, extra, left);
+	SkipInClientBuffer(server->serverClient, left + len, 0);
+	StartOutputCompression(server->serverClient,
+			       LzwCompressOn, LzwCompressOff);
     }
     server->initialized = TRUE;
 }
 
-StartProxy (server)
-    XServerPtr	server;
+StartProxy(server)
+    XServerPtr  server;
 {
-    char		buf[sz_xLbxStartProxyReq + 4];
-    xLbxStartProxyReq	*n = (xLbxStartProxyReq *)buf;
-    extern Bool		NewOutputPending;
+    char        buf[sz_xLbxStartProxyReq + 4];
+    xLbxStartProxyReq *n = (xLbxStartProxyReq *) buf;
+    extern Bool NewOutputPending;
 
     n->reqType = server->lbxReq;
     n->lbxReqType = X_LbxStartProxy;
@@ -644,48 +641,50 @@ StartProxy (server)
     n->deltaMaxLen = lbxDeltaMaxLen;
     if (lbxLZW) {
 	n->comptype = LbxCompressLZW;
-	*(CARD32 *)(n + 1) = lbxLZW;
+	*(CARD32 *) (n + 1) = lbxLZW;
 	n->length = (sz_xLbxStartProxyReq + 4) >> 2;
-    }
-    else {
+    } else {
 	n->comptype = LbxCompressNone;
 	n->length = sz_xLbxStartProxyReq >> 2;
     }
-    WriteToServer (clients[0], n->length << 2, n);
+    WriteToServer(clients[0], n->length << 2, n);
     server->serverClient->sequence++;
-    ExpectServerReply (server, StartProxyReply);
+    ExpectServerReply(server, StartProxyReply);
     while (NewOutputPending)
-	FlushAllOutput ();
+	FlushAllOutput();
 }
-  
-extern int      read(), writev ();
+
+extern int  read(), writev();
 
 Bool
-ConnectToServer (dpy_name)
-    char    *dpy_name;
+ConnectToServer(dpy_name)
+    char       *dpy_name;
 {
-    int		i;
-    XServerPtr	server;
-    int		request, error, event;
-    int		sequence;
-    ClientPtr	sc, AllocNewConnection ();
+    int         i;
+    XServerPtr  server;
+    int         request,
+                error,
+                event;
+    int         sequence;
+    ClientPtr   sc,
+                AllocNewConnection();
 
     for (i = 0; i < MAX_SERVERS; i++)
 	if (!servers[i])
 	    break;
     if (i == MAX_SERVERS)
 	return FALSE;
-    server = (XServerPtr) xalloc (sizeof (XServerRec));
+    server = (XServerPtr) xalloc(sizeof(XServerRec));
     if (!server)
 	return FALSE;
+    bzero(server, sizeof(XServerRec));
     server->index = i;
-    server->fd = InitMux (dpy_name, &request, &event, &error, &sequence);
-    if (server->fd < 0)
-    {
-	xfree (server);
+    server->fd = InitMux(dpy_name, &request, &event, &error, &sequence);
+    if (server->fd < 0) {
+	xfree(server);
 	return FALSE;
     }
-    DBG(DBG_IO,  (stderr, "making server connection\n"));
+    DBG(DBG_IO, (stderr, "making server connection\n"));
     server->lbxReq = request;
     server->lbxEvent = event;
     server->lbxError = error;
@@ -696,8 +695,8 @@ ConnectToServer (dpy_name)
     clients[0]->server = server;
     server->motion_allowed = 0;
 
-    sc = AllocNewConnection (server->fd, read, writev, NULL);
-    SwitchConnectionFuncs (sc, read, writev, CloseServer);
+    sc = AllocNewConnection(server->fd, read, writev, NULL);
+    SwitchConnectionFuncs(sc, read, writev, CloseServer);
     sc->server = server;
     sc->public.requestLength = ServerRequestLength;
     sc->lbxIndex = i;
@@ -707,7 +706,7 @@ ConnectToServer (dpy_name)
 
     server->serverClient = sc;
     servers[i] = server;
-    StartProxy (server);
+    StartProxy(server);
 
     /* Really should wait for reply to StartProxy request here!! */
 

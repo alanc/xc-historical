@@ -1,4 +1,4 @@
-/* $XConsortium: connection.c,v 1.1 94/02/10 20:08:35 dpw Exp $ */
+/* $XConsortium: connection.c,v 1.2 94/02/20 10:56:06 dpw Exp $ */
 /***********************************************************
 Copyright 1987, 1989 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -1507,9 +1507,10 @@ ClientAuthorized(client, proto_n, auth_proto, string_n, auth_string)
     } from;
     int	fromlen = sizeof (from);
     XID	 auth_id;
+    char *reason;
 
     auth_id = CheckAuthorization (proto_n, auth_proto,
-				  string_n, auth_string, client);
+				  string_n, auth_string, client, &reason);
 
     priv = (OsCommPtr)client->osPrivate;
     if (auth_id == (XID) ~0L)

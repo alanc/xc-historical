@@ -1,4 +1,4 @@
-/* $XConsortium: XIE.h,v 1.3 94/01/12 19:36:23 rws Exp $ */
+/* $XConsortium: tags.h,v 1.3 94/02/20 11:14:22 dpw Exp $ */
 /*
  * Copyright 1993 Network Computing Devices, Inc.
  *
@@ -20,7 +20,7 @@
  * WHETHER IN AN ACTION IN CONTRACT, TORT OR NEGLIGENCE, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * $NCDId: @(#)tags.h,v 1.2 1994/02/09 00:13:48 lemke Exp $
+ * $NCDId: @(#)tags.h,v 1.4 1994/03/04 00:07:36 lemke Exp $
  */
 
 #ifndef _TAGS_H_
@@ -40,11 +40,12 @@ typedef struct _tagdata {
 
 typedef struct _tagdata *TagData;
 
+extern void TagsInit();
+extern void FreeTags();
 extern Bool TagStoreData();
 extern pointer TagGetData();
 extern TagData TagGetTag();
 extern void TagFreeData();
-
 
 extern Cache global_cache;
 extern Cache prop_cache;

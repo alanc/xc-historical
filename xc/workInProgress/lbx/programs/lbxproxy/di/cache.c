@@ -1,4 +1,4 @@
-/* $XConsortium: cache.c,v 1.4 91/05/13 16:53:18 gildea Exp $ */
+/* $XConsortium: cache.c,v 1.2 94/02/20 11:12:37 dpw Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -21,7 +21,7 @@
  * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * $NCDId: @(#)cache.c,v 1.2 1994/02/09 00:58:32 lemke Exp $
+ * $NCDId: @(#)cache.c,v 1.4 1994/03/04 00:06:31 lemke Exp $
  *
  */
 #include	"cachestr.h"
@@ -82,6 +82,18 @@ CacheInit(maxsize)
     cache->id = id;
     num_caches++;
     return id;
+}
+
+void
+CacheFreeCache(cid)
+    Cache	cid;
+{
+    CachePtr cache = caches[cid];
+
+    CacheReset(cid, 0);
+    caches[cid] = 0;
+    xfree(cache->entries);
+    xfree(cache);
 }
 
 static int
@@ -168,7 +180,7 @@ rebuild_cache(cache)
 void
 CacheReset()
 {
-    CacheEntryPtr cp;
+    CacheEntryPtr cp, ocp;
     CachePtr    cache;
     int         i,
                 j;
@@ -178,10 +190,11 @@ CacheReset()
 	if (!cache)
 	    continue;
 	for (i = 0; i < cache->buckets; i++) {
-	    for (cp = cache->entries[i]; cp; cp = cp->next) {
+	    for (cp = cache->entries[i]; cp; cp = ocp) {
 		cache->elements--;
 		cache->cursize -= cp->size;
 		(*cp->free_func) (cp->id, cp->data, CacheWasReset);
+                ocp = cp->next;
 		xfree(cp);
 	    }
 	    cache->entries[i] = (CacheEntryPtr) 0;

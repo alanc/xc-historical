@@ -21,14 +21,26 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: utils.c,v 1.114 92/05/10 17:28:56 rws Exp $ */
+/* $XConsortium: utils.c,v 1.3 94/02/20 11:14:26 dpw Exp $ */
 #include "Xos.h"
 #include <stdio.h>
 #include "misc.h"
 #include "X.h"
 #include "input.h"
 #include "opaque.h"
+#ifdef X_POSIX_C_SOURCE
+#define _POSIX_C_SOURCE X_POSIX_C_SOURCE
 #include <signal.h>
+#undef _POSIX_C_SOURCE
+#else
+#if defined(X_NOT_POSIX) || defined(_POSIX_SOURCE)
+#include <signal.h>
+#else
+#define _POSIX_SOURCE
+#include <signal.h>
+#undef _POSIX_SOURCE
+#endif
+#endif
 #ifndef SYSV
 #include <sys/resource.h>
 #endif

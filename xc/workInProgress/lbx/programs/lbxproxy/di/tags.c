@@ -1,4 +1,4 @@
-/* $XConsortium: XIE.h,v 1.3 94/01/12 19:36:23 rws Exp $ */
+/* $XConsortium: tags.c,v 1.3 94/02/20 11:14:20 dpw Exp $ */
 /*
  * Copyright 1993 Network Computing Devices, Inc.
  *
@@ -20,7 +20,7 @@
  * WHETHER IN AN ACTION IN CONTRACT, TORT OR NEGLIGENCE, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * $NCDId: @(#)tags.c,v 1.4 1994/02/09 00:13:51 lemke Exp $
+ * $NCDId: @(#)tags.c,v 1.9 1994/03/07 19:02:24 lemke Exp $
  */
 
 #include	"cache.h"
@@ -33,13 +33,22 @@ Bool        lbxUseTags = TRUE;
 int         lbxTagCacheSize = 1000000;
 
 
+void
 TagsInit()
 {
     /* XXX make these configurable */
-    if (lbxUseTags) {
-	global_cache = CacheInit(lbxTagCacheSize);
-	prop_cache = CacheInit(lbxTagCacheSize);
+    if (!lbxUseTags) {
+	lbxTagCacheSize = 0;
     }
+    global_cache = CacheInit(lbxTagCacheSize);
+    prop_cache = CacheInit(lbxTagCacheSize);
+}
+
+void
+FreeTags()
+{
+    CacheFreeCache(global_cache);
+    CacheFreeCache(prop_cache);
 }
 
 static void
@@ -50,10 +59,11 @@ cache_free(id, data, reason)
 {
     TagData     tag = (TagData) data;
 
+    /* tell server we toasted this one */
+    if (reason != CacheEntryFreed)
+	SendInvalidateTag(0, tag->tid);
     xfree(tag->tdata);
     xfree(data);
-    /* tell server we toasted this one */
-    SendInvalidateTag(0, tag->tid);
 }
 
 Bool
@@ -65,6 +75,7 @@ TagStoreData(cache, id, size, dtype, data)
     pointer     data;
 {
     TagData     tag;
+    Bool	ret;
 
     assert(lbxUseTags);
     tag = (TagData) xalloc(sizeof(TagDataRec));
@@ -80,7 +91,12 @@ TagStoreData(cache, id, size, dtype, data)
     tag->data_type = dtype;
     tag->size = size;
 
-    return CacheStoreMemory(cache, id, (pointer) tag, size, cache_free);
+    ret = CacheStoreMemory(cache, id, (pointer) tag, size, cache_free);
+    if (!ret) {
+    	xfree(tag->tdata);
+        xfree(tag);
+    }
+    return ret;
 }
 
 TagData

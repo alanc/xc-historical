@@ -1,4 +1,4 @@
-/* $XConsortium: XIE.h,v 1.3 94/01/12 19:36:23 rws Exp $ */
+/* $XConsortium: colormap.h,v 1.3 94/02/20 11:12:51 dpw Exp $ */
 /*
  * Copyright 1994 Network Computing Devices, Inc.
  *
@@ -57,5 +57,6 @@ extern int  FreePixels();
 extern int  CreateColormap();
 extern int  FreeColormap();
 extern int  CopyAndFreeColormap();
+extern void FreeColors();
 
 #endif				/* COLORMAP_H_ */

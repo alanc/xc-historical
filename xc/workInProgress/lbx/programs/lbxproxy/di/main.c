@@ -1,7 +1,7 @@
-/* $XConsortium: XIE.h,v 1.3 94/01/12 19:36:23 rws Exp $ */
+/* $XConsortium: main.c,v 1.4 94/02/20 11:14:04 dpw Exp $ */
 /*
  * $NCDOr$
- * $NCDId: @(#)main.c,v 1.10 1994/02/11 00:11:00 lemke Exp $
+ * $NCDId: @(#)main.c,v 1.13 1994/03/04 00:12:28 lemke Exp $
  *
  * Copyright 1992 Network Computing Devices
  *
@@ -45,7 +45,6 @@ extern Bool NoticeServer ();
 
 XServerPtr  servers[MAX_SERVERS];
 
-long	zero = 0;
 extern char *display;
 
 main (argc, argv)
@@ -59,7 +58,6 @@ main (argc, argv)
     AdjustProcVector();
     while (1)
     {
-	SetInputCheck (&zero, &zero);
 	serverGeneration++;
 	OsInit ();
 	if (serverGeneration == 1)
@@ -82,8 +80,8 @@ main (argc, argv)
 	    serverClient->noClientException = Success;
             serverClient->awaitingSetup = FALSE;
 
-            TagsInit();
 	}
+	TagsInit();
         if (!InitClientResources(serverClient))
             FatalError("couldn't init server resources");
         InitDeleteFuncs();
@@ -93,6 +91,9 @@ main (argc, argv)
 	if (Dispatch () != 0)
 	    break;
         FreeAllResources();
+        FreeAtoms();
+        FreeColors();
+        FreeTags();
     }
     exit (0);
 }

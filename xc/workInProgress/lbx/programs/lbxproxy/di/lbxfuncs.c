@@ -19,10 +19,10 @@
  * WHETHER IN AN ACTION IN CONTRACT, TORT OR NEGLIGENCE, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  * 
- * $NCDId: @(#)lbxfuncs.c,v 1.23 1994/02/11 21:13:48 lemke Exp $
+ * $NCDId: @(#)lbxfuncs.c,v 1.26 1994/03/04 02:32:32 dct Exp $
  */
 
-/* $XConsortium: lbxfuncs.c,v 1.2 94/02/10 20:08:59 dpw Exp $ */
+/* $XConsortium: lbxfuncs.c,v 1.3 94/02/20 11:13:43 dpw Exp $ */
 
 /*
  * top level LBX request & reply handling
@@ -53,6 +53,96 @@
 
 #define	server_resource(client, xid)	(CLIENT_ID(xid) == 0)
 
+extern int xMajorVersion;
+extern int xMinorVersion;
+
+void
+FinishSetupReply(client, setup_len, setup_data, changes, majorVer, minorVer)
+    ClientPtr   client;
+    int		setup_len;
+    xConnSetup  *setup_data;
+    pointer	changes;
+{
+    xConnSetupPrefix reply;
+
+    reply.success = TRUE;
+    reply.majorVersion = majorVer;
+    reply.minorVersion = minorVer;
+    reply.length = setup_len >> 2;
+
+    GetConnectionInfo(client, setup_data, changes);
+
+    WriteToClient(client, sizeof(xConnSetupPrefix), &reply);
+    WriteToClient(client, setup_len, setup_data);
+}
+
+static void
+get_tagged_setup_reply(client, data)
+    ClientPtr   client;
+    char       *data;
+{
+    register xLbxConnSetupPrefix *rep;
+    TagData	td;
+    pointer     tag_data;
+    pointer	change_list = NULL;
+    int         len;
+    QueryTagRec qt;
+
+    rep = (xLbxConnSetupPrefix *) data;
+
+    len = (rep->length - 1) << 2;
+    if (rep->tag) {
+	if (!rep->tagOnly) {	/* first time, set tag */
+
+#ifdef LBX_STATS
+	    getsetup_full++;
+#endif
+	    tag_data = (pointer) &rep[1];
+	    if (!TagStoreData(global_cache, rep->tag, len,
+			      LbxTagTypeConnInfo, tag_data)) {
+		/* tell server we lost it */
+		SendInvalidateTag(client, rep->tag);
+	    }
+	} else {
+	    td = TagGetTag(global_cache, rep->tag);
+	    if (!td) {
+                qt.tag = rep->tag;
+                qt.tagtype = LbxTagTypeConnInfo;
+		qt.typedata.setup.majorVersion = rep->majorVersion;
+		qt.typedata.setup.minorVersion = rep->minorVersion;
+		qt.typedata.setup.changes = (pointer)xalloc(len);
+		if (!qt.typedata.setup.changes)
+		    CloseDownClient(client);
+		bcopy((char *)&rep[1], qt.typedata.setup.changes, len);
+		/* lost data -- ask again for tag value */
+		QueryTag(client, &qt);
+
+		/* XXX what is the right way to stack Queries? */
+		return;
+	    }
+#ifdef LBX_STATS
+	    getsetup_tag++;
+            tag_bytes_unsent += td->size - len;
+#endif
+	    tag_data = td->tdata;
+	    len = td->size;
+	    change_list = (pointer) &rep[1];
+	}
+    } else {
+
+#ifdef LBX_STATS
+	getsetup_full++;
+#endif
+	/* server didn't send us a tag for some reason -- just pass on data */
+	tag_data = (pointer) &rep[1];
+    }
+
+    FinishSetupReply(client, len, tag_data, change_list,
+		     rep->majorVersion, rep->minorVersion);
+
+    return;
+}
+
 static int
 intern_atom_req(client, data)
     ClientPtr   client;
@@ -75,7 +165,7 @@ intern_atom_req(client, data)
 
     s = data + sizeof(xInternAtomReq);
 
-    atom = MakeAtom(s, req->nbytes, &a, FALSE);
+    atom = LbxMakeAtom(s, req->nbytes, &a, FALSE);
     if (atom != None) {
 	/* found preset atom */
 	if (LBXCacheSafe(client)) {
@@ -129,7 +219,7 @@ intern_atom_reply(client, data)
 
     if (atom != None) {
 	/* make sure it gets stuffed in the DB */
-	(void) MakeAtom(str, len, atom, TRUE);
+	(void) LbxMakeAtom(str, len, atom, TRUE);
     }
     return TRUE;
 }
@@ -209,7 +299,7 @@ get_atom_name_reply(client, data)
     atom = nr->request_info.lbxatom.atom;
 
     /* make sure it gets stuffed in the DB */
-    (void) MakeAtom(s, len, atom, TRUE);
+    (void) LbxMakeAtom(s, len, atom, TRUE);
     return TRUE;
 }
 
@@ -561,6 +651,11 @@ get_mod_map_req(client, data)
 	nr->lbx_req = TRUE;
         nr->extension = client->server->lbxReq;
 
+	/*
+	 * this expects a reply.  since we write the data here, we have to be
+	 * sure the seq number is in sync first
+	 */
+	ForceSequenceUpdate(client);
 	SendGetModifierMapping(client);
 
 	return REQ_REPLACE;
@@ -669,6 +764,11 @@ get_key_map_req(client, data)
 	nr->request_info.lbxgetkeymap.count = req->count;
 	nr->request_info.lbxgetkeymap.first = req->firstKeyCode;
 
+	/*
+	 * this expects a reply.  since we write the data here, we have to be
+	 * sure the seq number is in sync first
+	 */
+	ForceSequenceUpdate(client);
 	SendGetKeyboardMapping(client);
 
 	return REQ_REPLACE;
@@ -790,6 +890,11 @@ queryfont_req(client, data)
 	nr->lbx_req = TRUE;
         nr->extension = client->server->lbxReq;
 
+	/*
+	 * this expects a reply.  since we write the data here, we have to be
+	 * sure the seq number is in sync first
+	 */
+	ForceSequenceUpdate(client);
 	SendQueryFont(client, req->id);
 
 	return REQ_REPLACE;
@@ -1081,12 +1186,13 @@ FinishLBXRequest(client, yank)
  *
  * QueryFont regularly hits this in normal operation
  */
-static void
+static int
 patchup_error(err, nr)
     xError     *err;
     ReplyStuffPtr nr;
 {
     QueryTagPtr qtp;
+    int		retval = 0;
 
     switch (err->minorCode) {
     case X_LbxGetModifierMapping:
@@ -1116,6 +1222,12 @@ patchup_error(err, nr)
 	case LbxTagTypeFont:
 	    err->minorCode = X_QueryFont;
 	    break;
+	case LbxTagTypeConnInfo:
+	    /*
+	     * What do we do now?!?!?  For now, return -1 so that caller
+	     * can shut down the client.
+	     */
+	    retval = -1;
 	default:
 	    assert(0);
 	    break;
@@ -1125,6 +1237,7 @@ patchup_error(err, nr)
 	assert(0);
 	break;
     }
+    return retval;
 }
 
 static Bool
@@ -1167,6 +1280,7 @@ DoLBXReply(client, data, len)
     ReplyStuffPtr nr;
     Bool        remove_it = TRUE;
     Bool        ret = TRUE;
+    extern Bool lbxUseTags;
 
 #ifdef PROTOCOL_RAW
     return;
@@ -1181,8 +1295,18 @@ DoLBXReply(client, data, len)
     reply = (xGenericReply *) data;
 #endif
 
-    if (client->awaitingSetup) {/* snarf setup info */
-	GetConnectionInfo(client, reply, len);
+    if (client->awaitingSetup) {
+	xConnSetupPrefix *prefix = (xConnSetupPrefix *) reply;
+	AttendClient(client);
+	if (prefix->success) {
+	    if (lbxUseTags) {
+		get_tagged_setup_reply(client, reply);
+		return FALSE;
+	    }
+	    else {
+		GetConnectionInfo(client, &prefix[1], NULL);
+	    }
+	}
 	return TRUE;
     }
 
@@ -1216,8 +1340,12 @@ DoLBXReply(client, data, len)
 	    err = (xError *) reply;
 	    nr = GetReply(client);
             if (error_matches(client, nr, err)) {
-                if (err->majorCode == client->server->lbxReq)
-		    patchup_error(err, nr);
+                if (err->majorCode == client->server->lbxReq) {
+		    if (patchup_error(err, nr) < 0) {
+			CloseDownClient(client);
+			return FALSE;
+		    }
+		}
 		RemoveReply(client);
 	    }
 	}
@@ -1316,6 +1444,10 @@ DoLBXReply(client, data, len)
 	    break;
 	case X_LbxGetProperty:
 	    remove_it = GetLbxGetPropertyReply(client, reply);
+	    ret = FALSE;
+	    break;
+	case X_LbxChangeProperty:
+	    remove_it = GetLbxChangePropertyReply(client, reply);
 	    ret = FALSE;
 	    break;
 	case X_LbxQueryFont:

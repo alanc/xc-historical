@@ -1,4 +1,4 @@
-/* $XConsortium: XIE.h,v 1.3 94/01/12 19:36:23 rws Exp $ */
+/* $XConsortium: props.c,v 1.2 94/02/20 11:14:08 dpw Exp $ */
 /*
  * Copyright 1994 Network Computing Devices, Inc.
  *
@@ -7,9 +7,9 @@
  * that the above copyright notice appear in all copies and that both that
  * copyright notice and this permission notice appear in supporting
  * documentation, and that the name Network Computing Devices, Inc. not be
- * used in advertising or publicity pertaining to distribution of this 
+ * used in advertising or publicity pertaining to distribution of this
  * software without specific, written prior permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED `AS-IS'.  NETWORK COMPUTING DEVICES, INC.,
  * DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING WITHOUT
  * LIMITATION ALL IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
@@ -20,7 +20,7 @@
  * WHETHER IN AN ACTION IN CONTRACT, TORT OR NEGLIGENCE, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  * 
- * $NCDId: @(#)props.c,v 1.2 1994/02/11 00:14:25 lemke Exp $
+ * $NCDId: @(#)props.c,v 1.5 1994/03/07 19:05:20 lemke Exp $
  */
 /*
  * property handling
@@ -55,6 +55,40 @@
  * required in X_LbxGetProperty?
  */
 
+/*
+ * wrapper for tags
+ *
+ * since this stuff has pointers, have to package it for
+ * tag cache
+ */
+static Bool
+propTagStoreData(tid, dlen, ptdp)
+    XID         tid;
+    unsigned long dlen;
+    PropertyTagDataPtr ptdp;
+{
+    PropertyTagDataPtr new, tmp;
+    Bool	ret;
+
+/* XXX this whole thing is a mess.  too many copies, too much mangling */
+    new = (PropertyTagDataPtr) xalloc(dlen + sizeof(PropertyTagDataRec));
+    if (!new)
+	return FALSE;
+    *new = *ptdp;
+    new->data = (pointer) (new + 1);
+    bcopy((char *) ptdp->data, (char *) new->data, dlen);
+    ret = TagStoreData(prop_cache, tid,
+			(dlen + sizeof(PropertyTagDataRec)),
+			LbxTagTypeProperty, new);
+    /* XXX barf.  since the saved tag has a pointer to its own
+     * stuff, have to tweak it after saving
+     */
+    if (ret) {
+    	tmp = (PropertyTagDataPtr) TagGetData(prop_cache, tid);
+        tmp->data = (pointer) (tmp + 1);
+    }
+    xfree(new);
+}
 
 /*
  * lots of brains need to live here.  this decides whether or not
@@ -73,8 +107,104 @@
  *	  receiver is also using proxy)
  */
 static Bool
-rewrite_change_prop()
+rewrite_change_prop(req)
+    xChangePropertyReq *req;
 {
+    extern Bool lbxUseTags;
+
+    /* if tags are turned off, don't try */
+    if (!lbxUseTags)
+	return FALSE;
+    /* XXX don't even try append for now */
+    if (req->mode != PropModeReplace)
+	return FALSE;
+    return TRUE;		/* XXX */
+}
+
+static int
+change_property_req(client, data)
+    ClientPtr   client;
+    char       *data;
+{
+    ReplyStuffPtr nr;
+    xChangePropertyReq *req;
+    int         size;
+    pointer     datacopy;
+
+    req = (xChangePropertyReq *) data;
+
+    size = req->nUnits * req->format / 8;
+    datacopy = (pointer) xalloc(size);
+    if (!datacopy)
+	return REQ_NOCHANGE;
+    bcopy((char *) &req[1], (char *) datacopy, size);
+
+    nr = NewReply(client);
+    if (!nr) {
+	xfree(datacopy);
+	return REQ_NOCHANGE;
+    }
+    nr->sequenceNumber = LBXSequenceNumber(client);
+    nr->request = X_LbxChangeProperty;
+    nr->lbx_req = TRUE;
+    nr->extension = client->server->lbxReq;
+    nr->request_info.lbxchangeprop.ptd.length = size;
+    nr->request_info.lbxchangeprop.ptd.type = req->type;
+    nr->request_info.lbxchangeprop.ptd.format = req->format;
+    nr->request_info.lbxchangeprop.ptd.data = datacopy;
+
+    /*
+     * this expects a reply.  since we write the data here, we have to be sure
+     * the seq number is in sync first
+     */
+    ForceSequenceUpdate(client);
+    SendChangeProperty(client, req->window, req->property, req->type,
+		       req->format, req->mode, req->nUnits);
+
+    return REQ_REPLACE;
+}
+
+int
+ProcLBXChangeProperty(client)
+    ClientPtr   client;
+{
+    int         yank;
+
+    REQUEST(xChangePropertyReq);
+
+    /* we may want to leave it as X_ChangeProperty */
+    if (!rewrite_change_prop(stuff)) {
+	return ProcStandardRequest(client);
+    }
+    yank = change_property_req(client, client->requestBuffer);
+    return FinishLBXRequest(client, yank);
+}
+
+Bool
+GetLbxChangePropertyReply(client, data)
+    ClientPtr   client;
+    char       *data;
+{
+    xLbxChangePropertyReply *rep;
+    ReplyStuffPtr nr;
+    PropertyTagDataPtr ptdp;
+
+    rep = (xLbxChangePropertyReply *) data;
+
+    nr = GetReply(client);
+    assert(nr);
+    ptdp = &nr->request_info.lbxchangeprop.ptd;
+    if (rep->tag) {
+	if (!propTagStoreData(rep->tag, ptdp->length, ptdp)) {
+	    SendInvalidateTag(client, rep->tag);
+/* XXX is this good enough?  or should we try to send the data on to
+ * the server?
+ */
+	    SendErrorToClient(client, X_ChangeProperty, 0, ptdp->length, BadAlloc);
+	}
+    }
+    xfree(ptdp->data);		/* propStore gets its own copy */
+    return TRUE;
 }
 
 static int
@@ -91,15 +221,21 @@ get_property_req(client, data)
 	nr->sequenceNumber = LBXSequenceNumber(client);
 	nr->request = X_LbxGetProperty;
 	nr->lbx_req = TRUE;
-        nr->extension = client->server->lbxReq;
-        nr->request_info.lbxgetprop.offset = req->longOffset;
-        nr->request_info.lbxgetprop.length = req->longLength;
+	nr->extension = client->server->lbxReq;
+	nr->request_info.lbxgetprop.offset = req->longOffset;
+	nr->request_info.lbxgetprop.length = req->longLength;
 
-        /* note we ask for the whole damn thing -- any truncating is
-         * done when we pass it on
-         */
-	SendGetProperty(client, req->window, req->property, req->type, 
-        	req->delete, 0, 1000000);
+	/*
+	 * this expects a reply.  since we write the data here, we have to be
+	 * sure the seq number is in sync first
+	 */
+	ForceSequenceUpdate(client);
+	/*
+	 * note we ask for the whole damn thing -- any truncating is done when
+	 * we pass it on
+	 */
+	SendGetProperty(client, req->window, req->property, req->type,
+			req->delete, 0, 1000000);
 
 	return REQ_REPLACE;
     } else
@@ -110,10 +246,10 @@ void
 FinishGetPropertyReply(client, seqnum, offset, length, ptdp, pdata)
     ClientPtr   client;
     int         seqnum;
-    CARD32		offset;
-    CARD32		length;
-    PropertyTagDataPtr	ptdp;
-    char               *pdata;
+    CARD32      offset;
+    CARD32      length;
+    PropertyTagDataPtr ptdp;
+    pointer     pdata;
 {
     xGetPropertyReply reply;
     int         bytesafter,
@@ -125,9 +261,9 @@ FinishGetPropertyReply(client, seqnum, offset, length, ptdp, pdata)
     bytesafter = ptdp->length - (dlen + 4 * offset);
 
     if (!pdata)
-    	pdata = ptdp->data;
+	pdata = ptdp->data;
 
-    pdata = pdata + (4 * offset);
+    pdata = (char *)pdata + (4 * offset);
 
     reply.type = X_Reply;
     reply.sequenceNumber = seqnum;
@@ -153,7 +289,6 @@ GetLbxGetPropertyReply(client, data)
     xGetPropertyReply reply;
     xLbxGetPropertyReply *rep;
     int         len;
-    pointer     pdata;
     ReplyStuffPtr nr;
     PropertyTagDataRec ptd;
     PropertyTagDataPtr ptdp;
@@ -168,7 +303,10 @@ GetLbxGetPropertyReply(client, data)
     ptd.format = rep->format;
     ptd.data = NULL;
     len = rep->length << 2;
-    ptd.length = len;
+    if (len)
+	ptd.length = rep->nItems / (rep->format / 8);
+    else
+	ptd.length = 0;
     ptdp = &ptd;
     if (rep->tag) {
 	if (rep->length) {	/* first time, set tag */
@@ -177,22 +315,8 @@ GetLbxGetPropertyReply(client, data)
 	    getprop_full++;
 #endif
 
-	    pdata = (pointer) xalloc(len);
-	    if (!pdata) {
-		xfree(pdata);
-		/* tell server we lost it */
-		SendInvalidateTag(client, rep->tag);
-		ptd.data = (pointer) &rep[1];
-		FinishGetPropertyReply(client, client->sequence,
-				       nr->request_info.lbxgetprop.offset,
-				    nr->request_info.lbxgetprop.length, &ptd, NULL);
-		return TRUE;
-	    }
-	    bcopy((char *) &rep[1], (char *) pdata, len);
-	    ptd.data = pdata;
-	    if (!TagStoreData(prop_cache, rep->tag,
-			      len + sizeof(PropertyTagDataRec),
-			      LbxTagTypeProperty, (pointer) &ptd, NULL)) {
+	    ptd.data = (pointer) &rep[1];
+	    if (!propTagStoreData(rep->tag, len, &ptd)) {
 		/* tell server we lost it */
 		SendInvalidateTag(client, rep->tag);
 	    }
@@ -205,15 +329,16 @@ GetLbxGetPropertyReply(client, data)
 		qt.tagtype = LbxTagTypeProperty;
 		qt.typedata.getprop.offset = nr->request_info.lbxgetprop.offset;
 		qt.typedata.getprop.length = nr->request_info.lbxgetprop.length;
-                qt.typedata.getprop.ptd = ptd;
+		qt.typedata.getprop.ptd = ptd;
 		QueryTag(client, &qt);
 
 		/* XXX what is the right way to stack Queries? */
 		return TRUE;
 	    }
+
 #ifdef LBX_STATS
 	    getprop_tag++;
-            tag_bytes_unsent += ptdp->length;
+	    tag_bytes_unsent += ptdp->length;
 #endif
 	}
     } else {
@@ -222,36 +347,39 @@ GetLbxGetPropertyReply(client, data)
 	getprop_full++;
 #endif
 
-	/* server didn't send us a tag -- either can't store it or no 
-         * prop data
-         */
-        if (rep->length)
+	/*
+	 * server didn't send us a tag -- either can't store it or no prop
+	 * data
+	 */
+	if (rep->length)
 	    ptd.data = (pointer) &rep[1];
     }
 
     FinishGetPropertyReply(client, rep->sequenceNumber,
-		      nr->request_info.lbxgetprop.offset,
-		      nr->request_info.lbxgetprop.length,
-		      ptdp, NULL);
+			   nr->request_info.lbxgetprop.offset,
+			   nr->request_info.lbxgetprop.length,
+			   ptdp, NULL);
 
     return TRUE;
 }
 
 int
 ProcLBXGetProperty(client)
-    ClientPtr	client;
+    ClientPtr   client;
 {
     int         yank;
+
     REQUEST(xGetPropertyReq);
 
     /* just pass through 'delete' messages */
     if (stuff->delete) {
+
 #ifdef DEBUG
 	fprintf(stderr, "Got GetProperty with 'delete' set -- passing through\n");
 #endif
-    	return ProcStandardRequest(client);
-    }
 
+	return ProcStandardRequest(client);
+    }
     yank = get_property_req(client, client->requestBuffer);
     return FinishLBXRequest(client, yank);
 }

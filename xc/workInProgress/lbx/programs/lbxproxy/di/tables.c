@@ -1,7 +1,7 @@
-/* $XConsortium: XIE.h,v 1.3 94/01/12 19:36:23 rws Exp $ */
+/* $XConsortium: tables.c,v 1.3 94/02/20 11:14:18 dpw Exp $ */
 /*
  * $NCDOr$
- * $NCDId: @(#)tables.c,v 1.10 1994/02/11 00:13:30 lemke Exp $
+ * $NCDId: @(#)tables.c,v 1.12 1994/03/04 00:11:02 lemke Exp $
  *
  * Copyright 1992 Network Computing Devices
  *
@@ -41,6 +41,7 @@ extern int	ProcLBXInternAtom(),
                 ProcLBXGetModifierMapping(),
                 ProcLBXGetKeyboardMapping(),
                 ProcLBXQueryFont(),
+                ProcLBXChangeProperty(),
                 ProcLBXGetProperty(),
 		ProcLBXPolyPoint(),
 		ProcLBXPolyLine(),
@@ -188,7 +189,7 @@ int (* ProcVector[256]) () =
     ProcStandardRequest,			/* 15 */
     ProcLBXInternAtom,
     ProcLBXGetAtomName,
-    ProcStandardRequest,
+    ProcLBXChangeProperty,
     ProcStandardRequest,
     ProcLBXGetProperty,			/* 20 */
     ProcStandardRequest,

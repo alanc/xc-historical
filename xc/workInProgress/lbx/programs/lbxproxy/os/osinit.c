@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: osinit.c,v 1.46 94/01/21 22:00:36 dpw Exp $ */
+/* $XConsortium: osinit.c,v 1.1 94/02/10 20:07:24 dpw Exp $ */
 
 #include <stdio.h>
 #include "X.h"
@@ -56,6 +56,7 @@ int limitStackSpace = -1;
 int limitNoFile = -1;
 #endif
 
+void
 OsInit()
 {
     static Bool been_here = FALSE;

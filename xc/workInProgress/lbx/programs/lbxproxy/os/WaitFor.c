@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: WaitFor.c,v 1.66 93/09/26 21:14:57 rws Exp $ */
+/* $XConsortium: WaitFor.c,v 1.1 94/02/10 20:07:25 dpw Exp $ */
 
 /*****************************************************************
  * OS Dependent input routines:
@@ -254,8 +254,6 @@ WaitForSomething(pClientsReady)
 		while (timers && timers->expires <= now)
 		    DoTimer(timers, now, &timers);
 	    }
-	    if (*checkForInput[0] != *checkForInput[1])
-		return 0;
 	}
 	else
 	{

@@ -1,4 +1,4 @@
-/* $XConsortium: XIE.h,v 1.3 94/01/12 19:36:23 rws Exp $ */
+/* $XConsortium: atomcache.c,v 1.3 94/02/20 11:12:33 dpw Exp $ */
 /*
  * Copyright 1994 Network Computing Devices, Inc.
  *
@@ -20,7 +20,7 @@
  * WHETHER IN AN ACTION IN CONTRACT, TORT OR NEGLIGENCE, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  * 
- * $NCDId: @(#)atomcache.c,v 1.2 1994/02/09 19:25:21 lemke Exp $
+ * $NCDId: @(#)atomcache.c,v 1.5 1994/03/04 00:08:00 lemke Exp $
  */
 /*
  * Original Author:  Keith Packard, MIT X Consortium
@@ -33,19 +33,19 @@
  *
  * real close to standard atom code, but with a slight twist.
  * LBX doesn't want to invent the Atom associated with a string,
- * but insert it itself.  only MakeAtom() ends up being modified.
+ * but insert it itself.  only LbxMakeAtom() ends up being modified.
  *
  * the end result is a (probably) sparse array of atoms.
  *
  * when a client does a GetAtomName(), we use NameForAtom()
  * - if it works, great, return the value.
  * - if its doesn't, send it on to the server, and when the answer
- * 	comes back, call MakeAtom()
+ * 	comes back, call LbxMakeAtom()
  *
- * when a client does InternAtom(), MakeAtom() is called.
+ * when a client does InternAtom(), LbxMakeAtom() is called.
  * if its already there (or only-if-exists is true) we return
  * the appropriate value. if not, we send it on to the server,
- * and call MakeAtom() with the answer.
+ * and call LbxMakeAtom() with the answer.
  */
 
 
@@ -134,6 +134,7 @@ ResizeReverseMap()
     else
 	reverseMapSize *= 2;
     reverseMap = (AtomListPtr *) xrealloc(reverseMap, reverseMapSize * sizeof(AtomListPtr));
+    bzero((char *)reverseMap, (reverseMapSize * sizeof(AtomListPtr)));
     if (!reverseMap)
 	return FALSE;
 }
@@ -150,7 +151,7 @@ NameEqual(a, b, l)
 }
 
 Atom
-MakeAtom(string, len, atom, makeit)
+LbxMakeAtom(string, len, atom, makeit)
     char       *string;
     Atom        atom;
     unsigned    len;
@@ -230,4 +231,23 @@ NameForAtom(atom)
     if (atom != None && atom <= lastAtom && reverseMap[atom])
 	return reverseMap[atom]->name;
     return 0;
+}
+
+void
+FreeAtoms()
+{
+    int         i;
+
+    if (reverseMap) {
+	for (i = 0; i <= lastAtom; i++)
+	    xfree(reverseMap[i]);
+	xfree(reverseMap);
+    }
+    xfree(hashTable);
+    reverseMapSize = 0;
+    reverseMap = NULL;
+    hashTable = NULL;
+    lastAtom = 0;
+    hashSize = 0;
+    hashUsed = 0;
 }

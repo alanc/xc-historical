@@ -22,8 +22,9 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: globals.c,v 1.51 92/03/13 15:40:57 rws Exp $ */
-
+/* $XConsortium: globals.c,v 1.1 94/02/10 20:08:47 dpw Exp $ */
+/* $NCDId: @(#)globals.c,v 1.2 1994/03/04 00:11:47 lemke Exp $ */
+  
 #include "X.h"
 #include "Xmd.h"
 #include "misc.h"
@@ -55,8 +56,6 @@ long TimeOutValue = DEFAULT_TIMEOUT * MILLI_PER_SECOND;
 char *defaultDisplayClass = "foo";
 
 Bool	terminateAtReset;
-
-long	*checkForInput[2];
 
 char *display;
 

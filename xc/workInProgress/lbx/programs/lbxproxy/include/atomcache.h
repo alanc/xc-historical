@@ -1,4 +1,4 @@
-/* $XConsortium: lbxdix.c,v 1.2 94/02/20 10:49:24 dpw Exp $ */
+/* $XConsortium: atomcache.h,v 1.4 94/02/20 13:38:14 dpw Exp $ */
 /*
  * Copyright 1994 Network Computing Devices, Inc.
  *
@@ -40,6 +40,7 @@ typedef unsigned long   XID;
 #endif
 
 extern char *NameForAtom();
-extern Atom MakeAtom();
+extern Atom LbxMakeAtom();
+extern void FreeAtoms();
 
 #endif				/* _ATOMCACHE_H_ */

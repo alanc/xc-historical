@@ -1,13 +1,13 @@
-XCOMM $XConsortium: Imakefile,v 1.3 94/02/10 20:09:29 dpw Exp $
+XCOMM $XConsortium: Imakefile,v 1.4 94/02/17 15:25:32 dpw Exp $
 
 #include <Server.tmpl>
 #define	IHaveSubdirs
 
 SUBDIRS = di os
 LBXLIBS = di/libdilbx.a os/libos.a $(LIBSRC)/lbxutil/liblbxutil.a 
-SYSLIBS = $(XEXTLIB) $(XLIB) $(OS) $(XAULIB) $(XDMCPLIB)
+OTHERLIBS = $(XEXTLIB) $(XLIB) $(XAULIB) $(XDMCPLIB) $(EXTRA_LIBRARIES)
 
-ServerTarget(lbxproxy,$(SUBDIRS),NullParameter,$(LBXLIBS),$(SYSLIBS))
+ServerTarget(lbxproxy,$(SUBDIRS),NullParameter,$(LBXLIBS),$(OTHERLIBS))
 
 DependSubdirs($(SUBDIRS))
 

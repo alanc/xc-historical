@@ -1,7 +1,7 @@
-/* $XConsortium: XIE.h,v 1.3 94/01/12 19:36:23 rws Exp $ */
+/* $XConsortium: dispatch.c,v 1.4 94/02/20 11:12:52 dpw Exp $ */
 /*
  * $NCDOr: dispatch.c,v 1.2 1993/11/19 21:28:48 keithp Exp keithp $
- * $NCDId: @(#)dispatch.c,v 1.13 1994/02/03 01:48:48 lemke Exp $
+ * $NCDId: @(#)dispatch.c,v 1.18 1994/03/04 02:32:48 dct Exp $
  *
  * Copyright 1992 Network Computing Devices
  *
@@ -37,6 +37,8 @@
 #include "dixstruct.h"
 #include "input.h"
 #include "servermd.h"
+#define _XLBX_SERVER_
+#include "lbxstr.h"
 
 extern int (* InitialVector[3]) ();
 extern int (* ProcVector[256]) ();
@@ -50,6 +52,7 @@ extern Bool InsertFakeRequest();
 static void KillAllClients();
 static void DeleteClientFromAnySelections();
 extern void ProcessWorkQueue();
+extern Bool lbxUseTags;
 
 static int nextFreeClientID; /* always MIN free client ID */
 
@@ -69,7 +72,6 @@ Dispatch ()
     register int	result;
     register ClientPtr	client;
     register int	nready;
-    register long	**icheck = checkForInput;
 
     nextFreeClientID = 1;
 /*    InitSelections(); */
@@ -158,11 +160,23 @@ Dispatch ()
 }
 
 void
-SetInputCheck(c0, c1)
-    long *c0, *c1;
+SendErrorToClient(client, majorCode, minorCode, resId, errorCode)
+    ClientPtr client;
+    unsigned int majorCode;
+    unsigned int minorCode;
+    XID resId;
+    int errorCode;
 {
-    checkForInput[0] = c0;
-    checkForInput[1] = c1;
+    xError      rep;
+
+    rep.type = X_Error;
+    rep.sequenceNumber = client->sequence;
+    rep.errorCode = errorCode;
+    rep.majorCode = majorCode;
+    rep.minorCode = minorCode;
+    rep.resourceID = resId;
+
+    WriteToClient(client, sizeof(rep), (char *) &rep);
 }
 
 /************************
@@ -263,12 +277,12 @@ ProcEstablishConnection(client)
     register ClientPtr client;
 {
     char *reason, *auth_proto, *auth_string;
-    register xConnClientPrefix *prefix;
+    register xLbxConnClientPrefix *prefix;
     register xWindowRoot *root;
     register int i;
     REQUEST(xReq);
 
-    prefix = (xConnClientPrefix *)((char *)stuff + sz_xReq);
+    prefix = (xLbxConnClientPrefix *)((char *)stuff + sz_xReq);
     auth_proto = (char *)prefix + sz_xConnClientPrefix;
     auth_string = auth_proto + ((prefix->nbytesAuthProto + 3) & ~3);
     if ((prefix->majorVersion != X_PROTOCOL) ||
@@ -308,9 +322,22 @@ ProcEstablishConnection(client)
     LBXSequenceNumber(client) = 0;
     /* wait for X server to kill client */
     client->closeDownMode = RetainPermanent;
-    if (!NewClient (client))
+
+    /* 
+     * NewClient outputs the LbxNewClient request header - have to
+     * follow it up with the setup connection info.
+     */
+    if (!NewClient (client, (stuff->length << 2) - sz_xReq))
 	return (client->noClientException = -1);
-    WriteToServer (client, (stuff->length << 2) - sz_xReq, prefix);
+    prefix->useTag = lbxUseTags;
+    WriteToServer (clients[0], (stuff->length << 2) - sz_xReq, prefix);
+
+    /*
+     * Can't allow any requests to be passed on to the server until
+     * the connection setup reply has been received.
+     */
+    IgnoreClient (client);
+
 #ifdef NOTDEF
     ((xConnSetup *)ConnectionInfo)->ridBase = client->clientAsMask;
     ((xConnSetup *)ConnectionInfo)->ridMask = RESOURCE_ID_MASK;
@@ -468,7 +495,6 @@ ProcBadRequest (client)
 /* turn off optional features */
 AdjustProcVector()
 {
-    extern Bool lbxUseTags;
     int         i;
 
     /*

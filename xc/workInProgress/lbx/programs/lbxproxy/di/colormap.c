@@ -1,4 +1,4 @@
-/* $XConsortium: XIE.h,v 1.3 94/01/12 19:36:23 rws Exp $ */
+/* $XConsortium: colormap.c,v 1.4 94/02/20 11:12:46 dpw Exp $ */
 /*
  * Copyright 1994 Network Computing Devices, Inc.
  *
@@ -20,7 +20,7 @@
  * WHETHER IN AN ACTION IN CONTRACT, TORT OR NEGLIGENCE, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  * 
- * $NCDId: @(#)colormap.c,v 1.5 1994/02/11 00:10:19 lemke Exp $
+ * $NCDId: @(#)colormap.c,v 1.9 1994/03/07 22:54:30 lemke Exp $
  */
 /*
  * XXX
@@ -285,11 +285,11 @@ FindPixel(client, cmap, red, green, blue, pent)
     int         i;
     Entry      *pe;
 
+    *pent = (Entry *) 0;
     pmap = (ColormapPtr) LookupIDByType(cmap, RT_COLORMAP);
     if (!pmap) {
 	return 0;
     }
-    *pent = (Entry *) 0;
     switch (pmap->class) {
     case StaticGray:
     case StaticColor:
@@ -333,11 +333,11 @@ FindNamedPixel(client, cmap, name, namelen, pent)
     int         i;
     Pixel       pix;
 
+    *pent = (Entry *) 0;
     pmap = (ColormapPtr) LookupIDByType(cmap, RT_COLORMAP);
     if (!pmap) {
 	return 0;
     }
-    *pent = (Entry *) 0;
     switch (pmap->class) {
     case StaticGray:
     case StaticColor:
@@ -593,7 +593,7 @@ FreePixels(client, cmap, num, pixels)
     Entry      *pent;
     Pixel       pix;
     int         i,
-                zapped,
+                zapped = 0,
                 npix,
                 npixnew;
     Pixel      *cptr,
@@ -611,8 +611,6 @@ FreePixels(client, cmap, num, pixels)
     case StaticColor:
     case PseudoColor:
     case GrayScale:
-	if (!pent->red)
-	    return 0;
 	for (i = 0, pix = pixels[i]; i < num; i++) {
 	    for (cptr = pmap->clientPixelsRed[idx],
 		    npix = pmap->numPixelsRed[idx];
@@ -629,7 +627,7 @@ FreePixels(client, cmap, num, pixels)
 	    npixnew = pmap->numPixelsRed[idx] - zapped;
 	    if (npixnew) {
 		pptr = cptr = pmap->clientPixelsRed[idx];
-		for (npix = 0; npix <= npixnew; cptr++) {
+		for (npix = 0; npix < npixnew; cptr++) {
 		    if (*cptr != ~((Pixel) 0)) {
 			*pptr++ = *cptr;
 			npix++;
@@ -769,5 +767,24 @@ CopyAndFreeColormap(client, new, old)
     newmap = create_colormap(new, pmap->window, pmap->visual);
     if (!AddResource(new, RT_COLORMAP, (pointer) newmap)) {
 	return 0;
+    }
+}
+
+void
+FreeColors()
+{
+    RGBCacheEntryPtr ce,
+                nce;
+    int         i;
+
+    for (i = 0; i < NBUCKETS; i++) {
+	ce = rgb_cache[i];
+	while (ce) {
+	    nce = ce->next;
+	    xfree(ce->color.name);
+	    xfree(ce);
+	    ce = nce;
+	}
+        rgb_cache[i] = 0;
     }
 }
