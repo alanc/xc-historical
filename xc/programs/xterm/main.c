@@ -1,4 +1,4 @@
-/* $XConsortium: main.c,v 1.167 91/02/06 17:26:01 gildea Exp $ */
+/* $XConsortium: main.c,v 1.168 91/02/11 15:33:51 rws Exp $ */
 
 /*
  * 				 W A R N I N G
@@ -1630,7 +1630,7 @@ spawn ()
 		 * open up the pty slave.
 		 */
 #ifdef	USE_SYSV_PGRP
-#if defined(CRAY) && (OSMAJORVERION > 5)
+#if defined(CRAY) && (OSMAJORVERSION > 5)
 		(void) setsid();
 #else
 		(void) setpgrp();
@@ -1900,7 +1900,19 @@ spawn ()
 		/* this is the time to go and set up stdin, out, and err
 		 */
 		{
-#ifndef CRAY
+#if defined(CRAY) && (OSMAJORVERSION >= 6)
+		    (void) close(tty);
+		    (void) close(0);
+
+		    if (open ("/dev/tty", O_RDWR)) {
+			fprintf(stderr, "cannot open /dev/tty\n");
+			exit(1);
+		    }
+		    (void) close(1);
+		    (void) close(2);
+		    dup(0);
+		    dup(0);
+#else
 		    /* dup the tty */
 		    for (i = 0; i <= 2; i++)
 			if (i != tty) {
@@ -1913,19 +1925,7 @@ spawn ()
 		    if (tty > 2)
 			(void) close(tty);
 #endif
-#else /* CRAY */
-		    (void) close(tty);
-		    (void) close(0);
-
-		    if (open ("/dev/tty", O_RDWR)) {
-			fprintf(stderr, "cannot open /dev/tty\n");
-			exit(1);
-		    }
-		    (void) close(1);
-		    (void) close(2);
-		    dup(0);
-		    dup(0);
-#endif
+#endif /* CRAY */
 		}
 
 #ifndef	USE_SYSV_PGRP
