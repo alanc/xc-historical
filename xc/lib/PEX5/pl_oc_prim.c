@@ -1,4 +1,4 @@
-/* $XConsortium: pl_oc_prim.c,v 1.3 92/05/26 16:20:58 mor Exp $ */
+/* $XConsortium: pl_oc_prim.c,v 1.4 92/06/12 10:47:00 mor Exp $ */
 
 /************************************************************************
 Copyright 1987,1991,1992 by Digital Equipment Corporation, Maynard,
@@ -1069,7 +1069,7 @@ INPUT PEXConnectivityData	*connectivity;
     int			totLength;
     int 		numContours;
     int 		count = 0;
-    int			i, j;
+    int			i, j, cbytes;
     CARD16		*pData;
 
 
@@ -1092,9 +1092,10 @@ INPUT PEXConnectivityData	*connectivity;
     lenofVertex = GetVertexWithDataLength (vertexAttributes, lenofColor);
     sizeofEdge = ((edgeAttributes == PEXOn) ? sizeof (CARD8) : 0);
 
+    cbytes = sizeof (CARD16) * (numFillAreaSets + numContours + numIndices);
+
     totLength = (lenofFacet * numFillAreaSets) + (lenofVertex * numVertices) + 
-	NUMWORDS (sizeofEdge * numIndices) + NUMWORDS (sizeof (CARD16) *
-	(numFillAreaSets + numContours + numIndices));
+	NUMWORDS (sizeofEdge * numIndices) + NUMWORDS (cbytes);
 
 
     /*
@@ -1156,12 +1157,14 @@ INPUT PEXConnectivityData	*connectivity;
 	    if (pData = (CARD16 *) PEXGetOCAddr (display, sizeof (CARD16)))
 		*pData = pList->count;
 
-	    _PEXCopyPaddedBytesToOC (display, pList->count * sizeof (CARD16),
+	    PEXCopyBytesToOC (display, pList->count * sizeof (CARD16),
 		(char *) pList->shorts);
 	}
 
 	pConnectivity++;
     }
+
+    PEXGetOCAddr (display, PAD (cbytes));
 
     PEXFinishOC (display);
 }
