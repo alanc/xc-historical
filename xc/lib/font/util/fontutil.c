@@ -1,5 +1,5 @@
 /*
- * $XConsortium: fontutil.c,v 1.6 93/09/20 15:56:40 gildea Exp $
+ * $XConsortium: fontutil.c,v 1.7 94/02/04 09:53:51 gildea Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -148,7 +148,8 @@ QueryTextExtents(pFont, count, chars, info)
 
     /* Do default character substitution as get_metrics doesn't */
 
-#define IsNonExistantChar(ci) ((ci)->ascent == 0 && \
+#define IsNonExistentChar(ci) (!(ci) || \
+			       (ci)->ascent == 0 && \
 			       (ci)->descent == 0 && \
 			       (ci)->leftSideBearing == 0 && \
 			       (ci)->rightSideBearing == 0 && \
@@ -158,11 +159,11 @@ QueryTextExtents(pFont, count, chars, info)
     defc[0] = pFont->info.defaultCh >> 8;
     defc[1] = pFont->info.defaultCh;
     (*pFont->get_metrics) (pFont, 1, defc, encoding, &t, &defaultChar);
-    if (IsNonExistantChar (defaultChar))
+    if (IsNonExistentChar (defaultChar))
 	defaultChar = 0;
     for (i = 0; i < n; i++)
     {
-	if (IsNonExistantChar (charinfo[i]))
+	if (IsNonExistentChar (charinfo[i]))
 	{
 	    if (!defaultChar)
 		continue;
