@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Label.c,v 1.38 88/02/06 14:42:12 swick Exp $";
+static char rcsid[] = "$Header: Label.c,v 1.39 88/02/10 09:57:53 rws Exp $";
 #endif lint
 
 /*
@@ -124,9 +124,9 @@ static XrmQuark	XrmQEright;
 static void ClassInitialize()
 {
 
-    XrmQEleft   = XrmAtomToQuark("left");
-    XrmQEcenter = XrmAtomToQuark("center");
-    XrmQEright  = XrmAtomToQuark("right");
+    XrmQEleft   = XrmStringToQuark("left");
+    XrmQEcenter = XrmStringToQuark("center");
+    XrmQEright  = XrmStringToQuark("right");
 
     XtAddConverter( XtRString, XtRJustify, CvtStringToJustify, NULL, 0 );
 } /* ClassInitialize */
@@ -151,7 +151,7 @@ static void CvtStringToJustify(args, num_args, fromVal, toVal)
 	lowerName[i] = isupper(c) ? (char) tolower(c) : c;
     }
 
-    q = XrmAtomToQuark(lowerName);
+    q = XrmStringToQuark(lowerName);
 
     toVal->size = sizeof(XtJustify);
     toVal->addr = (caddr_t) &e;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Xrm.c,v 1.6 88/02/03 19:48:30 swick Exp $";
+static char rcsid[] = "$Header: Xrm.c,v 1.7 88/02/10 18:04:45 rws Exp $";
 #endif lint
 
 /*
@@ -75,7 +75,7 @@ void XrmStringToQuarkList(name, quarks)
 	    if (ch == '.') {
 		if (i != 0) {
 		    oneName[i] = 0;
-		    *quarks = XrmAtomToQuark(oneName);
+		    *quarks = XrmStringToQuark(oneName);
 		    quarks++;
 		    i = 0;
 		}
@@ -86,7 +86,7 @@ void XrmStringToQuarkList(name, quarks)
 	}
 	if (i != 0) {
 	    oneName[i] = 0;
-	    *quarks = XrmAtomToQuark(oneName);
+	    *quarks = XrmStringToQuark(oneName);
 	    quarks++;
 	}
     }
@@ -112,7 +112,7 @@ void XrmStringToBindingQuarkList(name, bindings, quarks)
 		    *bindings = binding;
 		    bindings++;
 		    oneName[i] = '\0';
-		    *quarks = XrmAtomToQuark(oneName);
+		    *quarks = XrmStringToQuark(oneName);
 		    quarks++;
 		    i = 0;
 		    binding = XrmBindTightly;
@@ -127,7 +127,7 @@ void XrmStringToBindingQuarkList(name, bindings, quarks)
 	if (i != 0) {
 	    oneName[i] = '\0';
 	    *bindings = binding;
-	    *quarks = XrmAtomToQuark(oneName);
+	    *quarks = XrmStringToQuark(oneName);
 	    quarks++;
 	}
     }
@@ -414,7 +414,7 @@ static void PrintBindingQuarkList(bindings, quarks, stream)
 	    (void) fprintf(stream, ".");
 	}
 	firstNameSeen = True;
-	(void) fputs(XrmQuarkToAtom(*quarks), stream);
+	(void) fputs(XrmQuarkToString(*quarks), stream);
     }
 }
 
@@ -432,7 +432,7 @@ static void DumpEntry(bindings, quarks, type, value, stream)
     if (type == XrmQString) {
 	(void) fprintf(stream, ":\t%s\n", value->addr);
     } else {
-	(void) fprintf(stream, "!%s:\t", XrmRepresentationToAtom(type));
+	(void) fprintf(stream, "!%s:\t", XrmRepresentationToString(type));
 	for (i = 0; i < value->size; i++)
 	    (void) fprintf(stream, "%02x", (int) value->addr[i]);
         if (index(value->addr, '\n')) {
@@ -602,7 +602,7 @@ void XrmPutResource(pdb, specifier, type, value)
 
     if (*pdb == NULL) *pdb = NewDatabase();
     XrmStringToBindingQuarkList(specifier, bindings, quarks);
-    PutEntry(*pdb, bindings, quarks, XrmAtomToQuark(type), value);
+    PutEntry(*pdb, bindings, quarks, XrmStringToQuark(type), value);
 } /* XrmPutResource */
 
 
@@ -792,9 +792,9 @@ Bool XrmQGetResource(db, names, classes, pType, pValue)
 
 Bool XrmGetResource(db, name_str, class_str, pType_str, pValue)
     XrmHashBucket       db;
-    XrmAtom		name_str;
-    XrmAtom		class_str;
-    XrmAtom		*pType_str;  /* RETURN */
+    XrmString		name_str;
+    XrmString		class_str;
+    XrmString		*pType_str;  /* RETURN */
     XrmValuePtr		pValue;      /* RETURN */
 {
     XrmName		names[100];
@@ -805,12 +805,12 @@ Bool XrmGetResource(db, name_str, class_str, pType_str, pValue)
     XrmStringToNameList(name_str, names);
     XrmStringToClassList(class_str, classes);
     result = XrmQGetResource(db, names, classes, &fromType, pValue);
-    (*pType_str) = XrmQuarkToAtom(fromType);
+    (*pType_str) = XrmQuarkToString(fromType);
     return result;
 } /* XrmGetResource */
 
 void XrmInitialize()
 {
-    XrmQString = XrmAtomToQuark("String");
+    XrmQString = XrmStringToQuark("String");
 }
 

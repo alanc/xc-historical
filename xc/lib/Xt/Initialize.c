@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Initialize.c,v 1.108 88/02/11 13:49:30 rws Exp $";
+static char rcsid[] = "$Header: Initialize.c,v 1.109 88/02/11 21:08:30 rws Exp $";
 #endif
 
 /*
@@ -435,8 +435,8 @@ XtInitialize(name, classname, urlist, num_urs, argc, argv)
         num_args++;
 	    
 	/* initialize the toolkit */
-	XtApplicationName = XrmAtomToName( name );
-	XtApplicationClass = XrmAtomToClass( classname );
+	XtApplicationName = XrmStringToName( name );
+	XtApplicationClass = XrmStringToClass( classname );
 	DO_Initialize();
 #ifndef XAPPLOADDIR
 #ifndef VMS

@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Convert.c,v 1.5 88/02/03 23:21:07 swick Locked $";
+static char rcsid[] = "$Header: Convert.c,v 1.6 88/02/03 23:21:53 swick Exp $";
 #endif lint
 
 /*
@@ -97,13 +97,13 @@ void _XtAddConverter(fromType, toType, converter, convert_args, num_args)
 }
 
 void XtAddConverter(fromType, toType, converter, convert_args, num_args)
-    register XrmAtom	fromType, toType;
+    register XrmString	fromType, toType;
     XtConverter		converter;
     XtConvertArgList    convert_args;
     Cardinal		num_args;
 {
     _XtAddConverter(
-	XrmAtomToRepresentation(fromType), XrmAtomToRepresentation(toType),
+	XrmStringToRepresentation(fromType), XrmStringToRepresentation(toType),
 	converter, convert_args, num_args);
 }
 
@@ -227,7 +227,7 @@ static void ComputeArgs(widget, convert_args, num_args, args)
 	    /* Convert in place for next usage */
 	    convert_args[i].address_mode = XtResourceQuark;
 	    convert_args[i].address_id =
-	       (caddr_t) XrmAtomToQuark((String) convert_args[i].address_id);
+	       (caddr_t) XrmStringToQuark((String) convert_args[i].address_id);
 	    /* Fall through */
 
 	case XtResourceQuark:
@@ -235,7 +235,7 @@ static void ComputeArgs(widget, convert_args, num_args, args)
 		    (XrmQuark) convert_args[i].address_id, &offset)) {
 		(void) sprintf(message,
 		    "Cannot find resource name %s as argument to conversion",
-		    XrmQuarkToAtom((XrmQuark) convert_args[i].address_id));
+		    XrmQuarkToString((XrmQuark) convert_args[i].address_id));
 		XtWarning(message);
 		offset = 0;
 	    }
@@ -321,8 +321,8 @@ void _XtConvert(widget, fromType, from, toType, to)
 
     (void) sprintf(msg,
 	"No type converter registered for '%s' to '%s' conversion.",
-	XrmRepresentationToAtom(fromType),
-	XrmRepresentationToAtom(toType));
+	XrmRepresentationToString(fromType),
+	XrmRepresentationToString(toType));
     XtWarning(msg);
     to->addr = NULL;
     to->size = 0;
@@ -330,15 +330,15 @@ void _XtConvert(widget, fromType, from, toType, to)
 
 void XtConvert(widget, from_type_str, from, to_type_str, to)
     Widget	widget;
-    XrmAtom	from_type_str;
+    XrmString	from_type_str;
     XrmValuePtr	from;
-    XrmAtom	to_type_str;
+    XrmString	to_type_str;
     XrmValuePtr	to;
 {
     XrmQuark    fromType, toType;
 
-    fromType = XrmAtomToRepresentation(from_type_str);
-    toType = XrmAtomToRepresentation(to_type_str);
+    fromType = XrmStringToRepresentation(from_type_str);
+    toType = XrmStringToRepresentation(to_type_str);
     if (fromType != toType)
 	_XtConvert(widget, fromType, from, toType, to);
     else

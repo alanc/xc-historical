@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Text.c,v 1.27 88/02/08 15:08:47 swick Exp $";
+static char rcsid[] = "$Header: Text.c,v 1.28 88/02/11 17:30:30 rws Exp $";
 #endif
 
 /*
@@ -130,7 +130,7 @@ static void CvtStringToEditMode(args, num_args, fromVal, toVal)
 
 /* ||| where to put LowerCase */
     LowerCase((char *)fromVal->addr, lowerName);
-    q = XrmAtomToQuark(lowerName);
+    q = XrmStringToQuark(lowerName);
     if (q == XtQTextRead ) {
         editType = XttextRead;
         done(&editType, XtTextEditType);
@@ -153,9 +153,9 @@ static void CvtStringToEditMode(args, num_args, fromVal, toVal)
 
 static void ClassInitialize()
 {
-    XtQTextRead   = XrmAtomToQuark(XtEtextRead);
-    XtQTextAppend = XrmAtomToQuark(XtEtextAppend);
-    XtQTextEdit   = XrmAtomToQuark(XtEtextEdit);
+    XtQTextRead   = XrmStringToQuark(XtEtextRead);
+    XtQTextAppend = XrmStringToQuark(XtEtextAppend);
+    XtQTextEdit   = XrmStringToQuark(XtEtextEdit);
 
     XtAddConverter(XtRString, XtREditMode, CvtStringToEditMode, NULL, 0);
 }

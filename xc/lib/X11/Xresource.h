@@ -1,4 +1,4 @@
-/* $Header: Xresource.h,v 1.1 87/09/12 12:27:11 toddb Exp $ */
+/* $Header: Xresource.h,v 1.7 88/02/02 20:34:03 swick Exp $ */
 
 /*
  * Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
@@ -68,20 +68,20 @@ extern char *Xpermalloc();
 typedef int     XrmQuark, *XrmQuarkList;
 #define NULLQUARK ((XrmQuark) 0)
 
-typedef char *XrmAtom;
-#define NULLATOM ((XrmAtom) 0)
+typedef char *XrmString;
+#define NULLSTRING ((XrmString) 0)
 
-/* find quark for atom, create new quark if none already exists */
-extern XrmQuark XrmAtomToQuark(); /* name */
-    /* XrmAtom name; */
+/* find quark for string, create new quark if none already exists */
+extern XrmQuark XrmStringToQuark(); /* name */
+    /* XrmString name; */
 
-/* find atom for quark */
-extern XrmAtom XrmQuarkToAtom(); /* quark */
+/* find string for quark */
+extern XrmString XrmQuarkToString(); /* quark */
     /* XrmQuark name; */
 
 extern XrmQuark XrmUniqueQuark();
 
-#define XrmAtomsEqual(a1, a2) (strcmp(a1, a2) == 0)
+#define XrmStringsEqual(a1, a2) (strcmp(a1, a2) == 0)
 
 
 /****************************************************************
@@ -108,14 +108,14 @@ extern void XrmStringToBindingQuarkList();
 
 typedef XrmQuark     XrmName;
 typedef XrmQuarkList XrmNameList;
-#define XrmNameToAtom(name)		XrmQuarkToAtom(name)
-#define XrmAtomToName(atom)		XrmAtomToQuark(atom)
+#define XrmNameToString(name)		XrmQuarkToString(name)
+#define XrmStringToName(string)		XrmStringToQuark(string)
 #define XrmStringToNameList(str, name)	XrmStringToQuarkList(str, name)
 
 typedef XrmQuark     XrmClass;
 typedef XrmQuarkList XrmClassList;
-#define XrmClassToAtom(class)		XrmQuarkToAtom(class)
-#define XrmAtomToClass(class)		XrmAtomToQuark(class)
+#define XrmClassToString(class)		XrmQuarkToString(class)
+#define XrmStringToClass(class)		XrmStringToQuark(class)
 #define XrmStringToClassList(str,class)	XrmStringToQuarkList(str, class)
 
 
@@ -127,8 +127,8 @@ typedef XrmQuarkList XrmClassList;
  ****************************************************************/
 
 typedef XrmQuark     XrmRepresentation;
-#define XrmAtomToRepresentation(atom)   XrmAtomToQuark(atom)
-#define	XrmRepresentationToAtom(type)   XrmQuarkToAtom(type)
+#define XrmStringToRepresentation(string)   XrmStringToQuark(string)
+#define	XrmRepresentationToString(type)   XrmQuarkToString(type)
 
 typedef struct {
     unsigned int    size;

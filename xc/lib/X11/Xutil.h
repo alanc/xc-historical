@@ -1,4 +1,4 @@
-/* $Header: Xutil.h,v 11.39 87/09/12 02:32:45 swick Locked $ */
+/* $Header: Xutil.h,v 11.40 87/12/21 09:32:48 swick Exp $ */
 
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -245,7 +245,7 @@ typedef struct {
 typedef int XContext;
 
 #define XUniqueContext()       ((XContext) XrmUniqueQuark())
-#define XAtomToContext(atom)   ((XContext) XrmAtomToQuark(atom))
+#define XStringToContext(string)   ((XContext) XrmStringToQuark(string))
 
 extern int XSaveContext(); /* window, context, data */
     /* Window       window;		*/

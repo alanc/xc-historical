@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: TMstate.c,v 1.43 88/02/09 11:26:53 swick Exp $";
+static char rcsid[] = "$Header: TMstate.c,v 1.44 88/02/13 11:53:53 swick Exp $";
 #endif lint
 /*LINTLIBRARY*/
 
@@ -174,7 +174,7 @@ static String PrintActions(str, actions, quarkTable)
 {
     while (actions != NULL && actions->token != NULL) {
         (void) sprintf(
-            str, " %s(", XrmQuarkToAtom(quarkTable[actions->index]));
+            str, " %s(", XrmQuarkToString(quarkTable[actions->index]));
 	str += strlen(str);
 	str = PrintParams(str, actions->params, (Cardinal)actions->num_params);
 	str += strlen(str);
@@ -661,7 +661,7 @@ static void ReportUnboundActions(tm, stateTable)
 
     for (i=0; i < stateTable->numQuarks; i++) {
 	if (tm->proc_table[i] == NULL) {
-	    String s = XrmQuarkToAtom(stateTable->quarkTable[i]);
+	    String s = XrmQuarkToString(stateTable->quarkTable[i]);
 	    if (num_unbound != 0) {
 		(void) strcpy(&message[num_chars], ", ");
 		num_chars = num_chars + 2;
@@ -1203,7 +1203,7 @@ static Widget _XtFindPopup(widget, name)
     register XrmQuark q;
     register Widget w;
 
-    q = XrmAtomToQuark(name);
+    q = XrmStringToQuark(name);
 
     for (w=widget; w != NULL; w=w->core.parent)
 	for (i=0; i<w->core.num_popups; i++)

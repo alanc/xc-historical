@@ -1,5 +1,5 @@
 /*
-* $Header: IntrinsicI.h,v 6.15 88/01/29 16:25:36 swick Locked $
+* $Header: IntrinsicI.h,v 6.16 88/02/02 19:20:41 swick Exp $
 */
 
 /*
@@ -126,9 +126,9 @@ extern Boolean _XtwaitForSomething(); /* ignoreTimers, ignoreInputs, block, howl
  *
  ****************************************************************/
 
-#define StringToQuark(string) XrmAtomToQuark(string)
-#define StringToName(string) XrmAtomToName(string)
-#define StringToClass(string) XrmAtomToClass(string)
+#define StringToQuark(string) XrmStringToQuark(string)
+#define StringToName(string) XrmStringToName(string)
+#define StringToClass(string) XrmStringToClass(string)
 
 extern void XtGetResources();
     /* Widget       widget;             */

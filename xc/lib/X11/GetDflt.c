@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: XGetDflt.c,v 1.6 88/02/10 18:04:52 rws Exp $";
+static char rcsid[] = "$Header: XGetDflt.c,v 1.7 88/02/13 16:28:44 jim Exp $";
 #endif lint
 
 /*
@@ -118,7 +118,7 @@ char *XGetDefault(dpy, prog, name)
 
 {					/* to get, for example, "font"  */
 	char temp[BUFSIZ];
-	XrmAtom type;
+	XrmString type;
 	XrmValue result;
 
 

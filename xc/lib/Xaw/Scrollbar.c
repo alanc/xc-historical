@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Scroll.c,v 1.23 88/02/05 20:26:51 swick Exp $";
+static char rcsid[] = "$Header: Scroll.c,v 1.24 88/02/11 17:23:25 rws Exp $";
 #endif lint
 
 /*
@@ -180,7 +180,7 @@ static void CvtStringToOrientation(args, num_args, fromVal, toVal)
 
 /* ||| where to put LowerCase */
     LowerCase((char *) fromVal->addr, lowerName);
-    q = XrmAtomToQuark(lowerName);
+    q = XrmStringToQuark(lowerName);
     if (q == XtQEhorizontal) {
     	orient = XtorientHorizontal;
 	done(&orient, XtOrientation);
@@ -196,8 +196,8 @@ static void CvtStringToOrientation(args, num_args, fromVal, toVal)
 
 static void ClassInitialize()
 {
-    XtQEhorizontal = XrmAtomToQuark(XtEhorizontal);
-    XtQEvertical   = XrmAtomToQuark(XtEvertical);
+    XtQEhorizontal = XrmStringToQuark(XtEhorizontal);
+    XtQEvertical   = XrmStringToQuark(XtEvertical);
     XtAddConverter( XtRString, XtROrientation, CvtStringToOrientation,
 		    NULL, (Cardinal)0 );
 }

@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: XErrDes.c,v 11.21 88/02/03 19:35:45 swick Exp $";
+static char rcsid[] = "$Header: XErrDes.c,v 11.22 88/02/10 18:04:56 rws Exp $";
 #endif lint
 
 /*
@@ -87,7 +87,7 @@ XGetErrorDatabaseText(dpy, name, type, defaultp, buffer, nbytes)
 {
 
     static XrmDatabase db;
-    XrmAtom type_str;
+    XrmString type_str;
     XrmValue result;
     static int initialized = False;
     char temp[BUFSIZ];

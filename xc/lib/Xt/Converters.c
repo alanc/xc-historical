@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Converters.c,v 1.20 88/02/08 17:43:26 swick Exp $";
+static char rcsid[] = "$Header: Converters.c,v 1.21 88/02/11 21:19:15 rws Exp $";
 #endif lint
 
 /*
@@ -140,7 +140,7 @@ static void CvtStringToBoolean(args, num_args, fromVal, toVal)
 	XtWarning("String to Boolean conversion needs no extra arguments");
 
     LowerCase((char *) fromVal->addr, lowerName);
-    q = XrmAtomToQuark(lowerName);
+    q = XrmStringToQuark(lowerName);
 
     if (q == XtQEtrue || q == XtQEon || q == XtQEyes) {
 	b = TRUE;
@@ -188,7 +188,7 @@ static void CvtStringToLongBoolean(args, num_args, fromVal, toVal)
 	XtWarning("String to LongBoolean conversion needs no extra arguments");
 
     LowerCase((char *) fromVal->addr, lowerName);
-    q = XrmAtomToQuark(lowerName);
+    q = XrmStringToQuark(lowerName);
 
     if (q == XtQEtrue || q == XtQEon || q == XtQEyes) {
 	b = TRUE;
@@ -682,31 +682,31 @@ void _XtConvertInitialize()
 
 /* Representation types */
 
-    XtQBoolean		= XrmAtomToQuark(XtRBoolean);
-    XtQLongBoolean	= XrmAtomToQuark(XtRLongBoolean);
-    XtQColor		= XrmAtomToQuark(XtRColor);
-    XtQCursor		= XrmAtomToQuark(XtRCursor);
-    XtQDisplay		= XrmAtomToQuark(XtRDisplay);
-    XtQFile		= XrmAtomToQuark(XtRFile);
-    XtQFont		= XrmAtomToQuark(XtRFont);
-    XtQFontStruct	= XrmAtomToQuark(XtRFontStruct);
-    XtQGeometry		= XrmAtomToQuark(XtRGeometry);
-    XtQInt		= XrmAtomToQuark(XtRInt);
-    XtQPixel		= XrmAtomToQuark(XtRPixel);
-    XtQPixmap		= XrmAtomToQuark(XtRPixmap);
-    XtQPointer		= XrmAtomToQuark(XtRPointer);
-    XtQString		= XrmAtomToQuark(XtRString);
-    XtQWindow		= XrmAtomToQuark(XtRWindow);
-    XtQDefaultColor     = XrmAtomToQuark(XtRDefaultColor);
+    XtQBoolean		= XrmStringToQuark(XtRBoolean);
+    XtQLongBoolean	= XrmStringToQuark(XtRLongBoolean);
+    XtQColor		= XrmStringToQuark(XtRColor);
+    XtQCursor		= XrmStringToQuark(XtRCursor);
+    XtQDisplay		= XrmStringToQuark(XtRDisplay);
+    XtQFile		= XrmStringToQuark(XtRFile);
+    XtQFont		= XrmStringToQuark(XtRFont);
+    XtQFontStruct	= XrmStringToQuark(XtRFontStruct);
+    XtQGeometry		= XrmStringToQuark(XtRGeometry);
+    XtQInt		= XrmStringToQuark(XtRInt);
+    XtQPixel		= XrmStringToQuark(XtRPixel);
+    XtQPixmap		= XrmStringToQuark(XtRPixmap);
+    XtQPointer		= XrmStringToQuark(XtRPointer);
+    XtQString		= XrmStringToQuark(XtRString);
+    XtQWindow		= XrmStringToQuark(XtRWindow);
+    XtQDefaultColor     = XrmStringToQuark(XtRDefaultColor);
 
 /* Boolean enumeration constants */
 
-    XtQEfalse		= XrmAtomToQuark(XtEfalse);
-    XtQEno		= XrmAtomToQuark(XtEno);
-    XtQEoff		= XrmAtomToQuark(XtEoff);
-    XtQEon		= XrmAtomToQuark(XtEon);
-    XtQEtrue		= XrmAtomToQuark(XtEtrue);
-    XtQEyes		= XrmAtomToQuark(XtEyes);
+    XtQEfalse		= XrmStringToQuark(XtEfalse);
+    XtQEno		= XrmStringToQuark(XtEno);
+    XtQEoff		= XrmStringToQuark(XtEoff);
+    XtQEon		= XrmStringToQuark(XtEon);
+    XtQEtrue		= XrmStringToQuark(XtEtrue);
+    XtQEyes		= XrmStringToQuark(XtEyes);
 
 #define Add(from, to, proc, convert_args, num_args) \
     _XtAddConverter(from, to, (XtConverter) proc, \
