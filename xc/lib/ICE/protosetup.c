@@ -1,4 +1,4 @@
-/* $XConsortium: protosetup.c,v 1.1 93/08/19 18:25:31 mor Exp $ */
+/* $XConsortium: protosetup.c,v 1.2 93/08/26 17:10:08 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -210,6 +210,14 @@ char 	*errorStringRet;
 	*vendorRet = reply.protocol_reply.vendor;
 	*releaseRet = reply.protocol_reply.release;
 	
+
+	/*
+	 * Increase the reference count for the number of active protocols.
+	 */
+
+	iceConn->proto_ref_count++;
+
+
 	/*
 	 * We may be using a different major opcode for this protocol
 	 * than the other client.  Whenever we get a message, we must
