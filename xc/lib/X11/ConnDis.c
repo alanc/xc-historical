@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XConnDis.c,v 11.96 93/08/13 19:52:37 rws Exp $
+ * $XConsortium: XConnDis.c,v 11.97 93/08/14 09:33:14 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -27,14 +27,19 @@
 #define NEED_EVENTS
 
 #include <X11/Xlibint.h>
-#include <X11/Xos.h>
 #include "Xlibnet.h"
+#include <X11/Xos.h>
 #include <X11/Xauth.h>
 #include <stdio.h>
 #include <ctype.h>
 #ifdef DNETCONN
 #include <netdnet/dn.h>
 #include <netdnet/dnetdb.h>
+#endif
+#ifdef WIN32
+#undef close
+#define close closesocket
+#define ECONNREFUSED WSAECONNREFUSED
 #endif
 
 #ifndef X_CONNECTION_RETRIES		/* number retries on ECONNREFUSED */
@@ -277,7 +282,7 @@ int _XConnectDisplay (display_name, fullnamep, dpynump, screenp,
     if ((fd = (*connfunc) (phostname, idisplay, X_CONNECTION_RETRIES,
 			   &family, &saddrlen, &saddr)) < 0)
       goto bad;
-#ifndef USE_POLL
+#if !defined(USE_POLL) && !defined(WIN32)
     if (fd >= OPEN_MAX)
 	goto bad;
 #endif
@@ -286,10 +291,12 @@ int _XConnectDisplay (display_name, fullnamep, dpynump, screenp,
      * Set close-on-exec so that programs that fork() doesn't get confused.
      */
 
+#ifdef F_SETFD
 #ifdef FD_CLOEXEC
     (void) fcntl (fd, F_SETFD, FD_CLOEXEC);
 #else
     (void) fcntl (fd, F_SETFD, 1);
+#endif
 #endif
 
     /*
@@ -337,6 +344,7 @@ int _XConnectDisplay (display_name, fullnamep, dpynump, screenp,
  *                                                                           *
  *****************************************************************************/
 
+#ifndef WIN32
 #ifdef DNETCONN				/* stupid makedepend */
 #define NEED_BSDISH
 #endif
@@ -345,6 +353,7 @@ int _XConnectDisplay (display_name, fullnamep, dpynump, screenp,
 #endif
 #ifdef TCPCONN
 #define NEED_BSDISH
+#endif
 #endif
 
 #ifdef NEED_BSDISH			/* makedepend can't handle #if */
@@ -527,9 +536,16 @@ static int MakeTCPConnection (phostname, idisplay, retries,
     char *cp;				/* character pointer iterator */
     int fd;				/* file descriptor to return */
     int len;				/* length tmp variable */
+#ifdef WIN32
+    static WSADATA wsadata;
+#endif
 
 #define INVALID_INETADDR ((unsigned long) -1)
 
+#ifdef WIN32
+    if (!wsadata.wVersion && WSAStartup(MAKEWORD(1,1), &wsadata))
+	return -1;
+#endif
     if (!phostname) {
 	hostnamebuf[0] = '\0';
 	(void) _XGetHostname (hostnamebuf, sizeof hostnamebuf);
@@ -605,7 +621,7 @@ static int MakeTCPConnection (phostname, idisplay, retries,
 #ifdef TCP_NODELAY
 	{
 	    int tmp = 1;
-	    setsockopt (fd, IPPROTO_TCP, TCP_NODELAY, &tmp, sizeof (int));
+	    setsockopt (fd, IPPROTO_TCP, TCP_NODELAY, (char *)&tmp, sizeof (int));
 	}
 #endif
 
@@ -614,10 +630,16 @@ static int MakeTCPConnection (phostname, idisplay, retries,
 	 * been reached, then ECONNREFUSED will be returned.
 	 */
 	if (connect (fd, addr, addrlen) < 0) {
+#ifdef WIN32
+	    int olderrno = WSAGetLastError();
+#else
 	    int olderrno = errno;
+#endif
 	    (void) close (fd);
 	    if (olderrno != ECONNREFUSED || retries <= 0) {
+#ifndef WIN32
 		errno = olderrno;
+#endif
 		return -1;
 	    }
 	    sleep (1);
@@ -730,6 +752,9 @@ _XSendClientPrefix (dpy, client, auth_proto, auth_string)
     /*
      * Set the connection non-blocking since we use select() to block.
      */
+#ifdef WIN32
+    WinSockSetNonblocking(dpy->fd);
+#else
     /* ultrix reads hang on Unix sockets, hpux reads fail */
 #if defined(O_NONBLOCK) && (!defined(ultrix) && !defined(hpux) && !defined(AIXV3) && !defined(uniosu))
     (void) fcntl (dpy->fd, F_SETFL, O_NONBLOCK);
@@ -748,6 +773,7 @@ _XSendClientPrefix (dpy, client, auth_proto, auth_string)
     }
 #else
     (void) fcntl (dpy->fd, F_SETFL, FNDELAY);
+#endif
 #endif
 #endif
 #endif
