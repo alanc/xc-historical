@@ -1,4 +1,4 @@
-/* $XConsortium: Toggle.c,v 1.20 91/01/06 16:08:43 rws Exp $ */
+/* $XConsortium: Toggle.c,v 1.21 91/02/17 16:37:20 converse Exp $ */
 
 /*
  * Copyright 1989 Massachusetts Institute of Technology
@@ -50,10 +50,6 @@
 
 /* Private Data */
 
-/* This is a hack, see the comments in ClassInit(). */
-
-extern XtActionList xaw_command_actions_list;
-
 /* 
  * The order of toggle and notify are important, as the state has
  * to be set when we call the notify proc.
@@ -77,7 +73,6 @@ static XtResource resources[] = {
 
 #undef offset
 
-/* Action proceedures retrieved from the command widget */
 
 static void Toggle(), Initialize(), Notify(), ToggleSet();
 static void ToggleDestroy(), ClassInit();
@@ -143,8 +138,8 @@ ToggleClassRec toggleClassRec = {
     0                                     /* field not used    */
   },  /* CommmandClass fields initialization */
   {
-      NULL,			        /* Set Proceedure. */
-      NULL,			        /* Unset Proceedure. */
+      NULL,			        /* Set Procedure. */
+      NULL,			        /* Unset Procedure. */
       NULL			        /* extension. */
   }  /* ToggleClass fields initialization */
 };
@@ -162,45 +157,33 @@ static void
 ClassInit()
 {
   XtActionList actions;
+  Cardinal num_actions;
   Cardinal i;
   ToggleWidgetClass class = (ToggleWidgetClass) toggleWidgetClass;
 
   XawInitializeWidgetSet();
 
-/* actions = SuperClass->core_class.actions; */
-
-/* The actions table should really be retrieved from the toggle widget's
- * Superclass, but this information is munged by the R3 intrinsics so the
- * I have hacked the Athena command widget to export its action table
- * as a global variable.
- *
- * Chris D. Peterson 12/28/88.
- */
-
-   actions = xaw_command_actions_list;
-
 /* 
  * Find the set and unset actions in the command widget's action table. 
  */
 
-  for (i = 0 ; i < SuperClass->core_class.num_actions ; i++) {
+  XtGetActionList(commandWidgetClass, &actions, &num_actions);
+
+  for (i = 0 ; i < num_actions ; i++) {
     if (streq(actions[i].string, "set"))
 	class->toggle_class.Set = actions[i].proc;
     if (streq(actions[i].string, "unset")) 
 	class->toggle_class.Unset = actions[i].proc;
 
     if ( (class->toggle_class.Set != NULL) &&
-	 (class->toggle_class.Unset != NULL) ) return;
+	 (class->toggle_class.Unset != NULL) ) {
+	XtFree((char *) actions);
+	return;
+    }
   }  
 
 /* We should never get here. */
-  if (class->toggle_class.Set == NULL)
-    XtWarning(
-     "Toggle could not find action Proceedure Set() in the Command Widget.");
-  if (class->toggle_class.Unset == NULL)
-    XtWarning(
-     "Toggle could not find action Proceedure Unset() in the Command Widget.");
-  XtError("Aborting, due to errors in Toggle widget.");
+  XtError("Aborting, due to errors resolving bindings in the Toggle widget.");
 }
 
 static void Initialize(request, new)
