@@ -1,9 +1,9 @@
-# $Header: Imakefile,v 1.8 88/05/11 13:47:28 swick Exp $
+# $Header: Imakefile,v 1.9 88/08/08 17:31:38 keith Exp $
     STD_DEFINES = LibraryDefines
     CDEBUGFLAGS = LibraryCDebugFlags
        INCLUDES = -I$(TOP) -I$(INCLUDESRC) -I$(XLIBSRC) -I../include
-           SRCS = XFillZoids.c XBezier.c XPlxVideo.c
-           OBJS = XFillZoids.o XBezier.o XPlxVideo.o
+           SRCS = XFillZoids.c XBezier.c XPlxVideo.c XTestExt1.c
+           OBJS = XFillZoids.o XBezier.o XPlxVideo.o XTestExt1.o
        LINTLIBS = $(LINTXLIB)
 
 #if DebugLibXext && ProfileLibXext
