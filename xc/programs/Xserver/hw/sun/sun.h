@@ -1,5 +1,5 @@
 
-/* $XConsortium: sun.h,v 5.31 93/11/19 09:43:47 kaleb Exp $ */
+/* $XConsortium: sun.h,v 5.32 93/12/13 11:12:50 dpw Exp $ */
 
 /*-
  * Copyright (c) 1987 by the Regents of the University of California
@@ -37,14 +37,16 @@ extern char *getenv();
 #include <sys/filio.h>
 #include <sys/ioctl.h>
 #include <sys/resource.h>
-#if !defined(SVR4) || defined(_POSIX_SOURCE)
+#ifdef SVR4
+#ifdef X_POSIX_C_SOURCE
+#define _POSIX_C_SOURCE X_POSIX_C_SOURCE
 #include <signal.h>
+#undef _POSIX_C_SOURCE
 #else
 #define _POSIX_SOURCE
-#define _POSIX_C_SOURCE 3
-# include <signal.h>
+#include <signal.h>
 #undef _POSIX_SOURCE
-#undef _POSIX_C_SOURCE
+#endif
 #endif
 #include <fcntl.h>
 #ifndef i386
