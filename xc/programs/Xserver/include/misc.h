@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: misc.h,v 1.43 87/09/11 07:49:51 rws Locked $ */
+/* $Header: misc.h,v 1.44 87/10/07 17:33:57 rws Locked $ */
 #ifndef MISC_H
 #define MISC_H 1
 /*
@@ -102,6 +102,5 @@ typedef int ATOM;
 
 typedef struct _DDXPoint *DDXPointPtr;
 typedef struct _Box *BoxPtr;
-typedef struct _Rectangle *RectanglePtr;
 
 #endif /* MISC_H */
