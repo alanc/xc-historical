@@ -1,9 +1,5 @@
-			  X Window System Bug Report
-			Send to xbugs@expo.lcs.mit.edu
-
-PLEASE make your Subject: line as descriptive as possible!
-
-----cut here----
+To: xbugs@expo.lcs.mit.edu
+Subject: AREA: SYNOPSIS   [replace with actual area and short description]
 
 VERSION:
     R5beta
@@ -22,15 +18,29 @@ COMPILER:
 
 AREA:
     [e.g. server, Xlib, Xt, Xaw, PEX, twm, xterm, xmh, config, ...]
+    [Please only one area per bug report.]
 
 SYNOPSIS:
     [brief description of the problem and where it is located]
 
 DESCRIPTION:
-    [detailed description]
+    [detailed description of problem.  If this is a request for an
+     enhancement, justify it.]
 
 REPEAT BY:
-    [what you did to get the error; include test program if at all possible]
+    [What you did to get the error; include test program or session
+     transcript if at all possible.  Be specific; if we can't
+     reproduce it, we can't fix it.  Bug reports without a clear,
+     deterministic way of reproducing them will be fixed only after
+     all bug reports that do.]
 
 SAMPLE FIX:
-    [preferred, but not necessary.  Please send context diffs (diff -c)]
+    [preferred, but not necessary.  Please send context diffs (diff -c).
+     Be sure to include our "$XConsortium" ident line in any diffs.  The
+     best way to do this is to add your own versioning line immediately
+     after ours.]
+
+[PLEASE make your Subject: line as descriptive as possible.
+ Subjects like "xterm bug" or "bug report" are not helpful!]
+[Remove all the explanatory text in brackets before mailing.]
+[Send to xbugs@expo.lcs.mit.edu]
