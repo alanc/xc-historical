@@ -1,7 +1,7 @@
 #ifndef lint
-static char rcsid[] = "$Header: Composite.c,v 1.3 88/02/03 09:04:46 swick Exp $";
+static char rcsid[] = "$xHeader: Composite.c,v 1.5 88/08/31 09:47:37 swick Exp $";
+/* $oHeader: Composite.c,v 1.2 88/08/18 15:35:39 asente Exp $ */
 #endif lint
-
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -27,19 +27,17 @@ SOFTWARE.
 
 ******************************************************************/
 
-
 #define COMPOSITE
 #include "IntrinsicI.h"
-#include "Resource.h"
 #include "StringDefs.h"
 
-static void CompositeClassPartInitialize();
-static void CompositeInitialize();
-static void CompositeInsertChild();
-static void CompositeDeleteChild();
-static void CompositeDestroy();
+void CompositeClassPartInitialize();
+void CompositeInitialize();
+void CompositeInsertChild();
+void CompositeDeleteChild();
+void CompositeDestroy();
 
-globaldef CompositeClassRec compositeClassRec = {
+externaldef(compositeclassrec) CompositeClassRec compositeClassRec = {
   { /******* CorePart *******/
     /* superclass	    */	&widgetClassRec,
     /* class_name	    */	"Composite",
@@ -70,72 +68,77 @@ globaldef CompositeClassRec compositeClassRec = {
     /* version		    */	XtVersion,
     /* callback_offsets     */  NULL,
     /* tm_table		    */  NULL,
+    /* query_geometry	    */  NULL,
+    /* display_accelerator  */	NULL,
+    /* extension	    */  NULL
   },
   { /**** CompositePart *****/
     /* geometry_handler     */  NULL,
     /* change_managed       */  NULL,
     /* insert_child	    */  CompositeInsertChild,
     /* delete_child	    */  CompositeDeleteChild,
-    /* move_focus_to_next   */  NULL,
-    /* move_focus_to_prev   */  NULL
+    /* extension	    */  NULL
     }
 };
 
-globaldef WidgetClass compositeWidgetClass = (WidgetClass) &compositeClassRec;
+externaldef(compositewidgetclass) WidgetClass compositeWidgetClass = (WidgetClass) &compositeClassRec;
 
-
-static void CompositeClassPartInitialize(widgetClass)
+void CompositeClassPartInitialize(widgetClass)
 	WidgetClass widgetClass;
 {
-    register CompositeWidgetClass wc = (CompositeWidgetClass) widgetClass;
-    register CompositeWidgetClass super =
+    register CompositePartPtr wcPtr;
+    register CompositePartPtr superPtr;
+
+    if (_XtClassIsSubclass(widgetClass,compositeWidgetClass)) {
+        wcPtr =  (CompositePartPtr)&(((CompositeWidgetClass)widgetClass)
+                           ->composite_class);
+        superPtr = (CompositePartPtr)&(((CompositeWidgetClass)widgetClass
+            ->core_class.superclass)->composite_class);
+    }
+    else /* gadget composite */ {
+        wcPtr = (CompositePartPtr)&(((CompositeObjectClass)widgetClass)
+                           ->composite_class);
+        superPtr = (CompositePartPtr)&(((CompositeObjectClass)widgetClass
+            ->core_class.superclass)->composite_class);
+    };
+/*    register CompositeWidgetClass wc = (CompositeWidgetClass) widgetClass;
+      register CompositeWidgetClass super =
 	    (CompositeWidgetClass) wc->core_class.superclass;
+*/
+
 
     /* We don't need to check for null super since we'll get to composite
        eventually, and it had better define them!  */
 
-    if (wc->composite_class.geometry_manager == XtInheritGeometryManager) {
-	wc->composite_class.geometry_manager =
-		super->composite_class.geometry_manager;
+    if (wcPtr->geometry_manager == XtInheritGeometryManager) {
+	wcPtr->geometry_manager =
+		superPtr->geometry_manager;
     }
 
-    if (wc->composite_class.change_managed == XtInheritChangeManaged) {
-	wc->composite_class.change_managed =
-		super->composite_class.change_managed;
+    if (wcPtr->change_managed == XtInheritChangeManaged) {
+	wcPtr->change_managed =
+		superPtr->change_managed;
     }
 
-    if (wc->composite_class.insert_child == XtInheritInsertChild) {
-	wc->composite_class.insert_child = super->composite_class.insert_child;
+    if (wcPtr->insert_child == XtInheritInsertChild) {
+	wcPtr->insert_child = superPtr->insert_child;
     }
 
-    if (wc->composite_class.delete_child == XtInheritDeleteChild) {
-	wc->composite_class.delete_child = super->composite_class.delete_child;
+    if (wcPtr->delete_child == XtInheritDeleteChild) {
+	wcPtr->delete_child = superPtr->delete_child;
     }
 
-    if (wc->composite_class.move_focus_to_next == 
-	    XtInheritMoveFocusToNext) {
-	wc->composite_class.move_focus_to_next =
-		super->composite_class.move_focus_to_next;
-    }
-
-    if (wc->composite_class.move_focus_to_prev ==
-	    XtInheritMoveFocusToPrev) {
-	wc->composite_class.move_focus_to_prev =
-		super->composite_class.move_focus_to_prev;
-    }
 }
 
-static void CompositeDestroy(w)
+void CompositeDestroy(w)
     CompositeWidget	w;
 {
     XtFree((char *) w->composite.children);
 }
 
 /*ARGSUSED*/
-static void CompositeInsertChild(w, args, num_argsP)
+void CompositeInsertChild(w)
     Widget	w;
-    ArgList	args;
-    Cardinal	*num_argsP;
 {
     register Cardinal	     position;
     register Cardinal        i;
@@ -165,7 +168,7 @@ static void CompositeInsertChild(w, args, num_argsP)
     cw->composite.num_children++;
 }
 
-static void CompositeDeleteChild(w)
+ void CompositeDeleteChild(w)
     Widget	w;
 {
     register Cardinal	     position;
@@ -189,7 +192,7 @@ static void CompositeDeleteChild(w)
 }
 
 /* ARGSUSED */
-static void CompositeInitialize(requested_widget, new_widget)
+void CompositeInitialize(requested_widget, new_widget)
     Widget   new_widget, requested_widget;
 {
     register CompositeWidget cw;
@@ -197,7 +200,6 @@ static void CompositeInitialize(requested_widget, new_widget)
     cw = (CompositeWidget) new_widget;
     cw->composite.insert_position = NULL;
     cw->composite.num_children = 0;
-    cw->composite.num_mapped_children = 0;
     cw->composite.children = NULL;
     cw->composite.num_slots = 0;
 }
