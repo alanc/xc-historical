@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XMacros.c,v 11.17 87/09/08 13:06:44 newman Locked $ */
+/* $Header: XMacros.c,v 11.18 87/09/11 17:24:30 newman Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1987	*/
 
 #include "Xlibint.h"
@@ -93,6 +93,14 @@ int XBitmapBitOrder(dpy) Display *dpy; { return (BitmapBitOrder(dpy)); }
 int XBitmapPad(dpy) Display *dpy; { return (BitmapPad(dpy)); }
 
 int XImageByteOrder(dpy) Display *dpy; { return (ImageByteOrder(dpy)); }
+
+unsigned long XNextRequest(dpy)
+    Display *dpy;
+    { return (NextRequest(dpy)); }
+
+unsigned long XLastKnownRequestProcessed(dpy)
+    Display *dpy;
+    { return (LastKnownRequestProcessed(dpy)); }
 
 /* screen oriented macros (toolkit) */
 Screen *XScreenOfDisplay(dpy, scr) Display *dpy; int scr;
