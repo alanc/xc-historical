@@ -3,8 +3,8 @@
 
 SUBDIRS = \
 	appres bitmap listres oclock twm xauth xbiff xcalc xclipboard xclock \
-	xditview xdm xdpyinfo xedit xfd xhost xinit xkill \
- 	xload xlogo xlsclients xlsfonts xlswins xmag xman xmessage xmh \
+	xditview xdm xdpyinfo xedit xfd xhost xinit xkill xload xlogo \
+	xlsatoms xlsclients xlsfonts xlswins xmag xman xmessage xmh \
 	xmodmap xpr xprop xrdb xrefresh \
  	xset xsetroot xstdcmap xterm xwd xwininfo xwud
 
