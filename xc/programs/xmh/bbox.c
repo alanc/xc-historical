@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: bbox.c,v 1.10 88/01/07 16:52:26 swick Exp $";
+static char rcs_id[] = "$Header: bbox.c,v 1.11 88/01/08 10:57:51 swick Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -372,8 +372,9 @@ ButtonBox buttonbox;
 void BBoxLockSize(buttonbox)
 ButtonBox buttonbox;
 {
-    buttonbox->maxheight = GetHeight((Widget) buttonbox->inner);
+    buttonbox->maxheight = GetHeight(buttonbox->inner);
     XtPanedSetMinMax(buttonbox->outer, 5, buttonbox->maxheight);
+    XtManageChild(buttonbox->inner);
     buttonbox->fullsized = FALSE;
 }
 
