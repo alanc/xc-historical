@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Display.c,v 1.27 89/09/19 09:21:21 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Display.c,v 1.28 89/09/19 20:14:19 swick Exp $";
 /* $oHeader: Display.c,v 1.9 88/09/01 11:28:47 asente Exp $ */
 #endif /*lint*/
 
@@ -124,7 +124,7 @@ Display *XtOpenDisplay(app, displayName, applName, className,
 {
 	char  displayCopy[256];
 	int i;
-	char *ptr, *rindex(), *index(), *strncpy();
+	char *rindex(), *index(), *strncpy();
 	Display *d;
 #ifdef OLDCOLONDISPLAY
 	int squish = -1;
@@ -132,12 +132,6 @@ Display *XtOpenDisplay(app, displayName, applName, className,
 #endif
 	int min_display_len = 0;
 	int min_name_len = 0;
-
-	if (applName == NULL) {
-	    ptr = rindex(argv[0], '/');
-	    if (ptr) applName = ++ptr;
-	    else applName = argv[0];
-	}
 
 	/*
 	   Find the display name and open it
@@ -191,6 +185,18 @@ Display *XtOpenDisplay(app, displayName, applName, className,
 	
 	d = XOpenDisplay(displayName);
 
+	if (applName == NULL) {
+	    extern char* getenv();
+	    if ((applName = getenv("RESOURCE_NAME")) == NULL) {
+		if (*argc > 0 && argv[0] != NULL) {
+		    char *ptr = rindex(argv[0], '/');
+		    if (ptr) applName = ++ptr;
+		    else applName = argv[0];
+		} else
+		    applName = "main";
+	    }
+	}
+
 	if (d != NULL) {
 	    XtDisplayInitialize(app, d, applName, className,
 		    urlist, num_urs, argc, argv);
@@ -227,10 +233,11 @@ XtDisplayInitialize(app, dpy, name, classname, urlist, num_urs, argc, argv)
 	pd->GClist = NULL;
 	pd->drawables = NULL;
 	pd->drawable_count = 0;
+	pd->rv = False;
 	_XtHeapInit(&pd->heap);
 
-	_XtDisplayInitialize(dpy, app, name, classname, urlist, 
-		num_urs, argc, argv);
+	_XtDisplayInitialize(dpy, pd, name, classname, urlist, 
+			     num_urs, argc, argv);
 }
 
 XtAppContext XtCreateApplicationContext()
@@ -252,7 +259,7 @@ XtAppContext XtCreateApplicationContext()
 	app->action_table = NULL;
 	_XtSetDefaultSelectionTimeout(&app->selectionTimeout);
 	_XtSetDefaultConverterTable(&app->converterTable);
-	app->sync = app->rv = app->being_destroyed = app->error_inited = FALSE;
+	app->sync = app->being_destroyed = app->error_inited = FALSE;
 	app->fds.nfds = app->fds.count = 0;
 	FD_ZERO(&app->fds.rmask);
 	FD_ZERO(&app->fds.wmask);
