@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Intrinsic.c,v 1.142 89/11/14 17:28:52 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Intrinsic.c,v 1.143 89/12/12 18:56:02 swick Exp $";
 /* $oHeader: Intrinsic.c,v 1.4 88/08/18 15:40:35 asente Exp $ */
 #endif /* lint */
 
@@ -279,6 +279,9 @@ static void UnrealizeWidget(widget)
 	/* is unrealized. XtUnrealize widget makes sure the "top" widget */
 	/* is unmanaged, we can ignore all descendents */
     }
+
+    if (XtHasCallbacks(widget, XtNunrealizeCallback) == XtCallbackHasSome)
+	XtCallCallbacks(widget, XtNunrealizeCallback, NULL);
 
     /* Unregister window */
     _XtUnregisterWindow(XtWindow(widget), widget);
