@@ -55,11 +55,14 @@ borderPixmap	Pixmap	Pixmap		XtUnspecifiedPixmap
 borderWidth	BorderWidth	Dimension		1
 colormap	Colormap	Pointer		Parent's Colormap
 cursor	Cursor	Cursor		None
+cursorName	Cursor	String		NULL
 depth	Depth	int	C	Parent's Depth
 destroyCallback	Callback	XtCallbackList		NULL
 height	Height	Dimension		0
 insensitiveBorder	Insensitive	Pixmap		GreyPixmap
 mappedWhenManaged	MappedWhenManaged	Boolean		True
+pointerColor	Foreground	Pixel		XtDefaultForeground
+pointerColorBackground	Background	Pixel		XtDefaultBackground
 screen	Screen	Pointer	R	Parent's Screen
 sensitive	Sensitive	Boolean		True
 translations	Translations	TranslationTable		NULL
@@ -82,11 +85,14 @@ _
 .Bw
 .Cm
 .Cu Bold
+.Pn Bold
 .Dp
 .Dc
 .Hw
 .Ib Bold
 .Mm
+.Pf Bold
+.Pb Bold
 .Sc
 .Se
 .Tr
