@@ -8,13 +8,27 @@ xload - load average display for X
 The 
 .I xload 
 program displays a periodically updating histogram of the system load average.
-This program is nothing more than a wrapper around the Athena Load widget.
 .SH OPTIONS
 .PP
 .I Xload
 accepts all of the standard X Toolkit command line options along with the 
 following additional options:
 .PP
+.TP 8
+.B \-hl \fIcolor\fP or \-highlight \fIcolor\fP
+This option specifies the color of the scale lines.  
+.TP 8
+.B \-jumpscroll \FPnumber of pixels\fP
+The number of pixels to shift the graph to the left when the graph
+reaches the right edge of the window.  The default value is 1/2 the width
+of the current window.  Smooth scrolling can be acheived by setting it to 1.
+.TP 8
+.B \-label \fIstring\fP
+The string to put into the label above the load average.
+.TP 8
+.B \-nolabel
+If this command line option is specified then no label will be
+displayed above the load graph.
 .TP 8
 .B \-scale \fIinteger\fP
 This option specifies the minimum number of tick marks in the histogram,
@@ -24,15 +38,9 @@ use fewer than this number.  The default is 1.
 .PP
 .TP 8
 .B \-update \fIseconds\fP
-This option specifies the frequency in seconds at which
-.I xload
-updates its display.  If the load average window is uncovered (by moving 
-windows with a window manager or by the \fIxrefresh\fP program), the graph
-will be also be updated.  The minimum amount of time allowed between updates
-is 5 seconds (which is also the default).
-.TP 8
-.B \-hl \fIcolor\fP
-This option specifies the color of the label and scale lines.  
+This option specifies the frequency in seconds at which \fIxload\fP
+updates its display.  The minimum amount of time allowed between updates
+is 1 second (the default is 5 seconds).
 .PP
 The following standard X Toolkit arguments are commonly used
 with \fIxload\fP:
@@ -86,54 +94,59 @@ This program uses the
 widget in the X Toolkit.  It understands all of the core resource names and
 classes as well as:
 .TP 8
-.B width (\fPclass\fB Width)
-Specifies the width of the load average graph.
-.TP 8
-.B height (\fPclass\fB Height)
-Specifies the height of the load average graph.
-.TP 8
-.B update (\fPclass\fB Interval)
-Specifies the frequency in seconds at which the load should be redisplayed.
-.TP 8
-.B scale (\fPclass\fB Scale)
-Specifies the initial number of ticks on the graph.  The default is 1.
-.TP 8
-.B minScale (\fPclass\fB Scale)
-Specifies the minimum number of ticks that will be displayed.  The default
-is 1.
+.B font (\fPclass\fB Font)
+Specifies the font to be used for the label.  The default is \fIfixed\fP.
 .TP 8
 .B foreground (\fPclass\fB Foreground)
 Specifies the color for the graph.  
 The default is \fIblack\fP since the core default for background 
 is \fIwhite\fP.
 .TP 8
+.B height (\fPclass\fB Height)
+Specifies the height of the load average graph.
+.TP 8
 .B highlight (\fPclass\fB Foreground)
-Specifies the color for the text and scale lines.  The default is the same
+Specifies the color for the scale lines.  The default is the same
 as for the \fBforeground\fP resource.
 .TP 8
 .B label (\fPclass\fB Label)
 Specifies the label to use on the graph.  The default is the hostname.
 .TP 8
-.B font (\fPclass\fB Font)
-Specifies the font to be used for the label.  The default is \fIfixed\fP.
+.B Label*foreground (\fPclass\fB Label*Foreground)
+Specifies the color for the label.   The default is the same
+as for the \fBforeground\fP resource.
+.TP 8
+.B minScale (\fPclass\fB Scale)
+Specifies the minimum number of ticks that will be displayed.  The default
+is 1.
+.TP 8
+.B jumpScroll (\fPclass\fB JumpScroll)
+The number of pixels to shift the graph to the left when the graph
+reaches the right edge of the window.  The default value is 1/2 the width
+of the current window.  Smooth scrolling can be acheived by setting
+this resource to a value of 1.
 .TP 8
 .B reverseVideo (\fPclass\fB ReverseVideo)
 Specifies that the foreground and background should be reversed.
+.TP 8
+.B showLabel (\fPclass\fB Boolean)
+If False then no label will be displayed.
+.TP 8
+.B update (\fPclass\fB Interval)
+Specifies the frequency in seconds at which the load should be redisplayed.
+.TP 8
+.B width (\fPclass\fB Width)
+Specifies the width of the load average graph.
 .SH SEE ALSO
-X(1), xrdb(1), mem(4), Athena Load widget
-.SH DIAGNOSTICS
-Unable to open display or create window. Unable to open /dev/kmem.
-Unable to query window for dimensions. Various X errors.
+X(1), xrdb(1), mem(4), Athena StripChart Widget.
 .SH BUGS
 This program requires the ability to open and read the special system
 file \fI/dev/kmem\fP.  Sites that do not allow general access to this file
 should make \fIxload\fP belong to the same group as \fI/dev/kmem\fP and
 turn on the \fIset group id\fP permission flag.
 .PP
-Reading /dev/kmem is inherently non-portable.  Therefore, the widget upon
-which this application is based must be ported to each new operating system.
-.PP
-Border color has to be explicitly specified when reverse video is used.
+Reading /dev/kmem is inherently non-portable.  Therefore, the routine
+used to read it must be ported to each new operating system. 
 .SH COPYRIGHT
 Copyright 1988, Massachusetts Institute of Technology.
 .br
@@ -142,4 +155,4 @@ See \fIX(1)\fP for a full statement of rights and permissions.
 K. Shane Hartman (MIT-LCS) and Stuart A. Malone (MIT-LCS);
 .br
 with features added by Jim Gettys (MIT-Athena), Bob Scheifler (MIT-LCS),
-and Tony Della Fera (MIT-Athena)
+Tony Della Fera (MIT-Athena), and Chris Peterson (MIT-LCS).
