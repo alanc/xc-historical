@@ -1,4 +1,4 @@
-/* $XConsortium: PEX.h,v 5.5 91/11/15 19:46:06 hersh Exp $ */
+/* $XConsortium: PEX.h,v 5.6 92/03/04 14:07:57 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -692,6 +692,8 @@ SOFTWARE.
 
 #define PEXPWReqBufferMode	32
 #define PEXPWCurBufferMode	33
+
+#define PEXMaxPWIndex		33
 
 /* Indices for GetDynamics */
 #define PEXPWDViewRep			 0
