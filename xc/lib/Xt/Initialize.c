@@ -28,7 +28,7 @@ static char rcsid[] = "$Header: Initialize.c,v 1.98 88/02/02 15:13:15 swick Lock
 
 #include <pwd.h>
 #include <stdio.h>
-#include <strings.h>
+#include <X/Xos.h>
 #include <sys/param.h>
 
  /* Xlib definitions  */
