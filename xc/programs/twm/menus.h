@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.h,v 1.20 89/11/06 14:10:09 jim Exp $
+ * $XConsortium: menus.h,v 1.21 89/11/10 15:54:35 jim Exp $
  *
  * twm menus include file
  *
@@ -52,10 +52,10 @@ typedef struct MenuItem
     struct MenuRoot *root;	/* back pointer to my MenuRoot */
     char *item;			/* the character string displayed */
     char *action;		/* action to be performed */
-    unsigned fore;		/* foreground color */
-    unsigned back;		/* background color */
-    unsigned hi_fore;		/* highlight foreground */
-    unsigned hi_back;		/* highlight background */
+    unsigned long fore;		/* foreground color */
+    unsigned long back;		/* background color */
+    unsigned long hi_fore;	/* highlight foreground */
+    unsigned long hi_back;	/* highlight background */
     short item_num;		/* item number of this menu */
     short x;			/* x coordinate for text */
     short func;			/* twm built in function */
