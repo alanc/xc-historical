@@ -1,4 +1,4 @@
-/* $XConsortium: imDefIc.c,v 1.10 94/07/06 14:46:49 kaleb Exp kaleb $ */
+/* $XConsortium: imDefIc.c,v 1.11 94/08/02 12:44:21 kaleb Exp kaleb $ */
 /******************************************************************
 
            Copyright 1991, 1992 by Sun Microsystems, Inc.
@@ -293,7 +293,7 @@ _XimProtoGetICValues(xic, arg)
     CARD16		*buf_s;
     INT16		 len;
     char		 reply[BUFSIZE];
-    XPointer		 preply;
+    XPointer		 preply = NULL;
     int			 buf_size;
     int			 ret_code;
     char		*makeid_name;
@@ -397,6 +397,10 @@ _XimProtoGetICValues(xic, arg)
 	data = &buf_s[4];
 	data_len = buf_s[2];
     }
+    else {
+	return arg->name;
+    }
+
     decode_name = _XimDecodeICATTRIBUTE(ic, ic->private.proto.ic_resources,
 			ic->private.proto.ic_num_resources, data, data_len,
 			arg, XIM_GETICVALUES);
@@ -671,7 +675,7 @@ _XimProtoSetICValues(xic, arg)
     int			 total;
     XIMArg		*arg_ret;
     char		 reply[BUFSIZE];
-    XPointer		 preply;
+    XPointer		 preply = NULL;
     int			 ret_code;
     BITMASK32		 flag = 0L;
     char		*name;
@@ -737,8 +741,12 @@ _XimProtoSetICValues(xic, arg)
     }
     _XimSetCurrentICValues(ic, &ic_values);
 
-    if (!total)
-	return (char *)NULL;
+    if (!total) {
+	if(arg)
+	    return arg->name;
+	else
+	    return (char *)NULL;
+    }
 
     buf_s = (CARD16 *)&buf[XIM_HEADER_SIZE];
 
