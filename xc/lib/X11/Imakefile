@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.163 93/10/08 14:47:02 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.164 93/10/11 09:55:47 rws Exp $
 #define DoNormalLib NormalLibX11
 #define DoSharedLib SharedLibX11
 #define DoDebugLib DebugLibX11
@@ -60,7 +60,8 @@ XBSDLIB = /**/
 #endif
 
         DEFINES = $(MALLOC_DEFINES) $(MTX_DEFINES)
- DEPEND_DEFINES = -I$(EXTINCSRC) $(MTT_DEFINES) $(K5INCL) $(K5DEFS)
+   OPEN_DEFINES = -I$(EXTINCSRC) $(MTT_DEFINES) $(K5INCL) $(K5DEFS)
+ DEPEND_DEFINES = $(OPEN_DEFINES)
    INSTALLFLAGS = $(INSTINCFLAGS)
        AUTHOBJS = AuDispose.o AuGetBest.o AuFileName.o AuRead.o
        AUTHSRCS = AuDispose.c AuGetBest.c AuFileName.c AuRead.c
@@ -880,10 +881,10 @@ OBJS = $(OBJS1) $(OBJS2) $(OBJS3)
 SpecialCLibObjectRule(ErrDes,$(ICONFIGFILES),$(EDB_DEFINES))
 SpecialCLibObjectRule(StrKeysym,$(ICONFIGFILES),$(KDB_DEFINES))
 SpecialCLibObjectRule(ConnDis,$(ICONFIGFILES),$(XDMAUTHDEFS) $(RPCDEFS) $(CONN_DEFINES) $(SOCK_DEFINES) $(POLL_DEFINES) $(K5INCL) $(K5DEFS))
-SpecialCLibObjectRule(OpenDis,$(ICONFIGFILES),$(BC_DEFINES) $(DEPEND_DEFINES))
+SpecialCLibObjectRule(OpenDis,$(ICONFIGFILES),$(BC_DEFINES) $(OPEN_DEFINES))
 SpecialCLibObjectRule(Wrap,$(ICONFIGFILES),$(XDMAUTHDEFS))
 SpecialCLibObjectRule(Xstreams,$(ICONFIGFILES),$(CONN_DEFINES))
-SpecialCLibObjectRule(XlibInt,$(ICONFIGFILES),$(CONN_DEFINES) $(MTT_DEFINES) $(POLL_DEFINES))
+SpecialCLibObjectRule(XlibInt,$(ICONFIGFILES),-I$(EXTINCSRC) $(CONN_DEFINES) $(MTT_DEFINES) $(POLL_DEFINES))
 SpecialCLibObjectRule(cmsColNm,$(ICONFIGFILES),$(CMS_DEFINES))
 SpecialCLibObjectRule(globals,$(ICONFIGFILES),$(CONN_DEFINES))
 SpecialCLibObjectRule(Context,$(ICONFIGFILES),$(BC_DEFINES))
