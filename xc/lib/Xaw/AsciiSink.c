@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: AsciiSink.c,v 1.5 87/12/02 15:11:37 swick Locked $";
+static char rcsid[] = "$Header: AsciiSink.c,v 1.6 87/12/23 07:47:04 swick Locked $";
 #endif lint
 
 /*
@@ -24,13 +24,13 @@ static char rcsid[] = "$Header: AsciiSink.c,v 1.5 87/12/02 15:11:37 swick Locked
  * ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
  * SOFTWARE.
  */
-#include "Xlib.h"
-#include "Xutil.h"
-#include "Xatom.h"
-#include "Intrinsic.h"
-#include "Text.h"
+#include <X/Xlib.h>
+#include <X/Xutil.h>
+#include <X/Xatom.h>
+#include <X/Intrinsic.h>
+#include <X/Atoms.h>
+#include <X/Text.h>
 #include "TextP.h"
-#include "Atoms.h"
 
 #define GETLASTPOS (*(source->scan))(source, 0, XtstFile, XtsdRight, 1, TRUE)
 /* Private Ascii TextSink Definitions */
@@ -310,7 +310,6 @@ static int AsciiResolveToPosition (w, pos, fromx, width,
   XtTextPosition *leftPos, *rightPos;
 {
     int     resWidth, resHeight;
-    XtTextSink sink = ((TextWidget)w)->text.sink;
     XtTextSource source = ((TextWidget)w)->text.source;
 
     AsciiFindPosition(w, pos, fromx, width, FALSE,
@@ -323,7 +322,7 @@ static int AsciiResolveToPosition (w, pos, fromx, width,
 
 static int AsciiMaxLinesForHeight (w, height)
   Widget w;
-  int height;
+  Dimension height;
 {
     AsciiSinkData *data;
     XtTextSink sink = ((TextWidget)w)->text.sink;
@@ -362,8 +361,8 @@ AsciiSinkInitialize()
 }
 
 
-caddr_t XtAsciiSinkCreate (w, args, num_args)
-    Widget w;
+XtTextSink XtAsciiSinkCreate (parent, args, num_args)
+    Widget	parent;
     ArgList 	args;
     Cardinal 	num_args;
 {
@@ -388,9 +387,9 @@ caddr_t XtAsciiSinkCreate (w, args, num_args)
     sink->maxLines = AsciiMaxLinesForHeight;
     sink->maxHeight = AsciiMaxHeightForLines;
     data = XtNew(AsciiSinkData);
-    sink->data = (int *)data;
+    sink->data = (caddr_t)data;
 
-    XtGetSubresources (w, (caddr_t)data, "subclass", "subclass", 
+    XtGetSubresources (parent, (caddr_t)data, XtNtextSink, XtCTextSink, 
 		       SinkResources, XtNumber(SinkResources),
 		       args, num_args);
 
@@ -401,15 +400,15 @@ caddr_t XtAsciiSinkCreate (w, args, num_args)
     values.font = font->fid;
     values.graphics_exposures = (Bool) FALSE;
     values.foreground = data->foreground;
-    values.background = w->core.background_pixel;
-    data->normgc = XtGetGC(w, valuemask, &values);
-    values.foreground = w->core.background_pixel;
+    values.background = parent->core.background_pixel;
+    data->normgc = XtGetGC(parent, valuemask, &values);
+    values.foreground = parent->core.background_pixel;
     values.background = data->foreground;
-    data->invgc = XtGetGC(w, valuemask, &values);
+    data->invgc = XtGetGC(parent, valuemask, &values);
     values.function = GXxor;
-    values.foreground = data->foreground ^ w->core.background_pixel;
+    values.foreground = data->foreground ^ parent->core.background_pixel;
     values.background = 0;
-    data->xorgc = XtGetGC(w, valuemask, &values);
+    data->xorgc = XtGetGC(parent, valuemask, &values);
 
     wid = -1;
     if ((!XGetFontProperty(font, XA_QUAD_WIDTH, &wid)) || wid <= 0) {
@@ -422,15 +421,14 @@ caddr_t XtAsciiSinkCreate (w, args, num_args)
     if (wid <= 0) wid = 1;
     data->tabwidth = 8 * wid;
     data->font = font;
-    data->insertCursorOn = CreateInsertCursor(XtScreen(w));
+    data->insertCursorOn = CreateInsertCursor(XtScreen(parent));
     data->laststate = XtisOff;
-    return(caddr_t) sink;
+    return sink;
 }
 
-void XtAsciiSinkDestroy (w)
-    Widget w;
+void XtAsciiSinkDestroy (sink)
+    XtTextSink sink;
 {
-    XtTextSink sink = ((TextWidget)w)->text.sink;
     AsciiSinkData *data;
 
     data = (AsciiSinkData *) sink->data;

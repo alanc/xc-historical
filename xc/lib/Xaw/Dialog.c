@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Dialog.c,v 1.2 87/12/20 14:39:22 swick Locked $";
+static char rcsid[] = "$Header: Dialog.c,v 1.3 87/12/23 07:41:03 swick Locked $";
 #endif lint
 /*
  * Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
@@ -36,7 +36,7 @@ static char rcsid[] = "$Header: Dialog.c,v 1.2 87/12/20 14:39:22 swick Locked $"
 #include <X/Atoms.h>
 #include <X/Form.h>
 #include <X/Dialog.h>
-#include <X/Text.h>
+#include <X/AsciiText.h>
 #include <X/Command.h>
 #include <X/Label.h>
 #include "FormP.h"
@@ -52,7 +52,7 @@ XtResource resources[] = {
      XtOffset(DialogWidget, dialog.max_length), XrmRString, "256"}
 };
 
-static void ClassInitialize(), Initialize(), ConstraintInitialize();
+static void Initialize(), ConstraintInitialize();
 static Boolean SetValues();
 
 DialogClassRec dialogClassRec = {
@@ -60,7 +60,7 @@ DialogClassRec dialogClassRec = {
     /* superclass         */    (WidgetClass) &formClassRec,
     /* class_name         */    "Dialog",
     /* widget_size        */    sizeof(DialogRec),
-    /* class_initialize   */    ClassInitialize,
+    /* class_initialize   */    NULL,
     /* class_inited       */    FALSE,
     /* initialize         */    Initialize,
     /* realize            */    XtInheritRealize,
@@ -89,9 +89,9 @@ DialogClassRec dialogClassRec = {
     /* move_focus_to_prev */   NULL
   },
   { /* constraint_class fields */
-    /* subresourses       */   formConstraintResources,
+    /* subresourses       */   NULL,
     /* subresource_count  */   0,
-    /* constraint_size    */   sizeof(FormConstraintsRec),
+    /* constraint_size    */   sizeof(DialogConstraintsRec),
     /* initialize         */   ConstraintInitialize,
     /* destroy            */   NULL,
     /* set_values         */   NULL
@@ -105,13 +105,6 @@ DialogClassRec dialogClassRec = {
 };
 
 WidgetClass dialogWidgetClass = (WidgetClass)&dialogClassRec;
-
-
-static void ClassInitialize()
-{
-    dialogClassRec.constraint_class.num_resources =
-       formConstraintResourceCount;
-}
 
 
 /* ARGSUSED */
@@ -151,8 +144,8 @@ Cardinal num_args;
 	text_args[1].value = (XtArgVal)dw->dialog.value;
 	text_args[2].value = (XtArgVal)length;
 	text_args[3].value = (XtArgVal)dw->dialog.labelW;
-	dw->dialog.valueW = XtTextStringCreate( new, text_args,
-					        XtNumber(text_args) );
+	dw->dialog.valueW = XtCreateWidget("value",asciiStringWidgetClass,new,
+					   text_args, XtNumber(text_args) );
 	*childP++ = dw->dialog.valueW;
 #ifdef notdef
 	static int grabfocus;
@@ -186,16 +179,18 @@ Cardinal num_args;
 {
     DialogWidget dw = (DialogWidget)new->core.parent;
     WidgetList children = dw->composite.children;
-    FormConstraints form = (FormConstraints)new->core.constraints;
+    DialogConstraints constraint = (DialogConstraints)new->core.constraints;
     Widget *childP;
 
-    if (dw->composite.num_children == 0		/* is labelW? */
+    if (dw->composite.num_children == 0			/* is labelW? */
 	|| (dw->composite.num_children == 1 &&
-	    XtClass(new) == textWidgetClass))	/* or valueW? */
+	    XtClass(new) == asciiStringWidgetClass))	/* or valueW? */
       return;					/* then just use defaults */
 
-    form->left = form->right = XtChainLeft;
-    form->vert_base = dw->dialog.valueW ? dw->dialog.valueW :dw->dialog.labelW;
+    constraint->form.left = constraint->form.right = XtChainLeft;
+    constraint->form.vert_base = dw->dialog.valueW
+				 ? dw->dialog.valueW
+				 : dw->dialog.labelW;
 
     if (dw->composite.num_mapped_children > 1) {
         for (childP = children + dw->composite.num_children - 1;
@@ -203,7 +198,7 @@ Cardinal num_args;
 	    if (*childP == dw->dialog.labelW || *childP == dw->dialog.valueW)
 	        break;
 	    if (XtIsManaged(*childP)) {
-	        form->horiz_base = *childP;
+	        constraint->form.horiz_base = *childP;
 		break;
 	    }
 	}

@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Text.c,v 1.7 87/12/14 09:20:41 swick Locked $";
+static char rcsid[] = "$Header: Text.c,v 1.8 87/12/23 07:49:27 swick Locked $";
 #endif lint
 
 /*
@@ -37,6 +37,7 @@ static char rcsid[] = "$Header: Text.c,v 1.7 87/12/14 09:20:41 swick Locked $";
 Atom FMT8BIT;
 
 extern void bcopy();
+extern void _XLowerCase();
 
 #define BufMax 1000
 #define abs(x)	(((x) < 0) ? (-(x)) : (x))
@@ -44,12 +45,11 @@ extern void bcopy();
 #define max(x,y)	((x) > (y) ? (x) : (y))
 #define GETLASTPOS  (*(ctx->text.source->scan)) (ctx->text.source, 0, XtstFile, XtsdRight, 1, TRUE)
 #define BUTTONMASK 0x143d
-#define DEFAULTVALUE -9999
 
 #define  yMargin 2
 #define zeroPosition ((XtTextPosition) 0)
 
-extern void BuildLineTable ();
+static void BuildLineTable ();
 
 /****************************************************************
  *
@@ -89,9 +89,57 @@ static XtResource resources[] = {
 };
 
   
+#define done(address, type) \
+        { toVal->size = sizeof(type); toVal->addr = (caddr_t) address; }
+
+/* EditType enumeration constants */
+
+static  XrmQuark  XtQTextRead;
+static  XrmQuark  XtQTextAppend;
+static  XrmQuark  XtQTextEdit;
+
+/* ARGSUSED */
+static void CvtStringToEditMode(screen, fromVal, toVal)
+    Screen	*screen;
+    XrmValuePtr	fromVal;
+    XrmValuePtr	toVal;
+{
+    static XtEditType editType;
+    XrmQuark    q;
+    char        lowerName[1000];
+
+/* ||| where to put LowerCase */
+    _XLowerCase((char *)fromVal->addr, lowerName);
+    q = XrmAtomToQuark(lowerName);
+    if (q == XtQTextRead ) {
+        editType = XttextRead;
+        done(&editType, XtEditType);
+        return;
+    }
+    if (q == XtQTextAppend) {
+        editType = XttextAppend;
+        done(&editType, XtEditType);
+        return;
+    }
+    if (q == XtQTextEdit) {
+        editType = XttextEdit;
+        done(&editType, XtEditType);
+        return;
+    }
+    toVal->size = 0;
+    toVal->addr = NULL;
+};
+
+
 static void ClassInitialize()
 {
-    FMT8BIT = XrmAtomToQuark("FMT8BIT");
+    FMT8BIT	  = XrmAtomToQuark("FMT8BIT");
+
+    XtQTextRead   = XrmAtomToQuark(XtEtextRead);
+    XtQTextAppend = XrmAtomToQuark(XtEtextAppend);
+    XtQTextEdit   = XrmAtomToQuark(XtEtextEdit);
+
+    XrmRegisterTypeConverter(XrmRString, XtREditMode, CvtStringToEditMode);
 }
 
 
@@ -103,9 +151,12 @@ static void Initialize(request, new, args, num_args)
 {
     TextWidget ctx = (TextWidget) new;
 
-    if (ctx->core.height == DEFAULTVALUE)
-	ctx->core.height = (*ctx->text.sink->maxHeight)(new, 1)
-			   + (2*yMargin) + 2;
+    if (ctx->core.height == DEFAULTVALUE) {
+        ctx->core.height = (2*yMargin) + 2;
+        if (ctx->text.sink)
+	    ctx->core.height += (*ctx->text.sink->maxHeight)(new, 1);
+    }
+
     ctx->text.lt.lines = 0;
     ctx->text.lt.info = NULL;
     ctx->text.s.left = ctx->text.s.right = 0;
@@ -120,14 +171,18 @@ static void Initialize(request, new, args, num_args)
     ctx->text.lasttime = 0; /* ||| correct? */
     ctx->text.time = 0; /* ||| correct? */
     ctx->text.showposition = TRUE;
-    ctx->text.lastPos = GETLASTPOS;
+    ctx->text.lastPos = ctx->text.source ? GETLASTPOS : 0;
     ctx->text.dialog = NULL;
     ctx->text.updateFrom = (XtTextPosition *) XtMalloc((unsigned)1);
     ctx->text.updateTo = (XtTextPosition *) XtMalloc((unsigned)1);
     ctx->text.numranges = ctx->text.maxranges = 0;
     ctx->text.gc = DefaultGCOfScreen(XtScreen(ctx));
     ctx->text.hasfocus = FALSE;
-    BuildLineTable(ctx, ctx->text.lt.top);
+#ifdef notdef
+    if (ctx->text.sink)
+      BuildLineTable(ctx, ctx->text.lt.top);
+#endif
+
 /* what about this ugly scrollbar stuff?
     if (ctx->text.options & scrollVertical) {
 	scrollMgrArgs[0].value =
@@ -152,7 +207,7 @@ static void Realize( w, valueMask, attributes )
 {
    TextWidget ctx = (TextWidget)w;
 
-   XtCreateWindow( w, InputOutput, (Visual *)CopyFromParent,
+   XtCreateWindow( w, (unsigned)InputOutput, (Visual *)CopyFromParent,
 		   *valueMask, attributes);
    if (ctx->text.sbar) XtRealizeWidget(ctx->text.sbar);
 }
@@ -1218,7 +1273,7 @@ Boolean last;
     reply = XtSetValuesGeometryRequest( current, new, &reqGeom );
 
     if (reply == XtGeometryAlmost)
-        reply = XtSetValuesGeometryRequest( current, &reqGeom, &reqGeom );
+        reply = XtMakeGeometryRequest( current, &reqGeom, &reqGeom );
 
     if (reply == XtGeometryYes)
         redisplay = TRUE;
@@ -2299,6 +2354,8 @@ XtActionsRec textActionsTable [] = {
   {NULL,NULL}
 };
 
+Cardinal textActionsTableCount = XtNumber(textActionsTable); /* for subclasses */
+
 static char *defaultTextEventBindings[] = {
 /* motion bindings */
     "Ctrl<Key>F:		forward-character()",
@@ -2367,7 +2424,7 @@ static char *defaultTextEventBindings[] = {
 caddr_t defaultTextTranslations = (caddr_t)defaultTextEventBindings;
 
 TextClassRec textClassRec = {
-/* core fields */
+  { /* core fields */
     /* superclass       */      (WidgetClass) &widgetClassRec,
     /* class_name       */      "Text",
     /* widget_size      */      sizeof(TextRec),
@@ -2388,6 +2445,12 @@ TextClassRec textClassRec = {
     /* expose           */      ProcessExposeRegion,
     /* set_values       */      SetValues,
     /* accept_focus     */      TextAcceptFocus,
+    /* callback_private */      NULL,
+    /* reserved_private */      NULL
+  },
+  { /* text fields */
+    /* empty            */	0
+  }
 };
 
 WidgetClass textWidgetClass = (WidgetClass)&textClassRec;

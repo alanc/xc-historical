@@ -1,5 +1,5 @@
 /*
-* $Header: TextP.h,v 1.3 87/12/02 16:10:39 swick Locked $
+* $Header: TextP.h,v 1.4 87/12/23 07:55:10 swick Locked $
 */
 
 /*
@@ -47,6 +47,8 @@
 #define EDITERROR 1
 #define POSITIONERROR 2
 
+#define DEFAULTVALUE -9999
+
 typedef enum {XtsdLeft, XtsdRight} ScanDirection;
 typedef enum {XtstPositions, XtstWhiteSpace, XtstEOL, XtstParagraph, XtstFile} ScanType;
 
@@ -67,7 +69,7 @@ typedef struct _XtTextSource {
     int		    (*setLastPos)();
     XtTextPosition  (*scan)();
     XtEditType      (*editType)();
-    int		    *data;       
+    caddr_t	    data;       
     };
 
 typedef struct _XtTextSink {
@@ -81,7 +83,7 @@ typedef struct _XtTextSink {
     int (*resolve)();
     int (*maxLines)();
     int (*maxHeight)();
-    int *data;
+    caddr_t data;
     };
 
 /* displayable text management data structures */
