@@ -1,4 +1,4 @@
-/* $XConsortium: mibstore.c,v 5.23 89/09/14 16:30:06 rws Exp $ */
+/* $XConsortium: mibstore.c,v 5.25 89/10/06 17:28:10 keith Exp $ */
 /***********************************************************
 Copyright 1987 by the Regents of the University of California
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -2088,7 +2088,7 @@ miBSClearBackingStore(pWin, x, y, w, h, generateExposures)
     pScreen = pWin->drawable.pScreen;
 
     if (pBackingStore->status == StatusNoPixmap)
-	return;
+	return NullRegion;
     
     if (w == 0)
 	w = (int) pWin->drawable.width - x;
@@ -2101,7 +2101,7 @@ miBSClearBackingStore(pWin, x, y, w, h, generateExposures)
     box.y2 = y + h;
     pRgn = (*pWin->drawable.pScreen->RegionCreate)(&box, 1);
     if (!pRgn)
-	return;
+	return NullRegion;
     (* pScreen->Intersect) (pRgn, pRgn, &pBackingStore->SavedRegion);
 
     if ((* pScreen->RegionNotEmpty) (pRgn))
