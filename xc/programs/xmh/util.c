@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: util.c,v 2.16 88/03/07 11:21:14 swick Locked $";
+static char rcs_id[] = "$Header: util.c,v 2.17 88/08/22 13:14:02 swick Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -385,22 +385,22 @@ MsgList CurMsgListOrCurMsg(toc)
 int GetHeight(w)
    Widget w;
 {
-    static int height;
+    static Dimension height;
     static Arg args[] = { {XtNheight, (XtArgVal)&height} } ;
 
     XtGetValues( w, args, (Cardinal)1 );
-    return height;
+    return (int)height;
 }
 
 
 int GetWidth(w)
    Widget w;
 {
-    static int width;
+    static Dimension width;
     static Arg args[] = { {XtNwidth, (XtArgVal)&width} } ;
 
     XtGetValues( w, args, (Cardinal)1 );
-    return width;
+    return (int)width;
 }
 
 
