@@ -1,6 +1,6 @@
 /*
-* $XConsortium: Intrinsic.h,v 1.79 88/08/31 10:23:03 swick Exp $
-* $oHeader: Intrinsic.h,v 1.8 88/08/29 11:53:12 asente Exp $
+* $XConsortium: Intrinsic.h,v 1.81 88/09/04 12:20:33 swick Exp $
+* $oHeader: Intrinsic.h,v 1.10 88/09/01 10:33:34 asente Exp $
 */
 
 /***********************************************************
@@ -143,6 +143,13 @@ typedef struct {
 extern XtConvertArgRec colorConvertArgs[];
 extern XtConvertArgRec screenConvertArg[];
 
+extern void XtAppAddConverter();
+    /* XtAppContext	    app;	*/
+    /* String		    from_type;      */
+    /* String		    to_type;	    */
+    /* XtConverter      converter;      */
+    /* XtConvertArgList     convert_args;   */
+    /* Cardinal		    num_args;   */
 
 extern void XtAddConverter();
     /* String		    from_type;      */
@@ -361,6 +368,9 @@ extern void XtSetAsyncEventHandler(); /* handler, closure */
     /* Opaque	closure; */
 
 extern void XtMakeToolkitAsync();
+
+extern void XtSetKeyboardFocus();
+    /* Widget subtree, descendent; */
 
 /****************************************************************
  *
