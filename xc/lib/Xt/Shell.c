@@ -1,4 +1,4 @@
-/* $XConsortium: Shell.c,v 1.132 93/05/24 15:40:55 kaleb Exp $ */
+/* $XConsortium: Shell.c,v 1.133 93/05/24 20:01:06 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -1905,7 +1905,7 @@ static Boolean SetValues(old, ref, new, args, num_args)
 	}
 
 	if (mask) {
-	    XChangeWindowAttributes(XtDisplay(new), XtWindow(new), mask, &attr);
+	    XChangeWindowAttributes(XtDisplay(new),XtWindow(new), mask, &attr);
 	    if ((mask & CWOverrideRedirect) && !nw->shell.override_redirect)
 		_popup_set_prop(nw);
 	}
