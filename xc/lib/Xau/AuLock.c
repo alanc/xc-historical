@@ -1,7 +1,7 @@
 /*
  * Xau - X Authorization Database Library
  *
- * $XConsortium: $
+ * $XConsortium: AuLock.c,v 1.2 88/12/08 16:40:24 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -47,8 +47,14 @@ long	dead;
     (void) strcat (link_name, "-l");
     if (stat (creat_name, &statb) != -1) {
 	now = time ((long *) 0);
-	if (now - statb.st_ctime > dead)
+	/*
+	 * NFS may cause ctime to be before now, special
+	 * case a 0 deadtime to force lock removal
+	 */
+	if (dead == 0 || now - statb.st_ctime > dead) {
 	    (void) unlink (creat_name);
+	    (void) unlink (link_name);
+	}
     }
     
     while (retries > 0) {
