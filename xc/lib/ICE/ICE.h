@@ -1,4 +1,4 @@
-/* $XConsortium: ICE.h,v 1.1 93/08/19 18:24:59 mor Exp $ */
+/* $XConsortium: ICE.h,v 1.2 93/12/07 11:03:52 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -30,11 +30,11 @@ Author: Ralph Mor, X Consortium
 
 
 /*
- * Endians
+ * Byte Order
  */
 
-#define IceLittleEndian		0
-#define IceBigEndian		1
+#define IceLSBfirst		0
+#define IceMSBfirst		1
 
 
 /*
