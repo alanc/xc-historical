@@ -6,7 +6,7 @@
 .ds xC Inter-Client Communication Conventions Manual
 .ds Rn 3
 .ds Vn 2.2
-.hw XtCreate-Popup-Shell wid-get
+.hw XtCreate-Popup-Shell XtVaCreate-Popup-Shell wid-get
 .na
 .de Ds
 .nf
@@ -99,7 +99,7 @@
 .ny0
 .TH XtCreatePopupShell 3Xt "Release 6" "X Version 11" "XT FUNCTIONS"
 .SH NAME
-XtCreatePopupShell \- create a popup shell
+XtCreatePopupShell, XtVaCreatePopupShell \- create a popup shell
 .SH SYNTAX
 Widget XtCreatePopupShell(\fIname\fP, \fIwidget_class\fP, \fIparent\fP, \
 \fIargs\fP, \fInum_args\fP)
@@ -113,6 +113,14 @@ Widget XtCreatePopupShell(\fIname\fP, \fIwidget_class\fP, \fIparent\fP, \
       ArgList \fIargs\fP;
 .br
       Cardinal \fInum_args\fP;
+.LP
+Widget XtVaCreatePopupShell(\fIname\fP, \fIwidget_class\fP, \fIparent\fP, ...)
+.br
+      String \fIname\fP;
+.br
+      WidgetClass \fIwidget_class\fP;
+.br
+      Widget \fIparent\fP;
 .SH ARGUMENTS
 .ds Al to override the resource defaults
 .IP \fIargs\fP 1i
@@ -127,6 +135,8 @@ Specifies the parent widget.
 .ds Wc \ pointer for the created shell widget
 .IP \fIwidget_class\fP 1i
 Specifies the widget class\*(Wc.
+.IP \fI...\fP 1i
+Specifies the variable argument list \*(Al.
 .SH DESCRIPTION
 The
 .ZN XtCreatePopupShell
