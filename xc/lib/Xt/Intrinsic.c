@@ -1,4 +1,4 @@
-/* $XConsortium: Intrinsic.c,v 1.175 93/08/11 14:06:42 kaleb Exp $ */
+/* $XConsortium: Intrinsic.c,v 1.176 93/08/27 16:27:37 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -694,6 +694,20 @@ Boolean XtIsSensitive(object)
     UNLOCK_APP(app);
     return retval;
 }
+
+Boolean XtIsBeingDestroyed(object)
+	Widget	object;
+{
+    Boolean retval;
+    WIDGET_TO_APPCON(object);
+
+    LOCK_APP(app);
+    retval = object->core.being_destroyed;
+    UNLOCK_APP(app);
+    return retval;
+}
+
+/*
 
 /*
  * Internal routine; must be called only after XtIsWidget returns false

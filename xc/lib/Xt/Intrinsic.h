@@ -1,4 +1,4 @@
-/* $XConsortium: Intrinsic.h,v 1.182 93/09/08 15:51:34 kaleb Exp $ */
+/* $XConsortium: Intrinsic.h,v 1.183 93/09/09 10:14:42 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -646,6 +646,12 @@ extern Boolean XtIsRealized(
 extern Boolean XtIsSensitive(
 #if NeedFunctionPrototypes
     Widget 		/* widget */
+#endif
+);
+
+extern Boolean XtIsBeingDestroyed(
+#if NeedFunctionPrototypes
+    Widget		/* widget */
 #endif
 );
 
