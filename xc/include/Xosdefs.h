@@ -1,7 +1,7 @@
 /*
  * O/S-dependent (mis)feature macro definitions
  *
- * $XConsortium: Xosdefs.h,v 1.3 91/04/02 21:22:35 rws Exp $
+ * $XConsortium: Xosdefs.h,v 1.4 91/04/13 11:44:55 rws Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -66,8 +66,14 @@
 #define X_NOT_STDC_ENV
 #else
 
+#ifdef Mips
+#define X_NOT_POSIX
+#define X_NOT_STDC_ENV
+#else
+
 /* add new ones here */
 
+#endif /* Mips */
 #endif /* luna */
 #endif /* vax */
 #endif /* CRAY */
