@@ -33,7 +33,7 @@
  */
 
 #ifndef lint
-static char *rcsid_xpr_c = "$Header: xpr.c,v 1.19 87/10/05 16:49:24 swick Locked $";
+static char *rcsid_xpr_c = "$Header: xpr.c,v 1.20 87/10/06 13:04:46 rws Locked $";
 #endif
 
 #include <sys/types.h>
@@ -1136,6 +1136,7 @@ int flags;
 XWDFileHeader *win;
 enum orientation orientation;
 {
+    unsigned long swaptest = 1;
     int iwb = win->bytes_per_line;
     register int i;
     int n,bytes;
@@ -1182,8 +1183,12 @@ enum orientation orientation;
 	    }
 	    if (win->bitmap_bit_order == MSBFirst)
 		_swapbits((char *)buffer, iwb);
+	    if (!(*(char *) &swaptest))
+		_swaplong((char *)buffer,iwb);
 	    ps_bitrot(buffer,iw,--ocol,owidth);
 	}
+	if (!(*(char *) &swaptest))
+	    _swaplong(obuf,iw*owidth);
 	q = &obuf[iw*owidth];
 	bytes = (ih+7)/8;
 	for (p=obuf;p<q;p+=owidth)
