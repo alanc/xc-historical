@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: main.c,v 5.16 91/07/22 23:29:23 keith Exp $ */
+/* $XConsortium: main.c,v 5.17 91/07/24 12:33:14 rws Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -257,6 +257,8 @@ main(argc, argv)
 	Dispatch();
 
 	/* Now free up whatever must be freed */
+	if (screenIsSaved == SCREEN_SAVER_ON)
+	    SaveScreens(SCREEN_SAVER_OFF, ScreenSaverReset);
 	CloseDownExtensions();
 	FreeAllResources();
 	CloseDownDevices();
