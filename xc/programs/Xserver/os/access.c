@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: access.c,v 1.52 91/11/20 15:37:21 keith Exp $ */
+/* $XConsortium: access.c,v 1.53 91/12/29 14:06:01 rws Exp $ */
 
 #include "Xos.h"
 #include "X.h"
@@ -310,19 +310,15 @@ DefineSelf (fd)
 
 #ifdef XDMCP
 void
-AugmentSelf(fd)
-    int fd;
+AugmentSelf(from, len)
+    struct sockaddr *from;
+    int		    len;
 {
-    int len;
-    struct sockaddr from;
     int family;
     pointer addr;
     register HOST *host;
 
-    len = sizeof(from);
-    if (getpeername(fd, &from, &len))
-	return;
-    family = ConvertAddr(&from, &len, &addr);
+    family = ConvertAddr(from, &len, &addr);
     if (family == -1 || family == FamilyLocal)
 	return;
     for (host = selfhosts; host; host = host->next)
