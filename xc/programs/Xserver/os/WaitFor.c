@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: WaitFor.c,v 1.56 91/12/17 21:21:26 rws Exp $ */
+/* $XConsortium: WaitFor.c,v 1.57 92/03/13 15:47:39 rws Exp $ */
 
 /*****************************************************************
  * OS Depedent input routines:
@@ -53,8 +53,6 @@ extern long ClientsWithInput[];
 extern long ClientsWriteBlocked[];
 extern long OutputPending[];
 
-extern long ScreenSaverTime;               /* milliseconds */
-extern long ScreenSaverInterval;               /* milliseconds */
 extern int ConnectionTranslation[];
 
 extern Bool NewOutputPending;
@@ -62,10 +60,7 @@ extern Bool AnyClientsWriteBlocked;
 
 extern WorkQueuePtr workQueue;
 
-extern void CheckConnections();
-extern Bool EstablishNewConnections();
 extern void SaveScreens();
-extern void ResetOsBuffers();
 extern void ProcessInputEvents();
 extern void BlockHandler();
 extern void WakeupHandler();
