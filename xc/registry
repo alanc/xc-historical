@@ -1,4 +1,4 @@
-/* $XConsortium: Xregistry,v 1.17 91/01/22 08:20:03 rws Exp $ */
+/* $XConsortium: Xregistry,v 1.18 91/01/31 10:45:34 rws Exp $ */
 
 1. ORGANIZATION NAMES
 
@@ -22,6 +22,7 @@ Name						Reference
 "LTA"						[60]
 "MIT"						[8]
 "MOTIF"						[7]
+"NCD"						[66]
 "OMRON"						[45]
 "ORL"						[65]
 "OSF"						[7]
@@ -233,6 +234,7 @@ Name						Reference
 "MIT-SHM"					[8]
 "MIT-SUNDRY-NONSTANDARD"			[8]
 "Multi-Buffering"				[8], [10]
+"NCD-SIE"					[66]
 "ORL-SYNC"					[65]
 "PanasonicDosEmulatorExtension"			[52]
 "SGI-GLX"					[6]
@@ -291,6 +293,7 @@ Name						Reference
 "WM_STATE"					[16]
 "WM_TRANSIENT_FOR"				[16]
 "WM_ZOOM_HINTS"					[17], [18]
+"_NCD_WM_RUNNING"				[66]
 "_SGI_GL_COLORMAP"				[6]
 
 8. PROPERTY TYPE NAMES
@@ -408,6 +411,7 @@ Name						Reference
 "FujiXerox"					[64]
 "IBM"						[33]
 "MISC"						[8]
+"NCD"						[66]
 "Panasonic"					[52]
 "Sony"						[37]
 
@@ -612,6 +616,7 @@ Name						Reference
 "Acorn"						[49]
 "TD"						[63]
 "MIT"						[8]
+"NCD"						[66]
 
 
 20. NON-STANDARD CHARACTER SET ENCODINGS
@@ -924,4 +929,9 @@ REFERENCES
 	Olivetti Research Limited
 	24a Trumpington Street
 	Cambridge, England
+
+[66]	Jim Fulton
+	Network Computing Devices
+	350 North Bernardo Ave.
+	Mountain View, CA  94043
 Sumitomo Electric Workstation Corp.	[77]
