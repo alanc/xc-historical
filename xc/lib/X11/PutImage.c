@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XPutImage.c,v 11.36 87/10/11 14:56:23 rws Exp $ */
+/* $Header: XPutImage.c,v 11.37 87/12/12 17:45:32 rws Locked $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include <stdio.h>
@@ -443,13 +443,14 @@ SendXYImage(dpy, req, image, req_xoffset, req_yoffset)
 	_XSend(dpy, buf, length);
   }
 
-/* XXX assumes image->bits_per_pixel matches server's */
+/* XXX assumes image->bits_per_pixel == dest_bits_per_pixel */
 static void
-SendZImage(dpy, req, image, req_xoffset, req_yoffset)
+SendZImage(dpy, req, image, req_xoffset, req_yoffset,
+	   dest_bits_per_pixel, dest_scanline_pad)
     register Display *dpy;
     register xPutImageReq *req;
     register XImage *image;
-    int req_xoffset, req_yoffset;
+    int req_xoffset, req_yoffset, dest_bits_per_pixel, dest_scanline_pad;
 {
     long bytes_per_src, bytes_per_dest, length;
     unsigned char *src, *dest;
@@ -457,14 +458,17 @@ SendZImage(dpy, req, image, req_xoffset, req_yoffset)
     req->leftPad = 0;
     bytes_per_src = ROUNDUP(req->width * image->bits_per_pixel,
 			    image->bitmap_pad) >> 3;
-    bytes_per_dest = ROUNDUP(req->width * image->bits_per_pixel,
-			     dpy->bitmap_pad) >> 3;
+    bytes_per_dest = ROUNDUP(req->width * dest_bits_per_pixel,
+			     dest_scanline_pad) >> 3;
     length = bytes_per_dest * req->height;
     req->length += (length + 3) >> 2;
     src = (unsigned char *)image->data +
 	  (req_yoffset * image->bytes_per_line) +
 	  ((req_xoffset * image->bits_per_pixel) >> 3);
 
+    /* when req_xoffset > 0, we have to worry about stepping off the
+     * end of image->data.
+     */
     if (((image->byte_order == dpy->byte_order) ||
 	 (image->bits_per_pixel == 8)) &&
 	((long)image->bytes_per_line == bytes_per_dest) &&
@@ -503,15 +507,15 @@ SendZImage(dpy, req, image, req_xoffset, req_yoffset)
 }
 
 static void
-PutImageRequest(dpy, d, gc, image, req_xoffset, req_yoffset, x, y, req_width,
-								   req_height)
+PutImageRequest(dpy, d, gc, image, req_xoffset, req_yoffset, x, y,
+		req_width, req_height, dest_bits_per_pixel, dest_scanline_pad)
     register Display *dpy;
     Drawable d;
     GC gc;
     register XImage *image;
     int x, y;
     unsigned int req_width, req_height;
-    int req_xoffset, req_yoffset;
+    int req_xoffset, req_yoffset, dest_bits_per_pixel, dest_scanline_pad;
 {
     register xPutImageReq *req;
 
@@ -527,19 +531,20 @@ PutImageRequest(dpy, d, gc, image, req_xoffset, req_yoffset, x, y, req_width,
     if ((image->depth == 1) || (image->format != ZPixmap))
 	SendXYImage(dpy, req, image, req_xoffset, req_yoffset);
     else
-	SendZImage(dpy, req, image, req_xoffset, req_yoffset);
+	SendZImage(dpy, req, image, req_xoffset, req_yoffset,
+		   dest_bits_per_pixel, dest_scanline_pad);
 }
 	
 static void
-PutSubImage (dpy, d, gc, image, req_xoffset, req_yoffset, x, y, req_width,
-								req_height)
+PutSubImage (dpy, d, gc, image, req_xoffset, req_yoffset, x, y,
+	     req_width, req_height, dest_bits_per_pixel, dest_scanline_pad)
     register Display *dpy;
     Drawable d;
     GC gc;
     register XImage *image;
     int x, y;
     unsigned int req_width, req_height;
-    int req_xoffset, req_yoffset;
+    int req_xoffset, req_yoffset, dest_bits_per_pixel, dest_scanline_pad;
 
 {
     int left_pad, BytesPerRow, Available;
@@ -557,13 +562,14 @@ PutSubImage (dpy, d, gc, image, req_xoffset, req_yoffset, x, y, req_width,
 			* image->depth;
     } else {
 	left_pad = 0;
-	BytesPerRow = ROUNDUP(req_width * image->bits_per_pixel,
-			      dpy->bitmap_pad) >> 3;
+	BytesPerRow = ROUNDUP(req_width * dest_bits_per_pixel,
+			      dest_scanline_pad) >> 3;
     }
 
     if ((BytesPerRow * req_height) <= Available) {
         PutImageRequest(dpy, d, gc, image, req_xoffset, req_yoffset, x, y, 
-			req_width, req_height);
+			req_width, req_height,
+			dest_bits_per_pixel, dest_scanline_pad);
     } else if (req_height > 1) {
 	int SubImageHeight = Available / BytesPerRow;
 
@@ -571,21 +577,25 @@ PutSubImage (dpy, d, gc, image, req_xoffset, req_yoffset, x, y, req_width,
 	    SubImageHeight = 1;
 
 	PutSubImage(dpy, d, gc, image, req_xoffset, req_yoffset, x, y, 
-		    req_width, (unsigned int) SubImageHeight);
+		    req_width, (unsigned int) SubImageHeight,
+		    dest_bits_per_pixel, dest_scanline_pad);
 
 	PutSubImage(dpy, d, gc, image, req_xoffset, 
 		    req_yoffset + SubImageHeight, x, y + SubImageHeight,
-		    req_width, req_height - SubImageHeight);
+		    req_width, req_height - SubImageHeight,
+		    dest_bits_per_pixel, dest_scanline_pad);
     } else {
-	int SubImageWidth = (((Available << 3) / dpy->bitmap_pad)
-				* dpy->bitmap_pad) - left_pad;
+	int SubImageWidth = (((Available << 3) / dest_scanline_pad)
+				* dest_scanline_pad) - left_pad;
 
 	PutSubImage(dpy, d, gc, image, req_xoffset, req_yoffset, x, y, 
-		    (unsigned int) SubImageWidth, 1);
+		    (unsigned int) SubImageWidth, 1,
+		    dest_bits_per_pixel, dest_scanline_pad);
 
 	PutSubImage(dpy, d, gc, image, req_xoffset + SubImageWidth, 
 		    req_yoffset, x + SubImageWidth, y,
-		    req_width - SubImageWidth, 1);
+		    req_width - SubImageWidth, 1,
+		    dest_bits_per_pixel, dest_scanline_pad);
     }
 }
 
@@ -602,6 +612,7 @@ XPutImage (dpy, d, gc, image, req_xoffset, req_yoffset, x, y, req_width,
 {
     long width = req_width;
     long height = req_height;
+    int dest_bits_per_pixel, dest_scanline_pad;
 
     if (req_xoffset < 0) {
 	width += req_xoffset;
@@ -618,16 +629,22 @@ XPutImage (dpy, d, gc, image, req_xoffset, req_yoffset, x, y, req_width,
     if ((width <= 0) || (height <= 0))
 	return;
 
-    /* XXX until SendZImage gets hairy */
-    if (image->depth > 1) {
-	int n;
+    if ((image->depth == 1) || (image->format != ZPixmap)) {
+	dest_bits_per_pixel = 1;
+	dest_scanline_pad = dpy->bitmap_pad;
+    } else {
+	register int n;
+	register ScreenFormat *format;
 
-	for (n = 0;
-	     (n < dpy->nformats) &&
-	     ((dpy->pixmap_format[n].depth != image->depth) ||
-	      (dpy->pixmap_format[n].bits_per_pixel != image->bits_per_pixel));
-	     n++) ;
-	if (n >= dpy->nformats) {
+	dest_bits_per_pixel = image->bits_per_pixel;
+	dest_scanline_pad = image->bitmap_pad;
+	for (n = dpy->nformats, format = dpy->pixmap_format; --n >= 0; format++)
+	    if (format->depth == image->depth) {
+		dest_bits_per_pixel = format->bits_per_pixel;
+		dest_scanline_pad = format->scanline_pad;
+	    }
+	/* XXX until SendZImage gets hairy */
+	if (dest_bits_per_pixel != image->bits_per_pixel) {
 	    fputs("XPutImage: bits_per_pixel conversion unimplemented.\n",
 		  stderr);
 	    return;
@@ -638,7 +655,8 @@ XPutImage (dpy, d, gc, image, req_xoffset, req_yoffset, x, y, req_width,
     FlushGC(dpy, gc);
 
     PutSubImage(dpy, d, gc, image, req_xoffset, req_yoffset, x, y,
-		(unsigned int) width, (unsigned int) height);
+		(unsigned int) width, (unsigned int) height,
+		dest_bits_per_pixel, dest_scanline_pad);
 
     UnlockDisplay(dpy);
     SyncHandle();
