@@ -1,5 +1,5 @@
 /*
- * $XConsortium: gethost.c,v 1.16 93/08/16 14:11:52 rws Exp $
+ * $XConsortium: gethost.c,v 1.17 93/08/18 15:13:23 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -63,6 +63,7 @@ extern int errno;			/* for stupid errno.h files */
 #include <netdnet/dnetdb.h>
 #endif
 
+#ifdef SIGALRM
 Bool nameserver_timedout = False;
 
 
@@ -88,7 +89,7 @@ nameserver_lost(sig)
   return -1;				/* for picky compilers */
 #endif
 }
-
+#endif
 
 char *get_hostname (auth)
     Xauth *auth;
@@ -106,6 +107,7 @@ char *get_hostname (auth)
 	return "Illegal Address";
 #ifdef TCPCONN
     if (auth->family == FamilyInternet) {
+#ifdef SIGALRM
 	/* gethostbyaddr can take a LONG time if the host does not exist.
 	   Assume that if it does not respond in NAMESERVER_TIMEOUT seconds
 	   that something is wrong and do not make the user wait.
@@ -113,14 +115,13 @@ char *get_hostname (auth)
 	   jump out of it. 
 	   */
 	nameserver_timedout = False;
-#ifdef SIGALRM
 	signal (SIGALRM, nameserver_lost);
 	alarm (4);
-#endif
 	if (setjmp(env) == 0) {
+#endif
 	    hp = gethostbyaddr (auth->address, auth->address_length, AF_INET);
-	}
 #ifdef SIGALRM
+	}
 	alarm (0);
 #endif
 	if (hp)
