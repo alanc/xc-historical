@@ -81,6 +81,11 @@ macIIColorUpdateColormap(pScreen, cmap)
     register Entry *pent;
     struct ColorSpec Map[256];
     register VisualPtr pVisual = cmap->pVisual;
+    int fd;
+    struct strioctl ctl; /* Streams ioctl control structure */
+    struct CntrlParam pb;
+    struct VDEntryRecord vde;
+
 
     if ((pVisual->class | DynamicClass) == DirectColor) {
 	for (i = 0; i < 256; i++) {
@@ -131,19 +136,14 @@ macIIColorUpdateColormap(pScreen, cmap)
      * here, the remaining two hardware CLUT entries are allocated
      * to color the cursor.
      */
-    int fd;
-    struct strioctl ctl; /* Streams ioctl control structure */
-    struct CntrlParam pb;
-    struct VDEntryRecord vde;
-
-    pColorSpec[0xfe].value = 0xfe;
-    pColorSpec[0xfe].red = currentCursor->foreRed;
-    pColorSpec[0xfe].green = currentCursor->foreGreen;
-    pColorSpec[0xfe].blue = currentCursor->foreBlue;
-    pColorSpec[0xff].value = 0xff;
-    pColorSpec[0xff].red = currentCursor->backRed;
-    pColorSpec[0xff].green = currentCursor->backGreen;
-    pColorSpec[0xff].blue = currentCursor->backBlue;
+    Map[0xfe].value = 0xfe;
+    Map[0xfe].red = currentCursor->foreRed;
+    Map[0xfe].green = currentCursor->foreGreen;
+    Map[0xfe].blue = currentCursor->foreBlue;
+    Map[0xff].value = 0xff;
+    Map[0xff].red = currentCursor->backRed;
+    Map[0xff].green = currentCursor->backGreen;
+    Map[0xff].blue = currentCursor->backBlue;
 
     if (consoleFd <= 0) {
 	    fd = open("/dev/console",O_RDWR);
@@ -157,7 +157,7 @@ macIIColorUpdateColormap(pScreen, cmap)
     ctl.ic_len = sizeof(pb);
     ctl.ic_dp = (char *)&pb;
 
-    vde.csTable = (char *) pColorSpec;
+    vde.csTable = (char *) Map;
     vde.csStart = 0;
     vde.csCount = 256;
 
