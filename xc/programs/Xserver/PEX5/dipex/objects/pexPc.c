@@ -1,4 +1,4 @@
-/* $XConsortium: pexPc.c,v 5.1 91/02/16 09:56:48 rws Exp $ */
+/* $XConsortium: pexPc.c,v 5.2 91/07/12 17:57:32 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -277,6 +277,11 @@ unsigned char	*ptr;
 	SKIP_PADDING (ptr, 2);
 	EXTRACT_FLOAT (pca->surfApprox.uTolerance, ptr);
 	EXTRACT_FLOAT (pca->surfApprox.vTolerance, ptr);
+    }
+
+    CHECK_BITMASK_ARRAY(itemMask, PEXPCCullingMode) {
+         EXTRACT_CARD16 (pca->cullMode,ptr);
+         SKIP_PADDING (ptr, 2);
     }
 
     CHECK_BITMASK_ARRAY(itemMask, PEXPCDistinguishFlag) {
@@ -768,6 +773,10 @@ pexCopyPipelineContextReq 	*strmPtr;
 					= src->pPCAttr->surfApprox.vTolerance;
     }
 
+    CHECK_BITMASK_ARRAY(strmPtr->itemMask, PEXPCCullingMode) {
+        dst->pPCAttr->cullMode = src->pPCAttr->cullMode;
+    }
+
     CHECK_BITMASK_ARRAY(strmPtr->itemMask, PEXPCDistinguishFlag) {
 	dst->pPCAttr->distFlag = src->pPCAttr->distFlag;
     }
@@ -1235,6 +1244,13 @@ pexGetPipelineContextReq 	*strmPtr;
 	SKIP_PADDING (replyPtr, 2);
 	PACK_FLOAT ( pca->surfApprox.uTolerance, replyPtr);
 	PACK_FLOAT ( pca->surfApprox.vTolerance, replyPtr);
+    }
+
+    CHECK_BITMASK_ARRAY(strmPtr->itemMask, PEXPCCullingMode) {
+        CHK_PEX_BUF(size, sizeof(CARD32), reply, pexGetPipelineContextReply,
+                    replyPtr);
+        PACK_CARD16 ( pca->cullMode, replyPtr);
+        SKIP_PADDING (replyPtr, 2);
     }
 
     CHECK_BITMASK_ARRAY(strmPtr->itemMask, PEXPCDistinguishFlag) {
