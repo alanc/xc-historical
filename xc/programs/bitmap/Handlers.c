@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Handlers.c,v 1.3 90/11/01 19:34:25 dave Exp $
+ * $XConsortium: Handlers.c,v 1.4 90/12/08 17:29:47 dmatic Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -125,7 +125,7 @@ void DragOnePointEngage(w, status, draw, state)
     
     XtAddEventHandler(w,
 		      ButtonPressMask | ButtonReleaseMask | PointerMotionMask,
-		      FALSE, DragOnePointHandler, status);
+		      FALSE, DragOnePointHandler, (XtPointer)status);
 }
 
 /* ARGSUSED */
@@ -142,7 +142,7 @@ void DragOnePointTerminate(w, status, client_data)
     
     XtRemoveEventHandler(w,
 		 ButtonPressMask | ButtonReleaseMask | PointerMotionMask,
-		 FALSE, DragOnePointHandler, status);
+		 FALSE, DragOnePointHandler, (XtPointer)status);
     
 }
 
@@ -235,7 +235,7 @@ void OnePointEngage(w, status, draw, state)
     XtAddEventHandler(w,
 		      ButtonPressMask | ButtonReleaseMask | 
 		      ExposureMask | PointerMotionMask,
-		      FALSE, OnePointHandler, status);
+		      FALSE, OnePointHandler, (XtPointer)status);
 }
 
 void OnePointImmediateEngage(w, status, draw, state)
@@ -257,7 +257,7 @@ void OnePointImmediateEngage(w, status, draw, state)
     XtAddEventHandler(w,
 		      ButtonPressMask | ButtonReleaseMask | 
 		      ExposureMask | PointerMotionMask,
-		      FALSE, OnePointHandler, status);
+		      FALSE, OnePointHandler, (XtPointer)status);
 }
 
 void OnePointTerminate(w, status, draw)
@@ -283,7 +283,7 @@ void OnePointTerminate(w, status, draw)
     XtRemoveEventHandler(w,
 			 ButtonPressMask | ButtonReleaseMask | 
 			 ExposureMask | PointerMotionMask,
-			 FALSE, OnePointHandler, status);
+			 FALSE, OnePointHandler, (XtPointer)status);
 }
 
 void OnePointTerminateTransparent(w, status, draw)
@@ -305,7 +305,7 @@ void OnePointTerminateTransparent(w, status, draw)
     XtRemoveEventHandler(w,
 			 ButtonPressMask | ButtonReleaseMask | 
 			 ExposureMask | PointerMotionMask,
-			 FALSE, OnePointHandler, status);
+			 FALSE, OnePointHandler, (XtPointer)status);
     
 }
 
@@ -418,7 +418,7 @@ void TwoPointsEngage(w, status, draw, state)
     XtAddEventHandler(w,
 		      ButtonPressMask | ButtonReleaseMask | 
 		      ExposureMask | PointerMotionMask,
-		      FALSE, TwoPointsHandler, status);
+		      FALSE, TwoPointsHandler, (XtPointer)status);
 }
 
 void TwoPointsTerminate(w, status, draw)
@@ -447,7 +447,7 @@ void TwoPointsTerminate(w, status, draw)
     XtRemoveEventHandler(w,
 			 ButtonPressMask | ButtonReleaseMask | 
 			 ExposureMask | PointerMotionMask,
-			 FALSE, TwoPointsHandler, status);
+			 FALSE, TwoPointsHandler, (XtPointer)status);
 }
 
 void TwoPointsTerminateTransparent(w, status, draw)
@@ -472,7 +472,7 @@ void TwoPointsTerminateTransparent(w, status, draw)
     XtRemoveEventHandler(w,
 			 ButtonPressMask | ButtonReleaseMask | 
 			 ExposureMask | PointerMotionMask,
-			 FALSE, TwoPointsHandler, status);
+			 FALSE, TwoPointsHandler, (XtPointer)status);
 }
 
 void TwoPointsTerminateTimed(w, status, draw)
@@ -497,7 +497,7 @@ void TwoPointsTerminateTimed(w, status, draw)
     XtRemoveEventHandler(w,
 			 ButtonPressMask | ButtonReleaseMask | 
 			 ExposureMask | PointerMotionMask,
-			 FALSE, TwoPointsHandler, status);
+			 FALSE, TwoPointsHandler, (XtPointer)status);
 }
 
 /* ARGSUSED */
@@ -645,7 +645,7 @@ void DragTwoPointsEngage(w, status, draw, state)
 
     XtAddEventHandler(w,
 		      ButtonPressMask | ButtonReleaseMask | PointerMotionMask,
-		      FALSE, DragTwoPointsHandler, status);
+		      FALSE, DragTwoPointsHandler, (XtPointer)status);
 }
 
 void DragTwoPointsTerminate(w, status, draw)
@@ -668,7 +668,7 @@ void DragTwoPointsTerminate(w, status, draw)
     
     XtRemoveEventHandler(w,
 		         ButtonPressMask | ButtonReleaseMask | PointerMotionMask,
-			 FALSE, DragTwoPointsHandler, status);
+			 FALSE, DragTwoPointsHandler, (XtPointer)status);
 }
 
 /*****************************************************************************/
