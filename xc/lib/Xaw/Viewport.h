@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Viewport.h,v 1.10 89/07/21 01:39:39 kit Exp $
+ * $XConsortium: Viewport.h,v 1.11 89/07/21 01:55:47 kit Exp $
  * Public definitions for Viewport widget
  */
 
@@ -45,9 +45,11 @@ SOFTWARE.
  foreceBars	     Boolean		Boolean		False
  height		     Height		Dimension	0
  mappedWhenManaged   MappedWhenManaged	Boolean		True
+ notifyCallback	     NotifyCallback	Pointer		NULL
  sensitive	     Sensitive		Boolean		True
  useBottom	     Boolean		Boolean		False
  useRight	     Boolean		Boolean		False
+ usePanner	     UsePanner		Boolean		FALSE
  width		     Width		Dimension	0
  x		     Position		Position	0
  y		     Position		Position	0
@@ -60,10 +62,37 @@ SOFTWARE.
 #define XtNallowVert "allowVert"
 #define XtNuseBottom "useBottom"
 #define XtNuseRight "useRight"
+#define XtNusePanner "usePanner"
+#define XtCUsePanner "UsePanner"
+
+#define XtNnotifyCallback "notifyCallback"
+#define XtCNotifyCallback "NotifyCallback"
 
 extern WidgetClass viewportWidgetClass;
 
 typedef struct _ViewportClassRec *ViewportWidgetClass;
 typedef struct _ViewportRec  *ViewportWidget;
+
+typedef struct {
+    Position child_x, child_y;
+    Dimension child_width, child_height;
+    Dimension clip_width, clip_height;
+} XawViewportReport;
+
+extern void XawViewportSetLocation (
+#if NeedFunctionPrototypes
+    Widget /* gw */,
+    float /* xoff */,
+    float /* yoff */
+#endif
+);
+
+extern void XawViewportSetCoordinates (
+#if NeedFunctionPrototypes
+    Widget /* gw */,
+    Position /* x */,
+    Position /* y */
+#endif
+);
 
 #endif /* _Viewport_h */

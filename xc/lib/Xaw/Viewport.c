@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Viewport.c,v 1.50 90/02/05 14:04:32 jim Exp $";
+static char Xrcsid[] = "$XConsortium: Viewport.c,v 1.51 90/02/05 14:33:28 jim Exp $";
 #endif /* lint */
 
 
@@ -50,6 +50,10 @@ static XtResource resources[] = {
 	 offset(usebottom), XtRImmediate, (caddr_t)False},
     {XtNuseRight, XtCBoolean, XtRBoolean, sizeof(Boolean),
 	 offset(useright), XtRImmediate, (caddr_t)False},
+    {XtNusePanner, XtCUsePanner, XtRBoolean, sizeof(Boolean),
+	 offset(usepanner), XtRImmediate, (caddr_t) FALSE},
+    {XtNnotifyCallback, XtCNotifyCallback, XtRCallback, sizeof(XtPointer),
+	 offset(notify_callbacks), XtRImmediate, (caddr_t) NULL},
 };
 #undef offset
 
@@ -211,10 +215,12 @@ static void Initialize(request, new)
     if (!w->viewport.forcebars) 
         return;		 /* If we are not forcing the bars then we are done. */
 
-    if (w->viewport.allowhoriz) 
-        (void) CreateScrollbar(w, True);
-    if (w->viewport.allowvert) 
-        (void) CreateScrollbar(w, False);
+    if (!w->viewport.usepanner) {
+	if (w->viewport.allowhoriz) 
+	  (void) CreateScrollbar(w, True);
+	if (w->viewport.allowvert) 
+	  (void) CreateScrollbar(w, False);
+    }
 
     h_bar = w->viewport.horiz_bar;
     v_bar = w->viewport.vert_bar;
@@ -286,6 +292,10 @@ static Boolean SetValues(current, request, new)
 	    if (w->viewport.allowvert && w->viewport.vert_bar == (Widget)NULL)
 		(void) CreateScrollbar( w, False );
 	}
+    }
+
+    if (w->viewport.usepanner != cw->viewport.usepanner) {
+	/* XXX - do something */
     }
 
     /* take care of bars, &tc. */
@@ -411,6 +421,27 @@ static void MoveChild(w, x, y)
 }
 
 
+static void SendReport (w)
+    ViewportWidget w;
+{
+    XawViewportReport rep;
+
+    if (w->viewport.notify_callbacks) {
+	register Widget child = w->viewport.child;
+	register Widget clip = w->viewport.clip;
+
+	rep.child_x = child->core.x;
+	rep.child_y = child->core.y;
+	rep.child_width = child->core.width;
+	rep.child_height = child->core.height;
+	rep.clip_width = clip->core.width;
+	rep.clip_height = clip->core.height;
+	XtCallCallbackList ((Widget) w, w->viewport.notify_callbacks,
+			    (caddr_t) &rep);
+    }
+}
+
+
 static void ComputeLayout(widget, query, destroy_scrollbars)
     Widget widget;		/* Viewport */
     Boolean query;		/* query child's preferred geom? */
@@ -433,7 +464,7 @@ static void ComputeLayout(widget, query, destroy_scrollbars)
     intended.request_mode = CWBorderWidth;
     intended.border_width = 0;
 
-    if (w->viewport.forcebars) {
+    if (w->viewport.forcebars && !w->viewport.usepanner) {
         needsvert = w->viewport.allowvert;
         needshoriz = w->viewport.allowhoriz;
         ComputeWithForceBars(widget, query, &intended, 
@@ -490,7 +521,8 @@ static void ComputeLayout(widget, query, destroy_scrollbars)
 	     * thus avoiding potential oscillations.
 	     */
 #define CheckHoriz()							  \
-	    if (w->viewport.allowhoriz && preferred.width > clip_width) { \
+	    if (!w->viewport.usepanner && w->viewport.allowhoriz &&	  \
+		preferred.width > clip_width) {				  \
 	        if (!needshoriz) {					  \
 		    Widget bar;					          \
 		    needshoriz = True;				          \
@@ -504,7 +536,8 @@ static void ComputeLayout(widget, query, destroy_scrollbars)
 	    }
 /*enddef*/
 	    CheckHoriz();
-	    if (w->viewport.allowvert && preferred.height > clip_height) {
+	    if (!w->viewport.usepanner && w->viewport.allowvert &&
+		preferred.height > clip_height) {
 	        if (!needsvert) {
 		    Widget bar;
 		    needsvert = True;
@@ -597,6 +630,8 @@ static void ComputeLayout(widget, query, destroy_scrollbars)
 		  needshoriz ? child->core.x : 0,
 		  needsvert ? child->core.y : 0);
     }
+
+    SendReport (w);
 }
 
 /*      Function Name: ComputeWithForceBars
@@ -777,7 +812,8 @@ static XtGeometryResult GeometryManager(child, request, reply)
 
     height_remaining = w->core.height;
     if (rWidth && w->core.width != request->width) {
-	if (w->viewport.allowhoriz && request->width > w->core.width) {
+	if (!w->viewport.usepanner && w->viewport.allowhoriz &&
+	    request->width > w->core.width) {
 	    /* horizontal scrollbar will be needed so possibly reduce height */
 	    Widget bar; 
 	    if ((bar = w->viewport.horiz_bar) == (Widget)NULL)
@@ -790,7 +826,8 @@ static XtGeometryResult GeometryManager(child, request, reply)
 	}
     }
     if (rHeight && height_remaining != request->height) {
-	if (w->viewport.allowvert && request->height > height_remaining) {
+	if (!w->viewport.usepanner && w->viewport.allowvert &&
+	    request->height > height_remaining) {
 	    /* vertical scrollbar will be needed, so possibly reduce width */
 	    if (!w->viewport.allowhoriz || request->width < w->core.width) {
 		Widget bar;
@@ -875,3 +912,50 @@ static XtGeometryResult PreferredGeometry(w, constraints, reply)
     else
 	return XtGeometryYes;
 }
+
+
+void XawViewportSetLocation (gw, xoff, yoff)
+    Widget gw;
+    float  xoff,yoff;
+{
+    ViewportWidget w = (ViewportWidget) gw;
+    register Widget child = w->viewport.child;
+    Position x, y;
+
+    if (xoff > 1.0)			/* scroll to right */
+       x = child->core.width;
+    else if (xoff < 0.0)		/* if the offset is < 0.0 nothing */ 
+       x = child->core.x;
+    else
+       x = (Position) (((float) child->core.width) * xoff);
+
+    if (yoff > 1.0) 
+       y = child->core.height;
+    else if (yoff < 0.0)
+       y = child->core.y;
+    else
+       y = (Position) (((float) child->core.height) * yoff);
+
+    MoveChild (w, -x, -y);
+}
+
+void XawViewportSetCoordinates (gw, x, y)
+    Widget gw;
+    Position x, y;
+{
+    ViewportWidget w = (ViewportWidget) gw;
+    Widget child = w->viewport.child;
+
+    if (x > child->core.width) 
+      x = child->core.width;
+    else if (x < 0)
+      x = child->core.x;
+
+    if (y > child->core.height)
+      y = child->core.height;
+    else if (y < 0)
+      y = child->core.y;
+
+    MoveChild (w, -x, -y);
+}
+
