@@ -1,5 +1,5 @@
 static char rcsid[] =
-	"$XConsortium: StrToJust.c,v 1.1 89/12/07 10:53:03 rws Exp $";
+	"$XConsortium: StrToJust.c,v 1.2 89/12/10 10:36:16 rws Exp $";
 
 /* 
  * Copyright 1988 by the Massachusetts Institute of Technology
@@ -22,7 +22,7 @@ static char rcsid[] =
 /* ARGSUSED */
 void
 XmuCvtStringToJustify(args, num_args, fromVal, toVal)
-    XrmValuePtr *args;		/* unused */
+    XrmValuePtr args;		/* unused */
     Cardinal	*num_args;	/* unused */
     XrmValuePtr fromVal;
     XrmValuePtr toVal;

@@ -1,5 +1,5 @@
 static char rcsid[] =
-	"$XConsortium: StrToOrnt.c,v 1.1 89/05/11 14:52:56 kit Exp $";
+	"$XConsortium: StrToOrnt.c,v 1.2 89/12/07 10:53:36 rws Exp $";
 
 /* 
  * Copyright 1988 by the Massachusetts Institute of Technology
@@ -26,7 +26,7 @@ static char rcsid[] =
 /* ARGSUSED */
 void
 XmuCvtStringToOrientation(args, num_args, fromVal, toVal)
-    XrmValuePtr *args;		/* unused */
+    XrmValuePtr args;		/* unused */
     Cardinal	*num_args;	/* unused */
     XrmValuePtr	fromVal;
     XrmValuePtr	toVal;
