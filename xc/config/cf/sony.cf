@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: sony.cf,v 1.15 91/03/12 13:19:06 rws Exp $
+XCOMM platform:  $XConsortium: sony.cf,v 1.16 91/03/12 14:52:40 rws Exp $
 XCOMM operating system:  OSName
 
 /*
@@ -26,6 +26,6 @@ XCOMM operating system:  OSName
 #if BuildPex
 #define DefaultCCOptions        -Wf,-XNp15000,-XNd15000
 #else
-#define DefaultCCOptions        -Wf,-XNp5000,-XNd5000
+#define DefaultCCOptions        -Wf,-XNp6000,-XNd6000
 #endif
 #endif
