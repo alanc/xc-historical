@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: init.c,v 2.13 88/02/06 10:34:30 swick Exp $";
+static char rcs_id[] = "$Header: init.c,v 2.14 88/02/21 13:19:33 swick Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -33,10 +33,12 @@ static char rcs_id[] = "$Header: init.c,v 2.13 88/02/06 10:34:30 swick Exp $";
 extern char* _XLowerCase();
 
 /* Xmh-specific resources. */
+static Boolean defFalse = False;
+static Boolean defTrue = True;
 
 static XtResource resources[] = {
     {"debug", "Debug", XtRBoolean, sizeof(Boolean),
-	 (Cardinal)&debug, XtRString, "off"},
+	 (Cardinal)&debug, XtRBoolean, (caddr_t)&defFalse},
     {"tempdir", "tempDir", XtRString, sizeof(char *),
 	 (Cardinal)&tempDir, XtRString, "/tmp"},
     {"mhpath", "MhPath", XtRString, sizeof(char *),
@@ -57,15 +59,15 @@ static XtResource resources[] = {
     {"tocwidth", "TocWidth", XtRInt, sizeof(int),
 	 (Cardinal)&defTocWidth, XtRString, "100"},
     {"skipdeleted", "SkipDeleted", XtRBoolean, sizeof(Boolean),
-	 (Cardinal)&SkipDeleted, XtRString, "True"},
+	 (Cardinal)&SkipDeleted, XtRBoolean, (caddr_t)&defTrue},
     {"skipmoved", "SkipMoved", XtRBoolean, sizeof(Boolean),
-	 (Cardinal)&SkipMoved, XtRString, "True"},
-    {"skipCopied", "SkipCopied", XtRBoolean, sizeof(Boolean),
-	 (Cardinal)&SkipCopied, XtRString, "False"},
+	 (Cardinal)&SkipMoved, XtRBoolean, (caddr_t)&defTrue},
+    {"skipcopied", "SkipCopied", XtRBoolean, sizeof(Boolean),
+	 (Cardinal)&SkipCopied, XtRBoolean, (caddr_t)&defFalse},
     {"hideboringheaders", "HideBoringHeaders", XtRBoolean, sizeof(Boolean),
-	 (Cardinal)&defHideBoringHeaders, XtRString, "True"},
+	 (Cardinal)&defHideBoringHeaders, XtRBoolean, (caddr_t)&defTrue},
     {"geometry", "Geometry", XtRString, sizeof(char *),
-	 (Cardinal)&defGeometry, XtRString, ""},
+	 (Cardinal)&defGeometry, XtRString, NULL},
     {"tocgeometry", "TocGeometry", XtRString, sizeof(char *),
 	 (Cardinal)&defTocGeometry, XtRString, NULL},
     {"viewgeometry", "ViewGeometry", XtRString, sizeof(char *),
@@ -77,16 +79,20 @@ static XtResource resources[] = {
     {"tocpercentage", "TocPercentage", XtRInt, sizeof(int),
 	 (Cardinal)&defTocPercentage, XtRString, "33"},
     {"checknewmail", "CheckNewMail", XtRBoolean, sizeof(Boolean),
-	 (Cardinal)&defNewMailCheck, XtRString, "True"},
+	 (Cardinal)&defNewMailCheck, XtRBoolean, (caddr_t)&defTrue},
     {"makecheckpoints", "MakeCheckPoints", XtRBoolean, sizeof(Boolean),
-	 (Cardinal)&defMakeCheckpoints, XtRString, "False"},
-    {"mailPath", "MailPath", XtRString, sizeof(char *),
+	 (Cardinal)&defMakeCheckpoints, XtRBoolean, (caddr_t)&defFalse},
+    {"mailpath", "MailPath", XtRString, sizeof(char *),
 	 (Cardinal)&mailDir, XtRString, NULL},
+    {"mailwaitingflag", "MailWaitingFlag", XtRBoolean, sizeof(Boolean),
+	 (Cardinal)&mailWaitingFlag, XtRBoolean, &defFalse},
 };
 
 static XrmOptionDescRec table[] = {
-    {"-debug",	"debug",	XrmoptionNoArg,	"on"},
-    {"-path",	"mailPath",	XrmoptionSepArg, NULL}
+    {"-debug",	"debug",		XrmoptionNoArg,	"on"},
+    {"-flag",	"mailwaitingflag",	XrmoptionNoArg, "on"},
+    {"-initial","initialfolder",	XrmoptionSepArg, NULL},
+    {"-path",	"mailPath",		XrmoptionSepArg, NULL},
 };
 
 /* Tell the user how to use this program. */
@@ -94,7 +100,7 @@ Syntax(call)
     char *call;
 {
     extern void exit();
-    (void)fprintf(stderr, "usage: %s [display] [=geometry] [-path <path>]\n", call);
+    (void)fprintf(stderr, "usage: %s [-path <path>] [-initial <folder>]\n", call);
     exit(2);
 }
 
@@ -151,6 +157,8 @@ char **argv;
     XtGetApplicationResources( toplevel, (caddr_t) NULL,
 			       resources, XtNumber(resources),
 			       NULL, (Cardinal)0 );
+
+    if (mailWaitingFlag) defNewMailCheck = True;
 
     (void) sprintf(str, "%s/.mh_profile", homeDir);
     fid = myfopen(str, "r");
