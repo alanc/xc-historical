@@ -150,8 +150,8 @@ macIIMonoResolveColor(pred, pgreen, pblue, pVisual)
      */
 
     *pred = *pgreen = *pblue = 
-        (((39L * (long)*pred +
-           50L * (long)*pgreen +
+        (((30L * (long)*pred +
+           59L * (long)*pgreen +
            11L * (long)*pblue) >> 8) >= (((1<<8)-1)*50)) ? ~0 : 0;
     
 }
