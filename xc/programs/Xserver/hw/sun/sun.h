@@ -12,7 +12,7 @@
  * software for any purpose.  It is provided "as is" without
  * express or implied warranty.
  *
- *	"$XConsortium: sun.h,v 5.14 92/05/06 17:59:08 keith Exp $ SPRITE (Berkeley)"
+ *	"$XConsortium: sun.h,v 5.15 92/11/18 14:09:49 rws Exp $ SPRITE (Berkeley)"
  */
 #ifndef _SUN_H_
 #define _SUN_H_
@@ -24,7 +24,13 @@ extern int  errno;
 #include    <sys/time.h>
 #include    <sys/file.h>
 #include    <sys/fcntl.h>
-#include    <sys/signal.h>
+#if !defined(SVR4) || defined(_POSIX_SOURCE)
+# include   <signal.h>
+#else
+#define _POSIX_SOURCE
+# include   <signal.h>
+#undef _POSIX_SOURCE
+#endif
 #ifdef SVR4
 #include    <sys/kbd.h>
 #include    <sys/kbio.h>
