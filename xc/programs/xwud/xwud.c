@@ -4,7 +4,7 @@
 /* xwud - marginally useful raster image undumper */
 
 #ifndef lint
-static char *rcsid = "$XConsortium: xwud.c,v 1.34 89/12/10 17:54:58 rws Exp $";
+static char *rcsid = "$XConsortium: xwud.c,v 1.35 90/02/22 19:41:18 rws Exp $";
 #endif
 
 #include <X11/Xos.h>
@@ -18,6 +18,7 @@ static char *rcsid = "$XConsortium: xwud.c,v 1.34 89/12/10 17:54:58 rws Exp $";
 extern int errno;
 extern char *malloc();
 unsigned Image_Size();
+Atom wm_delete_window;
 
 char *progname;
 
@@ -495,8 +496,12 @@ main(argc, argv)
 			      0, vinfo.depth, InputOutput, vinfo.visual,
 			      CWBackPixel|CWColormap|CWEventMask|CWBitGravity,
 			      &attributes);
+
+    /* Setup for ICCCM delete window. */
+    wm_delete_window = XInternAtom(dpy, "WM_DELETE_WINDOW", False);
+    (void) XSetWMProtocols (dpy, image_win, &wm_delete_window, 1);
      
-     /* store the window name string */
+    /* store the window name string */
     XStoreName(dpy, image_win, win_name);
     
     /* store size hints */
@@ -511,6 +516,9 @@ main(argc, argv)
 	/* wait on mouse input event to terminate */
 	XNextEvent(dpy, &event);
 	switch(event.type) {
+	case ClientMessage:
+	     exit(0);		/* ICCCM delete window */
+	     break;
 	case ButtonPress:
 	    break;
 	case ButtonRelease:
