@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: cursor.h,v 1.16 87/06/15 02:47:28 sue Exp $ */
+/* $XConsortium: cursor.h,v 1.16 87/09/11 07:50:25 toddb Exp $ */
 #ifndef CURSOR_H
 #define CURSOR_H 
 #define NullCursor ((CursorPtr)NULL)

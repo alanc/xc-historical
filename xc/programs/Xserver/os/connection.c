@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: connection.c,v 1.80 88/08/19 13:55:26 jim Exp $ */
+/* $XConsortium: connection.c,v 1.81 88/08/31 10:09:37 rws Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *

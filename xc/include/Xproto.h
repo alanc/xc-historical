@@ -1,5 +1,5 @@
 /*
- *	$Header: Xproto.h,v 1.76 88/08/11 16:13:56 jim Exp $
+ *	$XConsortium: Xproto.h,v 1.77 88/08/11 16:36:37 jim Exp $
  */
 
 /* Definitions for the X window system used by server and c bindings */

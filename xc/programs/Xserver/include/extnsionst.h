@@ -1,4 +1,4 @@
-/* $Header: extnsionst.h,v 1.3 87/07/22 16:37:06 toddb Locked $ */
+/* $XConsortium: extnsionst.h,v 1.4 87/08/31 19:58:18 toddb Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.

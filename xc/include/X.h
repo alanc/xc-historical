@@ -1,5 +1,5 @@
 /*
- *	$Header: X.h,v 1.64 87/08/29 15:58:45 toddb Locked $
+ *	$XConsortium: X.h,v 1.65 87/09/07 14:57:14 toddb Exp $
  */
 
 /* Definitions for the X window system likely to be used by applications */

@@ -12,7 +12,7 @@
  * software for any purpose.  It is provided "as is" without
  * express or implied warranty.
  *
- *	"$Header: mibstore.h,v 1.4 88/02/26 18:35:43 deboor Exp $ SPRITE (Berkeley)"
+ *	"$XConsortium: mibstore.h,v 1.1 88/07/29 18:02:09 keith Exp $ SPRITE (Berkeley)"
  */
 
 #ifndef _MIBSTORE_H

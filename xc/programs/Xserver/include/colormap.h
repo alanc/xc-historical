@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 */
-/* $Header: colormap.h,v 1.17 87/12/07 18:05:48 rws Locked $ */
+/* $XConsortium: colormap.h,v 1.18 87/12/29 18:04:34 rws Exp $ */
 #ifndef CMAP_H
 #define CMAP_H 1
 

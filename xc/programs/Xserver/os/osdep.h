@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: osdep.h,v 1.13 88/08/10 20:10:12 rws Exp $ */
+/* $XConsortium: osdep.h,v 1.14 88/08/16 20:17:25 jim Exp $ */
 
 #ifndef NULL
 #define NULL 0

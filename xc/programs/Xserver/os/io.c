@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: io.c,v 1.47 88/08/16 20:42:03 jim Exp $ */
+/* $XConsortium: io.c,v 1.48 88/08/31 10:09:42 rws Exp $ */
 /*****************************************************************
  * i/o functions
  *

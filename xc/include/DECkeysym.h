@@ -1,4 +1,4 @@
-/* $Header: DECkeysym.h,v 1.1 88/02/09 11:51:33 rws Exp $ */
+/* $XConsortium: DECkeysym.h,v 1.1 88/02/09 13:17:25 rws Exp $ */
 
 /***********************************************************
 Copyright 1988 by Digital Equipment Corporation, Maynard, Massachusetts,

@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: misc.h,v 1.49 88/03/15 15:56:48 rws Exp $ */
+/* $XConsortium: misc.h,v 1.50 88/06/06 11:02:56 keith Exp $ */
 #ifndef MISC_H
 #define MISC_H 1
 /*

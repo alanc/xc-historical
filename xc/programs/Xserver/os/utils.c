@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: utils.c,v 1.61 88/08/29 15:29:12 jim Exp $ */
+/* $XConsortium: utils.c,v 1.62 88/08/30 18:00:53 jim Exp $ */
 #include <stdio.h>
 #include "Xos.h"
 #include "misc.h"

@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: rgb.h,v 1.1 87/09/11 07:50:22 toddb Exp $ */
+/* $XConsortium: rgb.h,v 1.2 88/07/27 09:45:55 jim Exp $ */
 
 #ifndef RGB_H
 #define RGB_H

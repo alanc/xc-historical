@@ -1,4 +1,4 @@
-/* $Header: extension.h,v 1.2 87/09/08 14:02:46 toddb Exp $ */
+/* $XConsortium: extension.h,v 1.3 88/04/30 12:05:10 rws Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.

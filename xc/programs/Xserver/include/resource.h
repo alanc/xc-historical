@@ -1,4 +1,4 @@
-/* $Header: resource.h,v 1.3 87/12/30 18:33:32 rws Exp $ */
+/* $XConsortium: resource.h,v 1.4 88/01/01 17:00:44 rws Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.

@@ -1,4 +1,4 @@
-/* $Header: Xprotostr.h,v 1.1 87/09/11 06:37:58 toddb Exp $ */
+/* $XConsortium: Xprotostr.h,v 1.2 88/01/30 17:49:46 rws Exp $ */
 #ifndef XPROTOSTRUCTS_H
 #define XPROTOSTRUCTS_H
 

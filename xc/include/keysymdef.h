@@ -1,4 +1,4 @@
-/* $Header: keysymdef.h,v 1.7 88/01/30 16:58:05 rws Locked $ */
+/* $XConsortium: keysymdef.h,v 1.8 88/02/02 09:18:20 rws Exp $ */
 
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,

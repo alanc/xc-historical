@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: gc.h,v 1.47 88/01/02 17:09:52 rws Exp $ */
+/* $XConsortium: gc.h,v 1.48 88/09/05 14:33:59 rws Exp $ */
 
 #ifndef GC_H
 #define GC_H 

@@ -1,4 +1,4 @@
-/* $Header: keysym.h,v 1.10 87/08/29 16:24:17 toddb Locked $ */
+/* $XConsortium: keysym.h,v 1.11 87/08/31 20:31:43 toddb Exp $ */
 
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,

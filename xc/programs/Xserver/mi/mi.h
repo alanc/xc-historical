@@ -1,4 +1,4 @@
-/* $Header: mi.h,v 1.1 87/09/11 07:49:59 toddb Exp $ */
+/* $XConsortium: mi.h,v 1.2 88/08/30 17:11:02 keith Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.

@@ -23,7 +23,7 @@ SOFTWARE.
 ******************************************************************/
 #ifndef SERVERMD_H
 #define SERVERMD_H 1
-/* $Header: servermd.h,v 1.36 88/07/20 09:38:27 xguest Exp $ */
+/* $XConsortium: servermd.h,v 1.37 88/09/01 09:03:10 rws Exp $ */
 
 /*
  * The vendor string identifies the vendor responsible for the

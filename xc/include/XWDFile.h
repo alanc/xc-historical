@@ -2,7 +2,7 @@
 
 /* Copyright 1985, 1986, Massachusetts Institute of Technology */
 
-/* $Header: XWDFile.h,v 1.6 87/09/11 16:51:01 rws Exp $ */
+/* $XConsortium: XWDFile.h,v 1.7 88/08/18 16:26:16 jim Exp $ */
 /*
  * XWDFile.h	MIT Project Athena, X Window system window raster
  *		image dumper, dump file format header file.

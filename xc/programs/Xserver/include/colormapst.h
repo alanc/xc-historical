@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 */
-/* $Header: colormapst.h,v 1.5 87/07/17 11:01:39 todd Exp $ */
+/* $XConsortium: colormapst.h,v 1.5 87/09/11 07:50:38 toddb Exp $ */
 #ifndef CMAPSTRUCT_H
 #define CMAPSTRUCT_H 1
 

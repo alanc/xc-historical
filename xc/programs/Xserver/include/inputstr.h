@@ -22,7 +22,7 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $Header: inputstr.h,v 1.15 88/01/02 13:04:34 rws Exp $ */
+/* $XConsortium: inputstr.h,v 1.16 88/08/16 22:27:19 rws Exp $ */
 
 #ifndef INPUTSTRUCT_H
 #define INPUTSTRUCT_H

@@ -1,4 +1,4 @@
-/* $Header: window.h,v 1.1 87/09/11 07:50:02 toddb Exp $ */
+/* $XConsortium: window.h,v 1.2 88/02/04 11:20:02 rws Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.

@@ -1,4 +1,4 @@
-/* $Header: cursorstr.h,v 1.2 88/01/02 17:08:03 rws Locked $ */
+/* $XConsortium: cursorstr.h,v 1.3 88/01/18 17:28:55 rws Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.

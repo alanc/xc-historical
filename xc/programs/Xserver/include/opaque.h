@@ -1,4 +1,4 @@
-/* $Header: opaque.h,v 1.3 87/09/07 13:09:51 rws Locked $ */
+/* $XConsortium: opaque.h,v 1.4 88/01/02 17:49:34 rws Exp $ */
 
 extern char *defaultFontPath;
 extern char *defaultTextFont;

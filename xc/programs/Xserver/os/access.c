@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: access.c,v 1.24 88/08/29 16:14:52 rws Exp $ */
+/* $XConsortium: access.c,v 1.25 88/08/31 10:09:32 rws Exp $ */
 
 #include "X.h"
 #include "Xproto.h"

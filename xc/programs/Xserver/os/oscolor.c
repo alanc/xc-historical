@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: oscolor.c,v 1.12 88/08/16 22:26:51 keith Exp $ */
+/* $XConsortium: oscolor.c,v 1.13 88/08/31 10:09:47 rws Exp $ */
 #include <dbm.h>
 #include "rgb.h"
 #include "os.h"

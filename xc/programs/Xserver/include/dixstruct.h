@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: dixstruct.h,v 1.9 87/12/30 17:59:00 rws Locked $ */
+/* $XConsortium: dixstruct.h,v 1.10 87/12/30 19:48:56 rws Exp $ */
 #ifndef DIXSTRUCT_H
 #define DIXSTRUCT_H
 

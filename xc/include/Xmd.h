@@ -23,7 +23,7 @@ SOFTWARE.
 ******************************************************************/
 #ifndef XMD_H
 #define XMD_H 1
-/* $Header: Xmd.h,v 1.30 88/09/01 16:26:00 jim Exp $ */
+/* $XConsortium: Xmd.h,v 1.31 88/09/02 14:57:34 jim Exp $ */
 /*
  *  Xmd.h: MACHINE DEPENDENT DECLARATIONS.
  */

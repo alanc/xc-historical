@@ -1,4 +1,4 @@
-/* $Header: windowstr.h,v 1.7 88/07/29 12:17:22 keith Exp $ */
+/* $XConsortium: windowstr.h,v 1.8 88/08/13 15:38:28 rws Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.

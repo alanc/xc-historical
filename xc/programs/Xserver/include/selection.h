@@ -1,4 +1,4 @@
-/* $Header$ */
+/* $XConsortium: selection.h,v 1.1 87/09/11 07:50:17 toddb Exp $ */
 #ifndef SELECTION_H
 #define SELECTION_H 1
 

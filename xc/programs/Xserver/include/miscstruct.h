@@ -1,4 +1,4 @@
-/* $Header: miscstruct.h,v 1.1 87/09/10 00:18:28 toddb Locked $ */
+/* $XConsortium: miscstruct.h,v 1.2 87/09/10 00:18:49 toddb Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.

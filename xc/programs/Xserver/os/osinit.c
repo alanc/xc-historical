@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: osinit.c,v 1.16 88/08/13 17:54:27 rws Exp $ */
+/* $XConsortium: osinit.c,v 1.17 88/08/16 20:17:49 jim Exp $ */
 #include "os.h"
 #include "opaque.h"
 #undef NULL

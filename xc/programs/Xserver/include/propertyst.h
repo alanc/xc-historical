@@ -1,4 +1,4 @@
-/* $Header$ */
+/* $XConsortium: propertyst.h,v 1.1 87/09/11 07:50:45 toddb Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.

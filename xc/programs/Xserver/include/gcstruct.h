@@ -1,4 +1,4 @@
-/* $Header: gcstruct.h,v 1.4 88/07/29 12:17:11 keith Exp $ */
+/* $XConsortium: gcstruct.h,v 1.5 88/08/30 17:11:09 keith Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.

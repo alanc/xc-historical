@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: dix.h,v 1.49 87/08/14 22:48:17 newman Exp $ */
+/* $XConsortium: dix.h,v 1.50 88/07/19 18:16:47 toddb Exp $ */
 
 #ifndef DIX_H
 #define DIX_H
