@@ -1,5 +1,5 @@
 XCOMM
-XCOMM $XConsortium: Imakefile,v 5.10 91/08/22 14:17:19 rws Exp $
+XCOMM $XConsortium: Imakefile,v 5.11 91/08/26 10:57:28 gildea Exp $
 XCOMM 
 XCOMM Copyright (c) 1989,1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
 XCOMM 
@@ -44,10 +44,10 @@ CDEBUGFLAGS = PexFontCDebugFlags
 
       FONTS = Roman Roman_M 
 
-#Original sources for the font files
+XCOMM Original sources for the font files
   FONTS_SRC = Roman.src Roman_M.src
 
-#Binary (run-time) versions
+XCOMM Binary (run-time) versions
 FONTS_BINARY = Roman.phont Roman_M.phont
 
        SRCS = to_wfont.c lex.c
