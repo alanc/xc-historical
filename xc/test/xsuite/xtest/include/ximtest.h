@@ -1,4 +1,7 @@
-/* $XConsortium$ */
+/* $XConsortium: ximtest.h,v 1.1 94/01/29 15:54:38 rws Exp $ */
+#include <X11/Xfuncproto.h>
+#include <X11/Xresource.h>
+
 #define	CB_MAX	8
 #define	CB_PE_START	0
 #define	CB_PE_DONE	1
@@ -91,18 +94,35 @@ struct ximconfig {
 
 extern struct ximconfig ximconfig;
 
-#if defined(FUNCPROTO) || __STDC__ || defined(__cplusplus) || defined(c_plusplus)
-void localestartup(void);
-void localecleanup(void);
-XrmDatabase rm_db_open(void);
-XIM im_open(XrmDatabase db);
-XIC ic_open(XIM im,Window win,XIMStyle which_style);
-XIC xim_ic_init(char* plocale);
-#else
-void localestartup();
-void localecleanup();
-XrmDatabase rm_db_open();
-XIM im_open();
-XIC ic_open();
-XIC xim_ic_init();
+void localestartup(
+#if NeedFunctionPrototypes
+    void
 #endif
+);
+void localecleanup(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+XrmDatabase rm_db_open(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+XIM im_open(
+#if NeedFunctionPrototypes
+    XrmDatabase /* db */
+#endif
+);
+XIC ic_open(
+#if NeedFunctionPrototypes
+    XIM /* im */,
+    Window /* win */,
+    XIMStyle /* which_style */
+#endif
+);
+XIC xim_ic_init(
+#if NeedFunctionPrototypes
+    char* /* plocale */
+#endif
+);
