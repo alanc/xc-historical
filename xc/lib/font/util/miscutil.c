@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: miscutil.c,v 1.2 91/05/13 16:40:27 gildea Exp $
  * 
  * Copyright 1991 by the Massachusetts Institute of Technology
  *
@@ -15,6 +15,13 @@
  *
  * The X Window System is a Trademark of MIT.
  */
+
+#include <X11/Xosdefs.h>
+#ifndef X_NOT_STDC_ENV
+#include <stdlib.h>
+#else
+char *malloc(), *realloc();
+#endif
 
 #define XK_LATIN1
 #include    <X11/keysymdef.h>
