@@ -1,4 +1,4 @@
-XCOMM $XConsortium$
+XCOMM $XConsortium: Imakefile,v 1.49 91/07/17 00:46:03 gildea Exp $
 XCOMM
 XCOMM                         Attention xterm porters
 XCOMM
@@ -15,14 +15,6 @@ XCOMM
 #ifdef SetTtyGroup			/* turn on in config/machine.cf */
    TTYGROUPDEF = -DUSE_TTY_GROUP
 #endif
-/*
- *	[PUCC = Purdue University Computer Center]
- *	If you use the PUCC ptyd, add "-DPUCC_PTYD" to the DEFINES
- *	and dink the -DUTMP (also do not define WTMP or LASTLOG - since
- *	ptyd does all that logging for you)  You will need to add
- *	the right library load line (we use -lpucc) to the 
- *	ComplexProgramTarget (right next to -ltermcap)
- */
 #ifdef UsePUCCPtyd			/* turn on in config/site.def */
     PUCCPTYDDEF = -DPUCC_PTYD		/* does not need to be setuid */
          PTYLIB = -lpucc
@@ -66,7 +58,13 @@ SpecialObjectRule(main.o,NullParameter,$(MAIN_DEFINES))
 SpecialObjectRule(misc.o,NullParameter,$(MISC_DEFINES))
 SpecialObjectRule(charproc.o,NullParameter,$(MISC_DEFINES))
 
-NormalProgramTarget(xterm,$(OBJS1),$(DEPLIBS1),XawClientLibs,$(TERMCAPLIB) $(PTYLIB))
+#if InstallXtermSetUID
+#define ProgramTarget SetUIDProgramTarget
+#else
+#define ProgramTarget NormalProgramTarget
+#endif
+
+ProgramTarget(xterm,$(OBJS1),$(DEPLIBS1),XawClientLibs,$(TERMCAPLIB) $(PTYLIB))
 #if InstallXtermSetUID && defined(SunArchitecture) && HasSharedLibraries
 #if AlternateUsrLibDir
 LDOVERRIDE =  -Bstatic -L$(USRLIBDIR)
@@ -74,7 +72,7 @@ LDOVERRIDE =  -Bstatic -L$(USRLIBDIR)
 install:: xterm
 	MakeDir($(DESTDIR)$(BINDIR))
 	$(RM) xterm.inst
-	$(CC) -o xterm.inst $(OBJS1) $(LDOPTIONS) $(LDOVERRIDE) -lXaw -lXmu -lXt -lXext -lX11 -Bdynamic $(LDLIBS) $(TERMCAPLIB) $(PTYLIB) $(EXTRA_LOAD_FLAGS)
+	cc -o xterm.inst $(OBJS1) $(LDOPTIONS) $(LDOVERRIDE) -lXaw -lXmu -lXt -lXext -lX11 -Bdynamic $(LDLIBS) $(TERMCAPLIB) $(PTYLIB)
 	$(INSTALL) -c $(INSTPGMFLAGS) $(INSTUIDFLAGS) xterm.inst $(DESTDIR)$(BINDIR)/xterm
 	$(RM) xterm.inst
 #else
