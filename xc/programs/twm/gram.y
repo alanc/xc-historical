@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: gram.y,v 1.89 90/11/15 11:39:45 dave Exp $
+ * $XConsortium: gram.y,v 1.90 90/12/01 13:06:26 rws Exp $
  *
  * .twmrc command grammer
  *
@@ -816,7 +816,7 @@ static Bool CheckWarpScreenArg (s)
 	strcmp (s,  WARPSCREEN_BACK) == 0)
       return True;
 
-    for (; *s && isascii(*s) && isdigit(*s); s++) ;
+    for (; *s && isascii(*s) && isdigit(*s); s++) ; /* SUPPRESS 530 */
     return (*s ? False : True);
 }
 
