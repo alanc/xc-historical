@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: dm.h,v 1.43 91/04/01 10:26:56 rws Exp $
+ * $XConsortium: dm.h,v 1.44 91/04/01 10:43:38 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -294,11 +294,14 @@ extern char		*localHostname ();
 # define CLOSE_ALWAYS	    0
 # define LEAVE_FOR_DISPLAY  1
 
-#if __STDC__ && !defined(NOSTDHDRS)
+#ifndef X_NOT_STDC_ENV
 #include <stdlib.h>
 #else
-extern char	*malloc (), *realloc ();
+char *malloc(), *realloc();
 #endif
+#if defined(macII) && !defined(__STDC__)  /* stdlib.h fails to define these */
+char *malloc(), *realloc();
+#endif /* macII */
 
 #ifdef SIGNALRETURNSINT
 #define SIGVAL int
