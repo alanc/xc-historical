@@ -11,32 +11,35 @@ cannot start X directly from \fI/etc/init\fP or in environments
 that use multiple window systems.  When this first client exits, 
 \fIxinit\fP will kill the X server and then terminate.
 .PP
-If no client arguments are specified on the command line, \fIxinit\fP will
-look for a file called \fI\.xinitrc\fP in the user's home directory (or the
-file given by the XINITRC environment variable).  If the file exists and is 
-readable, \fIxinit\fP will treat it as a Bourne shell script that should be
-run using the command \fBsh -c .xinitrc\fP.  Otherwise, \fIxinit\fP will
-use the following as the client command to execute:
+If no specific client program is given on the command line,
+\fIxinit\fP will look for a file in the user's home directory
+called \fI.xinit\fP to run as a shell script to start up client programs.
+If no such file exists, \fIxinit\fP will use the following as a default:
 .sp
 	xterm -geometry +1+1 -n login -display :0
 .sp
-(systems that don't support Unix domain sockets will be started with 
-hostname:0 instead).
 .PP
-It is important that \fI\.xinitrc\fP files run programs that don't exit
-right away in the background so that they don't prevent other programs
-from starting up.  However, the last long-lived program started (usually
-a window manager or terminal emulator) should be
-left in the foreground so that \fI\.xinitrc\fP itself doesn't exit (which
-indicates that the user is done and that \fIxinit\fP should exit).
-.PP
-Unless otherwise given on the command line,
-\fIxinit\fP assumes that there is a program named \fIX\fP in the current
+If no specific server program is given on the command line,
+\fIxinit\fP will look for a file in the user's home directory called
+\fI.xserverrc\fP to run as a shell script to start up the server.
+If no such file exists, \fIxinit\fP will use the following as a default:
+.sp
+        X :0
+.sp
+Note that this assumes that there is a program named \fIX\fP in the current
 search path.  However, servers are usually named \fIXdisplaytype\fP where 
 \fIdisplaytype\fP is the type of graphics display which is driven by this
 server.  The site administrator should, therefore, make a link to the 
 appropriate type of server on the machine, or create a shell script that
 runs \fIxinit\fP with the appropriate server.
+.PP
+It is important that \fI\.xinitrc\fP and \fI.xserverrc\fP files 
+run programs that don't exit
+right away in the background so that they don't prevent other programs
+from starting up.  However, the last long-lived program started (usually
+a window manager or terminal emulator) should be
+left in the foreground so that the script won't exit (which
+indicates that the user is done and that \fIxinit\fP should exit).
 .PP
 An alternate client and/or server may be specified on the
 command line.  The desired client program and its arguments should be given
