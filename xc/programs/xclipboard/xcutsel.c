@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xcutsel.c,v 1.11 89/12/08 13:25:23 swick Exp $
+ * $XConsortium: xcutsel.c,v 1.13 91/01/10 16:03:59 gildea Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -22,10 +22,6 @@
  *
  * Author:  Ralph Swick, DEC/Project Athena
  */
-
-#ifndef lint
-static char rcsid[] = "$XConsortium: xcutsel.c,v 1.11 89/12/08 13:25:23 swick Exp $";
-#endif /* lint */
 
 #include <stdio.h>
 #include <X11/Intrinsic.h>
@@ -82,9 +78,9 @@ Syntax(call)
 
 static void StoreBuffer(w, client_data, selection, type, value, length, format)
     Widget w;
-    caddr_t client_data;
+    XtPointer client_data;
     Atom *selection, *type;
-    caddr_t value;
+    XtPointer value;
     unsigned long *length;
     int *format;
 {
@@ -105,7 +101,7 @@ static Boolean ConvertSelection(w, selection, target,
 				type, value, length, format)
     Widget w;
     Atom *selection, *target, *type;
-    caddr_t *value;
+    XtPointer *value;
     unsigned long *length;
     int *format;
 {
@@ -173,7 +169,7 @@ static Boolean ConvertSelection(w, selection, target,
     }
 #endif /* notdef */
     if (XmuConvertStandardSelection(w, req->time, selection, target, type,
-				    value, length, format))
+				    (caddr_t *)value, length, format))
 	return True;
 
     /* else */
@@ -212,8 +208,8 @@ static void LoseSelection(w, selection)
 /* ARGSUSED */
 static void Quit(w, closure, callData)
     Widget w;
-    caddr_t closure;		/* unused */
-    caddr_t callData;		/* unused */
+    XtPointer closure;		/* unused */
+    XtPointer callData;		/* unused */
 {
     XtCloseDisplay( XtDisplay(w) );
     exit(0);
@@ -223,8 +219,8 @@ static void Quit(w, closure, callData)
 /* ARGSUSED */
 static void GetSelection(w, closure, callData)
     Widget w;
-    caddr_t closure;		/* unused */
-    caddr_t callData;		/* unused */
+    XtPointer closure;		/* unused */
+    XtPointer callData;		/* unused */
 {
     XtGetSelectionValue(w, app_resources.selection, XA_STRING,
 			StoreBuffer, NULL,
@@ -235,8 +231,8 @@ static void GetSelection(w, closure, callData)
 /* ARGSUSED */
 static void GetBuffer(w, closure, callData)
     Widget w;
-    caddr_t closure;
-    caddr_t callData;		/* unused */
+    XtPointer closure;
+    XtPointer callData;		/* unused */
 {
     XtFree( app_resources.value );
     app_resources.value =
@@ -251,14 +247,15 @@ static void GetBuffer(w, closure, callData)
 
 
 void main(argc, argv)
-    unsigned int argc;
-    char **argv;
+    int argc;
+    char *argv[];
 {
     char label[100];
     Widget box, button;
+    XtAppContext appcon;
     Widget shell =
-	XtInitialize( "xcutsel", "XCutsel", options, XtNumber(options),
-		      &argc, argv );
+	XtAppInitialize( &appcon, "XCutsel", options, XtNumber(options),
+			 &argc, argv, NULL, NULL, 0 );
     XrmDatabase rdb = XtDatabase(XtDisplay(shell));
 
     if (argc != 1) Syntax(argv[0]);
@@ -294,10 +291,10 @@ void main(argc, argv)
 
     button =
 	XtCreateManagedWidget("cut-sel", commandWidgetClass, box, NULL, ZERO);
-	XtAddCallback( button, XtNcallback, GetBuffer, (caddr_t)&state );
+	XtAddCallback( button, XtNcallback, GetBuffer, (XtPointer)&state );
  	state.button = button;
 	state.is_on = False;
    
     XtRealizeWidget(shell);
-    XtMainLoop();
+    XtAppMainLoop(appcon);
 }
