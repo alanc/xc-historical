@@ -1,4 +1,4 @@
-/* $XConsortium: grabs.c,v 5.5 89/10/04 22:50:55 rws Exp $ */
+/* $XConsortium: grabs.c,v 5.6 89/11/25 12:15:29 rws Exp $ */
 /************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -298,6 +298,8 @@ DeletePassiveGrabFromList(pMinuendGrab)
     i = 0;
     for (grab = wPassiveGrabs(pMinuendGrab->window); grab; grab = grab->next)
 	i++;
+    if (!i)
+	return TRUE;
     deletes = (GrabPtr *)ALLOCATE_LOCAL(i * sizeof(GrabPtr));
     adds = (GrabPtr *)ALLOCATE_LOCAL(i * sizeof(GrabPtr));
     updates = (Mask ***)ALLOCATE_LOCAL(i * sizeof(Mask **));
