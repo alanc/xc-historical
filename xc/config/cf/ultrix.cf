@@ -9,11 +9,13 @@
 #define XqvssServer Xqvss
 #define XqdssServer Xqdss
 
-/**/# platform:  $XConsortium$
+/**/# platform:  $XConsortium: ultrix.cf,v 1.1 89/01/11 14:58:35 jim Exp $
 /**/# operating system:  OSName
 
 /*****************************************************************************
  *			  Platform-specfic parameters                        *
  *****************************************************************************/
 
+#ifdef VaxArchitecture
 #define UnalignedReferencesAllowed YES	       /* if arbitrary deref is okay */
+#endif
