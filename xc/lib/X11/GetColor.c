@@ -1,4 +1,4 @@
-/* $XConsortium: XGetColor.c,v 11.20 91/02/12 16:11:15 dave Exp $ */
+/* $XConsortium: XGetColor.c,v 11.22 91/05/13 22:54:11 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -73,7 +73,7 @@ XColor *exact_def; /* RETURN */
     GetReq(AllocNamedColor, req);
 
     req->cmap = cmap;
-    nbytes = req->nbytes = tmpName[0] == '\0' ? strlen(tmpName) : 0;
+    nbytes = req->nbytes = strlen(tmpName);
     req->length += (nbytes + 3) >> 2; /* round up to mult of 4 */
 
     _XSend(dpy, tmpName, nbytes);

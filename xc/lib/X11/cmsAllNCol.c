@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsAlNCol.c,v 1.4 91/02/12 16:12:21 dave Exp $" */
+/* $XConsortium: XcmsAlNCol.c,v 1.5 91/05/13 23:02:49 rws Exp $" */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -175,7 +175,7 @@ PassToServer:
     GetReq(AllocNamedColor, req);
 
     req->cmap = cmap;
-    nbytes = req->nbytes = color_name ? strlen(color_name) : 0;
+    nbytes = req->nbytes = strlen(color_name);
     req->length += (nbytes + 3) >> 2; /* round up to mult of 4 */
 
     _XSend(dpy, color_name, nbytes);

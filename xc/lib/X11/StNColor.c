@@ -1,4 +1,4 @@
-/* $XConsortium: XStNColor.c,v 11.17 91/02/12 16:12:01 dave Exp $ */
+/* $XConsortium: XStNColor.c,v 11.19 91/05/13 23:01:26 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -74,7 +74,7 @@ int flags;  /* DoRed, DoGreen, DoBlue */
     req->cmap = cmap;
     req->flags = flags;
     req->pixel = pixel;
-    req->nbytes = nbytes = tmpName[0] == '\0' ? strlen(tmpName) : 0;
+    req->nbytes = nbytes = strlen(tmpName);
     req->length += (nbytes + 3) >> 2; /* round up to multiple of 4 */
     Data(dpy, tmpName, (long)nbytes);
     UnlockDisplay(dpy);

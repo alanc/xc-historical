@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsLkCol.c,v 1.6 91/02/20 09:02:39 rws Exp $ */
+/* $XConsortium: XcmsLkCol.c,v 1.8 91/05/13 23:25:38 rws Exp $ */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -167,11 +167,10 @@ PassToServer:
      * overwritten by XcmsResolveColorString().
      */
 
-    n = tmpName[0] == '\0' ? strlen (tmpName) : 0;
     LockDisplay(dpy);
     GetReq (LookupColor, req);
     req->cmap = cmap;
-    req->nbytes = n;
+    req->nbytes = n = strlen(tmpName);
     req->length += (n + 3) >> 2;
     Data (dpy, tmpName, (long)n);
     if (!_XReply (dpy, (xReply *) &reply, 0, xTrue)) {

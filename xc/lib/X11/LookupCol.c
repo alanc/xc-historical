@@ -1,4 +1,4 @@
-/* $XConsortium: XLookupCol.c,v 11.14 91/02/12 16:11:32 dave Exp $ */
+/* $XConsortium: XLookupCol.c,v 11.15 91/05/13 22:54:49 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1985	*/
 
 /*
@@ -69,7 +69,7 @@ Status XLookupColor (dpy, cmap, spec, def, scr)
 	 * overwritten by XcmsResolveColorString().
 	 */
 
-	n = tmpName[0] == '\0' ? strlen (tmpName) : 0;
+	n = strlen (tmpName);
 	LockDisplay(dpy);
 	GetReq (LookupColor, req);
 	req->cmap = cmap;

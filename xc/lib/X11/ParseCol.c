@@ -1,4 +1,4 @@
-/* $XConsortium: XParseCol.c,v 11.23 91/02/12 16:11:38 dave Exp $ */
+/* $XConsortium: XParseCol.c,v 11.24 91/05/13 22:55:52 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1985	*/
 
 /*
@@ -107,7 +107,7 @@ Status XParseColor (dpy, cmap, spec, def)
 	    LockDisplay(dpy);
 	    GetReq (LookupColor, req);
 	    req->cmap = cmap;
-	    req->nbytes = n;
+	    req->nbytes = n = strlen(tmpName);
 	    req->length += (n + 3) >> 2;
 	    Data (dpy, tmpName, (long)n);
 	    if (!_XReply (dpy, (xReply *) &reply, 0, xTrue)) {
