@@ -1,4 +1,4 @@
-/* $XConsortium: iceauth.c,v 1.3 93/09/27 11:45:30 mor Exp $ */
+/* $XConsortium: iceauth.c,v 1.4 93/11/08 16:34:13 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -17,254 +17,167 @@ purpose.  It is provided "as is" without express or implied warranty.
 #include <X11/ICE/ICElib.h>
 #include <X11/ICE/ICElibint.h>
 
+static int binaryEqual ();
 
+
+IcePoAuthStatus
+_IcePoMagicCookie1Proc (authStatePtr, connectionString, cleanUp, swap,
+    authDataLen, authData, replyDataLenRet, replyDataRet, errorStringRet)
+
+IcePointer	*authStatePtr;
+char		*connectionString;
+Bool 		cleanUp;
+Bool		swap;
+int     	authDataLen;
+IcePointer	authData;
+int 		*replyDataLenRet;
+IcePointer	*replyDataRet;
+char    	**errorStringRet;
+
+{
+    if (cleanUp && *authStatePtr != NULL)
+    {
+	/*
+	 * Free state.  We're done.
+	 */
+
+	IceDisposeAuthFileEntry ((IceAuthFileEntry *) *authStatePtr);
+	return (IcePoAuthDoneCleanup);
+    }
+
+    *errorStringRet = NULL;
+
+    if (*authStatePtr == NULL)
+    {
+	/*
+	 * This is the first time we're being called.  Check the
+	 * .ICEauthority file for the first occurence of
+	 * ICE-MAGIC-COOKIE-1 that matches connectionString.
+	 */
+
+	IceAuthFileEntry *entry = IceGetAuthFileEntry (3, "ICE",
+            strlen (connectionString), connectionString,
+	    18, "ICE-MAGIC-COOKIE-1");
+
+	if (!entry)
+	{
+	    *errorStringRet = "Could not find correct ICE-MAGIC-COOKIE-1 entry in .ICEauthority file";
+	    return (IcePoAuthFailed);
+	}
+	else
+	{
+	    *authStatePtr = (IcePointer) entry;
+
+	    *replyDataLenRet = entry->auth_data_length;
+	    *replyDataRet = entry->auth_data;
+
+	    return (IcePoAuthHaveReply);
+	}
+    }
+    else
+    {
+	/*
+	 * We should never get here for ICE-MAGIC-COOKIE-1 since it is
+	 * a single pass authentication method.
+	 */
+
+	*errorStringRet = "ICE-MAGIC-COOKIE-1 authentication internal error";
+	IceDisposeAuthFileEntry ((IceAuthFileEntry *) *authStatePtr);
+	return (IcePoAuthFailed);
+    }
+}
+
+
+
+IcePaAuthStatus
+_IcePaMagicCookie1Proc (authStatePtr, connectionString, swap,
+    replyDataLen, replyData, authDataLenRet, authDataRet, errorStringRet)
+
+IcePointer	*authStatePtr;
+char		*connectionString;
+Bool		swap;
+int     	replyDataLen;
+IcePointer	replyData;
+int 		*authDataLenRet;
+IcePointer	*authDataRet;
+char    	**errorStringRet;
+
+{
+    IceAuthDataEntry	*entry;
+
+    *errorStringRet = NULL;
+    *authDataLenRet = 0;
+    *authDataRet = NULL;
+
+    if (*authStatePtr == NULL)
+    {
+	/*
+	 * This is the first time we're being called.  Check the
+	 * authentication data set by IceSetAuthenticationData()
+	 * for the first occurence of ICE-MAGIC-COOKIE-1 that
+	 * matches connectionString.  The reason we don't check the
+	 * .ICEauthority file is because this would be a security
+	 * hole.  The client could just write an entry into the
+	 * .ICEauthority file knowing the accepting side would use
+	 * it in authentication.
+	 */
+
+	entry = _IceGetAuthDataEntry (3, "ICE",
+            strlen (connectionString), connectionString,
+	    18, "ICE-MAGIC-COOKIE-1");
+
+	if (!entry)
+	{
+	    /*
+	     * We should never get here because in the ConnectionReply
+	     * we should have passed all the valid methods.  So we should
+	     * always find a valid entry.
+	     */
+
+	    *errorStringRet =
+		"ICE-MAGIC-COOKIE-1 authentication internal error";
+
+	    return (IcePaAuthFailed);
+	}
+	else
+	{
+	    *authStatePtr = (IcePointer) entry;
+
+	    return (IcePaAuthContinue);
+	}
+    }
+    else
+    {
+	entry = (IceAuthFileEntry *) *authStatePtr;
+
+	if (replyDataLen == entry->auth_data_length &&
+	    binaryEqual (replyData, entry->auth_data, replyDataLen))
+	{
+	    return (IcePaAuthAccepted);
+	}
+	else
+	{
+	    *errorStringRet = "ICE-MAGIC-COOKIE-1 authentication rejected";
+	    return (IcePaAuthRejected);
+	}
+    }
+}
+
+
+
 /*
- * For now, I haven't implemented any real authentication for ICE.
- * Nevertheless, these routines are here for testing purposes.
+ * local routines
  */
 
-typedef struct {
-    int phase;
-} Auth1State;
+static int
+binaryEqual (a, b, len)
 
-typedef struct {
-    int phase;
-} Auth2State;
-
-
-IcePoAuthStatus
-_IcePoAuth1proc (authStatePtr, cleanUp, swap,
-    authDataLen, authData, replyDataLenRet, replyDataRet, errorStringRet)
-
-IcePointer	*authStatePtr;
-Bool 		cleanUp;
-Bool		swap;
-int     	authDataLen;
-IcePointer	authData;
-int 		*replyDataLenRet;
-IcePointer	*replyDataRet;
-char    	**errorStringRet;
+register char		*a, *b;
+register unsigned	len;
 
 {
-    Auth1State *state;
-
-    if (cleanUp && *authStatePtr != NULL)
-    {
-	/*
-	 * Free stuff within state, if any.
-	 */
-	
-	state = (Auth1State *) *authStatePtr;
-
-
-	/*
-	 * Now free state pointer.
-	 */
-
-	free ((char *) state);
-	return (IcePoAuthDoneCleanup);
-    }
-
-    *errorStringRet = NULL;
-
-    if (*authStatePtr == NULL)
-    {
-	/*
-	 * This is the first time we're being called.
-	 * Allocate state, initialize phase to 1.
-	 */
-
-	state = (Auth1State *) malloc (sizeof (Auth1State));
-	*authStatePtr = (IcePointer) state;
-	state->phase = 1;
-    }
-    else
-    {
-	state = (Auth1State *) *authStatePtr;
-	state->phase++;
-    }
-
-    *replyDataLenRet = 0;
-    *replyDataRet = NULL;
-
-    return (IcePoAuthHaveReply);
-}
-
-
-
-IcePaAuthStatus
-_IcePaAuth1proc (authStatePtr, swap, replyDataLen, replyData,
-    authDataLenRet, authDataRet, errorStringRet)
-
-IcePointer	*authStatePtr;
-Bool		swap;
-int     	replyDataLen;
-IcePointer	replyData;
-int 		*authDataLenRet;
-IcePointer	*authDataRet;
-char    	**errorStringRet;
-
-{
-    Auth1State *state;
-
-    *errorStringRet = NULL;
-
-    if (*authStatePtr == NULL)
-    {
-	/*
-	 * This is the first time we're being called.
-	 * Allocate state, initialize phase to 1.
-	 */
-
-	state = (Auth1State *) malloc (sizeof (Auth1State));
-	*authStatePtr = (IcePointer) state;
-	state->phase = 1;
-    }
-    else
-    {
-	state = (Auth1State *) *authStatePtr;
-	state->phase++;
-    }
-
-    if (state->phase == 3)
-    {
-	/*
-	 * Free stuff within state, if any.
-	 */
-	
-
-	/*
-	 * Now free state pointer.
-	 */
-
-	free ((char *) state);
-
-	return (IcePaAuthAccepted);
-    }
-    else
-    {
-	*authDataLenRet = 0;
-	*authDataRet = NULL;
-
-	return (IcePaAuthContinue);
-    }
-}
-
-
-IcePoAuthStatus
-_IcePoAuth2proc (authStatePtr, cleanUp, swap,
-    authDataLen, authData, replyDataLenRet, replyDataRet, errorStringRet)
-
-IcePointer	*authStatePtr;
-Bool 		cleanUp;
-Bool		swap;
-int     	authDataLen;
-IcePointer	authData;
-int 		*replyDataLenRet;
-IcePointer	*replyDataRet;
-char    	**errorStringRet;
-
-{
-    Auth2State *state;
-
-    if (cleanUp && *authStatePtr != NULL)
-    {
-	/*
-	 * Free stuff within state, if any.
-	 */
-	
-	state = (Auth2State *) *authStatePtr;
-
-
-	/*
-	 * Now free state pointer.
-	 */
-
-	free ((char *) state);
-	return (IcePoAuthDoneCleanup);
-    }
-
-    *errorStringRet = NULL;
-
-    if (*authStatePtr == NULL)
-    {
-	/*
-	 * This is the first time we're being called.
-	 * Allocate state, initialize phase to 1.
-	 */
-
-	state = (Auth2State *) malloc (sizeof (Auth2State));
-	*authStatePtr = (IcePointer) state;
-	state->phase = 1;
-    }
-    else
-    {
-	state = (Auth2State *) *authStatePtr;
-	state->phase++;
-    }
-
-    *replyDataLenRet = 0;
-    *replyDataRet = NULL;
-
-    return (IcePoAuthHaveReply);
-}
-
-
-
-IcePaAuthStatus
-_IcePaAuth2proc (authStatePtr, swap, replyDataLen, replyData,
-    authDataLenRet, authDataRet, errorStringRet)
-
-IcePointer 	*authStatePtr;
-Bool		swap;
-int     	replyDataLen;
-IcePointer	replyData;
-int 		*authDataLenRet;
-IcePointer	*authDataRet;
-char    	**errorStringRet;
-
-{
-    Auth2State *state;
-
-    *errorStringRet = NULL;
-
-    if (*authStatePtr == NULL)
-    {
-	/*
-	 * This is the first time we're being called.
-	 * Allocate state, initialize phase to 1.
-	 */
-
-	state = (Auth2State *) malloc (sizeof (Auth2State));
-	*authStatePtr = (IcePointer) state;
-	state->phase = 1;
-    }
-    else
-    {
-	state = (Auth2State *) *authStatePtr;
-	state->phase++;
-    }
-
-    if (state->phase == 3)
-    {
-	/*
-	 * Free stuff within state, if any.
-	 */
-	
-
-	/*
-	 * Now free state pointer.
-	 */
-
-	free ((char *) state);
-
-	return (IcePaAuthAccepted);
-    }
-    else
-    {
-	*authDataLenRet = 0;
-	*authDataRet = NULL;
-
-	return (IcePaAuthContinue);
-    }
+    while (len--)
+	if (*a++ != *b++)
+	    return 0;
+    return 1;
 }
