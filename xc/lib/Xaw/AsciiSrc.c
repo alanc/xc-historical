@@ -1,5 +1,5 @@
 #if ( !defined(lint) && !defined(SABER) )
-static char Xrcsid[] = "$XConsortium: AsciiSrc.c,v 1.20 89/10/04 13:55:44 kit Exp $";
+static char Xrcsid[] = "$XConsortium: AsciiSrc.c,v 1.21 89/10/05 13:17:09 kit Exp $";
 #endif 
 
 /*
@@ -53,23 +53,25 @@ static char Xrcsid[] = "$XConsortium: AsciiSrc.c,v 1.20 89/10/04 13:55:44 kit Ex
 
 /* Private Data */
 
+static int magic_value = MAGIC_VALUE;
+
 #define offset(field) XtOffset(AsciiSrcObject, ascii_src.field)
 
 static XtResource resources[] = {
     {XtNstring, XtCString, XtRString, sizeof (char *),
        offset(string), XtRString, NULL},
     {XtNtype, XtCType, XtRAsciiType, sizeof (XawAsciiType),
-       offset(type), XtRImmediate, (caddr_t)XawAsciiString},
+       offset(type), XtRImmediate, (XtPointer)XawAsciiString},
     {XtNdataCompression, XtCDataCompression, XtRBoolean, sizeof (Boolean),
-       offset(data_compression), XtRImmediate, (caddr_t) TRUE},
+       offset(data_compression), XtRImmediate, (XtPointer) TRUE},
     {XtNpieceSize, XtCPieceSize, XtRInt, sizeof (XawTextPosition),
-       offset(piece_size), XtRImmediate, (caddr_t) BUFSIZ},
-    {XtNcallback, XtCCallback, XtRCallback, sizeof(caddr_t), 
-       offset(callback), XtRCallback, (caddr_t)NULL},
+       offset(piece_size), XtRImmediate, (XtPointer) BUFSIZ},
+    {XtNcallback, XtCCallback, XtRCallback, sizeof(XtPointer), 
+       offset(callback), XtRCallback, (XtPointer)NULL},
     {XtNuseStringInPlace, XtCUseStringInPlace, XtRBoolean, sizeof (Boolean),
-       offset(use_string_in_place), XtRImmediate, (caddr_t) FALSE},
+       offset(use_string_in_place), XtRImmediate, (XtPointer) FALSE},
     {XtNlength, XtCLength, XtRInt, sizeof (int),
-       offset(ascii_length), XtRImmediate, (caddr_t) MAGIC_VALUE},
+       offset(ascii_length), XtRInt, (XtPointer) &magic_value},
 
 #ifdef ASCII_DISK
     {XtNfile, XtCFile, XtRString, sizeof (String),
