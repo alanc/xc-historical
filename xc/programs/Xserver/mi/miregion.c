@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: miregion.c,v 1.24 87/08/20 17:43:11 susan Exp $ */
+/* $Header: miregion.c,v 1.26 87/08/31 09:24:16 susan Exp $ */
 
 #include "miscstruct.h"
 #include "regionstr.h"
@@ -526,8 +526,6 @@ miRectIn(region, prect)
 /************************************************************
  *
  *     Written by Michael L. Bidun && Brian Kelleher; Nov 1985
- *     Butchered by Todd Newman; Sept 1986
- *   attempted to make faster by making  FirstRect a register variable.
  *****************************************************************/
 
 int 

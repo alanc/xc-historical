@@ -1,4 +1,4 @@
-/* $Header: dispatch.c,v 1.26 87/08/29 17:19:19 susan Exp $ */
+/* $Header: dispatch.c,v 1.28 87/08/30 14:12:31 ham Exp $ */
 /************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -1740,6 +1740,11 @@ ProcGetImage(client)
     }
     else
     {
+	if((((PixmapPtr) pDraw)->width < stuff->x) ||
+	   (stuff->x < 0) ||
+	   (((PixmapPtr) pDraw)->height < stuff->y) ||
+	   (stuff->y < 0))
+	    return(BadMatch);
 	xgi.visual = None;
     }
     xgi.type = X_Reply;
@@ -2948,7 +2953,9 @@ KillServerResources()
     int i;
 
     KillAllClients();
-    CloseDownDevices();
+    /* Good thing we stashed these two in globals so we could get at them
+     * here. */
+    CloseDownDevices(argcGlobal, argvGlobal);
     for (i = 0; i < screenInfo.numScreens; i++)
 	(*screenInfo.screen[i].CloseScreen)(i, &screenInfo.screen[i]);
 }

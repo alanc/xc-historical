@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: mibitblt.c,v 1.45 87/08/29 21:16:13 drewry Exp $ */
+/* $Header: mibitblt.c,v 1.46 87/08/31 01:24:43 todd Exp $ */
 /* Author: Todd Newman  (aided and abetted by Mr. Drewry) */
 
 #include "X.h"
@@ -375,6 +375,8 @@ miOpqStipDrawable(pDraw, pGC, prgnSrc, pbits, srcx, w, h, dstx, dsty)
     (*pGCT->ChangeClip)(pGCT, CT_REGION, prgnSrcClip, 0);
     ValidateGC(pPixmap, pGCT);
 
+    /* Since we know pDraw is always a pixmap, we never need to think
+     * about translation here */
     for(i = 0; i < h; i++)
     {
 	ppt->x = srcx;

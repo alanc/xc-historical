@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: gc.c,v 1.87 87/08/28 17:29:03 drewry Exp $ */
+/* $Header: gc.c,v 1.88 87/08/29 21:47:27 drewry Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -410,6 +410,8 @@ CreateGC(pDrawable, mask, pval, pStatus)
     pGC->graphicsExposures = TRUE;
     pGC->clipOrg.x = 0;
     pGC->clipOrg.y = 0;
+    pGC->clientClipType = CT_NONE;
+    pGC->clientClip = (pointer)NULL;
     pGC->numInDashList = 2;
     pGC->dash = (unsigned char *)Xalloc(2 * sizeof(unsigned char));
     pGC->dash[0] = 4;
@@ -503,6 +505,8 @@ CopyGC(pgcSrc, pgcDst, mask)
 		break;
 	    case GCTile:
 		{
+		    if (pgcDst->tile == pgcSrc->tile)
+			break;
 		    (* pgcDst->pScreen->DestroyPixmap)(pgcDst->tile);
 		    pgcDst->tile = pgcSrc->tile;
 		    if (IS_VALID_PIXMAP(pgcDst->tile))
@@ -511,6 +515,8 @@ CopyGC(pgcSrc, pgcDst, mask)
 		}
 	    case GCStipple:
 		{
+		    if (pgcDst->stipple = pgcSrc->stipple)
+			break;
 		    (* pgcDst->pScreen->DestroyPixmap)(pgcDst->stipple);
 		    pgcDst->stipple = pgcSrc->stipple;
 		    if (IS_VALID_PIXMAP(pgcDst->stipple))
@@ -524,7 +530,10 @@ CopyGC(pgcSrc, pgcDst, mask)
 		pgcDst->patOrg.y = pgcSrc->patOrg.y;
 		break;
 	    case GCFont:
-		CloseFont(pgcDst->font);
+		if (pgcDst->font == pgcSrc->font)
+		    break;
+		if (pgcDst->font)
+		    CloseFont(pgcDst->font);
 		if ((pgcDst->font = pgcSrc->font) != NullFont)
 		    (pgcDst->font)->refcnt++;
 		break;
@@ -541,9 +550,7 @@ CopyGC(pgcSrc, pgcDst, mask)
 		pgcDst->clipOrg.y = pgcSrc->clipOrg.y;
 		break;
 	    case GCClipMask:
-		(*pgcDst->DestroyClip)(pgcDst);
-		pgcDst->clientClip = pgcSrc->clientClip;
-		pgcDst->clientClipType = pgcSrc->clientClipType;
+		(* pgcDst->CopyClip)(pgcDst, pgcSrc);
 		break;
 	    case GCDashOffset:
 		pgcDst->dashOffset = pgcSrc->dashOffset;
