@@ -1,4 +1,4 @@
-.\" $XConsortium: X11.protocol,v 1.37 94/04/13 10:28:45 rws Exp $
+.\" $XConsortium: X11.protocol,v 1.38 94/04/13 19:15:29 rws Exp $
 .EH ''''
 .OH ''''
 .EF ''''
@@ -830,10 +830,12 @@ KEYCODE to any one of the modifiers
 through
 .PN Mod5 . 
 This modifier is
-called the ``group modifier.''  For any KEYCODE, Group 1 is used when the
+called the ``group modifier''.  For any KEYCODE, Group 1 is used when the
 group modifier is off, and Group 2 is used when the group modifier is on.
 .LP
-The Lock modifier is interpreted as CapsLock when the KEYSYM named CAPS
+The
+.PN Lock 
+modifier is interpreted as CapsLock when the KEYSYM named CAPS
 LOCK is attached to some KEYCODE and that KEYCODE is attached to the
 .PN Lock 
 modifier.  The
@@ -854,7 +856,7 @@ one of the modifiers
 through
 .PN Mod5 . 
 This modifier is called the
-``numlock modifier.''  The standard KEYSYMs with the prefix KEYPAD in their
+``numlock modifier''.  The standard KEYSYMs with the prefix KEYPAD in their
 name are called ``keypad'' KEYSYMs; these are KEYSYMS with numeric value in
 the hexadecimal range #xFF80 to #xFFBD inclusive.  In addition,
 vendor-specific KEYSYMS in the hexadecimal range #x11000000 to #x1100FFFF
