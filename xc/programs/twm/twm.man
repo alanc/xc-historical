@@ -464,6 +464,12 @@ The default is zero pixels.
 If your server has implemented backing store but you would rather not
 use this feature, this variable will disable \fItwm\fP from using 
 backing store.
+.IP "\fBNoGrabServer\fP" 20
+If this variable is specified, \fItwm\fP will not grab the server
+when performing certain operations. By default, \fItwm\fP will
+grab the server when necessary. \fITwm\fP will grab the server
+when menus are invoked, so you will want to define this variable
+if you plan on using pseudoroots.
 .IP "\fBNoHighlight\fP [ { \fIlist\fP } ]" 20
 This variable turns off border highlighting.
 An optional list may be specified with window names to selectively turn off
@@ -472,6 +478,10 @@ when the cursor enters the window.  When the border is highlighted, it will
 be drawn in the current \fBBorderColor\fP.  When the border is not
 highlighted, it will be rendered with a "grey" bitmap using the
 current \fBBorderTileForeground\fP and \fBBorderTileBackground\fP colors.
+.IP "\fBNoMenuShadows\fP" 20
+If this variable is specified, menus will not have shadows drawn
+behind them. This options speeds up drawing of menus, which is
+useful for slower machines.
 .IP "\fBNoRaiseOnDeiconify\fP" 20
 If this variable is specified, windows will not be raised to the top of
 the stacking order when de-iconified.

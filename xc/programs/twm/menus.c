@@ -48,6 +48,7 @@ static char RCSinfo[] =
 #include "util.h"
 #include "gram.h"
 #include "screen.h"
+#include "pull.bm"
 
 #define SYNC XSync(dpy, 0);
 
@@ -203,7 +204,6 @@ PaintEntry(mr, mi)
 MenuRoot *mr;
 MenuItem *mi;
 {
-    unsigned fore, back;
     XGCValues gcv;
     int new_colors;
     int y_offset;
@@ -219,20 +219,14 @@ MenuItem *mi;
     {
 	int x, y;
 
-	x = mr->width - 20;
-
 	if (mi->state)
 	{
-	    {
-		XSetForeground(dpy, Scr->NormalGC, mi->hi_back);
-		fore = mi->hi_fore;
-		back = mi->hi_back;
-	    }
+	    XSetForeground(dpy, Scr->NormalGC, mi->hi_back);
 
 	    XFillRectangle(dpy, mr->w, Scr->NormalGC, 0, y_offset,
 		mr->width, Scr->EntryHeight);
 
-	    FBF(fore, back, Scr->MenuFont.font->fid);
+	    FBF(mi->hi_fore, mi->hi_back, Scr->MenuFont.font->fid);
 
 	    XDrawImageString(dpy, mr->w, Scr->NormalGC, mi->x,
 		text_y, mi->item, mi->strlen);
@@ -240,11 +234,10 @@ MenuItem *mi;
 	else
 	{
 	    XSetForeground(dpy, Scr->NormalGC, mi->back);
+
 	    XFillRectangle(dpy, mr->w, Scr->NormalGC, 0, y_offset,
 		mr->width, Scr->EntryHeight);
 
-	    fore = mi->fore;
-	    back = mi->back;
 	    FBF(mi->fore, mi->back, Scr->MenuFont.font->fid);
 
 	    XDrawImageString(dpy, mr->w, Scr->NormalGC, mi->x,
@@ -253,23 +246,17 @@ MenuItem *mi;
 
 	if (mi->func == F_MENU)
 	{
-	    XPoint p[3];
 
-	    /* need to draw the pull right arrow */
-	    XSetForeground(dpy, Scr->NormalGC, fore);
-	    XSetLineAttributes(dpy, Scr->NormalGC, 3, LineSolid,
-		CapButt, JoinMiter);
-	    y = y_offset + (Scr->EntryHeight / 2);
-	    XDrawLine(dpy, mr->w, Scr->NormalGC, x, y, x+16, y);
-	    p[0].x = x+10;
-	    p[0].y = y-5;
-	    p[1].x = x+16;
-	    p[1].y = y;
-	    p[2].x = x+10;
-	    p[2].y = y+5;
-	    XDrawLines(dpy, mr->w, Scr->NormalGC, p, 3,CoordModeOrigin);
-	    XSetLineAttributes(dpy, Scr->NormalGC, 0, LineSolid,
-		CapButt, JoinMiter);
+	    /* create the pull right pixmap if needed */
+	    if (Scr->pullPm == NULL)
+	    {
+		Scr->pullPm = XCreatePixmapFromBitmapData(dpy, Scr->Root,
+		    pull_bits, pull_width, pull_height, 1, 0, 1);
+	    }
+	    x = mr->width - pull_width - 5;
+	    y = y_offset + ((Scr->EntryHeight - pull_height)/2);
+	    XCopyPlane(dpy, Scr->pullPm, mr->w, Scr->NormalGC, 0, 0,
+		pull_width, pull_height, x, y, 1);
 	}
     }
     else
@@ -296,6 +283,7 @@ MenuItem *mi;
 	XDrawImageString(dpy, mr->w, Scr->NormalGC, mi->x,
 	    text_y, mi->item, mi->strlen);
     }
+    XFlush(dpy);
 }
     
 
@@ -353,6 +341,10 @@ UpdateMenu()
 
 	    if (Scr == NULL)
 		continue;
+
+	    if (Event.type == ButtonRelease || Cancel)
+		if (!Scr->NoGrabServer)
+		    XUngrabServer(dpy);
 
 	    if (Event.type >= 0 && Event.type < LASTEvent)
 	        (*EventHandler[Event.type])();
@@ -446,7 +438,7 @@ UpdateMenu()
 		ActiveItem = NULL;
 	    }
 	}
-	XSync(dpy, 0);
+	XFlush(dpy);
     }
 }
 
@@ -926,6 +918,7 @@ PopUpMenu(menu, x, y)
     XMapRaised(dpy, menu->w);
     if (Scr->Shadow)
 	XMapWindow(dpy, menu->shadow);
+    XSync(dpy, 0);
 }
 
 /***********************************************************************
@@ -2395,7 +2388,7 @@ Bool GetWMState (w, statep, iwp)
 
     if (XGetWindowProperty (dpy, w, wmStateAtom, 0, 2, False, wmStateAtom,
 			    &actual_type, &actual_format, &nitems, &bytesafter,
-			    (unsigned char **) &datap) != Success || !datap)
+			    (unsigned char **) &datap) != Success)
       return False;
 
     *statep = (int) datap[0];

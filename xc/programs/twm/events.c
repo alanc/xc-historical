@@ -25,7 +25,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.60 89/05/11 19:13:59 jim Exp $
+ * $XConsortium: events.c,v 1.61 89/05/15 13:40:46 jim Exp $
  *
  * twm event handling
  *
@@ -35,7 +35,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: events.c,v 1.60 89/05/11 19:13:59 jim Exp $";
+"$XConsortium: events.c,v 1.61 89/05/15 13:40:46 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -1264,10 +1264,12 @@ HandleButtonPress()
 #endif
 
     /* pop down the menu, if any */
-    PopDownMenu();
+    if (ActiveMenu != NULL)
+	PopDownMenu();
 
     XUnmapWindow(dpy, Scr->InfoWindow);
     XUnmapWindow(dpy, Scr->VersionWindow);
+    XSync(dpy, 0);
 
     if (ButtonPressed != -1)
     {
@@ -1433,6 +1435,8 @@ HandleButtonPress()
     RootFunction = NULL;
     if (Scr->Mouse[Event.xbutton.button][Context][modifier].func == F_MENU)
     {
+	if (!Scr->NoGrabServer)
+	    XGrabServer(dpy);
 	PopUpMenu(Scr->Mouse[Event.xbutton.button][Context][modifier].menu, 
 	    Event.xbutton.x_root, Event.xbutton.y_root);
 	UpdateMenu();
@@ -1448,6 +1452,8 @@ HandleButtonPress()
     {
 	if (Scr->DefaultFunction.func == F_MENU)
 	{
+	    if (!Scr->NoGrabServer)
+		XGrabServer(dpy);
 	    PopUpMenu(Scr->DefaultFunction.menu, 
 		Event.xbutton.x_root, Event.xbutton.y_root);
 	    UpdateMenu();
