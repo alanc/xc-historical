@@ -1,4 +1,4 @@
-/* $XConsortium: scrnintstr.h,v 5.0 89/06/09 15:00:36 keith Exp $ */
+/* $XConsortium: scrnintstr.h,v 5.1 89/07/09 15:33:55 rws Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -41,31 +41,31 @@ typedef struct _PixmapFormat {
     
 typedef struct _Visual {
     unsigned long	vid;
-    short	screen;    
-    short       class;
+    short		screen;
+    short		class;
     unsigned long	redMask, greenMask, blueMask;
-    int		offsetRed, offsetGreen, offsetBlue;
-    short       bitsPerRGBValue;
-    short	ColormapEntries;
-    short	nplanes;	/* = log2 (ColormapEntries). This does not
+    int			offsetRed, offsetGreen, offsetBlue;
+    short		bitsPerRGBValue;
+    short		ColormapEntries;
+    short		nplanes;/* = log2 (ColormapEntries). This does not
 				 * imply that the screen has this many planes.
 				 * it may have more or fewer */
   } VisualRec;
 
 typedef struct _Depth {
-    int		depth;
-    int		numVids;
+    unsigned char	depth;
+    short		numVids;
     unsigned long	*vids;    /* block of visual ids for this depth */
   } DepthRec;
 
 typedef struct _Screen {
     int			myNum;	/* index of this instance in Screens[] */
-    ATOM id;
+    ATOM		id;
     short		width, height;
     short		mmWidth, mmHeight;
     short		numDepths;
+    unsigned char      	rootDepth;
     DepthPtr       	allowedDepths;
-    short       	rootDepth;
     unsigned long      	rootVisual;
     unsigned long	defColormap;
     short		minInstalledCmaps, maxInstalledCmaps;
