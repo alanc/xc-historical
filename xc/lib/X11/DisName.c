@@ -1,4 +1,4 @@
-/* $XConsortium: XDisName.c,v 11.4 88/09/06 16:06:28 jim Exp $ */
+/* $XConsortium: XDisName.c,v 11.5 91/01/06 11:45:09 rws Exp $ */
 
 /*
 Permission to use, copy, modify, distribute, and sell this software and its
@@ -31,12 +31,11 @@ without express or implied warranty.
 
 #include <stdio.h>
 
-char *getenv();
-
+extern char *getenv();
 
 char *
 XDisplayName( display )
-char *display;
+    char *display;
 {
     char *d;
     if ( display != (char *)NULL && *display != '\0' )
