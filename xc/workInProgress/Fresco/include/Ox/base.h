@@ -1,3 +1,4 @@
+/* $XConsortium$ */
 /*
  * Copyright (c) 1993 Silicon Graphics, Inc.
  * Copyright (c) 1993 Fujitsu, Ltd.
