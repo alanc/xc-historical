@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Label.h,v 1.12 88/02/26 09:20:03 swick Exp $
+* $XConsortium: Label.h,v 1.13 88/09/04 12:32:25 swick Exp $
 */
 
 
@@ -64,18 +64,8 @@ SOFTWARE.
 
 */
 
+#include <X11/Xmu.h>
 
-#ifndef _XtJustify_e
-#define _XtJustify_e
-
-typedef enum {
-    XtJustifyLeft,       /* justify text to left side of button   */
-    XtJustifyCenter,     /* justify text in center of button      */
-    XtJustifyRight       /* justify text to right side of button  */
-} XtJustify;
-#endif _XtJustify_e
-
-#define XtNjustify		"justify"
 #define XtNforeground		"foreground"
 #define XtNlabel		"label"
 #define XtNfont			"font"
