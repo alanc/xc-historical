@@ -470,16 +470,16 @@ objs:	depends								@@\
  */
 #ifndef NormalSharedLibraryTarget
 #define NormalSharedLibraryTarget(libname,rev,solist)			@@\
-AllTarget(lib/**/libname/**/_s)						@@\
+AllTarget(Concat3(lib,libname,_s))						@@\
 									@@\
-lib/**/libname/**/_s: sharedlib.o solist lib/**/libname/**/.spec	@@\
+Concat3(lib,libname,_s: sharedlib.o solist Concat(lib,libname.spec)	@@\
 	$(RM) $@ $@.a \							@@\
 	&& cd shared \							@@\
-	&& mkshlib -s ../lib/**/libname/**/.spec -t ../$@ -h ../$@.a \	@@\
+	&& mkshlib -s Concat(../lib,libname.spec) -t ../$@ -h ../$@.a \	@@\
 	&& ar rs ../$@.a sharedlib.o					@@\
 									@@\
 clean::									@@\
-	$(RM) lib/**/libname/**/_s lib/**/libname/**/_s.a
+	$(RM) Concat3(lib,libname,_s) Concat3(lib,libname,_s.a)
 
 #ifndef NormalSharedLibraryDataTarget
 #define NormalSharedLibraryDataTarget(libname,rev,salist)
@@ -491,9 +491,9 @@ clean::									@@\
  */
 #ifndef InstallSharedLibrary
 #define	InstallSharedLibrary(libname,rev,dest)				@@\
-install:: lib/**/libname/**/_s						@@\
-	$(INSTALL) -c $(INSTLIBFLAGS) lib/**/libname/**/_s.a dest	@@\
-	$(INSTALL) -c $(INSTBINFLAGS) lib/**/libname/**/_s dest
+install:: Concat3(lib,libname,_s)						@@\
+	$(INSTALL) -c $(INSTLIBFLAGS) Concat3(lib,libname,_s.a) $(DESTDIR)dest @@\
+	$(INSTALL) -c $(INSTBINFLAGS) Concat3(lib,libname,_s) $(DESTDIR)dest
 
 #endif /* InstallSharedLibrary */
 
@@ -502,8 +502,8 @@ install:: lib/**/libname/**/_s						@@\
  */
 #ifndef InstallSharedLibraryData
 #define	InstallSharedLibraryData(libname,rev,dest)			@@\
-install:: lib/**/libname/**/_s.a					@@\
-	$(INSTALL) -c $(INSTLIBFLAGS) lib/**/libname/**/_s.a dest
+install:: Concat3(lib,libname,_s.a)					@@\
+	$(INSTALL) -c $(INSTLIBFLAGS) Concat3(lib,libname,_s.a) $(DESTDIR)dest
 
 #endif /* InstallSharedLibraryData */
 
@@ -513,9 +513,9 @@ install:: lib/**/libname/**/_s.a					@@\
  */
 #ifndef GZeroLibraryTarget
 #define	GZeroLibraryTarget(libname,objlist)				@@\
-AllTarget(lib/**/libname/**/_G0.a)					@@\
+AllTarget(Concat3(lib,libname,_G0.a))					@@\
 									@@\
-lib/**/libname/**/_G0.a: objlist					@@\
+Concat3(lib,libname,_G0.a): objlist					@@\
 	$(RM) $@							@@\
 	cd gzero; $(AR) ../$@ objlist					@@\
 	$(RANLIB) $@
