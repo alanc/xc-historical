@@ -1,5 +1,5 @@
 ##
-# $XConsortium$
+# $XConsortium: Imakefile,v 5.2 91/02/16 09:56:51 rws Exp $
 ##
 ## 
 ## Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -29,12 +29,8 @@
 #define PassCDebugFlags
 #endif
 
-#ifndef PexDipexDefines
-#define PexDipexDefines
-#endif
-
 #ifndef PexDipexCDebugFlags
-#define PexDipexCDebugFlags OptimizedCDebugFlags
+#define PexDipexCDebugFlags ServerCDebugFlags
 #endif
 
 .SUFFIXES: .o .a

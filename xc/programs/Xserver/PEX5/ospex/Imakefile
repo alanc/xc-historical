@@ -1,5 +1,5 @@
 ##
-# $XConsortium$
+# $XConsortium: Imakefile,v 5.1 91/02/16 09:57:58 rws Exp $
 ##
 ## 
 ## Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -25,27 +25,12 @@
 
 #include <Server.tmpl>
 
-##
-##      Define a font path for PEX fonts.
-##      This is coherent iff FONTDIR == FontDir
-##
-
-#ifdef FontDir
-PEX_SITE_FONT_PATH = -DPEX_DEFAULT_FONTPATH=\"$(FONTDIR)/PEX\"
-#else
-PEX_SITE_FONT_PATH = /* nothing */
-#endif
-
 #ifndef PassCDebugFlags
 #define PassCDebugFlags
 #endif
 
-#ifndef PexDipexDefines
-#define PexDipexDefines
-#endif
-
 #ifndef PexDipexCDebugFlags
-#define PexDipexCDebugFlags OptimizedCDebugFlags
+#define PexDipexCDebugFlags ServerCDebugFlags
 #endif
 
 .SUFFIXES:  .o  .a
@@ -54,7 +39,8 @@ RDR_STUBS = -DRENDER_CMDS
 ST_STUBS = -DSTORE_CMDS
 
  CDEBUGFLAGS = PexDipexCDebugFlags
-     DEFINES = ExtensionDefines PexDipexDefines
+ FONTDEFINES = -DPEX_DEFAULT_FONTPATH=\"$(FONTDIR)/PEX\"
+     DEFINES = ExtensionDefines PexDipexDefines $(FONTDEFINES)
 
     LINTLIBS =	../../../../../server/dix/llib-ldix.ln \
 		../../../../../server/os/4.2bsd/llib-los.ln \
@@ -63,9 +49,9 @@ ST_STUBS = -DSTORE_CMDS
 		../../dipex/swap/llib-ldsw.ln \
 		../../dipex/objects/llib-lobj.ln
 
-   PEXSRVINC = ./../../include
-  PEXINCLUDE = ./../../../../include/PEX
-DDPEXINCLUDE = ./../../ddpex/mi/include
+   PEXSRVINC = ../../include
+  PEXINCLUDE = ../../../../include/PEX
+DDPEXINCLUDE = ../../ddpex/mi/include
     INCLUDES = -I. 	\
 	-I$(PEXSRVINC) 	\
 	-I$(PEXINCLUDE)	\
