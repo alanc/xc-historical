@@ -1,4 +1,4 @@
-/* $XConsortium: sm_process.c,v 1.7 93/09/22 17:59:13 mor Exp $ */
+/* $XConsortium: sm_process.c,v 1.8 93/09/24 12:15:21 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -51,7 +51,7 @@ IceReplyWaitInfo *replyWait;
     {
 	_IceReadSkip (iceConn, length << 3);
 
-	_SmcErrorBadState (iceConn, opcode, IceFatalToProtocol);
+	_IceErrorBadState (iceConn, _SmcOpcode, opcode, IceFatalToProtocol);
 
 	return (0);
     }
@@ -68,9 +68,14 @@ IceReplyWaitInfo *replyWait;
 
 	if (replyWait &&
 	    replyWait->minor_opcode_of_request == SM_RegisterClient &&
+            pMsg->errorClass == IceBadValue &&
 	    pMsg->offendingMinorOpcode == SM_RegisterClient &&
 	    pMsg->offendingSequenceNum == replyWait->sequence_of_request)
 	{
+	    /*
+	     * For Register Client, the previous ID was bad.
+	     */
+
 	    _SmcRegisterClientReply *reply =
 		(_SmcRegisterClientReply *) (replyWait->reply);
 
@@ -96,7 +101,7 @@ IceReplyWaitInfo *replyWait;
 	{
 	    _IceReadSkip (iceConn, length << 3);
 
-	    _SmcErrorBadState (iceConn,
+	    _IceErrorBadState (iceConn, _SmcOpcode,
 		SM_RegisterClientReply, IceFatalToProtocol);
 	}
         else
@@ -137,7 +142,8 @@ IceReplyWaitInfo *replyWait;
 
         if (!smcConn->interact_waits)
 	{
-	    _SmcErrorBadState (iceConn,	SM_Interact, IceCanContinue);
+	    _IceErrorBadState (iceConn, _SmcOpcode,
+		SM_Interact, IceCanContinue);
 	}
         else
 	{
@@ -163,7 +169,8 @@ IceReplyWaitInfo *replyWait;
 
 	if (!smcConn->shutdown_in_progress)
 	{
-	    _SmcErrorBadState (iceConn,	SM_ShutdownCancelled, IceCanContinue);
+	    _IceErrorBadState (iceConn, _SmcOpcode,
+		SM_ShutdownCancelled, IceCanContinue);
 	}
 	else
 	{
@@ -180,7 +187,7 @@ IceReplyWaitInfo *replyWait;
 	{
 	    _IceReadSkip (iceConn, length << 3);
 
-	    _SmcErrorBadState (iceConn,
+	    _IceErrorBadState (iceConn, _SmcOpcode,
 		SM_PropertiesReply, IceCanContinue);
 	}
         else
@@ -258,7 +265,7 @@ Bool		 swap;
     {
 	_IceReadSkip (iceConn, length << 3);
 
-	_SmsErrorBadState (iceConn, opcode, IceFatalToProtocol);
+	_IceErrorBadState (iceConn, _SmsOpcode, opcode, IceFatalToProtocol);
 
 	return;
     }
@@ -285,11 +292,14 @@ Bool		 swap;
     {
 	smRegisterClientMsg 	*pMsg;
 	char 			*pData;
+	char 			*savePtr;
 	char 			*previousId;
 
 	IceReadCompleteMessage (iceConn,
 	    SIZEOF (smRegisterClientMsg),
 	    smRegisterClientMsg, pMsg, pData);
+
+	savePtr = pData;
 
 	EXTRACT_ARRAY8_AS_STRING (pData, swap, previousId);
 
@@ -299,9 +309,19 @@ Bool		 swap;
 	    previousId = NULL;
 	}
 
-	(*smsConn->callbacks.register_client.callback) (smsConn,
-            smsConn->callbacks.register_client.manager_data, previousId);
+	if (!(*smsConn->callbacks.register_client.callback) (smsConn,
+            smsConn->callbacks.register_client.manager_data, previousId))
+	{
+	    /*
+	     * The previoudId was bad.  Generate BadValue error.
+	     */
 
+	    int length = previousId ? strlen (previousId) : 0;
+	    int bytes = ARRAY8_BYTES (length);
+
+	    _IceErrorBadValue (smsConn->iceConn, _SmsOpcode, SM_RegisterClient,
+		8, bytes, (IcePointer) savePtr);
+	}
 	break;
     }
 
@@ -309,7 +329,7 @@ Bool		 swap;
 
         if (!(smsConn->save_yourself_in_progress && smsConn->can_interact))
 	{
-	    _SmsErrorBadState (iceConn,
+	    _IceErrorBadState (iceConn, _SmsOpcode,
 		SM_InteractRequest, IceCanContinue);
 	}
         else
@@ -328,7 +348,7 @@ Bool		 swap;
 
         if (!smsConn->interact_in_progress)
 	{
-	    _SmsErrorBadState (iceConn,
+	    _IceErrorBadState (iceConn, _SmsOpcode,
 		SM_InteractDone, IceCanContinue);
 	}
         else
@@ -339,7 +359,8 @@ Bool		 swap;
 
 	    if (pMsg->cancelShutdown && !smsConn->can_cancel_shutdown)
 	    {
-		_SmsErrorBadState (iceConn, SM_InteractDone, IceCanContinue);
+		_IceErrorBadState (iceConn, _SmsOpcode,
+		    SM_InteractDone, IceCanContinue);
 	    }
 	    else
 	    {
@@ -356,7 +377,7 @@ Bool		 swap;
 
         if (!smsConn->save_yourself_in_progress)
 	{
-	    _SmsErrorBadState (iceConn,
+	    _IceErrorBadState (iceConn, _SmsOpcode,
 		SM_SaveYourselfDone, IceCanContinue);
 	}
         else
