@@ -346,6 +346,19 @@ ddxProcessArgument (argc, argv, i)
     extern void UseMsg();
     extern Bool ActiveZaphod;
 
+    if (strcmp (argv[i], "-ar1") == 0) {	/* -ar1 int */
+	if (++i >= argc) UseMsg ();
+	autoRepeatInitiate = 1000 * (long)atoi(argv[i]);
+	return 2;
+    }
+    if (strcmp (argv[i], "-ar2") == 0) {	/* -ar2 int */
+	if (++i >= argc) UseMsg ();
+	autoRepeatDelay = 1000 * (long)atoi(argv[i]);
+	return 2;
+    }
+    if (strcmp (argv[i], "-debug") == 0) {	/* -debug */
+	return 1;
+    }
     if (strcmp (argv[i], "-dev") == 0) {	/* -dev /dev/mumble */
 	if (++i >= argc) UseMsg ();
 	return 2;
@@ -363,7 +376,10 @@ ddxProcessArgument (argc, argv, i)
 void
 ddxUseMsg()
 {
+    ErrorF("-ar1 int               set autorepeat initiate time\n");
+    ErrorF("-ar2 int               set autorepeat interval time\n");
+    ErrorF("-debug                 disable non-blocking console mode\n");
     ErrorF("-dev filename          name of device to open\n");
     ErrorF("-mono                  force monochrome-only screen\n");
-    ErrorF("-zaphod               disable active Zaphod mode\n");
+    ErrorF("-zaphod                disable active Zaphod mode\n");
 }
