@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XOpenDis.c,v 11.129 92/12/30 19:06:00 gildea Exp $
+ * $XConsortium: XOpenDis.c,v 11.130 93/01/28 13:13:36 gildea Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986	*/
@@ -37,8 +37,15 @@ typedef struct {
 
 extern int _Xdebug;
 
-#ifndef lint
-static XPointer lock;	/* get rid of ifdefs when locking implemented */
+#ifdef MULTI_THREADED
+int  (*_XInitDisplayLock_fn)() = NULL;
+void (*_XFreeDisplayLock_fn)() = NULL;
+
+#define InitDisplayLock(d)	(_XInitDisplayLock_fn ? (*_XInitDisplayLock_fn)(d) : Success)
+#define FreeDisplayLock(d)	if (_XFreeDisplayLock_fn) (*_XFreeDisplayLock_fn)(d)
+#else
+#define InitDisplayLock(dis) Success
+#define FreeDisplayLock(dis)
 #endif
 
 static xReq _dummy_request = {
@@ -181,6 +188,7 @@ Display *XOpenDisplay (display)
 	dpy->im_filters		= NULL;
  	dpy->bigreq_size	= 0;
 	dpy->lock		= NULL;
+	dpy->lock_fns		= NULL;
 	dpy->qfree		= NULL;
 	dpy->next_event_serial_num = 1;
 
@@ -258,7 +266,6 @@ Display *XOpenDisplay (display)
 		     X_PROTOCOL, prefix.majorVersion);
 	    _XDisconnectDisplay (dpy->fd);
 	    Xfree ((char *)dpy);
-	    UnlockMutex(&lock);
 	    return(NULL);
 	}
 
@@ -675,6 +682,6 @@ _XFreeDisplayStructure(dpy)
 		qelt = qnxt;
 	    }
 	}
-	
+
 	Xfree ((char *)dpy);
 }

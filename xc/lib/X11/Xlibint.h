@@ -1,4 +1,4 @@
-/* $XConsortium: Xlibint.h,v 11.99 93/01/04 17:52:49 gildea Exp $ */
+/* $XConsortium: Xlibint.h,v 11.100 93/02/08 09:47:25 rws Exp $ */
 /* Copyright 1984, 1985, 1987, 1989  Massachusetts Institute of Technology */
 
 /*
@@ -97,9 +97,10 @@ struct _XDisplay
 	Bool (*event_vec[128])();  /* vector for wire to event */
 	Status (*wire_vec[128])(); /* vector for event to wire */
 	KeySym lock_meaning;	   /* for XLookupString */
-	XPointer lock;		/* is someone in critical section? */
+	struct _XLockInfo *lock;   /* multi-thread state, display lock */
 	struct _XInternalAsync *async_handlers; /* for internal async */
 	unsigned long bigreq_size; /* max size of big requests */
+	struct _XLockPtrs *lock_fns; /* pointers to threads functions */
 	/* things above this line should not move, for binary compatibility */
 	struct _XKeytrans *key_bindings; /* for XLookupString */
 	Font cursor_font;	   /* for XCreateFontCursor */
@@ -118,7 +119,7 @@ struct _XDisplay
 	} cms;
 	struct _XIMFilter *im_filters;
 	struct _XSQEvent *qfree; /* unallocated event queue elements */
-	unsigned long next_event_serial_num; /* inserted into next queue element */
+	unsigned long next_event_serial_num; /* inserted into next queue elt */
 };
 
 /*
@@ -138,6 +139,10 @@ typedef struct _XSQEvent
     XEvent event;
     unsigned long qserial_num;	/* so multi-threaded code can find new ones */
 } _XQEvent;
+#endif
+
+#ifdef MULTI_THREADED
+#define NEED_REPLIES		/* for xReply */
 #endif
 
 #if NeedFunctionPrototypes	/* prototypes require event type definitions */
@@ -178,12 +183,87 @@ char *malloc(), *realloc(), *calloc();
  * The following definitions can be used for locking requests in multi-threaded
  * address spaces.
  */
+#ifdef MULTI_THREADED
+/* Author: Stephen Gildea, MIT X Consortium
+ *
+ * declarations for C Threads locking
+ */
+
+#include <X11/Xfuncproto.h>
+
+struct _XLockPtrs {
+    /* used by all, including extensions; do not move */
+    void (*lock_display)();
+    void (*unlock_display)();
+    /* used only in XlibInt.c */
+    void (*pop_reader)();
+    struct _XCVList *(*push_reader)();
+    void (*condition_wait)();
+    /* used in XlibInt.c and locking.c */
+    void (*condition_signal)();
+};
+
+/* in XlibInt.c */
+extern void (*_XLockMutex_fn)();
+extern void (*_XUnlockMutex_fn)();
+
+/* used in very few places */
+#define LockMutex(m)		if (_XLockMutex_fn) (*_XLockMutex_fn)()
+#define UnlockMutex(m)		if (_XUnlockMutex_fn) (*_XUnlockMutex_fn)()
+
+/* used everywhere, so must be fast if not using threads */
+#define LockDisplay(d)	     if ((d)->lock_fns) (*(d)->lock_fns->lock_display)((d),__FILE__,__LINE__)
+#define UnlockDisplay(d)     if ((d)->lock_fns) (*(d)->lock_fns->unlock_display)((d),__FILE__,__LINE__)
+
+extern Status XInitThreads(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+
+extern void _XLockMutex(
+#if NeedFunctionPrototypes
+    mutex_t
+#endif
+);
+
+extern void _XUnlockMutex(
+#if NeedFunctionPrototypes
+    mutex_t
+#endif
+);
+
+/* returns 0 iff initialization okay */
+extern int _XInitDisplayLock(
+#if NeedFunctionPrototypes
+    Display *
+#endif
+);
+
+extern void _XFreeDisplayLock(
+#if NeedFunctionPrototypes
+    Display *
+#endif
+);
+
+extern void _XLockDisplay(
+#if NeedFunctionPrototypes
+    Display *
+#endif
+);
+
+extern void _XUnlockDisplay(
+#if NeedFunctionPrototypes
+    Display *
+#endif
+);
+
+#else /* MULTI_THREADED */
 #define LockDisplay(dis)
 #define LockMutex(mutex)
 #define UnlockMutex(mutex)
 #define UnlockDisplay(dis)
-#define InitDisplayLock(dis) 0	/* return success status */
-#define FreeDisplayLock(dis)
+#endif
 
 #define Xfree(ptr) free((ptr))
 
