@@ -75,6 +75,12 @@ extern int errno;
 #include <signal.h>
 #include <setjmp.h>
 
+#ifdef MTX
+#include "cit.h"
+#include "mtxlock.h"
+#endif
+
+
 #ifdef hpux
 #include <sys/utsname.h>
 #include <sys/ioctl.h>
@@ -114,6 +120,9 @@ static int unixDomainConnection = -1;
 #include <sys/uio.h>
 #include "misc.h"		/* for typedef of pointer */
 #include "osdep.h"
+#ifdef MTX
+#include "scrnintstr.h"
+#endif
 #include "opaque.h"
 #include "dixstruct.h"
 
@@ -167,6 +176,18 @@ int ConnectionTranslation[MAXSOCKS];
 extern int auditTrailLevel;
 extern ClientPtr NextAvailableClient();
 extern XID CheckAuthorization();
+
+#ifdef MTX
+extern X_MUTEX_TYPE ConnectionMutex;
+extern int nextFreeClientID;
+extern int (* ProcVector[256]) ();
+extern int (* SwappedProcVector[256]) ();
+extern char *ConnectionInfo;
+extern xConnSetupPrefix connSetupPrefix;
+extern int connBlockScreenStart;
+extern WindowPtr *WindowTable;
+#endif
+
 
 static void ErrorConnMax(
 #if NeedFunctionPrototypes
@@ -1660,6 +1681,21 @@ EstablishNewConnections(clientUnused, closure)
 	oc->input = (ConnectionInputPtr)NULL;
 	oc->output = (ConnectionOutputPtr)NULL;
 	oc->conn_time = connect_time;
+#ifdef MTX
+	/* Create the client input thread */
+	if (!CreateClientInputThread(oc))
+	{
+	    xfree(oc);
+	    close(newconn);
+	    continue;
+	}
+	X_THREAD_YIELD();
+/*
+ * XXX:SM - This looks tricky, the original MTX code removes this entirely.
+ *          My question is what happens when newconn >= lastfdesc?
+ *          There are still a maximum number of fd's right?
+ */
+#else
 	if ((newconn < lastfdesc) &&
 	    (client = NextAvailableClient((pointer)oc)))
 	{
@@ -1670,11 +1706,277 @@ EstablishNewConnections(clientUnused, closure)
 	    ErrorConnMax(newconn);
 	    CloseDownFileDescriptor(oc);
 	}
+#endif
     }
     return TRUE;
 }
 
 #define NOROOM "Maximum number of clients reached"
+#ifdef MTX
+#define EXCEPTION "Server Exception"
+#endif
+
+
+#ifdef MTX
+static void*
+ClientConnectionThread()
+{
+    struct timeval *wt;
+    long LastConnSelectMask[mskcnt];
+    long connections;
+    int result;
+    extern X_MUTEX_TYPE ServerMutex;
+ 
+    X_MUTEX_LOCK(&ServerMutex);
+
+    CLEARBITS(LastConnSelectMask);	
+
+    while (1)
+    {
+        wt = NULL;
+ 
+	LastConnSelectMask[0] = WellKnownConnections;
+
+#ifdef XDMCP
+	XdmcpBlockHandler(NULL, &wt, LastConnSelectMask);
+#endif
+	X_MUTEX_UNLOCK(&ServerMutex);
+
+        result = select (MAXSOCKS, (int *)LastConnSelectMask,
+                        (int *)NULL, (int *) NULL, wt);
+
+	X_MUTEX_LOCK(&ServerMutex);
+
+#ifdef XDMCP
+	XdmcpWakeupHandler(NULL, result, LastConnSelectMask);
+#endif
+        if (result <= 0) /* An error or timeout occurred */
+        {
+	    if (result < 0)
+	    {
+#ifdef XDMCP
+		if (errno == EBADF)
+		{
+		    continue;
+		}
+		else
+#endif
+                if (errno == EINTR)
+                {
+                    continue;
+                }
+                else
+		{
+                    ErrorF("ClientConnectionThread: select failed. \n");
+		    ErrorF("result = %d, errno = %d \n", result, errno);
+	            break;
+		}
+	    }
+        }
+        else
+        {
+	    connections = LastConnSelectMask[0] & WellKnownConnections;
+	    if (connections) 
+	    {
+            	EstablishNewConnections(connections);
+	    }
+        }
+    }
+    X_MUTEX_UNLOCK(&ServerMutex);
+    X_THREAD_EXIT(&result);
+}
+
+
+void
+CreateConnectionThread()
+{
+    X_THREAD_TYPE connection_thread;
+
+    /* start the connection thread */
+    if (X_THREAD_CREATE(&connection_thread, X_CCT_ATTR_DEFAULT,
+                        ClientConnectionThread, (void *)0))
+    {
+        FatalError ("CreateConnectionThread: thread create failed\n");
+    }
+    X_THREAD_DETACH(&connection_thread);
+}
+
+
+
+int
+ClientInitialConnection(oc, pclient)
+    OsCommPtr oc;
+    ClientPtr *pclient;
+{
+    void ErrorConnect();
+    ClientPtr client;
+    ConnectionInputPtr oci;
+    xConnClientPrefix *prefix;
+    char *reason, *auth_proto, *auth_string;
+    int swapped = UNKNOWN;
+    xWindowRoot *root;
+    int i;
+
+    if ( !ReadInitialConnection(oc, &swapped) )
+    {
+	CloseDownFileDescriptor(oc);
+        return (-1);
+    }
+    oci = oc->input;
+    prefix = (xConnClientPrefix *)oci->buffer;
+    auth_proto = (char *)prefix + sz_xConnClientPrefix;
+    auth_string = auth_proto + ((prefix->nbytesAuthProto + 3) & ~3);
+
+    X_MUTEX_LOCK(&ConnectionMutex);  
+
+    if (serverException)
+    {
+	reason = EXCEPTION;
+    }
+    else if (nextFreeClientID == MAXCLIENTS)
+    {
+	reason = NOROOM;
+    }
+    else if ((prefix->majorVersion != X_PROTOCOL) ||
+	     (prefix->minorVersion != X_PROTOCOL_REVISION))
+    {
+	reason = "Protocol version mismatch";
+    }
+    else
+    {
+	reason = ClientAuthorized(oc,
+				(unsigned short)prefix->nbytesAuthProto,
+				auth_proto,
+				(unsigned short)prefix->nbytesAuthString,
+				auth_string);
+    }
+
+    if (reason)
+    {
+        ErrorConnect(oc->fd,reason,swapped);
+	CloseDownFileDescriptor(oc);
+	X_MUTEX_UNLOCK(&ConnectionMutex);
+	return (-1);
+    }
+	  	
+    if (client = (ClientPtr)NextAvailableClient((pointer)oc))
+    {
+	ConnectionTranslation[oc->fd] = client->index;
+	if (swapped == SWAP)
+	    client->swapped = TRUE;
+    }
+    else
+    {
+	ErrorConnect(oc->fd,reason,swapped);
+	CloseDownFileDescriptor(oc);
+        X_MUTEX_UNLOCK(&ConnectionMutex);
+	return (-1);
+    }
+
+    X_MUTEX_UNLOCK(&ConnectionMutex);
+
+#ifdef CTHREADS
+    oc->thread = (X_THREAD_TYPE)X_THREAD_SELF();
+    oc->kern_thread = thread_self();
+#endif
+
+    client->requestVector = client->swapped ? SwappedProcVector : ProcVector;
+	
+    ((xConnSetup *)ConnectionInfo)->ridBase = client->clientAsMask;
+    ((xConnSetup *)ConnectionInfo)->ridMask = RESOURCE_ID_MASK;
+    /* fill in the "currentInputMask" */
+    root = (xWindowRoot *)(ConnectionInfo + connBlockScreenStart);
+
+    for (i=0; i < screenInfo.numScreens; i++)
+    {
+	register int j;
+	register xDepth *pDepth;
+
+	root->currentInputMask = WindowTable[i]->eventMask |
+				 wOtherEventMasks (WindowTable[i]);
+	pDepth = (xDepth *)(root + 1);
+	for (j=0; j < root->nDepths; j++)
+	{
+	    pDepth = (xDepth *)(((char *)(pDepth + 1)) +
+				pDepth->nVisuals * sizeof(xVisualType));
+	}
+	root = (xWindowRoot *)pDepth;
+    }
+    if (client->swapped)
+    {
+	SwapConnSetupPrefix(client, &connSetupPrefix);
+	SwapConnectionInfo(client,
+                           (unsigned long)(connSetupPrefix.length << 2),
+                           ConnectionInfo);
+    }
+
+    SendConnectionSetupInfo(client, &connSetupPrefix, 
+                            ConnectionInfo,
+                            connSetupPrefix.length << 2);
+    *pclient = client;
+    return (1);		 
+}
+
+
+static void
+ErrorConnect(fd, reason, swapped)
+    register int fd;
+    register char *reason;
+    register int swapped;
+{
+    xConnSetupPrefix csp;
+    char pad[3];
+    struct iovec iov[3];
+    char byteOrder = 0;
+    int whichbyte = 1;
+    struct timeval waittime;
+    long mask[mskcnt];
+
+    if (swapped == UNKNOWN) 
+    {
+        /* if these seems like a lot of trouble to go to, it probably is */
+        waittime.tv_sec = BOTIMEOUT / MILLI_PER_SECOND;
+        waittime.tv_usec = (BOTIMEOUT % MILLI_PER_SECOND) *
+		           (1000000 / MILLI_PER_SECOND);
+        CLEARBITS(mask);
+        BITSET(mask, fd);
+
+        (void)select((fd + 1), (int *) mask, (int *) NULL, (int *) NULL, 
+		     &waittime);
+
+        /* try to read the byte-order of the connection */
+        (void)read(fd, &byteOrder, 1);
+
+	if ((byteOrder == 'l') || (byteOrder == 'B'))
+	{
+	    return;
+	}
+	if (((*(char *) &whichbyte) && (byteOrder == 'B')) ||
+	    (!(*(char *) &whichbyte) && (byteOrder == 'l')))
+	{
+	    swapped = SWAP;	
+	}
+     }     
+     csp.success = xFalse;
+     csp.lengthReason = strlen(reason);
+     csp.length = (strlen(reason) + 3) >> 2;
+     csp.majorVersion = X_PROTOCOL;
+     csp.minorVersion = X_PROTOCOL_REVISION;
+     if (swapped == SWAP) 
+     {
+	swaps(&csp.majorVersion, whichbyte);
+	swaps(&csp.minorVersion, whichbyte);
+	swaps(&csp.length, whichbyte);
+     }
+     iov[0].iov_len = sz_xConnSetupPrefix;
+     iov[0].iov_base = (char *) &csp;
+     iov[1].iov_len = csp.lengthReason;
+     iov[1].iov_base = reason;
+     iov[2].iov_len = (4 - (csp.lengthReason & 3)) & 3;
+     iov[2].iov_base = pad;
+     (void)writev(fd, iov, 3);
+}
+#endif
 
 /************
  *   ErrorConnMax
@@ -1737,6 +2039,46 @@ CloseDownFileDescriptor(oc)
 {
     int connection = oc->fd;
 
+#ifdef MTX
+#ifdef CTHREADS
+    if (X_THREAD_SELF() != oc->thread)
+    {
+	thread_suspend(oc->kern_thread);
+	thread_abort(oc->kern_thread);
+    }
+    close(connection);
+    thread_resume(oc->kern_thread);
+#else
+/*
+ * XXX:SM Are these suppose to be pointers?  The original code was just a
+ * straight compare like this:
+ *
+ *  if (X_THREAD_SELF() != oc->thread)
+ *
+ * but that doesn't cut the mustard, a memcmp() needs to be done.  It
+ * looks like the original implementation treated this as pointer.  On
+ * AIX this will eventually resolves to a 3 field data structure, cma_t_handle.
+ * cma_t_handle has an unsigned char *, followed by two shorts.  The problem
+ * is that the fields are denoted as "field1", "field2", "field3".  I'm
+ * making a guess that the contents of the entire structure need to match,
+ * but this needs some futher investigation.
+ */
+    if (X_THREAD_EQUAL((X_THREAD_SELF()), oc->thread))
+    {
+	if (X_THREAD_CANCEL(oc->thread) != 0)
+	{
+	    ErrorF ("Unable to cancel thread, errno=%d", errno );
+	}
+    }
+    close(connection);
+#endif /* CTHREADS */
+
+/*
+ * XXX:SM This is once again some additional code that the original MTX
+ *        server had removed, some of it may be necessary.  I think that the
+ *        call to FreeOsBuffers may be needed.
+ */
+#else /* !MTX */
     close(connection);
     FreeOsBuffers(oc);
     BITCLEAR(AllSockets, connection);
@@ -1757,6 +2099,7 @@ CloseDownFileDescriptor(oc)
     	AnyClientsWriteBlocked = FALSE;
     BITCLEAR(OutputPending, connection);
     xfree(oc);
+#endif
 }
 
 /*****************

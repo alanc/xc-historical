@@ -212,6 +212,12 @@ typedef struct _osComm {
     k5_state	authstate;	/* state of setup auth conversation */
 #endif
     CARD32 conn_time;		/* timestamp if not established, else 0  */
+#ifdef MTX
+    X_THREAD_TYPE thread;
+#ifdef luna88k
+    thread_t kern_thread;
+#endif /*luna88k*/
+#endif /*MTX*/
 } OsCommRec, *OsCommPtr;
 
 extern int FlushClient(
