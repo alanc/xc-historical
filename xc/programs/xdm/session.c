@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: session.c,v 1.13 89/03/11 09:43:05 rws Exp $
+ * $XConsortium: session.c,v 1.14 89/05/14 14:08:13 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -201,7 +201,6 @@ int			*pidp;
 	char	*failsafeArgv[2];
 	int	pid;
 
-	SetUserAuthorization (d, verify);
 	if (verify->argv) {
 		Debug ("StartSession %s: ", verify->argv[0]);
 		for (f = verify->argv; *f; f++)
@@ -224,6 +223,7 @@ int			*pidp;
 		setgid (verify->gid);
 #endif
 		setuid (verify->uid);
+		SetUserAuthorization (d, verify);
 		home = getEnv (verify->userEnviron, "HOME");
 		if (home)
 			if (chdir (home) == -1) {
