@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XFillPoly.c,v 11.10 88/09/06 16:07:10 jim Exp $ */
+/* $XConsortium: XFillPoly.c,v 11.11 89/05/30 09:58:49 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
@@ -26,7 +26,7 @@ int mode;
     req->shape = shape;
     req->coordMode = mode;
 
-    if ((req->length + n_points) > 65535)
+    if ((req->length + n_points) > (unsigned)65535)
 	n_points = 65535 - req->length; /* force BadLength, if possible */
     req->length += n_points;
 

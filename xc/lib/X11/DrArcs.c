@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XDrArcs.c,v 11.14 89/06/02 14:39:42 rws Exp $ */
+/* $XConsortium: XDrArcs.c,v 11.15 89/06/05 17:29:58 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
@@ -23,7 +23,7 @@ int n_arcs;
     req->drawable = d;
     req->gc = gc->gid;
     len = ((long)n_arcs) * arc_scale;
-    if ((req->length + len) > 65535)
+    if ((req->length + len) > (unsigned)65535)
 	len = 1; /* force BadLength */
     req->length += len;
     len <<= 2; /* watch out for macros... */

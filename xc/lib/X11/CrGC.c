@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XCrGC.c,v 11.32 90/06/15 17:17:37 rws Exp $ */
+/* $XConsortium: XCrGC.c,v 11.33 90/12/11 11:08:06 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
@@ -23,11 +23,11 @@ static XGCValues Const initial_GC = {
     FillSolid,	/* fill_style */
     EvenOddRule,/* fill_rule */
     ArcPieSlice,/* arc_mode */
-    ~0L,	/* tile, impossible (unknown) resource */
-    ~0L,	/* stipple, impossible (unknown) resource */
+    (Pixmap)~0L,/* tile, impossible (unknown) resource */
+    (Pixmap)~0L,/* stipple, impossible (unknown) resource */
     0,		/* ts_x_origin */
     0,		/* ts_y_origin */
-    ~0L,	/* font, impossible (unknown) resource */
+    (Font)~0L,	/* font, impossible (unknown) resource */
     ClipByChildren, /* subwindow_mode */
     True,	/* graphics_exposures */
     0,		/* clip_x_origin */

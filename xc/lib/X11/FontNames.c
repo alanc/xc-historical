@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XFontNames.c,v 11.21 89/12/11 19:09:13 rws Exp $ */
+/* $XConsortium: XFontNames.c,v 11.22 90/12/12 09:17:49 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 #define NEED_REPLIES
 #include "Xlibint.h"
@@ -20,7 +20,7 @@ int *actualCount;	/* RETURN */
 #endif
 {       
     register long nbytes;
-    register int i;
+    register unsigned i;
     register int length;
     char **flist;
     char *ch;
