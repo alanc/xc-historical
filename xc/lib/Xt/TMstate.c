@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: TMstate.c,v 1.90 89/10/06 09:29:51 rws Exp $";
+static char Xrcsid[] = "$XConsortium: TMstate.c,v 1.91 89/10/06 12:35:08 swick Exp $";
 /* $oHeader: TMstate.c,v 1.5 88/09/01 17:17:29 asente Exp $ */
 #endif /* lint */
 /*LINTLIBRARY*/
@@ -1619,6 +1619,18 @@ static void MergeTables(old, new, override,accProcTbl)
 		    old->eventTblSize*sizeof(EventObjRec));
 	    }
 	    old->eventObjTbl[j] = *newEvent;
+#ifdef REFCNT_TRANSLATIONS
+	    if (newEvent->event.lateModifiers != NULL) {
+		int count = 0;
+		LateBindingsPtr b = newEvent->event.lateModifiers;
+		while (b->keysym != 0) {b++; count++};
+		old->eventObjTbl[j].event.lateModifiers =
+		    b = (LateBindingsPtr)
+			XtMalloc( (unsigned)count*sizeof(LateBindings) );
+		bcopy( (char*)newEvent->event.lateModifiers, (char*)b,
+		       (unsigned)count*sizeof(LateBindings) );
+	    }
+#endif
 	    old->eventObjTbl[j].state = NULL;
 	    old->numEvents++;
 	}
@@ -1691,38 +1703,6 @@ static void MergeTables(old, new, override,accProcTbl)
    XtFree((char *)accQuarkIndexMap);
 }
 
-#ifdef notdef
-void _XtOverrideTranslations(old, new,merged)
-    XtTranslations old, new,*merged;
-{
-    XtTranslations temp;
-    if (old == NULL) {
-	*merged = new;
-	return;
-    }
-    _XtInitializeStateTable(&temp);
-    /* merge in new table, overriding any existing bindings from old */
-    MergeTables(temp, new, FALSE,new->accProcTbl);
-    MergeTables(temp, old, FALSE,old->accProcTbl);
-    *merged= temp;
-}
-
-
-void _XtAugmentTranslations(old, new,merged)
-    XtTranslations old, new,*merged;
-{
-    /* merge in extra bindings, keeping old binding if any */
-    XtTranslations temp;
-    if (old == NULL) {
-	*merged = new;
-	return;
-    }
-    _XtInitializeStateTable(&temp);
-    MergeTables(temp, old, FALSE,old->accProcTbl);
-    MergeTables(temp, new, FALSE,new->accProcTbl);
-    *merged= temp;
-}
-#endif /*notdef*/
 
 /*ARGSUSED*/
 Boolean _XtCvtMergeTranslations(dpy, args, num_args, from, to, closure_ret)
@@ -1750,7 +1730,14 @@ Boolean _XtCvtMergeTranslations(dpy, args, num_args, from, to, closure_ret)
     operation = ((TMConvertRec*)from->addr)->operation;
 
     if (old == NULL)
+#ifdef REFCNT_TRANSLATIONS
+    {
+	_XtInitializeStateTable(&merged);
+	MergeTables(merged, new, FALSE, new->accProcTbl);
+    }
+#else
 	merged = new;
+#endif
     else {
 	_XtInitializeStateTable(&merged);
 	if (operation == override) {
