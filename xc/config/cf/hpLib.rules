@@ -1,4 +1,4 @@
-XCOMM $XConsortium: hpLib.rules,v 1.8 91/07/19 15:38:53 rws Exp $
+XCOMM $XConsortium: hpLib.rules,v 1.1 92/05/05 10:45:18 rws Exp $
 
 /*
  * HP shared library rules
@@ -24,6 +24,9 @@ XCOMM $XConsortium: hpLib.rules,v 1.8 91/07/19 15:38:53 rws Exp $
 #endif
 #ifndef PositionIndependentCFlags
 #define PositionIndependentCFlags +z
+#endif
+#ifndef UseInstalled
+#define ExtraLoadOptions -L$(USRLIBDIR)
 #endif
 
 /*
