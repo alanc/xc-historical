@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: Xproto.h,v 1.89 94/04/17 20:10:52 rws Exp $
+ *	$XConsortium: Xproto.h,v 1.90 95/03/03 01:56:06 dpw Exp gildea $
  */
 
 /* Definitions for the X window system used by server and c bindings */
@@ -278,7 +278,7 @@ typedef struct {
 } xConnClientPrefix;
 
 typedef struct {
-    BOOL           success;
+    CARD8          success;
     BYTE           lengthReason; /*num bytes in string following if failure */
     CARD16         majorVersion B16, 
                    minorVersion B16;
