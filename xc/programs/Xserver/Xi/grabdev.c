@@ -1,4 +1,4 @@
-/* $XConsortium: xgrabdev.c,v 1.8 89/12/02 15:21:11 rws Exp $ */
+/* $XConsortium: xgrabdev.c,v 1.9 90/05/18 11:02:36 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -119,7 +119,7 @@ ProcXGrabDevice(client)
 
     error = GrabDevice (client, dev, stuff->this_device_mode, 
 	stuff->other_devices_mode, stuff->grabWindow, stuff->ownerEvents, 
-	stuff->time, tmp, &rep.status);
+	stuff->time, tmp[stuff->deviceid].mask, &rep.status);
 
     if (error != Success)
 	{
@@ -146,7 +146,7 @@ CreateMaskFromList (client, list, count, mask, dev, req)
     DeviceIntPtr	dev;
     int			req;
     {
-    int			i,j,ndx;
+    int			i,j;
     int			device;
     DeviceIntPtr	tdev;
     extern int		ExtEventIndex;

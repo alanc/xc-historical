@@ -1,4 +1,4 @@
-/* $XConsortium: xgrabdevk.c,v 1.4 89/10/10 16:10:33 gms Exp $ */
+/* $XConsortium: xgrabdevk.c,v 1.5 89/12/02 15:21:15 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -123,7 +123,7 @@ ProcXGrabDeviceKey(client)
 
     ret = GrabKey(client, dev, stuff->this_device_mode, 
 	stuff->other_devices_mode, stuff->modifiers, mdev, stuff->key, 
-	stuff->grabWindow, stuff->ownerEvents, tmp);
+	stuff->grabWindow, stuff->ownerEvents, tmp[stuff->grabbed_device].mask);
 
     if (ret != Success)
         {

@@ -1,4 +1,4 @@
-/* $XConsortium: xexevents.c,v 1.14 90/05/18 11:45:21 rws Exp $ */
+/* $XConsortium: xexevents.c,v 1.15 90/05/18 14:15:14 rws Exp $ */
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
 Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -302,7 +302,6 @@ DeviceFocusEvent(dev, type, mode, detail, pWin)
         {
 	int			i,j;
 	int 			evcount = 1;
-	Mask			classmask = 0;
 	deviceStateNotify 	*ev, *sev;
 	deviceKeyStateNotify 	*kev;
 	deviceButtonStateNotify *bev;
@@ -314,7 +313,6 @@ DeviceFocusEvent(dev, type, mode, detail, pWin)
 
 	if ((k=dev->key) != NULL)
 	    {
-	    classmask |= (1 << KeyClass);
 	    if (k->curKeySyms.maxKeyCode > 32)
 		evcount++;
 	    }
@@ -432,7 +430,7 @@ GrabButton(client, dev, this_device_mode, other_devices_mode, modifiers,
     BOOL ownerEvents;
     Cursor rcursor;
     Window rconfineTo;
-    Mask eventMask[];
+    Mask eventMask;
    
 {
     WindowPtr pWin, confineTo;
@@ -507,7 +505,7 @@ GrabKey(client, dev, this_device_mode, other_devices_mode, modifiers,
     CARD8 key;
     Window grabWindow;
     BOOL ownerEvents;
-    Mask mask[];
+    Mask mask;
    
 {
     WindowPtr pWin;
@@ -935,7 +933,6 @@ SendDeviceMappingNotify(request, firstKeyCode, count, dev)
     KeyCode firstKeyCode;
     DeviceIntPtr dev;
     {
-    int i;
     xEvent event;
     deviceMappingNotify         *ev = (deviceMappingNotify *) &event;
     extern              	int     DeviceMappingNotify;

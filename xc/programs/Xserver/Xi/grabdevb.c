@@ -1,4 +1,4 @@
-/* $XConsortium: xgrabdevb.c,v 1.5 89/11/06 18:38:12 rws Exp $ */
+/* $XConsortium: xgrabdevb.c,v 1.6 89/12/02 15:21:13 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -88,7 +88,6 @@ ProcXGrabDeviceButton(client)
     DeviceIntPtr	mdev;
     XEventClass		*class;
     struct tmask	tmp[EMASKSIZE];
-    ButtonClassPtr	mb;
 
     REQUEST(xGrabDeviceButtonReq);
     REQUEST_AT_LEAST_SIZE(xGrabDeviceButtonReq);
@@ -126,7 +125,8 @@ ProcXGrabDeviceButton(client)
 	    return Success;
     ret = GrabButton(client, dev, stuff->this_device_mode, 
 	stuff->other_devices_mode, stuff->modifiers, mdev, stuff->button, 
-	stuff->grabWindow, stuff->ownerEvents, NullCursor, NullWindow, tmp);
+	stuff->grabWindow, stuff->ownerEvents, NullCursor, NullWindow, 
+	tmp[stuff->grabbed_device].mask);
 
     if (ret != Success)
 	SendErrorToClient(client, IReqCode, X_GrabDeviceButton, 0, ret);
