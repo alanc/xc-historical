@@ -1,0 +1,27 @@
+XCOMM $XConsortium$
+# Imakefile to build device dependent machine independent import element objects
+#include <Server.tmpl>
+
+       SRCS = 	faxtabs.c \
+		g4.c \
+		g31d.c \
+		g32d.c \
+		zeroeven.c
+
+       OBJS = 	faxtabs.o \
+		g31d.o \
+		g32d.o \
+		g4.o \
+		zeroeven.o
+
+
+   INCLUDES = -I../include -I../../include -I../../../../../include/xie \
+              -I../../../include -I../../../../../include  \
+              -I../../../../../../include -I../../../../../../server/include \
+              -I$(INCLUDESRC)
+
+SubdirLibraryRule($(OBJS))
+NormalLibraryObjectRule()
+NormalLintTarget($(SRCS))
+
+DependTarget()

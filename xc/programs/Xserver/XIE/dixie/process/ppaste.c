@@ -1,0 +1,232 @@
+/* $XConsortium$ */
+/**** module ppaste.c ****/
+/******************************************************************************
+				NOTICE
+                              
+This software is being provided by AGE Logic, Inc. and MIT under the
+following license.  By obtaining, using and/or copying this software,
+you agree that you have read, understood, and will comply with these
+terms and conditions:
+
+     Permission to use, copy, modify, distribute and sell this
+     software and its documentation for any purpose and without
+     fee or royalty and to grant others any or all rights granted
+     herein is hereby granted, provided that you agree to comply
+     with the following copyright notice and statements, including
+     the disclaimer, and that the same appears on all copies and
+     derivative works of the software and documentation you make.
+     
+     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     Institute of Technology"
+     
+     THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO
+     REPRESENTATIONS OR WARRANTIES, EXPRESS OR IMPLIED.  By way of
+     example, but not limitation, AGE LOGIC AND MIT MAKE NO
+     REPRESENTATIONS OR WARRANTIES OF MERCHANTABILITY OR FITNESS
+     FOR ANY PARTICULAR PURPOSE OR THAT THE SOFTWARE DOES NOT
+     INFRINGE THIRD-PARTY PROPRIETARY RIGHTS.  AGE LOGIC AND MIT
+     SHALL BEAR NO LIABILITY FOR ANY USE OF THIS SOFTWARE.  IN NO
+     EVENT SHALL EITHER PARTY BE LIABLE FOR ANY INDIRECT,
+     INCIDENTAL, SPECIAL, OR CONSEQUENTIAL DAMAGES, INCLUDING LOSS
+     OF PROFITS, REVENUE, DATA OR USE, INCURRED BY EITHER PARTY OR
+     ANY THIRD PARTY, WHETHER IN AN ACTION IN CONTRACT OR TORT OR
+     BASED ON A WARRANTY, EVEN IF AGE LOGIC OR MIT OR LICENSEES
+     HEREUNDER HAVE BEEN ADVISED OF THE POSSIBILITY OF SUCH
+     DAMAGES.
+    
+     The names of AGE Logic, Inc. and MIT may not be used in
+     advertising or publicity pertaining to this software without
+     specific, written prior permission from AGE Logic and MIT.
+
+     Title to this software shall at all times remain with AGE
+     Logic, Inc.
+*****************************************************************************
+  
+	ppaste.c -- DIXIE routines for managing the PasteUp element
+  
+	Dean Verheiden -- AGE Logic, Inc. June 1993
+  
+*****************************************************************************/
+
+#define _XIEC_PPASTE
+
+/*
+ *  Include files
+ */
+#include <stdio.h>
+  /*
+   *  Core X Includes
+   */
+#include <X.h>
+#include <Xproto.h>
+  /*
+   *  XIE Includes
+   */
+#include <XIE.h>
+#include <XIEproto.h>
+  /*
+   *  more X server includes.
+   */
+#include <misc.h>
+#include <extnsionst.h>
+#include <dixstruct.h>
+  /*
+   *  Server XIE Includes
+   */
+#include <corex.h>
+#include <macro.h>
+#include <element.h>
+#include <difloat.h>
+
+
+/*
+ *  routines referenced by other modules.
+ */
+peDefPtr	MakePasteUp();
+
+/*
+ *  routines internal to this module
+ */
+static Bool	PrepPasteUp();
+
+/*
+ * dixie entry points
+ */
+static diElemVecRec pPasteUpVec = {
+    PrepPasteUp			/* prepare for analysis and execution	*/
+    };
+
+
+/*------------------------------------------------------------------------
+----------------------- routine: make a arithmetic element --------------------
+------------------------------------------------------------------------*/
+peDefPtr MakePasteUp(flo,tag,pe)
+     floDefPtr      flo;
+     xieTypPhototag tag;
+     xieFlo        *pe;
+{
+  int t;
+  CARD16 inputs;
+  peDefPtr ped;
+  inFloPtr inFlo;
+  pPasteUpDefPtr pvt;
+  xieTypTile *rp;
+  ELEMENT(xieFloPasteUp);
+  ELEMENT_AT_LEAST_SIZE(xieFloPasteUp);
+  ELEMENT_NEEDS_1_INPUT(numTiles);
+
+  if ( flo->client->swapped ) {
+ 	cpswaps(stuff->numTiles, inputs);
+  } else
+	inputs = stuff->numTiles;
+
+  if(!(ped = MakePEDef((CARD32)inputs, (CARD32)stuff->elemLength<<2,
+		       sizeof(pPasteUpDefRec))))
+    FloAllocError(flo, tag, xieElemPasteUp, return(NULL));
+
+  ped->diVec	     = &pPasteUpVec;
+  ped->phototag      = tag;
+  ped->flags.process = TRUE;
+  raw = (xieFloPasteUp *)ped->elemRaw;
+  rp  = (xieTypTile *) &(raw[1]);
+  /*
+   * copy the client element parameters (swap if necessary)
+   */
+
+  if( flo->client->swapped ) {
+    xieTypTile *sp = (xieTypTile *) &(stuff[1]);
+
+    raw->elemType   = stuff->elemType;
+    raw->elemLength = stuff->elemLength;
+    /* We already did this one */
+    raw->numTiles = inputs;
+    cpswapl(stuff->width, raw->width);
+    cpswapl(stuff->height, raw->height);
+    cpswapl(stuff->constant0, raw->constant0);
+    cpswapl(stuff->constant1, raw->constant1);
+    cpswapl(stuff->constant2, raw->constant2);
+    for (t = 0; t < inputs; t++) {
+	cpswaps(sp[t].src,  rp[t].src);
+	cpswapl(sp[t].dstX, rp[t].dstX);
+	cpswapl(sp[t].dstY, rp[t].dstY);
+    }
+  }
+  else
+    bcopy((char *)stuff, (char *)raw, (CARD32)stuff->elemLength<<2);
+
+  /*
+   * convert constants
+   */
+  pvt = (pPasteUpDefPtr)ped->elemPvt;
+  pvt->constant[0] = ConvertFromIEEE(raw->constant0);
+  pvt->constant[1] = ConvertFromIEEE(raw->constant1);
+  pvt->constant[2] = ConvertFromIEEE(raw->constant2);
+
+  /*
+   * assign phototags to inFlos
+   */
+  inFlo = ped->inFloLst;
+
+  for (t = 0; t < inputs; t++) 
+	inFlo[t].srcTag = rp[t].src;
+  
+  return(ped);
+}                               /* end MakePasteUp */
+
+
+/*------------------------------------------------------------------------
+---------------- routine: prepare for analysis and execution -------------
+------------------------------------------------------------------------*/
+static Bool PrepPasteUp(flo,ped)
+     floDefPtr  flo;
+     peDefPtr   ped;
+{
+  xieFloPasteUp *raw = (xieFloPasteUp *)ped->elemRaw;
+  inFloPtr  in  = &ped->inFloLst[0];
+  outFloPtr src = &in->srcDef->outFlo;
+  outFloPtr dst = &ped->outFlo;
+  int b, t;
+
+ /* Grab a copy of the input attributes and propagate them to our output.
+  * Use the first input as a template, all attributes must match except for  
+  * width (and pitch) and height.
+  */
+
+  dst->bands = in->bands = src->bands;
+
+  for(b = 0; b < dst->bands; b++) {
+	CARD32 bits;
+	dst->format[b] = in->format[b] = src->format[b];
+	dst->format[b].width = bits = raw->width;
+	dst->format[b].height = raw->height;
+	bits *= dst->format[b].stride;
+	dst->format[b].pitch = bits + Align(bits,PITCH_MOD);
+  }
+
+  /* Compare the remaining tiles to ensure all attibutes that must match do */
+  for (t = 1; t < raw->numTiles; t++) {
+	in = &ped->inFloLst[t];
+  	src = &in->srcDef->outFlo;
+
+	if (src->bands != dst->bands) {
+      		MatchError(flo,ped,return(FALSE));
+	} else
+		in->bands = src->bands;
+
+  	for(b = 0; b < dst->bands; b++) {
+		formatRec *df  = &(dst->format[b]);
+		formatRec *srf = &(src->format[b]);
+		if ( srf->class  != df->class  ||
+		     srf->depth  != df->depth  ||
+		     srf->levels != df->levels ||
+		     srf->stride != df->stride) {
+      			MatchError(flo,ped,return(FALSE));
+		     }	
+		in->format[b] = src->format[b];
+	}
+  }
+
+  return( TRUE );
+}                               /* end PrepPasteUp */
+
+/* end module ppaste.c */

@@ -1,0 +1,43 @@
+XCOMM $XConsortium$
+# Imakefile to build device independent request objects
+#include <Server.tmpl>
+
+       SRCS = 	colorlst.c \
+                difloat.c \
+                error.c \
+                event.c \
+                flo.c \
+                lut.c \
+                memory.c \
+                photomap.c \
+                protoflo.c \
+                roi.c \
+                session.c \
+                tables.c \
+                technq.c
+
+       OBJS = 	colorlst.o \
+                difloat.o \
+                error.o \
+                event.o \
+                flo.o \
+                lut.o \
+                memory.o \
+                photomap.o \
+                protoflo.o \
+                roi.o \
+                session.o \
+                tables.o \
+                technq.o
+
+
+   INCLUDES = -I../../../../include/xie -I../../include -I../../../../include \
+              -I../../../../../include -I../../../../../server/include \
+              -I$(INCLUDESRC)
+
+SubdirLibraryRule($(OBJS))
+NormalLibraryObjectRule()
+NormalLintTarget($(SRCS))
+
+DependTarget()
+

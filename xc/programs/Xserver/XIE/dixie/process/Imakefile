@@ -1,0 +1,44 @@
+XCOMM $XConsortium$
+# Imakefile to build device independent processing element objects
+#include <Server.tmpl>
+
+       SRCS = 	parith.c \
+		pbandc.c \
+		pbande.c \
+		pblend.c \
+		pcnst.c \
+		pconv.c \
+		pcfromi.c \
+		pctoi.c \
+		pdither.c \
+		pgeom.c \
+		plogic.c \
+		ppaste.c \
+		ppoint.c \
+		puncnst.c
+
+       OBJS = 	parith.o \
+		pbandc.o \
+		pbande.o \
+		pblend.o \
+		pcnst.o \
+		pconv.o \
+		pcfromi.o \
+		pctoi.o \
+		pdither.o \
+		pgeom.o \
+		plogic.o \
+		ppaste.o \
+		ppoint.o \
+		puncnst.o
+
+
+   INCLUDES = -I../../../../include/xie -I../../include -I../../../../include \
+              -I../../../../../include -I../../../../../server/include \
+              -I$(INCLUDESRC)
+
+SubdirLibraryRule($(OBJS))
+NormalLibraryObjectRule()
+NormalLintTarget($(SRCS))
+
+DependTarget()

@@ -1,0 +1,32 @@
+XCOMM $XConsortium$
+# Imakefile to build device independent import element objects
+#include <Server.tmpl>
+
+       SRCS = 	iclut.c \
+		icphoto.c \
+		icroi.c \
+		idraw.c \
+		idrawp.c \
+		ilut.c \
+		iphoto.c \
+		iroi.c
+
+       OBJS = 	iclut.o \
+		icphoto.o \
+		icroi.o \
+		idraw.o \
+		idrawp.o \
+		ilut.o \
+		iphoto.o \
+		iroi.o
+
+
+   INCLUDES = -I../../../../include/xie -I../../include -I../../../../include \
+              -I../../../../../include -I../../../../../server/include \
+              -I$(INCLUDESRC)
+
+SubdirLibraryRule($(OBJS))
+NormalLibraryObjectRule()
+NormalLintTarget($(SRCS))
+
+DependTarget()

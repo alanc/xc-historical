@@ -1,0 +1,298 @@
+/* $XConsortium$ */
+/**** module ppoint.c ****/
+/******************************************************************************
+				NOTICE
+                              
+This software is being provided by AGE Logic, Inc. and MIT under the
+following license.  By obtaining, using and/or copying this software,
+you agree that you have read, understood, and will comply with these
+terms and conditions:
+
+     Permission to use, copy, modify, distribute and sell this
+     software and its documentation for any purpose and without
+     fee or royalty and to grant others any or all rights granted
+     herein is hereby granted, provided that you agree to comply
+     with the following copyright notice and statements, including
+     the disclaimer, and that the same appears on all copies and
+     derivative works of the software and documentation you make.
+     
+     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     Institute of Technology"
+     
+     THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO
+     REPRESENTATIONS OR WARRANTIES, EXPRESS OR IMPLIED.  By way of
+     example, but not limitation, AGE LOGIC AND MIT MAKE NO
+     REPRESENTATIONS OR WARRANTIES OF MERCHANTABILITY OR FITNESS
+     FOR ANY PARTICULAR PURPOSE OR THAT THE SOFTWARE DOES NOT
+     INFRINGE THIRD-PARTY PROPRIETARY RIGHTS.  AGE LOGIC AND MIT
+     SHALL BEAR NO LIABILITY FOR ANY USE OF THIS SOFTWARE.  IN NO
+     EVENT SHALL EITHER PARTY BE LIABLE FOR ANY INDIRECT,
+     INCIDENTAL, SPECIAL, OR CONSEQUENTIAL DAMAGES, INCLUDING LOSS
+     OF PROFITS, REVENUE, DATA OR USE, INCURRED BY EITHER PARTY OR
+     ANY THIRD PARTY, WHETHER IN AN ACTION IN CONTRACT OR TORT OR
+     BASED ON A WARRANTY, EVEN IF AGE LOGIC OR MIT OR LICENSEES
+     HEREUNDER HAVE BEEN ADVISED OF THE POSSIBILITY OF SUCH
+     DAMAGES.
+    
+     The names of AGE Logic, Inc. and MIT may not be used in
+     advertising or publicity pertaining to this software without
+     specific, written prior permission from AGE Logic and MIT.
+
+     Title to this software shall at all times remain with AGE
+     Logic, Inc.
+*****************************************************************************
+  
+	ppoint.c -- DIXIE routines for managing the Point element
+  
+	Robert NC Shelley -- AGE Logic, Inc. April 1993
+	Ben Fahy -- AGE Logic, Inc. May 1993
+  
+*****************************************************************************/
+
+#define _XIEC_PPOINT
+#define _XIEC_POINT
+
+/*
+ *  Include files
+ */
+#include <stdio.h>
+  /*
+   *  Core X Includes
+   */
+#include <X.h>
+#include <Xproto.h>
+  /*
+   *  XIE Includes
+   */
+#include <XIE.h>
+#include <XIEproto.h>
+  /*
+   *  more X server includes.
+   */
+#include <misc.h>
+#include <extnsionst.h>
+#include <dixstruct.h>
+  /*
+   *  Server XIE Includes
+   */
+#include <corex.h>
+#include <macro.h>
+#include <element.h>
+#include <error.h>
+
+
+/*
+ *  routines referenced by other modules.
+ */
+peDefPtr	MakePoint();
+
+/*
+ *  routines internal to this module
+ */
+static Bool	PrepPoint();
+
+/*
+ * dixie entry points
+ */
+static diElemVecRec pPointVec = {
+  PrepPoint		/* prepare for analysis and execution	*/
+  };
+
+
+/*------------------------------------------------------------------------
+----------------------- routine: make a point element --------------------
+------------------------------------------------------------------------*/
+peDefPtr MakePoint(flo,tag,pe)
+     floDefPtr      flo;
+     xieTypPhototag tag;
+     xieFlo        *pe;
+{
+  int inputs;
+  peDefPtr ped;
+  inFloPtr inFlo;
+  ELEMENT(xieFloPoint);
+  ELEMENT_SIZE_MATCH(xieFloPoint);
+  ELEMENT_NEEDS_2_INPUTS(src,lut);
+  inputs = stuff->domainPhototag ? 3 : 2;
+  
+  if(!(ped = MakePEDef(inputs, (CARD32)stuff->elemLength<<2, 0))) 
+    FloAllocError(flo,tag,xieElemPoint, return(NULL)) ;
+
+  ped->diVec	     = &pPointVec;
+  ped->phototag      = tag;
+  ped->flags.process = TRUE;
+  raw = (xieFloPoint *)ped->elemRaw;
+  /*
+   * copy the client element parameters (swap if necessary)
+   */
+  if( flo->client->swapped ) {
+    raw->elemType   = stuff->elemType;
+    raw->elemLength = stuff->elemLength;
+    cpswaps(stuff->src, raw->src);
+    cpswaps(stuff->lut, raw->lut);
+    cpswapl(stuff->domainOffsetX, raw->domainOffsetX);
+    cpswapl(stuff->domainOffsetY, raw->domainOffsetY);
+    cpswaps(stuff->domainPhototag,raw->domainPhototag);
+    raw->bandMask = stuff->bandMask;
+  }
+  else
+    bcopy((char *)stuff, (char *)raw, sizeof(xieFloPoint));
+  /*
+   * assign phototags to inFlos
+   */
+  inFlo = ped->inFloLst;
+  inFlo[SRCtag].srcTag = raw->src;
+  inFlo[LUTtag].srcTag = raw->lut;
+  if(raw->domainPhototag)
+    inFlo[ped->inCnt-1].srcTag = raw->domainPhototag;
+  
+  return(ped);
+}                               /* end MakePoint */
+
+
+/*------------------------------------------------------------------------
+---------------- routine: prepare for analysis and execution -------------
+------------------------------------------------------------------------*/
+static Bool PrepPoint(flo,ped)
+     floDefPtr  flo;
+     peDefPtr   ped;
+{
+  xieFloPoint *raw = (xieFloPoint *)ped->elemRaw;
+
+  inFloPtr  indom,inlut= &ped->inFloLst[LUTtag],insrc = &ped->inFloLst[SRCtag];
+  outFloPtr outdom, outlut= &inlut->srcDef->outFlo,
+	outsrc= &insrc->srcDef->outFlo;
+  outFloPtr dst = &ped->outFlo;
+  int b;
+
+  /* propage band attributes */
+  insrc->bands = outsrc->bands;
+  inlut->bands = outlut->bands;
+
+  dst->bands   = outlut->bands;	/* see V4.12 spec, page 6-2 */
+
+  /* if process domain src and lut class must match */
+  if (raw->domainPhototag && insrc->bands != inlut->bands)
+     	MatchError(flo,ped, return(FALSE));
+
+  /* check to make sure input image is constrained */
+  if(outsrc->format[0].class == UNCONSTRAINED)
+    MatchError(flo,ped, return(FALSE));
+
+  /* propagate outflo format of src to our inflo for src */
+  for (b=0; b<outsrc->bands; ++b)
+    insrc->format[b] = outsrc->format[b];
+
+  /* propagate outflo format of lut to our inflo for lut */
+  for (b=0; b<inlut->bands; ++b)
+    inlut->format[b] = outlut->format[b];
+
+  /* do same with process domain, if it is specified */
+  if(raw->domainPhototag) {
+    indom = &ped->inFloLst[ped->inCnt-1];
+    outdom = &indom->srcDef->outFlo;
+    if((indom->bands = outdom->bands) != 1)
+      DomainError(flo,ped,raw->domainPhototag, return(FALSE));
+    indom->format[0] = outdom->format[0];
+  } else
+    outdom = NULL;
+
+/***	Painful enumeration of cases	***/
+  if (outlut->bands == 1 && outsrc->bands == 1) {
+	/* gee.  so *simple*  :-) */
+
+    	dst->format[0] = insrc->format[0];
+	dst->format[0].levels = inlut->format[0].levels;
+
+	if (!UpdateFormatfromLevels(ped))
+     		MatchError(flo,ped, return(FALSE));
+
+	/* check to make sure length of lut is sufficient */
+	if (inlut->format[0].height < insrc->format[0].levels)
+     		MatchError(flo,ped, return(FALSE));
+
+	/* if domain is used, lut levels must be == src levels */
+	/* (or else we don't know what to do with pass-thru data */
+	if (outdom != NULL)
+	  if (inlut->format[0].levels < insrc->format[0].levels)
+     		MatchError(flo,ped, return(FALSE));
+  }
+
+  else if (outlut->bands == 1 && outsrc->bands == 3) {
+    int level_product;
+
+    /* make tripleband src into CRAZY PIXELS! produce singleband */
+    if ((raw->bandMask !=7) || (outdom != NULL))
+     	MatchError(flo,ped, return(FALSE)); /* see p7-25 of v4.12 spec */
+
+    /* check to make sure length of lut is sufficient */
+    level_product = insrc->format[0].levels *
+		    insrc->format[1].levels *
+		    insrc->format[2].levels;
+
+    if (inlut->format[0].height < level_product)
+	MatchError(flo,ped, return(FALSE));
+
+    /* XXX only do bytes * bytes * bytes --> bytes --> bytes */
+    if ( (level_product > 256) ||
+	 (insrc->format[0].levels <= 2) ||
+	 (insrc->format[1].levels <= 2) ||
+	 (insrc->format[2].levels <= 2) ||
+	 (inlut->format[0].levels <= 2) ||
+	 (inlut->format[0].levels > 256) )
+     	ImplementationError(flo,ped, return(FALSE));
+
+    /* XXX What to do when src bands are different size in Width, Height ?? */
+
+    dst->format[0] = insrc->format[0];
+    dst->format[0].levels = inlut->format[0].levels;
+    if (!UpdateFormatfromLevels(ped))
+	MatchError(flo,ped, return(FALSE));
+
+  }
+
+  else if (outlut->bands == 3 && outsrc->bands == 1) {
+	/* apply lut for each band to src */
+
+    /* can't use domain processing if class of lut and src don't match */
+    if (outdom != NULL)
+    	MatchError(flo,ped, return(FALSE));
+
+    /* destination format will be close to insrc, but not same */
+    for(b = 0; b < dst->bands; b++)  {
+    	dst->format[b] = insrc->format[0];
+    	dst->format[b].band = b;
+	dst->format[b].levels = inlut->format[b].levels;
+        if (inlut->format[b].height < insrc->format[0].levels)
+		MatchError(flo,ped, return(FALSE));
+    }
+    if (!UpdateFormatfromLevels(ped))
+	MatchError(flo,ped, return(FALSE));
+
+  }
+
+  else if (outlut->bands == 3 && outsrc->bands == 3) {
+
+    /* apply lut for each band to src of each band */
+
+    for(b = 0; b < dst->bands; b++)  {
+    	dst->format[b] = insrc->format[b];
+	dst->format[b].levels = inlut->format[b].levels;
+        if (inlut->format[b].height < insrc->format[b].levels)
+    		MatchError(flo,ped, return(FALSE));
+    }
+    if (!UpdateFormatfromLevels(ped))
+	MatchError(flo,ped, return(FALSE));
+
+    /* XXX seems like ROI Domains should apply here as well */
+
+  }
+  else {
+	/* is this possible? */
+	ImplementationError(flo,ped,return(FALSE));
+  }
+
+  return(TRUE);
+}                               /* end PrepPoint */
+
+/* end module ppoint.c */

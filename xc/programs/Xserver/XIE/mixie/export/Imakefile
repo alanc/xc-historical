@@ -1,0 +1,32 @@
+XCOMM $XConsortium$
+# Imakefile to build device dependent machine independent export element objs
+#include <Server.tmpl>
+
+       SRCS = 	mecroi.c \
+		meclut.c \
+		mecphoto.c \
+		medraw.c \
+		medrawp.c \
+		melut.c \
+		mephoto.c \
+		meroi.c
+
+       OBJS = 	mecroi.o \
+		meclut.o \
+		mecphoto.o \
+		medraw.o \
+		medrawp.o \
+		melut.o \
+		mephoto.o \
+		meroi.o
+
+   INCLUDES = -I../include -I../../include -I../../../../../include/xie \
+              -I../../../include -I../../../../../include  \
+              -I../../../../../../include -I../../../../../../server/include \
+              -I$(INCLUDESRC)
+
+SubdirLibraryRule($(OBJS))
+NormalLibraryObjectRule()
+NormalLintTarget($(SRCS))
+
+DependTarget()

@@ -1,0 +1,33 @@
+XCOMM $XConsortium$
+# Imakefile to build device dependent machine independent import element objects
+#include <Server.tmpl>
+
+       SRCS = 	mig4.c \
+		miclut.c \
+		micphoto.c \
+		microi.c \
+		midraw.c \
+		milut.c \
+		miphoto.c \
+		miroi.c
+
+
+       OBJS = 	mig4.o \
+		miclut.o \
+		micphoto.o \
+		microi.o \
+		midraw.o \
+		milut.o \
+		miphoto.o \
+		miroi.o
+
+   INCLUDES = -I../include -I../../include -I../../../../../include/xie \
+              -I../../../include -I../../../../../include  \
+              -I../../../../../../include -I../../../../../../server/include \
+              -I$(INCLUDESRC)
+
+SubdirLibraryRule($(OBJS))
+NormalLibraryObjectRule()
+NormalLintTarget($(SRCS))
+
+DependTarget()

@@ -1,0 +1,396 @@
+/* $XConsortium$ */
+/**** module mpcfromi.c ****/
+/******************************************************************************
+				NOTICE
+                              
+This software is being provided by AGE Logic, Inc. and MIT under the
+following license.  By obtaining, using and/or copying this software,
+you agree that you have read, understood, and will comply with these
+terms and conditions:
+
+     Permission to use, copy, modify, distribute and sell this
+     software and its documentation for any purpose and without
+     fee or royalty and to grant others any or all rights granted
+     herein is hereby granted, provided that you agree to comply
+     with the following copyright notice and statements, including
+     the disclaimer, and that the same appears on all copies and
+     derivative works of the software and documentation you make.
+     
+     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     Institute of Technology"
+     
+     THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO
+     REPRESENTATIONS OR WARRANTIES, EXPRESS OR IMPLIED.  By way of
+     example, but not limitation, AGE LOGIC AND MIT MAKE NO
+     REPRESENTATIONS OR WARRANTIES OF MERCHANTABILITY OR FITNESS
+     FOR ANY PARTICULAR PURPOSE OR THAT THE SOFTWARE DOES NOT
+     INFRINGE THIRD-PARTY PROPRIETARY RIGHTS.  AGE LOGIC AND MIT
+     SHALL BEAR NO LIABILITY FOR ANY USE OF THIS SOFTWARE.  IN NO
+     EVENT SHALL EITHER PARTY BE LIABLE FOR ANY INDIRECT,
+     INCIDENTAL, SPECIAL, OR CONSEQUENTIAL DAMAGES, INCLUDING LOSS
+     OF PROFITS, REVENUE, DATA OR USE, INCURRED BY EITHER PARTY OR
+     ANY THIRD PARTY, WHETHER IN AN ACTION IN CONTRACT OR TORT OR
+     BASED ON A WARRANTY, EVEN IF AGE LOGIC OR MIT OR LICENSEES
+     HEREUNDER HAVE BEEN ADVISED OF THE POSSIBILITY OF SUCH
+     DAMAGES.
+    
+     The names of AGE Logic, Inc. and MIT may not be used in
+     advertising or publicity pertaining to this software without
+     specific, written prior permission from AGE Logic and MIT.
+
+     Title to this software shall at all times remain with AGE
+     Logic, Inc.
+*****************************************************************************
+  
+	mpcfromi.c -- DDXIE ConvertFromIndex element
+  
+	Robert NC Shelley -- AGE Logic, Inc. July, 1993
+  
+*****************************************************************************/
+
+#define _XIEC_MPCFROMI
+#define _XIEC_PCFROMI
+
+/*
+ *  Include files
+ */
+#include <stdio.h>
+
+/*
+ *  Core X Includes
+ */
+#include <X.h>
+#include <Xproto.h>
+/*
+ *  XIE Includes
+ */
+#include <XIE.h>
+#include <XIEproto.h>
+/*
+ *  more X server includes.
+ */
+#include <misc.h>
+#include <extnsionst.h>
+#include <dixstruct.h>
+#include <scrnintstr.h>
+#include <colormapst.h>
+/*
+ *  Server XIE Includes
+ */
+#include <error.h>
+#include <macro.h>
+#include <colorlst.h>
+#include <element.h>
+#include <texstr.h>
+
+extern int QueryColors(); /* in ...server/dix/colormap.c */
+
+/* routines referenced by other DDXIE modules
+ */
+int	miAnalyzeCvtFromInd();
+
+/* routines used internal to this module
+ */
+static int CreateCfromI();
+static int InitCfromI();
+static int DoSingleCfromI();
+static int DoTripleCfromI();
+static int ResetCfromI();
+static int DestroyCfromI();
+
+
+/* DDXIE ConvertFromIndex entry points
+ */
+static ddElemVecRec mpCfromIVec = {
+  CreateCfromI,
+  InitCfromI,
+  (xieIntProc)NULL,
+  (xieIntProc)NULL,
+  ResetCfromI,
+  DestroyCfromI
+  };
+
+
+/* Local Declarations.
+ */
+typedef struct _mpcfromi {
+  bandPtr        iband;
+  bandPtr        oband;
+  Pixel         *pixLst;
+  xrgb          *rgbLst;
+  Bool           gray;
+  CARD32	 width;
+  xieIntProc	 action;
+} mpCfromIRec, *mpCfromIPtr;
+
+/* action routines
+ */
+#define    CfromI_1bb (xieIntProc)NULL
+#define    CfromI_1bB (xieIntProc)NULL
+#define    CfromI_1bP (xieIntProc)NULL
+#define    CfromI_1Bb (xieIntProc)NULL
+static int CfromI_1BB();
+static int CfromI_1BP();
+#define    CfromI_1Pb (xieIntProc)NULL
+static int CfromI_1PB();
+static int CfromI_1PP();
+#define    CfromI_1Qb (xieIntProc)NULL
+static int CfromI_1QB();
+static int CfromI_1QP();
+#define    CfromI_3bb (xieIntProc)NULL
+#define    CfromI_3bB (xieIntProc)NULL
+#define    CfromI_3bP (xieIntProc)NULL
+#define    CfromI_3Bb (xieIntProc)NULL
+static int CfromI_3BB();
+static int CfromI_3BP();
+#define    CfromI_3Pb (xieIntProc)NULL
+static int CfromI_3PB();
+static int CfromI_3PP();
+#define    CfromI_3Qb (xieIntProc)NULL
+static int CfromI_3QB();
+static int CfromI_3QP();
+
+static int (*action_CfromI[2][3][4])() = {
+  CfromI_1bb, CfromI_1Bb, CfromI_1Pb, CfromI_1Qb, /* single, o=1, i=1..4 */
+  CfromI_1bB, CfromI_1BB, CfromI_1PB, CfromI_1QB, /* single, o=2, i=1..4 */
+  CfromI_1bP, CfromI_1BP, CfromI_1PP, CfromI_1QP, /* single, o=3, i=1..4 */
+  CfromI_3bb, CfromI_3Bb, CfromI_3Pb, CfromI_3Qb, /* triple, o=1, i=1..4 */
+  CfromI_3bB, CfromI_3BB, CfromI_3PB, CfromI_3QB, /* triple, o=2, i=1..4 */
+  CfromI_3bP, CfromI_3BP, CfromI_3PP, CfromI_3QP, /* triple, o=3, i=1..4 */
+};
+
+
+/*------------------------------------------------------------------------
+------------------- see if we can handle this element --------------------
+------------------------------------------------------------------------*/
+int miAnalyzeCvtFromInd(flo,ped)
+     floDefPtr flo;
+     peDefPtr  ped;
+{
+  /* stash the entry point vector with the appropriate activate routine
+   */
+  ped->ddVec = mpCfromIVec;
+
+  return(TRUE);
+}                               /* end miAnalyzeCvtFromInd */
+
+/*------------------------------------------------------------------------
+---------------------------- create peTex . . . --------------------------
+------------------------------------------------------------------------*/
+static int CreateCfromI(flo,ped)
+     floDefPtr flo;
+     peDefPtr  ped;
+{
+  return(MakePETex(flo, ped, sizeof(mpCfromIRec), NO_SYNC, NO_SYNC));
+}                               /* end CreateCfromI */
+
+
+/*------------------------------------------------------------------------
+---------------------------- initialize peTex . . . ----------------------
+------------------------------------------------------------------------*/
+static int InitCfromI(flo,ped)
+     floDefPtr flo;
+     peDefPtr  ped;
+{
+  xieFloConvertFromIndex *raw = (xieFloConvertFromIndex *)ped->elemRaw;
+  peTexPtr      pet =  ped->peTex;
+  formatPtr     ift = &ped->inFloLst[SRCtag].format[0];
+  formatPtr     oft = &ped->outFlo.format[0];
+  pCfromIDefPtr dix = (pCfromIDefPtr) ped->elemPvt;
+  mpCfromIPtr   ddx = (mpCfromIPtr)pet->private;
+  CARD32  i, pseudo = !dix->pixMsk[0];
+  CARD32        odx =  ped->outFlo.bands == 1 ? 0 : 1;
+  Pixel  *p;
+  xrgb   *rgb;
+  
+  /* set up action parameters
+   */
+  ddx->gray   = dix->class <= GrayScale;
+  ddx->width  = oft->width;
+  ddx->iband  = &pet->receptor[SRCtag].band[0];
+  ddx->oband  = &pet->emitter[0];
+  ddx->action = action_CfromI[odx][oft->class-1][ift->class-1];
+  if(!ddx->action)
+    ImplementationError(flo,ped, return(FALSE));
+  ped->ddVec.activate = !odx ? DoSingleCfromI : DoTripleCfromI;
+
+  /* snapshot the current contents of the colormap
+   */
+  if(!(ddx->pixLst = (Pixel*) XieMalloc(dix->cells * sizeof(Pixel))) ||
+     !(ddx->rgbLst = (xrgb *) XieMalloc(dix->cells * sizeof(xrgb))))
+    AllocError(flo,ped, return(FALSE));
+  for(p = ddx->pixLst, i = 0; i < dix->cells; ++i)
+    *p++ = pseudo ? i : ((i & dix->pixMsk[0]) << dix->pixPos[0] |
+                         (i & dix->pixMsk[1]) << dix->pixPos[1] |
+                         (i & dix->pixMsk[2]) << dix->pixPos[2]);
+  if(QueryColors(dix->cmap,dix->cells,ddx->pixLst,ddx->rgbLst))
+    ColormapError(flo,ped,raw->colormap, return(FALSE));   /* XXX hmmm? */
+
+  /* adjust the RGB values according to the client's precision requirements
+   */
+  for(rgb = ddx->rgbLst, i = 0; i < dix->cells; ++rgb, ++i) {
+    rgb->red   >>= dix->precShift;
+    rgb->green >>= dix->precShift;
+    rgb->blue  >>= dix->precShift;
+  }
+    
+  return(InitReceptors(flo, ped, NO_DATAMAP, 1) &&
+         InitEmitter(flo, ped, NO_DATAMAP, NO_INPLACE));
+}                               /* end InitCfromI */
+
+
+/*------------------------------------------------------------------------
+------------------------- crank some input data --------------------------
+------------------------------------------------------------------------*/
+static int DoSingleCfromI(flo,ped,pet)	/* one band out */
+     floDefPtr flo;
+     peDefPtr  ped;
+     peTexPtr  pet;
+{
+  mpCfromIPtr   ddx = (mpCfromIPtr) pet->private;
+  void *src, *dst;
+  
+  if((src = GetCurrentSrc(void,flo,pet,ddx->iband)) &&
+     (dst = GetCurrentDst(void,flo,pet,ddx->oband)))
+    do {
+      (*ddx->action)(ddx, src, dst);
+
+      src = GetNextSrc(void,flo,pet,ddx->iband,FLUSH);
+      dst = GetNextDst(void,flo,pet,ddx->oband,FLUSH);
+    } while(src && dst);
+    
+  FreeData(void,flo,pet,ddx->iband,ddx->iband->current);
+
+  return(TRUE);
+}                               /* end DoSingleCfromI */
+
+static int DoTripleCfromI(flo,ped,pet)	/* three bands out */
+     floDefPtr flo;
+     peDefPtr  ped;
+     peTexPtr  pet;
+{
+  mpCfromIPtr   ddx = (mpCfromIPtr) pet->private;
+  void *src, *dstR, *dstG, *dstB;
+  
+  if((src  = GetCurrentSrc(void,flo,pet,ddx->iband))   &&
+     (dstR = GetCurrentDst(void,flo,pet,ddx->oband+0)) &&
+     (dstG = GetCurrentDst(void,flo,pet,ddx->oband+1)) &&
+     (dstB = GetCurrentDst(void,flo,pet,ddx->oband+2)))
+    do {
+      (*ddx->action)(ddx, src, dstR, dstG, dstB);
+
+      src  = GetNextSrc(void,flo,pet,ddx->iband,FLUSH);
+      dstR = GetNextDst(void,flo,pet,ddx->oband+0,FLUSH);
+      dstG = GetNextDst(void,flo,pet,ddx->oband+1,FLUSH);
+      dstB = GetNextDst(void,flo,pet,ddx->oband+2,FLUSH);
+    } while(src && dstR && dstG && dstB);
+    
+  FreeData(void,flo,pet,ddx->iband,ddx->iband->current);
+
+  return(TRUE);
+}                               /* end DoTripleCfromI */
+
+
+
+/*------------------------------------------------------------------------
+------------------------ get rid of run-time stuff -----------------------
+------------------------------------------------------------------------*/
+static int ResetCfromI(flo,ped)
+     floDefPtr flo;
+     peDefPtr  ped;
+{
+  mpCfromIPtr ddx = (mpCfromIPtr) ped->peTex->private;
+
+  if(ddx->pixLst) ddx->pixLst = (Pixel*) XieFree(ddx->pixLst);
+  if(ddx->rgbLst) ddx->rgbLst = (xrgb *) XieFree(ddx->rgbLst);
+
+  ResetReceptors(ped);
+  ResetEmitter(ped);
+  
+  return(TRUE);
+}                               /* end ResetCfromI */
+
+
+/*------------------------------------------------------------------------
+-------------------------- get rid of this element -----------------------
+------------------------------------------------------------------------*/
+static int DestroyCfromI(flo,ped)
+     floDefPtr flo;
+     peDefPtr  ped;
+{
+  /* get rid of the peTex structure  */
+  ped->peTex = (peTexPtr) XieFree(ped->peTex);
+  
+  /* zap this element's entry point vector */
+  ped->ddVec.create     = (xieIntProc)NULL;
+  ped->ddVec.initialize = (xieIntProc)NULL;
+  ped->ddVec.activate   = (xieIntProc)NULL;
+  ped->ddVec.reset      = (xieIntProc)NULL;
+  ped->ddVec.destroy    = (xieIntProc)NULL;
+  
+  return(TRUE);
+}                               /* end DestroyCfromI */
+
+/* Single band output action routines:
+ */
+#define DO_SINGLE_CFROMI(fn_do,itype,otype)		\
+static int fn_do(ddx,SRC,DST)				\
+    mpCfromIPtr ddx; void *SRC; void *DST;		\
+{							\
+  itype *s = (itype *)SRC;				\
+  otype *d = (otype *)DST;				\
+  xrgb  *x =  ddx->rgbLst;				\
+  int    w =  ddx->width;				\
+  while(w--) *d++ = x[*s++].red;			\
+}
+/* bit versions - nyi */
+/*		 CfromI_1bb,BitPixel, BitPixel  */
+/*		 CfromI_1bB,BitPixel, BytePixel */
+/*		 CfromI_1bP,BitPixel, PairPixel */
+/*		 CfromI_1Bb,BytePixel,BitPixel  */
+DO_SINGLE_CFROMI(CfromI_1BB,BytePixel,BytePixel)
+DO_SINGLE_CFROMI(CfromI_1BP,BytePixel,PairPixel)
+/*		 CfromI_1Pb,PairPixel,BitPixel  */
+DO_SINGLE_CFROMI(CfromI_1PB,PairPixel,BytePixel)
+DO_SINGLE_CFROMI(CfromI_1PP,PairPixel,PairPixel)
+/*		 CfromI_1Qb,QuadPixel,BitPixel  */
+DO_SINGLE_CFROMI(CfromI_1QB,QuadPixel,BytePixel)
+DO_SINGLE_CFROMI(CfromI_1QP,QuadPixel,PairPixel)
+
+
+/* Triple band output action routines:
+ */
+#define DO_TRIPLE_CFROMI(fn_do,itype,otype)		\
+static int fn_do(ddx,SRC,DSTR,DSTG,DSTB)		\
+    mpCfromIPtr ddx; void *SRC, *DSTR, *DSTG, *DSTB;	\
+{							\
+  itype  *s = (itype *)SRC;				\
+  otype  *r = (otype *)DSTR;				\
+  otype  *g = (otype *)DSTG;				\
+  otype  *b = (otype *)DSTB;				\
+  xrgb   *x =  ddx->rgbLst;				\
+  int     w =  ddx->width;				\
+  if(ddx->gray)						\
+    while(w--) *r++ = *g++ = *b++ = x[*s++].red;	\
+  else							\
+    while(w--) {					\
+      xrgb *p = x + *s++;				\
+      *r++ = p->red; *g++ = p->green; *b++ = p->blue;	\
+    }							\
+}
+/* bit versions - nyi */
+/*		 CfromI_3bb,BitPixel, BitPixel  */
+/*		 CfromI_3bB,BitPixel, BytePixel */
+/*		 CfromI_3bP,BitPixel, PairPixel */
+/*		 CfromI_3Bb,BytePixel,BitPixel  */
+DO_TRIPLE_CFROMI(CfromI_3BB,BytePixel,BytePixel)
+DO_TRIPLE_CFROMI(CfromI_3BP,BytePixel,PairPixel)
+/*		 CfromI_3Pb,PairPixel,BitPixel  */
+DO_TRIPLE_CFROMI(CfromI_3PB,PairPixel,BytePixel)
+DO_TRIPLE_CFROMI(CfromI_3PP,PairPixel,PairPixel)
+     /*		 CfromI_3Qb,QuadPixel,BitPixel  */
+DO_TRIPLE_CFROMI(CfromI_3QB,QuadPixel,BytePixel)
+DO_TRIPLE_CFROMI(CfromI_3QP,QuadPixel,PairPixel)
+     
+
+/* end module mpcfromi.c */
