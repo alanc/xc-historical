@@ -2,6 +2,7 @@
 #define PassCDebugFlags
 
       WORLDOPTS = -k
+BOOTSTRAPCFLAGS = 
 
 #if MakeContributed
     CONTRIBDIRS = $(CONTRIBSRC)
@@ -54,7 +55,7 @@ InstallManPage(X,$(MANDIR))
 
 # don't name your log file make.log when you run this ...
 World::
-	cd $(IMAKESRC); $(MAKE) clean; $(MAKE)
+	cd $(IMAKESRC); $(MAKE) clean; $(MAKE) BOOTSTRAPCFLAGS="$(BOOTSTRAPCFLAGS)"
 	-$(MV) Makefile Makefile.bak
 	$(MAKE) -f Makefile.bak Makefile
 	$(MAKE) Makefiles
