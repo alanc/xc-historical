@@ -124,14 +124,14 @@ miArcSegment(pDraw, pGC, tarc, right, left)
     int st, ct;
     miArcFacePtr	temp;
 
-    if (pGC->miTranslate && (pDraw->type == DRAWABLE_WINDOW)) {
-	tarc.x += ((WindowPtr) pDraw)->absCorner.x;
-	tarc.y += ((WindowPtr) pDraw)->absCorner.y;
-    }
-
     if (tarc.width == 0 || tarc.height == 0) {
     	drawZeroArc (pDraw, pGC, tarc, left, right);
 	return;
+    }
+
+    if (pGC->miTranslate && (pDraw->type == DRAWABLE_WINDOW)) {
+	tarc.x += ((WindowPtr) pDraw)->absCorner.x;
+	tarc.y += ((WindowPtr) pDraw)->absCorner.y;
     }
 
     if (l < 1)
