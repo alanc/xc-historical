@@ -1,9 +1,9 @@
 /*
- *	$XConsortium: resize.c,v 1.5 88/09/06 17:08:27 jim Exp $
+ *	$XConsortium: resize.c,v 1.6 89/01/18 16:26:01 jim Exp $
  */
 
 #ifndef lint
-static char *rcsid_resize_c = "$XConsortium: resize.c,v 1.5 88/09/06 17:08:27 jim Exp $";
+static char *rcsid_resize_c = "$XConsortium: resize.c,v 1.6 89/01/18 16:26:01 jim Exp $";
 #endif	/* lint */
 
 #include <X11/copyright.h>
@@ -71,7 +71,7 @@ extern struct passwd *fgetpwent();
 #endif	/* USE_SYSV_TERMIO */
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: resize.c,v 1.5 88/09/06 17:08:27 jim Exp $";
+static char rcs_id[] = "$XConsortium: resize.c,v 1.6 89/01/18 16:26:01 jim Exp $";
 #endif
 
 #define	EMULATIONS	2
@@ -355,8 +355,10 @@ char **argv;
 		fprintf(stderr, "%s: No `co#'\n", myname);
 		exit (1);
 	}
-	strncpy (newtc, termcap, ptr - termcap + 3);
-	sprintf (newtc + strlen (newtc), "%d", cols);
+
+	i = ptr - termcap + 3;
+	strncpy (newtc, termcap, i);
+	sprintf (newtc + i, "%d", cols);
 	ptr = index (ptr, ':');
 	strcat (newtc, ptr);
 
@@ -365,8 +367,10 @@ char **argv;
 		fprintf(stderr, "%s: No `li#'\n", myname);
 		exit (1);
 	}
-	strncpy (termcap, newtc, ptr - newtc + 3);
-	sprintf (termcap + ((int) ptr - (int) newtc + 3), "%d", rows);
+
+	i = ptr - newtc + 3;
+	strncpy (termcap, newtc, i);
+	sprintf (termcap + i, "%d", rows);
 	ptr = index (ptr, ':');
 	strcat (termcap, ptr);
 #endif /* USE_TERMCAP */
