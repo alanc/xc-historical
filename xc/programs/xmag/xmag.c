@@ -337,7 +337,7 @@ HighlightTO(data, id)	/* ARGSUSED */
   }
   XUngrabServer(dpy);
   if (data->selectMode != done)
-    XtAppAddTimeOut(app, HLINTERVAL, HighlightTO, data);
+    XtAppAddTimeOut(app, HLINTERVAL, HighlightTO, (XtPointer)data);
 }
 
 
@@ -417,7 +417,7 @@ ResizeEH(w, data, event)	/* ARGSUSED */
 	     data);
     XtUngrabPointer(w, CurrentTime);
     XtRemoveEventHandler(w, PointerMotionMask|ButtonReleaseMask,
-			 True, ResizeEH, data);
+			 True, ResizeEH, (XtPointer)data);
     data->selectMode = done;
     XUndefineCursor(dpy, XtWindow(w));  
     break;
@@ -446,7 +446,8 @@ DragEH(w, data, event) /* ARGSUSED */
 		   srcWidth, srcHeight, data);
       XtUngrabPointer(w, CurrentTime);
       XtRemoveRawEventHandler(w, PointerMotionMask|ButtonPressMask|
-			      ButtonReleaseMask, True, DragEH, data);
+			      ButtonReleaseMask, True, DragEH,
+			      (XtPointer)data);
       data->selectMode = done;
       XUndefineCursor(dpy, XtWindow(w));
     }
@@ -460,14 +461,14 @@ DragEH(w, data, event) /* ARGSUSED */
       data->y = event->xbutton.y_root + srcHeight;      
       data->selectMode = resize;
       XtRemoveEventHandler(w, PointerMotionMask|ButtonPressMask|
-			   ButtonReleaseMask, True, DragEH, data);
+			   ButtonReleaseMask, True, DragEH, (XtPointer)data);
       XChangeActivePointerGrab
 	(dpy, PointerMotionMask|ButtonPressMask|ButtonReleaseMask,
 	 lrAngle, CurrentTime);
       XWarpPointer(dpy, None, None, 0, 0, 0, 0, 
 		   srcWidth, srcHeight);
       XtAddEventHandler(w, PointerMotionMask|ButtonReleaseMask, 
-			True, ResizeEH, data);		   
+			True, ResizeEH, (XtPointer)data);
     }
     break;
   }
@@ -509,8 +510,8 @@ StartRootPtrGrab(new, data)
   hlData->height     = srcHeight;
   XtAddRawEventHandler
     (root, PointerMotionMask|ButtonPressMask|ButtonReleaseMask, 
-     True, DragEH, hlData);
-  hlId = XtAppAddTimeOut(app, HLINTERVAL, HighlightTO, hlData);  
+     True, DragEH, (XtPointer)hlData);
+  hlId = XtAppAddTimeOut(app, HLINTERVAL, HighlightTO, (XtPointer)hlData);
 }
 
 
@@ -588,15 +589,15 @@ PopupNewScale(data)
                                (Arg *) NULL, 0);
   close = XtCreateManagedWidget("close", commandWidgetClass, form,
                                (Arg *) NULL, 0);
-  XtAddCallback(close, XtNcallback, CloseCB, data->scaleShell);
+  XtAddCallback(close, XtNcallback, CloseCB, (XtPointer)data->scaleShell);
   replace = XtVaCreateManagedWidget("replace", commandWidgetClass, form,
 				    XtNfromHoriz, (XtArgVal)close,
 				    NULL);
-  XtAddCallback(replace, XtNcallback, ReplaceCB, data);
+  XtAddCallback(replace, XtNcallback, ReplaceCB, (XtPointer)data);
   new = XtVaCreateManagedWidget("new", commandWidgetClass, form,
 				XtNfromHoriz, (XtArgVal)replace,
 				NULL);
-  XtAddCallback(new, XtNcallback, NewCB, NULL);
+  XtAddCallback(new, XtNcallback, NewCB, (XtPointer)NULL);
   data->scaleInstance = 
     XtVaCreateManagedWidget("scale", scaleWidgetClass, 
 			    form,
