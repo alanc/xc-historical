@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: extension.c,v 2.3 87/08/18 17:35:28 newman Locked $ */
+/* $Header: extension.c,v 1.6 87/08/27 14:27:22 drewry Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -37,49 +37,25 @@ SOFTWARE.
 #define LAST_EVENT  128
 #define LAST_ERROR 0x7fffffff
 
-typedef struct _ProcEntry {
-    char *name;
-    ExtensionLookupProc proc;
-} ProcEntryRec, *ProcEntryPtr;
-
-
-typedef struct _ScreenProcEntry {
-    int num;
-    ProcEntryPtr procList;
-} ScreenProcEntry;
-
 ScreenProcEntry AuxillaryScreenProcs[MAXSCREENS];
 
 ExtensionEntry *extensions = (ExtensionEntry *)NULL;
 extern int (* ProcVector[]) ();
 extern int (* SwappedProcVector[]) ();
-extern void (* ReplySwapVector[256]) ();
+extern int (* ReplySwapVector[256]) ();
 
 int lastEvent = EXTENSION_EVENT_BASE;
 int lastError = FirstExtensionError;
 int NumExtensions = 0;
 
-void
-InitExtensions()
-{
-    int i;
-
-    lastEvent = EXTENSION_EVENT_BASE;
-    lastError = FirstExtensionError;
-    NumExtensions = 0;
-
-    for (i=0; i<MAXSCREENS; i++)
-        AuxillaryScreenProcs[i].num = 0;
-}
-
-
 ExtensionEntry *AddExtension(name, NumEvents, NumErrors, MainProc, 
-			      SwappedMainProc)
+			      SwappedMainProc, CloseDownProc)
     char *name;
     int NumEvents;
     int NumErrors;
     int (* MainProc)();
     int (* SwappedMainProc)();
+    void (* CloseDownProc)();
 {
     int i;
 
@@ -93,10 +69,11 @@ ExtensionEntry *AddExtension(name, NumEvents, NumErrors, MainProc,
     NumExtensions += 1;
     extensions = (ExtensionEntry *) Xrealloc(extensions,
 			      NumExtensions * sizeof(ExtensionEntry));
-    extensions[i].name = (char *)Xalloc(strlen(name)+1);
-    bcopy(name, extensions[i].name , strlen(name)+1); /* include null termination */
+    extensions[i].name = (char *)Xalloc(strlen(name));
+    bcopy(name, extensions[i].name , strlen(name));
     extensions[i].index = i;
     extensions[i].base = i + EXTENSION_BASE;
+    extensions[i].CloseDown = CloseDownProc;
     ProcVector[i + EXTENSION_BASE] = MainProc;
     SwappedProcVector[i + EXTENSION_BASE] = SwappedMainProc;
     if (NumEvents)
@@ -123,6 +100,20 @@ ExtensionEntry *AddExtension(name, NumEvents, NumErrors, MainProc,
     }
     return(&extensions[i]);
 }
+
+CloseDownExtensions()
+{
+    register int i;
+
+    for (i = 0; i < NumExtensions; i++)
+    {
+	(* extensions[i].CloseDown)(&extensions[i]);
+	Xfree(extensions[i].name);
+    }
+    Xfree(extensions);
+    NumExtensions = 0;
+}
+
 
 
 int
@@ -159,7 +150,7 @@ ProcQueryExtension(client)
 	    reply.first_error = extensions[i].errorBase;
 	}
     }
-    WriteReplyToClient(client, sizeof(xQueryExtensionReply), &reply);
+    WriteToClient(client, sizeof(xQueryExtensionReply), &reply);
     return(client->noClientException);
 }
 
@@ -177,6 +168,7 @@ ProcListExtensions(client)
     reply.type = X_Reply;
     reply.nExtensions = NumExtensions;
     reply.length = 0;
+    buffer = NULL;
 
     if ( NumExtensions )
     {
@@ -199,7 +191,7 @@ ProcListExtensions(client)
     if (reply.length)
     {
         WriteToClient(client, total_length, buffer);
-	DEALLOCATE_LOCAL(buffer);
+    	DEALLOCATE_LOCAL(buffer);
     }
     return(client->noClientException);
 }
@@ -222,26 +214,18 @@ LookupProc(name, pGC)
     return (ExtensionLookupProc)NULL;
 }
 
+
 void
 RegisterProc(name, pGC, proc)
     char *name;
     GC *pGC;
     ExtensionLookupProc proc;
 {
-    RegisterScreenProc(name, pGC->pScreen, proc);
-}
-
-void
-RegisterScreenProc(name, pScreen, proc)
-    char *name;
-    ScreenPtr pScreen;
-    ExtensionLookupProc proc;
-{
     ScreenProcEntry *spentry;
     ProcEntryPtr procEntry = (ProcEntryPtr)NULL;
     int i;
 
-    spentry = &AuxillaryScreenProcs[pScreen->myNum];
+    spentry = &AuxillaryScreenProcs[pGC->pScreen->myNum];
     /* first replace duplicates */
     if (spentry->num)
     {
@@ -269,4 +253,52 @@ RegisterScreenProc(name, pScreen, proc)
         procEntry->proc = proc;
         spentry->num++;        
     }
+}
+
+
+ /*****************
+  * SendErrorToClient
+  *    Send an Error back to the client.
+  *****************/
+
+ SendErrorToClient (client, reqCode, minorCode, resId, status)
+     ClientPtr client;
+     char reqCode, minorCode, status;
+     XID resId;
+ {
+     xError rep;
+
+     rep.type = X_Error;
+     rep.sequenceNumber = client->sequence;
+     rep.errorCode = status;
+     rep.majorCode = reqCode;
+     rep.minorCode = minorCode;
+     rep.resourceID = resId;
+
+     ErrorF("SendErrorToClient %x\n", client->index);
+     ErrorF("    sequenceNumber = %d\n", rep.sequenceNumber);
+     ErrorF("    rep.errorCode= %d\n", rep.errorCode);
+     ErrorF("    rep.majorCode = %d\n", rep.majorCode);
+     ErrorF("    rep.resourceID = %x\n", rep.resourceID);
+
+     WriteEventsToClient (client, 1, (pointer) &rep);
+}
+
+void
+InitExtensions()
+{
+    int i;
+
+    for (i=0; i<MAXSCREENS; i++)
+        AuxillaryScreenProcs[i].num = 0;
+
+#ifdef ZOID
+    ZoidExtensionInit();
+#endif ZOID
+#ifdef BEZIER
+    BezierExtensionInit();
+#endif BEZIER
+#ifdef OTHEREXTENSION
+    OtherExtensionInit();
+#endif OTHEREXTENSION
 }
