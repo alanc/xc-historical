@@ -296,10 +296,20 @@ _default_mapping _default_mappings[] = {
 Setup_Mapping()
 {
 	_default_mapping *dmap = _default_mappings;
+	Atom wm_state = XInternAtom (dpy, "WM_STATE", True);
 
 	while (dmap->format) {
 		Add_Mapping( dmap->atom, dmap->format, dmap->dformat );
 		dmap++;
+	}
+
+	/*
+	 * grok WM_STATE for debugging window and session managers
+	 */
+	if (wm_state != None) {
+	    Add_Mapping (wm_state, "32ix", ":\n\
+\t\twindow state: ?$0=0(Withdrawn)?$0=1(Normal)?$0=3(Iconic)\n\
+\t\ticon window: $1\n");
 	}
 }
 
