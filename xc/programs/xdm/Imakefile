@@ -1,3 +1,7 @@
+#ifdef BandAidCompiler
+#include BandAidCompiler
+#endif
+
 #if InstallxdmConfig
 #define IHaveSubdirs
 #define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
