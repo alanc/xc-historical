@@ -1,4 +1,4 @@
-/* $XConsortium: xsm.h,v 1.17 94/07/18 15:02:10 mor Exp $ */
+/* $XConsortium: xsm.h,v 1.18 94/07/19 12:37:57 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -81,13 +81,17 @@ typedef struct _ClientRec {
     IceConn		ice_conn;
     char 		*clientId;
     char		*clientHostname;
-    Bool		interactPending;
-    Bool		wantsPhase2;
     int			numProps;
     SmProp		*props[MAX_PROPS];
     char		*discardCommand;
     char		*saveDiscardCommand;
     struct _ClientRec	*next;
+
+    unsigned int	restarted : 1;
+    unsigned int	userIssuedCheckpoint : 1;
+    unsigned int	interactPending : 1;
+    unsigned int	wantsPhase2 : 1;
+
 } ClientRec;
 
 typedef struct _PendingClient {
@@ -133,8 +137,6 @@ extern Bool		shutdownDialogUp;
 
 extern int		sessionNameCount;
 extern String		*sessionNames;
-
-extern Bool		issued_checkpoint;
 
 extern Widget		topLevel;
 
@@ -184,6 +186,7 @@ extern Widget		    savePopup;
 extern Widget			saveForm;
 
 extern Widget			    saveTypeLabel;
+extern Widget			    saveTypeNone;
 extern Widget			    saveTypeGlobal;
 extern Widget			    saveTypeLocal;
 extern Widget			    saveTypeBoth;
