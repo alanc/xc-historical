@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XSetLocale.c,v 1.10 91/02/20 16:06:06 rws Exp $
+ * $XConsortium: XSetLocale.c,v 1.11 91/02/20 18:20:53 rws Exp $
  */
 
 /*
@@ -39,13 +39,13 @@
 
 #define MAXLOCALE       64      /* buffer size of locale name */
 
-#define CheckCategory(category) ((category != XLC_ALL &&                \
+#define CheckCategory(category) ((category != LC_ALL &&                \
                                  category != XLC_CODESET &&             \
                                  category != XLC_FONTSET &&             \
                                  category != XLC_INPUTMETHOD)? False: True)
 
 #define LocaleNameOfCategory(locale, category) \
-                ((category == XLC_ALL)? locale->lc_name: \
+                ((category == LC_ALL)? locale->lc_name: \
                 ((category == XLC_FONTSET)? locale->lc_fs_name: \
                 ((category == XLC_CODESET)? locale->lc_cs_name: \
                 ((category == XLC_INPUTMETHOD)? locale->lc_im_name: \
@@ -113,18 +113,18 @@ _Xsetlocale(lc_category, lc_name)
         return NULL;
     }
     switch (lc_category) {
-    case XLC_ALL:
+    case LC_ALL:
         /* all categories */
         current->lc_name = template->lc_name;
     case XLC_FONTSET:
         current->lc_fs_name = template->lc_fs_name;
         current->lc_fontset = template->lc_fontset;
-        if (lc_category != XLC_ALL)
+        if (lc_category != LC_ALL)
             break;
     case XLC_CODESET:
         current->lc_cs_name = template->lc_cs_name;
         current->lc_codeset = template->lc_codeset;
-        if (lc_category != XLC_ALL)
+        if (lc_category != LC_ALL)
             break;
     case XLC_INPUTMETHOD:
         /*
@@ -170,7 +170,7 @@ _XlcLocaleFromEnviron(category)
             return (s);
     case XLC_CODESET:
     case XLC_INPUTMETHOD:
-    case XLC_ALL:
+    case LC_ALL:
         return (getenv("LANG"));
     default:
         return (NULL);
@@ -237,7 +237,7 @@ CategoryName(category, catname)
     case XLC_INPUTMETHOD:
         (void) strcpy(catname, "inputmethod");
         return (3);
-    case XLC_ALL:
+    case LC_ALL:
         (void) strcpy(catname, "language");
         return (4);
     default:
