@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.109 93/08/20 10:01:24 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.110 93/09/04 15:53:34 rws Exp $
 #define IHaveSubdirs
 #define PassCDebugFlags CDEBUGFLAGS="$(CDEBUGFLAGS)"
 
@@ -74,6 +74,12 @@ Everything::
 	@echo ""
 	@echo "Rebuild of Release 6alpha of the X Window System complete."
 	@echo ""
+
+XCOMM clean out link tree looking for stuff that should get checked in
+dangerous_strip_clean::
+	make -k clean
+	find . -type l -exec rm {} \;
+	find . \( \! \( -type d -o -name Makefile \) \) -print
 
 #else
 
