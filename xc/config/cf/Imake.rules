@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
-XCOMM rules:  $XConsortium: Imake.rules,v 1.183 94/02/07 11:26:01 kaleb Exp $
+XCOMM rules:  $XConsortium: Imake.rules,v 1.184 94/02/07 17:04:35 kaleb Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -854,11 +854,11 @@ step:: list								@@\
 /*
  * InstallMultipleDest - generate rules to install multiple files at once
  * during a particular step in the build using any install flags set in 
- * $(INSTALLFLAGS).
+ * $(INSTDATFLAGS).
  */
 #ifndef InstallMultipleDest
 #define InstallMultipleDest(step,list,dest)				@@\
-InstallMultipleDestFlags(step,list,dest,$(INSTALLFLAGS))
+InstallMultipleDestFlags(step,list,dest,$(INSTDATFLAGS))
 #endif /* InstallMultipleDest */
 
 /*
