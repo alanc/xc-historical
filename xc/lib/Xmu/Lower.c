@@ -1,5 +1,4 @@
-/* static char rcsid[] =
-	"$XConsortium: Lower.c,v 1.4 90/07/15 16:18:48 rws Exp $"; */
+/* $XConsortium: Lower.c,v 1.5 90/12/19 18:18:31 converse Exp $ */
 
 /* 
  * Copyright 1988 by the Massachusetts Institute of Technology
@@ -104,7 +103,7 @@ int XmuCompareISOLatin1 (first, second)
 	    else if ((b >= XK_Ooblique) && (b <= XK_Thorn))
 	      b += (XK_oslash - XK_Ooblique);
 
-	    if (a != b) break;
+	    if (a != b) return (((int) a) - ((int) b));
 	}
     }
     return (((int) *ap) - ((int) *bp));
