@@ -1,7 +1,7 @@
-/* $XConsortium: evtomask.c,v 1.3 89/09/19 11:55:31 rws Exp $ */
+/* $XConsortium: evtomask.c,v 1.4 90/06/15 17:18:39 rws Exp $ */
 #include "X.h"
 
-#ifdef __STDC__
+#if __STDC__
 #define Const const
 #else
 #define Const /**/

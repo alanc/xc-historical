@@ -1,5 +1,5 @@
 /*
- * $XConsortium: globals.c,v 1.7 89/06/16 16:57:00 jim Exp $
+ * $XConsortium: globals.c,v 1.8 90/12/09 17:52:56 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -27,7 +27,7 @@
 /*
  * If we need to define extra variables for each global
  */
-#if defined(__STDC__) && !defined(UNIXCPP)  /* then ANSI C concatenation */
+#if __STDC__ && !defined(UNIXCPP)  /* then ANSI C concatenation */
 #define ZEROINIT(t,var,val) SetZero(t,var,val); \
   SetZero (long, _libX_##var##Flag, 0); \
   SetZero (void *, _libX_##var##Ptr, NULL)
