@@ -1,6 +1,6 @@
-XCOMM $XConsortium: Imakefile,v 1.9 94/02/06 15:53:18 mor Exp $
+XCOMM $XConsortium: Imakefile,v 1.10 94/02/21 11:07:30 mor Exp $
 
-none::
+all::
 
 DependTarget()
 BuildIncludesTop(Xtrans.h)
