@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbscrinit.c,v 5.11 90/09/24 09:20:17 rws Exp $ */
+/* $XConsortium: mfbscrinit.c,v 5.12 90/09/24 10:19:29 rws Exp $ */
 
 #include "X.h"
 #include "Xproto.h"	/* for xColorItem */
@@ -39,6 +39,9 @@ SOFTWARE.
 
 extern RegionPtr mfbPixmapToRegion();
 
+#ifdef PIXMAP_PER_WINDOW
+int frameWindowPrivateIndex;
+#endif
 int mfbWindowPrivateIndex;
 int mfbGCPrivateIndex;
 static unsigned long mfbGeneration = 0;
@@ -70,6 +73,9 @@ mfbAllocatePrivates(pScreen, pWinIndex, pGCIndex)
 {
     if (mfbGeneration != serverGeneration)
     {
+#ifdef PIXMAP_PER_WINDOW
+	frameWindowPrivateIndex = AllocateWindowPrivateIndex();
+#endif
 	mfbWindowPrivateIndex = AllocateWindowPrivateIndex();
 	mfbGCPrivateIndex = AllocateGCPrivateIndex();
 	visual.vid = FakeClientID(0);
