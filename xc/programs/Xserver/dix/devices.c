@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: devices.c,v 5.38 94/02/01 19:22:18 rws Exp $ */
+/* $XConsortium: devices.c,v 5.39 94/02/03 18:58:24 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -42,10 +42,6 @@ SOFTWARE.
 #endif
 
 extern InputInfo inputInfo;
-#ifdef XRECORD
-extern int RecordedEvents[128];
-#endif 
-extern int (* InitialVector[3]) ();
 extern void (* ReplySwapVector[256]) ();
 extern void CopySwap32Write(), SwapTimeCoordWrite();
 extern void ActivatePointerGrab(), DeactivatePointerGrab();
@@ -731,12 +727,7 @@ SendMappingNotify(request, firstKeyCode, count)
     /* 0 is the server client */
     for (i=1; i<currentMaxClients; i++)
     {
-#ifdef XRECORD
-	if (RecordedEvents[MappingNotify])
-	    XRecordEvent(clients[i], &event);
-#endif
-        if (clients[i] && ! clients[i]->clientGone &&
-	    (clients[i]->requestVector != InitialVector)
+        if (clients[i] && clients[i]->clientState == ClientStateRunning
 #ifdef XKB
 	    && (clients[i]->xkbClientFlags == 0)
 #endif
