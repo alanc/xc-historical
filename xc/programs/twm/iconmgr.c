@@ -21,7 +21,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: iconmgr.c,v 1.46 91/02/04 14:16:36 gildea Exp $
+ * $XConsortium: iconmgr.c,v 1.47 91/07/12 09:59:42 dave Exp $
  *
  * Icon Manager routines
  *
@@ -286,6 +286,9 @@ void MoveIconManager(dir)
 		 ProgramName, new_row, new_col);
 	return;
     }
+
+    if (tmp == NULL)
+      return;
 
     /* raise the frame so the icon manager is visible */
     if (ip->twm_win->mapped) {
