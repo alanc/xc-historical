@@ -1,4 +1,4 @@
-/* $XConsortium: XmbWMProps.c,v 1.2 91/06/04 22:37:06 rws Exp $ */
+/* $XConsortium: XmbWMProps.c,v 1.3 91/06/05 08:28:19 rws Exp $ */
 
 /*
 
@@ -53,11 +53,11 @@ void XmbSetWMProperties (dpy, w, windowName, iconName, argv, argc, sizeHints,
 
     if (windowName &&
 	XmbTextListToTextProperty(dpy, (char**)&windowName, 1,
-				   XStdICCTextStyle, &wname) == Success)
+				   XStdICCTextStyle, &wname) >= Success)
 	wprop = &wname;
     if (iconName &&
 	XmbTextListToTextProperty(dpy, (char**)&iconName, 1,
-				   XStdICCTextStyle, &iname) == Success)
+				   XStdICCTextStyle, &iname) >= Success)
 	iprop = &iname;
     XSetWMProperties(dpy, w, wprop, iprop, argv, argc,
 		     sizeHints, wmHints, classHints);
