@@ -1,4 +1,4 @@
-/* $XConsortium: cfbinit.c,v 1.6 94/03/21 15:11:27 dpw Exp $ */
+/* $XConsortium: cfbinit.c,v 1.7 94/04/17 20:29:53 dpw Exp kaleb $ */
 /***********************************************************
 
 Copyright (c) 1991  X Consortium
@@ -248,6 +248,9 @@ fbInitProc(index, pScreen, argc, argv)
     static ws_map_control mc;
     VisualPtr	    pVisual;
     ColormapPtr	    pCmap;
+#ifdef __alpha
+    Pixel	    blackPixel, whitePixel;
+#endif
 /* for initializing color map entries */
     unsigned short blackred      = 0x0000;
     unsigned short blackgreen    = 0x0000; 
@@ -400,8 +403,16 @@ fbInitProc(index, pScreen, argc, argv)
 
     }
 
-    if (!(*screenInit) (pScreen, dd->pixmap, wsp->screenDesc->width,
-	wsp->screenDesc->height, dpix, dpiy, dd->fb_width, dd->bits_per_pixel, dd->depth))
+    if (!(*screenInit) (pScreen, 
+#ifndef __alpha
+	dd->pixmap, 
+#else
+	(pointer)(((char*)dd->pixmap) - 4096),
+#endif
+	wsp->screenDesc->width,
+	wsp->screenDesc->height, 
+	dpix, dpiy, 
+	dd->fb_width, dd->bits_per_pixel, dd->depth))
     {
 	return FALSE;
     }
@@ -416,6 +427,7 @@ fbInitProc(index, pScreen, argc, argv)
 		       0)
 	!= Success)
 	return FALSE;
+#ifndef __alpha
     if ((AllocColor(pCmap, &whitered, &whitegreen, &whiteblue,
 		    &(pScreen->whitePixel), 0) != Success) ||
 	(AllocColor(pCmap, &blackred, &blackgreen, &blackblue,
@@ -423,6 +435,25 @@ fbInitProc(index, pScreen, argc, argv)
     {
 	return FALSE;
     }
+#else
+    /* 
+     * It could be argued that this is unnecessary because the DEC
+     * is little-endian and you get what you need, but it does
+     * eliminate a warning from the compiler.
+     */
+    if ((AllocColor(pCmap, &whitered, &whitegreen, &whiteblue,
+		    &whitePixel, 0) != Success) ||
+	(AllocColor(pCmap, &blackred, &blackgreen, &blackblue,
+		    &blackPixel, 0) != Success))
+    {
+	return FALSE;
+    }
+    else
+    {
+	pScreen->whitePixel = whitePixel;
+	pScreen->blackPixel = blackPixel;
+    }
+#endif
     (*pScreen->InstallColormap)(pCmap);
 
     planemask_addr = dd->plane_mask;
