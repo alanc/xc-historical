@@ -4,6 +4,13 @@
 #
 #**********************************************************************
 
+IconDirectory "/users/jim/icons"
+
+SqueezeTitle
+NoDefaults
+LeftTitleButton "bar7" = f.menu "windowops"
+#NoTitleHighlight
+
 UsePPosition "on"
 NoVersion
 NoHighlight
@@ -103,7 +110,8 @@ Button3 = m    : window|icon|frame|title  : f.function "move-or-raise"
 "Up"    = m    : all                      : f.upiconmgr
 "Down"  = m    : all                      : f.downiconmgr
 
-TitleButton "bar7" = f.menu "windowops"
+#LeftTitleButton "wide_weave" = f.refresh
+#RightTitleButton "bar7" = f.menu "windowops"
 
 ###############################################################################
 #                                                                             #
