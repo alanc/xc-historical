@@ -32,11 +32,11 @@ Author:  Ralph Mor, X Consortium
 #include <X11/Xatom.h>
 #include <X11/Xlib.h>
 #include <X11/SM/SMlib.h>
+#include <stdio.h>
 
 XtAppContext appContext;
 Display *disp;
 Window root;
-Widget topLevel;
 
 Atom wmProtocolsAtom;
 Atom wmSaveYourselfAtom;
@@ -554,6 +554,8 @@ int argc;
 char **argv;
 
 {
+    int zero = 0;
+
     if (argc > 1)
     {
 	debug = (argc == 2 && strcmp (argv[1], "-debug") == 0);
@@ -565,10 +567,16 @@ char **argv;
 	}
     }
 
-    topLevel = XtAppInitialize (&appContext, "SM-PROXY", NULL, 0, &argc, argv,
-	NULL, NULL, 0);
+    XtToolkitInitialize ();
+    appContext = XtCreateApplicationContext ();
 
-    disp =  XtDisplay (topLevel);
+    if (!(disp = XtOpenDisplay (appContext, NULL, "SM-PROXY", "SM-PROXY",
+	NULL, 0, &zero, NULL)))
+    {
+	fprintf (stderr, "smproxy: unable to open display\n");
+	exit (1);
+    }
+
     root = DefaultRootWindow (disp);
 
     XSelectInput (disp, root, SubstructureNotifyMask);
