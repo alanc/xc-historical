@@ -1,5 +1,5 @@
 %{
-/* $XConsortium: to_wfont.y,v 5.2 91/03/22 14:52:45 rws Exp $ */
+/* $XConsortium: to_wfont.y,v 5.3 91/04/04 16:00:26 gildea Exp $ */
 
 /*****************************************************************
 Copyright (c) 1989,1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -48,7 +48,7 @@ typedef struct {
 
 
 char            fname[80];
-Dispatch        *table;    /* dispatch table */
+Dispatch        *Table;    /* dispatch table */
 Standard	*sp_table; /* NCGA font spacings */
 Path            *strokes;  /* strokes of each character */
 Property        *property; /* property list */
@@ -253,15 +253,15 @@ int num_ch;
 	yyerrno = 0;
 	head.num_ch = num_ch;
 	if (num_ch > 0) {
-	  table    = (Dispatch *) malloc(num_ch * sizeof(Dispatch));
+	  Table    = (Dispatch *) malloc(num_ch * sizeof(Dispatch));
 	  sp_table = (Standard *) malloc(num_ch * sizeof(Standard));
 	  strokes  = (Path *)     malloc(num_ch * sizeof(Path));
 	}
 
 	for (tableindex = 0; tableindex < num_ch; tableindex++) {
-		table[tableindex].center = 0.0;
-		table[tableindex].right = 0.0;
-		table[tableindex].offset = 0;
+		Table[tableindex].center = 0.0;
+		Table[tableindex].right = 0.0;
+		Table[tableindex].offset = 0;
 
 		sp_table[tableindex].std_left = 0.0;
 		sp_table[tableindex].std_wide = 0.0;
@@ -401,7 +401,7 @@ glyph_header(npath, center, right, npts)
 	}
       }
       {
-		register Dispatch *tbl = table + tableindex;
+		register Dispatch *tbl = Table + tableindex;
 
 		tbl->offset = 0;
 		tbl->center = center;
@@ -497,7 +497,7 @@ fini()
 
 	/* adjust the characters for spacing, note max char width */
 	head.max_width = 0.0;
-	for (i = 0, tbl_ptr = table, strptr = strokes, sp_ptr = sp_table;
+	for (i = 0, tbl_ptr = Table, strptr = strokes, sp_ptr = sp_table;
              i < head.num_ch; i++, tbl_ptr++, strptr++, sp_ptr++) {
 		tbl_ptr->center += sp_ptr->std_left;
 		tbl_ptr->right += sp_ptr->std_left + sp_ptr->std_rght;
@@ -541,7 +541,7 @@ fini()
 
 
 	/* write the dispatch table */
-	for (i = 0, tbl_ptr = table, strptr = strokes;
+	for (i = 0, tbl_ptr = Table, strptr = strokes;
 	     i < head.num_ch; i++, tbl_ptr++, strptr++) {
 		if (fwrite(&tbl_ptr->center, sizeof (float), 1, fp) != 1 ||
 		    fwrite(&tbl_ptr->right, sizeof (float), 1, fp) != 1)
@@ -563,7 +563,7 @@ fini()
 	(void) fseek(fp, START_PATH(head.num_ch, head.num_props), L_SET);
 
 	/* write the stroke table */
-	for (i = 0, tbl_ptr = table, strptr = strokes;
+	for (i = 0, tbl_ptr = Table, strptr = strokes;
 	     i < head.num_ch; i++, tbl_ptr++, strptr++) {
 		if (strptr->n_subpaths > 0 ||
 		    tbl_ptr->center != 0.0 ||
@@ -610,7 +610,7 @@ freeall()
 				free((char *) spath->pts.pt2df);
 		if (path->subpaths != NULL)
 			free((char *) path->subpaths);
-	free(table);
+	free(Table);
 	free(sp_table);
 	free(strokes);
 	}
