@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XSetPntMap.c,v 11.6 88/08/11 14:52:22 jim Exp $ */
+/* $Header: XSetPntMap.c,v 11.7 88/08/11 15:13:48 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #define NEED_REPLIES
@@ -46,7 +46,7 @@ XChangeKeyboardMapping (dpy, first_keycode, keysyms_per_keycode,
     req->keySymsPerKeyCode = keysyms_per_keycode;
     req->firstKeyCode = first_keycode;
     req->length += nkeycodes * keysyms_per_keycode;
-    nbytes = keysyms_per_keycode * nkeycodes * sizeof (CARD32);
+    nbytes = keysyms_per_keycode * nkeycodes * 4;
     Data32 (dpy, (long *)keysyms, nbytes);
     UnlockDisplay(dpy);
     SyncHandle();
