@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: twm.c,v 1.66 89/08/15 11:41:53 jim Exp $
+ * $XConsortium: twm.c,v 1.67 89/09/19 17:51:43 jim Exp $
  *
  * twm - "Tom's Window Manager"
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: twm.c,v 1.66 89/08/15 11:41:53 jim Exp $";
+"$XConsortium: twm.c,v 1.67 89/09/19 17:51:43 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -70,6 +70,7 @@ int MultiScreen = TRUE;		/* try for more than one screen? */
 int NumScreens;			/* number of screens in ScreenList */
 #ifdef SHAPE
 int HasShape;			/* server supports shape extension? */
+int ShapeEventBase, ShapeErrorBase;
 #endif
 ScreenInfo **ScreenList;	/* structures for each screen */
 ScreenInfo *Scr = NULL, *PrevScr = NULL;  /* the cur and prev screens */
@@ -218,7 +219,7 @@ main(argc, argv, environ)
     }
 
 #ifdef SHAPE
-    HasShape = XShapeQueryExtension (dpy);
+    HasShape = XShapeQueryExtension (dpy, &ShapeEventBase, &ShapeErrorBase);
 #endif
     TwmContext = XUniqueContext();
     MenuContext = XUniqueContext();

@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.88 89/08/21 19:07:56 jim Exp $
+ * $XConsortium: events.c,v 1.89 89/09/01 11:33:51 jim Exp $
  *
  * twm event handling
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: events.c,v 1.88 89/08/21 19:07:56 jim Exp $";
+"$XConsortium: events.c,v 1.89 89/09/01 11:33:51 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -84,6 +84,7 @@ void HandleCreateNotify();
 
 #ifdef SHAPE
 void HandleShapeNotify ();
+extern int ShapeEventBase, ShapeErrorBase;
 #endif
 
 /***********************************************************************
@@ -126,7 +127,7 @@ InitEvents()
     EventHandler[VisibilityNotify] = HandleVisibilityNotify;
 #ifdef SHAPE
     if (HasShape)
-	EventHandler[XShapeGetEventBase(dpy)+ShapeNotify] = HandleShapeNotify;
+	EventHandler[ShapeEventBase+ShapeNotify] = HandleShapeNotify;
 #endif
 }
 
