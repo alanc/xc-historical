@@ -1,3 +1,5 @@
+XCOMM $XConsortium$
+
 DEFINES = ConnectionFlags -DTEST_t -DTHISHOST=\"`hostname`\"
 XCOMM	DEFINES = -DTCPCONN -DUNIXCONN -DTEST_t -DTHISHOST=\"`hostname`\"
 XCOMM	CDEBUGFLAGS = -g

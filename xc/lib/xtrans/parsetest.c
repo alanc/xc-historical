@@ -1,3 +1,5 @@
+/* $XConsortium$ */
+
 #include <stdio.h>
 #include <X11/Xtrans.h>
 
