@@ -1,4 +1,4 @@
-/* $XConsortium: XChgDCtl.c,v 1.1 90/06/20 14:10:43 xbuild ic1C-80 $ */
+/* $XConsortium: XChgDCtl.c,v 1.1 91/07/24 15:43:51 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -72,7 +72,7 @@ XChangeDeviceControl (dpy, dev, control, d)
 		R->num_valuators * sizeof(int);
 	    r.first_valuator = R->first_valuator;
 	    r.num_valuators = R->num_valuators;
-	    req->length += ((r.length + 3) >> 2);
+	    req->length += ((unsigned)(r.length + 3) >> 2);
 	    length = sizeof (xDeviceResolutionCtl);
 	    Data (dpy, (char *) &r, length);
 	    length  = r.num_valuators * sizeof(int);
@@ -92,7 +92,7 @@ XChangeDeviceControl (dpy, dev, control, d)
 
 	    u.control = d->control;
 	    u.length = d->length - sizeof (int);
-	    length = ((u.length + 3) >> 2);
+	    length = ((unsigned)(u.length + 3) >> 2);
 	    req->length += length;
 	    length <<= 2;
 	    Data (dpy, (char *) &u, length);
