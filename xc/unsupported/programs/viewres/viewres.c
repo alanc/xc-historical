@@ -1,5 +1,5 @@
 /*
- * $XConsortium: viewres.c,v 1.27 90/02/07 15:18:22 jim Exp $
+ * $XConsortium: viewres.c,v 1.28 90/02/07 17:35:42 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -97,7 +97,7 @@ static char *fallback_resources[] = {
 };
 
 static void HandleQuit(), HandleSetLableType(), HandleSetOrientation();
-static void HandleSelect(), HandleShowResources(), HandleScroll();
+static void HandleSelect(), HandleShowResources();
 static void set_labeltype_menu(), set_orientation_menu();
 static void build_tree(), set_node_labels();
 
@@ -107,7 +107,6 @@ static XtActionsRec viewres_actions[] = {
     { "SetOrientation", HandleSetOrientation },
     { "Select", HandleSelect },
     { "ShowResources", HandleShowResources },
-    { "Scroll", HandleScroll },
 };
 
 #define VIEW_VARIABLES 0
@@ -717,36 +716,6 @@ static void HandleShowResources (w, event, params, num_params)
     } else {
 	do_single_arg (w, params, *num_params, boolean_nametable,
 		       XtNumber(boolean_nametable), view_resources_callback);
-    }
-}
-
-
-/* ARGSUSED */
-static void HandleScroll (w, event, params, num_params)
-    Widget w;
-    XEvent *event;
-    String *params;			/* sbname, direction */
-    Cardinal *num_params;
-{
-    Widget sb;
-     
-    if (*num_params != 2) {
-	XBell (XtDisplay(w), 0);
-	return;
-    }
-
-    if (sb = XtNameToWidget (viewportWidget, params[0])) {
-	Arg args[1];
-	float top;
-
-	XtSetArg (args[0], XtNtopOfThumb, &top);
-	XtGetValues (sb, args, ONE);
-
-	top += ((float) atoi(params[1])) / 100.0;
-	if (top < 0.0) top = 0.0;
-	else if (top > 1.0) top = 1.0;
-
-	XawScrollbarSetThumb (sb, top, -1.0);
     }
 }
 
