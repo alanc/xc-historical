@@ -29,14 +29,12 @@ void DoWins(d, p)
 {
     int     x, y, i;
     int     child;
-    int     wp = WhitePixel (d, 0);
-    int     bp = BlackPixel (d, 0);
 
     child = 0;
     for (x = 0; x < COLS; x++)
 	for (y = 0; y < rows; y++) {
 	    (void) XCreateSimpleWindow (
-		    d, w, x*20 + 10, y*20 + 10, 10, 10, 0, wp, bp);
+		    d, w, x*20 + 10, y*20 + 10, 10, 10, 0, bgPixel, fgPixel);
 	    if ((++child) == p->objects)
 		goto Enough;
 	}
@@ -52,14 +50,12 @@ static void CreateSubs(d, p, rows, cols)
 {
     int     x, y, i;
     int     child;
-    int     wp = WhitePixel (d, 0);
-    int     bp = BlackPixel (d, 0);
 
     child = 0;
     for (x = 0; x < cols; x++)
 	for (y = 0; y < rows; y++) {
 	    (void) XCreateSimpleWindow (
-		    d, w, x*20 + 10, y*20 + 10, 10, 10, 0, wp, bp);
+		    d, w, x*20 + 10, y*20 + 10, 10, 10, 0, bgPixel, fgPixel);
 	    if ((++child) == p->objects)
 	        goto Enough ;
 	}
@@ -108,8 +104,6 @@ void InitPopups(d, p)
 #define POPUPCOLS 8
     int i, x, y;
     XSetWindowAttributes xswa;
-    int     wp = WhitePixel (d, 0);
-    int     bp = BlackPixel (d, 0);
 
     if (p->objects < 10) {
 	rows = 1;
@@ -125,7 +119,7 @@ void InitPopups(d, p)
 
     xswa.override_redirect = True;
     popup =  XCreateSimpleWindow (
-	    d, RootWindow(d, 0), 30, 40, 500, 500, 0, bp, wp);
+	    d, RootWindow(d, 0), 30, 40, 500, 500, 0, fgPixel, bgPixel);
     XChangeWindowAttributes (d, popup, CWOverrideRedirect, &xswa);
 #undef POPUPCOLS
 }
