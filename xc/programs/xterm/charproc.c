@@ -1,5 +1,5 @@
 /*
- * $XConsortium: charproc.c,v 1.129 90/11/08 15:27:33 dave Exp $
+ * $XConsortium: charproc.c,v 1.130 91/01/06 12:47:12 rws Exp $
  */
 
 
@@ -150,10 +150,6 @@ static void VTallocbuf();
 #define XtCAllowSendEvents	"AllowSendEvents"
 
 #define	doinput()		(bcnt-- > 0 ? *bptr++ : in_put())
-
-#ifndef lint
-static char rcs_id[] = "$XConsortium: charproc.c,v 1.129 90/11/08 15:27:33 dave Exp $";
-#endif	/* lint */
 
 static int nparam;
 static ANSI reply;

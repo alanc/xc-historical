@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: resize.c,v 1.11 89/12/09 17:24:12 jim Exp $
+ *	$XConsortium: resize.c,v 1.12 91/01/06 12:48:22 rws Exp $
  */
 
 /*
@@ -72,10 +72,6 @@ extern void endpwent();
 extern struct passwd *fgetpwent();
 #define	bzero(s, n)	memset(s, 0, n)
 #endif	/* USE_SYSV_TERMIO */
-
-#ifndef lint
-static char rcs_id[] = "$XConsortium: resize.c,v 1.11 89/12/09 17:24:12 jim Exp $";
-#endif
 
 #define	EMULATIONS	2
 #define	SUN		1

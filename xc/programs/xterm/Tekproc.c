@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Tekproc.c,v 1.82 90/11/08 15:27:19 dave Exp $
+ * $XConsortium: Tekproc.c,v 1.83 91/01/06 12:46:50 rws Exp $
  *
  * Warning, there be crufty dragons here.
  */
@@ -106,10 +106,6 @@ extern long time();
 #define	TekMove(x,y)	screen->cur_X = x; screen->cur_Y = y
 #define	input()		Tinput()
 #define	unput(c)	*Tpushback++ = c
-
-#ifndef lint
-static char rcs_id[] = "$XConsortium: Tekproc.c,v 1.82 90/11/08 15:27:19 dave Exp $";
-#endif	/* lint */
 
 extern Widget toplevel;
 

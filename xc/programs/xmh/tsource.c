@@ -1,7 +1,5 @@
-#if !defined(lint) && !defined(SABER)
-static char rcs_id[] =
-    "$XConsortium: tsource.c,v 2.18 89/12/15 19:40:42 converse Exp $";
-#endif
+/* $XConsortium: tsource.c,v 2.19 89/12/16 03:35:39 converse Exp $ */
+
 /*
  *			  COPYRIGHT 1987
  *		   DIGITAL EQUIPMENT CORPORATION
