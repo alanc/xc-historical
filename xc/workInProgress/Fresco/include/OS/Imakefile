@@ -1,17 +1,22 @@
-XCOMM
-XCOMM OS-dependent include files
-XCOMM
+XCOMM $XConsortium: Imakefile,v 1.1 93/12/31 15:12:57 kaleb Exp $
 
-HEADERS = *.h
-DEST = $(INCDIR)/Fresco/OS
+#define IHaveSubdirs
+#define PassCDebugFlags /**/
+
 SUBDIRS = Interfaces
 
-XCOMM No stub generation for threads
-IXFLAGS = -s BaseObject -m TypeObj
+HEADERS = \
+  directory.h  host.h       math.h       table.h      thread.h     types.h \
+  file.h       list.h       memory.h     table2.h     threads.h
 
-MakeHeaderFlags(thread,-i '<X11/Fresco/Ox/object.h>')
+DEST = $(INCDIR)/Fresco/OS
 
-DependHeaders()
+all::
+
+BuildIncludes($(HEADERS),Fresco/OS,../..)
 
 InstallMultipleFlags($(HEADERS),$(DEST),$(INSTINCFLAGS))
-MakeInSubdirs($(SUBDIRS))
+
+depend::
+
+clean::

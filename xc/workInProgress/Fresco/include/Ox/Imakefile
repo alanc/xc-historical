@@ -1,21 +1,22 @@
-XCOMM
-XCOMM ObjectExchange-dependent include files
-XCOMM
+XCOMM $XConsortium: Imakefile,v 1.1 93/12/31 15:12:57 kaleb Exp $
 
-HEADERS = *.h
-DEST = $(INCDIR)/Fresco/Ox
+#define IHaveSubdirs
+#define PassCDebugFlags /**/
+
 SUBDIRS = Interfaces
 
-IXFLAGS = -s BaseObject -m TypeObj
-IXINCLUDES = -i '<X11/Fresco/Ox/base.h>'
+HEADERS = \
+  base.h       exchange.h   obj-impl.h   request.h    stub.h       typeobjs.h \
+  env.h        marshal.h    object.h     schema.h     transport.h  
 
-MakeHeader(object)
+DEST = $(INCDIR)/Fresco/Ox
 
-EditImplHeader(request,Interfaces/object.idl)
-EditImplHeader(schema,Interfaces/object.idl)
-EditImplHeader(typeobjs,Interfaces/object.idl)
+all::
 
-DependHeaders()
+BuildIncludes($(HEADERS),Fresco/Ox,../..)
 
 InstallMultipleFlags($(HEADERS),$(DEST),$(INSTINCFLAGS))
-MakeInSubdirs($(SUBDIRS))
+
+depend::
+
+clean::
