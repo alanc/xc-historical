@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Viewport.c,v 1.24 88/09/06 09:58:11 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Viewport.c,v 1.25 88/09/06 16:42:46 jim Exp $";
 #endif lint
 
 
@@ -121,7 +121,7 @@ ViewportClassRec viewportClassRec = {
 
 WidgetClass viewportWidgetClass = (WidgetClass)&viewportClassRec;
 
-static Widget CreateScrollbar(w, horizontal)
+static void CreateScrollbar(w, horizontal)
     ViewportWidget w;
     Boolean horizontal;
 {
@@ -135,6 +135,7 @@ static Widget CreateScrollbar(w, horizontal)
 	{XtNright, NULL},
 	{XtNtop, NULL},
 	{XtNbottom, NULL},
+	{XtNmappedWhenManaged, False},
     };
     Widget bar;
 
@@ -173,10 +174,9 @@ static Widget CreateScrollbar(w, horizontal)
 		        bar->core.height, clip->core.border_width );
     }
 
-    XtSetMappedWhenManaged( bar, False );
     XtManageChild( bar );
 
-    return bar;
+    return;
 }
 
 /* ARGSUSED */
@@ -185,8 +185,6 @@ static void Initialize(request, new)
 {
     ViewportWidget w = (ViewportWidget)new;
     static Arg clip_args[] = {
-	{XtNfromHoriz, NULL},
-	{XtNfromVert, NULL},
 	{XtNwidth, NULL},
 	{XtNheight, NULL},
 	{XtNborderWidth, 0},
@@ -202,19 +200,16 @@ static void Initialize(request, new)
 
     w->form.default_spacing = 0;
 
+    clip_args[0].value = (XtArgVal)Max(w->core.width,1);
+    clip_args[1].value = (XtArgVal)Max(w->core.height,1);
+    w->viewport.clip =
+	XtCreateManagedWidget( "clip", widgetClass, new,
+			       clip_args, XtNumber(clip_args) );
+
     if (w->viewport.forcebars) {
-	if (w->viewport.allowhoriz)
-	    clip_args[1].value = (XtArgVal)CreateScrollbar(w, True);
-
-	if (w->viewport.allowvert)
-	    clip_args[0].value = (XtArgVal)CreateScrollbar(w, True);
+	if (w->viewport.allowhoriz) CreateScrollbar(w, True);
+	if (w->viewport.allowvert)  CreateScrollbar(w, False);
     }
-
-    clip_args[2].value = (XtArgVal)Max(w->core.width,1);
-    clip_args[3].value = (XtArgVal)Max(w->core.height,1);
-    w->viewport.clip = XtCreateWidget( "clip", widgetClass, new,
-				       clip_args, XtNumber(clip_args) );
-    XtManageChild( w->viewport.clip );	/* see ChangeManaged() */
 }
 
 /* ARGSUSED */
