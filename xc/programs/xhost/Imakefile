@@ -2,9 +2,6 @@
 LOCAL_LIBRARIES = $(XMULIB) $(XLIB)
            SRCS = xhost.c 
            OBJS = xhost.o 
-#ifdef ATTArchitecture
-  SYS_LIBRARIES = -ltcp
-#endif
         DEFINES = ConnectionFlags $(SIGNAL_DEFINES)
 
 ComplexProgramTarget(xhost)
