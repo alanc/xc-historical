@@ -1,5 +1,5 @@
 /*
- * $XConsortium: init.c,v 2.59 91/07/05 18:14:25 converse Exp $
+ * $XConsortium: init.c,v 2.60 91/07/06 15:54:31 converse Exp $
  *
  *
  *		        COPYRIGHT 1987, 1989
@@ -109,6 +109,10 @@ static XtResource resources[] = {
 	 Offset(mail_path), XtRString, NULL},
     {"mailWaitingFlag", "MailWaitingFlag", XtRBoolean, sizeof(Boolean),
 	 Offset(mail_waiting_flag), XtRImmediate, (XtPointer)False},
+    {"flagUp", "FlagUp", XtRBitmap, sizeof(Pixmap),
+	 Offset(flag_up), XtRImmediate, (XtPointer)None},
+    {"flagDown", "FlagDown", XtRBitmap, sizeof(Pixmap),
+	 Offset(flag_down), XtRImmediate, (XtPointer)None},
     {"cursor", "Cursor", XtRCursor, sizeof(Cursor),
 	 Offset(cursor), XtRString, "left_ptr"},
     {"pointerColor", "PointerColor", XtRPixel, sizeof(Pixel),
@@ -245,6 +249,7 @@ char **argv;
         {"XmhPopupFolderMenu",		XmhPopupFolderMenu},
         {"XmhSetCurrentFolder",		XmhSetCurrentFolder},
         {"XmhLeaveFolderButton",	XmhLeaveFolderButton},
+	{"XmhCheckForNewMail",		XmhCheckForNewMail},
 
 	/* actions upon the Table of Contents */
 
