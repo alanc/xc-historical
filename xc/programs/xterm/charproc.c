@@ -1,5 +1,5 @@
 /*
- * $XConsortium: charproc.c,v 1.168 91/06/18 11:16:11 gildea Exp $
+ * $XConsortium: charproc.c,v 1.169 91/06/24 18:42:52 gildea Exp $
  */
 
 /*
@@ -200,6 +200,7 @@ extern void HandleSelectExtend(), HandleSelectSet();
 extern void HandleSelectEnd(), HandleKeyboardSelectEnd();
 extern void HandleStartExtend(), HandleKeyboardStartExtend();
 static void HandleBell();
+static void HandleVisualBell();
 static void HandleIgnore();
 extern void HandleSecure();
 extern void HandleScrollForward();
@@ -284,7 +285,7 @@ static XtActionsRec actionsList[] = {
     { "scroll-back",	  HandleScrollBack },
     /* menu actions */
     { "allow-send-events",	HandleAllowSends },
-    { "set-visual-bell",	HandleVisualBell },
+    { "set-visual-bell",	HandleSetVisualBell },
     { "set-logging",		HandleLogging },
     { "redraw",			HandleRedraw },
     { "send-signal",		HandleSendSignal },
@@ -312,6 +313,7 @@ static XtActionsRec actionsList[] = {
     { "tek-page",		HandleTekPage },
     { "tek-reset",		HandleTekReset },
     { "tek-copy",		HandleTekCopy },
+    { "visual-bell",		HandleVisualBell },
 };
 
 static XtResource resources[] = {
@@ -2771,6 +2773,17 @@ static void HandleBell(w, event, params, param_count)
     int percent = (*param_count) ? atoi(params[0]) : 0;
 
     XBell( XtDisplay(w), percent );
+}
+
+
+/* ARGSUSED */
+static void HandleVisualBell(w, event, params, param_count)
+    Widget w;
+    XEvent *event;		/* unused */
+    String *params;		/* unused */
+    Cardinal *param_count;	/* unused */
+{
+    VisualBell();
 }
 
 

@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: misc.c,v 1.85 91/05/11 23:26:59 gildea Exp $
+ *	$XConsortium: misc.c,v 1.86 91/05/13 19:33:50 gildea Exp $
  */
 
 /*
@@ -314,84 +314,93 @@ static long lastBellTime;	/* in milliseconds */
 
 Bell()
 {
-	extern XtermWidget term;
-	register TScreen *screen = &term->screen;
-	register Pixel xorPixel = screen->foreground ^ term->core.background_pixel;
-	XGCValues gcval;
-	GC visualGC;
-	struct timeval curtime;
-	long now_msecs;
+    extern XtermWidget term;
+    register TScreen *screen = &term->screen;
+    struct timeval curtime;
+    long now_msecs;
 
-	/* has enough time gone by that we are allowed to ring
-	   the bell again? */
-	if(screen->bellSuppressTime) {
-	    if(screen->bellInProgress) {
-		if (QLength(screen->display) > 0 ||
-		    GetBytesAvailable (ConnectionNumber(screen->display)) > 0)
-		    xevents();
-		if(screen->bellInProgress) { /* even after new events? */
-		    return;
-		}
-	    }
-	    gettimeofday(&curtime, NULL);
-	    now_msecs = 1000*curtime.tv_sec + curtime.tv_usec/1000;
-	    if(lastBellTime != 0  &&  now_msecs - lastBellTime >= 0  &&
-	       now_msecs - lastBellTime < screen->bellSuppressTime) {
+    /* has enough time gone by that we are allowed to ring
+       the bell again? */
+    if(screen->bellSuppressTime) {
+	if(screen->bellInProgress) {
+	    if (QLength(screen->display) > 0 ||
+		GetBytesAvailable (ConnectionNumber(screen->display)) > 0)
+		xevents();
+	    if(screen->bellInProgress) { /* even after new events? */
 		return;
 	    }
-	    lastBellTime = now_msecs;
 	}
-
-	if(screen->visualbell) {
-		gcval.function = GXxor;
-		gcval.foreground = xorPixel;
-		visualGC = XtGetGC((Widget)term, GCFunction+GCForeground, &gcval);
-		if(screen->TekEmu) {
-			XFillRectangle(
-			    screen->display,
-			    TWindow(screen), 
-			    visualGC,
-			    0, 0,
-			    (unsigned) TFullWidth(screen),
-			    (unsigned) TFullHeight(screen));
-			XFlush(screen->display);
-			XFillRectangle(
-			    screen->display,
-			    TWindow(screen), 
-			    visualGC,
-			    0, 0,
-			    (unsigned) TFullWidth(screen),
-			    (unsigned) TFullHeight(screen));
-		} else {
-			XFillRectangle(
-			    screen->display,
-			    VWindow(screen), 
-			    visualGC,
-			    0, 0,
-			    (unsigned) FullWidth(screen),
-			    (unsigned) FullHeight(screen));
-			XFlush(screen->display);
-			XFillRectangle(
-			    screen->display,
-			    VWindow(screen), 
-			    visualGC,
-			    0, 0,
-			    (unsigned) FullWidth(screen),
-			    (unsigned) FullHeight(screen));
-		}
-	} else
-		XBell(screen->display, 0);
-
-	if(screen->bellSuppressTime) {
-	    /* now we change a property and wait for the notify event to come
-	       back.  If the server is suspending operations while the bell
-	       is being emitted (problematic for audio bell), this lets us
-	       know when the previous bell has finished */
-	    Widget w = screen->TekEmu ? (Widget) tekWidget : (Widget) term;
-	    XChangeProperty(XtDisplay(w), XtWindow(w),
-			    XA_NOTICE, XA_NOTICE, 8, PropModeAppend, NULL, 0);
-	    screen->bellInProgress = TRUE;
+	gettimeofday(&curtime, NULL);
+	now_msecs = 1000*curtime.tv_sec + curtime.tv_usec/1000;
+	if(lastBellTime != 0  &&  now_msecs - lastBellTime >= 0  &&
+	   now_msecs - lastBellTime < screen->bellSuppressTime) {
+	    return;
 	}
+	lastBellTime = now_msecs;
+    }
+
+    if (screen->visualbell)
+	VisualBell();
+    else
+	XBell(screen->display, 0);
+
+    if(screen->bellSuppressTime) {
+	/* now we change a property and wait for the notify event to come
+	   back.  If the server is suspending operations while the bell
+	   is being emitted (problematic for audio bell), this lets us
+	   know when the previous bell has finished */
+	Widget w = screen->TekEmu ? (Widget) tekWidget : (Widget) term;
+	XChangeProperty(XtDisplay(w), XtWindow(w),
+			XA_NOTICE, XA_NOTICE, 8, PropModeAppend, NULL, 0);
+	screen->bellInProgress = TRUE;
+    }
+}
+
+
+VisualBell()
+{
+    extern XtermWidget term;
+    register TScreen *screen = &term->screen;
+    register Pixel xorPixel = screen->foreground ^ term->core.background_pixel;
+    XGCValues gcval;
+    GC visualGC;
+
+    gcval.function = GXxor;
+    gcval.foreground = xorPixel;
+    visualGC = XtGetGC((Widget)term, GCFunction+GCForeground, &gcval);
+    if(screen->TekEmu) {
+	XFillRectangle(
+		       screen->display,
+		       TWindow(screen), 
+		       visualGC,
+		       0, 0,
+		       (unsigned) TFullWidth(screen),
+		       (unsigned) TFullHeight(screen));
+	XFlush(screen->display);
+	XFillRectangle(
+		       screen->display,
+		       TWindow(screen), 
+		       visualGC,
+		       0, 0,
+		       (unsigned) TFullWidth(screen),
+		       (unsigned) TFullHeight(screen));
+    } else {
+	XFillRectangle(
+		       screen->display,
+		       VWindow(screen), 
+		       visualGC,
+		       0, 0,
+		       (unsigned) FullWidth(screen),
+		       (unsigned) FullHeight(screen));
+	XFlush(screen->display);
+	XFillRectangle(
+		       screen->display,
+		       VWindow(screen), 
+		       visualGC,
+		       0, 0,
+		       (unsigned) FullWidth(screen),
+		       (unsigned) FullHeight(screen));
+    }
 }
 
 /* ARGSUSED */
