@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: commands.c,v 1.9 87/09/11 08:22:06 toddb Exp $";
+static char rcs_id[] = "$Header: commands.c,v 1.12 88/02/23 21:06:00 rws Exp $";
 #endif
 
 /*
@@ -437,11 +437,19 @@ DoJump()
 {
     char *XcutBuf, *buf;
     int   XcutSize, line;
+    int freeit;
 	
     XcutBuf = XFetchBuffer( CurDpy, &(XcutSize), 0);
+    if (XcutBuf) {
+	freeit = 1;
+    } else {
+	XcutBuf = "";
+	XcutSize = 0;
+	freeit = 0;
+    }
     buf = malloc(XcutSize+1);
     strncpy(buf, XcutBuf, XcutSize);
-    free(XcutBuf);
+    if (freeit) free (XcutBuf);
     buf[XcutSize] = 0;
     if(sscanf(buf, "%d", &line) > 0){
 	Jump(line);
