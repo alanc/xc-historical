@@ -1,5 +1,5 @@
 #if ( !defined(lint) && !defined(SABER) )
-static char Xrcsid[] = "$XConsortium: TextSink.c,v 1.3 89/09/13 15:06:50 kit Exp $";
+static char Xrcsid[] = "$XConsortium: TextSink.c,v 1.4 89/10/04 13:56:46 kit Exp $";
 #endif 
 
 /*
@@ -36,6 +36,7 @@ static char Xrcsid[] = "$XConsortium: TextSink.c,v 1.3 89/09/13 15:06:50 kit Exp
 #include <ctype.h>
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
+#include <X11/Xaw/XawInit.h>
 #include <X11/Xaw/TextSinkP.h>
 #include <X11/Xaw/TextP.h>
 
@@ -70,7 +71,7 @@ TextSinkClassRec textSinkClassRec = {
     /* superclass	  	*/	(WidgetClass) SuperClass,
     /* class_name	  	*/	"TextSink",
     /* widget_size	  	*/	sizeof(TextSinkRec),
-    /* class_initialize   	*/	NULL,
+    /* class_initialize   	*/	XawInitializeWidgetSet,
     /* class_part_initialize	*/	ClassPartInitialize,
     /* class_inited       	*/	FALSE,
     /* initialize	  	*/	Initialize,

@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: MenuButton.c,v 1.8 89/07/12 13:50:09 kit Exp $";
+static char Xrcsid[] = "$XConsortium: MenuButton.c,v 1.9 89/10/02 19:19:01 keith Exp $";
 #endif /* lint */
 
 /***********************************************************
@@ -49,6 +49,7 @@ SOFTWARE.
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
 
+#include <X11/Xaw/XawInit.h>
 #include <X11/Xaw/MenuButtoP.h>
 
 static void Realize();
@@ -94,7 +95,7 @@ MenuButtonClassRec menuButtonClassRec = {
     (WidgetClass) superclass,		/* superclass		  */	
     "MenuButton",			/* class_name		  */
     sizeof(MenuButtonRec),       	/* size			  */
-    NULL,				/* class_initialize	  */
+    XawInitializeWidgetSet,		/* class_initialize	  */
     NULL,				/* class_part_initialize  */
     FALSE,				/* class_inited		  */
     NULL,				/* initialize		  */

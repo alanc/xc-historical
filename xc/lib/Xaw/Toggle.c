@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Toggle.c,v 1.9 89/05/11 01:07:00 kit Exp $";
+static char Xrcsid[] = "$XConsortium: Toggle.c,v 1.10 89/10/04 16:51:56 kit Exp $";
 #endif /* lint */
 
 /***********************************************************
@@ -42,6 +42,7 @@ SOFTWARE.
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
 
+#include <X11/Xaw/XawInit.h>
 #include <X11/Xmu/Misc.h>
 #include <X11/Xaw/ToggleP.h>
 
@@ -167,6 +168,8 @@ ClassInit()
   XtActionList actions;
   Cardinal i;
   ToggleWidgetClass class = (ToggleWidgetClass) toggleWidgetClass;
+
+  XawInitializeWidgetSet();
 
 /* actions = SuperClass->core_class.actions; */
 

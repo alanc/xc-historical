@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Command.c,v 1.61 89/10/03 16:14:05 kit Exp $";
+static char Xrcsid[] = "$XConsortium: Command.c,v 1.62 89/10/05 17:53:21 jim Exp $";
 #endif /* lint */
 
 /***********************************************************
@@ -39,6 +39,7 @@ SOFTWARE.
 
 #include <X11/Xmu/Misc.h>
 
+#include <X11/Xaw/XawInit.h>
 #include <X11/Xaw/CommandP.h>
 
 #ifdef SHAPE
@@ -126,11 +127,7 @@ CommandClassRec commandClassRec = {
     (WidgetClass) SuperClass,		/* superclass		  */	
     "Command",				/* class_name		  */
     sizeof(CommandRec),			/* size			  */
-#ifdef SHAPE
     ClassInitialize,			/* class_initialize	  */
-#else
-    NULL,				/* class_initialize	  */
-#endif /*SHAPE*/
     NULL,				/* class_part_initialize  */
     FALSE,				/* class_inited		  */
     Initialize,				/* initialize		  */
@@ -558,6 +555,17 @@ Widget current, request, new;
   return (redisplay);
 }
 
+static void ClassInitialize()
+{
+    XawInitializeWidgetSet();
+#ifdef SHAPE
+    XtSetTypeConverter( XtRString, XtRShapeStyle, XmuCvtStringToShapeStyle,
+		        NULL, 0, XtCacheNone, NULL );
+#endif
+}
+
+
+
 #ifdef SHAPE
 
 static Boolean
@@ -580,12 +588,6 @@ CommandWidget cbw;
 	}
     }
     return(TRUE);
-}
-
-static void ClassInitialize()
-{
-    XtSetTypeConverter( XtRString, XtRShapeStyle, XmuCvtStringToShapeStyle,
-		        NULL, 0, XtCacheNone, NULL );
 }
 
 static void Realize(w, valueMask, attributes)

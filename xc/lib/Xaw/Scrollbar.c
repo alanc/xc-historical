@@ -1,6 +1,6 @@
 #ifndef lint
 static char Xrcsid[] =
-    "$XConsortium: Scroll.c,v 1.50 89/08/24 16:37:39 kit Exp $";
+    "$XConsortium: Scroll.c,v 1.51 89/08/24 17:49:49 kit Exp $";
 #endif /* lint */
 
 /***********************************************************
@@ -34,6 +34,7 @@ SOFTWARE.
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
 
+#include <X11/Xaw/XawInit.h>
 #include <X11/Xaw/ScrollP.h>
 
 /* Private definitions. */
@@ -161,6 +162,7 @@ WidgetClass scrollbarWidgetClass = (WidgetClass)&scrollbarClassRec;
 
 static void ClassInitialize()
 {
+    XawInitializeWidgetSet();
     XtAddConverter( XtRString, XtROrientation, XmuCvtStringToOrientation,
 		    NULL, (Cardinal)0 );
 }

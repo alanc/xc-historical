@@ -1,5 +1,5 @@
 #if ( !defined(lint) && !defined(SABER) )
-static char Xrcsid[] = "$XConsortium: AsciiSrc.c,v 1.21 89/10/05 13:17:09 kit Exp $";
+static char Xrcsid[] = "$XConsortium: AsciiSrc.c,v 1.22 89/10/05 19:31:56 kit Exp $";
 #endif 
 
 /*
@@ -37,6 +37,7 @@ static char Xrcsid[] = "$XConsortium: AsciiSrc.c,v 1.21 89/10/05 13:17:09 kit Ex
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
 
+#include <X11/Xaw/XawInit.h>
 #include <X11/Xaw/AsciiSrcP.h>
 #include <X11/Xmu/Misc.h>
 #include <X11/Xmu/CharSet.h>
@@ -162,6 +163,7 @@ WidgetClass asciiSrcObjectClass = (WidgetClass)&asciiSrcClassRec;
 static void
 ClassInitialize()
 {
+  XawInitializeWidgetSet();
   XtAddConverter( XtRString, XtRAsciiType, CvtStringToAsciiType,
 		 NULL, (Cardinal) 0);
 }

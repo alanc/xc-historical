@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Grip.c,v 1.24 89/03/30 16:53:50 jim Exp $";
+static char Xrcsid[] = "$XConsortium: Grip.c,v 1.25 89/05/11 01:05:23 kit Exp $";
 #endif /* lint */
 
 /***********************************************************
@@ -32,6 +32,7 @@ SOFTWARE.
  */
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
+#include <X11/Xaw/XawInit.h>
 #include <X11/Xaw/GripP.h>
 
 static XtResource resources[] = {
@@ -65,7 +66,7 @@ GripClassRec gripClassRec = {
     /* superclass         */   (WidgetClass) SuperClass,
     /* class name         */   "Grip",
     /* size               */   sizeof(GripRec),
-    /* class initialize   */   NULL,
+    /* class initialize   */   XawInitializeWidgetSet,
     /* class_part_init    */   NULL,
     /* class_inited       */   FALSE,
     /* initialize         */   NULL,

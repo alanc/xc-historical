@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: AsciiSink.c,v 1.44 89/10/03 11:37:33 jim Exp $";
+static char Xrcsid[] = "$XConsortium: AsciiSink.c,v 1.45 89/10/04 13:56:19 kit Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -33,6 +33,7 @@ SOFTWARE.
 #include <X11/Xatom.h>
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
+#include <X11/Xaw/XawInit.h>
 #include <X11/Xaw/AsciiSinkP.h>
 #include <X11/Xaw/AsciiSrcP.h>	/* For source function defs. */
 #include <X11/Xaw/TextP.h>	/* I also reach into the text widget. */
@@ -66,7 +67,7 @@ AsciiSinkClassRec asciiSinkClassRec = {
     /* superclass	  	*/	(WidgetClass) SuperClass,
     /* class_name	  	*/	"AsciiSink",
     /* widget_size	  	*/	sizeof(AsciiSinkRec),
-    /* class_initialize   	*/	NULL,
+    /* class_initialize   	*/	XawInitializeWidgetSet,
     /* class_part_initialize	*/	NULL,
     /* class_inited       	*/	FALSE,
     /* initialize	  	*/	Initialize,

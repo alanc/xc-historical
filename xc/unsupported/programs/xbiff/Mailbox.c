@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Mailbox.c,v 1.32 89/09/07 17:57:09 swick Exp $
+ * $XConsortium: Mailbox.c,v 1.33 89/10/05 17:53:25 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -33,6 +33,7 @@
 #include <X11/bitmaps/mailfull>		/* for flag up (mail present) bits */
 #include <X11/bitmaps/mailempty>	/* for flag down (mail not here) */
 
+#include <X11/Xaw/XawInit.h>
 #include <X11/Xaw/MailboxP.h>		/* for implementation mailbox stuff */
 
 #include <X11/Xmu/Converters.h>		/* for StringToPixmap */
@@ -163,6 +164,7 @@ static void ClassInitialize ()
     { XtWidgetBaseOffset, (caddr_t) XtOffset(Widget, core.screen), sizeof(Screen *) }
     };
 
+    XawInitializeWidgetSet();
     XtAddConverter (XtRString, XtRPixmap, XmuCvtStringToPixmap,
 		    screenConvertArg, XtNumber(screenConvertArg));
     return;

@@ -1,5 +1,5 @@
 #if ( !defined(lint) && !defined(SABER) )
-static char Xrcsid[] = "$XConsortium: BSBMenuEnt.c,v 1.3 89/10/03 16:42:01 kit Exp $";
+static char Xrcsid[] = "$XConsortium: BSBMenuEnt.c,v 1.4 89/10/05 17:50:36 kit Exp $";
 #endif 
 
 /***********************************************************
@@ -42,6 +42,7 @@ SOFTWARE.
 
 #include <X11/Xmu/Drawing.h>
 
+#include <X11/Xaw/XawInit.h>
 #include <X11/Xaw/SimpleMenu.h>
 #include <X11/Xaw/BSBMenuEnP.h>
 #include <X11/Xaw/Cardinals.h>
@@ -94,7 +95,7 @@ BSBMenuEntryClassRec bSBMenuEntryClassRec = {
     /* superclass         */    (WidgetClass) superclass,
     /* class_name         */    "BSBMenuEntry",
     /* size               */    sizeof(BSBMenuEntryRec),
-    /* Class Initializer  */	ClassInitialize,
+    /* class_initializer  */	ClassInitialize,
     /* class_part_initialize*/	NULL,
     /* Class init'ed      */	FALSE,
     /* initialize         */    Initialize,
@@ -154,6 +155,7 @@ WidgetClass bSBMenuEntryObjectClass = (WidgetClass) &bSBMenuEntryClassRec;
 static void 
 ClassInitialize()
 {
+    XawInitializeWidgetSet();
     XtAddConverter( XtRString, XtRJustify, XmuCvtStringToJustify, NULL, 0 );
 }
 

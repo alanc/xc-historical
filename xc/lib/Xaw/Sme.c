@@ -1,5 +1,5 @@
 #if ( !defined(lint) && !defined(SABER) )
-static char Xrcsid[] = "$XConsortium: MenuEntry.c,v 1.1 89/09/28 16:44:49 kit Exp $";
+static char Xrcsid[] = "$XConsortium: MenuEntry.c,v 1.2 89/09/29 19:03:48 kit Exp $";
 #endif 
 
 /***********************************************************
@@ -40,6 +40,7 @@ SOFTWARE.
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
 
+#include <X11/Xaw/XawInit.h>
 #include <X11/Xaw/MenuEntryP.h>
 #include <X11/Xaw/Cardinals.h>
 
@@ -64,7 +65,7 @@ MenuEntryClassRec menuEntryClassRec = {
     /* superclass         */    (WidgetClass) SUPERCLASS,
     /* class_name         */    "MenuEntry",
     /* size               */    sizeof(MenuEntryRec),
-    /* Class Initializer  */	NULL,
+    /* class_initialize   */	XawInitializeWidgetSet,
     /* class_part_initialize*/	ClassPartInitialize,
     /* Class init'ed      */	FALSE,
     /* initialize         */    NULL,

@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Dialog.c,v 1.32 89/08/25 18:35:32 kit Exp $";
+static char Xrcsid[] = "$XConsortium: Dialog.c,v 1.33 89/08/28 12:14:04 kit Exp $";
 #endif /* lint */
 
 
@@ -38,6 +38,7 @@ SOFTWARE.
 #include <X11/StringDefs.h>
 #include <X11/Xmu/Misc.h>
 
+#include <X11/Xaw/XawInit.h>
 #include <X11/Xaw/AsciiText.h>
 #include <X11/Xaw/Command.h>	
 #include <X11/Xaw/Label.h>
@@ -64,7 +65,7 @@ DialogClassRec dialogClassRec = {
     /* superclass         */    (WidgetClass) &formClassRec,
     /* class_name         */    "Dialog",
     /* widget_size        */    sizeof(DialogRec),
-    /* class_initialize   */    NULL,
+    /* class_initialize   */    XawInitializeWidgetSet,
     /* class_part init    */    NULL,
     /* class_inited       */    FALSE,
     /* initialize         */    Initialize,

@@ -1,5 +1,5 @@
 #if ( !defined(lint) && !defined(SABER))
-  static char Xrcs_id[] = "$XConsortium: List.c,v 1.20 89/07/16 14:44:23 jim Exp $";
+  static char Xrcs_id[] = "$XConsortium: List.c,v 1.21 89/08/24 17:57:39 kit Exp $";
 #endif
 
 /***********************************************************
@@ -49,6 +49,7 @@ SOFTWARE.
 
 #include <X11/Xmu/Drawing.h>
 
+#include <X11/Xaw/XawInit.h>
 #include <X11/Xaw/ListP.h>
 
 
@@ -126,7 +127,7 @@ ListClassRec listClassRec = {
     /* superclass	  	*/	(WidgetClass) superclass,
     /* class_name	  	*/	"List",
     /* widget_size	  	*/	sizeof(ListRec),
-    /* class_initialize   	*/	NULL,
+    /* class_initialize   	*/	XawInitializeWidgetSet,
     /* class_part_initialize	*/	NULL,
     /* class_inited       	*/	FALSE,
     /* initialize	  	*/	Initialize,

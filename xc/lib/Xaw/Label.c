@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Label.c,v 1.70 89/07/10 17:33:27 dschmidt Exp $";
+static char Xrcsid[] = "$XConsortium: Label.c,v 1.71 89/09/07 17:54:39 swick Exp $";
 #endif /* lint */
 
 
@@ -38,6 +38,7 @@ SOFTWARE.
 #include <ctype.h>
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
+#include <X11/Xaw/XawInit.h>
 #include <X11/Xaw/LabelP.h>
 
 /****************************************************************
@@ -130,6 +131,7 @@ static void ClassInitialize()
         {XtWidgetBaseOffset, (caddr_t) XtOffset(Widget, core.screen),
 	     sizeof(Screen *)}
     };
+    XawInitializeWidgetSet();
     XtAddConverter( XtRString, XtRJustify, XmuCvtStringToJustify, NULL, 0 );
     XtAddConverter("String", "Pixmap", XmuCvtStringToPixmap,
 		   screenConvertArg, XtNumber(screenConvertArg));

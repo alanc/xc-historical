@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Simple.c,v 1.19 89/05/02 12:58:13 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Simple.c,v 1.20 89/05/11 01:06:21 kit Exp $";
 #endif /* lint */
 
 /***********************************************************
@@ -28,8 +28,8 @@ SOFTWARE.
 
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
+#include <X11/Xaw/XawInit.h>
 #include <X11/Xaw/SimpleP.h>
-#include <X11/Vendor.h>		/* hack; force Xaw/Vendor.o to be loaded */
 
 #define UnspecifiedPixmap 2	/* %%% should be NULL, according to the spec */
 
@@ -42,7 +42,7 @@ static XtResource resources[] = {
 #undef offset
 };
 
-static void ClassInitialize(), ClassPartInitialize(), Realize();
+static void ClassPartInitialize(), Realize();
 static Boolean SetValues(), ChangeSensitive();
 
 SimpleClassRec simpleClassRec = {
@@ -50,7 +50,7 @@ SimpleClassRec simpleClassRec = {
     /* superclass		*/	(WidgetClass) &widgetClassRec,
     /* class_name		*/	"Simple",
     /* widget_size		*/	sizeof(SimpleRec),
-    /* class_initialize		*/	ClassInitialize,
+    /* class_initialize		*/	XawInitializeWidgetSet,
     /* class_part_initialize	*/	ClassPartInitialize,
     /* class_inited		*/	FALSE,
     /* initialize		*/	NULL,
@@ -86,17 +86,6 @@ SimpleClassRec simpleClassRec = {
 };
 
 WidgetClass simpleWidgetClass = (WidgetClass)&simpleClassRec;
-
-static void ClassInitialize()
-{
-    /* this silliness causes the linker to include the VendorShell
-     * module from Xaw, rather than the one from Xt.  Better
-     * optimizers require bigger hacks to hide the fact that this
-     * is a no-op.
-     */
-    if (vendorShellWidgetClass == NULL)
-	simpleClassRec.simple_class.change_sensitive = ChangeSensitive;
-}
 
 static void ClassPartInitialize(class)
     WidgetClass class;

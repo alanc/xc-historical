@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Logo.c,v 1.8 88/09/06 16:41:58 jim Exp $";
+static char Xrcsid[] = "$XConsortium: Logo.c,v 1.10 89/05/11 13:35:14 kit Exp $";
 #endif
 
 /*
@@ -20,6 +20,7 @@ without express or implied warranty.
 
 #include <X11/StringDefs.h>
 #include <X11/IntrinsicP.h>
+#include <X11/Xaw/XawInit.h>
 #include <X11/Xaw/LogoP.h>
 
 static Dimension defDim = 100;
@@ -45,7 +46,7 @@ LogoClassRec logoClassRec = {
     /* superclass		*/	&widgetClassRec,
     /* class_name		*/	"Logo",
     /* widget_size		*/	sizeof(LogoRec),
-    /* class_initialize		*/	NULL,
+    /* class_initialize		*/	XawInitializeWidgetSet,
     /* class_part_initialize	*/	NULL,
     /* class_inited		*/	FALSE,
     /* initialize		*/	Initialize,

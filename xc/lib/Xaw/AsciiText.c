@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: AsciiText.c,v 1.33 89/10/02 19:15:21 kit Exp $";
+static char Xrcsid[] = "$XConsortium: AsciiText.c,v 1.34 89/10/04 13:55:41 kit Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -50,6 +50,7 @@ SOFTWARE.
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
 
+#include <X11/Xaw/XawInit.h>
 #include <X11/Xaw/AsciiSrc.h>
 #include <X11/Xaw/AsciiSink.h>
 #include <X11/Xaw/AsciiTextP.h>
@@ -105,6 +106,7 @@ WidgetClass asciiTextWidgetClass = (WidgetClass)&asciiTextClassRec;
 static void 
 ClassInitialize()
 {
+  XawInitializeWidgetSet();
   asciiTextClassRec.core_class.num_actions = textActionsTableCount;
 }
 

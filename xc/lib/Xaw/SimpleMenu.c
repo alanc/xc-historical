@@ -1,5 +1,5 @@
 #if ( !defined(lint) && !defined(SABER) )
-static char Xrcsid[] = "$XConsortium: SimpleMenu.c,v 1.25 89/10/05 17:50:30 kit Exp $";
+static char Xrcsid[] = "$XConsortium: SimpleMenu.c,v 1.26 89/10/06 18:38:15 jim Exp $";
 #endif 
 
 /***********************************************************
@@ -40,6 +40,7 @@ SOFTWARE.
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
 
+#include <X11/Xaw/XawInit.h>
 #include <X11/Xaw/SimpleMenP.h>
 #include <X11/Xaw/BSBMenuEnt.h>
 #include <X11/Xaw/Cardinals.h>
@@ -142,7 +143,7 @@ SimpleMenuClassRec simpleMenuClassRec = {
     /* superclass         */    (WidgetClass) superclass,
     /* class_name         */    "SimpleMenu",
     /* size               */    sizeof(SimpleMenuRec),
-    /* Class Initializer  */	ClassInitialize,
+    /* class_initialize   */	ClassInitialize,
     /* class_part_initialize*/	ClassPartInitialize,
     /* Class init'ed      */	FALSE,
     /* initialize         */    Initialize,
@@ -203,6 +204,7 @@ WidgetClass simpleMenuWidgetClass = (WidgetClass)&simpleMenuClassRec;
 static void
 ClassInitialize()
 {
+  XawInitializeWidgetSet();
   XtAddConverter( XtRString, XtRBackingStore, XmuCvtStringToBackingStore,
 		 NULL, 0 );
   XmuAddInitializer( AddPositionAction, NULL);

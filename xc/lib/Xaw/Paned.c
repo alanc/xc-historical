@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Paned.c,v 1.10 89/09/19 16:30:27 kit Exp $";
+static char Xrcsid[] = "$XConsortium: Paned.c,v 1.11 89/10/07 15:16:49 kit Exp $";
 #endif /* lint */
 
 
@@ -48,6 +48,7 @@ SOFTWARE.
 #include <X11/Xmu/Misc.h>
 #include <X11/Xmu/Converters.h>
 
+#include <X11/Xaw/XawInit.h>
 #include <X11/Xaw/Grip.h>
 #include <X11/Xaw/PanedP.h>
 
@@ -187,7 +188,7 @@ PanedClassRec panedClassRec = {
     /* superclass         */   (WidgetClass) SuperClass,
     /* class name         */   "Paned",
     /* size               */   sizeof(PanedRec),
-    /* class initialize   */   ClassInitialize,
+    /* class_initialize   */   ClassInitialize,
     /* class_part init    */   NULL,
     /* class_inited       */   FALSE,
     /* initialize         */   Initialize,
@@ -1396,6 +1397,7 @@ PanedWidget pw;
 static void 
 ClassInitialize()
 {
+    XawInitializeWidgetSet();
     XtAddConverter( XtRString, XtROrientation, XmuCvtStringToOrientation,
 		    NULL, (Cardinal)0 );
 }

@@ -1,5 +1,5 @@
 #if ( !defined(lint) && !defined(SABER) )
-static char Xrcsid[] = "$XConsortium: LineMenuEn.c,v 1.1 89/09/29 19:04:03 kit Exp $";
+static char Xrcsid[] = "$XConsortium: LineMenuEn.c,v 1.2 89/10/02 19:12:57 kit Exp $";
 #endif 
 
 /***********************************************************
@@ -40,6 +40,7 @@ SOFTWARE.
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
 
+#include <X11/Xaw/XawInit.h>
 #include <X11/Xaw/LineMenuEP.h>
 #include <X11/Xaw/Cardinals.h>
 
@@ -71,7 +72,7 @@ LineMenuEntryClassRec lineMenuEntryClassRec = {
     /* superclass         */    (WidgetClass) SUPERCLASS,
     /* class_name         */    "LineMenuEntry",
     /* size               */    sizeof(LineMenuEntryRec),
-    /* Class Initializer  */	ClassInitialize,
+    /* class_initialize   */	ClassInitialize,
     /* class_part_initialize*/	NULL,
     /* Class init'ed      */	FALSE,
     /* initialize         */    Initialize,
@@ -135,6 +136,7 @@ ClassInitialize()
 	     sizeof(Screen *)}
     };
 
+    XawInitializeWidgetSet();
     XtAddConverter(XtRString, XtRPixmap, XmuCvtStringToPixmap,
 		   screenConvertArg, XtNumber(screenConvertArg));
 }

@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Clock.c,v 1.46 89/08/23 14:41:08 kit Exp $";
+static char Xrcsid[] = "$XConsortium: Clock.c,v 1.47 89/10/08 15:09:07 rws Exp $";
 #endif /* lint */
 
 
@@ -31,6 +31,7 @@ SOFTWARE.
 #include <X11/Xlib.h>
 #include <X11/StringDefs.h>
 #include <X11/IntrinsicP.h>
+#include <X11/Xaw/XawInit.h>
 #include <X11/Xaw/ClockP.h>
 
 extern long time();
@@ -145,6 +146,7 @@ WidgetClass clockWidgetClass = (WidgetClass) &clockClassRec;
 
 static void ClassInitialize()
 {
+    XawInitializeWidgetSet();
     XtAddConverter( XtRString, XtRBackingStore, XmuCvtStringToBackingStore,
 		    NULL, 0 );
 }

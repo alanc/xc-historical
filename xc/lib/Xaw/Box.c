@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Box.c,v 1.39 89/05/11 01:04:44 kit Exp $";
+static char Xrcsid[] = "$XConsortium: Box.c,v 1.40 89/09/19 16:29:23 kit Exp $";
 #endif /* lint */
 
 
@@ -36,6 +36,7 @@ SOFTWARE.
 #include	<X11/IntrinsicP.h>
 #include	<X11/StringDefs.h>
 #include	<X11/Xmu/Misc.h>
+#include	<X11/Xaw/XawInit.h>
 #include	<X11/Xaw/BoxP.h>
 
 /****************************************************************
@@ -71,7 +72,7 @@ BoxClassRec boxClassRec = {
     /* superclass         */    (WidgetClass) &compositeClassRec,
     /* class_name         */    "Box",
     /* widget_size        */    sizeof(BoxRec),
-    /* class_initialize   */    NULL,
+    /* class_initialize   */    XawInitializeWidgetSet,
     /* class_part_init    */	NULL,
     /* class_inited       */	FALSE,
     /* initialize         */    Initialize,

@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: StripChart.c,v 1.4 89/08/24 15:24:15 kit Exp $";
+static char Xrcsid[] = "$XConsortium: StripChart.c,v 1.5 89/09/14 17:01:11 kit Exp $";
 #endif
 
 /***********************************************************
@@ -29,6 +29,7 @@ SOFTWARE.
 #include <stdio.h>
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
+#include <X11/Xaw/XawInit.h>
 #include <X11/Xaw/StripCharP.h>
 
 #define MS_PER_SEC 1000
@@ -67,7 +68,7 @@ StripChartClassRec stripChartClassRec = {
     /* superclass		*/	(WidgetClass) &simpleClassRec,
     /* class_name		*/	"StripChart",
     /* size			*/	sizeof(StripChartRec),
-    /* class_initialize		*/	NULL,
+    /* class_initialize		*/	XawInitializeWidgetSet,
     /* class_part_initialize	*/	NULL,
     /* class_inited		*/	FALSE,
     /* initialize		*/	Initialize,

@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Form.c,v 1.31 89/10/05 19:24:37 kit Exp $";
+static char Xrcsid[] = "$XConsortium: Form.c,v 1.32 89/10/06 13:48:12 kit Exp $";
 #endif /* lint */
 
 
@@ -31,6 +31,7 @@ SOFTWARE.
 #include <X11/StringDefs.h>
 #include <X11/Xmu/Converters.h>
 #include <X11/Xmu/CharSet.h>
+#include <X11/Xaw/XawInit.h>
 #include <X11/Xaw/FormP.h>
 
 /* Private Definitions */
@@ -193,6 +194,7 @@ static void ClassInitialize()
     static XtConvertArgRec parentCvtArgs[] = {
 	{XtBaseOffset, (caddr_t)XtOffset(Widget, core.parent), sizeof(Widget)}
     };
+    XawInitializeWidgetSet();
     XtQChainLeft   = XrmStringToQuark("chainleft");
     XtQChainRight  = XrmStringToQuark("chainright");
     XtQChainTop    = XrmStringToQuark("chaintop");

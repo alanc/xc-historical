@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: Text.c,v 1.116 89/09/13 14:41:51 kit Exp $";
+static char Xrcsid[] = "$XConsortium: Text.c,v 1.117 89/09/15 12:09:13 kit Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -38,6 +38,7 @@ SOFTWARE.
 #include <X11/Xmu/StdSel.h>
 #include <X11/Xmu/Misc.h>
 
+#include <X11/Xaw/XawInit.h>
 #include <X11/Xaw/Cardinals.h>
 #include <X11/Xaw/Scroll.h>
 #include <X11/Xaw/TextP.h>
@@ -300,6 +301,8 @@ ClassInitialize()
   int len3 = strlen (_XawDefaultTextTranslations3);
   char *buf = XtMalloc (len1 + len2 + len3 + 1);
   char *cp = buf;
+
+  XawInitializeWidgetSet();
 
 /* 
  * Set the number of actions.

@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Viewport.c,v 1.43 89/07/21 14:22:46 jim Exp $";
+static char Xrcsid[] = "$XConsortium: Viewport.c,v 1.44 89/08/24 15:27:56 kit Exp $";
 #endif /* lint */
 
 
@@ -30,6 +30,7 @@ SOFTWARE.
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
 
+#include <X11/Xaw/XawInit.h>
 #include <X11/Xmu/Misc.h>
 #include <X11/Xaw/Scroll.h>
 #include <X11/Xaw/ViewportP.h>
@@ -63,7 +64,7 @@ ViewportClassRec viewportClassRec = {
     /* superclass	  */	(WidgetClass) superclass,
     /* class_name	  */	"Viewport",
     /* widget_size	  */	sizeof(ViewportRec),
-    /* class_initialize	  */	NULL,
+    /* class_initialize	  */	XawInitializeWidgetSet,
     /* class_part_init    */    NULL,
     /* class_inited	  */	FALSE,
     /* initialize	  */	Initialize,

@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Vendor.c,v 1.8 89/07/16 14:51:41 jim Exp $";
+static char Xrcsid[] = "$XConsortium: Vendor.c,v 1.9 89/09/07 17:57:33 swick Exp $";
 /* $oHeader: Vendor.c,v 1.3 88/08/19 13:11:01 asente Exp $ */
 #endif /* lint */
 
@@ -63,7 +63,7 @@ externaldef(vendorshellclassrec) VendorShellClassRec vendorShellClassRec = {
     /* superclass         */    (WidgetClass) &wmShellClassRec,
     /* class_name         */    "VendorShell",
     /* size               */    sizeof(VendorShellRec),
-    /* Class Initializer  */	_VendorShellClassInitialize,
+    /* class_initialize   */	_VendorShellClassInitialize,
     /* class_part_initialize*/	NULL,
     /* Class init'ed ?    */	FALSE,
     /* initialize         */    _VendorShellInitialize,
