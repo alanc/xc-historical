@@ -1,4 +1,4 @@
-/* $XConsortium: Command.c,v 1.75 91/02/17 14:53:02 converse Exp $ */
+/* $XConsortium: Command.c,v 1.76 91/05/04 19:29:00 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -459,8 +459,10 @@ Widget w;
 
 /* ARGSUSED */
 static Boolean 
-SetValues (current, request, new)
+SetValues (current, request, new, args, num_args)
 Widget current, request, new;
+ArgList args;
+Cardinal *num_args;
 {
   CommandWidget oldcbw = (CommandWidget) current;
   CommandWidget cbw = (CommandWidget) new;

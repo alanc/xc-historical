@@ -1,4 +1,4 @@
-/* $XConsortium: StripChart.c,v 1.19 91/03/08 14:16:01 converse Exp $ */
+/* $XConsortium: StripChart.c,v 1.20 91/05/24 17:20:42 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -158,8 +158,10 @@ unsigned int which;
 }
 
 /* ARGSUSED */
-static void Initialize (greq, gnew)
+static void Initialize (greq, gnew, args, num_args)
     Widget greq, gnew;
+    ArgList args;
+    Cardinal *num_args;
 {
     StripChartWidget w = (StripChartWidget)gnew;
 
@@ -409,8 +411,10 @@ Boolean blit;
 }
 
 /* ARGSUSED */
-static Boolean SetValues (current, request, new)
+static Boolean SetValues (current, request, new, args, num_args)
     Widget current, request, new;
+    ArgList args;
+    Cardinal *num_args;
 {
     StripChartWidget old = (StripChartWidget)current;
     StripChartWidget w = (StripChartWidget)new;
@@ -456,9 +460,10 @@ static Boolean SetValues (current, request, new)
 #define HEIGHT ( (unsigned int) w->core.height)
 
 static void
-SetPoints(w)
-StripChartWidget w;
+SetPoints(widget)
+Widget widget;
 {
+    StripChartWidget w = (StripChartWidget) widget;
     XPoint * points;
     Cardinal size;
     int i;

@@ -1,4 +1,4 @@
-/* $XConsortium: List.c,v 1.33 91/05/22 16:31:34 converse Exp $ */
+/* $XConsortium: List.c,v 1.34 91/09/27 18:35:07 converse Exp $ */
 
 /*
  * Copyright 1989 Massachusetts Institute of Technology
@@ -296,8 +296,10 @@ Dimension width, height;
 
 /* ARGSUSED */
 static void 
-Initialize(junk, new)
+Initialize(junk, new, args, num_args)
 Widget junk, new;
+ArgList args;
+Cardinal *num_args;
 {
     ListWidget lw = (ListWidget) new;
 
@@ -813,8 +815,10 @@ Cardinal *num_params;
  */
 
 static Boolean 
-SetValues(current, request, new)
+SetValues(current, request, new, args, num_args)
 Widget current, request, new;
+ArgList args;
+Cardinal *num_args;
 {
     ListWidget cl = (ListWidget) current;
     ListWidget rl = (ListWidget) request;

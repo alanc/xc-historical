@@ -1,4 +1,4 @@
-/* $XConsortium: SimpleMenu.c,v 1.38 91/04/08 19:46:33 converse Exp $ */
+/* $XConsortium: SimpleMenu.c,v 1.39 91/06/22 18:03:29 rws Exp $ */
 
 /*
  * Copyright 1989 Massachusetts Institute of Technology
@@ -241,8 +241,10 @@ WidgetClass wc;
 
 /* ARGSUSED */
 static void
-Initialize(request, new)
+Initialize(request, new, args, num_args)
 Widget request, new;
+ArgList args;
+Cardinal *num_args;
 {
   SimpleMenuWidget smw = (SimpleMenuWidget) new;
 
@@ -388,8 +390,10 @@ Widget w;
 
 /* ARGSUSED */
 static Boolean
-SetValues(current, request, new)
+SetValues(current, request, new, args, num_args)
 Widget current, request, new;
+ArgList args;
+Cardinal *num_args;
 {
     SimpleMenuWidget smw_old = (SimpleMenuWidget) current;
     SimpleMenuWidget smw_new = (SimpleMenuWidget) new;
@@ -418,10 +422,10 @@ Widget current, request, new;
 	else if (smw_old->simple_menu.label_string == NULL)    /* Create. */
 	    CreateLabel(new);
 	else {                                                 /* Change. */
-	    Arg args[1];
+	    Arg arglist[1];
 	    
-	    XtSetArg(args[0], XtNlabel, smw_new->simple_menu.label_string);
-	    XtSetValues((Widget) smw_new->simple_menu.label, args, ONE);
+	    XtSetArg(arglist[0], XtNlabel, smw_new->simple_menu.label_string);
+	    XtSetValues((Widget) smw_new->simple_menu.label, arglist, ONE);
 	}
     
     if (smw_old->simple_menu.label_class != smw_new->simple_menu.label_class)

@@ -1,4 +1,4 @@
-/* $XConsortium: Logo.c,v 1.24 91/03/14 16:47:45 converse Exp $ */
+/* $XConsortium: Logo.c,v 1.25 91/05/22 16:56:51 converse Exp $ */
 
 /*
 Copyright 1988 by the Massachusetts Institute of Technology
@@ -180,8 +180,10 @@ static void set_shape (w)
  *****************************************************************************/
 
 /* ARGSUSED */
-static void Initialize (request, new)
+static void Initialize (request, new, args, num_args)
     Widget request, new;
+    ArgList args;
+    Cardinal *num_args;
 {
     LogoWidget w = (LogoWidget)new;
 
@@ -250,8 +252,10 @@ static void Redisplay (gw, event, region)
 }
 
 /* ARGSUSED */
-static Boolean SetValues (gcurrent, grequest, gnew)
+static Boolean SetValues (gcurrent, grequest, gnew, args, num_args)
     Widget gcurrent, grequest, gnew;
+    ArgList args;
+    Cardinal *num_args;
 {
     LogoWidget current = (LogoWidget) gcurrent;
     LogoWidget new = (LogoWidget) gnew;

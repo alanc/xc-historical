@@ -1,4 +1,4 @@
-/* $XConsortium: Toggle.c,v 1.24 91/07/25 14:07:48 converse Exp $ */
+/* $XConsortium: Toggle.c,v 1.25 91/09/23 11:29:32 converse Exp $ */
 
 /*
  * Copyright 1989 Massachusetts Institute of Technology
@@ -192,8 +192,10 @@ ClassInit()
   XtError("Aborting, due to errors resolving bindings in the Toggle widget.");
 }
 
-static void Initialize(request, new)
+static void Initialize(request, new, args, num_args)
  Widget request, new;
+ ArgList args;
+ Cardinal *num_args;
 {
     ToggleWidget tw = (ToggleWidget) new;
     ToggleWidget tw_req = (ToggleWidget) request;
@@ -282,8 +284,10 @@ Cardinal *num_params;	/* unused */
 
 /* ARGSUSED */
 static Boolean 
-SetValues (current, request, new)
+SetValues (current, request, new, args, num_args)
 Widget current, request, new;
+ArgList args;
+Cardinal *num_args;
 {
     ToggleWidget oldtw = (ToggleWidget) current;
     ToggleWidget tw = (ToggleWidget) new;

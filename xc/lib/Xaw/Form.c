@@ -1,4 +1,4 @@
-/* $XConsortium: Form.c,v 1.47 91/05/02 16:19:26 swick Exp $ */
+/* $XConsortium: Form.c,v 1.48 91/07/22 18:08:25 ackerman Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -219,8 +219,10 @@ static void ClassPartInitialize(class)
 }
 
 /* ARGSUSED */
-static void Initialize(request, new)
+static void Initialize(request, new, args, num_args)
     Widget request, new;
+    ArgList args;
+    Cardinal *num_args;
 {
     FormWidget fw = (FormWidget)new;
 
@@ -650,16 +652,20 @@ static XtGeometryResult GeometryManager(w, request, reply)
 
 
 /* ARGSUSED */
-static Boolean SetValues(current, request, new)
+static Boolean SetValues(current, request, new, args, num_args)
     Widget current, request, new;
+    ArgList args;
+    Cardinal *num_args;
 {
     return( FALSE );
 }
 
 
 /* ARGSUSED */
-static void ConstraintInitialize(request, new)
+static void ConstraintInitialize(request, new, args, num_args)
     Widget request, new;
+    ArgList args;
+    Cardinal *num_args;
 {
     FormConstraints form = (FormConstraints)new->core.constraints;
     FormWidget fw = (FormWidget)new->core.parent;

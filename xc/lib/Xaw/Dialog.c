@@ -1,4 +1,4 @@
-/* $XConsortium: Dialog.c,v 1.44 91/02/17 14:55:45 converse Exp $ */
+/* $XConsortium: Dialog.c,v 1.45 91/03/21 14:38:27 dave Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -128,31 +128,33 @@ DialogClassRec dialogClassRec = {
 WidgetClass dialogWidgetClass = (WidgetClass)&dialogClassRec;
 
 /* ARGSUSED */
-static void Initialize(request, new)
+static void Initialize(request, new, args, num_args)
 Widget request, new;
+ArgList args;
+Cardinal *num_args;
 {
     DialogWidget dw = (DialogWidget)new;
     Arg arglist[9];
-    Cardinal num_args = 0;
+    Cardinal arg_cnt = 0;
 
-    XtSetArg(arglist[num_args], XtNborderWidth, 0); num_args++;
-    XtSetArg(arglist[num_args], XtNleft, XtChainLeft); num_args++;
+    XtSetArg(arglist[arg_cnt], XtNborderWidth, 0); arg_cnt++;
+    XtSetArg(arglist[arg_cnt], XtNleft, XtChainLeft); arg_cnt++;
 
     if (dw->dialog.icon != (Pixmap)0) {
-	XtSetArg(arglist[num_args], XtNbitmap, dw->dialog.icon); num_args++;
-	XtSetArg(arglist[num_args], XtNright, XtChainLeft); num_args++;
+	XtSetArg(arglist[arg_cnt], XtNbitmap, dw->dialog.icon); arg_cnt++;
+	XtSetArg(arglist[arg_cnt], XtNright, XtChainLeft); arg_cnt++;
 	dw->dialog.iconW =
 	    XtCreateManagedWidget( "icon", labelWidgetClass,
-				   new, arglist, num_args );
-	num_args = 2;
-	XtSetArg(arglist[num_args], XtNfromHoriz, dw->dialog.iconW);num_args++;
+				   new, arglist, arg_cnt );
+	arg_cnt = 2;
+	XtSetArg(arglist[arg_cnt], XtNfromHoriz, dw->dialog.iconW);arg_cnt++;
     } else dw->dialog.iconW = (Widget)NULL;
 
-    XtSetArg(arglist[num_args], XtNlabel, dw->dialog.label); num_args++;
-    XtSetArg(arglist[num_args], XtNright, XtChainRight); num_args++;
+    XtSetArg(arglist[arg_cnt], XtNlabel, dw->dialog.label); arg_cnt++;
+    XtSetArg(arglist[arg_cnt], XtNright, XtChainRight); arg_cnt++;
 
     dw->dialog.labelW = XtCreateManagedWidget( "label", labelWidgetClass,
-					      new, arglist, num_args);
+					      new, arglist, arg_cnt);
 
     if (dw->dialog.iconW != (Widget)NULL &&
 	(dw->dialog.labelW->core.height < dw->dialog.iconW->core.height)) {
@@ -166,8 +168,10 @@ Widget request, new;
 }
 
 /* ARGSUSED */
-static void ConstraintInitialize(request, new)
+static void ConstraintInitialize(request, new, args, num_args)
 Widget request, new;
+ArgList args;
+Cardinal *num_args;
 {
     DialogWidget dw = (DialogWidget)new->core.parent;
     DialogConstraints constraint = (DialogConstraints)new->core.constraints;

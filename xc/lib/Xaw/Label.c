@@ -1,4 +1,4 @@
-/* $XConsortium: Label.c,v 1.91 91/07/13 15:38:27 rws Exp $ */
+/* $XConsortium: Label.c,v 1.92 91/07/24 16:56:28 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -342,8 +342,10 @@ static void set_bitmap_info (lw)
 
 
 /* ARGSUSED */
-static void Initialize(request, new)
- Widget request, new;
+static void Initialize(request, new, args, num_args)
+    Widget request, new;
+    ArgList args;
+    Cardinal *num_args;
 {
     LabelWidget lw = (LabelWidget) new;
 

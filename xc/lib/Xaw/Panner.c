@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Panner.c,v 1.42 91/03/14 16:47:58 converse Exp $
+ * $XConsortium: Panner.c,v 1.43 91/08/26 10:53:17 gildea Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -483,8 +483,10 @@ static int parse_page_string (s, pagesize, canvassize, relative)
  *****************************************************************************/
 
 
-static void Initialize (greq, gnew)
+static void Initialize (greq, gnew, args, num_args)
     Widget greq, gnew;
+    ArgList args;
+    Cardinal *num_args;
 {
     PannerWidget req = (PannerWidget) greq, new = (PannerWidget) gnew;
     Dimension defwidth, defheight;
@@ -599,8 +601,10 @@ static void Redisplay (gw, event, region)
 
 
 /* ARGSUSED */
-static Boolean SetValues (gcur, greq, gnew)
+static Boolean SetValues (gcur, greq, gnew, args, num_args)
     Widget gcur, greq, gnew;
+    ArgList args;
+    Cardinal *num_args;
 {
     PannerWidget cur = (PannerWidget) gcur;
     PannerWidget new = (PannerWidget) gnew;

@@ -1,4 +1,4 @@
-/* $XConsortium: TextSink.c,v 1.15 91/03/10 18:40:26 converse Exp $ */
+/* $XConsortium: TextSink.c,v 1.16 91/05/28 10:50:01 converse Exp $ */
 
 /*
  * Copyright 1989 Massachusetts Institute of Technology
@@ -176,8 +176,10 @@ WidgetClass wc;
 
 /* ARGSUSED */
 static void
-Initialize(request, new)
+Initialize(request, new, args, num_args)
 Widget request, new;
+ArgList args;
+Cardinal *num_args;
 {
   TextSinkObject sink = (TextSinkObject) new;
 
@@ -195,6 +197,7 @@ Widget request, new;
 
 static void
 Destroy(w)
+Widget w;
 {
   TextSinkObject sink = (TextSinkObject) w;
 
@@ -212,8 +215,10 @@ Destroy(w)
 
 /* ARGSUSED */
 static Boolean
-SetValues(current, request, new)
+SetValues(current, request, new, args, num_args)
 Widget current, request, new;
+ArgList args;
+Cardinal *num_args;
 {
   TextSinkObject w = (TextSinkObject) new;
   TextSinkObject old_w = (TextSinkObject) current;

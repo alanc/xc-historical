@@ -1,4 +1,4 @@
-/* $XConsortium: Scrollbar.c,v 1.68 91/03/14 16:48:06 converse Exp $ */
+/* $XConsortium: Scrollbar.c,v 1.69 91/05/04 23:07:32 keith Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -349,9 +349,11 @@ Widget w;
 }
 
 /* ARGSUSED */
-static void Initialize( request, new )
+static void Initialize( request, new, args, num_args )
    Widget request;		/* what the client asked for */
    Widget new;			/* what we're going to give him */
+   ArgList args;
+   Cardinal *num_args;
 {
     ScrollbarWidget w = (ScrollbarWidget) new;
 
@@ -395,10 +397,12 @@ static void Realize( gw, valueMask, attributes )
 
 /* ARGSUSED */
 static Boolean 
-SetValues( current, request, desired )
+SetValues( current, request, desired, args, num_args )
 Widget current,		/* what I am */
        request,		/* what he wants me to be */
        desired;		/* what I will become */
+ArgList args;
+Cardinal *num_args;
 {
     ScrollbarWidget w = (ScrollbarWidget) current;
     ScrollbarWidget dw = (ScrollbarWidget) desired;

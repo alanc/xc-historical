@@ -1,4 +1,4 @@
-/* $XConsortium: SmeBSB.c,v 1.15 91/02/19 16:08:40 converse Exp $ */
+/* $XConsortium: SmeBSB.c,v 1.16 91/03/15 15:59:41 gildea Exp $ */
 
 /*
  * Copyright 1989 Massachusetts Institute of Technology
@@ -166,8 +166,10 @@ ClassInitialize()
 
 /* ARGSUSED */
 static void
-Initialize(request, new)
+Initialize(request, new, args, num_args)
 Widget request, new;
+ArgList args;
+Cardinal *num_args;
 {
     SmeBSBObject entry = (SmeBSBObject) new;
 
@@ -287,8 +289,10 @@ Region region;
 
 /* ARGSUSED */
 static Boolean
-SetValues(current, request, new)
+SetValues(current, request, new, args, num_args)
 Widget current, request, new;
+ArgList args;
+Cardinal *num_args;
 {
     SmeBSBObject entry = (SmeBSBObject) new;
     SmeBSBObject old_entry = (SmeBSBObject) current;

@@ -1,4 +1,4 @@
-/* $XConsortium: Sme.c,v 1.8 91/02/17 16:06:15 rws Exp $ */
+/* $XConsortium: Sme.c,v 1.9 91/02/17 16:44:14 rws Exp $ */
 
 /*
  * Copyright 1989 Massachusetts Institute of Technology
@@ -150,8 +150,10 @@ WidgetClass class;
 
 /* ARGSUSED */
 static void
-Initialize(request, new)
+Initialize(request, new, args, num_args)
 Widget request, new;
+ArgList args;
+Cardinal *num_args;
 {
     SmeObject entry = (SmeObject) new;
 

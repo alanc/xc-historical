@@ -1,4 +1,4 @@
-/* $XConsortium: Viewport.c,v 1.67 91/07/23 16:21:15 converse Exp $ */
+/* $XConsortium: Viewport.c,v 1.68 91/07/24 18:56:11 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -130,13 +130,13 @@ static Widget CreateScrollbar(w, horizontal)
     ViewportConstraints constraints =
 	(ViewportConstraints)clip->core.constraints;
     static Arg barArgs[] = {
-	{XtNorientation, NULL},
-	{XtNlength, NULL},
-	{XtNleft, NULL},
-	{XtNright, NULL},
-	{XtNtop, NULL},
-	{XtNbottom, NULL},
-	{XtNmappedWhenManaged, False},
+	{XtNorientation,       (XtArgVal) 0},
+	{XtNlength,            (XtArgVal) 0},
+	{XtNleft,              (XtArgVal) 0},
+	{XtNright,             (XtArgVal) 0},
+	{XtNtop,               (XtArgVal) 0},
+	{XtNbottom,            (XtArgVal) 0},
+	{XtNmappedWhenManaged, (XtArgVal) False},
     };
     Widget bar;
 
@@ -174,12 +174,14 @@ static Widget CreateScrollbar(w, horizontal)
 }
 
 /* ARGSUSED */
-static void Initialize(request, new)
+static void Initialize(request, new, args, num_args)
     Widget request, new;
+    ArgList args;
+    Cardinal *num_args;
 {
     ViewportWidget w = (ViewportWidget)new;
     static Arg clip_args[8];
-    Cardinal num_args;
+    Cardinal arg_cnt;
     Widget h_bar, v_bar;
     Dimension clip_height, clip_width;
 
@@ -197,18 +199,18 @@ static void Initialize(request, new)
  * Create Clip Widget.
  */
 
-    num_args = 0;
-    XtSetArg(clip_args[num_args], XtNbackgroundPixmap, None); num_args++;
-    XtSetArg(clip_args[num_args], XtNborderWidth, 0); num_args++;
-    XtSetArg(clip_args[num_args], XtNleft, XtChainLeft); num_args++;
-    XtSetArg(clip_args[num_args], XtNright, XtChainRight); num_args++;
-    XtSetArg(clip_args[num_args], XtNtop, XtChainTop); num_args++;
-    XtSetArg(clip_args[num_args], XtNbottom, XtChainBottom); num_args++;
-    XtSetArg(clip_args[num_args], XtNwidth, w->core.width); num_args++;
-    XtSetArg(clip_args[num_args], XtNheight, w->core.height); num_args++;
+    arg_cnt = 0;
+    XtSetArg(clip_args[arg_cnt], XtNbackgroundPixmap, None); arg_cnt++;
+    XtSetArg(clip_args[arg_cnt], XtNborderWidth, 0); arg_cnt++;
+    XtSetArg(clip_args[arg_cnt], XtNleft, XtChainLeft); arg_cnt++;
+    XtSetArg(clip_args[arg_cnt], XtNright, XtChainRight); arg_cnt++;
+    XtSetArg(clip_args[arg_cnt], XtNtop, XtChainTop); arg_cnt++;
+    XtSetArg(clip_args[arg_cnt], XtNbottom, XtChainBottom); arg_cnt++;
+    XtSetArg(clip_args[arg_cnt], XtNwidth, w->core.width); arg_cnt++;
+    XtSetArg(clip_args[arg_cnt], XtNheight, w->core.height); arg_cnt++;
 
     w->viewport.clip = XtCreateManagedWidget("clip", widgetClass, new,
-					     clip_args, num_args);
+					     clip_args, arg_cnt);
 
     if (!w->viewport.forcebars) 
         return;		 /* If we are not forcing the bars then we are done. */
@@ -238,15 +240,17 @@ static void Initialize(request, new)
 	  (int)(v_bar->core.height + v_bar->core.border_width)) )
         clip_height -= v_bar->core.height + v_bar->core.border_width;
 
-    num_args = 0;
-    XtSetArg(clip_args[num_args], XtNwidth, clip_width); num_args++;
-    XtSetArg(clip_args[num_args], XtNheight, clip_height); num_args++;
-    XtSetValues(w->viewport.clip, clip_args, num_args);
+    arg_cnt = 0;
+    XtSetArg(clip_args[arg_cnt], XtNwidth, clip_width); arg_cnt++;
+    XtSetArg(clip_args[arg_cnt], XtNheight, clip_height); arg_cnt++;
+    XtSetValues(w->viewport.clip, clip_args, arg_cnt);
 }
 
 /* ARGSUSED */
-static void ConstraintInitialize(request, new)
+static void ConstraintInitialize(request, new, args, num_args)
     Widget request, new;
+    ArgList args;
+    Cardinal *num_args;
 {
     ((ViewportConstraints)new->core.constraints)->viewport.reparented = False;
 }
@@ -277,8 +281,10 @@ static void Realize(widget, value_mask, attributes)
 }
 
 /* ARGSUSED */
-static Boolean SetValues(current, request, new)
+static Boolean SetValues(current, request, new, args, num_args)
     Widget current, request, new;
+    ArgList args;
+    Cardinal *num_args;
 {
     ViewportWidget w = (ViewportWidget)new;
     ViewportWidget cw = (ViewportWidget)current;
@@ -753,13 +759,14 @@ static void ScrollUpDownProc(widget, closure, call_data)
 
 
 /* ARGSUSED */
-static void ThumbProc(widget, closure, percent)
+static void ThumbProc(widget, closure, call_data)
     Widget widget;
     XtPointer closure;
-    float *percent;
+    XtPointer call_data;
 {
     ViewportWidget w = (ViewportWidget)closure;
     register Widget child = w->viewport.child;
+    float *percent = (float *) call_data;
     Position x, y;
 
     if (child == NULL) return;	/* no child to scroll. */

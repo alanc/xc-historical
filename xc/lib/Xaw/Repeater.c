@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Repeater.c,v 1.7 91/02/17 15:47:05 converse Exp $
+ * $XConsortium: Repeater.c,v 1.8 91/03/14 16:48:04 converse Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -195,8 +195,10 @@ static void tic (client_data, id)
  *****************************************************************************/
 
 /* ARGSUSED */
-static void Initialize (greq, gnew)
+static void Initialize (greq, gnew, args, num_args)
     Widget greq, gnew;
+    ArgList args;
+    Cardinal *num_args;
 {
     RepeaterWidget new = (RepeaterWidget) gnew;
 
@@ -211,8 +213,10 @@ static void Destroy (gw)
 }
 
 /* ARGSUSED */
-static Boolean SetValues (gcur, greq, gnew)
+static Boolean SetValues (gcur, greq, gnew, args, num_args)
     Widget gcur, greq, gnew;
+    ArgList args;
+    Cardinal *num_args;
 {
     RepeaterWidget cur = (RepeaterWidget) gcur;
     RepeaterWidget new = (RepeaterWidget) gnew;

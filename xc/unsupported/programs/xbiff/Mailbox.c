@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Mailbox.c,v 1.57 91/05/22 16:01:05 converse Exp $
+ * $XConsortium: Mailbox.c,v 1.58 91/06/13 16:50:32 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -196,8 +196,10 @@ static GC get_mailbox_gc (w)
 
 
 /* ARGSUSED */
-static void Initialize (request, new)
+static void Initialize (request, new, args, num_args)
     Widget request, new;
+    ArgList args;
+    Cardinal *num_args;
 {
     MailboxWidget w = (MailboxWidget) new;
     int shape_event_base, shape_error_base;
@@ -409,8 +411,10 @@ static void Destroy (gw)
 }
 
 
-static void Redisplay (gw)
+static void Redisplay (gw, event, region)
     Widget gw;
+    XEvent *event;
+    Region region;
 {
     MailboxWidget w = (MailboxWidget) gw;
 
@@ -543,8 +547,10 @@ static void CloseDown (w, status)
 
 
 /* ARGSUSED */
-static Boolean SetValues (gcurrent, grequest, gnew)
+static Boolean SetValues (gcurrent, grequest, gnew, args, num_args)
     Widget gcurrent, grequest, gnew;
+    ArgList args;
+    Cardinal *num_args;
 {
     MailboxWidget current = (MailboxWidget) gcurrent;
     MailboxWidget new = (MailboxWidget) gnew;

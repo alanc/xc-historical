@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Tree.c,v 1.41 91/02/17 16:41:14 converse Exp $
+ * $XConsortium: Tree.c,v 1.42 91/02/20 20:06:07 converse Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  * Copyright 1989 Prentice Hall
@@ -303,11 +303,13 @@ static void ClassInitialize ()
 }
 
 
-static void Initialize (grequest, gnew)
+static void Initialize (grequest, gnew, args, num_args)
     Widget grequest, gnew;
+    ArgList args;
+    Cardinal *num_args;
 {
     TreeWidget request = (TreeWidget) grequest, new = (TreeWidget) gnew;
-    Arg args[2];
+    Arg arglist[2];
 
     /*
      * Make sure the widget's width and height are 
@@ -338,9 +340,10 @@ static void Initialize (grequest, gnew)
      * Create the hidden root widget.
      */
     new->tree.tree_root = (Widget) NULL;
-    XtSetArg(args[0], XtNwidth, 1);
-    XtSetArg(args[1], XtNheight, 1);
-    new->tree.tree_root = XtCreateWidget ("root", widgetClass, gnew, args,TWO);
+    XtSetArg(arglist[0], XtNwidth, 1);
+    XtSetArg(arglist[1], XtNheight, 1);
+    new->tree.tree_root = XtCreateWidget ("root", widgetClass, gnew,
+					  arglist,TWO);
 
     /*
      * Allocate the array used to hold the widest values per depth
@@ -358,8 +361,10 @@ static void Initialize (grequest, gnew)
 
 
 /* ARGSUSED */
-static void ConstraintInitialize (request, new)
+static void ConstraintInitialize (request, new, args, num_args)
      Widget request, new;
+     ArgList args;
+     Cardinal *num_args;
 {
     TreeConstraints tc = TREE_CONSTRAINT(new);
     TreeWidget tw = (TreeWidget) new->core.parent;
@@ -388,8 +393,10 @@ static void ConstraintInitialize (request, new)
 
 
 /* ARGSUSED */
-static Boolean SetValues (gcurrent, grequest, gnew)
+static Boolean SetValues (gcurrent, grequest, gnew, args, num_args)
     Widget gcurrent, grequest, gnew;
+    ArgList args;
+    Cardinal *num_args;
 {
     TreeWidget current = (TreeWidget) gcurrent, new = (TreeWidget) gnew;
     Boolean redraw = FALSE;
@@ -540,11 +547,13 @@ static void Destroy (gw)
 
 
 /* ARGSUSED */
-static void Redisplay (tw, event, region)
-     TreeWidget tw;
+static void Redisplay (gw, event, region)
+     Widget gw;
      XEvent *event;
      Region region;
 {
+    TreeWidget tw = (TreeWidget) gw;
+
     /*
      * If the Tree widget is visible, visit each managed child.
      */

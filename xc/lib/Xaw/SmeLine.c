@@ -1,4 +1,4 @@
-/* $XConsortium: SmeLine.c,v 1.12 91/02/19 16:09:57 converse Exp $ */
+/* $XConsortium: SmeLine.c,v 1.13 91/07/23 12:23:21 rws Exp $ */
 
 /*
  * Copyright 1989 Massachusetts Institute of Technology
@@ -129,8 +129,10 @@ WidgetClass smeLineObjectClass = (WidgetClass) &smeLineClassRec;
 
 /* ARGSUSED */
 static void
-Initialize(request, new)
+Initialize(request, new, args, num_args)
 Widget request, new;
+ArgList args;
+Cardinal *num_args;
 {
     SmeLineObject entry = (SmeLineObject) new;
 
@@ -229,8 +231,10 @@ Region region;
 
 /* ARGSUSED */
 static Boolean
-SetValues(current, request, new)
+SetValues(current, request, new, args, num_args)
 Widget current, request, new;
+ArgList args;
+Cardinal *num_args;
 {
     SmeLineObject entry = (SmeLineObject) new;
     SmeLineObject old_entry = (SmeLineObject) current;

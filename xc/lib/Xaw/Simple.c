@@ -1,4 +1,4 @@
-/* $XConsortium: Simple.c,v 1.32 91/07/21 00:30:19 converse Exp $ */
+/* $XConsortium: Simple.c,v 1.33 91/07/21 13:55:23 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -204,8 +204,10 @@ Widget w;
 
 
 /* ARGSUSED */
-static Boolean SetValues(current, request, new)
+static Boolean SetValues(current, request, new, args, num_args)
     Widget current, request, new;
+    ArgList args;
+    Cardinal *num_args;
 {
     SimpleWidget s_old = (SimpleWidget) current;
     SimpleWidget s_new = (SimpleWidget) new;

@@ -1,4 +1,4 @@
-/* $XConsortium: Paned.c,v 1.22 91/05/09 20:58:03 gildea Exp $ */
+/* $XConsortium: Paned.c,v 1.23 91/07/21 18:56:15 gildea Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -1516,8 +1516,10 @@ XtWidgetGeometry *request, *reply;
 }
 
 /* ARGSUSED */
-static void Initialize(request, new)
+static void Initialize(request, new, args, num_args)
 Widget request, new;
+ArgList args;
+Cardinal *num_args;
 {
     PanedWidget pw = (PanedWidget)new;
 
@@ -1690,8 +1692,10 @@ Region region;			/* unused. */
 
 /* ARGSUSED */
 static Boolean 
-SetValues(old, request, new)
+SetValues(old, request, new, args, num_args)
 Widget old, request, new;
+ArgList args;
+Cardinal *num_args;
 {
     PanedWidget old_pw = (PanedWidget) old;
     PanedWidget new_pw = (PanedWidget) new;
@@ -1750,8 +1754,10 @@ Widget old, request, new;
 
 /* ARGSUSED */
 static Boolean 
-PaneSetValues(old, request, new)
+PaneSetValues(old, request, new, args, num_args)
 Widget old, request, new;
+ArgList args;
+Cardinal *num_args;
 {
     Pane old_pane = PaneInfo(old);
     Pane new_pane = PaneInfo(new);
