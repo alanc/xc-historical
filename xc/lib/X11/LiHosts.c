@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XLiHosts.c,v 11.11 87/07/31 16:42:58 newman Locked $ */
+/* $Header: XLiHosts.c,v 11.12 87/08/06 16:45:02 jim Locked $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 /* This can really be considered an os dependent routine */
 
@@ -44,7 +44,7 @@ XHostAddress *XListHosts (dpy, nhosts, enabled)
 	(XHostAddress *) Xmalloc (nbytes + *nhosts * sizeof (XHostAddress));
     bp = buf = ((unsigned char  *)outbuf) + *nhosts * sizeof (XHostAddress);
 
-    _XRead (dpy, buf, nbytes);
+    _XRead (dpy, (char *) buf, nbytes);
 
     for (i = 0; i < *nhosts; i++) {
 	op->family = ((xHostEntry *) bp)->family;
