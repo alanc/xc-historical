@@ -1,4 +1,4 @@
-/* $XConsortium: sm_client.c,v 1.6 93/09/13 17:01:31 mor Exp $ */
+/* $XConsortium: sm_client.c,v 1.7 93/09/22 11:23:50 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -145,8 +145,7 @@ char 		*errorStringRet;
     smcConn->release = release;
     smcConn->client_id = NULL;
 
-    bcopy ((char *) callbacks,
-	(char *) &smcConn->callbacks, sizeof (SmcCallbacks));
+    memcpy (&smcConn->callbacks, callbacks, sizeof (SmcCallbacks));
 
     smcConn->interact_waits = NULL;
     smcConn->prop_reply_waits = NULL;

@@ -1,4 +1,4 @@
-/* $XConsortium: SMlibint.h,v 1.3 93/09/22 11:27:33 mor Exp $ */
+/* $XConsortium: SMlibint.h,v 1.4 93/09/22 17:58:47 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -62,7 +62,7 @@ purpose.  It is provided "as is" without express or implied warranty.
 #define STORE_ARRAY8(_pBuf, _len, _array8) \
 { \
     STORE_CARD32 (_pBuf, _len); \
-    bcopy (_array8, _pBuf, _len); \
+    memcpy (_pBuf, _array8, _len); \
     _pBuf += _len; \
     if (PAD64 (4 + _len)) \
         _pBuf += PAD64 (4 + _len); \
@@ -96,7 +96,7 @@ purpose.  It is provided "as is" without express or implied warranty.
 { \
     EXTRACT_CARD32 (_pBuf, _swap, _len); \
     _array8 = (char *) malloc (_len + 1); \
-    bcopy (_pBuf, _array8, _len); \
+    memcpy (_array8, _pBuf, _len); \
     _array8[_len] = '\0'; \
     _pBuf += _len; \
     if (PAD64 (4 + _len)) \
@@ -108,7 +108,7 @@ purpose.  It is provided "as is" without express or implied warranty.
     CARD32 _len; \
     EXTRACT_CARD32 (_pBuf, _swap, _len); \
     _string = (char *) malloc (_len + 1); \
-    bcopy (_pBuf, _string, _len); \
+    memcpy (_string, _pBuf, _len); \
     _string[_len] = '\0'; \
     _pBuf += _len; \
     if (PAD64 (4 + _len)) \

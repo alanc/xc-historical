@@ -1,4 +1,4 @@
-/* $XConsortium: ICElibint.h,v 1.9 93/09/22 11:19:08 mor Exp $ */
+/* $XConsortium: ICElibint.h,v 1.10 93/09/22 17:57:12 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -187,7 +187,7 @@ typedef struct {
     } \
     else \
     { \
-        bcopy (_data, _iceConn->outbufptr, _bytes); \
+        memcpy (_iceConn->outbufptr, _data, _bytes); \
         _iceConn->outbufptr += (_bytes); \
     } \
 }
@@ -336,7 +336,7 @@ typedef struct {
         int pad     :16; \
     } _d; \
     _d.value = _val; \
-    bcopy ((char *) &_d, _pBuf, 2); \
+    memcpy (_pBuf, &_d, 2); \
     _pBuf += 2; \
 }
 
@@ -346,7 +346,7 @@ typedef struct {
         int value   :32; \
     } _d; \
     _d.value = _val; \
-    bcopy ((char *) &_d, _pBuf, 4); \
+    memcpy (_pBuf, &_d, 4); \
     _pBuf += 4; \
 }
 
@@ -356,7 +356,7 @@ typedef struct {
 { \
     CARD16 _len = strlen (_string); \
     STORE_CARD16 (_pBuf, _len); \
-    bcopy (_string, _pBuf, _len); \
+    memcpy (_pBuf, _string, _len); \
     _pBuf += _len; \
     if (PAD32 (2 + _len)) \
         _pBuf += PAD32 (2 + _len); \
@@ -424,7 +424,7 @@ typedef struct {
     CARD16 _len; \
     EXTRACT_CARD16 (_pBuf, _swap, _len); \
     _string = (char *) malloc (_len + 1); \
-    bcopy (_pBuf, _string, _len); \
+    memcpy (_string, _pBuf, _len); \
     _pBuf += _len; \
     _string[_len] = '\0'; \
     if (PAD32 (2 + _len)) \

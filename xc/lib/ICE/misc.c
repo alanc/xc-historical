@@ -1,4 +1,4 @@
-/* $XConsortium: misc.c,v 1.5 93/09/13 16:40:52 mor Exp $ */
+/* $XConsortium: misc.c,v 1.6 93/09/22 11:21:56 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -372,8 +372,8 @@ int 	myOpcode;
 	iceConn->process_msg_info = (_IceProcessMsgInfo *) malloc (
 	    newsize * sizeof (_IceProcessMsgInfo));
 
-	bcopy ((char *) oldVec, (char *) &iceConn->process_msg_info[
-	    iceConn->his_min_opcode - hisOpcode],
+	memcpy (&iceConn->process_msg_info[
+	    iceConn->his_min_opcode - hisOpcode], oldVec,
 	    oldsize * sizeof (_IceProcessMsgInfo));
 
 	free ((char *) oldVec);
@@ -399,8 +399,7 @@ int 	myOpcode;
 	iceConn->process_msg_info = (_IceProcessMsgInfo *) malloc (
 	    newsize * sizeof (_IceProcessMsgInfo));
 
-	bcopy ((char *) oldVec,
-	    (char *) iceConn->process_msg_info,
+	memcpy (iceConn->process_msg_info, oldVec,
 	    oldsize * sizeof (_IceProcessMsgInfo));
 
 	free ((char *) oldVec);

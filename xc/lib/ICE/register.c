@@ -1,4 +1,4 @@
-/* $XConsortium: register.c,v 1.2 93/09/13 16:46:20 mor Exp $ */
+/* $XConsortium: register.c,v 1.3 93/09/21 14:16:24 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -88,7 +88,7 @@ IceIOErrorProc		IOErrorProc;
 
     p->version_recs = (IceOCLversionRec *) malloc (
 	versionCount * sizeof (IceOCLversionRec));
-    bcopy (versionRecs, p->version_recs,
+    memcpy (p->version_recs, versionRecs,
 	versionCount * sizeof (IceOCLversionRec));
 
     if ((p->auth_count = authCount) > 0)
@@ -191,7 +191,7 @@ IceIOErrorProc			IOErrorProc;
 
     p->version_recs = (IceACLversionRec *) malloc (
 	versionCount * sizeof (IceACLversionRec));
-    bcopy (versionRecs, p->version_recs,
+    memcpy (p->version_recs, versionRecs,
 	versionCount * sizeof (IceACLversionRec));
 
     p->protocol_setup_notify_proc = protocolSetupNotifyProc;

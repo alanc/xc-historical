@@ -1,4 +1,4 @@
-/* $XConsortium: protosetup.c,v 1.4 93/09/13 16:45:06 mor Exp $ */
+/* $XConsortium: protosetup.c,v 1.5 93/09/21 14:17:15 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -175,7 +175,7 @@ char 	*errorStringRet;
 	}
 	else
 	{
-	    bcopy (authIndices, iceConn->protosetup_to_you->my_auth_indices,
+	    memcpy (iceConn->protosetup_to_you->my_auth_indices, authIndices,
 	        authCount * sizeof (int));
 	}
     }
