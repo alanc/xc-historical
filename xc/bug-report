@@ -2,29 +2,39 @@
 			    xbugs@expo.lcs.mit.edu
 
 
+
+
 VERSION:
-	X Window System, Version 11, Release 3
+    R3 from MIT
+
 
 CLIENT MACHINE and OPERATING SYSTEM:
-	[e.g. Sun 3/280 running SunOS 3.4, Microvax II running Ultrix 2.4, ...]
+    [Sun 3/280 running SunOS 3.4, Microvax II running Ultrix 2.2, ...]
+
 
 DISPLAY:
-	[e.g. Digital QVSS, Sun CG4, HP Topcat, IBM APA16, Apollo 4 plane, ...]
+    [Digital QVSS, Sun CG4, HP Topcat, IBM APA16, Apollo 4 plane, ...]
+
 
 WINDOW MANAGER:
-	[e.g. uwm, twm, awm, wm, ...]
+    [uwm, twm, awm, wm, rtl, ...]
+
 
 AREA:
-	[e.g. Xlib, xterm, uwm, server, doc, config, ...]
+    [Xlib, xterm, uwm, server, doc, config, ...]
+
 
 SYNOPSIS:
-	[Brief description of the problem and where it is located.]
+    [brief description of the problem and where it is located]
+
 
 DESCRIPTION:
-	[Detailed description.]
+    [detailed description]
+
 
 REPEAT BY:
-	[What you did to get the error; include test program if appropriate.]
+    [what you did to get the error; include test program if appropriate]
 
-FIX:
-	[Preferred, but not necessary.  Please send context diffs (diff -c).]
+
+SAMPLE FIX:
+    [preferred, but not necessary.  Please send context diffs (diff -c -b)]
