@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsInt.c,v 1.7 91/07/22 15:47:03 rws Exp $" */
+/* $XConsortium: XcmsInt.c,v 1.8 91/07/25 01:08:44 rws Exp $" */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -268,8 +268,8 @@ _XcmsFreeDefaultCCCs(dpy)
 		(*((XcmsFunctionSet *)ccc->pPerScrnInfo->functionSet)->screenFreeProc)
 			(ccc->pPerScrnInfo->screenData);
 	    }
+	    Xfree(ccc->pPerScrnInfo);
 	}
-	Xfree(ccc->pPerScrnInfo);
     }
 
     /*
