@@ -26,9 +26,10 @@ SOFTWARE.
 static XPoint   *points;
 static GC       pgc;
 
-Bool InitLines(xp, p)
+int InitLines(xp, p, reps)
     XParms  xp;
     Parms   p;
+    int     reps;
 {
     int size;
     int half;		/* Half of width if wide line		        */
@@ -124,16 +125,17 @@ Bool InitLines(xp, p)
 	    }
 	}
     }
-    return True;
+    return reps;
 }
  
-Bool InitWideLines(xp, p)
+int InitWideLines(xp, p, reps)
     XParms  xp;
     Parms   p;
+    int     reps;
 {
     int size;
 
-    (void)InitLines(xp, p);
+    (void)InitLines(xp, p, reps);
 
     size = p->special;
     XSetLineAttributes(xp->d, xp->bggc, (int) ((size + 9) / 10),
@@ -141,16 +143,17 @@ Bool InitWideLines(xp, p)
     XSetLineAttributes(xp->d, xp->fggc, (int) ((size + 9) / 10),
 	LineSolid, CapRound, JoinRound);
 
-    return True;
+    return reps;
 }
  
-Bool InitDashedLines(xp, p)
+int InitDashedLines(xp, p, reps)
     XParms  xp;
     Parms   p;
+    int     reps;
 {
     char dashes[2];
 
-    (void)InitLines(xp, p);
+    (void)InitLines(xp, p, reps);
 
     /* Modify GCs to draw dashed */
     XSetLineAttributes(xp->d, xp->bggc, 0, LineOnOffDash, CapButt, JoinMiter);
@@ -158,18 +161,19 @@ Bool InitDashedLines(xp, p)
     dashes[0] = 3;   dashes[1] = 2;
     XSetDashes(xp->d, xp->fggc, 0, dashes, 2);
     XSetDashes(xp->d, xp->bggc, 0, dashes, 2);
-    return True;
+    return reps;
 }
 
-Bool InitWideDashedLines(xp, p)
+int InitWideDashedLines(xp, p, reps)
     XParms  xp;
     Parms   p;
+    int     reps;
 {
     int		size;
     XGCValues   gcv;
     char	dashes[2];
 
-    (void)InitWideLines(xp, p);
+    (void)InitWideLines(xp, p, reps);
     size = p->special;
     size = (size + 9) / 10;
 
@@ -180,16 +184,17 @@ Bool InitWideDashedLines(xp, p)
     XChangeGC(xp->d, xp->bggc, GCLineStyle, &gcv);
     XSetDashes(xp->d, xp->fggc, 0, dashes, 2);
     XSetDashes(xp->d, xp->bggc, 0, dashes, 2);
-    return True;
+    return reps;
 }
 
-Bool InitDoubleDashedLines(xp, p)
+int InitDoubleDashedLines(xp, p, reps)
     XParms  xp;
     Parms   p;
+    int     reps;
 {
     char dashes[2];
 
-    (void)InitLines(xp, p);
+    (void)InitLines(xp, p, reps);
 
     /* Modify GCs to draw dashed */
     XSetLineAttributes(xp->d, xp->bggc, 0, LineDoubleDash, CapButt, JoinMiter);
@@ -197,18 +202,19 @@ Bool InitDoubleDashedLines(xp, p)
     dashes[0] = 3;   dashes[1] = 2;
     XSetDashes(xp->d, xp->fggc, 0, dashes, 2);
     XSetDashes(xp->d, xp->bggc, 0, dashes, 2);
-    return True;
+    return reps;
 }
 
-Bool InitWideDoubleDashedLines(xp, p)
+int InitWideDoubleDashedLines(xp, p, reps)
     XParms  xp;
     Parms   p;
+    int     reps;
 {
     int		size;
     XGCValues   gcv;
     char	dashes[2];
 
-    (void)InitWideLines(xp, p);
+    (void)InitWideLines(xp, p, reps);
     size = p->special;
     size = (size + 9) / 10;
 
@@ -219,16 +225,17 @@ Bool InitWideDoubleDashedLines(xp, p)
     XChangeGC(xp->d, xp->bggc, GCLineStyle, &gcv);
     XSetDashes(xp->d, xp->fggc, 0, dashes, 2);
     XSetDashes(xp->d, xp->bggc, 0, dashes, 2);
-    return True;
+    return reps;
 }
 
-void DoLines(xp, p)
+void DoLines(xp, p, reps)
     XParms  xp;
     Parms   p;
+    int     reps;
 {
     int i;
 
-    for (i = 0; i != p->reps; i++)
+    for (i = 0; i != reps; i++)
     {
         XDrawLines(xp->d, xp->w, pgc, points, p->objects+1, CoordModeOrigin);
         if (pgc == xp->bggc)

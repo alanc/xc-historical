@@ -30,26 +30,28 @@ SOFTWARE.
 
 static Window win[2];
 
-Bool InitValGC(xp, p)
+int InitGC(xp, p, reps)
     XParms  xp;
     Parms   p;
+    int     reps;
 {
     win[0] = XCreateSimpleWindow(
 	xp->d, xp->w, 10, 10, 10, 10, 1, xp->foreground, xp->background);
     win[1] = XCreateSimpleWindow(
 	xp->d, xp->w, 30, 30, 10, 10, 1, xp->foreground, xp->background);
     XMapSubwindows(xp->d, xp->w);
-    return True;
+    return reps;
 }
 
-void DoValGC(xp, p)
+void DoChangeGC(xp, p, reps)
     XParms  xp;
     Parms   p;
+    int     reps;
 {
     int		i;
     XGCValues   gcv;
 
-    for (i = 0; i != p->reps; i++) {
+    for (i = 0; i != reps; i++) {
         gcv.foreground = xp->foreground;
         XChangeGC(xp->d, xp->fggc, GCForeground , &gcv);
         XDrawPoint(xp->d, win[0], xp->fggc, 5, 5);       
@@ -68,7 +70,7 @@ void DoValGC(xp, p)
     }
 }
 
-void EndValGC(xp, p)
+void EndGC(xp, p)
     XParms  xp;
     Parms   p;
 {

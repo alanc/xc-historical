@@ -32,9 +32,10 @@ extern double cos();
 extern double sqrt();
 #define PI  3.14159265357989
 
-Bool InitTriangles(xp, p)
+int InitTriangles(xp, p, reps)
     XParms  xp;
     Parms   p;
+    int     reps;
 {
     int     i, j, numPoints;
     int     rows;
@@ -77,17 +78,18 @@ Bool InitTriangles(xp, p)
 	    }
 	}
     }
-    return True;
+    return reps;
 }
 
-void DoTriangles(xp, p)
+void DoTriangles(xp, p, reps)
     XParms  xp;
     Parms   p;
+    int     reps;
 {
     int     i, j;
     XPoint  *curPoint;
 
-    for (i = 0; i != p->reps; i++) {
+    for (i = 0; i != reps; i++) {
         curPoint = points;
         for (j = 0; j != p->objects; j++) {
             XFillPolygon(xp->d, xp->w, pgc, curPoint, NUM_POINTS, Convex, 

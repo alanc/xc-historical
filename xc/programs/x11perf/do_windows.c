@@ -42,9 +42,10 @@ void ComputeSizes(xp, p)
     parentheight = (CHILDSIZE+CHILDSPACE) * childrows;
 }
 
-void CreateParents(xp, p)
+int CreateParents(xp, p, reps)
     XParms  xp;
     Parms   p;
+    int     reps;
 {
     int     i;
 
@@ -54,10 +55,8 @@ void CreateParents(xp, p)
     parentrows = HEIGHT / parentheight;
     parentwindows = parentcolumns * parentrows; /* Max reps we can fit */
 
-    if (parentwindows > p->reps) {
-	parentwindows = p->reps;
-    } else {
-	p->reps = parentwindows;
+    if (parentwindows > reps) {
+	parentwindows = reps;
     }
 
     /* We will do parentwindows sets of childwindows, in order to get better
@@ -83,12 +82,14 @@ void CreateParents(xp, p)
     }
 
     XMapSubwindows(xp->d, xp->w);
+    return parentwindows;
 } /* CreateParents */
 
 
-void MapParents(xp, p)
+void MapParents(xp, p, reps)
     XParms  xp;
     Parms   p;
+    int     reps;
 {
     int i;
 
@@ -98,13 +99,14 @@ void MapParents(xp, p)
 }
 
 
-Bool InitCreate(xp, p)
+int InitCreate(xp, p, reps)
     XParms  xp;
     Parms   p;
+    int     reps;
 {
-    CreateParents(xp, p);
-    MapParents(xp, p);
-    return True;
+    reps = CreateParents(xp, p, reps);
+    MapParents(xp, p, reps);
+    return reps;
 }
 
 void CreateChildGroup(xp, p, parent)
@@ -125,9 +127,10 @@ void CreateChildGroup(xp, p, parent)
 	XMapSubwindows (xp->d, parent);
 }
 
-void CreateChildren(xp, p)
+void CreateChildren(xp, p, reps)
     XParms  xp;
     Parms   p;
+    int     reps;
 {
     int     i;
 
@@ -136,9 +139,10 @@ void CreateChildren(xp, p)
     } /* end i */
 }
 
-void DestroyChildren(xp, p)
+void DestroyChildren(xp, p, reps)
     XParms  xp;
     Parms   p;
+    int     reps;
 {
     int i;
 
@@ -157,20 +161,22 @@ void EndCreate(xp, p)
 }
 
 
-Bool InitMap(xp, p)
+int InitMap(xp, p, reps)
     XParms  xp;
     Parms   p;
+    int     reps;
 {
     int i;
 
-    CreateParents(xp, p);
-    CreateChildren(xp, p);
-    return True;
+    reps = CreateParents(xp, p, reps);
+    CreateChildren(xp, p, reps);
+    return reps;
 }
 
-void UnmapParents(xp, p)
+void UnmapParents(xp, p, reps)
     XParms  xp;
     Parms   p;
+    int     reps;
 {
     int i;
 
@@ -179,19 +185,21 @@ void UnmapParents(xp, p)
     }
 }
 
-Bool InitDestroy(xp, p)
+int InitDestroy(xp, p, reps)
     XParms  xp;
     Parms   p;
+    int     reps;
 {
-    CreateParents(xp, p);
-    CreateChildren(xp, p);
-    MapParents(xp, p);
-    return True;
+    reps = CreateParents(xp, p, reps);
+    CreateChildren(xp, p, reps);
+    MapParents(xp, p, reps);
+    return reps;
 }
 
-void DestroyParents(xp, p)
+void DestroyParents(xp, p, reps)
     XParms  xp;
     Parms   p;
+    int     reps;
 {
     int i;
 
@@ -211,13 +219,14 @@ void RenewParents(xp, p)
 	parents[i] = XCreateSimpleWindow(xp->d, isolates[i],
 	    0, 0, parentwidth, parentheight, 0, xp->background, xp->background);
     }
-    CreateChildren(xp, p);
-    MapParents(xp, p);
+    CreateChildren(xp, p, parentwindows);
+    MapParents(xp, p, parentwindows);
 }
 
-Bool InitPopups(xp, p)
+int InitPopups(xp, p, reps)
     XParms  xp;
     Parms   p;
+    int     reps;
 {
     XWindowAttributes    xwa;
     XSetWindowAttributes xswa;
@@ -252,15 +261,16 @@ Bool InitPopups(xp, p)
 	    0, xp->foreground, xp->foreground);
 #endif
     XChangeWindowAttributes (xp->d, popup, CWOverrideRedirect, &xswa);
-    return True;
+    return reps;
 }
 
-void DoPopUps(xp, p)
+void DoPopUps(xp, p, reps)
     XParms  xp;
     Parms   p;
+    int     reps;
 {
     int i;
-    for (i = 0; i != p->reps; i++) {
+    for (i = 0; i != reps; i++) {
         XMapWindow(xp->d, popup);
 	XUnmapWindow(xp->d, popup);
     }

@@ -27,9 +27,10 @@ SOFTWARE.
 static XPoint *points;
 static GC      pgc;
 
-Bool InitTrapezoids(xp, p)
+int InitTrapezoids(xp, p, reps)
     XParms  xp;
     Parms   p;
+    int     reps;
 {
     int     i, numPoints;
     int     rows;
@@ -72,17 +73,18 @@ Bool InitTrapezoids(xp, p)
 	    }
 	}
     }
-    return True;
+    return reps;
 }
 
-void DoTrapezoids(xp, p)
+void DoTrapezoids(xp, p, reps)
     XParms  xp;
     Parms   p;
+    int     reps;
 {
     int     i, j;
     XPoint  *curPoint;
 
-    for (i = 0; i != p->reps; i++) {
+    for (i = 0; i != reps; i++) {
         curPoint = points;
         for (j = 0; j != p->objects; j++) {
             XFillPolygon(xp->d, xp->w, pgc, curPoint, NUM_POINTS, Convex, 

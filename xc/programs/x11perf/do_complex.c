@@ -33,9 +33,10 @@ extern double cos();
 extern double sqrt();
 #define PI  3.14159265357989
 
-Bool InitComplexPoly(xp, p)
+int InitComplexPoly(xp, p, reps)
     XParms  xp;
     Parms   p;
+    int     reps;
 {
     int     i, j, numPoints;
     int     x, y;
@@ -77,17 +78,18 @@ Bool InitComplexPoly(xp, p)
 	    }
 	}
     }
-    return True;
+    return reps;
 }
 
-void DoComplexPoly(xp, p)
+void DoComplexPoly(xp, p, reps)
     XParms  xp;
     Parms   p;
+    int     reps;
 {
     int     i, j;
     XPoint  *curPoint;
 
-    for (i = 0; i != p->reps; i++) {
+    for (i = 0; i != reps; i++) {
         curPoint = points;
         for (j = 0; j != p->objects; j++) {
             XFillPolygon(xp->d, xp->w, pgc, curPoint, NUM_POINTS, Complex, 

@@ -32,33 +32,36 @@ SOFTWARE.
 static Atom XA_PK_TEMP;
 static Window root;
 
-void DoNoOp(xp, p)
+void DoNoOp(xp, p, reps)
     XParms  xp;
     Parms   p;
+    int     reps;
 {
     int     i;
 
-    for (i = 0; i != p->reps; i++) {
+    for (i = 0; i != reps; i++) {
 	XNoOp(xp->d);
     }
 }
 
 
-void DoAtom(xp, p)
+void DoGetAtom(xp, p, reps)
     XParms  xp;
     Parms   p;
+    int     reps;
 {
     char    *atom;
     int     i;
 
-    for (i = 0; i != p->reps; i++) {
+    for (i = 0; i != reps; i++) {
 	atom = XGetAtomName (xp->d, 1);
     }
 }
 
-Bool InitGetProp(xp, p)
+int InitGetProperty(xp, p, reps)
     XParms  xp;
     Parms   p;
+    int     reps;
 {
     int foo = 41;
 
@@ -67,19 +70,20 @@ Bool InitGetProp(xp, p)
     XChangeProperty (
 	    xp->d, root, XA_PK_TEMP, XA_INTEGER, 32,
 	    PropModeReplace, &foo, sizeof (int));
-    return True;
+    return reps;
 }
 
-void DoGetProp(xp, p)
+void DoGetProperty(xp, p, reps)
     XParms  xp;
     Parms   p;
+    int     reps;
 {
     char   *atom;
     int     i, status;
     int     prop, actual_format, actual_length, bytes_remaining;
     Atom actual_type;
 
-    for (i = 0; i != p->reps; i++) {
+    for (i = 0; i != reps; i++) {
 	status = XGetWindowProperty (
 		xp->d, root, XA_PK_TEMP, 0, sizeof (int),
 		False, AnyPropertyType, &actual_type, &actual_format,

@@ -27,15 +27,16 @@ static Window *children;
 static XPoint *positions;
 static Window cover;
 static int rows;
-static x_offset, y_offset;  /* Private global data for DoMoveWins */
+static x_offset, y_offset;  /* Private global data for DoMoveWindows */
 static int xmax, ymax;
-static delta1;		    /* Private global data for DoResizeWins */
+static delta1;		    /* Private global data for DoResizeWindows */
 
 #define STACK (4*(HEIGHT-10)/CHILDSIZE)
 
-Bool InitMoveWins(xp, p)
+int InitMoveWindows(xp, p, reps)
     XParms  xp;
     Parms   p;
+    int     reps;
 {
     int     i = 0;
 
@@ -60,16 +61,17 @@ Bool InitMoveWins(xp, p)
     }
     if (p->special)
 	XMapSubwindows (xp->d, xp->w);
-    return True;
+    return reps;
 }
 
-void DoMoveWins(xp, p)
+void DoMoveWindows(xp, p, reps)
     XParms  xp;
     Parms p;
+    int     reps;
 {
     int     i, j, x, y;
 
-    for (i = 0; i != p->reps; i++) {
+    for (i = 0; i != reps; i++) {
 	x_offset += 1;
 	y_offset += 3;
 	if (y_offset + ymax > HEIGHT)
@@ -83,7 +85,7 @@ void DoMoveWins(xp, p)
     }
 }
 
-void EndMoveWins(xp, p)
+void EndMoveWindows(xp, p)
     XParms  xp;
     Parms   p;
 {
@@ -91,13 +93,14 @@ void EndMoveWins(xp, p)
     free(positions);
 }
 
-void DoResizeWins(xp, p)
+void DoResizeWindows(xp, p, reps)
     XParms  xp;
     Parms   p;
+    int     reps;
 {
     int     i, j, delta2;
 
-    for (i = 0; i != p->reps; i++) {
+    for (i = 0; i != reps; i++) {
 	delta1 = -delta1;
 	delta2 = delta1;
 	for (j = 0; j != p->objects; j++) {
@@ -108,9 +111,10 @@ void DoResizeWins(xp, p)
     }
 }
 
-Bool InitCircWins(xp, p)
+int InitCircWindows(xp, p, reps)
     XParms  xp;
     Parms   p;
+    int     reps;
 {
     int     i;
     int     pos;
@@ -126,21 +130,22 @@ Bool InitCircWins(xp, p)
     }
     if (p->special)
 	XMapSubwindows (xp->d, xp->w);
-    return True;
+    return reps;
 }
 
-void DoCircWins(xp, p)
+void DoCircWindows(xp, p, reps)
     XParms  xp;
     Parms   p;
+    int     reps;
 {
     int     i, j;
 
-    for (i = 0; i != p->reps; i++)
+    for (i = 0; i != reps; i++)
 	for (j = 0; j != p->objects; j++)
 	    XCirculateSubwindows (xp->d, xp->w, RaiseLowest);
 }
 
-void EndCircWins(xp, p)
+void EndCircWindows(xp, p)
     XParms  xp;
     Parms   p;
 {
@@ -148,9 +153,10 @@ void EndCircWins(xp, p)
 }
 
 
-Bool InitMoveTree(xp, p)
+int InitMoveTree(xp, p, reps)
     XParms  xp;
     Parms   p;
+    int     reps;
 {
     int     i = 0;
 
@@ -179,16 +185,17 @@ Bool InitMoveTree(xp, p)
     }
     XMapSubwindows (xp->d, cover);
     XMapWindow (xp->d, cover);
-    return True;
+    return reps;
 }
 
-void DoMoveTree(xp, p)
+void DoMoveTree(xp, p, reps)
     XParms  xp;
     Parms p;
+    int     reps;
 {
     int     i, j;
 
-    for (i = 0; i != p->reps; i++) {
+    for (i = 0; i != reps; i++) {
 	x_offset += 1;
 	y_offset += 3;
 	if (y_offset + ymax > HEIGHT)

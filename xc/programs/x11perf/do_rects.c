@@ -298,9 +298,10 @@ static char mensetmanus_bits[] = {
  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
 
 
-Bool InitRects(xp, p)
+int InitRectangles(xp, p, reps)
     XParms  xp;
     Parms   p;
+    int     reps;
 {
     int i;
     int size = p->special;
@@ -378,16 +379,17 @@ Bool InitRects(xp, p)
 	XFreePixmap(xp->d, tile);
     }
 
-    return True;
+    return reps;
 }
 
-void DoRects(xp, p)
+void DoRectangles(xp, p, reps)
     XParms  xp;
     Parms   p;
+    int     reps;
 {
     int i;
 
-    for (i = 0; i != p->reps; i++) {
+    for (i = 0; i != reps; i++) {
         XFillRectangles(xp->d, xp->w, pgc, rects, p->objects);
         if (pgc == xp->bggc)
             pgc = xp->fggc;
@@ -396,7 +398,7 @@ void DoRects(xp, p)
     }
 }
 
-void EndRects(xp, p)
+void EndRectangles(xp, p)
     XParms  xp;
     Parms p;
 {

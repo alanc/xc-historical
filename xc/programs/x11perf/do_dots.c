@@ -26,9 +26,10 @@ SOFTWARE.
 static XPoint   *points;
 static GC       pgc;
 
-Bool InitDots(xp, p)
+int InitDots(xp, p, reps)
     XParms  xp;
     Parms   p;
+    int     reps;
 {
     int i;
 
@@ -40,16 +41,17 @@ Bool InitDots(xp, p)
 	points[i].x = 2 * (i/MAXROWS);
 	points[i].y = 2 * (i%MAXROWS);
     }
-    return True;
+    return reps;
 }
 
-void DoDots(xp, p)
+void DoDots(xp, p, reps)
     XParms  xp;
     Parms   p;
+    int     reps;
 {
     int     i;
 
-    for (i = 0; i != p->reps; i++) {
+    for (i = 0; i != reps; i++) {
         XDrawPoints(xp->d, xp->w, pgc, points, p->objects, CoordModeOrigin);
         if (pgc == xp->bggc)
             pgc = xp->fggc;

@@ -26,9 +26,10 @@ SOFTWARE.
 static XSegment *segments;
 static GC       pgc;
 
-Bool InitSegs(xp, p)
+int InitSegments(xp, p, reps)
     XParms  xp;
     Parms   p;
+    int     reps;
 {
     int size;
     int     half;
@@ -101,17 +102,18 @@ Bool InitSegs(xp, p)
 	    }
 	}
     }
-    return True;
+    return reps;
 }
    
 
-Bool InitDashedSegs(xp, p)
+int InitDashedSegments(xp, p, reps)
     XParms  xp;
     Parms   p;
+    int     reps;
 {
     char dashes[2];
 
-    (void)InitSegs(xp, p);
+    (void)InitSegments(xp, p, reps);
 
     /* Modify GCs to draw dashed */
     XSetLineAttributes(xp->d, xp->bggc, 0, LineOnOffDash, CapButt, JoinMiter);
@@ -119,16 +121,17 @@ Bool InitDashedSegs(xp, p)
     dashes[0] = 3;   dashes[1] = 2;
     XSetDashes(xp->d, xp->fggc, 0, dashes, 2);
     XSetDashes(xp->d, xp->bggc, 0, dashes, 2);
-    return True;
+    return reps;
 }
 
-Bool InitDoubleDashedSegs(xp, p)
+int InitDoubleDashedSegments(xp, p, reps)
     XParms  xp;
     Parms   p;
+    int     reps;
 {
     char dashes[2];
 
-    (void)InitSegs(xp, p);
+    (void)InitSegments(xp, p, reps);
 
     /* Modify GCs to draw dashed */
     XSetLineAttributes(xp->d, xp->bggc, 0, LineDoubleDash, CapButt, JoinMiter);
@@ -136,16 +139,17 @@ Bool InitDoubleDashedSegs(xp, p)
     dashes[0] = 3;   dashes[1] = 2;
     XSetDashes(xp->d, xp->fggc, 0, dashes, 2);
     XSetDashes(xp->d, xp->bggc, 0, dashes, 2);
-    return True;
+    return reps;
 }
 
-void DoSegs(xp, p)
+void DoSegments(xp, p, reps)
     XParms  xp;
     Parms   p;
+    int     reps;
 {
     int i;
 
-    for (i = 0; i != p->reps; i++) {
+    for (i = 0; i != reps; i++) {
         XDrawSegments(xp->d, xp->w, pgc, segments, p->objects);
         if (pgc == xp->bggc)
             pgc = xp->fggc;
@@ -154,7 +158,7 @@ void DoSegs(xp, p)
     }
 }
 
-void EndSegs(xp, p)
+void EndSegments(xp, p)
     XParms  xp;
     Parms p;
 {
