@@ -1,4 +1,4 @@
-/* $XConsortium: xkb.c,v 1.3 93/09/28 19:47:11 rws Exp $ */
+/* $XConsortium: xkb.c,v 1.4 93/09/28 21:11:59 rws Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -1045,7 +1045,7 @@ register int	 	 i;
     return 1;
 }
 
-static pointer
+static char *
 SetKeyTypes(xkb,req,wire,pChanges)
     XkbDescRec		*xkb;
     xkbSetMapReq	*req;
@@ -1135,10 +1135,10 @@ CARD8		*map,*preserve;
 	pChanges->firstKeyType = req->firstKeyType;
 	pChanges->nKeyTypes = req->nKeyTypes;
     }
-    return (pointer)wire;
+    return (char *)wire;
 }
 
-static pointer
+static char *
 SetKeySyms(xkb,req,wire,pChanges)
     XkbDescRec		*xkb;
     xkbSetMapReq	*req;
@@ -1167,10 +1167,10 @@ KeySym *newSyms,*pSyms;
 	pChanges->firstKeySym = req->firstKeySym;
 	pChanges->nKeySyms = req->nKeySyms;
     }
-    return (pointer)wire;
+    return (char *)wire;
 }
 
-static pointer
+static char *
 SetKeyActions(xkb,req,wire,pChanges)
     XkbDescRec		*xkb;
     xkbSetMapReq	*req;
@@ -1200,10 +1200,10 @@ XkbAction	*newActs;
 	pChanges->firstKeyAction = req->firstKeyAction;
 	pChanges->nKeyActions = req->nKeyActions;
     }
-    return (pointer)wire;
+    return (char *)wire;
 }
 
-static pointer
+static char *
 SetKeyBehaviors(xkb,req,wire,pChanges)
     XkbDescRec		*xkb;
     xkbSetMapReq	*req;
@@ -1222,7 +1222,7 @@ SetKeyBehaviors(xkb,req,wire,pChanges)
 	pChanges->firstKeyBehavior = req->firstKeyBehavior;
 	pChanges->nKeyBehaviors = req->nKeyBehaviors;
     }
-    return (pointer)wire;
+    return (char *)wire;
 }
 
 
