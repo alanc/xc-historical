@@ -1,8 +1,8 @@
 /*
- * $XConsortium: imakemdep.h,v 1.34 91/07/10 19:15:57 rws Exp $
+ * $XConsortium: imakemdep.h,v 1.35 91/07/15 11:56:22 rws Exp $
  * 
- * This file contains machine-dependent constants for the imake utility.  When
- * porting imake, read each of the steps below and add in any necessary
+ * This file contains machine-dependent constants for the imake utility.
+ * When porting imake, read each of the steps below and add in any necessary
  * definitions.  Do *not* edit ccimake.c or imake.c!
  */
 
@@ -217,6 +217,9 @@ char *cpp_argv[ARGUMENTS] = {
 #endif /* MOTOROLA */
 #ifdef SYSV386           /* System V/386 folks */
 	"-DSYSV386",
+# ifdef SVR4
+	"-DSVR4",
+# endif
 # ifdef ISC
 	"-DISC",         /* ISC 2.2.1 */
 # endif
