@@ -4,6 +4,8 @@ EXPORTS
  IceAcceptConnection
  IceAddConnectionWatch
  IceAllocScratch
+ IceAppLockConn
+ IceAppUnlockConn
  IceAuthFileName
  IceCheckShutdownNegotiation
  IceCloseConnection
@@ -11,21 +13,23 @@ EXPORTS
  IceConnectionNumber
  IceConnectionStatus
  IceConnectionString
+ IceFlush
  IceFreeAuthFileEntry
- IceFreeListenObj
+ IceFreeListenObjs
+ IceGenerateMagicCookie
  IceGetAuthFileEntry
- IceGetListenDescrip
- IceGetListenNetworkId
- IceGetPaAuthData
- IceGetPoAuthData
+ IceGetInBufSize
+ IceGetListenConnectionNumber
+ IceGetListenConnectionString
+ IceGetOutBufSize
  IceInitThreads
- IceLastSequenceNumber
+ IceLastReceivedSequenceNumber
+ IceLastSentSequenceNumber
  IceListenForConnections
  IceLockAuthFile
- IceLockConn
  IceOpenConnection
  IcePing
- IceProcessMessage
+ IceProcessMessages
  IceProtocolRevision
  IceProtocolSetup
  IceProtocolShutdown
@@ -40,12 +44,12 @@ EXPORTS
  IceSetIOErrorHandler
  IceSetPaAuthData
  IceSetShutdownNegotiation
+ IceSwapping
  IceUnlockAuthFile
- IceUnlockConn
  IceVendor
  IceWriteAuthFileEntry
- _ICETransGetPeerAddr
- _ICETransGetPeerNetworkId
+ _IceTransGetPeerAddr
+ _IceTransGetPeerNetworkId
  _IceErrorBadLength
  _IceErrorBadState
  _IceErrorBadValue
