@@ -1,5 +1,5 @@
 /*
- * $XConsortium: toc.c,v 2.42 91/02/22 16:23:52 converse Exp $
+ * $XConsortium: toc.c,v 2.43 91/04/12 13:59:44 converse Exp $
  *
  *
  *			  COPYRIGHT 1987
@@ -1061,7 +1061,7 @@ Msg msg;
     if (toc->validity != valid) return;
     fate = MsgGetFate(msg, &desttoc);
     MsgSetFate(msg, Fignore, (Toc) NULL);
-    argv = MakeArgv(5);
+    argv = MakeArgv(6);
     argv[0] = "scan";
     argv[1] = TocMakeFolderName(toc);
     (void) sprintf(str, "%d", msg->msgid);
@@ -1069,6 +1069,7 @@ Msg msg;
     argv[3] = "-width";
     (void) sprintf(str2, "%d", app_resources.toc_width);
     argv[4] = str2;
+    argv[5] = "-noheader";
     ptr = DoCommandToString(argv);
     XtFree(argv[1]);
     XtFree((char *) argv);

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: tocutil.c,v 2.48 91/02/22 16:30:56 converse Exp $
+ * $XConsortium: tocutil.c,v 2.49 91/04/02 19:28:44 gildea Exp $
  *
  *
  *			COPYRIGHT 1987, 1989
@@ -139,12 +139,13 @@ void TUScanFileForToc(toc)
 	(void) sprintf(str, "Rescanning %s", toc->foldername);
 	ChangeLabel(scrn->toclabel, str);
 
-	argv = MakeArgv(4);
+	argv = MakeArgv(5);
 	argv[0] = "scan";
 	argv[1] = TocMakeFolderName(toc);
 	argv[2] = "-width";
 	(void) sprintf(str, "%d", app_resources.toc_width);
 	argv[3] = str;
+	argv[4] = "-noheader";
 	DoCommand(argv, (char *) NULL, toc->scanfile);
 	XtFree(argv[1]);
 	XtFree((char *) argv);
