@@ -126,7 +126,7 @@
   ;; word, half-word or byte is returned.
   (let ((reply-buffer (gensym)))
     `(let ((,reply-buffer ,event))
-       (declare (type buffer ,reply-buffer))
+       (declare (type reply-buffer ,reply-buffer))
        (with-buffer-input (,reply-buffer ,@options) ,@body))))
 
 (defmacro with-buffer-input ((buffer &key (sizes '(8 16 32)) index) &body body)
