@@ -1,4 +1,4 @@
-.\" $XConsortium: xterm.man,v 1.77 94/04/13 22:02:55 gildea Exp $
+.\" $XConsortium: xterm.man,v 1.78 94/04/14 15:00:45 gildea Exp $
 .\" Copyright 1989 Massachusetts Institute of Technology
 .\"
 .\" Permission to use, copy, modify, distribute, and sell this software and
@@ -185,7 +185,7 @@ This option indicates that \fIxterm\fP should not work around the
 .IR more (3x)
 bug mentioned above.
 .TP 8
-.BI \-e " program \[arguments \.\.\.\]"
+.BI \-e " program \fP[ \fIarguments \fP.\|.\|. ]\fI"
 This option specifies the program (and its command line arguments) to be
 run in the \fIxterm\fP window.  It also sets the window title and icon
 name to be the basename of the program being executed if neither \fI\-T\fP
@@ -565,7 +565,7 @@ The default is ``true.''
 .TP 8
 .B "charClass (\fPclass\fB CharClass)"
 Specifies comma-separated lists of character class bindings of the form
-\[\fIlow\fP-\]\fIhigh\fP:\fIvalue\fP.  These are used in determining which
+[\fIlow\fP\-]\fIhigh\fP:\fIvalue\fP.  These are used in determining which
 sets of characters should be treated the same when doing cut and paste.
 See the section on specifying character classes.
 .TP 8
@@ -622,6 +622,13 @@ Specifies the name of the sixth alternative font.
 .TP 8
 .B "geometry (\fPclass\fB Geometry)"
 Specifies the preferred size and position of the VT102 window.
+.TP 8
+.B "hpLowerleftBugCompat (\fPclass\fB HpLowerleftBugCompat)"
+Specifies whether to work around a bug in HP's \fIxdb\fP,
+which ignores termcap and always sends
+ESC F to move to the lower left corner.
+``true'' causes xterm to interpret ESC F as a request to move to the
+lower left corner of the screen.  The default is ``false.''
 .TP 8
 .B "internalBorder (\fPclass\fB BorderWidth)"
 Specifies the number of pixels between the characters and the window border.
