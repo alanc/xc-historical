@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Mailbox.c,v 1.27 89/06/05 15:03:14 swick Exp $
+ * $XConsortium: Mailbox.c,v 1.28 89/07/10 16:40:27 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -205,9 +205,17 @@ static void Initialize (request, new)
 #ifdef SHAPE
     if (w->mailbox.shapeit && !XShapeQueryExtension (XtDisplay (w)))
       w->mailbox.shapeit = False;
+    w->mailbox.shape_cache.mask = None;
 #endif
 
     w->mailbox.gc = get_mailbox_gc (w);
+    w->mailbox.interval_id = (XtIntervalId) 0;
+    w->mailbox.full.bitmap = None;
+    w->mailbox.full.mask = None;
+    w->mailbox.full.pixmap = None;
+    w->mailbox.empty.bitmap = None;
+    w->mailbox.empty.mask = None;
+    w->mailbox.empty.pixmap = None;
 
     return;
 }
