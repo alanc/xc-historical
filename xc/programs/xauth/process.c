@@ -1,7 +1,7 @@
 /*
- * $XConsortium: process.c,v 1.23 89/01/03 10:57:44 jim Exp $
+ * $XConsortium: process.c,v 1.24 89/01/03 11:05:18 jim Exp $
  *
- * Copyright 1988 Massachusetts Institute of Technology
+ * Copyright 1989 Massachusetts Institute of Technology
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose and without fee is hereby granted, provided

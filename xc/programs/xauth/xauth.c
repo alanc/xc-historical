@@ -1,9 +1,9 @@
 /*
- * $XConsortium: xauth.c,v 1.13 88/12/12 14:59:05 jim Exp $
+ * $XConsortium: xauth.c,v 1.14 89/01/02 18:06:23 jim Exp $
  *
  * xauth - manipulate authorization file
  *
- * Copyright 1988 Massachusetts Institute of Technology
+ * Copyright 1989 Massachusetts Institute of Technology
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose and without fee is hereby granted, provided

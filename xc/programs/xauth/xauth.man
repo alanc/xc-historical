@@ -1,4 +1,4 @@
-.TH XAUTH 1 "12 December 1988" "X Version 11"
+.TH XAUTH 1 "12 December 1989" "X Version 11"
 .SH NAME
 xauth - X authority file utility
 .SH SYNOPSIS

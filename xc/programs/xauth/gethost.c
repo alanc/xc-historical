@@ -1,7 +1,7 @@
 /*
- * $XConsortium: gethost.c,v 1.4 88/12/12 15:22:04 jim Exp $
+ * $XConsortium: gethost.c,v 1.5 88/12/13 11:38:03 jim Exp $
  *
- * Copyright 1988 Massachusetts Institute of Technology
+ * Copyright 1989 Massachusetts Institute of Technology
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose and without fee is hereby granted, provided

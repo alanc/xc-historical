@@ -1,9 +1,9 @@
 /*
- * $XConsortium: parsedpy.c,v 1.3 88/12/12 14:23:23 jim Exp $
+ * $XConsortium: parsedpy.c,v 1.4 88/12/13 11:38:28 jim Exp $
  *
  * parse_displayname - utility routine for splitting up display name strings
  *
- * Copyright 1988 Massachusetts Institute of Technology
+ * Copyright 1989 Massachusetts Institute of Technology
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose and without fee is hereby granted, provided

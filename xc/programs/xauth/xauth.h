@@ -1,7 +1,7 @@
 /*
- * $XConsortium: xauth.h,v 1.9 88/12/12 14:59:07 jim Exp $
+ * $XConsortium: xauth.h,v 1.10 89/01/02 18:06:26 jim Exp $
  *
- * Copyright 1988 Massachusetts Institute of Technology
+ * Copyright 1989 Massachusetts Institute of Technology
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose and without fee is hereby granted, provided
