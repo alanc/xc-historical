@@ -1,9 +1,9 @@
 /*
- * $XConsortium: main.c,v 1.28 89/06/13 18:35:04 jim Exp $
+ * $XConsortium: main.c,v 1.29 89/06/13 19:15:34 jim Exp $
  */
 #include "def.h"
 #ifdef hpux
-I#define sigvec sigvector
+#define sigvec sigvector
 #endif /* hpux */
 
 #include <signal.h>
