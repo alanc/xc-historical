@@ -1,4 +1,4 @@
-XCOMM $XConsortium: svr4.cf,v 1.10 95/01/12 15:34:51 kaleb Exp kaleb $
+XCOMM $XConsortium: svr4.cf,v 1.11 95/01/25 16:32:39 kaleb Exp kaleb $
 /*
  * A default OS name
  */
@@ -41,17 +41,18 @@ XCOMM $XConsortium: svr4.cf,v 1.10 95/01/12 15:34:51 kaleb Exp kaleb $
 
 /* Some stuff that all SVR4s should have */
 
-#define SystemV4	YES
+#define SystemV4		YES
 #ifndef HasLdRunPath
-#define HasLdRunPath	YES
+#define HasLdRunPath		YES
 #endif
-#define HasPoll		YES
+#define HasPoll			YES
 #ifndef SVR4Architecture
 #define SVR4Architecture
 #endif
 #ifndef PatheticCpp
-#define PatheticCpp	YES
+#define PatheticCpp		YES
 #endif
+#define Malloc0ReturnsNull	YES		/* in case -lmalloc used */
 
 /*
  * Here are the default paths to use to pick up tools for building.
