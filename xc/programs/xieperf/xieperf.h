@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: xieperf.h,v 1.1 93/07/19 13:04:28 rws Exp $ */
 
 /**** module xieperf.h ****/
 /******************************************************************************
@@ -56,10 +56,7 @@ terms and conditions:
 #include <decw$include/Xutil.h>
 #endif
 #include <X11/Xfuncs.h>
-#include <X11/X.h>
-#include <XIElib.h>
-#include <XIE.h>         /* XIE constants, for client & server */
-#include <XIEproto.h>    /* XIE protocol defs, client & server */
+#include <X11/extensions/XIElib.h>
 
 #ifndef NULL
 #define NULL 0
