@@ -1,4 +1,4 @@
-/* $XConsortium: t1io.c,v 1.5 93/08/22 11:52:47 rws Exp $ */
+/* $XConsortium: t1io.c,v 1.6 94/02/04 08:42:05 gildea Exp $ */
 /* Copyright International Business Machines,Corp. 1991
  * All Rights Reserved
  *
@@ -170,6 +170,12 @@ int T1Close(f)       /* Close the file */
   f->b_base = NULL;  /* no valid stream */
   return close(f->fd);
 } /* end Close */
+
+#if __STDC__
+#define   pointer          void *
+#else
+#define   pointer          char *
+#endif
  
 /* -------------------------------------------------------------- */
 F_FILE *T1eexec(f)   /* Initialization */
@@ -192,7 +198,7 @@ F_FILE *T1eexec(f)   /* Initialization */
  
   /* If ASCII, the next 7 chars are guaranteed consecutive */
   randomP[0] = c;  /* store first non white space char */
-  fread(randomP+1, 1, 3, f);  /* read 3 more, for a total of 4 */
+  fread((pointer)randomP+1, 1, 3, f);  /* read 3 more, for a total of 4 */
   /* store first four chars */
   for (i=0,p=randomP; i<4; i++) {  /* Check 4 valid ASCIIEncode chars */
     if (HighHexP[*p++] > LAST_HDIGIT) {  /* non-ASCII byte */
@@ -201,7 +207,7 @@ F_FILE *T1eexec(f)   /* Initialization */
     }
   }
   if (asc) {  /* ASCII form, convert first eight bytes to binary */
-    fread(randomP+4, 1, 4, f);  /* Need four more */
+    fread((pointer)randomP+4, 1, 4, f);  /* Need four more */
     for (i=0,p=randomP; i<4; i++) {  /* Convert */
       H = HighHexP[*p++];
       randomP[i] = H | LowHexP[*p++];
