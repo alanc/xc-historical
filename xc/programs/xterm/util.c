@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: util.c,v 1.16 89/10/03 12:41:43 jim Exp $
+ *	$XConsortium: util.c,v 1.17 89/12/09 16:23:59 jim Exp $
  */
 
 #include <X11/copyright.h>
@@ -30,7 +30,7 @@
 /* util.c */
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: util.c,v 1.16 89/10/03 12:41:43 jim Exp $";
+static char rcs_id[] = "$XConsortium: util.c,v 1.17 89/12/09 16:23:59 jim Exp $";
 #endif	/* lint */
 
 #include <stdio.h>
@@ -920,17 +920,6 @@ ReverseVideo (term)
 		XDefineCursor(screen->display, tek, screen->arrow);
 
 	
-	if (term) {
-	    if (term->core.border_pixel == term->core.background_pixel) {
-		term->core.border_pixel = screen->foreground;
-		term->core.parent->core.border_pixel = screen->foreground;
-		if (term->core.parent->core.window)
-		  XSetWindowBorder (screen->display,
-				    term->core.parent->core.window,
-				    term->core.border_pixel);
-	    }
-	}
-
 	if(screen->scrollWidget)
 		ScrollBarReverseVideo(screen->scrollWidget);
 
