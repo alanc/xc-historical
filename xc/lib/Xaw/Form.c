@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Form.c,v 1.26 89/05/31 09:58:22 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Form.c,v 1.27 89/05/31 10:04:18 swick Exp $";
 #endif /* lint */
 
 
@@ -160,7 +160,7 @@ static void _CvtStringToEdgeType(args, num_args, fromVal, toVal)
     XrmQuark q;
     char lowerName[1000];
 
-    LowerCase((char*)fromVal->addr, lowerName);
+    XmuCopyISOLatin1Lowered ((char*)fromVal->addr, lowerName);
     q = XrmStringToQuark(lowerName);
     if (q == XtQChainLeft) {
 	edgeType = XtChainLeft;
