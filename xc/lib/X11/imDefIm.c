@@ -1,4 +1,4 @@
-/* $XConsortium: imDefIm.c,v 1.8 94/03/29 22:51:23 rws Exp $ */
+/* $XConsortium: imDefIm.c,v 1.9 94/03/30 09:09:37 rws Exp $ */
 /******************************************************************
          Copyright 1990, 1991, 1992 by Sun Microsystems, Inc.
          Copyright 1992, 1993, 1994 by FUJITSU LIMITED
@@ -73,7 +73,7 @@ _XimSetHeader(buf, major_opcode, minor_opcode, len)
 
     buf_b[0] = major_opcode;
     buf_b[1] = minor_opcode;
-    buf_s[1] = *len;
+    buf_s[1] = ((*len) / 4);
     *len += XIM_HEADER_SIZE;
     return;
 }

@@ -1,4 +1,4 @@
-/* $XConsortium: imTransR.c,v 1.5 94/03/26 17:01:05 rws Exp $ */
+/* $XConsortium: imTransR.c,v 1.6 94/03/26 20:07:12 rws Exp $ */
 /******************************************************************
 
               Copyright 1992 by Sun Microsystems, Inc.
@@ -86,7 +86,7 @@ _CheckProtocolData(im, recv_buf)
 {
     int		 data_len;
 
-    data_len = (int)(*((CARD16 *)recv_buf + 1) + XIM_HEADER_SIZE);
+    data_len = (int)(((*((CARD16 *)recv_buf + 1)) * 4) + XIM_HEADER_SIZE);
     return data_len;
 }
 
