@@ -24,7 +24,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: buffer.c,v 5.6 89/08/24 10:37:05 rws Exp $ */
+/* $XConsortium: buffer.c,v 1.1 89/09/18 19:14:08 keith Exp $ */
 #define NEED_REPLIES
 #define NEED_EVENTS
 #include <stdio.h>
@@ -43,6 +43,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include "bufferstr.h"
 #include "regionstr.h"
 #include "gcstruct.h"
+#include <sys/time.h>
 
 /*
  * per-buffer data
@@ -70,21 +71,43 @@ typedef struct _Buffers {
     int	    updateHint;		/* Frequent, Intermittent, Static */
     int	    windowMode;		/* always Mono */
 
+    TimeStamp	lastUpdate;	/* time of last update */
+
     unsigned short	width, height;	/* last known window size */
     short		x, y;		/* for static gravity */
 
     BufferPtr	buffers;
 } BuffersRec;
 
+/*
+ * per-screen data
+ */
 typedef struct _BufferScreen {
     Bool    (*PositionWindow)();
 } BufferScreenRec, *BufferScreenPtr;
+
+/*
+ * per display-image-buffers request data.
+ */
+
+typedef struct _DisplayRequest {
+    struct _DisplayRequest	*next;
+    TimeStamp			activateTime;
+    ClientPtr			pClient;
+    XID				id;
+} DisplayRequestRec, *DisplayRequestPtr;
 
 static unsigned char	BufferReqCode;
 static int		BufferEventBase;
 static int		BufferErrorBase;
 static int		BufferScreenIndex = -1;
 static int		BufferWindowIndex = -1;
+
+static void		BufferBlockHandler(), BufferWakeupHandler();
+
+static void		PerformDisplayRequest ();
+static void		DisposeDisplayRequest ();
+static Bool		QueueDisplayRequest ();
 
 /*
  * The Pixmap associated with a buffer can be found as a resource
@@ -102,6 +125,12 @@ static RESTYPE	BufferResType;
  * using the window resource id
  */
 static RESTYPE BuffersResType;
+/*
+ * Per display-buffers request is attached to a resource so that
+ * it will disappear if the client dies before the request should
+ * be processed
+ */
+static RESTYPE DisplayRequestResType;
 
 /*
  * make the resource id for buffer i refer to the window
@@ -361,6 +390,27 @@ BuffersDelete (pBuffers, id)
     xfree (pBuffers);
 }
 
+static void
+DisplayRequestDelete (pRequest, id)
+    DisplayRequestPtr	pRequest;
+    XID			id;
+{
+    DisposeDisplayRequest (pRequest);
+}
+
+static void
+BumpTimeStamp (ts, inc)
+TimeStamp   *ts;
+CARD32	    inc;
+{
+    CARD32  newms;
+
+    newms = ts->milliseconds + inc;
+    if (newms < ts->milliseconds)
+	ts->months++;
+    ts->milliseconds = newms;
+}
+
 /****************
  * BufferExtensionInit
  *
@@ -404,13 +454,18 @@ BufferExtensionInit()
 	pScreen->PositionWindow = BufferPositionWindow;
     }
     /*
-     * create the two resource types
+     * create the resource types
      */
     BufferDrawableResType =
 	CreateNewResourceType(BufferDrawableDelete)|RC_CACHED|RC_DRAWABLE;
     BufferResType = CreateNewResourceType(BufferDelete);
     BuffersResType = CreateNewResourceType(BuffersDelete);
-    if (BufferDrawableResType && BufferResType && BuffersResType &&
+    DisplayRequestResType = CreateNewResourceType(DisplayRequestDelete);
+    if (BufferDrawableResType && BufferResType &&
+	BuffersResType && DisplayRequestResType &&
+        RegisterBlockAndWakeupHandlers (BufferBlockHandler,
+					BufferWakeupHandler,
+					(pointer) 0) &&
 	(extEntry = AddExtension(BUFFERNAME,
 				 BufferNumberEvents, 
 				 BufferNumberErrors,
@@ -567,6 +622,8 @@ ProcCreateImageBuffers (client)
     pBuffers->updateAction = stuff->updateAction;
     pBuffers->updateHint = stuff->updateHint;
     pBuffers->windowMode = WindowModeMono;
+    pBuffers->lastUpdate.months = 0;
+    pBuffers->lastUpdate.milliseconds = 0;
     pBuffers->width = width;
     pBuffers->height = height;
     pWin->devPrivates[BufferWindowIndex].ptr = (pointer) pBuffers;
@@ -591,35 +648,37 @@ ProcDisplayImageBuffers (client)
     REQUEST(xDisplayImageBuffersReq);
     BufferPtr	    *pBuffer;
     BuffersPtr	    *ppBuffers;
-    WindowPtr	    pWin;
     int		    nbuf;
     XID		    *ids;
     int		    i, j;
-    GCPtr	    pGC;
-    PixmapPtr	    pPrevPixmap, pNewPixmap;
-    xRectangle	    clearRect;
+    CARD32	    minDelay, maxDelay;
+    TimeStamp	    activateTime, bufferTime;
     
     REQUEST_AT_LEAST_SIZE (xDisplayImageBuffersReq);
     nbuf = stuff->length - (sizeof (xDisplayImageBuffersReq) >> 2);
     if (!nbuf)
 	return Success;
+    minDelay = stuff->minDelay;
+    maxDelay = stuff->maxDelay;
     ids = (XID *) &stuff[1];
-    ppBuffers = (BuffersPtr *) ALLOCATE_LOCAL (nbuf * sizeof (BuffersPtr));
-    pBuffer = (BufferPtr *) ALLOCATE_LOCAL (nbuf * sizeof (BufferPtr));
+    ppBuffers = (BuffersPtr *) xalloc (nbuf * sizeof (BuffersPtr));
+    pBuffer = (BufferPtr *) xalloc (nbuf * sizeof (BufferPtr));
     if (!ppBuffers || !pBuffer)
     {
-	DEALLOCATE_LOCAL ((pointer) ppBuffers);
-	DEALLOCATE_LOCAL ((pointer) pBuffer);
+	xfree (ppBuffers);
+	xfree (pBuffer);
 	client->errorValue = 0;
 	return BadAlloc;
     }
+    activateTime.months = 0;
+    activateTime.milliseconds = 0;
     for (i = 0; i < nbuf; i++)
     {
 	pBuffer[i] = (BufferPtr) LookupIDByType (ids[i], BufferResType);
 	if (!pBuffer[i])
 	{
-	    DEALLOCATE_LOCAL ((pointer) ppBuffers);
-	    DEALLOCATE_LOCAL ((pointer) pBuffer);
+	    xfree (ppBuffers);
+	    xfree (pBuffer);
 	    client->errorValue = ids[i];
 	    return BufferErrorBase + BufferError;
 	}
@@ -628,13 +687,43 @@ ProcDisplayImageBuffers (client)
 	{
 	    if (ppBuffers[i] == ppBuffers[j])
 	    {
-	    	DEALLOCATE_LOCAL ((pointer) ppBuffers);
-	    	DEALLOCATE_LOCAL ((pointer) pBuffer);
+	    	xfree (ppBuffers);
+	    	xfree (pBuffer);
 		client->errorValue = ids[i];
 	    	return BadMatch;
 	    }
 	}
+	bufferTime = ppBuffers[i]->lastUpdate;
+	BumpTimeStamp (&bufferTime, minDelay);
+	if (CompareTimeStamps (bufferTime, activateTime) == LATER)
+	    activateTime = bufferTime;
     }
+    UpdateCurrentTime ();
+    if (CompareTimeStamps (activateTime, currentTime) == LATER &&
+	QueueDisplayRequest (client, activateTime))
+    {
+	;
+    }
+    else
+	PerformDisplayRequest (ppBuffers, pBuffer, nbuf);
+    xfree (ppBuffers);
+    xfree (pBuffer);
+    return Success;
+}
+
+static void
+PerformDisplayRequest (ppBuffers, pBuffer, nbuf)
+    BufferPtr	    *pBuffer;
+    BuffersPtr	    *ppBuffers;
+    int		    nbuf;
+{
+    GCPtr	    pGC;
+    PixmapPtr	    pPrevPixmap, pNewPixmap;
+    xRectangle	    clearRect;
+    WindowPtr	    pWin;
+    int		    i;
+
+    UpdateCurrentTime ();
     for (i = 0; i < nbuf; i++)
     {
 	pWin = ppBuffers[i]->pWindow;
@@ -674,10 +763,130 @@ ProcDisplayImageBuffers (client)
 	(*pGC->ops->CopyArea) (pNewPixmap, pWin, pGC,
 			       0, 0, pWin->drawable.width, pWin->drawable.height,
 			       0, 0);
+	ppBuffers[i]->lastUpdate = currentTime;
 	AliasBuffer (ppBuffers[i], pBuffer[i] - ppBuffers[i]->buffers);
 	FreeScratchGC (pGC);
     }
-    return Success;
+    return;
+}
+
+static DisplayRequestPtr    pPendingRequests;
+
+static void
+DisposeDisplayRequest (pRequest)
+    DisplayRequestPtr	pRequest;
+{
+    DisplayRequestPtr	pReq, pPrev;
+
+    pPrev = 0;
+    for (pReq = pPendingRequests; pReq; pReq = pReq->next)
+	if (pReq == pRequest)
+	{
+	    if (pPrev)
+		pPrev->next = pReq->next;
+	    else
+		pPendingRequests = pReq->next;
+	    xfree (pReq);
+	    break;
+	}
+}
+
+static Bool
+QueueDisplayRequest (client, activateTime)
+    ClientPtr	    client;
+    TimeStamp	    activateTime;
+{
+    DisplayRequestPtr	pRequest, pReq, pPrev;
+
+    pRequest = (DisplayRequestPtr) xalloc (sizeof (DisplayRequestRec));
+    if (!pRequest)
+	return FALSE;
+    pRequest->pClient = client;
+    pRequest->activateTime = activateTime;
+    pRequest->id = FakeClientID (client->index);
+    if (!AddResource (pRequest->id, DisplayRequestResType, (pointer) pRequest))
+    {
+	xfree (pRequest);
+	return FALSE;
+    }
+    pPrev = 0;
+    for (pReq = pPendingRequests; pReq; pReq = pReq->next)
+    {
+	if (CompareTimeStamps (pReq->activateTime, activateTime) == LATER)
+	    break;
+	pPrev = pReq;
+    }
+    if (pPrev)
+	pPrev->next = pRequest;
+    else
+	pPendingRequests = pRequest;
+    pRequest->next = pReq;
+    ResetCurrentRequest (client);
+    IgnoreClient (client);
+    return TRUE;
+}
+
+static void
+BufferBlockHandler (data, wt, LastSelectMask)
+    pointer	    data;		/* unused */
+    struct timeval  **wt;		/* wait time */
+    long	    *LastSelectMask;
+{
+    DisplayRequestPtr	    pReq, pNext;
+    unsigned long	    newdelay, olddelay;
+    static struct timeval   delay_val;
+
+    if (!pPendingRequests)
+	return;
+    UpdateCurrentTimeIf ();
+    for (pReq = pPendingRequests; pReq; pReq = pNext)
+    {
+	pNext = pReq->next;
+	if (CompareTimeStamps (pReq->activateTime, currentTime) == LATER)
+	    break;
+	AttendClient (pReq->pClient);
+	FreeResource (pReq->id, 0);
+    }
+    pReq = pPendingRequests;
+    if (!pReq)
+	return;
+    newdelay = pReq->activateTime.milliseconds - currentTime.milliseconds;
+    if (*wt == NULL)
+    {
+	delay_val.tv_sec = newdelay / 1000;
+	delay_val.tv_usec = 1000 * (newdelay % 1000);
+	*wt = &delay_val;
+    }
+    else
+    {
+	olddelay = (*wt)->tv_sec * 1000 + (*wt)->tv_usec / 1000;
+	if (newdelay < olddelay)
+	{
+	    (*wt)->tv_sec = newdelay / 1000;
+	    (*wt)->tv_usec = 1000 * (newdelay % 1000);
+	}
+    }
+}
+
+static void
+BufferWakeupHandler (data, i, LastSelectMask)
+    pointer	    data;
+    int		    i;
+    long	    *LastSelectMask;
+{
+    DisplayRequestPtr	pReq, pNext;
+
+    if (!pPendingRequests)
+	return;
+    UpdateCurrentTimeIf ();
+    for (pReq = pPendingRequests; pReq; pReq = pNext)
+    {
+	pNext = pReq->next;
+	if (CompareTimeStamps (pReq->activateTime, currentTime) == LATER)
+	    break;
+	AttendClient (pReq->pClient);
+	FreeResource (pReq->id, 0);
+    }
 }
 
 static int
