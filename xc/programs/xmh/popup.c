@@ -1,6 +1,6 @@
 #if !defined(lint) && !defined(SABER)
 static char rcs_id[]=
-    "$XConsortium: popup.c,v 2.14 89/08/23 17:59:10 converse Exp $";
+    "$XConsortium: popup.c,v 2.15 89/08/23 19:20:44 converse Exp $";
 #endif
 
 /*
@@ -414,8 +414,9 @@ void PopupAlert(message, parent, x, y)
     Arg		args[2];
 
     if (alert == NULL) {
+	XtSetArg(args[0], XtNallowShellResize, True);
 	alert = XtCreatePopupShell("alert", transientShellWidgetClass,
-				   parent, args, ZERO);
+				   parent, args, ONE);
 	XtSetArg(args[0], XtNlabel, message);
 	XtCreateManagedWidget("rescanning", labelWidgetClass, alert, args,
 			      ONE);
