@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: xedit.c,v 1.14 88/09/06 17:34:31 jim Exp $";
+static char rcs_id[] = "$XConsortium: xedit.c,v 1.16 88/10/18 12:09:37 swick Exp $";
 #endif
 
 /*
@@ -28,6 +28,15 @@ static char rcs_id[] = "$XConsortium: xedit.c,v 1.14 88/09/06 17:34:31 jim Exp $
  */
 
 #include "xedit.h"
+#include <X11/Shell.h>
+
+#ifndef DEFWIDTH
+#define DEFWIDTH 500
+#endif
+
+#ifndef DEFHEIGHT
+#define DEFHEIGHT 700
+#endif
 
 int Editable;
 int saved;
@@ -161,11 +170,8 @@ main(argc, argv)
   int argc;
   char **argv;
 {
-    static Dimension width, height;
-    Arg args[2];
-     static Arg setargs[]={
-        {XtNwidth, 500},
-        {XtNheight,700} };
+    static Dimension width, height; /* init'd to 0 */
+    Arg args[3];
     backedup = 0;
     saved = 0;
     filename = malloc(1000);
@@ -175,9 +181,13 @@ main(argc, argv)
     XtSetArg(args[0], XtNwidth, &width);
     XtSetArg(args[1], XtNheight, &height);
     XtGetValues(toplevel, args, XtNumber(args));
-    if(!width || !height){
-	XtSetValues(toplevel, setargs, XtNumber(setargs));
-    }
+    if (width == 0) width = DEFWIDTH;
+    if (height == 0) height = DEFHEIGHT;
+    XtSetArg(args[0], XtNwidth, width);
+    XtSetArg(args[1], XtNheight, height);
+    XtSetArg(args[2], XtNinput, True);
+    XtSetValues(toplevel, args, (Cardinal)3);
+
     XtGetApplicationResources(toplevel, &app_resources, resources,
                                   XtNumber(resources),NULL, 0);
     CurDpy = XtDisplay(toplevel);
