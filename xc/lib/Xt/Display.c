@@ -1,4 +1,4 @@
-/* $XConsortium: Display.c,v 1.62 91/01/08 17:09:52 converse Exp $ */
+/* $XConsortium: Display.c,v 1.63 91/01/09 20:11:46 gildea Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -267,7 +267,10 @@ XtDisplayInitialize(app, dpy, name, classname, urlist, num_urs, argc, argv)
 	pd->pdi.keyboard.grabType = XtNoServerGrab;
 	pd->pdi.pointer.grabType  = XtNoServerGrab;
 	_XtAllocWWTable(pd);
-
+	pd->per_screen_db = (XrmDatabase *)XtCalloc(ScreenCount(dpy),
+						    sizeof(XrmDatabase));
+	pd->cmd_db = (XrmDatabase)NULL;
+	pd->def_db_screen_specific = False;
 	_XtDisplayInitialize(dpy, pd, (String)name, (String)classname, urlist, 
 			     num_urs, argc, argv);
 }
@@ -437,6 +440,8 @@ static void CloseDisplay(dpy)
 {
         register XtPerDisplay xtpd;
 	register PerDisplayTablePtr pd, opd;
+	XrmDatabase def_db, db;
+	int i;
 	
 #ifdef lint
 	opd = NULL;
@@ -484,9 +489,18 @@ static void CloseDisplay(dpy)
 	    XtFree((char*)xtpd->pdi.trace);
 	    _XtHeapFree(&xtpd->heap);
 	    _XtFreeWWTable(xtpd);
+	    def_db = XrmGetDatabase(dpy);
+	    for (i = ScreenCount(dpy); --i >= 0; ) {
+		db = xtpd->per_screen_db[i];
+		if (db && db != def_db)
+		    XrmDestroyDatabase(db);
+	    }
+	    XtFree((char *)xtpd->per_screen_db);
+	    XrmDestroyDatabase(def_db);
+	    if (xtpd->cmd_db)
+		XrmDestroyDatabase(xtpd->cmd_db);
         }
 	XtFree((char*)pd);
-	XrmDestroyDatabase(XrmGetDatabase(dpy));
 	XrmSetDatabase(dpy, (XrmDatabase)NULL);
 	XCloseDisplay(dpy);
 }
