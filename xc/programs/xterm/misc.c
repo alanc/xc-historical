@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: misc.c,v 1.25 88/11/07 11:16:44 jim Exp $
+ *	$XConsortium: misc.c,v 1.26 88/11/16 13:46:24 rws Exp $
  */
 
 
@@ -53,7 +53,7 @@ extern void perror();
 extern void abort();
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: misc.c,v 1.25 88/11/07 11:16:44 jim Exp $";
+static char rcs_id[] = "$XConsortium: misc.c,v 1.26 88/11/16 13:46:24 rws Exp $";
 #endif	/* lint */
 
 xevents()
@@ -69,6 +69,7 @@ xevents()
 			return;
 		XNextEvent (screen->display, &event);
 		if (!event.xany.send_event ||
+		    screen->allowSendEvents ||
 		    ((event.xany.type != KeyPress) &&
 		     (event.xany.type != KeyRelease) &&
 		     (event.xany.type != ButtonPress) &&
@@ -189,9 +190,13 @@ caddr_t eventdata;
         register TScreen *screen = &term->screen;
 
         if(event->type == FocusIn)
-                selectwindow(screen, FOCUS);
+                selectwindow(screen,
+			     (event->detail == NotifyPointer) ? INWINDOW :
+								FOCUS);
         else
-                unselectwindow(screen, FOCUS);
+                unselectwindow(screen,
+			       (event->detail == NotifyPointer) ? INWINDOW :
+								  FOCUS);
 }
 
 
