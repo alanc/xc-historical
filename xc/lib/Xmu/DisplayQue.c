@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: DisplayQue.c,v 1.1 89/07/28 14:13:55 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -30,20 +30,23 @@
 
 static int _DQCloseDisplay();
 
-#define DoCallback(q,e) (void) (*((q)->closefunc)) ((q), (e))
+#define CallCloseCallback(q,e) (void) (*((q)->closefunc)) ((q), (e))
+#define CallFreeCallback(q) (void) (*((q)->freefunc)) ((q))
 
 /*
  * XmuDQCreate - create a display queue
  */
-DisplayQueue *XmuDQCreate (closefunc, data)
+XmuDisplayQueue *XmuDQCreate (closefunc, freefunc, data)
     int (*closefunc)();
+    int (*freefunc)();
     caddr_t data;
 {
-    DisplayQueue *q = (DisplayQueue *) malloc (sizeof (DisplayQueue));
+    XmuDisplayQueue *q = (XmuDisplayQueue *) malloc (sizeof (XmuDisplayQueue));
     if (q) {
 	q->nentries = 0;
 	q->head = q->tail = NULL;
 	q->closefunc = closefunc;
+	q->freefunc = freefunc;
 	q->data = data;
     }
     return q;
@@ -56,14 +59,14 @@ DisplayQueue *XmuDQCreate (closefunc, data)
  */
 
 Bool XmuDQDestroy (q, docallbacks)
-    DisplayQueue *q;
+    XmuDisplayQueue *q;
     Bool docallbacks;
 {
-    DisplayQueueEntry *e = q->head;
+    XmuDisplayQueueEntry *e = q->head;
 
     while (e) {
-	DisplayQueueEntry *nexte = e->next;
-	if (docallbacks && q->closefunc) DoCallback (q, e);
+	XmuDisplayQueueEntry *nexte = e->next;
+	if (docallbacks && q->closefunc) CallCloseCallback (q, e);
 	free ((char *) e);
 	e = nexte;
     }
@@ -75,11 +78,11 @@ Bool XmuDQDestroy (q, docallbacks)
 /*
  * XmuDQLookupDisplay - finds the indicated display on the given queue
  */
-DisplayQueueEntry *XmuDQLookupDisplay (q, dpy)
-    DisplayQueue *q;
+XmuDisplayQueueEntry *XmuDQLookupDisplay (q, dpy)
+    XmuDisplayQueue *q;
     Display *dpy;
 {
-    DisplayQueueEntry *e;
+    XmuDisplayQueueEntry *e;
 
     for (e = q->head; e; e = e->next) {
 	if (e->display == dpy) return e;
@@ -92,15 +95,15 @@ DisplayQueueEntry *XmuDQLookupDisplay (q, dpy)
  * XmuDQAddDisplay - add the specified display to the queue; set data as a
  * convenience.  Does not ensure that dpy hasn't already been added.
  */
-DisplayQueueEntry *XmuDQAddDisplay (q, dpy, data)
-    DisplayQueue *q;
+XmuDisplayQueueEntry *XmuDQAddDisplay (q, dpy, data)
+    XmuDisplayQueue *q;
     Display *dpy;
     caddr_t data;
 {
-    DisplayQueueEntry **ep = (q->tail ? &(q->tail->next) : &(q->tail));
-    DisplayQueueEntry *e;
+    XmuDisplayQueueEntry **ep = (q->tail ? &(q->tail->next) : &(q->tail));
+    XmuDisplayQueueEntry *e;
 
-    if (!(e = (DisplayQueueEntry *) malloc (sizeof (DisplayQueueEntry)))) {
+    if (!(e = (XmuDisplayQueueEntry *) malloc (sizeof (XmuDisplayQueueEntry)))) {
 	return NULL;
     }
     if (!(e->closehook = XmuAddCloseDisplayHook (dpy, _DQCloseDisplay,
@@ -130,10 +133,10 @@ DisplayQueueEntry *XmuDQAddDisplay (q, dpy, data)
  * XmuDQRemoveDisplay - remove the specified display from the queue
  */
 Bool XmuDQRemoveDisplay (q, dpy)
-    DisplayQueue *q;
+    XmuDisplayQueue *q;
     Display *dpy;
 {
-    DisplayQueueEntry *e;
+    XmuDisplayQueueEntry *e;
 
     for (e = q->head; e; e = e->next) {
 	if (e->display == dpy) {
@@ -168,13 +171,14 @@ static int _DQCloseDisplay (dpy, arg)
     Display *dpy;
     caddr_t arg;
 {
-    DisplayQueue *q = (DisplayQueue *) arg;
-    DisplayQueueEntry *e;
+    XmuDisplayQueue *q = (XmuDisplayQueue *) arg;
+    XmuDisplayQueueEntry *e;
 
     for (e = q->head; e; e = e->next) {
 	if (e->display == dpy) {
-	    if (q->closefunc) DoCallback (q, e);
+	    if (q->closefunc) CallCloseCallback (q, e);
 	    (void) XmuDQRemoveDisplay (q, dpy);
+	    if (q->nentries == 0 && q->freefunc) CallFreeCallback (q);
 	    return 1;
 	}
     }

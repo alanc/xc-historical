@@ -6,8 +6,9 @@
  *			      Public Entry Points
  * 
  * 
- * DisplayQueue *XmuDQCreate (closefunc, data)
+ * XmuDisplayQueue *XmuDQCreate (closefunc, freefunc, data)
  *     int (*closefunc)();
+ *     int (*freefunc)();
  *     caddr_t data;
  * 
  *         Creates and returns a queue into which displays may be placed.  When
@@ -16,9 +17,13 @@
  *
  *                 (*closefunc) (queue, entry)
  *
+ *         The freeproc, if non-NULL, is called whenever the last display is
+ *         closed, notifying the creator that display queue may be released
+ *         using XmuDQDestroy.
+ *
  *
  * Bool XmuDQDestroy (q, docallbacks)
- *     DisplayQueue *q;
+ *     XmuDisplayQueue *q;
  *     Bool docallbacks;
  * 
  *         Releases all memory for the indicated display queue.  If docallbacks
@@ -26,16 +31,16 @@
  *         display.
  * 
  * 
- * DisplayQueueEntry *XmuDQLookupDisplay (q, dpy)
- *     DisplayQueue *q;
+ * XmuDisplayQueueEntry *XmuDQLookupDisplay (q, dpy)
+ *     XmuDisplayQueue *q;
  *     Display *dpy;
  *
  *         Returns the queue entry for the specified display or NULL if the
  *         display is not in the queue.
  *
  * 
- * DisplayQueueEntry *XmuDQAddDisplay (q, dpy, data)
- *     DisplayQueue *q;
+ * XmuDisplayQueueEntry *XmuDQAddDisplay (q, dpy, data)
+ *     XmuDisplayQueue *q;
  *     Display *dpy;
  *     caddr_t data;
  *
@@ -47,7 +52,7 @@
  * 
  * 
  * Bool XmuDQRemoveDisplay (q, dpy)
- *     DisplayQueue *q;
+ *     XmuDisplayQueue *q;
  *     Display *dpy;
  *
  *         Removes the specified display from the given queue.  If the 
@@ -55,25 +60,26 @@
  *         otherwise True is returned.
  */
 
-typedef struct _DisplayQueueEntry {
-    struct _DisplayQueueEntry *prev, *next;
+typedef struct _XmuDisplayQueueEntry {
+    struct _XmuDisplayQueueEntry *prev, *next;
     Display *display;
     CloseHook closehook;
     caddr_t data;
-} DisplayQueueEntry;
+} XmuDisplayQueueEntry;
 
-typedef struct _DisplayQueue {
+typedef struct _XmuDisplayQueue {
     int nentries;
-    DisplayQueueEntry *head, *tail;
+    XmuDisplayQueueEntry *head, *tail;
     int (*closefunc)();
+    int (*freefunc)();
     caddr_t data;
-} DisplayQueue;
+} XmuDisplayQueue;
 
 
-extern DisplayQueue *XmuDQCreate ();
+extern XmuDisplayQueue *XmuDQCreate ();
 extern Bool XmuDQDestroy ();
-extern DisplayQueueEntry *XmuDQLookupDisplay ();
-extern DisplayQueueEntry *XmuDQAddDisplay ();
+extern XmuDisplayQueueEntry *XmuDQLookupDisplay ();
+extern XmuDisplayQueueEntry *XmuDQAddDisplay ();
 extern Bool XmuDQRemoveDisplay ();
 
 
