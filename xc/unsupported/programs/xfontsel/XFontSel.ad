@@ -72,12 +72,10 @@ FntChooser.cursor:	left_arrow
 
 *fontName*skipAdjust:	true
 
-*sampleText*EditType:	edit
-*sampleText*String: ABCDEFGHIJKLMNOPQRSTUVWXYZ\nabcdefghijklmnopqrstuvwxyz
+*sampleText*Label: \
+ABCDEFGHIJKLMNOPQRSTUVWXYZ\n\
+abcdefghijklmnopqrstuvwxyz\n\
+0123456789
 
-*sampleText*Label: ABCDEFGHIJKLMNOPQRSTUVWXYZ\nabcdefghijklmnopqrstuvwxyz
 *sampleText*allowResize: true
 *sampleText*Height:	 50
-
-*MenuButton.translations: #override \
-	<Btn2Down>:	set() notify() unset()
