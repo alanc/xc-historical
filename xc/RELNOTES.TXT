@@ -37,8 +37,8 @@ filesystems.  Conflicts remain for various header (.h) files.
 
 Hopefully you know the drill by now, so this will be brief.  Edit
 xc/config/cf/site.def to suit your needs.  Check the appropriate
-xc/config/cf/vendor.cf file to make sure that OSMajorVersion and
-OSMinorVersion are set correctly (change them if necessary).
+xc/config/cf/vendor.cf file to make sure that OSMajorVersion, OSMinorVersion,
+and OSTeeyVersion are set correctly (change them if necessary).
 
 On NT, type
      make World.Win32 > world.log
@@ -76,7 +76,7 @@ Please send bug reports about this release to xbugs@x.org.
 We compiled this release on the following systems.
 
 A/UX 3.0.1	(X server does not work)
-AIX 3.2.0
+AIX 3.2.1
 BSD/386 1.0
 HP-UX 9.1
 IRIX 4.0.1
@@ -372,6 +372,8 @@ See the porting layer document for details.  Also, the contents of union
 _Validate (validate.h) are now device dependent; mivalidate.h contains a
 sample definition.
 
+The ddx document, xc/doc/specs/Server/ddx.tbl.ms, is up to date.
+
 An implementation of the SYNC extension is in place (Xserver/Xext/sync.c) and
 is believed to fully implement the current spec.  As part of this work, client
 priorities have also been implemented; see the tail end of WaitForSomething()
@@ -461,3 +463,19 @@ We expect to bundle the test suite in with R6, so it is included here.  We
 haven't had time yet to integrate the Xi and XIM tests that have been
 contributed, so they are in contrib/test/xsuite.  We expect to have these
 integrated by beta.
+
+24. ANSIfication
+
+We've changed our sources to stop using the bsd function names index, rindex,
+bcopy, bcmp; we now use strchr, strrchr, memcpy/memmove, and memcmp.  We still
+use the name bzero (because there is no bsd equivalent for the general case of
+memset) but it is translated to memset via a #define in <X11/Xfuncs.h>.  The
+bsd function names are still supported in <X11/Xos.h> and <X11/Xfuncs.h>, but
+by beta we expect to be building our sources with this compatibility aid
+disabled.
+
+Most client-side uses of caddr_t should now be gone from our sources (a result
+of building on NT).  Explicit declarations of errno are now only used on
+non-ANSI systems.
+
+We still haven't worked on using ANSI/POSIX *_t types in very many places.
