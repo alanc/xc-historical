@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xconsole.c,v 1.2 91/02/08 18:23:14 keith Exp $
+ * $XConsortium: xconsole.c,v 1.3 91/02/09 17:15:47 rws Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -71,21 +71,22 @@ static struct _app_resources {
     Boolean verbose;
 } app_resources;
 
-#define offset(field) XtOffset(struct _app_resources*, field)
+#define Offset(field) XtOffsetOf(struct _app_resources, field)
 
 static XtResource  resources[] = {
     {"file",	"File",	    XtRString,	sizeof (char *),
-	offset (file),	XtRString,  "console" },
+	Offset (file),	XtRString,  "console" },
     {"notify",	"Notify",   XtRBoolean,	sizeof (Boolean),
-	offset (notify), XtRString, "TRUE" },
+	Offset (notify), XtRString, "TRUE" },
     {"stripNonprint",	"StripNonprint",    XtRBoolean, sizeof (Boolean),
-	offset (stripNonprint), XtRString, "TRUE" },
+	Offset (stripNonprint), XtRString, "TRUE" },
     {"daemon",		"Daemon",	    XtRBoolean,	sizeof (Boolean),
-	offset (daemon), XtRString, "FALSE"},
+	Offset (daemon), XtRString, "FALSE"},
     {"verbose",		"Verbose",	    XtRBoolean,	sizeof (Boolean),
-	offset (verbose),XtRString, "FALSE"},
+	Offset (verbose),XtRString, "FALSE"},
 };
-#undef offset
+
+#undef Offset
 
 static XrmOptionDescRec options[] = {
     {"-file",	    "*file",		XrmoptionSepArg,    NULL},
