@@ -1,5 +1,5 @@
 /*
- * $XConsortium: GetHost.c,v 1.4 93/08/18 15:10:17 rws Exp $
+ * $XConsortium: GetHost.c,v 1.5 93/09/13 12:22:55 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -29,6 +29,14 @@
 #include <winsock.h>
 #endif
 
+#ifdef USG
+#define NEED_UTSNAME
+#endif
+
+#ifdef NEED_UTSNAME
+#include <sys/utsname.h>
+#endif
+
 int XmuGetHostname (buf, maxlen)
     char *buf;
     int maxlen;
@@ -41,12 +49,7 @@ int XmuGetHostname (buf, maxlen)
 	return -1;
 #endif
 
-#ifdef USG
-#define NEED_UTSNAME
-#endif
-
 #ifdef NEED_UTSNAME
-#include <sys/utsname.h>
     /*
      * same host name crock as in server and xinit.
      */
@@ -65,4 +68,3 @@ int XmuGetHostname (buf, maxlen)
 #endif /* hpux */
     return len;
 }
-
