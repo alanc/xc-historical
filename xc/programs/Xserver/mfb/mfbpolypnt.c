@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbpolypnt.c,v 5.2 89/09/04 10:02:52 rws Exp $ */
+/* $XConsortium: mfbpolypnt.c,v 5.3 89/09/11 10:12:05 rws Exp $ */
 
 #include "X.h"
 #include "Xprotostr.h"
@@ -48,7 +48,7 @@ mfbPolyPoint(pDrawable, pGC, mode, npt, pptInit)
     register BoxPtr pbox;
     register int nbox;
 
-    register int *addrl;
+    register PixelType *addrl;
     int nlwidth;
 
     int nptTmp;
@@ -65,18 +65,7 @@ mfbPolyPoint(pDrawable, pGC, mode, npt, pptInit)
     pGCPriv = (mfbPrivGC *) pGC->devPrivates[mfbGCPrivateIndex].ptr;
     rop = pGCPriv->rop;
 
-    if (pDrawable->type == DRAWABLE_WINDOW)
-    {
-	addrl = (int *)
-	        (((PixmapPtr)(pDrawable->pScreen->devPrivate))->devPrivate.ptr);
-	nlwidth = (int)
-		  (((PixmapPtr)(pDrawable->pScreen->devPrivate))->devKind) >> 2;
-    }
-    else
-    {
-	addrl = (int *)(((PixmapPtr)pDrawable)->devPrivate.ptr);
-	nlwidth = (int)(((PixmapPtr)pDrawable)->devKind) >> 2;
-    }
+    mfbGetPixelWidthAndPointer(pDrawable, nlwidth, addrl);
 
     if ((mode == CoordModePrevious) && (npt > 1))
     {
@@ -99,7 +88,7 @@ mfbPolyPoint(pDrawable, pGC, mode, npt, pptInit)
 		y = ppt->y + pDrawable->y;
 		if ((x >= pbox->x1) && (x < pbox->x2) &&
 		    (y >= pbox->y1) && (y < pbox->y2))
-		    *(addrl + (y * nlwidth) + (x >> 5)) &= rmask[x & 0x1f];
+		    *mfbScanline(addrl, x, y, nlwidth) &= rmask[x & 0x1f];
 	    }
 	}
 	else if (rop == RROP_WHITE)
@@ -110,7 +99,7 @@ mfbPolyPoint(pDrawable, pGC, mode, npt, pptInit)
 		y = ppt->y + pDrawable->y;
 		if ((x >= pbox->x1) && (x < pbox->x2) &&
 		    (y >= pbox->y1) && (y < pbox->y2))
-		    *(addrl + (y * nlwidth) + (x >> 5)) |= mask[x & 0x1f];
+		    *mfbScanline(addrl, x, y, nlwidth) |= mask[x & 0x1f];
 	    }
 	}
 	else if (rop == RROP_INVERT)
@@ -121,7 +110,7 @@ mfbPolyPoint(pDrawable, pGC, mode, npt, pptInit)
 		y = ppt->y + pDrawable->y;
 		if ((x >= pbox->x1) && (x < pbox->x2) &&
 		    (y >= pbox->y1) && (y < pbox->y2))
-		    *(addrl + (y * nlwidth) + (x >> 5)) ^= mask[x & 0x1f];
+		    *mfbScanline(addrl, x, y, nlwidth) ^= mask[x & 0x1f];
 	    }
 	}
     }

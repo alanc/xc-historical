@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbbresd.c,v 1.2 89/09/14 16:26:59 rws Exp $ */
+/* $XConsortium: mfbbresd.c,v 1.3 89/11/08 17:12:27 keith Exp $ */
 #include "X.h"
 #include "misc.h"
 #include "mfb.h"
@@ -49,7 +49,7 @@ unsigned char *pDash;	/* dash list */
 int numInDashList;	/* total length of dash list */
 int *pdashOffset;	/* offset into current dash */
 int isDoubleDash;
-int *addrl;		/* pointer to base of bitmap */
+PixelType *addrl;	/* pointer to base of bitmap */
 int nlwidth;		/* width in longwords of bitmap */
 int signdx, signdy;	/* signs of directions */
 int axis;		/* major axis (Y_AXIS or X_AXIS) */
@@ -63,8 +63,8 @@ int len;		/* length of line */
     register unsigned char *addrb;
     register int e3 = e2-e1;
     register unsigned long bit;
-    unsigned int leftbit = mask[0]; /* leftmost bit to process in new word */
-    unsigned int rightbit = mask[31]; /* rightmost bit to process in new word */
+    PixelType leftbit = mask[0]; /* leftmost bit to process in new word */
+    PixelType rightbit = mask[31]; /* rightmost bit to process in new word */
     int dashIndex;
     int dashOffset;
     int dashRemaining;
@@ -80,7 +80,7 @@ int len;		/* length of line */
 	rop = bgrop;
 
     /* point to longword containing first point */
-    addrb = (unsigned char *)(addrl + (y1 * nlwidth) + (x1 >> 5));
+    addrb = (unsigned char *)mfbScanline(addrl, x1, y1, nlwidth);
     yinc = signdy * nlwidth * 4;                /* 4 == sizeof(int) */
     e = e-e1;			/* to make looping easier */
     bit = mask[x1 & 31];
@@ -91,19 +91,19 @@ int len;		/* length of line */
 	    while(len--)
 	    { 
 		if (rop == RROP_BLACK)
-		    *(unsigned long *)addrb &= ~bit;
+		    *(PixelType *)addrb &= ~bit;
 		else if (rop == RROP_WHITE)
-		    *(unsigned long *)addrb |= bit;
+		    *(PixelType *)addrb |= bit;
 		else if (rop == RROP_INVERT)
-		    *(unsigned long *)addrb ^= bit;
+		    *(PixelType *)addrb ^= bit;
 		e += e1;
 		if (e >= 0)
 		{
-		    addrb += yinc;
+		    mfbScanlineInc(addrb, yinc, nlwidth);
 		    e += e3;
 		}
 		bit = SCRRIGHT(bit,1);
-		if (!bit) { bit = leftbit;addrb += 4; }
+		if (!bit) { bit = leftbit;mfbScanlineInc(addrb, 4, nlwidth); }
 		StepDash
 	    }
 	}
@@ -112,19 +112,19 @@ int len;		/* length of line */
 	    while(len--)
 	    { 
 		if (rop == RROP_BLACK)
-		    *(unsigned long *)addrb &= ~bit;
+		    *(PixelType *)addrb &= ~bit;
 		else if (rop == RROP_WHITE)
-		    *(unsigned long *)addrb |= bit;
+		    *(PixelType *)addrb |= bit;
 		else if (rop == RROP_INVERT)
-		    *(unsigned long *)addrb ^= bit;
+		    *(PixelType *)addrb ^= bit;
 		e += e1;
 		if (e >= 0)
 		{
-		    addrb += yinc;
+		    mfbScanlineInc(addrb, yinc, nlwidth);
 		    e += e3;
 		}
 		bit = SCRLEFT(bit,1);
-		if (!bit) { bit = rightbit;addrb -= 4; }
+		if (!bit) { bit = rightbit;mfbScanlineInc(addrb, -4, nlwidth); }
 		StepDash
 	    }
 	}
@@ -136,19 +136,19 @@ int len;		/* length of line */
 	    while(len--)
 	    {
 		if (rop == RROP_BLACK)
-		    *(unsigned long *)addrb &= ~bit;
+		    *(PixelType *)addrb &= ~bit;
 		else if (rop == RROP_WHITE)
-		    *(unsigned long *)addrb |= bit;
+		    *(PixelType *)addrb |= bit;
 		else if (rop == RROP_INVERT)
-		    *(unsigned long *)addrb ^= bit;
+		    *(PixelType *)addrb ^= bit;
 		e += e1;
 		if (e >= 0)
 		{
 		    bit = SCRRIGHT(bit,1);
-		    if (!bit) { bit = leftbit;addrb += 4; }
+		    if (!bit) { bit = leftbit;mfbScanlineInc(addrb, 4, nlwidth); }
 		    e += e3;
 		}
-		addrb += yinc;
+		mfbScanlineInc(addrb, yinc, nlwidth);
 		StepDash
 	    }
 	}
@@ -157,19 +157,19 @@ int len;		/* length of line */
 	    while(len--)
 	    {
 		if (rop == RROP_BLACK)
-		    *(unsigned long *)addrb &= ~bit;
+		    *(PixelType *)addrb &= ~bit;
 		else if (rop == RROP_WHITE)
-		    *(unsigned long *)addrb |= bit;
+		    *(PixelType *)addrb |= bit;
 		else if (rop == RROP_INVERT)
-		    *(unsigned long *)addrb ^= bit;
+		    *(PixelType *)addrb ^= bit;
 		e += e1;
 		if (e >= 0)
 		{
 		    bit = SCRLEFT(bit,1);
-		    if (!bit) { bit = rightbit;addrb -= 4; }
+		    if (!bit) { bit = rightbit;mfbScanlineInc(addrb, -4, nlwidth); }
 		    e += e3;
 		}
-		addrb += yinc;
+		mfbScanlineInc(addrb, yinc, nlwidth);
 		StepDash
 	    }
 	}

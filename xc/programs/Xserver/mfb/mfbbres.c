@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbbres.c,v 1.14 89/09/05 20:13:00 keith Exp $ */
+/* $XConsortium: mfbbres.c,v 1.15 89/09/14 16:26:53 rws Exp $ */
 #include "X.h"
 #include "misc.h"
 #include "mfb.h"
@@ -35,7 +35,7 @@ SOFTWARE.
 
 mfbBresS(rop, addrl, nlwidth, signdx, signdy, axis, x1, y1, e, e1, e2, len)
 int rop;		/* a reduced rasterop */
-int *addrl;		/* pointer to base of bitmap */
+PixelType *addrl;	/* pointer to base of bitmap */
 int nlwidth;		/* width in longwords of bitmap */
 int signdx, signdy;	/* signs of directions */
 int axis;		/* major axis (Y_AXIS or X_AXIS) */
@@ -48,15 +48,15 @@ int len;		/* length of line */
     register int yinc;	/* increment to next scanline, in bytes */
     register unsigned char *addrb;		/* bitmask long pointer 
 						 * cast to char pointer */
-    register unsigned int bit;	/* current bit being set/cleared/etc.  */
-    unsigned int leftbit = mask[0]; /* leftmost bit to process in new word */
-    unsigned int rightbit = mask[31]; /* rightmost bit to process in new word */
+    register PixelType bit;	/* current bit being set/cleared/etc.  */
+    PixelType leftbit = mask[0]; /* leftmost bit to process in new word */
+    PixelType rightbit = mask[31]; /* rightmost bit to process in new word */
 
     register int e3 = e2-e1;
-    unsigned int	tmp;
+    PixelType	tmp;
 
     /* point to longword containing first point */
-    addrb = (unsigned char *)(addrl + (y1 * nlwidth) + (x1 >> 5));
+    addrb = (unsigned char *)mfbScanline(addrl, x1, y1, nlwidth);
     yinc = signdy * nlwidth * 4;                /* 4 == sizeof(int) */
     e = e-e1;			/* to make looping easier */
     bit = mask[x1 & 31];
@@ -69,7 +69,7 @@ int len;		/* length of line */
         {
 	    if (signdx > 0)
 	    {
-		tmp = *(unsigned long*)addrb;
+		tmp = *(PixelType*)addrb;
 		for (;;)
 		{ 
 		    tmp &= ~bit;
@@ -79,29 +79,29 @@ int len;		/* length of line */
 		    e += e1;
  		    if (e >= 0)
 		    {
-			*(unsigned long *) addrb = tmp;
-			addrb += yinc;
+			*(PixelType *) addrb = tmp;
+			mfbScanlineInc(addrb, yinc, nlwidth);
 			e += e3;
 			if (!bit)
 			{
 			    bit = leftbit;
 			    addrb += 4;
 			}
-			tmp = *(unsigned long *) addrb;
+			tmp = *(PixelType *) addrb;
 		    }
 		    else if (!bit)
  		    {
-			*(unsigned long *) addrb = tmp;
+			*(PixelType *) addrb = tmp;
 			bit = leftbit;
 			addrb += 4;
-			tmp = *(unsigned long *) addrb;
+			tmp = *(PixelType *) addrb;
 		    }
 		}
-		*(unsigned long *) addrb = tmp;
+		*(PixelType *) addrb = tmp;
 	    }
 	    else
 	    {
-		tmp = *(unsigned long *)addrb;
+		tmp = *(PixelType *)addrb;
 		for (;;)
 		{ 
 		    tmp &= ~bit;
@@ -111,25 +111,25 @@ int len;		/* length of line */
 		    bit = SCRLEFT(bit,1);
 		    if (e >= 0)
 		    {
-			*(unsigned long *) addrb = tmp;
-			addrb += yinc;
+			*(PixelType *) addrb = tmp;
+			mfbScanlineInc(addrb, yinc, nlwidth);
 			e += e3;
 			if (!bit)
 			{
 			    bit = rightbit;
 			    addrb -= 4;
 			}
-			tmp = *(unsigned long *) addrb;
+			tmp = *(PixelType *) addrb;
 		    }
 		    else if (!bit)
  		    {
-			*(unsigned long *) addrb = tmp;
+			*(PixelType *) addrb = tmp;
 			bit = rightbit;
 			addrb -= 4;
-			tmp = *(unsigned long *) addrb;
+			tmp = *(PixelType *) addrb;
 		    }
 		}
-		*(unsigned long *) addrb = tmp;
+		*(PixelType *) addrb = tmp;
 	    }
         } /* if X_AXIS */
         else
@@ -138,7 +138,7 @@ int len;		/* length of line */
 	    {
 		while(len--)
 		{
-		    *(unsigned long *)addrb &= ~bit;
+		    *(PixelType *)addrb &= ~bit;
 		    e += e1;
 		    if (e >= 0)
 		    {
@@ -146,14 +146,14 @@ int len;		/* length of line */
 			if (!bit) { bit = leftbit;addrb += 4; }
 			e += e3;
 		    }
-		    addrb += yinc;
+		    mfbScanlineInc(addrb, yinc, nlwidth);
 		}
 	    }
 	    else
 	    {
 		while(len--)
 		{
-		    *(unsigned long *)addrb &= ~bit;
+		    *(PixelType *)addrb &= ~bit;
 		    e += e1;
 		    if (e >= 0)
 		    {
@@ -161,7 +161,7 @@ int len;		/* length of line */
 			if (!bit) { bit = rightbit;addrb -= 4; }
 			e += e3;
 		    }
-		    addrb += yinc;
+		    mfbScanlineInc(addrb, yinc, nlwidth);
 		}
 	    }
         } /* else Y_AXIS */
@@ -172,7 +172,7 @@ int len;		/* length of line */
         {
 	    if (signdx > 0)
 	    {
-		tmp = *(unsigned long *)addrb;
+		tmp = *(PixelType *)addrb;
 		for (;;)
 		{
 		    tmp |= bit;
@@ -182,29 +182,29 @@ int len;		/* length of line */
 		    bit = SCRRIGHT(bit,1);
 		    if (e >= 0)
 		    {
-			*(unsigned long *) addrb = tmp;
-			addrb += yinc;
+			*(PixelType *) addrb = tmp;
+			mfbScanlineInc(addrb, yinc, nlwidth);
 			e += e3;
 			if (!bit)
 			{
 			    bit = leftbit;
 			    addrb += 4;
 			}
-			tmp = *(unsigned long *) addrb;
+			tmp = *(PixelType *) addrb;
 		    }
 		    else if (!bit)
  		    {
-			*(unsigned long *) addrb = tmp;
+			*(PixelType *) addrb = tmp;
 			bit = leftbit;
 			addrb += 4;
-			tmp = *(unsigned long *) addrb;
+			tmp = *(PixelType *) addrb;
 		    }
 		}
-		*(unsigned long *) addrb = tmp;
+		*(PixelType *) addrb = tmp;
 	    }
 	    else
 	    {
-		tmp = *(unsigned long *) addrb;
+		tmp = *(PixelType *) addrb;
 		for (;;)
 		{
 		    tmp |= bit;
@@ -214,25 +214,25 @@ int len;		/* length of line */
 		    bit = SCRLEFT(bit,1);
 		    if (e >= 0)
 		    {
-			*(unsigned long *) addrb = tmp;
-			addrb += yinc;
+			*(PixelType *) addrb = tmp;
+			mfbScanlineInc(addrb, yinc, nlwidth);
 			e += e3;
 			if (!bit)
 			{
 			    bit = rightbit;
 			    addrb -= 4;
 			}
-			tmp = *(unsigned long *) addrb;
+			tmp = *(PixelType *) addrb;
 		    }
 		    else if (!bit)
 		    {
-			*(unsigned long *) addrb = tmp;
+			*(PixelType *) addrb = tmp;
 			bit = rightbit;
 			addrb -= 4;
-			tmp = *(unsigned long *) addrb;
+			tmp = *(PixelType *) addrb;
 		    }
 		}
-		*(unsigned long *) addrb = tmp;
+		*(PixelType *) addrb = tmp;
 	    }
         } /* if X_AXIS */
         else
@@ -241,7 +241,7 @@ int len;		/* length of line */
 	    {
 		while(len--)
 		{
-		    *(unsigned long *)addrb |= bit;
+		    *(PixelType *)addrb |= bit;
 		    e += e1;
 		    if (e >= 0)
 		    {
@@ -249,14 +249,14 @@ int len;		/* length of line */
 			if (!bit) { bit = leftbit;addrb += 4; }
 			e += e3;
 		    }
-		    addrb += yinc;
+		    mfbScanlineInc(addrb, yinc, nlwidth);
 		}
 	    }
 	    else
 	    {
 		while(len--)
 		{
-		    *(unsigned long *)addrb |= bit;
+		    *(PixelType *)addrb |= bit;
 		    e += e1;
 		    if (e >= 0)
 		    {
@@ -264,7 +264,7 @@ int len;		/* length of line */
 			if (!bit) { bit = rightbit;addrb -= 4; }
 			e += e3;
 		    }
-		    addrb += yinc;
+		    mfbScanlineInc(addrb, yinc, nlwidth);
 		}
 	    }
         } /* else Y_AXIS */
@@ -277,11 +277,11 @@ int len;		/* length of line */
 	    {
 		while(len--)
 		{
-		    *(unsigned long *)addrb ^= bit;
+		    *(PixelType *)addrb ^= bit;
 		    e += e1;
 		    if (e >= 0)
 		    {
-			addrb += yinc;
+			mfbScanlineInc(addrb, yinc, nlwidth);
 			e += e3;
 		    }
 		    bit = SCRRIGHT(bit,1);
@@ -292,11 +292,11 @@ int len;		/* length of line */
 	    {
 		while(len--)
 		{
-		    *(unsigned long *)addrb ^= bit;
+		    *(PixelType *)addrb ^= bit;
 		    e += e1;
 		    if (e >= 0)
 		    {
-			addrb += yinc;
+			mfbScanlineInc(addrb, yinc, nlwidth);
 			e += e3;
 		    }
 		    bit = SCRLEFT(bit,1);
@@ -310,7 +310,7 @@ int len;		/* length of line */
 	    {
 		while(len--)
 		{
-		    *(unsigned long *)addrb ^= bit;
+		    *(PixelType *)addrb ^= bit;
 		    e += e1;
 		    if (e >= 0)
 		    {
@@ -318,22 +318,22 @@ int len;		/* length of line */
 			if (!bit) { bit = leftbit;addrb += 4; }
 			e += e3;
 		    }
-		    addrb += yinc;
+		    mfbScanlineInc(addrb, yinc, nlwidth);
 		}
 	    }
 	    else
 	    {
 		while(len--)
 		{
-		    *(unsigned long *)addrb ^= bit;
+		    *(PixelType *)addrb ^= bit;
 		    e += e1;
 		    if (e >= 0)
 		    {
 			bit = SCRLEFT(bit,1);
-			if (!bit) { bit = rightbit;addrb -= 4; }
+			if (!bit) { bit = rightbit; addrb -= 4; }
 			e += e3;
 		    }
-		    addrb += yinc;
+		    mfbScanlineInc(addrb, yinc, nlwidth);
 		}
 	    }
         } /* else Y_AXIS */

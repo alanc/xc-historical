@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbline.c,v 5.11 91/05/26 08:36:44 rws Exp $ */
+/* $XConsortium: mfbline.c,v 5.12 91/08/13 18:49:01 keith Exp $ */
 #include "X.h"
 
 #include "gcstruct.h"
@@ -125,7 +125,7 @@ mfbLineSS (pDrawable, pGC, mode, npt, pptInit)
     unsigned int oc1;		/* outcode of point 1 */
     unsigned int oc2;		/* outcode of point 2 */
 
-    int *addrl;		/* address of destination pixmap */
+    PixelType *addrl;		/* address of destination pixmap */
     int nlwidth;		/* width in longwords of destination pixmap */
     int xorg, yorg;		/* origin of window */
 
@@ -151,18 +151,7 @@ mfbLineSS (pDrawable, pGC, mode, npt, pptInit)
     pboxInit = REGION_RECTS(cclip);
     nboxInit = REGION_NUM_RECTS(cclip);
 
-    if (pDrawable->type == DRAWABLE_WINDOW)
-    {
-	addrl = (int *)
-		(((PixmapPtr)(pDrawable->pScreen->devPrivate))->devPrivate.ptr);
-	nlwidth = (int)
-		(((PixmapPtr)(pDrawable->pScreen->devPrivate))->devKind) >> 2;
-    }
-    else
-    {
-	addrl = (int *)(((PixmapPtr)pDrawable)->devPrivate.ptr);
-	nlwidth = (int)(((PixmapPtr)pDrawable)->devKind) >> 2;
-    }
+    mfbGetPixelWidthAndPointer(pDrawable, nlwidth, addrl);
 
     xorg = pDrawable->x;
     yorg = pDrawable->y;
@@ -460,14 +449,12 @@ mfbLineSS (pDrawable, pGC, mode, npt, pptInit)
 	 (ppt->y + yorg != pptInit->y + pDrawable->y) ||
 	 (ppt == pptInit + 1)))
     {
-	unsigned int _mask;
-	int _incr;
+	PixelType _mask;
 
 	if (alu == RROP_BLACK)
 		_mask = rmask[x2 & 0x1f];
 	else
 		_mask = mask[x2 & 0x1f];
-	_incr = (y2 * nlwidth) + (x2 >> 5);
 
 	nbox = nboxInit;
 	pbox = pboxInit;
@@ -478,7 +465,7 @@ mfbLineSS (pDrawable, pGC, mode, npt, pptInit)
 		(x2 <  pbox->x2) &&
 		(y2 <  pbox->y2))
 	    {
-		addrl += _incr;
+		addrl = mfbScanline(addrl, x2, y2, nlwidth);
 		switch(alu)
 		{
 		    case RROP_BLACK:
@@ -531,7 +518,7 @@ mfbLineSD( pDrawable, pGC, mode, npt, pptInit)
     register unsigned int oc1;	/* outcode of point 1 */
     register unsigned int oc2;	/* outcode of point 2 */
 
-    int *addrl;		/* address of destination pixmap */
+    PixelType *addrl;		/* address of destination pixmap */
     int nlwidth;		/* width in longwords of destination pixmap */
     int xorg, yorg;		/* origin of window */
 
@@ -561,18 +548,7 @@ mfbLineSD( pDrawable, pGC, mode, npt, pptInit)
     pboxInit = REGION_RECTS(cclip);
     nboxInit = REGION_NUM_RECTS(cclip);
 
-    if (pDrawable->type == DRAWABLE_WINDOW)
-    {
-	addrl = (int *)
-		(((PixmapPtr)(pDrawable->pScreen->devPrivate))->devPrivate.ptr);
-	nlwidth = (int)
-		(((PixmapPtr)(pDrawable->pScreen->devPrivate))->devKind) >> 2;
-    }
-    else
-    {
-	addrl = (int *)(((PixmapPtr)pDrawable)->devPrivate.ptr);
-	nlwidth = (int)(((PixmapPtr)pDrawable)->devKind) >> 2;
-    }
+   mfbGetPixelWidthAndPointer(pDrawable, nlwidth, addrl); 
 
     /* compute initial dash values */
      
@@ -805,7 +781,7 @@ dontStep:	;
 		    _mask = rmask[x2 & 0x1f];
 		else
 		    _mask = mask[x2 & 0x1f];
-		addrl += (y2 * nlwidth) + (x2 >> 5);
+		addrl = mfbScanline(addrl, x2, y2, nlwidth);
 		if (rop == RROP_BLACK)
 		    *addrl &= _mask;
 		else if (rop == RROP_WHITE)

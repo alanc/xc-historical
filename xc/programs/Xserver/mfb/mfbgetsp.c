@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbgetsp.c,v 5.4 89/09/13 18:58:05 rws Exp $ */
+/* $XConsortium: mfbgetsp.c,v 5.5 89/09/14 16:26:46 rws Exp $ */
 #include "X.h"
 #include "Xmd.h"
 
@@ -53,40 +53,30 @@ mfbGetSpans(pDrawable, wMax, ppt, pwidth, nspans, pdstStart)
     int			nspans;		/* number of scanlines to copy */
     unsigned int	*pdstStart;	/* where to put the bits */
 {
-    register unsigned int	*pdst;	/* where to put the bits */
-    register unsigned int	*psrc;	/* where to get the bits */
-    register unsigned int	tmpSrc;	/* scratch buffer for bits */
-    unsigned int		*psrcBase;	/* start of src bitmap */
+    register PixelType	*pdst;	/* where to put the bits */
+    register PixelType	*psrc;	/* where to get the bits */
+    register PixelType	tmpSrc;	/* scratch buffer for bits */
+    PixelType		*psrcBase;	/* start of src bitmap */
     int			widthSrc;	/* width of pixmap in bytes */
     register DDXPointPtr pptLast;	/* one past last point to get */
     int         	xEnd;		/* last pixel to copy from */
     register int	nstart; 
     int	 		nend; 
     int	 		srcStartOver; 
-    int	 		startmask, endmask, nlMiddle, nl, srcBit;
+    PixelType 		startmask, endmask;
+    int	 		nlMiddle, nl, srcBit;
     int			w;
   
     pptLast = ppt + nspans;
 
-    if (pDrawable->type == DRAWABLE_WINDOW)
-    {
-	psrcBase = (unsigned int *)
-		(((PixmapPtr)(pDrawable->pScreen->devPrivate))->devPrivate.ptr);
-	widthSrc = (int)
-		   ((PixmapPtr)(pDrawable->pScreen->devPrivate))->devKind;
-    }
-    else
-    {
-	psrcBase = (unsigned int *)(((PixmapPtr)pDrawable)->devPrivate.ptr);
-	widthSrc = (int)(((PixmapPtr)pDrawable)->devKind);
-    }
+    mfbGetPixelWidthAndPointer(pDrawable, widthSrc, psrcBase);
     pdst = pdstStart;
 
     while(ppt < pptLast)
     {
 	xEnd = min(ppt->x + *pwidth, widthSrc << 3);
 	pwidth++;
-	psrc = psrcBase + (ppt->y * (widthSrc >> 2)) + (ppt->x >> 5); 
+	psrc = mfbScanline(psrcBase, ppt->x, ppt->y, widthSrc >> 2);
 	w = xEnd - ppt->x;
 	srcBit = ppt->x & 0x1f;
 

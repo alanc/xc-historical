@@ -1,4 +1,4 @@
-/* $XConsortium: mfbtegblt.c,v 5.6 91/01/27 13:02:14 keith Exp $ */
+/* $XConsortium: mfbtegblt.c,v 5.7 91/05/26 09:02:16 rws Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -121,7 +121,7 @@ MFBTEGLYPHBLT(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 {
     FontPtr	pfont = pGC->font;
     int widthDst;
-    unsigned int *pdstBase;	/* pointer to longword with top row 
+    PixelType *pdstBase;	/* pointer to longword with top row 
 				   of current glyph */
 
     int h;			/* height of glyph and char */
@@ -134,32 +134,21 @@ MFBTEGLYPHBLT(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     int nfirst;			/* used if glyphs spans a longword boundary */
     BoxRec bbox;		/* for clipping */
     int	widthGlyphs;
-    register unsigned int  *dst;
-    register unsigned int  c;
+    register PixelType  *dst;
+    register PixelType  c;
     register int	    xoff1, xoff2, xoff3, xoff4;
     register glyphPointer   char1, char2, char3, char4;
 
 #ifdef USE_LEFTBITS
     register int	    glyphMask;
-    register unsigned int  tmpSrc;
+    register PixelType  tmpSrc;
     register int	    glyphBytes;
 #endif
 
     if (!(pGC->planemask & 1))
 	return;
 
-    if (pDrawable->type == DRAWABLE_WINDOW)
-    {
-	pdstBase = (unsigned int *)
-		(((PixmapPtr)(pDrawable->pScreen->devPrivate))->devPrivate.ptr);
-	widthDst = (int)
-		  (((PixmapPtr)(pDrawable->pScreen->devPrivate))->devKind) >> 2;
-    }
-    else
-    {
-	pdstBase = (unsigned int *)(((PixmapPtr)pDrawable)->devPrivate.ptr);
-	widthDst = (int)(((PixmapPtr)pDrawable)->devKind) >> 2;
-    }
+    mfbGetPixelWidthAndPointer(pDrawable, widthDst, pdstBase);
 
     xpos = x + pDrawable->x;
     ypos = y + pDrawable->y;
@@ -203,7 +192,7 @@ MFBTEGLYPHBLT(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
       case rgnOUT:
 	return;
     }
-    pdstBase += widthDst * ypos;
+    pdstBase = mfbScanlineDelta(pdstBase, ypos, widthDst);
     widthGlyphs = widthGlyph << 2;
 
 #ifdef USE_LEFTBITS

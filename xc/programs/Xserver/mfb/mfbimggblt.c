@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbimggblt.c,v 5.5 91/01/27 13:02:09 keith Exp $ */
+/* $XConsortium: mfbimggblt.c,v 5.6 91/05/26 09:21:19 rws Exp $ */
 #include	"X.h"
 #include	"Xmd.h"
 #include	"Xproto.h"
@@ -95,13 +95,13 @@ MFBIMAGEGLYPHBLT(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     int widthDst;	/* width of dst in longwords */
 
 			/* these keep track of the character origin */
-    unsigned int *pdstBase;
+    PixelType *pdstBase;
 			/* points to longword with character origin */
     int xchar;		/* xorigin of char (mod 32) */
 
 			/* these are used for placing the glyph */
     register int xoff;	/* x offset of left edge of glyph (mod 32) */
-    register unsigned int *pdst;
+    register PixelType *pdst;
 			/* pointer to current longword in dst */
 
     int w;		/* width of glyph in bits */
@@ -111,10 +111,10 @@ MFBIMAGEGLYPHBLT(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 			/* pointer to current row of glyph */
 
 			/* used for putting down glyph */    
-    register unsigned int tmpSrc;
+    register PixelType tmpSrc;
 			/* for getting bits from glyph */
-    register int startmask;
-    register int endmask;
+    register PixelType startmask;
+    register PixelType endmask;
 
     register int nFirst;/* bits of glyph in current longword */
     void (* oldFillArea)();
@@ -126,18 +126,7 @@ MFBIMAGEGLYPHBLT(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 
     xorg = pDrawable->x;
     yorg = pDrawable->y;
-    if (pDrawable->type == DRAWABLE_WINDOW)
-    {
-	pdstBase = (unsigned int *)
-		(((PixmapPtr)(pDrawable->pScreen->devPrivate))->devPrivate.ptr);
-	widthDst = (int)
-		 (((PixmapPtr)(pDrawable->pScreen->devPrivate))->devKind) >> 2;
-    }
-    else
-    {
-	pdstBase = (unsigned int *)(((PixmapPtr)pDrawable)->devPrivate.ptr);
-	widthDst = (int)(((PixmapPtr)pDrawable)->devKind) >> 2;
-    }
+    mfbGetPixelWidthAndPointer(pDrawable, widthDst, pdstBase);
 
     QueryGlyphExtents(pGC->font, ppci, (unsigned long)nglyph, &info);
 
@@ -192,7 +181,7 @@ MFBIMAGEGLYPHBLT(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
       case rgnOUT:
 	break;
       case rgnIN:
-        pdstBase = pdstBase + (widthDst * y) + (x >> 5);
+        pdstBase = mfbScanline(pdstBase, x, y, widthDst);
         xchar = x & 0x1f;
 
         while(nglyph--)
@@ -204,7 +193,7 @@ MFBIMAGEGLYPHBLT(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 	    widthGlyph = GLYPHWIDTHBYTESPADDED(pci);
 
 	    /* start at top scanline of glyph */
-	    pdst = pdstBase - (pci->metrics.ascent * widthDst);
+	    pdst = mfbScanlineDelta(pdstBase, -pci->metrics.ascent, widthDst);
 
 	    /* find correct word in scanline and x offset within it
 	       for left edge of glyph
@@ -230,7 +219,7 @@ MFBIMAGEGLYPHBLT(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 		    getleftbits(pglyph, w, tmpSrc);
 		    *pdst OPEQ (SCRRIGHT(tmpSrc, xoff) & startmask);
 		    pglyph += widthGlyph;
-		    pdst += widthDst;
+		    mfbScanlineInc(pdst, widthDst, widthDst);
 	        }
 	    }
 	    else
@@ -244,7 +233,7 @@ MFBIMAGEGLYPHBLT(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 		    *pdst OPEQ (SCRRIGHT(tmpSrc, xoff) & startmask);
 		    *(pdst+1) OPEQ (SCRLEFT(tmpSrc, nFirst) & endmask);
 		    pglyph += widthGlyph;
-		    pdst += widthDst;
+		    mfbScanlineInc(pdst, widthDst, widthDst);
 	        }
 	    } /* glyph crosses longwords boundary */
 
@@ -283,7 +272,7 @@ MFBIMAGEGLYPHBLT(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 	if(!(ppos = (TEXTPOS *)ALLOCATE_LOCAL(nglyph * sizeof(TEXTPOS))))
 	    return;
 
-        pdstBase = pdstBase + (widthDst * y) + (x >> 5);
+        pdstBase = mfbScanline(pdstBase, x, y, widthDst);
         xpos = x;
 	xchar = xpos & 0x1f;
 
@@ -374,7 +363,7 @@ MFBIMAGEGLYPHBLT(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 		pglyph = FONTGLYPHBITS(pglyphBase, pci);
 		pglyph += (glyphRow * widthGlyph);
 
-		pdst = ppos[i].pdstBase - ((y-topEdge) * widthDst);
+		pdst = mfbScanlineDelta(ppos[i].pdstBase, -(y-topEdge), widthDst);
 
 		glyphCol = (leftEdge - ppos[i].xpos) -
 			   (pci->metrics.leftSideBearing);
@@ -412,7 +401,7 @@ MFBIMAGEGLYPHBLT(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 			*pdst OPEQ (SCRRIGHT(tmpSrc, xoff) & startmask);
 			*(pdst+1) OPEQ (SCRLEFT(tmpSrc, nFirst) & endmask);
 			pglyph += widthGlyph;
-			pdst += widthDst;
+			mfbScanlineInc(pdst, widthDst, widthDst);
 		    }
 		}
 	    } /* for each glyph */

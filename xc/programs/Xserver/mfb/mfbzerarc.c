@@ -15,7 +15,7 @@ without any express or implied warranty.
 
 ********************************************************/
 
-/* $XConsortium: mfbzerarc.c,v 5.9 89/09/20 10:14:53 rws Exp $ */
+/* $XConsortium: mfbzerarc.c,v 5.10 89/09/20 18:55:33 rws Exp $ */
 
 /* Derived from:
  * "Algorithm for drawing ellipses or hyperbolae with a digital plotter"
@@ -36,9 +36,9 @@ without any express or implied warranty.
 extern void miPolyArc(), miZeroPolyArc();
 
 #if (BITMAP_BIT_ORDER == MSBFirst)
-#define LEFTMOST	((unsigned int) 0x80000000)
+#define LEFTMOST	((PixelType) 0x80000000)
 #else
-#define LEFTMOST	((unsigned int) 1)
+#define LEFTMOST	((PixelType) 1)
 #endif
 
 #define PixelateWhite(addr,off) \
@@ -65,12 +65,12 @@ mfbZeroArcSS(pDraw, pGC, arc)
     Bool do360;
     register int x, y, a, b, d, mask;
     register int k1, k3, dx, dy;
-    int *addrl;
-    int *yorgl, *yorgol;
-    unsigned long pixel;
+    PixelType *addrl;
+    PixelType *yorgl, *yorgol;
+    PixelType pixel;
     int nlwidth, yoffset, dyoffset;
-    int pmask;
-    register int *paddr;
+    PixelType pmask;
+    register PixelType *paddr;
 
     if (((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->rop ==
 	RROP_BLACK)
@@ -78,18 +78,7 @@ mfbZeroArcSS(pDraw, pGC, arc)
     else
 	pixel = ~0L;
 
-    if (pDraw->type == DRAWABLE_WINDOW)
-    {
-	addrl = (int *)
-		(((PixmapPtr)(pDraw->pScreen->devPrivate))->devPrivate.ptr);
-	nlwidth = (int)
-		(((PixmapPtr)(pDraw->pScreen->devPrivate))->devKind) >> 2;
-    }
-    else
-    {
-	addrl = (int *)(((PixmapPtr)pDraw)->devPrivate.ptr);
-	nlwidth = (int)(((PixmapPtr)pDraw)->devKind) >> 2;
-    }
+    mfbGetPixelWidthAndPointer(pDraw, nlwidth, addrl);
     do360 = miZeroArcSetup(arc, &info, TRUE);
     yorgl = addrl + ((info.yorg + pDraw->y) * nlwidth);
     yorgol = addrl + ((info.yorgo + pDraw->y) * nlwidth);
@@ -112,7 +101,7 @@ mfbZeroArcSS(pDraw, pGC, arc)
     if (do360 && (arc->width == arc->height) && !(arc->width & 1))
     {
 	int xoffset = nlwidth;
-	int *yorghl = yorgl + (info.h * nlwidth);
+	int *yorghl = mfbScanlineDelta(yorgl, info.h, nlwidth);
 	int xorghp = info.xorg + info.h;
 	int xorghn = info.xorg - info.h;
 

@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbpushpxl.c,v 5.1 89/07/28 08:27:49 rws Exp $ */
+/* $XConsortium: mfbpushpxl.c,v 5.2 89/09/14 16:26:57 rws Exp $ */
 
 #include "X.h"
 #include "gcstruct.h"
@@ -139,9 +139,9 @@ mfbPushPixels(pGC, pBitMap, pDrawable, dx, dy, xOrg, yOrg)
     int		dx, dy, xOrg, yOrg;
 {
     int		h, dxDiv32, ibEnd;
-    unsigned int *pwLineStart;
-    register unsigned int	*pw, *pwEnd;
-    register unsigned int mask;
+    PixelType *pwLineStart;
+    register PixelType	*pw, *pwEnd;
+    register PixelType mask;
     register int ib, w;
     register int ipt;		/* index into above arrays */
     Bool 	fInBox;
@@ -155,7 +155,7 @@ mfbPushPixels(pGC, pBitMap, pDrawable, dx, dy, xOrg, yOrg)
     for(h = 0; h < dy; h++)
     {
 
-	pw = (unsigned int *)
+	pw = (PixelType *)
 	     (((char *)(pBitMap->devPrivate.ptr))+(h * pBitMap->devKind));
 	pwLineStart = pw;
 	/* Process all words which are fully in the pixmap */

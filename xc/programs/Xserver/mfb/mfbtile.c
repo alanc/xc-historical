@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbtile.c,v 5.2 89/11/24 18:07:11 rws Exp $ */
+/* $XConsortium: mfbtile.c,v 5.3 90/05/15 18:38:21 keith Exp $ */
 #include "X.h"
 
 #include "windowstr.h"
@@ -54,44 +54,33 @@ MROP_NAME(mfbTileArea32)(pDraw, nbox, pbox, alu, ptile)
     int alu;
     PixmapPtr ptile;
 {
-    register unsigned int *psrc;
+    register PixelType *psrc;
 			/* pointer to bits in tile, if needed */
     int tileHeight;	/* height of the tile */
-    register unsigned int srcpix;	
+    register PixelType srcpix;	
 
     int nlwidth;	/* width in longwords of the drawable */
     int w;		/* width of current box */
     MROP_DECLARE_REG ()
     register int h;	/* height of current box */
     register int nlw;	/* loop version of nlwMiddle */
-    register unsigned int *p;	/* pointer to bits we're writing */
-    int startmask;
-    int endmask;	/* masks for reggedy bits at either end of line */
+    register PixelType *p;	/* pointer to bits we're writing */
+    PixelType startmask;
+    PixelType endmask;	/* masks for reggedy bits at either end of line */
     int nlwMiddle;	/* number of longwords between sides of boxes */
     int nlwExtra;	/* to get from right of box to left of next span */
     
     register int iy;	/* index of current scanline in tile */
 
 
-    unsigned int *pbits;	/* pointer to start of drawable */
+    PixelType *pbits;	/* pointer to start of drawable */
 
-    if (pDraw->type == DRAWABLE_WINDOW)
-    {
-	pbits = (unsigned int *)
-		(((PixmapPtr)(pDraw->pScreen->devPrivate))->devPrivate.ptr);
-	nlwidth = (int)
-		(((PixmapPtr)(pDraw->pScreen->devPrivate))->devKind) >> 2;
-    }
-    else
-    {
-	pbits = (unsigned int *)(((PixmapPtr)pDraw)->devPrivate.ptr);
-	nlwidth = (int)(((PixmapPtr)pDraw)->devKind) >> 2;
-    }
+    mfbGetPixelWidthAndPointer(pDraw, nlwidth, pbits);
 
     MROP_INITIALIZE(alu,~0)
 
     tileHeight = ptile->drawable.height;
-    psrc = (unsigned int *)(ptile->devPrivate.ptr);
+    psrc = (PixelType *)(ptile->devPrivate.ptr);
 
     while (nbox--)
     {
@@ -111,7 +100,7 @@ MROP_NAME(mfbTileArea32)(pDraw, nbox, pbox, alu, ptile)
 		if (iy == tileHeight)
 		    iy = 0;
 		*p = MROP_MASK(srcpix,*p,startmask);
-		p += nlwExtra;
+		mfbScanlineInc(p, nlwExtra, nlwidth);
 	    }
 	}
 	else
@@ -138,7 +127,7 @@ MROP_NAME(mfbTileArea32)(pDraw, nbox, pbox, alu, ptile)
 		    }
 
 		    *p = MROP_MASK(srcpix,*p,endmask);
-		    p += nlwExtra;
+		    mfbScanlineInc(p, nlwExtra, nlwidth);
 		}
 	    }
 	    else if (startmask && !endmask)
@@ -158,7 +147,7 @@ MROP_NAME(mfbTileArea32)(pDraw, nbox, pbox, alu, ptile)
 			*p = MROP_SOLID(srcpix,*p);
 			p++;
 		    }
-		    p += nlwExtra;
+		    mfbScanlineInc(p, nlwExtra, nlwidth);
 		}
 	    }
 	    else if (!startmask && endmask)
@@ -177,7 +166,7 @@ MROP_NAME(mfbTileArea32)(pDraw, nbox, pbox, alu, ptile)
 		    }
 
 		    *p = MROP_MASK(srcpix,*p,endmask);
-		    p += nlwExtra;
+		    mfbScanlineInc(p, nlwExtra, nlwidth);
 		}
 	    }
 	    else /* no ragged bits at either end */
@@ -194,7 +183,7 @@ MROP_NAME(mfbTileArea32)(pDraw, nbox, pbox, alu, ptile)
 			*p = MROP_SOLID (srcpix,*p);
 			p++;
 		    }
-		    p += nlwExtra;
+		    mfbScanlineInc(p, nlwExtra, nlwidth);
 		}
 	    }
 	}

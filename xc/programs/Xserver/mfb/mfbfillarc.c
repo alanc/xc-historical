@@ -15,7 +15,7 @@ without any express or implied warranty.
 
 ********************************************************/
 
-/* $XConsortium: mfbfillarc.c,v 5.6 89/11/24 18:07:50 rws Exp $ */
+/* $XConsortium: mfbfillarc.c,v 5.7 90/10/06 13:58:08 rws Exp $ */
 
 #include "X.h"
 #include "Xprotostr.h"
@@ -39,25 +39,14 @@ mfbFillEllipseSolid(pDraw, arc, rop)
     int yk, xk, ym, xm, dx, dy, xorg, yorg;
     register int slw;
     miFillArcRec info;
-    int *addrlt, *addrlb;
-    register int *addrl;
+    PixelType *addrlt, *addrlb;
+    register PixelType *addrl;
     register int n;
     int nlwidth;
     register int xpos;
     int startmask, endmask, nlmiddle;
 
-    if (pDraw->type == DRAWABLE_WINDOW)
-    {
-	addrlt = (int *)
-	       (((PixmapPtr)(pDraw->pScreen->devPrivate))->devPrivate.ptr);
-	nlwidth = (int)
-	       (((PixmapPtr)(pDraw->pScreen->devPrivate))->devKind) >> 2;
-    }
-    else
-    {
-	addrlt = (int *)(((PixmapPtr)pDraw)->devPrivate.ptr);
-	nlwidth = (int)(((PixmapPtr)pDraw)->devKind) >> 2;
-    }
+    mfbGetPixelWidthAndPointer(pDraw, nlwidth, addrlt);
     miFillArcSetup(arc, &info);
     MIFILLARCSETUP();
     xorg += pDraw->x;
@@ -227,44 +216,33 @@ mfbFillArcSliceSolidCopy(pDraw, pGC, arc, rop)
     xArc *arc;
     register int rop;
 {
-    register int *addrl;
+    register PixelType *addrl;
     register int n;
     int yk, xk, ym, xm, dx, dy, xorg, yorg, slw;
     register int x, y, e;
     miFillArcRec info;
     miArcSliceRec slice;
     int xl, xr, xc;
-    int *addrlt, *addrlb;
+    PixelType *addrlt, *addrlb;
     int nlwidth;
     int width;
     int startmask, endmask, nlmiddle;
 
-    if (pDraw->type == DRAWABLE_WINDOW)
-    {
-	addrlt = (int *)
-	       (((PixmapPtr)(pDraw->pScreen->devPrivate))->devPrivate.ptr);
-	nlwidth = (int)
-	       (((PixmapPtr)(pDraw->pScreen->devPrivate))->devKind) >> 2;
-    }
-    else
-    {
-	addrlt = (int *)(((PixmapPtr)pDraw)->devPrivate.ptr);
-	nlwidth = (int)(((PixmapPtr)pDraw)->devKind) >> 2;
-    }
+    mfbGetPixelWidthAndPointer(pDraw, nlwidth, addrlt);
     miFillArcSetup(arc, &info);
     miFillArcSliceSetup(arc, &slice, pGC);
     MIFILLARCSETUP();
     xorg += pDraw->x;
     yorg += pDraw->y;
     addrlb = addrlt;
-    addrlt += nlwidth * (yorg - y);
-    addrlb += nlwidth * (yorg + y + dy);
+    addrlt = mfbScanlineDelta(addrlt, yorg - y, nlwidth);
+    addrlb = mfbScanlineDelta(addrlb, yorg + y + dy, nlwidth);
     slice.edge1.x += pDraw->x;
     slice.edge2.x += pDraw->x;
     while (y > 0)
     {
-	addrlt += nlwidth;
-	addrlb -= nlwidth;
+	mfbScanlineInc(addrlt, nlwidth, nlwidth);
+	mfbScanlineInc(addrlb, -nlwidth, nlwidth);
 	MIFILLARCSTEP(slw);
 	MIARCSLICESTEP(slice.edge1);
 	MIARCSLICESTEP(slice.edge2);

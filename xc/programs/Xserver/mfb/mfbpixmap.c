@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbpixmap.c,v 5.5 89/07/28 11:59:59 rws Exp $ */
+/* $XConsortium: mfbpixmap.c,v 5.6 91/12/28 14:59:31 keith Exp $ */
 
 /* pixmap management
    written by drewry, september 1986
@@ -137,7 +137,7 @@ mfbPadPixmap(pPixmap)
 
     mask = endtab[width];
 
-    p = (unsigned int *)(pPixmap->devPrivate.ptr);
+    p = (PixelType *)(pPixmap->devPrivate.ptr);
     for (h=0; h < pPixmap->drawable.height; h++)
     {
 	*p &= mask;
@@ -161,13 +161,13 @@ mfbXRotatePixmap(pPix, rw)
     PixmapPtr	pPix;
     register int rw;
 {
-    register long	*pw, *pwFinal;
-    register unsigned long	t;
+    register PixelType	*pw, *pwFinal;
+    register PixelType	t;
 
     if (pPix == NullPixmap)
         return;
 
-    pw = (long *)pPix->devPrivate.ptr;
+    pw = (PixelType *)pPix->devPrivate.ptr;
     rw %= (int)pPix->drawable.width;
     if (rw < 0)
 	rw += (int)pPix->drawable.width;

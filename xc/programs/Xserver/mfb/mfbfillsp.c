@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbfillsp.c,v 5.6 89/11/24 18:02:25 rws Exp $ */
+/* $XConsortium: mfbfillsp.c,v 5.7 90/05/15 18:38:15 keith Exp $ */
 #include "X.h"
 #include "Xmd.h"
 #include "gcstruct.h"
@@ -69,12 +69,12 @@ void mfbBlackSolidFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     int n;			/* number of spans to fill */
     register DDXPointPtr ppt;	/* pointer to list of start points */
     register int *pwidth;	/* pointer to list of n widths */
-    int *addrlBase;		/* pointer to start of bitmap */
+    PixelType *addrlBase;	/* pointer to start of bitmap */
     int nlwidth;		/* width in longwords of bitmap */
-    register int *addrl;	/* pointer to current longword in bitmap */
+    register PixelType *addrl;/* pointer to current longword in bitmap */
     register int nlmiddle;
-    register int startmask;
-    register int endmask;
+    register PixelType startmask;
+    register PixelType endmask;
     int *pwidthFree;		/* copies of the pointers to free */
     DDXPointPtr pptFree;
 
@@ -96,22 +96,11 @@ void mfbBlackSolidFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 		    pptInit, pwidthInit, nInit,
 		    ppt, pwidth, fSorted);
 
-    if (pDrawable->type == DRAWABLE_WINDOW)
-    {
-	addrlBase = (int *)
-		(((PixmapPtr)(pDrawable->pScreen->devPrivate))->devPrivate.ptr);
-	nlwidth = (int)
-		  (((PixmapPtr)(pDrawable->pScreen->devPrivate))->devKind) >> 2;
-    }
-    else
-    {
-	addrlBase = (int *)(((PixmapPtr)pDrawable)->devPrivate.ptr);
-	nlwidth = (int)(((PixmapPtr)pDrawable)->devKind) >> 2;
-    }
+    mfbGetPixelWidthAndPointer(pDrawable, nlwidth, addrlBase);
 
     while (n--)
     {
-        addrl = addrlBase + (ppt->y * nlwidth) + (ppt->x >> 5);
+        addrl = mfbScanline(addrlBase, ppt->x, ppt->y, nlwidth);
 
 	if (*pwidth)
 	{
@@ -152,12 +141,12 @@ void mfbWhiteSolidFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     int n;			/* number of spans to fill */
     register DDXPointPtr ppt;	/* pointer to list of start points */
     register int *pwidth;	/* pointer to list of n widths */
-    int *addrlBase;		/* pointer to start of bitmap */
+    PixelType *addrlBase;	/* pointer to start of bitmap */
     int nlwidth;		/* width in longwords of bitmap */
-    register int *addrl;	/* pointer to current longword in bitmap */
+    register PixelType *addrl;/* pointer to current longword in bitmap */
     register int nlmiddle;
-    register int startmask;
-    register int endmask;
+    register PixelType startmask;
+    register PixelType endmask;
     int *pwidthFree;		/* copies of the pointers to free */
     DDXPointPtr pptFree;
 
@@ -179,22 +168,11 @@ void mfbWhiteSolidFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 		    pptInit, pwidthInit, nInit,
 		    ppt, pwidth, fSorted);
 
-    if (pDrawable->type == DRAWABLE_WINDOW)
-    {
-	addrlBase = (int *)
-		(((PixmapPtr)(pDrawable->pScreen->devPrivate))->devPrivate.ptr);
-	nlwidth = (int)
-		 (((PixmapPtr)(pDrawable->pScreen->devPrivate))->devKind) >> 2;
-    }
-    else
-    {
-	addrlBase = (int *)(((PixmapPtr)pDrawable)->devPrivate.ptr);
-	nlwidth = (int)(((PixmapPtr)pDrawable)->devKind) >> 2;
-    }
+    mfbGetPixelWidthAndPointer(pDrawable, nlwidth, addrlBase);
 
     while (n--)
     {
-        addrl = addrlBase + (ppt->y * nlwidth) + (ppt->x >> 5);
+        addrl = mfbScanline(addrlBase, ppt->x, ppt->y, nlwidth);
 
 	if (*pwidth)
 	{
@@ -235,12 +213,12 @@ void mfbInvertSolidFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     int n;			/* number of spans to fill */
     register DDXPointPtr ppt;	/* pointer to list of start points */
     register int *pwidth;	/* pointer to list of n widths */
-    int *addrlBase;		/* pointer to start of bitmap */
+    PixelType *addrlBase;	/* pointer to start of bitmap */
     int nlwidth;		/* width in longwords of bitmap */
-    register int *addrl;	/* pointer to current longword in bitmap */
+    register PixelType *addrl;/* pointer to current longword in bitmap */
     register int nlmiddle;
-    register int startmask;
-    register int endmask;
+    register PixelType startmask;
+    register PixelType endmask;
     int *pwidthFree;		/* copies of the pointers to free */
     DDXPointPtr pptFree;
 
@@ -262,22 +240,11 @@ void mfbInvertSolidFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 		    pptInit, pwidthInit, nInit,
 		    ppt, pwidth, fSorted);
 
-    if (pDrawable->type == DRAWABLE_WINDOW)
-    {
-	addrlBase = (int *)
-		(((PixmapPtr)(pDrawable->pScreen->devPrivate))->devPrivate.ptr);
-	nlwidth = (int)
-		  (((PixmapPtr)(pDrawable->pScreen->devPrivate))->devKind) >> 2;
-    }
-    else
-    {
-	addrlBase = (int *)(((PixmapPtr)pDrawable)->devPrivate.ptr);
-	nlwidth = (int)(((PixmapPtr)pDrawable)->devKind) >> 2;
-    }
+    mfbGetPixelWidthAndPointer(pDrawable, nlwidth, addrlBase);
 
     while (n--)
     {
-        addrl = addrlBase + (ppt->y * nlwidth) + (ppt->x >> 5);
+        addrl = mfbScanline(addrlBase, ppt->x, ppt->y, nlwidth);
 
 	if (*pwidth)
 	{
@@ -318,15 +285,15 @@ int fSorted;
     int n;			/* number of spans to fill */
     register DDXPointPtr ppt;	/* pointer to list of start points */
     register int *pwidth;	/* pointer to list of n widths */
-    int *addrlBase;		/* pointer to start of bitmap */
+    PixelType *addrlBase;	/* pointer to start of bitmap */
     int nlwidth;		/* width in longwords of bitmap */
-    register int *addrl;	/* pointer to current longword in bitmap */
-    register int src;
+    register PixelType *addrl;/* pointer to current longword in bitmap */
+    register PixelType src;
     register int nlmiddle;
-    register int startmask;
-    register int endmask;
+    register PixelType startmask;
+    register PixelType endmask;
     PixmapPtr pStipple;
-    int *psrc;
+    PixelType *psrc;
     int tileHeight;
     int *pwidthFree;		/* copies of the pointers to free */
     DDXPointPtr pptFree;
@@ -349,26 +316,15 @@ int fSorted;
 		    pptInit, pwidthInit, nInit, 
 		    ppt, pwidth, fSorted);
 
-    if (pDrawable->type == DRAWABLE_WINDOW)
-    {
-	addrlBase = (int *)
-		(((PixmapPtr)(pDrawable->pScreen->devPrivate))->devPrivate.ptr);
-	nlwidth = (int)
-		  (((PixmapPtr)(pDrawable->pScreen->devPrivate))->devKind) >> 2;
-    }
-    else
-    {
-	addrlBase = (int *)(((PixmapPtr)pDrawable)->devPrivate.ptr);
-	nlwidth = (int)(((PixmapPtr)pDrawable)->devKind) >> 2;
-    }
+    mfbGetPixelWidthAndPointer(pDrawable, nlwidth, addrlBase);
 
     pStipple = ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->pRotatedPixmap;
     tileHeight = pStipple->drawable.height;
-    psrc = (int *)(pStipple->devPrivate.ptr);
+    psrc = (PixelType *)(pStipple->devPrivate.ptr);
 
     while (n--)
     {
-        addrl = addrlBase + (ppt->y * nlwidth) + (ppt->x >> 5);
+        addrl = mfbScanline(addrlBase, ppt->x, ppt->y, nlwidth);
 	src = psrc[ppt->y % tileHeight];
 
         /* all bits inside same longword */
@@ -407,13 +363,13 @@ int fSorted;
     int n;			/* number of spans to fill */
     register DDXPointPtr ppt;	/* pointer to list of start points */
     register int *pwidth;	/* pointer to list of n widths */
-    int *addrlBase;		/* pointer to start of bitmap */
+    PixelType *addrlBase;	/* pointer to start of bitmap */
     int nlwidth;		/* width in longwords of bitmap */
-    register int *addrl;	/* pointer to current longword in bitmap */
-    register int src;
+    register PixelType *addrl;	/* pointer to current longword in bitmap */
+    register PixelType src;
     register int nlmiddle;
-    register int startmask;
-    register int endmask;
+    register PixelType startmask;
+    register PixelType endmask;
     PixmapPtr pStipple;
     int *psrc;
     int tileHeight;
@@ -438,26 +394,15 @@ int fSorted;
 		    pptInit, pwidthInit, nInit, 
 		    ppt, pwidth, fSorted);
 
-    if (pDrawable->type == DRAWABLE_WINDOW)
-    {
-	addrlBase = (int *)
-		(((PixmapPtr)(pDrawable->pScreen->devPrivate))->devPrivate.ptr);
-	nlwidth = (int)
-		  (((PixmapPtr)(pDrawable->pScreen->devPrivate))->devKind) >> 2;
-    }
-    else
-    {
-	addrlBase = (int *)(((PixmapPtr)pDrawable)->devPrivate.ptr);
-	nlwidth = (int)(((PixmapPtr)pDrawable)->devKind) >> 2;
-    }
+    mfbGetPixelWidthAndPointer(pDrawable, nlwidth, addrlBase);
 
     pStipple = ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->pRotatedPixmap;
     tileHeight = pStipple->drawable.height;
-    psrc = (int *)(pStipple->devPrivate.ptr);
+    psrc = (PixelType *)(pStipple->devPrivate.ptr);
 
     while (n--)
     {
-        addrl = addrlBase + (ppt->y * nlwidth) + (ppt->x >> 5);
+        addrl = mfbScanline(addrlBase, ppt->x, ppt->y, nlwidth);
 	src = psrc[ppt->y % tileHeight];
 
         /* all bits inside same longword */
@@ -496,15 +441,15 @@ int fSorted;
     int n;			/* number of spans to fill */
     register DDXPointPtr ppt;	/* pointer to list of start points */
     register int *pwidth;	/* pointer to list of n widths */
-    int *addrlBase;		/* pointer to start of bitmap */
+    PixelType *addrlBase;	/* pointer to start of bitmap */
     int nlwidth;		/* width in longwords of bitmap */
-    register int *addrl;	/* pointer to current longword in bitmap */
-    register int src;
+    register PixelType *addrl;	/* pointer to current longword in bitmap */
+    register PixelType src;
     register int nlmiddle;
-    register int startmask;
-    register int endmask;
+    register PixelType startmask;
+    register PixelType endmask;
     PixmapPtr pStipple;
-    int *psrc;
+    PixelType *psrc;
     int tileHeight;
     int *pwidthFree;		/* copies of the pointers to free */
     DDXPointPtr pptFree;
@@ -527,26 +472,15 @@ int fSorted;
 		    pptInit, pwidthInit, nInit, 
 		    ppt, pwidth, fSorted);
 
-    if (pDrawable->type == DRAWABLE_WINDOW)
-    {
-	addrlBase = (int *)
-		(((PixmapPtr)(pDrawable->pScreen->devPrivate))->devPrivate.ptr);
-	nlwidth = (int)
-		  (((PixmapPtr)(pDrawable->pScreen->devPrivate))->devKind) >> 2;
-    }
-    else
-    {
-	addrlBase = (int *)(((PixmapPtr)pDrawable)->devPrivate.ptr);
-	nlwidth = (int)(((PixmapPtr)pDrawable)->devKind) >> 2;
-    }
+    mfbGetPixelWidthAndPointer(pDrawable, nlwidth, addrlBase);
 
     pStipple = ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->pRotatedPixmap;
     tileHeight = pStipple->drawable.height;
-    psrc = (int *)(pStipple->devPrivate.ptr);
+    psrc = (PixelType *)(pStipple->devPrivate.ptr);
 
     while (n--)
     {
-        addrl = addrlBase + (ppt->y * nlwidth) + (ppt->x >> 5);
+        addrl = mfbScanline(addrlBase, ppt->x, ppt->y, nlwidth);
 	src = psrc[ppt->y % tileHeight];
 
         /* all bits inside same longword */
@@ -578,7 +512,7 @@ int fSorted;
     { \
 	if (*pwidth) \
 	{ \
-            addrl = addrlBase + (ppt->y * nlwidth) + (ppt->x >> 5); \
+            addrl = mfbScanline(addrlBase, ppt->x, ppt->y, nlwidth); \
 	    src = psrc[ppt->y % tileHeight]; \
             if ( ((ppt->x & 0x1f) + *pwidth) < 32) \
             { \
@@ -623,15 +557,15 @@ int fSorted;
     int n;			/* number of spans to fill */
     register DDXPointPtr ppt;	/* pointer to list of start points */
     register int *pwidth;	/* pointer to list of n widths */
-    int *addrlBase;		/* pointer to start of bitmap */
+    PixelType *addrlBase;		/* pointer to start of bitmap */
     int nlwidth;		/* width in longwords of bitmap */
-    register int *addrl;	/* pointer to current longword in bitmap */
-    register int src;
+    register PixelType *addrl;	/* pointer to current longword in bitmap */
+    register PixelType src;
     register int nlmiddle;
-    register int startmask;
-    register int endmask;
+    register PixelType startmask;
+    register PixelType endmask;
     PixmapPtr pTile;
-    int *psrc;
+    PixelType *psrc;
     int tileHeight;
     int rop;
     int *pwidthFree;		/* copies of the pointers to free */
@@ -657,22 +591,11 @@ int fSorted;
 		    pptInit, pwidthInit, nInit, 
 		    ppt, pwidth, fSorted);
 
-    if (pDrawable->type == DRAWABLE_WINDOW)
-    {
-	addrlBase = (int *)
-		(((PixmapPtr)(pDrawable->pScreen->devPrivate))->devPrivate.ptr);
-	nlwidth = (int)
-		  (((PixmapPtr)(pDrawable->pScreen->devPrivate))->devKind) >> 2;
-    }
-    else
-    {
-	addrlBase = (int *)(((PixmapPtr)pDrawable)->devPrivate.ptr);
-	nlwidth = (int)(((PixmapPtr)pDrawable)->devKind) >> 2;
-    }
+    mfbGetPixelWidthAndPointer(pDrawable, nlwidth, addrlBase);
 
     pTile = ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->pRotatedPixmap;
     tileHeight = pTile->drawable.height;
-    psrc = (int *)(pTile->devPrivate.ptr);
+    psrc = (PixelType *)(pTile->devPrivate.ptr);
     if (pGC->fillStyle == FillTiled)
 	rop = pGC->alu;
     else
@@ -692,7 +615,7 @@ int fSorted;
 	    {
 	    	if (*pwidth)
 	    	{
-            	    addrl = addrlBase + (ppt->y * nlwidth) + (ppt->x >> 5);
+            	    addrl = mfbScanline(addrlBase, ppt->x, ppt->y, nlwidth);
 	    	    src = psrc[ppt->y % tileHeight] ^ flip;
             	    if ( ((ppt->x & 0x1f) + *pwidth) < 32)
             	    {
@@ -730,7 +653,7 @@ int fSorted;
 	    {
 	    	if (*pwidth)
 	    	{
-            	    addrl = addrlBase + (ppt->y * nlwidth) + (ppt->x >> 5);
+            	    addrl = mfbScanline(addrlBase, ppt->x, ppt->y, nlwidth);
 	    	    src = psrc[ppt->y % tileHeight];
             	    if ( ((ppt->x & 0x1f) + *pwidth) < 32)
             	    {
@@ -780,17 +703,17 @@ int fSorted;
     int n;			/* number of spans to fill */
     register DDXPointPtr ppt;	/* pointer to list of start points */
     register int *pwidth;	/* pointer to list of n widths */
-    unsigned int *addrlBase;	/* pointer to start of bitmap */
+    PixelType *addrlBase;	/* pointer to start of bitmap */
     int		 nlwidth;	/* width in longwords of bitmap */
-    register unsigned int *pdst;/* pointer to current word in bitmap */
-    register unsigned int *psrc;/* pointer to current word in tile */
+    register PixelType *pdst;/* pointer to current word in bitmap */
+    register PixelType *psrc;/* pointer to current word in tile */
     register int nlMiddle;
     register int rop, nstart;
-    unsigned int startmask;
+    PixelType startmask;
     PixmapPtr	pTile;		/* pointer to tile we want to fill with */
     int		w, width, x, xSrc, ySrc, srcStartOver, nend;
     int 	tlwidth, rem, tileWidth, tileHeight, endinc;
-    unsigned int      endmask, *psrcT;
+    PixelType      endmask, *psrcT;
     int *pwidthFree;		/* copies of the pointers to free */
     DDXPointPtr pptFree;
 
@@ -828,18 +751,7 @@ int fSorted;
     xSrc = pDrawable->x;
     ySrc = pDrawable->y;
 
-    if (pDrawable->type == DRAWABLE_WINDOW)
-    {
-	addrlBase = (unsigned int *)
-		(((PixmapPtr)(pDrawable->pScreen->devPrivate))->devPrivate.ptr);
-	nlwidth = (int)
-		  (((PixmapPtr)(pDrawable->pScreen->devPrivate))->devKind) >> 2;
-    }
-    else
-    {
-	addrlBase = (unsigned int *)(((PixmapPtr)pDrawable)->devPrivate.ptr);
-	nlwidth = (int)(((PixmapPtr)pDrawable)->devKind) >> 2;
-    }
+    mfbGetPixelWidthAndPointer(pDrawable, nlwidth, addrlBase);
 
     tileWidth = pTile->drawable.width;
     tileHeight = pTile->drawable.height;
@@ -855,8 +767,8 @@ int fSorted;
     while (n--)
     {
 	iline = (ppt->y - ySrc) % tileHeight;
-        pdst = addrlBase + (ppt->y * nlwidth) + (ppt->x >> 5);
-        psrcT = (unsigned int *) pTile->devPrivate.ptr + (iline * tlwidth);
+        pdst = mfbScanline(addrlBase, ppt->x, ppt->y, nlwidth);
+        psrcT = (PixelType *) pTile->devPrivate.ptr + (iline * tlwidth);
 	x = ppt->x;
 
 	if (*pwidth)
@@ -949,16 +861,17 @@ int fSorted;
     register DDXPointPtr ppt;	/* pointer to list of start points */
     register int *pwidth;	/* pointer to list of n widths */
     int		iline;		/* first line of tile to use */
-    int		*addrlBase;	/* pointer to start of bitmap */
+    PixelType		*addrlBase;	/* pointer to start of bitmap */
     int		 nlwidth;	/* width in longwords of bitmap */
-    register int *pdst;		/* pointer to current word in bitmap */
-    register int *psrc;		/* pointer to current word in tile */
+    register PixelType *pdst;		/* pointer to current word in bitmap */
+    register PixelType *psrc;		/* pointer to current word in tile */
     register int nlMiddle;
     register int rop, nstart;
-    int startmask;
+    PixelType startmask;
     PixmapPtr	pTile;		/* pointer to tile we want to fill with */
     int		w, width,  x, xSrc, ySrc, srcStartOver, nend;
-    int 	endmask, tlwidth, rem, tileWidth, *psrcT, endinc;
+    PixelType 	endmask, *psrcT;
+    int 	tlwidth, rem, tileWidth, endinc;
     int		tileHeight;
     int *pwidthFree;		/* copies of the pointers to free */
     DDXPointPtr pptFree;
@@ -986,18 +899,7 @@ int fSorted;
     tlwidth = pTile->devKind >> 2;
     xSrc = pDrawable->x;
     ySrc = pDrawable->y;
-    if (pDrawable->type == DRAWABLE_WINDOW)
-    {
-	addrlBase = (int *)
-		(((PixmapPtr)(pDrawable->pScreen->devPrivate))->devPrivate.ptr);
-	nlwidth = (int)
-		  (((PixmapPtr)(pDrawable->pScreen->devPrivate))->devKind) >> 2;
-    }
-    else
-    {
-	addrlBase = (int *)(((PixmapPtr)pDrawable)->devPrivate.ptr);
-	nlwidth = (int)(((PixmapPtr)pDrawable)->devKind) >> 2;
-    }
+    mfbGetPixelWidthAndPointer(pDrawable, nlwidth, addrlBase);
 
     tileWidth = pTile->drawable.width;
     tileHeight = pTile->drawable.height;
@@ -1012,8 +914,8 @@ int fSorted;
     while (n--)
     {
 	iline = (ppt->y - ySrc) % tileHeight;
-        pdst = addrlBase + (ppt->y * nlwidth) + (ppt->x >> 5);
-        psrcT = (int *) pTile->devPrivate.ptr + (iline * tlwidth);
+        pdst = mfbScanline(addrlBase, ppt->x, ppt->y, nlwidth);
+        psrcT = (PixelType *) pTile->devPrivate.ptr + (iline * tlwidth);
 	x = ppt->x;
 
 	if (*pwidth)

@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbhrzvert.c,v 1.10 89/03/16 14:47:31 jim Exp $ */
+/* $XConsortium: mfbhrzvert.c,v 1.11 89/09/13 18:58:09 rws Exp $ */
 #include "X.h"
 
 #include "gc.h"
@@ -38,14 +38,14 @@ SOFTWARE.
 */
 mfbHorzS(rop, addrl, nlwidth, x1, y1, len)
 int rop;		/* a reduced rasterop */
-register int *addrl;	/* pointer to base of bitmap */
+register PixelType *addrl;	/* pointer to base of bitmap */
 register int nlwidth;	/* width in longwords of bitmap */
 int x1;			/* initial point */ 
 int y1;
 int len;		/* length of line */
 {
-    register int startmask;
-    register int endmask;
+    register PixelType startmask;
+    register PixelType endmask;
     register int nlmiddle;
 
 
@@ -59,7 +59,7 @@ int len;		/* length of line */
 	len = -len;
     }
 
-    addrl = addrl + (y1 * nlwidth) + (x1 >> 5);
+    addrl = mfbScanline(addrl, x1, y1, nlwidth);
 
     /* all bits inside same longword */
     if ( ((x1 & 0x1f) + len) < 32)
@@ -116,14 +116,14 @@ int len;		/* length of line */
 
 mfbVertS(rop, addrl, nlwidth, x1, y1, len)
 int rop;		/* a reduced rasterop */
-register int *addrl;	/* pointer to base of bitmap */
+register PixelType *addrl;	/* pointer to base of bitmap */
 register int nlwidth;	/* width in longwords of bitmap */
 int x1, y1;		/* initial point */
 register int len;	/* length of line */
 {
-    register int bitmask;
+    register PixelType bitmask;
 
-    addrl = addrl + (y1 * nlwidth) + (x1 >> 5);
+    addrl = mfbScanline(addrl, x1, y1, nlwidth);
 
     if (len < 0)
     {
@@ -134,17 +134,17 @@ register int len;	/* length of line */
     if (rop == RROP_BLACK)
     {
 	bitmask = rmask[x1&0x1f];
-        Duff(len, *addrl &= bitmask; addrl += nlwidth );
+        Duff(len, *addrl &= bitmask; mfbScanlineInc(addrl, nlwidth, nlwidth) );
     }
     else if (rop == RROP_WHITE)
     {
 	bitmask = mask[x1&0x1f];
-        Duff(len, *addrl |= bitmask; addrl += nlwidth );
+        Duff(len, *addrl |= bitmask; mfbScanlineInc(addrl, nlwidth, nlwidth) );
     }
     else if (rop == RROP_INVERT)
     {
 	bitmask = mask[x1&0x1f];
-        Duff(len, *addrl ^= bitmask; addrl += nlwidth );
+        Duff(len, *addrl ^= bitmask; mfbScanlineInc(addrl, nlwidth, nlwidth) );
     }
 }
 

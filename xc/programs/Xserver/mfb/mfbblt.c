@@ -18,7 +18,7 @@ purpose.  It is provided "as is" without express or implied warranty.
 Author: Keith Packard
 
 */
-/* $XConsortium: mfbblt.c,v 1.4 90/04/06 10:05:41 rws Exp $ */
+/* $XConsortium: mfbblt.c,v 1.5 91/01/27 13:02:19 keith Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -39,7 +39,7 @@ MROP_NAME(mfbDoBitblt)(pSrc, pDst, alu, prgnDst, pptSrc)
     RegionPtr	    prgnDst;
     DDXPointPtr	    pptSrc;
 {
-    unsigned int *psrcBase, *pdstBase;	
+    PixelType *psrcBase, *pdstBase;	
 				/* start of src and dst bitmaps */
     int widthSrc, widthDst;	/* add to get to same position in next line */
 
@@ -55,20 +55,20 @@ MROP_NAME(mfbDoBitblt)(pSrc, pDst, alu, prgnDst, pptSrc)
     int xdir;			/* 1 = left right, -1 = right left/ */
     int ydir;			/* 1 = top down, -1 = bottom up */
 
-    unsigned int *psrcLine, *pdstLine;	
+    PixelType *psrcLine, *pdstLine;	
 				/* pointers to line with current src and dst */
-    register unsigned int *psrc;/* pointer to current src longword */
-    register unsigned int *pdst;/* pointer to current dst longword */
+    register PixelType *psrc;/* pointer to current src longword */
+    register PixelType *pdst;/* pointer to current dst longword */
 
     MROP_DECLARE_REG()
 
 				/* following used for looping through a line */
-    unsigned int startmask, endmask;	/* masks for writing ends of dst */
+    PixelType startmask, endmask;	/* masks for writing ends of dst */
     int nlMiddle;		/* whole longwords in dst */
     int xoffSrc, xoffDst;
     register int leftShift, rightShift;
-    register unsigned int bits;
-    register unsigned int bits1;
+    register PixelType bits;
+    register PixelType bits1;
     register int nl;		/* temp copy of nlMiddle */
 
 				/* place to store full source word */
@@ -81,33 +81,9 @@ MROP_NAME(mfbDoBitblt)(pSrc, pDst, alu, prgnDst, pptSrc)
 
     MROP_INITIALIZE(alu,0);
 
-    if (pSrc->type == DRAWABLE_WINDOW)
-    {
-	psrcBase = (unsigned int *)
-		(((PixmapPtr)(pSrc->pScreen->devPrivate))->devPrivate.ptr);
-	widthSrc = (int)
-		   ((PixmapPtr)(pSrc->pScreen->devPrivate))->devKind
-		    >> 2;
-    }
-    else
-    {
-	psrcBase = (unsigned int *)(((PixmapPtr)pSrc)->devPrivate.ptr);
-	widthSrc = (int)(((PixmapPtr)pSrc)->devKind) >> 2;
-    }
+    mfbGetPixelWidthAndPointer(pSrc, widthSrc, psrcBase);
 
-    if (pDst->type == DRAWABLE_WINDOW)
-    {
-	pdstBase = (unsigned int *)
-		(((PixmapPtr)(pDst->pScreen->devPrivate))->devPrivate.ptr);
-	widthDst = (int)
-		   ((PixmapPtr)(pDst->pScreen->devPrivate))->devKind
-		    >> 2;
-    }
-    else
-    {
-	pdstBase = (unsigned int *)(((PixmapPtr)pDst)->devPrivate.ptr);
-	widthDst = (int)(((PixmapPtr)pDst)->devKind) >> 2;
-    }
+    mfbGetPixelWidthAndPointer(pDst, widthDst, pdstBase);
 
     /* XXX we have to err on the side of safety when both are windows,
      * because we don't know if IncludeInferiors is being used.
@@ -224,13 +200,13 @@ MROP_NAME(mfbDoBitblt)(pSrc, pDst, alu, prgnDst, pptSrc)
 
 	if (ydir == -1) /* start at last scanline of rectangle */
 	{
-	    psrcLine = psrcBase + ((pptSrc->y+h-1) * -widthSrc);
-	    pdstLine = pdstBase + ((pbox->y2-1) * -widthDst);
+	    psrcLine = mfbScanlineDelta(psrcBase, -(pptSrc->y+h-1), widthSrc);
+	    pdstLine = mfbScanlineDelta(pdstBase, -(pbox->y2-1), widthDst);
 	}
 	else /* start at first scanline */
 	{
-	    psrcLine = psrcBase + (pptSrc->y * widthSrc);
-	    pdstLine = pdstBase + (pbox->y1 * widthDst);
+	    psrcLine = mfbScanlineDelta(psrcBase, pptSrc->y, widthSrc);
+	    pdstLine = mfbScanlineDelta(pdstBase, pbox->y1, widthDst);
 	}
 	if ((pbox->x1 & PIM) + w <= PPW)
 	{
@@ -250,7 +226,7 @@ MROP_NAME(mfbDoBitblt)(pSrc, pDst, alu, prgnDst, pptSrc)
 	    psrcLine += (pptSrc->x >> PWSH);
 #ifdef DO_UNALIGNED_BITBLT
 	    nl = xoffSrc - xoffDst;
-	    psrcLine = (unsigned int *)
+	    psrcLine = (PixelType *)
 			(((unsigned char *) psrcLine) + nl);
 #else
 	    if (xoffSrc == xoffDst)
@@ -260,8 +236,8 @@ MROP_NAME(mfbDoBitblt)(pSrc, pDst, alu, prgnDst, pptSrc)
 		{
 		    psrc = psrcLine;
 		    pdst = pdstLine;
-		    pdstLine += widthDst;
-		    psrcLine += widthSrc;
+		    mfbScanlineInc(pdstLine, widthDst, widthDst);
+		    mfbScanlineInc(psrcLine, widthSrc, widthSrc);
 		    if (startmask)
 		    {
 			*pdst = MROP_MASK(*psrc, *pdst, startmask);
@@ -342,8 +318,8 @@ psrc += UNROLL;
 		{
 		    psrc = psrcLine;
 		    pdst = pdstLine;
-		    pdstLine += widthDst;
-		    psrcLine += widthSrc;
+		    mfbScanlineInc(pdstLine, widthDst, widthDst);
+		    mfbScanlineInc(psrcLine, widthSrc, widthSrc);
 		    bits = 0;
 		    if (xoffSrc > xoffDst)
 			bits = *psrc++;
@@ -430,7 +406,7 @@ pdst++;
 	    psrcLine += ((pptSrc->x+w - 1) >> PWSH) + 1;
 #ifdef DO_UNALIGNED_BITBLT
 	    nl = xoffSrc - xoffDst;
-	    psrcLine = (unsigned int *)
+	    psrcLine = (PixelType *)
 			(((unsigned char *) psrcLine) + nl);
 #else
 	    if (xoffSrc == xoffDst)
@@ -440,8 +416,8 @@ pdst++;
 		{
 		    psrc = psrcLine;
 		    pdst = pdstLine;
-		    pdstLine += widthDst;
-		    psrcLine += widthSrc;
+		    mfbScanlineInc(pdstLine, widthDst, widthDst);
+		    mfbScanlineInc(psrcLine, widthSrc, widthSrc);
 		    if (endmask)
 		    {
 			pdst--;
@@ -506,8 +482,8 @@ psrc -= UNROLL;
 		{
 		    psrc = psrcLine;
 		    pdst = pdstLine;
-		    pdstLine += widthDst;
-		    psrcLine += widthSrc;
+		    mfbScanlineInc(pdstLine, widthDst, widthDst);
+		    mfbScanlineInc(psrcLine, widthSrc, widthSrc);
 		    bits = 0;
 		    if (xoffDst > xoffSrc)
 			bits = *--psrc;

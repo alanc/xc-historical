@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbpntarea.c,v 5.1 89/09/13 18:58:22 rws Exp $ */
+/* $XConsortium: mfbpntarea.c,v 5.2 89/11/24 18:06:43 rws Exp $ */
 #include "X.h"
 
 #include "windowstr.h"
@@ -68,34 +68,22 @@ MFBSOLIDFILLAREA(pDraw, nbox, pbox, alu, nop)
     int nlwidth;	/* width in longwords of the drawable */
     int w;		/* width of current box */
     register int h;	/* height of current box */
-    register unsigned int *p;	/* pointer to bits we're writing */
+    register PixelType *p;	/* pointer to bits we're writing */
     register int nlw;	/* loop version of nlwMiddle */
-    register int startmask;
-    register int endmask;/* masks for reggedy bits at either end of line */
+    register PixelType startmask;
+    register PixelType endmask;/* masks for reggedy bits at either end of line */
     register int nlwExtra;	
 		        /* to get from right of box to left of next span */
     int nlwMiddle;	/* number of longwords between sides of boxes */
-    unsigned int *pbits;	/* pointer to start of drawable */
+    PixelType *pbits;	/* pointer to start of drawable */
 
-    if (pDraw->type == DRAWABLE_WINDOW)
-    {
-	pbits = (unsigned int *)
-		(((PixmapPtr)(pDraw->pScreen->devPrivate))->devPrivate.ptr);
-	nlwidth = (int)
-		(((PixmapPtr)(pDraw->pScreen->devPrivate))->devKind) >> 2;
-    }
-    else
-    {
-	pbits = (unsigned int *)(((PixmapPtr)pDraw)->devPrivate.ptr);
-	nlwidth = (int)(((PixmapPtr)pDraw)->devKind) >> 2;
-    }
-
+    mfbGetPixelWidthAndPointer(pDraw, nlwidth, pbits);
 
     while (nbox--)
     {
 	w = pbox->x2 - pbox->x1;
 	h = pbox->y2 - pbox->y1;
-	p = pbits + (pbox->y1 * nlwidth) + (pbox->x1 >> 5);
+	p = mfbScanline(pbits, pbox->x1, pbox->y1, nlwidth);
 
 	if ( ((pbox->x1 & 0x1f) + w) < 32)
 	{
@@ -118,7 +106,7 @@ MFBSOLIDFILLAREA(pDraw, nbox, pbox, alu, nop)
 		    p++;
 		    Duff(nlw, *p++ EQWHOLEWORD);
 		    *p OPEQ endmask;
-		    p += nlwExtra;
+		    mfbScanlineInc(p, nlwExtra, nlwidth);
 		}
 	    }
 	    else if (startmask && !endmask)
@@ -130,7 +118,7 @@ MFBSOLIDFILLAREA(pDraw, nbox, pbox, alu, nop)
 		    *p OPEQ startmask;
 		    p++;
 		    Duff(nlw, *p++ EQWHOLEWORD);
-		    p += nlwExtra;
+		    mfbScanlineInc(p, nlwExtra, nlwidth);
 		}
 	    }
 	    else if (!startmask && endmask)
@@ -140,7 +128,7 @@ MFBSOLIDFILLAREA(pDraw, nbox, pbox, alu, nop)
 		    nlw = nlwMiddle;
 		    Duff(nlw, *p++ EQWHOLEWORD);
 		    *p OPEQ endmask;
-		    p += nlwExtra;
+		    mfbScanlineInc(p, nlwExtra, nlwidth);
 		}
 	    }
 	    else /* no ragged bits at either end */
@@ -149,7 +137,7 @@ MFBSOLIDFILLAREA(pDraw, nbox, pbox, alu, nop)
 		{
 		    nlw = nlwMiddle;
 		    Duff(nlw, *p++ EQWHOLEWORD);
-		    p += nlwExtra;
+		    mfbScanlineInc(p, nlwExtra, nlwidth);
 		}
 	    }
 	}
@@ -181,15 +169,15 @@ MFBSTIPPLEFILLAREA(pDraw, nbox, pbox, alu, pstipple)
     int alu;
     PixmapPtr pstipple;
 {
-    register unsigned int *psrc;
+    register PixelType *psrc;
 			/* pointer to bits in tile, if needed */
     int tileHeight;	/* height of the tile */
-    register unsigned int srcpix;	
+    register PixelType srcpix;	
 
     int nlwidth;	/* width in longwords of the drawable */
     int w;		/* width of current box */
     register int nlw;	/* loop version of nlwMiddle */
-    register unsigned int *p;	/* pointer to bits we're writing */
+    register PixelType *p;	/* pointer to bits we're writing */
     register int h;	/* height of current box */
     int startmask;
     int endmask;	/* masks for reggedy bits at either end of line */
@@ -199,30 +187,19 @@ MFBSTIPPLEFILLAREA(pDraw, nbox, pbox, alu, pstipple)
     register int iy;	/* index of current scanline in tile */
 
 
-    unsigned int *pbits;	/* pointer to start of drawable */
+    PixelType *pbits;	/* pointer to start of drawable */
 
-    if (pDraw->type == DRAWABLE_WINDOW)
-    {
-	pbits = (unsigned int *)
-		(((PixmapPtr)(pDraw->pScreen->devPrivate))->devPrivate.ptr);
-	nlwidth = (int)
-		(((PixmapPtr)(pDraw->pScreen->devPrivate))->devKind) >> 2;
-    }
-    else
-    {
-	pbits = (unsigned int *)(((PixmapPtr)pDraw)->devPrivate.ptr);
-	nlwidth = (int)(((PixmapPtr)pDraw)->devKind) >> 2;
-    }
+    mfbGetPixelWidthAndPointer(pDraw, nlwidth, pbits);
 
     tileHeight = pstipple->drawable.height;
-    psrc = (unsigned int *)(pstipple->devPrivate.ptr);
+    psrc = (PixelType *)(pstipple->devPrivate.ptr);
 
     while (nbox--)
     {
 	w = pbox->x2 - pbox->x1;
 	h = pbox->y2 - pbox->y1;
 	iy = pbox->y1 % tileHeight;
-	p = pbits + (pbox->y1 * nlwidth) + (pbox->x1 >> 5);
+	p = mfbScanline(pbits, pbox->x1, pbox->y1, nlwidth);
 
 	if ( ((pbox->x1 & 0x1f) + w) < 32)
 	{

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: mfbply1rct.c,v 1.1 92/02/24 19:06:01 keith Exp $
+ * $XConsortium: mfbply1rct.c,v 1.2 92/10/01 12:23:56 rws Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -62,7 +62,7 @@ MFBFILLPOLY1RECT (pDrawable, pGC, shape, mode, count, ptsIn)
 {
     mfbPrivGCPtr    devPriv;
     int		    nwidth;
-    unsigned long   *addrl, *addr;
+    PixelType	    *addrl, *addr;
     int		    maxy;
     int		    origin;
     register int    vertex1, vertex2;
@@ -80,7 +80,7 @@ MFBFILLPOLY1RECT (pDrawable, pGC, shape, mode, count, ptsIn)
     int		    sign1, sign2;
     int		    h;
     int		    l, r;
-    unsigned long   mask, bits = ~((unsigned long)0);
+    PixelType	    mask, bits = ~0L;
     int		    nmiddle;
 
     devPriv = (mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr);
@@ -123,7 +123,7 @@ MFBFILLPOLY1RECT (pDrawable, pGC, shape, mode, count, ptsIn)
 	return;
     }
 
-#define AddrYPlus(a,y)  (unsigned long *) (((unsigned char *) (a)) + (y) * nwidth)
+#define AddrYPlus(a,y)  (PixelType *) (((unsigned char *) (a)) + (y) * nwidth)
 
     mfbGetTypedWidthAndPointer(pDrawable, nwidth, addrl, unsigned char, unsigned long);
     addrl = AddrYPlus(addrl,y + pDrawable->y);
