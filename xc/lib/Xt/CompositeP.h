@@ -1,4 +1,4 @@
-/* $XConsortium: CompositeP.h,v 1.12 89/09/13 17:56:24 swick Exp $ */
+/* $XConsortium: CompositeP.h,v 1.13 89/10/04 12:22:53 swick Exp $ */
 /* $oHeader: CompositeP.h,v 1.2 88/08/18 15:54:11 asente Exp $ */
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -35,8 +35,11 @@ SOFTWARE.
  *
  ************************************************************************/
 
-typedef Cardinal (*XtOrderProc)();
-    /* Widget child; */
+typedef Cardinal (*XtOrderProc)(
+#if NeedFunctionPrototypes
+    Widget 	/* child */
+#endif
+);
 
 typedef struct _CompositePart {
     WidgetList  children;	     /* array of ALL widget children	     */
