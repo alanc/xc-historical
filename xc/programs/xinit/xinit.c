@@ -1,5 +1,5 @@
 #ifndef lint
-static char *rcsid_xinit_c = "$XConsortium: xinit.c,v 11.38 89/12/13 13:48:01 keith Exp $";
+static char *rcsid_xinit_c = "$XConsortium: xinit.c,v 11.39 89/12/13 13:49:47 rws Exp $";
 #endif /* lint */
 #include <X11/copyright.h>
 
@@ -147,7 +147,7 @@ register char **argv;
 	register char **sptr = server;
 	register char **cptr = client;
 	register char **ptr;
-	int pid, i;
+	int pid;
 	int client_given = 0, server_given = 0;
 	int client_args_given = 0, server_args_given = 0;
 	int start_of_client_args, start_of_server_args;
@@ -492,7 +492,7 @@ static int ignorexio (dpy)
 {
     fprintf (stderr, "%s:  connection to X server lost.\r\n", program);
     longjmp (close_env, 1);
-    return;
+    /*NOTREACHED*/
 }
 
 static

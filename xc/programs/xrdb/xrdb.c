@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: xrdb.c,v 11.33 89/12/10 16:45:52 rws Exp $";
+static char rcs_id[] = "$XConsortium: xrdb.c,v 11.34 89/12/12 12:06:21 jim Exp $";
 #endif
 
 /*
@@ -84,18 +84,6 @@ int rename (from, to)
     }
 }
 #endif
-
-fatal(msg, prog, x1, x2, x3, x4, x5)
-    char *msg, *prog;
-    int x1, x2, x3, x4, x5;
-{
-    extern int errno;
-
-    if (errno)
-	perror(prog);
-    (void) fprintf(stderr, msg, prog, x1, x2, x3, x4, x5);
-    exit(1);
-}
 
 void InitBuffer(b)
     Buffer *b;
@@ -775,3 +763,14 @@ main (argc, argv)
     exit (0);
 }
 
+fatal(msg, prog, x1, x2, x3, x4, x5)
+    char *msg, *prog;
+    int x1, x2, x3, x4, x5;
+{
+    extern int errno;
+
+    if (errno)
+	perror(prog);
+    (void) fprintf(stderr, msg, prog, x1, x2, x3, x4, x5);
+    exit(1);
+}
