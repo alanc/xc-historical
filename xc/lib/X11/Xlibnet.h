@@ -1,4 +1,4 @@
-/* $XConsortium: Xlibnet.h,v 1.34 93/09/25 13:54:40 rws Exp $ */
+/* $XConsortium: Xlibnet.h,v 1.36 94/01/11 12:35:09 mor Exp $ */
 
 /*
 Copyright 1991 Massachusetts Institute of Technology
@@ -177,6 +177,15 @@ typedef unsigned long FdSet[MSKCNT];
 #endif
 
 #else /* not WIN32 */
+
+#define BOOL wBOOL
+#undef Status
+#define Status wStatus
+#include <winsock.h>
+#undef Status
+#define Status int
+#undef BOOL
+#include <X11/Xw32defs.h>
 
 typedef fd_set FdSet;
 
