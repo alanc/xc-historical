@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: help.c,v 1.4 89/04/28 15:05:40 kit Exp $
+ * $XConsortium: help.c,v 1.5 89/05/06 21:16:24 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -81,8 +81,6 @@ ManpageGlobals * man_globals;
     return(FALSE);
   }
     
-  XtSetArg(arglist[num_args], XtNfile, help_file_ptr); num_args++;
-  XtSetValues(man_globals->manpagewidgets.manpage, arglist, num_args);
-
+  OpenFile(man_globals, help_file_ptr);
   return(TRUE);
 }
