@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XErrDes.c,v 11.28 88/09/19 13:55:50 jim Exp $
+ * $XConsortium: XErrDes.c,v 11.29 88/09/30 15:34:57 jim Exp $
  */
 
 /***********************************************************
@@ -37,23 +37,23 @@ SOFTWARE.
 
 char *XErrorList[] = {
 	/* No error	*/	"",
-	/* BadRequest	*/	"bad request code",
-	/* BadValue	*/	"integer parameter out of range",
-	/* BadWindow	*/	"parameter not a Window",
-	/* BadPixmap	*/	"parameter not a Pixmap",
-	/* BadAtom	*/	"parameter not an Atom",
-	/* BadCursor	*/	"parameter not a Cursor",
-	/* BadFont	*/	"parameter not a Font",
-	/* BadMatch	*/	"parameter mismatch",
-	/* BadDrawable	*/	"parameter not a Pixmap or Window",
-	/* BadAccess	*/	"attempt to access private resource", 
-	/* BadAlloc	*/	"insufficient resources",
-    	/* BadColor   	*/  	"no such colormap",
-    	/* BadGC   	*/  	"parameter not a GC",
+	/* BadRequest	*/	"bad request code or no such operation",
+	/* BadValue	*/	"integer parameter out of range for operation",
+	/* BadWindow	*/	"parameter not a valid Window",
+	/* BadPixmap	*/	"parameter not a valid Pixmap",
+	/* BadAtom	*/	"parameter not a valid Atom",
+	/* BadCursor	*/	"parameter not a valid Cursor",
+	/* BadFont	*/	"parameter not a valid Font",
+	/* BadMatch	*/	"parameter attributes not valid for operation",
+	/* BadDrawable	*/	"parameter not a valid Pixmap or Window",
+	/* BadAccess	*/	"attempt to access private resource denied", 
+	/* BadAlloc	*/	"insufficient resources for operation",
+    	/* BadColor   	*/  	"parameter not a valid Colormap",
+    	/* BadGC   	*/  	"parameter not a valid GC",
 	/* BadIDChoice  */	"invalid resource ID for this connection",
-	/* BadName	*/	"font or color name does not exist",
-	/* BadLength	*/	"request too long or internal Xlib length error",
-	/* BadImplementation */	"server does not implement function",
+	/* BadName	*/	"named font or color does not exist",
+	/* BadLength	*/	"poly request too large or internal Xlib length error",
+	/* BadImplementation */	"server does not implement operation",
 };
 int XErrorListSize = sizeof(XErrorList);
 
