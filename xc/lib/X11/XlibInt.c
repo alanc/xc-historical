@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlibInt.c,v 11.147 91/05/11 23:29:51 rws Exp $
+ * $XConsortium: XlibInt.c,v 11.148 91/06/13 18:35:30 rws Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986, 1987 */
@@ -150,12 +150,43 @@ _XEventsQueued (dpy, mode)
 	if (dpy->flags & XlibDisplayIOError) return(dpy->qlen);
 	if (BytesReadable(dpy->fd, (char *) &pend) < 0)
 	    _XIOError(dpy);
+#ifdef XCONN_CHECK_FREQ
+	/* This is a crock, required because FIONREAD or equivalent is
+	 * not guaranteed to detect a broken connection.
+	 */
+	if (!pend && !dpy->qlen && ++dpy->conn_checker >= XCONN_CHECK_FREQ)
+	{
+	    unsigned long r_mask[MSKCNT];
+	    static struct timeval zero_time;
+
+	    dpy->conn_checker = 0;
+	    CLEARBITS(r_mask);
+	    BITSET(r_mask, dpy->fd);
+	    if (pend = select(dpy->fd + 1, (int *)r_mask, NULL, NULL,
+			      &zero_time))
+	    {
+		if (pend > 0)
+		{
+		    if (BytesReadable(dpy->fd, (char *) &pend) < 0)
+			_XIOError(dpy);
+		    /* we should not get zero, if we do, force a read */
+		    if (!pend)
+			pend = SIZEOF(xReply);
+		}
+		else if (pend < 0 && errno != EINTR)
+		    _XIOError(dpy);
+	    }
+	}
+#endif /* XCONN_CHECK_FREQ */
 	if ((len = pend) < SIZEOF(xReply))
 	    return(dpy->qlen);	/* _XFlush can enqueue events */
 	else if (len > BUFSIZE)
 	    len = BUFSIZE;
 	len /= SIZEOF(xReply);
 	pend = len * SIZEOF(xReply);
+#ifdef XCONN_CHECK_FREQ
+	dpy->conn_checker = 0;
+#endif
 	_XRead (dpy, buf, (long) pend);
 
 	/* no space between comma and type or else macro will die */
