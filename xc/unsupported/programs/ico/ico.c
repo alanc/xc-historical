@@ -1,4 +1,4 @@
-/* $XConsortium: ico.c,v 1.22 89/10/05 21:03:13 jim Exp $ */
+/* $XConsortium: ico.c,v 1.23 89/10/05 21:09:01 jim Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -267,6 +267,13 @@ char **argv;
 		exit(-1);
 	        }
 
+#ifdef MULTIBUFFER
+	if (multibuf && !XmbufQueryExtension (dpy, &mbevbase, &mberrbase)) {
+	    multibuf = 0;
+	    dblbuf = 1;
+	}
+#endif
+
 	cmap = XDefaultColormap(dpy,DefaultScreen(dpy));
 	if (!cmap) {
 		icoFatal("no default colormap!");
@@ -301,10 +308,8 @@ char **argv;
 		winW = DisplayWidth(dpy, DefaultScreen(dpy));
 		winH = DisplayHeight(dpy, DefaultScreen(dpy));
 		}
-	else
-		{
-		winW = 600;
-		winH = 600;
+	else {
+		winW = winH = (multibuf ? 300 : 600);
 		winX = (DisplayWidth(dpy, DefaultScreen(dpy)) - winW) >> 1;
 		winY = (DisplayHeight(dpy, DefaultScreen(dpy)) - winH) >> 1;
 		if (geom) 
@@ -354,19 +359,16 @@ char **argv;
 
 #ifdef MULTIBUFFER
 	if (multibuf) {
-	    if (XmbufQueryExtension (dpy, &mbevbase, &mberrbase)) {
-		if (XmbufCreateBuffers (dpy, draw_window, 2,
-					MultibufferUpdateActionBackground,
-					MultibufferUpdateHintFrequent,
-					multibuffers) == 2) {
-                    XCopyArea (dpy, draw_window, multibuffers[1],
-                               DefaultGC(dpy, DefaultScreen(dpy)),
-                               0, 0, winW, winH, 0, 0);
-		    win = multibuffers[1];
-		} else 
-		  icoFatal ("unable to obtain 2 buffers");
-	    } else
-	      multibuf = 0;
+	    if (XmbufCreateBuffers (dpy, draw_window, 2,
+				    MultibufferUpdateActionBackground,
+				    MultibufferUpdateHintFrequent,
+				    multibuffers) == 2) {
+		XCopyArea (dpy, draw_window, multibuffers[1],
+			   DefaultGC(dpy, DefaultScreen(dpy)),
+			   0, 0, winW, winH, 0, 0);
+		win = multibuffers[1];
+	    } else 
+	      icoFatal ("unable to obtain 2 buffers");
 	    dblbuf = 1;
 	}
 #endif /* MULTIBUFFER */
