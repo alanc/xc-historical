@@ -17,7 +17,7 @@
 Chapter 7 - Menus
 .XE
 .LP
-The Athena widget set provides support for single paned non-hierarchial
+The Athena widget set provides support for single paned non-hierarchical
 popup and pulldown menus.  We realized the support for menus must be
 provided in even  
 the most basic of widget sets, and that this has long been perceived as
@@ -39,7 +39,7 @@ be used to build menus.
 .IP \fBSme\fP 1i
 The base class of all menu entries, it may be used as a menu
 entry itself to provide blank space in a menu.
-.IP \fBSmeBSE\fP 1i
+.IP \fBSmeBSB\fP 1i
 Provides support for a menu string, as well as a bitmap in each of the
 margins. 
 .IP \fBSmeLine\fP 1i
@@ -49,10 +49,10 @@ A separator line may be placed in a menu by using this object class.
 The SimpleMenu widget sets the \fBOverride Redirect\fP flag to
 tell the window manager to ignore its window.  This behavior is fine
 for the click-drag-release style of menu operation, but if you desire
-click-move-click or \fIpinable\fP menues you should be sure to set up
+click-move-click or \fIpinable\fP menus you should be sure to set up
 the resources to allow the window manager to \fIsee\fP the menu.
 .LP
-To allow easy creation of pulldown menus a MenuButton widget is
+To allow easy creation of pulldown menus, a MenuButton widget is
 also provided as part of the Athena widget set.
 .NH 2
 Using the Menus
