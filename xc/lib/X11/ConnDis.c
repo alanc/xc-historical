@@ -1,4 +1,4 @@
-/* $XConsortium: ConnDis.c,v 11.123 94/05/19 11:00:27 mor Exp kaleb $ */
+/* $XConsortium: ConnDis.c,v 11.124 95/04/05 19:57:57 kaleb Exp mor $ */
 /*
  
 Copyright (c) 1989  X Consortium
@@ -318,7 +318,7 @@ _X11TransConnectDisplay (display_name, fullnamep, dpynump, screenp,
 	    sleep(1);
 	    if (saddr)
 	    {
-		Xfree (saddr);
+		free ((char *) saddr);
 		saddr = NULL;
 	    }
 	    continue;
@@ -368,7 +368,7 @@ _X11TransConnectDisplay (display_name, fullnamep, dpynump, screenp,
      */
   bad:
     if (trans_conn) (void)_X11TransClose(trans_conn);
-    if (saddr) Xfree (saddr);
+    if (saddr) free ((char *) saddr);
     if (pprotocol) Xfree (pprotocol);
     if (phostname) Xfree (phostname);
     if (pdpynum) Xfree (pdpynum);
@@ -1092,7 +1092,7 @@ GetAuthorization(trans_conn, family, saddr, saddrlen, idisplay,
 	}
     }
 #endif
-    if (saddr) Xfree (saddr);
+    if (saddr) free ((char *) saddr);
     if (*auth_namelenp = auth_namelen)
     {
 	if (*auth_namep = Xmalloc(auth_namelen))
