@@ -1,4 +1,4 @@
-/* $XConsortium: scrnintstr.h,v 5.17 93/09/20 18:05:31 dpw Exp $ */
+/* $XConsortium: scrnintstr.h,v 5.18 93/09/24 12:17:48 rws Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -682,6 +682,98 @@ typedef struct _Screen {
     unsigned		totalPixmapSize;
 #endif
 
+    void (* MarkWindow)(
+#if NeedNestedPrototypes
+	WindowPtr /*pWin*/
+#endif
+);
+
+    Bool (* MarkOverlappedWindows)(
+#if NeedNestedPrototypes
+	WindowPtr /*parent*/,
+	WindowPtr /*firstChild*/,
+	WindowPtr * /*pLayerWin*/
+#endif
+);
+
+
+    Bool (* ChangeSaveUnder)(
+#if NeedNestedPrototypes
+	WindowPtr /*pLayerWin*/,
+	WindowPtr /*firstChild*/
+#endif
+);
+
+    void (* PostChangeSaveUnder)(
+#if NeedNestedPrototypes
+	WindowPtr /*pLayerWin*/,
+	WindowPtr /*firstChild*/
+#endif
+);
+
+    void (* MoveWindow)(
+#if NeedNestedPrototypes
+	WindowPtr /*pWin*/,
+	int /*x*/,
+	int /*y*/,
+	WindowPtr /*pSib*/,
+	VTKind /*kind*/
+#endif
+);
+
+    void (* ResizeWindow)(
+#if NeedNestedPrototypes
+    WindowPtr /*pWin*/;
+    int /*x*/,
+    int /*y*/, 
+    unsigned int /*w*/,
+    unsigned int /*h*/,
+    WindowPtr /*pSib*/
+#endif
+);
+
+    WindowPtr (* GetLayerWindow)(
+#if NeedNestedPrototypes
+    WindowPtr /*pWin*/
+#endif
+);
+
+    void (* HandleExposures)(
+#if NeedNestedPrototypes
+    WindowPtr /*pWin*/
+#endif
+);
+
+    void (* ReparentWindow)(
+#if NeedNestedPrototypes
+    WindowPtr /*pWin*/,
+    WindowPtr /*pPriorParent*/
+#endif
+);
+
+#ifdef SHAPE
+    void (* SetShape)(
+#if NeedFunctionPrototypes
+	WindowPtr /*pWin*/
+#endif
+);
+#endif /* SHAPE */
+
+    void (* ChangeBorderWidth)(
+#if NeedFunctionPrototypes
+	WindowPtr /*pWin*/,
+	unsigned int /*width*/
+#endif
+);
+
+    void (* MarkUnrealizedWindow)(
+#if NeedFunctionPrototypes
+	WindowPtr /*pChild*/,
+	WindowPtr /*pWin*/,
+	Bool /*fromConfigure*/
+#endif
+);
+
 } ScreenRec;
 
 typedef struct _ScreenInfo {
@@ -695,8 +787,6 @@ typedef struct _ScreenInfo {
     int		arraySize;
     int		numScreens;
     ScreenPtr	screens[MAXSCREENS];
-    int		glyphCachingMode;	/* for screens to indicate
-					   highest supported mode */
 } ScreenInfo;
 
 extern ScreenInfo screenInfo;
