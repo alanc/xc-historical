@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.48 91/07/24 18:36:18 keith Exp $
+XCOMM $XConsortium: Imakefile,v 1.49 91/08/22 14:23:54 rws Exp $
 #include <Server.tmpl>
 
 #if (SystemV || SystemV4) && !HasSockets
@@ -70,6 +70,7 @@ BOOTSTRAPCFLAGS =
         DEFINES = ConnectionFlags $(OS_DEFINES) $(XDMAUTHDEFS) $(RPCDEFS) $(SIGNAL_DEFINES)
        INCLUDES = -I.  -I../include -I$(INCLUDESRC) -I$(TOP)/lib/Xau
     EXT_DEFINES = ExtensionDefines
+ DEPEND_DEFINES = $(DBM_DEFINES)
        LINTLIBS = ../dix/llib-ldix.ln
 
 #ifdef HPArchitecture
