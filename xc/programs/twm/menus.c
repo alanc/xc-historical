@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.95 89/08/14 18:16:35 jim Exp $
+ * $XConsortium: menus.c,v 1.96 89/08/15 11:10:51 jim Exp $
  *
  * twm menu code
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: menus.c,v 1.95 89/08/14 18:16:35 jim Exp $";
+"$XConsortium: menus.c,v 1.96 89/08/15 11:10:51 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -52,6 +52,7 @@ static char RCSinfo[] =
 #include "gram.h"
 #include "screen.h"
 #include "pull.bm"
+#include "version.h"
 
 #define SYNC XSync(dpy, 0);
 
@@ -2292,7 +2293,7 @@ TwmWindow *t;
     XTranslateCoordinates(dpy, t->w, Scr->Root, JunkX, JunkY, &x, &y, &junk);
 
     n = 0;
-    strcpy(Info[n++], "Window information");
+    strcpy(Info[n++], Version);
     Info[n++][0] = '\0';
     sprintf(Info[n++], "Name             = \"%s\"", t->full_name);
     sprintf(Info[n++], "Class.res_name   = \"%s\"", t->class.res_name);
@@ -2316,17 +2317,6 @@ TwmWindow *t;
     XResizeWindow(dpy, Scr->InfoWindow, width+10, height);
     XMapRaised(dpy, Scr->InfoWindow);
     InfoLines = n;
-/*
-         ==> Upper left X: 577
-         ==> Upper left Y: 162
-         ==> Width: 501
-         ==> Height: 803
-         ==> Depth: 8
-         ==> Border width: 2
-         ==> Window class: InputOutput
-         ==> Window Map State: IsViewable
-*/
-
 }
 
 SetMapStateProp(tmp_win, state)

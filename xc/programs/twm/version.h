@@ -27,7 +27,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: version.h,v 1.4 89/07/18 17:16:23 jim Exp $
+ * $XConsortium: version.h,v 1.5 89/08/15 11:24:20 jim Exp $
  *
  * TWM version externs
  *
@@ -38,6 +38,6 @@
 #ifndef _VERSION_
 #define _VERSION_
 
-extern char *Revision;
+extern char *Version;
 
 #endif /* _VERSION_ */

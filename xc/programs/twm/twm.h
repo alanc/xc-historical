@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: twm.h,v 1.36 89/07/27 17:42:08 jim Exp $
+ * $XConsortium: twm.h,v 1.37 89/08/14 18:16:50 jim Exp $
  *
  * twm include file
  *
@@ -239,8 +239,6 @@ extern XContext TwmContext;
 extern XContext MenuContext;
 extern XContext IconManagerContext;
 extern XContext ScreenContext;
-
-extern char Version[100];
 
 extern char *Home;
 extern int HomeLen;

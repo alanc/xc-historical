@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.83 89/07/26 11:11:31 jim Exp $
+ * $XConsortium: events.c,v 1.84 89/08/14 18:16:24 jim Exp $
  *
  * twm event handling
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: events.c,v 1.83 89/07/26 11:11:31 jim Exp $";
+"$XConsortium: events.c,v 1.84 89/08/14 18:16:24 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -54,6 +54,7 @@ static char RCSinfo[]=
 #include "screen.h"
 #include "iconmgr.h"
 #include "siconify.bm"
+#include "version.h"
 
 #define MAX_X_EVENT 256
 event_proc EventHandler[MAX_X_EVENT]; /* event handler jump table */

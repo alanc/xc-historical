@@ -25,25 +25,7 @@
 /**    OR PERFORMANCE OF THIS SOFTWARE.                                     **/
 /*****************************************************************************/
 
+static char *rcs = "$XConsortium: version.c,v 6.1 89/07/18 17:16:22 jim Exp $";
 
+char *Version = "MIT X Consortium, R4alpha++";
 
-/***********************************************************************
- *
- * $XConsortium: version.c,v 6.0 89/07/14 14:15:07 jim Exp $
- *
- * twm version number
- *
- * 14-Dec-87 Thomas E. LaStrange		File created
- *
- ***********************************************************************/
-
-static char RCSinfo[]=
-"$XConsortium: version.c,v 6.0 89/07/14 14:15:07 jim Exp $";
-
-char *Revision = "version: 6.00";
-char *Date = "date: 89/07/14 14:00:00";
-
-/* the following strings are for the SCCS "what" command */
-
-char *WhatRevision = "@(#)twm version: 6.01 $";
-char *WhatDate = "@(#)twm date: 89/07/14 14:00:00 $";

@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: twm.c,v 1.64 89/07/26 12:47:44 jim Exp $
+ * $XConsortium: twm.c,v 1.65 89/08/07 18:53:36 jim Exp $
  *
  * twm - "Tom's Window Manager"
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: twm.c,v 1.64 89/07/26 12:47:44 jim Exp $";
+"$XConsortium: twm.c,v 1.65 89/08/07 18:53:36 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -93,8 +93,6 @@ XContext ScreenContext;		/* context to get screen data */
 XClassHint NoClass;		/* for applications with no class */
 
 XGCValues Gcv;
-
-char Version[100];		/* place to build the version string */
 
 char *Home;			/* the HOME environment variable */
 int HomeLen;			/* length of Home */
@@ -451,13 +449,6 @@ main(argc, argv, environ)
 		Scr->DefaultC.fore,Scr->DefaultC.back);
 
 	/* contruct the version string */
-	strcpy(Version, &Date[7]);
-	sscanf(Version, "%d/%d/%d", &y, &m, &d);
-	sprintf(Version, "%s", &Revision[1]);
-	Version[strlen(Version) - 1] = '\0';
-	sscanf(&Date[7], "%d/%d/%d", &y, &m, &d);
-	sprintf(Version, "%s  Date: %d/%d/%d %s", Version, m, d, y, &Date[16]);
-	Version[strlen(Version) - 2] = '\0';
 
 	Scr->VersionWindow = XCreateSimpleWindow(dpy, Scr->Root, 0, 0,
 	    twm_width + 
