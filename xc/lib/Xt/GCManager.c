@@ -43,38 +43,41 @@ static int Matches(ptr,widget, valueMask, v)
     unsigned long	valueMask;
     register XGCValues	*v;
 {
+#define CheckGCField(MaskBit,fieldName) \
+    if (m & MaskBit) if (p->fieldName != v->fieldName) return 0
+
     register int m = ptr->valueMask & valueMask;
     register XGCValues *p = &(ptr->values);
-    int result;
-    result = 
-	(ptr->depth != widget->core.depth) &&
-	(ptr->screen != XtScreen(widget)) &&
-	(((m & GCFunction) == 0) || p->function == v->function) &&
-	(((m & GCPlaneMask) == 0) || p->plane_mask == v->plane_mask) &&
-        (((m & GCForeground) == 0) || p->foreground == v->foreground) &&
-	(((m & GCBackground) == 0) || p->background == v->background) &&
-	(((m & GCLineWidth) == 0) || p->line_width == v->line_width) &&
-	(((m & GCLineStyle) == 0) || p->line_style == v->line_style) &&
-	(((m & GCCapStyle) == 0) || p->cap_style == v->cap_style) &&
-	(((m & GCJoinStyle) == 0) || p->join_style == v->join_style);
-    result = result &&
-	(((m & GCFillStyle) == 0) || p->fill_style == v->fill_style) &&
-	(((m & GCFillRule) == 0) || p->fill_rule == v->fill_rule) &&
-	(((m & GCArcMode) == 0) || p->arc_mode == v->arc_mode) &&
-	(((m & GCTile) == 0) || p->tile == v->tile) &&
-	(((m & GCStipple) == 0) || p->stipple == v->stipple) &&
-	(((m & GCTileStipXOrigin) == 0) || p->ts_x_origin == v->ts_x_origin) &&
-	(((m & GCTileStipYOrigin) == 0) || p->ts_y_origin == v->ts_y_origin) &&
-	(((m & GCFont) == 0) || p->font == v->font);
-    result = result &&
-	(((m & GCSubwindowMode) == 0) || p->subwindow_mode == v->subwindow_mode) &&
-	(((m & GCGraphicsExposures) == 0) || p->graphics_exposures == v->graphics_exposures) &&
-	(((m & GCClipXOrigin) == 0) || p->clip_x_origin == v->clip_x_origin) &&
-	(((m & GCClipYOrigin) == 0) || p->clip_y_origin == v->clip_y_origin) &&
-	(((m & GCClipMask) == 0) || p->clip_mask == v->clip_mask) &&
-	(((m & GCDashOffset) == 0) || p->dash_offset == v->dash_offset) &&
-	(((m & GCDashList) == 0) || p->dashes == v->dashes);
-     return result;
+
+    if (ptr->valueMask != valueMask) return 0;
+    if (ptr->depth == widget->core.depth) return 0;
+    if (ptr->screen != XtScreen(widget)) return 0;
+
+    CheckGCField( GCFunction,		function);
+    CheckGCField( GCPlaneMask,		plane_mask);
+    CheckGCField( GCForeground,		foreground);
+    CheckGCField( GCBackground,		background);
+    CheckGCField( GCLineWidth,		line_width);
+    CheckGCField( GCLineStyle,		line_style);
+    CheckGCField( GCCapStyle,		cap_style);
+    CheckGCField( GCJoinStyle,		join_style);
+    CheckGCField( GCFillStyle,		fill_style);
+    CheckGCField( GCFillRule,		fill_rule);
+    CheckGCField( GCArcMode,		arc_mode);
+    CheckGCField( GCTile,		tile);
+    CheckGCField( GCStipple,		stipple);
+    CheckGCField( GCTileStipXOrigin,	ts_x_origin);
+    CheckGCField( GCTileStipYOrigin,	ts_y_origin);
+    CheckGCField( GCFont,		font);
+    CheckGCField( GCSubwindowMode,	subwindow_mode);
+    CheckGCField( GCGraphicsExposures,	graphics_exposures);
+    CheckGCField( GCClipXOrigin,	clip_x_origin);
+    CheckGCField( GCClipYOrigin,	clip_y_origin);
+    CheckGCField( GCClipMask,		clip_mask);
+    CheckGCField( GCDashOffset,		dash_offset);
+    CheckGCField( GCDashList,		dashes);
+#undef CheckGCField
+    return 1;
 }
 
 static void SetFields(ptr, valueMask, v)
@@ -82,55 +85,37 @@ GCptr ptr;
     register unsigned long valueMask;
     register XGCValues    *v;
 {
+#define SetGCField(MaskBit,fieldName) \
+    if (valueMask & MaskBit) p->fieldName = v->fieldName
+
     register XGCValues *p = &(ptr->values);
-    if (valueMask & GCFunction)
-	p->function = v->function;
-    if (valueMask & GCPlaneMask)
-	p->plane_mask = v->plane_mask;
-    if (valueMask & GCForeground)
-	p->foreground = v->foreground;
-    if (valueMask & GCBackground)
-	p->background = v->background;
-    if (valueMask & GCLineWidth)
-	p->line_width = v->line_width;
-    if (valueMask & GCLineStyle)
-	p->line_style = v->line_style;
-    if (valueMask & GCCapStyle)
-	p->cap_style = v->cap_style;
-    if (valueMask & GCJoinStyle)
-	p->join_style = v->join_style;
-    if (valueMask & GCFillStyle)
-	p->fill_style = v->fill_style;
-    if (valueMask & GCFillRule)
-	p->fill_rule = v->fill_rule;
-    if (valueMask & GCArcMode)
-	p->arc_mode = v->arc_mode;
-    if (valueMask & GCTile)
-	p->tile = v->tile;
-    if (valueMask & GCStipple)
-	p->stipple = v->stipple;
-    if (valueMask & GCTileStipXOrigin)
-	p->ts_x_origin = v->ts_x_origin;
-    if (valueMask & GCTileStipYOrigin)
-	p->ts_y_origin = v->ts_y_origin;
-    if (valueMask & GCFont)
-	p->font = v->font;
-    if (valueMask & GCSubwindowMode)
-	p->subwindow_mode = v->subwindow_mode;
-    if (valueMask & GCGraphicsExposures)
-	p->graphics_exposures = v->graphics_exposures;
-    if (valueMask & GCClipXOrigin)
-	p->clip_x_origin = v->clip_x_origin;
-    if (valueMask & GCClipYOrigin)
-	p->clip_y_origin = v->clip_y_origin;
-    if (valueMask & GCClipMask)
-	p->clip_mask = v->clip_mask;
-    if (valueMask & GCDashOffset)
-	p->dash_offset = v->dash_offset;
-    if (valueMask & GCDashList)
-	p->dashes = v->dashes;
+
+    SetGCField( GCFunction,		function);
+    SetGCField( GCPlaneMask,		plane_mask);
+    SetGCField( GCForeground,		foreground);
+    SetGCField( GCBackground,		background);
+    SetGCField( GCLineWidth,		line_width);
+    SetGCField( GCLineStyle,		line_style);
+    SetGCField( GCCapStyle,		cap_style);
+    SetGCField( GCJoinStyle,		join_style);
+    SetGCField( GCFillStyle,		fill_style);
+    SetGCField( GCFillRule,		fill_rule);
+    SetGCField( GCArcMode,		arc_mode);
+    SetGCField( GCTile,			tile);
+    SetGCField( GCStipple,		stipple);
+    SetGCField( GCTileStipXOrigin,	ts_x_origin);
+    SetGCField( GCTileStipYOrigin,	ts_y_origin);
+    SetGCField( GCFont,			font);
+    SetGCField( GCSubwindowMode,	subwindow_mode);
+    SetGCField( GCGraphicsExposures,	graphics_exposures);
+    SetGCField( GCClipXOrigin,		clip_x_origin);
+    SetGCField( GCClipYOrigin,		clip_y_origin);
+    SetGCField( GCClipMask,		clip_mask);
+    SetGCField( GCDashOffset,		dash_offset);
+    SetGCField( GCDashList,		dashes);
     ptr->valueMask |= valueMask;
     XChangeGC(ptr->dpy, ptr->gc, valueMask, p);
+#undef SetGCField
 }
 
 
