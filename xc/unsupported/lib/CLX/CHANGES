@@ -153,3 +153,24 @@ o The order of the color values returned by ALLOC-COLOR when a color name is sup
   as an argument is fixed so that the screen color correctly is returned as the second 
   value and the exact color is correctly returned as the third value.  The order was 
   backwards.
+
+o The internal WITH-BUFFER-INPUT and WITH-BUFFER-OUTPUT macros have been
+  changed to wrap macrolet around body only when necessary.  This simplifies the
+  compiler's job for non lisp machines.
+
+o All uses of DEFINE-CONDITION have been changed to include a slots argument,
+  even if that argument is NIL -- the argument is not optional.
+
+o DEFINE-CONDITION is no longer exported from the XLIB package.
+
+o New functionality has been added to make-pixmap and make-window.  They may
+  now take a :PIXMAP or :WINDOW argument (respectively).  If non-NIL (default is
+  nil), they will use that argument as the pixmap or window object to be set.
+  Otherwise they will create a new pixmap/window object.  This whole schmeel is
+  necessary because creation of window and pixmap objects in CLX doesn't go
+  through the CLOS initialize-instance mechanism.
+
+o The DESCRIBE-WINDOW debug utility has been fixed to not use strange
+  lisp machine format codes.
+
+o Numerous Allegro specific changes in support of Allegro CL version 4.0.
