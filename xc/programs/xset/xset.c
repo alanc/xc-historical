@@ -1,12 +1,12 @@
 /* 
- * $XConsortium: xset.c,v 1.50 89/07/16 15:47:55 jim Exp $ 
+ * $XConsortium: xset.c,v 1.51 89/07/17 17:42:22 jim Exp $ 
  */
 #include <X11/copyright.h>
 
 /* Copyright    Massachusetts Institute of Technology    1985	*/
 
 #ifndef lint
-static char *rcsid_xset_c = "$XConsortium: xset.c,v 1.50 89/07/16 15:47:55 jim Exp $";
+static char *rcsid_xset_c = "$XConsortium: xset.c,v 1.51 89/07/17 17:42:22 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -49,6 +49,7 @@ register char *arg;
 register int i;
 int percent;
 int acc_num, acc_denom, threshold;
+int key, auto_repeat_mode;
 XKeyboardControl values;
 unsigned long pixels[512];
 caddr_t colors[512];
@@ -297,23 +298,34 @@ for (i = 1; i < argc; ) {
       }
     }
   } 
-  else if(*arg == '-' && *(arg + 1) == 'r'){ /* If arg starts w/ "-r" */
-    set_repeat(dpy, ALL, OFF);
+  else if (strcmp(arg, "-r") == 0) {        /* Turn off one or all autorepeats */
+    auto_repeat_mode = OFF;
+    key = ALL;          /* None specified */
+    arg = argv[i];
+    if (i < argc)
+    if (isnumber(arg, 255)) {
+      key = atoi(arg);
+      i++;
   } 
-  else if (*arg == 'r') {            /*  If it starts with "r"        */
-    if (i >= argc) {
-      set_repeat(dpy, ALL, ON);
-      break;
+    set_repeat(dpy, key, auto_repeat_mode);
     }
-    arg = argv[i];                   /*  Check next argument.         */
+  else if (strcmp(arg, "r") == 0) {         /* Turn on one or all autorepeats */
+    auto_repeat_mode = ON;
+    key = ALL;          /* None specified */
+    arg = argv[i];
+    if (i < argc)
     if (strcmp(arg, "on") == 0) {
-      set_repeat(dpy, ALL, ON);
       i++;
     } 
-    else if (strcmp(arg, "off") == 0) {
-      set_repeat(dpy, ALL, OFF);
+    else if (strcmp(arg, "off") == 0) {       /*  ...except in this case. */
+      auto_repeat_mode = OFF;
       i++;
     }
+    else if (isnumber(arg, 255)) {
+      key = atoi(arg);
+      i++;
+  } 
+    set_repeat(dpy, key, auto_repeat_mode);
   } 
   else if (*arg == 'p') {           /*  If arg starts with "p"       */
     if (i + 1 >= argc)
@@ -742,6 +754,7 @@ XKeyboardState values;
 int acc_num, acc_denom, threshold;
 int timeout, interval, prefer_blank, allow_exp;
 char **font_path; int npaths;
+int i, j;
 char buf[20];				/* big enough for 16 bit number */
 
 XGetKeyboardControl(dpy, &values);
@@ -750,10 +763,18 @@ XGetScreenSaver(dpy, &timeout, &interval, &prefer_blank, &allow_exp);
 font_path = XGetFontPath(dpy, &npaths);
 
 printf ("Keyboard Control:\n");
-printf ("  auto repeat:  %s    key click percent:  %d    LED mask:  %d\n", 
+printf ("  auto repeat:  %s    key click percent:  %d    LED mask:  %08lx\n", 
 	on_or_off (values.global_auto_repeat,
 		   AutoRepeatModeOn, "on", AutoRepeatModeOff, "off", buf),
 	values.key_click_percent, values.led_mask);
+printf ("  auto repeating keys:  ");
+for (i = 0; i < 4; i++) {
+    if (i) printf ("                        ");
+    for (j = 0; j < 8; j++) {
+	printf ("%02x", (unsigned char)values.auto_repeats[i*8 + j]);
+    }
+    printf ("\n");
+}
 printf ("  bell percent:  %d    bell pitch:  %d    bell duration:  %d\n",
 	values.bell_percent, values.bell_pitch, values.bell_duration);
 
@@ -828,7 +849,8 @@ usage (fmt, arg)
     fprintf (stderr, "    To set pixel colors:\n");
     fprintf (stderr, "\t p pixel_value color_name\n");
     fprintf (stderr, "    To turn auto-repeat off or on:\n");
-    fprintf (stderr, "\t-r     r off        r    r on\n");
+    fprintf (stderr, "\t-r [keycode]        r off\n");
+    fprintf (stderr, "\t r [keycode]        r on\n");
     fprintf (stderr, "    For screen-saver control:\n");
     fprintf (stderr, "\t s [timeout [cycle]]  s default    s on\n");
     fprintf (stderr, "\t s blank              s noblank    s off\n");
