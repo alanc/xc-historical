@@ -1,4 +1,4 @@
-/* $XConsortium: pl_oc_util.c,v 1.3 92/05/26 11:29:04 mor Exp $ */
+/* $XConsortium: pl_oc_util.c,v 1.4 92/06/12 12:32:57 mor Exp $ */
 
 /************************************************************************
 Copyright 1992 by the Massachusetts Institute of Technology,
@@ -311,663 +311,662 @@ INPUT PEXOCData		*oc_data;
     {
 	switch (oc_data->oc_type)
 	{
-	    case PEXOCMarkerType:
-	    case PEXOCLineType:
-	    case PEXOCATextStyle:
-	    case PEXOCBFInteriorStyle:
-	    case PEXOCBFReflectionModel:
-	    case PEXOCBFSurfaceInterpMethod:
-	    case PEXOCInteriorStyle:
-	    case PEXOCPolylineInterpMethod:
-	    case PEXOCReflectionModel:
-	    case PEXOCRenderingColorModel:
-	    case PEXOCSurfaceEdgeType:
-	    case PEXOCSurfaceInterpMethod:
+	case PEXOCMarkerType:
+	case PEXOCLineType:
+	case PEXOCATextStyle:
+	case PEXOCBFInteriorStyle:
+	case PEXOCBFReflectionModel:
+	case PEXOCBFSurfaceInterpMethod:
+	case PEXOCInteriorStyle:
+	case PEXOCPolylineInterpMethod:
+	case PEXOCReflectionModel:
+	case PEXOCRenderingColorModel:
+	case PEXOCSurfaceEdgeType:
+	case PEXOCSurfaceInterpMethod:
 
-		totalSize += sizeof (pexMarkerType);
-		break;
+	    totalSize += sizeof (pexMarkerType);
+	    break;
 
-	    case PEXOCMarkerColorIndex:
-	    case PEXOCMarkerBundleIndex:
-	    case PEXOCTextFontIndex:
-	    case PEXOCTextColorIndex:
-	    case PEXOCTextBundleIndex:
-	    case PEXOCLineColorIndex:
-	    case PEXOCLineBundleIndex:
-	    case PEXOCSurfaceColorIndex:
-	    case PEXOCBFInteriorStyleIndex:
-	    case PEXOCBFSurfaceColorIndex:
-	    case PEXOCInteriorBundleIndex:
-	    case PEXOCInteriorStyleIndex:
-	    case PEXOCSurfaceEdgeColorIndex:
-	    case PEXOCEdgeBundleIndex:
-	    case PEXOCViewIndex:
-	    case PEXOCDepthCueIndex:
-	    case PEXOCColorApproxIndex:
+	case PEXOCMarkerColorIndex:
+	case PEXOCMarkerBundleIndex:
+	case PEXOCTextFontIndex:
+	case PEXOCTextColorIndex:
+	case PEXOCTextBundleIndex:
+	case PEXOCLineColorIndex:
+	case PEXOCLineBundleIndex:
+	case PEXOCSurfaceColorIndex:
+	case PEXOCBFInteriorStyleIndex:
+	case PEXOCBFSurfaceColorIndex:
+	case PEXOCInteriorBundleIndex:
+	case PEXOCInteriorStyleIndex:
+	case PEXOCSurfaceEdgeColorIndex:
+	case PEXOCEdgeBundleIndex:
+	case PEXOCViewIndex:
+	case PEXOCDepthCueIndex:
+	case PEXOCColorApproxIndex:
 
-	    	totalSize += sizeof (pexMarkerColorIndex);
-		break;
+	    totalSize += sizeof (pexMarkerColorIndex);
+	    break;
 
-	    case PEXOCMarkerColor:
-	    case PEXOCTextColor:
-	    case PEXOCLineColor:
-	    case PEXOCSurfaceColor:
-	    case PEXOCBFSurfaceColor:
-	    case PEXOCSurfaceEdgeColor:
+	case PEXOCMarkerColor:
+	case PEXOCTextColor:
+	case PEXOCLineColor:
+	case PEXOCSurfaceColor:
+	case PEXOCBFSurfaceColor:
+	case PEXOCSurfaceEdgeColor:
 
-		totalSize += (sizeof (pexMarkerColor) +
-		    GetColorSize (oc_data->data.SetMarkerColor.color_type));
-		break;
+	    totalSize += (sizeof (pexMarkerColor) +
+	        GetColorSize (oc_data->data.SetMarkerColor.color_type));
+	    break;
 
-	    case PEXOCMarkerScale:
-	    case PEXOCCharExpansion:
-	    case PEXOCCharSpacing:
-	    case PEXOCCharHeight:
-	    case PEXOCATextHeight:
-	    case PEXOCLineWidth:
-	    case PEXOCSurfaceEdgeWidth:
+	case PEXOCMarkerScale:
+	case PEXOCCharExpansion:
+	case PEXOCCharSpacing:
+	case PEXOCCharHeight:
+	case PEXOCATextHeight:
+	case PEXOCLineWidth:
+	case PEXOCSurfaceEdgeWidth:
 
-	    	totalSize += sizeof (pexMarkerScale);
-		break;
+	    totalSize += sizeof (pexMarkerScale);
+	    break;
 
-	    case PEXOCTextPrecision:
-	    case PEXOCTextPath:
-	    case PEXOCATextPath:
+	case PEXOCTextPrecision:
+	case PEXOCTextPath:
+	case PEXOCATextPath:
 
-	    	totalSize += sizeof (pexTextPrecision);
-		break;
+	    totalSize += sizeof (pexTextPrecision);
+	    break;
 
-	    case PEXOCCharUpVector:
-	    case PEXOCATextUpVector:
+	case PEXOCCharUpVector:
+	case PEXOCATextUpVector:
 
-		totalSize += sizeof (pexCharUpVector);
-		break;
+	    totalSize += sizeof (pexCharUpVector);
+	    break;
 
-	    case PEXOCTextAlignment:
-	    case PEXOCATextAlignment:
+	case PEXOCTextAlignment:
+	case PEXOCATextAlignment:
 
-		totalSize += sizeof (pexTextAlignment);
-		break;
+	    totalSize += sizeof (pexTextAlignment);
+	    break;
 
-	    case PEXOCCurveApprox:
+	case PEXOCCurveApprox:
 
-		totalSize += sizeof (pexCurveApproximation);
-		break;
+	    totalSize += sizeof (pexCurveApproximation);
+	    break;
 
-	    case PEXOCReflectionAttributes:
-	    case PEXOCBFReflectionAttributes:
+	case PEXOCReflectionAttributes:
+	case PEXOCBFReflectionAttributes:
 
-		totalSize += (sizeof (pexSurfaceReflAttr) + GetColorSize (
-                    oc_data->data.SetReflectionAttributes.attributes.specular_color.type));
-		break;
+	    totalSize += (sizeof (pexSurfaceReflAttr) + GetColorSize (
+                oc_data->data.SetReflectionAttributes.attributes.specular_color.type));
+	    break;
 
-	    case PEXOCSurfaceApprox:
+	case PEXOCSurfaceApprox:
 
-		totalSize += sizeof (pexSurfaceApproximation);
-		break;
+	    totalSize += sizeof (pexSurfaceApproximation);
+	    break;
 
-	    case PEXOCFacetCullingMode:
+	case PEXOCFacetCullingMode:
 
-		totalSize += sizeof (pexCullingMode);
-		break;
+	    totalSize += sizeof (pexCullingMode);
+	    break;
 
-	    case PEXOCFacetDistinguishFlag:
-	    case PEXOCSurfaceEdgeFlag:
-	    case PEXOCModelClipFlag:
+	case PEXOCFacetDistinguishFlag:
+	case PEXOCSurfaceEdgeFlag:
+	case PEXOCModelClipFlag:
 
-		totalSize += sizeof (pexDistinguishFlag);
-		break;
+	    totalSize += sizeof (pexDistinguishFlag);
+	    break;
 
-	    case PEXOCPatternSize:
-		totalSize += sizeof (pexPatternSize);
-		break;
+	case PEXOCPatternSize:
 
-	    case PEXOCPatternAttributes2D:
+	    totalSize += sizeof (pexPatternSize);
+	    break;
 
-		totalSize += sizeof (pexPatternRefPt);
-		break;
+	case PEXOCPatternAttributes2D:
 
-	    case PEXOCPatternAttributes:
+	    totalSize += sizeof (pexPatternRefPt);
+	    break;
 
-		totalSize += sizeof (pexPatternAttr);
-		break;
+	case PEXOCPatternAttributes:
 
-	    case PEXOCIndividualASF:
+	    totalSize += sizeof (pexPatternAttr);
+	    break;
 
-		totalSize += sizeof (pexSetAsfValues);
-		break;
+	case PEXOCIndividualASF:
 
-	    case PEXOCLocalTransform:
+	    totalSize += sizeof (pexSetAsfValues);
+	    break;
 
-		totalSize += sizeof (pexLocalTransform);
-		break;
+	case PEXOCLocalTransform:
 
-	    case PEXOCLocalTransform2D:
+	    totalSize += sizeof (pexLocalTransform);
+	    break;
 
-		totalSize += sizeof (pexLocalTransform2D);
-		break;
+	case PEXOCLocalTransform2D:
 
-	    case PEXOCGlobalTransform:
+	    totalSize += sizeof (pexLocalTransform2D);
+	    break;
 
-		totalSize += sizeof (pexGlobalTransform);
-		break;
+	case PEXOCGlobalTransform:
 
-	    case PEXOCGlobalTransform2D:
+	    totalSize += sizeof (pexGlobalTransform);
+	    break;
 
-		totalSize += sizeof (pexGlobalTransform2D);
-		break;
+	case PEXOCGlobalTransform2D:
 
-	    case PEXOCModelClipVolume:
+	    totalSize += sizeof (pexGlobalTransform2D);
+	    break;
 
-		totalSize += (sizeof (pexModelClipVolume) +
-    		    sizeof (pexHalfSpace) *
-		    oc_data->data.SetModelClipVolume.count);
-		break;
+	case PEXOCModelClipVolume:
 
-	    case PEXOCModelClipVolume2D:
+	    totalSize += (sizeof (pexModelClipVolume) +
+    	        sizeof (pexHalfSpace) *
+	        oc_data->data.SetModelClipVolume.count);
+	    break;
 
-		totalSize += (sizeof (pexModelClipVolume2D) +
-    		    sizeof (pexHalfSpace2D) *
-		    oc_data->data.SetModelClipVolume2D.count);
-		break;
+	case PEXOCModelClipVolume2D:
 
-	    case PEXOCRestoreModelClipVolume:
+	    totalSize += (sizeof (pexModelClipVolume2D) +
+    	        sizeof (pexHalfSpace2D) *
+	        oc_data->data.SetModelClipVolume2D.count);
+	    break;
 
-		totalSize += sizeof (pexRestoreModelClip);
-		break;
+	case PEXOCRestoreModelClipVolume:
 
-	    case PEXOCLightSourceState:
+	    totalSize += sizeof (pexRestoreModelClip);
+	    break;
 
+	case PEXOCLightSourceState:
+
+	{
+    	    int	sizeofEnableList, sizeofDisableList;
+
+    	    sizeofEnableList = sizeof (CARD16) *
+	        oc_data->data.SetLightSourceState.enable_count;
+
+    	    sizeofDisableList = sizeof (CARD16) *
+	        oc_data->data.SetLightSourceState.disable_count;
+	    
+	    totalSize += (sizeof (pexLightState) +
+	        PADDED_BYTES (sizeofEnableList) +
+	        PADDED_BYTES (sizeofDisableList));
+	    break;
+	}
+
+	case PEXOCPickID:
+	case PEXOCHLHSRID:
+
+	    totalSize += sizeof (pexPickId);
+	    break;
+
+	case PEXOCParaSurfCharacteristics:
+
+	{
+	    int	pscDataSize = 0;
+
+	    switch (oc_data->data.SetParaSurfCharacteristics.psc_type)
 	    {
-    	       	int	sizeofEnableList, sizeofDisableList;
-
-    	       	sizeofEnableList = sizeof (CARD16) *
-		    oc_data->data.SetLightSourceState.enable_count;
-
-    		sizeofDisableList = sizeof (CARD16) *
-		    oc_data->data.SetLightSourceState.disable_count;
-		
-		totalSize += (sizeof (pexLightState) +
-		    PADDED_BYTES (sizeofEnableList) +
-		    PADDED_BYTES (sizeofDisableList));
-		break;
-	    }
-
-	    case PEXOCPickID:
-	    case PEXOCHLHSRID:
-
-		totalSize += sizeof (pexPickId);
-		break;
-
-	    case PEXOCParaSurfCharacteristics:
-
-	    {
-		int	pscDataSize = 0;
-
-		switch (oc_data->data.SetParaSurfCharacteristics.psc_type)
-		{
-		case PEXPSCIsoCurves:
-		    pscDataSize = sizeof (PEXPSCIsoparametricCurves);
-		    break;
-
-		case PEXPSCMCLevelCurves:
-		case PEXPSCWCLevelCurves:
-		    pscDataSize = sizeof (pexPSC_LevelCurves) + sizeof (float) *
-			oc_data->data.SetParaSurfCharacteristics.characteristics.level_curves.count;
-		    break;
-
-		default:
-		    break;
-		}
-
-		totalSize += (sizeof (pexParaSurfCharacteristics) +
-		    pscDataSize);
-		break;
-  	    }
-
-	    case PEXOCAddToNameSet:
-	    case PEXOCRemoveFromNameSet:
-
-		totalSize += (sizeof (pexAddToNameSet) + 
-		    oc_data->data.AddToNameSet.count * sizeof (pexName));
-		break;
-
-	    case PEXOCExecuteStructure:
-
-		totalSize += sizeof (pexExecuteStructure);
-		break;
-
-	    case PEXOCLabel:
-
-		totalSize += sizeof (pexLabel);
-		break;
-
-	    case PEXOCApplicationData:
-
-		totalSize += (sizeof (pexApplicationData) +
-		    PADDED_BYTES (oc_data->data.ApplicationData.length));
-		break;
-
-	    case PEXOCGSE:
-
-		totalSize += (sizeof (pexGse) +
-		    PADDED_BYTES (oc_data->data.GSE.length));
-		break;
-
-	    case PEXOCMarkers:
-	    case PEXOCPolyline:
-
-		totalSize += (sizeof (pexMarker) +
-		    oc_data->data.Markers.count * sizeof (pexCoord3D));
-		break;
-
-	    case PEXOCMarkers2D:
-	    case PEXOCPolyline2D:
-
-		totalSize += (sizeof (pexMarker2D) +
-		    oc_data->data.Markers2D.count * sizeof (pexCoord2D));
-		break;
-
-	    case PEXOCText:
-
-	    {
-		/* Text is always mono encoded */
-
-		PEXEncodedTextData  	*nextString;
-		int 			lenofStrings, i;
-
-		GetStringsLength (oc_data->data.EncodedText.count,
-		    oc_data->data.EncodedText.encoded_text, lenofStrings)
-
-		totalSize += (sizeof (pexText) + NUMBYTES (lenofStrings));
-		break;
-	    }
-
-	    case PEXOCText2D:
-
-	    {
-		/* Text is always mono encoded */
-
-		PEXEncodedTextData  	*nextString;
-		int 			lenofStrings, i;
-
-		GetStringsLength (oc_data->data.EncodedText2D.count,
-		    oc_data->data.EncodedText2D.encoded_text, lenofStrings)
-
-		totalSize += (sizeof (pexText2D) + NUMBYTES (lenofStrings));
-		break;
-	    }
-
-	    case PEXOCAnnotationText:
-
-	    {
-		/* Anno Text is always mono encoded */
-
-		PEXEncodedTextData  	*nextString;
-		int 			lenofStrings, i;
-
-		GetStringsLength (oc_data->data.EncodedAnnoText.count,
-		    oc_data->data.EncodedAnnoText.encoded_text, lenofStrings)
-
-		totalSize += (sizeof (pexAnnotationText) +
-		    NUMBYTES (lenofStrings));
-		break;
-	    }
-
-	    case PEXOCAnnotationText2D:
-
-	    {
-		/* Anno Text is always mono encoded */
-
-		PEXEncodedTextData  	*nextString;
-		int 			lenofStrings, i;
-
-		GetStringsLength (oc_data->data.EncodedAnnoText2D.count,
-		    oc_data->data.EncodedAnnoText2D.encoded_text, lenofStrings)
-
-		totalSize += (sizeof (pexAnnotationText2D) +
-		    NUMBYTES (lenofStrings));
-		break;
-	    }
-
-	    case PEXOCPolylineSetWithData:
-
-	    {
-		int numPoints, lenofVertex, i;
-
-		for (i = 0, numPoints = 0;
-		     i < oc_data->data.PolylineSetWithData.count; i++)
-		    numPoints +=
-		    oc_data->data.PolylineSetWithData.vertex_lists[i].count;
-
-		lenofVertex = LENOF (pexCoord3D) +
-		    ((oc_data->data.PolylineSetWithData.vertex_attributes &
-		     PEXGAColor) ? GetColorLength (
-		     oc_data->data.PolylineSetWithData.color_type) : 0);
-
-		totalSize += (sizeof (pexPolylineSet) + NUMBYTES (
-		    oc_data->data.PolylineSetWithData.count +
-		    numPoints * lenofVertex));
-		break;
-	    }
-
-	    case PEXOCNURBCurve:
-
-	    {
-		int sizeofVertexList, sizeofKnotList;
-
-    		sizeofVertexList =
-		    oc_data->data.NURBCurve.count *
-		    ((oc_data->data.NURBCurve.rationality == PEXRational) ?
-		    sizeof (pexCoord4D) : sizeof (pexCoord3D));
-
-		sizeofKnotList = NUMBYTES (
-		    oc_data->data.NURBCurve.order +
-		    oc_data->data.NURBCurve.count);
-
-		totalSize += (sizeof (pexNurbCurve) +
-		    sizeofVertexList + sizeofKnotList);
-		break;
-	    }
-
-	    case PEXOCFillArea:
-
-		totalSize += (sizeof (pexFillArea) +
-		    oc_data->data.FillArea.count * sizeof (pexCoord3D));
-		break;
-
-	    case PEXOCFillArea2D:
-
-		totalSize += (sizeof (pexFillArea2D) +
-		    oc_data->data.FillArea2D.count * sizeof (pexCoord2D));
-		break;
-
-	    case PEXOCFillAreaWithData:
-
-	    {
-		int lenofColor, lenofFacet, lenofVertex;
-
-    		lenofColor =
-		    GetColorLength (oc_data->data.FillAreaWithData.color_type);
-
-		lenofFacet =
-		    GetFacetDataLength (
-			oc_data->data.FillAreaWithData.facet_attributes,
-			lenofColor); 
-
-		lenofVertex =
-		    GetVertexWithDataLength (
-			oc_data->data.FillAreaWithData.vertex_attributes,
-			lenofColor);
-
-		totalSize += (sizeof (pexExtFillArea) +
-		    NUMBYTES (lenofFacet + 1 +
-		    oc_data->data.FillAreaWithData.count * lenofVertex));
-		break;
-	    }
-
-	    case PEXOCFillAreaSet:
-
-	    {
-		int numPoints, i;
-
-		for (i = 0, numPoints = 0;
-		    i < oc_data->data.FillAreaSet.count; i++)
-		    numPoints +=
-		    oc_data->data.FillAreaSet.point_lists[i].count;
-
-		totalSize += (sizeof (pexFillAreaSet) +
-		    NUMBYTES (oc_data->data.FillAreaSet.count) +
-		    numPoints * sizeof (pexCoord3D));
-		break;
-	    }
-
-	    case PEXOCFillAreaSet2D:
-
-	    {
-		int numPoints, i;
-
-		for (i = 0, numPoints = 0;
-		    i < oc_data->data.FillAreaSet2D.count; i++)
-		    numPoints +=
-		    oc_data->data.FillAreaSet2D.point_lists[i].count;
-
-		totalSize += (sizeof (pexFillAreaSet2D) +
-		    NUMBYTES (oc_data->data.FillAreaSet2D.count) +
-		    numPoints * sizeof (pexCoord2D));
-		break;
-	    }
-
-	    case PEXOCFillAreaSetWithData:
-
-	    {
-		int lenofColor, lenofFacet, lenofVertex;
-		int numVertices, i;
-
-    		lenofColor = GetColorLength (
-		    oc_data->data.FillAreaSetWithData.color_type);
-
-		lenofFacet =
-		    GetFacetDataLength (
-		    oc_data->data.FillAreaSetWithData.facet_attributes,
-		    lenofColor); 
-
-		lenofVertex =
-		    GetVertexWithDataLength (
-		    oc_data->data.FillAreaSetWithData.vertex_attributes,
-		    lenofColor);
-
-		if (oc_data->data.FillAreaSetWithData.vertex_attributes &
-		    PEXGAEdges)
-		    lenofVertex++;         /* edge switch is CARD32 */
-
-		for (i = 0, numVertices = 0;
-		    i < oc_data->data.FillAreaSetWithData.count; i++)
-		    numVertices +=
-		    oc_data->data.FillAreaSetWithData.vertex_lists[i].count;
-
-		totalSize += (sizeof (pexExtFillAreaSet) +
-		    NUMBYTES (lenofFacet +
-		    oc_data->data.FillAreaSetWithData.count +
-		    numVertices * lenofVertex));
-		break;
-	    }
-
-	    case PEXOCTriangleStrip:
-
-	    {
-		int lenofColor, lenofFacetList, lenofVertexList;
-		int numVertices, i;
-
-    		lenofColor =
-		    GetColorLength (oc_data->data.TriangleStrip.color_type);
-
-		lenofFacetList = (oc_data->data.TriangleStrip.count - 2) *
-		    GetFacetDataLength (
-		    oc_data->data.TriangleStrip.facet_attributes, lenofColor);
-
-		lenofVertexList = oc_data->data.TriangleStrip.count *
-		    GetVertexWithDataLength (
-		    oc_data->data.TriangleStrip.vertex_attributes, lenofColor);
-
-		totalSize += (sizeof (pexTriangleStrip) +
-		    NUMBYTES (lenofFacetList + lenofVertexList));
-		break;
-	    }
-
-	    case PEXOCQuadrilateralMesh:
-
-	    {
-		int lenofColor, lenofFacetList, lenofVertexList;
-		int numVertices, i;
-
-    		lenofColor =
-		    GetColorLength (oc_data->data.QuadrilateralMesh.color_type);
-
-		lenofFacetList =
-		    (oc_data->data.QuadrilateralMesh.row_count - 1) *
-		    (oc_data->data.QuadrilateralMesh.col_count - 1) *
-		    GetFacetDataLength (
-		        oc_data->data.QuadrilateralMesh.facet_attributes,
-			lenofColor);
-
-		lenofVertexList =
-		    oc_data->data.QuadrilateralMesh.row_count *
-		    oc_data->data.QuadrilateralMesh.col_count *
-		    GetVertexWithDataLength (
-		        oc_data->data.QuadrilateralMesh.vertex_attributes,
-		        lenofColor);
-
-		totalSize += (sizeof (pexQuadrilateralMesh) +
-		    NUMBYTES (lenofFacetList + lenofVertexList));
-		break;
-	    }
-
-	    case PEXOCSetOfFillAreaSets:
-
-	    {
-		PEXConnectivityData *pConnectivity;
-		int 	lenofColor, lenofFacet, lenofVertex;
-		int 	sizeofEdge, sofaLength;
-		int 	numContours, numFillAreaSets, numIndices, numVertices;
-		int 	count, i, j;
-
-		numFillAreaSets = oc_data->data.SetOfFillAreaSets.set_count;
-		numIndices = oc_data->data.SetOfFillAreaSets.index_count;
-		numVertices = oc_data->data.SetOfFillAreaSets.vertex_count;
-
-		pConnectivity = oc_data->data.SetOfFillAreaSets.connectivity;
-		numContours = 0;
-		for (i = 0; i < numFillAreaSets; i++, pConnectivity++)
-		    numContours += pConnectivity->count;
-
-		lenofColor = GetColorLength (
-		    oc_data->data.SetOfFillAreaSets.color_type);
-		lenofFacet = GetFacetDataLength (
- 		    oc_data->data.SetOfFillAreaSets.facet_attributes,
-		    lenofColor); 
-		lenofVertex = GetVertexWithDataLength (
-		    oc_data->data.SetOfFillAreaSets.vertex_attributes,
-		    lenofColor);
-
-		sizeofEdge =
-		    ((oc_data->data.SetOfFillAreaSets.edge_attributes == PEXOn)
-		    ? sizeof (CARD8) : 0);
-
-		sofaLength = (lenofFacet * numFillAreaSets) +
-		    (lenofVertex * numVertices) + 
-		    NUMWORDS (sizeofEdge * numIndices) +
-		    NUMWORDS (sizeof (CARD16) *
-		    (numFillAreaSets + numContours + numIndices));
-
-		totalSize += (sizeof (pexSOFAS) + NUMBYTES (sofaLength));
-		break;
-	    }
-
-	    case PEXOCNURBSurface:
-	    {
-		PEXListOfTrimCurve *ptrimLoop;
-		PEXTrimCurve	   *ptrimCurve;
-		int 	numMPoints, numNPoints, numTrimLoops;
-		int 	uorder, vorder;
-		int 	lenofVertexList, lenofUKnotList, lenofVKnotList;
-		int 	lenofTrimData, count, i;
-
-		numMPoints = oc_data->data.NURBSurface.col_count;
-		numNPoints = oc_data->data.NURBSurface.row_count;
-		numTrimLoops = oc_data->data.NURBSurface.curve_count;
-		uorder = oc_data->data.NURBSurface.uorder;
-		vorder = oc_data->data.NURBSurface.vorder;
-
-		lenofVertexList = numMPoints * numNPoints *
-        	    ((oc_data->data.NURBSurface.rationality == PEXRational)
-		    ? LENOF (pexCoord4D) : LENOF (pexCoord3D));
-		lenofUKnotList = uorder + numMPoints;
-		lenofVKnotList = vorder + numNPoints;
-
-		lenofTrimData = numTrimLoops * LENOF (CARD32);
-
-		ptrimLoop = oc_data->data.NURBSurface.trim_curves;
-		for (i = 0; i < numTrimLoops; i++, ptrimLoop++)
-		{
-		    ptrimCurve = ptrimLoop->curves;
-		    count = ptrimLoop->count;
-		
-		    while (count--)
-		    {
-			lenofTrimData += (LENOF (pexTrimCurve) +
-			    ptrimCurve->count + ptrimCurve->order +
-		            ptrimCurve->count *
-		            (ptrimCurve->rationality == PEXRational ?
-		            LENOF (pexCoord3D) : LENOF (pexCoord2D)));
-	                ptrimCurve++;
-		    }
-		}
-
-		totalSize += (sizeof (pexNurbSurface) +
-		    NUMBYTES (lenofUKnotList + lenofVKnotList +
-		    lenofVertexList + lenofTrimData));
-		break;
-	    }
-
-	    case PEXOCCellArray:
-
-	    {
-		int bytes;
-
-		bytes = oc_data->data.CellArray.col_count *
-		    oc_data->data.CellArray.row_count * sizeof (pexTableIndex);
-		totalSize += (sizeof (pexCellArray) + PADDED_BYTES (bytes));
-	    	break;
-	    }
-
-	    case PEXOCCellArray2D:
-
-	    {
-		int bytes;
-
-		bytes = oc_data->data.CellArray2D.col_count *
-		    oc_data->data.CellArray2D.row_count *
-		    sizeof (pexTableIndex);
-		totalSize += (sizeof (pexCellArray2D) + PADDED_BYTES (bytes));
-	    	break;
-	    }
-
-	    case PEXOCExtendedCellArray:
-
-	    {
-		int lenofColorList;
-
-		lenofColorList = oc_data->data.ExtendedCellArray.col_count *
-		    oc_data->data.ExtendedCellArray.row_count * GetColorLength (
-		    oc_data->data.ExtendedCellArray.color_type);
-
-		totalSize += (sizeof (pexExtCellArray) +
-		    NUMBYTES (lenofColorList));
-		break;
-	    }
-
-	    case PEXOCGDP:
-
-		totalSize += (sizeof (pexGdp) +
-		    oc_data->data.GDP.count * sizeof (pexCoord3D) +
-		    PADDED_BYTES (oc_data->data.GDP.length));
-	    	break;
-
-	    case PEXOCGDP2D:
-
-		totalSize += (sizeof (pexGdp2D) +
-		    oc_data->data.GDP2D.count * sizeof (pexCoord2D) +
-		    PADDED_BYTES (oc_data->data.GDP2D.length));
-	    	break;
-
-	    case PEXOCNoop:
-
-		totalSize += sizeof (pexNoop);
-		break;
+	    case PEXPSCIsoCurves:
+	        pscDataSize = sizeof (PEXPSCIsoparametricCurves);
+	        break;
+
+	    case PEXPSCMCLevelCurves:
+	    case PEXPSCWCLevelCurves:
+	        pscDataSize = sizeof (pexPSC_LevelCurves) + sizeof (float) *
+	    	oc_data->data.SetParaSurfCharacteristics.characteristics.level_curves.count;
+	        break;
 
 	    default:
-		break;
+	        break;
+	    }
+
+	    totalSize += (sizeof (pexParaSurfCharacteristics) + pscDataSize);
+	    break;
+  	}
+
+	case PEXOCAddToNameSet:
+	case PEXOCRemoveFromNameSet:
+
+	    totalSize += (sizeof (pexAddToNameSet) + 
+	        oc_data->data.AddToNameSet.count * sizeof (pexName));
+	    break;
+
+	case PEXOCExecuteStructure:
+
+	    totalSize += sizeof (pexExecuteStructure);
+	    break;
+
+	case PEXOCLabel:
+
+	    totalSize += sizeof (pexLabel);
+	    break;
+
+	case PEXOCApplicationData:
+
+	    totalSize += (sizeof (pexApplicationData) +
+	        PADDED_BYTES (oc_data->data.ApplicationData.length));
+	    break;
+
+	case PEXOCGSE:
+
+	    totalSize += (sizeof (pexGse) +
+	        PADDED_BYTES (oc_data->data.GSE.length));
+	    break;
+
+	case PEXOCMarkers:
+	case PEXOCPolyline:
+
+	    totalSize += (sizeof (pexMarker) +
+	        oc_data->data.Markers.count * sizeof (pexCoord3D));
+	    break;
+
+	case PEXOCMarkers2D:
+	case PEXOCPolyline2D:
+
+	    totalSize += (sizeof (pexMarker2D) +
+	        oc_data->data.Markers2D.count * sizeof (pexCoord2D));
+	    break;
+
+	case PEXOCText:
+
+	{
+	    /* Text is always mono encoded */
+
+	    PEXEncodedTextData  	*nextString;
+	    int 			lenofStrings, i;
+
+	    GetStringsLength (oc_data->data.EncodedText.count,
+	        oc_data->data.EncodedText.encoded_text, lenofStrings)
+
+	    totalSize += (sizeof (pexText) + NUMBYTES (lenofStrings));
+	    break;
+	}
+
+	case PEXOCText2D:
+
+	{
+	    /* Text is always mono encoded */
+
+	    PEXEncodedTextData  	*nextString;
+	    int 			lenofStrings, i;
+
+	    GetStringsLength (oc_data->data.EncodedText2D.count,
+	        oc_data->data.EncodedText2D.encoded_text, lenofStrings)
+
+	    totalSize += (sizeof (pexText2D) + NUMBYTES (lenofStrings));
+	    break;
+	}
+
+	case PEXOCAnnotationText:
+
+	{
+	    /* Anno Text is always mono encoded */
+
+	    PEXEncodedTextData  	*nextString;
+	    int 			lenofStrings, i;
+
+	    GetStringsLength (oc_data->data.EncodedAnnoText.count,
+	        oc_data->data.EncodedAnnoText.encoded_text, lenofStrings)
+
+	    totalSize += (sizeof (pexAnnotationText) + NUMBYTES (lenofStrings));
+	    break;
+	}
+
+	case PEXOCAnnotationText2D:
+
+	{
+	    /* Anno Text is always mono encoded */
+
+	    PEXEncodedTextData  	*nextString;
+	    int 			lenofStrings, i;
+
+	    GetStringsLength (oc_data->data.EncodedAnnoText2D.count,
+	        oc_data->data.EncodedAnnoText2D.encoded_text, lenofStrings)
+
+	    totalSize += (sizeof (pexAnnotationText2D) +
+		NUMBYTES (lenofStrings));
+	    break;
+	}
+
+	case PEXOCPolylineSetWithData:
+
+	{
+	    int numPoints, lenofVertex, i;
+
+	    for (i = 0, numPoints = 0;
+	         i < oc_data->data.PolylineSetWithData.count; i++)
+	        numPoints +=
+	        oc_data->data.PolylineSetWithData.vertex_lists[i].count;
+
+	    lenofVertex = LENOF (pexCoord3D) +
+	        ((oc_data->data.PolylineSetWithData.vertex_attributes &
+	         PEXGAColor) ? GetColorLength (
+	         oc_data->data.PolylineSetWithData.color_type) : 0);
+
+	    totalSize += (sizeof (pexPolylineSet) + NUMBYTES (
+	        oc_data->data.PolylineSetWithData.count +
+	        numPoints * lenofVertex));
+	    break;
+	}
+
+	case PEXOCNURBCurve:
+
+	{
+	    int sizeofVertexList, sizeofKnotList;
+
+    	    sizeofVertexList =
+	        oc_data->data.NURBCurve.count *
+	        ((oc_data->data.NURBCurve.rationality == PEXRational) ?
+	        sizeof (pexCoord4D) : sizeof (pexCoord3D));
+
+	    sizeofKnotList = NUMBYTES (
+	        oc_data->data.NURBCurve.order +
+	        oc_data->data.NURBCurve.count);
+
+	    totalSize += (sizeof (pexNurbCurve) +
+	        sizeofVertexList + sizeofKnotList);
+	    break;
+	}
+
+	case PEXOCFillArea:
+
+	    totalSize += (sizeof (pexFillArea) +
+	        oc_data->data.FillArea.count * sizeof (pexCoord3D));
+	    break;
+
+	case PEXOCFillArea2D:
+
+	    totalSize += (sizeof (pexFillArea2D) +
+	        oc_data->data.FillArea2D.count * sizeof (pexCoord2D));
+	    break;
+
+	case PEXOCFillAreaWithData:
+
+	{
+	    int lenofColor, lenofFacet, lenofVertex;
+
+    	    lenofColor =
+	        GetColorLength (oc_data->data.FillAreaWithData.color_type);
+
+	    lenofFacet =
+	        GetFacetDataLength (
+	    	oc_data->data.FillAreaWithData.facet_attributes,
+	    	lenofColor); 
+
+	    lenofVertex =
+	        GetVertexWithDataLength (
+	    	oc_data->data.FillAreaWithData.vertex_attributes,
+	    	lenofColor);
+
+	    totalSize += (sizeof (pexExtFillArea) +
+	        NUMBYTES (lenofFacet + 1 +
+	        oc_data->data.FillAreaWithData.count * lenofVertex));
+	    break;
+	}
+
+	case PEXOCFillAreaSet:
+
+	{
+	    int numPoints, i;
+
+	    for (i = 0, numPoints = 0;
+	        i < oc_data->data.FillAreaSet.count; i++)
+	        numPoints +=
+	        oc_data->data.FillAreaSet.point_lists[i].count;
+
+	    totalSize += (sizeof (pexFillAreaSet) +
+	        NUMBYTES (oc_data->data.FillAreaSet.count) +
+	        numPoints * sizeof (pexCoord3D));
+	    break;
+	}
+
+	case PEXOCFillAreaSet2D:
+
+	{
+	    int numPoints, i;
+
+	    for (i = 0, numPoints = 0;
+	        i < oc_data->data.FillAreaSet2D.count; i++)
+	        numPoints +=
+	        oc_data->data.FillAreaSet2D.point_lists[i].count;
+
+	    totalSize += (sizeof (pexFillAreaSet2D) +
+	        NUMBYTES (oc_data->data.FillAreaSet2D.count) +
+	        numPoints * sizeof (pexCoord2D));
+	    break;
+	}
+
+	case PEXOCFillAreaSetWithData:
+
+	{
+	    int lenofColor, lenofFacet, lenofVertex;
+	    int numVertices, i;
+
+    	    lenofColor = GetColorLength (
+	        oc_data->data.FillAreaSetWithData.color_type);
+
+	    lenofFacet =
+	        GetFacetDataLength (
+	        oc_data->data.FillAreaSetWithData.facet_attributes,
+	        lenofColor); 
+
+	    lenofVertex =
+	        GetVertexWithDataLength (
+	        oc_data->data.FillAreaSetWithData.vertex_attributes,
+	        lenofColor);
+
+	    if (oc_data->data.FillAreaSetWithData.vertex_attributes &
+	        PEXGAEdges)
+	        lenofVertex++;         /* edge switch is CARD32 */
+
+	    for (i = 0, numVertices = 0;
+	        i < oc_data->data.FillAreaSetWithData.count; i++)
+	        numVertices +=
+	        oc_data->data.FillAreaSetWithData.vertex_lists[i].count;
+
+	    totalSize += (sizeof (pexExtFillAreaSet) +
+	        NUMBYTES (lenofFacet +
+	        oc_data->data.FillAreaSetWithData.count +
+	        numVertices * lenofVertex));
+	    break;
+	}
+
+	case PEXOCTriangleStrip:
+
+	{
+	    int lenofColor, lenofFacetList, lenofVertexList;
+	    int numVertices, i;
+
+    	    lenofColor =
+	        GetColorLength (oc_data->data.TriangleStrip.color_type);
+
+	    lenofFacetList = (oc_data->data.TriangleStrip.count - 2) *
+	        GetFacetDataLength (
+	        oc_data->data.TriangleStrip.facet_attributes, lenofColor);
+
+	    lenofVertexList = oc_data->data.TriangleStrip.count *
+	        GetVertexWithDataLength (
+	        oc_data->data.TriangleStrip.vertex_attributes, lenofColor);
+
+	    totalSize += (sizeof (pexTriangleStrip) +
+	        NUMBYTES (lenofFacetList + lenofVertexList));
+	    break;
+	}
+
+	case PEXOCQuadrilateralMesh:
+
+	{
+	    int lenofColor, lenofFacetList, lenofVertexList;
+	    int numVertices, i;
+
+    	    lenofColor =
+	        GetColorLength (oc_data->data.QuadrilateralMesh.color_type);
+
+	    lenofFacetList =
+	        (oc_data->data.QuadrilateralMesh.row_count - 1) *
+	        (oc_data->data.QuadrilateralMesh.col_count - 1) *
+	        GetFacetDataLength (
+	            oc_data->data.QuadrilateralMesh.facet_attributes,
+	    	lenofColor);
+
+	    lenofVertexList =
+	        oc_data->data.QuadrilateralMesh.row_count *
+	        oc_data->data.QuadrilateralMesh.col_count *
+	        GetVertexWithDataLength (
+	            oc_data->data.QuadrilateralMesh.vertex_attributes,
+	            lenofColor);
+
+	    totalSize += (sizeof (pexQuadrilateralMesh) +
+	        NUMBYTES (lenofFacetList + lenofVertexList));
+	    break;
+	}
+
+	case PEXOCSetOfFillAreaSets:
+
+	{
+	    PEXConnectivityData *pConnectivity;
+	    int 	lenofColor, lenofFacet, lenofVertex;
+	    int 	sizeofEdge, sofaLength;
+	    int 	numContours, numFillAreaSets, numIndices, numVertices;
+	    int 	count, i, j;
+
+	    numFillAreaSets = oc_data->data.SetOfFillAreaSets.set_count;
+	    numIndices = oc_data->data.SetOfFillAreaSets.index_count;
+	    numVertices = oc_data->data.SetOfFillAreaSets.vertex_count;
+
+	    pConnectivity = oc_data->data.SetOfFillAreaSets.connectivity;
+	    numContours = 0;
+	    for (i = 0; i < numFillAreaSets; i++, pConnectivity++)
+	        numContours += pConnectivity->count;
+
+	    lenofColor = GetColorLength (
+	        oc_data->data.SetOfFillAreaSets.color_type);
+	    lenofFacet = GetFacetDataLength (
+ 	        oc_data->data.SetOfFillAreaSets.facet_attributes,
+	        lenofColor); 
+	    lenofVertex = GetVertexWithDataLength (
+	        oc_data->data.SetOfFillAreaSets.vertex_attributes,
+	        lenofColor);
+
+	    sizeofEdge =
+	        ((oc_data->data.SetOfFillAreaSets.edge_attributes == PEXOn)
+	        ? sizeof (CARD8) : 0);
+
+	    sofaLength = (lenofFacet * numFillAreaSets) +
+	        (lenofVertex * numVertices) + 
+	        NUMWORDS (sizeofEdge * numIndices) +
+	        NUMWORDS (sizeof (CARD16) *
+	        (numFillAreaSets + numContours + numIndices));
+
+	    totalSize += (sizeof (pexSOFAS) + NUMBYTES (sofaLength));
+	    break;
+	}
+
+	case PEXOCNURBSurface:
+	{
+	    PEXListOfTrimCurve *ptrimLoop;
+	    PEXTrimCurve	   *ptrimCurve;
+	    int 	numMPoints, numNPoints, numTrimLoops;
+	    int 	uorder, vorder;
+	    int 	lenofVertexList, lenofUKnotList, lenofVKnotList;
+	    int 	lenofTrimData, count, i;
+
+	    numMPoints = oc_data->data.NURBSurface.col_count;
+	    numNPoints = oc_data->data.NURBSurface.row_count;
+	    numTrimLoops = oc_data->data.NURBSurface.curve_count;
+	    uorder = oc_data->data.NURBSurface.uorder;
+	    vorder = oc_data->data.NURBSurface.vorder;
+
+	    lenofVertexList = numMPoints * numNPoints *
+                ((oc_data->data.NURBSurface.rationality == PEXRational)
+	        ? LENOF (pexCoord4D) : LENOF (pexCoord3D));
+	    lenofUKnotList = uorder + numMPoints;
+	    lenofVKnotList = vorder + numNPoints;
+
+	    lenofTrimData = numTrimLoops * LENOF (CARD32);
+
+	    ptrimLoop = oc_data->data.NURBSurface.trim_curves;
+	    for (i = 0; i < numTrimLoops; i++, ptrimLoop++)
+	    {
+	        ptrimCurve = ptrimLoop->curves;
+	        count = ptrimLoop->count;
+	    
+	        while (count--)
+	        {
+	    	lenofTrimData += (LENOF (pexTrimCurve) +
+	    	    ptrimCurve->count + ptrimCurve->order +
+	                ptrimCurve->count *
+	                (ptrimCurve->rationality == PEXRational ?
+	                LENOF (pexCoord3D) : LENOF (pexCoord2D)));
+	            ptrimCurve++;
+	        }
+	    }
+
+	    totalSize += (sizeof (pexNurbSurface) +
+	        NUMBYTES (lenofUKnotList + lenofVKnotList +
+	        lenofVertexList + lenofTrimData));
+	    break;
+	}
+
+	case PEXOCCellArray:
+
+	{
+	    int bytes;
+
+	    bytes = oc_data->data.CellArray.col_count *
+	        oc_data->data.CellArray.row_count * sizeof (pexTableIndex);
+	    totalSize += (sizeof (pexCellArray) + PADDED_BYTES (bytes));
+	    break;
+	}
+
+	case PEXOCCellArray2D:
+
+	{
+	    int bytes;
+
+	    bytes = oc_data->data.CellArray2D.col_count *
+	        oc_data->data.CellArray2D.row_count *
+	        sizeof (pexTableIndex);
+	    totalSize += (sizeof (pexCellArray2D) + PADDED_BYTES (bytes));
+	    break;
+	}
+
+	case PEXOCExtendedCellArray:
+
+	{
+	    int lenofColorList;
+
+	    lenofColorList = oc_data->data.ExtendedCellArray.col_count *
+	        oc_data->data.ExtendedCellArray.row_count * GetColorLength (
+	        oc_data->data.ExtendedCellArray.color_type);
+
+	    totalSize += (sizeof (pexExtCellArray) +
+	        NUMBYTES (lenofColorList));
+	    break;
+	}
+
+	case PEXOCGDP:
+
+	    totalSize += (sizeof (pexGdp) +
+	        oc_data->data.GDP.count * sizeof (pexCoord3D) +
+	        PADDED_BYTES (oc_data->data.GDP.length));
+	    break;
+
+	case PEXOCGDP2D:
+
+	    totalSize += (sizeof (pexGdp2D) +
+	        oc_data->data.GDP2D.count * sizeof (pexCoord2D) +
+	        PADDED_BYTES (oc_data->data.GDP2D.length));
+	    break;
+
+	case PEXOCNoop:
+
+	    totalSize += sizeof (pexNoop);
+	    break;
+
+	default:
+	    break;
 	}
     }
 
@@ -980,4 +979,736 @@ INPUT PEXOCData		*oc_data;
 #endif
 
     return (totalSize);
+}
+
+
+unsigned long
+PEXCountOCs (float_format, length, encoded_ocs)
+
+INPUT int		float_format;
+INPUT unsigned long     length;
+INPUT char		*encoded_ocs;
+
+{
+    char		*ptr = encoded_ocs;
+    unsigned long	oc_count = 0;
+    int			totalSize = 0;
+    pexElementInfo	*elemInfo;
+
+
+    /*
+     * Keep parsing the data until the end of the buffer is reached.
+     * Increment the oc count as we go along.
+     */
+
+    while (totalSize < length)
+    {
+	elemInfo = (pexElementInfo *) ptr;
+
+	switch (elemInfo->elementType)
+	{
+	case PEXOCMarkerType:
+	case PEXOCLineType:
+	case PEXOCATextStyle:
+	case PEXOCBFInteriorStyle:
+	case PEXOCBFReflectionModel:
+	case PEXOCBFSurfaceInterpMethod:
+	case PEXOCInteriorStyle:
+	case PEXOCPolylineInterpMethod:
+	case PEXOCReflectionModel:
+	case PEXOCRenderingColorModel:
+	case PEXOCSurfaceEdgeType:
+	case PEXOCSurfaceInterpMethod:
+
+	    ptr += sizeof (pexMarkerType);
+	    break;
+
+	case PEXOCMarkerColorIndex:
+	case PEXOCMarkerBundleIndex:
+	case PEXOCTextFontIndex:
+	case PEXOCTextColorIndex:
+	case PEXOCTextBundleIndex:
+	case PEXOCLineColorIndex:
+	case PEXOCLineBundleIndex:
+	case PEXOCSurfaceColorIndex:
+	case PEXOCBFInteriorStyleIndex:
+	case PEXOCBFSurfaceColorIndex:
+	case PEXOCInteriorBundleIndex:
+	case PEXOCInteriorStyleIndex:
+	case PEXOCSurfaceEdgeColorIndex:
+	case PEXOCEdgeBundleIndex:
+	case PEXOCViewIndex:
+	case PEXOCDepthCueIndex:
+	case PEXOCColorApproxIndex:
+
+	    ptr += sizeof (pexMarkerColorIndex);
+	    break;
+
+	case PEXOCMarkerColor:
+	case PEXOCTextColor:
+	case PEXOCLineColor:
+	case PEXOCSurfaceColor:
+	case PEXOCBFSurfaceColor:
+	case PEXOCSurfaceEdgeColor:
+
+	{
+	    pexMarkerColor *oc = (pexMarkerColor *) ptr;
+    
+	    ptr += (sizeof (pexMarkerColor) +
+		GetColorSize (oc->colorSpec.colorType));
+	    break;
+	}
+
+	case PEXOCMarkerScale:
+	case PEXOCCharExpansion:
+	case PEXOCCharSpacing:
+	case PEXOCCharHeight:
+	case PEXOCATextHeight:
+	case PEXOCLineWidth:
+	case PEXOCSurfaceEdgeWidth:
+
+	    ptr += sizeof (pexMarkerScale);
+	    break;
+
+	case PEXOCTextPrecision:
+	case PEXOCTextPath:
+	case PEXOCATextPath:
+
+	    ptr += sizeof (pexTextPrecision);
+	    break;
+
+	case PEXOCCharUpVector:
+	case PEXOCATextUpVector:
+
+	    ptr += sizeof (pexCharUpVector);
+	    break;
+
+	case PEXOCTextAlignment:
+	case PEXOCATextAlignment:
+
+	    ptr += sizeof (pexTextAlignment);
+	    break;
+
+	case PEXOCCurveApprox:
+
+	    ptr += sizeof (pexCurveApproximation);
+	    break;
+
+	case PEXOCReflectionAttributes:
+	case PEXOCBFReflectionAttributes:
+
+	{
+	    pexSurfaceReflAttr *oc = (pexSurfaceReflAttr *) ptr;
+    
+	    ptr += (sizeof (pexSurfaceReflAttr) +
+		GetColorSize (oc->reflectionAttr.specularColor.colorType));
+	    break;
+	}
+
+	case PEXOCSurfaceApprox:
+
+	    ptr += sizeof (pexSurfaceApproximation);
+	    break;
+
+	case PEXOCFacetCullingMode:
+
+	    ptr += sizeof (pexCullingMode);
+	    break;
+
+	case PEXOCFacetDistinguishFlag:
+	case PEXOCSurfaceEdgeFlag:
+	case PEXOCModelClipFlag:
+
+	    ptr += sizeof (pexDistinguishFlag);
+	    break;
+
+	case PEXOCPatternSize:
+
+	    ptr += sizeof (pexPatternSize);
+	    break;
+
+	case PEXOCPatternAttributes2D:
+
+	    ptr += sizeof (pexPatternRefPt);
+	    break;
+
+	case PEXOCPatternAttributes:
+
+	    ptr += sizeof (pexPatternAttr);
+	    break;
+
+	case PEXOCIndividualASF:
+
+	    ptr += sizeof (pexSetAsfValues);
+	    break;
+
+	case PEXOCLocalTransform:
+
+	    ptr += sizeof (pexLocalTransform);
+	    break;
+
+	case PEXOCLocalTransform2D:
+
+	    ptr += sizeof (pexLocalTransform2D);
+	    break;
+
+	case PEXOCGlobalTransform:
+
+	    ptr += sizeof (pexGlobalTransform);
+	    break;
+
+	case PEXOCGlobalTransform2D:
+
+	    ptr += sizeof (pexGlobalTransform2D);
+	    break;
+
+	case PEXOCModelClipVolume:
+
+	{
+	    pexModelClipVolume 	*oc = (pexModelClipVolume *) ptr;
+    
+	    ptr += (sizeof (pexModelClipVolume) +
+		oc->numHalfSpaces * sizeof (pexHalfSpace));
+	    break;
+	}
+
+	case PEXOCModelClipVolume2D:
+
+	{
+	    pexModelClipVolume2D *oc = (pexModelClipVolume2D *) ptr;
+    
+	    ptr += (sizeof (pexModelClipVolume2D) +
+		oc->numHalfSpaces * sizeof (pexHalfSpace2D));
+	    break;
+	}
+
+	case PEXOCRestoreModelClipVolume:
+
+	    ptr += sizeof (pexRestoreModelClip);
+	    break;
+
+	case PEXOCLightSourceState:
+
+	{
+	    pexLightState 	*oc = (pexLightState *) ptr;
+	    int			size;
+    
+	    size = oc->numEnable * sizeof (PEXTableIndex);
+	    ptr += (sizeof (pexLightState) + PADDED_BYTES (size));
+    
+	    size = oc->numDisable * sizeof (PEXTableIndex);
+	    ptr += PADDED_BYTES (size);
+	    break;
+	}
+
+	case PEXOCPickID:
+	case PEXOCHLHSRID:
+
+	    ptr += sizeof (pexPickId);
+	    break;
+
+	case PEXOCParaSurfCharacteristics:
+
+	{
+	    pexParaSurfCharacteristics *oc = (pexParaSurfCharacteristics *) ptr;
+
+	    switch (oc->characteristics)
+	    {
+	    case PEXPSCIsoCurves:
+		ptr = (char *) (oc + 1) + sizeof (pexPSC_IsoparametricCurves);
+		break;
+	
+	    case PEXPSCMCLevelCurves:
+	    case PEXPSCWCLevelCurves:
+	    {
+		pexPSC_LevelCurves *level = (pexPSC_LevelCurves *) (oc + 1);
+
+		ptr = (char *) (level + 1) +
+		    sizeof (float) * level->numberIntersections;
+		break;
+	    }
+	
+	    default:
+		ptr = (char *) (oc + 1) + PADDED_BYTES (oc->length);
+		break;
+	    }
+
+	    break;
+	}
+
+	case PEXOCAddToNameSet:
+	case PEXOCRemoveFromNameSet:
+
+	    ptr += (sizeof (pexAddToNameSet) +
+		(elemInfo->length - 1) * sizeof (PEXName));
+	    break;
+
+	case PEXOCExecuteStructure:
+
+	    ptr += sizeof (pexExecuteStructure);
+	    break;
+
+	case PEXOCLabel:
+
+	    ptr += sizeof (pexLabel);
+	    break;
+
+	case PEXOCApplicationData:
+
+	{
+	    pexApplicationData *oc = (pexApplicationData *) ptr;
+
+	    ptr += (sizeof (pexApplicationData) +
+		PADDED_BYTES (oc->numElements));
+	    break;
+	}
+
+	case PEXOCGSE:
+
+	{
+	    pexGse *oc = (pexGse *) ptr;
+
+	    ptr += (sizeof (pexGse) + PADDED_BYTES (oc->numElements));
+	    break;
+	}
+
+	case PEXOCMarkers:
+	case PEXOCPolyline:
+
+	    ptr += (sizeof (pexMarker) + sizeof (pexCoord3D) *
+	    	(sizeof (CARD32) * (elemInfo->length-1)) / sizeof (pexCoord3D));
+	    break;
+
+	case PEXOCMarkers2D:
+	case PEXOCPolyline2D:
+
+	    ptr += (sizeof (pexMarker2D) + sizeof (pexCoord2D) *
+	    	(sizeof (CARD32) * (elemInfo->length-1)) / sizeof (pexCoord2D));
+	    break;
+
+	case PEXOCText:
+
+	{
+	    /* Text is always mono encoded */
+
+	    pexText 		*oc = (pexText *) ptr;
+	    pexMonoEncoding	*enc;
+	    int			i;
+
+	    enc = (pexMonoEncoding *) (oc + 1);
+
+	    for (i = 0; i < oc->numEncodings; i++)
+	    {
+		enc = (pexMonoEncoding *) ((char *) enc +
+	            sizeof (pexMonoEncoding) + PADDED_BYTES (enc->numChars));
+	    }
+
+	    ptr = (char *) enc;
+	    break;
+	}
+
+	case PEXOCText2D:
+
+	{
+	    /* Text is always mono encoded */
+
+	    pexText2D 		*oc = (pexText2D *) ptr;
+	    pexMonoEncoding	*enc;
+	    int			i;
+
+	    enc = (pexMonoEncoding *) (oc + 1);
+
+	    for (i = 0; i < oc->numEncodings; i++)
+	    {
+		enc = (pexMonoEncoding *) ((char *) enc +
+	            sizeof (pexMonoEncoding) + PADDED_BYTES (enc->numChars));
+	    }
+
+	    ptr = (char *) enc;
+	    break;
+	}
+
+	case PEXOCAnnotationText:
+
+	{
+	    /* Anno Text is always mono encoded */
+
+	    pexAnnotationText 	*oc = (pexAnnotationText *) ptr;
+	    pexMonoEncoding	*enc;
+	    int			i;
+
+	    enc = (pexMonoEncoding *) (oc + 1);
+
+	    for (i = 0; i < oc->numEncodings; i++)
+	    {
+		enc = (pexMonoEncoding *) ((char *) enc +
+	            sizeof (pexMonoEncoding) + PADDED_BYTES (enc->numChars));
+	    }
+
+	    ptr = (char *) enc;
+	    break;
+	}
+
+	case PEXOCAnnotationText2D:
+
+	{
+	    /* Anno Text is always mono encoded */
+
+	    pexAnnotationText2D	*oc = (pexAnnotationText2D *) ptr;
+	    pexMonoEncoding	*enc;
+	    int			i;
+
+	    enc = (pexMonoEncoding *) (oc + 1);
+
+	    for (i = 0; i < oc->numEncodings; i++)
+	    {
+		enc = (pexMonoEncoding *) ((char *) enc +
+	            sizeof (pexMonoEncoding) + PADDED_BYTES (enc->numChars));
+	    }
+
+	    ptr = (char *) enc;
+	    break;
+	}
+
+	case PEXOCPolylineSetWithData:
+
+	{
+	    pexPolylineSet 	*oc = (pexPolylineSet *) ptr;
+	    int			lenofVertex, count, i;
+
+	    lenofVertex = LENOF (pexCoord3D) +
+		((oc->vertexAttribs & PEXGAColor) ?
+		GetColorLength (oc->colorType) : 0); 
+
+	    ptr = (char *) (oc + 1);
+
+	    for (i = 0; i < oc->numLists; i++)
+	    {
+		count = *((CARD32 *) ptr);
+		ptr += (sizeof (CARD32) + NUMBYTES (count * lenofVertex));
+	    }
+	    break;
+	}
+
+	case PEXOCNURBCurve:
+
+	{
+	    pexNurbCurve	*oc = (pexNurbCurve *) ptr;
+
+	    ptr += (sizeof (pexNurbCurve) + oc->numKnots * sizeof (float) +
+	        (oc->numPoints * ((oc->coordType == PEXRational) ?
+		sizeof (pexCoord4D) : sizeof (pexCoord3D))));
+	    break;
+	}
+
+	case PEXOCFillArea:
+
+	{
+	    pexFillArea 	*oc = (pexFillArea *) ptr;
+	    int 		count;
+    
+	    count = (sizeof (CARD32) * (elemInfo->length - 2)) /
+		sizeof (pexCoord3D);
+    
+	    ptr += (sizeof (pexFillArea) + count * sizeof (pexCoord3D));
+	    break;
+	}
+
+	case PEXOCFillArea2D:
+
+	{
+	    pexFillArea2D 	*oc = (pexFillArea2D *) ptr;
+	    int 		count;
+    
+	    count = (sizeof (CARD32) * (elemInfo->length - 2)) /
+		sizeof (pexCoord2D);
+    
+	    ptr += (sizeof (pexFillArea2D) + count * sizeof (pexCoord2D));
+	    break;
+	}
+
+	case PEXOCFillAreaWithData:
+
+	{
+	    pexExtFillArea 	*oc = (pexExtFillArea *) ptr;
+	    int			lenofFacetData;
+	    int			lenofVertex;
+	    int			lenofColor, count;
+    
+	    lenofColor = GetColorLength (oc->colorType);
+	    lenofFacetData = GetFacetDataLength (oc->facetAttribs, lenofColor); 
+	    lenofVertex = GetVertexWithDataLength (
+		oc->vertexAttribs, lenofColor);
+
+	    ptr = (char *) (oc + 1);
+
+	    if (oc->facetAttribs)
+		ptr += NUMBYTES (lenofFacetData);
+
+	    count = *((CARD32 *) ptr);
+	    ptr += (sizeof (CARD32) + count * NUMBYTES (lenofVertex));
+	    break;
+	}
+
+	case PEXOCFillAreaSet:
+
+	{
+	    pexFillAreaSet 	*oc = (pexFillAreaSet *) ptr;
+	    int			count, i;
+
+	    ptr = (char *) (oc + 1);
+
+	    for (i = 0; i < oc->numLists; i++)
+	    {
+		count = *((CARD32 *) ptr);
+		ptr += (sizeof (CARD32) + count * sizeof (pexCoord3D));
+	    }
+	    break;
+	}
+
+	case PEXOCFillAreaSet2D:
+
+	{
+	    pexFillAreaSet2D 	*oc = (pexFillAreaSet2D *) ptr;
+	    int			count, i;
+
+	    ptr = (char *) (oc + 1);
+
+	    for (i = 0; i < oc->numLists; i++)
+	    {
+		count = *((CARD32 *) ptr);
+		ptr += (sizeof (CARD32) + count * sizeof (pexCoord2D));
+	    }
+	    break;
+	}
+
+	case PEXOCFillAreaSetWithData:
+
+	{
+	    pexExtFillAreaSet 	*oc = (pexExtFillAreaSet *) ptr;
+	    int			lenofFacetData;
+	    int			lenofVertex;
+	    int			lenofColor, count, i;
+
+	    lenofColor = GetColorLength (oc->colorType);
+	    lenofFacetData = GetFacetDataLength (oc->facetAttribs, lenofColor); 
+	    lenofVertex = GetVertexWithDataLength (
+		oc->vertexAttribs, lenofColor);
+    
+	    if (oc->vertexAttribs & PEXGAEdges)
+		lenofVertex++; 			/* edge switch is CARD32 */
+
+	    ptr = (char *) (oc + 1);
+
+	    if (oc->facetAttribs)
+		ptr += NUMBYTES (lenofFacetData);
+
+	    for (i = 0; i < oc->numLists; i++)
+	    {
+		count = *((CARD32 *) ptr);
+		ptr += (sizeof (CARD32) + count * NUMBYTES (lenofVertex));
+	    }
+	    break;
+	}
+
+	case PEXOCTriangleStrip:
+
+	{
+	    pexTriangleStrip 	*oc = (pexTriangleStrip *) ptr;
+	    int			lenofColor;
+	    int			lenofFacetDataList;
+	    int			lenofVertexList;
+
+	    lenofColor = GetColorLength (oc->colorType);
+	    lenofFacetDataList = (oc->numVertices - 2) *
+		GetFacetDataLength (oc->facetAttribs, lenofColor); 
+	    lenofVertexList = oc->numVertices *
+		GetVertexWithDataLength (oc->vertexAttribs, lenofColor);
+
+	    ptr = (char *) (oc + 1);
+
+	    if (oc->facetAttribs)
+		ptr += NUMBYTES (lenofFacetDataList);
+
+	    ptr += NUMBYTES (lenofVertexList);
+	    break;
+	}
+
+	case PEXOCQuadrilateralMesh:
+
+	{
+	    pexQuadrilateralMesh 	*oc = (pexQuadrilateralMesh *) ptr;
+	    int				lenofColor;
+	    int				lenofFacetDataList;
+	    int				lenofVertexList;
+
+	    lenofColor = GetColorLength (oc->colorType);
+	    lenofFacetDataList = ((oc->mPts - 1) * (oc->nPts - 1)) *
+		GetFacetDataLength (oc->facetAttribs, lenofColor); 
+	    lenofVertexList = oc->mPts * oc->nPts *
+		GetVertexWithDataLength (oc->vertexAttribs, lenofColor);
+
+	    ptr = (char *) (oc + 1);
+
+	    if (oc->facetAttribs)
+		ptr += NUMBYTES (lenofFacetDataList);
+
+	    ptr += NUMBYTES (lenofVertexList);
+	    break;
+	}
+
+	case PEXOCSetOfFillAreaSets:
+
+	{
+	    pexSOFAS		*oc = (pexSOFAS *) ptr;
+	    int 		lenofColor;
+	    int 		lenofFacet;
+	    int 		lenofVertex;
+	    int			count, scount, cbytes, i, j;
+
+	    lenofColor = GetColorLength (oc->colorType);
+	    lenofFacet = GetFacetDataLength (oc->FAS_Attributes, lenofColor); 
+	    lenofVertex = GetVertexWithDataLength (
+		oc->vertexAttributes, lenofColor);
+
+	    ptr = (char *) (oc + 1);
+
+	    if (oc->FAS_Attributes)
+		ptr += (NUMBYTES (lenofFacet) * oc->numFAS);
+
+	    ptr += (NUMBYTES (lenofVertex) * oc->numVertices);
+
+	    if (oc->edgeAttributes)
+		ptr += PADDED_BYTES (oc->numEdges * sizeof (CARD8));
+	
+	    for (i = 0; i < oc->numFAS; i++)
+	    {
+		count = *((CARD16 *) ptr);
+		ptr += sizeof (CARD16);
+
+		for (j = 0; j < count; j++)
+		{
+		    scount = *((CARD16 *) ptr);
+		    ptr += (sizeof (CARD16) + (scount * sizeof (CARD16)));
+		}
+	    }
+	
+	    cbytes = sizeof (CARD16) *
+		(oc->numFAS + oc->numContours + oc->numEdges);
+
+	    ptr += PAD (cbytes);
+	    break;
+	}
+
+	case PEXOCNURBSurface:
+
+	{
+	    pexNurbSurface	*oc = (pexNurbSurface *) ptr;
+	    int			sizeofVertexList;
+	    int			sizeofUKnotList;
+	    int			sizeofVKnotList;
+	    int			sizeofTrimData;
+	    pexTrimCurve	*trim;
+	    int			count, i, j;
+
+	    sizeofVertexList = oc->mPts * oc->nPts *
+		((oc->type == PEXRational) ?
+		sizeof (pexCoord4D) : sizeof (pexCoord3D));
+	    sizeofUKnotList = NUMBYTES (oc->uOrder + oc->mPts);
+	    sizeofVKnotList = NUMBYTES (oc->vOrder + oc->nPts);
+
+	    ptr += (sizeof (pexNurbSurface) +
+		sizeofUKnotList + sizeofVKnotList + sizeofVertexList);
+
+	    for (i = 0; i < oc->numLists; i++)
+	    {
+		count = *((CARD32 *) ptr);
+		ptr += sizeof (CARD32);
+
+		for (j = 0; j < count; j++)
+		{
+		    trim = (pexTrimCurve *) ptr;
+		    ptr += (sizeof (pexTrimCurve) +
+		        NUMBYTES (trim->order + trim->numCoord) +
+		        trim->numCoord * ((trim->type == PEXRational) ?
+		        sizeof (pexCoord3D) : sizeof (pexCoord2D)));
+		}
+	    }
+	    break;
+	}
+
+	case PEXOCCellArray:
+
+	{
+	    pexCellArray	*oc = (pexCellArray *) ptr;
+	    int			size;
+
+	    size = oc->dx * oc->dy * sizeof (pexTableIndex);
+	    ptr += (sizeof (pexCellArray) + PADDED_BYTES (size));
+	    break;
+	}
+
+	case PEXOCCellArray2D:
+
+	{
+	    pexCellArray2D	*oc = (pexCellArray2D *) ptr;
+	    int			size;
+
+	    size = oc->dx * oc->dy * sizeof (pexTableIndex);
+	    ptr += (sizeof (pexCellArray2D) + PADDED_BYTES (size));
+	    break;
+	}
+
+	case PEXOCExtendedCellArray:
+
+	{
+	    pexExtCellArray	*oc = (pexExtCellArray *) ptr;
+
+	    ptr += (sizeof (pexExtCellArray) + 
+		oc->dx * oc->dy * NUMBYTES (GetColorLength (oc->colorType)));
+	    break;
+	}
+
+	case PEXOCGDP:
+
+	{
+	    pexGdp	*oc = (pexGdp *) ptr;
+
+	    ptr += (sizeof (pexGdp) + oc->numPoints * sizeof (pexCoord3D) +
+	        PADDED_BYTES (oc->numBytes));
+	    break;
+	}
+
+	case PEXOCGDP2D:
+
+	{
+	    pexGdp2D	*oc = (pexGdp2D *) ptr;
+
+	    ptr += (sizeof (pexGdp2D) + oc->numPoints * sizeof (pexCoord2D) +
+	        PADDED_BYTES (oc->numBytes));
+	    break;
+	}
+
+	case PEXOCNoop:
+
+	    ptr += sizeof (pexNoop);
+	    break;
+
+	default:
+	    break;
+	}
+
+	totalSize += (ptr - (char *) elemInfo);
+	oc_count++;
+    }
+
+#ifdef DEBUG
+    if (totalSize > length)
+    {
+	printf ("PEXlib WARNING : Internal error in PEXCountOCs :\n");
+	printf ("OC parsing continued past the end of the input buffer.\n");
+    }
+#endif
+
+    return (oc_count);
 }
