@@ -1,5 +1,5 @@
 /*
- * $XConsortium: toc.c,v 2.44 91/06/14 18:15:50 converse Exp $
+ * $XConsortium: toc.c,v 2.45 91/07/05 18:27:12 converse Exp $
  *
  *
  *			  COPYRIGHT 1987
@@ -831,8 +831,8 @@ int TocConfirmCataclysm(toc, confirms, cancels)
 	{(XtCallbackProc) NULL,	(XtPointer) NULL}
     };
 
-    if (toc == NULL) 
-	return NULL;
+    if (! toc)
+	return 0;
 
     for (i=0 ; i<toc->nummsgs && !found ; i++)
 	if (toc->msgs[i]->fate != Fignore) found = True;
