@@ -9,37 +9,6 @@ Editres.Geometry:			500x600
 *ShapeStyle:				Oval
 *Tree*ShapeStyle:			Rectangle
 
-! Here are some suggested resources if you are using a color workstation.
-! They look pretty good on my display, your mileage may vary.
-
-
-! Editres*flashColor:			Yellow
-
-! Editres*Background:			SteelBlue4
-! Editres*Foreground:			Azure
-! Editres*BorderColor:			LightCyan1
-
-! Editres*Tree.Background: 		AntiqueWhite4
-! Editres*Tree.Foreground: 		White
-
-! Editres*Tree.Toggle.Background: 	RoyalBlue4
-! Editres*Tree.Toggle.Foreground: 	Gold
-! Editres*Tree.Toggle.BorderWidth: 	0
-
-! Editres*MenuButton.Background: 	RoyalBlue4
-! Editres*MenuButton.Foreground: 	Gold
-! Editres*MenuButton.BorderWidth: 	0
-
-! Editres*SimpleMenu.Background: 	RoyalBlue4
-! Editres*SmeBSB.Foreground: 		Gold
-
-! Editres*Panner*Foreground:		DimGrey
-! Editres*Panner*Background:		SeaGreen
-! Editres*Panner*BorderColor:		SeaGreen
-! Editres*Panner*ShadowColor:		Black
-! Editres*Panner*BackgroundStipple:	None
-
-
 ! The rest of this file are either button names, or important for
 ! functionality, modifying these values may cause strange program
 ! behavior.
@@ -110,7 +79,8 @@ Editres.Geometry:			500x600
 *resourceBox*namesAndClasses*BorderWidth:		0
 *resourceBox*star.Label:				*
 *resourceBox*dot.Label:					.
-*resourceBox*any.Label:					Allow Any Widget
+*resourceBox*single.Label:				Any Widget
+*resourceBox*any.Label:					Any Widget Chain
 
 *resourceBox*namesLabel.Label:				Normal Resources
 *resourceBox*namesLabel.font:				\
