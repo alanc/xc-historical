@@ -1,4 +1,4 @@
-/* $XConsortium: Selection.c,v 1.79 93/05/12 19:45:09 converse Exp $ */
+/* $XConsortium: Selection.c,v 1.78 93/05/13 10:43:20 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -367,7 +367,7 @@ XtPointer closure;
     else widget = req->widget;
 
     if (XtWindow(widget) == window)
-	XtAddEventHandler(widget, mask, TRUE, proc, closure);
+	XtAddEventHandler(widget, mask, False, proc, closure);
     else {
 	RequestWindowRec *requestWindowRec;
 	if (selectWindowContext == 0)
