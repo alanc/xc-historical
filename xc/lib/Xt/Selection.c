@@ -1,6 +1,6 @@
 #ifndef lint
 static char Xrcsid[] =
-    "$XConsortium: Selection.c,v 1.28 89/11/29 11:40:34 swick Exp $";
+    "$XConsortium: Selection.c,v 1.29 89/11/30 13:02:49 swick Exp $";
 #endif
 
 /***********************************************************
@@ -919,9 +919,9 @@ static long IncrPropSize(widget, value, format, length)
 #endif
 	) {
 	if (sizeof(long) == 4)
-	    size = ((long*)value)[length]; /* %%% what order for longs? */
+	    size = ((long*)value)[length-1]; /* %%% what order for longs? */
 	else {
-	    /* NOTREACHED */ /* if sizeof(long)==4 */
+	    /* NOTREACHED */ /* sizeof(long)!=4 */
 	    size = 0;
 	    bcopy(value+4*(length-1), ((char*)&size)+sizeof(long)-4, 4);
 	}
