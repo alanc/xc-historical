@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: tkfuncs.c,v 1.1 88/08/31 22:52:47 jim Exp $
+ * $XConsortium: tkfuncs.c,v 1.2 88/09/06 17:48:23 jim Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -20,7 +20,7 @@
  */
 
 #if ( !defined(lint) && !defined(SABER))
-  static char rcs_version[] = "$Athena: tkfuncs.c,v 4.0 88/08/31 22:13:27 kit Exp $";
+  static char rcs_version[] = "$Athena: tkfuncs.c,v 4.5 88/12/19 13:48:24 kit Exp $";
 #endif
 
 #include <X11/X.h>
@@ -141,7 +141,7 @@ Widget widget;
 				 also the parent of the lable.*/
   Widget w;
   XtGeometryResult answer;	/* result of geometery test. */
-  Cardinal awidth,aheight;	/* The height and width of the reply. */
+  Dimension awidth,aheight;	/* The height and width of the reply. */
   int width = 0;		/* The width of the biggest button */
   int i;
 

@@ -1,8 +1,8 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: defs.h,v 1.5 88/10/07 17:19:45 jim Exp $
- * $Athena: defs.h,v 4.0 88/08/31 22:11:42 kit Exp $
+ * $XConsortium: defs.h,v 1.6 88/10/20 19:03:47 jim Exp $
+ * $Athena: defs.h,v 4.8 89/01/06 15:56:19 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -73,13 +73,12 @@
 
 #define INIT_SEARCH_STRING "xman"     /* Intial search string. */
 #define SEARCH_STRING_LENGTH 30
-
+#define NO_SECTION_DEFAULTS ("no default sections")
 /*
  * The command filters for the manual and apropos searches.
  */
 
-#define APROPOSCOMMAND "apropos -M"
-#define APROPOSFILTER "pr -h Apropos"
+#define APROPOSFILTER ("man -M %s -k %s | pr -h Apropos > %s")
 #define MANUALCOMMAND "man -M"
 #ifdef macII
 #define FORMAT "pcat"	/* The format command. */
@@ -89,15 +88,22 @@
 
 #define CANCEL "Cancel"
 
-#define MAXSECT 25		/* The maximum number of sections. */
-#define FIXEDSECT 11		/* The number of predefined sections.
-				   0 - 8 and n, and l = 11. */
+#define DEFAULT_WIDTH 500	/* The default width of xman. */
+#define MAXSECT 62		/* The maximum number of sections.
+				   one for each of (1-9) & (a-z) & (A-Z) */
+#ifdef sun
+#define MAXENTRY 2000		/* The maximum number of entries in one 
+				   section, on a sun. */
+#else
 #define MAXENTRY 800		/* The maximum number of entries in one 
-				   section. */
+				   section, on other machines. */
+#endif
+
 #define NLINES  66		/* This is the number of lines to wait until
 				   we boldify the line again, this allows 
 				   me to bold the first line of each page.*/
 
+#define INITIAL_DIR 0		/* The Initial Directory displayed. */
 
 #define LMAN 3			/* Name and length of the man and cat dirs. */
 #define MAN "man"
@@ -165,9 +171,6 @@ void main(),Quit();
 /* man.c */
 
 int Man();
-void MatchEntries(),AddStruct(),SortAndRemove();
-Boolean GetEntry();
-void SetManNames();
 char * StrAlloc();
 
 /* menu.c is self contained */
@@ -175,7 +178,7 @@ char * StrAlloc();
 /* misc.c */
 
 void PrintError(),PrintWarning(),KillManpage(), ChangeLabel();
-void RemovePixmaps(),PositionCenter(),AddCursor();
+void RemovePixmaps(),PositionCenter(),AddCursor(),ParseEntry();
 FILE *FindFilename(),*Format(), *OpenEntryFile();
 
 /* pages.c */

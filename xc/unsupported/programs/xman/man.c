@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: man.c,v 1.1 88/08/31 22:52:42 jim Exp $
+ * $XConsortium: man.c,v 1.2 88/09/06 17:48:10 jim Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -20,29 +20,26 @@
  */
 
 #if ( !defined(lint) && !defined(SABER))
-  static char rcs_version[] = "$Athena: man.c,v 4.0 88/08/31 22:12:33 kit Exp $";
+  static char rcs_version[] = "$Athena: man.c,v 4.5 88/12/19 13:47:35 kit Exp $";
 #endif
 
 #include "globals.h"
 
-static void SetSectionNames();
-static int GetSectNumber();
-static void CheckMandesc();
-
 static char error_buf[BUFSIZ];		/* The buffer for error messages. */
 
-/*	Function Name: CmpEntryLabel - used in qsort().
- *	Description: compares to elements by using their labels.
- *	Arguments: e1, e2 - two elements to compare by label.
- *	Returns: an integer >, < or = 0.
- */
+static void SortList(), ReadMandescFile(), SortAndRemove(), InitManual();
+static void AddToCurrentSection(), AddNewSection(), AddStandardSections();
+static int CmpEntryLabel();
 
-static int 
-CmpEntryLabel(e1, e2) 
-struct entry *e1, *e2;
-{
-  return(strcmp(e1->label, e2->label));
-}
+#define SECT_ERROR -1
+#define streq(a, b)        ( strcmp((a), (b)) == 0 )
+
+typedef struct _SectionList {
+  struct _SectionList * next;	/* link to next elem in list. */
+  char * label, *directory;	/* The label and directory that this 
+				   section represents. */
+  Boolean standard;		/* Is this one of the standard sections? */
+} SectionList;
 
 /*	Function Name: Man
  *	Description: Builds a list of all manual directories and files.
@@ -53,299 +50,299 @@ struct entry *e1, *e2;
 int
 Man()
 {
-  char *man_nomatch[MAXSECT + 1]; /* allow NULL termination. */
-  char *manptr, manualdir[BUFSIZ], *local_ptr;
-  int i,current[MAXSECT],nsect;
-
-  nsect = FIXEDSECT;
-
-  for (i = 0 ; i < MAXSECT ; i ++) {
-    current[i] = 0;		/* set current entries = 0. */
-    if ( (manual[i].entries = 
-	  (struct entry *) malloc(MAXENTRY * sizeof(struct entry))) == NULL )
-      PrintError("Could not allocate memory, while building manpage list.");
-    
-    manual[i].blabel = "Dummy Section Label";
-    manual[i].longest = 1;
-  }
-
-  SetManNames(manual);
-  manptr = getenv("MANPATH");
-  if (manptr == NULL || strcmp(manptr,"") == 0) {
-#ifdef DEBUG  /* Since man does not complain we had better not either. */
-    sprintf(error_buf,"Could not find MANPATH searching only, %s.",MANDIR);
-    PrintWarning(error_buf);
-#endif
-    strcpy(manualdir,MANDIR);
-  }
-  else
-    strcpy(manualdir,manptr);
-
-  local_ptr = manualdir;
-  do {
-    char *man[MAXSECT];
-    char *curmandir;
-    if ( (manptr = index(local_ptr,':')) != NULL) {    
-      *manptr = '\0';
-      curmandir = local_ptr;
-      local_ptr = manptr + 1;
-    }
-    else
-      curmandir = local_ptr;
-
-/*    if (!Preformatted(curmandir, manual, current, nsect)) { */
-      if (GetEntry(curmandir,man_nomatch)) {
-	MatchEntries(curmandir,manual,man_nomatch,man,&nsect);
-	AddStruct(manual,curmandir,man,current,nsect);
-      }
-/*    } */
-
-  } while (manptr != NULL);
-
-  SetSectionNames(manual);
-  SortAndRemove(manual, nsect);
-#ifdef notdef
-  DumpManual(nsect);
-#endif
-  return(nsect);		/* return the number of man sections. */
-}    
-
-/*	Function Name: GetEntry
- *	Description: This function gets the names of the manual page
- *                   directories, then closes the directory.
- *	Arguments: path - the path to this directory.
- *                 man - The directries of unformatted manual pages.
- *	Returns: FALSE if directory could not be opened.
- */
-
-static Boolean
-GetEntry(path, man)
-char * path;
-char * man[MAXSECT];
-{
-  DIR * dir;
-  struct stat sb;
-  register struct direct *dp;
-  int numberman;
-  char full_path[BUFSIZ];
-
-  numberman = 0;
-
-  /*
-   * Read through this directory and save up any directory name
-   * which begins with "man".
-   */
-  
-  if((dir = opendir(path)) == NULL) {	
-    sprintf(error_buf,"Can't open directory %s", path);
-    PrintWarning(error_buf);
-    return(FALSE);
-  }
-
-  while((dp = readdir(dir)) != NULL) {
-    if((dp->d_namlen >= LSEARCHDIR) && 
-       (strncmp(dp->d_name, SEARCHDIR, LSEARCHDIR) == 0)) {
-      if(numberman == MAXSECT) 
-	PrintError(
-	  "Too many manual sections, recompile with larger allocations");
-      sprintf(full_path, "%s/%s", path, dp->d_name);
-      if((stat(full_path, &sb) >= 0) && (sb.st_mode & S_IFDIR))
-	man[numberman++] = StrAlloc(dp->d_name);
-    }
-  }
-  
-  man[numberman] = NULL;	/* NULL terminate this list. */
-  closedir(dir);
-  return(TRUE);
-}
-
-/*	Function Name: MatchEntries
- *	Description: This fucntion gives the correct number to the 
- *                   directory, so that all manl entries will be 
- *                   in the same place.
- *	Arguments: path - path name if the current searched directory.
- *                 manual - a pointer to the manual structure.
- *                 manin - the unmatched states of the directories.
- *                 manout - the new wonderfully matched directories.
- *                 number - a pointer to the current number of sections.
- *	Returns: manout.
- */
-
-void
-MatchEntries(path,manual,manin,manout,number)
-char * path;
-Manual * manual;
-char **manin;
-char **manout;
-int *number;
-{
+  SectionList *list = NULL;
+  char *ptr, manpath[BUFSIZ], *path, *current_label;
   int sect;
 
-  bzero((char *) manout, MAXSECT * sizeof(char *));
+/* 
+ * Get the environment variable MANPATH, and if it doesn't exist then back
+ * up to MANDIR.
+ */
 
-  for ( ; *manin != NULL ; manin++) {
-    if ( (sect = GetSectNumber( (*manin)[LMAN] )) >= 0) 
-      manout[sect] = *manin;
+  ptr = getenv("MANPATH");
+  if (ptr == NULL || streq(ptr , "") )
+    ptr = MANDIR;
+  strcpy(manpath, ptr);
+
+/*
+ * Get the list of manual directories in the users MANPATH that we should
+ * open to look for manual pages.  The ``mandesc'' file is read here.
+ */
+
+  for ( path = manpath ; (ptr = index(path , ':')) != NULL ; path = ++ptr) { 
+    *ptr = '\0';
+    ReadMandescFile(&list, path);
+  }
+  ReadMandescFile(&list, path);
+
+  SortList(&list);
+
+  sect = 0;
+  InitManual( &(manual[sect]), list->label );
+  current_label = NULL;
+  while ( list != NULL ) {
+    SectionList * old_list;
+
+    if ( current_label == NULL || streq(list->label, current_label) )
+      AddToCurrentSection( &(manual[sect]), list->directory);
+    else {
+      if (manual[sect].nentries == 0) {	/* empty section, re-use it. */
+	free(manual[sect].blabel);
+	manual[sect].blabel = list->label;
+      }
+      else {
+	if ( ++sect >= MAXSECT ) {
+	  sprintf(error_buf, "%s %s", "Too many manual sections, recompile",
+		  "with a larger value for MAXSECT.");
+	  PrintError(error_buf);
+	}
+	InitManual( &(manual[sect]), list->label );
+      }
+      AddToCurrentSection( &(manual[sect]), list->directory);
+    }
+    /* Save label to see if it matches next entry. */
+    current_label = list->label; 
+    old_list = list;
+    list = list->next;
+    free(old_list);		/* free what you allocate. */
+  }
+  if (manual[sect].nentries != 0)
+    sect++;			/* don't forget that last section. */
+  
+  SortAndRemove(manual, sect);
+
+#ifdef notdef			/* dump info. */
+  DumpManual(sect);
+#endif
+  return(sect);		/* return the number of man sections. */
+}    
+
+/*	Function Name: SortList
+ *	Description: Sorts the list of sections to search.
+ *	Arguments: list - a pointer to the list to sort.
+ *	Returns: a sorted list.
+ *
+ * This is the most complicated part of the entire operation.
+ * all sections with the same label must by right next to each other,
+ * but the sections that are in the standard list have to come first.
+ */
+
+static void
+SortList(list)
+SectionList ** list;
+{
+  SectionList * local;
+  SectionList *head, *last, *inner, *old;
+  
+  if (*list == NULL)
+    PrintError("No manual sections to read, exiting.");
+
+/* 
+ * First step 
+ * 
+ * Look for standard list items, and more them to the top of the list.
+ */
+
+  last = NULL;			/* keep Saber happy. */
+  for ( local = *list ; local->next != NULL ; local = local->next) {
+    if ( local->standard ) {
+      if ( local == *list )	/* top element is already standard. */
+	break;
+      head = local;
+
+      /* Find end of standard block */
+      for ( ; (local->next != NULL) && (local->standard) 
+	   ; old = local, local = local->next); 
+
+      last->next = old->next; /* Move the block. */
+      old->next = *list;
+      *list = head;
+
+      break;			/* First step accomplished. */
+    }
+    last = local;
   }
 
-  CheckMandesc(path, manout, manual, number);
-}
+/*
+ *  Second step
+ *
+ *  Move items with duplicate labels right next to each other.
+ */
 
-/*	Function Name: CheckMandesc
+  local = *list;
+  for ( local = *list ; local->next != NULL ; local = local->next) {
+    inner = local->next;
+    while ( inner != NULL) {
+      if ( streq(inner->label, local->label) && (inner != local->next)) {
+	last->next = inner->next; /* Move it to directly follow local. */
+	inner->next = local->next;
+	local->next = inner;
+	inner = last;		/* just so that we keep marching down the
+				   tree (this keeps us from looping). */
+      }
+      last = inner;
+      inner = inner->next;
+    }
+  }
+}	
+
+/*	Function Name: ReadMandescFile
  *	Description: Reads the mandesc file, and adds more sections as 
  *                   nescessary.
- *	Arguments: path - path name if the current searched directory.
- *                 manual - a pointer to the manual structure.
- *                 man - directories, now sorted by order.
- *                 number - a pointer to the current number of sections.
- *	Returns: none
+ *	Arguments: path - path name if the current search directory.
+ *                 section_list - pointer to the list of sections.
+ *	Returns: TRUE in we should use default sections
  */
   
 static void
-CheckMandesc(path, manout, manual, number)
-int *number;
+ReadMandescFile( section_list, path )
+SectionList ** section_list;
 char * path;
-char ** manout;
-Manual * manual;
 {
   char mandesc_file[BUFSIZ];	/* full path to the mandesc file. */
   FILE * descfile;
-  char character;
-  char string[BUFSIZ];
-  int sectnum;
-  register int j;
+  char string[BUFSIZ], local_file[BUFSIZ];
+  Boolean use_defaults = TRUE;
 
   sprintf(mandesc_file, "%s/%s", path, MANDESC);
-  if ( (descfile = fopen(mandesc_file, "r")) == NULL) 
-    return;			/* if no description file we are done. */
-  while ( (character = getc(descfile)) != EOF) {
-    Boolean flag = TRUE;
+  if ( (descfile = fopen(mandesc_file, "r")) != NULL) {
+    while ( fgets(string, BUFSIZ, descfile) != NULL) {
+      string[strlen(string)-1] = '\0';        /* Strip off the CR. */
 
-    fgets(string, 100, descfile);
-    string[strlen(string)-1] = '\0';        /* Strip off the CR. */
-    if ( (sectnum = GetSectNumber(character)) >= 0) {
-      if (manout[sectnum] == NULL) {
-	sprintf(error_buf, "Error in file: %s.", mandesc_file);
-	PrintWarning(error_buf);
-	sprintf(error_buf, "Could not find the directory %s/man%c.", 
-		path, character);
-	PrintWarning(error_buf);
+      if ( streq(string, NO_SECTION_DEFAULTS) ) {
+	use_defaults = FALSE;
 	continue;
       }
-      for (j = FIXEDSECT ; j < *number ; j++) {
-/*
- * If this section exists then do not create a new one for it.
- */
-	if ( (!strcmp(manual[j].blabel , string)) ) {
-	  manout[j] = manout[sectnum];
-	  flag = FALSE;
-	}
-      }
-      if (flag) {
-	manual[*number].blabel = StrAlloc(string);
-	manual[*number].sect = StrAlloc(manout[sectnum]);
-	manout[*number] = StrAlloc(manout[sectnum]);
-	if ( ++(*number) >= MAXSECT) {
-	  sprintf(error_buf,"Number of sections exceeded %d recompile %s",
-		  MAXSECT,"with larger MAXSECT.");
-	    PrintError(error_buf);
-	}
-      } 
-      manout[sectnum][0] = '\0'; /* remove it's name for the prev place */
+
+      sprintf(local_file, "%s%c", MAN, string[0]);
+      AddNewSection(section_list, path, local_file, (string + 1), FALSE );
     }
-    else { /* (sectnum = GetSectNumber(character)) >= 0) */
-      sprintf(error_buf, "Unknown man directory 'man%s'.", character);
-      PrintWarning(error_buf);
-    }
+    fclose(descfile);
   }
-  fclose(descfile);
+  if (use_defaults)
+    AddStandardSections(section_list, path);
 }
 
-/*	Function Name: AddStruct
- *	Description: add the new entries to the manual structure.
- *	Arguments: manual - the manual structure to add them to.
- *                 path   - the man path for these entires.
- *                 man  - a pointer to the man directory names. 
- *                 current - a pointer to the number of the current entry.
- *	Returns: current - new current pointer numbers and changes manual
+/*	Function Name: AddStandardSections
+ *	Description: Adds all the standard sections to the list for this path.
+ *	Arguments: list - a pointer to the section list.
+ *                 path - the path to these standard sections.
+ *	Returns: none.
  */
 
-void
-AddStruct(manual,path,man,current,number)
-Manual * manual;
+static void
+AddStandardSections(list, path)
+SectionList **list;
 char * path;
-char * man[MAXSECT];
-int current[MAXSECT];
-int number;
 {
-  int i;
+  static char * names[] = {
+    "User Commands       (1)",
+    "System Calls        (2)",
+    "Subroutines         (3)",
+    "Devices             (4)",
+    "File Formats        (5)",
+    "Games               (6)",
+    "Miscellaneous       (7)",
+    "Sys. Administration (8)",
+    "Local               (l)",
+    "New                 (n)",
+    "Old                 (o)",
+    };
+  register int i;
+  char file[BUFSIZ];
+
+  for (i = 1 ; i <= 8 ; i++) {
+    sprintf(file, "%s%d", MAN, i);
+    AddNewSection(list, path, file, names[i-1], TRUE);
+  }
+  i--;
+  sprintf(file, "%sl", MAN);
+  AddNewSection(list, path, file, names[i++], TRUE);
+  sprintf(file, "%sn", MAN);
+  AddNewSection(list, path, file, names[i++], TRUE);
+  sprintf(file, "%so", MAN);
+  AddNewSection(list, path, file, names[i], TRUE);
+}
+
+/*	Function Name: AddNewSection
+ *	Description: Adds the new section onto the current section list.
+ *	Arguments: list - pointer to the section list.
+ *                 path - the path to the current manual section.
+ *                 file - the file to save.
+ *                 label - the current section label.
+ *                 standard - one of the standard labels?
+ *	Returns: none.
+ */
+
+static void
+AddNewSection(list, path, file, label, standard)
+SectionList **list;
+char * path, * label, * file;
+Boolean standard;
+{
+  SectionList * local_list, * end;
+  char full_path[BUFSIZ];
+
+/* Allocate a new list element */
+
+  if ( (local_list = (SectionList *) malloc(sizeof(SectionList)) ) == NULL)
+    PrintError("Could not allocate Memory in AddNewSection.");
+
+  if (*list != NULL) {
+    for ( end = *list ; end->next != NULL ; end = end->next );
+    end->next = local_list;
+  }
+  else 
+    *list = local_list;
+
+  local_list->next = NULL;
+  local_list->label = StrAlloc(label);
+  sprintf(full_path, "%s/%s", path, file);
+  local_list->directory = StrAlloc(full_path);
+  local_list->standard = standard;
+}  
+
+/*	Function Name: AddToCurrentSection
+ *	Description: This function gets the names of the manual page
+ *                   directories, then closes the directory.
+ *	Arguments:  local_manual - a pointer to a manual pages structure.
+ *                  path - the path to this directory.
+ *	Returns: FALSE if directory could not be opened.
+ */
+
+static void
+AddToCurrentSection(local_manual, path)
+Manual * local_manual;
+char * path;
+{
   DIR * dir;
   register struct direct *dp;
-  char section[BUFSIZ];
+  register int nentries;
+  char full_name[BUFSIZ];
 
-  /*
-   * Go through each manual directory saving up the individual
-   * page entries.
-   * Demand that a page entry not start with a '.' but have
-   * a dot somewhere.
-   */
-
-  for(i=0; i < number; i++,man++) {
-    register int j, k;
-    int longest, lpixels;
-
-    longest = lpixels = 1;	/* prevents division by zero. */
-    k = current[i];
-
-    path = StrAlloc(path);	/* allocate a space to save the path. */
-
-    /* 
-     * Use the man directories to get the file names 'cause they should be 
-     * more complete. 
-     */ 
-
-    if (*man == NULL)
-      continue;
-    sprintf(section,"%s/%s",path, *man);
-    if ( (dir = opendir(section)) == NULL) {
-      sprintf(error_buf, "Could not open directory %s.", section);
-      PrintWarning(error_buf);
-      continue;
-    }
-
-    while((dp = readdir(dir)) != NULL) {
-      if( k >= MAXENTRY) {
-	sprintf(error_buf,"Too many manual pages in %s %s", section,
-		"Try recompiling with larger allocations");
-	PrintError(error_buf);
-      }
-      /* starts with a dot? no dot in name? */
-      if( (dp->d_name[0] == '.') || (rindex(dp->d_name,'.') == NULL) )
-	continue;
-      manual[i].entries[k].label = StrAlloc(dp->d_name);
-      manual[i].entries[k].path = path;
-      k++;
-/* 
- * This sets the value of the longest string in characters and pixels, I have
- * to play a few games since the longest string in characters is not 
- * nescessarily the longest string in pixels, and XTextWidth is not very fast.
- */
-      if ((j = strlen(dp->d_name)) >= longest - 2) {
-	longest = j;
-	if  ( (j = XTextWidth(fonts.directory,dp->d_name,strlen(dp->d_name))) >
-	     lpixels)
-	lpixels = j;
-      }
-    }
-    closedir(dir);
-/*
- * Yes, this check is needed, because we may add to the structure more 
- * than once, depending on the MANPATH.
- */
-    if ( (lpixels + 5) > manual[i].longest)
-      manual[i].longest = lpixels+5;
-    current[i] = manual[i].nentries = k;
+  if((dir = opendir(path)) == NULL) {	
+#ifdef DEBUG
+    sprintf(error_buf,"Can't open directory %s", path);
+    PrintWarning(NULL, error_buf);
+#endif DEBUG
+    return;
   }
+  
+  nentries = local_manual->nentries;
+
+  while( (dp = readdir(dir)) != NULL ) {
+    char * name = dp->d_name;
+    if( (name[0] == '.') || (index(name, '.') == NULL) ) 
+      continue;
+    if ( nentries >= MAXENTRY ) {
+      sprintf(error_buf, "%s %s %s", "Too many manual pages in directory",
+	      path, "recompile with A larger value for MAXENTRY.");
+      PrintError(error_buf);
+    }
+    sprintf(full_name, "%s/%s", path, name);
+    local_manual->entries[nentries++] = StrAlloc(full_name);
+  }
+  local_manual->nentries = nentries;
 }
 
 /*	Function Name: SortAndRemove
@@ -356,29 +353,70 @@ int number;
  *	Returns: an improved manual stucure
  */
 
-void
+static void
 SortAndRemove(manual, number)
 Manual *manual;
 int number;
 {
   int i;
+  char *l1, *l2;
 
   for ( i = 0; i < number; i++) { /* sort each section */
     register int j = 0;
     Manual * man = &(manual[i]);
 
-    qsort(man->entries, man->nentries, sizeof(struct entry), CmpEntryLabel);
+#ifdef DEBUG
+  printf("sorting section %d - %s\n", i, man->blabel);
+#endif DEBUG
+
+    qsort(man->entries, man->nentries, sizeof( char * ), CmpEntryLabel);
+
+#ifdef DEBUG
+    printf("removing from section %d.\n", i);
+#endif DEBUG
+
+    if ( (l1 = rindex(man->entries[j], '/')) == NULL)
+      PrintError("Internal error while removing duplicate manual pages.");
+    j++;
 
     while (j < (man->nentries - 1) ) {
-      if (!strcmp(man->entries[j].label, man->entries[j+1].label)) {
-	register int k = 0;
-	for( k = j; k < (man->nentries -1); k++)
-	  man->entries[j] = man->entries[j+1];
+      l2 = l1;
+      if ( (l1 = rindex(man->entries[j], '/')) == NULL)
+	PrintError("Internal error while removing duplicate manual pages.");
+      if ( streq(l1, l2) ) {
+	register int k;
+	for( k = j; k < (man->nentries); k++)
+	  man->entries[k - 1] = man->entries[k];
 	(man->nentries)--;
       }
-      j++;
+      else
+	j++;
     }
   }
+}
+
+/*	Function Name: CmpEntryLabel - used in qsort().
+ *	Description: compares to elements by using their labels.
+ *	Arguments: e1, e2 - two items to compare.
+ *	Returns: an integer >, < or = 0.
+ */
+
+static int 
+CmpEntryLabel(e1, e2) 
+char **e1, **e2;
+{
+  char *l1, *l2;
+
+/*
+ * What we really want to compare is the actual names of the manual pages,
+ * and not the full path names.
+ */
+
+  if ( (l1 = rindex(*e1, '/')) == NULL)
+    PrintError("Internal error while sorting manual pages.");
+  if ( (l2 = rindex(*e2, '/')) == NULL)
+    PrintError("Internal error while sorting manual pages.");
+  return( strcmp(l1, l2) );
 }
 
 /*	Function Name: StrAlloc
@@ -401,93 +439,25 @@ StrAlloc(sp) char *sp;
   return(ret);
 }
 
-/*	Function Name:  SetManNames
- *	Description: This function give a name to manual.sect
- *	Arguments: manual - pointer to the manual structure.
- *	Returns: NONE.
- */
-
-void
-SetManNames(manual)
-Manual *manual;
-{
-  int i;
-  char string[40];
-
-  for (i = 0; i < 9; i++) {
-    sprintf(string,"%s%d",MAN,i);
-    manual[i].sect = StrAlloc(string);
-  }
-  sprintf(string,"%s%c",MAN,'l');
-  manual[9].sect = StrAlloc(string);
-  sprintf(string,"%s%c",MAN,'n');
-  manual[10].sect = StrAlloc(string);
-}
-
-/*	Function Name: GetSectNumber
- *	Description: this gets a section number of a fixed section.
- *	Arguments: character - the character representing the section.
- *	Returns: the number of that section.
- */
-
-static int
-GetSectNumber(c)
-char c;
-{
-
-  switch (c) {
-  case '0':
-  case '1':
-  case '2':
-  case '3':
-  case '4':
-  case '5':
-  case '6':
-  case '7':
-  case '8':
-    return(c - '0');
-  case 'l':
-    return(9);
-  case 'n':
-    return(10);
-  default:
-    break;			/* ignore others, and return -1. */
-  }
-  return(-1);
-}
-
-/*	Function Name: SetSectNames
- *	Description: Sets the section names.
- *	Arguments: manual - the manual structure.
+/*	Function Name: InitManual
+ *	Description: Initializes this manual section.
+ *	Arguments: l_manual - local copy of the manual structure.
+ *                 label - the button label for this section.
  *	Returns: none.
  */
 
 static void
-SetSectionNames(manual)
-Manual * manual;
+InitManual(l_manual, label)
+Manual * l_manual;
+char * label;
 {
-
-  /* These are the names for the first 10 sections. */
-
-  static char * names[] = {
-    "foo bar (0)",
-    "User Commands (1)",
-    "System Calls (2)",
-    "Subroutines(3)",
-    "Devices (4)",
-    "File Formats (5)",
-    "Games (6)",
-    "Miscellaneous (7)",
-    "Sys. Administration (8)",
-    "Local (l)",
-    "New (n)"
-    };
-  register int i;
-
-  for (i = 1; i < FIXEDSECT; i++)
-    manual[i].blabel = names[i];
+  bzero( l_manual, sizeof(Manual) );	        /* clear it. */
+  l_manual->blabel = label;	                /* set label. */
+  l_manual->entries = (char **) malloc( sizeof(char *) * MAXENTRY);
+  if (l_manual->entries == NULL)
+	PrintError("Could not allocate memory in InitManual().");
 }
-
+  
 #if defined(DEBUG)
 
 /*	Function Name: DumpManual
@@ -502,9 +472,9 @@ DumpManual(number)
   register int i,j;
   
   for ( i = 0; i < number; i++) {
+    printf("label: %s\n", manual[i].blabel);
     for (j = 0; j < manual[i].nentries; j++) 
-      printf("path %-10s label %-20s\n", manual[i].entries[j].path,
-	     manual[i].entries[j].label);
+      printf("%s\n", manual[i].entries[j]);
   }
 }
 

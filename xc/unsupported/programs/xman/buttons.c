@@ -1,8 +1,8 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium$
- * $oHeader: buttons.c,v 4.0 88/08/31 22:11:26 kit Exp $
+ * $XConsortium: buttons.c,v 1.2 88/09/04 20:27:16 swick Exp $
+ * $Header: buttons.c,v 4.0 88/08/31 22:11:26 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -21,7 +21,7 @@
  */
 
 #if ( !defined(lint) && !defined(SABER))
-  static char rcs_version[] = "$Athena: buttons.c,v 4.0 88/08/31 22:11:26 kit Exp $";
+  static char rcs_version[] = "$Athena: buttons.c,v 4.5 88/12/19 13:46:34 kit Exp $";
 #endif
 
 #include "globals.h"
@@ -45,9 +45,9 @@ ManpageGlobals * InitPsuedoGlobals();
 #define TOPARGS 5
 
 void
-MakeTopMenuWidget(top)
-Widget top;
+MakeTopMenuWidget()
 {
+  Widget top;			/* top box widget. */
   Widget menu;			/* Top Box and menu. */
   Menu topbox;			/* The menu structure for this box. */
   Button topbuttons[TOPBUTTONS]; /* The button structure for these buttons. */
@@ -59,6 +59,21 @@ Widget top;
     "Quit",
     "Manual Page"
     };
+
+/* create the top icon. */
+
+  num_args = 0;
+  XtSetArg(arglist[num_args], XtNiconPixmap,
+	   XCreateBitmapFromData( XtDisplay(initial_widget), 
+				 XtScreen(initial_widget)->root,
+				 iconclosed_bits, iconclosed_width,
+				 iconclosed_height));
+  num_args++;
+  XtSetArg(arglist[num_args], XtNallowShellResize, TRUE); 
+  num_args++;
+
+  top = XtCreatePopupShell(TOPBOXNAME, topLevelShellWidgetClass, 
+			   initial_widget, arglist, num_args);
 
   /* Set up the manual structure. */
 
@@ -73,7 +88,8 @@ Widget top;
   topbox.buttons = topbuttons;
   topbox.callback = TopCallback;
 
-/* Set up the button structures, by assiging each one a name and a 
+/*
+ * Set up the button structures, by assiging each one a name and a 
  * width, this puts either one button on a line or two depending on
  * the length of the string that will go into the buttons. See Menu.c for 
  * details.
@@ -91,15 +107,9 @@ Widget top;
   menu = MakeMenu(top,&topbox, NULL); /* Create the menu. */
   XtManageChild(menu);		/* Manage the menu. */
 
-/* create the top icon. */
-
-  num_args = 0;
-  XtSetArg(arglist[num_args], XtNiconPixmap,
-	   XCreateBitmapFromData( XtDisplay(top), XtScreen(top)->root,
-				 iconclosed_bits, iconclosed_width,
-				 iconclosed_height));
-  num_args++;
-  XtSetValues(top,arglist,num_args);
+  XtRealizeWidget(top);
+  XtMapWidget(top);
+  AddCursor(top, resources.cursors.top);
 }
 
 /*	Function Name: CreateManpage
@@ -136,7 +146,7 @@ InitPsuedoGlobals()
 
 /* Initialize the number of screens that will be shown */
 
-  man_globals->both_shown = both_shown_initial;
+  man_globals->both_shown = resources.both_shown_initial;
 
   for ( i = 0 ; i < sections ; i++) 
     man_globals->manpagewidgets.box[i] = NULL;
@@ -174,8 +184,8 @@ Boolean full_instance;
   XtSetArg(arglist[num_args], XtNheight, default_height);
   num_args++; 
 
-  top = XtCreateApplicationShell(name, topLevelShellWidgetClass,
-				 arglist, num_args);
+  top = XtCreatePopupShell(name, topLevelShellWidgetClass, initial_widget,
+			   arglist, num_args);
 
   man_globals->This_Manpage = top; /* pointer to root widget of Manualpage. */
   num_args = 0;
@@ -215,16 +225,17 @@ Boolean full_instance;
     mpw->directory = XtCreateWidget(DIRECTORY_NAME, viewportWidgetClass,
 				    pane, arglist, num_args);
     
-    man_globals->current_directory = 1;
+    man_globals->current_directory = INITIAL_DIR;
     MakeDirectoryBox(man_globals, mpw->directory,
-		     mpw->box + man_globals->current_directory, 1);
+		     mpw->box + man_globals->current_directory, 
+		     man_globals->current_directory );
     XtManageChild(mpw->box[man_globals->current_directory]);
   }
 
 /* Create Manpage */
 
-  font_height = (fonts.normal->max_bounds.ascent + 
-		   fonts.normal->max_bounds.descent);
+  font_height = (resources.fonts.normal->max_bounds.ascent + 
+		   resources.fonts.normal->max_bounds.descent);
 
   num_args = 0;
   XtSetArg(arglist[num_args], XtNallowVert, TRUE);
@@ -285,7 +296,8 @@ Boolean help;
     if (man_globals->both_shown) {
       XtManageChild(dir);
       man_globals->dir_shown = TRUE;
-      XtPanedSetMinMax(dir, directory_height, directory_height);
+      XtPanedSetMinMax(dir, resources.directory_height, 
+		       resources.directory_height);
       XtSetSensitive(man_globals->put_up_manpage,FALSE);
       XtSetSensitive(man_globals->put_up_directory,FALSE);
       ChangeLabel(man_globals->both_shown_button, SHOW_ONE);
@@ -320,7 +332,9 @@ Boolean help;
  */
 
   XtRealizeWidget(  man_globals->This_Manpage );
-  AddCursor( man_globals->This_Manpage, cursors.manpage);
+  XtMapWidget( man_globals->This_Manpage );
+
+  AddCursor( man_globals->This_Manpage, resources.cursors.manpage);
   XtPanedSetMinMax(dir, 1, 10000); 
 }
 
@@ -467,7 +481,7 @@ Boolean is_manpage;
   MakeLong((Widget) pupwidget);
 
   XtRealizeWidget(popup_shell);	/* Realize it and change its cursor. */
-  AddCursor(popup_shell,cursors.top);
+  AddCursor(popup_shell,resources.cursors.top);
 }
 
 /*	Function Name: MakeDirPopUpWidget
@@ -494,20 +508,13 @@ Widget widget;
   Arg args[1];			/* The argument list. */
   int i;			/* A counter. */
   Cardinal num_args = 0;	/* The number of arguments. */
-  static char * name[MAXSECT];	/*the names of of the popups */
-
-/* Get the names from the manual structure. */
-
-  for ( i = 1; i < sections; i++)
-    name[i - 1] = manual[i].blabel;
 
   popup_shell = XtCreatePopupShell( SPOPUPNAME, overrideShellWidgetClass,
 				   widget, NULL, (Cardinal) 0);
   XtSetArg(args[num_args],XtNjustify,XtJustifyLeft); 
   num_args++;
 
-  popup.number = sections - 1;	/* We ignore section (0) even though it is
-				   in the manual structure. */
+  popup.number = sections;
   popup.name = "Manual Sections";
   popup.label_args = NULL;
   popup.label_num = (Cardinal) 0;
@@ -518,8 +525,8 @@ Widget widget;
   popup.buttons = buttons;
   popup.callback = DirPopUpCallback;
 
-  for ( i = 0 ; i < sections - 1; i ++) {
-    buttons[i].name = name[i];
+  for ( i = 0 ; i < sections; i ++) {
+    buttons[i].name = manual[i].blabel;
     buttons[i].number_per_line = 0;
   }
 
@@ -529,38 +536,43 @@ Widget widget;
   XtManageChild(pupwidget);
   (void) MakeLong(pupwidget);
   XtRealizeWidget(popup_shell);
-  AddCursor(popup_shell,cursors.top);
+  AddCursor(popup_shell,resources.cursors.top);
 }
 
 /*	Function Name: CreateManpageName
  *	Description: Creates the manual page name for a given item.
- *	Arguments: filename - the filename to convert.
+ *	Arguments: entry - the entry to convert.
  *	Returns: the manual page properly allocated.
  */
 
 /*
- * If the filename is foo.c - Create an entry of the form:  foo
- * If the filename is foo.cX - Create an entry of the form: foo(X)
+ * If the filename is foo.3     - Create an entry of the form:  foo
+ * If the filename is foo.3X11 
+ * or foo.cX11.stuff            - Create an entry of the form:  foo(X11)
  */
 
 char *
-CreateManpageName(filename)
-char * filename;
+CreateManpageName(entry)
+char * entry;
 {
-  char * cp, temp[BUFSIZ];
+  char * cp;
+  char page[BUFSIZ];
 
-  strcpy(temp, filename);
-  cp = rindex(temp, '.');
-  if (cp[2] != '\0') {
-    *cp++ = '(';  
-    *cp++ = *(cp + 1);
+  ParseEntry(entry, NULL, NULL, page);
+
+  cp = index(page, '.');
+  if ( (cp[2] != '\0') && (cp[2] != '.') ) {
+    *cp++ = '(';
+    while( (cp[1] != '\0') && (cp[1] != '.') ) {
+      *cp = cp[1]; cp++;
+    }
     *cp++ = ')';
     *cp = '\0';
   }
   else
     *cp = '\0';  
-  
-  return(StrAlloc(temp));
+
+  return(StrAlloc(page));
 }
 
 /*	Function Name: CreateList
@@ -581,7 +593,7 @@ CreateList(section)
 
   for (current = ret_list, count = 0 ; count < manual[section].nentries ;
        count++, current++)
-    *current = CreateManpageName(manual[section].entries[count].label);
+    *current = CreateManpageName(manual[section].entries[count]);
  
   *current = NULL;		/* NULL terminate the list. */
   return(ret_list);
@@ -618,7 +630,7 @@ int section;
   num_args++;
   XtSetArg(arglist[num_args], XtNborderWidth, 0);
   num_args++;
-  XtSetArg(arglist[num_args], XtNfont, fonts.directory);
+  XtSetArg(arglist[num_args], XtNfont, resources.fonts.directory);
   num_args++;
   
   *dir_disp = XtCreateWidget(DIRECTORY_NAME, listWidgetClass, parent,
@@ -669,7 +681,7 @@ Widget standby_parent,save_parent;
 						arglist,num_args);
   XtManageChild(box);
   XtRealizeWidget(shell);
-  AddCursor(shell,cursors.top);
+  AddCursor(shell,resources.cursors.top);
 
   num_args = 0;
   shell = XtCreatePopupShell("likeToSave",transientShellWidgetClass,
@@ -727,5 +739,5 @@ Widget standby_parent,save_parent;
 
   XtManageChild(box);
   XtRealizeWidget(shell);
-  AddCursor(shell,cursors.top);
+  AddCursor(shell,resources.cursors.top);
 }

@@ -1,8 +1,8 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: man.h,v 1.1 88/08/31 22:52:43 jim Exp $
- * $Athena: man.h,v 4.0 88/08/31 22:12:43 kit Exp $
+ * $XConsortium: man.h,v 1.2 88/09/06 17:48:12 jim Exp $
+ * $Athena: man.h,v 4.6 89/01/06 12:17:38 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -80,30 +80,16 @@ typedef struct _ManPageWidgets {
     directory,			/* The widget in which all directories will
 				   appear. */
     box[MAXSECT];		/* The boxes containing the sections. */
-  Boolean created_box[MAXSECT];	/* Has this box been created yet?. */
 } ManPageWidgets;
 
 /*
- * How we store each entry such as cat.1, sh.1 etc.
+ * The manual sections and entries
  */
 
-struct entry {
-  char *label;			/* The filename of the entry. */
-  char *path;			/* The path for this entry. */
- /* So that't why this is a structure, good thinking Barry. */
-};
-
-/*
- * the manual sections and entries
- */
 typedef struct tManual {
   char * blabel;		/* The button label. */
-  char * sect;			/* the section man directory. */
-  struct entry *entries;    /* the individual man page file names and paths*/
+  char ** entries;		/* the individual man page file names. */
   int nentries;			/* how many */
-  int longest;			/* The length (in pixels) of the longest
-                                   entry. */
-  int ncols,nrows;		/* The number of rows and columns */
 } Manual;
 
 /* 
@@ -133,7 +119,7 @@ typedef struct _ManpageGlobals{
     put_up_manpage,		/* The button that puts up the manpage. */
     put_up_directory,		/* The button that puts up the directory. */
     text_widget;		/* text widget containing search string. */
-  char * search_string;		/* The search string. */
+  char search_string[SEARCH_STRING_LENGTH];	/* The search string. */
   char manpage_title[80];	/* The label to use for the current manpage. */
   char filename[80];		/* the name of the file that we are
 				   currently looking at.*/
@@ -151,3 +137,17 @@ typedef struct _ManpageGlobals{
 				   this manpage. */
 
 } ManpageGlobals;
+
+
+/* Resource manager sets these. */
+
+typedef struct _Xman_Resources {
+  XmanFonts fonts;		/* The fonts used for the man pages. */
+  XmanCursors cursors;		/* The cursors for xman. */
+  Boolean both_shown_initial;	/* The initial state of the manual pages
+				   show two screens or only one. */
+  Boolean top_box_active;	        /* Put up the Top Box. */
+  int directory_height;	        /* The default height of directory in 
+				   both_shown mode. */
+  char * help_file;		/* The name of the help file. */
+} Xman_Resources;

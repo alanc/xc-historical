@@ -1,8 +1,8 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: version.h,v 1.1 88/08/31 22:52:48 jim Exp $
- * $Athena: version.h,v 4.0 88/08/31 22:13:33 kit Exp $
+ * $XConsortium: version.h,v 1.2 88/09/06 17:48:28 jim Exp $
+ * $Athena: version.h,v 4.5 88/12/19 13:48:30 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -20,5 +20,5 @@
  * Created:   July 18, 1988 
  */
 
-#define XMAN_VERSION "Xman_Version 3.1"
+#define XMAN_VERSION "Xman_Version 3.1.1"
 

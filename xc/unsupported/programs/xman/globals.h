@@ -1,8 +1,8 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: globals.h,v 1.1 88/08/31 22:52:33 jim Exp $
- * $Athena: globals.h,v 4.0 88/08/31 22:11:54 kit Exp $
+ * $XConsortium: globals.h,v 1.2 88/09/06 17:47:41 jim Exp $
+ * $Athena: globals.h,v 4.5 88/12/19 13:46:58 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -22,20 +22,11 @@
 
 #include "man.h"
 
-/* Resource manager sets these. */
-
-extern XmanFonts fonts;			/* The fonts used for the man pages. */
-extern XmanCursors cursors;		/* The cursors for xman. */
-extern Boolean both_shown_initial;      /* The initial state of the manual 
-				         pages show two screens or only one. */
-extern Boolean top_box_active;	        /* Put up the Top Box. */
-extern int directory_height;	        /* The default height of directory in 
-				            both_shown mode. */
-extern char * help_file;		/* The name of the help file. */
-
-extern Widget help_widget;		/* The help widget. */
+extern Xman_Resources resources;	/* Resource manager sets these. */
 
 /* bookkeeping global variables. */
+
+extern Widget help_widget;		/* The help widget. */
 
 extern int default_height,default_width; /* Approximately the default with and
 					    height, of the manpage when shown,
@@ -47,4 +38,4 @@ extern int man_pages_shown;		/* The current number of manual
 extern Manual manual[MAXSECT];		/* The manual structure. */
 extern int sections;			/* The number of manual sections. */
 
-
+extern Widget initial_widget;	      /* The initial widget, never realized. */

@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: pages.c,v 1.1 88/08/31 22:52:45 jim Exp $
+ * $XConsortium: pages.c,v 1.2 88/09/06 17:48:20 jim Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -20,7 +20,7 @@
  */
 
 #if ( !defined(lint) && !defined(SABER))
-  static char rcs_version[] = "$Athena: pages.c,v 4.0 88/08/31 22:13:10 kit Exp $";
+  static char rcs_version[] = "$Athena: pages.c,v 4.5 88/12/19 13:48:09 kit Exp $";
 #endif
 
 #include <ctype.h>
@@ -179,6 +179,8 @@ FILE * file;
  *	Returns: none.
  */
 
+/* ARGSUSED */
+
 void
 PrintManpage(w,struct_pointer,data)
 Widget w;
@@ -237,22 +239,23 @@ caddr_t struct_pointer,data;
  * export the font height.
  */
 
-  height = (fonts.normal->max_bounds.ascent + 
-		   fonts.normal->max_bounds.descent); 
+  height = (resources.fonts.normal->max_bounds.ascent + 
+		   resources.fonts.normal->max_bounds.descent); 
 
   bold_gc = XCreateGC(disp,window,0,NULL);
   XSetForeground(disp,bold_gc,(unsigned long) fgcolor);
-  XSetFont(disp,bold_gc,fonts.bold->fid);
+  XSetFont(disp,bold_gc,resources.fonts.bold->fid);
 
   normal_gc = XCreateGC(disp,window,0,NULL);
   XSetForeground(disp,normal_gc,(unsigned long) fgcolor);
-  XSetFont(disp,normal_gc,fonts.normal->fid);
+  XSetFont(disp,normal_gc,resources.fonts.normal->fid);
 
   italic_gc = XCreateGC(disp,window,0,NULL);
   XSetForeground(disp,italic_gc,(unsigned long) fgcolor);
-  XSetFont(disp,italic_gc,fonts.italic->fid);
+  XSetFont(disp,italic_gc,resources.fonts.italic->fid);
 
-  width =  XTextWidth(fonts.normal,"        ",8); /* Width of a tab stop. */
+ /* Width of a tab stop. */
+  width =  XTextWidth(resources.fonts.normal,"        ",8);
 
 /*
  * Because XDrawString uses the bottom of the text as a position
@@ -260,7 +263,7 @@ caddr_t struct_pointer,data;
  * to the ScollByLine position reference.
  */
 
-  y_loc = scroll_info->location + fonts.normal->max_bounds.ascent;
+  y_loc = scroll_info->location + resources.fonts.normal->max_bounds.ascent;
 
 /*
  * Ok, here's the more than mildly heuristic man page formatter.
@@ -334,7 +337,7 @@ caddr_t struct_pointer,data;
 	XDrawString(disp,window,normal_gc,col,y_loc,buf,strlen(buf));
       bufp = buf; 
       italicflag = 0;
-      cur_pos = XTextWidth(fonts.normal,buf,strlen(buf)) + col;
+      cur_pos = XTextWidth(resources.fonts.normal,buf,strlen(buf)) + col;
       col = cur_pos - (cur_pos % width) + width;
       break;
 
@@ -342,6 +345,62 @@ caddr_t struct_pointer,data;
       c++;			/* should always be esc-x */
       break;
 
+/* 
+ * Overstrike code supplied by: cs.utexas.edu!ut-emx!clyde@rutgers.edu 
+ * Since my manual pages do not have overstrike I couldn't test this.
+ */
+
+    case BACKSPACE:		/* Backspacing for nroff bolding */
+      if (c[-1] == c[1] && c[1] != BACKSPACE) {	/* overstriking one char */
+	*--bufp = '\0';		/* Zap 1st instance of char to bolden */
+	if (bufp > &buf[0]) {
+	  if (italicflag) {
+	    XDrawString(disp,window,italic_gc,col,y_loc,buf,strlen(buf));
+	    col += XTextWidth(resources.fonts.italic,buf,strlen(buf));
+	  }
+	  else {
+	    XDrawString(disp,window,normal_gc,col,y_loc,buf,strlen(buf));
+	    col += XTextWidth(resources.fonts.normal,buf,strlen(buf));
+	  }
+	  bufp = buf;
+	}
+	/*
+	 * It is painful writing one bold char at a time but
+	 * it is the only safe way to do it.  We trust that the library
+	 * buffers these one-char draw requests and sends one large
+	 * request packet.
+	 */
+	*bufp = c[1];
+	XDrawString(disp,window,bold_gc,col,y_loc,bufp,1);
+	col += XTextWidth(resources.fonts.bold,bufp,1);
+	*bufp = '\0';
+	first = FALSE;
+
+	/*
+	 *     Nroff bolding looks like:
+	 *	 	     C\bC\bC\bCN...
+	 * c points to ----^      ^
+	 * it needs to point to --^
+	 */
+	while (*c == BACKSPACE && c[-1] == c[1])
+	  c += 2;
+	c--;		/* Back up to previous char */
+      }
+      else {
+	if ((c[-1] == 'o' && c[1] == '+')          /* Nroff bullet */
+	    || (c[-1] == '+' && c[1] == 'o')) {	   /* Nroff bullet */
+	  /* I would prefer to put a 'bullet' char here */
+	  *bufp++ = 'o';
+	  c++;
+	}
+	else {		/* 'real' backspace - back up output ptr */
+	  bufp--;
+	}
+      }
+      break;
+
+/* End of contributed overstrike code. */
+  
    case '_':			/* look for underlining [italicize] */
       c++;
       if(*c != BACKSPACE) {
@@ -354,7 +413,7 @@ caddr_t struct_pointer,data;
 	  *bufp = '\0';
 	  XDrawString(disp,window,normal_gc,col,y_loc,
 		      buf,strlen(buf));
-	  col += XTextWidth(fonts.normal,buf,strlen(buf));
+	  col += XTextWidth(resources.fonts.normal,buf,strlen(buf));
 	  bufp = buf;
 	  *bufp = '\0';
 	  italicflag = 1;
@@ -368,7 +427,7 @@ caddr_t struct_pointer,data;
       if(italicflag) {			/* font change? */
 	*bufp = '\0';
 	XDrawString(disp,window,italic_gc,col,y_loc,buf,strlen(buf));
-	col += XTextWidth(fonts.italic,buf,strlen(buf));	
+	col += XTextWidth(resources.fonts.italic,buf,strlen(buf));	
 	bufp = buf;
 	*bufp = '\0';
 	italicflag = 0;
@@ -400,7 +459,7 @@ register char *sp;
 
   length = strlen(sp);
   for (sp_pointer = sp, count = 0; count < length; sp_pointer++,count++) 
-    if (islower(*sp_pointer))
+    if ( !isupper(*sp_pointer) && !isspace(*sp_pointer) )
       return(0);
   return(1);
 }

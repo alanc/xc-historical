@@ -2,15 +2,15 @@
 XMAN is an X Window System manual browsing tool, built upon the XToolkit.
 
 
-CREDITS:
+CREDITS
 
-    Version 3.1
+    Version 3.1.1
     Based Upon: Xman for X10 by Barry Shein - Boston Univ.
     Written By: Chris Peterson - MIT Project Athena.
     Copyright 1988 Massachusetts Institute of Technology 
 
 
-GETTING STARTED:
+GETTING STARTED
 
   By default, XMAN starts by creating a small window that contains
 three "buttons" (places on which to click a mouse button).  Two of
@@ -31,7 +31,7 @@ manual pages shown brings up that particular manual page.  Clicking
 the middle button returns you to the manual page previously on the
 screen.
 
-SCROLLING TEXT:
+SCROLLING TEXT
 
   The scrollbars are similar to xterm, xmh, and xmore scrollbars;
 clicking the left or right mouse buttons with the pointer at the
@@ -46,7 +46,7 @@ text of the document moves the area of the manual page that is shown
 down or up one page, respectively.  You may also type 'f' or
 <space bar> to scroll down one page, and 'b' to scroll up one page.
 
-RESIZING THINGS:
+RESIZING THINGS
 
   You can resize any of the windows in xman with your favorite window
 manager, and xman will to the best it can to resize everything
@@ -60,12 +60,12 @@ may be moved up and down to resize the panes of the screen, and when
 the mouse button is released xman will move the pane boundry to the
 newly specified location.
 
-FOR FURTHER INFORMATION:
+FOR FURTHER INFORMATION
 
 Information on customizing xman through resource and command line
 options can be found in the xman manpage.
 
-SUMMARY OF BASIC ACTIONS:
+SUMMARY OF BASIC ACTIONS
 
 Any time:
 
@@ -90,7 +90,7 @@ CLICK MIDDLE:			Move top of page to current mouse position.
 CLICK RIGHT:			Move Up - more if pointer is near bottom
 					of window, less if at top.
 
-EXTENDED COMMANDS:
+EXTENDED COMMANDS
 
   To reach the extended commands simply move the mouse over the label
 at the top of the manual page display window; this will activate the

@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: search.c,v 1.1 88/08/31 22:52:46 jim Exp $
+ * $XConsortium: search.c,v 1.2 88/09/04 20:27:33 swick Exp $
  * $oHeader: search.c,v 4.0 88/08/31 22:13:19 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
@@ -21,7 +21,7 @@
  */
 
 #if ( !defined(lint) && !defined(SABER))
-  static char rcs_version[] = "$Athena: search.c,v 4.0 88/08/31 22:13:19 kit Exp $";
+  static char rcs_version[] = "$Athena: search.c,v 4.7 89/01/06 15:59:02 kit Exp $";
 #endif
 
 #include "globals.h"
@@ -35,7 +35,7 @@ Ctrl<Key>m:    beginning-of-file()";
 #define SEARCHARGS 10
 
 FILE * DoManualSearch();
-struct entry * BEntrySearch();
+static int BEntrySearch();
 
 /*	Function Name: MakeSearchWidget
  *	Description: This Function Creates the Search Widget.
@@ -66,7 +66,7 @@ Widget parent;
   popup_shell = XtCreatePopupShell(SEARCHNAME, transientShellWidgetClass, 
 				   parent, arglist, num_args);
 
-  box = XtCreateWidget("box",boxWidgetClass, popup_shell,NULL,0);
+  box = XtCreateWidget("box",boxWidgetClass, popup_shell,NULL, (Cardinal) 0);
 
   num_args = 0;
   XtSetArg(arglist[num_args], XtNborderWidth, 0);
@@ -81,7 +81,7 @@ Widget parent;
   XtSetArg(arglist[num_args], XtNeditType, XttextEdit);
   num_args++;
 
-  man_globals->search_string = INIT_SEARCH_STRING;
+  strcpy(man_globals->search_string, INIT_SEARCH_STRING);
 
   XtSetArg(arglist[num_args], XtNstring, man_globals->search_string);
   num_args++;
@@ -90,7 +90,7 @@ Widget parent;
 
   XtSetArg(arglist[num_args], XtNlength, SEARCH_STRING_LENGTH);
   num_args++;
-  XtSetArg(arglist[num_args], XtNcursor, cursors.search_entry);
+  XtSetArg(arglist[num_args], XtNcursor, resources.cursors.search_entry);
   num_args++;
 
   text = XtCreateWidget("textWidgetSearch",asciiStringWidgetClass,
@@ -156,17 +156,17 @@ Widget parent;
 
   answer = XtMakeResizeRequest(text, width, height, &width, &height);
     
-    switch(answer) {
-    case XtGeometryYes:
-    case XtGeometryNo:
-      break;
-    case XtGeometryAlmost:
-      (void) XtMakeResizeRequest(text, width, height, &width, &height);
-    }
+  switch(answer) {
+  case XtGeometryYes:
+  case XtGeometryNo:
+    break;
+  case XtGeometryAlmost:
+    (void) XtMakeResizeRequest(text, width, height, &width, &height);
+  }
 
   XtManageChild(box);
   XtRealizeWidget(popup_shell);
-  AddCursor(popup_shell,cursors.search_entry);
+  AddCursor(popup_shell,resources.cursors.search_entry);
 }
 
 /*	Function Name: DoSearch
@@ -212,7 +212,7 @@ int type;
 
   if (!strcmp(man_globals->search_string,"") || 
       (man_globals->search_string[0] == ' ')) {
-    PrintWarning("You want me to search for what???");
+    PrintWarning(man_globals, "You want me to search for what???");
     return(NULL);
   }
 
@@ -228,8 +228,7 @@ int type;
     strcpy(path,manpath);
 
   if (type == APROPOS) {
-    sprintf(cmdbuf,"%s %s %s | %s > %s",APROPOSCOMMAND,path,
-	    man_globals->search_string,APROPOSFILTER,mantmp);
+    sprintf(cmdbuf, APROPOSFILTER, path, man_globals->search_string, mantmp);
     sprintf(label,"Results of apropos search on: %s",
 	    man_globals->search_string);
 
@@ -272,7 +271,6 @@ int type;
     if (flag) {
       fclose(file);
       file = NULL;
-/*    PrintWarning(string_buf); */
       ChangeLabel(man_globals->label,string_buf);
       return(NULL);
     }
@@ -285,7 +283,6 @@ int type;
     file = DoManualSearch(man_globals);
     if (file == NULL) {
       sprintf(string_buf,"No manual entry for %s.",man_globals->search_string);
-      /*    PrintWarning(string_buf); */
       ChangeLabel(man_globals->label,string_buf);
       return(NULL);
     }
@@ -299,40 +296,49 @@ int type;
  *	Returns: the filename of the man page.
  */
 
+#define NO_ENTRY -100
+
 FILE * 
 DoManualSearch(man_globals)
 ManpageGlobals *man_globals;
 {
-  struct entry * entry = NULL;
-  char *string, *name;
-  int i;
-  FILE * file;
+  char *string;
+  int e_num = NO_ENTRY;
+  int i, initial_entry;
 
 /* search current section first. */
   
   string = man_globals->search_string;
   i = man_globals->current_directory;
-  entry = BEntrySearch(string, manual[i].entries, manual[i].nentries);
+  e_num = BEntrySearch(string, manual[i].entries, manual[i].nentries);
 
 /* search other sections. */
 
-  if (entry == NULL) {
+  if (e_num == NO_ENTRY) {
     i = -1;			/* At the exit of the loop i needs to
 				   be the one we used. */
     do {
       i++;
       if (i == man_globals->current_directory) i++;
-      entry = BEntrySearch(string, manual[i].entries, manual[i].nentries);
-    } while ( (i < sections) && (entry == NULL) );
+      e_num = BEntrySearch(string, manual[i].entries, manual[i].nentries);
+    } while ( (i < sections) && (e_num == NO_ENTRY) );
+    if (e_num == NO_ENTRY)
+      return(NULL);
+/*
+ * Manual page found in some other section, unhighlight the current one.
+ */
+    XtListUnhighlight(
+            man_globals->manpagewidgets.box[man_globals->current_directory]);
   }
-    
-  if (entry == NULL)
-    return(NULL);
-
-  name = CreateManpageName(entry->label);
-  file = FindFilename(man_globals, name, i, entry);
-  free(name);
-  return(file);
+  else {
+    /* 
+     * Highlight the element we are searching for if it is in the directory
+     * listing currently being shown.
+     */
+   
+    XtListHighlight(man_globals->manpagewidgets.box[i], e_num);
+  }
+  return(FindFilename(man_globals, manual[i].entries[e_num]));
 }
 
 /*	Function Name: BEntrySearch
@@ -343,35 +349,43 @@ ManpageGlobals *man_globals;
  *	Returns: a pointer to the entry found.
  */
 
-struct entry *  
+static int
 BEntrySearch(string, first, number)
 char * string;
-struct entry * first;
+char ** first;
 int number;
 {
-  int check, cmp;
-  char * c, label[BUFSIZ];
+  int check, cmp, len_cmp, global_number;
+  char *head, *tail;
   
+  global_number = 0;
   while (TRUE) {
 
-    if (number == 0)
-      return(NULL);		/* didn't find it. */
-  
+    if (number == 0) {
+      return(NO_ENTRY);		/* didn't find it. */
+    }
+
     check = number/2;
 
-    strcpy (label, first[check].label);
-    c = index(label, '.');
-    if (c != NULL);
-    *c = '\0';
+    head = rindex(first[ global_number + check ], '/');
+    if (head == NULL) 
+      PrintError("index failure in BEntrySearch");
+    head++;
 
-    cmp = strcmp(string, label);
+    tail = rindex(head, '.');
+    if (tail == NULL) 
+      PrintError("index failure in BEntrySearch");
 
-    if ( cmp == 0 )
-      return(&(first[check]));
-    else if (cmp < 0) 
+    cmp = strncmp(string, head, (tail - head));
+    len_cmp = strlen(string) - (int) (tail - head);
+
+    if ( cmp == 0 && len_cmp == 0) {
+      return(global_number + check);
+    }
+    else if ( cmp < 0 || ((cmp == 0) && (len_cmp < 0)) ) 
       number = check;
-    else /* cmp > 0 */ {
-      first = &(first[check + 1]);
+    else /* cmp > 0 || ((cmp == 0) && (len_cmp > 0)) */ {
+      global_number += (check + 1);
       number -= ( check + 1 );
     }
   }

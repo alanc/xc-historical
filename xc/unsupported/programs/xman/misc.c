@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: misc.c,v 1.2 88/09/06 17:48:18 jim Exp $
+ * $XConsortium: misc.c,v 1.3 88/10/07 17:19:53 jim Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -20,7 +20,7 @@
  */
 
 #if ( !defined(lint) && !defined(SABER))
-  static char rcs_version[] = "$Athena: misc.c,v 4.0 88/08/31 22:13:01 kit Exp $";
+  static char rcs_version[] = "$Athena: misc.c,v 4.6 88/12/19 13:48:01 kit Exp $";
 #endif
 
 #include "globals.h"
@@ -37,10 +37,18 @@
  */
 
 void
-PrintWarning(string)
+PrintWarning(man_globals, string)
+ManpageGlobals * man_globals;
 char * string;
 {
-  fprintf(stderr,"Xman Warning: %s\n",string);
+  char buffer[BUFSIZ];
+
+  sprintf( buffer, "Xman Warning: %s", string);
+
+  if (man_globals != NULL) 
+    ChangeLabel(man_globals->label, buffer);
+
+  fprintf(stderr, "%s\n", buffer);
 }
 
 /*	Function Name: PrintError
@@ -63,47 +71,31 @@ char * string;
 /*	Function Name: FindFilename
  *	Description: Opens the entry file given the entry struct.
  *	Arguments: man_globals - the globals info for this manpage.
- *                 name - name of the current manpage.
  *                 entry - the structure containg the info on the file to open.
  *	Returns: fp - the file pointer
  */
 
 FILE *
-FindFilename(man_globals, name, section, entry)
+FindFilename(man_globals, entry)
 ManpageGlobals * man_globals;
-char * name;
-int section;
-struct entry * entry;
+char * entry;
 {
   FILE * file;
-  char local_filename[BUFSIZ];	/* local filename. */
+  char path[BUFSIZ], page[BUFSIZ], section[BUFSIZ], *temp;
 
-  sprintf(man_globals->manpage_title,
-	  "The current manual page is: %s.", name);   
+  temp = CreateManpageName(entry);
+  sprintf(man_globals->manpage_title, "The current manual page is: %s.", temp);
+  free(temp);
   
-  sprintf(man_globals->filename, "%s/%s%c/%s",
-	  entry->path, CAT,  manual[section].sect[LCAT], entry->label);
+  ParseEntry(entry, path, section, page);
+  sprintf(man_globals->filename, "%s/%s%c/%s", path, CAT, section[LCAT], page);
 
 /* if we find the formatted manpage then return it */
 
   if ( (file = fopen(man_globals->filename,"r")) != NULL)
     return(file);
 
-/* If not then look for the unformatted man page, format it and 
- * write access is allowed to the cat directory, then ask if we
- * want to save it.
- */
-
-  sprintf(local_filename,"%s/%s/%s",
-	  entry->path, manual[section].sect, entry->label);
-  if ( (file = fopen(local_filename,"r")) == NULL) {
-    char error_buf[BUFSIZ];
-    /* We Really could not find it, this should never happen, yea right. */
-    sprintf(error_buf, "Could open manual page file, %s", local_filename);
-    PrintError(error_buf);
-  }
-  else 
-    return(Format(man_globals,file,local_filename, entry, section));
+  return(Format(man_globals, entry));
 }
 
 /*	Function Name: Format
@@ -111,8 +103,6 @@ struct entry * entry;
  *                   with the user.
  *	Arguments: man_globals - the psuedo globals
  *                 file - the file pointer to use and return
- *                 local_filename - the name of the file that is 
- *                                  being formatted.
  *                 entry - the current entry struct.
  *                 current_box - The current directory being displayed. 
  *	Returns: none.
@@ -121,18 +111,16 @@ struct entry * entry;
 /* ARGSUSED */
 
 FILE *
-Format(man_globals, file, local_filename, entry, current_box)
+Format(man_globals, entry)
 ManpageGlobals * man_globals; 
-FILE * file;
-char * local_filename;
-struct entry * entry;
-int current_box;		/* The current directory being displayed.  */
+char * entry;
 {
+  FILE * file;
   Widget w = man_globals->manpagewidgets.directory;
-  char cmdbuf[256];
-  char tmp[25];
-  char catdir[100];
-  int x,y;			/* location to pop up whould you 
+  char cmdbuf[BUFSIZ], tmp[BUFSIZ], catdir[BUFSIZ];
+  char path[BUFSIZ], section[BUFSIZ], error_buf[BUFSIZ];
+
+  Position x,y;			/* location to pop up whould you 
 				   like to save widget. */
 
   strcpy(tmp,MANTEMP);		/* get a temp file. */
@@ -157,38 +145,50 @@ int current_box;		/* The current directory being displayed.  */
   XFlush(XtDisplay(w));
 */
 /* End replacement. */
-/*
-  ChangeLabel(man_globals->label, "Formatting Manpage, Please Stand by...");
-*/
+
+  if ( (file = fopen( entry , "r")) == NULL) {
+    /* We Really could not find it, this should never happen, yea right. */
+    sprintf(error_buf, "Could open manual page file, %s", entry);
+    PrintWarning(man_globals, error_buf);
+    return(NULL);
+  }
+
+  ParseEntry(entry, path, section, NULL);
+
 #ifdef macII
-  sprintf(cmdbuf,"cd %s;/usr/bin/pcat %s | /usr/bin/col | /usr/bin/ul -t dumb > %s",
-	  entry->path, local_filename, man_globals->tmpfile);
+  sprintf(cmdbuf,
+        "cd %s;/usr/bin/pcat %s | /usr/bin/col | /usr/bin/ul -t dumb > %s %s",
+	path, entry, man_globals->tmpfile, "2> /dev/null");
 #else
-  sprintf(cmdbuf,"cd %s;%s %s > %s",
-	  entry->path,
-	  FORMAT, local_filename, man_globals->tmpfile);
+  sprintf(cmdbuf,"cd %s ; %s %s > %s %s", path,
+	  FORMAT, entry, man_globals->tmpfile, "2> /dev/null");
 #endif
 
-  if(system(cmdbuf) != 0) 	/* execute search. */
-    PrintError("Something went wrong trying to run the command");
+  if(system(cmdbuf) != 0) {	/* execute search. */
+    sprintf(error_buf,
+	    "Something went wrong trying to run the command: %s", cmdbuf);
+    PrintWarning(man_globals, error_buf);
+    return(NULL);
+  }
 
   if ((file = fopen(man_globals->tmpfile,"r")) == NULL) {  
-    PrintWarning("Something went wrong in retrieving the temp file");
-    PrintError("Try cleaning up /tmp");
+    sprintf(error_buf, "Something went wrong in retrieving the temp file, %s",
+	    "Try cleaning up /tmp");
+    PrintWarning(man_globals, error_buf);
+    return(NULL);
   }
 
 /* if the catdir is writeable the ask the user if he/she wants to
    write the man page to it. */
 
-  sprintf(catdir,"%s/%s%c",
-	  entry->path,CAT, manual[current_box].sect[LCAT], entry->label);
+  sprintf(catdir,"%s/%s%c", path, CAT, section[LCAT]);
   
   if( (access(catdir,W_OK)) == 0)  {
     x = Width(man_globals->manpagewidgets.manpage)/2;
     y = Height(man_globals->manpagewidgets.manpage)/2;
     XtTranslateCoords(man_globals->manpagewidgets.manpage, x, y, &x, &y);
     PositionCenter( PopupChild(man_globals->manpagewidgets.manpage, 0),
-		   x,y,0,0,0,0);
+		   (int) x, (int) y,0,0,0,0);
     XtPopup( PopupChild(man_globals->manpagewidgets.manpage, 0),
 	    XtGrabExclusive);
   }
@@ -232,7 +232,7 @@ Cursor cursor;
 {
 
   if (!XtIsRealized(w)) {
-    PrintWarning("Widget is not realized, no cursor added.\n");
+    PrintWarning(NULL, "Widget is not realized, no cursor added.\n");
     return;
   }
   XDefineCursor(XtDisplay(w),XtWindow(w),cursor);
@@ -316,3 +316,37 @@ int h_space,v_space;
   XtMoveWidget(widget,x_temp,y_temp);
 }  
 
+/*	Function Name: ParseEntry(entry, path, sect, page)
+ *	Description: Parses the manual pages entry filenames.
+ *	Arguments: str - the full path name.
+ *                 path - the path name.      RETURNED
+ *                 sect - the section name.   RETURNED
+ *                 page - the page name.      RETURNED
+ *	Returns: none.
+ */
+
+void
+ParseEntry(entry, path, sect, page)
+char *entry, *path, *page, *sect;
+{
+  char *c, temp[BUFSIZ];
+
+  strcpy(temp, entry);
+
+  c = rindex(temp, '/');
+  if (c == NULL) 
+    PrintError("index failure in ParseEntry.");
+  *c++ = '\0';
+  if (page != NULL)
+    strcpy(page, c);
+
+  c = rindex(temp, '/');
+  if (c == NULL) 
+    PrintError("index failure in ParseEntry.");
+  *c++ = '\0';
+  if (sect != NULL)
+    strcpy(sect, c);
+
+  if (path != NULL)
+    strcpy(path, temp);
+}

@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: main.c,v 1.2 88/09/06 17:48:09 jim Exp $
+ * $XConsortium: main.c,v 1.3 88/10/20 10:05:04 swick Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -20,7 +20,7 @@
  */
 
 #if ( !defined(lint) && !defined(SABER))
-  static char rcs_version[] = "$Athena: main.c,v 4.0 88/08/31 22:12:26 kit Exp $";
+  static char rcs_version[] = "$Athena: main.c,v 4.5 88/12/19 13:47:28 kit Exp $";
 #endif
 
 #include "globals.h"
@@ -31,33 +31,33 @@
 
 static void ArgError();
 
-/* XtOffset() hack for ibmrt BandAidCompiler */
+#define Offset(field) (XtOffset(Xman_Resources *, field))
 
 static XtResource my_resources[] = {
   {"manualFontNormal", XtCFont, XtRFontStruct, sizeof(XFontStruct *),
-     (Cardinal) &(fonts.normal), XtRString, MANPAGE_NORMAL},
+     Offset(fonts.normal), XtRString, MANPAGE_NORMAL},
   {"manualFontBold", XtCFont, XtRFontStruct, sizeof(XFontStruct *),
-     (Cardinal) &(fonts.bold), XtRString, MANPAGE_BOLD},
+     Offset(fonts.bold), XtRString, MANPAGE_BOLD},
   {"manualFontItalic", XtCFont, XtRFontStruct, sizeof(XFontStruct *),
-     (Cardinal) &(fonts.italic), XtRString, MANPAGE_ITALIC},
+     Offset(fonts.italic), XtRString, MANPAGE_ITALIC},
   {"directoryFontNormal", XtCFont, XtRFontStruct, sizeof(XFontStruct *),
-     (Cardinal) &(fonts.directory), XtRString, DIRECTORY_NORMAL},
+     Offset(fonts.directory), XtRString, DIRECTORY_NORMAL},
   {"bothShown", XtCBoolean, XtRBoolean, sizeof(Boolean),
-     (Cardinal) &both_shown_initial, XtRString, "False"},
+     Offset(both_shown_initial), XtRString, "False"},
   {"directoryHeight", "DirectoryHeight", XtRInt, sizeof(int),
-     (Cardinal) &directory_height, XtRString, "150"},  
+     Offset(directory_height), XtRString, "150"},  
   {"topCursor", XtCCursor, XtRCursor, sizeof(Cursor), 
-     (Cardinal) &(cursors.top), XtRString, XMAN_CURSOR},
+     Offset(cursors.top), XtRString, XMAN_CURSOR},
   {"helpCursor", XtCCursor, XtRCursor, sizeof(Cursor),
-     (Cardinal) &(cursors.help), XtRString, HELP_CURSOR},
+     Offset(cursors.help), XtRString, HELP_CURSOR},
   {"manpageCursor", XtCCursor, XtRCursor, sizeof(Cursor),
-     (Cardinal) &(cursors.manpage), XtRString, MANPAGE_CURSOR},
+     Offset(cursors.manpage), XtRString, MANPAGE_CURSOR},
   {"searchEntryCursor", XtCCursor, XtRCursor, sizeof(Cursor),
-     (Cardinal) &(cursors.search_entry), XtRString, SEARCH_ENTRY_CURSOR},
+     Offset(cursors.search_entry), XtRString, SEARCH_ENTRY_CURSOR},
   {"helpFile", XtCFile, XtRString, sizeof(char *),
-     (Cardinal) &(help_file), XtRString, HELPFILE},
+     Offset(help_file), XtRString, HELPFILE},
   {"topBox", XtCBoolean, XtRBoolean, sizeof(Boolean),
-     (Cardinal) &top_box_active, XtRString, "True"},
+     Offset(top_box_active), XtRString, "True"},
 };
 
 /*
@@ -85,50 +85,49 @@ main(argc,argv)
 char ** argv;
 int argc;
 {
-  Widget top_menu;
-
-  top_menu = XtInitialize(TOPBOXNAME,"XMan", 
-			  xman_options, XtNumber(xman_options),
-			  (unsigned int*) &argc,argv);
+  initial_widget = XtInitialize(NULL, "XMan", 
+				xman_options, XtNumber(xman_options),
+				(unsigned int*) &argc,argv);
   if (argc != 1) {
     ArgError(argc, argv);
     exit(42);
   }
 
-  XtGetApplicationResources( (Widget) top_menu, (caddr_t) NULL, 
+  XtGetApplicationResources( initial_widget, (caddr_t) &resources, 
 			    my_resources, XtNumber(my_resources),
 			    NULL, (Cardinal) 0);
-  if (!fonts.normal)
-	XtError("failed to get the manualFontNormal font");
-  if (!fonts.bold)
-	fonts.bold = fonts.normal;
-  if (!fonts.italic)
-	fonts.italic = fonts.bold;
-  if (!fonts.directory)
-	fonts.directory = fonts.normal;
+
+  if (!resources.fonts.normal)
+	PrintError("Failed to get the manualFontNormal font");
+  if (!resources.fonts.bold)
+	resources.fonts.bold = resources.fonts.normal;
+  if (!resources.fonts.italic)
+	resources.fonts.italic = resources.fonts.bold;
+  if (!resources.fonts.directory)
+	resources.fonts.directory = resources.fonts.normal;
 
 #ifdef DEBUG
   printf("debugging mode\n");
-  XSynchronize( XtDisplay(top_menu), TRUE);
 #endif
 
-  /* set default width and height. */
+/*
+ * Set the default width and height.
+ * I am not real happy with this method, but it will usually do something
+ * reasonable, if not the "right" thing.  It is not a real big issue since
+ * it is easy to change the values with resources or command line options.
+ * NOTE: if you are in a 100 dpi display you will lose.
+ */
 
-  default_width = DisplayWidth(XtDisplay(top_menu), 
-			       XtDisplay(top_menu)->default_screen);
-  default_width /= 2; 
-  default_height=DisplayHeight(XtDisplay(top_menu), 
-			       XtDisplay(top_menu)->default_screen);
+  default_width = DEFAULT_WIDTH;
+  default_height=DisplayHeight(XtDisplay(initial_widget), 
+			       XtDisplay(initial_widget)->default_screen);
   default_height *= 3;
   default_height /= 4;
 
   sections = Man();
 
-  MakeTopMenuWidget(top_menu);	
-
-  if (top_box_active) {
-    XtRealizeWidget(top_menu);
-    AddCursor(top_menu,cursors.top);
+  if (resources.top_box_active) {
+    MakeTopMenuWidget();	
   }
   else
     CreateManpage();
@@ -138,7 +137,7 @@ int argc;
  * the screen so that if this user does not have a top box then when he
  * removes all his manual pages we can kill off the xman process.
  * To make things easier we will consider the top box a shown manual page
- * here, but since you cannot remove it, man_page_show only goes to zero when
+ * here, but since you cannot remove it, man_page_shown only goes to zero when
  * no top box is present.
  */
 
@@ -174,7 +173,6 @@ char ** argv;
 int argc;
 {
   int i;
-  char * prog;
 
   static char **syntax, *syntax_def[] = {
   "-helpfile <filename>",    "Specifies the helpfile to use.",
@@ -205,13 +203,10 @@ int argc;
   for (i = 1; i < argc ; i++) 
     (void) printf("This argument is unknown to Xman: %s\n", argv[i]);
   
-  if ( (prog = rindex(argv[0], '/')) == NULL)
-    prog = argv[0];
-
   (void) printf("\nKnown arguments are:\n");
 
   while ( *syntax != NULL ) {
-    printf("%-20s - %s\n", syntax[0], syntax[1]);
+    printf("%-30s - %s\n", syntax[0], syntax[1]);
     syntax += 2;
   }
 }

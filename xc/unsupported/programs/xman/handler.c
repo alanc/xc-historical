@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: handler.c,v 1.1 88/08/31 22:52:35 jim Exp $
+ * $XConsortium: handler.c,v 1.2 88/09/06 17:47:50 jim Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -20,7 +20,7 @@
  */
 
 #if ( !defined(lint) && !defined(SABER))
-  static char rcs_version[] = "$Athena: handler.c,v 4.0 88/08/31 22:11:58 kit Exp $";
+  static char rcs_version[] = "$Athena: handler.c,v 4.6 89/01/06 12:17:27 kit Exp $";
 #endif
 
 #include "globals.h"
@@ -84,8 +84,6 @@ caddr_t pointer,junk;
  * I did not have a two state or toggle widget, which is the way this
  * should really be done.  1/22/88 - CDP.
  */
-    ChangeLabel(man_globals->label,
-		man_globals->section_name[man_globals->current_directory]);
     if (man_globals->both_shown == TRUE) {
       label_str = SHOW_BOTH;
       if (man_globals->dir_shown)
@@ -98,7 +96,8 @@ caddr_t pointer,junk;
       Widget dir = man_globals->manpagewidgets.directory;
 
       label_str = SHOW_ONE;
-      XtPanedSetMinMax(dir,directory_height,directory_height);
+      XtPanedSetMinMax(dir, resources.directory_height, 
+		       resources.directory_height);
       if (!man_globals->dir_shown) {
 	XtUnmanageChild(manpage);
 	XtManageChild(dir);
@@ -116,6 +115,11 @@ caddr_t pointer,junk;
  * is up so very little time is wasted in the extra popdown call later.
  */
     XtPopdown( XtParent(XtParent(w)) );
+    if (man_globals->dir_shown)
+      ChangeLabel(man_globals->label,
+		  man_globals->section_name[man_globals->current_directory]);
+    else
+      ChangeLabel(man_globals->label, man_globals->manpage_title);
     ChangeLabel(man_globals->both_shown_button, label_str);
     /* if both are shown there is no need to switch between the two. */
     XtSetSensitive(man_globals->put_up_manpage,!man_globals->both_shown);
@@ -156,6 +160,8 @@ caddr_t pointer,junk;
 
 #define OFF_OF_TOP 25
 
+/* ARGSUSED */
+
 void
 PopUpMenu(w,junk,event)
 Widget w;
@@ -187,6 +193,8 @@ XEvent * event;
  *                 event - the event generated.
  *	Returns: none
  */
+
+/* ARGSUSED */
 
 void
 PopDown(w,junk,event)
@@ -226,7 +234,7 @@ caddr_t global_pointer,junk;
   else if ( !strcmp(Name(w),CANCEL) ) 
     file = NULL;
   else 
-    PrintWarning("Unknown widget");
+    PrintError("Unknown widget, in Search Box.");
 
   /* popdown the search widget */
 
@@ -254,17 +262,19 @@ FILE * file;
   InitManpage(man_globals,man_globals->manpagewidgets.manpage,file);
   fclose(file);
   
-  if (!man_globals->both_shown) {
+  if (man_globals->both_shown) {
+    ChangeLabel(man_globals->label, 
+		man_globals->section_name[man_globals->current_directory]);
+  }
+  else {
     XtUnmanageChild(man_globals->manpagewidgets.directory);
     XtManageChild(man_globals->manpagewidgets.manpage);
-  }
-  
-  XtSetSensitive(man_globals->both_shown_button,TRUE);
-  if (!man_globals->both_shown) {
     XtSetSensitive(man_globals->put_up_manpage,TRUE); 
     ChangeLabel(man_globals->label,man_globals->manpage_title);
     man_globals->dir_shown = FALSE;
   }
+
+  XtSetSensitive(man_globals->both_shown_button,TRUE);
   MakeLong( XtParent(man_globals->both_shown_button) );
   XtResetScrollByLine(man_globals->manpagewidgets.manpage);
 }
@@ -309,6 +319,8 @@ caddr_t pointer,junk;
  *	Returns: none.
  */
 
+/* ARGSUSED */
+
 void
 GotoManpage(w, global_pointer, event)
 Widget w;
@@ -350,9 +362,8 @@ caddr_t global_pointer, ret_val;
   ManpageGlobals * man_globals = (ManpageGlobals *) global_pointer;
   XtListReturnStruct * ret_struct = (XtListReturnStruct *) ret_val;
 
-  file = FindFilename(man_globals, ret_struct->string,
-		      man_globals->current_directory,
-	 &(manual[man_globals->current_directory].entries[ret_struct->index]));
+  file = FindFilename(man_globals,
+	 manual[man_globals->current_directory].entries[ret_struct->index]);
   PutUpManpage(man_globals, file);
 }
 
@@ -378,30 +389,26 @@ caddr_t pointer,junk;
   int current_box;
 
   menu_struct = (MenuCallbackStruct *) pointer;
-
   man_globals = (ManpageGlobals *) menu_struct->data;
 
-  /* The callback numbers go from 0 to n - 1 but I want from 1 to n */
-
   number = menu_struct->number;
-  number++;
-
   current_box = man_globals->current_directory;
 
   /* We have used this guy, pop down the menu. */
   
   if (number != current_box) {
     /* This is the only one that we know has a parent. */
-    parent = XtParent(man_globals->manpagewidgets.box[1]);
+    parent = XtParent(man_globals->manpagewidgets.box[INITIAL_DIR]);
 
     MakeDirectoryBox(man_globals, parent,
 		     man_globals->manpagewidgets.box + number, number);
     XtUnmanageChild(man_globals->manpagewidgets.box[current_box]);
     XtManageChild(man_globals->manpagewidgets.box[number]);
-    
+
+    XtListUnhighlight(man_globals->manpagewidgets.box[current_box]);
+    ChangeLabel(man_globals->label, man_globals->section_name[number]);
     man_globals->current_directory = number;
   }
-  ChangeLabel(man_globals->label, man_globals->section_name[number]);
 
   XtPopdown( XtParent(XtParent(w)) );
 
@@ -421,6 +428,8 @@ caddr_t pointer,junk;
  *                 junk - the callback and closure date are not used.
  *	Returns: none
  */
+
+/* ARGSUSED */
 
 void
 SaveCallback(w,global_pointer,junk)
@@ -453,6 +462,8 @@ caddr_t global_pointer,junk;
  *                 junk - the callback and closure date are not used.
  *	Returns: none.
  */
+
+/* ARGSUSED */
 
 void
 ManpageButtonPress(w,global_pointer,event)
