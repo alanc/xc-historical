@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: misc.c,v 1.1 88/08/31 22:52:45 jim Exp $
+ * $XConsortium: misc.c,v 1.2 88/09/06 17:48:18 jim Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -129,7 +129,7 @@ struct entry * entry;
 int current_box;		/* The current directory being displayed.  */
 {
   Widget w = man_globals->manpagewidgets.directory;
-  char cmdbuf[100];
+  char cmdbuf[256];
   char tmp[25];
   char catdir[100];
   int x,y;			/* location to pop up whould you 
@@ -160,9 +160,14 @@ int current_box;		/* The current directory being displayed.  */
 /*
   ChangeLabel(man_globals->label, "Formatting Manpage, Please Stand by...");
 */
+#ifdef macII
+  sprintf(cmdbuf,"cd %s;/usr/bin/pcat %s | /usr/bin/col | /usr/bin/ul -t dumb > %s",
+	  entry->path, local_filename, man_globals->tmpfile);
+#else
   sprintf(cmdbuf,"cd %s;%s %s > %s",
 	  entry->path,
 	  FORMAT, local_filename, man_globals->tmpfile);
+#endif
 
   if(system(cmdbuf) != 0) 	/* execute search. */
     PrintError("Something went wrong trying to run the command");

@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: defs.h,v 1.3 88/09/26 17:37:34 jim Exp $
+ * $XConsortium: defs.h,v 1.4 88/09/29 14:28:00 jim Exp $
  * $Athena: defs.h,v 4.0 88/08/31 22:11:42 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
@@ -81,7 +81,11 @@
 #define APROPOSCOMMAND "apropos -M"
 #define APROPOSFILTER "pr -h Apropos"
 #define MANUALCOMMAND "man -M"
+#ifdef macII
+#define FORMAT "pcat"	/* The format command. */
+#else
 #define FORMAT "nroff -man"	/* The format command. */
+#endif
 
 #define CANCEL "Cancel"
 
@@ -110,7 +114,11 @@
 
 #define BACKSPACE 010		/* I doubt you would want to change this. */
 #define MANDESC "mandesc"	/* Name of the mandesc files.  */
+#ifdef macII
+#define MANDIR "/usr/catman/u_man:/usr/catman/a_man"	/* The default manual page directory. */
+#else
 #define MANDIR "/usr/man"	/* The default manual page directory. */
+#endif
 
 #define INDENT 15
 #define TYP20STR "MMMMMMMMMMMMMMMMMMMM"
