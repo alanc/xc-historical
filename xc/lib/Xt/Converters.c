@@ -1,4 +1,4 @@
-/* "$XConsortium: Converters.c,v 1.63 91/02/05 16:58:04 gildea Exp $"; */
+/* $XConsortium: Converters.c,v 1.64 91/02/17 14:13:22 converse Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -33,6 +33,7 @@ SOFTWARE.
 #include	<stdio.h>
 #include        <X11/cursorfont.h>
 #include	<X11/keysym.h>
+#include	<X11/Xlocale.h>
 
 #if __STDC__
 #define Const const
@@ -42,6 +43,7 @@ SOFTWARE.
 
 static Const String XtNwrongParameters = "wrongParameters";
 static Const String XtNconversionError = "conversionError";
+static Const String XtNmissingCharsetList = "missingCharsetList";
 
 #define	done(type, value) \
 	{							\
@@ -154,6 +156,7 @@ static Boolean CvtStringToDisplay();
 static Boolean CvtStringToFile();
 static Boolean CvtStringToFloat();
 static Boolean CvtStringToFont();
+static Boolean CvtStringToFontSet();
 static Boolean CvtStringToFontStruct();
 static Boolean CvtStringToGeometry();
 static Boolean CvtStringToInt();
@@ -826,6 +829,146 @@ static Boolean CvtIntToFont(dpy, args, num_args, fromVal, toVal, closure_ret)
     done(Font, *(int*)fromVal->addr);
 }
 
+/*ARGSUSED*/
+static Boolean 
+CvtStringToFontSet( dpy, args, num_args, fromVal, toVal, closure_ret )
+    Display*  dpy;
+    XrmValuePtr args;
+    Cardinal    *num_args;
+    XrmValuePtr       fromVal;
+    XrmValuePtr       toVal;
+    XtPointer *closure_ret;
+{
+    XFontSet  f;
+    Display*  display;
+    char**    missing_charset_list;
+    int       missing_charset_count;
+    char*     def_string;
+
+    if (*num_args != 2)
+      XtAppErrorMsg(XtDisplayToApplicationContext(dpy),
+           XtNwrongParameters,"cvtStringToFontSet",XtCXtToolkitError,
+             "String to FontSet conversion needs display and locale arguments",
+              (String *) NULL, (Cardinal *)NULL);
+
+    display = *(Display**)args[0].addr;
+
+    if (CompareISOLatin1((String)fromVal->addr, XtDefaultFontSet) != 0) {
+      f = XCreateFontSet(display, (char *)fromVal->addr,
+              &missing_charset_list, &missing_charset_count, &def_string);
+        /* Free any returned missing charset list */
+      if (missing_charset_count) {
+          XtAppWarningMsg(XtDisplayToApplicationContext(dpy),
+                 XtNmissingCharsetList,"cvtStringToFontSet",XtCXtToolkitError,
+                 "Missing charsets in String to FontSet conversion",
+                 (String *) NULL, (Cardinal *)NULL);
+            XFreeStringList(missing_charset_list);
+      }
+      if (f != NULL) {
+  Done:           done( XFontSet, f );
+      }
+      XtDisplayStringConversionWarning(dpy, (char *) fromVal->addr, "FontSet");
+    }
+    /* try and get the default fontset */
+
+    {
+      XrmName xrm_name[2];
+      XrmClass xrm_class[2];
+      XrmRepresentation rep_type;
+      XrmValue value;
+
+      xrm_name[0] = XrmPermStringToQuark ("xtDefaultFontSet");
+      xrm_name[1] = 0;
+      xrm_class[0] = XrmPermStringToQuark ("XtDefaultFontSet");
+      xrm_class[1] = 0;
+      if (XrmQGetResource(XtDatabase(dpy), xrm_name, xrm_class, 
+                          &rep_type, &value)) {
+          if (rep_type == XtQString) {
+              f = XCreateFontSet(display, (char *)value.addr,
+				 &missing_charset_list, &missing_charset_count,
+				 &def_string);
+                /* Free any returned missing charset list */
+              if (missing_charset_count) {
+                  XtAppWarningMsg(XtDisplayToApplicationContext(dpy),
+			 XtNmissingCharsetList,"cvtStringToFontSet",
+			 XtCXtToolkitError,
+			 "Missing charsets in String to FontSet conversion",
+                         (String *) NULL, (Cardinal *)NULL);
+		  XFreeStringList(missing_charset_list);
+              }
+              if (f != NULL)
+                  goto Done;
+              else {
+                  XtDisplayStringConversionWarning( dpy, (char *)value.addr,
+                                                    "FontSet" );
+              }
+          } else if (rep_type == XtQFontSet) {
+              f = *(XFontSet*)value.addr;
+              goto Done;
+          }
+      }
+  }
+
+    /* Should really do XListFonts, but most servers support this */
+    f = XCreateFontSet(display, "-*-*-*-R-*-*-*-120-*-*-*-*",
+          &missing_charset_list, &missing_charset_count, &def_string);
+    /* Free any returned missing charset list */
+    if (missing_charset_count) {
+      XtAppWarningMsg(XtDisplayToApplicationContext(dpy),
+             XtNmissingCharsetList,"cvtStringToFontSet",XtCXtToolkitError,
+             "Missing charsets in String to FontSet conversion",
+             (String *) NULL, (Cardinal *)NULL);
+        XFreeStringList(missing_charset_list);
+    }
+    if (f != NULL)
+      goto Done;
+
+    XtAppWarningMsg(XtDisplayToApplicationContext(dpy),
+           "noFont","cvtStringToFontSet",XtCXtToolkitError,
+             "Unable to load any useable fontset",
+              (String *) NULL, (Cardinal *)NULL);
+    
+    return False;
+}
+
+/*ARGSUSED*/
+static void FreeFontSet(app, toVal, closure, args, num_args)
+    XtAppContext	app;
+    XrmValuePtr		toVal;
+    XtPointer		closure;        /* unused */
+    XrmValuePtr		args;
+    Cardinal		*num_args;
+{
+    Display *display;
+    if (*num_args != 2)
+      XtAppErrorMsg(app,
+           XtNwrongParameters,"freeFontSet",XtCXtToolkitError,
+             "FreeFontSet needs display and locale arguments",
+              (String *) NULL, (Cardinal *)NULL);
+
+    display = *(Display**)args[0].addr;
+    XFreeFontSet( display, *(XFontSet*)toVal->addr );
+}
+
+/*ARGSUSED*/
+static void FetchLocaleArg(widget, size, value )
+    Widget widget;	/* unused */
+    Cardinal *size;	/* unused */
+    XrmValue *value;
+{
+    static XrmString locale;
+
+    locale = XrmQuarkToString(XrmStringToQuark
+			      (setlocale(LC_CTYPE, (char*)NULL)));
+    value->size = sizeof(XrmString);
+    value->addr = (caddr_t)&locale;
+}
+
+static XtConvertArgRec Const localeDisplayConvertArgs[] = {
+    {XtProcedureArg, (XtPointer)FetchDisplayArg, 0},
+    {XtProcedureArg, (XtPointer)FetchLocaleArg, 0},
+};
+
 
 /*ARGSUSED*/
 static Boolean
@@ -1229,6 +1372,7 @@ XrmQuark  XtQDimension;
 XrmQuark  XtQFile;
 XrmQuark  XtQFloat;
 XrmQuark  XtQFont;
+XrmQuark  XtQFontSet;
 XrmQuark  XtQFontStruct;
 XrmQuark  XtQGeometry;
 XrmQuark  XtQInitialState;
@@ -1256,6 +1400,7 @@ void _XtConvertInitialize()
     XtQFile		= XrmPermStringToQuark(XtRFile);
     XtQFloat		= XrmPermStringToQuark(XtRFloat);
     XtQFont		= XrmPermStringToQuark(XtRFont);
+    XtQFontSet		= XrmPermStringToQuark(XtRFontSet);
     XtQFontStruct	= XrmPermStringToQuark(XtRFontStruct);
     XtQGeometry		= XrmPermStringToQuark(XtRGeometry);
     XtQInitialState     = XrmPermStringToQuark(XtRInitialState);
@@ -1310,6 +1455,9 @@ _XtAddDefaultConverters(table)
     Add2(XtQString, XtQFont,	    CvtStringToFont,
 	displayConvertArg, XtNumber(displayConvertArg),
 	XtCacheByDisplay, FreeFont);
+    Add2(XtQString, XtQFontSet,     CvtStringToFontSet,
+	localeDisplayConvertArgs, XtNumber(localeDisplayConvertArgs),
+	XtCacheByDisplay, FreeFontSet);
     Add2(XtQString, XtQFontStruct,  CvtStringToFontStruct,
 	displayConvertArg, XtNumber(displayConvertArg),
 	XtCacheByDisplay, FreeFontStruct);
