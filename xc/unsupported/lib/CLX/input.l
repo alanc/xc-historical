@@ -134,7 +134,7 @@
   ;; Returns NIL when the event-code is for an extension that isn't handled.
   (declare (type display display)
 	   (type card8 code))
-  (declare (values (or nil card8)))
+  (declare (values (or null card8)))
   (setq code (logand #x7f code))
   (if (< code *first-extension-event-code*)
       code

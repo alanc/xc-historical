@@ -816,7 +816,7 @@
   ;; Returns NIL when KEY-LIST is not a list or mask.
   (declare (type (simple-array keyword (*)) key-vector)
 	   (type (or mask32 list) key-list))
-  (declare (values (or mask32 nil)))
+  (declare (values (or mask32 null)))
   (typecase key-list
     (mask32 key-list)
     (list (let ((mask 0))
