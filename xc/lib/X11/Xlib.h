@@ -1,4 +1,4 @@
-/* $XConsortium: Xlib.h,v 11.220 93/06/25 16:29:12 gildea Exp $ */
+/* $XConsortium: Xlib.h,v 11.221 93/07/02 14:13:28 gildea Exp $ */
 /* 
  * Copyright 1985, 1986, 1987, 1991 by the Massachusetts Institute of Technology
  *
@@ -498,6 +498,10 @@ _XDisplay
 	unsigned long private16;
 	int min_keycode;	/* minimum defined keycode */
 	int max_keycode;	/* maximum defined keycode */
+	XPointer private17;
+	XPointer private18;
+	int private19;
+	char *xdefaults;	/* contents of defaults from server */
 	/* there is more to this structure, but it is private to Xlib */
 }
 #ifdef XLIB_ILLEGAL_ACCESS
