@@ -1,4 +1,4 @@
-.\" $XConsortium$
+.\" $XConsortium: icccm.ms,v 1.17 94/04/16 18:21:06 rws Exp $
 .\" Use tbl, eqn, -ms, and macros.t
 .\" @(#)icccm.ms	1.50	16 Apr 1994	14:13:55
 .EH ''''
@@ -1561,7 +1561,6 @@ The side effect of a target must be performed before the conversion is accepted.
 If the side effect of a target cannot be performed,
 the corresponding conversion request must be refused.
 .NE
-.RE
 .NT Problem
 The need to delay responding to the 
 .PN ConvertSelection 
@@ -3556,7 +3555,6 @@ the window, as most window managers will, and then crashes.
 The input focus will be 
 .PN None , 
 and there will probably be no way to change it.
-.KE
 .LP
 Note that neither
 .PN PointerRoot
