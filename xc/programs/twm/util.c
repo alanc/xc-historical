@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: util.c,v 1.37 90/03/07 16:43:15 jim Exp $
+ * $XConsortium: util.c,v 1.38 90/03/13 15:29:30 jim Exp $
  *
  * utility routines for twm
  *
@@ -38,7 +38,7 @@
 
 #if !defined(lint) && !defined(SABER)
 static char RCSinfo[]=
-"$XConsortium: util.c,v 1.37 90/03/07 16:43:15 jim Exp $";
+"$XConsortium: util.c,v 1.38 90/03/13 15:29:30 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -46,6 +46,7 @@ static char RCSinfo[]=
 #include "util.h"
 #include "gram.h"
 #include "screen.h"
+#include <X11/Xos.h>
 #include <X11/Xatom.h>
 #include <X11/Xmu/Drawing.h>
 #include <X11/Xmu/CharSet.h>
