@@ -1,4 +1,4 @@
-/* $XConsortium: XKB.c,v 1.9 94/02/05 02:38:25 rws Exp $ */
+/* $XConsortium: XKB.c,v 1.10 94/02/05 13:54:40 rws Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -132,7 +132,7 @@ Bool XkbGetAutoRepeatRate(dpy, deviceSpec, timeoutp, intervalp)
     req->xkbReqType = X_kbGetControls;
     req->deviceSpec = deviceSpec;
     if (!_XReply(dpy, (xReply *)&rep, 
-		(sizeof(xkbGetControlsReply)-sizeof(xReply))>>2, xFalse)) {
+		(SIZEOF(xkbGetControlsReply)-SIZEOF(xReply))>>2, xFalse)) {
 	UnlockDisplay(dpy);
 	SyncHandle();
 	return False;
@@ -866,7 +866,7 @@ XkbKeyTypeRec	*map;
 	map = &info->map->keyTypes[rep->firstKeyType];
 	for (i=0;i<(int)rep->nKeyTypes;i++,map++) {
 	    xkbKeyTypeWireDesc	desc;
-	    _XkbCopyFromReadBuffer(buf,&desc,sizeof(xkbKeyTypeWireDesc));
+	    _XkbCopyFromReadBuffer(buf,&desc,SIZEOF(xkbKeyTypeWireDesc));
 
 	    if ( (!(desc.flags&xkb_KTHasPreserve)) && map->preserve ) {
 		if (!map->flags&XkbNoFreeKTPreserve)
@@ -1391,7 +1391,7 @@ Bool XkbGetControls(dpy, which, desc)
     req->xkbReqType = X_kbGetControls;
     req->deviceSpec = desc->deviceSpec;
     if (!_XReply(dpy, (xReply *)&rep, 
-		(sizeof(xkbGetControlsReply)-sizeof(xReply))>>2, xFalse)) {
+		(SIZEOF(xkbGetControlsReply)-SIZEOF(xReply))>>2, xFalse)) {
 	UnlockDisplay(dpy);
 	SyncHandle();
 	return False;
@@ -1992,7 +1992,7 @@ _XkbSizeKeyTypes(xkb,firstKeyType,nKeyTypes)
     len= 0;
     map= &xkb->map->keyTypes[firstKeyType];
     for (i=0;i<nKeyTypes;i++,map++){
-	len+= sizeof(xkbKeyTypeWireDesc)+(((XkbKTMapWidth(map)+(unsigned)3)/4)*4);
+	len+= SIZEOF(xkbKeyTypeWireDesc)+(((XkbKTMapWidth(map)+(unsigned)3)/4)*4);
 	if (map->preserve)
 	    len+= (((XkbKTMapWidth(map)+(unsigned)3)/4)*4);
     }
@@ -2014,7 +2014,7 @@ _XkbWriteKeyTypes(dpy,xkb,firstKeyType,nKeyTypes)
     map= &xkb->map->keyTypes[firstKeyType];
     for (i=0;i<nKeyTypes;i++,map++) {
 	sz= (((XkbKTMapWidth(map)*(map->preserve?2:1))+(unsigned)3)/4)*4;
-	BufAlloc(xkbKeyTypeWireDesc *,desc,sz+sizeof(xkbKeyTypeWireDesc));
+	BufAlloc(xkbKeyTypeWireDesc *,desc,sz+SIZEOF(xkbKeyTypeWireDesc));
 	desc->flags = (map->preserve?xkb_KTHasPreserve:0);
 	desc->mask = map->mask;
 	desc->groupWidth = map->groupWidth;
@@ -2067,7 +2067,7 @@ XkbKeyTypeRec	*keyType;
 xkbSymMapWireDesc *desc;
 register int	i;
 
-    i= (nKeySyms*sizeof(xkbSymMapWireDesc))+(totalSyms*sizeof(KeySym));
+    i= (nKeySyms*SIZEOF(xkbSymMapWireDesc))+(totalSyms*sizeof(KeySym));
     BufAlloc(xkbSymMapWireDesc *,desc,i);
     symMap = &xkb->map->keySymMap[firstKeySym];
     for (i=0;i<nKeySyms;i++,symMap++) {
