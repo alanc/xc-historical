@@ -1,4 +1,4 @@
-/* $XConsortium: Vendor.c,v 1.39 90/12/31 16:56:00 rws Exp $ */
+/* $XConsortium: Vendor.c,v 1.40 91/02/05 16:59:31 gildea Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -96,8 +96,10 @@ externaldef(vendorshellclassrec) VendorShellClassRec vendorShellClassRec = {
   }
 };
 
+#if !defined(AIXSHLIB) || !defined(SHAREDCODE)
 externaldef(vendorshellwidgetclass) WidgetClass vendorShellWidgetClass =
 	(WidgetClass) (&vendorShellClassRec);
+#endif
 
 /* ARGSUSED */
 static void _VendorShellInitialize(req, new, args, num_args)
