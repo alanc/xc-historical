@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-XCOMM $XConsortium: Imake.tmpl,v 1.197 93/09/21 18:11:16 rws Exp $
+XCOMM $XConsortium: Imake.tmpl,v 1.198 93/09/26 15:40:44 gildea Exp $
 XCOMM
 
 /*
@@ -203,7 +203,9 @@ _NULLCMD_ = @ echo -n
 #define Krb5Libraries -L/krb5/lib -L/usr/isode/lib -lkrb5 -lcrypto -lisode -lcom_err -ldbm
 #endif
 #else
+#undef Krb5Includes
 #define Krb5Includes /**/
+#undef Krb5Libraries
 #define Krb5Libraries /**/
 #endif
 #ifndef NeedConstPrototypes
