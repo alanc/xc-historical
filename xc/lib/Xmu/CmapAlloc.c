@@ -1,5 +1,5 @@
 /*
- * $XConsortium: CmapAlloc.c,v 1.6 92/11/23 18:04:54 rws Exp $
+ * $XConsortium: CmapAlloc.c,v 1.7 92/11/24 14:15:51 rws Exp $
  * 
  * Copyright 1989 by the Massachusetts Institute of Technology
  *
@@ -124,9 +124,6 @@ static int default_allocation(vinfo, red, green, blue)
 {
     int			ngrays;		/* number of gray cells */
 
-    if (vinfo->colormap_size < 250)	/* skip it */
-	return 0;
-
     switch (vinfo->class) {
       case PseudoColor:
 
@@ -136,6 +133,8 @@ static int default_allocation(vinfo, red, green, blue)
 	else if (vinfo->colormap_size > 4000)
 	    /* intended for displays with 12 planes */
 	    *red = *green = *blue = (unsigned long) 12;
+	else if (vinfo->colormap_size < 250)
+	    return 0;
 	else
 	    /* intended for displays with 8 planes */
 	    *red = *green = *blue = (unsigned long)
@@ -144,6 +143,8 @@ static int default_allocation(vinfo, red, green, blue)
 
       case DirectColor:
 
+	if (vinfo->colormap_size < 10)
+	    return 0;
 	*red = *green = *blue = vinfo->colormap_size / 2 - 1;
 	break;
 
@@ -160,6 +161,8 @@ static int default_allocation(vinfo, red, green, blue)
 	    ngrays = 4096;
 	else if (vinfo->colormap_size > 4000)
 	    ngrays = 512;
+	else if (vinfo->colormap_size < 250)
+	    return 0;
 	else
 	    ngrays = 12;
 	gray_allocation(ngrays, red, green, blue);
