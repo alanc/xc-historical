@@ -1,4 +1,4 @@
-/* $XConsortium: Xregistry,v 1.16 91/01/21 11:48:03 rws Exp $ */
+/* $XConsortium: Xregistry,v 1.17 91/01/22 08:20:03 rws Exp $ */
 
 1. ORGANIZATION NAMES
 
@@ -23,6 +23,7 @@ Name						Reference
 "MIT"						[8]
 "MOTIF"						[7]
 "OMRON"						[45]
+"ORL"						[65]
 "OSF"						[7]
 "Panasonic"					[52]
 "PFU"						[32]
@@ -232,6 +233,7 @@ Name						Reference
 "MIT-SHM"					[8]
 "MIT-SUNDRY-NONSTANDARD"			[8]
 "Multi-Buffering"				[8], [10]
+"ORL-SYNC"					[65]
 "PanasonicDosEmulatorExtension"			[52]
 "SGI-GLX"					[6]
 "SGI-XGL"					[6]
@@ -917,4 +919,9 @@ REFERENCES
 	KSP/R&D Business Park Bldg.
 	100-1, Sakado, Takatsu-ku, Kawasaki-City, Kanagawa-Ken,
 	213 JAPAN
+
+[65]	Tim Glauert
+	Olivetti Research Limited
+	24a Trumpington Street
+	Cambridge, England
 Sumitomo Electric Workstation Corp.	[77]
