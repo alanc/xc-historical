@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Scroll.c,v 1.4 87/09/11 21:24:24 swick Locked $";
+static char rcsid[] = "$Header: Scroll.c,v 1.5 87/09/12 16:39:59 swick Locked $";
 #endif lint
 
 /*
@@ -33,7 +33,7 @@ static char rcsid[] = "$Header: Scroll.c,v 1.4 87/09/11 21:24:24 swick Locked $"
 /*#include "Conversion.h"*/
 #include "Intrinsic.h"
 #include "Scroll.h"
-#include "ScrollPrivate.h"
+#include "ScrollP.h"
 #include "Atoms.h"
 #include "cursorfont.h"
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header$";
+static char rcsid[] = "$Header: Label.c,v 1.20 87/09/11 21:21:45 swick Locked $";
 #endif lint
 
 /*
@@ -42,7 +42,7 @@ static char rcsid[] = "$Header$";
 #include <ctype.h>
 #include "Intrinsic.h"
 #include "Label.h"
-#include "LabelPrivate.h"
+#include "LabelP.h"
 #include "Atoms.h"
 
 /****************************************************************
