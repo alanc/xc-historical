@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 5.16 91/07/23 15:19:39 keith Exp $
+XCOMM $XConsortium: Imakefile,v 5.17 92/05/28 12:21:15 rws Exp $
 #include <Server.tmpl>
 
 SRCS =  mivaltree.c mipolyseg.c mipolyrect.c \
@@ -31,6 +31,6 @@ NormalLintTarget($(SRCS))
 
 all:: cbrt.o
 
-SpecialCObjectRule(miinitext,$(ICONFIGFILES),NullParameter)
+SpecialCObjectRule(miinitext,$(ICONFIGFILES),$(_NOOP_))
 
 DependTarget()

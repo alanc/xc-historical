@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.93 91/09/18 14:29:25 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.94 92/05/28 12:07:00 rws Exp $
 #define DoNormalLib NormalLibXt
 #define DoSharedLib SharedLibXt
 #define DoDebugLib DebugLibXt
@@ -176,10 +176,10 @@ LibraryObjectRule()
 
 SpecialCLibObjectRule(Intrinsic,$(ICONFIGFILES),$(SRCH_DEFINES))
 SpecialCLibObjectRule(Error,$(ICONFIGFILES),$(DB_DEFINES))
-SpecialCLibObjectRule(Alloc,NullParameter,$(ALLOC_DEFINES))
+SpecialCLibObjectRule(Alloc,$(_NOOP_),$(ALLOC_DEFINES))
 SpecialCLibObjectRule(Converters,$(ICONFIGFILES),$(BC_DEFINES))
 #if DoSharedLib
-SpecialCObjectRule(sharedlib,NullParameter,$(SHLIBDEF))
+SpecialCObjectRule(sharedlib,$(_NOOP_),$(SHLIBDEF))
 #endif
 
 #if DoSharedLib

@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.56 92/03/11 17:35:22 gildea Exp $
+XCOMM $XConsortium: Imakefile,v 1.57 92/05/28 12:16:27 rws Exp $
 XCOMM
 XCOMM                         Attention xterm porters
 XCOMM
@@ -59,9 +59,9 @@ XCOMM
 
 AllTarget($(PROGRAMS))
 
-SpecialCObjectRule(main,NullParameter,$(MAIN_DEFINES))
-SpecialCObjectRule(misc,NullParameter,$(MISC_DEFINES))
-SpecialCObjectRule(charproc,NullParameter,$(MISC_DEFINES))
+SpecialCObjectRule(main,$(_NOOP_),$(MAIN_DEFINES))
+SpecialCObjectRule(misc,$(_NOOP_),$(MISC_DEFINES))
+SpecialCObjectRule(charproc,$(_NOOP_),$(MISC_DEFINES))
 
 #if InstallXtermSetUID
 SetUIDProgramTarget(xterm,$(OBJS1),$(DEPLIBS1),XawClientLibs,$(TERMCAPLIB) $(PTYLIB))
