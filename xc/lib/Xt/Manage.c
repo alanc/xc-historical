@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Manage.c,v 1.14 88/09/06 09:51:26 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Manage.c,v 1.15 88/09/06 16:28:16 jim Exp $";
 /* $oHeader: Manage.c,v 1.3 88/09/01 11:41:51 asente Exp $ */
 #endif lint
 
@@ -168,6 +168,7 @@ void XtManageChildren(children, num_children)
 	    XtWarningMsg("invalidChild","xtManageChildren","XtToolkitError",
 		"null child passed to XtManageChildren",
 		(String *)NULL, (Cardinal *)NULL);
+	    if (unique_children != cache) XtFree((char *) unique_children);
 	    return;
 	}
         if ((CompositeWidget) child->core.parent != parent) {
@@ -175,7 +176,7 @@ void XtManageChildren(children, num_children)
 		    "ambigiousParent","xtManageChildren","XtToolkitError",
 		"Not all children have same parent in XtManageChildren",
 		(String *)NULL, (Cardinal *)NULL);
-	} else if (! child->core.managed) {
+	} else if (! child->core.managed && !child->core.being_destroyed) {
 	    unique_children[num_unique_children++] = child;
 	    child->core.managed = TRUE;
 	}
