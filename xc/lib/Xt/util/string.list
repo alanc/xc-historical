@@ -1,4 +1,4 @@
-! $XConsortium: string.list,v 1.9 94/04/01 16:31:46 kaleb Exp $
+! $XConsortium: string.list,v 1.10 94/04/08 15:37:48 converse Exp $
 ! NOTE: To maintain binary compatibility, you can only APPEND items within
 !	a given list!!!!
 
@@ -254,8 +254,7 @@ HunmapWidget
 Hpopup
 HpopupSpringLoaded
 Hpopdown
-HpreConfigure
-HpostConfigure
+Hconfigure
 HpreGeometry
 HpostGeometry
 Hdestroy
@@ -346,8 +345,8 @@ NclientLeader
 CClientLeader
 NwindowRole
 CWindowRole
-Nvisible
-CVisible
+Nurgency
+CUrgency
 NcancelCallback
 NcloneCommand
 CCloneCommand
