@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $Header: events.c,v 1.148 88/07/06 10:55:10 rws Exp $ */
+/* $Header: events.c,v 1.149 88/07/19 18:09:58 toddb Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -1850,7 +1850,7 @@ FocusInEvents(ancestor, child, skipChild, mode, detail, doAncestor)
     Bool doAncestor;
 {
     if (child == NullWindow)
-	return FALSE;
+	return ancestor == NullWindow;
     if (ancestor == child)
     {
 	if (doAncestor)
