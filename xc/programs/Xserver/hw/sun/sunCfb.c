@@ -1,5 +1,5 @@
 
-/* $XConsortium: sunCfb.c,v 1.2 93/08/08 18:14:35 kaleb Exp $ */
+/* $XConsortium: sunCfb.c,v 1.3 93/08/31 18:46:44 kaleb Exp $ */
 
 /*
  * Copyright 1990 Massachusetts Institute of Technology
@@ -256,7 +256,7 @@ Bool sunCG3Init (screen, pScreen, argc, argv)
     char    	  **argv;   	/* The arguments themselves. Don't change! */
 {
     checkMono (argc, argv);
-    sunFbs[screen].EnterLeave = NoopDDA;
+    sunFbs[screen].EnterLeave = (void (*)())NoopDDA;
     return sunInitCommon (screen, pScreen, (off_t) CG3_MMAP_OFFSET,
 	cfbScreenInit, CGScreenInit,
 	cfbCreateDefColormap, sunSaveScreen, 0);
@@ -334,7 +334,7 @@ Bool sunCG2Init (screen, pScreen, argc, argv)
 	if (strcmp (argv[i], "-mono") == 0)
 	    mono = TRUE;
 
-    sunFbs[screen].EnterLeave = NoopDDA;
+    sunFbs[screen].EnterLeave = (void (*)())NoopDDA;
     pScreen->SaveScreen = CG2SaveScreen;
     if (mono) {
 	pScreen->whitePixel = 0;
@@ -421,7 +421,7 @@ Bool sunCG6Init (screen, pScreen, argc, argv)
 	sunFbs[screen].fb = fb;
 #undef FBSIZE
     }
-    sunFbs[screen].EnterLeave = NoopDDA;
+    sunFbs[screen].EnterLeave = (void (*)())NoopDDA;
     if (!cfbSetupScreen (pScreen, 
 	    sunFbs[screen].fb + CG6_IMAGE_OFFSET,
 	    sunFbs[screen].info.fb_width, 

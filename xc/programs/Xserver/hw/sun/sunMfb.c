@@ -1,5 +1,5 @@
 
-/* $XConsortium: sunMfb.c,v 1.00 93/07/12 16:28:35 kaleb Exp $ */
+/* $XConsortium: sunMfb.c,v 1.1 93/08/08 18:01:47 kaleb Exp $ */
 
 /*
  * Copyright 1990, 1993 Massachusetts Institute of Technology
@@ -95,7 +95,7 @@ Bool sunBW2Init (screen, pScreen, argc, argv)
     int		    argc;    	/* The number of the Server's arguments. */
     char	    **argv;   	/* The arguments themselves. Don't change! */
 {
-    sunFbs[screen].EnterLeave = NoopDDA;
+    sunFbs[screen].EnterLeave = (void (*)())NoopDDA;
     pScreen->whitePixel = 0;
     pScreen->blackPixel = 1;
     return sunInitCommon (screen, pScreen, (off_t) 0,
