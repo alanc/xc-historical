@@ -1,4 +1,4 @@
-/* $XConsortium: texstr.h,v 1.1 93/10/26 09:50:59 rws Exp $ */
+/* $XConsortium: texstr.h,v 1.2 93/10/31 09:46:19 dpw Exp $ */
 /**** module texstr.h ****/
 /****************************************************************************
 				NOTICE
@@ -77,7 +77,7 @@ typedef struct _flotex {
   stripLstRec	 stripHead;	/* list of reusable strips		  */
   CARD32	 stripSize;	/* size of standard cachable strips	  */
   CARD32	 putCnt;	/* incremented each time a strip is "Put" */
-  void		*yieldPtr;	/* yielding info ptr			  */
+  pointer	 yieldPtr;	/* yielding info ptr			  */
 } floTexRec, *floTexPtr;
 
 /* 
@@ -104,7 +104,7 @@ typedef struct _petex {
   peDefPtr       peDef;		  /* pointer to the DIXIE element def     */
   outFloPtr      outFlo;	  /* pointer to element's outFlo	  */
   receptorPtr    receptor;	  /* pointer to in-line receptors	  */
-  void	        *private;	  /* pointer to in-line private info	  */
+  pointer        private;	  /* pointer to in-line private info	  */
   CARD32	 schedCnt;	  /* to detect that scheduler has resumed */
   CARD32         admissionCnt;	  /* number of receptors expecting data	  */
   BOOL	         inSync;	  /* true if inputs must be kept in sync  */
@@ -112,7 +112,7 @@ typedef struct _petex {
   bandMsk        scheduled;	  /* bits set if element is on ready-list */
   bandMsk	 emitting;	  /* mask of bands that are emitting data */
   bandRec        emitter[xieValMaxBands]; /* per-band output context	  */
-  void   	 *roi;		  /* pointer to run length/control plane  */
+  pointer   	 roi;		  /* pointer to run length/control plane  */
   Bool		 (*roiinit)();	  /* process domain line setup function   */
   INT32		 (*roiget)();	  /* process domain run length function   */
   INT32		 domXoff;	  /* processing domain x offset		  */
