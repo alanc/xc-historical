@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: Xmu.h,v 1.1 88/09/05 11:26:20 jim Exp $
  *
  * Copyright 1988 by the Massachusetts Institute of Technology
  *
@@ -25,7 +25,37 @@
  * public entry points
  */
 
+void XmuCopyISOLatin1Lowered();
+void XmuCvtFunctionToCallback();
+void XmuCvtStringToBackingStore();
+void XmuCvtStringToJustify();
+void XmuCvtStringToOrientation();
 int XmuReadBitmapDataFromFile();
+
+typedef enum {
+    XtJustifyLeft,       /* justify text to left side of button   */
+    XtJustifyCenter,     /* justify text in center of button      */
+    XtJustifyRight       /* justify text to right side of button  */
+} XtJustify;
+
+typedef enum {XtorientHorizontal, XtorientVertical} XtOrientation;
+
+#define XtNbackingStore		"backingStore"
+
+#define XtCBackingStore		"BackingStore"
+
+#define XtRBackingStore		"BackingStore"
+
+/* BackingStore constants */
+#define XtEnotUseful		"notUseful"
+#define XtEwhenMapped		"whenMapped"
+#define XtEalways		"always"
+#define XtEdefault		"default"
+
+/* Justify constants */
+#define XtEleft			"left"
+#define XtEcenter		"center"
+#define XtEright		"right"
 
 #endif /* _XMU_H_ */
 
