@@ -1,4 +1,4 @@
-/* $XConsortium: pexRndr.c,v 5.11 92/06/05 15:37:40 hersh Exp $ */
+/* $XConsortium: pexRndr.c,v 5.12 92/08/12 15:14:42 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -359,18 +359,27 @@ pexCreateRendererReq    *strmPtr;
     if (strmPtr->itemMask & PEXRDPickStartPath) {
 	pexElementRef *per;
 	diStructHandle sh, *psh;
+	ddPickPath	*ppath, *ppathStart;
 	CARD32 i, numpaths;
-	extern ddpex4rtn ValidateStructurePath();
+	extern ddpex3rtn ValidatePickPath();
 
+	/* must convert list of Element Ref into Pick Path for internal
+	   storage and use 
+	*/
 	EXTRACT_CARD32( numpaths, ptr);
-	for (i=0, per = (pexElementRef *)ptr; i<numpaths; i++, per++) {
-		LU_STRUCTURE(per->structure,sh);
-		psh = (diStructHandle *)&(per->structure);
-		*psh = sh;
-	}
+	ppath = (ddPickPath *)Xalloc(numpaths * sizeof(ddPickPath));
+	ppathStart = ppath;
 
-	puAddToList((ddPointer)ptr, numpaths, prend->pickStartPath);
-	err = ValidateStructurePath(prend->pickStartPath);
+	for (i=0, per = (pexElementRef *)ptr; i<numpaths; i++, per++,
+	  ppath++) {
+		LU_STRUCTURE(per->structure,sh);
+		ppath->structure = sh;
+		ppath->offset = per->offset;
+		ppath->pickid = 0;
+	  }
+
+	puAddToList((ddPointer)ppathStart, numpaths, prend->pickStartPath);
+	err = ValidatePickPath(prend->pickStartPath);
 	if (err != Success) PEX_ERR_EXIT(err,0,cntxtPtr);
 	ptr = (unsigned char *)per;
     }
@@ -591,19 +600,28 @@ pexChangeRendererReq 	*strmPtr;
     if (strmPtr->itemMask & PEXRDPickStartPath) {
 	pexElementRef *per;
 	diStructHandle sh, *psh;
+        ddPickPath      *ppath, *ppathStart;
 	CARD32 i, numpaths;
-	extern ddpex4rtn ValidateStructurePath();
+	extern ddpex3rtn ValidatePickPath();
 
+        /* must convert list of Element Ref into Pick Path for internal
+           storage and use 
+	*/
 	EXTRACT_CARD32( numpaths, ptr);
-	for (i=0, per = (pexElementRef *)ptr; i<numpaths; i++, per++) {
+        ppath = (ddPickPath *)Xalloc(numpaths * sizeof(ddPickPath));
+        ppathStart = ppath;
+
+	for (i=0, per = (pexElementRef *)ptr; i<numpaths; i++, per++,
+	  ppath++) {
 		LU_STRUCTURE(per->structure,sh);
-		psh = (diStructHandle *)&(per->structure);
-		*psh = sh;
-	}
+                ppath->structure = sh;
+                ppath->offset = per->offset;
+                ppath->pickid = 0;
+	  }
 
 	PU_EMPTY_LIST(prend->pickStartPath);
-	puAddToList((ddPointer)ptr, numpaths, prend->pickStartPath);
-	err = ValidateStructurePath(prend->pickStartPath);
+	puAddToList((ddPointer)ppathStart, numpaths, prend->pickStartPath);
+	err = ValidatePickPath(prend->pickStartPath);
 	if (err != Success) PEX_ERR_EXIT(err,0,cntxtPtr);
 	ptr = (unsigned char *)per;
     }
@@ -769,9 +787,13 @@ pexGetRendererAttributesReq 	*strmPtr;
 	PACK_CARD32( GetId(prend->ns[(unsigned)DD_PICK_EXCL_NS]), ptr);
 
     if (strmPtr->itemMask & PEXRDPickStartPath) {
+	/* StartPath is stored as a Pick Path even though the spec
+	   and encoding define it as an Element Ref since the Renderer
+	   Pikcing needs to use it as a Pick Path
+	*/
 	pexStructure sid = 0;
 	unsigned long i;
-	ddElementRef *per = (ddElementRef *)(prend->pickStartPath->pList);
+	ddPickPath *per = (ddPickPath *)(prend->pickStartPath->pList);
 	PACK_CARD32( prend->pickStartPath->numObj, ptr);
 	for (i=0; i<prend->pickStartPath->numObj; i++, per++) {
 	    sid = GetId(per->structure);
