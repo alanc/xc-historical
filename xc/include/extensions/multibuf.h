@@ -1,5 +1,5 @@
 /*
- * $XConsortium: multibuf.h,v 1.1 89/09/22 15:55:10 jim Exp $
+ * $XConsortium: multibuf.h,v 1.2 89/09/22 15:56:41 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -79,10 +79,10 @@
 
 #define MultibufferClobberNotify	0
 #define MultibufferUpdateNotify		1
-#define MultibufferNumberEvents		(MultibufferUpdateNotify + 1)
+#define MultibufferNumberOfEvents	(MultibufferUpdateNotify + 1)
 
 #define MultibufferBadBuffer		0
-#define MultibufferNumberErrors		(MultibufferBadBuffer + 1)
+#define MultibufferNumberOfErrors	(MultibufferBadBuffer + 1)
 
 
 #ifndef _MULTIBUF_SERVER_
