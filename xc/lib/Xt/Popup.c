@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Popup.c,v 6.8 88/01/29 12:24:05 asente Exp $";
+static char rcsid[] = "$Header: Popup.c,v 1.12 88/02/02 14:45:33 swick Locked $";
 #endif lint
 
 /*
@@ -41,7 +41,7 @@ void _XtPopup(widget, grab_kind, spring_loaded)
     }
 
     if (! shell_widget->shell.popped_up) {
-	XtCallCallbacks(widget, XtNpopupCallback, (Opaque)NULL);
+	XtCallCallbacks(widget, XtNpopupCallback, (caddr_t)NULL);
 	shell_widget->shell.popped_up = TRUE;
 	shell_widget->shell.grab_kind = grab_kind;
 	shell_widget->shell.spring_loaded = spring_loaded;
@@ -114,7 +114,7 @@ void XtPopdown(widget)
 	    XtRemoveGrab(widget);
 	}
 	shell_widget->shell.popped_up = FALSE;
-	XtCallCallbacks(widget, XtNpopdownCallback, (Opaque)NULL);
+	XtCallCallbacks(widget, XtNpopdownCallback, (caddr_t)NULL);
     }
 } /* XtPopdown */
 
