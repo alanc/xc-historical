@@ -1090,8 +1090,21 @@ void DishAction::execute() {
 /*
  *  Called by main() defined in tcl lib.
  */
+
+#if defined(sun) && !defined(SVR4)
+extern "C" {
+  void _main();
+  void on_exit(void (*)(), caddr_t);
+}
+#endif
+
 int Tcl_AppInit(Tcl_Interp* interp) {
+#if defined(sun) && !defined(SVR4)
+    _main();
+    on_exit(&Dish::cleanup, NULL);
+#else
     atexit(&Dish::cleanup);
+#endif
     Dish* dish = new Dish(interp);
     dish->add_commands(interp);
     dish->add_variables(interp);
