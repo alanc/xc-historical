@@ -1,4 +1,4 @@
-/* $XConsortium: xwd.c,v 1.53 90/11/10 16:11:27 rws Exp $ */
+/* $XConsortium: xwd.c,v 1.54 91/01/06 12:15:43 rws Exp $ */
 
 /* Copyright 1987 Massachusetts Institute of Technology */
 
@@ -62,6 +62,7 @@ Bool nobdrs = False;
 Bool on_root = False;
 Bool standard_out = True;
 Bool debug = False;
+Bool use_installed = False;
 long add_pixel_value = 0;
 
 extern int (*_XErrorFunction)();
@@ -123,6 +124,10 @@ main(argc, argv)
 	}
 	if (!strcmp(argv[i], "-screen")) {
 	    on_root = True;
+	    continue;
+	}
+	if (!strcmp(argv[i], "-icmap")) {
+	    use_installed = True;
 	    continue;
 	}
 	if (!strcmp(argv[i], "-add")) {
@@ -423,8 +428,12 @@ int Get_XColors(win_info, colors)
      XColor **colors;
 {
     int i, ncolors;
+    Colormap cmap = win_info->colormap;
 
-    if (!win_info->colormap)
+    if (use_installed)
+	/* assume the visual will be OK ... */
+	cmap = XListInstalledColormaps(dpy, win_info->root, &i)[0];
+    if (!cmap)
 	return(0);
 
     ncolors = win_info->visual->map_entries;
@@ -459,7 +468,7 @@ int Get_XColors(win_info, colors)
 	}
     }
 
-    XQueryColors(dpy, win_info->colormap, *colors, ncolors);
+    XQueryColors(dpy, cmap, *colors, ncolors);
     
     return(ncolors);
 }
