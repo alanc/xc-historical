@@ -1,4 +1,4 @@
-/* $XConsortium: dixfont.h,v 1.12 93/09/20 18:06:29 dpw Exp $ */
+/* $XConsortium: dixfont.h,v 1.13 94/01/17 23:55:22 rob Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -253,7 +253,9 @@ extern int RegisterFPEFunctions(
     int (* /*wakeup_func*/)(),
 #endif /* XTHREADS */
     int (* /*client_died*/)(),
-    int (* /*load_glyphs*/)()
+    int (* /*load_glyphs*/)(),
+    int (* /*start_list_alias_func*/)(),
+    int (* /*next_list_alias_func*/)()
 #endif
 );
 

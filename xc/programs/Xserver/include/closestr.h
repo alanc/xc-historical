@@ -23,19 +23,8 @@ typedef struct _OFclosure {
     XID         fontid;
     char       *fontname;
     int         fnamelen;
+    FontPtr	non_cachable_font;
 }           OFclosureRec;
-
-typedef struct _LFclosure {
-    ClientPtr		client;
-    short		current_fpe;
-    short		num_fpes;
-    FontPathElementPtr	*fpe_list;
-    FontNamesPtr	names;
-    char		*pattern;
-    int			max_names;
-    int			patlen;
-    Bool		slept;
-}           LFclosureRec;
 
 typedef struct _LFWIstate {
     char	*pattern;
@@ -59,6 +48,19 @@ typedef struct _LFWIclosure {
     Bool		slept;
     char		*savedName;
 } LFWIclosureRec;
+
+typedef struct _LFclosure {
+    ClientPtr   client;
+    int         num_fpes;
+    FontPathElementPtr *fpe_list;
+    FontNamesPtr names;
+    LFWIstateRec current;
+    LFWIstateRec saved;
+    Bool        haveSaved;
+    Bool        slept;
+    char	*savedName;
+    int		savedNameLen;
+}	LFclosureRec;
 
 typedef struct _PTclosure {
     ClientPtr		client;

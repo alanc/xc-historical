@@ -1,5 +1,5 @@
 /*
- * $XConsortium: fontdir.c,v 1.14 93/09/20 15:56:33 gildea Exp $
+ * $XConsortium: fontdir.c,v 1.15 94/01/21 22:13:45 dpw Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -409,30 +409,38 @@ FontFileFindNameInDir(table, pat)
     return FontFileFindNameInScalableDir(table, pat, (FontScalablePtr)0);
 }
 
-int
-FontFileFindNamesInScalableDir(table, pat, max, names, vals)
+FontFileFindNamesInScalableDir(table, pat, max, names, vals,
+			       alias_behavior, newmax)
     FontTablePtr    table;
     FontNamePtr	    pat;
     int		    max;
     FontNamesPtr    names;
     FontScalablePtr	vals;
+    int		    alias_behavior;
+    int		   *newmax;
 {
     int		    i,
 		    start,
 		    stop,
 		    res,
 		    private;
-    int		    ret;
+    int		    ret = Successful;
     FontEntryPtr    fname;
     FontNamePtr	    name;
 
     if (max <= 0)
 	return Successful;
     if ((i = SetupWildMatch(table, pat, &start, &stop, &private)) >= 0) {
-	name = &table->entries[i].name;
-	return AddFontNamesName(names, name->name, name->length);
+	if (alias_behavior == NORMAL_ALIAS_BEHAVIOR ||
+	    table->entries[i].type != FONT_ENTRY_ALIAS)
+	{
+	    name = &table->entries[i].name;
+	    if (newmax) *newmax = max - 1;
+	    return AddFontNamesName(names, name->name, name->length);
+	}
+	start = i;
+	stop = i + 1;
     }
-    fname = &table->entries[start];
     for (i = start, fname = &table->entries[start]; i < stop; i++, fname++) {
 	res = PatternMatch(pat->name, private, fname->name.name, fname->name.ndashes);
 	if (res > 0) {
@@ -443,6 +451,8 @@ FontFileFindNamesInScalableDir(table, pat, max, names, vals)
 
 		if (fname->type == FONT_ENTRY_SCALABLE)
 		    cap = fname->u.scalable.renderer->capabilities;
+		else if (fname->type == FONT_ENTRY_ALIAS)
+		    cap = ~0;	/* Calling code will have to see if true */
 		else
 		    cap = 0;
 		if (((vs & PIXELSIZE_MASK) == PIXELSIZE_ARRAY ||
@@ -454,15 +464,43 @@ FontFileFindNamesInScalableDir(table, pat, max, names, vals)
 		    !(cap & CAP_CHARSUBSETTING))
 		    continue;
 	    }
+
+	    if ((alias_behavior & IGNORE_SCALABLE_ALIASES) &&
+		fname->type == FONT_ENTRY_ALIAS)
+	    {
+		FontScalableRec	tmpvals;
+		if (FontParseXLFDName (fname->name.name, &tmpvals,
+				       FONT_XLFD_REPLACE_NONE) &&
+		    !(tmpvals.values_supplied & SIZE_SPECIFY_MASK))
+		    continue;
+	    }
+
 	    ret = AddFontNamesName(names, fname->name.name, fname->name.length);
 	    if (ret != Successful)
-		return ret;
+		goto bail;
+
+	    /* If alias_behavior is LIST_ALIASES_AND_TARGET_NAMES, mark
+	       this entry as an alias by negating its length and follow
+	       it by the resolved name */
+	    if ((alias_behavior & LIST_ALIASES_AND_TARGET_NAMES) &&
+		fname->type == FONT_ENTRY_ALIAS)
+	    {
+		names->length[names->nnames - 1] =
+		    -names->length[names->nnames - 1];
+		ret = AddFontNamesName(names, fname->u.alias.resolved,
+				       strlen(fname->u.alias.resolved));
+		if (ret != Successful)
+		    goto bail;
+	    }
+
 	    if (--max <= 0)
 		break;
 	} else if (res < 0)
 	    break;
     }
-    return Successful;
+  bail: ;
+    if (newmax) *newmax = max;
+    return ret;
 }
 
 int
@@ -473,7 +511,8 @@ FontFileFindNamesInDir(table, pat, max, names)
     FontNamesPtr    names;
 {
     return FontFileFindNamesInScalableDir(table, pat, max, names,
-					  (FontScalablePtr)0);
+					  (FontScalablePtr)0,
+					  NORMAL_ALIAS_BEHAVIOR, (int *)0);
 }
 
 /*

@@ -1,4 +1,4 @@
-/* $XConsortium: fserve.c,v 1.31 93/09/23 17:08:42 gildea Exp $ */
+/* $XConsortium: fserve.c,v 1.32 94/01/21 12:54:23 mor Exp $ */
 /*
  * Copyright 1990 Network Computing Devices
  *
@@ -1567,7 +1567,7 @@ fs_send_query_bitmaps(fpe, blockrec)
 /* ARGSUSED */
 static int
 fs_open_font(client, fpe, flags, name, namelen, format, fmask, id, ppfont,
-	     alias)
+	     alias, non_cachable_font)
     pointer     client;
     FontPathElementPtr fpe;
     Mask        flags;
@@ -1578,6 +1578,7 @@ fs_open_font(client, fpe, flags, name, namelen, format, fmask, id, ppfont,
     XID         id;
     FontPtr    *ppfont;
     char      **alias;
+    FontPtr     non_cachable_font;	/* Not used in this FPE */
 {
     FSFpePtr    conn = (FSFpePtr) fpe->private;
     FSBlockDataPtr blockrec;
@@ -2653,5 +2654,7 @@ fs_register_fpe_functions()
 					fs_next_list_with_info,
 					fs_wakeup,
 					fs_client_died,
-					_fs_load_glyphs);
+					_fs_load_glyphs,
+					(int (*))0,
+					(int (*))0);
 }

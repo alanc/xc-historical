@@ -1,4 +1,4 @@
-/* $XConsortium: closestr.h,v 1.2 91/05/13 16:48:20 gildea Exp $ */
+/* $XConsortium: closestr.h,v 1.3 91/07/16 20:22:05 keith Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -48,6 +48,7 @@ typedef struct _OFclosure {
     int         fnamelen;
     char       *orig_name;
     int         orig_len;
+    FontPtr	non_cachable_font;
 }           OFclosureRec;
 
 typedef struct _QEclosure {
@@ -68,18 +69,6 @@ typedef struct _QBclosure {
     Mask        flags;
     Bool        slept;
 }           QBclosureRec;
-
-typedef struct _LFclosure {
-    ClientPtr   client;
-    short       current_fpe;
-    short       num_fpes;
-    FontPathElementPtr *fpe_list;
-    FontNamesPtr names;
-    char       *pattern;
-    int         maxnames;
-    int         patlen;
-    Bool        slept;
-}           LFclosureRec;
 
 typedef struct _LFWIstate {
     char       *pattern;
@@ -104,5 +93,18 @@ typedef struct _LFWXIclosure {
     Bool        slept;
     char       *savedName;
 }           LFWXIclosureRec;
+
+typedef struct _LFclosure {
+    ClientPtr   client;
+    int         num_fpes;
+    FontPathElementPtr *fpe_list;
+    FontNamesPtr names;
+    LFWIstateRec current;
+    LFWIstateRec saved;
+    Bool        haveSaved;
+    Bool        slept;
+    char	*savedName;
+    int		savedNameLen;
+}	LFclosureRec;
 
 #endif				/* CLOSESTR_H */

@@ -151,10 +151,15 @@ typedef struct _FPEFunctions {
     int         (*reset_fpe) ( /* fpe */ );
     int         (*free_fpe) ( /* fpe */ );
     int         (*open_font) (	/* client, fpe, flags, name, namelen, format,
-			          fid,  ppfont, alias */ );
+			          fid,  ppfont, alias, non_cached_font */ );
     int         (*close_font) ( /* pfont */ );
     int         (*list_fonts) (	/* client, fpe, pattern, patlen, maxnames,
 			           paths */ );
+    int         (*start_list_fonts_and_aliases) ( /* client, fpe, name, namelen,
+					           maxnames, data */ );
+    int         (*list_next_font_or_alias) (	/* client, fpe, name, namelen,
+					         resolved, resolvedlen,
+						 data */ );
     int         (*start_list_fonts_with_info) (	/* client, fpe, name, namelen,
 					           maxnames, data */ );
     int         (*list_next_font_with_info) (	/* client, fpe, name, namelen,

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: fontfile.c,v 1.15 93/09/17 18:26:40 gildea Exp $
+ * $XConsortium: fontfile.c,v 1.16 93/09/18 16:48:04 rws Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -87,10 +87,125 @@ FontFileFreeFPE (fpe)
     return Successful;
 }
 
+int
+transfer_values_to_alias(entryname, entrynamelength, resolvedname,
+			 aliasName, vals)
+    char		*entryname;
+    int			entrynamelength;
+    char		*resolvedname;
+    char		**aliasName;
+    FontScalablePtr	vals;
+{
+    static char		aliasname[MAXFONTNAMELEN];
+    int			nameok = 1, len;
+    char		lowerName[MAXFONTNAMELEN];
+
+    *aliasName = resolvedname;
+    if ((len = strlen(*aliasName)) <= MAXFONTNAMELEN &&
+	FontFileCountDashes (*aliasName, len) == 14)
+    {
+	FontScalableRec tmpVals;
+	FontScalableRec tmpVals2;
+
+	tmpVals2 = *vals;
+
+	/* If we're aliasing a scalable name, transfer values
+	   from the name into the destination alias, multiplying
+	   by matrices that appear in the alias. */
+
+	CopyISOLatin1Lowered (lowerName, entryname,
+			      entrynamelength);
+	lowerName[entrynamelength] = '\0';
+
+	if (FontParseXLFDName(lowerName, &tmpVals,
+			      FONT_XLFD_REPLACE_NONE) &&
+	    !tmpVals.values_supplied &&
+	    FontParseXLFDName(*aliasName, &tmpVals,
+			      FONT_XLFD_REPLACE_NONE))
+	{
+	    double *matrix = 0, tempmatrix[4];
+
+	    /* Use a matrix iff exactly one is defined */
+	    if ((tmpVals.values_supplied & PIXELSIZE_MASK) ==
+		PIXELSIZE_ARRAY &&
+		!(tmpVals.values_supplied & POINTSIZE_MASK))
+		matrix = tmpVals.pixel_matrix;
+	    else if ((tmpVals.values_supplied & POINTSIZE_MASK) ==
+		     POINTSIZE_ARRAY &&
+		     !(tmpVals.values_supplied & PIXELSIZE_MASK))
+		matrix = tmpVals.point_matrix;
+
+	    /* If matrix given in the alias, compute new point
+	       and/or pixel matrices */
+	    if (matrix)
+	    {
+		/* Complete the XLFD name to avoid potential
+		   gotchas */
+		if (FontFileCompleteXLFD(&tmpVals2, &tmpVals2))
+		{
+		    double hypot();
+		    tempmatrix[0] =
+			matrix[0] * tmpVals2.point_matrix[0] +
+			matrix[1] * tmpVals2.point_matrix[2];
+		    tempmatrix[1] =
+			matrix[0] * tmpVals2.point_matrix[1] +
+			matrix[1] * tmpVals2.point_matrix[3];
+		    tempmatrix[2] =
+			matrix[2] * tmpVals2.point_matrix[0] +
+			matrix[3] * tmpVals2.point_matrix[2];
+		    tempmatrix[3] =
+			matrix[2] * tmpVals2.point_matrix[1] +
+			matrix[3] * tmpVals2.point_matrix[3];
+		    tmpVals2.point_matrix[0] = tempmatrix[0];
+		    tmpVals2.point_matrix[1] = tempmatrix[1];
+		    tmpVals2.point_matrix[2] = tempmatrix[2];
+		    tmpVals2.point_matrix[3] = tempmatrix[3];
+
+		    tempmatrix[0] =
+			matrix[0] * tmpVals2.pixel_matrix[0] +
+			matrix[1] * tmpVals2.pixel_matrix[2];
+		    tempmatrix[1] =
+			matrix[0] * tmpVals2.pixel_matrix[1] +
+			matrix[1] * tmpVals2.pixel_matrix[3];
+		    tempmatrix[2] =
+			matrix[2] * tmpVals2.pixel_matrix[0] +
+			matrix[3] * tmpVals2.pixel_matrix[2];
+		    tempmatrix[3] =
+			matrix[2] * tmpVals2.pixel_matrix[1] +
+			matrix[3] * tmpVals2.pixel_matrix[3];
+		    tmpVals2.pixel_matrix[0] = tempmatrix[0];
+		    tmpVals2.pixel_matrix[1] = tempmatrix[1];
+		    tmpVals2.pixel_matrix[2] = tempmatrix[2];
+		    tmpVals2.pixel_matrix[3] = tempmatrix[3];
+
+		    tmpVals2.values_supplied =
+			(tmpVals2.values_supplied &
+			 ~(PIXELSIZE_MASK | POINTSIZE_MASK)) |
+			PIXELSIZE_ARRAY | POINTSIZE_ARRAY;
+		}
+		else
+		    nameok = 0;
+	    }
+
+	    CopyISOLatin1Lowered (aliasname, *aliasName, len + 1);
+	    if (nameok && FontParseXLFDName(aliasname, &tmpVals2,
+				  FONT_XLFD_REPLACE_VALUE))
+		/* Return a version of the aliasname that has
+		   had the vals stuffed into it.  To avoid
+		   memory leak, this alias name lives in a
+		   static buffer.  The caller needs to be done
+		   with this buffer before this procedure is
+		   called again to avoid reentrancy problems. */
+		    *aliasName = aliasname;
+	}
+    }
+    return nameok;
+}
+
 /* ARGSUSED */
 int
 FontFileOpenFont (client, fpe, flags, name, namelen, format, fmask,
-		  id, pFont, aliasName)
+		  id, pFont, aliasName, non_cachable_font)
     pointer		client;
     FontPathElementPtr	fpe;
     int			flags;
@@ -101,6 +216,7 @@ FontFileOpenFont (client, fpe, flags, name, namelen, format, fmask,
     XID			id;
     FontPtr		*pFont;
     char		**aliasName;
+    FontPtr		non_cachable_font;
 {
     FontDirectoryPtr	dir;
     char		lowerName[MAXFONTNAMELEN];
@@ -111,7 +227,6 @@ FontFileOpenFont (client, fpe, flags, name, namelen, format, fmask,
     FontScalableEntryPtr   scalable;
     FontScaledPtr	scaled;
     FontBitmapEntryPtr	bitmap;
-    FontAliasEntryPtr	alias;
     FontBCEntryPtr	bc;
     int			ret;
     Bool		noSpecificSize;
@@ -192,8 +307,9 @@ FontFileOpenFont (client, fpe, flags, name, namelen, format, fmask,
 		    }
 		    else
 		    {
-			ret = FontFileOpenBitmap (fpe, pFont, flags, entry,
-						  format, fmask);
+			ret = FontFileOpenBitmapNCF (fpe, pFont, flags, entry,
+						     format, fmask,
+						     non_cachable_font);
 		    }
 		}
 		else /* "cannot" happen */
@@ -223,7 +339,8 @@ FontFileOpenFont (client, fpe, flags, name, namelen, format, fmask,
 		    strcpy (fileName, dir->directory);
 		    strcat (fileName, scalable->fileName);
 		    ret = (*scalable->renderer->OpenScalable) (fpe, pFont,
-			   flags, entry, fileName, &vals, format, fmask);
+			   flags, entry, fileName, &vals, format, fmask,
+			   non_cachable_font);
 
 		    /* In case rasterizer does something bad because of
 		       charset subsetting... */
@@ -270,7 +387,6 @@ FontFileOpenFont (client, fpe, flags, name, namelen, format, fmask,
 	xfree(ranges);
     if (entry)
     {
-	static char aliasname[MAXFONTNAMELEN];
 	int len;
 	switch (entry->type) {
 	case FONT_ENTRY_BITMAP:
@@ -282,120 +398,15 @@ FontFileOpenFont (client, fpe, flags, name, namelen, format, fmask,
 	    }
 	    else
 	    {
-		ret = FontFileOpenBitmap (fpe, pFont, flags, entry, format, fmask);
+		ret = FontFileOpenBitmapNCF (fpe, pFont, flags, entry, format,
+					     fmask, non_cachable_font);
 	    }
 	    break;
 	case FONT_ENTRY_ALIAS:
-	    alias = &entry->u.alias;
-	    *aliasName = alias->resolved;
-	    if ((len = strlen(*aliasName)) <= MAXFONTNAMELEN &&
-		FontFileCountDashes (*aliasName, len) == 14)
-	    {
-		FontScalableRec	tmpVals;
-
-		/* If we're aliasing a scalable name, transfer values
-		   from the name into the destination alias, multiplying
-		   by matrices that appear in the alias. */
-
-		CopyISOLatin1Lowered (lowerName, entry->name.name,
-				      entry->name.length);
-		lowerName[entry->name.length] = '\0';
-
-		if (FontParseXLFDName(lowerName, &tmpVals,
-				      FONT_XLFD_REPLACE_NONE) &&
-		    !tmpVals.values_supplied &&
-		    FontParseXLFDName(*aliasName, &tmpVals,
-				      FONT_XLFD_REPLACE_NONE))
-		{
-		    double *matrix = 0, tempmatrix[4];
-		    int nameok = 1;
-
-		    vals.nranges = nranges;
-		    vals.ranges = ranges;
-
-		    /* Use a matrix iff exactly one is defined */
-		    if ((tmpVals.values_supplied & PIXELSIZE_MASK) ==
-			PIXELSIZE_ARRAY &&
-			!(tmpVals.values_supplied & POINTSIZE_MASK))
-			matrix = tmpVals.pixel_matrix;
-		    else if ((tmpVals.values_supplied & POINTSIZE_MASK) ==
-			     POINTSIZE_ARRAY &&
-			     !(tmpVals.values_supplied & PIXELSIZE_MASK))
-			matrix = tmpVals.point_matrix;
-
-		    /* If matrix given in the alias, compute new point
-		       and/or pixel matrices */
-		    if (matrix)
-		    {
-			/* Complete the XLFD name to avoid potential
-			   gotchas */
-			if (FontFileCompleteXLFD(&vals, &vals))
-			{
-			    double hypot();
-			    tempmatrix[0] =
-				vals.point_matrix[0] * matrix[0] +
-				vals.point_matrix[1] * matrix[2];
-			    tempmatrix[1] =
-				vals.point_matrix[0] * matrix[1] +
-				vals.point_matrix[1] * matrix[3];
-			    tempmatrix[2] =
-				vals.point_matrix[2] * matrix[0] +
-				vals.point_matrix[3] * matrix[2];
-			    tempmatrix[3] =
-				vals.point_matrix[2] * matrix[1] +
-				vals.point_matrix[3] * matrix[3];
-			    vals.point_matrix[0] = tempmatrix[0];
-			    vals.point_matrix[1] = tempmatrix[1];
-			    vals.point_matrix[2] = tempmatrix[2];
-			    vals.point_matrix[3] = tempmatrix[3];
-
-			    tempmatrix[0] =
-				vals.pixel_matrix[0] * matrix[0] +
-				vals.pixel_matrix[1] * matrix[2];
-			    tempmatrix[1] =
-				vals.pixel_matrix[0] * matrix[1] +
-				vals.pixel_matrix[1] * matrix[3];
-			    tempmatrix[2] =
-				vals.pixel_matrix[2] * matrix[0] +
-				vals.pixel_matrix[3] * matrix[2];
-			    tempmatrix[3] =
-				vals.pixel_matrix[2] * matrix[1] +
-				vals.pixel_matrix[3] * matrix[3];
-			    vals.pixel_matrix[0] = tempmatrix[0];
-			    vals.pixel_matrix[1] = tempmatrix[1];
-			    vals.pixel_matrix[2] = tempmatrix[2];
-			    vals.pixel_matrix[3] = tempmatrix[3];
-
-			    vals.values_supplied =
-				(vals.values_supplied &
-				 ~(PIXELSIZE_MASK | POINTSIZE_MASK)) |
-				PIXELSIZE_ARRAY | POINTSIZE_ARRAY;
-
-			    nameok = hypot(vals.point_matrix[0],
-					   vals.point_matrix[1]) > EPS &&
-				     hypot(vals.point_matrix[2],
-					   vals.point_matrix[3]) > EPS &&
-				     hypot(vals.pixel_matrix[0],
-					   vals.pixel_matrix[1]) > EPS &&
-				     hypot(vals.pixel_matrix[2],
-					   vals.pixel_matrix[3]) > EPS;
-			}
-			else
-			    nameok = 0;
-		    }
-
-		    CopyISOLatin1Lowered (aliasname, *aliasName, len + 1);
-		    if (nameok && FontParseXLFDName(aliasname, &vals,
-					  FONT_XLFD_REPLACE_VALUE))
-			/* Return a version of the aliasname that has
-			   had the vals stuffed into it.  To avoid
-			   memory leak, this alias name lives in a
-			   static buffer.  The caller appears to require
-			   the buffer only very briefly, avoiding
-			   contention from non-reentrancy.  */
-			    *aliasName = aliasname;
-		}
-	    }
+	    vals.nranges = nranges;
+	    vals.ranges = ranges;
+	    transfer_values_to_alias(entry->name.name, entry->name.length,
+				     entry->u.alias.resolved, aliasName, &vals);
 	    if (ranges) xfree(ranges);
 	    ret = FontNameAlias;
 	    break;
@@ -403,7 +414,8 @@ FontFileOpenFont (client, fpe, flags, name, namelen, format, fmask,
 	    bc = &entry->u.bc;
 	    entry = bc->entry;
 	    ret = (*scalable->renderer->OpenScalable)
-		    (fpe, pFont, flags, entry, &bc->vals, format, fmask);
+		    (fpe, pFont, flags, entry, &bc->vals, format, fmask,
+		     non_cachable_font);
 	    break;
 	default:
 	    ret = BadFontName;
@@ -446,6 +458,18 @@ FontFileOpenBitmap (fpe, pFont, flags, entry, format, fmask)
     FontEntryPtr	entry;
     FontPtr		*pFont;
 {
+    FontFileOpenBitmapNCF (fpe, pFont, flags, entry, format, fmask,
+			   (FontPtr)0);
+}
+
+FontFileOpenBitmapNCF (fpe, pFont, flags, entry, format, fmask,
+		       non_cachable_font)
+    FontPathElementPtr	fpe;
+    int			flags;
+    FontEntryPtr	entry;
+    FontPtr		*pFont;
+    FontPtr		non_cachable_font;
+{
     FontBitmapEntryPtr	bitmap;
     char		fileName[MAXFONTFILENAMELEN*2+1];
     int			ret;
@@ -456,7 +480,8 @@ FontFileOpenBitmap (fpe, pFont, flags, entry, format, fmask)
     strcpy (fileName, dir->directory);
     strcat (fileName, bitmap->fileName);
     ret = (*bitmap->renderer->OpenBitmap) 
-			(fpe, pFont, flags, entry, fileName, format, fmask);
+			(fpe, pFont, flags, entry, fileName, format, fmask,
+			 non_cachable_font);
     if (ret == Successful)
     {
 	bitmap->pFont = *pFont;
@@ -484,13 +509,15 @@ FontFileGetInfoBitmap (fpe, pFontInfo, entry)
 }
 
 /* ARGSUSED */
-FontFileListFonts (client, fpe, pat, len, max, names)
+static int
+_FontFileListFonts (client, fpe, pat, len, max, names, mark_aliases)
     pointer     client;
     FontPathElementPtr fpe;
     char       *pat;
     int         len;
     int         max;
     FontNamesPtr names;
+    int		mark_aliases;
 {
     FontDirectoryPtr	dir;
     char		lowerChars[MAXFONTNAMELEN], zeroChars[MAXFONTNAMELEN];
@@ -499,9 +526,9 @@ FontFileListFonts (client, fpe, pat, len, max, names)
     FontNamesPtr	scaleNames;
     FontScalableRec	vals, zeroVals, tmpVals;
     int			i;
-    int			oldnnames;
     fsRange		*ranges;
     int			nranges;
+    int			result;
 
     if (len >= MAXFONTNAMELEN)
 	return AllocError;
@@ -517,7 +544,7 @@ FontFileListFonts (client, fpe, pat, len, max, names)
     if (lowerName.ndashes == 14 &&
 	FontParseXLFDName (zeroChars, &vals, FONT_XLFD_REPLACE_ZERO))
     {
-	oldnnames = names->nnames;
+	int newmax;
 	scaleNames = MakeFontNamesRecord (0);
 	if (!scaleNames)
 	{
@@ -528,27 +555,28 @@ FontFileListFonts (client, fpe, pat, len, max, names)
 	zeroName.length = strlen (zeroChars);
 	zeroName.ndashes = lowerName.ndashes;
 	FontFileFindNamesInScalableDir (&dir->scalable, &zeroName, max,
-					scaleNames, &vals);
-	/* Look for scalable aliases.  Because we do not track down the
-	   font to which this alias resolves, we have no way of knowing
-	   what enhanced XLFD capabilities are supported.  So we punt
-	   and disallow any enhanced fields in aliases (the dirty work
-	   is done in FontFileFindNamesInScalableDir()).  A more robust
-	   implementation would track down the target of this alias and
-	   allow enhancements into the alias name based on the
-	   capabilities of the target font */
+					scaleNames, &vals,
+					mark_aliases ?
+					LIST_ALIASES_AND_TARGET_NAMES :
+					NORMAL_ALIAS_BEHAVIOR, &newmax);
+	/* Look for scalable aliases */
 	FontFileFindNamesInScalableDir (&dir->nonScalable, &zeroName,
-					max - scaleNames->nnames, scaleNames,
-					&vals);
+					newmax, scaleNames, &vals,
+					mark_aliases ?
+					LIST_ALIASES_AND_TARGET_NAMES :
+					NORMAL_ALIAS_BEHAVIOR, (int *)0);
 	for (i = 0; i < scaleNames->nnames; i++)
 	{
-	    FontParseXLFDName (scaleNames->names[i], &zeroVals, FONT_XLFD_REPLACE_NONE);
+	    char nameChars[MAXFONTNAMELEN];
+	    FontParseXLFDName (scaleNames->names[i], &zeroVals,
+			       FONT_XLFD_REPLACE_NONE);
 	    tmpVals = vals;
 	    if (FontFileCompleteXLFD (&tmpVals, &zeroVals))
 	    {
-		strcpy (zeroChars, scaleNames->names[i]);
+		strcpy (nameChars, scaleNames->names[i]);
 		if ((vals.values_supplied & PIXELSIZE_MASK) ||
-		    !(vals.values_supplied & PIXELSIZE_WILDCARD))
+		    !(vals.values_supplied & PIXELSIZE_WILDCARD) ||
+		    vals.y == 0)
 		{
 		    tmpVals.values_supplied =
 			(tmpVals.values_supplied & ~PIXELSIZE_MASK) |
@@ -559,7 +587,8 @@ FontFileListFonts (client, fpe, pat, len, max, names)
 		    tmpVals.pixel_matrix[3] = vals.pixel_matrix[3];
 		}
 		if ((vals.values_supplied & POINTSIZE_MASK) ||
-		    !(vals.values_supplied & POINTSIZE_WILDCARD))
+		    !(vals.values_supplied & POINTSIZE_WILDCARD) ||
+		    vals.y == 0)
 		{
 		    tmpVals.values_supplied =
 			(tmpVals.values_supplied & ~POINTSIZE_MASK) |
@@ -577,28 +606,79 @@ FontFileListFonts (client, fpe, pat, len, max, names)
 		    tmpVals.y = 0;
 		tmpVals.ranges = ranges;
 		tmpVals.nranges = nranges;
-		FontParseXLFDName (zeroChars, &tmpVals, FONT_XLFD_REPLACE_VALUE);
-		(void) AddFontNamesName (names, zeroChars, strlen (zeroChars));
+		FontParseXLFDName (nameChars, &tmpVals,
+				   FONT_XLFD_REPLACE_VALUE);
+		/* If we're marking aliases with negative lengths, we
+		   need to concoct a valid target name to follow it.
+		   Otherwise we're done.  */
+		if (scaleNames->length[i] >= 0)
+		    (void) AddFontNamesName (names, nameChars,
+					     strlen (nameChars));
+		else
+		{
+		    char *aliasName;
+		    vals.ranges = ranges;
+		    vals.nranges = nranges;
+		    if (transfer_values_to_alias(zeroChars,
+						 strlen(zeroChars),
+						 scaleNames->names[++i],
+						 &aliasName, &vals))
+		    {
+			(void) AddFontNamesName (names, nameChars,
+						 strlen (nameChars));
+			names->length[names->nnames - 1] =
+			    -names->length[names->nnames - 1];
+			(void) AddFontNamesName (names, aliasName,
+						 strlen (aliasName));
+		    }
+		}
+		max--;
 	    }
 	}
 	FreeFontNames (scaleNames);
-	max -= names->nnames - oldnnames;
+	result = FontFileFindNamesInScalableDir (&dir->nonScalable,
+						 &lowerName, max, names,
+						 (FontScalablePtr)0,
+						 mark_aliases ?
+						 LIST_ALIASES_AND_TARGET_NAMES |
+						 IGNORE_SCALABLE_ALIASES :
+						 NORMAL_ALIAS_BEHAVIOR,
+						 (int *)0);
     }
     else
     {
-    	oldnnames = names->nnames;
-    	FontFileFindNamesInScalableDir (&dir->scalable, &lowerName, max,
-					names, &vals);
-	max -= names->nnames - oldnnames;
+    	FontFileFindNamesInScalableDir (&dir->scalable, &lowerName, max, names,
+					(FontScalablePtr)0,
+					mark_aliases ?
+					LIST_ALIASES_AND_TARGET_NAMES :
+					NORMAL_ALIAS_BEHAVIOR, &max);
+	result = FontFileFindNamesInScalableDir (&dir->nonScalable,
+						 &lowerName, max, names,
+						 (FontScalablePtr)0,
+						 mark_aliases ?
+						 LIST_ALIASES_AND_TARGET_NAMES :
+						 NORMAL_ALIAS_BEHAVIOR,
+						 (int *)0);
     }
     if (ranges) xfree(ranges);
-    return FontFileFindNamesInDir (&dir->nonScalable, &lowerName, max, names);
+    return result;
 }
 
 typedef struct _LFWIData {
     FontNamesPtr    names;
-    int		    current;
+    int                   current;
 } LFWIDataRec, *LFWIDataPtr;
+
+FontFileListFonts (client, fpe, pat, len, max, names)
+    pointer     client;
+    FontPathElementPtr fpe;
+    char       *pat;
+    int         len;
+    int         max;
+    FontNamesPtr names;
+{
+    return _FontFileListFonts (client, fpe, pat, len, max, names, 0);
+}
 
 FontFileStartListFontsWithInfo(client, fpe, pat, len, max, privatep)
     pointer     client;
@@ -820,6 +900,87 @@ FontFileListNextFontWithInfo(client, fpe, namep, namelenp, pFontInfo,
     return ret;
 }
 
+int
+FontFileStartListFontsAndAliases(client, fpe, pat, len, max, privatep)
+    pointer     client;
+    FontPathElementPtr fpe;
+    char       *pat;
+    int         len;
+    int         max;
+    pointer    *privatep;
+{
+    LFWIDataPtr	data;
+    int		ret;
+
+    data = (LFWIDataPtr) xalloc (sizeof *data);
+    if (!data)
+	return AllocError;
+    data->names = MakeFontNamesRecord (0);
+    if (!data->names)
+    {
+	xfree (data);
+	return AllocError;
+    }
+    ret = _FontFileListFonts (client, fpe, pat, len, max, data->names, 1);
+    if (ret != Successful)
+    {
+	FreeFontNames (data->names);
+	xfree (data);
+	return ret;
+    }
+    data->current = 0;
+    *privatep = (pointer) data;
+    return Successful;
+}
+
+int
+FontFileListNextFontOrAlias(client, fpe, namep, namelenp, resolvedp,
+			    resolvedlenp, private)
+    pointer		client;
+    FontPathElementPtr	fpe;
+    char		**namep;
+    int			*namelenp;
+    char		**resolvedp;
+    int			*resolvedlenp;
+    pointer		private;
+{
+    LFWIDataPtr	data = (LFWIDataPtr) private;
+    int		ret;
+    char	*name;
+    int		namelen;
+
+    if (data->current == data->names->nnames)
+    {
+	FreeFontNames (data->names);
+	xfree (data);
+	return BadFontName;
+    }
+    name = data->names->names[data->current];
+    namelen = data->names->length[data->current];
+
+    /* If this is a real font name... */
+    if (namelen >= 0)
+    {
+	*namep = name;
+	*namelenp = namelen;
+	ret = Successful;
+    }
+    /* Else if an alias */
+    else
+    {
+	/* Tell the caller that this is an alias... let him resolve it to
+	   see if it's valid */
+	*namep = name;
+	*namelenp = -namelen;
+	*resolvedp = data->names->names[++data->current];
+	*resolvedlenp = data->names->length[data->current];
+	ret = FontNameAlias;
+    }
+
+    ++data->current;
+    return ret;
+}
+
 typedef int (*IntFunc) ();
 static int  font_file_type;
 
@@ -842,5 +1003,7 @@ FontFileRegisterFpeFunctions()
 					  FontFileListNextFontWithInfo,
 					  (IntFunc) 0,
 					  (IntFunc) 0,
-					  (IntFunc) 0);
+					  (IntFunc) 0,
+					  FontFileStartListFontsAndAliases,
+					  FontFileListNextFontOrAlias);
 }

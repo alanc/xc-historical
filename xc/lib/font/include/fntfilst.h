@@ -1,5 +1,5 @@
 /*
- * $XConsortium: fontfilest.h,v 1.4 93/08/24 18:49:24 gildea Exp $
+ * $XConsortium: fntfilst.h,v 1.5 93/09/17 18:27:44 gildea Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -149,5 +149,10 @@ typedef struct _BitmapSources {
 } BitmapSourcesRec, *BitmapSourcesPtr;
 
 extern BitmapSourcesRec	FontFileBitmapSources;
+
+/* Defines for FontFileFindNamesInScalableDir() behavior */
+#define NORMAL_ALIAS_BEHAVIOR		0
+#define LIST_ALIASES_AND_TARGET_NAMES   (1<<0)
+#define IGNORE_SCALABLE_ALIASES		(1<<1)
 
 #endif /* _FONTFILEST_H_ */

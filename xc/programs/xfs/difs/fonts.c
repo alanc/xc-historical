@@ -1,4 +1,4 @@
-/* $XConsortium: fonts.c,v 1.18 93/09/20 18:10:38 hersh Exp $ */
+/* $XConsortium: fonts.c,v 1.19 93/09/23 14:45:23 gildea Exp $ */
 /*
  * font control
  */
@@ -233,26 +233,6 @@ make_clients_id_list()
     return ids;
 }
 
-static void
-free_svrPrivate(svrPrivate)
-    pointer svrPrivate;
-{
-    FontIDListPtr *idlist = (FontIDListPtr*) svrPrivate;
-    FontIDListPtr ids;
-    int i;
-
-    if (!idlist)
-	return;
-    for (i = 0; i < MAXCLIENTS; i++) {
-	ids = idlist[i];
-	if (ids) {
-	    fsfree((char *) ids->client_list);
-	    fsfree((char *) ids);
-	}
-    }
-    fsfree((char *) idlist);
-}
-
 static Bool
 do_open_font(client, c)
     ClientPtr   client;
@@ -284,7 +264,10 @@ do_open_font(client, c)
 	err = (*fpe_functions[fpe->type].open_font)
 	    ((pointer) c->client, fpe, c->flags,
 	     c->fontname, c->fnamelen, c->format, c->format_mask,
-	     c->fontid, &pfont, &alias);
+	     c->fontid, &pfont, &alias,
+	     c->non_cachable_font && c->non_cachable_font->fpe == fpe ?
+		 c->non_cachable_font :
+		 (FontPtr)0);
 
 	if (err == FontNameAlias && alias) {
 	    newlen = strlen(alias);
@@ -327,7 +310,7 @@ do_open_font(client, c)
     cfp->font = pfont;
     cfp->clientindex = c->client->index;
 
-    if (fontPatternCache && pfont->info.cachable)
+    if (fontPatternCache && pfont != c->non_cachable_font)
 	CacheFontPattern(fontPatternCache, c->orig_name, c->orig_len, pfont);
 
     /* either pull out the other id or make the array */
@@ -343,7 +326,7 @@ do_open_font(client, c)
 	    }
 	    idlist[c->client->index] = ids;
 	}
-	orig = ids->client_list[0];
+	orig = (ids->num > 0) ? ids->client_list[0] : (Font)0;
     } else {
 	idlist = (FontIDListPtr *) fsalloc(sizeof(FontIDListPtr) * MAXCLIENTS);
 	if (!idlist) {
@@ -365,7 +348,7 @@ do_open_font(client, c)
     }
     if (!AddResource(c->client->index, c->fontid, RT_FONT, (pointer) cfp)) {
 	fsfree(cfp);
-	free_svrPrivate(pfont->svrPrivate);
+	fsfree(pfont->svrPrivate);
 	pfont->svrPrivate = (pointer) 0;
 	err = AllocError;
 	goto dropout;
@@ -412,17 +395,33 @@ OpenFont(client, fid, format, format_mask, namelen, name)
     int         namelen;
     char       *name;
 {
-    FontPtr     pfont;
+    FontPtr     pfont = (FontPtr)0;
     fsOpenBitmapFontReply rep;
     OFclosurePtr c;
-    Font        orig;
     FontIDListPtr *idlist,
                 ids;
     int         i;
 
-    /* check name cache */
+    /*
+    ** Check name cache.  If we find a cached version of this font that
+    ** is cachable, immediately satisfy the request with it.  If we find
+    ** a cached version of this font that is non-cachable, we do not
+    ** satisfy the request with it.  Instead, we pass the FontPtr to the
+    ** FPE's open_font code (the fontfile FPE in turn passes the
+    ** information to the rasterizer; the fserve FPE ignores it).
+    **
+    ** Presumably, the font is marked non-cachable because the FPE has
+    ** put some licensing restrictions on it.  If the FPE, using
+    ** whatever logic it relies on, determines that it is willing to
+    ** share this existing font with the client, then it has the option
+    ** to return the FontPtr we passed it as the newly-opened font.
+    ** This allows the FPE to exercise its licensing logic without
+    ** having to create another instance of a font that already exists.
+    */
+
     if (fontPatternCache &&
-	  (pfont = FindCachedFontPattern(fontPatternCache, name, namelen))) {
+	  (pfont = FindCachedFontPattern(fontPatternCache, name, namelen)) &&
+	   pfont->info.cachable) {
 	ClientFontPtr cfp;
 
 	idlist = (FontIDListPtr *) pfont->svrPrivate;
@@ -434,7 +433,6 @@ OpenFont(client, fid, format, format_mask, namelen, name)
 	    }
 	    idlist[client->index] = ids;
 	}
-	orig = ids->client_list[0];
 	cfp = (ClientFontPtr) fsalloc(sizeof(ClientFontRec));
 	if (!cfp) {
     lowmem:
@@ -451,8 +449,16 @@ OpenFont(client, fid, format, format_mask, namelen, name)
 	}
 	pfont->refcnt++;
 	rep.type = FS_Reply;
-	rep.otherid = orig;
-	rep.otherid_valid = TRUE;
+	if (ids->num > 1)
+	{
+	    rep.otherid = ids->client_list[0];
+	    rep.otherid_valid = TRUE;
+	}
+	else
+	{
+	    rep.otherid = 0;
+	    rep.otherid_valid = FALSE;
+	}
 	rep.cachable = TRUE;	/* XXX */
 	rep.sequenceNumber = client->sequence;
 	rep.length = SIZEOF(fsOpenBitmapFontReply) >> 2;
@@ -495,6 +501,7 @@ OpenFont(client, fid, format, format_mask, namelen, name)
     c->flags = (FontLoadInfo | FontLoadProps);
     c->format = format;
     c->format_mask = format_mask;
+    c->non_cachable_font = pfont;
 
     (void) do_open_font(client, c);
     return FSSuccess;
@@ -505,13 +512,24 @@ close_font(pfont)
     FontPtr     pfont;
 {
     FontPathElementPtr fpe;
+    FontIDListPtr *idlist;
+    FontIDListPtr ids;
+    int i;
 
     assert(pfont);
     if (--pfont->refcnt == 0) {
 	if (fontPatternCache)
 	    RemoveCachedFontPattern(fontPatternCache, pfont);
-	free_svrPrivate(pfont->svrPrivate);
 	fpe = pfont->fpe;
+	idlist = (FontIDListPtr*) pfont->svrPrivate;
+	for (i = 0; i < MAXCLIENTS; i++) {
+	    ids = idlist[i];
+	    if (ids) {
+		fsfree((char *) ids->client_list);
+		fsfree((char *) ids);
+	    }
+	}
+	fsfree((char *) idlist);
 	(*fpe_functions[fpe->type].close_font) (fpe, pfont);
 	FreeFPE(fpe);
     }
@@ -718,53 +736,197 @@ SetFontCatalogue(str, badpath)
     return err;
 }
 
-static Bool
-do_list_fonts(client, c)
+do_list_fonts_and_aliases(client, c)
     ClientPtr   client;
     LFclosurePtr c;
 {
-    int         err = Successful;
-    fsListFontsReply reply;
-    FontNamesPtr names = NULL;
     FontPathElementPtr fpe;
-    int         stringLens,
-                i,
-                nnames;
-    char       *bufptr,
-               *bufferStart;
+    int         err = Successful;
+    FontNamesPtr names = NULL;
+    char       *name, *resolved;
+    int         namelen, resolvedlen;
+    int		nnames;
+    int         numFonts;
+    int         length;
+    int         stringLens;
+    int         i;
+    fsListFontsReply reply;
+    char	*bufptr;
+    char	*bufferStart;
 
     if (client->clientGone == CLIENT_GONE) {
-	if (c->current_fpe < c->num_fpes) {
-	    fpe = c->fpe_list[c->current_fpe];
+	if (c->current.current_fpe < c->num_fpes) {
+	    fpe = c->fpe_list[c->current.current_fpe];
 	    (*fpe_functions[fpe->type].client_died) ((pointer) client, fpe);
 	}
 	err = Successful;
 	goto bail;
     }
-    /* try each fpe in turn, returning if one wants to be blocked */
 
-    if (!c->patlen)
+    if (!c->current.patlen)
 	goto finish;
 
-    while (c->current_fpe < c->num_fpes && c->names->nnames <= c->maxnames) {
-	fpe = c->fpe_list[c->current_fpe];
+    while (c->current.current_fpe < c->num_fpes) {
+	fpe = c->fpe_list[c->current.current_fpe];
+	err = Successful;
 
-	err = (*fpe_functions[fpe->type].list_fonts)
-	    ((pointer) c->client, fpe, c->pattern, c->patlen,
-	     c->maxnames - c->names->nnames, c->names);
+	if (!fpe_functions[fpe->type].start_list_fonts_and_aliases)
+	{
+	    /* This FPE doesn't support/require list_fonts_and_aliases */
 
-	if (err == Suspended) {
-	    if (!c->slept) {
-		c->slept = TRUE;
-		ClientSleep(client, do_list_fonts, (pointer) c);
+	    err = (*fpe_functions[fpe->type].list_fonts)
+		((pointer) c->client, fpe, c->current.pattern,
+		 c->current.patlen, c->current.max_names - c->names->nnames,
+		 c->names);
+
+	    if (err == Suspended) {
+		if (!c->slept) {
+		    c->slept = TRUE;
+		    ClientSleep(client, do_list_fonts_and_aliases, (pointer) c);
+		}
+		return TRUE;
 	    }
-	    return TRUE;
+
+	    err = BadFontName;
 	}
-	if (err != Successful)
-	    break;
-	c->current_fpe++;
+	else
+	{
+	    /* Start of list_fonts_and_aliases functionality.  Modeled
+	       after list_fonts_with_info in that it resolves aliases,
+	       except that the information collected from FPEs is just
+	       names, not font info.  Each list_next_font_or_alias()
+	       returns either a name into name/namelen or an alias into
+	       name/namelen and its target name into resolved/resolvedlen.
+	       The code at this level then resolves the alias by polling
+	       the FPEs.  */
+
+	    if (!c->current.list_started) {
+		err = (*fpe_functions[fpe->type].start_list_fonts_and_aliases)
+		    ((pointer) c->client, fpe, c->current.pattern,
+		     c->current.patlen, c->current.max_names - c->names->nnames,
+		     &c->current.private);
+		if (err == Suspended) {
+		    if (!c->slept) {
+			ClientSleep(client, do_list_fonts_and_aliases,
+				    (pointer) c);
+			c->slept = TRUE;
+		    }
+		    return TRUE;
+		}
+		if (err == Successful)
+		    c->current.list_started = TRUE;
+	    }
+	    if (err == Successful) {
+		name = 0;
+		err = (*fpe_functions[fpe->type].list_next_font_or_alias)
+		    ((pointer) c->client, fpe, &name, &namelen, &resolved,
+		     &resolvedlen, c->current.private);
+		if (err == Suspended) {
+		    if (!c->slept) {
+			ClientSleep(client, do_list_fonts_and_aliases,
+				    (pointer) c);
+			c->slept = TRUE;
+		    }
+		    return TRUE;
+		}
+	    }
+
+	    if (err == Successful)
+	    {
+		if (c->haveSaved)
+		{
+		    if (c->savedName)
+			(void)AddFontNamesName(c->names, c->savedName,
+					       c->savedNameLen);
+		}
+		else
+		    (void)AddFontNamesName(c->names, name, namelen);
+	    }
+
+	    /*
+	     * When we get an alias back, save our state and reset back to
+	     * the start of the FPE looking for the specified name.  As
+	     * soon as a real font is found for the alias, pop back to the
+	     * old state
+	     */
+	    else if (err == FontNameAlias) {
+		/*
+		 * when an alias recurses, we need to give
+		 * the last FPE a chance to clean up; so we call
+		 * it again, and assume that the error returned
+		 * is BadFontName, indicating the alias resolution
+		 * is complete.
+		 */
+		if (c->haveSaved)
+		{
+		    char    *tmpname;
+		    int     tmpnamelen;
+
+		    tmpname = 0;
+		    (void) (*fpe_functions[fpe->type].list_next_font_or_alias)
+			((pointer) c->client, fpe, &tmpname, &tmpnamelen,
+			 &tmpname, &tmpnamelen, c->current.private);
+		}
+		else
+		{
+		    c->saved = c->current;
+		    c->haveSaved = TRUE;
+		    if (c->savedName)
+			fsfree(c->savedName);
+		    c->savedName = (char *)fsalloc(namelen + 1);
+		    if (c->savedName)
+			memmove(c->savedName, name, namelen + 1);
+		    c->savedNameLen = namelen;
+		}
+		c->current.pattern = resolved;
+		c->current.patlen = resolvedlen;
+		c->current.max_names = c->names->nnames + 1;
+		c->current.current_fpe = -1;
+		c->current.private = 0;
+		err = BadFontName;
+	    }
+	}
+	/*
+	 * At the end of this FPE, step to the next.  If we've finished
+	 * processing an alias, pop state back. If we've collected enough
+	 * font names, quit.
+	 */
+	if (err == BadFontName) {
+	    c->current.list_started = FALSE;
+	    c->current.current_fpe++;
+	    err = Successful;
+	    if (c->haveSaved)
+	    {
+		/* If we're searching for an alias, limit the search to
+		   FPE's of the same type as the one the alias came
+		   from.  This is unnecessarily restrictive, but if we
+		   have both fontfile and fs FPE's, this restriction can
+		   drastically reduce network traffic to the fs -- else
+		   we could poll the fs for *every* local alias found;
+		   on a typical system enabling FILE_NAMES_ALIASES, this
+		   is significant.  */
+
+		while (c->current.current_fpe < c->num_fpes &&
+		       c->fpe_list[c->current.current_fpe]->type !=
+		       c->fpe_list[c->saved.current_fpe]->type)
+		c->current.current_fpe++;
+
+		if (c->names->nnames == c->current.max_names ||
+			c->current.current_fpe == c->num_fpes) {
+		    c->haveSaved = FALSE;
+		    c->current = c->saved;
+		    /* Give the saved namelist a chance to clean itself up */
+		    continue;
+		}
+	    }
+	    if (c->names->nnames == c->current.max_names)
+		break;
+	}
     }
 
+    /*
+     * send the reply
+     */
     if (err != Successful) {
 	SendErrToClient(client, FontToFSError(err), (pointer) 0);
 	goto bail;
@@ -810,74 +972,71 @@ finish:
     WriteReplyToClient(client, SIZEOF(fsListFontsReply), &reply);
     (void) WriteToClient(client, stringLens + nnames, bufferStart);
     DEALLOCATE_LOCAL(bufferStart);
+
 bail:
     if (c->slept)
 	ClientWakeup(client);
     for (i = 0; i < c->num_fpes; i++)
 	FreeFPE(c->fpe_list[i]);
     fsfree(c->fpe_list);
+    if (c->savedName) fsfree(c->savedName);
     FreeFontNames(names);
-    fsfree(c->pattern);
+    fsfree(c->current.pattern);
     fsfree(c);
     return TRUE;
 }
 
-static      LFclosurePtr
-make_list_fonts_closure(client, pattern, length, maxnames)
+int
+ListFonts(client, length, pattern, maxNames)
     ClientPtr   client;
+    int         length;
     unsigned char *pattern;
-    unsigned int length;
-    unsigned int maxnames;
+    int         maxNames;
 {
-    LFclosurePtr c;
     int         i;
+    LFclosurePtr c;
 
-    c = (LFclosurePtr) fsalloc(sizeof(LFclosureRec));
-    if (!c)
-	return (LFclosurePtr) 0;
-    c->pattern = (char *) fsalloc(length);
-    if (!c->pattern && length) {
+    if (!(c = (LFclosurePtr) fsalloc(sizeof *c)))
+	goto badAlloc;
+    if (!(c->current.pattern = (char *) fsalloc(length)) && length) {
 	fsfree(c);
-	return (LFclosurePtr) 0;
+	goto badAlloc;
     }
-    c->names = MakeFontNamesRecord(maxnames < 100 ? maxnames : 100);
     c->fpe_list = (FontPathElementPtr *)
 	fsalloc(sizeof(FontPathElementPtr) * num_fpes);
-    if (!c->fpe_list || !c->names) {
-	FreeFontNames(c->names);
-	fsfree(c->pattern);
+    if (!c->fpe_list) {
+	fsfree(c->current.pattern);
 	fsfree(c);
-	return (LFclosurePtr) 0;
+	goto badAlloc;
     }
-    memmove( c->pattern, pattern, length);
+    c->names = MakeFontNamesRecord(maxNames < 100 ? maxNames : 100);
+    if (!c->names)
+    {
+	fsfree(c->fpe_list);
+	fsfree(c->current.pattern);
+	fsfree(c);
+	goto badAlloc;
+    }
+    memmove( c->current.pattern, pattern, length);
     for (i = 0; i < num_fpes; i++) {
 	c->fpe_list[i] = font_path_elements[i];
 	UseFPE(c->fpe_list[i]);
     }
-    c->patlen = length;
     c->client = client;
-    c->maxnames = maxnames;
-    c->current_fpe = 0;
     c->num_fpes = num_fpes;
+    c->current.patlen = length;
+    c->current.current_fpe = 0;
+    c->current.max_names = maxNames;
+    c->current.list_started = FALSE;
+    c->current.private = 0;
+    c->haveSaved = FALSE;
     c->slept = FALSE;
-    return c;
-}
-
-int
-ListFonts(client, length, pattern, maxnames)
-    ClientPtr   client;
-    unsigned int length;
-    unsigned char *pattern;
-    unsigned int maxnames;
-{
-    LFclosurePtr c;
-
-    c = make_list_fonts_closure(client, pattern, length, maxnames);
-    if (!c)
-	return FSBadAlloc;
-
-    (void) do_list_fonts(client, c);
-    return FSSuccess;
+    c->savedName = 0;
+    do_list_fonts_and_aliases(client, c);
+    return TRUE;
+badAlloc:
+    SendErrToClient(client, FSBadAlloc, (pointer) 0);
+    return TRUE;
 }
 
 static int padlength[4] = {0, 3, 2, 1};
@@ -1146,7 +1305,8 @@ LoadGlyphRanges(client, pfont, range_flag, num_ranges, item_size, data)
 int
 RegisterFPEFunctions(name_func, init_func, free_func, reset_func,
 	   open_func, close_func, list_func, start_lfwi_func, next_lfwi_func,
-		     wakeup_func, client_died, load_glyphs)
+		     wakeup_func, client_died, load_glyphs,
+		     start_list_alias_func, next_list_alias_func)
     Bool        (*name_func) ();
     int         (*init_func) ();
     int         (*free_func) ();
@@ -1159,6 +1319,8 @@ RegisterFPEFunctions(name_func, init_func, free_func, reset_func,
     int         (*wakeup_func) ();
     int         (*client_died) ();
     int         (*load_glyphs) ();
+    int		(*start_list_alias_func) ();
+    int		(*next_list_alias_func) ();
 {
     FPEFunctions *new;
 
@@ -1184,6 +1346,10 @@ RegisterFPEFunctions(name_func, init_func, free_func, reset_func,
 
     fpe_functions[num_fpe_types].client_died = client_died;
     fpe_functions[num_fpe_types].load_glyphs = load_glyphs;
+    fpe_functions[num_fpe_types].start_list_fonts_and_aliases =
+	start_list_alias_func;
+    fpe_functions[num_fpe_types].list_next_font_or_alias =
+	next_list_alias_func;
     return num_fpe_types++;
 }
 
