@@ -1,4 +1,4 @@
-XCOMM site:  $XConsortium: site.def,v 1.92 93/11/03 18:43:23 gildea Exp $
+XCOMM site:  $XConsortium: site.def,v 1.93 93/12/03 17:08:07 rws Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -101,8 +101,7 @@ XCOMM #define HasGcc2 YES
 program: objects deplibs						@@\
 	RemoveTargetProgram($@)						@@\
 	$(CC) -o $@ objects $(LDOPTIONS) locallibs $(LDLIBS) syslibs $(EXTRA_LOAD_FLAGS) @@\
-	-root /etc/chown root $@					@@\
-	-root chmod 4755 $@						@@\
+	-$(TOP)/config/util/chown-xterm					@@\
 									@@\
 clean::									@@\
 	$(RM) program
