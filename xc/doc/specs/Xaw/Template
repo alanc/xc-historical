@@ -142,11 +142,10 @@ extern Font\ \ WindowFont(\|/* Widget */\|);
 .CE
 .LP
 Note that we have chosen to call the input callback list by the generic
-name,
-.PN callback ,
-rather than a specific name.  If widgets that define a single user-input
-action all choose the same resource name then there is greater possibility
-for an application to switch between widgets of different types.
+name, \fBcallback\fP, rather than a specific name.  If widgets that define
+a single user-input action all choose the same resource name then there
+is greater possibility for an application to switch between widgets of
+different types.
 .NH 3
 Private Header File
 .LP
