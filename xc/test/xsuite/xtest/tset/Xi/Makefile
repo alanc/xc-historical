@@ -34,7 +34,7 @@
 # make no representations about the suitability of this software for any
 # purpose.  It is provided "as is" without express or implied warranty.
 #
-# $XConsortium: Makefile,v 1.2 94/01/30 10:39:08 rws Exp $
+# $XConsortium: Makefile,v 1.3 94/04/17 21:12:39 rws Exp dpw $
 #
 
 #
@@ -64,42 +64,43 @@ CAT=cat
 ALLTESTS=Tests
 
 TESTOFILES=\
-alldvevnts.o \
-chgdvctl.o \
-chgfctl.o \
-chgkbd.o \
-chgprop.o \
-chgptr.o \
-chngdvkmap.o \
-closdev.o \
-dvbell.o \
-getdctl.o \
-getfctl.o \
-getfocus.o \
-getprop.o \
-getvers.o \
-grbdev.o \
-grbdvbtn.o \
-grbdvky.o \
-gtbtnmppn.o \
-gtdvkmap.o \
-gtdvmmap.o \
-gtdvmtnevnts.o \
-gtslctevnt.o \
-listdev.o \
-misc.o \
-opendev.o \
-querydvst.o \
-setdval.o \
-setdvbmap.o \
-setdvfocus.o \
-setdvmmap.o \
-setdvmode.o \
-slextevnt.o \
-sndextevnt.o \
-ungrbdv.o \
-ungrbdvbtn.o \
-ungrbdvky.o
+allwdvcevn.o \
+chngdvccnt.o \
+chngdvcdnt.o \
+chngdvckym.o \
+chngfdbckc.o \
+chngkybrdd.o \
+chngpntrdv.o \
+clsdvc.o \
+dvcbll.o \
+grbdvc.o \
+grbdvcbttn.o \
+grbdvcky.o \
+gtdvcbttnm.o \
+gtdvccntrl.o \
+gtdvcdntpr.o \
+gtdvcfcs.o \
+gtdvckympp.o \
+gtdvcmdfrm.o \
+gtdvcmtnev.o \
+gtextnsnvr.o \
+gtfdbckcnt.o \
+gtslctdext.o \
+lstinptdvc.o \
+mscllns.o \
+opndvc.o \
+qrydvcstt.o \
+slctextnsn.o \
+sndextnsne.o \
+stdvcbttnm.o \
+stdvcfcs.o \
+stdvcmd.o \
+stdvcmdfrm.o \
+stdvcvltrs.o \
+ungrbdvc.o \
+ungrbdvcbt.o \
+ungrbdvcky.o
+
 
 LINKOFILE=linktbl.o
 OFILES = $(TESTOFILES) $(LINKOFILE)
@@ -125,7 +126,7 @@ grbdvky \
 gtbtnmppn \
 gtdvkmap \
 gtdvmmap \
-gtdvmtnevnts \
+gtdvmtnev \
 gtslctevnt \
 listdev \
 misc \
