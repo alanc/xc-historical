@@ -1,0 +1,6 @@
+xkb_types "complete"
+
+include "basic"
+override "cancel"
+augment "ibmpc"
+augment "iso9995"

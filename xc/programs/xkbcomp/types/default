@@ -1,0 +1,5 @@
+xkb_types "default"
+
+include "basic"
+override "cancel"
+augment "ibmpc"
