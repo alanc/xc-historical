@@ -1,4 +1,4 @@
-/* $XConsortium: PEX.h,v 5.1 91/02/16 09:47:00 rws Exp $ */
+/* $XConsortium: PEX.h,v 5.2 91/06/18 13:57:22 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -915,7 +915,7 @@ SOFTWARE.
 #define PEXOCGdp2D			103
 #define PEXMaxOC			103
 
-#define PEXOCNil			~0
+#define PEXOCNil			0xffff
 
 #endif /* PEX.h */
 
