@@ -1,4 +1,4 @@
-/* $XConsortium: connect.c,v 1.15 93/11/18 16:49:27 mor Exp $ */
+/* $XConsortium: connect.c,v 1.16 93/11/22 16:30:12 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -205,7 +205,8 @@ char *errorStringRet;
     {
 	authUsableFlags[i] = 0;
 	for (j = 0; j < afNameCount && !authUsableFlags[i]; j++)
-	    authUsableFlags[i] = (strncmp (_IcePoAuthRecs[i].auth_name,
+	    authUsableFlags[i] = (strlen (_IcePoAuthRecs[i].auth_name) ==
+		afNamesLengths[j] && strncmp (_IcePoAuthRecs[i].auth_name,
 		afNames[j], afNamesLengths[j]) == 0);
     }
 
