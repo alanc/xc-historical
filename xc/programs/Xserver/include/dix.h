@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: dix.h,v 1.71 93/12/01 20:33:08 rob Exp $ */
+/* $XConsortium: dix.h,v 1.72 94/01/11 23:17:45 rob Exp $ */
 
 #ifndef DIX_H
 #define DIX_H
@@ -185,11 +185,7 @@ extern ClientPtr requestingClient;
 extern ClientPtr *clients;
 extern ClientPtr serverClient;
 extern int currentMaxClients;
-#ifdef __alpha /* XXX temporary until driver is fixed */
-extern int *checkForInput[2];
-#else
 extern long *checkForInput[2];
-#endif
 
 /* dispatch.c */
 
@@ -423,4 +419,110 @@ extern Bool ClientIsAsleep(
     ClientPtr /*client*/
 #endif
 );
+
+/*
+ *  callback manager stuff
+ */
+
+typedef struct _CallbackList *CallbackListPtr;
+
+typedef void (*CallbackProcPtr) (
+#if NeedNestedPrototypes
+    CallbackListPtr *, pointer, pointer
+#endif
+);
+
+typedef Bool (*AddCallbackProcPtr) (
+#if NeedNestedPrototypes
+    CallbackListPtr *, CallbackProcPtr, pointer
+#endif
+);
+
+typedef Bool (*DeleteCallbackProcPtr) (
+#if NeedNestedPrototypes
+    CallbackListPtr *, CallbackProcPtr, pointer
+#endif
+);
+
+typedef void (*CallCallbacksProcPtr) (
+#if NeedNestedPrototypes
+    CallbackListPtr *, pointer
+#endif
+);
+
+typedef void (*DeleteCallbackListProcPtr) (
+#if NeedNestedPrototypes
+    CallbackListPtr *
+#endif
+);
+
+typedef struct _CallbackProcs {
+    AddCallbackProcPtr		AddCallback;
+    DeleteCallbackProcPtr	DeleteCallback;
+    CallCallbacksProcPtr	CallCallbacks;
+    DeleteCallbackListProcPtr	DeleteCallbackList;
+} CallbackFuncsRec, *CallbackFuncsPtr;
+
+extern Bool CreateCallbackList(
+#if NeedFunctionPrototypes
+    CallbackListPtr * /*pcbl*/,
+    CallbackFuncsPtr /*cbfuncs*/
+#endif
+);
+
+extern Bool AddCallback(
+#if NeedFunctionPrototypes
+    CallbackListPtr * /*pcbl*/,
+    CallbackProcPtr /*callback*/,
+    pointer /*data*/
+#endif
+);
+
+extern Bool DeleteCallback(
+#if NeedFunctionPrototypes
+    CallbackListPtr * /*pcbl*/,
+    CallbackProcPtr /*callback*/,
+    pointer /*data*/
+#endif
+);
+
+extern void CallCallbacks(
+#if NeedFunctionPrototypes
+    CallbackListPtr * /*pcbl*/,
+    pointer /*call_data*/
+#endif
+);
+
+extern void DeleteCallbackList(
+#if NeedFunctionPrototypes
+    CallbackListPtr * /*pcbl*/
+#endif
+);
+
+extern void InitCallbackManager(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+
+extern void ShutdownCallbackManager(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+
+/*
+ *  ServerGrabCallback stuff
+ */
+
+extern CallbackListPtr ServerGrabCallback;
+
+typedef enum {SERVER_GRABBED, SERVER_UNGRABBED,
+	      CLIENT_PERVIOUS, CLIENT_IMPERVIOUS } ServerGrabState;
+
+typedef struct {
+    ClientPtr client;
+    ServerGrabState grabstate;
+} ServerGrabInfoRec;
+
 #endif /* DIX_H */

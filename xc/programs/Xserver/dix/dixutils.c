@@ -23,7 +23,7 @@ SOFTWARE.
 ******************************************************************/
 
 
-/* $XConsortium: dixutils.c,v 1.46 93/09/18 13:38:33 dpw Exp $ */
+/* $XConsortium: dixutils.c,v 1.47 93/09/20 18:02:17 dpw Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -550,4 +550,286 @@ ClientIsAsleep (client)
 	if (q->client == client)
 	    return TRUE;
     return FALSE;
+}
+
+/*
+ * Copyright (C) 1993 by Adobe Systems Incorporated. All rights reserved. 
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation for any purpose and without fee is hereby granted, provided
+ * that the above copyright notices appear in all copies and that both those
+ * copyright notices and this permission notice appear in supporting
+ * documentation and that the name of Adobe Systems Incorporated not be used
+ * in advertising or publicity pertaining to distribution of the software
+ * without specific, written prior permission.  If any portion of this
+ * software is changed, it cannot be marketed under Adobe's trademarks and/or
+ * copyrights unless Adobe, in its sole discretion, approves by a prior
+ * writing the quality of the resulting implementation. 
+ *
+ * ADOBE MAKES NO REPRESENTATIONS ABOUT THE SUITABILITY OF THE SOFTWARE FOR ANY
+ * PURPOSE.  IT IS PROVIDED "AS IS" WITHOUT EXPRESS OR IMPLIED WARRANTY.
+ * ADOBE DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING ALL
+ * IMPLIED WARRANTIES OF MERCHANTABILITY FITNESS FOR A PARTICULAR PURPOSE AND
+ * NON-INFRINGEMENT OF THIRD PARTY RIGHTS.  IN NO EVENT SHALL ADOBE BE LIABLE
+ * TO YOU OR ANY OTHER PARTY FOR ANY SPECIAL, INDIRECT, OR CONSEQUENTIAL
+ * DAMAGES OR ANY DAMAGES WHATSOEVER WHETHER IN AN ACTION OF CONTRACT,
+ * NEGLIGENCE, STRICT LIABILITY OR ANY OTHER ACTION ARISING OUT OF OR IN
+ * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.  ADOBE WILL NOT
+ * PROVIDE ANY TRAINING OR OTHER SUPPORT FOR THE SOFTWARE. 
+ *
+ * PostScript, Display PostScript, and Adobe are trademarks of Adobe Systems
+ * Incorporated registered in the U.S.A. and other countries. 
+ *
+ * Author: Adobe Systems Incorporated 
+ */
+
+/* ===== Private Procedures ===== */
+
+static int numCallbackListsToCleanup = 0;
+static CallbackListPtr **listsToCleanup = NULL;
+
+static Bool 
+_AddCallback(pcbl, callback, data)
+    CallbackListPtr *pcbl;
+    CallbackProcPtr callback;
+    pointer         data;
+{
+    CallbackPtr     cbr;
+
+    cbr = (CallbackPtr) xalloc(sizeof(CallbackRec));
+    if (!cbr)
+	return FALSE;
+    cbr->proc = callback;
+    cbr->data = data;
+    cbr->next = (*pcbl)->list;
+    cbr->deleted = FALSE;
+    (*pcbl)->list = cbr;
+    return TRUE;
+}
+
+static Bool 
+_DeleteCallback(pcbl, callback, data)
+    CallbackListPtr *pcbl;
+    CallbackProcPtr callback;
+    pointer         data;
+{
+    CallbackListPtr cbl = *pcbl;
+    CallbackPtr     cbr, pcbr;
+    int i;
+
+    for (pcbr = NULL, cbr = cbl->list;
+	 cbr != NULL;
+	 pcbr = cbr, cbr = cbr->next)
+    {
+	if ((cbr->proc == callback) && (cbr->data == data))
+	    break;
+    }
+    if (cbr != NULL)
+    {
+	if (cbl->inCallback)
+	{
+	    ++(cbl->numDeleted);
+	    cbr->deleted = TRUE;
+	}
+	else
+	{
+	    if (pcbr == NULL)
+		cbl->list = cbr->next;
+	    else
+		pcbr->next = cbr->next;
+	    xfree(cbr);
+	}
+	return TRUE;
+    }
+    return FALSE;
+}
+
+static void 
+_CallCallbacks(pcbl, call_data)
+    CallbackListPtr    *pcbl;
+    pointer	    call_data;
+{
+    CallbackListPtr cbl = *pcbl;
+    CallbackPtr     cbr, pcbr;
+
+    ++(cbl->inCallback);
+    for (cbr = cbl->list; cbr != NULL; cbr = cbr->next)
+    {
+	(*(cbr->proc)) (pcbl, cbr->data, call_data);
+    }
+    --(cbl->inCallback);
+
+    if (cbl->inCallback) return;
+
+    /* Was the entire list marked for deletion? */
+
+    if (cbl->deleted)
+    {
+	DeleteCallbackList(pcbl);
+	return;
+    }
+
+    /* Were some individual callbacks on the list marked for deletion?
+     * If so, do the deletions.
+     */
+
+    if (cbl->numDeleted)
+    {
+	for (pcbr = NULL, cbr = cbl->list; (cbr != NULL) && cbl->numDeleted; )
+	{
+	    if (cbr->deleted)
+	    {
+		if (pcbr)
+		{
+		    cbr = cbr->next;
+		    xfree(pcbr->next);
+		    pcbr->next = cbr;
+		} else
+		{
+		    cbr = cbr->next;
+		    xfree(cbl->list);
+		    cbl->list = cbr;
+		}
+		cbl->numDeleted--;
+	    }
+	    else /* this one wasn't deleted */
+	    {
+		pcbr = cbr;
+		cbr = cbr->next;
+	    }
+	}
+    }
+}
+
+static void
+_DeleteCallbackList(pcbl)
+    CallbackListPtr    *pcbl;
+{
+    CallbackListPtr cbl = *pcbl;
+    CallbackPtr     cbr, nextcbr;
+    int i;
+
+    if (cbl->inCallback)
+    {
+	cbl->deleted = TRUE;
+	return;
+    }
+
+    for (i = 0; i < numCallbackListsToCleanup; i++)
+    {
+	if (listsToCleanup[i] = pcbl)
+	{
+	    listsToCleanup[i] = NULL;
+	    break;
+	}
+    }
+
+    for (cbr = cbl->list; cbr != NULL; cbr = nextcbr)
+    {
+	nextcbr = cbr->next;
+	xfree(cbr);
+    }
+    xfree(cbl);
+    *pcbl = NULL;
+}
+
+static CallbackFuncsRec default_cbfuncs =
+{
+    _AddCallback,
+    _DeleteCallback,
+    _CallCallbacks,
+    _DeleteCallbackList
+};
+
+/* ===== Public Procedures ===== */
+
+Bool
+CreateCallbackList(pcbl, cbfuncs)
+    CallbackListPtr  *pcbl;
+    CallbackFuncsPtr cbfuncs;
+{
+    CallbackListPtr  cbl;
+    int i;
+
+    if (!pcbl) return FALSE;
+    cbl = (CallbackListPtr) xalloc(sizeof(CallbackListRec));
+    if (!cbl) return FALSE;
+    cbl->funcs = cbfuncs ? *cbfuncs : default_cbfuncs;
+    cbl->inCallback = 0;
+    cbl->deleted = FALSE;
+    cbl->numDeleted = 0;
+    cbl->list = NULL;
+    *pcbl = cbl;
+
+    for (i = 0; i < numCallbackListsToCleanup; i++)
+    {
+	if (!listsToCleanup[i])
+	{
+	    listsToCleanup[i] = pcbl;
+	    return TRUE;
+	}    
+    }
+
+    listsToCleanup = (CallbackListPtr **)xnfrealloc(listsToCleanup,
+		sizeof(CallbackListPtr *) * numCallbackListsToCleanup+1);
+    listsToCleanup[numCallbackListsToCleanup] = pcbl;
+    numCallbackListsToCleanup++;
+    return TRUE;
+}
+
+Bool 
+AddCallback(pcbl, callback, data)
+    CallbackListPtr *pcbl;
+    CallbackProcPtr callback;
+    pointer         data;
+{
+    if (!pcbl) return FALSE;
+    if (!*pcbl)
+    {	/* list hasn't been created yet; go create it */
+	if (!CreateCallbackList(pcbl, (CallbackFuncsPtr)NULL))
+	    return FALSE;
+    }
+    return ((*(*pcbl)->funcs.AddCallback) (pcbl, callback, data));
+}
+
+Bool 
+DeleteCallback(pcbl, callback, data)
+    CallbackListPtr *pcbl;
+    CallbackProcPtr callback;
+    pointer         data;
+{
+    if (!pcbl || !*pcbl) return FALSE;
+    return ((*(*pcbl)->funcs.DeleteCallback) (pcbl, callback, data));
+}
+
+void 
+CallCallbacks(pcbl, call_data)
+    CallbackListPtr    *pcbl;
+    pointer	    call_data;
+{
+    if (!pcbl || !*pcbl) return;
+    (*(*pcbl)->funcs.CallCallbacks) (pcbl, call_data);
+}
+
+void
+DeleteCallbackList(pcbl)
+    CallbackListPtr    *pcbl;
+{
+    if (!pcbl || !*pcbl) return;
+    (*(*pcbl)->funcs.DeleteCallbackList) (pcbl);
+}
+
+void 
+InitCallbackManager()
+{
+    int i;
+
+    for (i = 0; i < numCallbackListsToCleanup; i++)
+    {
+	DeleteCallbackList(listsToCleanup[i]);
+    }
+    if (listsToCleanup) xfree(listsToCleanup);
+
+    numCallbackListsToCleanup = 0;
+    listsToCleanup = NULL;
 }

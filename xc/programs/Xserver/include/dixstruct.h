@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: dixstruct.h,v 1.25 94/01/11 23:05:33 rob Exp $ */
+/* $XConsortium: dixstruct.h,v 1.26 94/01/17 23:55:40 rob Exp $ */
 
 #ifndef DIXSTRUCT_H
 #define DIXSTRUCT_H
@@ -127,5 +127,20 @@ extern TimeStamp ClientTimeToServerTime(
     CARD32 /*c*/
 #endif
 );
+
+typedef struct _CallbackRec {
+  CallbackProcPtr proc;
+  pointer data;
+  Bool deleted;
+  struct _CallbackRec *next;
+} CallbackRec, *CallbackPtr;
+
+typedef struct _CallbackList {
+  CallbackFuncsRec funcs;
+  int inCallback;
+  Bool deleted;
+  int numDeleted;
+  CallbackPtr list;
+} CallbackListRec;
 
 #endif				/* DIXSTRUCT_H */
