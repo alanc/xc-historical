@@ -1,7 +1,17 @@
 #!/bin/sh
-if [ -f $HOME/.xsession ]; then
-	exec $HOME/.xsession
+startup=$HOME/.xsession
+resources=$HOME/.Xresources
+
+if [ -f $startup ]; then
+	if [ -x $startup ]; then
+		exec $startup
+	else
+		exec /bin/sh $startup
+	fi
 else
+	if [ -f $resources ]; then
+		xrdb -load $resources
+	fi
 	uwm &
-	exec xterm -geometry 80x24+270+272 -ls
+	exec xterm -geometry 80x24+10+10 -ls
 fi
