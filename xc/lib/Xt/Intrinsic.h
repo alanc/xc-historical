@@ -125,29 +125,29 @@ typedef char *XtArgVal;
  **************************************************************/
 
 typedef struct _CorePart {
-    struct _WidgetClassRec *widget_class; /* pointer to Widget's ClassRec     */
-    Screen	 *screen;		/* window's screen		      */
-    Window	 window;		/* window ID			      */
-    struct _CompositeRec   *parent;	/* parent widget		      */
-    String       name;			/* widget resource name		      */
-    XrmName      xrm_name;		/* widget resource name quarkified    */
-    Boolean      managed;		/* is widget geometry managed?        */
-    Position     x, y;			/* window position		      */
-    Dimension    width, height;		/* window dimensions		      */
-    Cardinal     depth;			/* number of planes in window         */
-    Boolean      visible;		/* is window mapped and not occluded? */
-    Pixel	 background_pixel;      /* window background pixel	      */
-    Pixmap       background_pixmap;     /* window background pixmap or NULL   */
-    Dimension    border_width;		/* window border width		      */
-    Pixel	 border_pixel;		/* window border pixel		      */
-    Pixmap       border_pixmap;		/* window border pixmap or NULL       */
-    EventMask    event_mask;		/* events to select for		      */
-    EventTable   event_table;		/* private to event dispatcher        */
-    Boolean	 sensitive;		/* is widget sensitive to user events */
-    Boolean      ancestor_sensitive;    /* are all ancestors sensitive?       */
-    Translations translations;		/* private to Translation Manager     */
-    CallbackList destroy_callbacks;     /* who to call when widget destroyed  */
-    Boolean      being_destroyed;       /* marked for destroy		      */
+    struct _WidgetClassRec *widget_class;/* pointer to Widget's ClassRec     */
+    Screen	 *screen;	       /* window's screen		     */
+    Window	 window;	       /* window ID			     */
+    struct _CompositeRec   *parent;    /* parent widget		  	     */
+    String       name;		       /* widget resource name		     */
+    XrmName      xrm_name;	       /* widget resource name quarkified    */
+    Boolean      managed;	       /* is widget geometry managed?        */
+    Position     x, y;		       /* window position		     */
+    Dimension    width, height;	       /* window dimensions		     */
+    Cardinal     depth;		       /* number of planes in window         */
+    Boolean      visible;	       /* is window mapped and not occluded? */
+    Pixel	 background_pixel;     /* window background pixel	     */
+    Pixmap       background_pixmap;    /* window background pixmap or NULL   */
+    Dimension    border_width;	       /* window border width		     */
+    Pixel	 border_pixel;	       /* window border pixel		     */
+    Pixmap       border_pixmap;	       /* window border pixmap or NULL       */
+    EventMask    event_mask;	       /* events to select for		     */
+    EventTable   event_table;	       /* private to event dispatcher        */
+    Boolean	 sensitive;	       /* is widget sensitive to user events */
+    Boolean      ancestor_sensitive;   /* are all ancestors sensitive?       */
+    Translations translations;	       /* private to Translation Manager     */
+    CallbackList destroy_callbacks;    /* who to call when widget destroyed  */
+    Boolean      being_destroyed;      /* marked for destroy		     */
 } CorePart;
 
 typedef struct _WidgetRec {
