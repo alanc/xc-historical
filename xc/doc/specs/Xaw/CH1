@@ -318,8 +318,8 @@ Superclass	Composite
 .De
 .IP "\fBApplication Header File\fP" 2.0i
 .IN "application header file" "" "@DEF@"
-This file must be included when an application uses this widget
-it usually contains the class definition, and some resource macros.
+This file must be included when an application uses this widget.
+It usually contains the class definition, and some resource macros.
 This is often called the ``public'' header file.
 .IN "class header file" "" "@DEF@"
 .IP "\fBClass Header File\fP" 2.0i
@@ -329,7 +329,7 @@ called the ``private'' header file.
 .IN "class" "" "@DEF@"
 .IP \fBClass\fP 2.0i
 This is the widget class of this widget.  This global symbol is passed to
-\fBXtCreateWidget\fP so that the \(*xI will know which type of widget
+\fBXtCreateWidget\fP so that the \*(xI will know which type of widget
 to create.
 .IN "class name" "" "@DEF@"
 .IP "\fBClass Name\fP" 2.0i
@@ -360,7 +360,7 @@ special restrictions placed upon individual resources.
 This resource may be automatically adjusted when another
 resource is changed.
 .IP C .5i
-This resources is only settable at widget creation time, and may not
+This resource is only settable at widget creation time, and may not
 be modified with \fBXtSetValues\fP.
 .IP D .5i
 Do not modify this resource.  While setting this resource will
@@ -401,6 +401,6 @@ assistance of window manager in acquiring the input focus.  The
 resource defaults to \fBFalse\fP in the \*(xI, but is redefined to
 default to \fBTrue\fP when an application is using the Athena widget
 set.  An application programmer may override this default and set the
-resource back to \fBFalse\fP if the application does need the window
+resource back to \fBFalse\fP if the application does not need the window
 manager to give it the input focus.  See the \fI\*(xT\fP for details
 on the \fIinput\fP resource.
