@@ -1,4 +1,4 @@
-/* $XConsortium: Shell.c,v 1.123 92/02/14 16:40:54 converse Exp $ */
+/* $XConsortium: Shell.c,v 1.124 92/02/21 12:34:32 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -2016,8 +2016,11 @@ static Boolean TopLevelSetValues(oldW, refW, newW, args, num_args)
 			       XtWindow(newW),
 			       XScreenNumberOfScreen(XtScreen(newW))
 			       );
-	    else
+	    else {
+		Boolean map = new->shell.popped_up;
 		XtPopup(newW, XtGrabNone);
+		if (map) XMapWindow(XtDisplay(newW), XtWindow(newW));
+	    }
 	}
 
 	if (!new->shell.override_redirect &&
