@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: sun.cf,v 1.63 91/07/26 11:47:50 rws Exp $
+XCOMM platform:  $XConsortium: sun.cf,v 1.64 91/07/26 14:46:23 rws Exp $
 
 #define OSName            SunOS 4.1.1
 XCOMM operating system:  OSName
@@ -33,6 +33,7 @@ XCOMM operating system:  OSName
 #include <sunLib.rules>
 
 #define HasGcc mc68000		/* XXX change to NO in R5 */
+#define HasMITGXSource YES	/* XXX change to NO in R5 */
 
 #if HasGcc
 
