@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 5.21 93/04/27 16:43:54 rws Exp $
+XCOMM $XConsortium: Imakefile,v 5.23 93/06/29 09:12:04 rws Exp $
 #include <Server.tmpl>
 
 #if BuildXInputExt || BuildPexExt || BuildPexClients || BuildXIE
@@ -16,7 +16,7 @@ XCOMM $XConsortium: Imakefile,v 5.21 93/04/27 16:43:54 rws Exp $
 #endif
 #endif
 #if BuildXIE
-  XIEDIRS = xiesi
+  XIEDIRS = xie
 #endif
 #if BuildXTrapExt
   XTRAPDIRS = xtrap
