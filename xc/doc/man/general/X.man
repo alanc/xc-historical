@@ -61,7 +61,7 @@ a display manager (\fIxdm\fP),
 mail managing utilities (\fIxmh\fP and \fIxbiff\fP),
 a manual page browser (\fIxman\fP),
 a bitmap editor (\fIbitmap\fP),
-an access control program (\fIxhost\fP),
+access control programs (\fIxauth\fP and \fIxhost\fP),
 user preference setting programs (\fIxrdb\fP, \fIxset\fP, \fIxsetroot\fP,
 and \fIxmodmap\fP),
 a load monitor (\fIxload\fP), clock (\fIxclock\fP),
@@ -209,6 +209,29 @@ case letters).  For example:  \fIunix:0\fP, \fIunix:1\fP, and \fIunix:0.1\fP.
 The hostname part of the display name should be the server machine's 
 nodename followed by two colons instead of one.
 For example:  \fImyws::0\fP, \fIbig::1\fP, and \fIhydra::0.1\fP.
+.PP
+.SH "ACCESS CONTROL"
+The sample server provides two types of access control:  an authorization
+protocol which provides a list of "magic cookies" clients can send to
+request access, and a list of hosts from which connections are always
+accepted.  \fIXdm\fP initializes the server magic cookie list, and also places
+them in a file accessable to the user.  Normally, the list of hosts from
+which connections are always accepted is empty.  When you add entries to
+this list (with \fIxhost\fP), the server no longer performs any
+authentication on connections from those machines.  Be careful with this.
+.PP
+The file for authorization which both \fIxdm\fP and \fIXlib\fP use is
+specified either with the environment variable \fBXAUTHORITY\fP or in the home
+directory with the name \fB.Xauthority\fP.  \fIXdm\fP prefers
+\fB$HOME/.Xauthority\fP and will create it or merge in authorization records
+if it already exists.
+.PP
+To manage a collection of authorization files containing a collection of
+authorization records use \fIxauth\fP.  This program allows you to extract
+records and insert them into other files.  Using this, you can send
+authorization to remote machines when you login.  As the files are
+machine-independent, you can also simply copy the files or use NFS to share
+them.
 .PP
 .SH "GEOMETRY SPECIFICATIONS"
 One of the advantages of using window systems instead of
@@ -756,7 +779,7 @@ administrator for instructions on how to submit an X Bug Report.
 .PP
 Xserver(1),
 mkfontdir(1),
-bitmap(1), uwm(1), x10tox11(1), xbiff(1), xcalc(1), xclock(1),
+bitmap(1), uwm(1), x10tox11(1), xauth(1), xbiff(1), xcalc(1), xclock(1),
 xdpyinfo(1), xedit(1), xev(1), xfd(1), xhost(1), xinit(1), xkill(1), xload(1),
 xlogo(1), xlsfonts(1), xlswins(1), xmag(1), xman(1), xmh(1), xmodmap(1),
 xpr(1), xprop(1), xrdb(1), xrefresh(1), xset(1), xsetroot(1),
