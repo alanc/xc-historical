@@ -1,4 +1,4 @@
-/* $XConsortium: NextEvent.c,v 1.133 93/10/15 14:59:46 kaleb Exp $ */
+/* $XConsortium: NextEvent.c,v 1.134 93/11/22 13:19:16 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -484,7 +484,7 @@ WaitLoop:
     while (1) {
 	AdjustTimes (app, block, howlong, ignoreTimers, &wt);
 
-	if (app->block_hook_list) {
+	if (block && app->block_hook_list) {
 	    BlockHook hook;
 	    for (hook = app->block_hook_list; 
 		 hook != NULL; 
