@@ -4,6 +4,7 @@
         SUBDIRS = misc 75dpi 100dpi
 
 MakeSubdirs($(SUBDIRS))
+DependSubdirs($(SUBDIRS))
 
 install::
 	-mkdir $(FONTDIR)/misc
