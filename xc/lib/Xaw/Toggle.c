@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Toggle.c,v 1.5 89/04/10 10:43:59 converse Exp $";
+static char Xrcsid[] = "$XConsortium: Toggle.c,v 1.6 89/05/01 13:19:45 kit Exp $";
 #endif /* lint */
 
 /***********************************************************
@@ -198,11 +198,11 @@ ClassInit()
   XtError("Aborting, due to errors in Toggle widget.");
 }
 
-/* ARGSUSED */
 static void Initialize(request, new)
  Widget request, new;
 {
     ToggleWidget tw = (ToggleWidget) new;
+    ToggleWidget tw_req = (ToggleWidget) request;
 
     tw->toggle.radio_list = NULL;
 
@@ -223,9 +223,12 @@ static void Initialize(request, new)
  *
  * If this widget is in a radio list then it may cause another
  * widget to be unset, thus calling the notify proceedure.
+ *
+ * I want to set the toggle if the user set the state to "On" in 
+ * the resource list, reguardless of what my ancestors did.
  */
 
-    if (tw->command.set)
+    if (tw_req->command.set)
       ToggleSet(new, NULL, NULL, 0);
 }
 
