@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: Win32.cf,v 1.26 93/09/12 09:57:50 rws Exp $
+XCOMM platform:  $XConsortium: Win32.cf,v 1.27 93/09/12 11:24:03 rws Exp $
 
 #define OSName			Microsoft Windows NT 3.1
 XCOMM operating system:  OSName
@@ -19,7 +19,8 @@ XCOMM operating system:  OSName
 #define MvCmd ren
 #define RmCmd del
 #define CcCmd cl
-#define HasCppCmd		NO
+#define PreProcessCmd CcCmd -nologo -batch -E
+#define CppCmd PreProcessCmd
 #define PatheticCpp		YES
 #define ArCmdBase lib32
 #define ArCmd ArCmdBase
