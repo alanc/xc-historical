@@ -1,9 +1,26 @@
-/*
- * Copyright 1988-1993 Network Computing Devices, Inc.  All rights reserved.
- * An unpublished work.
+/* $XConsortium: XRecord.c,v 1.8 94/03/30 16:36:21 rws Exp $ */
+/***************************************************************************
+ * Copyright 1994 Network Computing Devices;
+ * Portions Copyright 1994 by Digital Equipment Corporation and the
+ * Massachusetts Institute of Technology
  *
- * $XConsortium: XRecord.c,v 1.8 94/03/30 16:21:12 rws Exp $
- */
+ * Permission to use, copy, modify, distribute, and sell this software and
+ * its documentation for any purpose is hereby granted without fee, provided
+ * that the above copyright notice appear in all copies and that both that
+ * copyright notice and this permission notice appear in supporting
+ * documentation, and that the names of Network Computing Devices, Digital or
+ * M.I.T. not be used in advertising or publicity pertaining to distribution
+ * of the software without specific, written prior permission.
+ *
+ * NETWORK COMPUTING DEVICES, DIGITAL AND M.I.T. DISCLAIM ALL WARRANTIES WITH
+ * REGARD TO THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL NETWORK COMPUTING DEVICES,
+ * DIGITAL OR M.I.T. BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL
+ * DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR
+ * PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS
+ * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
+ * THIS SOFTWARE.
+ **************************************************************************/
 
 #include <stdio.h>
 #define NEED_EVENTS
