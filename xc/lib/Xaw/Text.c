@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: Text.c,v 1.150 90/06/13 14:44:17 kit Exp $";
+static char Xrcsid[] = "$XConsortium: Text.c,v 1.151 90/06/13 17:09:03 kit Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -2512,20 +2512,19 @@ TextWidget ctx;
   x = ctx->text.margin.left;
   y = ctx->core.height - ctx->text.margin.bottom;
   if (ctx->text.hbar != NULL)
-    y -= ctx->text.hbar->core.height - 2 * ctx->text.hbar->core.border_width;
+    y -= ctx->text.hbar->core.height + 2 * ctx->text.hbar->core.border_width;
   
   max_pos = PositionForXY (ctx, x, y);
   max_pos = SrcScan(ctx->text.source, max_pos, XawstEOL, XawsdRight, 1, FALSE);
-  max_pos++;
   lines = LineForPosition(ctx, max_pos); /* number of visable lines. */
   
   if ( (ctx->text.insertPos >= ctx->text.lt.top) &&
-       ((ctx->text.insertPos < max_pos) || ( max_pos > ctx->text.lastPos)) ) 
+       (ctx->text.insertPos <= max_pos))
     return;
 
   first = ctx->text.lt.top;
 
-  if (ctx->text.insertPos < first) {
+  if (ctx->text.insertPos < first) { /* We need to scroll up. */
       top = SrcScan(ctx->text.source, ctx->text.insertPos,
 		    XawstEOL, XawsdLeft, 1, FALSE);
 
@@ -2548,20 +2547,21 @@ TextWidget ctx;
 
       if (first > top) {
 	  /*
-	   * Not visable, back out of previous backup. */
+	   * Not visable, back out of previous backup. 
+	   */
 	  first = SrcScan(ctx->text.source, first,
 			  XawstPositions, XawsdLeft, 1, TRUE);
       }
       else			/* we are okay, back up line counter. */
 	  number++;
 
-      if (number > lines)	/* Make sure we don't scroll more than 
+      if ( - number > lines)	/* Make sure we don't scroll more than 
 				   once screen. */
 	  lines = 0;
       else
 	  lines = number;
   }
-  else {
+  else {			/* We need to Scroll down */
       top = SrcScan(ctx->text.source, ctx->text.insertPos,
 		    XawstEOL, XawsdLeft, lines, FALSE);
 
@@ -2577,6 +2577,7 @@ TextWidget ctx;
       _XawTextBuildLineTable(ctx, top, FALSE);      
       DisplayTextWindow((Widget)ctx);
   }
+  _XawTextSetScrollBars(ctx);
 }
 
 /*
