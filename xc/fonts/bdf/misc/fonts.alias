@@ -1,5 +1,5 @@
-fixed        -misc-fixed-medium-r-normal--13-130-75-75-c-60-iso8859-1
-variable     *-helvetica-bold-r-normal-*-*-140-*
+fixed        -misc-fixed-medium-r-normal-*-*-120-*-*-*-*-*-*
+variable     -*-helvetica-bold-r-normal-*-*-120-*-*-*-*-*-*
 5x8          -misc-fixed-medium-r-normal--8-80-75-75-c-50-iso8859-1
 6x10         -misc-fixed-medium-r-normal--10-100-75-75-c-60-iso8859-1
 6x12         -misc-fixed-medium-r-semicondensed--12-110-75-75-c-60-iso8859-1
