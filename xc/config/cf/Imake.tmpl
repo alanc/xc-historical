@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-XCOMM $XConsortium: Imake.tmpl,v 1.196 93/09/17 17:26:36 rws Exp $
+XCOMM $XConsortium: Imake.tmpl,v 1.197 93/09/21 18:11:16 rws Exp $
 XCOMM
 
 /*
@@ -169,6 +169,9 @@ _NULLCMD_ = @ echo -n
 #ifndef HasSecureRPC
 #define HasSecureRPC		NO	/* if you have Secure RPC */
 #endif
+#ifndef HasKrb5
+#define HasKrb5			NO      /* if you have Kerberos V5 */
+#endif
 #ifndef HasShm
 #if SystemV || SystemV4
 #define HasShm			YES
@@ -191,6 +194,17 @@ _NULLCMD_ = @ echo -n
 #endif
 #ifndef ThreadsLoadFlags
 #define ThreadsLoadFlags /**/
+#endif
+#if HasKrb5
+#ifndef Krb5Includes
+#define Krb5Includes -I/krb5/include
+#endif
+#ifndef Krb5Libraries
+#define Krb5Libraries -L/krb5/lib -L/usr/isode/lib -lkrb5 -lcrypto -lisode -lcom_err -ldbm
+#endif
+#else
+#define Krb5Includes /**/
+#define Krb5Libraries /**/
 #endif
 #ifndef NeedConstPrototypes
 #define NeedConstPrototypes	NO
@@ -719,7 +733,7 @@ _NULLCMD_ = @ echo -n
       STD_DEFINES = StandardDefines
  EXTRA_LOAD_FLAGS = ExtraLoadFlags
   EXTRA_LDOPTIONS = ExtraLoadOptions
-  EXTRA_LIBRARIES = ExtraLibraries
+  EXTRA_LIBRARIES = ExtraLibraries Krb5Libraries
              TAGS = TagsCmd
 #if ConstructMFLAGS
            MFLAGS = -$(MAKEFLAGS)

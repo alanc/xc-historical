@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.66 93/09/18 18:38:54 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.67 93/09/21 11:14:00 rws Exp $
 #include <Server.tmpl>
 
 #if (SystemV || SystemV4) && !HasSockets
@@ -47,6 +47,12 @@ RPCOBJS =
 RPCSRCS =
 #endif
 
+#if HasKrb5
+KRB5OBJS = k5auth.o k5encode.o
+KRB5SRCS = k5auth.c k5encode.c
+LinkSourceFile(k5encode.c,$(XAUTHSRC))
+#endif
+
 #if HasBSD44Sockets
    SOCK_DEFINES = -DBSD44SOCKETS
 #endif
@@ -54,10 +60,10 @@ RPCSRCS =
 BOOTSTRAPCFLAGS = 
            SRCS = WaitFor.c access.c connection.c io.c oscolor.c \
                   osinit.c utils.c auth.c mitauth.c $(XDMAUTHSRCS) \
- 		  $(RPCSRCS) xdmcp.c decompress.c OtherSources
+ 		  $(RPCSRCS) $(KRB5SRCS) xdmcp.c decompress.c OtherSources
            OBJS = WaitFor.o access.o connection.o io.o oscolor.o \
                   osinit.o utils.o auth.o mitauth.o $(XDMAUTHOBJS) \
- 		  $(RPCOBJS) xdmcp.o decompress.o OtherObjects
+ 		  $(RPCOBJS) $(KRB5OBJS) xdmcp.o decompress.o OtherObjects
 #if SpecialMalloc
      MEM_DEFINES = -DSPECIAL_MALLOC
 #endif /* SpecialMalloc */
@@ -66,8 +72,9 @@ BOOTSTRAPCFLAGS =
     EXT_DEFINES = ExtensionDefines
   XDMCP_DEFINES = ServerXdmcpDefines
      OS_DEFINES = ServerOSDefines
-        DEFINES = ConnectionFlags $(MEM_DEFINES) $(XDMAUTHDEFS) $(RPCDEFS) $(SIGNAL_DEFINES) $(OS_DEFINES)
-       INCLUDES = -I.  -I../include -I$(INCLUDESRC) -I$(TOP)/lib/Xau
+   KRB5_DEFINES = Krb5Defines
+        DEFINES = ConnectionFlags $(MEM_DEFINES) $(XDMAUTHDEFS) $(RPCDEFS) $(SIGNAL_DEFINES) $(OS_DEFINES) $(KRB5_DEFINES)
+       INCLUDES = -I.  -I../include -I$(INCLUDESRC) -I$(TOP)/lib/Xau Krb5Includes
  DEPEND_DEFINES = $(DBM_DEFINES) $(XDMCP_DEFINES) $(EXT_DEFINES)
        LINTLIBS = ../dix/llib-ldix.ln
 
@@ -99,6 +106,9 @@ SpecialCObjectRule(osinit,$(ICONFIGFILES),$(ADM_DEFINES))
 SpecialCObjectRule(WaitFor,$(ICONFIGFILES),$(EXT_DEFINES))
 SpecialCObjectRule(io,$(ICONFIGFILES),$(EXT_DEFINES))
 SpecialCObjectRule(utils,$(ICONFIGFILES),$(XDMCP_DEFINES))
+#if HasKrb5
+SpecialCObjectRule(k5auth,$(ICONFIGFILES),$(_NOOP_))
+#endif
 #if defined(SparcArchitecture) && HasGcc && !HasGcc2
 oscolor.o: oscolor.c $(ICONFIGFILES)
 	$(RM) $@

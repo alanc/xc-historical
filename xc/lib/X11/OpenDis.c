@@ -1,5 +1,5 @@
 /*
- * $XConsortium: OpenDis.c,v 11.138 93/09/15 18:08:43 rws Exp $
+ * $XConsortium: OpenDis.c,v 11.139 93/09/19 15:21:24 rws Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986	*/
@@ -82,6 +82,7 @@ Display *XOpenDisplay (display)
 	char *fullname = NULL;		/* expanded name of display */
 	int idisplay;			/* display number */
 	int iscreen;			/* screen number */
+	int prefixread = 0;             /* setup prefix already read? */
 	union {
 		xConnSetup *setup;
 		char *failure;
@@ -255,12 +256,15 @@ Display *XOpenDisplay (display)
 	client.minorVersion = X_PROTOCOL_REVISION;
 	client.nbytesAuthProto = conn_auth_namelen;
 	client.nbytesAuthString = conn_auth_datalen;
-	if (!_XSendClientPrefix(dpy, &client, conn_auth_name, conn_auth_data))
+	prefixread = _XSendClientPrefix(dpy, &client,
+					conn_auth_name, conn_auth_data,
+					&prefix);
+	if (prefixread < 0)
 	{
 	    _XDisconnectDisplay (dpy->fd);
 	    Xfree ((char *)dpy);
 	    return(NULL);
-	}	    
+	}
 	if (conn_auth_name) Xfree(conn_auth_name);
 	if (conn_auth_data) Xfree(conn_auth_data);
 /*
@@ -269,7 +273,8 @@ Display *XOpenDisplay (display)
 	/* these internal functions expect the display to be locked */
 	LockDisplay(dpy);
 
-	_XRead (dpy, (char *)&prefix,(long)SIZEOF(xConnSetupPrefix));
+	if (prefixread == 0)
+	    _XRead (dpy, (char *)&prefix,(long)SIZEOF(xConnSetupPrefix));
 
 	if (prefix.majorVersion != X_PROTOCOL) {
 	    /* XXX - printing messages marks a bad programming interface */

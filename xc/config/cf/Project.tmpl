@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM X Window System Build Parameters and Rules
-XCOMM $XConsortium: Project.tmpl,v 1.195 93/09/18 19:20:01 kaleb Exp $
+XCOMM $XConsortium: Project.tmpl,v 1.196 93/09/21 11:17:23 rws Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -186,6 +186,13 @@ XCOMM $XConsortium: Project.tmpl,v 1.195 93/09/18 19:20:01 kaleb Exp $
 #ifndef ServerOSDefines
 #define ServerOSDefines /**/
 #endif
+#if HasKrb5
+#ifndef Krb5Defines
+#define Krb5Defines -DK5AUTH
+#endif
+#else
+#define Krb5Defines /**/
+#endif
 #ifndef ServerExtraDefines
 #define ServerExtraDefines /* -DPIXPRIV */
 #endif
@@ -332,7 +339,6 @@ XCOMM $XConsortium: Project.tmpl,v 1.195 93/09/18 19:20:01 kaleb Exp $
 #ifndef ForceNormalLib
 #define ForceNormalLib HasGcc
 #endif
-
 
 #ifndef DoInstallExtensionsIntoXlib
 #define DoInstallExtensionsIntoXlib NO	/* merge libXext.a into libX11.a */

@@ -1,7 +1,7 @@
 /*
  * Xau - X Authorization Database Library
  *
- * $XConsortium: Xauth.h,v 1.11 91/02/28 09:28:46 rws Exp $
+ * $XConsortium: Xauth.h,v 1.12 91/07/15 18:12:39 gildea Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -28,6 +28,8 @@
 # define FamilyLocal (256)	/* not part of X standard (i.e. X.h) */
 # define FamilyWild  (65535)
 # define FamilyNetname    (254)   /* not part of X standard */
+# define FamilyKrb5Principal (253) /* Kerberos 5 principal name */
+# define FamilyLocalHost (252)	/* for local non-net authentication */
 
 typedef struct xauth {
     unsigned short   family;
@@ -131,6 +133,23 @@ void XauDisposeAuth(
 Xauth*		/* auth */
 #endif
 );
+
+#ifdef K5AUTH
+
+XauKrb5Encode(
+#if NeedFunctionPrototypes
+     krb5_principal	/* princ */,
+     krb5_data *	/* outbuf */
+#endif
+);
+
+XauKrb5Decode(
+#if NeedFunctionPrototypes
+     krb5_data		/* inbuf */,
+     krb5_principal *	/* princ */
+#endif
+);
+#endif /* K5AUTH */
 
 _XFUNCPROTOEND
 

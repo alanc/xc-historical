@@ -1,5 +1,5 @@
 /*
- * $XConsortium: ConnDis.c,v 11.100 93/09/07 21:30:28 rws Exp $
+ * $XConsortium: ConnDis.c,v 11.101 93/09/13 19:06:22 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -714,10 +714,11 @@ int _XDisconnectDisplay (server)
 static int padlength[4] = {0, 3, 2, 1};	 /* make sure auth is multiple of 4 */
 
 Bool
-_XSendClientPrefix (dpy, client, auth_proto, auth_string)
+_XSendClientPrefix (dpy, client, auth_proto, auth_string, prefix)
      Display *dpy;
      xConnClientPrefix *client;		/* contains count for auth_* */
      char *auth_proto, *auth_string;	/* NOT null-terminated */
+     xConnSetupPrefix *prefix;		/* prefix information */
 {
     int auth_length = client->nbytesAuthProto;
     int auth_strlen = client->nbytesAuthString;
@@ -774,7 +775,18 @@ _XSendClientPrefix (dpy, client, auth_proto, auth_string)
 #endif
 #endif
 #endif
-    return len == 0;
+
+    if (len != 0)
+	return -1;
+
+#ifdef K5AUTH
+    if (conn_auth_namelen == 13 &&
+	!strncmp(conn_auth_name, "KERBEROS-V5-1", 13))
+    {
+	return k5_clientauth(dpy, prefix);
+    } else
+#endif
+    return 0;
 }
 
 
@@ -809,6 +821,9 @@ static char *xauth_data = NULL;	 /* NULL means get default data */
  */
 
 static char *default_xauth_names[] = {
+#ifdef K5AUTH
+    "KERBEROS-V5-1",
+#endif
 #ifdef SECURE_RPC
     "SUN-DES-1",
 #endif
@@ -819,6 +834,9 @@ static char *default_xauth_names[] = {
 };
 
 static int default_xauth_lengths[] = {
+#ifdef K5AUTH
+    13,     /* strlen ("KERBEROS-V5-1") */
+#endif
 #ifdef SECURE_RPC
     9,	    /* strlen ("SUN-DES-1") */
 #endif
@@ -918,6 +936,263 @@ auth_ezencode(servername, window, cred_out, len)
 	return 1;
 }
 #endif
+
+#ifdef K5AUTH
+#include <krb5/krb5.h>
+#include <com_err.h>
+
+extern krb5_flags krb5_kdc_default_options;
+
+/*
+ * k5_clientauth
+ *
+ * Returns non-zero if the setup prefix has been read,
+ * so we can tell XOpenDisplay to not bother looking for it by
+ * itself.
+ */
+static int k5_clientauth(dpy, sprefix)
+    Display *dpy;
+    xConnSetupPrefix *sprefix;
+{
+    krb5_error_code retval;
+    xReq prefix;
+    char *buf;
+    CARD16 plen, tlen;
+    krb5_data kbuf;
+    krb5_ccache cc;
+    krb5_creds creds;
+    krb5_principal cprinc, sprinc;
+    krb5_ap_rep_enc_part *repl;
+
+    krb5_init_ets();
+    /*
+     * stage 0: get encoded principal and tgt from server
+     */
+    _XRead(dpy, (char *)&prefix, sz_xReq);
+    if (prefix.reqType != 2 && prefix.reqType != 3)
+	/* not an auth packet... so deal */
+	if (prefix.reqType == 0 || prefix.reqType == 1)
+	{
+	    bcopy((char *)&prefix, (char *)sprefix, sz_xReq);
+	    _XRead(dpy, (char *)sprefix + sz_xReq,
+		   sz_xConnSetupPrefix - sz_xReq); /* ewww... gross */
+	    return 1;
+	}
+	else
+	{
+	    fprintf(stderr,
+		    "Xlib: Krb5 stage 0: got illegal connection setup success code %d\n",
+		    prefix.reqType);
+	    return -1;
+	}
+    if (prefix.data != 0)
+    {
+	fprintf(stderr, "Xlib: got out of sequence (%d) packet in Krb5 auth\n",
+		prefix.data);
+	return -1;
+    }
+    buf = (char *)malloc((prefix.length << 2) - sz_xReq);
+    if (buf == NULL)		/* malloc failed.  Run away! */
+    {
+	fprintf(stderr, "Xlib: malloc bombed in Krb5 auth\n");
+	return -1;
+    }
+    tlen = (prefix.length << 2) - sz_xReq;
+    _XRead(dpy, buf, tlen);
+    if (prefix.reqType == 2 && tlen < 6)
+    {
+	fprintf(stderr, "Xlib: Krb5 stage 0 reply from server too short\n");
+	free(buf);
+	return -1;
+    }
+    if (prefix.reqType == 2)
+    {
+	plen = *(CARD16 *)buf;
+	kbuf.data = buf + 2;
+	kbuf.length = (plen > tlen) ? tlen : plen;
+    }
+    else
+    {
+	kbuf.data = buf;
+	kbuf.length = tlen;
+    }
+    if (k5_decode(kbuf, &sprinc))
+    {
+	free(buf);
+	fprintf(stderr, "Xlib: k5_decode bombed\n");
+	return -1;
+    }
+    if (prefix.reqType == 3)	/* do some special stuff here */
+    {
+	char *sname, *hostname = NULL;
+
+	sname = (char *)malloc(krb5_princ_component(sprinc, 0)->length + 1);
+	if (sname == NULL)
+	{
+	    free(buf);
+	    krb5_free_principal(sprinc);
+	    fprintf(stderr, "Xlib: malloc bombed in Krb5 auth\n");
+	    return -1;
+	}
+	bcopy(krb5_princ_component(sprinc, 0)->data, sname,
+	      krb5_princ_component(sprinc, 0)->length);
+	sname[krb5_princ_component(sprinc, 0)->length] = '\0';
+	krb5_free_principal(sprinc);
+	if (dpy->display_name[0] != ':') /* hunt for a hostname */
+	{
+	    char *t;
+
+	    if ((hostname = (char *)malloc(strlen(dpy->display_name)))
+		== NULL)
+	    {
+		free(buf);
+		free(sname);
+		fprintf(stderr, "Xlib: malloc bombed in Krb5 auth\n");
+		return -1;
+	    }
+	    strcpy(hostname, dpy->display_name);
+	    t = strchr(hostname, ':');
+	    if (t == NULL)
+	    {
+		free(buf);
+		free(sname);
+		free(hostname);
+		fprintf(stderr,
+			"Xlib: shouldn't get here! malformed display name.");
+		return -1;
+	    }
+	    if ((t - hostname + 1 < strlen(hostname)) && t[1] == ':')
+		t++;
+	    *t = '\0';		/* truncate the dpy number out */
+	}
+	retval = krb5_sname_to_principal(hostname, sname,
+					 KRB5_NT_SRV_HST, &sprinc);
+	free(sname);
+	if (hostname)
+	    free(hostname);
+	if (retval)
+	{
+	    free(buf);
+	    fprintf(stderr, "Xlib: krb5_sname_to_principal failed: %s\n",
+		    error_message(retval));
+	    return -1;
+	}
+    }
+    if (retval = krb5_cc_default(&cc))
+    {
+	free(buf);
+	krb5_free_principal(sprinc);
+	fprintf(stderr, "Xlib: krb5_cc_default failed: %s\n",
+		error_message(retval));
+	return -1;
+    }
+    if (retval = krb5_cc_get_principal(cc, &cprinc))
+    {
+	free(buf);
+	krb5_free_principal(sprinc);
+	fprintf(stderr, "Xlib: krb5_cc_get_principal failed: %s\n",
+		error_message(retval));
+	return -1;
+    }
+    bzero((char *)&creds, sizeof(creds));
+    creds.server = sprinc;
+    creds.client = cprinc;
+    if (prefix.reqType == 2)
+    {
+	creds.second_ticket.length = tlen - plen - 2;
+	creds.second_ticket.data = buf + 2 + plen;
+	retval = krb5_get_credentials(KRB5_GC_USER_USER |
+				      krb5_kdc_default_options,
+				      cc, &creds);
+    }
+    else
+	retval = krb5_get_credentials(krb5_kdc_default_options,
+				      cc, &creds);
+    if (retval)
+    {
+	free(buf);
+	krb5_free_cred_contents(&creds);
+	fprintf(stderr, "Xlib: krb5_get_credentials failed: %s\n",
+		error_message(retval));
+	return -1;
+    }
+    /*
+     * now format the ap_req to send to the server
+     */
+    if (prefix.reqType == 2)
+	retval = krb5_mk_req_extended(AP_OPTS_USE_SESSION_KEY |
+				      AP_OPTS_MUTUAL_REQUIRED, NULL,
+				      0, 0, NULL, cc,
+				      &creds, NULL, &kbuf);
+    else
+	retval = krb5_mk_req_extended(AP_OPTS_MUTUAL_REQUIRED, NULL,
+				      0, 0, NULL, cc, &creds, NULL,
+				      &kbuf);
+    free(buf);
+    if (retval)			/* Some manner of Kerberos lossage */
+    {
+	krb5_free_cred_contents(&creds);
+	fprintf(stderr, "Xlib: krb5_mk_req_extended failed: %s\n",
+		error_message(retval));
+	return -1;
+    }
+    prefix.reqType = 1;
+    prefix.data = 0;
+    prefix.length = (kbuf.length + sz_xReq + 3) >> 2;
+    /*
+     * stage 1: send ap_req to server
+     */
+    _XSend(dpy, (char *)&prefix, sz_xReq);
+    _XSend(dpy, (char *)kbuf.data, kbuf.length);
+    free(kbuf.data);
+    /*
+     * stage 2: get ap_rep from server to mutually authenticate
+     */
+    _XRead(dpy, (char *)&prefix, sz_xReq);
+    if (prefix.reqType != 2)
+	if (prefix.reqType == 0 || prefix.reqType == 1)
+	{
+	    bcopy((char *)&prefix, (char *)sprefix, sz_xReq);
+	    _XRead(dpy, (char *)sprefix + sz_xReq,
+		   sz_xConnSetupPrefix - sz_xReq);
+	    return 1;
+	}
+	else
+	{
+	    fprintf(stderr,
+		    "Xlib: Krb5 stage 2: got illegal connection setup success code %d\n",
+		    prefix.reqType);
+	    return -1;
+	}
+    if (prefix.data != 2)
+	return -1;
+    kbuf.length = (prefix.length << 2) - sz_xReq;
+    kbuf.data = (char *)malloc(kbuf.length);
+    if (kbuf.data == NULL)
+    {
+	fprintf(stderr, "Xlib: malloc bombed in Krb5 auth\n");
+	return -1;
+    }
+    _XRead(dpy, (char *)kbuf.data, kbuf.length);
+    retval = krb5_rd_rep(&kbuf, &creds.keyblock, &repl);
+    if (retval)
+    {
+	free(kbuf.data);
+	fprintf(stderr, "Xlib: krb5_rd_rep failed: %s\n",
+		error_message(retval));
+	return -1;
+    }
+    free(kbuf.data);
+    /*
+     * stage 3: send a short ack to the server and return
+     */
+    prefix.reqType = 3;
+    prefix.data = 0;
+    prefix.length = sz_xReq >> 2;
+    _XSend(dpy, (char *)&prefix, sz_xReq);
+    return 0;
+}
+#endif /* K5AUTH */
 
 static void
 GetAuthorization(fd, family, saddr, saddrlen, idisplay,

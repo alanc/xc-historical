@@ -1,7 +1,7 @@
 /*
  * SUN-DES-1 authentication mechanism
  *
- * $XConsortium: rpcauth.c,v 1.5 92/11/20 14:39:08 rws Exp $
+ * $XConsortium: rpcauth.c,v 1.6 93/09/03 08:21:41 dpw Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -24,6 +24,7 @@
 #include "Xauth.h"
 #include "misc.h"
 #include "os.h"
+#include "dixstruct.h"
 
 #include <rpc/rpc.h>
 
@@ -105,9 +106,10 @@ CheckNetName (addr, len, closure)
 }
 
 XID
-SecureRPCCheck (data_length, data)
+SecureRPCCheck (data_length, data, client)
 register unsigned short	data_length;
 char	*data;
+ClientPtr client;
 {
     char *fullname;
     

@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.155 93/09/18 11:48:06 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.156 93/09/19 20:07:46 rws Exp $
 #define DoNormalLib NormalLibX
 #define DoSharedLib SharedLibX
 #define DoDebugLib DebugLibX
@@ -47,12 +47,18 @@ XBSDLIB = /**/
     MTX_DEFINES = XMTDefines
     MTT_DEFINES = ThreadTypeDefines
     XLC_DEFINES = -DXLOCALEDIR=\"$(XLOCALEDIR)\"
+#if HasKrb5
+         K5OBJS = k5encode.o
+         K5SRCS = k5encode.c
+         K5INCL = Krb5Includes
+         K5DEFS = Krb5Defines
+#endif
 
         DEFINES = $(MALLOC_DEFINES) $(MTX_DEFINES)
  DEPEND_DEFINES = -I$(EXTINCSRC) $(MTT_DEFINES)
    INSTALLFLAGS = $(INSTINCFLAGS)
-       AUTHOBJS = AuDispose.o AuGetBest.o AuFileName.o AuRead.o 
-       AUTHSRCS = AuDispose.c AuGetBest.c AuFileName.c AuRead.c 
+       AUTHOBJS = AuDispose.o AuGetBest.o AuFileName.o AuRead.o
+       AUTHSRCS = AuDispose.c AuGetBest.c AuFileName.c AuRead.c
            SRCS = $(SRCS1) $(SRCS2) $(SRCS3) /* try *.c if you have trouble */
         HEADERS = Xlib.h Xresource.h Xutil.h cursorfont.h Xlibint.h \
 			Xcms.h Xlocale.h
@@ -440,7 +446,8 @@ SRCS2 = \
 	WMGeom.c \
 	WMProps.c \
 	$(AUTHSRCS) \
-	$(XDMAUTHSRCS)
+	$(XDMAUTHSRCS) \
+	$(K5SRCS)
 
 OBJS2 = \
 	Macros.o \
@@ -564,7 +571,8 @@ OBJS2 = \
 	WMGeom.o \
 	WMProps.o \
 	$(AUTHOBJS) \
-	$(XDMAUTHOBJS)
+	$(XDMAUTHOBJS) \
+	$(K5OBJS)
 
 SRCS3 = \
 	Lab.c \
@@ -860,13 +868,14 @@ LCOBJS = \
 	omTextPer.o \
 	omXChar.o
 
+INCLUDES = $(K5INCL)
 OBJS = $(OBJS1) $(OBJS2) $(OBJS3)
 
 #include <Library.tmpl>
 
 SpecialCLibObjectRule(ErrDes,$(ICONFIGFILES),$(EDB_DEFINES))
 SpecialCLibObjectRule(StrKeysym,$(ICONFIGFILES),$(KDB_DEFINES))
-SpecialCLibObjectRule(ConnDis,$(ICONFIGFILES),$(XDMAUTHDEFS) $(RPCDEFS) $(CONN_DEFINES) $(SOCK_DEFINES) $(POLL_DEFINES))
+SpecialCLibObjectRule(ConnDis,$(ICONFIGFILES),$(XDMAUTHDEFS) $(RPCDEFS) $(CONN_DEFINES) $(SOCK_DEFINES) $(POLL_DEFINES) $(K5DEFS))
 SpecialCLibObjectRule(OpenDis,$(ICONFIGFILES),$(BC_DEFINES) $(DEPEND_DEFINES))
 SpecialCLibObjectRule(Wrap,$(ICONFIGFILES),$(XDMAUTHDEFS))
 SpecialCLibObjectRule(Xstreams,$(ICONFIGFILES),$(CONN_DEFINES))
@@ -894,6 +903,9 @@ LinkSourceFile(AuDispose.c,$(XAUTHSRC))
 LinkSourceFile(AuGetBest.c,$(XAUTHSRC))
 LinkSourceFile(AuFileName.c,$(XAUTHSRC))
 LinkSourceFile(AuRead.c,$(XAUTHSRC))
+#if HasKrb5
+LinkSourceFile(k5encode.c,$(XAUTHSRC))
+#endif
 LinkSourceFile(Wrap.h,$(XDMCPLIBSRC))
 LinkSourceFile(Wrap.c,$(XDMCPLIBSRC))
 LinkSourceFile(Wraphelp.c,$(XDMCPLIBSRC))

@@ -1,7 +1,7 @@
 /*
  * MIT-MAGIC-COOKIE-1 authorization scheme
  *
- * $XConsortium: mitauth.c,v 1.3 89/03/14 15:53:36 rws Exp $
+ * $XConsortium: mitauth.c,v 1.4 93/09/03 08:18:23 dpw Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -20,6 +20,7 @@
 
 #include "X.h"
 #include "os.h"
+#include "dixstruct.h"
 
 static struct auth {
     struct auth	*next;
@@ -53,9 +54,10 @@ XID	id;
 }
 
 XID
-MitCheckCookie (data_length, data)
+MitCheckCookie (data_length, data, client)
 unsigned short	data_length;
 char	*data;
+ClientPtr client;
 {
     struct auth	*auth;
 

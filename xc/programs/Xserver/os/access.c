@@ -1,3 +1,4 @@
+/* $XConsortium: access.c,v 1.58 93/09/22 22:17:31 rws Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -22,8 +23,9 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: access.c,v 1.57 93/09/03 08:15:33 dpw Exp $ */
-
+#ifdef K5AUTH
+#include <krb5/krb5.h>
+#endif
 #include "Xos.h"
 #include "X.h"
 #include "Xproto.h"
@@ -33,6 +35,10 @@ SOFTWARE.
 #include <sys/socket.h>
 #include <sys/ioctl.h>
 #include <X11/Xauth.h>
+#include <ctype.h>
+#ifdef K5AUTH
+#include <X11/k5encode.h>
+#endif
 
 #ifdef TCPCONN
 #include <netinet/in.h>
@@ -199,6 +205,24 @@ DefineSelf (fd)
 	    }
 	}
     }
+    /*
+     * now add a host of family FamilyLocalHost...
+     */
+    for (host = selfhosts;
+	 host && !addrEqual(FamilyLocalHost, "", 0, host);
+	 host = host->next);
+    if (!host)
+    {
+	MakeHost(host, 0);
+	if (host)
+	{
+	    host->family = FamilyLocalHost;
+	    host->len = 0;
+	    acopy("", host->addr, 0);
+	    host->next = selfhosts;
+	    selfhosts = host;
+	}
+    }
 }
 
 #else
@@ -326,6 +350,24 @@ DefineSelf (fd)
 	}
 #endif
     }
+    /*
+     * add something of FamilyLocalHost
+     */
+    for (host = selfhosts;
+	 host && !addrEqual(FamilyLocalHost, "", 0, host);
+	 host = host->next);
+    if (!host)
+    {
+	MakeHost(host, 0);
+	if (host)
+	{
+	    host->family = FamilyLocalHost;
+	    host->len = 0;
+	    acopy("", host->addr, 0);
+	    host->next = selfhosts;
+	    selfhosts = host;
+	}
+    }
 }
 #endif /* hpux && !HAS_IFREQ */
 
@@ -371,10 +413,12 @@ ResetHosts (display)
     char *display;
 {
     register HOST	*host;
-    char 		hostname[120];
+    char                lhostname[120], ohostname[120];
+    char 		*hostname = ohostname;
     char		fname[32];
     FILE		*fd;
     char		*ptr;
+    int                 i, hostlen;
     union {
         struct sockaddr	sa;
 #ifdef TCPCONN
@@ -388,9 +432,13 @@ ResetHosts (display)
     struct nodeent 	*np;
     struct dn_naddr 	dnaddr, *dnaddrp, *dnet_addr();
 #endif
+#ifdef K5AUTH
+    krb5_principal      princ;
+    krb5_data		kbuf;
+#endif
     int			family;
-    int			len;
     pointer		addr;
+    int 		len;
     register struct hostent *hp;
 
     AccessEnabled = defeatAccessControl ? FALSE : DEFAULT_ACCESS_CONTROL;
@@ -405,15 +453,53 @@ ResetHosts (display)
     strcat (fname, ".hosts");
     if (fd = fopen (fname, "r")) 
     {
-        while (fgets (hostname, sizeof (hostname), fd))
+        while (fgets (ohostname, sizeof (ohostname), fd))
 	{
-    	if (ptr = strchr(hostname, '\n'))
+    	if (ptr = strchr(ohostname, '\n'))
     	    *ptr = 0;
+        hostlen = strlen(ohostname) + 1;
+        for (i = 0; i < hostlen; i++)
+	    lhostname[i] = tolower(ohostname[i]);
+	hostname = ohostname;
+	if (!strncmp("local:", lhostname, 6))
+	{
+	    family = FamilyLocalHost;
+	    NewHost(family, "", 0);
+	}
+#ifdef TCPCONN
+	else if (!strncmp("inet:", lhostname, 5))
+	{
+	    family = FamilyInternet;
+	    hostname = ohostname + 5;
+	}
+#endif
 #ifdef DNETCONN
-    	if ((ptr = strchr(hostname, ':')) && (*(ptr + 1) == ':'))
+	else if (!strncmp("dnet:", lhostname, 5))
+	{
+	    family = FamilyDECnet;
+	    hostname = ohostname + 5;
+	}
+#endif
+#ifdef SECURE_RPC
+	else if (!strncmp("nis:", lhostname, 4))
+	{
+	    family = FamilyNetname;
+	    hostname = ohostname + 4;
+	}
+#endif
+#ifdef K5AUTH
+	else if (!strncmp("krb:", lhostname, 4))
+	{
+	    family = FamilyKrb5Principal;
+	    hostname = ohostname + 4;
+	}
+#endif
+#ifdef DNETCONN
+    	if ((family == FamilyDECnet) ||
+	    (ptr = strchr(hostname, ':')) && (*(ptr + 1) == ':') &&
+	    !(*ptr = '\0'))	/* bash trailing colons if necessary */
 	{
     	    /* node name (DECnet names end in "::") */
-    	    *ptr = 0;
 	    dnaddrp = dnet_addr(hostname);
     	    if (!dnaddrp && (np = getnodebyname (hostname)))
 	    {
@@ -434,8 +520,18 @@ ResetHosts (display)
     	}
 	else
 #endif /* DNETCONN */
+#ifdef K5AUTH
+	if (family == FamilyKrb5Principal)
+	{
+            krb5_parse_name(hostname, &princ);
+	    XauKrb5Encode(princ, &kbuf);
+	    (void) NewHost(FamilyKrb5Principal, kbuf.data, kbuf.length);
+	    krb5_free_principal(princ);
+        }
+	else
+#endif
 #ifdef SECURE_RPC
-	if (strchr(hostname, '@'))
+	if ((family == FamilyNetname) || (strchr(hostname, '@')))
 	{
 	    SecureRPCInit ();
 	    (void) NewHost (FamilyNetname, hostname, strlen (hostname));
@@ -445,7 +541,8 @@ ResetHosts (display)
 #ifdef TCPCONN
 	{
     	    /* host name */
-    	    if (hp = gethostbyname (hostname))
+    	    if (family == FamilyInternet && (hp = gethostbyname (hostname)) ||
+		 (hp = gethostbyname (hostname)))
 	    {
     		saddr.sa.sa_family = hp->h_addrtype;
 		len = sizeof(saddr.sa);
@@ -462,8 +559,9 @@ ResetHosts (display)
 #endif
 		}
     	    }
-    	}	
+        }
 #endif /* TCPCONN */
+	family = FamilyWild;
         }
         fclose (fd);
     }
@@ -514,6 +612,15 @@ AddHost (client, family, length, pAddr)
     if (!AuthorizedClient(client))
 	return(BadAccess);
     switch (family) {
+    case FamilyLocalHost:
+	len = length;
+	LocalHostEnabled = TRUE;
+	break;
+#ifdef K5AUTH
+    case FamilyKrb5Principal:
+        len = length;
+        break;
+#endif
 #ifdef SECURE_RPC
     case FamilyNetname:
 	len = length;
@@ -594,6 +701,15 @@ RemoveHost (client, family, length, pAddr)
     if (!AuthorizedClient(client))
 	return(BadAccess);
     switch (family) {
+    case FamilyLocalHost:
+	len = length;
+	LocalHostEnabled = FALSE;
+	break;
+#ifdef K5AUTH
+    case FamilyKrb5Principal:
+        len = length;
+	break;
+#endif
 #ifdef SECURE_RPC
     case FamilyNetname:
 	len = length;

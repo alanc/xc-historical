@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.19 93/09/04 16:32:33 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.20 93/09/04 18:05:27 rws Exp $
 #define DoNormalLib NormalLibXau
 #define DoSharedLib SharedLibXau
 #define DoDebugLib DebugLibXau
@@ -9,14 +9,27 @@ XCOMM $XConsortium: Imakefile,v 1.19 93/09/04 16:32:33 rws Exp $
    INSTALLFLAGS = $(INSTINCFLAGS)
        LINTLIBS = $(LINTXLIB)
 
+#if HasKrb5
+K5ENCINC = k5encode.h
+K5ENCSRC = k5encode.c
+K5ENCOBJ = k5encode.o
+INCLUDES = Krb5Includes
+#else
+K5ENCINC =
+K5ENCSRC =
+K5ENCOBJ =
+INCLUDES =
+#endif
+
 HEADERS = \
-	Xauth.h
+	Xauth.h \
+	$(K5ENCINC)
 
 SRCS =	AuDispose.c AuFileName.c AuGetAddr.c AuGetBest.c AuLock.c \
-	AuRead.c AuUnlock.c AuWrite.c
+	AuRead.c AuUnlock.c AuWrite.c $(K5ENCSRC)
 
 OBJS =	AuDispose.o AuFileName.o AuGetAddr.o AuGetBest.o AuLock.o \
-	AuRead.o AuUnlock.o AuWrite.o
+	AuRead.o AuUnlock.o AuWrite.o $(K5ENCOBJ)
 
 #include <Library.tmpl>
 

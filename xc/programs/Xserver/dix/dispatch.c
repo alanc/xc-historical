@@ -1,4 +1,4 @@
-/* $XConsortium: dispatch.c,v 5.50 93/09/18 13:39:55 dpw Exp $ */
+/* $XConsortium: dispatch.c,v 5.51 93/09/23 16:18:15 dpw Exp $ */
 /************************************************************
 Copyright 1987, 1989 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -75,6 +75,9 @@ extern int connBlockScreenStart;
 
 extern int (* InitialVector[3]) ();
 extern int (* ProcVector[256]) ();
+#ifdef K5AUTH
+extern int (* k5_Vector[256]) ();
+#endif
 extern int (* SwappedProcVector[256]) ();
 extern void (* ReplySwapVector[256]) ();
 extern void Swap32Write(), SLHostsExtend(), SQColorsExtend(), WriteSConnectionInfo();
@@ -764,6 +767,9 @@ ProcDeleteProperty(client)
     }
 }
 
+#ifdef K5AUTH
+extern int k5_bad();
+#endif
 
 int
 ProcSetSelectionOwner(client)
@@ -3079,6 +3085,12 @@ InitProcVectors()
             ProcVector[i] = SwappedProcVector[i] = ProcBadRequest;
 	    ReplySwapVector[i] = NotImplemented;
 	}
+#ifdef K5AUTH
+	if (!k5_Vector[i])
+	{
+	    k5_Vector[i] = k5_bad;
+	}
+#endif
     }
     for(i = LASTEvent; i < 128; i++)
     {
@@ -3299,8 +3311,6 @@ ProcEstablishConnection(client)
 {
     char *reason, *auth_proto, *auth_string;
     register xConnClientPrefix *prefix;
-    register xWindowRoot *root;
-    register int i;
     REQUEST(xReq);
 
     prefix = (xConnClientPrefix *)((char *)stuff + sz_xReq);
@@ -3315,6 +3325,32 @@ ProcEstablishConnection(client)
 				  auth_proto,
 				  (unsigned short)prefix->nbytesAuthString,
 				  auth_string);
+    /*
+     * if auth protocol does some magic, fall back through to the
+     * dispatcher.
+     */
+    if (client->requestVector == InitialVector)
+	return(SendConnSetup(client, reason));
+    else
+    {
+	/*
+	 * bump up nClients because otherwise if the client has to get
+	 * terminated in the middle of a multi-packet authorization,
+	 * bad things might happen, like nClients going negative
+	 */
+	nClients++;
+	return(client->noClientException);
+    }
+}
+
+int
+SendConnSetup(client, reason)
+    register ClientPtr client;
+    char *reason;
+{
+    register xWindowRoot *root;
+    register int i;
+
     if (reason)
     {
 	xConnSetupPrefix csp;
@@ -3336,7 +3372,8 @@ ProcEstablishConnection(client)
 	return (client->noClientException = -1);
     }
 
-    nClients++;
+    if (client->requestVector == InitialVector)
+	nClients++;		/* nClients not already bumped up */
     client->requestVector = client->swapped ? SwappedProcVector : ProcVector;
     client->sequence = 0;
     ((xConnSetup *)ConnectionInfo)->ridBase = client->clientAsMask;

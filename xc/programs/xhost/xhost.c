@@ -1,4 +1,4 @@
-/* $XConsortium: xhost.c,v 11.49 93/09/09 10:00:23 rws Exp $ */
+/* $XConsortium: xhost.c,v 11.50 93/09/20 17:39:18 hersh Exp $ */
  
 /*
 
@@ -34,6 +34,9 @@ without express or implied warranty.
 #define NEEDSOCKETS
 #endif
 
+#ifdef K5AUTH
+#include <krb5/krb5.h>
+#endif
 #include <X11/Xlib.h>
 #include <X11/Xos.h>
 #include <X11/Xproto.h>
@@ -44,6 +47,9 @@ without express or implied warranty.
 #include <ctype.h>
 #include <X11/Xauth.h>
 #include <X11/Xmu/Error.h>
+#ifdef K5AUTH
+#include <X11/k5encode.h>
+#endif
 
 #ifdef NEEDSOCKETS
 #ifdef att
@@ -187,6 +193,23 @@ main(argc, argv)
 		    for (i = 0; i < nhosts; i++ )  {
 		      hostname = get_hostname(&list[i]);
 		      if (hostname) {
+			  switch (list[i].family) {
+			  case FamilyInternet:
+                              printf("INET:");
+			      break;
+                          case FamilyDECnet:
+                              printf("DNET:");
+                              break;
+                          case FamilyNetname:
+                              printf("NIS:");
+                              break;
+                          case FamilyKrb5Principal:
+			      printf("KRB:");
+                              break;
+			  case FamilyLocalHost:
+			      printf("LOCAL:");
+			      break;
+			  }
 			  printf ("%s", hostname);
 		      } else {
 #ifdef STREAMSCONN
@@ -262,6 +285,12 @@ int change_host (dpy, name, add)
 {
   struct hostent *hp;
   XHostAddress ha;
+  char *lname;
+  int namelen, i, family = FamilyWild;
+#ifdef K5AUTH
+  krb5_principal princ;
+  krb5_data kbuf;
+#endif
 #ifdef NEEDSOCKETS
   static struct in_addr addr;	/* so we can point at it */
 #endif
@@ -274,9 +303,46 @@ int change_host (dpy, name, add)
   static char *add_msg = "being added to access control list";
   static char *remove_msg = "being removed from access control list";
 
+  namelen = strlen(name);
+  if ((lname = (char *)malloc(namelen)) == NULL) {
+    fprintf (stderr, "%s: malloc bombed in change_host\n", ProgramName);
+    return -1;
+  }
+  for (i = 0; i < namelen; i++) {
+    lname[i] = tolower(name[i]);
+  }
+#ifdef TCPCONN
+  if (!strncmp("inet:", lname, 5)) {
+    family = FamilyInternet;
+    name += 5;
+  }
+#endif
 #ifdef DNETCONN
-  if ((cp = strchr(name, ':')) && (*(cp + 1) == ':')) {
-    *cp = '\0';
+  if (!strncmp("dnet:", lname, 5)) {
+    family = FamilyDECnet;
+    name += 5;
+  }
+#endif
+#ifdef SECURE_RPC
+  if (!strncmp("nis:", lname, 4)) {
+    family = FamilyNetname;
+    name += 4;
+  }
+#endif
+#ifdef K5AUTH
+  if (!strncmp("krb:", lname, 4)) {
+    family = FamilyKrb5Principal;
+    name +=4;
+  }
+#endif
+  if (!strncmp("local:", lname, 6)) {
+    family = FamilyLocalHost;
+  }
+  free(lname);
+#ifdef DNETCONN
+  if (family == FamilyDECnet ||
+      (cp = strchr(name, ':')) && (*(cp + 1) == ':') &&
+      !(*cp = '\0')) {
     ha.family = FamilyDECnet;
     if (dnaddrp = dnet_addr(name)) {
       dnaddr = *dnaddrp;
@@ -301,11 +367,40 @@ int change_host (dpy, name, add)
     return 1;
   }
 #endif /* DNETCONN */
+#ifdef K5AUTH
+  if (family == FamilyKrb5Principal) {
+    krb5_parse_name(name, &princ);
+    XauKrb5Encode(princ, &kbuf);
+    ha.length = kbuf.length;
+    ha.address = kbuf.data;
+    ha.family = family;
+    if (add)
+      XAddHost(dpy, &ha);
+    else
+      XRemoveHost(dpy, &ha);
+    krb5_free_principal(princ);
+    free(kbuf.data);
+    printf( "%s %s\n", name, add ? add_msg : remove_msg);
+    return 1;
+  }
+#endif
+  if (family == FamilyLocalHost) {
+    ha.length = 0;
+    ha.address = "";
+    ha.family = family;
+    if (add)
+      XAddHost(dpy, &ha);
+    else
+      XRemoveHost(dpy, &ha);
+    printf( "non-network local connections %s\n", add ? add_msg : remove_msg);
+    return 1;
+  }
     /*
-     * If it has an '@',  its a netname
+     * If it has an '@', it's a netname
      */
-    if (cp = strchr(name, '@')) {
-	char *netname = name;
+    if ((family == FamilyNetname && (cp = strchr(name, '@'))) ||
+	(cp = strchr(name, '@'))) {
+        char *netname = name;
 #ifdef SECURE_RPC
 	static char username[MAXNETNAMELEN];
 
@@ -426,7 +521,12 @@ static char *get_hostname (ha)
   struct nodeent *np;
   static char nodeaddr[5 + 2 * DN_MAXADDL];
 #endif /* DNETCONN */
-
+#ifdef K5AUTH
+  krb5_principal princ;
+  krb5_data kbuf;
+  char *kname;
+  static char kname_out[255];
+#endif
 #ifdef TCPCONN
   if (ha->family == FamilyInternet) {
     /* gethostbyaddr can take a LONG time if the host does not exist.
@@ -478,14 +578,29 @@ static char *get_hostname (ha)
     struct dn_naddr *addr_ptr = (struct dn_naddr *) ha->address;
 
     if (np = getnodebyaddr(addr_ptr->a_addr, addr_ptr->a_len, AF_DECnet)) {
-      sprintf(nodeaddr, "%s::", np->n_name);
+      sprintf(nodeaddr, "%s", np->n_name);
     } else {
-      sprintf(nodeaddr, "%s::", dnet_htoa(ha->address));
+      sprintf(nodeaddr, "%s", dnet_htoa(ha->address));
     }
     return(nodeaddr);
   }
 #endif
-#ifdef STREAMSCONN
+#ifdef K5AUTH
+  if (ha->family == FamilyKrb5Principal) {
+    kbuf.data = ha->address;
+    kbuf.length = ha->length;
+    XauKrb5Decode(kbuf, &princ);
+    krb5_unparse_name(princ, &kname);
+    krb5_free_principal(princ);
+    strncpy(kname_out, kname, sizeof (kname_out));
+    free(kname);
+    return kname_out;
+  }
+#endif
+  if (ha->family == FamilyLocalHost) {
+    return "";
+  }
+#ifdef STREAMSCONN 
   return get_streams_hostname (ha);
 #else
   return (NULL);

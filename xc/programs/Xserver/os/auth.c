@@ -1,7 +1,7 @@
 /*
  * authorization hooks for the server
  *
- * $XConsortium: auth.c,v 1.12 91/07/24 18:36:16 keith Exp $
+ * $XConsortium: auth.c,v 1.13 93/09/03 08:19:49 dpw Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -21,6 +21,9 @@
 # include   "X.h"
 # include   "Xauth.h"
 # include   "misc.h"
+# include   "dixstruct.h"
+# include   <sys/types.h>
+# include   <sys/stat.h>
 
 struct protocol {
     unsigned short   name_length;
@@ -55,6 +58,14 @@ extern XID  SecureRPCToID();
 extern int  SecureRPCFromID(), SecureRPCRemove();
 #endif
 
+#ifdef K5AUTH
+extern int K5Add();
+extern XID K5Check();
+extern int K5Reset();
+extern XID K5ToID();
+extern int K5FromID(), K5Remove();
+#endif
+
 static struct protocol   protocols[] = {
 {   (unsigned short) 18,    "MIT-MAGIC-COOKIE-1",
 		MitAddCookie,	MitCheckCookie,	MitResetCookie,
@@ -70,6 +81,12 @@ static struct protocol   protocols[] = {
 {   (unsigned short) 9,    "SUN-DES-1",
 		SecureRPCAdd,	SecureRPCCheck,	SecureRPCReset,
 		SecureRPCToID,	SecureRPCFromID,SecureRPCRemove,
+},
+#endif
+#ifdef K5AUTH
+{   (unsigned short) 13, "KERBEROS-V5-1",
+		K5Add, K5Check, K5Reset,
+		K5ToID, K5FromID, K5Remove,
 },
 #endif
 };
@@ -140,14 +157,27 @@ RegisterAuthorizations ()
 #endif
 
 XID
-CheckAuthorization (name_length, name, data_length, data)
+CheckAuthorization (name_length, name, data_length, data, client)
 unsigned short	name_length;
 char	*name;
 unsigned short	data_length;
 char	*data;
+ClientPtr client;
 {
     int	i;
+    struct stat buf;
+    static time_t lastmod = 0;
 
+    if (stat(authorization_file, &buf))
+    {
+	lastmod = 0;
+	ShouldLoadAuth = TRUE;	/* stat lost, so force reload */
+    }
+    else if (buf.st_mtime > lastmod)
+    {
+	lastmod = buf.st_mtime;
+	ShouldLoadAuth = TRUE;
+    }
     if (ShouldLoadAuth)
     {
 	if (!LoadAuthorization())
@@ -158,7 +188,7 @@ char	*data;
 	    if (protocols[i].name_length == name_length &&
 		memcmp (protocols[i].name, name, (int) name_length) == 0)
 	    {
-		return (*protocols[i].Check) (data_length, data);
+		return (*protocols[i].Check) (data_length, data, client);
 	    }
 	}
     return (XID) ~0L;

@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: osdep.h,v 1.34 93/09/23 16:55:37 rws Exp $ */
+/* $XConsortium: osdep.h,v 1.35 93/09/24 12:19:07 rws Exp $ */
 
 #define BOTIMEOUT 200 /* in milliseconds */
 #define BUFSIZE 4096
@@ -193,11 +193,24 @@ typedef struct _connectionOutput {
     int count;
 } ConnectionOutput, *ConnectionOutputPtr;
 
+#ifdef K5AUTH
+typedef struct _k5_state {
+    int		stageno;	/* current stage of auth protocol */
+    pointer	srvcreds;	/* server credentials */
+    pointer	srvname;	/* server principal name */
+    pointer	ktname;		/* key table: principal-key pairs */
+    pointer	skey;		/* session key */
+}           k5_state;
+#endif
+
 typedef struct _osComm {
     int fd;
     ConnectionInputPtr input;
     ConnectionOutputPtr output;
     XID	auth_id;		/* authorization id */
+#ifdef K5AUTH
+    k5_state	authstate;	/* state of setup auth conversation */
+#endif
     CARD32 conn_time;		/* timestamp if not established, else 0  */
 } OsCommRec, *OsCommPtr;
 

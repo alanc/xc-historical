@@ -2,7 +2,7 @@
  * XDM-AUTHENTICATION-1 (XDMCP authentication) and
  * XDM-AUTHORIZATION-1 (client authorization) protocols
  *
- * $XConsortium: xdmauth.c,v 1.6 92/05/19 17:24:20 keith Exp $
+ * $XConsortium: xdmauth.c,v 1.7 93/09/03 08:21:16 dpw Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -21,6 +21,7 @@
 
 #include "X.h"
 #include "os.h"
+#include "dixstruct.h"
 
 #ifdef HASXDMAUTH
 
@@ -28,6 +29,7 @@ static Bool authFromXDMCP;
 
 #ifdef XDMCP
 #include "Xmd.h"
+#undef REQUEST
 #include "Xdmcp.h"
 
 /* XDM-AUTHENTICATION-1 */
@@ -320,9 +322,10 @@ XID	id;
 }
 
 XID
-XdmCheckCookie (cookie_length, cookie)
+XdmCheckCookie (cookie_length, cookie, xclient)
 unsigned short	cookie_length;
 char	*cookie;
+ClientPtr xclient;
 {
     XdmAuthorizationPtr	auth;
     XdmClientAuthPtr	client;

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: process.c,v 1.44 93/08/16 16:04:06 rws Exp $
+ * $XConsortium: process.c,v 1.45 93/09/20 18:00:10 hersh Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -44,6 +44,7 @@ extern Bool nameserver_timedout;
 #endif
 
 #define SECURERPC "SUN-DES-1"
+#define K5AUTH "KERBEROS-V5-1"
 
 #define XAUTH_DEFAULT_RETRIES 10	/* number of competitors we expect */
 #define XAUTH_DEFAULT_TIMEOUT 2		/* in seconds, be quick */
@@ -922,8 +923,9 @@ static int dump_entry (inputfilename, lineno, auth, data)
 	fwrite (auth->name, sizeof (char), auth->name_length, fp);
 	putc (' ', fp);
 	putc (' ', fp);
-	if (!strncmp(auth->name, SECURERPC, auth->name_length))
-	    fwrite (auth->data, sizeof (char), auth->data_length, fp);
+	if (!strncmp(auth->name, SECURERPC, auth->name_length) ||
+	    !strncmp(auth->name, K5AUTH, auth->name_length))
+            fwrite (auth->data, sizeof (char), auth->data_length, fp);
 	else
 	    fprintfhex (fp, auth->data_length, auth->data);
 	putc ('\n', fp);
@@ -1403,7 +1405,8 @@ static int do_add (inputfilename, lineno, argc, argv)
 	key = malloc(len-1);
 	strncpy(key, hexkey+1, len-2);
 	len -= 2;
-    } else if (!strcmp(protoname, SECURERPC)) {
+    } else if (!strcmp(protoname, SECURERPC) ||
+	       !strcmp(protoname, K5AUTH)) {
 	key = malloc(len+1);
 	strcpy(key, hexkey);
     } else {
