@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: TMstate.c,v 1.72 89/06/09 08:19:56 swick Exp $";
+static char Xrcsid[] = "$XConsortium: TMstate.c,v 1.73 89/06/16 19:35:36 jim Exp $";
 /* $oHeader: TMstate.c,v 1.5 88/09/01 17:17:29 asente Exp $ */
 #endif /* lint */
 /*LINTLIBRARY*/
@@ -1048,13 +1048,11 @@ void _XtBindActions(widget,tm,index)
     int unbound = -1; /* initialize to non-zero */
     XtAppContext app;
 
-/* ||| Kludge error that Leo depends upon */
-    w = widget;
     if (stateTable == NULL) return;
     tm->proc_table= (XtBoundActions) XtCalloc(
                       stateTable->numQuarks,(Cardinal)sizeof(XtBoundActions));
+    w = widget;
     do {
-/* ||| */
         class = w->core.widget_class;
         do {
             if (class->core_class.actions != NULL)
@@ -1062,10 +1060,8 @@ void _XtBindActions(widget,tm,index)
 	        tm,(CompiledActionTable)class->core_class.actions, index);
 	    class = class->core_class.superclass;
         } while (unbound != 0 && class != NULL);
-/* ||| Kludge error that Leo depends upon */
     w = w->core.parent;
     } while (unbound != 0 && w != NULL);
-/* ||| */
 
     app = XtWidgetToApplicationContext(widget);
     for (actionList = app->action_table;
