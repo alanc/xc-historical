@@ -12,8 +12,7 @@
 #define LIBTEST_PROMPT	"TekCMS > "
 
 
-/*FuncTableEntry LibTstCmdTbl [];*/
-FuncTableEntry *LibTstCmdTbl;
+extern FuncTableEntry LibTstCmdTbl [];
 
 
 
