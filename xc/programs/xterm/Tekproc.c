@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Tekproc.c,v 1.49 89/03/01 19:59:35 jim Exp $
+ * $XConsortium: Tekproc.c,v 1.50 89/03/02 12:04:51 jim Exp $
  *
  * Warning, there be crufty dragons here.
  */
@@ -121,7 +121,7 @@ extern long time();
 #define	unput(c)	*Tpushback++ = c
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: Tekproc.c,v 1.49 89/03/01 19:59:35 jim Exp $";
+static char rcs_id[] = "$XConsortium: Tekproc.c,v 1.50 89/03/02 12:04:51 jim Exp $";
 #endif	/* lint */
 
 static XPoint *T_box[TEKNUMFONTS] = {
@@ -1443,11 +1443,6 @@ TekCopy()
 	long l;
 	char buf[32];
 
-	/* for login windows, check that a user has logged in */
-	if(L_flag && !checklogin()) {
-		Bell();
-		return;
-	}
 	time(&l);
 	tp = localtime(&l);
 	sprintf(buf, "COPY%02d-%02d-%02d.%02d:%02d:%02d", tp->tm_year,
