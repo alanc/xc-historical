@@ -1,5 +1,5 @@
 #ifndef lint
-static char *rid="$XConsortium: main.c,v 1.225 94/12/12 16:28:13 kaleb Exp kaleb $";
+static char *rid="$XConsortium: main.c,v 1.226 95/01/13 21:12:00 kaleb Exp kaleb $";
 #endif /* lint */
 
 /*
@@ -450,7 +450,7 @@ struct _xttymodes {
 };
 
 #ifdef USE_SYSV_UTMP
-#if defined(X_NOT_STDC_ENV) || defined(AIXV3)
+#if defined(X_NOT_STDC_ENV) || (defined(AIXV3) && OSMAJORVERSION < 4)
 extern struct utmp *getutent();
 extern struct utmp *getutid();
 extern struct utmp *getutline();
@@ -1290,6 +1290,7 @@ char **argv;
 	screen->inhibit = inhibit;
 
 #ifdef AIXV3
+#if OSMAJORVERSION < 4
 	/* In AIXV3, xterms started from /dev/console have CLOCAL set.
 	 * This means we need to clear CLOCAL so that SIGHUP gets sent
 	 * to the slave-pty process when xterm exits. 
@@ -1306,6 +1307,7 @@ char **argv;
 	    if (ioctl (pty, TCSETA, &tio) == -1)
 		SysError(ERROR_TIOCSETP);
 	}
+#endif
 #endif
 #ifdef USE_SYSV_TERMIO
 	if (0 > (mode = fcntl(pty, F_GETFL, 0)))
