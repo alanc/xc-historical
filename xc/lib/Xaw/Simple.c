@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Simple.c,v 1.25 89/12/15 11:42:05 kit Exp $";
+static char Xrcsid[] = "$XConsortium: Simple.c,v 1.26 89/12/18 10:52:32 rws Exp $";
 #endif /* lint */
 
 /***********************************************************
@@ -32,18 +32,23 @@ SOFTWARE.
 #include <X11/Xaw/XawInit.h>
 #include <X11/Xaw/SimpleP.h>
 
-#define UnspecifiedPixmap 2	/* %%% should be NULL, according to the spec */
+#define offset(field) XtOffset(SimpleWidget, simple.field)
 
 static XtResource resources[] = {
-#define offset(field) XtOffset(SimpleWidget, simple.field)
   {XtNcursor, XtCCursor, XtRCursor, sizeof(Cursor),
      offset(cursor), XtRImmediate, (caddr_t) None},
   {XtNinsensitiveBorder, XtCInsensitive, XtRPixmap, sizeof(Pixmap),
-     offset(insensitive_border), XtRImmediate, (caddr_t) NULL}
+     offset(insensitive_border), XtRImmediate, (caddr_t) NULL},
+  {XtNpointerColor, XtCForeground, XtRPixel, sizeof(Pixel),
+     offset(pointer_fg), XtRString, XtDefaultForeground},
+  {XtNpointerColorBackground, XtCBackground, XtRPixel, sizeof(Pixel),
+     offset(pointer_bg), XtRString, XtDefaultBackground},
+  {XtNcursorName, XtCCursor, XtRString, sizeof(String),
+     offset(cursor_name), XtRString, NULL},
 #undef offset
 };
 
-static void ClassPartInitialize(), Realize();
+static void ClassPartInitialize(), ClassInitialize(),Realize(),ConvertCursor();
 static Boolean SetValues(), ChangeSensitive();
 
 SimpleClassRec simpleClassRec = {
@@ -51,7 +56,7 @@ SimpleClassRec simpleClassRec = {
     /* superclass		*/	(WidgetClass) &widgetClassRec,
     /* class_name		*/	"Simple",
     /* widget_size		*/	sizeof(SimpleRec),
-    /* class_initialize		*/	XawInitializeWidgetSet,
+    /* class_initialize		*/	ClassInitialize,
     /* class_part_initialize	*/	ClassPartInitialize,
     /* class_inited		*/	FALSE,
     /* initialize		*/	NULL,
@@ -88,6 +93,24 @@ SimpleClassRec simpleClassRec = {
 
 WidgetClass simpleWidgetClass = (WidgetClass)&simpleClassRec;
 
+static void ClassInitialize()
+{
+    static XtConvertArgRec convertArg[] = {
+        {XtWidgetBaseOffset, (caddr_t) XtOffset(Widget, core.screen),
+	     sizeof(Screen *)},
+        {XtResourceString, (XtPointer) XtNpointerColor, sizeof(Pixel)},
+        {XtResourceString, (XtPointer) XtNpointerColorBackground, 
+	     sizeof(Pixel)},
+        {XtWidgetBaseOffset, (caddr_t) XtOffset(Widget, core.colormap),
+	     sizeof(Colormap)}
+    };
+
+    XawInitializeWidgetSet();
+    XtSetTypeConverter( XtRString, XtRColorCursor, XmuCvtStringToColorCursor,
+		       convertArg, XtNumber(convertArg), 
+		       XtCacheByDisplay, NULL);
+}
+
 static void ClassPartInitialize(class)
     WidgetClass class;
 {
@@ -105,8 +128,6 @@ static void ClassPartInitialize(class)
 
     if (c->simple_class.change_sensitive == XtInheritChangeSensitive)
 	c->simple_class.change_sensitive = ChangeSensitive;
-
-
 }
 
 static void Realize(w, valueMask, attributes)
@@ -133,6 +154,8 @@ static void Realize(w, valueMask, attributes)
 	*valueMask &= ~CWBorderPixel;
     }
 
+    ConvertCursor(w);
+
     if ((attributes->cursor = ((SimpleWidget)w)->simple.cursor) != None)
 	*valueMask |= CWCursor;
 
@@ -141,7 +164,40 @@ static void Realize(w, valueMask, attributes)
 
     if (!XtIsSensitive(w))
 	w->core.border_pixmap = border_pixmap;
+}
 
+/*	Function Name: ConvertCursor
+ *	Description: Converts a name to a new cursor.
+ *	Arguments: w - the simple widget.
+ *	Returns: none.
+ */
+
+static void
+ConvertCursor(w)
+Widget w;
+{
+    SimpleWidget simple = (SimpleWidget) w;
+    XrmValue from, to;
+    Cursor cursor;
+   
+    if (simple->simple.cursor_name == NULL)
+	return;
+
+    from.addr = (caddr_t) simple->simple.cursor_name;
+    from.size = strlen((char *) from.addr) + 1;
+
+    to.size = sizeof(Cursor);
+    to.addr = (caddr_t) &cursor;
+
+    if (XtConvertAndStore(w, XtRString, &from, XtRColorCursor, &to)) {
+	if ( cursor !=  None) 
+	    simple->simple.cursor = cursor;
+    } 
+    else {
+	XtErrorMsg("convertFailed","ConvertCursor","XawError",
+		   "Simple: ConvertCursor failed.",
+		   (String *)NULL, (Cardinal *)NULL);
+    }
 }
 
 
@@ -151,12 +207,28 @@ static Boolean SetValues(current, request, new)
 {
     SimpleWidget s_old = (SimpleWidget) current;
     SimpleWidget s_new = (SimpleWidget) new;
+    Boolean new_cursor = FALSE;
 
     if ( XtIsSensitive(current) != XtIsSensitive(new) )
 	(*((SimpleWidgetClass)XtClass(new))->
 	     simple_class.change_sensitive) ( new );
 
-    if ( (s_old->simple.cursor != s_new->simple.cursor) && XtIsRealized(new))
+    if (s_old->simple.cursor != s_new->simple.cursor) {
+	new_cursor = TRUE;
+    }
+	
+/*
+ * We are not handling the string cursor_name correctly here.
+ */
+
+    if ( (s_old->simple.pointer_fg != s_new->simple.pointer_fg) ||
+	(s_old->simple.pointer_bg != s_new->simple.pointer_bg) ||
+	(s_old->simple.cursor_name != s_new->simple.cursor_name) ) {
+	ConvertCursor(new);
+	new_cursor = TRUE;
+    }
+
+    if (new_cursor && XtIsRealized(new))
         XDefineCursor(XtDisplay(new), XtWindow(new), s_new->simple.cursor);
 
     return False;   
@@ -168,7 +240,7 @@ static Boolean ChangeSensitive(w)
 {
     if (XtIsRealized(w)) {
 	if (XtIsSensitive(w))
-	    if (w->core.border_pixmap != UnspecifiedPixmap)
+	    if (w->core.border_pixmap != XtUnspecifiedPixmap)
 		XSetWindowBorderPixmap( XtDisplay(w), XtWindow(w),
 				        w->core.border_pixmap );
 	    else
@@ -188,4 +260,3 @@ static Boolean ChangeSensitive(w)
     }
     return False;
 }
-

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Simple.h,v 1.8 89/05/11 01:06:23 kit Exp $
+ * $XConsortium: Simple.h,v 1.9 89/07/21 01:44:53 kit Exp $
  */
 
 /***********************************************************
@@ -29,6 +29,8 @@ SOFTWARE.
 #ifndef _Simple_h
 #define _Simple_h
 
+#include <X11/Xmu/Converters.h>
+
 /****************************************************************
  *
  * Simple widgets
@@ -43,10 +45,13 @@ SOFTWARE.
  border		     BorderColor	Pixel		XtDefaultForeground
  borderWidth	     BorderWidth	Dimension	1
  cursor		     Cursor		Cursor		None
+ cursorName	     Cursor		String		"None"
  destroyCallback     Callback		Pointer		NULL
  height		     Height		Dimension	0
  insensitiveBorder   Insensitive	Pixmap		Gray
  mappedWhenManaged   MappedWhenManaged	Boolean		True
+ pointerColor        Foreground         Pixel           XtDefaultForeground
+ pointerColorBackground Background      Pixel           XtDefaultBackground
  sensitive	     Sensitive		Boolean		True
  width		     Width		Dimension	0
  x		     Position		Position	0
@@ -55,6 +60,7 @@ SOFTWARE.
 */
 
 #define XtNcursor "cursor"
+#define XtNcursorName "cursorName"
 #define XtNinsensitiveBorder "insensitiveBorder"
 
 #define XtCInsensitive "Insensitive"

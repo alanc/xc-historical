@@ -1,6 +1,6 @@
 /***********************************************************
 
- $XConsortium: SimpleP.h,v 1.8 89/03/30 16:05:56 jim Exp $ 
+ $XConsortium: SimpleP.h,v 1.9 89/05/11 01:06:35 kit Exp $ 
 
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -48,7 +48,9 @@ typedef struct {
     /* resources */
     Cursor	cursor;
     Pixmap	insensitive_border;
+    String      cursor_name;	/* cursor specified by name. */
 
+    Pixel       pointer_fg, pointer_bg;	/* Pointer colors. */
     /* private state */
 } SimplePart;
 

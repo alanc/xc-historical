@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$XConsortium: StrToCurs.c,v 1.7 89/07/21 16:11:54 jim Exp $";
+static char rcsid[] = "$XConsortium: StrToCurs.c,v 1.8 89/08/17 15:33:05 jim Exp $";
 #endif /* lint */
 
 
@@ -179,3 +179,75 @@ void XmuCvtStringToCursor(args, num_args, fromVal, toVal)
 
     done(&cursor, Cursor);
 }
+
+#define	new_done(type, value) \
+	{							\
+	    if (toVal->addr != NULL) {				\
+		if (toVal->size < sizeof(type)) {		\
+		    toVal->size = sizeof(type);			\
+		    return False;				\
+		}						\
+		*(type*)(toVal->addr) = (value);		\
+	    }							\
+	    else {						\
+		static type static_val;				\
+		static_val = (value);				\
+		toVal->addr = (XtPointer)&static_val;		\
+	    }							\
+	    toVal->size = sizeof(type);				\
+	    return True;					\
+	}
+
+/*	Function Name: XmuCvtStringToColorCursor
+ *	Description: Converts a string into a colored cursor.
+ *	Arguments: args - an argument list (see below).
+ *                 num_args - number of elements in the argument list.
+ *                 fromVal - value to convert from.
+ *                 toVal - value to convert to.
+ *	Returns: none.
+ */
+
+/*ARGSUSED*/
+Boolean
+XmuCvtStringToColorCursor(dpy, args, num_args, fromVal, toVal, converter_data)
+    Display     *dpy;
+    XrmValuePtr args;
+    Cardinal    *num_args;
+    XrmValuePtr	fromVal;
+    XrmValuePtr	toVal;
+    XtPointer   *converter_data;	/* unused. */
+{
+    Cursor cursor;
+    Pixel fg, bg;
+    Colormap c_map;
+    XColor colors[2];
+    Cardinal number;
+    XrmValue ret_val;
+
+    if (*num_args != 4)
+     XtErrorMsg("wrongParameters","cvtStringToColorCursor","XmuError",
+             "String to color cursor conversion needs three arguments",
+              (String *)NULL, (Cardinal *)NULL);
+
+    fg = *((Pixel *) args[1].addr);
+    bg = *((Pixel *) args[2].addr);
+    c_map = *((Colormap *) args[3].addr);
+
+    number = 1;
+    XmuCvtStringToCursor(args, &number, fromVal, &ret_val);
+    
+    cursor = *((Cursor *) ret_val.addr);
+
+    if (cursor == None)
+	new_done(Cursor, cursor);
+
+    colors[0].pixel = fg;
+    colors[1].pixel = bg;
+
+    XQueryColors (dpy, c_map, colors, 2);
+    XRecolorCursor(dpy, cursor, colors, colors + 1);
+    new_done(Cursor, cursor);
+}
+
+    
+    
