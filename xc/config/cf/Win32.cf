@@ -1,6 +1,6 @@
-XCOMM platform:  $XConsortium: Win32.cf,v 1.13 93/08/15 17:16:08 rws Exp $
+XCOMM platform:  $XConsortium: Win32.cf,v 1.14 93/08/16 11:18:37 rws Exp $
 
-#define OSName			Microsoft Windows NT 3.1beta
+#define OSName			Microsoft Windows NT 3.1
 XCOMM operating system:  OSName
 #define OSMajorVersion		3
 #define OSMinorVersion		1
