@@ -33,9 +33,7 @@ SOFTWARE.
 
 #define MAP_LENGTH	256
 #define DOWN_LENGTH	32	/* 256/8 => number of bytes to hold 256 bits */
-#define OTHERCLIENTS(win) ((OtherClientsPtr)(win)->otherClients)
 #define NullGrab ((GrabPtr)NULL)
-#define PASSIVEGRABS(win) ((GrabPtr)(win)->passiveGrabs)
 #define PointerRootWin ((WindowPtr)PointerRoot)
 #define NoneWin ((WindowPtr)None)
 #define NullDevice ((DevicePtr)NULL)
