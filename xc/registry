@@ -1,4 +1,4 @@
-/* $XConsortium: Xregistry,v 1.50 91/10/04 10:03:57 rws Exp $ */
+/* $XConsortium: Xregistry,v 1.51 91/10/05 14:08:21 rws Exp $ */
 
 1. ORGANIZATION NAMES
 
@@ -747,6 +747,7 @@ Value	Name					Reference
 11	Digital Equipment Corp.			[82]
 12	Network Computing Devices		[66]
 13	ShoGraphics, Inc.			[85]
+14	Tektronix, Inc.				[86]
 
 
 REFERENCES
@@ -1144,3 +1145,8 @@ REFERENCES
 	ShoGraphics, Inc.
 	1890 N. Shoreline Blvd.
 	Mountain View, CA 94043
+
+[85]	Michael F. Cripps
+	Tektronix, Inc
+	P.O Boc 1000 MS 60-850
+	Wilsonville, OR 97070-1000
