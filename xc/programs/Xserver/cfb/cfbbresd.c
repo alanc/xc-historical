@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: cfbbresd.c,v 1.9 91/04/10 11:41:58 keith Exp $ */
+/* $XConsortium: cfbbresd.c,v 1.10 91/07/10 14:53:50 keith Exp $ */
 #include "X.h"
 #include "misc.h"
 #include "cfb.h"
@@ -66,7 +66,7 @@ int len;		/* length of line */
     andFg = rrops[0].and;
     xorBg = rrops[1].xor;
     andBg = rrops[1].and;
-    if ((thisDash = dashRemaining) > len)
+    if ((thisDash = dashRemaining) >= len)
     {
 	thisDash = len;
 	dashRemaining -= len;
@@ -80,7 +80,7 @@ int len;		/* length of line */
     if (dashIndex == numInDashList) \
 	dashIndex = 0; \
     dashRemaining = pDash[dashIndex]; \
-    if ((thisDash = dashRemaining) > len) \
+    if ((thisDash = dashRemaining) >= len) \
     { \
 	dashRemaining -= len; \
 	thisDash = len; \
