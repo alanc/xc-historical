@@ -1,9 +1,9 @@
 /*
- * $XConsortium: def.h,v 1.14 91/04/15 18:15:57 rws Exp $
+ * $XConsortium: def.h,v 1.16 91/04/25 15:57:08 gildea Exp $
  */
+#include <X11/Xosdefs.h>
 #include <stdio.h>
 #include <ctype.h>
-#include <X11/Xosdefs.h>
 #ifndef X_NOT_POSIX
 #ifndef _POSIX_SOURCE
 #define _POSIX_SOURCE
@@ -87,9 +87,17 @@ struct filepointer {
 	long	f_line;
 };
 
-char			*copy();
+#ifndef X_NOT_STDC_ENV
+#include <stdlib.h>
+#if defined(macII) && !defined(__STDC__)  /* stdlib.h fails to define these */
+char *malloc(), *realloc();
+#endif /* macII */
+#else
 char			*malloc();
 char			*realloc();
+#endif
+
+char			*copy();
 char			*basename();
 char			*getline();
 struct symtab		*slookup();
