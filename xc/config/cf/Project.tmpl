@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM X Window System Build Parameters
-XCOMM $XConsortium: Project.tmpl,v 1.104 91/03/25 10:48:17 rws Exp $
+XCOMM $XConsortium: Project.tmpl,v 1.105 91/03/26 11:07:49 rws Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -17,7 +17,7 @@ XCOMM $XConsortium: Project.tmpl,v 1.104 91/03/25 10:48:17 rws Exp $
  * X-specific things
  */
 #ifndef BuildServer
-#define BuildServer		YES	/* go ahead and build server */
+#define BuildServer		YES
 #endif
 #ifndef BuildBdfFonts
 #define BuildBdfFonts		BuildServer
@@ -26,7 +26,7 @@ XCOMM $XConsortium: Project.tmpl,v 1.104 91/03/25 10:48:17 rws Exp $
 #define BuildFontServer		BuildServer
 #endif
 #ifndef BuildPex
-#define BuildPex		NO	/* at least not for alpha */	
+#define BuildPex		YES
 #endif
 #ifndef BuildPexClients
 #define BuildPexClients		BuildPex
@@ -418,7 +418,7 @@ XCOMM $XConsortium: Project.tmpl,v 1.104 91/03/25 10:48:17 rws Exp $
 
 XCOMM -------------------------------------------------------------------------
 XCOMM X Window System make variables; this need to be coordinated with rules
-XCOMM $XConsortium: Project.tmpl,v 1.104 91/03/25 10:48:17 rws Exp $
+XCOMM $XConsortium: Project.tmpl,v 1.105 91/03/26 11:07:49 rws Exp $
 
 /*
  * This list must be reflected in the DIRS_TO_BUILD list in the top-level
