@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: wsx_lut.c,v 5.1 91/02/16 09:50:23 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -592,7 +592,7 @@ extend_bundle( ws, rep_type, rep, extrep )
     }
     if ( !PEXGetTableEntry( ws->display, lut_id,
 	    (pexTableIndex)rep->index, (CARD16)PEXSetValue,
-	    &type, &entry_status, &buf ) ) {
+	    &type, &entry_status, (char **)&buf ) ) {
 	ERR_BUF( ws->erh, ERR900 );
 	status = 0;
     } else {
@@ -1085,7 +1085,7 @@ phg_wsx_set_LUT_entry( ws, type, rep, gcolr )
 	    /* get current entry first so colors can be freed  */
     	    if ( !PEXGetTableEntry( ws->display, lut_id, 
 	            (pexTableIndex)index, PEXSetValue, &table_type,
-	       	    &entry_status, &cur_entry ) ) {
+	       	    &entry_status, (char **)&cur_entry ) ) {
 	    	ERR_BUF( ws->erh, ERR900 );
 	        goto end;
 	    } else {
@@ -1135,7 +1135,7 @@ phg_wsx_set_LUT_entry( ws, type, rep, gcolr )
 	}
 
 	if ( !phg_ut_htab_add_entry( htab, index, (caddr_t)NULL ) ) {
-	    PEXDeleteTableEntries( ws->display, lut_id, index, (CARD16)1 );
+	    PEXDeleteTableEntries( ws->display, lut_id, (int)index, (CARD16)1 );
 	    ERR_BUF( ws->erh, ERR900 );
 	    goto end;
 	}
