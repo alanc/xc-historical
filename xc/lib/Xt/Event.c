@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Event.c,v 1.71 88/04/22 16:30:51 swick Exp $";
+static char rcsid[] = "$Header: Event.c,v 1.72 88/05/03 19:44:25 swick Exp $";
 #endif lint
 
 /***********************************************************
@@ -603,15 +603,17 @@ void XtDispatchEvent (event)
     ConvertTypeToMask(event->xany.type, &mask, &grabType);
 
     if (widget == NULL) {
-	if (grabType != remap) return;
-	/* event occurred in a non-widget window, but we've promised
-	   also to dispatch it to the nearest spring_loaded widget */
-	for (gl = grabList; gl != NULL; gl = gl->next) {
-	    if (gl->spring_loaded) {
-		DispatchEvent(event, gl->widget, mask);
-		return;
+	if (grabType == remap) {
+	    /* event occurred in a non-widget window, but we've promised
+	       also to dispatch it to the nearest spring_loaded widget */
+	    for (gl = grabList; gl != NULL; gl = gl->next) {
+		if (gl->spring_loaded) {
+		    DispatchEvent(event, gl->widget, mask);
+		    return;
+		}
 	    }
 	}
+	return;
     }
 
     if (grabType == pass) {
