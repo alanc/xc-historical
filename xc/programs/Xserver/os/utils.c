@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: utils.c,v 1.83 89/08/31 13:40:53 keith Exp $ */
+/* $XConsortium: utils.c,v 1.84 89/09/30 10:51:14 keith Exp $ */
 #include <stdio.h>
 #include "Xos.h"
 #include "misc.h"
@@ -132,6 +132,13 @@ FatalError(f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9) /* limit of ten args */
     /*NOTREACHED*/
 }
 
+#if defined (UTEK) || defined (UTEKV)
+/*
+ * Tektronix has a shared-memory time value which doesn't
+ * match gettimeofday at all, but it is only accessible
+ * inside the driver.
+ */
+#else
 long
 GetTimeInMillis()
 {
@@ -140,6 +147,7 @@ GetTimeInMillis()
     gettimeofday(&tp, 0);
     return(tp.tv_sec * 1000) + (tp.tv_usec / 1000);
 }
+#endif
 
 void UseMsg()
 {
