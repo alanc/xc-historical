@@ -1,211 +1,167 @@
-/* $XConsortium: XTextExt16.c,v 11.13 89/02/01 13:44:38 rws Exp $ */
-/************************************************************************
-Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
-and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
+/*
+ * $XConsortium: XTextExt16.c,v 1.1 89/06/07 12:24:30 jim Exp $
+ *
+ * Copyright 1989 Massachusetts Institute of Technology
+ */
 
-                        All Rights Reserved
-
-Permission to use, copy, modify, and distribute this software and its 
-documentation for any purpose and without fee is hereby granted, 
-provided that the above copyright notice appear in all copies and that
-both that copyright notice and this permission notice appear in 
-supporting documentation, and that the names of Digital or MIT not be
-used in advertising or publicity pertaining to distribution of the
-software without specific, written prior permission.  
-
-DIGITAL DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING
-ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL
-DIGITAL BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR
-ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS,
-WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION,
-ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
-SOFTWARE.
-
-************************************************************************/
-
-#define NEED_REPLIES
 
 #include "Xlibint.h"
 
-/* text support routines. Three different access methods, a */
-/* charinfo array builder, and a bounding box calculator */
-/*ARGSUSED*/
-static XCharStruct *GetCS16(min_bounds, pCS, firstCol, numCols, 
-		firstRow, numRows, ind, chars, chDefault)
-    XCharStruct *min_bounds;
-    XCharStruct pCS[];
-    unsigned int firstCol, numCols, firstRow, numRows, ind, chDefault;
-    XChar2b *chars;
-{
-    XCharStruct *cs;
-    unsigned int c;
+#define min_byte2 min_char_or_byte2
+#define max_byte2 max_char_or_byte2
 
-    c = ((chars[ind].byte1 << 8) + chars[ind].byte2) - firstCol;
-    if (c < numCols) {
-	if ( pCS == NULL ) return min_bounds;
-	cs = &pCS[c];
-	if (! CI_NONEXISTCHAR(cs)) return cs;
-    }
-    c = chDefault - firstCol;
-    if (c >= numCols) return NULL;
-    if ( pCS == NULL ) return min_bounds;    
-    cs = &pCS[c];
-    if (! CI_NONEXISTCHAR(cs)) return cs;
-    return NULL;
+/* 
+ * GetCharInfo1d - Return the charinfo struct for the indicated 8bit
+ * character.  If the character is in the column and exists, then return the
+ * appropriate metrics (note that fonts with common per-character metrics will
+ * return min_bounds).  If none of these hold true, try again with the default
+ * char.
+ */
+
+#define GetCharInfo1d(fs,col,def,cs) \
+{ \
+    cs = def; \
+    if (col >= fs->min_byte2 && col <= fs->max_byte2) { \
+	if (fs->per_char == NULL) { \
+	    cs = &fs->min_bounds; \
+	} else { \
+	    cs = &fs->per_char[(col - fs->min_byte2)]; \
+	    if (CI_NONEXISTCHAR(cs)) cs = def; \
+	} \
+    } \
+}
+
+#define GetDefaultCharInfo1d(fs,cs) \
+  GetCharInfo1d (fs, fs->default_char, NULL, cs)
+
+
+#define GetCharInfo2d(fs,row,col,def,cs) \
+{ \
+    cs = NULL; \
+    if (row >= fs->min_byte1 && row <= fs->max_byte1 && \
+	col >= fs->min_byte2 && col <= fs->max_byte2) { \
+	if (fs->per_char == NULL) { \
+	    cs = &fs->min_bounds; \
+	} else { \
+	    cs = &fs->per_char[((row - fs->min_byte1) * \
+			        (fs->max_byte2 - fs->min_byte2 + 1)) + \
+			       (col - fs->min_byte2)]; \
+	    if (CI_NONEXISTCHAR(cs)) cs = NULL; \
+        } \
+    } \
+}
+
+#define GetDefaultCharInfo2d(fs,cs) \
+{ \
+    unsigned int r = (fs->default_char >> 8); \
+    unsigned int c = (fs->default_char & 0xff); \
+    GetCharInfo2d (fs, r, c, NULL, cs); \
 }
 
 
-static
-XCharStruct *GetCS162d(min_bounds, pCS, firstCol, numCols, firstRow, numRows, 
-		       ind, chars, chDefault)
-    XCharStruct *min_bounds;
-    XCharStruct pCS[];
-    unsigned int firstCol, numCols, firstRow, numRows, ind, chDefault;
-    XChar2b *chars;
-{
-    XCharStruct *cs;
-    unsigned int row, col, c;
-
-    row = chars[ind].byte1 - firstRow;
-    col = chars[ind].byte2 - firstCol;
-    if ((row < numRows) && (col < numCols)) {
-	if ( pCS == NULL ) return min_bounds;
-        c = row*numCols + col;
-	cs = &pCS[c];
-	if (! CI_NONEXISTCHAR(cs)) return cs;
-    }
-    row = (chDefault >> 8)-firstRow;
-    col = (chDefault & 0xff)-firstCol;
-    if ((row >= numRows) || (col >= numCols)) return NULL;
-	if ( pCS == NULL ) return min_bounds;
-    c = row*numCols + col;
-    cs = &pCS[c];
-    if (! CI_NONEXISTCHAR(cs)) return cs;
-    return NULL;
-}
 
 
-static void
-GetGlyphs(font, count, chars, getGlyph, glyphcount, glyphs)
-    XFontStruct *font;
-    int count;
-    XChar2b *chars;
-    XCharStruct *(*getGlyph)();
-    unsigned int *glyphcount;	/* RETURN */
-    XCharStruct *glyphs[];	/* RETURN */
-{
-    unsigned int    firstCol = font->min_char_or_byte2;
-    unsigned int    numCols = font->max_char_or_byte2 - firstCol + 1;
-    unsigned int    firstRow = font->min_byte1;
-    unsigned int    numRows = font->max_byte1 - firstRow + 1;
-    unsigned int    chDefault = font->default_char;
-    int		    i, n;
-    XCharStruct	    *cs;
 
-    n = 0;
-    for (i=0; i < count; i++) {
-	cs = (* getGlyph)(
-	    &font->min_bounds, font->per_char, firstCol, numCols, firstRow, numRows,
-	    i, chars, chDefault);
-	if (cs != NULL) glyphs[n++] = cs;
-    }
-    *glyphcount = n;
-}
-
-XTextExtents16 (fontstruct, string, nchars, dir, font_ascent, font_descent,
-	           overall)
-    XFontStruct *fontstruct;
+/*
+ * XTextExtents16 - compute the extents of string given as a sequence of 
+ * XChar2bs.
+ */
+XTextExtents16 (fs, string, nchars, dir, font_ascent, font_descent, overall)
+    XFontStruct *fs;
     XChar2b *string;
-    register int nchars;
-    int *dir;
-    int *font_ascent, *font_descent;
-    register XCharStruct *overall;
+    int nchars;
+    int *dir, *font_ascent, *font_descent;  /* RETURN font information */
+    register XCharStruct *overall;	/* RETURN character information */
 {
-    int	i;
-    unsigned int n;
+    int i;				/* iterator */
+    Bool singlerow = (fs->max_byte1 == 0);  /* optimization */
+    int nfound = 0;			/* number of characters found */
+    XCharStruct *def;			/* info about default char */
 
-    *dir = fontstruct->direction;
-    *font_ascent = fontstruct->ascent;
-    *font_descent = fontstruct->descent;
+    GetDefaultCharInfo2d (fs, def);
 
-	{
-	XCharStruct **charstruct =
-	    (XCharStruct **)Xmalloc((unsigned) nchars*sizeof(XCharStruct *));
-    
-	if (fontstruct->max_byte1 == 0)
-	    GetGlyphs(fontstruct, nchars, string, GetCS16, &n, charstruct);
-	else
-	    GetGlyphs(fontstruct, nchars, string, GetCS162d, &n, charstruct);
-    
-	if (n != 0) {
-    
-	    overall->ascent  = charstruct[0]->ascent;
-	    overall->descent = charstruct[0]->descent;
-	    overall->width   = charstruct[0]->width;
-	    overall->lbearing    = charstruct[0]->lbearing;
-	    overall->rbearing   = charstruct[0]->rbearing;
-    
-	    for (i=1; i < n; i++) {
-		overall->ascent = max(
-		    overall->ascent,
-		    charstruct[i]->ascent);
-		overall->descent = max(
-		    overall->descent,
-		    charstruct[i]->descent);
-		overall->lbearing = min(
-		    overall->lbearing,
-		    overall->width+charstruct[i]->lbearing);
-		overall->rbearing = max(
-		    overall->rbearing,
-		    overall->width+charstruct[i]->rbearing);
-		overall->width += charstruct[i]->width;
-	    }
-    
+    *dir = fs->direction;
+    *font_ascent = fs->ascent;
+    *font_descent = fs->descent;
+
+    /*
+     * Iterate over the input string getting the appropriate * char struct.
+     * The default (which may be null if there is no def_char) will be returned
+     * if the character doesn't exist.  On the first time * through the loop,
+     * assign the values to overall; otherwise, compute * the new values.
+     */
+
+    for (i = 0; i < nchars; i++, string++) {
+	register XCharStruct *cs;
+	unsigned int r = (unsigned int) string->byte1;	/* watch for macros */
+	unsigned int c = (unsigned int) string->byte2;	/* watch for macros */
+
+	if (singlerow && r == 0) {
+	    GetCharInfo1d (fs, c, def, cs);
 	} else {
-    
-	    overall->ascent  = 0;
-	    overall->descent = 0;
-	    overall->width   = 0;
-	    overall->lbearing = 0;
-	    overall->rbearing = 0;
-	}
-    
-	Xfree((char *)charstruct);
+	    GetCharInfo2d (fs, r, c, def, cs);
 	}
 
-    return (1);
+	if (cs) {
+	    if (nfound++ == 0) {
+		*overall = *cs;
+	    } else {
+		overall->ascent = max (overall->ascent, cs->ascent);
+		overall->descent = max (overall->descent, cs->descent);
+		overall->lbearing = min (overall->lbearing, 
+					 overall->width + cs->lbearing);
+		overall->rbearing = max (overall->rbearing,
+					 overall->width + cs->rbearing);
+		overall->width += cs->width;
+	    }
+	}
+    }
+
+    /*
+     * if there were no characters, then set everything to 0
+     */
+    if (nfound == 0) {
+	overall->width = overall->ascent = overall->descent = 
+	  overall->lbearing = overall->rbearing = 0;
+    }
+
+    return;
 }
 
-int XTextWidth16 (fontstruct, string, count)
-    XFontStruct *fontstruct;
+
+/*
+ * XTextWidth16 - compute the width of sequence of XChar2bs.  This is a 
+ * subset of XTextExtents16.
+ */
+int XTextWidth16 (fs, string, count)
+    XFontStruct *fs;
     XChar2b *string;
     int count;
 {
-    int	i, width;
-    unsigned int n;
+    int i;				/* iterator */
+    Bool singlerow = (fs->max_byte1 == 0);  /* optimization */
+    XCharStruct *def;			/* info about default char */
+    int width = 0;			/* RETURN value */
 
-    {
-	XCharStruct **charstruct =
-	    (XCharStruct **)Xmalloc((unsigned)count*sizeof(XCharStruct *));
-    
-	if (fontstruct->max_byte1 == 0)
-	    GetGlyphs(fontstruct, count, string, GetCS16, &n, charstruct);
-	else
-	    GetGlyphs(fontstruct, count, string, GetCS162d, &n, charstruct);
-    
-	if (n != 0) {
-	    width = 0;
-	    for (i=0; i < n; i++) {
-		width += charstruct[i]->width;
-	    }
-    
+    GetDefaultCharInfo2d (fs, def);
+
+    /*
+     * Iterate over all character in the input string; only consider characters
+     * that exist.
+     */
+    for (i = 0; i < count; i++, string++) {
+	register XCharStruct *cs;
+	unsigned int r = (unsigned int) string->byte1;	/* watch for macros */
+	unsigned int c = (unsigned int) string->byte2;	/* watch for macros */
+
+	if (singlerow && r == 0) {
+	    GetCharInfo1d (fs, c, def, cs);
 	} else {
-	    width   = 0;
+	    GetCharInfo2d (fs, r, c, def, cs);
 	}
-    
-	Xfree((char *)charstruct);
-    
-    }
-    return (width);
-}
 
+	if (cs) width += cs->width;
+    }
+
+    return width;
+}
