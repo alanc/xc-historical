@@ -1,4 +1,4 @@
-/* $XConsortium: strip.h,v 1.1 93/10/26 09:50:46 rws Exp $ */
+/* $XConsortium: strip.h,v 1.2 93/10/31 09:46:17 dpw Exp $ */
 /**** module strip.h ****/
 /******************************************************************************
 				NOTICE
@@ -92,7 +92,7 @@ typedef struct _band {
   struct _receptor *receptor;	/* receptor if isInput, otherwise NULL      */
   formatPtr	    format;	/* common format info for all strips	    */
   struct _band     *inPlace;	/* what to clone to make in-place strips    */
-  void	   	   *pcroi;	/* pointer to ROI entry for current line    */ 
+  pointer	    pcroi;	/* pointer to ROI entry for current line    */ 
   CARD32	    xindex;	/* index into pcroi ROI for current x pos   */
   INT32	    	    xcount;	/* current x location in output band	    */
   BOOL		    ypass;	/* True = no processing domain this line    */
@@ -104,14 +104,14 @@ typedef struct _band {
 /**************************************************************************
  * Photoflo data manager convenience macros
  *
- * (type*) GetCurrentSrc(type,flo,pet,bnd)		single Src line/byte
- * (type*) GetCurrentDst(type,flo,pet,bnd)		single Dst line/byte
- * (type*) GetNextSrc(type,flo,pet,bnd,purge)		single Src line/byte
- * (type*) GetNextDst(type,flo,pet,bnd,purge)		single Dst line/byte
- * (type*) GetSrc(type,flo,pet,bnd,unit,purge)		single Src line/byte
- * (type*) GetDst(type,flo,pet,bnd,unit,purge)		single Dst line/byte
- * (type*) GetSrcBytes(type,flo,pet,bnd,unit,len,purge) contiguous Src bytes
- * (type*) GetDstBytes(type,flo,pet,bnd,unit,len,purge) contiguous Dst bytes
+ * (type)  GetCurrentSrc(type,flo,pet,bnd)		single Src line/byte
+ * (type)  GetCurrentDst(type,flo,pet,bnd)		single Dst line/byte
+ * (type)  GetNextSrc(type,flo,pet,bnd,purge)		single Src line/byte
+ * (type)  GetNextDst(type,flo,pet,bnd,purge)		single Dst line/byte
+ * (type)  GetSrc(type,flo,pet,bnd,unit,purge)		single Src line/byte
+ * (type)  GetDst(type,flo,pet,bnd,unit,purge)		single Dst line/byte
+ * (type)  GetSrcBytes(type,flo,pet,bnd,unit,len,purge) contiguous Src bytes
+ * (type)  GetDstBytes(type,flo,pet,bnd,unit,len,purge) contiguous Dst bytes
  *  Bool   MapData(flo,pet,bnd,map,unit,len,purge)	map  multi-lines/bytes
  *  Bool   PutData(flo,pet,bnd,unit)			put  multi-lines/bytes
  *  void   FreeData(flo,pet,bnd,unit)			free multi-lines/bytes
@@ -193,12 +193,12 @@ typedef struct _band {
  *	 floDefPtr flo; peTexPtr pet; bandPtr bnd;
  */
 #define GetCurrentSrc(type,flo,pet,bnd) \
-	(type*)((bnd)->data ? (bnd)->data \
+	(type)((bnd)->data ? (bnd)->data \
 		: _is_global(bnd) \
 		? (*flo->stripVec->get_data)(flo,pet,bnd,1,FALSE) \
 		: ((bnd)->data = NULL))
 #define GetCurrentDst(type,flo,pet,bnd) \
-	(type*)((bnd)->data ? (bnd)->data \
+	(type)((bnd)->data ? (bnd)->data \
 		: (*flo->stripVec->make_lines)(flo,pet,bnd,FALSE))
 
 /* return the next sequential line/byte pointer (NULL if not available)
@@ -206,13 +206,13 @@ typedef struct _band {
  *	 floDefPtr flo; peTexPtr pet; bandPtr bnd; Bool purge;
  */
 #define GetNextSrc(type,flo,pet,bnd,purge) \
-	(type*)(++(bnd)->current < (bnd)->maxLocal \
+	(type)(++(bnd)->current < (bnd)->maxLocal \
 		? ((bnd)->data += (bnd)->pitch) \
 		: _is_global(bnd) \
 		? (*flo->stripVec->get_data)(flo,pet,bnd,1,purge) \
 		: ((bnd)->data = NULL))
 #define GetNextDst(type,flo,pet,bnd,purge) \
-	(type*)(++(bnd)->current < (bnd)->maxLocal \
+	(type)(++(bnd)->current < (bnd)->maxLocal \
 		? ((bnd)->data += (bnd)->pitch) \
 		: (*flo->stripVec->make_lines)(flo,pet,bnd,purge))
 
@@ -222,13 +222,13 @@ typedef struct _band {
  *	floDefPtr flo; peTexPtr pet; bandPtr bnd; CARD32 unit; Bool purge;
  */
 #define GetSrc(type,flo,pet,bnd,unit,purge) \
-	(type*)((bnd)->current = unit, _is_local(bnd) \
+	(type)((bnd)->current = unit, _is_local(bnd) \
 		? ((bnd)->data = _line_ptr(bnd)) \
 		: _is_global(bnd) \
 		? (*flo->stripVec->get_data)(flo,pet,bnd,1,purge) \
 		: ((bnd)->data = NULL))
 #define GetDst(type,flo,pet,bnd,unit,purge) \
-	(type*)((bnd)->current = unit, _is_local(bnd) \
+	(type)((bnd)->current = unit, _is_local(bnd) \
 		? ((bnd)->data = _line_ptr(bnd)) \
 		: (*flo->stripVec->make_lines)(flo,pet,bnd,purge))
 
@@ -239,12 +239,12 @@ typedef struct _band {
  *	len -- number of contiguous bytes required
  */
 #define GetSrcBytes(type,flo,pet,bnd,unit,len,purge) \
-	(type*)((bnd)->current = unit, _is_local_contig(bnd,len) \
+	(type)((bnd)->current = unit, _is_local_contig(bnd,len) \
 		? ((bnd)->data = _byte_ptr(bnd)) : _is_global(bnd) \
 		? (*flo->stripVec->get_data)(flo,pet,bnd,len,purge) \
 		: ((bnd)->data = NULL))
 #define GetDstBytes(type,flo,pet,bnd,unit,len,purge) \
-	(type*)((bnd)->current = unit, _is_local_contig(bnd,len) \
+	(type)((bnd)->current = unit, _is_local_contig(bnd,len) \
 		? ((bnd)->data = _byte_ptr(bnd)) \
 		: (*flo->stripVec->make_bytes)(flo,pet,bnd,len,purge))
 
