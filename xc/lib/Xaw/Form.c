@@ -259,7 +259,7 @@ static XtGeometryResult GeometryManager(w, request, reply)
     FormConstraints form = (FormConstraints)w->core.constraints;
     XtWidgetGeometry allowed;
 
-    if ((request->request_mode & ~(CWWidth || CWHeight)) ||
+    if ((request->request_mode & ~(CWWidth | CWHeight)) ||
 	!form->form.allow_resize)
 	return XtGeometryNo;
 
