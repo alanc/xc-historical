@@ -1,5 +1,5 @@
 /*
- * $XConsortium: LocBitmap.c,v 1.7 90/11/30 17:00:47 rws Exp $
+ * $XConsortium: LocBitmap.c,v 1.8 90/12/19 18:14:48 converse Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -27,12 +27,24 @@
 #include <X11/Xresource.h>
 #include <X11/Xutil.h>
 #include <X11/StringDefs.h>
-#include <sys/param.h>			/* get MAXPATHLEN if possible */
-#ifndef MAXPATHLEN
-#define MAXPATHLEN 256
-#endif
 #include <X11/Xmu/CvtCache.h>
 #include <X11/Xmu/Drawing.h>
+
+#ifndef PATH_MAX
+#ifdef _POSIX_SOURCE
+#include <limits.h>
+#else
+#include <sys/param.h>
+#ifdef MAXPATHLEN
+#define PATH_MAX MAXPATHLEN
+#endif
+#endif /* _POSIX_SOURCE */
+#ifndef PATH_MAX
+#define PATH_MAX 1024
+#endif
+#endif /* PATH_MAX */
+
+static char **split_path_string();
 
 
 /*
@@ -87,12 +99,10 @@ Pixmap XmuLocatePixmapFile (screen, name, fore, back, depth,
     Bool try_plain_name = True;
     XmuCvtCache *cache = _XmuCCLookupDisplay (dpy);
     char **file_paths;
-    char filename[MAXPATHLEN];
+    char filename[PATH_MAX];
     unsigned int width, height;
     int xhot, yhot;
     int i;
-    static char **split_path_string();
-
 
     /*
      * look in cache for bitmap path
