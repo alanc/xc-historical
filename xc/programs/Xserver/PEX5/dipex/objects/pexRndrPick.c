@@ -1,4 +1,4 @@
-/* $XConsortium: pexRndrPick.c,v 1.1 92/03/04 14:16:23 hersh Exp $ */
+/* $XConsortium: pexRndrPick.c,v 1.2 92/04/23 16:16:54 hersh Exp $ */
 
 /************************************************************
 Copyright 1992 by The Massachusetts Institute of Technology
@@ -95,21 +95,20 @@ pexEndPickOneReq        *strmPtr;
     ErrorCode err = Success;
     ddRendererStr *prend = 0;
     extern ddBufferPtr pPEXBuffer;
+    pexEndPickOneReply *reply = (pexEndPickOneReply*)(pPEXBuffer->pHead);
 
     LU_RENDERER(strmPtr->rdr, prend);
 
     if (prend->pickstr.state != DD_PICK_ONE)
-	PEX_ERR_EXIT(err,0,cntxtPtr);
+	PEX_ERR_EXIT(PEX_ERROR_CODE(PEXRendererStateError),0,cntxtPtr);
 
     SETUP_INQ(pexEndPickOneReply);
 
-    err = EndPickOne(prend, pPEXBuffer);
+    err = EndPickOne(prend, pPEXBuffer, &(reply->numPickElRefs),
+		     &(reply->pickStatus), &(reply->betterPick));
     if (err) PEX_ERR_EXIT(err,0,cntxtPtr);
     {
-	SETUP_VAR_REPLY(pexEndPickOneReply);
-	/* this line for debug purposes */
-	reply->numPickElRefs = 0;
-
+	reply->length = LWORDS(pPEXBuffer->dataSize);
 	WritePEXBufferReply(pexEndPickOneReply);
     }
     return( err );
@@ -124,6 +123,7 @@ pexPickOneReq           *strmPtr;
     extern ddBufferPtr pPEXBuffer;
     ddRendererStr *prend = 0;
     pexPickRecord *pr = (pexPickRecord *)(strmPtr+1);
+    pexPickOneReply *reply = (pexPickOneReply*)(pPEXBuffer->pHead);
 
     /* do stuff same as BeginPickOne */
     LU_RENDERER(strmPtr->rdr, prend);
@@ -141,19 +141,17 @@ pexPickOneReq           *strmPtr;
     err = BeginPicking(prend, prend->pickstr.pseudoPM);
     if (err) PEX_ERR_EXIT(err,0,cntxtPtr);
 
-    /* now call PickOne which does set up and calls RenderElements */
+    /* now call PickOne which does set up and calls the traverser */
     err = PickOne(prend);
 
     /* now do stuff same as EndPickOne */
     SETUP_INQ(pexPickOneReply);
 
-    err = EndPickOne(prend, pPEXBuffer);
+    err = EndPickOne(prend, pPEXBuffer, &(reply->numPickElRefs),
+		     &(reply->pickStatus), &(reply->betterPick));
     if (err) PEX_ERR_EXIT(err,0,cntxtPtr);
     {
-	SETUP_VAR_REPLY(pexPickOneReply);
-	/* this line for debug purposes */
-	reply->numPickElRefs = 0;
-
+	reply->length = LWORDS(pPEXBuffer->dataSize);
 	WritePEXBufferReply(pexPickOneReply);
     }
     return( err );
