@@ -1,4 +1,4 @@
-/* $XConsortium: restart.c,v 1.21 94/12/14 20:01:36 mor Exp mor $ */
+/* $XConsortium: restart.c,v 1.22 94/12/16 17:28:08 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -556,6 +556,9 @@ StartDefaultApps ()
 
 	execute_system_command (buf);
     }
+
+    if (buf)
+	free (buf);
 }
 
 
