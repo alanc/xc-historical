@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.138 89/12/14 17:04:50 jim Exp $
+ * $XConsortium: menus.c,v 1.139 89/12/14 17:14:58 jim Exp $
  *
  * twm menu code
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: menus.c,v 1.138 89/12/14 17:04:50 jim Exp $";
+"$XConsortium: menus.c,v 1.139 89/12/14 17:14:58 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -2465,10 +2465,15 @@ SetBorder (tmp, onoroff)
     Bool onoroff;
 {
     if (tmp->highlight) {
-	Pixmap pix = onoroff ? tmp->border : tmp->gray;
-
-	XSetWindowBorderPixmap (dpy, tmp->frame, pix);
-	if (tmp->title_w) XSetWindowBorderPixmap (dpy, tmp->title_w, pix);
+	if (onoroff) {
+	    XSetWindowBorder (dpy, tmp->frame, tmp->border);
+	    if (tmp->title_w) 
+	      XSetWindowBorder (dpy, tmp->title_w, tmp->border);
+	} else {
+	    XSetWindowBorderPixmap (dpy, tmp->frame, tmp->gray);
+	    if (tmp->title_w) 
+	      XSetWindowBorderPixmap (dpy, tmp->title_w, tmp->gray);
+	}
     }
 }
 
