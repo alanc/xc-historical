@@ -1,4 +1,4 @@
-/* $XConsortium: info.c,v 1.12 94/08/10 21:27:18 mor Exp mor $ */
+/* $XConsortium: info.c,v 1.13 94/08/11 14:34:49 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -28,14 +28,7 @@ in this Software without prior written authorization from the X Consortium.
 #include "xsm.h"
 #include "restart.h"
 
-static int		longest = 400;
-
-static int restartHints[] = {
-	SmRestartIfRunning,
-	SmRestartAnyway,
-	SmRestartImmediately,
-	SmRestartNever
-};
+static Pixmap checkBitmap;
 
 
 
@@ -45,28 +38,47 @@ ShowHint (client)
 ClientRec *client;
 
 {
-    int currentHint = client->restartHint;
+    static Widget active = NULL;
+    int hint = client->restartHint;
 
-    XawToggleSetCurrent (restartIfRunning /* just 1 of the group */,
-	(XtPointer) &restartHints[currentHint]);
+    if (active)
+	XtVaSetValues (active, XtNleftBitmap, None, NULL);
+
+    if (hint == SmRestartIfRunning)
+	active = restartIfRunning;
+    else if (hint == SmRestartAnyway)
+	active = restartAnyway;
+    else if (hint == SmRestartImmediately)
+	active = restartImmediately;
+    else if (hint == SmRestartNever)
+	active = restartNever;
+
+    XtVaSetValues (active, XtNleftBitmap, checkBitmap, NULL);
 }
 
 
 
 void
-DisplayProps (client, clientName)
+DisplayProps (client)
 
 ClientRec *client;
-char *clientName;
 
 {
     Position x, y, rootx, rooty;
-    int i, j;
+    int index, i, j;
+
+    for (index = 0; index < numClientListNames; index++)
+	if (clientListRecs[index] == client)
+	    break;
+
+    if (index >= numClientListNames)
+	return;
 
     if (client->numProps > 0)
     {
 	char buffer[1024];		/* ugh, gotta fix this */
 	char number[10];
+	char *ptr;
 
 	buffer[0] = '\0';
 
@@ -132,7 +144,9 @@ char *clientName;
 	    XtNstring, buffer,
 	    NULL);
 
-	sprintf (buffer, "SM Properties : %s", clientName);
+	sprintf (buffer, "SM Properties : %s", clientListNames[index]);
+	ptr = Strstr (buffer, ")   Restart");
+	if (ptr) *(ptr + 1) = '\0';
 
 	XtVaSetValues (clientPropPopup,
 	    XtNtitle, buffer,
@@ -175,7 +189,7 @@ XtPointer 	callData;
     ShowHint (client);
     current_client_selected = current->list_index;
     if (client_prop_visible)
-	DisplayProps (client, current->string);
+	DisplayProps (client);
 }
 
 
@@ -202,7 +216,7 @@ XtPointer 	callData;
     }
 
     client = clientListRecs[current->list_index];
-    DisplayProps (client, current->string);
+    DisplayProps (client);
     XtFree ((char *) current);
 }
 
@@ -273,91 +287,6 @@ XtPointer 	callData;
 {
     XtPopdown (clientInfoPopup);
     client_info_visible = 0;
-}
-
-
-
-static void
-RestartHintXtProc (w, client_data, callData)
-
-Widget		w;
-XtPointer 	client_data;
-XtPointer 	callData;
-
-{
-    XawListReturnStruct *current;
-    ClientRec *client;
-    XtPointer ptr;
-    char hint;
-    int i;
-
-    current = XawListShowCurrent (clientListWidget);
-
-    if (!current || current->list_index < 0)
-    {
-	if (current)
-	    XtFree ((char *) current);
-	return;
-    }
-
-    client = clientListRecs[current->list_index];
-
-    ptr = XawToggleGetCurrent (restartIfRunning /* just 1 of the group */);
-
-    if (!ptr)
-	return;
-
-    hint = *((int *) ptr);
-
-    if (hint == SmRestartIfRunning || hint == SmRestartAnyway ||
-	hint == SmRestartImmediately || hint == SmRestartNever)
-    {
-	SmProp prop;
-	SmPropValue propval;
-	int found = 0;
-
-	client->restartHint = hint;
-
-	for (i = 0; i < client->numProps; i++)
-	    if (strcmp (SmRestartStyleHint, client->props[i]->name) == 0)
-	    {
-		*((char *) (client->props[i]->vals[0].value)) = hint;
-		found = 1;
-		break;
-	    }
-
-	if (!found)
-	{
-	    prop.name = SmRestartStyleHint;
-	    prop.type = SmCARD8;
-	    prop.num_vals = 1;
-	    prop.vals = &propval;
-	    propval.value = (SmPointer) &hint;
-	    propval.length = 1;
-
-	    SetProperty (client, &prop, True /* Malloc for us */);
-	}
-
-	if (client_prop_visible && clientListRecs &&
-	    clientListRecs[current_client_selected] == client)
-	{
-	    DisplayProps (client, clientListNames[current_client_selected]);
-	}
-    }
-}
-
-
-
-static void
-clientPropDoneXtProc (w, client_data, callData)
-
-Widget		w;
-XtPointer 	client_data;
-XtPointer 	callData;
-
-{
-    XtPopdown (clientPropPopup);
-    client_prop_visible = 0;
 }
 
 
@@ -476,6 +405,7 @@ UpdateClientList ()
     for (client = ClientList, i = 0; client; client = client->next)
     {
 	int extra1, extra2;
+	char *hint;
 
 	if (!client->running)
 	    continue;
@@ -516,8 +446,19 @@ UpdateClientList ()
 	extra1 = maxlen1 - strlen (progName) + 5;
 	extra2 = maxlen2 - strlen (hostname);
 
+	if (client->restartHint == SmRestartIfRunning)
+	    hint = "Restart If Running";
+	else if (client->restartHint == SmRestartAnyway)
+	    hint = "Restart Anyway";
+	else if (client->restartHint == SmRestartImmediately)
+	    hint = "Restart Immediately";
+	else if (client->restartHint == SmRestartNever)
+	    hint = "Restart Never";
+	else
+	    hint = "";
+
 	clientInfo = (String) XtMalloc (strlen (progName) +
-	    extra1 + extra2 + 4 + strlen (hostname));
+	    extra1 + extra2 + 3 + strlen (hostname) + 3 + strlen (hint) + 1);
 
 	for (k = 0; k < extra1; k++)
 	    extraBuf1[k] = ' ';
@@ -527,15 +468,103 @@ UpdateClientList ()
 	    extraBuf2[k] = ' ';
 	extraBuf2[extra2] = '\0';
 
-	sprintf (clientInfo, "%s%s (%s%s)", progName, extraBuf1,
-	    hostname, extraBuf2);
+	sprintf (clientInfo, "%s%s (%s%s)   %s", progName, extraBuf1,
+	    hostname, extraBuf2, hint);
 
 	clientListRecs[i] = client;
 	clientListNames[i++] = clientInfo;
     }
 
     XawListChange (clientListWidget,
-	clientListNames, numClientListNames, longest, True);
+	clientListNames, numClientListNames, 0, True);
+}
+
+
+
+static void
+RestartHintXtProc (w, client_data, callData)
+
+Widget		w;
+XtPointer 	client_data;
+XtPointer 	callData;
+
+{
+    XawListReturnStruct *current;
+    ClientRec *client;
+    Widget active;
+    SmProp prop;
+    SmPropValue propval;
+    int found = 0, i;
+    char hint;
+
+    current = XawListShowCurrent (clientListWidget);
+
+    if (!current || current->list_index < 0)
+    {
+	if (current)
+	    XtFree ((char *) current);
+	return;
+    }
+
+    client = clientListRecs[current->list_index];
+
+    active = XawSimpleMenuGetActiveEntry (restartHintMenu);
+
+    if (active == restartIfRunning)
+	hint = SmRestartIfRunning;
+    else if (active == restartAnyway)
+	hint = SmRestartAnyway;
+    else if (active == restartImmediately)
+	hint = SmRestartImmediately;
+    else if (active == restartNever)
+	hint = SmRestartNever;
+    else
+	return;
+
+    client->restartHint = hint;
+
+    for (i = 0; i < client->numProps; i++)
+	if (strcmp (SmRestartStyleHint, client->props[i]->name) == 0)
+	{
+	    *((char *) (client->props[i]->vals[0].value)) = hint;
+	    found = 1;
+	    break;
+	}
+
+    if (!found)
+    {
+	prop.name = SmRestartStyleHint;
+	prop.type = SmCARD8;
+	prop.num_vals = 1;
+	prop.vals = &propval;
+	propval.value = (SmPointer) &hint;
+	propval.length = 1;
+	
+	SetProperty (client, &prop, True /* Malloc for us */);
+    }
+
+    UpdateClientList ();
+    XawListHighlight (clientListWidget, current_client_selected);
+
+    if (client_prop_visible && clientListRecs &&
+	clientListRecs[current_client_selected] == client)
+    {
+	DisplayProps (client);
+    }
+}
+
+
+
+static void
+clientPropDoneXtProc (w, client_data, callData)
+
+Widget		w;
+XtPointer 	client_data;
+XtPointer 	callData;
+
+{
+    XtPopdown (clientPropPopup);
+    client_prop_visible = 0;
 }
 
 
@@ -557,7 +586,7 @@ ClientInfoXtProc (w, client_data, callData)
 	XawListHighlight (clientListWidget, 0);
 	ShowHint (clientListRecs[0]);
 	if (client_prop_visible)
-	    DisplayProps (clientListRecs[0], clientListNames[0]);
+	    DisplayProps (clientListRecs[0]);
 
 	XtVaGetValues (mainWindow, XtNx, &x, XtNy, &y, NULL);
 	XtTranslateCoords (mainWindow, x, y, &rootx, &rooty);
@@ -572,12 +601,26 @@ ClientInfoXtProc (w, client_data, callData)
 }
 
 
+#define CHECK_WIDTH 9
+#define CHECK_HEIGHT 8
+
+static unsigned char check_bits[] = {
+   0x00, 0x01, 0x80, 0x01, 0xc0, 0x00, 0x60, 0x00,
+   0x31, 0x00, 0x1b, 0x00, 0x0e, 0x00, 0x04, 0x00
+};
+
 
 void
 create_client_info_popup ()
 
 {
-    extern Widget AddToggle ();
+    /*
+     * Make checkmark bitmap
+     */
+
+    checkBitmap = XCreateBitmapFromData (
+	XtDisplay (topLevel), RootWindowOfScreen (XtScreen (topLevel)),
+	(char *) check_bits, CHECK_WIDTH, CHECK_HEIGHT);
 
 
     /*
@@ -627,9 +670,48 @@ create_client_info_popup ()
     XtAddCallback (killClientButton, XtNcallback, KillClientXtProc, 0);
 
 
+    restartHintButton = XtVaCreateManagedWidget (
+	"restartHintButton", menuButtonWidgetClass, clientInfoForm,
+	XtNmenuName, "restartHintMenu",
+        XtNfromHoriz, killClientButton,
+        XtNfromVert, NULL,
+	XtNtop, XawChainBottom,
+	XtNbottom, XawChainBottom,
+	NULL);
+
+    restartHintMenu = XtVaCreatePopupShell (
+	"restartHintMenu", simpleMenuWidgetClass, clientInfoForm,
+	NULL);
+
+    restartIfRunning = XtVaCreateManagedWidget (
+	"restartIfRunning", smeBSBObjectClass, restartHintMenu,
+	XtNleftMargin, 18,
+	NULL);
+
+    restartAnyway = XtVaCreateManagedWidget (
+	"restartAnyway", smeBSBObjectClass, restartHintMenu,
+	XtNleftMargin, 18,
+	NULL);
+
+    restartImmediately = XtVaCreateManagedWidget (
+	"restartImmediately", smeBSBObjectClass, restartHintMenu,
+	XtNleftMargin, 18,
+	NULL);
+
+    restartNever = XtVaCreateManagedWidget (
+	"restartNever", smeBSBObjectClass, restartHintMenu,
+	XtNleftMargin, 18,
+	NULL);
+
+    XtAddCallback (restartIfRunning, XtNcallback, RestartHintXtProc, 0);
+    XtAddCallback (restartAnyway, XtNcallback, RestartHintXtProc, 0);
+    XtAddCallback (restartImmediately, XtNcallback, RestartHintXtProc, 0);
+    XtAddCallback (restartNever, XtNcallback, RestartHintXtProc, 0);
+
+
     clientInfoDoneButton = XtVaCreateManagedWidget (
 	"clientInfoDoneButton", commandWidgetClass, clientInfoForm,
-        XtNfromHoriz, killClientButton,
+        XtNfromHoriz, restartHintButton,
         XtNfromVert, NULL,
 	XtNtop, XawChainTop,
 	XtNbottom, XawChainTop,
@@ -650,69 +732,6 @@ create_client_info_popup ()
 	NULL);
 
     XtAddCallback (clientListWidget, XtNcallback, ClientListXtProc, 0);
-
-
-    restartHintLabel = XtVaCreateManagedWidget (
-	"restartHintLabel", labelWidgetClass, clientInfoForm,
-        XtNfromHoriz, NULL,
-        XtNfromVert, clientListWidget,
-        XtNborderWidth, 0,
-	XtNtop, XawChainBottom,
-	XtNbottom, XawChainBottom,
-	NULL);
-
-    restartIfRunning = AddToggle (
-	"restartIfRunning", 			/* widgetName */
-	clientInfoForm,				/* parent */
-	1,					/* state */
-        NULL,					/* radioGroup */
-        (XtPointer) &restartHints[0],		/* radioData */
-        restartHintLabel,			/* fromHoriz */
-        clientListWidget,			/* fromVert */
-	XawChainBottom,				/* top */
-	XawChainBottom				/* bottom */
-    );
-
-    restartAnyway = AddToggle (
-	"restartAnyway", 			/* widgetName */
-	clientInfoForm,				/* parent */
-	0,					/* state */
-        restartIfRunning,			/* radioGroup */
-        (XtPointer) &restartHints[1],		/* radioData */
-        restartIfRunning,			/* fromHoriz */
-        clientListWidget,			/* fromVert */
-	XawChainBottom,				/* top */
-	XawChainBottom				/* bottom */
-    );
-
-    restartImmediately = AddToggle (
-	"restartImmediately", 			/* widgetName */
-	clientInfoForm,				/* parent */
-	0,					/* state */
-        restartIfRunning,			/* radioGroup */
-        (XtPointer) &restartHints[2],		/* radioData */
-        restartAnyway,				/* fromHoriz */
-        clientListWidget,			/* fromVert */
-	XawChainBottom,				/* top */
-	XawChainBottom				/* bottom */
-    );
-
-    restartNever = AddToggle (
-	"restartNever", 			/* widgetName */
-	clientInfoForm,				/* parent */
-	0,					/* state */
-        restartIfRunning,			/* radioGroup */
-        (XtPointer) &restartHints[3],		/* radioData */
-        restartImmediately,			/* fromHoriz */
-        clientListWidget,			/* fromVert */
-	XawChainBottom,				/* top */
-	XawChainBottom				/* bottom */
-    );
-
-    XtAddCallback (restartIfRunning, XtNcallback, RestartHintXtProc, 0);
-    XtAddCallback (restartAnyway, XtNcallback, RestartHintXtProc, 0);
-    XtAddCallback (restartImmediately, XtNcallback, RestartHintXtProc, 0);
-    XtAddCallback (restartNever, XtNcallback, RestartHintXtProc, 0);
 
 
     /*
