@@ -1,4 +1,4 @@
-/* $XConsortium: globals.h,v 1.1 93/08/19 18:25:25 mor Exp $ */
+/* $XConsortium: globals.h,v 1.2 93/09/08 20:02:56 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -24,6 +24,10 @@ extern IceACLauthStatus _IceACLauth2proc ();
 
 extern Bool _IceProcessCoreMessage ();
 
+IceConn     	_IceConnectionObjs[256];
+char	    	*_IceConnectionStrings[256];
+int     	_IceConnectionCount = 0;
+
 _IceProtocol 	_IceProtocols[255];
 int         	_IceLastMajorOpcode = 0;
 
@@ -38,6 +42,8 @@ IceACLauthRec	_IceACLauthRecs[] = {
 int		_IceVersionCount = 1;
 _IceVersion	_IceVersions[] = {
 	  	    {IceProtoMajor, IceProtoMinor, _IceProcessCoreMessage}};
+
+_IceWatchProc	*_IceWatchProcs = NULL;
 
 IceErrorHandler   _IceErrorHandler   = _IceDefaultErrorHandler;
 IceIOErrorHandler _IceIOErrorHandler = _IceDefaultIOErrorHandler;
