@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium$
+ * $XConsortium: krb5auth.c,v 1.1 94/01/14 19:41:17 gildea Exp $
  *
  * Copyright 1994 Massachusetts Institute of Technology
  *
@@ -111,7 +111,6 @@ int preauth_search_list[] = {
 
 /*
  * Krb5Init - lifted from kinit.c
- * Copyright 1990 by the Massachusetts Institute of Technology.
  * Get TGT.
  * Returns 0 if successful, 1 if not.
  */
@@ -131,20 +130,22 @@ Krb5Init(name, passwd)
 
     if (ccache == NULL) {
 	 if (code = krb5_cc_default(&ccache)) {
-	      com_err("xdm", code, "while getting default ccache");
+	      LogError("%s while getting default Krb5 ccache\n",
+		       error_message(code));
 	      return 1;
 	 }
     }
 
     if (code = krb5_parse_name (name, &me)) {
-	 com_err ("xdm", code, "when parsing name %s", name);
+	 LogError("%s while parsing Krb5 name \"%s\"\n",
+		  error_message(code), name);
 	 return 1;
     }
 
     code = krb5_cc_initialize (ccache, me);
     if (code != 0) {
-	com_err ("xdm", code, "when initializing cache %s",
-		 krb5_cc_default_name());
+	LogError("%s while initializing Krb5 cache \"%s\"\n",
+		 error_message(code), krb5_cc_default_name());
 	return 1;
     }
 
@@ -159,7 +160,8 @@ Krb5Init(name, passwd)
 					krb5_princ_realm(me)->length,
 					krb5_princ_realm(me)->data,
 					0)) {
-	com_err("xdm", code, "while building server name");
+	LogError("%s while building Krb5 TGT server name\n",
+		 error_message(code));
 	return 1;
     }
 
@@ -167,11 +169,13 @@ Krb5Init(name, passwd)
 
     code = krb5_os_localaddr(&my_addresses);
     if (code != 0) {
-	com_err ("xdm", code, "when getting my address");
+	LogError("%s while getting my address for Krb5\n",
+		 error_message(code));
 	return 1;
     }
     if (code = krb5_timeofday(&now)) {
-	com_err("xdm", code, "while getting time of day");
+	LogError("%s while getting time of day for Krb5\n",
+		 error_message(code));
 	return 1;
     }
     my_creds.times.starttime = 0;	/* start timer when request
@@ -196,16 +200,17 @@ Krb5Init(name, passwd)
     krb5_free_addresses(my_addresses);
     
     if (code) {
+	char *my_name = NULL;
+	int code2 = krb5_unparse_name(me, &my_name);
 	if (code == KRB5KRB_AP_ERR_BAD_INTEGRITY) {
-	    char *my_name = NULL;
-	    code = krb5_unparse_name(me, &my_name);
 	    LogError ("password incorrect for Krb5 principal \"%s\"\n",
-		      code ? name : my_name);
-	    if (my_name)
-		free (my_name);
+		      code2 ? name : my_name);
 	}
 	else
-	    com_err ("xdm", code, "while getting initial credentials");
+	    LogError("%s while getting initial Krb5 credentials for \"%s\"\n",
+		     error_message(code), code2 ? name : my_name);
+	if (my_name)
+	    free (my_name);
 	return 1;
     }
     return 0;
