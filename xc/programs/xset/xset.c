@@ -1,5 +1,5 @@
 /* 
- * $XConsortium: xset.c,v 1.56 91/01/06 12:13:55 rws Exp $ 
+ * $XConsortium: xset.c,v 1.57 91/01/09 17:40:57 rws Exp $ 
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985	*/
@@ -16,7 +16,7 @@ suitability of this software for any purpose.  It is provided "as is"
 without express or implied warranty.
 */
 
-/* $XConsortium: xset.c,v 1.56 91/01/06 12:13:55 rws Exp $ */
+/* $XConsortium: xset.c,v 1.57 91/01/09 17:40:57 rws Exp $ */
 
 #include <stdio.h>
 #include <ctype.h>
@@ -690,7 +690,8 @@ int numpixels;
   int i;
 
   viproto.visualid = XVisualIDFromVisual (visual);
-  vip = XGetVisualInfo (dpy, VisualIDMask, &viproto, &nvisuals);
+  viproto.screen = scr;
+  vip = XGetVisualInfo (dpy, VisualIDMask|VisualScreenMask, &viproto, &nvisuals);
   if (!vip || nvisuals != 1) {
       fprintf (stderr, "%s:  got %d visual info structures for visual 0x%lx\n",
 	       progName, nvisuals, viproto.visualid);
