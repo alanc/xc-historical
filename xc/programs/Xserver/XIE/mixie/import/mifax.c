@@ -1,4 +1,4 @@
-/* $XConsortium: mifax.c,v 1.1 93/10/26 09:45:23 rws Exp $ */
+/* $XConsortium: mifax.c,v 1.2 93/10/31 09:45:08 dpw Exp $ */
 /**** module mifax.c ****/
 /******************************************************************************
 				NOTICE
@@ -141,7 +141,7 @@ photomapPtr map = ((iPhotoDefPtr)ped->elemPvt)->map;
 peTexPtr pet = ped->peTex;
 faxPvtPtr texpvt=(faxPvtPtr) pet->private;
 
- 	if (!common_init(flo,ped,(void *)map->tecParms,map->technique))
+ 	if (!common_init(flo,ped,(pointer)map->tecParms,map->technique))
 		return(0);
 
  	texpvt->map = map;	/* can be used as flag in Activate routine */ 
@@ -162,7 +162,7 @@ xieFloImportClientPhoto *raw = (xieFloImportClientPhoto *) ped->elemRaw;
 peTexPtr		 pet = ped->peTex;
 faxPvtPtr	      texpvt = (faxPvtPtr) pet->private;
 
-	if( !common_init(flo,ped,(void *) &raw[1],raw->decodeTechnique) )
+	if( !common_init(flo,ped,(pointer) &raw[1],raw->decodeTechnique) )
 		return(0);
 
 	texpvt->notify = raw->notify;
@@ -174,7 +174,7 @@ faxPvtPtr	      texpvt = (faxPvtPtr) pet->private;
 static int common_init(flo,ped,tec,technique)
 floDefPtr flo;
 peDefPtr  ped;
-void *tec;		/* we won't know the type until later */
+pointer tec;		/* we won't know the type until later */
 xieTypDecodeTechnique technique;
 			/*  (but we can get it from this  :-) */
 {
@@ -329,7 +329,7 @@ int ActivateICPhotoFax(flo,ped,pet)
   * exit with FALSE unless we are absolutely sure we are done with all
   * current input strips.
   */
-  src = GetSrcBytes(BytePixel,flo,pet,sbnd,sbnd->current,
+  src = GetSrcBytes(BytePixel *,flo,pet,sbnd,sbnd->current,
 		    MIN_BYTES_NEEDED,KEEP);
   /*  
    * Ok, so if we are here, there is src available. We will ignore it
@@ -350,7 +350,7 @@ int ActivateICPhotoFax(flo,ped,pet)
   /*
    * We have some data to decode, anything to write to?
    */
-  while (dst = GetDst(BytePixel,flo,pet,dbnd,state->o_line,KEEP)) {
+  while (dst = GetDst(BytePixel *,flo,pet,dbnd,state->o_line,KEEP)) {
     
     
     /*
