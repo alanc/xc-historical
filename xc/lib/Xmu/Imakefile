@@ -27,8 +27,8 @@ OBJS = \
 	Lower.o \
 	RdBitF.o \
 	StrToBS.o \
-	StrToBmap.c \
-	StrToCurs.c \
+	StrToBmap.o \
+	StrToCurs.o \
 	StrToJust.o \
 	StrToOrnt.o
 
