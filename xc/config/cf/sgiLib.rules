@@ -1,0 +1,525 @@
+/* Replacement Rules */
+/* Changed to a single shell command for pmake/smake */
+/*
+ * NormalLibraryObjectRule - generate make rules to build "normal" objects.
+ */
+#define	NormalLibraryObjectRule()					@@\
+.c.o:									@@\
+	$(RM) $@ $*.os \						@@\
+	&& $(CC) -c $(CFLAGS) $*.c \					@@\
+	&& $(LD) -x -r $@ -o $*.os \					@@\
+	&& $(MV) $*.os $@
+
+#define NormalMultiObjectRule(dst,src,flag)				@@\
+dst.c:									@@\
+	$(LN) src.c dst.c						@@\
+dst.o: src.c dst.c							@@\
+	$(RM) dst.o dst.os \						@@\
+	&& $(CC) flag $(CFLAGS) -c dst.c \				@@\
+	&& $(LD) -x -r dst.o -o dst.os \				@@\
+	&& $(MV) dst.os dst.o						@@\
+depend:: dst.c								@@\
+clean::									@@\
+	$(RM) dst.c
+
+/*
+ * ProfiledLibraryObjectRule - generate make rules to build both profiled
+ * and "normal" objects.
+ */
+#define	ProfiledLibraryObjectRule()					@@\
+all::									@@\
+	@if [ ! -d profiled ]; then mkdir profiled; else exit 0; fi	@@\
+									@@\
+.c.o:									@@\
+	$(RM) $@ profiled/$@ $*.os \					@@\
+	&& $(CC) -pg -c $(CFLAGS) $*.c \				@@\
+	&& $(MV) $@ profiled/$@ \					@@\
+	&& $(CC) -c $(CFLAGS) $*.c \					@@\
+	&& $(LD) -x -r $@ -o $*.os \					@@\
+	&& $(MV) $*.os $@						@@\
+									@@\
+clean::									@@\
+	-@if [ -d profiled ]; then echo "	$(RM) profiled/?*.o"; \	@@\
+		$(RM) profiled/?*.o; else exit 0; fi			@@\
+
+#define ProfiledMultiObjectRule(dst,src,flag)				@@\
+dst.c:									@@\
+	$(LN) src.c dst.c						@@\
+dst.o: src.c dst.c							@@\
+	$(RM) dst.o profiled/dst.o dst.os \				@@\
+	&& $(CC) flag $(CFLAGS) -c -pg dst.c \				@@\
+	&& $(MV) dst.o profiled/dst.o \					@@\
+	&& $(CC) flag $(CFLAGS) -c dst.c \				@@\
+	&& $(LD) -x -r dst.o -o dst.os \				@@\
+	&& $(MV) dst.os dst.o						@@\
+depend:: dst.c								@@\
+clean::									@@\
+	$(RM) dst.c
+/*
+ * DebuggedLibraryObjectRule - generate make rules to build both debuggable
+ * and "normal" objects.
+ */
+#define	DebuggedLibraryObjectRule()					@@\
+all::									@@\
+	@if [ ! -d debugger ]; then mkdir debugger; else exit 0; fi	@@\
+									@@\
+.c.o:									@@\
+	$(RM) $@ debugger/$@ $*.os \					@@\
+	&& $(CC) -g -c $(CFLAGS) $*.c \					@@\
+	&& $(MV) $@ debugger/$@ \					@@\
+	&& $(CC) -c $(CFLAGS) $*.c \					@@\
+	&& $(LD) -x -r $@ -o $*.os \					@@\
+	&& $(MV) $*.os $@						@@\
+									@@\
+clean::									@@\
+	-@if [ -d debugger ]; then echo "	$(RM) debugger/?*.o"; \ @@\
+		$(RM) debugger/?*.o; else exit 0; fi			@@\
+
+#define DebuggedMultiObjectRule(dst,src,flag)				@@\
+dst.c:									@@\
+	$(LN) src.c dst.c						@@\
+dst.o: src.c dst.c							@@\
+	$(RM) dst.o debugger/dst.o dst.os \				@@\
+	&& $(CC) flag $(CFLAGS) -c -g dst.c \				@@\
+	&& $(MV) dst.o debugger/dst.o \					@@\
+	&& $(CC) flag $(CFLAGS) -c dst.c \				@@\
+	&& $(LD) -x -r dst.o -o dst.os \				@@\
+	&& $(MV) dst.os dst.o						@@\
+depend:: dst.c								@@\
+clean::									@@\
+	$(RM) dst.c
+
+/*
+ * DebuggedAndProfiledLibraryOjbectRule - generate make rules to build
+ * debuggable, profiled, and "normal" objects.
+ */
+#define	DebuggedAndProfiledLibraryObjectRule()				@@\
+all::									@@\
+	@if [ ! -d profiled ]; then mkdir profiled; else exit 0; fi	@@\
+	@if [ ! -d debugger ]; then mkdir debugger; else exit 0; fi	@@\
+									@@\
+.c.o:									@@\
+	$(RM) $@ profiled/$@ debugger/$@ $*.os \			@@\
+	&& $(CC) -pg -c $(CFLAGS) $*.c \				@@\
+	&& $(MV) $@ profiled/$@ \					@@\
+	&& $(CC) -g -c $(CFLAGS) $*.c \					@@\
+	&& $(MV) $@ debugger/$@ \					@@\
+	&& $(CC) -c $(CFLAGS) $*.c \					@@\
+	&& $(LD) -x -r $@ -o $*.os \					@@\
+	&& $(MV) $*.os $@						@@\
+									@@\
+clean::									@@\
+	-@if [ -d profiled ]; then echo "	$(RM) profiled/?*.o"; \ @@\
+		$(RM) profiled/?*.o; else exit 0; fi			@@\
+	-@if [ -d debugger ]; then echo "	$(RM) debugger/?*.o"; \ @@\
+		$(RM) debugger/?*.o; else exit 0; fi			@@\
+
+#define DebuggedAndProfiledMultiObjectRule(dst,src,flag)		@@\
+dst.c:									@@\
+	$(LN) src.c dst.c						@@\
+dst.o: src.c dst.c							@@\
+	$(RM) dst.o debugger/dst.o dst.os profiled/dst.o \		@@\
+	&& $(CC) flag $(CFLAGS) -c -g dst.c \				@@\
+	&& $(MV) dst.o debugger/dst.o \					@@\
+	&& $(CC) flag $(CFLAGS) -c -pg dst.c \				@@\
+	&& $(MV) dst.o profiled/dst.o \					@@\
+	&& $(CC) flag $(CFLAGS) -c dst.c \				@@\
+	&& $(LD) -x -r dst.o -o dst.os \				@@\
+	&& $(MV) dst.os dst.o						@@\
+depend:: dst.c								@@\
+clean::									@@\
+	$(RM) dst.c
+
+/*
+ * SharedLibraryObjectRule - generate make rules to build shared and "normal"
+ * object files.
+ */
+#ifndef SharedLibraryObjectRule
+#define SharedLibraryObjectRule()					@@\
+all::									@@\
+	@if [ ! -d shared ]; then mkdir shared; else exit 0; fi		@@\
+									@@\
+.c.o:									@@\
+	$(RM) $@ shared/$@ $*.os \					@@\
+	&& $(CC) -G 0 -c $(SHAREDCODEDEF) $(SHLIBDEF) $(CFLAGS) $*.c \	@@\
+	&& $(MV) $@ shared/$*.o \					@@\
+	&& $(CC) -c $(CFLAGS) $*.c \					@@\
+	&& $(LD) -x -r $@ -o $*.os \					@@\
+	&& $(MV) $*.os $@						@@\
+									@@\
+clean::									@@\
+	-@if [ -d shared ]; then echo "	$(RM) shared/?*.o"; \		@@\
+		$(RM) shared/?*.o; else exit 0; fi			@@\
+
+#endif /* SharedLibraryObjectRule */
+
+/*
+ * SharedAndDebuggedLibraryObjectRule - generate make rules to build shared,
+ * debuggable, and "normal" object files.
+ */
+#ifndef SharedAndDebuggedLibraryObjectRule
+#define SharedAndDebuggedLibraryObjectRule()				@@\
+all::									@@\
+	@if [ ! -d shared ]; then mkdir shared; else exit 0; fi		@@\
+	@if [ ! -d debugger ]; then mkdir debugger; else exit 0; fi	@@\
+									@@\
+.c.o:									@@\
+	$(RM) $@ shared/$@ debugger/$@ $*.os \				@@\
+	&& $(CC) -G 0 -c $(SHAREDCODEDEF) $(SHLIBDEF) $(CFLAGS) $*.c \	@@\
+	&& $(MV) $@ shared/$*.o \					@@\
+	&& $(CC) -g -c $(CFLAGS) $*.c \					@@\
+	&& $(MV) $@ debugger/$@ \					@@\
+	&& $(CC) -c $(CFLAGS) $*.c \					@@\
+	&& $(LD) -x -r $@ -o $*.os \					@@\
+	&& $(MV) $*.os $@						@@\
+									@@\
+clean::									@@\
+	-@if [ -d shared ]; then echo "	$(RM) shared/?*.o"; \		@@\
+		$(RM) shared/?*.o; else exit 0; fi			@@\
+	-@if [ -d debugger ]; then echo "	$(RM) debugger/?*.o"; \ @@\
+		$(RM) debugger/?*.o; else exit 0; fi			@@\
+
+#endif /* SharedAndDebuggedLibraryObjectRule */
+
+/*
+ * SpecialSharedAndDebuggedObjectRule - generate rules to compile a file 
+ * with special flags and to make shared and debuggable versions.
+ */
+#ifndef SpecialSharedAndDebuggedObjectRule
+#define	SpecialSharedAndDebuggedObjectRule(objs,depends,options)	@@\
+all::									@@\
+	@if [ ! -d shared ]; then mkdir shared; else exit 0; fi		@@\
+	@if [ ! -d debugger ]; then mkdir debugger; else exit 0; fi	@@\
+									@@\
+objs:	depends								@@\
+	$(RM) $@ shared/$@ debugger/$@ $*.os \				@@\
+	&& $(CC) -G 0 -c $(SHAREDCODEDEF) $(SHLIBDEF) $(CFLAGS) options $*.c \	@@\
+	&& $(MV) $@ shared/$*.o \					@@\
+	&& $(CC) -g -c $(CFLAGS) options $*.c \				@@\
+	&& $(MV) $@ debugger/$@ \					@@\
+	&& $(CC) -c $(CFLAGS) options $*.c \				@@\
+	&& $(LD) -x -r $@ -o $*.os \					@@\
+	&& $(MV) $*.os $@
+
+#endif /* SpecialSharedAndDebuggedObjectRule */
+
+/*
+ * SpecialSharedObjectRule - generate rules to compile a file 
+ * with special flags and to make shared and debuggable versions.
+ */
+#ifndef SpecialSharedObjectRule
+#define	SpecialSharedObjectRule(objs,depends,options)			@@\
+all::									@@\
+	@if [ ! -d shared ]; then mkdir shared; else exit 0; fi		@@\
+									@@\
+objs:	depends								@@\
+	$(RM) $@ shared/$@ $*.os \					@@\
+	&& $(CC) -G 0 -c $(SHAREDCODEDEF) $(SHLIBDEF) $(CFLAGS) options $*.c \	@@\
+	&& $(MV) $@ shared/$*.o \					@@\
+	&& $(CC) -c $(CFLAGS) options $*.c \				@@\
+	&& $(LD) -x -r $@ -o $*.os \					@@\
+	&& $(MV) $*.os $@
+
+#endif /* SpecialSharedObjectRule */
+
+/*
+ * SpecialObjectRule - generate rules to compile a file with special flags.
+ */
+#ifndef SpecialObjectRule
+#define SpecialObjectRule(objs,depends,options)				@@\
+objs:	depends								@@\
+	$(RM) $@ $*.os \						@@\
+	&& $(CC) -c $(CFLAGS) options $*.c \				@@\
+	&& $(LD) -x -r $@ -o $*.os \					@@\
+	&& $(MV) $*.os $@
+#endif /* SpecialObjectRule */
+
+/*
+ * SpecialProfiledObjectRule - generate rules to compile a file with special
+ * flags and to make a profiled version.
+ */
+#ifndef SpecialProfiledObjectRule
+#define	SpecialProfiledObjectRule(objs,depends,options)			@@\
+all::									@@\
+	@if [ ! -d profiled ]; then mkdir profiled; else exit 0; fi	@@\
+									@@\
+objs:	depends								@@\
+	$(RM) $@ profiled/$@ $*.os  \					@@\
+	&& $(CC) -pg -c $(CFLAGS) options $*.c \			@@\
+	&& $(MV) $*.o profiled/$*.o \					@@\
+	&& $(CC) -c $(CFLAGS) options $*.c \				@@\
+	&& $(LD) -x -r $@ -o $*.os \					@@\
+	&& $(MV) $*.os $@
+#endif /* SpecialProfiledObjectRule */
+
+/*
+ * SpecialDebuggedObjectRule - generate rules to compile a file with special
+ * flags and to make a debuggable version.
+ */
+#ifndef SpecialDebuggedObjectRule
+#define	SpecialDebuggedObjectRule(objs,depends,options)			@@\
+all::									@@\
+	@if [ ! -d debugger ]; then mkdir debugger; else exit 0; fi	@@\
+									@@\
+objs:	depends								@@\
+	$(RM) $@ debugger/$@ $*.os \					@@\
+	&& $(CC) -g -c $(CFLAGS) options $*.c \				@@\
+	&& $(MV) $*.o debugger/$*.o \					@@\
+	&& $(CC) -c $(CFLAGS) options $*.c \				@@\
+	&& $(LD) -x -r $@ -o $*.os \					@@\
+	&& $(MV) $*.os $@
+#endif /* SpecialDebuggedObjectRule */
+
+/*
+ * SpecialDebuggedAndProfiledObjectRule - generate rules to compile a file 
+ * with special flags and to make debuggable and profiled versions.
+ */
+#ifndef SpecialDebuggedAndProfiledObjectRule
+#define	SpecialDebuggedAndProfiledObjectRule(objs,depends,options)	@@\
+all::									@@\
+	@if [ ! -d profiled ]; then mkdir profiled; else exit 0; fi	@@\
+	@if [ ! -d debugger ]; then mkdir debugger; else exit 0; fi	@@\
+									@@\
+objs:	depends								@@\
+	$(RM) $@ profiled/$@ debugger/$@ $*.os  \			@@\
+	&& $(CC) -pg -c $(CFLAGS) options $*.c \			@@\
+	&& $(MV) $@ profiled/$@ \					@@\
+	&& $(CC) -g -c $(CFLAGS) options $*.c \				@@\
+	&& $(MV) $@ debugger/$@ \					@@\
+	&& $(CC) -c $(CFLAGS) options $*.c \				@@\
+	&& $(LD) -x -r $@ -o $*.os \					@@\
+	&& $(MV) $*.os $@
+#endif /* SpecialDebuggedAndProfiledObjectRule */
+
+#define	GZeroLibraryObjectRule()					@@\
+all::									@@\
+	@if [ ! -d gzero ]; then mkdir gzero; else exit 0; fi		@@\
+.c.o:									@@\
+	$(RM) $@ gzero/$@ $*.os \					@@\
+	&& $(CC) -G 0 -c $(CFLAGS) $*.c \				@@\
+	&& $(LD) -x -r $@ -o gzero/$@ \					@@\
+	&& $(CC) -c $(CFLAGS) $*.c \					@@\
+	&& $(LD) -x -r $@ -o $*.os \					@@\
+	&& $(MV) $*.os $@						@@\
+									@@\
+clean::									@@\
+	-@if [ -d gzero ]; then echo "	$(RM) gzero/?*.o"; \		@@\
+		$(RM) gzero/?*.o; else exit 0; fi			@@\
+
+/*
+ * DebuggedAndGZeroLibraryObjectRule - generate make rules to build
+ * debuggable, "-G 0", and "normal" objects.
+ */
+#define	DebuggedAndGZeroLibraryObjectRule()				@@\
+all::									@@\
+	@if [ ! -d debugger ]; then mkdir debugger; else exit 0; fi	@@\
+	@if [ ! -d gzero ]; then mkdir gzero; else exit 0; fi		@@\
+									@@\
+.c.o:									@@\
+	$(RM) $@ debugger/$@ gzero/$@ $*.os \				@@\
+	&& $(CC) -g -c $(CFLAGS) $*.c \					@@\
+	&& $(MV) $@ debugger/$@ \					@@\
+	&& $(CC) -G 0 -c $(CFLAGS) $*.c \				@@\
+	&& $(LD) -x -r $@ -o gzero/$@ \					@@\
+	&& $(CC) -c $(CFLAGS) $*.c \					@@\
+	&& $(LD) -x -r $@ -o $*.os \					@@\
+	&& $(MV) $*.os $@						@@\
+									@@\
+clean::									@@\
+	-@if [ -d debugger ]; then echo "	$(RM) debugger/?*.o"; \ @@\
+		$(RM) debugger/?*.o; else exit 0; fi			@@\
+	-@if [ -d gzero ]; then echo "	$(RM) gzero/?*.o"; \		@@\
+		$(RM) gzero/?*.o; else exit 0; fi			@@\
+
+/*
+ * SharedAndGZeroLibraryObjectRule - generate make rules to build shared,
+ * "-G 0", and "normal" object files.
+ */
+#define SharedAndGZeroLibraryObjectRule()				@@\
+all::									@@\
+	@if [ ! -d shared ]; then mkdir shared; else exit 0; fi		@@\
+	@if [ ! -d gzero ]; then mkdir gzero; else exit 0; fi		@@\
+									@@\
+.c.o:									@@\
+	$(RM) $@ gzero/$@ shared/$@ $*.os \				@@\
+	&& $(CC) -G 0 -c $(SHAREDCODEDEF) $(SHLIBDEF) $(CFLAGS) $*.c \	@@\
+	&& $(MV) $@ shared/$*.o \					@@\
+	&& $(CC) -G 0 -c $(CFLAGS) $*.c \				@@\
+	&& $(LD) -x -r $@ -o gzero/$@ \					@@\
+	&& $(CC) -c $(CFLAGS) $*.c \					@@\
+	&& $(LD) -x -r $@ -o $*.os \					@@\
+	&& $(MV) $*.os $@						@@\
+									@@\
+clean::									@@\
+	-@if [ -d shared ]; then echo "	$(RM) shared/?*.o"; \		@@\
+		$(RM) shared/?*.o; else exit 0; fi			@@\
+	-@if [ -d gzero ]; then echo "	$(RM) gzero/?*.o"; \		@@\
+		$(RM) gzero/?*.o; else exit 0; fi			@@\
+
+
+/*
+ * SharedAndDebuggedAndGZeroLibraryObjectRule - generate make rules to
+ * build shared, debuggable, "-G 0", and "normal" object files.
+ */
+#define SharedAndDebuggedAndGZeroLibraryObjectRule()			@@\
+all::									@@\
+	@if [ ! -d shared ]; then mkdir shared; else exit 0; fi		@@\
+	@if [ ! -d debugger ]; then mkdir debugger; else exit 0; fi	@@\
+	@if [ ! -d gzero ]; then mkdir gzero; else exit 0; fi		@@\
+									@@\
+.c.o:									@@\
+	$(RM) $@ shared/$@ gzero/$@ debugger/$@ $*.os \			@@\
+	&& $(CC) -G 0 -c $(SHAREDCODEDEF) $(SHLIBDEF) $(CFLAGS) $*.c \	@@\
+	&& $(MV) $@ shared/$*.o \					@@\
+	&& $(CC) -g -c $(CFLAGS) $*.c \					@@\
+	&& $(MV) $@ debugger/$@ \					@@\
+	&& $(CC) -G 0 -c $(CFLAGS) $*.c \				@@\
+	&& $(LD) -x -r $@ -o gzero/$@ \					@@\
+	&& $(CC) -c $(CFLAGS) $*.c \					@@\
+	&& $(LD) -x -r $@ -o $*.os \					@@\
+	&& $(MV) $*.os $@						@@\
+									@@\
+clean::									@@\
+	-@if [ -d shared ]; then echo "	$(RM) shared/?*.o"; \		@@\
+		$(RM) shared/?*.o; else exit 0; fi			@@\
+	-@if [ -d debugger ]; then echo "	$(RM) debugger/?*.o"; \ @@\
+		$(RM) debugger/?*.o; else exit 0; fi			@@\
+	-@if [ -d gzero ]; then echo "	$(RM) gzero/?*.o"; \		@@\
+		$(RM) gzero/?*.o; else exit 0; fi			@@\
+
+
+/*
+ * SpecialSharedAndDebuggedAndGZeroObjectRule - generate rules to compile
+ * a file with special flags and to make many versions.
+ */
+#define	SpecialSharedAndDebuggedAndGZeroObjectRule(objs,depends,options)@@\
+all::									@@\
+	@if [ ! -d shared ]; then mkdir shared; else exit 0; fi		@@\
+	@if [ ! -d debugger ]; then mkdir debugger; else exit 0; fi	@@\
+	@if [ ! -d gzero ]; then mkdir gzero; else exit 0; fi		@@\
+									@@\
+objs:	depends								@@\
+	$(RM) $@ shared/$@ gzero/$@ debugger/$@ $*.os \			@@\
+	&& $(CC) -G 0 -c $(SHAREDCODEDEF) $(SHLIBDEF) $(CFLAGS) options $*.c \	@@\
+	&& $(MV) $@ shared/$*.o \					@@\
+	&& $(CC) -g -c $(CFLAGS) options $*.c \				@@\
+	&& $(MV) $@ debugger/$@ \					@@\
+	&& $(CC) -G 0 -c $(CFLAGS) options $*.c \			@@\
+	&& $(LD) -x -r $@ -o gzero/$@ \					@@\
+	&& $(CC) -c $(CFLAGS) options $*.c \				@@\
+	&& $(LD) -x -r $@ -o $*.os \					@@\
+	&& $(MV) $*.os $@
+
+
+/*
+ * SpecialSharedAndGZeroObjectRule - generate rules to compile a file 
+ * with special flags and to make shared and debuggable versions.
+ */
+#define	SpecialSharedAndGZeroObjectRule(objs,depends,options)		@@\
+all::									@@\
+	@if [ ! -d shared ]; then mkdir shared; else exit 0; fi		@@\
+	@if [ ! -d gzero ]; then mkdir gzero; else exit 0; fi		@@\
+									@@\
+objs:	depends								@@\
+	$(RM) $@ shared/$@ gzero/$@ $*.os \				@@\
+	&& $(CC) -G 0 -c $(SHAREDCODEDEF) $(SHLIBDEF) $(CFLAGS) options $*.c \	@@\
+	&& $(MV) $@ shared/$*.o \					@@\
+	&& $(CC) -G 0 -c $(CFLAGS) options $*.c \			@@\
+	&& $(LD) -x -r $@ -o gzero/$@ \					@@\
+	&& $(CC) -c $(CFLAGS) options $*.c \				@@\
+	&& $(LD) -x -r $@ -o $*.os \					@@\
+	&& $(MV) $*.os $@
+
+
+/*
+ * SpecialAndGZeroObjectRule - generate rules to compile a file with special
+ * flags.
+ */
+#define SpecialGZeroObjectRule(objs,depends,options)			@@\
+objs:	depends								@@\
+	$(RM) $@ gzero/$@ $*.os \					@@\
+	&& $(CC) -G 0 -c $(CFLAGS) options $*.c \			@@\
+	&& $(LD) -x -r $@ -o gzero/$@ \					@@\
+	&& $(CC) -c $(CFLAGS) options $*.c \				@@\
+	&& $(LD) -x -r $@ -o $*.os \					@@\
+	&& $(MV) $*.os $@
+
+/*
+ * SpecialDebuggedAndGZeroObjectRule - generate rules to compile a file
+ * with special flags and to make a "-G 0", and a debuggable version.
+ */
+#define	SpecialDebuggedAndGZeroObjectRule(objs,depends,options)		@@\
+all::									@@\
+	@if [ ! -d debugger ]; then mkdir debugger; else exit 0; fi	@@\
+	@if [ ! -d gzero ]; then mkdir gzero; else exit 0; fi		@@\
+									@@\
+objs:	depends								@@\
+	$(RM) $@ debugger/$@ gzero/$@ $*.os \				@@\
+	&& $(CC) -g -c $(CFLAGS) options $*.c \				@@\
+	&& $(MV) $*.o debugger/$*.o \					@@\
+	&& $(CC) -G 0 -c $(CFLAGS) options $*.c \			@@\
+	&& $(LD) -x -r $@ -o gzero/$@ \					@@\
+	&& $(CC) -c $(CFLAGS) options $*.c \				@@\
+	&& $(LD) -x -r $@ -o $*.os \					@@\
+	&& $(MV) $*.os $@
+
+/*
+ * NormalSharedLibraryTarget - generate rules to create a shared library;
+ * build it into a different name so that the we don't hose people by having
+ * the library gone for long periods.
+ */
+#ifndef NormalSharedLibraryTarget
+#define NormalSharedLibraryTarget(libname,rev,solist)			@@\
+AllTarget(lib/**/libname/**/_s)						@@\
+									@@\
+lib/**/libname/**/_s: sharedlib.o solist lib/**/libname/**/.spec	@@\
+	$(RM) $@ $@.a \							@@\
+	&& cd shared \							@@\
+	&& mkshlib -s ../lib/**/libname/**/.spec -t ../$@ -h ../$@.a \	@@\
+	&& ar rs ../$@.a sharedlib.o					@@\
+									@@\
+clean::									@@\
+	$(RM) lib/**/libname/**/_s lib/**/libname/**/_s.a
+
+#ifndef NormalSharedLibraryDataTarget
+#define NormalSharedLibraryDataTarget(libname,rev,salist)
+#endif /* NormalSharedLibraryTarget */
+
+/*
+ * InstallSharedLibrary - generate rules to install the shared library.
+ * NOTE: file must be executable, hence "INSTBINFLAGS"
+ */
+#ifndef InstallSharedLibrary
+#define	InstallSharedLibrary(libname,rev,dest)				@@\
+install:: lib/**/libname/**/_s						@@\
+	$(INSTALL) -c $(INSTLIBFLAGS) lib/**/libname/**/_s.a dest	@@\
+	$(INSTALL) -c $(INSTBINFLAGS) lib/**/libname/**/_s dest
+
+#endif /* InstallSharedLibrary */
+
+/*
+ * InstallSharedLibraryData - generate rules to install the shared library data
+ */
+#ifndef InstallSharedLibraryData
+#define	InstallSharedLibraryData(libname,rev,dest)			@@\
+install:: lib/**/libname/**/_s.a					@@\
+	$(INSTALL) -c $(INSTLIBFLAGS) lib/**/libname/**/_s.a dest
+
+#endif /* InstallSharedLibraryData */
+
+#endif
+/*
+ * GZeroLibraryTarget - generate rules to create a gzerod library.
+ */
+#ifndef GZeroLibraryTarget
+#define	GZeroLibraryTarget(libname,objlist)				@@\
+AllTarget(lib/**/libname/**/_G0.a)					@@\
+									@@\
+lib/**/libname/**/_G0.a: objlist					@@\
+	$(RM) $@							@@\
+	cd gzero; $(AR) ../$@ objlist					@@\
+	$(RANLIB) $@
+
+#endif /* GZeroLibraryTarget */
+
+/* END of Replacement Rules */
