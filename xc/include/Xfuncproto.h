@@ -1,4 +1,4 @@
-/* $XConsortium: Xfuncproto.h,v 1.5 91/03/30 09:38:00 rws Exp $ */
+/* $XConsortium: Xfuncproto.h,v 1.6 91/05/06 12:02:06 rws Exp $ */
 /* 
  * Copyright 1989, 1991 by the Massachusetts Institute of Technology
  *
@@ -54,7 +54,7 @@
 #endif /* _Xconst */
 
 #ifndef NeedWidePrototypes
-#if defined(NARROWPROTO)
+#ifdef NARROWPROTO
 #define NeedWidePrototypes 0
 #else
 #define NeedWidePrototypes 1		/* default to make interropt. easier */
