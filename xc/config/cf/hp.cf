@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: hp.cf,v 1.56 93/02/06 10:11:17 rws Exp $
+XCOMM platform:  $XConsortium: hp.cf,v 1.57 93/02/06 14:54:07 rws Exp $
 
 #define OSName                 HP-UX 9.1
 XCOMM operating system:  OSName
@@ -8,14 +8,12 @@ XCOMM operating system:  OSName
 
 #define SystemV                YES
 #define Malloc0ReturnsNull     YES
+
 #ifdef __hp9000s800
 #define OptimizedCDebugFlags   +O1
 #define DefaultCCOptions       -Aa +ESlit
 #define SharedLibraryCCOptions -Aa
 #define StandardDefines        -Dhpux -DSYSV -D_HPUX_SOURCE
-#define XhpServer              YES
-#define BuildXInputExt         YES
-#define ExtensionOSDefines     -DHPINPUT -DXTESTEXT1
 #define ServerOSDefines -DXOS -DBSTORE -DSOFTWARE_CURSOR -DNO_ALLOCA -DSCREEN_PIXMAPS -DMERGE_SAVE_UNDERS -DR5 -DHAS_IFREQ -DFORCE_SEPARATE_PRIVATE
 /* #include <hpLib.rules> */
 #else
@@ -29,7 +27,6 @@ XCOMM operating system:  OSName
 #endif
 #define PexShmIPC              NO
 #define LintOpts               -ax -Nd4000 -Ns8000 -Ne700 -Np200 -Na25000
-#define BuildServer            NO
 #endif
 #define MvCmd                  mv -f
 #define LdCombineFlags -r
@@ -39,10 +36,15 @@ XCOMM operating system:  OSName
 #define RemoveTargetProgramByMoving YES
 #define ExpandManNames         YES
 #define HasPutenv              YES
-#define HasFortran	       YES
-#define NeedBerklib            YES
 #define HasNdbm		       YES
 #define PrimaryScreenResolution	91
+#define ExtensionOSDefines     -DHPINPUT -DXTESTEXT1
+#define XhpServer              YES
+#define BuildXInputExt         YES
+#define HPFastScrolling        YES
+#define ServerExtraDefines -DXDMCP
+#define BuildServer            __hp9000s700
+#define NeedBerklib            (BuildServer|BuildFontServer)
 
 #if OSMajorVersion < 6 || (OSMajorVersion == 6 && OSMinorVersion < 2)
 #define ConnectionFlags		-DTCPCONN	/* no unix sockets */
