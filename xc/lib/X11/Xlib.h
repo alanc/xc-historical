@@ -1,4 +1,4 @@
-/* $XConsortium: Xlib.h,v 11.236 94/05/14 15:38:16 rws Exp kaleb $ */
+/* $XConsortium: Xlib.h,v 11.237 94/09/01 18:44:49 kaleb Exp kaleb $ */
 /* 
 
 Copyright (c) 1985, 1986, 1987, 1991  X Consortium
@@ -1082,8 +1082,8 @@ typedef enum {
 } XOrientation;
 
 typedef struct {
-    int num_orient;
-    XOrientation *orient;	/* Input Text description */
+    int num_orientation;
+    XOrientation *orientation;	/* Input Text description */
 } XOMOrientation;
 
 typedef struct {
