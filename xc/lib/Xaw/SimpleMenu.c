@@ -1,5 +1,5 @@
 #if ( !defined(lint) && !defined(SABER) )
-static char Xrcsid[] = "$XConsortium: SimpMenu.c,v 1.13 89/07/07 16:09:46 converse Exp $";
+static char Xrcsid[] = "$XConsortium: SimpleMenu.c,v 1.14 89/07/12 13:50:13 kit Exp $";
 #endif 
 
 /***********************************************************
@@ -110,7 +110,7 @@ static char defaultTranslations[] =
     "<EnterWindow>:     highlight()             \n\
      <LeaveWindow>:     unhighlight()           \n\
      <BtnMotion>:       highlight()             \n\
-     <BtnUp>:           notify() MenuPopdown() unhighlight()"; 
+     <BtnUp>:           MenuPopdown() notify() unhighlight()"; 
 
 #define superclass (&overrideShellClassRec)
 
@@ -312,16 +312,11 @@ XEvent * event;
 Region region;
 {
   SimpleMenuWidget smw = (SimpleMenuWidget) w;
-  GC gc;
   MenuEntry * entry;
   int i;
   Dimension y = smw->simple_menu.top_margin;
-  Dimension width = w->core.width, height = smw->simple_menu.row_height;
+  Dimension height = smw->simple_menu.row_height;
   Dimension y_temp;
-  int	font_ascent, font_descent;
-  
-  font_ascent = smw->simple_menu.font->max_bounds.ascent;
-  font_descent = smw->simple_menu.font->max_bounds.descent;
 
 /*
  * Check to see if we should paint label.
@@ -333,7 +328,7 @@ Region region;
     if (smw->simple_menu.label_sep_type != XawMenuNone)
       label_height -= smw->simple_menu.row_height;
       
-    switch (XRectInRegion(region, 0, y, width, label_height)) {
+    switch (XRectInRegion(region, 0, y, w->core.width, label_height)) {
     case RectangleIn:
     case RectanglePart:
       {
@@ -350,18 +345,18 @@ Region region;
 		    x_temp, y_temp,
 		    smw->simple_menu.label, strlen(smw->simple_menu.label));
       }
-      break;
-    default:
+    default:			/* Fall Through. */
       break;
     }
 
     if (smw->simple_menu.label_sep_type == XawMenuSeparator) {
-      switch(XRectInRegion(region, 0, y + label_height, width, height)) {
+      switch(XRectInRegion(region, 0, y + label_height, 
+			   w->core.width, height)) {
       case RectangleIn:
       case RectanglePart:
 	y_temp = y + label_height + height / 2;
 	XDrawLine(XtDisplay(w), XtWindow(w), smw->simple_menu.norm_gc,
-		  0, y_temp, width, y_temp);
+		  0, y_temp, w->core.width, y_temp);
 	break;
       default:
 	break;
@@ -376,53 +371,75 @@ Region region;
  */
 
   for (i = 0, entry = smw->simple_menu.entries; entry != NULL;
-       entry = entry->next, i++) {
+       entry = entry->next, i++, y += height) {
 
     if (entry->type != XawMenuBlank) {
-      switch(XRectInRegion(region, 0, y, width, height)) {
-	      
+      switch(XRectInRegion(region, 0, y, w->core.width, height)) {
+	
       case RectangleIn:
       case RectanglePart:
-	switch (entry->type) {
-	case XawMenuSeparator:
-	  y_temp = y + height / 2;
-	  XDrawLine(XtDisplay(w), XtWindow(w), smw->simple_menu.norm_gc,
-		    0, y_temp, width, y_temp);
-	  break;
-	  
-	case XawMenuText:
-	  if (entry->sensitive && XtIsSensitive(w) ) {
-	    if (i == smw->simple_menu.entry_set) {
-	      XFillRectangle(XtDisplay(w), XtWindow(w), 
-			     smw->simple_menu.norm_gc, 0, y,
-			     width, height);
-	      gc = smw->simple_menu.rev_gc;
-	    }
-	    else
-	      gc = smw->simple_menu.norm_gc;
-	  }
-	  else
-	    gc = smw->simple_menu.norm_grey_gc;
-
-	  y_temp = y + (height - (font_ascent + font_descent)) / 2
-		   + font_ascent;
-
-	  XDrawString(XtDisplay(w), XtWindow(w), gc,
-		      smw->simple_menu.left_margin, y_temp,
-		      entry->label, strlen(entry->label));
-
-	  DrawBitmaps(w, gc, entry, y);
-	default:			/* falling through... */
-	  break;
-	} /* switch (entry->type) */
-      
+	PaintEntry(w, entry, y, i);
       default:			/* falling through... */
 	break;
-      } /* switch(XRectInRegion(region, 0, y, width, height)) */
+      } 
     } /* if (entry->type != XawMenuBlank) */
+  } /* for (i = 0, entry = smw->simple_menu.entries... */
+}
 
-    y += height;
-  }
+/*	Function Name: PaintEntry
+ *	Description: Paints the text and graphics into an entry.
+ *	Arguments: w - the simple menu widget.
+ *                 entry - the entry to paint.
+ *                 y_loc - y location for the top of the entry graphics.
+ *                 e_number - the entry index.
+ *	Returns: none.
+ */
+
+static void
+PaintEntry(w, entry, y_loc, e_number)
+Widget w;
+MenuEntry *entry;
+int y_loc, e_number;
+{
+  GC gc;
+  SimpleMenuWidget smw = (SimpleMenuWidget) w;
+  Dimension width = w->core.width, height = smw->simple_menu.row_height;
+  int	font_ascent, font_descent, y_temp;
+  
+  font_ascent = smw->simple_menu.font->max_bounds.ascent;
+  font_descent = smw->simple_menu.font->max_bounds.descent;
+
+  switch (entry->type) {
+  case XawMenuSeparator:
+    y_temp = y_loc + height / 2;
+    XDrawLine(XtDisplay(w), XtWindow(w), smw->simple_menu.norm_gc,
+	      0, y_temp, width, y_temp);
+    break;
+    
+  case XawMenuText:
+    if (entry->sensitive && XtIsSensitive(w) ) {
+      if (e_number == smw->simple_menu.entry_set) {
+	XFillRectangle(XtDisplay(w), XtWindow(w), 
+		       smw->simple_menu.norm_gc, 0, y_loc,
+		       width, height);
+	gc = smw->simple_menu.rev_gc;
+      }
+      else
+	gc = smw->simple_menu.norm_gc;
+    }
+    else
+      gc = smw->simple_menu.norm_grey_gc;
+    
+    y_temp = y_loc + (height - (font_ascent + font_descent)) / 2 + font_ascent;
+
+    XDrawString(XtDisplay(w), XtWindow(w), gc,
+		smw->simple_menu.left_margin, y_temp,
+		entry->label, strlen(entry->label));
+    
+    DrawBitmaps(w, gc, entry, y_loc);
+  default:			/* falling through... */
+    break;
+  } /* switch (entry->type) */
 }
 
 /*      Function Name: Realize
@@ -1398,6 +1415,7 @@ XawRefreshTypes type;
   register Position row_height, y;
   Dimension height;
   MenuEntry * entry;
+  int e_num;
 
   if ( !XtIsRealized(w) ) return;
 
@@ -1413,12 +1431,14 @@ XawRefreshTypes type;
     if (smw->simple_menu.label != NULL)
       y += LabelHeight(smw);		/* Leave space for label. */
 
-    for ( entry = smw->simple_menu.entries ; entry != NULL ;
-	 entry = entry->next ) {
+    for ( e_num = 0, entry = smw->simple_menu.entries ; entry != NULL ;
+	 entry = entry->next, e_num++ ) {
       if ( quark == entry->name ) break;
       y += row_height;
     }
-  case XawErefreshLabel:	/* fall through. */
+    height = row_height;
+    break;
+  case XawErefreshLabel:	
     height = LabelHeight(smw);
     break;
   default:
@@ -1426,11 +1446,13 @@ XawRefreshTypes type;
   }
 
 /*
- * Clear the area and generate an exposure event.
+ * Clear and repaint the entry.
  */
 
   XClearArea(XtDisplay(w), XtWindow(w), 0, y,
-	     w->core.width, height, TRUE);
+	     w->core.width, height, FALSE);
+
+  PaintEntry(w, entry, y, e_num);
 }
 
 /*      Function Name: GetMenuEntry
