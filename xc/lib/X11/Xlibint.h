@@ -1,4 +1,4 @@
-/* $XConsortium: Xlibint.h,v 11.74 89/12/09 13:45:17 jim Exp $ */
+/* $XConsortium: Xlibint.h,v 11.75 89/12/09 20:55:28 jim Exp $ */
 /* Copyright 1984, 1985, 1987, 1989  Massachusetts Institute of Technology */
 
 /*
@@ -31,15 +31,7 @@
 #define DataRoutineIsProcedure
 #endif /* CRAY */
 
-#ifndef NeedFunctionPrototypes
-#if defined(__STDC__) || defined(__cplusplus)
-#define NeedFunctionPrototypes 1
-#else
-#define NeedFunctionPrototypes 0
-#endif /* __STDC__ */
-#endif /* NeedFunctionPrototypes */
-
-#include <X11/Xlib.h>
+#include <X11/Xlib.h>		/* get NeedFunctionPrototypes defs */
 
 #if NeedFunctionPrototypes	/* prototypes require event type definitions */
 #define NEED_EVENTS
