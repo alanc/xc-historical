@@ -1,10 +1,10 @@
 /*
- *	$XConsortium: x2pmp.c,v 1.5 88/09/06 17:20:28 jim Exp $
+ *	$XConsortium: x2pmp.c,v 1.6 89/01/20 16:04:07 rws Exp $
  */
 
 #ifndef lint
-static char *rcsid_x2pmp_c = "$XConsortium: x2pmp.c,v 1.5 88/09/06 17:20:28 jim Exp $";
-#endif	lint
+static char *rcsid_x2pmp_c = "$XConsortium: x2pmp.c,v 1.6 89/01/20 16:04:07 rws Exp $";
+#endif /* lint */
 
 /* x2pmp.c: Translate xwd window dump format into PMP format for the
  * IBM 3812 PagePrinter.

@@ -33,7 +33,7 @@
  */
 
 #ifndef lint
-static char *rcsid_xpr_c = "$XConsortium: xpr.c,v 1.36 89/05/26 14:09:21 rws Exp $";
+static char *rcsid_xpr_c = "$XConsortium: xpr.c,v 1.37 89/07/21 13:41:04 jim Exp $";
 #endif
 
 #include <X11/Xos.h>
@@ -993,7 +993,7 @@ dump_prolog(flags) {
     fclose(fi);
 }
 
-#else XPROLOG
+#else /* XPROLOG */
 /* postscript "programs" to unpack and print the bitmaps being sent */
 
 char *ps_prolog_compact[] = {
