@@ -1,4 +1,4 @@
-/* $XConsortium: XKBlib.h,v 1.4 93/09/28 21:34:12 rws Exp $ */
+/* $XConsortium: XKBlib.h,v 1.6 94/04/01 18:44:17 erik Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -178,9 +178,9 @@ typedef struct _XkbCompatMapNotify {
 	unsigned int device;	/* device ID */
 	unsigned int changed_mods;	/* modifiers with new compat maps */
 	unsigned int changed_vmods;/* virtual mods w/new compat maps */
-	unsigned int first_sym;		/* first new symbol interp */
-	unsigned int num_syms;		/* number of new symbol interps */
-	unsigned int num_total_syms;	/* total # of symbol interps */
+	unsigned int first_si;		/* first new symbol interp */
+	unsigned int num_si;		/* number of new symbol interps */
+	unsigned int num_total_si;	/* total # of symbol interps */
 } XkbCompatMapNotifyEvent;
 
 typedef struct _XkbAlternateSymsNotify {

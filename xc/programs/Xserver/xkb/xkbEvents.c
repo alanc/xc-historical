@@ -1,4 +1,4 @@
-/* $XConsortium: xkbEvents.c,v 1.5 93/09/29 16:04:47 rws Exp $ */
+/* $XConsortium: xkbEvents.c,v 1.7 94/04/01 18:47:59 erik Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -654,13 +654,13 @@ XkbSendNotification(kbd,pChanges,keycode,event,major,minor)
 	nn.changedIndicators= pChanges->names.changed_indicators;
 	XkbSendNamesNotify(kbd,&nn);
     }
-    if ((pChanges->compat.changed_mods)||(pChanges->compat.num_syms>0)||
+    if ((pChanges->compat.changed_mods)||(pChanges->compat.num_si>0)||
 				(pChanges->compat.changed_vmods)) {
 	xkbCompatMapNotify cmn;
 	cmn.changedMods= pChanges->compat.changed_mods;
 	cmn.changedVirtualMods= pChanges->compat.changed_vmods;
-	cmn.firstSI= pChanges->compat.first_sym;
-	cmn.nSI= pChanges->compat.num_syms;
+	cmn.firstSI= pChanges->compat.first_si;
+	cmn.nSI= pChanges->compat.num_si;
 	cmn.nTotalSI= kbd->key->xkbInfo->desc.compat->num_si;
 	XkbSendCompatMapNotify(kbd,&cmn);
     }

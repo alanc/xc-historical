@@ -1,4 +1,4 @@
-/* $XConsortium: XKBUse.c,v 1.3 94/04/02 10:46:21 erik Exp $ */
+/* $XConsortium: XKBUse.c,v 1.4 94/04/04 11:40:51 rws Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -430,9 +430,9 @@ wire_to_event(dpy,re,event)
 		    cmev->device = cmn->deviceID;
 		    cmev->changed_mods = cmn->changedMods;
 		    cmev->changed_vmods = cmn->changedVirtualMods;
-		    cmev->first_sym = cmn->firstSI;
-		    cmev->num_syms = cmn->nSI;
-		    cmev->num_total_syms = cmn->nTotalSI;
+		    cmev->first_si = cmn->firstSI;
+		    cmev->num_si = cmn->nSI;
+		    cmev->num_total_si = cmn->nTotalSI;
 		    return True;
 		}
 	    }
