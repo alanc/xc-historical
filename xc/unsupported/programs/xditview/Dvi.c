@@ -1,6 +1,6 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Dvi.c,v 1.6 89/05/16 15:04:08 kit Exp $";
-#endif lint
+static char Xrcsid[] = "$XConsortium: Dvi.c,v 1.7 89/07/16 17:07:42 jim Exp $";
+#endif /* lint */
 
 /*
  * Dvi.c - Dvi display widget

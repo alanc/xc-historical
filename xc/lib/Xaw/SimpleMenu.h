@@ -2,7 +2,7 @@
 Copyright 1989 by the Massachusetts Institute of Technology,
 Cambridge, Massachusetts.
 
- "$XConsortium: SimpleMenu.h,v 1.8 89/07/16 14:36:30 jim Exp $";
+ "$XConsortium: SimpleMenu.h,v 1.9 89/07/21 01:41:50 kit Exp $";
 
                         All Rights Reserved
 
@@ -264,4 +264,4 @@ ArgList args;
 Cardinal num_args;
 */
 
-#endif  _SimpleMenu_h
+#endif /* _SimpleMenu_h */

@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Dvi.h,v 1.2 89/03/03 13:58:12 keith Exp $
+* $XConsortium: Dvi.h,v 1.3 89/05/16 14:24:40 keith Exp $
 */
 
 #ifndef _XtDvi_h
@@ -38,5 +38,5 @@ typedef struct _DviClassRec *DviWidgetClass;    /* completely defined in DviPriv
 
 extern WidgetClass dviWidgetClass;
 
-#endif _XtDvi_h
+#endif /* _XtDvi_h */
 /* DON'T ADD STUFF AFTER THIS #endif */

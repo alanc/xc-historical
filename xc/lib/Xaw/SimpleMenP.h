@@ -1,6 +1,6 @@
 /***********************************************************
 
- "$XConsortium: SimpMenuP.h,v 1.5 89/07/07 16:08:37 converse Exp $";
+ "$XConsortium: SimpleMenP.h,v 1.6 89/07/12 13:50:12 kit Exp $";
 
 Copyright 1989 by the Massachusetts Institute of Technology,
 Cambridge, Massachusetts.
@@ -132,4 +132,4 @@ typedef struct _SimpleMenuRec {
   SimpleMenuPart	simple_menu;
 } SimpleMenuRec;
 
-#endif  _SimpleMenuP_h
+#endif /* _SimpleMenuP_h */

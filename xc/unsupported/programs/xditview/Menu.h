@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Exp $
+ * $XConsortium: Menu.h,v 1.1 89/04/13 13:34:36 keith Exp $
  */
 
 #ifndef _XtMenu_h
@@ -42,5 +42,5 @@ typedef struct _MenuClassRec *MenuWidgetClass;    /* completely defined in MenuP
 extern WidgetClass menuWidgetClass;
 
 extern Widget	XawMenuCreate ();
-#endif _XtMenu_h
+#endif /* _XtMenu_h */
 /* DON'T ADD STUFF AFTER THIS #endif */
