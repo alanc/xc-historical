@@ -1,6 +1,6 @@
 /*
  * $Source: /usr/expo/X/src/clients/xterm.new/RCS/charproc.c,v $
- * $Header: charproc.c,v 1.11 88/02/16 17:58:48 jim Exp $
+ * $Header: charproc.c,v 1.12 88/02/16 18:59:33 jim Exp $
  */
 
 
@@ -58,7 +58,7 @@ extern void exit(), bcopy();
 #define	doinput()		(bcnt-- > 0 ? *bptr++ : in_put())
 
 #ifndef lint
-static char rcs_id[] = "$Header: charproc.c,v 1.11 88/02/16 17:58:48 jim Exp $";
+static char rcs_id[] = "$Header: charproc.c,v 1.12 88/02/16 18:59:33 jim Exp $";
 #endif	/* lint */
 
 static long arg;
@@ -2324,12 +2324,12 @@ int item;
 	case MMENU_TEKWIN:
 		if(screen->Tshow = !screen->Tshow) {
 			if(TWindow(screen) || TekInit()) {
-				XMapWindow(screen->display, TShellWindow);
+				XMapWindow(screen->display, TWindow(screen));
 				screen->Tshow = TRUE;
 			}
 		} else {
 			screen->Tshow = FALSE;
-			XUnmapWindow(screen->display, TShellWindow);
+			XUnmapWindow(screen->display, TWindow(screen));
 			/* SyncUnmap(TWindow(screen), TWINDOWEVENTS); */
 			if(screen->TekEmu) {
 				if(screen->logging) {
