@@ -1889,6 +1889,9 @@ KeySym _XtKeyCodeToKeySym(dpy,pd,keycode,col)
 {
 /* copied from Xlib */
     int ind;
+     if (pd->keysyms == NULL) {
+	 _XtBuildKeysymTable(dpy,pd); /* pd->keysyms*/
+     }
      if (col < 0 || col >= pd->keysyms_per_keycode) return (NoSymbol);
      if (keycode < dpy->min_keycode || keycode > dpy->max_keycode)
        return(NoSymbol);
@@ -1914,25 +1917,13 @@ void XtTranslateKey(dpy, keycode, modifiers,
 {
     XtPerDisplay perDisplay;
     perDisplay = _XtGetPerDisplay(dpy);
-    if (modifiers == 0) {
-        *modifiers_return = 0;
+    *modifiers_return = StandardMask;
+    if ((modifiers & StandardMask) == 0)
         *keysym_return =_XtKeyCodeToKeySym(dpy,perDisplay,keycode,0);
-        return;
-    }
-    if (modifiers & ShiftMask != 0){
-          *modifiers_return =ShiftMask;
-          *keysym_return =_XtKeyCodeToKeySym(dpy,perDisplay,keycode,1);
-          return;
-    }
-    if (modifiers & LockMask != 0) {
-          *modifiers_return = LockMask;
-          *keysym_return =_XtKeyCodeToKeySym(dpy,perDisplay,keycode,1);
-          return;
-    }
-
-    *modifiers_return = 0;
-    *keysym_return = NoSymbol;
-        
+    else if ((modifiers & (ShiftMask | LockMask)) != 0)
+	*keysym_return =_XtKeyCodeToKeySym(dpy,perDisplay,keycode,1);
+    else
+	*keysym_return = NoSymbol;
 }
 
 void XtSetKeyTranslator(dpy, translator)
