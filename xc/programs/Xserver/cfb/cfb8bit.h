@@ -18,7 +18,7 @@ representations about the suitability of this software for any
 purpose.  It is provided "as is" without express or implied warranty.
 */
 
-/* $XConsortium: Exp $ */
+/* $XConsortium: cfb8bit.h,v 1.1 89/07/28 12:52:01 keith Exp $ */
 
 #if (BITMAP_BIT_ORDER == MSBFirst)
 #define GetFourBits(x)		(((x) >> 28) & 0xf)
@@ -42,6 +42,21 @@ extern void			cfb8SetPixels ();
 
 #define cfb8CheckPixels(fg, bg) \
     (((fg) & 0xff) == cfb8Pixelsfg && ((bg) & 0xff) == cfb8Pixelsbg)
+
+#define Duff(counter, block)	    \
+    switch (counter & 3) {	    \
+    do {			    \
+	{ block; }		    \
+    case 3:			    \
+	{ block; }		    \
+    case 2:			    \
+	{ block; }		    \
+    case 1:			    \
+	{ block; }		    \
+    case 0:			    \
+	;			    \
+    } while ((counter -= 4) >= 0);  \
+}
 
 #ifdef mips
 #define AVOID_SCREEN_READ
