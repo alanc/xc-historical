@@ -1,4 +1,4 @@
-/* $XConsortium: Xregistry,v 1.18 91/01/31 10:45:34 rws Exp $ */
+/* $XConsortium: Xregistry,v 1.19 91/03/04 18:49:13 rws Exp $ */
 
 1. ORGANIZATION NAMES
 
@@ -206,6 +206,7 @@ String						Reference
 "International Business Machines"		[33]
 "Matsushita Electric Industrial Co., Ltd."	[52]
 "MIT X Consortium"				[8]
+"Network Computing Devices Inc."		[66]
 "OMRON TATEISI ELECTRONICS CO."			[45]
 "PFU Limited"					[32]
 "Silicon Graphics Computer Systems"		[6]
