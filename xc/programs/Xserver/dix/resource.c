@@ -22,7 +22,7 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: resource.c,v 1.86 91/06/21 18:17:21 keith Exp $ */
+/* $XConsortium: resource.c,v 1.87 91/10/30 14:50:54 rws Exp $ */
 
 /*	Routines to manage various kinds of resources:
  *
@@ -536,7 +536,7 @@ FreeAllResources()
 {
     int	i;
 
-    for (i=0; i<currentMaxClients; i++) 
+    for (i = currentMaxClients; --i >= 0; ) 
     {
         if (clientTable[i].buckets) 
 	    FreeClientResources(clients[i]);
