@@ -1,4 +1,4 @@
-/* $XConsortium: EventI.h,v 1.15 90/12/30 12:42:38 rws Exp $ */
+/* $XConsortium: EventI.h,v 1.16 90/12/30 16:28:33 rws Exp $ */
 /* $oHeader: EventI.h,v 1.3 88/08/24 09:21:11 asente Exp $ */
 
 /***********************************************************
@@ -72,8 +72,8 @@ typedef struct _XtEventRec {
 typedef struct _XtGrabRec {
     XtGrabList next;
     Widget   widget;
-    Boolean  exclusive;
-    Boolean  spring_loaded;
+    unsigned int exclusive:1;
+    unsigned int spring_loaded:1;
 }XtGrabRec;
 
 
