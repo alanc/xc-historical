@@ -1,4 +1,4 @@
-XCOMM $XConsortium: sunLib.rules,v 1.8 92/05/22 11:47:31 rws Exp $
+XCOMM $XConsortium: sunLib.rules,v 1.9 92/06/28 17:43:02 rws Exp $
 
 /*
  * SunOS shared library rules
@@ -28,6 +28,13 @@ XCOMM $XConsortium: sunLib.rules,v 1.8 92/05/22 11:47:31 rws Exp $
 #else
 #define PositionIndependentCFlags -pic
 #endif
+#endif
+
+/*
+ * SharedDSLibDependencies - shared library dependencies with data separation
+ */
+#ifndef SharedDSLibDependencies
+#define SharedDSLibDependencies(libname,libsource,revname) _UseCat($(USRLIBDIR)/lib,libsource/lib,libname.sa.$(revname))
 #endif
 
 /*
