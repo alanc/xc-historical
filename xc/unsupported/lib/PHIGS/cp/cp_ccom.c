@@ -1,4 +1,4 @@
-/* $XConsortium: cp_ccom.c,v 5.1 91/02/16 09:48:23 rws Exp $ */
+/* $XConsortium: cp_ccom.c,v 5.2 91/02/18 11:11:36 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -32,12 +32,26 @@ SOFTWARE.
 #include <sys/socket.h>
 #include <fcntl.h>
 #include <signal.h>
-#include <sys/wait.h>
 #include <sys/types.h>
 #ifndef PEX_API_SOCKET_IPC
 #include <sys/ipc.h>
 #include <sys/shm.h>
 #endif /* ! PEX_API_SOCKET_IPC */
+#ifdef SVR4
+#define USE_POSIX_STYLE_WAIT
+#endif
+#ifdef _POSIX_SOURCE
+#define USE_POSIX_STYLE_WAIT
+#endif
+#ifdef USE_POSIX_STYLE_WAIT
+#include <sys/wait.h>
+# define waitSig(w)	WTERMSIG(w)
+typedef int		waitType;
+#else /* USE_POSIX_STYLE_WAIT */
+# include	<sys/wait.h>
+# define waitSig(w)	((w).w_T.w_Termsig)
+typedef union wait	waitType;
+#endif /* USE_POSIX_STYLE_WAIT else */
 
 #define CPC_SEND( cph, msg, size) \
     phg_cpxc_send( (cph)->data.client.sfd, (char*)(msg), (size))
@@ -1042,10 +1056,10 @@ phg_cpc_inp_request( cph, args, ret)
     }
 }
 
-#ifndef OS_4_2BSD
-#define WAIT_FOR_IT(p,s,o,u) wait4 ((p), (s), (o), (u))
+#ifdef USE_POSIX_STYLE_WAIT
+#define WAIT_FOR_IT(p,s,o) waitpid(p,s,o)
 #else
-#define WAIT_FOR_IT(p,s,o,u) wait3 ((s), (o), (u))
+#define WAIT_FOR_IT(p,s,o) wait3(s, o, (struct rusage *) 0)
 #endif
 
 static void
@@ -1059,9 +1073,9 @@ sig_wait( child_pid, sig, when)
      */
 
     int			pid;
-    union wait		status;
+    waitType		status;
 
-    while ( (pid = WAIT_FOR_IT ( child_pid, &status, WNOHANG, NULL)) > 0) {
+    while ( (pid = WAIT_FOR_IT ( child_pid, &status, WNOHANG)) > 0) {
 	if ( pid == child_pid) {
 	    phg_register_signal_func((unsigned long)child_pid,
 		(void(*)())NULL, sig);
@@ -1082,22 +1096,21 @@ sig_chld_proc( cph, sig, when)
      */
 
     int			pid;
-    union wait		status;
+    waitType		status;
 
-    while ( (pid = WAIT_FOR_IT ( cph->data.client.child_pid, &status, WNOHANG, NULL)) > 0) {
+    while ( (pid = WAIT_FOR_IT ( cph->data.client.child_pid, &status, WNOHANG)) > 0) {
 	if ( pid == cph->data.client.child_pid) {
 	    if ( WIFEXITED(status)) {
 		/* user hit a frame menu quit button, kill the application */
 		exit(3);
 	    } else if ( WIFSIGNALED(status)) {
 		fprintf( stderr, "PEX API: child died on signal %d\n",
-		    status.w_termsig);
+		    waitSig(status));
 		 exit(2);
 	    }
 	}
     }
 }
-#undef WAIT_FOR_IT
 
 
 static void
