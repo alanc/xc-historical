@@ -1,4 +1,4 @@
-/* $XConsortium: resource.h,v 1.4 88/01/01 17:00:44 rws Exp $ */
+/* $XConsortium: resource.h,v 1.5 88/09/06 15:48:12 jim Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -63,12 +63,15 @@ SOFTWARE.
 /* Invalid resource id */
 #define INVALID	(0)
 
+#define BAD_RESOURCE 0xe0000000
+
 unsigned short CreateNewResourceType();
 short CreateNewResourceClass();
 unsigned long FakeClientID();
-void AddResource();
+Bool AddResource();
 void FreeResource();
 void FreeClientResources();
+Bool LegalNewID();
 pointer LookupID();
 
 #endif /* RESOURCE_H */
