@@ -1,4 +1,4 @@
-/* $XConsortium: lndir.c,v 1.6 92/03/16 17:53:30 gildea Exp $ */
+/* $XConsortium: lndir.c,v 1.7 93/09/17 11:09:18 rws Exp $ */
 /* Create shadow link tree (after X11R4 script of the same name)
    Mark Reinhold (mbr@lcs.mit.edu)/3 January 1990 */
 
@@ -120,6 +120,8 @@ int rel;			/* if true, prepend "../" to fn before using */
     *p++ = '/';
     n_dirs = fs->st_nlink;
     while (dp = readdir (df)) {
+	if (dp->d_name[strlen(dp->d_name) - 1] == '~')
+	    continue;
 	strcpy (p, dp->d_name);
 
 	if (n_dirs > 0) {
