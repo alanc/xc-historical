@@ -1,4 +1,4 @@
-/* $Header: fontstruct.h,v 1.9 91/07/18 22:43:06 keith Exp $ */
+/* $XConsortium: fontstruct.h,v 1.10 91/07/22 15:37:41 keith Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -20,8 +20,6 @@ ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS,
 WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION,
 ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
-
-	@(#)fontstruct.h	3.2	91/04/15
 
 ******************************************************************/
 
@@ -115,10 +113,6 @@ typedef struct _Font {
     fsBitmapFormat format;
     int         (*get_glyphs) ( /* font, count, chars, encoding, count, glyphs */ );
     int         (*get_metrics) ( /* font, count, chars, encoding, count, glyphs */ );
-    int         (*get_bitmaps) (/* client, font, flags, ranges, nranges,
-				    nextents, extents */ );
-    int         (*get_extents) (/* client, font, format, flags, ranges,
-				    nranges, nglyphs, offsets, glyphs */ );
     void        (*unload_font) ( /* font */ );
     FontPathElementPtr fpe;
     pointer     svrPrivate;
