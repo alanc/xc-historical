@@ -1,4 +1,4 @@
-/* $XConsortium: iphoto.c,v 1.1 93/10/26 09:59:29 rws Exp $ */
+/* $XConsortium: iphoto.c,v 1.2 93/10/31 09:39:12 dpw Exp $ */
 /**** module iphoto.c ****/
 /******************************************************************************
 				NOTICE
@@ -170,7 +170,7 @@ static Bool PrepIPhoto(flo,ped)
   ++map->refCnt;
 
   /* Load up a generic structure for importing photos from map and client */
-  pvt->map = (void *)map;
+  pvt->map = map;
 
   if(!map->bands)
     AccessError(flo,ped, return(FALSE));
