@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Vendor.c,v 1.1 88/09/12 12:02:42 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Vendor.c,v 1.1 88/09/12 12:05:07 swick Exp $";
 /* $oHeader: Vendor.c,v 1.3 88/08/19 13:11:01 asente Exp $ */
 #endif lint
 
@@ -112,16 +112,7 @@ externaldef(vendorshellwidgetclass) WidgetClass vendorShellWidgetClass =
 
 static void _VendorShellClassInitialize()
 {
-}
-
-/* ARGSUSED */
-static void _VendorShellInitialize(req, new)
-	Widget req, new;
-{
-    XtAppContext app = XtWidgetToApplicationContext(new);
-    static XtAppContext *appList = NULL, *appP;
-    static int appCount = 0;
-    int i;
+    /* %%% botch; this requires an Application Context */
     extern void XmuCvtStringToCursor();
     extern void XmuCvtStringToPixmap();
     static XtConvertArgRec screenConvertArg[] = {
@@ -129,20 +120,17 @@ static void _VendorShellInitialize(req, new)
 	     sizeof(Screen *)}
     };
 
-    for (appP = appList, i = 0; i < appCount; appP++, i++) {
-	if (app == *appP)	/* already initialize this one? */
-	    return;
-    }
+    XtAddConverter("String", "Cursor", XmuCvtStringToCursor,      
+		   screenConvertArg, XtNumber(screenConvertArg));
 
-    appList = (XtAppContext*)XtRealloc(appList,
-				       sizeof(XtAppContext)*(appCount + 1));
-    appList[appCount++] = app;
+    XtAddConverter("String", "Pixmap", XmuCvtStringToPixmap,
+		   screenConvertArg, XtNumber(screenConvertArg));
+}
 
-    XtAppAddConverter(app, "String", "Cursor", XmuCvtStringToCursor,      
-		      screenConvertArg, XtNumber(screenConvertArg));
-
-    XtAppAddConverter(app, "String", "Pixmap", XmuCvtStringToPixmap,
-		      screenConvertArg, XtNumber(screenConvertArg));
+/* ARGSUSED */
+static void _VendorShellInitialize(req, new)
+	Widget req, new;
+{
 }
 
 /* ARGSUSED */
