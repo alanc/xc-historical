@@ -10,6 +10,7 @@
 #define HasSaberC	   YES		/* a useful program to buy... */
 #define HasBsearch	   YES
 #define HasNdbm		   YES
+#define HasVoidSignalReturn NO
 
 #define BuildServer YES
 
@@ -26,7 +27,7 @@
 #define XtekServer Xtek
 
 
-XCOMM platform:  $XConsortium: pegasus.cf,v 1.16 91/01/08 09:29:41 keith Exp $
+XCOMM platform:  $XConsortium: pegasus.cf,v 1.17 91/01/08 12:21:50 rws Exp $
 XCOMM operating system:  OSName
 
 /*
