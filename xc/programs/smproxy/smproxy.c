@@ -1,4 +1,4 @@
-/* $XConsortium: smproxy.c,v 1.19 94/07/19 12:36:45 mor Exp $ */
+/* $XConsortium: smproxy.c,v 1.20 94/07/26 12:38:04 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1994  X Consortium
@@ -117,9 +117,9 @@ void FinishSaveYourself (winInfo)
 WinInfo *winInfo;
 
 {
-    SmProp prop1, prop2, prop3, prop4, *props[4];
-    SmPropValue prop3val, prop4val;
-    char userId[20];
+    SmProp prop1, prop2, prop3, prop4, prop5, *props[5];
+    SmPropValue prop3val, prop4val, prop5val;
+    char userId[20], restartService[80];
     int i;
 
     prop1.name = SmRestartCommand;
@@ -161,12 +161,22 @@ WinInfo *winInfo;
     prop4val.value = (SmPointer) userId;
     prop4val.length = strlen (userId);
     
+    sprintf (restartService, "rstart-rsh/%s",
+	(char *) winInfo->wm_client_machine.value);
+    prop5.name = "_XC_RestartService";
+    prop5.type = SmLISTofARRAY8;
+    prop5.num_vals = 1;
+    prop5.vals = &prop5val;
+    prop5val.value = (SmPointer) restartService;
+    prop5val.length = strlen (restartService);
+
     props[0] = &prop1;
     props[1] = &prop2;
     props[2] = &prop3;
     props[3] = &prop4;
+    props[4] = &prop5;
     
-    SmcSetProperties (winInfo->smc_conn, 4, props);
+    SmcSetProperties (winInfo->smc_conn, 5, props);
     
     free ((char *) prop1.vals);
     
@@ -312,6 +322,23 @@ XtInputId	*id;
 
 
 void
+NullIceErrorHandler (iceConn, swap,
+    offendingMinorOpcode, offendingSequence, errorClass, severity, values)
+
+IceConn		iceConn;
+Bool		swap;
+int		offendingMinorOpcode;
+unsigned long	offendingSequence;
+int 		errorClass;
+int		severity;
+IcePointer	values;
+
+{
+    return;
+}
+
+
+void
 ConnectClientToSM (winInfo)
 
 WinInfo *winInfo;
@@ -340,6 +367,14 @@ WinInfo *winInfo;
 
     prevId = LookupClientID (winInfo);
 
+    /*
+     * In case a protocol error occurs when opening the connection,
+     * (e.g. an authentication error), we set a null error handler
+     * before the open, then restore the default handler after the open.
+     */
+
+    IceSetErrorHandler (NullIceErrorHandler);
+
     winInfo->smc_conn = SmcOpenConnection (
 	NULL, 			/* use SESSION_MANAGER env */
 	(SmPointer) winInfo,	/* force a new connection */
@@ -350,6 +385,8 @@ WinInfo *winInfo;
 	prevId,
 	&winInfo->client_id,
 	256, errorMsg);
+
+    IceSetErrorHandler (NULL);
 
     if (winInfo->smc_conn == NULL)
 	return;
@@ -453,6 +490,8 @@ Window window;
     newptr->class.res_name = NULL;
     newptr->class.res_class = NULL;
     newptr->wm_name = NULL;
+    newptr->wm_client_machine.value = NULL;
+    newptr->wm_client_machine.nitems = 0;
     newptr->has_save_yourself = 0;
     newptr->waiting_for_update = 0;
 
@@ -484,6 +523,9 @@ WinInfo *winptr;
 	
 	if (ptr->wm_name)
 	    XFree (ptr->wm_name);
+	
+	if (ptr->wm_client_machine.value)
+	    XFree (ptr->wm_client_machine.value);
 	
 	if (ptr->class.res_name)
 	    XFree (ptr->class.res_name);
@@ -569,12 +611,16 @@ Bool errorCheck;
 	    XFree ((char *) datap);
     }
 
+    XGetWMClientMachine (disp, event->window, &winptr->wm_client_machine);
+
     if (winptr->got_wm_state &&
 	winptr->wm_name != NULL &&
 	winptr->wm_command != NULL &&
 	winptr->wm_command_count > 0 &&
 	winptr->class.res_name != NULL &&
-	winptr->class.res_class != NULL)
+	winptr->class.res_class != NULL &&
+	winptr->wm_client_machine.value != NULL &&
+	winptr->wm_client_machine.nitems != 0)
     {
 	winptr->waiting_for_required_props = 0;
 
@@ -640,11 +686,12 @@ XPropertyEvent *event;
     WinInfo *winptr;
 
     if (event->atom != XA_WM_NAME && event->atom != XA_WM_COMMAND &&
-	event->atom != XA_WM_CLASS && event->atom != wmStateAtom)
+	event->atom != XA_WM_CLASS && event->atom != XA_WM_CLIENT_MACHINE &&
+	event->atom != wmStateAtom)
     {
 	/*
 	 * We are only interested in WM_NAME, WM_COMMAND,
-	 * WM_CLASS, and WM_STATE.
+	 * WM_CLASS, WM_CLIENT_MACHINE, and WM_STATE.
 	 */
 
 	return;
@@ -699,6 +746,18 @@ XPropertyEvent *event;
 
 	    XGetClassHint (disp, window, &winptr->class);
 	}
+	else if (event->atom == XA_WM_CLIENT_MACHINE)
+	{
+	    if (winptr->wm_client_machine.value)
+	    {
+		XFree (winptr->wm_client_machine.value);
+		winptr->wm_client_machine.value = NULL;
+		winptr->wm_client_machine.nitems = 0;
+	    }
+
+	    XGetWMClientMachine (disp, event->window,
+		&winptr->wm_client_machine);
+	}
 	else if (event->atom == wmStateAtom)
 	{
 	    winptr->got_wm_state = 1;
@@ -711,7 +770,9 @@ XPropertyEvent *event;
 		winptr->wm_command != NULL &&
 		winptr->wm_command_count > 0 &&
 		winptr->class.res_name != NULL &&
-		winptr->class.res_class != NULL)
+		winptr->class.res_class != NULL &&
+		winptr->wm_client_machine.value != NULL &&
+		winptr->wm_client_machine.nitems != 0)
 	    {
 		winptr->waiting_for_required_props = 0;
 		
@@ -919,6 +980,7 @@ SmPointer clientData;
 
 
 
+Status
 ConnectProxyToSM (previous_id)
 
 char *previous_id;
@@ -956,7 +1018,7 @@ char *previous_id;
 	256, errorMsg);
 
     if (proxy_smcConn == NULL)
-	return;
+	return (0);
 
     iceConn = SmcGetIceConnection (proxy_smcConn);
 
@@ -966,6 +1028,8 @@ char *previous_id;
             (XtPointer) XtInputReadMask,
 	    ProcessIceMsgProc,
 	    (XtPointer) iceConn);
+
+    return (1);
 }
 
 
@@ -1069,7 +1133,11 @@ char **argv;
     if (restore_filename)
 	ReadProxyFile (restore_filename);
 
-    ConnectProxyToSM (client_id);
+    if (!ConnectProxyToSM (client_id))
+    {
+	fprintf (stderr, "smproxy: unable to connect to session manager\n");
+	exit (1);
+    }
 
     root = DefaultRootWindow (disp);
 
