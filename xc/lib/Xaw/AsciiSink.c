@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: AsciiSink.c,v 1.43 89/09/13 15:06:47 kit Exp $";
+static char Xrcsid[] = "$XConsortium: AsciiSink.c,v 1.44 89/10/03 11:37:33 jim Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -49,7 +49,7 @@ static Boolean SetValues();
 static void DisplayText(), InsertCursor(), FindPosition();
 static void FindDistance(), Resolve(), GetCursorBounds();
 
-#define offset(field) XtOffset(AsciiSinkWidget, ascii_sink.field)
+#define offset(field) XtOffset(AsciiSinkObject, ascii_sink.field)
 
 static XtResource resources[] = {
     {XtNecho, XtCOutput, XtRBoolean, sizeof(Boolean),
@@ -115,7 +115,7 @@ AsciiSinkClassRec asciiSinkClassRec = {
   }
 };
 
-WidgetClass asciiSinkWidgetClass = (WidgetClass)&asciiSinkClassRec;
+WidgetClass asciiSinkObjectClass = (WidgetClass)&asciiSinkClassRec;
 
 /* Utilities */
 
@@ -126,7 +126,7 @@ int x;
 unsigned char c;
 {
     register int    i, width, nonPrinting;
-    AsciiSinkWidget sink = (AsciiSinkWidget) w;
+    AsciiSinkObject sink = (AsciiSinkObject) w;
     XFontStruct *font = sink->text_sink.font;
     Position *tab;
 
@@ -189,7 +189,7 @@ Position x, y;
 unsigned char * buf;
 int len;
 {
-    AsciiSinkWidget sink = (AsciiSinkWidget) w;
+    AsciiSinkObject sink = (AsciiSinkObject) w;
     TextWidget ctx = (TextWidget) XtParent(w);
 
     Position max_x;
@@ -228,7 +228,7 @@ Position x, y;
 Boolean highlight;
 XawTextPosition pos1, pos2;
 {
-    AsciiSinkWidget sink = (AsciiSinkWidget) w;
+    AsciiSinkObject sink = (AsciiSinkObject) w;
     Widget source = XawTextGetSource(XtParent(w));
     unsigned char buf[BUFSIZ];
 
@@ -299,7 +299,7 @@ Screen *s;
 
 /*	Function Name: GetCursorBounds
  *	Description: Returns the size and location of the cursor.
- *	Arguments: w - the text widget.
+ *	Arguments: w - the text object.
  * RETURNED        rect - an X rectangle to return the cursor bounds in.
  *	Returns: none.
  */
@@ -309,7 +309,7 @@ GetCursorBounds(w, rect)
 Widget w;
 XRectangle * rect;
 {
-    AsciiSinkWidget sink = (AsciiSinkWidget) w;
+    AsciiSinkObject sink = (AsciiSinkObject) w;
 
     rect->width = (unsigned short) insertCursor_width;
     rect->height = (unsigned short) insertCursor_height;
@@ -327,7 +327,7 @@ Widget w;
 Position x, y;
 XawTextInsertState state;
 {
-    AsciiSinkWidget sink = (AsciiSinkWidget) w;
+    AsciiSinkObject sink = (AsciiSinkObject) w;
     Widget text_widget = XtParent(w);
     XRectangle rect;
 
@@ -358,7 +358,7 @@ int *resWidth;			/* Distance between fromPos and resPos. */
 XawTextPosition *resPos;	/* Actual second position used. */
 int *resHeight;			/* Height required. */
 {
-    AsciiSinkWidget sink = (AsciiSinkWidget) w;
+    AsciiSinkObject sink = (AsciiSinkObject) w;
     Widget source = XawTextGetSource(XtParent(w));
 
     register XawTextPosition index, lastPos;
@@ -397,7 +397,7 @@ XawTextPosition *resPos;	/* Resulting position. */
 int *resWidth;			/* Actual width used. */
 int *resHeight;			/* Height required. */
 {
-    AsciiSinkWidget sink = (AsciiSinkWidget) w;
+    AsciiSinkObject sink = (AsciiSinkObject) w;
     Widget source = XawTextGetSource(XtParent(w));
 
     XawTextPosition lastPos, index, whiteSpacePosition;
@@ -461,8 +461,8 @@ XawTextPosition *leftPos, *rightPos;
 /***** Public routines *****/
 
 /*	Function Name: Initialize
- *	Description: Initializes the TextSink Widget.
- *	Arguments: request, new - the requested and new values for the widget
+ *	Description: Initializes the TextSink Object.
+ *	Arguments: request, new - the requested and new values for the object
  *                                instance.
  *	Returns: none.
  *
@@ -473,7 +473,7 @@ static void
 Initialize(request, new)
 Widget request, new;
 {
-    AsciiSinkWidget sink = (AsciiSinkWidget) new;
+    AsciiSinkObject sink = (AsciiSinkObject) new;
     XtGCMask valuemask = (GCFont | 
 			  GCGraphicsExposures | GCForeground | GCBackground );
     XGCValues values;
@@ -502,9 +502,9 @@ Widget request, new;
 }
 
 /*	Function Name: Destroy
- *	Description: This function cleans up when the widget is 
+ *	Description: This function cleans up when the object is 
  *                   destroyed.
- *	Arguments: w - the AsciiSink Widget.
+ *	Arguments: w - the AsciiSink Object.
  *	Returns: none.
  */
 
@@ -512,7 +512,7 @@ static void
 Destroy(w)
 Widget w;
 {
-   AsciiSinkWidget sink = (AsciiSinkWidget) w;
+   AsciiSinkObject sink = (AsciiSinkObject) w;
 
    XtReleaseGC(w, sink->ascii_sink.normgc);
    XtReleaseGC(w, sink->ascii_sink.invgc);
@@ -522,9 +522,9 @@ Widget w;
 
 /*	Function Name: SetValues
  *	Description: Sets the values for the AsciiSink
- *	Arguments: current - current state of the widget.
+ *	Arguments: current - current state of the object.
  *                 request - what was requested.
- *                 new - what the widget will become.
+ *                 new - what the object will become.
  *	Returns: True if redisplay is needed.
  */
 
@@ -533,8 +533,8 @@ static Boolean
 SetValues(current, request, new)
 Widget current, request, new;
 {
-    AsciiSinkWidget w = (AsciiSinkWidget) new;
-    AsciiSinkWidget old_w = (AsciiSinkWidget) current;
+    AsciiSinkObject w = (AsciiSinkObject) new;
+    AsciiSinkObject old_w = (AsciiSinkObject) current;
 
     if ( (w->ascii_sink.echo != old_w->ascii_sink.echo) ||
 	(w->ascii_sink.display_nonprinting != 

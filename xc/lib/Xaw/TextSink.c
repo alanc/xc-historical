@@ -1,5 +1,5 @@
 #if ( !defined(lint) && !defined(SABER) )
-static char Xrcsid[] = "$XConsortium: TextSink.c,v 1.2 89/09/08 17:20:39 kit Exp $";
+static char Xrcsid[] = "$XConsortium: TextSink.c,v 1.3 89/09/13 15:06:50 kit Exp $";
 #endif 
 
 /*
@@ -52,7 +52,7 @@ static int MaxHeight(), MaxLines();
 static void DisplayText(), InsertCursor(), ClearToBackground(), FindPosition();
 static void FindDistance(), Resolve(), SetTabs(), GetCursorBounds();
 
-#define offset(field) XtOffset(TextSinkWidget, text_sink.field)
+#define offset(field) XtOffset(TextSinkObject, text_sink.field)
 static XtResource resources[] = {
   {XtNfont, XtCFont, XtRFontStruct, sizeof (XFontStruct *),
      offset(font), XtRString, "Fixed"},
@@ -115,16 +115,16 @@ TextSinkClassRec textSinkClassRec = {
   }
 };
 
-WidgetClass textSinkWidgetClass = (WidgetClass)&textSinkClassRec;
+WidgetClass textSinkObjectClass = (WidgetClass)&textSinkClassRec;
 
 static void
 ClassPartInitialize(wc)
 WidgetClass wc;
 {
-  register TextSinkWidgetClass t_src, superC;
+  register TextSinkObjectClass t_src, superC;
 
-  t_src = (TextSinkWidgetClass) wc;
-  superC = (TextSinkWidgetClass) t_src->object_class.superclass;
+  t_src = (TextSinkObjectClass) wc;
+  superC = (TextSinkObjectClass) t_src->object_class.superclass;
 
 /* 
  * We don't need to check for null super since we'll get to TextSink
@@ -168,8 +168,8 @@ WidgetClass wc;
 }
 
 /*	Function Name: Initialize
- *	Description: Initializes the TextSink Widget.
- *	Arguments: request, new - the requested and new values for the widget
+ *	Description: Initializes the TextSink Object.
+ *	Arguments: request, new - the requested and new values for the object
  *                                instance.
  *	Returns: none.
  *
@@ -180,7 +180,7 @@ static void
 Initialize(request, new)
 Widget request, new;
 {
-  TextSinkWidget sink = (TextSinkWidget) new;
+  TextSinkObject sink = (TextSinkObject) new;
 
   sink->text_sink.tab_count = 0; /* Initialize the tab stops. */
   sink->text_sink.tabs = NULL;
@@ -188,16 +188,16 @@ Widget request, new;
 }
 
 /*	Function Name: Destroy
- *	Description: This function cleans up when the widget is 
+ *	Description: This function cleans up when the object is 
  *                   destroyed.
- *	Arguments: w - the TextSink Widget.
+ *	Arguments: w - the TextSink Object.
  *	Returns: none.
  */
 
 static void
 Destroy(w)
 {
-  TextSinkWidget sink = (TextSinkWidget) w;
+  TextSinkObject sink = (TextSinkObject) w;
 
   if (sink->text_sink.tabs != NULL)
     XtFree((char *) sink->text_sink.tabs);
@@ -205,9 +205,9 @@ Destroy(w)
 
 /*	Function Name: SetValues
  *	Description: Sets the values for the TextSink
- *	Arguments: current - current state of the widget.
+ *	Arguments: current - current state of the object.
  *                 request - what was requested.
- *                 new - what the widget will become.
+ *                 new - what the object will become.
  *	Returns: True if redisplay is needed.
  */
 
@@ -216,9 +216,9 @@ static Boolean
 SetValues(current, request, new)
 Widget current, request, new;
 {
-  TextSinkWidget w = (TextSinkWidget) new;
-  TextSinkWidget old_w = (TextSinkWidget) current;
-  TextSinkWidgetClass class = (TextSinkWidgetClass) w->object.widget_class;
+  TextSinkObject w = (TextSinkObject) new;
+  TextSinkObject old_w = (TextSinkObject) current;
+  TextSinkObjectClass class = (TextSinkObjectClass) w->object.widget_class;
   Boolean redisp = FALSE;
 
   if (w->text_sink.font != old_w->text_sink.font) {
@@ -241,7 +241,7 @@ Widget current, request, new;
 
 /*	Function Name: DisplayText
  *	Description: Stub function that in subclasses will display text. 
- *	Arguments: w - the TextSink Widget.
+ *	Arguments: w - the TextSink Object.
  *                 x, y - location to start drawing text.
  *                 pos1, pos2 - location of starting and ending points
  *                              in the text buffer.
@@ -265,7 +265,7 @@ XawTextPosition pos1, pos2;
 
 /*	Function Name: InsertCursor
  *	Description: Places the InsertCursor.
- *	Arguments: w - the TextSink Widget.
+ *	Arguments: w - the TextSink Object.
  *                 x, y - location for the cursor.
  *                 staye - whether to turn the cursor on, or off.
  *	Returns: none.
@@ -286,7 +286,7 @@ XawTextInsertState state;
 
 /*	Function Name: ClearToBackground
  *	Description: Clears a region of the sink to the background color.
- *	Arguments: w - the TextSink Widget.
+ *	Arguments: w - the TextSink Object.
  *                 x, y  - location of area to clear.
  *                 width, height - size of area to clear
  *	Returns: void.
@@ -312,7 +312,7 @@ Dimension width, height;
 
 /*	Function Name: FindPosition
  *	Description: Finds a position in the text.
- *	Arguments: w - the TextSink Widget.
+ *	Arguments: w - the TextSink Object.
  *                 fromPos - reference position.
  *                 fromX   - reference location.
  *                 width,  - width of section to paint text.
@@ -340,7 +340,7 @@ int *resWidth, *resHeight;
 
 /*	Function Name: FindDistance
  *	Description: Find the Pixel Distance between two text Positions.
- *	Arguments: w - the TextSink Widget.
+ *	Arguments: w - the TextSink Object.
  *                 fromPos - starting Position.
  *                 fromX   - x location of starting Position.
  *                 toPos   - end Position.
@@ -367,7 +367,7 @@ int *resHeight;
 
 /*	Function Name: Resolve
  *	Description: Resloves a location to a position.
- *	Arguments: w - the TextSink Widget.
+ *	Arguments: w - the TextSink Object.
  *                 pos - a reference Position.
  *                 fromx - a reference Location.
  *                 width - width to move.
@@ -389,7 +389,7 @@ XawTextPosition *resPos;
 /*	Function Name: MaxLines
  *	Description: Finds the Maximum number of lines that will fit in
  *                   a given height.
- *	Arguments: w - the TextSink Widget.
+ *	Arguments: w - the TextSink Object.
  *                 height - height to fit lines into.
  *	Returns: the number of lines that will fit.
  */
@@ -400,7 +400,7 @@ MaxLines(w, height)
 Widget w;
 Dimension height;
 {
-  TextSinkWidget sink = (TextSinkWidget) w;
+  TextSinkObject sink = (TextSinkObject) w;
   int font_height;
 
   font_height = sink->text_sink.font->ascent + sink->text_sink.font->descent;
@@ -410,7 +410,7 @@ Dimension height;
 /*	Function Name: MaxHeight
  *	Description: Finds the Minium height that will contain a given number 
  *                   lines.
- *	Arguments: w - the TextSink Widget.
+ *	Arguments: w - the TextSink Object.
  *                 lines - the number of lines.
  *	Returns: the height.
  */
@@ -421,7 +421,7 @@ MaxHeight(w, lines)
 Widget w;
 int lines;
 {
-  TextSinkWidget sink = (TextSinkWidget) w;
+  TextSinkObject sink = (TextSinkObject) w;
 
   return(lines * (sink->text_sink.font->ascent + 
 		  sink->text_sink.font->descent));
@@ -429,7 +429,7 @@ int lines;
 
 /*	Function Name: SetTabs
  *	Description: Sets the Tab stops.
- *	Arguments: w - the TextSink Widget.
+ *	Arguments: w - the TextSink Object.
  *                 tab_count - the number of tabs in the list.
  *                 tabs - the text positions of the tabs.
  *	Returns: none
@@ -440,7 +440,7 @@ SetTabs(w, tab_count, tabs)
 Widget w;
 int tab_count, *tabs;
 {
-  TextSinkWidget sink = (TextSinkWidget) w;
+  TextSinkObject sink = (TextSinkObject) w;
   int i;
   Atom XA_FIGURE_WIDTH;
   unsigned long figure_width = 0;
@@ -477,7 +477,7 @@ int tab_count, *tabs;
 
 /*	Function Name: GetCursorBounds
  *	Description: Finds the bounding box for the insert curor (caret).
- *	Arguments: w - the TextSinkWidget.
+ *	Arguments: w - the TextSinkObject.
  *                 rect - an X rectance containing the cursor bounds.
  *	Returns: none (fills in rect).
  */
@@ -499,7 +499,7 @@ XRectangle * rect;
 
 /*	Function Name: XawTextSinkDisplayText
  *	Description: Stub function that in subclasses will display text. 
- *	Arguments: w - the TextSink Widget.
+ *	Arguments: w - the TextSink Object.
  *                 x, y - location to start drawing text.
  *                 pos1, pos2 - location of starting and ending points
  *                              in the text buffer.
@@ -518,14 +518,14 @@ Position x, y;
 int highlight;
 XawTextPosition pos1, pos2;
 {
-  TextSinkWidgetClass class = (TextSinkWidgetClass) w->core.widget_class;
+  TextSinkObjectClass class = (TextSinkObjectClass) w->core.widget_class;
 
   (*class->text_sink_class.DisplayText)(w, x, y, pos1, pos2, highlight);
 }
 
 /*	Function Name: XawTextSinkInsertCursor
  *	Description: Places the InsertCursor.
- *	Arguments: w - the TextSink Widget.
+ *	Arguments: w - the TextSink Object.
  *                 x, y - location for the cursor.
  *                 staye - whether to turn the cursor on, or off.
  *	Returns: none.
@@ -541,7 +541,7 @@ Widget w;
 Position x, y;
 XawTextInsertState state;
 {
-  TextSinkWidgetClass class = (TextSinkWidgetClass) w->core.widget_class;
+  TextSinkObjectClass class = (TextSinkObjectClass) w->core.widget_class;
     
   (*class->text_sink_class.InsertCursor)(w, x, y, state);
 }
@@ -549,7 +549,7 @@ XawTextInsertState state;
 
 /*	Function Name: XawTextSinkClearToBackground
  *	Description: Clears a region of the sink to the background color.
- *	Arguments: w - the TextSink Widget.
+ *	Arguments: w - the TextSink Object.
  *                 x, y  - location of area to clear.
  *                 width, height - size of area to clear
  *	Returns: void.
@@ -565,14 +565,14 @@ Widget w;
 Position x, y;
 Dimension width, height;
 {
-  TextSinkWidgetClass class = (TextSinkWidgetClass) w->core.widget_class;
+  TextSinkObjectClass class = (TextSinkObjectClass) w->core.widget_class;
 
   (*class->text_sink_class.ClearToBackground)(w, x, y, width, height);
 }
 
 /*	Function Name: XawTextSinkFindPosition
  *	Description: Finds a position in the text.
- *	Arguments: w - the TextSink Widget.
+ *	Arguments: w - the TextSink Object.
  *                 fromPos - reference position.
  *                 fromX   - reference location.
  *                 width,  - width of section to paint text.
@@ -594,7 +594,7 @@ Boolean stopAtWordBreak;
 XawTextPosition *resPos;	
 int *resWidth, *resHeight;		
 {
-  TextSinkWidgetClass class = (TextSinkWidgetClass) w->core.widget_class;
+  TextSinkObjectClass class = (TextSinkObjectClass) w->core.widget_class;
 
   (*class->text_sink_class.FindPosition)(w, fromPos, fromx, width,
 					 stopAtWordBreak, 
@@ -603,7 +603,7 @@ int *resWidth, *resHeight;
 
 /*	Function Name: XawTextSinkFindDistance
  *	Description: Find the Pixel Distance between two text Positions.
- *	Arguments: w - the TextSink Widget.
+ *	Arguments: w - the TextSink Object.
  *                 fromPos - starting Position.
  *                 fromX   - x location of starting Position.
  *                 toPos   - end Position.
@@ -620,7 +620,7 @@ Widget w;
 XawTextPosition fromPos, toPos, *resPos;
 int fromx, *resWidth, *resHeight;
 {
-  TextSinkWidgetClass class = (TextSinkWidgetClass) w->core.widget_class;
+  TextSinkObjectClass class = (TextSinkObjectClass) w->core.widget_class;
 
   (*class->text_sink_class.FindDistance)(w, fromPos, fromx, toPos,
 					 resWidth, resPos, resHeight);
@@ -628,7 +628,7 @@ int fromx, *resWidth, *resHeight;
 
 /*	Function Name: XawTextSinkResolve
  *	Description: Resloves a location to a position.
- *	Arguments: w - the TextSink Widget.
+ *	Arguments: w - the TextSink Object.
  *                 pos - a reference Position.
  *                 fromx - a reference Location.
  *                 width - width to move.
@@ -644,7 +644,7 @@ XawTextPosition pos;
 int fromx, width;
 XawTextPosition *resPos;
 {
-  TextSinkWidgetClass class = (TextSinkWidgetClass) w->core.widget_class;
+  TextSinkObjectClass class = (TextSinkObjectClass) w->core.widget_class;
 
   (*class->text_sink_class.Resolve)(w, pos, fromx, width, resPos);
 }
@@ -652,7 +652,7 @@ XawTextPosition *resPos;
 /*	Function Name: XawTextSinkMaxLines
  *	Description: Finds the Maximum number of lines that will fit in
  *                   a given height.
- *	Arguments: w - the TextSink Widget.
+ *	Arguments: w - the TextSink Object.
  *                 height - height to fit lines into.
  *	Returns: the number of lines that will fit.
  */
@@ -663,7 +663,7 @@ XawTextSinkMaxLines(w, height)
 Widget w;
 Dimension height;
 {
-  TextSinkWidgetClass class = (TextSinkWidgetClass) w->core.widget_class;
+  TextSinkObjectClass class = (TextSinkObjectClass) w->core.widget_class;
 
   return((*class->text_sink_class.MaxLines)(w, height));
 }
@@ -671,7 +671,7 @@ Dimension height;
 /*	Function Name: XawTextSinkMaxHeight
  *	Description: Finds the Minium height that will contain a given number 
  *                   lines.
- *	Arguments: w - the TextSink Widget.
+ *	Arguments: w - the TextSink Object.
  *                 lines - the number of lines.
  *	Returns: the height.
  */
@@ -682,14 +682,14 @@ XawTextSinkMaxHeight(w, lines)
 Widget w;
 int lines;
 {
-  TextSinkWidgetClass class = (TextSinkWidgetClass) w->core.widget_class;
+  TextSinkObjectClass class = (TextSinkObjectClass) w->core.widget_class;
 
   return((*class->text_sink_class.MaxHeight)(w, lines));
 }
 
 /*	Function Name: XawTextSinkSetTabs
  *	Description: Sets the Tab stops.
- *	Arguments: w - the TextSink Widget.
+ *	Arguments: w - the TextSink Object.
  *                 tab_count - the number of tabs in the list.
  *                 tabs - the text positions of the tabs.
  *	Returns: none
@@ -700,14 +700,14 @@ XawTextSinkSetTabs(w, tab_count, tabs)
 Widget w;
 int tab_count, *tabs;
 {
-  TextSinkWidgetClass class = (TextSinkWidgetClass) w->core.widget_class;
+  TextSinkObjectClass class = (TextSinkObjectClass) w->core.widget_class;
 
   (*class->text_sink_class.SetTabs)(w, tab_count, tabs);
 }
 						  
 /*	Function Name: XawTextSinkGetCursorBounds
  *	Description: Finds the bounding box for the insert curor (caret).
- *	Arguments: w - the TextSinkWidget.
+ *	Arguments: w - the TextSinkObject.
  *                 rect - an X rectance containing the cursor bounds.
  *	Returns: none (fills in rect).
  */
@@ -718,7 +718,7 @@ XawTextSinkGetCursorBounds(w, rect)
 Widget w;
 XRectangle * rect;
 {
-  TextSinkWidgetClass class = (TextSinkWidgetClass) w->core.widget_class;
+  TextSinkObjectClass class = (TextSinkObjectClass) w->core.widget_class;
 
   (*class->text_sink_class.GetCursorBounds)(w, rect);
 }

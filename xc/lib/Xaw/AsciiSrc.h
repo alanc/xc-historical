@@ -1,5 +1,5 @@
 /*
- * $XConsortium: AsciiSrc.h,v 1.2 89/07/06 16:00:54 kit Exp $
+ * $XConsortium: AsciiSrc.h,v 1.3 89/09/01 14:28:32 kit Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -21,7 +21,7 @@
  *
  * This is the public header file for the Ascii Text Source.
  * It is intended to be used with the Text widget, the simplest way to use
- * this text source is to use the AsciiText Widget.
+ * this text source is to use the AsciiText Object.
  *
  * Date:    June 29, 1989
  *
@@ -46,13 +46,17 @@
  
 /* Class record constants */
 
-extern WidgetClass asciiSrcWidgetClass;
+extern WidgetClass asciiSrcObjectClass;
 
-typedef struct _AsciiSrcClassRec *AsciiSrcWidgetClass;
-typedef struct _AsciiSrcRec      *AsciiSrcWidget;
+typedef struct _AsciiSrcClassRec *AsciiSrcObjectClass;
+typedef struct _AsciiSrcRec      *AsciiSrcObject;
 
-#define AsciiSourceWidgetClass AsciiSrcWidgetClass
-#define AsciiSourceWidget      AsciiSrcWidget
+/*
+ * Just to make people's lives a bit easier.
+ */
+
+#define AsciiSourceObjectClass AsciiSrcObjectClass
+#define AsciiSourceObject      AsciiSrcObject
 
 /*
  * Resource Definitions.
@@ -84,7 +88,7 @@ typedef enum {XawAsciiFile, XawAsciiString} XawAsciiType;
 /*	Function Name: XawAsciiSourceFreeString
  *	Description: Frees the string returned by a get values call
  *                   on the string when the source is of type string.
- *	Arguments: w - the AsciiSrc widget.
+ *	Arguments: w - the AsciiSrc object.
  *	Returns: none.
  */
 
@@ -95,7 +99,7 @@ Widget w;
 
 /*	Function Name: XawAsciiSave
  *	Description: Saves all the pieces into a file or string as required.
- *	Arguments: w - the asciiSrc Widget.
+ *	Arguments: w - the asciiSrc Object.
  *	Returns: TRUE if the save was successful.
  */
 
@@ -106,7 +110,7 @@ Widget w;
 
 /*	Function Name: XawAsciiSaveAsFile
  *	Description: Save the current buffer as a file.
- *	Arguments: w - the asciiSrc widget.
+ *	Arguments: w - the asciiSrc object.
  *                 name - name of the file to save this file into.
  *	Returns: True if the save was sucessful.
  */
@@ -119,7 +123,7 @@ String name;
 
 /*	Function Name: XawAsciiSourceChanged
  *	Description: Returns true if the source has changed since last saved.
- *	Arguments: w - the asciiSource widget.
+ *	Arguments: w - the asciiSource object.
  *	Returns: a Boolean (see description).
  */
 

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: AsciiSink.h,v 1.1 89/09/01 14:28:36 kit Exp $
+ * $XConsortium: AsciiSink.h,v 1.1 89/09/06 17:29:51 kit Exp $
  */
 
 /***********************************************************
@@ -31,7 +31,7 @@ SOFTWARE.
 
 /***********************************************************************
  *
- * AsciiSink Widget
+ * AsciiSink Object
  *
  ***********************************************************************/
 
@@ -53,10 +53,10 @@ SOFTWARE.
 
 /* Class record constants */
 
-extern WidgetClass asciiSinkWidgetClass;
+extern WidgetClass asciiSinkObjectClass;
 
-typedef struct _AsciiSinkClassRec *AsciiSinkWidgetClass;
-typedef struct _AsciiSinkRec      *AsciiSinkWidget;
+typedef struct _AsciiSinkClassRec *AsciiSinkObjectClass;
+typedef struct _AsciiSinkRec      *AsciiSinkObject;
 
 /************************************************************
  *

@@ -1,5 +1,5 @@
 #if ( !defined(lint) && !defined(SABER) )
-static char Xrcsid[] = "$XConsortium: SimpleMenu.c,v 1.21 89/08/28 14:30:27 kit Exp $";
+static char Xrcsid[] = "$XConsortium: TextSrc.c,v 1.1 89/09/01 14:28:35 kit Exp $";
 #endif 
 
 /*
@@ -46,7 +46,7 @@ static char Xrcsid[] = "$XConsortium: SimpleMenu.c,v 1.21 89/08/28 14:30:27 kit 
 
 /* Private Data */
 
-#define offset(field) XtOffset(TextSrcWidget, textSrc.field)
+#define offset(field) XtOffset(TextSrcObject, textSrc.field)
 static XtResource resources[] = {
     {XtNeditType, XtCEditType, XtREditMode, sizeof(XawTextEditType), 
         offset(edit_mode), XtRString, "read"},
@@ -105,16 +105,16 @@ TextSrcClassRec textSrcClassRec = {
   }
 };
 
-WidgetClass textSrcWidgetClass = (WidgetClass)&textSrcClassRec;
+WidgetClass textSrcObjectClass = (WidgetClass)&textSrcClassRec;
 
 static void
 ClassPartInitialize(wc)
 WidgetClass wc;
 {
-  register TextSrcWidgetClass t_src, superC;
+  register TextSrcObjectClass t_src, superC;
 
-  t_src = (TextSrcWidgetClass) wc;
-  superC = (TextSrcWidgetClass) t_src->object_class.superclass;
+  t_src = (TextSrcObjectClass) wc;
+  superC = (TextSrcObjectClass) t_src->object_class.superclass;
 
 /* 
  * We don't need to check for null super since we'll get to TextSrc
@@ -170,7 +170,7 @@ int length;
 
 /*	Function Name: Replace.
  *	Description: Replaces a block of text with new text.
- *	Arguments: src - the Text Source Widget.
+ *	Arguments: src - the Text Source Object.
  *                 startPos, endPos - ends of text that will be removed.
  *                 text - new text to be inserted into buffer at startPos.
  *	Returns: XawEditError.
@@ -189,7 +189,7 @@ XawTextBlock *text;
 /*	Function Name: Scan
  *	Description: Scans the text source for the number and type
  *                   of item specified.
- *	Arguments: w - the TextSrc Widget.
+ *	Arguments: w - the TextSrc Object.
  *                 position - the position to start scanning.
  *                 type - type of thing to scan for.
  *                 dir - direction to scan.
@@ -217,7 +217,7 @@ Boolean	              include;
 
 /*	Function Name: Search
  *	Description: Searchs the text source for the text block passed
- *	Arguments: w - the TextSource Widget.
+ *	Arguments: w - the TextSource Object.
  *                 position - the position to start scanning.
  *                 dir - direction to scan.
  *                 text - the text block to search for.
@@ -237,7 +237,7 @@ XawTextBlock *        text;
 
 /*	Function Name: ConvertSelection
  *	Description: Dummy selection converter.
- *	Arguments: w - the TextSrc widget.
+ *	Arguments: w - the TextSrc object.
  *                 selection - the current selection atom.
  *                 target    - the current target atom.
  *                 type      - the type to conver the selection to.
@@ -261,7 +261,7 @@ int format;
 
 /*	Function Name: SetSelection
  *	Description: allows special setting of the selection.
- *	Arguments: w - the TextSrc widget.
+ *	Arguments: w - the TextSrc object.
  *                 left, right - bounds of the selection.
  *                 selection - the selection atom.
  *	Returns: none
@@ -299,14 +299,14 @@ XawTextPosition pos;
 XawTextBlock *text;	
 int length;		
 {
-  TextSrcWidgetClass class = (TextSrcWidgetClass) w->core.widget_class;
+  TextSrcObjectClass class = (TextSrcObjectClass) w->core.widget_class;
 
   return((*class->textSrc_class.Read)(w, pos, text, length));
 }
 
 /*	Function Name: XawTextSourceReplace.
  *	Description: Replaces a block of text with new text.
- *	Arguments: src - the Text Source Widget.
+ *	Arguments: src - the Text Source Object.
  *                 startPos, endPos - ends of text that will be removed.
  *                 text - new text to be inserted into buffer at startPos.
  *	Returns: XawEditError or XawEditDone.
@@ -319,7 +319,7 @@ Widget w;
 XawTextPosition startPos, endPos;
 XawTextBlock *text;
 {
-  TextSrcWidgetClass class = (TextSrcWidgetClass) w->core.widget_class;
+  TextSrcObjectClass class = (TextSrcObjectClass) w->core.widget_class;
 
   return((*class->textSrc_class.Replace)(w, startPos, endPos, text));
 }
@@ -327,7 +327,7 @@ XawTextBlock *text;
 /*	Function Name: XawTextSourceScan
  *	Description: Scans the text source for the number and type
  *                   of item specified.
- *	Arguments: w - the TextSrc Widget.
+ *	Arguments: w - the TextSrc Object.
  *                 position - the position to start scanning.
  *                 type - type of thing to scan for.
  *                 dir - direction to scan.
@@ -347,14 +347,14 @@ XawTextScanDirection  dir;
 int     	      count;
 Boolean	              include;
 {
-  TextSrcWidgetClass class = (TextSrcWidgetClass) w->core.widget_class;
+  TextSrcObjectClass class = (TextSrcObjectClass) w->core.widget_class;
 
   return((*class->textSrc_class.Scan)(w, position, type, dir, count, include));
 }
 
 /*	Function Name: XawTextSourceSearch
  *	Description: Searchs the text source for the text block passed
- *	Arguments: w - the TextSource Widget.
+ *	Arguments: w - the TextSource Object.
  *                 position - the position to start scanning.
  *                 dir - direction to scan.
  *                 text - the text block to search for.
@@ -369,14 +369,14 @@ XawTextPosition       position;
 XawTextScanDirection  dir;
 XawTextBlock *        text;
 {
-  TextSrcWidgetClass class = (TextSrcWidgetClass) w->core.widget_class;
+  TextSrcObjectClass class = (TextSrcObjectClass) w->core.widget_class;
 
   return((*class->textSrc_class.Search)(w, position, dir, text));
 }
 
 /*	Function Name: XawTextSourceConvertSelection
  *	Description: Dummy selection converter.
- *	Arguments: w - the TextSrc widget.
+ *	Arguments: w - the TextSrc object.
  *                 selection - the current selection atom.
  *                 target    - the current target atom.
  *                 type      - the type to conver the selection to.
@@ -395,7 +395,7 @@ caddr_t value;
 unsigned long length;
 int format;
 {
-  TextSrcWidgetClass class = (TextSrcWidgetClass) w->core.widget_class;
+  TextSrcObjectClass class = (TextSrcObjectClass) w->core.widget_class;
 
   return((*class->textSrc_class.ConvertSelection)(w, selection, target, type,
 						  value, length, format));
@@ -403,7 +403,7 @@ int format;
 
 /*	Function Name: XawTextSourceSetSelection
  *	Description: allows special setting of the selection.
- *	Arguments: w - the TextSrc widget.
+ *	Arguments: w - the TextSrc object.
  *                 left, right - bounds of the selection.
  *                 selection - the selection atom.
  *	Returns: none
@@ -415,7 +415,7 @@ Widget w;
 XawTextPosition left, right;
 Atom selection;
 {
-  TextSrcWidgetClass class = (TextSrcWidgetClass) w->core.widget_class;
+  TextSrcObjectClass class = (TextSrcObjectClass) w->core.widget_class;
 
   (*class->textSrc_class.SetSelection)(w, left, right, selection);
 }

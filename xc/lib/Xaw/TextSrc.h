@@ -1,5 +1,5 @@
 /*
- * $XConsortium: TextSrc.h,v 1.1 89/09/01 14:28:36 kit Exp $
+ * $XConsortium: TextSrc.h,v 1.2 89/09/06 17:30:25 kit Exp $
  */
 
 /***********************************************************
@@ -31,7 +31,7 @@ SOFTWARE.
 
 /***********************************************************************
  *
- * TextSrc Widget
+ * TextSrc Object
  *
  ***********************************************************************/
 
@@ -47,10 +47,10 @@ SOFTWARE.
  
 /* Class record constants */
 
-extern WidgetClass textSrcWidgetClass;
+extern WidgetClass textSrcObjectClass;
 
-typedef struct _TextSrcClassRec *TextSrcWidgetClass;
-typedef struct _TextSrcRec      *TextSrcWidget;
+typedef struct _TextSrcClassRec *TextSrcObjectClass;
+typedef struct _TextSrcRec      *TextSrcObject;
 
 typedef enum {XawstPositions, XawstWhiteSpace, XawstEOL, XawstParagraph,
               XawstAll} XawTextScanType;
@@ -93,7 +93,7 @@ int length;
 
 /*	Function Name: XawTextSourceReplace.
  *	Description: Replaces a block of text with new text.
- *	Arguments: src - the Text Source Widget.
+ *	Arguments: src - the Text Source Object.
  *                 startPos, endPos - ends of text that will be removed.
  *                 text - new text to be inserted into buffer at startPos.
  *	Returns: XawEditError or XawEditDone.
@@ -109,7 +109,7 @@ XawTextBlock *text;
 /*	Function Name: XawTextSourceScan
  *	Description: Scans the text source for the number and type
  *                   of item specified.
- *	Arguments: w - the TextSrc Widget.
+ *	Arguments: w - the TextSrc Object.
  *                 position - the position to start scanning.
  *                 type - type of thing to scan for.
  *                 dir - direction to scan.
@@ -132,7 +132,7 @@ Boolean	              include;
 
 /*	Function Name: XawTextSourceSearch
  *	Description: Searchs the text source for the text block passed
- *	Arguments: w - the TextSource Widget.
+ *	Arguments: w - the TextSource Object.
  *                 position - the position to start scanning.
  *                 dir - direction to scan.
  *                 text - the text block to search for.
@@ -150,7 +150,7 @@ XawTextBlock *        text;
 
 /*	Function Name: XawTextSourceConvertSelection
  *	Description: Dummy selection converter.
- *	Arguments: w - the TextSrc widget.
+ *	Arguments: w - the TextSrc object.
  *                 selection - the current selection atom.
  *                 target    - the current target atom.
  *                 type      - the type to conver the selection to.
@@ -172,7 +172,7 @@ int format;
 
 /*	Function Name: XawTextSourceSetSelection
  *	Description: allows special setting of the selection.
- *	Arguments: w - the TextSrc widget.
+ *	Arguments: w - the TextSrc object.
  *                 left, right - bounds of the selection.
  *                 selection - the selection atom.
  *	Returns: none

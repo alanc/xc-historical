@@ -1,5 +1,5 @@
 /*
-* $XConsortium: TextSrcP.h,v 1.15 89/09/01 17:46:30 kit Exp $
+* $XConsortium: TextSrcP.h,v 1.16 89/09/06 17:30:27 kit Exp $
 */
 
 
@@ -28,7 +28,7 @@ SOFTWARE.
 ******************************************************************/
 
 /* 
- * TextSrcP.h - Private definitions for TextSrc widget
+ * TextSrcP.h - Private definitions for TextSrc object
  * 
  */
 
@@ -37,7 +37,7 @@ SOFTWARE.
 
 /***********************************************************************
  *
- * TextSrc Widget Private Data
+ * TextSrc Object Private Data
  *
  ***********************************************************************/
 
@@ -47,7 +47,7 @@ SOFTWARE.
 
 /************************************************************
  *
- * New fields for the TextSrc widget class record.
+ * New fields for the TextSrc object class record.
  *
  ************************************************************/
 
@@ -68,7 +68,7 @@ typedef struct _TextSrcClassRec {
 
 extern TextSrcClassRec textSrcClassRec;
 
-/* New fields for the TextSrc widget record */
+/* New fields for the TextSrc object record */
 typedef struct {
     /* resources */
   XawTextEditType	edit_mode;

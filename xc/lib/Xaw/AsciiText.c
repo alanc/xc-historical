@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: AsciiText.c,v 1.32 89/09/08 17:20:25 kit Exp $";
+static char Xrcsid[] = "$XConsortium: AsciiText.c,v 1.33 89/10/02 19:15:21 kit Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -130,9 +130,9 @@ Cardinal *num_args;
   int i;
   int tabs[TAB_COUNT], tab;
   
-  w->text.source = XtCreateWidget( "textSource", asciiSrcWidgetClass,
+  w->text.source = XtCreateWidget( "textSource", asciiSrcObjectClass,
 				   widget, args, *num_args );
-  w->text.sink = XtCreateWidget( "textSink", asciiSinkWidgetClass,
+  w->text.sink = XtCreateWidget( "textSink", asciiSinkObjectClass,
 				 widget, args, *num_args );
 
   if (w->core.height == DEFAULT_TEXT_HEIGHT)

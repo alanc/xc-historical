@@ -1,5 +1,5 @@
 /*
-* $XConsortium: TextSinkP.h,v 1.1 89/09/06 17:30:25 kit Exp $
+* $XConsortium: TextSinkP.h,v 1.2 89/09/13 15:06:55 kit Exp $
 */
 
 
@@ -28,7 +28,7 @@ SOFTWARE.
 ******************************************************************/
 
 /* 
- * TextSinkP.h - Private definitions for TextSink widget
+ * TextSinkP.h - Private definitions for TextSink object
  * 
  */
 
@@ -37,7 +37,7 @@ SOFTWARE.
 
 /***********************************************************************
  *
- * TextSink Widget Private Data
+ * TextSink Object Private Data
  *
  ***********************************************************************/
 
@@ -48,7 +48,7 @@ SOFTWARE.
 
 /************************************************************
  *
- * New fields for the TextSink widget class record.
+ * New fields for the TextSink object class record.
  *
  ************************************************************/
 
@@ -73,7 +73,7 @@ typedef struct _TextSinkClassRec {
 
 extern TextSinkClassRec textSinkClassRec;
 
-/* New fields for the TextSink widget record */
+/* New fields for the TextSink object record */
 typedef struct {
     /* resources */
     XFontStruct	*font;		/* Font to draw in. */

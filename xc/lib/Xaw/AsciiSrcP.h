@@ -1,5 +1,5 @@
 /*
-* $XConsortium: LabelP.h,v 1.24 89/06/08 18:05:01 swick Exp $
+* $XConsortium: AsciiSrcP.h,v 1.4 89/09/01 14:28:34 kit Exp $
 */
 
 
@@ -32,7 +32,7 @@ SOFTWARE.
  *
  * This is the private header file for the Ascii Text Source.
  * It is intended to be used with the Text widget, the simplest way to use
- * this text source is to use the AsciiText Widget.
+ * this text source is to use the AsciiText Object.
  *
  * Date:    June 29, 1989
  *
@@ -42,7 +42,7 @@ SOFTWARE.
  */
 
 /* 
- * TextSrcP.h - Private definitions for AsciiSrc widget
+ * TextSrcP.h - Private definitions for AsciiSrc object
  * 
  */
 
@@ -77,7 +77,7 @@ typedef struct _Piece {		/* Piece of the text file of BUFSIZ allocated
 
 /************************************************************
  *
- * New fields for the AsciiSrc widget class record.
+ * New fields for the AsciiSrc object class record.
  *
  ************************************************************/
 
@@ -92,7 +92,7 @@ typedef struct _AsciiSrcClassRec {
 
 extern AsciiSrcClassRec asciiSrcClassRec;
 
-/* New fields for the AsciiSrc widget record */
+/* New fields for the AsciiSrc object record */
 
 typedef struct _AsciiSrcPart {
 

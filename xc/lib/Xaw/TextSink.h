@@ -1,5 +1,5 @@
 /*
- * $XConsortium: TextSink.h,v 1.2 89/09/11 13:59:02 kit Exp $
+ * $XConsortium: TextSink.h,v 1.3 89/09/13 15:06:53 kit Exp $
  */
 
 /***********************************************************
@@ -31,7 +31,7 @@ SOFTWARE.
 
 /***********************************************************************
  *
- * TextSink Widget
+ * TextSink Object
  *
  ***********************************************************************/
 
@@ -49,10 +49,10 @@ SOFTWARE.
  
 /* Class record constants */
 
-extern WidgetClass textSinkWidgetClass;
+extern WidgetClass textSinkObjectClass;
 
-typedef struct _TextSinkClassRec *TextSinkWidgetClass;
-typedef struct _TextSinkRec      *TextSinkWidget;
+typedef struct _TextSinkClassRec *TextSinkObjectClass;
+typedef struct _TextSinkRec      *TextSinkObject;
 
 typedef enum {XawisOn, XawisOff} XawTextInsertState;
 
@@ -64,7 +64,7 @@ typedef enum {XawisOn, XawisOff} XawTextInsertState;
 
 /*	Function Name: XawTextSinkDisplayText
  *	Description: Stub function that in subclasses will display text. 
- *	Arguments: w - the TextSink Widget.
+ *	Arguments: w - the TextSink Object.
  *                 x, y - location to start drawing text.
  *                 pos1, pos2 - location of starting and ending points
  *                              in the text buffer.
@@ -85,7 +85,7 @@ XawTextPosition pos1, pos2;
 
 /*	Function Name: XawTextSinkInsertCursor
  *	Description: Places the InsertCursor.
- *	Arguments: w - the TextSink Widget.
+ *	Arguments: w - the TextSink Object.
  *                 x, y - location for the cursor.
  *                 staye - whether to turn the cursor on, or off.
  *	Returns: none.
@@ -103,7 +103,7 @@ XawTextInsertState state;
 
 /*	Function Name: XawTextSinkClearToBackground
  *	Description: Clears a region of the sink to the background color.
- *	Arguments: w - the TextSink Widget.
+ *	Arguments: w - the TextSink Object.
  *                 x, y  - location of area to clear.
  *                 width, height - size of area to clear
  *	Returns: void.
@@ -121,7 +121,7 @@ Dimension width, height;
 
 /*	Function Name: XawTextSinkFindPosition
  *	Description: Finds a position in the text.
- *	Arguments: w - the TextSink Widget.
+ *	Arguments: w - the TextSink Object.
  *                 fromPos - reference position.
  *                 fromX   - reference location.
  *                 width,  - width of section to paint text.
@@ -145,7 +145,7 @@ int *resWidth, *resHeight;
 
 /*	Function Name: XawTextSinkFindDistance
  *	Description: Find the Pixel Distance between two text Positions.
- *	Arguments: w - the TextSink Widget.
+ *	Arguments: w - the TextSink Object.
  *                 fromPos - starting Position.
  *                 fromX   - x location of starting Position.
  *                 toPos   - end Position.
@@ -165,7 +165,7 @@ int fromx, *resWidth, *resHeight;
 
 /*	Function Name: XawTextSinkResolve
  *	Description: Resloves a location to a position.
- *	Arguments: w - the TextSink Widget.
+ *	Arguments: w - the TextSink Object.
  *                 pos - a reference Position.
  *                 fromx - a reference Location.
  *                 width - width to move.
@@ -184,7 +184,7 @@ XawTextPosition *resPos;
 /*	Function Name: XawTextSinkMaxLines
  *	Description: Finds the Maximum number of lines that will fit in
  *                   a given height.
- *	Arguments: w - the TextSink Widget.
+ *	Arguments: w - the TextSink Object.
  *                 height - height to fit lines into.
  *	Returns: the number of lines that will fit.
  */
@@ -198,7 +198,7 @@ Dimension height;
 /*	Function Name: XawTextSinkMaxHeight
  *	Description: Finds the Minium height that will contain a given number 
  *                   lines.
- *	Arguments: w - the TextSink Widget.
+ *	Arguments: w - the TextSink Object.
  *                 lines - the number of lines.
  *	Returns: the height.
  */
@@ -211,7 +211,7 @@ int lines;
 
 /*	Function Name: XawTextSinkSetTabs
  *	Description: Sets the Tab stops.
- *	Arguments: w - the TextSink Widget.
+ *	Arguments: w - the TextSink Object.
  *                 tab_count - the number of tabs in the list.
  *                 tabs - the text positions of the tabs.
  *	Returns: none
@@ -225,7 +225,7 @@ int tab_count, *tabs;
 						  
 /*	Function Name: XawTextSinkGetCursorBounds
  *	Description: Finds the bounding box for the insert curor (caret).
- *	Arguments: w - the TextSinkWidget.
+ *	Arguments: w - the TextSinkObject.
  *                 rect - an X rectance containing the cursor bounds.
  *	Returns: none (fills in rect).
  */

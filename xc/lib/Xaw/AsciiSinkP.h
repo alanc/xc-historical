@@ -1,5 +1,5 @@
 /*
-* $XConsortium: asciiSinkP.h,v 1.15 89/09/01 17:46:30 kit Exp $
+* $XConsortium: AsciiSinkP.h,v 1.1 89/09/06 17:29:51 kit Exp $
 */
 
 
@@ -28,7 +28,7 @@ SOFTWARE.
 ******************************************************************/
 
 /* 
- * asciiSinkP.h - Private definitions for asciiSink widget
+ * asciiSinkP.h - Private definitions for asciiSink object
  * 
  */
 
@@ -37,7 +37,7 @@ SOFTWARE.
 
 /***********************************************************************
  *
- * AsciiSink Widget Private Data
+ * AsciiSink Object Private Data
  *
  ***********************************************************************/
 
@@ -46,7 +46,7 @@ SOFTWARE.
 
 /************************************************************
  *
- * New fields for the AsciiSink widget class record.
+ * New fields for the AsciiSink object class record.
  *
  ************************************************************/
 
@@ -64,7 +64,7 @@ typedef struct _AsciiSinkClassRec {
 
 extern AsciiSinkClassRec asciiSinkClassRec;
 
-/* New fields for the AsciiSink widget record */
+/* New fields for the AsciiSink object record */
 typedef struct {
     /* public resources */
     Boolean echo;
