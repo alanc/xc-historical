@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Clock.c,v 1.26 88/02/14 15:25:14 jim Exp $";
+static char rcsid[] = "$Header: Clock.c,v 1.27 88/02/25 14:47:15 swick Exp $";
 #endif lint
 
 
@@ -121,6 +121,7 @@ ClockClassRec clockClassRec = {
     /* version			*/	XtVersion,
     /* callback_private		*/	NULL,
     /* tm_table			*/	NULL,
+    /* query_geometry           */	NULL,
     }
 };
 
