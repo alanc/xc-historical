@@ -125,7 +125,7 @@ _
 .Dp
 .Dc
 .Sd AsciiText	
-.Dp
+.Td
 .Oe AsciiText
 .Sh AsciiText
 .Sf AsciiText

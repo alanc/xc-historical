@@ -221,8 +221,8 @@ supported: \fBXmuShapeRectangle\fP, \fBXmuShapeOval\fP,
 A list of all this composite widget's current children.
 ..
 .de Ip \"Insert Position
-.IP insertPosition 1.5i
-[||| What is this resource anyway??? ]
+\".IP insertPosition 1.5i
+\"[||| What is this resource anyway??? ]
 ..
 .de Nc \"Number of Children
 .IP numChildren 1.5i
@@ -361,7 +361,7 @@ and the corresponding edge of the text within the window.  If there is
 a scrollbar active on this edge, then this is the space between the text and
 the scrollbar.
 ..
-.de Dp \" DisplayPosition
+.de Td \" DisplayPosition
 .ie 'Bold'\\$1' .IP \fBdisplayPosition\fP 1.5i
 .el .IP displayPosition	 1.5i
 The position in the text buffer of the character that is currently
