@@ -1,4 +1,4 @@
-/* $Header: Xlib.h,v 11.130 87/09/08 14:33:27 toddb Locked $ */
+/* $Header: Xlib.h,v 11.131 87/09/08 17:35:46 toddb Locked $ */
 /* 
  * Copyright 1985, 1986, 1987 by the Massachusetts Institute of Technology
  *
@@ -956,10 +956,10 @@ KeySym XStringToKeysym();
 
 /* routines for dealing with extensions */
 XExtCodes *XInitExtension();
-int (*XESetCreateGC()), (*XESetCopyGC()), (*XESetFlushGC()),
-    (*XESetFreeGC()), (*XESetCreateFont()), (*XESetFreeFont()), 
-    (*XESetCloseDisplay()), (*XESetWireToEvent()), (*XESetEventToWire()),
-    (*XESetError()), (*XESetErrorString());
+int (*XESetCreateGC())(), (*XESetCopyGC())(), (*XESetFlushGC())(),
+    (*XESetFreeGC())(), (*XESetCreateFont())(), (*XESetFreeFont())(), 
+    (*XESetCloseDisplay())(), (*XESetWireToEvent())(), (*XESetEventToWire())(),
+    (*XESetError())(), (*XESetErrorString())();
 
 /* these are routines for which there are also macros */
 Window XRootWindow(), XDefaultRootWindow(), XRootWindowOfScreen();
