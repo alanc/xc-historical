@@ -1,4 +1,4 @@
-/* $XConsortium: XIElibint.h,v 1.3 93/10/28 15:23:15 rws Exp $ */
+/* $XConsortium: XIElibint.h,v 1.4 94/03/18 10:29:54 mor Exp $ */
 
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -262,9 +262,11 @@ typedef struct _XieTechFuncRec {
  */
 
 #define XREAD_INTO_SCRATCH(_display, _pBuf, _numBytes) \
-    _pBuf = (char *) _XAllocScratch (_display, _numBytes); \
+    _pBuf = (char *) _XAllocTemp (_display, _numBytes); \
     _XRead (_display, _pBuf, _numBytes);
 
+#define FINISH_WITH_SCRATCH(_display, _pBuf, _numBytes) \
+    _XFreeTemp (_display, _pBuf, _numBytes);
 
 
 /*
