@@ -1108,7 +1108,7 @@
 			     (>= (array-dimension data 1) keysyms-per-keycode))
 			data
 		      (make-array `(,(+ start keycode-count) ,keysyms-per-keycode)
-				  :element-type 'keysym)))
+				  :element-type 'keysym :initial-element 0)))
 	    (i start (1+ i)))
 	   ((zerop keycode-count) (setq data result))
 	(buffer-input display buffer-bbuf 0 bytes-per-keycode)
