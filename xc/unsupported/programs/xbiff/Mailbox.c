@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Mailbox.c,v 1.52 91/03/14 15:34:57 converse Exp $
+ * $XConsortium: Mailbox.c,v 1.53 91/03/14 16:47:54 converse Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -22,21 +22,21 @@
  *         XBiff*emptyPixmap:  mailempty
  */
 
+#include <X11/IntrinsicP.h>		/* for toolkit stuff */
+#include <X11/StringDefs.h>		/* for useful atom names */
+#include <X11/cursorfont.h>		/* for cursor constants */
+#include <X11/Xosdefs.h>		/* for X_NOT_POSIX def */
+#include <sys/stat.h>			/* for stat() ** needs types.h ***/
 #include <stdio.h>			/* for printing error messages */
 #include <pwd.h>			/* for getting username */
 
-#include <X11/cursorfont.h>		/* for cursor constants */
-#include <X11/StringDefs.h>		/* for useful atom names */
-#include <X11/IntrinsicP.h>		/* for toolkit stuff */
-#include <sys/stat.h>			/* for stat() ** needs types.h ***/
-
-#ifdef _POSIX_SOURCE
+#ifndef X_NOT_POSIX
 # include <sys/wait.h>
 # define waitCode(w)	WEXITSTATUS(w)
 # define waitSig(w)	WIFSIGNALED(w)
 typedef int		waitType;
 # define INTWAITTYPE
-#else /* not _POSIX_SOURCE */
+#else /* ! X_NOT_POSIX */
 #ifdef SVR4
 # include <sys/wait.h>
 # define waitCode(w)	WEXITSTATUS(w)
@@ -56,7 +56,7 @@ typedef int		waitType;
 typedef union wait	waitType;
 #endif /* SYSV else */
 #endif /* SVR4 else */
-#endif /* _POSIX_SOURCE else */
+#endif /* ! X_NOT_POSIX else */
 
 #include <X11/bitmaps/mailfull>		/* for flag up (mail present) bits */
 #include <X11/bitmaps/mailempty>	/* for flag down (mail not here) */
