@@ -1,4 +1,4 @@
-/* $XConsortium: remote.c,v 1.11 94/12/14 20:00:47 mor Exp mor $ */
+/* $XConsortium: remote.c,v 1.12 94/12/16 17:30:22 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -111,10 +111,12 @@ char	*non_local_session_env;
 	    fprintf (fp, "DIR %s\n", cwd);
 	    fprintf (fp, "DETACH\n");
 
-	    if (!env)
-		env = environ;
-
 	    if (env)
+	    {
+		/*
+		 * The application saved its environment.
+		 */
+
 		for (i = 0; env[i]; i++)
 		{
 		    /*
@@ -128,6 +130,22 @@ char	*non_local_session_env;
 		    if (temp != env[i])
 			XtFree (temp);
 		}
+	    }
+	    else
+	    {
+		/*
+		 * The application did not save its environment.
+		 * The default PATH set up by rstart may not contain
+		 * the program we want to restart.  We play it safe
+		 * and pass xsm's PATH.  This will most likely contain
+		 * the path we need.
+		 */
+
+		char *path = (char *) getenv ("PATH");
+
+		if (path)
+		    fprintf (fp, "MISC X PATH=%s\n", path);
+	    }
 
 	    fprintf (fp, "MISC X %s\n", non_local_display_env);
 	    fprintf (fp, "MISC X %s\n", non_local_session_env);
