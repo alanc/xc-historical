@@ -37,7 +37,7 @@
  */
 
 #ifndef lint
-static char *rcsid_xwd_c = "$XConsortium: xwd.c,v 1.39 88/09/20 22:47:29 jim Exp $";
+static char *rcsid_xwd_c = "$XConsortium: xwd.c,v 1.40 88/09/20 22:53:28 jim Exp $";
 #endif
 
 /*%
@@ -66,7 +66,7 @@ long add_pixel_value = 0;
 extern int (*_XErrorFunction)();
 extern int _XDefaultError();
 
-static unsigned long parse_long (s)
+static long parse_long (s)
     char *s;
 {
     char *fmt = "%lu";
