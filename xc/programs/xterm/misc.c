@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: misc.c,v 1.81 91/05/07 00:44:04 gildea Exp $
+ *	$XConsortium: misc.c,v 1.82 91/05/07 15:20:37 gildea Exp $
  */
 
 /*
@@ -80,16 +80,16 @@ xevents()
 		 * looking at the event ourselves we make sure that we can
 		 * do the right thing.
 		 */
-		if (event.type == EnterNotify &&
-		    (event.xcrossing.window == XtWindow(XtParent(term))) ||
+		if(event.type == EnterNotify &&
+		   (event.xcrossing.window == XtWindow(XtParent(term)) ||
 		    (tekWidget &&
-		     event.xcrossing.window == XtWindow(XtParent(tekWidget))))
+		     event.xcrossing.window == XtWindow(XtParent(tekWidget)))))
 		  DoSpecialEnterNotify (&event);
 		else 
-		if (event.type == LeaveNotify &&
-		    (event.xcrossing.window == XtWindow(XtParent(term))) ||
+		if(event.type == LeaveNotify &&
+		   (event.xcrossing.window == XtWindow(XtParent(term)) ||
 		    (tekWidget &&
-		     event.xcrossing.window == XtWindow(XtParent(tekWidget))))
+		     event.xcrossing.window == XtWindow(XtParent(tekWidget)))))
 		  DoSpecialLeaveNotify (&event);
 
 		if (!event.xany.send_event ||
