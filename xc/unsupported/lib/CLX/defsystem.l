@@ -176,10 +176,19 @@
 #+lucid
 (defun clx-foreign-files ()
   #-lcl3.0 (load "make-sequence-patch")
+  #+apollo
+  (define-foreign-function '(xlib::connect-to-server "connect_to_server")
+    '((:val host    :string)
+      (:val display :integer32))
+    :integer32)
+  #-apollo
   (define-c-function (xlib::connect-to-server "_connect_to_server")
 		     (host display)
 		     :result-type :integer)
   (unintern 'display)
+  #+apollo
+  (load-foreign-file "socket" :preserve-pathname t)
+  #-apollo
   (load-foreign-files '("socket.o") *foreign-libraries*))
 
 #-lispm
