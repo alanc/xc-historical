@@ -1,5 +1,5 @@
 /*
- * $XConsortium: imakemdep.h,v 1.51 93/07/28 10:53:54 rws Exp $
+ * $XConsortium: imakemdep.h,v 1.52 93/07/28 20:56:23 rws Exp $
  * 
  * This file contains machine-dependent constants for the imake utility.
  * When porting imake, read each of the steps below and add in any necessary
@@ -264,6 +264,9 @@ char *cpp_argv[ARGUMENTS] = {
 	"-DSVR4",
 #endif
 #endif
+#if defined(BSD) && !defined(Mips)
+	"-DBSD",	/* BSD */
+#endif
 };
 #else /* else MAKEDEPEND */
 /*
@@ -321,8 +324,8 @@ struct symtab	predefs[] = {
 #ifdef CRAY
 	{"CRAY", "1"},
 #endif
-#ifdef USL
-	{"USL", "1"},
+#ifdef att
+	{"att", "1"},
 #endif
 #ifdef mips
 	{"mips", "1"},
