@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: cfbgc.c,v 5.16 89/09/01 15:44:57 keith Exp $ */
+/* $XConsortium: cfbgc.c,v 5.17 89/09/02 15:14:58 rws Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -73,7 +73,11 @@ static GCOps	cfbTEOps = {
     cfbLineSS,
     cfbSegmentSS,
     miPolyRectangle,
+#if PPW == 4
+    cfbZeroPolyArcSS8,
+#else
     miZeroPolyArc,
+#endif
     miFillPolygon,
     cfbPolyFillRect,
     miPolyFillArc,
@@ -103,7 +107,11 @@ static GCOps	cfbNonTEOps = {
     cfbLineSS,
     cfbSegmentSS,
     miPolyRectangle,
+#if PPW == 4
+    cfbZeroPolyArcSS8,
+#else
     miZeroPolyArc,
+#endif
     miFillPolygon,
     cfbPolyFillRect,
     miPolyFillArc,
@@ -562,7 +570,14 @@ cfbValidateGC(pGC, changes, pDrawable)
     {
 	pGC->ops->PolySegment = miPolySegment;
 	if (pGC->lineWidth == 0)
-	    pGC->ops->PolyArc = miZeroPolyArc;
+	{
+#if PPW == 4
+	    if ((pGC->lineStyle == LineSolid) && (pGC->fillStyle == FillSolid))
+		pGC->ops->PolyArc = cfbZeroPolyArcSS8;
+	    else
+#endif
+		pGC->ops->PolyArc = miZeroPolyArc;
+	}
 	else
 	    pGC->ops->PolyArc = miPolyArc;
 	switch (pGC->lineStyle)
