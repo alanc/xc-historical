@@ -33,8 +33,8 @@ function that implements the interface for the given transport.
 .P
 This API does not provide an abstraction for select() or poll().
 These function are themselves transport independent, so an additional interface
-is less for these functions.  It is also unclear how such an interface would
-affect performance.
+is not needed for these functions.  It is also unclear how such an interface
+would affect performance.
 .H 1 "Definition of Address Specification Format"
 .P
 Addresses are specified in the following syntax,
@@ -54,8 +54,8 @@ of an address.
 .H 1 "Internal Data Structures"
 .P
 There are two major data structures associated with the transport independent
-portion of this interface.  Addition data structures may be used internally by
-each transport.
+portion of this interface.  Additional data structures may be used internally
+by each transport.
 .H 2 "Xtransport"
 .P
 Each transport supported has an entry in the transport table.
@@ -64,56 +64,144 @@ contains all the entry points for a single transport. This record is defined as:
 .DS
 .nf
 typedef struct _Xtransport {
-        char    *TransName;
-        int    flags;
-        XtransConnInfo  *(*OpenCOTSClient)(struct _Xtransport *, char *,
-							char *, char *);
-        XtransConnInfo *(*OpenCOTSServer)(struct _Xtransport *, char *,
-							char *, char *);
-        XtransConnInfo  *(*OpenCLTSClient)(struct _Xtransport *, char *,
-							char *, char *);
-        XtransConnInfo  *(*OpenCLTSServer)(struct _Xtransport *, char *,
-							char *, char *);
-        int     (*SetOption)(struct _XtransConnInfo *, int, int, int);
-        int     (*CreateListener)(struct _XtransConnInfo *, int, char *);
-        XtransConnInfo     *(*Accept)(struct _XtransConnInfo *, int);
-        int     (*Connect)(struct _XtransConnInfo *, int, char *);
-        int     (*BytesReadable)(struct _XtransConnInfo *, int, BytesReadable_t *);
-        int     (*Read)(struct _XtransConnInfo *, int, char *, int);
-        int     (*Write)(struct _XtransConnInfo *, int, char *, int);
-        int     (*Readv)(struct _XtransConnInfo *, int, struct iovec *, int);
-        int     (*Writev)(struct _XtransConnInfo *, int, struct iovec *, int);
-        int     (*Disconnect)(struct _XtransConnInfo *, int);
-        int     (*Close)(struct _XtransConnInfo *, int);
-        int     (*NameToAddr)(struct _XtransConnInfo *, int);
-        int     (*AddrToName)(struct _XtransConnInfo *, int);
-        } Xtransport;
+
+    char *TransName;
+    int  flags;
+
+    XtransConnInfo (*OpenCOTSClient)(
+	struct _Xtransport *,	/* transport */
+	char *,			/* protocol */
+	char *,			/* host */
+	char *			/* port */
+    );
+
+    XtransConnInfo (*OpenCOTSServer)(
+	struct _Xtransport *,	/* transport */
+	char *,			/* protocol */
+	char *,			/* host */
+	char *			/* port */
+    );
+
+    XtransConnInfo (*OpenCLTSClient)(
+	struct _Xtransport *,	/* transport */
+	char *,			/* protocol */
+	char *,			/* host */
+	char *			/* port */
+    );
+
+    XtransConnInfo (*OpenCLTSServer)(
+	struct _Xtransport *,	/* transport */
+	char *,			/* protocol */
+	char *,			/* host */
+	char *			/* port */
+    );
+
+    int	(*SetOption)(
+	XtransConnInfo,		/* connection */
+	int,			/* option */
+	int			/* arg */
+    );
+
+    int	(*CreateListener)(
+	XtransConnInfo,		/* connection */
+	char *			/* port */
+    );
+
+    int	(*ResetListener)(
+	XtransConnInfo		/* connection */
+    );
+
+    XtransConnInfo (*Accept)(
+	XtransConnInfo		/* connection */
+    );
+
+    int	(*Connect)(
+	XtransConnInfo,		/* connection */
+	char *,			/* host */
+	char *			/* port */
+    );
+
+    int	(*BytesReadable)(
+	XtransConnInfo,		/* connection */
+	BytesReadable_t *	/* pend */
+    );
+
+    int	(*Read)(
+	XtransConnInfo,		/* connection */
+	char *,			/* buf */
+	int			/* size */
+    );
+
+    int	(*Write)(
+	XtransConnInfo,		/* connection */
+	char *,			/* buf */
+	int			/* size */
+    );
+
+    int	(*Readv)(
+	XtransConnInfo,		/* connection */
+	struct iovec *,		/* buf */
+	int			/* size */
+    );
+
+    int	(*Writev)(
+	XtransConnInfo,		/* connection */
+	struct iovec *,		/* buf */
+	int			/* size */
+    );
+
+    int	(*Disconnect)(
+	XtransConnInfo		/* connection */
+    );
+
+    int	(*Close)(
+	XtransConnInfo		/* connection */
+    );
+
+    int	(*NameToAddr)(
+	XtransConnInfo		/* connection */
+	/* What else ??? */
+    );
+
+    int	(*AddrToName)(
+	XtransConnInfo		/* connection */
+	/* What else ??? */
+    );
+
+} Xtransport;
 
 .fi
 .DE
 .P
-The \fIflags\fR field currently contains only one flag \fITRANS_ALIAS\fR that
-indicates that this record is providing an alias, and should not be used
-to create a listner.
+The \fIflags\fR field can contain an OR of the following masks:
+.sp
+\fITRANS_ALIAS\fR: indicates that this record is providing an alias,
+and should not be used to create a listner.
+.sp
+\fITRANS_LOCAL\fR: indicates that this is a LOCALCONN transport.
 
 .H 2 "XtransConnInfo"
 .P
-Each connection will have an \fIXtransConnInfo\fR record allocated for it. This
-record contains information specific to the connection. The record is defined
+Each connection will have an opaque \fIXtransConnInfo\fR transport connection
+object allocated for it. This record contains information specific to the
+connection. The record is defined
 as:
 .DS
 .nf
-typedef struct  _XtransConnInfo {
-        struct _Xtransport     *transptr;
-        char    *priv;
-        int     flags;
-        int     fd;
-        int     family;
-        char    *addr;
-        int     addrlen;
-        char    *peeraddr;
-        int     peeraddrlen;
-        } XtransConnInfo;
+typedef struct _XtransConnInfo *XtransConnInfo;
+.sp
+struct _XtransConnInfo {
+    struct _Xtransport     *transptr;
+    char	*priv;
+    int		flags;
+    int		fd;
+    int		family;
+    char	*addr;
+    int		addrlen;
+    char	*peeraddr;
+    int		peeraddrlen;
+};
+
 .fi
 .DE
 .H 1 "Exposed Transport Independent API"
@@ -136,57 +224,65 @@ be available for debugging purposes.
 .H 2 "Core Interface API"
 .BL
 .LI
-int TRANS(OpenCOTSClient)(char *address)
+XtransConnInfo
+TRANS(OpenCOTSClient)(char *address)
 .P
 This function creates a Connection-Oriented Transport that is suitable for
 use by a client.
 The parameter \fIaddress\fR contains the full address of the 
 server to which this endpoint will be connected.
-This functions returns a valid fd on success, or -1 on failure.
+This functions returns an opaque transport connection object on success,
+or NULL on failure.
 .LI
-int TRANS(OpenCOTSServer)(char *address)
+XtransConnInfo
+TRANS(OpenCOTSServer)(char *address)
 .P
 This function creates a Connection-Oriented Transport that is suitable for
 use by a server.
 The parameter \fIaddress\fR contains the full address to which this
 server will be bound.
-This functions returns a valid fd on success, or -1 on failure.
+This functions returns an opaque transport connection object on success,
+or NULL on failure.
 .LI
-int TRANS(OpenCLTSClient)(char *address)
+XtransConnInfo
+TRANS(OpenCLTSClient)(char *address)
 .P
 This function creates a Connection-Less Transport that is suitable for
 use by a client.
 The parameter \fIaddress\fR contains the full address of the 
 server to which this endpoint will be connected.
-This functions returns a valid fd on success, or -1 on failure.
+This functions returns an opaque transport connection object on success,
+or NULL on failure.
 .LI
-int TRANS(OpenCLTSServer)(char *address)
+XtransConnInfo
+TRANS(OpenCLTSServer)(char *address)
 .P
 This function creates a Connection-Less Transport that is suitable for
 use by a server.
 The parameter \fIaddress\fR contains the full address to which this
 server will be bound.
-This functions returns a valid fd on success, or -1 on failure.
+This functions returns an opaque transport connection object on success,
+or NULL on failure.
 .LI
-int TRANS(SetOption)(int fd, int option, int arg)
+int TRANS(SetOption)(XtransConnInfo connection, int option, int arg)
 .P
 This function sets transport options, similar to the way setsockopt() and
 ioctl() work.
-The parameter \fIfd\fR is an endpoint that was obtained from
+The parameter \fIconnection\fR is an endpoint that was obtained from
 _XTransOpen*() functions.
 The parameter \fIoption\fR contains the option that will be set. The actual
 values for \fIoption\fR are defined in a later section.
-The parameter \fIarg\fR can be used  to pass in an additional value that may
+The parameter \fIarg\fR can be used to pass in an additional value that may
 be required by some options.
 This function return 0 on success and -1 on failure.
 .P
 Note: Based on current usage, the complimentary function TRANS(GetOption)()
 is not necessary.
 .LI
-int TRANS(CreateListener)(int fd, char *port)
+int TRANS(CreateListener)(XtransConnInfo connection, char *port)
 .P
-This function sets up the server endpoint for a non-blocking listen.
-The parameter \fIfd\fR is an endpoint that was obtained from
+This function sets up the server endpoint for listening.
+The parameter \fIconnection\fR is an endpoint that was obtained from
 TRANS(OpenCOTSServer)() or TRANS(OpenCLTSServer)().
 The parameter \fIport\fR specifies the port to which this endpoint
 should be bound for listening.
@@ -195,95 +291,124 @@ available TSAP for this connection. If the transport cannot support this,
 then this function will return a failure.
 This function return 0 on success and -1 on failure.
 .LI
-int TRANS(Accept)(int fd)
+int TRANS(ResetListener)(XtransConnInfo connection)
+.P
+When a server is restarted, certain listen ports may need to be reset.
+For example, unix domain needs to check that the file used for communication
+has not been deleted.  If it has, it must be recreated.
+The parameter \fIconnection\fR is an opened and bound endpoint that was
+obtained from TRANS(OpenCOTSServer)() and passed to TRANS(CreateListener)().
+This function will return one of the following values: TRANS_RESET_NOOP,
+TRANS_RESET_NEW_FD, or TRANS_RESET_FAILURE.
+.LI
+XtransConnInfo
+TRANS(Accept)(XtransConnInfo connection)
 .P
 Once a connection indication is received, this function can be called to 
 accept the connection.
-The parameter \fIfd\fR is an opened and bound endpoint that was
-obtained from TRANS(OpenCOTSServer)() and passed to TRANS(CreateListner)().
-This function will return the fd for the new connection or -1 on failure.
+The parameter \fIconnection\fR is an opened and bound endpoint that was
+obtained from TRANS(OpenCOTSServer)() and passed to TRANS(CreateListener)().
+This function will return a new opaque transport connection object upon
+success, NULL otherwise.
 .LI
-TRANS(Connect)(int fd, char *address)
+int TRANS(Connect)(XtransConnInfo connection, char *address)
 .P
 This function creates a connection to a server.
-The parameter \fIfd\fR is an endpoint that was obtained from
+The parameter \fIconnection\fR is an endpoint that was obtained from
 TRANS(OpenCOTSClient)().
 The parameters \fIaddress\fR specify the TSAP to which this
 endpoint should connect. If the protocol is included in the address, it will
 be ignored.
+This function return 0 on success and -1 on failure.
 .LI
-int TRANS(BytesReadable)(int fd);
+int TRANS(BytesReadable)(XtransConnInfo connection, BytesReadable_t *pend);
 .P
 This function provides the same functionality as the BytesReadable macro.
 .LI
-int TRANS(Read)(int fd, char *buf, int size)
+int TRANS(Read)(XtransConnInfo connection, char *buf, int size)
 .P
 This function will return the number of bytes requested on a COTS connection,
 and will return the minimum of the number bytes requested or the size of
 the incoming packet on a CLTS connection.
 .LI
-int TRANS(Write)(int fd, char *buf, int size)
+int TRANS(Write)(XtransConnInfo connection, char *buf, int size)
 .P
 This function will write the requested number of bytes on a COTS connection, and
 will send a packet of the requested size on a CLTS connection.
 .LI
-int TRANS(Readv)(int fd, struct iovec *buf, int size)
+int TRANS(Readv)(XtransConnInfo connection, struct iovec *buf, int size)
 .P
 Similar to TRANS(Read)().
 .LI
-int TRANS(Writev)(int fd, struct iovec *buf, int size)
+int TRANS(Writev)(XtransConnInfo connection, struct iovec *buf, int size)
 .P
 Similar to TRANS(Write)().
 .LI
-int TRANS(Disconnect)(int fd)
+int TRANS(Disconnect)(XtransConnInfo connection)
 .P
 This function is used when an orderly disconnect is desired. This function
 breaks the connection on the transport. It is similar to the
 socket function shutdown().
 .LI
-int TRANS(Close)(int fd)
+int TRANS(Close)(XtransConnInfo connection)
 .P
 This function closes the transport, unbinds it, and frees all resources that
-was associated with the transport. If a _XTransDisconnect() call was not made
+was associated with the transport. If a TRANS(Disconnect) call was not made
 on the connection, a disorderly disconnect may occur.
 .LI
-int TRANS(NameToAddr)(int fd /*???what else???*/ )
+int TRANS(NameToAddr)(XtransConnInfo connection /* ???what else??? */ )
 .P
 This function performs a name resolution in a transport dependent way.
 The parameters of this function have not been finalized yet.
 .LI
-int TRANS(AddrToName)(int fd /*???what else???*/ )
+int TRANS(AddrToName)(XtransConnInfo connection /* ???what else??? */ )
 .P
 This function performs a reverse name lookup in a transport dependent way.
 The parameters of this function have not been finalized yet.
 .LI
-int TRANS(GetMyAddr)(int fd,int *familyp, int *addrlenp, char **addrp )
+int TRANS(IsLocal)(XtransConnInfo connection)
+.P
+Returns TRUE if it is a local transport.
+.LI
+int TRANS(GetMyAddr)(XtransConnInfo connection,
+	int *familyp, int *addrlenp, Xtransaddr **addrp)
 .P
 This function is similar to getsockname(). This function will allocate space
 for the address, so it must be freed by the caller.  Not all transports will
 have a valid address until a connection is established. This function should
 not be used until the connection is established with Connect() or Accept().
 .LI
-int TRANS(GetPeerAddr)(int fd,int *familyp, int *addrlenp, char **addrp )
+int TRANS(GetPeerAddr)(XtransConnInfo connection,
+	int *familyp, int *addrlenp, Xtransaddr **addrp)
 .P
 This function is similar to getpeername().  This function will allocate space
 for the address, so it must be freed by the caller.  Not all transports will
 have a valid address until a connection is established. This function should
 not be used until the connection is established with Connect() or Accept().
 .LI
-int TRANS(MakeAllCOTSServerListeners)(char *port, FdMask *fds)
+int TRANS(GetConnectionNumber)(XtransConnInfo connection)
+.P
+Returns the file descriptor associated with this transport.
+.LI
+int TRANS(MakeAllCOTSServerListeners)(
+	char *port, int *partial_ret, int *count_ret,
+	XtransConnInfo **connections_ret)
 .P
 This function should be used by most servers. It will try to establish a COTS
-server endpoint for each transport listed in the transport table.  The list
-of fds pointed to by \fIfds\fR will be updated to reflect the actual fds that
-were opened for listening by this function.
+server endpoint for each transport listed in the transport table.
+\fIpartial_ret\fR will be set to True if only a partial network could be
+created.  \fIcount_ret\fR is the number of transports returns, and
+\fIconnections_ret\fR is the list of transports.
 .LI
-int TRANS(MakeAllCLTSServerListeners)(char *port, FdMask *fds)
+int TRANS(MakeAllCLTSServerListeners)(
+	char *port, int *partial_ret, int *count_ret,
+	XtransConnInfo **connections_ret)
 .P
 This function should be used by most servers. It will try to establish a CLTS
-server endpoint for each transport listed int he transport table.  The list
-of fds pointed to by \fIfds\fR will be updated to reflect the actual fds that
-were opened for listening by this function.
+server endpoint for each transport listed in the transport table.
+\fIpartial_ret\fR will be set to True if only a partial network could be
+created.  \fIcount_ret\fR is the number of transports returns, and
+\fIconnections_ret\fR is the list of transports.
 .LE
 .H 2 "Utility API"
 .P
@@ -291,17 +416,12 @@ This section describes a few useful functions that have been implemented on top
 of the Core Interface API. These functions are being provided as a convenience.
 .BL
 .LI
-int TRANS(MakeConnection)(char *host, char *port, int retries, int *familyp, int *serveraddrlenp, char **serveraddrp)
+int TRANS(ConvertAddress)(int *familyp, int *addrlenp, Xtransaddr *addrp)
 .P
-This function performs an Open and and Connect in a single function call. The
-parameters are also similar to existing functions. The \fIfamilyp\fR parameter
-will contain a family in the X protocol format (ie FamilyInternet).
-.LI
-int TRANS(ConvertFamily)(int *familyp, int *addrlen, char *addr)
-.P
-This function converts the value of an address family from the socket
-definition (ie AF_INET, AF_UNIX), to the X protocol definition
-(ie FamilyInternet, FamilyLocal).
+This function converts a sockaddr based address to an
+X authorization based address (ie AF_INET, AF_UNIX to the
+X protocol definition (ie FamilyInternet, FamilyLocal)).
+
 .LE
 .H 1 "Transport Option Definition"
 .P
@@ -322,14 +442,6 @@ This option determines what will happen to the connection when an exec
 is encountered. If the argument is set to 1, then the connection will be
 closed when an exec occurs. If the argument is set to 0, then the connection
 will not be closed when an exec occurs.
-.LI
-TRANS_COALESCENCE
-.P
-This option determines the coalescence behavior of a connection. If the
-argument is set to 1, then the connection will be set to try and coalesce
-data before sending it over the transport. If the argument is set to 0, then
-the connection will send the data immediately without attempting any
-coalescence.
 .LE
 .H 1 "Hidden Transport Dependent API"
 .P
@@ -339,7 +451,8 @@ of the parameters and return values are slightly different.
 Stuff like the #ifdef SUNSYSV should be handled inside these functions.
 .BL
 .LI
-XtransConnInfo *OpenCOTSClient(struct _Xtransport *thistrans, char *protocol, char *host, char *port)
+XtransConnInfo *OpenCOTSClient (
+	struct _Xtransport *thistrans, char *protocol, char *host, char *port)
 .P
 This function creates a Connection-Oriented Transport. The parameter
 \fIthistrans\fR points to an Xtransport entry in the transport table. The
@@ -353,7 +466,8 @@ transport, and bind it into the transport namespace if applicable. The
 local address portion of the XtransConnInfo structure will also be filled
 in by this function.
 .LI
-XtransConnInfo *OpenCOTSServer(struct _Xtransport *thistrans, char *protocol, char *host, char *port)
+XtransConnInfo *OpenCOTSServer (
+	struct _Xtransport *thistrans, char *protocol, char *host, char *port)
 .P
 This function creates a Connection-Oriented Transport. The parameter
 \fIthistrans\fR points to an Xtransport entry in the transport table. The
@@ -365,7 +479,8 @@ This function must allocate and initialize the contents of the XtransConnInfo
 structure that is returned by this function. This function will open the
 transport. 
 .LI
-XtransConnInfo *OpenCLTSClient(struct _Xtransport *thistrans, char *protocol, char *host, char *port)
+XtransConnInfo *OpenCLTSClient (
+	struct _Xtransport *thistrans, char *protocol, char *host, char *port)
 .P
 This function creates a Connection-Less Transport. The parameter
 \fIthistrans\fR points to an Xtransport entry in the transport table. The
@@ -379,7 +494,8 @@ transport, and bind it into the transport namespace if applicable. The
 local address portion of the XtransConnInfo structure will also be filled
 in by this function.
 .LI
-XtransConnInfo *OpenCLTSServer(struct _Xtransport *thistrans, char *protocol, char *host, char *port)
+XtransConnInfo *OpenCLTSServer (
+	struct _Xtransport *thistrans, char *protocol, char *host, char *port)
 .P
 This function creates a Connection-Less Transport. The parameter
 \fIthistrans\fR points to an Xtransport entry in the transport table. The
@@ -391,7 +507,7 @@ This function must allocate and initialize the contents of the XtransConnInfo
 structure that is returned by this function. This function will open the
 transport.
 .LI
-int SetOption(struct _Xtransport *thistrans, int fd, int option, int arg )
+int SetOption (struct _Xtransport *thistrans, int option, int arg)
 .P
 This function provides a transport dependent way of implementing the options
 defined by the X Transport Interface. In the current prototype, this function
@@ -399,7 +515,7 @@ is not being used, because all of the option defined so far, are transport
 independent. This function will have to be used if a radically different
 transport type is added, or a transport dependent option is defined.
 .LI
-int CreateListener(struct _Xtransport *thistrans, int fd, char *port )
+int CreateListener (struct _Xtransport *thistrans, char *port )
 .P
 This function takes a transport endpoint opened for a server, and sets it
 up to listen for incoming connection requests. The parameter \fIport\fR
@@ -411,58 +527,62 @@ applicable, and fill in the local address portion of the XtransConnInfo
 structure. The transport endpoint will then be set to listen for
 incoming connection requests.
 .LI
-XtransConnInfo Accept(struct _Xtransport *thistrans, int fd )
+int ResetListener (struct _Xtransport *thistrans)
+.P
+This function resets the transport for listening.
+.LI
+XtransConnInfo Accept(struct _Xtransport *thistrans)
 .P
 This function creates a new transport endpoint as a result of an incoming
-connection request. The parameter \fIfd\fR is the endpoint that was opened
+connection request. The parameter \fIthistrans\fR is the endpoint that was opened
 for listening by the server. The new endpoint is opened and bound into the
 transport's namespace. A XtransConnInfo structure describing the new endpoint
 is returned from this function
 .LI
-int Connect(struct _Xtransport *thistrans, int fd, char *host, char *port )
+int Connect(struct _Xtransport *thistrans, char *host, char *port )
 .P
 This function establishes a connection to a server. The parameters \fIhost\fR
 and \fIport\fR describe the server to which the connection should be
 established. The connection will be established so that Read() and Write()
 call can be made.
 .LI
-int BytesReadable(struct _Xtransport *thistrans, int fd, BytesReadable_t *pend )
+int BytesReadable(struct _Xtransport *thistrans, BytesReadable_t *pend )
 .P
 This function replaces the BytesReadable() macro. This allows each transport
 to have it's own mechanism for determining how much data is ready to be read.
 .LI
-int Read(struct _Xtransport *thistrans, int fd, char *buf, int size )
+int Read(struct _Xtransport *thistrans, char *buf, int size )
 .P
 This function reads \fIsize\fR bytes into \fIbuf\fR from the connection.
 .LI
-int Write(struct _Xtransport *thistrans, int fd, char *buf, int size )
+int Write(struct _Xtransport *thistrans, char *buf, int size )
 .P
 This function writes \fIsize\fR bytes from \fIbuf\fR to the connection.
 .LI
-int Readv(struct _Xtransport *thistrans, int fd, struct iovec *buf, int size )
+int Readv(struct _Xtransport *thistrans, struct iovec *buf, int size )
 .P
 This function performs a readv() on the connection.
 .LI
-int Writev(struct _Xtransport *thistrans, int fd, struct iovec *buf, int size )
+int Writev(struct _Xtransport *thistrans, struct iovec *buf, int size )
 .P
 This function performs a writev() on the connection.
 .LI
-int Disconnect(struct _Xtransport *thistrans, int fd )
+int Disconnect(struct _Xtransport *thistrans)
 .P
 This function initiates an orderly shutdown of a connection. If a transport
 does not distinguish between orderly and disorderly disconnects, then a
 call to this function will have no affect.
 .LI
-int Close(struct _Xtransport *thistrans, int fd )
+int Close(struct _Xtransport *thistrans)
 .P
 This function will break the connection, and close the endpoint.
 .LI
-int NameToAddr(struct _Xtransport *thistrans, int fd )
+int NameToAddr(struct _Xtransport *thistrans)
 .P
 This function performs name resolution in a transport dependent way. Actual
 use of this function is still being determined.
 .LI
-int AddrToName(struct _Xtransport *thistrans, int fd )
+int AddrToName(struct _Xtransport *thistrans)
 .P
 This function performs reverse name resolution in a transport dependent way.
 Actual use of this function is still being determined.
@@ -478,9 +598,9 @@ or site.def config files.
 .TS
 center;
 l l .
-TCPCONN	Enables the INET Domain Socket based transport
+TCPCONN		Enables the INET Domain Socket based transport
 UNIXCONN	Enables the UNIX Domain Sokcet based transport
-TLICONN	Enables the TLI based transports
+STREAMSCONN	Enables the TLI based transports
 LOCALCONN	Enables the SYSV Local connection transports
 DNETCONN	Enables the DECnet transports
 .TE
@@ -575,7 +695,7 @@ transport.c.
 #ifdef TCPCONN
 #include "Xtranssock.c"
 #endif
-#ifdef TLICONN
+#ifdef STREAMSCONN
 #include "Xtranstli.c"
 #endif
 #include "Xtrans.c"
@@ -619,7 +739,7 @@ T}
 .TE
 .DE
 .P
-The file \fIXtrans.h\fR contains much of the transport related code that
+The file \fIXtransint.h\fR contains much of the transport related code that
 previously in Xlibint.h and Xlibnet.h. This will make the definitions
 available for all transport users. This should also obsolete the equivilent
 code in other libraries.
