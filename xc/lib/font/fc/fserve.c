@@ -27,12 +27,10 @@
  * font server specific font access
  */
 
-#include	<X11/X.h>
-#include	<X11/Xos.h>
-#include	"FS.h"
-#include	"FSproto.h"
 #include	"fontmisc.h"
 #include	"fontstruct.h"
+#include	"FS.h"
+#include	"FSproto.h"
 #include	"fservestr.h"
 #include	"assert.h"
 #include	<errno.h>
@@ -195,7 +193,7 @@ fs_new_block_rec(fpe, client, type)
     blockrec->client = client;
     blockrec->sequence_number = fsfpe->current_seq + fsfpe->expected_replies;
     blockrec->type = type;
-    blockrec->next = NULL;
+    blockrec->next = 0;
 
     /* stick it on the end of the list (since its expected last) */
     br = (FSBlockDataPtr) fsfpe->blocked_requests;

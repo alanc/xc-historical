@@ -27,11 +27,10 @@
  * FS data conversion
  */
 
-#include        <X11/X.h>
-#include	"FS.h"
-#include	"FSproto.h"
 #include	"fontmisc.h"
 #include	"fontstruct.h"
+#include	"FS.h"
+#include	"FSproto.h"
 #include	"fservestr.h"
 
 /*
@@ -224,7 +223,7 @@ _fs_get_glyphs(pFont, count, chars, charEncoding, glyphCount, glyphs)
     CharInfoPtr pDefault;
     FSFontDataPtr fsd = (FSFontDataPtr) pFont->fpePrivate;
     int         itemSize;
-    int         err = Success;
+    int         err = Successful;
 
     fsdata = (FSFontPtr) pFont->fontPrivate;
     encoding = fsdata->encoding;
@@ -242,7 +241,7 @@ _fs_get_glyphs(pFont, count, chars, charEncoding, glyphCount, glyphs)
 	itemSize = 2;
     if (!fsd->complete)
 	err = fs_load_glyphs((pointer) 0, pFont, count, itemSize, chars);
-    if (err != Success)
+    if (err != Successful)
 	return err;
 
     switch (charEncoding) {

@@ -28,6 +28,7 @@
  */
 
 #include	<X11/Xos.h>
+#include	"fontmisc.h"
 #include	"FS.h"
 #include	"FSproto.h"
 #include	<stdio.h>
@@ -38,7 +39,6 @@
 #include	<fcntl.h>
 #include	<sys/file.h>
 #include	"FSlibos.h"
-#include	"fontmisc.h"
 #include	"fsio.h"
 #include	"assert.h"
 
