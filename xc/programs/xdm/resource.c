@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: resource.c,v 1.15 88/12/15 18:32:18 keith Exp $
+ * $XConsortium: resource.c,v 1.16 89/01/16 17:12:22 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -213,6 +213,17 @@ char	*default_value;
 	}
 }
 
+XrmOptionDescRec configTable [] = {
+{"-server",	NULL,			XrmoptionSkipArg,	(caddr_t) NULL },
+{"-udpPort",	NULL,			XrmoptionSkipArg,	(caddr_t) NULL },
+{"-error",	NULL,			XrmoptionSkipArg,	(caddr_t) NULL },
+{"-resources",	NULL,			XrmoptionSkipArg,	(caddr_t) NULL },
+{"-session",	NULL,			XrmoptionSkipArg,	(caddr_t) NULL },
+{"-debug",	NULL,			XrmoptionSkipArg,	(caddr_t) NULL },
+{"-xrm",	NULL,			XrmoptionSkipArg,	(caddr_t) NULL },
+{"-config",	".configFile",		XrmoptionSepArg,	(caddr_t) NULL }
+};
+
 XrmOptionDescRec optionTable [] = {
 {"-server",	".servers",		XrmoptionSepArg,	(caddr_t) NULL },
 {"-udpPort",	".requestPort",		XrmoptionSepArg,	(caddr_t) NULL },
@@ -220,10 +231,9 @@ XrmOptionDescRec optionTable [] = {
 {"-resources",	"*resources",		XrmoptionSepArg,	(caddr_t) NULL },
 {"-session",	"*session",		XrmoptionSepArg,	(caddr_t) NULL },
 {"-debug",	"*debugLevel",		XrmoptionSepArg,	(caddr_t) NULL },
-{"-config",	NULL,			XrmoptionSkipArg,	(caddr_t) NULL },
 {"-xrm",	NULL,			XrmoptionResArg,	(caddr_t) NULL },
 {"-daemon",	".daemonMode",		XrmoptionNoArg,		"true"         },
-{"-nodaemon",	".daemonMode",		XrmoptionNoArg,		"false"        },
+{"-nodaemon",	".daemonMode",		XrmoptionNoArg,		"false"        }
 };
 
 static int	originalArgc;
@@ -244,36 +254,35 @@ ReinitResources ()
 	int	argc;
 	char	**a;
 	char	**argv;
-	char	*config = 0;
+	char	*config;
+	XrmDatabase newDB;
 
 	argv = (char **) malloc ((originalArgc + 1) * sizeof (char *));
 	if (!argv)
 		LogPanic ("no space for argument realloc\n");
-	for (a = originalArgv, argc = 0; *a; a++, argc++) {
-		if (argc != 0 && !strcmp (*a, "-config")) {
-			if (!a[1])
-				LogError ("missing config file argument\n");
-			else
-				config = a[1];
-		}
-		argv[argc] = *a;
-	}
+	for (argc = 0; argc < originalArgc; argc++)
+		argv[argc] = originalArgv[argc];
 	argv[argc] = 0;
-	if (!config) {
-		config = DEF_XDM_CONFIG;
-		if (access (config, 4) == -1)
-			config = 0;
-	}
 	/*
  	 * XXX As there is no way to release the old database,
 	 * it is dropped on the floor here.
 	 */
-	DmResourceDB = 0;
-	if (config) {
-		DmResourceDB = XrmGetFileDatabase ( config );
-		if (!DmResourceDB)
-			LogError ("Can't open resource file %s\n", config );
-	}
+	DmResourceDB = XrmGetStringDatabase ("");
+	/* pre-parse the command line to get the -config option, if any */
+	XrmParseCommand (&DmResourceDB, configTable,
+ 			 sizeof (configTable) / sizeof (configTable[0]),
+			 "DisplayManager", &argc, argv);
+	GetResource ("DisplayManager.configFile", "DisplayManager.ConfigFile",
+		     DM_STRING, &config, DEF_XDM_CONFIG);
+	newDB = XrmGetFileDatabase ( config );
+	/*
+ 	 * XXX As there is no way to release the old database,
+	 * it is dropped on the floor here.
+	 */
+	if (newDB)
+		DmResourceDB = newDB;
+	else if (argc != originalArgc)
+		LogError ("Can't open configuration file %s\n", config );
 	XrmParseCommand (&DmResourceDB, optionTable,
  			 sizeof (optionTable) / sizeof (optionTable[0]),
 			 "DisplayManager", &argc, argv);
