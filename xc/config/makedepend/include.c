@@ -1,5 +1,5 @@
 /*
- * $XConsortium: include.c,v 1.7 88/11/08 12:19:55 jim Exp $
+ * $XConsortium: include.c,v 1.8 89/12/12 12:44:20 jim Exp $
  */
 #include "def.h"
 
@@ -240,10 +240,15 @@ included_by(ip, newfile)
 	else {
 		for (i=0; i<ip->i_listlen; i++)
 			if (ip->i_list[ i ] == newfile) {
-			    if (!ip->i_included_sym)
+			    i = strlen(newfile->i_file);
+			    if (!ip->i_included_sym &&
+				!(i > 2 &&
+				  newfile->i_file[i-1] == 'c' &&
+				  newfile->i_file[i-2] == '.'))
 			    {
 				/* only bitch if ip has */
 				/* no #include SYMBOL lines  */
+				/* and is not a .c file */
 				warning("%s includes %s more than once!\n",
 					ip->i_file, newfile->i_file);
 				warning("Already have\n");
