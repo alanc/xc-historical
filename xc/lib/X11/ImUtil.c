@@ -1,13 +1,13 @@
 #include "copyright.h"
 
-/* $Header: XImUtil.c,v 11.18 88/01/30 18:02:08 jim Locked $ */
+/* $Header: XImUtil.c,v 11.19 88/02/06 16:30:26 jim Locked $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
 #include "Xutil.h"
 #include <stdio.h>
 
-extern char _reverse_byte[0x100]; /* found in XPutImage */
+extern unsigned char _reverse_byte[0x100]; /* found in XPutImage */
 static char _lomask[0x09] = { 0x00, 0x01, 0x03, 0x07, 0x0f, 0x1f, 0x3f, 0x7f, 0xff };
 static char _himask[0x09] = { 0xff, 0xfe, 0xfc, 0xf8, 0xf0, 0xe0, 0xc0, 0x80, 0x00 };
 
@@ -254,7 +254,7 @@ XImage *XCreateImage (dpy, visual, depth, format, offset, data, width, height,
 	}
 	if (format == ZPixmap) 
 	{
-	    bits_per_pixel = _XGetBitsPerPixel(dpy, depth);
+	    bits_per_pixel = _XGetBitsPerPixel(dpy, (int) depth);
 	}
 
 	image->xoffset = offset;
