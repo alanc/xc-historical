@@ -1,5 +1,5 @@
 /*
- *	$Header: misc.c,v 1.1 88/02/08 20:29:29 newman Locked $
+ *	$Header: misc.c,v 1.1 88/02/10 13:08:10 jim Exp $
  */
 
 
@@ -52,7 +52,7 @@ extern void perror();
 extern void abort();
 
 #ifndef lint
-static char rcs_id[] = "$Header: misc.c,v 1.1 88/02/08 20:29:29 newman Locked $";
+static char rcs_id[] = "$Header: misc.c,v 1.1 88/02/10 13:08:10 jim Exp $";
 #endif	/* lint */
 
 xevents()
@@ -69,6 +69,27 @@ xevents()
 		XNextEvent (screen->display, &event);
 		XtDispatchEvent(&event);
 	} while (QLength(screen->display) > 0);
+}
+
+
+Cursor make_colored_cursor (cursorindex, fg, bg)
+	int cursorindex;			/* index into font */
+	unsigned long fg, bg;			/* pixel value */
+{
+	register TScreen *screen = &term->screen;
+	Cursor c;
+	register Display *dpy = screen->display;
+	XColor foreback[2];
+	
+	c = XCreateFontCursor (dpy, cursorindex);
+	if (c == (Cursor) 0) return (c);
+
+	foreback[0].pixel = fg;
+	foreback[1].pixel = bg;
+	XQueryColors (dpy, DefaultColormap (dpy, DefaultScreen (dpy)),
+		      foreback, 2);
+	XRecolorCursor (dpy, c, foreback, foreback+1);
+	return (c);
 }
 
 /*ARGSUSED*/
@@ -271,28 +292,14 @@ Pixel fg, bg;
 Cursor make_tcross(fg, bg)
 Pixel fg, bg;
 {
-	register TScreen *screen = &term->screen;
-	Cursor c;
-	
-	c = XCreateFontCursor(screen->display, XC_tcross);
-/*
-	XRecolorCursor(screen->display, c, PixelToColor(fg), PixelToColor(bg));
-*/
-	return(c);
+	return (make_colored_cursor (XC_tcross, fg, bg));
 }
 
 /* ARGSUSED */
 Cursor make_xterm(fg, bg)
 unsigned long fg, bg;
 {
-	register TScreen *screen = &term->screen;
-	Cursor c;
-	
-	c = XCreateFontCursor(screen->display, XC_xterm);
-/*
-	XRecolorCursor(screen->display, c, PixelToColor(fg), PixelToColor(bg));
-*/
-	return(c);
+	return (make_colored_cursor (XC_xterm, fg, bg));
 }
 
 static XColor background = { 0L, 65535, 65535, 65535 };
@@ -302,17 +309,21 @@ Cursor make_wait(fg, bg)
 Pixel fg, bg;
 {
 	register TScreen *screen = &term->screen;
+	register Display *dpy = screen->display;
 	Pixmap source, mask;
+	XColor foreback[2];
 
 	source = Make_tile(wait_width, wait_height, wait_bits, 1L, 0L, 1);
 	mask = Make_tile(waitmask_width, waitmask_height, waitmask_bits, 
 	 1L, 0L, 1);
-/*
-	return(XCreatePixmapCursor(screen->display, source, mask, PixelToColor(fg),
-	 PixelToColor(bg), wait_x_hot, wait_y_hot));
-*/
-	return(XCreatePixmapCursor(screen->display, source, mask, 
-	 &foreground, &background, wait_x_hot, wait_y_hot));
+
+	foreback[0].pixel = fg;
+	foreback[1].pixel = bg;
+	XQueryColors (dpy, DefaultColormap (dpy, DefaultScreen (dpy)),
+		      foreback, 2);
+
+	return (XCreatePixmapCursor (dpy, source, mask, foreback, foreback+1,
+	 wait_x_hot, wait_y_hot));
 }
 
 /* ARGSUSED */
@@ -320,14 +331,7 @@ Cursor make_arrow(fg, bg)
 unsigned long fg, bg;
 
 {
-	register TScreen *screen = &term->screen;
-	Cursor c;
-	
-	c = XCreateFontCursor(screen->display, XC_left_ptr);
-/*
-	XRecolorCursor(screen->display, c, PixelToColor(fg), PixelToColor(bg));
-*/
-	return(c);
+	return (make_colored_cursor (XC_left_ptr, fg, bg));
 }
 
 char *uniquesuffix(name)
