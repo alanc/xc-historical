@@ -1,4 +1,4 @@
-/* $XConsortium: pl_wks.c,v 1.1 92/05/08 15:14:04 mor Exp $ */
+/* $XConsortium: pl_wks.c,v 1.2 92/05/11 13:13:59 mor Exp $ */
 
 /****************************************************************************
 Copyright 1987,1991 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -377,16 +377,16 @@ INPUT unsigned long	*valueMask;
 }
 
 
-PEXWorkstationDynamics *
-PEXGetWorkstationDynamics (display, d)
+Status
+PEXGetWorkstationDynamics (display, d, dynamics)
 
 INPUT Display			*display;
 INPUT Drawable			d;
+INPUT PEXWorkstationDynamics	*dynamics;
 
 {
     pexGetWorkstationDynamicsReq	*req;
     pexGetWorkstationDynamicsReply	rep;
-    PEXWorkstationDynamics		*ppwd;
 
 
     /*
@@ -407,38 +407,35 @@ INPUT Drawable			d;
     {
         UnlockDisplay (display);
         PEXSyncHandle (display);
-        return (NULL);            /* return an error */
+        return (0);            /* return an error */
     }
 
 
     /*
-     * Allocate a buffer for the replies to pass back to the client.
+     * Fill in the dynamics.
      */
 
-    ppwd = (PEXWorkstationDynamics *) PEXAllocBuf
-        ((unsigned) (sizeof (PEXWorkstationDynamics)));
-
-    ppwd->view_rep = rep.viewRep;
-    ppwd->marker_bundle = rep.markerBundle;
-    ppwd->text_bundle = rep.textBundle;
-    ppwd->line_bundle = rep.lineBundle;
-    ppwd->interior_bundle = rep.interiorBundle;
-    ppwd->edge_bundle = rep.edgeBundle;
-    ppwd->color_table = rep.colourTable;
-    ppwd->pattern_table = rep.patternTable;
-    ppwd->wks_transform = rep.wksTransform;
-    ppwd->highlight_filter = rep.highlightFilter;
-    ppwd->invisibility_filter = rep.invisibilityFilter;
-    ppwd->hlhsr_mode = rep.HlhsrMode;
-    ppwd->structure_modify = rep.structureModify;
-    ppwd->post_structure = rep.postStructure;
-    ppwd->unpost_structure = rep.unpostStructure;
-    ppwd->delete_structure = rep.deleteStructure;
-    ppwd->reference_modify = rep.referenceModify;
-    ppwd->buffer_modify = rep.bufferModify;
-    ppwd->light_table = rep.lightTable;
-    ppwd->depth_cue_table = rep.depthCueTable;
-    ppwd->color_approx_table = rep.colourApproxTable;
+    dynamics->view_rep = rep.viewRep;
+    dynamics->marker_bundle = rep.markerBundle;
+    dynamics->text_bundle = rep.textBundle;
+    dynamics->line_bundle = rep.lineBundle;
+    dynamics->interior_bundle = rep.interiorBundle;
+    dynamics->edge_bundle = rep.edgeBundle;
+    dynamics->color_table = rep.colourTable;
+    dynamics->pattern_table = rep.patternTable;
+    dynamics->wks_transform = rep.wksTransform;
+    dynamics->highlight_filter = rep.highlightFilter;
+    dynamics->invisibility_filter = rep.invisibilityFilter;
+    dynamics->hlhsr_mode = rep.HlhsrMode;
+    dynamics->structure_modify = rep.structureModify;
+    dynamics->post_structure = rep.postStructure;
+    dynamics->unpost_structure = rep.unpostStructure;
+    dynamics->delete_structure = rep.deleteStructure;
+    dynamics->reference_modify = rep.referenceModify;
+    dynamics->buffer_modify = rep.bufferModify;
+    dynamics->light_table = rep.lightTable;
+    dynamics->depth_cue_table = rep.depthCueTable;
+    dynamics->color_approx_table = rep.colourApproxTable;
 
 
     /*
@@ -448,7 +445,7 @@ INPUT Drawable			d;
     UnlockDisplay (display);
     PEXSyncHandle (display);
 
-    return (ppwd);
+    return (1);
 }
 
 
@@ -490,7 +487,7 @@ OUTPUT PEXViewRep	*curViewReturn;
     {
         UnlockDisplay (display);
         PEXSyncHandle (display);
-        return (Failure);            /* return an error */
+        return (0);            /* return an error */
     }
 
     *viewUpdateReturn = rep.viewUpdate;
@@ -554,7 +551,7 @@ OUTPUT PEXViewRep	*curViewReturn;
     UnlockDisplay (display);
     PEXSyncHandle (display);
 
-    return (Success);
+    return (1);
 }
 
 
