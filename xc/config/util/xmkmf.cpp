@@ -1,9 +1,9 @@
 XCOMM!/bin/sh
 
 XCOMM
-XCOMM generate a Makefile from an Imakefile from inside or outside the sources
+XCOMM make a Makefile from an Imakefile from inside or outside the sources
 XCOMM 
-XCOMM $XConsortium: xmkmf.cpp,v 1.18 91/08/22 11:08:01 rws Exp $
+XCOMM $XConsortium: xmkmf.cpp,v 1.19 93/12/28 14:41:49 gildea Exp $
 
 usage="usage:  $0 [-a] [top_of_sources_pathname [current_directory]]"
 
@@ -30,8 +30,8 @@ case "$topdir" in
 esac
 
 if [ -f Makefile ]; then 
-    echo mv Makefile Makefile.bak
-    mv Makefile Makefile.bak
+    echo mv -f Makefile Makefile.bak
+    mv -f Makefile Makefile.bak
 fi
 
 if [ "$topdir" = "" ]; then
