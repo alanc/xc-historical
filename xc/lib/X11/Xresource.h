@@ -1,8 +1,4 @@
 /* $Header: Xresource.h,v 1.1 87/09/12 12:27:11 toddb Exp $ */
-/* $Header: Xresource.h,v 1.1 87/09/12 12:27:11 toddb Exp $ */
-/*
- *	sccsid:	%W%	%G%
- */
 
 /*
  * Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
