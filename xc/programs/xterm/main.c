@@ -1,5 +1,5 @@
 #ifndef lint
-static char *rid="$XConsortium: main.c,v 1.191 91/07/02 19:38:04 gildea Exp $";
+static char *rid="$XConsortium: main.c,v 1.192 91/07/09 17:46:50 gildea Exp $";
 #endif /* lint */
 
 /*
@@ -1239,18 +1239,32 @@ get_terminal ()
 /*
  * The only difference in /etc/termcap between 4014 and 4015 is that 
  * the latter has support for switching character sets.  We support the
- * 4015 protocol, but ignore the character switches.  Therefore, we should
- * probably choose 4014 over 4015.
+ * 4015 protocol, but ignore the character switches.  Therefore, we 
+ * choose 4014 over 4015.
+ *
+ * Features of the 4014 over the 4012: larger (19") screen, 12-bit
+ * graphics addressing (compatible with 4012 10-bit addressing),
+ * special point plot mode, incremental plot mode (not implemented in
+ * later Tektronix terminals), and 4 character sizes.
+ * All of these are supported by xterm.
  */
 
 static char *tekterm[] = {
 	"tek4014",
-	"tek4015",		/* has alternate character set switching */
-	"tek4013",
-	"tek4010",
+	"tek4015",		/* 4014 with APL character set support */
+	"tek4012",		/* 4010 with lower case */
+	"tek4013",		/* 4012 with APL character set support */
+	"tek4010",		/* small screen, upper-case only */
 	"dumb",
 	0
 };
+
+/* The VT102 is a VT100 with the Advanced Video Option included standard.
+ * It also adds Escape sequences for insert/delete character/line.
+ * The VT220 adds 8-bit character sets, selective erase.
+ * The VT320 adds a 25th status line, terminal state interrogation.
+ * The VT420 has up to 48 lines on the screen.
+ */
 
 static char *vtterm[] = {
 #ifdef USE_X11TERM
