@@ -1,14 +1,10 @@
-XCOMM $XConsortium: Imakefile,v 1.4 92/06/29 11:56:28 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.5 92/06/30 14:39:50 mor Exp $
 
 #define DoNormalLib NormalLibPex
 #define DoSharedLib SharedLibPex
 #define DoDebugLib DebugLibPex
 #define DoProfileLib ProfileLibPex
 #include <Library.tmpl>
-
-#ifdef SharedPexReqs
-REQUIREDLIBS = SharedPexReqs
-#endif
 
 #ifdef PexNativeFPFormat
 NATIVE_FP_FORMAT = PexNativeFPFormat
@@ -74,7 +70,7 @@ SharedLibraryTarget(PEX5,$(SOPEXREV),$(OBJS),shared,..)
 #else
 SharedLibraryTarget(PEX5,$(SOPEXREV),$(OBJS),.,.)
 #endif
-InstallSharedLibrary(PEX5,$(SOPEXREV),$(SHLIBDIR))
+InstallSharedLibrary(PEX5,$(SOPEXREV),$(USRLIBDIR))
 #endif
 #if DoNormalLib
 NormalLibraryTarget(PEX5,$(OBJS))
