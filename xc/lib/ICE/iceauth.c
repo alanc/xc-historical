@@ -1,4 +1,4 @@
-/* $XConsortium: iceauth.c,v 1.4 93/11/08 16:34:13 mor Exp $ */
+/* $XConsortium: iceauth.c,v 1.5 93/11/18 11:45:34 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -61,7 +61,11 @@ char    	**errorStringRet;
 
 	if (!entry)
 	{
-	    *errorStringRet = "Could not find correct ICE-MAGIC-COOKIE-1 entry in .ICEauthority file";
+	    char *tempstr = "Could not find correct ICE-MAGIC-COOKIE-1 entry in .ICEauthority file";
+
+	    *errorStringRet = (char *) malloc (strlen (tempstr) + 1);
+	    strcpy (*errorStringRet, tempstr);
+
 	    return (IcePoAuthFailed);
 	}
 	else
@@ -81,8 +85,12 @@ char    	**errorStringRet;
 	 * a single pass authentication method.
 	 */
 
-	*errorStringRet = "ICE-MAGIC-COOKIE-1 authentication internal error";
+	char *tempstr = "ICE-MAGIC-COOKIE-1 authentication internal error";
+
+	*errorStringRet = (char *) malloc (strlen (tempstr) + 1);
+	strcpy (*errorStringRet, tempstr);
 	IceDisposeAuthFileEntry ((IceAuthFileEntry *) *authStatePtr);
+
 	return (IcePoAuthFailed);
     }
 }
@@ -134,8 +142,11 @@ char    	**errorStringRet;
 	     * always find a valid entry.
 	     */
 
-	    *errorStringRet =
+	    char *tempstr =
 		"ICE-MAGIC-COOKIE-1 authentication internal error";
+
+	    *errorStringRet = (char *) malloc (strlen (tempstr) + 1);
+	    strcpy (*errorStringRet, tempstr);
 
 	    return (IcePaAuthFailed);
 	}
@@ -157,7 +168,11 @@ char    	**errorStringRet;
 	}
 	else
 	{
-	    *errorStringRet = "ICE-MAGIC-COOKIE-1 authentication rejected";
+	    char *tempstr = "ICE-MAGIC-COOKIE-1 authentication rejected";
+
+	    *errorStringRet = (char *) malloc (strlen (tempstr) + 1);
+	    strcpy (*errorStringRet, tempstr);
+
 	    return (IcePaAuthRejected);
 	}
     }
