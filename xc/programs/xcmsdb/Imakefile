@@ -1,5 +1,5 @@
-SRCS = cmsdb.c LoadSCCData.c
-OBJS = cmsdb.o LoadSCCData.o
+SRCS = cmsdb.c loadData.c
+OBJS = cmsdb.o loadData.o
 INCLUDES = -I$(XLIBSRC)
 DEPLIBS = $(DEPXLIB)
 LOCAL_LIBRARIES = $(XLIB)
