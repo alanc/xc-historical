@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Intrinsic.c,v 1.90 87/12/04 10:32:05 swick Locked $";
+static char rcsid[] = "$Header: Intrinsic.c,v 1.91 87/12/04 14:08:08 swick Locked $";
 #endif lint
 
 /*
@@ -771,6 +771,7 @@ void XtSetMappedWhenManaged(widget, mappedWhenManaged)
                         ->composite.num_mapped_children--;
      }
     }
+    widget->core.mapped_when_managed = mappedWhenManaged;
 }
 
 
