@@ -16,7 +16,7 @@
  */
 #ifndef lint
 static char rcsid[] =
-"$XConsortium: cfbbstore.c,v 1.2 88/08/17 16:17:35 keith Exp $ SPRITE (Berkeley)";
+"$XConsortium: cfbbstore.c,v 1.3 88/09/06 15:02:51 jim Exp $ SPRITE (Berkeley)";
 #endif lint
 
 #include    "cfb.h"
@@ -61,6 +61,8 @@ cfbSaveAreas(pPixmap, prgnSave, xorg, yorg)
     
     pPtsInit =
 	(DDXPointPtr)ALLOCATE_LOCAL(prgnSave->numRects * sizeof(DDXPointRec));
+    if (!pPtsInit)
+	return;
     
     pBox = prgnSave->rects;
     pPt = pPtsInit;
@@ -115,6 +117,8 @@ cfbRestoreAreas(pPixmap, prgnRestore, xorg, yorg)
     
     pPtsInit =
 	(DDXPointPtr)ALLOCATE_LOCAL(prgnRestore->numRects*sizeof(DDXPointRec));
+    if (!pPtsInit)
+	return;
     
     pBox = prgnRestore->rects;
     pPt = pPtsInit;
