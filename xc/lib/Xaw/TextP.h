@@ -1,5 +1,5 @@
 /*
-* $Header: TextP.h,v 1.4 87/10/09 13:12:00 chow BL5 $
+* $Header: TextP.h,v 1.3 87/12/02 16:10:39 swick Locked $
 */
 
 /*
@@ -54,12 +54,13 @@ typedef struct {
     int  firstPos;
     int  length;
     char *ptr;
+    Atom format;
     } XtTextBlock, *TextBlockPtr;
 
 /* the data field is really a pointer to source info, see disk and 
    stream sources in TextKinds.c */
 
-typedef struct {
+typedef struct _XtTextSource {
     int		    (*read)();
     int		    (*replace)();
     XtTextPosition  (*getLastPos)();
@@ -67,9 +68,9 @@ typedef struct {
     XtTextPosition  (*scan)();
     XtEditType      (*editType)();
     int		    *data;       
-    } XtTextSource, *TextSourcePtr;
+    };
 
-typedef struct {
+typedef struct _XtTextSink {
     XFontStruct *font;
     int foreground;
     int (*display)();
@@ -81,7 +82,7 @@ typedef struct {
     int (*maxLines)();
     int (*maxHeight)();
     int *data;
-    } XtTextSink, *TextSinkPtr;
+    };
 
 /* displayable text management data structures */
 
@@ -134,8 +135,8 @@ extern TextClassRec textClassRec;
 
 /* New fields for the Text widget record */
 typedef struct {
-    XtTextSource	*source;
-    XtTextSink		*sink;
+    XtTextSource    source;
+    XtTextSink      sink;
     LineTable       lt;
     XtTextPosition  insertPos;
     TextSelection   s;
