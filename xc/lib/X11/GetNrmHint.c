@@ -61,6 +61,10 @@ Status XGetWMSizeHints (dpy, w, hints, supplied, property)
 
     hints->flags	  = prop->flags;
     /* XSizeHints misdeclares these as int instead of long */
+    hints->x = cvtINT32toInt (prop->x);
+    hints->y = cvtINT32toInt (prop->y);
+    hints->width = cvtINT32toInt (prop->width);
+    hints->height = cvtINT32toInt (prop->height);
     hints->min_width  = cvtINT32toInt (prop->minWidth);
     hints->min_height = cvtINT32toInt (prop->minHeight);
     hints->max_width  = cvtINT32toInt (prop->maxWidth);
