@@ -17,7 +17,7 @@ Author:  Bob Scheifler, MIT X Consortium
 
 ********************************************************/
 
-/* $XConsortium: mizerarc.c,v 5.32 92/04/20 17:14:47 rws Exp $ */
+/* $XConsortium: mizerarc.c,v 5.33 92/04/21 19:05:01 rws Exp $ */
 
 /* Derived from:
  * "Algorithm for drawing ellipses or hyperbolae with a digital plotter"
@@ -55,7 +55,11 @@ Author:  Bob Scheifler, MIT X Consortium
 #define EPSILON45 64
 
 typedef struct {
+    int skipStart;
+    int haveStart;
     DDXPointRec startPt;
+    int haveLast;
+    int skipLast;
     DDXPointRec endPt;
     int dashIndex;
     int dashOffset;
@@ -625,7 +629,8 @@ miZeroArcDashPts(pGC, arc, dinfo, points, maxPts, evenPts, oddPts)
     for (j = 4; startPts[j] == endPts[j]; j--)
 	;
     lastPt = endPts[j] - deltas[j];
-    if ((pt->x == dinfo->endPt.x) && (pt->y == dinfo->endPt.y))
+    if (dinfo->haveLast &&
+	(pt->x == dinfo->endPt.x) && (pt->y == dinfo->endPt.y))
     {
 	startPts[i] += deltas[i];
     }
@@ -634,11 +639,21 @@ miZeroArcDashPts(pGC, arc, dinfo, points, maxPts, evenPts, oddPts)
 	dinfo->dashIndex = dinfo->dashIndexInit;
 	dinfo->dashOffset = dinfo->dashOffsetInit;
     }
-    if ((lastPt->x == dinfo->startPt.x) && (lastPt->y == dinfo->startPt.y) &&
-	(lastPt != pt))
-	endPts[j] = pt;
-    dinfo->startPt = *pt;
-    dinfo->endPt = *lastPt;
+    if (!dinfo->skipStart && (info.startAngle != info.endAngle))
+    {
+	dinfo->startPt = *pt;
+	dinfo->haveStart = TRUE;
+    }
+    else if (!dinfo->skipLast && dinfo->haveStart &&
+	     (lastPt->x == dinfo->startPt.x) &&
+	     (lastPt->y == dinfo->startPt.y) &&
+	     (lastPt != startPts[i]))
+	endPts[j] = lastPt;
+    if (info.startAngle != info.endAngle)
+    {
+	dinfo->haveLast = TRUE;
+	dinfo->endPt = *lastPt;
+    }
     dashRemaining = pGC->dash[dinfo->dashIndex] - dinfo->dashOffset;
     for (i = 0; i < 5; i++)
     {
@@ -725,9 +740,9 @@ miZeroPolyArc(pDraw, pGC, narcs, parcs)
     if (pGC->lineStyle != LineSolid)
     {
 	numPts <<= 1;
-	dinfo.startPt.x = parcs->x - 1;
-	dinfo.startPt.y = parcs->y - 1;
-	dinfo.endPt = dinfo.startPt;
+	dinfo.haveStart = FALSE;
+	dinfo.skipStart = FALSE;
+	dinfo.haveLast = FALSE;
 	dinfo.dashIndexInit = 0;
 	dinfo.dashOffsetInit = 0;
 	miStepDash((int)pGC->dashOffset, &dinfo.dashIndexInit,
@@ -753,8 +768,10 @@ miZeroPolyArc(pDraw, pGC, narcs, parcs)
 	    {
 		pts = points;
 		oddPts = &points[(numPts >> 1) - 1];
+		dinfo.skipLast = i;
 		miZeroArcDashPts(pGC, arc, &dinfo,
 				 oddPts + 1, maxPts, &pts, &oddPts);
+		dinfo.skipStart = TRUE;
 	    }
 	    n = pts - points;
 	    if (!dospans)
