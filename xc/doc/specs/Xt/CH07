@@ -1,4 +1,4 @@
-.\" $XConsortium: CH07,v 1.12 94/04/17 14:14:43 kaleb Exp $
+.\" $XConsortium: CH07,v 1.13 94/04/18 16:05:46 converse Exp $
 .\"
 .\" Copyright 1985, 1986, 1987, 1988, 1991, 1994
 .\" Massachusetts Institute of Technology, Cambridge, Massachusetts,
@@ -366,13 +366,20 @@ Adding and Removing Signal Callbacks
 \fB\*(SN Adding and Removing Signal Callbacks\fP
 .XE
 .LP
-The signal facility notifies the application or the widget
-through a callback procedure that a signal or other external asynchronous
-event has occurred.
-The registered callback procedures are uniquely identified by a signal id.
+The signal facility notifies the application or the widget through a 
+callback procedure that a signal or other external asynchronous event 
+has occurred.  The registered callback procedures are uniquely identified 
+by a signal id.
 .sp
 .LP
-To register a signal callback use
+Prior to establishing a signal handler, the application or widget should
+call
+.PN XtAppAddSignal ,
+and store the resulting identifier in a place accessible to the signal
+handler.  When a signal arrives, the signal handler should call
+.PN XtNotice
+to notify the \*(xI that a signal has occured.  To register a signal 
+callback use
 .PN XtAppAddSignal .
 .IN "XtAppAddSignal" "" "@DEF@"
 .FD 0
@@ -409,12 +416,8 @@ Passes the id returned from the corresponding
 .PN XtAppAddSignal
 call.
 .LP
-Prior to establishing a signal handler, the application or widget would call
-.PN XtAppAddSignal ,
-and store the resulting identifier in a place accessible to the signal
-handler.  When a signal arrives, the signal handler would call
-.PN XtNoticeSignal 
-to notify the \*(xI that a signal has occurred.
+To notify the \*(xI that a signal has occured, use
+.PN XtNoticeSignal .
 .IN "XtNoticeSignal" "" "@DEF@"
 .sp
 .FD 0
@@ -429,8 +432,6 @@ call.
 .LP
 On a POSIX-based system,
 .PN XtNoticeSignal
-can safely be called from a signal handler.  
-.PN XtNoticeSignal
 is the only \*(xI function that can safely be called from a signal handler.
 If 
 .PN XtNoticeSignal
@@ -442,23 +443,33 @@ This flag is initially
 and is set to
 .PN True
 by
-.PN XtNoticeSignal ;
-the \*(xI invoke the callback whenever the flag is
-.PN True ,
-and the flag is set to
-.PN False
-just before the callback is invoked.
+.PN XtNoticeSignal .
+When 
+.XtAppNextEvent
+or
+.PN XtAppProcessEvent
+(with a mask including
+.PN XtIMSignal )
+is called, all registered callbacks with ``pending''
+.PN True
+are invoked and the flags are reset to
+.PN False .
 .LP
 If the signal handler wants to track how many times the signal has been
-raised, it can keep its own private counter.
-Typically the handler would not do any other work.
-Eventually (soon) the \*(xI will invoke the callback, and the callback
-does the actual processing for the signal.
-If the callback processes multiple signal raises all at once, then it
-needs to be prepared to be called when there is nothing to do, because
-a signal might be raised just after the \*(xI sets the pending flag to
+raised, it can keep its own private counter.  Typically the handler would 
+not do any other work; the callback does the actual processing for the 
+signal. The \*(xI never block signals from being raised, so if a given 
+signal can be raised multiple times before the \*(xI can invoke the 
+callback for that signal, the callback must be designed to deal with 
+this.  In another case, a signal might be raised just after the \*(xI
+sets the pending flag to
 .PN False
-but before the callback can get control.
+but before the callback can get control, in which case the pending flag
+will still be
+.PN True
+after the callback returns, and the \*(xI will invoke the callback
+again, even though all of the signal raises have been handled.  The
+callback must also be prepared to handle this case.
 .LP
 To remove a registered signal callback, call
 .PN XtRemoveSignal
@@ -474,11 +485,16 @@ Specifies the id returned by the corresponding call to
 .LP
 The client should typically disable the source of the signal before calling
 .PN XtRemoveSignal .
-After calling
-.PN XtRemoveSignal ,
-the widget or application should manually call the signal callback
-one more time, if the signal could have been raised again before
-the source was disabled.
+If the signal could have been raised again before the source was disabled
+and the client wants to process it, then after disabling the source but
+before calling
+.PN XtRemoveSignal
+the client can test for signals with
+.PN XtAppPending
+and process them by calling
+.PN XtAppProcessEvent
+with the mask
+.PN XtIMSignal .
 
 .NH 2
 Constraining Events to a Cascade of Widgets
@@ -686,7 +702,7 @@ as for
 .PN XGrabKey .
 If the widget is not realized, or is later unrealized, the call to
 .PN XGrabKey
-will be performed (again) when
+is performed (again) when
 the widget is realized and its window becomes mapped.  In the future,
 if
 .PN XtDispatchEvent
@@ -887,7 +903,7 @@ exactly as for
 .PN XGrabButton .
 If the widget is not realized, or is later unrealized, the call to
 .PN XGrabButton
-will be performed (again)
+is performed (again)
 when the widget is realized and its window becomes mapped.  In the
 future, if
 .PN XtDispatchEvent
@@ -1766,7 +1782,7 @@ Adding Background Work Procedures
 The \*(xI have some limited support for background processing.
 Because most applications spend most of their time waiting for input, 
 you can register an idle-time work procedure
-that will be called when the toolkit would otherwise block in
+that is called when the toolkit would otherwise block in
 .PN XtAppNextEvent
 or
 .PN XtAppProcessEvent .
@@ -1787,7 +1803,7 @@ when it is done to indicate that it
 should be removed.
 If the procedure returns
 .PN False ,
-it will remain registered and will be called again when the
+it will remain registered and called again when the
 application is next idle.
 Work procedures should be very judicious about how much they do. 
 If they run for more than a small part of a second,
@@ -1905,8 +1921,8 @@ rectangle.
 .LP
 In either case, these widgets do not care about getting partial exposure events.
 The \fIcompress_exposure\fP field in the widget class
-structure specifies the type and number of exposure events that will
-be dispatched to the widget's expose procedure.  This field must be
+structure specifies the type and number of exposure events that are
+dispatched to the widget's expose procedure.  This field must be
 initialized to one of the following values,
 .sp
 .Ds 0
@@ -1997,7 +2013,7 @@ Specifies that
 events are also to be dispatched to
 the expose procedure.
 .PN GraphicsExpose
-events will be compressed, if specified, in the same manner as
+events are compressed, if specified, in the same manner as
 .PN Expose
 events.
 .sp
@@ -2036,7 +2052,7 @@ other exposure events or with each other.
 .IN "XtExposeNoRegion" "" "@DEF"
 .IP
 Specifies that the final region argument passed to the expose
-procedure will be NULL.  The rectangle in the event will still
+procedure is NULL.  The rectangle in the event will still
 contain bounding box information for the entire series of
 compressed exposure events.
 
@@ -2237,7 +2253,7 @@ When an event handler is called, it may decide that further processing
 of the event is not desirable and may store
 .PN False
 in this Boolean, in
-which case any handlers remaining to be called for the event will be
+which case any handlers remaining to be called for the event are
 ignored.
 .LP
 The circumstances under which the \*(xI may add event handlers
@@ -2435,7 +2451,7 @@ is identical to
 with the additional \fIposition\fP argument.  If \fIposition\fP is
 .PN XtListHead ,
 the event
-handler is registered so that it will be called before any event
+handler is registered so that it is called before any event
 handlers that were previously registered for the same widget.  If
 \fIposition\fP is
 .PN XtListTail ,
@@ -2718,7 +2734,7 @@ If \fIevent_type\fP specifies one of the core X protocol events then
 .PN EventMask ,
 indicating
 the event mask to be used to select for the desired event.  This event
-mask will be included in the value returned by 
+mask is included in the value returned by 
 .PN XtBuildEventMask .
 If the widget is realized 
 .PN XtInsertEventTypeHandler 
@@ -2857,7 +2873,9 @@ registered values.  If the range specified by \fImin_event_type\fP
 and \fImax_event_type\fP overlaps the range of the parameters to a
 previous call for the same display in any other way, an error results.
 .LP
-When a widget is realized, the \*(xI check to see if any event
+When a widget is realized, 
+after the \fIcore.realize\fP method is called,
+the \*(xI check to see if any event
 handler specifies an event type within the range of a registered
 extension selector.  If so, the \*(xI call each such selector.
 If an event type handler is added or removed, the \*(xI check to
@@ -2940,7 +2958,7 @@ restored for the specified type.
 In the future, when
 .PN XtDispatchEvent
 is called with an event type of \fIevent_type\fP, the specified \fIproc\fP
-(or the default dispatcher) will be invoked to determine a widget
+(or the default dispatcher) is invoked to determine a widget
 to which to dispatch the event. 
 .LP
 The default dispatcher handles the \*(xI modal cascade and keyboard
@@ -3289,7 +3307,7 @@ or
 .PN XtAppProcessEvent
 and another thread in the same application context opens a new display, 
 adds an alternate input, or a timeout, that any new source(s) will not 
-normally be "noticed" by the blocked thread.  The new source(s) will be 
+normally be "noticed" by the blocked thread.  Any new sources are
 "noticed" the next time one of these functions is called.
 .LP
 The \*(xI manage access to events on a last in, first out basis.  If 
@@ -3298,6 +3316,6 @@ multiple threads in the same application context block in
 .PN XtAppPeekEvent , 
 or 
 .PN XtAppProcessEvent ,
-the last thread to call one of these functions will be the first
+the last thread to call one of these functions is the first
 thread to return.
 .bp
