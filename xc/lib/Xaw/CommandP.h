@@ -112,7 +112,7 @@ typedef struct _CommandRec {
     CorePart         core;
     LabelPart	     label;
     CommandPart      command;
-} CommmandRec;
+} CommandRec;
 
 #endif _XtCommandPrivate_h
 /* DON'T ADD STUFF AFTER THIS #endif */
