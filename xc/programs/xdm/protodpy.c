@@ -1,5 +1,5 @@
 /*
- * $XConsortium: protodpy.c,v 1.3 89/12/06 19:34:14 keith Exp $
+ * $XConsortium: protodpy.c,v 1.4 89/12/13 15:23:33 keith Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -32,6 +32,10 @@
  */
 
 #include "dm.h"
+# include	<sys/types.h>
+# include	<sys/socket.h>
+# include	<netinet/in.h>
+# include	<sys/un.h>
 
 struct protoDisplay	*protoDisplays;
 
@@ -43,14 +47,54 @@ int		len1, len2;
 {
     char    *c1, *c2;
 
-    if (len1 != len2)
+    if (a1->sa_family != a2->sa_family)
+    {
 	return FALSE;
-    c1 = (char *) a1;
-    c2 = (char *) a2;
-    while (len1--)
-	if (*c1++ != *c2++)
-	    return FALSE;
-    return TRUE;
+    }
+    if (len1 != len2)
+    {
+	return FALSE;
+    }
+    switch (a1->sa_family) {
+#ifdef AF_INET
+    case AF_INET:
+#define in(a)	((struct sockaddr_in *) a)
+	if (in(a1)->sin_port == in(a2)-> sin_port &&
+	    in(a1)->sin_addr.s_addr == in(a2)->sin_addr.s_addr)
+	    return TRUE;
+#endif
+    }
+    return FALSE;
+}
+
+PrintSockAddr (a, len)
+    struct sockaddr *a;
+    int		    len;
+{
+    unsigned char    *t, *p;
+
+    Debug ("family %d, ", a->sa_family);
+    switch (a->sa_family) {
+    case AF_INET:
+
+	p = (unsigned char *) &((struct sockaddr_in *) a)->sin_port;
+	t = (unsigned char *) &((struct sockaddr_in *) a)->sin_addr;
+
+	Debug ("port %d, host %d.%d.%d.%d\n",
+		(p[0] << 8) + p[1], t[0], t[1], t[2], t[3]);
+	break;
+    }
+}
+
+PrintProtoDisplay (pdpy)
+    struct protoDisplay	*pdpy;
+{
+    Debug ("ProtoDisplay 0x%x\n", pdpy);
+    Debug ("\taddress: ");
+    PrintSockAddr (pdpy->address, pdpy->addrlen);
+    Debug ("\tdate %d (%d from now)\n", pdpy->date, time(0) - pdpy->date);
+    Debug ("\tdisplay Number %d\n", pdpy->displayNumber);
+    Debug ("\tsessionID %d\n", pdpy->sessionID);
 }
 
 struct protoDisplay *
@@ -61,12 +105,15 @@ FindProtoDisplay (address, addrlen, displayNumber)
 {
     struct protoDisplay	*pdpy;
 
+    Debug ("FindProtoDisplay\n");
     for (pdpy = protoDisplays; pdpy; pdpy=pdpy->next)
+    {
 	if (pdpy->displayNumber == displayNumber &&
 	    addressEqual (address, addrlen, pdpy->address, pdpy->addrlen))
 	{
 	    return pdpy;
 	}
+    }
     return (struct protoDisplay *) 0;
 }
 
@@ -96,6 +143,7 @@ NewProtoDisplay (address, addrlen, displayNumber,
     struct protoDisplay	*pdpy;
     long    date;
 
+    Debug ("NewProtoDisplay\n");
     time (&date);
     TimeoutProtoDisplays (date);
     pdpy = (struct protoDisplay *) malloc (sizeof *pdpy);
