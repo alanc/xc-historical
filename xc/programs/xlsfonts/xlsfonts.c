@@ -258,10 +258,11 @@ show_fonts()
 				if (index >= font_cnt)
 					break;
 				if (j+1 == columns)
-					printf("%s", font_list[ index ]);
+					printf("%s", font_list[ index ].name);
 				else
 					printf("%-*s",
-						max_width, font_list[ index ]);
+						max_width, 
+						font_list[ index ].name);
 			}
 			printf("\n");
 		}
