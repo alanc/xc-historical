@@ -1,6 +1,6 @@
 /*
- *	$Source: /site/mit/poto/pp3812/src/RCS/pmp.h,v $
- *	$Header: pmp.h,v 1.1 87/09/23 11:51:11 poto Locked $
+ *	$Source: /local/X/clients/xpr/RCS/pmp.h,v $
+ *	$Header: pmp.h,v 1.1 87/10/05 16:51:12 swick Locked $
  */
 
 /* Written by Jose' J. Capo' */
@@ -25,18 +25,6 @@
 #define inch2pel(inches)	((int) ((inches) * PPI))
 #define ppmask(rounded,thickness)	(0x20 * (rounded) + (thickness))
 
-/* the following are duplicated in xpr.c; change there, too */
-#define DEFAULT_WIDTH	8.5
-#define X_MAX_PELS	inch2pel(DEFAULT_WIDTH)
-#define DEFAULT_LENGTH	11
-#define Y_MAX_PELS	inch2pel(DEFAULT_LENGTH)
-enum orientation {
-    UNSPECIFIED = -1,
-    PORTRAIT = 0,
-    LANDSCAPE = 1,
-    UPSIDE_DOWN = 2,
-    LANDSCAPE_LEFT = 3,
-  };
 
 #define min(a,b)	((a) < (b)? (a) : (b))
 #define lo(x)	((x) & 0xFF)
