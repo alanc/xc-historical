@@ -1,4 +1,3 @@
-/* $Header: cfbgc.c,v 1.4 87/07/20 11:49:30 toddb Locked $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -36,7 +35,7 @@ SOFTWARE.
 #include "cfb.h"
 #include "mistruct.h"
 
-#include "maskbits.h"
+#include "cfbmaskbits.h"
 extern cfbXRotatePixmap();
 extern cfbYRotatePixmap();
 extern void mfbPushPixels();
@@ -73,7 +72,11 @@ cfbCreateGC(pGC)
     pGC->CopyPlane = miCopyPlane;
     pGC->PolyPoint = miPolyPoint;
 
-    pGC->Polylines = miNotMiter;
+#ifdef notdef
+    pGC->Polylines = miNotMiter;    /* Doesn't work for 0-width lines */
+#else
+    pGC->Polylines = miZeroLine;
+#endif notdef
     pGC->PolySegment = miPolySegment;
     pGC->PolyRectangle = miPolyRectangle;
     pGC->PolyArc = miPolyArc;
@@ -213,7 +216,7 @@ cfbValidateGC(pGC, pQ, changes, pDrawable)
 	break;
     case 1:
 	if (pDrawable->type == DRAWABLE_PIXMAP) {
-	    mfbValidateGC(pGC);
+	    mfbValidateGC(pGC, pQ, changes, pDrawable);
 	    return;
 	}
 	/* WARNING - FALL THROUGH */
@@ -544,35 +547,47 @@ cfbValidateGC(pGC, pQ, changes, pDrawable)
 	default:
 	    FatalError("cfbValidateGC: illegal fillStyle\n");
 	}
-    }
+    } /* end of new_fillspans */
 
-    if (fRotate) {
+    if (xrot || yrot || fRotate) {
+	/*
+	 * First destroy any previously-rotated tile/stipple
+	 */
+	if (devPriv->pRotatedTile) {
+	    cfbDestroyPixmap(devPriv->pRotatedTile);
+	    devPriv->pRotatedTile = (PixmapPtr)NULL;
+	}
+	if (devPriv->pRotatedStipple) {
+	    cfbDestroyPixmap(devPriv->pRotatedStipple);
+	    devPriv->pRotatedStipple = (PixmapPtr)NULL;
+	}
+	if (pGC->tile &&
+	    (devPriv->pRotatedTile = cfbCopyPixmap(pGC->tile))
+		== (PixmapPtr) NULL)
+	    FatalError("cfbValidateGC: cannot rotate tile\n");
+	if (pGC->stipple && 
+	    (devPriv->pRotatedStipple = cfbCopyPixmap(pGC->stipple))
+		== (PixmapPtr) NULL)
+	    FatalError("cfbValidateGC: cannot rotate stipple\n");
+	/*
+	 * If we've gotten here, we're probably going to rotate the tile
+	 * and/or stipple, so we have to add the pattern origin into
+	 * the rotation factor, even if it hasn't changed.
+	 */
 	xrot += pGC->patOrg.x;
 	yrot += pGC->patOrg.y;
-    }
-    if (xrot || yrot || fRotate) {
-	if (((cfbPrivGC *) pGC->devPriv)->pRotatedTile) {
-	    cfbDestroyPixmap(((cfbPrivGC *) pGC->devPriv)->pRotatedTile);
-	    (((cfbPrivGC *) pGC->devPriv)->pRotatedTile) = NULL;
+	if (xrot) {
+	    if (pGC->tile && devPriv->pRotatedTile)
+		cfbXRotatePixmap(devPriv->pRotatedTile, xrot);
+	    if (pGC->stipple && devPriv->pRotatedStipple)
+		cfbXRotatePixmap(devPriv->pRotatedStipple, xrot);
 	}
-	if (((cfbPrivGC *) pGC->devPriv)->pRotatedStipple) {
-	    cfbDestroyPixmap(((cfbPrivGC *) pGC->devPriv)->pRotatedStipple);
-	    (((cfbPrivGC *) pGC->devPriv)->pRotatedStipple) = NULL;
+	if (yrot) {
+	    if (pGC->tile && devPriv->pRotatedTile)
+		cfbYRotatePixmap(devPriv->pRotatedTile, yrot);
+	    if (pGC->stipple && devPriv->pRotatedStipple)
+		cfbYRotatePixmap(devPriv->pRotatedStipple, yrot);
 	}
-	if (pGC->tile && ((((cfbPrivGC *) pGC->devPriv)->pRotatedTile =
-			   cfbCopyPixmap(pGC->tile)) == (PixmapPtr) NULL))
-	    FatalError("cfbValidateGC: cannot rotate tile\n");
-	if (pGC->stipple && ((((cfbPrivGC *) pGC->devPriv)->pRotatedStipple =
-		       cfbCopyPixmap(pGC->stipple)) == (PixmapPtr) NULL))
-	    FatalError("cfbValidateGC: cannot rotate stipple\n");
-    }
-    if (xrot) {
-	cfbXRotatePixmap(((cfbPrivGC *) pGC->devPriv)->pRotatedTile, xrot);
-	cfbXRotatePixmap(((cfbPrivGC *) pGC->devPriv)->pRotatedStipple, xrot);
-    }
-    if (yrot) {
-	cfbYRotatePixmap(((cfbPrivGC *) (pGC->devPriv))->pRotatedTile, yrot);
-	cfbYRotatePixmap(((cfbPrivGC *) (pGC->devPriv))->pRotatedStipple, yrot);
     }
 }
 

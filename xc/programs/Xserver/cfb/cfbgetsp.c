@@ -1,4 +1,3 @@
-/* $Header: cfbgetsp.c,v 1.1 87/08/08 17:06:02 toddb Locked $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -34,7 +33,7 @@ SOFTWARE.
 #include "scrnintstr.h"
 
 #include "cfb.h"
-#include "maskbits.h"
+#include "cfbmaskbits.h"
 
 /* GetSpans -- for each span, gets bits from drawable starting at ppt[i]
  * and continuing for pwidth[i] bits
@@ -148,11 +147,13 @@ cfbGetSpans(pDrawable, wMax, ppt, pwidth, nspans)
 	    } 
 #ifdef	notdef
 	    pdst++; 
-#endif
 	    while(pdst < pdstNext)
 	    {
 		*pdst++ = 0;
 	    }
+#else
+	    pdst = pdstNext;
+#endif notdef
 	} 
         ppt++;
     }

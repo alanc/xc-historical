@@ -1,4 +1,3 @@
-/* $Header: cfbfillsp.c,v 1.2 87/07/13 17:56:05 toddb Locked $ */
 /*
  * The Sun X drivers are a product of Sun Microsystems, Inc. and are provided
  * for unrestricted use provided that this legend is included on all tape
@@ -60,10 +59,11 @@ SOFTWARE.
 #include "scrnintstr.h"
 
 #include "cfb.h"
-#include "maskbits.h"
+#include "cfbmaskbits.h"
 
 /* scanline filling for color frame buffer
    written by drewry, oct 1986 modified by smarks
+   changes for compatibility with Little-endian systems Jul 1987; MIT:yba.
 
    these routines all clip.  they assume that anything that has called
 them has already translated the points (i.e. pGC->miTranslate is
@@ -323,11 +323,14 @@ int fSorted;
 	    width = *pwidth;
 	    while(width > 0)
 	    {
-		psrc = psrcT;
+		rem = x % tileWidth;
+		psrc = psrcT + rem / PPW;
 	        w = min(tileWidth, width);
+		w = min(w,tileWidth-rem);
+#ifdef notdef
 		if((rem = x % tileWidth) != 0)
 		{
-		    w = min(min(tileWidth - rem, width), BITMAP_SCANLINE_UNIT);
+		    w = min(min(tileWidth - rem, width), PPW);
 		    /* we want to grab from the end of the tile.  Figure
 		     * out where that is.  In general, the start of the last
 		     * word of data on this scanline is tlwidth -1 words 
@@ -335,11 +338,11 @@ int fSorted;
 		     * find on that line, we have to back up 1 word further.
 		     * On the other hand, if the whole tile fits in 1 word,
 		     * let's skip the work */ 
-		    endinc = tlwidth - 1 - w / BITMAP_SCANLINE_UNIT;
+		    endinc = tlwidth - 1 - (tileWidth-rem) / PPW;
 
 		    if(endinc)
 		    {
-			if((rem & PIM) + w > tileWidth % BITMAP_SCANLINE_UNIT)
+			if((rem & PIM) + w > tileWidth % PPW)
 			    endinc--;
 		    }
 
@@ -349,12 +352,14 @@ int fSorted;
 		    if((x & PIM) + w >= PPW)
 			pdst++;
 		}
-
-		else if(((x & PIM) + w) < PPW)
+		else
+#endif notdef
+		if(((rem & PIM) + w) <= PPW)
 		{
-		    getbits(psrc, 0, w, tmpSrc);
+		    getbits(psrc, (rem & PIM), w, tmpSrc);
 		    putbitsrop(tmpSrc, x & PIM, w, pdst, 
 			pGC->planemask, rop);
+		    ++pdst;
 		}
 		else
 		{
@@ -373,17 +378,16 @@ int fSorted;
 
 		    if(startmask)
 		    {
-			getbits(psrc, 0, nstart, tmpSrc);
-			putbitsrop(tmpSrc, (x & PIM), nstart, pdst, 
+			getbits(psrc, rem & PIM, nstart, tmpSrc);
+			putbitsrop(tmpSrc, x & PIM, nstart, pdst, 
 			    pGC->planemask, rop);
 			pdst++;
-			if(srcStartOver)
-			    psrc++;
+			psrc++;
 		    }
 		     
 		    while(nlMiddle--)
 		    {
-			    getbits(psrc, nstart, PPW, tmpSrc);
+			    getbits(psrc, 0, PPW, tmpSrc);
 			    putbitsrop( tmpSrc, 0, PPW,
 				pdst, pGC->planemask, rop );
 			    pdst++;
@@ -391,7 +395,7 @@ int fSorted;
 		    }
 		    if(endmask)
 		    {
-			getbits(psrc, nstart, nend, tmpSrc);
+			getbits(psrc, 0, nend, tmpSrc);
 			putbitsrop(tmpSrc, 0, nend, pdst, 
 			    pGC->planemask, rop);
 		    }
@@ -414,11 +418,19 @@ int fSorted;
  * index.  This table is used by getstipplepixels.
  */
 static unsigned int QuartetBitsTable[5] = {
+#if (BITMAP_BIT_ORDER == MSBFirst)
     0x00000000,				/* 0 - 0000 */
     0x00000008,				/* 1 - 1000 */
     0x0000000C,				/* 2 - 1100 */
     0x0000000E,				/* 3 - 1110 */
     0x0000000F				/* 4 - 1111 */
+#else /* (BITMAP_BIT_ORDER == LSBFirst */
+    0x00000000,				/* 0 - 0000 */
+    0x00000001,				/* 1 - 0001 */
+    0x00000003,				/* 2 - 0011 */
+    0x00000007,				/* 3 - 0111 */
+    0x0000000F				/* 4 - 1111 */
+#endif (BITMAP_BIT_ORDER == MSBFirst)
 };
 
 /*
@@ -426,7 +438,6 @@ static unsigned int QuartetBitsTable[5] = {
  * corresponding to a quartet of bits.
  */
 static unsigned int QuartetPixelMaskTable[16] = {
-#if (BITMAP_BIT_ORDER == MSBFirst)
     0x00000000,
     0x000000FF,
     0x0000FF00,
@@ -443,24 +454,6 @@ static unsigned int QuartetPixelMaskTable[16] = {
     0xFFFF00FF,
     0xFFFFFF00,
     0xFFFFFFFF
-#else /* (BITMAP_BIT_ORDER == LSBFirst */
-    0x00000000,
-    0xFF000000,
-    0x00FF0000,
-    0xFFFF0000,
-    0x0000FF00,
-    0xFF00FF00,
-    0x00FFFF00,
-    0xFFFFFF00,
-    0x000000FF,
-    0xFF0000FF,
-    0x00FF00FF,
-    0xFFFF00FF,
-    0x0000FFFF,
-    0xFF00FFFF,
-    0x00FFFFFF,
-    0xFFFFFFFF
-#endif (BITMAP_BIT_ORDER == MSBFirst)
 };
 
 
@@ -495,9 +488,16 @@ int x, w, ones;
 {
     unsigned int q;
 
+#if (BITMAP_BIT_ORDER == MSBFirst)
     q = ((*psrcstip) >> (28-x)) & 0x0F;
     if ( x+w > 32 )
-	q |= *(psrcstip+1) >> (64-x-w);
+	q |= *(psrcstip+1) >> (64-x-w); /* & 0xF ? ****XXX*/
+#else
+    q = (*psrcstip) >> x;
+    if ( x+w > 32 )
+	q |= *(psrcstip+1) << (32-x);
+    q &= 0xf;
+#endif
     q = QuartetBitsTable[w] & (ones ? q : ~q);
     *destpix = (*(psrcpix)) & QuartetPixelMaskTable[q];
 }
@@ -645,9 +645,20 @@ int fSorted;
 			    &fgfill, &tmpDst2);
 			break;
 		}
+#ifdef notdef
 		putbitsrop(tmpDst1 | tmpDst2, x & PIM, w, pdst + (x>>PWSH), 
 		    pGC->planemask, rop);
-
+#else
+		{
+		    /*
+		     * Ultrix cc hasn't enough expression stack to compile
+		     * these values in the putbitsrop call.  (MIT:yba)
+		     */
+		    int tmpDst = tmpDst1 | tmpDst2, tmpx = x & PIM;
+		    int * pdsttmp = pdst + (x>>PWSH);
+		    putbitsrop(tmpDst, tmpx, w, pdsttmp, pGC->planemask, rop);
+		}
+#endif notdef
 		x += w;
 		width -= w;
 	    }
@@ -670,11 +681,11 @@ int fSorted;
 		     * find on that line, we have to back up 1 word further.
 		     * On the other hand, if the whole tile fits in 1 word,
 		     * let's skip the work */ 
-		    endinc = stwidth - 1 - w / BITMAP_SCANLINE_UNIT;
+		    endinc = stwidth - 1 - w / PPW;
 
 		    if(endinc)
 		    {
-			if((rem & 0x1f) + w > stippleWidth % BITMAP_SCANLINE_UNIT)
+			if((rem & 0x1f) + w > stippleWidth % PPW)
 			    endinc--;
 		    }
 

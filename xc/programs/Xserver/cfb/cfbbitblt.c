@@ -1,4 +1,3 @@
-/* $Header: cfbbitblt.c,v 1.1 87/08/08 17:05:42 toddb Locked $ */
 /*
  * The Sun X drivers are a product of Sun Microsystems, Inc. and are provided
  * for unrestricted use provided that this legend is included on all tape
@@ -64,7 +63,7 @@ SOFTWARE.
 #include "scrnintstr.h"
 
 #include "cfb.h"
-#include "maskbits.h"
+#include "cfbmaskbits.h"
 
 
 /* CopyArea and CopyPlane for a monchrome frame buffer
