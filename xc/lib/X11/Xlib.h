@@ -1,4 +1,4 @@
-/* $XConsortium: Xlib.h,v 11.202 91/05/01 08:43:13 rws Exp $ */
+/* $XConsortium: Xlib.h,v 11.203 91/05/05 20:54:59 rws Exp $ */
 /* 
  * Copyright 1985, 1986, 1987, 1991 by the Massachusetts Institute of Technology
  *
@@ -33,7 +33,13 @@
 #define __TYPES__
 #endif /* __TYPES__ */
 #else
+#if !defined(_POSIX_SOURCE) || !defined(MOTOROLA)
 #include <sys/types.h>
+#else
+#undef _POSIX_SOURCE
+#include <sys/types.h>
+#define _POSIX_SOURCE
+#endif
 #endif /* USG */
 
 #include <X11/X.h>
@@ -536,13 +542,19 @@ typedef struct _XDisplay {
 /*
  * A "XEvent" structure always  has type as the first entry.  This 
  * uniquely identifies what  kind of event it is.  The second entry
- * is always a pointer to the display the event was read from.
- * The third entry is always a window of one type or another,
- * carefully selected to be useful to toolkit dispatchers.  (Except
- * for keymap events, which have no window.) You
- * must not change the order of the three elements or toolkits will
- * break! The pointer to the generic event must be cast before use to 
- * access any other information in the structure.
+ * is always the serial number of the last request processed by the
+ * server.  The third entry is always a boolean indicating whether
+ * the event came from a SendEvent (the MSB of the type byte in the
+ * protocol encoding).  The fourth entry is always a pointer to the
+ * display the event was read from.  The fifth entry is always a
+ * resource id of one type or another, usually a window, carefully
+ * selected to be useful to toolkit dispatchers.  The fifth entry
+ * should always exist, even if the event does not have a natural
+ * "destination"; if there is no value from the protocol to put in
+ * the entry, initialize it to zero.  You must not change the order
+ * of the five elements or toolkits will break!  The pointer to the
+ * generic event must be cast before use to access any other information
+ * in the structure.
  */
 
 /*
@@ -2641,7 +2653,7 @@ extern XForceScreenSaver(
 
 extern XFree(
 #if NeedFunctionPrototypes
-    XPointer		/* data */
+    void*		/* data */
 #endif
 );
 
