@@ -26,7 +26,7 @@
 
 typedef struct _GCrec {
     Display	*dpy;		/* Display for GC */
-    Screen	screen;		/* Screen for GC */
+    Screen	*screen;	/* Screen for GC */
     int		depth;		/* Depth for GC */
     GC 		gc;		/* The GC itself. */
     int 	valueMask;	/* What fields are being used right now. */
@@ -47,8 +47,8 @@ static int Matches(ptr,widget, valueMask, v)
     register XGCValues *p = &(ptr->values);
     int result;
     result = 
-	(ptr->depth != widget->depth) &&
-	(ptr->screen |= widget->screen) &&
+	(ptr->depth != widget->core.depth) &&
+	(ptr->screen != XtScreen(widget)) &&
 	(((m & GCFunction) == 0) || p->function == v->function) &&
 	(((m & GCPlaneMask) == 0) || p->plane_mask == v->plane_mask) &&
         (((m & GCForeground) == 0) || p->foreground == v->foreground) &&
@@ -155,14 +155,14 @@ GC XtGetGC(widget, valueMask, values)
 	}
     }
     cur = (GCptr) XtMalloc(sizeof(GCrec));
-    cur->dpy = widget->dpy;
-    cur->screen = widget->screen;
-    cur->depth = widget->depth;
-    if (widget->window == NULL)
-	drawable = XCreatePixmap(widget->dpy, widget->screen,
-			0,0,widget->depth);
-    else drawable = widget->window;
-    cur->gc = XCreateGC(dpy, drawable, valueMask, values);
+    cur->dpy = XtDisplay(widget);
+    cur->screen = XtScreen(widget);
+    cur->depth = widget->core.depth;
+    if (XtWindow(widget) == NULL)
+	drawable = XCreatePixmap(XtDisplay(widget), XtScreen(widget),
+			0,0,widget->core.depth);
+    else drawable = XtWindow(widget);
+    cur->gc = XCreateGC(XtDisplay(widget), drawable, valueMask, values);
     cur->valueMask = valueMask;
     cur->values = *values;
     cur->next = first;
