@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: property.c,v 1.58 88/01/16 10:29:14 rws Exp $ */
+/* $Header: property.c,v 1.60 88/02/02 11:55:01 rws Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -92,6 +92,7 @@ ProcRotateProperties(client)
         if (!ValidAtom(atoms[i]))
         {
             DEALLOCATE_LOCAL(props);
+	    client->errorValue = atoms[i];
             return BadAtom;
         }
         for (j = i + 1; j < stuff->nAtoms; j++)
@@ -170,8 +171,16 @@ ProcChangeProperty(client)
     pWin = (WindowPtr)LookupWindow(stuff->window, client);
     if (!pWin)
 	return(BadWindow);
-    if (!(ValidAtom(stuff->property)  && ValidAtom(stuff->type)))
+    if (!ValidAtom(stuff->property))
+    {
+	client->errorValue = stuff->property;
 	return(BadAtom);
+    }
+    if (!ValidAtom(stuff->type))
+    {
+	client->errorValue = stuff->type;
+	return(BadAtom);
+    }
 
     /* first see if property already exists */
 
@@ -331,11 +340,14 @@ ProcGetProperty(client)
 
     REQUEST_SIZE_MATCH(xGetPropertyReq);
     pWin = (WindowPtr)LookupWindow(stuff->window, client);
-    client->errorValue = stuff->window;
     if (pWin)
     {
-	if (ValidAtom(stuff->property) && 
-	    ((stuff->type == AnyPropertyType) || ValidAtom(stuff->type)))
+	if (!ValidAtom(stuff->property))
+	{
+	    client->errorValue = stuff->property;
+	    return(BadAtom);
+	}
+	if ((stuff->type == AnyPropertyType) || ValidAtom(stuff->type))
 	{
 	    pProp = pWin->userProps;
             prevProp = (PropertyPtr)NULL;
@@ -430,7 +442,10 @@ ProcGetProperty(client)
 
 	}
         else
+	{
+	    client->errorValue = stuff->type;
             return(BadAtom);
+	}
     }
     else            
         return (BadWindow); 
