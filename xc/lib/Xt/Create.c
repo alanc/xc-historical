@@ -1,4 +1,4 @@
-/* $XConsortium: Create.c,v 1.100 94/01/21 19:12:23 converse Exp $ */
+/* $XConsortium: Create.c,v 1.101 94/02/10 20:36:24 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -105,27 +105,40 @@ XtInitializeWidgetClass(wc)
 #undef LeaveIfClass
     }
     if (wc->core_class.version != XtVersion &&
-	wc->core_class.version != XtVersionDontCheck &&
-	wc->core_class.version != (11 * 1000 + 4)) { /* MIT R4 is OK */
+	wc->core_class.version != XtVersionDontCheck) {
 	String param[3];
-        param[0] = wc->core_class.class_name;
-	if (wc->core_class.version == (11 * 1000 + 3)) { /* MIT X11R3 */
+	String mismatch = "Widget class %s version mismatch (recompilation needed):\n  widget %d vs. intrinsics %d.";
+	Cardinal num_params;
+
+	param[0] = wc->core_class.class_name;
+	param[1] = (String) wc->core_class.version;
+	param[2] = (String) XtVersion;
+
+	if (wc->core_class.version == (11 * 1000 + 5) || /* MIT X11R5 */
+	    wc->core_class.version == (11 * 1000 + 4)) { /* MIT X11R4 */
+	    if ((inited & WMShellClassFlag) &&
+		(sizeof(Boolean) != sizeof(char) ||
+		 sizeof(Atom) != sizeof(Widget) ||
+		 sizeof(Atom) != sizeof(String))) {
+		num_params=3;
+		XtWarningMsg("versionMismatch","widget",XtCXtToolkitError,
+			     mismatch, param, &num_params);
+	    }
+	}
+	else if (wc->core_class.version == (11 * 1000 + 3)) { /* MIT X11R3 */
 	    if (inited & ShellClassFlag) {
-		Cardinal num_params=1;
+		num_params=1;
 		XtWarningMsg("r3versionMismatch","widget",XtCXtToolkitError,
 			     "Shell Widget class %s binary compiled for R3",
 			     param,&num_params);
 	    }
 	}
 	else {
-	    Cardinal num_params=3;
-	    param[1] = (String)wc->core_class.version;
-	    param[2] = (String)XtVersion;
+	    num_params=3;
 	    XtWarningMsg("versionMismatch","widget",XtCXtToolkitError,
-			 "Widget class %s version mismatch (recompilation needed):\n  widget %d vs. intrinsics %d.",
-			 param,&num_params);
+			 mismatch, param, &num_params);
 	    if (wc->core_class.version == (2 * 1000 + 2)) /* MIT X11R2 */ {
-		Cardinal num_params=1;
+		num_params=1;
 		XtErrorMsg("r2versionMismatch","widget",XtCXtToolkitError,
 			   "Widget class %s must be re-compiled.",
 			   param, &num_params);
