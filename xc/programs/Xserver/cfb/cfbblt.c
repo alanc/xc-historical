@@ -242,58 +242,47 @@ MROP_NAME(cfbDoBitblt)(pSrc, pDst, alu, prgnDst, pptSrc, planemask)
 	}
 	if ((pbox->x1 & PIM) + w <= PPW)
 	{
-	    pdst = pdstLine + (pbox->x1 >> PWSH);
-	    psrc = psrcLine + (pptSrc->x >> PWSH);
-	    xoffSrc = pptSrc->x & PIM;
-	    xoffDst = pbox->x1 & PIM;
-	    while (h--)
-	    {
-		getbits (psrc, xoffSrc, w, bits)
-#if (MROP) == Mcopy
-		putbits (bits, xoffDst, w, pdst, ~0)
-#else
-		putbitsrop(bits, xoffDst, w, pdst, planemask, alu)
-#endif
-		psrc += widthSrc;
-		pdst += widthDst;
-	    }
+	    maskpartialbits (pbox->x1, w, startmask);
+	    endmask = 0;
+	    nlMiddle = 0;
 	}
 	else
 	{
 	    maskbits(pbox->x1, w, startmask, endmask, nlMiddle);
-	    if (xdir == 1)
-	    {
-		xoffSrc = pptSrc->x & PIM;
-		xoffDst = pbox->x1 & PIM;
-		pdstLine += (pbox->x1 >> PWSH);
-		psrcLine += (pptSrc->x >> PWSH);
+	}
+	if (xdir == 1)
+	{
+	    xoffSrc = pptSrc->x & PIM;
+	    xoffDst = pbox->x1 & PIM;
+	    pdstLine += (pbox->x1 >> PWSH);
+	    psrcLine += (pptSrc->x >> PWSH);
 #ifdef DO_UNALIGNED_BITBLT
-		nl = xoffSrc - xoffDst;
-		psrcLine = (unsigned int *)
-			    (((unsigned char *) psrcLine) + nl);
+	    nl = xoffSrc - xoffDst;
+	    psrcLine = (unsigned int *)
+			(((unsigned char *) psrcLine) + nl);
 #else
-		if (xoffSrc == xoffDst)
+	    if (xoffSrc == xoffDst)
 #endif
+	    {
+		while (h--)
 		{
-		    while (h--)
+		    psrc = psrcLine;
+		    pdst = pdstLine;
+		    pdstLine += widthDst;
+		    psrcLine += widthSrc;
+		    if (startmask)
 		    {
-			psrc = psrcLine;
-			pdst = pdstLine;
-			pdstLine += widthDst;
-			psrcLine += widthSrc;
-			if (startmask)
-			{
-			    *pdst = MROP_MASK(*psrc, *pdst, startmask);
-			    psrc++;
-			    pdst++;
-			}
-			nl = nlMiddle;
+			*pdst = MROP_MASK(*psrc, *pdst, startmask);
+			psrc++;
+			pdst++;
+		    }
+		    nl = nlMiddle;
 
 #ifdef LARGE_INSTRUCTION_CACHE
 #ifdef FAST_CONSTANT_OFFSET_MODE
 
-			psrc += nl & (UNROLL-1);
-			pdst += nl & (UNROLL-1);
+		    psrc += nl & (UNROLL-1);
+		    pdst += nl & (UNROLL-1);
 
 #define BodyOdd(n) pdst[-n] = MROP_SOLID (psrc[-n], pdst[-n]);
 #define BodyEven(n) pdst[-n] = MROP_SOLID (psrc[-n], pdst[-n]);
@@ -310,7 +299,7 @@ psrc += UNROLL;
 #define LoopReset   ;
 
 #endif
-			PackedLoop
+		    PackedLoop
 
 #undef BodyOdd
 #undef BodyEven
@@ -318,71 +307,71 @@ psrc += UNROLL;
 
 #else
 #ifdef NOTDEF
-			/* you'd think this would be faster --
-			 * a single instruction instead of 6
-			 * but measurements show it to be ~15% slower
-			 */
-			while ((nl -= 6) >= 0)
-			{
-			    asm ("moveml %1+,#0x0c0f;moveml#0x0c0f,%0"
-				 : "=m" (*(char *)pdst)
-				 : "m" (*(char *)psrc)
-				 : "d0", "d1", "d2", "d3",
-				   "a2", "a3");
-			    pdst += 6;
-			}
-			nl += 6;
-			while (nl--)
-			    *pdst++ = *psrc++;
+		    /* you'd think this would be faster --
+		     * a single instruction instead of 6
+		     * but measurements show it to be ~15% slower
+		     */
+		    while ((nl -= 6) >= 0)
+		    {
+			asm ("moveml %1+,#0x0c0f;moveml#0x0c0f,%0"
+			     : "=m" (*(char *)pdst)
+			     : "m" (*(char *)psrc)
+			     : "d0", "d1", "d2", "d3",
+			       "a2", "a3");
+			pdst += 6;
+		    }
+		    nl += 6;
+		    while (nl--)
+			*pdst++ = *psrc++;
 #endif
-			DuffL(nl, label1,
-				*pdst = MROP_SOLID (*psrc, *pdst);
- 				pdst++; psrc++;)
+		    DuffL(nl, label1,
+			    *pdst = MROP_SOLID (*psrc, *pdst);
+			    pdst++; psrc++;)
 #endif
 
-			if (endmask)
-			    *pdst = MROP_MASK(*psrc, *pdst, endmask);
-		    }
+		    if (endmask)
+			*pdst = MROP_MASK(*psrc, *pdst, endmask);
 		}
+	    }
 #ifndef DO_UNALIGNED_BITBLT
+	    else
+	    {
+		if (xoffSrc > xoffDst)
+		{
+		    leftShift = (xoffSrc - xoffDst) << (5 - PWSH);
+		    rightShift = 32 - leftShift;
+		}
 		else
 		{
+		    rightShift = (xoffDst - xoffSrc) << (5 - PWSH);
+		    leftShift = 32 - rightShift;
+		}
+		while (h--)
+		{
+		    psrc = psrcLine;
+		    pdst = pdstLine;
+		    pdstLine += widthDst;
+		    psrcLine += widthSrc;
+		    bits = 0;
 		    if (xoffSrc > xoffDst)
+			bits = *psrc++;
+		    if (startmask)
 		    {
-			leftShift = (xoffSrc - xoffDst) << (5 - PWSH);
-			rightShift = 32 - leftShift;
+			bits1 = BitLeft(bits,leftShift);
+			bits = *psrc++;
+			bits1 |= BitRight(bits,rightShift);
+			*pdst = MROP_MASK(bits1, *pdst, startmask);
+			pdst++;
 		    }
-		    else
-		    {
-			rightShift = (xoffDst - xoffSrc) << (5 - PWSH);
-			leftShift = 32 - rightShift;
-		    }
-		    while (h--)
-		    {
-			psrc = psrcLine;
-			pdst = pdstLine;
-			pdstLine += widthDst;
-			psrcLine += widthSrc;
-			bits = 0;
-			if (xoffSrc > xoffDst)
-			    bits = *psrc++;
-			if (startmask)
-			{
-			    bits1 = BitLeft(bits,leftShift);
-			    bits = *psrc++;
-			    bits1 |= BitRight(bits,rightShift);
-			    *pdst = MROP_MASK(bits1, *pdst, startmask);
-			    pdst++;
-			}
-			nl = nlMiddle;
+		    nl = nlMiddle;
 
 #ifdef LARGE_INSTRUCTION_CACHE
-			bits1 = bits;
+		    bits1 = bits;
 
 #ifdef FAST_CONSTANT_OFFSET_MODE
 
-			psrc += nl & (UNROLL-1);
-			pdst += nl & (UNROLL-1);
+		    psrc += nl & (UNROLL-1);
+		    pdst += nl & (UNROLL-1);
 
 #define BodyOdd(n) \
 bits = psrc[-n]; \
@@ -402,7 +391,7 @@ psrc += UNROLL;
 bits = *psrc++; \
 *pdst = MROP_SOLID(BitLeft(bits1, leftShift) | BitRight(bits, rightShift), *pdst); \
 pdst++;
-		       
+		   
 #define BodyEven(n) \
 bits1 = *psrc++; \
 *pdst = MROP_SOLID(BitLeft(bits, leftShift) | BitRight(bits1, rightShift), *pdst); \
@@ -412,67 +401,67 @@ pdst++;
 
 #endif	/* !FAST_CONSTANT_OFFSET_MODE */
 
-			PackedLoop
+		    PackedLoop
 
 #undef BodyOdd
 #undef BodyEven
 #undef LoopReset
 
 #else
-			DuffL (nl,label2,
-			    bits1 = BitLeft(bits, leftShift);
-			    bits = *psrc++;
-			    *pdst = MROP_SOLID (bits1 | BitRight(bits, rightShift), *pdst);
-			    pdst++;
-			)
+		    DuffL (nl,label2,
+			bits1 = BitLeft(bits, leftShift);
+			bits = *psrc++;
+			*pdst = MROP_SOLID (bits1 | BitRight(bits, rightShift), *pdst);
+			pdst++;
+		    )
 #endif
 
-			if (endmask)
+		    if (endmask)
+		    {
+			bits1 = BitLeft(bits, leftShift);
+			if (BitLeft(endmask, rightShift))
 			{
-			    bits1 = BitLeft(bits, leftShift);
-			    if (BitLeft(endmask, rightShift))
-			    {
-				bits = *psrc;
-				bits1 |= BitRight(bits, rightShift);
-			    }
-			    *pdst = MROP_MASK (bits1, *pdst, endmask);
+			    bits = *psrc;
+			    bits1 |= BitRight(bits, rightShift);
 			}
+			*pdst = MROP_MASK (bits1, *pdst, endmask);
 		    }
 		}
-#endif /* DO_UNALIGNED_BITBLT */
 	    }
-	    else	/* xdir == -1 */
-	    {
-		xoffSrc = (pptSrc->x + w - 1) & PIM;
-		xoffDst = (pbox->x2 - 1) & PIM;
-		pdstLine += ((pbox->x2-1) >> PWSH) + 1;
-		psrcLine += ((pptSrc->x+w - 1) >> PWSH) + 1;
+#endif /* DO_UNALIGNED_BITBLT */
+	}
+	else	/* xdir == -1 */
+	{
+	    xoffSrc = (pptSrc->x + w - 1) & PIM;
+	    xoffDst = (pbox->x2 - 1) & PIM;
+	    pdstLine += ((pbox->x2-1) >> PWSH) + 1;
+	    psrcLine += ((pptSrc->x+w - 1) >> PWSH) + 1;
 #ifdef DO_UNALIGNED_BITBLT
-		nl = xoffSrc - xoffDst;
-		psrcLine = (unsigned int *)
-			    (((unsigned char *) psrcLine) + nl);
+	    nl = xoffSrc - xoffDst;
+	    psrcLine = (unsigned int *)
+			(((unsigned char *) psrcLine) + nl);
 #else
-		if (xoffSrc == xoffDst)
+	    if (xoffSrc == xoffDst)
 #endif
+	    {
+		while (h--)
 		{
-		    while (h--)
+		    psrc = psrcLine;
+		    pdst = pdstLine;
+		    pdstLine += widthDst;
+		    psrcLine += widthSrc;
+		    if (endmask)
 		    {
-			psrc = psrcLine;
-			pdst = pdstLine;
-			pdstLine += widthDst;
-			psrcLine += widthSrc;
-			if (endmask)
-			{
-			    pdst--;
-			    psrc--;
-			    *pdst = MROP_MASK (*psrc, *pdst, endmask);
-			}
-			nl = nlMiddle;
+			pdst--;
+			psrc--;
+			*pdst = MROP_MASK (*psrc, *pdst, endmask);
+		    }
+		    nl = nlMiddle;
 
 #ifdef LARGE_INSTRUCTION_CACHE
 #ifdef FAST_CONSTANT_OFFSET_MODE
-			psrc -= nl & (UNROLL - 1);
-			pdst -= nl & (UNROLL - 1);
+		    psrc -= nl & (UNROLL - 1);
+		    pdst -= nl & (UNROLL - 1);
 
 #define BodyOdd(n) pdst[n-1] = MROP_SOLID (psrc[n-1], pdst[n-1]);
 
@@ -489,62 +478,62 @@ psrc -= UNROLL;
 #define LoopReset   ;
 
 #endif
-			PackedLoop
+		    PackedLoop
 
 #undef BodyOdd
 #undef BodyEven
 #undef LoopReset
 
 #else
-			DuffL(nl,label3,
-			     --pdst; --psrc; *pdst = MROP_SOLID (*psrc, *pdst);)
+		    DuffL(nl,label3,
+			 --pdst; --psrc; *pdst = MROP_SOLID (*psrc, *pdst);)
 #endif
 
-			if (startmask)
-			{
-			    --pdst;
-			    --psrc;
-			    *pdst = MROP_MASK(*psrc, *pdst, startmask);
-			}
+		    if (startmask)
+		    {
+			--pdst;
+			--psrc;
+			*pdst = MROP_MASK(*psrc, *pdst, startmask);
 		    }
 		}
+	    }
 #ifndef DO_UNALIGNED_BITBLT
+	    else
+	    {
+		if (xoffDst > xoffSrc)
+		{
+		    rightShift = (xoffDst - xoffSrc) << (5 - PWSH);
+		    leftShift = 32 - rightShift;
+		}
 		else
 		{
+		    leftShift = (xoffSrc - xoffDst) << (5 - PWSH);
+		    rightShift = 32 - leftShift;
+		}
+		while (h--)
+		{
+		    psrc = psrcLine;
+		    pdst = pdstLine;
+		    pdstLine += widthDst;
+		    psrcLine += widthSrc;
+		    bits = 0;
 		    if (xoffDst > xoffSrc)
+			bits = *--psrc;
+		    if (endmask)
 		    {
-			rightShift = (xoffDst - xoffSrc) << (5 - PWSH);
-			leftShift = 32 - rightShift;
+			bits1 = BitRight(bits, rightShift);
+			bits = *--psrc;
+			bits1 |= BitLeft(bits, leftShift);
+			pdst--;
+			*pdst = MROP_MASK(bits1, *pdst, endmask);
 		    }
-		    else
-		    {
-			leftShift = (xoffSrc - xoffDst) << (5 - PWSH);
-			rightShift = 32 - leftShift;
-		    }
-		    while (h--)
-		    {
-			psrc = psrcLine;
-			pdst = pdstLine;
-			pdstLine += widthDst;
-			psrcLine += widthSrc;
-			bits = 0;
-			if (xoffDst > xoffSrc)
-			    bits = *--psrc;
-			if (endmask)
-			{
-			    bits1 = BitRight(bits, rightShift);
-			    bits = *--psrc;
-			    bits1 |= BitLeft(bits, leftShift);
-			    pdst--;
-			    *pdst = MROP_MASK(bits1, *pdst, endmask);
-			}
-			nl = nlMiddle;
+		    nl = nlMiddle;
 
 #ifdef LARGE_INSTRUCTION_CACHE
-			bits1 = bits;
+		    bits1 = bits;
 #ifdef FAST_CONSTANT_OFFSET_MODE
-			psrc -= nl & (UNROLL - 1);
-			pdst -= nl & (UNROLL - 1);
+		    psrc -= nl & (UNROLL - 1);
+		    pdst -= nl & (UNROLL - 1);
 
 #define BodyOdd(n) \
 bits = psrc[n-1]; \
@@ -572,36 +561,35 @@ bits1 = *--psrc; --pdst; \
 
 #endif
 
-			PackedLoop
+		    PackedLoop
 
 #undef BodyOdd
 #undef BodyEven
 #undef LoopReset
 
 #else
-			DuffL (nl, label4,
-			    bits1 = BitRight(bits, rightShift);
-			    bits = *--psrc;
-			    --pdst;
-			    *pdst = MROP_SOLID(bits1 | BitLeft(bits, leftShift),*pdst);
-			)
+		    DuffL (nl, label4,
+			bits1 = BitRight(bits, rightShift);
+			bits = *--psrc;
+			--pdst;
+			*pdst = MROP_SOLID(bits1 | BitLeft(bits, leftShift),*pdst);
+		    )
 #endif
 
-			if (startmask)
+		    if (startmask)
+		    {
+			bits1 = BitRight(bits, rightShift);
+			if (BitRight (startmask, leftShift))
 			{
-			    bits1 = BitRight(bits, rightShift);
-			    if (BitRight (startmask, leftShift))
-			    {
-				bits = *--psrc;
-				bits1 |= BitLeft(bits, leftShift);
-			    }
-			    --pdst;
-			    *pdst = MROP_MASK(bits1, *pdst, startmask);
+			    bits = *--psrc;
+			    bits1 |= BitLeft(bits, leftShift);
 			}
+			--pdst;
+			*pdst = MROP_MASK(bits1, *pdst, startmask);
 		    }
 		}
-#endif
 	    }
+#endif
 	}
 	pbox++;
 	pptSrc++;
