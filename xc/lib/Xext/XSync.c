@@ -1,3 +1,4 @@
+/* $XConsortium$ */
 /***********************************************************
 Copyright 1991,1993 by Digital Equipment Corporation, Maynard, Massachusetts,
 the Massachusetts Institute of Technology, Cambridge, Massachusetts,
@@ -22,17 +23,6 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 PERFORMANCE OF THIS SOFTWARE.
 
 ******************************************************************/
-/*
- * @DEC_COPYRIGHT@
- */
-/*
- * HISTORY $Log: XSync.c,v $ Revision 1.1.1.2  1993/05/05  18:00:16
- * Pete_Snider initial rcs submit
- * 
- * 
- * $EndLog$
- */
-
 
 #include <stdio.h>
 #define NEED_EVENTS
