@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: objects.c,v 1.4 91/10/10 11:18:29 rws Exp $ */
 /* Copyright International Business Machines, Corp. 1991
  * All Rights Reserved
  * Copyright Lexmark International, Inc. 1991
@@ -725,7 +725,7 @@ struct xobject *t1_Unique(obj)
        copy...Note also that if the object was not permanent, we must
        consume the old handle! 3-26-91 PNM
        NOTE : consumption of the old handle moved to Allocate. 4-18-91 */
-    if (obj->references == 1)
+    if (!obj || obj->references == 1)
         return(obj);
  
     obj = Copy(obj);
