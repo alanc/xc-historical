@@ -1,4 +1,4 @@
-/* $XConsortium: access.c,v 1.61 93/09/29 18:57:24 gildea Exp $ */
+/* $XConsortium: access.c,v 1.62 93/10/12 09:04:03 rws Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -149,6 +149,18 @@ EnableLocalHost ()
 	LocalHostEnabled = TRUE;
 	AddLocalHosts ();
     }
+}
+
+/*
+ * called when authorization is enabled to keep us secure
+ */
+DisableLocalHost ()
+{
+    HOST *self;
+
+    LocalHostEnabled = FALSE;
+    for (self = selfhosts; self; self = self->next)
+	(void) RemoveHost (NULL, self->family, self->len, self->addr);
 }
 
 /*
