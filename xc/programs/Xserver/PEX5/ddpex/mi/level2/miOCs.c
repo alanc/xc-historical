@@ -1,4 +1,4 @@
-/* $XConsortium: miOCs.c,v 5.2 91/05/01 14:31:44 hersh Exp $ */
+/* $XConsortium: miOCs.c,v 5.3 91/07/22 19:40:15 hersh Exp $ */
 
 
 /***********************************************************
@@ -1078,7 +1078,7 @@ miAddToNameSet(pRend, pOC) /* and RemoveNameFromNameSet */
 {
     miDDContext    *pddc = (miDDContext *)(pRend->pDDContext);
     pexAddToNameSet *pANS = (pexAddToNameSet *)(pOC+1);
-    ddULONG    *pName = (ddULONG *)(pOC + 2);
+    ddULONG    *pName = (ddULONG *)(pANS + 1);
     register int num = (pANS->head.length) - 1;
     ddUSHORT    save_flags = pddc->Dynamic->filter_flags;
     ddBitmask   namesets;
