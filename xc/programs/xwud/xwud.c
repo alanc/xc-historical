@@ -4,7 +4,7 @@
 /* xwud - marginally useful raster image undumper */
 
 #ifndef lint
-static char *rcsid = "$XConsortium: xwud.c,v 1.33 89/12/10 16:54:38 rws Exp $";
+static char *rcsid = "$XConsortium: xwud.c,v 1.34 89/12/10 17:54:58 rws Exp $";
 #endif
 
 #include <X11/Xos.h>
@@ -386,8 +386,11 @@ main(argc, argv)
 	(vinfo.blue_mask == header.blue_mask)) {
 	colormap = XCreateColormap(dpy, RootWindow(dpy, screen), vinfo.visual,
 				   AllocAll);
-	if (ncolors)
+	if (ncolors) {
+	    for (i = 0; i < ncolors; i++)
+		colors[i].flags = DoRed|DoGreen|DoBlue;
 	    XStoreColors(dpy, colormap, colors, ncolors);
+	}
     } else if (std) {
 	colormap = stdmap->colormap;
     } else {
@@ -436,7 +439,7 @@ main(argc, argv)
 	    XParseColor(dpy, colormap, fgname, &color) &&
 	    XAllocColor(dpy, colormap, &color))
 	    gc_val.foreground = color.pixel;
-	else if (ncolors && XAllocColor(dpy, colormap, &colors[1]))
+	else if ((ncolors == 2) && XAllocColor(dpy, colormap, &colors[1]))
 	    gc_val.foreground = colors[1].pixel;
 	else
 	    gc_val.foreground = BlackPixel (dpy, screen);
@@ -444,7 +447,7 @@ main(argc, argv)
 	    XParseColor(dpy, colormap, bgname, &color) &&
 	    XAllocColor(dpy, colormap, &color))
 	    gc_val.background = color.pixel;
-	else if (ncolors && XAllocColor(dpy, colormap, &colors[0]))
+	else if ((ncolors == 2) && XAllocColor(dpy, colormap, &colors[0]))
 	    gc_val.background = colors[0].pixel;
 	else
 	    gc_val.background = WhitePixel (dpy, screen);
@@ -634,6 +637,8 @@ Do_StdGray(dpy, stdmap, ncolors, colors, in_image, out_image)
     }
 }
 
+#define MapVal(val,lim,mult) ((((val * lim) + 32768) / 65535) * mult)
+
 Do_StdCol(dpy, stdmap, ncolors, colors, in_image, out_image)
     Display *dpy;
     XStandardColormap *stdmap;
@@ -645,14 +650,14 @@ Do_StdCol(dpy, stdmap, ncolors, colors, in_image, out_image)
     register XColor *color;
     unsigned limr, limg, limb;
 
-    limr = stdmap->red_max + 1;
-    limg = stdmap->green_max + 1;
-    limb = stdmap->blue_max + 1;
+    limr = stdmap->red_max;
+    limg = stdmap->green_max;
+    limb = stdmap->blue_max;
     for (i = 0, color = colors; i < ncolors; i++, color++)
 	color->pixel = stdmap->base_pixel +
-		       (((color->red * limr) >> 16) * stdmap->red_mult) +
-		       (((color->green * limg) >> 16) * stdmap->green_mult) +
-		       (((color->blue * limb) >> 16) * stdmap->blue_mult);
+		       MapVal(color->red, limr, stdmap->red_mult) +
+		       MapVal(color->green, limg, stdmap->green_mult) +
+		       MapVal(color->blue, limb, stdmap->blue_mult);
     for (y = 0; y < in_image->height; y++) {
 	for (x = 0; x < in_image->width; x++) {
 	    XPutPixel(out_image, x, y,
