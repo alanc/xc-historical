@@ -1,4 +1,4 @@
-/* $XConsortium: Xcmsint.h,v 1.3 91/02/15 18:34:57 dave Exp $ */
+/* $XConsortium: Xcmsint.h,v 1.4 91/02/17 12:58:02 rws Exp $ */
 
 /*
  * (c) Copyright 1990 1991 Tektronix Inc.
@@ -120,7 +120,7 @@ typedef struct _XcmsPerDpyInfo {
  *	DEFINES
  */
 
-#define XDCCC_NUMBER	0x8000000	/* 2**27 per XDCCC */
+#define XDCCC_NUMBER	0x8000000L	/* 2**27 per XDCCC */
 
 typedef struct _IntensityRec {
     unsigned short value;
@@ -152,8 +152,6 @@ typedef struct {
 /*
  *	DEFINES
  */
-
-#define XDCCC_NUMBER	0x8000000L	/* 2**27 per XDCCC */
 
 #define XDCCC_MATRIX_ATOM_NAME	"XDCCC_LINEAR_RGB_MATRICES"
 #define XDCCC_CORRECT_ATOM_NAME "XDCCC_LINEAR_RGB_CORRECTION"
