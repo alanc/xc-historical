@@ -1,5 +1,5 @@
 #ifndef lint
-static char *rcsid_xinit_c = "$XConsortium: xinit.c,v 11.35 89/05/30 18:40:18 rws Exp $";
+static char *rcsid_xinit_c = "$XConsortium: xinit.c,v 11.36 89/05/30 19:01:24 rws Exp $";
 #endif /* lint */
 #include <X11/copyright.h>
 
@@ -7,18 +7,15 @@ static char *rcsid_xinit_c = "$XConsortium: xinit.c,v 11.35 89/05/30 18:40:18 rw
 
 #include <X11/Xos.h>
 #include <X11/Xlib.h>
+#include <X11/Xmu/SysUtil.h>
 #include <stdio.h>
 #include <ctype.h>
 #include <signal.h>
-#include <sys/resource.h>
 #ifndef SYSV
 #include <sys/wait.h>
 #endif
 #include <errno.h>
 extern int sys_nerr;
-#ifdef hpux
-#include <sys/utsname.h>
-#endif
 #include <setjmp.h>
 
 extern char *getenv();
@@ -157,21 +154,7 @@ register char **argv;
 	argc--;
 
 #ifndef UNIXCONN
-#ifdef hpux
-	/* Why not use gethostname()?  Well, at least on my system, I've had to
-	 * make an ugly kernel patch to get a name longer than 8 characters, and
-	 * uname() lets me access to the whole string (it smashes release, you
-	 * see), whereas gethostname() kindly truncates it for me.
-	 */
-	{
-	struct utsname name;
-
-	uname(&name);
-	strcpy(displayname, name.nodename);
-	}
-#else
-	gethostname(displayname, sizeof(displayname));
-#endif
+	(void) XmuGetHostname (displayname, sizeof(displayname));
 #endif /* UNIXCONN */
 	/*
 	 * copy the client args.
