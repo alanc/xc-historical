@@ -1,4 +1,4 @@
-/* $XConsortium: session.c,v 1.12 94/08/25 20:54:15 mor Exp mor $ */
+/* $XConsortium: session.c,v 1.13 94/09/14 18:23:21 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1994  X Consortium
@@ -392,7 +392,7 @@ TWMWinConfigEntry **pentry;
 
 {
     TWMWinConfigEntry *entry;
-    char byte;
+    unsigned char byte;
     int i;
 
     *pentry = entry = (TWMWinConfigEntry *) malloc (
@@ -508,7 +508,7 @@ char *filename;
     FILE *configFile;
     TWMWinConfigEntry *entry;
     int done = 0;
-    short version;
+    unsigned short version;
 
     configFile = fopen (filename, "rb");
     if (!configFile)
@@ -697,7 +697,7 @@ SmPointer clientData;
 	    path = ".";
     }
 
-    filename = tempnam (path, ".twm");
+    filename = (char *) tempnam (path, ".twm");
     configFile = fopen (filename, "wb");
 
     if (!write_ushort (configFile, SAVEFILE_VERSION))
