@@ -1,4 +1,4 @@
-/* $XConsortium: Intrinsic.h,v 1.172 91/07/19 23:20:41 rws Exp $ */
+/* $XConsortium: Intrinsic.h,v 1.173 91/07/21 00:19:04 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -849,7 +849,7 @@ extern void XtRemoveActionHook(
 #endif
 );
 
-extern void XtGetActionTable(
+extern void XtGetActionList(
 #if NeedFunctionPrototypes
     WidgetClass		/* widget_class */,
     XtActionList*	/* actions_return */,
