@@ -1,4 +1,4 @@
-/* $XConsortium: Create.c,v 1.88 92/05/11 12:17:03 converse Exp $ */
+/* $XConsortium: Create.c,v 1.88 92/05/11 16:38:19 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -261,6 +261,17 @@ static Widget _XtCreate(
     req_widget = (Widget) XtStackAlloc(wsize, widget_cache);
     bcopy ((char *) widget, (char *) req_widget, (int) wsize);
     CallInitialize (XtClass(widget), req_widget, widget, args, num_args);
+    if (parent_constraint_class != NULL) {
+	if (csize) {
+	    req_constraints = XtStackAlloc(csize, constraint_cache);
+	    bcopy(widget->core.constraints, (char*)req_constraints,(int)csize);
+	    req_widget->core.constraints = req_constraints;
+	} else req_widget->core.constraints = NULL;
+	CallConstraintInitialize(parent_constraint_class, req_widget, widget,
+				 args, num_args);
+	if (csize) XtStackFree(req_constraints, constraint_cache);
+    }
+    XtStackFree((XtPointer)req_widget, widget_cache);
 
     if (typed_args != NULL) {
 	while (num_typed_args-- > 0) {
@@ -277,21 +288,8 @@ static Widget _XtCreate(
 	    }
 	    typed_args++;
 	}
-
 	DEALLOCATE_LOCAL((char*)args);
     }
-
-    if (parent_constraint_class != NULL) {
-	if (csize) {
-	    req_constraints = XtStackAlloc(csize, constraint_cache);
-	    bcopy(widget->core.constraints, (char*)req_constraints,(int)csize);
-	    req_widget->core.constraints = req_constraints;
-	} else req_widget->core.constraints = NULL;
-	CallConstraintInitialize(parent_constraint_class, req_widget, widget,
-				 args, num_args);
-	if (csize) XtStackFree(req_constraints, constraint_cache);
-    }
-    XtStackFree((XtPointer)req_widget, widget_cache);
     return (widget);
 }
 
