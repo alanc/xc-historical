@@ -1,4 +1,4 @@
-# $XConsortium$
+# $XConsortium: termcap,v 1.5 91/05/23 17:32:59 gildea Exp $
 #
 vs|xterm|vs100|xterm terminal emulator (X Window System):\
 	:AL=\E[%dL:DC=\E[%dP:DL=\E[%dM:DO=\E[%dB:IC=\E[%d@:UP=\E[%dA:\
@@ -13,7 +13,7 @@ vs|xterm|vs100|xterm terminal emulator (X Window System):\
 	:k1=\EOP:k2=\EOQ:k3=\EOR:k4=\EOS:kb=^H:kd=\EOB:ke=\E[?1l\E>:\
 	:kl=\EOD:km:kn#4:kr=\EOC:ks=\E[?1h\E=:ku=\EOA:\
 	:li#65:md=\E[1m:me=\E[m:mr=\E[7m:ms:nd=\E[C:pt:\
-	:sf=\n:so=\E[7m:se=\E[m:sr=\EM:\
+	:sc=\E7:rc=\E8:sf=\n:so=\E[7m:se=\E[m:sr=\EM:\
 	:te=\E[2J\E[?47l\E8:ti=\E7\E[?47h:\
 	:up=\E[A:us=\E[4m:ue=\E[m:xn:
 v2|xterms|vs100s|xterm terminal emulator, small window (X Window System):\
