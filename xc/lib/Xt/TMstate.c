@@ -1,4 +1,4 @@
-/* $XConsortium: TMstate.c,v 1.143 91/04/15 19:33:09 converse Exp $ */
+/* $XConsortium: TMstate.c,v 1.144 91/04/29 12:03:22 converse Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -1029,7 +1029,7 @@ static StatePtr NewState(stateTree, typeIndex, modIndex)
  */
 void _XtTraverseStateTree(tree, func, data)
     TMStateTree	tree;
-    Boolean 	(*func)();
+    _XtTraversalProc func;
     XtPointer 	data;
 {
     register 	TMComplexStateTree stateTree = (TMComplexStateTree)tree;
