@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: WaitFor.c,v 1.66 93/09/26 21:14:57 rws Exp $ */
+/* $XConsortium: WaitFor.c,v 1.1 94/01/19 15:57:00 rob Exp $ */
 
 /*****************************************************************
  * OS Dependent input routines:
@@ -48,6 +48,7 @@ extern int errno;
 #include "dixstruct.h"
 #include "opaque.h"
 
+#ifndef XTHREADS
 extern FdSet AllSockets;
 extern FdSet AllClients;
 extern FdSet LastSelectMask;
@@ -81,6 +82,7 @@ static FdSet LastWriteMask;
  */
 extern int playback_on;
 #endif /* XTESTEXT1 */
+#endif /* not XTHREADS */
 
 struct _OsTimerRec {
     OsTimerPtr		next;
@@ -92,6 +94,7 @@ struct _OsTimerRec {
 static void DoTimer();
 static OsTimerPtr timers;
 
+#ifndef XTHREADS
 /*****************
  * WaitForSomething:
  *     Make the server suspend until there is
@@ -344,6 +347,7 @@ ANYSET(src)
     return (FALSE);
 }
 #endif
+#endif /* not XTHREADS */
 
 static void
 DoTimer(timer, now, prev)
