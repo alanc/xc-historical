@@ -1,4 +1,4 @@
-/* $XConsortium: constrain.c,v 1.1 93/10/26 10:05:39 rws Exp $ */
+/* $XConsortium: constrain.c,v 1.2 93/10/27 21:52:00 rws Exp $ */
 
 /**** module constrain.c ****/
 /******************************************************************************
@@ -53,7 +53,7 @@ terms and conditions:
 
 static XiePhotomap XIEPhotomap;
 static XiePhotomap XIEPhotomap2;
-static int flo_notify, flo_id;
+static int flo_notify;
 static XiePhotoElement *flograph;
 static XiePhotoflo flo;
 static int flo_elements;
