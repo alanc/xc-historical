@@ -1,4 +1,4 @@
-/* $XConsortium: process.c,v 1.6 93/09/08 20:50:37 mor Exp $ */
+/* $XConsortium: process.c,v 1.7 93/09/10 14:12:54 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -215,7 +215,10 @@ IceReplyWaitInfo *replyWait;
      * replyWait list if it is ready.
      */
 
-    return (_IceCheckReplyReady (iceConn, replyWait));
+    if (replyWait)
+	return (_IceCheckReplyReady (iceConn, replyWait));
+    else
+	return (False);
 }
 
 
@@ -1036,6 +1039,14 @@ Bool		swap;
 		        my_version_index].minor_version,
 		    iceConn->protosetup_to_me->his_vendor,
 		    iceConn->protosetup_to_me->his_release);
+
+		/*
+		 * Set vendor and release pointers to NULL, so it won't
+		 * get freed below.  The ProtocolSetupNotifyCB should free it.
+		 */
+
+		iceConn->protosetup_to_me->his_vendor = NULL;
+		iceConn->protosetup_to_me->his_release = NULL;
 	    }
 	}
 	else if (status == IceACLauthRejected)
@@ -1051,8 +1062,10 @@ Bool		swap;
 
 	if (free_setup_info)
 	{
-	    free (iceConn->protosetup_to_me->his_vendor);
-	    free (iceConn->protosetup_to_me->his_release);
+	    if (iceConn->protosetup_to_me->his_vendor)
+		free (iceConn->protosetup_to_me->his_vendor);
+	    if (iceConn->protosetup_to_me->his_release)
+		free (iceConn->protosetup_to_me->his_release);
 	    free ((char *) iceConn->protosetup_to_me);
 	    iceConn->protosetup_to_me = NULL;
 	}
@@ -1486,6 +1499,8 @@ Bool			swap;
 		myProtocol->version_recs[myVersionIndex].major_version,
 		myProtocol->version_recs[myVersionIndex].minor_version,
 	        vendor, release);
+
+	    vendor = release = NULL;   /* so we don't free it */
 	}
     }
 
