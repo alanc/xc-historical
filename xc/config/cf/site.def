@@ -1,4 +1,4 @@
-XCOMM site:  $XConsortium: site.def,v 1.88 93/09/29 18:03:18 rws Exp $
+XCOMM site:  $XConsortium: site.def,v 1.89 93/09/30 15:43:11 rws Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -93,7 +93,6 @@ XCOMM #define HasGcc2 YES
 
 #define XmanLocalSearchPath /usr/local/man
 #define ManPath XmanLocalSearchPath
-#define HasMITGXSource YES
 #define HasXdmAuth YES
 
 #if defined(UltrixArchitecture) && defined(MipsArchitecture)
