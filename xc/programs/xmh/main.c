@@ -1,5 +1,4 @@
-/*
- * $XConsortium: main.c,v 2.20 91/07/02 17:37:17 converse Exp $
+/* $XConsortium: main.c,v 2.21 91/07/10 19:43:04 converse Exp $
  *
  *
  *		       COPYRIGHT 1987, 1989
@@ -120,9 +119,6 @@ char **argv;
     }
 #ifdef DEBUG_CLEANUP
     XtDestroyApplicationContext(appCtx);
-#ifdef XTTRACEMEMORY
-    _XtPrintMemory("/tmp/xmh.mem");	/* not a standard Xt interface */
-#endif
     exit(0);
 #endif    
 }
