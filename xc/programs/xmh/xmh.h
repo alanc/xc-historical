@@ -100,7 +100,7 @@ typedef struct _ScrnRec {
    Pick		pick;		/* Pick in this screen. */
 #ifdef X11
    XWMHints	hints;		/* Record of hints to window manager. */
-#endif X11
+#endif  /* X11 */
 } ScrnRec, *Scrn;
 
 
@@ -124,4 +124,4 @@ typedef struct {
 #include "msg.h"
 #include "toc.h"
 
-#endif _xmh_h
+#endif /* _xmh_h */
