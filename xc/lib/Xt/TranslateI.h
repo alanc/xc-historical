@@ -1,4 +1,4 @@
-/* $XConsortium: TranslateI.h,v 1.8 89/09/26 18:05:39 swick Exp $ */
+/* $XConsortium: TranslateI.h,v 1.9 89/09/28 11:59:17 swick Exp $ */
 /* $oHeader: TranslateI.h,v 1.2 88/08/18 15:56:37 asente Exp $ */
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -161,6 +161,7 @@ typedef struct _ActionHookRec {
 
 typedef struct _TMContext {
     XEvent *event;
+    unsigned long serial;
     KeySym keysym;
     Modifiers modifiers;
 } TMContextRec, *TMContext;
