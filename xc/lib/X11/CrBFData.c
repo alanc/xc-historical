@@ -4,9 +4,9 @@
 #include "Xlib.h"
 
 /*
- * MakeBitmap: Routine to make a pixmap from user supplied data.
- *             D is the window the pixmap will be used in (i.e, where
- *             to get depth from).  Data is a pointer to the bit data, and
+ * XCreateBitmapFromData: Routine to make a pixmap of depth 1 from user supplied data.
+ *             D is any drawable on the same screen that the pixmap will be used in.
+ *             Data is a pointer to the bit data, and 
  *             width & height give the size in bits of the pixmap.
  *
  * The following format is assumed for data:
