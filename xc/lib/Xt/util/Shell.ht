@@ -1,4 +1,4 @@
-/* $XConsortium: Shell.h,v 1.32 94/04/17 20:14:49 kaleb Exp kaleb $ */
+/* $XConsortium: Shell.ht,v 1.33 95/05/05 17:44:08 kaleb Exp kaleb $ */
 
 /***********************************************************
 
@@ -62,7 +62,19 @@ SOFTWARE.
  * Shell-specific resources names, classes, and a representation type.
  */
 
-STRING_TABLE_GOES_HERE
+#ifndef XTSTRINGDEFINES
+#ifdef __STDC__
+#define _XtShell_h_Const const
+#else
+#define _XtShell_h_Const /**/
+#endif
+#endif
+
+<<<STRING_TABLE_GOES_HERE>>>
+
+#ifndef XTSTRINGDEFINES
+#undef _XtShell_h_Const
+#endif
 
 /* Class record constants */
 
