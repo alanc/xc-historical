@@ -1,7 +1,7 @@
 /*
  * authorization hooks for the server
  *
- * $XConsortium: auth.c,v 1.9 91/02/11 18:33:49 keith Exp $
+ * $XConsortium: auth.c,v 1.10 91/02/28 09:35:56 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -175,6 +175,10 @@ ResetAuthorization ()
 
 XID
 AuthorizationToID (name_length, name, data_length, data)
+unsigned short	name_length;
+char	*name;
+unsigned short	data_length;
+char	*data;
 {
     int	i;
 
