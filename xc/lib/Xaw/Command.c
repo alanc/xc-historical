@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Command.c,v 1.55 89/09/25 13:05:22 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Command.c,v 1.56 89/09/29 15:13:42 swick Exp $";
 #endif /* lint */
 
 /***********************************************************
@@ -650,10 +650,14 @@ static ShapeError(w)
 		   );
 }
 
-static void Realize(w)
+static void Realize(w, valueMask, attributes)
     Widget w;
+    Mask *valueMask;
+    XSetWindowAttributes *attributes;
 {
-    (*commandWidgetClass->core_class.superclass->core_class.realize)(w);
+    (*commandWidgetClass->core_class.superclass->core_class.realize)
+	(w, valueMask, attributes);
+
     switch (((CommandWidget)w)->command.shape_style) {
       case XawShapeRectangular:
 	break;
