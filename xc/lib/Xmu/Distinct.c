@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: Distinct.c,v 1.0 90/09/27 19:18:11 rws Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -77,7 +77,7 @@ XmuDistinguishablePixels (dpy, cmap, pixels, count)
     for (i = 0; i < count; i++)
 	defs[i].pixel = pixels[i];
     XQueryColors (dpy, cmap, defs, count);
-    ret = XmuDistinguishableColors (count, defs);
+    ret = XmuDistinguishableColors (defs, count);
     free ((char *) defs);
     return ret;
 }
