@@ -1,5 +1,5 @@
 /*
- * $XConsortium: charproc.c,v 1.155 91/05/04 19:54:56 gildea Exp $
+ * $XConsortium: charproc.c,v 1.156 91/05/04 21:42:58 gildea Exp $
  */
 
 /*
@@ -2229,9 +2229,9 @@ Widget w;
 
 /*ARGSUSED*/
 static void VTRealize (w, valuemask, values)
-Widget w;
-XtValueMask *valuemask;
-XSetWindowAttributes *values;
+    Widget w;
+    XtValueMask *valuemask;
+    XSetWindowAttributes *values;
 {
 	unsigned int width, height;
 	register TScreen *screen = &term->screen;
@@ -2271,8 +2271,8 @@ XSetWindowAttributes *values;
 			  screen->mousecolor, screen->mousecolorback);
 
 	scrollbar_width = (term->misc.scrollbar ?
-			   screen->scrollWidget->core.width : 0);
-
+			   screen->scrollWidget->core.width /* +
+			   screen->scrollWidget->core.border_width */ : 0);
 
 	/* set defaults */
 	xpos = 1; ypos = 1; width = 80; height = 24;
@@ -3015,7 +3015,8 @@ update_font_info (screen, doresize)
     screen->fullVwin.f_height = (screen->fnt_norm->ascent +
 				 screen->fnt_norm->descent);
     scrollbar_width = (term->misc.scrollbar ? 
-		       screen->scrollWidget->core.width : 0);
+		       screen->scrollWidget->core.width +
+		       screen->scrollWidget->core.border_width : 0);
     i = 2 * screen->border + scrollbar_width;
     j = 2 * screen->border;
     width = (screen->max_col + 1) * screen->fullVwin.f_width + i;
