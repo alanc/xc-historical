@@ -1,4 +1,4 @@
-/* $XConsortium: windowstr.h,v 5.14 92/02/13 15:54:18 keith Exp $ */
+/* $XConsortium: windowstr.h,v 5.15 92/07/23 10:15:24 rws Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -104,6 +104,7 @@ typedef struct _Window {
     unsigned		realized:1;	/* ancestors are all mapped */
     unsigned		viewable:1;	/* realized && InputOutput */
     unsigned		dontPropagate:3;/* index into DontPropagateMasks */
+    unsigned		forcedBS:1;	/* system-supplied backingStore */
     DevUnion		*devPrivates;
 } WindowRec;
 
