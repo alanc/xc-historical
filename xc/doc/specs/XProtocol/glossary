@@ -201,9 +201,11 @@ but no inferior contains the pointer.
 \fBCoordinate system\fP
 .IN "Coordinate system" "" "@DEF@"
 .IP
-The coordinate system has X horizontal and Y vertical, 
+The coordinate system has the X axis horizontal and the Y axis vertical, 
 with the origin [0, 0] at the upper left.
-Coordinates are integral and coincide with pixel centers.
+Coordinates are integral,
+in terms of pixels,
+and coincide with pixel centers.
 Each window and pixmap has its own coordinate system.
 For a window, 
 the origin is inside the border at the inside upper left.
