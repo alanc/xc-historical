@@ -1,8 +1,4 @@
-/* $Header: Xresource.h,v 1.2 87/11/18 13:35:56 swick Locked $ */
-/* $Header: Xresource.h,v 1.2 87/11/18 13:35:56 swick Locked $ */
-/*
- *	sccsid:	%W%	%G%
- */
+/* $Header: Xresource.h,v 1.3 87/11/19 14:28:46 swick Locked $ */
 
 /*
  * Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
@@ -91,7 +87,7 @@ extern void XrmStringToQuarkList(); /* name, quarks */
 
 extern XrmQuarkList XrmNewQuarkList();
 
-extern XrmQuarkList XrmFreeQuarkList(); /* list */
+extern void XrmFreeQuarkList(); /* list */
     /* XrmQuarkList list; */
 
 extern int XrmQuarkListLength(); /* list */
@@ -183,7 +179,7 @@ extern void XrmGetSearchList(); /* rdb, names, classes, searchList */
     /* XrmResourceDataBase rdb	    */
     /* XrmNameList   names;		    */
     /* XrmClassList  classes;		    */
-    /* SearchList   searchList;   /* RETURN */
+    /* SearchList   searchList;   * RETURN */
 
 extern void XrmGetSearchResource();
 /* screen, searchList, name, class, type, pVal */
@@ -192,7 +188,7 @@ extern void XrmGetSearchResource();
     /* XrmName       name;		    */
     /* XrmClass      class;		    */
     /* XrmAtom       type;		    */
-    /* XrmValue     *pVal;        /* RETURN */
+    /* XrmValue     *pVal;        * RETURN */
 
 /****************************************************************
  *
@@ -242,7 +238,7 @@ typedef struct {
     caddr_t     value;		/* Value to provide if XrmoptionNoArg    */
 } XrmOptionDescRec, *XrmOptionDescList;
 
-extern void XrmParseCommand(); /* table, prependName, argc, argv */
+extern void XrmParseCommand(); /* rdb, table, tableCount, prependName, argc, argv */
     /* XrmResourceDataBase *rdb;*/
     /* XrmOptionDescList   table;					    */
     /* int		tableCount;					    */
