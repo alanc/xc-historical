@@ -29,7 +29,7 @@
  */
 
 #ifndef lint
-static char *rcsid_xwd_c = "$Header: xwd.c,v 1.2 87/05/18 13:02:17 dkk Locked $";
+static char *rcsid_xwd_c = "$Header: xwd.c,v 1.3 87/05/18 18:20:30 dkk Locked $";
 #endif
 
 #include <X11/X.h>
@@ -61,6 +61,8 @@ char *calloc();
 
 #define FEEP_VOLUME 0
 
+#define DONT_KNOW_YET 17
+
 
 extern int errno;
 
@@ -82,12 +84,16 @@ main(argc, argv)
     int ncolors = 0;
     int pointer_mode, keyboard_mode;
     int screen;
+    int depth;
     int format;
+    int offset;
+    int width, height;
     long plane_mask;
     char *str_index;
     char *file_name;
     char display[256];
     char *win_name;
+    char *data;
     Bool nobdrs = False;
     Bool debug = False;
     Bool standard_out = True;
@@ -103,7 +109,9 @@ main(argc, argv)
     Window confine_to;
     Window rootwin;
     XWindowAttributes win_info;
+    Visual *visual;
     Drawable image_win;
+    XImage *image;
     Cursor cursor;
     XButtonEvent rep;
 
@@ -112,6 +120,8 @@ main(argc, argv)
     FILE *out_file = stdout;
 
     pointer_mode = keyboard_mode = GrabModeSync;
+
+/*    *bcolor = *scolor = DONT_KNOW_YET    %%*/
 
     for (i = 1; i < argc; i++) {
 	str_index = (char *)index (argv[i], ':');
@@ -184,13 +194,14 @@ main(argc, argv)
      */
     if(DisplayPlanes(dpy, screen) == 1) {
         pixmap_format = XYPixmap;
-	format = Bitmap;
+	format = XYBitmap;
     }
     else {
-            format = XYPixmap;              /*  INCOMPLETE  %%*/
+            format = XYPixmap;
 	if(pixmap_format != XYPixmap) {
 	    pixmap_format = ZPixmap;
 	    format = ZPixmap;
+	  }
     }
 
     /*
@@ -234,7 +245,7 @@ main(argc, argv)
 
     /*
      * Calculate the virtual x, y, width and height of the window pane image
-     * (this depends on wether or not the borders are included.
+     * (this depends on whether or not the borders are included.
      */
     if (nobdrs) {
 	if (debug) fprintf(stderr,"xwd: Image without borders selected.\n");
@@ -283,25 +294,41 @@ main(argc, argv)
     /*
      * Calloc the buffer.
      */
-    if (debug) fprintf(stderr,"xwd: Calloc'ing data buffer.\n");
+/*  if (debug) fprintf(stderr,"xwd: Calloc'ing data buffer.\n");
     if((buffer = calloc(buffer_size , 1)) == NULL)
        Error("Can't calloc data buffer.");
-
+ %%*/
     /*
      * Snarf the pixmap out of the frame buffer.
      * Color windows get snarfed in Z format first to check the color
      * map allocations before resnarfing if XY format selected.
      */
+
+    visual = DefaultVisual(dpy, screen);
+    depth = DefaultDepth(dpy, screen);
+    offset = virt_x;
+    width = virt_width;
+    height = virt_height;
+
+    image = XCreateImage ( dpy, visual, depth, format, offset,
+			   data, width, height);
+
+/*    XGetImage ( dpy, image_win, virt_x, virt_y, width, height, 
+	       plane_mask, format);
+ %%*/
+
     if (debug) fprintf(stderr,"xwd: Getting pixmap.\n");
-    if (DisplayPlanes(dpy, screen) == 1) {
+
+/*    if (DisplayPlanes(dpy, screen) == 1) {
 	(void) XGetImage(
 	    dpy, image_win,
 	    virt_x, virt_y,
 	    virt_width, virt_height,
 	    plane_mask,
 	    format
+ %%*/
 /*	    (short *)buffer  %%*/
-	);
+/*	);
     }
     else {
 	(void) XPixmapGetZ(
@@ -311,19 +338,20 @@ main(argc, argv)
 	    (caddr_t)buffer
 	);
     }
-
+ %%*/
     /*
      * Find the number of colors used, then write them out to the file.
      */
     ncolors = 0;
-    if(DisplayPlanes(dpy, screen) > 1) {
+/*  if(DisplayPlanes(dpy, screen) > 1) {
 	if(DisplayPlanes(dpy, screen) < 9) {
 	    histbuffer = (int *)calloc(256, sizeof(int));
 	    bzero(histbuffer, 256*sizeof(int));
 	    pixcolors = (XColor *)calloc(1, sizeof(XColor));
 	    for(i=0; i<buffer_size; i++) {
+ %%*/
 		/* if previously found, skip color query */
-		if(histbuffer[(int)buffer[i]] == 0) {
+/*		if(histbuffer[(int)buffer[i]] == 0) {
 		    pixcolors = 
 		      (XColor *)realloc(pixcolors, sizeof(XColor)*(++ncolors));
 		    if(debug)
@@ -346,7 +374,9 @@ main(argc, argv)
 	    bzero(histbuffer, 65536*sizeof(int));
 	    pixcolors = (XColor *)calloc(1, sizeof(XColor));
 	    for(i=0; i<(buffer_size/sizeof(u_short)); i++) {
+ %%*/
 		/* if previously found, skip color query */
+/*
 		if(histbuffer[(int)wbuffer[i]] == 0) {
 		    pixcolors = 
 		      (XColor *)realloc(pixcolors, sizeof(XColor)*(++ncolors));
@@ -364,25 +394,30 @@ main(argc, argv)
 		}
 	    }
 	} 
-	else if(DisplayPlanes(dpy, screen) > 16)
+ %%*/
+/*	else %%*/  
+if(DisplayPlanes(dpy, screen) > 16)
 	  Error("Unable to handle more than 16 planes at this time");
 
 	/* reread in XY format if necessary */
-	if(pixmap_format == XYPixmap) {
+/*	if(pixmap_format == XYPixmap) {
 	    (void) XPixmapGetXY(image_win,
 				virt_x, virt_y,
 				virt_width, virt_height,
 				(short *)buffer);
 	}
+ %%*/
 
 	free(histbuffer);
-    }
+/*
+ * }
+ %%*/    
 
     /*
      * Inform the user that the image has been retrieved.
      */
-    XBell(FEEP_VOLUME);
-    XBell(FEEP_VOLUME);
+    XBell(dpy, FEEP_VOLUME);
+    XBell(dpy, FEEP_VOLUME);
     XFlush();
 
     /*
