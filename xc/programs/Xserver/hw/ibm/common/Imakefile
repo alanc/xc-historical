@@ -119,15 +119,12 @@ NormalLibraryObjectRule()
 
 all::	$(OBJS)
 NormalRelocatableTarget(ibmcomm,$(LIBOBJS))
-NormalLibraryTarget(ibmalloc,$(ALLOCOBJS))
 
 #if ProfileServer
 ProfiledRelocatableTarget(ibmcomm,$(LIBOBJS))
-ProfiledLibraryTarget(ibmalloc,$(ALLOCOBJS))
 #endif
 #if DebugServer
 DebuggedRelocatableTarget(ibmcomm,$(LIBOBJS))
-DebuggedLibraryTarget(ibmalloc,$(ALLOCOBJS))
 #endif
 
 DependTarget()
@@ -154,5 +151,3 @@ ibmScreen.o ibmInit.o ibmIO.o ibmUtils.o:	Imakefile
 
 LintLibraryTarget(ibmcomm,$(SRCS))
 NormalLintTarget($(SRCS))
-
-LintLibraryTarget(ibmalloc,$(ALLOCSRCS))
