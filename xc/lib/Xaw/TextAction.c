@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: TextAction.c,v 1.28 90/04/17 17:02:53 kit Exp $";
+static char Xrcsid[] = "$XConsortium: TextAction.c,v 1.29 90/04/18 14:17:15 kit Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -1200,8 +1200,6 @@ XawTextPosition from, to;
     endPos=SrcScan(src, startPos, XawstEOL, XawsdRight, 1, FALSE);
 
     temp=SrcScan(src, endPos, XawstWhiteSpace, XawsdLeft, 1, FALSE);
-    if (temp == endPos)
-	temp=SrcScan(src, endPos, XawstWhiteSpace, XawsdRight, 2, FALSE);
     temp=SrcScan(src, temp, XawstWhiteSpace, XawsdRight, 1, FALSE);
 
     if (temp > startPos)
@@ -1221,9 +1219,6 @@ XawTextPosition from, to;
 
       periodPos= SrcScan(src, endPos, XawstPositions, XawsdLeft, 1, TRUE);
       next_word = SrcScan(src, endPos, XawstWhiteSpace, XawsdRight, 1, FALSE);
-      if (next_word == endPos)
-	  next_word = SrcScan(src, endPos, 
-			      XawstWhiteSpace, XawsdRight, 2, FALSE);	  
 
       len = next_word - periodPos;
 
@@ -1286,9 +1281,6 @@ XawTextPosition from, to;
 
     eol = SrcScan(ctx->text.source, eol, XawstPositions, XawsdLeft, 1, TRUE);
     space= SrcScan(ctx->text.source, eol, XawstWhiteSpace, XawsdRight, 1,TRUE);
-    if (space == eol) 
-	space = SrcScan(ctx->text.source, eol, 
-			XawstWhiteSpace, XawsdRight, 2, TRUE);	
     
     startPos = endPos = eol;
     if (eol == space) 

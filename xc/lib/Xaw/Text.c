@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: Text.c,v 1.141 90/04/17 14:41:12 kit Exp $";
+static char Xrcsid[] = "$XConsortium: Text.c,v 1.142 90/04/17 18:10:45 kit Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -1997,14 +1997,15 @@ Boolean motion;
     }
       
     ctx->text.origSel.type = ctx->text.s.type;
+
     if (pos >= ctx->text.s.left + ((ctx->text.s.right - ctx->text.s.left) / 2))
-      ctx->text.extendDir = XawsdRight;
+	ctx->text.extendDir = XawsdRight;
     else
-      ctx->text.extendDir = XawsdLeft;
+	ctx->text.extendDir = XawsdLeft;
   }
   else /* check for change in extend direction */
-    if ((ctx->text.extendDir == XawsdRight && pos < ctx->text.origSel.left) ||
-	(ctx->text.extendDir == XawsdLeft && pos > ctx->text.origSel.right)) {
+    if ((ctx->text.extendDir == XawsdRight && pos <= ctx->text.origSel.left) ||
+	(ctx->text.extendDir == XawsdLeft && pos >= ctx->text.origSel.right)) {
       ctx->text.extendDir = (ctx->text.extendDir == XawsdRight) ?
 	                                            XawsdLeft : XawsdRight;
       ModifySelection(ctx, ctx->text.origSel.left, ctx->text.origSel.right);
@@ -2013,13 +2014,42 @@ Boolean motion;
   dir = ctx->text.extendDir;
   switch (ctx->text.s.type) {
   case XawselectWord: 
-    pos = SrcScan(ctx->text.source, pos, XawstWhiteSpace, dir, 1, FALSE);
+  case XawselectParagraph:
+    {
+      XawTextPosition left_pos, right_pos;
+      XawTextScanType stype;
+
+      if (ctx->text.s.type == XawselectWord)
+        stype = XawstWhiteSpace;
+      else
+	stype = XawstParagraph;
+
+      /*
+       * Somewhat complicated, but basically I treat the space between
+       * two objects as another object.  The object that I am currently
+       * in then becomes the end of the selection.
+       * 
+       * Chris Peterson - 4/19/90.
+       */
+
+      right_pos = SrcScan(ctx->text.source, pos, stype, XawsdRight, 1, FALSE);
+      right_pos =SrcScan(ctx->text.source, right_pos,stype,XawsdLeft,1, FALSE);
+
+      if (pos != right_pos) 
+	left_pos = SrcScan(ctx->text.source, pos, stype, XawsdLeft, 1, FALSE);
+      else
+	left_pos = pos;
+
+      left_pos =SrcScan(ctx->text.source, left_pos, stype, XawsdRight,1,FALSE);
+
+      if (dir == XawsdLeft)
+	pos = Min(left_pos, right_pos);
+      else /* dir == XawsdRight */
+	pos = Max(left_pos, right_pos);
+    }
     break;
   case XawselectLine:
     pos = SrcScan(ctx->text.source, pos, XawstEOL, dir, 1, dir == XawsdRight);
-    break;
-  case XawselectParagraph:
-    pos = SrcScan(ctx->text.source, pos, XawstParagraph, dir, 1, FALSE);
     break;
   case XawselectAll: 
     pos = ctx->text.insertPos;
@@ -2028,7 +2058,7 @@ Boolean motion;
     break;
   }
   
-  if (ctx->text.extendDir == XawsdRight)
+  if (dir == XawsdRight)
     ModifySelection(ctx, ctx->text.s.left, pos);
   else
     ModifySelection(ctx, pos, ctx->text.s.right);
