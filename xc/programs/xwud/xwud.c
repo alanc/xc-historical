@@ -1,4 +1,4 @@
-/* $XConsortium: xwud.c,v 1.47 91/07/14 13:51:36 rws Exp $ */
+/* $XConsortium: xwud.c,v 1.48 91/07/25 18:02:05 rws Exp $ */
 /* Copyright 1985, 1986, 1988 Massachusetts Institute of Technology */
 
 /*
@@ -31,6 +31,7 @@ extern char *malloc();
 unsigned Image_Size();
 Atom wm_protocols;
 Atom wm_delete_window;
+int split;
 
 char *progname;
 
@@ -162,6 +163,10 @@ main(argc, argv)
 	}
 	if (strcmp(argv[i], "-rv") == 0) {
 	    inverse = True;
+	    continue;
+	}
+	if (strcmp(argv[i], "-split") == 0) {
+	    split = True;
 	    continue;
 	}
 	if (strcmp(argv[i], "-std") == 0) {
@@ -595,12 +600,39 @@ main(argc, argv)
 		    expose->width = out_image->width - expose->x;
 		if ((out_image->height - expose->y) < expose->height)
 		    expose->height = out_image->height - expose->y;
-		XPutImage(dpy, image_win, gc, out_image,
-			  expose->x, expose->y, expose->x, expose->y,
+		putImage(dpy, image_win, gc, out_image,
+			  expose->x, expose->y,
 			  expose->width, expose->height);
 	    }
 	    break;
 	}
+    }
+}
+
+putImage (dpy, image_win, gc, out_image, x, y, w, h)
+    Display	*dpy;
+    Window	image_win;
+    GC		gc;
+    XImage	*out_image;
+    int		x, y, w, h;
+{
+#define SPLIT_SIZE  100
+    int	t_x, t_y, t_w, t_h;
+    if (split) {
+    	for (t_y = y; t_y < y + h; t_y += t_h) {
+    	    t_h = SPLIT_SIZE;
+    	    if (t_y + t_h > y + h)
+	    	t_h = y + h - t_y;
+    	    for (t_x = x; t_x < x + w; t_x += t_w) {
+	    	t_w = SPLIT_SIZE;
+	    	if (t_x + t_w > x + w)
+	    	    t_w = x + w - t_x;
+	    	XPutImage(dpy, image_win, gc, out_image,
+		      	  t_x, t_y, t_x, t_y, t_w, t_h);
+    	    }
+    	}
+    } else {
+	XPutImage (dpy, image_win, gc, out_image, x, y, x, y, w, h);
     }
 }
 
