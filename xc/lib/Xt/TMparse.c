@@ -1,4 +1,4 @@
-/* $XConsortium: TMparse.c,v 1.106 91/03/28 15:42:20 rws Exp $ */
+/* $XConsortium: TMparse.c,v 1.107 91/04/19 19:02:48 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -649,7 +649,7 @@ static String FetchModifierToken(str,modStr)
     }
     str = ScanIdent(str);
     if (start != str) {
-         (void) strncpy(modStr, start, str-start);
+	 bcopy(start, modStr, str-start);
           modStr[str-start] = '\0';
           return str;
     }
@@ -750,7 +750,7 @@ static String ParseXtEventType(str, event, tmEventP,error)
     char eventTypeStr[100];
 
     str = ScanAlphanumeric(str);
-    (void) strncpy(eventTypeStr, start, str-start);
+    bcopy(start, eventTypeStr, str-start);
     eventTypeStr[str-start] = '\0';
     *tmEventP = LookupTMEventType(eventTypeStr,error);
     if (*error) 
@@ -959,7 +959,7 @@ static String ParseKeySym(str, closure, event,error)
                 && *str != '\n'
                 && (*str != '(' || *(str+1) <= '0' || *(str+1) >= '9')
 		&& *str != '\0') str++;
-	(void) strncpy(keySymName, start, str-start);
+	bcopy(start, keySymName, str-start);
 	keySymName[str-start] = '\0';
 	event->event.eventCode = StringToKeySym(keySymName, error);
 	event->event.eventCodeMask = ~0L;
@@ -999,7 +999,7 @@ static String ParseTable(str, closure, event,error)
 	*error = TRUE;
 	return str;
     }
-    (void) strncpy(tableSymName, start, str-start);
+    bcopy(start, tableSymName, str-start);
     tableSymName[str-start] = '\0';
     if (! _XtLookupTableSym((NameValueTable)closure, tableSymName, 
             (Value *)&event->event.eventCode)) {
@@ -1054,7 +1054,7 @@ static String ParseAtom(str, closure, event,error)
 	    *error = TRUE;
 	    return str;
 	}
-	(void) strncpy(atomName, start, str-start);
+	bcopy(start, atomName, str-start);
 	atomName[str-start] = '\0';
 	event->event.eventCode = XrmStringToQuark(atomName);
 	event->event.eventCodeMask = ~0L;
@@ -1464,7 +1464,7 @@ static String ParseRepeat(str, eventP, actionsP)
 	str = ScanNumeric(str);
 	len = (str - start);
 	if (len < sizeof repStr) {
-	    (void) strncpy (repStr, start, len);
+	    bcopy(start, repStr, len);
 	    repStr[len] = '\0';
 	    reps = StrToNum(repStr);
 	} else {
@@ -1592,7 +1592,7 @@ static String ParseActionProc(str, actionProcNameP, error)
 	*error = TRUE;
 	return str;
     }
-    (void) strncpy(procName, start, str-start);
+    bcopy(start, procName, str-start);
     procName[str-start] = '\0';
     *actionProcNameP = XrmStringToQuark( procName );
     return str;
@@ -1609,7 +1609,8 @@ static String ParseString(str, strP)
 	str++;
 	start = str;
 	while (*str != '"' && *str != '\0') str++;
-	*strP = strncpy(XtMalloc((unsigned)(str-start+1)), start, str-start);
+	*strP = XtMalloc((unsigned)(str-start+1));
+	bcopy(start, *strP, str-start);
 	(*strP)[str-start] = '\0';
 	if (*str == '"') str++; else
             XtWarningMsg(XtNtranslationParseError,"parseString",
@@ -1624,7 +1625,8 @@ static String ParseString(str, strP)
 		&& *str != ')'
                 && *str != '\n'
 		&& *str != '\0') str++;
-	*strP = strncpy(XtMalloc((unsigned)(str-start+1)), start, str-start);
+	*strP = XtMalloc((unsigned)(str-start+1));
+	bcopy(start, *strP, str-start);
 	(*strP)[str-start] = '\0';
     }
     return str;
@@ -1884,11 +1886,13 @@ static String CheckForPoundSign(str, defaultOp, actualOpRtn)
     opType = defaultOp;
     str = ScanWhitespace(str);
     if (*str == '#') {
+	int len;
 	str++;
 	start = str;
 	str = ScanIdent(str);
-	(void) strncpy(operation, start, MIN(20, str-start));
-	operation[str-start] = '\0';
+	len = MIN(19, str-start);
+	bcopy(start, operation, len);
+	operation[len] = '\0';
 	if (!strcmp(operation,"replace"))
 	  opType = XtTableReplace;
 	else if (!strcmp(operation,"augment"))
