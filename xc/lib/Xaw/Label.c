@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Label.c,v 1.51 88/09/06 16:35:28 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Label.c,v 1.52 88/09/06 16:41:39 jim Exp $";
 #endif lint
 
 
@@ -167,7 +167,7 @@ static void GetgrayGC(lw)
 
     lw->label.gray_GC = XtGetGC(
 	(Widget)lw, 
-	(unsigned) GCForeground | GCFont | GCTile | GCFillStyle, 
+	(unsigned) GCForeground | GCFont | GCTile | GCFillStyle,
 	&values);
 }
 
@@ -228,43 +228,92 @@ static void Redisplay(w, event, region)
     Region region;
 {
    LabelWidget lw = (LabelWidget) w;
+   GC gc;
 
+   if (XRectInRegion(region, lw->label.label_x, lw->label.label_y,
+		     lw->label.label_width, lw->label.label_height)
+	     == RectangleOut)
+       return;
+
+   gc = XtIsSensitive(lw) ? lw->label.normal_GC : lw->label.gray_GC;
+   XSetRegion(XtDisplay(w), gc, region);
    XDrawString(
-	XtDisplay(w), XtWindow(w),
-	XtIsSensitive(lw) ? lw->label.normal_GC : lw->label.gray_GC,
-	lw->label.label_x, lw->label.label_y,
+	XtDisplay(w), XtWindow(w), gc, lw->label.label_x,
+	lw->label.label_y + lw->label.font->max_bounds.ascent,
 	lw->label.label, (int) lw->label.label_len);
+   XSetClipMask(XtDisplay(w), gc, (Pixmap)None);
 }
 
-static void _Reposition(lw, width, height)
+static void _Reposition(lw, width, height, dx, dy)
     register LabelWidget lw;
     Dimension width, height;
+    Position *dx, *dy;
 {
+    Position newPos, delta;
     switch (lw->label.justify) {
 
 	case XtJustifyLeft   :
 	    lw->label.label_x = lw->label.internal_width;
+	    *dx = 0;
 	    break;
 
 	case XtJustifyRight  :
 	    lw->label.label_x = width -
-		(lw->label.label_width + lw->label.internal_width);
+		 (lw->label.label_width + lw->label.internal_width);
+	    *dx = 0;
 	    break;
 
 	case XtJustifyCenter :
-	    lw->label.label_x = (width - lw->label.label_width) / 2;
+	    delta = lw->label.label_x -
+		(newPos = (width - lw->label.label_width) / 2);
+	    if (delta & 1)
+		*dx = (lw->label.label_x > newPos) ? 1 : -1;
+	    else
+		*dx = 0;
+	    lw->label.label_x = newPos;
 	    break;
     }
     if (lw->label.label_x < 0) lw->label.label_x = 0;
-    lw->label.label_y = (height - lw->label.label_height) / 2
-	+ lw->label.font->max_bounds.ascent;
+    newPos = (height - lw->label.label_height) / 2;
+    delta = lw->label.label_y -
+	(newPos = (height - lw->label.label_height) / 2);
+    if (delta & 1)
+	*dy = (lw->label.label_y > newPos) ? 1 : -1;
+    else
+	*dy = 0;
+    lw->label.label_y = newPos;
+    return;
 }
 
 
 static void Resize(w)
     Widget w;
 {
-    _Reposition((LabelWidget)w, w->core.width, w->core.height);
+    LabelWidget lw = (LabelWidget)w;
+    Position dx, dy;
+    _Reposition(lw, w->core.width, w->core.height, &dx, &dy);
+    if ((dx || dy) && XtIsRealized(w)) {
+	/* size went from odd to even; gravity didn't
+	   move bits far enough */
+	int old_x = lw->label.label_x + dx;
+	int old_y = lw->label.label_y + dy;
+	XCopyArea(XtDisplay(w), XtWindow(w), XtWindow(w), lw->label.normal_GC,
+		  (int)old_x, (int)old_y,
+		  (unsigned)lw->label.label_width,
+		  (unsigned)lw->label.label_height,
+		  (int)lw->label.label_x, (int)lw->label.label_y);
+	if (dx) {
+	    XClearArea(XtDisplay(w), XtWindow(w),
+		       (dx < 0) ? old_x : old_x + lw->label.label_width,
+		       old_y, 1, (unsigned)lw->label.label_height, False);
+	}
+	if (dy) {
+	    XClearArea(XtDisplay(w), XtWindow(w),
+		       old_x,
+		       (dy < 0) ? old_y : old_y + lw->label.label_height,
+		       (unsigned)lw->label.label_width, 1, False);
+	}
+    }
 }
 
 /*
@@ -332,7 +381,8 @@ static Boolean SetValues(current, request, new)
         || (curlw->label.internal_height != newlw->label.internal_height)
 	|| was_resized) {
 	/* Resize() will be called if geometry changes succeed */
-	_Reposition(newlw, curlw->core.width, curlw->core.height);
+	Position dx, dy;
+	_Reposition(newlw, curlw->core.width, curlw->core.height, &dx, &dy);
     }
 
     return( was_resized );
