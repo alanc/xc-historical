@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbbitblt.c,v 5.11 89/09/14 16:26:35 rws Exp $ */
+/* $XConsortium: mfbbitblt.c,v 5.12 89/11/21 15:19:17 keith Exp $ */
 #include "X.h"
 #include "Xprotostr.h"
 
@@ -75,7 +75,7 @@ mfbCopyArea(pSrcDrawable, pDstDrawable,
 	    pGC, srcx, srcy, width, height, dstx, dsty)
 register DrawablePtr pSrcDrawable;
 register DrawablePtr pDstDrawable;
-GC *pGC;
+register GC *pGC;
 int srcx, srcy;
 int width, height;
 int dstx, dsty;
@@ -515,7 +515,6 @@ DDXPointPtr pptSrc;
     /* special case copy */
     if (alu == GXcopy)
     {
-	register int nl;		/* temp copy of nlMiddle */
 	register unsigned int bits;
 	register unsigned int bits1;
 	int xoffSrc, xoffDst;
@@ -1018,6 +1017,30 @@ DDXPointPtr pptSrc;
     }
 }
 
+/*
+ * Allow devices which use mfb for 1-bit pixmap support
+ * to register a function for n-to-1 copy operations, instead
+ * of falling back to miCopyPlane
+ */
+
+static unsigned long	copyPlaneGeneration;
+static int		copyPlaneScreenIndex = -1;
+
+Bool
+mfbRegisterCopyPlaneProc (pScreen, proc)
+    ScreenPtr	pScreen;
+    RegionPtr	(*proc)();
+{
+    if (copyPlaneGeneration != serverGeneration)
+    {
+	copyPlaneScreenIndex = AllocateScreenPrivateIndex();
+	if (copyPlaneScreenIndex < 0)
+	    return FALSE;
+	copyPlaneGeneration = serverGeneration;
+    }
+    pScreen->devPrivates[copyPlaneScreenIndex].ptr = (pointer) proc;
+    return TRUE;
+}
 
 /*
     if fg == 1 and bg ==0, we can do an ordinary CopyArea.
@@ -1044,11 +1067,22 @@ unsigned long plane;
 {
     int alu;
     RegionPtr	prgnExposed;
+    RegionPtr	(*copyPlane)();
 
-    /* XXX a deeper screen ought to wrap ValidateGC to get around this */
     if (pSrcDrawable->depth != 1)
-	return miCopyPlane(pSrcDrawable, pDstDrawable,
+    {
+	if (copyPlaneScreenIndex >= 0 &&
+	    (copyPlane = (RegionPtr (*)()) 
+		pSrcDrawable->pScreen->devPrivates[copyPlaneScreenIndex].ptr)
+	    )
+	{
+	    return (*copyPlane) (pSrcDrawable, pDstDrawable,
 			   pGC, srcx, srcy, width, height, dstx, dsty, plane);
+	}
+	else
+	    return miCopyPlane(pSrcDrawable, pDstDrawable,
+			   pGC, srcx, srcy, width, height, dstx, dsty, plane);
+    }
     if (plane != 1)
 	return NULL;
 
