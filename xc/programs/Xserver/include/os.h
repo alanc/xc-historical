@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: os.h,v 1.16 87/08/19 20:14:16 toddb Locked $ */
+/* $Header: os.h,v 1.17 87/08/31 12:22:24 toddb Locked $ */
 
 #ifndef OS_H
 #define OS_H
@@ -40,15 +40,32 @@ typedef pointer	FID;
 typedef struct _FontPathRec *FontPathPtr;
 typedef struct _NewClientRec *NewClientPtr;
 
-/* os-dependent definition of local allocation and deallocation */
+/*
+ * os-dependent definition of local allocation and deallocation
+ * If you need something other than malloc/free for ALLOCATE/DEALLOCATE
+ * LOCAL then you add that to the beginning of this set.  Note that
+ * some machines do not return a valid pointer for malloc(0), in
+ * which case we provide an alternate under the control of the
+ * define MALLOC_0_RETURNS_NULL.  This is necessary because some
+ * server code expects malloc(0) to return a valid pointer to storage.
+ */
 #if defined(ibm032) && !defined(_pcc_)
+
 #define ALLOCATE_LOCAL(size) (alloca(size))
 #define DEALLOCATE_LOCAL(ptr)
 pragma on(alloca);
-#else /* !ibm32 */
-#define ALLOCATE_LOCAL(size) (malloc(size))
+
+#else /* everyone else */
+
+# ifdef MALLOC_0_RETURNS_NULL
+# define ALLOCATE_LOCAL(size) (malloc(max(size,1)))
+# else
+# define ALLOCATE_LOCAL(size) (malloc(size))
+# endif
+
 #define DEALLOCATE_LOCAL(ptr) (free(ptr))
-#endif /* !ibm32 */
+
+#endif
 
 extern WaitForSomething();
 extern char *ReadRequestFromClient();   /* should be xReq but then 
