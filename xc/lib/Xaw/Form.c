@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Form.c,v 1.24 89/05/11 01:05:15 kit Exp $";
+static char Xrcsid[] = "$XConsortium: Form.c,v 1.25 89/05/18 18:16:15 kit Exp $";
 #endif /* lint */
 
 
@@ -34,14 +34,12 @@ SOFTWARE.
 
 /* Private Definitions */
 
-static int def0 = 0;
-static int def4 = 4;
-static int DEFAULTVALUE = -99999;
+#define DEFAULTVALUE -99999
 
 #define Offset(field) XtOffset(FormWidget, form.field)
 static XtResource resources[] = {
     {XtNdefaultDistance, XtCThickness, XtRInt, sizeof(int),
-	Offset(default_spacing), XtRInt, (caddr_t)&def4}
+	Offset(default_spacing), XtRImmediate, (caddr_t)4}
 };
 #undef Offset
 
@@ -58,23 +56,24 @@ static XtResource formConstraintResources[] = {
     {XtNright, XtCEdge, XtREdgeType, sizeof(XtEdgeType),
 	Offset(right), XtREdgeType, (caddr_t)&defEdge},
     {XtNhorizDistance, XtCThickness, XtRInt, sizeof(int),
-	Offset(dx), XtRInt, (caddr_t)&DEFAULTVALUE},
+	Offset(dx), XtRImmediate, (caddr_t)DEFAULTVALUE},
     {XtNfromHoriz, XtCWidget, XtRWidget, sizeof(Widget),
 	Offset(horiz_base), XtRWidget, (caddr_t)NULL},
     {XtNvertDistance, XtCThickness, XtRInt, sizeof(int),
-	Offset(dy), XtRInt, (caddr_t)&DEFAULTVALUE},
+	Offset(dy), XtRImmediate, (caddr_t)DEFAULTVALUE},
     {XtNfromVert, XtCWidget, XtRWidget, sizeof(Widget),
 	Offset(vert_base), XtRWidget, (caddr_t)NULL},
     {XtNresizable, XtCBoolean, XtRBoolean, sizeof(Boolean),
-	Offset(allow_resize), XtRInt, (caddr_t)&def0},
+	Offset(allow_resize), XtRImmediate, (caddr_t)0},
 };
 #undef Offset
 
-static void ClassInitialize(), Initialize(), Resize();
+static void ClassInitialize(), ClassPartInitialize(), Initialize(), Resize();
 static void ConstraintInitialize();
 static Boolean SetValues(), ConstraintSetValues();
 static XtGeometryResult GeometryManager();
 static void ChangeManaged();
+static Boolean Layout();
 
 FormClassRec formClassRec = {
   { /* core_class fields */
@@ -82,7 +81,7 @@ FormClassRec formClassRec = {
     /* class_name         */    "Form",
     /* widget_size        */    sizeof(FormRec),
     /* class_initialize   */    ClassInitialize,
-    /* class_part_init    */    NULL,
+    /* class_part_init    */    ClassPartInitialize,
     /* class_inited       */    FALSE,
     /* initialize         */    Initialize,
     /* initialize_hook    */    NULL,
@@ -128,7 +127,7 @@ FormClassRec formClassRec = {
     /* extension          */   NULL
   },
   { /* form_class fields */
-    /* empty              */   0
+    /* layout             */   Layout
   }
 };
 
@@ -204,6 +203,15 @@ static void ClassInitialize()
 		    parentCvtArgs, XtNumber(parentCvtArgs) );
 }
 
+static void ClassPartInitialize(class)
+    WidgetClass class;
+{
+    register FormWidgetClass c = (FormWidgetClass)class;
+
+    if (c->form_class.layout == XtInheritLayout)
+	c->form_class.layout = Layout;
+}
+
 
 /* ARGSUSED */
 static void Initialize(request, new)
@@ -213,60 +221,117 @@ static void Initialize(request, new)
 
     fw->form.old_width = fw->core.width;
     fw->form.old_height = fw->core.height;
-    fw->form.no_refigure = FALSE;
-    fw->form.needs_relayout = FALSE;
+    fw->form.no_refigure = False;
+    fw->form.needs_relayout = False;
+    fw->form.resize_in_layout = True;
 }
 
 
 static void RefigureLocations(w)
-    Widget w;
+    FormWidget w;
 {
-    FormWidget fw = (FormWidget)w;
+    if (w->form.no_refigure) {
+	w->form.needs_relayout = True;
+    }
+    else {
+	(*((FormWidgetClass)w->core.widget_class)->form_class.layout)
+	    ( w, w->core.width, w->core.height );
+	w->form.needs_relayout = False;
+    }
+}
+
+/* ARGSUSED */
+static Boolean Layout(fw, width, height)
+    FormWidget fw;
+    Dimension width, height;
+{
     int num_children = fw->composite.num_children;
     WidgetList children = fw->composite.children;
     Widget *childP;
-    Position x, y, maxx, maxy;
+    Position maxx, maxy;
+    static void LayoutChild();
+    Boolean ret_val;
 
-    if (fw->form.no_refigure) {
-	fw->form.needs_relayout = TRUE;
-	return;
+    for (childP = children; childP - children < num_children; childP++) {
+	FormConstraints form = (FormConstraints)(*childP)->core.constraints;
+	form->form.layout_state = LayoutPending;
     }
 
     maxx = maxy = 1;
     for (childP = children; childP - children < num_children; childP++) {
-	FormConstraints form = (FormConstraints)(*childP)->core.constraints;
-	if (!XtIsManaged(*childP)) continue;
-	x = form->form.dx;
-	y = form->form.dy;
-	if (form->form.horiz_base)
-	    x += form->form.horiz_base->core.x
-	         + form->form.horiz_base->core.width
-	         + (form->form.horiz_base->core.border_width << 1);
-	if (form->form.vert_base)
-	    y += form->form.vert_base->core.y
-	         + form->form.vert_base->core.height
-	         + (form->form.vert_base->core.border_width << 1);
-	XtMoveWidget( *childP, x, y );
-	x += (*childP)->core.width  + ((*childP)->core.border_width << 1);
-	y += (*childP)->core.height + ((*childP)->core.border_width << 1);
-	if (maxx < x) maxx = x;
-	if (maxy < y) maxy = y;
+	if (XtIsManaged(*childP)) {
+	    Position x, y;
+	    LayoutChild(*childP);
+	    x = (*childP)->core.x + (*childP)->core.width
+		+ ((*childP)->core.border_width << 1);
+	    y = (*childP)->core.y + (*childP)->core.height
+		+ ((*childP)->core.border_width << 1);
+	    if (maxx < x) maxx = x;
+	    if (maxy < y) maxy = y;
+	}
     }
 
-    maxx += fw->form.default_spacing;
-    maxy += fw->form.default_spacing;
-    if (maxx != fw->core.width || maxy != fw->core.height) {
+    fw->form.preferred_width = (maxx += fw->form.default_spacing);
+    fw->form.preferred_height = (maxy += fw->form.default_spacing);
+
+    if (fw->form.resize_in_layout
+	&& (maxx != fw->core.width || maxy != fw->core.height)) {
 	XtGeometryResult result;
-	result = XtMakeResizeRequest( w, (Dimension)maxx, (Dimension)maxy,
+	result = XtMakeResizeRequest( fw, (Dimension)maxx, (Dimension)maxy,
 				      (Dimension*)&maxx, (Dimension*)&maxy );
 	if (result == XtGeometryAlmost)
-	    XtMakeResizeRequest( w, (Dimension)maxx, (Dimension)maxy,
-				 NULL, NULL );
+	    result = XtMakeResizeRequest( fw, (Dimension)maxx, (Dimension)maxy,
+					  NULL, NULL );
 	fw->form.old_width  = fw->core.width;
 	fw->form.old_height = fw->core.height;
-    }
+	ret_val = (result == XtGeometryYes);
+    } else ret_val = False;
 
-    fw->form.needs_relayout = FALSE;
+    return ret_val;
+}
+
+
+static void LayoutChild(w)
+    Widget w;
+{
+    FormConstraints form = (FormConstraints)w->core.constraints;
+    Position x, y;
+    Widget ref;
+
+    switch (form->form.layout_state) {
+
+      case LayoutPending:
+	form->form.layout_state = LayoutInProgress;
+	break;
+
+      case LayoutDone:
+	return;
+
+      case LayoutInProgress:
+	{
+	String subs[2];
+	Cardinal num_subs = 2;
+	subs[0] = w->core.name;
+	subs[1] = w->core.parent->core.name;
+	XtAppWarningMsg(XtWidgetToApplicationContext(w),
+			"constraintLoop","xawFormLayout","XawToolkitError",
+   "constraint loop detected while laying out child '%s' in FormWidget '%s'",
+			subs, &num_subs);
+	return;
+	}
+    }
+    x = form->form.dx;
+    y = form->form.dy;
+    if ((ref = form->form.horiz_base) != (Widget)NULL) {
+	LayoutChild(ref);
+	x += ref->core.x + ref->core.width + (ref->core.border_width << 1);
+    }
+    if ((ref = form->form.vert_base) != (Widget)NULL) {
+	LayoutChild(ref);
+	y += ref->core.y + ref->core.height + (ref->core.border_width << 1);
+    }
+    XtMoveWidget( w, x, y );
+    form->form.layout_state = LayoutDone;
 }
 
 
@@ -367,7 +432,7 @@ static XtGeometryResult GeometryManager(w, request, reply)
         /* reset virtual width and height. */
       	form->form.virtual_width = w->core.width = allowed.width;
 	form->form.virtual_height = w->core.height = allowed.height;
-	RefigureLocations( w->core.parent );
+	RefigureLocations( (FormWidget)w->core.parent );
     }
     return XtGeometryYes;
 }
@@ -437,7 +502,7 @@ static void ChangeManaged(w)
 	form->form.virtual_height = (int) child->core.height;
     }
   }
-  RefigureLocations( w );
+  RefigureLocations( (FormWidget)w );
 }
     
 /**********************************************************************
@@ -459,5 +524,5 @@ Boolean doit;
     fw->form.no_refigure = !doit;
 
     if ( XtIsRealized(w) && fw->form.needs_relayout )
-        RefigureLocations( w );
+        RefigureLocations( fw );
 }
