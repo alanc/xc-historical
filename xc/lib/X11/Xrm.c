@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Xrm.c,v 1.15 88/08/29 12:02:37 swick Exp $";
+static char rcsid[] = "$Header: Xrm.c,v 1.16 88/08/29 13:53:19 swick Exp $";
 #endif /* lint */
 
 /***********************************************************
@@ -760,7 +760,7 @@ static void PutLineResources(pdb, get_line, closure)
 	XrmQPutResource(pdb, bindings, quarks, XrmQString, &value);
     } /* for lines left to process */
     if (pbuf != buf) Xfree(pbuf);
-#undef CheckForFulBuffer
+#undef CheckForFullBuffer
 } /* PutLineResources */
   
 void XrmPutStringResource(pdb, specifier, str)
