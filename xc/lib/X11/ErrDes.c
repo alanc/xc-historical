@@ -1,13 +1,31 @@
-#include "copyright.h"
-
-/* $Header: XErrDes.c,v 11.16 87/11/23 11:49:09 rws Locked $ */
-/* Copyright    Massachusetts Institute of Technology    1986	*/
+/*
+*****************************************************************************
+**                                                                          *
+**                         COPYRIGHT (c) 1987 BY                            *
+**             DIGITAL EQUIPMENT CORPORATION, MAYNARD, MASS.                *
+**			   ALL RIGHTS RESERVED                              *
+**                                                                          *
+**  THIS SOFTWARE IS FURNISHED UNDER A LICENSE AND MAY BE USED AND  COPIED  *
+**  ONLY  IN  ACCORDANCE  WITH  THE  TERMS  OF  SUCH  LICENSE AND WITH THE  *
+**  INCLUSION OF THE ABOVE COPYRIGHT NOTICE.  THIS SOFTWARE OR  ANY  OTHER  *
+**  COPIES  THEREOF MAY NOT BE PROVIDED OR OTHERWISE MADE AVAILABLE TO ANY  *
+**  OTHER PERSON.  NO TITLE TO AND OWNERSHIP OF  THE  SOFTWARE  IS  HEREBY  *
+**  TRANSFERRED.                                                            *
+**                                                                          *
+**  THE INFORMATION IN THIS SOFTWARE IS SUBJECT TO CHANGE  WITHOUT  NOTICE  *
+**  AND  SHOULD  NOT  BE  CONSTRUED  AS  A COMMITMENT BY DIGITAL EQUIPMENT  *
+**  CORPORATION.                                                            *
+**                                                                          *
+**  DIGITAL ASSUMES NO RESPONSIBILITY FOR THE USE OR  RELIABILITY  OF  ITS  *
+**  SOFTWARE ON EQUIPMENT WHICH IS NOT SUPPLIED BY DIGITAL.                 *
+**                                                                          *
+*****************************************************************************
+**/
 
 #include <stdio.h>
-#include <X11/Xos.h>
 #include "Xlibint.h"
 #include "Xresource.h"
-#include "Quarks.h"
+#include <string.h>
 
 char *XErrorList[] = {
 	/* No error	*/	"",
@@ -29,6 +47,8 @@ char *XErrorList[] = {
 	/* BadLength	*/	"request length incorrect; internal Xlib error",
 	/* BadImplementation */	"server does not implement function",
 };
+int XErrorListSize = sizeof(XErrorList);
+
 
 XGetErrorText(dpy, code, buffer, nbytes)
     register int code;
@@ -42,11 +62,9 @@ XGetErrorText(dpy, code, buffer, nbytes)
     register _XExtension *ext;
 
     sprintf(buf, "%d\0", code);
-
-    
-    if (code <= (sizeof(XErrorList)/ sizeof (char *)) && code > 0) {
+    if (code <= (XErrorListSize/ sizeof (char *)) && code > 0) {
 	defaultp =  XErrorList[code];
-       XGetErrorDatabaseText(dpy, "XProtoError", buf, defaultp, buffer, nbytes);
+	XGetErrorDatabaseText(dpy, "XProtoError", buf, defaultp, buffer, nbytes);
 	}
     ext = dpy->ext_procs;
     while (ext) {		/* call out to any extensions interested */
@@ -60,30 +78,35 @@ XGetErrorText(dpy, code, buffer, nbytes)
 XGetErrorDatabaseText(dpy, name, type, defaultp, buffer, nbytes)
     register char *name, *type;
     char *defaultp;
-    register Display *dpy;
+    Display *dpy;
     char *buffer;
     int nbytes;
 {
-    static XrmResourceDataBase db;
-    XrmName namelist[5];
-    XrmClass classlist[5];
+
+    static XrmDatabase db;
+    XrmAtom type_str;
     XrmValue result;
     static int initialized = False;
     char temp[BUFSIZ];
 
     if (initialized == False) {
-        XrmInitialize();
-	db = XrmGetDataBase(ErrorDataBase);
+	_XInitErrorHandling (&db);
 	initialized = True;
     }
     sprintf(temp, "%s.%s", name, type);
-    XrmStringToNameList(temp, namelist);
-    XrmStringToClassList("ErrorType.ErrorNumber", classlist);
-
-    XrmGetResource(DefaultScreen(dpy), db,
-		namelist, classlist, XrmQString, &result);
+    XrmGetResource(db, temp, "ErrorType.ErrorNumber", &type_str, &result);
     if (result.addr) {
 	(void) strncpy (buffer, result.addr, nbytes);
 	if (result.size < nbytes) buffer[result.size] = 0;
     } else (void) strncpy(buffer, defaultp, nbytes);
 }
+
+_XInitErrorHandling (db)
+    XrmDatabase *db;
+    {
+    XrmDatabase errordb;
+    XrmInitialize();
+    errordb = XrmGetFileDatabase(ErrorDataBase);
+    XrmMergeDatabases(errordb, db);
+     }
+
