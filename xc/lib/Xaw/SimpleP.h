@@ -1,6 +1,6 @@
 /***********************************************************
 
- $XConsortium: SimpleP.h,v 1.9 89/05/11 01:06:35 kit Exp $ 
+ $XConsortium: SimpleP.h,v 1.10 90/03/05 17:47:33 kit Exp $ 
 
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -29,7 +29,6 @@ SOFTWARE.
 #define _SimpleP_h
 
 #include <X11/Xaw/Simple.h>
-/* #include <X11/CoreP.h> */
 
 typedef struct {
     Boolean	(*change_sensitive)(/* widget */);
@@ -51,6 +50,7 @@ typedef struct {
     String      cursor_name;	/* cursor specified by name. */
 
     Pixel       pointer_fg, pointer_bg;	/* Pointer colors. */
+    Boolean     international;
     /* private state */
 } SimplePart;
 

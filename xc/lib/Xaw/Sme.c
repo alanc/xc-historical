@@ -1,4 +1,4 @@
-/* $XConsortium: Sme.c,v 1.9 91/02/17 16:44:14 rws Exp $ */
+/* $XConsortium: Sme.c,v 1.10 91/10/16 21:39:55 eswu Exp $ */
 
 /*
  * Copyright 1989 Massachusetts Institute of Technology
@@ -43,6 +43,8 @@
 static XtResource resources[] = {
   {XtNcallback, XtCCallback, XtRCallback, sizeof(XtPointer),
      offset(callbacks), XtRCallback, (XtPointer)NULL},
+  {XtNinternational, XtCInternational, XtRBoolean, sizeof(Boolean),
+     offset(international), XtRImmediate, (XtPointer) FALSE},
 };   
 #undef offset
 
@@ -198,7 +200,7 @@ static void
 Notify(w) 
 Widget w;
 {
-    XtCallCallbacks(w, XtNcallback, NULL);
+    XtCallCallbacks(w, XtNcallback, (XtPointer)NULL);
 }
 
 /*	Function Name: QueryGeometry.

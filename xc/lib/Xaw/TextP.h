@@ -1,5 +1,5 @@
 /*
-* $XConsortium: TextP.h,v 1.48 91/04/16 09:08:33 rws Exp $
+* $XConsortium: TextP.h,v 1.49 91/05/14 15:20:55 gildea Exp $
 */
 
 
@@ -40,10 +40,6 @@ SOFTWARE.
  ****************************************************************/
 #define MAXCUT	30000	/* Maximum number of characters that can be cut. */
 
-#ifndef abs
-#define abs(x)	(((x) < 0) ? (-(x)) : (x))
-#endif
-
 #define GETLASTPOS  XawTextSourceScan(ctx->text.source, 0, \
 				      XawstAll, XawsdRight, 1, TRUE)
 
@@ -82,6 +78,10 @@ typedef struct {
 typedef struct _XawTextSelectionSalt {
     struct _XawTextSelectionSalt    *next;
     XawTextSelection	s;
+    /* 
+     * The element "contents" stores the CT string which is gotten in the
+     * function _XawTextSaltAwaySelection().
+    */ 
     char		*contents;
     int			length;
 } XawTextSelectionSalt;
@@ -194,7 +194,9 @@ typedef struct _TextPart {
 
     /* private state, shared w/Source and Sink */
     Boolean	    redisplay_needed; /* in SetValues */
+    XawTextSelectionSalt    *salt2;	     /* salted away selections */
 
+    String	internal_selection; /* stores the selection for later pastage */
 } TextPart;
 
 /*************************************************************
@@ -219,4 +221,50 @@ typedef struct _TextRec {
     TextPart	text;
 } TextRec;
 
+/********************************************
+ *
+ * Semi-private functions
+ * for use by other Xaw modules only
+ *
+ *******************************************/
+
+void _XawTextBuildLineTable (
+#if NeedFunctionPrototypes
+    TextWidget /*ctx*/, 
+    XawTextPosition /*top pos*/, 
+#if NeedWidePrototypes
+    int
+#else
+    Boolean /* force_rebuild */
+#endif
+#endif
+);
+
+extern char * _XawTextGetSTRING(
+#if NeedFunctionPrototypes
+    TextWidget /*ctx*/, 
+    XawTextPosition /*left*/, 
+    XawTextPosition /*right*/
+#endif
+); 
+
+extern void _XawTextSaltAwaySelection(
+#if NeedFunctionPrototypes
+    TextWidget /*ctx*/, 
+    Atom* /*selections*/, 
+    int /*num_atoms*/
+#endif
+); 
+
+extern void _XawTextPosToXY(
+#if NeedFunctionPrototypes
+    Widget			/* w */,
+    XawTextPosition		/* pos */,
+    Position *			/* x */,
+    Position *			/*y */
+#endif
+);
+
 #endif /* _XawTextP_h */
+
+

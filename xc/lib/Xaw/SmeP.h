@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: SmeP.h,v 1.4 89/12/11 15:20:22 kit Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -43,7 +43,6 @@
  *
  ***********************************************************************/
 
-#include <X11/RectObjP.h>
 #include <X11/Xaw/Sme.h>
 
 /************************************************************
@@ -71,6 +70,7 @@ extern SmeClassRec smeClassRec;
 typedef struct {
     /* resources */
     XtCallbackList callbacks;	/* The callback list */
+    Boolean     international;
 
 } SmePart;
 

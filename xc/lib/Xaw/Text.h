@@ -1,4 +1,4 @@
-/* $XConsortium: Text.h,v 1.40 91/07/22 18:45:22 converse Exp $ */
+/* $XConsortium: Text.h,v 1.41 91/07/22 19:05:20 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -27,7 +27,7 @@ SOFTWARE.
 #ifndef _XawText_h
 #define _XawText_h
 
-#include <X11/Xfuncproto.h>
+#include <X11/Xaw/Simple.h>
 
 /*
  Text widget
@@ -135,6 +135,7 @@ typedef struct {
 #define XawPositionError	2
 
 extern unsigned long FMT8BIT;
+extern unsigned long FMTWIDE;
 
 /* Class record constants */
 
@@ -144,6 +145,12 @@ typedef struct _TextClassRec *TextWidgetClass;
 typedef struct _TextRec      *TextWidget;
 
 _XFUNCPROTOBEGIN
+
+extern XrmQuark TextFormat(
+#if NeedFunctionPrototypes
+    TextWidget		/* tw */
+#endif
+);
 
 extern void XawTextDisplay(
 #if NeedFunctionPrototypes

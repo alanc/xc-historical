@@ -1,4 +1,4 @@
-/* $XConsortium: Toggle.c,v 1.25 91/09/23 11:29:32 converse Exp $ */
+/* $XConsortium: Toggle.c,v 1.26 91/10/16 21:40:14 eswu Exp $ */
 
 /*
  * Copyright 1989 Massachusetts Institute of Technology
@@ -168,7 +168,7 @@ ClassInit()
   XawInitializeWidgetSet();
   XtSetTypeConverter(XtRString, XtRWidget, XmuNewCvtStringToWidget,
 		     parentCvtArgs, XtNumber(parentCvtArgs), XtCacheNone,
-		     NULL);
+		     (XtDestructor)NULL);
 /* 
  * Find the set and unset actions in the command widget's action table. 
  */
@@ -192,6 +192,7 @@ ClassInit()
   XtError("Aborting, due to errors resolving bindings in the Toggle widget.");
 }
 
+/*ARGSUSED*/
 static void Initialize(request, new, args, num_args)
  Widget request, new;
  ArgList args;
@@ -211,7 +212,7 @@ static void Initialize(request, new, args, num_args)
       else
 	AddToRadioGroup( GetRadioGroup(tw->toggle.widget), new);
     }      
-    XtAddCallback(new, XtNdestroyCallback, ToggleDestroy, NULL);
+    XtAddCallback(new, XtNdestroyCallback, ToggleDestroy, (XtPointer)NULL);
 
 /*
  * Command widget assumes that the widget is unset, so we only 
@@ -225,7 +226,7 @@ static void Initialize(request, new, args, num_args)
  */
 
     if (tw_req->command.set)
-      ToggleSet(new, NULL, NULL, 0);
+      ToggleSet(new, (XEvent *)NULL, (String *)NULL, (Cardinal *)0);
 }
 
 /************************************************************
@@ -273,7 +274,9 @@ String *params;		/* unused */
 Cardinal *num_params;	/* unused */
 {
   ToggleWidget tw = (ToggleWidget) w;
-  XtCallCallbacks(w, XtNcallback, (XtPointer) tw->command.set);
+  long antilint = tw->command.set;
+
+  XtCallCallbacks( w, XtNcallback, (XtPointer) antilint );
 }
 
 /************************************************************
@@ -301,7 +304,7 @@ Cardinal *num_args;
 
     if (oldtw->command.set != tw->command.set) {
 	tw->command.set = oldtw->command.set;
-	Toggle(new, NULL, NULL, 0); /* Does a redisplay. */
+	Toggle(new, (XEvent *)NULL, (String *)NULL, (Cardinal *)0);
     }
     return(FALSE);
 }
@@ -324,7 +327,7 @@ XtPointer junk, garbage;
 
 /************************************************************
  *
- * Below are all the private proceedures that handle 
+ * Below are all the private procedures that handle 
  * radio toggle buttons.
  *
  ************************************************************/
@@ -364,12 +367,12 @@ Widget w1, w2;
   ToggleWidget tw2 = (ToggleWidget) w2;
 
   if ( (tw1->toggle.radio_group != NULL) || (tw2->toggle.radio_group != NULL) ) {
-    sprintf(error_buf, "%s %s", "Toggle Widget Error - Attempting",
+    (void) sprintf(error_buf, "%s %s", "Toggle Widget Error - Attempting",
 	    "to create a new toggle group, when one already exists.");
     XtWarning(error_buf);
   }
 
-  AddToRadioGroup( NULL, w1 );
+  AddToRadioGroup( (RadioGroup *)NULL, w1 );
   AddToRadioGroup( GetRadioGroup(w1), w2 );
 }
 
@@ -428,7 +431,7 @@ Widget w;
     ToggleWidget local_tog = (ToggleWidget) group->widget;
     if ( local_tog->command.set ) {
       class->toggle_class.Unset(group->widget, NULL, NULL, 0);
-      Notify( group->widget, NULL, NULL, 0);
+      Notify( group->widget, (XEvent *)NULL, (String *)NULL, (Cardinal *)0);
     }
     group = group->next;
   }
@@ -543,14 +546,14 @@ XtPointer radio_data;
   RadioGroup * group;
   ToggleWidget local_tog; 
 
-/* Special case case of no radio group. */
+/* Special case of no radio group. */
 
   if ( (group = GetRadioGroup(radio_group)) == NULL) {
     local_tog = (ToggleWidget) radio_group;
     if ( (local_tog->toggle.radio_data == radio_data) )     
       if (!local_tog->command.set) {
-	ToggleSet((Widget) local_tog, NULL, NULL, 0);
-	Notify((Widget) local_tog, NULL, NULL, 0);
+	ToggleSet((Widget) local_tog, (XEvent *)NULL, (String *)NULL, (Cardinal *)0);
+	Notify((Widget) local_tog, (XEvent *)NULL, (String *)NULL, (Cardinal *)0);
       }
     return;
   }
@@ -569,8 +572,8 @@ XtPointer radio_data;
     local_tog = (ToggleWidget) group->widget;
     if ( (local_tog->toggle.radio_data == radio_data) ) {
       if (!local_tog->command.set) { /* if not already set. */
-	ToggleSet((Widget) local_tog, NULL, NULL, 0);
-	Notify((Widget) local_tog, NULL, NULL, 0);
+	ToggleSet((Widget) local_tog, (XEvent *)NULL, (String *)NULL, (Cardinal *)0);
+	Notify((Widget) local_tog, (XEvent *)NULL, (String *)NULL, (Cardinal *)0);
       }
       return;			/* found it, done */
     }
@@ -600,8 +603,9 @@ Widget radio_group;
   if (local_tog->command.set) {
     class = (ToggleWidgetClass) local_tog->core.widget_class;
     class->toggle_class.Unset(radio_group, NULL, NULL, 0);
-    Notify(radio_group, NULL, NULL, 0);
+    Notify(radio_group, (XEvent *)NULL, (String *)NULL, (Cardinal *)0);
   }
   if ( GetRadioGroup(radio_group) == NULL) return;
   TurnOffRadioSiblings(radio_group);
 }
+

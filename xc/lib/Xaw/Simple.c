@@ -1,4 +1,4 @@
-/* $XConsortium: Simple.c,v 1.33 91/07/21 13:55:23 converse Exp $ */
+/* $XConsortium: Simple.c,v 1.34 91/10/16 21:39:47 eswu Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -44,6 +44,8 @@ static XtResource resources[] = {
      offset(pointer_bg), XtRString, XtDefaultBackground},
   {XtNcursorName, XtCCursor, XtRString, sizeof(String),
      offset(cursor_name), XtRString, NULL},
+  {XtNinternational, XtCInternational, XtRBoolean, sizeof(Boolean),
+     offset(international), XtRImmediate, (XtPointer) FALSE},
 #undef offset
 };
 
@@ -107,20 +109,20 @@ static void ClassInitialize()
     XawInitializeWidgetSet();
     XtSetTypeConverter( XtRString, XtRColorCursor, XmuCvtStringToColorCursor,
 		       convertArg, XtNumber(convertArg), 
-		       XtCacheByDisplay, NULL);
+		       XtCacheByDisplay, (XtDestructor)NULL);
 }
 
 static void ClassPartInitialize(class)
     WidgetClass class;
 {
-    register SimpleWidgetClass c = (SimpleWidgetClass)class;
-    register SimpleWidgetClass super = (SimpleWidgetClass) 
-	c->core_class.superclass;
+    SimpleWidgetClass c     = (SimpleWidgetClass) class;
+    SimpleWidgetClass super = (SimpleWidgetClass)
+      c->core_class.superclass;
 
     if (c->simple_class.change_sensitive == NULL) {
 	char buf[BUFSIZ];
 
-	sprintf(buf,
+	(void) sprintf(buf,
 		"%s Widget: The Simple Widget class method 'change_sensitive' is undefined.\nA function must be defined or inherited.",
 		c->core_class.class_name);
 	XtWarning(buf);
@@ -132,12 +134,11 @@ static void ClassPartInitialize(class)
 }
 
 static void Realize(w, valueMask, attributes)
-    register Widget w;
+    Widget w;
     Mask *valueMask;
     XSetWindowAttributes *attributes;
 {
     Pixmap border_pixmap;
-
     if (!XtIsSensitive(w)) {
 	/* change border to gray; have to remember the old one,
 	 * so XtDestroyWidget deletes the proper one */
@@ -213,6 +214,9 @@ static Boolean SetValues(current, request, new, args, num_args)
     SimpleWidget s_new = (SimpleWidget) new;
     Boolean new_cursor = FALSE;
 
+    /* this disables user changes after creation*/
+    s_new->simple.international = s_old->simple.international;
+
     if ( XtIsSensitive(current) != XtIsSensitive(new) )
 	(*((SimpleWidgetClass)XtClass(new))->
 	     simple_class.change_sensitive) ( new );
@@ -240,7 +244,7 @@ static Boolean SetValues(current, request, new, args, num_args)
 
 
 static Boolean ChangeSensitive(w)
-    register Widget w;
+    Widget w;
 {
     if (XtIsRealized(w)) {
 	if (XtIsSensitive(w))

@@ -288,8 +288,8 @@ repaint_window(w, left, width)
 StripChartWidget w;
 int left, width;
 {
-    register int i, j;
-    register int next = w->strip_chart.interval;
+    int i, j;
+    int next = w->strip_chart.interval;
     int scale = w->strip_chart.scale;
     int scalewidth = 0;
 
@@ -356,7 +356,7 @@ Boolean blit;
 {
     double old_max;
     int left, i, j;
-    register int next = w->strip_chart.interval;
+    int next = w->strip_chart.interval;
 
     if (!XtIsRealized((Widget) w)) return;
 

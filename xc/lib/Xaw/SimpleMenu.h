@@ -1,5 +1,5 @@
 /*
- * $XConsortium: SimpleMenu.h,v 1.19 90/05/08 15:22:11 converse Exp $
+ * $XConsortium: SimpleMenu.h,v 1.20 91/02/17 13:18:55 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -45,7 +45,6 @@
 
 #include <X11/Shell.h>
 #include <X11/Xmu/Converters.h>
-#include <X11/Xfuncproto.h>
 
 /****************************************************************
  *

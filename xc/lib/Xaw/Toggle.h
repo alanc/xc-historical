@@ -41,7 +41,6 @@
  ***********************************************************************/
 
 #include <X11/Xaw/Command.h>
-#include <X11/Xfuncproto.h>
 
 /* Resources:
 
@@ -172,4 +171,3 @@ extern void XawToggleUnsetCurrent(
 _XFUNCPROTOEND
 
 #endif /* _XawToggle_h */
-/* DON'T ADD STUFF AFTER THIS */

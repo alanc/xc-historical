@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: SimpleMenP.h,v 1.12 89/12/11 15:01:39 kit Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -38,12 +38,6 @@
 #include <X11/Xaw/SimpleMenu.h>
 #include <X11/Xaw/SmeP.h>
 #include <X11/ShellP.h>
-
-#define ForAllChildren(smw, childP) \
-  for ( (childP) = (SmeObject *) (smw)->composite.children ; \
-        (childP) < (SmeObject *) ( (smw)->composite.children + \
-				 (smw)->composite.num_children ) ; \
-        (childP)++ )
 
 typedef struct {
     XtPointer extension;		/* For future needs. */

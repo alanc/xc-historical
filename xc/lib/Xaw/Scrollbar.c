@@ -1,4 +1,4 @@
-/* $XConsortium: Scrollbar.c,v 1.69 91/05/04 23:07:32 keith Exp $ */
+/* $XConsortium: Scrollbar.c,v 1.70 91/10/16 21:39:40 eswu Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -209,7 +209,7 @@ static float FractionLoc(w, x, y)
 }
 
 
-static FillArea(w, top, bottom, thumb)
+static void FillArea(w, top, bottom, thumb)
   ScrollbarWidget w;
   Position top, bottom;
   int thumb;
@@ -701,7 +701,7 @@ static void NotifyThumb( gw, event, params, num_params )
    String *params;		/* unused */
    Cardinal *num_params;	/* unused */
 {
-    register ScrollbarWidget w = (ScrollbarWidget) gw;
+    ScrollbarWidget w = (ScrollbarWidget) gw;
 
     if (w->scrollbar.direction == 0) return; /* if no StartScroll */
 

@@ -188,6 +188,12 @@ SimpleMenuClassRec simpleMenuClassRec = {
 
 WidgetClass simpleMenuWidgetClass = (WidgetClass)&simpleMenuClassRec;
 
+#define ForAllChildren(smw, childP) \
+  for ( (childP) = (SmeObject *) (smw)->composite.children ; \
+        (childP) < (SmeObject *) ( (smw)->composite.children + \
+				 (smw)->composite.num_children ) ; \
+        (childP)++ )
+
 /************************************************************
  *
  * Semi-Public Functions.
@@ -205,7 +211,7 @@ ClassInitialize()
 {
   XawInitializeWidgetSet();
   XtAddConverter( XtRString, XtRBackingStore, XmuCvtStringToBackingStore,
-		 NULL, 0 );
+		 (XtConvertArgList)NULL, (Cardinal)0 );
   XmuAddInitializer( AddPositionAction, NULL);
 }
 
@@ -264,7 +270,7 @@ Cardinal *num_args;
 
   if (smw->core.width == 0) {
       smw->simple_menu.menu_width = FALSE;
-      smw->core.width = GetMenuWidth(new, NULL);
+      smw->core.width = GetMenuWidth(new, (Widget)NULL);
   }
 
   smw->simple_menu.menu_height = TRUE;
@@ -278,7 +284,7 @@ Cardinal *num_args;
  * Add a popup_callback routine for changing the cursor.
  */
   
-  XtAddCallback(new, XtNpopupCallback, ChangeCursorOnGrab, NULL);
+  XtAddCallback(new, XtNpopupCallback, ChangeCursorOnGrab, (XtPointer)NULL);
 }
 
 /*      Function Name: Redisplay
@@ -440,7 +446,7 @@ Cardinal *num_args;
     }
 
     if (layout)
-	Layout(new, NULL, NULL);
+	Layout(new, (Dimension *)NULL, (Dimension *)NULL);
 
     return(ret_val);
 }
@@ -466,7 +472,7 @@ Widget w;
 ArgList arglist;
 Cardinal *num_args;
 {
-    register Cardinal i;
+    Cardinal i;
     Dimension width, height;
     
     width = w->core.width;
@@ -537,7 +543,7 @@ XtWidgetGeometry * request, * reply;
 	    entry->rectangle.height = old_height;	
 	}
 	else {
-	    Layout(( Widget) smw, NULL, NULL);
+	    Layout(( Widget) smw, (Dimension *)NULL, (Dimension *)NULL);
 	}
 	answer = XtGeometryDone;
     }
@@ -572,7 +578,7 @@ static void
 ChangeManaged(w)
 Widget w;
 {
-    Layout(w, NULL, NULL);
+    Layout(w, (Dimension *)NULL, (Dimension *)NULL);
 }
 
 /************************************************************
@@ -606,7 +612,7 @@ Cardinal * num_params;
 
   if (*num_params != 1) {
     char error_buf[BUFSIZ];
-    sprintf(error_buf, "%s %s",
+    (void) sprintf(error_buf, "%s %s",
 	    "Xaw - SimpleMenuWidget: position menu action expects only one",
 	    "parameter which is the name of the menu.");
     XtAppWarning(XtWidgetToApplicationContext(w), error_buf);
@@ -615,7 +621,7 @@ Cardinal * num_params;
 
   if ( (menu = FindMenu(w, params[0])) == NULL) {
     char error_buf[BUFSIZ];
-    sprintf(error_buf, "%s '%s'",
+    (void) sprintf(error_buf, "%s '%s'",
 	    "Xaw - SimpleMenuWidget: could not find menu named: ", params[0]);
     XtAppWarning(XtWidgetToApplicationContext(w), error_buf);
     return;
@@ -640,7 +646,7 @@ Cardinal * num_params;
     PositionMenu(menu, &loc);
     break;
   default:
-    PositionMenu(menu, NULL);
+    PositionMenu(menu, (XPoint *)NULL);
     break;
   }
 }  
@@ -739,8 +745,8 @@ Cardinal * num_params;
     SmeObject entry = smw->simple_menu.entry_set;
     SmeObjectClass class;
     
-    if ( (entry == NULL) || !XtIsSensitive((Widget) entry) ) return;
-
+    if ( (entry == NULL) || !XtIsSensitive((Widget) entry ) ) return;
+    
     class = (SmeObjectClass) entry->object.widget_class;
     (class->sme_class.notify)( (Widget) entry );
 }
@@ -828,15 +834,15 @@ CreateLabel(w)
 Widget w;
 {
     SimpleMenuWidget smw = (SimpleMenuWidget) w;
-    register Widget * child, * next_child;
-    register int i;
+    Widget * child, * next_child;
+    int i;
     Arg args[2];
 
     if ( (smw->simple_menu.label_string == NULL) ||
 	 (smw->simple_menu.label != NULL) ) {
 	char error_buf[BUFSIZ];
 
-	sprintf(error_buf, "Xaw Simple Menu Widget: %s or %s, %s",
+	(void) sprintf(error_buf, "Xaw Simple Menu Widget: %s or %s, %s",
 		"label string is NULL", "label already exists", 
 		"no label is being created.");
 	XtAppWarning(XtWidgetToApplicationContext(w), error_buf);
@@ -980,7 +986,7 @@ FindMenu(widget, name)
 Widget widget;
 String name;
 {
-    register Widget w, menu;
+    Widget w, menu;
     
     for ( w = widget ; w != NULL ; w = XtParent(w) )
 	if ( (menu = XtNameToWidget(w, name)) != NULL )
@@ -1013,7 +1019,7 @@ XPoint * location;
 	if (XQueryPointer(XtDisplay(w), XtWindow(w), &junk1, &junk2, 
 			  &root_x, &root_y, &junkX, &junkY, &junkM) == FALSE) {
 	    char error_buf[BUFSIZ];
-	    sprintf(error_buf, "%s %s", "Xaw - SimpleMenuWidget:",
+	    (void) sprintf(error_buf, "%s %s", "Xaw Simple Menu Widget:",
 		    "Could not find location of mouse pointer");
 	    XtAppWarning(XtWidgetToApplicationContext(w), error_buf);
 	    return;
@@ -1165,7 +1171,7 @@ Widget w, w_ent;
 	if (!XtIsManaged( (Widget) *entry)) continue;
 	
 	if (*entry != cur_entry) {
-	    XtQueryGeometry((Widget) *entry, NULL, &preferred);
+	    XtQueryGeometry((Widget) *entry, (XtWidgetGeometry *)NULL, &preferred);
 	    
 	    if (preferred.request_mode & CWWidth)
 		width = preferred.width;

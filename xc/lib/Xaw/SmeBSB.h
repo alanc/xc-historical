@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: SmeBSB.h,v 1.5 89/12/11 15:20:14 kit Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -80,6 +80,14 @@ extern WidgetClass smeBSBObjectClass;
 #define XtNrightBitmap "rightBitmap"
 #define XtNrightMargin "rightMargin"
 #define XtNvertSpace   "vertSpace"
+
+#ifndef XtNfontSet
+#define XtNfontSet		"fontSet"
+#endif
+
+#ifndef XtCFontSet
+#define XtCFontSet		"FontSet"
+#endif
 
 #define XtCLeftBitmap "LeftBitmap"
 #define XtCHorizontalMargins "HorizontalMargins"

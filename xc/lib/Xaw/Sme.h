@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: Sme.h,v 1.4 89/12/11 15:20:09 kit Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -58,6 +58,15 @@
  y		     Position		Position	0
 
 */
+
+#ifndef XtCInternational
+#define XtCInternational	"International"
+#endif
+
+#ifndef XtNinternational
+#define XtNinternational	"international"
+#endif
+
 
 typedef struct _SmeClassRec*	SmeObjectClass;
 typedef struct _SmeRec*	        SmeObject;

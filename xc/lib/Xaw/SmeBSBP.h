@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: SmeBSBP.h,v 1.6 89/12/11 15:20:15 kit Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -52,9 +52,9 @@ typedef struct _SmeBSBClassPart {
 
 /* Full class record declaration */
 typedef struct _SmeBSBClassRec {
-    RectObjClassPart       rect_class;
-    SmeClassPart     sme_class;
-    SmeBSBClassPart  sme_bsb_class;
+    RectObjClassPart	rect_class;
+    SmeClassPart	sme_class;
+    SmeBSBClassPart	sme_bsb_class;
 } SmeBSBClassRec;
 
 extern SmeBSBClassRec smeBSBClassRec;
@@ -69,6 +69,7 @@ typedef struct {
     Dimension left_margin, right_margin; /* left and right margins. */
     Pixel foreground;		/* foreground color. */
     XFontStruct * font;		/* The font to show label in. */
+    XFontSet	fontset;	/* or fontset*/
     XtJustify justify;		/* Justification for the label. */
 
 /* private resources. */
@@ -93,10 +94,10 @@ typedef struct {
  ****************************************************************/
 
 typedef struct _SmeBSBRec {
-  ObjectPart         object;
-  RectObjPart        rectangle;
-  SmePart	     sme;
-  SmeBSBPart   sme_bsb;
+    ObjectPart		object;
+    RectObjPart		rectangle;
+    SmePart		sme;
+    SmeBSBPart		sme_bsb;
 } SmeBSBRec;
 
 /************************************************************
