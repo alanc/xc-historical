@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsCCC.c,v 1.9 91/07/22 15:58:22 rws Exp $" */
+/* $XConsortium: XcmsCCC.c,v 1.10 91/07/25 01:08:25 rws Exp $" */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -237,7 +237,8 @@ XcmsFreeCCC(ccc)
  *
  */
 {
-    if (ccc == XcmsDefaultCCC(ccc->dpy, ccc->screenNumber)) {
+    if (ccc->dpy->cms.defaultCCCs &&
+	ccc == ((XcmsCCC)ccc->dpy->cms.defaultCCCs) + ccc->screenNumber) {
 	/* do not allow clients to free DefaultCCC's */
 	return;
     }
