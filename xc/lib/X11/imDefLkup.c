@@ -1,4 +1,4 @@
-/* $XConsortium: imDefLkup.c,v 1.3 93/09/18 11:00:48 rws Exp $ */
+/* $XConsortium: imDefLkup.c,v 1.4 93/09/18 12:36:08 rws Exp $ */
 /******************************************************************
 
            Copyright 1992, 1993 by FUJITSU LIMITED
@@ -510,8 +510,6 @@ _XimProcCommit(d, ic, ev, buf)
 
     if (ic->private.proto.xim_commit)
 	return False;
-
-    len += sizeof(INT16);		/* sizeof length */
 
     if (!(commit = Xmalloc(len + 1)))
 	return False;
