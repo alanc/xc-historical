@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Selection.c,v 1.9 88/09/06 09:52:39 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Selection.c,v 1.10 88/09/06 16:28:52 jim Exp $";
 /* $oHeader: Selection.c,v 1.8 88/09/01 11:53:42 asente Exp $ */
 #endif lint
 
@@ -140,7 +140,7 @@ Widget widget;
 Time time;
 Boolean incremental;
 {
-    	void HandleSelectionReplies();
+    	static void HandleSelectionReplies();
     	CallBackInfo info;
 	info = (CallBackInfo) XtMalloc(
 		(unsigned) sizeof(CallBackInfoRec));
@@ -161,8 +161,8 @@ Select ctx;
 Atom selection;
 Atom target;
 {
-    void HandleSelectionReplies();
-    void ReqTimedOut();
+    static void HandleSelectionReplies();
+    static void ReqTimedOut();
 #ifndef DEBUG
     XtAppContext app = XtWidgetToApplicationContext(info->widget);
 	info->timeout = XtAppAddTimeOut(app,
@@ -232,7 +232,7 @@ Widget widget;
 Atom selection;
 Time time;
 {
-    void HandleSelectionEvents();
+    static void HandleSelectionEvents();
 
     if ((ctx->widget == widget)
        && (ctx->selection == selection) /* paranoia */
@@ -303,7 +303,7 @@ XtIntervalId   *id;
     PropGone rec = (PropGone)closure;
     Select ctx = rec->ctx;
     Incremental incr;
-    void HandlePropertyGone();
+    static void HandlePropertyGone();
 
     incr = FindIncr(ctx, rec->window, rec->property);
     if (incr != NULL) {
@@ -682,7 +682,7 @@ XEvent *ev;
     char *value;
     int format;
     Atom target;
-    void HandleGetIncrement();
+    static void HandleGetIncrement();
 
     if ((ev->type & 0x7f) == SelectionNotify) {
 	XSelectionEvent *event = (XSelectionEvent *) ev;
@@ -738,7 +738,7 @@ XtIntervalId   *id;
     Atom type;
     IndirectPair *pairs;
     Opaque *c;
-    void HandleSelectionReplies();
+    static void HandleSelectionReplies();
     /* call requestor with XT_CONVERT_FAIL */
     if ((info->incremental) && (info->req_cancel != NULL))
 	(*info->req_cancel)(info->widget, &info->ctx->selection, 
@@ -795,7 +795,7 @@ XEvent *ev;
     unsigned long length;
     Incremental incr;
     int bad;
-    void HandleSelectionReplies();
+    static void HandleSelectionReplies();
 
     if ((event->state != PropertyNewValue) || (event->atom != info->property))
 	 return;
