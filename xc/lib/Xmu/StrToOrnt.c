@@ -1,5 +1,5 @@
 /* static char rcsid[] =
-	"$XConsortium: StrToOrnt.c,v 1.3 90/03/28 16:53:39 swick Exp $"; */
+	"$XConsortium: StrToOrnt.c,v 1.4 90/07/15 16:18:59 rws Exp $"; */
 
 /* 
  * Copyright 1988 by the Massachusetts Institute of Technology
@@ -39,8 +39,8 @@ XmuCvtStringToOrientation(args, num_args, fromVal, toVal)
     char	lowerName[1000];
 
     if (!haveQuarks) {
-	XtQEhorizontal = XrmStringToQuark(XtEhorizontal);
-	XtQEvertical   = XrmStringToQuark(XtEvertical);
+	XtQEhorizontal = XrmPermStringToQuark(XtEhorizontal);
+	XtQEvertical   = XrmPermStringToQuark(XtEvertical);
 	haveQuarks = 1;
     }
     XmuCopyISOLatin1Lowered(lowerName, (char *) fromVal->addr);

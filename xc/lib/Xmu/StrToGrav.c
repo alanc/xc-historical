@@ -1,5 +1,5 @@
 /*
- * $XConsortium: StrToGrav.c,v 1.2 90/04/13 16:19:49 jim Exp $
+ * $XConsortium: StrToGrav.c,v 1.3 90/04/13 16:22:28 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -71,7 +71,7 @@ void XmuCvtStringToGravity (args, num_args, fromVal, toVal)
 
     if (!haveQuarks) {
 	for (np = names; np->name; np++) {
-	    np->quark = XrmStringToQuark (np->name);
+	    np->quark = XrmPermStringToQuark (np->name);
 	}
 	haveQuarks = TRUE;
     }

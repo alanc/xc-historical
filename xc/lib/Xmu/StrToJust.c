@@ -1,5 +1,5 @@
 /* static char rcsid[] =
-	"$XConsortium: StrToJust.c,v 1.3 90/03/28 16:50:48 swick Exp $"; */
+	"$XConsortium: StrToJust.c,v 1.4 90/07/15 16:18:58 rws Exp $"; */
 
 /* 
  * Copyright 1988 by the Massachusetts Institute of Technology
@@ -39,9 +39,9 @@ XmuCvtStringToJustify(args, num_args, fromVal, toVal)
     if (s == NULL) return;
 
     if (!haveQuarks) {
-	XrmQEleft   = XrmStringToQuark(XtEleft);
-	XrmQEcenter = XrmStringToQuark(XtEcenter);
-	XrmQEright  = XrmStringToQuark(XtEright);
+	XrmQEleft   = XrmPermStringToQuark(XtEleft);
+	XrmQEcenter = XrmPermStringToQuark(XtEcenter);
+	XrmQEright  = XrmPermStringToQuark(XtEright);
 	haveQuarks = 1;
     }
 
