@@ -1,4 +1,4 @@
-/* $XConsortium: a2x.c,v 1.39 92/04/05 15:43:55 rws Exp $ */
+/* $XConsortium: a2x.c,v 1.40 92/04/05 17:23:41 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -65,6 +65,7 @@ released automatically at next button or non-modifier key.
 #include <math.h> /* Sun needs it */
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
+#include <X11/extensions/shape.h>
 #include <X11/extensions/XTest.h>
 #include <X11/Xos.h>
 #include <X11/keysym.h>
@@ -516,19 +517,34 @@ do_warp(buf)
 }
 
 Region
-compute_univ(puniv, wa)
+compute_univ(puniv, w, wa, level)
     Region puniv;
+    Window w;
     XWindowAttributes *wa;
+    int level;
 {
     XRectangle rect;
+    XRectangle *rects;
+    int n;
+    int order;
     Region univ;
 
-    rect.x = wa->x;
-    rect.y = wa->y;
-    rect.width = wa->width + (2 * wa->border_width);
-    rect.height = wa->height + (2 * wa->border_width);
     univ = XCreateRegion();
-    XUnionRectWithRegion(&rect, univ, univ);
+    if (!level &&
+	(rects = XShapeGetRectangles(dpy, w, ShapeBounding, &n, &order))) {
+	while (--n >= 0) {
+	    rects[n].x += wa->x;
+	    rects[n].y += wa->y;
+	    XUnionRectWithRegion(&rects[n], univ, univ);
+	}
+	XFree((char *)rects);
+    } else {
+	rect.x = wa->x;
+	rect.y = wa->y;
+	rect.width = wa->width + (2 * wa->border_width);
+	rect.height = wa->height + (2 * wa->border_width);
+	XUnionRectWithRegion(&rect, univ, univ);
+    }
     XIntersectRegion(puniv, univ, univ);
     if (XEmptyRegion(univ)) {
 	XDestroyRegion(univ);
@@ -553,19 +569,23 @@ compute_box(univ, box)
 }
 
 void
-compute_point(univ, box, rec)
+compute_point(univ, wa, rec)
     Region univ;
-    BBox *box;
+    XWindowAttributes *wa;
     Closest *rec;
 {
     int lim;
     int max;
     int i;
 
-    lim = (box->x2 - box->x1) / 2;
-    i = (box->y2 - box->y1) / 2;
-    if (i > lim)
-	lim = i;
+    rec->bestx = wa->x + wa->width / 2 + wa->border_width;
+    rec->besty = wa->y + wa->height / 2 + wa->border_width;
+    if (XPointInRegion(univ, rec->bestx, rec->besty))
+	return;
+    lim = wa->width;
+    if (wa->height > wa->width)
+	lim = wa->height;
+    lim = lim / 2 + wa->border_width;
     for (max = 0; max <= lim; max++) {
 	for (i = 0; i <= max; i++) {
 	    if (XPointInRegion(univ, rec->bestx - max, rec->besty - i)) {
@@ -622,11 +642,12 @@ destroy_region(univ)
 }
 
 Bool
-find_closest(rec, parent, pwa, puniv)
+find_closest(rec, parent, pwa, puniv, level)
     Closest *rec;
     Window parent;
     XWindowAttributes *pwa;
     Region puniv;
+    int level;
 {
     Window *children;
     unsigned int nchild;
@@ -647,10 +668,11 @@ find_closest(rec, parent, pwa, puniv)
 	    continue;
 	wa.x += pwa->x;
 	wa.y += pwa->y;
-	univ = compute_univ(puniv, &wa);
+	univ = compute_univ(puniv, children[i], &wa, level);
 	if (!univ)
 	    continue;
-	if (rec->recurse && find_closest(rec, children[i], &wa, univ))
+	if (rec->recurse &&
+	    find_closest(rec, children[i], &wa, univ, level + 1))
 	    found = True;
 	if (rec->input && !(wa.all_event_masks & rec->input))
 	    continue;
@@ -704,10 +726,7 @@ find_closest(rec, parent, pwa, puniv)
 		rec->ymult * (y - rec->rooty) * (y - rec->rooty));
 	if (dist >= rec->best_dist)
 	    continue;
-	rec->bestx = (box.x1 + box.x2) / 2;
-	rec->besty = (box.y1 + box.y2) / 2;
-	if (!XPointInRegion(univ, rec->bestx, rec->besty))
-	    compute_point(univ, &box, rec);
+	compute_point(univ, &wa, rec);
 	rec->best_dist = dist;
 	found = True;
     }
@@ -805,7 +824,7 @@ do_jump(buf)
     rect.width = wa.width;
     rect.height = wa.height;
     XUnionRectWithRegion(&rect, univ, univ);
-    if (find_closest(&rec, root, &wa, univ))
+    if (find_closest(&rec, root, &wa, univ, 0))
 	generate_warp(screen, rec.bestx, rec.besty);
     XDestroyRegion(univ);
 }
