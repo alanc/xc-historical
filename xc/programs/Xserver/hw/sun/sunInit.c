@@ -1,4 +1,4 @@
-/* $XConsortium: sunInit.c,v 5.47 94/02/01 11:02:30 kaleb Exp $ */
+/* $XConsortium: sunInit.c,v 5.48 94/02/01 11:06:14 kaleb Exp $ */
 /*
  * sunInit.c --
  *	Initialization functions for screen/keyboard/mouse, etc.
@@ -71,6 +71,7 @@ extern Bool sunBW2Init(
 #define CG3I NULL
 #define CG4I NULL
 #define CG6I NULL
+#define CG8I NULL
 #else /* }{ */
 extern Bool sunCG3Init(
 #if NeedFunctionPrototypes
@@ -117,6 +118,19 @@ extern Bool sunCG6Init(
 #else /* }{ */
 #define CG6I NULL
 #endif /* } */
+#if SUNMAXDEPTH > 8 /* { */
+extern Bool sunCG8Init(
+#if NeedFunctionPrototypes
+    int /* screen */,
+    ScreenPtr /* pScreen */,
+    int /* argc */,
+    char** /* argv */
+#endif
+);
+#define CG8I sunCG8Init
+#else /* }{ */
+#define CG8I NULL
+#endif /* } */
 #endif /* } */
 
 static Bool	sunDevsInited = FALSE;
@@ -141,7 +155,7 @@ sunFbDataRec sunFbData[FBTYPE_LASTPLUSONE] = {
   { NULL, "SUN2GP        (gp1/gp2)" },
   { NULL, "SUN5COLOR     (cg5/386i accel)" },
   { CG3I, "SUN3COLOR     (cg3)" },
-  { NULL, "MEMCOLOR      (cg8)" },
+  { CG8I, "MEMCOLOR      (cg8)" },
   { CG4I, "SUN4COLOR     (cg4)" },
   { NULL, "NOTSUN1" },
   { NULL, "NOTSUN2" },
@@ -201,6 +215,9 @@ static char *fallbackList[] = {
 #if (MAXSCREENS == 4)
     BWTWO3DEV,
 #endif
+#endif /* } */
+#if SUNMAXDEPTH > 8 /* { */
+    CGEIGHT0DEV,
 #endif /* } */
     "/dev/fb"
 };

@@ -1,5 +1,5 @@
 
-/* $XConsortium: sunCfb.c,v 1.8 94/02/01 11:02:29 kaleb Exp $ */
+/* $XConsortium: sunCfb.c,v 1.9 94/02/06 09:21:23 kaleb Exp $ */
 
 /*
  * Copyright 1990 Massachusetts Institute of Technology
@@ -80,23 +80,22 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
 #include "sun.h"
-#include "cfb.h"
-#include <sys/mman.h>
+#include "cfb/cfb.h"
 
 extern int TellLostMap(), TellGainedMap();
 
-static void CGUpdateColormap(pScreen, index, count, rmap, gmap, bmap)
+static void CGUpdateColormap(pScreen, dex, count, rmap, gmap, bmap)
     ScreenPtr	pScreen;
-    int		index, count;
+    int		dex, count;
     u_char	*rmap, *gmap, *bmap;
 {
     struct fbcmap sunCmap;
 
-    sunCmap.index = index;
+    sunCmap.index = dex;
     sunCmap.count = count;
-    sunCmap.red = &rmap[index];
-    sunCmap.green = &gmap[index];
-    sunCmap.blue = &bmap[index];
+    sunCmap.red = &rmap[dex];
+    sunCmap.green = &gmap[dex];
+    sunCmap.blue = &bmap[dex];
 
     if (ioctl(sunFbs[pScreen->myNum].fd, FBIOPUTCMAP, &sunCmap) < 0) {
 	Error("CGUpdateColormap");
@@ -104,7 +103,7 @@ static void CGUpdateColormap(pScreen, index, count, rmap, gmap, bmap)
     }
 }
 
-static void CGInstallColormap(cmap)
+void sunInstallColormap(cmap)
     ColormapPtr	cmap;
 {
     SetupScreen(cmap->pScreen);
@@ -120,15 +119,9 @@ static void CGInstallColormap(cmap)
 		 (pointer) &(pPrivate->installedMap->mid));
     if ((pVisual->class | DynamicClass) == DirectColor) {
 	for (i = 0; i < 256; i++) {
-	    pent = &cmap->red[(i & pVisual->redMask) >>
-			      pVisual->offsetRed];
-	    rmap[i] = pent->co.local.red >> 8;
-	    pent = &cmap->green[(i & pVisual->greenMask) >>
-				pVisual->offsetGreen];
-	    gmap[i] = pent->co.local.green >> 8;
-	    pent = &cmap->blue[(i & pVisual->blueMask) >>
-			       pVisual->offsetBlue];
-	    bmap[i] = pent->co.local.blue >> 8;
+	    rmap[i] = cmap->red[i].co.local.red >> 8;
+	    gmap[i] = cmap->green[i].co.local.green >> 8;
+	    bmap[i] = cmap->blue[i].co.local.blue >> 8;
 	}
     } else {
 	for (i = 0, pent = cmap->red;
@@ -151,7 +144,7 @@ static void CGInstallColormap(cmap)
     WalkTree(cmap->pScreen, TellGainedMap, (pointer) &(cmap->mid));
 }
 
-static void CGUninstallColormap(cmap)
+void sunUninstallColormap(cmap)
     ColormapPtr	cmap;
 {
     SetupScreen(cmap->pScreen);
@@ -170,7 +163,7 @@ static void CGUninstallColormap(cmap)
     }
 }
 
-static int CGListInstalledColormaps(pScreen, pCmapList)
+int sunListInstalledColormaps(pScreen, pCmapList)
     ScreenPtr	pScreen;
     Colormap	*pCmapList;
 {
@@ -189,7 +182,7 @@ static void CGStoreColors(pmap, ndef, pdefs)
     xColorItem	expanddefs[256];
     register int i;
 
-    if (pmap != pPrivate->installedMap)
+    if (pPrivate->installedMap != NULL && pPrivate->installedMap != pmap)
 	return;
     if ((pmap->pVisual->class | DynamicClass) == DirectColor) {
 	ndef = cfbExpandDirectColors(pmap, ndef, pdefs, expanddefs);
@@ -210,15 +203,15 @@ static void CGScreenInit (pScreen)
 {
 #ifndef STATIC_COLOR /* { */
     SetupScreen (pScreen);
-    pScreen->InstallColormap = CGInstallColormap;
-    pScreen->UninstallColormap = CGUninstallColormap;
-    pScreen->ListInstalledColormaps = CGListInstalledColormaps;
+    pScreen->InstallColormap = sunInstallColormap;
+    pScreen->UninstallColormap = sunUninstallColormap;
+    pScreen->ListInstalledColormaps = sunListInstalledColormaps;
     pScreen->StoreColors = CGStoreColors;
     pPrivate->UpdateColormap = CGUpdateColormap;
-    if (sunFlipPixels)
-    {
-	pScreen->whitePixel = 1;
-	pScreen->blackPixel = 0;
+    if (sunFlipPixels) {
+	Pixel pixel = pScreen->whitePixel;
+	pScreen->whitePixel = pScreen->blackPixel;
+	pScreen->blackPixel = pixel;
     }
 #endif /* } */
 }

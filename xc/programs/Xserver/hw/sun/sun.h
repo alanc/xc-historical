@@ -1,5 +1,5 @@
 
-/* $XConsortium: sun.h,v 5.34 94/01/21 18:44:56 kaleb Exp $ */
+/* $XConsortium: sun.h,v 5.35 94/02/01 11:01:56 kaleb Exp $ */
 
 /*-
  * Copyright (c) 1987 by the Regents of the University of California
@@ -18,14 +18,13 @@
 
 /* X headers */
 #include "Xos.h"
+#undef index /* don't mangle silly Sun structure member names */
 #include "X.h"
 #include "Xproto.h"
 
 /* general system headers */
 #ifndef NOSTDHDRS
-# ifndef PSZ
 # include <stdlib.h>
-# endif
 #else
 # include <malloc.h>
 extern char *getenv();
@@ -97,6 +96,8 @@ extern int gettimeofday();
  * Server specific headers
  */
 #include "misc.h"
+#undef abs /* don't munge function prototypes in headers, sigh */
+#undef fabs
 #include "scrnintstr.h"
 #ifdef NEED_EVENTS
 # include "inputstr.h"
@@ -116,9 +117,11 @@ extern int gettimeofday();
 /* 
  * ddx specific headers 
  */
+#ifndef PSZ
 #define PSZ 8
+#endif
 
-#include "mipointer.h"
+#include "mi/mipointer.h"
 
 extern int monitorResolution;
 
@@ -142,6 +145,7 @@ extern int monitorResolution;
 # define BWTWO1DEV	"/dev/fbs/bwtwo1"
 # define BWTWO2DEV	"/dev/fbs/bwtwo2"
 # define BWTWO3DEV	"/dev/fbs/bwtwo3"
+# define CGEIGHT0DEV	"/dev/fbs/cgeight0"
 #else
 # define CGTWO0DEV	"/dev/cgtwo0"
 # define CGTWO1DEV	"/dev/cgtwo1"
@@ -160,6 +164,7 @@ extern int monitorResolution;
 # define BWTWO1DEV	"/dev/bwtwo1"
 # define BWTWO2DEV	"/dev/bwtwo2"
 # define BWTWO3DEV	"/dev/bwtwo3"
+# define CGEIGHT0DEV	"/dev/cgeight0"
 #endif
 
 /*
@@ -424,6 +429,25 @@ extern Bool sunCfbScreenInit(
     int /* dpiy */,		/* dots per inch */
     int /* width */,		/* pixel width of frame buffer */
     int	/* bpp */		/* bits per pixel of root */
+#endif
+);
+
+extern void sunInstallColormap(
+#if NeedFunctionPrototypes
+    ColormapPtr /* cmap */
+#endif
+);
+
+extern void sunUninstallColormap(
+#if NeedFunctionPrototypes
+    ColormapPtr /* cmap */
+#endif
+);
+
+extern int sunListInstalledColormaps(
+#if NeedFunctionPrototypes
+    ScreenPtr /* pScreen */,
+    Colormap* /* pCmapList */
 #endif
 );
 

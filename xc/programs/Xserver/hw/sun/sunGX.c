@@ -1,5 +1,5 @@
 #ifndef lint
-static char *rid="$XConsortium: sunGX.c,v 1.23 93/12/13 18:22:29 dpw Exp $";
+static char *rid="$XConsortium: sunGX.c,v 1.24 94/01/07 09:52:13 dpw Exp $";
 #endif /* lint */
 /*
  * Copyright 1991 Massachusetts Institute of Technology
@@ -24,25 +24,21 @@ static char *rid="$XConsortium: sunGX.c,v 1.23 93/12/13 18:22:29 dpw Exp $";
  * Author:  Keith Packard, MIT X Consortium
  */
 
-#include	"X.h"
+#include	"sun.h"
+
 #include	"Xmd.h"
-#include	"Xproto.h"
 #include	"gcstruct.h"
-#include	"windowstr.h"
 #include	"scrnintstr.h"
 #include	"pixmapstr.h"
 #include	"regionstr.h"
 #include	"mistruct.h"
 #include	"fontstruct.h"
 #include	"dixfontstr.h"
-#define PSZ 8
-#include	"cfb.h"
-#include	"cfbmskbits.h"
-#include	"cfb8bit.h"
+#include	"cfb/cfb.h"
+#include	"cfb/cfbmskbits.h"
+#include	"cfb/cfb8bit.h"
 #include	"fastblt.h"
 #include	"mergerop.h"
-
-#include	"sun.h"
 #include	"sunGX.h"
 #include	"migc.h"
 
