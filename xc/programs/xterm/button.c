@@ -1,5 +1,5 @@
 /*
- *	$Header: button.c,v 1.4 88/04/06 17:08:37 jim Exp $
+ *	$Header: button.c,v 1.5 88/05/18 10:44:58 jim Exp $
  */
 
 
@@ -35,7 +35,7 @@ button.c	Handles button events in the terminal emulator.
 				J. Gettys.
 */
 #ifndef lint
-static char rcs_id[] = "$Header: button.c,v 1.4 88/04/06 17:08:37 jim Exp $";
+static char rcs_id[] = "$Header: button.c,v 1.5 88/05/18 10:44:58 jim Exp $";
 #endif	/* lint */
 #include <X11/Xos.h>
 #include <X11/Xlib.h>
@@ -260,7 +260,7 @@ register XButtonEvent *event;
 		return;
 	if (screen->incopy)
 		CopyWait (screen);
-	textfunc[screen->send_mouse_pos][shift][0][button](event);
+	(*(textfunc[screen->send_mouse_pos][shift][0][button]))(event);
 }
 
 /*ARGSUSED*/
@@ -296,7 +296,7 @@ register XButtonEvent *event;
 
 	switch (eventMode) {
 		case NORMAL :
-			textfunc[screen->send_mouse_pos][shift][1][button]
+			(*(textfunc[screen->send_mouse_pos][shift][1][button]))
 			 (event);
 			break;
 		case LEFTEXTENSION :
@@ -320,7 +320,7 @@ register XButtonEvent *event;
 
 	if (screen->incopy)
 		CopyWait (screen);
-	Tbfunc[shift][button](event);
+	(*(Tbfunc[shift][button]))(event);
 }
 
 
