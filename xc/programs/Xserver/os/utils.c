@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: utils.c,v 1.38 88/02/05 10:34:57 rws Exp $ */
+/* $Header: utils.c,v 1.39 88/02/06 17:17:21 rws Exp $ */
 #include <stdio.h>
 #include <sys/time.h>
 #include "misc.h"
@@ -79,6 +79,7 @@ ErrorF( f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9) /* limit of ten args */
 void
 AbortServer()
 {
+    fflush(stderr);
     abort();
 }
 
@@ -92,6 +93,18 @@ Error(str)
 int
 Notice()
 {
+}
+
+/*VARARGS1*/
+FatalError (msg, v0, v1, v2, v3, v4, v5, v6, v7, v8)
+    char *msg;
+    char *v0, *v1, *v2, *v3, *v4, *v5, *v6, *v7, *v8;
+{
+    ErrorF("\nFatal server bug!\n");
+    ErrorF(msg, v0, v1, v2, v3, v4, v5, v6, v7, v8);
+    ErrorF("\n");
+    AbortServer();
+    /*NOTREACHED*/
 }
 
 int
