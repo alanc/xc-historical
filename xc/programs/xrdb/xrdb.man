@@ -4,31 +4,22 @@ xrdb - Server Resource Database Utility.
 .SH SYNOPSIS
 .B xrdb
 [
-.B \-display \fIhost\fP:\fInumber\fP
-] [
-.B \-d
-] [
-.B \-r
-] [
-.B \-q
-] [
-.B \-m
-] [
-.B \-e
+.B \-options
 ] [
 .I filename
 ] 
 .SH DESCRIPTION
 .I Xrdb
-is used to set or dump the contents of the RESOURCE_MANAGER property
-on the root window of screen 0.
-You would normally run this program from your .login script.
+is used to get or set the contents of the RESOURCE_MANAGER property
+on the root window of screen 0.  You would normally run this program from 
+your .login script.
 .LP
-.B filename
-is passed through cpp with symbols defined that depend upon properties
-of the server in question.
-If filename is not provided, stdin is used.
-The symbols generated include
+The
+.I filename
+(or the standard input if - or no input file is given)
+is (optionally) passed through the C preprocessor with the 
+following symbols defined, based on the capabilities of the server
+being used:
 .TP
 .B HOST=<hostname>
 the hostname portion of the display to which you are
@@ -58,59 +49,92 @@ only defined if the default visual's type is one of the color options.
 .LP
 Lines that begin with a "!" character are discarded.
 .LP
-The X library XGetDefault routine, and toolkit resource managers
-use this property to get user preferences about color, fonts, and so
-on for your applications.
-This solves the problem present in V10 which required you to
-maitain up to date default files on all of the machines you
+The resource manager (used by the Xlib routine XGetDefault and the
+Xtk toolkit) uses the RESOURCE_MANAGER property to get user preferences about 
+color, fonts, and so on for applications.  Having this information in
+the server, where it is available to all clients, 
+solves the problem in Version 10 of X which required you to 
+maintain up to date default files on all of the machines you
 used in your network.
 .SH "OPTIONS"
 .PP
+The 
+.B xrdb
+program accepts the following options:
 .TP
-.B \-q
-This option allows you to query the current contents of the
-property, and prints the contents on the standard output.
+.B \-help
+This option (or any other incorrect option) will cause a brief description of 
+the allowable options and parameters to be printed.
 .TP
-.B \-m
-This option allows you to merge the contents of the file with what is
-currently held as a property on the root.
+.B \-display \fIhost\fP:\fIdisplay\fP
+This option specifies the server to be used.
 .TP
-.B \-r
-This option allows you to remove the current contents of the
-property.
+.B -cpp \fIfilename\fP
+This option specifies the pathname of the C preprocessor program to be used.
+Although 
+.B xrdb
+was designed to use CPP, any program that acts as a filter
+and accepts the -D, -I, and -U options may be used.
 .TP
-.B \-d
-This option allows you to see the symbols that are defined to CPP
-when for processing the defaults file before storing the property
-on the root window. It can be used in conjunction with any of the other
-options.
-.TP
-.B \-e
-.I file
-This option edits values from the property on the root into the specified
-.I file
-.
-.TP
-.B \-D<define value>
-This option allows you to add to the definitions passed to CPP.
-.TP 8
-.B \fIhost\fP:\fIdisplay\fP
-Normally,
+.B -nocpp
+This option indicates that
 .I xrdb
-gets the host and display number to use from the environment
-variable ``DISPLAY''.  One can, however specify them explicitly.
-The
-.I host
-specifies which machine's resource data base to manipulate, and
-the
-.I number
-argument specifies the display number.
+should not run the input file through a preprocessor before loading it
+into the RESOURCE_MANAGER property.
+.TP
+.B \-symbols
+This option indicates that the symbols that are defined for the preprocessor
+should be printed onto the standard output.  It can be used in conjunction with 
+.B \-query,
+but not with the options that change the RESOURCE_MANAGER property.
+.TP
+.B \-query
+This option indicates that the current contents of the RESOURCE_MANAGER 
+property should be printed onto the standard output.
+.TP
+.B \-load
+This option indicates that the input should be loaded as the new value
+of the RESOURCE_MANAGER property, replacing whatever what there (i.e.
+the old contents are deleted).  This is the default action.
+.TP
+.B \-merge
+This option indicates that the input should be merged with, instead of
+replacing, the current contents of the RESOURCE_MANAGER property.
+.TP
+.B \-remove
+This option indicates that the RESOUCE_MANAGER property should be removed
+from its window.
+.TP
+.B \-edit \fIfilename\fP
+This option indicates that the contents of the RESOURCE_MANAGER property
+should be edited into the given file, replacing any values already listed
+there.  This is the opposite of 
+.B \-merge.
+.TP
+.B \-backup \fIstring\fP
+This option specifies a suffix to be appended to the filename used with
+.B \-edit
+to generate a backup file.
+.TP
+.B \-D\fIname\[=value\]\fP
+This option is passed through to the preprocessor and is used to define 
+symbols for use with conditionals such as
+.I #ifdef.
+.TP
+.B \-U\fIname\fP
+This option is passed through to the preprocessor and is used to remove
+any definitions of this symbol.
+.TP
+.B \-I\fIdirectory\fP
+This option is passed through to the preprocessor and is used to specify
+a directory to search for files that are referenced with 
+.I #include.
 .SH FILES
-~/.Xdefaults
+Generalizes the ~/.Xdefaults notion.
 .SH "SEE ALSO"
 XGetDefault(3X)
 .SH ENVIRONMENT
-DISPLAY	-	To find out which display you are using.
+DISPLAY	-	To figure out which display to use.
 .SH AUTHORS
 Jim Gettys
 .br
