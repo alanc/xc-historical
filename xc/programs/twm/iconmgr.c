@@ -21,7 +21,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: iconmgr.c,v 1.43 90/03/20 11:20:17 jim Exp $
+ * $XConsortium: iconmgr.c,v 1.44 91/01/05 15:50:52 dave Exp $
  *
  * Icon Manager routines
  *
@@ -39,6 +39,9 @@
 #include "siconify.bm"
 #include <X11/Xos.h>
 #include <X11/Xmu/CharSet.h>
+#ifdef macII
+int strcmp(); /* missing from string.h in AUX 2.0 */
+#endif
 
 int iconmgr_textx = siconify_width+11;
 WList *Active = NULL;
