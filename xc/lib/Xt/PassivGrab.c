@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium$";
+static char Xrcsid[] = "$XConsortium: PassivGrab.c,v 1.7 90/01/25 08:55:30 swick Exp $";
 #endif
 
 /********************************************************
@@ -334,7 +334,7 @@ XtServerGrabPtr pFirstGrab, pSecondGrab;
 
 /*
  * Delete a grab combination from the passive grab list.  Each entry will
- * be checked to see if it is affected by the grab being delete.  This
+ * be checked to see if it is affected by the grab being deleted.  This
  * may result in multiple entries being modified/deleted.
  */
 
@@ -348,7 +348,7 @@ static void  DeleteServerGrabFromList(passiveListPtr,
     register XtServerGrabPtr *next;
     register XtServerGrabPtr grab;
     
-    for (next = (XtServerGrabPtr *) (passiveListPtr); *next; )
+    for (next = passiveListPtr; *next; )
       {
 	  grab = *next;
 	  
@@ -527,22 +527,15 @@ XtServerGrabPtr _XtCheckServerGrabsOnWidget (event, widget, isKeyboard, pdi)
     XtServerGrabRec 	tempGrab;
     XtServerGrabPtr	*passiveListPtr;
     XtPerWidgetInput	pwi;
-    XtDevice		device;
-
 
     if ((pwi = _XtGetPerWidgetInput(widget, FALSE)) == NULL)
       return (XtServerGrabPtr)0;
 
     if (isKeyboard)
-      {
 	  passiveListPtr = &pwi->keyList;
-	  device = &pdi->keyboard;
-      }
     else
-      {
 	  passiveListPtr = &pwi->ptrList;
-	  device = &pdi->pointer;
-      }
+
     /*
      * if either there is no entry in the context manager or the entry
      * is empty, or the keyboard is grabed, then no work to be done
@@ -769,8 +762,6 @@ void   UngrabKeyOrButton (widget, keyOrButton, modifiers, isKeyboard)
     Boolean	isKeyboard;
 {
     XtServerGrabRec 	tempGrab;
-    XtServerGrabPtr	*passiveListPtr;
-    XtPerDisplayInput	pdi;
     XtPerWidgetInput	pwi;
     
     if (!XtIsWidget(widget)){
@@ -792,8 +783,7 @@ void   UngrabKeyOrButton (widget, keyOrButton, modifiers, isKeyboard)
     pwi = _XtGetPerWidgetInput(widget, FALSE);
     
     /*
-     * if either there is no entry in the context manager or the entry
-     * is empty, then somethings wrong
+     * if there is no entry in the context manager then somethings wrong
      */
     if (!pwi)
       {
@@ -803,11 +793,6 @@ void   UngrabKeyOrButton (widget, keyOrButton, modifiers, isKeyboard)
 		       (String *)NULL, (Cardinal *)NULL);
 	  return;
       }
-
-    if (isKeyboard)
-	passiveListPtr = &pwi->keyList;
-    else
-	passiveListPtr = &pwi->ptrList;
 
     if (XtIsRealized(widget))
       {
@@ -821,11 +806,10 @@ void   UngrabKeyOrButton (widget, keyOrButton, modifiers, isKeyboard)
 			  widget->core.window);
       }
 
-    pdi = _XtGetPerDisplayInput(XtDisplay(widget));
-    
+   
     /* Delete all entries which are encompassed by the specified grab. */
-    DeleteServerGrabFromList(passiveListPtr,
-			     pdi, 
+    DeleteServerGrabFromList(isKeyboard ? &pwi->keyList : &pwi->ptrList,
+			     _XtGetPerDisplayInput(XtDisplay(widget)), 
 			     &tempGrab);
 }
 
