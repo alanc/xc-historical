@@ -1,5 +1,5 @@
 static char rcsid[] =
-	"$XConsortium: Lookup.c,v 1.3 88/10/13 08:44:36 rws Exp $";
+	"$XConsortium: Lookup.c,v 1.4 89/01/06 16:21:41 rws Exp $";
 
 /* 
  * Copyright 1988, 1989 by the Massachusetts Institute of Technology
@@ -15,8 +15,6 @@ static char rcsid[] =
  * without express or implied warranty.
  *
  */
-
-/* XXX the APL character set needs work, and Kana needs to be checked */
 
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
@@ -149,7 +147,7 @@ int XmuLookupString (event, buffer, nbytes, keysym, status, keysymSet)
     return count;
 }
 
-/* produces ISO 8859-1 encoding */
+/* produces ISO 8859-1 encoding plus ASCII control */
 int XmuLookupLatin1 (event, buffer, nbytes, keysym, status)
     register XKeyEvent *event;
     char *buffer;
@@ -160,7 +158,7 @@ int XmuLookupLatin1 (event, buffer, nbytes, keysym, status)
     return XLookupString(event, buffer, nbytes, keysym, status);
 }
 
-/* produces ISO 8859-2 encoding */
+/* produces ISO 8859-2 encoding plus ASCII control */
 int XmuLookupLatin2 (event, buffer, nbytes, keysym, status)
     register XKeyEvent *event;
     char *buffer;
@@ -171,7 +169,7 @@ int XmuLookupLatin2 (event, buffer, nbytes, keysym, status)
     return XmuLookupString(event, buffer, nbytes, keysym, status, 1);
 }
 
-/* produces ISO 8859-3 encoding */
+/* produces ISO 8859-3 encoding plus ASCII control */
 int XmuLookupLatin3 (event, buffer, nbytes, keysym, status)
     register XKeyEvent *event;
     char *buffer;
@@ -182,7 +180,7 @@ int XmuLookupLatin3 (event, buffer, nbytes, keysym, status)
     return XmuLookupString(event, buffer, nbytes, keysym, status, 2);
 }
 
-/* produces ISO 8859-4 encoding */
+/* produces ISO 8859-4 encoding plus ASCII control */
 int XmuLookupLatin4 (event, buffer, nbytes, keysym, status)
     register XKeyEvent *event;
     char *buffer;
@@ -193,6 +191,7 @@ int XmuLookupLatin4 (event, buffer, nbytes, keysym, status)
     return XmuLookupString(event, buffer, nbytes, keysym, status, 3);
 }
 
+/* produces ISO 8859-1 GL plus Katakana plus ASCII control */
 int XmuLookupKana (event, buffer, nbytes, keysym, status)
     register XKeyEvent *event;
     char *buffer;
@@ -203,7 +202,7 @@ int XmuLookupKana (event, buffer, nbytes, keysym, status)
     return XmuLookupString(event, buffer, nbytes, keysym, status, 4);
 }
 
-/* produces ISO 8859-6 encoding */
+/* produces ISO 8859-6 encoding plus ASCII control */
 int XmuLookupArabic (event, buffer, nbytes, keysym, status)
     register XKeyEvent *event;
     char *buffer;
@@ -214,7 +213,7 @@ int XmuLookupArabic (event, buffer, nbytes, keysym, status)
     return XmuLookupString(event, buffer, nbytes, keysym, status, 5);
 }
 
-/* produces ISO 8859-5.2 encoding */
+/* produces ISO 8859-5.2 encoding plus ASCII control */
 int XmuLookupCyrillic (event, buffer, nbytes, keysym, status)
     register XKeyEvent *event;
     char *buffer;
@@ -225,7 +224,7 @@ int XmuLookupCyrillic (event, buffer, nbytes, keysym, status)
     return XmuLookupString(event, buffer, nbytes, keysym, status, 6);
 }
 
-/* produces ISO 8859-7 encoding */
+/* produces ISO 8859-7 encoding plus ASCII control */
 int XmuLookupGreek (event, buffer, nbytes, keysym, status)
     register XKeyEvent *event;
     char *buffer;
@@ -235,6 +234,8 @@ int XmuLookupGreek (event, buffer, nbytes, keysym, status)
 {
     return XmuLookupString(event, buffer, nbytes, keysym, status, 7);
 }
+
+/* XXX this character set needs work */
 
 int XmuLookupAPL (event, buffer, nbytes, keysym, status)
     register XKeyEvent *event;
@@ -246,7 +247,7 @@ int XmuLookupAPL (event, buffer, nbytes, keysym, status)
     return XmuLookupString(event, buffer, nbytes, keysym, status, 11);
 }
 
-/* produces ISO 8859-8 encoding */
+/* produces ISO 8859-8 encoding plus ASCII control */
 int XmuLookupHebrew (event, buffer, nbytes, keysym, status)
     register XKeyEvent *event;
     char *buffer;
