@@ -1,99 +1,27 @@
+/* $XConsortium$ */
+
+/*
+
+Copyright 1989-1991, Bitstream Inc., Cambridge, MA.
+You are hereby granted permission under all Bitstream propriety rights to
+use, copy, modify, sublicense, sell, and redistribute the Bitstream Speedo
+software and the Bitstream Charter outline font for any purpose and without
+restrictions; provided, that this notice is left intact on all copies of such
+software or font and that Bitstream's trademark is acknowledged as shown below
+on all unmodified copies of such font.
+
+BITSTREAM CHARTER is a registered trademark of Bitstream Inc.
 
 
+BITSTREAM INC. DISCLAIMS ANY AND ALL WARRANTIES, EXPRESS OR IMPLIED, INCLUDING
+WITHOUT LIMITATION THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+PARTICULAR PURPOSE.  BITSTREAM SHALL NOT BE LIABLE FOR ANY DIRECT OR INDIRECT
+DAMAGES, INCLUDING BUT NOT LIMITED TO LOST PROFITS, LOST DATA, OR ANY OTHER
+INCIDENTAL OR CONSEQUENTIAL DAMAGES, ARISING OUT OF OR IN ANY WAY CONNECTED
+WITH THE SPEEDO SOFTWARE OR THE BITSTREAM CHARTER OUTLINE FONT.
 
-/*****************************************************************************
-*                                                                            *
-*  Copyright 1989, as an unpublished work by Bitstream Inc., Cambridge, MA   *
-*                         U.S. Patent No 4,785,391                           *
-*                           Other Patent Pending                             *
-*                                                                            *
-*         These programs are the sole property of Bitstream Inc. and         *
-*           contain its proprietary and confidential information.            *
-*                                                                            *
-*****************************************************************************/
-/********************* Revision Control Information **********************************
-*                                                                                    *
-*     $Header: //toklas/archive/rcs/speedo/out_util.c,v 22.1 91/01/23 17:19:52 leeann Release $                                                                       *
-*                                                                                    *
-*     $Log:	out_util.c,v $
- * Revision 22.1  91/01/23  17:19:52  leeann
- * Release
- * 
- * Revision 21.1  90/11/20  14:39:07  leeann
- * Release
- * 
- * Revision 20.2  90/11/20  13:15:03  leeann
- * fixed clipping precision
- * 
- * Revision 20.1  90/11/12  09:31:55  leeann
- * Release
- * 
- * Revision 19.1  90/11/08  10:24:27  leeann
- * Release
- * 
- * Revision 18.2  90/11/07  15:38:41  leeann
- *  implement clipping for rotation of 90, 180, and 270 degrees
- * 
- * Revision 18.1  90/09/24  10:15:30  mark
- * Release
- * 
- * Revision 17.1  90/09/13  16:05:41  mark
- * Release name rel0913
- * 
- * Revision 16.1  90/09/11  13:20:33  mark
- * Release
- * 
- * Revision 15.1  90/08/29  10:09:04  mark
- * Release name rel0829
- * 
- * Revision 14.1  90/07/13  10:47:15  mark
- * Release name rel071390
- * 
- * Revision 13.1  90/07/02  10:46:01  mark
- * Release name REL2070290
- * 
- * Revision 12.2  90/06/26  09:01:59  leeann
- * use tcb0 to compute pixel values
- * 
- * Revision 12.1  90/04/23  12:17:07  mark
- * Release name REL20
- * 
- * Revision 11.1  90/04/23  10:17:26  mark
- * Release name REV2
- * 
- * Revision 1.8  90/04/23  09:44:08  mark
- * add GDECL statement
- * 
- * Revision 1.7  90/04/10  13:28:04  mark
- * fix collected bounding boxes
- * 
- * Revision 1.6  90/04/10  12:19:01  mark
- * correct ymin calculation to get rid of extra blank scan line at bottom
- * 
- * Revision 1.5  90/04/09  12:54:07  mark
- * another null checkin to test fix of put proble,
- * 
- * Revision 1.4  90/04/09  12:51:10  mark
- * null put to test bug in put procedure
- * 
- * Revision 1.3  90/04/06  12:15:01  mark
- * fix configuration problems so that necessary variables
- * are calculated regardless of which output modules are
- * included.
- * 
- * Revision 1.2  90/04/04  13:18:58  mark
- * added Y clipping by limiting y_band.band_min and band_max to
- * the size of the Em square
- * 
- * Revision 1.1  90/03/30  14:44:43  mark
- * Initial revision
- * 
-*                                                                                    *
-*************************************************************************************/
+*/
 
-#ifdef RCSSTATUS
-static char rcsid[] = "$Header: //toklas/archive/rcs/speedo/out_util.c,v 22.1 91/01/23 17:19:52 leeann Release $";
-#endif
 
 #define	DEBUG	0
 

@@ -1,116 +1,26 @@
+/* $XConsortium$ */
+
+/*
+
+Copyright 1989-1991, Bitstream Inc., Cambridge, MA.
+You are hereby granted permission under all Bitstream propriety rights to
+use, copy, modify, sublicense, sell, and redistribute the Bitstream Speedo
+software and the Bitstream Charter outline font for any purpose and without
+restrictions; provided, that this notice is left intact on all copies of such
+software or font and that Bitstream's trademark is acknowledged as shown below
+on all unmodified copies of such font.
+
+BITSTREAM CHARTER is a registered trademark of Bitstream Inc.
 
 
+BITSTREAM INC. DISCLAIMS ANY AND ALL WARRANTIES, EXPRESS OR IMPLIED, INCLUDING
+WITHOUT LIMITATION THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+PARTICULAR PURPOSE.  BITSTREAM SHALL NOT BE LIABLE FOR ANY DIRECT OR INDIRECT
+DAMAGES, INCLUDING BUT NOT LIMITED TO LOST PROFITS, LOST DATA, OR ANY OTHER
+INCIDENTAL OR CONSEQUENTIAL DAMAGES, ARISING OUT OF OR IN ANY WAY CONNECTED
+WITH THE SPEEDO SOFTWARE OR THE BITSTREAM CHARTER OUTLINE FONT.
 
-/*****************************************************************************
-*                                                                            *
-*  Copyright 1989, as an unpublished work by Bitstream Inc., Cambridge, MA   *
-*                         U.S. Patent No 4,785,391                           *
-*                           Other Patent Pending                             *
-*                                                                            *
-*         These programs are the sole property of Bitstream Inc. and         *
-*           contain its proprietary and confidential information.            *
-*                                                                            *
-*****************************************************************************/
-/********************* Revision Control Information **********************************
-*                                                                                    *
-*     $Header: //toklas/archive/rcs/speedo/iface.c,v 22.1 91/01/23 17:16:37 leeann Release $                                                                       *
-*                                                                                    *
-*     $Log:	iface.c,v $
-*       Revision 22.1  91/01/23  17:16:37  leeann
-*       Release
-*       
-*       Revision 21.1  90/11/20  14:36:38  leeann
-*       Release
-*       
-*       Revision 20.1  90/11/12  09:27:48  leeann
-*       Release
-*       
-*       Revision 19.1  90/11/08  10:18:55  leeann
-*       Release
-*       
-*       Revision 18.1  90/09/24  10:03:45  mark
-*       Release
-*       
-*       Revision 17.1  90/09/13  15:57:38  mark
-*       Release name rel0913
-*       
-*       Revision 16.1  90/09/11  13:06:41  mark
-*       Release
-*       
-*       Revision 15.1  90/08/29  10:02:54  mark
-*       Release name rel0829
-*       
-*       Revision 14.1  90/07/13  10:38:40  mark
-*       Release name rel071390
-*       
-*       Revision 13.1  90/07/02  10:37:36  mark
-*       Release name REL2070290
-*       
-*       Revision 12.1  90/04/23  12:11:37  mark
-*       Release name REL20
-*       
-*       Revision 11.1  90/04/23  10:11:36  mark
-*       Release name REV2
-*       
-*       Revision 10.2  90/04/21  10:40:55  mark
-*       correct declaration of arguments to sp_load_char_data
-*       
-*       Revision 10.1  89/07/28  18:08:23  mark
-*       Release name PRODUCT
-*       
-*       Revision 9.1  89/07/27  10:21:34  mark
-*       Release name PRODUCT
-*       
-*       Revision 8.1  89/07/13  18:18:10  mark
-*       Release name Product
-*       
-*       Revision 7.2  89/07/13  16:39:05  mark
-*       fix arguments to open_bitmap to agree with new spec
-*       
-*       Revision 7.1  89/07/11  08:59:44  mark
-*       Release name PRODUCT
-*       
-*       Revision 6.1  89/06/19  08:33:43  mark
-*       Release name prod
-*       
-*       Revision 5.1  89/05/01  17:52:06  mark
-*       Release name Beta
-*       
-*       Revision 4.1  89/04/27  12:12:43  mark
-*       Release name Beta
-*       
-*       Revision 3.1  89/04/25  08:25:41  mark
-*       Release name beta
-*       
-*       Revision 2.1  89/04/04  13:32:20  mark
-*       Release name EVAL
-*       
-*       Revision 1.6  89/04/04  13:18:04  mark
-*       Update copyright text
-*       
-*       Revision 1.5  89/03/31  16:35:23  john
-*       Updated to use new function and call-back conventions.
-*       Fontware 2.X interface functions modified to conform to
-*       original convetions by omitting initial underscore.
-*       
-*       Revision 1.4  89/03/31  14:46:39  mark
-*       change speedo.h to spdo_prv.h
-*       change comments from fontware to speedo
-*       
-*       Revision 1.3  89/03/30  09:48:36  john
-*       Updated for new global/static variable handling.
-*       
-*       Revision 1.2  89/03/21  13:26:40  mark
-*       change name from oemfw.h to speedo.h
-*       
-*       Revision 1.1  89/03/15  12:31:59  mark
-*       Initial revision
-*                                                                                 *
-*                                                                                    *
-*************************************************************************************/
-
-static char rcsid[] = "$Header: //toklas/archive/rcs/speedo/iface.c,v 22.1 91/01/23 17:16:37 leeann Release $";
-
+*/
 
 
 
@@ -118,22 +28,6 @@ static char rcsid[] = "$Header: //toklas/archive/rcs/speedo/iface.c,v 22.1 91/01
  *                                                                           *
  * This module provides a layer to make Speedo function calls to and         *
  * from it compatible with Fontware 2.X function calls.                      *
- *                                                                           *
- ********************** R E V I S I O N   H I S T O R Y **********************
- *                                                                           *
- *  1) 11 Jan 89  jsc  Created                                               *
- *                                                                           *
- *  2) 31 Jan 89  jsc  xmin, xmax, ymin, ymax arguments added to             *
- *                     open_outline().                                       *
- *                                                                           *
- *  3)  2 Feb 89  jsc  Dummy curve_to() function defined.                    *
- *                                                                           *
- *                     Set width arg removed from close_outline().           *
- *                                                                           *
- *  4) 28 Feb 89  jsc  Global function declarations added.                   *
- *                                                                           *
- *                     All call-back functions except load_char_data()       *
- *                     declared as void.                                     *
  *                                                                           *
  ****************************************************************************/
 

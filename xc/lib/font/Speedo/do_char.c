@@ -1,254 +1,31 @@
+/* $XConsortium$ */
+
+/*
+
+Copyright 1989-1991, Bitstream Inc., Cambridge, MA.
+You are hereby granted permission under all Bitstream propriety rights to
+use, copy, modify, sublicense, sell, and redistribute the Bitstream Speedo
+software and the Bitstream Charter outline font for any purpose and without
+restrictions; provided, that this notice is left intact on all copies of such
+software or font and that Bitstream's trademark is acknowledged as shown below
+on all unmodified copies of such font.
+
+BITSTREAM CHARTER is a registered trademark of Bitstream Inc.
 
 
+BITSTREAM INC. DISCLAIMS ANY AND ALL WARRANTIES, EXPRESS OR IMPLIED, INCLUDING
+WITHOUT LIMITATION THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+PARTICULAR PURPOSE.  BITSTREAM SHALL NOT BE LIABLE FOR ANY DIRECT OR INDIRECT
+DAMAGES, INCLUDING BUT NOT LIMITED TO LOST PROFITS, LOST DATA, OR ANY OTHER
+INCIDENTAL OR CONSEQUENTIAL DAMAGES, ARISING OUT OF OR IN ANY WAY CONNECTED
+WITH THE SPEEDO SOFTWARE OR THE BITSTREAM CHARTER OUTLINE FONT.
 
-/*****************************************************************************
-*                                                                            *
-*  Copyright 1989, as an unpublished work by Bitstream Inc., Cambridge, MA   *
-*                         U.S. Patent No 4,785,391                           *
-*                           Other Patent Pending                             *
-*                                                                            *
-*         These programs are the sole property of Bitstream Inc. and         *
-*           contain its proprietary and confidential information.            *
-*                                                                            *
-*****************************************************************************/
-/********************* Revision Control Information **********************************
-*                                                                                    *
-*     $Header: //toklas/archive/rcs/speedo/do_char.c,v 22.1 91/01/23 17:15:40 leeann Release $                                                                       *
-*                                                                                    *
-*     $Log:	do_char.c,v $
-*       Revision 22.1  91/01/23  17:15:40  leeann
-*       Release
-*       
-*       Revision 21.2  91/01/21  18:04:43  leeann
-*       make pointer in get_char_org a FONTFAR
-*       
-*       Revision 21.1  90/11/20  14:35:42  leeann
-*       Release
-*       
-*       Revision 20.1  90/11/12  09:20:07  leeann
-*       Release
-*       
-*       Revision 19.1  90/11/08  10:17:59  leeann
-*       Release
-*       
-*       Revision 18.2  90/11/06  19:02:02  leeann
-*       fix bugs when combining imported setwidth and squeezing
-*       
-*       Revision 18.1  90/09/24  09:50:30  mark
-*       Release
-*       
-*       Revision 17.4  90/09/19  18:10:20  leeann
-*       make preview_bounding_box visible when squeezing
-*       
-*       Revision 17.3  90/09/17  10:49:00  mark
-*       Change INCL_WHITE conditional for allocation of sp_intercepts 
-*       to INCL_SCREEN, so that it is used.
-*       
-*       Revision 17.2  90/09/14  15:01:06  leeann
-*       changes for imported setwidth = 1 into src area
-*       
-*       Revision 17.1  90/09/13  15:56:56  mark
-*       Release name rel0913
-*       
-*       Revision 16.2  90/09/13  15:13:55  leeann
-*       allow imported widths of zero
-*       
-*       Revision 16.1  90/09/11  12:54:03  mark
-*       Release
-*       
-*       Revision 15.2  90/09/05  11:29:03  leeann
-*       recalculate constants when necessary for precision
-*       with imported setwidths
-*       
-*       Revision 15.1  90/08/29  10:02:25  mark
-*       Release name rel0829
-*       
-*       Revision 14.2  90/08/23  16:14:17  leeann
-*       for imported set width, check if the imported width
-*       is greater than the max in the font, and if it is,
-*       reset the maximum.
-*       
-*       Revision 14.1  90/07/13  10:37:50  mark
-*       Release name rel071390
-*       
-*       Revision 13.1  90/07/02  10:36:48  mark
-*       Release name REL2070290
-*       
-*       Revision 12.3  90/06/26  08:55:59  leeann
-*       compute squeezed bounding box for composite characters
-*       before the characters are generated
-*       
-*       Revision 12.2  90/06/06  18:05:43  leeann
-*       Correct parameter to sp_make_char_isw
-*       
-*       Revision 12.1  90/04/23  12:11:10  mark
-*       Release name REL20
-*       
-*       Revision 11.1  90/04/23  10:11:05  mark
-*       Release name REV2
-*       
-*       Revision 10.10  90/04/23  09:42:14  mark
-*       fix declaration of do_make_char to match reentrant requirements
-*       
-*       Revision 10.9  90/04/21  10:47:12  mark
-*       if multidevice support is enabled, make sure that the
-*       device is specified before imaging characters.
-*       
-*       Revision 10.8  90/04/18  10:53:58  mark
-*       add function sp_get_char_bbox
-*       
-*       Revision 10.7  90/04/17  09:32:51  leeann
-*       make imported setwidth parameter 1/65536 of a pixel
-*       
-*       Revision 10.6  90/04/11  13:07:15  leeann
-*       change squeezing compilation option to INCL_SQUEEZING,
-*       include make_char_isw function
-*       
-*       Revision 10.5  90/04/05  15:14:24  leeann
-*       set squeezing_compound flag apropriately
-*       
-*       Revision 10.4  90/03/29  16:43:16  leeann
-*       Added set_flags argument to read_bbox
-*       Added SQUEEZE code to make_simp_char to read_bbox
-*       before calling plaid_tcb
-*       
-*       Revision 10.3  90/03/26  15:48:42  mark
-*       calculate subpixel setwidth values for normal and compound characters
-*       using metric_resolution and specs.xxmult
-*       also change get_char_width similarly
-*       
-*       Revision 10.2  89/09/11  11:39:10  mark
-*       correct declaration of stackfar pointer to fontfar pointer argument
-*       in functions sp_get_posn_arg and sp_get_scale_arg so that code works
-*       with Microsoft C when stackfar and fontfar are not equivalent.
-*       *** EOF *** 
-*       
-*       Revision 10.1  89/07/28  18:07:36  mark
-*       Release name PRODUCT
-*       
-*       Revision 9.1  89/07/27  10:20:41  mark
-*       Release name PRODUCT
-*       
-*       Revision 8.1  89/07/13  18:17:24  mark
-*       Release name Product
-*       
-*       Revision 7.1  89/07/11  08:58:56  mark
-*       Release name PRODUCT
-*       
-*       Revision 6.2  89/07/09  11:37:08  mark
-*       only allocate intercept lists if one of the bitmap output
-*       modules is included
-*       
-*       Revision 6.1  89/06/19  08:33:00  mark
-*       Release name prod
-*       
-*       Revision 5.3  89/06/02  16:58:09  mark
-*       In the reentrant model, allocate space for intercept
-*       lists and plaid tables on the stack
-*       
-*       Revision 5.2  89/06/01  16:56:04  mark
-*       only process outline data if begin_char returns TRUE
-*       
-*       Revision 5.1  89/05/01  17:50:55  mark
-*       Release name Beta
-*       
-*       Revision 4.2  89/05/01  16:17:51  john
-*       bug in get_char_org() corrected:
-*       16 bit offsets in char directory now cast to unsigned
-*       before being cast into fix31.
-*       
-*       Revision 4.1  89/04/27  12:11:30  mark
-*       Release name Beta
-*       
-*       Revision 3.1  89/04/25  08:24:27  mark
-*       Release name beta
-*       
-*       Revision 2.5  89/04/24  15:52:48  john
-*       Two pixel allowance added to compound char
-*       bounding box.
-*       
-*       Revision 2.4  89/04/12  13:17:24  mark
-*       correct far pointer declarations of get_posn_args 
-*       and get_scale_args
-*       
-*       Revision 2.3  89/04/12  12:10:52  mark
-*       added stuff for far stack and font
-*       
-*       Revision 2.2  89/04/10  17:06:57  mark
-*       Modified pointer declarations that are used to refer
-*       to font data to use FONTFAR symbol, which will be used
-*       for Intel SS != DS memory models
-*       Also changed use of read_bbox and plaid_tcb to return 
-*       updated pointer, rather than passing a pointer to a pointer
-*       
-*       Revision 2.1  89/04/04  13:31:13  mark
-*       Release name EVAL
-*       
-*       Revision 1.10  89/04/04  13:16:21  mark
-*       Update copyright text
-*       
-*       Revision 1.9  89/03/31  14:42:23  mark
-*       Change speedo.h to spdo_prv.h
-*       
-*       Revision 1.8  89/03/31  12:14:14  john
-*       modified to use new NEXT_WORD macro.
-*       
-*       Revision 1.7  89/03/30  17:47:21  john
-*       read_long() moved to set_spcs.c
-*       
-*       Revision 1.6  89/03/29  16:07:47  mark
-*       changes for slot independence and dynamic/reentrant
-*       data allocation
-*       
-*       Revision 1.5  89/03/24  16:48:01  john
-*       Direct access to character directory implemented.
-*       
-*       Revision 1.4  89/03/23  17:51:21  john
-*       Added expansion joint to character header data
-*       
-*       Revision 1.3  89/03/23  11:50:59  john
-*       Dynamic char data loader modified to correct compound character
-*       bug. New offset arg added to load_char_data()
-*       
-*       Revision 1.2  89/03/21  13:25:27  mark
-*       change name from oemfw.h to speedo.h
-*       
-*       Revision 1.1  89/03/15  12:28:44  mark
-*       Initial revision
-*                                                                                 *
-*                                                                                    *
-*************************************************************************************/
-
-#ifdef RCSSTATUS
-static char rcsid[] = "$Header: //toklas/archive/rcs/speedo/do_char.c,v 22.1 91/01/23 17:15:40 leeann Release $";
-#endif
-
-
+*/
 
 /***************************** D O - C H A R . C *****************************
  *                                                                           *
  * This is the top level module for processing one simple or composite       *
  * character.
- *                                                                           *
- ********************** R E V I S I O N   H I S T O R Y **********************
- *                                                                           *
- *  1) 15 Dec 88  jsc  Created                                               *
- *                                                                           *
- *  2) 27 Jan 89  jsc  fw_get_char_id() added.                               *
- *                     fw_get_char_width() added.                            *
- *                     make_simple_char() and make_comp_char() changed from  *
- *                     void to boolean to return FALSE if error              *
- *                                                                           *
- *  3) 30 Jan 89  jsc  fw_get_char_width() changed from ufix16 to fix31      *
- *                                                                           *
- *  4)  6 Feb 89  jsc  Conditional compilation of metrics functions.         *
- *                                                                           *
- *                     Conditional compilation of dynamic character data     *
- *                     loading.                                              *
- *                                                                           *
- *  5)  9 Feb 89  jsc  Kerning access functions added.                       *
- *                                                                           *
- *  6)  2 Mar 89  jsc  Corrected char index bounds checking bug.             *
  *                                                                           *
  ****************************************************************************/
 

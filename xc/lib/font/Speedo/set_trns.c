@@ -1,211 +1,26 @@
+/* $XConsortium$ */
+
+/*
+
+Copyright 1989-1991, Bitstream Inc., Cambridge, MA.
+You are hereby granted permission under all Bitstream propriety rights to
+use, copy, modify, sublicense, sell, and redistribute the Bitstream Speedo
+software and the Bitstream Charter outline font for any purpose and without
+restrictions; provided, that this notice is left intact on all copies of such
+software or font and that Bitstream's trademark is acknowledged as shown below
+on all unmodified copies of such font.
+
+BITSTREAM CHARTER is a registered trademark of Bitstream Inc.
 
 
+BITSTREAM INC. DISCLAIMS ANY AND ALL WARRANTIES, EXPRESS OR IMPLIED, INCLUDING
+WITHOUT LIMITATION THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+PARTICULAR PURPOSE.  BITSTREAM SHALL NOT BE LIABLE FOR ANY DIRECT OR INDIRECT
+DAMAGES, INCLUDING BUT NOT LIMITED TO LOST PROFITS, LOST DATA, OR ANY OTHER
+INCIDENTAL OR CONSEQUENTIAL DAMAGES, ARISING OUT OF OR IN ANY WAY CONNECTED
+WITH THE SPEEDO SOFTWARE OR THE BITSTREAM CHARTER OUTLINE FONT.
 
-/*****************************************************************************
-*                                                                            *
-*  Copyright 1989, as an unpublished work by Bitstream Inc., Cambridge, MA   *
-*                         U.S. Patent No 4,785,391                           *
-*                           Other Patent Pending                             *
-*                                                                            *
-*         These programs are the sole property of Bitstream Inc. and         *
-*           contain its proprietary and confidential information.            *
-*                                                                            *
-*****************************************************************************/
-/********************* Revision Control Information **********************************
-*                                                                                    *
-*     $Header: //toklas/archive/rcs/speedo/set_trns.c,v 22.1 91/01/23 17:21:25 leeann Release $                                                                       *
-*                                                                                    *
-*     $Log:	set_trns.c,v $
-*       Revision 22.1  91/01/23  17:21:25  leeann
-*       Release
-*       
-*       Revision 21.1  90/11/20  14:40:51  leeann
-*       Release
-*       
-*       Revision 20.1  90/11/12  09:36:29  leeann
-*       Release
-*       
-*       Revision 19.2  90/11/11  09:41:32  leeann
-*       surround compute_isw_scale with ifdef INCL_ISW
-*       
-*       Revision 19.1  90/11/08  10:25:55  leeann
-*       Release
-*       
-*       Revision 18.2  90/11/06  19:03:19  leeann
-*       fix bugs when combining imported setwidth and squeezing
-*       
-*       Revision 18.1  90/09/24  10:17:16  mark
-*       Release
-*       
-*       Revision 17.2  90/09/14  15:03:48  leeann
-*       if the setwidth_orus are zero, just set the isw_scale to one.
-*       
-*       Revision 17.1  90/09/13  16:02:11  mark
-*       Release name rel0913
-*       
-*       Revision 16.2  90/09/13  15:18:20  leeann
-*       allow imported setwidth of zero
-*       
-*       Revision 16.1  90/09/11  13:22:58  mark
-*       Release
-*       
-*       Revision 15.2  90/09/05  11:27:44  leeann
-*       apply scale factor to offset when doing imported setwidths
-*       
-*       Revision 15.1  90/08/29  10:05:59  mark
-*       Release name rel0829
-*       
-*       Revision 14.1  90/07/13  10:42:57  mark
-*       Release name rel071390
-*       
-*       Revision 13.2  90/07/12  17:16:39  judy
-*       fixed 2 bugs: initialized spacing error variable
-*       and corrected negative error case of going from
-*       zone 1 to 0.
-*       
-*       Revision 13.1  90/07/02  10:41:59  mark
-*       Release name REL2070290
-*       
-*       Revision 12.3  90/06/26  09:00:07  leeann
-*       correct xof
-*       compute correct xoffset when SQUEEZING in the x direction
-*       
-*       Revision 12.2  90/06/20  15:59:31  leeann
-*       Fix squeezing bugs
-*       
-*       Revision 12.1  90/04/23  12:14:26  mark
-*       Release name REL20
-*       
-*       Revision 11.1  90/04/23  10:14:41  mark
-*       Release name REV2
-*       
-*       Revision 10.10  90/04/23  09:43:16  mark
-*       add GDECL statements to new squeezing functions
-*       
-*       
-*       Revision 10.9  90/04/19  10:11:52  judy
-*       add inter-character spacing fix. Store
-*       temp. variable of non-interpolated
-*       position of 1st zone in setup_pix_table.
-*       
-*       Revision 10.8  90/04/17  12:10:18  leeann
-*       add code to support imported setwidths
-*       
-*       Revision 10.7  90/04/11  13:04:41  leeann
-*       fix x and y pixel value calculations, change
-*       squeeze compilation flag to be INCL_SQUEEZING
-*       
-*       Revision 10.6  90/04/10  14:18:55  leeann
-*       fixup y_scale calculations
-*       
-*       Revision 10.5  90/04/05  15:15:40  leeann
-*       added code to calculate SQUEEZED pixel positions
-*       
-*       Revision 10.4  90/03/29  16:49:31  leeann
-*       make read_oru_table visible outside this source
-*       (took of "static" declaration)
-*       
-*       Revision 10.3  90/03/28  13:51:13  leeann
-*       new function skip_orus added
-*       
-*       Revision 10.2  90/03/27  14:53:27  leeann
-*       Include new functions skip_control_zone, skip_interpolation_zone
-*       
-*       Revision 10.1  89/07/28  18:13:16  mark
-*       Release name PRODUCT
-*       
-*       Revision 9.1  89/07/27  10:26:45  mark
-*       Release name PRODUCT
-*       
-*       Revision 8.1  89/07/13  18:22:34  mark
-*       Release name Product
-*       
-*       Revision 7.1  89/07/11  09:05:15  mark
-*       Release name PRODUCT
-*       
-*       Revision 6.2  89/07/09  14:49:38  mark
-*       change tcb manipulating functions to take GLOBALFAR pointers
-*       
-*       Revision 6.1  89/06/19  08:38:03  mark
-*       Release name prod
-*       
-*       Revision 5.6  89/06/05  17:22:13  mark
-*       reference plaid data (orus, pix, mult, offset) via new symbol
-*       sp_globals so that they may conditionally be allocated off the
-*       stack for reentrant mode
-*       
-*       Revision 5.5  89/05/24  18:25:37  john
-*       Updated c_pix[] to contain min value when constraint
-*       is inactive. Min values is now used whether or not
-*       a constraint is active.
-*       
-*       Revision 5.4  89/05/24  10:34:15  john
-*       Corrected 16-bit overflow bug in interpolation
-*       coefficient computation.
-*       
-*       Revision 5.3  89/05/16  15:45:51  john
-*       Interpolation coefficient accuracy improved
-*       
-*       Revision 5.2  89/05/03  17:00:41  mark
-*       correct no rules version of sp_plaid_tcb to
-*       remove accounting for obsolete length
-*       
-*       Revision 5.1  89/05/01  17:57:26  mark
-*       Release name Beta
-*       
-*       Revision 4.2  89/05/01  17:16:12  mark
-*       declare tmpufix16 if INCL_EXT is true
-*       
-*       Revision 4.1  89/04/27  12:20:26  mark
-*       Release name Beta
-*       
-*       Revision 3.2  89/04/26  17:00:29  mark
-*       use static void, not void static
-*       
-*       Revision 3.1  89/04/25  08:33:38  mark
-*       Release name beta
-*       
-*       Revision 2.3  89/04/12  12:16:17  mark
-*       added stuff for far stack and font
-*       
-*       Revision 2.2  89/04/10  17:10:00  mark
-*       Modified pointer declarations that are used to refer
-*       to font data to use FONTFAR symbol, which will be used
-*       for Intel SS != DS memory models
-*       Modified plaid_tcb, read_oru_table, setup_pix_table and
-*       setup_int_table to receive a pointer and return the resulting 
-*       pointer, rather than receiving a pointer to a pointer
-*       
-*       Revision 2.1  89/04/04  13:39:34  mark
-*       Release name EVAL
-*       
-*       Revision 1.6  89/04/04  13:28:33  mark
-*       Update copyright text
-*       
-*       Revision 1.5  89/03/31  14:45:30  mark
-*       change speedo.h to spdo_prv.h
-*       change comments from fontware to speedo
-*       
-*       Revision 1.4  89/03/31  12:25:02  john
-*       modified to use new NEXT_WORD macro.
-*       
-*       Revision 1.3  89/03/29  16:13:27  mark
-*       changes for slot independence and dynamic/reentrant
-*       data allocation
-*       
-*       Revision 1.2  89/03/21  13:34:41  mark
-*       change name from oemfw.h to speedo.h
-*       
-*       Revision 1.1  89/03/15  12:36:14  mark
-*       Initial revision
-*                                                                                 *
-*                                                                                    *
-*************************************************************************************/
-
-#ifdef RCSSTATUS
-static char rcsid[] = "$Header: //toklas/archive/rcs/speedo/set_trns.c,v 22.1 91/01/23 17:21:25 leeann Release $";
-#endif
-
+*/
 
 
 
@@ -214,17 +29,6 @@ static char rcsid[] = "$Header: //toklas/archive/rcs/speedo/set_trns.c,v 22.1 91
  * This module is called from do_char.c to set up the intelligent            *
  * transformation for one character (or sub-character of a composite         *
  * character.
- *                                                                           *
- ********************** R E V I S I O N   H I S T O R Y **********************
- *                                                                           *
- *  1) 16 Dec 88  jsc  Created                                               *
- *                                                                           *
- *  2) 20 Jan 89  jsc  Option to read interpolation length removed. Bit 6 of *
- *                     interpolation zone format byte is now ignored.        *
- *                                                                           *
- *  3) 23 Jan 89  jsc  Constraint limit test changed to round accurately     *
- *                                                                           *
- *  4) 28 Feb 89  jsc  Plaid data monitoring functions added.                *
  *                                                                           *
  ****************************************************************************/
 

@@ -1,205 +1,32 @@
- 
+/* $XConsortium$ */
+
+/*
+
+Copyright 1989-1991, Bitstream Inc., Cambridge, MA.
+You are hereby granted permission under all Bitstream propriety rights to
+use, copy, modify, sublicense, sell, and redistribute the Bitstream Speedo
+software and the Bitstream Charter outline font for any purpose and without
+restrictions; provided, that this notice is left intact on all copies of such
+software or font and that Bitstream's trademark is acknowledged as shown below
+on all unmodified copies of such font.
+
+BITSTREAM CHARTER is a registered trademark of Bitstream Inc.
 
 
-/*****************************************************************************
-*                                                                            *
-*  Copyright 1989, as an unpublished work by Bitstream Inc., Cambridge, MA   *
-*                         U.S. Patent No 4,785,391                           *
-*                           Other Patent Pending                             *
-*                                                                            *
-*         These programs are the sole property of Bitstream Inc. and         *
-*           contain its proprietary and confidential information.            *
-*                                                                            *
-*****************************************************************************/
-/********************* Revision Control Information **********************************
-*                                                                                    *
-*     $Header: out_blk.c,v 1.1 91/05/10 16:29:42 keith Exp $                                                                       *
-*                                                                                    *
-*     $Log:	out_blk.c,v $
- * Revision 1.1  91/05/10  16:29:42  keith
- * Initial revision
- * 
-*       Revision 22.1  91/01/23  17:19:04  leeann
-*       Release
-*       
-*       Revision 21.1  90/11/20  14:38:22  leeann
-*       Release
-*       
-*       Revision 20.2  90/11/20  13:15:40  leeann
-*       fixed clipping precision
-*       
-*       Revision 20.1  90/11/12  09:30:58  leeann
-*       Release
-*       
-*       Revision 19.1  90/11/08  10:20:38  leeann
-*       Release
-*       
-*       Revision 18.2  90/11/07  15:38:05  leeann
-*       implement clipping for rotation of 90, 180, and 270 degrees
-*       
-*       Revision 18.1  90/09/24  10:10:30  mark
-*       Release
-*       
-*       Revision 17.1  90/09/13  15:59:34  mark
-*       Release name rel0913
-*       
-*       Revision 16.1  90/09/11  13:19:31  mark
-*       Release
-*       
-*       Revision 15.1  90/08/29  10:04:06  mark
-*       Release name rel0829
-*       
-*       Revision 14.4  90/08/29  09:55:03  judy
-*       fix syntax error in interchar spacing
-*       
-*       Revision 14.3  90/08/28  17:23:29  judy
-*       fix interchar spacing fix - xmode = 4 has no rounding error
-*       
-*       Revision 14.2  90/08/28  16:32:01  judy
-*       fix inter-character spacing bug in end_char: add the round
-*       error based on the xmode and ymode type to either xorg or
-*       yorg.
-*       
-*       Revision 14.1  90/07/13  10:40:16  mark
-*       Release name rel071390
-*       
-*       Revision 13.1  90/07/02  10:39:27  mark
-*       Release name REL2070290
-*       
-*       Revision 12.3  90/06/26  08:58:11  leeann
-*       When CLIPPED characters go into banding, save the
-*       correct ymin and ymax
-*       
-*       Revision 12.2  90/06/06  16:40:53  judy
-*       fix inter-character spacing
-*       
-*       Revision 12.1  90/04/23  12:12:43  mark
-*       Release name REL20
-*       
-*       Revision 11.1  90/04/23  10:12:57  mark
-*       Release name REV2
-*       
-*       Revision 10.7  90/04/20  09:48:00  judy
-*       add the rounding error from xformation back
-*       into the left edge of the character, end_char_black
-*       
-*       Revision 10.6  90/04/10  13:27:16  mark
-*       put resetting of xmin/xmax back into end_char
-*       so that collected bounding boxes will work
-*       
-*       Revision 10.5  90/04/04  13:19:48  mark
-*       added x clipping to proc_x_intercepts
-*       
-*       Revision 10.4  90/03/30  14:58:39  mark
-*       remove out_wht and add out_scrn and out_util
-*       
-*       Revision 10.3  89/09/17  22:37:44  roger
-*       Fixed minor bug with revision 10.2
-*       
-*       Revision 10.2  89/08/29  10:52:02  roger
-*       Added 10 lines of code in line() for a 2 to 4 percent speed improvement
-*       
-*       Revision 6.3  89/07/09  14:46:28  mark
-*       make specsarg argument to init_black GLOBALFAR
-*                                                     
-*       
-*       Revision 6.2  89/07/09  13:18:03  mark
-*       >> changed arguments to sp_open_bitmap to contain
-*       new high resolution positioning information
-*       
-*       Revision 6.1  89/06/19  08:35:25  mark
-*       Release name prod
-*       
-*       Revision 5.6  89/06/16  16:50:08  mark
-*       correct calculation of bounding box
-*       
-*       Revision 5.5  89/06/06  17:23:28  mark
-*       add curve depth to output module curve functions
-*       
-*       Revision 5.4  89/06/02  17:06:30  mark
-*       refer to intercept lists via symbol sp_intercepts instead
-*       of sp_globals so that they may conditionally allocated off
-*       stack for reentrant mode
-*       
-*       Revision 5.3  89/06/01  16:53:36  mark
-*       changed declaration of begin_char_black to boolean,
-*       return TRUE
-*       
-*       Revision 5.2  89/05/15  10:31:22  mark
-*       fix calculation of bounding box (xmin,xmax,ymin,ymax) to round outward
-*       to avoid violations in the event of interpolated bounding boxes
-*       
-*       Revision 5.1  89/05/01  17:54:19  mark
-*       Release name Beta
-*       
-*       Revision 4.2  89/05/01  17:14:58  mark
-*       remove unreferenced local variables
-*       
-*       Revision 4.1  89/04/27  12:15:57  mark
-*       Release name Beta
-*       
-*       Revision 3.2  89/04/26  16:57:58  mark
-*       when adding dropped pixels, make sure they don't violate xmax
-*       
-*       Revision 3.1  89/04/25  08:29:01  mark
-*       Release name beta
-*       
-*       Revision 2.2  89/04/12  12:12:01  mark
-*       added stuff for far stack and font
-*       
-*       Revision 2.1  89/04/04  13:35:21  mark
-*       Release name EVAL
-*       
-*       Revision 1.7  89/04/04  13:21:37  mark
-*       Update copyright text
-*       
-*       Revision 1.6  89/03/31  14:47:54  mark
-*       change arguments to open_bitmap
-*       change speedo.h to spdo_prv.h
-*       eliminate thresh
-*       change fontware comments to speedo
-*       
-*       Revision 1.5  89/03/30  17:49:13  john
-*       Calculation of normal moved to set_spcs.c
-*       Bitmap extents and initial band simplified to take
-*       advantage of reliable bounding box data.
-*       
-*       Revision 1.4  89/03/29  16:09:13  mark
-*       changes for slot independence and dynamic/reentrant
-*       data allocation
-*       
-*       Revision 1.3  89/03/22  18:17:12  csdf
-*       3/22/89 cdf  Added "Dumb" pixel catching in x-direction
-*       
-*       Revision 1.2  89/03/21  13:27:49  mark
-*       change name from oemfw.h to speedo.h
-*       
-*       Revision 1.1  89/03/15  12:33:38  mark
-*       Initial revision
-*                                                                                 *
-*                                                                                    *
-*************************************************************************************/
+BITSTREAM INC. DISCLAIMS ANY AND ALL WARRANTIES, EXPRESS OR IMPLIED, INCLUDING
+WITHOUT LIMITATION THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+PARTICULAR PURPOSE.  BITSTREAM SHALL NOT BE LIABLE FOR ANY DIRECT OR INDIRECT
+DAMAGES, INCLUDING BUT NOT LIMITED TO LOST PROFITS, LOST DATA, OR ANY OTHER
+INCIDENTAL OR CONSEQUENTIAL DAMAGES, ARISING OUT OF OR IN ANY WAY CONNECTED
+WITH THE SPEEDO SOFTWARE OR THE BITSTREAM CHARTER OUTLINE FONT.
 
-#ifdef RCSSTATUS
-static char rcsid[] = "$Header: out_blk.c,v 1.1 91/05/10 16:29:42 keith Exp $";
-#endif
-
+*/
 
 
 
 /*************************** O U T _ B L K . C *********************************
  *                                                                           *
  * This is an output module for black-writer mode.                           *
- *                                                                           *
- ********************** R E V I S I O N   H I S T O R Y **********************
- *                                                                           *
- *  1) 16 Dec 88  jsc  Created                                               *
- *                                                                           *
- *  2) 23 Jan 89  jsc  normal computed from tcb.xtype, tcb.ytype now it is   *
- *                     no longer a member of tcb                             *
- *                                                                           *
- *  3)  7 Feb 89  cdf  Released as blackwriter version: calculates whole     *
- *                     pixel intercepts.  Does not catch any missing pixels  *
  *                                                                           *
  *****************************************************************************/
 

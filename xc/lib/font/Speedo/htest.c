@@ -1,110 +1,26 @@
+/* $XConsortium$ */
+
+/*
+
+Copyright 1989-1991, Bitstream Inc., Cambridge, MA.
+You are hereby granted permission under all Bitstream propriety rights to
+use, copy, modify, sublicense, sell, and redistribute the Bitstream Speedo
+software and the Bitstream Charter outline font for any purpose and without
+restrictions; provided, that this notice is left intact on all copies of such
+software or font and that Bitstream's trademark is acknowledged as shown below
+on all unmodified copies of such font.
+
+BITSTREAM CHARTER is a registered trademark of Bitstream Inc.
 
 
-/*****************************************************************************
-*                                                                            *
-*  Copyright 1989, as an unpublished work by Bitstream Inc., Cambridge, MA   *
-*                         U.S. Patent No 4,785,391                           *
-*                           Other Patent Pending                             *
-*                                                                            *
-*         These programs are the sole property of Bitstream Inc. and         *
-*           contain its proprietary and confidential information.            *
-*                                                                            *
-*****************************************************************************/
-/********************* Revision Control Information **********************************
-*                                                                                    *
-*     $Header: //toklas/archive/rcs/speedo/htest.c,v 22.1 91/01/23 17:16:26 leeann Release $                                                                       *
-*                                                                                    *
-*     $Log:	htest.c,v $
-*       Revision 22.1  91/01/23  17:16:26  leeann
-*       Release
-*       
-*       Revision 21.1  90/11/20  14:36:28  leeann
-*       Release
-*       
-*       Revision 20.1  90/11/12  09:27:37  leeann
-*       Release
-*       
-*       Revision 19.1  90/11/08  10:18:45  leeann
-*       Release
-*       
-*       Revision 18.1  90/09/24  10:03:28  mark
-*       Release
-*       
-*       Revision 17.1  90/09/13  16:02:39  mark
-*       Release name rel0913
-*       
-*       Revision 16.1  90/09/11  13:06:26  mark
-*       Release
-*       
-*       Revision 15.1  90/08/29  10:06:26  mark
-*       Release name rel0829
-*       
-*       Revision 14.1  90/07/13  10:43:41  mark
-*       Release name rel071390
-*       
-*       Revision 13.1  90/07/02  10:42:33  mark
-*       Release name REL2070290
-*       
-*       Revision 12.1  90/04/23  12:14:50  mark
-*       Release name REL20
-*       
-*       Revision 11.1  90/04/23  10:15:05  mark
-*       Release name REV2
-*       
-*       Revision 10.2  89/08/01  09:17:47  john
-*       Names of header fields changed to correspond to documentation.
-*       Character set ID added.
-*       Short Font Name added.
-*       
-*       Revision 10.1  89/07/28  18:13:51  mark
-*       Release name PRODUCT
-*       
-*       Revision 9.1  89/07/27  10:27:39  mark
-*       Release name PRODUCT
-*       
-*       Revision 8.1  89/07/13  18:23:07  mark
-*       Release name Product
-*       
-*       Revision 7.1  89/07/11  09:05:58  mark
-*       Release name PRODUCT
-*       
-*       Revision 6.1  89/06/19  08:38:37  mark
-*       Release name prod
-*       
-*       Revision 5.1  89/05/01  17:58:58  mark
-*       Release name Beta
-*       
-*       Revision 4.2  89/05/01  17:13:42  mark
-*       change wording for number of characters to number of indexes
-*       
-*       Revision 4.1  89/04/27  12:21:23  mark
-*       Release name Beta
-*       
-*       Revision 3.1  89/04/25  08:34:36  mark
-*       Release name beta
-*       
-*       Revision 2.2  89/04/24  10:36:41  mark
-*       read a word for ORUS per EM
-*       
-*       Revision 2.1  89/04/04  13:40:29  mark
-*       Release name EVAL
-*       
-*       Revision 1.11  89/04/04  13:29:10  mark
-*       Update copyright text
-*       
-*       Revision 1.10  89/04/03  16:35:49  mark
-*       don't use null string (Microsoft doesn't like it)
-*       specify long for format strings for 4 byte integers
-*       
-*       Revision 1.9  89/03/31  14:46:10  mark
-*       change comments from fontware to speedo
-*       
-*       Revision 1.8  89/03/24  15:56:42  mark
-*       Clean up format for release
-*       
-*                                                                                    *
-*************************************************************************************/
+BITSTREAM INC. DISCLAIMS ANY AND ALL WARRANTIES, EXPRESS OR IMPLIED, INCLUDING
+WITHOUT LIMITATION THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+PARTICULAR PURPOSE.  BITSTREAM SHALL NOT BE LIABLE FOR ANY DIRECT OR INDIRECT
+DAMAGES, INCLUDING BUT NOT LIMITED TO LOST PROFITS, LOST DATA, OR ANY OTHER
+INCIDENTAL OR CONSEQUENTIAL DAMAGES, ARISING OUT OF OR IN ANY WAY CONNECTED
+WITH THE SPEEDO SOFTWARE OR THE BITSTREAM CHARTER OUTLINE FONT.
 
+*/
 
 /****************************** H T E S T . C ********************************
  *                                                                           *

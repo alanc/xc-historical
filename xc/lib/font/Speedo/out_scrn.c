@@ -1,134 +1,26 @@
+/* $XConsortium$ */
+
+/*
+
+Copyright 1989-1991, Bitstream Inc., Cambridge, MA.
+You are hereby granted permission under all Bitstream propriety rights to
+use, copy, modify, sublicense, sell, and redistribute the Bitstream Speedo
+software and the Bitstream Charter outline font for any purpose and without
+restrictions; provided, that this notice is left intact on all copies of such
+software or font and that Bitstream's trademark is acknowledged as shown below
+on all unmodified copies of such font.
+
+BITSTREAM CHARTER is a registered trademark of Bitstream Inc.
 
 
+BITSTREAM INC. DISCLAIMS ANY AND ALL WARRANTIES, EXPRESS OR IMPLIED, INCLUDING
+WITHOUT LIMITATION THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+PARTICULAR PURPOSE.  BITSTREAM SHALL NOT BE LIABLE FOR ANY DIRECT OR INDIRECT
+DAMAGES, INCLUDING BUT NOT LIMITED TO LOST PROFITS, LOST DATA, OR ANY OTHER
+INCIDENTAL OR CONSEQUENTIAL DAMAGES, ARISING OUT OF OR IN ANY WAY CONNECTED
+WITH THE SPEEDO SOFTWARE OR THE BITSTREAM CHARTER OUTLINE FONT.
 
-/*****************************************************************************
-*                                                                            *
-*  Copyright 1989, as an unpublished work by Bitstream Inc., Cambridge, MA   *
-*                         U.S. Patent No 4,785,391                           *
-*                           Other Patent Pending                             *
-*                                                                            *
-*         These programs are the sole property of Bitstream Inc. and         *
-*           contain its proprietary and confidential information.            *
-*                                                                            *
-*****************************************************************************/
-/********************* Revision Control Information **********************************
-*                                                                                    *
-*     $Header: //toklas/archive/rcs/speedo/out_scrn.c,v 22.1 91/01/23 17:19:32 leeann Release $                                                                       *
-*                                                                                    *
-*     $Log:	out_scrn.c,v $
-*       Revision 22.1  91/01/23  17:19:32  leeann
-*       Release
-*       
-*       Revision 21.1  90/11/20  14:38:47  leeann
-*       Release
-*       
-*       Revision 20.2  90/11/20  13:16:51  leeann
-*       fixed clipping precisionfixed clipping precision
-*       
-*       Revision 20.1  90/11/12  09:31:22  leeann
-*       Release
-*       
-*       Revision 19.1  90/11/08  10:21:03  leeann
-*       Release
-*       
-*       Revision 18.2  90/11/07  15:40:57  leeann
-*        implement clipping for rotation of 90, 180, and 270 degrees
-*       
-*       Revision 18.1  90/09/24  10:11:02  mark
-*       Release
-*       
-*       Revision 17.1  90/09/13  16:05:24  mark
-*       Release name rel0913
-*       
-*       Revision 16.1  90/09/11  13:20:10  mark
-*       Release
-*       
-*       Revision 15.1  90/08/29  10:08:50  mark
-*       Release name rel0829
-*       
-*       Revision 14.4  90/08/29  09:56:53  judy
-*        fix syntax error in interchar spacing
-*       
-*       Revision 14.3  90/08/28  17:24:48  judy
-*       fix interchar spacing fix - xmode = 4 has no rounding error
-*       
-*       Revision 14.2  90/08/28  16:36:25  judy
-*       fix inter-character spacing bug in end_char: add the round
-*       error based on the xmode and ymode type to either xorg or yorg.
-*       
-*       Revision 14.1  90/07/13  10:46:57  mark
-*       Release name rel071390
-*       
-*       Revision 13.1  90/07/02  10:45:42  mark
-*       Release name REL2070290
-*       
-*       Revision 12.8  90/06/29  15:30:47  mark
-*       when checking for opposing convex points in Y, and 
-*       jplus1 has to be inverted to account for a mirror
-*       transformation, check for wrapping the end of the contour
-*       
-*       Revision 12.7  90/06/26  08:59:00  leeann
-*        When CLIPPED characters go into banding, save the
-*        correct ymin and ymax
-*       
-*       Revision 12.6  90/06/18  16:19:52  mark
-*       augment termination condition to terminate on node
-*       where x0 = y0 = (?)ffff and x3 = y3 = (?+1)0000
-*       
-*       Revision 12.5  90/06/18  12:25:52  mark
-*       remove dependency on setting of P0, use x0_spxl, y0_spxl instead
-*       also, clean up debug statements so they are useful.
-*       
-*       Revision 12.4  90/06/06  16:42:03  judy
-*       fix inter-character spacing
-*       
-*       Revision 12.3  90/06/01  15:25:34  mark
-*       use mirror flag to determine whether an up or down vector
-*       is a left edge.  ALso need to check mirror to decide
-*       if a local minimum is a whitespace valley for continuity
-*       checking.
-*       
-*       Revision 12.2  90/05/31  17:01:56  mark
-*       Skipping of continuity check in band mode caused linked 
-*       list index not to be properly updated
-*       
-*       Revision 12.1  90/04/23  12:16:55  mark
-*       Release name REL20
-*       
-*       Revision 11.1  90/04/23  10:17:14  mark
-*       Release name REV2
-*       
-*       Revision 1.6  90/04/23  09:43:45  mark
-*       use sp_intercepts for intercept lists so that reentrant
-*       configurations will work
-*       
-*       Revision 1.5  90/04/20  11:48:23  judy
-*       put resetting of xmin/xmax back into end_char.
-*       add rounding error from xform back into left
-*       edge of char, end_char.
-*       
-*       Revision 1.4  90/04/18  08:35:53  mark
-*       fix treatment of selfintersecting paths
-*       
-*       Revision 1.3  90/04/09  11:55:45  mark
-*       declare scan_curve and vert_line functions as void
-*       
-*       Revision 1.2  90/04/06  12:35:18  mark
-*       enable y clipping through band_min/max 
-*       also include curve scanning
-*       
-*       Revision 1.1  90/03/30  14:28:17  mark
-*       Initial revision
-*       
-*                                                                                 *
-*                                                                                    *
-*************************************************************************************/
-
-#ifdef RCSSTATUS
-static char rcsid[] = "$Header: //toklas/archive/rcs/speedo/out_scrn.c,v 22.1 91/01/23 17:19:32 leeann Release $";
-#endif
-
-
+*/
 
 
 /*************************** O U T _ S C R N . C *****************************

@@ -1,151 +1,31 @@
+/* $XConsortium$ */
+
+/*
+
+Copyright 1989-1991, Bitstream Inc., Cambridge, MA.
+You are hereby granted permission under all Bitstream propriety rights to
+use, copy, modify, sublicense, sell, and redistribute the Bitstream Speedo
+software and the Bitstream Charter outline font for any purpose and without
+restrictions; provided, that this notice is left intact on all copies of such
+software or font and that Bitstream's trademark is acknowledged as shown below
+on all unmodified copies of such font.
+
+BITSTREAM CHARTER is a registered trademark of Bitstream Inc.
 
 
+BITSTREAM INC. DISCLAIMS ANY AND ALL WARRANTIES, EXPRESS OR IMPLIED, INCLUDING
+WITHOUT LIMITATION THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+PARTICULAR PURPOSE.  BITSTREAM SHALL NOT BE LIABLE FOR ANY DIRECT OR INDIRECT
+DAMAGES, INCLUDING BUT NOT LIMITED TO LOST PROFITS, LOST DATA, OR ANY OTHER
+INCIDENTAL OR CONSEQUENTIAL DAMAGES, ARISING OUT OF OR IN ANY WAY CONNECTED
+WITH THE SPEEDO SOFTWARE OR THE BITSTREAM CHARTER OUTLINE FONT.
 
-/*****************************************************************************
-*                                                                            *
-*  Copyright 1989, as an unpublished work by Bitstream Inc., Cambridge, MA   *
-*                         U.S. Patent No 4,785,391                           *
-*                           Other Patent Pending                             *
-*                                                                            *
-*         These programs are the sole property of Bitstream Inc. and         *
-*           contain its proprietary and confidential information.            *
-*                                                                            *
-*****************************************************************************/
-/********************* Revision Control Information **********************************
-*                                                                                    *
-*     $Header: //toklas/archive/rcs/speedo/out_outl.c,v 22.1 91/01/23 17:19:18 leeann Release $                                                                       *
-*                                                                                    *
-*     $Log:	out_outl.c,v $
-*       Revision 22.1  91/01/23  17:19:18  leeann
-*       Release
-*       
-*       Revision 21.1  90/11/20  14:38:35  leeann
-*       Release
-*       
-*       Revision 20.1  90/11/12  09:31:11  leeann
-*       Release
-*       
-*       Revision 19.1  90/11/08  10:20:52  leeann
-*       Release
-*       
-*       Revision 18.1  90/09/24  10:10:46  mark
-*       Release
-*       
-*       Revision 17.1  90/09/13  16:00:34  mark
-*       Release name rel0913
-*       
-*       Revision 16.1  90/09/11  13:19:51  mark
-*       Release
-*       
-*       Revision 15.1  90/08/29  10:04:45  mark
-*       Release name rel0829
-*       
-*       Revision 14.1  90/07/13  10:41:14  mark
-*       Release name rel071390
-*       
-*       Revision 13.1  90/07/02  10:40:16  mark
-*       Release name REL2070290
-*       
-*       Revision 12.1  90/04/23  12:13:18  mark
-*       Release name REL20
-*       
-*       Revision 11.1  90/04/23  10:13:33  mark
-*       Release name REV2
-*       
-*       Revision 10.1  89/07/28  18:11:24  mark
-*       Release name PRODUCT
-*       
-*       Revision 9.1  89/07/27  10:24:47  mark
-*       Release name PRODUCT
-*       
-*       Revision 8.1  89/07/13  18:20:53  mark
-*       Release name Product
-*       
-*       Revision 7.1  89/07/11  09:03:03  mark
-*       Release name PRODUCT
-*       
-*       Revision 6.2  89/07/09  14:47:48  mark
-*       make specsarg argument to init_outline GLOBALFAR
-*       
-*       Revision 6.1  89/06/19  08:36:22  mark
-*       Release name prod
-*       
-*       Revision 5.4  89/06/06  17:24:13  mark
-*       add curve depth to output module curve functions
-*       
-*       Revision 5.3  89/06/02  08:24:06  mark
-*       added logic to limit coordinates of points on the
-*       outline to the bounding box provided to sp_begin_char
-*       in case extrapolation causes some problem.
-*       
-*       Revision 5.2  89/06/01  16:55:35  mark
-*       changed declaration of begin_char_outline to boolean,
-*       return TRUE
-*       
-*       Revision 5.1  89/05/01  17:55:26  mark
-*       Release name Beta
-*       
-*       Revision 4.1  89/04/27  12:17:36  mark
-*       Release name Beta
-*       
-*       Revision 3.1  89/04/25  08:30:40  mark
-*       Release name beta
-*       
-*       Revision 2.2  89/04/12  12:13:02  mark
-*       added stuff for far stack and font
-*       
-*       Revision 2.1  89/04/04  13:36:52  mark
-*       Release name EVAL
-*       
-*       Revision 1.6  89/04/04  13:25:11  mark
-*       Update copyright text
-*       
-*       Revision 1.5  89/03/31  14:50:08  mark
-*       change arguments to open_outline
-*        change speedo.h to spdo_prv.h
-*       eliminate thresh
-*       change fontware to comments to speedo
-*       
-*       Revision 1.4  89/03/30  17:51:54  john
-*       Open outline now gives valid bounding box information
-*       even in the presence of arbitrary transformations.
-*       
-*       Revision 1.3  89/03/29  16:10:58  mark
-*       changes for slot independence and dynamic/reentrant
-*       data allocation
-*       
-*       Revision 1.2  89/03/21  13:30:39  mark
-*       change name from oemfw.h to speedo.h
-*       
-*       Revision 1.1  89/03/15  12:34:33  mark
-*       Initial revision
-*                                                                                 *
-*                                                                                    *
-*************************************************************************************/
-
-#ifdef RCSSTATUS
-static char rcsid[] = "$Header: //toklas/archive/rcs/speedo/out_outl.c,v 22.1 91/01/23 17:19:18 leeann Release $";
-#endif
-
+*/
 
 
 /**************************** O U T _ 2 _ 1 . C ******************************
  *                                                                           *
  * This is the standard output module for vector output mode.                *
- *                                                                           *
- ********************** R E V I S I O N   H I S T O R Y **********************
- *                                                                           *
- *  1) 16 Dec 88  jsc  Created                                               *
- *                                                                           *
- *  2) 31 Jan 89  jsc  xmin, xmax, ymin, ymax arguments added to             *
- *                     open_outline() function.                              *
- *                                                                           *
- *  3)  2 Feb 89  jsc  Call to external curve_to() added for curve output    *
- *                     when enabled.                                         *
- *                                                                           *
- *  4)  7 Feb 89  jsc  Additional commenting.                                *
- *                                                                           *
- *  5) 16 Feb 89  jsc  init_out2() function added.                           *
  *                                                                           *
  ****************************************************************************/
 

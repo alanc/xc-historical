@@ -1,170 +1,26 @@
+/* $XConsortium$ */
+
+/*
+
+Copyright 1989-1991, Bitstream Inc., Cambridge, MA.
+You are hereby granted permission under all Bitstream propriety rights to
+use, copy, modify, sublicense, sell, and redistribute the Bitstream Speedo
+software and the Bitstream Charter outline font for any purpose and without
+restrictions; provided, that this notice is left intact on all copies of such
+software or font and that Bitstream's trademark is acknowledged as shown below
+on all unmodified copies of such font.
+
+BITSTREAM CHARTER is a registered trademark of Bitstream Inc.
 
 
+BITSTREAM INC. DISCLAIMS ANY AND ALL WARRANTIES, EXPRESS OR IMPLIED, INCLUDING
+WITHOUT LIMITATION THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+PARTICULAR PURPOSE.  BITSTREAM SHALL NOT BE LIABLE FOR ANY DIRECT OR INDIRECT
+DAMAGES, INCLUDING BUT NOT LIMITED TO LOST PROFITS, LOST DATA, OR ANY OTHER
+INCIDENTAL OR CONSEQUENTIAL DAMAGES, ARISING OUT OF OR IN ANY WAY CONNECTED
+WITH THE SPEEDO SOFTWARE OR THE BITSTREAM CHARTER OUTLINE FONT.
 
-/*****************************************************************************
-*                                                                            *
-*  Copyright 1989, as an unpublished work by Bitstream Inc., Cambridge, MA   *
-*                         U.S. Patent No 4,785,391                           *
-*                           Other Patent Pending                             *
-*                                                                            *
-*         These programs are the sole property of Bitstream Inc. and         *
-*           contain its proprietary and confidential information.            *
-*                                                                            *
-*****************************************************************************/
-/********************* Revision Control Information **********************************
-*                                                                         
-*     $Header: //toklas/archive/rcs/speedo/spdo_prv.h,v 22.1 91/01/23 17:21:45 leeann Release $
-*                                                                                    
-*     $Log:	spdo_prv.h,v $
-*       Revision 22.1  91/01/23  17:21:45  leeann
-*       Release
-*       
-*       Revision 21.1  90/11/20  14:41:09  leeann
-*       Release
-*       
-*       Revision 20.1  90/11/12  09:36:47  leeann
-*       Release
-*       
-*       Revision 19.1  90/11/08  10:26:19  leeann
-*       Release
-*       
-*       Revision 18.2  90/11/06  19:01:17  leeann
-*       add new function compute_isw_scale
-*       
-*       Revision 18.1  90/09/24  10:17:35  mark
-*       Release
-*       
-*       Revision 17.2  90/09/19  18:08:01  leeann
-*       make preview_bounding_box visible when squeezing
-*       
-*       Revision 17.1  90/09/13  16:04:03  mark
-*       Release name rel0913
-*       
-*       Revision 16.1  90/09/11  13:23:18  mark
-*       Release
-*       
-*       Revision 15.2  90/09/05  11:20:23  leeann
-*       added two new functions: sp_reset_xmax and sp_preview_bounding_box
-*       
-*       Revision 15.1  90/08/29  10:07:37  mark
-*       Release name rel0829
-*       
-*       Revision 14.2  90/08/23  16:13:14  leeann
-*       make setup_const take min and max as arguments
-*       
-*       Revision 14.1  90/07/13  10:45:12  mark
-*       Release name rel071390
-*       
-*       Revision 13.1  90/07/02  10:44:10  mark
-*       Release name REL2070290
-*       
-*       Revision 12.4  90/06/26  08:54:34  leeann
-*       Add macro for SQUEEZE_MULT
-*       
-*       Revision 12.3  90/06/20  15:57:41  leeann
-*       Add parameter of number of y control zones to function
-*       sp_calculate_y_zone
-*       
-*       Revision 12.2  90/06/01  15:23:10  mark
-*       straighten out reentrant declarations of multi device
-*       support function declarations
-*       
-*       Revision 12.1  90/04/23  12:15:56  mark
-*       Release name REL20
-*       
-*       Revision 11.1  90/04/23  10:16:14  mark
-*       Release name REV2
-*       
-*       Revision 10.12  90/04/23  09:42:56  mark
-*       add proper redefinitions of do_make_char
-*       
-*       Revision 10.11  90/04/21  10:45:59  mark
-*       add declaration of functions for multiple output device handling
-*       sp_set_bitmap_device() and sp_set_outline_device()
-*       
-*       Revision 10.10  90/04/18  09:56:05  mark
-*       define init_userout
-*       
-*       
-*       Revision 10.9  90/04/12  13:00:09  mark
-*       add argument of type buff_t to get_cust_no, since
-*       valid specs cannot be provided via set_specs until
-*        the encryption is set, which requires customer number
-*       
-*       Revision 10.8  90/04/12  12:25:51  mark
-*       added macros for sp_get_char_bbox and sp_get_cust_no
-*       
-*       Revision 10.7  90/04/11  13:02:44  leeann
-*       add make_char_isw; make char for imported setwidth
-*       
-*       Revision 10.6  90/04/06  12:32:18  mark
-*       declare curve handling functions in out_scrn
-*       
-*       Revision 10.5  90/03/30  14:58:08  mark
-*       remove out_wht and add out_scrn and out_util
-*       
-*       Revision 10.4  90/03/29  16:41:37  leeann
-*       Added set_flags argument to read_bbox
-*       
-*       Revision 10.3  90/03/28  13:50:34  leeann
-*       new global variables added for squeezing
-*       new function skip_orus added
-*       
-*       Revision 10.2  90/03/27  14:51:18  leeann
-*       Include new functions skip_control_zone, skip_interpolation_zone
-*       
-*       Revision 10.1  89/07/28  18:15:59  mark
-*       Release name PRODUCT
-*       
-*       Revision 9.1  89/07/27  10:29:51  mark
-*       Release name PRODUCT
-*       
-*       Revision 8.1  89/07/13  18:24:48  mark
-*       Release name Product
-*       
-*       Revision 7.1  89/07/11  09:08:15  mark
-*       Release name PRODUCT
-*       
-*       Revision 6.1  89/06/19  08:40:19  mark
-*       Release name prod
-*       
-*       Revision 5.3  89/06/06  17:48:49  mark
-*       add curve depth to output module curve functions
-*       
-*       Revision 5.2  89/05/25  17:33:39  john
-*       All 3-byte fields in list of private font header
-*       offset constants now commented as Encrypted.
-*       
-*       Revision 5.1  89/05/01  18:01:32  mark
-*       Release name Beta
-*       
-*       Revision 4.1  89/04/27  12:24:09  mark
-*       Release name Beta
-*       
-*       Revision 3.2  89/04/26  16:59:57  mark
-*       remove redundant declarations of get_char_org and plaid_tcb
-*       
-*       Revision 3.1  89/04/25  08:37:26  mark
-*       Release name beta
-*       
-*       Revision 2.2  89/04/18  18:21:33  john
-*       setup_mult(), setup_offset() function definitions added
-*       
-*       Revision 2.1  89/04/04  13:42:34  mark
-*       Release name EVAL
-*       
-*       Revision 1.3  89/04/04  13:30:12  mark
-*       Update copyright text
-*       
-*       Revision 1.2  89/03/31  17:35:18  john
-*       Added read_word_u() function def.
-*       
-*       Revision 1.1  89/03/31  15:08:11  mark
-*       Initial revision
-*       
-*                                                                                    
-*************************************************************************************/
-
+*/
 
 
 

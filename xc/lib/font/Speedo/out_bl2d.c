@@ -1,107 +1,30 @@
+/* $XConsortium$ */
+
+/*
+
+Copyright 1989-1991, Bitstream Inc., Cambridge, MA.
+You are hereby granted permission under all Bitstream propriety rights to
+use, copy, modify, sublicense, sell, and redistribute the Bitstream Speedo
+software and the Bitstream Charter outline font for any purpose and without
+restrictions; provided, that this notice is left intact on all copies of such
+software or font and that Bitstream's trademark is acknowledged as shown below
+on all unmodified copies of such font.
+
+BITSTREAM CHARTER is a registered trademark of Bitstream Inc.
 
 
+BITSTREAM INC. DISCLAIMS ANY AND ALL WARRANTIES, EXPRESS OR IMPLIED, INCLUDING
+WITHOUT LIMITATION THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+PARTICULAR PURPOSE.  BITSTREAM SHALL NOT BE LIABLE FOR ANY DIRECT OR INDIRECT
+DAMAGES, INCLUDING BUT NOT LIMITED TO LOST PROFITS, LOST DATA, OR ANY OTHER
+INCIDENTAL OR CONSEQUENTIAL DAMAGES, ARISING OUT OF OR IN ANY WAY CONNECTED
+WITH THE SPEEDO SOFTWARE OR THE BITSTREAM CHARTER OUTLINE FONT.
 
-/*****************************************************************************
-*                                                                            *
-*  Copyright 1989, as an unpublished work by Bitstream Inc., Cambridge, MA   *
-*                         U.S. Patent No 4,785,391                           *
-*                           Other Patent Pending                             *
-*                                                                            *
-*         These programs are the sole property of Bitstream Inc. and         *
-*           contain its proprietary and confidential information.            *
-*                                                                            *
-*****************************************************************************/
-/*************************** O U T _ B L 2 D . C *********************************
+*/
+
+/*************************** O U T _ B L 2 D . C *****************************
  *                                                                           *
  * This is an output module for screen writer using two dimensional scanning *
- *                                                                           */
-/********************* Revision Control Information **********************************
-*                                                                                    *
-*     $Header: out_bl2d.c,v 1.1 91/05/10 16:29:40 keith Exp $                                                                       *
-*                                                                                    *
-*     $Log:	out_bl2d.c,v $
- * Revision 1.1  91/05/10  16:29:40  keith
- * Initial revision
- * 
-*       Revision 22.1  91/01/23  17:18:45  leeann
-*       Release
-*       
-*       Revision 21.2  90/11/28  11:31:14  joyce
-*       fixed problem in draw_vector_to_2d
-*       
-*       Revision 21.1  90/11/20  14:38:07  leeann
-*       Release
-*       
-*       Revision 20.2  90/11/20  13:16:09  leeann
-*       fixed clipping precision
-*       
-*       Revision 20.1  90/11/12  09:30:44  leeann
-*       Release
-*       
-*       Revision 19.1  90/11/08  10:20:23  leeann
-*       Release
-*       
-*       Revision 18.2  90/11/07  15:39:45  leeann
-*        implement clipping for rotation of 90, 180, and 270 degrees
-*       
-*       Revision 18.1  90/09/24  10:10:13  mark
-*       Release
-*       
-*       Revision 17.1  90/09/13  16:02:55  mark
-*       Release name rel0913
-*       
-*       Revision 16.1  90/09/11  13:19:11  mark
-*       Release
-*       
-*       Revision 15.1  90/08/29  10:06:41  mark
-*       Release name rel0829
-*       
-*       Revision 14.4  90/08/29  09:55:53  judy
-*       fix syntax error in interchar spacing
-*       
-*       Revision 14.3  90/08/28  17:24:17  judy
-*       fix interchar spacing fix - xmode = 4 has no rounding error
-*       
-*       Revision 14.2  90/08/28  16:35:32  judy
-*       fix inter-character spacing bug in end_char: add the round
-*       error based on the xmode and ymode type to either xorg or
-*       yorg.
-*       
-*       Revision 14.1  90/07/13  10:44:01  mark
-*       Release name rel071390
-*       
-*       Revision 13.1  90/07/02  10:42:51  mark
-*       Release name REL2070290
-*       
-*       Revision 12.3  90/06/26  08:57:10  leeann
-*       When CLIPPED characters go into banding, save the
-*       correct ymin and ymax
-*       
-*       Revision 12.2  90/06/06  16:41:26  judy
-*       fix inter-character spacing
-*       
-*       Revision 12.1  90/04/23  12:15:02  mark
-*       Release name REL20
-*       
-*       Revision 11.1  90/04/23  10:15:18  mark
-*       Release name REV2
-*       
-*       Revision 10.6  90/04/20  12:52:31  judy
-*       fix revision comment.
-*       
-*       Revision 10.5  90/04/20  11:54:43  judy
-*       enter rccs information.
-*       
-*************************************************************************************/
-
-#ifdef RCSSTATUS
-static char rcsid[] = "$Header: out_bl2d.c,v 1.1 91/05/10 16:29:40 keith Exp $";
-#endif
-
-/********************** R E V I S I O N   H I S T O R Y **********************
- *                                                                           *
- *  1)  29 Mar 89 cdf   First Version                                        *
- *                                                                           *
  ****************************************************************************/
 
 

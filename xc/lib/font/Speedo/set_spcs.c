@@ -1,223 +1,31 @@
-/*                                                                            *
-*  Copyright 1989, as an unpublished work by Bitstream Inc., Cambridge, MA   *
-*                         U.S. Patent No 4,785,391                           *
-*                           Other Patent Pending                             *
-*                                                                            *
-*         These programs are the sole property of Bitstream Inc. and         *
-*           contain its proprietary and confidential information.            *
-*                                                                            *
-*****************************************************************************/
-/********************* Revision Control Information **********************************
-*                                                                                    *
-*     $Header: //toklas/archive/rcs/speedo/set_spcs.c,v 22.1 91/01/23 17:21:05 leeann Release $                                                                       *
-*                                                                                    *
-*     $Log:	set_spcs.c,v $
-*       Revision 22.1  91/01/23  17:21:05  leeann
-*       Release
-*       
-*       Revision 21.1  90/11/20  14:40:32  leeann
-*       Release
-*       
-*       Revision 20.1  90/11/12  09:36:13  leeann
-*       Release
-*       
-*       Revision 19.1  90/11/08  10:25:33  leeann
-*       Release
-*       
-*       Revision 18.1  90/09/24  10:16:57  mark
-*       Release
-*       
-*       Revision 17.1  90/09/13  16:01:54  mark
-*       Release name rel0913
-*       
-*       Revision 16.1  90/09/11  13:22:33  mark
-*       Release
-*       
-*       Revision 15.1  90/08/29  10:05:43  mark
-*       Release name rel0829
-*       
-*       Revision 14.2  90/08/23  16:13:46  leeann
-*       make setup_const take min and max as arguments
-*       
-*       Revision 14.1  90/07/13  10:42:31  mark
-*       Release name rel071390
-*       
-*       Revision 13.2  90/07/13  09:32:24  mark
-*       cast elements of calculation used to determine mirror
-*       images to fix31 so we don't get integer overflow on
-*       16 bit machines (such as IBM PC with Microsoft C).
-*       
-*       Revision 13.1  90/07/02  10:41:35  mark
-*       Release name REL2070290
-*       
-*       Revision 12.5  90/07/02  09:19:41  mark
-*       cast byte pointers to target type in read_word_u and read_long
-*       
-*       Revision 12.4  90/06/01  15:24:26  mark
-*       set mirror in type_tcb based on dot (cross?) product
-*       of basic transformations matrix.  i.e.
-*       xx*yy - xy*yx < 0 is a mirror
-*       
-*       Revision 12.3  90/04/23  17:59:20  mark
-*       rearrange priority of user output modules and
-*       internals to allow JC to reuse screen output
-*       
-*       Revision 12.2  90/04/23  16:44:14  judy
-*       fixed USEROUT syntax error.
-*       
-*       Revision 12.1  90/04/23  12:14:11  mark
-*       Release name REL20
-*       
-*       Revision 11.1  90/04/23  10:14:26  mark
-*       Release name REV2
-*       
-*       Revision 10.11  90/04/23  09:40:05  mark
-*       fix argument passed to read_word_u to retrieve metric resolution
-*       
-*       Revision 10.10  90/04/21  10:46:35  mark
-*       wrote functions sp_set_bitmap_device and sp_set_outline_device
-*       for initializing structures used in multidevice support
-*        
-*       
-*       Revision 10.9  90/04/18  09:56:35  mark
-*       if INCL_USEROUT, call init_userout
-*       
-*       Revision 10.8  90/04/12  09:11:25  leeann
-*       Check for CLIPPING flags set, but clipping code
-*       not included.
-*       
-*       Revision 10.7  90/04/11  13:05:42  leeann
-*       change squeeze compilation flag to be INCL_SQUEEZING
-*       take CLIPPING dependancy off SQUEEZING
-*       
-*       Revision 10.6  90/04/10  14:19:46  leeann
-*       turn on clipping whenever squeezing is on
-*       
-*       Revision 10.5  90/04/05  15:15:08  leeann
-*       set no squeeze available error to "11"
-*       
-*       Revision 10.4  90/03/30  14:58:22  mark
-*       remove out_wht and add out_scrn and out_util
-*       
-*       Revision 10.3  90/03/29  14:22:33  leeann
-*       Put in error message call for setting of SQUEEZE mode flags
-*       when SQUEEZE code is not compiled.
-*       
-*       
-*       Revision 10.2  90/03/26  15:50:15  mark
-*       change typo (|= changed to !=) when checking for set_specs with same font
-*       set metric_resolution to specified value if font header size is large than
-*       nominal, or to orus_per_em if not.
-*       
-*       Revision 10.1  89/07/28  18:12:51  mark
-*       Release name PRODUCT
-*       
-*       Revision 9.1  89/07/27  10:26:17  mark
-*       Release name PRODUCT
-*       
-*       Revision 8.1  89/07/13  18:22:11  mark
-*       Release name Product
-*       
-*       Revision 7.1  89/07/11  09:04:49  mark
-*       Release name PRODUCT
-*       
-*       Revision 6.3  89/07/09  15:00:12  mark
-*       change stuff to handle GLOBALFAR option
-*       
-*       Revision 6.2  89/07/09  12:39:13  mark
-*       copy specsarg into sp_globals.specs, and set pspecs to
-*       point to copy in case user allocates it off the stack
-*       
-*       Revision 6.1  89/06/19  08:37:41  mark
-*       Release name prod
-*       
-*       Revision 5.1  89/05/01  17:56:59  mark
-*       Release name Beta
-*       
-*       Revision 4.2  89/05/01  17:15:38  mark
-*       remove improper function declarations
-*       
-*       Revision 4.1  89/04/27  15:41:56  mark
-*       Release name Beta
-*       
-*       Revision 3.1  89/04/25  08:32:59  mark
-*       Release name beta
-*       
-*       Revision 2.5  89/04/18  18:23:13  john
-*       setup_consts() rewritten to correct bounding box errors.
-*       setup_mult(), setup_offset() function definitions added.
-*       
-*       Revision 2.4  89/04/14  14:13:45  mark
-*        Changed shift in setup_consts to work around MicroSoft C problem
-*       
-*       Revision 2.3  89/04/12  12:15:30  mark
-*       added stuff for far stack and font
-*       
-*       Revision 2.2  89/04/10  17:05:24  mark
-*       Modified pointer declarations that are used to refer
-*       to font data to use FONTFAR symbol, which will be used
-*       for Intel SS != DS memory models
-*       
-*       Revision 2.1  89/04/04  13:39:00  mark
-*       Release name EVAL
-*       
-*       Revision 1.9  89/04/04  13:27:52  mark
-*       Update copyright text
-*       
-*       Revision 1.8  89/03/31  17:36:17  john
-*       Replaced NEXT_WORD_U() macro with read_word_u() function.
-*       
-*       Revision 1.7  89/03/31  14:51:20  mark
-*       change speedo.h to spdo_prv.h
-*       eliminate thresh
-*       change fontware comments to speedo                  
+/* $XConsortium$ */
 
-*       
-*       Revision 1.6  89/03/30  17:54:38  john
-*       read_long_u() and read_long_ee() replaced by read_long().
-*       value of normal now calculated in type_tcb().
-*       
-*       Revision 1.5  89/03/29  16:12:44  mark
-*       changes for slot independence and dynamic/reentrant
-*       data allocation
-*       
-*       Revision 1.4  89/03/24  16:46:06  john
-*       Error 2 (Too many characters) eliminated.
-*       setup_char_dir() eliminated.
-*       
-*       Revision 1.3  89/03/23  11:50:33  john
-*       New entries added to font header
-*       
-*       Revision 1.2  89/03/21  13:32:52  mark
-*       change name from oemfw.h to speedo.h
-*       
-*       Revision 1.1  89/03/15  12:35:55  mark
-*       Initial revision
-*                                                                                 *
-*                                                                                    *
-*************************************************************************************/
+/*
 
-#ifdef RCSSTATUS
-static char rcsid[] = "$Header: //toklas/archive/rcs/speedo/set_spcs.c,v 22.1 91/01/23 17:21:05 leeann Release $";
-#endif
+Copyright 1989-1991, Bitstream Inc., Cambridge, MA.
+You are hereby granted permission under all Bitstream propriety rights to
+use, copy, modify, sublicense, sell, and redistribute the Bitstream Speedo
+software and the Bitstream Charter outline font for any purpose and without
+restrictions; provided, that this notice is left intact on all copies of such
+software or font and that Bitstream's trademark is acknowledged as shown below
+on all unmodified copies of such font.
 
+BITSTREAM CHARTER is a registered trademark of Bitstream Inc.
+
+
+BITSTREAM INC. DISCLAIMS ANY AND ALL WARRANTIES, EXPRESS OR IMPLIED, INCLUDING
+WITHOUT LIMITATION THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+PARTICULAR PURPOSE.  BITSTREAM SHALL NOT BE LIABLE FOR ANY DIRECT OR INDIRECT
+DAMAGES, INCLUDING BUT NOT LIMITED TO LOST PROFITS, LOST DATA, OR ANY OTHER
+INCIDENTAL OR CONSEQUENTIAL DAMAGES, ARISING OUT OF OR IN ANY WAY CONNECTED
+WITH THE SPEEDO SOFTWARE OR THE BITSTREAM CHARTER OUTLINE FONT.
+
+*/
 
 
 /*************************** S E T _ S P C S . C *****************************
  *                                                                           *
  * This module implements all sp_set_specs() functionality.                  *
- *                                                                           *
- ********************** R E V I S I O N   H I S T O R Y **********************
- *                                                                           *
- *  1) 15 Dec 88  jsc  Created                                               *
- *                                                                           *
- *  2) 23 Jan 89  jsc  Font decryption mechanism implemented                 *
- *                                                                           *
- *  3)  2 Feb 89  jsc  Constraints off control added to specs flags          *
- *                                                                           *
- *  4) 10 Feb 89  jsc  Added CR NUL check in font header                     *
- *                                                                           *
- *  3)  1 Mar 89  jsc  Font decryption mechanism updated.                    *
  *                                                                           *
  ****************************************************************************/
 #define SET_SPCS
