@@ -1,0 +1,103 @@
+##
+# $XConsortium$
+##
+## 
+## Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
+## 
+##			 All Rights Reserved
+## 
+## Permission to use, copy, modify, and distribute this software and its 
+## documentation for any purpose and without fee is hereby granted, 
+## provided that the above copyright notice appear in all copies and that
+## both that copyright notice and this permission notice appear in 
+## supporting documentation, and that the names of Sun Microsystems,
+## the X Consortium, and MIT not be used in advertising or publicity 
+## pertaining to distribution of the software without specific, written 
+## prior permission.  
+## 
+## SUN MICROSYSTEMS DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, 
+## INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO
+## EVENT SHALL SUN MICROSYSTEMS BE LIABLE FOR ANY SPECIAL, INDIRECT OR
+## CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF
+## USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+## OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+## PERFORMANCE OF THIS SOFTWARE.
+
+#define PassCDebugFlags
+
+#ifndef PexPhigsCDebugFlags
+#define PexPhigsCDebugFlags OptimizedCDebugFlags
+#endif
+
+#ifndef PexPhigsDefines
+#define PexPhigsDefines 
+#endif
+
+CDEBUGFLAGS = PexPhigsCDebugFlags
+    DEFINES = PexPhigsDefines
+
+     LIBCODE = ./libcb.a
+
+CSRCS = cb_ar.c cb_erhd.c cb_inp.c cb_sedt.c cb_ws.c \
+	cb_cell.c cb_err.c cb_nset.c cb_stru.c cb_xfut.c \
+	cb_erfn.c cb_colr.c cb_fill.c cb_plin.c cb_text.c \
+	cb_ctrl.c cb_pmrk.c cb_util.c cb_esc.c \
+	cb_wst.c cb_mf.c cb_nurb.c cb_dcue.c cb_lite.c
+
+OBJS = cb_ar.o cb_erhd.o cb_inp.o cb_sedt.o cb_ws.o \
+	cb_cell.o cb_err.o cb_nset.o cb_stru.o cb_xfut.o \
+	cb_erfn.o cb_colr.o cb_fill.o cb_plin.o cb_text.o \
+	cb_ctrl.o cb_pmrk.o cb_util.o cb_esc.o \
+	cb_wst.o cb_mf.o cb_nurb.o cb_dcue.o cb_lite.o
+
+HSRCS = cb_priv.h
+SRCS = $(CSRCS) $(HSRCS)
+
+.SUFFIXES: .o .a .lint
+
+   PEXAPIINC = -I../include
+  PEXINCLUDE = -I../../../include/PEX
+    INCLUDES = $(PEXAPIINC) $(PEXINCLUDE) -I../../../../X11
+
+LINTOPTS = -u
+LINT_LIBS = ../cp/llib-lcp.ln ../util/llib-lut.ln ../error/llib-lerr.ln \
+		../ws_type/llib-lwst.ln
+XLINT_LIBS = $(LINTXLIB)
+LINT_FILTER_FILE = ../include/lint_filter_strings
+LINT_FILTER = fgrep -v -f $(LINT_FILTER_FILE) | cat
+
+all:: Pex
+
+extract : $(SRCS)
+
+Pex: ${OBJS}
+	@echo "putting off ar of $(LIBCODE)"
+#	ar rvl $(LIBCODE) $(OBJS)
+
+# Force Re-Compliation
+FRC:
+	@echo "forcing remake"
+
+lint:   $(SRCS)
+	$(LINT) $(CSRCS) $(LINTFLAGS) $(LINT_LIBS) | $(LINT_FILTER)
+
+lint-x: $(SRCS)
+	$(LINT) $(CSRCS) $(LINTFLAGS) $(LINT_LIBS) $(XLINT_LIBS) | $(LINT_FILTER)
+
+lintlib : llib-lcb.ln
+
+llib-lcb.ln : $(SRCS)
+	$(LINT) $(CSRCS) $(LINTFLAGS) -Ccb | $(LINT_FILTER)
+
+lint-library: llib-lphigs.ln
+llib-lphigs.ln : phigs_cb.c phigs.c_bind
+	$(LINT) $(LINTFLAGS) -Cphigs phigs_cb.c
+
+.c.lint:
+	$(LINT) $< $(LINTFLAGS) $(LINT_LIBS) $(XLINT_LIBS) | $(LINT_FILTER)
+
+#ifdef HPArchitecture
+SpecialObjectRule(hpext.o, $(IRULESRC)/$(MACROFILE), $(EXT_DEFINES))
+#endif
+
+DependTarget()

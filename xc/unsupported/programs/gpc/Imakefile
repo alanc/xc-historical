@@ -1,0 +1,64 @@
+# $XConsortium$
+#
+##
+## Copyright 1989,1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
+##
+##                         All Rights Reserved
+##
+## Permission to use, copy, modify, and distribute this software and its
+## documentation for any purpose and without fee is hereby granted,
+## provided that the above copyright notice appear in all copies and that
+## both that copyright notice and this permission notice appear in
+## supporting documentation, and that the names of Sun Microsystems,
+## the X Consortium, and MIT not be used in advertising or publicity
+## pertaining to distribution of the software without specific, written
+## prior permission.
+##
+## SUN MICROSYSTEMS DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
+## INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO
+## EVENT SHALL SUN MICROSYSTEMS BE LIABLE FOR ANY SPECIAL, INDIRECT OR
+## CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF
+## USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+## OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+## PERFORMANCE OF THIS SOFTWARE.
+
+#
+# $Header: Imakefile,v 1.5 91/01/25 17:30:41 mikec Exp $
+#
+INCLUDES = -I. -I${TOP} -I${INCLUDESRC} -I../../../include/PEX \
+		-I../../../lib/PEX/include
+
+PEXLIB = ../../../lib/PEX/libphigs.a
+LOCAL_LIBRARIES = $(PEXLIB) $(XMULIB) $(XLIB)
+
+SYS_LIBRARIES = -lm
+
+SRCS =  basestat.c bif_lex.c bifbuild.c bifconfig.c bifparse.c bld_prim.c \
+	bld_str.c bld_view.c bldgeneric.c brf_ents.c brf_phead.c brf_trv.c \
+	db_tools.c doentity.c dummies.c fakefigs.c new_ents.c gen_ents.c \
+	init_bench.c listbufs.c maptools.c matrix.c \
+	traverser.c brf_except.c fillcont.c pixbuf.c stopwatch.c
+
+OBJS =   basestat.o bif_lex.o bifbuild.o bifconfig.o bifparse.o bld_prim.o \
+	bld_str.o bld_view.o bldgeneric.o brf_ents.o brf_phead.o brf_trv.o \
+	db_tools.o doentity.o dummies.o fakefigs.o new_ents.o gen_ents.o \
+	init_bench.o listbufs.o maptools.o matrix.o \
+	traverser.o brf_except.o fillcont.o pixbuf.o stopwatch.o
+
+
+
+# USING_PHIGS Build gpc for PHIGS_API
+# HAVEPIXELS  Turns on code not particular to the SI, used in conjuction
+#		with specialized GDP's or GSE's not supported by PEX_API
+# RCS_ID      Used by the rcs code management system.
+
+DEFINES = -DUSING_PHIGS 
+
+ComplexProgramTarget(plbpex)
+
+bifparse::
+        $(CP) bifparse.yacc bifparse.y
+        $(YACC) -d -v bifparse.y
+        $(MV) y.tab.c bifparse.c
+        $(MV) y.tab.h bifparse.h
+        $(RM) bifparse.y

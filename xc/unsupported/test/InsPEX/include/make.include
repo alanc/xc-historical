@@ -1,0 +1,10 @@
+# $XConsortium$
+# Makefile for include files
+
+SRC = pdt.h wdt.h
+	
+src: $(SRC)
+
+copy:
+	cp $(SRC) $(DESTDIR)
+

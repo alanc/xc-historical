@@ -1,0 +1,93 @@
+##
+# $XConsortium$
+##
+## 
+## Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
+## 
+##			 All Rights Reserved
+## 
+## Permission to use, copy, modify, and distribute this software and its 
+## documentation for any purpose and without fee is hereby granted, 
+## provided that the above copyright notice appear in all copies and that
+## both that copyright notice and this permission notice appear in 
+## supporting documentation, and that the names of Sun Microsystems,
+## the X Consortium, and MIT not be used in advertising or publicity 
+## pertaining to distribution of the software without specific, written 
+## prior permission.  
+## 
+## SUN MICROSYSTEMS DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, 
+## INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO
+## EVENT SHALL SUN MICROSYSTEMS BE LIABLE FOR ANY SPECIAL, INDIRECT OR
+## CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF
+## USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+## OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+## PERFORMANCE OF THIS SOFTWARE.
+
+#include <Server.tmpl>
+
+##
+##      Define a font path for PEX fonts.
+##      This is coherent iff FONTDIR == FontDir
+##
+
+#ifdef FontDir
+PEX_SITE_FONT_PATH = -DPEX_DEFAULT_FONTPATH=\"$(FONTDIR)/PEX\"
+#else
+PEX_SITE_FONT_PATH = /* nothing */
+#endif
+
+#ifndef PassCDebugFlags
+#define PassCDebugFlags
+#endif
+
+#ifndef PexDipexDefines
+#define PexDipexDefines
+#endif
+
+#ifndef PexDipexCDebugFlags
+#define PexDipexCDebugFlags OptimizedCDebugFlags
+#endif
+
+.SUFFIXES:  .o  .a
+
+RDR_STUBS = -DRENDER_CMDS
+ST_STUBS = -DSTORE_CMDS
+
+ CDEBUGFLAGS = PexDipexCDebugFlags
+     DEFINES = ExtensionDefines PexDipexDefines
+
+    LINTLIBS =	../../../../../server/dix/llib-ldix.ln \
+		../../../../../server/os/4.2bsd/llib-los.ln \
+		../../ddpex/mi/level4/llib-ldp4.ln \
+		../../ddpex/mi/shared/llib-ldps.ln \
+		../../dipex/swap/llib-ldsw.ln \
+		../../dipex/objects/llib-lobj.ln
+
+   PEXSRVINC = ./../../include
+  PEXINCLUDE = ./../../../../include/PEX
+DDPEXINCLUDE = ./../../ddpex/mi/include
+    INCLUDES = -I. 	\
+	-I$(PEXSRVINC) 	\
+	-I$(PEXINCLUDE)	\
+	-I$(INCLUDESRC) \
+	-I$(SERVERSRC)/include \
+	-I$(DDPEXINCLUDE)
+
+
+SRCS = osPexFont.c
+
+OBJS = osPexFont.o
+
+PEX_OS_LIBNAME = libospex.a
+
+#
+# Depend on Subdirectories.
+#
+#
+NormalLibraryObjectRule()
+NormalLibraryTarget(ospex,$(OBJS))
+LintLibraryTarget(osp,$(SRCS))
+NormalLintTarget($(SRCS))
+
+DependTarget()
+

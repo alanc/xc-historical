@@ -1,0 +1,116 @@
+##
+# $XConsortium$
+##
+## 
+## Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
+## 
+##			 All Rights Reserved
+## 
+## Permission to use, copy, modify, and distribute this software and its 
+## documentation for any purpose and without fee is hereby granted, 
+## provided that the above copyright notice appear in all copies and that
+## both that copyright notice and this permission notice appear in 
+## supporting documentation, and that the names of Sun Microsystems,
+## the X Consortium, and MIT not be used in advertising or publicity 
+## pertaining to distribution of the software without specific, written 
+## prior permission.  
+## 
+## SUN MICROSYSTEMS DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, 
+## INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO
+## EVENT SHALL SUN MICROSYSTEMS BE LIABLE FOR ANY SPECIAL, INDIRECT OR
+## CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF
+## USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+## OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+## PERFORMANCE OF THIS SOFTWARE.
+
+#include <Server.tmpl>
+
+#ifndef PassCDebugFlags
+#define PassCDebugFlags
+#endif
+
+#ifndef PexDipexDefines
+#define PexDipexDefines
+#endif
+
+#ifndef PexDipexCDebugFlags
+#define PexDipexCDebugFlags OptimizedCDebugFlags
+#endif
+
+.SUFFIXES:  .o  .a
+
+ CDEBUGFLAGS = PexDipexCDebugFlags
+     DEFINES = PexDipexDefines
+    INCLUDES = -I. -I./include -I../../../include -I$(INCLUDESRC) \
+		-I$(SERVERSRC)/include \
+		-I$(SERVERSRC)/ddx/hp/hp -I$(SERVERSRC)/ddx/hp/mfb
+
+    LINTLIBS = ../../../../../server/dix/llib-ldix.ln \
+		../../../../../server/os/4.2bsd/llib-los.ln \
+		../objects/llib-lobj.ln
+
+   PEXSRVINC = ./../../include
+  PEXINCLUDE = ./../../../../include/PEX
+    INCLUDES = -I. -I$(PEXSRVINC) -I$(PEXINCLUDE) -I$(INCLUDESRC) \
+		-I$(SERVERSRC)/include
+
+
+SRCS =  convUtil.c cOCprim.c uOCprim.c floatconv.c check.c \
+	OCattr.c OCcolour.c convReq.c uconvRep.c Convert.c \
+	OCTables.c ReqTables.c RepTables.c
+
+OBJS =  convUtil.o cOCprim.o uOCprim.o floatconv.o check.o \
+	OCattr.o OCcolour.o convReq.o uconvRep.o Convert.o \
+	OCTables.o ReqTables.o RepTables.o
+
+
+PEX_SW_LIBNAME = libdiswapex.a
+
+all:: libdiswapex.a
+
+OCTables.o: cOCTables.ci uOCTables.ci
+
+cOCTables.ci: OCTables.awk $(PEXINCLUDE)/PEX.h OCReduce.awk OCReduce.sed
+	rm -f OCTables.temp
+	rm -f cOCTables.ci
+	rm -f OCReduce.temp
+	echo "STUB_NAME " "cPEX" | cat > OCTables.temp
+	sed -n '/##/!p' OCReduce.sed > OCReduce.temp
+	echo "/*      %""Z%""%M""% %""I% %""E% SMI      */" | cat > cOCTables.ci
+	awk -f OCTables.awk OCTables.temp $(PEXINCLUDE)/PEX.h | awk -f OCReduce.awk | sed -f OCReduce.temp >> cOCTables.ci
+
+uOCTables.ci: OCTables.awk $(PEXINCLUDE)/PEX.h OCReduce.awk OCReduce.sed
+	rm -f OCTables.temp
+	rm -f uOCTables.ci
+	rm -f OCReduce.temp
+	echo "STUB_NAME " "uPEX" | cat > OCTables.temp
+	sed -n '/##/!p' OCReduce.sed > OCReduce.temp
+	echo "/*      %""Z%""%M""% %""I% %""E% SMI      */" | cat > uOCTables.ci
+	awk -f OCTables.awk OCTables.temp $(PEXINCLUDE)/PEX.h | awk -f OCReduce.awk | sed -f OCReduce.temp >> uOCTables.ci
+
+ReqTables.o: Requests.h Requests.ci
+
+Requests.h: ReqTab.awk $(PEXINCLUDE)/PEX.h
+	rm -f Requests.h
+	echo "/*      %""Z%""%M""% %""I% %""E% SMI      */" | cat > Requests.h
+	awk -f ReqTab.awk $(PEXINCLUDE)/PEX.h >> Requests.h
+
+Requests.ci: Requests.h ReqSame.awk
+	rm -f Requests.ci
+	echo "/*      %""Z%""%M""% %""I% %""E% SMI      */" | cat > Requests.ci
+	sed -n '/\%Z\%\%M\% \%I\% \%E\% SMI/!p' Requests.h | sed -n '/*      @(#)Requests.h /!p' | awk -f ReqSame.awk >> Requests.ci
+
+
+#
+# Depend on Subdirectories.
+#
+#
+NormalLibraryObjectRule()
+NormalLibraryTarget(diswapex,$(OBJS))
+LintLibraryTarget(dsw,$(SRCS))
+NormalLintTarget($(SRCS))
+
+depend:: Requests.h Requests.ci cOCTables.ci uOCTables.ci
+
+DependTarget()
+

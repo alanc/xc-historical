@@ -1,0 +1,78 @@
+##
+# $XConsortium$
+##
+## 
+## Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
+## 
+##			 All Rights Reserved
+## 
+## Permission to use, copy, modify, and distribute this software and its 
+## documentation for any purpose and without fee is hereby granted, 
+## provided that the above copyright notice appear in all copies and that
+## both that copyright notice and this permission notice appear in 
+## supporting documentation, and that the names of Sun Microsystems,
+## the X Consortium, and MIT not be used in advertising or publicity 
+## pertaining to distribution of the software without specific, written 
+## prior permission.  
+## 
+## SUN MICROSYSTEMS DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, 
+## INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO
+## EVENT SHALL SUN MICROSYSTEMS BE LIABLE FOR ANY SPECIAL, INDIRECT OR
+## CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF
+## USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+## OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+## PERFORMANCE OF THIS SOFTWARE.
+
+#include <Server.tmpl>
+
+#ifndef PassCDebugFlags
+#define PassCDebugFlags
+#endif
+
+#ifndef PexDipexDefines
+#define PexDipexDefines
+#endif
+
+#ifndef PexDipexCDebugFlags
+#define PexDipexCDebugFlags OptimizedCDebugFlags
+#endif
+
+.SUFFIXES: .o .a
+
+    CDEBUGFLAGS = PexDipexCDebugFlags
+        DEFINES = PexDipexDefines
+       LINTLIBS =  ../../../../../server/dix/llib-ldix.ln \
+		../../../../../server/os/4.2bsd/llib-los.ln \
+		../../ddpex/mi/level4/llib-ldp4.ln \
+		../../ddpex/mi/shared/llib-ldps.ln
+
+
+   PEXSRVINC = ./../../include
+  PEXINCLUDE = ./../../../../include/PEX
+    INCLUDES = -I. -I$(PEXSRVINC) -I$(PEXINCLUDE) -I$(INCLUDESRC) \
+		-I$(SERVERSRC)/include
+
+
+SRCS =  pexRndr.c pexFont.c pexLut.c pexNs.c pexStr.c \
+	pexPhigs.c pexInfo.c pexSc.c pexPick.c pexPc.c
+
+OBJS =  pexRndr.o pexFont.o pexLut.o pexNs.o pexStr.o \
+	pexPhigs.o pexInfo.o pexSc.o pexPick.o pexPc.o
+
+## LINTOPTS = -acvxz
+
+#
+# Depend on Subdirectories.
+#
+#
+NormalLibraryObjectRule()
+NormalLibraryTarget(diobpex,$(OBJS))
+LintLibraryTarget(obj,$(SRCS))
+NormalLintTarget($(SRCS))
+
+#ifdef HPArchitecture
+SpecialObjectRule(hpext.o, $(IRULESRC)/$(MACROFILE), $(EXT_DEFINES))
+#endif
+
+DependTarget()
+

@@ -1,0 +1,152 @@
+##
+# $XConsortium$
+##
+## 
+## Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
+## 
+##			 All Rights Reserved
+## 
+## Permission to use, copy, modify, and distribute this software and its 
+## documentation for any purpose and without fee is hereby granted, 
+## provided that the above copyright notice appear in all copies and that
+## both that copyright notice and this permission notice appear in 
+## supporting documentation, and that the names of Sun Microsystems,
+## the X Consortium, and MIT not be used in advertising or publicity 
+## pertaining to distribution of the software without specific, written 
+## prior permission.  
+## 
+## SUN MICROSYSTEMS DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, 
+## INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO
+## EVENT SHALL SUN MICROSYSTEMS BE LIABLE FOR ANY SPECIAL, INDIRECT OR
+## CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF
+## USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+## OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+## PERFORMANCE OF THIS SOFTWARE.
+
+#include <Server.tmpl>
+
+#define IHaveSubdirs
+
+#ifndef PassCDebugFlags
+#define PassCDebugFlags
+#endif
+
+#ifndef PexDipexDefines
+#define PexDipexDefines
+#endif
+
+#ifndef PexDipexCDebugFlags
+#define PexDipexCDebugFlags OptimizedCDebugFlags 
+#endif
+
+.SUFFIXES: .o .a
+
+ CDEBUGFLAGS = PexDipexCDebugFlags
+     DEFINES = ExtensionDefines PexDipexDefines
+   INCLUDES  = -I. -I./include -I../include -I$(INCLUDESRC) \
+		-I$(SERVERSRC)/include\
+		-I$(SERVERSRC)/ddx/hp/hp -I$(SERVERSRC)/ddx/hp/mfb
+   LINTLIBS =    ../../../server/dix/llib-ldix.ln \
+		../../../server/os/4.2bsd/llib-los.ln \
+		$(DISPATCHDIR)/llib-ldsp.ln \
+		$(SWAPDIR)/llib-ldsw.ln \
+		$(OBJECTSDIR)/llib-lobj.ln \
+		$(DDPEX1DIR)/llib-ldp1.ln \
+		$(DDPEX2DIR)/llib-ldp2.ln \
+		$(DDPEX3DIR)/llib-ldp3.ln \
+		$(DDPEX4DIR)/llib-ldp4.ln \
+		$(DDPEXSDIR)/llib-ldps.ln \
+		$(OSPEXDIR)/llib-losp.ln
+
+     SWAPDIR = ./dipex/swap
+        SWAP = $(SWAPDIR)/libdiswapex.a
+
+ DISPATCHDIR = ./dipex/dispatch
+    DISPATCH = $(DISPATCHDIR)/libdidipex.a
+
+  OBJECTSDIR = ./dipex/objects
+     OBJECTS = $(OBJECTSDIR)/libdiobpex.a
+
+    DDPEX1DIR = ./ddpex/mi/level1
+       DDPEX1 = $(DDPEX1DIR)/libddpex1.a
+
+    DDPEX2DIR = ./ddpex/mi/level2
+       DDPEX2 = $(DDPEX2DIR)/libddpex2.a
+
+    DDPEX3DIR = ./ddpex/mi/level3
+       DDPEX3 = $(DDPEX3DIR)/libddpex3.a
+
+    DDPEX4DIR = ./ddpex/mi/level4
+       DDPEX4 = $(DDPEX4DIR)/libddpex4.a
+
+    DDPEXSDIR = ./ddpex/mi/shared
+       DDPEXS = $(DDPEXSDIR)/libddpexs.a
+
+     OSPEXDIR = ./ospex/4.2bsd
+        OSPEX = $(OSPEXDIR)/libospex.a
+
+     SUBDIRS = $(DISPATCHDIR) $(SWAPDIR) $(OBJECTSDIR) $(DDPEX1DIR) \
+		$(DDPEX2DIR) $(DDPEX3DIR) $(DDPEX4DIR) $(DDPEXSDIR) \
+		$(OSPEXDIR)
+     SUBOBJS = $(DISPATCH) $(SWAP) $(OBJECTS) $(DDPEX1) \
+		$(DDPEX2) $(DDPEX3) $(DDPEX4) $(DDPEXS) $(OSPEX)
+
+   PEXSRVINC = ./include
+  PEXINCLUDE = ./../../include/PEX
+    INCLUDES = -I. -I$(PEXSRVINC) -I$(PEXINCLUDE) -I$(INCLUDESRC) \
+		-I$(SERVERSRC)/include
+
+
+# local builds
+#
+all:: subdirs
+
+
+XDEVROOT=../../..
+PexServer:  ${SUBOBJS}
+	-@if [ -f Xsun ]; then echo "$(MV) Xsun Xsun.bak"; \
+	$(MV) Xsun Xsun.bak; else exit 0; fi
+	$(CC) $(CDEBUGFLAGS) -o Xsun \
+			$(XDEVROOT)/server/ddx/sun/sunInit.o \
+			$(XDEVROOT)/fonts/mkfontdir/fontdir.o \
+			$(XDEVROOT)/server/ddx/sun/libsun.a \
+			$(XDEVROOT)/server/ddx/cfb/libcfb.a \
+			$(XDEVROOT)/server/dix/libdix.a \
+			$(XDEVROOT)/server/os/4.2bsd/libos.a \
+			$(XDEVROOT)/lib/Xau/libXau.a \
+			$(XDEVROOT)/lib/Xdmcp/libXdmcp.a \
+			$(XDEVROOT)/server/ddx/snf/libsnf.a \
+			$(XDEVROOT)/server/ddx/mfb/libmfb.a \
+			$(XDEVROOT)/server/ddx/mi/libmi.a \
+			$(XDEVROOT)/extensions/server/libext.a \
+			$(DISPATCH) \
+			$(SWAP) \
+			$(OBJECTS) \
+			$(DISPATCH) \
+			$(DDPEX4) \
+			$(DDPEX3) \
+			$(DDPEXS) \
+			$(DDPEX2) \
+			$(DDPEX1) \
+			$(OSPEX) \
+			-lm -ldbm -lsunwindow -lpixrect 
+#
+# Depend on Subdirectories.
+#
+#
+all:: subdirs
+
+linkables:
+	@for i in $(SUBOBJS); \
+	do \
+	echo "../extensions/server/$$i"; \
+	done 
+
+
+NamedMakeSubdirs(subdirs, $(SUBDIRS))
+
+#ifdef HPArchitecture
+SpecialObjectRule(hppex.o, $(IRULESRC)/$(MACROFILE), $(EXT_DEFINES))
+#endif
+
+DependSubdirs($(SUBDIRS))

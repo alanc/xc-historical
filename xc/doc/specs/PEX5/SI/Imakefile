@@ -1,0 +1,115 @@
+##
+# $XConsortium$
+## 
+## Copyright (c) 1989,1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
+## 
+##			 All Rights Reserved
+## 
+## Permission to use, copy, modify, and distribute this software and its 
+## documentation for any purpose and without fee is hereby granted, 
+## provided that the above copyright notice appear in all copies and that
+## both that copyright notice and this permission notice appear in 
+## supporting documentation, and that the names of Sun Microsystems,
+## the X Consortium, and MIT not be used in advertising or publicity 
+## pertaining to distribution of the software without specific, written 
+## prior permission.  
+## 
+## SUN MICROSYSTEMS DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, 
+## INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO
+## EVENT SHALL SUN MICROSYSTEMS BE LIABLE FOR ANY SPECIAL, INDIRECT OR
+## CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF
+## USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+## OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+## PERFORMANCE OF THIS SOFTWARE.
+
+#define PassCDebugFlags
+
+SRCS = indexer.c build_ind.c print_ind.c ind_token.c \
+       xref.c build_cw.c token.c print_refs.c sub_refs.c dump_cw.c \
+       recode.c
+
+IND_OBJECTS = indexer.o build_ind.o print_ind.o ind_token.o
+
+XREF_OBJECTS = xref.o build_cw.o token.o print_refs.o \
+	sub_refs.o dump_cw.o
+
+RECODE_OBJECTS = recode.o
+
+#ifdef  SunArchitecture
+## if doing cross compile, force make of local and remote
+## versions of to_wfont. Do remote version first!! 
+
+all:: xref_r xref_l recode_r recode_l indexer_r indexer_l pex.macros
+
+xref_r: $(XREF_OBJECTS)
+	if [ $(HOST_ARCH) != $(TARGET_ARCH) ]; \
+	then 	make TARGET_ARCH=$(TARGET_ARCH) xref; \
+		mv xref xref$(TARGET_ARCH);     \
+		rm -f $(XREF_OBJECTS); \
+	fi
+
+xref_l: 
+	if [ $(HOST_ARCH) != $(TARGET_ARCH) ]; \
+	then    if [ $$FLOAT_OPTION ]; \
+		then    unset FLOAT_OPTION; \
+			make TARGET_ARCH=$(HOST_ARCH) xref; \
+		else    make TARGET_ARCH=$(HOST_ARCH) xref; \
+		fi; \
+	else     make TARGET_ARCH=$(HOST_ARCH) xref; \
+	fi
+
+recode_r: $(RECODE_OBJECTS)
+	if [ $(HOST_ARCH) != $(TARGET_ARCH) ]; \
+	then 	make TARGET_ARCH=$(TARGET_ARCH) recode; \
+		mv recode recode$(TARGET_ARCH); \
+		rm -f $(RECODE_OBJECTS); \
+	fi
+
+recode_l: 
+	if [ $(HOST_ARCH) != $(TARGET_ARCH) ]; \
+	then    if [ $$FLOAT_OPTION ]; \
+		then    unset FLOAT_OPTION; \
+			make TARGET_ARCH=$(HOST_ARCH) recode; \
+		else    make TARGET_ARCH=$(HOST_ARCH) recode; \
+		fi; \
+	else     make TARGET_ARCH=$(HOST_ARCH) recode; \
+	fi
+
+indexer_r: $(IND_OBJECTS)
+	if [ $(HOST_ARCH) != $(TARGET_ARCH) ]; \
+	then 	make TARGET_ARCH=$(TARGET_ARCH) indexer; \
+		mv indexer indexer$(TARGET_ARCH);        \
+		rm -f $(IND_OBJECTS); \
+	fi
+
+indexer_l: 
+	if [ $(HOST_ARCH) != $(TARGET_ARCH) ]; \
+	then    if [ $$FLOAT_OPTION ]; \
+		then    unset FLOAT_OPTION; \
+			make TARGET_ARCH=$(HOST_ARCH) indexer; \
+		else    make TARGET_ARCH=$(HOST_ARCH) indexer; \
+		fi; \
+	else     make TARGET_ARCH=$(HOST_ARCH) indexer; \
+	fi
+
+clean:: 
+	if [ $(HOST_ARCH) != $(TARGET_ARCH) ]; \
+	then	$(RM) xref$(TARGET_ARCH) ;     \
+		$(RM) recode$(TARGET_ARCH) ;   \
+		$(RM) indexer$(TARGET_ARCH) ;  \
+	fi
+
+#else	/*SunArchitecture*/
+
+all:: xref recode indexer pex.macros
+
+#endif	/*SunArchitecture*/
+
+pex.macros: ex.toc exp.acc exp.eqn exp.ref exp.tbl
+
+NormalProgramTarget(xref,$(XREF_OBJECTS), /**/, /**/, /**/)
+NormalProgramTarget(recode,$(RECODE_OBJECTS), /**/, /**/, /**/)
+NormalProgramTarget(indexer,$(IND_OBJECTS), /**/, /**/, /**/)
+
+DependTarget()
+

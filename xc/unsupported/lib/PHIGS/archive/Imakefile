@@ -1,0 +1,86 @@
+##
+# $XConsortium$
+##
+## 
+## Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
+## 
+##			 All Rights Reserved
+## 
+## Permission to use, copy, modify, and distribute this software and its 
+## documentation for any purpose and without fee is hereby granted, 
+## provided that the above copyright notice appear in all copies and that
+## both that copyright notice and this permission notice appear in 
+## supporting documentation, and that the names of Sun Microsystems,
+## the X Consortium, and MIT not be used in advertising or publicity 
+## pertaining to distribution of the software without specific, written 
+## prior permission.  
+## 
+## SUN MICROSYSTEMS DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, 
+## INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO
+## EVENT SHALL SUN MICROSYSTEMS BE LIABLE FOR ANY SPECIAL, INDIRECT OR
+## CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF
+## USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+## OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+## PERFORMANCE OF THIS SOFTWARE.
+
+#define PassCDebugFlags
+
+#ifndef PexPhigsCDebugFlags
+#define PexPhigsCDebugFlags OptimizedCDebugFlags
+#endif
+
+#ifndef PexPhigsDefines
+#define PexPhigsDefines 
+#endif
+
+CDEBUGFLAGS = PexPhigsCDebugFlags
+    DEFINES = PexPhigsDefines
+
+     LIBCODE = ./libar.a
+
+SRCS = ar_ops.c ar_hier.c ar_conv.c
+OBJS = ar_ops.o ar_hier.o ar_conv.o
+
+.SUFFIXES: .o .a .lint
+
+   PEXAPIINC = -I../include
+  PEXINCLUDE = -I../../../include/PEX
+    INCLUDES = $(PEXAPIINC) $(PEXINCLUDE) -I../../../../X11
+
+LINTOPTS = -uv
+LINT_LIBS = ../cp/llib-lcp.ln ../util/llib-lut.ln ../error/llib-lerr.ln
+XLINT_LIBS = $(LINTXLIB)
+LINT_FILTER_FILE = ../include/lint_filter_strings
+LINT_FILTER = fgrep -v -f $(LINT_FILTER_FILE) | cat
+
+all:: Pex
+
+extract : $(SRCS)
+
+Pex: ${OBJS}
+	@echo "putting off ar of $(LIBCODE)"
+#	ar rvl $(LIBCODE) $(OBJS)
+
+# Force Re-Compliation
+FRC:
+	@echo "forcing remake"
+
+lint:   $(SRCS)
+	$(LINT) $(SRCS) $(LINTFLAGS) $(LINT_LIBS) | $(LINT_FILTER)
+
+lint-x: $(SRCS)
+	$(LINT) $(SRCS) $(LINTFLAGS) $(LINT_LIBS) $(XLINT_LIBS) | $(LINT_FILTER)
+
+lintlib : llib-lar.ln
+
+llib-lar.ln : $(SRCS)
+	$(LINT) $(SRCS) $(LINTFLAGS) -Car | $(LINT_FILTER)
+
+.c.lint:
+	$(LINT) $< $(LINTFLAGS) $(LINT_LIBS) $(XLINT_LIBS) | $(LINT_FILTER)
+
+#ifdef HPArchitecture
+SpecialObjectRule(hpext.o, $(IRULESRC)/$(MACROFILE), $(EXT_DEFINES))
+#endif
+
+DependTarget()

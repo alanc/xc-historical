@@ -1,0 +1,109 @@
+##
+# $XConsortium$
+##
+## 
+## Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
+## 
+##			 All Rights Reserved
+## 
+## Permission to use, copy, modify, and distribute this software and its 
+## documentation for any purpose and without fee is hereby granted, 
+## provided that the above copyright notice appear in all copies and that
+## both that copyright notice and this permission notice appear in 
+## supporting documentation, and that the names of Sun Microsystems,
+## the X Consortium, and MIT not be used in advertising or publicity 
+## pertaining to distribution of the software without specific, written 
+## prior permission.  
+## 
+## SUN MICROSYSTEMS DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, 
+## INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO
+## EVENT SHALL SUN MICROSYSTEMS BE LIABLE FOR ANY SPECIAL, INDIRECT OR
+## CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF
+## USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+## OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+## PERFORMANCE OF THIS SOFTWARE.
+
+#include <Server.tmpl>
+
+##
+##	Define a font path for PEX fonts.
+##	This is coherent iff FONTDIR == FontDir
+##
+
+#ifdef FontDir
+PEX_SITE_FONT_PATH = -DPEX_DEFAULT_FONTPATH=\"$(FONTDIR)/PEX\"
+#else
+PEX_SITE_FONT_PATH = /* nothing */
+#endif
+
+#ifndef PexDdpexCDebugFlags
+#define PexDdpexCDebugFlags OptimizedCDebugFlags
+#endif
+
+#ifndef PexDdpexDefines
+#define PexDdpexDefines $(PEX_SITE_FONT_PATH) 
+#endif
+
+#-D defines for ddpex:
+#	DDTEST turns on some fprintf(stderr...)s for debugging
+#	PEX_DEFAULT_FONTPATH defines the default path to PEX fonts
+
+    DEFINES = PexDdpexDefines
+CDEBUGFLAGS = PexDdpexCDebugFlags
+
+  PEXSERVINC = ./../../../include
+  PEXINCLUDE = ./../../../../../include/PEX
+DDPEXINCLUDE = ./../include
+
+INCLUDES = -I. \
+	-I$(DDPEXINCLUDE) \
+	-I$(PEXINCLUDE) \
+	-I$(INCLUDESRC) \
+	-I$(PEXSERVINC) \
+	-I$(SERVERSRC)/include
+
+SRCS = miFont.c \
+	miLUT.c \
+	miLineLUT.c \
+	miMarkLUT.c \
+	miTextLUT.c \
+	miEdgeLUT.c \
+	miIntLUT.c \
+	miPattLUT.c \
+	miFontLUT.c \
+	miViewLUT.c \
+	miColrLUT.c \
+	miClrApLUT.c \
+	miLightLUT.c \
+	miDCueLUT.c \
+	miNS.c \
+	miUtils.c \
+	miMisc.c 
+
+OBJS = miFont.o \
+	miLUT.o \
+	miLineLUT.o \
+	miMarkLUT.o \
+	miTextLUT.o \
+	miEdgeLUT.o \
+	miIntLUT.o \
+	miPattLUT.o \
+	miFontLUT.o \
+	miViewLUT.o \
+	miColrLUT.o \
+	miClrApLUT.o \
+	miLightLUT.o \
+	miDCueLUT.o \
+	miNS.o \
+	miUtils.o \
+	miMisc.o 
+
+NormalLibraryObjectRule()
+
+NormalLibraryTarget(ddpexs,$(OBJS))
+
+LintLibraryTarget(dps, $(SRCS))
+NormalLintTarget($(SRCS))
+
+DependTarget()
+

@@ -1,0 +1,102 @@
+##
+# $XConsortium$
+## 
+## Copyright (c) 1989,1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
+## 
+##			 All Rights Reserved
+## 
+## Permission to use, copy, modify, and distribute this software and its 
+## documentation for any purpose and without fee is hereby granted, 
+## provided that the above copyright notice appear in all copies and that
+## both that copyright notice and this permission notice appear in 
+## supporting documentation, and that the names of Sun Microsystems,
+## the X Consortium, and MIT not be used in advertising or publicity 
+## pertaining to distribution of the software without specific, written 
+## prior permission.  
+## 
+## SUN MICROSYSTEMS DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, 
+## INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO
+## EVENT SHALL SUN MICROSYSTEMS BE LIABLE FOR ANY SPECIAL, INDIRECT OR
+## CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF
+## USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+## OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+## PERFORMANCE OF THIS SOFTWARE.
+
+#define PassCDebugFlags
+
+#ifndef PexFontCDebugFlags
+#define PexFontCDebugFlags OptimizedCDebugFlags
+#endif
+
+#ifndef PexFontDefines
+#define PexFontDefines 
+#endif
+
+.SUFFIXES: $(SUFFIXES) .src .phont
+
+CDEBUGFLAGS = PexFontCDebugFlags
+    DEFINES = PexFontDefines
+
+     YFLAGS = -d
+
+  LINTFLAGS = -u
+       LIBS = -ll -lm
+
+      FONTS = Roman Roman_M 
+
+#Original sources for the font files
+  FONTS_SRC = Roman.src Roman_M.src
+
+#Binary (run-time) versions
+FONTS_BINARY = Roman.phont Roman_M.phont
+
+       SRCS = to_wfont.y lex.c
+       OBJS = to_wfont.o lex.o
+
+#ifdef SunArchitecture
+## if doing cross compile, force make of local and remote
+## versions of to_wfont. Do remote version first!! 
+
+all:: to_wfont_r to_wfont_l $(FONTS_BINARY)
+
+to_wfont_r: $(OBJS)
+	if [ $(HOST_ARCH) != $(TARGET_ARCH) ]; \
+	then 	make TARGET_ARCH=$(TARGET_ARCH) to_wfont; \
+		mv to_wfont to_wfont$(TARGET_ARCH);       \
+		rm -f $(OBJS);  \
+	fi
+
+to_wfont_l:
+	if [ $(HOST_ARCH) != $(TARGET_ARCH) ]; \
+	then	if [ $$FLOAT_OPTION ]; \
+		then	unset FLOAT_OPTION; \
+			make TARGET_ARCH=$(HOST_ARCH) to_wfont; \
+		else	make TARGET_ARCH=$(HOST_ARCH) to_wfont; \
+		fi; \
+	else	 make TARGET_ARCH=$(HOST_ARCH) to_wfont; \
+	fi
+
+clean:: 
+	if [ $(HOST_ARCH) != $(TARGET_ARCH) ]; \
+	then	$(RM) to_wfont$(TARGET_ARCH) ; \
+	fi
+
+#else	/*SunArchitecture*/
+
+all:: to_wfont $(FONTS_BINARY)
+
+#endif	/*SunArchitecture*/
+
+SingleProgramTarget(to_wfont,$(OBJS), $(LIBS), /**/)
+
+.src.phont:
+	to_wfont -o $@ $<
+
+clean:: 
+	$(RM) $(FONTS_BINARY) lex.c
+
+depend:: lex.c
+
+DependTarget()
+
+InstallMultipleFlags($(FONTS_BINARY),$(FONTDIR)/PEX,$(INSTDATFLAGS))

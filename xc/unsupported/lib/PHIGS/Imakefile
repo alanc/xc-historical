@@ -1,0 +1,141 @@
+##
+# $XConsortium$
+##
+## 
+## Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
+## 
+##			 All Rights Reserved
+## 
+## Permission to use, copy, modify, and distribute this software and its 
+## documentation for any purpose and without fee is hereby granted, 
+## provided that the above copyright notice appear in all copies and that
+## both that copyright notice and this permission notice appear in 
+## supporting documentation, and that the names of Sun Microsystems,
+## the X Consortium, and MIT not be used in advertising or publicity 
+## pertaining to distribution of the software without specific, written 
+## prior permission.  
+## 
+## SUN MICROSYSTEMS DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, 
+## INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO
+## EVENT SHALL SUN MICROSYSTEMS BE LIABLE FOR ANY SPECIAL, INDIRECT OR
+## CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF
+## USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+## OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+## PERFORMANCE OF THIS SOFTWARE.
+
+#define IHaveSubdirs
+#define PassCDebugFlags
+
+#ifndef PexPhigsCDebugFlags
+#define PexPhigsCDebugFlags OptimizedCDebugFlags
+#endif
+
+#ifndef PexPhigsDefines
+#define PexPhigsDefines 
+#endif
+
+CDEBUGFLAGS = PexPhigsCDebugFlags
+    DEFINES = PexPhigsDefines
+
+.SUFFIXES: .o .a
+
+     AR = ar
+     SUBDIRS = ./include ./archive ./c_binding ./css ./cp ./error ./input \
+		./pex  ./util ./ws ./ws_type
+
+    ALL_SRCS = ./archive/ar*.c ./c_binding/cb*.c \
+		./cp/cp*.c ./cp/psl.c ./css/css*.c \
+		./error/er*.c ./input/sin*.c ./pex/pex*.c  ./util/ut*.c \
+		./ws/ws*.c ./ws_type/wstx*.c
+
+     ALL_OBJ = ./archive/ar*.o ./c_binding/cb*.o \
+		./cp/cp*.o ./cp/psl.o ./css/css*.o \
+		./error/er*.o ./input/sin*.o ./pex/pex*.o  ./util/ut*.o \
+		./ws/ws*.o ./ws_type/wstx*.o
+
+   PEXAPIINC = ./include
+  PEXINCLUDE = ./../../include/PEX
+    XINCLUDE = $(SERVERSRC)/include
+    INCLUDES = -I. -I$(PEXAPIINC) -I$(PEXINCLUDE) -I$(XINCLUDE) \
+		-I$(INCLUDESRC)
+
+  PEXLIBNAME = libphigs.a
+      MFLAGS = "LIBCODE=../$(PEXLIBNAME)"
+      PEXLIB = ../../lib/${PEXLIBNAME}
+
+    SWAPLIB  = ../../server/PEX/dipex/swap/libdiswapex.a
+   SWAPOBJS  = OCTables.o Convert.o floatconv.o OCattr.o OCcolour.o   \
+		cOCprim.o uOCprim.o
+
+    LINTLIBS =
+
+# local builds
+#
+CHILD = phigsmon
+
+all:: errortext subdirs swapcode
+	$(AR) ruvl $(PEXLIBNAME) $(ALL_OBJ)
+	$(RANLIB) $(PEXLIBNAME)
+	$(MAKE) $(CHILD)
+
+LIB_SHARED_DIR = lib
+$(LIB_SHARED_DIR):
+	-mkdir $@
+
+$(CHILD) : FRC
+	-(cd cp; $(MAKE) $@)
+	if [ -f cp/$@ ]; then \
+	    mv -f cp/$@ ./lib/$(CHILD);  \
+	fi;
+
+ERR_TEXT_FILES = PHIGSerr.txt PHIGSfnc.txt
+errortext: FRC $(LIB_SHARED_DIR)
+	(cd $(LIB_SHARED_DIR); rm -f $(ERR_TEXT_FILES))
+	(cd include; $(MAKE) $(ERR_TEXT_FILES) )
+	(cd include; cp $(ERR_TEXT_FILES) ../$(LIB_SHARED_DIR))
+
+
+swapcode: FRC
+	@echo "Extracting swap objects from diPEX library" $(SWAPLIB)
+	$(AR) xvl $(SWAPLIB) $(SWAPOBJS)
+	@echo "Archiving swap objects into" $(PEXLIBNAME)
+	$(AR) ruvl $(PEXLIBNAME) $(SWAPOBJS)
+	-rm -f $(SWAPOBJS)
+	
+lintlib lint-library: FRC
+	(cd c_binding; $(MAKE) lint-library)
+
+lintlibs:
+	-for i in ${SUBDIRS}; do \
+	    ( 	echo in $$i; cd $$i; \
+		$(MAKE) lintlib  \
+	    ); done
+
+lint lint-x: lintlibs
+	-for i in ${SUBDIRS}; do \
+	    ( 	echo in $$i; cd $$i; \
+		$(MAKE) $@  \
+	    ); done
+
+extract: FRC
+	for i in  $(SUBDIRS) ;\
+	do \
+	(cd $$i ; echo "making $@ in $$i"; \
+	$(MAKE)  $(MFLAGS) $@); \
+	done
+
+# Force Re-Compliation
+FRC:
+	@echo "forcing remake"
+
+
+NamedMakeSubdirs(subdirs, $(SUBDIRS))
+NormalLibraryObjectRule()
+
+InstallLibrary(pexapi,$(USRLIBDIR))
+
+#ifdef HPArchitecture
+SpecialObjectRule(hppex.o, $(IRULESRC)/$(MACROFILE), $(EXT_DEFINES))
+#endif
+
+DependSubdirs($(SUBDIRS))
