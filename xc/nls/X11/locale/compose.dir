@@ -1,9 +1,10 @@
-# $XConsortium$
+# $XConsortium: compose.dir,v 1.1 94/01/22 14:03:47 rws Exp $
 #
 #	This file contains compose table file name.
 #	The first word is the compose table file name and
 #	the second word is full locale name.
 #
+iso8859-1/Compose	C
 iso8859-1/Compose	da_DK.ISO8859-1
 iso8859-1/Compose	de_DE.ISO8859-1
 iso8859-1/Compose	de_AT.ISO8859-1
