@@ -1,4 +1,4 @@
-/* $XConsortium: xexevents.c,v 1.38 92/12/30 16:06:44 rws Exp $ */
+/* $XConsortium: xexevents.c,v 1.39 92/12/30 16:10:57 rws Exp $ */
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
 Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -111,13 +111,16 @@ ProcessOtherEvent (xE, other, count)
     void		NoticeEventTime();
     deviceValuator	*xV = (deviceValuator *) xE;
 
-    GetSpritePosition(&rootX, &rootY);
-    xE->root_x = rootX;
-    xE->root_y = rootY;
-    key = xE->detail;
-    NoticeEventTime(xE);
-    xE->state = inputInfo.keyboard->key->state | 
-		inputInfo.pointer->button->state;
+    if (xE->type != DeviceValuator) {
+        GetSpritePosition(&rootX, &rootY);
+        xE->root_x = rootX;
+        xE->root_y = rootY;
+        key = xE->detail;
+        NoticeEventTime(xE);
+        xE->state = inputInfo.keyboard->key->state | 
+		    inputInfo.pointer->button->state;
+        bit = 1 << (key & 7);
+    }
     for (i=1; i<count; i++)
 	if ((++xV)->type == DeviceValuator)
 	    {
@@ -127,7 +130,6 @@ ProcessOtherEvent (xE, other, count)
 	    if (b)
 	        xV->device_state |= b->state;
 	    }
-    bit = 1 << (key & 7);
     
     if (xE->type == DeviceKeyPress)
 	{
