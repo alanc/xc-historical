@@ -1,9 +1,21 @@
-.\" $XConsortium: xclipboard.man,v 1.13 94/04/11 14:27:31 gildea Exp $
+.\" $XConsortium: xclipboard.man,v 1.14 94/04/11 16:03:03 matt Exp $
+.\" Copyright 1988 Massachusetts Institute of Technology
+.\"
+.\" Permission to use, copy, modify, distribute, and sell this software and
+.\" its documentation for any purpose is hereby granted without fee, provided
+.\" that the above copyright notice appear in all copies and that both that
+.\" copyright notice and this permission notice appear in supporting
+.\" documentation, and that the name of M.I.T. not be used in advertising or
+.\" publicity pertaining to distribution of the software without specific,
+.\" written prior permission.  M.I.T. makes no representations about the
+.\" suitability of this software for any purpose.  It is provided "as is"
+.\" without express or implied warranty.
 .TH XCLIPBOARD 1 "Release 6" "X Version 11"
 .SH NAME
-xclipboard - X clipboard client
+xclipboard \- X clipboard client
 .SH SYNOPSIS
-\fBxclipboard\fP [ \fI-toolkitoption\fP ...] [-w] [-nw]
+\fBxclipboard\fP [ \fI\-toolkitoption\fP ... ] [ \fB\-w\fP ]
+[ \fB\-nw\fP ]
 .SH DESCRIPTION
 The \fIxclipboard\fP program is used to collect and display text selections 
 that are sent to the CLIPBOARD by other clients.  It is typically used to
@@ -33,6 +45,11 @@ next one displayed.
 Creates a new buffer with no contents.  Useful in constructing a new
 CLIPBOARD selection by hand.
 .TP 8
+.I save
+Displays a File Save dialog box.
+Pressing the Accept button saves the currently
+displayed buffer to the file specified in the text field.
+.TP 8
 .I next
 Displays the next buffer in the list.
 .TP 8
@@ -60,12 +77,24 @@ is given first, followed by the widget instance name.
 .ta .5i 1.0i 1.5i
 XClipboard  xclipboard
 	Form  form
-		Command  quit
+		Command  Quit
 		Command  delete
 		Command  new
+		Command  Save
 		Command  next
 		Command  prev
+		Label  index
 		Text  text
+	TransientShell  fileDialogShell
+		Dialog  fileDialog
+			Label  label
+			Command  accept
+			Command  cancel
+			Text value
+	TransientShell  failDialogShell
+		Dialog  failDialog
+			Label  label
+			Command  continue
 .fi
 .sp
 .SH SENDING/RETRIEVING CLIPBOARD CONTENTS
@@ -99,10 +128,6 @@ to get the name of a resource file that overrides the global resources
 stored in the RESOURCE_MANAGER property.
 .SH FILES
 <XRoot>/lib/X11/app-defaults/XClipboard - specifies required resources
-.SH COPYRIGHT
-Copyright 1988, Massachusetts Institute of Technology
-.br
-See \fIX(1)\fP for a full statement of rights and permissions.
 .SH AUTHOR
 Ralph R. Swick, DEC/MIT Project Athena
 .br
