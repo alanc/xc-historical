@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Text.c,v 1.55 88/09/13 18:05:45 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Text.c,v 1.56 88/09/15 12:38:58 swick Exp $";
 #endif
 
 
@@ -553,6 +553,7 @@ _XtTextScroll(ctx, n)
 	    (*ctx->text.sink->ClearToBackground)(ctx, 0,
 		ctx->text.lt.info[0].y + ctx->core.height - ctx->text.lt.info[n].y,
 		(int)ctx->core.width, (int)ctx->core.height);
+	    if (n < ctx->text.lt.lines) n++; /* update descenders at bottom */
 	    _XtTextNeedsUpdating(ctx,
 		    ctx->text.lt.info[ctx->text.lt.lines - n].position, ctx->text.lastPos);
 	    SetScrollBar(ctx);
@@ -764,15 +765,15 @@ int ReplaceText (ctx, pos1, pos2, text)
 	for (i = line1; i < ctx->text.lt.lines; i++) {/* fixup line table */
 	    thisLine = nextLine++;
 	    width = resizeable ? BIGNUM : ctx->core.width - x;
-	    if (startPos <= ctx->text.lastPos) {
+	    if (startPos <= lastPos) {
 		(*FindPosition)(ctx, startPos, x, width, wordwrap,
 				&endPos, &realW, &realH);
-		if (!wordwrap && endPos < ctx->text.lastPos) {
+		if (!wordwrap && endPos < lastPos) {
 		    /* if not wordBreak, skip remainder of this line */
 		    endPos = (*Scan)(ctx->text.source, startPos,
 				     XtstEOL, XtsdRight, 1, TRUE);
 		    if (endPos == startPos)
-			endPos = ctx->text.lastPos + 1;
+			endPos = lastPos + 1;
 		}
 		thisLine->endX = x + realW;
 		nextLine->y = thisLine->y + realH;
@@ -780,7 +781,7 @@ int ReplaceText (ctx, pos1, pos2, text)
 		    break;	/* %%% why not update remaining y's? */
 		startPos = endPos;
 	    }
-	    if (startPos > ctx->text.lastPos) {
+	    if (startPos > lastPos) {
 		if (nextLine->position <= lastPos) {
 		    (*ClearToBackground) (ctx, nextLine->x, nextLine->y,
 					  nextLine->endX,
@@ -791,11 +792,11 @@ int ReplaceText (ctx, pos1, pos2, text)
 	    nextLine->position = startPos;
 	    x = nextLine->x;
 	}
-	if (delta >= ctx->text.lastPos)
-	    endPos = ctx->text.lastPos;
+	if (delta >= lastPos)
+	    endPos = lastPos;
 	if (endPos < pos2)	/* might scroll if word wrapped off bottom */
 	    endPos = pos2;
-	if (pos2 >= ctx->text.lt.top || delta >= ctx->text.lastPos)
+	if (pos2 >= ctx->text.lt.top || delta >= lastPos)
 	    _XtTextNeedsUpdating(ctx, updateFrom, endPos);
     }
     SetScrollBar(ctx);
@@ -1179,10 +1180,8 @@ static void ProcessExposeRegion(w, event)
     XtTextLineTableEntry *info;
 
    _XtTextPrepareToUpdate(ctx);
-#ifdef notdef
     if (x < ctx->text.leftmargin) /* stomp on caret tracks */
         (*ctx->text.sink->ClearToBackground)(ctx, x, y, width, height);
-#endif
    /* figure out starting line that was exposed */
     line = LineForPosition(ctx, PositionForXY(ctx, x, y));
     while (line < ctx->text.lt.lines && ctx->text.lt.info[line + 1].y < y)
