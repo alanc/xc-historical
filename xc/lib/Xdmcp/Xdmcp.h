@@ -117,6 +117,7 @@ extern void XdmcpIncrementKey();
 extern void XdmcpDecrementKey();
 extern void XdmcpEncrypt();
 extern void XdmcpDecrypt();
+extern void XdmcpKeyToOddParityKey();
 #endif
 
 #ifndef TRUE
