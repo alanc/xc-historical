@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: sgi.cf,v 1.25 92/11/21 17:16:43 rws Exp $
+XCOMM platform:  $XConsortium: sgi.cf,v 1.26 92/12/22 17:45:15 gildea Exp $
 
 #define OSName			IRIX
 XCOMM operating system:  OSName
@@ -49,6 +49,12 @@ XCOMM operating system:  OSName
 #define PexCCOptions sgiCCOptions PexSymbolTables
 #define ServerCCOptions sgiCCOptions ServerSymbolTables
 
+/* the default ServerExtraDefines compiles pixmap privates and XDMCP.
+ * MIT doesn't want pixprivs on the sgi server yet because
+ * we don't have their ddx source so must remain binary compatibile.
+ */
+#define ServerExtraDefines -DXDMCP
+
 /* At SGI, we don't need this */
 #define ConstructMFLAGS		NO	/* build MFLAGS from MAKEFLAGS */
 
@@ -85,3 +91,4 @@ XCOMM operating system:  OSName
 #define	LibObjCompile(dir,options) $(RM) $@ dir/$@ \			@@\
 	&& $(CC) -c $(CCOPTIONS) $(ALLDEFINES) options $*.c \		@@\
 	&& $(MV) $@ dir/$@
+
