@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: mkg3states.c,v 1.1 95/01/17 19:29:06 mor Exp mor $ */
 /*
  * Copyright (c) 1991, 1992 Sam Leffler
  * Copyright (c) 1991, 1992 Silicon Graphics, Inc.
@@ -39,8 +39,6 @@
  *	License is granted by the copyright holder to distribute and use this
  *	code without payment of royalties or the necessity of notification as
  *	long as this notice (all the text under "LEGAL") is included.
- *
- *	Reference: $Id: mkg3states.c,v 1.13 92/03/06 11:10:57 sam Exp $
  *
  *	This program is offered without any warranty of any kind. It includes
  *	no warranty of merchantability or fitness for any purpose. Testing and
