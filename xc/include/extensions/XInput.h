@@ -1,4 +1,4 @@
-/* $XConsortium: XInput.h,v 1.15 92/12/30 16:01:49 rws Exp $ */
+/* $XConsortium: XInput.h,v 1.16 92/12/30 18:55:44 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -56,13 +56,13 @@ SOFTWARE.
 #define _changeDeviceNotify	2
 
 #define FindTypeAndClass(d,type,_class,classid,offset) \
-    { int i; XInputClassInfo *ip; \
+    { int _i; XInputClassInfo *_ip; \
     type = 0; _class = 0; \
-    for (i=0, ip= ((XDevice *) d)->classes; \
-	 i< ((XDevice *) d)->num_classes; \
-	 i++, ip++) \
-	if (ip->input_class == classid) \
-	    {type =  ip->event_type_base + offset; \
+    for (_i=0, _ip= ((XDevice *) d)->classes; \
+	 _i< ((XDevice *) d)->num_classes; \
+	 _i++, _ip++) \
+	if (_ip->input_class == classid) \
+	    {type =  _ip->event_type_base + offset; \
 	     _class =  ((XDevice *) d)->device_id << 8 | type;}}
 
 #define DeviceKeyPress(d,type,_class) \
