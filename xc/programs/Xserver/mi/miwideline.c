@@ -1,5 +1,5 @@
 /*
- * $XConsortium: miwideline.c,v 1.28 90/02/09 14:17:14 keith Exp $
+ * $XConsortium: miwideline.c,v 1.29 90/04/13 14:56:50 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -1202,7 +1202,7 @@ miWideSegment (pDrawable, pGC, pixel, spanData,
     }
 }
 
-static SpanDataPtr
+SpanDataPtr
 miSetupSpanData (pGC, spanData, npt)
     register GCPtr pGC;
     SpanDataPtr	spanData;
@@ -1237,7 +1237,7 @@ miSetupSpanData (pGC, spanData, npt)
     return spanData;
 }
 
-static void
+void
 miCleanupSpanData (pDrawable, pGC, spanData)
     DrawablePtr	pDrawable;
     GCPtr	pGC;
