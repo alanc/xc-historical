@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Text.c,v 1.18 88/01/22 11:39:45 swick Locked $";
+static char rcsid[] = "$Header: Text.c,v 1.19 88/01/25 13:46:31 swick Locked $";
 #endif lint
 
 /*
@@ -1534,6 +1534,25 @@ void XtTextInvalidate(w, from, to)
         _XtTextNeedsUpdating(ctx, from, to);
         ForceBuildLineTable(ctx);
         _XtTextExecuteUpdate(ctx);
+}
+
+void XtTextDisableRedisplay(w, d)
+    Widget w;
+    int d;
+{
+    _XtTextPrepareToUpdate(w);
+}
+
+void XtTextEnableRedisplay(w)
+    Widget w;
+{
+    _XtTextExecuteUpdate(w);
+}
+
+XtTextSource XtTextGetSource(w)
+    Widget w;
+{
+    return ((TextWidget)w)->text.source;
 }
 
 
