@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: ultrix.cf,v 1.50 93/08/23 18:15:15 rws Exp $
+XCOMM platform:  $XConsortium: ultrix.cf,v 1.51 93/09/04 16:07:29 rws Exp $
 
 #define OSName            Ultrix-32 4.3
 XCOMM operating system:  OSName
@@ -36,6 +36,14 @@ XCOMM operating system:  OSName
 #if !HasGcc
 #define NeedFunctionPrototypes YES
 #define PexCCOptions -Wf,-XNp15000,-XNd15000
+/*
+ * NormalLibObjCompile - compile fragment for a library object file
+ * 	do ld -x to remove line number symbols for libraries
+ */
+#define NormalLibObjCompile(options) $(RM) $@ $*.os \			@@\
+	&& $(CC) -c options $(CFLAGS) $*.c \				@@\
+	&& $(LD) -x -r $@ -o $*.os \					@@\
+	&& $(MV) $*.os $@
 #endif
 #endif
 
