@@ -1,4 +1,5 @@
-/* $XConsortium$ */
+/* $XConsortium: SelectionI.h,v 1.2 88/09/04 12:21:44 swick Exp $ */
+/* $oHeader: SelectionI.h,v 1.3 88/08/19 14:02:44 asente Exp $ */
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.

@@ -1,4 +1,5 @@
-/* $XConsortium$ */
+/* $XConsortium: Composite.h,v 1.5 88/09/04 12:16:59 swick Exp $ */
+/* $oHeader: Composite.h,v 1.2 asente Exp $ */
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.

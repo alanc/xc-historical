@@ -1,5 +1,7 @@
 #ifndef lint
-static char rcsid[] = "$XConsortium$";
+static char rcsid[] =
+    "$XConsortium: Core.c,v 1.17 88/09/04 12:17:46 swick Exp $";
+/* $oHeader: Core.c,v 1.2 88/08/18 15:37:59 asente Exp $ */
 #endif lint
 
 /***********************************************************

@@ -1,4 +1,5 @@
-/* $XConsortium$ */
+/* $XConsortium: ConstrainP.h,v 1.7 88/09/04 12:17:14 swick Exp $ */
+/* $oHeader: ConstrainP.h,v 1.2 88/08/18 15:54:15 asente Exp $ */
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.

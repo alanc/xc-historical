@@ -1,4 +1,5 @@
-/* $XConsortium$ */
+/* $XConsortium: Object.h,v 1.2 88/09/04 12:21:02 swick Exp $ */
+/* $oHeader: Object.h,v 1.2 88/08/18 15:55:32 asente Exp $ */
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
