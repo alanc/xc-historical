@@ -1,5 +1,5 @@
 
-/* $XConsortium$ */
+/* $XConsortium: wdt.h,v 5.1 91/02/16 10:04:34 rws Exp $ */
 
 /*****************************************************************
 Copyright (c) 1989,1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -29,6 +29,22 @@ SOFTWARE.
 /*
  * wdt.h: implementation dependent data for workstation description table
  */
+
+/* JSH - include so that MAXFLOAT is defined */
+#if !defined(X_NOT_STDC_ENV) && (__STDC__ || !defined(sun))
+#include <float.h>
+#endif
+#ifndef MAXFLOAT
+#ifdef FLT_MAX
+#define MAXFLOAT FLT_MAX
+#else
+#ifdef vax
+#define MAXFLOAT ((float)1.701411733192644299e+38)
+#else
+#define MAXFLOAT ((float)3.40282346638528860e+38)
+#endif /* vax */
+#endif /* FLT_MAX */
+#endif /* MAXFLOAT */
 
 #ifdef PHIGS_WS_TYPE_X_TOOL
 
@@ -149,12 +165,12 @@ Ptext_font_prec list_font_precision[] = { {1,PPREC_STRING},
 /* number of available, minimum, maximum character expansion factors */
 Pint num_char_exp = 0.0;
 Pfloat min_char_exp = 0.0;
-Pfloat max_char_exp = 170141173319264429905852091742258462720.0;
+Pfloat max_char_exp = MAXFLOAT;
 
 /* number of available, minimum, maximum character heights */
 Pint num_char_height = 0.0;
 Pfloat min_char_height = 0.0;
-Pfloat max_char_height = 170141173319264429905852091742258462720.0;
+Pfloat max_char_height = MAXFLOAT;
 
 /* number of predefined text indices */
 Pint num_pred_text_idx = 6;
@@ -170,7 +186,7 @@ Pint list_anno_style[] = { 1,2 };
 /* number of available, minimum, maximum annotation character heights */
 Pint num_anno_char_height = 0.0;
 Pfloat min_anno_char_height = 0.0;
-Pfloat max_anno_char_height = 170141173319264429905852091742258462720.0;
+Pfloat max_anno_char_height = MAXFLOAT;
 
 
 /* 
