@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.7 92/06/30 16:27:06 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.8 92/07/24 14:05:36 mor Exp $
 XCOMM
 XCOMM Copyright 1992 by the Massachusetts Institute of Technology
 XCOMM 
@@ -89,7 +89,7 @@ SharedLibraryTarget(PEX5,$(SOPEXREV),$(OBJS),shared,..)
 #else
 SharedLibraryTarget(PEX5,$(SOPEXREV),$(OBJS),.,.)
 #endif
-InstallSharedLibrary(PEX5,$(SOPEXREV),$(SHLIBDIR))
+InstallSharedLibrary(PEX5,$(SOPEXREV),$(USRLIBDIR))
 #endif
 #if DoNormalLib
 NormalLibraryTarget(PEX5,$(OBJS))
