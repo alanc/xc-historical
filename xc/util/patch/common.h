@@ -1,6 +1,6 @@
-/* $Header: common.h,v 2.0.1.2 88/06/22 20:44:53 lwall Locked $
+/* oldHeader: common.h,v 2.0.1.2 88/06/22 20:44:53 lwall Locked $
+ * $XConsortium: common.h,v 3.1 94/09/09 20:04:28 gildea Exp $
  *
- * $Log:	common.h,v $
  * Revision 2.0.1.2  88/06/22  20:44:53  lwall
  * patch12: sprintf was declared wrong
  * 
