@@ -1,4 +1,4 @@
-/**/# site:  $XConsortium: site.def,v 1.20 89/12/05 11:22:00 jim Exp $
+XCOMM site:  $XConsortium: site.def,v 1.21 89/12/06 11:46:50 jim Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -143,4 +143,8 @@
 
 #ifndef SharedLibXext
 #define SharedLibXext NO	/* XXX - haven't made it sharable yet */
+#endif
+
+#ifndef HasDESLibrary
+#define HasDESLibrary YES	/* DES code is built into libXdmcp.a */
 #endif
