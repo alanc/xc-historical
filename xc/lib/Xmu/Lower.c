@@ -1,5 +1,5 @@
 /* static char rcsid[] =
-	"$XConsortium: Lower.c,v 1.3 89/11/11 16:31:07 jim Exp $"; */
+	"$XConsortium: Lower.c,v 1.4 90/07/15 16:18:48 rws Exp $"; */
 
 /* 
  * Copyright 1988 by the Massachusetts Institute of Technology
@@ -18,14 +18,18 @@
 
 #define  XK_LATIN1
 #include <X11/keysymdef.h>
+#include <X11/Xmu/CharSet.h>
 
 /*
  * ISO Latin-1 case conversion routine
  */
 
-void
-XmuCopyISOLatin1Lowered(dst, src)
+#if NeedFunctionPrototypes
+void XmuCopyISOLatin1Lowered(char *dst, _Xconst char *src)
+#else
+void XmuCopyISOLatin1Lowered(dst, src)
     char *dst, *src;
+#endif
 {
     register unsigned char *dest, *source;
 
@@ -45,9 +49,12 @@ XmuCopyISOLatin1Lowered(dst, src)
     *dest = '\0';
 }
 
-void
-XmuCopyISOLatin1Uppered(dst, src)
+#if NeedFunctionPrototypes
+void XmuCopyISOLatin1Uppered(char *dst, _Xconst char *src)
+#else
+void XmuCopyISOLatin1Uppered(dst, src)
     char *dst, *src;
+#endif
 {
     register unsigned char *dest, *source;
 
@@ -67,8 +74,12 @@ XmuCopyISOLatin1Uppered(dst, src)
     *dest = '\0';
 }
 
+#if NeedFunctionPrototypes
+int XmuCompareISOLatin1 (_Xconst char *first, _Xconst char *second)
+#else
 int XmuCompareISOLatin1 (first, second)
     char *first, *second;
+#endif
 {
     register unsigned char *ap, *bp;
 
