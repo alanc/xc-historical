@@ -1,4 +1,4 @@
-/* $XConsortium: xtest.c,v 1.11 92/04/17 17:16:34 rws Exp $ */
+/* $XConsortium: xtest.c,v 1.12 92/04/20 13:15:13 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -254,6 +254,25 @@ ProcXTestFakeInput(client)
 }
 
 static int
+ProcXTestGrabControl(client)
+    register ClientPtr client;
+{
+    REQUEST(xXTestGrabControlReq);
+
+    REQUEST_SIZE_MATCH(xXTestGrabControlReq);
+    if ((stuff->impervious != xTrue) && (stuff->impervious != xFalse))
+    {
+	client->errorValue = stuff->impervious;
+        return(BadValue);
+    }
+    if (stuff->impervious)
+	MakeClientGrabImpervious(client);
+    else
+	MakeClientGrabPervious(client);
+    return(client->noClientException);
+}
+
+static int
 ProcXTestDispatch (client)
     register ClientPtr	client;
 {
@@ -266,6 +285,8 @@ ProcXTestDispatch (client)
 	return ProcXTestCompareCursor(client);
     case X_XTestFakeInput:
 	return ProcXTestFakeInput(client);
+    case X_XTestGrabControl:
+	return ProcXTestGrabControl(client);
     default:
 	return BadRequest;
     }
@@ -339,6 +360,18 @@ SProcXTestFakeInput(client)
 }
 
 static int
+SProcXTestGrabControl(client)
+    register ClientPtr	client;
+{
+    register int n;
+    REQUEST(xXTestGrabControlReq);
+
+    swaps(&stuff->length, n);
+    REQUEST_SIZE_MATCH(xXTestGrabControlReq);
+    return ProcXTestGrabControl(client);
+}
+
+static int
 SProcXTestDispatch (client)
     register ClientPtr	client;
 {
@@ -351,6 +384,8 @@ SProcXTestDispatch (client)
 	return SProcXTestCompareCursor(client);
     case X_XTestFakeInput:
 	return SProcXTestFakeInput(client);
+    case X_XTestGrabControl:
+	return SProcXTestGrabControl(client);
     default:
 	return BadRequest;
     }

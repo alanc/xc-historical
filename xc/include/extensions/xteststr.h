@@ -1,4 +1,4 @@
-/* $XConsortium: xteststr.h,v 1.4 92/03/19 11:27:05 rws Exp $ */
+/* $XConsortium: xteststr.h,v 1.5 92/04/20 13:14:15 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -82,3 +82,14 @@ typedef struct {
     CARD32	pad4 B32;
 } xXTestFakeInputReq;
 #define sz_xXTestFakeInputReq 36
+
+typedef struct {
+    CARD8	reqType;	/* always XTestReqCode */
+    CARD8	xtReqType;	/* always X_XTestGrabControl */
+    CARD16	length B16;
+    BOOL	impervious;
+    CARD8	pad0;
+    CARD8	pad1;
+    CARD8	pad2;
+} xXTestGrabControlReq;
+#define sz_xXTestGrabControlReq 8

@@ -1,4 +1,4 @@
-/* $XConsortium: XTest.c,v 1.6 92/03/19 11:25:45 rws Exp $ */
+/* $XConsortium: XTest.c,v 1.7 92/04/20 13:14:52 rws Exp $ */
 /*
 
 Copyright 1990, 1991 by UniSoft Group Limited
@@ -154,6 +154,7 @@ XTestFakeKeyEvent(dpy, keycode, is_press, delay)
     req->time = delay;
     UnlockDisplay(dpy);
     SyncHandle();
+    return 1;
 }
 
 XTestFakeButtonEvent(dpy, button, is_press, delay)
@@ -176,6 +177,7 @@ XTestFakeButtonEvent(dpy, button, is_press, delay)
     req->time = delay;
     UnlockDisplay(dpy);
     SyncHandle();
+    return 1;
 }
 
 XTestFakeMotionEvent(dpy, screen, x, y, delay)
@@ -204,6 +206,7 @@ XTestFakeMotionEvent(dpy, screen, x, y, delay)
     req->time = delay;
     UnlockDisplay(dpy);
     SyncHandle();
+    return 1;
 }
 
 XTestFakeRelativeMotionEvent(dpy, dx, dy, delay)
@@ -228,6 +231,26 @@ XTestFakeRelativeMotionEvent(dpy, dx, dy, delay)
     req->time = delay;
     UnlockDisplay(dpy);
     SyncHandle();
+    return 1;
+}
+
+XTestGrabControl(dpy, impervious)
+    Display *dpy;
+    Bool impervious;
+{
+    XExtDisplayInfo *info = find_display (dpy);
+    register xXTestGrabControlReq *req;
+
+    XTestCheckExtension (dpy, info, 0);
+
+    LockDisplay(dpy);
+    GetReq(XTestGrabControl, req);
+    req->reqType = info->codes->major_opcode;
+    req->xtReqType = X_XTestGrabControl;
+    req->impervious = impervious;
+    UnlockDisplay(dpy);
+    SyncHandle();
+    return 1;
 }
 
 void

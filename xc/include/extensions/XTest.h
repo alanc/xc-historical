@@ -1,4 +1,4 @@
-/* $XConsortium: XTest.h,v 1.3 92/03/19 11:28:19 rws Exp $ */
+/* $XConsortium: XTest.h,v 1.4 92/04/20 13:13:54 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -23,13 +23,14 @@ without express or implied warranty.
 #define X_XTestGetVersion	0
 #define X_XTestCompareCursor	1
 #define X_XTestFakeInput	2
+#define X_XTestGrabControl	3
 
 #define XTestNumberEvents	0
 
 #define XTestNumberErrors	0
 
 #define XTestMajorVersion	2
-#define XTestMinorVersion	1
+#define XTestMinorVersion	2
 
 #define XTestExtensionName	"XTEST"
 
@@ -96,6 +97,13 @@ extern XTestFakeRelativeMotionEvent(
     int			/* x */,
     int			/* y */,
     unsigned long	/* delay */
+#endif
+);
+
+extern XTestGrabControl(
+#if NeedFunctionPrototypes
+    Display*		/* dpy */,
+    Bool		/* impervious */
 #endif
 );
 
