@@ -29,7 +29,8 @@ HEADERS = \
 	Misc.h \
 	StdSel.h \
 	StdCmap.h \
-	WinUtil.h
+	WinUtil.h \
+	Xct.h
 
 
 SRCS = \
@@ -64,7 +65,8 @@ SRCS = \
 	StrToLong.c \
 	StrToOrnt.c \
 	StrToWidg.c \
-	VisCmap.c
+	VisCmap.c \
+	Xct.c
 
 OBJS = \
 	AllCmap.o \
@@ -98,7 +100,8 @@ OBJS = \
 	StrToLong.o \
 	StrToOrnt.o \
 	StrToWidg.o \
-	VisCmap.o
+	VisCmap.o \
+	Xct.o
 
 all::
 
