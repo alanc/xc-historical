@@ -1,4 +1,4 @@
-/* $XConsortium: sunKbd.c,v 5.47 94/08/16 13:45:30 dpw Exp kaleb $ */
+/* $XConsortium: sunKbd.c,v 5.48 94/10/16 16:10:44 kaleb Exp kaleb $ */
 /*-
  * Copyright (c) 1987 by the Regents of the University of California
  *
@@ -541,11 +541,13 @@ int sunKbdProc (device, what)
 #if NeedFunctionPrototypes
 Firm_event* sunKbdGetEvents (
     int		fd,
+    Bool	on,
     int*	pNumEvents,
     Bool*	pAgain)
 #else
-Firm_event* sunKbdGetEvents (fd, pNumEvents, pAgain)
+Firm_event* sunKbdGetEvents (fd, on, pNumEvents, pAgain)
     int		fd;
+    Bool	on;
     int*	pNumEvents;
     Bool*	pAgain;
 #endif
@@ -562,8 +564,13 @@ Firm_event* sunKbdGetEvents (fd, pNumEvents, pAgain)
 	    FatalError ("Could not read the keyboard");
 	}
     } else {
-	*pNumEvents = nBytes / sizeof (Firm_event);
-	*pAgain = (nBytes == sizeof (evBuf));
+	if (on) {
+	    *pNumEvents = nBytes / sizeof (Firm_event);
+	    *pAgain = (nBytes == sizeof (evBuf));
+	} else {
+	    *pNumEvents = 0;
+	    *pAgain = FALSE;
+	}
     }
     return evBuf;
 }
