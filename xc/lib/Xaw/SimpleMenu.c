@@ -1,5 +1,5 @@
 #if ( !defined(lint) && !defined(SABER) )
-static char Xrcsid[] = "$XConsortium: SimpleMenu.c,v 1.1 89/04/03 17:23:02 kit Exp $";
+static char Xrcsid[] = "$XConsortium: SimpleMenu.c,v 1.2 89/04/13 17:37:24 kit Exp $";
 #endif 
 
 /***********************************************************
@@ -1282,12 +1282,14 @@ Widget w;
   SimpleMenuWidget smw = (SimpleMenuWidget) w;
 
   values.foreground = smw->core.background_pixel;
+  values.background = smw->simple_menu.foreground;
   values.font = smw->simple_menu.font->fid;
-  mask        = GCForeground | GCFont;
+  mask        = GCForeground | GCBackground | GCFont;
   smw->simple_menu.rev_gc = XtGetGC(w, mask, &values);
 
   /* used to draw separater lines, is width == 0 okay? */
   values.foreground = smw->simple_menu.foreground;
+  values.background = smw->core.background_pixel;
   smw->simple_menu.norm_gc = XtGetGC(w, mask, &values);
 
   values.fill_style = FillTiled;
