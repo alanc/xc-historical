@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Resources.c,v 1.39 88/02/24 21:38:18 swick Exp $";
+static char rcsid[] = "$Header: Resources.c,v 1.41 88/03/16 10:43:01 swick Exp $";
 #endif lint
 
 /***********************************************************
@@ -277,12 +277,15 @@ static void XrmGetResources(widget, base, names, classes, length,
 	for (res = xrmres, j = 0; j < num_resources; j++, res++) {
 	    if (! found[j]) {
 		if (XrmQGetSearchResource(searchList,
-			res->xrm_name, res->xrm_class, &rawType, &rawValue)
-			&& rawType != res->xrm_type) {
-		    _XtConvert(widget,
-			rawType, &rawValue, res->xrm_type, &value);
+			res->xrm_name, res->xrm_class, &rawType, &rawValue)) {
+		    if (rawType != res->xrm_type) {
+			_XtConvert(widget,
+				   rawType, &rawValue, res->xrm_type, &value);
+		    } else {
+			value = rawValue;
+		    }
 		} else {
-		    value = rawValue;
+		    value.addr = NULL;
 		}
 		if (value.addr == NULL && res->xrm_default_addr != NULL) {
 		    /* Convert default value to proper type */
