@@ -1,5 +1,5 @@
 /*
- * $XConsortium: extutil.c,v 1.14 93/09/24 13:19:18 gildea Exp $
+ * $XConsortium: extutil.c,v 1.15 93/11/11 17:40:11 kaleb Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -138,11 +138,11 @@ XExtDisplayInfo *XextAddDisplay (extinfo, dpy, ext_name, hooks, nevents, data)
     /*
      * now, chain it onto the list
      */
-    LockMutex(_Xglobal_lock);
+    _XLockMutex(_Xglobal_lock);
     extinfo->head = dpyinfo;
     extinfo->cur = dpyinfo;
     extinfo->ndisplays++;
-    UnlockMutex(_Xglobal_lock);
+    _XUnlockMutex(_Xglobal_lock);
     return dpyinfo;
 }
 
@@ -159,14 +159,14 @@ int XextRemoveDisplay (extinfo, dpy)
     /*
      * locate this display and its back link so that it can be removed
      */
-    LockMutex(_Xglobal_lock);
+    _XLockMutex(_Xglobal_lock);
     prev = NULL;
     for (dpyinfo = extinfo->head; dpyinfo; dpyinfo = dpyinfo->next) {
 	if (dpyinfo->display == dpy) break;
 	prev = dpyinfo;
     }
     if (!dpyinfo) {
-	UnlockMutex(_Xglobal_lock);
+	_XUnlockMutex(_Xglobal_lock);
 	return 0;		/* hmm, actually an error */
     }
 
@@ -180,7 +180,7 @@ int XextRemoveDisplay (extinfo, dpy)
 
     extinfo->ndisplays--;
     if (dpyinfo == extinfo->cur) extinfo->cur = NULL;  /* flush cache */
-    UnlockMutex(_Xglobal_lock);
+    _XUnlockMutex(_Xglobal_lock);
 
     Xfree ((char *) dpyinfo);
     return 1;
@@ -206,15 +206,15 @@ XExtDisplayInfo *XextFindDisplay (extinfo, dpy)
     /*
      * look for display in list
      */
-    LockMutex(_Xglobal_lock);
+    _XLockMutex(_Xglobal_lock);
     for (dpyinfo = extinfo->head; dpyinfo; dpyinfo = dpyinfo->next) {
 	if (dpyinfo->display == dpy) {
 	    extinfo->cur = dpyinfo;	/* cache most recently used */
-	    UnlockMutex(_Xglobal_lock);
+	    _XUnlockMutex(_Xglobal_lock);
 	    return dpyinfo;
 	}
     }
-    UnlockMutex(_Xglobal_lock);
+    _XUnlockMutex(_Xglobal_lock);
 
     return NULL;
 }
