@@ -1,4 +1,4 @@
-/* $XConsortium: StrToCurs.c,v 1.11 90/12/28 21:02:12 gildea Exp $ */
+/* $XConsortium: StrToCurs.c,v 1.12 90/12/31 08:19:55 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -70,10 +70,6 @@ static XtConvertArgRec screenConvertArg[] = {
 
 #define	done(address, type) \
 	{ (*toVal).size = sizeof(type); (*toVal).addr = (caddr_t) address; }
-
-#ifndef BITMAPDIR
-#define BITMAPDIR "/usr/include/X11/bitmaps"
-#endif
 
 #define FONTSPECIFIER		"FONT "
 
