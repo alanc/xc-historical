@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.175 94/02/04 21:39:43 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.176 94/02/05 15:55:44 rws Exp $
 #define DoNormalLib NormalLibX11
 #define DoSharedLib SharedLibX11
 #define DoDebugLib DebugLibX11
@@ -663,7 +663,7 @@ SRCS3 = \
 	RegstFlt.c \
 	locking.c \
 	LockDis.c \
-	xtrans.c \
+	x11trans.c \
 	ximtrans.c \
 	$(XKBSRCS) $(LCSRCS)
 
@@ -744,7 +744,7 @@ OBJS3 = \
 	RegstFlt.o \
 	locking.o \
 	LockDis.o \
-	xtrans.o \
+	x11trans.o \
 	ximtrans.o \
 	$(XKBOBJS) $(LCOBJS)
 
@@ -884,8 +884,8 @@ OBJS = $(OBJS1) $(OBJS2) $(OBJS3)
 SpecialCLibObjectRule(ErrDes,$(ICONFIGFILES),$(EDB_DEFINES))
 SpecialCLibObjectRule(StrKeysym,$(ICONFIGFILES),$(KDB_DEFINES))
 SpecialCLibObjectRule(ConnDis,$(ICONFIGFILES),$(XDMAUTHDEFS) $(RPCDEFS) $(CONN_DEFINES) $(SOCK_DEFINES) $(POLL_DEFINES) $(XTRANS_X_DEFINES) $(K5INCL) $(K5DEFS))
-SpecialCLibObjectRule(xtrans,$(ICONFIGFILES),$(TRANS_INCLUDES) $(CONN_DEFINES) $(SOCK_DEFINES) $(XTRANS_X_DEFINES))
-LinkFile(xtrans.c,$(TRANSCOMMSRC)/transport.c)
+SpecialCLibObjectRule(x11trans,$(ICONFIGFILES),$(TRANS_INCLUDES) $(CONN_DEFINES) $(SOCK_DEFINES) $(XTRANS_X_DEFINES))
+LinkFile(x11trans.c,$(TRANSCOMMSRC)/transport.c)
 SpecialCLibObjectRule(ximtrans,$(ICONFIGFILES),$(TRANS_INCLUDES) $(CONN_DEFINES) $(SOCK_DEFINES) $(XTRANS_XIM_DEFINES))
 LinkFile(ximtrans.c,$(TRANSCOMMSRC)/transport.c)
 SpecialCLibObjectRule(OpenDis,$(ICONFIGFILES),$(BC_DEFINES) $(OPEN_DEFINES) $(XTRANS_X_DEFINES) $(XKB_DEFINES))
