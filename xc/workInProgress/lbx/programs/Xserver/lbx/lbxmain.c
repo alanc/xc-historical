@@ -1,3 +1,4 @@
+/* $XConsortium: lbxdix.c,v 1.2 94/02/20 10:49:24 dpw Exp $ */
 /*
  * $NCDId: @(#)lbxmain.c,v 1.25 1994/02/18 03:08:56 lemke Exp $
  * $NCDOr: lbxmain.c,v 1.4 1993/12/06 18:47:18 keithp Exp keithp $
