@@ -1,6 +1,6 @@
 XCOMM -----------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
-XCOMM rules:  $XConsortium: Imake.rules,v 1.194 94/08/30 17:25:36 matt Exp kaleb $
+XCOMM rules:  $XConsortium: Imake.rules,v 1.195 94/11/21 17:13:14 kaleb Exp gildea $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -1895,12 +1895,27 @@ target::								@@\
 		*) curdir=$(CURRENT_DIR)/ ;; \				@@\
 		esac; \							@@\
 		echo "making Makefiles in $$curdir$$i..."; \		@@\
-		case "$$i" in \						@@\
+		itmp="$$i" \						@@\
+		curtmp="$$curdir" \					@@\
+		toptmp=""; \						@@\
+		case "$$itmp" in \					@@\
+		    ../?*) \ 						@@\
+			while echo "$$itmp" | grep '^../' > /dev/null;\	@@\
+			  do \						@@\
+			     toptmp="/`basename $$curtmp`$$toptmp"; \	@@\
+			     curtmp="`dirname $$curtmp`"; \		@@\
+			     itmp="`echo $$itmp | sed 's;../;;'`"; \	@@\
+			  done \					@@\
+		    ;; \						@@\
+		esac; \							@@\
+		case "$$itmp" in \					@@\
+		*/?*/?*/?*/?*)	newtop=../../../../..;; \		@@\
 		*/?*/?*/?*)	newtop=../../../..;; \			@@\
 		*/?*/?*)	newtop=../../..;; \			@@\
 		*/?*)		newtop=../..;; \			@@\
 		*)		newtop=..;; \				@@\
 		esac; \							@@\
+		newtop="$$newtop$$toptmp"; \				@@\
 		case "$(TOP)" in \					@@\
 		/?*) imaketop=$(TOP) \					@@\
 		     imakeprefix= ;; \					@@\
