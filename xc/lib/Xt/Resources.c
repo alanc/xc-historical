@@ -1,6 +1,6 @@
 #ifndef lint
 static char Xrcsid[] =
-    "$XConsortium: Resources.c,v 1.57 88/09/21 12:42:02 swick Exp $";
+    "$XConsortium: Resources.c,v 1.1 89/06/01 14:34:06 swick Exp $";
 /* $oHeader: Resources.c,v 1.6 88/09/01 13:39:14 asente Exp $ */
 #endif lint
 /*LINTLIBRARY*/
@@ -420,7 +420,7 @@ static XrmResourceList* CreateIndirectionTable (resources, num_resources)
     return table;
 }
 
-static void GetResources(widget, base, names, classes,
+static XtCacheRef *GetResources(widget, base, names, classes,
 	table, num_resources, quark_args, args, num_args)
     Widget	    widget;	    /* Widget resources are associated with */
     caddr_t	    base;	    /* Base address of memory to write to   */
@@ -442,6 +442,8 @@ static void GetResources(widget, base, names, classes,
     unsigned int    searchListSize = SEARCHLISTLEN;
     Bool            status;
     Boolean	    found[400];
+    XtCacheRef	    cache_ref[400];
+    int		    cache_ref_size = 0;
     Display	    *dpy;
 
     if ((args == NULL) && (num_args != 0)) {
@@ -452,13 +454,13 @@ static void GetResources(widget, base, names, classes,
 	num_args = 0;
     }
     if (num_resources == 0) {
-	return;
+	return NULL;
     } else if (table == NULL) {
     	XtAppWarningMsg(XtWidgetToApplicationContext(widget),
 		"invalidResourceCount","getResources","XtToolkitError",
               "resource count > 0 on NULL resource list",
 	      (String *)NULL, (Cardinal *)NULL);
-	return;
+	return NULL;
     }
 
     /* Mark each resource as not found on arg list */
@@ -527,21 +529,27 @@ static void GetResources(widget, base, names, classes,
 	int	int_val;
 	long	long_val;
 	char*	char_ptr;
-	XtAppContext app = XtWidgetToApplicationContext(widget);
 
 	for (res = table, j = 0; j < num_resources; j++, res++) {
 	    if (! found[j]) {
+		Boolean	already_copied = False;
 		rx = *res;
 		xrm_type = rx->xrm_type;
 		if (XrmQGetSearchResource(searchList,
-			rx->xrm_name, rx->xrm_class, &rawType, pv)) {
+			rx->xrm_name, rx->xrm_class, &rawType, &value)) {
 		    if (rawType != xrm_type) {
 			rawValue = *pv;
-			_XtConvert(widget, app, rawType, &rawValue,
-				   xrm_type, pv);
+			value.size = rx->xrm_size;
+			value.addr = base - rx->xrm_offset - 1;
+			already_copied =
+			    _XtConvert(widget, rawType, &rawValue,
+				       xrm_type, &value,
+				       &cache_ref[cache_ref_size]);
+			if (cache_ref[cache_ref_size] != NULL)
+			    cache_ref_size++;
 		    }
-		} else pv->addr = NULL;
-		if (pv->addr == NULL && rx->xrm_default_addr != NULL) {
+		}
+		if (!already_copied && rx->xrm_default_addr != NULL) {
 		    /* Convert default value to proper type */
 		    xrm_default_type = rx->xrm_default_type;
 		    if (xrm_default_type == QCallProc) {
@@ -575,25 +583,41 @@ static void GetResources(widget, base, names, classes,
 			} else {
 			    rawValue.size = sizeof(caddr_t);
 			}
-			_XtConvert(widget, app, xrm_default_type,
-				    &rawValue, xrm_type, pv);
+			value.size = rx->xrm_size;
+			value.addr = base - rx->xrm_offset - 1;
+			already_copied =
+			    _XtConvert(widget, xrm_default_type,
+				       &rawValue, xrm_type, &value,
+				       &cache_ref[cache_ref_size]);
+			if (cache_ref[cache_ref_size] != NULL)
+			    cache_ref_size++;
 		    }
 		}
-		if (pv->addr != NULL) {
-		    if (xrm_type == QString) {
-		       *((char* *)(base - rx->xrm_offset - 1)) = pv->addr;
+		if (!already_copied) {
+		    if (pv->addr != NULL) {
+			if (xrm_type == QString) {
+			    *((char* *)(base - rx->xrm_offset - 1)) = pv->addr;
+			} else {
+			    XtBCopy(pv->addr, base - rx->xrm_offset - 1,
+				    rx->xrm_size);
+			}
 		    } else {
-			XtBCopy(pv->addr, base - rx->xrm_offset - 1,
-			    rx->xrm_size);
+			/* didn't get value, initialize to NULL... */
+			XtBZero(base - rx->xrm_offset - 1, rx->xrm_size);
 		    }
-		} else {
-		    /* didn't get value, initialize to NULL... */
-		    XtBZero(base - rx->xrm_offset - 1, rx->xrm_size);
 		}
 	    }
 	}
     }
     if (searchList != stackSearchList) XtFree(searchList);
+    if (cache_ref_size > 0) {
+	XtCacheRef *refs =
+	    (XtCacheRef*)XtMalloc(sizeof(XtCacheRef)*(cache_ref_size+1));
+	bcopy( cache_ref, refs, sizeof(XtCacheRef)*cache_ref_size );
+	refs[cache_ref_size] = NULL;
+	return refs;
+    }
+    else return (XtCacheRef*)NULL;
 }
 
 
@@ -624,7 +648,7 @@ static void CacheArgs(args, num_args, quark_cache, num_quarks, pQuarks)
 	  if (cache != pointer) XtFree((char *)pointer)
 
 
-void XtGetResources(w, args, num_args)
+XtCacheRef *_XtGetResources(w, args, num_args)
     register 	Widget	  w;
     		ArgList	  args;
     		Cardinal  num_args;
@@ -635,6 +659,7 @@ void XtGetResources(w, args, num_args)
     XrmQuarkList    quark_args;
     WidgetClass     wc;
     ConstraintWidgetClass   cwc;
+    XtCacheRef	    *cache_refs;
 
     wc = XtClass(w);
 
@@ -650,7 +675,7 @@ void XtGetResources(w, args, num_args)
     /* Compile arg list into quarks */
     CacheArgs(args, num_args, quark_cache, XtNumber(quark_cache), &quark_args);
     /* Get normal resources */
-    GetResources(w, (caddr_t) w, names, classes,
+    cache_refs = GetResources(w, (caddr_t) w, names, classes,
 	(XrmResourceList *) wc->core_class.resources,
 	wc->core_class.num_resources, quark_args, args, num_args);
     if (w->core.constraints != NULL) {
@@ -661,6 +686,7 @@ void XtGetResources(w, args, num_args)
 	    quark_args, args, num_args);
     }
     FreeCache(quark_cache, quark_args);
+    return cache_refs;
 } /* XtGetResources */
 
 
