@@ -1,5 +1,5 @@
 /*
- * $XConsortium: charproc.c,v 1.135 91/02/05 19:44:45 gildea Exp $
+ * $XConsortium: charproc.c,v 1.136 91/02/28 17:57:29 gildea Exp $
  */
 
 
@@ -548,8 +548,8 @@ VTparse()
 			Index(screen, 1);
 			if (term->flags & LINEFEED)
 				CarriageReturn(screen);
-			if (screen->display->qlen > 0 ||
-			    GetBytesAvailable (screen->display->fd) > 0)
+			if (QLength(screen->display) > 0 ||
+			    GetBytesAvailable (ConnectionNumber(screen->display)) > 0)
 			  xevents();
 			break;
 
@@ -923,8 +923,8 @@ VTparse()
 		 case CASE_IND:
 			/* IND */
 			Index(screen, 1);
-			if (screen->display->qlen > 0 ||
-			    GetBytesAvailable (screen->display->fd) > 0)
+			if (QLength(screen->display) > 0 ||
+			    GetBytesAvailable (ConnectionNumber(screen->display)) > 0)
 			  xevents();
 			parsestate = groundtable;
 			break;
@@ -934,8 +934,8 @@ VTparse()
 			Index(screen, 1);
 			CarriageReturn(screen);
 			
-			if (screen->display->qlen > 0 ||
-			    GetBytesAvailable (screen->display->fd) > 0)
+			if (QLength(screen->display) > 0 ||
+			    GetBytesAvailable (ConnectionNumber(screen->display)) > 0)
 			  xevents();
 			parsestate = groundtable;
 			break;
@@ -1031,24 +1031,21 @@ finput()
 	return(doinput());
 }
 
-static int select_mask;
-static int write_mask;
-
 static char v_buffer[4096];
-static char *v_bufstr;
+static char *v_bufstr = NULL;
 static char *v_bufptr;
 static char *v_bufend;
 #define	ptymask()	(v_bufptr > v_bufstr ? pty_mask : 0)
 
-v_write(f, d, l)
-int f;
-char *d;
-int l;
+v_write(f, d, len)
+    int f;
+    char *d;
+    int len;
 {
-	int r;
-	int c = l;
+	int riten;
+	int c = len;
 
-	if (!v_bufstr) {
+	if (v_bufstr == NULL) {
 		v_bufstr = v_buffer;
 		v_bufptr = v_buffer;
 		v_bufend = &v_buffer[4096];
@@ -1056,23 +1053,25 @@ int l;
 
 
 	if ((1 << f) != pty_mask)
-		return(write(f, d, l));
+		return(write(f, d, len));
 
+	/* anything left over from last time? */
 	if (v_bufptr > v_bufstr) {
-		if (l) {
-			if (v_bufend > v_bufptr + l) {
-				bcopy(d, v_bufptr, l);
-				v_bufptr += l;
+		if (len) {
+			if (v_bufend > v_bufptr + len) {
+				bcopy(d, v_bufptr, len);
+				v_bufptr += len;
 			} else {
 				if (v_bufstr != v_buffer) {
+				        /* possibly overlapping bcopy here */
 					bcopy(v_bufstr, v_buffer,
 					      v_bufptr - v_bufstr);
 					v_bufptr -= v_bufstr - v_buffer;
 					v_bufstr = v_buffer;
 				}
-				if (v_bufend > v_bufptr + l) {
-					bcopy(d, v_bufptr, l);
-					v_bufptr += l;
+				if (v_bufend > v_bufptr + len) {
+					bcopy(d, v_bufptr, len);
+					v_bufptr += len;
 				} else if (v_bufptr < v_bufend) {
 					fprintf(stderr, "Out of buffer space\n");
 					c = v_bufend - v_bufptr;
@@ -1085,33 +1084,37 @@ int l;
 			}
 		}
 		if (v_bufptr > v_bufstr) {
-			if ((r = write(f, v_bufstr, v_bufptr - v_bufstr)) <= 0)
-				return(r);
-			if ((v_bufstr += r) >= v_bufptr)
+			riten = write(f, v_bufstr, v_bufptr - v_bufstr);
+			if (riten <= 0)
+				return(riten);
+			if ((v_bufstr += riten) >= v_bufptr)
 				v_bufstr = v_bufptr = v_buffer;
 		}
-	} else if (l) {
-		if ((r = write(f, d, l)) < 0) {
+	} else if (len) {
+		if ((riten = write(f, d, len)) < 0) {
 			if (errno == EWOULDBLOCK)
-				r = 0;
+				riten = 0;
 			else if (errno == EINTR)
-				r = 0;
+				riten = 0;
 			else
-				return(r);
+				return(riten);
 		}
-		if (l - r) {
-			if (l - r > v_bufend - v_buffer) {
+		if (len - riten) {
+			if (len - riten > v_bufend - v_buffer) {
 				fprintf(stderr, "Truncating to %d\n",
 						v_bufend - v_buffer);
-				l = (v_bufend - v_buffer) + r;
+				len = (v_bufend - v_buffer) + riten;
 			}
-			bcopy(d + r, v_buffer, l - r);
+			bcopy(d + riten, v_buffer, len - riten);
 			v_bufstr = v_buffer;
-			v_bufptr = v_buffer + (l - r);
+			v_bufptr = v_buffer + (len - riten);
 		}
 	}
 	return(c);
 }
+
+static int select_mask;
+static int write_mask;
 
 in_put()
 {
@@ -1172,21 +1175,21 @@ in_put()
 		}
 		
 	if (waitingForTrackInfo) {
-			trackTimeOut.tv_sec = TRACKTIMESEC;
-			trackTimeOut.tv_usec = TRACKTIMEUSEC;
-			select_mask = pty_mask;
-			if ((i = select(max_plus1, &select_mask, (int *)NULL, (int *)NULL,
-			 &trackTimeOut)) < 0) {
-			 	if (errno != EINTR)
-					SysError(ERROR_SELECT);
-				continue;
-			} else if (i == 0) {
-				/* emacs just isn't replying, go on */
-				waitingForTrackInfo = 0;
-				Bell();
-				select_mask = Select_mask;
-			}
-		} else if (QLength(screen->display))
+	    trackTimeOut.tv_sec = TRACKTIMESEC;
+	    trackTimeOut.tv_usec = TRACKTIMEUSEC;
+	    select_mask = pty_mask;
+	    if ((i = select(max_plus1, &select_mask, (int *)NULL, (int *)NULL,
+			    &trackTimeOut)) < 0) {
+		if (errno != EINTR)
+		    SysError(ERROR_SELECT);
+		continue;
+	    } else if (i == 0) {
+		/* emacs just isn't replying, go on */
+		waitingForTrackInfo = 0;
+		Bell();
+		select_mask = Select_mask;
+	    }
+	} else if (QLength(screen->display))
 			select_mask = X_mask;
 		else {
 			write_mask = ptymask();
@@ -1797,8 +1800,7 @@ int fd;
 		buf[1] = '\n';
 		i++;
 	}
-	if (write(fd, buf, i) != i)
-		Panic("unparseputc: error writing character\n", 0);
+	v_write(fd, buf, i);
 }
 
 unparsefputs (s, fd)
