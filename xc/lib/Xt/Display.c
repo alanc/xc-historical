@@ -1,4 +1,4 @@
-/* $XConsortium: Display.c,v 1.74 91/05/17 18:37:12 converse Exp $ */
+/* $XConsortium: Display.c,v 1.75 91/05/20 12:03:09 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -36,7 +36,7 @@ static String XtNnoPerDisplay = "noPerDisplay";
 
 extern void _XtHeapInit();
 extern void _XtHeapFree();
-extern XrmDatabase _XtParseNameAndDisplay();
+extern XrmDatabase _XtPreparseCommandLine();
 
 ProcessContext _XtGetProcessContext()
 {
@@ -94,6 +94,55 @@ static void XtDeleteFromAppContext(d, app)
 	}
 }
 
+static XtPerDisplay NewPerDisplay();
+
+static XtPerDisplay InitPerDisplay(dpy, app, name, classname)
+    Display *dpy;
+    XtAppContext app;
+    String name;
+    String classname;
+{
+    XtPerDisplay pd;
+    extern void _XtAllocWWTable(), _XtAllocTMContext();
+
+    XtAddToAppContext(dpy, app);
+
+    pd = NewPerDisplay(dpy);
+    _XtHeapInit(&pd->heap);
+    pd->destroy_callbacks = NULL;
+    pd->region = XCreateRegion();
+    pd->case_cvt = NULL;
+    pd->defaultKeycodeTranslator = XtTranslateKey;
+    pd->keysyms = NULL;
+    pd->modKeysyms = NULL;
+    pd->modsToKeysyms = NULL;
+    pd->appContext = app;
+    pd->name = XrmStringToName(name);
+    pd->class = XrmStringToClass(classname);
+    pd->being_destroyed = False;
+    pd->GClist = NULL;
+    pd->pixmap_tab = NULL;
+    pd->language = NULL;
+    pd->rv = False;
+    pd->last_timestamp = 0;
+    _XtAllocTMContext(pd);
+    pd->mapping_callbacks = NULL;
+
+    pd->pdi.grabList = NULL;
+    pd->pdi.trace = NULL;
+    pd->pdi.traceDepth = 0;
+    pd->pdi.traceMax = 0;
+    pd->pdi.focusWidget = NULL;
+    pd->pdi.activatingKey = 0;
+    pd->pdi.keyboard.grabType = XtNoServerGrab;
+    pd->pdi.pointer.grabType  = XtNoServerGrab;
+    _XtAllocWWTable(pd);
+    pd->per_screen_db = (XrmDatabase *)XtCalloc(ScreenCount(dpy),
+						sizeof(XrmDatabase));
+    pd->cmd_db = (XrmDatabase)NULL;
+    return pd;
+}
+
 
 #if NeedFunctionPrototypes
 Display *XtOpenDisplay(
@@ -119,11 +168,13 @@ Display *XtOpenDisplay(app, displayName, applName, className,
 {
 	Display *d;
 	XrmDatabase db = 0;
+	XtPerDisplay pd;
+	String language = NULL;
 
-	/* parse the command line for name and display */
+	/* parse the command line for name, display, and language */
 	if (! displayName || !applName)
-	    db = _XtParseNameAndDisplay(urlist, num_urs, *argc, argv,
-					&applName, &displayName);
+	    db = _XtPreparseCommandLine(urlist, num_urs, *argc, argv,
+					&applName, &displayName, &language);
 	d = XOpenDisplay(displayName);
 
 	if (! applName && !(applName = getenv("RESOURCE_NAME"))) {
@@ -135,15 +186,14 @@ Display *XtOpenDisplay(app, displayName, applName, className,
 		applName = "main";
 	}
 
-	if (d)
-	    XtDisplayInitialize(app, d, applName, className,
-				urlist, num_urs, argc, argv);
-
+	if (d) {
+	    pd = InitPerDisplay(d, app, applName, className);
+	    if (language) pd->language = XtNewString(language);
+	    _XtDisplayInitialize(d, pd, applName, urlist, num_urs, argc, argv);
+	}
 	if (db) XrmDestroyDatabase(db);
 	return d;
 }
-
-static XtPerDisplay NewPerDisplay();
 
 #if NeedFunctionPrototypes
 void
@@ -169,46 +219,17 @@ XtDisplayInitialize(app, dpy, name, classname, urlist, num_urs, argc, argv)
 	String *argv;
 #endif
 {
-	XtPerDisplay pd;
-	extern void _XtAllocWWTable(), _XtAllocTMContext();
+    XtPerDisplay pd;
+    XrmDatabase db;
+    String language = NULL;
 
-	XtAddToAppContext(dpy, app);
-
-	pd = NewPerDisplay(dpy);
-	_XtHeapInit(&pd->heap);
-	pd->destroy_callbacks = NULL;
-	pd->region = XCreateRegion();
-	pd->case_cvt = NULL;
-        pd->defaultKeycodeTranslator = XtTranslateKey;
-        pd->keysyms = NULL;
-	pd->modKeysyms = NULL;
-        pd->modsToKeysyms = NULL;
-	pd->appContext = app;
-	pd->name = XrmStringToName(name);
-	pd->class = XrmStringToClass(classname);
-	pd->being_destroyed = False;
-	pd->GClist = NULL;
-	pd->pixmap_tab = NULL;
-	pd->language = NULL;
-	pd->rv = False;
-	pd->last_timestamp = 0;
-	_XtAllocTMContext(pd);
-	pd->mapping_callbacks = NULL;
-
-	pd->pdi.grabList = NULL;
-	pd->pdi.trace = NULL;
-	pd->pdi.traceDepth = 0;
-	pd->pdi.traceMax = 0;
-	pd->pdi.focusWidget = NULL;
-	pd->pdi.activatingKey = 0;
-	pd->pdi.keyboard.grabType = XtNoServerGrab;
-	pd->pdi.pointer.grabType  = XtNoServerGrab;
-	_XtAllocWWTable(pd);
-	pd->per_screen_db = (XrmDatabase *)XtCalloc(ScreenCount(dpy),
-						    sizeof(XrmDatabase));
-	pd->cmd_db = (XrmDatabase)NULL;
-	_XtDisplayInitialize(dpy, pd, (String)name, (String)classname, urlist, 
-			     num_urs, argc, argv);
+    pd = InitPerDisplay(dpy, app, name, classname);
+    /* pre-parse the command line for the language resource */
+    db = _XtPreparseCommandLine(urlist, num_urs, *argc, argv, NULL, NULL,
+				&language);
+    if (language) pd->language = XtNewString(language);
+    XrmDestroyDatabase(db);
+    _XtDisplayInitialize(dpy, pd, name, urlist, num_urs, argc, argv);
 }
 
 XtAppContext XtCreateApplicationContext()
