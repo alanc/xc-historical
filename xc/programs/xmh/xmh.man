@@ -1,4 +1,4 @@
-.\" $XConsortium: xmh.man,v 1.19 89/12/22 22:08:40 converse Exp $
+.\" $XConsortium: xmh.man,v 1.20 90/01/22 18:02:48 swick Exp $
 .TH XMH 1 "Release 4" "X Version 11"
 .SH NAME
 \fIxmh\fR \- X interface to the MH message handling system
@@ -864,43 +864,43 @@ Xmh xmh
 			Label  pickTitlebar
 			Viewport.core  pick.clip
 				Form  form
-					Form
+					Form  groupform
 \fIThe first 6 rows of the pick window have identical structure:\fR
-						Form
+						Form  rowform
 							Toggle
 							Toggle
 							Label
 							Text
 							Command
 
-						Form
+						Form  rowform
 							Toggle
 							Toggle
 							Text
 							Text
 							Command
-						Form
+						Form  rowform
 							Command
 			Viewport.core  pick.clip
 				Form  form
-					From
-						Form
+					From  groupform
+						Form  rowform
 							Label
 							Text
 							Label
 							Text
-						Form
+						Form  rowform
 							Label
 							Text
 							Label
 							Text
 							Label
 							Text
-						Form
+						Form  rowform
 							Label
 							Toggle
 							Toggle
-						Form
+						Form  rowform
 							Command
 							Command
 						
