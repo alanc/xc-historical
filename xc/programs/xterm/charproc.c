@@ -1,5 +1,5 @@
 /*
- * $XConsortium: charproc.c,v 1.137 91/03/04 14:50:44 gildea Exp $
+ * $XConsortium: charproc.c,v 1.138 91/03/04 17:35:39 gildea Exp $
  */
 
 
@@ -1073,12 +1073,14 @@ v_write(f, d, len)
 					bcopy(d, v_bufptr, len);
 					v_bufptr += len;
 				} else if (v_bufptr < v_bufend) {
-					fprintf(stderr, "Out of buffer space\n");
+					fprintf(stderr, "%s: out of buffer space\n",
+						xterm_name);
 					c = v_bufend - v_bufptr;
 					bcopy(d, v_bufptr, c);
 					v_bufptr = v_bufend;
 				} else {
-					fprintf(stderr, "Out of buffer space\n");
+					fprintf(stderr, "%s: completely out of buffer space\n",
+						xterm_name);
 					c = 0;
 				}
 			}
