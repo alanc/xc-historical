@@ -17,7 +17,7 @@ representations about the suitability of this software for any
 purpose.  It is provided "as is" without express or implied warranty.
 */
 
-/* $XConsortium: cfbtile32.c,v 1.2 90/11/19 17:29:29 keith Exp $ */
+/* $XConsortium: cfbtile32.c,v 1.3 91/04/10 11:42:12 keith Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -177,20 +177,20 @@ MROP_NAME(cfbFillRectTile32) (pDrawable, pGC, nBox, pBox)
 		else
 		{
 		    Expand(*p = MROP_MASK(srcpix, *p, startmask); p++;,
-			   )
+			   ;)
 		}
 	    }
 	    else
 	    {
 		if (endmask)
 		{
-		    Expand(,
+		    Expand(;,
 			   *p = MROP_MASK(srcpix, *p, endmask);)
 		}
 		else
 		{
-		    Expand(,
-			   )
+		    Expand(;,
+			   ;)
 		}
 	    }
 	}
