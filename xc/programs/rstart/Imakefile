@@ -1,4 +1,4 @@
-XCOMM $XConsortium$
+XCOMM $XConsortium: Imakefile,v 1.6 94/02/06 16:13:09 mor Exp $
 XCOMM
 XCOMM Copyright (c) 1993 Quarterdeck Office Systems
 XCOMM
@@ -22,21 +22,22 @@ XCOMM PROFITS, EVEN IF ADVISED OF THE POSSIBILITY THEREOF, AND REGARDLESS
 XCOMM OF WHETHER IN AN ACTION IN CONTRACT, TORT OR NEGLIGENCE, ARISING OUT
 XCOMM OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-XCOMM $XConsortium: Imakefile,v 1.5 94/02/06 14:35:36 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.6 94/02/06 16:13:09 mor Exp $
 
 XCOMM Having had to change the name once, I don't want it to be tough
 XCOMM the next time...
 SERVERNAME=rstartd
 CLIENTNAME=rstart
-MYLIBDIR=LibDir/rstart
+MYLIBDIR=$(LIBDIR)/rstart
 ENVPREFIX=RSTART
 PACKAGEname=rstart
 
-#if	!defined(UsrBin)
-#define	UsrBin	/usr/bin
+#ifndef UsrBin
+#define	UsrBin /usr/bin
 #endif
+USRBIN=UsrBin
 
-#if	!defined(RshCmd)
+#ifndef RshCmd
 # if	SystemV
 #  ifdef HPArchitecture
 #   define	RshCmd	remsh
@@ -66,46 +67,15 @@ SpecialCObjectRule(server,NullParameter,$(SRVDEFS) $(PEDEFS))
 
 AllTarget($(SERVERNAME))
 CppScriptTarget($(SERVERNAME),server.cpp,-DLIBDIR=$(MYLIBDIR) -DSERVERNAME=$(SERVERNAME),NullParameter)
-InstallProgram($(SERVERNAME),UsrBin)
+InstallProgram($(SERVERNAME),$(USRBIN))
 
 AllTarget($(CLIENTNAME))
 CppScriptTarget($(CLIENTNAME),client.cpp,-DRSHCMD=$(RSHCMD) -DSERVERNAME=$(SERVERNAME),NullParameter)
-InstallProgram($(CLIENTNAME),BinDir)
+InstallProgram($(CLIENTNAME),$(BINDIR))
 
 AllTarget(config)
 CppFileTarget(config,config.cpp,-DBINDIR=$(BINDIR) -DLIBDIR=$(MYLIBDIR) -DPACKAGEname=$(PACKAGEname) -DENVPREFIX=$(ENVPREFIX),NullParameter)
 InstallNonExecFile(config,$(MYLIBDIR))
-
-#define	MakeDirFunc(src, dest)						\
-	if test ! -d dest;						\@@\
-	then								\@@\
-		mkdir dest;						\@@\
-	fi
-
-/* This is ugly.  Suggested change to Imake.tmpl:			*/
-/*	#ifndef SystemManDirectory					*/
-/*	#if SystemV4							*/
-/*	#define SystemManDirectory /usr/share/man			*/
-/*	#else								*/
-/*	#define SystemManDirectory /usr/man				*/
-/*	#endif								*/
-/*	#endif								*/
-/*	#ifndef ManDirectoryRoot					*/
-/*	#ifdef ProjectRoot						*/
-/*	#define ManDirectoryRoot Concat(ProjectRoot,/man)		*/
-/*	#else								*/
-/*	#define ManDirectoryRoot SystemManDirectory			*/
-/*	#endif								*/
-/*	#endif								*/
-
-/* If the above change is made, then the next paragraph can disappear. */
-#ifndef	SystemManDirectory
-#if SystemV4
-#define SystemManDirectory /usr/share/man
-#else
-#define SystemManDirectory /usr/man
-#endif
-#endif
 
 #ifdef	ProjectRoot
 DEFAULT_X_MANPATH=$(MANPATH):SystemManDirectory
@@ -115,14 +85,17 @@ DEFAULT_X_MANPATH=SystemManDirectory
 
 DEFAULT_USER_PATH=DefaultUserPath
 
-#define	FilterContext(src, dest)					\
+#define MakeDirect(dir) if [ -d dir ]; then set +x;			\@@\
+		else (set -x; $(MKDIRHIER) dir); fi
+
+#define	FilterContext(src, dest)					\@@\
 	RemoveFile(dest);						\@@\
 	sed								\@@\
 		-e 's,_PATH,$(DEFAULT_USER_PATH),g'			\@@\
 		-e 's,_MANPATH,$(DEFAULT_X_MANPATH),g'			\@@\
 		< src > dest
 
-#define	FilterCommand(src, dest)					\
+#define	FilterCommand(src, dest)					\@@\
 	RemoveFile(dest);						\@@\
 	sed								\@@\
 		-e 's,ENVPREFIX,$(ENVPREFIX),g'				\@@\
@@ -134,43 +107,43 @@ DEFAULT_USER_PATH=DefaultUserPath
 		chmod +x dest ;;					\@@\
 	esac
 
-#define	Recurse(src, dest, filefunc, dirfunc)				\
+#define	Recurse(src, dest, filefunc)					\@@\
 	set -x;								\@@\
 	find src -print |						\@@\
 		while read name;					\@@\
 		do							\@@\
 			if test -f $$name;				\@@\
 			then						\@@\
-				filefunc($$name,dest/$$name);		\@@\
+				filefunc($$name,$(DESTDIR)dest/$$name);	\@@\
 			else						\@@\
-				dirfunc($$name,dest/$$name);		\@@\
+				MakeDirect($(DESTDIR)dest/$$name);	\@@\
 			fi;						\@@\
  		done
 
 #if	HasSymLinks
-#define	InstallAliases()						\
+#define	InstallAliases()						\@@\
 	set -x;								\@@\
- 	cd $(MYLIBDIR)/contexts;					\@@\
+ 	cd $(DESTDIR)$(MYLIBDIR)/contexts;				\@@\
  		sed -e '/^$$/d' -e '/^#/d' @Aliases |			\@@\
  		while read real aliases;				\@@\
  		do							\@@\
  			for i in $$aliases;				\@@\
  			do						\@@\
- 				rm -f $$i;				\@@\
+ 				$(RM) $$i;				\@@\
  				$(LN) $$real $$i;			\@@\
- 				rm -f $(MYLIBDIR)/commands/$$i;		\@@\
- 				$(LN) $$real $(MYLIBDIR)/commands/$$i;	\@@\
+ 				$(RM) $(DESTDIR)$(MYLIBDIR)/commands/$$i; \@@\
+ 				$(LN) $$real $(DESTDIR)$(MYLIBDIR)/commands/$$i; \@@\
  			done;						\@@\
  		done;							\@@\
  		rm @Aliases
 #else
-#define	InstallAliases()						\
+#define	InstallAliases()						\@@\
 	echo "Sorry:  don't yet know how to install aliases without symlinks"
 #endif
 
 install::
-	Recurse(commands,$(MYLIBDIR),FilterCommand,MakeDirFunc)
-	Recurse(contexts,$(MYLIBDIR),FilterContext,MakeDirFunc)
+	Recurse(commands,$(MYLIBDIR),FilterCommand)
+	Recurse(contexts,$(MYLIBDIR),FilterContext)
 	InstallAliases()
 
 XCOMM # Turning this on makes the server look up host names in $DISPLAY and
