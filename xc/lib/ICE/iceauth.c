@@ -1,4 +1,4 @@
-/* $XConsortium: iceauth.c,v 1.15 94/03/17 15:41:48 mor Exp $ */
+/* $XConsortium: iceauth.c,v 1.16 94/03/18 15:59:16 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -57,12 +57,7 @@ int len;
 #ifdef ITIMER_REAL
     {
 	struct timeval  now;
-#if defined(SVR4) || defined(WIN32) || defined(VMS)
-	gettimeofday (&now);
-#else
-	struct timezone zone;
-	gettimeofday (&now, &zone);
-#endif
+	GETTIMEOFDAY (&now);
 	ldata[0] = now.tv_sec;
 	ldata[1] = now.tv_usec;
     }
