@@ -1,5 +1,5 @@
 %{
-/* $XConsortium$ */
+/* $XConsortium: to_wfont.y,v 5.1 91/02/16 09:46:36 rws Exp $ */
 
 /*****************************************************************
 Copyright (c) 1989,1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -29,12 +29,10 @@ SOFTWARE.
 #define YYMAXDEPTH 10000
 
 #include <stdio.h>
-#ifdef SYSV
-#include <sys/types.h>
-#include <unistd.h>
+#include <X11/Xos.h>
+#ifndef L_SET
 #define L_SET SEEK_SET
 #endif
-#include <sys/file.h>
 #include "wfont.h"
 
 
