@@ -1,5 +1,5 @@
 /*
- *	$Header: screen.c,v 1.10 87/12/19 10:09:17 rws Exp $
+ *	$Header: screen.c,v 1.1 88/02/10 13:08:12 jim Exp $
  */
 
 #include <X11/copyright.h>
@@ -30,7 +30,7 @@
 /* screen.c */
 
 #ifndef lint
-static char rcs_id[] = "$Header: screen.c,v 1.10 87/12/19 10:09:17 rws Exp $";
+static char rcs_id[] = "$Header: screen.c,v 1.1 88/02/10 13:08:12 jim Exp $";
 #endif	/* lint */
 
 #include <X11/Xlib.h>
@@ -479,8 +479,12 @@ unsigned *flags;
 	ts.ts_cols = cols;
 	ioctl (screen->respond, TIOCSSIZE, &ts);
 #ifdef SIGWINCH
-	if(screen->pid > 1)
-		killpg(getpgrp(screen->pid), SIGWINCH);
+	if(screen->pid > 1) {
+		int	pgrp;
+		
+		if (ioctl (screen->respond, TIOCGPGRP, &pgrp) != -1)
+			killpg(pgrp, SIGWINCH);
+	}
 #endif	/* SIGWINCH */
 #endif	/* TIOCSSIZE */
 #else	/* sun */
@@ -491,9 +495,13 @@ unsigned *flags;
 	ws.ws_xpixel = width;
 	ws.ws_ypixel = height;
 	ioctl (screen->respond, TIOCSWINSZ, (char *)&ws);
-#ifdef SIGWINCH
-	if(screen->pid > 1)
-		killpg(getpgrp((int)screen->pid), SIGWINCH);
+#ifdef notdef	/* change to SIGWINCH if this doesn't work for you */
+	if(screen->pid > 1) {
+		int	pgrp;
+		
+		if (ioctl (screen->respond, TIOCGPGRP, &pgrp) != -1)
+			killpg(pgrp, SIGWINCH);
+	}
 #endif	/* SIGWINCH */
 #endif	/* TIOCSWINSZ */
 #endif	/* sun */
