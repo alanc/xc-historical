@@ -1,4 +1,4 @@
-/* $XConsortium: HVCGcVC.c,v 1.9 91/09/05 15:58:10 dave Exp $" */
+/* $XConsortium: HVCGcVC.c,v 1.10 93/09/07 21:30:51 rws Exp $" */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -192,6 +192,10 @@ XcmsTekHVCClipVC (ccc, pColors_in_out, nColors, i, pCompressed)
 	    }
 	    retval = _XcmsDIConvertColors(&myCCC, pColor,
 		    &myCCC.pPerScrnInfo->screenWhitePt, 1, XcmsCIEXYZFormat);
+
+	    if (retval != XcmsFailure && pCompressed != NULL) {
+		*(pCompressed + i) = True;
+	    }
 	    return (retval);
 	}
 
