@@ -5,7 +5,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$XConsortium: xditview.c,v 1.12 89/07/24 13:59:13 keith Exp $";
+static char rcsid[] = "$XConsortium: xditview.c,v 1.13 89/10/04 13:16:42 kit Exp $";
 #endif /* lint */
 
 #include <X11/Xatom.h>
@@ -28,6 +28,7 @@ static char rcsid[] = "$XConsortium: xditview.c,v 1.12 89/07/24 13:59:13 keith E
 #include "xdit_mask.bm"
 #include "stdio.h"
 
+extern FILE *popen();
 extern void exit();
 
 /* Command line options table.  Only resources are entered here...there is a
