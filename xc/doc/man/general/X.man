@@ -1,4 +1,4 @@
-.\" $XConsortium$
+.\" $XConsortium: X.man,v 1.59 91/08/27 15:47:30 gildea Exp $
 .TH X 1 "Release 5" "X Version 11"
 .SH NAME
 X \- a portable, network-transparent window system
@@ -446,6 +446,38 @@ replace it with a specific size in decipoints (there are 722.7 decipoints to
 the inch) to name a font at that size.
 The last zero is an average width field, measured in tenths of pixels;
 some servers will anamorphically scale if this value is specified.
+.SH "FONT SERVER NAMES"
+One of the following forms can be used to name a font server that
+accepts TCP connections:
+.sp
+.nf
+    tcp/\fIhostname\fP:\fIport\fP
+    tcp/\fIhostname\fP:\fIport\fP/\fIcataloguelist\fP
+.fi
+.PP
+The \fIhostname\fP specifies the name (or decimal numeric address)
+of the machine on which the font server is running.  The \fIport\fP
+is the decimal TCP port on which the font server is listening for connections.
+The \fIcataloguelist\fP specifies a list of catalogue names,
+with '+' as a separator.
+.PP
+Examples: \fItcp/expo.lcs.mit.edu:7000\fP, \fItcp/18.30.0.212:7001/all\fP.
+.PP
+One of the following forms can be used to name a font server that
+accepts DECnet connections:
+.sp
+.nf
+    decnet/\fInodename\fP::font$\fIobjname\fP
+    decnet/\fInodename\fP::font$\fIobjname\fP/\fIcataloguelist\fP
+.fi
+.PP
+The \fInodename\fP specifies the name (or decimal numeric address)
+of the machine on which the font server is running.
+The \fIobjname\fP is a normal, case-insensitive DECnet object name.
+The \fIcataloguelist\fP specifies a list of catalogue names,
+with '+' as a separator.
+.PP
+Examples: \fIDECnet/SRVNOD::FONT$DEFAULT\fP, \fIdecnet/44.70::font$special/symbols\fP.
 .SH "COLOR NAMES"
 Most applications provide ways of tailoring (usually through resources or
 command line arguments) the colors of various elements
