@@ -1,5 +1,5 @@
 /*
- * $XConsortium: bitmap.c,v 1.1 91/05/10 14:45:37 keith Exp $
+ * $XConsortium: bitmap.c,v 1.2 91/05/14 15:41:13 rws Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -62,6 +62,8 @@ bitmapGetGlyphs(pFont, count, chars, charEncoding, glyphCount, glyphs)
 
     case Linear8Bit:
     case TwoD8Bit:
+	if (pFont->info.firstRow > 0)
+	    break;
 	if (pFont->info.allExist && pDefault) {
 	    while (count--) {
 		c = (*chars++) - firstCol;
@@ -120,7 +122,7 @@ bitmapGetGlyphs(pFont, count, chars, charEncoding, glyphCount, glyphs)
     return Successful;
 }
 
-static CharInfoRec junkDefault;
+static CharInfoRec nonExistantChar;
 
 int
 bitmapGetMetrics(pFont, count, chars, charEncoding, glyphCount, glyphs)
@@ -135,30 +137,23 @@ bitmapGetMetrics(pFont, count, chars, charEncoding, glyphCount, glyphs)
     xCharInfo  *ink_metrics;
     CharInfoPtr metrics;
     BitmapFontPtr  bitmapFont;
+    CharInfoPtr	oldDefault;
     int         i;
 
     bitmapFont = (BitmapFontPtr) pFont->fontPrivate;
-    if (!bitmapFont->pDefault)
-	bitmapFont->pDefault = &junkDefault;
+    oldDefault = bitmapFont->pDefault;
+    bitmapFont->pDefault = &nonExistantChar;
     ret = bitmapGetGlyphs(pFont, count, chars, charEncoding, glyphCount, (CharInfoPtr *) glyphs);
     if (ret == Successful) {
 	if (bitmapFont->ink_metrics) {
 	    metrics = bitmapFont->metrics;
 	    ink_metrics = bitmapFont->ink_metrics;
 	    for (i = 0; i < *glyphCount; i++) {
-		if (glyphs[i] == (xCharInfo *) & junkDefault)
-		    glyphs[i] = 0;
-		else
+		if (glyphs[i] != (xCharInfo *) & nonExistantChar)
 		    glyphs[i] = ink_metrics + (((CharInfoPtr) glyphs[i]) - metrics);
-	    }
-	} else if (bitmapFont->pDefault == &junkDefault) {
-	    for (i = 0; i < *glyphCount; i++) {
-		if (glyphs[i] == (xCharInfo *) & junkDefault)
-		    glyphs[i] = 0;
 	    }
 	}
     }
-    if (bitmapFont->pDefault == &junkDefault)
-	bitmapFont->pDefault = 0;
+    bitmapFont->pDefault = oldDefault;
     return ret;
 }
