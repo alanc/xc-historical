@@ -1,4 +1,4 @@
-/* $XConsortium: mibstore.c,v 1.26 89/03/23 18:34:40 rws Exp $ */
+/* $XConsortium: mibstore.c,v 1.27 89/03/23 18:48:54 rws Exp $ */
 /***********************************************************
 Copyright 1987 by the Regents of the University of California
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -2967,6 +2967,7 @@ miBSDestroyGC (pGC, pGCI)
     MIBSGCPrivPtr pPriv = (MIBSGCPrivPtr) pGC->devBackingStore;
     
     FreeGC(pPriv->pBackingGC, (GContext)0);
+    RemoveGCI(pGCI);
     xfree(pGC->devBackingStore);
     xfree(pGCI);
 }
