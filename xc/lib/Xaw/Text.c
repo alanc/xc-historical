@@ -1,4 +1,4 @@
-/* $XConsortium: Text.c,v 1.190 94/03/08 12:19:15 kaleb Exp $ */
+/* $XConsortium: Text.c,v 1.191 94/03/21 13:23:05 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -42,6 +42,7 @@ SOFTWARE.
 #include <X11/Xaw/Cardinals.h>
 #include <X11/Xaw/Scrollbar.h>
 #include <X11/Xaw/TextP.h>
+#include <X11/Xaw/MultiSinkP.h>
 #include <X11/Xaw/XawImP.h>	/* for _XawImVASetValues */
 
 #include <X11/Xfuncs.h>
@@ -709,7 +710,7 @@ XawTextPosition left, right;
   }
 
   if (bytes == sizeof(wchar_t)) 
-      *((wchar_t*)tempResult) = (wchar_t)NULL;
+      *((wchar_t*)tempResult) = (wchar_t)0;
   else 
       *tempResult = '\0';
   return(result);
@@ -731,15 +732,16 @@ XawTextPosition left, right;
 
   /* allow ESC in accordance with ICCCM */
   if (_XawTextFormat(ctx) == XawFmtWide) {
+     MultiSinkObject sink = (MultiSinkObject) ctx->text.sink;
      ws = (wchar_t *)_XawTextGetText(ctx, left, right);
      n = wcslen(ws);
      for (j = 0, i = 0; j < n; j++) {
          wc = ws[j];
-         if (iswprint(wc) || 
+         if (XwcTextEscapement (sink->multi_sink.fontset, &wc, 1) || 
             (wc == _Xaw_atowc(XawTAB)) || (wc == _Xaw_atowc(XawLF)) || (wc == _Xaw_atowc(XawESC)))
             ws[i++] = wc;
      }
-     ws[i] = (wchar_t)NULL;
+     ws[i] = (wchar_t)0;
      return (char *)ws;
   } else {
      s = (unsigned char *)_XawTextGetText(ctx, left, right);

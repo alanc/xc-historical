@@ -1,4 +1,4 @@
-/* $XConsortium: XawI18n.h,v 1.4 94/03/08 12:19:28 kaleb Exp $ */
+/* $XConsortium: XawI18n.h,v 1.5 94/03/21 13:25:15 kaleb Exp $ */
 
 /************************************************************
 Copyright 1993 by The Massachusetts Institute of Technology
@@ -31,44 +31,128 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
  * and their contents? There's got to be a better way!
  */
 
-#if defined(SVR4) || defined(sgi)
-#ifndef NCR
+#ifdef sgi
+/* IRIX 5.x close enough for Xaw */
+#define SVR4
+#endif
+
+#ifdef SVR4
+
+#ifndef NO_WCHAR
 #include <wctype.h>
 #include <widec.h>
 #define wcslen(c) wslen(c)
 #define wcscpy(d,s) wscpy(d,s)
 #define wcsncpy(d,s,l) wsncpy(d,s,l)
 #else
-/* this all goes away when NCR installs their widechar package */
-#include <libw.h>
-#define iswprint(c) wisprint(c)
+#ifdef NCR
 #define iswspace(c) _iswspace(c)
 extern int _iswspace(wchar_t);
-#define wcslen(c) _Xwcslen(c)
-#define wcscpy(d,s) _Xwcscpy(d,s)
-#define wcsncpy(d,s,l) _Xwcsncpy(d,s,l)
+#define USE_XWCHAR_STRING
 #endif
+#endif
+
 #ifdef sun
 #define HAS_ISW_FUNCS
 #endif
+
+#else /* SVR4 */
+
+#ifdef luna
+#ifdef MACH
+#define HAS_WCHAR_H
+#endif
 #endif
 
-#if (defined(luna) && defined(MACH)) || defined(hpux) || (defined(__osf__) && defined(__WCHAR_T_LEN)) || defined(WIN32)
-#if (defined(luna) && defined(MACH)) || defined(hpux)
-#define HAS_ISW_FUNCS
+#ifdef hpux
+#define HAS_WCHAR_H
 #endif
+
+#ifdef __osf__
+#ifdef __WCHAR_T_LEN
+#define HAS_WCHAR_H
+#endif
+#endif
+
+#ifdef WIN32
+#define HAS_WCHAR_H
+#endif
+
+#ifdef HAS_WCHAR_H
 #include <wchar.h>
 #endif
 
-/* now deal with the exceptions */
-
-#if defined(sony) && !defined(SVR4) /* old Sony */
-#include <jctype.h>
-#define iswspace(c) jisspace(c)
-#define Iswprint(c) jisalpha(c) || jisnumeric(c) || jiskigou(c) || jisspace(c)
+#ifdef luna
+#ifdef MACH
+#define HAS_ISW_FUNCS
+#endif
 #endif
 
-#if defined(ultrix) || (defined(sun) && !defined(SVR4)) || defined(macII) || defined(bsdi) || defined(CRAY) || (defined(__osf__) && !defined(__WCHAR_T_LEN))
+#ifdef hpux
+#define HAS_ISW_FUNCS
+#endif
+
+#endif /* !SVR4 */
+
+/* now deal with the exceptions */
+
+#ifdef ultrix
+#define USE_XWCHAR_STRING
+#endif
+
+#ifdef sony
+#ifndef SVR4
+#include <jctype.h>
+#define iswspace(c) jisspace(c)
+#define USE_XWCHAR_STRING
+#endif
+#endif
+
+#ifdef sun
+#ifndef SVR4
+#define USE_XWCHAR_STRING
+#endif
+#endif
+
+#ifdef macII
+#define USE_XWCHAR_STRING
+#endif
+
+#ifdef bsdi
+#define USE_XWCHAR_STRING
+#endif
+
+#ifdef CRAY
+#define USE_XWCHAR_STRING
+#endif
+
+#ifdef __osf__
+#ifndef __WCHAR_T_LEN
+#define USE_XWCHAR_STRING
+#endif
+#endif
+
+#ifdef AMOEBA
+#define USE_XWCHAR_STRING
+#endif
+
+#ifdef _MINIX
+#define USE_XWCHAR_STRING
+#endif
+
+#ifdef __FreeBSD__
+#define USE_XWCHAR_STRING
+#endif
+
+#ifdef __NetBSD__
+#define USE_XWCHAR_STRING
+#endif
+
+#ifdef __linux__
+#define USE_XWCHAR_STRING
+#endif
+
+#ifdef USE_XWCHAR_STRING
 #define wcslen(c) _Xwcslen(c)
 #define wcscpy(d,s) _Xwcscpy(d,s)
 #define wcsncpy(d,s,l) _Xwcsncpy(d,s,l)
@@ -87,17 +171,13 @@ extern wchar_t _Xaw_atowc (
 #endif
 );
 
-
 /* 
- * At this point the only place these are undefined is on, e.g. 
- * SunOS 4.x, Ultrix, and old MIPS OSF/1, whose locale support only 
- * includes C locale anyway.
+ * At this point the only place these are undefined is on, e.g. BSD (like 
+ * SunOS 4, Ultrix, BSDI, older Sony, and old MIPS OSF/1, whose locale 
+ * support only handles C locale anyway.
  */
-#if !defined(HAS_ISW_FUNCS) && (!defined(iswprint) || !defined(iswspace))
+#ifndef HAS_ISW_FUNCS
 #include <ctype.h>
-#ifndef iswprint
-#define iswprint(c) (isascii(c) && isprint(c))
-#endif
 #ifndef iswspace
 #define iswspace(c) (isascii(c) && isspace(c))
 #endif

@@ -1,4 +1,4 @@
-/* $XConsortium: XawIm.c,v 1.2 94/03/09 09:23:25 kaleb Exp $ */
+/* $XConsortium: XawIm.c,v 1.3 94/03/21 13:25:23 kaleb Exp $ */
 
 /*
  * Copyright 1991 by OMRON Corporation
@@ -37,6 +37,7 @@
 #include <X11/Xaw/MultiSinkP.h>
 #include <X11/Xaw/XawImP.h>
 #include <X11/Xaw/VendorEP.h>
+#include "XawI18n.h"
 #include <ctype.h>
 
 #if NeedVarargsPrototypes

@@ -1,4 +1,4 @@
-/* $XConsortium: MultiSink.c,v 1.2 94/03/08 12:18:43 kaleb Exp $ */
+/* $XConsortium: MultiSink.c,v 1.3 94/03/21 13:21:23 kaleb Exp $ */
 
 /*
  * Copyright 1991 by OMRON Corporation
@@ -149,7 +149,7 @@ CharWidth (w, x, c)
     int x;
     wchar_t c;
 {
-    int    i, width, nonPrinting;
+    int    i, width;
     MultiSinkObject sink = (MultiSinkObject) w;
     XFontSet fontset = sink->multi_sink.fontset;
     Position *tab;
@@ -173,16 +173,15 @@ CharWidth (w, x, c)
 	return 0;
     }
 
-    if ( (nonPrinting = !iswprint(c)) )
+    if (XwcTextEscapement (fontset, &c, 1) == 0)
 	if (sink->multi_sink.display_nonprinting)
-	    c += _Xaw_atowc('@');
+	    c = _Xaw_atowc('@');
 	else {
 	    c = _Xaw_atowc(XawSP);
-	    nonPrinting = False;
 	}
 
     /*
-     * if more effeciency(suppose one column is one ASCII char)
+     * if more efficiency(suppose one column is one ASCII char)
 
     width = XwcGetColumn(fontset->font_charset, fontset->num_of_fonts, c) *
             fontset->font_struct_list[0]->min_bounds.width;
@@ -193,9 +192,6 @@ CharWidth (w, x, c)
      */
 
     width = XwcTextEscapement(fontset, &c, 1);
-
-    if (nonPrinting)
-        width += CharWidth(w, x, _Xaw_atowc('^'));
 
     return width;
 }
@@ -301,13 +297,9 @@ DisplayText(w, x, y, pos1, pos2, highlight)
                 x += width;
                 j = -1;
             }
-            else if (!iswprint(buf[j])) {
-                if (sink->multi_sink.display_nonprinting) {
-                    /* DP10646 control function: C PAD PAD PAD */
-                    buf[j + 1] = (buf[j] & 0x7F) + _Xaw_atowc('@');
-                    buf[j] = _Xaw_atowc('^');
-                    j++;
-                }
+            else if (XwcTextEscapement (sink->multi_sink.fontset, &buf[j], 1 == 0)) {
+                if (sink->multi_sink.display_nonprinting)
+                    buf[j] = _Xaw_atowc('@');
                 else
                     buf[j] = _Xaw_atowc(' ');
             }

@@ -1,4 +1,4 @@
-/* $XConsortium: MultiSrc.c,v 1.3 94/03/08 12:19:13 kaleb Exp $ */
+/* $XConsortium: MultiSrc.c,v 1.4 94/03/21 13:21:14 kaleb Exp $ */
 
 /*
  * Copyright 1991 by OMRON Corporation
@@ -344,7 +344,7 @@ ReplaceText( w, startPos, endPos, u_text_p)
       if ( src->multi_src.use_string_in_place && 
 	   ((src->multi_src.length - (endPos - startPos)) < 
 	    (src->multi_src.piece_size - 1)) ) 
-	start_piece->text[src->multi_src.length - (endPos - startPos)] = (wchar_t)NULL;
+	start_piece->text[src->multi_src.length - (endPos - startPos)] = (wchar_t)0;
     }
   }
 
@@ -377,7 +377,7 @@ ReplaceText( w, startPos, endPos, u_text_p)
           /*((TextWidget)src->object.parent)->text.lastPos = src->multi_src.length;*/
 
 
-          start_piece->text[src->multi_src.length] = (wchar_t)NULL;
+          start_piece->text[src->multi_src.length] = (wchar_t)0;
 	  return(XawEditError);
 	}
       }
@@ -411,7 +411,7 @@ ReplaceText( w, startPos, endPos, u_text_p)
       XtFree( text.ptr );
 
   if (src->multi_src.use_string_in_place)
-    start_piece->text[start_piece->used] = (wchar_t)NULL;
+    start_piece->text[start_piece->used] = (wchar_t)0;
 
   src->multi_src.changes = TRUE;
 
@@ -1019,7 +1019,7 @@ StorePiecesInString(src)
       				first += piece->used, piece = piece->next)
       (void) wcsncpy( wc_string + first, piece->text, piece->used );
 
-  wc_string[ char_count ] = (wchar_t)NULL; /* NULL terminate this sucker. */
+  wc_string[ char_count ] = (wchar_t)0; /* NULL terminate this sucker. */
 
 
   /* This will refill all pieces to capacity. */

@@ -1,4 +1,4 @@
-/* $XConsortium: TextAction.c,v 1.48 94/03/08 12:19:20 kaleb Exp $ */
+/* $XConsortium: TextAction.c,v 1.49 94/03/21 13:23:17 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1989 by the Massachusetts Institute of Technology,
@@ -165,7 +165,7 @@ static int ProbablyMB(s)
     /* if it has more than one ESC char, I assume it is COMPOUND_TEXT.
     If it has at least one hi bit set character, I pretend it is multibyte. */
 
-    while ( (*s) != (wchar_t)NULL ) {
+    while ( (*s) != (wchar_t)0 ) {
         if ( *s & 128 )
             has_hi_bit = True;
         if ( *s++ == '\033' )
@@ -1231,7 +1231,7 @@ Cardinal *n;
      length = wcslen((wchar_t*)text.ptr);
      while ( length && ( iswspace(*ptr) || ( *ptr == _Xaw_atowc(XawTAB) ) ) )
          ptr++, length--;
-     *ptr = (wchar_t)NULL;
+     *ptr = (wchar_t)0;
      text.length = wcslen((wchar_t*)text.ptr);
 
   } else {

@@ -1,4 +1,4 @@
-/* $XConsortium: TextPop.c,v 1.28 94/03/08 12:19:24 kaleb Exp $ */
+/* $XConsortium: TextPop.c,v 1.29 94/03/21 13:24:43 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1989 by the Massachusetts Institute of Technology,
@@ -543,7 +543,7 @@ Cardinal * num_params;
       if (_XawTextFormat(ctx) == XawFmtWide) {
           /*This just does the equivalent of ptr = ""L, a waste because params[1] isnt W aligned.*/
           ptr = (char *)XtMalloc(sizeof(wchar_t));
-          *((wchar_t*)ptr) = (wchar_t)NULL;
+          *((wchar_t*)ptr) = (wchar_t)0;
       } else
           ptr = "";
 
