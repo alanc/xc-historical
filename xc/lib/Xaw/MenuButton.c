@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: MenuButton.c,v 1.9 89/10/02 19:19:01 keith Exp $";
+static char Xrcsid[] = "$XConsortium: MenuButton.c,v 1.10 89/10/09 16:20:58 jim Exp $";
 #endif /* lint */
 
 /***********************************************************
@@ -226,26 +226,6 @@ Cardinal * num_params;
   XtSetArg(arglist[num_args], XtNy, menu_y); num_args++;
   XtSetValues(menu, arglist, num_args);
 
-  /* Menu is positioned pop it up. */
-
-  XtAddGrab(menu, TRUE, TRUE);	/* We want spring_loaded so 
-				   that we always get events. */
-
-/*
- *  What a crock *** CDP 5/2/89 ... 
- *
- * But it is the only way that I can get these menus to work correctly and
- * come down with MenuPopdown.
- */
-
-  {
-#   include <X11/ShellP.h>
-    ShellWidget shell_widget = (ShellWidget) menu;
-    shell_widget->shell.popped_up = TRUE;
-    shell_widget->shell.grab_kind = XtGrabExclusive;
-    shell_widget->shell.spring_loaded = TRUE;
-  }
-
-  XMapRaised(XtDisplay(menu), XtWindow(menu));
+  XtPopupSpringLoaded(menu);
 }
 
