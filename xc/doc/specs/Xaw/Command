@@ -17,18 +17,18 @@ Superclass	Label
 .De
 .LP
 The Command widget is an area, often rectangular, that contains a text
-label or bitmap image.  I will call thest selectable areas "buttons". 
-When the pointer cursor is on the button, it
-becomes highlighted by drawing a rectangle around its perimeter.  This
+label or bitmap image.  Those selectable areas are often referred to as
+"buttons".  When the pointer cursor is on a button, it becomes
+highlighted by drawing a rectangle around its perimeter.  This
 highlighting indicates that the button is ready for selection.  When
-pointer button 1 (usually the left button) is pressed, the Command
-widget indicates that it has been selected by reversing its foreground
-and background colors.  When the button is released, the \fBnotify\fP
-action will be invoked, calling all functions on the Command widget's
-callback list.  If the pointer is moved out of the widget before
-the button is released, the widget reverts to its normal
-foreground and background colors, and releasing the button has no
-effect.  This behavior allows the user to cancel an action.
+pointer button 1 is pressed, the Command widget indicates that it has
+been selected by reversing its foreground and background colors.  When
+the button is released, the Command widget's \fBnotify\fP action will be
+invoked, calling all functions on its callback list.  If the pointer is
+moved out of the widget before the button is released, the widget
+reverts to its normal foreground and background colors, and releasing
+the button has no effect.  This behavior allows the user to cancel an
+action.
 .LP
 When creating a Command widget instance, the following resources are
 retrieved from the argument list or from the resource database:
@@ -146,8 +146,8 @@ The full list of actions supported by Command is:
 .IP \fBhighlight\fP(\fIcondition\fP) 1.5i
 Displays the internal highlight border in the color (\fBforeground\fP
 or \fBbackground\fP ) that contrasts with the interior color of the
-Command widget.  The conditions \fBWhenUnset\fP or \fBAlways\fP are
-understood by this action procedure.  If no argument is passed then
+Command widget.  The conditions \fBWhenUnset\fP and \fBAlways\fP are
+understood by this action procedure.  If no argument is passed,
 \fBWhenUnset\fP is assumed.
 .IP \fBunhighlight\fP(\|) 1.5i
 Displays the internal highlight border in the color (\fBforeground\fP
@@ -169,11 +169,11 @@ in the \fBforeground\fP color.
 .IP \fBnotify\fP(\|) 1.5i
 When the button is in the \fBset\fP state this action calls all functions in
 the callback list named by the \fBcallback\fP resource.  The value of
-the call_data argument passed to these functions is undefined. 
+the \fIcall_data\fP argument passed to these functions is undefined. 
 .LP
 .NT
 When a bitmap of depth greater that one (1) is specified the
-\fIset\fP(), \fIunset\fP(), \fIreset\fP() actions have no effect,
-since there are no foreground and background colors used in a 
+\fIset\fP(), \fIunset\fP(), and \fIreset\fP() actions have no effect,
+since there are no foreground and background colors used in a
 multi-plane pixmap.
 .NE

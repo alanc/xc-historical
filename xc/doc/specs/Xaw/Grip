@@ -18,7 +18,7 @@ Superclass	Simple
 .LP
 The Grip widget provides a small rectangular region in which user input
 events (such as ButtonPress or ButtonRelease) may be handled.  The most
-common use for the grip is as an attachment point for visually
+common use for the Grip widget is as an attachment point for visually
 repositioning an object, such as the pane border in a Paned widget.
 .LP
 When creating a Grip widget instance, the following resources are
@@ -84,7 +84,8 @@ is given below in the \fBGrip Actions\fP section.
 .De
 .Dc
 .IP \fBforeground\fP 1.5i
-An index to the color used to flood fill the entire Grip widget.
+A pixel value which indexes the widget's colormap to derive the color
+used to flood fill the entire Grip widget.
 .Hw
 .Ib
 .Mm
@@ -101,9 +102,9 @@ but it does declare a single action routine named \fBGripAction\fP.  The
 client specifies an arbitrary event translation table, optionally giving
 parameters to the \fBGripAction\fP routine.
 .LP
-The \fBGripAction\fP action executes the callbacks on the \fBcallback\fP
-list, passing as \fIcall_data\fP a pointer to a \fBGripCallData\fP structure, 
-defined in the Grip widget's public header file.
+The \fBGripAction\fP executes the callbacks on the \fBcallback\fP list,
+passing as \fIcall_data\fP a pointer to a \fBGripCallData\fP structure,
+defined in the Grip widget's application header file.
 .LP
 .Ds 0
 .TA .5i 2.25i
@@ -119,10 +120,10 @@ typedef struct _GripCallData {
 .sp
 .De
 .LP
-In this structure, the \fIevent\fP is a pointer to the input
-event that triggered the action, and \fIparams\fP and \fInum_params\fP give
-the string parameters specified in the translation table for the
-particular event binding.
+In this structure, the \fIevent\fP is a pointer to the input event that
+triggered the action.  \fIparams\fP and \fInum_params\fP give the string
+parameters specified in the translation table for the particular event
+binding.
 .IN "Grip widget" "GripAction table"
 .LP
 The following is an example of a translation table that uses the GripAction:
