@@ -1,4 +1,4 @@
-/* $XConsortium: StrToBS.c,v 1.1 90/07/15 16:18:52 rws Exp $ */
+/* $XConsortium: StrToBS.c,v 1.2 90/12/20 13:27:50 converse Exp $ */
 
 /* 
  * Copyright 1988 by the Massachusetts Institute of Technology
@@ -20,7 +20,7 @@
 #include "CharSet.h"
 
 #define	done(address, type) \
-	{ (*toVal).size = sizeof(type); (*toVal).addr = (caddr_t) address; }
+	{ (*toVal).size = sizeof(type); (*toVal).addr = (XPointer) address; }
 
 /* ARGSUSED */
 void
