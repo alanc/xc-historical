@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: mpgeom.h,v 1.1 93/07/19 10:17:45 rws Exp $ */
 /**** module mpgeom.h ****/
 /******************************************************************************
 				NOTICE
@@ -85,6 +85,10 @@ typedef struct _mpgeombanddef {
 	/* required by general line filling routine */
 	int	in_width;
 	int	in_height;
+
+	/* keep track of what input lines we've come across */
+	int     lo_src_available;
+	int     hi_src_available;
 
 	void    (*linefunc) ();
 	void    (*fillfunc) ();
