@@ -1,40 +1,86 @@
-XCOMM platform:  $XConsortium: luna.cf,v 1.12 91/05/11 10:24:38 rws Exp $
+XCOMM platform:  $XConsortium: luna.cf,v 1.13 91/06/06 14:13:20 rws Exp $
+/*
+ *	Please set the values for OSMajorVerion and OSMinorVersion
+ *	before making makefiles.	 
+ */
+
 #ifdef Mc68000Architecture
-#define OSName            UNIOS-B 4.3BSD UNIX: 1.50
+# ifdef luna2
+#define OSName            Mach 2.5 Vers 1.20
 #define OSMajorVersion    1
-#define OSMinorVersion    50
+#define OSMinorVersion    20
+# else 
+#define OSName            UNIOS-B 4.3BSD UNIX: 1.70
+#define OSMajorVersion    1
+#define OSMinorVersion    70
 #define DirFailPrefix -
-#else
-#define OSName            Mach 2.5 Vers 1.10
+# endif /* uniosb */
+#else  /* Mc88000Architecture */
+#define OSName            Mach 2.5 Vers 1.13
 #define OSMajorVersion    1
-#define OSMinorVersion    10
+#define OSMinorVersion    13
 #endif
 XCOMM operating system:  OSName
 
-#ifdef Mc68000Architecture
-/* Is -Dluna really needed, or does the compiler supply it? */
-#define BootstrapCFlags		-Dluna
-#define StandardDefines		-Dluna
-#endif
 #define HasPutenv		NO
 #define HasBsearch		NO
 #define HasSaberC		NO
 #define HasVoidSignalReturn	NO
 #define HasGcc			YES
-#ifdef Mc88000Architecture
-#define HasNdbm			YES
-#endif
+
 
 #define PrimaryScreenResolution 100
 
 #ifdef Mc68000Architecture
-#define BuildServer YES
-#define XlunaServer YES
-#define UnalignedReferencesAllowed YES	       /* if arbitrary deref is okay */
+#ifdef	luna2
+#define StandardDefines         -DXML
+#if ((OSMajorVersion <= 1) && (OSMinorVersion <= 20))
+#define ServerOSDefines -DUNUSE_DRV_TIME -DUNUSE_SIGIO_SIGNAL 
+#endif
+#else	/* luna1 */
+#if ((OSMajorVersion <= 1) && (OSMinorVersion <= 60)
+#define StandardDefines         -Dluna -Duniosb -DXML
+#else
+#define StandardDefines         -DXML
+#endif
+#if ((OSMajorVersion <= 1) && (OSMinorVersion <= 70))
+#define ServerOSDefines -DUNUSE_DRV_TIME -DUNUSE_SIGIO_SIGNAL 
+#endif
+#endif	/* luna2 */
+#if HasGcc
+#define OptimizedCDebugFlags    -O -traditional
+#define ServerCDebugFlags       -Dmc68020 -O -traditional
+#else	/* cc */
+#define OptimizedCDebugFlags    -O -Z18
+#define ServerCDebugFlags       -Dmc68020 -O -Z18
+#endif /* HasGcc */
+#endif /* Mc68000Architecture */
+
+
+#ifdef Mc88000Architecture
+#define StandardDefines         -DXML
+#if ((OSMajorVersion <= 1) && (OSMinorVersion <= 12))
+#define ServerOSDefines -DUNUSE_DRV_TIME -DUNUSE_SIGIO_SIGNAL 
+#endif
+#define HasNdbm			YES
+#ifdef HasGcc
+#define CcCmd                   gcc -fstrength-reduce
+#define OptimizedCDebugFlags    -O2 -traditional
+#define ServerCDebugFlags       -O2 -traditional
+#endif
+#endif
+
+#ifdef Mc68000Architecture
+#define UnalignedReferencesAllowed YES  /* if arbitrary deref is okay */
+#define BuildServer		YES		
+#define BuildXInputLib		NO
+#define BuildPex		NO		
+#define XlunaServer 		YES
 #endif
 
 #ifdef Mc88000Architecture
-#define BuildFonts		NO		/* XXX remove in R5 */
-#define BuildServer		YES		/* XXX remove in R5 */
-#define XnonServer		YES		/* XXX remove in R5 */
+#define BuildServer		YES		
+#define BuildXInputLib		NO	
+#define BuildPex		NO
+#define XlunaServer 		YES
 #endif
