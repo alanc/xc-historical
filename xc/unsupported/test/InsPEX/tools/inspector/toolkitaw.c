@@ -1,5 +1,5 @@
 
-/* $XConsortium: toolkitaw.c,v 5.3 91/05/29 18:41:46 converse Exp $ */
+/* $XConsortium: toolkitaw.c,v 5.4 91/05/29 19:27:06 converse Exp $ */
 
 /*****************************************************************
 Copyright (c) 1989,1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -59,6 +59,7 @@ static Widget toplevel;		/* Shell Widget returned by XtInitialize */
  */
 static Widget lastwidget=NULL;  	/* last one created */
 static Widget lastleftwidget=NULL; 	/* last one beginning a row */
+static Widget widgetAbove = NULL;	/* the first one in the previous row */
 
 /*
  * array of string pointers for list, first one null
@@ -94,11 +95,11 @@ TK_Main_Window tk_create_main_window(label, height, width, display_return)
     int height,width;
     Display **display_return;
 {
-    Arg args[2];
-    int i = 0;
-    Widget box;
+    Arg args[5];
+    Cardinal i = 0;
+    Widget form;
 
-    /* toplevel already created by tk_init: create a "box" child */
+    /* toplevel already created by tk_init: create a form child */
 
     /* blow off label for now */
     if (height != -1) {
@@ -107,26 +108,27 @@ TK_Main_Window tk_create_main_window(label, height, width, display_return)
     if (width != -1) {
 	XtSetArg(args[i], XtNwidth, width); i++;
     }
-    box = XtCreateManagedWidget("main", boxWidgetClass,	toplevel, args,	i);
+    XtSetArg(args[i], XtNresizable, True);	i++;
+    form = XtCreateManagedWidget("main", formWidgetClass, toplevel, args, i);
     *display_return = XtDisplay(toplevel);
-    return (box);
+    return form;
 }
 
 
 /*
  * TK_Control_Window
- * tk_create_control_window(parent, x, y, height, width)
  * Create a subwindow suitable for buttons, etc. that is a child of
  * the given parent.  A -1 for any of x, y, height or width 
  * yields the default or toolkit-determined value.
  */
 TK_Control_Window tk_create_control_window(parent, x, y, height, width)
     TK_Main_Window parent;
-    int x,y,height,width;
+    int x, y, height, width;
 {
-    Arg args[4];
-    int i = 0;
+    Arg args[15];
+    Cardinal i = 0;
     Widget control_win;
+    static int child = 0;	/* evil hack */
 
     if (height != -1) {
 	XtSetArg(args[i], XtNheight, height); i++;
@@ -140,16 +142,30 @@ TK_Control_Window tk_create_control_window(parent, x, y, height, width)
     if (y != -1) {
 	XtSetArg(args[i], XtNy, y); i++;
     }
+
+    XtSetArg(args[i], XtNfromHoriz, NULL);		i++;
+    XtSetArg(args[i], XtNhorizDistance, x);		i++;
+    XtSetArg(args[i], XtNfromVert, NULL);		i++;
+    XtSetArg(args[i], XtNvertDistance, y);		i++;
+    XtSetArg(args[i], XtNresizable, True);		i++;
+    if (child == 0) {
+	XtSetArg(args[i], XtNbottom, XawChainBottom);	i++;
+	XtSetArg(args[i], XtNleft, XawChainLeft);	i++;
+	XtSetArg(args[i], XtNright, XawChainRight);	i++;
+    } else if (child == 1) {
+	XtSetArg(args[i], XtNtop, XawChainTop);		i++;
+	XtSetArg(args[i], XtNright, XawChainRight);	i++;
+	XtSetArg(args[i], XtNbottom, XawChainBottom);	i++;
+    }
+    child++;
+
     control_win = XtCreateManagedWidget("control", formWidgetClass, parent,
 					args, i);
     return (control_win);
 }
 
-
+#if 0 /* never called */
 /*
- * Drawable
- * tk_create_X_drawable_window(parent,height,width,
- *			repaint_proc,display_return);
  * Create an X window as a subwindow of the supplied parent window,
  * returning its id.  *display_return is set to the current default display. 
  */
@@ -161,7 +177,7 @@ Drawable tk_create_X_drawable_window(parent,height,width,
 {
     /* create a Core widget and return its Xid */
     Arg args[4];
-    int i = 0;
+    Cardinal i = 0;
     Widget core_widget;
     Drawable drawable;
 
@@ -179,7 +195,7 @@ Drawable tk_create_X_drawable_window(parent,height,width,
     return(drawable);
     
 }
-
+#endif
 
 XID tk_get_xid(window)
     TK_Main_Window window;
@@ -190,8 +206,7 @@ XID tk_get_xid(window)
 
 
 /*
- * tk_create_button(control_win,row, col,label,proc,active_status)
- * create a button in the given control window, at designated row & col.
+ * Create a button in the given control window, at designated row & col.
  * proc identifies a procedure to be called when the button is pressed.
  */
 TK_Button tk_create_button(control_win, row, col, label, proc, active_status)
@@ -201,39 +216,40 @@ TK_Button tk_create_button(control_win, row, col, label, proc, active_status)
     void (*proc)();
     int active_status;
 {
+    Cardinal i=0;
+    Widget button;
     Arg args[5];
-    int i=0;
-    Widget buttonwidget;
 
     /*
      * Set up geometry constraints for Form widget parent
      */
     if (row == 1 && col == 1) {
 	/* the first widget in the control window */
-	XtSetArg(args[i], XtNleft, XtChainLeft); i++;
-	XtSetArg(args[i], XtNtop, XtChainTop); i++;
+	XtSetArg(args[i], XtNleft, XtChainLeft); 	i++;
+	XtSetArg(args[i], XtNtop, XtChainTop);		i++;
     } else if (col == 1) {
 	/* widget is in new row */
-	XtSetArg(args[i], XtNfromVert, lastleftwidget); i++;
-	XtSetArg(args[i], XtNleft, XtChainLeft); i++;
+	XtSetArg(args[i], XtNfromVert, lastleftwidget);	i++;
+	XtSetArg(args[i], XtNleft, XtChainLeft);	i++;
     } else {
 	/* widget is in same row as last widget */
-	XtSetArg(args[i], XtNfromHoriz, lastwidget); i++;
+	XtSetArg(args[i], XtNfromHoriz, lastwidget);	i++;
+	XtSetArg(args[i], XtNfromVert, widgetAbove);	i++;
     }
+    XtSetArg(args[i], XtNlabel, label);			i++;
+    if (active_status != TK_BUTTON_ACTIVE) {
+	XtSetArg(args[i], XtNsensitive, False);		i++;
+    }
+    button = XtCreateManagedWidget("button", commandWidgetClass,
+				   control_win, args, i);
+    XtAddCallback(button, XtNcallback, proc, (XtPointer) NULL);
 
-    /* set up other button attributes */
-    XtSetArg(args[i], XtNlabel, label); i++;
-    XtSetArg(args[i], XtNcallback, proc); i++;
-    if (active_status == TK_BUTTON_ACTIVE) {
-	XtSetArg(args[i], XtNsensitive, TRUE); i++;
-    } else {
-	XtSetArg(args[i], XtNsensitive, FALSE); i++;
+    lastwidget = button;
+    if (col == 1) {
+	widgetAbove = lastleftwidget;
+	lastleftwidget = button;
     }
-    buttonwidget = XtCreateManagedWidget(label, commandWidgetClass,
-					 control_win, args, i);
-    lastwidget = buttonwidget;
-    if (col == 1) lastleftwidget = buttonwidget;
-    return (buttonwidget);
+    return (button);
 }
 
 
@@ -267,51 +283,61 @@ void tk_set_button_label(button,label)
     TK_Button button;
     char *label;
 {
-    Arg arg;
-
-    XtSetArg(arg, XtNlabel, label);
-    XtSetValues(button, &arg, 1);
+    Arg arg[1];
+    XtSetArg(arg[0], XtNlabel, label);
+    XtSetValues(button, arg, (Cardinal) 1);
 }
 
 
 /*
  * TK_Message_Item
- * tk_create_message_item(control_win,row, col,init_string)
  * create a text output item  in the given control window, 
  * at designated row & col, with the initial contents init_string.
  */
-TK_Message_Item tk_create_message_item(control_win, row, col, init_string)
+TK_Message_Item tk_create_message_item(control_win, row, col, label)
     TK_Control_Window control_win;
     int row, col;
-    char *init_string;
+    char *label;
 {
     Arg args[5];
-    int i=0;
-    Widget messagewidget;
+    Cardinal i=0;
+    Widget message;
 
     /*
      * Set up geometry constraints for Form widget parent
      */
     if (row == 1 && col == 1) {
 	/* the first widget in the control window */
-	XtSetArg(args[i], XtNleft, XawChainLeft); i++;
-	XtSetArg(args[i], XtNtop, XawChainTop); i++;
+	XtSetArg(args[i], XtNleft, XawChainLeft);	i++;
+	XtSetArg(args[i], XtNtop, XawChainTop);		i++;
     } else if (col == 1) {
 	/* widget is in new row */
-	XtSetArg(args[i], XtNfromVert, lastleftwidget); i++;
-	XtSetArg(args[i], XtNleft, XawChainLeft); i++;
-    } else {
+	XtSetArg(args[i], XtNfromVert, lastleftwidget);	i++;
+	XtSetArg(args[i], XtNleft, XawChainLeft);	i++;
+    } else if (row != -1) {
 	/* widget is in same row as last widget */
-	XtSetArg(args[i], XtNfromHoriz, lastwidget); i++;
+	XtSetArg(args[i], XtNfromHoriz, lastwidget);	i++;
+	XtSetArg(args[i], XtNfromVert, lastleftwidget);	i++;
+    } else {
+	/* widget is not in the control panel */ 
+	XtSetArg(args[i], XtNfromVert, NULL);		i++;
+	if (col == 60) {
+	    XtSetArg(args[i], XtNwidth, col);		i++;
+	    XtSetArg(args[i], XtNfromHoriz,lastwidget);	i++;
+	}
     }
 
     /* set up other button attributes */
-    XtSetArg(args[i], XtNlabel, init_string); i++;
-    messagewidget = XtCreateManagedWidget(init_string, labelWidgetClass,
-					  control_win, args, i);
-    lastwidget = messagewidget;
-    if (col == 1) lastleftwidget = messagewidget;
-    return (messagewidget);
+    XtSetArg(args[i], XtNlabel, label);			i++;
+    message = XtCreateManagedWidget("label", labelWidgetClass,
+				    control_win, args, i);
+
+    lastwidget = message;
+    if (col == 1) {
+	widgetAbove = lastleftwidget;
+	lastleftwidget = message;
+    }
+    return (message);
 }
 
 
@@ -338,7 +364,7 @@ TK_List tk_create_list(control_win,row,col,notify_proc)
     int row,col, (*notify_proc)();
 {
     Arg args[4];
-    int i=0;
+    Cardinal i=0;
     Widget viewport, list;
 
     /*
@@ -365,20 +391,19 @@ TK_List tk_create_list(control_win,row,col,notify_proc)
     i=0;
     XtSetArg(args[i], XtNverticalList,  TRUE); i++;
     XtSetArg(args[i], XtNheight,  100); i++;
-    XtSetArg(args[i], XtNcallback,  notify_proc); i++;
 
     list = XtCreateManagedWidget("list", listWidgetClass, viewport, args, i);
+    XtAddCallback(list, XtNcallback, notify_proc, (XtPointer) NULL);
     return (list);
 }
 
 
 /*
- * char *
- * tk_get_selected_item(list,index_return) - return a pointer to the
+ * Return a pointer to the
  * string of the currently selected list item, and set index_return
  * to that element's index.  If no list item is selected, return NULL.
  */
-char * tk_get_selected_list_item(list,index_return)
+char * tk_get_selected_list_item(list, index_return)
     TK_List list;
     int *index_return;
 {
