@@ -1,4 +1,4 @@
-/* $XConsortium: sunInit.c,v 5.42 93/11/14 13:37:09 kaleb Exp $ */
+/* $XConsortium: sunInit.c,v 5.43 93/12/13 11:58:52 kaleb Exp $ */
 /*
  * sunInit.c --
  *	Initialization functions for screen/keyboard/mouse, etc.
@@ -375,9 +375,10 @@ void OsVendorInit(
 	struct rlimit rl;
 
 	/* 
-	 * one per client, one per screen, plus keyboard, mouse, & stderr
+	 * one per client, one per screen, one per connection block,
+	 * keyboard, mouse, & stderr
 	 */
-	int maxfds = MAXCLIENTS + MAXSCREENS + 3;
+	int maxfds = MAXCLIENTS + MAXSCREENS + 5;
 
 	if (getrlimit (RLIMIT_NOFILE, &rl) == 0) {
 	    rl.rlim_cur = maxfds < rl.rlim_max ? maxfds : rl.rlim_max;
