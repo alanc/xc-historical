@@ -205,8 +205,10 @@ static void GetgrayGC(lw)
 	&values);
 }
 
-static void Initialize(w)
+static void Initialize(w, args, num_args)
  Widget w;
+ ArgList args;
+ Cardinal num_args;
 {
     LabelWidget lw = (LabelWidget) w;
 

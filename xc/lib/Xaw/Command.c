@@ -206,15 +206,18 @@ static void Get_highlightGC(cbw)
 }
 
 
-static void Initialize(w)
+/* ARGSUSED */
+static void Initialize(w, args, num_args)
  Widget w;
+ ArgList args;
+ Cardinal num_args;
 {
     CommandWidget cbw = (CommandWidget) w;
 
       /*** MAKE SURE core_class and coreClass standardized in
 	             Label&Command   Intrinsic
       ****/
-    XtCallParentProcedure(initialize,w);
+    XtCallParentProcedure3Args(initialize, w, args, num_args);
         /* The above call will set all of the label fields such as
 	   label text and internal width and height. */
     Get_inverseGC(cbw);
