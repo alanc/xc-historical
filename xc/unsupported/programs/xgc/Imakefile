@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.9 91/07/16 23:08:10 gildea Exp $
+XCOMM $XConsortium: Imakefile,v 1.10 92/06/01 18:32:48 rws Exp $
         DEFINES = 
            SRCS = dashlist.c planemask.c getfile.c tests.c text.c \
                   choice.c main.c interpret.c record.c testfrac.c
@@ -8,7 +8,7 @@ XCOMM $XConsortium: Imakefile,v 1.9 91/07/16 23:08:10 gildea Exp $
                   gram.o lex.o
 LOCAL_LIBRARIES = $(XAWLIB) $(XMULIB) $(XTOOLLIB) $(XLIB)
         DEPLIBS = $(DEPXAWLIB) $(DEPXMULIB) $(DEPXTOOLLIB) $(DEPXLIB)
-  SYS_LIBRARIES = -lm
+  SYS_LIBRARIES = MathLibrary
          YFLAGS = -d
 
 ComplexProgramTarget(xgc)
@@ -21,6 +21,6 @@ gram.h gram.c: gram.y
 	$(MV) y.tab.h gram.h
 
 clean::
-	$(RM) y.tab.h y.tab.c lex.yy.c gram.h gram.c lex.c
+	RemoveFiles(y.tab.h y.tab.c lex.yy.c gram.h gram.c lex.c)
 
 depend:: lex.c gram.c

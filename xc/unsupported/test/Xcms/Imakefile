@@ -1,4 +1,4 @@
-      SYS_LIBRARIES = -lm
+      SYS_LIBRARIES = MathLibrary
 
             DEFINES =
 

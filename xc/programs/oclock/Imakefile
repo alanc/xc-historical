@@ -1,5 +1,5 @@
-XCOMM $XConsortium: Imakefile,v 1.12 91/07/16 23:06:30 gildea Exp $
-SYS_LIBRARIES = -lm
+XCOMM $XConsortium: Imakefile,v 1.13 92/05/15 15:29:44 converse Exp $
+SYS_LIBRARIES = MathLibrary
 DEPLIBS = $(DEPXMULIB) $(DEPXTOOLLIB) $(DEPXLIB)
 LOCAL_LIBRARIES = $(XMULIB) $(XTOOLLIB) $(XLIB)
 

@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.6 91/08/22 12:27:00 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.7 91/08/26 13:34:51 rws Exp $
 XCOMM 
 XCOMM  xgas
 XCOMM 
@@ -22,7 +22,7 @@ XCOMM
         DEFINES = $(IEEE_DEFS) $(SIGNAL_DEFINES)
         DEPLIBS = $(DEPXAWLIB) $(DEPXMULIB) $(DEPXTOOLLIB) $(DEPXLIB)
 LOCAL_LIBRARIES = $(XAWLIB) $(XMULIB) $(XTOOLLIB) $(XLIB)
-  SYS_LIBRARIES = -lm
+  SYS_LIBRARIES = MathLibrary
            DOCNS = doc.n quick.n
            DOCSRCS = doc.c quick.c
            DOCOBJS = doc.o quick.o

@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.3 93/07/19 14:41:49 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.4 93/07/19 15:21:27 rws Exp $
 
    SRCS = xieperf.c tests.c flo.c flomap.c \
 	  constrain.c dither.c point.c import.c \
@@ -16,7 +16,7 @@ XCOMM $XConsortium: Imakefile,v 1.3 93/07/19 14:41:49 rws Exp $
 
    LOCAL_LIBRARIES = $(XIELIB) $(XLIB)
            DEPLIBS = $(DEPXIELIB) $(DEPXLIB)
-     SYS_LIBRARIES = -lm
+     SYS_LIBRARIES = MathLibrary
            DEFINES = $(SIGNAL_DEFINES)
 
 ComplexProgramTarget(xieperf)
