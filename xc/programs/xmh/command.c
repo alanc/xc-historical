@@ -1,4 +1,4 @@
-/* $XConsortium: command.c,v 2.41 91/04/16 18:31:12 rws Exp $ */
+/* $XConsortium: command.c,v 2.42 91/05/22 16:12:04 gildea Exp $ */
 
 /*
  *			  COPYRIGHT 1987, 1989
@@ -67,6 +67,7 @@
 typedef struct _CommandStatus {
     Widget	popup;		 /* must be first; see PopupStatus */
     struct _LastInput lastInput; /* must be second; ditto */
+    char*	shell_command;	 /* must be third; for XmhShellCommand */
     int		child_pid;
     XtInputId	output_inputId;
     XtInputId	error_inputId;
@@ -345,6 +346,12 @@ DEBUG("read.\n")}
 	    XtRemoveInput( status->error_inputId );
 	}
 	if (status->error_buffer != NULL) {
+	    /* special case for arbitrary shell commands: capture command */
+	    if ((strcmp(argv[0], "/bin/sh") == 0) &&
+	        (strcmp(argv[1], "-c") == 0)) {
+	        status->shell_command = XtNewString(argv[2]);
+            } else status->shell_command = (char*) NULL;
+	
 	    while (status->error_buffer[status->error_buf_size-1]  == '\0')
 		status->error_buf_size--;
 	    while (status->error_buffer[status->error_buf_size-1]  == '\n')
@@ -367,7 +374,8 @@ DEBUG("read.\n")}
 	    }
 	}
     } else {			/* We're the child process. */
-	(void) execv(FullPathOfCommand(argv[0]), argv);
+	if (*argv[0] != '/')
+	    (void) execv(FullPathOfCommand(argv[0]), argv);
 	(void) execvp(argv[0], argv);
         progName = argv[0];	/* for Punt message */
 	Punt("(cannot execvp it)");
