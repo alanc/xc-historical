@@ -29,4 +29,3 @@ InstallFonts($(FONTINSTDIR))
 InstallFontAliases($(FONTINSTDIR))
 
 depend::
-	@echo "skipping make depend in bdf/misc"

@@ -1,12 +1,10 @@
-# $XConsortium: Imakefile,v 1.8 89/07/16 21:06:05 jim Exp $
+# $XConsortium: Imakefile,v 1.9 89/07/17 11:13:10 jim Exp $
      HEADERS = zoid.h bezier.h shape.h plxvideo.h xtestext1.h
 INSTALLFLAGS = -m 0444
 
 all:
-	@echo "skipping make all in extensions/include"
 
 BuildIncludes($(HEADERS),extensions,..)
 InstallMultiple($(HEADERS),$(INCDIR)/extensions)
 
 depend:
-	@echo "skipping make depend in extensions/include"
