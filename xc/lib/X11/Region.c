@@ -1,4 +1,4 @@
-/* $Header: XRegion.c,v 11.15 87/11/11 16:31:15 rws Exp $ */
+/* $Header: XRegion.c,v 11.16 88/02/03 20:19:46 jim Locked $ */
 /************************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -61,6 +61,7 @@ SOFTWARE.
 #endif
 
 extern char *_XAllocScratch();
+static void miRegionOp();
 /*	Create a new empty region	*/
 Region
 XCreateRegion()
@@ -121,6 +122,7 @@ XUnionRectWithRegion(rect, source, dest)
  *-----------------------------------------------------------------------
  */
 /* static void*/
+static
 miSetExtents (pReg)
     Region	  	pReg;
 {
@@ -158,6 +160,7 @@ miSetExtents (pReg)
 	pBox++;
     }
     assert(pExtents->x1 < pExtents->x2);
+    return 0;	/* lint */
 }
 
 XSetRegion( dpy, gc, r )
@@ -305,6 +308,7 @@ static BOX
  *-----------------------------------------------------------------------
  */
 /* static void*/
+static
 miIntersectO (pReg, r1, r1End, r2, r2End, y1, y2)
     register Region	pReg;
     register BoxPtr	r1;
@@ -365,6 +369,7 @@ miIntersectO (pReg, r1, r1End, r2, r2End, y1, y2)
 	    r2++;
 	}
     }
+    return 0;	/* lint */
 }
 
 XIntersectRegion(reg1, reg2, newReg)
@@ -397,7 +402,7 @@ XIntersectRegion(reg1, reg2, newReg)
 }
 
 void bcopy();
-void
+static void
 miRegionCopy(dstrgn, rgn)
     register Region dstrgn;
     register Region rgn;
@@ -576,6 +581,7 @@ TopRects(newReg, rects, reg1, reg2, FirstRect)
  *-----------------------------------------------------------------------
  */
 /* static int*/
+static
 miCoalesce (pReg, prevStart, curStart)
     register Region	pReg;	    	/* Region to coalesce */
     int	    	  	prevStart;  	/* Index of start of previous band */
@@ -726,6 +732,7 @@ miCoalesce (pReg, prevStart, curStart)
  *-----------------------------------------------------------------------
  */
 /* static void*/
+static void
 miRegionOp(newReg, reg1, reg2, overlapFunc,  nonOverlap1Func, nonOverlap2Func)
     register Region 	newReg;	    	    	/* Place to store result */
     Region	  	reg1;	    	    	/* First region in operation */
@@ -990,6 +997,7 @@ miRegionOp(newReg, reg1, reg2, overlapFunc,  nonOverlap1Func, nonOverlap2Func)
 	}
     }
     Xfree ((char *) oldRects);
+    return;
 }
 
 
@@ -1014,6 +1022,7 @@ miRegionOp(newReg, reg1, reg2, overlapFunc,  nonOverlap1Func, nonOverlap2Func)
  *-----------------------------------------------------------------------
  */
 /* static void*/
+static
 miUnionNonO (pReg, r, rEnd, y1, y2)
     register Region	pReg;
     register BoxPtr	r;
@@ -1041,7 +1050,7 @@ miUnionNonO (pReg, r, rEnd, y1, y2)
 	assert(pReg->numRects<=pReg->size);
 	r++;
     }
-
+    return 0;	/* lint */
 }
 
 
@@ -1062,6 +1071,7 @@ miUnionNonO (pReg, r, rEnd, y1, y2)
  */
 
 /* static void*/
+static
 miUnionO (pReg, r1, r1End, r2, r2End, y1, y2)
     register Region	pReg;
     register BoxPtr	r1;
@@ -1124,6 +1134,7 @@ miUnionO (pReg, r1, r1End, r2, r2End, y1, y2)
     {
 	MERGERECT(r2);
     }
+    return 0;	/* lint */
 }
 
 XUnionRegion(reg1, reg2, newReg)
@@ -1211,6 +1222,7 @@ XUnionRegion(reg1, reg2, newReg)
  *-----------------------------------------------------------------------
  */
 /* static void*/
+static
 miSubtractNonO1 (pReg, r, rEnd, y1, y2)
     register Region	pReg;
     register BoxPtr	r;
@@ -1239,6 +1251,7 @@ miSubtractNonO1 (pReg, r, rEnd, y1, y2)
 
 	r++;
     }
+    return 0;	/* lint */
 }
 
 /*-
@@ -1256,6 +1269,7 @@ miSubtractNonO1 (pReg, r, rEnd, y1, y2)
  *-----------------------------------------------------------------------
  */
 /* static void*/
+static
 miSubtractO (pReg, r1, r1End, r2, r2End, y1, y2)
     register Region	pReg;
     register BoxPtr	r1;
@@ -1383,6 +1397,7 @@ miSubtractO (pReg, r1, r1End, r2, r2End, y1, y2)
 	    x1 = r1->x1;
 	}
     }
+    return 0;	/* lint */
 }
 	
 /*-
