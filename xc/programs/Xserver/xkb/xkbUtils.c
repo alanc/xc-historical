@@ -121,9 +121,9 @@ CARD8		mask;
 
 #ifdef DEBUG
     if (xkbDebugFlags>0)
-	ErrorF("Updating key type %d due to virtual modifier change\n");
+	ErrorF("Updating key type %d due to virtual modifier change\n",index);
 #endif
-    type= &xkb->map->types[i];
+    type= &xkb->map->types[index];
     type->mask= type->real_mods|XkbMaskForVMask(xkb,type->vmods);
     if ((type->map_count>0)&&(type->vmods!=0)) {
 	XkbKTMapEntryPtr entry;
