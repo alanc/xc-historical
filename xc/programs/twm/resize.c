@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: resize.c,v 1.55 89/11/20 14:30:47 jim Exp $
+ * $XConsortium: resize.c,v 1.56 89/11/22 15:36:51 jim Exp $
  *
  * window resizing borrowed from the "wm" window manager
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: resize.c,v 1.55 89/11/20 14:30:47 jim Exp $";
+"$XConsortium: resize.c,v 1.56 89/11/22 15:36:51 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -896,7 +896,7 @@ SetFrameShape (tmp)
 	 * need to do general case
 	 */
 	XShapeCombineShape (dpy, tmp->frame, ShapeBounding,
-			    -tmp->frame_bw, Scr->TitleHeight, tmp->w,
+			    0, tmp->title_height, tmp->w,
 			    ShapeBounding, ShapeSet);
 	if (tmp->title_w) {
 	    XShapeCombineShape (dpy, tmp->frame, ShapeBounding,
