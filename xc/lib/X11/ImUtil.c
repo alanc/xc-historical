@@ -1,4 +1,4 @@
-/* $XConsortium: XImUtil.c,v 11.50 91/06/27 16:39:03 rws Exp $ */
+/* $XConsortium: XImUtil.c,v 11.51 91/07/23 12:02:13 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -54,8 +54,13 @@ static unsigned char Const _himask[0x09] = { 0xff, 0xfe, 0xfc, 0xf8, 0xf0, 0xe0,
  	for (i = dpy->nformats + 1; --i; ++fmt)
  		if (fmt->depth == depth)
  			return(fmt->bits_per_pixel);
- 
- 	return(depth);
+	if (depth <= 4)
+	    return 4;
+	if (depth <= 8)
+	    return 8;
+	if (depth <= 16)
+	    return 16;
+	return 32;
  }
  
 
