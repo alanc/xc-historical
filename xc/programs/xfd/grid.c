@@ -1,5 +1,5 @@
 /*
- * $XConsortium: fontgrid.c,v 1.22 91/02/22 14:10:03 rws Exp $
+ * $XConsortium: fontgrid.c,v 1.23 91/05/22 19:04:34 converse Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -37,7 +37,6 @@
 static void ClassInitialize(), Initialize(), Realize(), Redisplay(), Notify();
 static void Destroy(), Resize(), paint_grid();
 static Boolean SetValues();
-static char stupidString[] = {'-','1',0}; /* workaround scanf bug */
 
 #define Offset(field) XtOffsetOf(FontGridRec, fontgrid.field)
 
@@ -52,8 +51,8 @@ static XtResource resources[] = {
 	Offset(cell_width), XtRImmediate, (XtPointer) 0 },
     { XtNcellHeight, XtCCellHeight, XtRInt, sizeof(int),
 	Offset(cell_height), XtRImmediate, (XtPointer) 0 },
-    { XtNstartChar, XtCStartChar, XtRLong, sizeof(long),
-	Offset(start_char), XtRString, (XtPointer) stupidString },
+    { XtNstartChar, XtCStartChar, XtRDimension, sizeof(Dimension),
+	Offset(start_char), XtRImmediate, (XtPointer) 0xffff },
     { XtNforeground, XtCForeground, XtRPixel, sizeof(Pixel),
 	Offset(foreground_pixel), XtRString, (XtPointer) XtDefaultForeground },
     { XtNcenterChars, XtCCenterChars, XtRBoolean, sizeof(Boolean),
@@ -128,11 +127,11 @@ WidgetClass fontgridWidgetClass = (WidgetClass) &fontgridClassRec;
 
 void GetFontGridCellDimensions (w, startp, ncolsp, nrowsp)
     Widget w;
-    long *startp;
+    Dimension *startp;
     int *ncolsp, *nrowsp;
 {
     FontGridWidget fgw = (FontGridWidget) w;
-    *startp = fgw->fontgrid.start_char;
+    *startp = (long)fgw->fontgrid.start_char;
     *ncolsp = fgw->fontgrid.cell_cols;
     *nrowsp = fgw->fontgrid.cell_rows;
 }
@@ -148,8 +147,8 @@ void GetPrevNextStates (w, prevvalidp, nextvalidp)
     long minn = (long) ((fs->min_byte1 << 0) | fs->min_char_or_byte2);
     long maxn = (long) ((fs->max_byte1 << 8) | fs->max_char_or_byte2);
 
-    *prevvalidp = (fgw->fontgrid.start_char > minn);
-    *nextvalidp = ((fgw->fontgrid.start_char +
+    *prevvalidp = ((long)fgw->fontgrid.start_char > minn);
+    *nextvalidp = (((long)fgw->fontgrid.start_char +
 		    (fgw->fontgrid.cell_cols * fgw->fontgrid.cell_rows))
 		   < maxn);
 }
@@ -194,6 +193,7 @@ static void Initialize (request, new)
     FontGridWidget reqfg = (FontGridWidget) request;
     FontGridWidget newfg = (FontGridWidget) new;
     XFontStruct *fs = newfg->fontgrid.text_font;
+    unsigned maxn;
 
     if (reqfg->fontgrid.cell_cols <= 0)
       newfg->fontgrid.cell_cols = 16;
@@ -228,11 +228,16 @@ static void Initialize (request, new)
      * select the first character
      */
 
-    if (newfg->fontgrid.start_char == -1L) {
-	newfg->fontgrid.start_char = (fs ? (long)(fs->min_byte1 << 8) : 0L);
+    if (newfg->fontgrid.start_char == 0xffff) {
+	newfg->fontgrid.start_char = (fs ? (unsigned)(fs->min_byte1 << 8) : 0);
     }
-
-    return;
+    if (fs) {
+	maxn = ((fs->max_byte1 << 8) | fs->max_char_or_byte2);
+	if (newfg->fontgrid.start_char > maxn) 
+	  newfg->fontgrid.start_char = (maxn + 1 - 
+					(newfg->fontgrid.cell_cols * 
+					 newfg->fontgrid.cell_rows));
+    }
 }
 
 static void Realize (gw, valueMask, attributes)
@@ -361,7 +366,7 @@ static void paint_grid (fgw, col, row, ncols, nrows)
      * fonts.  Store the high eight bits in byte1 and the low eight bits in 
      * byte2.
      */
-    prevn = ((unsigned) p->start_char) + col + row * tcols;
+    prevn = p->start_char + col + row * tcols;
     startx = col * cw + p->internal_pad;
     for (j = 0, y = row * ch + p->internal_pad + p->text_font->ascent;
 	 j < nrows; j++, y += ch) {
@@ -450,15 +455,12 @@ static Boolean SetValues (current, request, new, args, num_args)
 
     if (curfg->fontgrid.start_char != newfg->fontgrid.start_char) {
 	XFontStruct *fs = newfg->fontgrid.text_font;
-	long maxn = (long) ((fs->max_byte1 << 8) | fs->max_char_or_byte2);
+	unsigned maxn = ((fs->max_byte1 << 8) | fs->max_char_or_byte2);
 
 	if (newfg->fontgrid.start_char > maxn) 
 	  newfg->fontgrid.start_char = (maxn + 1 - 
 					(newfg->fontgrid.cell_cols * 
 					 newfg->fontgrid.cell_rows));
-
-	if (newfg->fontgrid.start_char < 0)
-	  newfg->fontgrid.start_char = 0;
 
 	redisplay = (curfg->fontgrid.start_char != newfg->fontgrid.start_char);
     }
@@ -513,7 +515,7 @@ static void Notify (gw, event, params, nparams)
 	    return;
 	}
 
-	n= (((unsigned) fgw->fontgrid.start_char) + 
+	n= (fgw->fontgrid.start_char + 
 	    ((y / ch) * fgw->fontgrid.cell_cols) + (x / cw));
 
 	rec.thefont = fgw->fontgrid.text_font;
