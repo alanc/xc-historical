@@ -1,4 +1,4 @@
-/* $XConsortium: Event.c,v 1.116 90/07/26 09:53:41 swick Exp $ */
+/* $XConsortium: Event.c,v 1.117 90/07/27 13:49:45 swick Exp $ */
 /* $oHeader: Event.c,v 1.9 88/09/01 11:33:51 asente Exp $ */
 
 /***********************************************************
@@ -53,8 +53,6 @@ SOFTWARE.
 #define NO_EXPOSE        (XtExposeNoExpose & COMP_EXPOSE)
 
 extern void 			bzero();
-
-CallbackList *_XtDestroyList;
 
 EventMask XtBuildEventMask(widget)
     Widget widget;
@@ -887,42 +885,25 @@ static Boolean DecideToDispatch(event)
 Boolean XtDispatchEvent (event)
     XEvent  *event;
 {
-    CallbackList *oldDestroyList, destroyList;
     Boolean was_dispatched;
+    XtAppContext app = XtDisplayToApplicationContext(event->xany.display);
+    int dispatch_level = ++app->dispatch_level;
+    int starting_count = app->destroy_count;
 
     /*
      * To make recursive XtDispatchEvent work, we need to do phase 2 destroys
      * only on those widgets destroyed by this particular dispatch.
-     * The "right" way to do this is by passing a local variable through to
-     * each recursive instance, and passing the list to XtDestroy, but that
-     * causes unwieldy proliferation of arguments. We could do all this stuff
-     * with signals (if we had them), but instead we have a global pointer
-     * to the "current" destroy list, and XtDispatchEvent and XtDestroy
-     * conspire to keep it up to date, and use the right one.
      *
-     * This is pretty gross.
      */
-
-    oldDestroyList = _XtDestroyList;
-    _XtDestroyList = &destroyList;
-    destroyList = NULL;
 
     was_dispatched = DecideToDispatch(event);
 
-    /* To accomodate widgets destroying other widgets in their destroy
-     * callbacks, we have to make this a loop */
+    if (app->destroy_count > starting_count)
+	_XtDoPhase2Destroy(app, dispatch_level);
 
-    while (destroyList != NULL) {
-	CallbackList newList = NULL;
-	_XtDestroyList = &newList;
-	_XtCallCallbacks (&destroyList, (XtPointer) NULL);
-	_XtRemoveAllCallbacks (&destroyList);
-	destroyList = newList;
-    }
+    app->dispatch_level = dispatch_level - 1;
 
-    _XtDestroyList = oldDestroyList;
-
-    if (_XtSafeToDestroy) {
+    if (_XtSafeToDestroy(app)) {
 	if (_XtAppDestroyCount != 0) _XtDestroyAppContexts();
 	if (_XtDpyDestroyCount != 0) _XtCloseDisplays();
     }
@@ -1049,7 +1030,6 @@ void _XtEventInitialize()
     if (initialized) return;
     initialized = TRUE;
 
-    _XtDestroyList = NULL;
     nullRegion = XCreateRegion();
     InitializeHash();
 }

@@ -1,4 +1,4 @@
-/* $XConsortium: Display.c,v 1.47 90/07/26 10:03:10 swick Exp $ */
+/* $XConsortium: Display.c,v 1.48 90/08/20 15:24:55 swick Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -296,6 +296,8 @@ XtAppContext XtCreateApplicationContext()
 	app->fallback_resources = NULL;
 	_XtPopupInitialize(app);
 	app->action_hook_list = NULL;
+	app->destroy_list_size = app->destroy_count = app->dispatch_level = 0;
+	app->destroy_list = NULL;
 #ifndef NO_IDENTIFY_WINDOWS
 	app->identify_windows = False;
 #endif
@@ -321,6 +323,7 @@ static void DestroyAppContext(app)
 	while (app->timerQueue) XtRemoveTimeOut((XtIntervalId)app->timerQueue);
 	while (app->workQueue) XtRemoveWorkProc((XtWorkProcId)app->workQueue);
 	if (app->input_list) _XtRemoveAllInputs(app);
+	XtFree((char*)app->destroy_list);
 	_XtHeapFree(&app->heap);
 	while (*prev_app != app) prev_app = &(*prev_app)->next;
 	*prev_app = app->next;
@@ -334,7 +337,7 @@ void XtDestroyApplicationContext(app)
 {
 	if (app->being_destroyed) return;
 
-	if (_XtSafeToDestroy) DestroyAppContext(app);
+	if (_XtSafeToDestroy(app)) DestroyAppContext(app);
 	else {
 	    app->being_destroyed = TRUE;
 	    _XtAppDestroyCount++;
@@ -556,7 +559,7 @@ void XtCloseDisplay(dpy)
 	
 	if (pd->being_destroyed) return;
 
-	if (_XtSafeToDestroy) CloseDisplay(dpy);
+	if (_XtSafeToDestroy(pd->appContext)) CloseDisplay(dpy);
 	else {
 	    pd->being_destroyed = TRUE;
 	    _XtDpyDestroyCount++;

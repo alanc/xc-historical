@@ -1,4 +1,4 @@
-/* $XConsortium: InitialI.h,v 1.32 90/07/15 21:40:45 swick Exp $ */
+/* $XConsortium: InitialI.h,v 1.33 90/07/26 09:55:09 swick Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -93,6 +93,8 @@ typedef struct {
     int		bytes_remaining;
 } Heap;
 
+typedef struct _DestroyRec DestroyRec;
+
 typedef struct _XtAppStruct {
     XtAppContext next;		/* link to next app in process context */
     ProcessContext process;	/* back pointer to our process context */
@@ -116,6 +118,10 @@ typedef struct _XtAppStruct {
     Heap heap;
     String * fallback_resources;	/* Set by XtAppSetFallbackResources. */
     struct _ActionHookRec* action_hook_list;
+    int destroy_list_size;
+    int destroy_count;
+    int dispatch_level;
+    DestroyRec* destroy_list;
 #ifndef NO_IDENTIFY_WINDOWS
     Boolean identify_windows;		/* debugging hack */
 #endif
@@ -302,3 +308,12 @@ extern void _XtFreeActions(
     struct _ActionListRec* /* action_table */
 #endif
 );
+
+extern void _XtDoPhase2Destroy(
+#if NeedFunctionPrototypes
+    XtAppContext /* app */,
+    int		 /* dispatch_level */
+#endif
+);
+
+#define _XtSafeToDestroy(app) ((app)->dispatch_level == 0)

@@ -1,6 +1,4 @@
-#ifndef lint
-static char Xrcsid[] = "$XConsortium: Destroy.c,v 1.26 90/06/21 16:25:14 swick Exp $";
-#endif /* lint */
+/* $XConsortium: Destroy.c,v 1.27 90/06/25 12:10:55 swick Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -27,6 +25,11 @@ SOFTWARE.
 ******************************************************************/
 
 #include "IntrinsicI.h"
+
+struct _DestroyRec {
+    int dispatch_level;
+    Widget widget;
+};
 
 static void Recursive(widget, proc)
     Widget       widget;
@@ -98,21 +101,24 @@ static void Phase2Destroy(widget)
     }
 } /* Phase2Destroy */
 
-/*ARGSUSED*/
-static void XtPhase2Destroy (widget, closure, call_data)
+static Boolean IsDescendant(widget, root)
+    register Widget widget, root;
+{
+    while ((widget = XtParent(widget)) != root) {
+	if (widget == NULL) return False;
+    }
+    return True;
+}
+
+static void XtPhase2Destroy (widget)
     register Widget widget;
-    XtPointer	    closure;
-    XtPointer	    call_data;
 {
     Display	    *display;
     Window	    window;
     Widget          parent;
-    CallbackList    *oldDestroyList = _XtDestroyList;
-    CallbackList    newDestroyList = NULL;
     XtAppContext    app = XtWidgetToApplicationContext(widget);
     Boolean	    outerInPhase2Destroy = app->in_phase2_destroy;
-
-    _XtDestroyList = &newDestroyList;
+    int		    starting_count = app->destroy_count;
 
     parent = widget->core.parent;
 
@@ -151,15 +157,20 @@ static void XtPhase2Destroy (widget, closure, call_data)
     }
 
     Recursive(widget, Phase2Callbacks);
-    while (newDestroyList != NULL) {
-	CallbackList newerList = NULL;
-	_XtDestroyList = &newerList;
-	_XtCallCallbacks(&newDestroyList, (XtPointer)NULL);
-	_XtRemoveAllCallbacks(&newDestroyList);
-	newDestroyList = newerList;
+    if (app->destroy_count > starting_count) {
+	int i = starting_count;
+	while (i < app->destroy_count) {
+	    if (IsDescendant(app->destroy_list[i].widget, widget)) {
+		Widget descendant = app->destroy_list[i].widget;
+		int j;
+		app->destroy_count--;
+		for (j = i; j < app->destroy_count; j++)
+		    app->destroy_list[j] = app->destroy_list[j+1];
+		XtPhase2Destroy(descendant);
+	    }
+	    else i++;
+	}
     }
-
-    _XtDestroyList = oldDestroyList;
 
     app->in_phase2_destroy = TRUE;
     Recursive(widget, Phase2Destroy);
@@ -174,29 +185,44 @@ static void XtPhase2Destroy (widget, closure, call_data)
 } /* XtPhase2Destroy */
 
 
+void _XtDoPhase2Destroy(app, dispatch_level)
+    XtAppContext app;
+    int dispatch_level;
+{
+    while (app->destroy_count &&
+	   app->destroy_list[app->destroy_count-1].dispatch_level >=
+		dispatch_level) {
+	XtPhase2Destroy(app->destroy_list[--app->destroy_count].widget);
+    }
+}
+
+
+
 void XtDestroyWidget (widget)
     Widget    widget;
 {
-    CallbackList tempDestroyList = NULL;
     XtAppContext app = XtWidgetToApplicationContext(widget);
 
     if (widget->core.being_destroyed) return;
 
-    if (_XtSafeToDestroy || app->in_phase2_destroy)
-	_XtDestroyList = &tempDestroyList;
-
     Recursive(widget, Phase1Destroy);
-    _XtAddCallback(widget, _XtDestroyList, XtPhase2Destroy, (XtPointer)NULL);
 
-    if (_XtDestroyList == &tempDestroyList) {
-	while (tempDestroyList != NULL) {
-	    CallbackList newList = NULL;
-	    _XtDestroyList = &newList;
-	    _XtCallCallbacks(&tempDestroyList, (XtPointer)NULL);
-	    _XtRemoveAllCallbacks(&tempDestroyList);
-	    tempDestroyList = newList;
-	}
-	_XtDestroyList = NULL;
+    if (app->in_phase2_destroy) {
+	XtPhase2Destroy(widget);
+	return;
     }
+
+    if (app->destroy_count == app->destroy_list_size) {
+	app->destroy_list_size += 10;
+	app->destroy_list = (DestroyRec*)
+	    XtRealloc( (char*)app->destroy_list,
+		       (unsigned)sizeof(DestroyRec)*app->destroy_list_size
+		      );
+    }
+    app->destroy_list[app->destroy_count].dispatch_level = app->dispatch_level;
+    app->destroy_list[app->destroy_count++].widget = widget;
+
+    if (_XtSafeToDestroy(app))
+	_XtDoPhase2Destroy(app, app->dispatch_level);
 	
 } /* XtDestroyWidget */
