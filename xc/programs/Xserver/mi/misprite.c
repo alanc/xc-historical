@@ -4,7 +4,7 @@
  * machine independent software sprite routines
  */
 
-/* $XConsortium: misprite.c,v 5.25 89/11/10 14:48:40 keith Exp $ */
+/* $XConsortium: misprite.c,v 5.26 89/12/08 18:27:46 keith Exp $ */
 
 /*
 Copyright 1989 by the Massachusetts Institute of Technology
@@ -1781,6 +1781,8 @@ miSpriteLineHelper()
  * miPointer interface routines
  */
 
+#define SPRITE_PAD  8
+
 static Bool
 miSpriteRealizeCursor (pScreen, pCursor)
     ScreenPtr	pScreen;
@@ -1841,8 +1843,10 @@ miSpriteDisplayCursor (pScreen, pCursor, x, y)
 	    sx < pScreenPriv->saved.x2 &&
 	    sy + (int) pCursor->bits->height >= pScreenPriv->saved.y1 &&
 	    sy < pScreenPriv->saved.y2 &&
-	    pCursor->bits->width <= pScreenPriv->saved.x2 - pScreenPriv->saved.x1 &&
-	    pCursor->bits->height<= pScreenPriv->saved.y2 - pScreenPriv->saved.y1
+	    (int) pCursor->bits->width + (2 * SPRITE_PAD) ==
+		pScreenPriv->saved.x2 - pScreenPriv->saved.x1 &&
+	    (int) pCursor->bits->height + (2 * SPRITE_PAD) ==
+		pScreenPriv->saved.y2 - pScreenPriv->saved.y1
 	    )
 	{
 	    pScreenPriv->isUp = FALSE;
@@ -1855,8 +1859,8 @@ miSpriteDisplayCursor (pScreen, pCursor, x, y)
 
 		oldx1 = pScreenPriv->saved.x1;
 		oldy1 = pScreenPriv->saved.y1;
-		dx = oldx1 - (sx - 8);
-		dy = oldy1 - (sy - 8);
+		dx = oldx1 - (sx - SPRITE_PAD);
+		dy = oldy1 - (sy - SPRITE_PAD);
 		pScreenPriv->saved.x1 -= dx;
 		pScreenPriv->saved.y1 -= dy;
 		pScreenPriv->saved.x2 -= dx;
@@ -1976,8 +1980,8 @@ miSpriteComputeSaved (pScreen)
     y = pScreenPriv->y - (int)pCursor->bits->yhot;
     w = pCursor->bits->width;
     h = pCursor->bits->height;
-    wpad = 8;
-    hpad = 8;
+    wpad = SPRITE_PAD;
+    hpad = SPRITE_PAD;
     pScreenPriv->saved.x1 = x - wpad;
     pScreenPriv->saved.y1 = y - hpad;
     pScreenPriv->saved.x2 = pScreenPriv->saved.x1 + w + wpad * 2;
