@@ -1,5 +1,5 @@
 /*
- * $XConsortium: screen.c,v 2.55 90/01/22 17:57:40 swick Exp $
+ * $XConsortium: screen.c,v 2.56 91/01/10 22:32:06 gildea Exp $
  *
  *
  *		        COPYRIGHT 1987, 1989
@@ -195,6 +195,7 @@ Scrn scrn;
     XmhMenuButtonDesc	mbd;
     ButtonBox		buttonbox;
     char		*name;
+    static XtTranslations WMProtocolsTranslations;
     static XawTextSelectType sarray[] = {XawselectLine,
 					XawselectPosition,
 					XawselectAll,
@@ -236,7 +237,7 @@ Scrn scrn;
     /* the optional miscellaneous command buttons */
 
     if (app_resources.command_button_count > 0) {
-	char	name[30];
+	char	name[12];
 	if (app_resources.command_button_count > 500)
 	    app_resources.command_button_count = 500;
 	for (i=1; i <= app_resources.command_button_count; i++) {
@@ -245,22 +246,27 @@ Scrn scrn;
 	}
     }
 
-    XtOverrideTranslations(scrn->parent, 
-        XtParseTranslationTable("<Message>WM_PROTOCOLS: XmhClose()\n"));
+    if (! WMProtocolsTranslations)
+	WMProtocolsTranslations = 
+	    XtParseTranslationTable("<Message>WM_PROTOCOLS: XmhClose()\n");
+    XtOverrideTranslations(scrn->parent, WMProtocolsTranslations);
 
     if (app_resources.mail_waiting_flag) {
-	static Arg arglist[] = {XtNiconPixmap, NULL};
-	arglist[0].value = (XtArgVal) NoMailPixmap;
-	XtSetValues(scrn->parent, arglist, XtNumber(arglist));
+	Arg args[1];
+	XtSetArg(args[0], XtNiconPixmap, NoMailPixmap);
+	XtSetValues(scrn->parent, args, (Cardinal)1);
     }
 }
 
+static XtTranslations ViewWMProtocols;
+static String XmhSviewWMProtocols = "<Message>WM_PROTOCOLS: XmhCloseView()\n";
 
 static void MakeView(scrn)
 Scrn scrn;
 {
-    XtOverrideTranslations(scrn->parent, 
-        XtParseTranslationTable("<Message>WM_PROTOCOLS: XmhCloseView()\n"));
+    if (! ViewWMProtocols)
+	ViewWMProtocols = XtParseTranslationTable(XmhSviewWMProtocols);
+    XtOverrideTranslations(scrn->parent, ViewWMProtocols);
     scrn->viewlabel = CreateTitleBar(scrn, "viewTitlebar");
     scrn->viewwidget = CreateTextSW(scrn, "view", (ArgList)NULL, (Cardinal)0);
     scrn->viewbuttons = BBoxCreate(scrn, "viewButtons");
@@ -271,8 +277,9 @@ Scrn scrn;
 static void MakeComp(scrn)
 Scrn scrn;
 {
-    XtOverrideTranslations(scrn->parent, 
-        XtParseTranslationTable("<Message>WM_PROTOCOLS: XmhCloseView()\n"));
+    if (! ViewWMProtocols)
+	ViewWMProtocols = XtParseTranslationTable(XmhSviewWMProtocols);
+    XtOverrideTranslations(scrn->parent, ViewWMProtocols);
     scrn->viewlabel = CreateTitleBar(scrn, "composeTitlebar");
     scrn->viewwidget = CreateTextSW(scrn, "comp", (ArgList)NULL, (Cardinal)0);
     scrn->viewbuttons = BBoxCreate(scrn, "compButtons");
