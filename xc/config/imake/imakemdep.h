@@ -1,5 +1,5 @@
 /*
- * $XConsortium: imakemdep.h,v 1.14 90/12/26 11:36:26 rws Exp $
+ * $XConsortium: imakemdep.h,v 1.15 90/12/28 15:27:13 rws Exp $
  * 
  * This file contains machine-dependent constants for the imake utility.  When
  * porting imake, read each of the steps below and add in any necessary
@@ -21,7 +21,7 @@
 #define imake_ccflags "-DNOSTDHDRS"
 #endif
 
-#ifdef macII
+#if defined(macII) || defined(_AUX_SOURCE)
 #define imake_ccflags "-DSYSV"
 #endif
 
@@ -123,7 +123,7 @@ char *cpp_argv[ARGUMENTS] = {
 #ifdef M4310
 	"-DM4310",	/* Tektronix */
 #endif
-#ifdef macII
+#if defined(macII) || defined(_AUX_SOURCE)
 	"-DmacII",	/* Apple A/UX */
 #endif
 #ifdef att
