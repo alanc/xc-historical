@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XMultibuf.c,v 1.28 92/04/03 10:55:22 eswu Exp $
+ * $XConsortium: XMultibuf.c,v 1.29 94/01/18 13:56:07 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -308,15 +308,9 @@ int XmbufCreateBuffers (dpy, w, count, update_action, update_hint, buffers)
 
     MbufCheckExtension (dpy, info, 0);
 
-    /*
-     * allocate the id; hopefully, it would be nice to be able to 
-     * get rid of the ones we don't need, but this would require access
-     * various Xlib internals.  we could do caching on this side, but the
-     * chances of wasting enough resources to really matter is very small
-     */
-    for (i = 0; i < count; i++) buffers[i] = XAllocID (dpy);
-
     LockDisplay (dpy);
+
+    XAllocIDs(dpy, buffers, count);
     MbufGetReq (MbufCreateImageBuffers, req, info);
     req->window = w;
     req->updateAction = update_action;
