@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XwcWrap.c,v 11.1 91/04/06 13:18:57 rws Exp $
+ * $XConsortium: XwcWrap.c,v 11.2 91/04/07 16:09:27 rws Exp $
  */
 
 /*
@@ -92,37 +92,33 @@ XwcDrawImageString(dpy, d, font_set, gc, x, y, text, text_len)
 }
 
 int 
-XwcTextEscapement(display, font_set, text, text_len)
-    Display        *display;
+XwcTextEscapement(font_set, text, text_len)
     XFontSet        font_set;
     wchar_t        *text;
     int             text_len;
 {
-    return (*font_set->methods->wc_escapement) (display, font_set,
-						text, text_len);
+    return (*font_set->methods->wc_escapement) (font_set, text, text_len);
 }
 
 int
-XwcTextExtents(display, font_set, text, text_len,
+XwcTextExtents(font_set, text, text_len,
 	       overall_ink_extents, overall_logical_extents)
-    Display        *display;
     XFontSet        font_set;
     wchar_t        *text;
     int             text_len;
     XRectangle      *overall_ink_extents;
     XRectangle      *overall_logical_extents;
 {
-    return (*font_set->methods->wc_extents) (display, font_set, text, text_len,
+    return (*font_set->methods->wc_extents) (font_set, text, text_len,
 					     overall_ink_extents,
 					     overall_logical_extents);
 }
 
-int
-XwcTextPerCharExtents(display, font_set, text, text_len,
+Status
+XwcTextPerCharExtents(font_set, text, text_len,
 		      ink_extents_buffer, logical_extents_buffer,
 		      buffer_size, num_chars,
 		      max_ink_extents, max_logical_extents)
-    Display        *display;
     XFontSet        font_set;
     wchar_t        *text;
     int             text_len;
@@ -134,7 +130,7 @@ XwcTextPerCharExtents(display, font_set, text, text_len,
     XRectangle     *max_logical_extents;
 {
     return (*font_set->methods->wc_extents_per_char) 
-	      (display, font_set, text, text_len, 
+	      (font_set, text, text_len, 
 	       ink_extents_buffer, logical_extents_buffer,
 	       buffer_size, num_chars, max_ink_extents, max_logical_extents);
 }

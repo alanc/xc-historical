@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XmbWrap.c,v 11.1 91/04/06 13:18:54 rws Exp $
+ * $XConsortium: XmbWrap.c,v 11.2 91/04/07 16:09:42 rws Exp $
  */
 
 /*
@@ -121,27 +121,24 @@ XmbDrawImageString(dpy, d, font_set, gc, x, y, text, text_len)
 #if NeedFunctionPrototypes
 int 
 XmbTextEscapement(
-    Display        *display,
     XFontSet        font_set,
     _Xconst char   *text,
     int             text_len)
 #else
 int 
-XmbTextEscapement(display, font_set, text, text_len)
-    Display        *display;
+XmbTextEscapement(font_set, text, text_len)
     XFontSet        font_set;
     char           *text;
     int             text_len;
 #endif
 {
-    return (*font_set->methods->mb_escapement) (display, font_set,
+    return (*font_set->methods->mb_escapement) (font_set,
 						(char *)text, text_len);
 }
 
 #if NeedFunctionPrototypes
 int
 XmbTextExtents(
-    Display        *display,
     XFontSet        font_set,
     _Xconst char   *text,
     int             text_len,
@@ -149,9 +146,8 @@ XmbTextExtents(
     XRectangle     *overall_logical_extents)
 #else
 int
-XmbTextExtents(display, font_set, text, text_len,
+XmbTextExtents(font_set, text, text_len,
 	       overall_ink_extents, overall_logical_extents)
-    Display        *display;
     XFontSet        font_set;
     char           *text;
     int             text_len;
@@ -159,16 +155,15 @@ XmbTextExtents(display, font_set, text, text_len,
     XRectangle     *overall_logical_extents;
 #endif
 {
-    return (*font_set->methods->mb_extents) (display, font_set,
+    return (*font_set->methods->mb_extents) (font_set,
 					     (char *)text, text_len,
 					     overall_ink_extents,
 					     overall_logical_extents);
 }
 
 #if NeedFunctionPrototypes
-int
+Status
 XmbTextPerCharExtents(
-    Display        *display,
     XFontSet        font_set,
     _Xconst char   *text,
     int             text_len,
@@ -179,12 +174,11 @@ XmbTextPerCharExtents(
     XRectangle     *max_ink_extents,
     XRectangle     *max_logical_extents)
 #else
-int
-XmbTextPerCharExtents(display, font_set, text, text_len,
+Status
+XmbTextPerCharExtents(font_set, text, text_len,
 		      ink_extents_buffer, logical_extents_buffer,
 		      buffer_size, num_chars,
 		      max_ink_extents, max_logical_extents)
-    Display        *display;
     XFontSet        font_set;
     char           *text;
     int             text_len;
@@ -197,7 +191,7 @@ XmbTextPerCharExtents(display, font_set, text, text_len,
 #endif
 {
     return (*font_set->methods->mb_extents_per_char)
-	     (display, font_set, (char *)text, text_len, 
+	     (font_set, (char *)text, text_len, 
 	      ink_extents_buffer, logical_extents_buffer,
 	      buffer_size, num_chars, max_ink_extents, max_logical_extents);
 }
