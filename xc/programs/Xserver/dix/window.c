@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: window.c,v 1.191 88/01/16 10:15:09 rws Exp $ */
+/* $Header: window.c,v 1.192 88/01/16 15:12:23 rws Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -773,41 +773,16 @@ DestroySubwindows(pWin, client)
     ClientPtr client;
 {
     WindowPtr pChild, pSib;
-    xEvent event;
 
-    if ((pChild = pWin->lastChild) == (WindowPtr) NULL)
-        return;
-    while (pChild) 
+    for (pChild = pWin->lastChild; pChild; pChild = pSib)
     {
 	pSib = pChild->prevSib;
 	/* a little lazy evaluation, don't send exposes until all deleted */
-	if (pSib != (WindowPtr) NULL)
-	{
-	    event.u.u.type = UnmapNotify;
-	    event.u.unmapNotify.window = pChild->wid;
-	    event.u.unmapNotify.fromConfigure = xFalse;
-	    DeliverEvents(pChild, &event, 1, NullWindow);
-	}
-        else
-        {
-	    pChild->nextSib = (WindowPtr)NULL;
-    	    UnmapWindow(pChild, HANDLE_EXPOSURES, SEND_NOTIFICATION, FALSE);
-	}
-	CrushTree(pChild->firstChild);
-
-	event.u.u.type = DestroyNotify;
-	event.u.destroyNotify.window = pChild->wid;
-	DeliverEvents(pChild, &event, 1, NullWindow);		
-    
-	FreeResource(pChild->wid, RC_CORE);
-	FreeWindowResources(pChild);
-	xfree(pChild);
-	pChild = pSib;
+	UnmapWindow(pChild, DONT_HANDLE_EXPOSURES, SEND_NOTIFICATION, FALSE);
+	FreeResource(pChild->wid, RC_NONE);
     }
-    pWin->firstChild = (WindowPtr)NULL;
-    pWin->lastChild = (WindowPtr)NULL;
+    HandleExposures(pWin);
 }
-
 
 /*****
  *  ChangeWindowAttributes
@@ -1946,7 +1921,7 @@ ReflectStackChange(pWin, pSib)
 
     Bool doValidation = (Bool)pWin->realized;
     WindowPtr pParent;
-    int anyMarked;
+    Bool anyMarked;
     BoxPtr box;
     WindowPtr pFirstChange;
 
@@ -2375,7 +2350,7 @@ ReparentWindow(pWin, pParent, x, y, client)
     return(Success);
 }
 
-static int
+static Bool
 MarkSiblingsBelowMe(pWin, box)
     WindowPtr pWin;
     BoxPtr box;
@@ -2398,7 +2373,7 @@ MarkSiblingsBelowMe(pWin, box)
 	}
 	pSib = pSib->nextSib;
     }
-    return(anyMarked);
+    return(anyMarked != 0);
 }    
 
 static void
@@ -2644,25 +2619,27 @@ UnmapWindow(pWin, SendExposures, SendNotification, fromConfigure)
  * UnmapSubwindows
  *    Performs an UnMapWindow request with the specified mode on all mapped
  *    children of the window, in bottom to top stacking order.
- *
- *    XXX: Should use the validation function, not mess with the clip lists
- *    directly, though this way is faster.
  *****/
 
 UnmapSubwindows(pWin, sendExposures)
     WindowPtr pWin;
     Bool sendExposures;
 {
-    WindowPtr pChild;
+    register WindowPtr pChild;
     xEvent event;
-    void (*RegionEmpty)();
     Bool (*UnrealizeWindow)();
     Bool wasMapped = (Bool)pWin->realized;
+    Bool anyMarked;
+    BoxPtr box;
 
-    pChild = pWin->lastChild;
-    RegionEmpty = pWin->drawable.pScreen->RegionEmpty;
+    if (wasMapped)
+    {
+	box = (* pWin->drawable.pScreen->RegionExtents)(pWin->winSize);
+	anyMarked = MarkSiblingsBelowMe(pWin->firstChild, box);
+    }
+
     UnrealizeWindow = pWin->drawable.pScreen->UnrealizeWindow;    
-    while (pChild) 
+    for (pChild = pWin->lastChild; pChild; pChild = pChild->prevSib)
     {
 	if (pChild->mapped) 
         {
@@ -2676,24 +2653,16 @@ UnmapSubwindows(pWin, sendExposures)
     	        pChild->realized = pChild->viewable = FALSE;
     		/* We SHOULD check for an error value here XXX */
                 (* UnrealizeWindow)(pChild);
+                DeleteWindowFromAnyEvents(pChild, FALSE);
 	        if (pChild->firstChild)
                     UnrealizeChildren(pChild->firstChild);
-                DeleteWindowFromAnyEvents(pChild, FALSE);
-	        (* RegionEmpty)(pChild->clipList);/* to force expsoures later*/
-    	        (* RegionEmpty)(pChild->borderClip);
-	        (* RegionEmpty)(pChild->borderExposed);
-	        (* RegionEmpty)(pChild->exposed);      
-	        pChild->drawable.serialNumber = NEXT_SERIAL_NUMBER;
 	    }
 	}
-        pChild = pChild->prevSib;
     }
-    if ((pWin->lastChild) && wasMapped)
+    if (wasMapped)
     {
-        (* pWin->drawable.pScreen->Intersect)(pWin->clipList,
-				      pWin->winSize, pWin->borderClip);
-	/* XXX should collect union of inferiors instead? */
-        (* pWin->drawable.pScreen->RegionCopy)(pWin->exposed, pWin->clipList);
+	(* pWin->drawable.pScreen->ValidateTree)(pWin, (WindowPtr) NULL, 
+						 TRUE, anyMarked);
 	if (sendExposures)
 	    HandleExposures(pWin);
     }
