@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: os.h,v 1.19 87/11/05 08:31:54 rws Exp $ */
+/* $Header: os.h,v 1.20 88/01/01 15:20:49 rws Exp $ */
 
 #ifndef OS_H
 #define OS_H
@@ -60,7 +60,6 @@ pragma on(alloca);
 #else /* everyone else */
 
 char *malloc();
-void free();
 
 # ifdef MALLOC_0_RETURNS_NULL
 # define ALLOCATE_LOCAL(size) malloc((unsigned)((size) > 0 ? (size) : 1))
