@@ -1,5 +1,5 @@
 /*
- * $XConsortium: WAofA8.c,v 1.2 90/07/31 09:52:42 rws Exp $
+ * $XConsortium: WAofA8.c,v 1.3 91/01/02 13:27:20 gildea Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -23,10 +23,10 @@
  * Author:  Keith Packard, MIT X Consortium
  */
 
-#include    "Xos.h"
-#include    "X.h"
-#include    "Xmd.h"
-#include    "Xdmcp.h"
+#include <X11/Xos.h>
+#include <X11/X.h>
+#include <X11/Xmd.h>
+#include <X11/Xdmcp.h>
 
 int
 XdmcpWriteARRAYofARRAY8 (buffer, array)

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: A8Eq.c,v 1.1 89/09/14 17:10:59 keith Exp $
+ * $XConsortium: A8Eq.c,v 1.2 91/01/02 12:57:25 gildea Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -23,10 +23,10 @@
  * Author:  Keith Packard, MIT X Consortium
  */
 
-#include    "Xos.h"
-#include    "X.h"
-#include    "Xmd.h"
-#include    "Xdmcp.h"
+#include <X11/Xos.h>
+#include <X11/X.h>
+#include <X11/Xmd.h>
+#include <X11/Xdmcp.h>
 
 int
 XdmcpARRAY8Equal (array1, array2)

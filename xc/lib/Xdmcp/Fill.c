@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Fill.c,v 1.1 89/09/14 17:11:12 keith Exp $
+ * $XConsortium: Fill.c,v 1.2 91/01/02 13:17:05 gildea Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -23,10 +23,10 @@
  * Author:  Keith Packard, MIT X Consortium
  */
 
-#include    "Xos.h"
-#include    "X.h"
-#include    "Xmd.h"
-#include    "Xdmcp.h"
+#include <X11/Xos.h>
+#include <X11/X.h>
+#include <X11/Xmd.h>
+#include <X11/Xdmcp.h>
 
 /* keep SVR4 compiler from complaining about scope of arg declaration below */
 typedef  struct sockaddr *  netaddrbuf;

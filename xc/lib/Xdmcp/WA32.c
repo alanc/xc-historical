@@ -1,5 +1,5 @@
 /*
- * $XConsortium: WA32.c,v 1.1 89/09/14 17:11:24 keith Exp $
+ * $XConsortium: WA32.c,v 1.2 91/01/02 13:25:39 gildea Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -23,10 +23,10 @@
  * Author:  Keith Packard, MIT X Consortium
  */
 
-#include    "Xos.h"
-#include    "X.h"
-#include    "Xmd.h"
-#include    "Xdmcp.h"
+#include <X11/Xos.h>
+#include <X11/X.h>
+#include <X11/Xmd.h>
+#include <X11/Xdmcp.h>
 
 int
 XdmcpWriteARRAY32 (buffer, array)

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: GenKey.c,v 1.1 89/12/13 14:32:59 keith Exp $
+ * $XConsortium: GenKey.c,v 1.2 91/01/11 13:07:55 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -23,10 +23,10 @@
  * Author:  Keith Packard, MIT X Consortium
  */
 
-#include    "Xos.h"
-#include    "X.h"
-#include    "Xmd.h"
-#include    "Xdmcp.h"
+#include <X11/Xos.h>
+#include <X11/X.h>
+#include <X11/Xmd.h>
+#include <X11/Xdmcp.h>
 
 static getbits (data, dst)
     long	    data;

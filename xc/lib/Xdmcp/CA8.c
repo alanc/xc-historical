@@ -1,5 +1,5 @@
 /*
- * $XConsortium: CA8.c,v 1.1 89/09/14 17:11:07 keith Exp $
+ * $XConsortium: CA8.c,v 1.2 90/12/26 16:30:38 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -23,11 +23,11 @@
  * Author:  Keith Packard, MIT X Consortium
  */
 
-#include    "Xos.h"
-#include    "X.h"
-#include    "Xmd.h"
-#include    "Xdmcp.h"
-#include    "Xfuncs.h"
+#include <X11/Xos.h>
+#include <X11/X.h>
+#include <X11/Xmd.h>
+#include <X11/Xdmcp.h>
+#include <X11/Xfuncs.h>
 
 int
 XdmcpCopyARRAY8 (src, dst)
