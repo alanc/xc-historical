@@ -1,5 +1,5 @@
 /*
- * $XConsortium: choose.c,v 1.7 91/07/18 18:54:31 rws Exp $
+ * $XConsortium: choose.c,v 1.8 91/07/18 19:17:28 rws Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -152,6 +152,7 @@ FormatChooserArgument (buf, len)
 
     if (GetChooserAddr (addr_buf, &addr_len) == -1)
     {
+	LogError ("Cannot get return address for chooser socket\n");
 	Debug ("Cannot get chooser socket address\n");
 	return 0;
     }
