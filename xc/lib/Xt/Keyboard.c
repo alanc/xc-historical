@@ -1,4 +1,4 @@
-/* $XConsortium: Keyboard.c,v 1.19 90/08/23 16:19:52 swick Exp $ */
+/* $XConsortium: Keyboard.c,v 1.20 90/08/24 18:49:18 swick Exp $ */
 
 /********************************************************
 
@@ -541,19 +541,19 @@ void _XtHandleFocus(widget, client_data, event, cont)
 	  Boolean 	add;
 	  Widget	descendant = pwi->focusKid;
 
+	  pwi->focalPoint = newFocalPoint;
+
 	  if ((oldFocalPoint == XtUnrelated) &&
 	      InActiveSubtree(widget) != NotActive)
 	    {
 		pdi->focusWidget = NULL; /* invalidate the cache */
 		pwi->haveFocus = TRUE;
-		pwi->focalPoint = newFocalPoint;
 		add = TRUE;
 	    }
 	  else if (newFocalPoint == XtUnrelated)
 	    {
 		pdi->focusWidget = NULL; /* invalidate the cache */
 		pwi->haveFocus = FALSE;
-		pwi->focalPoint = newFocalPoint;
 		add = FALSE;
 	    }
 	  else
