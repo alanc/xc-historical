@@ -1,4 +1,4 @@
-/* $XConsortium: Xtrans.c,v 1.28 94/12/01 16:30:09 kaleb Exp $ */
+/* $XConsortium: Xtrans.c,v 1.29 95/02/10 17:54:09 mor Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -196,9 +196,17 @@ char	**port;
 
 {
     /*
-     * Address is a string formatted as "protocol/host:port". If the protocol
-     * part is missing, then assume INET. If the protocol part and host part
-     * are missing, then assume local. If a "::" is found then assume DNET.
+     * For the font library, the address is a string formatted
+     * as "protocol/host:port[/catalogue]".  Note that the catologue
+     * is optional.  At this time, the catologue info is ignored, but
+     * we have to parse it anyways.
+     *
+     * Other than fontlib, the address is a string formatted
+     * as "protocol/host:port".
+     *
+     * If the protocol part is missing, then assume INET.
+     * If the protocol part and host part are missing, then assume local.
+     * If a "::" is found then assume DNET.
      */
 
     char	*mybuf, *tmpptr;
@@ -298,11 +306,26 @@ char	**port;
 	mybuf++;
     }
 
-    /* The rest is the port */
+    /* Get the port */
 
 get_port:
 
     _port = mybuf;
+
+#if defined(FONT_t) || defined(FS_t)
+    /*
+     * Is there an optional catalogue list?
+     */
+
+    if ((mybuf = strchr (mybuf,'/')) != NULL)
+	*mybuf ++= '\0';
+
+    /*
+     * The rest, if any, is the (currently unused) catalogue list.
+     *
+     * _catalogue = mybuf;
+     */
+#endif
 
     /*
      * Now that we have all of the components, allocate new
