@@ -1,4 +1,4 @@
-/* $XConsortium: convReq.c,v 5.11 92/03/04 14:18:50 hersh Exp $ */
+/* $XConsortium: convReq.c,v 5.12 92/04/23 16:14:51 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -51,6 +51,8 @@ SOFTWARE.
 #include "convReq.h"
 
 extern RequestFunction PEXRequest[];
+
+#define PADDING(n) ( (n)&3 ? (4 - (n)&3) : 0)
 
 
 /****************************************************************
@@ -2224,8 +2226,8 @@ CARD8 *p_data;
 		num = *((CARD16 *)ptr);
 		ptr += sizeof(CARD32);
 		for (i=0; i<num; i++) {
-		    SWAP_COORD3D((*((pexCoord3D *)ptr)));
-		    ptr += sizeof(pexCoord3D);
+		    SWAP_FLOAT((*((PEXFLOAT *)ptr)));
+		    ptr += sizeof(PEXFLOAT);
 		}
 	    }
 	}
@@ -2277,7 +2279,7 @@ unsigned char	*pdata;
 	SWAP_CARD32 ((*((CARD32 *)ptr)));
 	len = (int)(*ptr);
 	ptr += sizeof(CARD32);
-	ptr += (len + 3)/4;		    /*	pad it out  */
+	ptr += len + PADDING(len);		    /*	pad it out  */
     };
 
     if (im & PEXPDPickPromptEchoType) {
