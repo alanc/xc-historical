@@ -2,10 +2,10 @@ To: xbugs@expo.lcs.mit.edu
 Subject: [area]: [synopsis]   [replace with actual area and short description]
 
 VERSION:
-    R5beta [with any patches?]
+    R5 [with any patches?]
 
 CLIENT MACHINE and OPERATING SYSTEM:
-    [e.g. Sparc/SunOS 4.1.1, DECstation 3100/Ultrix 4.1, ...]
+    [e.g. Sparc/SunOS 4.1.1, DECstation 3100/Ultrix 4.2, ...]
 
 DISPLAY TYPE:
     [e.g. Sun GX, 8-bit framebuffer, IBM APA16 ...]
