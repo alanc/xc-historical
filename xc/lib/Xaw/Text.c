@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: Text.c,v 1.124 89/11/11 16:25:11 kit Exp $";
+static char Xrcsid[] = "$XConsortium: Text.c,v 1.125 89/11/11 17:31:57 kit Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -1690,7 +1690,7 @@ XawTextPosition pos1, pos2;
     
     if ( (endPos = ctx->text.lt.info[i + 1].position) > pos2 ) {
       clear_eol = ((endPos = pos2) >= lastPos);
-      done_painting = (!clear_eol && ctx->text.single_char);
+      done_painting = (!clear_eol || ctx->text.single_char);
     }
     else {
       clear_eol = TRUE;
@@ -1717,11 +1717,32 @@ XawTextPosition pos1, pos2;
       }
     }
     startPos = endPos;
-    if (clear_eol)
-      SinkClearToBG(ctx->text.sink, 
-		    (Position) (ctx->text.lt.info[i].textWidth +
-				ctx->text.margin.left),
-		    (Position) y, w->core.width, (Dimension) height);
+    if (clear_eol) {
+	SinkClearToBG(ctx->text.sink, 
+		      (Position) (ctx->text.lt.info[i].textWidth +
+				  ctx->text.margin.left),
+		      (Position) y, w->core.width, (Dimension) height);
+
+	/*
+	 * We only get here if single character is true, and we need
+	 * to clear to the end of the screen.  We know that since there
+	 * was only on character deleted that this is the same
+	 * as clearing an extra line, so we do this, and are done.
+	 * 
+	 * This a performance hack, and a pretty gross one, but it works.
+	 *
+	 * Chris Peterson 11/13/89.
+	 */
+
+	if (done_painting) {
+	    y += height;
+	    SinkClearToBG(ctx->text.sink, 
+			  (Position) ctx->text.margin.left, (Position) y, 
+			  w->core.width, (Dimension) height);
+
+	    break;		/* set single_char to FALSE and return. */
+	}
+    }
 
     x = (Position) ctx->text.margin.left;
     y = ctx->text.lt.info[i + 1].y;
