@@ -2,11 +2,6 @@
 #include BandAidCompiler
 #endif
 
-#ifdef SharedLibXt
-#undef SharedLibXt
-#endif
-#define SharedLibXt YES
-
 #if UnalignedReferencesAllowed
   ALIGN_DEFINES = -DUNALIGNED
 #endif
