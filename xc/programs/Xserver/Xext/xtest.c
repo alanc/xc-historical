@@ -1,4 +1,4 @@
-/* $XConsortium: xtest.c,v 1.3 92/02/01 15:07:10 rws Exp $ */
+/* $XConsortium: xtest.c,v 1.4 92/02/05 16:18:32 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -265,6 +265,7 @@ XTestSwapFakeInput(req)
 	swapl(&ev->u.keyButtonPointer.time, n);
 	swapl(&ev->u.keyButtonPointer.root, n);
 	swaps(&ev->u.keyButtonPointer.rootX, n);
+	swaps(&ev->u.keyButtonPointer.rootY, n);
     }
 }
 
