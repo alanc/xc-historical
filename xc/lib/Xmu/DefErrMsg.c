@@ -1,5 +1,5 @@
 /*
- * $XConsortium: DefErrMsg.c,v 1.2 88/10/10 14:34:48 jim Exp $
+ * $XConsortium: DefErrMsg.c,v 1.3 89/11/14 16:16:32 jim Exp $
  *
  * Copyright 1988 by the Massachusetts Institute of Technology
  *
@@ -75,8 +75,11 @@ int XmuSimpleErrorHandler (dpy, errorp)
     switch (errorp->request_code) {
       case X_QueryTree:
       case X_GetWindowAttributes:
-      case X_GetGeometry:
         if (errorp->error_code == BadWindow) return 0;
+	break;
+      case X_GetGeometry:
+	if (errorp->error_code == BadDrawable) return 0;
+	break;
     }
     /* got a "real" X error */
     return XmuPrintDefaultErrorMessage (dpy, errorp, stderr);
