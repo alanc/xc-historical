@@ -1,4 +1,4 @@
-/* $XConsortium: CIExyY.c,v 1.2 91/02/05 13:40:51 dave Exp $" */
+/* $XConsortium: CIExyY.c,v 1.3 91/02/07 15:42:57 dave Exp $" */
 
 /*
  * (c) Copyright 1990 1991 Tektronix Inc.

@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsColNm.c,v 1.2 91/02/05 13:41:28 dave Exp $" */
+/* $XConsortium: XcmsColNm.c,v 1.3 91/02/07 15:43:06 dave Exp $" */
 
 /*
  * (c) Copyright 1990 1991 Tektronix Inc.
@@ -678,7 +678,7 @@ XResolvePathname(dpy, type, filename, suffix, root, path, substitutions,
 Status
 _XcmsResolveColorString (
     XcmsCCC *pCCC,
-    const char *color_string,
+    _Xconst char *color_string,
     XcmsColor *pColor_exact_return,
     XcmsSpecFmt result_format)
 #else

@@ -1,4 +1,4 @@
-/* $XConsortium: CIELab.c,v 1.2 91/02/05 13:40:43 dave Exp $ */
+/* $XConsortium: CIELab.c,v 1.3 91/02/07 15:42:52 dave Exp $ */
 
 /*
  * (c) Copyright 1990 1991 Tektronix Inc.

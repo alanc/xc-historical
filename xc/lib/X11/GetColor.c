@@ -1,4 +1,4 @@
-/* $XConsortium: XGetColor.c,v 11.17 91/01/06 11:45:53 rws Exp $ */
+/* $XConsortium: XGetColor.c,v 11.18 91/02/05 13:40:33 dave Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -17,8 +17,6 @@ without express or implied warranty.
 #include <stdio.h>
 #include "Xlibint.h"
 #include "TekCMS.h"
-
-extern XcmsCCC *XcmsCCCofColormap();
 
 #if NeedFunctionPrototypes
 Status XAllocNamedColor(

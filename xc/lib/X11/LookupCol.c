@@ -1,4 +1,4 @@
-/* $XConsortium: XLookupCol.c,v 11.11 91/01/06 11:46:52 rws Exp $ */
+/* $XConsortium: XLookupCol.c,v 11.12 91/02/05 13:40:36 dave Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1985	*/
 
 /*
@@ -17,9 +17,6 @@ without express or implied warranty.
 #include <stdio.h>
 #include "Xlibint.h"
 #include "TekCMS.h"
-
-
-extern XcmsCCC *XcmsCCCofColormap();
 
 #if NeedFunctionPrototypes
 Status XLookupColor (

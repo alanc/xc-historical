@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsAlNCol.c,v 1.15 91/01/27 00:36:13 alt Exp $" */
+/* $XConsortium: XcmsAlNCol.c,v 1.1 91/01/30 18:23:47 dave Exp $" */
 
 /*
  * (c) Copyright 1989 1990 1991 Tektronix Inc.
@@ -67,7 +67,7 @@ Status
 XcmsAllocNamedColor (
     Display *dpy,
     Colormap cmap,
-    const char *color_name,
+    _Xconst char *color_name,
     XcmsColor *pColor_scrn_return,
     XcmsColor *pColor_exact_return,
     XcmsSpecFmt result_format)

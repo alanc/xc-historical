@@ -1,4 +1,4 @@
-/* $XConsortium: XParseCol.c,v 11.20 91/01/06 11:47:11 rws Exp $ */
+/* $XConsortium: XParseCol.c,v 11.21 91/02/05 13:40:28 dave Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1985	*/
 
 /*
@@ -17,8 +17,6 @@ without express or implied warranty.
 #include <stdio.h>
 #include "Xlibint.h"
 #include "TekCMS.h"
-
-extern XcmsCCC *XcmsCCCofColormap();
 
 #if NeedFunctionPrototypes
 Status XParseColor (

@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsAllCol.c,v 1.7 91/01/27 00:36:20 alt Exp $" */
+/* $XConsortium: XcmsAllCol.c,v 1.1 91/01/30 18:30:26 dave Exp $" */
 
 /*
  * (c) Copyright 1989 1990 1991 Tektronix Inc.
@@ -37,13 +37,6 @@
  */
 #include "Xlib.h"
 #include "TekCMS.h"
-
-
-/*
- *      EXTERNS
- */
-
-extern Status XAllocColor();
 
 
 /*

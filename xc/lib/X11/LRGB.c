@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsLRGB.c,v 1.2 91/02/05 13:41:38 dave Exp $" */
+/* $XConsortium: XcmsLRGB.c,v 1.3 91/02/07 15:43:11 dave Exp $" */
 
 /*
  * (c) Copyright 1990 1991 Tektronix Inc.
