@@ -1,4 +1,4 @@
-/* $XConsortium: Shell.c,v 1.144 94/01/19 21:20:20 converse Exp $ */
+/* $XConsortium: Shell.c,v 1.145 94/01/21 19:19:09 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -41,6 +41,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #endif
 
 #include "IntrinsicI.h"
+#include "SessionP.h"
 #include "StringDefs.h"
 #include "Shell.h"
 #include "ShellP.h"
@@ -872,6 +873,8 @@ static void WMInitialize(req, new, args, num_args)
 	}
 	w->wm.size_hints.flags = 0;
 	w->wm.wm_hints.flags = 0;
+	if (w->wm.window_role)
+	    w->wm.window_role = XtNewString(w->wm.window_role);
 }
 
 
@@ -1079,6 +1082,8 @@ static void EvaluateWMHints(w)
 	    }
 	} else if (hintp->window_group != XtUnspecifiedWindowGroup)
 	    hintp->flags |=  WindowGroupHint;
+
+	if (w->wm.visible) hintp->flags |= XVisibleHint;
 }
 
 
@@ -1253,6 +1258,43 @@ static void _popup_set_prop(w)
 				(unsigned char *)locale, strlen(locale));
 	}
 	UNLOCK_PROCESS;
+
+	p = (Widget) w;
+	while (p->core.parent && 
+	       (XtIsWMShell(p) && ! ((WMShellWidget)p)->wm.client_leader))
+	    p = p->core.parent;
+
+	/* ASSERT: p is a WMshell with client_leader set, or p has no parent */
+
+	if (((WMShellWidget)p)->wm.client_leader)
+	    p = ((WMShellWidget)p)->wm.client_leader;
+	if (XtWindow(p))
+	    XChangeProperty(XtDisplay((Widget)w), XtWindow((Widget)w),
+			    XInternAtom(XtDisplay((Widget)w),
+					"WM_CLIENT_LEADER", False),
+			    XA_WINDOW, 32, PropModeReplace,
+			    (unsigned char *)(&(p->core.window)), 1);
+	if (p == (Widget) w) {
+	    for ( ; p->core.parent != NULL; p = p->core.parent);
+	    if (XtIsApplicationShell(p)) {
+		String id;
+		p = ((ApplicationShellWidget)p)->application.session;
+		if (p && (id = ((SessionObject)p)->session.session_id))
+		    XChangeProperty(XtDisplay((Widget)w), XtWindow((Widget)w),
+				    XInternAtom(XtDisplay((Widget)w),
+						"SM_CLIENT_ID", False),
+				    XA_STRING, 8, PropModeReplace,
+				    (unsigned char *) id, strlen(id));
+	    }
+	}
+
+	if (wmshell->wm.window_role)
+	    XChangeProperty(XtDisplay((Widget)w), XtWindow((Widget)w),
+			    XInternAtom(XtDisplay((Widget)w),
+					"WM_WINDOW_ROLE", False),
+			    XA_STRING, 8, PropModeReplace,
+			    (unsigned char *)wmshell->wm.window_role,
+			    strlen(wmshell->wm.window_role));
 }
 
 /* ARGSUSED */
@@ -1380,6 +1422,7 @@ static void WMDestroy(wid)
 	WMShellWidget w = (WMShellWidget) wid;
 
 	XtFree((char *) w->wm.title);
+	XtFree((char *) w->wm.window_role);
 }
 
 static void TopLevelDestroy(wid)
@@ -1966,7 +2009,23 @@ static Boolean WMSetValues(old, ref, new, args, num_args)
  	    else XDeleteProperty(XtDisplay(new), XtWindow(new),
  				 XA_WM_TRANSIENT_FOR);
  	}
-	
+
+	if (nwmshell->wm.window_role != owmshell->wm.window_role) {
+	    XtFree(owmshell->wm.window_role);
+	    if (set_prop && nwmshell->wm.window_role) {
+		XChangeProperty(XtDisplay(new), XtWindow(new),
+				XInternAtom(XtDisplay(new), "WM_WINDOW_ROLE",
+					    False),
+				XA_STRING, 8, PropModeReplace,
+				(unsigned char *)nwmshell->wm.window_role,
+				strlen(nwmshell->wm.window_role));
+	    } else if (XtIsRealized(new) && ! nwmshell->wm.window_role) {
+		XDeleteProperty(XtDisplay(new), XtWindow(new),
+				XInternAtom(XtDisplay(new), "WM_WINDOW_ROLE",
+					    False));
+	    }
+	}
+
 	return FALSE;
 }
 
