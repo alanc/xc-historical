@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xrm.c,v 1.46 90/10/30 10:28:43 rws Exp $
+ * $XConsortium: Xrm.c,v 1.47 90/12/01 16:08:46 rws Exp $
  */
 
 /***********************************************************
@@ -91,7 +91,7 @@ typedef unsigned long Signature;
 
 extern void bzero();
 
-XrmQuark    XrmQString;
+static XrmQuark XrmQString, XrmQANY;
 
 typedef	Bool (*DBEnumProc)();
 
@@ -122,7 +122,8 @@ typedef struct _NTable {
     unsigned int	tight:1;	/* 1 if it is a tight binding */
     unsigned int	leaf:1;		/* 1 if children are values */
     unsigned int	hasloose:1;	/* 1 if has loose children */
-    unsigned int	pad:5;		/* unused */
+    unsigned int	hasany:1;	/* 1 if has ANY entry */
+    unsigned int	pad:4;		/* unused */
     unsigned int	mask:8;		/* hash size - 1 */
     unsigned int	entries:16;	/* number of children */
 } NTableRec, *NTable;
@@ -220,6 +221,7 @@ static XrmBits Const _xrmtypes[256] = {
 void XrmInitialize()
 {
     XrmQString = XrmPermStringToQuark("String");
+    XrmQANY = XrmPermStringToQuark("?");
 }
 
 #if NeedFunctionPrototypes
@@ -532,6 +534,8 @@ static void MergeTables(ftable, pprev, override)
     ttable = *pprev;
     if (ftable->hasloose)
 	ttable->hasloose = 1;
+    if (ftable->hasany)
+	ttable->hasany = 1;
     for (i = ftable->mask, bucket = NodeBuckets(ftable);
 	 i >= 0;
 	 i--, bucket++) {
@@ -651,15 +655,16 @@ static void PutEntry(db, bindings, quarks, type, value)
     register VEntry entry;
     NTable *nprev, *firstpprev;
 
-#define NEWTABLE(q) \
+#define NEWTABLE(q,i) \
     table = (NTable)Xmalloc(sizeof(LTableRec)); \
     if (!table) \
 	return; \
     table->name = q; \
     table->hasloose = 0; \
+    table->hasany = 0; \
     table->mask = 0; \
     table->entries = 0; \
-    if (quarks[1]) { \
+    if (quarks[i]) { \
 	table->leaf = 0; \
 	nprev = NodeBuckets(table); \
     } else { \
@@ -681,7 +686,7 @@ static void PutEntry(db, bindings, quarks, type, value)
     pprev = prev;
     if (!table || (quarks[1] && table->leaf)) {
 	/* no top-level node table, create one and chain it in */
-	NEWTABLE(NULLQUARK);
+	NEWTABLE(NULLQUARK,1);
 	table->tight = 1; /* arbitrary */
 	prev = nprev;
     } else {
@@ -759,7 +764,9 @@ static void PutEntry(db, bindings, quarks, type, value)
     /* iterate until we get to the leaf */
     while (quarks[1]) {
 	/* build a new table and chain it in */
-	NEWTABLE(*quarks++);
+	NEWTABLE(*quarks,2);
+	if (*quarks++ == XrmQANY)
+	    (*pprev)->hasany = 1;
 	if (*bindings++ == XrmBindTightly) {
 	    table->tight = 1;
 	} else {
@@ -1615,9 +1622,9 @@ void XrmPutFileDatabase(db, fileName)
 
 /* macros used in get/search functions */
 
-/* find an entry named *list, with leafness given by leaf */
-#define NFIND(list) \
-    q = *list; \
+/* find an entry named ename, with leafness given by leaf */
+#define NFIND(ename) \
+    q = ename; \
     entry = NodeHash(table, q); \
     while (entry && entry->name != q) \
 	entry = entry->next; \
@@ -1629,9 +1636,9 @@ void XrmPutFileDatabase(db, fileName)
 	    entry = (NTable)NULL; \
     }
 
-/* find entries named *list, leafness leaf, tight or loose, and call get */
-#define GTIGHTLOOSE(list,looseleaf) \
-    NFIND(list); \
+/* find entries named ename, leafness leaf, tight or loose, and call get */
+#define GTIGHTLOOSE(ename,looseleaf) \
+    NFIND(ename); \
     if (entry) { \
 	if (leaf == entry->leaf) { \
 	    if ((*get)(entry, names+1, classes+1, closure)) \
@@ -1649,9 +1656,9 @@ void XrmPutFileDatabase(db, fileName)
 	} \
     }
 
-/* find entries named *list, leafness leaf, loose only, and call get */
-#define GLOOSE(list,looseleaf) \
-    NFIND(list); \
+/* find entries named ename, leafness leaf, loose only, and call get */
+#define GLOOSE(ename,looseleaf) \
+    NFIND(ename); \
     if (entry && entry->tight) { \
 	entry = entry->next; \
 	if (entry && entry->name != q) \
@@ -1726,8 +1733,11 @@ static Bool SearchNEntry(table, names, classes, closure)
 	get = AppendLEntry; /* bottom of recursion */
 	leaf = 1;
     }
-    GTIGHTLOOSE(names, AppendLooseLEntry);   /* do name, tight and loose */
-    GTIGHTLOOSE(classes, AppendLooseLEntry); /* do class, tight and loose */
+    GTIGHTLOOSE(*names, AppendLooseLEntry);   /* do name, tight and loose */
+    GTIGHTLOOSE(*classes, AppendLooseLEntry); /* do class, tight and loose */
+    if (table->hasany) {
+	GTIGHTLOOSE(XrmQANY, AppendLooseLEntry); /* do ANY, tight and loose */
+    }
     if (table->hasloose) {
 	while (1) {
 	    names++;
@@ -1738,8 +1748,11 @@ static Bool SearchNEntry(table, names, classes, closure)
 		get = AppendLEntry; /* bottom of recursion */
 		leaf = 1;
 	    }
-	    GLOOSE(names, AppendLooseLEntry);   /* loose names */
-	    GLOOSE(classes, AppendLooseLEntry); /* loose classes */
+	    GLOOSE(*names, AppendLooseLEntry);   /* loose names */
+	    GLOOSE(*classes, AppendLooseLEntry); /* loose classes */
+	    if (table->hasany) {
+		GLOOSE(XrmQANY, AppendLooseLEntry); /* loose ANY */
+	    }
 	}
     }
     /* now look for matching leaf node */
@@ -1920,8 +1933,8 @@ static Bool GetLooseVEntry(table, names, classes, closure)
     register VEntry	entry;
     register XrmQuark	q;
 
-#define VLOOSE(list) \
-    q = *list; \
+#define VLOOSE(ename) \
+    q = ename; \
     entry = LeafHash(table, q); \
     while (entry && entry->name != q) \
 	entry = entry->next; \
@@ -1936,9 +1949,9 @@ static Bool GetLooseVEntry(table, names, classes, closure)
 	names++;
 	classes++;
     }
-    VLOOSE(names);  /* do name, loose only */
+    VLOOSE(*names);  /* do name, loose only */
     if (!entry) {
-	VLOOSE(classes); /* do class, loose only */
+	VLOOSE(*classes); /* do class, loose only */
 	if (!entry)
 	    return False;
     }
@@ -1975,8 +1988,11 @@ static Bool GetNEntry(table, names, classes, closure)
 	get = GetVEntry; /* bottom of recursion */
 	leaf = 1;
     }
-    GTIGHTLOOSE(names, GetLooseVEntry);   /* do name, tight and loose */
-    GTIGHTLOOSE(classes, GetLooseVEntry); /* do class, tight and loose */
+    GTIGHTLOOSE(*names, GetLooseVEntry);   /* do name, tight and loose */
+    GTIGHTLOOSE(*classes, GetLooseVEntry); /* do class, tight and loose */
+    if (table->hasany) {
+	GTIGHTLOOSE(XrmQANY, GetLooseVEntry); /* do ANY, tight and loose */
+    }
     if (table->hasloose) {
 	while (1) {
 	    names++;
@@ -1987,8 +2003,11 @@ static Bool GetNEntry(table, names, classes, closure)
 		get = GetVEntry; /* bottom of recursion */
 		leaf = 1;
 	    }
-	    GLOOSE(names, GetLooseVEntry);   /* do name, loose only */
-	    GLOOSE(classes, GetLooseVEntry); /* do class, loose only */
+	    GLOOSE(*names, GetLooseVEntry);   /* do name, loose only */
+	    GLOOSE(*classes, GetLooseVEntry); /* do class, loose only */
+	    if (table->hasany) {
+		GLOOSE(XrmQANY, GetLooseVEntry); /* do ANY, loose only */
+	    }
 	}
     }
     /* look for a matching leaf table */
