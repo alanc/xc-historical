@@ -1,5 +1,5 @@
 /*
-* $Header: Intrinsic.h,v 1.60 87/12/02 15:47:54 swick Locked $
+* $Header: Intrinsic.h,v 1.61 87/12/04 10:30:17 swick Locked $
 */
 
 /*
@@ -44,24 +44,11 @@
  ****************************************************************/
 
 
-#ifndef VMS
 #include	<X11/Xlib.h>
-#else
-#include	Xlib
-#endif
-#ifndef VMS
 #include	<X11/Xresource.h>
-#else
-#include	Xresource
-#endif
-#ifndef VMS
 #include	<sys/types.h>
-#else
-#include	types
-#endif
 
 #ifndef NULL
-
 #define NULL 0
 #endif
 
@@ -126,7 +113,7 @@ typedef void (*XtExposeProc)();
 
 typedef void (*XtRealizeProc) ();
     /* Widget	widget;			    */
-    /* XtValueMask mask;			    */
+    /* XtValueMask mask;		    */
     /* XSetWindowAttributes *attributes;    */
 
 typedef enum  {
@@ -136,9 +123,9 @@ typedef enum  {
 } XtGeometryResult;
 
 typedef XtGeometryResult (*XtGeometryHandler)();
-    /* Widget		    widget */
-    /* XtWidgetGeometry       *request */
-    /* XtWidgetGeometry	    *reply   */
+    /* Widget		    widget	*/
+    /* XtWidgetGeometry     *request	*/
+    /* XtWidgetGeometry	    *reply	*/ /* RETURN */
 
 /****************************************************************
  *
@@ -370,14 +357,6 @@ extern Widget XtCreateApplicationShell ();
     /* ArgList      args;	    */
     /* Cardinal     num_args;       */
 
-extern Widget TopLevelCreate (); /*hack for now*/
-    /* String	   name; */
-    /* WidgetClass widgetClass; */
-    /* Screen      *screen;*/
-    /* ArgList     args; */
-    /* Cardinal    num_args; */
-    /* Widget	   parent; maybe null */
-
 extern void XtRealizeWidget ();
     /* Widget    widget      */
 
@@ -438,9 +417,9 @@ extern void XtUnmanageChild ();
  **************************************************************/
 
 typedef void (*XtCallbackProc)();
-    /* Widget widget; */
-    /* caddr_t closure;  data the application registered */
-    /* caddr_t callData; widget instance specific data passed to application*/
+    /* Widget widget;	 */
+    /* caddr_t closure;	 */ /* data the application registered */
+    /* caddr_t callData; */ /* widget specific data passed to application */
 
 typedef struct _XtCallbackRec {
     XtCallbackProc  callback;
@@ -510,27 +489,6 @@ extern Widget XtInitialize();
  ****************************************************************/
 
 #define XtNew(type) ((type *) XtMalloc((unsigned) sizeof(type)))
-
-#ifdef VMS
-/* this is temporary, until VMS gets back in sync */
-
-#ifdef XtMalloc
-#undef XtMalloc
-#endif
-
-#ifdef XtCalloc
-#undef XtCalloc
-#endif
-
-#ifdef XtRealloc
-#undef XtRealloc
-#endif
-
-#ifdef XtFree
-#undef XtFree
-#endif
-
-#endif
 
 extern char *XtMalloc(); /* size */
     /* Cardinal size; */
@@ -725,12 +683,17 @@ extern XtGeometryResult XtMakeGeometryRequest();
     /*  widget, request, reply		    */
     /* Widget	widget; 		    */
     /* XtWidgetGeometry    *request;	    */
-    /* XtWidgetGeometry	 *reply;  /* RETURN */
+    /* XtWidgetGeometry	 *reply;  	    */ /* RETURN */
 
 extern XtGeometryResult XtMakeResizeRequest ();
     /* Widget    widget;	*/
     /* Dimension width, height; */
-    /* Dimension *replyWidth, *replyHeight; */
+    /* Dimension *replyWidth, *replyHeight; */ /* RETURN */
+
+extern XtGeometryResult XtSetValuesGeometryRequest();
+    /* Widget		current;	*/
+    /* Widget		new;		*/
+    /* XtWidgetGeometry *reply;		*/ /* RETURN */
 
 extern void XtResizeWindow(); /* widget */
     /* Widget widget; */
