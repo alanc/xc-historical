@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: main.c,v 1.82 88/09/06 17:08:07 jim Exp $";
+static char rcs_id[] = "$XConsortium: main.c,v 1.83 88/09/12 17:00:05 jim Exp $";
 #endif	/* lint */
 
 /*
@@ -928,6 +928,7 @@ static char *tekterm[] = {
 
 static char *vtterm[] = {
 	"xterm",
+	"x11term",
 	"vt102",
 	"vt100",
 	"ansi",
