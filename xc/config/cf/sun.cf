@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: sun.cf,v 1.60 91/07/23 15:36:47 rws Exp $
+XCOMM platform:  $XConsortium: sun.cf,v 1.61 91/07/25 19:18:48 rws Exp $
 
 #define OSName            SunOS 4.1.1
 XCOMM operating system:  OSName
@@ -42,6 +42,11 @@ XCOMM operating system:  OSName
 
 #if HasSharedLibraries && HasGcc
 #define LibraryCcCmd cc		/* until gcc can generate -pic code */
+#endif
+
+#if HasGcc
+.c.o:
+	$(CC) -c $(CFLAGS) $*.c
 #endif
 
 #if !HasGcc
