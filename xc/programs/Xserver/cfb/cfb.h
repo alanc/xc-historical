@@ -1,4 +1,4 @@
-/* $XConsortium: cfb.h,v 5.25 92/01/31 18:27:59 gildea Exp $ */
+/* $XConsortium: cfb.h,v 5.26 92/03/13 16:23:48 eswu Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -61,9 +61,7 @@ extern Bool cfbDestroyPixmap();
 extern void cfbCopyWindow();
 extern void cfbPaintWindow();
 
-extern void miPolyFillRect();
 extern void cfbPolyFillRect();
-extern void miPolyFillArc();
 extern void cfbZeroPolyArcSS8Copy(), cfbZeroPolyArcSS8Xor();
 extern void cfbZeroPolyArcSS8General();
 extern void cfbLineSS(), cfbLineSD(), cfbSegmentSS(), cfbSegmentSD();
@@ -95,30 +93,12 @@ extern void cfbImageGlyphBlt8();
 extern void cfbSaveAreas();
 extern void cfbRestoreAreas();
 
-/* included from mfb.h; we can't include mfb.h directly because of other 
- * conflicts */
-extern void mfbPushPixels();
-extern void mfbSetSpans();
-extern void mfbGetSpans();
-extern void mfbUnnaturalTileFS();
-extern void mfbUnnaturalStippleFS();
-extern Bool mfbRealizeFont();
-extern Bool mfbUnrealizeFont();
-extern void mfbQueryBestSize();
-extern RegionPtr mfbPixmapToRegion();
-extern void mfbCopyRotatePixmap();
-
 extern PixmapPtr cfbCopyPixmap();
 extern void  cfbConvertRects();
-extern void  miPolyArc();
-extern void  miFillPolyArc();
 
 extern void cfbPutImage();
 extern void cfbGetImage();
-extern RegionPtr miCopyArea();
-extern RegionPtr miCopyPlane();
 extern void cfbPolyPoint();
-extern void miPushPixels();
 
 #ifdef	STATIC_COLOR
 extern void cfbInstallColormap();

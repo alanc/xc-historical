@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbscrinit.c,v 5.13 92/03/13 16:17:17 eswu Exp $ */
+/* $XConsortium: mfbscrinit.c,v 5.14 93/07/12 09:29:49 dpw Exp $ */
 
 #include "X.h"
 #include "Xproto.h"	/* for xColorItem */
@@ -36,8 +36,6 @@ SOFTWARE.
 #include "mi.h"
 #include "mibstore.h"
 #include "servermd.h"
-
-extern RegionPtr mfbPixmapToRegion();
 
 #ifdef PIXMAP_PER_WINDOW
 int frameWindowPrivateIndex;

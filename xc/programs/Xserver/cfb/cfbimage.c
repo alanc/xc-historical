@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: cfbimage.c,v 1.10 93/06/24 10:25:22 dpw Exp $ */
+/* $XConsortium: cfbimage.c,v 1.11 93/07/12 09:31:42 dpw Exp $ */
 
 #include "X.h"
 #include "windowstr.h"
@@ -31,8 +31,6 @@ SOFTWARE.
 #include "cfb.h"
 #include "cfbmskbits.h"
 #include "servermd.h"
-
-extern void mfbGetImage();
 
 void
 cfbPutImage(pDraw, pGC, depth, x, y, w, h, leftPad, format, pImage)

@@ -1,4 +1,4 @@
-/* $XConsortium: cfbpixmap.c,v 5.8 91/12/19 14:17:05 keith Exp $ */
+/* $XConsortium: cfbpixmap.c,v 5.9 93/06/24 10:26:04 dpw Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -37,9 +37,6 @@ SOFTWARE.
 #include "cfbmskbits.h"
 
 extern unsigned int endtab[];
-
-extern void mfbXRotatePixmap(), mfbYRotatePixmap();
-extern PixmapPtr AllocatePixmap();
 
 PixmapPtr
 cfbCreatePixmap (pScreen, width, height, depth)

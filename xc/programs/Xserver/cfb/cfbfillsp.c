@@ -50,7 +50,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: cfbfillsp.c,v 5.18 91/12/19 14:16:13 keith Exp $ */
+/* $XConsortium: cfbfillsp.c,v 5.19 91/12/19 18:36:32 keith Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -69,8 +69,6 @@ SOFTWARE.
 #if PSZ == 8
 #include "cfb8bit.h"
 #endif
-
-extern void mfbInvertSolidFS(), mfbBlackSolidFS(), mfbWhiteSolidFS();
 
 /* scanline filling for color frame buffer
    written by drewry, oct 1986 modified by smarks

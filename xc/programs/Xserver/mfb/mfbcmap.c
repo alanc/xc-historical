@@ -21,13 +21,12 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbcmap.c,v 5.2 89/07/16 17:25:27 rws Exp $ */
+/* $XConsortium: mfbcmap.c,v 5.3 89/07/19 15:48:00 rws Exp $ */
 #include "X.h"
 #include "scrnintstr.h"
 #include "colormapst.h"
 #include "resource.h"
 
-extern int	TellLostMap(), TellGainedMap();
 /* A monochrome frame buffer is a static gray colormap with two entries.
  * We have a "required list" of length 1.  Because we can only support 1
  * colormap, we never have to change it, but we may have to change the 

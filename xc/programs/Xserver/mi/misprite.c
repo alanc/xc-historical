@@ -4,7 +4,7 @@
  * machine independent software sprite routines
  */
 
-/* $XConsortium: misprite.c,v 5.38 91/07/19 23:19:31 keith Exp $ */
+/* $XConsortium: misprite.c,v 5.39 93/07/12 09:28:53 dpw Exp $ */
 
 /*
 Copyright 1989 by the Massachusetts Institute of Technology
@@ -121,8 +121,6 @@ static int	    miSpritePolyText8(),	miSpritePolyText16();
 static void	    miSpriteImageText8(),	miSpriteImageText16();
 static void	    miSpriteImageGlyphBlt(),	miSpritePolyGlyphBlt();
 static void	    miSpritePushPixels(),	miSpriteLineHelper();
-static void	    miSpriteChangeClip(),	miSpriteDestroyClip();
-static void	    miSpriteCopyClip();
 
 static GCOps miSpriteGCOps = {
     miSpriteFillSpans,	    miSpriteSetSpans,	    miSpritePutImage,	

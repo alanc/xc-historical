@@ -25,7 +25,7 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XConsortium: cfbscrinit.c,v 5.25 92/07/30 10:43:43 rws Exp $ */
+/* $XConsortium: cfbscrinit.c,v 5.26 93/07/12 09:31:49 dpw Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -42,8 +42,6 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include "cfbmskbits.h"
 #include "mibstore.h"
 
-extern RegionPtr mfbPixmapToRegion();
-extern RegionPtr cfbCopyPlane();
 extern Bool mfbAllocatePrivates();
 
 

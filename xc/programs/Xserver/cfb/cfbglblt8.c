@@ -1,4 +1,4 @@
-/* $XConsortium: cfbglblt8.c,v 5.23 91/07/18 23:44:50 keith Exp $ */
+/* $XConsortium: cfbglblt8.c,v 5.24 91/12/19 14:16:27 keith Exp $ */
 /*
 Copyright 1989 by the Massachusetts Institute of Technology
 
@@ -89,6 +89,8 @@ static void cfbPolyGlyphBlt8Clipped();
 
 #define DST_INC	    (4 >> PWSH)
 
+extern void		cfbStippleStack (), cfbStippleStackTE ();
+
 void
 cfbPolyGlyphBlt8 (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     DrawablePtr pDrawable;
@@ -128,7 +130,6 @@ cfbPolyGlyphBlt8 (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 #ifndef STIPPLE
 #ifdef USE_STIPPLE_CODE
     void		(*stipple)();
-    extern void		cfbStippleStack (), cfbStippleStackTE ();
 
     stipple = cfbStippleStack;
     if (FONTCONSTMETRICS(pfont))

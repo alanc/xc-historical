@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbpixmap.c,v 5.7 92/12/23 17:46:31 rws Exp $ */
+/* $XConsortium: mfbpixmap.c,v 5.8 93/06/24 10:23:30 dpw Exp $ */
 
 /* pixmap management
    written by drewry, september 1986
@@ -38,8 +38,6 @@ SOFTWARE.
 #include "mi.h"
 
 #include "servermd.h"
-
-extern PixmapPtr AllocatePixmap();
 
 PixmapPtr
 mfbCreatePixmap (pScreen, width, height, depth)

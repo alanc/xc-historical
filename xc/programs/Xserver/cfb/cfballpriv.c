@@ -1,5 +1,5 @@
 /*
- * $XConsortium: cfballpriv.c,v 1.1 91/12/19 14:15:38 keith Exp $
+ * $XConsortium: cfballpriv.c,v 1.2 91/12/19 18:37:00 keith Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -44,7 +44,7 @@ int cfbGCPrivateIndex;
 int cfbScreenPrivateIndex;
 #endif
 
-extern RegionPtr    miCopyPlane (), (*cfbPuntCopyPlane)();
+extern RegionPtr (*cfbPuntCopyPlane)();
 
 Bool
 cfbAllocatePrivates(pScreen, window_index, gc_index)
