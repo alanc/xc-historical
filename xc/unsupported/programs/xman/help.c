@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: help.c,v 1.7 89/08/30 18:24:23 kit Exp $
+ * $XConsortium: help.c,v 1.8 91/06/03 17:00:16 dave Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -20,6 +20,8 @@
  */
 
 #include "globals.h"
+
+static Atom wm_delete_window;
 
 ManpageGlobals * InitPsuedoGlobals();
 
@@ -57,6 +59,18 @@ MakeHelpWidget()
   XtRealizeWidget(  help_widget );
   SaveGlobals( man_globals->This_Manpage, man_globals );
   AddCursor( help_widget, resources.cursors.manpage);
+
+/*
+ * Set up ICCCM delete window.
+ */
+  wm_delete_window = XInternAtom(XtDisplay(help_widget), "WM_DELETE_WINDOW",
+				 False);
+  XtOverrideTranslations
+      (man_globals->This_Manpage, 
+       XtParseTranslationTable ("<Message>WM_PROTOCOLS: RemoveThisManpage()"));
+  (void) XSetWMProtocols (XtDisplay(man_globals->This_Manpage),
+			  XtWindow(man_globals->This_Manpage),
+			  &wm_delete_window, 1);
 
   return(TRUE);
 }
