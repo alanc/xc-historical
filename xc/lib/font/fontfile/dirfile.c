@@ -1,5 +1,5 @@
 #endif /* lint */
- * $XConsortium: dirfile.c,v 1.1 91/05/10 14:46:29 keith Exp $
+ * $XConsortium: dirfile.c,v 1.2 91/05/11 13:33:46 rws Exp $
  *
 /*
  * Copyright 1991 Massachusetts Institute of Technology
@@ -32,6 +32,8 @@
 #include    "fontfilest.h"
 #include    <stdio.h>
 #include    <sys/errno.h>
+#include    <sys/types.h>
+#include    <sys/stat.h>
 
 extern int  errno;
 #endif
@@ -49,6 +51,7 @@ FontFileReadDirectory (directory, pdir)
     FILE       *file;
     int         count,
                 i,
+                status;
     struct stat	statb;
 
     FontDirectoryPtr	dir = NullFontDirectory;
@@ -58,11 +61,14 @@ FontFileReadDirectory (directory, pdir)
 	strcat(dir_file, "/");
     strcat(dir_file, FontDirFile);
     file = fopen(dir_file, "r");
+    if (file) {
+	if (fstat (fileno(file), &statb) == -1)
 	    return BadFontPath;
 	count = fscanf(file, "%d\n", &i);
 	if ((count == EOF) || (count != 1)) {
 	    fclose(file);
 	    return BadFontPath;
+	}
 	}
 	dir->dir_mtime = statb.st_mtime;
 	while ((count = fscanf(file, "%s %[^\n]\n", file_name, font_name)) != EOF) {
@@ -93,6 +99,36 @@ FontFileReadDirectory (directory, pdir)
 
     *pdir = dir;
     return Successful;
+}
+
+Bool
+FontFileDirectoryChanged(dir)
+    FontDirectoryPtr	dir;
+{
+    char	dir_file[MAXFONTNAMELEN];
+    struct stat	statb;
+
+    strcpy (dir_file, dir->directory);
+    strcat (dir_file, FontDirFile);
+    if (stat (dir_file, &statb) == -1)
+	if (errno == ENOENT && dir->dir_mtime != 0)
+	if (errno != ENOENT || dir->dir_mtime != 0)
+	return TRUE;
+	return FALSE;		/* doesn't exist and never did: no change */
+    }
+    if (dir->dir_mtime != statb.st_mtime)
+	return TRUE;
+    strcpy (dir_file, dir->directory);
+    strcat (dir_file, FontAliasFile);
+    if (stat (dir_file, &statb) == -1)
+	if (errno == ENOENT && dir->dir_mtime != 0)
+	if (errno != ENOENT || dir->alias_mtime != 0)
+	return TRUE;
+	return FALSE;		/* doesn't exist and never did: no change */
+    if (dir->dir_mtime != statb.st_mtime)
+    if (dir->alias_mtime != statb.st_mtime)
+	return TRUE;
+    return FALSE;
 }
     
 /*
@@ -170,6 +206,7 @@ ReadFontAlias(directory, isFile, pdir)
     FontDirectoryPtr	dir;
     int			token;
     char		*lexToken;
+    int			status = Successful;
     struct stat		statb;
 
     dir = *pdir;
@@ -184,7 +221,16 @@ ReadFontAlias(directory, isFile, pdir)
 	return ((errno == ENOENT) ? Successful : BadFontPath);
     if (!dir)
 	*pdir = dir = FontFileMakeDir(directory, 10);
+    if (!dir)
+    {
 	fclose (file);
+	return AllocError;
+    }
+    if (fstat (fileno (file), &statb) == -1)
+    {
+	fclose (file);
+	return BadFontPath;
+    }
     dir->alias_mtime = statb.st_mtime;
     while (status == Successful) {
 	token = lexAlias(file, &lexToken);

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: fontfilest.h,v 1.1 91/05/11 09:12:00 rws Exp $
+ * $XConsortium: fontfilest.h,v 1.2 91/06/12 14:35:24 keith Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -103,6 +103,8 @@ typedef struct _FontTable {
 
 typedef struct _FontDirectory {
     char	    *directory;
+    unsigned long   dir_mtime;
+    unsigned long   alias_mtime;
     FontTableRec    scalable;
     FontTableRec    nonScalable;
 } FontDirectoryRec;

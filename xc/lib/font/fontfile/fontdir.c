@@ -1,5 +1,5 @@
 /*
- * $XConsortium: fontdir.c,v 1.3 91/05/16 14:29:22 rws Exp $
+ * $XConsortium: fontdir.c,v 1.4 91/07/16 18:06:19 keith Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -109,6 +109,8 @@ FontFileMakeDir(dirName, size)
 	return (FontDirectoryPtr)0;
     }
     dir->directory = (char *) (dir + 1);
+    dir->dir_mtime = 0;
+    dir->alias_mtime = 0;
     strcpy(dir->directory, dirName);
     if (needslash)
 	strcat(dir->directory, "/");
