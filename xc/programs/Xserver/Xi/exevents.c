@@ -1,4 +1,4 @@
-/* $XConsortium: xexevents.c,v 1.42 93/02/25 14:32:33 rws Exp $ */
+/* $XConsortium: xexevents.c,v 1.43 93/02/25 15:05:47 rws Exp $ */
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
 Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -174,6 +174,7 @@ ProcessOtherEvent (xE, other, count)
 	if (other->valuator)
 	    other->valuator->motionHintWindow = NullWindow;
 	*kptr |= bit;
+	k->prev_state = k->state;
 	for (i = 0, mask = 1; modifiers; i++, mask <<= 1)
 	    {
 	    if (mask & modifiers) 
@@ -199,6 +200,7 @@ ProcessOtherEvent (xE, other, count)
 	if (other->valuator)
 	    other->valuator->motionHintWindow = NullWindow;
 	*kptr &= ~bit;
+	k->prev_state = k->state;
 	for (i = 0, mask = 1; modifiers; i++, mask <<= 1)
 	    {
 	    if (mask & modifiers) 
