@@ -1,6 +1,6 @@
-XCOMM $XConsortium: Imakefile,v 1.51 91/07/16 23:07:16 gildea Exp $
+XCOMM $XConsortium: Imakefile,v 1.52 93/08/18 20:33:07 rws Exp $
 #define IHaveSubdirs
-#define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
+#define PassCDebugFlags CDEBUGFLAGS="$(CDEBUGFLAGS)"
 
 #ifndef Win32Architecture
 

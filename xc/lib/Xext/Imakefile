@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.41 93/07/22 13:25:07 gildea Exp $
+XCOMM $XConsortium: Imakefile,v 1.42 93/07/26 18:18:37 rws Exp $
 #define DoNormalLib NormalLibXext
 #define DoSharedLib SharedLibXext
 #define DoDebugLib DebugLibXext
@@ -10,7 +10,7 @@ REQUIREDLIBS = SharedXextReqs
 #endif
 
 #define IHaveSubdirs
-#define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
+#define PassCDebugFlags CDEBUGFLAGS="$(CDEBUGFLAGS)"
 
 #if BuildXInputLib
       XINPUTDIRS = xinput
