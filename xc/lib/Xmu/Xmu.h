@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xmu.h,v 1.23 89/06/07 16:50:58 jim Exp $
+ * $XConsortium: Xmu.h,v 1.24 89/07/14 17:51:35 jim Exp $
  *
  * Copyright 1988 by the Massachusetts Institute of Technology
  *
@@ -24,21 +24,21 @@
 
 /*
  * This include file is obsolete.  Callers should use the appropriate 
- * specific include file.  If you add any Xmu includes, please keep them
- * in alphabetical order.
+ * specific include file.  
+ *
+ * DO NOT ADD ANY NEW INCLUDES OR DEFINITIONS TO THIS FILE!
  */
 #include <X11/Intrinsic.h>
 
-#include <X11/Xmu/Atoms.h>
-#include <X11/Xmu/CharSet.h>
-#include <X11/Xmu/CloseHook.h>
-#include <X11/Xmu/Converters.h>
-#include <X11/Xmu/Drawing.h>
-#include <X11/Xmu/Error.h>
-#include <X11/Xmu/Initer.h>
-#include <X11/Xmu/StdSel.h>
-#include <X11/Xmu/StdCmap.h>
-#include <X11/Xmu/WindowUtil.h>
+#include <X11/Xmu/Atoms.h>		/* _XA_... */
+#include <X11/Xmu/CharSet.h>		/* CopyISOLatin1Lowered */
+#include <X11/Xmu/Converters.h>		/* CvtStringTo... */
+#include <X11/Xmu/Drawing.h>		/* DrawRoundedRect, DrawLogo */
+#include <X11/Xmu/Error.h>		/* PrintDefaultError */
+#include <X11/Xmu/Initer.h>		/* CallInitializers, ... */
+#include <X11/Xmu/StdSel.h>		/* ConvertStandardSelection */
+#include <X11/Xmu/StdCmap.h>		/* standard colormap */
+#include <X11/Xmu/WinUtil.h>		/* ClientWindow */
 
 #endif /* _XMU_H_ */
 
