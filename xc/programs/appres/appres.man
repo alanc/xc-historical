@@ -9,9 +9,13 @@ appres - list application resource database
 The \fIappres\fP program prints the contents of the resource database for the
 specified application \fIclass\fP.  It is used to determine which resources a
 particular program would load.  For example,
-.EX 0
+.sp 1
+.in +.5i
+.nf
 %  appres XTerm
-.EE
+.fi
+.in -.5i
+.sp 1
 would list the resources that \fIxterm\fP would load.  If no application
 class is specified, the class \fIAppres\fP (which normally has no defaults
 resource files or user defaults) is used.
