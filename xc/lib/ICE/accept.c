@@ -1,4 +1,4 @@
-/* $XConsortium: accept.c,v 1.18 94/01/31 10:45:42 mor Exp $ */
+/* $XConsortium: accept.c,v 1.19 94/03/15 13:37:02 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -38,7 +38,7 @@ IceAcceptStatus	*statusRet;
      * Accept the connection.
      */
 
-    if ((newconn = _ICETransAccept (listenObj->trans_conn, &status)) == 0)
+    if ((newconn = _IceTransAccept (listenObj->trans_conn, &status)) == 0)
     {
 	if (status == TRANS_ACCEPT_BAD_MALLOC)
 	    *statusRet = IceAcceptBadMalloc;
@@ -54,7 +54,7 @@ IceAcceptStatus	*statusRet;
 
     if ((iceConn = (IceConn) malloc (sizeof (struct _IceConn))) == NULL)
     {
-	_ICETransClose (newconn);
+	_IceTransClose (newconn);
 	*statusRet = IceAcceptBadMalloc;
 	return (NULL);
     }
@@ -74,7 +74,7 @@ IceAcceptStatus	*statusRet;
 
     if (iceConn->connection_string == NULL)
     {
-	_ICETransClose (newconn);
+	_IceTransClose (newconn);
 	free ((char *) iceConn);
 	*statusRet = IceAcceptBadMalloc;
 	return (NULL);
@@ -92,7 +92,7 @@ IceAcceptStatus	*statusRet;
     }
     else
     {
-	_ICETransClose (newconn);
+	_IceTransClose (newconn);
 	free ((char *) iceConn);
 	*statusRet = IceAcceptBadMalloc;
 	return (NULL);
@@ -105,7 +105,7 @@ IceAcceptStatus	*statusRet;
     }
     else
     {
-	_ICETransClose (newconn);
+	_IceTransClose (newconn);
 	free (iceConn->inbuf);
 	free ((char *) iceConn);
 	*statusRet = IceAcceptBadMalloc;

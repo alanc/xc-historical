@@ -1,4 +1,4 @@
-/* $XConsortium: listen.c,v 1.10 94/02/03 16:20:17 mor Exp $ */
+/* $XConsortium: listen.c,v 1.11 94/03/15 13:32:59 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -41,7 +41,7 @@ char		*errorStringRet;
     XtransConnInfo		*transConns = NULL;
 
 
-    if ((_ICETransMakeAllCOTSServerListeners (NULL, &partial,
+    if ((_IceTransMakeAllCOTSServerListeners (NULL, &partial,
 	&transCount, &transConns) < 0) || (transCount < 1))
     {
 	*listenObjsRet = NULL;
@@ -57,7 +57,7 @@ char		*errorStringRet;
 	transCount * sizeof (struct _IceListenObj))) == NULL)
     {
 	for (i = 0; i < transCount; i++)
-	    _ICETransClose (transConns[i]);
+	    _IceTransClose (transConns[i]);
 	free ((char *) transConns);
 	return (0);
     }
@@ -66,9 +66,9 @@ char		*errorStringRet;
 
     for (i = 0; i < transCount; i++)
     {
-	_ICETransGetMyAddr (transConns[i], &family, &addrlen, &addr);
+	_IceTransGetMyAddr (transConns[i], &family, &addrlen, &addr);
 
-	networkId = _ICETransGetMyNetworkId (family, addrlen, addr);
+	networkId = _IceTransGetMyNetworkId (family, addrlen, addr);
 
 	free (addr);
 
@@ -140,7 +140,7 @@ char		*errorStringRet;
     else
     {
 	for (i = 0; i < transCount; i++)
-	    _ICETransClose (transConns[i]);
+	    _IceTransClose (transConns[i]);
     }
 
     free ((char *) listenObjs);
@@ -157,7 +157,7 @@ IceGetListenConnectionNumber (listenObj)
 IceListenObj listenObj;
 
 {
-    return (_ICETransGetConnectionNumber (listenObj->trans_conn));
+    return (_IceTransGetConnectionNumber (listenObj->trans_conn));
 }
 
 
@@ -231,7 +231,7 @@ IceListenObj *listenObjs;
     for (i = 0; i < count; i++)
     {
 	free (listenObjs[i]->network_id);
-	_ICETransClose (listenObjs[i]->trans_conn);
+	_IceTransClose (listenObjs[i]->trans_conn);
 	free ((char *) listenObjs[i]);
     }
 

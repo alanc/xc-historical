@@ -1,4 +1,4 @@
-/* $XConsortium: sm_manager.c,v 1.17 94/02/21 09:15:13 mor Exp $ */
+/* $XConsortium: sm_manager.c,v 1.18 94/03/07 17:08:44 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -125,14 +125,14 @@ SmsConn smsConn;
     char	*hostname;
 
 
-    if (_ICETransGetPeerAddr (smsConn->iceConn->trans_conn,
+    if (_IceTransGetPeerAddr (smsConn->iceConn->trans_conn,
 	&family, &peer_addrlen, &peer_addr) < 0)
     {
 	return (NULL);
     }
     else
     {
-	hostname = _ICETransGetPeerNetworkId (family, peer_addrlen, peer_addr);
+	hostname = _IceTransGetPeerNetworkId (family, peer_addrlen, peer_addr);
 
 	free ((char *) peer_addr);
 

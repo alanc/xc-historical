@@ -1,4 +1,4 @@
-/* $XConsortium: connect.c,v 1.23 94/02/05 01:46:13 rws Exp $ */
+/* $XConsortium: connect.c,v 1.24 94/03/15 13:37:23 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -412,14 +412,14 @@ char **actualConnectionRet;
 
 	for (retry = ICE_CONNECTION_RETRIES; retry >= 0; retry--)
 	{
-	    if ((trans_conn = _ICETransOpenCOTSClient (address)) == NULL)
+	    if ((trans_conn = _IceTransOpenCOTSClient (address)) == NULL)
 	    {
 		break;
 	    }
 
-	    if ((connect_stat = _ICETransConnect (trans_conn, address)) < 0)
+	    if ((connect_stat = _IceTransConnect (trans_conn, address)) < 0)
 	    {
-		_ICETransClose (trans_conn);
+		_IceTransClose (trans_conn);
 
 		if (connect_stat == TRANS_TRY_CONNECT_AGAIN)
 		{

@@ -1,4 +1,4 @@
-/* $XConsortium: misc.c,v 1.19 94/03/17 15:37:31 mor Exp $ */
+/* $XConsortium: misc.c,v 1.20 94/03/18 10:19:43 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -169,7 +169,7 @@ IceConnectionNumber (iceConn)
 IceConn iceConn;
 
 {
-    return (_ICETransGetConnectionNumber (iceConn->trans_conn));
+    return (_IceTransGetConnectionNumber (iceConn->trans_conn));
 }
 
 
@@ -245,7 +245,7 @@ register char	 *ptr;
     nleft = nbytes;
     while (nleft > 0)
     {
-	int nread = _ICETransRead (iceConn->trans_conn, ptr, (int) nleft);
+	int nread = _IceTransRead (iceConn->trans_conn, ptr, (int) nleft);
 
 	if (nread <= 0)
 	{
@@ -359,7 +359,7 @@ register char	 *ptr;
     nleft = nbytes;
     while (nleft > 0)
     {
-	int nwritten = _ICETransWrite (iceConn->trans_conn, ptr, (int) nleft);
+	int nwritten = _IceTransWrite (iceConn->trans_conn, ptr, (int) nleft);
 
 	if (nwritten <= 0)
 	{
@@ -598,14 +598,14 @@ IceConn iceConn;
     char 	*networkId;
 
 
-    if (_ICETransGetPeerAddr (iceConn->trans_conn,
+    if (_IceTransGetPeerAddr (iceConn->trans_conn,
 	&family, &peer_addrlen, &peer_addr) < 0)
     {
 	return (NULL);
     }
     else
     {
-	networkId = _ICETransGetPeerNetworkId (
+	networkId = _IceTransGetPeerNetworkId (
 	    family, peer_addrlen, peer_addr);
 
 	free (peer_addr);
