@@ -16,7 +16,7 @@ without specific, written prior permission.  M.I.T. makes no
 representations about the suitability of this software for any
 purpose.  It is provided "as is" without express or implied warranty.
 */
-/* $XConsortium: cfbglblt8.c,v 5.16 91/02/17 13:39:05 keith Exp $ */
+/* $XConsortium: cfbglblt8.c,v 5.17 91/04/10 11:42:01 keith Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -129,11 +129,10 @@ cfbPolyGlyphBlt8 (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 	bbox.x1 = ppci[0]->metrics.leftSideBearing;
     else
 	bbox.x1 = 0;
-    w = 0;
-    for (h = 0; h < nglyph; h++)
+    h = nglyph - 1;
+    w = ppci[h]->metrics.rightSideBearing;
+    while (--h >= 0)
 	w += ppci[h]->metrics.characterWidth;
-    bbox.x2 = w - ppci[nglyph-1]->metrics.characterWidth;
-    bbox.x2 += ppci[nglyph-1]->metrics.rightSideBearing;
     bbox.y1 = -FONTMAXBOUNDS(pfont,ascent);
     bbox.y2 = FONTMAXBOUNDS(pfont,descent);
 
