@@ -97,15 +97,18 @@ void XtCopyDefaultDepth(widget, offset, value)
 #ifdef UNALIGNED
 
 static void CopyFromArg(src, dst, size)
-	     XtArgVal src, dst;
+    XtArgVal src;
+    caddr_t dst;
     register unsigned int size;
 {
-    if (size == sizeof(XtArgVal))
-	*(XtArgVal *)dst = src;
+    if (size == sizeof(long))
+	*(long *)dst = (long)src;
     else if (size == sizeof(short)) 
 	*(short *)dst = (short)src;
     else if (size == sizeof(char))
 	*(char *)dst = (char)src;
+    else if (size == sizeof(XtArgVal))
+	*(XtArgVal *)dst = src;
     else if (size > sizeof(XtArgVal))
 	bcopy((char *)  src, (char *) dst, (int) size);
     else
@@ -113,48 +116,81 @@ static void CopyFromArg(src, dst, size)
 } /* CopyFromArg */
 
 static void CopyToArg(src, dst, size)
-    XtArgVal src, *dst;
+    caddr_t src;
+    XtArgVal *dst;
     register unsigned int size;
 {
-    Boolean addrGiven = FALSE;
-    /* ||| Old semantics are yucky, but keep as long as NULL value */
-    if (*dst != NULL) {
-          dst = *(XtArgVal **)dst;
-          addrGiven = TRUE;
+    if (*dst == NULL) {
+	/* old GetValues semantics (storing directly into arglists) are bad,
+	 * but preserve for compatibility as long as arglist contains NULL.
+	 */
+	switch (size) {
+	    case sizeof(long):	   *dst = (XtArgVal)*(long*)src;	break;
+	    case sizeof(short):	   *dst = (XtArgVal)*(short*)src;	break;
+	    case sizeof(char):	   *dst = (XtArgVal)*(char*)src;	break;
+	    default:
+	      if (size == sizeof(XtArgVal)) *dst = *(XtArgVal*)src;
+	      else bcopy((char*)src, (char*)dst, (int)size);
+	}
     }
-    if (size == sizeof(XtArgVal))
-	*dst = *(XtArgVal *)src;
-    else if (size == sizeof(short)) {
-        if (addrGiven) *((short*)dst) = (short)*((short*)src);
-        else *(short *) dst =  *(short *) src;
+    else {
+	/* proper GetValues semantics: argval is pointer to destination */
+	switch (size) {
+	    case sizeof(long):	   *(long*)*dst  = *(long*)src;		break;
+	    case sizeof(short):	   *(short*)*dst = *(short*)src;	break;
+	    case sizeof(char):	   *(char*)*dst  = *(char*)src;		break;
+	    default:
+	      if (size == sizeof(XtArgVal)) *(XtArgVal*)*dst = *(XtArgVal*)src;
+	      else bcopy((char*)src, (char*)*dst, (int)size);
+	}
     }
-    else if (size == sizeof(char)) {
-        if (addrGiven) *((char*)dst) = (char)*((char*)src);
-	*(char *) dst = *(char *) src;
-    }
-    else bcopy((char *) src, (char *) dst, (int) size);
-
 } /* CopyToArg */
 
 #else
 static void CopyFromArg(src, dst, size)
-	     XtArgVal src, dst;
+    XtArgVal src;
+    caddr_t dst;
     register unsigned int size;
 {
     if (size > sizeof(XtArgVal))
 	bcopy((char *)  src, (char *) dst, (int) size);
-    else
-	bcopy((char *) &src, (char *) dst, (int) size);
+    else {
+	union {
+	    long	longval;
+	    short	shortval;
+	    char	charval;
+	} u;
+	char* p;
+	if (size == sizeof(long)) {
+	    u.longval = (long)src;
+	    p = (char*)&u.longval;
+	} else if (size == sizeof(short)) {
+	    u.shortval = (short)src;
+	    p = (char*)&u.shortval;
+	} else if (size == sizeof(char)) {
+	    u.charval = (char)src;
+	    p = (char*)&u.charval;
+	} else 
+	    p = (char*)&src;
+	bcopy(p, (char *) dst, (int) size);
+    }
 } /* CopyFromArg */
 
 static void CopyToArg(src, dst, size)
-    XtArgVal src, *dst;
+    caddr_t src;
+    XtArgVal *dst;
     register unsigned int size;
 {
-    /* ||| Old semantics are yucky, but keep as long as NULL value */
-    if (*dst != NULL) dst = *(XtArgVal **)dst;
-
-    bcopy((char *) src, (char *) dst, (int) size);
+    if (*dst == NULL) {
+	/* old GetValues semantics (storing directly into arglists) are bad,
+	 * but preserve for compatibility as long as arglist contains NULL.
+	 */
+	bcopy( (char*)src, (char*)dst, (int)size );
+    }
+    else {
+	/* proper GetValues semantics: argval is pointer to destination */
+	bcopy( (char*)src, (char*)*dst, (int)size );
+    }
 } /* CopyToArg */
 
 #endif
@@ -430,7 +466,7 @@ static void GetResources(widget, base, names, classes,
 		if (argName == rx->xrm_name) {
 		    CopyFromArg(
 			arg->value,
-			(XtArgVal) base - rx->xrm_offset - 1,
+			(caddr_t) base - rx->xrm_offset - 1,
 			rx->xrm_size);
 		    found[j] = TRUE;
 		    break;
@@ -684,7 +720,7 @@ static void GetValues(base, res, num_resources, args, num_args)
 	for (xrmres = res, i = 0; i < num_resources; i++, xrmres++) {
 	    if (argName == (*xrmres)->xrm_name) {
 		CopyToArg(
-		    (XtArgVal) base - (*xrmres)->xrm_offset - 1,
+		    (caddr_t) base - (*xrmres)->xrm_offset - 1,
 		    &arg->value,
 		    (*xrmres)->xrm_size);
 		break;
@@ -772,7 +808,7 @@ static void SetValues(base, res, num_resources, args, num_args)
 	for (xrmres = res, i = 0; i < num_resources; i++, xrmres++) {
 	    if (argName == (*xrmres)->xrm_name) {
 		CopyFromArg(arg->value,
-		    (XtArgVal) base - (*xrmres)->xrm_offset - 1,
+		    (caddr_t) base - (*xrmres)->xrm_offset - 1,
 		    (*xrmres)->xrm_size);
 		break;
 	    }
