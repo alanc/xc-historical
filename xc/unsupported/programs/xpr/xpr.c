@@ -36,10 +36,16 @@
  * conversion option of -gray to accept an input of  2, 3, or 4 to signify
  * the gray level desired.  The output is produced, using 5, 10, or 17-level
  * gray scales, respectively.
+ *
+ * Modifications by Larry Rupp, Hewlett-Packard Company, to support HP
+ * LaserJet, PaintJet, and other PCL printers.  Added "ljet" and "pjet"
+ * to devices recognized.  Also added -density, -cutoff, and -noposition
+ * command line options.
+ *
  */
 
 #ifndef lint
-static char *rcsid_xpr_c = "$XConsortium: xpr.c,v 1.40 89/10/07 17:29:00 rws Exp $";
+static char *rcsid_xpr_c = "$XConsortium: xpr.c,v 1.41 89/10/08 11:04:43 rws Exp $";
 #endif
 
 #include <X11/Xos.h>
@@ -52,9 +58,22 @@ static char *rcsid_xpr_c = "$XConsortium: xpr.c,v 1.40 89/10/07 17:29:00 rws Exp
 #include "xpr.h"
 #include <X11/XWDFile.h>
 
-int debug = 0;
+#ifdef	NLS16
+#ifndef NLS
+#define	NLS
+#endif
+#endif
 
-enum device {LN01, LN03, LA100, PS, PP};
+#ifndef NLS
+#define catgets(i, sn,mn,s) (s)
+#else /* NLS */
+#define NL_SETN 1	/* set number */
+#include <nl_types.h>
+
+nl_catd nlmsg_fd;
+#endif /* NLS */
+
+int debug = 0;
 
 #define W_MAX 2400
 #define H_MAX 3150
@@ -77,9 +96,13 @@ enum device {LN01, LN03, LA100, PS, PP};
 #define F_COMPACT 128
 #define F_INVERT 256
 #define F_GRAY 512
-#define F_PSFIG 1024
+#define F_NPOSITION 1024
+#define F_SLIDE 2048
 
-char *infilename = NULL, *whoami;
+#define DEFAULT_CUTOFF ((unsigned int) (0xFFFF * 0.50))
+
+char *infilename = NULL;
+char *progname;
 
 char *malloc();
 char *convert_data();
@@ -114,12 +137,15 @@ char **argv;
     register int ih;
     register int sixel_count;
     char *w_name;
-    int scale = 0, width, height, flags, split;
+    int scale, width, height, flags, split;
     int left, top;
     int top_margin, left_margin;
     int hpad;
     char *header, *trailer;
     int plane;
+    int density, render;
+    unsigned int cutoff;
+    float gamma;
     GrayPtr gray;
     char *data;
     long size;
@@ -127,8 +153,14 @@ char **argv;
     enum device device;
     XColor *colors = (XColor *)NULL;
     
+    if (!(progname = argv[0]))
+      progname = "xpr";
+#ifdef	NLS
+    nlmsg_fd = catopen("xpr", 0);
+#endif
     parse_args (argc, argv, &scale, &width, &height, &left, &top, &device, 
-		&flags, &split, &header, &trailer, &plane, &gray);
+		&flags, &split, &header, &trailer, &plane, &gray,
+		&density, &cutoff, &gamma, &render);
     
     if (device == PP) {
 	x2pmp(stdin, stdout, scale,
@@ -140,6 +172,17 @@ char **argv;
 	      (flags & F_PORTRAIT)? PORTRAIT:
 	      ((flags & F_LANDSCAPE)? LANDSCAPE: UNSPECIFIED),
 	      (flags & F_INVERT));
+	exit(0);
+    } else if ((device == LJET) || (device == PJET) || (device == PJETXL)) {
+        x2jet(stdin, stdout, scale, density, width, height, left, top,
+	      header, trailer,
+	      (flags & F_PORTRAIT)? PORTRAIT:
+	      ((flags & F_LANDSCAPE)? LANDSCAPE: UNSPECIFIED),
+	      (flags & F_INVERT),
+	      ((flags & F_APPEND) && !(flags & F_NOFF)),
+	      !(flags & F_NPOSITION),
+	      (flags & F_SLIDE),
+	      device, cutoff, gamma, render);
 	exit(0);
     }
 
@@ -241,34 +284,39 @@ char **argv;
 	fprintf(stderr, "Orientation: %s, Scale: %d\n", 
 		(orientation==PORTRAIT) ? "Portrait" : "Landscape", scale);
     }
-    if (device != PS && (flags & F_DUMP)) dump_sixmap(sixmap, iw, ih);
+    if (((device == LN03) || (device == LA100)) && (flags & F_DUMP))
+	dump_sixmap(sixmap, iw, ih);
     exit(0);
 }
 
 usage()
 {
-    fprintf(stderr, "usage: %s [options] [file]\n", whoami);
+    fprintf(stderr, "usage: %s [options] [file]\n", progname);
     fprintf(stderr, "    -append <file>  -noff  -output <file>\n");
     fprintf(stderr, "    -compact\n");
-    fprintf(stderr, "    -device {ln03 | la100 | ps | lw | pp}\n");
+    fprintf(stderr, "    -device {ln03 | la100 | ps | lw | pp | ljet | pjet | pjetxl}\n");
     fprintf(stderr, "    -dump\n");
+    fprintf(stderr, "    -gamma <correction>\n");
     fprintf(stderr, "    -gray {2 | 3 | 4}\n");
     fprintf(stderr, "    -height <inches>  -width <inches>\n");
-    fprintf(stderr, "    -header <string>\n  -trailer <string>");
+    fprintf(stderr, "    -header <string>  -trailer <string>\n");
     fprintf(stderr, "    -landscape  -portrait\n");
     fprintf(stderr, "    -left <inches>  -top <inches>\n");
+    fprintf(stderr, "    -noposition\n");
     fprintf(stderr, "    -nosixopt\n");
     fprintf(stderr, "    -plane <n>\n");
     fprintf(stderr, "    -psfig\n");
+    fprintf(stderr, "    -render <type>\n");
     fprintf(stderr, "    -report\n");
     fprintf(stderr, "    -rv\n");
     fprintf(stderr, "    -scale <scale>\n");
+    fprintf(stderr, "    -slide\n");
     fprintf(stderr, "    -split <n-pages>\n");
     exit(1);
 }
 
 parse_args(argc, argv, scale, width, height, left, top, device, flags, 
-	   split, header, trailer, plane, gray)
+	   split, header, trailer, plane, gray, density, cutoff, gamma, render)
 register int argc;
 register char **argv;
 int *scale;
@@ -283,6 +331,10 @@ char **header;
 char **trailer;
 int *plane;
 GrayPtr *gray;
+int *density;
+unsigned int *cutoff;
+float *gamma;
+int *render;
 {
     register char *output_filename;
     register int f;
@@ -294,6 +346,7 @@ GrayPtr *gray;
     output_filename = NULL;
     *device = LN03;	/* default */
     *flags = 0;
+    *scale = 0;
     *split = 1;
     *width = -1;
     *height = -1;
@@ -302,9 +355,12 @@ GrayPtr *gray;
     *header = NULL;
     *trailer = NULL;
     *plane = -1;
-    if (!(whoami = argv[0]))
-      whoami = "xpr";
-    
+    *gray = (GrayPtr)NULL;
+    *density = 0;
+    *cutoff = DEFAULT_CUTOFF;
+    *gamma = -1.0;
+    *render = 0;
+
     for (argc--, argv++; argc > 0; argc--, argv++) {
 	if (argv[0][0] != '-') {
 	    infilename = *argv;
@@ -322,17 +378,31 @@ GrayPtr *gray;
 		usage();
 	    break;
 
-	case 'c':		/* -compact */
+	case 'c':		/* -compact | -cutoff <intensity> */
+	    if (len <= 2 )
+		usage();
 	    if (!bcmp(*argv, "-compact", len)) {
 		*flags |= F_COMPACT;
+	    } else if (!bcmp(*argv, "-cutoff", len)) {
+		argc--; argv++;
+		if (argc == 0) usage();
+		*cutoff = min((atof(*argv) / 100.0 * 0xFFFF), 0xFFFF);
 	    } else
 		usage();
 	    break;
 
-	case 'd':	/* -device {ln03 | la100 | ps | lw | pp} | -dump */
+	case 'd':	/* -density <num> | -device <dev> | -dump */
 	    if (len <= 2)
 		usage();
-	    if (!bcmp(*argv, "-device", len)) {
+	    if (!bcmp(*argv, "-dump", len)) {
+		*flags |= F_DUMP;
+	    } else if (len <= 3) {
+		usage();
+	    } else if (!bcmp(*argv, "-density", len)) {
+		argc--; argv++;
+		if (argc == 0) usage();
+		*density = atoi(*argv);
+	    } else if (!bcmp(*argv, "-device", len)) {
 		argc--; argv++;
 		if (argc == 0) usage();
 		len = strlen(*argv);
@@ -348,16 +418,26 @@ GrayPtr *gray;
 		    *device = PS;
 		} else if (!bcmp(*argv, "pp", len)) {
 		    *device = PP;
+		} else if (!bcmp(*argv, "ljet", len)) {
+		    *device = LJET;
+		} else if (!bcmp(*argv, "pjet", len)) {
+		    *device = PJET;
+		} else if (!bcmp(*argv, "pjetxl", len)) {
+		    *device = PJETXL;
 		} else
 		    usage();
-	    } else if (!bcmp(*argv, "-dump", len)) {
-		*flags |= F_DUMP;
 	    } else
 		usage();
 	    break;
 
-	case 'g':		/* -gray */
-	    if (!bcmp(*argv, "-gray", len) ||
+	case 'g':		/* -gamma <float> | -gray <num> */
+	    if (len <= 2)
+		usage();
+	    if (!bcmp(*argv, "-gamma", len)) {
+		argc--; argv++;
+		if (argc == 0) usage();
+		*gamma = atof(*argv);
+	    } else if (!bcmp(*argv, "-gray", len) ||
 		!bcmp(*argv, "-grey", len)) {
 		argc--; argv++;
 		if (argc == 0) usage();
@@ -407,13 +487,15 @@ GrayPtr *gray;
 		usage();
 	    break;
 
-	case 'n':		/* -nosixopt | -noff */
+	case 'n':		/* -nosixopt | -noff | -noposition */
 	    if (len <= 3)
 		usage();
 	    if (!bcmp(*argv, "-nosixopt", len)) {
 		*flags |= F_NOSIXOPT;
 	    } else if (!bcmp(*argv, "-noff", len)) {
 		*flags |= F_NOFF;
+	    } else if (!bcmp(*argv, "-noposition", len)) {
+		*flags |= F_NPOSITION;
 	    } else
 		usage();
 	    break;
@@ -437,29 +519,37 @@ GrayPtr *gray;
 		if (argc == 0) usage();
 		*plane = atoi(*argv);
 	    } else if (!bcmp(*argv, "-psfig", len)) {
-		*flags |= F_PSFIG;
+		*flags |= F_NPOSITION;
 	    } else
 		usage();
 	    break;
 
-	case 'r':		/* -report | -rv */
+	case 'r':		/* -render <type> | -report | -rv */
 	    if (len <= 2)
 		usage();
-	    if (!bcmp(*argv, "-report", len)) {
-		*flags |= F_REPORT;
-	    } else if (!bcmp(*argv, "-rv", len)) {
+	    if (!bcmp(*argv, "-rv", len)) {
 		*flags |= F_INVERT;
+	    } else if (len <= 3) {
+		usage();
+	    } if (!bcmp(*argv, "-render", len)) {
+		argc--; argv++;
+		if (argc == 0) usage();
+		*render = atoi(*argv);
+	    } else if (!bcmp(*argv, "-report", len)) {
+		*flags |= F_REPORT;
 	    } else
 		usage();
 	    break;
 
-	case 's':		/* -scale <scale> | -split <n-pages> */
+	case 's':	/* -scale <scale> | -slide | -split <n-pages> */
 	    if (len <= 2)
 		usage();
 	    if (!bcmp(*argv, "-scale", len)) {
 		argc--; argv++;
 		if (argc == 0) usage();
 		*scale = atoi(*argv);
+	    } else if (!bcmp(*argv, "-slide", len)) {
+		*flags |= F_SLIDE;
 	    } else if (!bcmp(*argv, "-split", len)) {
 		argc--; argv++;
 		if (argc == 0) usage();
@@ -525,8 +615,10 @@ GrayPtr *gray;
 	}
 	if (*flags & F_APPEND) {
 	    pos = lseek(f, 0, 2);          /* get eof position */
-	    if (*flags & F_NOFF) pos -= 3; /* set position before trailing */
-					   /*     formfeed and reset */
+	    if ((*flags & F_NOFF) &&
+		!(*device == LJET || *device == PJET || *device == PJETXL))
+		pos -= 3; /* set position before trailing */
+	    		  /*     formfeed and reset */
 	    lseek(f, pos, 0);              /* set pointer */
 	}
 	dup2(f, 1);
@@ -1197,7 +1289,7 @@ char *name;
 	/* set resolution to device units (300/inch) */
 	printf("72 300 div dup scale\n");
 	/* move to lower left corner of image */
-	if (!(flags & F_PSFIG))
+	if (!(flags & F_NPOSITION))
 	    printf("%d %d translate\n",lm,bm);
 	/* dump the bitmap */
 	printf("%d %d %d bitdump\n",iw,ih,scale);
@@ -1232,7 +1324,7 @@ char *name;
 	/* set resolution to device units (300/inch) */
 	printf("72 300 div dup scale\n");
 	/* move to lower left corner of image */
-	if (!(flags & F_PSFIG))
+	if (!(flags & F_NPOSITION))
 	    printf("%d %d translate\n",lm,bm);
 	/* dump the bitmap */
 	printf("%d %d %d bitdump\n",ih,iw,scale);
