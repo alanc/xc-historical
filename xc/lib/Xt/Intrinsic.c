@@ -452,7 +452,6 @@ void XtSetSensitive(widget,sensitive)
                          widgetClass->core_class.proc; \
 }
 #define TABLESIZE 20
-static unsigned long listSize;
 typedef struct {
     int offset;
     WidgetClass widgetClass;
@@ -470,8 +469,8 @@ InitializeCallbackTable ()
 static void ExpandTable()
 {
 
-   callbackTable = (CallbackTable)XtRealloc((currentIndex+TABLESIZE)
-                                                *sizeof(CallbackTableRec));
+   callbackTable = (CallbackTable)XtRealloc(callbackTable,
+                    (currentIndex+TABLESIZE)*sizeof(CallbackTableRec));
    maxIndex = currentIndex + TABLESIZE;
 } 
                                              
@@ -480,7 +479,7 @@ XtCallbackType XtNewCallbackType(widgetClass,offset)
     WidgetClass widgetClass;
     Cardinal  offset;
 {
-    if (currentIndex =  maxIndex) ExpandTable();
+    if (currentIndex ==  maxIndex) ExpandTable();
     callbackTable[currentIndex].offset = offset;
     callbackTable[currentIndex].widgetClass = widgetClass;
     return(currentIndex++);
@@ -492,7 +491,7 @@ CallbackList *FetchCallbackList (widget,callbackType)
     Widget  widget;
     XtCallbackType  callbackType;
 {
-    if ( callbackType >= listSize ||
+    if ( callbackType >= maxIndex ||
        !XtIsSubclass(widget,callbackTable[callbackType].widgetClass) )
           return(NULL);
 
@@ -618,7 +617,7 @@ void XtCallCallbacks (widget, callbackType, callData)
    CallbackList *callbackList;
    callbackList = FetchCallbackList(widget,callbackType);
    if (callbackList == NULL) {
-     XtError("invalid parameters to XtRemoveAllCallbacks");
+     XtError("invalid parameters to XtCallCallbacks");
      return;
    }
    CallCallbacks(callbackList,callData);

@@ -185,6 +185,7 @@ DO_Initialize() {
     EventInitialize();
     TranslateInitialize();
     CursorsInitialize();
+    InitializeCallbackTable();
 
 
 }

@@ -145,10 +145,9 @@ XtCallbackType  activateCommand;   /* for public consumption*/
 
 static void ClassInitialize()
 {
-  /*activateCommand = XtRegisterCallbackType(commandWidgetClass,
-					   Offset(CommandWidget,
-						  command.callbackList));
-						  */
+  activateCommand = XtNewCallbackType(commandWidgetClass,
+			 Offset(CommandWidget,command.callbackList));
+						
 } 
 
 static void Get_inverseGC(cbw)
@@ -213,9 +212,9 @@ static void Initialize(w)
     Get_highlightGC(cbw);
       /* Start the callback list if the client specified one in
 	 the arglist */
-/*    if (ComWcallback != NULL)
-      XtAddCallback(activateCommand,ComWcallback,ComWclosure);
-*/
+    if (ComWcallback != NULL)
+      XtAddCallback(cbw,activateCommand,ComWcallback,ComWclosure);
+
       /* init flags for state */
     ComWset = FALSE;
     ComWhighlighted = FALSE;  
@@ -233,19 +232,6 @@ static void Realize(w, valueMask, attributes)
   XtCallParentProcedure3Args(realize,w,valueMask,attributes);
 } 
 
-/*
-static void AddCallback(widget,resourceName,callback,closure,position)
-     Widget widget;
-     XrmAtom resourceName;
-     Callback callback;
-     caddr_t closure;
-     enum {Head, Tail} position;
-{
-  CommandWidget cbw = (CommandWidget)widget;
-  XtAddSingleCallback(ComWcallbackList,resourceName,
-		      callback,closure,position);
-}
-*/
 
 /***************************
 *
@@ -294,7 +280,7 @@ static void Notify(w,event)
      XEvent *event;
 {
   CommandWidget cbw = (CommandWidget)w;
-/*  XtCallCallback(cbw,activateCommand,NULL);*/
+  XtCallCallbacks(cbw,activateCommand,NULL);
 }
 /*
  * Repaint the widget window
