@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: utils.c,v 1.103 91/07/03 19:09:27 rws Exp $ */
+/* $XConsortium: utils.c,v 1.104 91/07/06 13:05:57 rws Exp $ */
 #include "Xos.h"
 #include <stdio.h>
 #include "misc.h"
@@ -47,6 +47,7 @@ extern int defaultScreenSaverBlanking;
 extern int defaultBackingStore;
 extern Bool disableBackingStore;
 extern Bool disableSaveUnders;
+extern Bool PartialNetwork;
 #ifndef NOLOGOHACK
 extern int logoScreenSaver;
 #endif
@@ -63,6 +64,8 @@ extern int defaultColorVisualClass;
 extern long ScreenSaverTime;		/* for forcing reset */
 extern Bool permitOldBugs;
 extern int monitorResolution;
+
+Bool CoreDump;
 
 void ddxUseMsg();
 
@@ -128,7 +131,9 @@ AbortServer()
 
     AbortDDX();
     fflush(stderr);
-    abort();
+    if (CoreDump)
+	abort();
+    exit (1);
 }
 
 void
@@ -296,6 +301,8 @@ char	*argv[];
 	    else
 		UseMsg();
 	}
+	else if ( strcmp( argv[i], "-core") == 0)
+	    CoreDump = TRUE;
 	else if ( strcmp( argv[i], "-dpi") == 0)
 	{
 	    if(++i < argc)
@@ -389,6 +396,8 @@ char	*argv[];
 	    else
 		UseMsg();
 	}
+	else if ( strcmp( argv[i], "-pn") == 0)
+	    PartialNetwork = TRUE;
 	else if ( strcmp( argv[i], "r") == 0)
 	    defaultKeyboardControl.autoRepeat = TRUE;
 	else if ( strcmp( argv[i], "-r") == 0)
@@ -818,7 +827,7 @@ FatalError(f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9) /* limit of ten args */
     char *f;
     char *s0, *s1, *s2, *s3, *s4, *s5, *s6, *s7, *s8, *s9;
 {
-    ErrorF("\nFatal server bug!\n");
+    ErrorF("\nFatal server error:\n");
     ErrorF(f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9);
     ErrorF("\n");
     AbortServer();

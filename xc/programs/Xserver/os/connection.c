@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: connection.c,v 1.138 91/06/29 16:54:01 rws Exp $ */
+/* $XConsortium: connection.c,v 1.139 91/07/03 15:08:03 keith Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -123,6 +123,7 @@ Bool NewOutputPending;		/* not yet attempted to write some new output */
 Bool AnyClientsWriteBlocked;	/* true if some client blocked on write */
 
 Bool RunFromSmartParent;	/* send SIGUSR1 to parent process */
+Bool PartialNetwork;		/* continue even if unable to bind all addrs */
 static int ParentProcess;
 
 static Bool debug_conns = FALSE;
@@ -384,19 +385,31 @@ CreateWellKnownSockets()
 	WellKnownConnections |= (1L << request);
 	DefineSelf (request);
     }
-#endif /* TCPCONN */
-#ifdef UNIXCONN
-    if ((request = open_unix_socket ()) != -1) {
-	WellKnownConnections |= (1L << request);
-	unixDomainConnection = request;
+    else if (!PartialNetwork) 
+    {
+	FatalError ("Cannot establish tcp listening socket");
     }
-#endif /* UNIXCONN */
+#endif /* TCPCONN */
 #ifdef DNETCONN
     if ((request = open_dnet_socket ()) != -1) {
 	WellKnownConnections |= (1L << request);
 	DefineSelf (request);
     }
+    else if (!PartialNetwork) 
+    {
+	FatalError ("Cannot establish dnet listening socket");
+    }
 #endif /* DNETCONN */
+#ifdef UNIXCONN
+    if ((request = open_unix_socket ()) != -1) {
+	WellKnownConnections |= (1L << request);
+	unixDomainConnection = request;
+    }
+    else if (!PartialNetwork) 
+    {
+	FatalError ("Cannot establish unix listening socket");
+    }
+#endif /* UNIXCONN */
     if (WellKnownConnections == 0)
         FatalError ("Cannot establish any listening sockets");
     signal (SIGPIPE, SIG_IGN);
