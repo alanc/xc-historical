@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.157 93/09/26 15:40:53 gildea Exp $
+XCOMM $XConsortium: Imakefile,v 1.158 93/09/28 19:27:23 rws Exp $
 #define DoNormalLib NormalLibX
 #define DoSharedLib SharedLibX
 #define DoDebugLib DebugLibX
@@ -896,6 +896,7 @@ SpecialCLibObjectRule(imTrSrm,$(ICONFIGFILES),$(CONN_DEFINES))
 SpecialCLibObjectRule(imTrTcp,$(ICONFIGFILES),$(CONN_DEFINES) $(SOCK_DEFINES))
 SpecialCLibObjectRule(lcUtil,$(ICONFIGFILES),$(XLC_DEFINES))
 #if BuildXKBlib
+SpecialCLibObjectRule(XKBCvt,$(_NOOP_),$(RCONST_DEFINES))
 SpecialCLibObjectRule(KeyBind,$(ICONFIGFILES),$(XKB_DEFINES))
 #endif
 
