@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Scale.c,v 1.13 91/07/19 18:29:31 dave Exp $
+ * $XConsortium: Scale.c,v 1.14 91/08/20 15:57:39 gildea Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -38,6 +38,10 @@
 
 #ifndef X_NOT_STDC_ENV
 #include <stdlib.h>
+#endif
+
+#if defined(ISC) && defined(SYSV) && defined(SYSV386) && __STDC__
+extern double atof(char *);
 #endif
 
 #define streq(a,b) (strcmp( (a), (b) ) == 0)

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: draw.c,v 1.5 91/07/26 12:30:50 keith Exp $
+ * $XConsortium: draw.c,v 1.6 91/07/30 14:10:42 keith Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -43,6 +43,11 @@
 #include <ctype.h>
 #include <math.h>
 #include "DviP.h"
+
+#if defined(ISC) && defined(SYSV) && defined(SYSV386) && __STDC__
+extern double atof(char *);
+#endif
+
 #ifndef M_PI
 #define M_PI 3.14159265358979323846264338327950
 #endif

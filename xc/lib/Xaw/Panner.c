@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Panner.c,v 1.41 91/02/19 16:06:27 converse Exp $
+ * $XConsortium: Panner.c,v 1.42 91/03/14 16:47:58 converse Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -31,6 +31,10 @@
 #include <X11/Xmu/Misc.h>		/* for Min */
 #include <ctype.h>			/* for isascii() etc. */
 #include <math.h>			/* for atof() */
+
+#if defined(ISC) && defined(SYSV) && defined(SYSV386) && __STDC__
+extern double atof(char *);
+#endif
 
 static char defaultTranslations[] = 
   "<Btn1Down>:    start() \n\

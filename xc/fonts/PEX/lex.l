@@ -1,5 +1,5 @@
 %{
-/* $XConsortium: lex.l,v 5.2 91/02/16 11:37:50 rws Exp $ */
+/* $XConsortium: lex.l,v 5.3 91/07/21 16:42:05 rws Exp $ */
 
 /*****************************************************************
 Copyright (c) 1989,1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -29,6 +29,10 @@ SOFTWARE.
 #include <ctype.h>
 #include <math.h>
 #include "to_wfont.h"
+
+#if defined(ISC) && defined(SYSV) && defined(SYSV386) && __STDC__
+extern double atof(char *);
+#endif
 
 %}
 %%
