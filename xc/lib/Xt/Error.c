@@ -1,4 +1,4 @@
-/* $XConsortium: Error.c,v 1.31 91/04/09 19:07:25 converse Exp $ */
+/* $XConsortium: Error.c,v 1.32 91/04/12 11:37:18 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -329,9 +329,15 @@ void XtSetErrorMsgHandler(handler)
 #endif /* GLOBALERRORS */
 }
 
+#if NeedFunctionPrototypes
+XtErrorMsgHandler XtAppSetErrorMsgHandler(
+    XtAppContext app,
+    XtErrorMsgHandler handler)
+#else
 XtErrorMsgHandler XtAppSetErrorMsgHandler(app,handler)
     XtAppContext app;
     XtErrorMsgHandler handler;
+#endif
 {
     XtErrorMsgHandler old;
 #if GLOBALERRORS
@@ -357,9 +363,15 @@ void XtSetWarningMsgHandler(handler)
 #endif /* GLOBALERRORS */
 }
 
+#if NeedFunctionPrototypes
+XtErrorMsgHandler XtAppSetWarningMsgHandler(
+    XtAppContext app,
+    XtErrorMsgHandler handler)
+#else
 XtErrorMsgHandler XtAppSetWarningMsgHandler(app,handler)
     XtAppContext app;
     XtErrorMsgHandler handler;
+#endif
 {
     XtErrorMsgHandler old;
 #if GLOBALERRORS
@@ -459,8 +471,12 @@ void XtAppWarning(app,message)
 #endif /* GLOBALERRORS */
 }
 
+#if NeedFunctionPrototypes
+void XtSetErrorHandler(XtErrorHandler handler)
+#else
 void XtSetErrorHandler(handler)
     XtErrorHandler handler;
+#endif
 {
 #if GLOBALERRORS
     if (handler != NULL) errorHandler = handler;
@@ -470,9 +486,15 @@ void XtSetErrorHandler(handler)
 #endif /* GLOBALERRORS */
 }
 
+#if NeedFunctionPrototypes
+XtErrorHandler XtAppSetErrorHandler(
+    XtAppContext app,
+    XtErrorHandler handler)
+#else
 XtErrorHandler XtAppSetErrorHandler(app,handler)
     XtAppContext app;
     XtErrorHandler handler;
+#endif
 {
     XtErrorHandler old;
 #if GLOBALERRORS
@@ -487,8 +509,12 @@ XtErrorHandler XtAppSetErrorHandler(app,handler)
     return old;
 }
 
+#if NeedFunctionPrototypes
+void XtSetWarningHandler(XtErrorHandler handler)
+#else
 void XtSetWarningHandler(handler)
     XtErrorHandler handler;
+#endif
 {
 #if GLOBALERRORS
     if (handler != NULL) warningHandler = handler;
@@ -498,9 +524,15 @@ void XtSetWarningHandler(handler)
 #endif /* GLOBALERRORS */
 }
 
+#if NeedFunctionPrototypes
+XtErrorHandler XtAppSetWarningHandler(
+    XtAppContext app,
+    XtErrorHandler handler)
+#else
 XtErrorHandler XtAppSetWarningHandler(app,handler)
     XtAppContext app;
     XtErrorHandler handler;
+#endif
 {
     XtErrorHandler old;
 #if GLOBALERRORS
