@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: error.c,v 1.1 93/09/03 13:25:10 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -37,8 +37,8 @@ int 		severity;
 SmPointer 	data;
 
 {
-    char *str;
     char *pData = (char *) data;
+    char *str;
 
     switch (offendingMinorOpcode)
     {
@@ -91,7 +91,7 @@ SmPointer 	data;
 	    str = "???";
     }
 
-    fprintf (stderr, "            Error class               = %s\n", str);
+    fprintf (stderr, "             Error class               = %s\n", str);
 
     if (severity == IceCanContinue)
 	str = "CanContinue";
@@ -102,7 +102,7 @@ SmPointer 	data;
     else
 	str = "???";
 
-    fprintf (stderr, "            Severity                  = %s\n", str);
+    fprintf (stderr, "             Severity                  = %s\n", str);
 
     switch (errorClass)
     {
@@ -112,6 +112,11 @@ SmPointer 	data;
 	default:
 	    break;
     }
+
+    fprintf (stderr, "\n");
+
+    if (severity == IceFatalToProtocol || severity == IceFatalToConnection)
+	exit (1);
 }
 
 
@@ -133,8 +138,8 @@ int 		severity;
 SmPointer 	data;
 
 {
-    char *str;
     char *pData = (char *) data;
+    char *str;
 
     switch (offendingMinorOpcode)
     {
@@ -199,6 +204,11 @@ SmPointer 	data;
 	default:
 	    break;
     }
+
+    fprintf (stderr, "\n");
+
+    if (severity == IceFatalToProtocol || severity == IceFatalToConnection)
+	exit (1);
 }
 
 
@@ -261,6 +271,25 @@ int	severity;
 {
     IceErrorHeader (iceConn,
 	_SmcOpcode, offendingMinor,
+	iceConn->sequence - 1,
+	severity,
+	IceBadState,
+	0);
+
+    IceFlush (iceConn);
+}
+
+
+void
+_SmsErrorBadState (iceConn, offendingMinor, severity)
+
+IceConn	iceConn;
+int	offendingMinor;
+int	severity;
+
+{
+    IceErrorHeader (iceConn,
+	_SmsOpcode, offendingMinor,
 	iceConn->sequence - 1,
 	severity,
 	IceBadState,
