@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Convert.c,v 1.26 89/09/14 10:12:08 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Convert.c,v 1.27 89/09/26 10:53:02 swick Exp $";
 /* $oHeader: Convert.c,v 1.4 88/09/01 11:10:44 asente Exp $ */
 #endif /*lint*/
 /*LINTLIBRARY*/
@@ -157,8 +157,18 @@ void _XtTableAddConverter(table, from_type, to_type, converter, convert_args, nu
     }
     p->converter    = converter;
     p->destructor   = destructor;
-    p->convert_args = convert_args;
-    p->num_args     = num_args;
+    p->num_args     = num_args;	
+    if (num_args) {
+	XtConvertArgList args =
+	    p->convert_args = (XtConvertArgList)
+		XtMalloc( num_args*sizeof(XtConvertArgRec) );
+	while (num_args--) {
+	    *args++ = *convert_args++;
+	}
+    }
+    else {
+	p->convert_args = NULL;
+    }
     p->new_style    = new_style;
     if (destructor != nullProc || ((cache_type & 0xff) != XtCacheNone))
 	p->cache_type = cache_type;
