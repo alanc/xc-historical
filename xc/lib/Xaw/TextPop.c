@@ -1,4 +1,4 @@
-/* $XConsortium: TextPop.c,v 1.16 91/03/13 22:06:45 gildea Exp $ */
+/* $XConsortium: TextPop.c,v 1.17 91/03/25 12:18:28 converse Exp $ */
 
 /***********************************************************
 Copyright 1989 by the Massachusetts Institute of Technology,
@@ -317,7 +317,7 @@ char * ptr;
   num_args = 0;
   XtSetArg(args[num_args], XtNfromVert, label); num_args++;
   XtSetArg(args[num_args], XtNleft, XtChainLeft); num_args++;
-  XtSetArg(args[num_args], XtNright, XtChainLeft); num_args++;
+  XtSetArg(args[num_args], XtNright, XtChainRight); num_args++;
   XtSetArg(args[num_args], XtNeditType, XawtextEdit); num_args++;
   XtSetArg(args[num_args], XtNresizable, TRUE); num_args++;
   XtSetArg(args[num_args], XtNresize, XawtextResizeWidth); num_args++;
@@ -657,7 +657,7 @@ char * ptr;
   XtSetArg(args[num_args], XtNfromVert, search->left_toggle); num_args++;
   XtSetArg(args[num_args], XtNfromHoriz, s_label); num_args++;
   XtSetArg(args[num_args], XtNleft, XtChainLeft); num_args++;
-  XtSetArg(args[num_args], XtNright, XtChainLeft); num_args++;
+  XtSetArg(args[num_args], XtNright, XtChainRight); num_args++;
   XtSetArg(args[num_args], XtNeditType, XawtextEdit); num_args++;
   XtSetArg(args[num_args], XtNresizable, TRUE); num_args++;
   XtSetArg(args[num_args], XtNresize, XawtextResizeWidth); num_args++;
@@ -679,7 +679,7 @@ char * ptr;
   XtSetArg(args[num_args], XtNfromHoriz, s_label); num_args++;
   XtSetArg(args[num_args], XtNfromVert, s_text); num_args++;
   XtSetArg(args[num_args], XtNleft, XtChainLeft); num_args++;
-  XtSetArg(args[num_args], XtNright, XtChainLeft); num_args++;
+  XtSetArg(args[num_args], XtNright, XtChainRight); num_args++;
   XtSetArg(args[num_args], XtNeditType, XawtextEdit); num_args++;
   XtSetArg(args[num_args], XtNresizable, TRUE); num_args++;
   XtSetArg(args[num_args], XtNresize, XawtextResizeWidth); num_args++;
