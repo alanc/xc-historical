@@ -26,7 +26,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: lex.l,v 1.33 89/05/11 16:18:09 jim Exp $
+ * $XConsortium: lex.l,v 1.34 89/05/16 10:11:26 jim Exp $
  *
  * .twmrc lex file
  *
@@ -35,7 +35,7 @@
  ***********************************************************************/
 
 static char RCSinfo[]=
-"$XConsortium: lex.l,v 1.33 89/05/11 16:18:09 jim Exp $";
+"$XConsortium: lex.l,v 1.34 89/05/16 10:11:26 jim Exp $";
 
 #include <stdio.h>
 #include "gram.h"
@@ -49,7 +49,7 @@ extern int ParseError;
 %n 4000
 %a 4000
 
-string				\"[^"]*\"
+string				\"([^"]|\\.)*\"
 number				[0-9]+
 button				[Bb][Uu][Tt][Tt][Oo][Nn]
 tbutton				[Tt][Ii][Tt][Ll][Ee][Bb][Uu][Tt][Tt][Oo][Nn]

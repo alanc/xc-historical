@@ -25,7 +25,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: gram.y,v 1.37 89/05/11 16:17:58 jim Exp $
+ * $XConsortium: gram.y,v 1.38 89/05/16 10:11:22 jim Exp $
  *
  * .twmrc command grammer
  *
@@ -35,7 +35,7 @@
 
 %{
 static char RCSinfo[]=
-"$XConsortium: gram.y,v 1.37 89/05/11 16:17:58 jim Exp $";
+"$XConsortium: gram.y,v 1.38 89/05/16 10:11:22 jim Exp $";
 
 #include <stdio.h>
 #include "twm.h"
@@ -723,8 +723,81 @@ yyerror(s) char *s;
 RemoveDQuote(str)
 char *str;
 {
-    strcpy(str, &str[1]);
-    str[strlen(str)-1] = '\0';
+    register char *i, *o;
+    register n;
+    register count;
+
+    for (i=str+1, o=str; *i && *i != '\"'; o++)
+    {
+	if (*i == '\\')
+	{
+	    switch (*++i)
+	    {
+	    case 'n':
+		*o = '\n';
+		i++;
+		break;
+	    case 'b':
+		*o = '\b';
+		i++;
+		break;
+	    case 'r':
+		*o = '\r';
+		i++;
+		break;
+	    case 't':
+		*o = '\t';
+		i++;
+		break;
+	    case 'f':
+		*o = '\f';
+		i++;
+		break;
+	    case '0':
+		if (*++i == 'x')
+		    goto hex;
+		else
+		    --i;
+	    case '1': case '2': case '3':
+	    case '4': case '5': case '6': case '7':
+		n = 0;
+		count = 0;
+		while (*i >= '0' && *i <= '7' && count < 3)
+		{
+		    n = (n<<3) + (*i++ - '0');
+		    count++;
+		}
+		*o = n;
+		break;
+	    hex:
+	    case 'x':
+		n = 0;
+		count = 0;
+		while (i++, count++ < 2)
+		{
+		    if (*i >= '0' && *i <= '9')
+			n = (n<<4) + (*i - '0');
+		    else if (*i >= 'a' && *i <= 'f')
+			n = (n<<4) + (*i - 'a') + 10;
+		    else if (*i >= 'A' && *i <= 'F')
+			n = (n<<4) + (*i - 'A') + 10;
+		    else
+			break;
+		}
+		*o = n;
+		break;
+	    case '\"':
+	    case '\'':
+	    case '\\':
+	    default:
+		*o = *i++;
+		break;
+	    }
+	}
+	else
+	    *o = *i++;
+    }
+    *o = '\0';
 }
 
 MenuRoot *
