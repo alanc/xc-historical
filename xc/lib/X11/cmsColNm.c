@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsColNm.c,v 1.18 91/06/07 18:21:04 rws Exp $" */
+/* $XConsortium: XcmsColNm.c,v 1.19 91/06/27 10:52:25 dave Exp $" */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -889,8 +889,8 @@ _XcmsResolveColorString(ccc, color_string, pColor_exact_return, result_format)
  */
 {
     XcmsColor dbWhitePt;	/* whitePt associated with pColor_exact_return*/
-    int inheritScrnWhitePt = 0;	/* Indicates if pColor_exact_return inherits */
 				/*    the screen's white point */
+    XcmsColor *pClientWhitePt;
     int retval;
     char *strptr = whitePtStr;
 
@@ -912,7 +912,7 @@ _XcmsResolveColorString(ccc, color_string, pColor_exact_return, result_format)
 		&& pColor_exact_return->format != result_format) {
 	    /* need to be converted to the target format */
 	    return(XcmsConvertColors(ccc, pColor_exact_return, 1, 
-		    result_format, (Bool *) NULL));
+		    result_format, (Bool *)NULL));
 	} else {
 	    return(XcmsSuccess);
 	}
@@ -941,66 +941,104 @@ _XcmsResolveColorString(ccc, color_string, pColor_exact_return, result_format)
     }
 
     /*
-     * c. Attempt to extract the specification for the "WhitePoint" from
-     *    the DI Database (dbWhitePt).
-     *
-     *    If
-     *	     (1) the database specification is device-dependent (e.g., RGB
-     *	  	or RGBi), or
-     *	     (2) the DI Database does not have a white point,
-     *	  then assume the white point is the same as the Screen White Point.
-     */
-
-     if (XCMS_DD_ID(pColor_exact_return->format) ||
-	    (_XcmsLookupColorName(ccc, &strptr, &dbWhitePt)
-	    != 1)) {
-	inheritScrnWhitePt++;
-	bcopy((char *)&ccc->pPerScrnInfo->screenWhitePt, (char *)&dbWhitePt,
-		sizeof(XcmsColor));
-    }
-
-    /*
-     * d. White Point Adjustment  (ClientWhitePoint versus DBWhitePt)
-     *
+     * b. If result_format not defined, then assume target format
+     *	  is the exact format.
      */
     if (result_format == XcmsUndefinedFormat) {
 	result_format = pColor_exact_return->format;
     }
-    if ((ccc->clientWhitePt.format == XcmsUndefinedFormat && inheritScrnWhitePt)
-	    || _XcmsEqualWhitePts(ccc, &ccc->clientWhitePt, &dbWhitePt)) {
+
+    if ((ClientWhitePointOfCCC(ccc))->format == XcmsUndefinedFormat) {
+	pClientWhitePt = ScreenWhitePointOfCCC(ccc);
+    } else {
+	pClientWhitePt = ClientWhitePointOfCCC(ccc);
+    }
+
+    /*
+     * c. Convert to the target format, making adjustments for white
+     *	  point differences as necessary.
+     */
+    if (XCMS_DD_ID(pColor_exact_return->format)) {
 	/*
-	 * 1. Client White Point is equal to the Screen White Point AND
-	 *	a. pColor_exact_return->format is Device-Dependent (e.g. RGB,
-	 *		RGBi),  OR
-	 *	b. No white point was found in the database.
-	 *     OR
-	 * 2. Database White Point and Client White Point are equal.
-	 *
-	 * Therefore, we can just use dbWhitePt in our conversion and
-	 * convert to the target format.
+	 * The spec format is Device-Dependent, therefore assume the
+	 *    its white point is the Screen White Point.
 	 */
-	return(_XcmsConvertColorsWithWhitePt(ccc, pColor_exact_return,
-		&dbWhitePt, 1, result_format, (Bool *) NULL));
-    } else if (ccc->whitePtAdjProc) {
-	/*
-	 * Database White Point and Client White Point are not equal therefore
-	 *	the pColor_exact_return must be White Point Adjusted from the
-	 *	Database White Point to the Client White Point.
-	 */
-	return((*ccc->whitePtAdjProc)(ccc, &dbWhitePt,
-		&ccc->clientWhitePt, result_format, pColor_exact_return, 1,
-		(Bool *) NULL));
+	if (XCMS_DD_ID(result_format)) {
+	    /*
+	     * Target format is Device-Dependent
+	     *	Therefore, DD --> DD conversion
+	     */
+	    return(_XcmsDDConvertColors(ccc, pColor_exact_return,
+		    1, result_format, (Bool *) NULL));
+	} else {
+	    /*
+	     * Target format is Device-Independent
+	     *	Therefore, DD --> DI conversion
+	     */
+	    if (ccc->whitePtAdjProc && !_XcmsEqualWhitePts(ccc,
+		    pClientWhitePt, ScreenWhitePointOfCCC(ccc))) {
+		return((*ccc->whitePtAdjProc)(ccc, ScreenWhitePointOfCCC(ccc),
+			pClientWhitePt, result_format,
+			pColor_exact_return, 1, (Bool *) NULL));
+	    } else {
+		if (_XcmsDDConvertColors(ccc, pColor_exact_return, 1,
+			XcmsCIEXYZFormat, (Bool *) NULL) == XcmsFailure) {
+		    return(XcmsFailure);
+		}
+		return(_XcmsDIConvertColors(ccc, pColor_exact_return,
+			pClientWhitePt, 1, result_format));
+	    }
+	}
     } else {
 	/*
-	 * White Point Adjustment function unavailable in ccc, therefore
-	 * do not perform white point adjustment.  Just convert to target
-	 * format
+	 * The spec format is Device-Independent, therefore attempt
+	 * to find a database white point.
+	 *
+	 * If the Database does not have a white point, then assume the
+	 * database white point is the same as the Screen White Point.
 	 */
-	if (result_format == pColor_exact_return->format) {
-	    return(1);
+
+	if (_XcmsLookupColorName(ccc, &strptr, &dbWhitePt) != 1) {
+	    bcopy((char *)&ccc->pPerScrnInfo->screenWhitePt, (char *)&dbWhitePt,
+		    sizeof(XcmsColor));
 	}
-	/* Convert to the target format */
-	return(XcmsConvertColors(ccc, pColor_exact_return,
-		1, result_format, (Bool *) NULL));
+	if (XCMS_DD_ID(result_format)) {
+	    /*
+	     * Target format is Device-Dependent
+	     *	Therefore, DI --> DD conversion
+	     */
+	    if (ccc->whitePtAdjProc && !_XcmsEqualWhitePts(ccc,
+		    &dbWhitePt, ScreenWhitePointOfCCC(ccc))) {
+		return((*ccc->whitePtAdjProc)(ccc, &dbWhitePt,
+			ScreenWhitePointOfCCC(ccc), result_format,
+			pColor_exact_return, 1, (Bool *)NULL));
+	    } else {
+		if (_XcmsDIConvertColors(ccc, pColor_exact_return,
+			&dbWhitePt, 1, XcmsCIEXYZFormat) == XcmsFailure) {
+		    return(XcmsFailure);
+		}
+		return (_XcmsDDConvertColors(ccc, pColor_exact_return, 1,
+			result_format, (Bool *)NULL));
+	    }
+	} else {
+	    /*
+	     * Target format is Device-Independent
+	     *	Therefore, DI --> DI conversion
+	     *
+	     * Since DI->DI, we don't apply WhiteAdjustProc.
+	     */
+	    if (_XcmsEqualWhitePts(ccc,
+		    &dbWhitePt, pClientWhitePt)) {
+		return (_XcmsDIConvertColors(ccc, pColor_exact_return,
+			&dbWhitePt, 1, result_format));
+	    } else {
+		if (_XcmsDIConvertColors(ccc, pColor_exact_return,
+			&dbWhitePt, 1, XcmsCIEXYZFormat) == XcmsFailure) {
+		    return(XcmsFailure);
+		}
+		return(_XcmsDIConvertColors(ccc, pColor_exact_return,
+			pClientWhitePt, 1, result_format));
+	    }
+	}
     }
 }
