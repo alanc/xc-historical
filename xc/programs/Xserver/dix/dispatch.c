@@ -1,4 +1,4 @@
-/* $XConsortium: dispatch.c,v 5.39 91/12/23 12:09:58 keith Exp $ */
+/* $XConsortium: dispatch.c,v 5.40 92/02/27 18:14:04 eswu Exp $ */
 /************************************************************
 Copyright 1987, 1989 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -252,7 +252,7 @@ Dispatch()
 		client->requestLog[client->requestLogIndex] = MAJOROP;
 		client->requestLogIndex++;
 #endif
-		if (result > (MAX_REQUEST_SIZE << 2))
+		if (result > (MAX_BIG_REQUEST_SIZE << 2))
 		    result = BadLength;
 		else
 		    result = (* client->requestVector[MAJOROP])(client);
@@ -302,7 +302,7 @@ ProcCreateWindow(client)
     LEGAL_NEW_RESOURCE(stuff->wid, client);
     if (!(pParent = (WindowPtr)LookupWindow(stuff->parent, client)))
         return BadWindow;
-    len = stuff->length -  (sizeof(xCreateWindowReq) >> 2);
+    len = client->req_len - (sizeof(xCreateWindowReq) >> 2);
     if (Ones(stuff->mask) != len)
         return BadLength;
     if (!stuff->width || !stuff->height)
@@ -344,7 +344,7 @@ ProcChangeWindowAttributes(client)
     pWin = (WindowPtr)LookupWindow(stuff->window, client);
     if (!pWin)
         return(BadWindow);
-    len = stuff->length - (sizeof(xChangeWindowAttributesReq) >> 2);
+    len = client->req_len - (sizeof(xChangeWindowAttributesReq) >> 2);
     if (len != Ones(stuff->valueMask))
         return BadLength;
     result =  ChangeWindowAttributes(pWin, 
@@ -542,7 +542,7 @@ ProcConfigureWindow(client)
     pWin = (WindowPtr)LookupWindow( stuff->window, client);
     if (!pWin)
         return(BadWindow);
-    len = stuff->length - (sizeof(xConfigureWindowReq) >> 2);
+    len = client->req_len - (sizeof(xConfigureWindowReq) >> 2);
     if (Ones((Mask)stuff->mask) != len)
         return BadLength;
     result =  ConfigureWindow(pWin, (Mask)stuff->mask, (XID *) &stuff[1], 
@@ -1149,7 +1149,7 @@ ProcQueryTextExtents(client)
 	}
 	pFont = pGC->font;
     }
-    length = stuff->length - (sizeof(xQueryTextExtentsReq) >> 2);
+    length = client->req_len - (sizeof(xQueryTextExtentsReq) >> 2);
     length = length << 1;
     if (stuff->oddLength)
     {
@@ -1284,7 +1284,7 @@ ProcCreateGC(client)
     client->errorValue = stuff->gc;
     LEGAL_NEW_RESOURCE(stuff->gc, client);
     VERIFY_DRAWABLE (pDraw, stuff->drawable, client);
-    len = stuff->length -  (sizeof(xCreateGCReq) >> 2);
+    len = client->req_len -  (sizeof(xCreateGCReq) >> 2);
     if (len != Ones(stuff->mask))
         return BadLength;
     pGC = (GC *)CreateGC(pDraw, stuff->mask, 
@@ -1307,7 +1307,7 @@ ProcChangeGC(client)
 		
     REQUEST_AT_LEAST_SIZE(xChangeGCReq);
     VERIFY_GC(pGC, stuff->gc, client);
-    len = stuff->length -  (sizeof(xChangeGCReq) >> 2);
+    len = client->req_len -  (sizeof(xChangeGCReq) >> 2);
     if (len != Ones(stuff->mask))
         return BadLength;
     result = DoChangeGC(pGC, stuff->mask, (XID *) &stuff[1], 0);
@@ -1390,7 +1390,7 @@ ProcSetClipRectangles(client)
     }
     VERIFY_GC(pGC,stuff->gc, client);
 		 
-    nr = (stuff->length << 2) - sizeof(xSetClipRectanglesReq);
+    nr = (client->req_len << 2) - sizeof(xSetClipRectanglesReq);
     if (nr & 4)
 	return(BadLength);
     nr >>= 3;
@@ -1542,7 +1542,7 @@ ProcPolyPoint(client)
         return BadValue;
     }
     VALIDATE_DRAWABLE_AND_GC(stuff->drawable, pDraw, pGC, client); 
-    npoint = ((stuff->length << 2) - sizeof(xPolyPointReq)) >> 2;
+    npoint = ((client->req_len << 2) - sizeof(xPolyPointReq)) >> 2;
     if (npoint)
         (*pGC->ops->PolyPoint)(pDraw, pGC, stuff->coordMode, npoint,
 			  (xPoint *) &stuff[1]);
@@ -1566,7 +1566,7 @@ ProcPolyLine(client)
         return BadValue;
     }
     VALIDATE_DRAWABLE_AND_GC(stuff->drawable, pDraw, pGC, client);
-    npoint = ((stuff->length << 2) - sizeof(xPolyLineReq)) >> 2;
+    npoint = ((client->req_len << 2) - sizeof(xPolyLineReq)) >> 2;
     if (npoint)
 	(*pGC->ops->Polylines)(pDraw, pGC, stuff->coordMode, npoint, 
 			      (xPoint *) &stuff[1]);
@@ -1584,7 +1584,7 @@ ProcPolySegment(client)
 
     REQUEST_AT_LEAST_SIZE(xPolySegmentReq);
     VALIDATE_DRAWABLE_AND_GC(stuff->drawable, pDraw, pGC, client);
-    nsegs = (stuff->length << 2) - sizeof(xPolySegmentReq);
+    nsegs = (client->req_len << 2) - sizeof(xPolySegmentReq);
     if (nsegs & 4)
 	return(BadLength);
     nsegs >>= 3;
@@ -1604,7 +1604,7 @@ ProcPolyRectangle (client)
 
     REQUEST_AT_LEAST_SIZE(xPolyRectangleReq);
     VALIDATE_DRAWABLE_AND_GC(stuff->drawable, pDraw, pGC, client);
-    nrects = (stuff->length << 2) - sizeof(xPolyRectangleReq);
+    nrects = (client->req_len << 2) - sizeof(xPolyRectangleReq);
     if (nrects & 4)
 	return(BadLength);
     nrects >>= 3;
@@ -1625,7 +1625,7 @@ ProcPolyArc(client)
 
     REQUEST_AT_LEAST_SIZE(xPolyArcReq);
     VALIDATE_DRAWABLE_AND_GC(stuff->drawable, pDraw, pGC, client);
-    narcs = (stuff->length << 2) - sizeof(xPolyArcReq);
+    narcs = (client->req_len << 2) - sizeof(xPolyArcReq);
     if (narcs % sizeof(xArc))
 	return(BadLength);
     narcs /= sizeof(xArc);
@@ -1658,7 +1658,7 @@ ProcFillPoly(client)
     }
 
     VALIDATE_DRAWABLE_AND_GC(stuff->drawable, pDraw, pGC, client);
-    things = ((stuff->length << 2) - sizeof(xFillPolyReq)) >> 2;
+    things = ((client->req_len << 2) - sizeof(xFillPolyReq)) >> 2;
     if (things)
         (*pGC->ops->FillPolygon) (pDraw, pGC, stuff->shape,
 			 stuff->coordMode, things,
@@ -1677,7 +1677,7 @@ ProcPolyFillRectangle(client)
 
     REQUEST_AT_LEAST_SIZE(xPolyFillRectangleReq);
     VALIDATE_DRAWABLE_AND_GC(stuff->drawable, pDraw, pGC, client);
-    things = (stuff->length << 2) - sizeof(xPolyFillRectangleReq);
+    things = (client->req_len << 2) - sizeof(xPolyFillRectangleReq);
     if (things & 4)
 	return(BadLength);
     things >>= 3;
@@ -1688,7 +1688,7 @@ ProcPolyFillRectangle(client)
 }
 
 int
-ProcPolyFillArc               (client)
+ProcPolyFillArc(client)
     register ClientPtr client;
 {
     int		narcs;
@@ -1698,7 +1698,7 @@ ProcPolyFillArc               (client)
 
     REQUEST_AT_LEAST_SIZE(xPolyFillArcReq);
     VALIDATE_DRAWABLE_AND_GC(stuff->drawable, pDraw, pGC, client);
-    narcs = (stuff->length << 2) - sizeof(xPolyFillArcReq);
+    narcs = (client->req_len << 2) - sizeof(xPolyFillArcReq);
     if (narcs % sizeof(xArc))
 	return(BadLength);
     narcs /= sizeof(xArc);
@@ -1745,7 +1745,7 @@ ProcPutImage(client)
         return BadValue;
     }
     length *= stuff->height;
-    if ((((length + 3) >> 2) + (sizeof(xPutImageReq) >> 2)) != stuff->length)
+    if ((((length + 3) >> 2) + (sizeof(xPutImageReq) >> 2)) != client->req_len)
 	return BadLength;
     (*pGC->ops->PutImage) (pDraw, pGC, stuff->depth, stuff->dstX, stuff->dstY,
 		  stuff->width, stuff->height, 
@@ -1932,7 +1932,7 @@ ProcPolyText(client)
     VALIDATE_DRAWABLE_AND_GC(stuff->drawable, pDraw, pGC, client);
 
     pElt = (unsigned char *)&stuff[1];
-    endReq = ((unsigned char *) stuff) + (stuff->length <<2);
+    endReq = ((unsigned char *) stuff) + (client->req_len <<2);
     xorg = stuff->x;
     if (stuff->reqType == X_PolyText8)
     {
@@ -2425,7 +2425,7 @@ ProcFreeColors          (client)
 
 	if(pcmp->flags & AllAllocated)
 	    return(BadAccess);
-	count = ((stuff->length << 2)- sizeof(xFreeColorsReq)) >> 2;
+	count = ((client->req_len << 2)- sizeof(xFreeColorsReq)) >> 2;
 	retval =  FreeColors(pcmp, client->index, count,
 	    (unsigned long *)&stuff[1], stuff->planeMask);
         if (client->noClientException != Success)
@@ -2458,7 +2458,7 @@ ProcStoreColors               (client)
 	int	count;
         int     retval;
 
-        count = (stuff->length << 2) - sizeof(xStoreColorsReq);
+        count = (client->req_len << 2) - sizeof(xStoreColorsReq);
 	if (count % sizeof(xColorItem))
 	    return(BadLength);
 	count /= sizeof(xColorItem);
@@ -2527,7 +2527,7 @@ ProcQueryColors(client)
 	xrgb 			*prgbs;
 	xQueryColorsReply	qcr;
 
-	count = ((stuff->length << 2) - sizeof(xQueryColorsReq)) >> 2;
+	count = ((client->req_len << 2) - sizeof(xQueryColorsReq)) >> 2;
 	prgbs = (xrgb *)ALLOCATE_LOCAL(count * sizeof(xrgb));
 	if(!prgbs && count)
             return(BadAlloc);
@@ -2970,7 +2970,7 @@ ProcSetFontPath(client)
     
     REQUEST_AT_LEAST_SIZE(xSetFontPathReq);
     
-    nbytes = (stuff->length << 2) - sizeof(xSetFontPathReq);
+    nbytes = (client->req_len << 2) - sizeof(xSetFontPathReq);
     total = nbytes;
     ptr = (unsigned char *)&stuff[1];
     nfonts = stuff->nFonts;
@@ -3180,6 +3180,41 @@ CloseDownRetainedResources()
     }
 }
 
+void InitClient(client, i, ospriv)
+    ClientPtr client;
+    int i;
+    pointer ospriv;
+{
+    client->index = i;
+    client->sequence = 0; 
+    client->clientAsMask = ((Mask)i) << CLIENTOFFSET;
+    client->clientGone = FALSE;
+    if (i)
+    {
+	client->closeDownMode = DestroyAll;
+	client->lastDrawable = (DrawablePtr)WindowTable[0];
+	client->lastDrawableID = WindowTable[0]->drawable.id;
+    }
+    else
+    {
+	client->closeDownMode = RetainPermanent;
+	client->lastDrawable = (DrawablePtr)NULL;
+	client->lastDrawableID = INVALID;
+    }
+    client->lastGC = (GCPtr) NULL;
+    client->lastGCID = INVALID;
+    client->numSaved = 0;
+    client->saveSet = (pointer *)NULL;
+    client->noClientException = Success;
+#ifdef DEBUG
+    client->requestLogIndex = 0;
+#endif
+    client->requestVector = InitialVector;
+    client->osPrivate = ospriv;
+    client->swapped = FALSE;
+    client->big_requests = FALSE;
+}
+
 /************************
  * int NextAvailableClient(ospriv)
  *
@@ -3201,24 +3236,7 @@ NextAvailableClient(ospriv)
     clients[i] = client = (ClientPtr)xalloc(sizeof(ClientRec));
     if (!client)
 	return (ClientPtr)NULL;
-    client->index = i;
-    client->sequence = 0; 
-    client->clientAsMask = ((Mask)i) << CLIENTOFFSET;
-    client->closeDownMode = DestroyAll;
-    client->clientGone = FALSE;
-    client->lastDrawable = (DrawablePtr)WindowTable[0];
-    client->lastDrawableID = WindowTable[0]->drawable.id;
-    client->lastGC = (GCPtr) NULL;
-    client->lastGCID = INVALID;
-    client->numSaved = 0;
-    client->saveSet = (pointer *)NULL;
-    client->noClientException = Success;
-#ifdef DEBUG
-    client->requestLogIndex = 0;
-#endif
-    client->requestVector = InitialVector;
-    client->osPrivate = ospriv;
-    client->swapped = FALSE;
+    InitClient(client, i, ospriv);
     if (!InitClientResources(client))
     {
 	xfree(client);
