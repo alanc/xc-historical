@@ -1,3 +1,4 @@
+    CDEBUGFLAGS = LibraryCDebugFlags
        INCLUDES = -I. -I$(TOP) -I$(INCLUDESRC)
         DEFINES = -DUNIXCONN
    INSTALLFLAGS = -m 0644
