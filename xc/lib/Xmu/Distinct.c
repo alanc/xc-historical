@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Distinct.c,v 1.0 90/09/27 19:18:11 rws Exp $
+ * $XConsortium: Distinct.c,v 1.1 90/09/27 19:18:57 rws Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -42,7 +42,7 @@ int	count;
     int		    i, j;
 
     for (i = 0; i < count - 1; i++)
-	for (j = i; j < count; j++)
+	for (j = i + 1; j < count; j++)
 	{
      	    deltaRed = colors[i].red - colors[j].red;
     	    deltaGreen = colors[i].green - colors[j].green;
@@ -68,7 +68,7 @@ XmuDistinguishablePixels (dpy, cmap, pixels, count)
     Bool    ret;
 
     for (i = 0; i < count - 1; i++)
-	for (j = 0; j < count; j++)
+	for (j = i + 1; j < count; j++)
 	    if (pixels[i] == pixels[j])
 		return False;
     defs = (XColor *) malloc (count * sizeof (XColor));
