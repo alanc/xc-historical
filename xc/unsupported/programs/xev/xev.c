@@ -1,7 +1,7 @@
 /*
  * xev - event diagnostics
  *
- * $XHeader: xev.c,v 1.3 88/07/18 08:13:50 rws Exp $
+ * $XHeader: xev.c,v 1.4 88/07/22 12:03:16 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -26,6 +26,21 @@
 #define XK_LATIN1
 #include <X11/keysymdef.h>
 #include <ctype.h>
+
+#define INNER_WINDOW_WIDTH 50
+#define INNER_WINDOW_HEIGHT 50
+#define INNER_WINDOW_BORDER 4
+#define INNER_WINDOW_X 10
+#define INNER_WINDOW_Y 10
+#define OUTER_WINDOW_MIN_WIDTH (INNER_WINDOW_WIDTH + \
+				2 * (INNER_WINDOW_BORDER + INNER_WINDOW_X))
+#define OUTER_WINDOW_MIN_HEIGHT (INNER_WINDOW_HEIGHT + \
+				2 * (INNER_WINDOW_BORDER + INNER_WINDOW_Y))
+#define OUTER_WINDOW_DEF_WIDTH (OUTER_WINDOW_MIN_WIDTH + 100)
+#define OUTER_WINDOW_DEF_HEIGHT (OUTER_WINDOW_MIN_HEIGHT + 100)
+#define OUTER_WINDOW_DEF_X 100
+#define OUTER_WINDOW_DEF_Y 100
+				
 
 typedef unsigned long Pixel;
 
@@ -85,7 +100,7 @@ main (argc, argv)
     int i;
     XSizeHints hints;
     int borderwidth = 2;
-    Window w;
+    Window w, subw;
     XSetWindowAttributes attr;
     unsigned long mask = 0L;
     int done;
@@ -136,7 +151,9 @@ main (argc, argv)
 	exit (1);
     }
 
-    set_sizehints (&hints, 10, 10, 400, 200, 100, 100, geom);
+    set_sizehints (&hints, OUTER_WINDOW_MIN_WIDTH, OUTER_WINDOW_MIN_HEIGHT,
+		   OUTER_WINDOW_DEF_WIDTH, OUTER_WINDOW_DEF_HEIGHT, 
+		   OUTER_WINDOW_DEF_X, OUTER_WINDOW_DEF_Y, geom);
 
     screen = DefaultScreen (dpy);
 
@@ -165,7 +182,15 @@ main (argc, argv)
     XSetStandardProperties (dpy, w, "Event Tester", NULL, (Pixmap) 0,
 			    argv, argc, &hints);
 
+    subw = XCreateSimpleWindow (dpy, w, INNER_WINDOW_X, INNER_WINDOW_Y,
+				INNER_WINDOW_WIDTH, INNER_WINDOW_HEIGHT,
+				INNER_WINDOW_BORDER,
+				attr.border_pixel, attr.background_pixel);
+
+    XMapWindow (dpy, subw);		/* map before w so that it appears */
     XMapWindow (dpy, w);
+
+    printf ("Outer window is 0x%lx, inner window is 0x%lx\n", w, subw);
 
     for (done = 0; !done; ) {
 	XEvent event;
