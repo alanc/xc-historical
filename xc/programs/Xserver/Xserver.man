@@ -17,11 +17,13 @@ following platforms:
 Xqvss	Digital monochrome vaxstationII or II
 Xqdss	Digital color vaxstationII or II
 Xsun	Sun monochrome or color Sun 2, 3, or 4
-Xhp	HP Topcat 9000s300
+Xibm	IBM AED, APA and megapel PC/RT, 8514 and VGA PS/2 model 80
 Xapollo	Apollo monochrome or color (Domain/OS SR10.1 or SR10.2)
-Xibm	IBM APA and megapel PC/RT
+Xhp	HP Topcat 9000s300
 XmacII	Apple monochrome Macintosh II
-Xplx	Parallax color and video graphics controller
+Xcfbpmax	Digital color DECstation 3100
+Xmfbpmax	Digital monochrome DECstation 3100
+Xtek	Tektronix 4319 (this is the only tested configuration)
 .fi
 .in -4
 .SH "STARTING THE SERVER"
@@ -36,7 +38,7 @@ terminal emulator windows).
 Since \fIxdm\fP now handles automatic starting of the server in a portable
 way, the \fI-L\fP option to \fIxterm\fP is now considered obsolete.  Support
 for starting a login window from 4.3bsd-derived \fI/etc/ttys\fP files
-may not be included in future releases.
+is no longer included.
 .PP
 Installations that run more than one window system will still need to use the
 \fIxinit\fP utility.  However, \fIxinit\fP is to be considered a tool for
@@ -63,7 +65,7 @@ the socket, where \fIn\fP is the display number.
 .I "DECnet"
 .br
 The server responds to connections to object \fIX$X\fBn\fR, where \fIn\fP
-is the display number.
+is the display number.  This is not supported in all environments.
 .SH OPTIONS
 All of the sample servers accept the following command line options:
 .TP 8
@@ -154,7 +156,7 @@ sets screen-saver timeout time in minutes.
 .B \-su
 disables save under support on all screens.
 .TP 8
-.B \-t \fInumbers\fP
+.B \-t \fInumber\fP
 sets pointer acceleration threshold in pixels (i.e. after how many pixels
 pointer acceleration should take effect).
 .TP 8
@@ -178,21 +180,76 @@ a cheap trick way of getting backing-store to apply to all windows.
 loads the specified extension at init.
 Not supported in most implementations.
 .PP
+You can also have the X server connect to xdm using XDMCP.  Although this is
+not typically useful as it doesn't allow xdm to manage the server process,
+it can be used to debug XDMCP implementations, and servers as a sample
+implementation of the server side of XDMCP.  For more information on this
+protocol, see the XDMCP specification in docs/XDMCP/xdmcp.ms.  The following
+options control the behaviour of XDMCP.
+.TP 8
+.B \-query \fIhost-name\fP
+Enable XDMCP and send Query packets to the specified host.
+.TP 8
+.B \-broadcast
+Enable XDMCP and broadcast BroadcastQuery packets to the network.  The
+first responding display manager will be chosen for the session.
+.TP 8
+.B \-indirect \fIhost-name\fP
+Enable XDMCP and send IndirectQuery packets to the specified host.
+.TP 8
+.B \-port \fIport-num\fP
+Use an alternate port number for XDMCP packets.  Must be specified before
+any -query, -broadcast or -indirect options.
+.TP 8
+.B \-once
+Normally, the server keeps starting sessions, one after the other.  This
+option makes the server exit after the first session is over.
+.TP 8
+.B \-class \fIdisplay-class\fP
+XDMCP has an addtional display qualifier used in resource lookup for
+display-specific options.  This option sets that value, by default it 
+is "MIT-Unspecified" (not a very useful value).
+.TP 8
+.B \-cookie \fIxdm-auth-bits\fP
+When testing XDM-AUTHENTICATION-1, a private key is shared between the
+server and the manager.  This option sets the value of that private
+data (not that it's very private, being on the command line and all...).
+.TP 8
+.B \-displayID \fIdisplay-id\fP
+Yet another XDMCP specific value, this one allows the display manager to
+identify each display so that it can locate the shared key.
+.PP
 Many servers also have device-specific command line options.  See the
 manual pages for the individual servers for more details.
 .SH "SECURITY"
 .PP
-The sample server implements a simplistic authorization protocol which uses
-data private to authorized clients and the server.  The authorzation data is
-passed to the server in a private file named with the \fB-auth\fP command
-line option.  If this file contains any authorization records, the local
-host is not automatically allowed access to the server, and only clients
-which send one of the authorization records contained in the file in the
-connection setup information will be allowed access.  The authorization name
-supported is "MIT-MAGIC-COOKIE-1".  See the \fIXau\fP manual page for
-a description of the binary format of this file.  Maintenence of this
-file, and distribution of its contents to remote sites for use there is
-left as an exercise for the reader.
+The sample server implements a simplistic authorization protocol,
+MIT-MAGIC-COOKIE-1 which uses data private to authorized clients and the
+server.  This is a rather trivial scheme; if the client passes authorization
+data which is the same as the server has, it is allowed access.  This scheme
+is worse than the host-based access control mechanisms in environments with
+unsecure networks as it allows any host to connect, given that it has
+discovered the private key.  But in many environments, this level of
+security is better than the host-based scheme as it allows access control
+per-user instead of per-host.
+.PP
+In addtion, the server provides support for a DES-based authorization
+scheme, XDM-AUTHORIZATION-1, which is more secure (given a secure key
+distribution mechanism), but as DES is not generally distributable, the
+implementation is missing routines to encrypt and decrypt the authorization
+data.  This authorization scheme can be used in conjunction with XDMCP's
+authentication scheme, XDM-AUTHENTICATION-1 or in isolation.
+.PP
+The authorzation data is passed to the server in a private file named with
+the \fB-auth\fP command line option.  Each time the server is about to
+accept the first connection after a reset (or when the server is starting),
+it reads this file.  If this file contains any authorization records, the
+local host is not automatically allowed access to the server, and only
+clients which send one of the authorization records contained in the file in
+the connection setup information will be allowed access.  See the \fIXau\fP
+manual page for a description of the binary format of this file.
+Maintenence of this file, and distribution of its contents to remote sites
+for use there is left as an exercise for the reader.
 .PP
 The sample server also uses a host-based access control list for deciding
 whether or not to accept connections from clients on a particular machine.
@@ -253,6 +310,13 @@ user.
 .TP 8
 .I SIGTERM
 This signal causes the server to exit cleanly.
+.TP 8
+.I SIGUSR1
+This signal is used quite differently from either of the above.  When the
+server starts, it checks to see if it has inherited SIGUSR1 as SIG_IGN
+instead of the usual SIG_DFL.  In this case, the server sends a SIGUSR1 to
+it's parent process after it has set up the various connection schemes.  Xdm
+uses this feature to recognise when connecting to the server is possible.
 .SH "FONTS"
 Fonts are usually stored as individual files in directories.  The list of
 directories in which the server looks when trying to open a font is controlled
@@ -277,7 +341,7 @@ for 75 dots per inch displays.  An integrated selection of sizes, styles,
 and weights are provided for each family.
 .TP 8
 .I /usr/lib/X11/fonts/100dpi
-This directory contains versions of some of 
+This directory contains versions of
 the fonts in the \fI75dpi\fP directory
 for 100 dots per inch displays.
 .PP
@@ -328,15 +392,12 @@ The color database is missing a large number of colors.  However, there
 doesn't seem to be a better one available that can generate RGB values
 tailorable to particular displays.
 .PP
-The \fIxterm -L\fP method for starting an initial window from \fI/etc/ttys\fP
-is completely inadequate and should be removed.  People should use \fIxdm\fP
-instead.
 .SH COPYRIGHT
-Copyright 1984, 1985, 1986, 1987, 1988, Massachusetts Institute of Technology.
+Copyright 1984, 1985, 1986, 1987, 1988, 1989, Massachusetts Institute of Technology.
 .br
 See \fIX(1)\fP for a full statement of rights and permissions.
 .SH AUTHORS
-The sample server was originally written by
-Susan Angebranndt, Raymond Drewry, Philip Karlton, and Todd Newman,
-with support from a cast of thouands.  See also the file \fIdoc/contributors\fP
-in the sample distribution for a more complete list.
+The sample server was originally written by Susan Angebranndt, Raymond
+Drewry, Philip Karlton, and Todd Newman, with support from a cast of
+thouands.  See also the file \fIdoc/contributors\fP in the sample
+distribution for a more complete list.
