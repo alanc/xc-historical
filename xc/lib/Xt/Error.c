@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Error.c,v 1.25 90/07/12 13:29:45 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Error.c,v 1.26 90/09/21 11:45:45 swick Exp $";
 /* $oHeader: Error.c,v 1.6 88/08/31 17:46:14 asente Exp $ */
 #endif /* lint */
 
@@ -118,8 +118,13 @@ void XtAppGetErrorDatabaseText(app, name,type,class,defaultp,
     } else (void) XrmGetResource(db, temp, class, &type_str, &result);
     if (result.addr) {
         (void) strncpy (buffer, result.addr, nbytes);
-        if (result.size < nbytes) buffer[result.size] = 0;
-    } else (void) strncpy(buffer, defaultp, nbytes);
+        if (result.size > nbytes) buffer[nbytes-1] = 0;
+    } else {
+	int len = strlen(defaultp);
+	if (len >= nbytes) len = nbytes-1;
+	bcopy(defaultp, buffer, len);
+	buffer[len] = '\0';
+    }
 }
 
 _XtInitErrorHandling (db)
