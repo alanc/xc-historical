@@ -1,8 +1,8 @@
 /*
  * xmodmap - program for loading keymap definitions into server
  *
- * $Source: /usr.MC68020/expo.lcs.mit.edu/jim/X11/xmodmap/RCS/xmodmap.h,v $
- * $Header: xmodmap.h,v 1.4 88/02/08 17:13:33 jim Exp $
+ * $Source: /usr/expo/X/src/clients/xmodmap/RCS/xmodmap.h,v $
+ * $Header: xmodmap.h,v 1.1 88/02/08 18:33:57 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -21,6 +21,7 @@
 
 extern char *ProgramName;
 extern Display *dpy;
+extern int min_keycode, max_keycode;
 extern Bool verbose;
 extern Bool dontExecute;
 extern char *inputFilename;
