@@ -17,7 +17,7 @@ Author:  Bob Scheifler, MIT X Consortium
 
 ********************************************************/
 
-/* $XConsortium: mizerarc.c,v 5.30 91/08/26 10:28:30 rws Exp $ */
+/* $XConsortium: mizerarc.c,v 5.31 91/09/21 19:38:21 rws Exp $ */
 
 /* Derived from:
  * "Algorithm for drawing ellipses or hyperbolae with a digital plotter"
@@ -813,9 +813,9 @@ miZeroPolyArc(pDraw, pGC, narcs, parcs)
 	    }
 	}
     }
+    DEALLOCATE_LOCAL(points);
     if (dospans)
     {
 	DEALLOCATE_LOCAL(widths);
     }
-    DEALLOCATE_LOCAL(points);
 }
