@@ -1,4 +1,4 @@
-/* $XConsortium: Xtrans.h,v 1.20 94/03/18 11:29:00 mor Exp $ */
+/* $XConsortium: Xtrans.h,v 1.21 94/03/31 11:10:55 mor Exp $ */
 
 /* Copyright (c) 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  * Copyright 1993, 1994 by the Massachusetts Institute of Technology
@@ -182,11 +182,17 @@ typedef struct _XtransConnInfo *XtransConnInfo;
  * Function prototypes for the exposed interface
  */
 
+#ifdef TRANS_CLIENT
+
 XtransConnInfo TRANS(OpenCOTSClient)(
 #if NeedFunctionPrototypes
     char *		/* address */
 #endif
 );
+
+#endif /* TRANS_CLIENT */
+
+#ifdef TRANS_SERVER
 
 XtransConnInfo TRANS(OpenCOTSServer)(
 #if NeedFunctionPrototypes
@@ -194,11 +200,19 @@ XtransConnInfo TRANS(OpenCOTSServer)(
 #endif
 );
 
+#endif /* TRANS_SERVER */
+
+#ifdef TRANS_CLIENT
+
 XtransConnInfo TRANS(OpenCLTSClient)(
 #if NeedFunctionPrototypes
     char *		/* address */
 #endif
 );
+
+#endif /* TRANS_CLIENT */
+
+#ifdef TRANS_SERVER
 
 XtransConnInfo TRANS(OpenCLTSServer)(
 #if NeedFunctionPrototypes
@@ -206,6 +220,7 @@ XtransConnInfo TRANS(OpenCLTSServer)(
 #endif
 );
 
+#endif /* TRANS_SERVER */
 
 #ifdef TRANS_REOPEN
 
@@ -245,6 +260,8 @@ int TRANS(SetOption)(
 #endif
 );
 
+#ifdef TRANS_SERVER
+
 int TRANS(CreateListener)(
 #if NeedFunctionPrototypes
     XtransConnInfo,	/* ciptr */
@@ -265,12 +282,18 @@ XtransConnInfo TRANS(Accept)(
 #endif
 );
 
+#endif /* TRANS_SERVER */
+
+#ifdef TRANS_CLIENT
+
 int TRANS(Connect)(
 #if NeedFunctionPrototypes
     XtransConnInfo,	/* ciptr */
     char *		/* address */
 #endif
 );
+
+#endif /* TRANS_CLIENT */
 
 int TRANS(BytesReadable)(
 #if NeedFunctionPrototypes
@@ -359,6 +382,8 @@ int TRANS(GetConnectionNumber)(
 #endif
 );
 
+#ifdef TRANS_SERVER
+
 int TRANS(MakeAllCOTSServerListeners)(
 #if NeedFunctionPrototypes
     char *,		/* port */
@@ -376,6 +401,8 @@ int TRANS(MakeAllCLTSServerListeners)(
     XtransConnInfo **	/* ciptrs_ret */
 #endif
 );
+
+#endif /* TRANS_SERVER */
 
 
 /*
