@@ -1,4 +1,4 @@
-/* $XConsortium: dispatch.c,v 5.32 91/06/12 17:07:06 rws Exp $ */
+/* $XConsortium: dispatch.c,v 5.33 91/06/21 18:17:36 keith Exp $ */
 /************************************************************
 Copyright 1987, 1989 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -3123,6 +3123,7 @@ CloseDownClient(client)
 	}
 	DeleteClientFromAnySelections(client);
 	ReleaseActiveGrabs(client);
+	DeleteClientFontStuff(client);
     
 	if (client->closeDownMode == DestroyAll)
 	{
