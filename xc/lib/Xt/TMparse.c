@@ -1,4 +1,4 @@
-/* $XConsortium: TMparse.c,v 1.109 91/04/20 15:26:50 converse Exp $ */
+/* $XConsortium: TMparse.c,v 1.110 91/04/20 16:08:07 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -1732,10 +1732,12 @@ static void ShowProduction(currentProduction)
     Cardinal num_params = 1;
     char production[500], *eol;
     String params[1];
-	
-    strncpy( production, currentProduction, 500 );
-    if ((eol = index(production, '\n')) != 0) *eol = '\0';
-    else production[499] = '\0'; /* just in case */
+    int len = 499;
+
+    eol = strchr(currentProduction, '\n');
+    if (eol) len = MIN(499, eol - currentProduction);
+    bcopy(currentProduction, production, len);
+    production[len] = '\0';
 
     params[0] = production;
     XtWarningMsg(XtNtranslationParseError, "showLine", XtCXtToolkitError,
