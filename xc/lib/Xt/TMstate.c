@@ -1,4 +1,4 @@
-/* $XConsortium: TMstate.c,v 1.160 92/02/24 17:47:10 converse Exp $ */
+/* $XConsortium: TMstate.c,v 1.161 92/02/27 17:04:04 converse Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -865,7 +865,6 @@ static StatePtr TryCurrentTree(stateTreePtr, tmRecPtr, curEventPtr)
 	    if (MatchIncomingEvent(curEventPtr, typeMatch, modMatch))
 	      {
 		  if (candState->actions) {
-		      PushContext(contextPtr, candState);
 		      return candState;
 		  }
 		  else
@@ -894,9 +893,7 @@ static StatePtr TryCurrentTree(stateTreePtr, tmRecPtr, curEventPtr)
 			
 			if ((tmRecPtr->lastEventTime + delta) >= time) {
 			    if (nextState->actions) {
-				PushContext(contextPtr, candState);
-				PushContext(contextPtr, nextState);
-				return nextState;
+				return candState;
 			    }
 			    else
 			      matchState = candState;
@@ -905,14 +902,6 @@ static StatePtr TryCurrentTree(stateTreePtr, tmRecPtr, curEventPtr)
 		}
 	    }
 	}
-    }
-    if (matchState) {
-	typeMatch = TMGetTypeMatch(matchState->typeIndex);
-	if (typeMatch->eventType == _XtEventTimerEventType) {
-	    PushContext(contextPtr, matchState);
-	    matchState = matchState->nextLevel;
-	}
-	PushContext(contextPtr, matchState);
     }
     return matchState;
 }
@@ -924,8 +913,8 @@ static void HandleComplexState(w, tmRecPtr, curEventPtr)
 {
     XtTranslations 	xlations = tmRecPtr->translations;
     TMContext		*contextPtr = GetContextPtr(tmRecPtr);
-    TMShortCard		i;
-    StatePtr		candState;
+    TMShortCard		i, matchTreeIndex;
+    StatePtr		matchState = NULL, candState;
     TMComplexStateTree 	*stateTreePtr = 
       (TMComplexStateTree *)&xlations->stateTreeTbl[0];
     
@@ -939,11 +928,14 @@ static void HandleComplexState(w, tmRecPtr, curEventPtr)
 	if (((*stateTreePtr)->isSimple == False) &&
 	    (candState = TryCurrentTree(stateTreePtr,
 				       tmRecPtr,
-				       curEventPtr)))
-	  break;
+				       curEventPtr))) {
+	    matchTreeIndex = i;
+	    matchState = candState;
+	    if (candState->actions)
+	      break;
+	}
     }
-
-    if (candState == NULL){
+    if (matchState == NULL){
 	/* couldn't find it... */
 	if (!Ignore(curEventPtr))
 	  {
@@ -955,27 +947,36 @@ static void HandleComplexState(w, tmRecPtr, curEventPtr)
 	TMBindData	bindData = (TMBindData) tmRecPtr->proc_table;
 	XtActionProc	*procs;
 	Widget		accelWidget;
+	TMTypeMatch 	typeMatch;
 	
+	typeMatch  = TMGetTypeMatch(matchState->typeIndex);
+
+	PushContext(contextPtr, matchState);
+	if (typeMatch->eventType == _XtEventTimerEventType) {
+	    matchState = matchState->nextLevel;
+	    PushContext(contextPtr, matchState);
+	}
 	tmRecPtr->lastEventTime = GetTime (tmRecPtr, curEventPtr->xev);
 
 	if (bindData->simple.isComplex) {
 	    TMComplexBindProcs bindProcs =
-	      TMGetComplexBindEntry(bindData, i);
+	      TMGetComplexBindEntry(bindData, matchTreeIndex);
 	    procs = bindProcs->procs;
 	    accelWidget = bindProcs->widget;
 	}
 	else {
 	    TMSimpleBindProcs bindProcs = 
-	      TMGetSimpleBindEntry(bindData, i);
+	      TMGetSimpleBindEntry(bindData, matchTreeIndex);
 	    procs = bindProcs->procs;
 	    accelWidget = NULL;
 	}
 	HandleActions(w, 
 		      curEventPtr->xev, 
-		      (TMSimpleStateTree)*stateTreePtr,
+		      (TMSimpleStateTree)
+		      xlations->stateTreeTbl[matchTreeIndex],
 		      accelWidget,
 		      procs,
-		      candState->actions);
+		      matchState->actions);
     }
 }
 
