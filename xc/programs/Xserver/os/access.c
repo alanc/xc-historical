@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: access.c,v 1.26 88/09/06 15:51:03 jim Exp $ */
+/* $XConsortium: access.c,v 1.27 88/12/08 16:39:43 keith Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -299,8 +299,14 @@ ResetHosts (display)
 	    {
     		saddr.sa.sa_family = hp->h_addrtype;
     		if ((family = ConvertAddr (&saddr.sa, &len, &addr)) > 0)
-#ifdef NEW_HEADER_WITH_OLD_LIBRARY
-    		    NewHost (family, (pointer)hp->h_addr_list);
+#ifdef h_addr				/* new 4.3bsd version of gethostent */
+		{
+		    char **list;
+
+		    /* iterate over the addresses */
+		    for (list = hp->h_addr_list; *list; list++)
+			NewHost (family, (pointer)*list);
+		}
 #else
     		    NewHost (family, (pointer)hp->h_addr);
 #endif
