@@ -1,6 +1,6 @@
         DEFINES = ExtensionDefines
-        DEPLIBS = $(DEPXLIB)
-LOCAL_LIBRARIES = $(XLIB)
+        DEPLIBS = $(DEPEXTENSIONLIB) $(DEPXLIB)
+LOCAL_LIBRARIES = $(EXTENSIONLIB) $(XLIB)
   SYS_LIBRARIES = -lm
 
 SimpleProgramTarget(ico)
