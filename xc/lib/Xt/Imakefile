@@ -2,10 +2,15 @@
 #include BandAidCompiler
 #endif
 
+#ifdef SharedLibXt
+#undef SharedLibXt
+#endif
+#define SharedLibXt YES
+
 #if UnalignedReferencesAllowed
   ALIGN_DEFINES = -DUNALIGNED
 #endif
-      CCOPTIONS = LibraryCCOptions
+      CCOPTIONS = LibraryCCOptions 
     STD_DEFINES = LibraryDefines $(ALIGN_DEFINES)
     APP_DEFINES = -DXAPPLOADDIR=\"$(XAPPLOADDIR)$(PATHSEP)\"
      DB_DEFINES = -DERRORDB=\"$(LIBDIR)/XtErrorDB\"
@@ -48,6 +53,7 @@ SRCS = \
 	Event.c \
 	GCManager.c \
 	Geometry.c \
+	Inherit.c \
 	Initialize.c \
 	Intrinsic.c \
 	Manage.c \
@@ -95,29 +101,51 @@ OBJS = \
 	Vendor.o \
 	WindowObj.o
 
-all::
+UNSHAREDOBJS = Inherit.o
 
-#if DebugLibXt && ProfileLibXt
+#if SharedLibXt 
+# if DebugLibXt
+SharedAndDebuggedLibraryObjectRule()
+SpecialSharedAndDebuggedObjectRule(Initialize.o,$(ICONFIGFILES),$(APP_DEFINES))
+SpecialSharedDebuggedObjectRule(Error.o,$(ICONFIGFILES),$(DB_DEFINES))
+# else
+SharedLibraryObjectRule()
+SpecialSharedObjectRule(Initialize.o,$(ICONFIGFILES),$(APP_DEFINES))
+SpecialSharedObjectRule(Error.o,$(ICONFIGFILES),$(DB_DEFINES))
+# endif
+#else
+# if DebugLibXt && ProfileLibXt
 DebuggedAndProfiledLibraryObjectRule()
 SpecialDebuggedAndProfiledObjectRule(Initialize.o,$(ICONFIGFILES),$(APP_DEFINES))
 SpecialDebuggedAndProfiledObjectRule(Error.o,$(ICONFIGFILES),$(DB_DEFINES))
-#else
-# if DebugLibXt
+# else
+#  if DebugLibXt
 DebuggedLibraryObjectRule()
 SpecialDebuggedObjectRule(Initialize.o,$(ICONFIGFILES),$(APP_DEFINES))
 SpecialDebuggedObjectRule(Error.o,$(ICONFIGFILES),$(DB_DEFINES))
-# else
-#  if ProfileLibXt
+#  else
+#   if ProfileLibXt
 ProfiledLibraryObjectRule()
 SpecialProfiledObjectRule(Initialize.o,$(ICONFIGFILES),$(APP_DEFINES))
 SpecialProfiledObjectRule(Error.o,$(ICONFIGFILES),$(DB_DEFINES))
-#  else
+#   else
 NormalLibraryObjectRule()
 SpecialObjectRule(Initialize.o,$(ICONFIGFILES),$(APP_DEFINES))
 SpecialObjectRule(Error.o,$(ICONFIGFILES),$(DB_DEFINES))
+#   endif
 #  endif
 # endif
 #endif
+
+/*
+ * always generate unshared library too 
+ */
+#if SharedLibXt
+NormalSharedLibraryTarget(Xt,$(SOXTREV),$(OBJS),$(UNSHAREDOBJS))
+InstallSharedLibrary(Xt,$(SOXTREV),$(USRLIBDIR))
+#endif
+NormalLibraryTarget(Xt,$(OBJS) $(UNSHAREDOBJS))
+InstallLibrary(Xt,$(USRLIBDIR))
 
 #if defined(SunArchitecture) && defined(SparcArchitecture)
 /* the Sun C optimizer is broken on just this file */
@@ -133,9 +161,7 @@ clean::
 	$(RM) nooptRMparse.c
 #endif
 
-NormalLibraryTarget(Xt,$(OBJS))
 LintLibraryTarget(Xt,$(SRCS))
-InstallLibrary(Xt,$(USRLIBDIR))
 InstallLintLibrary(Xt,$(LINTLIBDIR))
 
 #if ProfileLibXt
