@@ -4,6 +4,10 @@
 #define DoProfileLib ProfileOldLibX
 #include <Library.tmpl>
 
+#ifdef RsArchitecture
+REQUIREDLIBS = $(XLIBSRC)/libX11.a
+#endif
+
 #if Malloc0ReturnsNull
         DEFINES = -DMALLOC_0_RETURNS_NULL
 #endif

@@ -1,13 +1,17 @@
+XCOMM
+XCOMM This library contains miscellaneous utility routines and is not part
+XCOMM of the Xlib standard.
+XCOMM
+
 #define DoNormalLib NormalLibXmu
 #define DoSharedLib SharedLibXmu
 #define DoDebugLib DebugLibXmu
 #define DoProfileLib ProfileLibXmu
 #include <Library.tmpl>
 
-XCOMM
-XCOMM This library contains miscellaneous utility routines and is not part
-XCOMM of the Xlib standard.
-XCOMM
+#ifdef RsArchitecture
+REQUIREDLIBS = $(EXTENSIONSRC)/lib/libXext.a $(TOOLKITSRC)/libXt.a $(XLIBSRC)/libX11.a
+#endif
 
 /* Since people link in Xmu without Xt, we avoid references to string data. */
 #if HasSharedLibraries

@@ -4,6 +4,10 @@
 #define DoProfileLib ProfileLibXaw
 #include <Library.tmpl>
 
+#ifdef RsArchitecture
+REQUIREDLIBS = $(XMUSRC)/libXmu.a $(EXTENSIONSRC)/lib/libXext.a $(TOOLKITSRC)/libXt.a $(XLIBSRC)/libX11.a
+#endif
+
    INSTALLFLAGS = $(INSTINCFLAGS)
        LINTLIBS = $(LINTXLIB) $(LINTXTOOL)
 

@@ -4,6 +4,10 @@
 #define DoProfileLib ProfileLibXext
 #include <Library.tmpl>
 
+#ifdef RsArchitecture
+REQUIREDLIBS = $(XLIBSRC)/libX11.a
+#endif
+
 #if BuildXInputLib || BuildPexClients
 #define IHaveSubdirs
 #define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
