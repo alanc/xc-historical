@@ -10,7 +10,7 @@ OBJS = atom.o colormap.o cursor.o dispatch.o dixutils.o events.o \
 CDEBUGFLAGS = ServerCDebugFlags
    INCLUDES = -I. -I../include -I../../include
 EXT_DEFINES = ExtensionDefines
-   LINTLIBS = -lc ../os/4.2bsd/llib-los.ln
+   LINTLIBS = ../os/4.2bsd/llib-los.ln
 
 NormalLibraryObjectRule()
 NormalLibraryTarget(dix,$(OBJS))

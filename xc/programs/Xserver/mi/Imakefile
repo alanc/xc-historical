@@ -16,7 +16,7 @@ OBJS =	mivaltree.o mipolyseg.o mipolyrect.o \
 
 CDEBUGFLAGS = ServerCDebugFlags
 INCLUDES = -I. -I../../include -I../../../include
-LINTLIBS = -lc ../../dix/llib-ldix.ln ../../os/4.2bsd/llib-los.ln
+LINTLIBS = ../../dix/llib-ldix.ln ../../os/4.2bsd/llib-los.ln
 
 NormalLibraryObjectRule()
 NormalLibraryTarget(mi,$(OBJS))
