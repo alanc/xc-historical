@@ -31,8 +31,6 @@
 #ifdef UsePUCCPtyd			/* turn on in config/site.def */
     PUCCPTYDDEF = -DPUCC_PTYD		/* does not need to be setuid */
          PTYLIB = -lpucc
-#else
-   INSTPGMFLAGS = $(INSTUIDFLAGS)
 #endif
 
    MAIN_DEFINES = -DUTMP $(TTYGROUPDEF) $(PUCCPTYDDEF)
@@ -48,6 +46,7 @@
        PROGRAMS = resize xterm
        DEPLIBS1 = XawClientDepLibs
        DEPLIBS2 = 
+       PROGRAMS = xterm resize
 
 #ifdef CrayArchitecture
      TERMCAPLIB = -lcurses
@@ -55,10 +54,16 @@
      TERMCAPLIB = -ltermcap
 #endif
 
-ComplexProgramTarget_1(xterm,XawClientLibs,$(TERMCAPLIB) $(PTYLIB))
+AllTarget($(PROGRAMS))
+
 SpecialObjectRule(main.o, ,$(MAIN_DEFINES))
 
-SingleProgramTarget(resize,$(OBJS2), ,-ltermcap)
+NormalProgramTarget(xterm,$(OBJS1),$(DEPLIBS1),XawClientLibs,$(TERMCAPLIB) $(PTYLIB))
+InstallProgramWithFlags(xterm, $(BINDIR), $(INSTUIDFLAGS))
+
+NormalProgramTarget(resize,$(OBJS2),$(DEPLIBS2), ,-ltermcap)
 InstallProgramWithFlags(resize, $(BINDIR), )
+
 InstallAppDefaults(XTerm)
+InstallManPage(xterm,$(MANDIR))
 InstallManPage(resize,$(MANDIR))
