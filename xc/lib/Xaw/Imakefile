@@ -27,6 +27,8 @@ HEADERS = \
 	LoadP.h \
 	Logo.h \
 	LogoP.h \
+	Mailbox.h \
+	MailboxP.h \
 	Scroll.h \
 	ScrollP.h \
 	Simple.h \
@@ -52,6 +54,7 @@ SRCS = \
 	Label.c \
 	Load.c \
 	Logo.c \
+	Mailbox.c \
 	Scroll.c \
 	Simple.c \
 	StringSrc.c \
@@ -74,6 +77,7 @@ OBJS = \
 	Label.o \
 	Load.o \
 	Logo.o \
+	Mailbox.o \
 	Scroll.o \
 	Simple.o \
 	StringSrc.o \
