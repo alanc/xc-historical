@@ -1,4 +1,4 @@
-/* $XConsortium: sunKbd.c,v 5.35 93/11/14 13:37:48 kaleb Exp $ */
+/* $XConsortium: sunKbd.c,v 5.36 93/11/16 10:15:58 kaleb Exp $ */
 /*-
  * Copyright (c) 1987 by the Regents of the University of California
  *
@@ -154,8 +154,25 @@ static void SetLights (ctrl)
     KeybdCtrl*	ctrl;
 {
 #ifdef KIOCSLED
-    char request = ctrl->leds & 0x0f;
-    if (ioctl (sunKbdFd, KIOCSLED, &request) == -1)
+    static unsigned char led_tab[16] = {
+	0,
+	LED_NUM_LOCK,
+	LED_SCROLL_LOCK,
+	LED_SCROLL_LOCK | LED_NUM_LOCK,
+	LED_COMPOSE,
+	LED_COMPOSE | LED_NUM_LOCK,
+	LED_COMPOSE | LED_SCROLL_LOCK,
+	LED_COMPOSE | LED_SCROLL_LOCK | LED_NUM_LOCK,
+	LED_CAPS_LOCK,
+	LED_CAPS_LOCK | LED_NUM_LOCK,
+	LED_CAPS_LOCK | LED_SCROLL_LOCK,
+	LED_CAPS_LOCK | LED_SCROLL_LOCK | LED_NUM_LOCK,
+	LED_CAPS_LOCK | LED_COMPOSE,
+	LED_CAPS_LOCK | LED_COMPOSE | LED_NUM_LOCK,
+	LED_CAPS_LOCK | LED_COMPOSE | LED_SCROLL_LOCK,
+	LED_CAPS_LOCK | LED_COMPOSE | LED_SCROLL_LOCK | LED_NUM_LOCK
+    };
+    if (ioctl (sunKbdFd, KIOCSLED, (caddr_t)&led_tab[ctrl->leds & 0x0f]) == -1)
 	Error("Failed to set keyboard lights");
 #endif
 }
@@ -198,19 +215,20 @@ static void ModLight (device, on, led)
 static void sunBell (
     int		    percent,
     DeviceIntPtr    device,
-    KeybdCtrl*	    ctrl,
+    pointer	    ctrl,
     int		    unused)
 #else
 static void sunBell (percent, device, ctrl, unused)
     int		    percent;	    /* Percentage of full volume */
     DeviceIntPtr    device;	    /* Keyboard to ring */
-    KeybdCtrl*	    ctrl;
+    pointer	    ctrl;
     int		    unused;
 #endif
 {
     int		    kbdCmd;   	    /* Command to give keyboard */
+    KeybdCtrl*      kctrl = (KeybdCtrl*) ctrl;
  
-    if (percent == 0 || ctrl->bell == 0)
+    if (percent == 0 || kctrl->bell == 0)
  	return;
 
     kbdCmd = KBD_CMD_BELL;
@@ -218,23 +236,10 @@ static void sunBell (percent, device, ctrl, unused)
  	Error("Failed to activate bell");
 	return;
     }
-    usleep (ctrl->bell_duration * 1000);
+    usleep (kctrl->bell_duration * 1000);
     kbdCmd = KBD_CMD_NOBELL;
     if (ioctl (sunKbdFd, KIOCCMD, &kbdCmd) == -1)
 	Error ("Failed to deactivate bell");
-}
-
-static KeyCode LookupKeyCode (keysym, keysymsrec)
-    KeySym keysym;
-    KeySymsPtr keysymsrec;
-{
-    KeyCode i;
-    int ii, index = 0;
-
-    for (i = keysymsrec->minKeyCode; i < keysymsrec->maxKeyCode; i++)
-	for (ii = 0; ii < keysymsrec->mapWidth; ii++)
-	    if (keysymsrec->map[index++] == keysym)
-		return i;
 }
 
 static void EnqueueEvent (xE)
@@ -260,6 +265,25 @@ static void EnqueueEvent (xE)
 }
 
 #ifndef XKB
+
+#define XLED_NUM_LOCK    0x1
+#define XLED_COMPOSE     0x4
+#define XLED_SCROLL_LOCK 0x2
+#define XLED_CAPS_LOCK   0x8
+
+static KeyCode LookupKeyCode (keysym, keysymsrec)
+    KeySym keysym;
+    KeySymsPtr keysymsrec;
+{
+    KeyCode i;
+    int ii, index = 0;
+
+    for (i = keysymsrec->minKeyCode; i < keysymsrec->maxKeyCode; i++)
+	for (ii = 0; ii < keysymsrec->mapWidth; ii++)
+	    if (keysymsrec->map[index++] == keysym)
+		return i;
+}
+
 static void pseudoKey(device, down, keycode)
     DeviceIntPtr device;
     Bool down;
@@ -301,6 +325,47 @@ static void pseudoKey(device, down, keycode)
 	}
     }
 }
+
+static void DoLEDs(device, ctrl, pPriv)
+    DeviceIntPtr    device;	    /* Keyboard to alter */
+    KeybdCtrl* ctrl;
+    KbPrivPtr  pPriv;
+{
+    if ((ctrl->leds & XLED_CAPS_LOCK) && !(pPriv->leds & XLED_CAPS_LOCK))
+	    pseudoKey(device, TRUE,
+		LookupKeyCode(XK_Caps_Lock, &device->key->curKeySyms));
+
+    if (!(ctrl->leds & XLED_CAPS_LOCK) && (pPriv->leds & XLED_CAPS_LOCK))
+	    pseudoKey(device, FALSE,
+		LookupKeyCode(XK_Caps_Lock, &device->key->curKeySyms));
+
+    if ((ctrl->leds & XLED_NUM_LOCK) && !(pPriv->leds & XLED_NUM_LOCK))
+	    pseudoKey(device, TRUE,
+		LookupKeyCode(XK_Num_Lock, &device->key->curKeySyms));
+
+    if (!(ctrl->leds & XLED_NUM_LOCK) && (pPriv->leds & XLED_NUM_LOCK))
+	    pseudoKey(device, FALSE,
+		LookupKeyCode(XK_Num_Lock, &device->key->curKeySyms));
+
+    if ((ctrl->leds & XLED_SCROLL_LOCK) && !(pPriv->leds & XLED_SCROLL_LOCK))
+	    pseudoKey(device, TRUE,
+		LookupKeyCode(XK_Scroll_Lock, &device->key->curKeySyms));
+
+    if (!(ctrl->leds & XLED_SCROLL_LOCK) && (pPriv->leds & XLED_SCROLL_LOCK))
+	    pseudoKey(device, FALSE,
+		LookupKeyCode(XK_Scroll_Lock, &device->key->curKeySyms));
+
+    if ((ctrl->leds & XLED_COMPOSE) && !(pPriv->leds & XLED_COMPOSE))
+	    pseudoKey(device, TRUE,
+		LookupKeyCode(SunXK_Compose, &device->key->curKeySyms));
+
+    if (!(ctrl->leds & XLED_COMPOSE) && (pPriv->leds & XLED_COMPOSE))
+	    pseudoKey(device, FALSE,
+		LookupKeyCode(SunXK_Compose, &device->key->curKeySyms));
+
+    pPriv->leds = ctrl->leds & 0x0f;
+    SetLights (ctrl);
+}
 #endif
 
 /*-
@@ -340,45 +405,8 @@ static void sunKbdCtrl (device, ctrl)
  	    Error("Failed to set keyclick");
     }
 #ifndef XKB
-    if (ctrl != NULL && 
-	pPriv->leds != ctrl->leds & 0x0f &&
-	pPriv->type == KB_SUN4) {
-
-	if ((ctrl->leds & LED_CAPS_LOCK) && !(pPriv->leds & LED_CAPS_LOCK))
-	    pseudoKey(device, TRUE,
-		LookupKeyCode(XK_Caps_Lock, &device->key->curKeySyms));
-
-	if (!(ctrl->leds & LED_CAPS_LOCK) && (pPriv->leds & LED_CAPS_LOCK))
-	    pseudoKey(device, FALSE,
-		LookupKeyCode(XK_Caps_Lock, &device->key->curKeySyms));
-
-	if ((ctrl->leds & LED_NUM_LOCK) && !(pPriv->leds & LED_NUM_LOCK))
-	    pseudoKey(device, TRUE,
-		LookupKeyCode(XK_Num_Lock, &device->key->curKeySyms));
-
-	if (!(ctrl->leds & LED_NUM_LOCK) && (pPriv->leds & LED_NUM_LOCK))
-	    pseudoKey(device, FALSE,
-		LookupKeyCode(XK_Num_Lock, &device->key->curKeySyms));
-
-	if ((ctrl->leds & LED_SCROLL_LOCK) && !(pPriv->leds & LED_SCROLL_LOCK))
-	    pseudoKey(device, TRUE,
-		LookupKeyCode(XK_Scroll_Lock, &device->key->curKeySyms));
-
-	if (!(ctrl->leds & LED_SCROLL_LOCK) && (pPriv->leds & LED_SCROLL_LOCK))
-	    pseudoKey(device, FALSE,
-		LookupKeyCode(XK_Scroll_Lock, &device->key->curKeySyms));
-
-	if ((ctrl->leds & LED_COMPOSE) && !(pPriv->leds & LED_COMPOSE))
-	    pseudoKey(device, TRUE,
-		LookupKeyCode(SunXK_Compose, &device->key->curKeySyms));
-
-	if (!(ctrl->leds & LED_COMPOSE) && (pPriv->leds & LED_COMPOSE))
-	    pseudoKey(device, FALSE,
-		LookupKeyCode(SunXK_Compose, &device->key->curKeySyms));
-
-	pPriv->leds = ctrl->leds & 0x0f;
-	SetLights (ctrl);
-    }
+    if (pPriv->type == KB_SUN4 && pPriv->leds != ctrl->leds & 0x0f)
+	DoLEDs(device, ctrl, pPriv);
 #endif
 }
 
@@ -618,8 +646,8 @@ void sunKbdEnqueueEvent (device, fe)
     xEvent		xE;
     BYTE		keycode;
     CARD8		keyModifiers;
-    KeySym		ksym;
-    int			map_index, bit;
+    KeySym		ksym, base_ksym;
+    int			shift_index, map_index, bit;
     KbPrivPtr		pPriv = (KbPrivPtr)device->public.devicePrivate;
     KeybdCtrl*		ctrl = &device->kbdfeed->ctrl;
     BYTE*		kptr;
@@ -641,11 +669,16 @@ void sunKbdEnqueueEvent (device, fe)
     xE.u.u.detail = keycode;
 #ifndef XKB
     /* look up the present idea of the keysym */
-    map_index = 0;
-    if (device->key->state & ShiftMask) map_index ^= 1;
-    if (device->key->state & LockMask) map_index ^= 1;
-    map_index += (fe->id - 1) * device->key->curKeySyms.mapWidth;
-    ksym = device->key->curKeySyms.map[map_index];
+    shift_index = 0;
+    if (device->key->state & ShiftMask) 
+	shift_index ^= 1;
+    if (device->key->state & LockMask) 
+	shift_index ^= 1;
+    map_index = (fe->id - 1) * device->key->curKeySyms.mapWidth;
+    base_ksym = device->key->curKeySyms.map[map_index];
+    ksym = device->key->curKeySyms.map[shift_index + map_index];
+    if (ksym == 0)
+	ksym = base_ksym;
 
     /*
      * Toggle functionality is hardcoded. This is achieved by always
@@ -668,16 +701,16 @@ void sunKbdEnqueueEvent (device, fe)
 
     if (ksym == XK_Num_Lock) {
 	if (pPriv->type == KB_SUN4)
-	    ModLight (device, xE.u.u.type == KeyPress, LED_NUM_LOCK);
+	    ModLight (device, xE.u.u.type == KeyPress, XLED_NUM_LOCK);
     } else if (ksym == XK_Scroll_Lock) {
 	if (pPriv->type == KB_SUN4)
-	    ModLight (device, xE.u.u.type == KeyPress, LED_SCROLL_LOCK);
+	    ModLight (device, xE.u.u.type == KeyPress, XLED_SCROLL_LOCK);
     } else if (ksym == SunXK_Compose) {
 	if (pPriv->type == KB_SUN4)
-	    ModLight (device, xE.u.u.type == KeyPress, LED_COMPOSE);
+	    ModLight (device, xE.u.u.type == KeyPress, XLED_COMPOSE);
     } else if (keyModifiers & LockMask) {
 	if (pPriv->type == KB_SUN4)
-	    ModLight (device, xE.u.u.type == KeyPress, LED_CAPS_LOCK);
+	    ModLight (device, xE.u.u.type == KeyPress, XLED_CAPS_LOCK);
     } else if ((xE.u.u.type == KeyPress) && (keyModifiers == 0)) {
 	/* initialize new AutoRepeater event & mark AutoRepeater on */
 	autoRepeatEvent = xE;
