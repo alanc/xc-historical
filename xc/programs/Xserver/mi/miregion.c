@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: miregion.c,v 1.54 91/07/03 12:35:08 keith Exp $ */
+/* $XConsortium: miregion.c,v 1.55 91/07/06 14:02:29 rws Exp $ */
 
 #include <stdio.h>
 #include "miscstruct.h"
@@ -387,7 +387,7 @@ miRegionCopy(dst, src)
     if (dst == src)
 	return TRUE;
     dst->extents = src->extents;
-    if (!src->data || !src->data->numRects)
+    if (!src->data || !src->data->size)
     {
 	xfreeData(dst);
 	dst->data = src->data;
