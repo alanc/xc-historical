@@ -1,4 +1,4 @@
-/* $XConsortium: XListDev.c,v 1.18 92/11/14 12:55:20 rws Exp $ */
+/* $XConsortium: XListDev.c,v 1.19 93/02/05 17:03:43 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -33,7 +33,6 @@ SOFTWARE.
 
 #define NEED_REPLIES
 #define NEED_EVENTS
-#include "Xproto.h"
 #include "Xlibint.h"
 #include "XIproto.h"
 #include "XI.h"
