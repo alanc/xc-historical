@@ -3,10 +3,6 @@
 **
 */
 
-#ifdef SVR4
-#define SYSV
-#endif
-
 #include <X11/Intrinsic.h>
 #include <X11/StringDefs.h>
 #include <X11/Xaw/AsciiText.h>
@@ -14,6 +10,9 @@
 #include <stdio.h>
 #include <math.h>
 #include "xgc.h"
+#ifdef SVR4
+#define SYSV
+#endif
 #ifndef SYSV
 #include <sys/timeb.h>
 #include <sys/resource.h>
