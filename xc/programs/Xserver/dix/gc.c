@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: gc.c,v 5.16 91/04/07 17:30:27 keith Exp $ */
+/* $XConsortium: gc.c,v 5.17 91/05/10 17:40:06 keith Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -1094,7 +1094,7 @@ SetClipRects(pGC, xOrigin, yOrigin, nrects, prects, ordering)
 	return(BadMatch);
     size = nrects * sizeof(xRectangle);
     prectsNew = (xRectangle *) xalloc(size);
-    if (!prects && size)
+    if (!prectsNew && size)
 	return BadAlloc;
 
     pGC->serialNumber |= GC_CHANGE_SERIAL_BIT;
