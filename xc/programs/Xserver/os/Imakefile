@@ -52,11 +52,6 @@ NormalLintTarget($(SRCS))
 access.o: $(IRULESRC)/$(MACROFILE)
 connection.o: $(IRULESRC)/$(MACROFILE)
 
-# these depend on COMPRESSED_FONTS
-fileio.o:  $(IRULESRC)/$(MACROFILE)
-filenames.o:  $(IRULESRC)/$(MACROFILE)
-utils.o:  $(IRULESRC)/$(MACROFILE)
-
 #ifdef HPArchitecture
 /**/#
 /**/# The following kludge is necessary because dbm already has a global 
