@@ -110,20 +110,6 @@ int dstx, dsty;
     origDest.x = dstx;
     origDest.y = dsty;
 
-    /*
-       clip the left and top edges of the source
-    */
-    if (srcx < 0)
-    {
-        width += srcx;
-        srcx = 0;
-    }
-    if (srcy < 0)
-    {
-        height += srcy;
-        srcy = 0;
-    }
-
     /* clip the source */
 
     if (pSrcDrawable->type == DRAWABLE_PIXMAP)

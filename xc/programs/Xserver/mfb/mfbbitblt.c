@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: mfbbitblt.c,v 1.48 88/07/26 17:10:41 keith Exp $ */
+/* $Header: mfbbitblt.c,v 1.49 88/07/26 18:20:16 jim Exp $ */
 #include "X.h"
 #include "Xprotostr.h"
 
@@ -80,20 +80,6 @@ int dstx, dsty;
     origSource.height = height;
     origDest.x = dstx;
     origDest.y = dsty;
-
-    /*
-       clip the left and top edges of the source
-    */
-    if (srcx < 0)
-    {
-        width += srcx;
-        srcx = 0;
-    }
-    if (srcy < 0)
-    {
-        height += srcy;
-        srcy = 0;
-    }
 
     /* clip the source */
 
