@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Porthole.c,v 1.1 90/02/28 18:07:29 jim Exp $
+ * $XConsortium: Porthole.c,v 1.2 90/02/28 18:46:55 jim Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -208,28 +208,29 @@ static XtGeometryResult GeometryManager (w, req, reply)
 	return XtGeometryAlmost;
     }
 
-    /*
-     * Allow all size changes; allow location changes that remain within
-     * the visible region.
-     */
-    if (req->request_mode & CWX && w->core.x != req->x) {
-	changed |= XawPRSliderX;
-	w->core.x = req->x;
+    if (!(req->request_mode & XtCWQueryOnly)) {
+	/*
+	 * Allow all size changes; allow location changes that remain within
+	 * the visible region.
+	 */
+	if (req->request_mode & CWX && w->core.x != req->x) {
+	    changed |= XawPRSliderX;
+	    w->core.x = req->x;
+	}
+	if (req->request_mode & CWY && w->core.y != req->y) {
+	    changed |= XawPRSliderY;
+	    w->core.y = req->y;
+	}
+	if (req->request_mode & CWWidth && w->core.width != req->width) {
+	    changed |= XawPRSliderWidth;
+	    w->core.width = req->width;
+	}
+	if (req->request_mode & CWHeight && w->core.height != req->height) {
+	    changed |= XawPRSliderHeight;
+	    w->core.height = req->height;
+	}
+	SendReport (pw, changed);
     }
-    if (req->request_mode & CWY && w->core.y != req->y) {
-	changed |= XawPRSliderY;
-	w->core.y = req->y;
-    }
-    if (req->request_mode & CWWidth && w->core.width != req->width) {
-	changed |= XawPRSliderWidth;
-	w->core.width = req->width;
-    }
-    if (req->request_mode & CWHeight && w->core.height != req->height) {
-	changed |= XawPRSliderHeight;
-	w->core.height = req->height;
-    }
-
-    SendReport (pw, changed);
 
     return XtGeometryYes;
 }
@@ -267,8 +268,9 @@ static void ChangeManaged (gw)
 	    }
 	    if (geom.request_mode &&
 		XtMakeGeometryRequest (gw, &geom, &retgeom) ==
-		XtGeometryAlmost)
-	      (void) XtMakeGeometryRequest (gw, &retgeom, NULL);
+		XtGeometryAlmost) {
+	        (void) XtMakeGeometryRequest (gw, &retgeom, NULL);
+	    }
 	}
     }
 }
