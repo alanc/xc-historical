@@ -1,22 +1,20 @@
-/* $XConsortium: wsx_util.c,v 5.1 91/02/16 09:50:34 rws Exp $ */
-
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
 
                         All Rights Reserved
 
-Permission to use, copy, modify, and distribute this software and its 
-documentation for any purpose and without fee is hereby granted, 
+Permission to use, copy, modify, and distribute this software and its
+documentation for any purpose and without fee is hereby granted,
 provided that the above copyright notice appear in all copies and that
-both that copyright notice and this permission notice appear in 
+both that copyright notice and this permission notice appear in
 supporting documentation, and that the names of Sun Microsystems,
-the X Consortium, and MIT not be used in advertising or publicity 
-pertaining to distribution of the software without specific, written 
-prior permission.  
+the X Consortium, and MIT not be used in advertising or publicity
+pertaining to distribution of the software without specific, written
+prior permission.
 
-SUN MICROSYSTEMS DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, 
-INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT 
-SHALL SUN MICROSYSTEMS BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL 
+SUN MICROSYSTEMS DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
+INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT
+SHALL SUN MICROSYSTEMS BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL
 DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS,
 WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION,
 ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
@@ -35,7 +33,74 @@ SOFTWARE.
 #include "PEXfuncs.h"
 #include "phigspex.h"
 #include "X11/Xatom.h"
+#include <X11/Xlibint.h>
+
 
+
+/*
+ * 				    WARNING
+ *
+ * This is a ICCCM routine.  It will reference the new fields
+ * in the XStandardColormap structure.
+ */
+
+static Status
+ICCCM_XGetStandardColormap (display, w, cmap, property)
+    Display *display;
+    Window w;
+    XStandardColormap *cmap;
+    Atom property;		/* XA_RGB_BEST_MAP, etc. */
+{
+    Status stat;			/* return value */
+    XStandardColormap *stdcmaps;	/* will get malloced value */
+    int nstdcmaps;			/* count of above */
+
+    stat = XGetRGBColormaps (display, w, &stdcmaps, &nstdcmaps, property);
+    if (stat) {
+	XStandardColormap *use;
+
+	if (nstdcmaps > 1) {
+	    VisualID vid;
+	    Screen *sp;
+	    int i;
+
+	    sp = _XScreenOfWindow (display, w);
+	    if (!sp) {
+		if (stdcmaps) Xfree ((char *) stdcmaps);
+		return FALSE;
+	    }
+	    vid = sp->root_visual->visualid;
+
+	    for (i = 0; i < nstdcmaps; i++) {
+		if (stdcmaps[i].visualid == vid) break;
+	    }
+
+	    if (i == nstdcmaps) {	/* not found */
+		Xfree ((char *) stdcmaps);
+		return FALSE;
+	    }
+	    use = &stdcmaps[i];
+	} else {
+	    use = stdcmaps;
+	}
+	
+	cmap->colormap	 = use->colormap;
+	cmap->red_max	 = use->red_max;
+	cmap->red_mult	 = use->red_mult;
+	cmap->green_max	 = use->green_max;
+	cmap->green_mult = use->green_mult;
+	cmap->blue_max	 = use->blue_max;
+	cmap->blue_mult	 = use->blue_mult;
+	cmap->base_pixel = use->base_pixel;
+	cmap->visualid   = use->visualid;
+	cmap->killid     = use->killid;
+
+	Xfree ((char *) stdcmaps);	/* don't need alloced memory */
+    }
+    return stat;
+}
+
+
 
 /*  Ideally, what we want to be able to do is take these steps (before a window
  *  is created) :
@@ -68,13 +133,13 @@ phg_wsx_find_best_visual(ws, wst, best_visual, cmap, err)
     Atom		 best_map;
     Atom		 pex_map;
     Visual		*default_visual;
-    
+
     *err = 0;
     default_visual = DefaultVisual(dpy, DefaultScreen(dpy));
     *cmap = DefaultColormap( dpy, DefaultScreen(dpy) );
 
-    /* use default visual if it has a standard colormap defined 
-     * regardless of the visual type 
+    /* use default visual if it has a standard colormap defined
+     * regardless of the visual type
      * try for BEST std colormap first, then DEFAULT
      */
     if ((default_visual->class == StaticGray) ||
@@ -87,27 +152,37 @@ phg_wsx_find_best_visual(ws, wst, best_visual, cmap, err)
      * if there is, use it's colormap, but still find the best visual
      */
     pex_map = wst->desc_tbl.xwin_dt.colormap_property_atom;
-    if (XGetStandardColormap(dpy, DefaultRootWindow(dpy),  &std, 
+    if (ICCCM_XGetStandardColormap(dpy, DefaultRootWindow(dpy),  &std,
 			pex_map) && (std.colormap)) {
 	*cmap = std.colormap;
 	goto get_best_visual;
     }
 
-    if (XGetStandardColormap(dpy, DefaultRootWindow(dpy),  &std, 
+    if (ICCCM_XGetStandardColormap(dpy, DefaultRootWindow(dpy),  &std,
 			best_map) && (std.colormap)) {
 	/* map already exists */
-	*best_visual = *default_visual;
-	*cmap = std.colormap;
-	return ( True );
-    } 
+        template.visualid = std.visualid;
+        available_visuals = XGetVisualInfo(dpy, VisualIDMask,
+				       &template, &nvisuals);
 
-    if (XGetStandardColormap(dpy, DefaultRootWindow(dpy),  
+	*best_visual = *available_visuals->visual;
+	*cmap = std.colormap;
+        XFree((caddr_t)available_visuals);
+	return ( True );
+    }
+
+    if (ICCCM_XGetStandardColormap(dpy, DefaultRootWindow(dpy),
 		&std, XA_RGB_DEFAULT_MAP) && (std.colormap)) {
 	/* map already exists */
-	*best_visual = *default_visual;
+        template.visualid = std.visualid;
+        available_visuals = XGetVisualInfo(dpy, VisualIDMask,
+				       &template, &nvisuals);
+
+	*best_visual = *available_visuals->visual;
+        XFree((caddr_t)available_visuals);
 	*cmap = std.colormap;
 	return ( True );
-    } 
+    }
 
 get_best_visual:
         /* no standard colormap so pick best visual
@@ -116,23 +191,33 @@ get_best_visual:
          *  This relies on the fact that the class values are ordered:
          *    DirectColor > TrueColor > PseudoColor > StaticColor
          *
-         *  However, only choose a higher numbered class if its got at 
+         *  However, only choose a higher numbered class if its got at
          *  least as many cmap entries as what's currently best
 	 *  Note: colour mapping is only supported on PseudoColor visuals
          */
-        template.screen = DefaultScreen(dpy); 
-        available_visuals = XGetVisualInfo(dpy, (long)VisualScreenMask,
+        template.screen = DefaultScreen(dpy);
+        available_visuals = XGetVisualInfo(dpy, VisualScreenMask,
 				       &template, &nvisuals);
 
         the_best = &available_visuals[0];
         for (i = 1; i < nvisuals; i++) {
 	    if (  (available_visuals[i].class > the_best->class) &&
-	          (available_visuals[i].colormap_size >= the_best->colormap_size)) 
+	          (available_visuals[i].colormap_size >= the_best->colormap_size))
 	        the_best = &available_visuals[i];
         }
-    
+
 	*best_visual = *the_best->visual;
     	XFree((caddr_t)available_visuals);
+
+	/* If the best visual is different from the root window visual */
+	/* then we must put the right kind of Colormap in cmap so that */
+	/* the CreateWindow will work.                                 */
+	if ( best_visual->visualid != default_visual->visualid)
+	{
+		*cmap = XCreateColormap( dpy,
+					RootWindow( dpy, DefaultScreen(dpy) ),
+					best_visual, AllocNone );
+	}
 
     return ( True );
 }
@@ -154,7 +239,7 @@ get_best_visual:
 #ifdef sun
 
 #define REDS_128	4
-#define GREENS_128	4 
+#define GREENS_128	4
 #define BLUES_128	4
 
 #define RED_PLANES	2
@@ -162,7 +247,6 @@ get_best_visual:
 #define BLUE_PLANES	2
 
 #else
-
 #define REDS_128	4
 #define GREENS_128	8
 #define BLUES_128	4
@@ -190,7 +274,7 @@ phg_wsx_get_true_colors(ws, attrs, ncolors, xcolors, pcae)
     int			     err;
     register int	     i;
     register XColor	    *xcolor;
-    
+
     if ((attrs->visual->class == StaticGray) ||
        (attrs->visual->class == GrayScale))
 	best_map = XA_RGB_GRAY_MAP;
@@ -199,18 +283,18 @@ phg_wsx_get_true_colors(ws, attrs, ncolors, xcolors, pcae)
 
     /* look for predefined maps first */
     pex_map = ws->type->desc_tbl.xwin_dt.colormap_property_atom;
-    if (XGetStandardColormap(dpy, DefaultRootWindow(dpy),  &std, 
-		pex_map) && (attrs->colormap == std.colormap)) {
+    if (ICCCM_XGetStandardColormap(dpy, DefaultRootWindow(dpy),  &std,
+		pex_map) && (attrs->visual->visualid == std.visualid)) {
 	/* colors are already in the colormap */
 	*ncolors = 0;
 	goto set_colour_approx_table;
-    } else if (XGetStandardColormap(dpy, DefaultRootWindow(dpy), &std, 
-		best_map) && (attrs->colormap == std.colormap)) {
+    } else if (ICCCM_XGetStandardColormap(dpy, DefaultRootWindow(dpy), &std,
+		best_map) && (attrs->visual->visualid == std.visualid)) {
 	/* colors are already in the colormap */
 	*ncolors = 0;
 	goto set_colour_approx_table;
-    } else if (XGetStandardColormap(dpy, DefaultRootWindow(dpy), &std, 
-		XA_RGB_DEFAULT_MAP) && (attrs->colormap == std.colormap)) {
+    } else if (ICCCM_XGetStandardColormap(dpy, DefaultRootWindow(dpy), &std,
+		XA_RGB_DEFAULT_MAP) && (attrs->visual->visualid == std.visualid)) {
 	/* colors are already in the colormap */
 	*ncolors = 0;
 	goto set_colour_approx_table;
@@ -218,23 +302,20 @@ phg_wsx_get_true_colors(ws, attrs, ncolors, xcolors, pcae)
 
     /* no predefined maps found, so make our own color cube */
     std.colormap = attrs->colormap;
+    std.visualid = attrs->visual->visualid;
 
     /* define color entries */
     switch(attrs->visual->class) {
 	case StaticGray:
 	case StaticColor:
-	case TrueColor:
 #ifndef PEX_SI_API_GRAY_VISUAL
 	case GrayScale:
-#endif
-#ifndef PEX_SI_API_DIRECT_VISUAL
-	case DirectColor:
 #endif
 	    /* can't set entries */
 	    return ( ERRN168 );
 	    break;
 #ifdef PEX_SI_API_GRAY_VISUAL
-/* PEX-SI doesn't support GrayScale visuals. 
+/* PEX-SI doesn't support GrayScale visuals.
  * Here's untested code in case you want to try it
  */
 	case GrayScale:
@@ -253,7 +334,7 @@ phg_wsx_get_true_colors(ws, attrs, ncolors, xcolors, pcae)
 
 	    if (!XAllocColorCells( dpy, attrs->colormap, True,
 			plane_masks, nplanes, &std.base_pixel, 1 )) {
-		    if (!(std.colormap = XCreateColormap( dpy, 
+		    if (!(std.colormap = XCreateColormap( dpy,
 				ws->drawable_id, attrs->visual, AllocNone ))) {
 			err = ERRN169;
 			goto fail;
@@ -318,7 +399,7 @@ phg_wsx_get_true_colors(ws, attrs, ncolors, xcolors, pcae)
 
 	    if (!XAllocColorCells( dpy, attrs->colormap, True,
 			plane_masks, nplanes, &std.base_pixel, 1 )) {
-		    if (!(std.colormap = XCreateColormap( dpy, 
+		    if (!(std.colormap = XCreateColormap( dpy,
 				ws->drawable_id, attrs->visual, AllocNone ))) {
 			err = ERRN169;
 			goto fail;
@@ -356,7 +437,7 @@ phg_wsx_get_true_colors(ws, attrs, ncolors, xcolors, pcae)
 	        for (j = 0; j <= std.green_max; j++) /* green loop */
 	            for (k = 0; k <= std.blue_max; k++) { /* blues */
 			xcolor->flags = DoRed | DoGreen | DoBlue;
-			xcolor->pixel = std.base_pixel + 
+			xcolor->pixel = std.base_pixel +
 					i * std.red_mult +
 					j * std.green_mult +
 					k * std.blue_mult;
@@ -367,32 +448,56 @@ phg_wsx_get_true_colors(ws, attrs, ncolors, xcolors, pcae)
 	    	    }
 	    break;
 	}
-#ifdef PEX_SI_API_DIRECT_VISUAL
-/* PEX-SI doesn't support DirectColor visuals. 
- * Here's untested code in case you want to try it
- */
+
 	case DirectColor:
 	/* set up direct color cube */
 	{
             unsigned long red_mask, green_mask, blue_mask;
             register unsigned long red_shift, green_shift, blue_shift;
+	    int red_planes, green_planes, blue_planes;
+	    int red_max, green_max, blue_max;
+	    XVisualInfo template, *visual_info;
+	    int nvisuals;
 
-	    *ncolors = WS_MAX_3(REDS_128, GREENS_128, BLUES_128);
+            template.visualid = attrs->visual->visualid;
+            visual_info = XGetVisualInfo(dpy, VisualIDMask,
+					 &template, &nvisuals);
+
+	    *ncolors = visual_info->colormap_size;
 	    if ( !(*xcolors = (XColor *)Malloc(*ncolors * sizeof(XColor)) ) )
 	        return ( ERR900 );
 
+	    /*
+	     * Figure out the number of planes for each component
+	     * Figure out the number of colors for each component
+             * Note: This code has been tested with servers supporting
+             * DirectColor visuals with equal component depths (e.g., 8 8 8),
+             * but has not been tested with unequal component depths.
+             */
+            red_planes = green_planes = blue_planes = 0;
+            red_max = green_max = blue_max = 1;
+	    for(red_mask = visual_info->red_mask;
+                red_mask; red_mask = red_mask >> 1)
+		if (red_mask & 1) { red_planes++; red_max *= 2; }
+	    for(green_mask = visual_info->green_mask;
+                green_mask; green_mask = green_mask >> 1)
+		if (green_mask & 1) { green_planes++; green_max *= 2; }
+	    for(blue_mask = visual_info->blue_mask;
+                blue_mask; blue_mask = blue_mask >> 1)
+		if (blue_mask & 1) { blue_planes++; blue_max *= 2; }
+
 	    if (!XAllocColorPlanes( dpy, attrs->colormap, True,
-			&std.base_pixel, 1, 
-			RED_PLANES, GREEN_PLANES, BLUE_PLANES
+			&std.base_pixel, 1,
+			red_planes, green_planes, blue_planes,
 			&red_mask, &green_mask, &blue_mask)) {
-		    if (!(std.colormap = XCreateColormap( dpy, 
+		    if (!(std.colormap = XCreateColormap( dpy,
 				ws->drawable_id, attrs->visual, AllocNone ))) {
 			err = ERRN169;
 			goto fail;
 		    } else {
 	    		if (!XAllocColorPlanes( dpy, std.colormap, True,
-				&std.base_pixel, 1, 
-				RED_PLANES, GREEN_PLANES, BLUE_PLANES
+				&std.base_pixel, 1,
+				red_planes, green_planes, blue_planes,
 				&red_mask, &green_mask, &blue_mask)) {
 			    XFreeColormap( dpy, std.colormap );
 			    err = ERRN169;
@@ -416,31 +521,40 @@ phg_wsx_get_true_colors(ws, attrs, ncolors, xcolors, pcae)
 	    std.green_mult = 1 << green_shift;
 	    std.blue_mult = 1 << blue_shift;
 
-    	    std.red_max = REDS_128 - 1;
-	    std.green_max = GREENS_128 - 1;
-	    std.blue_max = BLUES_128 - 1;
+    	    std.red_max = red_max - 1;
+	    std.green_max = green_max - 1;
+	    std.blue_max = blue_max - 1;
 
 	    for (xcolor = *xcolors, i = 0; i < *ncolors; i++, xcolor++) {
-		xcolor->flags = DoRed | DoGreen | DoBlue;
-		xcolor->pixel = (i << red_shift) |
-				(i << green_shift) |
-				(i << blue_shift) | std.base_pixel;
-		if (i < REDS_128)
+		xcolor->flags = 0;
+                xcolor->pixel = std.base_pixel;
+                if (i < red_max) {
+		    xcolor->flags |= DoRed ;
+                    xcolor->pixel |= (i << red_shift);
 		    xcolor->red = i * X_MAX_COLOR_VALUE / std.red_max;
-		if (i < GREENS_128)
+                    }
+                if (i < green_max) {
+		    xcolor->flags |= DoGreen ;
+                    xcolor->pixel |= (i << green_shift);
 		    xcolor->green = i * X_MAX_COLOR_VALUE / std.green_max;
-		if (i < BLUES_128)
+                    }
+                if (i < blue_max) {
+		    xcolor->flags |= DoBlue;
+                    xcolor->pixel |= (i << blue_shift);
 		    xcolor->blue = i * X_MAX_COLOR_VALUE / std.blue_max;
+                    }
 	    }
 	    break;
 	}
-#endif
+	case TrueColor:
+	    *ncolors = 0;
+	    break;
     }
-	    
+	
 set_colour_approx_table:
     /* TRUE is always loaded as a ColourSpace regardless of visual type */
     pcae->approxType	= PEXColourSpace;
-    pcae->approxModel	= PEXColourApproxRGB;  
+    pcae->approxModel	= PEXColourApproxRGB;
     pcae->max1		= std.red_max;
     pcae->max2		= std.green_max;
     pcae->max3		= std.blue_max;
@@ -458,9 +572,11 @@ set_colour_approx_table:
 	                 XA_RGB_COLOR_MAP, 32, PropModeReplace,
 	                 (unsigned char *)&std, sizeof(XStandardColormap)/4 );
 
+    XSetWindowColormap( dpy, ws->drawable_id, std.colormap);
+
     /* keep track of how many true colours were defined */
 
-    ws->type->desc_tbl.phigs_dt.out_dt.num_true_colours = 
+    ws->type->desc_tbl.phigs_dt.out_dt.num_true_colours =
 	 (pcae->max1 + 1) * (pcae->max2 + 1) * (pcae->max3 + 1);
 
     return ( 0 );
@@ -484,19 +600,19 @@ phg_wsx_setup_colormap(ws, err)
     XColor		    *xcolors;
     pexColourApproxEntry     pcae;
     int                      ncolors;
-	    
+	
     *err = 0;
-    
+
     XGetWindowAttributes(ws->display, ws->drawable_id, &attrs);
-    
+
     if (*err = phg_wsx_get_true_colors(ws, &attrs, &ncolors, &xcolors, &pcae))
 	return ( False );
 
-    if (!PEXSetTableEntries(ws->display, ws->out_ws.lut.colour_approx, 
-	    (pexTableIndex)0, (CARD16)1, (CARD32)sizeof(pcae), 
+    if (!PEXSetTableEntries(ws->display, ws->out_ws.lut.colour_approx,
+	    (pexTableIndex)0, (CARD16)1, (CARD32)sizeof(pcae),
 		    (char *)&pcae)) {
 		*err = ERRN254;
-		return ( False ); 
+		return ( False );
 	    }
     if (ncolors) {
         XStoreColors( ws->display, attrs.colormap, xcolors, ncolors );
@@ -505,8 +621,8 @@ phg_wsx_setup_colormap(ws, err)
 
     ws->true_colr_map_count = 1;
     ws->true_colr_map_base_pixel = pcae.basePixel;
-	    
-    phg_wsx_lut_update_htab( ws, ws->out_ws.htab.colour_approx, 
+	
+    phg_wsx_lut_update_htab( ws, ws->out_ws.htab.colour_approx,
 	ws->out_ws.lut.colour_approx );
 
     return ( True );
@@ -531,11 +647,10 @@ phg_wsx_colr_mapping_entry_from_pex( ws, pcmb, cmb )
     XGetWindowAttributes(dpy, ws->drawable_id, &attrs);
     switch ( pcmb->approxType ) {
 	case PEXColourSpace:
-	    if ( ws->true_colr_map_count && 
+	    if ( ws->true_colr_map_count &&
 		 (ws->true_colr_map_base_pixel == pcmb->basePixel) ) {
 	        cmb->method = PCOLR_MAP_TRUE;
 	        /* no data */
-#ifdef PEX_SI_API_DIRECT_VISUAL
 	    } else {
 		/* PSEUDO_N is best used with DirectColor visuals
 		 * PEX-SI doesn't support DirectColor visuals,
@@ -551,25 +666,25 @@ phg_wsx_colr_mapping_entry_from_pex( ws, pcmb, cmb )
 	        cmb->method = PCOLR_MAP_PSEUDO_N;
 		cmb->rec.meth_r3.colr_model = pcmb->approxModel;
 		cmb->rec.meth_r3.colr_lists.num_lists = 3;
-	        cmb->rec.meth_r3.colr_lists.lists[0].num_floats = nred; 
-	        cmb->rec.meth_r3.colr_lists.lists[1].num_floats = ngreen; 
-	        cmb->rec.meth_r3.colr_lists.lists[2].num_floats = nblue; 
+	        cmb->rec.meth_r3.colr_lists.lists[0].num_floats = nred;
+	        cmb->rec.meth_r3.colr_lists.lists[1].num_floats = ngreen;
+	        cmb->rec.meth_r3.colr_lists.lists[2].num_floats = nblue;
 	    if ( !( xcolrs = (XColor *)Malloc(ncolrs * sizeof(XColor)) ) ) {
 		goto fail;
 	    }
 
 	    for (i=0, xcolr=xcolrs; i< ncolrs; i++, xcolr++ ) {
 		xcolr->flags = DoRed | DoGreen | DoBlue;
-		xcolr->pixel = i * pcmb->mult1 + i * pcmb->mult2 + 
-			       i * pcmb->mult3 + pcmb->basePixel; 
+		xcolr->pixel = i * pcmb->mult1 + i * pcmb->mult2 +
+			       i * pcmb->mult3 + pcmb->basePixel;
 	    }
 	    XQueryColors( dpy, attrs.colormap, xcolrs, ncolrs );
 
 	    /* put x colors in data record */
 	    for (i=0, xcolr=xcolrs;
-		 pred=cmb->rec.meth_r3.colr_lists.lists[0].floats, 
-		 pgreen=cmb->rec.meth_r3.colr_lists.lists[1].floats, 
-		 pblue=cmb->rec.meth_r3.colr_lists.lists[2].floats, 
+		 pred=cmb->rec.meth_r3.colr_lists.lists[0].floats,
+		 pgreen=cmb->rec.meth_r3.colr_lists.lists[1].floats,
+		 pblue=cmb->rec.meth_r3.colr_lists.lists[2].floats,
 		 i< ncolrs; i++, xcolr++ ) {
 		if ( i < nred ) {
 		    X_CONV_COLOR_TO_Pfloat( xcolr->red, *pred );
@@ -585,7 +700,6 @@ phg_wsx_colr_mapping_entry_from_pex( ws, pcmb, cmb )
 		}
 	    }
 	    free( (char *)xcolrs );
-#endif
 	    }
 	    break;
 	case PEXColourRange:
@@ -608,12 +722,12 @@ phg_wsx_colr_mapping_entry_from_pex( ws, pcmb, cmb )
 	    for (i=0, xcolr=xcolrs; i< ncolrs; i++, xcolr++ ) {
 		xcolr->flags = DoRed | DoGreen | DoBlue;
 		/* not efficient */
-		xcolr->pixel = i * pcmb->mult1 + pcmb->basePixel; 
+		xcolr->pixel = i * pcmb->mult1 + pcmb->basePixel;
 	    }
 	    XQueryColors( dpy, attrs.colormap, xcolrs, ncolrs );
 
 	    /* convert xcolrs to pcolrs */
-	    for (i=0, xcolr=xcolrs, pcolr=cmb->rec.meth_r2.colrs.colr_reps; 
+	    for (i=0, xcolr=xcolrs, pcolr=cmb->rec.meth_r2.colrs.colr_reps;
 		i<ncolrs; i++, xcolr++, pcolr++) {
 		X_CONV_COLOR_TO_Pcolr_rep(xcolr, pcolr);
 	    }
@@ -746,7 +860,7 @@ phg_wsx_build_exposure_rects( display, window, ws, first_event, prects, xrects )
     register	XEvent		*evp = first_event;
     register	pexDeviceRect	*pex_rects;
     register	XRectangle	*x_rects;
-    
+
     /* For an expose event, we want to collect up all of the exposed
      * regions and translate them into absolute coordinates.
      */
@@ -761,7 +875,7 @@ phg_wsx_build_exposure_rects( display, window, ws, first_event, prects, xrects )
 
     XGetGeometry(display, (Drawable)window,
 	&root_win, &x, &y, &w, &h, &bw, &depth);
-    
+
     /* Collect the exposed regions. */
     i = 0;
     do {
