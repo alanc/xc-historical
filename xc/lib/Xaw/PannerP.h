@@ -1,5 +1,5 @@
 /*
- * $XConsortium: PannerP.h,v 1.14 90/03/07 18:38:38 jim Exp $
+ * $XConsortium: PannerP.h,v 1.15 90/03/08 10:52:42 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -87,7 +87,7 @@ typedef struct _PannerRec {
 
 #define PANNER_DSCALE(pw,val) (Dimension)  \
   ((((unsigned long) (val)) * (unsigned long) pw->panner.default_scale) / 100L)
-#define PANNER_DEFAULT_SCALE 10		/* in percent */
+#define PANNER_DEFAULT_SCALE 5		/* percent */
 
 #define PANNER_OUTOFRANGE -30000
 
