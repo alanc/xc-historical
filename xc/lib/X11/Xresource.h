@@ -1,4 +1,4 @@
-/* $XConsortium: Xresource.h,v 1.32 91/02/17 13:00:28 rws Exp $ */
+/* $XConsortium: Xresource.h,v 1.33 91/04/11 19:46:43 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -27,6 +27,8 @@ SOFTWARE.
 #ifndef _XRESOURCE_H_
 #define _XRESOURCE_H_
 
+/* You must include <X11/Xlib.h> before including this file */
+
 /****************************************************************
  ****************************************************************
  ***                                                          ***
@@ -37,30 +39,11 @@ SOFTWARE.
  ****************************************************************
  ****************************************************************/
 
-
-
-/****************************************************************
- *
- * Miscellaneous definitions
- *
- ****************************************************************/
-
-#ifdef USG
-#ifndef __TYPES__
-#include <sys/types.h>			/* forgot to protect it... */
-#define __TYPES__
-#endif /* __TYPES__ */
-#else
-#include <sys/types.h>
-#endif /* USG */
-
-#include <X11/Xfuncproto.h>
-
 _XFUNCPROTOBEGIN
 
 /****************************************************************
  *
- * ||| Memory Management (move out of here!)
+ * Memory Management
  *
  ****************************************************************/
 
