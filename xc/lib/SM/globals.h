@@ -1,4 +1,4 @@
-/* $XConsortium: globals.h,v 1.9 94/02/07 19:21:10 mor Exp $ */
+/* $XConsortium: globals.h,v 1.10 94/03/07 15:23:44 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -23,7 +23,7 @@ extern void _SmsDefaultErrorHandler ();
 extern IcePoAuthStatus _IcePoMagicCookie1Proc ();
 extern IcePaAuthStatus _IcePaMagicCookie1Proc ();
 
-extern Bool _SmcProcessMessage ();
+extern void _SmcProcessMessage ();
 extern void _SmsProcessMessage ();
 
 int 	_SmcOpcode = 0;
