@@ -1,4 +1,4 @@
-/* $XConsortium: sm_client.c,v 1.27 94/04/02 15:27:16 rws Exp $ */
+/* $XConsortium: sm_client.c,v 1.28 94/04/07 18:19:34 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -240,7 +240,7 @@ char 		*errorStringRet;
 
 
 
-void
+SmcCloseStatus
 SmcCloseConnection (smcConn, count, reasonMsgs)
 
 SmcConn smcConn;
@@ -252,6 +252,8 @@ char    **reasonMsgs;
     smCloseConnectionMsg 	*pMsg;
     char 			*pData;
     int				extra, i;
+    IceCloseStatus	        closeStatus;
+    SmcCloseStatus		statusRet;
 
     extra = 8;
 
@@ -272,7 +274,7 @@ char    **reasonMsgs;
 
     IceProtocolShutdown (iceConn, _SmcOpcode);
     IceSetShutdownNegotiation (iceConn, False);
-    IceCloseConnection (iceConn);
+    closeStatus = IceCloseConnection (iceConn);
 
     if (smcConn->vendor)
 	free (smcConn->vendor);
@@ -298,6 +300,15 @@ char    **reasonMsgs;
     }
 
     free ((char *) smcConn);
+
+    if (closeStatus == IceClosedNow)
+	statusRet = SmcClosedNow;
+    else if (closeStatus == IceClosedASAP)
+	statusRet = SmcClosedASAP;
+    else
+	statusRet = SmcConnectionInUse;
+
+    return (statusRet);
 }
 
 
