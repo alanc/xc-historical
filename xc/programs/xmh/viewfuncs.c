@@ -1,5 +1,5 @@
 /*
- * $XConsortium: viewfuncs.c,v 2.21 91/07/07 16:35:39 converse Exp $
+ * $XConsortium: viewfuncs.c,v 2.22 91/07/17 21:25:48 converse Exp $
  *
  *
  *		       COPYRIGHT 1987, 1989
@@ -63,13 +63,11 @@ void XmhCloseView(w, event, params, num_params)
 }
 
 
-/*ARGSUSED*/
-void DoViewReply(w, client_data, call_data)
-    Widget	w;
-    XtPointer	client_data;
-    XtPointer	call_data;
+void DoViewReplyMsg(scrn, params, num_params)
+    Scrn	scrn;
+    String	*params;
+    Cardinal	num_params;
 {
-    Scrn	scrn = (Scrn) client_data;
     Msg		msg;
     Scrn	nscrn;
 
@@ -78,9 +76,18 @@ void DoViewReply(w, client_data, call_data)
     ScreenSetAssocMsg(nscrn, scrn->msg);
     msg = TocMakeNewMsg(DraftsFolder);
     MsgSetTemporary(msg);
-    MsgLoadReply(msg, scrn->msg);
+    MsgLoadReply(msg, scrn->msg, params, num_params);
     MsgSetScrnForComp(msg, nscrn);
     MapScrn(nscrn);
+}
+
+/*ARGSUSED*/
+void DoViewReply(w, client_data, call_data)
+    Widget	w;
+    XtPointer	client_data;
+    XtPointer	call_data;
+{
+    DoViewReplyMsg((Scrn) client_data, (String *)NULL, (Cardinal)0);
 }
 
 
@@ -93,9 +100,23 @@ void XmhViewReply(w, event, params, num_params)
     Cardinal	*num_params;
 {
     Scrn scrn = ScrnFromWidget(w);
-    DoViewReply(w, (XtPointer) scrn, (XtPointer) NULL);
+    DoViewReplyMsg(scrn, params, *num_params);
 }
 
+
+/*ARGSUSED*/
+void DoViewForwardMsg(scrn, params, num_params)
+    Scrn	scrn;
+    String	*params;
+    Cardinal	num_params;
+{
+    MsgList	mlist;
+
+    if (scrn->msg == NULL) return;
+    mlist = MakeSingleMsgList(scrn->msg);
+    CreateForward(mlist, params, num_params);
+    FreeMsgList(mlist);
+}
 
 /*ARGSUSED*/
 void DoViewForward(w, client_data, call_data)
@@ -103,13 +124,7 @@ void DoViewForward(w, client_data, call_data)
     XtPointer	client_data;
     XtPointer	call_data;
 {
-    Scrn	scrn = (Scrn) client_data;
-    MsgList	mlist;
-
-    if (scrn->msg == NULL) return;
-    mlist = MakeSingleMsgList(scrn->msg);
-    CreateForward(mlist);
-    FreeMsgList(mlist);
+    DoViewForwardMsg((Scrn) client_data, (String *)NULL, (Cardinal)0);
 }
 
 /*ARGSUSED*/
@@ -119,8 +134,7 @@ void XmhViewForward(w, event, params, num_params)
     String	*params;
     Cardinal	*num_params;
 {
-    Scrn scrn = ScrnFromWidget(w);
-    DoViewForward(w, (XtPointer) scrn, (XtPointer) NULL);
+    DoViewForwardMsg(ScrnFromWidget(w), params, *num_params);
 }
 
 
