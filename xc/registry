@@ -1,4 +1,4 @@
-/* $XConsortium: Xregistry,v 1.71 92/09/09 09:46:33 rws Exp $ */
+/* $XConsortium: Xregistry,v 1.72 92/09/09 11:03:11 rws Exp $ */
 
 1. ORGANIZATION NAMES
 
@@ -7,6 +7,7 @@ Name						Reference
 "Acorn"						[49]
 "Adobe"						[69]
 "AIX"						[33]
+"ALLINK"					[99]
 "APOLLO"					[1]
 "Apple"						[22]
 "ARDENT"					[2]
@@ -1263,3 +1264,8 @@ REFERENCES
 	Kubota Pacific Computer
 	2630 Walsh Avenue
 	Santa Clara, CA 95051-0905
+
+[99]	Ilan Aisic
+	NYNEX ALLINK Co.
+	4 Gannett Drive
+	White Plains, NY 10604
