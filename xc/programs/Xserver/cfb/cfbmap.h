@@ -1,5 +1,5 @@
 /*
- * $XConsortium: cfbmap.h,v 1.4 93/02/08 09:53:10 rws Exp $
+ * $XConsortium: cfbmap.h,v 1.5 93/08/08 13:23:19 rws Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -27,17 +27,31 @@
  * Map names around so that multiple depths can be supported simultaneously
  */
 
+/* a losing vendor cpp dumps core if we define NAME in terms of CATNAME */
+
 #if PSZ != 8
 #if PSZ == 32
-#define NAME(subname) CATNAME(cfb32,subname)
+#if (__STDC__ && !defined(UNIXCPP)) || defined(ANSICPP)
+#define NAME(subname) cfb32##subname
+#else
+#define NAME(subname) cfb32/**/subname
+#endif
 #endif
 
 #if PSZ == 16
-#define NAME(subname) CATNAME(cfb16,subname)
+#if (__STDC__ && !defined(UNIXCPP)) || defined(ANSICPP)
+#define NAME(subname) cfb16##subname
+#else
+#define NAME(subname) cfb16/**/subname
+#endif
 #endif
 
 #if PSZ == 4
-#define NAME(subname) CATNAME(cfb4,subname)
+#if (__STDC__ && !defined(UNIXCPP)) || defined(ANSICPP)
+#define NAME(subname) cfb4##subname
+#else
+#define NAME(subname) cfb4/**/subname
+#endif
 #endif
 
 #ifndef NAME
@@ -49,7 +63,6 @@ cfb can not hack PSZ yet
 #else
 #define CATNAME(prefix,subname) prefix/**/subname
 #endif
-
 
 #define cfbScreenPrivateIndex NAME(ScreenPrivateIndex)
 #define cfbWindowPrivateIndex NAME(WindowPrivateIndex)
