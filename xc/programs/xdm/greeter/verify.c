@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: verify.c,v 1.18 91/04/16 18:09:46 rws Exp $
+ * $XConsortium: verify.c,v 1.19 91/04/17 10:03:41 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -25,12 +25,6 @@
  */
 
 # include	"dm.h"
-
-#ifndef X_NOT_POSIX
-#ifndef _POSIX_SOURCE
-#define _POSIX_SOURCE
-#endif
-#endif
 # include	<pwd.h>
 # ifdef NGROUPS_MAX
 # include	<grp.h>
