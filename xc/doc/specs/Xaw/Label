@@ -58,8 +58,10 @@ borderPixmap	Pixmap	Pixmap		XtUnspecifiedPixmap
 borderWidth	BorderWidth	Dimension		1
 colormap	Colormap	Pointer		Parent's Colormap
 cursor	Cursor	Cursor		None
+cursorName	Cursor	String		NULL
 depth	Depth	int	C	Parent's Depth
 destroyCallback	Callback	XtCallbackList		NULL
+encoding	Encoding	UnsignedChar		XawTextEncoding8bit
 font	Font	XFontStruct		XtDefaultFont
 foreground	Foreground	Pixel		XtDefaultForeground
 height	Height	Dimension	A	Font height + 2 * \fBinternalHeight\fP
@@ -68,7 +70,10 @@ internalHeight	Height	Dimension		2
 internalWidth	Width	Dimension		4
 justify	Justify	Justify		XtJustifyCenter (center)
 label	Label	String		name of widget
+leftBitmap	LeftBitmap	Bitmap		None
 mappedWhenManaged	MappedWhenManaged	Boolean		True
+pointerColor	Foreground	Pixel		XtDefaultForeground
+pointerColorBackground	Background	Pixel		XtDefaultBackground
 resize	Resize	Boolean		True
 screen	Screen	Pointer	R	Parent's Screen
 sensitive	Sensitive	Boolean		True
@@ -93,8 +98,10 @@ _
 .Bw
 .Cm
 .Cu
+.Pn
 .Dp
 .Dc
+.Le Bold
 .Lf Bold
 .Lg Bold
 .Hw
@@ -102,7 +109,10 @@ _
 .Ih Bold
 .Ju Bold
 .La Bold
+.Ll Bold
 .Mm
+.Pf
+.Pb
 .Re Bold
 .Sc
 .Se
