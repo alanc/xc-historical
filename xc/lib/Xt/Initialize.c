@@ -267,6 +267,9 @@ Widget wid;
 	if(w->top.icon_name == NULL) {
 		w->top.icon_name = w->core.name;
 	}
+	if(w->top.title == NULL) {
+		w->top.title = w->top.icon_name;
+	}
 	w->core.background_pixel = None;
 	w->core.background_pixmap = NULL;
 /*
