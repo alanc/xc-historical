@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: Text.c,v 1.104 89/08/17 17:46:15 kit Exp $";
+static char Xrcsid[] = "$XConsortium: Text.c,v 1.105 89/08/17 18:42:09 kit Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -685,7 +685,7 @@ PositionForXY (ctx, x, y)
 TextWidget ctx;
 Position x,y;
 {
-  int fromx, line;
+  int fromx, line, width, height;
   XawTextPosition position;
   XawTextSource src = ctx->text.source;
 
@@ -699,7 +699,8 @@ Position x,y;
   if (position >= ctx->text.lastPos)
     return(ctx->text.lastPos);
   fromx = (int) ctx->text.margin.left; 
-  position = (*ctx->text.sink->Resolve) ((Widget) ctx, position, fromx, x);
+  (*ctx->text.sink->FindPosition)((Widget) ctx, position, fromx, x - fromx,
+				  FALSE, &position, &width, &height);
   if (position >= ctx->text.lt.info[line + 1].position)
     position = (*src->Scan)(src, ctx->text.lt.info[line + 1].position,
 			    XawstPositions, XawsdLeft, 1, TRUE);

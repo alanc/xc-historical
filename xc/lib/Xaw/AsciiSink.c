@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: AsciiSink.c,v 1.34 89/08/17 16:44:55 kit Exp $";
+static char Xrcsid[] = "$XConsortium: AsciiSink.c,v 1.35 89/08/17 18:42:06 kit Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -169,11 +169,12 @@ int len;
 
 /* Sink Object Functions */
 
-static /*void*/ AsciiDisplayText (w, x, y, pos1, pos2, highlight)
-  Widget w;
-  Position x, y;
-  int highlight;
-  XawTextPosition pos1, pos2;
+static void 
+AsciiDisplayText (w, x, y, pos1, pos2, highlight)
+Widget w;
+Position x, y;
+int highlight;
+XawTextPosition pos1, pos2;
 {
     TextWidget ctx = (TextWidget) w;
     XawTextSink sink = ctx->text.sink;
@@ -268,10 +269,11 @@ XRectangle * rect;
  * The following procedure manages the "insert" cursor.
  */
 
-static AsciiInsertCursor (w, x, y, state)
-  Widget w;
-  Position x, y;
-  XawTextInsertState state;
+static void
+AsciiInsertCursor (w, x, y, state)
+Widget w;
+Position x, y;
+XawTextInsertState state;
 {
     XawTextSink sink = ((TextWidget)w)->text.sink;
     AsciiSinkData *data = (AsciiSinkData *) sink->data;
@@ -293,10 +295,11 @@ static AsciiInsertCursor (w, x, y, state)
  * Clear the passed region to the background color.
  */
 
-static AsciiClearToBackground (w, x, y, width, height)
-  Widget w;
-  Position x, y;
-  Dimension width, height;
+static void
+AsciiClearToBackground (w, x, y, width, height)
+Widget w;
+Position x, y;
+Dimension width, height;
 {
 
 /* 
@@ -312,8 +315,8 @@ static AsciiClearToBackground (w, x, y, width, height)
  * Given two positions, find the distance between them.
  */
 
-static AsciiFindDistance (w, fromPos, fromx, toPos,
-			  resWidth, resPos, resHeight)
+static void
+AsciiFindDistance (w, fromPos, fromx, toPos, resWidth, resPos, resHeight)
   Widget w;
   XawTextPosition fromPos;	/* First position. */
   int fromx;			/* Horizontal location of first position. */
@@ -351,8 +354,9 @@ static AsciiFindDistance (w, fromPos, fromx, toPos,
 }
 
 
-static AsciiFindPosition(w, fromPos, fromx, width, stopAtWordBreak, 
-			 resPos, resWidth, resHeight)
+static  void
+AsciiFindPosition(w, fromPos, fromx, width, stopAtWordBreak, 
+		  resPos, resWidth, resHeight)
   Widget w;
   XawTextPosition fromPos; 	/* Starting position. */
   int fromx;			/* Horizontal location of starting position.*/
@@ -408,34 +412,27 @@ static AsciiFindPosition(w, fromPos, fromx, width, stopAtWordBreak,
     *resHeight = data->font->ascent + data->font->descent;
 }
 
-/*	Function Name: AsciiResolveToPosition
- *	Description: Resolves an x location into a position.
- *	Arguments: w - The text widget.
- *                 pos - The position at the reference location.
- *                 ref_x - A reference location for the position "pos".
- *                 x - The x location that we need the position for.
- *	Returns: The position corrosponding to the X location.
- */
-
-static XawTextPosition
-AsciiResolveToPosition (w, pos, ref_x, x)
+static void
+AsciiResolveToPosition (w, pos, fromx, width, leftPos, rightPos)
 Widget w;
 XawTextPosition pos;
-Position ref_x, x;
+int fromx, width;
+XawTextPosition *leftPos, *rightPos;
 {
-  int resWidth, resHeight, width = x - ref_x;
-  XawTextPosition ret_pos;
+    int resWidth, resHeight;
+    XawTextSource source = ((TextWidget)w)->text.source;
 
-  AsciiFindPosition(w, pos, ref_x, width,
-		    FALSE, &ret_pos, &resWidth, &resHeight);
-
-  return (ret_pos);
+    AsciiFindPosition(w, pos, fromx, width, FALSE,
+          leftPos, &resWidth, &resHeight);
+    if (*leftPos > GETLASTPOS)
+      *leftPos = GETLASTPOS;
+    *rightPos = *leftPos;
 }
 
-
-static int AsciiMaxLinesForHeight (w, height)
-  Widget w;
-  Dimension height;
+static int 
+AsciiMaxLinesForHeight (w, height)
+Widget w;
+Dimension height;
 {
     AsciiSinkData *data;
     XawTextSink sink = ((TextWidget)w)->text.sink;
@@ -445,9 +442,10 @@ static int AsciiMaxLinesForHeight (w, height)
 }
 
 
-static int AsciiMaxHeightForLines (w, lines)
-  Widget w;
-  int lines;
+static int 
+AsciiMaxHeightForLines (w, lines)
+Widget w;
+int lines;
 {
     AsciiSinkData *data;
     XawTextSink sink = ((TextWidget)w)->text.sink;
