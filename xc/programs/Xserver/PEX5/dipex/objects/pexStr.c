@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: pexStr.c,v 5.1 91/02/16 09:56:50 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -412,8 +412,6 @@ pexStoreElementsReq    	*strmPtr;
 	 i++, curOC += pe->length  ) {
 	pe = (pexElementInfo *)curOC;
     	if ((PEXOCAll < pe->elementType ) && (pe->elementType <= PEXMaxOC)) { 
-	    if (cntxtPtr->pexSwapRequestOC)		/* Any conversions? */
-		cntxtPtr->pexSwapRequestOC[pe->elementType](cntxtPtr->swap, pe);
 	    if (pe->elementType == PEXOCExecuteStructure) {
 		ps = &(((pexExecuteStructure *)(pe))->id);
 		LU_STRUCTURE(*ps, ph);
