@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Initialize.c,v 1.126 88/09/26 14:40:11 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Initialize.c,v 1.127 89/03/10 17:53:31 rws Exp $";
 /* $oHeader: Initialize.c,v 1.7 88/08/31 16:33:39 asente Exp $ */
 #endif lint
 
@@ -148,16 +148,16 @@ static XrmDatabase GetAppUserDefaults(classname)
 	XrmDatabase rdb;
 	extern char *getenv();
 	char	filenamebuf[MAXPATHLEN];
-	char	*filename = &filenamebuf[0];
+	char	*dirname = getenv("XAPPLRESDIR");
 
-	if ((filename = getenv("XAPPLRESDIR")) == NULL)
-	    (void) XtGetRootDirName(filename = &filenamebuf[0]);
+	if (dirname != NULL)
+	    strcpy(filenamebuf, dirname);
 	else
-	    filename = strcpy(filenamebuf, filename);
+	    (void) XtGetRootDirName(filenamebuf);
 
-	(void) strcat(filename, classname);
+	(void) strcat(filenamebuf, classname);
 	
-	rdb = XrmGetFileDatabase(filename);
+	rdb = XrmGetFileDatabase(filenamebuf);
 
 	return rdb;
 }
@@ -186,7 +186,7 @@ static XrmDatabase GetEnvironmentDefaults(dpy)
 	XrmDatabase rdb;
 	extern char *getenv();
 	char	filenamebuf[MAXPATHLEN];
-	char	*filename = &filenamebuf[0];
+	char	*filename;
 
 	if ((filename = getenv("XENVIRONMENT")) == NULL) {
 	    int len;
@@ -206,7 +206,13 @@ static void GetInitialResourceDatabase(dpy, classname)
 {
 	XrmDatabase rdb;
 
-	dpy->db = NULL;
+	/* make sure a db exists, since XtDatabase() must return one */
+	/* ||| note: versions of Xlib before R4 return NULL.  Since
+	   there's no other way to create an empty database that worked
+	   in R3 and since the circumstances are likely rare, and since
+	   there's an easy user work-around, we'll just punt. */
+	/* ||| Xt shouldn't be using dpy->db. */
+	dpy->db = XrmGetStringDatabase( "" );
 
 	rdb = GetAppSystemDefaults(classname);
 	if (rdb != NULL) XrmMergeDatabases(rdb, &(dpy->db));
