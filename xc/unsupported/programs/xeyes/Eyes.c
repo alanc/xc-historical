@@ -352,22 +352,28 @@ int		num;
 	Window win = XtWindow(w);
 	int ecx = (int) EYE_CENTER_X(w, num), ecy = (int) EYE_CENTER_Y(w, num);
 	int et = EYE_THICK(w);
-	unsigned int ew = EYE_WIDTH(w), eh = EYE_HEIGHT(w);
+	int ew = EYE_WIDTH(w), eh = EYE_HEIGHT(w);
 	int etdiv2 = et/2;
-	unsigned int ewdiv2 = ew/2, ehdiv2 = eh/2;
+	int ewdiv2 = ew/2, ehdiv2 = eh/2;
 
+	if (ew < 0 || eh < 0)
+		return;
 	if (w->eyes.use_wide_lines) {
 		XDrawArc (dpy, win, outgc,
 			  (ecx - ewdiv2), (ecy - ehdiv2),
-			  ew, eh,
+			  (unsigned) ew, (unsigned) eh,
 			  90 * 64, 360 * 64);
 	} else {
 		XFillArc (dpy, win, outgc, 
 			  (ecx - ewdiv2 - etdiv2), (ecy - ehdiv2 - etdiv2),
-			  (ew + et), (eh + et), 90 * 64, 360 * 64);
+			  (unsigned) (ew + et), (unsigned) (eh + et),
+ 			  90 * 64, 360 * 64);
+		if (et > ew || et > eh)
+			return;
 		XFillArc (dpy, win, centergc,
 			  (ecx - ewdiv2 + etdiv2), (ecy - ehdiv2 + etdiv2),
-			  (ew - et), (eh - et), 90 * 64, 360 * 64);
+			  (unsigned) (ew - et), (unsigned) (eh - et),
+			  90 * 64, 360 * 64);
 	}
 }
 
