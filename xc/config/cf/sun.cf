@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: sun.cf,v 1.62 91/07/26 11:36:45 rws Exp $
+XCOMM platform:  $XConsortium: sun.cf,v 1.63 91/07/26 11:47:50 rws Exp $
 
 #define OSName            SunOS 4.1.1
 XCOMM operating system:  OSName
@@ -32,13 +32,7 @@ XCOMM operating system:  OSName
 
 #include <sunLib.rules>
 
-/* #define HasGcc YES */	/* VERY USEFUL for server on Sun3 */
-#define HasGcc mc68000		/* XXX remove in R5 */
-#if HasGcc			/* XXX remove in R5 */
-#define ServerCcCmd gcc -fstrength-reduce -fpcc-struct-return 
-#define CcCmd cc
-#define ServerCCOptions /* */
-#endif
+#define HasGcc mc68000		/* XXX change to NO in R5 */
 
 #if HasGcc
 
@@ -80,9 +74,3 @@ XCOMM operating system:  OSName
 #endif
 
 #define ServerOSDefines SunWindowsDefines AllocateLocalDefines
-
-#if HasGcc
-#define ServerCDebugFlags -O -g		/* XXX remove this in R5 */
-#define PexDipexCDebugFlags -O		/* XXX remove this in R5 */
-#define PexDdpexCDebugFlags -O		/* XXX remove this in R5 */
-#endif
