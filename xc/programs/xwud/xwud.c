@@ -1,4 +1,4 @@
-/* $XConsortium: xwud.c,v 1.49 91/12/17 19:40:49 keith Exp $ */
+/* $XConsortium: xwud.c,v 1.50 91/12/23 11:45:11 keith Exp $ */
 /* Copyright 1985, 1986, 1988 Massachusetts Institute of Technology */
 
 /*
@@ -17,6 +17,7 @@ without express or implied warranty.
 
 
 #include <X11/Xos.h>
+#define XLIB_ILLEGAL_ACCESS
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <X11/Xatom.h>

@@ -1,4 +1,4 @@
-/* $XConsortium: xpr.c,v 1.53 91/06/30 18:49:40 rws Exp $ */
+/* $XConsortium: xpr.c,v 1.54 91/07/18 11:55:34 rws Exp $ */
 
 /*
  * XPR - process xwd(1) files for various printers
@@ -46,6 +46,7 @@
 
 #include <X11/Xos.h>
 #include <X11/Xfuncs.h>
+#define XLIB_ILLEGAL_ACCESS
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <stdio.h>
