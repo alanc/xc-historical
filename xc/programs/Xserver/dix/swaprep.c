@@ -22,7 +22,7 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $Header: swaprep.c,v 2.7 87/08/20 15:40:52 newman Locked $ */
+/* $Header: swaprep.c,v 1.25 87/08/20 16:29:52 newman Locked $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -179,9 +179,9 @@ SGetWindowAttributesReply(pClient, size, pRep)
 
 void
 SGetGeometryReply(pClient, size, pRep)
-    xGetGeometryReply	*pRep;
     ClientPtr		pClient;
     int			size;
+    xGetGeometryReply	*pRep;
 {
     int n;
 
@@ -197,9 +197,9 @@ SGetGeometryReply(pClient, size, pRep)
 
 void
 SQueryTreeReply(pClient, size, pRep)
-    xQueryTreeReply	*pRep;
     ClientPtr		pClient;
     int			size;
+    xQueryTreeReply	*pRep;
 {
     int n;
 
@@ -213,9 +213,9 @@ SQueryTreeReply(pClient, size, pRep)
 
 void
 SInternAtomReply(pClient, size, pRep)
-    xInternAtomReply	*pRep;
     ClientPtr		pClient;
     int			size;
+    xInternAtomReply	*pRep;
 {
     int n;
 
