@@ -568,16 +568,11 @@
       (#\* (when (> term i)
 	     (push (subseq string i term) name-list))
 	   (push '* name-list))
-      ;; Value seperator
-      (#\: (push (subseq string i term) name-list)
-	   (let* ((start (position '(#\tab #\space) string
-				   :test-not #'char-memq
-				   :start (1+ term) :end end))
-		  (value (if (and start (> end start))
-			     (subseq string start)
-			   "")))
-	     (return (values (nreverse name-list)
-			     (string-right-trim '(#\tab #\space) value))))))
+      ;; Value separator
+      (#\:
+       (push (subseq string i term) name-list)
+       (return (values (nreverse name-list)
+		       (string-trim '(#\tab #\space) (subseq string (1+ term)))))))
     (setq i (1+ term))))
 
 (defun write-resources (database pathname &key write test test-not)
