@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: main.c,v 1.69 88/08/17 16:39:58 jim Exp $";
+static char rcs_id[] = "$Header: main.c,v 1.68 88/08/13 09:11:53 jim Exp $";
 #endif	/* lint */
 
 /*
@@ -62,16 +62,15 @@ SOFTWARE.
 #ifdef SYSV				/* note that macII is *not* SYSV */
 #include <sys/ioctl.h>
 #include <sys/termio.h>
-# ifndef mips
-# include <sys/ptyio.h>
-# endif /* not mips */
+#include <sys/ptyio.h>
 #include <sys/stat.h>
-# ifdef JOBCONTROL
-# include <sys/bsdtty.h>
-# endif	/* JOBCONTROL */
+#ifdef JOBCONTROL
+#include <sys/bsdtty.h>
+#endif	/* JOBCONTROL */
 #define USE_SYSV_TERMIO
 #define USE_SYSV_UTMP
 #define USE_SYSV_SIGNALS
+#define	USE_SYSV_PGRP
 #else	/* else not SYSV */		/* BSD and macII */
 #include <sgtty.h>
 #include <sys/wait.h>
@@ -395,6 +394,37 @@ char **argv;
 	int fd2 = -1;
 	int fd3 = -1;
 
+#ifdef	hpux
+	/* This is a temporary kludge to get around the bug in 6.2 hp-ux unix
+	 * domain sockets which will crash the server if we do an invalid
+	 * (to unix domain sockets) ioctl on it.  Let's run through fd's
+	 * 0, 1, and 2 and if any of them are sockets, let's move them
+	 * out of the way.
+	 */
+
+	for (i = 0; i <= 2; i++) {
+	    struct stat st;
+
+	    if (!fstat(i, &st)) {
+		if ((st.st_mode & S_IFMT) == S_IFSOCK) {
+		    /* dup it outside the range... */
+		    (void) fcntl(i, F_DUPFD, 3);
+		    /* and close it up */
+		    (void) close(i);
+		    /* and open up /dev/null in it's place */
+		    (void) open("/dev/null", O_RDONLY);
+		}
+	    } else {
+		/* open up a file into this slot so that the unix domain
+		 * socket won't fall into the slot and possibly panic us
+		 * when cuserid calls... which does a TCGETA against fd's
+		 * 0, 1, and 2 which would panic us.
+		 */
+		(void) open("/dev/null", O_RDONLY);
+	    }
+	}
+#endif	/* hpux */
+
 	ProgramName = argv[0];
 
 #ifdef macII
@@ -420,7 +450,7 @@ char **argv;
 	/* Initialization is done here rather than above in order
 	** to prevent any assumptions about the order of the contents
 	** of the various terminal structures (which may change from
-	** implementation to implementation.
+	** implementation to implementation).
 	*/
 #ifdef macII
 	d_tio.c_iflag = ICRNL|IXON;
@@ -560,82 +590,20 @@ char **argv;
 		continue;
 #endif	/* TIOCCONS */
 	     case 'L':
-		{
-		static char *t_ptydev = NULL;
-		static char *t_ttydev = NULL;
-
-		if (!t_ptydev) {
-		    t_ptydev = malloc (strlen (PTYDEV) + 1);
-		    t_ttydev = malloc (strlen (TTYDEV) + 1);
-		    if (!t_ptydev || !t_ttydev) {
-			fprintf (stderr, 
-			 "%s:  unable to alloc memory for t_ttydev or t_ptydev\n",
-				 ProgramName);
-			exit (1);
-		    }
-		    strcpy (t_ptydev, PTYDEV);
-		    strcpy (t_ttydev, TTYDEV);
-		}
-
 		L_flag = 1;
 		get_ty = argv[--argc];
-		t_ptydev[strlen(t_ptydev) - 2] =
-			t_ttydev[strlen(t_ttydev) - 2] =
+		ptydev[strlen(ptydev) - 2] = ttydev[strlen(ttydev) - 2] =
 			get_ty[strlen(get_ty) - 2];
-		t_ptydev[strlen(t_ptydev) - 1] =
-			t_ttydev[strlen(t_ttydev) - 1] =
+		ptydev[strlen(ptydev) - 1] = ttydev[strlen(ttydev) - 1] =
 			get_ty[strlen(get_ty) - 1];
-		loginpty = open( t_ptydev, O_RDWR, 0 );
-#ifdef USE_SYSV_UTMP
-		/* use the same tty name that everyone else will use
-		** (from ttyname)
-		*/
-		{
-			char *ptr;
-
-			if (ptr = ttyname(loginpty)) {
-				/* it may be bigger! */
-				t_ptydev = realloc (t_ptydev,
-						    (unsigned) (strlen(ptr) + 1));
-				(void) strcpy(t_ptydev, ptr);
-			}
+		if ((loginpty = open(ptydev, O_RDWR, 0)) < 0) {
+			consolepr("open(%s) failed\n", ptydev);
+			exit(ERROR_PTYS);
 		}
-#endif /* USE_SYSV_UTMP */
-		loginpty = open( t_ptydev, O_RDWR, 0 );
-		dup2( loginpty, 4);
-		close( loginpty );
-		loginpty = 4;
-		chown(t_ttydev, 0, 0);
-		chmod(t_ttydev, 0622);
-		if (open(t_ttydev, O_RDWR, 0) < 0) {
-			consolepr("open(%s) failed\n", t_ttydev);
-		}
-		signal(SIGHUP, SIG_IGN);
-#ifdef SYSV
-#ifdef JOBCONTROL
-		{
-			/* kind of do a vhangup */
-			int tty_pgrp;
-
-			if (!ioctl(0, TIOCGPGRP, &tty_pgrp)) {
-				(void) kill (-tty_pgrp, SIGHUP);
-			}
-		}
-		setpgrp2(0,0);
-#else	/* !JOBCONTROL */
-		setpgrp();
-#endif	/* !JOBCONTROL */
-#else	/* !SYSV */
-		vhangup();
-		setpgrp(0,0);
-#endif	/* !SYSV */
-		signal(SIGHUP, SIG_DFL);
-		(void) close(0);
-		open(t_ttydev, O_RDWR, 0);
-		dup2(0, 1);
-		dup2(0, 2);
+		chown(ttydev, 0, 0);
+		chmod(ttydev, 0622);
 		continue;
-		}
+
 	     case 'S':
 		sscanf(*argv + 2, "%c%c%d", passedPty, passedPty+1,
 		 &am_slave);
@@ -730,8 +698,65 @@ char **argv;
 		 0666);
 	else
 #endif	/* DEBUG */
-	if(get_ty)
+	if(get_ty) {
+#ifdef USE_SYSV_PGRP
+		/* This is kind of vile and discusting.  While it is fine
+		 * to just go and open up /dev/console on a BSD system, we
+		 * can't do that on a SYSV system because if we do we might
+		 * become the controlling terminal for it and break login
+		 * attempts to it.
+		 *
+		 * The solution is to fork off a child, let it open up
+		 * /dev/console and when it has done that we can open it up
+		 * without fear of taking control of it.  After opening up
+		 * the console, we can go and kill the child process.
+		 *
+		 * Told you it was ugly.  But its a BSD world....
+		 */
+		int pid;
+		int status;
+		int pf[2];
+
+		pipe(pf);
+		pid = fork();
+		if (pid == 0) {
+			/* child:
+			 *  - close off the read side of the pipe,
+			 *  - do a setpgrp() so that we can gain control
+			 *    of /dev/console,
+			 *  - close the write side fo the pipe (so that our
+			 *    parent will know what we have done),
+			 *  - wait around till we are killed.
+			 */
+			(void) close(pf[0]);
+			(void) setpgrp();
+			(void) open("/dev/console", O_WRONLY, 0);
+			(void) close(pf[1]);
+			(void) pause();
+		} else if (pid > 0) {
+			/* parent:
+			 *  - read from pipe -- read will terminate when
+			 *    child closes the pipe or exit's,
+			 *  - open /dev/console,
+			 *  - kill off child,
+			 *  - wait on child.
+			 */
+			(void) close(pf[1]);
+			(void) read(pf[0], (char *) &status, sizeof(status));
+			i = open("/dev/console", O_WRONLY, 0);
+			(void) kill(pid, 9);
+			while (pid != wait(&status)) {
+				if (errno == EINTR)
+					continue;
+				else
+					break;
+			}
+			(void) close(pf[0]);
+		}
+#else	/* USE_SYSV_PGRP */
 		i = open("/dev/console", O_WRONLY, 0);
+#endif	/* !USE_SYSV_PGRP */
+	}
 	if(i >= 0) {
 #ifdef USE_SYSV_TERMIO
 		/* SYSV has another pointer which should be part of the
@@ -742,36 +767,17 @@ char **argv;
 		old_bufend = (unsigned char *) _bufend(stderr);
 		fileno(stderr) = i;
 		(unsigned char *) _bufend(stderr) = old_bufend;
-#else /* else not USE_SYSV_TERMIO */
+#else	/* USE_SYSV_TERMIO */
 		fileno(stderr) = i;
 #endif	/* USE_SYSV_TERMIO */
 	}
-	if(fileno(stderr) != (NOFILE - 1)) {
-#ifdef USE_SYSV_TERMIO
-		/* SYSV has another pointer which should be part of the
-		** FILE structure but is actually a seperate array.
-		*/
-		unsigned char *old_bufend;
-
-		dup2(fileno(stderr), (NOFILE - 1));
-		old_bufend = (unsigned char *) _bufend(stderr);
-		if(fileno(stderr) >= 3)
-			close(fileno(stderr));
-		fileno(stderr) = (NOFILE - 1);
-		(unsigned char *) _bufend(stderr) = old_bufend;
-#else	/* else not USE_SYSV_TERMIO */
-		dup2(fileno(stderr), (NOFILE - 1));
-		if(fileno(stderr) >= 3)
-			close(fileno(stderr));
-		fileno(stderr) = (NOFILE - 1);
-#endif	/* USE_SYSV_TERMIO */
-	}
-
-	signal (SIGCHLD, reapchild);
 
 	/* open a terminal for client */
 	get_terminal ();
 	spawn ();
+	/* Child process is out there, let's catch it's termination */
+	signal (SIGCHLD, reapchild);
+
 	/* Realize procs have now been executed */
 
 	Xsocket = screen->display->fd;
@@ -829,51 +835,41 @@ char *name;
 	return((cp = rindex(name, '/')) ? cp + 1 : name);
 }
 
-get_pty (pty, tty)
-/*
-   opens a pty, storing fildes in pty and tty.
+/* This function opens up a pty master and stuffs it's value into pty.
+ * If it finds one, it returns a value of 0.  If it does not find one,
+ * it returns a value of !0.  This routine is designed to be re-entrant,
+ * so that if a pty master is found and later, we find that the slave
+ * has problems, we can re-enter this function and get another one.
  */
-int *pty, *tty;
+
+get_pty (pty)
+int *pty;
 {
-	int devindex, letter = 0;
+	static int devindex, letter = 0;
 
-#if defined (mips) && defined (SYSTYPE_SYSV)
-	struct stat fstat_buf;
-
-	*pty = open ("/dev/ptc", O_RDWR);
-	if (*pty < 0 || (fstat (*pty, &fstat_buf)) < 0) {
-	  fprintf (stderr, "%s: Out of ptys.\n", xterm_name);
-	  exit (ERROR_PTYS);
-	}
-	sprintf (ttydev, "/dev/ttyq%d", minor(fstat_buf.st_rdev));
-	sprintf (ptydev, "/dev/ptyq%d", minor(fstat_buf.st_rdev));
-	if ((*tty = open (ttydev, O_RDWR)) < 0) {
-	  fprintf (stderr, "%s: Unable to open tty.\n", xterm_name);
-	  close (*pty);
-	  exit (ERROR_PTYS);
-	}
-	return;
-#else /* not (mips && SYSTYPE_SYSV) */
-	while (letter < 11) {
+	while (PTYCHAR1[letter]) {
 	    ttydev [strlen(ttydev) - 2]  = ptydev [strlen(ptydev) - 2] =
-		    PTYCHAR1 [letter++];
-	    devindex = 0;
+		    PTYCHAR1 [letter];
 
-	    while (devindex < 16) {
+	    while (PTYCHAR2[devindex]) {
 		ttydev [strlen(ttydev) - 1] = ptydev [strlen(ptydev) - 1] =
-			PTYCHAR2 [devindex++];
-		if ((*pty = open (ptydev, O_RDWR)) < 0)
-			continue;
-		if ((*tty = open (ttydev, O_RDWR)) < 0) {
-			close(*pty);
-			continue;
+			PTYCHAR2 [devindex];
+		if ((*pty = open (ptydev, O_RDWR)) >= 0) {
+			/* We need to set things up for our next entry
+			 * into this function!
+			 */
+			(void) devindex++;
+			return(0);
 		}
-		return;
+		devindex++;
 	    }
+	    devindex = 0;
+	    (void) letter++;
 	}
-	fprintf (stderr, "%s: Not enough available pty's\n", xterm_name);
-	exit (ERROR_PTYS);
-#endif /* mips && SYSTYPE_SYSV */
+	/* We were unable to allocate a pty master!  Return an error
+	 * condition and let our caller terminate cleanly.
+	 */
+	return(1);
 }
 
 get_terminal ()
@@ -929,6 +925,48 @@ hungtty()
 	longjmp(env, 1);
 }
 
+typedef enum {		/* c == child, p == parent                        */
+	PTY_BAD,	/* c->p: can't open pty slave for some reason     */
+	PTY_FATALERROR,	/* c->p: we had a fatal error with the pty        */
+	PTY_GOOD,	/* c->p: we have a good pty, let's go on          */
+	PTY_NEW,	/* p->c: here is a new pty slave, try this        */
+	PTY_NOMORE,	/* p->c; no more pty's, terminate                 */
+	UTMP_ADDED,	/* c->p: utmp entry has been added                */
+	UTMP_TTYSLOT,	/* c->p: here is my ttyslot                       */
+	ACK,		/* m->s: thanks for letting me know               */
+} status_t;
+
+typedef struct {
+	status_t status;
+	int error;
+	int fatal_error;
+	int tty_slot;
+	char buffer[1024];
+} handshake_t;
+
+/* HsSysError()
+ *
+ * This routine does the equivalent of a SysError but it handshakes
+ * over the errno and error exit to the master process so that it can
+ * display our error message and exit with our exit code so that the
+ * user can see it.
+ */
+
+void
+HsSysError(pf, error)
+int pf;
+int error;
+{
+	handshake_t handshake;
+
+	handshake.status = PTY_FATALERROR;
+	handshake.error = errno;
+	handshake.fatal_error = error;
+	strcpy(handshake.buffer, ttydev);
+	write(pf, &handshake, sizeof(handshake));
+	exit(error);
+}
+
 spawn ()
 /* 
  *  Inits pty and tty and forks a login process.
@@ -940,8 +978,12 @@ spawn ()
 {
 	register TScreen *screen = &term->screen;
 	int Xsocket = screen->display->fd;
+	handshake_t handshake;
 	int index1, tty = -1;
+	int pc_pipe[2];	/* this pipe is used for parent to child transfer */
+	int cp_pipe[2];	/* this pipe is used for child to parent transfer */
 	int discipline;
+	int done;
 #ifdef USE_SYSV_TERMIO
 	struct termio tio;
 	struct termio dummy_tio;
@@ -1000,17 +1042,6 @@ spawn ()
 
 	if (get_ty) {
 		screen->respond = loginpty;
-#ifndef USE_SYSV_UTMP
-		if((tslot = ttyslot()) <= 0)
-			SysError(ERROR_TSLOT);
-#ifdef TIOCCONS
-		if (Console) {
-			int on = 1;
-			if (ioctl (0, TIOCCONS, (char *)&on) == -1)
-				SysError(ERROR_TIOCCONS);
-		}
-#endif  /* TIOCCONS */
-#endif	/* not USE_SYSV_UTMP */
 	} else if (am_slave) {
 		screen->respond = am_slave;
 		ptydev[strlen(ptydev) - 2] = ttydev[strlen(ttydev) - 2] =
@@ -1018,18 +1049,6 @@ spawn ()
 		ptydev[strlen(ptydev) - 1] = ttydev[strlen(ttydev) - 1] =
 			passedPty[1];
 
-		/* use the same tty name that everyone else will use
-		** (from ttyname)
-		*/
-		if (ptr = ttyname(ttydev)) {
-			/* it may be bigger! */
-			ttydev = realloc(ttydev, (unsigned) (strlen(ptr) + 1));
-			(void) strcpy(ttydev, ptr);
-		}
-#ifndef USE_SYSV_UTMP
-		if((tslot = ttyslot()) <= 0)
-			SysError(ERROR_TSLOT2);
-#endif	/* not USE_SYSV_UTMP */
 		setgid (screen->gid);
 		setuid (screen->uid);
 	} else {
@@ -1096,159 +1115,16 @@ spawn ()
 				SysError (ERROR_TIOCLGET);
 #endif	/* USE_SYSV_TERMIO */
 			close (tty);
-
-			/* close all std file descriptors */
-			for (index1 = 0; index1 < 3; index1++)
-				close (index1);
-#ifndef SYSV				/* macII does want this! */
-			if ((tty = open ("/dev/tty", O_RDWR, 0)) < 0)
-				SysError (ERROR_OPDEVTTY2);
-
-			if (ioctl (tty, TIOCNOTTY, (char *) NULL) == -1)
-				SysError (ERROR_NOTTY);
-			close (tty);
-#endif	/* !SYSV */
+			/* tty is no longer an open fd! */
+			tty = -1;
 		}
 
-		get_pty (&screen->respond, &tty);
-
-		/* use the same tty name that everyone else will use
-		** (from ttyname)
-		*/
-		if (ptr = ttyname(tty)) {
-			/* it may be bigger */
-			ttydev = realloc (ttydev, (unsigned) (strlen(ptr) + 1));
-			(void) strcpy(ttydev, ptr);
+		if (get_pty (&screen->respond)) {
+			/*  no ptys! */
+			(void) fprintf(stderr, "%s: no available ptys\n",
+				       xterm_name);
+			exit (ERROR_PTYS);
 		}
-		if (screen->respond < 3) {
-			int newrespond = dupHigh (screen->respond);
-			close (screen->respond);
-			screen->respond = newrespond;
-		}
-
-		/* change ownership of tty to real group and user id */
-		chown (ttydev, screen->uid, screen->gid);
-
-		/* change protection of tty */
-		chmod (ttydev, 0622);
-
-		if (tty < 3) {
-			int newtty = dupHigh (tty);
-			close (tty);
-			tty = newtty;
-		}
-
-		/* set the new terminal's state to be the old one's 
-		   with minor modifications for efficiency */
-
-#ifdef USE_SYSV_TERMIO
-#ifdef mips
-		/* If the control tty had its modes screwed around with,
-		   eg. by lineedit in the shell, or emacs, etc. then tio
-		   will have bad values.  Let's just get termio from the
-		   new tty and tailor it.  */
-		if (ioctl (tty, TCGETA, &tio) == -1)
-		    SysError (ERROR_TIOCGETP);
-		tio.c_lflag |= ECHOE;
-#endif /* mips */
-
-		/* input: nl->nl, don't ignore cr, cr->nl */
-		tio.c_iflag &= ~(INLCR|IGNCR);
-		tio.c_iflag |= ICRNL;
-		/* ouput: cr->cr, nl is not return, no delays, ln->cr/nl */
-		tio.c_oflag &=
-		 ~(OCRNL|ONLRET|NLDLY|CRDLY|TABDLY|BSDLY|VTDLY|FFDLY);
-		tio.c_oflag |= ONLCR;
-#ifdef BAUD_0
-		/* baud rate is 0 (don't care) */
-		tio.c_cflag &= ~(CBAUD);
-#else	/* !BAUD_0 */
-		/* baud rate is 9600 (nice default) */
-		tio.c_cflag &= ~(CBAUD);
-		tio.c_cflag |= B9600;
-#endif	/* !BAUD_0 */
-		/* enable signals, canonical processing (erase, kill, etc),
-		** echo
-		*/
-		tio.c_lflag |= ISIG|ICANON|ECHO;
-		/* reset EOL to defalult value */
-		tio.c_cc[VEOL] = '@' & 0x3f;		/* '^@'	*/
-		/* certain shells (ksh & csh) change EOF as well */
-		tio.c_cc[VEOF] = 'D' & 0x3f;		/* '^D'	*/
-		if (ioctl (tty, TCSETA, &tio) == -1)
-			SysError (ERROR_TIOCSETP);
-#ifdef TIOCSLTC
-		if (ioctl (tty, TIOCSLTC, &ltc) == -1)
-			SysError (ERROR_TIOCSETC);
-#endif	/* TIOCSLTC */
-#ifdef TIOCLSET
-		if (ioctl (tty, TIOCLSET, (char *)&lmode) == -1)
-			SysError (ERROR_TIOCLSET);
-#endif	/* TIOCLSET */
-#else	/* not USE_SYSV_TERMIO */
-		sg.sg_flags &= ~(ALLDELAY | XTABS | CBREAK | RAW);
-		sg.sg_flags |= ECHO | CRMOD;
-		/* make sure speed is set on pty so that editors work right*/
-		sg.sg_ispeed = B9600;
-		sg.sg_ospeed = B9600;
-		/* reset t_brkc to default value */
-		tc.t_brkc = -1;
-
-		if (ioctl (tty, TIOCSETP, (char *)&sg) == -1)
-			SysError (ERROR_TIOCSETP);
-		if (ioctl (tty, TIOCSETC, (char *)&tc) == -1)
-			SysError (ERROR_TIOCSETC);
-		if (ioctl (tty, TIOCSETD, (char *)&discipline) == -1)
-			SysError (ERROR_TIOCSETD);
-		if (ioctl (tty, TIOCSLTC, (char *)&ltc) == -1)
-			SysError (ERROR_TIOCSLTC);
-		if (ioctl (tty, TIOCLSET, (char *)&lmode) == -1)
-			SysError (ERROR_TIOCLSET);
-#ifdef TIOCCONS
-		if (Console) {
-			int on = 1;
-			if (ioctl (tty, TIOCCONS, (char *)&on) == -1)
-				SysError(ERROR_TIOCCONS);
-		}
-#endif	/* TIOCCONS */
-#endif	/* USE_SYSV_TERMIO */
-
-		close (open ("/dev/null", O_RDWR, 0));
-
-		for (index1 = 0; index1 < 3; index1++)
-			dup2 (tty, index1);
-#ifndef USE_SYSV_UTMP
-		if((tslot = ttyslot()) <= 0)
-			SysError(ERROR_TSLOT3);
-#endif	/* not USE_SYSV_UTMP */
-
-#ifdef UTMP
-#ifdef USE_SYSV_UTMP
-		/* If we have gotten this far, we can only assume that
-		** we have (will have) set the utmp entry.  Anyway,
-		** we won't reset it later if the pid's don't match.
-		** Also, if utmpInhibit is set, then pretend failure.
-		*/
-		added_utmp_entry = resource.utmpInhibit ? False : True;
-#else	/* not USE_SYSV_UTMP, it is bsd */
-		added_utmp_entry = False;
-		if (!resource.utmpInhibit &&
-		    (pw = getpwuid(screen->uid)) &&
-		    (i = open(etc_utmp, O_WRONLY)) >= 0) {
-			bzero((char *)&utmp, sizeof(struct utmp));
-			(void) strcpy(utmp.ut_line, ttydev + strlen("/dev/"));
-			(void) strcpy(utmp.ut_name, pw->pw_name);
-			(void) strcpy(utmp.ut_host, 
-				      XDisplayString (screen->display));
-			time(&utmp.ut_time);
-			lseek(i, (long)(tslot * sizeof(struct utmp)), 0);
-			write(i, (char *)&utmp, sizeof(struct utmp));
-			added_utmp_entry = True;
-			close(i);
-		} else
-			tslot = -tslot;
-#endif	/* USE_SYSV_UTMP */
-#endif	/* UTMP */
 	}
 
         /* Realize the Tek or VT widget, depending on which mode we're in.
@@ -1307,12 +1183,10 @@ spawn ()
 	ioctl (screen->respond, TIOCSWINSZ, (char *)&ws);
 #endif	/* TIOCSWINSZ */
 #endif	/* sun */
-            
+
 	if (!am_slave) {
-#if defined(macII) || defined(USE_SYSV_SIGNALS)
-	    (void) setpgrp (0, getpid());
-	    (void) close (open (ttydev, O_RDWR, 0));
-#endif /* macII or USE_SYSV_SIGNALS */
+	    if (pipe(pc_pipe) || pipe(cp_pipe))
+		SysError (ERROR_FORK);
 	    if ((screen->pid = fork ()) == -1)
 		SysError (ERROR_FORK);
 		
@@ -1326,12 +1200,153 @@ spawn ()
 		char numbuf[12];
 #endif	/* USE_SYSV_TERMIO */
 
+		/* close parent's sides of the pipes */
+		close (cp_pipe[0]);
+		close (pc_pipe[1]);
+
+		/* we don't need the socket, or the pty master anymore */
 		close (Xsocket);
 		close (screen->respond);
-		if(fileno(stderr) >= 3)
-			close (fileno(stderr));
 
-		if (tty >= 0) close (tty);
+		/* Now is the time to set up our process group and
+		 * open up the pty slave.
+		 */
+#ifdef	USE_SYSV_PGRP
+		(void) setpgrp();
+#endif	/* USE_SYSV_PGRP */
+		while (1) {
+			if ((tty = open(ttydev, O_RDWR, 0)) >= 0) {
+#ifdef	USE_SYSV_PGRP
+				/* We need to make sure that we are acutally
+				 * the process group leader for the pty.  If
+				 * we are, then we should now be able to open
+				 * /dev/tty.
+				 */
+				if ((i = open("/dev/tty", O_RDWR, 0)) > 0) {
+					/* success! */
+					close(i);
+					break;
+				}
+#else	/* USE_SYSV_PGRP */
+				break;
+#endif	/* USE_SYSV_PGRP */
+			}
+
+			/* let our master know that the open failed */
+			handshake.status = PTY_BAD;
+			handshake.error = errno;
+			strcpy(handshake.buffer, ttydev);
+			write(cp_pipe[1], (char *) &handshake,
+			    sizeof(handshake));
+
+			/* get reply from parent */
+			i = read(pc_pipe[0], (char *) &handshake,
+			    sizeof(handshake));
+			if (i <= 0) {
+				/* parent terminated */
+				exit(1);
+			}
+
+			if (handshake.status == PTY_NOMORE) {
+				/* No more ptys, let's shutdown. */
+				exit(1);
+			}
+
+			/* We have a new pty to try */
+			free(ttydev);
+			ttydev = malloc((unsigned)
+			    (strlen(handshake.buffer) + 1));
+			strcpy(ttydev, handshake.buffer);
+		}
+
+		/* use the same tty name that everyone else will use
+		** (from ttyname)
+		*/
+		if (ptr = ttyname(tty)) {
+			/* it may be bigger */
+			ttydev = realloc (ttydev, (unsigned) (strlen(ptr) + 1));
+			(void) strcpy(ttydev, ptr);
+		}
+
+		/* change ownership of tty to real group and user id */
+		chown (ttydev, screen->uid, screen->gid);
+
+		/* change protection of tty */
+		chmod (ttydev, 0622);
+
+		if (!get_ty) {
+#ifdef USE_SYSV_TERMIO
+		    /* Now is also the time to change the modes of the
+		     * child pty.
+		     */
+		    /* input: nl->nl, don't ignore cr, cr->nl */
+		    tio.c_iflag &= ~(INLCR|IGNCR);
+		    tio.c_iflag |= ICRNL;
+		    /* ouput: cr->cr, nl is not return, no delays, ln->cr/nl */
+		    tio.c_oflag &=
+		     ~(OCRNL|ONLRET|NLDLY|CRDLY|TABDLY|BSDLY|VTDLY|FFDLY);
+		    tio.c_oflag |= ONLCR;
+#ifdef BAUD_0
+		    /* baud rate is 0 (don't care) */
+		    tio.c_cflag &= ~(CBAUD);
+#else	/* !BAUD_0 */
+		    /* baud rate is 9600 (nice default) */
+		    tio.c_cflag &= ~(CBAUD);
+		    tio.c_cflag |= B9600;
+#endif	/* !BAUD_0 */
+		    /* enable signals, canonical processing (erase, kill, etc),
+		    ** echo
+		    */
+		    tio.c_lflag |= ISIG|ICANON|ECHO;
+		    /* reset EOL to defalult value */
+		    tio.c_cc[VEOL] = '@' & 0x3f;		/* '^@'	*/
+		    /* certain shells (ksh & csh) change EOF as well */
+		    tio.c_cc[VEOF] = 'D' & 0x3f;		/* '^D'	*/
+		    if (ioctl (tty, TCSETA, &tio) == -1)
+			    HsSysError(cp_pipe[1], ERROR_TIOCSETP);
+#ifdef TIOCSLTC
+		    if (ioctl (tty, TIOCSLTC, &ltc) == -1)
+			    HsSysError(cp_pipe[1], ERROR_TIOCSETC);
+#endif	/* TIOCSLTC */
+#ifdef TIOCLSET
+		    if (ioctl (tty, TIOCLSET, (char *)&lmode) == -1)
+			    HsSysError(cp_pipe[1], ERROR_TIOCLSET);
+#endif	/* TIOCLSET */
+#ifdef TIOCCONS
+		    if (Console) {
+			    int on = 1;
+			    if (ioctl (tty, TIOCCONS, (char *)&on) == -1)
+				    HsSysError(cp_pipe[1], ERROR_TIOCCONS);
+		    }
+#endif	/* TIOCCONS */
+#else	/* USE_SYSV_TERMIO */
+		    sg.sg_flags &= ~(ALLDELAY | XTABS | CBREAK | RAW);
+		    sg.sg_flags |= ECHO | CRMOD;
+		    /* make sure speed is set on pty so that editors work right*/
+		    sg.sg_ispeed = B9600;
+		    sg.sg_ospeed = B9600;
+		    /* reset t_brkc to default value */
+		    tc.t_brkc = -1;
+
+		    if (ioctl (tty, TIOCSETP, (char *)&sg) == -1)
+			    HsSysError (cp_pipe[1], ERROR_TIOCSETP);
+		    if (ioctl (tty, TIOCSETC, (char *)&tc) == -1)
+			    HsSysError (cp_pipe[1], ERROR_TIOCSETC);
+		    if (ioctl (tty, TIOCSETD, (char *)&discipline) == -1)
+			    HsSysError (cp_pipe[1], ERROR_TIOCSETD);
+		    if (ioctl (tty, TIOCSLTC, (char *)&ltc) == -1)
+			    HsSysError (cp_pipe[1], ERROR_TIOCSLTC);
+		    if (ioctl (tty, TIOCLSET, (char *)&lmode) == -1)
+			    HsSysError (cp_pipe[1], ERROR_TIOCLSET);
+#ifdef TIOCCONS
+		    if (Console) {
+			    int on = 1;
+			    if (ioctl (tty, TIOCCONS, (char *)&on) == -1)
+				    HsSysError(cp_pipe[1], ERROR_TIOCCONS);
+		    }
+#endif	/* TIOCCONS */
+#endif	/* !USE_SYSV_TERMIO */
+		}
 
 		signal (SIGCHLD, SIG_DFL);
 		signal (SIGHUP, SIG_IGN);
@@ -1378,15 +1393,35 @@ spawn ()
 		Setenv ("DISPLAY=", XDisplayString (screen->display));
 
 		signal(SIGTERM, SIG_DFL);
-#if defined(USE_SYSV_SIGNALS) && !defined(JOBCONTROL)
-		close(open(ttyname(0), O_WRONLY, 0));
-#else /* else not USE_SYSV_SIGNALS or is JOBCONTROL */		/* macII yes */
-		ioctl(0, TIOCSPGRP, (char *)&pgrp);
-		setpgrp (0, 0);
-		close(open(ttyname(0), O_WRONLY, 0));
-		setpgrp (0, pgrp);
-#endif /* USE_SYSV_SIGNALS and not JOBCONTROL */
 
+		/* this is the time to go and set up stdin, out, and err
+		 */
+
+		/* dup the tty */
+		for (i = 0; i <= 2; i++)
+		    if (i != tty) {
+			(void) close(i);
+			(void) dup(tty);
+		    }
+
+		/* and close the tty */
+		if (tty > 2)
+		    (void) close(tty);
+
+#ifndef	SYSV
+		ioctl(0, TIOCSPGRP, (char *)&pgrp);
+		if (get_ty) {
+			signal(SIGHUP, SIG_IGN);
+			vhangup();
+		}
+		setpgrp(0,0);
+		if (get_ty)
+			signal(SIGHUP, SIG_DFL);
+		close(open(ttydev, O_WRONLY, 0));
+		setpgrp (0, pgrp);
+#endif /* SYSV */
+
+#ifdef UTMP
 #ifdef USE_SYSV_UTMP
 		/* Set up our utmp entry now.  We need to do it here
 		** for the following reasons:
@@ -1429,10 +1464,8 @@ spawn ()
 		utmp.ut_pid = getpid();
 		utmp.ut_time = time ((long *) 0);
 
-#ifdef UTMP
 		/* write out the entry */
 		if (!resource.utmpInhibit) (void) pututline(&utmp);
-#endif	/* UTMP */
 
 		/* close the file */
 		(void) endutent();
@@ -1444,31 +1477,83 @@ spawn ()
 			(void) close(fd);
 		    }
 		}
+#else	/* USE_SYSV_UTMP */
+		/* We can now get our ttyslot!  We can also set the initial
+		 * UTMP entry.
+		 */
+		tslot = ttyslot();
+		added_utmp_entry = False;
+		if (!get_ty) {
+			if (!resource.utmpInhibit &&
+			    (pw = getpwuid(screen->uid)) &&
+			    (i = open(etc_utmp, O_WRONLY)) >= 0) {
+				bzero((char *)&utmp, sizeof(struct utmp));
+				(void) strcpy(utmp.ut_line, ttydev + strlen("/dev/"));
+				(void) strcpy(utmp.ut_name, pw->pw_name);
+				(void) strcpy(utmp.ut_host, 
+					      XDisplayString (screen->display));
+				time(&utmp.ut_time);
+				lseek(i, (long)(tslot * sizeof(struct utmp)), 0);
+				write(i, (char *)&utmp, sizeof(struct utmp));
+				added_utmp_entry = True;
+				close(i);
+			} else
+				tslot = -tslot;
+		}
+
+		/* Let's pass our ttyslot to our parent so that it can
+		 * clean up after us.
+		 */
+		handshake.tty_slot = tslot;
 #endif	/* USE_SYSV_UTMP */
+
+		/* Let our parent know that we set up our utmp entry
+		 * so that it can clean up after us.
+		 */
+		handshake.status = UTMP_ADDED;
+		handshake.error = 0;
+		strcpy(handshake.buffer, ttydev);
+		(void) write(cp_pipe[1], &handshake, sizeof(handshake));
+#endif	/* UTMP */
+
+#ifdef TIOCCONS
+		if (get_ty && Console) {
+		    int on = 1;
+		    if (ioctl (1, TIOCCONS, (char *)&on) == -1)
+			HsSysError(cp_pipe[0], ERROR_TIOCCONS);
+		}
+#endif /* TIOCCONS */
 
 		setgid (screen->gid);
 		setuid (screen->uid);
+
+		/* mark the pipes as close on exec */
+		fcntl(cp_pipe[1], F_SETFD, 1);
+		fcntl(pc_pipe[0], F_SETFD, 1);
+#ifdef	NOTDEF
+		/* mark all other fd's close on exec */
+		for (i = 3; i < NOFILE; i++)
+		    (void) fcntl(i, F_SETFD, 1);
+#endif	/* NOTDEF */
+
+		/* We are at the point where we are going to
+		 * exec our shell (or whatever).  Let our parent
+		 * know we arrived safely.
+		 */
+		handshake.status = PTY_GOOD;
+		handshake.error = 0;
+		(void) strcpy(handshake.buffer, ttydev);
+		(void) write(cp_pipe[1], &handshake, sizeof(handshake));
 
 		if (command_to_exec) {
 			execvp(*command_to_exec, command_to_exec);
 			/* print error message on screen */
 			fprintf(stderr, "%s: Can't execvp %s\n", xterm_name,
 			 *command_to_exec);
-		}
-		signal(SIGHUP, SIG_IGN);
-		if (get_ty) {
-#ifdef TIOCCONS
-		    if (Console) {
-			int on = 1;
-			if (ioctl (1, TIOCCONS, (char *)&on) == -1)
-			    SysError (ERROR_TIOCCONS);
-		    }
-#endif /* TIOCCONS */
-
+		} else if (get_ty) {
+			signal(SIGHUP, SIG_IGN);
 #ifdef SYSV				/* macII does NOT want this */
-#ifndef mips
 			ioctl (0, TIOCTTY, &zero);
-#endif /* not mips */
 			execlp (getty_program, "getty", get_ty, "Xwindow", 0);
 
 #else	/* !SYSV */
@@ -1501,31 +1586,100 @@ spawn ()
 		ioctl(0, TIOCSETD, (char *)&ldisc);
 #endif	/* !USE_SYSV_TERMIO */
 		execlp (ptr, term->misc.login_shell ? shname_minus : shname, 0);
+
+		/* Exec failed. */
 		fprintf (stderr, "%s: Could not exec %s!\n", xterm_name, ptr);
 		sleep(5);
 		exit(ERROR_EXEC);
 	    }
+
+	    /* Parent process.  Let's handle handshaked requests to our
+	     * child process.
+	     */
+
+	    /* close childs's sides of the pipes */
+	    close (cp_pipe[1]);
+	    close (pc_pipe[0]);
+
+	    for (done = 0; !done; ) {
+		if (read(cp_pipe[0], &handshake, sizeof(handshake)) <= 0) {
+			/* Our child is done talking to us.  If it terminated
+			 * due to an error, we will catch the death of child
+			 * and clean up.
+			 */
+			close(cp_pipe[0]);
+			close(pc_pipe[1]);
+			break;
+		}
+
+		switch(handshake.status) {
+		case PTY_GOOD:
+			/* Success!  Let's free up resources and
+			 * continue.
+			 */
+			close(cp_pipe[0]);
+			close(pc_pipe[1]);
+			done = 1;
+			break;
+
+		case PTY_BAD:
+			if (get_ty) {
+				/* This is a getty.  We were given a specific
+				 * pty to use, so we won't try to get another
+				 * one.
+				 */
+				errno = handshake.error;
+				(void) perror(handshake.buffer);
+				handshake.status = PTY_NOMORE;
+				write(pc_pipe[1], &handshake, sizeof(handshake));
+				exit(1);
+			} else {
+				/* The open of the pty failed!  Let's get
+				 * another one.
+				 */
+				(void) close(screen->respond);
+				if (get_pty(&screen->respond)) {
+				    /* no more ptys! */
+				    (void) fprintf(stderr,
+					"%s: no available ptys\n", xterm_name);
+				    handshake.status = PTY_NOMORE;
+				    write(pc_pipe[1], &handshake, sizeof(handshake));
+				    exit (ERROR_PTYS);
+				}
+			}
+			handshake.status = PTY_NEW;
+			(void) strcpy(handshake.buffer, ttydev);
+			write(pc_pipe[1], &handshake, sizeof(handshake));
+			break;
+
+		case PTY_FATALERROR:
+			errno = handshake.error;
+			SysError(handshake.fatal_error);
+
+		case UTMP_ADDED:
+			/* The utmp entry was set by our slave.  Remember
+			 * this so that we can reset it later.
+			 */
+			added_utmp_entry = True;
+#ifndef	USE_SYSV_UTMP
+			tslot = handshake.tty_slot;
+#endif	/* USE_SYSV_UTMP */
+			free(ttydev);
+			ttydev = malloc((unsigned) strlen(handshake.buffer) + 1);
+			strcpy(ttydev, handshake.buffer);
+			break;
+		}
+	    }
+	    /* close our sides of the pipes */
+	    close (cp_pipe[0]);
+	    close (pc_pipe[1]);
 	}
 
 	/*
 	 * still in parent (xterm process)
 	 */
 
-	if(tty >= 0) close (tty);
-#ifdef USE_SYSV_TERMIO
-	/* the parent should not be associated with tty anymore */
-	for (index1 = 0; index1 < 3; index1++)
-		close(index1);
-#endif	/* USE_SYSV_TERMIO */
 	signal(SIGHUP,SIG_IGN);
-
-	if (!no_dev_tty) {
-		if ((tty = open ("/dev/tty", O_RDWR, 0)) < 0)
-			SysError(ERROR_OPDEVTTY3);
-		for (index1 = 0; index1 < 3; index1++)
-			dup2 (tty, index1);
-		if (tty > 2) close (tty);
-	}
 
 /*
  * Unfortunately, System V seems to have trouble divorcing the child process
@@ -1539,9 +1693,27 @@ spawn ()
 	signal (SIGQUIT, SIG_IGN);
 	signal (SIGTERM, SIG_IGN);
 #else /* else is bsd or has job control */
+#ifdef SYSV
+	/* if we were spawned by a jobcontrol smart shell (like ksh or csh),
+	 * then our pgrp and pid will be the same.  If we were spawned by
+	 * a jobcontrol dump shell (like /bin/sh), then we will be in out
+	 * parents pgrp, and we must ignore keyboard signals, or will will
+	 * tank on everything.
+	 */
+	if (getpid() == getpgrp()) {
+	    (void) signal(SIGINT, Exit);
+	    (void) signal(SIGQUIT, Exit);
+	    (void) signal(SIGTERM, Exit);
+	} else {
+	    (void) signal(SIGINT, SIG_IGN);
+	    (void) signal(SIGQUIT, SIG_IGN);
+	    (void) signal(SIGTERM, SIG_IGN);
+	}
+#else	/* SYSV */
 	signal (SIGINT, Exit);
 	signal (SIGQUIT, Exit);
 	signal (SIGTERM, Exit);
+#endif	/* SYSV */
 #endif /* USE_SYSV_SIGNALS and not JOBCONTROL */
 
 	return;
@@ -1708,6 +1880,7 @@ char *fmt;
 #endif	/* TIOCNOTTY */
 }
 
+#ifndef USE_SYSV_PGRP
 int dupHigh(oldfd)
 {
     int desc[3],i,j;
@@ -1726,6 +1899,7 @@ int dupHigh(oldfd)
 	close(desc[j]);
     return  desc[i];
 }
+#endif	/* !USE_SYSV_PGRP */
 
 checklogin() 
 {
@@ -1733,18 +1907,37 @@ checklogin()
 	register struct passwd *pw;
 #ifdef USE_SYSV_UTMP
 	char *name;
+	struct utmp utmp;
+	struct utmp *utptr;
 #else /* not USE_SYSV_UTMP */
 	struct utmp utmp;
 #endif /* USE_SYSV_UTMP */
 
 #ifdef USE_SYSV_UTMP
-	name = cuserid((char *) 0);
-	if (name)
-		pw = getpwnam(name);
-	else
-		pw = getpwuid(getuid());
-	if (pw == NULL)
+	(void) setutent ();
+	/* set up entry to search for */
+	(void) strncpy(utmp.ut_id,ttydev + strlen(ttydev) - 2,
+	 sizeof (utmp.ut_id));
+	utmp.ut_type = DEAD_PROCESS;
+
+	/* position to entry in utmp file */
+	utptr = getutid(&utmp);
+
+	/* entry must:
+	 *  - exist,
+	 *  - have a name in ut_user,
+	 *  - that is not GETTY (seems to null it out in this case, but
+	 *    better to be safe),
+	 *  - have an entry in /etc/utmp for that user.
+	 *
+	 * BTW, endutent() seems to zero out utptr.
+	 */
+	if (!utptr || !*utptr->ut_user || !XStrCmp(utptr->ut_user, "GETTY") ||
+	 (pw = getpwnam(utptr->ut_name)) == NULL) {
+		endutent();
 		return(FALSE);
+	}
+	endutent();
 #else	/* not USE_SYSV_UTMP */
 	ts = tslot > 0 ? tslot : -tslot;
 	if((i = open(etc_utmp, O_RDONLY)) < 0)
@@ -1755,16 +1948,19 @@ checklogin()
 	if(ts != sizeof(utmp) || XStrCmp(get_ty, utmp.ut_line) != 0 ||
 	 !*utmp.ut_name || (pw = getpwnam(utmp.ut_name)) == NULL)
 		return(FALSE);
-	chdir(pw->pw_dir);
 #endif	/* USE_SYSV_UTMP */
+	chdir(pw->pw_dir);
+	/* This is kind of ugly since we won't be able to clean up /etc/utmp
+	 * ourselves, but it shouldn't be too bad, since we will be kicked
+	 * off right away again by init and  will clean things up at that time.
+	 */
 	setgid(pw->pw_gid);
 	setuid(pw->pw_uid);
 	L_flag = 0;
 	return(TRUE);
 }
 
-
-remove_termcap_entry (buf, str)
+remove_termcap_entry (buf, str)
     char *buf;
     char *str;
 {
