@@ -166,7 +166,7 @@ handler.
 Upon receipt of a signal from the operating system, the application may 
 call 
 .ZN XtNoticeSignal
-passing the \fIid\f returned by the call to
+passing the \fIid\fP returned by the call to
 .ZN XtAppAddSignal .
 .LP
 .ZN XtNoticeSignal
