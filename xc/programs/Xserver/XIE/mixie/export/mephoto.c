@@ -1,4 +1,4 @@
-/* $XConsortium: mephoto.c,v 1.2 93/10/26 14:13:46 rws Exp $ */
+/* $XConsortium: mephoto.c,v 1.3 93/10/31 09:43:41 dpw Exp $ */
 /**** module mephoto.c ****/
 /******************************************************************************
 				NOTICE
@@ -363,7 +363,7 @@ static int ActivateEPhotoUncomByPlane(flo,ped,pet)
   CARD32              bands = rcp->inFlo->bands;
   bandPtr              sbnd = rcp->band, dbnd;
   CARD32 b, olddlen, nextdlen, width, stride, pitch;
-  void *src;
+  pointer src;
   CARD8 *dst;
   
   for(b = 0; b < bands; ++sbnd, ++b, ++pvt) {
@@ -375,25 +375,25 @@ static int ActivateEPhotoUncomByPlane(flo,ped,pet)
     
     if (!(pet->scheduled & 1<<b)) continue;	/* This band is bypassed */
     
-    src      = GetCurrentSrc(void,flo,pet,sbnd);
-    dst      = GetDstBytes(CARD8,flo,pet,dbnd,dbnd->current,nextdlen,KEEP);
+    src      = GetCurrentSrc(pointer,flo,pet,sbnd);
+    dst      = GetDstBytes(CARD8 *,flo,pet,dbnd,dbnd->current,nextdlen,KEEP);
     
     while(!ferrCode(flo) && src && dst) {
       
       (*pvt->action)(src,dst,pvt);
       
-      src         = GetNextSrc(void,flo,pet,sbnd,FLUSH);
+      src         = GetNextSrc(pointer,flo,pet,sbnd,FLUSH);
       pvt->bitOff = pvt->bitOff + pitch & 7;  /* Set next */
       olddlen     = (pvt->bitOff) ? nextdlen - 1: nextdlen;
       nextdlen    = pvt->bitOff + pitch + 7 >> 3;
-      dst         = GetDstBytes(CARD8,flo,pet,dbnd,dbnd->current+olddlen,
+      dst         = GetDstBytes(CARD8 *,flo,pet,dbnd,dbnd->current+olddlen,
 				nextdlen, KEEP);
     }
     FreeData(flo,pet,sbnd,sbnd->current);
 
     if(!src && sbnd->final) {
       if (pvt->bitOff) /* If we have any bits left, send them out now */
-	*GetDstBytes(CARD8,flo,pet,dbnd,dbnd->current,1,KEEP) = pvt->leftOver;
+	*GetDstBytes(CARD8 *,flo,pet,dbnd,dbnd->current,1,KEEP) = pvt->leftOver;
 
       SetBandFinal(dbnd);
       PutData(flo,pet,dbnd,dbnd->maxGlobal);   /* write the remaining data */
@@ -548,9 +548,9 @@ static int InitializeEPhotoUncomByPixel(flo,ped)
 				   [depth1 <= 8 ? 0 : 1]
 				   [depth2 <= 8 ? 0 : 1]
 				   [depth3 <= 8 ? 0 : 1];
-    if(depth1 == 1 && !(pvt[0].buf = (void*)XieMalloc(pvt[0].width+7)) ||
-       depth2 == 1 && !(pvt[1].buf = (void*)XieMalloc(pvt[1].width+7)) ||
-       depth3 == 1 && !(pvt[2].buf = (void*)XieMalloc(pvt[2].width+7)))
+    if(depth1 == 1 && !(pvt[0].buf = (pointer)XieMalloc(pvt[0].width+7)) ||
+       depth2 == 1 && !(pvt[1].buf = (pointer)XieMalloc(pvt[1].width+7)) ||
+       depth3 == 1 && !(pvt[2].buf = (pointer)XieMalloc(pvt[2].width+7)))
       AllocError(flo,ped, return(FALSE));
   }
   pet->bandSync = SYNC;
@@ -574,7 +574,7 @@ static int ActivateEPhotoUncomByPixel(flo,ped,pet)
   bandPtr   sb2 = &pet->receptor[SRCtag].band[pvt[2].bandMap];
   bandPtr  dbnd = &pet->emitter[0];
   CARD32  pitch = dbnd->format->pitch;
-  void *sp0 = (void *)NULL, *sp1 = (void *)NULL, *sp2 = (void *)NULL;
+  pointer sp0 = (pointer )NULL, sp1 = (pointer )NULL, sp2 = (pointer )NULL;
   CARD8 *dst;
   
   
@@ -582,10 +582,10 @@ static int ActivateEPhotoUncomByPixel(flo,ped,pet)
     CARD32 stride   = dbnd->format->stride;
     CARD32 width    = dbnd->format->width;
     CARD32 nextdlen = pvt->bitOff + pitch + 7 >> 3, olddlen;
-    if((sp0 = GetCurrentSrc(void,flo,pet,sb0)) &&
-       (sp1 = GetCurrentSrc(void,flo,pet,sb1)) && 
-       (sp2 = GetCurrentSrc(void,flo,pet,sb2)) &&
-       (dst = GetDstBytes(BytePixel,flo,pet,dbnd,dbnd->current,nextdlen,KEEP)))
+    if((sp0 = GetCurrentSrc(pointer,flo,pet,sb0)) &&
+       (sp1 = GetCurrentSrc(pointer,flo,pet,sb1)) && 
+       (sp2 = GetCurrentSrc(pointer,flo,pet,sb2)) &&
+       (dst = GetDstBytes(BytePixel *,flo,pet,dbnd,dbnd->current,nextdlen,KEEP)))
 
       do {
 	if(pvt[0].buf) sp0 = bitexpand(sp0,pvt[0].buf,width,(char)0,(char)1);
@@ -594,22 +594,22 @@ static int ActivateEPhotoUncomByPixel(flo,ped,pet)
 
 	(*pvt->action)(sp0,sp1,sp2,dst,stride,pvt);
 	
-	sp0         = GetNextSrc(void,flo,pet,sb0,FLUSH);
-	sp1         = GetNextSrc(void,flo,pet,sb1,FLUSH);
-	sp2         = GetNextSrc(void,flo,pet,sb2,FLUSH);
+	sp0         = GetNextSrc(pointer,flo,pet,sb0,FLUSH);
+	sp1         = GetNextSrc(pointer,flo,pet,sb1,FLUSH);
+	sp2         = GetNextSrc(pointer,flo,pet,sb2,FLUSH);
 	pvt->bitOff = pvt->bitOff + pitch & 7;  /* Set next */
 	olddlen     = (pvt->bitOff) ? nextdlen - 1 : nextdlen;
 	nextdlen    = pvt->bitOff + pitch + 7 >> 3;
-	dst         = GetDstBytes(BytePixel,flo,pet,dbnd,
+	dst         = GetDstBytes(BytePixel *,flo,pet,dbnd,
 				  dbnd->current+olddlen, nextdlen,KEEP);
       } while(dst && sp0 && sp1 && sp2);
 
   } else {
     CARD32  dlen  = pitch >> 3;	/* For nicely aligned data */
-    if((sp0 = GetCurrentSrc(void,flo,pet,sb0)) &&
-       (sp1 = GetCurrentSrc(void,flo,pet,sb1)) && 
-       (sp2 = GetCurrentSrc(void,flo,pet,sb2)) &&
-       (dst = GetDstBytes(BytePixel,flo,pet,dbnd,dbnd->current,dlen,KEEP)))
+    if((sp0 = GetCurrentSrc(pointer,flo,pet,sb0)) &&
+       (sp1 = GetCurrentSrc(pointer,flo,pet,sb1)) && 
+       (sp2 = GetCurrentSrc(pointer,flo,pet,sb2)) &&
+       (dst = GetDstBytes(BytePixel *,flo,pet,dbnd,dbnd->current,dlen,KEEP)))
 
       do {
 	
@@ -619,10 +619,10 @@ static int ActivateEPhotoUncomByPixel(flo,ped,pet)
 	(*pvt[1].action)(sp1,dst,&pvt[1]);
 	(*pvt[2].action)(sp2,dst,&pvt[2]);
 	
-	sp0 = GetNextSrc(void,flo,pet,sb0,FLUSH);
-	sp1 = GetNextSrc(void,flo,pet,sb1,FLUSH);
-	sp2 = GetNextSrc(void,flo,pet,sb2,FLUSH);
-	dst = GetDstBytes(BytePixel,flo,pet,dbnd,dbnd->current+dlen,
+	sp0 = GetNextSrc(pointer,flo,pet,sb0,FLUSH);
+	sp1 = GetNextSrc(pointer,flo,pet,sb1,FLUSH);
+	sp2 = GetNextSrc(pointer,flo,pet,sb2,FLUSH);
+	dst = GetDstBytes(BytePixel *,flo,pet,dbnd,dbnd->current+dlen,
 			  dlen,KEEP);
       } while(dst && sp0 && sp1 && sp2);
   }
@@ -633,7 +633,7 @@ static int ActivateEPhotoUncomByPixel(flo,ped,pet)
 
   if(!sp0 && sb0->final && !sp1 && sb1->final && !sp2 && sb2->final) {
     if (pvt->bitOff) /* If we have any bits left, send them out now */
-      *GetDstBytes(CARD8,flo,pet,dbnd,dbnd->current,1,KEEP) = pvt->leftOver;
+      *GetDstBytes(CARD8 *,flo,pet,dbnd,dbnd->current,1,KEEP) = pvt->leftOver;
 
     SetBandFinal(dbnd);
     PutData(flo,pet,dbnd,dbnd->maxGlobal);   /* write the remaining data */
@@ -654,7 +654,7 @@ static int ResetEPhoto(flo,ped)
   int i;
 
   for(i = 0; i < xieValMaxBands; ++i)
-    if(pvt[i].buf) pvt[i].buf = (void*) XieFree(pvt[i].buf);
+    if(pvt[i].buf) pvt[i].buf = (pointer) XieFree(pvt[i].buf);
 
   ResetReceptors(ped);
   ResetEmitter(ped);
