@@ -86,14 +86,14 @@ insensitive if either it or any of its ancestors is insensitive.
 This resource should not be changed with \fBXtSetValues\fP.  It may,
 however, be queried.
 .IP background 1.5i
-An index into this widget's colormap specifing the background color of the
+An index into this widget's colormap specifying the background color of the
 widget's window.
 .IP backgroundPixmap 1.5i
 The background pixmap of this widget.  If this resource is set to
 anything other than \fBXtUnspecifiedPixmap\fP the pixmap specified will be
 used instead of the background color.
 .IP borderColor 1.5i
-An index into this widget's colormap specifing the border color of the
+An index into this widget's colormap specifying the border color of the
 widget's window.
 .IP borderPixmap 1.5i
 The border pixmap of this widget.  If this resource is set to
@@ -102,7 +102,7 @@ used instead of the border color.
 .IP borderWidth 1.5i
 This is the width of this widget's border.
 .IP children 1.5i
-A list of all this composite widget'c current children.
+A list of all the current children of this widget.
 .IP colormap 1.5i
 The colormap that this widget wants for its window.
 .IP \fBdefaultDistance\fP 1.5i
@@ -137,7 +137,7 @@ The event bindings associated with this widget.
 .br
 .ns
 .IP y 1.5i
-The location of the upper lefthand corner of this widget in its parent.
+The location of the upper left corner of this widget in its parent.
 .NH 3
 Constraint Resources
 .LP
@@ -166,7 +166,7 @@ fromHoriz	Widget	Widget	NULL (left edge of Dialog)
 fromVert	Widget	Widget 	NULL (top edge of Dialog)
 horizDistance	Thickness	int	\fBdefaultDistance\fP resource
 left	Edge	XawEdgeType	XawRubber
-resizeable	Boolean	Boolean	FALSE
+resizable	Boolean	Boolean	FALSE
 right	Edge	XawEdgeType	XawRubber
 top	Edge	XawEdgeType	XawRubber
 vertDistance	Thickness	int	\fBdefaultDistance\fP resource
@@ -196,14 +196,14 @@ details.
 .IP \fBfromVert\fP 1.5i
 Which widget this child should be placed underneath (or to the right
 of).  If a value of NULL is specified then this widget will be positioned
-realtive to the edge of the Dialog.
+relative to the edge of the Dialog.
 .IP \fBhorizDistance\fP 1.5i
 .br
 .ns
 .IP \fBvertDistance\fP 1.5i
 The amount of space, in pixels, between this child and its left or
 upper neighbor. 
-.IP \fBresizeable\fP 1.5i
+.IP \fBresizable\fP 1.5i
 If this resource is \fBFalse\fP then the Dialog widget will ignore all
 geometry request made by this child.  The Dialog may still resize this
 child itself, however.
@@ -224,25 +224,24 @@ determined by the \fBhorizDistance\fP and \fBvertDistance\fP resources.
 This implies some things about how the order of creation affects the 
 possible placement of the children.  
 .LP
-The second layout method is used when the Form is resized, it does
+The second layout method is used when the Form is resized.  It does
 not matter what causes this resize, and it is possible for a resize to
-happen before the widget becomes visable (due to constraints imposed
-by the parent of the From widget).  This layout method uses the
-\fBbottom\fP, \fBtop\fP, \fBleft\fP, and \fBright\fP resources.  These 
-are used to determine what will happen the each edge of the child when
-the Form is resized.  If value of \fBXawChain\fP\fI<something>\fP is
-specified the 
-the edge of the child will remain a fixed distance from the
-\fIchain\fP edge of the form.  For example if \fBXawChainLeft\fP is
-specified for the \fBright\fP resource of a child then the right
-edge of that child will remain a fixed distance from the left edge of
-the Form widget.  If a value of \fBXawRubber\fP is specified, that
-edge will grow by the same percentage that the Form grew.  For
-instance if the Dialog grows by 50% the left edge of the child (if
-specified as \fBXawRubber\fP will be 50% farther from the left edge of
-the Form).  One must be very careful when specifying these
-resources, for when they are specified incorrectly children may
-overlap or completly occlude other children when the Form widget is
+happen before the widget becomes visible (due to constraints imposed
+by the parent of the Form widget).  This layout method uses the
+\fBbottom\fP, \fBtop\fP, \fBleft\fP, and \fBright\fP resources.  These
+are used to determine what will happen to each edge of the child when
+the Form is resized.  If the value of \fBXawChain\fP\fI<something>\fP
+is specified, then the edge of the child will remain a fixed distance
+from the \fIchain\fP edge of the form.  For example if
+\fBXawChainLeft\fP is specified for the \fBright\fP resource of a
+child then the right edge of that child will remain a fixed distance
+from the left edge of the Form widget.  If a value of \fBXawRubber\fP
+is specified, that edge will grow by the same percentage that the Form
+grew.  For instance if the Dialog grows by 50% the left edge of the
+child (if specified as \fBXawRubber\fP will be 50% farther from the
+left edge of the Form).  One must be very careful when specifying
+these resources, for if they are specified incorrectly, children may
+overlap or completely occlude other children when the Form widget is
 resized.
 .LP
 .ps 9

@@ -9,7 +9,7 @@ Dialog Widget
 .TA 2.0i
 .ta 2.0i
 .sp
-Header file	Dialog.h
+Header file	<Xaw/Dialog.h>
 Class		dialogWidgetClass
 Class Name	Dialog
 Superclass	Form
@@ -19,8 +19,8 @@ Superclass	Form
 The Dialog widget implements a commonly used interaction semantic to
 prompt for auxiliary input from a user.  For example, you can use a
 Dialog widget when an application requires a small piece of
-information, such as a filename, from the user.  A Dialog widget is
-simply a special case of the Form widget that provides a convenient
+information, such as a filename, from the user.  A Dialog widget, which is
+simply a special case of the Form widget, provides a convenient
 way to create a preconfigured form.
 .LP
 The typical Dialog widget contains three areas.  The first line
@@ -91,23 +91,23 @@ insensitive if either it or any of its ancestors is insensitive.
 This resource should not be changed with \fBXtSetValues\fP.  It may,
 however, be queried.
 .IP background 1.5i
-An index into this widget's colormap specifing the background color of the
+An index into this widget's colormap specifying the background color of the
 widget's window.
 .IP backgroundPixmap 1.5i
 The background pixmap of this widget.  If this resource is set to
-anything other than \fBXtUnspecifiedPixmap\fP the pixmap specified will be
+anything other than \fBXtUnspecifiedPixmap\fP, the pixmap specified will be
 used instead of the background color.
 .IP borderColor 1.5i
-An index into this widget's colormap specifing the border color of the
+An index into this widget's colormap specifying the border color of the
 widget's window.
 .IP borderPixmap 1.5i
 The border pixmap of this widget.  If this resource is set to
-anything other than \fBXtUnspecifiedPixmap\fP the pixmap specified will be
+anything other than \fBXtUnspecifiedPixmap\fP, the pixmap specified will be
 used instead of the border color.
 .IP borderWidth 1.5i
 This is the width of this widget's border.
 .IP children 1.5i
-A list of all this composite widget'c current children.
+A list of all this composite widget's current children.
 .IP colormap 1.5i
 The colormap that this widget wants for its window.
 .IP defaultDistance 1.5i
@@ -124,12 +124,12 @@ All callback functions on this list are called when this widget is destroyed.
 .IP width 1.5i
 The height and width of this widget in pixels.
 .IP \fBicon\fP 1.5i
-A pixmap image to be displayed immediatly to the left of the 
+A pixmap image to be displayed immediately to the left of the 
 Dialog widget's label.
 .IP insertPosition 1.5i
 [||| What is this resource anyway??? ]
 .IP \fBlabel\fP 1.5i
-A single line Latin1 string to be displayed at the top of the Dialog widget.
+A one-line Latin1 string to be displayed at the top of the Dialog widget.
 .IP mappedWhenManaged 1.5i
 If this resource is \fBTrue\fP then the widget's window will automatically be
 mapped by the Toolkit when it is realized and managed.
@@ -145,15 +145,15 @@ widget will not get events if either \fBancestorSensitive\fP or
 The event bindings associated with this widget.
 .IP \fBvalue\fP 1.5i
 An initial value for the string field that the user will enter text
-into.  By default no text entry field is avaliable to the user.
+into.  By default, no text entry field is available to the user.
 Specifying an initial value for \fBvalue\fP activates the text entry
 field.  If string input is desired, but no initial value is to be
-specifed then set this resource to "" (empty string).
+specified then set this resource to "" (empty string).
 .IP x 1.5i
 .br
 .ns
 .IP y 1.5i
-The location of the upper lefthand corner of this widget in its parent.
+The location of the upper left corner of this widget in its parent.
 .NH 3
 Constraint Resources
 .LP
@@ -182,7 +182,7 @@ fromHoriz	Widget	Widget	NULL (left edge of Dialog)
 fromVert	Widget	Widget 	NULL (top edge of Dialog)
 horizDistance	Thickness	int	\fBdefaultDistance\fP resource
 left	Edge	XawEdgeType	XawRubber
-resizeable	Boolean	Boolean	FALSE
+resizable	Boolean	Boolean	FALSE
 right	Edge	XawEdgeType	XawRubber
 top	Edge	XawEdgeType	XawRubber
 vertDistance	Thickness	int	\fBdefaultDistance\fP resource
@@ -212,14 +212,14 @@ details.
 .IP fromVert 1.5i
 Which widget this child should be placed underneath (or to the right
 of).  If a value of NULL is specified then this widget will be positioned
-realtive to the edge of the Dialog.
+relative to the edge of the Dialog.
 .IP horizDistance 1.5i
 .br
 .ns
 .IP vertDistance 1.5i
 The amount of space, in pixels, between this child and its left or
 upper neighbor. 
-.IP resizeable 1.5i
+.IP resizable 1.5i
 If this resource is \fBFalse\fP then the Dialog widget will ignore all
 geometry request made by this child.  The Dialog may still resize this
 child itself, however.
@@ -240,14 +240,14 @@ determined by the \fBhorizDistance\fP and \fBvertDistance\fP resources.
 This implies some things about how the order of creation affects the 
 possible placement of the children.  
 .LP
-The second layout method is used when the Dialog is resized, it does
+The second layout method is used when the Dialog is resized.  It does
 not matter what causes this resize, and it is possible for a resize to
-happen before the widget becomes visable (due to constraints imposed
+happen before the widget becomes visible (due to constraints imposed
 by the parent of the Dialog widget).  This layout method uses the
 \fBbottom\fP, \fBtop\fP, \fBleft\fP, and \fBright\fP resources.  These 
-are used to determine what will happen the each edge of the child when
-the Dialog is resized.  If value of \fBXawChain\fP\fI<something>\fP is
-specified the 
+are used to determine what will happen to each edge of the child when
+the Dialog is resized.  If a value of \fBXawChain\fP\fI<something>\fP is
+specified, the 
 the edge of the child will remain a fixed distance from the
 \fIchain\fP edge of the form.  For example if \fBXawChainLeft\fP is
 specified for the \fBright\fP resource of a child then the right
@@ -258,7 +258,7 @@ instance if the Dialog grows by 50% the left edge of the child (if
 specified as \fBXawRubber\fP will be 50% farther from the left edge of
 the Dialog).  One must be very careful when specifying these
 resources, for when they are specified incorrectly children may
-overlap or completly occlude other children when the Dialog widget is
+overlap or completely occlude other children when the Dialog widget is
 resized.
 .LP
 .ps 9
@@ -303,26 +303,26 @@ The Dialog widget automatically sets the \fBtop\fP and \fBbottom\fP
 resources for all Children that are subclasses of the Command widget,
 as well as the widget children that are used to contain the \fBlabel\fP,
 \fBvalue\fP, and \fBicon\fP.  This policy allows the buttons at the
-bottom of the Dialog to interact correctly with the predefined children.
-And makes it possible for a client to simply create and manage a new
+bottom of the Dialog to interact correctly with the predefined children,
+and makes it possible for a client to simply create and manage a new
 Command button without having to specify its constraints.
 .LP
 The Dialog will also set \fBfromLeft\fP to the last button in the
 Dialog for each new button added to the Dialog widget.
 .LP
 The automatically added constraints cannot be overridden, as they are
-policy decisions of the Dialog widget.  If a more flexable Dialog is
-desired the application is free to use the Form widget to create its
+policy decisions of the Dialog widget.  If a more flexible Dialog is
+desired, the application is free to use the Form widget to create its
 own Dialog policy. 
 .NH 3
 Automatically Created Children.
 .LP
 The Dialog uses Label widgets to contain the \fBlabel\fP and
 \fBicon\fP.  These widgets are named \fIlabel\fP and \fIicon\fP
-respectivly.  The Dialog \fBvalue\fP is contained in an AsciiText
+respectively.  The Dialog \fBvalue\fP is contained in an AsciiText
 widget whose name is \fIvalue\fP.  Using \fBXtNameToWidget\fP the application
 can change those resources associated with each of these widgets that
-are not avaliable through the Dialog widget itself.
+are not available through the Dialog widget itself.
 .LP
 .NH 3
 Convenience Routines
@@ -348,7 +348,7 @@ the Text widget function \fBXawAsciiSourceFreeString\fP.
 .LP
 .sp
 To add a new button to the Dialog widget use
-'fBXawDialogAddButton\fP.
+\fBXawDialogAddButton\fP.
 .IN "XawDialogAddButton" "" "@DEF@"
 .FD 0
 void XawDialogAddButton(\fIw\fP, \fIname\fP, \fIfunc\fP, \fIclient_data\fP)
