@@ -36,57 +36,58 @@ The following documents are X Consortium standards:
 .nf
 
 X Window System Protocol
-X Version 11, Release 5
+X Version 11, Release 6
 Robert W. Scheifler
 
 Xlib \- C Language X Interface
-X Version 11, Release 5
+X Version 11, Release 6
 James Gettys, Robert W. Scheifler, Ron Newman
 
 X Toolkit Intrinsics \- C Language Interface
-X Version 11, Release 5
-Joel McCormack, Paul Asente, Ralph R. Swick
+X Version 11, Release 6
+Joel McCormack, Paul Asente, Ralph R. Swick, Donna Converse
 
 Bitmap Distribution Format
 Version 2.1
-X Version 11, Release 5
+X Version 11, Release 6
 
 Inter-Client Communication Conventions Manual
 Version 2.0
-X Version 11, Release 5
+X Version 11, Release 6
 David Rosenthal, Stuart W. Marks
 
 Compound Text Encoding
 Version 1.1
-X Version 11, Release 5
+X Version 11, Release 6
 Robert W. Scheifler
 
 X Logical Font Description Conventions
 Version 1.5
+X Version 11, Release 6
 Jim Flowers, Stephen Gildea
 
 X Display Manager Control Protocol
 Version 1.0
-X Version 11, Release 5
+X Version 11, Release 6
 Keith Packard
 
 X11 Nonrectangular Window Shape Extension
 Version 1.0
-X Version 11, Release 5
+X Version 11, Release 6
 Keith Packard
 
 X11 Input Extension Protocol Specification
 Version 1.0
-X Version 11, Release 5
+X Version 11, Release 6
 George Sachs, Mark Patrick
 
 X11 Input Extension Library Specification
-X Version 11, Release 5
+X Version 11, Release 6
 Mark Patrick, George Sachs
 
 The X Font Service Protocol
-Version 1.0
-X Version 11, Release 5
+Version 2.0
+X Version 11, Release 6
 Jim Fulton
 
 PEX Protocol Specification
@@ -99,47 +100,65 @@ Jeff Stevenson
 
 Inter-Client Exchange (ICE) Protocol
 Version 1.0
-Robert Scheifler
+X Version 11, Release 6
+Robert Scheifler, Jordan Brown
 
 Inter-Client Exchange (ICE) Library
 Version 1.0
+X Version 11, Release 6
 Ralph Mor
 
 X Session Management Protocol
 Version 1.0
+X Version 11, Release 6
 Mike Wexler
 
 X Session Management Library
 Version 1.0
+X Version 11, Release 6
 Ralph Mor
 
 The Input Method Protocol
 Version 1.0
+X Version 11, Release 6
 Masahiko Narita, Hideki Hiura
 
 X Synchronization Extension
 Version 3.0
+X Version 11, Release 6
 Tim Glauert, Dave Carver, Jim Gettys, David P. Wiggins
 
 X Image Extension, Protocol Reference Manual
 Version 5.0
+X Version 11, Release 6
 Bob Shelley
+
+XTEST Extension
+Version 2.2
+Kieron Drake
+
+Big Requests Extension
+Version 2.0
+X Version 11, Release 6
+Bob Scheifler
+
+XC-MISC Extension
+Version 1.1
+X Version 11, Release 6
+Bob Scheifler
 .fi
 .SH "DRAFT STANDARDS"
 The following documents are currently draft standards of the X Consortium.
 .nf
 
+X Image Extension Libary
+Public Review Draft
+Gary Rogers
+
 Extending X for Double-Buffering, Multi-Buffering, and Stereo
-Version 3.2
+Version 3.3
+Public Review Draft
 Jeffrey Friedberg, Larry Seiler, Jeff Vroom
-
-X Image Extension, Libary Reference Manual
-Version 4.14
-Bob Shelley
-
-PEX Protocol Specification
-Version 5.2
-Cheryl Huntington (architect), Paula Womack (editor)
 .fi
 
 .SH "INCLUDE FILES"
@@ -198,6 +217,56 @@ The following include files are part of the X Input Extension standard.
 <X11/extensions/XIproto.h>
 .fi
 .PP
+The following include files are part of the PEXlib standard.
+.nf
+
+<X11/PEX5/PEX.h>
+<X11/PEX5/PEXlib.h>
+<X11/PEX5/PEXlibint.h>
+<X11/PEX5/PEXproto.h>
+<X11/PEX5/PEXprotost.h>
+.fi
+.PP
+The following include files are part of the ICElib standard.
+.nf
+
+<X11/ICE/ICE.h>
+<X11/ICE/ICEconn.h>
+<X11/ICE/ICElib.h>
+<X11/ICE/ICEmsg.h>
+<X11/ICE/ICEproto.h>
+<X11/ICE/ICEutil.h>
+.fi
+.PP
+The following include files are part of the SMlib standard.
+.nf
+
+<X11/SM/SM.h>
+<X11/SM/SMlib.h>
+<X11/SM/SMproto.h>
+.fi
+.PP
+The following include file is part of the Synchronization standard.
+.nf
+
+<X11/extensions/sync.h>
+.fi
+.PP
+The following include files are part of the XIElib draft standard.
+.nf
+
+<X11/extensions/XIE.h>
+<X11/extensions/XIElib.h>
+<X11/extensions/XIEproto.h>
+<X11/extensions/XIEprotost.h>
+.fi
+.PP
+The following include file is part of the XTEST standard.
+.nf
+
+<X11/extensions/XTest.h>
+.fi
+.PP
 The following include file is part of the Multi-Buffering draft standard.
 .nf
 
@@ -216,14 +285,19 @@ status within the X Consortium.  For example, none of the following
 are standards:
 internal interfaces of the sample server;
 the MIT-SHM extension;
-the Input Synthesis extension;
 the Athena Widget Set;
 the Xmu library;
 the Xau library;
-CLX, the Common Lisp interface to X;
 the RGB database;
 the fonts distributed with X11R6;
 the applications distributed with X11R6;
 the include files <X11/XWDFile.h>, <X11/Xfuncproto.h>, <X11/Xfuncs.h>,
-<X11/Xosdefs.h>, and <X11/Xos.h>;
+<X11/Xosdefs.h>, <X11/Xos.h>, and <X11/Xthreads.h>;
 the bitmap files in <X11/bitmaps>.
+.PP
+The following are works in progress within the X Consortium, and are
+neither standards nor draft standards:
+Fresco;
+Low Bandwidth X;
+X Keyboard Extension;
+Record Extension.
