@@ -39,27 +39,26 @@ SRCS=xdaemon.c starserver.c itserver.c
 
 all:: xdaemon starserver itserver
 
-SingleProgramTarget(xdaemon, xdaemon.o, $(XLIB),)
-InstallProgram(xdaemon, $(LIBDIR))
+SingleProgramTarget(xdaemon,xdaemon.o,$(XLIB), /**/)
+InstallProgram(xdaemon,$(LIBDIR))
 
-install:: xdaemon.rc
-	$(INSTALL) -m 755 -f $(ADMDIR) xdaemon.rc
+InstallNamedProg(xdaemon.rc,xdaemon.rc,$(ADMDIR))
 
-SingleProgramTarget(starserver, starserver.o, $(XLIB),)
+SingleProgramTarget(starserver,starserver.o,$(XLIB), /**/)
 
 install:: starserver
 	cp starserver nameserver
-        $(INSTALL) $(INSTALLFLAGS) -f $(STARLANDIR) nameserver
-        $(STRIP) $(STARLANDIR)/nameserver
-	$(RM) -f nameserver
+        $(INSTALL) $(INSTALLFLAGS) -f $(DESTDIR)$(STARLANDIR) nameserver
+        $(STRIP) $(DESTDIR)$(STARLANDIR)/nameserver
+	$(RM) nameserver
 
 SingleProgramTarget(itserver, itserver.o, $(XLIB), -ltcp)
 
 install:: itserver
 	cp itserver nameserver
-        $(INSTALL) $(INSTALLFLAGS) -f $(ITDIR) nameserver
-        $(STRIP) $(STARLANDIR)/nameserver
-	$(RM) -f nameserver
+        $(INSTALL) $(INSTALLFLAGS) -f $(DESTDIR)$(ITDIR) nameserver
+        $(STRIP) $(DESTDIR)$(STARLANDIR)/nameserver
+	$(RM) nameserver
 
 DependTarget()
 
