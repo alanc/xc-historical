@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: Login.c,v 1.35 91/07/18 19:31:10 rws Exp $
+ * $XConsortium: Login.c,v 1.36 93/09/20 18:03:02 hersh Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -671,20 +671,6 @@ InsertChar (ctxw, event, params, num_params)
     XorCursor (ctx);
 }
 
-/*ARGSUSED*/
-static void FetchDisplayArg(widget, size, value)
-    Widget widget;
-    Cardinal *size;
-    XrmValue* value;
-{
-    value->size = sizeof(Display*);
-    value->addr = (caddr_t)&DisplayOfScreen(XtScreenOfObject(widget));
-}
-
-static XtConvertArgRec displayConvertArg[] = {
-    {XtProcedureArg, (XtPointer)FetchDisplayArg, 0},
-};
-
 /* ARGSUSED */
 static void Initialize (greq, gnew, args, num_args)
     Widget greq, gnew;
@@ -720,7 +706,7 @@ static void Initialize (greq, gnew, args, num_args)
 
     if (w->login.font == NULL)
 	w->login.font = XQueryFont (XtDisplay (w),
-		XGContextFromGC (DefaultGCOfScreen (XtScreen (w))));
+		XGContextFromGC (XDefaultGCOfScreen (XtScreen (w))));
 
     xvaluemask = valuemask;
     if (w->login.promptFont == NULL)
@@ -766,9 +752,9 @@ static void Initialize (greq, gnew, args, num_args)
 	w->core.height = fy + pady;	/* for stupid compilers */
     }
     if ((x = w->core.x) == -1)
-	x = (int)(WidthOfScreen (XtScreen (w)) - w->core.width) / 2;
+	x = (int)(XWidthOfScreen (XtScreen (w)) - w->core.width) / 2;
     if ((y = w->core.y) == -1)
-	y = (int)(HeightOfScreen (XtScreen (w)) - w->core.height) / 3;
+	y = (int)(XHeightOfScreen (XtScreen (w)) - w->core.height) / 3;
     XtSetArg (position[0], XtNx, x);
     XtSetArg (position[1], XtNy, y);
     XtSetValues (XtParent (w), position, (Cardinal) 2);
