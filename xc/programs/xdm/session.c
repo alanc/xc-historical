@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: session.c,v 1.31 90/03/05 11:50:21 keith Exp $
+ * $XConsortium: session.c,v 1.32 90/03/29 11:35:41 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -199,19 +199,20 @@ struct display	*d;
 LoadXloginResources (d)
 struct display	*d;
 {
-    char	cmd[1024];
+    char	*args[4];
+    char	**env = 0, **setEnv();
 
     if (d->resources[0] && access (d->resources, 4) == 0) {
-	if (d->authFile) {
-	    sprintf (cmd, "XAUTHORITY=%s %s -display %s -load %s",
-			    d->authFile,
-			    d->xrdb, d->name, d->resources);
-	} else {
-	    sprintf (cmd, "%s -display %s -load %s",
-			    d->xrdb, d->name, d->resources);
-	}
-	Debug ("Loading resource file: %s\n", cmd);
-	system (cmd);
+	env = setEnv (env, "DISPLAY", d->name);
+	if (d->authFile)
+	    env = setEnv (env, "XAUTHORITY", d->authFile);
+	args[0] = d->xrdb;
+	args[1] = "-load";
+	args[2] = d->resources;
+	args[3] = NULL;
+	Debug ("Loading resource file: %s\n", d->resources);
+	(void) runAndWait (args, env);
+	freeEnv (env);
     }
 }
 
@@ -401,34 +402,41 @@ struct verify_info	*verify;
 char			*file;
 {
     char	*args[2];
+    if (file && file[0]) {
+	Debug ("source %s\n", file);
+	args[0] = file;
+	args[1] = NULL;
+	return runAndWait (args, verify->systemEnviron);
+    }
+    return 0;
+}
+
+int
+runAndWait (args, environ)
+    char	**args;
+    char	**environ;
+{
     int	pid;
     extern int	errno;
     waitType	result;
-    char	*getEnv ();
 
-    if (file && file[0]) {
-	Debug ("source %s\n", file);
-	switch (pid = fork ()) {
-	case 0:
-	    CleanUpChild ();
-	    args[0] = file;
-	    args[1] = NULL;
-	    execute (args, verify->systemEnviron);
-	    LogError ("can't execute %s\n", args[0]);
-	    exit (1);
-	case -1:
-	    Debug ("fork failed\n");
-	    LogError ("can't fork to execute %s\n", file);
-	    return 1;
-	    break;
-	default:
-	    while (wait (&result) != pid)
-		    ;
-	    break;
-	}
-	return waitVal (result);
+    switch (pid = fork ()) {
+    case 0:
+	CleanUpChild ();
+	execute (args, environ);
+	LogError ("can't execute %s\n", args[0]);
+	exit (1);
+    case -1:
+	Debug ("fork failed\n");
+	LogError ("can't fork to execute %s\n", args[0]);
+	return 1;
+	break;
+    default:
+	while (wait (&result) != pid)
+		;
+	break;
     }
-    return 0;
+    return waitVal (result);
 }
 
 execute (argv, environ)
@@ -443,7 +451,7 @@ char	**environ;
      * made executable (or this is a SYSV box), do
      * a reasonable thing
      */
-    if (errno == ENOEXEC) {
+    if (errno != ENOENT) {
 	char	program[1024], *e, *p, *optarg;
 	FILE	*f;
 	char	**newargv, **av;
