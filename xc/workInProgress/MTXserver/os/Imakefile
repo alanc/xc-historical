@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.3 94/01/11 18:36:26 gildea Exp $
+XCOMM $XConsortium: Imakefile,v 1.4 94/01/11 20:50:11 rob Exp $
 #define DoThreadedServer XServerThreaded
 #include <Server.tmpl>
 
@@ -136,6 +136,7 @@ LinkSourceFile(xdmauth.c,$(SERVERSRC)/os)
 LinkSourceFile(rpcauth.c,$(SERVERSRC)/os)
 #endif
 #if HasKrb5
+LinkSourceFile(k5auth.c,$(SERVERSRC)/os)
 LinkSourceFile(k5encode.c,$(XAUTHSRC))
 #endif
 
