@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: devices.c,v 5.20 91/11/17 13:48:08 rws Exp $ */
+/* $XConsortium: devices.c,v 5.21 91/11/22 12:12:01 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -45,6 +45,7 @@ extern void CopySwap32Write(), SwapTimeCoordWrite();
 extern void ActivatePointerGrab(), DeactivatePointerGrab();
 extern void ActivateKeyboardGrab(), DeactivateKeyboardGrab();
 extern Mask EventMaskForClient();
+extern void EnqueueEvent();
 
 DevicePtr
 AddInputDevice(deviceProc, autoStart)
@@ -65,6 +66,7 @@ AddInputDevice(deviceProc, autoStart)
     dev->public.on = FALSE;
     dev->public.processInputProc = NoopDDA;
     dev->public.realInputProc = NoopDDA;
+    dev->public.enqueueInputProc = EnqueueEvent;
     dev->deviceProc = deviceProc;
     dev->startup = autoStart;
     dev->sync.frozen = FALSE;
