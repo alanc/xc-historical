@@ -1,4 +1,15 @@
-.\" $XConsortium: xauth.man,v 1.9 91/12/16 20:30:02 gildea Exp $
+.\" $XConsortium: xauth.man,v 1.10 94/04/11 14:28:07 gildea Exp $
+.\" Copyright 1993 Massachusetts Institute of Technology
+.\"
+.\" Permission to use, copy, modify, distribute, and sell this software and
+.\" its documentation for any purpose is hereby granted without fee, provided
+.\" that the above copyright notice appear in all copies and that both that
+.\" copyright notice and this permission notice appear in supporting
+.\" documentation, and that the name of M.I.T. not be used in advertising or
+.\" publicity pertaining to distribution of the software without specific,
+.\" written prior permission.  M.I.T. makes no representations about the
+.\" suitability of this software for any purpose.  It is provided "as is"
+.\" without express or implied warranty.
 .TH XAUTH 1 "Release 6" "X Version 11"
 .SH NAME
 xauth \- X authority file utility
@@ -14,6 +25,8 @@ another (as is the case when using remote logins or granting access to
 other users).  Commands (described below) may be entered interactively,
 on the \fIxauth\fP command line, or in scripts.  Note that this program
 does \fBnot\fP contact the X server.
+Normally \fIxauth\fP is not used to create the authority file entry in
+the first place; \fIxdm\fP does that.
 .SH OPTIONS
 The following options may be used with \fIxauth\fP.  They may be given 
 individually (e.g., \fI\-q \-i\|\fP) or may combined (e.g., \fI\-qi\|\fP).
@@ -153,9 +166,5 @@ may need to use encrypted authorization mechanisms such as Kerberos.
 .PP
 Spaces are currently not allowed in the protocol name.  Quoting could be
 added for the truly perverse.
-.SH COPYRIGHT
-Copyright 1989, Massachusetts Institute of Technology.
-.br
-See \fIX\fP(1) for a full statement of rights and permissions.
 .SH AUTHOR
 Jim Fulton, MIT X Consortium
