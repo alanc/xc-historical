@@ -12,11 +12,6 @@ with your mail, it makes calls to the \fImh\fR package.
 Please don't be misled by the size of this document.  \fIXmh\fR really is
 easy to use!
 
-.SH DISCLAIMER
-\fIXmh\fR is still in pre-release form (although it hasn't done anything
-very nasty to anyone in quite a while).  Use at your own risk.  Be aware
-that the user interface may be changed without warning.
-
 .SH INSTALLATION
 The current version of \fIxmh\fR requires that the user is already set up
 to use \fImh\fR, version 6.  To do so, see if there is a file
@@ -216,17 +211,17 @@ Mark the selected messages for deletion.  If no messages are highlighted, then
 this will automatically display the next unmarked message.
 .PP
 .TP 8
-.B Mark Copy
-Mark the selected messages to be copied into the current folder.  (If the
-current folder is the same as the viewed folder, this command will just
-beep.)
-.PP
-.TP 8
 .B Mark Move
 Mark the selected messages to be moved into the current folder.  (If the
 current folder is the same as the viewed folder, this command will just
 beep.)  If no messages are highlighted, then
 this will automatically display the next unmarked message.
+.PP
+.TP 8
+.B Mark Copy
+Mark the selected messages to be copied into the current folder.  (If the
+current folder is the same as the viewed folder, this command will just
+beep.)
 .PP
 .TP 8
 .B Unmark
@@ -258,10 +253,6 @@ Execute any deletions, moves, and copies that have been marked in this
 folder.
 .PP
 .TP 8
-.B Pick Messages
-Define a new message-sequence.  (See MESSAGE-SEQUENCES.)
-.PP
-.TP 8
 .B Print
 Print the selected messages.  \fIXmh\fR prints by by invoking
 the \fIenscript\fR(1) command.
@@ -282,8 +273,28 @@ Rebuild the list of messages.  This can be used whenever you suspect \fIxmh\fR's
 idea of what messages you have is wrong.  (In particular, this is useful
 if you ever change things using straight mh commands without using \fIxmh\fR.)
 .PP
-If the current folder has any message-sequences defined, a few more
-buttons will appear hear.  (See MESSAGE-SEQUENCES.)
+.TP 8
+.B Pick Messages
+Define a new message-sequence.  (See MESSAGE-SEQUENCES.)
+.PP
+The following buttons will appear but will be sensitive only if
+the current folder has any message-sequences defined (See MESSAGE-SEQUENCES).
+.TP 8
+.B Open Sequence
+Change the viewed sequence to be the same as the selected sequence.
+.PP
+.TP 8
+.B Add to Sequence
+Add the selected messages to the selected sequence.
+.PP
+.TP 8
+.B Remove from Sequence
+Remove the selected messages from the selected sequence.
+.PP
+.TP 8
+.B Delete Sequence
+Remove the selected sequence entirely.  Note the messages themselves are
+not effected; they simply are no longer grouped together as a message-sequence.
 
 .SH VIEW WINDOWS
 The commands in these windows are the same as the message commands by the
@@ -385,8 +396,8 @@ Move up to the previous line.
 Move down to the next screenfull of text.
 .PP
 .TP 8
-.B Control-W, Meta-H, Meta-Delete
-Kill the previous word.
+.B Control-W
+Kill the selected text.
 .PP
 .TP 8
 .B Control-Y
@@ -395,10 +406,6 @@ Insert the last killed text.
 .TP 8
 .B Control-Z
 Scroll the text one line up.
-.PP
-.TP 8
-.B Meta-Shift-!
-Kill the selected text.
 .PP
 .TP 8
 .B Meta-<
@@ -427,6 +434,10 @@ Kill the next word.
 .TP 8
 .B Meta-F
 Move forward one word.
+.PP
+.TP 8
+.B Meta-H, Meta-Delete
+Kill the previous word.
 .PP
 .TP 8
 .B Meta-I
@@ -474,8 +485,8 @@ only the current message.  \fIXmh\fR hides ``cur'' from the user, instead
 placing a ``+'' by the current message.  Also, \fIxmh\fR does not support
 the ``unseen'' sequence, so that one is also hidden from the user.)
 
-If a folder contains any sequences besides ``all'' and ``cur'', then \fIxmh\fR will
-display a row of buttons containing the names of the sequences (including
+The message sequences for a folder are displayed as
+buttons containing the names of the sequences (including
 one for ``all'').  The table of contents (aka ``toc'') is at any one time
 displaying one message sequence.  This is called the ``viewed sequence''; if
 it's not ``all'', its name will be displayed in the title bar just after the
@@ -484,24 +495,9 @@ highlighted.  This is called the ``selected sequence''.  Note that the viewed
 sequence and the selected sequence are not necessarily the same.  (This all
 pretty much corresponds to the way the folder buttons work.)
 
-A few new buttons will also appear if the viewed folder contains
-message-sequences:
-.TP 8
-.B Open Sequence
-Change the viewed sequence to be the same as the selected sequence.
-.PP
-.TP 8
-.B Add to Sequence
-Add the selected messages to the selected sequence.
-.PP
-.TP 8
-.B Remove from Sequence
-Remove the selected messages from the selected sequence.
-.PP
-.TP 8
-.B Delete Sequence
-Remove the selected sequence entirely.  Note the messages themselves are
-not effected; they simply are no longer grouped together as a message-sequence.
+The \fBOpen Sequence\fR, \fBAdd to Sequence\fR, \fBRemove from Sequence\fR,
+and \fBDelete Sequence\fR buttons are active only if the viewed folder
+contains message-sequences.
 .PP
 Note that none of the above actually effect whether a message is in the
 folder.  Remember that a sequence is a set of messages within the folder;
@@ -619,6 +615,13 @@ within messages by scrolling them off.  (Default is ``on''.)
 .TP 8
 .B InitialFolder
 Which folder to display on startup.  (Default is ``inbox''.)
+.PP
+.TP 8
+.B InitialIncFile
+The file name of your incoming mail drop.  \fIxmh\fR tries to construct
+a filename for the ``inc -file'' command, but in some installations
+(e.g. those using the Post Office Protocol) no file is appropriate.
+In this case, \fBInitialIncFile\fR should be specified as the empty string.
 .PP
 .TP 8
 .B LabelFont
@@ -909,8 +912,6 @@ mh (1) - the mh Mail Handler
 Terry Weissman (weissman@decwrl.dec.com)
 
 .SH BUGS
-Color is hardly supported at all.
-
 Command-line syntax is silly.
 
 Printing support is minimal.
@@ -924,16 +925,9 @@ offer to set things up for him or her.
 
 Will bomb if the file /usr/athena/lib/.Tkeys doesn't exist.
 
-Things should look better under X version 11.  Right now, there's a few
-``light shows'' as things rearrange themselves on the screen, and some
-actions can be very slow on somewhat slow hardware.
-
 There need to be a lot more text functions.  In particular, searching
 would be very nice.
 
 Still a few commands missing (rename folder, remail message).
-
-Message sequences disappear if they contain nothing.  Therefore, there's
-no adequate feedback if a pick selects no messages.
 
 The user should probably be able to customize the buttonboxes somewhat.
