@@ -20,7 +20,7 @@ XCOMM PROFITS, EVEN IF ADVISED OF THE POSSIBILITY THEREOF, AND REGARDLESS
 XCOMM OF WHETHER IN AN ACTION IN CONTRACT, TORT OR NEGLIGENCE, ARISING OUT
 XCOMM OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-XCOMM $XConsortium: Imakefile,v 1.1 94/02/04 11:54:21 mor Exp $
+XCOMM $XConsortium: Imakefile,v 1.2 94/02/04 15:23:30 mor Exp $
 
 XCOMM Having had to change the name once, I don't want it to be tough
 XCOMM the next time...
@@ -175,3 +175,5 @@ XCOMM # Turning this on makes the server look up host names in $DISPLAY and
 XCOMM # substitute IP addresses.  (ODT v1 X clients can't look names up in
 XCOMM # DNS.)
 XCOMM #CFLAGS=-DODT1_DISPLAY_HACK
+
+depend::
