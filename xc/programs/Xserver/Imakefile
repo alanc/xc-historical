@@ -4,7 +4,8 @@
 
 #include <Server.tmpl>
 
-     EXTENSIONS = $(EXTENSIONSRC)/server/libext.a
+      OTHEREXTS = $(EXTENSIONSRC)/server/xinput/libxinput.a
+     EXTENSIONS = $(OTHEREXTS) $(EXTENSIONSRC)/server/libext.a
          EXTDIR = $(EXTENSIONSRC)/server
     FONTUTILDIR = $(FONTSRC)/mkfontdir
        FONTUTIL = $(FONTUTILDIR)/fontdir.o
@@ -316,22 +317,10 @@ ServerTarget(Xplx,$(EXTDIR) $(FONTUTILDIR) $(PLXDIRS),$(PLXOBJS),$(PLXLIBS),$(PL
 HPDIRS = dix ddx/snf ddx/mi ddx/hp os/4.2bsd os/bsdemul
 
 /* set up .o load */
-/* note the string __hp9000s300 is present in 6.5 lib/cpp but is
-   not defined there. The follow sequence works perfectly for
-   7.0 6.5 and 3.1 machines 
-*/
 #ifdef hp9000s300
-#ifdef __hp9000s300 /* 7.0 and later */
-HPOBJS = ddx/hp/hp.300.70.o $(FONTUTIL)
-#else /* 6.5 */
-HPOBJS = ddx/hp/hp.300.65.o $(FONTUTIL)
-#endif /* __hp9000s300 */
-#else /* 9000s800 */
-#ifdef __hp9000s800  /* 7.0 and later */
-HPOBJS = ddx/hp/hp.800.70.o $(FONTUTIL)
-#else /* 3.1 */
-HPOBJS = ddx/hp/hp.800.31.o $(FONTUTIL)
-#endif /* __hp9000s800 */
+HPOBJS = ddx/hp/hp.300.o $(FONTUTIL)
+#else /* 800 */
+HPOBJS = ddx/hp/hp.800.o $(FONTUTIL)
 #endif /* hp9000s300 */
 
 HPLIBS = $(DIX) $(BSD) $(MI) $(EXTENSIONS) $(BSDEMUL)
