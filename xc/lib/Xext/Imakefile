@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.39 92/06/28 17:49:04 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.40 93/07/09 15:34:48 gildea Exp $
 #define DoNormalLib NormalLibXext
 #define DoSharedLib SharedLibXext
 #define DoDebugLib DebugLibXext
@@ -36,9 +36,8 @@ REQUIREDLIBS = SharedXextReqs
 #if Malloc0ReturnsNull
 ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
 #endif
-#if ThreadedX
-  MTX_DEFINES = -DXTHREADS
-#endif
+  MTX_DEFINES = XlibMTDefines
+
       DEFINES = ExtensionDefines $(ALLOC_DEFINES) $(MTX_DEFINES)
      INCLUDES = -I$(XLIBSRC) -I../include
          SRCS = globals.c extutil.c XMultibuf.c XShape.c $(SHMSRCS)  \
