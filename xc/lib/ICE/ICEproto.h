@@ -1,4 +1,4 @@
-/* $XConsortium: ICEproto.h,v 1.1 93/08/19 18:25:19 mor Exp $ */
+/* $XConsortium: ICEproto.h,v 1.2 93/11/18 11:15:29 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -51,6 +51,8 @@ typedef struct {
     CARD8	versionCount;
     CARD8	authCount;
     CARD32	length B32;
+    CARD8	mustAuthenticate;
+    CARD8	unused[7];
     /* i	XPCS		vendor */
     /* j	XPCS		release */
     /* k	LIST of XPCS	authentication-protocol-names */
@@ -107,11 +109,11 @@ typedef struct {
     CARD8	majorOpcode;
     CARD8	minorOpcode;
     CARD8	protocolOpcode;
-    CARD8	unused1;
+    CARD8	mustAuthenticate;
     CARD32	length B32;
     CARD8	versionCount;
     CARD8	authCount;
-    CARD8	unused2[6];
+    CARD8	unused[6];
     /* i	XPCS		protocol-name */
     /* j	XPCS		vendor */
     /* k	XPCS		release */
@@ -144,7 +146,7 @@ typedef iceMsg  iceNoCloseMsg;
 #define sz_iceMsg			8
 #define sz_iceErrorMsg			16
 #define sz_iceByteOrderMsg		8
-#define sz_iceConnectionSetupMsg        8
+#define sz_iceConnectionSetupMsg        16
 #define sz_iceAuthRequiredMsg		16
 #define sz_iceAuthReplyMsg		16
 #define sz_iceAuthNextPhaseMsg		16
