@@ -1,5 +1,5 @@
 /*
- * $XConsortium: charproc.c,v 1.174 91/10/21 14:25:18 eswu Exp $
+ * $XConsortium: charproc.c,v 1.175 91/10/31 09:31:32 rws Exp $
  */
 
 /*
@@ -1508,6 +1508,7 @@ dpmodes(termw, func)
 		switch (param[i]) {
 		case 1:			/* DECCKM			*/
 			(*func)(&termw->keyboard.flags, CURSOR_APL);
+			update_appcursor();
 			break;
 		case 2:			/* ANSI/VT52 mode		*/
 			if (func == bitset) {
@@ -1587,7 +1588,7 @@ dpmodes(termw, func)
 				screen->send_mouse_pos = 0;
 			break;
 		case 38:		/* DECTEK			*/
-			if(func == bitset & !(screen->inhibit & I_TEK)) {
+			if(func == bitset && !(screen->inhibit & I_TEK)) {
 				if(screen->logging) {
 					FlushLog(screen);
 					screen->logstart = Tbuffer;
@@ -1812,7 +1813,7 @@ restoremodes(termw)
 		case 44:		/* margin bell			*/
 			if(!(screen->marginbell = screen->save_modes[12]))
 				screen->bellarmed = -1;
-			update_visualbell();
+			update_marginbell();
 			break;
 		case 45:		/* reverse wraparound	*/
 			termw->flags &= ~REVERSEWRAP;
@@ -2149,6 +2150,7 @@ static void VTClassInit ()
 }
 
 
+/* ARGSUSED */
 static void VTInitialize (wrequest, wnew, args, num_args)
    Widget wrequest, wnew;
    ArgList args;
