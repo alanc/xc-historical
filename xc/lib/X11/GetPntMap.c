@@ -1,11 +1,14 @@
 #include "copyright.h"
 
-/* $Header: XGetPntMap.c,v 1.5 87/05/31 00:30:38 jg Exp $ */
+/* $Header: XGetPntMap.c,v 1.5 87/09/11 08:09:56 newman Locked $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #define NEED_REPLIES
 #include "Xlibint.h"
 
+#ifdef MIN		/* some systems define this in <sys/param.h> */
+#undef MIN
+#endif
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
 
 int XGetPointerMapping (dpy, map, nmaps)
