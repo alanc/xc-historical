@@ -42,6 +42,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include "mibstore.h"
 
 extern RegionPtr mfbPixmapToRegion();
+extern Bool mfbAllocatePrivates();
 
 extern int defaultColorVisualClass;
 
@@ -58,29 +59,32 @@ extern int defaultColorVisualClass;
 #define _CE (1 << _RZ)
 
 static VisualRec visuals[] = {
-/* vid screen class rMask gMask bMask oRed oGreen oBlue bpRGB cmpE nplan */
+/* vid  class        bpRGB cmpE nplan rMask gMask bMask oRed oGreen oBlue */
 #ifndef STATIC_COLOR
-    0,  0, PseudoColor, 0,   0,   0,   0,   0,   0,   _BP,  1<<PSZ,   PSZ,
-    0,  0, DirectColor, _RM, _GM, _BM, _RS, _GS, _BS, _BP, _CE,       PSZ,
-    0,  0, GrayScale,   0,   0,   0,   0,   0,   0,   _BP,  1<<PSZ,   PSZ,
-    0,  0, StaticGray,  0,   0,   0,   0,   0,   0,   _BP,  1<<PSZ,   PSZ,
+    0,  PseudoColor, _BP,  1<<PSZ,   PSZ,  0,   0,   0,   0,   0,   0,
+    0,  DirectColor, _BP, _CE,       PSZ,  _RM, _GM, _BM, _RS, _GS, _BS,
+    0,  GrayScale,   _BP,  1<<PSZ,   PSZ,  0,   0,   0,   0,   0,   0,
+    0,  StaticGray,  _BP,  1<<PSZ,   PSZ,  0,   0,   0,   0,   0,   0,
 #endif
-    0,  0, StaticColor, _RM, _GM, _BM, _RS, _GS, _BS, _BP,  1<<PSZ,   PSZ,
-    0,  0, TrueColor,   _RM, _GM, _BM, _RS, _GS, _BS, _BP, _CE,       PSZ
+    0,  StaticColor, _BP,  1<<PSZ,   PSZ,  _RM, _GM, _BM, _RS, _GS, _BS,
+    0,  TrueColor,   _BP, _CE,       PSZ,  _RM, _GM, _BM, _RS, _GS, _BS
 };
 
 #define	NUMVISUALS	((sizeof visuals)/(sizeof visuals[0]))
 
+static  VisualID VIDs[NUMVISUALS];
+
 static DepthRec depths[] = {
 /* depth	numVid		vids */
     1,		0,		NULL,
-    8,		NUMVISUALS,	NULL
+    8,		NUMVISUALS,	VIDs
 };
 
 #define NUMDEPTHS	((sizeof depths)/(sizeof depths[0]))
 
-int cfbWindowPrivateIndex = -1;
-int cfbGCPrivateIndex = -1;
+int cfbWindowPrivateIndex;
+int cfbGCPrivateIndex;
+static unsigned long cfbGeneration = 0;
 
 miBSFuncRec cfbBSFuncRec = {
     cfbSaveAreas,
@@ -96,18 +100,13 @@ cfbCloseScreen (index, pScreen)
     int		index;
     ScreenPtr	pScreen;
 {
-    int	    i;
-
-    for (i = 0; i < NUMDEPTHS; i++)
-	xfree (depths[i].vids);
     xfree (pScreen->devPrivate);
     return TRUE;
 }
 
 /* dts * (inch/dot) * (25.4 mm / inch) = mm */
 Bool
-cfbScreenInit(index, pScreen, pbits, xsize, ysize, dpix, dpiy, width)
-    int index;
+cfbScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
     register ScreenPtr pScreen;
     pointer pbits;		/* pointer to screen bitmap */
     int xsize, ysize;		/* in pixels */
@@ -118,7 +117,23 @@ cfbScreenInit(index, pScreen, pbits, xsize, ysize, dpix, dpiy, width)
     register PixmapPtr pPixmap;
     int	i, j;
 
-    pScreen->myNum = index;
+    if (cfbGeneration != serverGeneration)
+    {
+	if (!mfbAllocatePrivates(pScreen,
+				 &cfbWindowPrivateIndex, &cfbGCPrivateIndex))
+	    return FALSE;
+	/*  Set up the visual IDs */
+	for (i = 0; i < NUMVISUALS; i++) {
+	    visuals[i].vid = FakeClientID(0);
+	    VIDs[i] = visuals[i].vid;
+	}
+	cfbGeneration = serverGeneration;
+    }
+
+    if (!AllocateWindowPrivate(pScreen, cfbWindowPrivateIndex,
+			       sizeof(cfbPrivWin)) ||
+	!AllocateGCPrivate(pScreen, cfbGCPrivateIndex, sizeof(cfbPrivGC)))
+	return FALSE;
     pScreen->width = xsize;
     pScreen->height = ysize;
     pScreen->mmWidth = (xsize * 254) / (dpix * 10);
@@ -219,29 +234,6 @@ cfbScreenInit(index, pScreen, pbits, xsize, ysize, dpix, dpiy, width)
     pScreen->CreateColormap = cfbInitializeColormap;
     pScreen->DestroyColormap = NoopDDA;
 
-    /*  Set up the remaining fields in the visuals[] array */
-    for (i = 0; i < NUMVISUALS; i++) {
-	visuals[i].vid = FakeClientID(0);
-	visuals[i].screen = index;
-    }
-
-    /*  Set up the remaining fields in the depths[] array */
-    for (i = 0; i < NUMDEPTHS; i++) {
-	if (depths[i].numVids > 0) {
-	    depths[i].vids = pVids = (VisualID *) xalloc(sizeof (VisualID) *
-							 depths[i].numVids);
-	    if (!pVids)
-	    {
-		while (--i >= 0)
-		    xfree(depths[i].vids);
-		xfree(pPixmap);
-		return FALSE;
-	    }
-	    for (j = 0; j < depths[i].numVids; j++)
-		pVids[j] = visuals[j].vid;
-	}
-    }
-
     pScreen->defColormap = FakeClientID(0);
     if (defaultColorVisualClass < 0)
     {
@@ -257,10 +249,6 @@ cfbScreenInit(index, pScreen, pbits, xsize, ysize, dpix, dpiy, width)
 	    i = 0;
     }
     pScreen->rootVisual = visuals[i].vid;
-    if (cfbGCPrivateIndex == -1)
-	cfbGCPrivateIndex = AllocateGCPrivateIndex ();
-    if (cfbWindowPrivateIndex == -1)
-	cfbWindowPrivateIndex = AllocateWindowPrivateIndex ();
     miInitializeBackingStore (pScreen, &cfbBSFuncRec);
     return TRUE;
 }

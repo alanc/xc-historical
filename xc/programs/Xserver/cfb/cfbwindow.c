@@ -38,10 +38,7 @@ cfbCreateWindow(pWin)
 {
     cfbPrivWin *pPrivWin;
 
-    pPrivWin = (cfbPrivWin *)xalloc(sizeof(cfbPrivWin));
-    pWin->devPrivates[cfbWindowPrivateIndex].ptr = (pointer)pPrivWin;
-    if (!pPrivWin)
-	return FALSE;
+    pPrivWin = (cfbPrivWin *)(pWin->devPrivates[cfbWindowPrivateIndex].ptr);
     pPrivWin->pRotatedBorder = NullPixmap;
     pPrivWin->pRotatedBackground = NullPixmap;
     pPrivWin->fastBackground = FALSE;
@@ -62,7 +59,6 @@ cfbDestroyWindow(pWin)
 	cfbDestroyPixmap(pPrivWin->pRotatedBorder);
     if (pPrivWin->pRotatedBackground)
 	cfbDestroyPixmap(pPrivWin->pRotatedBackground);
-    xfree(pWin->devPrivates[cfbWindowPrivateIndex].ptr);
     return(TRUE);
 }
 

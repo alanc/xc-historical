@@ -56,10 +56,10 @@ static char sccsid[] = "%W %G Copyright 1987 Sun Micro";
 
 extern int sunMouseProc();
 extern int sunKbdProc();
-extern Bool sunBW2Probe();
-extern Bool sunCG2CProbe();
-extern Bool sunCG3CProbe();
-extern Bool sunCG4CProbe();
+extern Bool sunBW2Probe(), sunBW2Create();
+extern Bool sunCG2CProbe(), sunCG2CCreate();
+extern Bool sunCG3CProbe(), sunCG3CCreate();
+extern Bool sunCG4CProbe(), sunCG4CCreate();
 extern void ProcessInputEvents();
 
 extern void SetInputCheck();
@@ -74,6 +74,11 @@ static int autoRepeatHandlersInstalled;	/* FALSE each time InitOutput called */
 
 	/* What should this *really* be? */
 #define MOTION_BUFFER_SIZE 0
+
+static Bool sunDevsProbed = FALSE;
+Bool sunSupportsDepth8 = FALSE;
+unsigned long sunGeneration = 0;
+
 
 /*-
  *-----------------------------------------------------------------------
@@ -103,19 +108,19 @@ SigIOHandler(sig, code, scp)
  */
 #ifdef ZOIDS
 sunFbDataRec sunFbData[] = {
-    sunBW2Probe,  	"/dev/bwtwo0",	    neverProbed,	0, 0,
-    sunCG2CProbe,  	"/dev/cgtwo0",	    neverProbed,	0, 0,
-    sunCG3CProbe,  	"/dev/cgthree0",    neverProbed,	0, 0,
-    sunCG4CProbe,  	"/dev/cgfour0",	    neverProbed,	0, 0,
+    sunBW2Probe,  	"/dev/bwtwo0",	    sunBW2Create,	0, 0,
+    sunCG2CProbe,  	"/dev/cgtwo0",	    sunCG2CCreate,	0, 0,
+    sunCG3CProbe,  	"/dev/cgthree0",    sunCG3CCreate,	0, 0,
+    sunCG4CProbe,  	"/dev/cgfour0",	    sunCG4CCreate,	0, 0
 };
 #else  ZOIDS
 sunFbDataRec sunFbData[] = {
-    sunBW2Probe,  	"/dev/bwtwo0",	    neverProbed,
+    sunBW2Probe,  	"/dev/bwtwo0",	    sunBW2Create,
 #ifdef NOTDEF
-    sunCG2CProbe,  	"/dev/cgtwo0",	    neverProbed,
-    sunCG3CProbe,  	"/dev/cgthree0",    neverProbed,
+    sunCG2CProbe,  	"/dev/cgtwo0",	    sunCG2CCreate,
+    sunCG3CProbe,  	"/dev/cgthree0",    sunCG3CCreate,
 #endif
-    sunCG4CProbe,  	"/dev/cgfour0",	    neverProbed,
+    sunCG4CProbe,  	"/dev/cgfour0",	    sunCG4CCreate
 };
 #endif ZOIDS
 
@@ -219,26 +224,31 @@ InitOutput(pScreenInfo, argc, argv)
 
     pScreenInfo->numPixmapFormats = NUMFORMATS;
     for (i=0; i< NUMFORMATS; i++)
-    {
         pScreenInfo->formats[i] = formats[i];
-    }
 
     autoRepeatHandlersInstalled = FALSE;
 
-    for (i = 0, index = 0; i < NUMSCREENS; i++) {
-	if ((* sunFbData[i].probeProc) (pScreenInfo, index, i, argc, argv)) {
-	    /* This display exists OK */
-	    index++;
-	} else {
-	    /* This display can't be opened */
-	    ;
+    if (!sunDevsProbed)
+    {
+	index = 0;
+	for (i = 0; i < NUMSCREENS; i++) {
+	    if ((*sunFbData[i].probeProc)(pScreenInfo, index, i, argc, argv))
+		index++;
+	    else
+		sunFbData[i].createProc = NULL;
 	}
+	sunDevsProbed = TRUE;
+	if (index == 0)
+	    return;
     }
-    if (index == 0)
-	FatalError("Can't find any displays\n");
-
-    pScreenInfo->numScreens = index;
-
+    if (!sunSupportsDepth8)
+	pScreenInfo->numPixmapFormats--;
+    for (i = 0; i < NUMSCREENS; i++)
+    {
+	if (sunFbData[i].createProc)
+	    (*sunFbData[i].createProc)(pScreenInfo, argc, argv);
+    }
+    sunGeneration = serverGeneration;
     sunInitCursor();
     signal(SIGWINCH, SIG_IGN);
 }

@@ -154,18 +154,13 @@ cfbCreateGC(pGC)
     pGC->ops = &cfbNonTEOps;
     pGC->funcs = &cfbFuncs;
 
-    /* cfb wants to translate before scan convesion */
+    /* cfb wants to translate before scan conversion */
     pGC->miTranslate = 1;
 
-    pPriv = (cfbPrivGC *) xalloc(sizeof(cfbPrivGC));
-    if (!pPriv)
-	return FALSE;
-    else {
-	pPriv->rop = pGC->alu;
-	pPriv->fExpose = TRUE;
-	pGC->devPrivates[cfbGCPrivateIndex].ptr = (pointer) pPriv;
-	pPriv->freeCompClip = FALSE;
-    }
+    pPriv = (cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr);
+    pPriv->rop = pGC->alu;
+    pPriv->fExpose = TRUE;
+    pPriv->freeCompClip = FALSE;
     return TRUE;
 }
 
@@ -187,7 +182,6 @@ cfbDestroyGC(pGC)
     pPriv = (cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr);
     if (pPriv->freeCompClip)
 	(*pGC->pScreen->RegionDestroy)(pPriv->pCompositeClip);
-    xfree(pGC->devPrivates[cfbGCPrivateIndex].ptr);
     cfbDestroyOps (pGC->ops);
 }
 
@@ -203,7 +197,7 @@ cfbCreateOps (prototype)
     extern Bool	Must_have_memory;
 
     /* XXX */ Must_have_memory = TRUE;
-    ret = (GCOps *) xalloc (sizeof *ret);
+    ret = (GCOps *) xalloc (sizeof(GCOps));
     /* XXX */ Must_have_memory = FALSE;
     if (!ret)
 	return 0;

@@ -12,7 +12,7 @@
  * software for any purpose.  It is provided "as is" without
  * express or implied warranty.
  *
- *	"$XConsortium: sun.h,v 5.2 89/07/03 20:42:47 rws Exp $ SPRITE (Berkeley)"
+ *	"$XConsortium: sun.h,v 5.3 89/07/10 13:29:38 rws Exp $ SPRITE (Berkeley)"
  */
 #ifndef _SUN_H_
 #define _SUN_H_
@@ -196,15 +196,8 @@ typedef struct {
     pointer 	  	fbPriv;	    /* Frame-buffer-dependent data */
 } fbFd;
 
-/*
- * Data describing each type of frame buffer. The probeProc is called to
- * see if such a device exists and to do what needs doing if it does. devName
- * is the expected name of the device in the file system. Note that this only
- * allows one of each type of frame buffer. This may need changing later.
- */
-typedef enum {
-	neverProbed, probedAndSucceeded, probedAndFailed
-} SunProbeStatus;
+extern Bool sunSupportsDepth8;
+extern unsigned long sunGeneration;
 
 /*
  * ZOIDS should only ever be defined if SUN_WINDOWS is defined.
@@ -212,7 +205,7 @@ typedef enum {
 typedef struct _sunFbDataRec {
     Bool    (*probeProc)();	/* probe procedure for this fb */
     char    *devName;		/* device filename */
-    SunProbeStatus probeStatus;	/* TRUE if fb has been probed successfully */
+    Bool    (*createProc)();	/* create procedure for this fb */
 #ifdef ZOIDS
     Pixrect *pr;		/* set for bwtwo's only */
     Pixrect *scratch_pr;	/* set for bwtwo's only */
