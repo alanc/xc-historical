@@ -198,7 +198,7 @@
 255  69   0		orange red
 255  69   0		OrangeRed
 255   0   0		red
-176  36 124		maroon
+176  48  96		maroon
 255 105 180		hot pink
 255 105 180		HotPink
 255  20 147		deep pink
