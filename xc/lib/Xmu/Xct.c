@@ -1,5 +1,5 @@
 /* 
- * $XConsortium: Xct.c,v 1.0 89/05/09 08:36:44 rws Exp $
+ * $XConsortium: Xct.c,v 1.1 89/05/09 08:51:00 rws Exp $
  * Copyright 1989 by the Massachusetts Institute of Technology
  *
  * Permission to use, copy, modify, and distribute this software and its
@@ -50,6 +50,10 @@ char *realloc();
 #define IsGL(c) (((c) >= 0x20) && ((c) <= 0x7f))
 #define IsC1(c) (((c) >= 0x80) && ((c) <= 0x9f))
 #define IsGR(c) ((c) >= 0xa0)
+
+#define HasC  1
+#define HasGL 2
+#define HasGR 4
 
 static void
 ComputeGLGR(data)
@@ -328,7 +332,7 @@ XctNextItem(data)
 {
     register XctPriv priv = data->priv;
     unsigned char c;
-    int len;
+    int len, bits;
 
 #define NEXT data->item_length++; priv->ptr++
 
@@ -454,7 +458,8 @@ XctNextItem(data)
 		while (IsMore(priv) && IsGL(*priv->ptr)) {
 		    NEXT;
 		}
-		if (data->char_size && (data->item_length % data->char_size))
+		if ((data->char_size > 1) &&
+		    (data->item_length % data->char_size))
 		    return XctSyntaxError;
 		return XctGLSegment;
 	    } else if (IsC1(c)) {
@@ -468,50 +473,73 @@ XctNextItem(data)
 		while (IsMore(priv) && IsGR(*priv->ptr)) {
 		    NEXT;
 		}
-		if (data->char_size && (data->item_length % data->char_size))
+		if ((data->char_size > 1) &&
+		    (data->item_length % data->char_size))
 		    return XctSyntaxError;
 		return XctGRSegment;
 	    }
 	} else {
-	    data->encoding = data->GLGR_encoding;
-	    if (data->GL_char_size == data->GR_char_size)
-		data->char_size = data->GL_char_size;
-	    else
-		data->char_size = 0;
+	    bits = 0;
 	    while (1) {
 		if (IsC0(c) || IsC1(c)) {
 		    if ((c == ESC) || (c == CSI))
-			return XctSegment;
-		    if (IsC0(c) ? !IsLegalC0(data, c) : !IsLegalC1(data, c)) {
-			if (data->item_length)
-			    return XctSegment;
-			NEXT;
 			break;
-		    }
-		    if (data->char_size > 1)
-			data->char_size = 0;
+		    if (IsC0(c) ? !IsLegalC0(data, c) : !IsLegalC1(data, c))
+			break;
+		    bits |= HasC;
 		    NEXT;
 		} else {
 		    len = data->item_length;
 		    NEXT;
 		    if (IsGL(c)) {
+			bits |= HasGL;
 			while (IsMore(priv) && IsGL(*priv->ptr)) {
 			    NEXT;
 			}
-			if (data->GL_char_size && (len % data->GL_char_size))
+			if ((data->GL_char_size > 1) &&
+			    ((data->item_length - len) % data->GL_char_size))
 			    return XctSyntaxError;
 		    } else {
+			bits |= HasGR;
 			while (IsMore(priv) && IsGR(*priv->ptr)) {
 			    NEXT;
 			}
-			if (data->GR_char_size && (len % data->GR_char_size))
+			if ((data->GR_char_size > 1) &&
+			    ((data->item_length - len) % data->GR_char_size))
 			    return XctSyntaxError;
 		    }
 		}
 		if (!IsMore(priv))
-		    return XctSegment;
+		    break;
 		c = *priv->ptr;
 	    }
+	    if (data->item_length) {
+		if ((bits == HasGL|HasGR) ||
+		    (data->GLGR_encoding && !(bits & HasC))) {
+		    data->encoding = data->GLGR_encoding;
+		    if (data->GL_char_size == data->GR_char_size)
+			data->char_size = data->GL_char_size;
+		    else
+			data->char_size = 0;
+		} else if (bits == HasGL) {
+		    data->encoding = data->GL_encoding;
+		    data->char_size = data->GL_char_size;
+		} else if (bits == HasGR) {
+		    data->encoding = data->GR_encoding;
+		    data->char_size = data->GR_char_size;
+		} else {
+		    data->encoding = (char *)NULL;
+		    data->char_size = 1;
+		    if ((bits & HasGL) &&
+			(data->GL_char_size != data->char_size))
+			data->char_size = 0;
+		    if ((bits & HasGR) &&
+			(data->GR_char_size != data->char_size))
+			data->char_size = 0;
+		}
+		return XctSegment;
+	    }
+	    NEXT;
 	}
 	if (data->version <= XctVersion)
 	    return XctSyntaxError;
