@@ -1,4 +1,4 @@
-/* $XConsortium: mparith.c,v 1.1 93/10/26 09:46:08 rws Exp $ */
+/* $XConsortium: mparith.c,v 1.2 93/10/31 09:48:00 dpw Exp $ */
 /**** module mparith.c ****/
 /******************************************************************************
 				NOTICE
@@ -289,10 +289,10 @@ static int ActivateArithMROI(flo,ped,pet)
     bandPtr dband     = &(pet->emitter[0]);
 
     for(band = 0; band < nbands; band++, pvt++, sband++, dband++) {
-	void *svoid, *dvoid;
+	pointer svoid, dvoid;
 
-    	if (!(svoid = GetCurrentSrc(void,flo,pet,sband)) ||
-	    !(dvoid = GetCurrentDst(void,flo,pet,dband))) continue;
+    	if (!(svoid = GetCurrentSrc(pointer,flo,pet,sband)) ||
+	    !(dvoid = GetCurrentDst(pointer,flo,pet,dband))) continue;
 
 	while (!ferrCode(flo) && svoid && dvoid && 
 				SyncDomain(flo,ped,dband,FLUSH)) {
@@ -308,8 +308,8 @@ static int ActivateArithMROI(flo,ped,pet)
 		    ix -= run;
 		}
 	    }
-	    svoid = GetNextSrc(void,flo,pet,sband,FLUSH);
-	    dvoid = GetNextDst(void,flo,pet,dband,FLUSH);
+	    svoid = GetNextSrc(pointer,flo,pet,sband,FLUSH);
+	    dvoid = GetNextDst(pointer,flo,pet,dband,FLUSH);
 	}
 
 	FreeData(flo, pet, sband, sband->current);
@@ -329,15 +329,15 @@ static int ActivateArithDROI(flo,ped,pet)
     bandPtr dband     = &(pet->emitter[0]);
 
     for(band = 0; band < nbands; band++, pvt++, sband++, tband++, dband++) {
-	void *svoid, *tvoid, *dvoid;
+	pointer svoid, tvoid, dvoid;
 	CARD32 w;
 
 	w = sband->format->width;
 	if (w > tband->format->width) w = tband->format->width;
 
-    	if (!(svoid = GetCurrentSrc(void,flo,pet,sband)) ||
-    	    !(tvoid = GetCurrentSrc(void,flo,pet,tband)) ||
-	    !(dvoid = GetCurrentDst(void,flo,pet,dband))) continue;
+    	if (!(svoid = GetCurrentSrc(pointer,flo,pet,sband)) ||
+    	    !(tvoid = GetCurrentSrc(pointer,flo,pet,tband)) ||
+	    !(dvoid = GetCurrentDst(pointer,flo,pet,dband))) continue;
 
 	while (!ferrCode(flo) && svoid && tvoid && dvoid && 
 				SyncDomain(flo,ped,dband,FLUSH)) {
@@ -364,9 +364,9 @@ static int ActivateArithDROI(flo,ped,pet)
 		    ix -= run; 
 		}
 	    }
-	    svoid = GetNextSrc(void,flo,pet,sband,FLUSH);
-	    tvoid = GetNextSrc(void,flo,pet,tband,FLUSH);
-	    dvoid = GetNextDst(void,flo,pet,dband,FLUSH);
+	    svoid = GetNextSrc(pointer,flo,pet,sband,FLUSH);
+	    tvoid = GetNextSrc(pointer,flo,pet,tband,FLUSH);
+	    dvoid = GetNextDst(pointer,flo,pet,dband,FLUSH);
 	}
 
 	if(!svoid && sband->final) {
@@ -560,7 +560,7 @@ static void name1(pvt)							\
 
 #define MakeLook(name1, itype)						\
 static void name1(dst1,src1,nx,x,pvt)					\
-    void   *dst1, *src1;						\
+    pointer dst1, src1;							\
     CARD32 nx, x;							\
     mpArithPvtPtr pvt;							\
 {									\
@@ -620,7 +620,7 @@ static void (*action_lut[5])() = {
 
 #define MakePixI(name1, itype, expr)					\
 static void name1(dst1,src1,nx,x,pvt)					\
-    void   *dst1, *src1;						\
+    pointer dst1, src1;							\
     CARD32 nx, x;							\
     mpArithPvtPtr pvt;							\
 {									\
@@ -637,7 +637,7 @@ static void name1(dst1,src1,nx,x,pvt)					\
 
 #define MakePixF2(name1, itype, expr)					\
 static void name1(dst1,src1,nx,x,pvt)					\
-    void   *dst1, *src1;						\
+    pointer dst1, src1;							\
     CARD32 nx, x;							\
     mpArithPvtPtr pvt;							\
 {									\
@@ -658,7 +658,7 @@ static void name1(dst1,src1,nx,x,pvt)					\
 
 #define MakePixF1(name1, itype, expr)					\
 static void name1(dst1,src1,nx,x,pvt)					\
-    void   *dst1, *src1;						\
+    pointer dst1, src1;							\
     CARD32 nx, x;							\
     mpArithPvtPtr pvt;							\
 {									\
@@ -679,7 +679,7 @@ static void name1(dst1,src1,nx,x,pvt)					\
 
 #define DakePix(name2, itype, expr)					\
 static void name2(dst1,src1,src2,nx,x,pvt)				\
-    void   *dst1, *src1, *src2;						\
+    pointer dst1, src1, src2;						\
     CARD32 nx, x;							\
     mpArithPvtPtr pvt;							\
 {									\
@@ -698,7 +698,7 @@ static void name2(dst1,src1,src2,nx,x,pvt)				\
 
 #define MakeFlt2(name1, expr)						\
 static void name1(dst1,src1,nx,x,pvt)					\
-    void   *dst1, *src1;						\
+    pointer dst1, src1;							\
     CARD32 nx, x;							\
     mpArithPvtPtr pvt;							\
 {									\
@@ -714,7 +714,7 @@ static void name1(dst1,src1,nx,x,pvt)					\
 
 #define MakeFlt1(name1, expr)						\
 static void name1(dst1,src1,nx,x,pvt)					\
-    void   *dst1, *src1;						\
+    pointer dst1, src1;							\
     CARD32 nx, x;							\
     mpArithPvtPtr pvt;							\
 {									\
@@ -730,7 +730,7 @@ static void name1(dst1,src1,nx,x,pvt)					\
 
 #define DakeFlt(name2, expr)						\
 static void name2(dst1,src1,src2,nx,x,pvt)				\
-    void   *dst1, *src1, *src2;						\
+    pointer dst1, src1, src2;						\
     CARD32 nx, x;							\
     mpArithPvtPtr pvt;							\
 {									\
