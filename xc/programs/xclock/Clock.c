@@ -1,4 +1,4 @@
-/* $XConsortium: Clock.c,v 1.68 93/10/06 10:00:18 kaleb Exp $ */
+/* $XConsortium: Clock.c,v 1.69 93/11/01 10:30:27 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -31,7 +31,7 @@ SOFTWARE.
 #include "ClockP.h"
 #include <X11/Xosdefs.h>
 
-#if __STDC__
+#if __STDC__ && !defined(AIXV3) /* AIX is broken */
 #define Const const
 #else
 #define Const /**/
