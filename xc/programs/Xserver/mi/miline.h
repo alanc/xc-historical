@@ -1,4 +1,4 @@
-/* $XConsortium: miline.h,v 1.3 94/03/31 14:05:07 dpw Exp $ */
+/* $XConsortium: miline.h,v 1.4 1994/07/28 14:22:39 dpw Exp dpw $ */
 
 /*
 
@@ -58,8 +58,21 @@ in this Software without prior written authorization from the X Consortium.
  * using the following function.  The bias parameter is an OR'ing of
  * the appropriate OCTANT constants defined above to indicate which
  * octants to bias a line to prefer an axial step when the Bresenham
- * error term is exactly zero.
+ * error term is exactly zero.  The octants are mapped as follows:
+ *
+ *   \    |    /
+ *    \ 3 | 2 /
+ *     \  |  /
+ *    4 \ | / 1
+ *       \|/
+ *   -----------
+ *       /|\
+ *    5 / | \ 8
+ *     /  |  \
+ *    / 6 | 7 \
+ *   /    |    \
  */
+
 extern void miSetZeroLineBias(
 #if NeedFunctionPrototypes
     ScreenPtr /* pScreen */,
