@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XOpenDis.c,v 11.130 93/01/28 13:13:36 gildea Exp $
+ * $XConsortium: XOpenDis.c,v 11.132 93/03/10 16:37:18 converse Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986	*/
@@ -511,8 +511,10 @@ Display *XOpenDisplay (display)
 
 	    if (_XReply (dpy, (xReply *) &reply, 0, xFalse)) {
 		if (reply.format == 8 && reply.propertyType == XA_STRING &&
-		    (dpy->xdefaults = Xmalloc (reply.nItems + 1)))
+		    (dpy->xdefaults = Xmalloc (reply.nItems + 1))) {
 		    _XReadPad (dpy, dpy->xdefaults, reply.nItems);
+		    dpy->xdefaults[reply.nItems] = '\0';
+		}
 		else if (reply.propertyType != None)
 		    _XEatData(dpy, reply.nItems * (reply.format >> 3));
 	    }
