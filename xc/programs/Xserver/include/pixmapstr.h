@@ -1,4 +1,4 @@
-/* $XConsortium: pixmapstr.h,v 1.3 89/06/09 14:52:59 keith Exp $ */
+/* $XConsortium: pixmapstr.h,v 5.0 89/06/09 15:00:35 keith Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -52,6 +52,9 @@ typedef struct _Pixmap {
     int			refcnt;
     int			devKind;
     DevUnion		devPrivate;
+#ifdef PIXPRIV
+    DevUnion		*devPrivates; /* real devPrivates like gcs & windows */
+#endif
 } PixmapRec;
 
 #endif /* PIXMAPSTRUCT_H */
