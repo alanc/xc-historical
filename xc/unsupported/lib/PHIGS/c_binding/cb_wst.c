@@ -1,4 +1,4 @@
-/* $XConsortium: cb_wst.c,v 5.4 91/04/11 12:01:41 rws Exp $ */
+/* $XConsortium: cb_wst.c,v 5.5 91/04/14 11:26:50 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -154,7 +154,7 @@ pinq_list_avail_ws_types( length, start, error_ind, types, length_list)
     Pint		*length_list;	/* OUT length of list in PHIGS */
 {
     register Cp_wst_list_entry		*node;
-    register Pint			*t;
+    int			                t;
 
     if ( !CB_ENTRY_CHECK( phg_cur_cph, 0, Pfn_INQUIRY)) {
 	*error_ind = ERR2;
@@ -171,10 +171,13 @@ pinq_list_avail_ws_types( length, start, error_ind, types, length_list)
 		*error_ind = ERR2201;
 	    else if ( length > 0 ) {
 		types->num_ints = MIN(length, *length_list - start);
-		t = (Pint *)types->ints;
-		for(node = phg_cur_cph->wst_list; node;
-			node = node->next)
-		    *t++ = (Pint)node->wst;
+                node = phg_cur_cph->wst_list;
+		/* skip past wst not asked for */
+		for (t = 0; t < start; t++) node = node->next;
+		for (t = 0; t < types->num_ints; t++) {
+		    types->ints[t] = (Pint)node->wst;
+		    node = node->next;
+		}
 	    } else if ( length < 0 )
 		*error_ind = ERRN153;
 	}
