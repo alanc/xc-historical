@@ -46,7 +46,6 @@ V11LIST=\
 	XClDisplay.o \
 	XClear.o \
 	XClearArea.o \
-	XCompEv.o \
 	XConfWind.o \
 	XConnDis.o \
 	XConvSel.o \
