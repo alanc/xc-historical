@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: buttons.c,v 1.27 91/06/03 16:59:20 dave Exp $
+ * $XConsortium: buttons.c,v 1.28 91/06/05 09:49:23 dave Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -576,7 +576,8 @@ ManpageGlobals *man_globals;
 Widget parent;
 {
   Widget shell, dialog; /* misc. widgets. */
-  
+  Arg warg[1];
+
 /* make the please stand by popup widget. */
 
   shell = XtCreatePopupShell( "pleaseStandBy", transientShellWidgetClass,
@@ -587,9 +588,10 @@ Widget parent;
   XtRealizeWidget(shell);
   AddCursor(shell,resources.cursors.top);
 
+  XtSetArg(warg[0], XtNtransientFor, parent);
   man_globals->save = XtCreatePopupShell("likeToSave",
 					 transientShellWidgetClass,
-					 parent, NULL, (Cardinal) 0);
+					 parent, warg, 1);
 
   dialog = XtCreateManagedWidget("dialog", dialogWidgetClass, 
 				 man_globals->save, NULL, (Cardinal) 0);
@@ -597,8 +599,8 @@ Widget parent;
   XawDialogAddButton(dialog, FILE_SAVE, NULL, NULL);
   XawDialogAddButton(dialog, CANCEL_FILE_SAVE, NULL, NULL);
 
-  XtRealizeWidget(man_globals->save);
-  AddCursor(man_globals->save, resources.cursors.top);
+  /*XtRealizeWidget(man_globals->save);*/
+  /*AddCursor(man_globals->save, resources.cursors.top);*/
 }
 
 /*      Function Name: FormUpWidgets

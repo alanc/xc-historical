@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: search.c,v 1.15 91/06/03 17:00:26 dave Exp $
+ * $XConsortium: search.c,v 1.16 91/06/05 10:19:39 dave Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -45,11 +45,11 @@ Widget parent;
   Arg arglist[1];
   Cardinal num_args = 0;
 
+  XtSetArg(arglist[0], XtNtransientFor, parent); 
   man_globals->search_widget = XtCreatePopupShell(SEARCHNAME, 
 						  transientShellWidgetClass, 
 						  parent,
-						  NULL, (Cardinal) 0);  
-
+						  arglist, 1);
 
   if (resources.clear_search_string) {
     XtSetArg(arglist[0], XtNvalue, ""); num_args++;  
@@ -93,8 +93,6 @@ Widget parent;
     FormUpWidgets(dialog, full_size, half_size);
   }
 
-  XtRealizeWidget(man_globals->search_widget);
-  AddCursor(man_globals->search_widget, resources.cursors.search_entry);
 }
 
 /*      Function Name: SearchString

@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: misc.c,v 1.24 91/04/02 15:24:52 gildea Exp $
+ * $XConsortium: misc.c,v 1.25 91/06/03 17:00:11 dave Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -53,7 +53,7 @@ ManpageGlobals * man_globals;
 char * string;
 {
   int n;
-  Arg wargs[2];
+  Arg wargs[3];
   Dimension topX, topY;
   char buffer[BUFSIZ];
 
@@ -69,6 +69,7 @@ char * string;
     n=0;
     XtSetArg(wargs[n], XtNx, topX); n++;
     XtSetArg(wargs[n], XtNy, topY); n++;
+    XtSetArg(wargs[n], XtNtransientFor, top); n++;
     warnShell = XtCreatePopupShell("warnShell", transientShellWidgetClass, 
 				   initial_widget, wargs, n);
     XtSetArg(wargs[0], XtNlabel, buffer); 
@@ -366,6 +367,10 @@ char * entry;
 	  if ( access(catdir, W_OK) != 0 )
 	    unlink(man_globals->tmpfile);
 	  else {
+	    if (!XtIsRealized(man_globals->save))  {
+	      XtRealizeWidget(man_globals->save);
+	      AddCursor(man_globals->save, resources.cursors.top);
+	    }
 	    x = (Position) Width(man_globals->manpagewidgets.manpage)/2;
 	    y = (Position) Height(man_globals->manpagewidgets.manpage)/2;
 	    XtTranslateCoords(manpage, x, y, &x, &y);

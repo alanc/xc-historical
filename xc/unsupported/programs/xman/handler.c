@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: handler.c,v 1.18 91/02/13 16:09:47 converse Exp $
+ * $XConsortium: handler.c,v 1.19 91/06/03 17:00:23 dave Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -474,7 +474,10 @@ String * params;
 Cardinal * num_params;
 {
   ManpageGlobals * man_globals = GetGlobals(w);
-
+  if (!XtIsRealized(man_globals->search_widget)) {
+    XtRealizeWidget(man_globals->search_widget);
+    AddCursor(man_globals->search_widget, resources.cursors.search_entry);
+  }
   Popup(man_globals->search_widget, XtGrabNone);
 }
 
