@@ -1,4 +1,4 @@
-/* $XConsortium: Varargs.c,v 1.28 95/06/08 19:21:35 converse Exp converse $ */
+/* $XConsortium: Varargs.c,v 1.29 95/06/15 18:34:20 converse Exp converse $ */
 
 /*
 
@@ -462,8 +462,7 @@ Cardinal * number;
     XtInitializeWidgetClass(XtClass(widget));
     XtGetResourceList(XtClass(widget), res_list, number);
     
-    /* assert: !XtIsShell(w) => (XtParent(w) != NULL) */
-    if (!XtIsShell(widget) && XtIsConstraint(parent)) {
+    if (!XtIsShell(widget) && parent && XtIsConstraint(parent)) {
 	XtResourceList res, constraint, cons_top;
 	Cardinal num_constraint, temp;
 
