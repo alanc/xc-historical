@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM X Window System Build Parameters and Rules
-XCOMM $XConsortium: Project.tmpl,v 1.200 93/09/30 18:24:56 rws Exp $
+XCOMM $XConsortium: Project.tmpl,v 1.201 93/10/08 14:47:30 rws Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -432,10 +432,10 @@ XCOMM X Window System make variables; these need to be coordinated with rules
 #endif
           XLIBSRC = $(LIBSRC)/X11
 #if SharedLibX11
-#ifndef SharedXlibRev
-#define SharedXlibRev 5.0
+#ifndef SharedX11Rev
+#define SharedX11Rev 5.0
 #endif
-SharedLibReferences(XONLY,X11,$(XLIBSRC),SOXLIBREV,SharedXlibRev)
+SharedLibReferences(XONLY,X11,$(XLIBSRC),SOXLIBREV,SharedX11Rev)
 #else
 UnsharedLibReferences(XONLY,X11,$(XLIBSRC))
 #endif

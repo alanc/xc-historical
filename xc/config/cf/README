@@ -1,4 +1,4 @@
-$XConsortium: README,v 1.30 93/09/04 16:07:02 rws Exp $
+$XConsortium: README,v 1.31 93/10/08 14:47:57 rws Exp $
 
 The easiest way to write an Imakefile is to find another one that does
 something similar and copy/modify it!
@@ -272,6 +272,6 @@ An <os>Lib.tmpl file provides defaults for the following variables:
 	SharedXdmcpRev		version number for shared libXdmcp
 	SharedXextRev		version number for shared libXext
 	SharedXinputRev		version number for shared libXi
-	SharedXlibRev		version number for shared libX11
+	SharedX11Rev		version number for shared libX11
 	SharedXmuRev		version number for shared libXmu
 	SharedXtRev		version number for shared libXt
