@@ -30,7 +30,7 @@ in this Software without prior written authorization from the X Consortium.
 Author: Keith Packard
 
 */
-/* $XConsortium: cfbbitblt.c,v 5.49 94/01/07 09:42:07 dpw Exp $ */
+/* $XConsortium: cfbbitblt.c,v 5.50 94/04/17 20:28:43 dpw Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -451,7 +451,8 @@ cfbCopyPlane1to8 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, planemask, b
 	leftShift = xoffSrc;
 	rightShift = MFB_PPW - leftShift;
 
-	pixelsRemainingOnRightEdge = (nlMiddle & 7) + ((dstx + width) & PIM);
+	pixelsRemainingOnRightEdge = (nlMiddle & 7) * PPW +
+	    				((dstx + width) & PIM);
 
 	/* setup is done; now let's move some bits */
 
