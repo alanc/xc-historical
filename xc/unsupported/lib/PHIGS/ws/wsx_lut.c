@@ -1,4 +1,4 @@
-/* $XConsortium: wsx_lut.c,v 5.1 91/02/16 09:50:23 rws Exp $ */
+/* $XConsortium: wsx_lut.c,v 5.2 91/04/19 18:50:31 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -1236,7 +1236,12 @@ phg_wsx_inq_LUT_entry( ws, index, type, rep_type, ret, gcolr, vrep )
 		&& phg_ut_htab_get_entry( htab, 1, (caddr_t *)NULL ) ) {
 	    index = 1;
 	} else {
-	    ret->err = ERR101;
+	    if ( type == PINQ_REALIZED && ( rep_type == PHG_ARGS_PTREP ||
+		rep_type == PHG_ARGS_EXTPTREP ) ) {
+		ret->err = ERR109;
+	    } else {
+		ret->err = ERR101;
+	    }
 	    return;
 	}
     }
