@@ -1,4 +1,4 @@
-/*
+ /*
  * The Sun X drivers are a product of Sun Microsystems, Inc. and are provided
  * for unrestricted use provided that this legend is included on all tape
  * media and as a part of the software program in whole or part.  Users
@@ -344,10 +344,32 @@ KeySymsRec sunKeySyms[] = {
     Sun3Map,		1,	0x7a,	2,
 };
 
-ModifierMapRec sunMapRec[] = {
-/*	lock shiftA shiftB ctrlA ctrlB m1a m1b m2a m2b m3a m3b m4a m4b m5a m5b */
-    {    0,    0,     0,     0,   0,   0,    0,  0, 0,  0,  0,  0,  0,  0,  0,},
-    {    0,    0,     0,     0,   0,   0,    0,  0, 0,  0,  0,  0,  0,  0,  0,},
-    {	0x77, 0x63,  0x6e, 0x4c,  0, 0x78, 0x7a, 0, 0,  0,  0,  0,  0,  0,  0,},
-    {	0x77, 0x63,  0x6e, 0x4c,  0, 0x78, 0x7a, 0, 0,  0,  0,  0,  0,  0,  0,},
+#define	cT	(ControlMask)
+#define	sH	(ShiftMask)
+#define	lK	(LockMask)
+#define	mT	(Mod1Mask)
+static CARD8 type2modmap[MAP_LENGTH] = {
+    0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, /* 00-0f */
+    0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, /* 10-1f */
+    0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, /* 20-2f */
+    0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, /* 30-3f */
+    0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  cT, 0,  0,  0, /* 40-4f */
+    0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, /* 50-5f */
+    0,  0,  0,  sH, 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  sH, 0, /* 60-6f */
+    0,  0,  0,  0,  0,  0,  0,  lK, mT, 0,  mT, 0,  0,  0,  0,  0, /* 70-7f */
+    0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, /* 80-8f */
+    0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, /* 90-9f */
+    0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, /* a0-af */
+    0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, /* b0-bf */
+    0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, /* c0-cf */
+    0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, /* d0-df */
+    0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, /* e0-ef */
+    0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, /* f0-ff */
+};
+
+CARD8 *sunModMap[] = {
+	NULL,
+	NULL,
+	type2modmap,
+	type2modmap,
 };
