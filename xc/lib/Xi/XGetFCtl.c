@@ -1,4 +1,4 @@
-/* $Header: XGetFCtl.c,v 1.2 90/11/13 13:16:52 gms Exp $ */
+/* $Header: XGetFCtl.c,v 1.10 91/01/24 16:04:55 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -234,7 +234,7 @@ XFeedbackState
 	    f = (xFeedbackState *) ((char *) f + f->length);
 	    Feedback = (XFeedbackState *) ((char *) Feedback+Feedback->length);
 	    }
-	XFree (sav);
+	XFree ((char *)sav);
 	}
 
     UnlockDisplay(dpy);
@@ -245,5 +245,5 @@ XFeedbackState
 XFreeFeedbackList (list)
     XFeedbackState *list;
     {
-    XFree (list);
+    XFree ((char *)list);
     }

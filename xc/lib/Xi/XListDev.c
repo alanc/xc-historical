@@ -1,4 +1,4 @@
-/* $Header: XListDev.c,v 1.1 90/06/20 14:11:24 xbuild ic1C-80 $ */
+/* $Header: XListDev.c,v 1.14 91/01/24 16:07:38 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -127,7 +127,7 @@ XDeviceInfo
 	clist = (XDeviceInfoPtr) Xmalloc (size);
         if (!clist)
 	    {
-	    XFree (slist);
+	    XFree ((char *)slist);
 	    UnlockDisplay(dpy);
 	    SyncHandle();
 	    return (XDeviceInfo *) NULL;
@@ -214,7 +214,7 @@ XDeviceInfo
 	    }
 	}
 
-    XFree (slist);
+    XFree ((char *)slist);
     UnlockDisplay(dpy);
     SyncHandle();
     return (sclist);
@@ -231,6 +231,6 @@ XFreeDeviceList (list)
     {
     if (list != NULL) 
 	{
-        XFree ((XDeviceInfo *) list);
+        XFree ((char *) list);
         }
     }

@@ -1,4 +1,4 @@
-/* $Header: XExtInt.c,v 1.5 90/10/05 12:28:29 gms Exp $ */
+/* $Header: XExtInt.c,v 1.14 91/01/24 16:01:28 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -165,11 +165,11 @@ CheckExtInit(dpy, version_index)
 	    ((ext->major_version == versions[version_index].major_version) &&
 	     (ext->minor_version < versions[version_index].minor_version)))
 	    {
-	    XFree (ext);
+	    XFree ((char *)ext);
     	    UnlockDisplay(dpy);
 	    return (-1);
 	    }
-	XFree (ext);
+	XFree ((char *)ext);
 	}
     return (0);
     }
@@ -187,12 +187,12 @@ XInputClose (dpy, codes)
     {
     XExtDisplayInfo 	*info = XInput_find_display (dpy);
 
-    XFree(info->data);
+    XFree((char *)info->data);
     return XextRemoveDisplay (xinput_info, dpy);
     }
 
 
-int
+static int
 Ones(mask)  
     Mask mask;
 {

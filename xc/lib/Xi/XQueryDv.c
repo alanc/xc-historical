@@ -1,4 +1,4 @@
-/* $Header: XQueryDv.c,v 1.3 90/11/07 15:44:14 gms Exp $ */
+/* $Header: XQueryDv.c,v 1.8 91/01/24 16:08:23 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -170,5 +170,5 @@ XDeviceState
 XFreeDeviceState (list)
     XDeviceState *list;
     {
-    XFree (list);
+    XFree ((char *)list);
     }

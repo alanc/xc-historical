@@ -1,4 +1,4 @@
-/* $Header: XGMotion.c,v 1.2 90/11/07 15:36:46 gms Exp $ */
+/* $Header: XGMotion.c,v 1.8 91/01/24 16:03:47 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -100,7 +100,7 @@ XDeviceTimeCoord
 	for (j=0; j<*axis_count; j++)
 	    *data++ = *readp++;
 	}
-    XFree (savp);
+    XFree ((char *)savp);
     UnlockDisplay(dpy);
     SyncHandle();
     return ((XDeviceTimeCoord *) bufp);
@@ -109,5 +109,5 @@ XDeviceTimeCoord
 XFreeDeviceMotionEvents (events)
     XDeviceTimeCoord *events;
     {
-    XFree (events);
+    XFree ((char *)events);
     }
