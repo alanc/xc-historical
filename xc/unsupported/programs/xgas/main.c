@@ -57,6 +57,16 @@ static XtResource resources[] = {
 };
 #undef Offset
 
+static XrmOptionDescRec optionDesc[] = {
+  { "-ts", "*timestepSize", XrmoptionSepArg, (XtPointer)NULL },
+  { "-d",  "*delay",        XrmoptionSepArg, (XtPointer)NULL },
+  { "-rb", "*randomBounce", XrmoptionSepArg, (XtPointer)NULL },
+  { "-eq", "*equilibrium",  XrmoptionSepArg, (XtPointer)NULL },
+  { "-mm", "*maxMolecules", XrmoptionSepArg, (XtPointer)NULL },
+  { "-fg", "*foreground",   XrmoptionSepArg, (XtPointer)NULL },
+  { "-bg", "*background",   XrmoptionSepArg, (XtPointer)NULL },
+};
+
 /*
  *  Global array describing wall and corner geometry.
  *    wallReflect, toRotate, fromRotate
@@ -94,8 +104,9 @@ main( argc, argv )
   Pixmap icon;
   
   /* TOPLEVEL */
-  toplevel = XtAppInitialize(&app, "XGas", NULL, 0, &argc, argv,
-			     FallbackResources, NULL, (Cardinal)0);
+  toplevel = XtAppInitialize(&app, "XGas", optionDesc, XtNumber(optionDesc),
+			     &argc, argv, FallbackResources, NULL, 
+			     (Cardinal)0);
   
   /* Get Resources */
   XtGetApplicationResources( toplevel, (XtPointer) &labData, resources,

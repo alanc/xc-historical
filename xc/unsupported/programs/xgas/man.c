@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: man.c,v 1.3 91/08/26 13:31:22 rws Exp $ */
 char *man[]={"\
 \n\
 \n\
@@ -30,7 +30,21 @@ OPTIONS\n\
      This is a toolkit program;\n\
              all the usual toolkit options are available.\n\
 \n\
-X DEFAULTS\n\
+     -ts     Sets the timeStepSize resource.\n\
+\n\
+     -d      Sets the delay resource.\n\
+\n\
+     -rb     Sets the randomBounce resource.\n\
+\n\
+     -eq     Sets the equilibrium resource.\n\
+\n\
+     -mm     Sets the maxMolecules resource.\n\
+\n\
+     -fg     Sets the foreground.\n\
+\n\
+     -bg     Sets the background.\n\
+\n\
+RESOURCES\n\
      The xgas program uses the following X resources:\n\
 \n\
      timeStepSize\n\
