@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: window.c,v 1.166 87/09/01 17:15:12 swick Locked $ */
+/* $Header: window.c,v 1.168 87/09/03 13:25:57 toddb Locked $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -2410,12 +2410,11 @@ MarkSiblingsBelowMe(pWin, box)
     WindowPtr pWin;
     BoxPtr box;
 {
-    WindowPtr pSib, pParent;
+    WindowPtr pSib;
     int anyMarked = 0;
     register ScreenPtr pScreen;
 
     pScreen = pWin->drawable.pScreen;
-    pParent = pWin->parent;
 
     pSib = pWin;
     while (pSib) 
