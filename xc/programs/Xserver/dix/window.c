@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: window.c,v 1.155 87/08/10 14:42:09 swick Locked $ */
+/* $Header: window.c,v 1.157 87/08/10 15:50:16 newman Locked $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -2096,48 +2096,39 @@ ConfigureWindow(pWin, mask, vlist, client)
 	        SubstructureRedirectMask, client) == 1)
     	    return(Success);            
     }
-    if ((action == RESIZE_WIN) && (pWin->allEventMasks & ResizeRedirectMask))
-    {
-	xEvent eventT;
-
-       if ((w != pWin->clientWinSize.width) ||
-	   (h != pWin->clientWinSize.height))
-       {
+    if (action == RESIZE_WIN) {
+        Bool size_change = (w != pWin->clientWinSize.width)
+                        || (h != pWin->clientWinSize.height);
+	if (size_change && (pWin->allEventMasks & ResizeRedirectMask)) {
+	    xEvent eventT;
     	    eventT.u.u.type = ResizeRequest;
     	    eventT.u.resizeRequest.window = pWin->wid;
 	    eventT.u.resizeRequest.width = w;
 	    eventT.u.resizeRequest.height = h;
 	    if (MaybeDeliverEventsToClient(pWin, &eventT, 1, 
-				       ResizeRedirectMask, client) == 1)
-	    {
+				       ResizeRedirectMask, client) == 1) {
+                /* if event is delivered, leave the actual size alone. */
 	        w = pWin->clientWinSize.width;
 	        h = pWin->clientWinSize.height;
-	        if (mask & (CWX | CWY))
-    	            action = MOVE_WIN;
-		else if (mask & (CWStackMode | CWSibling | CWBorderWidth))
-	            action = RESTACK_WIN;
-                else   /* really nothing to do */
-                    return(Success) ;        
-            }
-	}
-        else    
-        {
+                size_change = FALSE;
+		}
+	    }
+        if (!size_change) {
 	    if (mask & (CWX | CWY))
     	        action = MOVE_WIN;
 	    else if (mask & (CWStackMode | CWSibling | CWBorderWidth))
 	        action = RESTACK_WIN;
             else   /* really nothing to do */
                 return(Success) ;        
+	    }
         }
-    }
 
+    if (action == RESIZE_WIN)
+            /* we've already checked whether there's really a size change */
+            goto ActuallyDoSomething;
     if ((mask & CWX) && (x != beforeX))
             goto ActuallyDoSomething;
     if ((mask & CWY) && (y != beforeY))
-            goto ActuallyDoSomething;
-    if ((mask & CWHeight) && (h != pWin->clientWinSize.height))
-            goto ActuallyDoSomething;
-    if ((mask & CWWidth) && (w != pWin->clientWinSize.width))
             goto ActuallyDoSomething;
     if ((mask & CWBorderWidth) && (bw != pWin->borderWidth))
             goto ActuallyDoSomething;
