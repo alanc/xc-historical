@@ -1,4 +1,4 @@
-/* $XConsortium: midraw.c,v 1.1 93/10/26 09:45:36 rws Exp $ */
+/* $XConsortium: midraw.c,v 1.2 93/10/26 13:22:21 rws Exp $ */
 /**** module midraw.c ****/
 /******************************************************************************
 				NOTICE
@@ -503,8 +503,8 @@ XIEGetImage (pDrawable, sx, sy, w, h, format, pmask, pdst, fill, Exposed)
 		y += pSrcWin->origin.y;
 		pSrcWin = pSrcWin->parent;
 	    }
-	    (*pGC->ops->CopyArea) (pSrcWin,
-				   pPixmap, pGC,
+	    (*pGC->ops->CopyArea) ((DrawablePtr)pSrcWin,
+				   (DrawablePtr)pPixmap, pGC,
 				   x, y, w, h,
 				   0, 0);
 	    (*pScreen->Subtract) (&Remaining, &Remaining,
@@ -516,7 +516,8 @@ XIEGetImage (pDrawable, sx, sy, w, h, format, pmask, pdst, fill, Exposed)
 
 	/* Copy in Backstore now */
 	if (pWin->backStorage) {
-		(*pWin->drawable.pScreen->ExposeCopy) (pDrawable, pPixmap,
+		(*pWin->drawable.pScreen->ExposeCopy) (pWin,
+						       (DrawablePtr)pPixmap,
 						       pGC, &Remaining,
 						       sx, sy,
 						       0, 0,
@@ -538,7 +539,8 @@ XIEGetImage (pDrawable, sx, sy, w, h, format, pmask, pdst, fill, Exposed)
 		pRect->height = pBox->y2 - pBox->y1;
 	    }
 	    pRect -= numRects;
-	    (*pGC->ops->PolyFillRect) (pPixmap, pGC, numRects, pRect);
+	    (*pGC->ops->PolyFillRect) ((DrawablePtr)pPixmap, pGC,
+				       numRects, pRect);
 	    DEALLOCATE_LOCAL (pRect);
 	}
 
