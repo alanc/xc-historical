@@ -1042,7 +1042,7 @@ if( connect(ciptr->fd,(struct sockaddr *)&sockname,namelen) < 0 )
     PRMSG(1,"TRANS(SocketINETConnect)() can't connect: errno=%d\n",
 	  						EGET(),0,0 );
 
-    if (olderrno == ECONNREFUSED)
+    if (olderrno == ECONNREFUSED || olderrno == EINTR)
 	return TRANS_TRY_CONNECT_AGAIN;
     else
 	return TRANS_CONNECT_FAILED;	
@@ -1159,7 +1159,7 @@ if( connect(ciptr->fd,(struct sockaddr *)&sockname, namelen) < 0 )
 	PRMSG(1,"TRANS(SocketUNIXConnect)() can't connect: errno=%d\n",
 	      EGET(),0,0 );
 
-	if (olderrno == ENOENT)
+	if (olderrno == ENOENT || olderrno == EINTR)
 	    return TRANS_TRY_CONNECT_AGAIN;
 	else
 	    return TRANS_CONNECT_FAILED;
