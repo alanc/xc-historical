@@ -1,3 +1,4 @@
+XCOMM $XConsortium$
 OBJS1 =	FontObj(courB08) FontObj(courB10) FontObj(courB12) FontObj(courB14) \
 	FontObj(courB18) FontObj(courB24) FontObj(courBO08) \
 	FontObj(courBO10) FontObj(courBO12) FontObj(courBO14) \

@@ -1,3 +1,4 @@
+XCOMM $XConsortium$
 DEPLIBS = $(DEPXAUTHLIB) $(DEPXMULIB)
 LOCAL_LIBRARIES = $(XAUTHLIB) $(XMULIB)
            SRCS = xauth.c gethost.c process.c parsedpy.c

@@ -1,3 +1,4 @@
+XCOMM $XConsortium$
 #if HasSecureRPC
 RPC_DEFINES = -DSECURE_RPC
 #else

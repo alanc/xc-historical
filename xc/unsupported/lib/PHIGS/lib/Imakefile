@@ -1,3 +1,4 @@
+XCOMM $XConsortium$
 #define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
 
 all: PHIGSerr.txt PHIGSfnc.txt phigsmon

@@ -1,3 +1,4 @@
+XCOMM $XConsortium$
 /*
  * NOTE: CppSourcesPresent IS NO LONGER TESTED OR SUPPORTED,
  * and is nearly guaranteed to not work.

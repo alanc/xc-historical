@@ -1,3 +1,4 @@
+XCOMM $XConsortium$
           SRCS = xconsole.c
           OBJS = xconsole.o
        PROGRAMS = xconsole

@@ -1,3 +1,4 @@
+XCOMM $XConsortium$
 #define DoNormalLib NormalLibXinput
 #define DoSharedLib SharedLibXinput
 #define DoDebugLib DebugLibXinput

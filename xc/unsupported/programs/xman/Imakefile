@@ -1,3 +1,4 @@
+XCOMM $XConsortium$
 
 #ifdef XmanSearchPath
 DEFAULTMANPATH = -DDEFAULTMANPATH=\"XmanSearchPath\"

@@ -1,3 +1,4 @@
+XCOMM $XConsortium$
         DEFINES = 
            SRCS = dashlist.c planemask.c getfile.c tests.c text.c \
                   choice.c main.c interpret.c record.c testfrac.c

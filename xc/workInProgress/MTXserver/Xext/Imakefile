@@ -1,3 +1,4 @@
+XCOMM $XConsortium$
 #include <Server.tmpl>
 
 #if BuildXInputExt || BuildPexExt || BuildPexClients

@@ -1,3 +1,4 @@
+XCOMM $XConsortium$
 #if BuildPexClients || BuildPexExt
 #define IHaveSubdirs
 #define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
