@@ -1,4 +1,4 @@
-/* $XConsortium: Xlib.h,v 11.200 91/04/14 12:41:37 rws Exp $ */
+/* $XConsortium: Xlib.h,v 11.201 91/04/15 21:59:52 rws Exp $ */
 /* 
  * Copyright 1985, 1986, 1987, 1991 by the Massachusetts Institute of Technology
  *
@@ -1052,9 +1052,6 @@ typedef struct {
 
 typedef struct _XFontSet *XFontSet;
 
-#define XBufferOverflow -4
-#define XSuccess 0
-
 typedef struct {
     char           *chars;
     int             nchars;
@@ -1121,10 +1118,11 @@ typedef struct {
 #define XNLineSpace "lineSpace"
 #define XNCursor "cursor"
 
-#define XLookupNone		2
-#define XLookupChars		3
-#define XLookupKeySym		4
-#define XLookupBoth		5
+#define XBufferOverflow		-1
+#define XLookupNone		1
+#define XLookupChars		2
+#define XLookupKeySym		3
+#define XLookupBoth		4
 
 #if __STDC__
 typedef void *XVaNestedList;
@@ -4023,7 +4021,6 @@ extern void XFreeStringList(
 
 extern int XFontsOfFontSet(
 #if NeedFunctionPrototypes
-    Display*		/* display */,
     XFontSet		/* font_set */,
     XFontStruct***	/* font_struct_list */,
     char***		/* font_name_list */
@@ -4032,28 +4029,24 @@ extern int XFontsOfFontSet(
 
 extern char *XBaseFontNameListOfFontSet(
 #if NeedFunctionPrototypes
-    Display*		/* display */,
     XFontSet		/* font_set */
 #endif
 );
 
 extern char *XLocaleOfFontSet(
 #if NeedFunctionPrototypes
-    Display*		/* display */,
     XFontSet		/* font_set */
 #endif
 );
 
 extern XFontSetExtents *XExtentsOfFontSet(
 #if NeedFunctionPrototypes
-    Display*		/* display */,
     XFontSet		/* font_set */
 #endif
 );
 
 extern int XmbTextEscapement(
 #if NeedFunctionPrototypes
-    Display*		/* display */,
     XFontSet		/* font_set */,
     _Xconst char*	/* text */,
     int			/* bytes_text */
@@ -4062,7 +4055,6 @@ extern int XmbTextEscapement(
 
 extern int XwcTextEscapement(
 #if NeedFunctionPrototypes
-    Display*		/* display */,
     XFontSet		/* font_set */,
     wchar_t*		/* text */,
     int			/* num_wchars */
@@ -4071,7 +4063,6 @@ extern int XwcTextEscapement(
 
 extern int XmbTextExtents(
 #if NeedFunctionPrototypes
-    Display*		/* display */,
     XFontSet		/* font_set */,
     _Xconst char*	/* text */,
     int			/* bytes_text */,
@@ -4082,7 +4073,6 @@ extern int XmbTextExtents(
 
 extern int XwcTextExtents(
 #if NeedFunctionPrototypes
-    Display*		/* display */,
     XFontSet		/* font_set */,
     wchar_t*		/* text */,
     int			/* num_wchars */,
@@ -4091,9 +4081,8 @@ extern int XwcTextExtents(
 #endif
 );
 
-extern int XmbTextPerCharExtents(
+extern Status XmbTextPerCharExtents(
 #if NeedFunctionPrototypes
-    Display*		/* display */,
     XFontSet		/* font_set */,
     _Xconst char*	/* text */,
     int			/* bytes_text */,
@@ -4106,9 +4095,8 @@ extern int XmbTextPerCharExtents(
 #endif
 );
 
-extern int XwcTextPerCharExtents(
+extern Status XwcTextPerCharExtents(
 #if NeedFunctionPrototypes
-    Display*		/* display */,
     XFontSet		/* font_set */,
     wchar_t*		/* text */,
     int			/* num_wchars */,
