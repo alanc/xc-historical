@@ -57,6 +57,7 @@ mfbPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
     register BoxPtr pbox;	/* used to clip with */
     register BoxPtr pboxClipped;
     BoxPtr pboxClippedBase;
+    BoxPtr pextent;
 
     int alu;
     void (* pfn) ();
@@ -89,19 +90,44 @@ mfbPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
     }
 
     prect = prectInit;
+
+    pextent = (*pGC->pScreen->RegionExtents)(prgnClip);
+
     while (nrectFill--)
     {
 	BoxRec box;
+	int	x2, y2;
 
-	if (prect->width <= 0 || prect->height <= 0)
+	if (prect->width == 0 || prect->height == 0)
 	{
 	    prect++;
 	    continue;
 	}
+
+	/*
+	 * clip the box to the extent of the region --
+	 * avoids overflowing shorts and minimizes other
+	 * computations
+	 */
+
 	box.x1 = prect->x;
+	if (prect->x > box.x1)
+		box.x1 = prect->x;
+
 	box.y1 = prect->y;
-	box.x2 = box.x1 + prect->width;
-	box.y2 = box.y1 + prect->height;
+	if (prect->y > box.y1)
+		box.y1 = prect->y;
+
+	x2 = (int) box.x1 + (int) prect->width;
+	if (x2 > pextent->x2)
+		x2 = pextent->x2;
+	box.x2 = x2;
+
+	y2 = (int) box.y1 + (int) prect->height;
+	if (y2 > pextent->y2)
+		y2 = pextent->y2;
+	box.y2 = y2;
+
 	prect++;
 
 	switch((*pGC->pScreen->RectIn)(prgnClip, &box))
