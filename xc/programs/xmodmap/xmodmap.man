@@ -1,4 +1,4 @@
-.\" $XConsortium: xmodmap.man,v 1.19 93/08/02 11:13:25 gildea Exp $
+.\" $XConsortium: xmodmap.man,v 1.20 94/04/11 14:26:54 gildea Exp $
 .de EX		\"Begin example
 .ne 5
 .if n .sp 1
@@ -109,7 +109,8 @@ The \fIKEYSYMNAME\fP on the left hand side is translated into matching keycodes
 used to perform the corresponding set of \fBkeycode\fP expressions.
 The list of keysym names may be
 found in the header file \fI<X11/keysymdef.h>\fP (without the \fIXK_\fP prefix)
-or the keysym database \fI/usr/lib/X11/XKeysymDB\fP.
+or the keysym database \fI<XRoot>/lib/X11/XKeysymDB\fP, where <XRoot> refers
+to the root of the X11 install tree.
 Note that if the same keysym is bound to multiple keys, the expression is
 executed for each matching keycode.
 .TP 8

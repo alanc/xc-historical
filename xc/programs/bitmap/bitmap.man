@@ -1,4 +1,4 @@
-.\" $XConsortium: bitmap.man,v 1.12 93/06/23 17:29:59 rws Exp $
+.\" $XConsortium: bitmap.man,v 1.13 94/04/11 14:26:24 gildea Exp $
 .TH BITMAP 1 "Release 6" "X Version 11"
 .SH NAME
 bitmap, bmtoa, atobm \- bitmap editor and converter utilities for the X Window System
@@ -582,7 +582,10 @@ in the #ifdef COLOR section of the file you read with xrdb:
 .br
 This will cause bitmap to pick up the colors in the app-defaults color
 customization file:
-/usr/lib/X11/app-defaults/Bitmap-color.
+.sp 1
+    <XRoot>/lib/X11/app-defaults/Bitmap-color
+.sp 1
+where <XRoot> refers to the root of the X11 install tree.
 .fi
 .SH BITMAP WIDGET
 Bitmap widget is a stand-alone widget for editing raster images.  It

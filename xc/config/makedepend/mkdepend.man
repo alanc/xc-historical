@@ -1,4 +1,4 @@
-.\" $XConsortium: mkdepend.man,v 1.10 94/02/04 19:11:44 matt Exp $
+.\" $XConsortium: mkdepend.man,v 1.11 94/04/11 14:25:57 gildea Exp $
 .TH MAKEDEPEND 1 "Release 6" "X Version 11"
 .UC 4
 .SH NAME

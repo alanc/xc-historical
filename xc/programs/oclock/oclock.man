@@ -1,4 +1,4 @@
-.\" $XConsortium: oclock.man,v 1.10 92/04/01 17:14:12 converse Exp $
+.\" $XConsortium: oclock.man,v 1.11 94/04/11 14:28:20 gildea Exp $
 .TH OCLOCK 1 "Release 6" "X Version 11"
 .SH NAME
 oclock \- display time of day
@@ -56,7 +56,7 @@ in the #ifdef COLOR section you read with xrdb:
 .br
 This will cause oclock to pick up the colors in the app-defaults color
 customization file:
-/usr/lib/X11/app-defaults/Clock-color.
+<XRoot>/lib/X11/app-defaults/Clock-color.
 Below are the default colors:
 .sp 1
 Clock*Background: grey

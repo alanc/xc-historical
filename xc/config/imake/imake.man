@@ -1,4 +1,4 @@
-.\" $XConsortium: imake.man,v 1.19 93/07/14 20:05:11 rws Exp $
+.\" $XConsortium: imake.man,v 1.20 94/04/11 14:25:54 gildea Exp $
 .TH IMAKE 1 "Release 6" "X Version 11"
 .SH NAME
 imake \- C preprocessor interface to the make utility

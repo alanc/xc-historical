@@ -1,4 +1,4 @@
-.\" $XConsortium: editres.man,v 1.7 93/08/02 11:14:02 gildea Exp $
+.\" $XConsortium: editres.man,v 1.8 94/04/11 14:28:52 gildea Exp $
 .TH EDITRES 1 "Release 6" "X Version 11"
 .SH NAME
 editres - a dynamic resource editor for X Toolkit applications
@@ -396,7 +396,7 @@ to get the default host and display number.
 to get the name of a resource file that overrides the global resources
 stored in the RESOURCE_MANAGER property.
 .SH FILES
-/usr/lib/X11/app-defaults/Editres - specifies required resources
+<XRoot>/lib/X11/app-defaults/Editres - specifies required resources
 .SH SEE ALSO
 X(1), xrdb(1), Athena Widget Set
 .SH RESTRICTIONS

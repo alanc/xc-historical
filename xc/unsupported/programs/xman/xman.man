@@ -1,4 +1,4 @@
-.\" $XConsortium: xman.man,v 1.20 92/09/18 13:02:02 converse Exp $
+.\" $XConsortium: xman.man,v 1.21 94/04/11 14:29:51 gildea Exp $
 .TH XMAN 1 "Release 6" "X Version 11"
 .SH NAME
 xman \- Manual page display program for the X Window System
@@ -340,8 +340,9 @@ of xman.
 .IP "\fI<manpath directory>\fP/man<\fIcharacter\fP>" 2.5i
 .IP "\fI<manpath directory>\fP/cat<\fIcharacter\fP>" 
 .IP "\fI<manpath directory>\fP/mandesc" 
-.IP /usr/lib/X11/app-defaults/Xman
-specifies required resources
+.IP <XRoot>/lib/X11/app-defaults/Xman
+specifies required resources.  <XRoot> refers to the root of the X11 install
+tree.
 .IP /tmp
 .I Xman
 creates temporary files in /tmp for all unformatted man pages and all apropos

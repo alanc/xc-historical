@@ -1,4 +1,4 @@
-.\" $XConsortium: xfontsel.man,v 1.10 91/07/29 17:57:38 rws Exp $
+.\" $XConsortium: xfontsel.man,v 1.11 94/04/11 14:29:45 gildea Exp $
 .de EX		\"Begin example
 .ne 5
 .if n .sp 1
@@ -100,7 +100,8 @@ a warning message will be printed to standard output and the
 resulting window will be nearly incomprehensible.
 .PP
 Most of the significant parts of the widget hierarchy are documented
-in the app-defaults file (normally /usr/lib/X11/app-defaults/XFontSel).
+in the app-defaults file (normally <XRoot>/lib/X11/app-defaults/XFontSel,
+where <XRoot> refers to the root of the X11 install tree.)
 .PP
 Application specific resources:
 .PP

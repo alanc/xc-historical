@@ -1,4 +1,4 @@
-.\" $XConsortium: sessreg.man,v 1.9 93/08/02 11:13:51 gildea Exp $
+.\" $XConsortium: sessreg.man,v 1.10 94/04/11 14:28:13 gildea Exp $
 .TH SESSREG 1 "Release 6" "X Version 11"
 .SH NAME
 sessreg \- manage utmp/wtmp entries for non-init clients
@@ -47,14 +47,13 @@ System V.  This option is also ignored by the System V version of
 In Xstartup, place a call like:
 .nf
 
-       sessreg -a -l $DISPLAY -x /usr/lib/X11/xdm/Xservers $USER
+       sessreg -a -l $DISPLAY -x /usr/X11R6/lib/xdm/Xservers $USER
 
 .fi
 and in Xreset:
 .nf
 
-       sessreg -d -l $DISPLAY -x /usr/lib/X11/xdm/Xservers $USER
-
+       sessreg -d -l $DISPLAY -x /usr/X11R6/lib/xdm/Xservers $USER
 .fi
 .SH OPTIONS
 .IP "\fB-w\fP \fIwtmp-file\fP"

@@ -1,4 +1,4 @@
-.\" $XConsortium: XmacII.man,v 1.9 94/01/28 22:29:55 rws Exp $
+.\" $XConsortium: XmacII.man,v 1.10 94/04/11 11:59:32 dpw Exp $
 .TH XMACII 1 "Release 6" "X Version 11"
 .SH NAME
 XmacII \- Macintosh II server for X Version 11
@@ -80,30 +80,30 @@ additional suffix (usually ".Z", defined when the server is built) must
 be appended to the usual filename.
 .SH "FILES"
 .TP 30
-/usr/X11R6/bin/X11/X11 
-/usr/X11R6/bin/X11/X11R6 
+<XRoot>/bin/X11
+<XRoot>/bin/X11R6
 Bourne shell scripts which start the server and initial 
 .I xterm 
-client
+client.  <XRoot> refers to the root of the X11 install tree.
 .TP 30
 $HOME/.x11start 
 Bourne shell script executed by initial 
 .I xterm 
 client which starts a slew of other clients. 
-Reference copy in /usr/X11R6/lib/X11/.x11start
+Reference copy in <XRoot>/lib/X11/.x11start
 .TP 30
-/usr/X11R6/bin/X11/XmacII 
+<XRoot>/bin/XmacII 
 the server binary
 .TP 30
-/usr/X11R6/bin/X11/Xrepair 
+<XRoot>/bin/Xrepair 
 ensures console viability after server exits
 .TP 30
-/usr/X11R6/bin/X11/* 
+<XRoot>/bin/* 
 client binaries
 .TP 30
-/usr/X11R6/lib/X11/fonts/*
+<XRoot>lib/X11/fonts/*
 .TP 30
-/usr/X11R6/lib/X11/rgb.{dir,pag,txt} 
+<XRoot>/lib/X11/rgb.{dir,pag,txt} 
 color names to RGB mapping
 .TP 30
 /etc/X0.hosts
@@ -118,26 +118,26 @@ Error log file
 $HOME/.twmrc 
 customization for the
 .I twm
-window manager. Reference copy in /usr/X11R6/lib/X11/Sample.twmrc
+window manager. Reference copy in <XRoot>/lib/X11/Sample.twmrc
 .TP 30
-/usr/X11R6/lib/X11/XErrorDB 
+<XRoot>/lib/X11/XErrorDB 
 client error message database
 .TP 30
-/usr/X11R6/lib/X11/app-defaults 
+<XRoot>/lib/X11/app-defaults 
 client specific resource specifications
 .TP 30
-/usr/X11R6/lib/X11/examples/Xaw/* 
+<XRoot>/lib/X11/examples/Xaw/* 
 source code examples of applications built on the
 .I X
 Toolkit
 .TP 30
-/usr/X11R6/lib/terminfo/x/xterm* 
+<XRoot>/lib/terminfo/x/xterm* 
 .I terminfo
 database entries descibing the terminal emulation capabilities of the
 .I xterm
-client. Reference copies in /usr/X11R6/lib/X11/xterm*.tic
+client. Reference copies in <XRoot>/lib/X11/xterm*.tic
 .TP 30
-/usr/X11R6/include/X11/bitmaps/*icon 
+<XRoot>/include/X11/bitmaps/*icon 
 bitmap representations of icons used by the
 .I twm
 window manager

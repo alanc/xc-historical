@@ -1,4 +1,4 @@
-.\" $XConsortium: xinit.man,v 1.18 91/07/31 18:48:25 gildea Exp $
+.\" $XConsortium: xinit.man,v 1.19 94/04/11 14:26:58 gildea Exp $
 .TH XINIT 1 "Release 6" "X Version 11"
 .SH NAME
 xinit \- X Window System initializer
@@ -81,7 +81,7 @@ used.
 This will start up a server named \fIX\fP and run the user's \fI\.xinitrc\fP,
 if it exists, or else start an \fIxterm\fP.
 .TP 8
-.B "xinit \-\^\- /usr/bin/X11/Xqdss  :1"
+.B "xinit \-\^\- /usr/X11R6/bin/Xqdss  :1"
 This is how one could start a specific type of server on an alternate display.
 .TP 8
 .B "xinit \-geometry =80x65+10+10 \-fn 8x13 \-j \-fg white \-bg navy"
@@ -133,7 +133,7 @@ novice users:
 .in +8
 .nf
 #!/bin/sh
-xinit /usr/local/lib/site.xinitrc \-\^\- /usr/bin/X11/X bc
+xinit /usr/local/lib/site.xinitrc \-\^\- /usr/X11R6/bin/X bc
 .fi
 .in -8
 .sp

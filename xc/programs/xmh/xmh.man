@@ -1,4 +1,4 @@
-.\" $XConsortium: xmh.man,v 1.30 93/10/07 15:22:45 gildea Exp $
+.\" $XConsortium: xmh.man,v 1.31 94/04/11 14:26:35 gildea Exp $
 .TH XMH 1 "Release 6" "X Version 11"
 .SH NAME
 \fIxmh\fR \- send and read mail with an X interface to MH

@@ -1,4 +1,4 @@
-.\" $XConsortium: xfs.man,v 1.5 93/09/24 15:24:22 gildea Exp $
+.\" $XConsortium: xfs.man,v 1.6 94/04/11 14:29:02 gildea Exp $
 .TH XFS 1 "Release 6" "X Version 11"
 .SH NAME
 xfs \- X font server
@@ -107,9 +107,9 @@ alternate-servers = hansen:7001,hansen:7002
 # the first is a set of Speedo outlines, the second is a set of 
 # misc bitmaps and the last is a set of 100dpi bitmaps
 #
-catalogue = /usr/lib/fonts/speedo,
-	/usr/lib/X11/fonts/misc,
-	/usr/lib/X11/fonts/100dpi/
+catalogue = /usr/X11R6/lib/X11/fonts/speedo,
+	/usr/X11R6/lib/X11/fonts/misc,
+	/usr/X11R6/lib/X11/fonts/100dpi/
 
 # in 12 points, decipoints
 default-point-size = 120

@@ -1,4 +1,4 @@
-.\" $XConsortium: showrgb.man,v 1.1 91/07/29 21:35:11 gildea Exp $
+.\" $XConsortium: showrgb.man,v 1.2 94/04/11 14:27:21 gildea Exp $
 .TH SHOWRGB 1 "Release 6" "X Version 11"
 .SH NAME
 showrgb \- uncompile an rgb color-name database
@@ -18,5 +18,5 @@ the command line.  Specify the database name without
 the \fI.pag\fP or \fI.dir\fP suffix.
 .SH FILES
 .TP 20
-/usr/lib/X11/rgb
+<XRoot>/lib/X11/rgb
 default database.

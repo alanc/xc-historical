@@ -1,4 +1,4 @@
-.\" $XConsortium: xcalc.man,v 1.7 93/08/02 11:13:39 gildea Exp $
+.\" $XConsortium: xcalc.man,v 1.8 94/04/11 14:29:34 gildea Exp $
 .de EX		\"Begin example
 .ne 5
 .if n .sp 1
@@ -391,7 +391,7 @@ in the #ifdef COLOR section of the file you read with xrdb:
 .br
 This will cause xcalc to pick up the colors in the app-defaults color
 customization file:
-/usr/lib/X11/app-defaults/XCalc-color.
+<XRoot>/lib/X11/app-defaults/XCalc-color.
 .fi
 .SH "SEE ALSO"
 X(1), xrdb(1), the Athena Widget Set

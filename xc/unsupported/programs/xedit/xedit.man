@@ -1,4 +1,4 @@
-.\" $XConsortium: xedit.man,v 1.20 91/07/30 18:29:17 gildea Exp $
+.\" $XConsortium: xedit.man,v 1.21 94/04/11 14:29:43 gildea Exp $
 .TH XEDIT 1 "Release 6" "X Version 11"
 .SH NAME
 xedit \- simple text editor for X
@@ -158,7 +158,7 @@ to get the name of a resource file that overrides the global resources
 stored in the RESOURCE_MANAGER property.
 .SH FILES
 .TP 20
-.I /usr/lib/X11/app-defaults/Xedit
+.I <XRoot>/lib/X11/app-defaults/Xedit
 specifies required resources
 .SH "SEE ALSO"
 .IR X (1),

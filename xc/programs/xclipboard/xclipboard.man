@@ -1,4 +1,4 @@
-.\" $XConsortium: xclipboard.man,v 1.12 93/08/02 11:13:47 gildea Exp $
+.\" $XConsortium: xclipboard.man,v 1.13 94/04/11 14:27:31 gildea Exp $
 .TH XCLIPBOARD 1 "Release 6" "X Version 11"
 .SH NAME
 xclipboard - X clipboard client
@@ -98,7 +98,7 @@ to get the default host and display number.
 to get the name of a resource file that overrides the global resources
 stored in the RESOURCE_MANAGER property.
 .SH FILES
-/usr/lib/X11/app-defaults/XClipboard - specifies required resources
+<XRoot>/lib/X11/app-defaults/XClipboard - specifies required resources
 .SH COPYRIGHT
 Copyright 1988, Massachusetts Institute of Technology
 .br

@@ -1,4 +1,4 @@
-.\" $XConsortium: Xserver.man,v 1.50 94/02/04 19:33:11 dpw Exp $
+.\" $XConsortium: Xserver.man,v 1.51 94/04/07 18:50:13 dpw Exp $
 .TH XSERVER 1 "Release 6"  "X Version 11"
 .SH NAME
 Xserver \- X Window System display server
@@ -82,7 +82,8 @@ The class numbers are as specified in the X protocol.
 Not obeyed by all servers.
 .TP 8
 .B \-co \fIfilename\fP
-sets name of RGB color database.  The default is /usr/X11R6/lib/X11/rgb.
+sets name of RGB color database.  The default is <XRoot>/lib/X11/rgb,
+where <XRoot> refers to the root of the X11 install tree.
 .TP 8
 .B \-config \fIfilename\fP
 reads more options from the given file.  Options in the file may be separated
@@ -335,12 +336,15 @@ can obtain fonts from directories and/or from font servers.
 The list of directories and font servers
 the X server uses when trying to open a font is controlled
 by the \fIfont path\fP.  
-The default is
-"/usr/X11R6/lib/X11/fonts/misc/,
-/usr/X11R6/lib/X11/fonts/Speedo/,
-/usr/X11R6/lib/X11/fonts/Type1/,
-/usr/X11R6/lib/X11/fonts/75dpi/,
-/usr/X11R6/lib/X11/fonts/100dpi/\" .
+.LP
+The default font path is
+"<XRoot>/lib/X11/fonts/misc/,
+<XRoot>/lib/X11/fonts/Speedo/,
+<XRoot>/lib/X11/fonts/Type1/,
+<XRoot>/lib/X11/fonts/75dpi/,
+<XRoot>/lib/X11/fonts/100dpi/\" .
+where <XRoot> refers to the root of the X11 install tree.
+.LP
 The font path can be set with the \fB\-fp\fP option or by \fIxset(1)\fP
 after the server has started.
 .SH FILES
@@ -348,16 +352,16 @@ after the server has started.
 /etc/X\fBn\fP.hosts
 Initial access control list for display number \fBn\fP
 .TP 30
-/usr/X11R6/lib/X11/fonts/misc, /usr/X11R6/lib/X11/fonts/75dpi, /usr/X11R6/lib/X11/fonts/100dpi 
+<XRoot>/lib/X11/fonts/misc, <XRoot>/lib/X11/fonts/75dpi, <XRoot>/lib/X11/fonts/100dpi 
 Bitmap font directories
 .TP 30
-/usr/X11R6/lib/X11/fonts/Speedo, /usr/X11R6/lib/X11/fonts/Type1
+<XRoot>/lib/X11/fonts/Speedo, <XRoot>/lib/X11/fonts/Type1
 Outline font directories
 .TP 30
-/usr/X11R6/lib/X11/fonts/PEX
+<XRoot>/lib/X11/fonts/PEX
 PEX font directories
 .TP 30
-/usr/X11R6/lib/X11/rgb.txt
+<XRoot>/lib/X11/rgb.txt
 Color database
 .TP 30
 /tmp/.X11-unix/X\fBn\fP
@@ -368,6 +372,8 @@ Kerberos 5 replay cache for display number \fBn\fP
 .TP 30
 /usr/adm/X\fBn\fPmsgs
 Error log file for display number \fBn\fP if run from \fIinit(8)\fP
+.LP
+Note: <XRoot> refers to the root of the X11 install tree.
 .SH "SEE ALSO"
 General information: X(1)
 .PP

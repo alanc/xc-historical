@@ -218,20 +218,22 @@ Possible values might include ``.txt'', ``.dat'', and ``.bm''.
 .LP
 A suggested value for the default path on POSIX-based systems is
 .IP
-/usr/lib/X11/%L/%T/%N%C%S:/usr/lib/X11/%l/%T/%N%C%S:\\
+<XRoot>/lib/X11/%L/%T/%N%C%S:<XRoot>/lib/X11/%l/%T/%N%C%S:\\
 .br
-/usr/lib/X11/%T/%N%C%S:/usr/lib/X11/%L/%T/%N%S:\\
+<XRoot>/lib/X11/%T/%N%C%S:<XRoot>/lib/X11/%L/%T/%N%S:\\
 .br
-/usr/lib/X11/%l/%T/%N%S:/usr/lib/X11/%T/%N%S
-
+<XRoot>/lib/X11/%l/%T/%N%S:<XRoot>/lib/X11/%T/%N%S
+.LP
+where <XRoot> is replaced by the root of the X11 installation tree
+(/usr/X11R6, for example).
 .LP
 Using this example, if the user has specified a language, it will be
-used as a subdirectory of /usr/lib/X11 that will be searched for other
+used as a subdirectory of <XRoot>/lib/X11 that will be searched for other
 files.  If the desired file is not found there, the lookup will be
 tried again using just the language part of the specification.  If the
-file is not there, it will be looked for in /usr/lib/X11.  The \fItype\fP
+file is not there, it will be looked for in <XRoot>/lib/X11.  The \fItype\fP
 parameter is used as a subdirectory of the language directory or of
-/usr/lib/X11, and \fIsuffix\fP is appended to the file name.
+<XRoot>/lib/X11, and \fIsuffix\fP is appended to the file name.
 .LP
 The %D substitution allows the addition of path
 elements to the implementation-specific default path, typically to

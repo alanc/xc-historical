@@ -1,4 +1,4 @@
-.\" $XConsortium$
+.\" $XConsortium: rstartd.man,v 1.1 94/04/02 18:18:00 rws Exp $
 .hy 0		\" I hate hyphenation.
 .de EX		\"Begin example
 .ne 5
@@ -36,7 +36,8 @@ This option specifies the "global" configuration file that \fIrstartd\fP
 is to read.  Normally, \fIrstartd\fP is a shell script that invokes
 \fIrstartd.real\fP with the \fB-c\fP switch, allowing local configuration
 of the location of the configuration file.  If \fIrstartd.real\fP is started
-without the -c option, it reads /usr/lib/X11/rstart/config.
+without the -c option, it reads <XRoot>/lib/X11/rstart/config, where 
+<XRoot> refers to the root of the X11 install tree.
 .SH INSTALLATION
 It is critical to successful interoperation of the Remote Start protocol
 that \fIrstartd\fP be installed in a directory which is in the "default"
@@ -77,7 +78,7 @@ Presumably one of the first lines in the request will be a CONTEXT line.
 The context name is converted to lower case.
 .PP
 \fIRstartd\fP will read the global config file for that context, default name
-/usr/lib/X11/rstart/contexts/<name>, if any.
+<XRoot>/lib/X11/rstart/contexts/<name>, if any.
 .PP
 It will then read the user's config file for that context, default name
 $HOME/.rstart.contexts/<name>, if any.
@@ -116,9 +117,9 @@ cat both the global and local copies of @List.
 Generic commands are searched for in several places: (defaults)
 .EX 0
 per-user per-context directory ($HOME/.rstart.commands/<context>)
-global per-context directory (/usr/lib/X11/rstart/commands/<context>)
+global per-context directory (<XRoot>/lib/X11/rstart/commands/<context>)
 per-user all-contexts directory ($HOME/.rstart.commands)
-global all-contexts directory (/usr/lib/X11/rstart/commands)
+global all-contexts directory (<XRoot>/lib/X11/rstart/commands)
 .EE
 (Yes, this means you can't have an all-contexts generic command with the
 same name as a context.  It didn't seem like a big deal.)
