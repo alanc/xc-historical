@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: io.c,v 1.83 94/02/20 10:41:41 dpw Exp $ */
+/* $XConsortium: io.c,v 1.84 94/02/23 15:49:33 dpw Exp $ */
 /*****************************************************************
  * i/o functions
  *
@@ -310,6 +310,19 @@ ReadRequestFromClient(client)
 	    }
 	    oci->bufptr = oci->buffer;
 	    oci->bufcnt = gotnow;
+	}
+	/*  XXX this is a workaround.  This function is sometimes called
+	 *  after the trans_conn has been freed.  In this case trans_conn
+	 *  will be null.  Really ought to restructure things so that we
+	 *  never get here in those circumstances.
+	 */
+	if (!trans_conn)
+	{
+	    /*  treat as if an error occured on the read, which is what
+	     *  used to happen
+	     */
+	    YieldControlDeath();
+	    return -1;
 	}
 #ifdef LBX
 	ReadingClient = client;
