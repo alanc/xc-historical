@@ -1,4 +1,4 @@
-/* $XConsortium: Xlib.h,v 11.209 91/06/05 08:49:07 rws Exp $ */
+/* $XConsortium: Xlib.h,v 11.210 91/06/11 18:38:47 rws Exp $ */
 /* 
  * Copyright 1985, 1986, 1987, 1991 by the Massachusetts Institute of Technology
  *
@@ -1136,7 +1136,7 @@ typedef struct {
 #define XLookupKeySym		3
 #define XLookupBoth		4
 
-#if __STDC__
+#if NeedFunctionPrototypes
 typedef void *XVaNestedList;
 #else
 typedef XPointer XVaNestedList;
