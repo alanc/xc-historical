@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.108 89/11/15 14:27:37 jim Exp $
+ * $XConsortium: events.c,v 1.109 89/11/15 21:19:12 jim Exp $
  *
  * twm event handling
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: events.c,v 1.108 89/11/15 14:27:37 jim Exp $";
+"$XConsortium: events.c,v 1.109 89/11/15 21:19:12 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -202,22 +202,8 @@ Bool DispatchEvent ()
 
     if (Scr == NULL) return False;
 
-#ifdef DEBUG_EVENTS
-    if (Tmp_win != NULL) {
-	fprintf (stderr,"Event w=%x, t->w=%x, t->frame=%x, t->title=%x, ",
-		 Event.xany.window, Tmp_win->w,
-		 Tmp_win->frame, Tmp_win->title_w);
-    } else {
-	fprintf (stderr, "Event w=%x, ", Event.xany.window);
-    }
-#endif
-
     if (Event.type >= 0 && Event.type < MAX_X_EVENT)
       (*EventHandler[Event.type])();
-
-#ifdef DEBUG_EVENTS
-    fflush(stderr);
-#endif
 
     return True;
 }
@@ -276,10 +262,6 @@ HandleEvents()
 void
 HandleVisibilityNotify()
 {
-#ifdef DEBUG_EVENTS
-    fprintf(stderr, "VisibilityNotify\n");
-    fprintf(stderr, "  visibility = %d\n", Event.xvisibility.state);
-#endif
     if (Tmp_win == NULL)
 	return;
 
@@ -308,10 +290,6 @@ HandleColormapNotify()
     Bool sameScreen;
     Window child;
 
-#ifdef DEBUG_EVENTS
-    fprintf(stderr, "ColormapNotify\n");
-#endif
-
     if (cevent->window == Scr->Root)
     {
 	XWindowAttributes attr;
@@ -328,11 +306,6 @@ HandleColormapNotify()
 					&JunkMask);
 	    if (sameScreen && child == None)
 	    {
-#ifdef DEBUG_EVENTS
-		fprintf(stderr, "    installing 0x%x\n",
-		    Tmp_win->attr.colormap);
-		printf ("installa from HandleColormapNotify\n");
-#endif
 		InstallAColormap(dpy, Scr->CMap);
 	    }
 	}
@@ -341,17 +314,6 @@ HandleColormapNotify()
 
     if (Tmp_win == NULL)
 	return;
-
-#ifdef DEBUG_EVENTS
-    printf ("Colormap:  win 0x%lx, cmap 0x%lx, new %d, state ",
-	    cevent->window, cevent->colormap, cevent->new);
-    switch (cevent->state) {
-      case ColormapInstalled: printf ("Installed"); break;
-      case ColormapUninstalled: printf ("Uninstalled"); break;
-      default:  printf ("%d", cevent->state); break;
-    }
-    printf ("; twin 0x%lx\n", Tmp_win->w);
-#endif
 
     if (cevent->window == Tmp_win->w)
     {
@@ -376,11 +338,6 @@ HandleColormapNotify()
 					&JunkMask);
 	    if (sameScreen && child == Tmp_win->w)
 	    {
-#ifdef DEBUG_EVENTS
-		fprintf(stderr, "    installing 0x%x\n",
-		    Tmp_win->attr.colormap);
-		printf ("installa from HandleColormapNotify\n");
-#endif
 		InstallAColormap(dpy, Tmp_win->attr.colormap);
 	    }
 	}
@@ -555,20 +512,16 @@ void free_colormap_windows (tmp)
 void
 HandlePropertyNotify()
 {
-    char *prop;
+    char *prop = NULL;
     XWMHints *wmhints;
     XSizeHints hints;
-    Atom actual;
+    Atom actual = None;
     int junk1, junk2, len;
     int width, height, x, y;
     unsigned long valuemask;		/* mask for create windows */
     XSetWindowAttributes attributes;	/* attributes for create windows */
     Pixmap pm;
     unsigned long supplied;
-
-#ifdef DEBUG_EVENTS
-    fprintf(stderr, "PropertyNotify = %d\n", Event.xproperty.atom);
-#endif
 
     /* watch for standard colormap changes */
     if (Event.xproperty.window == Scr->Root) {
@@ -590,78 +543,77 @@ HandlePropertyNotify()
 	}
     }
 
-    if (Tmp_win == NULL)
-	return;
+    if (!Tmp_win) return;		/* unknown window */
 
-    XGetWindowProperty(dpy, Tmp_win->w, Event.xproperty.atom, 0, 200, False,
-	XA_STRING, &actual, &junk1, &junk2, &len, &prop);
+#define MAX_NAME_LEN 200		/* truncate to this many */
+#define MAX_ICON_NAME_LEN 200		/* ditto */
 
-    if (actual == None)
-	return;
-
-    if (prop == NULL)
-	prop = NoName;
-
-    switch (Event.xproperty.atom)
-    {
-    case XA_WM_NAME:
+    switch (Event.xproperty.atom) {
+      case XA_WM_NAME:
+	if (XGetWindowProperty (dpy, Tmp_win->w, Event.xproperty.atom, 0, 
+				MAX_NAME_LEN, False, XA_STRING, &actual,
+				&junk1, &junk2, &len, &prop) != Success ||
+	    actual == None)
+	  return;
+	if (!prop) prop = NoName;
 	free_window_names (Tmp_win, True, True, False);
 
 	Tmp_win->full_name = prop;
 	Tmp_win->name = prop;
 
-	Tmp_win->name_width = XTextWidth(Scr->TitleBarFont.font, Tmp_win->name,
-	    strlen(Tmp_win->name));
+	Tmp_win->name_width = XTextWidth (Scr->TitleBarFont.font,
+					  Tmp_win->name,
+					  strlen (Tmp_win->name));
 
-	SetupWindow(Tmp_win,
-	    Tmp_win->frame_x, Tmp_win->frame_y,
-	    Tmp_win->frame_width, Tmp_win->frame_height);
+	SetupWindow (Tmp_win, Tmp_win->frame_x, Tmp_win->frame_y,
+		     Tmp_win->frame_width, Tmp_win->frame_height);
 
-	if (Tmp_win->title_w)
-	{
-	    XClearArea(dpy, Tmp_win->title_w, 0,0,0,0, True);
-	}
+	if (Tmp_win->title_w) XClearArea(dpy, Tmp_win->title_w, 0,0,0,0, True);
 
-
-	/* if the icon name is NoName, set the name of the icon to be
+	/*
+	 * if the icon name is NoName, set the name of the icon to be
 	 * the same as the window 
 	 */
-	if (Tmp_win->icon_name == NoName)
-	{
+	if (Tmp_win->icon_name == NoName) {
 	    Tmp_win->icon_name = Tmp_win->name;
 	    RedoIconName();
 	}
 	break;
 
-    case XA_WM_ICON_NAME:
+      case XA_WM_ICON_NAME:
+	if (XGetWindowProperty (dpy, Tmp_win->w, Event.xproperty.atom, 0, 
+				MAX_ICON_NAME_LEN, False, XA_STRING, &actual,
+				&junk1, &junk2, &len, &prop) != Success ||
+	    actual == None)
+	  return;
+	if (!prop) prop = NoName;
 	free_window_names (Tmp_win, False, False, True);
 	Tmp_win->icon_name = prop;
 
 	RedoIconName();
 	break;
 
-    case XA_WM_HINTS:
+      case XA_WM_HINTS:
 	if (Tmp_win->wmhints) XFree (Tmp_win->wmhints);
 	Tmp_win->wmhints = XGetWMHints(dpy, Event.xany.window);
 
 	if (Tmp_win->wmhints && (Tmp_win->wmhints->flags & WindowGroupHint))
-	    Tmp_win->group = Tmp_win->wmhints->window_group;
+	  Tmp_win->group = Tmp_win->wmhints->window_group;
 
 	if (!Tmp_win->forced && Tmp_win->wmhints &&
 	    Tmp_win->wmhints->flags & IconWindowHint)
-	{
-	    Tmp_win->icon_w = Tmp_win->wmhints->icon_window;
-	}
+	  Tmp_win->icon_w = Tmp_win->wmhints->icon_window;
 
 	if (Tmp_win->icon_w && !Tmp_win->forced && Tmp_win->wmhints &&
-	    (Tmp_win->wmhints->flags & IconPixmapHint))
-	{
-	    XGetGeometry(dpy, Tmp_win->wmhints->icon_pixmap, &JunkRoot,
-		&JunkX, &JunkY, &Tmp_win->icon_width, &Tmp_win->icon_height,
-		&JunkBW, &JunkDepth);
+	    (Tmp_win->wmhints->flags & IconPixmapHint)) {
+	    if (!XGetGeometry (dpy, Tmp_win->wmhints->icon_pixmap, &JunkRoot,
+			       &JunkX, &JunkY, &Tmp_win->icon_width, 
+			       &Tmp_win->icon_height, &JunkBW, &JunkDepth)) {
+		return;
+	    }
 
-	    pm = XCreatePixmap(dpy, Scr->Root, Tmp_win->icon_width,
-		Tmp_win->icon_height, Scr->d_depth);
+	    pm = XCreatePixmap (dpy, Scr->Root, Tmp_win->icon_width,
+				Tmp_win->icon_height, Scr->d_depth);
 
 	    FB(Tmp_win->iconc.fore, Tmp_win->iconc.back);
 	    XCopyPlane(dpy, Tmp_win->wmhints->icon_pixmap, pm,
@@ -679,18 +631,18 @@ HandlePropertyNotify()
 		0, Scr->d_depth, CopyFromParent, Scr->d_visual,
 		valuemask, &attributes);
 
+	    XFreePixmap (dpy, pm);
 	    RedoIconName();
 	}
 	break;
 
-    case XA_WM_NORMAL_HINTS:
+      case XA_WM_NORMAL_HINTS:
 	if (XGetWMNormalHints (dpy, Tmp_win->w, &Tmp_win->hints, &supplied) &&
-	    !(supplied & PWinGravity)) {
-	    SimulateWinGravity (Tmp_win);
-	}
+	    !(supplied & PWinGravity))
+	  SimulateWinGravity (Tmp_win);
 	break;
 
-    default:
+      default:
 	if (Event.xproperty.atom == _XA_WM_COLORMAP_WINDOWS) {
 	    FetchWmColormapWindows (Tmp_win);	/* frees old data */
 	    break;
@@ -698,9 +650,6 @@ HandlePropertyNotify()
 	    FetchWmProtocols (Tmp_win);
 	    break;
 	}
-#ifdef DEBUG_EVENTS
-	fprintf(stderr, "TWM Not handling property %d\n",Event.xproperty.atom);
-#endif
 	break;
     }
 }
@@ -778,15 +727,8 @@ RedoIconName()
 void
 HandleClientMessage()
 {
-#ifdef DEBUG_EVENTS
-    fprintf(stderr, "ClientMessage = 0x%x\n", Event.xclient.message_type);
-#endif
-
     if (Event.xclient.message_type == _XA_WM_CHANGE_STATE)
     {
-#ifdef DEBUG_EVENTS
-	fprintf(stderr, "WM_CHANGE_STATE client message received.\n");
-#endif
 	if (Tmp_win != NULL)
 	{
 	    if (Event.xclient.data.l[0] == IconicState && !Tmp_win->icon)
@@ -804,12 +746,6 @@ HandleClientMessage()
 	    }
 	}
     }
-    else
-    {
-#ifdef DEBUG_EVENTS
-	fprintf(stderr, "Unknown client message received.\n");
-#endif
-    }
 }
 
 
@@ -826,10 +762,6 @@ HandleExpose()
 {
     MenuRoot *tmp;
     static void flush_expose();
-
-#ifdef DEBUG_EVENTS
-    fprintf(stderr, "Expose %d\n", Event.xexpose.count);
-#endif
 
     if (XFindContext(dpy, Event.xany.window, MenuContext, &tmp) == 0)
     {
@@ -938,10 +870,6 @@ HandleDestroyNotify()
 {
     int i;
 
-#ifdef DEBUG_EVENTS
-    fprintf(stderr, "DestroyNotify\n");
-#endif
-    
     /*
      * Warning, this is also called by HandleUnmapNotify; if it ever needs to
      * look at the event, HandleUnmapNotify will have to mash the UnmapNotify
@@ -1033,9 +961,6 @@ HandleCreateNotify()
     XBell(dpy, 0);
     XSync(dpy, 0);
 #endif
-    /*
-    XSelectInput(dpy, Event.xcreatewindow.window, ~0);
-    */
 }
 /***********************************************************************
  *
@@ -1051,10 +976,6 @@ HandleMapRequest()
     int stat;
     XSizeHints hints;
     int zoom_save;
-
-#ifdef DEBUG_EVENTS
-    fprintf(stderr, "MapRequest w = 0x%x\n", Event.xmaprequest.window);
-#endif
 
     Event.xany.window = Event.xmaprequest.window;
     stat = XFindContext(dpy, Event.xany.window, TwmContext, &Tmp_win);
@@ -1129,9 +1050,6 @@ HandleMapRequest()
 void
 HandleMapNotify()
 {
-#ifdef DEBUG_EVENTS
-    fprintf(stderr, "MapNotify\n");
-#endif
     if (Tmp_win == NULL)
 	return;
 
@@ -1164,10 +1082,6 @@ HandleUnmapNotify()
     unsigned int dumuint, bw;
     Window dumwin;
     int gravx, gravy;
-
-#ifdef DEBUG_EVENTS
-    fprintf(stderr, "UnmapNotify\n");
-#endif
 
     /*
      * The July 27, 1988 ICCCM spec states that a client wishing to switch
@@ -1223,12 +1137,6 @@ HandleUnmapNotify()
 void
 HandleMotionNotify()
 {
-#ifdef DEBUG_EVENTS
-    /*
-    fprintf(stderr, "MotionNotify\n");
-    */
-#endif
-
     if (ResizeWindow != NULL)
     {
 	XFindContext(dpy, ResizeWindow, TwmContext, &Tmp_win);
@@ -1249,10 +1157,6 @@ HandleButtonRelease()
 {
     int xl, xr, yt, yb, w, h;
     unsigned mask;
-
-#ifdef DEBUG_EVENTS
-    fprintf(stderr, "ButtonRelease\n");
-#endif
 
     if (DragWindow != None)
     {
@@ -1434,10 +1338,6 @@ HandleButtonPress()
 {
     int modifier;
     Cursor cur;
-
-#ifdef DEBUG_EVENTS
-    fprintf(stderr, "ButtonPress\n");
-#endif
 
     /* pop down the menu, if any */
     if (ActiveMenu != NULL)
@@ -1646,15 +1546,8 @@ HandleEnterNotify()
 {
     MenuRoot *mr;
 
-#ifdef DEBUG_EVENTS
-    fprintf(stderr, "EnterNotify\n");
-#endif
-
     if (ActiveMenu == NULL && Event.xcrossing.window == Scr->Root)
     {
-#ifdef DEBUG_EVENTS
-	printf ("installa from EnterNotify into frame or icon\n");
-#endif
 	InstallAColormap(dpy, Scr->CMap);
 	return;
     }
@@ -1675,9 +1568,6 @@ HandleEnterNotify()
 	    {
 		if (Tmp_win->hilite_w)
 		    XMapWindow(dpy, Tmp_win->hilite_w);
-#ifdef DEBUG_EVENTS
-		printf ("installa from EnterNotify into frame or icon\n");
-#endif
 		InstallAColormap(dpy, Scr->CMap);
 		XSetWindowBorder(dpy, Tmp_win->frame, Tmp_win->border);
 		if (Tmp_win->title_w)
@@ -1689,11 +1579,6 @@ HandleEnterNotify()
 	    }
 	    if (Event.xcrossing.window == Tmp_win->w)
 	    {
-#ifdef DEBUG_EVENTS
-		fprintf(stderr, "    installing cmap 0x%x\n",
-		    Tmp_win->attr.colormap);
-		printf ("installa from window 0x%lx\n", Tmp_win->w);
-#endif
 		InstallAColormap(dpy, Tmp_win->attr.colormap);
 	    }
 	}
@@ -1736,11 +1621,6 @@ HandleLeaveNotify()
 {
     MenuRoot *mr;
 
-#ifdef DEBUG_EVENTS
-    fprintf(stderr, "LeaveNotify\n");
-    fprintf(stderr, "\tmode %d, detail %d\n", 
-	    Event.xcrossing.mode, Event.xcrossing.detail);
-#endif
     if (Tmp_win != NULL)
     {
 	if (Scr->FocusRoot)
@@ -1772,9 +1652,6 @@ HandleLeaveNotify()
 		}
 		else if (Event.xcrossing.window == Tmp_win->w)
 		{
-#ifdef DEBUG_EVENTS
-		    printf ("installa from leaving window 0x%lx\n", Tmp_win->w);
-#endif
 		    InstallAColormap(dpy, Scr->CMap);
 		}
 	    }
@@ -1825,9 +1702,6 @@ HandleConfigureRequest()
      */
     if (Tmp_win == NULL)
     {
-#ifdef DEBUG_EVENTS
-	fprintf(stderr, "  Transient or never-before-mapped window\n");
-#endif
 	xwcm = Event.xconfigurerequest.value_mask & 
 	    (CWX | CWY | CWWidth | CWHeight);
 	xwc.x = Event.xconfigurerequest.x;
@@ -1962,9 +1836,6 @@ FindScreenInfo(w)
 
     attr.screen = NULL;
     stat = XGetWindowAttributes(dpy, w, &attr);
-#ifdef DEBUG_EVENTS
-    fprintf(stderr, "FindScreenInfo stat = %d\n", stat);
-#endif
 
     for (scrnum = 0; scrnum < NumScreens; scrnum++)
     {
@@ -1973,10 +1844,6 @@ FindScreenInfo(w)
 		return(ScreenList[scrnum]);
     }
 
-#ifdef DEBUG_EVENTS
-    fprintf(stderr, "FindScreenInfo(0x%x) returning NULL\n", w);
-    fprintf(stderr, "  attr.screen = %d\n", attr.screen);
-#endif
     return(NULL);
 }
 
