@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XConnDis.c,v 11.53 89/06/22 14:23:35 jim Exp $
+ * $XConsortium: XConnDis.c,v 11.54 89/07/18 11:06:14 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -588,13 +588,17 @@ static int MakeTCPConnection (phostname, idisplay, retries,
     /*
      * Success!  So, save the auth information
      */
-#if defined(CRAY) && defined(OLDTCP)
+#ifdef CRAY
+#ifdef OLDTCP
     len = sizeof(inaddr.sin_addr);
-    cp = (char *) &inaddr.sin_addr;
 #else
+    len = SIZEOF_in_addr;
+#endif /* OLDTCP */
+    cp = (char *) &inaddr.sin_addr;
+#else /* else not CRAY */
     len = sizeof(inaddr.sin_addr.s_addr);
     cp = (char *) &inaddr.sin_addr.s_addr;
-#endif /* CRAY and OLDTCP */
+#endif /* CRAY */
 
     /*
      * We are special casing the BSD hack localhost address
