@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Intrinsic.c,v 1.94 87/12/11 16:57:15 swick Locked $";
+static char rcsid[] = "$Header: Intrinsic.c,v 1.95 87/12/17 08:04:05 swick Locked $";
 #endif lint
 
 /*
@@ -120,33 +120,33 @@ static void CompositeDestroy();
 
 ConstraintClassRec constraintClassRec = {
     {
-         (WidgetClass)&compositeClassRec,	/*superclass pointer*/
-         "Constraint",		/*class_name*/
-          sizeof(ConstraintRec),   /*size of core data record*/
-	  (XtWidgetProc)NULL,     /* class initializer routine */
+	 (WidgetClass)&compositeClassRec,	/*superclass pointer*/
+	 "Constraint",		/*class_name*/
+	  sizeof(ConstraintRec),/*size of core data record*/
+	  (XtWidgetProc)NULL,	/* class initializer routine */
 	  FALSE,		/* not init'ed */
-          (XtWidgetProc)NULL,	/* Instance Initializer routine*/
-          (XtWidgetProc)NULL,	/*Realize*/
-          NULL,			/*actions*/
-          0,                    /*number of actions*/
-          NULL,			/*resource list*/
-          0,			/*resource_count*/
-          NULLQUARK,		/*xrm_class*/
-          FALSE,                /*compress motion*/
-          TRUE,                 /*compress expose*/
-          FALSE,		/*visible_interest*/
-          (XtWidgetProc) NULL,	/*destroy proc*/
-          (XtWidgetProc) NULL,	 /*resize*/
-          (XtExposeProc)NULL, /*expose*/
-          NULL,			/*set_values*/
-          (XtWidgetProc)NULL,      /*accept_focus*/
-           NULL,               /*callback offsets*/
-           NULL,               /*reserved*/
+	  (XtWidgetProc)NULL,	/* Instance Initializer routine*/
+	  XtInheritRealize,	/*Realize*/
+	  NULL,			/*actions*/
+	  0,			/*number of actions*/
+	  NULL,			/*resource list*/
+	  0,			/*resource_count*/
+	  NULLQUARK,		/*xrm_class*/
+	  FALSE,		/*compress motion*/
+	  TRUE,			/*compress expose*/
+	  FALSE,		/*visible_interest*/
+	  (XtWidgetProc)NULL,	/*destroy proc*/
+	  (XtWidgetProc)NULL,	/*resize*/
+	  (XtExposeProc)NULL,	/*expose*/
+	  NULL,			/*set_values*/
+	  (XtWidgetProc)NULL,	/*accept_focus*/
+	  NULL,			/*callback offsets*/
+	  NULL,			/*reserved*/
     },{
 	(XtGeometryHandler) NULL,	/* geometry_manager */
 	(XtWidgetProc) NULL,
-	CompositeInsertChild,
-	CompositeDeleteChild,
+	XtInheritInsertChild,
+	XtInheritDeleteChild,
 	(XtWidgetProc) NULL,
 	(XtWidgetProc) NULL,
     },{
@@ -164,28 +164,28 @@ static void CompositeInitialize();
 
 CompositeClassRec compositeClassRec = {
     {
-         (WidgetClass)&widgetClassRec,	/*superclass pointer*/
-         "Composite",		/*class_name*/
-          sizeof(CompositeRec),   /*size of core data record*/
-	  (XtWidgetProc)NULL,     /* class initializer routine */
+	 (WidgetClass)&widgetClassRec,	/*superclass pointer*/
+	 "Composite",		/*class_name*/
+	  sizeof(CompositeRec), /*size of core data record*/
+	  (XtWidgetProc)NULL,	/* class initializer routine */
 	  FALSE,		/* not init'ed */
-          (XtInitProc)CompositeInitialize,  /* Instance Initializer routine */
-          (XtWidgetProc)NULL,	/*Realize*/
-          NULL,			/*actions*/
-          0,                    /*number of actions*/
-          NULL,			/*resource list*/
-          0,			/*resource_count*/
-          NULLQUARK,		/*xrm_class*/
-          FALSE,                /*compress motion*/
-          TRUE,                 /*compress expose*/
-          FALSE,		/*visible_interest*/
-          (XtWidgetProc) CompositeDestroy,	/*destroy proc*/
-          (XtWidgetProc) NULL,	 /*resize*/
-          (XtExposeProc)NULL, /*expose*/
-          NULL,			/*set_values*/
-          (XtWidgetProc)NULL,      /*accept_focus*/
-          NULL,                    /*callback offsets*/
-          NULL,                    /*reserved*/
+	  (XtInitProc)CompositeInitialize,  /* Instance Initializer routine */
+	  XtInheritRealize,	/*Realize*/
+	  NULL,			/*actions*/
+	  0,			/*number of actions*/
+	  NULL,			/*resource list*/
+	  0,			/*resource_count*/
+	  NULLQUARK,		/*xrm_class*/
+	  FALSE,		/*compress motion*/
+	  TRUE,			/*compress expose*/
+	  FALSE,		/*visible_interest*/
+	  (XtWidgetProc)CompositeDestroy,	/*destroy proc*/
+	  (XtWidgetProc)NULL,	/*resize*/
+	  (XtExposeProc)NULL,	/*expose*/
+	  NULL,			/*set_values*/
+	  (XtWidgetProc)NULL,	/*accept_focus*/
+	  NULL,			/*callback offsets*/
+	  NULL,			/*reserved*/
     },{
 	(XtGeometryHandler) NULL,	/* geometry_manager */
 	(XtWidgetProc) NULL,
@@ -1487,7 +1487,8 @@ void XtInheritRealize(w, mask, attr)
 	XtClass(w) = class;
     }
 
-    XtClass(w)->core_class.realize = (XtSuperclass(w))->core_class.realize;
+    if (XtClass(w)->core_class.realize == XtInheritRealize)
+      XtClass(w)->core_class.realize = (XtSuperclass(w))->core_class.realize;
 }
 
 void XtInheritResize(w)
@@ -1508,7 +1509,8 @@ void XtInheritResize(w)
 	XtClass(w) = class;
     }
 
-    XtClass(w)->core_class.resize = (XtSuperclass(w))->core_class.resize;
+    if (XtClass(w)->core_class.resize == XtInheritResize)
+      XtClass(w)->core_class.resize = (XtSuperclass(w))->core_class.resize;
 }
 
 void XtInheritExpose(w, event)
@@ -1530,7 +1532,8 @@ void XtInheritExpose(w, event)
 	XtClass(w) = class;
     }
 
-    XtClass(w)->core_class.expose = (XtSuperclass(w))->core_class.expose;
+    if (XtClass(w)->core_class.expose == XtInheritExpose)
+      XtClass(w)->core_class.expose = (XtSuperclass(w))->core_class.expose;
 }
 
 void XtInheritAcceptFocus(w)
@@ -1607,9 +1610,13 @@ XtGeometryResult XtInheritGeometryManager(child, request, reply)
 	XtClass(parent) = class;
     }
 
-    ((CompositeWidgetClass)(XtClass(parent)))->composite_class.geometry_manager=
-	((CompositeWidgetClass) XtSuperclass(parent))->
+    if (((CompositeWidgetClass)XtClass(parent))->
+	composite_class.geometry_manager == XtInheritGeometryManager) {
+      ((CompositeWidgetClass)(XtClass(parent)))->
+	composite_class.geometry_manager =
+	  ((CompositeWidgetClass) XtSuperclass(parent))->
 	    composite_class.geometry_manager;
+    }
 
     return res;
 }
@@ -1634,9 +1641,12 @@ void XtInheritChangeManaged(w)
 	XtClass(w) = class;
     }
 
-    ((CompositeWidgetClass)(XtClass(w)))->composite_class.change_managed =
+    if (((CompositeWidgetClass)XtClass(w))->composite_class.change_managed
+	== XtInheritChangeManaged) {
+      ((CompositeWidgetClass)(XtClass(w)))->composite_class.change_managed =
 	((CompositeWidgetClass) XtSuperclass(w))->
 	    composite_class.change_managed;
+    }
 }
 
 void XtInheritInsertChild(child, args, num_args)
@@ -1656,16 +1666,19 @@ void XtInheritInsertChild(child, args, num_args)
 	    composite_class.insert_child) {
 	/* Here we fake runtime casting by changing the class field in  */
 	/* the current class record and resetting it when we return.    */
-	class = XtClass(parent);
+        class = XtClass(parent);
 	XtClass(parent) = XtSuperclass(parent);
 
 	(*(((CompositeWidgetClass) XtClass(parent))->
 	    composite_class.insert_child))(child, args, num_args);
 	XtClass(parent) = class;
     }
-    ((CompositeWidgetClass)(XtClass(parent)))-> composite_class.insert_child =
+    if (((CompositeWidgetClass)XtClass(parent))->composite_class.insert_child
+	== XtInheritInsertChild) {
+      ((CompositeWidgetClass)XtClass(parent))->composite_class.insert_child =
 	((CompositeWidgetClass) XtSuperclass(parent))->
 	    composite_class.insert_child;
+    }
 }
 
 void XtInheritDeleteChild(child)
@@ -1690,9 +1703,12 @@ void XtInheritDeleteChild(child)
 	     composite_class.delete_child))(child);
 	XtClass(parent) = class;
     }
-    ((CompositeWidgetClass)(XtClass(parent)))-> composite_class.delete_child =
+    if (((CompositeWidgetClass)XtClass(parent))->composite_class.delete_child
+	== XtInheritDeleteChild) {
+      ((CompositeWidgetClass)(XtClass(parent)))->composite_class.delete_child =
 	((CompositeWidgetClass) XtSuperclass(parent))->
 	    composite_class.delete_child;
+    }
 }
 
 /*
