@@ -12,7 +12,7 @@
  * software for any purpose.  It is provided "as is" without
  * express or implied warranty.
  *
- *	"$XConsortium: sun.h,v 4.8 89/03/21 15:02:41 rws Exp $ SPRITE (Berkeley)"
+ *	"$XConsortium: sun.h,v 5.0 89/06/09 15:10:00 keith Exp $ SPRITE (Berkeley)"
  */
 #ifndef _SUN_H_
 #define _SUN_H_
@@ -262,6 +262,8 @@ extern fbFd 	  sunFbs[];
 extern int  	  lastEventTime;    /* Time (in ms.) of last event */
 extern void 	  SetTimeSinceLastInputEvent();
 
+extern int monitorResolution;
+
 #define AUTOREPEAT_INITIATE	(200)		/* milliseconds */
 #define AUTOREPEAT_DELAY	(50)		/* milliseconds */
 /*
@@ -276,6 +278,8 @@ extern void 	  SetTimeSinceLastInputEvent();
 extern int	autoRepeatKeyDown;		/* TRUE if key down */
 extern int	autoRepeatReady;		/* TRUE if time out */
 extern int	autoRepeatDebug;		/* TRUE if debugging */
+extern long	autoRepeatInitiate;
+extern long 	autoRepeatDelay;
 extern struct timeval autoRepeatLastKeyDownTv;
 extern struct timeval autoRepeatDeltaTv;
 
