@@ -1,4 +1,4 @@
-/* $XConsortium: saveutil.c,v 1.11 94/07/07 16:46:48 mor Exp $ */
+/* $XConsortium: saveutil.c,v 1.12 94/07/08 14:06:15 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -163,9 +163,17 @@ char **sm_id;
 	    val = (PendingValue *)malloc(sizeof *val);
 	    if(!val) nomem();
 
-	    val->length = strlen(p);
-	    /* NEEDSWORK:  Binary data */
-	    val->value = XtNewString(p);
+	    if (strcmp (prop->type, SmCARD8) == 0)
+	    {
+		val->length = 1;
+		val->value = (XtPointer) malloc (1);
+		*((char *)(val->value)) = atoi (p);
+	    }
+	    else
+	    {
+		val->length = strlen(p);
+		val->value = XtNewString(p);
+	    }
 
 	    if(!ListAddLast(prop->values, (void *)val)) nomem(); 
 	}
