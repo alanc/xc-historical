@@ -1,6 +1,6 @@
 #ifndef lint
 static char Xrcsid[] =
-    "$XConsortium: Varargs.c,v 1.13 90/02/09 16:50:29 kit Exp $";
+    "$XConsortium: Varargs.c,v 1.14 90/02/13 13:32:54 kit Exp $";
 #endif
 /*
 
@@ -394,22 +394,20 @@ Cardinal * number;
     XtGetResourceList(XtClass(widget), res_list, number);
     
     if ((parent != NULL) && (XtIsConstraint(parent))) {
-	int i;
-	XtResourceList constraint;
+	XtResourceList res, constraint;
 	Cardinal num_constraint;
 
-	XtInitializeWidgetClass(XtClass(parent));
-	
 	XtGetConstraintResourceList(XtClass(parent), &constraint, 
 				    &num_constraint);
 
-	*res_list = (XtResourceList) XtRealloc(*res_list, sizeof(XtResource) * 
-					       (*number + num_constraint));
-
-	for (i = 0; i < num_constraint; i++)
-	    (*res_list)[*number + i] = constraint[i];
-
+	res = *res_list + *number;
 	*number += num_constraint;
+	*res_list = (XtResourceList)
+			XtRealloc(*res_list, *number * sizeof(XtResource));
+
+	for (/* res */; num_constraint; num_constraint--)
+	    *res++ = *constraint++;
+
 	XtFree( (XtPointer) constraint);
     }
 }
