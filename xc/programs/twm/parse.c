@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: parse.c,v 1.45 90/03/15 14:23:02 jim Exp $
+ * $XConsortium: parse.c,v 1.46 90/11/15 11:39:42 dave Exp $
  *
  * parse the .twmrc file
  *
@@ -38,7 +38,7 @@
 
 #if !defined(lint) && !defined(SABER)
 static char RCSinfo[]=
-"$XConsortium: parse.c,v 1.45 90/03/15 14:23:02 jim Exp $";
+"$XConsortium: parse.c,v 1.46 90/11/15 11:39:42 dave Exp $";
 #endif
 
 #include <stdio.h>
@@ -1054,7 +1054,6 @@ do_squeeze_entry (list, name, justify, num, denom)
 	denom = 0;
     }
 
-#ifdef SHAPE
     if (HasShape) {
 	SqueezeInfo *sinfo;
 	sinfo = (SqueezeInfo *) malloc (sizeof(SqueezeInfo));
@@ -1070,5 +1069,4 @@ do_squeeze_entry (list, name, justify, num, denom)
 	sinfo->denom = denom;
 	AddToList (list, name, (char *) sinfo);
     }
-#endif
 }
