@@ -1,4 +1,4 @@
-/* $XConsortium: StrToWidg.c,v 1.7 91/07/22 23:43:29 converse Exp $ */
+/* $XConsortium: StrToWidg.c,v 1.8 91/07/23 15:19:48 converse Exp $ */
 
 /* Copyright 1988, 1991 Massachusetts Institute of Technology
  *
@@ -23,7 +23,7 @@
  * XmuCvtStringToWidget
  *
  *   static XtConvertArgRec parentCvtArgs[] = {
- *	{XtBaseOffset, (caddr_t)XtOffset(Widget, core.parent), sizeof(Widget)},
+ *	{XtBaseOffset, (XtPointer)XtOffset(Widget, core.parent), sizeof(Widget)},
  *   };
  *
  * matches the string against the name of the immediate children (normal
