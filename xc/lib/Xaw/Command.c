@@ -1,6 +1,4 @@
-#ifndef lint
-static char Xrcsid[] = "$XConsortium: Command.c,v 1.72 90/10/10 12:18:00 converse Exp $";
-#endif /* lint */
+/* $XConsortium: Command.c,v 1.73 90/12/01 13:00:34 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -231,8 +229,8 @@ CommandWidget cbw;
   XRectangle rect;
 
   if (cbw->command.highlight_thickness == 0 ||
-      cbw->command.highlight_thickness > Min(cbw->core.width,
-					     cbw->core.height)/2)
+      cbw->command.highlight_thickness >
+      (Dimension) ((Dimension) Min(cbw->core.width, cbw->core.height)/2))
     return(NULL);
 
   if (outerRegion == NULL) {
@@ -417,8 +415,8 @@ Boolean change;
   Boolean very_thick;
   GC norm_gc, rev_gc;
    
-  very_thick = cbw->command.highlight_thickness > Min(cbw->core.width,
-						      cbw->core.height)/2;
+  very_thick = cbw->command.highlight_thickness >
+               (Dimension)((Dimension) Min(cbw->core.width, cbw->core.height)/2);
 
   if (cbw->command.set) {
     cbw->label.normal_GC = cbw->command.inverse_GC;
@@ -553,7 +551,7 @@ Boolean checkRectangular;
     if ( (cbw->command.shape_style == XawShapeRoundedRectangle) ) {
 	corner_size = (cbw->core.width < cbw->core.height) ? cbw->core.width 
 	                                                   : cbw->core.height;
-	corner_size = (corner_size * cbw->command.corner_round) / 100;
+	corner_size = (int) (corner_size * cbw->command.corner_round) / 100;
     }
 
     if (checkRectangular || cbw->command.shape_style != XawShapeRectangle) {
