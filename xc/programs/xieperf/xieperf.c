@@ -1,4 +1,4 @@
-/* $XConsortium: xieperf.c,v 1.6 93/10/27 21:52:50 rws Exp $ */
+/* $XConsortium: xieperf.c,v 1.7 93/10/30 11:07:31 rws Exp $ */
 
 int   verbosity_Group_xielib ;
 int   verbosity_Group_xielib_user_level ;
@@ -722,15 +722,16 @@ XParms	xp;
     XFreeGC(xp->d, xp->bggc);
 }
 
-void DisplayStatus(d, message, test)
+void DisplayStatus(d, message, test, try)
     Display *d;
     char    *message;
     char    *test;
+    int     try;
 {
     char    s[500];
 
     XClearWindow(d, status);
-    sprintf(s, "%s %s", message, test);
+    sprintf(s, "%d %s %s", try, message, test);
     /* We should really look at the height, descent of the font, etc. but
        who cares.  This works. */
     XDrawString(d, status, tgc, 10, 13, s, strlen(s));
@@ -757,7 +758,7 @@ void ProcessTest(xp, test, func, pm, label, locreps)
     }
     if ( loCal == False )
     {
-	    DisplayStatus(xp->d, "Calibrating", label);
+	    DisplayStatus(xp->d, "Calibrating", label, 0);
 	    reps = CalibrateTest(xp, test, seconds, &time);
     }
     else
@@ -770,7 +771,6 @@ void ProcessTest(xp, test, func, pm, label, locreps)
     if ( locreps != -1 )
 	reps = locreps;
     if (reps != 0) {
-	DisplayStatus(xp->d, "Testing", label);
 	XDestroySubwindows(xp->d, xp->w);
 	XClearWindow(xp->d, xp->w);
 
@@ -783,6 +783,7 @@ void ProcessTest(xp, test, func, pm, label, locreps)
 	totalTime = 0.0;
 	for (j = 0; j != repeat; j++) {
     
+	    DisplayStatus(xp->d, "Testing", label, j+1);
 	    time = DoTest(xp, test, reps);
 	    totalTime += time;
 	    ReportTimes (time, reps * test->parms.objects,
