@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: commands.c,v 1.15 88/09/06 17:34:28 jim Exp $";
+static char rcs_id[] = "$XConsortium: commands.c,v 1.16 88/09/16 14:31:45 swick Exp $";
 #endif
 
 /*
@@ -302,7 +302,7 @@ DoSave()
 	return;
     }
     if((!backedup) && (strlen(loadedfile)) && (!strcmp(filename, loadedfile))){
-        backupFilename = makeBackupName(filename);
+        backupFilename = makeBackupName();
         unlink(backupFilename);
         if(link(filename, backupFilename)){
 	    XeditPrintf("\ncan't create backup file");
