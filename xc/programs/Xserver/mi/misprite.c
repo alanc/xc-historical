@@ -4,7 +4,7 @@
  * machine independent software sprite routines
  */
 
-/* $XConsortium: misprite.c,v 5.40 93/07/12 16:26:17 dpw Exp $ */
+/* $XConsortium: misprite.c,v 5.41 93/07/17 09:53:24 dpw Exp $ */
 
 /*
 Copyright 1989 by the Massachusetts Institute of Technology
@@ -120,7 +120,10 @@ static void	    miSpritePolyFillRect(),	miSpritePolyFillArc();
 static int	    miSpritePolyText8(),	miSpritePolyText16();
 static void	    miSpriteImageText8(),	miSpriteImageText16();
 static void	    miSpriteImageGlyphBlt(),	miSpritePolyGlyphBlt();
-static void	    miSpritePushPixels(),	miSpriteLineHelper();
+static void	    miSpritePushPixels();
+#ifdef NEED_LINEHELPER
+static void	    miBSLineHelper();
+#endif
 
 static GCOps miSpriteGCOps = {
     miSpriteFillSpans,	    miSpriteSetSpans,	    miSpritePutImage,	
@@ -129,7 +132,10 @@ static GCOps miSpriteGCOps = {
     miSpritePolyArc,	    miSpriteFillPolygon,    miSpritePolyFillRect,
     miSpritePolyFillArc,    miSpritePolyText8,	    miSpritePolyText16,
     miSpriteImageText8,	    miSpriteImageText16,    miSpriteImageGlyphBlt,
-    miSpritePolyGlyphBlt,   miSpritePushPixels,	    miSpriteLineHelper,
+    miSpritePolyGlyphBlt,   miSpritePushPixels
+#ifdef NEED_LINEHELPER
+    , miBSLineHelper
+#endif
 };
 
 /*
@@ -337,7 +343,7 @@ miSpriteGetImage (pDrawable, sx, sy, w, h, format, planemask, pdstLine)
     int		    sx, sy, w, h;
     unsigned int    format;
     unsigned long   planemask;
-    pointer	    pdstLine;
+    char	    *pdstLine;
 {
     ScreenPtr	    pScreen = pDrawable->pScreen;
     miSpriteScreenPtr    pScreenPriv;
@@ -366,7 +372,7 @@ miSpriteGetSpans (pDrawable, wMax, ppt, pwidth, nspans, pdstStart)
     DDXPointPtr	ppt;
     int		*pwidth;
     int		nspans;
-    unsigned int *pdstStart;
+    char	*pdstStart;
 {
     ScreenPtr		    pScreen = pDrawable->pScreen;
     miSpriteScreenPtr	    pScreenPriv;
@@ -456,7 +462,7 @@ static void
 miSpriteBlockHandler (i, blockData, pTimeout, pReadmask)
     int	i;
     pointer	blockData;
-    pointer	pTimeout;
+    OSTimePtr	pTimeout;
     pointer	pReadmask;
 {
     ScreenPtr		pScreen = screenInfo.screens[i];
@@ -958,7 +964,7 @@ static void
 miSpriteSetSpans(pDrawable, pGC, psrc, ppt, pwidth, nspans, fSorted)
     DrawablePtr		pDrawable;
     GCPtr		pGC;
-    unsigned int	*psrc;
+    char		*psrc;
     register DDXPointPtr ppt;
     int			*pwidth;
     int			nspans;
@@ -1597,7 +1603,7 @@ miSpriteText (pDraw, pGC, x, y, count, chars, fontEncoding, textType, cursorBox)
     register CharInfoPtr *info;
     unsigned long n, i;
     int		  w;
-    void    	  (*drawFunc)();
+    void   	  (*drawFunc)();
 
     Bool imageblt;
 
@@ -1627,13 +1633,13 @@ miSpriteText (pDraw, pGC, x, y, count, chars, fontEncoding, textType, cursorBox)
 	switch (textType)
 	{
 	case TT_POLY8:
-	    drawFunc = pGC->ops->PolyText8;
+	    drawFunc = (void (*)())pGC->ops->PolyText8;
 	    break;
 	case TT_IMAGE8:
 	    drawFunc = pGC->ops->ImageText8;
 	    break;
 	case TT_POLY16:
-	    drawFunc = pGC->ops->PolyText16;
+	    drawFunc = (void (*)())pGC->ops->PolyText16;
 	    break;
 	case TT_IMAGE16:
 	    drawFunc = pGC->ops->ImageText16;
@@ -1755,7 +1761,7 @@ miSpriteImageGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     int 	x, y;
     unsigned int nglyph;
     CharInfoPtr *ppci;		/* array of character info */
-    char * 	pglyphBase;	/* start of array of glyphs */
+    pointer 	pglyphBase;	/* start of array of glyphs */
 {
     GC_SETUP(pDrawable, pGC);
 
@@ -1778,7 +1784,7 @@ miSpritePolyGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     int 	x, y;
     unsigned int nglyph;
     CharInfoPtr *ppci;		/* array of character info */
-    char 	*pglyphBase;	/* start of array of glyphs */
+    pointer	pglyphBase;	/* start of array of glyphs */
 {
     GC_SETUP (pDrawable, pGC);
 
@@ -1816,6 +1822,7 @@ miSpritePushPixels(pGC, pBitMap, pDrawable, w, h, x, y)
     GC_OP_EPILOGUE (pGC);
 }
 
+#ifdef NEED_LINEHELPER
 /*
  * I don't expect this routine will ever be called, as the GC
  * will have been unwrapped for the line drawing
@@ -1826,6 +1833,7 @@ miSpriteLineHelper()
 {
     FatalError("miSpriteLineHelper called\n");
 }
+#endif
 
 /*
  * miPointer interface routines
