@@ -21,12 +21,10 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: micursor.c,v 1.9 89/07/18 20:33:02 rws Exp $ */
+/* $XConsortium: micursor.c,v 1.1 93/12/27 12:23:08 rob Exp $ */
 #include "scrnintstr.h"
 #include "cursor.h"
 #include "misc.h"
-
-extern Bool Must_have_memory;
 
 void
 miRecolorCursor( pScr, pCurs, displayed)
@@ -39,10 +37,7 @@ miRecolorCursor( pScr, pCurs, displayed)
      * been bound up in private state created by RealizeCursor
      */
     (* pScr->UnrealizeCursor)( pScr, pCurs);
-    Must_have_memory = TRUE; /* XXX */
     (* pScr->RealizeCursor)( pScr, pCurs);
-    Must_have_memory = FALSE; /* XXX */
     if ( displayed)
 	(* pScr->DisplayCursor)( pScr, pCurs);
-
 }

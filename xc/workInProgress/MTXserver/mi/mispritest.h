@@ -4,7 +4,7 @@
  * mi sprite structures
  */
 
-/* $XConsortium: mispritest.h,v 5.12 93/10/12 11:42:12 dpw Exp $ */
+/* $XConsortium: mispritest.h,v 1.1 93/12/27 13:21:20 rob Exp $ */
 
 /*
 Copyright 1989 by the Massachusetts Institute of Technology
@@ -18,6 +18,28 @@ advertising or publicity pertaining to distribution of the software
 without specific, written prior permission.  M.I.T. makes no
 representations about the suitability of this software for any
 purpose.  It is provided "as is" without express or implied warranty.
+
+Copyright 1992, 1993 Data General Corporation;
+Copyright 1992, 1993 OMRON Corporation  
+
+Permission to use, copy, modify, distribute, and sell this software and its
+documentation for any purpose is hereby granted without fee, provided that the
+above copyright notice appear in all copies and that both that copyright
+notice and this permission notice appear in supporting documentation, and that
+neither the name OMRON or DATA GENERAL be used in advertising or publicity
+pertaining to distribution of the software without specific, written prior
+permission of the party whose name is to be used.  Neither OMRON or 
+DATA GENERAL make any representation about the suitability of this software
+for any purpose.  It is provided "as is" without express or implied warranty.  
+
+OMRON AND DATA GENERAL EACH DISCLAIM ALL WARRANTIES WITH REGARD TO THIS
+SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS,
+IN NO EVENT SHALL OMRON OR DATA GENERAL BE LIABLE FOR ANY SPECIAL, INDIRECT
+OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
+DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
+TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE
+OF THIS SOFTWARE.
+
 */
 
 # include   "misprite.h"
@@ -30,9 +52,13 @@ typedef struct {
     CloseScreenProcPtr			CloseScreen;
     GetImageProcPtr			GetImage;
     GetSpansProcPtr			GetSpans;
+#ifndef MTX
     SourceValidateProcPtr		SourceValidate;
+#endif /* not MTX */
     CreateGCProcPtr			CreateGC;
+#ifndef MTX
     ScreenBlockHandlerProcPtr		BlockHandler;
+#endif /* not MTX */
     InstallColormapProcPtr		InstallColormap;
     StoreColorsProcPtr			StoreColors;
     PaintWindowBackgroundProcPtr	PaintWindowBackground;
@@ -47,9 +73,11 @@ typedef struct {
     int		    y;
     BoxRec	    saved;
     Bool	    isUp;
+#ifndef MTX
     Bool	    shouldBeUp;
     WindowPtr	    pCacheWin;
     Bool	    isInCacheWin;
+#endif /* not MTX */
     Bool	    checkPixels;
     xColorItem	    colors[2];
     ColormapPtr	    pInstalledMap;
@@ -60,6 +88,10 @@ typedef struct {
 
 #define SOURCE_COLOR	0
 #define MASK_COLOR	1
+
+/*
+ * GC op wrappers
+ */
 
 typedef struct {
     GCFuncs		*wrapFuncs;

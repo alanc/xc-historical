@@ -1,5 +1,5 @@
 /*
- * $XConsortium: miwideline.c,v 1.51 93/07/11 15:20:07 rws Exp $
+ * $XConsortium: miwideline.c,v 1.1 93/12/27 12:23:14 rob Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -14,6 +14,28 @@
  * without express or implied warranty.
  *
  * Author:  Keith Packard, MIT X Consortium
+ *
+ * Copyright 1992, 1993 Data General Corporation;
+ * Copyright 1992, 1993 OMRON Corporation  
+ *
+ * Permission to use, copy, modify, distribute, and sell this software and its
+ * documentation for any purpose is hereby granted without fee, provided that
+ * the above copyright notice appear in all copies and that both that copyright
+ * notice and this permission notice appear in supporting documentation, and
+ * that neither the name OMRON or DATA GENERAL be used in advertising or 
+ * publicity pertaining to distribution of the software without specific, 
+ * written prior permission of the party whose name is to be used.  Neither 
+ * OMRON or DATA GENERAL make any representation about the suitability of this
+ * software for any purpose.  It is provided "as is" without express or
+ * implied warranty.  
+ *
+ * OMRON AND DATA GENERAL EACH DISCLAIM ALL WARRANTIES WITH REGARD TO THIS
+ * SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS,
+ * IN NO EVENT SHALL OMRON OR DATA GENERAL BE LIABLE FOR ANY SPECIAL, INDIRECT
+ * OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF
+ * USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
+ * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE
+ * OF THIS SOFTWARE.
  */
 
 /*
@@ -1519,6 +1541,31 @@ miWideLine (pDrawable, pGC, mode, npt, pPts)
     register int    first;
     Bool	    somethingDrawn = FALSE;
     Bool	    selfJoin;
+
+#ifdef MTX
+#ifdef DGUX
+    void miWideDash();
+
+    if (pGC->lineStyle != LineSolid)
+    {
+        if (pGC->lineStyle == LineDoubleDash &&
+         (pGC->fillStyle == FillOpaqueStippled || pGC->fillStyle == FillTiled))
+        {
+        ;
+        }
+        else
+        {
+            miWideDash(pDrawable, pGC, mode, npt, pPts);
+            return;
+        }
+    }
+    else if (pGC->lineWidth == 0)
+    {
+        miZeroLine (pDrawable, pGC, mode, npt, pPts);
+        return;
+    }
+#endif
+#endif /* MTX */
 
     spanData = miSetupSpanData (pGC, &spanDataRec, npt);
     pixel = pGC->fgPixel;

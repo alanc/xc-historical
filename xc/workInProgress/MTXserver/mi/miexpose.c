@@ -20,9 +20,30 @@ WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION,
 ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
+Copyright 1992, 1993 Data General Corporation;
+Copyright 1992, 1993 OMRON Corporation  
+
+Permission to use, copy, modify, distribute, and sell this software and its
+documentation for any purpose is hereby granted without fee, provided that the
+above copyright notice appear in all copies and that both that copyright
+notice and this permission notice appear in supporting documentation, and that
+neither the name OMRON or DATA GENERAL be used in advertising or publicity
+pertaining to distribution of the software without specific, written prior
+permission of the party whose name is to be used.  Neither OMRON or 
+DATA GENERAL make any representation about the suitability of this software
+for any purpose.  It is provided "as is" without express or implied warranty.  
+
+OMRON AND DATA GENERAL EACH DISCLAIM ALL WARRANTIES WITH REGARD TO THIS
+SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS,
+IN NO EVENT SHALL OMRON OR DATA GENERAL BE LIABLE FOR ANY SPECIAL, INDIRECT
+OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
+DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
+TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE
+OF THIS SOFTWARE.
+
 ******************************************************************/
 
-/* $XConsortium: miexpose.c,v 5.17 93/07/12 09:28:56 dpw Exp $ */
+/* $XConsortium: miexpose.c,v 1.1 93/12/27 12:23:09 rob Exp $ */
 
 #include "X.h"
 #define NEED_EVENTS
@@ -499,6 +520,7 @@ border tile in the resource table.
 
 static RESTYPE ResType = 0;
 static int numGCs = 0;
+#ifndef MTX
 static GCPtr	screenContext[MAXSCREENS];
 
 /*ARGSUSED*/
@@ -514,6 +536,7 @@ XID id;
     if (!numGCs)
 	ResType = 0;
 }
+#endif /* MTX */
 
 
 void
@@ -647,6 +670,7 @@ int what;
 	/*
 	 * draw the background to the root window
 	 */
+#ifndef MTX
 	if (screenContext[i] == (GCPtr)NULL)
 	{
 	    if (!ResType && !(ResType = CreateNewResourceType(tossGC)))
@@ -661,6 +685,9 @@ int what;
 	        return;
 	}
 	pGC = screenContext[i];
+#else /* MTX */
+	pGC = CreateGC((DrawablePtr)pWin, (BITS32) 0, (XID *)NULL, &status);
+#endif /* MTX */
 	newValues[SUBWINDOW] = IncludeInferiors;
 	newValues[ABSX] = pBgWin->drawable.x;
 	newValues[ABSY] = pBgWin->drawable.y;
@@ -764,6 +791,12 @@ int what;
 	}
 	FreeScratchGC(pGC);
     }
+#ifdef MTX
+    else
+    {
+        FreeGC( pGC );
+    }
+#endif /* MTX */
 }
 
 

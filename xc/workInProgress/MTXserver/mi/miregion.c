@@ -21,8 +21,29 @@ WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION,
 ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
+Copyright 1992, 1993 Data General Corporation;
+Copyright 1992, 1993 OMRON Corporation  
+
+Permission to use, copy, modify, distribute, and sell this software and its
+documentation for any purpose is hereby granted without fee, provided that the
+above copyright notice appear in all copies and that both that copyright
+notice and this permission notice appear in supporting documentation, and that
+neither the name OMRON or DATA GENERAL be used in advertising or publicity
+pertaining to distribution of the software without specific, written prior
+permission of the party whose name is to be used.  Neither OMRON or 
+DATA GENERAL make any representation about the suitability of this software
+for any purpose.  It is provided "as is" without express or implied warranty.  
+
+OMRON AND DATA GENERAL EACH DISCLAIM ALL WARRANTIES WITH REGARD TO THIS
+SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS,
+IN NO EVENT SHALL OMRON OR DATA GENERAL BE LIABLE FOR ANY SPECIAL, INDIRECT
+OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
+DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
+TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE
+OF THIS SOFTWARE.
+
 ******************************************************************/
-/* $XConsortium: miregion.c,v 1.57 93/09/03 08:06:33 dpw Exp $ */
+/* $XConsortium: miregion.c,v 1.1 93/12/27 12:23:11 rob Exp $ */
 
 #include <stdio.h>
 #include "miscstruct.h"
@@ -39,8 +60,6 @@ SOFTWARE.
 /*
  * hack until callers of these functions can deal with out-of-memory
  */
-
-extern Bool Must_have_memory;
 
 #ifdef DEBUG
 #define assert(expr) {if (!(expr)) \
@@ -121,6 +140,7 @@ extern Bool Must_have_memory;
         ((r1)->y2 >= (r2)->y2) )
 
 #define xallocData(n) (RegDataPtr)xalloc(REGION_SZOF(n))
+#define xnfallocData(n) (RegDataPtr)xnfalloc(REGION_SZOF(n))
 #define xfreeData(reg) if ((reg)->data && (reg)->data->size) xfree((reg)->data)
 
 #define RECTALLOC(pReg,n) \
@@ -275,9 +295,7 @@ miRegionCreate(rect, size)
 {
     register RegionPtr pReg;
    
-    Must_have_memory = TRUE; /* XXX */
-    pReg = (RegionPtr)xalloc(sizeof(RegionRec));
-    Must_have_memory = FALSE; /* XXX */
+    pReg = (RegionPtr)xnfalloc(sizeof(RegionRec));
     if (rect)
     {
 	pReg->extents = *rect;
@@ -348,17 +366,16 @@ miRectAlloc(pRgn, n)
     register RegionPtr pRgn;
     int n;
 {
-    Must_have_memory = TRUE; /* XXX */
     if (!pRgn->data)
     {
 	n++;
-	pRgn->data = xallocData(n);
+	pRgn->data = xnfallocData(n);
 	pRgn->data->numRects = 1;
 	*REGION_BOXPTR(pRgn) = pRgn->extents;
     }
     else if (!pRgn->data->size)
     {
-	pRgn->data = xallocData(n);
+	pRgn->data = xnfallocData(n);
 	pRgn->data->numRects = 0;
     }
     else
@@ -370,9 +387,8 @@ miRectAlloc(pRgn, n)
 		n = 250;
 	}
 	n += pRgn->data->numRects;
-	pRgn->data = (RegDataPtr)xrealloc(pRgn->data, REGION_SZOF(n));
+	pRgn->data = (RegDataPtr)xnfrealloc(pRgn->data, REGION_SZOF(n));
     }
-    Must_have_memory = FALSE; /* XXX */
     pRgn->data->size = n;
     return TRUE;
 }
@@ -396,9 +412,7 @@ miRegionCopy(dst, src)
     if (!dst->data || (dst->data->size < src->data->numRects))
     {
 	xfreeData(dst);
-	Must_have_memory = TRUE; /* XXX */
-	dst->data = xallocData(src->data->numRects);
-	Must_have_memory = FALSE; /* XXX */
+	dst->data = xnfallocData(src->data->numRects);
 	dst->data->size = src->data->numRects;
     }
     dst->data->numRects = src->data->numRects;
@@ -1262,7 +1276,10 @@ miRegionAppend(dstrgn, rgn)
     rects[b] = t;	    \
 }
 
-static void
+#ifndef MTX
+static
+#endif /* MTX */
+void
 QuickSortRects(rects, numRects)
     register BoxRec     rects[];
     register int        numRects;
@@ -1411,9 +1428,7 @@ miRegionValidate(badreg, pOverlap)
 
     /* Set up the first region to be the first rectangle in badreg */
     /* Note that step 2 code will never overflow the ri[0].reg rects array */
-    Must_have_memory = TRUE; /* XXX */
-    ri = (RegionInfo *) xalloc(4 * sizeof(RegionInfo));
-    Must_have_memory = FALSE; /* XXX */
+    ri = (RegionInfo *) xnfalloc(4 * sizeof(RegionInfo));
     sizeRI = 4;
     numRI = 1;
     ri[0].prevBand = 0;
@@ -1475,9 +1490,7 @@ miRegionValidate(badreg, pOverlap)
 	{
 	    /* Oops, allocate space for new region information */
 	    sizeRI <<= 1;
-	    Must_have_memory = TRUE; /* XXX */
-	    ri = (RegionInfo *) xrealloc(ri, sizeRI * sizeof(RegionInfo));
-	    Must_have_memory = FALSE; /* XXX */
+	    ri = (RegionInfo *) xnfrealloc(ri, sizeRI * sizeof(RegionInfo));
 	    rit = &ri[numRI];
 	}
 	numRI++;
@@ -1566,10 +1579,8 @@ miRectsToRegion(nrects, prect, ctype)
 	}
 	return pRgn;
     }
-    Must_have_memory = TRUE; /* XXX */
-    pData = xallocData(nrects);
+    pData = xnfallocData(nrects);
     pBox = (BoxPtr) (pData + 1);
-    Must_have_memory = FALSE; /* XXX */
     for (i = nrects; --i >= 0; prect++)
     {
 	x1 = prect->x;
@@ -2230,6 +2241,18 @@ static void QuickSortSpans(spans, widths, numSpans)
     } while (numSpans > 1);
 }
 
+#if defined(TRANSLATE_COORDS) && defined(MTX)
+#define NextBand()						    \
+{								    \
+    clipy1 = pboxBandStart->y1;					    \
+    clipy2 = pboxBandStart->y2;					    \
+    pboxBandEnd = pboxBandStart + 1;				    \
+    while (pboxBandEnd != pboxLast && pboxBandEnd->y1 == clipy1) {  \
+	pboxBandEnd++;						    \
+    }								    \
+    for (; ppt != pptLast && (ppt->y + yOrg) < clipy1; ppt++, pwidth++) {} \
+}
+#else
 #define NextBand()						    \
 {								    \
     clipy1 = pboxBandStart->y1;					    \
@@ -2240,6 +2263,7 @@ static void QuickSortSpans(spans, widths, numSpans)
     }								    \
     for (; ppt != pptLast && ppt->y < clipy1; ppt++, pwidth++) {} \
 }
+#endif /* TRANSLATE_COORDS && MTX */
 
 /*
     Clip a list of scanlines to a region.  The caller has allocated the
@@ -2249,7 +2273,11 @@ static void QuickSortSpans(spans, widths, numSpans)
 */
 
 int
-miClipSpans(prgnDst, ppt, pwidth, nspans, pptNew, pwidthNew, fSorted)
+miClipSpans(prgnDst, ppt, pwidth, nspans, pptNew, pwidthNew, fSorted
+#if defined(TRANSLATE_COORDS) && defined(MTX)
+	, xOrg, yOrg
+#endif /* TRANSLATE_COORDS && MTX */
+)
     RegionPtr		    prgnDst;
     register DDXPointPtr    ppt;
     register int	    *pwidth;
@@ -2257,6 +2285,9 @@ miClipSpans(prgnDst, ppt, pwidth, nspans, pptNew, pwidthNew, fSorted)
     register DDXPointPtr    pptNew;
     int			    *pwidthNew;
     int			    fSorted;
+#if defined(TRANSLATE_COORDS) && defined(MTX)
+    register int            xOrg, yOrg;
+#endif /* TRANSLATE_COORDS && MTX */
 {
     register DDXPointPtr pptLast;
     int			*pwidthNewStart;	/* the vengeance of Xerox! */
@@ -2282,8 +2313,13 @@ miClipSpans(prgnDst, ppt, pwidth, nspans, pptNew, pwidthNew, fSorted)
 	    
 	for (; ppt != pptLast; ppt++, pwidth++)
 	{
+#if defined(TRANSLATE_COORDS) && defined(MTX)
+	    y = ppt->y + yOrg;
+	    x1 = ppt->x + xOrg;
+#else /* TRANSLATE_COORDS && MTX */
 	    y = ppt->y;
 	    x1 = ppt->x;
+#endif /* TRANSLATE_COORDS && MTX */
 	    if (clipy1 <= y && y < clipy2)
 	    {
 		x2 = x1 + *pwidth;
@@ -2322,12 +2358,20 @@ miClipSpans(prgnDst, ppt, pwidth, nspans, pptNew, pwidthNew, fSorted)
 
 	for (; ppt != pptLast; )
 	{
-	    y = ppt->y;
+	    y = ppt->y
+#if defined(TRANSLATE_COORDS) && defined(MTX)
+		+yOrg
+#endif /* TRANSLATE_COORDS && MTX */
+		;
 	    if (y < clipy2)
 	    {
 		/* span is in the current band */
 		pbox = pboxBandStart;
-		x1 = ppt->x;
+		x1 = ppt->x
+#if defined(TRANSLATE_COORDS) && defined(MTX)
+		    +xOrg
+#endif /* TRANSLATE_COORDS && MTX */
+		    ;
 		x2 = x1 + *pwidth;
 		do
 		{ /* For each box in band */
