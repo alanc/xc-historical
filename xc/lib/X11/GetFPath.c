@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XGetFPath.c,v 11.12 88/09/06 16:07:45 jim Exp $ */
+/* $XConsortium: XGetFPath.c,v 11.13 89/11/08 17:06:43 converse Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #define NEED_REPLIES
@@ -14,7 +14,7 @@ int *npaths;	/* RETURN */
 	register long nbytes;
 	char **flist;
 	char *ch;
-	register int i;
+	register unsigned i;
 	register int length;
 	register xReq *req;
 

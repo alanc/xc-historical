@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XLiHosts.c,v 11.16 89/11/08 17:07:12 converse Exp $ */
+/* $XConsortium: XLiHosts.c,v 11.17 90/01/31 12:22:47 keith Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 /* This can really be considered an os dependent routine */
 
@@ -19,7 +19,7 @@ XHostAddress *XListHosts (dpy, nhosts, enabled)
     xListHostsReply reply;
     long nbytes;
     unsigned char *buf, *bp;
-    register int i;
+    register unsigned i;
     register xListHostsReq *req;
 
     LockDisplay(dpy);

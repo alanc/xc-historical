@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XKeyBind.c,v 11.59 90/12/09 16:47:29 rws Exp $ */
+/* $XConsortium: XKeyBind.c,v 11.60 90/12/12 09:18:27 rws Exp $ */
 /* Copyright 1985, 1987, Massachusetts Institute of Technology */
 
 /* Beware, here be monsters (still under construction... - JG */
@@ -42,7 +42,7 @@ KeyCodetoKeySym(dpy, keycode, col)
     KeySym lsym, usym;
 
     if ((col < 0) || ((col >= per) && (col > 3)) ||
-	(keycode < dpy->min_keycode) || (keycode > dpy->max_keycode))
+	((int)keycode < dpy->min_keycode) || ((int)keycode > dpy->max_keycode))
       return NoSymbol;
 
     syms = &dpy->keysyms[(keycode - dpy->min_keycode) * per];
@@ -265,7 +265,8 @@ XTranslateKey(dpy, keycode, modifiers, modifiers_return, keysym_return)
     if ((! dpy->keysyms) && (! Initialize(dpy)))
 	return 0;
     *modifiers_return = (ShiftMask|LockMask) | dpy->mode_switch;
-    if ((keycode < dpy->min_keycode) || (keycode > dpy->max_keycode))  {
+    if (((int)keycode < dpy->min_keycode) || ((int)keycode > dpy->max_keycode))
+    {
 	*keysym_return = NoSymbol;
 	return 1;
     }

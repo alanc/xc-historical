@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XListExt.c,v 11.7 88/09/06 16:09:00 jim Exp $ */
+/* $XConsortium: XListExt.c,v 11.8 89/11/08 17:07:22 converse Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #define NEED_REPLIES
@@ -13,7 +13,7 @@ int *nextensions;	/* RETURN */
 	xListExtensionsReply rep;
 	char **list;
 	char *ch;
-	register int i;
+	register unsigned i;
 	register int length;
 	register xReq *req;
 	register long rlen;

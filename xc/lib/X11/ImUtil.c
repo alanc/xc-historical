@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XImUtil.c,v 11.38 90/06/15 17:17:55 rws Exp $ */
+/* $XConsortium: XImUtil.c,v 11.39 90/12/11 11:08:14 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
@@ -13,8 +13,8 @@
 #define Const /**/
 #endif
 
-static char Const _lomask[0x09] = { 0x00, 0x01, 0x03, 0x07, 0x0f, 0x1f, 0x3f, 0x7f, 0xff };
-static char Const _himask[0x09] = { 0xff, 0xfe, 0xfc, 0xf8, 0xf0, 0xe0, 0xc0, 0x80, 0x00 };
+static unsigned char Const _lomask[0x09] = { 0x00, 0x01, 0x03, 0x07, 0x0f, 0x1f, 0x3f, 0x7f, 0xff };
+static unsigned char Const _himask[0x09] = { 0xff, 0xfe, 0xfc, 0xf8, 0xf0, 0xe0, 0xc0, 0x80, 0x00 };
 
 /* These two convenience routines return the scanline_pad and bits_per_pixel 
 	associated with a specific depth of ZPixmap format image for a 
