@@ -309,7 +309,7 @@ Specifies the display string, or NULL.
 Specifies the name of the application instance, or NULL.
 .IP \fIapplication_class\fP 1i
 Specifies the class name of this application,
-which is usually the generic name for all instances of this application
+which is usually the generic name for all instances of this application.
 .IP \fIoptions\fP 1i
 Specifies how to parse the command line for any application-specific resources.
 The options argument is passed as a parameter to

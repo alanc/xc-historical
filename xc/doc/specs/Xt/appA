@@ -20,14 +20,14 @@ The format of a resource specification is
 .TS
 l l .
 ResourceLine	= Comment | ResourceSpec
-Comment	= "!" string | <empty line>
-ResourceSpec	= WhiteSpace ResourceName WhiteSpace ":" WhiteSpace value
+Comment	= ``!'' string | <empty line>
+ResourceSpec	= WhiteSpace ResourceName WhiteSpace ``:'' WhiteSpace value
 ResourceName	= [Binding] ComponentName {Binding ComponentName}
-Binding	= "." | "*"
-WhiteSpace	= {" " | "\\\\t"}
-ComponentName	= {"A"-"Z" | "a"-"z" | "0"-"9" | "_" | "-"}
+Binding	= ``.'' | ``*''
+WhiteSpace	= {`` '' | ``\\\\t''}
+ComponentName	= {``A''-``Z'' | ``a''-``z'' | ``0''-``9'' | ``_'' | ``-''}
 value	= string
-string	= {<any character not including "\\\\n">}
+string	= {<any character not including ``\\\\n''>}
 .TE
 .LP
 where {...} means zero or more occurrences of the enclosed elements.

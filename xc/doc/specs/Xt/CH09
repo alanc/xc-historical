@@ -1904,7 +1904,10 @@ descriptor.  The caller is expected to copy this private storage
 immediately and must not modify it in any way.  If a non-NULL location
 is specified, the caller must allocate sufficient storage to hold the
 converted value and must also specify the size of that storage in the
-descriptor.  If the conversion succeeds,
+descriptor.
+The \fIsize\fP field will be modified on return to indicate the actual
+size of the converted data.
+If the conversion succeeds,
 .PN XtConvertAndStore
 returns
 .PN True ;
