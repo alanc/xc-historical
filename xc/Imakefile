@@ -4,7 +4,7 @@
       WORLDOPTS = -k
 BOOTSTRAPCFLAGS = 
      CHECKFNSRC = $(UTILSRC)/checkfn
-        CHECKFN = $(CHECKFNSRC/checkfn
+        CHECKFN = $(CHECKFNSRC)/checkfn
 
 /**/#
 /**/# Preserve this order!
