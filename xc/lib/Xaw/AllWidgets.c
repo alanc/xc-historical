@@ -22,6 +22,8 @@ extern WidgetClass gripWidgetClass;
 extern WidgetClass labelWidgetClass;
 extern WidgetClass listWidgetClass;
 extern WidgetClass menuButtonWidgetClass;
+extern WidgetClass multiSinkObjectClass;
+extern WidgetClass multiSrcObjectClass;
 extern WidgetClass objectClass;
 extern WidgetClass overrideShellWidgetClass;
 extern WidgetClass panedWidgetClass;
@@ -64,6 +66,8 @@ XmuWidgetNode XawWidgetArray[] = {
 { "label", &labelWidgetClass },
 { "list", &listWidgetClass },
 { "menuButton", &menuButtonWidgetClass },
+{ "multiSink", &multiSinkObjectClass },
+{ "multiSrc", &multiSrcObjectClass },
 { "object", &objectClass },
 { "overrideShell", &overrideShellWidgetClass },
 { "paned", &panedWidgetClass },
