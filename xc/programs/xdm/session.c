@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: $
+ * $XConsortium: session.c,v 1.4 88/09/23 14:21:31 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -38,6 +38,7 @@ struct display	*d;
 	/*
 	 * Step 5: Load system default Resources
 	 */
+	Debug ("ManageSession %s\n", d->name);
 	LoadXloginResources (d);
 	InitGreet (d);
 	for (;;) {
@@ -54,6 +55,7 @@ struct display	*d;
 			FailedLogin (d, &greet);
 	}
 	CloseGreet (d);
+	Debug ("Greet loop finished\n");
 	/*
 	 * Step 8: Run system-wide initialization file
 	 *	   /etc/Xstartup
@@ -63,7 +65,9 @@ struct display	*d;
 	 * Step 9: Start the clients, changing uid/groups
 	 *	   setting up environment and running /etc/Xsession
 	 */
+	Debug ("Startup sourced\n");
 	if (StartClient (&verify, &clientPid)) {
+		Debug ("Client Started\n");
 		/*
 		 * Step 13: Wait for session to end,
 		 */
@@ -111,6 +115,7 @@ int			*pidp;
 	Debug ("\n");
 	switch (pid = fork ()) {
 	case 0:
+		setpgrp (0, getpid ());
 #ifdef NGROUPS
 		setgroups (verify->ngroups, verify->groups);
 		setgid (verify->groups[0]);
