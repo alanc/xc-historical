@@ -1,5 +1,5 @@
 /*
- * $XConsortium: pr.c,v 1.5 88/09/06 17:53:54 jim Exp $
+ * $XConsortium: pr.c,v 1.6 88/09/30 08:55:13 jim Exp $
  */
 #include "def.h"
 
@@ -101,7 +101,7 @@ void catch()
 	log_fatal("got signal\n");
 }
 #else /* not (mips && SYSTYPE_SYSV) */
-#ifdef ultrix
+#if defined(ultrix) || defined(sun)
 void
 #endif
 catch(n)
