@@ -1,7 +1,7 @@
 /*
  * xrdb - X resource manager database utility
  *
- * $XConsortium: xrdb.c,v 11.37 90/12/12 14:46:29 gildea Exp $
+ * $XConsortium: xrdb.c,v 11.39 91/01/23 12:15:03 gildea Exp $
  */
 
 /*
@@ -53,8 +53,13 @@ static Bool quiet = False;
 #define RESOURCE_PROPERTY_NAME "RESOURCE_MANAGER"
 #define BACKUP_SUFFIX ".bak"		/* for editting */
 
-
 extern FILE *popen();
+
+#if defined(FUNCPROTO) || defined(__STDC__) || defined(_cplusplus) || defined (c_plusplus)
+extern char *mktemp(char *);	/* must match system .h decl */
+#else
+extern char *mktemp();
+#endif
 
 typedef struct _Entry {
     char *tag, *value;
