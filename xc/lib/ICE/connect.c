@@ -1,4 +1,4 @@
-/* $XConsortium: connect.c,v 1.26 94/03/18 15:59:13 mor Exp $ */
+/* $XConsortium: connect.c,v 1.27 94/04/07 13:34:07 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -413,6 +413,28 @@ char 	   *errorStringRet;
     }
 
     return (iceConn);
+}
+
+
+
+void
+IceSetConnectionContext (iceConn, context)
+
+IceConn    iceConn;
+IcePointer context;
+
+{
+    iceConn->context = context;
+}
+
+
+IcePointer
+IceGetConnectionContext (iceConn)
+
+IceConn    iceConn;
+
+{
+    return (iceConn->context);
 }
 
 

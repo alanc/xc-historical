@@ -18,6 +18,7 @@ EXPORTS
  IceFreeListenObjs
  IceGenerateMagicCookie
  IceGetAuthFileEntry
+ IceGetConnectionContext
  IceGetInBufSize
  IceGetListenConnectionNumber
  IceGetListenConnectionString
@@ -39,6 +40,7 @@ EXPORTS
  IceRegisterForProtocolSetup
  IceRelease
  IceRemoveConnectionWatch
+ IceSetConnectionContext
  IceSetErrorHandler
  IceSetHostBasedAuthProc
  IceSetIOErrorHandler
