@@ -10,6 +10,7 @@
 #define OSName AIX
 #define ibmbootstrapcflags -Daix
 #define OSDefines /**/
+#define OPERATING_SYSTEM AIX /* directory name under server/ddx/ibm/ */
 #ifdef USE_PCC
 #define CcCmd i386cc
 #define ibmosdefs -DHCVERSION=HCRevision
@@ -25,6 +26,7 @@
 #define CcCmd hc
 #define ibmosdefs -DHCVERSION=HCRevision
 #define OSDefines -DBSDrt
+#define OPERATING_SYSTEM BSDrt
 #endif /* AIXArchitecture */
 
 #define HasVoidSignalReturn    NO
@@ -38,13 +40,13 @@
  * 
  *                                        PS2, Rt, ...
  */
-#define ibmInclude8514  YES
-#define ibmIncludeAED   YES
+#define ibmInclude8514  NO /* YES */
+#define ibmIncludeAED   NO /* YES */
 #define ibmIncludeAPA16 YES
 #define ibmIncludeAPA8c NO
-#define ibmIncludeEGA   YES
-#define ibmIncludeMPEL  YES
-#define ibmIncludeVGA   YES
+#define ibmIncludeEGA   NO /* YES */
+#define ibmIncludeMPEL  NO /* YES */
+#define ibmIncludeVGA   NO /* YES */
 #define ibmIncludeGEN   NO
 #endif /* RtArchitecture */
 
@@ -174,6 +176,6 @@
 /* define this as you like for normal library compilation */
 #define LibraryDefines -DUNIXCPP StandardDefines
 
-/**/# platform:  $XConsortium: ibm.cf,v 1.9 89/10/10 19:21:00 jim Exp $
+/**/# platform:  $XConsortium: ibm.cf,v 1.10 89/10/11 16:53:38 jim Exp $
 /**/# operating system:  OSName
 
