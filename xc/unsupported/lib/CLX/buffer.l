@@ -592,7 +592,7 @@
     (with-buffer-input (reply-buffer :sizes (16) :index index)
       #-clx-overlapping-arrays
       (do* ((j start (index+ j 1))
-	    (end (index+ start (index* nitems 2)))
+	    (end (index+ start index))
 	    (index 0 (index+ index 2)))
 	   ((index>= j end))
 	(declare (type array-index j index))
@@ -610,7 +610,7 @@
   (with-vector (data (simple-array card16 (*)))
     (with-buffer-input (reply-buffer :sizes (16) :index index)
       (do* ((j start (index+ j 1))
-	    (end (index+ start (index* nitems 2)))
+	    (end (index+ start nitems))
 	    (index 0 (index+ index 2)))
 	   ((index>= j end))
 	(declare (type array-index j index))
@@ -624,7 +624,7 @@
     (with-buffer-input (reply-buffer :sizes (16) :index index)
       #-clx-overlapping-arrays
       (do* ((j start (index+ j 1))
-	    (end (index+ start (index* nitems 2)))
+	    (end (index+ start nitems))
 	    (index 0 (index+ index 2)))
 	   ((index>= j end))
 	(declare (type array-index j index))
@@ -732,7 +732,7 @@
     (with-buffer-input (reply-buffer :sizes (32) :index index)
       #-clx-overlapping-arrays
       (do* ((j start (index+ j 1))
-	    (end (index+ start (index* nitems 4)))
+	    (end (index+ start nitems))
 	    (index 0 (index+ index 4)))
 	   ((index>= j end))
 	(declare (type array-index j index))
@@ -750,7 +750,7 @@
   (with-vector (data (simple-array card32 (*)))
     (with-buffer-input (reply-buffer :sizes (32) :index index)
       (do* ((j start (index+ j 1))
-	    (end (index+ start (index* nitems 4)))
+	    (end (index+ start nitems))
 	    (index 0 (index+ index 4)))
 	   ((index>= j end))
 	(declare (type array-index j index))
@@ -764,7 +764,7 @@
     (with-buffer-input (reply-buffer :sizes (32) :index index)
       #-clx-overlapping-arrays
       (do* ((j start (index+ j 1))
-	    (end (index+ start (index* nitems 4)))
+	    (end (index+ start nitems))
 	    (index 0 (index+ index 4)))
 	   ((index>= j end))
 	(declare (type array-index j index))
