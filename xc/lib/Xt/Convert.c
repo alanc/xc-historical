@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Convert.c,v 1.23 89/09/07 17:45:28 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Convert.c,v 1.24 89/09/12 16:47:01 swick Exp $";
 /* $oHeader: Convert.c,v 1.4 88/09/01 11:10:44 asente Exp $ */
 #endif /*lint*/
 /*LINTLIBRARY*/
@@ -661,7 +661,8 @@ Boolean _XtConvert(widget, from_type, from, to_type, to, cache_ref_return)
 		XrmValue tempTo;
 		XtDirectConvert((XtConverter)p->converter, args, num_args,
 				from, &tempTo);
-		*cache_ref_return = NULL;
+		if (cache_ref_return != NULL)
+		    *cache_ref_return = NULL;
 		if (tempTo.addr != NULL) {
 		    static XrmRepresentation QString = NULLQUARK;
 		    if (QString == NULLQUARK)
