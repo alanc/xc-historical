@@ -1,4 +1,4 @@
-/* $Header: dsimple.c,v 1.3 88/01/25 16:38:36 jim Exp $ */
+/* $Header: dsimple.c,v 1.4 88/01/31 15:37:13 rws Exp $ */
 #include <X11/Xos.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
@@ -90,28 +90,41 @@ char *Realloc(ptr, size)
 
 /*
  * Get_Display_Name (argc, argv) Look for -display, -d, or host:dpy (obselete)
+ * If found, remove it from command line.  Don't go past a lone -.
  */
 char *Get_Display_Name(pargc, argv)
-    int *pargc;
-    char **argv;
+    int *pargc;  /* MODIFIED */
+    char **argv; /* MODIFIED */
 {
     int argc = *pargc;
+    char **pargv = argv+1;
     char *displayname = NULL;
     int i;
 
     for (i = 1; i < argc; i++) {
 	char *arg = argv[i];
 
-	if (strcmp (arg, "-display") == 0 || strcmp (arg, "-d") == 0) {
+	if (!strcmp (arg, "-display") || !strcmp (arg, "-d")) {
 	    if (++i >= argc) usage ();
 
 	    displayname = argv[i];
+	    *pargc -= 2;
 	    continue;
 	}
-	if (index (arg, ':') != NULL)
+	if (!strcmp(arg,"-")) {
+		while (i<argc)
+			*pargv++ = argv[i++];
+		break;
+	}
+	if (index (arg, ':') != NULL) {
 	    displayname = arg;
+	    *pargc -= 1;
+	    continue;
+	}
+	*pargv++ = arg;
     }
 
+    *pargv = NULL;
     return (displayname);
 }
 
@@ -127,10 +140,10 @@ char *display_name;
 
 	d = XOpenDisplay(display_name);
 	if (d == NULL) {
-		if (display_name == NULL)
-		  Fatal_Error("Could not open default display!");
-		else
-		  Fatal_Error("Could not open display %s!", display_name);
+	    fprintf (stderr, "%s:  unable to open display '%s'\n",
+		     program_name, XDisplayName (display_name));
+	    usage ();
+	    /* doesn't return */
 	}
 
 	return(d);
@@ -145,17 +158,10 @@ char *display_name;
  *                           Does not require dpy or screen defined.
  */
 void Setup_Display_And_Screen(argc, argv)
-int *argc;
-char **argv;
+int *argc;      /* MODIFIED */
+char **argv;    /* MODIFIED */
 {
-	char *displayname = Get_Display_Name(argc, argv);
-
-	dpy = Open_Display (displayname);
-	if (!dpy) {
-	    fprintf (stderr, "%s:  unable to open display '%s'\n",
-		     program_name, XDisplayName (displayname));
-	    usage ();
-	}
+	dpy = Open_Display (Get_Display_Name(argc, argv));
 	screen = DefaultScreen(dpy);
 }
 
@@ -426,26 +432,41 @@ Window Select_Window(dpy)
   int status;
   Cursor cursor;
   XEvent event;
-  Window target_win;
+  Window target_win = None;
+  int buttons = 0;
 
   /* Make the target cursor */
   cursor = XCreateFontCursor(dpy, XC_crosshair);
 
   /* Grab the pointer using target cursor, letting it room all over */
-  status = XGrabPointer(dpy, RootWindow(dpy, screen), True,
-			ButtonPressMask, GrabModeAsync,
+  status = XGrabPointer(dpy, RootWindow(dpy, screen), False,
+			ButtonPressMask|ButtonReleaseMask, GrabModeSync,
 			GrabModeAsync, None, cursor, CurrentTime);
   if (status != GrabSuccess) Fatal_Error("Can't grab the mouse.");
 
   /* Let the user select a window... */
-  XNextEvent(dpy, &event);
-  target_win = event.xbutton.subwindow;  /* Get which window selected */
+  while ((target_win == None) || (buttons != 0)) {
+    /* allow one more event */
+    XAllowEvents(dpy, SyncPointer, CurrentTime);
+    XWindowEvent(dpy, RootWindow(dpy, screen),
+		 ButtonPressMask|ButtonReleaseMask, &event);
+    switch (event.type) {
+    case ButtonPress:
+      if (target_win == None) {
+	target_win = event.xbutton.subwindow; /* window selected */
+	if (target_win == None)
+	  target_win = RootWindow(dpy, screen);
+      }
+      buttons++;
+      break;
+    case ButtonRelease:
+      if (buttons > 0) /* there may have been some down before we started */
+	buttons--;
+       break;
+    }
+  } 
 
   XUngrabPointer(dpy, CurrentTime);      /* Done with pointer */
-
-  /* 0 for subwindow means root window */
-  if (target_win == 0)
-    target_win = RootWindow(dpy, screen);
 
   return(target_win);
 }
