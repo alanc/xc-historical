@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$XConsortium: Text.c,v 1.42 88/09/01 19:12:00 swick Exp $";
+static char rcsid[] = "$XConsortium: Text.c,v 1.43 88/09/04 12:33:39 swick Exp $";
 #endif
 
 
@@ -2554,56 +2554,62 @@ XtActionsRec textActionsTable [] = {
 Cardinal textActionsTableCount = XtNumber(textActionsTable); /* for subclasses */
 
 char defaultTextTranslations[] =
-"Ctrl<Key>F:	forward-character() \n\
-<Key>Right:	forward-character() \n\
+"\
+Ctrl<Key>F:	forward-character() \n\
 Ctrl<Key>B:	backward-character() \n\
-<Key>Left:	backward-character() \n\
-Meta<Key>F:	forward-word() \n\
-Meta<Key>B:	backward-word() \n\
-:Meta<Key>]:	forward-paragraph() \n\
-:Ctrl<Key>[:	backward-paragraph() \n\
+Ctrl<Key>D:	delete-next-character() \n\
 Ctrl<Key>A:	beginning-of-line() \n\
 Ctrl<Key>E:	end-of-line() \n\
+Ctrl<Key>H:	delete-previous-character() \n\
+Ctrl<Key>J:	newline-and-indent() \n\
+Ctrl<Key>K:	kill-to-end-of-line() \n\
+Ctrl<Key>L:	redraw-display() \n\
+Ctrl<Key>M:	newline() \n\
 Ctrl<Key>N:	next-line() \n\
-<Key>Down:	next-line() \n\
+Ctrl<Key>O:	newline-and-backup() \n\
 Ctrl<Key>P:	previous-line() \n\
-<Key>Up:	previous-line() \n\
 Ctrl<Key>V:	next-page() \n\
+Ctrl<Key>W:	kill-selection() \n\
+Ctrl<Key>Y:	unkill() \n\
+Ctrl<Key>Z:	scroll-one-line-up() \n\
+Meta<Key>F:	forward-word() \n\
+Meta<Key>B:	backward-word() \n\
+Meta<Key>I:	insert-file() \n\
+Meta<Key>K:	kill-to-end-of-paragraph() \n\
 Meta<Key>V:	previous-page() \n\
+Meta<Key>Y:	stuff() \n\
+Meta<Key>Z:	scroll-one-line-down() \n\
+:Meta<Key>d:	delete-next-word() \n\
+:Meta<Key>D:	kill-word() \n\
+:Meta<Key>h:	delete-previous-word() \n\
+:Meta<Key>H:	backward-kill-word() \n\
 :Meta<Key>\\<:	beginning-of-file() \n\
 :Meta<Key>\\>:	end-of-file() \n\
-Ctrl<Key>Z:	scroll-one-line-up() \n\
-Meta<Key>Z:	scroll-one-line-down() \n\
-Ctrl<Key>D:	delete-next-character() \n\
-Ctrl<Key>H:	delete-previous-character() \n\
+:Meta<Key>]:	forward-paragraph() \n\
+:Meta<Key>[:	backward-paragraph() \n\
+~Shift Meta<Key>Delete:		delete-previous-word() \n\
+ Shift Meta<Key>Delete:		backward-kill-word() \n\
+~Shift Meta<Key>Backspace:	delete-previous-word() \n\
+ Shift Meta<Key>Backspace:	backward-kill-word() \n\
+<Key>Right:	forward-character() \n\
+<Key>Left:	backward-character() \n\
+<Key>Down:	next-line() \n\
+<Key>Up:	previous-line() \n\
 <Key>Delete:	delete-previous-character() \n\
 <Key>BackSpace:	delete-previous-character() \n\
-~Shift Meta<Key>D:	delete-next-word() \n\
-~Shift Meta<Key>H:	delete-previous-word() \n\
-Shift Meta<Key>D:	kill-word() \n\
-Shift Meta<Key>H:	backward-kill-word() \n\
-Ctrl<Key>W:	kill-selection() \n\
-Ctrl<Key>K:	kill-to-end-of-line() \n\
-Meta<Key>K:	kill-to-end-of-paragraph() \n\
-Ctrl<Key>Y:	unkill() \n\
-Meta<Key>Y:	stuff() \n\
-Ctrl<Key>J:	newline-and-indent() \n\
 <Key>Linefeed:	newline-and-indent() \n\
-Ctrl<Key>O:	newline-and-backup() \n\
-Ctrl<Key>M:	newline() \n\
 <Key>Return:	newline() \n\
-Ctrl<Key>L:	redraw-display() \n\
-Meta<Key>I:	insert-file() \n\
+<Key>:		insert-char() \n\
 <FocusIn>:	focus-in() \n\
 <FocusOut>:	focus-out() \n\
 <Btn1Down>:	select-start() \n\
-Button1<PtrMoved>:	extend-adjust() \n\
+<Btn1Motion>:	extend-adjust() \n\
 <Btn1Up>:	extend-end() \n\
 <Btn2Down>:	stuff() \n\
 <Btn3Down>:	extend-start() \n\
-Button3<PtrMoved>:	extend-adjust() \n\
-<Btn3Up>:	extend-end() \n\
-<Key>:	insert-char()";
+<Btn3Motion>:	extend-adjust() \n\
+<Btn3Up>:	extend-end() \
+";
 
 TextClassRec textClassRec = {
   { /* core fields */
