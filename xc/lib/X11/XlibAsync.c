@@ -1,7 +1,7 @@
-/* $XConsortium: XAsync.c,v 1.1 91/04/16 15:03:32 rws Exp $ */
+/* $XConsortium: XlibAsync.c,v 1.1 92/01/19 17:35:49 rws Exp $ */
 /*
 
-Copyright 1991 by the Massachusetts Institute of Technology
+Copyright 1992 by the Massachusetts Institute of Technology
 
 Permission to use, copy, modify, distribute, and sell this software and its
 documentation for any purpose is hereby granted without fee, provided that
