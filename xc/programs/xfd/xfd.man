@@ -46,7 +46,9 @@ and its descent.  If verbose mode is selected, typing '<' or '>' into the
 window will display the minimum or maximum values respectively 
 taken on by each of these fields over the entire font.
 .PP
-The font name is interpreted by the X server.  On a VAX, if the name
+The font name is interpreted by the X server.
+To obtain a list of all the fonts available, use xlsfonts.
+On a VAX, if the name
 does not begin with ``/'', the X server adds the suffix ``.snf'' to it and
 looks up the font file in the directory \fI/usr/new/lib/X/font/\fP.  If
 the name does begin with ``/'', the X server treats it as an absolute
@@ -72,7 +74,7 @@ The
 .I host
 specifies which machine to create the window on, and
 the
-.I display
+.I number
 argument specifies the display number.
 For example,
 ``orpheus:1'' creates a shell window on display one on the machine
@@ -169,7 +171,7 @@ Set the title to be used.
 .SH FILES
 /usr/new/lib/X/font/*.snf
 .SH "SEE ALSO"
-X(1), X(8C), xterm(1)
+X(1), X(8C), xterm(1), xlsfonts(1)
 .SH ENVIRONMENT
 DISPLAY	-	To find out which display you are using.
 .SH BUGS
