@@ -1,4 +1,4 @@
-/* $XConsortium: mpconv.c,v 1.1 93/10/26 09:46:54 rws Exp $ */
+/* $XConsortium: mpconv.c,v 1.2 93/10/31 09:48:12 dpw Exp $ */
 /**** module mpconv.c ****/
 /******************************************************************************
 				NOTICE
@@ -125,7 +125,7 @@ static ddElemVecRec ConvolveReplicateVec = {
   };
 
 typedef struct _mpconvconst {
-	void *carray;		/* stores constant convolution lines */
+	pointer carray;		/* stores constant convolution lines */
 	ConvFloat *sums;	/* stores constant * kernel vals     */
 	void (*action)();	/* band specific action function     */	    
 	ConvFloat minClip;	/* constrained data min clip value   */
@@ -177,9 +177,9 @@ static int CreateConvolveConstant(flo,ped)
 	itype *cline; 							    \
 	register itype cconst = (itype)*tconst;		 	    	    \
 	register CARD32 i;					 	    \
-	if (!(cpvt->carray = cline =					    \
-		(itype *)XieMalloc(sizeof(itype) * iwidth)))	 	    \
+	if (!(cline = (itype *)XieMalloc(sizeof(itype) * iwidth)))	    \
 		AllocError(flo,ped,return(FALSE));		 	    \
+        cpvt->carray = (pointer)cline;					    \
 	for (i = 0; i < iwidth; i++) *cline++ = cconst;	 	    	    \
 	for (i = 0; i < ks2; i++) bnd->dataMap[i] = (CARD8 *)cpvt->carray;  
 
@@ -386,8 +386,8 @@ static int ActivateConvolveConstant(flo,ped,pet)
         CARD32  dline = oband->current;
         CARD32    len = ks;
         CARD32    map = 0;
-        void     **br = (void **)iband->dataMap;
-	void *dst;
+        pointer *br = (pointer *)iband->dataMap;
+	pointer dst;
         Bool ok;
 
 	while(!ferrCode(flo)) {
@@ -403,12 +403,12 @@ static int ActivateConvolveConstant(flo,ped,pet)
 	    }
 	   if(dline > end) {
 		len = iband->threshold - 1;
-		br[len] = (void *)cpvt->carray;
+		br[len] = (pointer)cpvt->carray;
        	        SetBandThreshold(iband, len);
  	    }
 
 	    ok  = MapData(flo,pet,iband,map,sline++,len,TRUE);
-	    dst = GetDst(void,flo,pet,oband,dline++,TRUE);
+	    dst = GetDst(pointer,flo,pet,oband,dline++,TRUE);
 
 	    if(!ok || !dst || !SyncDomain(flo,ped,oband,FLUSH)) break;
 
@@ -446,7 +446,7 @@ static int ResetConvolveConstant(flo,ped)
   int b;
 
   for(b = 0; b < ped->inFloLst[SRCtag].bands; b++, cpvt++) {
-  	if (cpvt->carray) cpvt->carray = (void *) XieFree(cpvt->carray);
+  	if (cpvt->carray) cpvt->carray = (pointer) XieFree(cpvt->carray);
 	if (cpvt->sums)     cpvt->sums = (ConvFloat *) XieFree(cpvt->sums);
 	cpvt->action = (void (*)())NULL;
 	cpvt->minClip = 0;
