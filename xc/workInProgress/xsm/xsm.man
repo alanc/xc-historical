@@ -1,0 +1,14 @@
+.\" $XConsortium: iceauth.man,v 1.1 94/02/10 21:28:08 rws Exp $
+.TH XSM 1 "Release 6" "X Version 11"
+.SH NAME
+xsm \- X session manager
+.SH SYNOPSIS
+.B xsm
+[ TBD ]
+.SH DESCRIPTION
+.PP
+The \fIxsm\fP program is a simple session manager.
+.SH COPYRIGHT
+Copyright 1994, X Consortium, Inc.
+.SH AUTHOR
+Ralph Mor, X Consortium

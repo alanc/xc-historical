@@ -1,0 +1,14 @@
+.\" $XConsortium: xsmclient.man,v 1.1 94/02/10 21:32:12 rws Exp $
+.TH XSMCLIENT 1 "Release 6" "X Version 11"
+.SH NAME
+xsmclient \- X session manager tester
+.SH SYNOPSIS
+.B xsmclient
+[ TBD ]
+.SH DESCRIPTION
+.PP
+The \fIxsmclient\fP program is used to test the session manager.
+.SH COPYRIGHT
+Copyright 1994, X Consortium, Inc.
+.SH AUTHOR
+Ralph Mor, X Consortium
