@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: toc.c,v 1.10 88/01/19 14:07:10 swick Exp $";
+static char rcs_id[] = "$Header: toc.c,v 1.11 88/01/19 14:41:28 swick Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -898,7 +898,6 @@ Toc toc;
 int msgid;
 {
     int h, l, m;
-    char str[100];
     l = 0;
     h = toc->nummsgs - 1;
     while (l < h - 1) {
@@ -910,8 +909,11 @@ int msgid;
     }
     if (toc->msgs[l]->msgid == msgid) return toc->msgs[l];
     if (toc->msgs[h]->msgid == msgid) return toc->msgs[h];
-    (void) sprintf(str, "TocMsgFromId search failed! hi=%d, lo=%d, msgid=%d",
-		   h, l, msgid);
-    Punt(str);
-    return 0; /* Keep lint happy. */
+    if (debug) {
+	char str[100];
+	(void)sprintf(str, "TocMsgFromId search failed! hi=%d, lo=%d, msgid=%d",
+		      h, l, msgid);
+	DEBUG( str );
+    }
+    return NULL;
 }
