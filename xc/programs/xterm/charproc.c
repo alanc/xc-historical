@@ -1,5 +1,5 @@
 /*
- * $XConsortium: charproc.c,v 1.180 94/04/17 20:23:25 hersh Exp gildea $
+ * $XConsortium: charproc.c,v 1.181 94/08/10 21:40:25 gildea Exp gildea $
  */
 
 /*
@@ -3112,15 +3112,15 @@ int LoadNewFont (screen, nfontname, bfontname, doresize, fontnum)
     }
 
     if (!(nfs = XLoadQueryFont (screen->display, nfontname))) goto bad;
-    if (nfs->ascent + nfs->descent == 0)
-	goto bad;		/* can't use a 0-height font */
+    if (nfs->ascent + nfs->descent == 0  ||  nfs->max_bounds.width == 0)
+	goto bad;		/* can't use a 0-sized font */
 
     if (!(bfontname && 
 	  (bfs = XLoadQueryFont (screen->display, bfontname))))
       bfs = nfs;
     else
-	if (bfs->ascent + bfs->descent == 0)
-	    goto bad;		/* can't use a 0-height font */
+	if (bfs->ascent + bfs->descent == 0  ||  bfs->max_bounds.width == 0)
+	    goto bad;		/* can't use a 0-sized font */
 
     mask = (GCFont | GCForeground | GCBackground | GCGraphicsExposures |
 	    GCFunction);
