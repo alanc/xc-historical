@@ -568,8 +568,7 @@
     (if queue
 	(values
 	  (with-event-queue-internal (display :timeout timeout)
-	    (threaded-length (or current-event (display-event-queue-head display))
-			     reply-next reply-buffer))
+	    (threaded-length queue reply-next reply-buffer))
 	  nil)
       (with-event-queue (display :timeout timeout :inline t)
 	(let ((eof-or-timeout (wait-for-event display timeout nil)))
@@ -577,7 +576,7 @@
 	      (values nil eof-or-timeout)
 	    (values 
 	      (with-event-queue-internal (display :timeout timeout)
-		(threaded-length (display-event-queue-head display)
+		(threaded-length (display-new-events display)
 				 reply-next reply-buffer))
 	      nil)))))))
 
