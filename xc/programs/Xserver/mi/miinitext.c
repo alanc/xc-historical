@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: miinitext.c,v 1.17 92/01/25 16:35:50 rws Exp $ */
+/* $XConsortium: miinitext.c,v 1.18 92/02/13 15:51:52 keith Exp $ */
 
 #ifdef BEZIER
 extern void BezierExtensionInit();
@@ -58,6 +58,9 @@ extern void DEC_XTRAPInit();
 #endif
 #ifdef SCREENSAVER
 extern void ScreenSaverExtensionInit ();
+#endif
+#ifdef XV
+extern void XvExtensionInit();
 #endif
 
 /*ARGSUSED*/
@@ -101,5 +104,8 @@ InitExtensions(argc, argv)
 #endif
 #ifdef SCREENSAVER
     ScreenSaverExtensionInit ();
+#endif
+#ifdef XV
+    XvExtensionInit();
 #endif
 }
