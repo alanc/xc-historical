@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: miexpose.c,v 1.34 88/09/01 19:10:54 keith Exp $ */
+/* $XConsortium: miexpose.c,v 1.35 88/09/06 14:49:08 jim Exp $ */
 
 #include "X.h"
 #define NEED_EVENTS
@@ -50,13 +50,13 @@ the region package can call this.
 
 
 /* miHandleExposures 
-    generate exposures for areas that were copied from obscured or
-non-existent areas to non-obscured areas of the destination.
+    generate a region for exposures for areas that were copied from obscured or
+non-existent areas to non-obscured areas of the destination.  Paint the
+background for the region, if the destination is a window.
 
 NOTE:
-    this code sends the exposure events, then paints the background.
-this will NOT work unless this routine is allowed to complete before
-the dispatcher looks at this client again.
+     this should generally be called, even if graphicsExposures is false,
+because this is where bits get recovered from backing store.
 
 NOTE:
      added argument 'plane' is used to indicate how exposures from backing
@@ -81,7 +81,6 @@ miHandleExposures(pSrcDrawable, pDstDrawable,
     RegionPtr prgnSrcClip;	/* drawable-relative source clip */
     RegionPtr prgnDstClip;	/* drawable-relative dest clip */
     BoxRec srcBox;		/* unclipped source */
-    RegionPtr prgnSrc;		/* clipped source */
     RegionPtr prgnExposed;	/* exposed region, calculated source-
 				   relative, made dst relative to
 				   intersect with visible parts of
@@ -91,22 +90,42 @@ miHandleExposures(pSrcDrawable, pDstDrawable,
 				*/
     WindowPtr pSrcWin;
 
+    /* avoid work if we can */
+    if (!pGC->graphicsExposures &&
+	(pDstDrawable->type == DRAWABLE_PIXMAP) &&
+	((pSrcDrawable->type == DRAWABLE_PIXMAP) ||
+	 (((WindowPtr)pSrcDrawable)->backingStore == NotUseful) ||
+	 (((WindowPtr)pSrcDrawable)->backStorage == (BackingStorePtr)NULL)))
+	return NULL;
+	
+    srcBox.x1 = srcx;
+    srcBox.y1 = srcy;
+    srcBox.x2 = srcx+width;
+    srcBox.y2 = srcy+height;
+
     if (pSrcDrawable->type == DRAWABLE_WINDOW)
     {
+	pSrcWin = (WindowPtr)pSrcDrawable;
 	if (pGC->subWindowMode == IncludeInferiors)
 	{
-	    prgnSrcClip = NotClippedByChildren((WindowPtr)pSrcDrawable);
+	    prgnSrcClip = NotClippedByChildren(pSrcWin);
 	}
 	else
 	{
+	    BoxRec TsrcBox;
+
+	    TsrcBox.x1 = srcx + pSrcWin->absCorner.x;
+	    TsrcBox.y1 = srcy + pSrcWin->absCorner.x;
+	    TsrcBox.x1 = TsrcBox.x1+width;
+	    TsrcBox.x1 = TsrcBox.y1+height;
+	    if (((*pscr->RectIn)(pSrcWin->clipList, &TsrcBox)) == rgnIN)
+		return NULL;
 	    prgnSrcClip = (*pscr->RegionCreate)(NullBox, 1);
-	    (*pscr->RegionCopy)(prgnSrcClip,
-				((WindowPtr)pSrcDrawable)->clipList);
+	    (*pscr->RegionCopy)(prgnSrcClip, pSrcWin->clipList);
 	}
-	pSrcWin = (WindowPtr)pSrcDrawable;
 	(*pscr->TranslateRegion)(prgnSrcClip,
-				 -((WindowPtr)pSrcDrawable)->absCorner.x,
-				 -((WindowPtr)pSrcDrawable)->absCorner.y);
+				 -pSrcWin->absCorner.x,
+				 -pSrcWin->absCorner.y);
     }
     else
     {
@@ -116,6 +135,9 @@ miHandleExposures(pSrcDrawable, pDstDrawable,
 	box.y1 = 0;
 	box.x2 = ((PixmapPtr)pSrcDrawable)->width;
 	box.y2 = ((PixmapPtr)pSrcDrawable)->height;
+	if ((srcBox.x1 >= 0) && (srcBox.y1 >= 0) &&
+	    (srcBox.x2 <= box.x2) && (srcBox.y2 <= box.y2))
+	    return NULL;
 	prgnSrcClip = (*pscr->RegionCreate)(&box, 1);
 	pSrcWin = (WindowPtr)NULL;
     }
@@ -152,18 +174,10 @@ miHandleExposures(pSrcDrawable, pDstDrawable,
     }
 
     /* drawable-relative source region */
-    srcBox.x1 = srcx;
-    srcBox.y1 = srcy;
-    srcBox.x2 = srcx+width;
-    srcBox.y2 = srcy+height;
-    prgnSrc = (*pscr->RegionCreate)(&srcBox, 1);
+    prgnExposed = (*pscr->RegionCreate)(&srcBox, 1);
 
-    /* get the visible parts of the source box */
-    (*pscr->Intersect)(prgnSrc, prgnSrc, prgnSrcClip);
-
-    /* now get the hidden parts */
-    prgnExposed = (*pscr->RegionCreate)(NullBox, 1);
-    (*pscr->Inverse)(prgnExposed, prgnSrc, &srcBox);
+    /* now get the hidden parts of the source box*/
+    (*pscr->Subtract)(prgnExposed, prgnExposed, prgnSrcClip);
 
     if (pSrcWin && (pSrcWin->backingStore != NotUseful) &&
 	(pSrcWin->backStorage != (BackingStorePtr)NULL))
@@ -205,7 +219,6 @@ miHandleExposures(pSrcDrawable, pDstDrawable,
     if (prgnDstClip != prgnSrcClip)
 	(*pscr->RegionDestroy)(prgnDstClip);
     (*pscr->RegionDestroy)(prgnSrcClip);
-    (*pscr->RegionDestroy)(prgnSrc);
     if (pGC->graphicsExposures)
 	return prgnExposed;
     else
@@ -214,6 +227,8 @@ miHandleExposures(pSrcDrawable, pDstDrawable,
 	return NULL;
     }
 }
+
+/* send GraphicsExpose events, or a NoExpose event, based on the region */
 
 void
 miSendGraphicsExpose (client, pRgn, drawable, major, minor)
