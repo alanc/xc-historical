@@ -1,5 +1,5 @@
 /*
- * $XConsortium: imakemdep.h,v 1.33 91/07/09 14:37:14 rws Exp $
+ * $XConsortium: imakemdep.h,v 1.34 91/07/10 19:15:57 rws Exp $
  * 
  * This file contains machine-dependent constants for the imake utility.  When
  * porting imake, read each of the steps below and add in any necessary
@@ -34,8 +34,13 @@
 #endif
 
 #ifdef sony
-#ifndef bsd43
+#ifdef SYSTYPE_SYSV
 #define imake_ccflags "-DSVR4"
+#else
+#include <sys/param.h>
+#if NEWSOS < 41
+#define imake_ccflags "-DNOSTDHDRS"
+#endif
 #endif
 #endif
 
