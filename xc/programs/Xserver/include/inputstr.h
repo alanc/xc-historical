@@ -22,7 +22,7 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: inputstr.h,v 1.18 89/03/30 09:31:06 rws Exp $ */
+/* $XConsortium: inputstr.h,v 1.19 89/04/22 15:49:54 rws Exp $ */
 
 #ifndef INPUTSTRUCT_H
 #define INPUTSTRUCT_H
@@ -30,6 +30,7 @@ SOFTWARE.
 #include "input.h"
 #include "window.h"
 #include "dixstruct.h"
+#include "screenint.h"
 
 typedef struct _OtherClients {
     OtherClientsPtr	next;
