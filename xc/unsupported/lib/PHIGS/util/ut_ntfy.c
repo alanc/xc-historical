@@ -1,4 +1,4 @@
-/* $XConsortium: ut_ntfy.c,v 5.1 91/02/16 09:50:11 rws Exp $ */
+/* $XConsortium: ut_ntfy.c,v 5.2 91/02/18 11:18:25 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -93,11 +93,8 @@ timer_list *list;
 
 /*ARGSUSED*/
 static void							
-timer_dispatcher(signal_num, code, scp, addr)
+timer_dispatcher(signal_num)
 int		     signal_num;
-int		     code;
-struct sigcontext   *scp;
-char		    *addr;
 {
     register	 timer_list	*trav;
 	
@@ -270,13 +267,9 @@ unsigned long	usecs;		    /* when alarm should go off */
     
 }
 
-/*ARGSUSED*/
 static void							
-sig_dispatcher(signal_num, code, scp, addr)
+sig_dispatcher(signal_num)
 int		     signal_num;
-int		     code;
-struct sigcontext   *scp;
-char		    *addr;
 {
     register	 notify_list	*curr;
 	
