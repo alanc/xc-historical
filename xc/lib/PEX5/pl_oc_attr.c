@@ -1,4 +1,4 @@
-/* $XConsortium: pl_oc_attr.c,v 1.4 92/06/12 10:42:02 mor Exp $ */
+/* $XConsortium: pl_oc_attr.c,v 1.5 92/07/16 11:16:14 mor Exp $ */
 
 /******************************************************************************
 Copyright 1987,1991 by Digital Equipment Corporation, Maynard, Massachusetts
@@ -1074,13 +1074,13 @@ INPUT int		flag;
 
 
 void
-PEXSetModelClipVolume (display, resource_id, req_type, operator,
+PEXSetModelClipVolume (display, resource_id, req_type, op,
     numHalfSpaces, halfSpaces)
 
 INPUT Display		*display;
 INPUT XID		resource_id;
 INPUT PEXOCRequestType	req_type;
-INPUT int		operator;
+INPUT int		op;
 INPUT unsigned int	numHalfSpaces;
 INPUT PEXHalfSpace	*halfSpaces;
 
@@ -1105,7 +1105,7 @@ INPUT PEXHalfSpace	*halfSpaces;
      * Store the request header data. 
      */
 
-    pReq->modelClipOperator = operator; 
+    pReq->modelClipOperator = op; 
     pReq->numHalfSpaces = numHalfSpaces;
 
 
@@ -1121,13 +1121,13 @@ INPUT PEXHalfSpace	*halfSpaces;
 
 
 void
-PEXSetModelClipVolume2D (display, resource_id, req_type, operator,
+PEXSetModelClipVolume2D (display, resource_id, req_type, op,
     numHalfSpaces, halfSpaces)
 
 INPUT Display		*display;
 INPUT XID		resource_id;
 INPUT PEXOCRequestType	req_type;
-INPUT int		operator;
+INPUT int		op;
 INPUT unsigned int	numHalfSpaces;
 INPUT PEXHalfSpace2D	*halfSpaces;
 
@@ -1152,7 +1152,7 @@ INPUT PEXHalfSpace2D	*halfSpaces;
      * Store the request header data. 
      */
 
-    pReq->modelClipOperator = operator; 
+    pReq->modelClipOperator = op; 
     pReq->numHalfSpaces = numHalfSpaces;
 
 
