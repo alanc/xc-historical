@@ -1,6 +1,6 @@
 #include <Server.tmpl>
 
-#if BuildXInputExt || BuildPexExt
+#if BuildXInputExt || BuildPexExt || BuildPexClients
 #define IHaveSubdirs
 #endif
 
