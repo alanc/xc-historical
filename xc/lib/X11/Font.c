@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XFont.c,v 11.28 89/05/30 15:28:50 jim Exp $ */
+/* $XConsortium: XFont.c,v 11.30 89/08/16 09:40:31 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 #define NEED_REPLIES
 #include "Xlibint.h"
@@ -66,7 +66,6 @@ XFreeFont(dpy, fs)
     if (fs->properties)
        Xfree ((char *) fs->properties);
     Xfree ((char *) fs);
-    ext = dpy->ext_procs;
     UnlockDisplay(dpy);
     SyncHandle();
 }
