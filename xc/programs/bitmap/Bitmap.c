@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Bitmap.c,v 1.2 90/03/30 06:19:41 dmatic Exp $
+ * $XConsortium: Bitmap.c,v 1.4 90/03/29 16:41:18 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -2300,9 +2300,7 @@ void DragOnePointHandler(w, status, event)
     switch (event->type) {
     
     case ButtonPress:
-	fprintf(stderr, "<");
 	if (event->xbutton.state != status->state) return;
-	fprintf(stderr, ">");	
 	if (!QuerySet(status->at_x, status->at_y)) {
 	    BWStoreToBuffer(w);
 	    status->value = Value(BW, event->xbutton.button);
@@ -2910,7 +2908,7 @@ void BWTPaste(w, event)
 {
     BitmapWidget BW = (BitmapWidget) w;
 
-    BWRequestSelection(w, event->xbutton.time);
+    BWRequestSelection(w, event->xbutton.time, TRUE);
 
     
     BWEngageRequest(w, RestoreRequest, False, 
@@ -3108,7 +3106,8 @@ void SelectionCallback(w, client_data, selection, type, value, length, format)
 {
     BitmapWidget BW = (BitmapWidget) w;
     Pixmap *pixmap;
-    switch (*type) {
+
+   switch (*type) {
 	
     case XA_BITMAP:
     case XA_PIXMAP:
@@ -3127,18 +3126,29 @@ void SelectionCallback(w, client_data, selection, type, value, length, format)
 	XtWarning(" selection request failed.  BitmapWidget");
 	break;
     }
+
+    BW->bitmap.selection_limbo = FALSE;
 }
 
-void BWRequestSelection(w, time)
+void BWRequestSelection(w, time, wait)
     Widget w;
     Time time;
+    Boolean wait;
 {
     BitmapWidget BW = (BitmapWidget) w;
     
     XtGetSelectionValue(w, XA_PRIMARY, XA_PIXMAP,
 			SelectionCallback, NULL, time);
-}
 
+    BW->bitmap.selection_limbo = TRUE;
+
+    if (wait)
+	while (BW->bitmap.selection_limbo) {
+	    XEvent event;
+	    XtNextEvent(&event);
+	    XtDispatchEvent(&event);
+	}
+}
 
 /*****************************************************************************/
 
@@ -3181,7 +3191,8 @@ static void Initialize(request, new, argv, argc)
     new->bitmap.fold = False;
     new->bitmap.changed = False;
     new->bitmap.zooming = False;
-    
+    new->bitmap.selection_limbo = False;
+
     new->bitmap.request_stack = (BWRequestStack *)
 	XtMalloc(sizeof(BWRequestStack));
     new->bitmap.request_stack[0].request = NULL;
@@ -3269,8 +3280,6 @@ static void Initialize(request, new, argv, argc)
 					   buffer_data,
 					   new->bitmap.width,
 					   new->bitmap.height);
-    /* magic command !!! */
-    BWEngageRequest((Widget)new, MarkRequest, True, 0, sizeof(int));
 
     /* Read file */
     {
@@ -3306,9 +3315,9 @@ static void Initialize(request, new, argv, argc)
 	    new->bitmap.changed = False;
 	    new->bitmap.zooming = False;
 	}
-	if (!strcmp(new->bitmap.basename, ""))
-	    strcpy(new->bitmap.basename, 
-		   StripFilename(new->bitmap.filename));
+	if (!strcmp(new->bitmap.basename, "")) {
+	    XtFree(new->bitmap.basename);
+	    new->bitmap.basename = StripFilename(new->bitmap.filename);
     }
     
     Resize(new);
@@ -3399,8 +3408,10 @@ void BWChangeFilename(w, str)
     BitmapWidget BW = (BitmapWidget) w;
     
     if (str)
-	if (strcmp(str, ""))
-	    strcpy(BW->bitmap.filename, str);
+	if (strcmp(str, "")) {
+	    XtFree(BW->bitmap.filename);
+	    BW->bitmap.filename = XtNewString( str);
+	}
 }
 
 void BWChangeBasename(w, str)
@@ -3410,8 +3421,10 @@ void BWChangeBasename(w, str)
     BitmapWidget BW = (BitmapWidget) w;
     
     if (str)
-	if (strcmp(str, ""))
-	    strcpy(BW->bitmap.basename, str);
+	if (strcmp(str, "")) {
+	    XtFree(BW->bitmap.basename);
+	    BW->bitmap.basename = XtNewString(str);
+	}
 }
 
 
@@ -3519,7 +3532,6 @@ int BWWriteFile(w, filename, basename)
     }
     if (!basename) basename = BW->bitmap.basename;
     else strcpy(BW->bitmap.basename, basename);
-	
 
     if (DEBUG)
 	fprintf(stderr, "Saving filename: %s\n", filename);

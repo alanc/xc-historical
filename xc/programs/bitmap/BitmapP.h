@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: BitmapP.h,v 1.1 90/03/29 15:21:42 dmatic Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -119,6 +119,7 @@ typedef struct {
   BWZoom           zoom;
   caddr_t         *value;
   char             status[80];
+  Boolean          selection_limbo;
 } BitmapPart;
 
 /* Full instance record declaration */

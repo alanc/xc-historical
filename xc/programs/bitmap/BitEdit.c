@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Bit.c,v 1.3 90/03/30 06:20:30 dmatic Exp $
+ * $XConsortium: BitEdit.c,v 1.2 90/03/29 19:05:37 dmatic Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -264,14 +264,14 @@ static ButtonRec buttons[] = {
 
 Widget 
     top_widget, 
-    box_widget,
+    parent_widget,
+    formy_widget,
     infoButton_widget,
     fileButton_widget, fileMenu_widget,
     editButton_widget, editMenu_widget,
-    paned_widget, 
-    form_widget,
-    pane_widget,
     status_widget,
+    pane_widget, 
+    form_widget,
     bitmap_widget,
     image_shell,
     image_widget;
@@ -612,7 +612,7 @@ void TheCallback(w, id)
 	break;
 
     case Paste:
-	/*BWRequestSelection(bitmap_widget, time);*/
+	/*BWRequestSelection(bitmap_widget, time, TRUE);*/
 	BWEngageRequest(bitmap_widget, RestoreRequest, False, Plain);
 	break;
 	
@@ -838,25 +838,25 @@ void main(argc, argv)
 
     XtAddActions(actions_table, XtNumber(actions_table));
 
-    paned_widget = XtCreateManagedWidget("paned", panedWidgetClass,
+    parent_widget = XtCreateManagedWidget("parent", panedWidgetClass,
 					 top_widget, NULL, 0);
 
-    form_widget = XtCreateManagedWidget("form", formWidgetClass, 
-					paned_widget, NULL, 0);
+    formy_widget = XtCreateManagedWidget("formy", formWidgetClass,
+				       parent_widget, NULL, 0);
 
     infoButton_widget = XtCreateManagedWidget("infoButton",
 					commandWidgetClass, 
-					form_widget, NULL, 0);
+					formy_widget, NULL, 0);
 
     XtAddCallback(infoButton_widget, XtNcallback, InfoCallback, NULL);
     
     fileMenu_widget = XtCreatePopupShell("fileMenu", 
 					 simpleMenuWidgetClass, 
-					 form_widget, NULL, 0);
+					 formy_widget, NULL, 0);
     
     fileButton_widget = XtCreateManagedWidget("fileButton",
 					      menuButtonWidgetClass, 
-					      form_widget, NULL, 0);
+					      formy_widget, NULL, 0);
 
     for (i = 0; i < XtNumber(file_menu); i++) {
 	w = XtCreateManagedWidget(file_menu[i].name, 
@@ -873,11 +873,11 @@ void main(argc, argv)
         
     editMenu_widget = XtCreatePopupShell("editMenu", 
 					 simpleMenuWidgetClass, 
-					 form_widget, NULL, 0);
+					 formy_widget, NULL, 0);
     
     editButton_widget = XtCreateManagedWidget("editButton", 
 					      menuButtonWidgetClass, 
-					      form_widget, NULL, 0);
+					      formy_widget, NULL, 0);
 
     for (i = 0; i < XtNumber(edit_menu); i++) {
 	w = XtCreateManagedWidget(edit_menu[i].name, 
@@ -891,6 +891,15 @@ void main(argc, argv)
 	
 	edit_menu[i].widget = w;
     }
+
+    status_widget = XtCreateManagedWidget("status", labelWidgetClass,
+					  formy_widget, NULL, 0);
+
+    pane_widget = XtCreateManagedWidget("pane", panedWidgetClass,
+					parent_widget, NULL, 0);
+
+    form_widget = XtCreateManagedWidget("form", formWidgetClass, 
+					pane_widget, NULL, 0);
         
     for (i = 0; i < XtNumber(buttons); i++) {
 	w = XtCreateManagedWidget(buttons[i].name, 
@@ -905,13 +914,6 @@ void main(argc, argv)
 
 	buttons[i].widget = w;
     }
-
-    pane_widget = XtCreateManagedWidget("pane", panedWidgetClass,
-					paned_widget, NULL, 0);
-
-    status_widget = XtCreateManagedWidget("status", labelWidgetClass,
-					  pane_widget, NULL, 0);
-
     
     bitmap_widget = XtCreateManagedWidget("bitmap", bitmapWidgetClass,
 					  pane_widget, NULL, 0);

@@ -1,17 +1,15 @@
 *TransientShell.allowShellResize:	True
-*font:					variable
+*font:			-adobe-helvetica-bold-r-normal--*-120-*-*-*-*-iso*-*
 *shapeStyle:				oval
 *cursor:				left_ptr
-!*highlight:				magenta
-!*frame:				lightBlue
-!*SimpleMenu*foreground: 		white
-*paned.orientation:			horizontal
+*pane.orientation:			horizontal
 
-*form*top:				ChainTop
-*form*bottom:				ChainTop
-*form*left:				ChainLeft
-*form*right:				ChainLeft
+*Form*top:				ChainTop
+*Form*bottom:				ChainTop
+*Form*left:				ChainLeft
+*Form*right:				ChainLeft
 
+*MenuButton.leftBitmap:			menu12
 *form*width:              		120
 *form*height:             		15
 
@@ -51,36 +49,43 @@
 *Dialog.cancel.label:			Cancel
 *Dialog.retry.label:			Retry
 
-*form.infoButton.width:			36
-*form.infoButton.label:			Info
+*infoButton.width:			48
+*infoButton.label:			Info
 
 *infoPopup.width:			300
 *infoPopup.height:			100
 
-*form.MenuButton.width:			36
+*MenuButton.width:			48
 
-*form.SimpleMenu.width:			0
-*form.SimpleMenu.height:		0
-*form.SimpleMenu.cursor:		hand2
-*form.SimpleMenu.line.height:		0
+*SimpleMenu.width:			0
+*SimpleMenu.height:			0
+*SimpleMenu.cursor:			hand2
+*SimpleMenu.line.height:		0
 
-*form.fileButton.label:			File
-*form.fileButton.fromHoriz: 		infoButton
-*form.fileButton.menuName:		fileMenu
+*fileButton.label:			File
+*fileButton.fromHoriz: 			infoButton
+*fileButton.menuName:			fileMenu
 
-*form.editButton.label:			Edit
-*form.editButton.fromHoriz: 		fileButton
-*form.editButton.menuName:		editMenu
+*editButton.label:			Edit
+*editButton.fromHoriz: 			fileButton
+*editButton.menuName:			editMenu
+
+*formy.status*top:			ChainTop
+*formy.status*bottom:			ChainTop
+*formy.status*left:			ChainLeft
+*formy.status*right:			ChainRight
+*status.fromHoriz:			editButton
+*status.borderWidth:			0
 
 *SmeBSB.HorizontalMargins:		32
 
-*fileMenu.load.label:			Load
-*fileMenu.insert.label:			Insert
+*fileMenu.load.label:			Load...
+*fileMenu.insert.label:			Insert...
 *fileMenu.save.label:			Save
-*fileMenu.saveAs.label:			Save As
-*fileMenu.resize.label:			Resize
-*fileMenu.filename.label:		Filename
-*fileMenu.basename.label:		Basename
+*fileMenu.saveAs.label:			Save As...
+*fileMenu.resize.label:			Resize...
+*fileMenu.filename.label:		Filename...
+*fileMenu.basename.label:		Basename...
 *fileMenu.quit.label:			Quit
 
 *editMenu.image.label:			Image
@@ -94,7 +99,6 @@
 *editMenu.copy.label:			Copy
 *editMenu.paste.label:			Paste
 
-*form.clear.vertDistance:		10
 *form.clear.fromVert: 			infoButton
 *form.clear.label:			Clear
 *form.set.fromVert: 			clear
