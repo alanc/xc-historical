@@ -1,4 +1,4 @@
-/* $XConsortium: Xlibnet.h,v 1.13 91/05/12 16:57:58 rws Exp $ */
+/* $XConsortium: Xlibnet.h,v 1.14 91/07/09 20:09:04 rws Exp $ */
 
 /*
 Copyright 1991 Massachusetts Institute of Technology
@@ -47,7 +47,7 @@ without express or implied warranty.
 #endif /* SVR4 */
 #else /* not STREAMSCONN */
 /*
- * 4.2BSD-based systems
+ * socket-based systems
  */
 #include <netinet/in.h>
 #include <sys/ioctl.h>
@@ -57,7 +57,13 @@ without express or implied warranty.
 #include <sys/filio.h>
 #endif
 
+#if defined(SYSV386) && defined(SYSV)
+#include <net/errno.h>
+#include <sys/stropts.h>
+#define BytesReadable(fd,ptr) ioctl((fd), I_NREAD, (ptr))
+#else
 #define BytesReadable(fd, ptr) ioctl ((fd), FIONREAD, (ptr))
+#endif
 
 #endif /* STREAMSCONN else */
 
@@ -235,7 +241,9 @@ extern Xstream _XsStream[];
 
 
 #if !defined(USG) || defined(MOTOROLA)
+#if !(defined(SYSV) && defined(SYSV386))
 #define _XReadV readv
+#endif
 #define _XWriteV writev
 #endif
 
