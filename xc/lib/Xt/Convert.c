@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Convert.c,v 1.24 89/09/12 16:47:01 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Convert.c,v 1.25 89/09/12 17:05:38 swick Exp $";
 /* $oHeader: Convert.c,v 1.4 88/09/01 11:10:44 asente Exp $ */
 #endif /*lint*/
 /*LINTLIBRARY*/
@@ -653,7 +653,7 @@ Boolean _XtConvert(widget, from_type, from, to_type, to, cache_ref_return)
 	    } else args = NULL;
 	    if (p->new_style) {
 		retval =
-		    XtCallConverter(XtDisplay(widget),
+		    XtCallConverter(XtDisplayOfObject(widget),
 				    p->converter, args, num_args,
 				    from, to, cache_ref_return);
 	    }
