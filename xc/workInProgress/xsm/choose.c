@@ -1,4 +1,4 @@
-/* $XConsortium: choose.c,v 1.14 94/09/14 16:12:01 mor Exp mor $ */
+/* $XConsortium: choose.c,v 1.15 94/09/16 04:59:51 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -27,6 +27,7 @@ in this Software without prior written authorization from the X Consortium.
 
 #include "xsm.h"
 #include "saveutil.h"
+#include "lock.h"
 #include <sys/types.h>
 #include <dirent.h>
 
@@ -35,12 +36,25 @@ static Pixel save_message_background;
 
 static int delete_phase = 0;
 
+Widget chooseSessionPopup;
+Widget chooseSessionForm;
+Widget chooseSessionLabel;
+Widget chooseSessionListWidget;
+Widget chooseSessionMessageLabel;
+Widget chooseSessionLoadButton;
+Widget chooseSessionDeleteButton;
+Widget chooseSessionForceShutdownButton;
+Widget chooseSessionFailSafeButton;
+Widget chooseSessionCancelButton;
+
+
 
 int
-GetSessionNames (count_ret, names_ret)
+GetSessionNames (count_ret, names_ret, locked_ret)
 
 int *count_ret;
 String **names_ret;
+Bool **locked_ret;
 
 {
     DIR *dir;
@@ -58,6 +72,7 @@ String **names_ret;
     
     *count_ret = 0;
     *names_ret = NULL;
+    *locked_ret = NULL;
 
     if ((dir = opendir (path)) == NULL)
 	return 0;
@@ -71,9 +86,12 @@ String **names_ret;
     }
 
     if (count == 0 ||
-       (*names_ret = (String *) XtMalloc (count * sizeof (String))) == NULL)
+       (*names_ret = (String *) XtMalloc (count * sizeof (String))) == NULL ||
+       (*locked_ret = (Bool *) XtMalloc (count * sizeof (Bool))) == NULL)
     {
 	closedir (dir);
+	if (*names_ret)
+	    XtFree ((char *) *names_ret);
 	return 0;
     }
 
@@ -82,7 +100,33 @@ String **names_ret;
     while ((entry = readdir (dir)) != NULL && *count_ret < count)
     {
 	if (strncmp (entry->d_name, ".XSM-", 5) == 0)
-	    (*names_ret)[(*count_ret)++] = XtNewString (entry->d_name + 5);
+	{
+	    char *name = entry->d_name + 5;
+	    char *id = NULL;
+
+	    if (!CheckSessionLocked (name, True, &id))
+	    {
+		(*names_ret)[*count_ret] = XtNewString (name);
+		(*locked_ret)[(*count_ret)++] = False;
+	    }
+	    else
+	    {
+		char *host = ((char *) strchr (id, '/')) + 1;
+		char *colon = (char *) strchr (host, ':');
+
+		*colon = '\0';
+
+		(*names_ret)[*count_ret] =
+		    XtMalloc (strlen (name) + strlen (host) + 14);
+		(*locked_ret)[*count_ret] = True;
+
+		sprintf ((*names_ret)[(*count_ret)++],
+		    "%s (locked at %s)", name, host);
+		*colon = ':';
+
+		XtFree (id);
+	    }
+	}
     }
 
     closedir (dir);
@@ -93,10 +137,11 @@ String **names_ret;
 
 
 void
-FreeSessionNames (count, names)
+FreeSessionNames (count, names, lockFlags)
 
 int count;
 String *names;
+Bool *lockFlags;
 
 {
     int i;
@@ -105,6 +150,26 @@ String *names;
 	XtFree ((char *) names[i]);
 
     XtFree ((char *) names);
+    XtFree ((char *) lockFlags);
+}
+
+
+
+static void
+SessionSelected (number, highlight)
+
+int number;
+Bool highlight;
+
+{
+    Bool locked = sessionLocked[number];
+
+    if (highlight)
+	XawListHighlight (chooseSessionListWidget, number);
+
+    XtSetSensitive (chooseSessionLoadButton, !locked);
+    XtSetSensitive (chooseSessionDeleteButton, !locked);
+    XtSetSensitive (chooseSessionForceShutdownButton, locked);
 }
 
 
@@ -117,7 +182,7 @@ String *names;
 
 {
     XawListChange (chooseSessionListWidget, names, count, 0, True);
-    XawListHighlight (chooseSessionListWidget, 0);
+    SessionSelected (0, True);
 }
 
 
@@ -229,7 +294,7 @@ Cardinal *numParams;
     
     current = XawListShowCurrent (chooseSessionListWidget);
     if (current->list_index > 0)
-	XawListHighlight (chooseSessionListWidget, current->list_index - 1);
+	SessionSelected (current->list_index - 1, True);
     XtFree ((char *) current);
 }
 
@@ -247,7 +312,25 @@ Cardinal *numParams;
     
     current = XawListShowCurrent (chooseSessionListWidget);
     if (current->list_index < sessionNameCount - 1)
-	XawListHighlight (chooseSessionListWidget, current->list_index + 1);
+	SessionSelected (current->list_index + 1, True);
+    XtFree ((char *) current);
+}
+
+
+
+static void
+ChooseSessionBtn1Down (w, event, params, numParams)
+
+Widget w;
+XEvent *event;
+String *params;
+Cardinal *numParams;
+
+{
+    XawListReturnStruct *current;
+
+    current = XawListShowCurrent (chooseSessionListWidget);
+    SessionSelected (current->list_index, False /* already highlighted */);
     XtFree ((char *) current);
 }
 
@@ -286,10 +369,15 @@ XtPointer 	callData;
 
     XtFree ((char *) current);
 
-    FreeSessionNames (sessionNameCount, sessionNames);
+    FreeSessionNames (sessionNameCount, sessionNames, sessionLocked);
 
-    StartSession (session_name,
-	False /* look for .XSM-<session name> startup file */);
+
+    /*
+     * Start the session, looking for .XSM-<session name> startup file.
+     */
+
+    if (!StartSession (session_name, False))
+	UnableToLockSession (session_name);
 }
 
 
@@ -388,6 +476,19 @@ XtPointer 	callData;
 
 
 static void
+ChooseSessionForceShutdownXtProc (w, client_data, callData)
+
+Widget		w;
+XtPointer 	client_data;
+XtPointer 	callData;
+
+{
+    XBell (XtDisplay (topLevel), 0);
+}
+
+
+
+static void
 ChooseSessionFailSafeXtProc (w, client_data, callData)
 
 Widget		w;
@@ -406,7 +507,15 @@ XtPointer 	callData;
 
     session_name = XtNewString (FAILSAFE_SESSION_NAME);
 
-    FreeSessionNames (sessionNameCount, sessionNames);
+    FreeSessionNames (sessionNameCount, sessionNames, sessionLocked);
+
+
+    /*
+     * We don't need to check return value of StartSession in this case,
+     * because we are using the default session, and StartSession will
+     * not try to lock the session at this time.  It will try to lock
+     * it as soon as the user gives the session a name.
+     */
 
     StartSession (session_name,
 	True /* Use ~/.xsmstartup if found, else system.xsm */);
@@ -431,7 +540,7 @@ XtPointer 	callData;
 	delete_phase = 0;
     }
     else
-	exit (2);
+	EndSession (2);
 }
 
 
@@ -442,7 +551,8 @@ create_choose_session_popup ()
 {
     XtActionsRec choose_actions[] = {
         {"ChooseSessionUp", ChooseSessionUp},
-        {"ChooseSessionDown", ChooseSessionDown}
+        {"ChooseSessionDown", ChooseSessionDown},
+        {"ChooseSessionBtn1Down", ChooseSessionBtn1Down}
     };
 
     /*
@@ -506,10 +616,20 @@ create_choose_session_popup ()
     XtAddCallback (chooseSessionDeleteButton, XtNcallback,
 	ChooseSessionDeleteXtProc, 0);
 
-    chooseSessionFailSafeButton = XtVaCreateManagedWidget (
-	"chooseSessionFailSafeButton", commandWidgetClass, chooseSessionForm,
+    chooseSessionForceShutdownButton = XtVaCreateManagedWidget (
+	"chooseSessionForceShutdownButton",
+	commandWidgetClass, chooseSessionForm,
         XtNfromHoriz, chooseSessionDeleteButton,
         XtNfromVert, chooseSessionMessageLabel,
+        NULL);
+
+    XtAddCallback (chooseSessionForceShutdownButton, XtNcallback,
+	ChooseSessionForceShutdownXtProc, 0);
+
+    chooseSessionFailSafeButton = XtVaCreateManagedWidget (
+	"chooseSessionFailSafeButton", commandWidgetClass, chooseSessionForm,
+        XtNfromHoriz, NULL,
+        XtNfromVert, chooseSessionLoadButton,
         NULL);
 
     XtAddCallback (chooseSessionFailSafeButton, XtNcallback,
@@ -519,7 +639,7 @@ create_choose_session_popup ()
     chooseSessionCancelButton = XtVaCreateManagedWidget (
 	"chooseSessionCancelButton", commandWidgetClass, chooseSessionForm,
         XtNfromHoriz, chooseSessionFailSafeButton,
-        XtNfromVert, chooseSessionMessageLabel,
+        XtNfromVert, chooseSessionLoadButton,
         NULL);
 
     XtAddCallback (chooseSessionCancelButton, XtNcallback,
