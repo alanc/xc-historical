@@ -1,6 +1,6 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Intrinsic.c,v 1.118 88/09/03 11:41:28 swick Exp $";
-static char rcsid[] = "$Header: Intrinsic.c,v 1.118 88/09/03 11:41:28 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Intrinsic.c,v 1.119 88/09/06 09:51:10 swick Exp $";
+static char rcsid[] = "$Header: Intrinsic.c,v 1.119 88/09/06 09:51:10 swick Exp $";
 /* $oHeader: Intrinsic.c,v 1.4 88/08/18 15:40:35 asente Exp $ */
 #endif lint
 
@@ -429,10 +429,9 @@ Widget XtNameToWidget(root, name)
     String name;
 {
     XrmName	names[100];
-
     XrmStringToNameList(name, names);
-    if (names[0] != root->core.xrm_name) return NULL;
-    return NameListToWidget(root, &names[1]);
+    if (names[0] == NULLQUARK) return NULL;
+    return NameListToWidget(root, names);
 } /* XtNameToWidget */
 
 /* Define user versions of intrinsics macros */
