@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: window.c,v 5.69 91/07/02 18:35:48 keith Exp $ */
+/* $XConsortium: window.c,v 5.70 91/07/03 14:02:01 keith Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -1021,8 +1021,6 @@ CreateWindow(wid, pParent, x, y, w, h, bw, class, vmask, vlist,
 	(void)ChangeWindowAttributes(pWin, CWBackingStore, &value, wClient (pWin));
     }
 
-    WindowHasNewCursor(pWin);
-
     if (SubSend(pParent))
     {
 	event.u.u.type = CreateNotify;
@@ -1203,7 +1201,7 @@ ChangeWindowAttributes(pWin, vmask, vlist, client)
     register XID *pVlist;
     PixmapPtr pPixmap;
     Pixmap pixID;
-    CursorPtr pCursor;
+    CursorPtr pCursor, pOldCursor;
     Cursor cursorID;
     WindowPtr pChild;
     Colormap cmap;
@@ -1593,13 +1591,13 @@ ChangeWindowAttributes(pWin, vmask, vlist, client)
 		    }
 	    	}
 
+		pOldCursor = 0;
 		if (pCursor == (CursorPtr) None)
 		{
 		    pWin->cursorIsNone = TRUE;
 		    if (pWin->optional)
 		    {
-			if (pWin->optional->cursor)
-			    FreeCursor (pWin->optional->cursor, (Cursor)0);
+			pOldCursor = pWin->optional->cursor;
 			pWin->optional->cursor = (CursorPtr) None;
 			checkOptional = TRUE;
 		    }
@@ -1614,8 +1612,7 @@ ChangeWindowAttributes(pWin, vmask, vlist, client)
 		    }
 		    else if (pWin->parent && pCursor == wCursor (pWin->parent))
 			checkOptional = TRUE;
-		    if (pWin->optional->cursor != (CursorPtr) None)
-			FreeCursor (pWin->optional->cursor, (Cursor)0);
+		    pOldCursor = pWin->optional->cursor;
 		    pWin->optional->cursor = pCursor;
 		    pCursor->refcnt++;
 		    pWin->cursorIsNone = FALSE;
@@ -1631,7 +1628,14 @@ ChangeWindowAttributes(pWin, vmask, vlist, client)
 		    }
 		}
 
-	    	WindowHasNewCursor( pWin);
+		if (pWin->realized)
+		    WindowHasNewCursor( pWin);
+
+		/* Can't free cursor until here - old cursor
+		 * is needed in WindowHasNewCursor
+		 */
+		if (pOldCursor)
+		    FreeCursor (pOldCursor, (Cursor)0);
 	    }
 	    break;
      	 default:
