@@ -1,5 +1,5 @@
 /*
- * $XConsortium: imakemdep.h,v 1.54 93/07/29 09:38:13 rws Exp $
+ * $XConsortium: imakemdep.h,v 1.55 93/08/07 10:52:43 rws Exp $
  * 
  * This file contains machine-dependent constants for the imake utility.
  * When porting imake, read each of the steps below and add in any necessary
@@ -301,8 +301,14 @@ struct symtab	predefs[] = {
 #ifdef hpux
 	{"hpux", "1"},
 #endif
-#ifdef __hp9000s800__
-	{"__hp9000s800__", "1"},
+#ifdef __hpux
+	{"__hpux", "1"},
+#endif
+#ifdef __hp9000s800
+	{"__hp9000s800", "1"},
+#endif
+#ifdef __hp9000s700
+	{"__hp9000s700", "1"},
 #endif
 #ifdef vax
 	{"vax", "1"},
