@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbfillsp.c,v 5.7 90/05/15 18:38:15 keith Exp $ */
+/* $XConsortium: mfbfillsp.c,v 5.8 92/12/23 17:42:33 rws Exp $ */
 #include "X.h"
 #include "Xmd.h"
 #include "gcstruct.h"
@@ -371,7 +371,7 @@ int fSorted;
     register PixelType startmask;
     register PixelType endmask;
     PixmapPtr pStipple;
-    int *psrc;
+    PixelType *psrc;
     int tileHeight;
     int *pwidthFree;		/* copies of the pointers to free */
     DDXPointPtr pptFree;

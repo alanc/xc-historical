@@ -15,7 +15,7 @@ without any express or implied warranty.
 
 ********************************************************/
 
-/* $XConsortium: mfbzerarc.c,v 5.12 92/12/23 18:53:48 rws Exp $ */
+/* $XConsortium: mfbzerarc.c,v 5.13 92/12/24 09:26:43 rws Exp $ */
 
 /* Derived from:
  * "Algorithm for drawing ellipses or hyperbolae with a digital plotter"
@@ -103,7 +103,7 @@ mfbZeroArcSS(pDraw, pGC, arc)
     if (do360 && (arc->width == arc->height) && !(arc->width & 1))
     {
 	int xoffset = nlwidth;
-	int *yorghl = mfbScanlineDelta(yorgl, info.h, nlwidth);
+	PixelType *yorghl = mfbScanlineDelta(yorgl, info.h, nlwidth);
 	int xorghp = info.xorg + info.h;
 	int xorghn = info.xorg - info.h;
 
