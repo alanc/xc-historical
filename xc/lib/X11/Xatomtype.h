@@ -1,4 +1,7 @@
-/* $XConsortium: Xatomtype.h,v 11.10 88/08/31 19:14:53 jim Exp $ */
+#ifndef _XATOMTYPE_H_
+#define _XATOMTYPE_H_
+
+/* $XConsortium: Xatomtype.h,v 11.11 88/09/06 16:09:48 jim Exp $ */
 
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -30,59 +33,63 @@ SOFTWARE.
  * routines will handle conversion to and from actual 32 bit objects.  If your
  * compiler doesn't treat &structoflongs the same as &arrayoflongs[0], you
  * will have some work to do.
- *
- * See server/dix/BuiltInAtoms for additional information.
  */
-
+#define BOOL long
+#define SIGNEDINT long
+#define UNSIGNEDINT unsigned long
+#define RESOURCEID unsigned long
 
 /* this structure may be extended, but do not change the order */
 typedef struct {
-    CARD32 flags;
-    INT32 x, y;			/* XXX - watch for sign extension problems */
-    CARD32 width, height;
-    CARD32 minWidth, minHeight;
-    CARD32 maxWidth, maxHeight;
-    CARD32 widthInc, heightInc;
-    CARD32 minAspectX, minAspectY;
-    CARD32 maxAspectX, maxAspectY;
+    UNSIGNEDINT flags;
+    SIGNEDINT x, y;			/* need to cvt */
+    SIGNEDINT width, height;		/* need to cvt */
+    SIGNEDINT minWidth, minHeight;	/* need to cvt */
+    SIGNEDINT maxWidth, maxHeight;	/* need to cvt */
+    SIGNEDINT widthInc, heightInc;	/* need to cvt */
+    SIGNEDINT minAspectX, minAspectY;	/* need to cvt */
+    SIGNEDINT maxAspectX, maxAspectY;	/* need to cvt */
     } xPropSizeHints;
 #define NumPropSizeElements 15	/* number of elements in this structure */
 
 /* this structure may be extended, but do not change the order */
 typedef struct {
-    CARD32 flags;
-    CARD32 input;
-    CARD32 initialState;
-    BITS32 iconPixmap;
-    BITS32 iconWindow;
-    INT32  iconX;		/* XXX - watch for sign extension problems */
-    INT32  iconY;		/* XXX - watch for sign extension problems */
-    BITS32 iconMask;
-    CARD32 windowGroup;
+    UNSIGNEDINT flags;
+    BOOL input;				/* need to convert */
+    SIGNEDINT initialState;		/* need to cvt */
+    RESOURCEID iconPixmap;
+    RESOURCEID iconWindow;
+    SIGNEDINT  iconX;			/* need to cvt */
+    SIGNEDINT  iconY;			/* need to cvt */
+    RESOURCEID iconMask;
+    UNSIGNEDINT windowGroup;
   } xPropWMHints;
 #define NumPropWMHintsElements 9 /* number of elements in this structure */
 
 /* this structure defines the icon size hints information */
 typedef struct {
-    CARD32 minWidth, minHeight;
-    CARD32 maxWidth, maxHeight;
-    CARD32 widthInc, heightInc;
+    SIGNEDINT minWidth, minHeight;	/* need to cvt */
+    SIGNEDINT maxWidth, maxHeight;	/* need to cvt */
+    SIGNEDINT widthInc, heightInc;	/* need to cvt */
   } xPropIconSize;
 #define NumPropIconSizeElements 6 /* number of elements in this structure */
 
 /* this structure may be extended, but do not change the order */
 /* RGB properties */
 typedef struct {
-	BITS32 colormap;
-	CARD32 red_max;
-	CARD32 red_mult;
-	CARD32 green_max;
-	CARD32 green_mult;
-	CARD32 blue_max;
-	CARD32 blue_mult;
-	CARD32 base_pixel;
+	RESOURCEID colormap;
+	UNSIGNEDINT red_max;
+	UNSIGNEDINT red_mult;
+	UNSIGNEDINT green_max;
+	UNSIGNEDINT green_mult;
+	UNSIGNEDINT blue_max;
+	UNSIGNEDINT blue_mult;
+	UNSIGNEDINT base_pixel;
 } xPropStandardColormap;
 #define NumPropStandardColormapElements 8
     
-    
-    
+#undef SIGNEDINT
+#undef UNSIGNEDINT
+#undef RESOURCEID
+
+#endif _XATOMTYPE_H_

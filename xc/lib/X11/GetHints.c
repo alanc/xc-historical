@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XGetHints.c,v 11.22 88/08/11 17:34:07 jim Exp $ */
+/* $XConsortium: XGetHints.c,v 11.23 88/09/06 16:07:52 jim Exp $ */
 
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -57,20 +57,18 @@ Status XGetSizeHints (dpy, w, hints, property)
 	/* XSizeHints misdeclares these as int instead of long */
 	hints->x 	  = cvtINT32toInt (prop->x);
 	hints->y 	  = cvtINT32toInt (prop->y);
-	/* XSizeHints misdeclares these as int instead of unsigned long */
-	/* so, large values will look negative instead of positive */
-	hints->width      = prop->width;
-	hints->height     = prop->height;
-	hints->min_width  = prop->minWidth;
-	hints->min_height = prop->minHeight;
-	hints->max_width  = prop->maxWidth;
-	hints->max_height = prop->maxHeight;
-	hints->width_inc  = prop->widthInc;
-	hints->height_inc = prop->heightInc;
-	hints->min_aspect.x = prop->minAspectX;
-	hints->min_aspect.y = prop->minAspectY;
-	hints->max_aspect.x = prop->maxAspectX;
-	hints->max_aspect.y = prop->maxAspectY;
+	hints->width      = cvtINT32toInt (prop->width);
+	hints->height     = cvtINT32toInt (prop->height);
+	hints->min_width  = cvtINT32toInt (prop->minWidth);
+	hints->min_height = cvtINT32toInt (prop->minHeight);
+	hints->max_width  = cvtINT32toInt (prop->maxWidth);
+	hints->max_height = cvtINT32toInt (prop->maxHeight);
+	hints->width_inc  = cvtINT32toInt (prop->widthInc);
+	hints->height_inc = cvtINT32toInt (prop->heightInc);
+	hints->min_aspect.x = cvtINT32toInt (prop->minAspectX);
+	hints->min_aspect.y = cvtINT32toInt (prop->minAspectY);
+	hints->max_aspect.x = cvtINT32toInt (prop->maxAspectX);
+	hints->max_aspect.y = cvtINT32toInt (prop->maxAspectY);
 	Xfree((char *)prop);
 	return(1);
 }
@@ -108,8 +106,8 @@ XWMHints *XGetWMHints (dpy, w)
 	/* static copies not allowed in library, due to reentrancy constraint*/
 	hints = (XWMHints *) Xcalloc (1, (unsigned) sizeof(XWMHints));
 	hints->flags = prop->flags;
-	hints->input = prop->input;
-	hints->initial_state = prop->initialState;
+	hints->input = (prop->input ? True : False);
+	hints->initial_state = cvtINT32toInt (prop->initialState);
 	hints->icon_pixmap = prop->iconPixmap;
 	hints->icon_window = prop->iconWindow;
 	hints->icon_x = cvtINT32toInt (prop->iconX);
@@ -186,12 +184,12 @@ Status XGetIconSizes (dpy, w, size_list, count)
 
 	/* march down array putting things into native form */
 	for (i = 0; i < *count; i++) {
-	    hp->min_width  = pp->minWidth;
-	    hp->min_height = pp->minHeight;
-	    hp->max_width  = pp->maxWidth;
-	    hp->max_height = pp->maxHeight;
-	    hp->width_inc  = pp->widthInc;
-	    hp->height_inc = pp->heightInc;
+	    hp->min_width  = cvtINT32toInt (pp->minWidth);
+	    hp->min_height = cvtINT32toInt (pp->minHeight);
+	    hp->max_width  = cvtINT32toInt (pp->maxWidth);
+	    hp->max_height = cvtINT32toInt (pp->maxHeight);
+	    hp->width_inc  = cvtINT32toInt (pp->widthInc);
+	    hp->height_inc = cvtINT32toInt (pp->heightInc);
 	    hp += 1;
 	    pp += 1;
 	  }

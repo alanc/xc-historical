@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XSetHints.c,v 11.25 88/08/11 11:35:59 jim Exp $ */
+/* $XConsortium: XSetHints.c,v 11.26 88/09/06 16:03:55 jim Exp $ */
 
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -72,7 +72,7 @@ XSetWMHints (dpy, w, wmhints)
 {
 	xPropWMHints prop;
 	prop.flags = wmhints->flags;
-	prop.input = wmhints->input;
+	prop.input = (wmhints->input == True ? 1 : 0);
 	prop.initialState = wmhints->initial_state;
 	prop.iconPixmap = wmhints->icon_pixmap;
 	prop.iconWindow = wmhints->icon_window;
