@@ -32,7 +32,7 @@
     PUCCPTYDDEF = -DPUCC_PTYD		/* does not need to be setuid */
          PTYLIB = -lpucc
 #else
-   INSTALLFLAGS = $(INSTUIDFLAGS)
+   INSTPGMFLAGS = $(INSTUIDFLAGS)
 #endif
 
    MAIN_DEFINES = -DUTMP $(TTYGROUPDEF) $(PUCCPTYDDEF)
