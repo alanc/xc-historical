@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.85 89/07/18 17:16:03 jim Exp $
+ * $XConsortium: menus.c,v 1.86 89/07/21 18:30:29 jim Exp $
  *
  * twm menu code
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: menus.c,v 1.85 89/07/18 17:16:03 jim Exp $";
+"$XConsortium: menus.c,v 1.86 89/07/21 18:30:29 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -1043,6 +1043,7 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
     Window rootw;
     int origX, origY;
     int do_next_action = TRUE;
+    int moving_icon = FALSE;
     extern int ConstrainedMoveTime;
 
     RootFunction = NULL;
@@ -1237,6 +1238,7 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
 	    w = tmp_win->icon_w;
 	    DragX = eventp->xbutton.x;
 	    DragY = eventp->xbutton.y;
+	    moving_icon = TRUE;
 	}
 	else if (w != tmp_win->icon_w)
 	{
@@ -1385,7 +1387,8 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
 			XMoveWindow(dpy, DragWindow, xl, yt);
 		    else
 			MoveOutline(eventp->xmotion.root, xl, yt, w, h,
-				    tmp_win->frame_bw, tmp_win->title_height);
+			    tmp_win->frame_bw, 
+			    moving_icon ? 0 : tmp_win->title_height);
 		}
 	    }
 	    else if (DragWindow != NULL)
@@ -1417,7 +1420,8 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
 		    XMoveWindow(dpy, DragWindow, xl, yt);
 		else
 		    MoveOutline(eventp->xmotion.root, xl, yt, w, h,
-				tmp_win->frame_bw, tmp_win->title_height);
+			tmp_win->frame_bw,
+			moving_icon ? 0 : tmp_win->title_height);
 	    }
 
 	}
