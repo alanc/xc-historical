@@ -1,5 +1,5 @@
 /*
- * $XConsortium: sessreg.c,v 1.11 94/04/17 20:03:46 rws Exp gildea $
+ * $XConsortium: sessreg.c,v 1.12 94/10/11 00:19:24 gildea Exp gildea $
  *
 Copyright (c) 1990  X Consortium
 
@@ -42,10 +42,20 @@ in this Software without prior written authorization from the X Consortium.
  * one of -a or -d must be specified
  */
 
+
 # include	<X11/Xos.h>
 # include	<X11/Xfuncs.h>
 # include	<stdio.h>
 # include	<utmp.h>
+
+#ifdef SYSV
+#define NO_LL
+#endif
+
+#ifndef NO_LL
+# include	<lastlog.h>
+# include	<pwd.h>
+#endif
 
 #ifdef SVR4
 #define SYSV			/* nice System V utmp interface still the same */
@@ -56,6 +66,11 @@ in this Software without prior written authorization from the X Consortium.
 #endif
 #ifndef UTMP_FILE
 # define UTMP_FILE	"/etc/utmp"
+#endif
+#ifndef NO_LL
+#ifndef LLOG_FILE
+# define LLOG_FILE	"/usr/adm/lastlog"
+#endif
 #endif
 #ifndef SYSV
 # ifndef TTYS_FILE
@@ -88,13 +103,17 @@ int	slot_number;
 char	*xservers_file, *ttys_file;
 char	*user_name;
 int	aflag, dflag;
+#ifndef NO_LL
+char	*llog_file;
+int	llog_none, Lflag;
+#endif
 
 char	*program_name;
 
 usage (x)
 {
 	if (x) {
-		fprintf (stderr, "%s: usage %s {-a -d} [-w wtmp-file] [-u utmp-file]\n", program_name, program_name);
+		fprintf (stderr, "%s: usage %s {-a -d} [-w wtmp-file] [-u utmp-file] [-L lastlog-file]\n", program_name, program_name);
 		fprintf (stderr, "             [-t ttys-file] [-l line-name] [-h host-name]\n");
 		fprintf (stderr, "             [-s slot-number] [-x servers-file] user-name\n");
 		exit (1);
@@ -165,6 +184,11 @@ char	**argv;
 			if (!strcmp (utmp_file, "none"))
 				utmp_none = 1;
 			break;
+		case 'L':
+			llog_file = getstring (&argv, &Lflag);
+			if (!strcmp (llog_file, "none"))
+				llog_none = 1;
+			break;
 		case 't':
 			ttys_file = getstring (&argv, &tflag);
 			break;
@@ -203,12 +227,16 @@ char	**argv;
 		wtmp_file = WTMP_FILE;
 	if (!uflag)
 		utmp_file = UTMP_FILE;
+#ifndef NO_LL
+	if (!Lflag)
+		llog_file = LLOG_FILE;
+#endif
 #ifndef SYSV
 	if (!tflag)
 		ttys_file = TTYS_FILE;
-	if (!sflag) {
+	if (!sflag && !utmp_none) {
 		if (xflag)
-			sysnerr (slot_number = Xslot (ttys_file, xservers_file, line), "Xslot");
+			sysnerr (slot_number = Xslot (ttys_file, xservers_file, line, host_name, aflag), "Xslot");
 		else
 			sysnerr (slot_number = ttyslot (), "ttyslot");
 	}
@@ -233,7 +261,7 @@ char	**argv;
 #else
 		utmp = open (utmp_file, O_RDWR);
 		if (utmp != -1) {
-			syserr ((int) lseek (utmp, (long) (slot_number - 1) * sizeof (struct utmp), 0), "lseek");
+			syserr ((int) lseek (utmp, (long) slot_number * sizeof (struct utmp), 0), "lseek");
 			sysnerr (write (utmp, (char *) &utmp_entry, sizeof (utmp_entry))
 				        == sizeof (utmp_entry), "write utmp entry");
 			close (utmp);
@@ -248,6 +276,30 @@ char	**argv;
 			close (wtmp);
 		}
 	}
+#ifndef NO_LL
+	if (aflag && !llog_none) {
+		int llog = open (llog_file, O_WRONLY);
+		if (llog != -1) {
+			int	user_id;
+			struct passwd *pwd = getpwnam(user_name);
+			struct lastlog ll;
+
+			sysnerr( pwd != NULL, "get user id");
+
+			bzero((char *)&ll, sizeof(ll));
+			ll.ll_time = current_time;
+			if (line)
+			 (void) strncpy (ll.ll_line, line, sizeof (ll.ll_line));
+			if (host_name)
+			 (void) strncpy (ll.ll_host, host_name, sizeof (ll.ll_host));
+
+			sysnerr (lseek(llog, (long) pwd->pw_uid*sizeof(ll), 0) != -1, "seeking lastlog entry");
+			sysnerr (write (llog, (char *) &ll, sizeof (ll))
+				        == sizeof (ll), "write lastlog entry");
+			close (llog);
+		}
+	}
+#endif
 	return 0;
 }
 
@@ -308,12 +360,16 @@ Time_t		date;
  * by counting the lines in /etc/ttys and adding the line-number
  * that the display appears on in Xservers.  This is a poor
  * design, but is limited by the non-existant interface to utmp.
+ * If host_name is non-NULL, assume it contains the display name,
+ * otherwise use the display_name argument (i.e., the tty name).
  */
 
-Xslot (ttys_file, servers_file, display_name)
+Xslot (ttys_file, servers_file, display_name, host_name, addp)
 char	*ttys_file;
 char	*servers_file;
 char	*display_name;
+char	*host_name;
+int	addp;
 {
 	FILE	*ttys, *servers;
 	int	c;
@@ -325,7 +381,7 @@ char	*display_name;
 	char	*pos;
 
 	/* remove screen number from the display name */
-	strcpy(disp_name, display_name);
+	strcpy(disp_name, host_name ? host_name : display_name);
 	pos = strrchr(disp_name, ':');
 	if (pos) {
 	    pos = strchr(pos, '.');
@@ -343,6 +399,7 @@ char	*display_name;
 		++slot;
 	(void) fclose (ttys);
 	sysnerr (servers = fopen (servers_file, "r"), servers_file);
+
 	len = strlen (disp_name);
 	column0 = 1;
 	while (fgets (servers_line, sizeof (servers_line), servers)) {
@@ -358,6 +415,61 @@ char	*display_name;
 		else
 			column0 = 1;
 	}
-	return 0;
+	/*
+	 * display not found in Xservers file - allocate utmp entry dinamically
+	 */
+	return findslot (display_name, host_name, addp, slot);
+}
+
+/*
+ * find a free utmp slot for the X display.  This allocates a new entry
+ * past the regular tty entries if necessary, reusing existing entries
+ * (identified by (line,hostname)) if possible.
+ */
+findslot (line_name, host_name, addp, slot)
+char	*line_name;
+char	*host_name;
+int	addp;
+int	slot;
+{
+	int	utmp;
+	struct	utmp entry;
+	int	found = 0;
+	int	freeslot = -1;
+
+	syserr(utmp = open (utmp_file, O_RDONLY), "open utmp");
+
+	/*
+	 * first, try to locate a previous entry for this display
+	 * also record location of a free slots in case we need a new one
+	 */
+	syserr ((int) lseek (utmp, (long) slot * sizeof (struct utmp), 0), "lseek");
+
+	if (!host_name)
+		host_name = "";
+
+	while (read (utmp, (char *) &entry, sizeof (entry)) == sizeof (entry)) {
+		if (strncmp(entry.ut_line, line_name,
+			sizeof(entry.ut_line)) == 0 &&
+		    strncmp(entry.ut_host, host_name,
+			sizeof(entry.ut_host)) == 0) {
+			found = 1;
+			break;
+		}
+		if (freeslot < 0 && *entry.ut_name == '\0')
+			freeslot = slot;
+		++slot;
+	}
+
+	close (utmp);
+
+	if (found)
+		return slot;
+	else if (!addp)
+		return 0;	/* trying to delete a non-existing entry */
+	else if (freeslot < 0)
+		return slot;	/* first slot past current entries */
+	else
+		return freeslot;
 }
 #endif
