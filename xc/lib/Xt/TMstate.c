@@ -1,4 +1,4 @@
-/* $XConsortium: TMstate.c,v 1.152 91/06/14 16:13:59 converse Exp $ */
+/* $XConsortium: TMstate.c,v 1.153 91/07/21 17:47:41 converse Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -2124,6 +2124,7 @@ void XtInstallAllAccelerators(destination,source)
     XtInstallAccelerators(destination,source);
 }
 
+#if 0 /* dead code */
 static _XtTranslateOp _XtGetTMOperation(xlations)
     XtTranslations xlations;
 {
@@ -2131,6 +2132,7 @@ static _XtTranslateOp _XtGetTMOperation(xlations)
 	    ? ((ATranslations)xlations)->xlations->operation
 	    : xlations->operation);
 }
+#endif
 
 void XtAugmentTranslations(widget, new)
     Widget widget;
