@@ -1,6 +1,6 @@
 #ifndef lint
 static char Xrcsid[] =
-    "$XConsortium: Varargs.c,v 1.18 90/04/04 11:27:01 swick Exp $";
+    "$XConsortium: Varargs.c,v 1.19 90/06/24 19:00:36 kit Exp $";
 #endif
 /*
 
@@ -394,7 +394,8 @@ Cardinal * number;
     XtInitializeWidgetClass(XtClass(widget));
     XtGetResourceList(XtClass(widget), res_list, number);
     
-    if ((parent != NULL) && (XtIsConstraint(parent))) {
+    /* assert: !XtIsShell(w) => (XtParent(w) != NULL) */
+    if (!XtIsShell(widget) && XtIsConstraint(parent)) {
 	XtResourceList res, constraint, cons_top;
 	Cardinal num_constraint, temp;
 
