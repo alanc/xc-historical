@@ -1,11 +1,12 @@
 /*
- * $XConsortium: pr.c,v 1.12 91/04/05 17:40:37 rws Exp $
+ * $XConsortium: pr.c,v 1.13 91/05/10 18:21:46 rws Exp $
  */
 #include "def.h"
 
 extern struct	inclist	inclist[ MAXFILES ],
 			*inclistp;
-extern char	*objfile;
+extern char	*objprefix;
+extern char	*objsuffix;
 extern int	width;
 extern boolean	printed;
 extern boolean	verbose;
@@ -76,7 +77,8 @@ pr(ip, file, base)
 	len = strlen(ip->i_file)+1;
 	if (current_len + len > width || file != lastfile) {
 		lastfile = file;
-		sprintf(buf, "\n%s%s: %s", base, objfile, ip->i_file);
+		sprintf(buf, "\n%s%s%s: %s", objprefix, base, objsuffix,
+			ip->i_file);
 		len = current_len = strlen(buf);
 	}
 	else {
