@@ -5,7 +5,7 @@ xpr \- print an X window dump
 .B xpr
 [
 .B \-device
-.I dev
+.I devtype
 ] [
 .B \-scale
 .I scale
@@ -92,7 +92,7 @@ is specified.
 .ne 8
 .B Command Options
 .sp 1
-.IP "\fB\-device\fP \fIdev\fP"
+.IP "\fB\-device\fP \fIdevtype\fP"
 Specifies the device on which the file will be printed.  Currently supported:
 .RS 12
 .PD 0
@@ -122,7 +122,7 @@ PostScript printer
 .PD
 .RE
 .IP
-The default device is the \fILN03\fP, for historical reasons.
+The default is PostScript.
 \fB-device lw\fP (LaserWriter) is equivalent to -device ps and is
 provided only for backwards compatibility.
 .IP "\fB\-scale\fP \fIscale\fP"

@@ -1,4 +1,4 @@
-.\" $XConsortium: xdpr.man,v 1.9 88/09/06 17:20:30 jim Exp $
+.\" $XConsortium: xdpr.man,v 1.10 91/06/30 18:46:15 rws Exp $
 .TH XDPR 1 "10 May 1988" "X Version 11"
 .SH NAME
 xdpr \- dump an X window directly to a printer
@@ -16,7 +16,7 @@ xdpr \- dump an X window directly to a printer
 ]
 [
 .B \-device
-.I printer_device
+.I devtype
 ]
 [
 option ...
@@ -89,7 +89,7 @@ PostScript printer
 .PD
 .RE
 .IP
-The default device is the \fILN03\fP, for historical reasons.
+The default is PostScript.
 \fB-device lw\fP (LaserWriter) is equivalent to -device ps and is
 provided only for backwards compatibility.
 .TP

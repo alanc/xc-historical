@@ -1,7 +1,7 @@
-/* $XConsortium: xpr.c,v 1.51 91/05/04 22:40:50 rws Exp $ */
+/* $XConsortium: xpr.c,v 1.52 91/05/10 12:21:30 rws Exp $ */
 
 /*
- * XPR - process xwd(1) files for the LN03 or LA100 printer
+ * XPR - process xwd(1) files for various printers
  *
  * Author: Michael R. Gretzinger, MIT Project Athena
  * Copyright (C) 1985, Massachusetts Institute of Technology
@@ -342,7 +342,7 @@ int *render;
 #endif
 
     output_filename = NULL;
-    *device = LN03;	/* default */
+    *device = PS;	/* default */
     *flags = 0;
     *scale = 0;
     *split = 1;
