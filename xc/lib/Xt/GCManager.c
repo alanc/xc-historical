@@ -1,4 +1,4 @@
-/* $XConsortium: GCManager.c,v 1.42 91/06/28 16:06:46 rws Exp $ */
+/* $XConsortium: GCManager.c,v 1.43 91/07/05 09:54:06 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988, 1990 by Digital Equipment Corporation, Maynard,
@@ -163,6 +163,7 @@ GC XtAllocateGC(widget, depth, valueMask, values, dynamicMask, unusedMask)
     screen = XtScreen(widget);
     dpy = DisplayOfScreen(screen);
     pd = _XtGetPerDisplay(dpy);
+    unusedMask &= ~valueMask;
     readOnlyMask = ~(dynamicMask | unusedMask);
 
     /* Search for existing GC that matches exactly */
