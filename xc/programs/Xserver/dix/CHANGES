@@ -7,6 +7,7 @@ a full description, see doc/Server/r4.tbl.ms):
      o  Pixmaps restructured (drawable changes mostly)
      o  Cursors restructured (shares glyph bits now)
      o  Visuals restructured (screen index removed, fields rearranged)
+     o  Devices restructured (input extension changes)
      o  Out of memory changes.  Many interfaces now return OutOfMemory
      	status.
      o  Synchronous grab code rewritten.  Should conform to our
