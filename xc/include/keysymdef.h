@@ -1,4 +1,4 @@
-/* $Header: keysym.h,v 1.1 87/08/17 12:11:56 toddb Locked $ */
+/* $Header: keysymdef.h,v 1.1 87/08/30 20:38:26 susan Exp $ */
 
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -45,6 +45,7 @@ SOFTWARE.
 /* International & multi-key character composition */
 
 #define XK_Compose		0xFF20	/* Multi-key character compose */
+#define XK_Multi_key		0xFF20  /* Multi-key character compose */
 #define XK_Kanji		0xFF21	/* Kanji split-space, Kanji convert, ... */
 
 /* Cursor control & motion */
@@ -73,6 +74,7 @@ SOFTWARE.
 #define XK_Cancel		0xFF69	/* Cancel, stop, abort, exit */
 #define XK_Help			0xFF6A	/* Help, ? */
 #define XK_Break		0xFF6B
+#define XK_Mode_switch		0xFF7E	/* Kana switch, Hebrew switch ...*/
 #define XK_Num_Lock		0xFF7F
 
 /* Keypad Functions, keypad numbers cleverly chosen to map to ascii */
@@ -193,9 +195,9 @@ SOFTWARE.
 #endif XK_MISCELLANY
 
 /* 
-   Latin 1
-   Byte 3 = 0
-*/
+ *  Latin 1
+ *  Byte 3 = 0
+ */
 #ifdef XK_LATIN1
 #define XK_space               0x020         
 #define XK_exclam              0x021         
@@ -392,9 +394,9 @@ SOFTWARE.
 #endif XK_LATIN1
 
 /*
-    Latin 2
-    Byte 3 = 1
-*/
+ *   Latin 2
+ *   Byte 3 = 1
+ */
 
 #ifdef XK_LATIN2
 #define XK_Aogonek             0x1a1            
@@ -451,9 +453,9 @@ SOFTWARE.
 #endif XK_LATIN2
 
 /*
-    Latin 3
-    Byte 3 = 2
-*/
+ *   Latin 3
+ *   Byte 3 = 2
+ */
 
 #ifdef XK_LATIN3
 #define XK_Hstroke             0x2a1            
@@ -483,9 +485,9 @@ SOFTWARE.
 
 
 /*
-    Latin 4
-    Byte 3 = 3
-*/
+ *   Latin 4
+ *   Byte 3 = 3
+ */
 
 #ifdef XK_LATIN4
 #define XK_kappa               0x3a2            
@@ -526,14 +528,15 @@ SOFTWARE.
 #endif XK_LATIN4
 
 /*
-  Katakana
-  Byte 3 = 4
-*/
+ * Katakana
+ * Byte 3 = 4
+ */
 
 #ifdef XK_KATAKANA
-#define XK_kana_fullstop                               0x4a1            
-#define XK_kana_openingbracket                         0x4a2            
-#define XK_kana_closingbracket                         0x4a3            
+#define XK_overline				       0x47e
+#define XK_kana_fullstop                               0x4a1
+#define XK_kana_openingbracket                         0x4a2
+#define XK_kana_closingbracket                         0x4a3
 #define XK_kana_comma                                  0x4a4             
 #define XK_kana_middledot                              0x4a5            
 #define XK_kana_WO                                     0x4a6      
@@ -597,9 +600,9 @@ SOFTWARE.
 #endif XK_KATAKANA
 
 /*
-   Arabic
-   Byte 3 = 5
-*/
+ *  Arabic
+ *  Byte 3 = 5
+ */
 
 #ifdef XK_ARABIC
 #define XK_Arabic_comma                                0x5ac                 
@@ -653,9 +656,9 @@ SOFTWARE.
 #endif XK_ARABIC
 
 /*
-  Cyrillic
-  Byte 3 = 6
-*/
+ * Cyrillic
+ * Byte 3 = 6
+ */
 #ifdef XK_CYRILLIC
 #define XK_Serbian_dje                                 0x6a1           
 #define XK_Macedonia_gje                               0x6a2           
@@ -753,9 +756,9 @@ SOFTWARE.
 #endif XK_CYRILLIC
                                                        
 /*
-  Greek
-  Byte 3 = 7
-*/
+ * Greek
+ * Byte 3 = 7
+ */
 
 #ifdef XK_GREEK
 #define XK_Greek_ALPHAaccent                           0x7a1           
@@ -832,9 +835,9 @@ SOFTWARE.
 #endif XK_GREEK
                                                        
 /*
-  Technical
-  Byte 3 = 8
-*/
+ * Technical
+ * Byte 3 = 8
+ */
 
 #ifdef XK_TECHNICAL
 #define XK_leftradical                                 0x8a1                 
@@ -880,7 +883,6 @@ SOFTWARE.
 #define XK_union                                       0x8dd                 
 #define XK_logicaland                                  0x8de                 
 #define XK_logicalor                                   0x8df                 
-#define XK_logicalnot				       0x8e0
 #define XK_partialderivative                           0x8ef                 
 #define XK_function                                    0x8f6                 
 #define XK_leftarrow                                   0x8fb                 
@@ -890,9 +892,9 @@ SOFTWARE.
 #endif XK_TECHNICAL
                                                        
 /*
-  Special
-  Byte 3 = 9
-*/
+ *  Special
+ *  Byte 3 = 9
+ */
 
 #ifdef XK_SPECIAL
 #define XK_blank                                       0x9df                 
@@ -922,9 +924,9 @@ SOFTWARE.
 #endif XK_SPECIAL
                                                        
 /*
-  Publishing
-  Byte 3 = a
-*/
+ *  Publishing
+ *  Byte 3 = a
+ */
 
 #ifdef XK_PUBLISHING
 #define XK_emspace                                     0xaa1                 
@@ -1013,9 +1015,9 @@ SOFTWARE.
 #endif XK_PUBLISHING
                                                        
 /*
-  APL
-  Byte 3 = b
-*/
+ *  APL
+ *  Byte 3 = b
+ */
 
 #ifdef XK_APL
 #define XK_leftcaret                                   0xba3                 
@@ -1040,9 +1042,9 @@ SOFTWARE.
 #endif XK_APL
 
 /*
-  Hebrew
-  Byte 3 = c
-*/
+ * Hebrew
+ * Byte 3 = c
+ */
 
 #ifdef XK_HEBREW
 #define XK_hebrew_aleph                                0xce0                
@@ -1073,3 +1075,4 @@ SOFTWARE.
 #define XK_hebrew_shin                                 0xcf9                
 #define XK_hebrew_taf                                  0xcfa     
 #endif XK_HEBREW
+

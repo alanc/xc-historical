@@ -110,8 +110,9 @@ extern void mfbPolyGlyphBltWhite();
 extern void mfbPolyGlyphBltBlack();
 extern void mfbPolyGlyphBltInvert();
 
-/* text for terminal emulator text */
-extern void mfbTEGlyphBlt();
+/* text for terminal emulator fonts */
+extern void mfbTEGlyphBltWhite();	/* fg = 1, bg = 0 */
+extern void mfbTEGlyphBltBlack();	/* fg = 0, bg = 1 */
 
 extern void mfbChangeClip();
 extern void mfbDestroyClip();
