@@ -1,4 +1,4 @@
-/* $XConsortium: phg.h,v 5.4 91/04/04 21:55:01 gildea Exp $ */
+/* $XConsortium: phg.h,v 5.5 91/05/12 16:50:23 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -67,9 +67,20 @@ extern int	 errno;
 #define M_PI 3.14159265358979323846
 #endif
 
-#ifndef MAXFLOAT
-#define MAXFLOAT	((float)1.701411733192644299e+38)
+#if !defined(X_NOT_STDC_ENV) && (__STDC__ || !defined(sun))
+#include <float.h>
 #endif
+#ifndef MAXFLOAT
+#ifdef FLT_MAX
+#define MAXFLOAT FLT_MAX
+#else
+#ifdef vax
+#define MAXFLOAT ((float)1.701411733192644299e+38)
+#else
+#define MAXFLOAT ((float)3.40282346638528860e+38)
+#endif /* vax */
+#endif /* FLT_MAX */
+#endif /* MAXFLOAT */
 
 /* Not all environments' <math.h> define _ABS, so if not defined, define */
 #ifndef _ABS
