@@ -1,4 +1,4 @@
-/* $Header: Xutil.h,v 11.38 87/09/12 02:27:19 rws Locked $ */
+/* $Header: Xutil.h,v 11.39 87/09/12 02:32:45 swick Locked $ */
 
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -256,7 +256,7 @@ extern int XFindContext(); /* display, window, context, data */
     /* Display	    *display;		*/
     /* Window       window;		*/
     /* XContext    context;		*/
-    /* caddr_t      *data;    /* RETURN */
+    /* caddr_t      *data;  *//* RETURN */
 
 extern int XDeleteContext(); /* window, context */
     /* Window       window;		*/
