@@ -1,4 +1,4 @@
-/* $XConsortium: Resources.c,v 1.100 91/02/07 21:09:54 converse Exp $ */
+/* $XConsortium: Resources.c,v 1.101 91/02/08 16:00:04 converse Exp $ */
 
 /*LINTLIBRARY*/
 
@@ -483,7 +483,6 @@ static XtCacheRef *GetResources(widget, base, names, classes,
     int		    num_typed_args = *pNumTypedArgs;
     XrmDatabase     db;
     Boolean	    do_tm_hack = False;
-    XrmDatabase     _XtScreenDatabase();
 
     if ((args == NULL) && (num_args != 0)) {
     	XtAppWarningMsg(XtWidgetToApplicationContext(widget),
@@ -563,7 +562,7 @@ static XtCacheRef *GetResources(widget, base, names, classes,
     /* Ask resource manager for a list of database levels that we can
        do a single-level search on each resource */
 
-    db = _XtScreenDatabase(XtScreenOfObject(widget));
+    db = XtScreenDatabase(XtScreenOfObject(widget));
     while (!XrmQGetSearchList(db, names, classes,
 			      searchList, searchListSize)) {
 	if (searchList == stackSearchList)
@@ -624,7 +623,7 @@ static XtCacheRef *GetResources(widget, base, names, classes,
 	}
 	/* now get the database to use for the rest of the resources */
 	if (widget->core.screen != oldscreen) {
-	    db = _XtScreenDatabase(widget->core.screen);
+	    db = XtScreenDatabase(widget->core.screen);
 	    while (!XrmQGetSearchList(db, names, classes,
 				      searchList, searchListSize)) {
 		if (searchList == stackSearchList)
