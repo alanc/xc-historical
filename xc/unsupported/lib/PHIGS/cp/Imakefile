@@ -1,5 +1,5 @@
 XCOMM
-XCOMM $XConsortium: Imakefile,v 5.13 91/07/19 16:48:51 rws Exp $
+XCOMM $XConsortium: Imakefile,v 5.14 91/07/22 22:27:21 rws Exp $
 XCOMM
 XCOMM 
 XCOMM Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium
@@ -51,34 +51,20 @@ MONDEPLIBS = ../libphigs.a XawClientDepLibs
 MONLIBS = ../libphigs.a XawClientLibs
 SYSLIBS = -lm
 
-.SUFFIXES: .o .lint
-
    PEXAPIINC = -I../include
   PEXINCLUDE = -I../../../include/PEX
     INCLUDES = $(PEXAPIINC) $(PEXINCLUDE) -I../../../../X11
 
-LINTOPTS = -uv
-LINT_LIBS = ../util/llib-lut.ln ../error/llib-lerr.ln ../pex/llib-lpex.ln \
+LINTLIBS = ../util/llib-lut.ln ../error/llib-lerr.ln ../pex/llib-lpex.ln \
 		../ws_type/llib-lwst.ln ../ws/llib-lws.ln ../input/llib-linp.ln
-XLINT_LIBS = $(LINTXTOOL) $(LINTXLIB)
 
 SubdirLibraryRule($(OBJS))
 
 NormalProgramTarget(phigsmon,phigsmon.o,$(MONDEPLIBS),$(MONLIBS),$(SYSLIBS))
 
-lint:
-	$(LINT) $(CSRCS) $(LINTFLAGS) $(LINT_LIBS) 
+NormalLintTarget($(CSRCS))
 
-lint-x:
-	$(LINT) $(CSRCS) $(LINTFLAGS) $(LINT_LIBS) $(XLINT_LIBS) 
-
-lintlib : llib-lcp.ln
-
-llib-lcp.ln :
-	$(LINT) $(CSRCS) $(LINTFLAGS) -Ccp 
-
-.c.lint:
-	$(LINT) $< $(LINTFLAGS) $(LINT_LIBS) $(XLINT_LIBS) 
+LintLibraryTarget(cp,$(CSRCS))
 
 #ifdef HPArchitecture
 SpecialObjectRule(hpext.o, $(IRULESRC)/$(MACROFILE), $(EXT_DEFINES))

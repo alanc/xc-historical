@@ -1,5 +1,5 @@
 XCOMM
-XCOMM $XConsortium: Imakefile,v 5.9 91/07/12 17:39:32 rws Exp $
+XCOMM $XConsortium: Imakefile,v 5.10 91/07/22 22:29:14 rws Exp $
 XCOMM
 XCOMM 
 XCOMM Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium
@@ -42,30 +42,17 @@ OBJS = sin.o sin_ws.o sin_q.o sin_cvs.o sin_dev.o \
 HSRCS = sin_priv.h sin_cvs.h
 SRCS = $(CSRCS) $(HSRCS)
 
-.SUFFIXES: .o
-
    PEXAPIINC = -I../include
   PEXINCLUDE = -I../../../include/PEX
     INCLUDES = $(PEXAPIINC) $(PEXINCLUDE) -I../../../../X11
 
-LINTOPTS = -uv
-LINT_LIBS = ../error/llib-lerr.ln ../pex/llib-lpex.ln
-XLINT_LIBS = $(LINTXAW) $(LINTXTOOL) $(LINTXLIB)
+LINTLIBS = ../error/llib-lerr.ln ../pex/llib-lpex.ln
 
 SubdirLibraryRule($(OBJS))
 
-extract : $(SRCS)
+NormalLintTarget($(CSRCS))
 
-lint:   $(SRCS)
-	$(LINT) $(CSRCS) $(LINTFLAGS) $(LINT_LIBS) 
-
-lint-x: $(SRCS)
-	$(LINT) $(CSRCS) $(LINTFLAGS) $(LINT_LIBS) $(XLINT_LIBS) 
-
-lintlib : llib-linp.ln
-
-llib-linp.ln : $(SRCS)
-	$(LINT) $(CSRCS) $(LINTFLAGS) -Cinp 
+LintLibraryTarget(inp,$(CSRCS))
 
 #ifdef HPArchitecture
 SpecialObjectRule(hpext.o, $(IRULESRC)/$(MACROFILE), $(EXT_DEFINES))

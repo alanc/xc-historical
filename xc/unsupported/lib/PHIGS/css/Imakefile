@@ -1,5 +1,5 @@
 XCOMM
-XCOMM $XConsortium: Imakefile,v 5.9 91/07/12 17:42:01 rws Exp $
+XCOMM $XConsortium: Imakefile,v 5.10 91/07/22 22:27:58 rws Exp $
 XCOMM
 XCOMM 
 XCOMM Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium
@@ -43,33 +43,17 @@ HSRCS = css_priv.h
 
 SRCS = $(CSRCS) $(HSRCS)
 
-.SUFFIXES: .o .lint
-
    PEXAPIINC = -I../include
   PEXINCLUDE = -I../../../include/PEX
     INCLUDES = $(PEXAPIINC) $(PEXINCLUDE) -I../../../../X11
 
-LINTOPTS = -uv
-LINT_LIBS = ../error/llib-lerr.ln
-XLINT_LIBS = $(LINTXLIB)
+LINTLIBS = ../error/llib-lerr.ln
 
 SubdirLibraryRule($(OBJS))
 
-extract : $(SRCS)
+NormalLintTarget($(CSRCS))
 
-lint: $(SRCS)
-	-$(LINT) $(CSRCS) $(LINTFLAGS) $(LINT_LIBS) 
-
-lint-x: $(SRCS)
-	-$(LINT) $(CSRCS) $(LINTFLAGS) $(LINT_LIBS) $(XLINT_LIBS) 
-
-lintlib : llib-lcss.ln
-
-llib-lcss.ln : $(SRCS)
-	-$(LINT) $(CSRCS) $(LINTFLAGS) -Ccss 
-
-.c.lint:
-	-$(LINT) $< $(LINTFLAGS) $(LINT_LIBS) $(XLINT_LIBS) 
+LintLibraryTarget(css,$(CSRCS))
 
 #ifdef HPArchitecture
 SpecialObjectRule(hpext.o, $(IRULESRC)/$(MACROFILE), $(EXT_DEFINES))

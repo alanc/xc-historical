@@ -1,5 +1,5 @@
 XCOMM
-XCOMM $XConsortium: Imakefile,v 5.11 91/07/12 17:40:36 rws Exp $
+XCOMM $XConsortium: Imakefile,v 5.12 91/07/22 22:30:24 rws Exp $
 XCOMM
 XCOMM 
 XCOMM Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium
@@ -39,33 +39,15 @@ SRCS = ut_path.c ut_mat.c ut_misc.c utx.c utx_conv.c ut_ntfy.c \
 OBJS = ut_path.o ut_mat.o ut_misc.o utx.o utx_conv.o ut_ntfy.o \
        ut_htab.o
 
-.SUFFIXES: .o .lint
-
    PEXAPIINC = -I../include
   PEXINCLUDE = -I../../../include/PEX
     INCLUDES = $(PEXAPIINC) $(PEXINCLUDE) -I../../../../X11
 
-LINTOPTS = -uv
-LINT_LIBS = ../pex/llib-lpex.ln
-XLINT_LIBS = $(LINTXLIB)
+LINTLIBS = ../pex/llib-lpex.ln
 
 SubdirLibraryRule($(OBJS))
 
-extract : $(SRCS)
-
-lint:   $(SRCS)
-	$(LINT) $(SRCS) $(LINTFLAGS) $(LINT_LIBS) 
-
-lint-x: $(SRCS)
-	$(LINT) $(SRCS) $(LINTFLAGS) $(LINT_LIBS) $(XLINT_LIBS) 
-
-lintlib : llib-lut.ln
-
-llib-lut.ln : $(SRCS)
-	$(LINT) $(SRCS) $(LINTFLAGS) -Cut 
-
-.c.lint:
-	$(LINT) $< $(LINTFLAGS) $(LINT_LIBS) $(XLINT_LIBS) 
+NormalLintTarget(ut,$(SRCS))
 
 SpecialObjectRule(ut_path.o,$(ICONFIGFILES),$(API_DEFINES))
 
