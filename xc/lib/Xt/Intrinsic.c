@@ -84,8 +84,8 @@ static void CoreInitialize();
 
 XrmResourceDataBase XtDefaultDB = NULL;
 WidgetClass widgetClass = &widgetClassRec;
-WidgetClass compositeWidgetClass = &compositeClassRec;
-WidgetClass constraintWidgetClass = &constraintClassRec;
+WidgetClass compositeWidgetClass = (WidgetClass)&compositeClassRec;
+WidgetClass constraintWidgetClass = (WidgetClass)&constraintClassRec;
 
 /* ||| Should have defaults for Inherit from superclass to work */
 
@@ -1181,13 +1181,14 @@ static void Phase2Destroy(widget)
     register ConstraintWidgetClass  cwClass;
 
     /* Call constraint destroy procedures */
-    if (widget->core.parent != NULL && widget->core.constraints != NULL) {
-	cwClass = (ConstraintWidgetClass)widget->core.parent->core.widget_class;
+    if (widget->core.parent != NULL &&
+	XtIsSubclass(widget->core.parent, constraintWidgetClass)) {
+	cwClass= (ConstraintWidgetClass)widget->core.parent->core.widget_class;
 	for (;;) {
 	    if (cwClass->constraint_class.destroy != NULL)
 		(*(cwClass->constraint_class.destroy)) (widget);
-            if (cwClass == constraintWidgetClass) break;
-            cwClass = (ConstraintWidgetClass) cwClass->core_class.superclass;
+	    if (((WidgetClass)cwClass) == constraintWidgetClass) break;
+	    cwClass = (ConstraintWidgetClass)cwClass->core_class.superclass;
 	}
     }
 
