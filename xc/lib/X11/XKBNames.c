@@ -156,12 +156,12 @@ _XkbReadGetNamesReply(dpy,rep,xkb)
     }
     if ( rep->which&XkbVirtualModNamesMask ) {
 	if (!_XkbReadAtoms(&buf,names->vmods,XkbNumVirtualMods,
-							rep->virtualMods))
+						(CARD32)rep->virtualMods))
 	    goto BAILOUT;
     }
     if ( rep->which&XkbKeyNamesMask ) {
 	if (names->keys==NULL) {
-	    int nKeys= xkb->max_key_code-xkb->min_key_code+1;
+	    int nKeys= xkb->max_key_code+1;
 	    names->keys= (XkbKeyNamePtr)Xmalloc(nKeys*4);
 	}
 	if (names->keys!=NULL) {
