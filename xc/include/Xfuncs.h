@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xfuncs.h,v 1.1 90/12/26 16:04:44 rws Exp $
+ * $XConsortium: Xfuncs.h,v 1.2 91/01/09 15:03:56 rws Exp $
  * 
  * Copyright 1990 by the Massachusetts Institute of Technology
  *
@@ -35,9 +35,8 @@
 #ifdef _XBCOPYFUNC
 #define bcopy _XBCOPYFUNC
 #define _XNEEDBCOPYFUNC
-#else
-void bcopy();
 #endif
+void bcopy();
 #define bzero(b,len) memset(b, 0, len)
 #define bcmp(b1,b2,len) memcmp(b1, b2, len)
 #else
