@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: mpgeomnn.c,v 1.1 93/07/19 10:20:06 rws Exp $ */
 /**** module mpgeomnn.c ****/
 /******************************************************************************
 				NOTICE
@@ -58,10 +58,6 @@ terms and conditions:
  */
 #include <stdio.h>
 
-#ifndef XoftWare
-#define XoftWare
-#endif
-
 /*
  *  Core X Includes
  */
@@ -103,10 +99,6 @@ static int InitializeGeomNN();
 static int ActivateGeomNN();
 static int ResetGeomNN();
 static int DestroyGeomNN();
-
-static void DoFakeLine();
-static void DoScaleLine();
-static void DoCropLine();
 
 /*
  * DDXIE Geometry entry points
@@ -431,9 +423,11 @@ static int ActivateGeomNN(flo,ped)
 	   * Thus, first time through, just map everything we have.
 	   */
 	   if (!pvtband->yOut)  {
-	     if (!MapData(flo,pet,iband,0,0,iband->maxGlobal,KEEP)) {
+	     if (!MapData(flo,pet,iband,0,0,iband->maxGlobal,KEEP)) { 
       		   ImplementationError(flo,ped, return(FALSE));
 	     }
+	     pvtband->lo_src_available = 0;
+	     pvtband->hi_src_available = iband->maxGlobal-1;
 	  }
 	   
 	   outp = GetCurrentDst(void,flo,pet,oband);
@@ -534,14 +528,14 @@ static int ActivateGeomNN(flo,ped)
 	     if(!(ok  = MapData(flo,pet,iband,sline,sline,len,KEEP)))
 		break;
 
-	      if (sline != iband->current) {
-           	printf(" sline = %d,  iband->current = %d\n",
-           		sline, iband->current);
+	     if (sline != iband->current) 
       		   ImplementationError(flo,ped, return(FALSE));
-	       }
 
-		/***	Compute output pixels for this line ***/
-		(*pvtband->linefunc)(outp,iband->dataMap,
+	     pvtband->lo_src_available = 0;
+	     pvtband->hi_src_available = iband->maxGlobal-1;
+
+	      /***	Compute output pixels for this line ***/
+	      (*pvtband->linefunc)(outp,iband->dataMap,
 		   width,sline,pedpvt,pvt,pvtband);
 
 	    }
@@ -813,6 +807,9 @@ register LogInt constant, val, M, *ptrIn;
 register LogInt *outp	= (LogInt *) OUTP;
 register int 	srcwidth  = pvtband->in_width;
 register int 	srcheight = pvtband->in_height;
+register int 	minline  = pvtband->lo_src_available;
+register int 	maxline  = pvtband->hi_src_available;
+
 
     	constant = pvtband->int_constant ? ~(LogInt) 0 : 0;
 	/* could pull out inner if (constant) */
@@ -826,7 +823,7 @@ register int 	srcheight = pvtband->in_height;
 	    srcline += c;
 	    srcpix  += a;
 	    /* if (isrcline,isrcpix) not in src image, fill w/val*/
-	    if ( (isrcline >= 0) && (isrcline < srcheight) ) { 
+	    if ( (isrcline >= minline) && (isrcline <= maxline) ) { 
 		ptrIn = (LogInt *) srcimg[isrcline];
 		if ( (isrcpix >= 0) && (isrcpix < srcwidth) && ptrIn )
 		    if (LOG_chgbit(ptrIn,isrcpix,constant))
@@ -860,8 +857,10 @@ register iotype constant = (iotype) pvtband->CONST;			\
 register iotype *outp	= (iotype *) OUTP;				\
 register iotype *ptrIn;							\
 register iotype val;							\
+/* some variables which describe available input data (for clipping) */	\
 register int 	srcwidth  = pvtband->in_width;				\
-register int 	srcheight = pvtband->in_height;				\
+register int 	minline  = pvtband->lo_src_available;			\
+register int 	maxline  = pvtband->hi_src_available;			\
 									\
 	/* in our coordinate system, truncate does a round */		\
 	while ( width > 0 ) { 						\
@@ -873,7 +872,7 @@ register int 	srcheight = pvtband->in_height;				\
 		srcpix  += a; 						\
 		/* if (isrcline,isrcpix) not in src image, fill w/val*/	\
 		val = constant; 					\
-		if ( (isrcline >= 0) && (isrcline < srcheight) ) { 	\
+		if ( (isrcline >= minline) && (isrcline <= maxline) ) { \
 		     ptrIn = (iotype *) srcimg[isrcline];  		\
 		     if ( (isrcpix >= 0) &&				\
 			  (isrcpix < srcwidth) &&			\
@@ -885,38 +884,60 @@ register int 	srcheight = pvtband->in_height;				\
 }
 
 DO_GL	(GL_R, RealPixel, flt_constant)
+#if 1
 DO_GL	(GL_B, BytePixel, int_constant)
+#else
+/* note: due to the glory of cdefs, there's no reason to take this out! :) */
+static void GL_B (OUTP,srcimg,width,sline,pedpvt,pvt,pvtband)	
+register void *OUTP;						
+register void **srcimg;					
+register int width,sline;				
+pGeomDefPtr pedpvt; 
+mpGeometryDefPtr pvt;	
+mpGeometryBandPtr pvtband;
+{				
+double 	 b  = 	pedpvt->coeffs[1];
+double 	 d  = 	pedpvt->coeffs[3];
+double 	 tx = 	pedpvt->coeffs[4];
+double 	 ty = 	pedpvt->coeffs[5];
+register double a  = pedpvt->coeffs[0];
+register double c  = pedpvt->coeffs[2];
+register double srcline = c*0.5 + d * pvtband->yOut + ty;
+register double srcpix  = a*0.5 + b * pvtband->yOut + tx;
+register int 	isrcline,isrcpix;				
+register BytePixel constant = (BytePixel) pvtband->int_constant;		
+register BytePixel *outp	= (BytePixel *) OUTP;		
+register BytePixel *ptrIn;					
+register BytePixel val;					
+register int 	srcwidth  = pvtband->in_width;	
+register int 	srcheight = pvtband->in_height;
+register int 	minline  = pvtband->lo_src_available;
+register int 	maxline  = pvtband->hi_src_available;
+						
+	/* in our coordinate system, truncate does a round */
+	while ( width > 0 ) { 					
+		isrcline = srcline; 			
+		isrcpix  = srcpix; /* no fpu?, move down in 'if' */
+		/* prepare for next loop */			
+		width--; 				
+		srcline += c; 			
+		srcpix  += a; 		
+		/* if (isrcline,isrcpix) not in src image, fill w/val*/
+		val = constant; 				
+		if ( (isrcline >= minline) && (isrcline <= maxline) ) { 
+		     ptrIn = (BytePixel *) srcimg[isrcline];  	
+		     if ( (isrcpix >= 0) &&		
+			  (isrcpix < srcwidth) &&
+			  ptrIn )		
+			val = ptrIn[isrcpix]; 
+		}			
+		*outp++ = val; 	
+	}		
+}
+#endif
+
 DO_GL	(GL_P, PairPixel, int_constant)
 DO_GL	(GL_Q, QuadPixel, int_constant)
 
-/**********************************************************************/
-static void DoCropLine(outp,srcimg,width,sline,fconstant,pvt,pvtband)
-register BytePixel *outp;
-register BytePixel **srcimg;
-register int width,sline;
-double fconstant;
-mpGeometryDefPtr pvt;
-mpGeometryBandPtr pvtband;
-{
-	/* let's fake it until we have time to clean up */
-	DoFakeLine(outp,srcimg,width,sline,fconstant,pvt,pvtband);
-}
-/**********************************************************************/
-static void DoFakeLine(outp,srcimg,width,sline,fconstant,pvt,pvtband)
-register BytePixel *outp;
-register BytePixel **srcimg;
-register int width,sline;
-double fconstant;
-mpGeometryDefPtr pvt;
-mpGeometryBandPtr pvtband;
-{
-register int i;
-register BytePixel constant = (BytePixel) pvtband->int_constant;
-register BytePixel *src = srcimg[sline];
-
-printf(" Faking it by writing a ramp of width %d into outp 0x%x\n",
-	width,outp);
-        for (i=0; i < width; ++i) *outp++ = i%256;
-}
 /**********************************************************************/
 /* end module mpgeomnn.c */
