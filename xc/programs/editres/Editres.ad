@@ -117,6 +117,7 @@ Editres.Geometry:			500x600
 
 *Tree.Translations:	#override \n\
 	:<Key>space:		Select(nothing) \n\
+	:<Key>w:		Select(widget) \n\
 	:<Key>s:		Select(all) \n\
 	:<Key>i:		Select(invert) \n\
 	:<Key>c:		Select(children) \n\
@@ -130,6 +131,7 @@ Editres.Geometry:			500x600
 
 *Tree.Toggle.Translations:	#override \n\
 	:<Key>space:		Select(nothing) \n\
+	:<Key>w:		Select(widget) \n\
 	:<Key>s:		Select(all) \n\
 	:<Key>i:		Select(invert) \n\
 	:<Key>c:		Select(children) \n\
