@@ -1,4 +1,5 @@
-.\" $XConsortium: x11perf.man,v 1.21 94/04/12 18:42:33 dpw Exp $
+.\" $XConsortium: x11perf.man,v 1.22 94/04/12 18:45:26 dpw Exp $
+.\" Copyright 1988, 1989 Digital Equipment Corporation.
 .\" Copyright 1989 Massachusetts Institute of Technology
 .\"
 .\" Permission to use, copy, modify, distribute, and sell this software and
@@ -988,10 +989,6 @@ Circulate unmapped window to top.
 There are no X defaults used by this program.
 .SH "SEE ALSO"
 X(1), xbench(1), x11perfcomp(1)
-.SH COPYRIGHT
-Copyright 1988, 1989 Digital Equipment Corporation.
-.br
-See \fIX(1)\fP for a full statement of rights and permissions.
 .SH AUTHORS
 Joel McCormack
 .br
