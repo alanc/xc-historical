@@ -1,7 +1,10 @@
 /*
- * $Header: main.c,v 1.4 87/04/28 19:04:06 karlton Exp $
+ * $Header: main.c,v 1.4 87/06/29 16:13:18 toddb Locked $
  *
  * $Log:	main.c,v $
+ * Revision 1.4  87/06/29  16:13:18  toddb
+ * Initial revision.
+ * 
  * Revision 1.4  87/04/28  19:04:06  karlton
  * make sure makefile has contents before dereferencing
  * 
@@ -201,7 +204,7 @@ struct filepointer *getfile(file)
 		return(content);
 	}
 	fstat(fd, &st);
-	content->f_len = st.st_size;
+	content->f_len = st.st_size+1;
 	content->f_base = malloc(content->f_len);
 	if (content->f_base == NULL)
 		log_fatal("cannot allocate mem\n");
