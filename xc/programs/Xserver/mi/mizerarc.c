@@ -15,7 +15,7 @@ without any express or implied warranty.
 
 ********************************************************/
 
-/* $XConsortium: mizerarc.c,v 5.13 89/09/14 16:30:26 rws Exp $ */
+/* $XConsortium: mizerarc.c,v 5.14 89/09/14 20:00:03 rws Exp $ */
 
 /* Derived from:
  * "Algorithm for drawing ellipses or hyperbolae with a digital plotter"
@@ -32,10 +32,11 @@ without any express or implied warranty.
 #include "mi.h"
 #include "mizerarc.h"
 
-void
-miZeroArcSetup(arc, info)
+Bool
+miZeroArcSetup(arc, info, ok360)
     register xArc *arc;
     register miZeroArcRec *info;
+    Bool ok360;
 {
     int l;
     int angle1, angle2;
@@ -109,21 +110,18 @@ miZeroArcSetup(arc, info)
     info->endAngle = endAngle;
     if (startAngle == endAngle)
     {
-	info->startx = -1;
-	info->endx = -1;
-	info->starty = -1;
-	info->endy = -1;
-	if (angle2)
-	{
-	    info->initialMask = 0xf;
-	}
-	else
+	if (!angle2)
 	{
 	    info->initialMask = 0;
 	    info->h = -1;
 	    info->w = -1;
+	    return FALSE;
 	}
-	return;
+	if (ok360)
+	{
+	    info->initialMask = 0xf;
+	    return TRUE;
+	}
     }
     startseg = startAngle / OCTANT;
     if (!arc->height || (((startseg + 1) & 2) && arc->width))
@@ -160,7 +158,7 @@ miZeroArcSetup(arc, info)
     info->initialMask = 0;
     for (i = 0; i < 4; i++)
     {
-	if ((endAngle < startAngle) ?
+	if ((endAngle <= startAngle) ?
 	    ((i * QUADRANT <= endAngle) || ((i + 1) * QUADRANT > startAngle)) :
 	    ((i * QUADRANT <= endAngle) && ((i + 1) * QUADRANT > startAngle)))
 	    info->initialMask |= (1 << i);
@@ -169,7 +167,7 @@ miZeroArcSetup(arc, info)
     info->endMask = info->initialMask;
     startseg >>= 1;
     endseg >>= 1;
-    overlap = (endseg == startseg) && (endAngle < startAngle);
+    overlap = (endseg == startseg) && (endAngle <= startAngle);
     if (startseg & 1)
     {
 	if  (!overlap)
@@ -201,6 +199,7 @@ miZeroArcSetup(arc, info)
     }
     if (!info->startx)
 	info->initialMask = info->startMask;
+    return FALSE;
 }
 
 DDXPointPtr
@@ -212,7 +211,7 @@ miZeroArcPts(arc, pts)
     register int x, y, a, b, d, mask;
     register int k1, k3, dx1, dy1;
 
-    miZeroArcSetup(arc, &info);
+    (void)miZeroArcSetup(arc, &info, FALSE);
     x = info.x;
     y = info.y;
     k1 = info.k1;
@@ -350,13 +349,15 @@ miZeroArcDashPts(pGC, arc, points, maxPts, evenPts, oddPts)
     unsigned char *pDash;
     int numInDashList, dashIndex, dashOffset, dashRemaining;
     DDXPointPtr circPts[4];
-    DDXPointPtr startPt, oldPt;
+    DDXPointPtr startPt;
     DDXPointPtr pt, lastPt, *pts;
     int i, delta, ptsdelta, seg, startseg;
 
+    if (!arc->angle2)
+	return;
     for (i = 0; i < 4; i++)
 	circPts[i] = points + (i * maxPts);
-    miZeroArcSetup(arc, &info);
+    (void)miZeroArcSetup(arc, &info, FALSE);
     x = info.x;
     y = info.y;
     k1 = info.k1;
@@ -415,8 +416,12 @@ miZeroArcDashPts(pGC, arc, points, maxPts, evenPts, oddPts)
 	    d -= a;
 	}
     }
+    if ((x == info.startx) || (y == info.starty))
+	startPt = circPts[startseg];
     for (; x <= info.w; x++)
     {
+	if (x == info.startx)
+	    startPt = circPts[startseg];
 	DoPix(0, info.xorg + x, info.yorg + y);
 	DoPix(1, info.xorgo - x, info.yorg + y);
 	if (!arc->height || (arc->height & 1))
@@ -432,45 +437,39 @@ miZeroArcDashPts(pGC, arc, points, maxPts, evenPts, oddPts)
     miStepDash((int)pGC->dashOffset, &dashIndex, pDash,
 	       numInDashList, &dashOffset);
     dashRemaining = pDash[dashIndex] - dashOffset;
-    oldPt = circPts[startseg];
     for (i = 0; i < 5; i++)
     {
 	seg = (startseg + i) & 3;
 	pt = points + (seg * maxPts);
-	if (seg == startseg)
-	{
-	    if (seg & 1)
-	    {
-		if (i == 0)
-		    pt = startPt;
-		else if (oldPt == startPt)
-		    break;
-		else
-		    circPts[seg] = startPt;
-	    }
-	    else
-	    {
-		if (i == 0)
-		    circPts[startseg] = startPt;
-		else if (oldPt == startPt)
-		    break;
-		else
-		{
-		    pt = startPt;
-		    circPts[startseg] = oldPt;
-		}
-	    }
-	}
 	if (seg & 1)
 	{
 	    lastPt = circPts[seg];
 	    delta = 1;
+	    if (i == 0)
+		pt = startPt;
+	    else if (i == 4)
+	    {
+		if (startPt == pt)
+		    break;
+		lastPt = startPt - 1;
+	    }
 	}
 	else
 	{
 	    lastPt = pt - 1;
 	    pt = circPts[seg] - 1;
 	    delta = -1;
+	    if (i == 0)
+	    {
+		if (startPt < pt)
+		    pt = startPt;
+	    }
+	    else if (i == 4)
+	    {
+		if (startPt > pt)
+		    break;
+		lastPt = startPt;
+	    }
 	}
 	while (pt != lastPt)
 	{
