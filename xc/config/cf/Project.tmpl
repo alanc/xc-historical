@@ -1,15 +1,15 @@
-XCOMM -----------------------------------------------------------------------
+XCOMM ----------------------------------------------------------------------
 XCOMM X Window System Build Parameters and Rules
-XCOMM $XConsortium: Project.tmpl,v 1.243 94/08/17 02:45:50 mor Exp matt $
+XCOMM $XConsortium: Project.tmpl,v 1.244 94/08/17 18:57:34 matt Exp gildea $
 
-/****************************************************************************
- *                                                                          *
- *                            DEFAULT DEFINITONS                            *
- *                                                                          *
- * The following section contains defaults for things that can              *
- * overridden in the various *.cf and site.def files.  DO NOT EDIT!         *
- *                                                                          *
- ***************************************************************************/
+/***************************************************************************
+ *                                                                         *
+ *                            DEFAULT DEFINITONS                           *
+ *                                                                         *
+ * The following section contains defaults for things that can             *
+ * overridden in the various *.cf and site.def files.  DO NOT EDIT!        *
+ *                                                                         *
+ **************************************************************************/
 
 #define ProjectX		6	/* do *not* change this line */
 
@@ -1081,3 +1081,25 @@ file.idx.PS:								@@\
 clean::									@@\
 	$(RM) index.troff index.pageno file.idx.nPS file.idx.PS
 #endif
+
+#ifndef MakeLatexDoc
+#if HasLatex
+#define MakeLatexDoc(file,srcs) 					@@\
+all:: file.PS								@@\
+									@@\
+file.dvi: srcs  							@@\
+	latex srcs							@@\
+									@@\
+file.PS: file.dvi							@@\
+	$(DVIPS) -o file.nPS file && $(MV) file.nPS $@			@@\
+									@@\
+clean:: 								@@\
+	RemoveFiles(file.nPS file.PS file.dvi file.log)			@@\
+	RemoveFiles(file.aux file.toc file.lof file.lot)
+#else /* HasLatex */
+#define MakeLatexDoc(file,srcs) 					@@\
+all::									@@\
+file.PS: srcs								@@\
+	@echo "cannot make file.PS: no latex on this system"; exit 1
+#endif /* HasLatex (else) */
+#endif /* MakeLatexDoc */

@@ -1,6 +1,6 @@
-XCOMM -----------------------------------------------------------------------
+XCOMM ----------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-XCOMM $XConsortium: Imake.tmpl,v 1.219 94/05/13 15:58:31 matt Exp matt $
+XCOMM $XConsortium: Imake.tmpl,v 1.220 94/08/30 17:25:36 matt Exp gildea $
 XCOMM
 
 /*
@@ -187,6 +187,9 @@ XCOMM the platform-specific parameters - edit site.def to change
 #endif
 #ifndef HasKrb5
 #define HasKrb5			NO      /* if you have Kerberos V5 */
+#endif
+#ifndef HasLatex
+#define HasLatex		YES
 #endif
 #ifndef HasShm
 #if SystemV || SystemV4
@@ -692,6 +695,9 @@ XCOMM the platform-specific parameters - edit site.def to change
 #ifndef EqnCmd
 #define EqnCmd eqn
 #endif
+#ifndef DvipsCmd
+#define DvipsCmd dvips
+#endif
 #if HasSentinel
 #ifndef SentinelCmd
 #define SentinelCmd sentinel
@@ -837,6 +843,9 @@ CXXEXTRA_INCLUDES = CplusplusExtraIncludes
          MSMACROS = MsMacros
               TBL = TblCmd
               EQN = EqnCmd
+#if HasLatex
+            DVIPS = DvipsCmd
+#endif
 #if HasSentinel
          SENTINEL = SentinelCmd
   SENTINELOPTIONS = SentinelOptions
