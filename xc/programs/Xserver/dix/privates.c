@@ -1,4 +1,4 @@
-/* $XConsortium: privates.c,v 1.1 93/06/24 10:14:05 dpw Exp $ */
+/* $XConsortium: privates.c,v 1.2 94/02/04 10:48:45 rws Exp $ */
 /*
 
 Copyright 1993 by the Massachusetts Institute of Technology
@@ -45,6 +45,9 @@ void
 ResetClientPrivates()
 {
     clientPrivateCount = 0;
+    clientPrivateLen = 0;
+    xfree(clientPrivateSizes);
+    clientPrivateSizes = (unsigned *)NULL;
     totalClientSize = sizeof(ClientRec);
 
 }
