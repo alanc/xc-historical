@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: miarc.c,v 1.69 89/03/18 12:58:06 rws Exp $ */
+/* $XConsortium: miarc.c,v 1.70 89/03/22 10:49:19 rws Exp $ */
 /* Author: Keith Packard */
 
 #include "X.h"
@@ -128,22 +128,22 @@ typedef struct _miPolyArc {
 				 GCLineWidth | GCCapStyle | GCJoinStyle)
 static XID gcvals[6];
 
-#undef max
-#undef min
-
 extern double sqrt(), cos(), sin(), atan(), atan2(), pow(), acos(), asin();
 extern double ceil(), floor();
 extern void miFillSppPoly();
 static void fillSpans(), span(), drawArc(), drawQuadrant(), drawZeroArc();
+static void miFreeArcs();
 static int computeAngleFromPath();
 static miPolyArcPtr miComputeArcs ();
 
+#undef max
 static int
 max (x, y)
 {
 	return x>y? x:y;
 }
 
+#undef min
 static int
 min (x, y)
 {
@@ -334,10 +334,7 @@ miPolyArc(pDraw, pGC, narcs, parcs)
 
 	fg = pGCTo->fgPixel;
 	bg = pGCTo->bgPixel;
-	polyArcs = miComputeArcs (parcs, narcs,
- 	    		!(pGC->lineStyle == LineSolid),
- 			pGC->lineStyle == LineDoubleDash,
-			pGC->dash, pGC->numInDashList, pGC->dashOffset);
+	polyArcs = miComputeArcs (parcs, narcs, pGC);
 
 	if (!polyArcs)
 	{
@@ -430,18 +427,7 @@ miPolyArc(pDraw, pGC, narcs, parcs)
 		}
 	    }
 	}
-	for (iphase = ((pGC->lineStyle == LineDoubleDash) ? 1 : 0);
- 	     iphase >= 0;
-	     iphase--)
-	{
-	    if (polyArcs[iphase].narcs > 0)
-		xfree(polyArcs[iphase].arcs);
-	    if (polyArcs[iphase].njoins > 0)
-		xfree (polyArcs[iphase].joins);
-	    if (polyArcs[iphase].ncaps > 0)
-		xfree (polyArcs[iphase].caps);
-	}
-	xfree(polyArcs);
+	miFreeArcs(polyArcs, pGC);
 
 	if(fTricky)
 	{
@@ -942,18 +928,39 @@ addArc (arcsp, narcsp, sizep, xarc)
 	return arc;
 }
 
+static void
+miFreeArcs(arcs, pGC)
+    miPolyArcPtr arcs;
+    GCPtr pGC;
+{
+	int iphase;
+
+	for (iphase = ((pGC->lineStyle == LineDoubleDash) ? 1 : 0);
+ 	     iphase >= 0;
+	     iphase--)
+	{
+	    if (arcs[iphase].narcs > 0)
+		xfree(arcs[iphase].arcs);
+	    if (arcs[iphase].njoins > 0)
+		xfree(arcs[iphase].joins);
+	    if (arcs[iphase].ncaps > 0)
+		xfree(arcs[iphase].caps);
+	}
+	xfree(arcs);
+}
+
 /*
  * this routine is a bit gory
  */
 
 static miPolyArcPtr
-miComputeArcs (parcs, narcs, isDashed, isDoubleDash, pDash, nDashes, dashOffset)
+miComputeArcs (parcs, narcs, pGC)
 	xArc	*parcs;
 	int	narcs;
-	int	isDashed, isDoubleDash;
-	unsigned char	*pDash;
-	int	nDashes, dashOffset;
+	GCPtr	pGC;
 {
+	int		isDashed, isDoubleDash;
+	int		dashOffset;
 	miPolyArcPtr	arcs;
 	int		start, i, j, k, nexti, nextk;
 	int		joinSize[2];
@@ -972,6 +979,10 @@ miComputeArcs (parcs, narcs, isDashed, isDoubleDash, pDash, nDashes, dashOffset)
 	int		iDashStart, dashRemainingStart, iphaseStart;
 	int		startAngle, spanAngle, endAngle, backwards;
 	int		prevDashAngle, dashAngle;
+
+	isDashed = !(pGC->lineStyle == LineSolid);
+	isDoubleDash = (pGC->lineStyle == LineDoubleDash);
+	dashOffset = pGC->dashOffset;
 
 	data = (struct arcData *) ALLOCATE_LOCAL (narcs * sizeof (struct arcData));
 	if (!data)
@@ -1014,13 +1025,13 @@ miComputeArcs (parcs, narcs, isDashed, isDoubleDash, pDash, nDashes, dashOffset)
 	iphase = 0;
 	if (isDashed) {
 		iDash = 0;
-		dashRemaining = pDash[0];
+		dashRemaining = pGC->dash[0];
 	 	while (dashOffset > 0) {
 			if (dashOffset >= dashRemaining) {
 				dashOffset -= dashRemaining;
 				iphase = iphase ? 0 : 1;
 				iDash++;
-				dashRemaining = pDash[iDash];
+				dashRemaining = pGC->dash[iDash];
 			} else {
 				dashRemaining -= dashOffset;
 				dashOffset = 0;
@@ -1098,6 +1109,8 @@ miComputeArcs (parcs, narcs, isDashed, isDoubleDash, pDash, nDashes, dashOffset)
 					xarc.angle2 = spanAngle;
 					arc = addArc (&arcs[iphase].arcs, &arcs[iphase].narcs,
  							&arcSize[iphase], xarc);
+					if (!arc)
+					    goto arcfail;
 					/*
 					 * cap each end of an on/off dash
 					 */
@@ -1129,6 +1142,8 @@ miComputeArcs (parcs, narcs, isDashed, isDoubleDash, pDash, nDashes, dashOffset)
 				if (!arc) {
 					arc = addArc (&arcs[iphase].arcs, &arcs[iphase].narcs,
  				      	      	      &arcSize[iphase], parcs[i]);
+					if (!arc)
+					    goto arcfail;
 					arc->join = arcs[iphase].njoins;
 					arc->cap = arcs[iphase].ncaps;
 					arc->selfJoin = data[i].selfJoin;
@@ -1136,16 +1151,18 @@ miComputeArcs (parcs, narcs, isDashed, isDoubleDash, pDash, nDashes, dashOffset)
 				prevphase = iphase;
 				if (dashRemaining <= 0) {
 					++iDash;
-					if (iDash == nDashes)
+					if (iDash == pGC->numInDashList)
 						iDash = 0;
 					iphase = iphase ? 0:1;
-					dashRemaining = pDash[iDash];
+					dashRemaining = pGC->dash[iDash];
 				}
 				prevDashAngle = dashAngle;
 			}
 		} else {
 			arc = addArc (&arcs[iphase].arcs, &arcs[iphase].narcs,
  				      &arcSize[iphase], parcs[i]);
+			if (!arc)
+			    goto arcfail;
 			arc->join = arcs[iphase].njoins;
 			arc->cap = arcs[iphase].ncaps;
 			arc->selfJoin = data[i].selfJoin;
@@ -1250,7 +1267,12 @@ miComputeArcs (parcs, narcs, isDashed, isDoubleDash, pDash, nDashes, dashOffset)
 			arcs[iphase].arcs[arcs[iphase].narcs-1].cap =
 			         arcs[iphase].ncaps;
 		}
+	DEALLOCATE_LOCAL(data);
 	return arcs;
+arcfail:
+	miFreeArcs(arcs, pGC);
+	DEALLOCATE_LOCAL(data);
+	return (miPolyArcPtr)NULL;
 }
 
 /* b > 0 only */
