@@ -1,4 +1,4 @@
-/* $XConsortium: log.c,v 1.2 94/12/16 17:29:59 mor Exp mor $ */
+/* $XConsortium: log.c,v 1.3 94/12/27 17:44:30 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1994  X Consortium
@@ -51,7 +51,13 @@ XtPointer callData;
 {
     static int first_time = 1;
 
-    if (!client_log_visible)
+    if (client_log_visible)
+    {
+	/* Make sure it is visible */
+
+	XMapRaised (XtDisplay (topLevel), XtWindow (logPopup));
+    }
+    else
     {
 	PopupPopup (mainWindow, logPopup,
 	    False, first_time, 50, 50, "DelLogWinAction()");

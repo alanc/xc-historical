@@ -1,4 +1,4 @@
-/* $XConsortium: save.c,v 1.18 94/12/27 17:56:40 mor Exp mor $ */
+/* $XConsortium: save.c,v 1.19 94/12/30 16:51:59 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -871,7 +871,13 @@ XtPointer callData;
 {
     static int first_time = 1;
 
-    if (!help_visible)
+    if (help_visible)
+    {
+	/* Make sure it is visible */
+
+	XMapRaised (XtDisplay (topLevel), XtWindow (helpPopup));
+    }
+    else
     {
 	PopupPopup (savePopup, helpPopup,
 	    True, first_time, 50, 50, "DelSaveHelpWinAction()");

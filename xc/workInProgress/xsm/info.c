@@ -1,4 +1,4 @@
-/* $XConsortium: info.c,v 1.24 94/12/27 17:52:00 mor Exp mor $ */
+/* $XConsortium: info.c,v 1.25 95/01/03 18:35:35 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -241,7 +241,13 @@ ClientRec *client;
 	    XtNiconName, buffer.bufStart,
 	    NULL);
 
-	if (!client_prop_visible)
+	if (client_prop_visible)
+	{
+	    /* Make sure it is visible */
+
+	    XMapRaised (XtDisplay (topLevel), XtWindow (clientPropPopup));
+	}
+	else
 	{
 	    PopupPopup (mainWindow, clientPropPopup,
 		False, first_time, 50, 150, "DelPropWinAction()");
@@ -739,7 +745,13 @@ ClientInfoXtProc (w, client_data, callData)
 {
     static int first_time = 1;
 
-    if (!client_info_visible)
+    if (client_info_visible)
+    {
+	/* Make sure it is visible */
+
+	XMapRaised (XtDisplay (topLevel), XtWindow (clientInfoPopup));
+    }
+    else
     {
 	UpdateClientList ();
 
