@@ -1,4 +1,4 @@
-/* $XConsortium: miRndrPick.c,v 1.3 92/08/12 15:23:15 hersh Exp $ */
+/* $XConsortium: miRndrPick.c,v 1.4 92/10/05 17:04:55 hersh Exp $ */
 
 /************************************************************
 Copyright 1992 by The Massachusetts Institute of Technology
@@ -179,9 +179,10 @@ ddUSHORT        *betterPick;
 {
     ddpex3rtn		err = Success;
     miPickMeasureStr    *ppm;
-    int                 numbytes, i;
+    int                 numbytes, i, j;
     ddPickPath          *per;
     pexPickElementRef   *dest;
+    ddPickPath          *sIDpp;
 
     err = EndPicking(pRend, pRend->pickstr.pseudoPM);
 
@@ -207,15 +208,23 @@ ddUSHORT        *betterPick;
 	     dest = (pexPickElementRef*) pBuffer->pBuf, i=0;
 	     i < ppm->path->numObj; per++, dest++, i++) {
 
-	     /* if returned structure handle is the fakeStr
+	     /* if returned structure handle is in the sIDlist
 	        then the pick was on a path below an immediate OC
 	        so return the struct id the user sent over in the BeginPick
 	        request, otherwise return the resource ID as normal
 	     */
-	    if ((diStructHandle)(per->structure) == pRend->pickstr.fakeStr)
-	      dest->sid = pRend->pickstr.sid;
-	    else
-	      dest->sid = ((ddStructResource*)(per->structure))->id;
+	     sIDpp = (ddPickPath *) (pRend->pickstr.sIDlist)->pList;
+	     for (j = 0; j < (pRend->pickstr.sIDlist)->numObj; j++, sIDpp++) {
+		if ((diStructHandle)(per->structure) == sIDpp->structure) {
+		    /* this is CORRECT, pickid is used to store the client
+		       provided structure id, yes it is a kludge...
+		    */
+		    dest->sid = sIDpp->pickid;
+		    break;
+		}
+		else
+		  dest->sid = ((ddStructResource*)(per->structure))->id;
+	     }
 	    dest->offset = per->offset;
 	    dest->pickid = per->pickid;
 	}
@@ -267,10 +276,10 @@ ddBufferPtr     pBuffer;    /* list of pick element ref */
     ddpex3rtn		err = Success;
 
     pexEndPickAllReply	*reply = (pexEndPickAllReply *)(pBuffer->pHead);
-    int 		i, j, numbytes = 0, pbytes, numObj; 
+    int 		i, j, k, numbytes = 0, pbytes, numObj; 
     listofObj		*list;
     listofObj		**listofp;
-    ddPickPath		*pp;
+    ddPickPath		*pp, *sIDpp;
     ddPointer		pplist;
     ddPickElementRef	ref;
 
@@ -295,10 +304,18 @@ ddBufferPtr     pBuffer;    /* list of pick element ref */
 	for (j = 0; j < list->numObj; j++) {
 	  pp = (ddPickPath *) pplist;
 	  pplist = (ddPointer)(pp+1);
-	  if ((diStructHandle)(pp->structure) == pRend->pickstr.fakeStr)
-	      ref.sid = pRend->pickstr.sid;
-	  else
-	      ref.sid = ((ddStructResource *)(pp->structure))->id;
+	  sIDpp = (ddPickPath *) (pRend->pickstr.sIDlist)->pList;
+	  for (k = 0; k < (pRend->pickstr.sIDlist)->numObj; k++, sIDpp++) {
+	    if ((diStructHandle)(pp->structure) == sIDpp->structure) {
+		/* this is CORRECT, pickid is used to store the client
+		   provided structure id, yes it is a kludge...
+		*/
+		ref.sid = sIDpp->pickid;
+		break;
+	    }
+	    else
+		ref.sid = ((ddStructResource *)(pp->structure))->id;
+	  }
 	  ref.offset = pp->offset;
 	  ref.pickid = pp->pickid;
 	  PACK_STRUCT(ddPickElementRef, &ref, pBuffer->pBuf);

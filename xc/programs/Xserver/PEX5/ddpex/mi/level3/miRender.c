@@ -1,4 +1,4 @@
-/* $XConsortium: miRender.c,v 5.9 92/10/05 17:03:42 hersh Exp $ */
+/* $XConsortium: miRender.c,v 5.10 92/11/09 18:55:03 hersh Exp $ */
 
 
 /***********************************************************
@@ -322,6 +322,8 @@ RenderOCs(pRend, numOCs, pOCs)
 	diPMHandle            	pPM = (diPMHandle) NULL;
 	unsigned long 		PEXStructType;
 	miStructPtr 		pheader;
+	ddPickPath    		*strpp;
+
 
 
 #ifdef DDTEST
@@ -337,7 +339,8 @@ RenderOCs(pRend, numOCs, pOCs)
     if (pRend->state == PEXPicking) {
     /* state == PEXPicking, call through traverser */
 
-	sh = pRend->pickstr.fakeStr;
+	strpp = (ddPickPath *)(pRend->pickstr.fakeStrlist)->pList;
+	sh = strpp->structure;
 	pheader = (miStructPtr) sh->deviceData;
 	offset1 = MISTR_NUM_EL(pheader) + 1;
 	offset2 = offset1 + numOCs - 1;

@@ -1,4 +1,4 @@
-/* $XConsortium: pexRndr.c,v 5.13 92/10/05 17:00:35 hersh Exp $ */
+/* $XConsortium: pexRndr.c,v 5.14 92/11/09 18:48:29 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -139,7 +139,10 @@ pexCreateRendererReq    *strmPtr;
     ErrorCode freeRenderer();
     ddRendererStr *prend = 0;
     CARD8 *ptr = (CARD8 *)(strmPtr+1);
-    XID  fakepm, fakestr;
+    XID  fakepm, fakeStrID;
+    diStructHandle    fakeStr;   
+    ddPickPath		fakeStrpp, sIDpp;
+
 	
     if (prend = (ddRendererStr *) LookupIDByType (strmPtr->rdr, PEXRendType))
 	PEX_ERR_EXIT(BadIDChoice,strmPtr->rdr,cntxtPtr);
@@ -202,18 +205,37 @@ pexCreateRendererReq    *strmPtr;
     /* create a phony structure to pack OCs into 
        for doing immediate mode renderer picking
     */
-    fakestr = FakeClientID(cntxtPtr->client->index);
-    prend->pickstr.fakeStr = (diStructHandle)Xalloc((unsigned long)
+    fakeStrID = FakeClientID(cntxtPtr->client->index);
+    fakeStr = (diStructHandle)Xalloc((unsigned long)
 					  sizeof(ddStructResource));
-    if (!prend->pickstr.fakeStr) PEX_ERR_EXIT(BadAlloc,0,cntxtPtr);
-    (prend->pickstr.fakeStr)->id = fakestr;
-    err = CreateStructure(prend->pickstr.fakeStr);
+    if (!fakeStr) PEX_ERR_EXIT(BadAlloc,0,cntxtPtr);
+    fakeStr->id = fakeStrID;
+    err = CreateStructure(fakeStr);
     if (err) {
-	Xfree((pointer)(prend->pickstr.fakeStr));
+	Xfree((pointer)(fakeStr));
 	PEX_ERR_EXIT(err,0,cntxtPtr);
     }
+    ADDRESOURCE(fakeStrID, PEXStructType, fakeStr);
 
-    ADDRESOURCE(fakestr, PEXStructType, prend->pickstr.fakeStr);
+    /* Now create 2 ddPickPaths, one for the fakeStrlist and the other
+       for maintaining the correspondence between the user supplied 
+       structure ID and the structure handle
+    */
+
+    fakeStrpp.structure = fakeStr;
+    fakeStrpp.offset = 0;
+    fakeStrpp.pickid = 0;
+    prend->pickstr.fakeStrlist = puCreateList(DD_PICK_PATH);
+    err = puAddToList((ddPointer) &fakeStrpp, (ddULONG) 1, prend->pickstr.fakeStrlist);
+    if (err != Success) return(err);
+
+    sIDpp.structure = fakeStr;
+    sIDpp.offset = 0;
+    sIDpp.pickid = 0;
+    prend->pickstr.sIDlist = puCreateList(DD_PICK_PATH);
+    err = puAddToList((ddPointer) &sIDpp, (ddULONG) 1, prend->pickstr.sIDlist);
+    if (err != Success) return(err);
+
 
     if (strmPtr->itemMask & PEXRDPipelineContext) {
 	ddPCStr *ppc = 0;

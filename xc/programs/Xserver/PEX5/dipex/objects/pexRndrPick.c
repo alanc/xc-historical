@@ -1,4 +1,4 @@
-/* $XConsortium: pexRndrPick.c,v 1.3 92/08/12 15:15:05 hersh Exp $ */
+/* $XConsortium: pexRndrPick.c,v 1.4 92/10/05 17:01:16 hersh Exp $ */
 
 /************************************************************
 Copyright 1992 by The Massachusetts Institute of Technology
@@ -68,11 +68,17 @@ pexBeginPickOneReq      *strmPtr;
     ErrorCode err = Success;
     ddRendererStr *prend = 0;
     pexPickRecord *pr = (pexPickRecord *)(strmPtr+1);
+    ddPickPath    *sIDpp;
 
     LU_RENDERER(strmPtr->rdr, prend);
     LU_DRAWABLE(strmPtr->drawable, prend->pDrawable);
     prend->drawableId = strmPtr->drawable;
-    prend->pickstr.sid = strmPtr->sid;
+    /* this is evil but necessary, use the pickid field of the
+       sIDlist to store the structure ID that corresponds to the 
+       top level fake structure
+    */
+    sIDpp = (ddPickPath *)(prend->pickstr.sIDlist)->pList;
+    sIDpp->pickid = strmPtr->sid;
 
     prend->pickstr.pick_method = strmPtr->method;
     prend->pickstr.state = DD_PICK_ONE;
@@ -135,7 +141,6 @@ pexPickOneReq           *strmPtr;
     LU_DRAWABLE(strmPtr->drawable, prend->pDrawable);
     prend->drawableId = strmPtr->drawable;
     LU_STRUCTURE(strmPtr->sid, prend->pickstr.strHandle);
-    prend->pickstr.sid = strmPtr->sid;
 
     prend->pickstr.pick_method = strmPtr->method;
     prend->pickstr.state = DD_PICK_ONE;
@@ -170,11 +175,17 @@ pexBeginPickAllReq      *strmPtr;
     ErrorCode err = Success;
     ddRendererStr *prend = 0;
     pexPickRecord *pr = (pexPickRecord *)(strmPtr+1);
+    ddPickPath    *sIDpp;
 
     LU_RENDERER(strmPtr->rdr, prend);
     LU_DRAWABLE(strmPtr->drawable, prend->pDrawable);
     prend->drawableId = strmPtr->drawable;
-    prend->pickstr.sid = strmPtr->sid;
+    /* this is evil but necessary, use the pickid field of the
+       sIDlist to store the structure ID that corresponds to the 
+       top level fake structure
+    */
+    sIDpp = (ddPickPath *)(prend->pickstr.sIDlist)->pList;
+    sIDpp->pickid = strmPtr->sid;
 
     prend->pickstr.pick_method = strmPtr->method;
     prend->pickstr.state = DD_PICK_ALL;

@@ -1,4 +1,4 @@
-/* $XConsortium: ddpex.h,v 5.9 92/08/13 18:45:56 hersh Exp $ */
+/* $XConsortium: ddpex.h,v 5.10 92/10/05 17:05:22 hersh Exp $ */
 
 /***********************************************************
 Copyright (c) 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -566,6 +566,11 @@ typedef struct {
 	ddULONG           sid;          /* structure id for BeginPick */
 	diPMHandle	  pseudoPM;      /* fake PM for Renderer Pick */
 	listofObj	  *list;	/* list of list for pick all */
+	listofObj	  *fakeStrlist;	/* list of fake struct handle for
+					   picking */
+	listofObj	  *sIDlist;	/* list of IDs, struct handles  and
+					   offsets for reverse mapping
+					   BeginStructures when picking */
 } ddRdrPickStr, *ddRdrPickPtr;       /* need to send the event */ 
 
 typedef struct {
