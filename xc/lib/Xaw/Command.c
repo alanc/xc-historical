@@ -261,7 +261,7 @@ static void Highlight(w,event)
      XEvent *event;
 {
   CommandWidget cbw = (CommandWidget)w;
-  ComWhighlight = TRUE;
+  ComWhighlighted = TRUE;
   Redisplay(w);
 }
 
@@ -270,7 +270,7 @@ static void Unhighlight(w,event)
      XEvent *event;
 {
   CommandWidget cbw = (CommandWidget)w;
-  ComWhighlight = FALSE;
+  ComWhighlighted = FALSE;
   Redisplay(w);
 }
 
