@@ -1,5 +1,5 @@
 /*
- * $XConsortium: mergerop.h,v 1.5 90/04/06 10:04:59 rws Exp $
+ * $XConsortium: mergerop.h,v 1.6 90/12/11 13:31:30 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -37,6 +37,7 @@ typedef struct _mergeRopBits {
 extern mergeRopRec	mergeRopBits[16];
 
 #define DeclareMergeRop() unsigned long   _ca1, _cx1, _ca2, _cx2;
+#define DeclarePrebuiltMergeRop()	unsigned long	_cca, _ccx;
 
 #if PPW != 32	/* cfb */
 #define InitializeMergeRop(alu,pm) {\
@@ -66,6 +67,14 @@ extern mergeRopRec	mergeRopBits[16];
 
 #define DoMergeRop(src, dst) \
     ((dst) & ((src) & _ca1 ^ _cx1) ^ ((src) & _ca2 ^ _cx2))
+
+#define DoPrebuiltMergeRop(dst) ((dst) & _cca ^ _ccx)
+
+#define DoMaskPrebuiltMergeRop(dst,mask) \
+    ((dst) & (_cca | ~(mask)) ^ (_ccx & (mask)))
+
+#define PrebuildMergeRop(src) ((_cca = (src) & _ca1 ^ _cx1), \
+			       (_ccx = (src) & _ca2 ^ _cx2))
 
 #define DoMaskMergeRop(src, dst, mask) \
     ((dst) & (((src) & _ca1 ^ _cx1) | ~(mask)) ^ (((src) & _ca2 ^ _cx2) & (mask)))
@@ -141,6 +150,10 @@ extern mergeRopRec	mergeRopBits[16];
 #define MROP_MASK(src,dst,mask)	\
     ((dst) & (((src) & _ca1 ^ _cx1) | ~(mask)) ^ ((src) & (mask)))
 #define MROP_NAME(prefix)	MROP_NAME_CAT(prefix,CopyXorAndReverseOr)
+#define MROP_PREBUILD(src)	PrebuildMergeRop(src)
+#define MROP_PREBUILT_DECLARE()	DeclarePrebuiltMergeRop()
+#define MROP_PREBUILT_SOLID(src,dst)	DoPrebuiltMergeRop(dst)
+#define MROP_PREBUILT_MASK(src,dst,mask)    DoMaskPrebuiltMergeRop(dst,mask)
 #endif
 
 #if (MROP) == 0
@@ -150,6 +163,17 @@ extern mergeRopRec	mergeRopBits[16];
 #define MROP_SOLID(src,dst)	DoMergeRop(src,dst)
 #define MROP_MASK(src,dst,mask)	DoMaskMergeRop(src, dst, mask)
 #define MROP_NAME(prefix)	MROP_NAME_CAT(prefix,General)
+#define MROP_PREBUILD(src)	PrebuildMergeRop(src)
+#define MROP_PREBUILT_DECLARE()	DeclarePrebuiltMergeRop()
+#define MROP_PREBUILT_SOLID(src,dst)	DoPrebuiltMergeRop(dst)
+#define MROP_PREBUILT_MASK(src,dst,mask)    DoMaskPrebuiltMergeRop(dst,mask)
+#endif
+
+#ifndef MROP_PREBUILD
+#define MROP_PREBUILD(src)
+#define MROP_PREBUILT_DECLARE()
+#define MROP_PREBUILT_SOLID(src,dst)	MROP_SOLID(src,dst)
+#define MROP_PREBUILT_MASK(src,dst,mask)    MROP_MASK(src,dst,mask)
 #endif
 
 #if __STDC__ && !defined(UNIXCPP)
