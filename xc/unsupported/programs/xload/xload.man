@@ -1,4 +1,4 @@
-.\" $XConsortium: xload.man,v 1.27 94/04/11 14:29:47 gildea Exp $
+.\" $XConsortium: xload.man,v 1.28 94/04/11 16:03:35 matt Exp $
 .TH XLOAD 1 "Release 6" "X Version 11"
 .SH NAME
 xload \- system load average display for X
@@ -94,7 +94,7 @@ turn on the \fIset group id\fP permission flag.
 Reading /dev/kmem is inherently non-portable.  Therefore, the routine
 used to read it (get_load.c) must be ported to each new operating system. 
 .SH COPYRIGHT
-Copyright 1988, Massachusetts Institute of Technology.
+Copyright ([\d,\s]*) X Consortium
 .br
 See \fIX(1)\fP for a full statement of rights and permissions.
 .SH AUTHORS

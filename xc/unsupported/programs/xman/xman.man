@@ -1,4 +1,4 @@
-.\" $XConsortium: xman.man,v 1.21 94/04/11 14:29:51 gildea Exp $
+.\" $XConsortium: xman.man,v 1.22 94/04/11 16:03:38 matt Exp $
 .TH XMAN 1 "Release 6" "X Version 11"
 .SH NAME
 xman \- Manual page display program for the X Window System
@@ -371,8 +371,6 @@ A string that will have ``Xman'' appended to it.  This string will be
 the full path name of a user app-defaults file to be merged into the
 resource database after the system app-defaults file, and before
 the resources that are attached to the display.
-.SH COPYRIGHT
-Copyright 1988 by Massachusetts Institute of Technology.
 .br
 See \fIX(1)\fP for a full statement of rights and permissions.
 .SH AUTHORS
