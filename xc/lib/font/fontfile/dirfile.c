@@ -1,5 +1,5 @@
 #endif /* lint */
- * $XConsortium: dirfile.c,v 1.7 93/09/17 18:26:43 gildea Exp $
+ * $XConsortium: dirfile.c,v 1.8 93/09/20 15:56:34 gildea Exp $
  *
 /*
  * Copyright 1991 Massachusetts Institute of Technology
@@ -118,9 +118,9 @@ FontFileDirectoryChanged(dir)
     strcpy (dir_file, dir->directory);
     strcat (dir_file, FontDirFile);
     if (stat (dir_file, &statb) == -1)
-	if (errno == ENOENT && dir->dir_mtime != 0)
+    {
 	if (errno != ENOENT || dir->dir_mtime != 0)
-	return TRUE;
+	    return TRUE;
 	return FALSE;		/* doesn't exist and never did: no change */
     }
     if (dir->dir_mtime != statb.st_mtime)
@@ -128,11 +128,11 @@ FontFileDirectoryChanged(dir)
     strcpy (dir_file, dir->directory);
     strcat (dir_file, FontAliasFile);
     if (stat (dir_file, &statb) == -1)
-	if (errno == ENOENT && dir->dir_mtime != 0)
+    {
 	if (errno != ENOENT || dir->alias_mtime != 0)
-	return TRUE;
+	    return TRUE;
 	return FALSE;		/* doesn't exist and never did: no change */
-    if (dir->dir_mtime != statb.st_mtime)
+    }
     if (dir->alias_mtime != statb.st_mtime)
 	return TRUE;
     return FALSE;
