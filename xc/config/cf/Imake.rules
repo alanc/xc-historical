@@ -1,6 +1,6 @@
 /**/###########################################################################
 /**/# Imake rules for building libraries, programs, scripts, and data files
-/**/# rules:  $XConsortium: Imake.rules,v 1.65 89/11/14 20:19:25 jim Exp $
+/**/# rules:  $XConsortium: Imake.rules,v 1.66 89/12/12 11:16:11 jim Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -389,12 +389,12 @@ InstallManPageLong(file,dest,file)
 
 /*
  * InstallNonExec - generate rules to install a data file using any special
- * install flags set in $(INSTALLFLAGS).
+ * install flags
  */
 #ifndef InstallNonExec
 #define	InstallNonExec(file,dest)					@@\
 install:: file								@@\
-	$(INSTALL) -c $(INSTALLFLAGS) file dest
+	$(INSTALL) -c $(INSTDATFLAGS) file dest
 #endif /* InstallNonExec */
 
 
@@ -427,7 +427,7 @@ InstallProgramWithFlags(program,dest, /**/)
 #ifndef InstallScript
 #define	InstallScript(program,dest)					@@\
 install:: program.script						@@\
-	$(INSTALL) -c $(INSTALLFLAGS) program.script dest/program
+	$(INSTALL) -c $(INSTPGMFLAGS) program.script dest/program
 #endif /* InstallScript */
 
 
@@ -1362,10 +1362,10 @@ clean::									@@\
  */
 #ifndef InstallFonts
 #define InstallFonts(dest)						@@\
-InstallMultiple($(OBJS),dest)						@@\
+InstallMultipleFlags($(OBJS),dest,$(INSTDATFLAGS))			@@\
 									@@\
 install::  fonts.dir							@@\
-	$(INSTALL) -c $(INSTINCFLAGS) fonts.dir dest
+	$(INSTALL) -c $(INSTDATFLAGS) fonts.dir dest
 #endif /* InstallFonts */
 
 
@@ -1375,7 +1375,7 @@ install::  fonts.dir							@@\
 #ifndef InstallFontAliases
 #define InstallFontAliases(dest)					@@\
 install::  fonts.alias							@@\
-	$(INSTALL) -c $(INSTINCFLAGS) fonts.alias dest
+	$(INSTALL) -c $(INSTDATFLAGS) fonts.alias dest
 #endif /* InstallFontAliases */
 
 
