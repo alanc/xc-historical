@@ -15,7 +15,7 @@ without any express or implied warranty.
 
 ********************************************************/
 
-/* $XConsortium: mifillarc.c,v 5.0 89/10/20 08:46:19 rws Exp $ */
+/* $XConsortium: mifillarc.c,v 5.1 89/10/20 09:20:07 rws Exp $ */
 
 #include "X.h"
 #include "Xprotostr.h"
@@ -120,7 +120,8 @@ miFillEllipseI(pDraw, pGC, arc)
     register int *wids;
     int n;
 
-    if (!arc->width || !arc->height)
+    if (!arc->width || !arc->height ||
+	((arc->width == 1) && (arc->height & 1)))
 	return;
     points = (DDXPointPtr)ALLOCATE_LOCAL(sizeof(DDXPointRec) * arc->height);
     if (!points)
@@ -178,7 +179,8 @@ miFillEllipseD(pDraw, pGC, arc)
     register int *wids;
     int n;
 
-    if (!arc->width || !arc->height)
+    if (!arc->width || !arc->height ||
+	((arc->width == 1) && (arc->height & 1)))
 	return;
     points = (DDXPointPtr)ALLOCATE_LOCAL(sizeof(DDXPointRec) * arc->height);
     if (!points)
