@@ -1,4 +1,4 @@
-/* $XConsortium: globals.c,v 1.10 94/08/10 19:40:25 mor Exp mor $ */
+/* $XConsortium: globals.c,v 1.11 94/08/11 18:55:47 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -25,8 +25,11 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from the X Consortium.
 ******************************************************************************/
 
+List		*RunningList;
 List		*PendingList;
-ClientRec	*ClientList = NULL;
+List		*RestartAnywayList;
+List		*RestartImmedList;
+
 int		numClients = 0;
 int		saveDoneCount = 0;
 int		interactCount = 0;
