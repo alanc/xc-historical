@@ -1,4 +1,4 @@
-/* $XConsortium: xinit.c,v 11.55 93/09/20 17:56:55 hersh Exp $ */
+/* $XConsortium: xinit.c,v 11.56 93/09/21 17:59:05 kaleb Exp $ */
 
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
@@ -109,7 +109,7 @@ char *displayNum;
 char *program;
 Display *xd;			/* server connection */
 #ifndef SYSV
-#if defined(SVR4) || defined(_POSIX_SOURCE)
+#if defined(SVR4) || defined(_POSIX_SOURCE) || defined(__bsdi__)
 int status;
 #else
 union wait	status;
