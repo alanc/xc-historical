@@ -1,12 +1,12 @@
 /* 
- * $XConsortium: xset.c,v 1.45 88/10/08 15:21:59 jim Exp $ 
+ * $XConsortium: xset.c,v 1.46 88/10/15 18:35:26 jim Exp $ 
  */
 #include <X11/copyright.h>
 
 /* Copyright    Massachusetts Institute of Technology    1985	*/
 
 #ifndef lint
-static char *rcsid_xset_c = "$XConsortium: xset.c,v 1.45 88/10/08 15:21:59 jim Exp $";
+static char *rcsid_xset_c = "$XConsortium: xset.c,v 1.46 88/10/15 18:35:26 jim Exp $";
 #endif
 
 #include <X11/Xos.h>
@@ -55,15 +55,22 @@ XColor def;
 int numpixels = 0;
 char *disp = NULL;
 Display *dpy;
+Bool hasargs = False;
+
 progName = argv[0];
-if (argc == 1)  usage (NULL, NULL);    /* To be replaced by window-interface */
 for (i = 1; i < argc; i++) {
   arg = argv[i];
   if (strcmp (arg, "-display") == 0 || strcmp (arg, "-d") == 0) {
     if (++i >= argc) usage ("missing argument to -display", NULL);
     disp = argv[i];
-  } 
+  } else {
+    hasargs = True;
+  }
 }
+if (!hasargs) {
+    usage (NULL, NULL);			/* replace with window interface */
+}
+
 dpy = XOpenDisplay(disp);  /*  Open display and check for success */
 if (dpy == NULL) {
   fprintf(stderr, "%s:  unable to open display \"%s\"\n",
@@ -272,7 +279,8 @@ for (i = 1; i < argc; ) {
 	i++;
       }
     }
-    else if (strcmp(arg, "default") == 0) {    /*  Leave as default.       */
+    else if (strcmp(arg, "default") == 0 ||
+	     strcmp(arg, "on") == 0) {    /*  Leave as default.       */
       set_saver(dpy, ALL, 0);
       i++;
     } 
@@ -704,6 +712,22 @@ Bool onoff;
   return;
 }
 
+char *on_or_off (val, onval, onstr, offval, offstr, buf)
+    int val, onval, offval;
+    char *onstr, *offstr;
+    char buf[];
+{
+    if (val == onval) 
+      return onstr;
+    else if (val == offval)
+      return offstr;
+
+    buf[0] = '\0';
+    sprintf (buf, "<%d>", val);
+    return buf;
+}
+
+
 /*  This is the information-getting function for telling the user what the
  *  current "xsettings" are.
  */
@@ -715,47 +739,48 @@ XKeyboardState values;
 int acc_num, acc_denom, threshold;
 int timeout, interval, prefer_blank, allow_exp;
 char **font_path; int npaths;
+char buf[20];				/* big enough for 16 bit number */
 
 XGetKeyboardControl(dpy, &values);
 XGetPointerControl(dpy, &acc_num, &acc_denom, &threshold);
 XGetScreenSaver(dpy, &timeout, &interval, &prefer_blank, &allow_exp);
 font_path = XGetFontPath(dpy, &npaths);
 
-printf ("Keyboard Control Values:\n");
-/*printf ("Auto Repeat:  %d \t\t", values.auto_repeat_mode);    %%*/
-/*printf ("Key:  %d \n\n", values.key);     %%*/
-printf ("Key Click Volume (%%):  %d \n", values.key_click_percent);
-printf ("Bell Volume (%%):  %d \t", values.bell_percent);
-printf ("Bell Pitch (Hz):  %d \t", values.bell_pitch);
-printf ("Bell Duration (msec):  %d \n", values.bell_duration);
-/*printf ("LED:  %d \t\t\t", values.led);
-printf ("LED Mode:  %o \t\t", values.led_mode);         %%*/
+printf ("Keyboard Control:\n");
+printf ("  auto repeat:  %s    key click percent:  %d    LED mask:  %d\n", 
+	on_or_off (values.global_auto_repeat,
+		   AutoRepeatModeOn, "on", AutoRepeatModeOff, "off", buf),
+	values.key_click_percent, values.led_mask);
+printf ("  bell percent:  %d    bell pitch:  %d    bell duration:  %d\n",
+	values.bell_percent, values.bell_pitch, values.bell_duration);
 
-printf ("Pointer Control Values:\n");
-printf ("Acceleration:  %d (%d/%d)\t",
-	acc_num / acc_denom, acc_num, acc_denom);
-printf ("Threshold:  %d \n", threshold);
+printf ("Pointer Control:\n");
+printf ("  acceleration:  %d = %d / %d    threshold:  %d\n",
+	acc_denom != 0 ? (acc_num / acc_denom) : 0,
+	acc_num, acc_denom, threshold);
+
 printf ("Screen Saver:\n");
-printf ("Prefer Blanking:  %s\t",
-	(prefer_blank == PreferBlanking) ? "Yes" :
-	(prefer_blank == DontPreferBlanking) ? "No" :
-	"<server violates spec>");
-printf ("Allow Exposures:  %s\n",
-	(allow_exp == AllowExposures) ? "Yes" :
-	(allow_exp == DontAllowExposures) ? "No" :
-	"<server violates spec>");
-printf ("Time-out:  %d \t Cycle:  %d\n", timeout, interval);
-printf ("Default colormap:   0x%lx \t BlackPixel:  %d \t WhitePixel:  %d\n",
+printf ("  prefer blanking:  %s    ",
+	on_or_off (prefer_blank, PreferBlanking, "yes",
+		   DontPreferBlanking, "no", buf));
+printf ("allow exposures:  %s\n",
+	on_or_off (allow_exp, AllowExposures, "yes",
+		   DontAllowExposures, "no", buf));
+printf ("  timeout:  %d    cycle:  %d\n", timeout, interval);
+
+printf ("Colors:\n");
+printf ("  default colormap:  0x%lx    BlackPixel:  %d    WhitePixel:  %d\n",
 	DefaultColormap (dpy, scr), 
 	BlackPixel (dpy, scr), WhitePixel (dpy, scr));
 
+printf ("Font Path:\n");
 if (npaths) {
-    printf( "Font Path:  %s", *font_path++ );
+    printf( "  %s", *font_path++ );
     for( --npaths; npaths; npaths-- )
         printf( ",%s", *font_path++ );
     printf( "\n" );
 } else {
-    printf ("Font Path:  (empty)\n");
+    printf ("  (empty)\n");
 }
 return;
 }
@@ -802,8 +827,8 @@ usage (fmt, arg)
     fprintf (stderr, "    To turn auto-repeat off or on:\n");
     fprintf (stderr, "\t-r     r off        r    r on\n");
     fprintf (stderr, "    For screen-saver control:\n");
-    fprintf (stderr, "\t s [timeout [cycle]]  s default\n");
-    fprintf (stderr, "\t s blank              s noblank\n");
+    fprintf (stderr, "\t s [timeout [cycle]]  s default    s on\n");
+    fprintf (stderr, "\t s blank              s noblank    s off\n");
     fprintf (stderr, "\t s expose             s noexpose\n");
     fprintf (stderr, "    For status information:  q   or  query\n");
     exit(0);
