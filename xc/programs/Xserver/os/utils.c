@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: utils.c,v 1.90 90/06/12 14:08:16 keith Exp $ */
+/* $XConsortium: utils.c,v 1.91 90/09/11 14:32:26 keith Exp $ */
 #include <stdio.h>
 #include "Xos.h"
 #include "misc.h"
@@ -379,6 +379,13 @@ char	*argv[];
 	    defaultScreenSaverBlanking = PreferBlanking;
 	else if ( strcmp( argv[i], "-v") == 0)
 	    defaultScreenSaverBlanking = DontPreferBlanking;
+#ifdef MEMBUG
+	else if ( strcmp ( argv[i], "validateMemory") == 0)
+	{
+	    extern unsigned long MemoryValidate;
+	    MemoryValidate = 1;
+	}
+#endif
 	else if ( strcmp( argv[i], "-wm") == 0)
 	    defaultBackingStore = WhenMapped;
 	else if ( strcmp( argv[i], "-x") == 0)
