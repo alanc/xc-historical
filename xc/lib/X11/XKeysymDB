@@ -1,4 +1,4 @@
-! $XConsortium: XKeysymDB,v 1.6 92/07/10 11:18:01 rws Exp $
+! $XConsortium: XKeysymDB,v 1.7 93/01/04 09:29:27 rws Exp $
 
 hpmute_acute		:100000A8
 hpmute_grave		:100000A9
@@ -131,6 +131,7 @@ osfDeselectAll		:1004FF72
 osfReselect		:1004FF73
 osfExtend		:1004FF74
 osfRestore		:1004FF78
+osfSwitchDirection	:1004FF7E
 osfDelete		:1004FFFF
 
 SunFA_Grave		:1005FF00
