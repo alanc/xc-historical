@@ -1,5 +1,5 @@
 /*
-* $Header: GripP.h,v 1.6 88/02/14 13:59:30 rws Exp $
+* $Header: GripP.h,v 1.8 88/08/16 10:56:35 swick Exp $
 */
 
 
@@ -58,6 +58,7 @@ extern GripClassRec gripClassRec;
 
 /* New fields for the Grip widget record */
 typedef struct {
+  Cursor	 cursor;
   XtCallbackList grip_action;
 } GripPart;
 

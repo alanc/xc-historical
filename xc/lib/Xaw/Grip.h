@@ -1,5 +1,5 @@
 /*
-* $Header: Grip.h,v 1.5 88/01/22 20:30:03 swick Exp $
+* $Header: Grip.h,v 1.8 88/08/16 11:08:19 swick Exp $
 */
 
 
@@ -49,6 +49,7 @@ SOFTWARE.
  border		     BorderColor	pixel		Black
  borderWidth	     BorderWidth	int		0
  callback	     Callback		Pointer		GripAction
+ cursor		     Cursor		Cursor		None
  destroyCallback     Callback		Pointer		NULL
  height		     Height		int		6
  mappedWhenManaged   MappedWhenManaged	Boolean		True
@@ -60,6 +61,7 @@ SOFTWARE.
 */
 
 
+#define XtNcursor		"cursor"
 #define XtNgripTranslations	"gripTranslations"
 
 typedef struct {
