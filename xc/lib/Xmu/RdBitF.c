@@ -1,5 +1,5 @@
 /*
- * $XConsortium: RdBitF.c,v 1.1 88/09/05 10:42:30 jim Exp $
+ * $XConsortium: RdBitF.c,v 1.1 88/09/05 10:44:28 jim Exp $
  *
  * Copyright, 1987, Massachusetts Institute of Technology
  *
@@ -99,7 +99,8 @@ static NextInt (fstream)
 /*
  * The data returned by the following routine is always in left-most byte
  * first and left-most bit first.  If it doesn't return BitmapSuccess then
- * the data pointer is set to NULL.
+ * its arguments won't have been touched.  This routine should look as much
+ * like the Xlib routine XReadBitmapfile as possible.
  */
 int XmuReadBitmapDataFromFile (filename, width, height, datap, x_hot, y_hot)
     char *filename;
@@ -122,14 +123,7 @@ int XmuReadBitmapDataFromFile (filename, width, height, datap, x_hot, y_hot)
     int hx = -1;			/* x hotspot */
     int hy = -1;			/* y hotspot */
 
-    /* do some initialization */
-
-    *datap = NULL;
-    *width = 0;
-    *height = 0;
-    if (x_hot) *x_hot = 0;
-    if (y_hot) *y_hot = 0;
-
+#define Xmalloc(size) malloc(size)
 
     /* first time initialization */
     if (initialized == False) initHexTable();
@@ -194,7 +188,7 @@ int XmuReadBitmapDataFromFile (filename, width, height, datap, x_hot, y_hot)
 	bytes_per_line = (ww+7)/8 + padding;
 
 	size = bytes_per_line * hh;
-	data = (unsigned char *) malloc ((unsigned int) size);
+	data = (unsigned char *) Xmalloc ((unsigned int) size);
 	if (!data) 
 	  RETURN (BitmapNoMemory);
 
@@ -226,11 +220,11 @@ int XmuReadBitmapDataFromFile (filename, width, height, datap, x_hot, y_hot)
     }
 
     *datap = data;
+    data = NULL;
     *width = ww;
     *height = hh;
     if (x_hot) *x_hot = hx;
     if (y_hot) *y_hot = hy;
 
-    fclose (fstream);
-    return BitmapSuccess;
+    RETURN (BitmapSuccess);
 }
