@@ -683,9 +683,9 @@ CreateRoot()
     data->gc         = selectGC;
     data->width      = srcWidth;
     data->height     = srcHeight;
-    PopupNewScale(data);
     GetImageAndAttributes(RootWindow(dpy, scr), srcX, srcY, srcWidth, 
 			  srcHeight, data);
+    PopupNewScale(data);
     return;
   }
 }
