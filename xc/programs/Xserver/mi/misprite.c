@@ -4,7 +4,7 @@
  * machine independent software sprite routines
  */
 
-/* $XConsortium: misprite.c,v 5.36 91/05/09 15:08:58 rws Exp $ */
+/* $XConsortium: misprite.c,v 5.37 91/07/11 20:36:45 keith Exp $ */
 
 /*
 Copyright 1989 by the Massachusetts Institute of Technology
@@ -208,9 +208,9 @@ static void miSpriteRemoveCursor (),	miSpriteRestoreCursor();
  */
 
 Bool
-miSpriteInitialize (pScreen, spriteFuncs, screenFuncs)
+miSpriteInitialize (pScreen, cursorFuncs, screenFuncs)
     ScreenPtr		    pScreen;
-    miSpriteCursorFuncPtr   spriteFuncs;
+    miSpriteCursorFuncPtr   cursorFuncs;
     miPointerScreenFuncPtr  screenFuncs;
 {
     miSpriteScreenPtr	pPriv;
@@ -266,7 +266,7 @@ miSpriteInitialize (pScreen, spriteFuncs, screenFuncs)
     pPriv->checkPixels = TRUE;
     pPriv->pInstalledMap = NULL;
     pPriv->pColormap = NULL;
-    pPriv->funcs = spriteFuncs;
+    pPriv->funcs = cursorFuncs;
     pScreen->devPrivates[miSpriteScreenIndex].ptr = (pointer) pPriv;
     pScreen->CloseScreen = miSpriteCloseScreen;
     pScreen->GetImage = miSpriteGetImage;
