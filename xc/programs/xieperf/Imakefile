@@ -1,0 +1,32 @@
+XCOMM $XConsortium$
+# Imakefile to build device independent processing element objects
+#include <Server.tmpl>
+
+   XIELIB = ../../../lib/xielib/libCxie.a 
+
+   SRCS = xieperf.c do_tests.c do_simpleflo.c do_simpleflomap.c \
+	  do_constrain.c do_dither.c do_point.c do_import.c \
+	  do_importclient.c do_logical.c do_createdestroy.c \
+	  do_query.c do_modify.c do_redefine.c do_purgecolorlist.c \
+	  do_abort.c do_await.c do_exportclient.c do_unconstrain.c \
+	  do_blend.c do_pasteup.c do_geometry.c do_converttoindex.c
+
+   OBJS = xieperf.o do_tests.o do_simpleflo.o do_simpleflomap.o \
+	  do_constrain.o do_dither.o do_point.o do_import.o \
+	  do_importclient.o do_logical.o do_createdestroy.o \
+	  do_query.o do_modify.o do_redefine.o do_purgecolorlist.o \
+	  do_abort.o do_await.o do_exportclient.o do_unconstrain.o \
+	  do_blend.o do_pasteup.o do_geometry.o do_converttoindex.o
+
+   INCLUDES = -I../../../include/xie -Iinclude -I../../../include \
+              -I../../../../include -I../../../../server/include \
+	      -I../../../../extensions/lib/xielib \
+              -I$(INCLUDESRC)
+   LOCAL_LIBRARIES = $(XLIB) $(XIELIB)
+     SYS_LIBRARIES = -lm
+
+SubdirLibraryRule($(OBJS))
+NormalLibraryObjectRule()
+NormalLintTarget($(SRCS))
+
+ComplexProgramTarget(xieperf)
