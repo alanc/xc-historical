@@ -123,7 +123,7 @@ Imake.tmpl provides defaults for the following variables:
 	FortranDebugFlags	flags for Fortran debug info
 	FortranFlags		Fortran compiler flags
 	HasBsearch		boolean for libc has bsearch()
-	HasDESLibrary		boolean for system has DES library
+	HasXdmAuth		boolean for using XDM-AUTHORIZATION-1
 	HasFortran		boolean for system has Fortran compiler
 	HasGcc			boolean for system has GNU C compiler
 	HasLargeTmp		boolean for system has /tmp space
