@@ -2,7 +2,7 @@
 /* Copyright    Massachusetts Institute of Technology    1985, 1986, 1987 */
 
 #ifndef lint
-static char rcsid[] = "$Header: XlibInt.c,v 11.63 88/02/20 20:21:11 rws Exp $";
+static char rcsid[] = "$Header: XlibInt.c,v 11.64 88/04/09 16:31:17 rws Exp $";
 #endif
 
 /*
@@ -360,7 +360,10 @@ _SetLastRequestRead(dpy, rep)
     while (newseq < lastseq) {
 	newseq += 0x10000;
 	if (newseq > dpy->request) {
-	    (void) fprintf(stderr, "sequence lost!\n");
+	    (void) fprintf (stderr, 
+	    "Xlib:  sequence lost (0x%lx > 0x%lx) in reply type 0x%x!\n",
+	                           newseq, dpy->request, 
+				   (unsigned int) rep->type);
 	    newseq -= 0x10000;
 	    break;
 	}
