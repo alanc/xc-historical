@@ -8,7 +8,7 @@ SRCS =  mivaltree.c mipolyseg.c mipolyrect.c \
 	mipolytext.c mibitblt.c mipolypnt.c mipushpxl.c\
 	miexpose.c miglblt.c mizerline.c mifpolycon.c \
 	midash.c mibstore.c miinitext.c \
-	mipointer.c misprite.c midispcur.c
+	mipointer.c misprite.c midispcur.c miscrinit.c miclipn.c
 
 OBJS =	mivaltree.o mipolyseg.o mipolyrect.o \
 	mipoly.o mipolycon.o mipolygen.o mipolyutil.o \
@@ -18,7 +18,7 @@ OBJS =	mivaltree.o mipolyseg.o mipolyrect.o \
 	mipolytext.o mibitblt.o mipolypnt.o mipushpxl.o\
 	miexpose.o miglblt.o mizerline.o mifpolycon.o \
 	midash.o mibstore.o miinitext.o \
-	mipointer.o misprite.o midispcur.o
+	mipointer.o misprite.o midispcur.o miscrinit.o miclipn.o
 
 INCLUDES = -I. -I../../include -I$(INCLUDESRC)
 LINTLIBS = ../../dix/llib-ldix.ln ../../os/4.2bsd/llib-los.ln
