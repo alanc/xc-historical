@@ -1,5 +1,5 @@
 
-/* $XConsortium: wdt5.c,v 5.1 91/02/16 10:01:21 rws Exp $ */
+/* $XConsortium: wdt5.c,v 5.2 91/07/15 12:20:17 hersh Exp $ */
 
 /*****************************************************************
 Copyright (c) 1989,1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -307,7 +307,7 @@ verify_light_source_facilities()
 
 	lightsrcfacil.types.ints = intbuf;
 	err = BOGUSERR;
-	pinq_light_src_facs(wstype,BUFSIZE,0,&err,&total,&lightsrcfacil);
+	pinq_light_src_facs(wstype,BUFSIZE,0,&err,&lightsrcfacil,&total);
 	ERROR("pinq_light_src_facs");
 
 	exptype.num_ints = num_light_src_type;
