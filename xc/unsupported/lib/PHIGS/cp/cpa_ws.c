@@ -1,4 +1,4 @@
-/* $XConsortium: cpa_ws.c,v 5.3 91/07/01 16:21:01 hersh Exp $ */
+/* $XConsortium: cpa_ws.c,v 5.4 91/07/12 20:29:14 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -111,6 +111,7 @@ phg_cpa_inq_disp_update_state( cph, cp_args, ret, ws )
     pexBitmask			mask[PEXMSGetWksInfo];
     Phg_ret_update_state	*st = &ret->data.update_state;
 
+    ret->err = 0;
     bzero((char *)mask, sizeof(mask));   
     PEX_BITSET(mask,PEXPWVisualState);
     PEX_BITSET(mask,PEXPWDisplaySurface);
@@ -382,6 +383,7 @@ phg_cpa_inq_hlhsr_mode( cph, cp_args, ret, ws )
     pexBitmask		mask[PEXMSGetWksInfo];
     Phg_ret_hlhsr_mode	*hlhsr_mode = &ret->data.hlhsr_mode;
 
+    ret->err = 0;
     bzero((char *)mask, sizeof(mask));   
     PEX_BITSET(mask, PEXPWHlhsrUpdate);
     PEX_BITSET(mask, PEXPWReqHlhsrMode);
@@ -481,6 +483,7 @@ phg_cpa_inq_ws_xform( cph, cp_args, ret, ws )
     caddr_t	data;
     pexBitmask	mask[PEXMSGetWksInfo];
 
+    ret->err = 0;
     bzero((char *)mask, sizeof(mask));   
     PEX_BITSET(mask, PEXPWWksUpdate);
     PEX_BITSET(mask, PEXPWReqNpcSubvolume);
@@ -648,6 +651,7 @@ phg_cpa_ws_drawable_pick( cph, cp_args, ret, ws )
     Phg_ret		*ret;
     Ws			*ws;
 {
+    ret->err = 0;
     if (ws->drawable_pick )
 	(*ws->drawable_pick )( ws, &cp_args->data.drawable_pick, ret );
     else {
@@ -664,6 +668,7 @@ phg_cpa_ws_map_points( cph, cp_args, ret, ws )
     Phg_ret		*ret;
     Ws			*ws;
 {
+    ret->err = 0;
     if (ws->map_points )
 	(*ws->map_points )( ws, &cp_args->data.map_points, ret );
     else {
