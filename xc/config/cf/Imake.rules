@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
-XCOMM rules:  $XConsortium: Imake.rules,v 1.138 93/08/10 20:36:44 rws Exp $
+XCOMM rules:  $XConsortium: Imake.rules,v 1.139 93/08/10 21:19:05 rws Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -17,6 +17,7 @@ XCOMM rules:  $XConsortium: Imake.rules,v 1.138 93/08/10 20:36:44 rws Exp $
  * Concat4			(a,b,c,d)
  * _Use				(a,b)
  * _UseCat			(a,b,c)
+ * ProgramTargetName		(target)
  * SaberLoadTarget		(target,srclist,libs,defines)
  * SaberProgramTarget		(program,srclist,objlist,locallibs,syslibs)
  * PurifyLinkTarget		(step,program,linklist)
@@ -208,13 +209,17 @@ XCOMM rules:  $XConsortium: Imake.rules,v 1.138 93/08/10 20:36:44 rws Exp $
 #endif
 #endif /* _UseCat */
 
+#ifndef ProgramTargetName(target)
+#define ProgramTargetName(target) target
+#endif
+
 /*
  * SaberLoadTarget - generate rules to load Saber-C files
  */
 #ifndef SaberLoadTarget
 #if HasSaberC
 #define SaberLoadTarget(target,srclist,libs,defines)			@@\
-target:: srclist							@@\
+ProgramTargetName(target):: srclist					@@\
 	XCOMM load defines srclist libs
 #else
 #define SaberLoadTarget(target,srclist,libs,defines) /**/
@@ -235,7 +240,7 @@ SaberLoadTarget(Concat(osaber_,program),objlist,$(LDOPTIONS) locallibs $(SYS_LIB
 #ifndef PurifyLinkTarget
 #if HasPurify
 #define PurifyLinkTarget(step,program,linklist)				@@\
-step.pure:								@@\
+ProgramTargetName(step.pure):						@@\
 	RemoveTargetProgram($@)						@@\
 	$(CCENVSETUP) $(PURIFY) $(PURIFYOPTIONS) $(CC) -o program.pure linklist
 #else
@@ -249,7 +254,7 @@ step.pure:								@@\
 #ifndef PurifyProgramTarget
 #if HasPurify
 #define	PurifyProgramTarget(program,deplist,linklist)			@@\
-program.pure: deplist							@@\
+ProgramTargetName(program.pure): deplist				@@\
 	RemoveTargetProgram($@)						@@\
 	$(CCENVSETUP) $(PURIFY) $(PURIFYOPTIONS) $(CC) -o $@ linklist	@@\
 									@@\
@@ -303,7 +308,7 @@ $(CCLINK) -o program options objects libraries $(EXTRA_LOAD_FLAGS)
  */
 #ifndef NormalProgramTarget
 #define	NormalProgramTarget(program,objects,deplibs,locallibs,syslibs)	@@\
-program: objects deplibs						@@\
+ProgramTargetName(program): objects deplibs				@@\
 	RemoveTargetProgram($@)						@@\
 	LinkRule($@,$(LDOPTIONS),objects,locallibs $(LDLIBS) syslibs)	@@\
 									@@\
@@ -344,7 +349,7 @@ ComplexProgramTarget(program)
 
 #ifndef ProgramTargetHelper
 #define	ProgramTargetHelper(program,srcs,objs,deplib,locallib,syslib)	@@\
-program: $(objs) $(deplib)						@@\
+ProgramTargetName(program): $(objs) $(deplib)				@@\
 	RemoveTargetProgram($@)						@@\
 	LinkRule($@,$(LDOPTIONS),$(objs),locallib $(LDLIBS) syslib)	@@\
 									@@\
@@ -440,13 +445,13 @@ ProgramTargetHelper(program,SRCS3,OBJS3,DEPLIBS3,locallib,syslib)
  */
 #ifndef ServerTarget
 #define	ServerTarget(server,subdirs,objects,libs,syslibs)		@@\
-server: subdirs objects libs						@@\
-	MoveToBakFile(server)						@@\
-	LinkRule(server,$(CDEBUGFLAGS) $(CCOPTIONS),objects,libs $(EXTRA_LIBRARIES) syslibs) @@\
+ProgramTargetName(server): subdirs objects libs				@@\
+	MoveToBakFile($@)						@@\
+	LinkRule($@,$(CDEBUGFLAGS) $(CCOPTIONS),objects,libs $(EXTRA_LIBRARIES) syslibs) @@\
 									@@\
 Concat(load,server):							@@\
-	MoveToBakFile(server)						@@\
-	LinkRule(server,$(CDEBUGFLAGS) $(CCOPTIONS),objects,libs $(EXTRA_LIBRARIES) syslibs) @@\
+	MoveToBakFile(ProgramTargetName(server))			@@\
+	LinkRule(ProgramTargetName(server),$(CDEBUGFLAGS) $(CCOPTIONS),objects,libs $(EXTRA_LIBRARIES) syslibs) @@\
 									@@\
 PurifyProgramTarget(server,subdirs objects libs,$(CDEBUGFLAGS) $(CCOPTIONS) objects libs $(EXTRA_LIBRARIES) syslibs $(EXTRA_LOAD_FLAGS)) @@\
 PurifyLinkTarget(Concat(load,server),server,$(CDEBUGFLAGS) $(CCOPTIONS) objects libs $(EXTRA_LIBRARIES) syslibs $(EXTRA_LOAD_FLAGS))
@@ -769,9 +774,9 @@ tags::									@@\
 #define ImakeDependency(target) /**/
 #else
 #define ImakeDependency(target)						@@\
-target:: $(IMAKE)							@@\
+target:: ProgramTargetName($(IMAKE))					@@\
 									@@\
-$(IMAKE):								@@\
+ProgramTargetName($(IMAKE)):						@@\
 	@(cd $(IMAKESRC); if [ -f Makefile ]; then \			@@\
 	echo "checking $@ in $(IMAKESRC) first..."; $(MAKE) all; else \	@@\
 	echo "bootstrapping $@ from Makefile.ini in $(IMAKESRC) first..."; \	@@\
