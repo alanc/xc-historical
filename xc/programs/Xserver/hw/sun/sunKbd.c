@@ -666,8 +666,13 @@ sunChangeKbdTranslation(pKeyboard,makeTranslated)
     lastChngKbdTransTv = tv;
     
 
-    pPriv = (KbPrivPtr)pKeyboard->devicePrivate;
-    kbdFd = pPriv->fd;
+    kbdFd = -1;
+    if (pKeyboard)
+    {
+    	pPriv = (KbPrivPtr)pKeyboard->devicePrivate;
+	if (pPriv)
+	    kbdFd = pPriv->fd;
+    }
 
     kbdOpenedHere = ( kbdFd < 0 );
     if ( kbdOpenedHere ) {
@@ -707,7 +712,10 @@ sunChangeKbdTranslation(pKeyboard,makeTranslated)
 	    tmp = 0;
 	    (void)ioctl (kbdFd, KIOCSDIRECT, &tmp);
 	}
-	tmp = ((SunKbPrivPtr)pPriv->devPrivate)->trans;
+	if (pKeyboard && pPriv && pPriv->devPrivate)
+	    tmp = ((SunKbPrivPtr)pPriv->devPrivate)->trans;
+	else
+	    tmp = TR_ASCII;
 	(void)ioctl (kbdFd, KIOCTRANS, &tmp);
     }
 
