@@ -1,4 +1,4 @@
-/* $XConsortium: Shell.c,v 1.110 91/07/20 17:42:35 rws Exp $ */
+/* $XConsortium: Shell.c,v 1.111 91/07/20 19:33:08 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -1012,7 +1012,7 @@ static void _SetTransientForHint(w, delete)
 	    return;
 	} else if (window_group == XtUnspecifiedWindow) {
 	    Cardinal count = 1;
-	    XtAppWarningMsg(XtWidgetToApplicationContext(w),
+	    XtAppWarningMsg(XtWidgetToApplicationContext((Widget)w),
 			    "invalidWindow", "xtSetTransientFor",
 			    XtCXtToolkitError,
 			    "Widget %s has XtUnspecifiedWindow as transient_for",
