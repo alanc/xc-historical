@@ -1,3 +1,4 @@
+XTerm*SimpleMenu*labelFont: *-*-helvetica-bold-r-normal--*-120-*-*-*-*-*-*
 XTerm*SimpleMenu*HorizontalMargins: 16
 XTerm*SimpleMenu*Cursor: left_ptr
 XTerm*SimpleMenu*VerticalSpace: 2
