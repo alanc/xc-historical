@@ -48,7 +48,7 @@ InstallLibrary(Xau_p,$(USRLIBDIR))
 DebuggedLibraryTarget(Xau,$(OBJS))
 #endif
 
-BuildIncludes($(HEADERS),.)
+BuildIncludes($(HEADERS),.,.)
 InstallMultiple($(HEADERS),$(INCDIR))
 
 saber_src:

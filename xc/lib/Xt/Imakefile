@@ -147,7 +147,7 @@ InstallLibrary(Xt_p,$(USRLIBDIR))
 DebuggedLibraryTarget(Xt,$(OBJS))
 #endif
 
-BuildIncludes($(HEADERS),.)
+BuildIncludes($(HEADERS),.,.)
 InstallMultiple($(HEADERS),$(INCDIR))
 
 DependTarget()
