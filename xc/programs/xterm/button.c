@@ -1,4 +1,4 @@
-/* $XConsortium: button.c,v 1.58 91/03/04 18:55:53 gildea Exp $ */
+/* $XConsortium: button.c,v 1.59 91/03/13 14:05:41 gildea Exp $ */
 /*
  * Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
  *
@@ -1260,8 +1260,14 @@ Cardinal count;
 	  default:	       buffer = -1;
 	}
 	if (buffer >= 0)
-	    XStoreBuffer( XtDisplay((Widget)term), term->screen.selection,
-			  term->screen.selection_length, buffer );
+	    if ( term->screen.selection_length >
+		 4*XMaxRequestSize(XtDisplay((Widget)term))-32)
+		fprintf(stderr,
+			"%s: selection too big (%d bytes), not storing in CUT_BUFFER%d\n",
+			xterm_name, term->screen.selection_length, buffer);
+	    else
+		XStoreBuffer( XtDisplay((Widget)term), term->screen.selection,
+			      term->screen.selection_length, buffer );
 	else if (!replyToEmacs) {
 	    have_selection |=
 		XtOwnSelection( (Widget)term, atoms[i],
