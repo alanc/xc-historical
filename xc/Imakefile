@@ -11,7 +11,7 @@ XCOMM R4beta, the "fonts" and "rgb" directories will become subdirectories of
 XCOMM server so that BuildServer is no longer necessary.
 XCOMM
 #if BuildServer
-SERVERDIRSTOMAKE = server fonts rgb
+SERVERDIRSTOMAKE = fonts server rgb
 #endif
 #if BuildExamples
 EXAMPLESDIRS = examples
