@@ -1,4 +1,4 @@
-XCOMM site:  $XConsortium: site.def,v 1.125 94/04/05 16:40:28 gildea Exp $
+XCOMM site:  $XConsortium: site.def,v 1.126 94/04/07 15:45:21 rws Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -242,6 +242,8 @@ clean::									@@\
 #endif
 
 #ifdef AlphaArchitecture
+#undef BuildServer
+#define BuildServer YES
 #define XVirtualFramebufferServer YES
 #define ServerExtraDefines -D_XSERVER64
 #define ServerOSDefines -DDDXTIME
