@@ -1,4 +1,4 @@
-/* $XConsortium: GCManager.c,v 1.45 93/08/27 16:27:27 kaleb Exp $ */
+/* $XConsortium: GCManager.c,v 1.46 93/10/06 17:20:21 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988, 1990 by Digital Equipment Corporation, Maynard, Massachusetts, 
@@ -137,9 +137,9 @@ void _XtGClistFree(dpy, pd)
     if (pd->pixmap_tab) {
 	for (i = ScreenCount(dpy); --i >= 0; ) {
 	    if (pd->pixmap_tab[i])
-		XFree((char *)pd->pixmap_tab[i]);
+		XtFree((char *)pd->pixmap_tab[i]);
 	}
-	XFree((char *)pd->pixmap_tab);
+	XtFree((char *)pd->pixmap_tab);
     }
 }
 
@@ -211,9 +211,13 @@ GC XtAllocateGC(widget, depth, valueMask, values, dynamicMask, unusedMask)
     if (!drawable && depth == DefaultDepthOfScreen(screen))
 	drawable = RootWindowOfScreen(screen);
     if (!drawable) {
-	if (!pd->pixmap_tab)
-	    pd->pixmap_tab = (Drawable **)XtCalloc((unsigned)ScreenCount(dpy),
+	if (!pd->pixmap_tab) {
+	    int n;
+	    pd->pixmap_tab = (Drawable **)XtMalloc((unsigned)ScreenCount(dpy) *
 						   sizeof(Drawable *));
+	    for (n = 0; n < ScreenCount(dpy); n++)
+		pd->pixmap_tab[n] = NULL;
+	}
 	pixmaps = pd->pixmap_tab[cur->screen];
 	if (!pixmaps) {
 	    int max, n, *depths;
