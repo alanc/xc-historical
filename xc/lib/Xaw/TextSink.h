@@ -1,5 +1,5 @@
 /*
- * $XConsortium: TextSink.h,v 1.3 89/09/13 15:06:53 kit Exp $
+ * $XConsortium: TextSink.h,v 1.4 89/10/04 13:56:56 kit Exp $
  */
 
 /***********************************************************
@@ -79,7 +79,7 @@ void XawTextSinkDisplayText(/* w, x, y, pos1, pos2, highlight */);
 /*
 Widget w;
 Position x, y;
-int highlight;
+Boolean highlight;
 XawTextPosition pos1, pos2;
 */
 
