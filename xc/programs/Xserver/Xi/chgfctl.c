@@ -1,4 +1,4 @@
-/* $XConsortium: xchgfctl.c,v 1.6 90/05/18 13:50:48 rws Exp $ */
+/* $XConsortium: xchgfctl.c,v 1.7 90/05/18 14:04:51 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -73,6 +73,12 @@ ProcXChangeFeedbackControl(client)
     ClientPtr client;
     {
     DeviceIntPtr dev;
+    KbdFeedbackPtr k;
+    PtrFeedbackPtr p;
+    IntegerFeedbackPtr i;
+    StringFeedbackPtr s;
+    BellFeedbackPtr b;
+    LedFeedbackPtr l;
 
     REQUEST(xChangeFeedbackControlReq);
     REQUEST_AT_LEAST_SIZE(xChangeFeedbackControlReq);
@@ -88,53 +94,58 @@ ProcXChangeFeedbackControl(client)
     switch (stuff->feedbackid)
 	{
 	case KbdFeedbackClass:
-	    if (dev->kbdfeed)
-		ChangeKbdFeedback (client, dev, stuff->mask, &stuff[1]);
-	    else
-		SendErrorToClient (client, IReqCode, X_ChangeFeedbackControl, 
-			0, BadMatch);
+	    for (k=dev->kbdfeed; k; k=k->next)
+		if (k->id == ((xKbdFeedbackCtl *) &stuff[1])->id)
+		    {
+		    ChangeKbdFeedback (client, dev, stuff->mask, k, &stuff[1]);
+		    return Success;
+		    }
 	    break;
 	case PtrFeedbackClass:
-	    if (dev->ptrfeed)
-		ChangePtrFeedback (client, dev, stuff->mask, &stuff[1]);
-	    else
-		SendErrorToClient (client, IReqCode, X_ChangeFeedbackControl, 
-			0, BadMatch);
+	    for (p=dev->ptrfeed; p; p=p->next)
+		if (p->id == ((xPtrFeedbackCtl *) &stuff[1])->id)
+		    {
+		    ChangePtrFeedback (client, dev, stuff->mask, p, &stuff[1]);
+		    return Success;
+		    }
 	    break;
 	case StringFeedbackClass:
-	    if (dev->stringfeed)
-		ChangeStringFeedback (client, dev, stuff->mask, &stuff[1]);
-	    else
-		SendErrorToClient (client, IReqCode, X_ChangeFeedbackControl, 
-			0, BadMatch);
+	    for (s=dev->stringfeed; s; s=s->next)
+		if (s->id == ((xStringFeedbackCtl *) &stuff[1])->id)
+		    {
+		    ChangeStringFeedback (client, dev, stuff->mask,s,&stuff[1]);
+		    return Success;
+		    }
 	    break;
 	case IntegerFeedbackClass:
-	    if (dev->intfeed)
-		ChangeIntegerFeedback (client, dev, stuff->mask, &stuff[1]);
-	    else
-		SendErrorToClient (client, IReqCode, X_ChangeFeedbackControl, 
-			0, BadMatch);
+	    for (i=dev->intfeed; i; i=i->next)
+		if (i->id == ((xIntegerFeedbackCtl *) &stuff[1])->id)
+		    {
+		    ChangeIntegerFeedback (client, dev,stuff->mask,i,&stuff[1]);
+		    return Success;
+		    }
 	    break;
 	case LedFeedbackClass:
-	    if (dev->leds)
-		ChangeLedFeedback (client, dev, stuff->mask, &stuff[1]);
-	    else
-		SendErrorToClient (client, IReqCode, X_ChangeFeedbackControl, 
-			0, BadMatch);
+	    for (l=dev->leds; l; l=l->next)
+		if (l->id == ((xLedFeedbackCtl *) &stuff[1])->id)
+		    {
+		    ChangeLedFeedback (client, dev, stuff->mask, l, &stuff[1]);
+		    return Success;
+		    }
 	    break;
 	case BellFeedbackClass:
-	    if (dev->bell)
-	        ChangeBellFeedback (client, dev, stuff->mask, &stuff[1]);
-	    else
-		SendErrorToClient (client, IReqCode, X_ChangeFeedbackControl, 
-			0, BadMatch);
+	    for (b=dev->bell; b; b=b->next)
+		if (b->id == ((xBellFeedbackCtl *) &stuff[1])->id)
+		    {
+		    ChangeBellFeedback (client, dev, stuff->mask, b, &stuff[1]);
+		    return Success;
+		    }
 	    break;
 	default:
-	    SendErrorToClient(client, IReqCode, X_ChangeFeedbackControl, 0, 
-		BadMatch);
 	    break;
 	}
 
+    SendErrorToClient (client, IReqCode, X_ChangeFeedbackControl, 0, BadMatch);
     return Success;
     } 
 
@@ -144,14 +155,14 @@ ProcXChangeFeedbackControl(client)
  *
  */
 
-ChangeKbdFeedback (client, dev, mask, f)
+ChangeKbdFeedback (client, dev, mask, k, f)
     ClientPtr client;
     DeviceIntPtr dev;
     unsigned long 	mask;
+    KbdFeedbackPtr	k;
     xKbdFeedbackCtl 	*f;
     {
     register char n;
-    KbdFeedbackPtr	k = dev->kbdfeed;
     KeybdCtrl kctrl;
     int t;
     int led = DO_ALL;
@@ -299,14 +310,14 @@ ChangeKbdFeedback (client, dev, mask, f)
  *
  */
 
-ChangePtrFeedback (client, dev, mask, f)
+ChangePtrFeedback (client, dev, mask, p, f)
     ClientPtr 		client;
     DeviceIntPtr 	dev;
     unsigned long 	mask;
+    PtrFeedbackPtr 	p;
     xPtrFeedbackCtl 	*f;
     {
     register char n;
-    PtrFeedbackPtr p = dev->ptrfeed;
     PtrCtrl pctrl;		/* might get BadValue part way through */
 
     if (client->swapped)
@@ -379,13 +390,13 @@ ChangePtrFeedback (client, dev, mask, f)
  *
  */
 
-ChangeIntegerFeedback (client, dev, mask, f)
+ChangeIntegerFeedback (client, dev, mask, i, f)
     ClientPtr 			client;
     DeviceIntPtr 		dev;
     unsigned long 		mask;
+    IntegerFeedbackPtr 		i;
     xIntegerFeedbackCtl 	*f;
     {
-    IntegerFeedbackPtr i = dev->intfeed;
     register char n;
 
     if (client->swapped)
@@ -404,15 +415,15 @@ ChangeIntegerFeedback (client, dev, mask, f)
  *
  */
 
-ChangeStringFeedback (client, dev, mask, f)
+ChangeStringFeedback (client, dev, mask, s, f)
     ClientPtr 		client;
     DeviceIntPtr 	dev;
     unsigned long 	mask;
+    StringFeedbackPtr 	s;
     xStringFeedbackCtl 	*f;
     {
     register char n;
     register long *p;
-    StringFeedbackPtr s = dev->stringfeed;
     int		i, j;
     KeySym	*syms, *sup_syms;
 
@@ -461,14 +472,14 @@ ChangeStringFeedback (client, dev, mask, f)
  *
  */
 
-ChangeBellFeedback (client, dev, mask, f)
+ChangeBellFeedback (client, dev, mask, b, f)
     ClientPtr 		client;
     DeviceIntPtr 	dev;
     unsigned long 	mask;
+    BellFeedbackPtr 	b;
     xBellFeedbackCtl 	*f;
     {
     register char n;
-    BellFeedbackPtr b = dev->bell;
     int t;
     BellCtrl bctrl;		/* might get BadValue part way through */
 
@@ -534,14 +545,14 @@ ChangeBellFeedback (client, dev, mask, f)
  *
  */
 
-ChangeLedFeedback (client, dev, mask, f)
+ChangeLedFeedback (client, dev, mask, l, f)
     ClientPtr 		client;
     DeviceIntPtr 	dev;
     unsigned long 	mask;
+    LedFeedbackPtr 	l;
     xLedFeedbackCtl 	*f;
     {
     register char n;
-    LedFeedbackPtr l = dev->leds;
     LedCtrl lctrl;		/* might get BadValue part way through */
 
     if (client->swapped)

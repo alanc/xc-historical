@@ -1,4 +1,4 @@
-/* $XConsortium: XGetFCtl.c,v 1.6 90/05/18 13:51:07 rws Exp $ */
+/* $XConsortium: XGetFCtl.c,v 1.7 90/05/18 13:57:47 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -137,6 +137,7 @@ XFeedbackState
 
 		    K->class = k->class;
 		    K->length = sizeof (XKbdFeedbackState);
+		    K->id = k->id;
 		    K->click = k->click;
 		    K->percent = k->percent;
 		    K->pitch = k->pitch;
@@ -157,6 +158,7 @@ XFeedbackState
 
 		    P->class = p->class;
 		    P->length = sizeof (XPtrFeedbackState);
+		    P->id = p->id;
 		    P->accelNum = p->accelNum;
 		    P->accelDenom = p->accelDenom;
 		    P->threshold = p->threshold;
@@ -173,6 +175,7 @@ XFeedbackState
 
 		    I->class = i->class;
 		    I->length = sizeof (XIntegerFeedbackState);
+		    I->id = i->id;
 		    I->resolution = i->resolution;
 		    I->minVal = i->min_value;
 		    I->maxVal = i->max_value;
@@ -189,6 +192,7 @@ XFeedbackState
 		    S->class = s->class;
 		    S->length = sizeof (XStringFeedbackState) + 
 			(s->num_syms_supported * sizeof (KeySym));
+		    S->id = s->id;
 		    S->max_symbols = s->max_symbols;
 		    S->num_syms_supported = s->num_syms_supported;
 		    f = (xFeedbackState *) ((char *) f + f->length);
@@ -206,6 +210,7 @@ XFeedbackState
 
 		    L->class = l->class;
 		    L->length = sizeof (XLedFeedbackState);
+		    L->id = l->id;
 		    L->led_values = l->led_values;
 		    f = (xFeedbackState *) ((char *) f + f->length);
 		    break;
@@ -219,6 +224,7 @@ XFeedbackState
 
 		    B->class = b->class;
 		    B->length = sizeof (XBellFeedbackState);
+		    B->id = b->id;
 		    B->percent = b->percent;
 		    B->pitch = b->pitch;
 		    B->duration = b->duration;

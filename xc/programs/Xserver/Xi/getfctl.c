@@ -1,4 +1,4 @@
-/* $XConsortium: xgetfctl.c,v 1.6 90/05/18 11:34:20 rws Exp $ */
+/* $XConsortium: xgetfctl.c,v 1.7 90/05/18 13:50:40 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -77,9 +77,14 @@ ProcXGetFeedbackControl(client)
     ClientPtr client;
     {
     int	total_length = 0;
-    int	i;
-    char *p, *buf, *savbuf;
+    char *buf, *savbuf;
     register DeviceIntPtr dev;
+    KbdFeedbackPtr k;
+    PtrFeedbackPtr p;
+    IntegerFeedbackPtr i;
+    StringFeedbackPtr s;
+    BellFeedbackPtr b;
+    LedFeedbackPtr l;
     xGetFeedbackControlReply rep;
 
     REQUEST(xGetFeedbackControlReq);
@@ -99,33 +104,33 @@ ProcXGetFeedbackControl(client)
     rep.sequenceNumber = client->sequence;
     rep.num_feedbacks = 0;
 
-    if (dev->kbdfeed != NULL)
+    for (k=dev->kbdfeed; k; k=k->next)
 	{
 	rep.num_feedbacks++;
 	total_length += sizeof(xKbdFeedbackState);
 	}
-    if (dev->ptrfeed != NULL)
+    for (p=dev->ptrfeed; p; p=p->next)
 	{
 	rep.num_feedbacks++;
 	total_length += sizeof(xPtrFeedbackState);
 	}
-    if (dev->stringfeed != NULL)
+    for (s=dev->stringfeed; s; s=s->next)
 	{
 	rep.num_feedbacks++;
 	total_length += sizeof(xStringFeedbackState) + 
-	    (dev->stringfeed->ctrl.num_symbols_supported * sizeof (KeySym));
+	    (s->ctrl.num_symbols_supported * sizeof (KeySym));
 	}
-    if (dev->intfeed != NULL)
+    for (i=dev->intfeed; i; i=i->next)
 	{
 	rep.num_feedbacks++;
 	total_length += sizeof(xIntegerFeedbackState);
 	}
-    if (dev->leds != NULL)
+    for (l=dev->leds; l; l=l->next)
 	{
 	rep.num_feedbacks++;
 	total_length += sizeof(xLedFeedbackState);
 	}
-    if (dev->bell != NULL)
+    for (b=dev->bell; b; b=b->next)
 	{
 	rep.num_feedbacks++;
 	total_length += sizeof(xBellFeedbackState);
@@ -141,18 +146,18 @@ ProcXGetFeedbackControl(client)
     buf = (char *) Xalloc (total_length);
     savbuf=buf;
 
-    if (dev->kbdfeed != NULL)
-	CopySwapKbdFeedback (client, dev->kbdfeed, &buf);
-    if (dev->ptrfeed != NULL)
-	CopySwapPtrFeedback (client, dev->ptrfeed, &buf);
-    if (dev->stringfeed != NULL)
-	CopySwapStringFeedback (client, dev->stringfeed, &buf);
-    if (dev->intfeed != NULL)
-	CopySwapIntegerFeedback (client, dev->intfeed, &buf);
-    if (dev->leds != NULL)
-	CopySwapLedFeedback (client, dev->leds, &buf);
-    if (dev->bell != NULL)
-	CopySwapBellFeedback (client, dev->bell, &buf);
+    for (k=dev->kbdfeed; k; k=k->next)
+	CopySwapKbdFeedback (client, k, &buf);
+    for (p=dev->ptrfeed; p; p=p->next)
+	CopySwapPtrFeedback (client, p, &buf);
+    for (s=dev->stringfeed; s; s=s->next)
+	CopySwapStringFeedback (client, s, &buf);
+    for (i=dev->intfeed; i; i=i->next)
+	CopySwapIntegerFeedback (client, i, &buf);
+    for (l=dev->leds; l; l=l->next)
+	CopySwapLedFeedback (client, l, &buf);
+    for (b=dev->bell; b; b=b->next)
+	CopySwapBellFeedback (client, b, &buf);
 
     rep.length = (total_length+3) >> 2;
     WriteReplyToClient(client, sizeof(xGetFeedbackControlReply), &rep);
@@ -179,6 +184,7 @@ CopySwapKbdFeedback (client, k, buf)
     k2 = (xKbdFeedbackState *) *buf;
     k2->class = KbdFeedbackClass;
     k2->length = sizeof (xKbdFeedbackState);
+    k2->id = k->id;
     k2->click = k->ctrl.click;
     k2->percent = k->ctrl.bell;
     k2->pitch = k->ctrl.bell_pitch;
@@ -215,6 +221,7 @@ CopySwapPtrFeedback (client, p, buf)
     p2 = (xPtrFeedbackState *) *buf;
     p2->class = PtrFeedbackClass;
     p2->length = sizeof (xPtrFeedbackState);
+    p2->id = p->id;
     p2->accelNum = p->ctrl.num;
     p2->accelDenom = p->ctrl.den;
     p2->threshold = p->ctrl.threshold;
@@ -245,6 +252,7 @@ CopySwapIntegerFeedback (client, i, buf)
     i2 = (xIntegerFeedbackState *) *buf;
     i2->class = IntegerFeedbackClass;
     i2->length = sizeof (xIntegerFeedbackState);
+    i2->id = i->id;
     i2->resolution = i->ctrl.resolution;
     i2->min_value = i->ctrl.min_value;
     i2->max_value = i->ctrl.max_value;
@@ -278,6 +286,7 @@ CopySwapStringFeedback (client, s, buf)
     s2->class = StringFeedbackClass;
     s2->length = sizeof (xStringFeedbackState) + 
         s->ctrl.num_symbols_supported * sizeof (KeySym);
+    s2->id = s->id;
     s2->max_symbols = s->ctrl.max_symbols;
     s2->num_syms_supported = s->ctrl.num_symbols_supported;
     *buf += sizeof (xStringFeedbackState);
@@ -313,6 +322,7 @@ CopySwapLedFeedback (client, l, buf)
     l2 = (xLedFeedbackState *) *buf;
     l2->class = LedFeedbackClass;
     l2->length = sizeof (xLedFeedbackState);
+    l2->id = l->id;
     l2->led_values = l->ctrl.led_values;
     if (client->swapped)
 	{
@@ -340,6 +350,7 @@ CopySwapBellFeedback (client, b, buf)
     b2 = (xBellFeedbackState *) *buf;
     b2->class = BellFeedbackClass;
     b2->length = sizeof (xBellFeedbackState);
+    b2->id = b->id;
     b2->percent = b->ctrl.percent;
     b2->pitch = b->ctrl.pitch;
     b2->duration = b->ctrl.duration;
