@@ -1,8 +1,8 @@
-/*      Copyright (c) 1993 NCR Corporation - Dayton, Ohio, USA */
-/*        All Rights Reserved   */
-
 #ifndef _XTRANSINT_H_
 #define _XTRANSINT_H_
+
+/*      Copyright (c) 1993 NCR Corporation - Dayton, Ohio, USA */
+/*        All Rights Reserved   */
 
 /*
  * Permission to use, copy, modify, and distribute this software and its
@@ -100,15 +100,15 @@ extern int  errno;		/* Internal system error number. */
 #endif
 
 struct _XtransConnInfo {
-	struct _Xtransport     *transptr;
-	char	*priv;
-	int	flags;
-	int	fd;
-	int	family;
-	char	*addr;
-	int	addrlen;
-	char	*peeraddr;
-	int	peeraddrlen;
+    struct _Xtransport     *transptr;
+    char	*priv;
+    int		flags;
+    int		fd;
+    int		family;
+    char	*addr;
+    int		addrlen;
+    char	*peeraddr;
+    int		peeraddrlen;
 };
 
 #define XTRANS_OPEN_COTS_CLIENT       1
@@ -118,147 +118,152 @@ struct _XtransConnInfo {
 
 
 typedef struct _Xtransport {
-	char	*TransName;
-	int	flags;
+    char	*TransName;
+    int		flags;
 
-	XtransConnInfo (*OpenCOTSClient)(
+    XtransConnInfo (*OpenCOTSClient)(
 #if NeedNestedPrototypes
-		struct _Xtransport *,
-		char *,
-		char *,
-		char *
+	struct _Xtransport *,
+	char *,
+	char *,
+	char *
 #endif
-);
+    );
 
-	XtransConnInfo (*OpenCOTSServer)(
+    XtransConnInfo (*OpenCOTSServer)(
 #if NeedNestedPrototypes
-		struct _Xtransport *,
-		char *,
-		char *,
-		char *
+	struct _Xtransport *,
+	char *,
+	char *,
+	char *
 #endif
-);
+    );
 
-	XtransConnInfo (*OpenCLTSClient)(
+    XtransConnInfo (*OpenCLTSClient)(
 #if NeedNestedPrototypes
-		struct _Xtransport *,
-		char *,
-		char *,
-		char *
+	struct _Xtransport *,
+	char *,
+	char *,
+	char *
 #endif
-);
+    );
 
-	XtransConnInfo (*OpenCLTSServer)(
+    XtransConnInfo (*OpenCLTSServer)(
 #if NeedNestedPrototypes
-		struct _Xtransport *,
-		char *,
-		char *,
-		char *
+	struct _Xtransport *,
+	char *,
+	char *,
+	char *
 #endif
-);
+    );
 
-	int	(*SetOption)(
+    int	(*SetOption)(
 #if NeedNestedPrototypes
-		XtransConnInfo,
-		int,
-		int
+	XtransConnInfo,
+	int,
+	int
 #endif
-);
+    );
 
-	int	(*CreateListener)(
+    int	(*CreateListener)(
 #if NeedNestedPrototypes
-		XtransConnInfo,
-		char *
+	XtransConnInfo,
+	char *
 #endif
-);
+    );
 
-	XtransConnInfo (*Accept)(
+    XtransConnInfo (*Accept)(
 #if NeedNestedPrototypes
-		XtransConnInfo
+	XtransConnInfo
 #endif
-);
+    );
 
-	int	(*Connect)(
+    int	(*Connect)(
 #if NeedNestedPrototypes
-		XtransConnInfo,
-		char *,
-		char *
+	XtransConnInfo,
+	char *,
+	char *
 #endif
-);
+    );
 
-	int	(*BytesReadable)(
+    int	(*BytesReadable)(
 #if NeedNestedPrototypes
-		XtransConnInfo,
-		BytesReadable_t *
+	XtransConnInfo,
+	BytesReadable_t *
 #endif
-);
+    );
 
-	int	(*Read)(
+    int	(*Read)(
 #if NeedNestedPrototypes
-		XtransConnInfo,
-		char *,
-		int
+	XtransConnInfo,
+	char *,
+	int
 #endif
-);
+    );
 
-	int	(*Write)(
+    int	(*Write)(
 #if NeedNestedPrototypes
-		XtransConnInfo,
-		char *,
-		int
+	XtransConnInfo,
+	char *,
+	int
 #endif
-);
+    );
 
-	int	(*Readv)(
+    int	(*Readv)(
 #if NeedNestedPrototypes
-		XtransConnInfo,
-		struct iovec *,
-		int
+	XtransConnInfo,
+	struct iovec *,
+	int
 #endif
-);
+    );
 
-	int	(*Writev)(
+    int	(*Writev)(
 #if NeedNestedPrototypes
-		XtransConnInfo,
-		struct iovec *,
-		int
+	XtransConnInfo,
+	struct iovec *,
+	int
 #endif
-);
+    );
 
-	int	(*Disconnect)(
+    int	(*Disconnect)(
 #if NeedNestedPrototypes
-		XtransConnInfo
+	XtransConnInfo
 #endif
-);
+    );
 
-	int	(*Close)(
+    int	(*Close)(
 #if NeedNestedPrototypes
-		XtransConnInfo
+	XtransConnInfo
 #endif
-);
+    );
 
-	int	(*NameToAddr)(
+    int	(*NameToAddr)(
 #if NeedNestedPrototypes
-		XtransConnInfo
+	XtransConnInfo
 #endif
-);
+    );
 
-	int	(*AddrToName)(
+    int	(*AddrToName)(
 #if NeedNestedPrototypes
-		XtransConnInfo
+	XtransConnInfo
 #endif
-);
-	} Xtransport;
+    );
+
+} Xtransport;
+
 
 /*
  * Flags for the flags member of Xtransport.
  */
+
 #define TRANS_ALIAS	0x01	/* record is an alias, don't create server */
+
 
 /*
  * readv() and writev() don't exist or don't work correctly on some
  * systems, so they may be emulated.
  */
+
 #if defined(CRAY) || (defined(SYSV) && defined(SYSV386)) || defined(WIN32)
 
 #define READV(ciptr, iov, iovcnt)	TRANS(ReadV)(ciptr, iov, iovcnt)
@@ -288,9 +293,11 @@ static int TRANS(WriteV)(
 
 #endif /* CRAY || (SYSV && SYSV386) || WIN32 */
 
+
 /*
  * Some DEBUG stuff
  */
+
 #if defined(DEBUG)
 #define PRMSG(lvl,x,a,b,c)	if (lvl <= DEBUG){ \
 			int saveerrno=errno; \
