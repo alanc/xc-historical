@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.21 93/09/26 15:41:00 gildea Exp $
+XCOMM $XConsortium: Imakefile,v 1.22 93/12/27 17:38:04 gildea Exp $
 #define DoNormalLib NormalLibXau
 #define DoSharedLib SharedLibXau
 #define DoDebugLib DebugLibXau
@@ -29,7 +29,5 @@ OBJS =	AuDispose.o AuFileName.o AuGetAddr.o AuGetBest.o AuLock.o \
 	AuRead.o AuUnlock.o AuWrite.o $(K5ENCOBJ)
 
 #include <Library.tmpl>
-
-InstallManPage(Xau,$(MANDIR))
 
 DependTarget()
