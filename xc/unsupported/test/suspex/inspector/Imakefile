@@ -1,4 +1,4 @@
-# $XConsortium$
+# $XConsortium: Imakefile,v 1.0 93/11/22 12:08:46 rws Exp $
 #
 #       NOTICE TO USER: The source code in this file is copyrighted under
 #       U.S. and international laws.  SunSoft, Inc., a Sun Microsystems,
@@ -31,10 +31,10 @@
 OBJS = imagelib.o
 
 CDEBUGFLAGS = -g
-CPPFLAGS=-DATHENA
+DEFINES=-DATHENA
 INCLUDES = -I. 
 
-LDLIBS = -lXaw -lXmu -lXt -lX11 -lm
+LDLIBS = XawClientLibs -lm
 
 PROGS = inspector-aw 
 
