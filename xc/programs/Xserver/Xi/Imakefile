@@ -27,6 +27,7 @@
 		xqueryst.c \
 		xselectev.c \
 		xsendexev.c \
+		xsetdval.c \
 		xsetfocus.c \
 		xsetmode.c \
 		xsetbmap.c \
@@ -63,6 +64,7 @@
 		xqueryst.o \
 		xselectev.o \
 		xsendexev.o \
+		xsetdval.o \
 		xsetfocus.o \
 		xsetmode.o \
 		xsetbmap.o \
