@@ -1,4 +1,4 @@
-/* $XConsortium: ICElibint.h,v 1.4 93/08/26 17:09:02 mor Exp $ */
+/* $XConsortium: ICElibint.h,v 1.5 93/09/08 20:03:29 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -484,6 +484,10 @@ typedef struct _IceWatchProc {
  * Extern declarations
  */
 
+extern IceConn     	_IceConnectionObjs[];
+extern char	    	*_IceConnectionStrings[];
+extern int     		_IceConnectionCount;
+
 extern _IceProtocol	_IceProtocols[];
 extern int         	_IceLastMajorOpcode;
 
@@ -493,6 +497,8 @@ extern IceACLauthRec	_IceACLauthRecs[];
 
 extern int		_IceVersionCount;
 extern _IceVersion	_IceVersions[];
+
+extern _IceWatchProc	*_IceWatchProcs;
 
 extern IceErrorHandler   _IceErrorHandler;
 extern IceIOErrorHandler _IceIOErrorHandler;
