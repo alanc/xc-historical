@@ -1,5 +1,5 @@
 ##
-# $XConsortium: Makefile,v 5.2 91/02/16 09:36:35 rws Exp $
+# $XConsortium: Imakefile,v 1.1 91/07/23 18:20:36 rws Exp $
 ##
 ## 
 ## Copyright (c) 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -45,8 +45,8 @@ outline: $(CHAPTERS)
 	egrep -h '^\.(H|FN|TN)' $(CHAPTERS) > outline
 
 doc.PS:
-	$(XREF) -o outline $(CHAPTERS) | $(PIC) | (cat $(PEXMACROS) ; $(TBL)) \
-	$(TROFF) -rF1 -rM1 >doc.PS 2>slush.tmp
+	$(XREF) -o outline $(CHAPTERS) | $(PIC) | \
+	(cat $(PEXMACROS) ; $(TBL)) | $(TROFF) -rF1 -rM1 >doc.PS 2>slush.tmp
 	$(RECODE) < slush.tmp >slush.file
 	$(RM) slush.tmp 
 
