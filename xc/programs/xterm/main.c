@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: main.c,v 1.76 88/08/30 17:39:22 swick Exp $";
+static char rcs_id[] = "$Header: main.c,v 1.77 88/08/31 22:04:01 jim Exp $";
 #endif	/* lint */
 
 /*
@@ -274,7 +274,7 @@ static XrmOptionDescRec optionDescList[] = {
 {"+vb",		"*visualBell",	XrmoptionNoArg,		(caddr_t) "off"},
 /* bogus old compatibility stuff for which there are
    standard XtInitialize options now */
-#ifndef TRASHEQUALGEOMETRY
+#ifdef EQUALGEOMETRY
 {"=",		"*vt100.geometry",XrmoptionStickyArg,	(caddr_t) NULL},
 #endif
 {"%",		"*tekGeometry",	XrmoptionStickyArg,	(caddr_t) NULL},
@@ -285,7 +285,7 @@ static XrmOptionDescRec optionDescList[] = {
 {"+r",		"*reverseVideo",XrmoptionNoArg,		(caddr_t) "off"},
 {"-rv",		"*reverseVideo",XrmoptionNoArg,		(caddr_t) "on"},
 {"+rv",		"*reverseVideo",XrmoptionNoArg,		(caddr_t) "off"},
-{"-w",		".TopLevelShell.borderWidth", XrmoptionSepArg, (caddr_t) NULL},
+{"-w",		".borderWidth", XrmoptionSepArg,	(caddr_t) NULL},
 };
 
 static char *options[] = {
