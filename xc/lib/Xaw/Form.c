@@ -1,7 +1,4 @@
-#ifndef lint
-static char Xrcsid[] = "$XConsortium: Form.c,v 1.40 90/05/08 15:16:24 converse Exp $";
-#endif /* lint */
-
+/* $XConsortium: Form.c,v 1.42 90/12/31 11:08:01 gildea Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -76,6 +73,8 @@ static Boolean SetValues(), ConstraintSetValues();
 static XtGeometryResult GeometryManager(), PreferredGeometry();
 static void ChangeManaged();
 static Boolean Layout();
+
+static void LayoutChild(), ResizeChildren();
 
 FormClassRec formClassRec = {
   { /* core_class fields */
@@ -310,7 +309,6 @@ static Boolean Layout(fw, width, height, force_relayout)
     WidgetList children = fw->composite.children;
     Widget *childP;
     Dimension maxx, maxy;
-    static void LayoutChild(), ResizeChildren();
     Boolean ret_val;
 
     for (childP = children; childP - children < num_children; childP++) {
@@ -330,12 +328,12 @@ static Boolean Layout(fw, width, height, force_relayout)
 
 	    x = form->form.new_x + (*childP)->core.width + 
 		((*childP)->core.border_width << 1);
-	    if ( x > maxx)
+	    if (x > (int)maxx)
 		maxx = x;
 
 	    y = form->form.new_y + (*childP)->core.height +
 		((*childP)->core.border_width << 1);
-	    if (y > maxy)
+	    if (y > (int)maxy)
 		maxy = y;
 	}
     }
@@ -462,7 +460,7 @@ static Position TransformCoord(loc, old, new, type)
 {
     if (type == XtRubber) {
         if ( ((int) old) > 0)
-	    loc = (loc * new) / old;
+	    loc = (int)(loc * new) / (int)old;
     }
     else if (type == XtChainBottom || type == XtChainRight)
       loc += (Position)new - (Position)old;
