@@ -4,7 +4,7 @@
 
 /**/###########################################################################
 /**/# Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-/**/# $XConsortium: Imake.tmpl,v 1.53 89/09/19 12:09:29 jim Exp $
+/**/# $XConsortium: Imake.tmpl,v 1.54 89/09/27 10:53:27 jim Exp $
 /**/#
 /**/# Platform-specific parameters may be set in the appropriate .cf
 /**/# configuration files.  Site-wide parameters may be set in the file
@@ -44,9 +44,11 @@
  */
 
 #ifdef ibm032
-#define MacroIncludeFile <rt.cf>
-#define MacroFile rt.cf
+#define MacroIncludeFile <ibm.cf>
+#define MacroFile ibm.cf
 #undef ibm032
+#undef ibm
+#define IBMArchitecture
 #define RtArchitecture
 #endif /* ibm032 */
 
