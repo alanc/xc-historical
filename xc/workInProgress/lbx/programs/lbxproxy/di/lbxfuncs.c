@@ -19,10 +19,10 @@
  * WHETHER IN AN ACTION IN CONTRACT, TORT OR NEGLIGENCE, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * $NCDId: @(#)lbxfuncs.c,v 1.40 1994/11/18 20:39:18 lemke Exp $
+ * $NCDId: @(#)lbxfuncs.c,v 1.43 1995/03/09 00:54:06 lemke Exp $
  */
 
-/* $XConsortium: lbxfuncs.c,v 1.6 94/11/08 20:01:14 mor Exp mor $ */
+/* $XConsortium: lbxfuncs.c,v 1.7 94/12/01 20:50:00 mor Exp $ */
 
 /*
  * top level LBX request & reply handling
@@ -37,7 +37,8 @@
  * out.
  *
  * requests copy out interesting stuff and then swap so original data
- * is left alone as much as possible
+ * is left alone as much as possible.  note that the length field
+ * is *not* swapped
  *
  * replied data is copied yet again before swapping because the data
  * may be stored as a tag result and we don't want to change that.
@@ -514,7 +515,7 @@ alloc_color_req(client, data)
 	IncrementPixel(client, cmap, pent);
 
 	/* must tell server to bump refcnt */
-	SendIncrementPixel(client, req->cmap, pent->pixel);
+	SendIncrementPixel(client, cmap, pent->pixel);
 
 	reply.type = X_Reply;
 	reply.length = 0;
@@ -811,16 +812,19 @@ free_colors_req(client, data)
     Colormap    cmap;
     Bool        freepix = FALSE;
     char        n;
+    CARD16	len;
 
     req = (xFreeColorsReq *) data;
     mask = req->planeMask;
     cmap = req->cmap;
+    len = req->length;
 
     if (client->swapped) {
 	swapl(&cmap, n);
 	swapl(&mask, n);
+	swaps(&len, n);
     }
-    num = ((req->length << 2) - sizeof(xFreeColorsReq)) >> 2;
+    num = ((len << 2) - sizeof(xFreeColorsReq)) >> 2;
 
     if (client->swapped) {
 	pixels = (Pixel *) ALLOCATE_LOCAL(num * sizeof(Pixel));
@@ -1546,7 +1550,8 @@ patchup_error(client, err, nr)
     if (client->swapped) {
 	swaps(&minor_code, n);
     }
-    err->minorCode = minor_code;
+    err->majorCode = minor_code;
+    err->minorCode = 0;
     return retval;
 }
 
@@ -1650,9 +1655,10 @@ DoLBXReply(client, data, len)
 			/* error for proxy -- eat it */
 			ret = FALSE;
 		    }
-		}
-		/* handle extension error */
+		} else {
+		    /* error in core X or other extension */
 		HandleExtensionError(client, err);
+		}
 		RemoveReply(client, nr);
 	    }
 	}
