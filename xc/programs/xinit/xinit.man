@@ -12,11 +12,12 @@ that use multiple window systems.  When this first client exits,
 \fIxinit\fP will kill the X server and then terminate.
 .PP
 If no client arguments are specified on the command line, \fIxinit\fP will
-look for a file called \fI\.xinitrc\fP in the user's home directory.  If the
-file exists and is executable, \fIxinit\fP use that program as the default
-client.  If the file is not executable, but is readable, \fIxinit\fP will
+look for a file called \fI\.xinitrc\fP in the user's home directory (or the
+file given by the XINITRC environment variable).  If the file exists and is 
+executable, \fIxinit\fP will use it as the default client to run.  If the file
+is not executable, but is readable, \fIxinit\fP will
 run it as a Bourne shell script.  If no such file is found, \fIxinit\fP
-will default to the following command:
+will use the following command as a default:
 .sp
 	xterm -geometry +1+1 -n login -display :0
 .sp
@@ -122,6 +123,11 @@ xinit /usr/local/bin/startx -- /usr/bin/X11/Xhp :0
 .fi
 .in -8
 .sp
+.SH "ENVIRONMENT VARIABLES"
+.TP 8
+.B XINITRC
+Specifies an init file containing shell commands to start up the initial
+windows.  By default, \fI\.xinitrc\fP in the home directory will be used.
 .SH "SEE ALSO"
 X(1), Xserver(1), xterm(1), xrdb(1)
 .SH COPYRIGHT
