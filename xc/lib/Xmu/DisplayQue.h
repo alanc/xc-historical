@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: DisplayQue.h,v 1.3 90/12/19 18:07:40 converse Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -32,8 +32,8 @@
  * 
  * 
  * XmuDisplayQueue *XmuDQCreate (closefunc, freefunc, data)
- *     int (*closefunc)();
- *     int (*freefunc)();
+ *     XmuCloseDisplayQueueProc closefunc;
+ *     XmuFreeDisplayQueueProc freefunc;
  *     caddr_t data;
  * 
  *         Creates and returns a queue into which displays may be placed.  When
@@ -85,21 +85,36 @@
  *         otherwise True is returned.
  */
 
-typedef struct _XmuDisplayQueueEntry {
+typedef struct _XmuDisplayQueue XmuDisplayQueue;
+typedef struct _XmuDisplayQueueEntry XmuDisplayQueueEntry;
+
+typedef int (*XmuCloseDisplayQueueProc)(
+#if NeedFunctionPrototypes
+    XmuDisplayQueue*		/* queue */,
+    XmuDisplayQueueEntry*	/* entry */
+#endif
+);
+
+typedef int (*XmuFreeDisplayQueueProc)(
+#if NeedFunctionPrototypes
+    XmuDisplayQueue*		/* queue */
+#endif
+);
+
+struct _XmuDisplayQueueEntry {
     struct _XmuDisplayQueueEntry *prev, *next;
     Display *display;
     CloseHook closehook;
     caddr_t data;
-} XmuDisplayQueueEntry;
+};
 
-typedef struct _XmuDisplayQueue {
+struct _XmuDisplayQueue {
     int nentries;
     XmuDisplayQueueEntry *head, *tail;
-    int (*closefunc)();
-    int (*freefunc)();
+    XmuCloseDisplayQueueProc closefunc;
+    XmuFreeDisplayQueueProc freefunc;
     caddr_t data;
-} XmuDisplayQueue;
-
+};
 
 #ifdef __cplusplus
 extern "C" {					/* for C++ V2.0 */
@@ -107,17 +122,8 @@ extern "C" {					/* for C++ V2.0 */
 
 extern XmuDisplayQueue *XmuDQCreate(
 #if NeedFunctionPrototypes
-    int (*)(
-#if NeedNestedPrototypes
-	    XmuDisplayQueue*		/* queue */,
-	    XmuDisplayQueueEntry*	/* entry */
-#endif
-	    )	/* closefunc */,
-    int (*)(
-#if NeedNestedPrototypes
-	    XmuDisplayQueue*		/* queue */
-#endif
-	    )	/* freefunc */,
+    XmuCloseDisplayQueueProc	/* closefunc */,
+    XmuFreeDisplayQueueProc	/* freefunc */,
     caddr_t	/* data */
 #endif
 );
