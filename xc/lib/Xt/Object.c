@@ -1,4 +1,4 @@
-/* $XConsortium: Object.c,v 1.16 91/01/06 13:32:24 rws Exp $ */
+/* $XConsortium: Object.c,v 1.17 91/02/17 14:04:34 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -150,6 +150,8 @@ static void ObjectClassPartInitialize(wc)
     register WidgetClass wc;
 {
    ObjectClass oc = (ObjectClass)wc;
+
+    oc->object_class.xrm_class = XrmPermStringToQuark(oc->object_class.class_name);
 
     if (oc->object_class.resources != NULL) {
 	XrmCompileResourceList(oc->object_class.resources,

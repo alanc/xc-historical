@@ -1,4 +1,4 @@
-/* $XConsortium: Resources.c,v 1.102 91/03/07 19:16:40 rws Exp $ */
+/* $XConsortium: Resources.c,v 1.103 91/03/28 15:50:13 rws Exp $ */
 
 /*LINTLIBRARY*/
 
@@ -929,12 +929,6 @@ XtCacheRef *_XtGetResources(w, args, num_args, typed_args, num_typed_args)
     XtCacheRef	    *cache_refs;
 
     wc = XtClass(w);
-
-    /* Make sure xrm_class is valid */
-    /* ||| Class quarkifying should be part of Core.c */
-    if (wc->core_class.xrm_class == NULLQUARK) {
-        wc->core_class.xrm_class = XrmPermStringToQuark(wc->core_class.class_name);
-    }
 
     /* Get names, classes for widget and ancestors */
     (void) GetNamesAndClasses(w, names, classes);

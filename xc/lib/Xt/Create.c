@@ -1,4 +1,4 @@
-/* $XConsortium: Create.c,v 1.85 91/03/07 17:46:11 rws Exp $ */
+/* $XConsortium: Create.c,v 1.86 91/03/08 18:39:25 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -221,8 +221,7 @@ static Widget _XtCreate(
 	if (class != NULL)
 	    a->application.xrm_class = StringToClass(class);
 	else
-	    a->application.xrm_class =
-		XrmPermStringToQuark(widget_class->core_class.class_name);
+	    a->application.xrm_class = widget_class->core_class.xrm_class;
 	a->application.class = XrmQuarkToString(a->application.xrm_class);
     }
 
