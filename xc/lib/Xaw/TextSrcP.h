@@ -1,5 +1,5 @@
 /*
-* $XConsortium: TextSrcP.h,v 1.16 89/09/06 17:30:27 kit Exp $
+* $XConsortium: TextSrcP.h,v 1.17 89/10/04 13:56:16 kit Exp $
 */
 
 
@@ -42,8 +42,8 @@ SOFTWARE.
  ***********************************************************************/
 
 #include <X11/ObjectP.h>
-#include <X11/Xaw/TextSrc.h>
 #include <X11/Xaw/TextP.h>	/* This source works with the Text widget. */
+#include <X11/Xaw/TextSrc.h>
 
 /************************************************************
  *

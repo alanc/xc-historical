@@ -1,4 +1,4 @@
-/* $XConsortium: TextSrc.c,v 1.9 91/01/02 11:42:35 gildea Exp $ */
+/* $XConsortium: TextSrc.c,v 1.10 91/02/17 16:27:35 converse Exp $ */
 
 /*
  * Copyright 1989 Massachusetts Institute of Technology
@@ -35,7 +35,6 @@
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
 #include <X11/Xaw/XawInit.h>
-#include <X11/Xaw/TextI.h>
 #include <X11/Xaw/TextSrcP.h>
 #include <X11/Xmu/CharSet.h>
 

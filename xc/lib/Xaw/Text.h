@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Text.h,v 1.35 90/05/08 15:18:22 converse Exp $
+* $XConsortium: Text.h,v 1.36 90/12/01 13:01:49 rws Exp $
 */
 
 
@@ -30,7 +30,29 @@ SOFTWARE.
 #ifndef _XawText_h
 #define _XawText_h
 
-#include <X11/Xaw/TextI.h>
+typedef long XawTextPosition;
+
+typedef enum { XawtextScrollNever,
+	       XawtextScrollWhenNeeded, XawtextScrollAlways} XawTextScrollMode;
+
+typedef enum { XawtextWrapNever, 
+	       XawtextWrapLine, XawtextWrapWord} XawTextWrapMode;
+
+typedef enum { XawtextResizeNever, XawtextResizeWidth,
+	       XawtextResizeHeight, XawtextResizeBoth} XawTextResizeMode;
+
+typedef enum {XawsdLeft, XawsdRight} XawTextScanDirection;
+typedef enum {XawtextRead, XawtextAppend, XawtextEdit} XawTextEditType;
+typedef enum {XawselectNull, XawselectPosition, XawselectChar, XawselectWord,
+    XawselectLine, XawselectParagraph, XawselectAll} XawTextSelectType;
+
+typedef struct {
+    int  firstPos;
+    int  length;
+    char *ptr;
+    Atom format;
+    } XawTextBlock, *XawTextBlockPtr; 
+
 #include <X11/Xaw/TextSink.h>
 #include <X11/Xaw/TextSrc.h>
 

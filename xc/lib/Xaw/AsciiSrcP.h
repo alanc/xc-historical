@@ -1,5 +1,5 @@
 /*
-* $XConsortium: AsciiSrcP.h,v 1.6 89/10/05 13:17:39 kit Exp $
+* $XConsortium: AsciiSrcP.h,v 1.7 90/11/27 08:23:07 swick Exp $
 */
 
 
@@ -49,8 +49,8 @@ SOFTWARE.
 #ifndef _XawAsciiSrcP_h
 #define _XawAsciiSrcP_h
 
-#include <X11/Xaw/AsciiSrc.h>
 #include <X11/Xaw/TextSrcP.h>
+#include <X11/Xaw/AsciiSrc.h>
 
 /************************************************************
  *
