@@ -1,4 +1,4 @@
-/* $XConsortium: protosetup.c,v 1.10 93/11/22 16:23:29 mor Exp $ */
+/* $XConsortium: protosetup.c,v 1.11 93/11/24 14:49:23 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -19,14 +19,12 @@ purpose.  It is provided "as is" without express or implied warranty.
 
 
 IceProtocolSetupStatus
-IceProtocolSetup (iceConn, myOpcode, authCount, authIndices, mustAuthenticate,
+IceProtocolSetup (iceConn, myOpcode, mustAuthenticate,
     majorVersionRet, minorVersionRet, vendorRet, releaseRet,
     errorLength, errorStringRet)
 
 IceConn	iceConn;
 int 	myOpcode;
-int	authCount;
-int	*authIndices;
 Bool    mustAuthenticate;
 int	*majorVersionRet;
 int	*minorVersionRet;
@@ -43,11 +41,12 @@ char 	*errorStringRet;
     Bool		gotReply;
     int			accepted, i;
     int			hisOpcode;
-    int			doFavor;
     unsigned long	setup_sequence;
     IceReplyWaitInfo 	replyWait;
     _IceReply		reply;
     IcePoVersionRec	*versionRec;
+    int			authCount;
+    int			*authIndices;
 
     if (errorStringRet && errorLength > 0)
 	*errorStringRet = '\0';
@@ -69,11 +68,6 @@ char 	*errorStringRet;
     {
 	strncpy (errorStringRet,
 	    "IceRegisterForProtocolSetup was not called", errorLength);
-	return (IceProtocolSetupFailure);
-    }
-    else if (authCount > myProtocol->orig_client->auth_count)
-    {
-	strncpy (errorStringRet, "authCount is bad", errorLength);
 	return (IceProtocolSetupFailure);
     }
 
@@ -99,14 +93,27 @@ char 	*errorStringRet;
 	}
     }
 
-    if (!(doFavor = (authCount > 0 && authIndices == NULL)))
-	for (i = 0; i < authCount; i++)
-	    if (authIndices[i] >= myProtocol->orig_client->auth_count)
-	    {
-		strncpy (errorStringRet,
-	            "Bad authentication indices", errorLength);
-		return (IceProtocolSetupFailure);
-	    }
+    /*
+     * Generate the message.
+     */
+
+    if (myProtocol->orig_client->auth_count > 0)
+    {
+	authIndices = (int *) malloc (
+	    myProtocol->orig_client->auth_count * sizeof (int));
+
+	_IceGetPoValidAuthIndices (myProtocol->protocol_name,
+	    iceConn->connection_string,
+	    myProtocol->orig_client->auth_count,
+	    myProtocol->orig_client->auth_names,
+            &authCount, authIndices);
+
+    }
+    else
+    {
+	authCount = 0;
+	authIndices = NULL;
+    }
 
     extra = XPCS_BYTES (myProtocol->protocol_name) +
             XPCS_BYTES (myProtocol->orig_client->vendor) +
@@ -115,7 +122,7 @@ char 	*errorStringRet;
     for (i = 0; i < authCount; i++)
     {
 	extra += XPCS_BYTES (myProtocol->orig_client->auth_names[
-	    doFavor ? i : authIndices[i]]);
+	    authIndices[i]]);
     }
 
     extra += (myProtocol->orig_client->version_count * 4);
@@ -138,7 +145,7 @@ char 	*errorStringRet;
     for (i = 0; i < authCount; i++)
     {
 	STORE_XPCS (pData, myProtocol->orig_client->auth_names[
-	    doFavor ? i : authIndices[i]]);
+	    authIndices[i]]);
     }
 
     for (i = 0; i < myProtocol->orig_client->version_count; i++)
@@ -166,25 +173,7 @@ char 	*errorStringRet;
     iceConn->protosetup_to_you->my_opcode = myOpcode;
     iceConn->protosetup_to_you->my_auth_count = authCount;
     iceConn->protosetup_to_you->auth_active = 0;
-
-    if (authCount > 0)
-    {
-	iceConn->protosetup_to_you->my_auth_indices = (int *) malloc (
-	    authCount * sizeof (int));
-
-	if (doFavor)
-	{
-	    for (i = 0; i < authCount; i++)
-		iceConn->protosetup_to_you->my_auth_indices[i] = i;
-	}
-	else
-	{
-	    memcpy (iceConn->protosetup_to_you->my_auth_indices, authIndices,
-	        authCount * sizeof (int));
-	}
-    }
-    else
-	iceConn->protosetup_to_you->my_auth_indices = NULL;
+    iceConn->protosetup_to_you->my_auth_indices = authIndices;
 
     gotReply = False;
     accepted = 0;
