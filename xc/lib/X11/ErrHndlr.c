@@ -1,4 +1,4 @@
-/* $XConsortium: XErrHndlr.c,v 11.17 93/07/09 15:24:40 gildea Exp $ */
+/* $XConsortium: ErrHndlr.c,v 11.18 93/08/14 17:43:41 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -32,7 +32,7 @@ XErrorHandler XSetErrorHandler(handler)
 {
     int (*oldhandler)();
 
-    LockMutex();
+    LockMutex(_Xglobal_lock);
     oldhandler = _XErrorFunction;
 
     if (!oldhandler)
@@ -44,7 +44,7 @@ XErrorHandler XSetErrorHandler(handler)
     else {
 	_XErrorFunction = _XDefaultError;
     }
-    UnlockMutex();
+    UnlockMutex(_Xglobal_lock);
 
     return (XErrorHandler) oldhandler;
 }
@@ -65,7 +65,7 @@ XIOErrorHandler XSetIOErrorHandler(handler)
 {
     int (*oldhandler)();
 
-    LockMutex();
+    LockMutex(_Xglobal_lock);
     oldhandler = _XIOErrorFunction;
 
     if (!oldhandler)
@@ -77,7 +77,7 @@ XIOErrorHandler XSetIOErrorHandler(handler)
     else {
 	_XIOErrorFunction = _XDefaultIOError;
     }
-    UnlockMutex();
+    UnlockMutex(_Xglobal_lock);
 
     return (XIOErrorHandler) oldhandler;
 }

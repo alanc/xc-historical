@@ -1,4 +1,4 @@
-/* $XConsortium: aixlcLoad.c,v 1.1 93/09/17 13:25:19 rws Exp $ */
+/* $XConsortium: aixlcLoad.c,v 1.2 93/09/18 15:28:25 rws Exp $ */
 /*
  *
  * Copyright IBM Corporation 1993
@@ -269,11 +269,11 @@ create_ldxdb()
 	char	*pathlist, *path;
 	char	buffer[_POSIX_PATH_MAX];
 
-	LockMutex();
+	LockMutex(_Xglobal_lock);
 
 	if(_ldxdb != (ldxDB)NULL){
 		/* ldx database is already created */
-		UnlockMutex();
+		UnlockMutex(_Xglobal_lock);
 		return;
 	}
 
@@ -293,7 +293,7 @@ create_ldxdb()
 		read_ldxdb(path);
 	}
 
-	UnlockMutex();
+	UnlockMutex(_Xglobal_lock);
 }
 
 static int

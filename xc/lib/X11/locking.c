@@ -1,5 +1,5 @@
 /*
- * $XConsortium: locking.c,v 1.14 93/09/15 13:22:43 rws Exp $
+ * $XConsortium: locking.c,v 1.15 93/09/15 15:11:18 gildea Exp $
  *
  * Copyright 1992 Massachusetts Institute of Technology
  *
@@ -67,16 +67,34 @@ static xthread_t _Xthread_self()
     return xthread_self();
 }
 
-static xmutex_t _Xglobal_lock;
+static LockInfoRec global_lock;
 
-static void _XLockMutex()
+LockInfoPtr _Xglobal_lock = &global_lock;
+
+#if defined(XTHREADS_WARN) || defined(XTHREADS_FILE_LINE)
+static void _XLockMutex(lip,file,line)
+    LockInfoPtr lip;
+    char* file;
+    int line;
+#else
+static void _XLockMutex(lip)
+    LockInfoPtr lip;
+#endif
 {
-    xmutex_lock(_Xglobal_lock);
+    xmutex_lock(lip->lock);
 }
 
-static void _XUnlockMutex()
+#if defined(XTHREADS_WARN) || defined(XTHREADS_FILE_LINE)
+static void _XUnlockMutex(lip,file,line)
+    LockInfoPtr lip;
+    char* file;
+    int line;
+#else
+static void _XUnlockMutex(lip)
+    LockInfoPtr lip;
+#endif
 {
-    xmutex_unlock(_Xglobal_lock);
+    xmutex_unlock(lip->lock);
 }
 
 #ifdef XTHREADS_WARN
@@ -466,15 +484,15 @@ void _XUserUnlockDisplay(dpy)
 
 Status XInitThreads()
 {
-    if (_Xglobal_lock)
+    if (_Xglobal_lock->lock)
 	return 1;
 #ifdef xthread_init
     xthread_init();		/* return value? */
 #endif
-    _Xglobal_lock = xmutex_malloc();
-    if (!_Xglobal_lock)
+    _Xglobal_lock->lock = xmutex_malloc();
+    if (!_Xglobal_lock->lock)
 	return 0;
-    xmutex_init(_Xglobal_lock);
+    xmutex_init(_Xglobal_lock->lock);
     _XLockMutex_fn = _XLockMutex;
     _XUnlockMutex_fn = _XUnlockMutex;
     _XInitDisplayLock_fn = _XInitDisplayLock;

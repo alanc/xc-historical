@@ -1,5 +1,5 @@
 /*
- * $XConsortium: locking.h,v 1.8 93/08/26 08:57:41 rws Exp $
+ * $XConsortium: locking.h,v 1.9 93/09/14 17:06:52 gildea Exp $
  *
  * Copyright 1992 Massachusetts Institute of Technology
  *
@@ -73,5 +73,9 @@ struct _XLockInfo {
 #define ConditionSignal(d,c) if ((d)->lock_fns) \
 	(*(d)->lock_fns->condition_signal)((c)->cv)
 #endif
+
+typedef struct _LockInfoRec {
+	xmutex_t	lock;
+} LockInfoRec;
 
 #endif /* _X_locking_H_ */

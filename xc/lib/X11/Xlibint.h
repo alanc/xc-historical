@@ -1,4 +1,4 @@
-/* $XConsortium: Xlibint.h,v 11.123 93/10/23 14:12:47 rws Exp $ */
+/* $XConsortium: Xlibint.h,v 11.124 93/10/24 15:49:47 rws Exp $ */
 /* Copyright 1984, 1985, 1987, 1989  Massachusetts Institute of Technology */
 
 /*
@@ -212,35 +212,39 @@ struct _XLockPtrs {
     void (*user_unlock_display)();
 };
 
+typedef struct _LockInfoRec *LockInfoPtr;
+
 /* in XlibInt.c */
 extern void (*_XLockMutex_fn)(
 #if NeedFunctionPrototypes
-    void
+    LockInfoPtr	/* lock */
 #endif
 );
 extern void (*_XUnlockMutex_fn)(
 #if NeedFunctionPrototypes
-    void
+    LockInfoPtr	/* lock */
 #endif
 );
 
-/* used in very few places */
-#define LockMutex()		if (_XLockMutex_fn) (*_XLockMutex_fn)()
-#define UnlockMutex()		if (_XUnlockMutex_fn) (*_XUnlockMutex_fn)()
+extern LockInfoPtr _Xglobal_lock;
 
 #if defined(XTHREADS_WARN) || defined(XTHREADS_FILE_LINE)
 #define LockDisplay(d)	     if ((d)->lock_fns) (*(d)->lock_fns->lock_display)((d),__FILE__,__LINE__)
 #define UnlockDisplay(d)     if ((d)->lock_fns) (*(d)->lock_fns->unlock_display)((d),__FILE__,__LINE__)
+#define LockMutex(lock)		if (_XLockMutex_fn) (*_XLockMutex_fn)(lock,__FILE__,__LINE__)
+#define UnlockMutex(lock)	if (_XUnlockMutex_fn) (*_XUnlockMutex_fn)(lock,__FILE__,__LINE__)
 #else
 /* used everywhere, so must be fast if not using threads */
 #define LockDisplay(d)	     if ((d)->lock_fns) (*(d)->lock_fns->lock_display)(d)
 #define UnlockDisplay(d)     if ((d)->lock_fns) (*(d)->lock_fns->unlock_display)(d)
+#define LockMutex(lock)		if (_XLockMutex_fn) (*_XLockMutex_fn)(lock)
+#define UnlockMutex(lock)	if (_XUnlockMutex_fn) (*_XUnlockMutex_fn)(lock)
 #endif
 
 #else /* XTHREADS */
 #define LockDisplay(dis)
-#define LockMutex()
-#define UnlockMutex()
+#define LockMutex(lock)
+#define UnlockMutex(lock)
 #define UnlockDisplay(dis)
 #endif
 

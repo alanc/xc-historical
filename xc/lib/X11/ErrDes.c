@@ -138,13 +138,13 @@ XGetErrorDatabaseText(dpy, name, type, defaultp, buffer, nbytes)
 	XrmInitialize();
 	temp_db = XrmGetFileDatabase(ERRORDB);
 
-	LockMutex();
+	LockMutex(_Xglobal_lock);
 	if (!db) {
 	    db = temp_db;
 	    do_destroy = 0;
 	} else
 	    do_destroy = 1;	/* we didn't need to get it after all */
-	UnlockMutex();
+	UnlockMutex(_Xglobal_lock);
 
 	if (do_destroy)
 	    XrmDestroyDatabase(temp_db);
