@@ -1,4 +1,4 @@
-/* $XConsortium: dispatch.c,v 5.2 89/07/03 13:23:58 rws Exp $ */
+/* $XConsortium: dispatch.c,v 5.3 89/07/03 16:38:01 rws Exp $ */
 /************************************************************
 Copyright 1987, 1989 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -68,7 +68,6 @@ extern int  defaultScreenSaverAllowExposures;
 static ClientPtr onlyClient;
 static Bool grabbingClient = FALSE;
 static long *checkForInput[2];
-extern Bool clientsDoomed;
 extern int connBlockScreenStart;
 
 extern int (* InitialVector[3]) ();
@@ -87,6 +86,8 @@ static int nextFreeClientID; /* always MIN free client ID */
 
 static int	nClients;	/* number active clients */
 
+char dispatchException = 0;
+char isItTimeToYield;
 
 /* Various of the DIX function interfaces were not designed to allow
  * the client->errorValue to be set on BadValue and other errors.
@@ -239,12 +240,13 @@ FlushClientCaches(id)
     }
 }
 
+#define MAJOROP ((xReq *)client->requestBuffer)->reqType
+#define MINOROP 0 /* XXX */
+
 Dispatch()
 {
     register int        *clientReady;     /* array of request ready clients */
-    int			result;
-    register xReq	*request;
-    int			ErrorStatus;
+    register int	result;
     register ClientPtr	client;
     register int	nready;
     register long	**icheck = checkForInput;
@@ -256,11 +258,11 @@ Dispatch()
     clientReady = (int *) ALLOCATE_LOCAL(sizeof(int) * MaxClients);
     if (!clientReady)
 	return;
-    request = (xReq *)NULL;
 
-    while (!clientsDoomed)
+    while (!dispatchException)
     {
-        if (*icheck[0] != *icheck[1]) {
+        if (*icheck[0] != *icheck[1])
+	{
 	    ProcessInputEvents();
 	    FlushIfCriticalOutputPending();
 	}
@@ -272,7 +274,7 @@ Dispatch()
 	*  each round 
 	*****************/
 
-	while (--nready >= 0)
+	while (!dispatchException && (--nready >= 0))
 	{
 	    client = clients[clientReady[nready]];
 	    if (! client)
@@ -286,45 +288,42 @@ Dispatch()
 	    isItTimeToYield = FALSE;
  
             requestingClient = client;
-	    while (! isItTimeToYield)
+	    while (!isItTimeToYield)
 	    {
-	        if (*icheck[0] != *icheck[1]) {
+	        if (*icheck[0] != *icheck[1])
+		{
 		    ProcessInputEvents();
 		    FlushIfCriticalOutputPending();
 		}
 	   
 		/* now, finally, deal with client requests */
 
-	        request = (xReq *)ReadRequestFromClient(
-				      client, &result, (char *)request);
+	        result = ReadRequestFromClient(client);
 	        if (result <= 0) 
 	        {
-		    if (result == 0)
-			continue;
-		    CloseDownClient(client);
+		    if (result < 0)
+			CloseDownClient(client);
 		    break;
 	        }
 
 		client->sequence++;
-		client->requestBuffer = (pointer)request;
 #ifdef DEBUG
 		if (client->requestLogIndex == MAX_REQUEST_LOG)
 		    client->requestLogIndex = 0;
-		client->requestLog[client->requestLogIndex] = request->reqType;
+		client->requestLog[client->requestLogIndex] = MAJOROP;
 		client->requestLogIndex++;
 #endif
 		if (result > (MAX_REQUEST_SIZE << 2))
-		    ErrorStatus = BadLength;
+		    result = BadLength;
 		else
-		    ErrorStatus = (* client->requestVector[request->reqType])
-						(client);
+		    result = (* client->requestVector[MAJOROP])(client);
 	    
-		if (ErrorStatus != Success) 
+		if (result != Success) 
 		{
 		    if (client->noClientException != Success)
                         CloseDownClient(client);
                     else
-		        Oops(client, request->reqType, 0, ErrorStatus);
+		        Oops(client, MAJOROP, MINOROP, result);
 		    break;
 	        }
 	    }
@@ -333,8 +332,11 @@ Dispatch()
     }
     KillAllClients();
     DEALLOCATE_LOCAL(clientReady);
-    clientsDoomed = FALSE;
+    dispatchException &= ~DE_RESET;
 }
+
+#undef MAJOROP
+#undef MINOROP
 
 /*ARGSUSED*/
 int
@@ -3244,7 +3246,7 @@ CloseDownClient(client)
 	    clients[client->index] = NullClient;
 	    if ((client->requestVector != InitialVector) &&
 		(--nClients == 0))
-		clientsDoomed = TRUE;
+		dispatchException |= DE_RESET;
 	    xfree(client);
 	}
 	else
