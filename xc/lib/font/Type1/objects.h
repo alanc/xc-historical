@@ -79,7 +79,7 @@ struct xobject *t1_Copy();    /* make a new copy, not reference bump PNM      */
 /*END SHARED*/
 /*SHARED*/
  
-#define   ON          (-1)   /* all bits on                                  */
+#define   ON          (~0)   /* all bits on                                  */
 #ifndef FALSE
 #define   FALSE       0      /* handy zero value                             */
 #endif
@@ -107,7 +107,7 @@ out of memory.
  
 struct xobject {
        char type;           /* encoded type of object                         */
-       char flag;           /* flag byte for temporary object characteristics */
+       unsigned char flag;  /* flag byte for temporary object characteristics */
        short references;    /* count of pointers to this object
                                (plus 1 for permanent objects) PNM             */
 } ;
@@ -115,7 +115,7 @@ struct xobject {
 /*END SHARED*/
 /*SHARED*/
  
-#define XOBJ_COMMON      char type; char flag; short references;
+#define XOBJ_COMMON      char type; unsigned char flag; short references;
  
 /*END SHARED*/
 /*SHARED*/
