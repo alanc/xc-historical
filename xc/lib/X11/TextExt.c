@@ -13,36 +13,32 @@
  * min_bounds).  If none of these hold true, try again with the default char. 
  */
 
-static XCharStruct *InitGetCS (fs)
-    XFontStruct *fs;
-{
-    register XCharStruct *cs;
-    unsigned int col = fs->default_char;
-
-    if (col >= fs->min_byte2 && col <= fs->max_byte2) {
-	if (fs->per_char == NULL) return &fs->min_bounds;
-	cs = &fs->per_char[(col - fs->min_byte2)];
-	if (! CI_NONEXISTCHAR(cs)) return cs;
-    }
-
-    return NULL;
+#define InitGetCS(fs,cs) \
+{ \
+    unsigned int col = fs->default_char; \
+    cs = NULL; \
+    if (col >= fs->min_byte2 && col <= fs->max_byte2) { \
+	if (fs->per_char == NULL) { \
+	    cs = &fs->min_bounds; \
+	} else { \
+	    cs = &fs->per_char[(col - fs->min_byte2)]; \
+	    if (CI_NONEXISTCHAR(cs)) cs = NULL; \
+	} \
+    } \
 }
 
 
-static XCharStruct *GetCS (fs, col, def)
-    register XFontStruct *fs;
-    unsigned int col;
-    XCharStruct *def;
-{
-    register XCharStruct *cs;
-
-    if (col >= fs->min_byte2 && col <= fs->max_byte2) {
-	if (fs->per_char == NULL) return &fs->min_bounds;
-	cs = &fs->per_char[(col - fs->min_byte2)];
-	if (! CI_NONEXISTCHAR(cs)) return cs;
-    }
-
-    return def;
+#define GetCS(fs,col,def,cs) \
+{ \
+    cs = def; \
+    if (col >= fs->min_byte2 && col <= fs->max_byte2) { \
+	if (fs->per_char == NULL) { \
+	    cs = &fs->min_bounds; \
+	} else { \
+	    cs = &fs->per_char[(col - fs->min_byte2)]; \
+	    if (CI_NONEXISTCHAR(cs)) cs = def; \
+	} \
+    } \
 }
 
 
@@ -54,40 +50,36 @@ static XCharStruct *GetCS (fs, col, def)
  * optimization would do the check for min_byte1 being zero athead of time.
  */
 
-static XCharStruct *InitGetCS2d (fs)
-    XFontStruct *fs;
-{
-    register XCharStruct *cs;
-    unsigned int row = (fs->default_char >> 8);
-    unsigned int col = (fs->default_char & 0xff);
-    int numCols = fs->max_byte2 - fs->min_byte2 + 1;
-
-    if (row >= fs->min_byte1 && row <= fs->max_byte1 &&
-	col >= fs->min_byte2 && col <= fs->max_byte2) {
-	if (fs->per_char == NULL) return &fs->min_bounds;
-	cs = &fs->per_char[(row - fs->min_byte1) * numCols + 
-			   (col - fs->min_byte2)];
-	if (! CI_NONEXISTCHAR(cs)) return cs;
-    }
-
-    return NULL;
+#define InitGetCS2d(fs,cs) \
+{ \
+    unsigned int row = (fs->default_char >> 8); \
+    unsigned int col = (fs->default_char & 0xff); \
+    int numCols = fs->max_byte2 - fs->min_byte2 + 1; \
+    cs = NULL; \
+    if (row >= fs->min_byte1 && row <= fs->max_byte1 && \
+	col >= fs->min_byte2 && col <= fs->max_byte2) { \
+	if (fs->per_char == NULL) { \
+	    cs = &fs->min_bounds; \
+	} else { \
+	    cs = &fs->per_char[(row - fs->min_byte1) * numCols +  \
+			       (col - fs->min_byte2)]; \
+	    if (CI_NONEXISTCHAR(cs)) cs = NULL; \
+        } \
+    } \
 }
 
-static XCharStruct *GetCS2d (fs, col, def)
-    register XFontStruct *fs;
-    unsigned int col;
-    XCharStruct *def;
-{
-    register XCharStruct *cs;
-
-    if (fs->min_byte1 == 0 &&
-	col >= fs->min_byte2 && col <= fs->max_byte2) {
-	if (fs->per_char == NULL) return &fs->min_bounds;
-	cs = &fs->per_char[(col - fs->min_byte2)];
-	if (! CI_NONEXISTCHAR(cs)) return cs;
-    }
-
-    return def;
+#define GetCS2d(fs,col,def,cs) \
+{ \
+    cs = def; \
+    if (fs->min_byte1 == 0 && \
+	col >= fs->min_byte2 && col <= fs->max_byte2) { \
+	if (fs->per_char == NULL) { \
+	    cs = &fs->min_bounds; \
+	} else { \
+	    cs = &fs->per_char[(col - fs->min_byte2)]; \
+	    if (CI_NONEXISTCHAR(cs)) cs = def; \
+	} \
+    } \
 }
 
 
@@ -105,17 +97,15 @@ XTextExtents (fs, string, nchars, dir, font_ascent, font_descent, overall)
     register XCharStruct *overall;	/* RETURN character information */
 {
     int i;				/* iterator */
+    Bool singlerow = (fs->max_byte1 == 0);  /* optimization */
     int nfound = 0;			/* number of characters found */
-    XCharStruct *(*getglyph)();
-    XCharStruct *def;
-    unsigned char *us = (unsigned char *) string;
+    XCharStruct *def;			/* info about default char */
+    unsigned char *us = (unsigned char *) string;  /* be 8bit clean */
 
-    if (fs->max_byte1 == 0) {
-	getglyph = GetCS;
-	def = InitGetCS (fs);
+    if (singlerow) {
+	InitGetCS (fs, def);
     } else {
-	getglyph = GetCS2d;
-	def = InitGetCS2d (fs);
+	InitGetCS2d (fs, def);
     }
 
     *dir = fs->direction;
@@ -130,7 +120,14 @@ XTextExtents (fs, string, nchars, dir, font_ascent, font_descent, overall)
      * the new values.
      */
     for (i = 0, us = (unsigned char *) string; i < nchars; i++, us++) {
-	register XCharStruct *cs = (*getglyph) (fs, (unsigned) *us, def);
+	register unsigned uc = (unsigned) *us;	/* since about to do macro */
+	register XCharStruct *cs;
+
+	if (singlerow) {
+	    GetCS (fs, uc, def, cs);
+	} else {
+	    GetCS2d (fs, uc, def, cs);
+	}
 
 	if (cs) {
 	    if (nfound++ == 0) {
@@ -169,17 +166,15 @@ int XTextWidth (fs, string, count)
     int count;
 {
     int i;				/* iterator */
-    XCharStruct *(*getglyph)();
-    XCharStruct *def;
-    unsigned char *us = (unsigned char *) string;
-    int width = 0;
+    Bool singlerow = (fs->max_byte1 == 0);  /* optimization */
+    XCharStruct *def;			/* info about default char */
+    unsigned char *us = (unsigned char *) string;  /* be 8bit clean */
+    int width = 0;			/* RETURN value */
 
-    if (fs->max_byte1 == 0) {
-	getglyph = GetCS;
-	def = InitGetCS (fs);
+    if (singlerow) {
+	InitGetCS (fs, def);
     } else {
-	getglyph = GetCS2d;
-	def = InitGetCS2d (fs);
+	InitGetCS2d (fs, def);
     }
 
     /*
@@ -187,12 +182,17 @@ int XTextWidth (fs, string, count)
      * that exist.
      */
     for (i = 0, us = (unsigned char *) string; i < count; i++, us++) {
-	register XCharStruct *cs = (*getglyph) (fs, (unsigned) *us, def);
+	register unsigned uc = (unsigned) *us;	/* since about to do macro */
+	register XCharStruct *cs;
+
+	if (singlerow) {
+	    GetCS (fs, uc, def, cs);
+	} else {
+	    GetCS2d (fs, uc, def, cs);
+	}
 
 	if (cs) width += cs->width;
     }
 
     return width;
 }
-
-	    
