@@ -1,4 +1,4 @@
-/* $XConsortium: Xtranssock.c,v 1.25 94/04/17 20:23:05 mor Exp $ */
+/* $XConsortium: Xtranssock.c,v 1.26 94/05/02 11:01:17 mor Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -1309,6 +1309,14 @@ else
 
 	PRMSG (1,"TRANS(SocketINETConnect) () can't connect: errno = %d\n",
 	  EGET(),0, 0);
+
+	/*
+	 * If the error was ECONNREFUSED, the server may be overloaded
+	 * and we should try again.
+	 *
+	 * If the error was EINTR, the connect was interrupted and we
+	 * should try again.
+	 */
 
 	if (olderrno == ECONNREFUSED || olderrno == EINTR)
 	    return TRANS_TRY_CONNECT_AGAIN;
