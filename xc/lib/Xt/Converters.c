@@ -1,4 +1,4 @@
-/* $XConsortium: Converters.c,v 1.92 94/01/30 17:26:15 kaleb Exp $ */
+/* $XConsortium: Converters.c,v 1.93 94/02/04 18:06:11 converse Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -66,6 +66,7 @@ static Const String XtNmissingCharsetList = "missingCharsetList";
 #define XtQPixmap	XrmPermStringToQuark(XtRPixmap)
 #define XtQRestartStyle XrmPermStringToQuark(XtRRestartStyle)
 #define XtQShort	XrmPermStringToQuark(XtRShort)
+#define XtQStringArray	XrmPermStringToQuark(XtRStringArray)
 #define XtQUnsignedChar	XrmPermStringToQuark(XtRUnsignedChar)
 #define XtQVisual	XrmPermStringToQuark(XtRVisual)
 
@@ -1498,6 +1499,64 @@ Boolean XtCvtStringToRestartStyle(dpy, args, num_args, fromVal, toVal,
 }
 
 /*ARGSUSED*/
+Boolean XtCvtStringToStringArray(dpy, args, num_args, fromVal, toVal,
+				 closure_ret)
+    Display* dpy;
+    XrmValuePtr args;
+    Cardinal    *num_args;
+    XrmValuePtr fromVal;
+    XrmValuePtr toVal;
+    XtPointer	*closure_ret;
+{
+    int n;
+    char *s;
+    String *strarray, *ptr, *optr;
+    char *tmp[50]; /* XXX */
+
+    s = XtNewString((char *) fromVal->addr);
+    n = 0;
+    while (*s) {
+	tmp[n++] = s;
+	while (*s && (*s != ' ')) {
+	    if ((*s == '\\') && (*(s+1) == ' '))
+		s++;
+            s++;
+	}
+	if (!*s)
+	    break;
+	if (*s == ' ') {
+	    *s = '\0';
+	    s++;
+	}
+	while (*s && (*s == ' '))
+	    s++;
+    }
+    tmp[n++] = NULL;
+    ptr = strarray = (String *) XtMalloc((Cardinal) n * sizeof(String));
+    optr = tmp;
+    for (; --n >= 0; ptr++, optr++)
+	*ptr = *optr;
+    *closure_ret = (XtPointer) strarray;
+    done(char**, strarray)
+}
+
+/*ARGSUSED*/
+static void StringArrayDestructor(app, toVal, closure, args, num_args)
+    XtAppContext app;
+    XrmValuePtr	toVal;
+    XtPointer	closure;
+    XrmValuePtr	args;
+    Cardinal	*num_args;
+{
+    String *strarray;
+
+    if (closure) {
+	strarray = (String*) closure;
+	XtFree(*strarray);
+	XtFree(strarray);
+    }
+}
+/*ARGSUSED*/
 Boolean XtCvtStringToGravity (dpy, args, num_args, fromVal, toVal, closure_ret)
     Display* dpy;
     XrmValuePtr args;
@@ -1631,6 +1690,8 @@ void _XtAddDefaultConverters(table)
     Add(_XtQString, XtQRestartStyle, XtCvtStringToRestartStyle, NULL, 0,
 	XtCacheNone);
     Add(_XtQString, XtQShort,        XtCvtStringToShort,  NULL, 0, XtCacheAll);
+   Add2(_XtQString, XtQStringArray,  XtCvtStringToStringArray,
+	NULL, 0, XtCacheNone, StringArrayDestructor);
     Add(_XtQString, XtQUnsignedChar, XtCvtStringToUnsignedChar,
 	NULL, 0, XtCacheAll);
    Add2(_XtQString, XtQVisual,       XtCvtStringToVisual,
