@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Viewport.h,v 1.5 88/09/06 09:47:05 swick Exp $
+ * $XConsortium: Viewport.h,v 1.6 88/09/06 16:42:49 jim Exp $
  * Public definitions for Viewport widget
  */
 
@@ -31,6 +31,28 @@ SOFTWARE.
 #define _Viewport_h
 
 #include <X11/Form.h>
+
+/* Resources:
+
+ Name		     Class		RepType		Default Value
+ ----		     -----		-------		-------------
+ allowHoriz	     Boolean		Boolean		False
+ allowVert	     Boolean		Boolean		False
+ background	     Background		Pixel		XtDefaultBackground
+ border		     BorderColor	Pixel		XtDefaultForeground
+ borderWidth	     BorderWidth	Dimension	1
+ destroyCallback     Callback		Pointer		NULL
+ foreceBars	     Boolean		Boolean		False
+ height		     Height		Dimension	0
+ mappedWhenManaged   MappedWhenManaged	Boolean		True
+ sensitive	     Sensitive		Boolean		True
+ useBottom	     Boolean		Boolean		False
+ useRight	     Boolean		Boolean		False
+ width		     Width		Dimension	0
+ x		     Position		Position	0
+ y		     Position		Position	0
+
+*/
 
 /* fields added to Form */
 #define	XtNforceBars		"forceBars"
