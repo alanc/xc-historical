@@ -1,4 +1,4 @@
-/* $XConsortium: NextEvent.c,v 1.90 90/09/27 12:22:22 swick Exp $ */
+/* $XConsortium: NextEvent.c,v 1.91 90/09/28 11:51:06 swick Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -88,6 +88,9 @@ static WorkProcRec* freeWorkRecs;
 
 #define IS_AFTER(t1, t2) (((t2).tv_sec > (t1).tv_sec) \
 	|| (((t2).tv_sec == (t1).tv_sec)&& ((t2).tv_usec > (t1).tv_usec)))
+
+#define IS_AT_OR_AFTER(t1, t2) (((t2).tv_sec > (t1).tv_sec) \
+	|| (((t2).tv_sec == (t1).tv_sec)&& ((t2).tv_usec >= (t1).tv_usec)))
 
 static void QueueTimerEvent(app, ptr)
     XtAppContext app;
@@ -613,7 +616,7 @@ static void DoOtherSources(app)
 	if (app->timerQueue != NULL) {	/* check timeout queue */
 	    (void) gettimeofday (&cur_time, NULL);
 	    FIXUP_TIMEVAL(cur_time);
-	    while(IS_AFTER (app->timerQueue->te_timer_value, cur_time)) {
+	    while(IS_AT_OR_AFTER (app->timerQueue->te_timer_value, cur_time)) {
 		te_ptr = app->timerQueue;
 		app->timerQueue = te_ptr->te_next;
 		te_ptr->te_next = NULL;
@@ -738,7 +741,7 @@ void XtAppProcessEvent(app, mask)
 	    if (mask & XtIMTimer && app->timerQueue != NULL) {
 		(void) gettimeofday (&cur_time, NULL);
 		FIXUP_TIMEVAL(cur_time);
-		if (IS_AFTER(app->timerQueue->te_timer_value, cur_time)) {
+		if (IS_AT_OR_AFTER(app->timerQueue->te_timer_value, cur_time)){
 		    TimerEventRec *te_ptr = app->timerQueue;
 		    app->timerQueue = app->timerQueue->te_next;
 		    te_ptr->te_next = NULL;
@@ -839,7 +842,7 @@ XtInputMask XtAppPending(app)
 	if (app->timerQueue != NULL) {	/* check timeout queue */ 
 	    (void) gettimeofday (&cur_time, NULL);
 	    FIXUP_TIMEVAL(cur_time);
-	    if ((IS_AFTER(app->timerQueue->te_timer_value, cur_time))  &&
+	    if ((IS_AT_OR_AFTER(app->timerQueue->te_timer_value, cur_time))  &&
                 (app->timerQueue->te_proc != 0)) {
 		ret |= XtIMTimer;
 	    }
@@ -875,7 +878,8 @@ Boolean PeekOtherSources(app)
 	if (app->timerQueue != NULL) {	/* check timeout queue */
 	    (void) gettimeofday (&cur_time, NULL);
 	    FIXUP_TIMEVAL(cur_time);
-	    if (IS_AFTER (app->timerQueue->te_timer_value, cur_time)) return TRUE;
+	    if (IS_AT_OR_AFTER (app->timerQueue->te_timer_value, cur_time))
+		return TRUE;
 	}
 
 	return FALSE;
