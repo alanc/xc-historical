@@ -1,4 +1,4 @@
-/* $XConsortium: mppaste.c,v 1.1 93/10/26 09:47:08 rws Exp $ */
+/* $XConsortium: mppaste.c,v 1.2 93/10/31 09:48:22 dpw Exp $ */
 /**** module mppaste.c ****/
 /******************************************************************************
 				NOTICE
@@ -335,7 +335,7 @@ static int ActivatePasteUp(flo,ped,pet)
   CARD32 bands         = rcp[SRCt1].inFlo->bands;
   bandPtr dbnd         = &pet->emitter[0];
   mpPasteUpPvtPtr mpvt = (mpPasteUpPvtPtr) pet->private;
-  void *src, *dst;
+  pointer src, dst;
   PasteRectPtr tp;
   CARD32 t, b;
   
@@ -343,7 +343,7 @@ static int ActivatePasteUp(flo,ped,pet)
 	INT32 dst_width = dbnd->format->width;
 
 	/* Get pointer for dst scanline, Fill with constant */
-	if (!(dst = GetCurrentDst(void,flo,pet,dbnd)))
+	if (!(dst = GetCurrentDst(pointer,flo,pet,dbnd)))
 	    break;
 
 	(*(mpvt->fill)) (dst,*fconst,mpvt->iconstant,dst_width);
@@ -351,7 +351,7 @@ static int ActivatePasteUp(flo,ped,pet)
 	/* Skip any constant lines */
 	if (dbnd->current < mpvt->nextline) {
 	    while (dbnd->current < mpvt->nextline)  {
-		if (dst = GetNextDst(void,flo,pet,dbnd,KEEP)) {
+		if (dst = GetNextDst(pointer,flo,pet,dbnd,KEEP)) {
 		    (*(mpvt->fill)) (dst,*fconst,mpvt->iconstant,dst_width);
 		} else {
 		    PutData(flo,pet,dbnd,dbnd->current);
@@ -373,10 +373,10 @@ static int ActivatePasteUp(flo,ped,pet)
 	    if ((INT32)dbnd->current >= tdy && (INT32)dbnd->current < tdend) {
 
 	        if (sbnd->threshold > 1) {
-		    src = GetSrc(void,flo,pet,sbnd,sbnd->threshold - 1,KEEP);
+		    src = GetSrc(pointer,flo,pet,sbnd,sbnd->threshold - 1,KEEP);
 		    SetBandThreshold(sbnd,1);
 		} else 
-		    src = GetCurrentSrc(void,flo,pet,sbnd);
+		    src = GetCurrentSrc(pointer,flo,pet,sbnd);
 		if (!src) 	/* all tiles for this line should be ready */
 		    ImplementationError(flo, ped, return(FALSE));
 
@@ -398,7 +398,7 @@ static int ActivatePasteUp(flo,ped,pet)
 		
 	if (mpvt->nextline < dbnd->format->height) {
 	    /* ... still more tiles to copy */
-	    (void) GetNextDst(void,flo,pet,dbnd,FLUSH);
+	    (void) GetNextDst(pointer,flo,pet,dbnd,FLUSH);
 	    if (mpvt->nextline != dbnd->current) {
 	        /* ... find the Next bunch of tiles */
   		tp = mpvt->rects;
@@ -409,7 +409,7 @@ static int ActivatePasteUp(flo,ped,pet)
 	    }
 	} else {
 	    /* ... fill in remaining destination with constant */
-	    while((dst = GetNextDst(void,flo,pet,dbnd,KEEP)))
+	    while((dst = GetNextDst(pointer,flo,pet,dbnd,KEEP)))
 	        (*(mpvt->fill)) (dst,*fconst,mpvt->iconstant,dst_width);
 	    PutData(flo,pet,dbnd,dbnd->current);
 	} 
@@ -476,7 +476,7 @@ static void FillReal(dst,ffill,ifill,width)
 
 #define PasteFill(fname,stype)					\
 static void fname(din,ffill,ifill,width)	 		\
-void *din;							\
+pointer din;							\
 PasteUpFloat ffill;						\
 CARD32 ifill,width;						\
 {								\
@@ -504,7 +504,7 @@ static void FillBit(dst,ffill,ifill,width)
 #define PasteAction(fname,stype)				\
 static void fname(sin,s_off,din,d_off,width) 			\
 CARD32 width, s_off, d_off;					\
-void *sin, *din;						\
+pointer sin, din;						\
 {								\
 stype *src = (stype *)sin, *dst = (stype *)din;			\
 	src += s_off;						\
@@ -519,7 +519,7 @@ PasteAction(PasteByte,BytePixel)
 
 static void PasteBit(sin,s_off,din,d_off,width)
 	CARD32 width, s_off, d_off;
-	void *sin, *din;
+	pointer sin, din;
 {
 	LogInt * src = (LogInt *) sin;
 	LogInt * dst = (LogInt *) din;
