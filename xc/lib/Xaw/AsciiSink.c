@@ -1,4 +1,4 @@
-/* $XConsortium: AsciiSink.c,v 1.54 90/12/31 13:22:51 gildea Exp $ */
+/* $XConsortium: AsciiSink.c,v 1.55 91/02/17 14:43:53 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -52,9 +52,9 @@ static void FindDistance(), Resolve(), GetCursorBounds();
 
 static XtResource resources[] = {
     {XtNecho, XtCOutput, XtRBoolean, sizeof(Boolean),
-	offset(echo), XtRImmediate, (caddr_t) True},
+	offset(echo), XtRImmediate, (XtPointer) True},
     {XtNdisplayNonprinting, XtCOutput, XtRBoolean, sizeof(Boolean),
-	offset(display_nonprinting), XtRImmediate, (caddr_t) True},
+	offset(display_nonprinting), XtRImmediate, (XtPointer) True},
 };
 #undef offset
 
@@ -108,9 +108,9 @@ AsciiSinkClassRec asciiSinkClassRec = {
     /* SetTabs                  */      XtInheritSetTabs,
     /* GetCursorBounds          */      GetCursorBounds
   },
-/* ascii_sink_class fields. */
+/* ascii_sink_class fields */
   {
-    /* Keep Compiler happy.     */      NULL
+    /* unused			*/	0
   }
 };
 
