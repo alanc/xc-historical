@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xdpyinfo.c,v 1.13 89/09/18 16:08:11 jim Exp $
+ * $XConsortium: xdpyinfo.c,v 1.14 89/09/18 19:22:13 jim Exp $
  * 
  * xdpyinfo - print information about X display connecton
  *
@@ -22,6 +22,9 @@
 #include <X11/Xos.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
+#ifdef MULTIBUFFER
+#include <X11/extensions/multibuf.h>
+#endif
 
 char *ProgramName;
 
@@ -40,6 +43,10 @@ main (argc, argv)
     Display *dpy;			/* X connection */
     char *displayname = NULL;		/* server to contact */
     int i;				/* temp variable:  iterator */
+    Bool multibuf = False;
+#ifdef MULTIBUFFER
+    int mbuf_event_base, mbuf_error_base;
+#endif
 
     ProgramName = argv[0];
 
@@ -66,9 +73,14 @@ main (argc, argv)
 	exit (1);
     }
 
+#ifdef MULTIBUFFER
+    if (XmbufQueryExtension (dpy, &mbuf_event_base, &mbuf_error_base))
+      multibuf = True;
+#endif
+
     print_display_info (dpy);
     for (i = 0; i < ScreenCount (dpy); i++) {
-	print_screen_info (dpy, i);
+	print_screen_info (dpy, i, multibuf);
     }
 
     XCloseDisplay (dpy);
@@ -161,9 +173,10 @@ print_extension_info (dpy)
     return;
 }
 
-print_screen_info (dpy, scr)
+print_screen_info (dpy, scr, multibuf)
     Display *dpy;
     int scr;
+    Bool multibuf;
 {
     Screen *s = ScreenOfDisplay (dpy, scr);  /* opaque structure */
     XVisualInfo viproto;		/* fill in for getting info */
@@ -175,6 +188,7 @@ print_screen_info (dpy, scr)
     static char *yes = "YES", *no = "NO";
     double xres, yres;
     int ndepths = 0, *depths = NULL;
+
 
     /*
      * there are 2.54 centimeters to an inch; so there are 25.4 millimeters.
@@ -236,6 +250,36 @@ print_screen_info (dpy, scr)
 	print_visual_info (dpy, vip+i);
     }
     if (vip) XFree ((char *) vip);
+
+#ifdef MULTIBUFFER
+    if (multibuf) {
+	int j;				/* temp variable: iterator */
+	int nmono, nstereo;		/* count */
+	XmbufBufferInfo *mono_info = NULL, *stereo_info = NULL;  /* arrays */
+	static char *fmt = 
+	  "    visual id, max buffers, depth:    0x%lx, %d, %d\n";
+
+	if (!XmbufGetScreenInfo (dpy, RootWindow(dpy, scr), &nmono, &mono_info,
+				 &nstereo, &stereo_info)) {
+	    fprintf (stderr,
+		     "%s:  unable to get multibuffer info for screen %d\n",
+		     ProgramName, scr);
+	} else {
+	    printf ("  number of mono multibuffer types:    %d\n", nmono);
+	    for (j = 0; j < nmono; j++) {
+		printf (fmt, mono_info[j].visualid, mono_info[j].max_buffers,
+			mono_info[j].depth);
+	    }
+	    printf ("  number of stereo multibuffer types:    %d\n", nstereo);
+	    for (j = 0; j < nstereo; j++) {
+		printf (fmt, stereo_info[j].visualid,
+			stereo_info[j].max_buffers, stereo_info[j].depth);
+	    }
+	    if (mono_info) XFree ((char *) mono_info);
+	    if (stereo_info) XFree ((char *) stereo_info);
+	}
+    }
+#endif
 
     return;
 }
