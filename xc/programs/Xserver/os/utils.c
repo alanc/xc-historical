@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: utils.c,v 1.63 88/09/06 15:50:42 jim Exp $ */
+/* $XConsortium: utils.c,v 1.64 88/09/29 17:20:57 jim Exp $ */
 #include <stdio.h>
 #include "Xos.h"
 #include "misc.h"
@@ -149,7 +149,6 @@ void UseMsg()
 {
     ErrorF("use: X [:<display>] [option]\n");
     ErrorF("-a #                   mouse acceleration (pixels)\n");
-    ErrorF("-bp<:screen> color     BlackPixel for screen\n");
     ErrorF("-c                     turns off key-click\n");
     ErrorF("c #                    key-click volume (0-8)\n");
     ErrorF("-co string             color database file\n");
@@ -172,7 +171,6 @@ void UseMsg()
     ErrorF("v                      video blanking for screen-saver\n");
     ErrorF("-v                     screen-saver without video blanking\n");
     ErrorF("-wm                    WhenMapped default backing-store\n");
-    ErrorF("-wp<:screen> color     WhitePixel for screen\n");
     ErrorF("-I                     ignore all remaining arguments\n");
     ErrorF("ttyxx                  server started from init on /dev/ttyxx\n");
     ddxUseMsg();
