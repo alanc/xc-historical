@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: main.c,v 1.21 88/02/22 09:42:12 jim Exp $";
+static char rcs_id[] = "$Header: main.c,v 1.23 88/02/26 09:14:01 swick Exp $";
 #endif	/* lint */
 
 /*
@@ -141,7 +141,6 @@ static char etc_utmp[] = "/etc/utmp";
 static char *get_ty;
 static int inhibit;
 static int log_on;
-static int login_shell;
 static char passedPty[2];	/* name if pty if slave */
 static int loginpty;
 #ifdef TIOCCONS
@@ -1259,7 +1258,7 @@ spawn ()
 		 NTTYDISC : 0;
 		ioctl(0, TIOCSETD, (char *)&ldisc);
 #endif	/* !SYSV */
-		execlp (ptr, login_shell ? shname_minus : shname, 0);
+		execlp (ptr, term->misc.login_shell ? shname_minus : shname, 0);
 		fprintf (stderr, "%s: Could not exec %s!\n", xterm_name, ptr);
 		sleep(5);
 		exit(ERROR_EXEC);
