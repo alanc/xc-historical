@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: main.c,v 1.33 88/05/11 13:51:18 jim Exp $";
+static char rcs_id[] = "$Header: main.c,v 1.34 88/05/11 16:11:00 jim Exp $";
 #endif	/* lint */
 
 /*
@@ -254,9 +254,11 @@ char **argv;
 
 	ProgramName = argv[0];
 
+#ifdef broken
 	/* close any extra open (stray) file descriptors */
 	for (i = 3; i < NOFILE; i++)
 		(void) close(i);
+#endif /* broken */
 
 #ifdef SYSV
 	/* Initialization is done here rather than above in order
@@ -387,6 +389,7 @@ char **argv;
 			t_ttydev[strlen(t_ttydev) - 1] =
 			get_ty[strlen(get_ty) - 1];
 #ifdef SYSV
+#ifdef braindead
 		/* use the same tty name that everyone else will use
 		** (from ttyname)
 		*/
@@ -399,7 +402,8 @@ char **argv;
 				(void) strcpy(t_ptydev, ptr);
 			}
 		}
-#endif	/* SYSV */
+#endif /* braindead */
+#endif /* SYSV */
 		loginpty = open( t_ptydev, O_RDWR, 0 );
 		dup2( loginpty, 4);
 		close( loginpty );
@@ -557,9 +561,12 @@ char **argv;
 	pty = screen->respond;
 
 	if (am_slave) { /* Write window id so master end can read and use */
-	    write(pty, screen->TekEmu ? (char *)&TWindow(screen) :
-	     (char *)&VWindow(screen), sizeof(Window));
-	    write(pty, "\n", 1);
+	    char buf[80];
+
+	    buf[0] = '\0';
+	    sprintf (buf, "%lx\n", (screen->TekEmu ?
+				    TWindow (screen) : VWindow (screen)));
+	    write (pty, buf, strlen (buf));
 	}
 
 	if(log_on) {
@@ -830,6 +837,7 @@ spawn ()
 		ptydev[strlen(ptydev) - 1] = ttydev[strlen(ttydev) - 1] =
 			passedPty[1];
 
+#ifdef braindead
 		/* use the same tty name that everyone else will use
 		** (from ttyname)
 		*/
@@ -838,6 +846,7 @@ spawn ()
 			ttydev = malloc((unsigned) (strlen(ptr) + 1));
 			(void) strcpy(ttydev, ptr);
 		}
+#endif /* braindead */
 #ifndef SYSV
 		if((tslot = ttyslot()) <= 0)
 			SysError(ERROR_TSLOT2);
