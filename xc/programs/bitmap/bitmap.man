@@ -1,14 +1,26 @@
 .TH BITMAP 1 "Release 5" "X Version 11"
 .SH NAME
-bitmap \- bitmap editor for the X Window System
+bitmap, bmtoa, atobm \- bitmap editor and converter utilities for the
+X Window System
 .SH SYNOPSIS
 .B bitmap
 [-options ...]\fI [filename] [basename]\fP
+.sp
+.B bmtoa
+[-chars ...] [\fIfilename\fP]
+.sp
+.B atobm
+[-chars \fIcc\fP] [-name \fIvariable\fP]
+[-xhot \fInumber\fP] [-yhot\fP \fInumber\fP] [\fIfilename\fP]
 .SH DESCRIPTION
 The\fI bitmap\fP program is a rudimentary tool for creating or editing
 rectangular images made up of 1's and 0's.  Bitmaps are used in X for
 defining clipping regions, cursor shapes, icon shapes, and tile and
 stipple patterns.
+.PP
+The \fIbmtoa\fP and \fIatobm\fP filters convert \fIbitmap\fP files (FILE
+FORMAT) to and from ASCII strings.  They are most commonly used to 
+quickly print out bitmaps and to generate versions for including in text.
 .SH COMMAND LINE OPTIONS
 \fIBitmap\fP supports the standard X Toolkit command line arguments
 (see X(1)).  The following additional arguments are supported as well.
@@ -69,6 +81,35 @@ If the file does not exist,\fI bitmap\fP will assume it is a new file.
 Specifies the basename to be used in the C code output file.  
 If it is different than the basename in the working file,\fI bitmap\fP 
 will change it when saving the file.
+.PP
+\fIBmtoa\fP accepts the following option:
+.TP 4
+.B \-chars \fIcc\fP
+This option specifies the pair of characters to use in the string version
+of the bitmap.  The first character is used for 0 bits and the second character
+is used for 1 bits.  The default is to use dashes (-) for 0's and sharp signs
+(#) for 1's.
+.PP
+\fIAtobm\fP accepts the following options:
+.TP 4
+.B \-chars \fIcc\fP
+This option specifies the pair of characters to use when converting string
+bitmaps into arrays of numbers.  The first character represents a 0 bit and
+the second character represents a 1 bit.  The default is to use dashes (-)
+for 0's and sharp signs (#) for 1's.
+.TP 4
+.B \-name \fIvariable\fP
+This option specifies the variable name to be used when writing out the
+bitmap file.  The default is to use the basename of the \fIfilename\fP command
+line argument or leave it blank if the standard input is read.
+.TP 4
+.B \-xhot \fInumber\fP
+This option specifies the X coordinate of the hotspot.  Only positive values
+are allowed.  By default, no hotspot information is included.
+.TP 4
+.B \-yhot \fInumber\fP
+This option specifies the Y coordinate of the hotspot.  Only positive values
+are allowed.  By default, no hotspot information is included.
 .SH USAGE 
 \fIBitmap\fP displays grid in which each square represents a single
 bit in the picture being edited.  Actual size of the bitmap image, as
