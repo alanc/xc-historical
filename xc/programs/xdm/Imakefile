@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.64 93/07/06 09:19:05 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.65 93/09/04 19:17:24 rws Exp $
 #define IHaveSubdirs
 #define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
 
@@ -66,9 +66,10 @@ LOCAL_LIBRARIES = XawClientLibs $(XAUTHLIB) $(XDMCPLIB) $(RPCLIB)
 
  OSMAJORVERSION = OSMajorVersion
  OSMINORVERSION = OSMinorVersion
+   CONN_DEFINES = ConnectionFlags
         DEFINES = -DBINDIR=\"$(BINDIR)\" -DXDMDIR=\"$(XDMDIR)\" \
-		$(SIGNAL_DEFINES) $(XDMAUTH_DEFINES) $(RPC_DEFINES) $(PWD_DEFINES) \
-		ConnectionFlags \
+		$(SIGNAL_DEFINES) $(XDMAUTH_DEFINES) $(RPC_DEFINES) \
+		$(PWD_DEFINES) $(CONN_DEFINES) \
 		-DOSMAJORVERSION=$(OSMAJORVERSION) \
 		-DOSMINORVERSION=$(OSMINORVERSION)
 
