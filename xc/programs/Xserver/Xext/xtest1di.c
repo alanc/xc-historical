@@ -1,5 +1,5 @@
 /*
- *	File:  xtestext1di.c
+ *	File:  xtest1di.c
  *
  *	This file contains the device independent parts of the input
  *	synthesis extension.
@@ -45,7 +45,7 @@ University of California.
 #include "extnsionst.h"
 #include "dixstruct.h"
 #define  XTestSERVER_SIDE
-#include "extensions/xtestext1.h"
+#include "xtestext1.h"
 
 /*****************************************************************************
  * defines
@@ -106,26 +106,26 @@ int			exclusive_steal = FALSE;
 /*
  * holds the resource class assigned to this extension
  */
-short			XTestClass;
+static short		XTestClass;
 /*
  * holds the resource type assigned to this extension
  */
-short			XTestType;
+static short		XTestType;
 /*
  * holds the resource ID for the client currently using XTestGetInput
  */
-int			current_client_id;
+static XID		current_client_id;
 
 /*****************************************************************************
  * function declarations
  ****************************************************************************/
 
-int	ProcXTestDispatch();
-int	SProcXTestDispatch();
-void	XTestResetProc();
+static int	ProcXTestDispatch();
+static int	SProcXTestDispatch();
+static void	XTestResetProc();
 
-void	SReplyXTestDispatch();
-void	SEventXTestDispatch();
+static void	SReplyXTestDispatch();
+static void	SEventXTestDispatch();
 void	NotImplemented();
 
 void	abort_play_back();
@@ -133,7 +133,7 @@ void	return_input_array_size();
 
 void	AddResource();
 void	FreeResource();
-void	XTestCurrentClientGone();
+static void	XTestCurrentClientGone();
 
 /*****************************************************************************
  *
@@ -223,9 +223,9 @@ XTestExtension1Init()
  *
  *
  */
-int
+static int
 ProcXTestDispatch(client)
-register ClientPtr	client;
+	register ClientPtr	client;
 {
 	REQUEST(xReq);
 	if (stuff->data == X_TestFakeInput)
@@ -265,9 +265,9 @@ register ClientPtr	client;
  *
  *
  */
-int
+static int
 SProcXTestDispatch(client)
-register ClientPtr	client;
+	register ClientPtr	client;
 {
 	REQUEST(xReq);
 	if (stuff->data == X_TestFakeInput)
@@ -307,9 +307,9 @@ register ClientPtr	client;
  *
  *
  */
-int
+static int
 SProcTestFakeInput(client)
-register ClientPtr	client;
+	register ClientPtr	client;
 {
 	/*
 	 * used in the swaps and swapl macros for temporary storage space
@@ -429,9 +429,9 @@ register ClientPtr	client;
  *
  *
  */
-int
+static int
 SProcTestGetInput(client)
-register ClientPtr	client;
+	register ClientPtr	client;
 {
 	/*
 	 * used in the swaps and swapl macros for temporary storage space
@@ -453,9 +453,9 @@ register ClientPtr	client;
  *
  *
  */
-int
+static int
 SProcTestStopInput(client)
-register ClientPtr	client;
+	register ClientPtr	client;
 {
 	/*
 	 * used in the swaps and swapl macros for temporary storage space
@@ -476,9 +476,9 @@ register ClientPtr	client;
  *
  *
  */
-int
+static int
 SProcTestReset(client)
-register ClientPtr	client;
+	register ClientPtr	client;
 {
 	/*
 	 * used in the swaps and swapl macros for temporary storage space
@@ -499,9 +499,9 @@ register ClientPtr	client;
  *
  *
  */
-int
+static int
 SProcTestQueryInputSize(client)
-register ClientPtr	client;
+	register ClientPtr	client;
 {
 	/*
 	 * used in the swaps and swapl macros for temporary storage space
@@ -522,9 +522,9 @@ register ClientPtr	client;
  *
  *
  */
-int
+static int
 ProcTestFakeInput(client)
-register ClientPtr	client;
+	register ClientPtr	client;
 {
 	REQUEST(xTestFakeInputReq);
 	REQUEST_SIZE_MATCH(xTestFakeInputReq);
@@ -561,9 +561,9 @@ register ClientPtr	client;
  *
  *
  */
-int
+static int
 ProcTestGetInput(client)
-register ClientPtr	client;
+	register ClientPtr	client;
 {
 	REQUEST(xTestGetInputReq);
 	REQUEST_SIZE_MATCH(xTestGetInputReq);
@@ -617,9 +617,9 @@ register ClientPtr	client;
  *
  *
  */
-int
+static int
 ProcTestStopInput(client)
-register ClientPtr	client;
+	register ClientPtr	client;
 {
 	REQUEST(xTestStopInputReq);
 	REQUEST_SIZE_MATCH(xTestStopInputReq);
@@ -656,9 +656,9 @@ register ClientPtr	client;
  *
  *
  */
-int
+static int
 ProcTestReset(client)
-register ClientPtr	client;
+	register ClientPtr	client;
 {
 	REQUEST(xTestResetReq);
 	REQUEST_SIZE_MATCH(xTestResetReq);
@@ -681,9 +681,9 @@ register ClientPtr	client;
  *
  *
  */
-int
+static int
 ProcTestQueryInputSize(client)
-register ClientPtr	client;
+	register ClientPtr	client;
 {
 	REQUEST(xTestQueryInputSizeReq);
 	REQUEST_SIZE_MATCH(xTestQueryInputSizeReq);
@@ -702,7 +702,7 @@ register ClientPtr	client;
  *	connected to it.  It must put eveything back the way it was before
  *	this extension was installed.
  */
-void
+static void
 XTestResetProc()
 {
 	/*
@@ -734,10 +734,11 @@ XTestResetProc()
  *	to be sent to it "goes away".  This routine must clean up the 
  *	server state.
  */
-void
+/*ARGSUSED*/
+static void
 XTestCurrentClientGone(value, id)
-int	value;
-XID	id;
+	int	value;
+	XID	id;
 {
 	/*
 	 * defined in xtestext1dd.c
@@ -757,11 +758,11 @@ XID	id;
  *
  *	Swap any replies defined in this extension.
  */
-void
+static void
 SReplyXTestDispatch(client_ptr, size, reply_ptr)
-ClientPtr	client_ptr;
-int		size;
-char		*reply_ptr;
+	ClientPtr	client_ptr;
+	int		size;
+	char		*reply_ptr;
 {
 	/*
 	 * used in the swaps and swapl macros for temporary storage space
@@ -791,10 +792,10 @@ char		*reply_ptr;
  *
  *	Swap any events defined in this extension.
  */
-void
+static void
 SEventXTestDispatch(from, to)
-xEvent	*from;
-xEvent	*to;
+	xEvent	*from;
+	xEvent	*to;
 {
 	/*
 	 * used in the swaps and swapl macros for temporary storage space
