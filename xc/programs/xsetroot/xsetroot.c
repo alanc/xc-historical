@@ -155,7 +155,7 @@ main(argc, argv)
 
   /* Clear the root window, flush all output and exit. */
   XClearWindow(dpy, RootWindow(dpy, screen));
-  XFlush(dpy);
+  XCloseDisplay(dpy);
 }
 
 
