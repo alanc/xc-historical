@@ -12,10 +12,6 @@
 \s+1\fBKEYSYM Encoding\fP\s-1
 .sp 2
 .LP
-.ps 9
-.nr PS 9
-.vs 10
-.nr VS 10
 .EH '\s+2\fBX Protocol\fP''\fBX11, Release 4\fP\s-2'
 .OH '\s+2\fBX Protocol\fP''\fBX11, Release 4\fP\s-2'
 .EF ''\s+2\fB % \fP\s-2''
@@ -35,7 +31,8 @@ There are two special KEYSYM values: NoSymbol and VoidSymbol.
 .TS
 l l l l l.
 _
-.TB
+.sp 6p
+.B
 Byte 1	Byte 2	Byte 3	Byte 4	Name
 .sp 6p
 _
@@ -53,7 +50,7 @@ and byte 4 indicates a particular character within that set.
 l l.
 _
 .sp 6p
-.TB
+.B
 Byte 3	Byte 4
 .sp 6p
 _
@@ -118,16 +115,18 @@ Paragraph, and Section, as follows:
 l l l.
 _
 .sp 6p
-.TB
+.B
 US name	European name	code position in Latin-1
 .sp 6p
 _
+.R
 .sp 6p
 Section sign	Paragraph sign	10/07
 Paragraph sign	Pilcrow sign	11/06
 .sp 6p
 _
 .TE
+.LP
 We have adopted the US names (by accident rather than by design).
 .LP
 The Keyboard set is a miscellaneous collection of commonly occurring keys on
@@ -203,10 +202,15 @@ In all cases, the KEYSYM value is:
 .DS
 byte3 * 256 + byte4
 .DE
+.ps 9
+.nr PS 9
+.vs 10
+.nr VS 10
 .TS H
 lw(.25i) lw(.25i) lw(.5i) lw(3.75i) lw(.6i).
 _
 .sp 6p
+.B
 Byte	Byte	Code	Name	Set
  3 	 4 	Pos
 .sp 6p
