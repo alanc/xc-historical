@@ -1,4 +1,4 @@
-/* $Header: mibstore.c,v 1.2 88/05/21 17:37:17 rws Exp $ */
+/* $Header: mibstore.c,v 1.3 88/07/20 14:16:14 keith Exp $ */
 /***********************************************************
 Copyright 1987 by the Regents of the University of California
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -158,6 +158,7 @@ typedef struct {
 				     * fully-validated (i.e. used with a window
 				     * with backing-store on). */
     int 	  guarantee;        /* GuaranteeNothing, etc. */
+    unsigned long serialNumber;	    /* clientClip computed time */
     /* The real procedures to call */
     void    	  (* FillSpans)();
     void    	  (* SetSpans)();
@@ -408,17 +409,21 @@ miBSGetSpans(pDrawable, pPixmap, wMax, ppt, pwidth, pwidthPadded, nspans)
 	/*
 	 * Get all the bits at once, then set them in.
 	 */
-	if (!pBackingStore->pBackingPixmap && pWin)
+	if (pBackingStore->pBackingPixmap == NullPixmap)
 	    miCreateBSPixmap (pWin);
 
-	pBits = (*pDrawable->pScreen->GetSpans) (pBackingStore->pBackingPixmap,
-						 wMax, pptClipped,
-						 pwidthClipped,
-						 k);
-	(* pGC->SetSpans) (pPixmap, pGC, pBits, pptDest, pwidthClipped,
+	if (pBackingStore->pBackingPixmap != NullPixmap)
+	{
+	    pBits = (*pDrawable->pScreen->GetSpans) (
+ 	    		pBackingStore->pBackingPixmap,
+			wMax, pptClipped,
+			pwidthClipped,
+			k);
+	    (* pGC->SetSpans) (pPixmap, pGC, pBits, pptDest, pwidthClipped,
 			   k, FALSE);
 	
-	Xfree((pointer)pBits);
+	    Xfree((pointer)pBits);
+	}
     }
     FreeScratchGC(pGC);
     DEALLOCATE_LOCAL(pptClipped);
@@ -469,64 +474,77 @@ miBSPutImage(pDst, pGC, depth, x, y, w, h, leftPad, format, pBits)
 }
 
 /*-
+ * miGetImageWithBS
+ *
+ * use miGetImage and miBSGetImage to form a composite image for a
+ * backing stored window
+ */
+
+miGetImageWithBS ( pDraw, x, y, w, h, format, planemask, pImage)
+    DrawablePtr		pDraw;
+    int			x, y, w, h;
+    unsigned int	format;
+    unsigned long	planemask;
+    unsigned char	*pImage;
+{
+    miGetImage( pDraw, x, y, w, h, format, planemask, pImage);
+    if ((pDraw->type == DRAWABLE_WINDOW) &&
+	(((WindowPtr)pDraw)->backingStore != NotUseful))
+    {
+	miBSGetImage( pDraw, (PixmapPtr) 0, x, y, w, h, format, planemask, pImage);
+    }
+}
+
+/*-
  *-----------------------------------------------------------------------
  * miBSGetImage --
  *	Retrieve the missing pieces of the given image from the window's
  *	backing-store and place them into the given pixmap at the proper
- *	location. Note that regions of the window obscured by INFERIOR
- *	windows are not copied from the backing-store.
+ *	location.
  *
  * Results:
  *	None.
  *
  * Side Effects:
- *	Parts of pPixmap are modified.
+ *	Parts of pImage are modified.
  *
  *-----------------------------------------------------------------------
  */
+
 void
-miBSGetImage (pWin, pPixmap, x, y, w, h, format, planeMask)
+miBSGetImage (pWin, pOldPixmapPtr, x, y, w, h, format, planeMask, pImage)
     WindowPtr	  pWin;	    	    /* Source window with bstore */
-    PixmapPtr	  pPixmap;  	    /* Destination pixmap */
-    int	    	  x;	    	    /* Screen-relative x of source box */
-    int	    	  y;	    	    /* Screen-relative y of source box */
+    PixmapPtr	  pOldPixmapPtr;    /* pixmap containing screen contents */
+    int	    	  x;	    	    /* Window-relative x of source box */
+    int	    	  y;	    	    /* Window-relative y of source box */
     int	    	  w;	    	    /* Width of source box */
     int	    	  h;	    	    /* Height of source box */
     unsigned int  format;   	    /* Format for request */
     unsigned long  planeMask;	    /* Mask of planes to fetch */
+    pointer	  pImage;	    /* pointer to space allocated by caller */
 {
-    MIBackingStorePtr	pBackingStore;
     ScreenPtr	  	pScreen;    /* Screen for proc vectors */
-    RegionPtr	  	pRgn;	    /* Region to extract */
-    BoxRec  	  	box;	    /* Box for forming pRgn */
-    DDXPointPtr 	pPts;	    /* Start of array of points */
-    int	    	  	*pWidths;   /* Start of array of widths */
-    int	    	  	nSpans;	    /* Total number of spans */
-    GCPtr   	  	pGC;	    /* GC for {Get,Set}Spans call */
-    unsigned int	*pBits;	    /* Bits from GetSpans for SetSpans */
-    int	    	  	wMax;	    /* Place for maximum width */
-    register DDXPointPtr pPt;
-    register int  	n;
+    PixmapPtr		pNewPixmapPtr; /* local pixmap hack */
+    PixmapPtr		pPixmapPtr;
+    RegionPtr		pRgn;
+    BoxRec		box;
+    GCPtr		pGC;
+    static void		miBSDoGetImage ();
 
     pScreen = pWin->drawable.pScreen;
-    pBackingStore = (MIBackingStorePtr)pWin->devBackingStore;
 
     /*
-     * First figure out what part of the source box is actually in the
-     * backing-store by taking the inverse of the borderClip inside the source
-     * box and intersecting it with the region of the valid areas in the
-     * backing pixmap. We use the borderClip because we're not supposed to
-     * provide bits for regions obscured by inferiors...
+     * First figure out what part of the source box is actually not visible
+     * by taking the inverse of the not-clipped-by-children region.
      */
-    pRgn = (* pScreen->RegionCreate) (NULL, 1);
-    box.x1 = x;
-    box.y1 = y;
-    box.x2 = x + w;
-    box.y2 = y + h;
+
+    pRgn = NotClippedByChildren (pWin);
+    box.x1 = x + pWin->absCorner.x;
+    box.y1 = y + pWin->absCorner.y;
+    box.x2 = box.x1 + w;
+    box.y2 = box.y1 + h;
     
-    (* pScreen->Inverse)(pRgn, pWin->borderClip, &box);
-    (* pScreen->TranslateRegion) (pRgn, -pWin->absCorner.x, -pWin->absCorner.y);
-    (* pScreen->Intersect) (pRgn, pBackingStore->pSavedRegion, pRgn);
+    (* pScreen->Inverse)(pRgn, pRgn, &box);
 
     /*
      * Nothing that wasn't visible -- return immediately.
@@ -538,47 +556,268 @@ miBSGetImage (pWin, pPixmap, x, y, w, h, format, planeMask)
     }
 
     /*
-     * Extract spans from the region, after translating it to the window's
-     * (and hence the backing pixmap's) coordinate system, and fetch their
-     * contents from the backing pixmap for this window.
+     * if no pixmap was given to us, create one now
      */
-    nSpans = miRegionToSpans(pRgn, 0, &pPts, &pWidths, &wMax);
 
-    pBits = (* pScreen->GetSpans) (pBackingStore->pBackingPixmap,
-				   wMax,
-				   pPts,
-				   pWidths,
-				   nSpans);
-    
-    /*
-     * Translate the points into the coordinates of the destination pixmap,
-     * whose origin is at the screen point (x, y). Since we've already
-     * translated the spans into the window's coordinate system, we just
-     * need to translate it to the image's coordinate system, whose origin
-     * is at (x - window_x, y - window_y).
-     */
-    x -= pWin->absCorner.x;
-    y -= pWin->absCorner.y;
-
-    for (pPt = pPts, n = nSpans; n > 0; pPt++, n--)
-    {
-	pPt->x -= x;
-	pPt->y -= y;
+    if (!pOldPixmapPtr) {
+	pNewPixmapPtr = (*pScreen->CreatePixmap) (pScreen, w, h, pWin->drawable.depth);
+	pGC = GetScratchGC (pNewPixmapPtr->drawable.depth, pScreen);
+	ValidateGC (pNewPixmapPtr, pGC);
+	(*pGC->PutImage) (pNewPixmapPtr, pGC,
+ 		pWin->drawable.depth, 0, 0, w, h, 0, format, pImage);
+	pPixmapPtr = pNewPixmapPtr;
     }
-    
+    else
+    {
+	pGC = GetScratchGC (pOldPixmapPtr->drawable.depth, pScreen);
+	pNewPixmapPtr = 0;
+	pPixmapPtr = pOldPixmapPtr;
+	ValidateGC (pPixmapPtr, pGC);
+    }
     /*
-     * Get a scratch GC and reset its planeMask to the one we were given,
-     * then copy the spans we just fetched into the destination pixmap.
-     * XXX: This probably doesn't handle format == XYBitmap properly...
+     * make sure the CopyArea operations below never
+     * end up sending NoExpose or GraphicsExpose events.
      */
-    pGC = GetScratchGC(pWin->drawable.depth, pScreen);
-    DoChangeGC(pGC, GCPlaneMask, &planeMask, FALSE);
-    ValidateGC(pPixmap, pGC);
 
-    (* pGC->SetSpans) (pPixmap, pGC, pBits, pPts, pWidths, nSpans, TRUE);
+    pGC->graphicsExposures = FALSE;
 
-    Xfree((pointer)pBits);
-    FreeScratchGC(pGC);
+    /*
+     * translate to window-relative coordinates
+     */
+
+    (* pScreen->TranslateRegion) (pRgn, -pWin->absCorner.x, -pWin->absCorner.y);
+
+    miBSDoGetImage (pWin, pPixmapPtr, pRgn, x, y, pGC);
+
+    /*
+     * now we have a composite view in pNewPixmapPtr; create the resultant
+     * image
+     */
+
+    if (pNewPixmapPtr)
+    {
+	(*pScreen->GetImage) (pNewPixmapPtr, 0, 0, w, h, format, planeMask, pImage);
+	(*pScreen->DestroyPixmap) (pNewPixmapPtr);
+    }
+    FreeScratchGC (pGC);
+    (*pScreen->RegionDestroy) (pRgn);
+}
+
+/*
+ * fill a region of the destination with virtual bits
+ *
+ * pRgn is offset by (x, y) into the drawable
+ */
+
+static void
+miBSFillVirtualBits (pDrawable, pGC, pRgn, x, y, pixel, tile, use_pixel)
+    DrawablePtr		pDrawable;
+    GCPtr		pGC;
+    RegionPtr		pRgn;
+    unsigned long	pixel;
+    int			x, y;
+    PixmapPtr		tile;
+    PixmapPtr		use_pixel;
+{
+    int		i;
+    BITS32	gcmask;
+    XID		gcval[4];
+    xRectangle	*pRect;
+    BoxPtr	pBox;
+
+    if (tile == (PixmapPtr) None)
+	return;
+    i = 0;
+    gcmask = 0;
+    if (tile == use_pixel)
+    {
+	if (pGC->fgPixel != pixel)
+	{
+	    gcval[i++] = (XID) pixel;
+	    gcmask |= GCForeground;
+	}
+	if (pGC->fillStyle != FillSolid)
+	{
+	    gcval[i++] = (XID) FillSolid;
+	    gcmask |= GCFillStyle;
+	}
+    }
+    else
+    {
+	if (pGC->fillStyle != FillTiled)
+	{
+	    gcval[i++] = (XID) FillTiled;
+	    gcmask |= GCFillStyle;
+	}
+	if (pGC->tile != tile)
+	{
+	    gcval[i++] = (XID) tile;
+	    gcmask |= GCTile;
+	}
+	if (pGC->patOrg.x != -x)
+	{
+	    gcval[i++] = (XID) -x;
+	    gcmask |= GCTileStipXOrigin;
+	}
+	if (pGC->patOrg.y != -y)
+	{
+	    gcval[i++] = (XID) -y;
+	    gcmask |= GCTileStipYOrigin;
+	}
+    }
+    if (gcmask)
+    {
+	DoChangeGC (pGC, gcmask, gcval, 1);
+	ValidateGC (pDrawable, pGC);
+    }
+    pRect = (xRectangle *)ALLOCATE_LOCAL(pRgn->numRects * sizeof(xRectangle));
+    pBox = pRgn->rects;
+    for (i = 0; i < pRgn->numRects; i++, pBox++, pRect++)
+    {
+    	pRect->x = pBox->x1 - x;
+	pRect->y = pBox->y1 - y;
+	pRect->width = pBox->x2 - pBox->x1;
+	pRect->height = pBox->y2 - pBox->y1;
+    }
+    pRect -= pRgn->numRects;
+    (*pGC->PolyFillRect) (pDrawable, pGC, pRgn->numRects, pRect);
+    DEALLOCATE_LOCAL (pRect);
+}
+
+/*
+ * copy this window's backing store and all of it's childrens
+ * backing store into pPixmap
+ *
+ * (x, y) is the offset of the pixmap into the window
+ */
+
+static void
+miBSDoGetImage (pWin, pPixmap, pRgn, x, y, pGC)
+    WindowPtr	pWin;
+    PixmapPtr	pPixmap;
+    RegionPtr	pRgn;
+    int		x, y;
+    GCPtr	pGC;
+{
+    MIBackingStorePtr	pBackingStore;
+    BoxPtr	pBox;
+    WindowPtr	pChild;
+    RegionPtr	pBackRgn;
+    ScreenPtr	pScreen;
+    int		dx, dy;
+    int		n;
+    XID		gcval[4];
+    BITS32	gcmask;
+    int		i;
+    xRectangle	*pRect;
+		
+    
+    pBox = pRgn->rects;
+    pScreen = pWin->drawable.pScreen;
+    pBackingStore = (MIBackingStorePtr)pWin->devBackingStore;
+    if (pWin->backingStore != NotUseful && pWin->backStorage &&
+        pBackingStore->status != StatusNoPixmap)
+    {
+	pBackRgn = (*pScreen->RegionCreate) (NULL, 1);
+	(*pScreen->Intersect) (pBackRgn, pRgn, pBackingStore->pSavedRegion);
+
+	if ((*pScreen->RegionNotEmpty) (pBackRgn))
+	{
+	    if (!pBackingStore->pBackingPixmap &&
+ 		pBackingStore->backgroundTile != (PixmapPtr) ParentRelative)
+	    {
+		miBSFillVirtualBits (pPixmap, pGC, pBackRgn, x, y,
+	    			     pBackingStore->backgroundPixel,
+				     pBackingStore->backgroundTile,
+				     (PixmapPtr) USE_BACKGROUND_PIXEL);
+	    }
+	    else
+	    {
+		if (pBackingStore->pBackingPixmap == NullPixmap)
+		    miCreateBSPixmap (pWin);
+
+		if (pBackingStore->pBackingPixmap != NullPixmap)
+		{
+		    pBox = pBackRgn->rects;
+		    i = 0;
+		    gcmask = 0;
+		    for (n = 0; n < pBackRgn->numRects; n++)
+		    {
+			(*pGC->CopyArea) (pBackingStore->pBackingPixmap,
+ 					  pPixmap, pGC,
+					  pBox->x1, pBox->y1,
+ 					  pBox->x2 - pBox->x1,
+ 					    pBox->y2 - pBox->y1,
+					  pBox->x1 - x, pBox->y1 - y);
+			pBox++;
+		    }
+		}
+	    }
+	}
+
+	/*
+	 * draw the border of this window into the pixmap
+	 */
+
+	if (pWin->borderWidth > 0)
+	{
+	    pBox = (*pScreen->RegionExtents) (pRgn);
+
+	    if (pBox->x1 < 0 || pBox->y1 < 0 ||
+		pWin->clientWinSize.width < pBox->x2 ||
+ 		pWin->clientWinSize.height < pBox->y2)
+	    {
+		/*
+		 * compute areas of border to display
+		 */
+		(*pScreen->Subtract) (pBackRgn,
+				      pWin->borderSize, pWin->winSize);
+
+		/*
+		 * translate relative to pWin
+		 */
+		(*pScreen->TranslateRegion) (pBackRgn,
+ 					     -pWin->absCorner.x,
+ 					     -pWin->absCorner.y);
+
+		/*
+		 * extract regions to fill
+		 */
+		(*pScreen->Intersect) (pBackRgn, pBackRgn, pRgn);
+
+		if ((*pScreen->RegionNotEmpty) (pBackRgn))
+		{
+		    miBSFillVirtualBits (pPixmap, pGC, pBackRgn, x, y,
+					 pWin->borderPixel,
+					 pWin->borderTile,
+					 (PixmapPtr) USE_BORDER_PIXEL);
+		}
+	    }
+	}
+	(*pScreen->RegionDestroy) (pBackRgn);
+    }
+    /*
+     * now fetch any bits from children's backing store
+     */
+    if (pWin->lastChild)
+    {
+	for (pChild = pWin->lastChild; pChild; pChild = pChild->prevSib) {
+	    /*
+	     * create a region which covers the non-visibile
+	     * portions of the child which need to
+	     * be restored
+	     */
+
+	    dx = pChild->absCorner.x - pWin->absCorner.x;
+	    dy = pChild->absCorner.y - pWin->absCorner.y;
+
+	    (*pScreen->TranslateRegion) (pRgn, -dx, -dy);
+
+	    miBSDoGetImage (pChild, pPixmap, pRgn, x - dx, y - dy, pGC);
+
+	    (*pScreen->TranslateRegion) (pRgn, dx, dy);
+	}
+    }
 }
 
 /*-
@@ -671,6 +910,8 @@ miBSDoCopy(pWin, pGC, srcx, srcy, w, h, dstx, dsty, plane, copyProc)
      */
     if (!(*pGC->pScreen->RegionNotEmpty) (pRgnObs))
     {
+	(*pGC->pScreen->RegionDestroy) (pRgnExp);
+	(*pGC->pScreen->RegionDestroy) (pRgnObs);
 	return (FALSE);
     }
 
@@ -963,6 +1204,10 @@ miBSCopyArea (pSrc, pDst, pGC, srcx, srcy, w, h, dstx, dsty)
     int	    	  dstx;
     int	    	  dsty;
 {
+    BoxPtr	pExtents;
+    long	dx, dy;
+    int		bsrcx, bsrcy, bw, bh, bdstx, bdsty;
+
     PROLOGUE(pDst);
 
     if (!pPriv->inUse)
@@ -972,11 +1217,49 @@ miBSCopyArea (pSrc, pDst, pGC, srcx, srcy, w, h, dstx, dsty)
 	    (!miBSDoCopy((WindowPtr)pSrc, pGC, srcx, srcy, w, h, dstx, dsty,
 			 (unsigned long) 0, pPriv->CopyArea)))
 	{
+	    /*
+	     * always copy to the backing store first, miBSDoCopy
+	     * returns FALSE if the *source* region is disjoint
+	     * from the backing store saved region.  So, copying
+	     * *to* the backing store is always safe
+	     */
+	    /*
+	     * adjust srcx, srcy, w, h, dstx, dsty to be clipped to
+	     * the backing store.  An unnecessary optimisation,
+	     * but a useful one when GetSpans is slow.
+	     */
+	    pExtents = (*pDst->pScreen->RegionExtents) (pBackingGC->clientClip);
+	    bsrcx = srcx;
+	    bsrcy = srcy;
+	    bw = w;
+	    bh = h;
+	    bdstx = dstx;
+	    bdsty = dsty;
+	    dx = pExtents->x1 - bdstx;
+	    if (dx > 0)
+ 	    {
+		bsrcx += dx;
+		bdstx += dx;
+		bw -= dx;
+	    }
+	    dy = bdsty - pExtents->y1;
+	    if (dy > 0)
+	    {
+		bsrcy += dy;
+		bdsty += dy;
+		bh -= dy;
+	    }
+	    dx = (bdstx + bw) - pExtents->x2;
+	    if (dx > 0)
+	        bw -= dx;
+	    dy = (bdsty + bh) - pExtents->y2;
+	    if (dy > 0)
+	        bh -= dy;
+	    if (bw > 0 && bh > 0)
+		(* pBackingGC->CopyArea) (pSrc, pBackingStore->pBackingPixmap,
+					  pBackingGC, bsrcx, bsrcy, bw, bh,
+					  bdstx, bdsty);
 	    (* pPriv->CopyArea) (pSrc, pDst, pGC, srcx, srcy, w, h, dstx, dsty);
-	    
-	    (* pBackingGC->CopyArea) (pSrc, pBackingStore->pBackingPixmap,
-				      pBackingGC, srcx, srcy, w, h,
-				      dstx, dsty);
 	}
 	pPriv->inUse = FALSE;
     }
@@ -1010,6 +1293,10 @@ miBSCopyPlane (pSrc, pDst, pGC, srcx, srcy, w, h, dstx, dsty, plane)
 		  dsty;
     unsigned long  plane;
 {
+    BoxPtr	pExtents;
+    long	dx, dy;
+    int		bsrcx, bsrcy, bw, bh, bdstx, bdsty;
+
     PROLOGUE(pDst);
 
     if (!pPriv->inUse)
@@ -1019,12 +1306,51 @@ miBSCopyPlane (pSrc, pDst, pGC, srcx, srcy, w, h, dstx, dsty, plane)
 	    (!miBSDoCopy((WindowPtr)pSrc, pGC, srcx, srcy, w, h, dstx, dsty,
 			 plane,  pPriv->CopyPlane)))
 	{
+	    /*
+	     * always copy to the backing store first, miBSDoCopy
+	     * returns FALSE if the *source* region is disjoint
+	     * from the backing store saved region.  So, copying
+	     * *to* the backing store is always safe
+	     */
+	    /*
+	     * adjust srcx, srcy, w, h, dstx, dsty to be clipped to
+	     * the backing store.  An unnecessary optimisation,
+	     * but a useful one when GetSpans is slow.
+	     */
+	    pExtents = (*pDst->pScreen->RegionExtents) (pBackingGC->clientClip);
+	    bsrcx = srcx;
+	    bsrcy = srcy;
+	    bw = w;
+	    bh = h;
+	    bdstx = dstx;
+	    bdsty = dsty;
+	    dx = pExtents->x1 - bdstx;
+	    if (dx > 0)
+ 	    {
+		bsrcx += dx;
+		bdstx += dx;
+		bw -= dx;
+	    }
+	    dy = bdsty - pExtents->y1;
+	    if (dy > 0)
+	    {
+		bsrcy += dy;
+		bdsty += dy;
+		bh -= dy;
+	    }
+	    dx = (bdstx + bw) - pExtents->x2;
+	    if (dx > 0)
+	        bw -= dx;
+	    dy = (bdsty + bh) - pExtents->y2;
+	    if (dy > 0)
+	        bh -= dy;
+	    if (bw > 0 && bh > 0)
+		(* pBackingGC->CopyPlane) (pSrc, pBackingStore->pBackingPixmap,
+					  pBackingGC, bsrcx, bsrcy, bw, bh,
+					  bdstx, bdsty, plane);
 	    (* pPriv->CopyPlane) (pSrc, pDst, pGC, srcx, srcy, w, h,
 				  dstx, dsty, plane);
 	    
-	    (* pBackingGC->CopyPlane) (pSrc, pBackingStore->pBackingPixmap,
-				      pBackingGC, srcx, srcy, w, h,
-				      dstx, dsty, plane);
 	}
 	pPriv->inUse = FALSE;
     }
@@ -1693,6 +2019,11 @@ miBSClearToBackground(pWin, x, y, w, h, generateExposures)
     if (pBackingStore->status == StatusNoPixmap)
 	return;
     
+    if (w == 0)
+	w = pWin->clientWinSize.width - x;
+    if (h == 0)
+	h = pWin->clientWinSize.height - y;
+
     box.x1 = x;
     box.y1 = y;
     box.x2 = x + w;
@@ -1703,6 +2034,21 @@ miBSClearToBackground(pWin, x, y, w, h, generateExposures)
 
     if ((* pScreen->RegionNotEmpty) (pRgn))
     {
+	/*
+	 * if clearing entire window, simply make new virtual
+	 * tile.  For the root window, we also destroy the pixmap
+	 * to save a pile of memory
+	 */
+	if (x == 0 && y == 0 &&
+ 	    w == pWin->clientWinSize.width &&
+ 	    h == pWin->clientWinSize.height)
+	{
+	    if (!pWin->parent)
+		miDestroyBSPixmap (pWin);
+	    if (pBackingStore->status != StatusContents)
+		 miTileVirtualBS (pWin);
+	}
+
 	backgroundPixel = pWin->backgroundPixel;
 	backgroundTile = pWin->backgroundTile;
 	ts_x_origin = ts_y_origin = 0;
@@ -1728,49 +2074,53 @@ miBSClearToBackground(pWin, x, y, w, h, generateExposures)
 	    if (pBackingStore->pBackingPixmap == NullPixmap)
 		miCreateBSPixmap(pWin);
 
-	    /*
-	     * First take care of any ParentRelative stuff by altering the
-	     * tile/stipple origin to match the coordinates of the upper-left
-	     * corner of the first ancestor without a ParentRelative background.
-	     * This coordinate is, of course, negative.
-	     */
-	    pGC = GetScratchGC(pWin->drawable.depth, pScreen);
-	    
-	    if (backgroundTile == (PixmapPtr) USE_BACKGROUND_PIXEL)
+	    if (pBackingStore->pBackingPixmap != NullPixmap)
 	    {
+		/*
+		 * First take care of any ParentRelative stuff by altering the
+		 * tile/stipple origin to match the coordinates of the upper-left
+		 * corner of the first ancestor without a ParentRelative background.
+		 * This coordinate is, of course, negative.
+		 */
+		pGC = GetScratchGC(pWin->drawable.depth, pScreen);
+	    
+		if (backgroundTile == (PixmapPtr) USE_BACKGROUND_PIXEL)
+		{
 		    gcvalues[0] = (XID) backgroundPixel;
 		    gcvalues[1] = FillSolid;
 		    gcmask = GCForeground|GCFillStyle;
-	    }
-	    else
-	    {
+		}
+		else
+		{
 		    gcvalues[0] = FillTiled;
 		    gcvalues[1] = (XID) backgroundTile;
 		    gcmask = GCFillStyle|GCTile;
-	    }
-	    gcvalues[2] = ts_x_origin;
-	    gcvalues[3] = ts_y_origin;
-	    gcmask |= GCTileStipXOrigin|GCTileStipYOrigin;
-	    DoChangeGC(pGC, gcmask, gcvalues, TRUE);
-	    ValidateGC(pBackingStore->pBackingPixmap, pGC);
+		}
+		gcvalues[2] = ts_x_origin;
+		gcvalues[3] = ts_y_origin;
+		gcmask |= GCTileStipXOrigin|GCTileStipYOrigin;
+		DoChangeGC(pGC, gcmask, gcvalues, TRUE);
+		ValidateGC(pBackingStore->pBackingPixmap, pGC);
     
-	    /*
-	     * Figure out the array of rectangles to fill and fill them with
-	     * PolyFillRect in the proper mode, as set in the GC above.
-	     */
-	    rects = (xRectangle *)ALLOCATE_LOCAL(pRgn->numRects*sizeof(xRectangle));
+		/*
+		 * Figure out the array of rectangles to fill and fill them with
+		 * PolyFillRect in the proper mode, as set in the GC above.
+		 */
+		rects = (xRectangle *)ALLOCATE_LOCAL(pRgn->numRects*sizeof(xRectangle));
 	    
-	    for (i = 0, pBox = pRgn->rects; i < pRgn->numRects; i++, pBox++) {
-		rects[i].x = pBox->x1;
-		rects[i].y = pBox->y1;
-		rects[i].width = pBox->x2 - pBox->x1;
-		rects[i].height = pBox->y2 - pBox->y1;
-	    }
-	    (* pGC->PolyFillRect) (pBackingStore->pBackingPixmap,
+		for (i = 0, pBox = pRgn->rects; i < pRgn->numRects; i++, pBox++)
+ 		{
+		    rects[i].x = pBox->x1;
+		    rects[i].y = pBox->y1;
+		    rects[i].width = pBox->x2 - pBox->x1;
+		    rects[i].height = pBox->y2 - pBox->y1;
+		}
+		(* pGC->PolyFillRect) (pBackingStore->pBackingPixmap,
 				   pGC, pRgn->numRects, rects);
-    
-	    FreeScratchGC(pGC);
-	    DEALLOCATE_LOCAL(rects);
+	
+		FreeScratchGC(pGC);
+		DEALLOCATE_LOCAL(rects);
+	    }
 	}	
 
 	if (generateExposures) {
@@ -2121,12 +2471,11 @@ miSaveAreas(pWin)
 	if (pBackingStore->pBackingPixmap == NullPixmap)
 	    miCreateBSPixmap (pWin);
 
-	if (pBackingStore->pBackingPixmap == NullPixmap)
-	    FatalError("failed to allocate backing store");
-    
-	(* pBackingStore->SaveAreas) (pBackingStore->pBackingPixmap, prgnDoomed,
-				      pWin->backStorage->oldAbsCorner.x,
-				      pWin->backStorage->oldAbsCorner.y);
+	if (pBackingStore->pBackingPixmap != NullPixmap)
+	    (* pBackingStore->SaveAreas) (pBackingStore->pBackingPixmap,
+ 	    				  prgnDoomed,
+					  pWin->backStorage->oldAbsCorner.x,
+					  pWin->backStorage->oldAbsCorner.y);
     }
 
     (* pScreen->Union)(pBackingStore->pSavedRegion,
@@ -2142,6 +2491,7 @@ miSaveAreas(pWin)
      * stateChanges for the GC, so unless we do this, the pBackingGC won't be
      * validated properly...
      */
+
     if (pBackingStore->pBackingPixmap != NullPixmap)
 	pBackingStore->pBackingPixmap->drawable.serialNumber = NEXT_SERIAL_NUMBER;
 }
@@ -2285,13 +2635,19 @@ miRestoreAreas(pWin)
 	 */
 	BoxRec  box;
 	
-	miTileVirtualBS(pWin);
-	    
+	prgnSaved = pBackingStore->pSavedRegion;
+
 	box.x1 = pWin->absCorner.x;
 	box.x2 = box.x1 + pWin->clientWinSize.width;
 	box.y1 = pWin->absCorner.y;
 	box.y2 = pWin->absCorner.y + pWin->clientWinSize.height;
 	
+	(* pScreen->Inverse)(prgnSaved, pWin->clipList,  &box);
+	(* pScreen->TranslateRegion) (prgnSaved,
+				      -pWin->absCorner.x,
+				      -pWin->absCorner.y);
+	miTileVirtualBS(pWin);
+
 	exposures = (* pScreen->RegionCreate)(&box, 1);
     }
     pBackingStore->viewable = (int)pWin->viewable;
@@ -2431,6 +2787,7 @@ miBSInstallPriv (pGC)
     pPriv->gcHooked = FALSE;
     pPriv->changes = 0;
     pPriv->guarantee = GuaranteeNothing;
+    pPriv->serialNumber = NEXT_SERIAL_NUMBER;
 }
 
 /*
@@ -2448,7 +2805,7 @@ miBSDrawGuarantee (pWin, pGC, guarantee)
 {
     MIBSGCPrivPtr 	pPriv;
 
-    if (pWin->backingStore != NotUseful)
+    if (pWin->backingStore != NotUseful && pWin->backStorage)
     {
 	if (!pGC->devBackingStore)
 	    miBSInstallPriv (pGC);
@@ -2575,8 +2932,8 @@ miValidateBackingStore(pDrawable, pGC, procChanges)
         lift_functions = TRUE;
 
     if (!lift_functions && 
-        ((pDrawable->serialNumber != pBackingGC->serialNumber) ||
-	 (stateChanges&(GCClipXOrigin|GCClipYOrigin|GCClipMask))))
+        ((pDrawable->serialNumber != pPriv->serialNumber) ||
+	 (stateChanges&(GCClipXOrigin|GCClipYOrigin|GCClipMask|GCSubwindowMode))))
     {
 	if ((*pGC->pScreen->RegionNotEmpty) (pBackingStore->pSavedRegion))
  	{
@@ -2606,6 +2963,21 @@ miValidateBackingStore(pDrawable, pGC, procChanges)
 		(*pGC->pScreen->Intersect) (tempRgn, tempRgn,
  	    			pBackingStore->pSavedRegion);
 	    }
+	    if (pGC->subWindowMode == IncludeInferiors)
+ 	    {
+		RegionPtr translatedClip;
+
+		/* XXX
+		 * any output in IncludeInferiors mode will not
+		 * be redirected to Inferiors backing store
+		 */
+		translatedClip = NotClippedByChildren (pWin);
+		(*pGC->pScreen->TranslateRegion) (translatedClip,
+						  pGC->clipOrg.x,
+						  pGC->clipOrg.y);
+		(*pGC->pScreen->Subtract) (tempRgn, tempRgn, translatedClip);
+		(*pGC->pScreen->RegionDestroy) (translatedClip);
+	    }
 
 	    /*
 	     * Finally, install the new clip list as the clientClip for the
@@ -2619,19 +2991,54 @@ miValidateBackingStore(pDrawable, pGC, procChanges)
 		lift_functions = TRUE;
 	    }
 
-	    pBackingGC->serialNumber = pDrawable->serialNumber;
+	    pPriv->serialNumber = pDrawable->serialNumber;
 	}
  	else
  	{
 	    lift_functions = TRUE;
 	}
-	if (lift_functions && (pBackingStore->status == StatusVirtual))
+
+	/* Reset the status when drawing to an unoccluded window so that
+	 * future SaveAreas will actually copy bits from the screen.  Note that
+	 * output to root window in IncludeInferiors mode will not cause this
+	 * to change.  This causes all trasient graphics by the window
+	 * manager to the root window to not enable backing store.
+	 */
+	if (lift_functions && (pBackingStore->status == StatusVirtual) &&
+	    (pWin->parent || pGC->subWindowMode != IncludeInferiors))
 	    pBackingStore->status = StatusVDirty;
     }
 
-    if (lift_functions ||
-	(pWin->backingStore == NotUseful) ||
-	(((pWin->backingStore & 3) == WhenMapped) && !pWin->viewable))
+    /*
+     * all of these bits have already been dealt with for
+     * pBackingGC above and needn't be looked at again
+     */
+
+    stateChanges &= ~(GCClipXOrigin|GCClipYOrigin|GCClipMask|GCSubwindowMode);
+
+    if (pWin->backingStore == NotUseful ||
+        ((pWin->backingStore & 3) == WhenMapped && !pWin->realized))
+    {
+	lift_functions = TRUE;
+    }
+
+    /*
+     * if no backing store has been allocated, and it's needed,
+     * create it now
+     */
+
+    if (!lift_functions && pBackingStore->pBackingPixmap == NullPixmap)
+	miCreateBSPixmap (pWin);
+
+    /*
+     * if this window still doesn't have a backing pixmap,
+     * lift functions!
+     */
+
+    if (!lift_functions && pBackingStore->pBackingPixmap == NullPixmap)
+        lift_functions = TRUE;
+    
+    if (lift_functions)
     {
 	/*
 	 * If the thing isn't a window or it shouldn't be having backing-store
@@ -2732,13 +3139,6 @@ miValidateBackingStore(pDrawable, pGC, procChanges)
     }
     pPriv->gcHooked = TRUE;
 
-    /*
-     * if no backing store has been allocated, create it now
-     */
-
-    if (pBackingStore->pBackingPixmap == NullPixmap)
-	miCreateBSPixmap (pWin);
-    
     mask = procChanges;
     while (mask)
     {
@@ -2839,7 +3239,13 @@ miValidateBackingStore(pDrawable, pGC, procChanges)
 	DoChangeGC(pBackingGC, GCGraphicsExposures, &false, FALSE);
     }
 
-    ValidateGC(pBackingStore->pBackingPixmap, pBackingGC);
+    if (pBackingStore->pBackingPixmap->drawable.serialNumber
+        != pBackingGC->serialNumber)
+	ValidateGC(pBackingStore->pBackingPixmap, pBackingGC);
+
+    if (pBackingGC->clientClip == 0) {
+    	ErrorF ("backing store clip list nil");
+    }
 }
 
 
@@ -2851,12 +3257,14 @@ miDestroyBSPixmap (pWin)
     
     pScreen = pWin->drawable.pScreen;
     pBackingStore = (MIBackingStorePtr) pWin->devBackingStore;
-    (* pScreen->DestroyPixmap)(pBackingStore->pBackingPixmap);
+    if (pBackingStore->pBackingPixmap)
+	(* pScreen->DestroyPixmap)(pBackingStore->pBackingPixmap);
     pBackingStore->pBackingPixmap = NullPixmap;
     if (IS_VALID_PIXMAP(pBackingStore->backgroundTile))
 	(* pScreen->DestroyPixmap)(pBackingStore->backgroundTile);
     pBackingStore->backgroundTile = NullPixmap;
     pBackingStore->status = StatusNoPixmap;
+    pWin->drawable.serialNumber = NEXT_SERIAL_NUMBER;
 }
 
 miTileVirtualBS (pWin)
@@ -2879,6 +3287,13 @@ miTileVirtualBS (pWin)
     if (pBackingStore->backgroundTile == (PixmapPtr) ParentRelative)
 	miCreateBSPixmap (pWin);
 }
+
+static int BSAllocationsFailed = 0;
+
+# define FAILEDSIZE	32
+
+static struct { int w, h; } failedRecord[FAILEDSIZE];
+static int failedIndex;
 
 miCreateBSPixmap (pWin)
     WindowPtr	pWin;
@@ -2904,7 +3319,21 @@ miCreateBSPixmap (pWin)
 			    pWin->drawable.depth);
 
     if (pBackingStore->pBackingPixmap == NullPixmap)
+    {
+	BSAllocationsFailed++;
+	/*
+	 * record failed allocations
+	 */
+	failedRecord[failedIndex].w = pWin->clientWinSize.width;
+	failedRecord[failedIndex].h = pWin->clientWinSize.height;
+	failedIndex++;
+	if (failedIndex == FAILEDSIZE)
+		failedIndex = 0;
+
+	pBackingStore->status = StatusNoPixmap;
 	return; /* XXX */
+    }
+
     pBackingStore->status = StatusContents;
 
     if (backSet)
