@@ -1,4 +1,4 @@
-/* $XConsortium: MultiSink.c,v 1.4 94/03/30 21:28:04 kaleb Exp $ */
+/* $XConsortium: MultiSink.c,v 1.5 94/04/17 20:12:22 kaleb Exp kaleb $ */
 
 /*
  * Copyright 1991 by OMRON Corporation
@@ -320,7 +320,7 @@ DisplayText(w, x, y, pos1, pos2, highlight)
                 x += width;
                 j = -1;
             }
-            else if (XwcTextEscapement (sink->multi_sink.fontset, &buf[j], 1 == 0)) {
+            else if (XwcTextEscapement (sink->multi_sink.fontset, &buf[j], 1) == 0) {
                 if (sink->multi_sink.display_nonprinting)
                     buf[j] = _Xaw_atowc('@');
                 else

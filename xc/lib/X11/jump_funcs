@@ -1,5 +1,5 @@
-# $XConsortium: jump_funcs,v 1.3 94/12/31 21:23:40 kaleb Exp kaleb $
-# $XFree86: xc/lib/X11/jump_funcs,v 3.1 1994/05/04 14:56:09 dawes Exp $
+# $XConsortium: jump_funcs,v 1.4 95/01/05 16:44:43 kaleb Exp kaleb $
+# $XFree86: xc/lib/X11/jump_funcs,v 3.3 1995/01/14 10:41:20 dawes Exp $
 #
 00000000 T _XSaveContext        libX11         Context
 00000000 T _XFindContext        libX11         Context
@@ -424,7 +424,7 @@
 00000000 T _XFree               libX11         XlibInt
 00000000 T __XGetHostname       libX11         XlibInt
 00000000 T __XScreenOfWindow    libX11         XlibInt
-00000000 U _XANYSET             libX11         XlibInt
+00000000 U __DUMMY__            libX11         XlibInt
 00000000 T __XAllocIDs          libX11       XlibInt
 00000000 T __XAllocTemp         libX11       XlibInt
 00000000 T __XFreeTemp          libX11       XlibInt
@@ -649,7 +649,7 @@
 00000000 T __XRegisterFilterByMask libX11         XRegstFlt
 00000000 T __XRegisterFilterByType libX11         XRegstFlt
 00000000 T __XUnregisterFilter  libX11         XRegstFlt
-00000000 T __XlcMapOSLocaleName libX11         XSetLocale
+00000000 U __DUMMY__ 		libX11         XSetLocale
 00000000 T _XDefaultString      libX11         XCnvToStr
 00000000 T __XlcDefaultLoader   libX11         XlcDefLd
 00000000 T __XrmInitParseInfo   libX11         XlcLoad
@@ -1097,9 +1097,21 @@
 00000000 T __IceTransGetHostname libICE         transport
 00000000 T __IceTransGetMyNetworkId libICE         transport
 00000000 T __IceTransGetPeerNetworkId libICE         transport
-00000000 T __XimLcctstombs      libXdmcp         imLcLkup
-00000000 T __XimLcctstowcs      libXdmcp         imLcLkup
-00000000 T _XdmcpWrap           libXdmcp         Wrap
-00000000 T __XdmcpWrapperToOddParity libXdmcp         Wrap
-00000000 T __XdmcpAuthSetup     libXdmcp         Wraphelp
-00000000 T __XdmcpAuthDoIt      libXdmcp         Wraphelp
+00000000 T __XimLcctstombs      libX11         imLcLkup
+00000000 T __XimLcctstowcs      libX11         imLcLkup
+#ifdef HASXDMAUTH
+00000000 T _XdmcpWrap           libX11         Wrap
+00000000 T __XdmcpWrapperToOddParity libX11         Wrap
+00000000 T __XdmcpAuthSetup     libX11         Wraphelp
+00000000 T __XdmcpAuthDoIt      libX11         Wraphelp
+#else
+00000000 T __DUMMY__		libX11	       Wrap
+00000000 T __DUMMY__		libX11	       Wrap
+00000000 T __DUMMY__		libX11	       Wraphelp
+00000000 T __DUMMY__		libX11	       Wraphelp
+#endif
+#ifdef X_LOCALE
+00000000 T __Xsetlocale		libX11         SetLocale
+#else
+00000000 T __DUMMY__		libX11	       SetLocale
+#endif
