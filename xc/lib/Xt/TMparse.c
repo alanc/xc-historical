@@ -1,4 +1,4 @@
-/* $XConsortium: TMparse.c,v 1.96 90/08/15 21:43:10 swick Exp $ */
+/* $XConsortium: TMparse.c,v 1.97 90/08/17 15:37:31 swick Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -894,7 +894,8 @@ static String ParseKeySym(str, closure, event,error)
 	keySymName[1] = '\0';
 	event->event.eventCode = StringToKeySym(keySymName, error);
 	event->event.eventCodeMask = ~0L;
-    } else if (*str == ',' || *str == ':') {
+    } else if (*str == ',' || *str == ':' ||
+	       (*str == '(' && *(str+1) >= '0' && *(str+1) <= '9')) {
 	/* no detail */
 	event->event.eventCode = 0L;
         event->event.eventCodeMask = 0L;
@@ -906,6 +907,7 @@ static String ParseKeySym(str, closure, event,error)
 		&& *str != ' '
 		&& *str != '\t'
                 && *str != '\n'
+	        && (*str != '(' || *(str+1) <= '0' || *(str+1) >= '9')
 		&& *str != '\0') str++;
 	(void) strncpy(keySymName, start, str-start);
 	keySymName[str-start] = '\0';
