@@ -499,7 +499,7 @@ GrabButton(client, dev, this_device_mode, other_devices_mode, modifiers,
     }
 
     grab = CreateGrab(client->index, dev, pWin, eventMask,
-	(Bool)ownerEvents, (Bool) other_devices_mode, (Bool)this_device_mode,
+	(Bool)ownerEvents, (Bool) this_devices_mode, (Bool)other_device_mode,
 	modifier_device, modifiers, DeviceButtonPress, button, confineTo, 
 	cursor);
     if (!grab)
