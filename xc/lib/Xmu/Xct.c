@@ -1,5 +1,5 @@
 /* 
- * $XConsortium: Xct.c,v 1.11 89/11/30 16:47:28 rws Exp $
+ * $XConsortium: Xct.c,v 1.12 90/12/19 18:03:45 converse Exp $
  * Copyright 1989 by the Massachusetts Institute of Technology
  *
  * Permission to use, copy, modify, and distribute this software and its
@@ -337,7 +337,7 @@ ShiftGRToGL(data, hasCdata)
 /* Create an XctData structure for parsing a Compound Text string. */
 #if NeedFunctionPrototypes
 XctData
-XctCreate(_Xconst XctString string, int length, XctFlags flags)
+XctCreate(_Xconst usigned char *string, int length, XctFlags flags)
 #else
 XctData
 XctCreate(string, length, flags)

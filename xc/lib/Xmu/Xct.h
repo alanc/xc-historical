@@ -2,7 +2,7 @@
 #define _Xct_h
 
 /* 
- * $XConsortium: Xct.h,v 1.3 89/11/21 12:03:47 rws Exp $
+ * $XConsortium: Xct.h,v 1.4 90/12/19 18:03:08 converse Exp $
  * Copyright 1989 by the Massachusetts Institute of Technology
  *
  * Permission to use, copy, modify, and distribute this software and its
@@ -131,7 +131,7 @@ extern "C" {					/* for C++ V2.0 */
 
 extern XctData XctCreate(
 #if NeedFunctionPrototypes
-    _Xconst XctString	/* string */,
+    _Xconst unsigned char *	/* string */,
     int			/* length */,
     XctFlags		/* flags */
 #endif
