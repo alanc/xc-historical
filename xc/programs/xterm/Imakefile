@@ -43,6 +43,8 @@
 		  VTPrsTbl.o TekPrsTbl.o data.o menu.o
           SRCS2 = resize.c
           OBJS2 = resize.o
+           SRCS = $(SRCS1) $(SRCS2)
+           OBJS = $(OBJS1) $(OBJS2)
        PROGRAMS = resize xterm
        DEPLIBS1 = XawClientDepLibs
        DEPLIBS2 = 
@@ -67,3 +69,4 @@ InstallProgramWithFlags(resize, $(BINDIR), )
 InstallAppDefaults(XTerm)
 InstallManPage(xterm,$(MANDIR))
 InstallManPage(resize,$(MANDIR))
+DependTarget()
