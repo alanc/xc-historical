@@ -1,4 +1,4 @@
-/* $XConsortium: cpa_css.c,v 5.2 91/07/01 16:20:40 hersh Exp $ */
+/* $XConsortium: cpa_css.c,v 5.3 91/07/12 20:29:43 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -46,6 +46,7 @@ phg_cpa_add_el( cph, cp_args, css_srvr )
     Cpx_css_srvr	*css_srvr;
 {
     Cpa_struct_data	*stp;
+    int			save_id;
 
     if ( stp = phg_cpa_struct_exists( cph, css_srvr, CPX_BY_SID,
 	    cph->psl->open_struct, CPA_STRUCT_OP_CHECK ) ) {
@@ -63,8 +64,10 @@ phg_cpa_add_el( cph, cp_args, css_srvr )
 		    phg_cpa_link_struct( cph, css_srvr, ste );
 		}
 	    }
-	    if ( ste )
+	    if ( ste ){
+                save_id = (int)ed->id;
 		ed->id = ste->xid;
+	    }
 	    else
 		return;
 	}
@@ -73,6 +76,14 @@ phg_cpa_add_el( cph, cp_args, css_srvr )
 		(CARD32)cp_args->data.add_el.pex_oc.size,
 		(char *)cp_args->data.add_el.pex_oc.oc ) ) {
 	    CPA_FLUSH( css_srvr );
+	}
+
+	/* If EXECUTE STRUCTURE restore the structure id */
+	if (cp_args->data.add_el.el_type == PELEM_EXEC_STRUCT ) {
+	    pexExecuteStructure		*ed;
+
+	    ed = (pexExecuteStructure*)cp_args->data.add_el.pex_oc.oc;
+	    ed->id = (pexStructure)save_id;
 	}
     }
 }
