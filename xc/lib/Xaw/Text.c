@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: Text.c,v 1.140 90/03/19 11:15:01 converse Exp $";
+static char Xrcsid[] = "$XConsortium: Text.c,v 1.141 90/04/17 14:41:12 kit Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -515,7 +515,8 @@ Mask *valueMask;
 XSetWindowAttributes *attributes;
 {
   TextWidget ctx = (TextWidget)w;
-  
+  void _XawTextCheckResize();
+
   (*textClassRec.core_class.superclass->core_class.realize)
     (w, valueMask, attributes);
   
@@ -531,6 +532,7 @@ XSetWindowAttributes *attributes;
 
   _XawTextBuildLineTable(ctx, ctx->text.lt.top, TRUE);
   _XawTextSetScrollBars(ctx);
+  _XawTextCheckResize(ctx);
 }
 
 /* Utility routines for support of Text */
