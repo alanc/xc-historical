@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Intrinsic.c,v 1.103 88/01/08 13:13:21 swick Locked $";
+static char rcsid[] = "$Header: Intrinsic.c,v 1.105 88/01/20 10:42:23 swick Locked $";
 #endif lint
 
 /*
@@ -664,37 +664,44 @@ void XtUnmanageChildren(children, num_children)
     WidgetList children;
     Cardinal num_children;
 {
-
-    CompositeWidget	parent;
-    register Widget	child;
-    Cardinal		num_unique_children, i;
+    Widget		parent, *parentP;
+    Cardinal		i;
+    WidgetList		parentList;
 
     if (num_children == 0) return;
-    parent = (CompositeWidget) children[0]->core.parent;
-    if (parent->core.being_destroyed) return;
 
-    num_unique_children = 0;
+    parentP = (Widget*)parentList = (num_children > 1) ?
+		(WidgetList)XtMalloc( num_children*sizeof(Widget) )
+	       : &parent ;
+    *parentP = children[0]->core.parent;
+
     for (i = 0; i < num_children; i++) {
-	child = children[i];
-        if ((CompositeWidget) child->core.parent != parent) {
-	    XtWarning("Not all children have same parent in XtUnmanageChildren");
-	} else if ((! child->core.managed) || (child->core.being_destroyed)) {
-	    /* Do nothing */
-	} else {
-	    if (child->core.mapped_when_managed) {
-		if (XtIsRealized(child)) {
-		    XtUnmapWidget(child);
-		}
-		num_unique_children++;
-	    }
-	    child->core.managed = FALSE;
+	register Widget child = children[i];
+	register Widget parent = child->core.parent;
+        if ( !child->core.managed ||
+	     parent->core.being_destroyed ||
+	     child->core.being_destroyed )
+	    continue;
+        if (parent != *parentP) {
+	    Widget *pP = parentP;
+	    for (; pP > parentList && *pP != parent; pP-- ) ;
+	    if (*pP != parent) *++parentP = parent;
 	}
+	if (child->core.mapped_when_managed) {
+	    ((CompositeWidget)parent)->composite.num_mapped_children--;
+	    if (XtIsRealized(child))
+		XtUnmapWidget(child);
+	}
+	child->core.managed = FALSE;
     }
-    parent->composite.num_mapped_children =
-    	parent->composite.num_mapped_children-num_unique_children;
 
-    (*(((CompositeWidgetClass)parent->core.widget_class)
-        ->composite_class.change_managed))(parent);
+    for (; parentP >= parentList; parentP-- ) {
+	(*(((CompositeWidgetClass)(*parentP)->core.widget_class)
+	   ->composite_class.change_managed))(*parentP);
+    }
+
+    if (num_children > 1)
+	XtFree( parentList );
 }
 
 
@@ -709,37 +716,45 @@ void XtManageChildren(children, num_children)
     Cardinal num_children;
 {
 
-    Widget		*parentP;
+    Widget		parent, *parentP, realize;
     register Widget	*realizeP;
     Cardinal		i;
     WidgetList		realizeList, parentList;
 
     if (num_children == 0) return;
 
-    parentP = (Widget*)parentList =
-	(WidgetList)XtMalloc( num_children*sizeof(Widget) );
+    if (num_children > 1) {
+	parentP = (Widget*)parentList =
+		    (WidgetList)XtMalloc( num_children*sizeof(Widget) );
+	realizeP = realizeList =
+		    (Widget*)XtMalloc( num_children*sizeof(Widget) );
+    }
+    else {
+	parentP = &parent;
+	realizeP = &realize;
+    }
     *parentP = children[0]->core.parent;
-
-    realizeP = realizeList = (Widget*)XtMalloc( num_children*sizeof(Widget) );
 
     for (i = 0; i < num_children; i++) {
 	register Widget child = children[i];
 	register Widget parent = child->core.parent;
-	if (parent->core.being_destroyed) continue;
-        if (parent != *parentP) {
+	if ( child->core.managed ||
+	     parent->core.being_destroyed ||
+	     child->core.being_destroyed )
+	    continue;
+	if (parent != *parentP) {
 	    Widget *pP = parentP;
 	    for (; pP > parentList && *pP != parent; pP-- ) ;
 	    if (*pP != parent) *++parentP = parent;
 	}
-	if ((child->core.managed) || (child->core.being_destroyed)) {
-	    /* Do nothing */
-	} else {
-	    child->core.managed = TRUE;
-	    if (child->core.mapped_when_managed)
-		((CompositeWidget)parent)->composite.num_mapped_children++;
-	    if (XtIsRealized(child->core.parent) && ! XtIsRealized(child))
-		*realizeP++ = child;
+	child->core.managed = TRUE;
+	if (child->core.mapped_when_managed) {
+	    ((CompositeWidget)parent)->composite.num_mapped_children++;
+	    if (XtIsRealized(child))
+		XtMapWidget(child);
 	}
+	if (XtIsRealized(child->core.parent) && ! XtIsRealized(child))
+	    *realizeP++ = child;
     }
 
     for (; parentP >= parentList; parentP-- ) {
@@ -753,8 +768,10 @@ void XtManageChildren(children, num_children)
 	    XtMapWidget(*realizeP);
 	}
     }
-    XtFree( parentList );
-    XtFree( realizeList );
+    if (num_children > 1) {
+	XtFree( parentList );
+	XtFree( realizeList );
+    }
 
 }
 
