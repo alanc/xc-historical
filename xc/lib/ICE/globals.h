@@ -1,4 +1,4 @@
-/* $XConsortium: globals.h,v 1.3 93/09/08 20:43:22 mor Exp $ */
+/* $XConsortium: globals.h,v 1.4 93/09/27 11:45:29 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -17,10 +17,10 @@ purpose.  It is provided "as is" without express or implied warranty.
 extern void _IceDefaultErrorHandler ();
 extern void _IceDefaultIOErrorHandler ();
 
-extern IcePOauthStatus _IcePOauth1proc ();
-extern IcePAauthStatus _IcePAauth1proc ();
-extern IcePOauthStatus _IcePOauth2proc ();
-extern IcePAauthStatus _IcePAauth2proc ();
+extern IcePoAuthStatus _IcePoAuth1proc ();
+extern IcePaAuthStatus _IcePaAuth1proc ();
+extern IcePoAuthStatus _IcePoAuth2proc ();
+extern IcePaAuthStatus _IcePaAuth2proc ();
 
 extern Bool _IceProcessCoreMessage ();
 
@@ -32,12 +32,12 @@ _IceProtocol 	_IceProtocols[255];
 int         	_IceLastMajorOpcode = 0;
 
 int		_IceAuthCount = 2;
-IcePOauthRec	_IcePOauthRecs[] = {
-		  		{"ICE-AUTH-TEST-1", _IcePOauth1proc},
-		  		{"ICE-AUTH-TEST-2", _IcePOauth2proc}};
-IcePAauthRec	_IcePAauthRecs[] = {
-		  		{"ICE-AUTH-TEST-1", _IcePAauth1proc},
-		  		{"ICE-AUTH-TEST-2", _IcePAauth2proc}};
+IcePoAuthRec	_IcePoAuthRecs[] = {
+		  		{"ICE-AUTH-TEST-1", _IcePoAuth1proc},
+		  		{"ICE-AUTH-TEST-2", _IcePoAuth2proc}};
+IcePaAuthRec	_IcePaAuthRecs[] = {
+		  		{"ICE-AUTH-TEST-1", _IcePaAuth1proc},
+		  		{"ICE-AUTH-TEST-2", _IcePaAuth2proc}};
 
 int		_IceVersionCount = 1;
 _IceVersion	_IceVersions[] = {

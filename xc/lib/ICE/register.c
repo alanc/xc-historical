@@ -1,4 +1,4 @@
-/* $XConsortium: register.c,v 1.4 93/09/23 11:52:45 mor Exp $ */
+/* $XConsortium: register.c,v 1.5 93/09/27 11:45:33 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -25,13 +25,13 @@ char			*protocolName;
 char			*vendor;
 char			*release;
 int			versionCount;
-IcePOversionRec		*versionRecs;
+IcePoVersionRec		*versionRecs;
 int			authCount;
-IcePOauthRec		*authRecs;
+IcePoAuthRec		*authRecs;
 IceIOErrorProc		IOErrorProc;
 
 {
-    _IcePOprotocol 	*p;
+    _IcePoProtocol 	*p;
     int			opcodeRet, i;
 
     for (i = 1; i <= _IceLastMajorOpcode; i++)
@@ -71,7 +71,7 @@ IceIOErrorProc		IOErrorProc;
 	strcpy (name, protocolName);
 
 	p = _IceProtocols[_IceLastMajorOpcode].orig_client =
-	    (_IcePOprotocol *) malloc (sizeof (_IcePOprotocol));
+	    (_IcePoProtocol *) malloc (sizeof (_IcePoProtocol));
 
 	_IceProtocols[_IceLastMajorOpcode].accept_client = NULL;
 
@@ -86,15 +86,15 @@ IceIOErrorProc		IOErrorProc;
 
     p->version_count = versionCount;
 
-    p->version_recs = (IcePOversionRec *) malloc (
-	versionCount * sizeof (IcePOversionRec));
+    p->version_recs = (IcePoVersionRec *) malloc (
+	versionCount * sizeof (IcePoVersionRec));
     memcpy (p->version_recs, versionRecs,
-	versionCount * sizeof (IcePOversionRec));
+	versionCount * sizeof (IcePoVersionRec));
 
     if ((p->auth_count = authCount) > 0)
     {
-	p->auth_recs = (IcePOauthRec *) malloc (
-	    authCount * sizeof (IcePOauthRec));
+	p->auth_recs = (IcePoAuthRec *) malloc (
+	    authCount * sizeof (IcePoAuthRec));
 
 	for (i = 0; i < authCount; i++)
 	{
@@ -126,14 +126,14 @@ char				*protocolName;
 char				*vendor;
 char				*release;
 int				versionCount;
-IcePAversionRec			*versionRecs;
+IcePaVersionRec			*versionRecs;
 IceProtocolSetupNotifyProc	protocolSetupNotifyProc;
 int				authCount;
-IcePAauthRec			*authRecs;
+IcePaAuthRec			*authRecs;
 IceIOErrorProc			IOErrorProc;
 
 {
-    _IcePAprotocol 	*p;
+    _IcePaProtocol 	*p;
     int			opcodeRet, i;
 
     for (i = 1; i <= _IceLastMajorOpcode; i++)
@@ -176,7 +176,7 @@ IceIOErrorProc			IOErrorProc;
 	_IceProtocols[_IceLastMajorOpcode].orig_client = NULL;
 
 	p = _IceProtocols[_IceLastMajorOpcode].accept_client =
-	    (_IcePAprotocol *) malloc (sizeof (_IcePAprotocol));
+	    (_IcePaProtocol *) malloc (sizeof (_IcePaProtocol));
 
 	opcodeRet = ++_IceLastMajorOpcode;
     }
@@ -189,17 +189,17 @@ IceIOErrorProc			IOErrorProc;
 
     p->version_count = versionCount;
 
-    p->version_recs = (IcePAversionRec *) malloc (
-	versionCount * sizeof (IcePAversionRec));
+    p->version_recs = (IcePaVersionRec *) malloc (
+	versionCount * sizeof (IcePaVersionRec));
     memcpy (p->version_recs, versionRecs,
-	versionCount * sizeof (IcePAversionRec));
+	versionCount * sizeof (IcePaVersionRec));
 
     p->protocol_setup_notify_proc = protocolSetupNotifyProc;
 
     if ((p->auth_count = authCount) > 0)
     {
-	p->auth_recs = (IcePAauthRec *) malloc (
-	    authCount * sizeof (IcePAauthRec));
+	p->auth_recs = (IcePaAuthRec *) malloc (
+	    authCount * sizeof (IcePaAuthRec));
 
 	for (i = 0; i < authCount; i++)
 	{

@@ -1,4 +1,4 @@
-/* $XConsortium: ICElib.h,v 1.12 93/09/22 17:54:54 mor Exp $ */
+/* $XConsortium: ICElib.h,v 1.13 93/09/27 11:44:45 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -32,18 +32,18 @@ typedef char *IcePointer;
 #endif
 
 typedef enum {
-    IcePOauthHaveReply,
-    IcePOauthRejected,
-    IcePOauthFailed,
-    IcePOauthDoneCleanup
-} IcePOauthStatus;
+    IcePoAuthHaveReply,
+    IcePoAuthRejected,
+    IcePoAuthFailed,
+    IcePoAuthDoneCleanup
+} IcePoAuthStatus;
 
 typedef enum {
-    IcePAauthContinue,
-    IcePAauthAccepted,
-    IcePAauthRejected,
-    IcePAauthFailed
-} IcePAauthStatus;
+    IcePaAuthContinue,
+    IcePaAuthAccepted,
+    IcePaAuthRejected,
+    IcePaAuthFailed
+} IcePaAuthStatus;
 
 typedef enum {
     IceConnectPending,
@@ -75,7 +75,7 @@ typedef void (*IceWatchProc) (
 #endif
 );
 
-typedef Bool (*IcePOprocessMsgProc) (
+typedef Bool (*IcePoProcessMsgProc) (
 #if NeedFunctionPrototypes
     IceConn 		/* iceConn */,
     int			/* opcode */,
@@ -85,7 +85,7 @@ typedef Bool (*IcePOprocessMsgProc) (
 #endif
 );
 
-typedef void (*IcePAprocessMsgProc) (
+typedef void (*IcePaProcessMsgProc) (
 #if NeedFunctionPrototypes
     IceConn 		/* iceConn */,
     int			/* opcode */,
@@ -97,16 +97,16 @@ typedef void (*IcePAprocessMsgProc) (
 typedef struct {
     int			 major_version;
     int			 minor_version;
-    IcePOprocessMsgProc  process_msg_proc;
-} IcePOversionRec;
+    IcePoProcessMsgProc  process_msg_proc;
+} IcePoVersionRec;
 
 typedef struct {
     int			 major_version;
     int			 minor_version;
-    IcePAprocessMsgProc  process_msg_proc;
-} IcePAversionRec;
+    IcePaProcessMsgProc  process_msg_proc;
+} IcePaVersionRec;
 
-typedef IcePOauthStatus (*IcePOauthProc) (
+typedef IcePoAuthStatus (*IcePoAuthProc) (
 #if NeedFunctionPrototypes
     IcePointer *	/* authStatePtr */,
     Bool		/* cleanUp */,
@@ -119,7 +119,7 @@ typedef IcePOauthStatus (*IcePOauthProc) (
 #endif
 );
 
-typedef IcePAauthStatus (*IcePAauthProc) (
+typedef IcePaAuthStatus (*IcePaAuthProc) (
 #if NeedFunctionPrototypes
     IcePointer *	/* authStatePtr */,
     Bool		/* swap */,
@@ -133,13 +133,13 @@ typedef IcePAauthStatus (*IcePAauthProc) (
 
 typedef struct {
     char		*auth_name;
-    IcePOauthProc	auth_proc;
-} IcePOauthRec;
+    IcePoAuthProc	auth_proc;
+} IcePoAuthRec;
 
 typedef struct {
     char		*auth_name;
-    IcePAauthProc	auth_proc;
-} IcePAauthRec;
+    IcePaAuthProc	auth_proc;
+} IcePaAuthRec;
 
 typedef void (*IceProtocolSetupNotifyProc) (
 #if NeedFunctionPrototypes
@@ -204,27 +204,27 @@ typedef struct {
     char		*vendor;
     char		*release;
     int			version_count;
-    IcePOversionRec	*version_recs;
+    IcePoVersionRec	*version_recs;
     int			auth_count;
-    IcePOauthRec	*auth_recs;
+    IcePoAuthRec	*auth_recs;
     IceIOErrorProc	io_error_proc;
-} _IcePOprotocol;
+} _IcePoProtocol;
 
 typedef struct {
     char			*vendor;
     char			*release;
     int				version_count;
-    IcePAversionRec		*version_recs;
+    IcePaVersionRec		*version_recs;
     IceProtocolSetupNotifyProc	protocol_setup_notify_proc;
     int				auth_count;
-    IcePAauthRec		*auth_recs;
+    IcePaAuthRec		*auth_recs;
     IceIOErrorProc		io_error_proc;
-} _IcePAprotocol;
+} _IcePaProtocol;
 
 typedef struct {
     char		*protocol_name;
-    _IcePOprotocol	*orig_client;
-    _IcePAprotocol   	*accept_client;
+    _IcePoProtocol	*orig_client;
+    _IcePaProtocol   	*accept_client;
 } _IceProtocol;
 
 typedef struct {
@@ -233,8 +233,8 @@ typedef struct {
     _IceProtocol		*protocol;
     Bool			accept_flag;
     union {
-	IcePAprocessMsgProc	accept_client;
-	IcePOprocessMsgProc	orig_client;
+	IcePaProcessMsgProc	accept_client;
+	IcePoProcessMsgProc	orig_client;
     } process_msg_proc;
 } _IceProcessMsgInfo;
 
@@ -410,9 +410,9 @@ extern int IceRegisterForProtocolSetup (
     char *			/* vendor */,
     char *			/* release */,
     int				/* versionCount */,
-    IcePOversionRec *		/* versionRecs */,
+    IcePoVersionRec *		/* versionRecs */,
     int				/* authCount */,
-    IcePOauthRec *		/* authRecs */,
+    IcePoAuthRec *		/* authRecs */,
     IceIOErrorProc		/* IOErrorProc */
 #endif
 );
@@ -423,10 +423,10 @@ extern int IceRegisterForProtocolReply (
     char *			/* vendor */,
     char *			/* release */,
     int				/* versionCount */,
-    IcePAversionRec *		/* versionRecs */,
+    IcePaVersionRec *		/* versionRecs */,
     IceProtocolSetupNotifyProc	/* protocolSetupNotifyProc */,
     int				/* authCount */,
-    IcePAauthRec *		/* authRecs */,
+    IcePaAuthRec *		/* authRecs */,
     IceIOErrorProc		/* IOErrorProc */
 #endif
 );

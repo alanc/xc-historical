@@ -1,4 +1,4 @@
-/* $XConsortium: sm_auth.c,v 1.2 93/09/22 17:59:24 mor Exp $ */
+/* $XConsortium: sm_auth.c,v 1.3 93/09/27 11:47:22 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -32,7 +32,7 @@ typedef struct {
 } Auth2State;
 
 
-IcePOauthStatus
+IcePoAuthStatus
 _SmcAuth1proc (authStatePtr, cleanUp, swap,
     authDataLen, authData, replyDataLenRet, replyDataRet, errorStringRet)
 
@@ -62,7 +62,7 @@ char    	**errorStringRet;
 	 */
 
 	free ((char *) state);
-	return (IcePOauthDoneCleanup);
+	return (IcePoAuthDoneCleanup);
     }
 
     *errorStringRet = NULL;
@@ -87,12 +87,12 @@ char    	**errorStringRet;
     *replyDataLenRet = 0;
     *replyDataRet = NULL;
 
-    return (IcePOauthHaveReply);
+    return (IcePoAuthHaveReply);
 }
 
 
 
-IcePAauthStatus
+IcePaAuthStatus
 _SmsAuth1proc (authStatePtr, swap, replyDataLen, replyData,
     authDataLenRet, authDataRet, errorStringRet)
 
@@ -139,19 +139,19 @@ char    	**errorStringRet;
 
 	free ((char *) state);
 
-	return (IcePAauthAccepted);
+	return (IcePaAuthAccepted);
     }
     else
     {
 	*authDataLenRet = 0;
 	*authDataRet = NULL;
 
-	return (IcePAauthContinue);
+	return (IcePaAuthContinue);
     }
 }
 
 
-IcePOauthStatus
+IcePoAuthStatus
 _SmcAuth2proc (authStatePtr, cleanUp, swap,
     authDataLen, authData, replyDataLenRet, replyDataRet, errorStringRet)
 
@@ -181,7 +181,7 @@ char    	**errorStringRet;
 	 */
 
 	free ((char *) state);
-	return (IcePOauthDoneCleanup);
+	return (IcePoAuthDoneCleanup);
     }
 
     *errorStringRet = NULL;
@@ -206,12 +206,12 @@ char    	**errorStringRet;
     *replyDataLenRet = 0;
     *replyDataRet = NULL;
 
-    return (IcePOauthHaveReply);
+    return (IcePoAuthHaveReply);
 }
 
 
 
-IcePAauthStatus
+IcePaAuthStatus
 _SmsAuth2proc (authStatePtr, swap, replyDataLen, replyData,
     authDataLenRet, authDataRet, errorStringRet)
 
@@ -258,13 +258,13 @@ char    	**errorStringRet;
 
 	free ((char *) state);
 
-	return (IcePAauthAccepted);
+	return (IcePaAuthAccepted);
     }
     else
     {
 	*authDataLenRet = 0;
 	*authDataRet = NULL;
 
-	return (IcePAauthContinue);
+	return (IcePaAuthContinue);
     }
 }
