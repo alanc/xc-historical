@@ -1,4 +1,4 @@
-/* $XConsortium: Xlib.h,v 11.207 91/06/05 08:41:45 rws Exp $ */
+/* $XConsortium: Xlib.h,v 11.208 91/06/05 08:46:17 rws Exp $ */
 /* 
  * Copyright 1985, 1986, 1987, 1991 by the Massachusetts Institute of Technology
  *
@@ -4040,6 +4040,12 @@ extern char *XBaseFontNameListOfFontSet(
 );
 
 extern char *XLocaleOfFontSet(
+#if NeedFunctionPrototypes
+    XFontSet		/* font_set */
+#endif
+);
+
+extern Bool XContextDependentDrawing(
 #if NeedFunctionPrototypes
     XFontSet		/* font_set */
 #endif
