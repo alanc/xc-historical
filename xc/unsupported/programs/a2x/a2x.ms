@@ -1,4 +1,4 @@
-$XConsortium: a2x.doc,v 1.7 92/08/11 20:03:56 rws Exp $
+$XConsortium: a2x.doc,v 1.8 92/08/13 19:34:59 rws Exp $
 
 				Using a2x
 
@@ -550,6 +550,12 @@ name/class pair.  The <name>, if specified, must match exactly (for 'N') or
 be a prefix of (for 'P') the name of the window, and the <class>, if
 specified, must match exactly (for 'N') or be a prefix of (for 'P') the
 class of the window, for a window to be considered.
+
+In case the <name> you want to specify has a '.' in it, a2x uses the last
+'.' as the separator between <name> and <class>, so if you have no <class>
+to provide, simply terminate the <name> with another '.'.  For example:
+
+	nxterm-expo.lcs.mit.edu.
 
 The _MIT_OBJ_CLASS property is set by a nonstandard addition to the Xt
 Intrinsics.  If the application resource "xtIdentifyWindows" is set to
