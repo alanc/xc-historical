@@ -130,7 +130,6 @@ static char *hex_table[] = {		/* for printing hex digits */
 };
 
 static int original_umask = 0;
-static int real_uid = -1, effective_uid = -1;
 
 extern char *get_hostname();
 extern Bool nameserver_timedout;
@@ -144,7 +143,7 @@ static void prefix (fn, n)
     char *fn;
     int n;
 {
-    fprintf (stderr, "%s: line %d of \"%s\":  ", ProgramName, n, fn);
+    fprintf (stderr, "%s: %s:%d:  ", ProgramName, fn, n);
 }
 
 static void baddisplayname (dpy, cmd)
@@ -450,16 +449,11 @@ int auth_initialize (authfilename)
     int n;
     AuthList *head, *tail;
 
-    real_uid = getuid ();		/* save the old uid's */
-    effective_uid = geteuid ();
-
-    if (setuid (real_uid) != 0) {	/* clear the uid */
-	fprintf (stderr, "%s:  unable to set uid to user\n", ProgramName);
-	return -1;
-    }
-
     original_umask = umask (0077);	/* disallow non-owner access */
 
+    /*
+     * XXX needs to lock auth file
+     */
     authfp = fopen (authfilename, "r");
     if (!authfp) {
 	int olderrno = errno;
@@ -491,8 +485,13 @@ int auth_finalize ()
 {
     if (xauth_modified) {
 	/* XXX - need to write stuff back out */
-	printf ("Writing authority file \"%s\"\n", xauth_filename);
+	if (verbose) {
+	    printf ("Writing authority file %s\n", xauth_filename);
+	}
     }
+    /*
+     * XXX - need to unlock auth file
+     */
     (void) umask (original_umask);
     return 0;
 }
@@ -810,7 +809,7 @@ static int do_help (inputfilename, lineno, argc, argv)
     char **argv;
 {
     /* allow bad lines since this is help */
-    print_help ();
+    print_help (False);
     return 0;
 }
 
@@ -1122,11 +1121,11 @@ static int do_info (inputfilename, lineno, argc, argv)
 	badcommandline (argv[0]);
 	return 1;
     }
-    printf ("Authority file:  %s%s\n", 
-	    xauth_filename ? xauth_filename : "(none)",
-	    xauth_modified ? " (needs to be written out)" : "");
-    printf ("Numeric format:  %s\n", format_numeric ? "on" : "off");
-    printf ("Current input:   %s, line %d\n", inputfilename, lineno);
+    printf ("Authority file:     %s\n",
+	    xauth_filename ? xauth_filename : "(none)");
+    printf ("Has been modified:  %s\n", xauth_modified ? "yes" : "no");
+    printf ("Numeric format:     %s\n", format_numeric ? "on" : "off");
+    printf ("Input line:         %s:%d\n", inputfilename, lineno);
     return 0;
 }
 
@@ -1212,7 +1211,8 @@ static int do_abort (inputfilename, lineno, argc, argv)
     char **argv;
 {
     /* allow bogus stuff */
-    exit (0);
+    xauth_modified = False;		/* bash it to prevent writing */
+    exit (auth_finalize ());
     /* NOTREACHED */
 }
 
