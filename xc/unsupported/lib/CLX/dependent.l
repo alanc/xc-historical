@@ -2215,15 +2215,13 @@
 (deftype bitmap ()
   'pixarray-1)
 
-;;; Lispms, Vaxen, Dec/Mips boxes, and 80*86s are all little endian.
-
 (defconstant *image-bit-lsb-first-p*
-	     #+(or lispm vax) t
-	     #-(or lispm vax) nil)
+	     #+clx-little-endian t
+	     #-clx-little-endian nil)
 
 (defconstant *image-byte-lsb-first-p*
-	     #+(or lispm vax) t
-	     #-(or lispm vax) nil)
+	     #+clx-little-endian t
+	     #-clx-little-endian nil)
 
 ;;; All known lisps running CLX work best with image unit and pad being 32
 ;;; bits.
@@ -2314,21 +2312,16 @@
 	   (pixarray-padded-bits-per-line
 	     (* pixarray-padded-pixels-per-line bits-per-pixel)))
       (when (and (= (sys:array-element-size pixarray) bits-per-pixel)
-		 (zerop (mod padded-bits-per-line 32))
-		 (zerop (mod pixarray-padded-bits-per-line 32)))
-	(if (zerop boffset)
-	    (sys:with-stack-array (a (list (+ y height) padded-pixels-per-line)
-				     :element-type (array-element-type pixarray)
-				     :displaced-to bbuf)
-	      (sys:bitblt boole-1 width height a x y pixarray 0 0))
-	  (sys:with-stack-array (b (- (length bbuf) boffset)
-				   :element-type 'card8
-				   :displaced-to bbuf
-				   :displaced-index-offset boffset)
-	    (sys:with-stack-array (a (list (+ y height) padded-pixels-per-line)
-				     :element-type (array-element-type pixarray)
-				     :displaced-to b)
-	      (sys:bitblt boole-1 width height a x y pixarray 0 0))))
+		 (zerop (index-mod padded-bits-per-line 32))
+		 (zerop (index-mod pixarray-padded-bits-per-line 32)))
+	(#+Genera sys:stack-let* #-Genera let*
+	 ((dimensions (list height padded-pixels-per-line))
+	  (a (make-array
+	       dimensions
+	       :element-type (array-element-type pixarray)
+	       :displaced-to bbuf
+	       :displaced-index-offset (floor (* boffset 8) bits-per-pixel))))
+	 (sys:bitblt boole-1 width height a x y pixarray 0 0))
 	t))))
 
 ;;; FAST-WRITE-PIXARRAY - copy part of a pixarray into an array of CARD8s
@@ -2352,21 +2345,16 @@
 	   (pixarray-padded-bits-per-line
 	     (* pixarray-padded-pixels-per-line bits-per-pixel)))
       (when (and (= (sys:array-element-size pixarray) bits-per-pixel)
-		 (zerop (mod padded-bits-per-line 32))
-		 (zerop (mod pixarray-padded-bits-per-line 32)))
-	(if (zerop boffset)
-	    (sys:with-stack-array (a (list height padded-pixels-per-line)
-				     :element-type (array-element-type pixarray)
-				     :displaced-to bbuf)
-	      (sys:bitblt boole-1 width height pixarray x y a 0 0))
-	  (sys:with-stack-array (b (- (length bbuf) boffset)
-				   :element-type 'card8
-				   :displaced-to bbuf
-				   :displaced-index-offset boffset)
-	    (sys:with-stack-array (a (list height padded-pixels-per-line)
-				     :element-type (array-element-type pixarray)
-				     :displaced-to b)
-	      (sys:bitblt boole-1 width height pixarray x y a 0 0))))
+		 (zerop (index-mod padded-bits-per-line 32))
+		 (zerop (index-mod pixarray-padded-bits-per-line 32)))
+	(#+Genera sys:stack-let* #-Genera let*
+	 ((dimensions (list height padded-pixels-per-line))
+	  (a (make-array
+	       dimensions
+	       :element-type (array-element-type pixarray)
+	       :displaced-to bbuf
+	       :displaced-index-offset (floor (* boffset 8) bits-per-pixel))))
+	 (sys:bitblt boole-1 width height pixarray x y a 0 0))
 	t))))
 
 ;;; FAST-COPY-PIXARRAY - copy part of a pixarray into another
@@ -2387,7 +2375,7 @@
 	   (copy-padded-bits-per-line
 	     (* copy-padded-pixels-per-line bits-per-pixel)))
       (when (and (= (sys:array-element-size pixarray) bits-per-pixel)
-		 (zerop (mod pixarray-padded-bits-per-line 32))
-		 (zerop (mod copy-padded-bits-per-line 32)))
+		 (zerop (index-mod pixarray-padded-bits-per-line 32))
+		 (zerop (index-mod copy-padded-bits-per-line 32)))
 	(sys:bitblt boole-1 width height pixarray x y copy 0 0)
 	t))))
