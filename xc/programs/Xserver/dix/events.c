@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: events.c,v 5.45 91/07/20 23:26:39 rws Exp $ */
+/* $XConsortium: events.c,v 5.46 91/07/21 10:22:44 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -547,7 +547,7 @@ PlayReleasedEvents()
 	    (*qe->device->public.processInputProc)(qe->event, qe->device,
 						   qe->evcount);
 	    xfree(qe);
-	    for (dev = inputInfo.devices; dev->sync.frozen; dev = dev->next)
+	    for (dev = inputInfo.devices; dev && dev->sync.frozen; dev = dev->next)
 		;
 	    if (!dev)
 		break;
@@ -945,12 +945,22 @@ ReleaseActiveGrabs(client)
     ClientPtr client;
 {
     register DeviceIntPtr dev;
+    Bool    done;
 
-    for (dev = inputInfo.devices; dev; dev = dev->next)
-    {
-	if (dev->grab && SameClient(dev->grab, client))
-	    (*dev->DeactivateGrab)(dev);
-    }
+    /* XXX CloseDownClient should remove passive grabs before
+     * releasing active grabs.
+     */
+    do {
+    	done = TRUE;
+    	for (dev = inputInfo.devices; dev; dev = dev->next)
+    	{
+	    if (dev->grab && SameClient(dev->grab, client))
+	    {
+	    	(*dev->DeactivateGrab)(dev);
+	    	done = FALSE;
+	    }
+    	}
+    } while (!done);
 }
 
 /**************************************************************************
