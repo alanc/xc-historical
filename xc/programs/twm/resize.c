@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: resize.c,v 1.67 90/03/13 15:29:08 jim Exp $
+ * $XConsortium: resize.c,v 1.68 90/03/23 11:42:37 jim Exp $
  *
  * window resizing borrowed from the "wm" window manager
  *
@@ -38,7 +38,7 @@
 
 #if !defined(lint) && !defined(SABER)
 static char RCSinfo[]=
-"$XConsortium: resize.c,v 1.67 90/03/13 15:29:08 jim Exp $";
+"$XConsortium: resize.c,v 1.68 90/03/23 11:42:37 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -975,6 +975,11 @@ SetFrameShape (tmp)
 	    newClip[1].height = tmp->attr.height;
 	    XShapeCombineRectangles (dpy, tmp->frame, ShapeClip, 0, 0,
 				     newClip, 2, ShapeSet, YXBanded);
+	} else {
+	    (void) XShapeCombineMask (dpy, tmp->frame, ShapeBounding, 0, 0,
+ 				      None, ShapeSet);
+	    (void) XShapeCombineMask (dpy, tmp->frame, ShapeClip, 0, 0,
+				      None, ShapeSet);
 	}
     }
 }
