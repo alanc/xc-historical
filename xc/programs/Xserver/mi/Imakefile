@@ -28,6 +28,8 @@ NormalLibraryTarget(mi,$(OBJS))
 LintLibraryTarget(mi,$(SRCS))
 NormalLintTarget($(SRCS))
 
+all:: cbrt.o
+
 SpecialObjectRule(miinitext.o, $(ICONFIGFILES), $(EXT_DEFINES))
 
 #if HasSaberC
