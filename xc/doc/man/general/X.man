@@ -1,6 +1,7 @@
-.TH X 1 "Release 5"  "X Version 11"
+.\" $XConsortium$
+.TH X 1 "Release 5" "X Version 11"
 .SH NAME
-X - a portable, network-transparent window system
+X \- a portable, network-transparent window system
 .SH SYNOPSIS
 .PP
 The X Window System
@@ -953,7 +954,6 @@ please refer to that command's manual page.
     %  xeyes -geometry 48x48-48+0
     %  xbiff -update 20 
     %  xlsfonts '*helvetica*'
-    %  xlswins -l
     %  xwininfo -root
     %  xdpyinfo -display joesworkstation:0
     %  xhost -joesworkstation
@@ -999,26 +999,32 @@ the appropriate instance name can be placed before the asterisk:
 .fi
 .SH "SEE ALSO"
 .PP
+.\" introductions
 XConsortium(1),
 XStandards(1),
 Xsecurity(1),
+.\" clients, utilities, and demos
 appres(1), auto_box(1), bdftopcf(1), beach_ball(1), bitmap(1), editres(1),
 fs(1), fsinfo(1), fslsfonts(1), fstobdf(1),
-ico(1), imake(1), listres(1), maze(1),
-mkfontdir(1), oclock(1), plbpex(1), puzzle(1), resize(1),
-showfont(1), twm(1), viewres(1), x11perf(1),
-xauth(1), xbiff(1), xcalc(1), xclipboard(1), xclock(1), xcmsdb(1), xconsole(1),
-xditview(1), xdm(1), xdpyinfo(1), xedit(1), xev(1), xeyes(1), xfd(1),
+ico(1), imake(1), listres(1), lndir(1), makedepend(1), maze(1),
+mkdirhier(1), mkfontdir(1), oclock(1), plbpex(1), puzzle(1), resize(1),
+showfont(1), showrgb(1), twm(1), viewres(1), x11perf(1), x11perfcomp(1),
+xauth(1), xbiff(1), xcalc(1), xclipboard(1), xclock(1),
+xcmsdb(1), xcmstest(1), xconsole(1), xcutsel(1),
+xditview(1), xdm(1), xdpr(1), xdpyinfo(1), xedit(1), xev(1), xeyes(1), xfd(1),
 xfontsel(1), xgas(1), xgc(1), xhost(1), xinit(1), xkill(1), xload(1),
 xlogo(1), xlsatoms(1), xlsclients(1), xlsfonts(1), xmag(1),
-xman(1), xmh(1), xmodmap(1), xon(1), xpr(1), xprop(1), xrdb(1), xrefresh(1),
+xman(1), xmh(1), xmkmf(1), xmodmap(1), xon(1),
+xpr(1), xprop(1), xrdb(1), xrefresh(1),
 xset(1), xsetroot(1), xstdcmap(1), xterm(1), xwd(1), xwininfo(1), xwud(1),
-Xserver(1), Xdec(1), Xibm(1), XmacII(1), Xmips(1),
-Xqdss(1), Xqvss(1), Xsun(1), Xtek(1), X386(1)
-kbd_mode(1), biff(1), init(8), ttys(5),
+.\" servers
+Xserver(1), Xdec(1), XmacII(1), Xmips(1),
+Xqdss(1), Xqvss(1), Xsun(1), X386(1),
+kbd_mode(1),
+.\" specifications
 .I "Xlib \- C Language X Interface\fR,\fP"
 and
-.I "X Toolkit Intrinsics - C Language Interface\fR,\fP"
+.I "X Toolkit Intrinsics \- C Language Interface"
 .SH COPYRIGHT
 .PP
 The following copyright and permission notice outlines the rights and
