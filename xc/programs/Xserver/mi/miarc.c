@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: miarc.c,v 5.44 93/07/12 09:28:57 dpw Exp $ */
+/* $XConsortium: miarc.c,v 5.45 93/09/03 08:09:28 dpw Exp $ */
 /* Author: Keith Packard and Bob Scheifler */
 /* Warning: this code is toxic, do not dally very long here. */
 
@@ -404,6 +404,7 @@ miFreeArcCache (data, id)
 	}
     }
     lrustamp = 0;
+    return Success;
 }
 
 static void
@@ -526,13 +527,13 @@ miComputeEllipseSpans(lw, parc, spdata)
 	if (d < 0.0) {
 	    d = Nc;
 	    b = N;
-	    if (b < 0.0 == t < 0.0)
+	    if ( (b < 0.0) == (t < 0.0) )
 	    {
 		b = -b;
 		d = -d;
 	    }
 	    Z = N - 2.0 * b * cos(acos(-t / d) / 3.0);
-	    if (Z < 0.0 == Vr < 0.0)
+	    if ( (Z < 0.0) == (Vr < 0.0) )
 		flip = 2;
 	    else
 		flip = 1;
@@ -709,13 +710,13 @@ tailX(K, def, bounds, acc)
     if (d < 0.0) {
 	d = Nc;
 	b = N;
-	if (b < 0.0 == t < 0.0)
+	if ( (b < 0.0) == (t < 0.0) )
 	{
 	    b = -b;
 	    d = -d;
 	}
 	Z = N - 2.0 * b * cos(acos(-t / d) / 3.0);
-	if (Z < 0.0 == Vr < 0.0)
+	if ( (Z < 0.0) == (Vr < 0.0) )
 	    flip = 2;
 	else
 	    flip = 1;
@@ -1236,7 +1237,7 @@ angleBetween (center, point1, point2)
 	return a;
 }
 
-static
+static void
 translateBounds (b, x, y, fx, fy)
 miArcFacePtr	b;
 int		x, y;
@@ -1323,7 +1324,7 @@ miArcJoin (pDraw, pGC, pLeft, pRight,
 		pArcPts[1].y = center.y;
 		pArcPts[2].x = corner.x;
 		pArcPts[2].y = corner.y;
-		if( cpt = miGetArcPts(&arc, 3, &pArcPts))
+		if( (cpt = miGetArcPts(&arc, 3, &pArcPts)) )
 		{
 			/* by drawing with miFillSppPoly and setting the endpoints of the arc
 			 * to be the corners, we assure that the cap will meet up with the
@@ -1449,7 +1450,7 @@ miRoundCap(pDraw, pGC, pCenter, pEnd, pCorner, pOtherCorner, fLineEnd,
 	    arc.angle2 += 360.0;
     }
     pArcPts = (SppPointPtr) NULL;
-    if( cpt = miGetArcPts(&arc, 0, &pArcPts))
+    if( (cpt = miGetArcPts(&arc, 0, &pArcPts)) )
     {
 	/* by drawing with miFillSppPoly and setting the endpoints of the arc
 	 * to be the corners, we assure that the cap will meet up with the
@@ -1687,7 +1688,7 @@ static void
 addJoin (joinsp, njoinsp, sizep, end0, index0, phase0, end1, index1, phase1)
 	miArcJoinPtr	*joinsp;
 	int		*njoinsp, *sizep;
-	int		end0, index0, end1, index1;
+	int		end0, index0, phase0, end1, index1, phase1;
 {
 	int newsize;
 	miArcJoinPtr	join;
@@ -2126,7 +2127,7 @@ miComputeArcs (parcs, narcs, pGC)
 			 * hardly matters...
 			 */
 			if ((iphase == 0 || isDoubleDash) &&
-			    (nexti != start || arcsJoin && isDashed))
+			    (nexti != start || (arcsJoin && isDashed)))
 				addCap (&arcs[iphase].caps, &arcs[iphase].ncaps,
  					&capSize[iphase], RIGHT_END, nextk);
 		}
@@ -2724,11 +2725,12 @@ hookEllipseY (scan_y, bound, acc, left)
 	double			scan_y;
 	struct arc_bound	*bound;
 	struct accelerators	*acc;
+	int			left;
 {
 	double	ret;
 
 	if (acc->h2mw2 == 0) {
-		if (scan_y > 0 && !left || scan_y < 0 && left)
+		if ( (scan_y > 0 && !left) || (scan_y < 0 && left) )
 			return bound->ellipse.min;
 		return bound->ellipse.max;
 	}
@@ -3075,6 +3077,7 @@ fillSpans (pDrawable, pGC)
 
 static struct finalSpan **
 realFindSpan (y)
+    int y;
 {
 	struct finalSpan	**newSpans;
 	int			newSize, newMiny, newMaxy;
