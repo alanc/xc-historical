@@ -1,4 +1,4 @@
-/* $XConsortium: wstx_ini.c,v 5.5 91/07/24 14:43:18 hersh Exp $ */
+/* $XConsortium: wstx_ini.c,v 5.6 91/09/30 16:47:24 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -784,6 +784,10 @@ phg_wst_init( erh, display, name, class, rmdb, category )
     char	*name_buf = NULL, *class_buf;
     unsigned	size, name_len, class_len;
 
+    if (!rmdb) {
+	(void) XGetDefault (display, name, "hackToGetDefaults");
+	rmdb = XrmGetDatabase (display);
+    }
     if ( rmdb ) {
 	/* Set up for getting resource database values. */
 	name_len = strlen( name );
