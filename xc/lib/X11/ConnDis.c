@@ -1,5 +1,5 @@
 #include "copyright.h"
-/* $XConsortium: XConnDis.c,v 11.36 88/09/16 11:09:34 jim Exp $ */
+/* $XConsortium: XConnDis.c,v 11.37 88/11/22 16:11:00 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1985, 1986	*/
 #define NEED_EVENTS
 /*
@@ -26,6 +26,32 @@
 #endif /* X_UNIX_PATH */
 #endif /* UNIXCONN */
 void bcopy();
+
+static get_host_name (buf, maxlen)
+    char *buf;
+    int maxlen;
+{
+#ifdef hpux
+    /*
+     * same host name crock as in server and xinit.
+     */
+    struct utsname name;
+    int len;
+
+    uname (&name);
+    len = strlen (name.nodename);
+    if (len >= maxlen) len = maxlen - 1;
+    strncpy (buf, name.nodename, len);
+    buf[len] = '\0';
+#else
+    buf[0] = '\0';
+    (void) gethostname (buf, maxlen);
+    buf [maxlen - 1] = '\0';
+#endif /* hpux */
+    return;
+}
+
+
 /* 
  * Attempts to connect to server, given display name. Returns file descriptor
  * (network socket) or -1 if connection fails. The expanded display name
@@ -162,19 +188,7 @@ int _XConnectDisplay (display_name, expanded_name, prop_name, screen_num,
 #ifdef UNIXCONN
 		;	/* Do nothing if UNIX DOMAIN. Will be handled below. */
 #else
-#ifdef hpux
-	    /*
-	     * same host name crock as in server and xinit.
-	     */
-	    {
-		struct utsname name;
-
-		uname(&name);
-		strcpy(displaybuf, name.nodename);
-	    }
-#else
-		(void) gethostname (displaybuf, sizeof(displaybuf));
-#endif /* hpux */
+	        get_host_name (displaybuf, sizeof displaybuf);
 #endif /* UNIXCONN else TCPCONN (assumed) */
 
 #ifdef DNETCONN
@@ -239,8 +253,19 @@ int _XConnectDisplay (display_name, expanded_name, prop_name, screen_num,
 		 * This is a hack and is not part of the protocol
 		 */
 		tmpfamily = FamilyLocal;  /* 255 */
-		tmp_server_addrlen = 0;
-		tmp_server_addr = NULL;
+		{
+		    char tmpbuf[1024];
+
+		    get_host_name (tmpbuf, sizeof tmpbuf);
+		    tmp_server_addrlen = strlen (tmpbuf);
+		    tmp_server_addr = Xmalloc (tmp_server_addrlen + 1);
+		    if (!tmp_server_addr) {
+			if (tmp_dpy_num) Xfree (tmp_dpy_num);
+			(void) close (fd);
+			return(-1);
+		    }
+		    strcpy (tmp_server_addr, tmpbuf);
+		}
 	    } else
 #endif
 	    {
