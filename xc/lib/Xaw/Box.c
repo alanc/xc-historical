@@ -74,12 +74,12 @@ static Resource resources[] = {
  *
  ****************************************************************/
 
-extern void Initialize();
-extern void Realize();
-extern void Resize();
-extern void SetValues();
-extern XtGeometryReturnCode GeometryManager();
-extern void ChangeManaged();
+static void Initialize();
+static void Realize();
+static void Resize();
+static void SetValues();
+static XtGeometryReturnCode GeometryManager();
+static void ChangeManaged();
 
 ButtonBoxWidgetClassData buttonBoxWidgetClassData = {
     /* superclass         */    (WidgetClass) &compositeWidgetClassData,
