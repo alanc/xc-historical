@@ -1,5 +1,5 @@
 /*
- * $XConsortium: DisplayQue.c,v 1.1 89/07/28 14:13:55 jim Exp $
+ * $XConsortium: DisplayQue.c,v 1.2 89/08/17 14:06:45 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -100,7 +100,6 @@ XmuDisplayQueueEntry *XmuDQAddDisplay (q, dpy, data)
     Display *dpy;
     caddr_t data;
 {
-    XmuDisplayQueueEntry **ep = (q->tail ? &(q->tail->next) : &(q->tail));
     XmuDisplayQueueEntry *e;
 
     if (!(e = (XmuDisplayQueueEntry *) malloc (sizeof (XmuDisplayQueueEntry)))) {
