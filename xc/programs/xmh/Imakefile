@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 2.22 94/02/04 14:40:55 kaleb Exp $
+XCOMM $XConsortium: Imakefile,v 2.23 94/02/04 14:42:02 kaleb Exp $
 #if HasVFork
   VFORK_DEFINES = -DHAS_VFORK
 #endif
@@ -20,5 +20,4 @@ LOCAL_LIBRARIES = XawClientLibs
 ComplexProgramTarget(xmh)
 BuildIncludes($(XMH_BITMAPS),bitmaps,..)
 InstallAppDefaults(Xmh)
-INSTALLFLAGS = $(INSTINCFLAGS)
-InstallMultiple($(XMH_BITMAPS),$(INCDIR)/bitmaps)
+InstallMultipleDestFlags(install,$(XMH_BITMAPS),$(INCDIR)/bitmaps,$(INSTINCFLAGS))
