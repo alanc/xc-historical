@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Shell.c,v 1.80 89/12/12 20:05:12 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Shell.c,v 1.81 89/12/13 17:09:58 swick Exp $";
 /* $oHeader: Shell.c,v 1.7 88/09/01 11:57:00 asente Exp $ */
 #endif /* lint */
 
@@ -248,6 +248,12 @@ externaldef(overrideshellwidgetclass) WidgetClass overrideShellWidgetClass =
 #undef Offset
 #define Offset(x)	(XtOffsetOf(WMShellRec, x))
 
+static int default_unspecified_shell_int = XtUnspecifiedShellInt;
+/*
+ * Warning, casting XtUnspecifiedShellInt (which is -1) to an (XtPointer)
+ * can result is loss of bits on some machines (i.e. crays)
+ */
+
 static XtResource wmResources[]=
 {
 	{ XtNtitle, XtCTitle, XtRString, sizeof(String),
@@ -263,43 +269,43 @@ static XtResource wmResources[]=
 /* size_hints minus things stored in core */
 	{ XtNbaseWidth, XtCBaseWidth, XtRInt, sizeof(int),
 	    Offset(wm.base_width),
-	    XtRImmediate, (XtPointer)XtUnspecifiedShellInt},
+	    XtRInt, (XtPointer) &default_unspecified_shell_int},
 	{ XtNbaseHeight, XtCBaseHeight, XtRInt, sizeof(int),
 	    Offset(wm.base_height),
-	    XtRImmediate, (XtPointer)XtUnspecifiedShellInt},
+	    XtRInt, (XtPointer) &default_unspecified_shell_int},
 	{ XtNwinGravity, XtCWinGravity, XtRInt, sizeof(int),
 	    Offset(wm.win_gravity),
-	    XtRImmediate, (XtPointer)XtUnspecifiedShellInt},
+	    XtRInt, (XtPointer) &default_unspecified_shell_int},
 	{ XtNminWidth, XtCMinWidth, XtRInt, sizeof(int),
 	    Offset(wm.size_hints.min_width),
-	    XtRImmediate, (XtPointer)XtUnspecifiedShellInt},
+	    XtRInt, (XtPointer) &default_unspecified_shell_int},
 	{ XtNminHeight, XtCMinHeight, XtRInt, sizeof(int),
 	    Offset(wm.size_hints.min_height),
-	    XtRImmediate, (XtPointer)XtUnspecifiedShellInt},
+	    XtRInt, (XtPointer) &default_unspecified_shell_int},
 	{ XtNmaxWidth, XtCMaxWidth, XtRInt, sizeof(int),
 	    Offset(wm.size_hints.max_width),
-	    XtRImmediate, (XtPointer)XtUnspecifiedShellInt},
+	    XtRInt, (XtPointer) &default_unspecified_shell_int},
 	{ XtNmaxHeight, XtCMaxHeight, XtRInt, sizeof(int),
 	    Offset(wm.size_hints.max_height),
-	    XtRImmediate, (XtPointer)XtUnspecifiedShellInt},
+	    XtRInt, (XtPointer) &default_unspecified_shell_int},
 	{ XtNwidthInc, XtCWidthInc, XtRInt, sizeof(int),
 	    Offset(wm.size_hints.width_inc),
-	    XtRImmediate, (XtPointer)XtUnspecifiedShellInt},
+	    XtRInt, (XtPointer) &default_unspecified_shell_int},
 	{ XtNheightInc, XtCHeightInc, XtRInt, sizeof(int),
 	    Offset(wm.size_hints.height_inc),
-	    XtRImmediate, (XtPointer)XtUnspecifiedShellInt},
+	    XtRInt, (XtPointer) &default_unspecified_shell_int},
 	{ XtNminAspectX, XtCMinAspectX, XtRInt, sizeof(int),
 	    Offset(wm.size_hints.min_aspect.x),
-	    XtRImmediate, (XtPointer)XtUnspecifiedShellInt},
+	    XtRInt, (XtPointer) &default_unspecified_shell_int},
 	{ XtNminAspectY, XtCMinAspectY, XtRInt, sizeof(int),
 	    Offset(wm.size_hints.min_aspect.y),
-	    XtRImmediate, (XtPointer)XtUnspecifiedShellInt},
+	    XtRInt, (XtPointer) &default_unspecified_shell_int},
 	{ XtNmaxAspectX, XtCMaxAspectX, XtRInt, sizeof(int),
 	    Offset(wm.size_hints.max_aspect.x),
-	    XtRImmediate, (XtPointer)XtUnspecifiedShellInt},
+	    XtRInt, (XtPointer) &default_unspecified_shell_int},
 	{ XtNmaxAspectY, XtCMaxAspectY, XtRInt, sizeof(int),
 	    Offset(wm.size_hints.max_aspect.y),
-	    XtRImmediate, (XtPointer)XtUnspecifiedShellInt},
+	    XtRInt, (XtPointer) &default_unspecified_shell_int},
 /* wm_hints */
 	{ XtNinput, XtCInput, XtRBool, sizeof(Bool),
 	    Offset(wm.wm_hints.input), XtRImmediate, (XtPointer)False},
@@ -312,10 +318,10 @@ static XtResource wmResources[]=
 	    Offset(wm.wm_hints.icon_window), XtRWindow,   (XtPointer) NULL},
 	{ XtNiconX, XtCIconX, XtRInt, sizeof(int),
 	    Offset(wm.wm_hints.icon_x),
-	    XtRImmediate, (XtPointer)XtUnspecifiedShellInt},
+	    XtRInt, (XtPointer) &default_unspecified_shell_int},
 	{ XtNiconY, XtCIconY, XtRInt, sizeof(int),
 	    Offset(wm.wm_hints.icon_y),
-	    XtRImmediate, (XtPointer)XtUnspecifiedShellInt},
+	    XtRInt, (XtPointer) &default_unspecified_shell_int},
 	{ XtNiconMask, XtCIconMask, XtRBitmap, sizeof(Pixmap),
 	    Offset(wm.wm_hints.icon_mask), XtRPixmap, NULL},
 	{ XtNwindowGroup, XtCWindowGroup, XtRWindow, sizeof(Window),
