@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: window.c,v 1.155 87/08/10 08:49:02 swick Locked $ */
+/* $Header: window.c,v 1.155 87/08/10 14:42:09 swick Locked $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -1181,12 +1181,13 @@ fixChildrenWinSize(pWin)
     }
 }
 
-static void
+static WindowPtr
 MoveWindowInStack(pWin, pNextSib, above)
     WindowPtr pWin, pNextSib;
     int above;
 {
     WindowPtr pParent = pWin->parent;
+    WindowPtr pFirstChange = pWin; /* highest window where list changes */
 
     if (above != Above)	{	/* then must be Below */
         if (pNextSib)		/* so transform to an Above */
@@ -1200,8 +1201,12 @@ MoveWindowInStack(pWin, pNextSib, above)
 	{
             if (pParent->firstChild == pWin)
                 pParent->firstChild = pWin->nextSib;
-	    if (pWin->nextSib) 
+	    /* if (pWin->nextSib) */	 /* is always True: pNextSib == NULL
+				          * and pWin->nextSib != pNextSib
+					  * therefore pWin->nextSib != NULL */
+	        pFirstChange = pWin->nextSib;
 		pWin->nextSib->prevSib = pWin->prevSib;
+	    /* else pFirstChange = pWin; */	/* if you don't believe the proof! */
 	    if (pWin->prevSib) 
                 pWin->prevSib->nextSib = pWin->nextSib;
             pParent->lastChild->nextSib = pWin;
@@ -1209,8 +1214,9 @@ MoveWindowInStack(pWin, pNextSib, above)
             pWin->nextSib = (WindowPtr )NULL;
             pParent->lastChild = pWin;
 	}
-        else if (pParent->firstChild == pNextSib)
+        else if (pParent->firstChild == pNextSib) /* move to top */
         {        
+	    pFirstChange = pWin;
 	    if (pParent->lastChild == pWin)
     	       pParent->lastChild = pWin->prevSib;
 	    if (pWin->nextSib) 
@@ -1222,12 +1228,17 @@ MoveWindowInStack(pWin, pNextSib, above)
 	    pNextSib->prevSib = pWin;
 	    pParent->firstChild = pWin;
 	}
-        else 
+        else			/* move in middle of list */
         {
+	    WindowPtr pOldNext = pWin->nextSib;
+
+	    pFirstChange = (WindowPtr )NULL;
             if (pParent->firstChild == pWin)
-                pParent->firstChild = pWin->nextSib;
-	    if (pParent->lastChild == pWin)
+                pFirstChange = pParent->firstChild = pWin->nextSib;
+	    if (pParent->lastChild == pWin) {
+	       pFirstChange = pWin;
     	       pParent->lastChild = pWin->prevSib;
+	    }
 	    if (pWin->nextSib) 
 		pWin->nextSib->prevSib = pWin->prevSib;
 	    if (pWin->prevSib) 
@@ -1237,8 +1248,15 @@ MoveWindowInStack(pWin, pNextSib, above)
 	    if (pNextSib->prevSib)
                 pNextSib->prevSib->nextSib = pWin;
             pNextSib->prevSib = pWin;
+	    if (!pFirstChange) {		     /* do we know it yet? */
+	        pFirstChange = pParent->firstChild;  /* no, search from top */
+	        while ((pFirstChange != pWin) && (pFirstChange != pOldNext))
+		     pFirstChange = pFirstChange->nextSib;
+	    }
 	}
     }
+
+    return( pFirstChange );
 }
 
 static void
@@ -1306,8 +1324,7 @@ MoveWindow(pWin, x, y, pNextSib, above)
 
     (* pScreen->PositionWindow)(pWin,pWin->absCorner.x, pWin->absCorner.y);
 
-    MoveWindowInStack(pWin, pNextSib, above);
-/*  windowToValidate = pNextSib; */
+    windowToValidate = MoveWindowInStack(pWin, pNextSib, above);
 
     fixChildrenWinSize(pWin);
     if (WasMapped) 
@@ -1335,11 +1352,7 @@ MoveWindow(pWin, x, y, pNextSib, above)
         anyMarked = MarkSiblingsBelowMe(windowToValidate, pBox, 
 					TRUE) || anyMarked;
             
-        (* pScreen->ValidateTree)(pParent, (WindowPtr)NULL, TRUE, anyMarked);
-/*
-		       (anyMarked ? windowToValidate : (WindowPtr )NULL), 
-						 TRUE, anyMarked);
-*/
+        (* pScreen->ValidateTree)(pParent, windowToValidate, TRUE, anyMarked);
 	
 	DoObscures(pParent); 
         if (pWin->backgroundTile == (PixmapPtr)ParentRelative)
@@ -1497,6 +1510,7 @@ SlideAndSizeWindow(pWin, x, y, w, h, pSib, above)
     Bool anyMarked;
     register ScreenPtr pScreen;
     BoxPtr pBox;
+    WindowPtr pFirstChange;
 
     /* if this is a root window, can't be resized */
     if (!(pParent = pWin->parent)) 
@@ -1552,22 +1566,18 @@ SlideAndSizeWindow(pWin, x, y, w, h, pSib, above)
     /* let the hardware adjust background and border pixmaps, if any */
     (* pScreen->PositionWindow)(pWin, pWin->absCorner.x, pWin->absCorner.y);
 
-    MoveWindowInStack(pWin, pSib, above);
+    pFirstChange = MoveWindowInStack(pWin, pSib, above);
 
     if (WasMapped) 
     {
         RegionPtr pRegion;
 
-        if (!pSib || (above == Above))
-	    anyMarked = MarkSiblingsBelowMe(pWin, pBox, TRUE) ||  anyMarked;
-        else
-	    anyMarked = MarkSiblingsBelowMe(pSib, pBox, TRUE) ||  anyMarked;
+	anyMarked = MarkSiblingsBelowMe(pFirstChange, pBox, TRUE) || anyMarked;
 
         if ((pWin->bitGravity == ForgetGravity) ||
             (pWin->backgroundTile == (PixmapPtr)ParentRelative))
 	{
-	    (* pScreen->ValidateTree)(pParent, (WindowPtr )NULL, 
-						     TRUE, anyMarked);
+	    (* pScreen->ValidateTree)(pParent, pFirstChange, TRUE, anyMarked);
 	    TraverseTree(pWin, ExposeAll, pScreen); 
 	    DoObscures(pParent); 
 	    HandleExposures(pParent);
@@ -1618,6 +1628,7 @@ SlideAndSizeWindow(pWin, x, y, w, h, pSib, above)
 	      default:
                    break;
 	    }
+/*
 	    if (dw < 0)
 	    {
 		width = w;
@@ -1628,9 +1639,8 @@ SlideAndSizeWindow(pWin, x, y, w, h, pSib, above)
 		height = h;
 		if (y < pWin->absCorner.y) y = pWin->absCorner.y;
 	    }
-	    (* pScreen->ValidateTree)(pParent, 
-			       (anyMarked ? pWin : (WindowPtr )NULL), 
-			       TRUE, anyMarked);
+*/
+	    (* pScreen->ValidateTree)(pParent, pFirstChange, TRUE, anyMarked);
 	    DoObscures(pParent);
 	    if (pWin->backStorage && (pWin->backingStore != NotUseful))
 	    {
@@ -1649,9 +1659,8 @@ SlideAndSizeWindow(pWin, x, y, w, h, pSib, above)
 	    (* pScreen->Subtract)(pParent->exposed, pParent->exposed, 
 				  pWin->borderSize);
 	    (* pScreen->RegionDestroy)(pRegion);
-	    if (!XYSame && (IS_VALID_PIXMAP(pWin->backgroundTile )))
-			/* tile was "rotated" so redraw entire thing */
-	        (* pScreen->Subtract)(pWin->borderExposed, 
+	    /* CopyWindow will step on borders, so re-paint them */
+	    (* pScreen->Subtract)(pWin->borderExposed, 
 			 pWin->borderClip, pWin->winSize);
 	    HandleExposures(pParent);
 	    (* pScreen->RegionDestroy)(oldRegion);
@@ -1918,15 +1927,11 @@ WhereDoIGoInTheStack(pWin, pSib, x, y, w, h, smode, above)
 	}
         else
         {
-	    /* For Opposite, I occlude no-one and no-one occludes me;
-	     * for BottomIf, I occlude no-one
-	     * so don't move me */
 	    *above = Above;
             return(pWin->nextSib);
 	}
         break;
     }
-    /* NOTREACHED */
     return((WindowPtr)NULL);
 }
 
@@ -1941,24 +1946,19 @@ ReflectStackChange(pWin, pSib, above)
     WindowPtr pParent;
     int anyMarked;
     BoxPtr box;
+    WindowPtr pFirstChange;
 
     /* if this is a root window, can't be restacked */
     if (!(pParent = pWin->parent))
         return ;
 
+    pFirstChange = MoveWindowInStack(pWin, pSib, above);
+
     if (doValidation)
     {
-
         box = (* pWin->drawable.pScreen->RegionExtents)(pWin->borderSize);
-        anyMarked = MarkChildren(pParent, box, FALSE);
-    }
-
-    MoveWindowInStack(pWin, pSib, above);
-
-    if (doValidation)
-    {
-        (* pWin->drawable.pScreen->ValidateTree)(pParent, 
-					 (anyMarked ? (WindowPtr)NULL : pWin), 
+        anyMarked = MarkSiblingsBelowMe(pFirstChange, box, FALSE);
+        (* pWin->drawable.pScreen->ValidateTree)(pParent, pFirstChange,
 					 TRUE, anyMarked);
 	DoObscures(pParent);
 	HandleExposures(pParent);
