@@ -8,7 +8,7 @@
 # include <stdio.h>
 # include <X11/IntrinsicP.h>
 # include <X11/StringDefs.h>
-# include <X11/Xmu/Xmu.h>
+# include <X11/Xmu/Converters.h>
 # include "ClockP.h"
 # include <math.h>
 #ifdef SHAPE

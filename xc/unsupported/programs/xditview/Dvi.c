@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Dvi.c,v 1.5 89/05/16 14:23:59 keith Exp $";
+static char Xrcsid[] = "$XConsortium: Dvi.c,v 1.6 89/05/16 15:04:08 kit Exp $";
 #endif lint
 
 /*
@@ -15,7 +15,7 @@ static char Xrcsid[] = "$XConsortium: Dvi.c,v 1.5 89/05/16 14:23:59 keith Exp $"
 
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
-#include <X11/Xmu/Xmu.h>
+#include <X11/Xmu/Converters.h>
 #include <stdio.h>
 #include <ctype.h>
 #include "DviP.h"
