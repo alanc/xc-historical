@@ -1,6 +1,6 @@
-XCOMM platform:  $XConsortium: osf1.cf,v 1.6 92/04/07 10:08:10 rws Exp $
+XCOMM platform:  $XConsortium: osf1.cf,v 1.7 92/06/27 21:52:21 rws Exp $
 
-#define OSName			OSF1
+#define OSName			OSF/1 1.0
 XCOMM operating system:  OSName
 #define OSMajorVersion		1
 #define OSMinorVersion		0
@@ -14,6 +14,7 @@ XCOMM operating system:  OSName
 #define InstallCmd installbsd
 
 #ifdef MipsArchitecture
+#include <osfLib.rules>
 #define DefaultCCOptions	-Xc
 #define StandardDefines -D__OSF1__
 #define NoRConst YES
