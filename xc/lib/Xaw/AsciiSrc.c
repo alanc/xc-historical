@@ -1,5 +1,5 @@
 #if ( !defined(lint) && !defined(SABER) )
-static char Xrcsid[] = "$XConsortium: AsciiSrc.c,v 1.19 89/09/13 14:42:02 kit Exp $";
+static char Xrcsid[] = "$XConsortium: AsciiSrc.c,v 1.20 89/10/04 13:55:44 kit Exp $";
 #endif 
 
 /*
@@ -41,6 +41,10 @@ static char Xrcsid[] = "$XConsortium: AsciiSrc.c,v 1.19 89/09/13 14:42:02 kit Ex
 #include <X11/Xmu/Misc.h>
 #include <X11/Xmu/CharSet.h>
 
+#if (defined(ASCII_STRING) || defined(ASCII_DISK))
+#  include <X11/Xaw/AsciiText.h> /* for Widget Classes. */
+#endif
+
 /****************************************************************
  *
  * Full class record constant
@@ -59,15 +63,13 @@ static XtResource resources[] = {
     {XtNdataCompression, XtCDataCompression, XtRBoolean, sizeof (Boolean),
        offset(data_compression), XtRImmediate, (caddr_t) TRUE},
     {XtNpieceSize, XtCPieceSize, XtRInt, sizeof (XawTextPosition),
-       offset(piece_size), XtRImmediate, (caddr_t)DEFAULT_PIECE_SIZE},
+       offset(piece_size), XtRImmediate, (caddr_t) BUFSIZ},
     {XtNcallback, XtCCallback, XtRCallback, sizeof(caddr_t), 
        offset(callback), XtRCallback, (caddr_t)NULL},
-#ifdef ASCII_STRING
-    {XtNasciiString, XtCAsciiString, XtRBoolean, sizeof (Boolean),
-       offset(ascii_string), XtRImmediate, (caddr_t) FALSE},
+    {XtNuseStringInPlace, XtCUseStringInPlace, XtRBoolean, sizeof (Boolean),
+       offset(use_string_in_place), XtRImmediate, (caddr_t) FALSE},
     {XtNlength, XtCLength, XtRInt, sizeof (int),
        offset(ascii_length), XtRImmediate, (caddr_t) MAGIC_VALUE},
-#endif /* ASCII_STRING */
 
 #ifdef ASCII_DISK
     {XtNfile, XtCFile, XtRString, sizeof (String),
@@ -183,15 +185,15 @@ Widget request, new;
  */
 
 #ifdef ASCII_DISK
-  if (XtIsSubclass(parent, asciiDiskWidgetClass)) {
+  if (XtIsSubclass(XtParent(new), asciiDiskWidgetClass)) {
     src->ascii_src.type = XawAsciiFile;
     src->ascii_src.string = src->ascii_src.filename;
   }
 #endif
 
 #ifdef ASCII_STRING
-  if (XtIsSubclass(parent, asciiStringWidgetClass)) {
-    src->ascii_src.ascii_string = TRUE;
+  if (XtIsSubclass(XtParent(new), asciiStringWidgetClass)) {
+    src->ascii_src.use_string_in_place = TRUE;
     src->ascii_src.type = XawAsciiString;
   }
 #endif
@@ -298,12 +300,10 @@ XawTextBlock *text;
       MyStrncpy(start_piece->text + (startPos - start_first),
 		start_piece->text + (endPos - start_first),
 		(int) (start_piece->used - (startPos - start_first)) );
-#ifdef ASCII_STRING
-      if ( src->ascii_src.ascii_string && 
-	   ( (src->ascii_src.length - (endPos - startPos)) < 
-	      src->ascii_src.piece_size) ) 
+      if ( src->ascii_src.use_string_in_place && 
+	   ((src->ascii_src.length - (endPos - startPos)) < 
+	    (src->ascii_src.piece_size - 1)) ) 
 	start_piece->text[src->ascii_src.length - (endPos - startPos)] = '\0';
-#endif
     }
   }
 
@@ -324,21 +324,25 @@ XawTextBlock *text;
       char * ptr;
       int fill;
       
-      if (start_piece->used == src->ascii_src.piece_size) {
-#ifdef ASCII_STRING
-	if (src->ascii_src.ascii_string) {
+      if (src->ascii_src.use_string_in_place) {
+	if (start_piece->used == (src->ascii_src.piece_size - 1)) {
 	  /*
-	   * If we are in ascii string emulation mode. Then the string is not 
-	   * allowed to grow.
+	   * If we are in ascii string emulation mode. Then the
+	   *  string is not allowed to grow.
 	   */
-	  start_piece->used = src->ascii_src.length =src->ascii_src.piece_size;
+	  start_piece->used = src->ascii_src.length = 
+	                                         src->ascii_src.piece_size - 1;
 	  start_piece->text[src->ascii_src.length] = '\0';
 	  return(XawEditError);
 	}
-#endif
+      }
+
+
+      if (start_piece->used == src->ascii_src.piece_size) {
 	BreakPiece(src, start_piece);
 	start_piece = FindPiece(src, startPos, &start_first);
       }
+
       fill = Min((int)(src->ascii_src.piece_size - start_piece->used), length);
       
       ptr = start_piece->text + (startPos - start_first);
@@ -353,10 +357,8 @@ XawTextBlock *text;
     }
   }
 
-#ifdef ASCII_STRING
-  if (src->ascii_src.ascii_string) 
+  if (src->ascii_src.use_string_in_place)
     start_piece->text[start_piece->used] = '\0';
-#endif
 
   return(XawEditDone);
 }
@@ -602,6 +604,14 @@ Widget current, request, new;
   Boolean total_reset = FALSE;
   FILE * file;
 
+  if ( old_src->ascii_src.use_string_in_place != 
+       src->ascii_src.use_string_in_place ) {
+      XtAppWarning( XtWidgetToApplicationContext(new),
+	   "AsciiSrc: The XtNuseStrinInPlace resources may not be changed.");
+       src->ascii_src.use_string_in_place != 
+	   old_src->ascii_src.use_string_in_place;
+  }
+
   if ( (old_src->ascii_src.string != src->ascii_src.string) ||
        (old_src->ascii_src.type != src->ascii_src.type) ) {
     if (old_src->ascii_src.string == src->ascii_src.string) {
@@ -623,12 +633,15 @@ Widget current, request, new;
     total_reset = TRUE;
   }
 
+  if ( old_src->ascii_src.ascii_length != src->ascii_src.ascii_length ) 
+      src->ascii_src.piece_size = src->ascii_src.ascii_length;
+
   if ( !total_reset && 
-       (old_src->ascii_src.piece_size != src->ascii_src.piece_size) ) {
-    String string = StorePiecesInString(old_src);
-    FreeAllPieces(old_src);
-    LoadPieces(src, NULL, string);
-    XtFree(string);
+      (old_src->ascii_src.piece_size != src->ascii_src.piece_size) ) {
+      String string = StorePiecesInString(old_src);
+      FreeAllPieces(old_src);
+      LoadPieces(src, NULL, string);
+      XtFree(string);
   }
 
   return(FALSE);
@@ -652,17 +665,17 @@ Cardinal * num_args;
   AsciiSrcObject src = (AsciiSrcObject) w;
   register int i;
 
-#ifdef ASCII_STRING
-  if (!src->ascii_src.ascii_string)
-#endif
-    if (src->ascii_src.type == XawAsciiString) {
-      for (i = 0; i < *num_args ; i++ ) 
-	if (streq(args[i].name, XtNstring)) {
-	  XawAsciiSave(w);
+  if (src->ascii_src.use_string_in_place) 
+      return;
+
+  if (src->ascii_src.type == XawAsciiString) {
+    for (i = 0; i < *num_args ; i++ ) 
+      if (streq(args[i].name, XtNstring)) {
+	if (XawAsciiSave(w))	/* If save sucessful. */
 	  *((char **) args[i].value) = src->ascii_src.string;
-	  break;
-	}
-    }
+	break;
+      }
+  }
 }    
 
 /*	Function Name: Destroy
@@ -716,16 +729,13 @@ Widget w;
   AsciiSrcObject src = (AsciiSrcObject) w;
   char * string;
 
-#ifdef ASCII_STRING
 /*
- * It did not support this functionality. 
+ * If using the string in place then there is no need to play games
+ * to get the internal info into a readable string.
  */
-  if (src->ascii_src.ascii_string) {
-    XtAppWarning(XtWidgetToApplicationContext(w), 
-	        "XawAsciiSave is not supported in by the AsciiString Widget.");
-    return(FALSE);
-  }
-#endif
+
+  if (src->ascii_src.use_string_in_place) 
+    return(TRUE);
 
   if (!src->ascii_src.changes)		/* No changes to save. */
     return(TRUE);
@@ -880,87 +890,85 @@ static FILE *
 InitStringOrFile(src)
 AsciiSrcObject src;
 {
-  char * open_mode;
-  FILE * file;
+    char * open_mode;
+    FILE * file;
 
-  if (src->ascii_src.type == XawAsciiString) {
-    if (src->ascii_src.string == NULL)
-      src->ascii_src.length = 0;
-    else 
-      src->ascii_src.length = strlen(src->ascii_src.string);
-
-#ifdef ASCII_STRING
-    if (src->ascii_src.ascii_string) {
-      if (src->ascii_src.ascii_length == MAGIC_VALUE) 
-	src->ascii_src.piece_size = src->ascii_src.length;
-      else
-	src->ascii_src.piece_size = src->ascii_src.ascii_length - 1;
+    if (src->ascii_src.type == XawAsciiString) {
+	if (src->ascii_src.string == NULL)
+	    src->ascii_src.length = 0;
+	else 
+	    src->ascii_src.length = strlen(src->ascii_src.string);
+	
+	if (src->ascii_src.use_string_in_place) {
+	    if (src->ascii_src.ascii_length == MAGIC_VALUE) 
+		src->ascii_src.piece_size = src->ascii_src.length;
+	    else
+		src->ascii_src.piece_size = src->ascii_src.ascii_length + 1;
+	}
+		
+	return(NULL);
     }
-#endif
-
-    return(NULL);
-  }
 
 /*
  * type is XawAsciiFile.
  */
-
-  src->ascii_src.is_tempfile = FALSE;
-
-  switch (src->text_src.edit_mode) {
-  case XawtextRead:
-    if (src->ascii_src.string == NULL)
-      XtErrorMsg("NoFile", "asciiSourceCreate", "XawError",
-		 "Creating a read only disk widget and no file specified.",
-		 NULL, 0);
-    open_mode = "r";
-    break;
-  case XawtextAppend:
-  case XawtextEdit:
-    if (src->ascii_src.string == NULL) {
-      src->ascii_src.string = tmpnam (XtMalloc((unsigned)TMPSIZ));
-      src->ascii_src.is_tempfile = TRUE;
+    
+    src->ascii_src.is_tempfile = FALSE;
+    
+    switch (src->text_src.edit_mode) {
+    case XawtextRead:
+	if (src->ascii_src.string == NULL)
+	    XtErrorMsg("NoFile", "asciiSourceCreate", "XawError",
+		     "Creating a read only disk widget and no file specified.",
+		       NULL, 0);
+	open_mode = "r";
+	break;
+    case XawtextAppend:
+    case XawtextEdit:
+	if (src->ascii_src.string == NULL) {
+	    src->ascii_src.string = tmpnam (XtMalloc((unsigned)TMPSIZ));
+	    src->ascii_src.is_tempfile = TRUE;
+	} 
+	else {
+	    if (!src->ascii_src.allocated_string) {
+		src->ascii_src.allocated_string = TRUE;
+		src->ascii_src.string = XtNewString(src->ascii_src.string);
+	    }
+	    open_mode = "r+";
+	}
+	
+	break;
+    default:
+	XtErrorMsg("badMode", "asciiSourceCreate", "XawError",
+		"Bad editMode for ascii source; must be Read, Append or Edit.",
+		   NULL, NULL);
+    }
+    
+    if (!src->ascii_src.is_tempfile) {
+	if ((file = fopen(src->ascii_src.string, open_mode)) == 0) {
+	    String params[2];
+	    Cardinal num_params = 2;
+	    
+	    params[0] = src->ascii_src.string;
+	    if (errno <= sys_nerr)
+		params[1] = sys_errlist[errno];
+	    else {
+		char msg[11];
+		sprintf(msg, "errno=%.4d", errno);
+		params[1] = msg;
+	    }
+	    XtErrorMsg("openError", "asciiSourceCreate", "XawError",
+		       "Cannot open source file %s; %s", params, &num_params);
+	}
+	(void) fseek(file, 0L, 2);
+	src->ascii_src.length = ftell (file); 
     } 
     else {
-      if (!src->ascii_src.allocated_string) {
-	src->ascii_src.allocated_string = TRUE;
-	src->ascii_src.string = XtNewString(src->ascii_src.string);
-      }
-      open_mode = "r+";
+	src->ascii_src.length = 0;
+	return(NULL);
     }
-
-    break;
-  default:
-    XtErrorMsg("badMode", "asciiSourceCreate", "XawError",
-	       "Bad editMode for ascii source; must be Read, Append or Edit.",
-	       NULL, NULL);
-  }
-
-  if (!src->ascii_src.is_tempfile) {
-    if ((file = fopen(src->ascii_src.string, open_mode)) == 0) {
-      String params[2];
-      Cardinal num_params = 2;
-      
-      params[0] = src->ascii_src.string;
-      if (errno <= sys_nerr)
-	params[1] = sys_errlist[errno];
-      else {
-	char msg[11];
-	sprintf(msg, "errno=%.4d", errno);
-	params[1] = msg;
-      }
-      XtErrorMsg("openError", "asciiSourceCreate", "XawError",
-		 "Cannot open source file %s; %s", params, &num_params);
-    }
-    (void) fseek(file, 0L, 2);
-    src->ascii_src.length = ftell (file); 
-  } 
-  else {
-    src->ascii_src.length = 0;
-    return(NULL);
-  }
-
-  return(file);
+    
+    return(file);
 }
 
 static void
@@ -991,22 +999,19 @@ char * string;
   else
     local_str = string;
 
-#ifdef ASCII_STRING
 /*
- * In Ascii String Emulation we will use the string in place, and
- * set the other fields as follows:
+ * If we are using teh string in place then set the other fields as follows:
  *
  * piece_size = length;
  * piece->used = src->ascii_src.length;
  */
   
-  if (src->ascii_src.ascii_string) {
+  if (src->ascii_src.use_string_in_place) {
     piece = AllocNewPiece(src, piece);
     piece->used = Min(src->ascii_src.length, src->ascii_src.piece_size);
     piece->text = src->ascii_src.string;
     return;
   }
-#endif
 
   ptr = local_str;
   left = src->ascii_src.length;
@@ -1098,10 +1103,9 @@ Piece * piece;
   if (piece->next != NULL)
     (piece->next)->prev = piece->prev;
 
-#ifdef ASCII_STRING
   if (src->ascii_src.allocated_string)
-#endif
-  XtFree(piece->text);
+    XtFree(piece->text);
+
   XtFree(piece);
 }
 
@@ -1225,7 +1229,7 @@ XrmValuePtr	toVal;
  *	Returns: a pointer to the new text source.
  */
 
-XawTextSource
+Widget
 XawStringSourceCreate(parent, args, num_args)
 Widget parent;
 ArgList args;
@@ -1236,10 +1240,10 @@ Cardinal num_args;
   Arg temp[2];
 
   XtSetArg(temp[0], XtNtype, XawAsciiString);
-  XtSetArg(temp[1], XtNasciiString, TRUE);
+  XtSetArg(temp[1], XtNuseStringInPlace, TRUE);
   ascii_args = XtMergeArgLists(temp, TWO, args, num_args);
 
-  src = XtCreateWidget("genericAsciiString", AsciiSrcObjectClass, parent,
+  src = XtCreateWidget("genericAsciiString", asciiSrcObjectClass, parent,
 		       ascii_args, num_args + TWO);
   XtFree(ascii_args);
   return(src);
@@ -1271,7 +1275,7 @@ XawTextPosition lastPos;
  *	Returns: a pointer to the new text source.
  */
 
-XawTextSource
+Widget
 XawDiskSourceCreate(parent, args, num_args)
 Widget parent;
 ArgList args;
@@ -1289,7 +1293,7 @@ Cardinal num_args;
     if (streq(args[i].name, XtNfile) || streq(args[i].name, XtCFile)) 
       args[i].name = XtNstring;
 
-  src = XtCreateWidget("genericAsciiDisk", AsciiSrcObjectClass, parent,
+  src = XtCreateWidget("genericAsciiDisk", asciiSrcObjectClass, parent,
 		       ascii_args, num_args + TWO);
   XtFree(ascii_args);
   return(src);

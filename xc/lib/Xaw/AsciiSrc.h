@@ -1,5 +1,5 @@
 /*
- * $XConsortium: AsciiSrc.h,v 1.3 89/09/01 14:28:32 kit Exp $
+ * $XConsortium: AsciiSrc.h,v 1.4 89/10/04 13:56:01 kit Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -62,15 +62,15 @@ typedef struct _AsciiSrcRec      *AsciiSrcObject;
  * Resource Definitions.
  */
 
-#define XtCAsciiString "AsciiString"
 #define XtCDataCompression "DataCompression"
 #define XtCPieceSize "PieceSize"
 #define XtCType "Type"
+#define XtCUseStringInPlace "UseStringInPlace"
 
-#define XtNasciiString "asciiString"
 #define XtNdataCompression "dataCompression"
 #define XtNpieceSize "pieceSize"
 #define XtNtype "type"
+#define XtNuseStringInPlace "useStringInPlace"
 
 #define XtRAsciiType "AsciiType"
 
@@ -138,7 +138,7 @@ Widget w;
  * These functions are only preserved for compatability.     
  */
 
-#define ASCII_STRING		/* Turn R3 AsciiDisk and AsciiString */
+#define ASCII_STRING		/* Turn on R3 AsciiDisk and AsciiString */
 #define ASCII_DISK		/* Emulation modes. */
 
 #ifdef ASCII_STRING
@@ -157,7 +157,7 @@ Widget w;
  *	Returns: a pointer to the new text source.
  */
 
-XawTextSource XawStringSourceCreate(/* parent, args, num_args */);
+Widget XawStringSourceCreate(/* parent, args, num_args */);
 /*
 Widget parent;
 ArgList args;
@@ -173,7 +173,7 @@ Cardinal num_args;
  *	Returns: a pointer to the new text source.
  */
 
-XawTextSource XawDiskSourceCreate(/* parent, args, num_args */);
+Widget XawDiskSourceCreate(/* parent, args, num_args */);
 /*
 Widget parent;
 ArgList args;

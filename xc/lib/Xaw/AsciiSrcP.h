@@ -1,5 +1,5 @@
 /*
-* $XConsortium: AsciiSrcP.h,v 1.4 89/09/01 14:28:34 kit Exp $
+* $XConsortium: AsciiSrcP.h,v 1.5 89/10/04 13:56:02 kit Exp $
 */
 
 
@@ -59,11 +59,8 @@ SOFTWARE.
  ************************************************************/
 
 #define TMPSIZ 32		/* bytes to allocate for tmpnam */
-#define DEFAULT_PIECE_SIZE BUFSIZ
 
-#ifdef ASCII_STRING
-#  define MAGIC_VALUE -1		/* ascii_length magic value. */
-#endif
+#define MAGIC_VALUE ((XawTextPosition) -1) /* Magic value. */
 
 #define streq(a, b)        ( strcmp((a), (b)) == 0 )
 
@@ -106,10 +103,8 @@ typedef struct _AsciiSrcPart {
 				   on save? */
   XtCallbackList callback;	/* A callback list to call when the source is
 				   changed. */
-#ifdef ASCII_STRING
-  Boolean ascii_string;		/* Emulate the R3 ascii string widget? */
+  Boolean use_string_in_place;	/* Use the string passed in place. */
   int     ascii_length;		/* length field for ascii string emulation. */
-#endif /* ASCII_STRING */
 
 #ifdef ASCII_DISK
   String filename;		/* name of file for Compatability. */
