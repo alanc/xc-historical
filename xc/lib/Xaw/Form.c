@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Form.c,v 1.29 89/06/19 17:50:42 jim Exp $";
+static char Xrcsid[] = "$XConsortium: Form.c,v 1.30 89/07/16 14:43:21 jim Exp $";
 #endif /* lint */
 
 
@@ -35,7 +35,7 @@ SOFTWARE.
 
 /* Private Definitions */
 
-#define DEFAULTVALUE -99999
+static int default_value = -99999
 
 #define Offset(field) XtOffset(FormWidget, form.field)
 static XtResource resources[] = {
@@ -57,15 +57,15 @@ static XtResource formConstraintResources[] = {
     {XtNright, XtCEdge, XtREdgeType, sizeof(XtEdgeType),
 	Offset(right), XtREdgeType, (caddr_t)&defEdge},
     {XtNhorizDistance, XtCThickness, XtRInt, sizeof(int),
-	Offset(dx), XtRImmediate, (caddr_t)DEFAULTVALUE},
+	Offset(dx), XtRInt, &default_value},
     {XtNfromHoriz, XtCWidget, XtRWidget, sizeof(Widget),
 	Offset(horiz_base), XtRWidget, (caddr_t)NULL},
     {XtNvertDistance, XtCThickness, XtRInt, sizeof(int),
-	Offset(dy), XtRImmediate, (caddr_t)DEFAULTVALUE},
+	Offset(dy), XtRInt, &default_value},
     {XtNfromVert, XtCWidget, XtRWidget, sizeof(Widget),
 	Offset(vert_base), XtRWidget, (caddr_t)NULL},
     {XtNresizable, XtCBoolean, XtRBoolean, sizeof(Boolean),
-	Offset(allow_resize), XtRImmediate, (caddr_t)0},
+	Offset(allow_resize), XtRImmediate, (caddr_t) FALSE},
 };
 #undef Offset
 
@@ -455,10 +455,13 @@ static void ConstraintInitialize(request, new)
     FormConstraints form = (FormConstraints)new->core.constraints;
     FormWidget fw = (FormWidget)new->core.parent;
 
-    if (form->form.dx == DEFAULTVALUE)
+    form->form.virtual_width = (int) new->core.width;
+    form->form.virtual_height = (int) new->core.height;
+
+    if (form->form.dx == default_value)
         form->form.dx = fw->form.default_spacing;
 
-    if (form->form.dy == DEFAULTVALUE)
+    if (form->form.dy == default_value)
         form->form.dy = fw->form.default_spacing;
 }
 
