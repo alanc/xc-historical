@@ -1,5 +1,5 @@
 .\" Use -ms
-.\" $XConsortium: a2x.ms,v 1.23 92/09/17 19:34:37 rws Exp $
+.\" $XConsortium: a2x.ms,v 1.24 92/09/17 19:46:37 rws Exp $
 .de Ds
 .RS
 .nf
@@ -76,20 +76,14 @@ hence can be somewhat less accurate, but time delays are rarely needed.  In
 addition, XTestExtension1 does not provide a way to synthesize relative
 pointer motion, so the WarpPointer protocol request is used instead.
 .LP
-The Imakefile for \fBa2x\fP comes configured for building with XTEST; to build
-with DEC-XTRAP change the line
-.Ds
-#define BuildWithXTest
-.De
-to
-.Ds
-#define BuildWithXTrap
-.De
-instead.  To build with XTestExtension1 change the line to
-.Ds
-#define BuildWithXTestExt1
-.De
-instead.
+The Imakefile for \fBa2x\fP comes configured to use only XTEST, but you can
+configure it to compile in support for any or all of the extensions; \fBa2x\fP
+will automatically choose whichever extension is supported by the display.  If
+you use different displays supporting different extensions, you will probably
+want to compile more than one extension into \fBa2x\fP.  At the top of the
+Imakefile are #define's for BuildWithXTest, BuildWithXTrap, and
+BuildWithXTestExt1; simply comment out the ones you don't want, and
+uncomment the ones you do want.
 .LP
 The documentation provided here is for using DragonDictate and \fBa2x\fP solely
 for work under X; the assumption is that you do not use DragonDictate with
