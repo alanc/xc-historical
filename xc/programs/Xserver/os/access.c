@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: access.c,v 1.28 89/02/03 09:04:31 rws Exp $ */
+/* $XConsortium: access.c,v 1.29 89/03/10 17:34:13 rws Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -140,23 +140,29 @@ DefineSelf (fd)
      */
     uname(&name);
     hp = gethostbyname (name.nodename);
-    if (hp != NULL) {
+    if (hp != NULL)
+    {
 	saddr.sa.sa_family = hp->h_addrtype;
 	inetaddr = (struct sockaddr_in *) (&(saddr.sa));
 	acopy ( hp->h_addr, &(inetaddr->sin_addr), hp->h_length);
 	family = ConvertAddr ( &(saddr.sa), &len, &addr);
-	if ( family > 0) {
+	if ( family > 0)
+	{
 	    for (host = selfhosts;
 		 host && !addrEqual (family, addr, len, host);
 		 host = host->next) ;
-	    if (!host) {
+	    if (!host)
+	    {
 		/* add this host to the host list.	*/
 		host = (HOST *) xalloc (sizeof (HOST));
-		host->family = family;
-		host->len = len;
-		acopy ( addr, host->addr, len);
-		host->next = selfhosts;
-		selfhosts = host;
+		if (host)
+		{
+		    host->family = family;
+		    host->len = len;
+		    acopy ( addr, host->addr, len);
+		    host->next = selfhosts;
+		    selfhosts = host;
+		}
 	    }
 	}
     }
@@ -190,7 +196,8 @@ DefineSelf (fd)
 	 * this is ugly but SIOCGIFCONF returns decnet addresses in
 	 * a different form from other decnet calls
 	 */
-	if (ifr->ifr_addr.sa_family == AF_DECnet) {
+	if (ifr->ifr_addr.sa_family == AF_DECnet)
+	{
 		len = sizeof (struct dn_naddr);
 		addr = (pointer)ifr->ifr_addr.sa_data;
 		family = AF_DECnet;
@@ -205,11 +212,14 @@ DefineSelf (fd)
         if (host)
 	    continue;
         host = (HOST *) xalloc (sizeof (HOST));
-        host->family = family;
-        host->len = len;
-        acopy(addr, host->addr, len);
-        host->next = selfhosts;
-        selfhosts = host;
+	if (host)
+	{
+	    host->family = family;
+	    host->len = len;
+	    acopy(addr, host->addr, len);
+	    host->next = selfhosts;
+	    selfhosts = host;
+	}
     }
 }
 #endif hpux
@@ -247,13 +257,17 @@ ResetHosts (display)
         validhosts = host->next;
         xfree (host);
     }
-    if (!LocalHostDisabled) {
+    if (!LocalHostDisabled)
+    {
     	for (self = selfhosts; self; self = self->next)
     	{
             host = (HOST *) xalloc (sizeof (HOST));
-            *host = *self;
-            host->next = validhosts;
-            validhosts = host;
+	    if (host)
+	    {
+		*host = *self;
+		host->next = validhosts;
+		validhosts = host;
+	    }
     	}
     }
     strcpy (fname, "/etc/X");
@@ -383,6 +397,8 @@ AddHost (client, family, length, pAddr)
     	    return (Success);
     }
     host = (HOST *) xalloc (sizeof (HOST));
+    if (!host)
+	return(BadAlloc);
     host->family = unixFamily;
     host->len = len;
     acopy(pAddr, host->addr, len);
@@ -408,11 +424,14 @@ NewHost (family, addr)
 	    return;
     }
     host = (HOST *) xalloc (sizeof (HOST));
-    host->family = family;
-    host->len = len;
-    acopy(addr, host->addr, len);
-    host->next = validhosts;
-    validhosts = host;
+    if (host)
+    {
+	host->family = family;
+	host->len = len;
+	acopy(addr, host->addr, len);
+	host->next = validhosts;
+	validhosts = host;
+    }
 }
 
 /* Remove a host from the access control list */
@@ -455,9 +474,10 @@ RemoveHost (client, family, length, pAddr)
 
 /* Get all hosts in the access control list */
 int
-GetHosts (data, pnHosts, pEnabled)
+GetHosts (data, pnHosts, pLen, pEnabled)
     pointer		*data;
     int			*pnHosts;
+    int			*pLen;
     BOOL		*pEnabled;
 {
     int			len;
@@ -466,19 +486,31 @@ GetHosts (data, pnHosts, pEnabled)
     register HOST	*host;
     int			nHosts = 0;
     int			*lengths = (int *) NULL;
+    int			*newlens;
 
     *pEnabled = AccessEnabled ? EnableAccess : DisableAccess;
     for (host = validhosts; host; host = host->next)
     {
         if ((len = CheckFamily (DONT_CHECK, host->family)) < 0)
             return (-1);
-	lengths = (int *) xrealloc(lengths, (nHosts + 1) * sizeof(int));
+	newlens = (int *) xrealloc(lengths, (nHosts + 1) * sizeof(int));
+	if (!newlens)
+	{
+	    xfree(lengths);
+	    return(BadAlloc);
+	}
+	lengths = newlens;
 	lengths[nHosts++] = len;
 	n += (((len + 3) >> 2) << 2) + sizeof(xHostEntry);
     }
     if (n)
     {
         *data = ptr = (pointer) xalloc (n);
+	if (!ptr)
+	{
+	    xfree(lengths);
+	    return(BadAlloc);
+	}
 	nHosts = 0;
         for (host = validhosts; host; host = host->next)
 	{
@@ -492,8 +524,9 @@ GetHosts (data, pnHosts, pEnabled)
         }
     }
     *pnHosts = nHosts;
+    *pLen = n;
     xfree(lengths);
-    return (n);
+    return(Success);
 }
 
 /* Check for valid address family, and for local host if client modification.
@@ -567,7 +600,8 @@ InvalidHost (saddr, len)
 	     */
 	    for (selfhost = selfhosts; selfhost; selfhost=selfhost->next)
  	    {
-		for (host = validhosts; host; host=host->next) {
+		for (host = validhosts; host; host=host->next)
+		{
 		    if (addrEqual (selfhost->family, selfhost->addr,
 				   selfhost->len, host))
 			return 0;

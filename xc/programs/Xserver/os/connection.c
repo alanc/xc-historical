@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: connection.c,v 1.93 89/01/17 07:24:12 rws Exp $ */
+/* $XConsortium: connection.c,v 1.94 89/01/17 08:32:29 rws Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -120,7 +120,7 @@ extern ClientPtr NextAvailableClient();
 
 extern int AutoResetServer();
 extern int GiveUp();
-static void CloseDownFileDescriptor(), CloseConnMax();
+static void CloseDownFileDescriptor(), ErrorConnMax();
 
 #ifdef UNIXCONN
 
@@ -402,6 +402,8 @@ EstablishNewConnections()
     register int i;
     register ClientPtr client;
     register OsCommPtr oc;
+    char *ibuf;
+    unsigned char *obuf;
 
 #ifdef TCP_NODELAY
     union {
@@ -419,79 +421,94 @@ EstablishNewConnections()
     int	fromlen;
 #endif TCP_NODELAY
 
-    if (readyconnections = (LastSelectMask[0] & WellKnownConnections)) 
+    readyconnections = (LastSelectMask[0] & WellKnownConnections);
+    if (!readyconnections)
+	return;
+    connect_time = GetTimeInMillis();
+    /* kill off stragglers */
+    for (i=1; i<currentMaxClients; i++)
     {
-	connect_time = GetTimeInMillis();
-	/* kill off stragglers */
-	for (i=1; i<currentMaxClients; i++)
+	if (client = clients[i])
 	{
-	    if (client = clients[i])
+	    oc = (OsCommPtr)(client->osPrivate);
+	    if (oc && (oc->conn_time != 0) &&
+		(connect_time - oc->conn_time) >= TimeOutValue)
+		CloseDownClient(client);     
+	}
+    }
+    while (readyconnections) 
+    {
+	curconn = ffs (readyconnections) - 1;
+	readyconnections &= ~(1 << curconn);
+	if ((newconn = accept (curconn,
+			      (struct sockaddr *) NULL, 
+			      (int *)NULL)) < 0) 
+	    continue;
+#ifdef TCP_NODELAY
+	fromlen = sizeof (from);
+	if (!getpeername (newconn, &from.sa, &fromlen))
+	{
+	    if (fromlen && (from.sa.sa_family == AF_INET)) 
 	    {
-		oc = (OsCommPtr)(client->osPrivate);
-		if (oc && (oc->conn_time != 0) &&
-		    (connect_time - oc->conn_time) >= TimeOutValue)
-		    CloseDownClient(client);     
+		int mi = 1;
+		setsockopt (newconn, IPPROTO_TCP, TCP_NODELAY,
+			   (char *)&mi, sizeof (int));
 	    }
 	}
-	while (readyconnections) 
-	{
-	    curconn = ffs (readyconnections) - 1;
-	    if ((newconn = accept (curconn,
-				  (struct sockaddr *) NULL, 
-				  (int *)NULL)) >= 0) 
-	    {
-#ifdef TCP_NODELAY
-		fromlen = sizeof (from);
-		if (!getpeername (newconn, &from.sa, &fromlen))
-		{
-		    if (fromlen && (from.sa.sa_family == AF_INET)) 
-		    {
-			int mi = 1;
-			setsockopt (newconn, IPPROTO_TCP, TCP_NODELAY,
-				   (char *)&mi, sizeof (int));
-		    }
-		}
 #endif /* TCP_NODELAY */
 #ifdef	hpux
-		/*
-		 * HPUX does not have  FNDELAY
-		 */
-		{
-		    int	arg;
-		    arg = 1;
-		    ioctl(newconn, FIOSNBIO, &arg);
-		}
+	/*
+	 * HPUX does not have  FNDELAY
+	 */
+	{
+	    int	arg;
+	    arg = 1;
+	    ioctl(newconn, FIOSNBIO, &arg);
+	}
 #else
-		fcntl (newconn, F_SETFL, FNDELAY);
+	fcntl (newconn, F_SETFL, FNDELAY);
 #endif /* hpux */
-		if (GrabDone)
-		{
-		    BITSET(SavedAllClients, newconn);
-		    BITSET(SavedAllSockets, newconn);
-		}
-		else
-		{
-		    BITSET(AllClients, newconn);
-		    BITSET(AllSockets, newconn);
-		}
-		oc =  (OsCommPtr)xalloc(sizeof(OsCommRec));
-		oc->fd = newconn;
-		oc->input.size = BUFSIZE;
-		oc->input.buffer = (char *)xalloc(oc->input.size);
-		oc->input.bufptr = oc->input.buffer;
-		oc->input.bufcnt = 0;
-		oc->input.lenLastReq = 0;
-		oc->output.size = OutputBufferSize;
-		oc->output.buf = (unsigned char *) xalloc(oc->output.size);
-		oc->output.count = 0;
-		oc->conn_time = connect_time;
-		if ((newconn < lastfdesc) &&
-		    (client = NextAvailableClient((pointer)oc)))
-		    ConnectionTranslation[newconn] = client->index;
-		else
-		    CloseConnMax(oc);
-	    }
-	    readyconnections &= ~(1 << curconn);
+	oc =  (OsCommPtr)xalloc(sizeof(OsCommRec));
+	ibuf = (char *)xalloc(BUFSIZE);
+	obuf = (unsigned char *) xalloc(OutputBufferSize);
+	if (!oc || !ibuf || !obuf)
+	{
+	    xfree(oc);
+	    xfree(ibuf);
+	    xfree(obuf);
+	    ErrorConnMax(newconn);
+	    close(newconn);
+	    continue;
+	}
+	if (GrabDone)
+	{
+	    BITSET(SavedAllClients, newconn);
+	    BITSET(SavedAllSockets, newconn);
+	}
+	else
+	{
+	    BITSET(AllClients, newconn);
+	    BITSET(AllSockets, newconn);
+	}
+	oc->fd = newconn;
+	oc->input.size = BUFSIZE;
+	oc->input.buffer = ibuf;
+	oc->input.bufptr = oc->input.buffer;
+	oc->input.bufcnt = 0;
+	oc->input.lenLastReq = 0;
+	oc->output.size = OutputBufferSize;
+	oc->output.buf = obuf;
+	oc->output.count = 0;
+	oc->conn_time = connect_time;
+	if ((newconn < lastfdesc) &&
+	    (client = NextAvailableClient((pointer)oc)))
+	{
+	    ConnectionTranslation[newconn] = client->index;
+	}
+	else
+	{
+	    ErrorConnMax(newconn);
+	    CloseDownFileDescriptor(oc);
 	}
     }
 }
@@ -499,12 +516,12 @@ EstablishNewConnections()
 #define NOROOM "Maximum number of clients reached"
 
 /************
- *   CloseConnMax
- *     Close a connection due to lack of client or file descriptor space
+ *   ErrorConnMax
+ *     Fail a connection due to lack of client or file descriptor space
  ************/
 
 static void
-CloseConnMax(oc)
+ErrorConnMax(oc)
     register OsCommPtr oc;
 {
     xConnSetupPrefix csp;
@@ -547,7 +564,6 @@ CloseConnMax(oc)
 	iov[2].iov_base = pad;
 	(void)writev(oc->fd, iov, 3);
     }
-    CloseDownFileDescriptor(oc);
 }
 
 /************
