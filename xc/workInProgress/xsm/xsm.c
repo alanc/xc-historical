@@ -1,4 +1,4 @@
-/* $XConsortium: xsm.c,v 1.24 94/02/18 16:04:04 converse Exp $ */
+/* $XConsortium: xsm.c,v 1.25 94/02/18 19:59:30 converse Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -230,9 +230,8 @@ SmProp	*prop;
     printf ("   Type:	%s\n", prop->type);
     printf ("   Num values:	%d\n", prop->num_vals);
     if (strcmp(prop->type, SmCARD8) == 0) {
-	/* must be restart style */
-	char *style = prop->vals->value;
-	int value = *style;
+	char *card8 = prop->vals->value;
+	int value = *card8;
 	printf ("   Value 1:\t%d\n", value);
     } else {
 	for (j = 0; j < prop->num_vals; j++) {
@@ -1370,8 +1369,16 @@ write_save()
 		prop = client->props[i];
 		fprintf(f, "%s\n", prop->name);
 		fprintf(f, "%s\n", prop->type);
-		for(j = 0; j < prop->num_vals; j++) {
-		    fprintf(f, "\t%s\n", prop->vals[j].value);
+		if (strcmp (prop->type, SmCARD8) == 0)
+		{
+		    char *card8 = prop->vals->value;
+		    int value = *card8;
+		    fprintf(f, "\t%d\n", prop->vals[0].value);
+		}
+		else
+		{
+		    for(j = 0; j < prop->num_vals; j++)
+			fprintf(f, "\t%s\n", prop->vals[j].value);
 		}
 	    }
 	    fprintf(f, "\n");
