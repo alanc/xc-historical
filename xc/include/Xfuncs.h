@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xfuncs.h,v 1.10 93/08/23 18:59:26 gildea Exp $
+ * $XConsortium: Xfuncs.h,v 1.11 93/08/24 17:21:08 gildea Exp $
  * 
  * Copyright 1990 by the Massachusetts Institute of Technology
  *
@@ -67,15 +67,15 @@ int bcmp();
 #else /* else X_NOT_STDC_ENV or SunOS 4 */
 #if defined(SYSV) || defined(luna) || defined(sun)
 #include <memory.h>
-#define memmove(dst,src,len) bcopy(src,dst,len)
+#define memmove(dst,src,len) bcopy((char *)(src),(char *)(dst),(int)(len))
 #if defined(SYSV) && defined(_XBCOPYFUNC)
-#define memmove(dst,src,len) _XBCOPYFUNC(src,dst,len)
+#define memmove(dst,src,len) _XBCOPYFUNC((char *)(src),(char *)(dst),(int)(len))
 #define _XNEEDBCOPYFUNC
 #endif
 #else /* else vanilla BSD */
-#define memmove(dst,src,len) bcopy(src,dst,len)
-#define memcpy(dst,src,len) bcopy(src,dst,len)
-#define memcmp(b1,b2,len) bcmp(b1,b2,len)
+#define memmove(dst,src,len) bcopy((char *)(src),(char *)(dst),(int)(len))
+#define memcpy(dst,src,len) bcopy((char *)(src),(char *)(dst),(int)(len))
+#define memcmp(b1,b2,len) bcmp((char *)(b1),(char *)(b2),(int)(len))
 #endif /* SYSV else */
 #endif /* ! X_NOT_STDC_ENV else */
 
