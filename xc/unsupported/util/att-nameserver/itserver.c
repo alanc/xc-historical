@@ -37,11 +37,10 @@
 #include <fcntl.h>
 #include <errno.h>
 #include <stdio.h>
-#include "Xproto.h"
-#include "Xstreams.h"
-#include "X.h"
+#include <X11/Xproto.h>
+#include "Xstreams.h"				/* in Xlib sources */
+#include <X11/X.h>
 
-#include "Xproto.h"
 #include "osdep.h"
 
 extern	char	*calloc(), *realloc(), *alialloc();

@@ -24,18 +24,16 @@
  *
 */
 
-#include <sys/types.h>
+#include <X11/Xos.h>
 #include <tiuser.h>
 #include <sys/param.h>
 #include <sys/utsname.h>
 #include <sys/signal.h>
-#include <fcntl.h>
 #include <errno.h>
 #include <stdio.h>
-#include "Xproto.h"
-#include "Xstreams.h"
+#include <X11/Xproto.h>
+#include "Xstreams.h"				/* in Xlib sources */
 
-#include "Xproto.h"
 #include "osdep.h"
 
 

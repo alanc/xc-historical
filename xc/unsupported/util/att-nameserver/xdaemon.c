@@ -24,22 +24,17 @@
  *
 */
 
-#include <sys/types.h>
+#include <X11/Xos.h>
 #include <errno.h>
-#include <sys/time.h>
 #include <sys/param.h>
 #include <signal.h>
-#include <signal.h>
-#include <fcntl.h>
 #include <sys/stream.h>
 #include <sys/stropts.h>
-#include <fcntl.h>
 #include <stdio.h>
-#include "Xstreams.h"
+#include "Xstreams.h"				/* in Xlib sources */
 #include <sys/utsname.h>
-#include "Xproto.h"
+#include <X11/Xproto.h>
 
-#include "Xproto.h"
 #include "osdep.h"
 
 #define	NSECONDS	2	
@@ -77,7 +72,7 @@ long LastSelectMask[mskcnt];	      /* mask returned from last select call */
 long MaxClients = MAXSOCKS ;
 
 #define SUCCESS		"1"
-char	*ptmx = "/dev/ptmx";
+static char	*ptmx = "/dev/ptmx";
 
 /*
 int	sig = -1;

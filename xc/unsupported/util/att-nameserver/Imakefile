@@ -33,6 +33,7 @@
 
 /**/# 	END USER STAMP AREA
 
+    INCLUDES = -I$(TOP) -I$(XLIBSRC)
 
 SRCS=xdaemon.c starserver.c itserver.c
 
