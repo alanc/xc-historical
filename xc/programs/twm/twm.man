@@ -125,6 +125,16 @@ in the window name to check for.  For example:
 The above list contains two names which will match window names beginning
 with the string "xterm" or "xclock".  The following window names will match
 and be in auto-raise mode: "xterm", "xterm_iguana", "xclock".
+.IP "\fBAutoRelativeResize\fP" 8
+This variable instructs \fItwm\fP to automatically begin rubberbanding whenever
+resizing is done, rather than waiting for the pointer to cross a window
+boundary.  When a window is initially mapped, pressing Button2 with this 
+option enabled will cause the rubber band to appear with the lower right hand
+corner attached to the pointer (as if the lower right hand corner of the
+window had been crossed).  Similarly, when resizing an already mapped window,
+this option causes the rubberbanding to begin immediately with the closest 
+end or corner.  If the resize is started in the center of the window, \fItwm\fP
+will wait for the pointer to cross an edge even if this option is set.
 .IP "\fBBorderColor\fP \fIstring\fP [ { \fIlist\fP } ]" 8
 This variable sets the color of the border to placed around all non-iconified
 windows.
