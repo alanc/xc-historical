@@ -1,5 +1,5 @@
 /*
- * $XConsortium: miwideline.c,v 1.9 89/11/01 13:29:21 keith Exp $
+ * $XConsortium: miwideline.c,v 1.10 89/11/01 19:47:19 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -64,7 +64,7 @@ miFillPolyHelper (pDrawable, pGC, pixel, spanData, y, overall_height,
 
     DDXPointPtr	ppt, pptInit;
     int		*pwidth, *pwidthInit;
-    int		oldPixel;
+    unsigned long oldPixel;
     int		xorg;
     Spans	spanRec;
 
@@ -176,7 +176,6 @@ miPolyBuildEdge (x0, y0, k, dx, dy, xi, yi, left, edge)
     int	    x, y, e;
     int	    signdx;
     int	    xady;
-    int	    t;
 
     if (dy < 0)
     {
@@ -247,7 +246,6 @@ miPolyBuildPoly (vertices, slopes, count, xi, yi, left, right, pnleft, pnright, 
     int	    s;
     int	    nleft, nright;
     int	    y, lasty, bottomy, topy;
-    int	    idy, jdy;
 
     /* find the top of the polygon */
     maxy = miny = vertices[0].y;
@@ -420,7 +418,8 @@ miLineJoin (pDrawable, pGC, pixel, spanData, pLeft, pRight)
     switch (joinStyle)
     {
     case JoinRound:
-	miLineRoundCapJoin(pDrawable, pGC, pixel, spanData, pLeft->x, pLeft->y);
+	miLineArc(pDrawable, pGC, pixel, spanData, pLeft->x, pLeft->y,
+		  (double)0.0, (double)0.0, TRUE);
 	return;
     case JoinMiter:
 	slopes[2].dx = pLeft->dx;
@@ -466,55 +465,20 @@ miLineJoin (pDrawable, pGC, pixel, spanData, pLeft, pRight)
     miFillPolyHelper (pDrawable, pGC, pixel, spanData, y, height, left, right, nleft, nright);
 }
 
-miLineRoundCapJoin (pDraw, pGC, pixel, spanData, xorg, yorg)
+int
+miLineArcI (pDraw, pGC, xorg, yorg, points, widths)
     DrawablePtr	    pDraw;
     GCPtr	    pGC;
-    unsigned long   pixel;
-    SpanDataPtr	    spanData;
     int		    xorg, yorg;
+    DDXPointPtr	    points;
+    int		    *widths;
 {
     register int x, y, e, ex, slw;
-    DDXPointPtr points;
     register DDXPointPtr pts;
-    int *widths;
     register int *wids;
-    unsigned long oldPixel;
-    Spans spanRec;
 
-    if (!spanData)
-    {
-    	points = (DDXPointPtr)ALLOCATE_LOCAL(sizeof(DDXPointRec) * pGC->lineWidth);
-    	if (!points)
-	    return;
-    	widths = (int *)ALLOCATE_LOCAL(sizeof(int) * pGC->lineWidth);
-    	if (!widths)
-    	{
-	    DEALLOCATE_LOCAL(points);
-	    return;
-    	}
-    	pts = points;
-    	wids = widths;
-    	oldPixel = pGC->fgPixel;
-    	if (pixel != oldPixel)
-    	{
-	    DoChangeGC(pGC, GCForeground, (XID *)&pixel, FALSE);
-	    ValidateGC (pDraw, pGC);
-    	}
-    }
-    else
-    {
-	spanRec.points = (DDXPointPtr) xalloc (pGC->lineWidth * sizeof (DDXPointRec));
-	if (!spanRec.points)
-	    return;
-	spanRec.widths = (int *) xalloc (pGC->lineWidth * sizeof (int));
-	if (!spanRec.widths)
-	{
-	    xfree (spanRec.points);
-	    return;
-	}
-	pts = spanRec.points;
-	wids = spanRec.widths;
-    }
+    pts = points;
+    wids = widths;
     if (pGC->miTranslate)
     {
 	xorg += pDraw->x;
@@ -551,80 +515,24 @@ miLineRoundCapJoin (pDraw, pGC, pixel, spanData, xorg, yorg)
 	    *wids++ = slw;
 	}
     }
-    if (!spanData)
-    {
-    	(*pGC->ops->FillSpans)(pDraw, pGC, pts - points, points, widths, FALSE);
-    	DEALLOCATE_LOCAL(widths);
-    	DEALLOCATE_LOCAL(points);
-    	if (pixel != oldPixel)
-    	{
-	    DoChangeGC(pGC, GCForeground, (XID *)&oldPixel, FALSE);
-	    ValidateGC (pDraw, pGC);
-    	}
-    }
-    else
-    {
-	SpanGroup   *group;
-
-	spanRec.count = pts - spanRec.points;
-	if (pixel == pGC->fgPixel)
-	    group = &spanData->fgGroup;
-	else
-	    group = &spanData->bgGroup;
-	miAppendSpans (group, &spanRec);
-    }
+    return (pts - points);
 }
 
-miLineRoundCapD(pDraw, pGC, pixel, spanData, xorg, yorg, radius)
+int
+miLineArcD (pDraw, pGC, xorg, yorg, points, widths)
     DrawablePtr	    pDraw;
     GCPtr	    pGC;
-    unsigned long   pixel;
-    SpanDataPtr	    spanData;
-    double xorg, yorg, radius;
+    double	    xorg, yorg;
+    DDXPointPtr	    points;
+    int		    *widths;
 {
-    DDXPointPtr points;
     register DDXPointPtr pts;
-    int *widths;
     register int *wids;
-    unsigned long oldPixel;
-    Spans spanRec;
-    double x0, y0, el, er, yk, xlk, xrk, k;
+    double radius, x0, y0, el, er, yk, xlk, xrk, k;
     int xbase, ybase, y, boty, xl, xr;
 
-    if (!spanData)
-    {
-    	points = (DDXPointPtr)ALLOCATE_LOCAL(sizeof(DDXPointRec) * pGC->lineWidth);
-    	if (!points)
-	    return;
-    	widths = (int *)ALLOCATE_LOCAL(sizeof(int) * pGC->lineWidth);
-    	if (!widths)
-    	{
-	    DEALLOCATE_LOCAL(points);
-	    return;
-    	}
-    	pts = points;
-    	wids = widths;
-    	oldPixel = pGC->fgPixel;
-    	if (pixel != oldPixel)
-    	{
-	    DoChangeGC(pGC, GCForeground, (XID *)&pixel, FALSE);
-	    ValidateGC (pDraw, pGC);
-    	}
-    }
-    else
-    {
-	spanRec.points = (DDXPointPtr) xalloc (pGC->lineWidth * sizeof (DDXPointRec));
-	if (!spanRec.points)
-	    return;
-	spanRec.widths = (int *) xalloc (pGC->lineWidth * sizeof (int));
-	if (!spanRec.widths)
-	{
-	    xfree (spanRec.points);
-	    return;
-	}
-	pts = spanRec.points;
-	wids = spanRec.widths;
-    }
+    pts = points;
+    wids = widths;
     xbase = floor(xorg);
     x0 = xorg - xbase;
     ybase = ceil(yorg);
@@ -637,6 +545,7 @@ miLineRoundCapD(pDraw, pGC, pixel, spanData, xorg, yorg, radius)
     xlk = x0 + x0 + 1.0;
     xrk = x0 + x0 - 1.0;
     yk = y0 + y0 - 1.0;
+    radius = ((double)pGC->lineWidth) / 2.0;
     y = floor(radius - y0 + 1.0);
     el = radius * radius - ((y + y0) * (y + y0)) - (x0 * x0);
     er = el + xrk;
@@ -648,7 +557,7 @@ miLineRoundCapD(pDraw, pGC, pixel, spanData, xorg, yorg, radius)
 	el -= xlk;
     }
     boty = floor(-y0 - radius + 1.0);
-    while (y > 0)
+    while (y > 1)
     {
 	k = (y << 1) + yk;
 	er += k;
@@ -698,9 +607,64 @@ miLineRoundCapD(pDraw, pGC, pixel, spanData, xorg, yorg, radius)
 	    *wids++ = xr - xl + 1;
 	}
     }
+    return (pts - points);
+}
+
+miLineArc (pDraw, pGC, pixel, spanData, xorgi, yorgi, xorg, yorg, isInteger)
+    DrawablePtr	    pDraw;
+    GCPtr	    pGC;
+    unsigned long   pixel;
+    SpanDataPtr	    spanData;
+    int		    xorgi, yorgi;
+    double	    xorg, yorg;
+    Bool	    isInteger;
+{
+    DDXPointPtr points;
+    int *widths;
+    unsigned long oldPixel;
+    Spans spanRec;
+    int n;
+
     if (!spanData)
     {
-    	(*pGC->ops->FillSpans)(pDraw, pGC, pts - points, points, widths, FALSE);
+    	points = (DDXPointPtr)ALLOCATE_LOCAL(sizeof(DDXPointRec) * pGC->lineWidth);
+    	if (!points)
+	    return;
+    	widths = (int *)ALLOCATE_LOCAL(sizeof(int) * pGC->lineWidth);
+    	if (!widths)
+    	{
+	    DEALLOCATE_LOCAL(points);
+	    return;
+    	}
+    	oldPixel = pGC->fgPixel;
+    	if (pixel != oldPixel)
+    	{
+	    DoChangeGC(pGC, GCForeground, (XID *)&pixel, FALSE);
+	    ValidateGC (pDraw, pGC);
+    	}
+    }
+    else
+    {
+	points = (DDXPointPtr) xalloc (pGC->lineWidth * sizeof (DDXPointRec));
+	if (!points)
+	    return;
+	widths = (int *) xalloc (pGC->lineWidth * sizeof (int));
+	if (!widths)
+	{
+	    xfree (points);
+	    return;
+	}
+	spanRec.points = points;
+	spanRec.widths = widths;
+    }
+    if (isInteger)
+	n = miLineArcI(pDraw, pGC, xorgi, yorgi, points, widths);
+    else
+	n = miLineArcD(pDraw, pGC, xorg, yorg, points, widths);
+
+    if (!spanData)
+    {
+    	(*pGC->ops->FillSpans)(pDraw, pGC, n, points, widths, FALSE);
     	DEALLOCATE_LOCAL(widths);
     	DEALLOCATE_LOCAL(points);
     	if (pixel != oldPixel)
@@ -713,24 +677,13 @@ miLineRoundCapD(pDraw, pGC, pixel, spanData, xorg, yorg, radius)
     {
 	SpanGroup   *group;
 
-	spanRec.count = pts - spanRec.points;
+	spanRec.count = n;
 	if (pixel == pGC->fgPixel)
 	    group = &spanData->fgGroup;
 	else
 	    group = &spanData->bgGroup;
 	miAppendSpans (group, &spanRec);
     }
-}
-
-miLineCapRound (pDraw, pGC, pixel, spanData, face, left)
-    DrawablePtr	    pDraw;
-    GCPtr	    pGC;
-    unsigned long   pixel;
-    SpanDataPtr	    spanData;
-    LineFacePtr	    face;
-    Bool	    left;
-{
-    miLineRoundCapJoin(pDraw, pGC, pixel, spanData, face->x, face->y);
 }
 
 void
@@ -749,7 +702,6 @@ miWideSegment (pDrawable, pGC, pixel, spanData,
     double	projectXoff, projectYoff;
     double	k;
     int		x, y;
-    int		e;
     int		dx, dy;
     PolyEdgeRec	left, right;
     PolyEdgeRec	top, bottom;
@@ -1012,7 +964,7 @@ miWideLine (pDrawable, pGC, mode, npt, pPts)
     SpanDataRec	    spanDataRec;
     SpanDataPtr	    spanData;
     unsigned long   pixel;
-    Bool	    projectLeft, projectRight, doJoin;
+    Bool	    projectLeft, projectRight;
     LineFaceRec	    leftFace, rightFace, prevRightFace;
     int		    first;
     Bool	    somethingDrawn = FALSE;
@@ -1025,7 +977,6 @@ miWideLine (pDrawable, pGC, mode, npt, pPts)
     x2 = pPts->x;
     y2 = pPts->y;
     first = TRUE;
-    doJoin = FALSE;
     projectLeft = pGC->capStyle == CapProjecting;
     projectRight = FALSE;
     while (--npt)
@@ -1050,7 +1001,9 @@ miWideLine (pDrawable, pGC, mode, npt, pPts)
 	if (first)
 	{
 	    if (pGC->capStyle == CapRound)
-		miLineCapRound (pDrawable, pGC, pixel, spanData, &leftFace, TRUE);
+		miLineArc (pDrawable, pGC, pixel, spanData,
+			   leftFace.x, leftFace.y, (double)0.0, (double)0.0,
+			   TRUE);
 	}
 	else
 	{
@@ -1058,7 +1011,9 @@ miWideLine (pDrawable, pGC, mode, npt, pPts)
 		        &prevRightFace);
 	}
 	if (npt == 1 && pGC->capStyle == CapRound)
-	    miLineCapRound (pDrawable, pGC, pixel, spanData, &rightFace, FALSE);
+	    miLineArc (pDrawable, pGC, pixel, spanData,
+		       rightFace.x, rightFace.y, (double)0.0, (double)0.0,
+		       TRUE);
 	prevRightFace = rightFace;
 	first = FALSE;
 	projectLeft = FALSE;
@@ -1072,8 +1027,12 @@ miWideLine (pDrawable, pGC, mode, npt, pPts)
 		       &leftFace, &rightFace);
 	if (pGC->capStyle == CapRound)
 	{
-	    miLineCapRound (pDrawable, pGC, pixel, spanData, &leftFace, TRUE);
-	    miLineCapRound (pDrawable, pGC, pixel, spanData, &rightFace, FALSE);
+	    miLineArc (pDrawable, pGC, pixel, spanData,
+		       leftFace.x, leftFace.y, (double)0.0, (double)0.0,
+		       TRUE);
+	    miLineArc (pDrawable, pGC, pixel, spanData,
+		       rightFace.x, rightFace.y, (double)0.0, (double)0.0,
+		       TRUE);
 	}
     }
     if (spanData)
@@ -1231,10 +1190,10 @@ miWideDashSegment (pDrawable, pGC, spanData, pDashOffset, pDashIndex,
 		    vertices[V_RIGHT] = saveRight;
 		    break;
 		case CapRound:
-		    miLineRoundCapD (pDrawable, pGC, pixel, spanData,
-				     lcenterx, lcentery, l);
-		    miLineRoundCapD (pDrawable, pGC, pixel, spanData,
-				     rcenterx, rcentery, l);
+		    miLineArc (pDrawable, pGC, pixel, spanData, 0, 0,
+			       lcenterx, lcentery, FALSE);
+		    miLineArc (pDrawable, pGC, pixel, spanData, 0, 0,
+			       rcenterx, rcentery, FALSE);
 		    break;
 		}
 	    }
@@ -1294,8 +1253,8 @@ miWideDashSegment (pDrawable, pGC, spanData, pDashOffset, pDashIndex,
 	if (!first && pGC->lineStyle == LineOnOffDash &&
 	    pGC->capStyle == CapRound)
 	{
-	    miLineRoundCapD (pDrawable, pGC, pixel, spanData,
-			     lcenterx, lcentery, l);
+	    miLineArc (pDrawable, pGC, pixel, spanData, 0, 0,
+		       lcenterx, lcentery, FALSE);
 	}
     }
     dashRemain = ((double) dashRemain) - LRemain;
@@ -1328,7 +1287,7 @@ miWideDash (pDrawable, pGC, mode, npt, pPts)
 {
     int		    x1, y1, x2, y2;
     unsigned long   pixel;
-    Bool	    projectLeft, projectRight, doJoin;
+    Bool	    projectLeft, projectRight;
     LineFaceRec	    leftFace, rightFace, prevRightFace;
     int		    first;
     int		    dashIndex, dashOffset;
@@ -1341,7 +1300,6 @@ miWideDash (pDrawable, pGC, mode, npt, pPts)
     x2 = pPts->x;
     y2 = pPts->y;
     first = TRUE;
-    doJoin = FALSE;
     projectLeft = pGC->capStyle == CapProjecting;
     projectRight = FALSE;
     dashIndex = 0;
@@ -1373,7 +1331,9 @@ miWideDash (pDrawable, pGC, mode, npt, pPts)
 	    if (first)
 	    {
 	    	if (pGC->capStyle == CapRound)
-		    miLineCapRound (pDrawable, pGC, pixel, spanData, &leftFace, TRUE);
+		    miLineArc (pDrawable, pGC, pixel, spanData,
+			       leftFace.x, leftFace.y,
+			       (double)0.0, (double)0.0, TRUE);
 	    }
 	    else
 	    {
@@ -1381,7 +1341,9 @@ miWideDash (pDrawable, pGC, mode, npt, pPts)
 		            &prevRightFace);
 	    }
 	    if (npt == 1 && pGC->capStyle == CapRound)
-	    	miLineCapRound (pDrawable, pGC, pixel, spanData, &rightFace, FALSE);
+	    	miLineArc (pDrawable, pGC, pixel, spanData,
+			   rightFace.x, rightFace.y,
+			   (double)0.0, (double)0.0, TRUE);
 	}
 	prevRightFace = rightFace;
 	first = FALSE;
