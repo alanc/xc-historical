@@ -1,13 +1,13 @@
 /* 
- * $Header: xset.c,v 1.13 87/06/29 13:56:25 dkk Exp $ 
- * $Locker:  $ 
+ * $Header: xset.c,v 1.16 87/07/07 15:45:39 dkk Locked $ 
+ * $Locker: dkk $ 
  */
 #include <X11/copyright.h>
 
 /* Copyright    Massachusetts Institute of Technology    1985	*/
 
 #ifndef lint
-static char *rcsid_xset_c = "$Header: xset.c,v 1.13 87/06/29 13:56:25 dkk Exp $";
+static char *rcsid_xset_c = "$Header: xset.c,v 1.16 87/07/07 15:45:39 dkk Locked $";
 #endif
 
 #include <X11/X.h>      /*  Should be transplanted to X11/Xlibwm.h     %*/
@@ -95,6 +95,7 @@ char **argv;
 		XAutoRepeatOff(dpy);
 	}
 	if (set->do_what & DO_SAVER) {
+	  set->allow_exp = DefaultExposures;
 	  XSetScreenSaver(dpy, set->timeout, set->interval, 
 				     set->prefer_blank, set->allow_exp);
 	}
