@@ -1,4 +1,4 @@
-/* $XConsortium: xsm.h,v 1.24 94/08/10 19:41:01 mor Exp mor $ */
+/* $XConsortium: xsm.h,v 1.25 94/08/11 18:56:09 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -81,8 +81,6 @@ extern FILE *fdopen(int, char const *);
 #define DEFAULT_SESSION_NAME "Default"
 #define FAILSAFE_SESSION_NAME "Fail Safe"
 
-#define MAX_PROPS 50
-
 #define RESTART_MANAGERS 	1
 #define RESTART_REST_OF_CLIENTS	2
 
@@ -91,13 +89,10 @@ typedef struct _ClientRec {
     IceConn		ice_conn;
     char 		*clientId;
     char		*clientHostname;
-    int			numProps;
-    SmProp		*props[MAX_PROPS];
+    List		*props;
     char		*discardCommand;
     char		*saveDiscardCommand;
-    struct _ClientRec	*next;
 
-    unsigned int	running : 1;
     unsigned int	restarted : 1;
     unsigned int	userIssuedCheckpoint : 1;
     unsigned int	interactPending : 1;
@@ -112,16 +107,16 @@ typedef struct _PendingClient {
     List		*props;
 } PendingClient;
 
-typedef struct _PendingProp {
+typedef struct _Prop {
     char		*name;
     char		*type;
     List		*values;
-} PendingProp;
+} Prop;
 
-typedef struct _PendingValue {
+typedef struct _PropValue {
     XtPointer		value;
     int			length;
-} PendingValue;
+} PropValue;
 
 
 extern char		*display_env, *non_local_display_env;
@@ -143,8 +138,11 @@ extern char		*sm_id;
 
 extern char		*session_name;
 
-extern ClientRec	*ClientList;
-extern List	 	*PendingList;
+extern List		*RunningList;
+extern List		*PendingList;
+extern List		*RestartAnywayList;
+extern List		*RestartImmedList;
+
 extern int		numClients;
 extern Bool		client_info_visible;
 extern Bool		client_prop_visible;
