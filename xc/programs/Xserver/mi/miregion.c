@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: miregion.c,v 1.49 89/07/14 17:13:54 keith Exp $ */
+/* $XConsortium: miregion.c,v 1.50 89/07/17 19:23:43 rws Exp $ */
 
 #include <stdio.h>
 #include "miscstruct.h"
@@ -1388,7 +1388,15 @@ miRegionValidate(badreg, pOverlap)
     }
     if (badreg->extents.x1 < badreg->extents.x2)
     {
-	DOWNSIZE(badreg, numRects);
+	if ((numRects) == 1)
+	{
+	    xfreeData(badreg);
+	    badreg->data = (RegDataPtr) NULL;
+	}
+	else
+	{
+	    DOWNSIZE(badreg, numRects);
+	}
 	good(badreg);
 	return TRUE;
     }
