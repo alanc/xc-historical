@@ -1,4 +1,4 @@
-/* $XConsortium: misc.c,v 1.2 94/02/22 15:43:12 mor Exp $ */
+/* $XConsortium: misc.c,v 1.3 94/04/17 21:15:16 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -72,7 +72,7 @@ putenv(s)
     if(virgin) {
 	register i;
 
-	newenv = (char **) malloc((unsigned) ((idx + 2) * sizeof(char*)));
+	newenv = (char **) XtMalloc((unsigned) ((idx + 2) * sizeof(char*)));
 	if(newenv == 0)
 	    return -1;
 	for(i = idx-1; i >= 0; --i)
