@@ -342,6 +342,11 @@ in \fI/etc/utmp\fP.
 .B "sunFunctionKeys (\fPclass\fB SunFunctionKeys)"
 Specifies whether or not Sun Function Key escape codes should be generated for
 function keys instead of standard escape sequences.
+.TP 8
+.B "forceTitleStrings (\fPclass\fB ForceTitleStrings)"
+Specifies whether or not a command name given with \fI\-e\fP should override
+the window title and icon strings.  This is true by default, but is
+automatically set to false for \fI\-E\fP.
 .sp
 .PP
 The following resources are specified as part of the ``vt100'' widget (class
