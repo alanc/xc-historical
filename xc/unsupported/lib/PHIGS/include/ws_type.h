@@ -1,4 +1,4 @@
-/* $XConsortium: ws_type.h,v 5.1 91/02/16 09:49:22 rws Exp $ */
+/* $XConsortium: ws_type.h,v 5.2 91/03/29 10:44:27 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -70,8 +70,6 @@ SOFTWARE.
 #define	WST_MIN_PREDEF_LIGHT_REPS	2
 #define	WST_MIN_PREDEF_DEPTH_CUE_REPS	2
 #define	WST_MIN_PREDEF_COLR_MAP_REPS	1
-
-#define WST_MAX_VIEWS			20
 #define	WST_MIN_PREDEF_VIEW_REPS	6
 
 /* 

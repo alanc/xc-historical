@@ -1,4 +1,4 @@
-/* $XConsortium: wstx_atr.c,v 5.2 91/05/30 14:21:09 hersh Exp $ */
+/* $XConsortium: wstx_atr.c,v 5.3 91/07/01 16:24:19 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -615,8 +615,7 @@ init_table_sizes( display, window, wst )
 	PEXViewLUT, &max_entries, &num_predef, &pmin, &pmax ) ) {
 	wst->desc_tbl.phigs_dt.min_predef_view_index = pmin;
 	wst->desc_tbl.phigs_dt.max_predef_view_index = pmax;
-	wst->desc_tbl.phigs_dt.num_view_indices =
-	    MIN( WST_MAX_VIEWS, max_entries );
+	wst->desc_tbl.phigs_dt.num_view_indices = max_entries;
 	assure( max_entries >= WST_MIN_PREDEF_VIEW_REPS);
     }
     if ( PEXGetTableInfo( display, window,
