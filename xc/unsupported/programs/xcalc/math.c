@@ -1,4 +1,4 @@
-/* $XConsortium: math.c,v 1.15 91/02/16 21:37:20 converse Exp $ 
+/* $XConsortium: math.c,v 1.16 91/07/11 14:31:40 converse Exp $ 
  *
  *  math.c  -  mathematics functions for a hand calculator under X
  *
@@ -24,6 +24,7 @@
 #endif
 #include <setjmp.h>
 #include "xcalc.h"
+#include <errno.h>
 
 #ifdef _CRAY		/* kludge around Cray STDC compiler */
 double (*log_p)() = log;
