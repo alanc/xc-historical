@@ -1,4 +1,4 @@
-# $XConsortium: Imakefile,v 1.20 91/02/17 10:54:56 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.21 91/04/09 19:40:02 rws Exp $
 
 #if BuildXInputLib
 #define IHaveSubdirs
