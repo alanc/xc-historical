@@ -1,10 +1,11 @@
-/* $XConsortium: Xregistry,v 1.22 91/03/19 10:53:51 rws Exp $ */
+/* $XConsortium: Xregistry,v 1.23 91/03/21 16:18:10 rws Exp $ */
 
 1. ORGANIZATION NAMES
 
 Name						Reference
 ----						---------
 "Acorn"						[49]
+"Adobe"						[69]
 "AIX"						[33]
 "APOLLO"					[1]
 "Apple"						[22]
@@ -380,6 +381,8 @@ Name						Reference
 "TEXT"						[16]
 "TIMESTAMP"					[16]
 "USER"						[16]
+"_ADOBE_EPS"					[69]
+"_ADOBE_EPSI"					[69]
 "_SONY_CDFF"					[37]
 "_SONY_XWD"					[37]
 "_SONY_XPICT"					[37]
@@ -951,4 +954,9 @@ REFERENCES
 	Wyse Technology
 	3471 N. First Street
 	San Jose, CA 95134
+
+[69]	PostScript Developer Support
+	Adobe Systems Incorporated
+	PO Box 7900
+	Mountain View, CA 94039-7900
 Sumitomo Electric Workstation Corp.	[77]
