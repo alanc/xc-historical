@@ -17,7 +17,7 @@ Author:  Bob Scheifler, MIT X Consortium
 
 ********************************************************/
 
-/* $XConsortium: mizerarc.c,v 5.26 91/06/01 17:21:01 rws Exp $ */
+/* $XConsortium: mizerarc.c,v 5.27 91/06/30 11:23:13 rws Exp $ */
 
 /* Derived from:
  * "Algorithm for drawing ellipses or hyperbolae with a digital plotter"
@@ -113,7 +113,7 @@ miZeroArcSetup(arc, info, ok360)
 	info->beta = 0;
 	info->k1 = 0;
 	info->k3 = 0;
-	info->a = -arc->height;
+	info->a = -(int)arc->height;
 	info->b = 0;
 	info->d = -1;
     }
