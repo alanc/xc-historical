@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Initialize.c,v 1.139 89/09/21 09:12:58 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Initialize.c,v 1.140 89/09/21 13:24:30 swick Exp $";
 /* $oHeader: Initialize.c,v 1.7 88/08/31 16:33:39 asente Exp $ */
 #endif /* lint */
 
@@ -567,6 +567,14 @@ void _XtDisplayInitialize(dpy, pd, name, class, urlist, num_urs, argc, argv)
 			 XtRBoolean, &value)
 	        && tmp_bool) {
 	    pd->rv = True;
+	}
+
+	value.size = sizeof(pd->multi_click_time);
+	value.addr = (XtPointer)&pd->multi_click_time;
+	if (!_GetResource(dpy, search_list,
+			  "multiClickTime", "MultiClickTime",
+			  XtRInt, &value)) {
+	    pd->multi_click_time = 200;
 	}
 
 	value.size = sizeof(pd->appContext->selectionTimeout);
