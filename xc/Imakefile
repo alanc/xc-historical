@@ -164,11 +164,9 @@ flushlinks::
 	find . -type l -exec rm {} \;
 	find . \( \! \( -type d -o -name Makefile \) \) -print
 
-XCOMM rebuild the Makefiles in the master source tree
-mastermakefiles::
+XCOMM rebuild the top-level Makefile
+mastermakefile::
 	cd $(IMAKESRC); $(MAKE) -f Makefile.ini clean; $(MAKE) -f Makefile.ini BOOTSTRAPCFLAGS="$(BOOTSTRAPCFLAGS)"
 	-$(RM) Makefile.bak; $(MV) Makefile Makefile.bak
 	$(MAKE) -f Makefile.bak Makefile
-	$(MAKE) Makefiles
 	cd $(IMAKESRC); $(MAKE) clean
-
