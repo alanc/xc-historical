@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: miarc.c,v 1.74 89/04/03 19:30:50 keith Exp $ */
+/* $XConsortium: miarc.c,v 1.75 89/04/04 14:58:41 keith Exp $ */
 /* Author: Keith Packard */
 
 #include "X.h"
@@ -322,7 +322,7 @@ miPolyArc(pDraw, pGC, narcs, parcs)
 	    /* allocate a 1 bit deep pixmap of the appropriate size, and
 	     * validate it */
 	    pDrawTo = (DrawablePtr)(*pDraw->pScreen->CreatePixmap)
-					(pDraw->pScreen, dx, dy, 1, XYBitmap);
+					(pDraw->pScreen, dx, dy, 1);
 	    if (!pDrawTo)
 	    {
 		FreeScratchGC(pGCTo);
