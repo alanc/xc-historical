@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: devices.c,v 5.1 89/10/04 22:50:46 rws Exp $ */
+/* $XConsortium: devices.c,v 5.2 89/10/09 15:47:20 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -513,7 +513,7 @@ InitKeyboardDeviceStruct(device, pKeySyms, pModifiers, bellProc, controlProc)
 	   InitKbdFeedbackClassDeviceStruct(dev, bellProc, controlProc));
 }
 
-static int
+int
 SendMappingNotify(request, firstKeyCode, count)
     CARD8 request, count;
     KeyCode firstKeyCode;
