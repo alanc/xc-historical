@@ -61,8 +61,8 @@ WidgetClassRec widgetClassRec = {
           (WidgetProc)NULL      /*accept_focus*/
 };
 
-extern void CompositeInsertChild();
-extern void CompositeDeleteChild();
+static void CompositeInsertChild();
+static void CompositeDeleteChild();
 static void CompositeDestroy();
 
 ConstraintClassRec constraintClassRec = {
@@ -191,7 +191,7 @@ static void CompositeDestroy(w)
     XtFree((char *) w->composite.children);
 }
 
-void CompositeInsertChild(w)
+static void CompositeInsertChild(w)
     Widget	w;
 {
     Cardinal	    position;
@@ -215,7 +215,7 @@ void CompositeInsertChild(w)
     cw->composite.num_children++;
 }
 
-void CompositeDeleteChild(w)
+static void CompositeDeleteChild(w)
     Widget	w;
 {
     Cardinal	    position;

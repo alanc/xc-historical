@@ -157,7 +157,7 @@ TopLevelClassRec topLevelClassRec = {
     /* geometry_manager   */    GeometryManager,
     /* change_managed     */    ChangeManaged,
     /* insert_child	  */	InsertChild,
-    /* delete_child	  */	CompositeDeleteChild,
+    /* delete_child	  */	NULL,	      /* ||| Inherit from Composite */
     /* move_focus_to_next */    NULL,
     /* move_focus_to_prev */    NULL
 };
@@ -406,7 +406,7 @@ Widget wid;
 static void InsertChild(w)
     Widget w;
 {
-    CompositeInsertChild(w);
+    ((CompositeWidgetClass) XtSuperclass(w))->composite_class.insert_child(w);
     XtCompositeAddChild(w);	/* Add to managed set now */
 }
 

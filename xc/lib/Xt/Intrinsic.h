@@ -280,13 +280,6 @@ typedef struct _ConstraintClassRec {
 extern ConstraintClassRec constraintClassRec;
 extern ConstraintWidgetClass constraintWidgetClass;
 
-/* ||| Kludge definitions until class initialization procedure let you inherit
-   from your superclass */
-
-extern void CompositeInsertChild(); /* w : Widget */
-extern void CompositeDeleteChild();
-
-
 /*************************************************************************
  *
  * Generic Procedures
@@ -297,6 +290,9 @@ extern void CompositeDeleteChild();
 extern Boolean XtIsSubclass ();
     /* Widget       widget;	    */
     /* WidgetClass  widgetClass;    */
+
+#define XtSuperclass(widget) \
+    ((widget)->core.widget_class->core_class.superclass)
 
 extern Widget XtCreateWidget ();
     /* String	    name;	    */
