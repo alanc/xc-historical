@@ -1,4 +1,5 @@
 STARTFONT 2.1
+COMMENT $XConsortium$
 COMMENT 
 COMMENT  Copyright 1984, 1987 Adobe Systems, Inc.
 COMMENT  Portions Copyright 1988 Digital Equipment Corporation
@@ -51,7 +52,7 @@ CHARSET_REGISTRY "ISO8859"
 CHARSET_ENCODING "1"
 COMMENT END LogicalFontDescription
 CHARSET_COLLECTIONS "ASCII ISO8859-1 ADOBE-STANDARD"
-FULL_NAME "Courier"
+FACE_NAME "Courier"
 COPYRIGHT "Copyright (c) 1985,1987 Adobe Systems, Inc., Portions Copyright 1988 Digital Equipment Corp."
 COMMENT ***** end of inserted font properties
 FONT_ASCENT 8
