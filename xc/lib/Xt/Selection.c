@@ -1,4 +1,4 @@
-/* $XConsortium: Selection.c,v 1.54 90/09/04 10:50:45 swick Exp $ */
+/* $XConsortium: Selection.c,v 1.55 90/09/20 14:59:41 swick Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -563,7 +563,8 @@ Boolean *incremental;
 	ctx->req = NULL;
     }
     if (BYTELENGTH(length,format) <= MAX_SELECTION_INCR(ctx->dpy)) {
-	if (! timestamp_target && ctx->notify != NULL) {
+	if (! timestamp_target) {
+	    if (ctx->notify != NULL) {
 		  req->target = target;
 		  req->property = property;
 		  req->widget = widget;
@@ -579,6 +580,8 @@ Boolean *incremental;
 	          AddHandler(ctx->dpy, event->requestor,
 			     widget, (EventMask) PropertyChangeMask, 
 			     HandlePropertyGone, (XtPointer)req);
+	      }
+	      else ctx->ref_count--;
         }
 	XChangeProperty(ctx->dpy, event->requestor, property, 
 			targetType, format, PropModeReplace,
@@ -604,7 +607,7 @@ XtPointer closure;
 XEvent *event;
 Boolean *cont;
 {
-    Select eventCtx, ctx;
+    Select ctx;
     XSelectionEvent ev;
     Boolean incremental;
     Atom target;
@@ -614,21 +617,17 @@ Boolean *cont;
     ctx = (Select) closure;
     switch (event->type) {
       case SelectionClear:
-	eventCtx = FindCtx(event->xselectionclear.display,
-			   event->xselectionclear.selection);
 	/* if this event is not for the selection we registered for,
 	 * don't do anything */
-	if (eventCtx != ctx)
+	if (ctx->selection != event->xselectionclear.selection)
 	    break;
 	(void) LoseSelection(ctx, widget, event->xselectionclear.selection,
 			event->xselectionclear.time);
 	break;
       case SelectionRequest:
-	eventCtx = FindCtx(event->xselectionrequest.display,
-			   event->xselectionrequest.selection);
 	/* if this event is not for the selection we registered for,
 	 * don't do anything */
-	if (eventCtx != ctx)
+	if (ctx->selection != event->xselectionrequest.selection)
 	    break;
 	ev.type = SelectionNotify;
 	ev.display = event->xselectionrequest.display;
@@ -638,7 +637,7 @@ Boolean *cont;
 	ev.target = event->xselectionrequest.target;
 	if (event->xselectionrequest.property == None) /* obsolete requestor */
 	   event->xselectionrequest.property = event->xselectionrequest.target;
-	if (!(ctx->widget) || ctx->was_disowned
+	if (ctx->widget != widget || ctx->was_disowned
 	   || ((event->xselectionrequest.time != CurrentTime)
 	        && (event->xselectionrequest.time < ctx->time)))
 	    ev.property = None;
@@ -713,6 +712,10 @@ Boolean incremental;
         if (XGetSelectionOwner(ctx->dpy, selection) != window)
 	    return FALSE;
 	if (ctx->ref_count) {	/* exchange is in-progress */
+#ifdef DEBUG_ACTIVE
+	    printf( "Active exchange for widget \"%s\"; selection=0x%x, ref_count=%d\n",
+		    XtName(widget), (long)selection, ctx->ref_count );
+#endif
 	    if (ctx->widget != widget ||
 		ctx->convert != convert ||
 		ctx->loses != lose ||
