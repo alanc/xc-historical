@@ -1,6 +1,4 @@
-#if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: AsciiSink.c,v 1.52 90/08/14 14:15:46 converse Exp $";
-#endif /* lint && SABER */
+/* $XConsortium: AsciiSink.c,v 1.54 90/12/31 10:18:50 gildea Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -137,11 +135,11 @@ unsigned char c;
 	/* Adjust for Left Margin. */
 	x -= ((TextWidget) XtParent(w))->text.margin.left;
 
-	if (x >= XtParent(w)->core.width) return 0;
+	if (x >= (int)XtParent(w)->core.width) return 0;
 	for (i = 0, tab = sink->text_sink.tabs ; 
 	     i < sink->text_sink.tab_count ; i++, tab++) {
 	    if (x < *tab) {
-		if (*tab < XtParent(w)->core.width)
+		if (*tab < (int)XtParent(w)->core.width)
 		    return *tab - x;
 		else
 		    return 0;
