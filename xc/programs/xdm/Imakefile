@@ -21,7 +21,9 @@ LOCAL_LIBRARIES = $(XAWLIB) $(XMULIB) $(XTOOLLIB) $(XLIB) $(TOP)/lib/Xau/libXau.
           OBJS2 = xdmshell.o 
           SRCS3 = xdmauthgen.c
           OBJS3 = xdmauthgen.o
-       PROGRAMS = xdm xdmshell xdmauthgen
+          SRCS4 = sessreg.c
+          OBJS4 = sessreg.o
+       PROGRAMS = xdm xdmshell xdmauthgen sessreg
         DEFINES = -DBINDIR=\"$(BINDIR)\" -DXDMDIR=\"$(XDMDIR)\" ConnectionFlags
 
 /**/#
@@ -50,6 +52,7 @@ RES_DEFINES = '-DDEF_SERVER_LINE=":0 secure $(DEF_SERVER) :0"' \
 ComplexProgramTarget_1(xdm,$(LOCAL_LIBRARIES),)
 SingleProgramTarget(xdmshell,$(OBJS2),,)
 SingleProgramTarget(xdmauthgen,$(OBJS3),$(LOCAL_LIBRARIES),)
+SingleProgramTarget(sessreg,$(OBJS4),,)
 
 SpecialObjectRule(resource.o, $(ICONFIGFILES), $(RES_DEFINES))
 
