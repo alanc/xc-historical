@@ -104,6 +104,10 @@ extern Bool InitCircWins();
 extern void DoCircWins();
 extern void EndCircWins();
 
+extern Bool InitMoveTree();
+extern void DoMoveTree();
+extern void EndMoveTree();
+
 extern Bool InitText();
 extern void DoText();
 extern void DoImageText();
@@ -217,6 +221,15 @@ Test test[] = {
   {"-tilerect500", "500x500 4x4 tiled rectangle",
 		InitRects, DoRects, NullProc, EndRects, False, 0,
 		{200, 1, 500, NULL, NULL, FillTiled}},
+  {"-bigtile10", "10x10 161x145 tiled rectangle",
+		InitRects, DoRects, NullProc, EndRects, False, 0,
+		{200, POLY, 10, "big", NULL, FillTiled}},
+  {"-bigtile100", "100x100 161x145 tiled rectangle",
+		InitRects, DoRects, NullProc, EndRects, False, 0,
+		{200, 30, 100, "big", NULL, FillTiled}},
+  {"-bigtile500", "500x500 161x145 tiled rectangle",
+		InitRects, DoRects, NullProc, EndRects, False, 0,
+		{200, 1, 500, "big", NULL, FillTiled}},
   {"-seg1",     "1-pixel line segment",
 		InitSegs, DoSegs, NullProc, EndSegs,    False, 0,
 		{200, POLY, 1}},
@@ -536,6 +549,9 @@ Test test[] = {
   {"-umove",    "Moved unmapped window",
 		InitMoveWins, DoMoveWins, NullProc, EndMoveWins, True, 0,
 		{12000, 0, False}},
+  {"-movetree", "Move window via parent",
+		InitMoveTree, DoMoveTree, NullProc, EndMoveTree, True, 0,
+		{1200, 4, True}},
   {"-resize",   "Resize window",
 		InitMoveWins, DoResizeWins, NullProc, EndMoveWins, True, 0,
 		{1200, 4, True}},
