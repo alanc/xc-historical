@@ -73,11 +73,11 @@ char	*argv[];
 
     dpy = StartConnectionToServer(argc, argv);
 
-    xswa.background_pixel = BlackPixel(dpy, 0);
+    xswa.background_pixel = BlackPixel(dpy, DefaultScreen(dpy));
     xswa.override_redirect = True;
     visual.visualid = CopyFromParent;
-    win = XCreateWindow(dpy, RootWindow(dpy, 0), 0, 0, 9999, 9999,
-	    0, DefaultDepth(dpy, 0), InputOutput, &visual,
+    win = XCreateWindow(dpy, DefaultRootWindow(dpy), 0, 0, 9999, 9999,
+	    0, DefaultDepth(dpy, DefaultScreen(dpy)), InputOutput, &visual,
 	    CWBackPixel | CWOverrideRedirect, &xswa);
 
     XMapWindow(dpy, win);
