@@ -1,6 +1,20 @@
-.\"#! troff -Q -ms $1		-*- Nroff -*-
+.\"#! troff -ms $1		-*- Nroff -*-
 .\" "Xterm Control Sequences" document
-.\" $XConsortium: ctlseqs.ms,v 1.6 91/07/01 17:15:04 gildea Exp $
+.\" $XConsortium: ctlseqs.ms,v 1.7 91/07/14 12:45:15 gildea Exp $
+.\" 
+.\" Copyright 1991 by the Massachusetts Institute of Technology
+.\"
+.\" Permission to use, copy, modify, and distribute this documentation
+.\" for any purpose and without fee is hereby granted, provided 
+.\" that the above copyright notice appears in all copies,
+.\" and that the name of M.I.T. not be used in advertising
+.\" or publicity pertaining to distribution of the software without specific, 
+.\" written prior permission.  M.I.T. makes no representations about the 
+.\" suitability of the software described here for any purpose, nor
+.\" about the accuracy of this documentation.  It is provided "as is"
+.\" without express or implied warranty.
+.\"
+.\" The X Window System is a Trademark of MIT.
 .\"
 .\" Originally written by Edward Moy, University of California,
 .\" Berkeley, edmoy@violet.berkeley.edu, for the X.V10R4 xterm.
