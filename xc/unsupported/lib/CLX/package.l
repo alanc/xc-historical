@@ -82,13 +82,13 @@
     character-in-map-p circulate-window-down circulate-window-up clear-area
     close-display close-down-mode close-font closed-display color
     color-blue color-green color-p color-red color-rgb colormap
-    colormap-display colormap-equal colormap-error colormap-id
-    colormap-p colormap-visual-info connection-failure convert-selection
+    colormap-display colormap-equal colormap-error colormap-id colormap-p
+    colormap-plist colormap-visual-info connection-failure convert-selection
     copy-area copy-colormap-and-free copy-gcontext copy-gcontext-components
     copy-image copy-plane create-colormap create-cursor
     create-gcontext create-glyph-cursor create-image create-pixmap
     create-window cursor cursor-display cursor-equal cursor-error
-    cursor-id cursor-p cut-buffer declare-event decode-core-error
+    cursor-id cursor-p cursor-plist cut-buffer declare-event decode-core-error
     default-error-handler default-keysym-index default-keysym-translate
     define-condition define-error define-extension define-gcontext-accessor
     define-keysym define-keysym-set delete-property delete-resource
@@ -251,13 +251,13 @@
     character-in-map-p circulate-window-down circulate-window-up clear-area
     close-display close-down-mode close-font closed-display color
     color-blue color-green color-p color-red color-rgb colormap
-    colormap-display colormap-equal colormap-error colormap-id
-    colormap-p colormap-visual-info connection-failure convert-selection
+    colormap-display colormap-equal colormap-error colormap-id colormap-p
+    colormap-plist colormap-visual-info connection-failure convert-selection
     copy-area copy-colormap-and-free copy-gcontext copy-gcontext-components
     copy-image copy-plane create-colormap create-cursor
     create-gcontext create-glyph-cursor create-image create-pixmap
     create-window cursor cursor-display cursor-equal cursor-error
-    cursor-id cursor-p cut-buffer declare-event decode-core-error
+    cursor-id cursor-p cursor-plist cut-buffer declare-event decode-core-error
     default-error-handler default-keysym-index default-keysym-translate
     define-error define-extension define-gcontext-accessor
     define-keysym define-keysym-set delete-property delete-resource

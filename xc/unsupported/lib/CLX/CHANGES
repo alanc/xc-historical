@@ -111,7 +111,7 @@ o A new variable *OUTPUT-BUFFER-SIZE* has been introduced, with value 8192.
   length 8192 bytes, they create output buffers of length *OUTPUT-BUFFER-SIZE* 
   bytes.
 
-o GCONTEXT-CACHE-P has been exported.
+o GCONTEXT-CACHE-P, COLORMAP-PLIST and CURSOR-PLIST have been exported.
 
 o If CREATE-GCONTEXT is given a rect-seq as a clip-mask, then a
   SetClipRectangles request must be sent to initialize the clip-mask.  The logic
