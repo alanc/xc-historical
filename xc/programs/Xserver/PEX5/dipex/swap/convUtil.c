@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: convUtil.c,v 5.1 91/02/16 09:57:12 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -57,7 +57,6 @@ pexViewport	*ptr;
 {
     SWAP_DEVICE_COORD (ptr->minval);
     SWAP_DEVICE_COORD (ptr->maxval);
-    SWAP_INT16 (ptr->useDrawable); 
 }
 
 void
@@ -190,3 +189,21 @@ pexNpcSubvolume	    *ps;
 
 
 
+SwapListOfOutputCommands (cntxtPtr, num, oc)
+pexContext  *cntxtPtr;
+int	    num;
+CARD32	    *oc;
+{
+    pexElementInfo  *pe;
+    int		    i;
+    pexSwap	    *swapPtr = cntxtPtr->swap;
+    
+    for (i = 0; i < num; i++)
+    {
+	pe = (pexElementInfo *) oc;
+	SWAP_ELEMENT_INFO (*pe);
+	if (PEXOCAll < pe->elementType && pe->elementType <= PEXMaxOC)
+	    cntxtPtr->pexSwapRequestOC[pe->elementType](cntxtPtr->swap,pe);
+	oc += pe->length;
+    }
+}
