@@ -70,7 +70,7 @@ typedef struct _XtActionsRec *XtActionList;
 typedef struct _XtResource *XtResourceList;
 typedef struct _GrabRec  *GrabList;
 typedef unsigned int   Cardinal;
-typedef unsigned char	Boolean;
+typedef char	Boolean;
 typedef unsigned long	*Opaque;
 typedef struct _TranslationData	*_XtTranslations;
 typedef struct _XtCallbackRec*    XtCallbackList;
