@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlibInt.c,v 11.164 93/01/28 12:11:02 gildea Exp $
+ * $XConsortium: XlibInt.c,v 11.165 93/03/10 16:31:22 gildea Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986, 1987 */
@@ -45,6 +45,9 @@ void (*_XUnlockMutex_fn)() = NULL;
 #define QueueEventReaderLock(d) ((d)->lock_fns ? \
     (*(d)->lock_fns->push_reader)(&(d)->lock->event_awaiters_tail) : NULL)
 
+#define DisplayLockWait(d) if ((d)->lock_fns && (d)->lock_fns->lock_wait) \
+    (*(d)->lock_fns->lock_wait)(d)
+
 #else /* MULTI_THREADED else */
 
 #define UnlockNextReplyReader(d)   
@@ -53,6 +56,7 @@ void (*_XUnlockMutex_fn)() = NULL;
 #define QueueEventReaderLock(d) NULL
 #define ConditionWait(d,c)
 #define ConditionSignal(d,c)
+#define DisplayLockWait(d)
 
 #endif /* MULTI_THREADED else */ 
 
@@ -545,8 +549,7 @@ _XReadEvents(dpy)
 		_XQEvent *qev = dpy->head;
 		while (qev) {
 		    if (qev->qserial_num > entry_event_serial_num) {
-			UnlockNextEventReader(dpy);
-			return;
+			goto got_event;
 		    }
 		    qev = qev->next;
 		}
@@ -571,8 +574,8 @@ _XReadEvents(dpy)
 		    int qlen = dpy->qlen;
 		    _XFlush (dpy);
 		    if (qlen != dpy->qlen) {
-			UnlockNextEventReader(dpy);
-			return;
+			/* _XReply has read an event for us */
+			goto got_event;
 		    }
 		    not_yet_flushed = False;
 		}
@@ -635,7 +638,9 @@ _XReadEvents(dpy)
 	    } ENDITERATE
 	} while (dpy->head == NULL);
 
+    got_event:
 	UnlockNextEventReader(dpy);
+	DisplayLockWait(dpy);
 }
 
 /* 

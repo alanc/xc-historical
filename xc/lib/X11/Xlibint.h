@@ -1,4 +1,4 @@
-/* $XConsortium: Xlibint.h,v 11.101 93/03/10 16:31:17 gildea Exp $ */
+/* $XConsortium: Xlibint.h,v 11.102 93/04/26 17:42:48 mor Exp $ */
 /* Copyright 1984, 1985, 1987, 1989  Massachusetts Institute of Technology */
 
 /*
@@ -201,6 +201,8 @@ struct _XLockPtrs {
     void (*condition_wait)();
     /* used in XlibInt.c and locking.c */
     void (*condition_signal)();
+    /* used in XlibInt.c and XLockDis.c */
+    void (*lock_wait)();
 };
 
 /* in XlibInt.c */
