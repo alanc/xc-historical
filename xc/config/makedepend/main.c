@@ -1,5 +1,5 @@
 /*
- * $XConsortium: main.c,v 1.72 93/08/18 10:26:46 rws Exp $
+ * $XConsortium: main.c,v 1.73 93/08/18 12:08:37 rws Exp $
  */
 #include "def.h"
 #ifdef hpux
@@ -105,6 +105,53 @@ main(argc, argv)
 	{
 	    define2(psymp->s_name, psymp->s_value, &maininclist);
 	    psymp++;
+	}
+	if (argc == 2 && argv[1][0] == '@') {
+	    struct stat ast;
+	    int afd;
+	    char *args;
+	    char **nargv;
+	    int nargc;
+	    char quotechar = '\0';
+
+	    nargc = 1;
+	    if ((afd = open(argv[1]+1, O_RDONLY)) < 0)
+		fatalerr("cannot open \"%s\"\n", argv[0]+1);
+	    fstat(afd, &ast);
+	    args = (char *)malloc(ast.st_size + 1);
+	    if ((ast.st_size = read(afd, args, ast.st_size)) < 0)
+		fatalerr("failed to read %s\n", argv[0]+1);
+	    args[ast.st_size] = '\0';
+	    close(afd);
+	    for (p = args; *p; p++) {
+		if (quotechar) {
+		    if (quotechar == '\\' ||
+			(*p == quotechar && p[-1] != '\\'))
+			quotechar = '\0';
+		    continue;
+		}
+		switch (*p) {
+		case '\\':
+		case '"':
+		case '\'':
+		    quotechar = *p;
+		    break;
+		case ' ':
+		case '\n':
+		    *p = '\0';
+		    if (p > args && p[-1])
+			nargc++;
+		    break;
+		}
+	    }
+	    if (p[-1])
+		nargc++;
+	    nargv = (char **)malloc(nargc * sizeof(char *));
+	    nargv[0] = argv[0];
+	    argc = 1;
+	    for (p = args; argc < nargc; p += strlen(p) + 1)
+		if (*p) nargv[argc++] = p;
+	    argv = nargv;
 	}
 	for(argc--, argv++; argc; argc--, argv++) {
 	    	/* if looking for endmarker then check before parsing */
