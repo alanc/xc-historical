@@ -4,7 +4,7 @@
 
 /**/###########################################################################
 /**/# Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-/**/# $XConsortium: Imake.tmpl,v 1.39 89/07/11 14:38:44 jim Exp $
+/**/# $XConsortium: Imake.tmpl,v 1.40 89/07/12 10:18:13 jim Exp $
 /**/#
 /**/# Platform-specific parameters may be set in the appropriate .cf
 /**/# configuration files.  Site-wide parameters may be set in the file
@@ -535,6 +535,7 @@ InstallManSubdirs($(SUBDIRS))
 CleanSubdirs($(SUBDIRS))
 TagSubdirs($(SUBDIRS))
 MakefileSubdirs($(SUBDIRS))
+IncludesSubdirs($(SUBDIRS))
 
 #else
 /**/###########################################################################
@@ -547,6 +548,8 @@ install.man::
 	@echo "install.man done"
 
 Makefiles::
+
+includes::
 
 #endif /* if subdirectory rules are needed */
 
