@@ -288,7 +288,7 @@ ks_names.h: $(INCLUDESRC)/keysymdef.h
 	}' < $? > $@
 
 clean::
-	rm -f ks_names.h
+	$(RM) ks_names.h
 
 XStrKeysym.o: ks_names.h
 

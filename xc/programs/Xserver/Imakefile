@@ -195,7 +195,7 @@ $(EXTDIR) $(SUBDIRS): FRC
 	$(MAKE) $(MFLAGS) PassCDebugFlags all
 
 clean::
-	rm -f $(ALLPOSSIBLE)
+	$(RM) $(ALLPOSSIBLE)
 
 InstallManPage(X,$(MANDIR))
 InstallManPage(Xserver,$(MANDIR))
