@@ -1,4 +1,4 @@
-/* $XConsortium: Context.c,v 1.4 88/09/06 16:08:12 jim Exp $ */
+/* $XConsortium: Context.c,v 1.5 89/11/08 17:06:04 converse Exp $ */
 /* static char *sccsid = "@(#)Context.c	1.5	2/24/87"; */
 
 
@@ -153,6 +153,7 @@ Display *display;
     dsp->numentries = 0;
     dsp->maxentries = -1;
     if (ResizeTable(dsp, dsp->size * 2) == XCNOMEM) {
+	numDsp--;
 	Xfree((char *) dsp);
 	return (Dsp) NULL;
     }
