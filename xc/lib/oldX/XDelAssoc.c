@@ -1,4 +1,4 @@
-/* $XConsortium: XDelAssoc.c,v 10.18 88/09/06 16:09:26 jim Exp $ */
+/* $XConsortium: XDelAssoc.c,v 10.19 91/01/06 12:06:39 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1985	*/
 
 /*
@@ -15,12 +15,6 @@ without express or implied warranty.
 
 #include "Xlibint.h"
 #include "X10.h"
-void remque();
-struct qelem {
-	struct    qelem *q_forw;
-	struct    qelem *q_back;
-	char q_data[1];
-};
 
 /*
  * XDeleteAssoc - Delete an association in an XAssocTable keyed on
@@ -52,7 +46,8 @@ XDeleteAssoc(dpy, table, x_id)
 				/* We have the right entry! */
 				/* Remove it from the queue and */
 				/* free the entry. */
-				remque((struct qelem *)Entry);
+				Entry->prev->next = Entry->next;
+				Entry->next->prev = Entry->prev;
 				Xfree((char *)Entry);
 				return;
 			}
