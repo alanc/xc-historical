@@ -65,7 +65,7 @@ SOFTWARE.
 #include "cfbmskbits.h"
 
 
-/* CopyArea and CopyPlane for a monchrome frame buffer
+/* CopyArea and CopyPlane for a color frame buffer
 
 
     clip the source rectangle to the source's available bits.  (this
@@ -249,10 +249,10 @@ DDXPointPtr pptSrc;
     register BoxPtr pbox;
     int nbox;
 
-    BoxPtr pboxTmp, pboxNext, pboxBase, pboxNew;
+    BoxPtr pboxTmp, pboxNext, pboxBase, pboxNewX, pboxNewY;
 				/* temporaries for shuffling rectangles */
-    DDXPointPtr pptTmp, pptNew;	/* shuffling boxes entails shuffling the
-				   source points too */
+    DDXPointPtr pptTmp, pptNewX, pptNewY; /* shuffling boxes entails shuffling the
+					     source points too */
     int w, h;
     int xdir;			/* 1 = left right, -1 = right left/ */
     int ydir;			/* 1 = top down, -1 = bottom up */
@@ -298,8 +298,10 @@ DDXPointPtr pptSrc;
     pbox = prgnDst->rects;
     nbox = prgnDst->numRects;
 
-    pboxNew = 0;
-    pptNew = 0;
+    pboxNewX = NULL;
+    pboxNewY = NULL;
+    pptNewX = NULL;
+    pptNewY = NULL;
     if (pptSrc->y < pbox->y1) 
     {
         /* walk source botttom to top */
@@ -310,12 +312,13 @@ DDXPointPtr pptSrc;
 	if (nbox > 1)
 	{
 	    /* keep ordering in each band, reverse order of bands */
-	    pboxNew = (BoxPtr)ALLOCATE_LOCAL(sizeof(BoxRec) * nbox);
-	    pptNew = (DDXPointPtr)ALLOCATE_LOCAL(sizeof(DDXPointRec) * nbox);
-	    if(!pboxNew || !pptNew)
+	    pboxNewY = (BoxPtr)ALLOCATE_LOCAL(sizeof(BoxRec) * nbox);
+	    if(!pboxNewY)
+		return;
+	    pptNewY = (DDXPointPtr)ALLOCATE_LOCAL(sizeof(DDXPointRec) * nbox);
+	    if(!pptNewY)
 	    {
-	        DEALLOCATE_LOCAL(pptNew);
-	        DEALLOCATE_LOCAL(pboxNew);
+		DEALLOCATE_LOCAL(pboxNewY);
 	        return;
 	    }
 	    pboxBase = pboxNext = pbox+nbox-1;
@@ -328,15 +331,15 @@ DDXPointPtr pptSrc;
 	        pptTmp = pptSrc + (pboxTmp - pbox);
 	        while (pboxTmp <= pboxBase)
 	        {
-		    *pboxNew++ = *pboxTmp++;
-		    *pptNew++ = *pptTmp++;
+		    *pboxNewY++ = *pboxTmp++;
+		    *pptNewY++ = *pptTmp++;
 	        }
 	        pboxBase = pboxNext;
 	    }
-	    pboxNew -= nbox;
-	    pbox = pboxNew;
-	    pptNew -= nbox;
-	    pptSrc = pptNew;
+	    pboxNewY -= nbox;
+	    pbox = pboxNewY;
+	    pptNewY -= nbox;
+	    pptSrc = pptNewY;
         }
     }
     else
@@ -353,15 +356,20 @@ DDXPointPtr pptSrc;
 	if (nbox > 1)
 	{
 	    /* reverse order of rects ineach band */
-	    pboxNew = (BoxPtr)ALLOCATE_LOCAL(sizeof(BoxRec) * nbox);
-	    pptNew = (DDXPointPtr)ALLOCATE_LOCAL(sizeof(DDXPointRec) * nbox);
-	    pboxBase = pboxNext = pbox;
-	    if(!pboxNew || !pptNew)
+	    pboxNewX = (BoxPtr)ALLOCATE_LOCAL(sizeof(BoxRec) * nbox);
+	    pptNewX = (DDXPointPtr)ALLOCATE_LOCAL(sizeof(DDXPointRec) * nbox);
+	    if(!pboxNewX || !pptNewX)
 	    {
-	        DEALLOCATE_LOCAL(pptNew);
-	        DEALLOCATE_LOCAL(pboxNew);
+		if (pboxNewY)
+		{
+		    DEALLOCATE_LOCAL(pboxNewY);
+		    DEALLOCATE_LOCAL(pptNewY);
+		}
+		if (pboxNewX) DEALLOCATE_LOCAL(pboxNewX);
+		if (pptNewX) DEALLOCATE_LOCAL(pptNewX);
 	        return;
 	    }
+	    pboxBase = pboxNext = pbox;
 	    while (pboxBase < pbox+nbox)
 	    {
 	        while ((pboxNext < pbox+nbox) &&
@@ -371,15 +379,15 @@ DDXPointPtr pptSrc;
 	        pptTmp = pptSrc + (pboxTmp - pbox);
 	        while (pboxTmp != pboxBase)
 	        {
-		    *pboxNew++ = *--pboxTmp;
-		    *pptNew++ = *--pptTmp;
+		    *pboxNewX++ = *--pboxTmp;
+		    *pptNewX++ = *--pptTmp;
 	        }
 	        pboxBase = pboxNext;
 	    }
-	    pboxNew -= nbox;
-	    pbox = pboxNew;
-	    pptNew -= nbox;
-	    pptSrc = pptNew;
+	    pboxNewX -= nbox;
+	    pbox = pboxNewX;
+	    pptNewX -= nbox;
+	    pptSrc = pptNewX;
 	}
     }
     else
@@ -577,12 +585,14 @@ DDXPointPtr pptSrc;
 	    DOBITBLT(fnSET)
     }
 
-    if (pptNew)
+    if (pboxNewY)
     {
-	DEALLOCATE_LOCAL(pptNew);
+	DEALLOCATE_LOCAL(pboxNewY);
+	DEALLOCATE_LOCAL(pptNewY);
     }
-    if (pboxNew)
+    if (pboxNewX)
     {
-	DEALLOCATE_LOCAL(pboxNew);
+	DEALLOCATE_LOCAL(pboxNewX);
+	DEALLOCATE_LOCAL(pptNewX);
     }
 }
