@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: mfbgc.c,v 1.119 88/02/02 17:00:44 rws Exp $ */
+/* $Header: mfbgc.c,v 1.120 88/05/05 19:09:31 rws Exp $ */
 #include "X.h"
 #include "Xmd.h"
 #include "Xproto.h"
@@ -374,8 +374,8 @@ mfbValidateGC(pGC, pQ, changes, pDrawable)
     mask = changes;
     while (mask)
     {
-	index = ffs(mask) - 1;
-	mask &= ~(index = (1 << index));
+	index = lowbit (mask);
+	mask &= ~index;
 
 	/* this switch acculmulates a list of which procedures
 	   might have to change due to changes in the GC.  in

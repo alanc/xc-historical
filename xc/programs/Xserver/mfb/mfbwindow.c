@@ -1,4 +1,4 @@
-/* $Header: mfbwindow.c,v 1.4 88/01/16 15:24:50 rws Exp $ */
+/* $Header: mfbwindow.c,v 1.5 88/03/15 16:30:00 rws Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -224,8 +224,8 @@ mfbChangeWindowAttributes(pWin, mask)
     pPrivWin = (mfbPrivWin *)(pWin->devPrivate);
     while(mask)
     {
-	index = ffs(mask) -1;
-	mask &= ~(index = 1 << index);
+	index = lowbit (mask);
+	mask &= ~index;
 	switch(index)
 	{
 	  case CWBackingStore:
