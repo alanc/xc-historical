@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: misc.c,v 1.20 90/02/26 12:03:04 converse Exp $
+ * $XConsortium: misc.c,v 1.21 91/01/09 17:31:37 rws Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -65,10 +65,7 @@ PrintError(string)
 char * string;
 {
   fprintf(stderr,"Xman Error: %s\n",string);
-#ifdef DEBUG
-  fprintf(stderr,"\n\nbye,bye\n\n\n\n\nsniff...\n");
-#endif
-  exit(42);
+  exit(1);
 }
 
 /*	Function Name: OpenFile

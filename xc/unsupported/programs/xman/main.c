@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: main.c,v 1.13 91/01/09 17:31:27 rws Exp $
+ * $XConsortium: main.c,v 1.14 91/01/10 12:13:56 converse Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -127,7 +127,7 @@ int argc;
 
   if ( (argc != 1) || (resources.show_help_syntax) ) {
     ArgError(argc, argv);
-    exit(42);
+    exit(1);
   }
 
   XtAppAddActions(app_con, xman_actions, XtNumber(xman_actions));
