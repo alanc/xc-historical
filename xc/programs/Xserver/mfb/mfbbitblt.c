@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: mfbbitblt.c,v 1.49 88/07/26 18:20:16 jim Exp $ */
+/* $Header: mfbbitblt.c,v 1.50 88/07/28 14:20:21 rws Exp $ */
 #include "X.h"
 #include "Xprotostr.h"
 
@@ -31,6 +31,8 @@ SOFTWARE.
 #include "windowstr.h"
 #include "pixmapstr.h"
 #include "scrnintstr.h"
+
+#include "mi.h"
 
 #include "mfb.h"
 #include "maskbits.h"
@@ -50,7 +52,7 @@ destination.  this is a simple translation.
     do graphics exposures
 */
 
-void 
+RegionPtr
 mfbCopyArea(pSrcDrawable, pDstDrawable,
 	    pGC, srcx, srcy, width, height, dstx, dsty)
 register DrawablePtr pSrcDrawable;
@@ -64,7 +66,7 @@ int dstx, dsty;
     RegionPtr prgnSrcClip;	/* may be a new region, or just a copy */
     int realSrcClip = 0;	/* non-0 if we've created a src clip */
 
-    RegionPtr prgnDst;
+    RegionPtr prgnDst, prgnExposed;
     DDXPointPtr pptSrc;
     register DDXPointPtr ppt;
     register BoxPtr pbox;
@@ -180,15 +182,18 @@ int dstx, dsty;
 	DEALLOCATE_LOCAL(pptSrc);
     }
 
+    prgnExposed = 0;
     if (((mfbPrivGC *)(pGC->devPriv))->fExpose)
-        miHandleExposures(pSrcDrawable, pDstDrawable, pGC,
-		          origSource.x, origSource.y,
-		          origSource.width, origSource.height,
-		          origDest.x, origDest.y, 0);
+        prgnExposed =
+ 	  miHandleExposures(pSrcDrawable, pDstDrawable, pGC,
+		            origSource.x, origSource.y,
+		            origSource.width, origSource.height,
+		            origDest.x, origDest.y, 0);
 		
     (*pGC->pScreen->RegionDestroy)(prgnDst);
     if (realSrcClip)
 	(*pGC->pScreen->RegionDestroy)(prgnSrcClip);
+    return prgnExposed;
 }
 
 /* DoBitblt() does multiple rectangle moves into the rectangles
@@ -774,7 +779,7 @@ CopyArea().
 
 */
 
-void
+RegionPtr
 mfbCopyPlane(pSrcDrawable, pDstDrawable,
 	    pGC, srcx, srcy, width, height, dstx, dsty, plane)
 DrawablePtr pSrcDrawable, pDstDrawable;
@@ -785,20 +790,21 @@ int dstx, dsty;
 unsigned int plane;
 {
     int alu;
+    RegionPtr	prgnExposed;
 
     if (plane != 1)
 	return;
 
     if ((pGC->fgPixel == 1) && (pGC->bgPixel == 0))
     {
-	(*pGC->CopyArea)(pSrcDrawable, pDstDrawable,
+	prgnExposed = (*pGC->CopyArea)(pSrcDrawable, pDstDrawable,
 			 pGC, srcx, srcy, width, height, dstx, dsty);
     }
     else if (pGC->fgPixel == pGC->bgPixel)
     {
 	alu = pGC->alu;
 	pGC->alu = ReduceRop(pGC->alu, pGC->fgPixel);
-	(*pGC->CopyArea)(pSrcDrawable, pDstDrawable,
+	prgnExposed = (*pGC->CopyArea)(pSrcDrawable, pDstDrawable,
 			 pGC, srcx, srcy, width, height, dstx, dsty);
 	pGC->alu = alu;
     }
@@ -806,9 +812,10 @@ unsigned int plane;
     {
 	alu = pGC->alu;
 	pGC->alu = InverseAlu[alu];
-	(*pGC->CopyArea)(pSrcDrawable, pDstDrawable,
+	prgnExposed = (*pGC->CopyArea)(pSrcDrawable, pDstDrawable,
 			 pGC, srcx, srcy, width, height, dstx, dsty);
 	pGC->alu = alu;
     }
+    return prgnExposed;
 }
 

@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: mfbscrinit.c,v 1.53 88/01/03 17:06:17 rws Exp $ */
+/* $Header: mfbscrinit.c,v 1.54 88/07/29 11:43:50 keith Exp $ */
 
 #include "X.h"
 #include "Xproto.h"	/* for xColorItem */
@@ -134,6 +134,7 @@ mfbScreenInit(index, pScreen, pbits, xsize, ysize, dpix, dpiy)
     pScreen->RegionNotEmpty = miRegionNotEmpty;
     pScreen->RegionEmpty = miRegionEmpty;
     pScreen->RegionExtents = miRegionExtents;
+    pScreen->SendGraphicsExpose = miSendGraphicsExpose;
 
     pScreen->BlockHandler = NoopDDA;
     pScreen->WakeupHandler = NoopDDA;

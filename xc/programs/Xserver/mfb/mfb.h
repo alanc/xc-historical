@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: mfb.h,v 1.6 87/09/02 00:30:58 toddb Exp $ */
+/* $Header: mfb.h,v 1.7 88/07/29 11:43:25 keith Exp $ */
 /* Monochrome Frame Buffer definitions 
    written by drewry, september 1986
 */
@@ -75,9 +75,9 @@ extern void mfbTileArea32();
 
 
 extern void mfbPolyFillRect();
-extern void mfbCopyArea();
+extern RegionPtr mfbCopyArea();
 extern void mfbPolyPoint();
-extern void mfbCopyPlane();
+extern RegionPtr mfbCopyPlane();
 
 extern void mfbDestroyGC();
 extern void mfbValidateGC();
