@@ -1,4 +1,4 @@
-/* $XConsortium: ico.c,v 1.9 89/10/04 15:01:14 jim Exp $ */
+/* $XConsortium: ico.c,v 1.10 89/10/04 16:35:24 jim Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -98,8 +98,7 @@ int mbuf_event_base, mbuf_error_base;
 Multibuffer multibuffers[2];
 #endif /* MULTIBUFFER */
 
-char *Primaries[] = {"red", "green", "blue", "yellow", "cyan", "magenta",
-		     "black", "white"};
+char *Primaries[] = {"red", "green", "blue", "yellow", "cyan", "magenta"};
 #define NumberPrimaries 6
 
 int nplanesets;
@@ -348,6 +347,19 @@ char **argv;
 	    vmask |= (GCLineStyle | GCDashList);
 	}
 	gc = XCreateGC (dpy, draw_window, vmask, &xgcv);
+#ifdef MULTIBUFFER
+	/* workaround for ClearBuffer */
+	if (multibuf) {
+	    GC tmpgc;
+	    int i;
+
+	    xgcv.foreground = bg;
+	    tmpgc = XCreateGC (dpy, draw_window, GCForeground, &xgcv);
+	    for (i = 0; i < 2; i++)
+	      XFillRectangle (dpy, multibuffers[i], tmpgc, 0, 0, winW, winH);
+	    XFreeGC (dpy, tmpgc);
+	}
+#endif
 
 	if (dofaces && numcolors>=1) {
 	    int i,t,bits;
