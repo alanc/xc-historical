@@ -1,4 +1,4 @@
-/* $XConsortium: io.c,v 1.12 94/01/31 12:49:37 mor Exp $ */
+/* $XConsortium: io.c,v 1.13 94/02/03 15:43:05 mor Exp $ */
 /*
  * i/o functions
  */
@@ -396,7 +396,15 @@ FlushClient(client, oc, extraBuf, extraCount, padsize)
 	    written += len;
 	    notWritten -= len;
 	    todo = notWritten;
-	} else if (ETEST(errno)) {
+	} else if (ETEST(errno)
+#ifdef SUNSYSV /* check for another brain-damaged OS bug */
+		 || (errno == 0)
+#endif
+#ifdef EMSGSIZE /* check for another brain-damaged OS bug */
+		 || ((errno == EMSGSIZE) && (todo == 1))
+#endif
+		)
+	{
 	    BITSET(ClientsWriteBlocked, fd);
 	    AnyClientsWriteBlocked = TRUE;
 
@@ -434,7 +442,15 @@ FlushClient(client, oc, extraBuf, extraCount, padsize)
 	    }
 	    oco->count = notWritten;
 	    return extraCount;
-	} else {
+	}
+#ifdef EMSGSIZE /* check for another brain-damaged OS bug */
+	else if (errno == EMSGSIZE)
+	{
+	    todo >>= 1;
+	}
+#endif
+	else
+	{
 	    _FONTTransClose(oc->trans_conn);
 	    oc->trans_conn = NULL;
 	    MarkClientException(client);
