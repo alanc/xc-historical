@@ -1,4 +1,4 @@
-/* $XConsortium: Xlib.h,v 11.187 91/02/17 12:49:24 rws Exp $ */
+/* $XConsortium: Xlib.h,v 11.188 91/02/19 22:37:30 rws Exp $ */
 /* 
  * Copyright 1985, 1986, 1987 by the Massachusetts Institute of Technology
  *
@@ -307,7 +307,7 @@ typedef struct {
  */
 
 typedef struct {
-	int family;		/* for example AF_DNET */
+	int family;		/* for example FamilyInternet */
 	int length;		/* length of address, in bytes */
 	char *address;		/* pointer to where to find the bytes */
 } XHostAddress;
@@ -3979,6 +3979,14 @@ extern int XWriteBitmapFile(
     unsigned int	/* height */,
     int			/* x_hot */,
     int			/* y_hot */		     
+#endif
+);
+
+extern Bool XSupportsLocale();
+
+extern char *XSetLocaleModifiers(
+#if NeedFunctionPrototypes
+    _Xconst char*	/* modifier_list */
 #endif
 );
 
