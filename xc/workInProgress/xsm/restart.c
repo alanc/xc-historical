@@ -1,4 +1,4 @@
-/* $XConsortium: restart.c,v 1.12 94/07/26 14:16:52 mor Exp $ */
+/* $XConsortium: restart.c,v 1.13 94/07/26 14:23:42 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -35,6 +35,11 @@ extern List *PendingList;
 extern void remote_start ();
 
 
+/*
+ * Until XSMP provides a better way to know which clients are "managers",
+ * we have to hard code the list.
+ */
+
 Bool
 CheckIsManager (program)
 
@@ -46,6 +51,108 @@ char *program;
 
 
 
+/*
+ * GetRestartInfo() will determine which method should be used to
+ * restart a client.
+ *
+ * 'restart_service_prop' is a property set by the client, or NULL.
+ * The format is "remote_start_protocol/remote_start_data".  An
+ * example is "rstart-rsh/hostname".  This is a non-standard property,
+ * which is the whole reason we need this function in order to determine
+ * the restart method.  The proxy uses this property to over-ride the
+ * 'client_host_name' from the ICE connection (the proxy is connected to
+ * the SM via a local connection, but the proxy may be acting as a proxy
+ * for a remote client).
+ *
+ * 'client_host_name' is the connection info obtained from the ICE
+ * connection.  It's format is "transport/host_info".  An example
+ * is "tcp/machine:port".
+ *
+ * If 'restart_service_prop' is NULL, we use 'client_host_name' to
+ * determine the restart method.  If the transport is "local", we
+ * do a local restart.  Otherwise, we use the default "rstart-rsh" method.
+ *
+ * If 'restart_service_prop' is non-NULL, we check the remote_start_protocol
+ * field.  "local" means a local restart.  Currently, the only remote
+ * protocol we recognize is "rstart-rsh".  If the remote protocol is
+ * "rstart-rsh" but the hostname in the 'restart_service_prop' matches
+ * 'client_host_name', we do a local restart.
+ *
+ * On return, set the run_local flag, restart_protocol and restart_machine.
+ */
+
+void
+GetRestartInfo (restart_service_prop, client_host_name,
+    run_local, restart_protocol, restart_machine)
+
+char *restart_service_prop;
+char *client_host_name;
+Bool *run_local;
+char **restart_protocol;
+char **restart_machine;
+
+{
+    char hostnamebuf[80];
+    char *temp;
+
+    *run_local = False;
+    *restart_protocol = NULL;
+    *restart_machine = NULL;
+
+    if (restart_service_prop)
+    {
+	gethostname (hostnamebuf, sizeof hostnamebuf);
+
+	if ((temp = (char *) strchr (
+	    restart_service_prop, '/')) == NULL)
+	{
+	    *restart_protocol = (char *) XtNewString ("rstart-rsh");
+	    *restart_machine = (char *) XtNewString (restart_service_prop);
+	}
+	else
+	{
+	    *restart_protocol = (char *) XtNewString (restart_service_prop);
+	    (*restart_protocol)[temp - restart_service_prop] = '\0';
+	    *restart_machine = (char *) XtNewString (temp + 1);
+	}
+
+	if (strcmp (*restart_machine, hostnamebuf) == 0 ||
+	    strcmp (*restart_protocol, "local") == 0)
+	{
+	    *run_local = True;
+	}
+    }
+    else
+    {
+	if (strncmp (client_host_name, "tcp/", 4) != 0 &&
+	    strncmp (client_host_name, "decnet/", 7) != 0)
+	{
+	    *run_local = True;
+	}
+	else
+	{
+	    *restart_protocol = (char *) XtNewString ("rstart-rsh");
+
+	    if ((temp = (char *) strchr (
+		client_host_name, '/')) == NULL)
+	    {
+		*restart_machine = (char *) XtNewString (client_host_name);
+	    }
+	    else
+	    {
+		*restart_machine = (char *) XtNewString (temp + 1);
+	    }
+	}
+    }
+}
+
+
+
+/*
+ * Restart clients.  The flag indicates RESTART_MANAGERS or
+ * RESTART_REST_OF_CLIENTS.
+ */
+
 Status
 Restart (flag)
 
@@ -63,7 +170,11 @@ int flag;
     char	**pp;
     int		cnt;
     extern char **environ;
-    char	*p, *temp;
+    char	*p;
+    char	*restart_service_prop;
+    char	*restart_protocol;
+    char	*restart_machine;
+    Bool	run_local;
     Bool	is_manager;
     Bool	ran_manager = 0;
 
@@ -78,6 +189,7 @@ int flag;
 	env = NULL;
 	program=NULL;
 	args=NULL;
+	restart_service_prop=NULL;
 
 	is_manager = 0;
 
@@ -91,6 +203,10 @@ int flag;
 	    } else if(!strcmp(prop->name, SmCurrentDirectory)) {
 		vl = ListFirst(prop->values);
 		if(vl) cwd = ((PendingValue *)vl->thing)->value;
+	    } else if(!strcmp(prop->name, "_XC_RestartService")) {
+		vl = ListFirst(prop->values);
+		if(vl) restart_service_prop =
+		    ((PendingValue *)vl->thing)->value;
 	    } else if(!strcmp(prop->name, SmRestartCommand)) {
 		cnt = ListCount(prop->values);
 		args = (char **)malloc((cnt+1) * sizeof(char *));
@@ -137,8 +253,10 @@ int flag;
 		printf("\n");
 	    }
 
-	    if (strncmp(c->clientHostname, "tcp/", 4) != 0 &&
-		strncmp(c->clientHostname, "decnet/", 7) != 0)
+	    GetRestartInfo (restart_service_prop, c->clientHostname,
+    		&run_local, &restart_protocol, &restart_machine);
+
+	    if (run_local)
 	    {
 		/*
 		 * The client is being restarted on the local machine.
@@ -170,9 +288,17 @@ int flag;
 		 * The client is being restarted on a remote machine.
 		 */
 
-		remote_start (c->clientHostname, program, args, cwd, env,
+		remote_start (restart_protocol, restart_machine,
+		    program, args, cwd, env,
 		    non_local_display_env, non_local_session_env);
 	    }
+
+	    if (restart_protocol)
+		XtFree (restart_protocol);
+
+	    if (restart_machine)
+		XtFree (restart_machine);
+
 	} else {
 	    fprintf(stderr, "Can't restart ID '%s':  no program or no args\n",
 		c->clientId);
@@ -189,6 +315,10 @@ int flag;
 
 
 
+/*
+ * Clone a client
+ */
+
 void
 Clone (client)
 
@@ -202,7 +332,11 @@ ClientRec *client;
     char	**pp;
     int		i, j;
     extern char **environ;
-    char	*p, *temp;
+    char	*p;
+    char	*restart_service_prop;
+    char	*restart_protocol;
+    char	*restart_machine;
+    Bool	run_local;
 
     if (verbose)
     {
@@ -214,6 +348,7 @@ ClientRec *client;
     env = NULL;
     program = NULL;
     args = NULL;
+    restart_service_prop = NULL;
 
     for (i = 0; i < client->numProps; i++)
     {
@@ -223,6 +358,8 @@ ClientRec *client;
 	    program = (char *) prop->vals[0].value;
 	else if (strcmp (prop->name, SmCurrentDirectory) == 0)
 	    cwd = (char *) prop->vals[0].value;
+	else if (strcmp (prop->name, "_XC_RestartService") == 0)
+	    restart_service_prop = (char *) prop->vals[0].value;
 	else if (strcmp(prop->name, SmCloneCommand) == 0)
 	{
 	    args = (char **) malloc ((prop->num_vals + 1) * sizeof (char *));
@@ -270,11 +407,13 @@ ClientRec *client;
 	    printf("\n");
 	}
 
-	if (strncmp (client->clientHostname, "tcp/", 4) != 0 &&
-	    strncmp (client->clientHostname, "decnet/", 7) != 0)
+	GetRestartInfo (restart_service_prop, client->clientHostname,
+    	    &run_local, &restart_protocol, &restart_machine);
+
+	if (run_local)
 	{
 	    /*
-	     * The client is being restarted on the local machine.
+	     * The client is being cloned on the local machine.
 	     */
 
 	    switch(vfork()) {
@@ -282,31 +421,41 @@ ClientRec *client;
 		perror("vfork");
 		break;
 	    case 0:		/* kid */
-		chdir (cwd);
-		if (env) environ = env;
-		execvp (program, args);
-		perror ("execve");
-		_exit (255);
+		chdir(cwd);
+		if(env) environ = env;
+		execvp(program, args);
+		perror("execve");
+		_exit(255);
 	    default:	/* parent */
 		break;
 	    }
 	}
 	else if (!remote_allowed)
 	{
-	    fprintf (stderr,
+	    fprintf(stderr,
 		   "Can't remote clone client ID '%s': only local supported\n",
-		     client->clientId);
+			client->clientId);
 	}
 	else
 	{
 	    /*
-	     * The client is being restarted on a remote machine.
+	     * The client is being cloned on a remote machine.
 	     */
 
-	    remote_start (client->clientHostname, program, args, cwd, env,
+	    remote_start (restart_protocol, restart_machine,
+		program, args, cwd, env,
 		non_local_display_env, non_local_session_env);
 	}
-    } else {
+
+	if (restart_protocol)
+	    XtFree (restart_protocol);
+
+	if (restart_machine)
+	    XtFree (restart_machine);
+
+    }
+    else
+    {
 	XBell (XtDisplay (topLevel), 0);
 
 	fprintf(stderr, "Can't restart ID '%s':  no program or no args\n",
