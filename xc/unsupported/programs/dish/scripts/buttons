@@ -1,0 +1,14 @@
+# This dish script draws a simple push button
+
+proc push_me {message} {
+    puts $message
+    flush stdout
+}
+
+set button [
+    widget_kit push_button [
+    	figure_kit label [figure_kit default_style] "Push me"] [
+    	action push_me "pushed"
+    ]
+]
+main button [layout_kit margin button 10.0]

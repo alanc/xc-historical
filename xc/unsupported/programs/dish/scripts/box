@@ -1,0 +1,10 @@
+# This dish script draws a resizeable glyph
+
+set style [figure_kit default_style]
+set hello [figure_kit label style hello]
+set world [figure_kit label style world]
+set hbox [layout_kit hbox]
+hbox append hello
+hbox append [layout_kit hfil]
+hbox append world
+main 0 hbox

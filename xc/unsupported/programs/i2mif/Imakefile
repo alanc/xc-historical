@@ -1,0 +1,16 @@
+XCOMM
+XCOMM IDL-to-MIF documentation generator
+XCOMM
+
+#ifdef InObjectCodeDir
+
+Use_libFresco()
+ComplexProgramTarget(i2mif)
+
+MakeObjectFromSrc(main)
+
+#else
+
+MakeInObjectCodeDir()
+
+#endif
