@@ -1,37 +1,47 @@
-.\" $XConsortium: xmh.man,v 1.21 90/01/31 14:45:50 converse Exp $
+.\" $XConsortium: xmh.man,v 1.22 91/03/26 19:26:47 rws Exp $
 .TH XMH 1 "Release 4" "X Version 11"
 .SH NAME
-\fIxmh\fR \- X interface to the MH message handling system
+\fIxmh\fR \- X interface to the MH Message Handling System
 .SH SYNOPSIS
 .B xmh
 [-path \fImailpath\fR] [-initial \fIfoldername\fR] [-flag] [-\fItoolkitoption\fR ...]
 .SH DESCRIPTION
 The
 .I xmh
-program provides a window-oriented user interface to the Rand \fIMH\fR Message
+program provides a window-oriented user interface to the \fIMH\fR Message
 Handling System.  To actually do things with your mail, it makes calls to the
 \fIMH\fR package.  Electronic mail messages may be composed, sent, 
-received, replied to, forwarded, sorted, and stored in folders. 
+received, replied to, forwarded, sorted, and stored in folders.  \fIxmh\fR
+provides extensive mechanism for customization of the user interface.
+.PP
+This document introduces many aspects of the Athena Widget Set.
 
-To specify an alternate collection of mail folders in which to process
-mail, use \fB-path\fR followed by the pathname of the alternate mail directory.
+.SH OPTIONS
+.TP 8
+.B \-path \fIdirectory\fP
+This option specifies an alternate collection of mail folders in which to
+process mail.  The directory is specified as an absolute pathname.
 The default mail path is the value of the Path component in 
 $HOME/.mh_profile, or $HOME/Mail if the \fIMH\fR Path is not given.  
-To specify an alternate folder which may receive new mail and is initially 
-opened by \fIxmh\fR, use the \fB-initial\fR flag.  
-The default initial folder is `inbox'.  
-The option \fB-flag\fR will cause \fIxmh\fR to attempt to
-change the appearance of its icon when new mail has arrived.  
+.TP 8
+.B \-initial \fIfolder\fP
+This option specifies an alternate folder which may receive new mail and is
+initially opened by \fIxmh\fR.  
+The default initial folder is `inbox'.
+.TP 8
+.B -flag
+This option will cause \fIxmh\fR to change the appearance of appropriate
+folder buttons and to request the window manager to change the appearance
+of the xmh icon when new mail has arrived.
+.TP 8
 These three options have corresponding application-specific resources, 
-named \fBMailPath\fR, \fBInitialFolder\fR, and \fBMailWaitingFlag\fR, which
-can be used in a resource file.  
+\fBMailPath\fR, \fBInitialFolder\fR, and \fBMailWaitingFlag\fR, which
+can be specified in a resource file.
+.PP
 The standard toolkit command line options are given in \fIX(1)\fP.
 
-Please don't be misled by the size of this document.  It introduces 
-many aspects of the Athena Widget Set, and provides extensive mechanism
-for customization of the user interface.  \fIxmh\fR really is easy to use.
-
 .SH INSTALLATION
+.PP
 The current version of \fIxmh\fR requires that the user is already set up
 to use \fIMH\fR, version 6.  To do so, see if there is a file
 called .mh_profile in your home directory.  If it exists, check to see if it
@@ -39,12 +49,16 @@ contains a line that starts with ``Current-Folder''.  If it does,
 you've been using version 4 or earlier of \fIMH\fR; to convert to version
 6, you must remove that line.  (Failure to do so causes spurious output to
 stderr, which can hang \fIxmh\fR depending on your setup.)
-
+.PP
 If you do not already have a .mh_profile, you can create one (and
 everything else you need) by typing ``inc'' to the shell.  You should
 do this before using \fIxmh\fR to incorporate new mail.
-
+.PP
 For more information, refer to the \fImh(1)\fR documentation.
+.PP
+Much of the user-interface is configured in the application class defaults
+file; if this file was not installed properly a warning message will appear
+in a popup dialog box.
 
 .SH BASIC SCREEN LAYOUT
 \fIxmh\fR starts out with a single window, divided into four main areas:
@@ -709,7 +723,7 @@ followed by the widget instance name.
 The application class name is Xmh.
 .PP
 The hierarchy of the main toc and view window is identical for additional
-toc and view windows, except that a topLevelShell widget is inserted
+toc and view windows, except that a TopLevelShell widget is inserted
 in the hierarchy between the application shell and the Paned widget.
 .sp
 .nf
@@ -794,7 +808,7 @@ Xmh xmh
 .sp
 \fIThe hierarchy of the Create Folder popup dialog box:\fR
 .sp
-	transientShell  prompt
+	TransientShell  prompt
 		Dialog  dialog
 			Label  label
 			Text  value
@@ -803,7 +817,7 @@ Xmh xmh
 .sp
 \fIThe hierarchy of the Notice dialog box, which reports messages from MH:\fR
 .sp
-	transientShell  notice
+	TransientShell  notice
 		Dialog  dialog
 			Label  label
 			Text  value
@@ -811,7 +825,7 @@ Xmh xmh
 .sp
 \fIThe hierarchy of the Confirmation dialog box:\fR
 .sp
-	transientShell  confirm
+	TransientShell  confirm
 		Dialog  dialog
 			Label  label
 			Command  yes
@@ -819,14 +833,14 @@ Xmh xmh
 .sp
 \fIThe hierarchy of the dialog box which reports errors:\fR
 .sp
-	transientShell  error
+	TransientShell  error
 		Dialog  dialog
 			Label  label
 			Command  OK
 .sp
 \fIThe hierarchy of the composition window:\fR
 .sp
-	topLevelShell  xmh
+	TopLevelShell  xmh
 		Paned  xmh
 			Label  composeTitlebar
 			Text  comp
@@ -841,7 +855,7 @@ Xmh xmh
 .sp
 \fIThe hierarchy of the view window:\fR
 .sp
-	topLevelShell  xmh
+	TopLevelShell  xmh
 		Paned  xmh
 			Label  viewTitlebar
 			Text  view
@@ -859,7 +873,7 @@ Xmh xmh
 \fIThe hierarchy of the pick window:\fR
 \fI(Unnamed widgets have no name.)\fR
 .sp
-	topLevelShell  xmh
+	TopLevelShell  xmh
 		Paned  xmh
 			Label  pickTitlebar
 			Viewport.core  pick.clip
@@ -906,65 +920,89 @@ Xmh xmh
 						
 .fi				
 .SH APPLICATION-SPECIFIC RESOURCES
-
-Resource instance names begin with a lower case letter but are otherwise
-identical to the class name.
 .PP
-If TocGeometry, ViewGeometry, CompGeometry, or PickGeometry are not
-specified, then the value of Geometry is used instead.  If the resulting
+The application class name is \fBXmh\fP. 
+Application-specific resource class names begin with an upper case
+character, but unless noted otherwise, are identical to the instance name.
+Many user interface defaults are configured in the application class
+defaults file.
+.PP
+If \fBTocGeometry\fR, \fBViewGeometry\fR, \fBCompGeometry\fR, or
+\fBPickGeometry\fR are not
+specified, then the value of \fBGeometry\fR is used instead.  If the resulting
 height is not specified (e.g., "", "=500", "+0-0"), then the default
 height of windows is calculated from fonts and line counts. If
 the width is not specified (e.g., "", "=x300", "-0+0), then half of the
 display width is used.  If unspecified, the height of a pick window
 defaults to half the height of the display.
-
+.PP
 Any of these options may also be specified on the command line by
 using the X Toolkit Intrinsics resource specification mechanism.
 Thus, to run \fIxmh\fR showing all message headers,
-
+.br
 % xmh -xrm '*HideBoringHeaders:off'
-
+.PP
 The following resources are defined:
 .TP 8
-.B Banner
+.B banner
 A short string that is the default label of the folder, Table of Contents,
-and view.  The default is "xmh    MIT X Consortium    R4".
+and view.  The default is "xmh    MIT X Consortium    R5".
 .PP
 .TP 8
-.B BlockEventsOnBusy
+.B blockEventsOnBusy
 Whether to disallow user input and show a busy cursor while \fIxmh\fP is
 busy processing a command.  Default is true.
 .PP
 .TP 8
-.B BusyCursor
+.B busyCursor
 The name of the symbol used to represent the position of the pointer,
-displayed if \fBBlockEventsOnBusy\fR is true, when \fIxmh\fR is
+displayed if \fBblockEventsOnBusy\fR is true, when \fIxmh\fR is
 processing a time-consuming command.
 The default is "watch".
 .PP
 .TP 8
-.B BusyPointerColor
+.B busyPointerColor
 The foreground color of the busy cursor.  Default is XtDefaultForeground.
 .PP
 .TP 8
-.B CheckFrequency
+.B checkFrequency
 How often to check for new mail, make checkpoints, and rescan the Table
-of Contents, in minutes.  If \fBCheckNewMail\fR is true, \fIxmh\fR checks
-to see if you have new mail each interval.  If \fBMakeCheckpoints\fR is
+of Contents, in minutes.  If \fBcheckNewMail\fR is true, \fIxmh\fR checks
+to see if you have new mail each interval.  If \fBmakeCheckpoints\fR is
 true, checkpoints are made every fifth interval.  Also every fifth 
 interval, the Table of Contents is checked for inconsistencies with the
-file system, and rescanned.  To prevent all of these checks from occurring,
-set \fBCheckFrequency\fR to 0.  The default is 1.
+file system, and rescanned if out of date.  To prevent all of these checks
+from occurring, set \fBCheckFrequency\fR to 0.  The default is 1.
+See also \fBcheckpointInterval\fP, \fBmailInterval\fP,
+and \fBrescanInterval\fP.
 .PP
 .TP 8
-.B CheckNewMail
+.B checkNewMail
 If true, \fIxmh\fP will check at regular intervals to see if new mail
-has arrived for any of the folders.  A visual indication will be given
-if new mail is waiting to be retrieved.  Default is True. (See BUGS).
-The interval can be adjusted with the \fBCheckFrequency\fR.
+has arrived for any of the top level folders and an opened subfolders.
+A visual indication will be given if new mail is waiting to be retrieved
+from a top level folder.
+Default is True.
+The interval can be adjusted with \fBmailInterval\fR.
 .PP
 .TP 8
-.B CommandButtonCount
+.B "checkpointInterval (\fPclass\fB Interval)"
+Specifies in minutes how often to make checkpoints of volatile state,
+if \fBmakeCheckpoints\fP is true.
+The default is 5 times the value of \fBcheckFrequency\fP.
+.PP
+.TP 8
+.B checkpointNameFormat
+Specifies how checkpointed files are to be named.  The value of this
+resource will be used to compose a file name by inserting the message
+number as a string in place of the required single occurance of `%d'.  If
+the value of the resource is the empty string, or if no `%d' occurs in
+the string, or if "%d" is the value of the resource, the default will be
+used instead.  The default is "%d.CKP".  Checkpointing is done in the 
+appropriate folder unless an absolute pathname is given.
+.PP
+.TP 8
+.B commandButtonCount
 The number of command buttons to create in a button box in between the toc
 and the view areas of the main window.  \fIxmh\fP will create these buttons
 with the names \fIbutton1, button2\fP and so on, in a box with the name
@@ -972,81 +1010,106 @@ with the names \fIbutton1, button2\fP and so on, in a box with the name
 in a private resource file; see the section on Actions.  The default is 0.
 .PP
 .TP 8
-.B CompGeometry
+.B compGeometry
 Initial geometry for windows containing compositions.
 .PP
 .TP 8
-.B Cursor
+.B cursor
 The name of the symbol used to represent the pointer.  Default is ``left_ptr''.
 .PP
 .TP 8
-.B DraftsFolder
+.B draftsFolder
 The folder used for message drafts.  Default is ``drafts''.
 .PP
 .TP 8
-.B Geometry
+.B geometry
 Default geometry to use.  Default is none.
 .PP
 .TP 8
-.B HideBoringHeaders
+.B hideBoringHeaders
 If ``on'', then \fIxmh\fR will attempt to skip uninteresting header lines
 within messages by scrolling them off.  Default is ``on''.
 .PP
 .TP 8
-.B InitialFolder
+.B initialFolder
 Which folder to display on startup.  May also be set with the command-line
 option \fB-initial\fR.  Default is ``inbox''.  
 .PP
 .TP 8
-.B InitialIncFile
-The file name of your incoming mail drop.  \fIxmh\fR tries to construct
-a filename for the ``inc -file'' command, but in some installations
-(e.g. those using the Post Office Protocol) no file is appropriate.
-In this case, \fBInitialIncFile\fR should be specified as the empty string,
-and \fIinc\fR will be invoked without a -file argument.  The default
-is to use the value of the environment variable \fBMAIL\fR, or if that
-is not set, to append the value of the environment variable \fBUSER\fR
-to \fI/usr/spool/mail/\fR.
+.B initialIncFile
+The path name of your incoming mail drop file.
+In some installations, for example those using the Post Office Protocol,
+no file is appropriate.
+In this case, \fBinitialIncFile\fR should not be specified,
+or may be specified as the empty string,
+and \fIinc\fR will be invoked without a -file argument.
+By default, this resource has no value.
 .PP
 .TP 8
-.B MailPath
+.B "mailInterval (\fPclass\fB Interval)"
+Specifies the interval in minutes at which the mail should be checked, if
+\fBmailWaitingFlag\fP or \fBcheckNewMail\fP are true.
+The default is the value of \fBcheckFrequency\fR.
+.PP
+.TP 8
+.B mailPath
 The full path prefix for locating your mail folders.  May also be set
 with the command-line option, \fB-path\fR.  The default is the
 Path component in $HOME/.mh_profile, or ``$HOME/Mail'' if none.
 .PP
 .TP 8
-.B MailWaitingFlag
+.B mailWaitingFlag
 If true, \fIxmh\fP will attempt to set an indication in its icon when
 new mail is waiting to be retrieved.  If this option is true, then
-CheckNewMail is assumed to be true as well.  The \fB-flag\fP command line
-option is a quick way to turn MailWaitingFlag on.
+\fBcheckNewMail\fP is assumed to be true as well.  The \fB-flag\fP command line
+option is a quick way to turn on this option.
 .PP
 .TP 8
-.B MakeCheckpoints
+.B makeCheckpoints
 If true, \fIxmh\fP will attempt to save checkpoints of volatile information.
-The frequency of checkpointing is controlled by the resource 
-\fBCheckFrequency\fR.
+The default is false.  The frequency of checkpointing is controlled by the
+resource \fBcheckpointInterval\fR.
 .PP
 .TP 8
-.B MhPath
+.B mhPath
 What directory in which to find the \fIMH\fR commands.  If a command isn't found
 here, then the directories in the user's path are searched.  Default is
 ``/usr/local/mh6''.
 .PP
 .TP 8
-.B PickGeometry
+.B "newMailBitmap (\fPclass\fB NewMailBitmap)"
+The bitmap to show in the folder button when a folder has new mail.
+The default is ``black6''.
+.PP
+.TP 8
+.B "newMailIconBitmap (\fPclass\fB NewMailBitmap)"
+The bitmap suggested to the window manager for the icon when any folder
+has new mail.  The default is ``flagup''.
+.PP
+.TP 8
+.B "noMailBitmap (\fPclass\fB NoMailBitmap)"
+The bitmap to show in the folder button when a folder has no new mail.
+The default is ``blank6''.
+.PP
+.TP 8
+.B "noMailIconBitmap (\fPclass\fB NoMailBitmap)"
+The bitmap suggested to the window manager for the icon when no folders
+have new mail.  The default is ``flagdown''.
+.PP
+.TP 8
+.B pickGeometry
 Initial geometry for pick windows.
 .PP
 .TP 8
-.B PointerColor
+.B pointerColor
 The foreground color of the pointer.  Default is XtDefaultForeground.
 .PP
 .TP 8
-.B PrefixWmAndIconName
+.B prefixWmAndIconName
 Whether to prefix the window and icon name with "xmh: ".  Default is true.
 .PP
 .TP 8
-.B PrintCommand
+.B printCommand
 What sh command to execute to print a message.  Note that stdout and stderr
 must be specifically redirected!  If a message or range of messages is
 selected for printing, the full file paths of each message file is
@@ -1054,7 +1117,7 @@ appended to the specified print command.  The default is ``enscript >/dev/null
 2>/dev/null''.
 .PP
 .TP 8
-.B ReplyInsertFilter
+.B replyInsertFilter
 A shell command to be executed when the \fIInsert\fP button is activated
 in a composition window.  The full path and filename of the source
 message is added to the end of the command before being passed to \fIsh\fP(1).
@@ -1064,13 +1127,19 @@ into the composition.  Interesting filters are:
 \fI<mh directory>/lib/mhl -form mhl.body\fP.
 .PP
 .TP 8
-.B ReverseReadOrder
+.B "rescanInterval (\fPclass\fB Interval)"
+How often to check the Table of Contents of currently viewed folders,
+and folders with messages currently displayed, for inconsistencies with
+the file system.  The default is 5 times the value of \fBcheckFrequency\fP.
+.PP
+.TP 8
+.B reverseReadOrder
 When true, the next message will be the message prior to the current message
 in the table of contents, and the previous message will be the message
 after the current message in the table of contents.  The default is false.
 .PP
 .TP 8
-.B SendBreakWidth
+.B sendBreakWidth
 When a message is sent from \fIxmh\fP, lines longer than this value will be
 split into multiple lines, each of which is no longer than \fBSendWidth\fP.
 This value may be overridden for a single message by inserting an additional
@@ -1079,7 +1148,7 @@ line will be removed from the header before the message is sent.
 The default is 2000.
 .PP
 .TP 8
-.B SendWidth
+.B sendWidth
 When a message is sent from \fIxmh\fP, lines longer than \fBSendBreakWidth\fP
 characters will be split into multiple lines, each of which is no longer than
 this value.
@@ -1089,53 +1158,58 @@ line will be removed from the header before the message is sent.
 The default is 72.
 .PP
 .TP 8
-.B SkipCopied
+.B showOnInc
+Whether to automatically show the current message after incorporating new
+mail.  Default is true.
+.PP
+.TP 8
+.B skipCopied
 Whether to skip over messages marked for copying when using ``View Next
 Message'' and ``View Previous Message''.  Default is true.
 .PP
 .TP 8
-.B SkipDeleted
+.B skipDeleted
 Whether to skip over messages marked for deletion when using ``View Next
 Message'' and ``View Previous Message''.  Default is true.
 .PP
 .TP 8
-.B SkipMoved
+.B skipMoved
 Whether to skip over messages marked for moving to other folders when
 using ``View Next Message'' and ``View Previous Message''.  Default is true.
 .PP
 .TP 8
-.B StickyMenu
+.B stickyMenu
 If true, when popup command menus are used, the most recently selected
 entry will be under the cursor when the menu pops up.  Default is false.
 See the file \fIclients/xmh/Xmh.sample\fR for an example of how to 
 specify resources for pop up command menus.
 .PP
 .TP 8
-.B TempDir
-Directory for \fIxmh\fR to store temporary directories.  For privacy, a user
+.B tempDir
+Directory for \fIxmh\fR to store temporary files.  For security, a user
 might want to change this to a private directory.  Default is ``/tmp''.
 .PP
 .TP 8
-.B TocGeometry
+.B tocGeometry
 Initial geometry for master \fIxmh\fR windows.
 .PP
 .TP 8 
-.B TocPercentage
+.B tocPercentage
 The percentage of the main window that is used to display the Table of 
 Contents.  Default is 33.
 .PP
 .TP 8
-.B TocWidth
+.B tocWidth
 How many characters to generate for each message in a folder's table of
 contents.  Default is 100.  Use 80 if you plan to use \fImhl\fR a lot,
 because it will be faster, and the extra 20 characters may not be useful.
 .PP
 .TP 8
-.B ViewGeometry
+.B viewGeometry
 Initial geometry for windows showing only a view of a message.
 
 .SH ACTIONS
-
+.PP
 Because \fIxmh\fR provides action procedures which correspond to command
 functionality and installs accelerators, users can customize accelerators
 in a private resource file.  \fIxmh\fR provides action procedures
@@ -1190,7 +1264,28 @@ This action is equivalent to pressing the cancel button in the pick window.
 .B XmhReloadSeqLists()
 This action rescans the contents of the public mh sequences for the
 currently opened folder and updates the sequence menu if necessary.
-
+.TP 18
+.B XmhShellCommand(\fI parameter \fR[\fI, parameter\fR]\fB)\fR
+At least one parameter must be specified.  The parameters will be concatenated
+with a space character separator, into a single string, and the list of
+selected messsages, or if no messages are selected, the current message, 
+will be appended to the string of parameters.  The string will be executed
+as a shell command.  The messages are always given as absolute pathnames.
+The current folder can be inferred from these pathnames.
+It is an error to cause this action to execute when there are no selected
+messages or no current message; this is not an arbitrary escape to a shell
+command.  No special parsing of parameters is performed.  Judicious use
+of shell programming can allow further freedom to customize xmh, without
+hacking xmh source.
+.TP 18
+.B XmhCheckForNewMail()
+This action will check all mail drops known to xmh.  If no mail drops have
+been specified by the user either through the \fI.xmhcheck\fR file or by
+the \fBinitialIncFile\fP resource, the \fIMH\fP command \fImsgchk\fP is
+used to check for new mail.
+.SH CUSTOMIZATION
+(How to write your own button bindings, your own accelerators, your own
+decorative colors, etc, etc, etc.)
 .SH CUSTOMIZATION USING \fIMH\fR
 The initial text displayed in a composition window is generated by
 executing the corresponding \fIMH\fP command; i.e. \fIcomp\fP, \fIrepl\fP,
@@ -1198,23 +1293,30 @@ or \fIforw\fP, and therefore message components may be customized as
 specified for those commands.  \fIComp\fP is executed only once per
 invocation of \fIxmh\fP and the message template is re-used for each
 successive new composition.
+.SH ENVIRONMENT
+.br
+HOME - users's home directory
+MH - to get the location of the \fIMH\fP profile file
 .SH FILES
-~/Mail
+~/.mh_profile - \fIMH\fR profile, used if the MH environment variable is not set
 .br
-~/.mh_profile - \fIMH\fR profile
+~/Mail - directory of folders, used if the \fIMH\fR profile cannot be found
 .br
-/usr/local/mh6 - \fIMH\fR commands
+~/.xmhcheck - optional, for multiple mail drops in cooperation with \fIslocal\fP.
 .br
-~/Mail/<folder>/.xmhcache - scan folder
+/usr/local/mh6 - \fIMH\fR commands, as a last resort, see \fBmhPath\fP.
 .br
-~/Mail/<folder>/.mh_sequences - sequence definitions
+~/Mail/<folder>/.xmhcache - scan output in each folder
 .br
-/tmp - temporary files
+~/Mail/<folder>/.mh_sequences - sequence definitions, in each folder
+.br
+/tmp - temporary files, see \fBtempDir\fP.
 .SH SEE ALSO
 X(1), xrdb(1), X Toolkit Intrinsics, Athena Widget Set, mh(1), enscript(1)
-.SH BUGS
-- Printing support is minimal.
 .br
+\fIMH & xmh: E-mail for Users and Programmers\fR, Jerry Peek, O'Reilly &
+Associates, 1990
+.SH BUGS
 - Should handle the ``unseen'' message-sequence.
 .br
 - Should determine by itself if the user hasn't used \fIMH\fR before, and
@@ -1222,24 +1324,10 @@ offer to create the .mh_profile, instead of hanging on inc.
 .br
 - Still a few commands missing (rename folder, remail message).
 .br
-- A bug in \fIMH\fR limits the the number of characters in .mh_sequences to 
-BUFSIZ.
-When the limit is reached, the .mh_sequences file often becomes corrupted,
-and sequence definitions may be lost.
-.br
-- Except for the icon, there isn't an indication that you have new mail.
-.br
-- There should be a resource, ShowOnInc, which when true, would show 
-the current message in the view after incorporating new mail.
-.br
-- The CheckFrequency resource should be split into two separate resources.
-.br
-- WM_SAVE_YOURSELF protocol is ignored.
-.br
 - WM_DELETE_WINDOW protocol doesn't work right when requesting deletion
 of the first toc and view, while trying to keep other \fIxmh\fP windows around.
 .br
-- Doesn't support annotations when replying to messages.
+- Still doesn't support annotations when replying to messages.
 .SH COPYRIGHT
 Copyright 1988, 1989, Digital Equipment Corporation.
 .br
@@ -1247,6 +1335,6 @@ Copyright 1989, Massachusetts Institute of Technology
 .br
 See \fIX(1)\fP for a full statement of rights and permissions.
 .SH AUTHOR
-Terry Weissman, Digital Western Research Laboratory
+Terry Weissman, formerly of Digital Western Research Laboratory
 .br
-modified by Donna Converse, MIT X Consortium
+Donna Converse, MIT X Consortium
