@@ -1,4 +1,4 @@
-$XConsortium: a2x.doc,v 1.8 92/08/13 19:34:59 rws Exp $
+$XConsortium: a2x.doc,v 1.9 92/08/13 20:07:44 rws Exp $
 
 				Using a2x
 
@@ -20,19 +20,19 @@ X Window System is a trademark of the Massachusetts Institute of Technology
 
 			     Getting Started
 
-A2x is designed to interface DragonDictate to the X Window System.  A2x
+a2x is designed to interface DragonDictate to the X Window System.  A2x
 converts the ASCII output of DragonDictate into X device events.  A2x is
 capable of manipulating both the keyboard and the pointer; depending on the
 applications, it is possible to use X hands-free through a2x.
 
-A2x requires an X protocol extension to function.  Either the XTEST or
+a2x requires an X protocol extension to function.  Either the XTEST or
 XTRAP extension can be used.  (There is code for the old XTESTEXT1
 extension in the source, but it has never been tested and probably will not
 work.)  The XTEST extension was developed by the X Consortium for use in
 the X Test Suite.  It is not currently part of R5 or the Test Suite,
 although it is expected that the X Consortium will release it prior to R6.
 The XTRAP extension was developed by Digital Equipment Corp., and public
-versions are available for both R4 and R5.  A2x was originally written for
+versions are available for both R4 and R5.  a2x was originally written for
 the XTEST extension, but XTRAP is perfectly adequate.  (The main difference
 as far as a2x is concerned is that XTEST permits time delays inside the X
 server, while with XTRAP the delays are handled on the client side and
@@ -54,16 +54,23 @@ for work under X; the assumption is that you do not use DragonDictate with
 programs on the PC.  If you use DragonDictate with programs on the PC, you
 may need to create dcom files for switching between PC and X use.
 
+There are two ways to run DragonDictate: directly under DOS, and under
+DESQview/X.  Running directly under DOS is described here; running under
+DESQview/X is described later.
+
 The normal mode of operation is to use a telnet program on the PC, and
-telnet across to your X workstation and log in.  (If you do not have a
-network connection, it should be possible to use a terminal program and log
-in to the workstation using a serial line.  However, performance over a
-serial line will not be as good as over a network.)  In that telnet
-session, run the script "DragonDictate" provided with the a2x distribution.
-This script simply clears the screen and starts up a2x.  Clearing the
-screen is a convenience so that the focus of attention on the PC screen
-will be the DragonDictate menus.  (You can, of course, write your own
-script or simply run a2x directly.)
+telnet across to your workstation and log in.  You may wish to try using
+rsh instead of telnet, but the performance may be substantially worse.  If
+you do not have a network connection, it should be possible to use a
+terminal program and log in to the workstation over a serial line, but
+performance over a serial line will likely not be as good as over a
+network.  In the telnet session, run the script "DragonDictate" provided
+with the a2x distribution.  You should be able to speak this, by saying
+"DragonDictate", "[enter key]", "OK" (the "OK" being necessary to pop down
+the menu to permit execution to continue).  This script simply clears the
+screen and starts up a2x.  Clearing the screen is a convenience so that the
+focus of attention on the PC screen will be the DragonDictate menus.  You
+can, of course, write your own script or simply run a2x directly.
 
 You will probably find it convenient to force the DragonDictate menus to
 appear in a fixed position on the PC screen.  For example, in the
@@ -79,7 +86,7 @@ You should also set
 
 for quickest operation.
 
-A2x takes each ASCII character produced by DragonDictate and determines a
+a2x takes each ASCII character produced by DragonDictate and determines a
 key on the X keyboard that can be pressed and released to generate that
 character.  If Shift and Control modifiers are necessary to generate the
 character, a2x will automatically press and release keys for those
@@ -95,7 +102,7 @@ a2x.  (One simple exception to this rule is that you can use a2x to
 press/release buttons and keys while directly moving the pointer with your
 hand.)
 
-A2x interprets the character {c-t} specially; it introduces a control
+a2x interprets the character {c-t} specially; it introduces a control
 sequence for special a2x operations.  The character {c-t} was chosen
 because it occurs infrequently in normal text; escape was not chosen
 because you might use it frequently in voice macros to send escape
@@ -104,7 +111,7 @@ sequences to applications.  There are two types of a2x control sequences:
 string of characters terminated by another {c-t}.  Control sequences are
 described in detail below.
 
-A2x also interprets the backspace character ({c-h} or {Backspace})
+a2x also interprets the backspace character ({c-h} or {Backspace})
 specially.  When you make corrections through DragonDictate, e.g., you use
 "choose <n>", DragonDictate will output backspaces to "undo" the previous
 choice before outputting the characters for the new choice (if any).  For
@@ -113,10 +120,10 @@ instead of backspaces.  The default action of a2x is to convert Backspace
 to Delete; if you do not want this behavior, specify "-b" on the a2x
 command line.
 
-A2x also interprets backspace characters specially in that it assumes they
+a2x also interprets backspace characters specially in that it assumes they
 are produced by DragonDictate to make corrections and are not produced as
 normal text (i.e., that voice macros do not contain backspace characters).
-A2x looks at backspace characters in order to undo edits (described in more
+a2x looks at backspace characters in order to undo edits (described in more
 detail below).  As such, it is recommended that you change some predefined
 DragonDictate voice macros to replace backspace characters with delete
 characters or with control sequences to generate backspace.  For example,
@@ -138,7 +145,7 @@ sequence:
 
 	{c-t}<keysym>{c-t}
 
-where <keysym> is the string name of a keysym.  A2x will find a key on the
+where <keysym> is the string name of a keysym.  a2x will find a key on the
 keyboard labeled with this keysym, and press and release that key.  For
 example:
 
@@ -620,7 +627,7 @@ To establish a trigger for a selection ownership, use the control sequence:
 
 	{c-t}{c-y}S<selection>{c-t}
 
-where <selection> is the name of the selection (e.g., PRIMARY).  A2x will
+where <selection> is the name of the selection (e.g., PRIMARY).  a2x will
 take ownership of the specified selection; the trigger will be satisfied
 when a2x loses ownership (usually when some other client takes ownership).
 
@@ -843,3 +850,116 @@ With this patch, you can use translations such as:
 	!:Ctrl<Key>w: extend-end(PRIMARY, CUT_BUFFER0)kill-selection() \n\
 	!:Meta Ctrl<Key>w: extend-end(PRIMARY, CUT_BUFFER0)\n\
 	!:Meta Ctrl<Key>y: insert-selection(PRIMARY, CUT_BUFFER0)
+
+
+				DESQview/X
+
+If you have DESQview/X from Quarterdeck Office Systems, it is possible to
+export the DragonDictate menus onto your X display.  This means you don't
+have to look at another screen to make corrections, but at the cost of
+dedicating some screen real estate to a window for menus.  You may also
+find the menu display slower going across the network.
+
+To accomplish this, you start a DOS window on your X display, then start up
+DragonDictate in that DOS window.  If you have a version of a2x compiled to
+run on your PC, you can then run that a2x in the DOS window; otherwise, you
+telnet to your workstation (from within the DOS window) and then run the
+"DragonDictate" script.
+
+To be able to run DragonDictate in a DOS window, you must permit lots of
+Expanded Memory to be used.  Use DVPMAN on \DVX\DVPS\DOS.DVP, and under the
+Advanced Options, make the field for "Maximum Expanded Memory Size" blank.
+
+To open a remote DOS window, you can type:
+
+	run dos -display <display-spec>
+
+in a local DOS window, or else type:
+
+	rsh <PC-hostname> dos
+
+from a shell on your X display.  Alternatively, you can create a fancier
+.DVP to run.  For example, in the \DVP\DVPS\ directory, copy DOS.DVP to
+A2X.DVP.  Then use DVPMAN to edit this file.  Change the "Program Name" to
+"a2x", and change the "DOS Command" to:
+
+	a2xini -display <display-spec>
+
+In the Advanced Options, make the field for "Maximum Expanded Memory Size"
+blank, and clear the toggle for "Wait for Window to Open".  Now create a
+file A2XINI.BAT, containing something like:
+
+	CD \DICTATE\USERS		(or wherever your voice files are)
+	CALL DT /s <your-name>
+	TELNET <workstation-hostname>
+
+if you use telnet, or:
+
+	CD \DICTATE\USERS		(or wherever your voice files are)
+	CALL DT /s <your-name>
+	A2X -display <display-spec>
+
+if you are running a2x directly on the PC.  Place this program in the
+DESQview/X "Open Window" menu, calling it "a2x", and then you can start up
+DragonDictate and connect to your workstation simply by clicking on the
+menu entry when DESQview/X starts up.
+
+Running DragonDictate under DESQview/X is a somewhat fragile setup.  Most
+important, once you have started DragonDictate in one DOS window, do not
+try to start up DragonDictate again, or your PC will hang.  You will have
+to reboot before starting up DragonDictate again.
+
+DESQview/X looks for the font "pc8x16" to use in the DOS window.  You will
+want to create an X font alias to map this name to whatever font you
+prefer.
+
+There is no good way through DESQview/X to control the initial size and
+position of the DOS window on your X display.  (Actually, you can control
+the initial size by changing the Maximum Width and Maximum Height in the
+.DVP file, but if you do this DragonDictate's menus will come out
+scrambled.)  For this reason, a2x has command line options to permit you to
+reconfigure the DOS window:
+
+	-w <DOS-window-name> -g <geometry-spec>
+
+The <DOS-window-name> must be the WM_NAME of the DOS window (usually
+displayed by the window manager in the title bar).  For example, if you
+opened a standard DOS window, the name would be "DOS Window".  If you
+created an A2X.DVP and assigned it the Program Name "a2x", then the name
+will be "a2x".  You want this name to be unique across all windows on your
+display.  The <geometry-spec> should be a complete geometry specification,
+with x, y, width and height all specified; the width and height are numbers
+of characters.  To contain full DragonDictate dialogue boxes, you will need
+a width of at least 58 and a height of at least 18.
+
+You will need a key on your X keyboard to act as the DragonDictate HOTKEY.
+By default, DragonDictate uses the keypad '+' key, which is the X keysym
+KP_Add.  Make sure you have a key with the appropriate keysym.  You may
+find it inconvenient that the HOTKEY only works when the input focus is in
+the DOS window; specifically, it is difficult to quickly turn off the
+microphone.  For convenience, you can tell a2x to grab the HOTKEY away from
+all other applications, so that it always functions as the HOTKEY
+regardless where the input focus is.  To do this, specify the command line
+options:
+
+	-w <DOS-window-name> -h <HOTKEY-keysym>
+
+If you are using the "DragonDictate" script, you can pass command line
+options to a2x by providing them as options to the script, or you can
+preset the A2XOPTS environment variable to the options you want.  For
+example:
+
+	setenv A2XOPTS "-w a2x -h KP_Add -g 58x18+1+1"
+
+With a2x running in a DOS window on your X screen, you need to be careful
+about speaking and typing when the input focus is in the DOS window and no
+DragonDictate menu or dialogue box is up.  Any character you type will be
+sent by DragonDictate to a2x, a2x will generate an event that is received
+by the DOS window, DragonDictate will get the character again, and send it
+on to a2x again, and the character will continue to infinite loop until you
+move the input focus out of the DOS window.  Fortunately, nothing really
+bad happens, you just drive the load average up on your machine.  If you
+speak when menus are down and the input focus is in the DOS window, the
+characters generated by a2x will be directed back to the DOS window, and
+DragonDictate will enter them as corrections to the word choice.
+
