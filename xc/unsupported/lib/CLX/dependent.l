@@ -1152,7 +1152,7 @@
       (error "Failed to connect to server: ~A ~D" host display))
     fd))
 
-;;; buffer-read-default - read data from the X stream
+;;; BUFFER-READ-DEFAULT - read data from the X stream
 
 #+(or Genera explorer)
 (defun buffer-read-default (display vector start end timeout)
@@ -1164,14 +1164,13 @@
 	   (type (or null number) timeout))
   #.(declare-buffun)
   (let ((stream (display-input-stream display)))
-    (when timeout
-      (unless (sys:process-wait-with-timeout
-		  "CLX Input" (round (* timeout 60.))
-		stream :listen)
-	(return-from buffer-read-default :timeout)))
-    (multiple-value-bind (ignore eofp)
-	(funcall stream :string-in nil vector start end)
-      eofp)))
+    (or (cond ((null stream))
+	      ((funcall stream :listen) nil)
+	      ((eql timeout 0) :timeout)
+	      ((buffer-input-wait-default display timeout)))
+	(multiple-value-bind (ignore eofp)
+	    (funcall stream :string-in nil vector start end)
+	  eofp))))
 
 
 #+excl
@@ -1190,29 +1189,11 @@
     (declare (type array-index howmany)
 	     (fixnum fd))
 	  
-    (cond ((fd-char-avail-p fd)
-	   ;; Either bytes are available, or error or eof.
-	   (fd-read-bytes fd vector start howmany))
-	  (t
-	   ;; This shouldn't happen, since buffer-input-wait is always called
-	   ;; before buffer-read.
-	   (if* (buffer-input-wait display timeout)
-	      thenret
-	      else
-		   (fd-read-bytes fd vector start howmany))))))
+    (or (cond ((fd-char-avail-p fd) nil)
+	      ((eql timeout 0) :timeout)
+	      ((buffer-input-wait-default display timeout)))
+	(fd-read-bytes fd vector start howmany))))
 
-
-#+lcl3.0
-(defmacro fast-read-bytes (stream vector start end)
-  `(do* ((i ,start (index+ i 1))
-	 (c nil))
-	((index>= i ,end) nil)
-     (declare (type array-index i)
-	      (type (or null card8) c))
-     (setq c (lcl:fast-read-byte ,stream (unsigned-byte 8) nil nil))
-     (if c
-	 (setf (aref ,vector i) c)
-	 (return t))))
 
 #+lcl3.0
 (defmacro extract-underlying-stream (stream display direction)
@@ -1220,9 +1201,8 @@
   ;;;input stream structure.
   `(or (getf (display-plist ,display) ,direction)
        (setf (getf (display-plist ,display) ,direction)
-	     (lucid::underlying-stream ,stream (if (eq ,direction 'input)
-						   :input 
-						 :output)))))
+	     (lucid::underlying-stream
+	       ,stream (if (eq ,direction 'input) :input :output)))))
 
 #+lcl3.0
 (defun buffer-read-default (display vector start end timeout)
@@ -1236,31 +1216,28 @@
 	   (type (or null number) timeout)
 	   (optimize (speed 3)
 		     (safety 0)))
-  (let* ((stream (display-input-stream display))
-	 (fast-stream (extract-underlying-stream stream display 'input)))
-    (cond ((or (null timeout)
-	       (listen stream))
-	   (lcl:with-scheduling-inhibited
-	       (fast-read-bytes fast-stream vector start end))
-	   nil)				;return NIL, it expects that
-	  ((or (minusp timeout) (zerop timeout))
-	   ;;negative timeout means try once, Jerry's hack.  Zerop seems
-	   ;;to *also* mean try once; don't understand why Jerry wanted -1.
-	   (if (listen stream)
-	       (lcl:with-scheduling-inhibited
-		   (fast-read-bytes fast-stream vector start end))
-	       :timeout))
-	  (timeout ;otherwise we have a bona-fide timeout on our hands which
-                   ;we should wait for.
-	   (let ((input-appeared
-		  (lucid::waiting-for-input-from-stream fast-stream
-                     (lucid::with-io-unlocked
-			 (lcl:process-wait-with-timeout
-			   "CLX Input" timeout #'listen stream)))))
-	     (if input-appeared
-		 (lcl:with-scheduling-inhibited
-		     (fast-read-bytes fast-stream vector start end))
-		 :timeout))))))
+  
+  ;;negative timeout means try once, Jerry's hack.  Zerop seems
+  ;;to *also* mean try once; don't understand why Jerry wanted -1.
+  (when (and timeout (minusp timeout))
+    (setq timeout 0))
+
+  (let ((stream (display-input-stream display)))
+    (declare (type (or null stream) stream))
+    (or (cond ((null stream))
+	      ((listen stream) nil)
+	      ((eql timeout 0) :timeout)
+	      ((buffer-input-wait-default display timeout)))
+	(let ((stream (extract-underlying-stream stream display 'input)))
+	  (lcl:with-scheduling-inhibited
+	    (do* ((index start (index1+ index)))
+		 ((index>= index end) nil)
+	      (declare (type array-index index))
+	      (let ((c (lcl:fast-read-byte stream (unsigned-byte 8) nil nil)))
+		(declare (type (or null card8) c))
+		(if (null c)
+		    (return t)
+		  (setf (aref vector index) (the card8 c))))))))))
 
 
 ;;; WARNING:
@@ -1269,22 +1246,6 @@
 ;;;	You are encouraged to write a specialized version of
 ;;;	buffer-read-default that does block transfers.
 #-(or Genera explorer excl lcl3.0)
-(defmacro CL-read-bytes (stream vector start end)
-  `(do* ((i ,start (index+ i 1))
-	 (c nil))
-	((index>= i ,end) nil)
-     (declare (type array-index i)
-	      (type (or null card8) c))
-     (setq c (read-byte ,stream nil nil))
-     (if c
-	 (setf (aref ,vector i) c)
-	 (return t))))
-
-;; Poll for input every *buffer-read-polling-time* SECONDS.
-#-(or Genera explorer excl lcl3.0)
-(defparameter *buffer-read-polling-time* 0.5)
-
-#-(or Genera explorer excl lcl3.0)
 (defun buffer-read-default (display vector start end timeout)
   (declare (type display display)
 	   (type buffer-bytes vector)
@@ -1292,26 +1253,21 @@
 	   (type (or null (rational 0 *) (float 0.0 *)) timeout))
   #.(declare-buffun)
   (let ((stream (display-input-stream display)))
-    (declare (type stream stream))
-    (cond ((or (null timeout)			; timeout = NIL
-	       (listen stream))			; OR input waiting
-	   (cl-read-bytes stream vector start end))
-	  ((zerop timeout)			; timeout = 0 
-	   :timeout)				; no input (we listened above)
-	  (t					; timeout > 0, so poll until time is up.
-	   (multiple-value-bind (npoll fraction)
-	       (truncate timeout *buffer-read-polling-time*)
-	     (if (or (listen stream)		; listen first
-		     (dotimes (i npoll)		; Sleep for a time, then listen again
-		       (sleep *buffer-read-polling-time*)
-		       (when (listen stream) (return t)))
-		     (when (plusp fraction)
-		       (sleep fraction)		; Sleep a fraction of a second
-		       (listen stream)))	; and listen one last time
-		 (cl-read-bytes stream vector start end)
-		 :timeout))))))
+    (declare (type (or null stream) stream))
+    (or (cond ((null stream))
+	      ((listen stream) nil)
+	      ((eql timeout 0) :timeout)
+	      ((buffer-input-wait-default display timeout)))
+	(do* ((index start (index1+ index)))
+	     ((index>= index end) nil)
+	  (declare (type array-index index))
+	  (let ((c (read-byte stream nil nil)))
+	    (declare (type (or null card8) c))
+	    (if (null c)
+		(return t)
+	      (setf (aref vector index) (the card8 c))))))))
 
-;;; buffer-write--default - write data to the X stream
+;;; BUFFER-WRITE-DEFAULT - write data to the X stream
 
 #+(or Genera explorer)
 (defun buffer-write-default (vector display start end)
@@ -1344,11 +1300,12 @@
 	   (optimize (:tail-merge nil)
 		     (speed 3)
 		     (safety 0)))
-  (lcl:with-scheduling-inhibited
-      (lcl:write-array
-	(extract-underlying-stream
-	  (display-output-stream display) display 'output)
-	vector start end)))
+  (let ((stream (display-output-stream display)))
+    (declare (type (or null stream) stream))
+    (unless (null stream) 
+      (let ((stream (extract-underlying-stream stream display 'output)))
+	(lcl:with-scheduling-inhibited
+          (lcl:write-array stream vector start end))))))
 
 ;;; WARNING:
 ;;;	CLX performance will be severely degraded if your lisp uses
@@ -1367,11 +1324,9 @@
     (declare (type (or null stream) stream))
     (unless (null stream)
       (with-vector (vector buffer-bytes)
-	(do ((stream (display-output-stream display))
-	     (index start (index+ index 1)))
+	(do ((index start (index1+ index)))
 	    ((index>= index end))
-	  (declare (type stream stream)
-		   (type array-index index))
+	  (declare (type array-index index))
 	  (write-byte (aref vector index) stream))))))
 
 ;;; buffer-force-output-default - force output to the X stream
@@ -1415,14 +1370,35 @@
 ;;; waiting for input is abortable when between requests.  Should return
 ;;; :TIMEOUT if it times out, NIL otherwise.
 
-;;; The default implementation is to just return right away.
-#-(or Genera excl lcl3.0)
+;;; The default implementation
+
+;; Poll for input every *buffer-read-polling-time* SECONDS.
+#-(or Genera explorer excl lcl3.0)
+(defparameter *buffer-read-polling-time* 0.5)
+
+#-(or Genera explorer excl lcl3.0)
 (defun buffer-input-wait-default (display timeout)
   (declare (type display display)
-	   (type (or null number) timeout)
-	   (ignore display timeout))
+	   (type (or null number) timeout))
   (declare (values timeout))
-  nil)
+  
+  (let ((stream (display-input-stream display)))
+    (declare (type (or null stream) stream))
+    (cond ((null stream))
+	  ((listen stream) nil)
+	  ((eql timeout 0) :timeout)
+	  ((not (null timeout))
+	   (multiple-value-bind (npoll fraction)
+	       (truncate timeout *buffer-read-polling-time*)
+	     (dotimes (i npoll)			; Sleep for a time, then listen again
+	       (sleep *buffer-read-polling-time*)
+	       (when (listen stream)
+		 (return-from buffer-input-wait-default nil)))
+	     (when (plusp fraction)
+	       (sleep fraction)			; Sleep a fraction of a second
+	       (when (listen stream)		; and listen one last time
+		 (return-from buffer-input-wait-default nil)))
+	     :timeout)))))
 
 #+Genera
 (defun buffer-input-wait-default (display timeout)
@@ -1432,6 +1408,8 @@
   (let ((stream (display-input-stream display)))
     (declare (type (or null stream) stream))
     (cond ((null stream))
+	  ((scl:send stream :listen) nil)
+	  ((eql timeout 0) :timeout)
 	  ((null timeout)
 	   #+CLX-Genera-new-scheduler (si:stream-input-block stream "CLX Input")
 	   #-CLX-Genera-new-scheduler (scl:send stream :input-wait "CLX Input"))
@@ -1443,6 +1421,24 @@
 	     (neti:with-stream-timeout (stream :input timeout)
 	       #+CLX-Genera-new-scheduler (si:stream-input-block stream "CLX Input")
 	       #-CLX-Genera-new-scheduler (scl:send stream :input-wait "CLX Input")))))
+    nil))
+
+#+explorer
+(defun buffer-input-wait-default (display timeout)
+  (declare (type display display)
+	   (type (or null number) timeout))
+  (declare (values timeout))
+  (let ((stream (display-input-stream display)))
+    (declare (type (or null stream) stream))
+    (cond ((null stream))
+	  ((zl:send stream :listen) nil)
+	  ((eql timeout 0) :timeout)
+	  ((null timeout)
+	   (si:process-wait "CLX Input" stream :listen))
+	  (t
+	   (unless (si:process-wait-with-timeout
+		       "CLX Input" (round (* timeout 60.)) stream :listen)
+	     (return-from buffer-input-wait-default :timeout))))
     nil))
 
 #+excl
@@ -1524,15 +1520,18 @@
   (declare (values timeout))
   (let ((stream (display-input-stream display)))
     (declare (type (or null stream) stream))
-    (unless (null stream)
-      (unless (let ((fast-stream (extract-underlying-stream stream display 'input)))
-		(lucid::waiting-for-input-from-stream fast-stream
-                  (lucid::with-io-unlocked
-		    (if (null timeout)
-			(lcl:process-wait "CLX Input" #'listen stream)
-		      (lcl:process-wait-with-timeout
-			"CLX Input" timeout #'listen stream)))))
-	:timeout))))
+    (cond ((null stream))
+	  ((listen stream) nil)
+	  ((eql timeout 0) :timeout)
+	  ((let ((stream (extract-underlying-stream stream display 'input)))
+	     (lucid::waiting-for-input-from-stream stream
+               (lucid::with-io-unlocked
+		 (if (null timeout)
+		     (lcl:process-wait "CLX Input" #'listen stream)
+		   (lcl:process-wait-with-timeout
+		     "CLX Input" timeout #'listen stream)))))
+	   nil)
+	  (:timeout))))
 
 
 ;;; BUFFER-LISTEN-DEFAULT - returns T if there is input available for the
