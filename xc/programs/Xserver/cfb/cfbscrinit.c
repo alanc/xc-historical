@@ -25,7 +25,7 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XConsortium: cfbscrinit.c,v 5.17 90/09/24 10:19:29 rws Exp $ */
+/* $XConsortium: cfbscrinit.c,v 5.18 90/09/24 17:46:11 rws Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -86,6 +86,7 @@ static DepthRec depths[] = {
 
 int cfbWindowPrivateIndex;
 int cfbGCPrivateIndex;
+
 static unsigned long cfbGeneration = 0;
 
 miBSFuncRec cfbBSFuncRec = {
@@ -96,9 +97,8 @@ miBSFuncRec cfbBSFuncRec = {
     (PixmapPtr (*)()) 0,
 };
 
-/* dts * (inch/dot) * (25.4 mm / inch) = mm */
 Bool
-cfbScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
+cfbSetupScreen(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
     register ScreenPtr pScreen;
     pointer pbits;		/* pointer to screen bitmap */
     int xsize, ysize;		/* in pixels */
@@ -123,19 +123,6 @@ cfbScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
 			       sizeof(cfbPrivWin)) ||
 	!AllocateGCPrivate(pScreen, cfbGCPrivateIndex, sizeof(cfbPrivGC)))
 	return FALSE;
-    if (defaultColorVisualClass < 0)
-    {
-	i = 0;
-    }
-    else
-    {
-	for (i = 0;
-	     (i < NUMVISUALS) && (visuals[i].class != defaultColorVisualClass);
-	     i++)
-	    ;
-	if (i >= NUMVISUALS)
-	    i = 0;
-    }
     pScreen->defColormap = FakeClientID(0);
     /* let CreateDefColormap do whatever it wants for pixels */ 
     pScreen->blackPixel = pScreen->whitePixel = (Pixel) 0;
@@ -167,9 +154,49 @@ cfbScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
 #endif
     pScreen->ResolveColor = cfbResolveColor;
     pScreen->BitmapToRegion = mfbPixmapToRegion;
+
     mfbRegisterCopyPlaneProc (pScreen, cfbCopyPlane);
+    return TRUE;
+}
+
+cfbFinishScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
+    register ScreenPtr pScreen;
+    pointer pbits;		/* pointer to screen bitmap */
+    int xsize, ysize;		/* in pixels */
+    int dpix, dpiy;		/* dots per inch */
+    int width;			/* pixel width of frame buffer */
+{
+    int	i;
+
+    if (defaultColorVisualClass < 0)
+    {
+	i = 0;
+    }
+    else
+    {
+	for (i = 0;
+	     (i < NUMVISUALS) && (visuals[i].class != defaultColorVisualClass);
+	     i++)
+	    ;
+	if (i >= NUMVISUALS)
+	    i = 0;
+    }
     return miScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width,
 			8, NUMDEPTHS, depths,
 			visuals[i].vid, NUMVISUALS, visuals,
 			&cfbBSFuncRec);
+}
+
+/* dts * (inch/dot) * (25.4 mm / inch) = mm */
+Bool
+cfbScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
+    register ScreenPtr pScreen;
+    pointer pbits;		/* pointer to screen bitmap */
+    int xsize, ysize;		/* in pixels */
+    int dpix, dpiy;		/* dots per inch */
+    int width;			/* pixel width of frame buffer */
+{
+    if (!cfbSetupScreen(pScreen, pbits, xsize, ysize, dpix, dpiy, width))
+	return FALSE;
+    return cfbFinishScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width);
 }
