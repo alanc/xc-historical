@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: sun.cf,v 1.79 92/11/20 19:13:42 rws Exp $
+XCOMM platform:  $XConsortium: sun.cf,v 1.80 92/12/17 19:48:17 rws Exp $
 
 #ifdef SVR4
 #define OSName            SunOS 5.0
@@ -73,6 +73,8 @@ XCOMM operating system:  OSName
 #else
 #if OSMajorVersion < 5
 #define DefaultCCOptions -pipe
+#else
+#define DefaultCCOptions -Xc
 #endif
 #endif
 
@@ -82,8 +84,8 @@ XCOMM operating system:  OSName
 
 #if OSMajorVersion < 5
 #define SharedAllocateLocalDefines -DINCLUDE_ALLOCA_H
-#endif
 #define LibraryCCOptions /* don't want special floating point */
+#endif
 
 #ifndef UseSunWindowsInServer
 #define UseSunWindowsInServer	NO	/* link in SunWindows support? */
