@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: twm.c,v 1.92 89/11/27 16:45:39 jim Exp $
+ * $XConsortium: twm.c,v 1.93 89/11/28 11:33:10 jim Exp $
  *
  * twm - "Tom's Window Manager"
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: twm.c,v 1.92 89/11/27 16:45:39 jim Exp $";
+"$XConsortium: twm.c,v 1.93 89/11/28 11:33:10 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -538,7 +538,7 @@ InitVariables()
     NewFontCursor(&Scr->MoveCursor, "fleur");
     NewFontCursor(&Scr->ResizeCursor, "fleur");
     NewFontCursor(&Scr->MenuCursor, "sb_left_arrow");
-    NewFontCursor(&Scr->ButtonCursor, "center_ptr");
+    NewFontCursor(&Scr->ButtonCursor, "hand2");
     NewFontCursor(&Scr->WaitCursor, "watch");
     NewFontCursor(&Scr->SelectCursor, "dot");
     NewFontCursor(&Scr->DestroyCursor, "pirate");
