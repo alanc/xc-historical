@@ -1,4 +1,4 @@
-/* $XConsortium: misc.c,v 1.13 93/12/30 11:04:55 mor Exp $ */
+/* $XConsortium: misc.c,v 1.14 94/01/31 11:01:35 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -17,11 +17,23 @@ purpose.  It is provided "as is" without express or implied warranty.
 Author: Ralph Mor, X Consortium
 ******************************************************************************/
 
+#ifdef WIN32
+#define _WILLWINSOCK_
+#endif
 #include <X11/ICE/ICElib.h>
 #include <X11/ICE/ICElibint.h>
 #include <X11/Xtrans.h>
 #include <stdio.h>
-
+#ifdef WIN32
+#define BOOL wBOOL
+#undef Status
+#define Status wStatus
+#include <winsock.h>
+#undef Status
+#define Status int
+#undef BOOL
+#include <X11/Xw32defs.h>
+#endif
 
 
 /*
