@@ -1,4 +1,4 @@
-/* $XConsortium: xdmcp.c,v 1.24 93/07/12 09:33:42 dpw Exp $ */
+/* $XConsortium: xdmcp.c,v 1.25 93/09/03 08:14:52 dpw Exp $ */
 /*
  * Copyright 1989 Network Computing Devices, Inc., Mountain View, California.
  *
@@ -179,7 +179,7 @@ static void XdmcpBlockHandler(
 #if NeedFunctionPrototypes
     pointer /*data*/,
     struct timeval **/*wt*/,
-    long */*LastSelectMask*/
+    pointer /*LastSelectMask*/
 #endif
 );
 
@@ -187,7 +187,7 @@ static void XdmcpWakeupHandler(
 #if NeedFunctionPrototypes
     pointer /*data*/,
     int /*i*/,
-    long */*LastSelectMask*/
+    pointer /*LastSelectMask*/
 #endif
 );
 
@@ -589,11 +589,12 @@ XdmcpCloseDisplay(sock)
 
 /*ARGSUSED*/
 static void
-XdmcpBlockHandler(data, wt, LastSelectMask)
+XdmcpBlockHandler(data, wt, pReadmask)
     pointer	    data;   /* unused */
     struct timeval  **wt;
-    long	    *LastSelectMask;
+    pointer	    pReadmask;
 {
+    long *LastSelectMask = (long *)pReadmask;
     long millisToGo, wtMillis;
     static struct timeval waittime;
 
@@ -630,11 +631,12 @@ XdmcpBlockHandler(data, wt, LastSelectMask)
 
 /*ARGSUSED*/
 static void
-XdmcpWakeupHandler(data, i, LastSelectMask)
+XdmcpWakeupHandler(data, i, pReadmask)
     pointer data;   /* unused */
     int	    i;
-    long    *LastSelectMask;
+    pointer pReadmask;
 {
+    long    *LastSelectMask = (long *)pReadmask;
     long    devicesReadable[mskcnt];
 
     if (state == XDM_OFF)
