@@ -6,30 +6,46 @@
 #define OSMinorVersion         0
 
 #ifdef AIXArchitecture
-#define SystemV                YES
-#define OSName                 AIX			/* SVR2++ */
+#define SystemV YES
+#define OSName AIX
 #define ibmbootstrapcflags -Daix
-#ifndef USE_PCC
-#define CcCmd cc -Nd4000 -Nn3000 -DBSD_INCLUDES
-#define LibraryDefines -Hcpp -DUNIXCPP
-#define ibmosdefs -DSYSV -Nd4000 -Nn3000
-#else
+#define OSDefines /**/
+#ifdef USE_PCC
 #define CcCmd i386cc
 #define ibmosdefs -DHCVERSION=HCRevision
 #define LibraryDefines /**/
-#endif
 #else
-#define SystemV                NO
-#define OSName                 AOS			/* BSD */
-#define CcCmd                  hc
-#define ibmosdefs              -DHCVERSION=HCRevision
-#endif
+#define CcCmd cc -Nd4000 -Nn3000 -DBSD_INCLUDES
+#define LibraryDefines -Hcpp -DUNIXCPP
+#define ibmosdefs -DSYSV -Nd4000 -Nn3000
+#endif /* USE_PCC */
+#else /* else not aix */
+#define SystemV NO
+#define OSName AOS
+#define CcCmd hc
+#define ibmosdefs -DHCVERSION=HCRevision
+#define OSDefines -DBSDrt
+#endif /* AIXArchitecture */
 
 #define HasVoidSignalReturn    NO
 
-
 #ifdef RtArchitecture
-#define ibmdisplayoption(ps2opt,rtopt) rtopt
+/*
+ * These define the screens the server will allow
+ * affected:    .../server/ddx/ibm/Makefile
+ *              .../server/ddx/ibm/common/Makefile
+ * Also, be sure to remove .../server/ddx/ibm/common/ibmscreen.o
+ * 
+ *                                        PS2, Rt, ...
+ */
+#define ibmInclude8514  YES
+#define ibmIncludeAED   YES
+#define ibmIncludeAPA16 YES
+#define ibmIncludeAPA8c NO
+#define ibmIncludeEGA   YES
+#define ibmIncludeMPEL  YES
+#define ibmIncludeVGA   YES
+#define ibmIncludeGEN   NO
 #endif /* RtArchitecture */
 
 #ifdef PS2Architecture
@@ -38,7 +54,22 @@
 #define ExtraLibraries /lib.386/libtcp.a
 #define LnCmd ln			/* no symbolic links */
 #define ibmarchdefs -Di386 -DiAPX386
-#define ibmdisplayoption(ps2opt,rtopt) ps2opt
+/*
+ * These define the screens the server will allow
+ * affected:    .../server/ddx/ibm/Makefile
+ *              .../server/ddx/ibm/common/Makefile
+ * Also, be sure to remove .../server/ddx/ibm/common/ibmscreen.o
+ * 
+ *                                        PS2, Rt, ...
+ */
+#define ibmInclude8514  YES
+#define ibmIncludeAED   NO
+#define ibmIncludeAPA16 NO
+#define ibmIncludeAPA8c NO
+#define ibmIncludeEGA   NO
+#define ibmIncludeMPEL  NO
+#define ibmIncludeVGA   YES
+#define ibmIncludeGEN   NO
 #endif /* PS2Architecture */
 
 /*
@@ -49,16 +80,6 @@
  * 
  *                                        PS2, Rt, ...
  */
-#define ibmInclude8514  ibmdisplayoption (YES, YES)
-#define ibmIncludeAED   ibmdisplayoption (NO,  YES)
-#define ibmIncludeAPA16 ibmdisplayoption (NO,  YES)
-#define ibmIncludeAPA8c ibmdisplayoption (NO,  NO)
-#define ibmIncludeEGA   ibmdisplayoption (NO,  YES)
-#define ibmIncludeMPEL  ibmdisplayoption (NO,  YES)
-#define ibmIncludeVGA   ibmdisplayoption (YES, YES)
-#define ibmIncludeGEN   ibmdisplayoption (NO,  NO)
-#undef ibmdisplayoption
-
 #ifndef ibmosdefs
 #define ibmosdefs /**/
 #endif
@@ -77,8 +98,8 @@
  * This defines the name of server you want.
  * affected: .../X11/server/Makefile
  */
-/* #define XibmServer Xibm */
-#define BuildServer NO
+#define XibmServer Xibm
+/* #define BuildServer NO */
 
 /*****************************************************************************
  *                        Platform-specfic parameters                        *
@@ -139,7 +160,8 @@
  * define this as you like for server compilation 
  * affected: all makefiles in .../X11/server
  */
-#define ServerDefines  StandardDefines -DUNIXCPP -DNOSTDHDRS StandardDefines ExtensionDefines
+#define ServerDefines  StandardDefines -DUNIXCPP -DNOSTDHDRS StandardDefines OSDefines ExtensionDefines
+
 
 /* define this as you like for server font support */
 #define FontDefines -DFONT_SNF -DFONT_BDF -DCOMPRESSED_FONTS StandardDefines
@@ -147,11 +169,11 @@
 /* define the following line for easily debuggable servers, the */
 /* second line for especially speedy servers.			*/
 /* #define ServerCDebugFlags	-O -DDEBUG -DTRACE_X */
-#define	ServerCDebugFlags	-O 
+#define	ServerCDebugFlags -O -DATHENA
 
 /* define this as you like for normal library compilation */
-#define LibraryDefines		-DUNIXCPP StandardDefines
+#define LibraryDefines -DUNIXCPP StandardDefines
 
-/**/# platform:  $XConsortium: ibm.cf,v 1.8 89/10/03 09:39:29 jim Exp $
+/**/# platform:  $XConsortium: ibm.cf,v 1.9 89/10/10 19:21:00 jim Exp $
 /**/# operating system:  OSName
 
