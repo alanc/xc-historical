@@ -1,4 +1,4 @@
-/* $XConsortium: AsciiText.c,v 1.40 90/12/19 18:44:13 converse Exp $ */
+/* $XConsortium: AsciiText.c,v 1.41 91/01/06 16:08:31 rws Exp $ */
 
 /*
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -55,7 +55,7 @@ SOFTWARE.
 
 #define TAB_COUNT 32
 
-static void ClassInitialize(), Initialize(), CreateSourceSink(), Destroy();
+static void Initialize(), CreateSourceSink(), Destroy();
 
 AsciiTextClassRec asciiTextClassRec = {
   { /* core fields */
