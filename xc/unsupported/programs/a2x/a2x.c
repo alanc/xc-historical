@@ -1,4 +1,4 @@
-/* $XConsortium: a2x.c,v 1.63 92/04/17 10:03:18 rws Exp $ */
+/* $XConsortium: a2x.c,v 1.64 92/04/20 10:18:14 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -1239,7 +1239,6 @@ do_jump(buf)
     Window root, child;
     XWindowAttributes wa;
     int screen;
-    double mult = 10.0;
     Region univ;
     XRectangle rect;
     char *endptr;
@@ -1247,6 +1246,7 @@ do_jump(buf)
     unsigned int mask;
 
     jump.dir = 0;
+    jump.mult = 10.0;
     jump.recurse = False;
     jump.input = 0;
     jump.best_dist = 4e9;
@@ -1293,7 +1293,7 @@ do_jump(buf)
 	    overlap = True;
 	    break;
 	case ' ':
-	    mult = strtod(buf+1, &endptr);
+	    jump.mult = strtod(buf+1, &endptr);
 	    if (*endptr)
 		return;
 	    buf = endptr - 1;
