@@ -10,11 +10,17 @@
 #include "math.h"
 #include "stdio.h"
 #include <sys/types.h>
+#ifdef SYSV
+#include <time.h>
+#else
 #include <sys/time.h>
+#endif
 #include <sys/timeb.h>
 #include <sys/resource.h>
 
+#ifndef PI
 #define PI 3.14159265
+#endif
 
 extern XStuff X;
 extern Widget result;
@@ -32,13 +38,16 @@ void show_result();
 ** from our timer, and just concentrate on the time used in the X calls.
 */
 
-static long timer(flag)
+static long
+timer(flag)
      int flag;
 {
   static struct timeval starttime;  /* starting time for gettimeofday() */
-  static struct rusage startusage;  /* starting time for getrusage() */
   struct timeval endtime;           /* ending time for gettimeofday() */
+#ifndef SYSV
+  static struct rusage startusage;  /* starting time for getrusage() */
   struct rusage endusage;           /* ending time for getrusage() */
+#endif
   struct timezone tz;               /* to make gettimeofday() happy */
 
   long elapsedtime;                 /* how long since we started the timer */
@@ -46,16 +55,23 @@ static long timer(flag)
   switch (flag) {
     case StartTimer:                       /* store initial values */
       gettimeofday(&starttime,&tz);       
+#ifndef SYSV
       getrusage(RUSAGE_SELF,&startusage);
+#endif
       return((long) NULL);
     case EndTimer:
       gettimeofday(&endtime,&tz);          /* store final values */
+#ifndef SYSV
       getrusage(RUSAGE_SELF,&endusage);
-
+#endif
   /* all the following line does is use the formula 
      elapsed time = ending time - starting time, but there are three 
      different timers and two different units of time, ack... */
 
+#ifdef SYSV
+      elapsedtime = (long) ((endtime.tv_sec - starttime.tv_sec) * 1000000
+			    + endtime.tv_usec - starttime.tv_usec);
+#else
       elapsedtime = (long) ((long)
 	((endtime.tv_sec - endusage.ru_utime.tv_sec - endusage.ru_stime.tv_sec
 	 - starttime.tv_sec + startusage.ru_utime.tv_sec
@@ -63,6 +79,7 @@ static long timer(flag)
       ((endtime.tv_usec - endusage.ru_utime.tv_usec - endusage.ru_stime.tv_usec
 	 - starttime.tv_usec + startusage.ru_utime.tv_usec
 	 + startusage.ru_stime.tv_usec));
+#endif
 
       return(elapsedtime);                
     default:                              
@@ -72,7 +89,8 @@ static long timer(flag)
 }
 
 
-void copyarea_test()
+void
+copyarea_test()
 {
   int num_copies = 200;
   int i;
@@ -96,7 +114,8 @@ void copyarea_test()
   show_result(buf);
 }
 
-void copyplane_test()
+void
+copyplane_test()
 {
   int num_copies = 200;
   int i;
@@ -120,7 +139,8 @@ void copyplane_test()
   show_result(buf);
 }
 
-void circle_line_test(num_vertices,radius)
+void
+circle_line_test(num_vertices,radius)
      int num_vertices,radius;
 {
   double theta, delta;
@@ -159,12 +179,14 @@ void circle_line_test(num_vertices,radius)
 
 
 
-void polyline_test()
+void
+polyline_test()
 {
   circle_line_test((int)(601*X.percent),190);
 }
 
-void polysegment_test()
+void
+polysegment_test()
 {
   XSegment *segments;
   int num_segments = 600;
@@ -199,7 +221,8 @@ void polysegment_test()
   free(segments);
 }
 
-void polypoint_test()
+void
+polypoint_test()
 {
   XPoint *points;
   int num_points = 100000;
@@ -236,7 +259,8 @@ void polypoint_test()
   free(points);
 }
 
-void genericrectangle_test(fill)
+void
+genericrectangle_test(fill)
      Boolean fill;
 {
   XRectangle *rects;
@@ -274,19 +298,22 @@ void genericrectangle_test(fill)
   free(rects);
 }
 
-void polyrectangle_test()
+void
+polyrectangle_test()
 {
   genericrectangle_test(FALSE);
 }
 
-void polyfillrectangle_test()
+void
+polyfillrectangle_test()
 {
   genericrectangle_test(TRUE);
 }
 
 /*****************************/
 
-void genericarc_test(fill)
+void
+genericarc_test(fill)
      Boolean fill;
 {
   XArc *arcs;
@@ -322,17 +349,20 @@ void genericarc_test(fill)
   free(arcs);
 }
 
-void polyarc_test()
+void
+polyarc_test()
 {
   genericarc_test(FALSE);
 }
 
-void polyfillarc_test()
+void
+polyfillarc_test()
 {
   genericarc_test(TRUE);
 }
 
-void polytext8_test()
+void
+polytext8_test()
 {
   int num_strings = 200;
   static char string[] = "pack my box with five dozen liquor jugs";
@@ -356,10 +386,11 @@ void polytext8_test()
   show_result(buf);
 }
 
-void imagetext8_test()
+void
+imagetext8_test()
 {
   int num_strings = 200;
-  static char string[] = "Fill my box with ten dozen liquor jugs";
+  static char string[] = "pack my box with five dozen liquor jugs";
   int i;
   long totaltime;
   char buf[80];
@@ -380,7 +411,8 @@ void imagetext8_test()
   show_result(buf);
 }
 
-void putimage_test()
+void
+putimage_test()
 {
   int num_copies = 200;
   int i;
@@ -409,7 +441,8 @@ void putimage_test()
 /*****************************/
 /*****************************/
 
-void run_test()
+void
+run_test()
 {
   XClearWindow(X.dpy,X.win);
 
@@ -439,7 +472,8 @@ void run_test()
 ** Sets the text in a read-only text widget to the specified string.
 */
 
-void set_text(w,string)
+void
+set_text(w,string)
      Widget w;
      char *string;
 {
@@ -459,7 +493,8 @@ void set_text(w,string)
   XawTextSetSource(w,source,(XawTextPosition) 0);
 }
 
-void show_result(string)
+void
+show_result(string)
      char *string;
 {
   char buf[80];
