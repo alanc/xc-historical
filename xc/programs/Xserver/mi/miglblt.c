@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: miglblt.c,v 5.6 91/12/18 18:52:27 keith Exp $ */
+/* $XConsortium: miglblt.c,v 5.7 93/07/12 09:28:52 dpw Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -35,8 +35,6 @@ SOFTWARE.
 #include	"scrnintstr.h"
 #include	"pixmap.h"
 #include	"servermd.h"
-
-extern void QueryGlyphExtents();
 
 /*
     machine-independent glyph blt.

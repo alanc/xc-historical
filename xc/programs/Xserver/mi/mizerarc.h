@@ -15,7 +15,7 @@ without any express or implied warranty.
 
 ********************************************************/
 
-/* $XConsortium: mizerarc.h,v 5.10 91/06/13 09:42:11 rws Exp $ */
+/* $XConsortium: mizerarc.h,v 5.11 93/10/12 11:42:18 dpw Exp $ */
 
 typedef struct {
     int x;
@@ -37,8 +37,6 @@ typedef struct {
 
 #define miCanZeroArc(arc) (((arc)->width == (arc)->height) || \
 			   (((arc)->width <= 800) && ((arc)->height <= 800)))
-
-extern Bool miZeroArcSetup();
 
 #define MIARCSETUP() \
     x = info.x; \

@@ -1,7 +1,7 @@
 /*
  * authorization hooks for the server
  *
- * $XConsortium: auth.c,v 1.18 94/01/18 17:29:17 gildea Exp $
+ * $XConsortium: auth.c,v 1.19 94/02/08 14:55:09 gildea Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -107,6 +107,7 @@ static char *authorization_file = (char *)NULL;
 static int  AuthorizationIndex = 0;
 static Bool ShouldLoadAuth = TRUE;
 
+void
 InitAuthorization (file_name)
 char	*file_name;
 {
@@ -149,6 +150,7 @@ LoadAuthorization ()
  * XdmcpInit calls this function to discover all authorization
  * schemes supported by the display
  */
+void
 RegisterAuthorizations ()
 {
     int	    i;
@@ -161,9 +163,9 @@ RegisterAuthorizations ()
 
 XID
 CheckAuthorization (name_length, name, data_length, data, client, reason)
-    unsigned short	name_length;
+    unsigned int name_length;
     char	*name;
-    unsigned short	data_length;
+    unsigned int data_length;
     char	*data;
     ClientPtr client;
     char	**reason;	/* failure message.  NULL for default msg */
@@ -200,6 +202,7 @@ CheckAuthorization (name_length, name, data_length, data, client, reason)
     return (XID) ~0L;
 }
 
+void
 ResetAuthorization ()
 {
     int	i;
@@ -228,6 +231,7 @@ char	*data;
     return (XID) ~0L;
 }
 
+int
 AuthorizationFromID (id, name_lenp, namep, data_lenp, datap)
 XID id;
 unsigned short	*name_lenp;
@@ -247,6 +251,7 @@ char	**datap;
     return 0;
 }
 
+int
 RemoveAuthorization (name_length, name, data_length, data)
 unsigned short	name_length;
 char	*name;
@@ -265,10 +270,11 @@ char	*data;
     return 0;
 }
 
+int
 AddAuthorization (name_length, name, data_length, data)
-unsigned short	name_length;
+unsigned int name_length;
 char	*name;
-unsigned short	data_length;
+unsigned int data_length;
 char	*data;
 {
     int	i;

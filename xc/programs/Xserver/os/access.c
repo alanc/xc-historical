@@ -1,4 +1,4 @@
-/* $XConsortium: access.c,v 1.65 94/02/04 19:34:27 dpw Exp $ */
+/* $XConsortium: access.c,v 1.66 94/02/05 16:17:36 rws Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -23,6 +23,7 @@ SOFTWARE.
 
 ******************************************************************/
 
+#include <stdio.h>
 #include <X11/Xtrans.h>
 #include <X11/Xauth.h>
 #include "X.h"
@@ -74,8 +75,7 @@ SOFTWARE.
 #else
 #include <netdb.h>
 #endif
-#undef NULL
-#include <stdio.h>
+
 #include "dixstruct.h"
 #include "osdep.h"
 
@@ -133,6 +133,7 @@ static int UsingXdmcp = FALSE;
  * local host to the access list
  */
 
+void
 EnableLocalHost ()
 {
     if (!UsingXdmcp)
@@ -145,6 +146,7 @@ EnableLocalHost ()
 /*
  * called when authorization is enabled to keep us secure
  */
+void
 DisableLocalHost ()
 {
     HOST *self;
@@ -159,6 +161,7 @@ DisableLocalHost ()
  * adds local hosts manually when needed
  */
 
+void
 AccessUsingXdmcp ()
 {
     UsingXdmcp = TRUE;
@@ -169,11 +172,12 @@ AccessUsingXdmcp ()
 /* Define this host for access control.  Find all the hosts the OS knows about 
  * for this fd and add them to the selfhosts list.
  */
+void
 DefineSelf (fd)
     int fd;
 {
 #if !defined(TCPCONN) && !defined(UNIXCONN)
-    return -1;
+    return;
 #else
     register int n;
     int	len;
@@ -261,6 +265,7 @@ DefineSelf (fd)
 /* Define this host for access control.  Find all the hosts the OS knows about 
  * for this fd and add them to the selfhosts list.
  */
+void
 DefineSelf (fd)
     int fd;
 {
@@ -406,8 +411,8 @@ DefineSelf (fd)
 #ifdef XDMCP
 void
 AugmentSelf(from, len)
-    struct sockaddr *from;
-    int		    len;
+    pointer from;
+    int	    len;
 {
     int family;
     pointer addr;
@@ -432,6 +437,7 @@ AugmentSelf(from, len)
 }
 #endif
 
+void
 AddLocalHosts ()
 {
     HOST    *self;
@@ -441,6 +447,7 @@ AddLocalHosts ()
 }
 
 /* Reset access control list to initial hosts */
+void
 ResetHosts (display)
     char *display;
 {

@@ -50,7 +50,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: cfbfillsp.c,v 5.21 93/09/13 09:35:03 dpw Exp $ */
+/* $XConsortium: cfbfillsp.c,v 5.22 93/12/13 17:21:57 dpw Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -72,6 +72,9 @@ SOFTWARE.
 
 #define MFB_CONSTS_ONLY
 #include "maskbits.h"
+
+#include "mi.h"
+#include "mispans.h"
 
 /* scanline filling for color frame buffer
    written by drewry, oct 1986 modified by smarks

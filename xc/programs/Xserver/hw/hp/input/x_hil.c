@@ -1820,6 +1820,7 @@ format_ev (type, detail, event_time, log, event)
 
 #define CLICK_VOICE 		2
 
+void
 ProcessInputEvents()
     {
     int	click, id, i;
@@ -1851,13 +1852,13 @@ ProcessInputEvents()
 		    beep(CLICK_VOICE,800,keyboard_click,1);
 	    case KeyRelease:
 		dev = (DeviceIntPtr) LookupKeyboardDevice ();
-		(*dev->public.processInputProc) (event, dev, 1);
+		(*dev->public.processInputProc) ((xEventPtr)event, dev, 1);
 	        break;
 	    case ButtonPress:
 	    case ButtonRelease:
 	    case MotionNotify:
 		dev = (DeviceIntPtr) LookupPointerDevice ();
-		(*dev->public.processInputProc) (event, dev, 1);
+		(*dev->public.processInputProc) ((xEventPtr)event, dev, 1);
 	        break;
 	    default:
 #ifdef XINPUT
@@ -1883,7 +1884,7 @@ ProcessInputEvents()
 		    for (i=0; i < (u_char) event->x.num_valuators; i++)
 			dev->valuator->axisVal[i] = *(ip+i);
 		    }
-		(*dev->public.processInputProc) (event, dev, count);
+		(*dev->public.processInputProc) ((xEventPtr)event, dev, count);
 #endif /* XINPUT */
 	    break;
 	    }

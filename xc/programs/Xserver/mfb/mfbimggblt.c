@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbimggblt.c,v 5.13 94/01/07 09:43:28 dpw Exp $ */
+/* $XConsortium: mfbimggblt.c,v 5.14 94/01/12 18:05:04 dpw Exp $ */
 #include	"X.h"
 #include	"Xmd.h"
 #include	"Xproto.h"
@@ -35,8 +35,6 @@ SOFTWARE.
 #include	"pixmapstr.h"
 #include	"regionstr.h"
 #include	"maskbits.h"
-
-extern void QueryGlyphExtents();
 
 /*
     we should eventually special-case fixed-width fonts for ImageText.

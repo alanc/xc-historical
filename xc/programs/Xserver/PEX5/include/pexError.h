@@ -1,4 +1,4 @@
-/* $XConsortium: pexError.h,v 5.2 92/12/04 18:45:00 hersh Exp $ */
+/* $XConsortium: pexError.h,v 5.3 93/09/27 17:28:21 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -30,10 +30,6 @@ SOFTWARE.
 #define NEED_EVENTS
 #include "Xproto.h"
 #include "dipex.h"
-
-extern unsigned short MinorOpcodeOfRequest();
-extern void SendErrorToClient();
-extern WriteEventsToClient();
 
 #define PEX_ERROR_CODE(error_code) ((error_code) + PexErrorBase)
 

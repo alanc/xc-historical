@@ -22,7 +22,7 @@ SOFTWARE.
 
 ************************************************************************/
 
-/* $XConsortium: glyphcurs.c,v 5.12 93/09/23 19:55:02 rws Exp $ */
+/* $XConsortium: glyphcurs.c,v 5.13 94/01/21 22:00:01 dpw Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -53,7 +53,7 @@ cursor metrics.
 int
 ServerBitsFromGlyph(pfont, ch, cm, ppbits)
     FontPtr	pfont;
-    unsigned short ch;
+    unsigned int ch;
     register CursorMetricPtr cm;
     unsigned char **ppbits;
 {

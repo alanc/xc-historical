@@ -101,6 +101,7 @@ int forceDepth;
 int wsScreenPrivateIndex;
 /* the following filth is forced by a broken dix interface */
 
+void
 InitOutput(screenInfo, argc, argv)
     ScreenInfo *screenInfo;
     int argc;

@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbfillsp.c,v 5.9 92/12/24 13:08:58 rws Exp $ */
+/* $XConsortium: mfbfillsp.c,v 5.10 94/01/12 18:04:52 dpw Exp $ */
 #include "X.h"
 #include "Xmd.h"
 #include "gcstruct.h"
@@ -36,6 +36,8 @@ SOFTWARE.
 #include "mergerop.h"
 
 #include "servermd.h"
+#include "mi.h"
+#include "mispans.h"
 
 /* scanline filling for monochrome frame buffer
    written by drewry, oct 1986

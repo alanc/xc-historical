@@ -1,5 +1,5 @@
 /*
- * $XConsortium: fontutil.c,v 1.7 94/02/04 09:53:51 gildea Exp $
+ * $XConsortium: fontutil.c,v 1.8 94/02/08 12:38:56 gildea Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -51,7 +51,7 @@ GetGlyphs(font, count, chars, fontEncoding, glyphcount, glyphs)
 void
 QueryGlyphExtents(pFont, charinfo, count, info)
     FontPtr     pFont;
-    xCharInfo **charinfo;
+    CharInfoPtr *charinfo;
     unsigned long count;
     ExtentInfoRec *info;
 {
@@ -65,7 +65,7 @@ QueryGlyphExtents(pFont, charinfo, count, info)
 
     if (count != 0) {
 
-	pCI = *charinfo++;
+	pCI = &((*charinfo)->metrics); charinfo++;
 	/* ignore nonexisting characters when calculating text extents */
 	if ( !((pCI->characterWidth == 0)
 	       && (pCI->rightSideBearing == 0)
@@ -85,7 +85,7 @@ QueryGlyphExtents(pFont, charinfo, count, info)
 				   pCI->characterWidth);
 	} else {
 	    for (i = 1; i < count; i++) {
-		pCI = *charinfo++;
+		pCI = &((*charinfo)->metrics); charinfo++;
 		/* ignore nonexisting characters when calculating extents */
 		if ( !((pCI->characterWidth == 0)
 		       && (pCI->rightSideBearing == 0)

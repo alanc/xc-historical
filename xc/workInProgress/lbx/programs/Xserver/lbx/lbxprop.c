@@ -1,4 +1,4 @@
-/* $XConsortium: XIE.h,v 1.3 94/01/12 19:36:23 rws Exp $ */
+/* $XConsortium: lbxprop.c,v 1.2 94/02/20 10:51:41 dpw Exp $ */
 /*
  * Copyright 1993 Network Computing Devices, Inc.
  *
@@ -46,7 +46,6 @@
 #include "lbxtags.h"
 #include "Xfuncproto.h"
 
-extern void CopySwap32Write();
 extern int (*ProcVector[256])();
 extern void (*ReplySwapVector[256]) ();
 extern void CopySwap16Write(), CopySwap32Write(), Swap32Write();

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: ibmInit.c,v 1.6 93/07/12 09:27:16 dpw Exp $
+ * $XConsortium: ibmInit.c,v 1.7 93/08/30 08:03:15 dpw Exp $
  *
  * Copyright IBM Corporation 1987,1988,1989,1990,1991
  *
@@ -273,7 +273,9 @@ static DevicePtr keyboard;
 static DevicePtr mouse;
 
 void
-InitInput()
+InitInput(argc, argv)
+    int  argc;
+    char ** argv;
 {
 extern  int OS_MouseProc(),OS_KeybdProc();
 

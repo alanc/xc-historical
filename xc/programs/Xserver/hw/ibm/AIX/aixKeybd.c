@@ -1,5 +1,5 @@
 /*
- * $XConsortium: aixKeybd.c,v 1.3 91/07/16 13:00:11 jap Exp $
+ * $XConsortium: aixKeybd.c,v 1.4 93/08/30 07:56:04 dpw Exp $
  *
  * Copyright IBM Corporation 1987,1988,1989,1990,1991
  *
@@ -91,9 +91,9 @@ rtBell(loud, pDevice, ctrl, what)
 
 /***============================================================***/
 
-Bool LegalModifier (key)
-
-    BYTE    key;
+Bool LegalModifier (key, pDev)
+    unsigned int key;
+    DevicePtr pDev;
 {
     TRACE(("LegalModifier(key= 0x%x)\n",key));
     if ( (key==Aix_Control_L) || (key==Aix_Shift_L) || (key==Aix_Shift_R) ||

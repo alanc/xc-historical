@@ -1,4 +1,4 @@
-/* $XConsortium: input.h,v 1.14 93/09/20 16:22:00 dpw Exp $ */
+/* $XConsortium: input.h,v 1.15 93/09/24 12:17:40 rws Exp $ */
 /************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -55,7 +55,6 @@ SOFTWARE.
 typedef unsigned long Leds;
 typedef struct _OtherClients *OtherClientsPtr;
 typedef struct _InputClients *InputClientsPtr;
-typedef struct _GrabRec *GrabPtr;
 typedef struct _DeviceIntRec *DeviceIntPtr;
 
 typedef int (*DeviceProc)(
@@ -402,24 +401,10 @@ extern void NoteLedState(
 #endif
 );
 
-extern int Ones(
-#if NeedFunctionPrototypes
-    Mask /*mask*/
-#endif
-);
-
 extern void MaybeStopHint(
 #if NeedFunctionPrototypes
     DeviceIntPtr /*device*/,
     ClientPtr /*client*/
-#endif
-);
-
-extern void WriteEventsToClient(
-#if NeedFunctionPrototypes
-    ClientPtr /*pClient*/,
-    int /*count*/,
-    xEventPtr /*events*/
 #endif
 );
 
@@ -436,6 +421,26 @@ extern void ProcessKeyboardEvent(
     xEventPtr /*xE*/,
     DeviceIntPtr /*keybd*/,
     int /*count*/
+#endif
+);
+
+extern Bool LegalModifier(
+#if NeedFunctionPrototypes
+    unsigned int /*key*/, 
+    DevicePtr /*pDev*/
+#endif
+);
+
+extern void ProcessInputEvents(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+
+extern void InitInput(
+#if NeedFunctionPrototypes
+    int  /*argc*/,
+    char ** /*argv*/
 #endif
 );
 

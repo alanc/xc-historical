@@ -1,4 +1,4 @@
-/* $XConsortium: connection.c,v 1.179 94/02/11 10:58:45 dpw Exp $ */
+/* $XConsortium: connection.c,v 1.180 94/02/20 10:41:34 dpw Exp $ */
 /***********************************************************
 Copyright 1987, 1989 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -132,8 +132,6 @@ int	       	*ListenTransFds = NULL;
 int		ListenTransCount;
 
 extern int auditTrailLevel;
-extern ClientPtr NextAvailableClient();
-extern XID CheckAuthorization();
 
 static void ErrorConnMax(
 #if NeedFunctionPrototypes

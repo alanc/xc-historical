@@ -1,5 +1,5 @@
 /*
- * $XConsortium: omronInit.c,v 1.1 91/06/29 13:48:57 xguest Exp $
+ * $XConsortium: omronInit.c,v 1.2 93/09/26 12:29:39 rws Exp $
  *
  * Copyright 1991 by OMRON Corporation
  * 
@@ -54,7 +54,7 @@ static OmronFbProc omron_fb_proc_1 = {
 #endif /* luna88k */
 
 
-int
+void
 InitOutput(pScreenInfo, argc, argv)
 ScreenInfo 	  *pScreenInfo;
 int     	  argc;
@@ -115,7 +115,7 @@ char 		**argv;
 }
 
 
-int
+void
 InitInput(argc, argv)
     int    argc;
     char   **argv;

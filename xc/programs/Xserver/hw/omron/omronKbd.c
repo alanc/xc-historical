@@ -1,5 +1,5 @@
 /*
- * $XConsortium: omronKbd.c,v 1.1 91/06/29 13:49:01 xguest Exp $
+ * $XConsortium: omronKbd.c,v 1.2 93/09/03 19:50:21 dpw Exp $
  *
  * Copyright 1991 by OMRON Corporation
  * 
@@ -529,8 +529,9 @@ KeybdCtrl     *ctrl;
 }
 	
 Bool
-LegalModifier(key)
-BYTE key;
+LegalModifier(key, pDev)
+unsigned int key;
+DevicePtr pDev;
 {
 	return(TRUE);
 }

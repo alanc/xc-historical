@@ -42,7 +42,7 @@ TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE
 OF THIS SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: misc.h,v 1.64 94/01/10 18:25:03 rob Exp $ */
+/* $XConsortium: misc.h,v 1.65 94/01/11 20:54:46 rob Exp $ */
 #ifndef MISC_H
 #define MISC_H 1
 /*
@@ -56,6 +56,7 @@ extern unsigned long serverGeneration;
 #include <X11/Xosdefs.h>
 #include <X11/Xfuncproto.h>
 #include <X11/Xmd.h>
+#include <X11/X.h>
 
 #ifndef NULL
 #ifndef X_NOT_STDC_ENV
@@ -210,10 +211,23 @@ extern void SwapShorts(
 #endif
 );
 
+extern int MakePredeclaredAtoms(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+
+extern int Ones(
+#if NeedFunctionPrototypes
+    unsigned long /*mask*/
+#endif
+);
+
 typedef struct _xPoint *DDXPointPtr;
 typedef struct _Box *BoxPtr;
 typedef struct _xEvent *xEventPtr;
 typedef struct _xRectangle *xRectanglePtr;
+typedef struct _GrabRec *GrabPtr;
 
 /*  typedefs from other places - duplicated here to minimize the amount
  *  of unnecessary junk that one would normally have to include to get

@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: main.c,v 5.26 94/01/21 21:59:49 dpw Exp $ */
+/* $XConsortium: main.c,v 5.28 94/02/04 10:48:16 rws Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -49,6 +49,18 @@ extern int defaultScreenSaverAllowExposures;
 
 void ddxGiveUp();
 
+extern int InitClientPrivates(
+#if NeedFunctionPrototypes
+    ClientPtr /*client*/
+#endif
+);
+
+extern void Dispatch(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+
 extern char *display;
 char *ConnectionInfo;
 xConnSetupPrefix connSetupPrefix;
@@ -57,17 +69,17 @@ extern WindowPtr *WindowTable;
 extern FontPtr defaultFont;
 extern int screenPrivateCount;
 
-extern void SetInputCheck();
 extern void InitProcVectors();
 extern void InitEvents();
-extern void InitExtensions();
 extern void DefineInitialRootWindow();
 extern Bool CreateGCperDepthArray();
+
 static Bool CreateConnectionBlock(
 #if NeedFunctionPrototypes
     void
 #endif
 );
+
 static void FreeScreen(
 #if NeedFunctionPrototypes
     ScreenPtr /*pScreen*/
@@ -154,6 +166,7 @@ static int indexForScanlinePad[ 65 ] = {
 };
 
 
+int
 main(argc, argv)
     int		argc;
     char	*argv[];

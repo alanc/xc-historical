@@ -1,5 +1,5 @@
 /*
- * $XConsortium: cfbsolid.c,v 1.6 91/12/19 18:36:58 keith Exp $
+ * $XConsortium: cfbsolid.c,v 1.7 93/12/13 17:22:33 dpw Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -36,6 +36,9 @@
 #include "cfb.h"
 #include "cfbmskbits.h"
 #include "cfbrrop.h"
+
+#include "mi.h"
+#include "mispans.h"
 
 #if defined(FAST_CONSTANT_OFFSET_MODE) && (RROP != GXcopy)
 # define Expand(left,right,leftAdjust) {\

@@ -21,11 +21,13 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: cursor.h,v 1.19 93/07/12 16:32:50 dpw Exp $ */
+/* $XConsortium: cursor.h,v 1.20 93/09/24 12:17:29 rws Exp $ */
 #ifndef CURSOR_H
 #define CURSOR_H 
 
 #include "misc.h"
+#include "screenint.h"
+#include "window.h"
 
 #define NullCursor ((CursorPtr)NULL)
 
@@ -76,6 +78,50 @@ extern CursorPtr CreateRootCursor(
 #if NeedFunctionPrototypes
     char* /*pfilename*/,
     unsigned int /*glyph*/
+#endif
+);
+
+extern int ServerBitsFromGlyph(
+#if NeedFunctionPrototypes
+    FontPtr /*pfont*/,
+    unsigned int /*ch*/,
+    register CursorMetricPtr /*cm*/,
+    unsigned char ** /*ppbits*/
+#endif
+);
+
+extern Bool CursorMetricsFromGlyph(
+#if NeedFunctionPrototypes
+    FontPtr /*pfont*/,
+    unsigned /*ch*/,
+    CursorMetricPtr /*cm*/
+#endif
+);
+
+extern void CheckCursorConfinement(
+#if NeedFunctionPrototypes
+    WindowPtr /*pWin*/
+#endif
+);
+
+extern void NewCurrentScreen(
+#if NeedFunctionPrototypes
+    ScreenPtr /*newScreen*/,
+    int /*x*/,
+    int /*y*/
+#endif
+);
+
+extern Bool PointerConfinedToScreen(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+
+extern void GetSpritePosition(
+#if NeedFunctionPrototypes
+    int * /*px*/,
+    int * /*py*/
 #endif
 );
 

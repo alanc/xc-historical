@@ -61,10 +61,6 @@ University of California.
  */
 extern void		(* ReplySwapVector[256]) ();
 /*
- * holds the addresses of the routines that handle byte-swapping of events
- */
-extern void		(* EventSwapVector[128]) ();
-/*
  * id of client using XTestGetInput
  *
  * defined in xtest1dd.c

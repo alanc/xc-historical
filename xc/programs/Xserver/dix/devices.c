@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: devices.c,v 5.40 94/02/04 10:42:59 rws Exp $ */
+/* $XConsortium: devices.c,v 5.41 94/02/04 15:35:04 dpw Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -864,7 +864,7 @@ ProcSetModifierMapping(client)
     {
 	for (i = 0; i < inputMapLen; i++)
 	{
-	    if (inputMap[i] && !LegalModifier(inputMap[i], keybd))
+	    if (inputMap[i] && !LegalModifier(inputMap[i], (DevicePtr)keybd))
 	    {
 		rep.success = MappingFailed;
 		break;
@@ -1085,9 +1085,9 @@ NoteLedState(keybd, led, on)
 
 int
 Ones(mask)                /* HACKMEM 169 */
-    Mask mask;
+    unsigned long mask;
 {
-    register Mask y;
+    register unsigned long y;
 
     y = (mask >> 1) &033333333333;
     y = mask - y - ((y >>1) & 033333333333);

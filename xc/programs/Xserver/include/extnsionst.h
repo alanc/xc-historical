@@ -1,4 +1,4 @@
-/* $XConsortium: extnsionst.h,v 1.11 93/09/20 16:37:18 dpw Exp $ */
+/* $XConsortium: extnsionst.h,v 1.12 93/09/24 12:17:34 rws Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -114,24 +114,6 @@ extern Bool AddExtensionAlias(
 #endif
 );
 
-extern unsigned short StandardMinorOpcode(
-#if NeedFunctionPrototypes
-    ClientPtr /*client*/
-#endif
-);
-
-extern unsigned short MinorOpcodeOfRequest(
-#if NeedFunctionPrototypes
-    ClientPtr /*client*/
-#endif
-);
-
-extern void CloseDownExtensions(
-#if NeedFunctionPrototypes
-    void
-#endif
-);
-
 extern ExtensionLookupProc LookupProc(
 #if NeedFunctionPrototypes
     char* /*name*/,
@@ -152,13 +134,6 @@ extern Bool RegisterScreenProc(
     char* /*name*/,
     ScreenPtr /*pScreen*/,
     ExtensionLookupProc /*proc*/
-#endif
-);
-
-extern void InitExtensions(
-#if NeedFunctionPrototypes
-    int argc,
-    char **argv
 #endif
 );
 

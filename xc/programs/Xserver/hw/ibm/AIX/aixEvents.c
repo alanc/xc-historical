@@ -1,5 +1,5 @@
 /*
- * $XConsortium: aixEvents.c,v 1.4 91/11/22 17:06:59 eswu Exp $
+ * $XConsortium: aixEvents.c,v 1.5 93/09/05 15:55:37 rws Exp $
  *
  * Copyright IBM Corporation 1987,1988,1989,1990,1991
  *
@@ -309,7 +309,7 @@ register        ibmPerScreenInfo        *screenInfo;
 	e.u.keyButtonPointer.rootY=     AIXCurrentY= y;
 	e.u.keyButtonPointer.time=      lastEventTime = GET_OS_TIME();
 	pendingX= pendingY= 0;
-	(*ibmPtr->processInputProc)(&e,ibmPtr,1);
+	(*ibmPtr->processInputProc)(&e,(DeviceIntPtr)ibmPtr,1);
     }
 }
 
@@ -339,7 +339,7 @@ register        ibmPerScreenInfo        *screenInfo;
 	if (!on_steal_input || \
 	    XTestStealKeyData((ev)->u.u.detail, (ev)->u.u.type, XE_DKB, \
 	                      AIXCurrentX, AIXCurrentY)) \
-	(*ibmKeybd->processInputProc)((ev),ibmKeybd,1);\
+	(*ibmKeybd->processInputProc)((ev),(DeviceIntPtr)ibmKeybd,1);\
 	}
 #elif defined(SOFTWARE_CURSOR)
 #define FAKEEVENT(ev,key,up)    {\
@@ -349,13 +349,13 @@ register        ibmPerScreenInfo        *screenInfo;
 	                  &((ev)->u.keyButtonPointer.rootX),       \
 	                  &((ev)->u.keyButtonPointer.rootY)         \
 	                  ) ;                                       \
-	(*ibmKeybd->processInputProc)((ev),ibmKeybd,1);\
+	(*ibmKeybd->processInputProc)((ev),(DeviceIntPtr)ibmKeybd,1);\
 	}
 #else /* HARDWARE_CURSOR */
 #define FAKEEVENT(ev,key,up)    {\
 	(ev)->u.u.detail= (key);\
 	(ev)->u.u.type= ((up)?KeyRelease:KeyPress);\
-	(*ibmKeybd->processInputProc)((ev),ibmKeybd,1);\
+	(*ibmKeybd->processInputProc)((ev),(DeviceIntPtr)ibmKeybd,1);\
 	}
 #endif /* XTESTEXT1 */
 
@@ -456,7 +456,7 @@ int             key;
 	                  &e.u.keyButtonPointer.rootY
 	                  ) ;
 #endif
-	(*ibmKeybd->processInputProc)(&e,ibmKeybd,1);
+	(*ibmKeybd->processInputProc)(&e,(DeviceIntPtr)ibmKeybd,1);
 	e.u.u.type= KeyPress;
     }
     else if (pKey->keStatus[0]&HFUXMAKE)        e.u.u.type= KeyPress;
@@ -570,7 +570,7 @@ int             key;
 	                  &(e.u.keyButtonPointer.rootY)
 	                  ) ;
 #endif
-    (*ibmKeybd->processInputProc)(&e,ibmKeybd,1);
+    (*ibmKeybd->processInputProc)(&e,(DeviceIntPtr)ibmKeybd,1);
 
     return(1);
 }
@@ -630,7 +630,7 @@ xEvent          e;
 	    XTestStealKeyData(e.u.u.detail, e.u.u.type, XE_MOUSE,
 	                      AIXCurrentX, AIXCurrentY))
 #endif /* XTESTEXT1 */
-	    (*ibmPtr->processInputProc)(&e,ibmPtr,1);
+	    (*ibmPtr->processInputProc)(&e,(DeviceIntPtr)ibmPtr,1);
 	}
 	if (delayed_left || (buttons&HFT_LBUTTON) ) {
 	    hftAddTimeout(NULL,0);
@@ -641,7 +641,7 @@ xEvent          e;
 	    XTestStealKeyData(e.u.u.detail, e.u.u.type, XE_MOUSE,
 	                      AIXCurrentX, AIXCurrentY))
 #endif /* XTESTEXT1 */
-	    (*ibmPtr->processInputProc)(&e,ibmPtr,1);
+	    (*ibmPtr->processInputProc)(&e,(DeviceIntPtr)ibmPtr,1);
 	}
 	/* if we had previously generated a middle event from a LEFT&RIGHT
 	   and we are waiting for it to go away */
@@ -654,7 +654,7 @@ xEvent          e;
 	    XTestStealKeyData(e.u.u.detail, e.u.u.type, XE_MOUSE,
 	                      AIXCurrentX, AIXCurrentY))
 #endif /* XTESTEXT1 */
-	    (*ibmPtr->processInputProc)(&e,ibmPtr,1);
+	    (*ibmPtr->processInputProc)(&e,(DeviceIntPtr)ibmPtr,1);
 	}
 	e.u.u.detail= MIDDLE;
 	e.u.u.type=   DOWN;
@@ -663,7 +663,7 @@ xEvent          e;
 	    XTestStealKeyData(e.u.u.detail, e.u.u.type, XE_MOUSE,
 	                      AIXCurrentX, AIXCurrentY))
 #endif /* XTESTEXT1 */
-	(*ibmPtr->processInputProc)(&e,ibmPtr,1);
+	(*ibmPtr->processInputProc)(&e,(DeviceIntPtr)ibmPtr,1);
 	lastButtons = buttons;
 	if (hftInstallHandler(HFT_LOCATOR,aix3ButtonPtrEvent)==HFT_ERROR)
 	    ErrorF("Couldn't install three button mouse handler\n");
@@ -692,7 +692,7 @@ xEvent          e;
 	    XTestStealKeyData(e.u.u.detail, e.u.u.type, XE_MOUSE,
 	                      AIXCurrentX, AIXCurrentY))
 #endif /* XTESTEXT1 */
-	              (*ibmPtr->processInputProc)(&e,ibmPtr,1);
+	              (*ibmPtr->processInputProc)(&e,(DeviceIntPtr)ibmPtr,1);
 	              break;
 	      }
 	     break;
@@ -709,7 +709,7 @@ xEvent          e;
 	    XTestStealKeyData(e.u.u.detail, e.u.u.type, XE_MOUSE,
 	                      AIXCurrentX, AIXCurrentY))
 #endif /* XTESTEXT1 */
-	                  (*ibmPtr->processInputProc)(&e,ibmPtr,1);
+	                  (*ibmPtr->processInputProc)(&e,(DeviceIntPtr)ibmPtr,1);
 	                  delayed_left = FALSE;
 	              }
 	              if (delayed_middle) {
@@ -720,7 +720,7 @@ xEvent          e;
 	    XTestStealKeyData(e.u.u.detail, e.u.u.type, XE_MOUSE,
 	                      AIXCurrentX, AIXCurrentY))
 #endif /* XTESTEXT1 */
-	                  (*ibmPtr->processInputProc)(&e,ibmPtr,1);
+	                  (*ibmPtr->processInputProc)(&e,(DeviceIntPtr)ibmPtr,1);
 	                  delayed_middle = FALSE;
 	              } else {
 	                  e.u.u.detail= LEFT;
@@ -730,7 +730,7 @@ xEvent          e;
 	    XTestStealKeyData(e.u.u.detail, e.u.u.type, XE_MOUSE,
 	                      AIXCurrentX, AIXCurrentY))
 #endif /* XTESTEXT1 */
-	                  (*ibmPtr->processInputProc)(&e,ibmPtr,1);
+	                  (*ibmPtr->processInputProc)(&e,(DeviceIntPtr)ibmPtr,1);
 	              }
 	              break;
 	         case HFT_LBUTTON  :
@@ -743,7 +743,7 @@ xEvent          e;
 	    XTestStealKeyData(e.u.u.detail, e.u.u.type, XE_MOUSE,
 	                      AIXCurrentX, AIXCurrentY))
 #endif /* XTESTEXT1 */
-	                  (*ibmPtr->processInputProc)(&e,ibmPtr,1);
+	                  (*ibmPtr->processInputProc)(&e,(DeviceIntPtr)ibmPtr,1);
 	                  delayed_left = FALSE;
 	              }
 	              break;
@@ -757,7 +757,7 @@ xEvent          e;
 	    XTestStealKeyData(e.u.u.detail, e.u.u.type, XE_MOUSE,
 	                      AIXCurrentX, AIXCurrentY))
 #endif /* XTESTEXT1 */
-	                  (*ibmPtr->processInputProc)(&e,ibmPtr,1);
+	                  (*ibmPtr->processInputProc)(&e,(DeviceIntPtr)ibmPtr,1);
 	                  delayed_left = FALSE;
 	              }
 	                  e.u.u.detail= LEFT;
@@ -767,7 +767,7 @@ xEvent          e;
 	    XTestStealKeyData(e.u.u.detail, e.u.u.type, XE_MOUSE,
 	                      AIXCurrentX, AIXCurrentY))
 #endif /* XTESTEXT1 */
-	                  (*ibmPtr->processInputProc)(&e,ibmPtr,1);
+	                  (*ibmPtr->processInputProc)(&e,(DeviceIntPtr)ibmPtr,1);
 	              delayed_right = TRUE;
 	              break;
 	         case HFT_BUTTONS  :
@@ -780,7 +780,7 @@ xEvent          e;
 	    XTestStealKeyData(e.u.u.detail, e.u.u.type, XE_MOUSE,
 	                      AIXCurrentX, AIXCurrentY))
 #endif /* XTESTEXT1 */
-	                  (*ibmPtr->processInputProc)(&e,ibmPtr,1);
+	                  (*ibmPtr->processInputProc)(&e,(DeviceIntPtr)ibmPtr,1);
 	                  delayed_left = FALSE;
 	              } else if (!delayed_middle) {
 	                  e.u.u.detail= LEFT;
@@ -790,7 +790,7 @@ xEvent          e;
 	    XTestStealKeyData(e.u.u.detail, e.u.u.type, XE_MOUSE,
 	                      AIXCurrentX, AIXCurrentY))
 #endif /* XTESTEXT1 */
-	                  (*ibmPtr->processInputProc)(&e,ibmPtr,1);
+	                  (*ibmPtr->processInputProc)(&e,(DeviceIntPtr)ibmPtr,1);
 	                  e.u.u.detail= MIDDLE;
 	                  e.u.u.type=   DOWN;
 #ifdef  XTESTEXT1
@@ -798,7 +798,7 @@ xEvent          e;
 	    XTestStealKeyData(e.u.u.detail, e.u.u.type, XE_MOUSE,
 	                      AIXCurrentX, AIXCurrentY))
 #endif /* XTESTEXT1 */
-	                  (*ibmPtr->processInputProc)(&e,ibmPtr,1);
+	                  (*ibmPtr->processInputProc)(&e,(DeviceIntPtr)ibmPtr,1);
 	              }
 	              break;
 	      }
@@ -816,7 +816,7 @@ xEvent          e;
 	    XTestStealKeyData(e.u.u.detail, e.u.u.type, XE_MOUSE,
 	                      AIXCurrentX, AIXCurrentY))
 #endif /* XTESTEXT1 */
-	                  (*ibmPtr->processInputProc)(&e,ibmPtr,1);
+	                  (*ibmPtr->processInputProc)(&e,(DeviceIntPtr)ibmPtr,1);
 	                  delayed_right = FALSE;
 	              }
 	              if (delayed_middle) {
@@ -827,7 +827,7 @@ xEvent          e;
 	    XTestStealKeyData(e.u.u.detail, e.u.u.type, XE_MOUSE,
 	                      AIXCurrentX, AIXCurrentY))
 #endif /* XTESTEXT1 */
-	                  (*ibmPtr->processInputProc)(&e,ibmPtr,1);
+	                  (*ibmPtr->processInputProc)(&e,(DeviceIntPtr)ibmPtr,1);
 	                  delayed_middle = FALSE;
 	              } else {
 	                  e.u.u.detail= RIGHT;
@@ -837,7 +837,7 @@ xEvent          e;
 	    XTestStealKeyData(e.u.u.detail, e.u.u.type, XE_MOUSE,
 	                      AIXCurrentX, AIXCurrentY))
 #endif /* XTESTEXT1 */
-	                  (*ibmPtr->processInputProc)(&e,ibmPtr,1);
+	                  (*ibmPtr->processInputProc)(&e,(DeviceIntPtr)ibmPtr,1);
 	              }
 	              break;
 	         case HFT_LBUTTON  :
@@ -850,7 +850,7 @@ xEvent          e;
 	    XTestStealKeyData(e.u.u.detail, e.u.u.type, XE_MOUSE,
 	                      AIXCurrentX, AIXCurrentY))
 #endif /* XTESTEXT1 */
-	                  (*ibmPtr->processInputProc)(&e,ibmPtr,1);
+	                  (*ibmPtr->processInputProc)(&e,(DeviceIntPtr)ibmPtr,1);
 	                  delayed_right = FALSE;
 	              }
 	              e.u.u.detail= RIGHT;
@@ -860,7 +860,7 @@ xEvent          e;
 	    XTestStealKeyData(e.u.u.detail, e.u.u.type, XE_MOUSE,
 	                      AIXCurrentX, AIXCurrentY))
 #endif /* XTESTEXT1 */
-	              (*ibmPtr->processInputProc)(&e,ibmPtr,1);
+	              (*ibmPtr->processInputProc)(&e,(DeviceIntPtr)ibmPtr,1);
 	              delayed_left = TRUE;
 	              break;
 	         case HFT_RBUTTON  :
@@ -873,7 +873,7 @@ xEvent          e;
 	    XTestStealKeyData(e.u.u.detail, e.u.u.type, XE_MOUSE,
 	                      AIXCurrentX, AIXCurrentY))
 #endif /* XTESTEXT1 */
-	                  (*ibmPtr->processInputProc)(&e,ibmPtr,1);
+	                  (*ibmPtr->processInputProc)(&e,(DeviceIntPtr)ibmPtr,1);
 	                  delayed_right = FALSE;
 	              }
 	              break;
@@ -887,7 +887,7 @@ xEvent          e;
 	    XTestStealKeyData(e.u.u.detail, e.u.u.type, XE_MOUSE,
 	                      AIXCurrentX, AIXCurrentY))
 #endif /* XTESTEXT1 */
-	                  (*ibmPtr->processInputProc)(&e,ibmPtr,1);
+	                  (*ibmPtr->processInputProc)(&e,(DeviceIntPtr)ibmPtr,1);
 	                  delayed_right = FALSE;
 	              } else if (!delayed_middle) {
 	                  e.u.u.detail= RIGHT;
@@ -897,7 +897,7 @@ xEvent          e;
 	    XTestStealKeyData(e.u.u.detail, e.u.u.type, XE_MOUSE,
 	                      AIXCurrentX, AIXCurrentY))
 #endif /* XTESTEXT1 */
-	                  (*ibmPtr->processInputProc)(&e,ibmPtr,1);
+	                  (*ibmPtr->processInputProc)(&e,(DeviceIntPtr)ibmPtr,1);
 	                  e.u.u.detail= MIDDLE;
 	                  e.u.u.type=   DOWN;
 #ifdef  XTESTEXT1
@@ -905,7 +905,7 @@ xEvent          e;
 	    XTestStealKeyData(e.u.u.detail, e.u.u.type, XE_MOUSE,
 	                      AIXCurrentX, AIXCurrentY))
 #endif /* XTESTEXT1 */
-	                  (*ibmPtr->processInputProc)(&e,ibmPtr,1);
+	                  (*ibmPtr->processInputProc)(&e,(DeviceIntPtr)ibmPtr,1);
 	              }
 	              break;
 	      }
@@ -921,7 +921,7 @@ xEvent          e;
 	    XTestStealKeyData(e.u.u.detail, e.u.u.type, XE_MOUSE,
 	                      AIXCurrentX, AIXCurrentY))
 #endif /* XTESTEXT1 */
-	              (*ibmPtr->processInputProc)(&e,ibmPtr,1);
+	              (*ibmPtr->processInputProc)(&e,(DeviceIntPtr)ibmPtr,1);
 	              break;
 	         case HFT_LBUTTON  :
 	         case HFT_RBUTTON  :
@@ -980,7 +980,7 @@ xEvent          e;
 	    XTestStealKeyData(e.u.u.detail, e.u.u.type, XE_MOUSE,
 	                      AIXCurrentX, AIXCurrentY))
 #endif /* XTESTEXT1 */
-	(*ibmPtr->processInputProc)(&e,ibmPtr,1);
+	(*ibmPtr->processInputProc)(&e,(DeviceIntPtr)ibmPtr,1);
     }
     if (changed & HFT_BUTTON3) {
 	if (buttons & HFT_BUTTON3)      e.u.u.type = DOWN;
@@ -991,7 +991,7 @@ xEvent          e;
 	    XTestStealKeyData(e.u.u.detail, e.u.u.type, XE_MOUSE,
 	                      AIXCurrentX, AIXCurrentY))
 #endif /* XTESTEXT1 */
-	(*ibmPtr->processInputProc)(&e,ibmPtr,1);
+	(*ibmPtr->processInputProc)(&e,(DeviceIntPtr)ibmPtr,1);
     }
     if (changed & HFT_BUTTON2) {
 	if (buttons & HFT_BUTTON2)      e.u.u.type = DOWN;
@@ -1002,7 +1002,7 @@ xEvent          e;
 	    XTestStealKeyData(e.u.u.detail, e.u.u.type, XE_MOUSE,
 	                      AIXCurrentX, AIXCurrentY))
 #endif /* XTESTEXT1 */
-	(*ibmPtr->processInputProc)(&e,ibmPtr,1);
+	(*ibmPtr->processInputProc)(&e,(DeviceIntPtr)ibmPtr,1);
     }
 
     lastButtons = buttons;
@@ -1042,7 +1042,7 @@ XTestGenerateEvent(dev_type, keycode, keystate, mousex, mousey)
 	        e.u.keyButtonPointer.time= lastEventTime = GET_OS_TIME();
 	        e.u.u.detail=                   keycode;
 	        e.u.u.type=                     keystate;
-	        (*ibmPtr->processInputProc)(&e,ibmPtr,1);
+	        (*ibmPtr->processInputProc)(&e,(DeviceIntPtr)ibmPtr,1);
 	}
 	else  /* keyboard events */
 	{
@@ -1055,7 +1055,7 @@ XTestGenerateEvent(dev_type, keycode, keystate, mousex, mousey)
 	        e.u.keyButtonPointer.time= lastEventTime = GET_OS_TIME();
 	        e.u.u.detail=                   keycode;
 	        e.u.u.type=                     keystate;
-	        (*ibmKeybd->processInputProc)(&e,ibmKeybd,1);
+	        (*ibmKeybd->processInputProc)(&e,(DeviceIntPtr)ibmKeybd,1);
 	}
 
 #ifdef notdef
@@ -1125,7 +1125,7 @@ int     dev_type;
 	e.u.keyButtonPointer.rootY = AIXCurrentY = jy;
 	e.u.u.type = MotionNotify;
 
-	(*ibmPtr->processInputProc)(&e,ibmPtr,1);
+	(*ibmPtr->processInputProc)(&e,(DeviceIntPtr)ibmPtr,1);
 	(*(ibmCursorShow(ibmCurrentScreen)))(jx, jy);
 }
 #endif /* XTESTEXT1 */

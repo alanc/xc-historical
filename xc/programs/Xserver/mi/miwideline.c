@@ -1,5 +1,5 @@
 /*
- * $XConsortium: miwideline.c,v 1.51 93/07/11 15:20:07 rws Exp $
+ * $XConsortium: miwideline.c,v 1.52 94/01/21 22:03:33 dpw Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -28,6 +28,7 @@
 #include "gcstruct.h"
 #include "miscstruct.h"
 #include "miwideline.h"
+#include "mi.h"
 
 #if (defined(SVR4) || defined(SYSV) && defined(SYSV386)) && __STDC__
 extern double hypot(double, double);
@@ -176,13 +177,10 @@ miFillRectPolyHelper (pDrawable, pGC, pixel, spanData, x, y, w, h)
     int		x, y, w, h;
 {
     register DDXPointPtr ppt;
-    DDXPointPtr pptInit;
     register int *pwidth;
-    int *pwidthInit;
     XID		oldPixel;
     Spans	spanRec;
     xRectangle  rect;
-    int		xorg;
 
     if (!spanData)
     {
@@ -205,7 +203,6 @@ miFillRectPolyHelper (pDrawable, pGC, pixel, spanData, x, y, w, h)
     }
     else
     {
-	SpanGroup   *group;
 	spanRec.points = (DDXPointPtr) xalloc (h * sizeof (*ppt));
 	if (!spanRec.points)
 	    return;
@@ -840,6 +837,7 @@ miLineArcD (pDraw, pGC, xorg, yorg, points, widths,
     return (pts - points);
 }
 
+int
 miRoundJoinFace (face, edge, leftEdge)
     register LineFacePtr face;
     register PolyEdgePtr edge;
@@ -888,6 +886,7 @@ miRoundJoinFace (face, edge, leftEdge)
     return y;
 }
 
+void
 miRoundJoinClip (pLeft, pRight, edge1, edge2, y1, y2, left1, left2)
     register LineFacePtr pLeft, pRight;
     PolyEdgePtr	edge1, edge2;
@@ -912,6 +911,7 @@ miRoundJoinClip (pLeft, pRight, edge1, edge2, y1, y2, left1, left2)
     *y2 = miRoundJoinFace (pRight, edge2, left2);
 }
 
+int
 miRoundCapClip (face, isInt, edge, leftEdge)
     register LineFacePtr face;
     Bool	isInt;
@@ -1075,6 +1075,7 @@ miLineArc (pDraw, pGC, pixel, spanData, leftFace, rightFace, xorg, yorg, isInt)
     }
 }
 
+void
 miLineProjectingCap (pDrawable, pGC, pixel, spanData, face, isLeft, xorg, yorg, isInt)
     DrawablePtr	    pDrawable;
     register GCPtr  pGC;

@@ -4,7 +4,7 @@
  * mi sprite structures
  */
 
-/* $XConsortium: mispritest.h,v 5.11 91/04/26 21:46:09 keith Exp $ */
+/* $XConsortium: mispritest.h,v 5.12 93/10/12 11:42:12 dpw Exp $ */
 
 /*
 Copyright 1989 by the Massachusetts Institute of Technology
@@ -65,8 +65,6 @@ typedef struct {
     GCFuncs		*wrapFuncs;
     GCOps		*wrapOps;
 } miSpriteGCRec, *miSpriteGCPtr;
-
-extern void QueryGlyphExtents();
 
 /*
  * Overlap BoxPtr and Box elements

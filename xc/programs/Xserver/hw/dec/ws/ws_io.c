@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: ws_io.c,v 1.10 93/09/23 18:59:48 rws Exp $ */
+/* $XConsortium: ws_io.c,v 1.11 93/09/29 20:34:39 rws Exp $ */
 
 #include <stdio.h>
 #include <sys/types.h>
@@ -316,7 +316,7 @@ wsMouseProc(pDev, onoff, argc, argv)
 /*ARGSUSED*/
 Bool
 LegalModifier(key, pDev)
-    BYTE key;
+    unsigned int key;
     DevicePtr	pDev;
 {
     return TRUE;

@@ -1,4 +1,4 @@
-/* $XConsortium: sunKbd.c,v 5.37 94/02/01 14:57:26 kaleb Exp $ */
+/* $XConsortium: sunKbd.c,v 5.38 94/02/01 16:02:33 kaleb Exp $ */
 /*-
  * Copyright (c) 1987 by the Regents of the University of California
  *
@@ -77,9 +77,6 @@ extern SunModmapRec *sunModMaps[];
 extern int sunMaxLayout;
 extern KeySym *sunType4KeyMaps[];
 extern SunModmapRec *sunType4ModMaps[];
-
-extern void	ProcessInputEvents();
-extern void	miPointerPosition();
 
 #ifndef XKB
 long	  	  sunAutoRepeatInitiate = 1000 * AUTOREPEAT_INITIATE;
@@ -868,7 +865,7 @@ int sunChangeKbdTranslation(pKeyboard, makeTranslated)
 
 /*ARGSUSED*/
 Bool LegalModifier(key, pDev)
-    BYTE    key;
+    unsigned int key;
     DevicePtr	pDev;
 {
     return TRUE;

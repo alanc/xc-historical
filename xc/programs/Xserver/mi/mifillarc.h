@@ -15,7 +15,7 @@ without any express or implied warranty.
 
 ********************************************************/
 
-/* $XConsortium: mifillarc.h,v 5.4 90/10/06 13:55:43 rws Exp $ */
+/* $XConsortium: mifillarc.h,v 5.5 93/10/12 11:41:22 dpw Exp $ */
 
 #define FULLCIRCLE (360 * 64)
 
@@ -33,8 +33,6 @@ typedef struct _miFillArc {
 
 #define miCanFillArc(arc) (((arc)->width == (arc)->height) || \
 			   (((arc)->width <= 800) && ((arc)->height <= 800)))
-
-extern void miFillArcSetup(), miFillArcSliceSetup();
 
 #define MIFILLARCSETUP() \
     x = 0; \

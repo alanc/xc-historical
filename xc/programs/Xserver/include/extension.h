@@ -1,4 +1,4 @@
-/* $XConsortium: extension.h,v 1.5 89/07/03 19:47:55 rws Exp $ */
+/* $XConsortium: extension.h,v 1.6 89/07/16 14:37:47 rws Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -65,4 +65,30 @@ SOFTWARE.
     }\
     if (pGC->serialNumber != pDraw->serialNumber)\
 	ValidateGC(pDraw, pGC);
+
+extern unsigned short StandardMinorOpcode(
+#if NeedFunctionPrototypes
+    ClientPtr /*client*/
+#endif
+);
+
+extern unsigned short MinorOpcodeOfRequest(
+#if NeedFunctionPrototypes
+    ClientPtr /*client*/
+#endif
+);
+
+extern void InitExtensions(
+#if NeedFunctionPrototypes
+    int argc,
+    char **argv
+#endif
+);
+
+extern void CloseDownExtensions(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+
 #endif /* EXTENSION_H */

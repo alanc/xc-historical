@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: io.c,v 1.82 94/02/10 15:24:16 dpw Exp $ */
+/* $XConsortium: io.c,v 1.83 94/02/20 10:41:41 dpw Exp $ */
 /*****************************************************************
  * i/o functions
  *
@@ -60,7 +60,6 @@ extern int errno;
 #endif
 #endif
 
-extern void MarkClientException();
 extern FdSet ClientsWithInput;
 extern FdSet ClientsWriteBlocked;
 extern FdSet OutputPending;

@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: os.h,v 1.56 94/01/11 23:18:00 rob Exp $ */
+/* $XConsortium: os.h,v 1.57 94/01/18 19:38:20 rws Exp $ */
 
 #ifndef OS_H
 #define OS_H
@@ -315,6 +315,12 @@ typedef CARD32 (*OsTimerCallback)(
 #endif
 );
 
+extern void TimerInit(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+
 extern Bool TimerForce(
 #if NeedFunctionPrototypes
     OsTimerPtr /* timer */
@@ -377,6 +383,12 @@ extern unsigned long *Xalloc(
 #endif
 );
 
+extern unsigned long *XNFalloc(
+#if NeedFunctionPrototypes
+    unsigned long /*amount*/
+#endif
+);
+
 extern unsigned long *Xcalloc(
 #if NeedFunctionPrototypes
     unsigned long /*amount*/
@@ -384,6 +396,13 @@ extern unsigned long *Xcalloc(
 );
 
 extern unsigned long *Xrealloc(
+#if NeedFunctionPrototypes
+    pointer /*ptr*/,
+    unsigned long /*amount*/
+#endif
+);
+
+extern unsigned long *XNFrealloc(
 #if NeedFunctionPrototypes
     pointer /*ptr*/,
     unsigned long /*amount*/
@@ -436,4 +455,187 @@ extern void ErrorF(
 #endif
 );
 
+extern int OsLookupColor(
+#if NeedFunctionPrototypes
+    int	/*screen*/,
+    char * /*name*/,
+    unsigned /*len*/,
+    unsigned short * /*pred*/,
+    unsigned short * /*pgreen*/,
+    unsigned short * /*pblue*/
+#endif
+);
+
+extern void OsInit(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+
+extern void OsVendorInit(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+
+extern int OsInitColors(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+
+extern int AddHost(
+#if NeedFunctionPrototypes
+    ClientPtr	/*client*/,
+    int         /*family*/,
+    unsigned    /*length*/,
+    pointer     /*pAddr*/
+#endif
+);
+
+extern Bool ForEachHostInFamily (
+#if NeedFunctionPrototypes
+    int	    /*family*/,
+    Bool    (* /*func*/ )(),
+    pointer /*closure*/
+#endif
+);
+
+extern int RemoveHost(
+#if NeedFunctionPrototypes
+    ClientPtr	/*client*/,
+    int         /*family*/,
+    unsigned    /*length*/,
+    pointer     /*pAddr*/
+#endif
+);
+
+extern int GetHosts(
+#if NeedFunctionPrototypes
+    pointer * /*data*/,
+    int	    * /*pnHosts*/,
+    int	    * /*pLen*/,
+    BOOL    * /*pEnabled*/
+#endif
+);
+
+typedef struct sockaddr * sockaddrPtr;
+
+extern int InvalidHost(
+#if NeedFunctionPrototypes
+    sockaddrPtr /*saddr*/,
+    int		/*len*/
+#endif
+);
+
+extern int ChangeAccessControl(
+#if NeedFunctionPrototypes
+    ClientPtr /*client*/,
+    int /*fEnabled*/
+#endif
+);
+
+extern void AddLocalHosts(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+
+extern void ResetHosts(
+#if NeedFunctionPrototypes
+    char *display
+#endif
+);
+
+extern void EnableLocalHost(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+
+extern void DisableLocalHost(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+
+extern void AccessUsingXdmcp(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+
+extern void DefineSelf(
+#if NeedFunctionPrototypes
+    int /*fd*/
+#endif
+);
+
+extern void AugmentSelf(
+#if NeedFunctionPrototypes
+    pointer /*from*/,
+    int /*len*/
+#endif
+);
+
+extern void InitAuthorization(
+#if NeedFunctionPrototypes
+    char * /*filename*/
+#endif
+);
+
+extern int LoadAuthorization(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+
+extern void RegisterAuthorizations(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+
+extern XID CheckAuthorization(
+#if NeedFunctionPrototypes
+    unsigned int /*namelength*/,
+    char * /*name*/,
+    unsigned int /*datalength*/,
+    char * /*data*/,
+    ClientPtr /*client*/,
+    char ** /*reason*/
+#endif
+);
+
+extern void ResetAuthorization(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+
+extern int AddAuthorization(
+#if NeedFunctionPrototypes
+    unsigned int /*name_length*/,
+    char * /*name*/,
+    unsigned int /*data_length*/,
+    char * /*data*/
+#endif
+);
+
+extern void ExpandCommandLine(
+#if NeedFunctionPrototypes
+    int * /*pargc*/,
+    char *** /*pargv*/
+#endif
+);
+
+extern int ddxProcessArgument(
+#if NeedFunctionPrototypes
+    int /*argc*/,
+    char * /*argv*/ [],
+    int /*i*/
+#endif
+);
+
 #endif /* OS_H */
+

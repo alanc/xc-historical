@@ -1,4 +1,4 @@
-/* $XConsortium: dixfont.h,v 1.13 94/01/17 23:55:22 rob Exp $ */
+/* $XConsortium: dixfont.h,v 1.14 94/02/03 10:07:20 gildea Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -115,22 +115,6 @@ extern int ListFonts(
 #endif
 );
 
-extern int doListFontsWithInfo(
-#if NeedFunctionPrototypes
-    ClientPtr /*client*/,
-    LFWIclosurePtr /*c*/
-#endif
-);
-
-extern int StartListFontsWithInfo(
-#if NeedFunctionPrototypes
-    ClientPtr /*client*/,
-    int /*length*/,
-    unsigned char * /*pattern*/,
-    int /*max_names*/
-#endif
-);
-
 extern int doPolyText(
 #if NeedFunctionPrototypes
     ClientPtr /*client*/,
@@ -208,12 +192,6 @@ extern int LoadGlyphs(
 extern void DeleteClientFontStuff(
 #if NeedFunctionPrototypes
     ClientPtr /*client*/
-#endif
-);
-
-extern void InitGlyphCaching(
-#if NeedFunctionPrototypes
-    void
 #endif
 );
 
@@ -308,6 +286,60 @@ extern void remove_fs_handlers(
     FontPathElementPtr /*fpe*/,
     BlockHandlerProcPtr /*block_handler*/,
     Bool /*all*/
+#endif
+);
+
+extern void GetGlyphs(
+#if NeedFunctionPrototypes
+    FontPtr     /*font*/,
+    unsigned long /*count*/,
+    unsigned char * /*chars*/,
+    FontEncoding /*fontEncoding*/,
+    unsigned long * /*glyphcount*/,
+    CharInfoPtr * /*glyphs*/
+#endif
+);
+
+extern void QueryGlyphExtents(
+#if NeedFunctionPrototypes
+    FontPtr     /*pFont*/,
+    CharInfoPtr * /*charinfo*/,
+    unsigned long /*count*/,
+    ExtentInfoPtr /*info*/
+#endif
+);
+
+extern Bool QueryTextExtents(
+#if NeedFunctionPrototypes
+    FontPtr     /*pFont*/,
+    unsigned long /*count*/,
+    unsigned char * /*chars*/,
+    ExtentInfoPtr /*info*/
+#endif
+);
+
+extern Bool ParseGlyphCachingMode(
+#if NeedFunctionPrototypes
+    char * /*str*/
+#endif
+);
+
+extern void InitGlyphCaching(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+
+extern void SetGlyphCachingMode(
+#if NeedFunctionPrototypes
+    int /*newmode*/
+#endif
+);
+
+void
+ResetFontPrivateIndex(
+#if NeedFunctionPrototypes
+    void
 #endif
 );
 

@@ -1,4 +1,4 @@
-/* $XConsortium: scrnintstr.h,v 5.21 93/10/12 11:24:05 dpw Exp $ */
+/* $XConsortium: scrnintstr.h,v 5.22 94/01/21 21:54:25 dpw Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -897,5 +897,13 @@ typedef struct _ScreenInfo {
 } ScreenInfo;
 
 extern ScreenInfo screenInfo;
+
+extern void InitOutput(
+#if NeedFunctionPrototypes
+    ScreenInfo 	* /*pScreenInfo*/,
+    int     	/*argc*/,
+    char    	** /*argv*/
+#endif
+);
 
 #endif /* SCREENINTSTRUCT_H */

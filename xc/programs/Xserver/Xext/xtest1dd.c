@@ -277,12 +277,6 @@ static void	start_play_clock();
 static void	compute_action_time();
 static int	find_residual_time();
 
-/*
- * This function is defined in the "events.c" file in the dix part of the
- * server source.
- */
-void	WriteEventsToClient();
-
 static CARD16	check_time_event();
 static CARD32	current_ms();
 static int	there_is_room();

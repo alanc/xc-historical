@@ -22,7 +22,7 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: swaprep.c,v 1.38 93/09/03 08:00:05 dpw Exp $ */
+/* $XConsortium: swaprep.c,v 1.39 93/09/23 19:47:01 rws Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -308,6 +308,17 @@ SQueryPointerReply(pClient, size, pRep)
     swaps(&pRep->winY, n);
     swaps(&pRep->mask, n);
     (void)WriteToClient(pClient, size, (char *) pRep);
+}
+
+void
+SwapTimecoord(pCoord)
+    xTimecoord *pCoord;
+{
+    register char n;
+
+    swapl(&pCoord->time, n);
+    swaps(&pCoord->x, n);
+    swaps(&pCoord->y, n);
 }
 
 void
@@ -612,6 +623,17 @@ SAllocColorPlanesReply(pClient, size, pRep)
     swapl(&pRep->greenMask, n);
     swapl(&pRep->blueMask, n);
     (void)WriteToClient(pClient, size, (char *) pRep);
+}
+
+void
+SwapRGB(prgb)
+    xrgb	*prgb;
+{
+    register char n;
+
+    swaps(&prgb->red, n);
+    swaps(&prgb->green, n);
+    swaps(&prgb->blue, n);
 }
 
 void

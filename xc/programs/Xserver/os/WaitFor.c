@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: WaitFor.c,v 1.65 93/09/26 12:07:15 rws Exp $ */
+/* $XConsortium: WaitFor.c,v 1.66 93/09/26 21:14:57 rws Exp $ */
 
 /*****************************************************************
  * OS Dependent input routines:
@@ -63,11 +63,6 @@ extern Bool NewOutputPending;
 extern Bool AnyClientsWriteBlocked;
 
 extern WorkQueuePtr workQueue;
-
-extern void SaveScreens();
-extern void ProcessInputEvents();
-extern void BlockHandler();
-extern void WakeupHandler();
 
 #ifdef apollo
 extern FdSet apInputMask;

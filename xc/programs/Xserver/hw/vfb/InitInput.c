@@ -33,7 +33,7 @@
 
 Bool
 LegalModifier(key, pDev)
-    BYTE key;
+    unsigned int key;
     DevicePtr	pDev;
 {
     return TRUE;

@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: extension.c,v 1.50 93/09/03 08:02:09 dpw Exp $ */
+/* $XConsortium: extension.c,v 1.51 93/09/20 16:37:43 dpw Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -43,7 +43,6 @@ static ExtensionEntry **extensions = (ExtensionEntry **)NULL;
 extern int (* ProcVector[]) ();
 extern int (* SwappedProcVector[]) ();
 extern void (* ReplySwapVector[256]) ();
-extern void WriteEventsToClient();
 
 int lastEvent = EXTENSION_EVENT_BASE;
 static int lastError = FirstExtensionError;

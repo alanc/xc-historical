@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: events.c,v 5.72 94/02/01 19:23:58 rws Exp $ */
+/* $XConsortium: events.c,v 5.73 94/02/04 10:47:43 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -149,7 +149,6 @@ int DeliverDeviceEvents();
 void DoFocusEvents();
 Mask EventMaskForClient();
 Bool CheckDeviceGrabs();
-void NewCurrentScreen();
 void EnqueueEvent();
 
 extern GrabPtr CreateGrab();		/* Defined in grabs.c */

@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: x_hilinit.c,v 8.199 93/08/08 12:59:37 rws Exp $ */
 
 /*''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 Copyright (c) 1988-1992 by Hewlett-Packard Corporation, Palo Alto,
@@ -29,6 +29,13 @@ SOFTWARE.
 	    if (f==serialprocs[i].fd) { \
 		if ((*(serialprocs[i].write)) (f, type, ptr)==WRITE_SUCCESS) \
 		    return Success; } }
+
+#define SERIAL_DRIVER_WRITE_VOID(f, type, ptr) \
+	{ int i; \
+	for (i=0; i<num_serial_devices; i++) \
+	    if (f==serialprocs[i].fd) { \
+		if ((*(serialprocs[i].write)) (f, type, ptr)==WRITE_SUCCESS) \
+		    return; } }
 
 #define	 MAXNAMLEN	255
 #define  spare  	MAX_LOGICAL_DEVS - 2
@@ -237,12 +244,12 @@ static char  *default_names[MAX_LOGICAL_DEVS] =
  * could use them.
  */
 
-static hpChangeIntegerControl(pDevice, ctrl)
-    DevicePtr pDevice;
+static void hpChangeIntegerControl(pDevice, ctrl)
+    DeviceIntPtr pDevice;
     IntegerCtrl *ctrl;
     {
     HPIntegerFeedbackControl	dctrl;
-    HPInputDevice *d = GET_HPINPUTDEVICE ((DeviceIntPtr) pDevice);
+    HPInputDevice *d = GET_HPINPUTDEVICE (pDevice);
 
     if (d->hpflags & IS_SERIAL_DEVICE)
 	{
@@ -250,16 +257,16 @@ static hpChangeIntegerControl(pDevice, ctrl)
 	dctrl.resolution = ctrl->resolution;
 	dctrl.max_value = ctrl->max_value;
 	dctrl.integer_displayed = ctrl->integer_displayed;
-	SERIAL_DRIVER_WRITE(d->file_ds, _XChangeFeedbackControl, &dctrl);
+	SERIAL_DRIVER_WRITE_VOID(d->file_ds, _XChangeFeedbackControl, &dctrl);
 	}
     }
 
-static hpChangeStringControl(pDevice, ctrl)
-    DevicePtr pDevice;
+static void hpChangeStringControl(pDevice, ctrl)
+    DeviceIntPtr pDevice;
     StringCtrl *ctrl;
     {
     HPStringFeedbackControl	dctrl;
-    HPInputDevice *d = GET_HPINPUTDEVICE ((DeviceIntPtr) pDevice);
+    HPInputDevice *d = GET_HPINPUTDEVICE (pDevice);
 
     if (d->hpflags & IS_SERIAL_DEVICE)
 	{
@@ -269,16 +276,16 @@ static hpChangeStringControl(pDevice, ctrl)
 	dctrl.num_symbols_displayed = ctrl->num_symbols_displayed;
 	dctrl.symbols_supported = (int *) ctrl->symbols_supported;
 	dctrl.symbols_displayed = (int *) ctrl->symbols_displayed;
-	SERIAL_DRIVER_WRITE(d->file_ds, _XChangeFeedbackControl, &dctrl);
+	SERIAL_DRIVER_WRITE_VOID(d->file_ds, _XChangeFeedbackControl, &dctrl);
 	}
     }
 
-static hpChangeBellControl(pDevice, ctrl)
-    DevicePtr pDevice;
+static void hpChangeBellControl(pDevice, ctrl)
+    DeviceIntPtr pDevice;
     BellCtrl *ctrl;
     {
     HPBellFeedbackControl	dctrl;
-    HPInputDevice *d = GET_HPINPUTDEVICE ((DeviceIntPtr) pDevice);
+    HPInputDevice *d = GET_HPINPUTDEVICE (pDevice);
 
     if (d->hpflags & IS_SERIAL_DEVICE)
 	{
@@ -286,7 +293,7 @@ static hpChangeBellControl(pDevice, ctrl)
 	dctrl.percent = ctrl->percent;
 	dctrl.pitch = ctrl->pitch;
 	dctrl.duration = ctrl->duration;
-	SERIAL_DRIVER_WRITE(d->file_ds, _XChangeFeedbackControl, &dctrl);
+	SERIAL_DRIVER_WRITE_VOID(d->file_ds, _XChangeFeedbackControl, &dctrl);
 	}
     }
 
@@ -300,8 +307,8 @@ static hpChangeBellControl(pDevice, ctrl)
  *
  */
 
-static hpChangePointerControl(pDevice, ctrl)
-    DevicePtr pDevice;
+static void hpChangePointerControl(pDevice, ctrl)
+    DeviceIntPtr pDevice;
     PtrCtrl *ctrl;
     {
     HPInputDevice *d;
@@ -309,7 +316,7 @@ static hpChangePointerControl(pDevice, ctrl)
 #ifdef XINPUT
     PtrFeedbackPtr b;
 
-    b = ((DeviceIntPtr) pDevice)->ptrfeed;
+    b = pDevice->ptrfeed;
 
     b->ctrl = *ctrl;
 #else
@@ -322,13 +329,13 @@ static hpChangePointerControl(pDevice, ctrl)
 	acceleration = 1;
 #endif /* XINPUT */
 
-    d = GET_HPINPUTDEVICE ((DeviceIntPtr) pDevice);
+    d = GET_HPINPUTDEVICE (pDevice);
 #ifdef __apollo
     {
     smd_$pos_t pos;
     extern smd_unit_event_data_t olddata;
 
-    if ((DeviceIntPtr) pDevice == inputInfo.pointer)
+    if (pDevice == inputInfo.pointer)
 	{
 	pos.column = d->coords[0];
 	pos.line = d->coords[1];
@@ -343,7 +350,7 @@ static hpChangePointerControl(pDevice, ctrl)
 	dctrl.num = ctrl->num;
 	dctrl.den = ctrl->den;
 	dctrl.threshold = ctrl->threshold;
-	SERIAL_DRIVER_WRITE(d->file_ds, _XChangeFeedbackControl, &dctrl);
+	SERIAL_DRIVER_WRITE_VOID(d->file_ds, _XChangeFeedbackControl, &dctrl);
 	}
     }
 
@@ -393,21 +400,21 @@ static SetLeds (d, leds, mask)
  *
  */
 
-static hpChangeLedControl(pDevice, ctrl)
-    DevicePtr pDevice;
+static void hpChangeLedControl(pDevice, ctrl)
+    DeviceIntPtr pDevice;
     LedCtrl *ctrl;
     {
     HPInputDevice	*d;
     HPLedFeedbackControl	dctrl;
 
-    d = GET_HPINPUTDEVICE ((DeviceIntPtr) pDevice);
+    d = GET_HPINPUTDEVICE (pDevice);
     SetLeds(d, ctrl->led_values, ctrl->led_mask);
     if (d->hpflags & IS_SERIAL_DEVICE)
 	{
 	dctrl.class = LedFeedbackClass;
 	dctrl.led_values = ctrl->led_values;
 	dctrl.led_mask = ctrl->led_mask;
-	SERIAL_DRIVER_WRITE(d->file_ds, _XChangeFeedbackControl, &dctrl);
+	SERIAL_DRIVER_WRITE_VOID(d->file_ds, _XChangeFeedbackControl, &dctrl);
 	}
     }
 
@@ -423,18 +430,17 @@ static hpChangeLedControl(pDevice, ctrl)
  * keyboard_click is checked whenever a key is pressed, in x_hil.c.
  */
 
-static hpChangeKeyboardControl(pDevice, ctrl)
-    DevicePtr pDevice;
+static void hpChangeKeyboardControl(pDevice, ctrl)
+    DeviceIntPtr pDevice;
     KeybdCtrl *ctrl;
     {
     HPInputDevice	*d;
     HPKeyboardFeedbackControl	dctrl;
 
-    if (inputInfo.keyboard &&
-        ((DeviceIntPtr) pDevice)->id==inputInfo.keyboard->id)
+    if (inputInfo.keyboard && pDevice->id==inputInfo.keyboard->id)
         keyboard_click = (int)((double)(ctrl->click) * 15.0 / 100.0);
 
-    d = GET_HPINPUTDEVICE ((DeviceIntPtr) pDevice);
+    d = GET_HPINPUTDEVICE (pDevice);
     SetAutoRepeat(d, ctrl->autoRepeat);
     SetBellAttributes(d, ctrl);
     SetLeds(d, ctrl->leds, 0xffffffff);
@@ -448,7 +454,7 @@ static hpChangeKeyboardControl(pDevice, ctrl)
 	dctrl.autoRepeat = ctrl->autoRepeat;
 	memmove(dctrl.autoRepeats, ctrl->autoRepeats, 32);
 	dctrl.leds = ctrl->leds;
-	SERIAL_DRIVER_WRITE(d->file_ds, _XChangeFeedbackControl, &dctrl);
+	SERIAL_DRIVER_WRITE_VOID(d->file_ds, _XChangeFeedbackControl, &dctrl);
 	}
     }
 
@@ -458,11 +464,14 @@ static hpChangeKeyboardControl(pDevice, ctrl)
  *
  */
 
-static int hpGetDeviceMotionEvents (dev, buff, start, stop)
+
+static int hpGetDeviceMotionEvents (dev, coords, start, stop, pScreen)
     DeviceIntPtr  dev;
-    CARD32 start, stop;
-    char *buff;
+    xTimecoord * coords;
+    unsigned long start, stop;
+    ScreenPtr pScreen;
     {
+    char *buff;
     HPInputDevice 	*pHPDev = (HPInputDevice *) dev->public.devicePrivate;
     int			i;
     int			evcount = 0;
@@ -817,13 +826,14 @@ static Bool hpDeviceProc(pDev, onoff)
 
 struct	opendevs serial[MAX_DEVICES];
  
+void
 InitInput(argc, argv)
     int     	  argc;
     char    	  **argv;
     {
     int	i, j;
     DeviceIntPtr x_init_device();
-    int CheckInput();
+    void CheckInput();
 
     mflg = (char *)getenv("XHPPRINTDEBUGMSG");
     x_axis = 0;
@@ -869,7 +879,8 @@ InitInput(argc, argv)
     AddEnabledDevice (beeper_fd);
 #endif /* __hp_osf */
 
-    RegisterBlockAndWakeupHandlers (NoopDDA, CheckInput, NULL);
+    RegisterBlockAndWakeupHandlers ((BlockHandlerProcPtr)NoopDDA,
+				    CheckInput, NULL);
     loopnum = atoi(display);
     hilpath[0] = '\0';
     ldigit = '\0';
@@ -927,7 +938,7 @@ x_init_device (dev, start_it)
 	miRegisterPointerDevice(screenInfo.screens[0], pXDev);
 #endif
 	if (dev->x_type == KEYBOARD)
-	    InitKbdFeedbackClassDeviceStruct (pXDev, hpBell,
+	    InitKbdFeedbackClassDeviceStruct ((DeviceIntPtr)pXDev, hpBell,
 		hpChangeKeyboardControl);
 	screen_change_dev = (DeviceIntPtr) pXDev;
 	if (screen_change_amt == SCREEN_CHANGE_DEFAULT)
@@ -2182,9 +2193,10 @@ static DevicePtr hpAddInputDevice(deviceProc, autoStart, pHPDev)
  *
  */
 
+Bool
 LegalModifier(key, dev)
-    BYTE key;
-    DeviceIntPtr dev;
+    unsigned int key;
+    DevicePtr dev;
     {
     return TRUE;
     }
@@ -2297,11 +2309,13 @@ deallocate_event (ev)
 
 extern int apLeave_X, apReenter_X;      /*  in hp/apollo/apInit2.c */
 
-CheckInput (data, result, LastSelectMask)
+void
+CheckInput (data, result, selmask)
     pointer data;
-    unsigned long result;
-    long LastSelectMask[];
+    int result;
+    pointer selmask;
     {
+    long *LastSelectMask = (long*)selmask;
     long devicesReadable[mskcnt];
     extern long EnabledDevices[];
     extern Bool	display_borrowed;	/* in x_hil.c */
@@ -2510,7 +2524,7 @@ RecordOpenRequest (client, d, id, token)
     new_client->count = 1;
     new_client->mode = token;
 
-    AddResource(new_client->resource, HPType, id);
+    AddResource(new_client->resource, HPType, (pointer)id);
     }
 
 

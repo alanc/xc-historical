@@ -1,5 +1,5 @@
 /*
- * $XConsortium: ibmColor.c,v 1.2 91/07/16 13:05:07 jap Exp $
+ * $XConsortium: ibmColor.c,v 1.3 93/07/12 09:27:12 dpw Exp $
  *
  * Copyright IBM Corporation 1987,1988,1989,1990,1991
  *
@@ -122,7 +122,8 @@ int len = strlen( name ) ;
 	return 1 ;
     }
     else
-	return OsLookupColor( pCmap->pScreen, name, len, pRed, pGreen, pBlue ) ;
+	return OsLookupColor( pCmap->pScreen->myNum, name, len,
+			     pRed, pGreen, pBlue ) ;
 }
 
 /* NOTE: ibmBlackPixelText & ibmWhitePixelText are ddx-arguments from

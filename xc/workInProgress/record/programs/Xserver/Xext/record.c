@@ -1,4 +1,4 @@
-/* $XConsortium: record.c,v 1.11 94/02/05 02:24:52 rws Exp $ */
+/* $XConsortium: record.c,v 1.12 94/02/05 14:42:03 rws Exp $ */
 /***************************************************************************
  * Copyright 1994 Network Computing Devices;
  * Portions Copyright 1988 by Digital Equipment Corporation and the
@@ -101,8 +101,6 @@ static RESTYPE RecordDelete;   /* Resource type for intercepted clients */
 }
 
 static int RecordedEvents[128];
-
-extern void_function EventSwapVector[128];
 
 typedef struct _RecordIntercept {
     struct _RecordIntercept *next;

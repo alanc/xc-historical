@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: window.c,v 5.99 94/01/07 09:41:30 dpw Exp $ */
+/* $XConsortium: window.c,v 5.100 94/02/04 04:16:41 dpw Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -64,8 +64,6 @@ ScreenSaverStuffRec savedScreenInfo[MAXSCREENS];
 extern WindowPtr *WindowTable;
 extern void (* ReplySwapVector[256]) ();
 
-extern void CheckCursorConfinement();
-extern void DeleteWindowFromAnySelections();
 extern void DeleteWindowFromAnyEvents();
 extern Mask EventMaskForClient();
 extern void WindowHasNewCursor();

@@ -1,4 +1,4 @@
-/* $XConsortium: dixfontstr.h,v 1.12 94/01/11 20:54:44 rob Exp $ */
+/* $XConsortium: dixfontstr.h,v 1.13 94/02/15 08:54:40 dpw Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -92,12 +92,5 @@ SOFTWARE.
 #define	GLYPHWIDTHBYTESPADDED(pci)	((GLYPHWIDTHBYTES(pci)+7) & ~0x7)
 #define	PADGLYPHWIDTHBYTES(w)		(((((w)+7)>>3)+7) & ~0x7)
 #endif
-
-extern int doListFontsWithInfo(
-#if NeedFunctionPrototypes
-    ClientPtr /*client*/,
-    LFWIclosurePtr /*c*/
-#endif
-);
 
 #endif				/* DIXFONTSTRUCT_H */

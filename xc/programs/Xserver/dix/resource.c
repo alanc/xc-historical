@@ -22,7 +22,7 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: resource.c,v 1.91 93/09/20 17:38:37 dpw Exp $ */
+/* $XConsortium: resource.c,v 1.92 93/10/23 12:05:45 rws Exp $ */
 
 /*	Routines to manage various kinds of resources:
  *
@@ -55,7 +55,6 @@ SOFTWARE.
 #include "opaque.h"
 #include "windowstr.h"
 
-extern void FlushClientCaches();
 extern WindowPtr *WindowTable;
 
 static void RebuildTable(
@@ -236,7 +235,7 @@ AvailableID(client, id, maxid, goodid)
 void
 GetXIDRange(client, server, minp, maxp)
     int client;
-    BOOL server;
+    Bool server;
     XID *minp, *maxp;
 {
     register XID id, maxid;

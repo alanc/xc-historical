@@ -1,4 +1,4 @@
-/* $XConsortium: dispatch.c,v 5.60 94/02/04 16:53:08 rws Exp $ */
+/* $XConsortium: dispatch.c,v 5.61 94/02/16 12:31:28 rws Exp $ */
 /************************************************************
 Copyright 1987, 1989 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -52,10 +52,13 @@ SOFTWARE.
 extern WindowPtr *WindowTable;
 extern xConnSetupPrefix connSetupPrefix;
 extern char *ConnectionInfo;
-extern Atom MakeAtom();
-extern char *NameForAtom();
 extern void ReleaseActiveGrabs();
 extern void NotImplemented();
+extern void SwapConnClientPrefix(
+#if NeedFunctionPrototypes
+    xConnClientPrefix	*
+#endif
+);
 
 Selection *CurrentSelections;
 int NumCurrentSelections;
@@ -3542,35 +3545,6 @@ ProcInitialConnection(client)
 }
 
 int
-ProcEstablishConnection(client)
-    register ClientPtr client;
-{
-    char *reason, *auth_proto, *auth_string;
-    register xConnClientPrefix *prefix;
-    REQUEST(xReq);
-
-    prefix = (xConnClientPrefix *)((char *)stuff + sz_xReq);
-    auth_proto = (char *)prefix + sz_xConnClientPrefix;
-    auth_string = auth_proto + ((prefix->nbytesAuthProto + 3) & ~3);
-    if ((prefix->majorVersion != X_PROTOCOL) ||
-	(prefix->minorVersion != X_PROTOCOL_REVISION))
-	reason = "Protocol version mismatch";
-    else
-	reason = ClientAuthorized(client,
-				  (unsigned short)prefix->nbytesAuthProto,
-				  auth_proto,
-				  (unsigned short)prefix->nbytesAuthString,
-				  auth_string);
-    /*
-     * if auth protocol does some magic, fall back through to the
-     * dispatcher.
-     */
-    if (client->clientState == ClientStateInitial)
-	return(SendConnSetup(client, reason));
-    return(client->noClientException);
-}
-
-int
 SendConnSetup(client, reason)
     register ClientPtr client;
     char *reason;
@@ -3640,6 +3614,35 @@ SendConnSetup(client, reason)
     if (ClientStateCallback)
 	CallCallbacks(&ClientStateCallback, (pointer)client);
     return (client->noClientException);
+}
+
+int
+ProcEstablishConnection(client)
+    register ClientPtr client;
+{
+    char *reason, *auth_proto, *auth_string;
+    register xConnClientPrefix *prefix;
+    REQUEST(xReq);
+
+    prefix = (xConnClientPrefix *)((char *)stuff + sz_xReq);
+    auth_proto = (char *)prefix + sz_xConnClientPrefix;
+    auth_string = auth_proto + ((prefix->nbytesAuthProto + 3) & ~3);
+    if ((prefix->majorVersion != X_PROTOCOL) ||
+	(prefix->minorVersion != X_PROTOCOL_REVISION))
+	reason = "Protocol version mismatch";
+    else
+	reason = ClientAuthorized(client,
+				  (unsigned short)prefix->nbytesAuthProto,
+				  auth_proto,
+				  (unsigned short)prefix->nbytesAuthString,
+				  auth_string);
+    /*
+     * if auth protocol does some magic, fall back through to the
+     * dispatcher.
+     */
+    if (client->clientState == ClientStateInitial)
+	return(SendConnSetup(client, reason));
+    return(client->noClientException);
 }
 
 void

@@ -1,4 +1,4 @@
-/* $XConsortium: resource.h,v 1.16 93/11/16 10:56:38 rob Exp $ */
+/* $XConsortium: resource.h,v 1.17 94/01/27 16:51:52 rob Exp $ */
 /***********************************************************
 Copyright 1987, 1989 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -205,6 +205,15 @@ extern pointer LookupIDByClass(
 #if NeedFunctionPrototypes
     XID /*id*/,
     RESTYPE /*classes*/
+#endif
+);
+
+extern void GetXIDRange(
+#if NeedFunctionPrototypes
+    int /*client*/,
+    Bool /*server*/,
+    XID * /*minp*/,
+    XID * /*maxp*/
 #endif
 );
 

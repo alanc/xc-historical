@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbplygblt.c,v 5.10 94/01/07 09:43:31 dpw Exp $ */
+/* $XConsortium: mfbplygblt.c,v 5.11 94/01/12 18:05:14 dpw Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -36,8 +36,6 @@ SOFTWARE.
 #include "regionstr.h"
 #include "maskbits.h"
 #include "miscstruct.h"
-
-extern void QueryGlyphExtents();
 
 /*
     we should eventually special-case fixed-width fonts, although

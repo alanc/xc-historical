@@ -53,9 +53,6 @@ static Bool miPointerCloseScreen();
 
 static void miPointerMove ();
 
-extern void ProcessInputEvents ();
-extern void NewCurrentScreen ();
-
 Bool
 miPointerInitialize (pScreen, spriteFuncs, screenFuncs, waitForUpdate)
     ScreenPtr		    pScreen;
@@ -298,7 +295,6 @@ miPointerUpdate ()
     ScreenPtr		pScreen;
     miPointerScreenPtr	pScreenPriv;
     int			x, y, devx, devy;
-    Bool		newScreen = FALSE;
 
     pScreen = miPointer.pScreen;
     x = miPointer.x;
@@ -437,7 +433,7 @@ miPointerMove (pScreen, x, y, time)
 {
     SetupScreen(pScreen);
     xEvent		xE;
-    miHistoryPtr	history, prevHistory;
+    miHistoryPtr	history;
     int			prev, end, start;
 
     if (!pScreenPriv->waitForUpdate && pScreen == miPointer.pSpriteScreen)

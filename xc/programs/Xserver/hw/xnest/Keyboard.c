@@ -1,4 +1,4 @@
-/* $XConsortium: xnestKeyboard.c,v 1.1 93/06/23 16:23:35 dmatic Exp $ */
+/* $XConsortium: Keyboard.c,v 1.1 93/07/12 15:28:36 rws Exp $ */
 /*
 
 Copyright 1993 by Davor Matic
@@ -137,7 +137,7 @@ int xnestKeyboardProc(pDev, onoff, argc, argv)
 }
 
 Bool LegalModifier(key, pDev)
-     BYTE key;
+     unsigned int key;
      DevicePtr pDev;
 {
   return TRUE;

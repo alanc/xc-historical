@@ -25,7 +25,7 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XConsortium: cfbscrinit.c,v 5.28 93/08/07 18:15:31 rws Exp $ */
+/* $XConsortium: cfbscrinit.c,v 5.29 93/12/13 17:22:30 dpw Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -41,8 +41,6 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include "dix.h"
 #include "cfbmskbits.h"
 #include "mibstore.h"
-
-extern Bool mfbAllocatePrivates();
 
 
 miBSFuncRec cfbBSFuncRec = {

@@ -1,3 +1,4 @@
+/* $XConsortium: mfbplygblt.c,v 5.11 94/01/12 18:05:14 dpw Exp $ */
 /*****************************************************************************
 Copyright 1988-1993 by Apple Computer, Inc, Cupertino, California
 			All Rights Reserved
@@ -576,7 +577,7 @@ macIIEnqueueAutoRepeat ()
 
 Bool
 LegalModifier(key, pDev)
-    BYTE    key;
+    unsigned int key;
     DevicePtr	pDev;
 {
     return (TRUE);

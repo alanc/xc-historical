@@ -17,7 +17,7 @@ representations about the suitability of this software for any
 purpose.  It is provided "as is" without express or implied warranty.
 */
 
-/* $XConsortium: cfbtile32.c,v 1.5 91/07/14 13:49:46 keith Exp $ */
+/* $XConsortium: cfbtile32.c,v 1.6 93/12/13 17:22:38 dpw Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -33,6 +33,9 @@ purpose.  It is provided "as is" without express or implied warranty.
 #include "cfb8bit.h"
 
 #include "mergerop.h"
+
+#include "mi.h"
+#include "mispans.h"
 
 #ifdef sparc
 #define SHARED_IDCACHE

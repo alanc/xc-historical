@@ -1,5 +1,5 @@
 /*
- * $XConsortium: skyIO.c,v 1.1 91/05/10 09:09:03 jap Exp $
+ * $XConsortium: aixCursor.c,v 1.3 91/07/16 12:58:05 jap Exp $
  *
  * Copyright IBM Corporation 1987,1988,1989,1990,1991
  *
@@ -71,7 +71,7 @@ DevicePtr       mouse;
 	motion.u.keyButtonPointer.time= lastEventTime;
 	motion.u.u.type=                        MotionNotify;
 	mouse= LookupPointerDevice();
-	(*mouse->processInputProc)(&motion,mouse,1);
+	(*mouse->processInputProc)(&motion,(DeviceIntPtr)mouse,1);
     }
     AIXCurrentX= x;
     AIXCurrentY= y;

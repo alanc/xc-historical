@@ -1,5 +1,5 @@
 /*
- * $XConsortium: miwideline.h,v 1.8 91/12/17 19:39:09 keith Exp $
+ * $XConsortium: miwideline.h,v 1.9 93/10/12 11:42:16 dpw Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -178,7 +178,7 @@ extern int miRoundJoinFace(
 #endif
 );
 
-extern int miRoundJoinClip(
+extern void miRoundJoinClip(
 #if NeedFunctionPrototypes
     LineFacePtr /*pLeft*/,
     LineFacePtr /*pRight*/,
@@ -200,7 +200,7 @@ extern int miRoundCapClip(
 #endif
 );
 
-extern int miLineProjectingCap(
+extern void miLineProjectingCap(
 #if NeedFunctionPrototypes
     DrawablePtr /*pDrawable*/,
     GCPtr /*pGC*/,

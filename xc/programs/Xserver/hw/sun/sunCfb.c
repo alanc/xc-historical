@@ -1,5 +1,5 @@
 
-/* $XConsortium: sunCfb.c,v 1.9 94/02/06 09:21:23 kaleb Exp $ */
+/* $XConsortium: sunCfb.c,v 1.10 94/02/21 10:20:56 kaleb Exp $ */
 
 /*
  * Copyright 1990 Massachusetts Institute of Technology
@@ -81,8 +81,6 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 #include "sun.h"
 #include "cfb/cfb.h"
-
-extern int TellLostMap(), TellGainedMap();
 
 static void CGUpdateColormap(pScreen, dex, count, rmap, gmap, bmap)
     ScreenPtr	pScreen;

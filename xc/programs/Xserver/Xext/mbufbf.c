@@ -24,7 +24,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 */
 
-/* $XConsortium: mbufbf.c,v 1.2 93/07/08 14:03:49 dpw Exp $ */
+/* $XConsortium: mbufbf.c,v 1.3 94/01/07 09:46:03 dpw Exp $ */
 
 #define NEED_REPLIES
 #define NEED_EVENTS
@@ -295,8 +295,6 @@ UpdateBufferFromWindow(pBuffer, pWin)
 
     pBuffer->origin = pWin->origin;
 }
-
-extern WindowPtr AllocateWindow();
 
 static BufferPtr
 bufCreateBuffer(pScreen, pWin, bufferNum)

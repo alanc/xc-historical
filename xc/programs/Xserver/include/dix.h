@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: dix.h,v 1.75 94/02/04 15:35:39 dpw Exp $ */
+/* $XConsortium: dix.h,v 1.76 94/02/20 10:38:33 dpw Exp $ */
 
 #ifndef DIX_H
 #define DIX_H
@@ -429,6 +429,128 @@ extern void ClientWakeup(
 extern Bool ClientIsAsleep(
 #if NeedFunctionPrototypes
     ClientPtr /*client*/
+#endif
+);
+
+/* atom.c */
+
+extern Atom MakeAtom(
+#if NeedFunctionPrototypes
+    char * /*string*/,
+    unsigned /*len*/,
+    Bool /*makeit*/
+#endif
+);
+
+extern Bool ValidAtom(
+#if NeedFunctionPrototypes
+    Atom /*atom*/
+#endif
+);
+
+extern char *NameForAtom(
+#if NeedFunctionPrototypes
+    Atom /*atom*/
+#endif
+);
+
+extern void AtomError(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+
+extern void FreeAllAtoms(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+
+extern void InitAtoms(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+
+/* events.c */
+
+extern int DeliverEvents(
+#if NeedFunctionPrototypes
+    WindowPtr /*pWin*/,
+    xEventPtr /*xE*/,
+    int /*count*/,
+    WindowPtr /*otherParent*/
+#endif
+);
+
+extern void WriteEventsToClient(
+#if NeedFunctionPrototypes
+    ClientPtr /*pClient*/,
+    int	     /*count*/,
+    xEventPtr /*events*/
+#endif
+);
+
+extern int TryClientEvents(
+#if NeedFunctionPrototypes
+    ClientPtr /*client*/,
+    xEventPtr /*pEvents*/,
+    int /*count*/,
+    Mask /*mask*/,
+    Mask /*filter*/,
+    GrabPtr /*grab*/
+#endif
+);
+
+extern int EventSelectForWindow(
+#if NeedFunctionPrototypes
+    WindowPtr /*pWin*/,
+    ClientPtr /*client*/,
+    Mask /*mask*/
+#endif
+);
+
+extern int EventSuppressForWindow(
+#if NeedFunctionPrototypes
+    WindowPtr /*pWin*/,
+    ClientPtr /*client*/,
+    Mask /*mask*/,
+    Bool * /*checkOptional*/
+#endif
+);
+
+extern int MaybeDeliverEventsToClient(
+#if NeedFunctionPrototypes
+    WindowPtr /*pWin*/,
+    xEventPtr /*pEvents*/,
+    int /*count*/,
+    Mask /*filter*/,
+    ClientPtr /*dontClient*/
+#endif
+);
+
+extern void WindowsRestructured(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+
+extern void ResetClientPrivates(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+
+extern int AllocateClientPrivateIndex(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+
+extern Bool AllocateClientPrivate(
+#if NeedFunctionPrototypes
+    int /*index*/,
+    unsigned /*amount*/
 #endif
 );
 
