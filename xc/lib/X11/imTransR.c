@@ -1,4 +1,4 @@
-/* $XConsortium: imTransR.c,v 1.2 93/09/17 17:04:19 rws Exp $ */
+/* $XConsortium: imTransR.c,v 1.3 94/01/20 18:06:09 rws Exp $ */
 /******************************************************************
 
               Copyright 1992 by Sun Microsystems, Inc.
@@ -38,16 +38,16 @@ Public TransportSW _XimTransportRec[] = {
     "X",          1, _XimXConf,  /* 1st entry must be X. 
 					This will be a fallback */
 #ifdef TCPCONN
-    "tcp",        3, _XimInetConf,
+    "tcp",        3, _XimTransConf, /* use X transport lib */
 #endif /* TCPCONN */
 #ifdef UNIXCONN
-    "local",      4, _XimInternalConf,
+    "local",      5, _XimTransConf, /* use X transport lib */
 #endif /* UNIXCONN */
 #ifdef DNETCONN
-    "decnet",     6, _XimDecnetConf,
+    "decnet",     6, _XimTransConf, /* use X transport lib */
 #endif /* DNETCONN */
 #ifdef STREAMSCONN
-    "streams",    6, _XimStreamsConf,
+    "streams",    7, _XimTransConf, /* use X transport lib */
 #endif /* STREAMSCONN */
     (char *)NULL, 0, (Bool (*)())NULL,
 };
