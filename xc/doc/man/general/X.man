@@ -75,9 +75,9 @@ screen image manipulation utilities (\fIxwd\fP, \fIxwud\fP, \fIxpr\fP,
 and \fIxmag\fP),
 and various demos (\fIxeyes\fP, \fIico\fP, \fImuncher\fP, \fIpuzzle\fP, etc.).
 .PP
-Many additional utilities, window managers, games, toolkits, etc. are also
-distributed with the core software.  See you site administrator for details
-about what additional programs are available.
+Many other utilities, window managers, games, toolkits, etc. are available
+from the user-contributed distribution.  See your site administrator for
+details.
 .SH STARTING UP
 .PP 
 There are currently 3 ways of getting the X server and an initial set of
@@ -137,7 +137,7 @@ connect to the server and which screen it should use by default
 .TP 8
 .I hostname
 The \fIhostname\fP specifies the name of the machine to which the display is
-connected.  If the hostname is not given, the most efficient way of 
+physically connected.  If the hostname is not given, the most efficient way of 
 communicating to a server on the same machine will be used.
 .TP 8
 .I displaynumber
@@ -157,7 +157,7 @@ Since each monitor has its own set of windows, each screen is assigned a
 \fIscreen number\fP (starting with 0) when the X server for that display is
 started.  If the screen number is not given, then screen 0 will be used.
 .PP
-On UNIX systems, the default display name for X programs to use is stored 
+On UNIX systems, the default display name is stored 
 in your DISPLAY environment variable.  This variable is set automatically
 by the \fIxterm\fP terminal emulator.  However, when you log into another
 machine on a network, you'll need to set DISPLAY by hand to point to your
@@ -172,9 +172,9 @@ $ DISPLAY=myws:0; export DISPLAY
 .PP
 Finally, most X programs accept a command line option of 
 \fB-display \fIdisplayname\fR to temporarily override the contents of
-DISPLAY.  This is most commonly used to pop windows on your neighbors screen or
-as part of a "remote shell" command to start an xterm pointing back to your
-display.  For example,
+DISPLAY.  This is most commonly used to pop windows on another person's
+screen or as part of a "remote shell" command to start an xterm pointing back 
+to your display.  For example,
 .sp
 .in +8
 .nf
@@ -183,31 +183,32 @@ display.  For example,
 .fi
 .in -8
 .PP
-X servers usually listen for connections on a variety of different 
-communications channels (e.g. network byte-stream, shared memory, etc.) 
-and can, therefore, have serveral different display names.
-The \fIhostname\fP part of the display name determines type of channel
+X servers listen for connections on a variety of different 
+communications channels (network byte streams, shared memory, etc.).
+Since there can be more than one way of contactacting a given server,
+The \fIhostname\fP part of the display name is used to determine the
+type of channel 
 (also called a transport layer) to be used.  The sample servers from MIT
 support the following types of connections:
 .TP 8
-.B TCP\/IP
+.I TCP\/IP
 .br
 The hostname part of the display name should be the server machine's
 IP address name.  Full Internet names (e.g., expo.lcs.mit.edu),
 abbreviated names (e.g., expo), and IP addresses (e.g., 18.30.0.212)
-are allowed.  For example:  \fImyworkstation:0\fP, \fIbigmachine:1\fP, and 
+are all llowed.  For example:  \fImyworkstation:0\fP, \fIbigmachine:1\fP, and 
 \fIhydra:0.1\fP.
 .TP 8
-.B "UNIX domain sockets"
+.I "UNIX domain sockets"
 .br
 The hostname part of the display name should be the string "unix" (in lower
 case letters).  For example:  \fIunix:0\fP, \fIunix:1\fP, and \fIunix:0.1\fP.
 .TP 8
-.B DECnet
+.I DECnet
 .br
 The hostname part of the display name should be the server machine's 
-nodename followed by a colon.  For example:  \fImyws::0\fP, \fIbig::1\fP,
-and \fIhydra::0.1\fP.
+nodename followed by two colons instead of one.
+For example:  \fImyws::0\fP, \fIbig::1\fP, and \fIhydra::0.1\fP.
 .PP
 .SH "GEOMETRY SPECIFICATIONS"
 One of the advantages of using window systems instead of
@@ -215,7 +216,7 @@ hardwired terminals is that
 applications don't have to be restricted to a particular size or location
 on the screen.
 Although the layout of windows on a display is controlled
-by the window manager that the user is running (see below), 
+by the window manager that the user is running (described below), 
 most X programs accept
 a command line argument of the form \fB-geometry \fIWIDTHxHEIGHT+XOFF+YOFF\fR
 for specifying a prefered size and location for this application's main
@@ -237,9 +238,8 @@ will be off the screen.
 .TP 8
 .I -XOFF
 The right edge of the window is to be \fIXOFF\fP pixels in from the
-right edge of the screen (i.e. the X coordinate of the window will be at
-\fIXOFF\fP).  \fIXOFF\fP may be negative, in which case the window's right
-edge will be off the screen.
+right edge of the screen.  \fIXOFF\fP may be negative, in which case the 
+window's right edge will be off the screen.
 .PP
 The Y offset has similar meanings:
 .TP 8
@@ -251,33 +251,41 @@ will be off the screen.
 .TP 8
 .I -YOFF
 The bottom edge of the window is to be \fIYOFF\fP pixels above the
-bottom edge of the screen (i.e. the Y coordinate of the window will be at
-\fIYOFF\fP).  \fIYOFF\fP may be negative, in which case the window's bottom
-edge will be off the screen.
+bottom edge of the screen.  \fIYOFF\fP may be negative, in which case 
+the window's bottom edge will be off the screen.
 .PP
 Offsets must be given as pairs; in other words, in order to specify either
-\fIXOFF\fP or \fIYOFF\fP both must be present.
+\fIXOFF\fP or \fIYOFF\fP both must be present.  Windows can be placed in the
+four corners of the screen using the following specifications:
+.TP 8
+.I +0+0
+upper left hand corner.
+.TP 8
+.I -0+0
+upper right hand corner.
+.TP 8
+.I -0-0
+lower right hand corner.
+.TP 8
+.I +0-0
+lower left hand corner.
 .PP
-The upper left hand corner of the screen is +0+0; the upper right is -0+0;
-the lower right is -0-0; and the lower left is +0-0.  The command
+In the following examples, a terminal emulator will be placed in roughly
+the center of the screen and
+a load average monitor, mailbox, and clock will be placed in the upper right 
+hand corner:
 .sp
 .nf
-        xterm -fn 6x10 -geometry 80x24+30+200
-.fi
-.sp
-will place a terminal emulator
-roughly in the center of the screen.  The following three commands will start
-up a load average monitor, a mailbox, and a clock in the upper right hand
-corner such that they all line up nicely:
-.sp
-.nf
+        xterm -fn 6x10 -geometry 80x24+30+200 &
         xclock -geometry 48x48-0+0 &
         xload -geometry 48x48-96+0 &
         xbiff -geometry 48x48-48+0 &
 .fi
 .PP
-The geometry specification should be thought of hint, indicating the 
-prefered size for the window.  Window managers are free to ignore any or
+A geometry specification should be thought of as a hint, indicating the 
+prefered size for the window.  Window managers (special programs which
+control the layout of the screen)
+are free to ignore any or
 all of the specification.  Some window managers, such as \fIuwm\fP will
 assume default values for any information that isn't given; others might
 require that the user provide the information interactively (by drawing
@@ -285,45 +293,53 @@ out a region on the screen with the pointer, for example).
 .SH WINDOW MANAGERS
 The core X protocol provides mechanism, not policy.  This means that
 the exact way in which the user the moves or resizes a window is not
-built into the window system.  Instead, X provides programming interfaces
+built into the server or the base programming libraries.  
+Instead, X provides programming interfaces
 for constructing special applications called \fIwindow managers\fP which 
-provide the desired user interface (for example, 
+implement the desired user interface (for example, 
 point-to-type vs. click-to-type,
 whether or not to display title bars, moving and resizing with special key
 combinations vs. dragging parts of the window frame).
 .PP
 The core distribution provides two window managers:
 .TP 8
-.B uwm
+.I uwm
 This window manager does not display title bars, uses many combinations of
 special keys and pointer buttons, and is generally used in a click-to-type
 fashion.  It tries to stay out of the way as much as possible, but can be
 somewhat difficult to master.
 .TP 8
-.B wm
+.I wm
 This window manager provides title bars as well as resize and moving boxes.
-It is primarily a prototype for other, friendlier window managers and is 
-rarely used.
+It is primarily a prototype for other, prettier and more functional 
+window managers and is rarely used.
 .PP
-The user-contributed distribution provides several more window managers:
+Several other window managers are available in the user-contributed
+distribution: 
 .TP 8
-.B awm
+.I awm
 This window manager is descended from \fIuwm\fP but provides optional title
 bars whose layout can be specified by the user.
 .TP 8
-.B twm
+.I twm
 This window manager provides title bars, resize boxes, and reposition boxes.
 It is known for its small size and simplicity.
 .TP 8
-.B rtl
+.I rtl
 This window manager enforces a tiled layout of application windows.
 .PP
 People who find that none of these window managers are acceptable are 
 encouraged to write their own.
-.SH "COMMAND LINE ARGUMENTS"
-Most X programs attempt to use a common set of names for their command line
-arguments.
-The X Toolkit automatically handles the following arguments:
+.SH "OPTIONS"
+Most X programs attempt to use the same names for command line options and
+arguments.  All applications written with the X Toolkit automatically accept
+the following options:
+.TP 8
+.B \-display \fIdisplay\fP
+This option specifies the name of the X server to use.
+.TP 8
+.B \-geometry \fIgeometry\fP
+This option specifies the initial size and location of the window.
 .TP 8
 .B \-bg \fIcolor\fP, \fB\-background \fIcolor\fP
 Either option specifies the color to use for the window background.
@@ -334,17 +350,11 @@ Either option specifies the color to use for the window border.
 .B \-bw \fInumber\fP, \fB\-borderwidth \fInumber\fP
 Either option specifies the width in pixels of the window border.
 .TP 8
-.B \-display \fIdisplay\fP
-This option specifies the name of the X server to use.
-.TP 8
 .B \-fg \fIcolor\fP, \fB\-foreground \fIcolor\fP
 Either option specifies the color to use for text or graphics.
 .TP 8
 .B \-fn \fIfont\fP, \fB-font \fIfont\fP
 Either option specifies the font to use for displaying text.
-.TP 8
-.B \-geometry \fIgeometry\fP
-This option specifies the initial size and location of the window.
 .TP 8
 .B \-iconic
 .br
@@ -395,11 +405,12 @@ To make the tailoring of applications to personal preferences easier, X
 supports several mechanisms for storing default values for program resources 
 (e.g. background color, window title, etc.)
 Resources are specified as strings of the form 
-\fI``name*subname*subsubname...: value''\fP (see the
-.I Xlib
-manual section \fIUsing the Resource Manager\fP for more details) that are 
-loaded into a
-client when it starts up.  The \fIXlib\fP routine
+.sp
+.ce 1
+\fIname*subname*subsubname...: value\fP
+.sp
+that are read in from various places when an application is run.
+The \fIXlib\fP routine
 .I XGetDefault(3X)
 and the resource utilities within the X Toolkit
 obtain resources from the following sources:
@@ -407,7 +418,8 @@ obtain resources from the following sources:
 .B "RESOURCE_MANAGER root window property"
 Any global resources that should be available to clients on all machines 
 should be stored in the RESOURCE_MANAGER property on the
-root window using the \fIxrdb\fP program.
+root window using the \fIxrdb\fP program.  This is frequently taken care
+when the user starts up X through the display manager or \fIxinit\fP.
 .TP 8
 .B "application-specific files"
 Any application- or machine-specific resources can be stored in
@@ -434,8 +446,9 @@ the shell (e.g., asterisk), they must be quoted.
 Any number of \fB\-xrm\fP arguments may be given on the
 command line.
 .PP
-Program resources are organized into groups called ``classes,'' so that 
-collections of individual resources (each of which are called ``instances'')
+Program resources are organized into groups called \fIclasses\fP, so that 
+collections of individual resources (each of which are 
+called \fIinstances\fP)
 can be set all at once.  By convention, the instance name of a resource
 begins with a lowercase letter and class name with an upper case letter.
 Multiple word resources are concatentated with the first letter of the 
@@ -501,16 +514,18 @@ without having to define all of the related resources.  For example,
 .fi
 .PP
 If these resources were stored in a file called \fI.Xresources\fP in your home
-directory, they could be loaded into the server using the following command:
+directory, they could be added to any existing resources in the server with
+the following command:
 .sp
 .nf
         %  xrdb -merge $HOME/.Xresources
 .fi
 .sp
-This adds these resources to any that have already been loaded.  This is 
-frequently how user-friendly startup scripts merge user-specific defaults
+This is frequently how user-friendly startup scripts merge user-specific 
+defaults
 into any site-wide defaults.  All sites are encouraged to set up convenient
-ways of automatically loading defaults.
+ways of automatically loading resources. See the \fIXlib\fP 
+manual section \fIUsing the Resource Manager\fP for more information.
 .SH "FONT NAMES"
 Collections of characters for displaying text and symbols in X are known as
 \fIfonts\fP.  A font typically contains images that share a common appearance
@@ -526,8 +541,8 @@ information on how to find the font.  The server uses these
 databases to translate \fIfont names\fP (which have nothing to do with
 file names) into font data.
 .PP
-The list of font directories in which the server looks when trying to open 
-a font name is controlled by the \fIfont path\fP.  Although most installations
+The list of font directories in which the server looks when trying to find
+a font is controlled by the \fIfont path\fP.  Although most installations
 will choose to have the server start up with all of the commonly used font
 directories, the font path can be changed at any time with the \fIxset\fP
 program.  However, it is important to remember that the directory names are
@@ -602,7 +617,7 @@ a color database that can usually be found in \fI/usr/lib/X11/rgb.txt\fP.
 Color names are case-insensative, meaning that \fIred\fP, \fIRed\fP, 
 and \fIRED\fP all refer to the same color.  
 .PP
-Many applications also accept color specifications of the following forms:
+Many applications also accept color specifications of the following form:
 .sp
 .ce 4
 #rgb
