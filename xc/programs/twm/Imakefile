@@ -6,10 +6,6 @@
 /**/#
 
 
-#if !HasVoidSignalReturn
-     SIGPROCDEF = -DSIGNALRETURNSINT
-#endif
-
 #if !HasPutenv
       PUTENVDEF = -DNOPUTENV
 #endif
@@ -20,7 +16,7 @@ LOCAL_LIBRARIES = $(EXTENSIONLIB) $(XMULIB) $(XLIB)
       OTHERSRCS = gram.y lex.l
          YFLAGS = -d
      OPTIONSDEF = -DSHAPE 
-        DEFINES = $(OPTIONSDEF) $(SIGPROCDEF) $(PUTENVDEF)
+        DEFINES = $(OPTIONSDEF) $(SIGNAL_DEFINES) $(PUTENVDEF)
 
 SRCS1=	gram.c lex.c deftwmrc.c add_window.c gc.c list.c twm.c parse.c \
         menus.c events.c resize.c util.c version.c iconmgr.c \

@@ -14,12 +14,8 @@
     OBJS = include.o main.o parse.o pr.o cppsetup.o
 #endif
 
-#if !HasVoidSignalReturn
-SIGPROCDEF = -DSIGNALRETURNSINT
-#endif
-
 INCLUDES = -I$(CONFIGSRC)
- DEFINES = $(CPPDEFS) '-DINCLUDEDIR="/usr/include"' $(SIGPROCDEF)
+ DEFINES = $(CPPDEFS) '-DINCLUDEDIR="/usr/include"' $(SIGNAL_DEFINES)
  DEPLIBS =
 
 all:: makedepend
