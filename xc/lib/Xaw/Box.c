@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: ButtonBox.c,v 1.11 87/09/13 13:07:53 newman Locked $";
+static char rcsid[] = "$Header: ButtonBox.c,v 1.12 87/09/13 18:40:48 newman Locked $";
 #endif lint
 
 /*
@@ -62,7 +62,7 @@ static XtResource resources[] = {
 static void Initialize();
 static void Realize();
 static void Resize();
-static void SetValues();
+static Boolean SetValues();
 static XtGeometryResult GeometryManager();
 static void ChangeManaged();
 static void ClassInitialize();
@@ -369,11 +369,12 @@ static void Realize(w, valueMask, attributes)
  *
  */
 
-static void SetValues (current, request, new, last)
+static Boolean SetValues (current, request, new, last)
     ButtonBoxWidget current, request, new;
     Boolean last;
 {
     /* ||| Old code completely bogus, need background, etc., then
     XtMakeGeometryRequest, then relayout */
+    return (FALSE);
 }
 
