@@ -1,4 +1,4 @@
-/* $XConsortium: Event.c,v 1.154 93/08/27 16:27:21 kaleb Exp $ */
+/* $XConsortium: Event.c,v 1.155 93/09/03 09:57:11 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -124,8 +124,8 @@ static void CallExtensionSelector(widget, rec, forceCall)
 	    }
 
     (*rec->proc)(widget, types, data, count, rec->client_data);
-    DEALLOCATE_LOCAL((char*) data);
     DEALLOCATE_LOCAL((char*) types);
+    DEALLOCATE_LOCAL((char*) data);
 }
 
 static void
@@ -476,8 +476,11 @@ void XtAddRawEventHandler(widget, eventMask, other, proc, closure)
     XtPointer	    closure;
 #endif
 {
+    WIDGET_TO_APPCON(widget);
+    LOCK_APP(app);
     AddEventHandler(widget, (XtPointer) &eventMask, 0, FALSE, other, 
 		    proc, closure, XtListTail, FALSE, TRUE);
+    UNLOCK_APP(app);
 }
 
 #if NeedFunctionPrototypes
