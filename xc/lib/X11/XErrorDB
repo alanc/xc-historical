@@ -1,4 +1,3 @@
-XProtoError.3: not a valid window ID
 # these are used in XGetErrorMessage.
 XlibMessage.XError: X Error of failed request
 XlibMessage.MajorCode: Major opcode of failed request:  %d
@@ -146,4 +145,33 @@ XProtoError.14: BadIDChoice (invalid resource ID chosen for this connection)
 XProtoError.15: BadName (named color or font does not exist)
 XProtoError.16: BadLength (poly request too large or internal Xlib length error)
 XProtoError.17: BadImplementation (server does not implement operation)
-
+# Multi-Buffering extension
+XRequest.Multi-Buffering.0: X_MbufGetBufferVersion
+XRequest.Multi-Buffering.1: X_MbufCreateImageBuffers
+XRequest.Multi-Buffering.2: X_MbufDestroyImageBuffers
+XRequest.Multi-Buffering.3: X_MbufDisplayImageBuffers
+XRequest.Multi-Buffering.4: X_MbufSetMultiBufferAttributes
+XRequest.Multi-Buffering.5: X_MbufGetMultiBufferAttributes
+XRequest.Multi-Buffering.6: X_MbufSetBufferAttributes
+XRequest.Multi-Buffering.7: X_MbufGetBufferAttributes
+XRequest.Multi-Buffering.8: X_MbufGetBufferInfo
+XRequest.Multi-Buffering.9: X_MbufCreateStereoWindow
+XProtoError.Multi-Buffering.0: BadBuffer (invalid Buffer parameter)
+# SHAPE extension, not an X Consortium standard
+XRequest.SHAPE.0: X_ShapeQueryVersion
+XRequest.SHAPE.1: X_ShapeRectangles
+XRequest.SHAPE.2: X_ShapeMask
+XRequest.SHAPE.3: X_ShapeCombine
+XRequest.SHAPE.4: X_ShapeOffset
+XRequest.SHAPE.5: X_ShapeQueryExtents
+XRequest.SHAPE.6: X_ShapeSelectInput
+XRequest.SHAPE.7: X_ShapeInputSelected
+XRequest.SHAPE.8: X_ShapeGetRectangles
+# MIT-SHM extension, not an X Consortium standard
+XRequest.MIT-SHM.0: X_ShmQueryVersion
+XRequest.MIT-SHM.1: X_ShmAttach
+XRequest.MIT-SHM.2: X_ShmDetach
+XRequest.MIT-SHM.3: X_ShmPutImage
+XRequest.MIT-SHM.4: X_ShmGetImage
+XRequest.MIT-SHM.5: X_ShmCreatePixmap
+XProtoError.MIT-SHM.0: BadShmSeg (invalid shared segment parameter)
