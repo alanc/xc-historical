@@ -1,4 +1,4 @@
-/* $XConsortium: x11perf.c,v 2.39 93/01/15 11:09:55 gildea Exp $ */
+/* $XConsortium: x11perf.c,v 2.40 93/01/15 13:35:01 rws Exp $ */
 /*****************************************************************************
 Copyright 1988, 1989 by Digital Equipment Corporation, Maynard, Massachusetts.
 
@@ -832,12 +832,12 @@ main(argc, argv)
 		usage();
 	    cp1 = argv[i];
 	    if (*cp1 == '-')
-		*cp1++;
+		cp1++;
 	    for (cp2 = cp1; *cp2 != '\0' && *cp2 != ','; cp2++) {};
 	    if (*cp2 == ',') {
 		*cp2++ = '\0';
 		if (*cp2 == '-')
-		    *cp2++;
+		    cp2++;
 	    } else {
 		cp2 = "-";
 	    }
