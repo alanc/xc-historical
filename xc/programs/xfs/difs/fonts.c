@@ -1,4 +1,4 @@
-/* $XConsortium: fonts.c,v 1.12 92/05/13 15:41:55 gildea Exp $ */
+/* $XConsortium: fonts.c,v 1.12 92/05/13 15:49:41 gildea Exp $ */
 /*
  * font control
  */
@@ -7,22 +7,22 @@
  * Portions Copyright 1987 by Digital Equipment Corporation and the
  * Massachusetts Institute of Technology
  *
- * Permission to use, copy, modify, and distribute this protoype software
- * and its documentation to Members and Affiliates of the MIT X Consortium
- * any purpose and without fee is hereby granted, provided
+ * Permission to use, copy, modify, distribute, and sell this software and
+ * its documentation for any purpose is hereby granted without fee, provided
  * that the above copyright notice appear in all copies and that both that
  * copyright notice and this permission notice appear in supporting
  * documentation, and that the names of Network Computing Devices, Digital or
- * MIT not be used in advertising or publicity pertaining to distribution of
- * the software without specific, written prior permission.
+ * M.I.T. not be used in advertising or publicity pertaining to distribution
+ * of the software without specific, written prior permission.
  *
- * NETWORK COMPUTING DEVICES, DIGITAL AND MIT DISCLAIM ALL WARRANTIES WITH
- * REGARD TO THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
- * AND FITNESS, IN NO EVENT SHALL NETWORK COMPUTING DEVICES, DIGITAL OR MIT BE
- * LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
- * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
- * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
- * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ * NETWORK COMPUTING DEVICES, DIGITAL AND M.I.T. DISCLAIM ALL WARRANTIES WITH
+ * REGARD TO THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL NETWORK COMPUTING DEVICES,
+ * DIGITAL OR M.I.T. BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL
+ * DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR
+ * PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS
+ * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
+ * THIS SOFTWARE.
  */
 
 #include        "FS.h"
@@ -37,6 +37,7 @@
 #include	"globals.h"
 
 extern void (*ReplySwapVector[NUM_PROC_VECTORS]) ();
+extern FSID FakeClientID();
 
 static FontPathElementPtr *font_path_elements = (FontPathElementPtr *) 0;
 static int  num_fpes = 0;
@@ -150,7 +151,7 @@ RemoveFontWakeup(fpe)
 }
 
 /* ARGSUSED */
-int
+void
 FontWakeup(data, count, LastSelectMask)
     pointer     data;
     int         count;
@@ -160,14 +161,12 @@ FontWakeup(data, count, LastSelectMask)
     FontPathElementPtr fpe;
 
     if (count < 0)
-	return FSSuccess;	/* ignore -1 return from select XXX */
+	return;			/* ignore -1 return from select XXX */
     /* wake up any fpe's that may be waiting for information */
     for (i = 0; i < num_slept_fpes; i++) {
 	fpe = slept_fpes[i];
 	(void) (*fpe_functions[fpe->type].wakeup_fpe) (fpe, LastSelectMask);
     }
-
-    return FSSuccess;
 }
 
 static Bool
@@ -578,7 +577,6 @@ set_font_path_elements(npaths, paths, bad)
     int		len;
     int		type;
     char       *cp = paths;
-    char       *colon;
     FontPathElementPtr fpe,
                *fplist;
 
@@ -704,7 +702,7 @@ do_list_fonts(client, c)
 {
     int         err = Successful;
     fsListFontsReply reply;
-    FontNamesPtr names;
+    FontNamesPtr names = NULL;
     FontPathElementPtr fpe;
     int         stringLens,
                 i,
@@ -1171,7 +1169,7 @@ static unsigned int last_server_gen;
 
 init_fs_handlers(fpe, block_handler)
     FontPathElementPtr fpe;
-    int         (*block_handler) ();
+    void         (*block_handler) ();
 {
     /* if server has reset, make sure the b&w handlers are reinstalled */
     if (last_server_gen < serverGeneration) {
@@ -1195,7 +1193,7 @@ init_fs_handlers(fpe, block_handler)
 
 remove_fs_handlers(fpe, block_handler, all)
     FontPathElementPtr fpe;
-    int         (*block_handler) ();
+    void        (*block_handler) ();
     Bool        all;
 {
     if (all) {
