@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: command.c,v 2.13 88/07/21 14:17:02 jim Exp $";
+static char rcs_id[] = "$Header: command.c,v 2.13 88/07/21 14:17:02 swick Locked $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -63,7 +63,7 @@ static char *FullPathOfCommand(str)
   char *str;
 {
     static char result[100];
-    (void) sprintf(result, "%s/%s", defMhPath, str);
+    (void) sprintf(result, "%s/%s", app_resources.defMhPath, str);
     return result;
 }
 
@@ -107,7 +107,7 @@ DoCommand(argv, inputfile, outputfile)
 	myfclose(fout);
     }
 
-    if (!debug) {		/* Throw away error messages. */
+    if (!app_resources.debug) {		/* Throw away error messages. */
         old_stderr = dup(fileno(stderr));
 	ferr = FOpenAndCheck("/dev/null", "w");
 	(void) dup2(fileno(ferr), fileno(stderr));
@@ -129,7 +129,7 @@ DoCommand(argv, inputfile, outputfile)
 	if (pid != 0) dup2(old_stdout, fileno(stdout));
 	close(old_stdout);
     }
-    if (!debug) {
+    if (!app_resources.debug) {
 	if (pid != 0) dup2(old_stderr, fileno(stderr));
 	close(old_stderr);
 	if (!outputfile) {

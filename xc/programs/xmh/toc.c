@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: toc.c,v 2.14 88/02/22 21:35:43 swick Exp $";
+static char rcs_id[] = "$Header: toc.c,v 2.15 88/02/23 20:06:49 swick Locked $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -45,7 +45,7 @@ struct direct *ent;
     struct stat buf;
     if (ent->d_name[0] == '.')
 	return FALSE;
-    (void) sprintf(str, "%s/%s", mailDir, ent->d_name);
+    (void) sprintf(str, "%s/%s", app_resources.mailDir, ent->d_name);
     (void) stat(str, &buf);
     return (buf.st_mode & S_IFMT) == S_IFDIR;
 }
@@ -62,9 +62,10 @@ char *name;
     char str[200];
     for (i=0 ; i<*numfoldersptr ; i++)
 	if (strcmp((*namelistptr)[i]->d_name, name) == 0) return;
-    (void) sprintf(str, "%s/%s", mailDir, name);
+    (void) sprintf(str, "%s/%s", app_resources.mailDir, name);
     (void) mkdir(str, 0700);
-    *numfoldersptr = scandir(mailDir, namelistptr, IsDir, alphasort);
+    *numfoldersptr = scandir(app_resources.mailDir, namelistptr,
+			     IsDir, alphasort);
     for (i=0 ; i<*numfoldersptr ; i++)
 	if (strcmp((*namelistptr)[i]->d_name, name) == 0) return;
     Punt("Can't create new mail folder!");
@@ -95,9 +96,9 @@ static void LoadCheckFiles()
 	    }
 	}
 	myfclose(fid);
-    } else if (initialIncFile) {
-        if (*initialIncFile != '\0')
-	    InitialFolder->incfile = initialIncFile;
+    } else if (app_resources.initialIncFile != NULL) {
+        if (*app_resources.initialIncFile != '\0')
+	    InitialFolder->incfile = app_resources.initialIncFile;
     } else {
 	ptr = getenv("MAIL");
 	if (ptr == NULL) ptr = getenv("mail");
@@ -124,25 +125,25 @@ void TocInit()
     struct direct **namelist;
     int i;
     extern alphasort();
-    numFolders = scandir(mailDir, &namelist, IsDir, alphasort);
+    numFolders = scandir(app_resources.mailDir, &namelist, IsDir, alphasort);
     if (numFolders < 0) {
-	(void) mkdir(mailDir, 0700);
-	numFolders = scandir(mailDir, &namelist, IsDir, alphasort);
+	(void) mkdir(app_resources.mailDir, 0700);
+	numFolders = scandir(app_resources.mailDir, &namelist, IsDir, alphasort);
 	if (numFolders < 0)
 	    Punt("Can't create or read mail directory!");
     }
-    MakeSureFolderExists(&namelist, &numFolders, initialFolderName);
-    MakeSureFolderExists(&namelist, &numFolders, draftsFolderName);
+    MakeSureFolderExists(&namelist, &numFolders, app_resources.initialFolderName);
+    MakeSureFolderExists(&namelist, &numFolders, app_resources.draftsFolderName);
     folderList = (Toc *) XtMalloc((unsigned) numFolders * sizeof(Toc));
     for (i=0 ; i<numFolders ; i++) {
 	toc = folderList[i] = TUMalloc();
 	toc->foldername = MallocACopy(namelist[i]->d_name);
 	XtFree((char *)namelist[i]);
     }
-    InitialFolder = TocGetNamed(initialFolderName);
-    DraftsFolder = TocGetNamed(draftsFolderName);
+    InitialFolder = TocGetNamed(app_resources.initialFolderName);
+    DraftsFolder = TocGetNamed(app_resources.draftsFolderName);
     XtFree((char *)namelist);
-    if (defNewMailCheck) LoadCheckFiles();
+    if (app_resources.defNewMailCheck) LoadCheckFiles();
 }
 
 
@@ -155,7 +156,7 @@ char *foldername;
     int i, j;
     char str[500];
     if (TocGetNamed(foldername)) return NULL;
-    (void) sprintf(str, "%s/%s", mailDir, foldername);
+    (void) sprintf(str, "%s/%s", app_resources.mailDir, foldername);
     if (mkdir(str, 0700) < 0) return NULL;
     toc = TUMalloc();
     toc->foldername = MallocACopy(foldername);
@@ -180,7 +181,7 @@ void TocCheckForNewMail()
     Scrn scrn;
     int i, j, hasmail;
     static Arg arglist[] = {XtNiconPixmap, NULL};
-    if (!defNewMailCheck) return;
+    if (!app_resources.defNewMailCheck) return;
     for (i=0 ; i<numFolders ; i++) {
 	toc = folderList[i];
 	if (toc->incfile) {
@@ -190,7 +191,8 @@ void TocCheckForNewMail()
 		for (j=0 ; j<numScrns ; j++) {
 		    scrn = scrnList[j];
 		    if (scrn->kind == STtocAndView) {
-			if (mailWaitingFlag && toc == InitialFolder) {
+			if (app_resources.mailWaitingFlag
+			    && toc == InitialFolder) {
 			    arglist[0].value = (XtArgVal)
 				hasmail ? NewMailPixmap : NoMailPixmap;
 			    XtSetValues(scrn->parent,
@@ -772,7 +774,7 @@ Toc toc;
 		argv[cur++] = TocMakeFolderName(curdesttoc);
 		break;
 	    }
-	    if (debug) {
+	    if (app_resources.debug) {
 		for (i = 0; i < cur; i++)
 		    (void) fprintf(stderr, "%s ", argv[i]);
 		(void) fprintf(stderr, "\n");
@@ -817,7 +819,7 @@ Toc toc;
     argv[0] = "inc";
     argv[1] = TocMakeFolderName(toc);
     argv[2] = "-width";
-    (void) sprintf(str, "%d", defTocWidth);
+    (void) sprintf(str, "%d", app_resources.defTocWidth);
     argv[3] = str;
     if (toc->incfile) {
 	argv[4] = "-file";
@@ -868,7 +870,7 @@ Msg msg;
     (void) sprintf(str, "%d", msg->msgid);
     argv[2] = str;
     argv[3] = "-width";
-    (void) sprintf(str2, "%d", defTocWidth);
+    (void) sprintf(str2, "%d", app_resources.defTocWidth);
     argv[4] = str2;
     ptr = DoCommandToString(argv);
     XtFree(argv[1]);
@@ -904,7 +906,7 @@ int msgid;
     l = 0;
     h = toc->nummsgs - 1;
     if (h < 0) {
-	if (debug) {
+	if (app_resources.debug) {
 	    char str[100];
 	    (void)sprintf(str, "Toc is empty! folder=%s\n", toc->foldername);
 	    DEBUG( str );
@@ -920,7 +922,7 @@ int msgid;
     }
     if (toc->msgs[l]->msgid == msgid) return toc->msgs[l];
     if (toc->msgs[h]->msgid == msgid) return toc->msgs[h];
-    if (debug) {
+    if (app_resources.debug) {
 	char str[100];
 	(void)sprintf(str,
 		      "TocMsgFromId search failed! hi=%d, lo=%d, msgid=%d\n",

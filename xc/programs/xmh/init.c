@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: init.c,v 2.18 88/05/12 16:53:59 swick Exp $";
+static char rcs_id[] = "$Header: init.c,v 2.19 88/05/13 12:15:11 swick Locked $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -36,59 +36,63 @@ extern char* _XLowerCase();
 static Boolean defFalse = False;
 static Boolean defTrue = True;
 
+#define offset(field) XtOffset(struct _resources *, field)
+
 static XtResource resources[] = {
     {"debug", "Debug", XtRBoolean, sizeof(Boolean),
-	 (Cardinal)&debug, XtRBoolean, (caddr_t)&defFalse},
+	 offset(debug), XtRBoolean, (caddr_t)&defFalse},
     {"tempdir", "tempDir", XtRString, sizeof(char *),
-	 (Cardinal)&tempDir, XtRString, "/tmp"},
+	 offset(tempDir), XtRString, "/tmp"},
     {"mhpath", "MhPath", XtRString, sizeof(char *),
-	 (Cardinal)&defMhPath, XtRString, "/usr/local/mh6"},
+	 offset(defMhPath), XtRString, "/usr/local/mh6"},
     {"initialfolder", "InitialFolder", XtRString, sizeof(char *),
-	 (Cardinal)&initialFolderName, XtRString, "inbox"},
+	 offset(initialFolderName), XtRString, "inbox"},
     {"initialincfile", "InitialIncFile", XtRString, sizeof(char *),
-         (Cardinal)&initialIncFile, XtRString, NULL},
+         offset(initialIncFile), XtRString, NULL},
     {"replyinsertfilter", "ReplyInsertFilter", XtRString, sizeof(char *),
-	 (Cardinal)&defInsertFilter, XtRString, NULL},
+	 offset(defInsertFilter), XtRString, NULL},
     {"draftsfolder", "DraftsFolder", XtRString, sizeof(char *),
-	 (Cardinal)&draftsFolderName, XtRString, "drafts"},
+	 offset(draftsFolderName), XtRString, "drafts"},
     {"sendwidth", "SendWidth", XtRInt, sizeof(int),
-	 (Cardinal)&defSendLineWidth, XtRString, "72"},
+	 offset(defSendLineWidth), XtRString, "72"},
     {"sendbreakwidth", "SendBreakWidth", XtRInt, sizeof(int),
-	 (Cardinal)&defBreakSendLineWidth, XtRString, "85"},
+	 offset(defBreakSendLineWidth), XtRString, "85"},
     {"printcommand", "PrintCommand", XtRString, sizeof(char *),
-	 (Cardinal)&defPrintCommand, XtRString,
+	 offset(defPrintCommand), XtRString,
 	 "enscript > /dev/null 2>/dev/null"},
     {"tocwidth", "TocWidth", XtRInt, sizeof(int),
-	 (Cardinal)&defTocWidth, XtRString, "100"},
+	 offset(defTocWidth), XtRString, "100"},
     {"skipdeleted", "SkipDeleted", XtRBoolean, sizeof(Boolean),
-	 (Cardinal)&SkipDeleted, XtRBoolean, (caddr_t)&defTrue},
+	 offset(SkipDeleted), XtRBoolean, (caddr_t)&defTrue},
     {"skipmoved", "SkipMoved", XtRBoolean, sizeof(Boolean),
-	 (Cardinal)&SkipMoved, XtRBoolean, (caddr_t)&defTrue},
+	 offset(SkipMoved), XtRBoolean, (caddr_t)&defTrue},
     {"skipcopied", "SkipCopied", XtRBoolean, sizeof(Boolean),
-	 (Cardinal)&SkipCopied, XtRBoolean, (caddr_t)&defFalse},
+	 offset(SkipCopied), XtRBoolean, (caddr_t)&defFalse},
     {"hideboringheaders", "HideBoringHeaders", XtRBoolean, sizeof(Boolean),
-	 (Cardinal)&defHideBoringHeaders, XtRBoolean, (caddr_t)&defTrue},
+	 offset(defHideBoringHeaders), XtRBoolean, (caddr_t)&defTrue},
     {"geometry", "Geometry", XtRString, sizeof(char *),
-	 (Cardinal)&defGeometry, XtRString, NULL},
+	 offset(defGeometry), XtRString, NULL},
     {"tocgeometry", "TocGeometry", XtRString, sizeof(char *),
-	 (Cardinal)&defTocGeometry, XtRString, NULL},
+	 offset(defTocGeometry), XtRString, NULL},
     {"viewgeometry", "ViewGeometry", XtRString, sizeof(char *),
-	 (Cardinal)&defViewGeometry, XtRString, NULL},
+	 offset(defViewGeometry), XtRString, NULL},
     {"compgeometry", "CompGeometry", XtRString, sizeof(char *),
-	 (Cardinal)&defCompGeometry, XtRString, NULL},
+	 offset(defCompGeometry), XtRString, NULL},
     {"pickgeometry", "PickGeometry", XtRString, sizeof(char *),
-	 (Cardinal)&defPickGeometry, XtRString, NULL},
+	 offset(defPickGeometry), XtRString, NULL},
     {"tocpercentage", "TocPercentage", XtRInt, sizeof(int),
-	 (Cardinal)&defTocPercentage, XtRString, "33"},
+	 offset(defTocPercentage), XtRString, "33"},
     {"checknewmail", "CheckNewMail", XtRBoolean, sizeof(Boolean),
-	 (Cardinal)&defNewMailCheck, XtRBoolean, (caddr_t)&defTrue},
+	 offset(defNewMailCheck), XtRBoolean, (caddr_t)&defTrue},
     {"makecheckpoints", "MakeCheckPoints", XtRBoolean, sizeof(Boolean),
-	 (Cardinal)&defMakeCheckpoints, XtRBoolean, (caddr_t)&defFalse},
+	 offset(defMakeCheckpoints), XtRBoolean, (caddr_t)&defFalse},
     {"mailpath", "MailPath", XtRString, sizeof(char *),
-	 (Cardinal)&mailDir, XtRString, NULL},
+	 offset(mailDir), XtRString, NULL},
     {"mailwaitingflag", "MailWaitingFlag", XtRBoolean, sizeof(Boolean),
-	 (Cardinal)&mailWaitingFlag, XtRBoolean, &defFalse},
+	 offset(mailWaitingFlag), XtRBoolean, &defFalse},
 };
+
+#undef offset
 
 static XrmOptionDescRec table[] = {
     {"-debug",	"debug",		XrmoptionNoArg,	"on"},
@@ -114,7 +118,7 @@ Dimension defwidth, defheight;
     int gbits;
     Position x, y;
     Dimension width, height;
-    if (geo == NULL) geo = defGeometry;
+    if (geo == NULL) geo = app_resources.defGeometry;
     x = y = 0;
     gbits = XParseGeometry(geo, &x, &y, &width, &height);
     if (!(gbits & WidthValue)) {
@@ -156,11 +160,11 @@ char **argv;
 
     homeDir = MallocACopy(getenv("HOME"));
 
-    XtGetApplicationResources( toplevel, (caddr_t) NULL,
+    XtGetApplicationResources( toplevel, (caddr_t)&app_resources,
 			       resources, XtNumber(resources),
 			       NULL, (Cardinal)0 );
 
-    if (mailWaitingFlag) defNewMailCheck = True;
+    if (app_resources.mailWaitingFlag) app_resources.defNewMailCheck = True;
 
     (void) sprintf(str, "%s/.mh_profile", homeDir);
     fid = myfopen(str, "r");
@@ -192,25 +196,30 @@ char **argv;
     (void) sprintf(str, "%s/xmhdraft", str2);
     xmhDraftFile = MallocACopy(str);
 
-    if (!mailDir) mailDir = MallocACopy(str2);
+    if (app_resources.mailDir == NULL)
+	app_resources.mailDir = MallocACopy(str2);
 
     NullSource = XtCreateEDiskSource("/dev/null", FALSE);
 
-    l = strlen(defMhPath) - 1;
-    if (l > 0 && defMhPath[l] == '/')
-	defMhPath[l] = 0;
+    l = strlen(app_resources.defMhPath) - 1;
+    if (l > 0 && app_resources.defMhPath[l] == '/')
+	app_resources.defMhPath[l] = 0;
 
     rootwidth = DisplayWidth(theDisplay, theScreen);
     rootheight = DisplayHeight(theDisplay, theScreen);
 
-    defTocGeometry = FixUpGeometry(defTocGeometry,
-				   rootwidth / 2, 3 * rootheight / 4);
-    defViewGeometry = FixUpGeometry(defViewGeometry,
-				    rootwidth / 2, rootheight / 2);
-    defCompGeometry = FixUpGeometry(defCompGeometry,
-				    rootwidth / 2, rootheight / 2);
-    defPickGeometry = FixUpGeometry(defPickGeometry,
-				    rootwidth / 2, rootheight / 2);
+    app_resources.defTocGeometry =
+	FixUpGeometry(app_resources.defTocGeometry,
+		      rootwidth / 2, 3 * rootheight / 4);
+    app_resources.defViewGeometry =
+	FixUpGeometry(app_resources.defViewGeometry,
+		      rootwidth / 2, rootheight / 2);
+    app_resources.defCompGeometry =
+	FixUpGeometry(app_resources.defCompGeometry,
+		      rootwidth / 2, rootheight / 2);
+    app_resources.defPickGeometry =
+	FixUpGeometry(app_resources.defPickGeometry,
+		      rootwidth / 2, rootheight / 2);
 
     numScrns = 0;
     scrnList = (Scrn *) XtMalloc((unsigned) 1);
@@ -231,8 +240,6 @@ char **argv;
     TocSetScrn(InitialFolder, scrn);
 
     DEBUG("done.\n");
-
-/* if (debug) {DEBUG("Syncing ..."); ExecSyncOn(); DEBUG(" done\n");} */
 
     MapScrn(scrn);
 }

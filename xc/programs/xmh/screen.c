@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: screen.c,v 2.23 88/05/12 16:54:14 swick Exp $";
+static char rcs_id[] = "$Header: screen.c,v 2.24 88/05/13 16:04:35 swick Locked $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -252,7 +252,7 @@ Scrn scrn;
     BBoxLockSize(scrn->tocbuttons);
     BBoxLockSize(scrn->viewbuttons);
 
-    if (mailWaitingFlag) {
+    if (app_resources.mailWaitingFlag) {
 	static Arg arglist[] = {XtNiconPixmap, NULL};
 	arglist[0].value = (XtArgVal) NoMailPixmap;
 	XtSetValues(scrn->parent, arglist, XtNumber(arglist));
@@ -262,7 +262,7 @@ Scrn scrn;
 
     theight = GetHeight((Widget)scrn->tocwidget) +
 	GetHeight((Widget)scrn->viewwidget);
-    theight = defTocPercentage * theight / 100;
+    theight = app_resources.defTocPercentage * theight / 100;
     XtPanedGetMinMax((Widget) scrn->tocwidget, &min, &max);
     XtPanedSetMinMax((Widget) scrn->tocwidget, theight, theight);
     XtPanedSetMinMax((Widget) scrn->tocwidget, min, max);
@@ -306,10 +306,14 @@ ScrnKind kind;
 	if (scrnList[i]->kind == kind && !scrnList[i]->mapped)
 	    return scrnList[i];
     switch (kind) {
-       case STtocAndView: arglist[0].value = (XtArgVal)defTocGeometry;	break;
-       case STview:	  arglist[0].value = (XtArgVal)defViewGeometry;	break;
-       case STcomp:	  arglist[0].value = (XtArgVal)defCompGeometry;	break;
-       case STpick:	  arglist[0].value = (XtArgVal)defPickGeometry;	break;
+       case STtocAndView: arglist[0].value =
+			   (XtArgVal)app_resources.defTocGeometry;	break;
+       case STview:	  arglist[0].value =
+			   (XtArgVal)app_resources.defViewGeometry;	break;
+       case STcomp:	  arglist[0].value =
+			   (XtArgVal)app_resources.defCompGeometry;	break;
+       case STpick:	  arglist[0].value =
+			   (XtArgVal)app_resources.defPickGeometry;	break;
     }
 
     numScrns++;

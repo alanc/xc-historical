@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: util.c,v 2.15 88/02/22 21:37:59 swick Exp $";
+static char rcs_id[] = "$Header: util.c,v 2.16 88/03/07 11:21:14 swick Locked $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -41,7 +41,7 @@ Punt(str)
     extern void abort();
     (void) fprintf(stderr, "%s\nerrno = %d\007\n", str, errno);
     (void) fflush(stderr);
-    if (debug)
+    if (app_resources.debug)
 	abort();
     else {
 	(void)fprintf(stderr, "exiting.\n");
@@ -99,7 +99,8 @@ char *MakeNewTempFileName()
     static char name[60];
     static int  uniqueid = 0;
     do {
-	(void) sprintf(name, "%s/xmh_%ld_%d", tempDir, getpid(), uniqueid++);
+	(void) sprintf(name, "%s/xmh_%ld_%d", app_resources.tempDir,
+		       getpid(), uniqueid++);
     } while (FileExists(name));
     return name;
 }

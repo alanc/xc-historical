@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: main.c,v 2.8 88/01/19 14:37:21 swick Locked $";
+static char rcs_id[] = "$Header: main.c,v 2.9 88/02/14 20:03:31 swick Locked $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -60,14 +60,14 @@ static void CheckMail(client_data, id)
     static int count = 0;
     int i;
     timerid = XtAddTimeOut((int)60000, CheckMail, NULL);
-    if (defNewMailCheck) {
+    if (app_resources.defNewMailCheck) {
 	DEBUG("(Checking for new mail...")
 	TocCheckForNewMail();
 	DEBUG(" done)\n")
     }
     if (count++ % 5 == 0) {
 	NeedToCheckScans();
-	if (defMakeCheckpoints) {
+	if (app_resources.defMakeCheckpoints) {
 	    DEBUG("(Checkpointing...")
 	    for (i=0 ; i<numScrns ; i++)
 		if (scrnList[i]->msg) 
@@ -84,7 +84,7 @@ unsigned int argc;
 char **argv;
 {
     InitializeWorld(argc, argv);
-    if (defNewMailCheck)
+    if (app_resources.defNewMailCheck)
 	TocCheckForNewMail();
     timerid = XtAddTimeOut((int)60000, CheckMail, NULL);
     XtMainLoop();

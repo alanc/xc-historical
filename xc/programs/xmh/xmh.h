@@ -1,5 +1,5 @@
 /*
- *	rcs_id[] = "$Header: xmh.h,v 2.11 88/03/07 11:23:39 swick Exp $";
+ *	rcs_id[] = "$Header: xmh.h,v 2.12 88/05/12 16:54:33 swick Locked $";
  */
 
 /*
@@ -55,13 +55,16 @@
 #define yMargin 2
 
 #define DEBUG(msg) \
-	if (debug) {(void)fprintf(stderr, msg); (void)fflush(stderr);}
+	if (app_resources.debug) \
+	    {(void)fprintf(stderr, msg); (void)fflush(stderr);}
 
 #define DEBUG1(msg, arg) \
-	if (debug) {(void)fprintf(stderr, msg, arg); (void)fflush(stderr);}
+	if (app_resources.debug) \
+	    {(void)fprintf(stderr, msg, arg); (void)fflush(stderr);}
 
 #define DEBUG2(msg, arg1, arg2) \
-	if (debug) {(void)fprintf(stderr,msg,arg1,arg2); (void)fflush(stderr);}
+	if (app_resources.debug) \
+	    {(void)fprintf(stderr,msg,arg1,arg2); (void)fflush(stderr);}
 
 typedef int * dp;		/* For debugging. */
 

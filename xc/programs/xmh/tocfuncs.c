@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: tocfuncs.c,v 2.11 88/03/24 13:10:07 swick Exp $";
+static char rcs_id[] = "$Header: tocfuncs.c,v 2.12 88/05/12 16:54:21 swick Locked $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -47,9 +47,9 @@ void ExecNextView(scrn)
 	msg = TocGetCurMsg(toc);
 	if (msg && msg == scrn->msg) msg = TocMsgAfter(toc, msg);
 	if (msg) fate = MsgGetFate(msg, (Toc *)NULL);
-	while (msg && ((SkipDeleted && fate == Fdelete)
-		|| (SkipMoved && fate == Fmove)
-		|| (SkipCopied && fate == Fcopy))) {
+	while (msg && ((app_resources.SkipDeleted && fate == Fdelete)
+		|| (app_resources.SkipMoved && fate == Fmove)
+		|| (app_resources.SkipCopied && fate == Fcopy))) {
 	    msg = TocMsgAfter(toc, msg);
 	    if (msg) fate = MsgGetFate(msg, (Toc *)NULL);
 	}
@@ -80,9 +80,9 @@ void ExecPrevView(scrn)
 	msg = TocGetCurMsg(toc);
 	if (msg && msg == scrn->msg) msg = TocMsgBefore(toc, msg);
 	if (msg) fate = MsgGetFate(msg, (Toc *)NULL);
-	while (msg && ((SkipDeleted && fate == Fdelete)
-		|| (SkipMoved && fate == Fmove)
-		|| (SkipCopied && fate == Fcopy))) {
+	while (msg && ((app_resources.SkipDeleted && fate == Fdelete)
+		|| (app_resources.SkipMoved && fate == Fmove)
+		|| (app_resources.SkipCopied && fate == Fcopy))) {
 	    msg = TocMsgBefore(toc, msg);
 	    if (msg) fate = MsgGetFate(msg, (Toc *)NULL);
 	}
@@ -196,7 +196,7 @@ int skip;
 void ExecMarkDelete(scrn)
 Scrn scrn;
 {
-    MarkMessages(scrn, Fdelete, SkipDeleted);
+    MarkMessages(scrn, Fdelete, app_resources.SkipDeleted);
 }
 
 
@@ -204,14 +204,14 @@ Scrn scrn;
 void ExecMarkCopy(scrn)
 Scrn scrn;
 {
-    MarkMessages(scrn, Fcopy, SkipCopied);
+    MarkMessages(scrn, Fcopy, app_resources.SkipCopied);
 }
 
 
 void ExecMarkMove(scrn)
 Scrn scrn;
 {
-    MarkMessages(scrn, Fmove, SkipMoved);
+    MarkMessages(scrn, Fmove, app_resources.SkipMoved);
 }
 
 
@@ -241,7 +241,7 @@ Scrn scrn;
     mlist = CurMsgListOrCurMsg(toc);
     i = 0;
     while (i < mlist->nummsgs) {
-	strcpy( str, defPrintCommand );
+	strcpy( str, app_resources.defPrintCommand );
 	used = strlen(str) + 2;
 	while (i < mlist->nummsgs &&
 	       (msg = MsgFileName(mlist->msglist[i])) &&

@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: tocutil.c,v 2.15 88/03/28 13:32:20 swick Exp $";
+static char rcs_id[] = "$Header: tocutil.c,v 2.16 88/05/13 11:12:06 swick Locked $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -129,7 +129,7 @@ void TUScanFileForToc(toc)
 	argv[0] = "scan";
 	argv[1] = TocMakeFolderName(toc);
 	argv[2] = "-width";
-	(void) sprintf(str, "%d", defTocWidth);
+	(void) sprintf(str, "%d", app_resources.defTocWidth);
 	argv[3] = str;
 	DoCommand(argv, (char *) NULL, toc->scanfile);
 	XtFree(argv[1]);
@@ -511,7 +511,7 @@ void TUGetFullFolderInfo(toc)
 {
     char str[500];
     if (toc->path == NULL) {
-	(void) sprintf(str, "%s/%s", mailDir, toc->foldername);
+	(void) sprintf(str, "%s/%s", app_resources.mailDir, toc->foldername);
 	toc->path = MallocACopy(str);
 	(void) sprintf(str, "%s/.xmhcache", toc->path);
 	toc->scanfile = MallocACopy(str);

@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: viewfuncs.c,v 2.8 88/02/24 15:37:24 swick Exp $";
+static char rcs_id[] = "$Header: viewfuncs.c,v 2.9 88/05/12 16:54:27 swick Locked $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -110,7 +110,8 @@ Scrn scrn;
 {
     char str[200];
     if (scrn->msg == NULL) return;
-    (void) sprintf(str, "%s %s", defPrintCommand, MsgFileName(scrn->msg));
+    (void) sprintf(str, "%s %s", app_resources.defPrintCommand,
+		   MsgFileName(scrn->msg));
     (void) system(str);
 }
 

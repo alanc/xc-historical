@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: pick.c,v 2.20 88/02/22 10:36:49 swick Exp $";
+static char rcs_id[] = "$Header: pick.c,v 2.21 88/02/22 21:38:39 swick Locked $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -476,7 +476,7 @@ static void ExecOK(w, closure, call_data)
     EraseLast();
     if (found) AppendArgv("-rbrace");
     else if (*fromdate || *todate) EraseLast();
-    if (debug) {
+    if (app_resources.debug) {
 	for (i=0 ; i<argvsize ; i++)
 	    (void) fprintf(stderr, "%s ", argv[i]);
 	(void) fprintf(stderr, "\n");
