@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: button.c,v 1.26 89/01/03 15:09:38 jim Exp $
+ *	$XConsortium: button.c,v 1.27 89/01/03 16:17:57 jim Exp $
  */
 
 
@@ -35,7 +35,7 @@ button.c	Handles button events in the terminal emulator.
 				J. Gettys.
 */
 #ifndef lint
-static char rcs_id[] = "$XConsortium: button.c,v 1.26 89/01/03 15:09:38 jim Exp $";
+static char rcs_id[] = "$XConsortium: button.c,v 1.27 89/01/03 16:17:57 jim Exp $";
 #endif	/* lint */
 #include <X11/Xos.h>
 #include <X11/Xlib.h>
@@ -584,9 +584,9 @@ int x, y;
 
 ScrollSelection(screen, amount)
 register TScreen* screen;
-int amount;
+register int amount;
 {
-    int minrow = -screen->savedlines;
+    register int minrow = -screen->savedlines;
 
     /* Sent by scrollbar stuff, so amount never takes selection out of
        saved text */
@@ -606,6 +606,8 @@ int amount;
     if (startSRow < minrow) startSRow = minrow;
     if (endSRow < minrow) endSRow = minrow;
     if (rawRow < minrow) rawRow = minrow;
+    if (screen->startHRow < minrow) screen->startHRow = minrow;
+    if (screen->endHRow < minrow) screen->endHRow = minrow;
 }
 
 
