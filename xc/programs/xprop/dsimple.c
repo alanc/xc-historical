@@ -1,4 +1,5 @@
-/* $Header$ */
+/* $Header: dsimple.c,v 1.1 87/09/11 08:23:17 rws Locked $ */
+#include <X11/Xos.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <X11/cursorfont.h>
@@ -29,9 +30,6 @@ Window Window_With_Name();
  * Send bugs, etc. to chariot@athena.mit.edu.
  */
 
-#include <strings.h>
-
-#define NULL 0
 
 /* This stuff is defined in the calling program by just_display.h */
 extern char *program_name;

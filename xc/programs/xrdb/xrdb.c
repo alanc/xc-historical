@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: xrdb.c,v 11.4 87/08/29 15:09:48 jg Locked $";
+static char rcs_id[] = "$Header: xrdb.c,v 11.5 87/09/11 19:57:36 rws Locked $";
 #endif
 
 /*
@@ -35,8 +35,8 @@ static char rcs_id[] = "$Header: xrdb.c,v 11.4 87/08/29 15:09:48 jg Locked $";
  */
 
 #include <stdio.h>
+#include <X11/Xos.h>
 #include <X11/Xlib.h>
-#include <strings.h>
 #include <X11/Xatom.h>
 #include <ctype.h>
 

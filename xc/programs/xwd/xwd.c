@@ -37,7 +37,7 @@
  */
 
 #ifndef lint
-static char *rcsid_xwd_c = "$Header: xwd.c,v 1.28 87/09/11 16:57:09 newman Locked $";
+static char *rcsid_xwd_c = "$Header: xwd.c,v 1.29 87/10/09 14:36:37 rws Locked $";
 #endif
 
 /*%
@@ -45,11 +45,10 @@ static char *rcsid_xwd_c = "$Header: xwd.c,v 1.28 87/09/11 16:57:09 newman Locke
  *%  color can be supported.
 %*/
 
+#include <X11/Xos.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
-#include <sys/types.h>
 #include <stdio.h>
-#include <strings.h>
 
 #define FEEP_VOLUME 0
 

@@ -1,23 +1,20 @@
 /* 
  * $header: xset.c,v 1.18 87/07/11 08:47:46 dkk Locked $ 
- * $Locker:  $ 
+ * $Locker: rws $ 
  */
 #include <X11/copyright.h>
 
 /* Copyright    Massachusetts Institute of Technology    1985	*/
 
 #ifndef lint
-static char *rcsid_xset_c = "$Header: xset.c,v 1.21 87/09/07 11:51:22 swick Exp $";
+static char *rcsid_xset_c = "$Header: xset.c,v 1.22 87/09/12 23:14:10 rws Locked $";
 #endif
 
-#include <X11/X.h>      /*  Should be transplanted to X11/Xlibwm.h     %*/
+#include <X11/Xos.h>
 #include <X11/Xlib.h>
 /*  #include <X11/Xlibwm.h>  [Doesn't exist yet  5-14-87]  %*/
 #include <X11/keysym.h>
 #include <stdio.h>
-#include <netdb.h>
-#include <netinet/in.h>
-#include <strings.h>
 #include <ctype.h>
 
 #define ON 1
