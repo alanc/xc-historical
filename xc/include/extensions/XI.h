@@ -1,4 +1,4 @@
-/* $Header: XI.h,v 1.18 90/09/27 10:45:09 gms ic1C-80 $ */
+/* $Header: XI.h,v 1.9 91/02/22 15:20:26 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -147,7 +147,9 @@ SOFTWARE.
 #define SyncAll			5
 
 #define FollowKeyboard 		3
+#ifndef RevertToFollowKeyboard
 #define RevertToFollowKeyboard 	3
+#endif
 
 #define DvAccelNum              (1L << 0)
 #define DvAccelDenom            (1L << 1)
