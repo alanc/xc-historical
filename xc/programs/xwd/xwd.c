@@ -37,7 +37,7 @@
  */
 
 #ifndef lint
-static char *rcsid_xwd_c = "$Header: xwd.c,v 1.20 87/07/01 18:48:20 chariot Locked $";
+static char *rcsid_xwd_c = "$Header: xwd.c,v 1.21 87/07/02 15:01:46 chariot Locked $";
 #endif
 
 /*%
@@ -294,9 +294,9 @@ Window_Dump(window, out)
  */
 usage()
 {
-    outl("%s: %s [-debug] [-help] %s [-nobdrs] [-out <file>]\n", program_name,
-	 SELECT_USAGE);
-    outl("                [-xy] [[host]:vs]\n");
+    printf("%s: %s [-debug] [-help] %s [-nobdrs] [-out <file>]",
+	   program_name, SELECT_USAGE);
+    printf(" [-xy] [[host]:vs]\n");
     exit(1);
 }
 
