@@ -73,13 +73,13 @@ static KeybdCtrl  sysKbCtrl;
 static KbPrivRec  	sysKbPriv = {
     -1,				/* Type of keyboard */
     -1,				/* Descriptor open to device */
-    macIIKbdProcessEvent,		/* Function to process an event */
+    macIIKbdProcessEvent,	/* Function to process an event */
     macIIKbdDoneEvents,		/* Function called when all events */
 				/* have been handled. */
     (pointer) NULL,		/* Private to keyboard device */
     (Bool)0,			/* Mapped queue */
     0,				/* offset for device keycodes */
-    &sysKbCtrl,                 /* Initial full duration = .25 sec. */
+    &sysKbCtrl,                 /* Initial full duration = .20 sec. */
 };
 
 extern int consoleFd;
@@ -176,16 +176,6 @@ macIIKbdProc (pKeyboard, what)
 
 #include <sys/termio.h>
 
-static struct termio d_tio = {
-	(BRKINT|IGNPAR|ISTRIP|ICRNL|IXON)&(~IGNBRK)&(~PARMRK)&(~INPCK)&(~INLCR)&
-	(~IGNCR)&(~IUCLC)&(~IXANY)&(~IXOFF),
-	(OPOST|ONLCR)&(~OLCUC)&(~OCRNL)&(~ONOCR)&(~ONLRET)&(~OFILL)&(~OFDEL),
-	(B9600|CS7|CREAD)&(~CSTOPB)&(~PARENB)&(~PARODD)&(~HUPCL)&(~CLOCAL)&(~LOBLK),
-	(ISIG|ICANON|ECHO|ECHOE|ECHOK)&(~XCASE)&(~ECHONL)&(~NOFLSH),
-	0,
-	{CINTR, CQUIT, CERASE, CKILL, CEOF, CNUL, CNUL, CNUL}
-};
-
 int
 macIIKbdSetUp(fd, openClose)
     int		fd;
@@ -193,21 +183,30 @@ macIIKbdSetUp(fd, openClose)
 {
     struct strioctl ctl;
     struct termio tio;
-    int status;
+    static struct termio save_tio;
+    int iarg;
 
     if (openClose) {
 
-	ioctl(fd, I_POP, 0);
+	if (ioctl(fd, TCGETA, &save_tio) < 0) {
+		FatalError("Failed to ioctl TCGETA.\n");
+		return (!Success);
+	}
+
+	if(ioctl(fd, I_POP, 0) < 0) {
+		FatalError("Failed to ioctl I_POP.\n");
+		return (!Success);
+	}
 		
-	status = 1;
-	if (ioctl(fd, FIONBIO, &status) < 0) {
+	iarg = 1;
+	if (ioctl(fd, FIONBIO, &iarg) < 0) {
 		FatalError("Could not ioctl FIONBIO. \n");
 		return (!Success);
 	}
 
-#ifdef	notdef
-	status = 1;
-	if (ioctl(fd, FIOASYNC, &status) < 0) {
+#ifdef notdef
+	iarg = 1;
+	if (ioctl(fd, FIOASYNC, &iarg) < 0) {
 		FatalError("Could not ioctl FIOASYNC. \n");
 		return (!Success);
 	}
@@ -245,34 +244,53 @@ macIIKbdSetUp(fd, openClose)
 	}
 
     } else {
-	status = 0;
-	if (ioctl(fd, FIONBIO, &status) < 0) {
+	iarg = 0;
+	if (ioctl(fd, FIONBIO, &iarg) < 0) {
 		FatalError("Could not ioctl FIONBIO. \n");
 		return (!Success);
 	}
 
 #ifdef notdef
-	status = 0;
-	if (ioctl(fd, FIOASYNC, &status) < 0) {
+	iarg = 0;
+	if (ioctl(fd, FIOASYNC, &iarg) < 0) {
 		FatalError("Could not ioctl FIOASYNC. \n");
 		return (!Success);
 	}
 #endif
 
-	ioctl(fd, I_POP, 0); /* remove line discipline */
-	ioctl(fd, I_FLUSH, FLUSHRW); /* flush input to get known state */
+	if(ioctl(fd, I_POP, 0) < 0) {
+		FatalError("Failed to ioctl I_POP.\n");
+		return (!Success);
+	}
+
+	if (ioctl(fd, I_FLUSH, FLUSHRW) < 0) {
+		FatalError("Failed to ioctl I_FLUSH FLUSHRW.\n");
+		return (!Success);
+	}
     
 	ctl.ic_len = 0;
 	ctl.ic_cmd = VIDEO_NOMOUSE;
-	ioctl(fd, I_STR, &ctl);
+	if (ioctl(fd, I_STR, &ctl) < 0) {
+		FatalError("Failed to ioctl I_STR VIDEO_NOMOUSE.\n");
+		return(!Success);
+	}
 
 	ctl.ic_len = 0;
 	ctl.ic_cmd = VIDEO_ASCII;
-	ioctl(fd, I_STR, &ctl);
+	if (ioctl(fd, I_STR, &ctl) < 0) {
+		FatalError("Failed to ioctl I_STR VIDEO_ASCII.\n");
+		return(!Success);
+	}
 
-	ioctl(fd, I_PUSH, "line");
+	if(ioctl(fd, I_PUSH, "line") < 0) {
+		FatalError("Failed to ioctl I_PUSH.\n");
+		return (!Success);
+	}
 
-	ioctl(fd, TCSETA, &d_tio);
+	if (ioctl(fd, TCSETA, &save_tio) < 0) {
+		FatalError("Failed to ioctl TCSETA.\n");
+		return (!Success);
+	}
     }
 }
 
