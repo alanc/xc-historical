@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $Header: events.c,v 1.88 87/08/10 14:43:59 ham Exp $ */
+/* $Header: events.c,v 1.88 87/08/11 12:53:29 toddb Locked $ */
 
 #include "X.h"
 #include "misc.h"
@@ -984,6 +984,7 @@ NewCurrentScreen(newScreen, x, y)
     if (newScreen == currentScreen)
         return;
     ROOT = &WindowTable[newScreen->myNum];
+    currentScreen = newScreen;
     (void) CheckMotion(x, y, TRUE);
 }
 
