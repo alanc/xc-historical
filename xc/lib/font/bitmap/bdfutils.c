@@ -22,7 +22,7 @@ SOFTWARE.
 
 ************************************************************************/
 
-/* $XConsortium: bdfutils.c,v 1.2 91/05/10 15:58:21 keith Exp $ */
+/* $XConsortium: bdfutils.c,v 1.3 91/07/17 20:43:53 rws Exp $ */
 
 #include <ctype.h>
 
@@ -172,7 +172,7 @@ bdfGetPropertyValue(s)
 		} else {
 		    atom = None;
 		}
-		free(pp);
+		xfree(pp);
 		return atom;
 	    } else {
 		s++;
@@ -180,6 +180,7 @@ bdfGetPropertyValue(s)
 	}
 	*p++ = *s++;
     }
+    xfree (pp);
     return None;
 }
 
