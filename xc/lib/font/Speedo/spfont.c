@@ -1,4 +1,4 @@
-/* $XConsortium: spfont.c,v 1.12 91/07/22 22:59:38 keith Exp $ */
+/* $XConsortium: spfont.c,v 1.13 91/09/16 11:42:28 keith Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -626,35 +626,21 @@ open_sp_font(fontname, filename, entry, format, fmask, flags, spfont)
 {
     SpeedoFontPtr spf;
     SpeedoMasterFontPtr spmf;
-    FontPtr     mpfont;
     int         ret;
     char        tmpname[MAXFONTNAMELEN];
     specs_t     specs;
     FontScalableRec vals;
     double      pointsize;
 
-    /* make a master if we don't have one */
-    if (entry) {
-	mpfont = (FontPtr) entry->u.scalable.extra->private;
-	if (!mpfont) {
-	    mpfont = (FontPtr) xalloc(sizeof(FontRec));
-	    if (!mpfont)
-		return AllocError;
-	    flags |= FontLoadBitmaps;	/* make sure a master is all there */
-	    ret = load_sp_font(entry->name.name, filename, (FontEntryPtr) 0,
-			       format, fmask, mpfont, flags);
-	    if (ret != Successful) {
-		xfree(mpfont);
-		return ret;
-	    }
-	    entry->u.scalable.extra->private = (pointer) mpfont;
-	}
-	spf = (SpeedoFontPtr) mpfont->fontPrivate;
-	spmf = spf->master;
-    } else {
+    /* find a master (create it if necessary) */
+    spmf = (SpeedoMasterFontPtr) entry->u.scalable.extra->private;
+    if (!spmf)
+    {
 	ret = open_master(filename, &spmf);
 	if (ret != Successful)
 	    return ret;
+	entry->u.scalable.extra->private = (pointer) spmf;
+	spmf->entry = entry;
     }
 
     spf = (SpeedoFontPtr) xalloc(sizeof(SpeedoFontRec));
@@ -663,6 +649,7 @@ open_sp_font(fontname, filename, entry, format, fmask, flags, spfont)
     bzero((char *) spf, sizeof(SpeedoFontRec));
 
     spf->master = spmf;
+    spf->entry = entry;
     spmf->refcount++;
     sp_reset_master(spmf);
 
@@ -697,12 +684,15 @@ open_sp_font(fontname, filename, entry, format, fmask, flags, spfont)
     specs.flags = MODE_SCREEN;
     specs.out_info = NULL;
 
+    /* clobber global state to avoid wrecking future obliqued fonts */
+    bzero ((char *) &sp_globals, sizeof(sp_globals));
+
     if (!sp_set_specs(&specs))
 	return BadFontName;
 
     spf->specs = specs;
-
     *spfont = spf;
+    spf->master = spmf;
 
     return Successful;
 }
@@ -768,6 +758,7 @@ load_sp_font(fontname, filename, entry, format, fmask, pfont, flags)
     pfont->maxPrivate = -1;
     pfont->devPrivates = (pointer *) 0;
 
+    /* have to hold on to master for min/max id */
     close_master_file(spmf);
 
     return ret;
@@ -794,7 +785,9 @@ SpeedoFontLoad(ppfont, fontname, filename, entry, format, fmask, flags)
 
     if (ret == Successful)
 	*ppfont = pfont;
-
+    else
+	xfree (pfont);
+    
     return ret;
 }
 
@@ -805,13 +798,9 @@ close_sp_font(spf)
     SpeedoMasterFontPtr spmf;
 
     spmf = spf->master;
-    if (--spmf->refcount == 0) {
-	if (spmf->state & MasterFileOpen) {
-	    (void) fclose(spmf->fp);
-	    xfree(spmf->f_buffer);
-	    xfree(spmf->c_buffer);
-	}
-    }
+    --spmf->refcount;
+    if (spmf->refcount == 0)
+	close_master_font (spmf);
     xfree(spf->encoding);
     xfree(spf->bitmaps);
     xfree(spf);

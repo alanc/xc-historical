@@ -1,4 +1,4 @@
-/* $XConsortium: spint.h,v 1.3 91/05/11 09:59:09 rws Exp $ */
+/* $XConsortium: spint.h,v 1.4 91/07/16 20:20:32 keith Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -52,6 +52,7 @@
 #define	MasterFileOpen	0x1
 
 typedef struct _sp_master {
+    FontEntryPtr    entry;	/* back pointer */
     FILE       *fp;
     char       *fname;
     ufix8      *f_buffer;
@@ -98,6 +99,8 @@ typedef struct _cur_font_stats {
 typedef struct _sp_font {
     struct _sp_master *master;
     specs_t     specs;
+
+    FontEntryPtr    entry;
 
     FontScalableRec vals;
 

@@ -1,4 +1,4 @@
-/* $XConsortium: spfile.c,v 1.3 91/05/11 09:57:37 rws Exp $ */
+/* $XConsortium: spfile.c,v 1.4 91/07/15 18:16:46 keith Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -265,6 +265,7 @@ close_master_font(spmf)
 	return;
     if (spmf->state & MasterFileOpen)
 	fclose(spmf->fp);
+    spmf->entry->u.scalable.extra->private = (pointer) 0;
     xfree(spmf->fname);
     xfree(spmf->f_buffer);
     xfree(spmf->c_buffer);
