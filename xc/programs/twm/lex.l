@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: lex.l,v 1.56 89/11/13 15:16:29 jim Exp $
+ * $XConsortium: lex.l,v 1.57 89/11/13 18:11:23 jim Exp $
  *
  * .twmrc lex file
  *
@@ -37,7 +37,7 @@
  ***********************************************************************/
 
 static char RCSinfo[]=
-"$XConsortium: lex.l,v 1.56 89/11/13 15:16:29 jim Exp $";
+"$XConsortium: lex.l,v 1.57 89/11/13 18:11:23 jim Exp $";
 
 /* #include <stdio.h> */		/* lex already includes stdio.h */
 #include "gram.h"
@@ -49,9 +49,6 @@ extern int ParseError;
 
 string				\"([^"]|\\.)*\"
 number				[0-9]+
-button				[Bb][Uu][Tt][Tt][Oo][Nn]
-tbutton				[Tt][Ii][Tt][Ll][Ee][Bb][Uu][Tt][Tt][Oo][Nn]
-noraise				[Nn][Oo][Rr][Aa][Ii][Ss][Ee][Oo][Nn]
 %%
 "{"				{ return (LB); }
 "}"				{ return (RB); }
@@ -63,12 +60,6 @@ noraise				[Nn][Oo][Rr][Aa][Ii][Ss][Ee][Oo][Nn]
 "-"				{ return MINUS; }
 "|"				{ return OR; }
 
-{button}{number}		{ (void)sscanf(&yytext[6], "%d", &yylval.num);
-				  return (BUTTON);
-				}
-{tbutton}{number}		{ (void)sscanf(&yytext[11], "%d", &yylval.num);
-				  return (TBUTTON);
-				}
 [a-zA-Z\.]+			{ return parse_keyword (yytext, &yylval.num); }
 
 "!"				{ yylval.num = F_EXEC; return FSKEYWORD; }
