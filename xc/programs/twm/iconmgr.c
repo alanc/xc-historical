@@ -21,7 +21,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: iconmgr.c,v 1.24 89/07/07 12:02:59 jim Exp $
+ * $XConsortium: iconmgr.c,v 1.25 89/07/18 17:15:54 jim Exp $
  *
  * Icon Manager routines
  *
@@ -58,8 +58,6 @@ WList *DownIconManager = NULL;
 
 CreateIconManagers()
 {
-
-    TwmWindow *tmp_win;
     IconMgr *p;
     int mask;
     char str[100];
@@ -106,6 +104,7 @@ CreateIconManagers()
 	XSetStandardProperties(dpy, p->w, str, icon_name, None, NULL, 0, NULL);
 
 	p->twm_win = AddWindow(p->w, TRUE, p);
+	SetMapStateProp (p->twm_win, WithdrawnState);
     }
     for (p = &Scr->iconmgr; p != NULL; p = p->next)
     {

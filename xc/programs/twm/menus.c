@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.84 89/07/18 14:20:39 jim Exp $
+ * $XConsortium: menus.c,v 1.85 89/07/18 17:16:03 jim Exp $
  *
  * twm menu code
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: menus.c,v 1.84 89/07/18 14:20:39 jim Exp $";
+"$XConsortium: menus.c,v 1.85 89/07/18 17:16:03 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -1115,6 +1115,7 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
     case F_HIDELIST:
 	if (Scr->NoIconManagers)
 	    break;
+	SetMapStateProp (Scr->iconmgr.twm_win, WithdrawnState);
 	XUnmapWindow(dpy, Scr->iconmgr.twm_win->frame);
 	if (Scr->iconmgr.twm_win->icon_w)
 	    XUnmapWindow(dpy, Scr->iconmgr.twm_win->icon_w);
@@ -2292,8 +2293,6 @@ int state;
 {
     unsigned long data[2];		/* "suggested" by ICCCM version 1 */
   
-    if (tmp_win->iconmgr) return;
-
     data[0] = (unsigned long) state;
     data[1] = (unsigned long) (tmp_win->iconify_by_unmapping ? None : 
 			   tmp_win->icon_w);

@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: twm.c,v 1.60 89/07/14 14:13:04 jim Exp $
+ * $XConsortium: twm.c,v 1.61 89/07/18 17:16:17 jim Exp $
  *
  * twm - "Tom's Window Manager"
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: twm.c,v 1.60 89/07/14 14:13:04 jim Exp $";
+"$XConsortium: twm.c,v 1.61 89/07/18 17:16:17 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -423,6 +423,7 @@ main(argc, argv, environ)
 	    Scr->iconmgr.twm_win->icon = FALSE;
 	    if (Scr->iconmgr.count)
 	    {
+		SetMapStateProp (Scr->iconmgr.twm_win, NormalState);
 		XMapWindow(dpy, Scr->iconmgr.w);
 		XMapWindow(dpy, Scr->iconmgr.twm_win->frame);
 	    }
