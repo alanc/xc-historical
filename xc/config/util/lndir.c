@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: lndir.c,v 1.1 91/07/14 15:20:39 rws Exp $ */
 /* Create shadow link tree (after X.V11R4 script of the same name)
    Mark Reinhold (mbr@lcs.mit.edu)/3 January 1990 */
 
@@ -41,18 +41,29 @@
 */
 
 #include <stdio.h>
-#include <sys/types.h>
+#include <X11/Xos.h>
 #include <sys/stat.h>
-#include <sys/dir.h>
 #include <sys/param.h>
-#include <strings.h>
 #include <errno.h>
 
-extern int errno;
-
-#ifdef _IBMR2
-#define direct dirent
+#ifndef X_NOT_POSIX
+#include <dirent.h>
+#else
+#ifdef SYSV
+#include <dirent.h>
+#else
+#ifdef USG
+#include <dirent.h>
+#else
+#include <sys/dir.h>
+#ifndef dirent
+#define dirent direct
 #endif
+#endif
+#endif
+#endif
+
+extern int errno;
 
 void
 quit (code, fmt, a1, a2, a3)
@@ -90,8 +101,9 @@ struct stat *fs, *ts;		/* stats for the "from" directory and cwd */
 int rel;			/* if true, prepend "../" to fn before using */
 {
     DIR *df;
-    struct direct *dp;
+    struct dirent *dp;
     char buf[MAXPATHLEN + 1], *p;
+    char symbuf[MAXPATHLEN + 1];
     struct stat sb, sc;
     int n_dirs;
 
@@ -150,9 +162,16 @@ int rel;			/* if true, prepend "../" to fn before using */
 	}
 
 	/* non-directory */
-	if (symlink (buf, dp->d_name) < 0)
-	    perror (dp->d_name);
-
+	if (symlink (buf, dp->d_name) < 0) {
+	    int saverrno = errno;
+	    int symlen;
+	    symlen = readlink(dp->d_name, symbuf, sizeof(symbuf) - 1);
+	    errno = saverrno;
+	    if (symlen > 0)
+		symbuf[symlen] = '\0';
+	    if (symlen < 0 || strcmp(symbuf, buf))
+		perror (dp->d_name);
+	}
     }
 
     closedir (df);
