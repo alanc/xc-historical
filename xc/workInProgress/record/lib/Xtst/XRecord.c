@@ -2,7 +2,7 @@
  * Copyright 1988-1993 Network Computing Devices, Inc.  All rights reserved.
  * An unpublished work.
  *
- * $XConsortium: XRecord.c,v 1.6 94/02/05 14:16:43 rws Exp $
+ * $XConsortium: XRecord.c,v 1.8 94/03/30 16:21:12 rws Exp $
  */
 
 #include <stdio.h>
@@ -241,9 +241,10 @@ XRecordEnableCG(dpy, config, func, arg)
 	data.client_swapped = rep.client_swapped;
 	data.client_seq = rep.client_seq;
 	data.data_len = rep.length << 2;
-	data.data = (XRecordDatum *)_XAllocScratch(dpy, data.data_len);
+	data.data = (XRecordDatum *)_XAllocTemp(dpy, data.data_len);
 	_XRead (dpy, (char *)data.data, (long) data.data_len);
 	(*func)(dpy, &data, arg);
+	_XFreeTemp(dpy, (char *)data.data, data.data_len);
     }
 
     UnlockDisplay(dpy);
@@ -298,10 +299,11 @@ _XCGHandler(dpy, rep, buf, len, adata)
     data.client_swapped = repl->client_swapped;
     data.client_seq = repl->client_seq;
     data.data_len = repl->length << 2;
-    data.data = (XRecordDatum *)_XAllocScratch(dpy, data.data_len);
+    data.data = (XRecordDatum *)_XAllocTemp(dpy, data.data_len);
     _XGetAsyncData(dpy, (char *)data.data, buf, len,
 		   SIZEOF(xRecordEnableConfigReply), data.data_len, 0);
     (*state->func)(dpy, &data, state->arg);
+    _XFreeTemp(dpy, (char *)data.data, data.data_len);
     return True;
 }
 
