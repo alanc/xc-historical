@@ -1,5 +1,5 @@
 /*
-* $XConsortium: TextSrcP.h,v 1.8 89/07/07 14:28:42 kit Exp $
+* $XConsortium: TextSrcP.h,v 1.9 89/07/10 17:38:13 kit Exp $
 */
 
 
@@ -39,7 +39,7 @@ typedef struct _XawTextSource {
     XawTextPosition	(*Read)();
     int			(*Replace)();
     XawTextPosition	(*Scan)();
-    int                 (*Search)();
+    XawTextPosition     (*Search)();
     void		(*SetSelection)( /* source, left, right, selection */);
     Boolean		(*ConvertSelection)( /* Display*, source, ... */ );
     Boolean             (*SetValuesHook)(); /* source, ArgList, NumArgs */
