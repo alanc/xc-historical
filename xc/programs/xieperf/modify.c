@@ -1,4 +1,4 @@
-/* $XConsortium: modify.c,v 1.8 93/11/06 15:05:12 rws Exp $ */
+/* $XConsortium: modify.c,v 1.9 94/01/12 20:47:13 rws Exp $ */
 
 /**** module modify.c ****/
 /******************************************************************************
@@ -799,7 +799,7 @@ XiePhotoElement **flograph;
 #ifdef WIN32
 #define RAND( x, y ) ( ( rand() / ((RAND_MAX + 1) / 2.0) ) * ( y - x ) + x )
 #else
-#if defined(SYSV) || defined(SVR4)
+#if defined(SYSV) || defined(SVR4) || defined(__osf__)
 #define random lrand48
 #endif
 #ifndef sgi
