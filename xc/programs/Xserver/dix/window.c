@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: window.c,v 5.43 89/11/26 14:06:01 rws Exp $ */
+/* $XConsortium: window.c,v 5.44 89/11/26 15:25:37 rws Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -3391,7 +3391,7 @@ MapWindow(pWin, client)
 {
     register ScreenPtr pScreen;
 
-    WindowPtr pParent;
+    register WindowPtr pParent;
 #ifdef DO_SAVE_UNDERS
     Bool	dosave = FALSE;
 #endif
