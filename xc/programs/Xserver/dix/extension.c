@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: extension.c,v 1.6 87/08/27 14:27:22 drewry Exp $ */
+/* $Header: extension.c,v 1.27 87/09/01 20:50:42 toddb Locked $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -214,10 +214,19 @@ LookupProc(name, pGC)
     return (ExtensionLookupProc)NULL;
 }
 
-
 void
 RegisterProc(name, pGC, proc)
     char *name;
+    GC *pGC;
+    ExtensionLookupProc proc;
+{
+    RegisterScreenProc(name, pGC->pScreen, proc);
+}
+
+void
+RegisterScreenProc(name, pScreen, proc)
+    char *name;
+    Screen *pScreen;
     GC *pGC;
     ExtensionLookupProc proc;
 {
@@ -225,7 +234,7 @@ RegisterProc(name, pGC, proc)
     ProcEntryPtr procEntry = (ProcEntryPtr)NULL;
     int i;
 
-    spentry = &AuxillaryScreenProcs[pGC->pScreen->myNum];
+    spentry = &AuxillaryScreenProcs[pScreen->myNum];
     /* first replace duplicates */
     if (spentry->num)
     {
