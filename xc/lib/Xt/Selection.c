@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Selection.c,v 1.16 89/09/28 11:36:59 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Selection.c,v 1.17 89/10/06 19:22:38 swick Exp $";
 /* $oHeader: Selection.c,v 1.8 88/09/01 11:53:42 asente Exp $ */
 #endif /* lint */
 
@@ -927,6 +927,7 @@ Select ctx;
     int format;
     Atom type;
     unsigned char *value;
+    static HandleIncremental();
 
     (void) XGetWindowProperty(dpy, XtWindow(widget), property, 0L,
 			      10000000, False, AnyPropertyType,
