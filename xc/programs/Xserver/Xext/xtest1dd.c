@@ -1209,6 +1209,7 @@ int		readable;
  */
 struct timeval	*waittime;
 {	
+int mousex, mousey;
 	/*
 	 * if playback_on is 0, then the input action array is empty
 	 */
@@ -1268,12 +1269,15 @@ struct timeval	*waittime;
 				my = action_array[read_index].y;
 			}
 			if (action_array[read_index].type == XTestKEY_ACTION)
+			    {
+			    GetSpritePosition(&mousex, &mousey);
 			    XTestGenerateEvent(
 				     action_array[read_index].device, 
 				     action_array[read_index].keycode, 
 				     action_array[read_index].keystate,
-				     mx,
-				     my);
+				     mousex,
+				     mousey);
+			    }
 			read_index++;
 			/*
 			 * if all input actions are processed, then restore 
