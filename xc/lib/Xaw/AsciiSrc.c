@@ -1,5 +1,5 @@
 #if ( !defined(lint) && !defined(SABER) )
-static char Xrcsid[] = "$XConsortium: AsciiSrc.c,v 1.36 90/04/30 17:46:06 converse Exp $";
+static char Xrcsid[] = "$XConsortium: AsciiSrc.c,v 1.37 90/05/08 15:23:37 converse Exp $";
 #endif 
 
 /*
@@ -977,12 +977,12 @@ AsciiSrcObject src;
 	if ((file = fopen(src->ascii_src.string, open_mode)) == 0) {
 	    String params[2];
 	    Cardinal num_params = 2;
+	    char msg[11];
 	    
 	    params[0] = src->ascii_src.string;
 	    if (errno <= sys_nerr)
 		params[1] = sys_errlist[errno];
 	    else {
-		char msg[11];
 		sprintf(msg, "errno=%.4d", errno);
 		params[1] = msg;
 	    }
