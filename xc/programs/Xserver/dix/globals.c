@@ -22,7 +22,7 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $Header: globals.c,v 1.38 88/02/21 18:24:21 rws Exp $ */
+/* $XConsortium: globals.c,v 1.39 88/02/23 19:37:17 rws Exp $ */
 
 #include "X.h"
 #include "Xmd.h"

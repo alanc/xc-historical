@@ -1,4 +1,4 @@
-/* $Header: dispatch.c,v 1.64 88/09/01 19:08:22 keith Exp $ */
+/* $XConsortium: dispatch.c,v 1.65 88/09/05 14:34:55 rws Exp $ */
 /************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.

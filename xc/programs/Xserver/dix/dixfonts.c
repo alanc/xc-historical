@@ -22,7 +22,7 @@ SOFTWARE.
 
 ************************************************************************/
 
-/* $Header: dixfonts.c,v 1.1 88/08/16 12:11:45 keith Exp $ */
+/* $XConsortium: dixfonts.c,v 1.2 88/08/21 20:06:43 rws Exp $ */
 
 #define NEED_REPLIES
 #include "X.h"

@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $Header: events.c,v 1.153 88/09/04 17:28:16 rws Exp $ */
+/* $XConsortium: events.c,v 1.154 88/09/05 14:47:11 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"

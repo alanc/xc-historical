@@ -22,7 +22,7 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $Header: swaprep.c,v 1.28 88/01/02 14:38:48 rws Exp $ */
+/* $XConsortium: swaprep.c,v 1.29 88/02/24 15:19:32 rws Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES

@@ -22,7 +22,7 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $Header: resource.c,v 1.64 88/01/01 17:12:35 rws Exp $ */
+/* $XConsortium: resource.c,v 1.65 88/06/30 15:33:11 keith Exp $ */
 
 /*	Routines to manage various kinds of resources:
  *

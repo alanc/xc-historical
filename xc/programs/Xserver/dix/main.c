@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: main.c,v 1.138 88/07/29 12:15:52 keith Exp $ */
+/* $XConsortium: main.c,v 1.139 88/08/09 17:41:13 rws Exp $ */
 
 #include "X.h"
 #include "Xproto.h"

@@ -1,4 +1,4 @@
-/* $Header: grabs.c,v 1.4 88/01/02 18:01:44 rws Exp $ */
+/* $XConsortium: grabs.c,v 1.5 88/08/16 22:29:58 rws Exp $ */
 /************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.

@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: window.c,v 1.211 88/09/04 20:55:17 rws Exp $ */
+/* $XConsortium: window.c,v 1.212 88/09/05 13:26:51 rws Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES

@@ -22,7 +22,7 @@ SOFTWARE.
 
 ************************************************************************/
 
-/* $Header: glyphcurs.c,v 1.12 88/01/18 18:04:25 rws Locked $ */
+/* $XConsortium: glyphcurs.c,v 1.13 88/02/02 19:12:50 rws Exp $ */
 
 #include "X.h"
 #include "Xmd.h"

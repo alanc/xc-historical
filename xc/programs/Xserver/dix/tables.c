@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: tables.c,v 1.17 87/09/07 19:46:18 newman Locked $ */
+/* $XConsortium: tables.c,v 1.18 87/09/18 16:53:09 newman Exp $ */
 
 extern int    ProcBadRequest(), ProcCreateWindow(),
     ProcChangeWindowAttributes(), ProcGetWindowAttributes(),

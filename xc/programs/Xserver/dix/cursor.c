@@ -23,7 +23,7 @@ SOFTWARE.
 ******************************************************************/
 
 
-/* $Header: cursor.c,v 1.28 87/12/30 17:27:08 rws Locked $ */
+/* $XConsortium: cursor.c,v 1.29 88/01/02 18:04:02 rws Exp $ */
 
 #include "X.h"
 #include "scrnintstr.h"

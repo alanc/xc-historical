@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: extension.c,v 1.41 87/12/31 16:27:58 rws Locked $ */
+/* $XConsortium: extension.c,v 1.42 88/01/02 15:10:49 rws Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES

@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: colormap.c,v 1.73 88/07/27 11:23:21 rws Exp $ */
+/* $XConsortium: colormap.c,v 1.74 88/08/09 11:07:21 rws Exp $ */
 
 #include "X.h"
 #define NEED_EVENTS

@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: atom.c,v 1.23 87/11/04 20:10:50 rws Locked $ */
+/* $XConsortium: atom.c,v 1.24 88/01/01 16:11:46 rws Exp $ */
 
 #include "X.h"
 #include "Xatom.h"

@@ -22,7 +22,7 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $Header: swapreq.c,v 1.26 87/08/14 22:40:54 newman Exp $ */
+/* $XConsortium: swapreq.c,v 1.27 88/01/02 15:04:46 rws Exp $ */
 
 #include "X.h"
 #define NEED_EVENTS

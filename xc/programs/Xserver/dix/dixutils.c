@@ -23,7 +23,7 @@ SOFTWARE.
 ******************************************************************/
 
 
-/* $Header: dixutils.c,v 1.28 88/05/24 13:32:49 rws Exp $ */
+/* $XConsortium: dixutils.c,v 1.29 88/08/16 20:02:40 keith Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
