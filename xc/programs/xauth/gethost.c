@@ -1,5 +1,5 @@
 /*
- * $XConsortium: gethost.c,v 1.20 93/09/20 18:00:18 hersh Exp $
+ * $XConsortium: gethost.c,v 1.21 94/04/17 20:37:51 hersh Exp kaleb $
  *
  * 
 Copyright (c) 1989  X Consortium
@@ -52,13 +52,13 @@ in this Software without prior written authorization from the X Consortium.
 #include <sys/socket.h>
 #include <netdb.h>
 #include <netinet/in.h>
-#ifdef SYSV386
-#ifndef SVR4
+#ifdef SYSV
+#ifdef i386
 #ifndef SCO
 #include <net/errno.h>
 #endif /* !SCO */
-#endif /* !SVR4 */
-#endif /* SYSV386 */
+#endif /* i386 */
+#endif /* SYSV */
 #endif /* !STREAMSCONN */
 #endif /* !WIN32 */
 #include <errno.h>
