@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: mfbpixmap.c,v 1.44 87/09/07 19:02:10 rws Locked $ */
+/* $Header: mfbpixmap.c,v 1.45 87/09/07 19:03:20 rws Exp $ */
 
 /* pixmap management
    written by drewry, september 1986
@@ -76,8 +76,7 @@ Bool
 mfbDestroyPixmap(pPixmap)
     PixmapPtr pPixmap;
 {
-/* BOGOSITY ALERT */
-    if ((unsigned)pPixmap < 42)
+    if (!IS_VALID_PIXMAP(pPixmap))
 	return TRUE;
 
     if(--pPixmap->refcnt)

@@ -147,8 +147,7 @@ Bool
 cfbDestroyPixmap(pPixmap)
     PixmapPtr pPixmap;
 {
-/* BOGOSITY ALERT */
-    if ((unsigned)pPixmap < 42)
+    if (!IS_VALID_PIXMAP(pPixmap))
 	return TRUE;
 
     if(--pPixmap->refcnt)
