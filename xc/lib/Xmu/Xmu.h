@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xmu.h,v 1.16 89/03/31 15:41:38 jim Exp $
+ * $XConsortium: Xmu.h,v 1.17 89/04/07 16:06:26 jim Exp $
  *
  * Copyright 1988 by the Massachusetts Institute of Technology
  *
@@ -86,6 +86,8 @@ void XmuCvtStringToJustify();
 void XmuCvtStringToOrientation();
 void XmuCvtStringToPixmap();
 void XmuCvtStringToWidget();
+void XmuCallInitializers(/* XtAppContext */);
+void XmuAddInitializer(/* (*void)(), caddr_t */);
 AtomPtr XmuMakeAtom( /* char* */ );
 Atom XmuInternAtom( /* Display*, AtomPtr */ );
 void XmuInternStrings( /* Display*, String*, Cardinal, Atom* */);

@@ -27,6 +27,7 @@ SRCS = \
 	DefErrMsg.c \
 	DrRndRect.c \
 	FToCback.c \
+	Initializer.c \
 	Lookup.c \
 	Lower.c \
 	RdBitF.c \
@@ -49,6 +50,7 @@ OBJS = \
 	DefErrMsg.o \
 	DrRndRect.o \
 	FToCback.o \
+	Initializer.o \
 	Lookup.o \
 	Lower.o \
 	RdBitF.o \
