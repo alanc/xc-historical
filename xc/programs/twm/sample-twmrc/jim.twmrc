@@ -115,7 +115,8 @@ Button3 = m    : window|icon|frame|title  : f.function "move-or-raise"
 Button1 = c|m|s: root			  : f.refresh
 #"F20"   =      : all                      : f.warptoscreen "next"
 
-"F28"   =      : all                      : f.colormap "next"
+"F24"	=      : all			  : f.colormap "next"
+"F28"   =      : all                      : f.warpring "next"
 "F30"   =      : all                      : f.warptoiconmgr ""
 "F32"   =      : all                      : f.raiselower
 "F34"   =      : all                      : f.iconify
@@ -161,7 +162,12 @@ NoTitle				# little programs that look like icons
   "xcutsel"
 }
 
-
+WindowRing			# f.warpring acts along these windows
+{
+    "XTerm"
+    "emacs"
+    "Xmh"
+}
 
 
 ###############################################################################
@@ -202,6 +208,7 @@ menu "windowops"
 menu "windowmenu"
 {
 "Iconify"		f.iconify
+"RaiseLower"		f.raiselower
 "Refresh"		f.winrefresh
 "Focus"			f.focus
 ""			f.nop
