@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: pick.c,v 2.18 88/01/25 13:54:33 swick Locked $";
+static char rcs_id[] = "$Header: pick.c,v 2.19 88/02/06 10:54:51 swick Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -398,8 +398,9 @@ char *str;
     XtDialogAddButton( pick->errorwidget, "OK",
 		       DestroyErrorWidget, (caddr_t)pick );
 
-    CenterWidget(pick->scrn->widget, pick->errorwidget);
     XtRealizeWidget( pick->errorwidget );
+    CenterWidget( pick->scrn->widget, pick->errorwidget );
+    XtMapWidget( pick->errorwidget );
 }
 
 
