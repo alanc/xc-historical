@@ -12,7 +12,7 @@
 # make no representations about the suitability of this software for any
 # purpose.  It is provided "as is" without express or implied warranty.
 #
-# $XConsortium$
+# $XConsortium: Makefile,v 1.3 92/06/11 15:33:44 rws Exp $
 #
 
 # This Makefile can be used to print the documentation for the X test suite.
@@ -28,17 +28,19 @@ SOELIM=soelim
 # This command converts tbl requests to nroff format.
 TBL=tbl 
 
-# This command formats text using nroff/troff with the mm macros.
-TROFF=ditroff -mm -Tpsc
+MACROS=-mm
 
-# This command converts to PostScript format if needed (if not, it can
-# be altered to "cat").
-PSDIT=psdit
+# This command formats text using nroff/troff with the mm macros
+# and converts to PostScript
+#TROFF=ditroff $(MACROS) -Tpsc | psdit
+#TROFF=troff $(MACROS) -Tpsc | psdit
+TROFF=psroff $(MACROS)
 
 # This command sends output to a printer.
-LPR=cpr -Bps
+#LPR=cpr -Bps
+LPR=lpr
 
-all:	printall
+all: rel_note.ps user_guide.ps prog_guide.ps paper.ps
 
 printall:	print00 print01 print02
 
@@ -46,22 +48,22 @@ print00:	rel_note.ps
 	cat rel_note.ps | $(LPR)
 
 rel_note.ps:	rel_note.mm
-	$(SOELIM) rel_note.mm | $(TBL) | $(TROFF) | $(PSDIT) >rel_note.ps
+	$(SOELIM) rel_note.mm | $(TBL) | $(TROFF) >rel_note.ps
 
 print01:	user_guide.ps
 	cat user_guide.ps | $(LPR)
 
 user_guide.ps:	user_guide.mm
-	$(SOELIM) user_guide.mm | $(TBL) | $(TROFF) | $(PSDIT) >user_guide.ps
+	$(SOELIM) user_guide.mm | $(TBL) | $(TROFF) >user_guide.ps
 
 print02:	prog_guide.ps
 	cat prog_guide.ps | $(LPR)
 
 prog_guide.ps:	prog_guide.mm
-	$(SOELIM) prog_guide.mm | $(TBL) | $(TROFF) | $(PSDIT) >prog_guide.ps
+	$(SOELIM) prog_guide.mm | $(TBL) | $(TROFF) >prog_guide.ps
 
 print03:	paper.ps
 	cat paper.ps | $(LPR)
 
 paper.ps:	paper.mm
-	$(SOELIM) paper.mm | $(TBL) | $(TROFF) | $(PSDIT) >paper.ps
+	$(SOELIM) paper.mm | $(TBL) | $(TROFF) >paper.ps
