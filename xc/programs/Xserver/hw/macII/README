@@ -18,7 +18,9 @@ Build the system by:
 	alias make "make SHELL=/bin/sh"
 	make BOOTSTRAPCFLAGS=-DmacII -k World >>& MakeLog
 
-	This takes several hours.
+	This takes several hours.  Many files will generate warnings about
+	"enumeration type clashes".  This is a misfeature in the C compiler 
+	and can safely be ignored.
 
 3)	As super-user, in the top-level directory, type:
 
