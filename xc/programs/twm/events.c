@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.139 90/03/16 11:16:19 jim Exp $
+ * $XConsortium: events.c,v 1.140 90/03/16 13:50:31 jim Exp $
  *
  * twm event handling
  *
@@ -38,7 +38,7 @@
 
 #if !defined(lint) && !defined(SABER)
 static char RCSinfo[]=
-"$XConsortium: events.c,v 1.139 90/03/16 11:16:19 jim Exp $";
+"$XConsortium: events.c,v 1.140 90/03/16 13:50:31 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -1062,6 +1062,30 @@ HandleExpose()
     }
 }
 
+static void remove_window_from_ring (tmp)
+    TwmWindow *tmp;
+{
+    TwmWindow *prev = tmp->ring.prev, *next = tmp->ring.next;
+
+    if (enter_win == tmp) {
+	enter_flag = FALSE;
+	enter_win = NULL;
+    }
+    if (raise_win == Tmp_win) raise_win = NULL;
+
+    /*
+     * 1. Unlink window
+     * 2. If window was only thing in ring, null out ring
+     * 3. If window was ring leader, set to next (or null)
+     */
+    if (prev) prev->ring.next = next;
+    if (next) next->ring.prev = prev;
+    if (Scr->Ring == tmp) 
+      Scr->Ring = (next != tmp ? next : (TwmWindow *) NULL);
+
+    if (!Scr->Ring || Scr->RingLeader == tmp) Scr->RingLeader = Scr->Ring;
+}
+
 /***********************************************************************
  *
  *  Procedure:
@@ -1133,6 +1157,7 @@ HandleDestroyNotify()
      *     8.  iconmgrp
      *     9.  cwins
      *     10. titlebuttons
+     *     11. window ring
      */
     if (Tmp_win->gray) XFreePixmap (dpy, Tmp_win->gray);
 
@@ -1157,6 +1182,8 @@ HandleDestroyNotify()
     free_cwins (Tmp_win);				/* 9 */
     if (Tmp_win->titlebuttons)					/* 10 */
       free ((char *) Tmp_win->titlebuttons);
+    remove_window_from_ring (Tmp_win);				/* 11 */
+
     free((char *)Tmp_win);
 }
 
@@ -1294,6 +1321,8 @@ HandleMapNotify()
     Tmp_win->icon_on = FALSE;
 }
 
+
+
 /***********************************************************************
  *
  *  Procedure:
@@ -1327,20 +1356,6 @@ HandleUnmapNotify()
     if (Tmp_win == NULL || (!Tmp_win->mapped && !Tmp_win->icon))
 	return;
 
-    if (enter_win == Tmp_win) enter_win = NULL;
-
-    if (Scr->RingLeader && Scr->RingLeader == Tmp_win)
-      Scr->RingLeader = (TwmWindow *) NULL;
-    if (Tmp_win->ring.next) {
-	if (Tmp_win->ring.next != Tmp_win) {
-	    Tmp_win->ring.next->ring.prev = Tmp_win->ring.prev;
-	    Tmp_win->ring.prev->ring.next = Tmp_win->ring.next;
-	    Scr->Ring = Tmp_win->ring.next;
-	} else {
-	    Scr->Ring = (TwmWindow *) NULL;
-	}
-    }
-
     /*
      * The program may have unmapped the client window, from either
      * NormalState or IconicState.  Handle the transition to WithdrawnState.
@@ -1359,7 +1374,7 @@ HandleUnmapNotify()
 	RestoreWithdrawnLocation (Tmp_win);
 	XRemoveFromSaveSet (dpy, Event.xunmap.window);
 	HandleDestroyNotify ();		/* do not need to mash event before */
-    }
+    } /* else window no longer exists and we'll get a destroy notify */
     XUngrabServer (dpy);
     XFlush (dpy);
 }
@@ -2527,3 +2542,4 @@ dumpevent (e)
     }
 }
 #endif /* TRACE */
+
