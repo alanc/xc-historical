@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: connection.c,v 1.66 88/01/30 10:22:18 rws Exp $ */
+/* $Header: connection.c,v 1.67 88/05/05 11:43:51 rws Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -53,6 +53,7 @@ SOFTWARE.
 #include <setjmp.h>
 #ifdef TCPCONN
 #include <netinet/in.h>
+#include <netinet/tcp.h>
 #endif
 #ifdef UNIXCONN
 #include <sys/un.h>
@@ -505,7 +506,7 @@ ErrorF("Didn't make connection: Out of file descriptors for connections\n");
 		    {
 			if (fromlen && (from.sa.sa_family == AF_INET)) 
 			{
-			    mi = 1;
+			    int mi = 1;
 			    setsockopt (newconn, IPPROTO_TCP, TCP_NODELAY,
 				       &mi, sizeof (int));
 			}
