@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Simple.c,v 1.9 88/02/26 12:15:32 swick Exp $";
+static char rcsid[] = "$Header: Simple.c,v 1.12 88/08/12 15:48:41 swick Exp $";
 #endif lint
 
 /* Copyright	Massachusetts Institute of Technology	1987 */
@@ -9,6 +9,7 @@ static char rcsid[] = "$Header: Simple.c,v 1.9 88/02/26 12:15:32 swick Exp $";
 #include <X11/StringDefs.h>
 #include <X11/SimpleP.h>
 
+#define UnspecifiedPixmap 2	/* %%% should be NULL, according to the spec */
 #define IsSensitive(w) ((w)->core.sensitive && (w)->core.ancestor_sensitive)
 
 static Cursor defaultCursor = None;
@@ -58,6 +59,8 @@ SimpleClassRec simpleClassRec = {
     /* callback_private		*/	NULL,
     /* tm_table			*/	NULL,
     /* query_geometry		*/	XtInheritQueryGeometry,
+    /* display_accelerator	*/	XtInheritDisplayAccelerator,
+    /* extension		*/	NULL
   },
   { /* simple fields */
     /* change_sensitive		*/	ChangeSensitive
