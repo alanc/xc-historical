@@ -1,5 +1,5 @@
 /*
- * $XConsortium: locking.h,v 1.7 93/08/22 18:20:00 rws Exp $
+ * $XConsortium: locking.h,v 1.8 93/08/26 08:57:41 rws Exp $
  *
  * Copyright 1992 Massachusetts Institute of Technology
  *
@@ -33,6 +33,12 @@
 #define xfree(s) Xfree(s)
 #include <X11/Xthreads.h>
 
+extern xthread_t (*_Xthread_self_fn)( /* in XlibInt.c */
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+
 struct _XCVList {
     xcondition_t cv;
     xReply *buf;
@@ -51,6 +57,8 @@ struct _XLockInfo {
 	struct _XCVList **event_awaiters_tail;
 	/* for XLockDisplay */
 	xthread_t locking_thread; /* thread that did XLockDisplay */
+	xthread_t reading_thread; /* cache */
+	xthread_t conni_thread;	/* thread in XProcessInternalConnection */
 	xcondition_t cv;	/* wait if another thread has XLockDisplay */
 };
 
