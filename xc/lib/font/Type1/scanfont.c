@@ -1,4 +1,4 @@
-/* $XConsortium: scanfont.c,v 1.8 92/07/04 17:13:32 rws Exp $ */
+/* $XConsortium: scanfont.c,v 1.9 92/07/07 17:14:56 gildea Exp $ */
 /* Copyright International Business Machines,Corp. 1991
  * All Rights Reserved
  *
@@ -1325,7 +1325,6 @@ static int FindDictValue(dictP)
  
        default:
          return(SCAN_ERROR);
-         break;
      }
    }
    /* Name is not in dictionary.  That is ok. */
