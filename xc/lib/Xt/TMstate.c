@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: TMstate.c,v 6.38 88/01/29 16:42:27 asente Exp $";
+static char rcsid[] = "$Header: TMstate.c,v 1.41 88/02/02 13:50:41 swick Locked $";
 #endif lint
 /*LINTLIBRARY*/
 
@@ -322,7 +322,7 @@ static unsigned long GetTime(tm, event)
 /* ARGSUSED */
 static void _XtTranslateEvent (w, closure, event)
     Widget w;
-    Opaque closure;
+    caddr_t closure;
     register    XEvent * event;
 {
     register XtTranslations stateTable = ((TMRec*)closure)->translations;
@@ -634,7 +634,7 @@ void _XtInstallTranslations(widget, stateTable)
 
     XtAddEventHandler(
         widget, eventMask, nonMaskable,
-             _XtTranslateEvent, (Opaque)&widget->core.tm);
+             _XtTranslateEvent, (caddr_t)&widget->core.tm);
 
 }
 
