@@ -1,4 +1,4 @@
-/* $XConsortium: imDefIc.c,v 1.5 94/01/20 18:03:56 rws Exp $ */
+/* $XConsortium: imDefIc.c,v 1.8 94/03/29 22:51:19 rws Exp $ */
 /******************************************************************
 
            Copyright 1991, 1992 by Sun Microsystems, Inc.
@@ -1052,7 +1052,6 @@ _XimCommitedMbString(im, ic, buf)
 {
     CARD16		*buf_s = (CARD16 *)buf;
     XimCommitInfo	 info;
-    XimCommitInfo	 next;
     int			 len;
     int			 new_len;
     char		*commit;
@@ -1060,42 +1059,37 @@ _XimCommitedMbString(im, ic, buf)
     char		*str;
     Status		 status;
 
-    if (ic->core.reset_return != XIMReturnNULL) {
-	len = 0;
-	for (info = ic->private.proto.commit_info; info; info = info->next) {
-	    len += info->string_len;
-	}
-	len += buf_s[0];
+    len = 0;
+    for (info = ic->private.proto.commit_info; info; info = info->next)
+	len += info->string_len;
+    len += buf_s[0];
+    if( len == 0 )
+	return( NULL );
 
-	if (!(commit = (char *)Xmalloc(len + 1)))
-	    goto Error_On_Reset;
+    if (!(commit = (char *)Xmalloc(len + 1)))
+	goto Error_On_Reset;
 
-	str = commit;
-	for (info = ic->private.proto.commit_info; info; info = info->next) {
-	    (void)memcpy(str, info->string, info->string_len);
-	    str += info->string_len;
-	}
-	(void)memcpy(str, (char *)&buf_s[1], (int)&buf_s[0]);
-	commit[len] = '\0';
-
-	new_len = _Ximctstombs(im, commit, len, NULL, 0, &status);
-	if (status != XLookupNone) {
-	    if (!(new_commit = Xmalloc(new_len + 1))) {
-		Xfree(commit);
-		goto Error_On_Reset;
-	    }
-	    (void)_Ximctstombs(im, commit, len, new_commit, new_len, NULL);
-	    new_commit[new_len] = '\0';
-	}
-	Xfree(commit);
+    str = commit;
+    for (info = ic->private.proto.commit_info; info; info = info->next) {
+	(void)memcpy(str, info->string, info->string_len);
+	str += info->string_len;
     }
+    (void)memcpy(str, (char *)&buf_s[1], (int)&buf_s[0]);
+    commit[len] = '\0';
+
+    new_len = _Ximctstombs(im, commit, len, NULL, 0, &status);
+    if (status != XLookupNone) {
+	if (!(new_commit = Xmalloc(new_len + 1))) {
+	    Xfree(commit);
+	    goto Error_On_Reset;
+	}
+	(void)_Ximctstombs(im, commit, len, new_commit, new_len, NULL);
+	new_commit[new_len] = '\0';
+    }
+    Xfree(commit);
 
 Error_On_Reset:
-    for (info = ic->private.proto.commit_info; info;) {
-	next = info->next;
-	Xfree(info);
-	info = next;
-    }
+    _XimFreeCommitInfo( ic );
     return new_commit;
 }
 
@@ -1175,7 +1169,6 @@ _XimCommitedWcString(im, ic, buf)
 {
     CARD16		*buf_s = (CARD16 *)buf;
     XimCommitInfo	 info;
-    XimCommitInfo	 next;
     int			 len;
     int			 new_len;
     char		*commit;
@@ -1183,43 +1176,38 @@ _XimCommitedWcString(im, ic, buf)
     char		*str;
     Status		 status;
 
-    if (ic->core.reset_return != XIMReturnNULL) {
-	len = 0;
-	for (info = ic->private.proto.commit_info; info; info = info->next) {
-	    len += info->string_len;
-	}
-	len += buf_s[0];
+    len = 0;
+    for (info = ic->private.proto.commit_info; info; info = info->next)
+	len += info->string_len;
+    len += buf_s[0];
+    if( len == 0 )
+	return( (wchar_t *)NULL );
 
-	if (!(commit = (char *)Xmalloc(len + 1)))
-	    goto Error_On_Reset;
+    if (!(commit = (char *)Xmalloc(len + 1)))
+	goto Error_On_Reset;
 
-	str = commit;
-	for (info = ic->private.proto.commit_info; info; info = info->next) {
-	    (void)memcpy(str, info->string, info->string_len);
-	    str += info->string_len;
-	}
-	(void)memcpy(str, (char *)&buf_s[1], (int)&buf_s[0]);
-	commit[len] = '\0';
-
-	new_len = _Ximctstowcs(im, commit, len, NULL, 0, &status);
-	if (status != XLookupNone) {
-	    if (!(new_commit =
-			 (wchar_t *)Xmalloc(sizeof(wchar_t) * (new_len + 1)))) {
-		Xfree(commit);
-		goto Error_On_Reset;
-	    }
-	    (void)_Ximctstowcs(im, commit, len, new_commit, new_len, NULL);
-	    new_commit[new_len] = (wchar_t)'\0';
-	}
-	Xfree(commit);
+    str = commit;
+    for (info = ic->private.proto.commit_info; info; info = info->next) {
+	(void)memcpy(str, info->string, info->string_len);
+	str += info->string_len;
     }
+    (void)memcpy(str, (char *)&buf_s[1], (int)&buf_s[0]);
+    commit[len] = '\0';
+
+    new_len = _Ximctstowcs(im, commit, len, NULL, 0, &status);
+    if (status != XLookupNone) {
+	if (!(new_commit =
+		     (wchar_t *)Xmalloc(sizeof(wchar_t) * (new_len + 1)))) {
+	    Xfree(commit);
+	    goto Error_On_Reset;
+	}
+	(void)_Ximctstowcs(im, commit, len, new_commit, new_len, NULL);
+	new_commit[new_len] = (wchar_t)'\0';
+    }
+    Xfree(commit);
 
 Error_On_Reset:
-    for (info = ic->private.proto.commit_info; info;) {
-	next = info->next;
-	Xfree(info);
-	info = next;
-    }
+    _XimFreeCommitInfo( ic );
     return new_commit;
 }
 

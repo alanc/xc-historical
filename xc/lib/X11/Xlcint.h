@@ -1,4 +1,4 @@
-/* $XConsortium: Xlcint.h,v 11.18 94/03/29 22:51:15 rws Exp $ */
+/* $XConsortium: Xlcint.h,v 11.19 94/04/17 20:21:41 rws Exp $ */
 /*
 
 Copyright (c) 1991  X Consortium
@@ -796,7 +796,6 @@ typedef struct {
     XIMCallback		string_conversion_callback;
     XIMStringConversionText	 string_conversion;
     XIMResetState	reset_state;
-    XIMResetReturn	reset_return;
     XIMHotKeyTriggers  *hotkey;
     XIMHotKeyState	hotkey_state;
 

@@ -1,4 +1,4 @@
-/* $XConsortium: Ximint.h,v 1.4 94/01/20 18:02:50 rws Exp $ */
+/* $XConsortium: Ximint.h,v 1.6 94/03/29 22:51:06 rws Exp $ */
 /******************************************************************
 
                 Copyright 1992, 1993, 1994 by FUJITSU LIMITED
@@ -106,7 +106,6 @@ typedef struct _XimDefICValues {
     XIMCallback			 string_conversion_callback;
     XIMStringConversionText	 string_conversion;
     XIMResetState		 reset_state;
-    XIMResetReturn		 reset_return;
     XIMHotKeyTriggers		*hotkey;
     XIMHotKeyState		 hotkey_state;
     ICPreeditAttributes		 preedit_attr;

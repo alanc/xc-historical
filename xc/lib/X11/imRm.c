@@ -1,4 +1,4 @@
-/* $XConsortium: imRm.c,v 1.6 94/03/29 22:51:41 rws Exp $ */
+/* $XConsortium: imRm.c,v 1.7 94/03/31 22:02:36 rws Exp $ */
 /******************************************************************
 
 	  Copyright 1990, 1991, 1992,1993, 1994 by FUJITSU LIMITED
@@ -210,7 +210,6 @@ static char *supported_local_ic_values_list[] = {
     XNStringConversionCallback,
     XNStringConversion,
     XNResetState,
-    XNResetReturn,
     XNHotKey,
     XNHotKeyState,
     XNPreeditAttributes,
@@ -468,20 +467,6 @@ _XimDefaultResetState(info, top, parm, mode)
     XIMResetState	*out;
 
     out = (XIMResetState *)((char *)top + info->offset);
-    *out = XIMInitialState;
-    return(True);
-}
-
-Private  Bool
-_XimDefaultResetReturn(info, top, parm, mode)
-    XimValueOffsetInfo	  info;
-    XPointer	 	  top;
-    XPointer	 	  parm;
-    unsigned long	  mode;
-{
-    XIMResetReturn	*out;
-
-    out = (XIMResetReturn *)((char *)top + info->offset);
     *out = XIMInitialState;
     return(True);
 }
@@ -798,19 +783,6 @@ _XimEncodeResetState(info, top, val)
 
     out = (XIMResetState *)((char *)top + info->offset);
     *out = (XIMResetState)val;
-    return(True);
-}
-
-Private  Bool
-_XimEncodeResetReturn(info, top, val)
-    XimValueOffsetInfo	 info;
-    XPointer	 	 top;
-    XPointer	 	 val;
-{
-    XIMResetReturn	*out;
-
-    out = (XIMResetReturn *)((char *)top + info->offset);
-    *out = (XIMResetReturn)val;
     return(True);
 }
 
@@ -1197,19 +1169,6 @@ _XimDecodeResetState(info, top, val)
 }
 
 Private  Bool
-_XimDecodeResetReturn(info, top, val)
-    XimValueOffsetInfo	 info;
-    XPointer	 	 top;
-    XPointer	 	 val;
-{
-    XIMResetReturn	*in;
-
-    in = (XIMResetReturn *)((char *)top + info->offset);
-    *((XIMResetReturn *)val) = *in;
-    return(True);
-}
-
-Private  Bool
 _XimDecodeHotKey(info, top, val)
     XimValueOffsetInfo	 info;
     XPointer	 	 top;
@@ -1436,7 +1395,6 @@ static	XIMResource	ic_resources[] = {
     {XNStringConversionCallback,   0, 0,			0, 0, 0},
     {XNStringConversion,	   0, XimType_XIMStringConversion,0, 0, 0},
     {XNResetState,		   0, 0,			0, 0, 0},
-    {XNResetReturn,		   0, 0,			0, 0, 0},
     {XNHotKey,			   0, XimType_XIMHotKeyTriggers,0, 0, 0},
     {XNHotKeyState,		   0, XimType_XIMHotKeyState, 	0, 0, 0},
     {XNPreeditAttributes,	   0, XimType_NEST,		0, 0, 0},
@@ -1468,7 +1426,6 @@ static	XIMResource	ic_inner_resources[] = {
     {XNGeometryCallback,	   0, 0,			0, 0, 0},
     {XNDestroyCallback,		   0, 0,			0, 0, 0},
     {XNStringConversionCallback,   0, 0,			0, 0, 0},
-    {XNResetReturn,		   0, 0,			0, 0, 0},
     {XNPreeditStartCallback,	   0, 0,			0, 0, 0},
     {XNPreeditDoneCallback,	   0, 0,			0, 0, 0},
     {XNPreeditDrawCallback,	   0, 0,			0, 0, 0},
@@ -1552,10 +1509,6 @@ static XimValueOffsetInfoRec ic_attr_info[] = {
     {XNResetState,		 0,
 	XOffsetOf(XimDefICValues, reset_state),
 	_XimDefaultResetState,	 _XimEncodeResetState,	_XimDecodeResetState},
-
-    {XNResetReturn,		 0,
-	XOffsetOf(XimDefICValues, reset_return),
-	_XimDefaultResetReturn,	 _XimEncodeResetReturn,	_XimDecodeResetReturn},
 
     {XNHotKey,			 0,
 	XOffsetOf(XimDefICValues, hotkey),
@@ -1833,16 +1786,6 @@ static XimICMode	ic_mode[] = {
 		0,
 		0},
     {XNResetState, 0,
-		(XIM_MODE_PRE_DEFAULT | XIM_MODE_PRE_SET | XIM_MODE_PRE_GET),
-		(XIM_MODE_PRE_DEFAULT | XIM_MODE_PRE_SET | XIM_MODE_PRE_GET),
-		(XIM_MODE_PRE_DEFAULT | XIM_MODE_PRE_SET | XIM_MODE_PRE_GET),
-		(XIM_MODE_PRE_DEFAULT | XIM_MODE_PRE_SET | XIM_MODE_PRE_GET),
-		0,
-		0,
-		0,
-		0,
-		0},
-    {XNResetReturn, 0,
 		(XIM_MODE_PRE_DEFAULT | XIM_MODE_PRE_SET | XIM_MODE_PRE_GET),
 		(XIM_MODE_PRE_DEFAULT | XIM_MODE_PRE_SET | XIM_MODE_PRE_GET),
 		(XIM_MODE_PRE_DEFAULT | XIM_MODE_PRE_SET | XIM_MODE_PRE_GET),
@@ -3078,7 +3021,6 @@ _XimGetCurrentICValues(ic, ic_values)
 				 = ic->core.string_conversion_callback;
     ic_values->string_conversion = ic->core.string_conversion;
     ic_values->reset_state	 = ic->core.reset_state;
-    ic_values->reset_return	 = ic->core.reset_return;
     ic_values->hotkey		 = ic->core.hotkey;
     ic_values->hotkey_state	 = ic->core.hotkey_state;
     ic_values->preedit_attr	 = ic->core.preedit_attr;
@@ -3104,7 +3046,6 @@ _XimSetCurrentICValues(ic, ic_values)
 				= ic_values->string_conversion_callback;
     ic->core.string_conversion	= ic_values->string_conversion;
     ic->core.reset_state	= ic_values->reset_state;
-    ic->core.reset_return	= ic_values->reset_return;
     ic->core.hotkey		= ic_values->hotkey;
     ic->core.hotkey_state	= ic_values->hotkey_state;
     ic->core.preedit_attr	= ic_values->preedit_attr;
