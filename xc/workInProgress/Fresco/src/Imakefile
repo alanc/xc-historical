@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.6 94/03/25 19:52:57 matt Exp $
+XCOMM $XConsortium: Imakefile,v 1.7 94/03/28 16:47:14 gildea Exp $
 #define DoNormalLib NormalLibFresco
 #define DoSharedLib SharedLibFresco
 #define DoDebugLib DebugLibFresco
@@ -79,7 +79,7 @@ OBJS =  \
 
 SpecialCplusplusLibObjectRule(Xdisplay,$(ICONFIGFILES),$(FRESCO_DEFINES))
 
-ALLDEFINES = $(CCDEFINES)
+ALLDEFINES = $(CXXDEFINES)
 
 DependTarget()
 
