@@ -1,4 +1,4 @@
-/* $XConsortium: mibstore.c,v 5.38 90/05/18 15:26:38 keith Exp $ */
+/* $XConsortium: mibstore.c,v 5.39 90/06/07 11:17:00 rws Exp $ */
 /***********************************************************
 Copyright 1987 by the Regents of the University of California
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -2442,12 +2442,8 @@ miBSAllocate(pWin)
 	if ((pWin->backingStore == WhenMapped && pWin->viewable) ||
 	    (pWin->backingStore == Always))
  	{
-	    BoxPtr	pBox;
 	    BoxRec  	box;
 	    RegionPtr	pSavedRegion;
-	    xEvent	*pEvent, *pe;
-	    int		i;
-	    int		numRects;
 
 	    pSavedRegion = &pBackingStore->SavedRegion;
 
@@ -2472,28 +2468,14 @@ miBSAllocate(pWin)
 	    miTileVirtualBS (pWin);
 	    
 	    /*
-	     * deliver all the newly availible regions
-	     * as exposure events to the window
+	     * deliver all the newly available regions
+	     * as exposure events to the window, unless
+	     * miTileVirtualBS has already done it for us
 	     */
 
-	    pBox = REGION_RECTS(pSavedRegion);
-	    numRects = REGION_NUM_RECTS(pSavedRegion);
-	    if(!(pEvent = (xEvent *) ALLOCATE_LOCAL(numRects *
-						    sizeof(xEvent))))
-		return;
-
-	    for (i=numRects, pe = pEvent; --i >= 0; pe++, pBox++)
-	    {
-		pe->u.u.type = Expose;
-		pe->u.expose.window = pWin->drawable.id;
-		pe->u.expose.x = pBox->x1;
-		pe->u.expose.y = pBox->y1;
-		pe->u.expose.width = pBox->x2 - pBox->x1;
-		pe->u.expose.height = pBox->y2 - pBox->y1;
-		pe->u.expose.count = i;
-	    }
-	    DeliverEvents(pWin, pEvent, numRects, NullWindow);
-	    DEALLOCATE_LOCAL(pEvent);
+	    if ((pBackingStore->status == StatusVirtual) ||
+		(pBackingStore->status == StatusVDirty))
+		miSendExposures(pWin, pSavedRegion, 0, 0);
 	}
     }
 }
@@ -3490,12 +3472,19 @@ miCreateBSPixmap (pWin)
 
     if ((* pScreen->RegionNotEmpty) (&pBackingStore->SavedRegion))
     {
+	RegionPtr exposed;
+
 	extents = (* pScreen->RegionExtents) (&pBackingStore->SavedRegion);
-	miBSClearBackingStore(pWin,
+	exposed = miBSClearBackingStore(pWin,
 			      extents->x1, extents->y1,
 			      extents->x2 - extents->x1,
 			      extents->y2 - extents->y1,
-			      FALSE);
+			      !backSet);
+	if (exposed)
+	{
+	    miSendExposures(pWin, exposed, 0, 0);
+	    (* pScreen->RegionDestroy)(exposed);
+	}
     }
 
     if (backSet)
