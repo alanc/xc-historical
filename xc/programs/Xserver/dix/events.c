@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $Header: events.c,v 1.105 87/09/03 10:18:39 newman Locked $ */
+/* $Header: events.c,v 1.106 87/09/03 19:02:19 swick Locked $ */
 
 #include "X.h"
 #include "misc.h"
@@ -2357,6 +2357,13 @@ InitAndStartDevices(argc, argv)
     int     i;
     DeviceIntPtr d;
 
+    for (i=0; i<8; i++)
+        modifierKeyCount[i] = 0;
+
+    keyButtonState = 0;
+    buttonsDown = 0;
+    buttonMotionMask = 0;
+        
     for (i = 0; i < inputInfo.numDevices; i++)
     {
 	d = inputInfo.devices[i];
