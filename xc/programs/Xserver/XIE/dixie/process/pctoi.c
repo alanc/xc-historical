@@ -1,4 +1,4 @@
-/* $XConsortium: pctoi.c,v 1.1 93/10/26 10:00:14 rws Exp $ */
+/* $XConsortium: pctoi.c,v 1.2 93/10/31 09:40:32 dpw Exp $ */
 /**** module pctoi.c ****/
 /******************************************************************************
 				NOTICE
@@ -194,7 +194,7 @@ Bool CopyCtoIAllocMatch(flo, ped, sparms, rparms, tsize, isDefault)
 
   VALIDATE_TECHNIQUE_SIZE(ped->techVec, tsize, isDefault);
   
-  if (!(ped->techPvt=(void *)XieMalloc(sizeof(pTecConvertToIndexMatchDefRec))))
+  if (!(ped->techPvt=(pointer )XieMalloc(sizeof(pTecConvertToIndexMatchDefRec))))
     AllocError(flo,ped, return(TRUE));
   
   pvt = (pConvertToIndexMatchDefPtr)ped->techPvt;
