@@ -1,5 +1,5 @@
 /*
- * $XConsortium: listres.c,v 1.13 89/07/12 11:15:39 jim Exp $
+ * $XConsortium: listres.c,v 1.14 89/07/12 11:19:49 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -80,7 +80,7 @@ usage ()
     fprintf(stderr,
 	    "    -variable        show variable name instead of class name\n");
     fprintf(stderr,
-	    "    -top name        name of top object or widget to display\n");
+	    "    -top name        object to be top of tree\n");
     fprintf(stderr,
 	    "    -format string   printf format for instance, class, type\n");
     fprintf(stderr, "\n");
