@@ -1,4 +1,4 @@
-/* $XConsortium: Xlib.h,v 11.217 92/01/19 15:00:17 rws Exp $ */
+/* $XConsortium: Xlib.h,v 11.218 92/01/30 10:23:22 rws Exp $ */
 /* 
  * Copyright 1985, 1986, 1987, 1991 by the Massachusetts Institute of Technology
  *
@@ -1557,6 +1557,11 @@ extern KeySym XStringToKeysym(
 #endif
 );
 extern long XMaxRequestSize(
+#if NeedFunctionPrototypes
+    Display*		/* display */
+#endif
+);
+extern long XExtendedMaxRequestSize(
 #if NeedFunctionPrototypes
     Display*		/* display */
 #endif
