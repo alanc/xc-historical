@@ -1,3 +1,4 @@
+! $XConsortium$
 ! these are used in XGetErrorMessage.
 XlibMessage.XError: X Error of failed request
 XlibMessage.MajorCode: Major opcode of failed request:  %d
