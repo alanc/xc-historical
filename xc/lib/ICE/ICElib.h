@@ -1,4 +1,4 @@
-/* $XConsortium: ICElib.h,v 1.30 94/03/17 12:23:23 mor Exp $ */
+/* $XConsortium: ICElib.h,v 1.31 94/03/17 15:36:28 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -137,10 +137,10 @@ typedef IcePaAuthStatus (*IcePaAuthProc) (
     IceConn		/* iceConn */,
     IcePointer *	/* authStatePtr */,
     Bool		/* swap */,
-    int			/* replyDataLen */,
-    IcePointer		/* replyData */,
-    int *		/* authDataLenRet */,
-    IcePointer *	/* authDataRet */,
+    int			/* authDataLen */,
+    IcePointer		/* authData */,
+    int *		/* replyDataLenRet */,
+    IcePointer *	/* replyDataRet */,
     char **		/* errorStringRet */
 #endif
 );

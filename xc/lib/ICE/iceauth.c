@@ -1,4 +1,4 @@
-/* $XConsortium: iceauth.c,v 1.13 94/03/15 13:39:37 mor Exp $ */
+/* $XConsortium: iceauth.c,v 1.14 94/03/17 12:24:19 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -170,23 +170,23 @@ char    	**errorStringRet;
 
 IcePaAuthStatus
 _IcePaMagicCookie1Proc (iceConn, authStatePtr, swap,
-    replyDataLen, replyData, authDataLenRet, authDataRet, errorStringRet)
+    authDataLen, authData, replyDataLenRet, replyDataRet, errorStringRet)
 
 IceConn		iceConn;
 IcePointer	*authStatePtr;
 Bool		swap;
-int     	replyDataLen;
-IcePointer	replyData;
-int 		*authDataLenRet;
-IcePointer	*authDataRet;
+int     	authDataLen;
+IcePointer	authData;
+int 		*replyDataLenRet;
+IcePointer	*replyDataRet;
 char    	**errorStringRet;
 
 {
     IceAuthDataEntry	*entry;
 
     *errorStringRet = NULL;
-    *authDataLenRet = 0;
-    *authDataRet = NULL;
+    *replyDataLenRet = 0;
+    *replyDataRet = NULL;
 
     if (*authStatePtr == NULL)
     {
@@ -216,8 +216,8 @@ char    	**errorStringRet;
 	{
 	    IcePaAuthStatus stat;
 
-	    if (replyDataLen == length &&
-	        binaryEqual (replyData, data, replyDataLen))
+	    if (authDataLen == length &&
+	        binaryEqual (authData, data, authDataLen))
 	    {
 		stat = IcePaAuthAccepted;
 	    }
