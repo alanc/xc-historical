@@ -1,4 +1,4 @@
-/* $XConsortium: IntrinsicI.h,v 1.46 91/04/08 18:09:14 converse Exp $ */
+/* $XConsortium: IntrinsicI.h,v 1.47 91/06/10 15:07:29 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -133,12 +133,12 @@ SOFTWARE.
  ****************************************************************/
 
 #define XtStackAlloc(size, stack_cache_array)     \
-    (size <= sizeof(stack_cache_array)		  \
-    ?  (XtPointer)stack_cache_array		  \
-    :  XtMalloc((unsigned) size))
+    ((size) <= sizeof(stack_cache_array)	  \
+    ?  (XtPointer)(stack_cache_array)		  \
+    :  XtMalloc((unsigned)(size)))
 
 #define XtStackFree(pointer, stack_cache_array) \
-    if ((pointer) != ((XtPointer)stack_cache_array)) XtFree(pointer); else
+    if ((pointer) != ((XtPointer)(stack_cache_array))) XtFree(pointer); else
 
 /***************************************************************
  *
