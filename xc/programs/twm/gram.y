@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: gram.y,v 1.2 89/11/13 08:56:44 jim Exp $
+ * $XConsortium: gram.y,v 1.67 89/11/13 10:52:50 jim Exp $
  *
  * .twmrc command grammer
  *
@@ -38,7 +38,7 @@
 
 %{
 static char RCSinfo[]=
-"$XConsortium: gram.y,v 1.2 89/11/13 08:56:44 jim Exp $";
+"$XConsortium: gram.y,v 1.67 89/11/13 10:52:50 jim Exp $";
 
 #include <stdio.h>
 #include <ctype.h>
@@ -54,7 +54,6 @@ static MenuRoot	*root, *pull = NULL;
 
 MenuRoot *GetRoot();
 
-static int ParseUsePPosition();
 static Bool CheckWarpScreenArg(), CheckColormapArg();
 static void GotButton(), GotKey(), GotTitleButton();
 static char *ptr;
@@ -65,13 +64,6 @@ static int color;
 int num[5], mult, indx = 0;
 int mods = 0;
 
-int ConstrainedMoveTime = 400;		/* milliseconds, event times */
-
-/*
-%token <num> CUR_BUTTON CUR_FRAME CUR_TITLE CUR_ICONMGR CUR_ICON 
-%token <num> CUR_MOVE CUR_RESIZE CUR_WAIT CUR_SELECT CUR_KILL
-*/
-
 extern int yylineno;
 %}
 
@@ -81,46 +73,37 @@ extern int yylineno;
     char *ptr;
 };
 
-%token <num> LB RB MENUS MENU BUTTON TBUTTON DEFAULT_FUNCTION PLUS MINUS
+%token <num> LB RB LP RP MENUS MENU BUTTON TBUTTON DEFAULT_FUNCTION PLUS MINUS
+%token <num> ALL OR CURSORS PIXMAPS ICONS COLOR MONOCHROME FUNCTION F_FUNCTION
 %token <num> F_MENU F_UNFOCUS F_REFRESH F_FILE F_TWMRC F_CIRCLEUP F_QUIT
 %token <num> F_NOP F_TITLE F_VERSION F_EXEC F_CUT F_CIRCLEDOWN F_SOURCE
 %token <num> F_CUTFILE F_MOVE F_ICONIFY F_FOCUS F_RESIZE F_RAISE F_LOWER
-%token <num> F_POPUP F_DEICONIFY F_FORCEMOVE WINDOW_FUNCTION MOVE_DELTA
-%token <num> F_DESTROY F_WINREFRESH F_BEEP DONT_MOVE_OFF ZOOM ICONMGRS
-%token <num> F_DELETE F_SAVEYOURSELF F_COLORMAP
-%token <num> F_SHOWLIST F_HIDELIST NO_BACKINGSTORE NO_SAVEUNDER
+%token <num> F_POPUP F_DEICONIFY F_FORCEMOVE WINDOW_FUNCTION 
+%token <num> F_DESTROY F_WINREFRESH F_BEEP ZOOM ICONMGRS
+%token <num> F_DELETE F_SAVEYOURSELF F_COLORMAP F_IDENTIFY
+%token <num> F_SHOWLIST F_HIDELIST F_AUTORAISE
 %token <num> F_ZOOM F_FULLZOOM F_UPICONMGR F_DOWNICONMGR F_HORIZOOM
 %token <num> F_RIGHTZOOM F_LEFTZOOM F_TOPZOOM F_BOTTOMZOOM F_RESTART 
-%token <num> F_LEFTICONMGR F_RIGHTICONMGR F_WARPTO F_DELTASTOP ICONMGR_SHOW
-%token <num> F_WARPTOICONMGR OPAQUE_MOVE ICONMGR_HIGHLIGHT SORT_ICONMGR
-%token <num> ICONMGR_FOREGROUND ICONMGR_BACKGROUND ICONMGR_FONT ICONMGR
-%token <num> ICONMGR_GEOMETRY SHOW_ICONMGR ICONMGR_NOSHOW MAKE_TITLE
-%token <num> F_RAISELOWER DECORATE_TRANSIENTS RANDOM_PLACEMENT
-%token <num> ICONIFY_BY_UNMAPPING DONT_ICONIFY_BY_UNMAPPING XOR_VALUE
-%token <num> WARPCURSOR NUMBER BORDERWIDTH CLIENT_BORDERWIDTH TITLE_FONT 
-%token <num> RESIZE_FONT NO_TITLE AUTO_RAISE FORCE_ICON NO_HILITE
-%token <num> MENU_FONT ICON_FONT UNKNOWN_ICON ICONS ICON_DIRECTORY
+%token <num> F_LEFTICONMGR F_RIGHTICONMGR F_WARPTO F_DELTASTOP
+%token <num> F_WARPTOICONMGR F_WARPTOSCREEN F_RAISELOWER F_SORTICONMGR
+%token <num> F_FORWICONMGR F_BACKICONMGR F_NEXTICONMGR F_PREVICONMGR
+%token <num> ICONMGR_HIGHLIGHT ICONMGR_SHOW
+%token <num> ICONMGR_FOREGROUND ICONMGR_BACKGROUND ICONMGR
+%token <num> ICONMGR_GEOMETRY ICONMGR_NOSHOW MAKE_TITLE
+%token <num> ICONIFY_BY_UNMAPPING DONT_ICONIFY_BY_UNMAPPING 
+%token <num> NO_TITLE AUTO_RAISE NO_HILITE 
 %token <num> META SHIFT CONTROL WINDOW TITLE ICON ROOT FRAME 
 %token <num> COLON EQUALS BORDER_COLOR TITLE_FOREGROUND TITLE_BACKGROUND
-%token <num> DEFAULT_FOREGROUND DEFAULT_BACKGROUND BUTTON_INDENT
+%token <num> DEFAULT_FOREGROUND DEFAULT_BACKGROUND 
 %token <num> MENU_FOREGROUND MENU_BACKGROUND MENU_SHADOW_COLOR
-%token <num> MENU_TITLE_FOREGROUND MENU_TITLE_BACKGROUND F_AUTORAISE
-%token <num> ICON_FOREGROUND ICON_BACKGROUND ICON_BORDER_COLOR NO_GRAB_SERVER
-%token <num> NO_RAISE_ON_MOVE NO_RAISE_ON_DEICONIFY NO_RAISE_ON_RESIZE
-%token <num> COLOR MONOCHROME NO_TITLE_FOCUS FUNCTION F_FUNCTION
-%token <num> BORDER_TILE_FOREGROUND BORDER_TILE_BACKGROUND F_IDENTIFY
-%token <num> F_FORWICONMGR F_BACKICONMGR F_NEXTICONMGR F_PREVICONMGR
-%token <num> START_ICONIFIED NO_MENU_SHADOWS LP RP NO_VERSION
-%token <num> INTERPOLATE_MENUS NO_TITLE_HILITE ICON_BORDERWIDTH TITLE_HILITE
-%token <num> ALL OR CURSORS PIXMAPS NO_ICONMGRS F_SORTICONMGR
-%token <num> MOVE RESIZE WAIT SELECT KILL
-%token <num> NORTH SOUTH EAST WEST
-%token <num> ICON_REGION RESTART_PREVIOUS_STATE
-%token <num> F_WARPTOSCREEN AUTO_RELATIVE_RESIZE FRAME_PADDING TITLE_PADDING
-%token <num> CONSTRAINED_MOVE_TIME USE_PPOSITION NODEFAULTS
-%token <num> LEFT_TITLEBUTTON RIGHT_TITLEBUTTON SQUEEZETITLE
-%token <num> TITLEBUTTON_BORDERWIDTH
-%token <ptr> STRING
+%token <num> MENU_TITLE_FOREGROUND MENU_TITLE_BACKGROUND 
+%token <num> ICON_FOREGROUND ICON_BACKGROUND ICON_BORDER_COLOR 
+%token <num> BORDER_TILE_FOREGROUND BORDER_TILE_BACKGROUND 
+%token <num> START_ICONIFIED NO_TITLE_HILITE TITLE_HILITE
+%token <num> MOVE RESIZE WAIT SELECT KILL LEFT_TITLEBUTTON RIGHT_TITLEBUTTON 
+%token <num> NORTH SOUTH EAST WEST ICON_REGION 
+%token <num> NUMBER KEYWORD NKEYWORD
+%token <ptr> STRING SKEYWORD
 
 %type <ptr> string
 %type <num> action button number tbutton full fullkey grav
@@ -136,70 +119,20 @@ stmts		: /* Empty */
 		;
 
 stmt		: error
-		| NODEFAULTS	{ Scr->NoDefaults = True; }
-		| USE_PPOSITION string { int ppos = ParseUsePPosition ($2);
-					 if (ppos < 0) {
-					     fprintf (stderr,
-	"twm: line %d:  ignoring invalid UsePPosition argument \"%s\"\n", 
-						      yylineno, $2);
-					 } else {
-					     Scr->UsePPosition = ppos;
-					 }
-				       }
-		| CONSTRAINED_MOVE_TIME number { ConstrainedMoveTime = $2; }
-		| AUTO_RELATIVE_RESIZE	{ Scr->AutoRelativeResize = True; }
-		| FORCE_ICON		{ if (Scr->FirstTime) Scr->ForceIcon = TRUE; }
+		| noarg
+		| sarg
+		| narg
 		| ICON_REGION string grav grav number number
 					{ AddIconRegion($2, $3, $4, $5, $6); }
-		| ICON_FONT string	{ if (!Scr->HaveFonts)
-					     Scr->IconFont.name = $2; }
-		| RESIZE_FONT string	{ if (!Scr->HaveFonts)
-					     Scr->SizeFont.name = $2; }
-		| MENU_FONT string	{ if (!Scr->HaveFonts)
-					     Scr->MenuFont.name = $2; }
-		| TITLE_FONT string	{ if (!Scr->HaveFonts)
-					     Scr->TitleBarFont.name = $2; }
-		| ICONMGR_FONT string	{ if (!Scr->HaveFonts)
-					     Scr->IconManagerFont.name=$2; }
-		| ICONMGR_GEOMETRY string number{ if (Scr->FirstTime)
+		| ICONMGR_GEOMETRY string number	{ if (Scr->FirstTime)
 						  {
 						    Scr->iconmgr.geometry=$2;
 						    Scr->iconmgr.columns=$3;
 						  }
 						}
-		| ICONMGR_GEOMETRY string{ if (Scr->FirstTime)
-						Scr->iconmgr.geometry=$2;}
-		| UNKNOWN_ICON string	{ if (Scr->FirstTime)
-						GetUnknownIcon($2); }
-		| ICON_DIRECTORY string	{ if (Scr->FirstTime)
-					Scr->IconDirectory = ExpandFilename($2);
-					}
-		| NO_ICONMGRS		{ Scr->NoIconManagers = TRUE; }
-		| OPAQUE_MOVE		{ Scr->OpaqueMove = TRUE; }
-		| INTERPOLATE_MENUS	{ if (Scr->FirstTime)
-					    Scr->InterpolateMenuColors=TRUE; }
-		| WARPCURSOR		{ if (Scr->FirstTime)
-						Scr->WarpCursor = TRUE; }
-		| NO_VERSION		{ /* obsolete */ }
-		| SORT_ICONMGR		{ if (Scr->FirstTime) 
-						Scr->SortIconMgr = TRUE; }
-		| NO_GRAB_SERVER	{ if (Scr->FirstTime)
-						Scr->NoGrabServer = TRUE; }
-		| NO_MENU_SHADOWS	{ if (Scr->FirstTime) 
-						Scr->Shadow = FALSE; }
-		| NO_RAISE_ON_MOVE	{ if (Scr->FirstTime) 
-						Scr->NoRaiseMove = TRUE; }
-		| NO_RAISE_ON_RESIZE	{ if (Scr->FirstTime) 
-						Scr->NoRaiseResize = TRUE; }
-		| NO_RAISE_ON_DEICONIFY	{ if (Scr->FirstTime) 
-						Scr->NoRaiseDeicon = TRUE; }
-		| DONT_MOVE_OFF		{ if (Scr->FirstTime) 
-						Scr->DontMoveOff = TRUE; }
-		| NO_BACKINGSTORE	{ if (Scr->FirstTime) 
-						Scr->BackingStore = FALSE; }
-		| NO_SAVEUNDER		{ if (Scr->FirstTime) 
-						Scr->SaveUnder = FALSE; }
-		| MOVE_DELTA number	{ Scr->MoveDelta = $2; }
+		| ICONMGR_GEOMETRY string	{ if (Scr->FirstTime)
+						    Scr->iconmgr.geometry = $2;
+						}
 		| ZOOM number		{ if (Scr->FirstTime)
 					  {
 						Scr->DoZoom = TRUE;
@@ -208,46 +141,18 @@ stmt		: error
 					}
 		| ZOOM			{ if (Scr->FirstTime) 
 						Scr->DoZoom = TRUE; }
-		| XOR_VALUE number	{ if (Scr->FirstTime)
-						Scr->XORvalue = $2; }
-		| FRAME_PADDING	number	{ if (Scr->FirstTime)
-						Scr->FramePadding = $2; }
-		| TITLE_PADDING	number	{ if (Scr->FirstTime)
-						Scr->TitlePadding = $2; }
-		| BUTTON_INDENT number	{ if (Scr->FirstTime)
-						Scr->ButtonIndent = $2; }
-		| BORDERWIDTH number	{ if (Scr->FirstTime) 
-						Scr->BorderWidth = $2; }
-		| ICON_BORDERWIDTH number{ if (Scr->FirstTime) 
-						Scr->IconBorderWidth = $2; }
-		| RESTART_PREVIOUS_STATE { if (Scr->FirstTime)
-						RestartPreviousState = True; }
-		| CLIENT_BORDERWIDTH	{ if (Scr->FirstTime)
-						Scr->ClientBorderWidth=TRUE; }
-		| NO_TITLE_FOCUS	{ if (Scr->FirstTime) 
-						Scr->TitleFocus = FALSE; }
-		| RANDOM_PLACEMENT	{ if (Scr->FirstTime) 
-						Scr->RandomPlacement=TRUE; }
-		| DECORATE_TRANSIENTS	{ if (Scr->FirstTime) 
-						Scr->DecorateTransients = TRUE;}
-		| SQUEEZETITLE		{ if (Scr->FirstTime)
-						Scr->SqueezeTitle = TRUE; }
 		| PIXMAPS pixmap_list	{}
 		| CURSORS cursor_list	{}
 		| ICONIFY_BY_UNMAPPING	{ list = &Scr->IconifyByUn; }
 		  win_list
 		| ICONIFY_BY_UNMAPPING	{ if (Scr->FirstTime) 
 		    Scr->IconifyByUnmapping = TRUE; }
-		| SHOW_ICONMGR	{ if (Scr->FirstTime) 
-					Scr->ShowIconManager = TRUE; }
 		| LEFT_TITLEBUTTON string EQUALS action { 
 					  GotTitleButton ($2, $4, False);
 					}
 		| RIGHT_TITLEBUTTON string EQUALS action { 
 					  GotTitleButton ($2, $4, True);
 					}
-		| TITLEBUTTON_BORDERWIDTH number { if (Scr->FirstTime)
-						     Scr->TBInfo.border = $2; }
 		| button string		{ root = GetRoot($2, 0, 0);
 					  Scr->Mouse[$1][C_ROOT][0].func = F_MENU;
 					  Scr->Mouse[$1][C_ROOT][0].menu = root;
@@ -356,6 +261,38 @@ stmt		: error
 					   pull = NULL;
 					}
 		;
+
+
+noarg		: KEYWORD		{ if (!do_single_keyword ($1)) {
+					    twmrc_error_prefix();
+					    fprintf (stderr,
+					"unknown singleton keyword %d\n",
+						     $1);
+					    ParseError = 1;
+					  }
+					}
+		;
+
+sarg		: SKEYWORD string	{ if (!do_string_keyword ($1, $2)) {
+					    twmrc_error_prefix();
+					    fprintf (stderr,
+				"unknown string keyword %d (value \"%s\")\n",
+						     $1, $2);
+					    ParseError = 1;
+					  }
+					}
+		;
+
+narg		: NKEYWORD number	{ if (!do_number_keyword ($1, $2)) {
+					    twmrc_error_prefix();
+					    fprintf (stderr,
+				"unknown numeric keyword %d (value %d)\n",
+						     $1, $2);
+					    ParseError = 1;
+					  }
+					}
+		;
+
 
 
 full		: EQUALS keys COLON contexts COLON action  { $$ = $6; }
@@ -704,9 +641,10 @@ action		: F_NOP			{ $$ = F_NOP; }
 					  if (CheckWarpScreenArg (Action)) {
 					      $$ = F_WARPTOSCREEN;
 					  } else {
+					      twmrc_error_prefix();
 					      fprintf (stderr, 
-	"twm: line %d:  ignoring invalid f.warpscreen argument \"%s\"\n", 
-						       yylineno, Action);
+			"ignoring invalid f.warpscreen argument \"%s\"\n", 
+						       Action);
 					      $$ = F_NOP;
 					  }
 					}
@@ -714,9 +652,10 @@ action		: F_NOP			{ $$ = F_NOP; }
 					if (CheckColormapArg (Action)) {
 					    $$ = F_COLORMAP;
 					} else {
+					    twmrc_error_prefix();
 					    fprintf (stderr,
-	"twm: line %d:  ignoring invalid f.colormap argument \"%s\"\n", 
-						       yylineno, Action);
+			"ignoring invalid f.colormap argument \"%s\"\n", 
+						     Action);
 					    $$ = F_NOP;
 					}
 				    }
@@ -780,7 +719,8 @@ number		: NUMBER		{ $$ = $1; }
 %%
 yyerror(s) char *s;
 {
-    fprintf (stderr, "twm: line %d:  %s\n", yylineno, s ? s : "");
+    twmrc_error_prefix();
+    fprintf (stderr, "error in input file:  %s\n", s ? s : "");
     ParseError = 1;
 }
 RemoveDQuote(str)
@@ -944,9 +884,10 @@ static void GotTitleButton (bitmapname, func, rightside)
     Bool rightside;
 {
     if (!AddTitleButton (bitmapname, func, Action, pull, rightside)) {
+	twmrc_error_prefix();
 	fprintf (stderr, 
-		 "twm: line %d:  unable to add %s titlebutton \"%s\"\n",
-		 yylineno, rightside ? "right" : "left", bitmapname);
+		 "unable to add %s titlebutton \"%s\"\n",
+		 rightside ? "right" : "left", bitmapname);
     }
     Action = "";
     pull = NULL;
@@ -981,19 +922,7 @@ static Bool CheckColormapArg (s)
 }
 
 
-static int ParseUsePPosition (s)
-    register char *s;
+twmrc_error_prefix ()
 {
-    XmuCopyISOLatin1Lowered (s, s);
-
-    if (strcmp (s, "off") == 0) {
-	return PPOS_OFF;
-    } else if (strcmp (s, "on") == 0) {
-	return PPOS_ON;
-    } else if (strcmp (s, "non-zero") == 0 ||
-	       strcmp (s, "nonzero") == 0) {
-	return PPOS_NON_ZERO;
-    }
-
-    return -1;
+    fprintf (stderr, "twm:  line %d:  ", yylineno);
 }

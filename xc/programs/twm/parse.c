@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: parse.c,v 1.2 89/11/13 08:56:48 jim Exp $
+ * $XConsortium: parse.c,v 1.9 89/11/13 10:52:56 jim Exp $
  *
  * parse the .twmrc file
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: parse.c,v 1.2 89/11/13 08:56:48 jim Exp $";
+"$XConsortium: parse.c,v 1.9 89/11/13 10:52:56 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -57,8 +57,12 @@ static int ptr = 0;
 static int len = 0;
 static char buff[BUF_LEN+1];
 static char *stringSource, *currentString;
+static int ParseUsePPosition();
+
 extern int yylineno;
 extern int mods;
+
+int ConstrainedMoveTime = 400;		/* milliseconds, event times */
 
 static int twmFileInput(), twmStringInput();
 static void twmFileUnput(), twmStringUnput();
@@ -244,19 +248,53 @@ TwmOutput(c)
 typedef struct _TwmKeyword {
     char *name;
     int value;
+    int subnum;
 } TwmKeyword;
 
-/*
- * The other tokens are already defined:
- * %token <num> BUTTON FRAME TITLE ICONMGR ICON 
- */
-#ifndef KILL
-#define KILL CUR_KILL
-#define MOVE CUR_MOVE
-#define RESIZE CUR_RESIZE
-#define SELECT CUR_SELECT
-#define WAIT CUR_WAIT
-#endif
+#define kw0_NoDefaults			1
+#define kw0_AutoRelativeResize		2
+#define kw0_ForceIcons			3
+#define kw0_NoIconManagers		4
+#define kw0_OpaqueMove			5
+#define kw0_InterpolateMenuColors	6
+#define kw0_WarpCursor			7
+#define kw0_NoVersion			8
+#define kw0_SortIconManager		9
+#define kw0_NoGrabServer		10
+#define kw0_NoMenuShadows		11
+#define kw0_NoRaiseOnMove		12
+#define kw0_NoRaiseOnResize		13
+#define kw0_NoRaiseOnDeiconify		14
+#define kw0_DontMoveOff			15
+#define kw0_NoBackingStore		16
+#define kw0_NoSaveUnders		17
+#define kw0_RestartPreviousState	18
+#define kw0_ClientBorderWidth		19
+#define kw0_NoTitleFocus		20
+#define kw0_RandomPlacement		21
+#define kw0_DecorateTransients		22
+#define kw0_SqueezeTitle		23
+#define kw0_ShowIconManager		24
+
+#define kws_UsePPosition		1
+#define kws_IconFont			2
+#define kws_ResizeFont			3
+#define kws_MenuFont			4
+#define kws_TitleFont			5
+#define kws_IconManagerFont		6
+#define kws_IconManagerGeometry		7
+#define kws_UnknownIcon			8
+#define kws_IconDirectory		9
+
+#define kwn_ConstrainedMoveTime		1
+#define kwn_MoveDelta			2
+#define kwn_XorValue			3
+#define kwn_FramePadding		4
+#define kwn_TitlePadding		5
+#define kwn_ButtonIndent		6
+#define kwn_BorderWidth			7
+#define kwn_IconBorderWidth		8
+#define kwn_TitleButtonBorderWidth	9
 
 /*
  * The following is sorted alphabetically according to name (which must be
@@ -264,186 +302,186 @@ typedef struct _TwmKeyword {
  * search to parse keywords.
  */
 static TwmKeyword keytable[] = { 
-    { "all",			ALL },
-    { "autoraise",		AUTO_RAISE },
-    { "autorelativeresize",	AUTO_RELATIVE_RESIZE },
-    { "bordercolor",		BORDER_COLOR },
-    { "bordertilebackground",	BORDER_TILE_BACKGROUND },
-    { "bordertileforeground",	BORDER_TILE_FOREGROUND },
-    { "borderwidth",		BORDERWIDTH },
-    { "button",			BUTTON },
-    { "buttonindent",		BUTTON_INDENT },
-    { "c",			CONTROL },
-    { "clientborderwidth",	CLIENT_BORDERWIDTH },
-    { "color",			COLOR },
-    { "constrainedmovetime",	CONSTRAINED_MOVE_TIME },
-    { "cursors",		CURSORS },
-    { "decoratetransients",	DECORATE_TRANSIENTS },
-    { "defaultbackground",	DEFAULT_BACKGROUND },
-    { "defaultforeground",	DEFAULT_FOREGROUND },
-    { "defaultfunction",	DEFAULT_FUNCTION },
-    { "destroy",		KILL },
-    { "donticonifybyunmapping",	DONT_ICONIFY_BY_UNMAPPING },
-    { "dontmoveoff",		DONT_MOVE_OFF },
-    { "east",			EAST },
-    { "f",			FRAME },
-    { "f.autoraise",		F_AUTORAISE },
-    { "f.backiconmgr",		F_BACKICONMGR },
-    { "f.beep",			F_BEEP },
-    { "f.bottomzoom",		F_BOTTOMZOOM },
-    { "f.circledown",		F_CIRCLEDOWN },
-    { "f.circleup",		F_CIRCLEUP },
-    { "f.colormap",		F_COLORMAP },
-    { "f.cutfile",		F_CUTFILE },
-    { "f.deiconify",		F_DEICONIFY },
-    { "f.delete",		F_DELETE },
-    { "f.deltastop",		F_DELTASTOP },
-    { "f.destroy",		F_DESTROY },
-    { "f.downiconmgr",		F_DOWNICONMGR },
-    { "f.file",			F_FILE },
-    { "f.focus",		F_FOCUS },
-    { "f.forcemove",		F_FORCEMOVE },
-    { "f.forwiconmgr",		F_FORWICONMGR },
-    { "f.fullzoom",		F_FULLZOOM },
-    { "f.function",		F_FUNCTION },
-    { "f.hbzoom",		F_BOTTOMZOOM },
-    { "f.hideiconmgr",		F_HIDELIST },
-    { "f.horizoom",		F_HORIZOOM },
-    { "f.htzoom",		F_TOPZOOM },
-    { "f.hzoom",		F_HORIZOOM },
-    { "f.iconify",		F_ICONIFY },
-    { "f.identify",		F_IDENTIFY },
-    { "f.lefticonmgr",		F_LEFTICONMGR },
-    { "f.leftzoom",		F_LEFTZOOM },
-    { "f.lower",		F_LOWER },
-    { "f.menu",			F_MENU },
-    { "f.move",			F_MOVE },
-    { "f.nexticonmgr",		F_NEXTICONMGR },
-    { "f.nop",			F_NOP },
-    { "f.previconmgr",		F_PREVICONMGR },
-    { "f.quit",			F_QUIT },
-    { "f.raise",		F_RAISE },
-    { "f.raiselower",		F_RAISELOWER },
-    { "f.refresh",		F_REFRESH },
-    { "f.resize",		F_RESIZE },
-    { "f.restart",		F_RESTART },
-    { "f.righticonmgr",		F_RIGHTICONMGR },
-    { "f.rightzoom",		F_RIGHTZOOM },
-    { "f.saveyourself",		F_SAVEYOURSELF },
-    { "f.showiconmgr",		F_SHOWLIST },
-    { "f.sorticonmgr",		F_SORTICONMGR },
-    { "f.source",		F_SOURCE },
-    { "f.title",		F_TITLE },
-    { "f.topzoom",		F_TOPZOOM },
-    { "f.twmrc",		F_TWMRC },
-    { "f.unfocus",		F_UNFOCUS },
-    { "f.upiconmgr",		F_UPICONMGR },
-    { "f.version",		F_VERSION },
-    { "f.vlzoom",		F_LEFTZOOM },
-    { "f.vrzoom",		F_RIGHTZOOM },
-    { "f.warpto",		F_WARPTO },
-    { "f.warptoiconmgr",	F_WARPTOICONMGR },
-    { "f.warptoscreen",		F_WARPTOSCREEN },
-    { "f.winrefresh",		F_WINREFRESH },
-    { "f.zoom",			F_ZOOM },
-    { "forceicons",		FORCE_ICON },
-    { "frame",			FRAME },
-    { "framepadding",		FRAME_PADDING },
-    { "function",		FUNCTION },
-    { "i",			ICON },
-    { "icon",			ICON },
-    { "iconbackground",		ICON_BACKGROUND },
-    { "iconbordercolor",	ICON_BORDER_COLOR },
-    { "iconborderwidth",	ICON_BORDERWIDTH },
-    { "icondirectory",		ICON_DIRECTORY },
-    { "iconfont",		ICON_FONT },
-    { "iconforeground",		ICON_FOREGROUND },
-    { "iconifybyunmapping",	ICONIFY_BY_UNMAPPING },
-    { "iconmanagerbackground",	ICONMGR_BACKGROUND },
-    { "iconmanagerdontshow",	ICONMGR_NOSHOW },
-    { "iconmanagerfont",	ICONMGR_FONT },
-    { "iconmanagerforeground",	ICONMGR_FOREGROUND },
-    { "iconmanagergeometry",	ICONMGR_GEOMETRY },
-    { "iconmanagerhighlight",	ICONMGR_HIGHLIGHT },
-    { "iconmanagers",		ICONMGRS },
-    { "iconmanagershow",	ICONMGR_SHOW },
-    { "iconmgr",		ICONMGR },
-    { "iconregion",		ICON_REGION },
-    { "icons",			ICONS },
-    { "interpolatemenucolors",	INTERPOLATE_MENUS },
-    { "lefttitlebutton",	LEFT_TITLEBUTTON },
-    { "m",			META },
-    { "maketitle",		MAKE_TITLE },
-    { "menu",			MENU },
-    { "menubackground",		MENU_BACKGROUND },
-    { "menufont",		MENU_FONT },
-    { "menuforeground",		MENU_FOREGROUND },
-    { "menushadowcolor",	MENU_SHADOW_COLOR },
-    { "menutitlebackground",	MENU_TITLE_BACKGROUND },
-    { "menutitleforeground",	MENU_TITLE_FOREGROUND },
-    { "monochrome",		MONOCHROME },
-    { "move",			MOVE },
-    { "movedelta",		MOVE_DELTA },
-    { "nobackingstore",		NO_BACKINGSTORE },
-    { "nodefaults",		NODEFAULTS },
-    { "nograbserver",		NO_GRAB_SERVER },
-    { "nohighlight",		NO_HILITE },
-    { "noiconmanagers",		NO_ICONMGRS },
-    { "nomenushadows",		NO_MENU_SHADOWS },
-    { "noraiseondeiconify",	NO_RAISE_ON_DEICONIFY },
-    { "noraiseonmove",		NO_RAISE_ON_MOVE },
-    { "noraiseonresize",	NO_RAISE_ON_RESIZE },
-    { "north",			NORTH },
-    { "nosaveunders",		NO_SAVEUNDER },
-    { "noshadowmenus",		NO_MENU_SHADOWS },
-    { "notitle",		NO_TITLE },
-    { "notitlefocus",		NO_TITLE_FOCUS },
-    { "notitlehighlight",	NO_TITLE_HILITE },
-    { "noversion",		NO_VERSION },
-    { "opaquemove",		OPAQUE_MOVE },
-    { "pixmaps",		PIXMAPS },
-    { "r",			ROOT },
-    { "randomplacement",	RANDOM_PLACEMENT },
-    { "resize",			RESIZE },
-    { "resizefont",		RESIZE_FONT },
-    { "restartpreviousstate",	RESTART_PREVIOUS_STATE },
-    { "righttitlebutton",	RIGHT_TITLEBUTTON },
-    { "root",			ROOT },
-    { "s",			SHIFT },
-    { "select",			SELECT },
-    { "showiconmanager",	SHOW_ICONMGR },
-    { "sorticonmanager",	SORT_ICONMGR },
-    { "south",			SOUTH },
-    { "squeezetitle",		SQUEEZETITLE },
-    { "starticonified",		START_ICONIFIED },
-    { "t",			TITLE },
-    { "t.lower",		F_LOWER },
-    { "t.move",			F_MOVE },
-    { "t.nop",			F_NOP },
-    { "t.raise",		F_RAISE },
-    { "title",			TITLE },
-    { "titlebackground",	TITLE_BACKGROUND },
-    { "titlebuttonborderwidth",	TITLEBUTTON_BORDERWIDTH },
-    { "titlefont",		TITLE_FONT },
-    { "titleforeground",	TITLE_FOREGROUND },
-    { "titlehighlight",		TITLE_HILITE },
-    { "titlepadding",		TITLE_PADDING },
-    { "unknownicon",		UNKNOWN_ICON },
-    { "usepposition",		USE_PPOSITION },
-    { "w",			WINDOW },
-    { "wait",			WAIT },
-    { "warpcursor",		WARPCURSOR },
-    { "west",			WEST },
-    { "window",			WINDOW },
-    { "windowfunction",		WINDOW_FUNCTION },
-    { "xorvalue",		XOR_VALUE },
-    { "zoom",			ZOOM },
+    { "all",			ALL, 0 },
+    { "autoraise",		AUTO_RAISE, 0 },
+    { "autorelativeresize",	KEYWORD, kw0_AutoRelativeResize },
+    { "bordercolor",		BORDER_COLOR, 0 },
+    { "bordertilebackground",	BORDER_TILE_BACKGROUND, 0 },
+    { "bordertileforeground",	BORDER_TILE_FOREGROUND, 0 },
+    { "borderwidth",		NKEYWORD, kwn_BorderWidth },
+    { "button",			BUTTON, 0 },
+    { "buttonindent",		NKEYWORD, kwn_ButtonIndent },
+    { "c",			CONTROL, 0 },
+    { "clientborderwidth",	KEYWORD, kw0_ClientBorderWidth },
+    { "color",			COLOR, 0 },
+    { "constrainedmovetime",	NKEYWORD, kwn_ConstrainedMoveTime },
+    { "cursors",		CURSORS, 0 },
+    { "decoratetransients",	KEYWORD, kw0_DecorateTransients },
+    { "defaultbackground",	DEFAULT_BACKGROUND, 0 },
+    { "defaultforeground",	DEFAULT_FOREGROUND, 0 },
+    { "defaultfunction",	DEFAULT_FUNCTION, 0 },
+    { "destroy",		KILL, 0 },
+    { "donticonifybyunmapping",	DONT_ICONIFY_BY_UNMAPPING, 0 },
+    { "dontmoveoff",		KEYWORD, kw0_DontMoveOff },
+    { "east",			EAST, 0 },
+    { "f",			FRAME, 0 },
+    { "f.autoraise",		F_AUTORAISE, 0 },
+    { "f.backiconmgr",		F_BACKICONMGR, 0 },
+    { "f.beep",			F_BEEP, 0 },
+    { "f.bottomzoom",		F_BOTTOMZOOM, 0 },
+    { "f.circledown",		F_CIRCLEDOWN, 0 },
+    { "f.circleup",		F_CIRCLEUP, 0 },
+    { "f.colormap",		F_COLORMAP, 0 },
+    { "f.cutfile",		F_CUTFILE, 0 },
+    { "f.deiconify",		F_DEICONIFY, 0 },
+    { "f.delete",		F_DELETE, 0 },
+    { "f.deltastop",		F_DELTASTOP, 0 },
+    { "f.destroy",		F_DESTROY, 0 },
+    { "f.downiconmgr",		F_DOWNICONMGR, 0 },
+    { "f.file",			F_FILE, 0 },
+    { "f.focus",		F_FOCUS, 0 },
+    { "f.forcemove",		F_FORCEMOVE, 0 },
+    { "f.forwiconmgr",		F_FORWICONMGR, 0 },
+    { "f.fullzoom",		F_FULLZOOM, 0 },
+    { "f.function",		F_FUNCTION, 0 },
+    { "f.hbzoom",		F_BOTTOMZOOM, 0 },
+    { "f.hideiconmgr",		F_HIDELIST, 0 },
+    { "f.horizoom",		F_HORIZOOM, 0 },
+    { "f.htzoom",		F_TOPZOOM, 0 },
+    { "f.hzoom",		F_HORIZOOM, 0 },
+    { "f.iconify",		F_ICONIFY, 0 },
+    { "f.identify",		F_IDENTIFY, 0 },
+    { "f.lefticonmgr",		F_LEFTICONMGR, 0 },
+    { "f.leftzoom",		F_LEFTZOOM, 0 },
+    { "f.lower",		F_LOWER, 0 },
+    { "f.menu",			F_MENU, 0 },
+    { "f.move",			F_MOVE, 0 },
+    { "f.nexticonmgr",		F_NEXTICONMGR, 0 },
+    { "f.nop",			F_NOP, 0 },
+    { "f.previconmgr",		F_PREVICONMGR, 0 },
+    { "f.quit",			F_QUIT, 0 },
+    { "f.raise",		F_RAISE, 0 },
+    { "f.raiselower",		F_RAISELOWER, 0 },
+    { "f.refresh",		F_REFRESH, 0 },
+    { "f.resize",		F_RESIZE, 0 },
+    { "f.restart",		F_RESTART, 0 },
+    { "f.righticonmgr",		F_RIGHTICONMGR, 0 },
+    { "f.rightzoom",		F_RIGHTZOOM, 0 },
+    { "f.saveyourself",		F_SAVEYOURSELF, 0 },
+    { "f.showiconmgr",		F_SHOWLIST, 0 },
+    { "f.sorticonmgr",		F_SORTICONMGR, 0 },
+    { "f.source",		F_SOURCE, 0 },
+    { "f.title",		F_TITLE, 0 },
+    { "f.topzoom",		F_TOPZOOM, 0 },
+    { "f.twmrc",		F_TWMRC, 0 },
+    { "f.unfocus",		F_UNFOCUS, 0 },
+    { "f.upiconmgr",		F_UPICONMGR, 0 },
+    { "f.version",		F_VERSION, 0 },
+    { "f.vlzoom",		F_LEFTZOOM, 0 },
+    { "f.vrzoom",		F_RIGHTZOOM, 0 },
+    { "f.warpto",		F_WARPTO, 0 },
+    { "f.warptoiconmgr",	F_WARPTOICONMGR, 0 },
+    { "f.warptoscreen",		F_WARPTOSCREEN, 0 },
+    { "f.winrefresh",		F_WINREFRESH, 0 },
+    { "f.zoom",			F_ZOOM, 0 },
+    { "forceicons",		KEYWORD, kw0_ForceIcons },
+    { "frame",			FRAME, 0 },
+    { "framepadding",		NKEYWORD, kwn_FramePadding },
+    { "function",		FUNCTION, 0 },
+    { "i",			ICON, 0 },
+    { "icon",			ICON, 0 },
+    { "iconbackground",		ICON_BACKGROUND, 0 },
+    { "iconbordercolor",	ICON_BORDER_COLOR, 0 },
+    { "iconborderwidth",	NKEYWORD, kwn_IconBorderWidth },
+    { "icondirectory",		SKEYWORD, kws_IconDirectory },
+    { "iconfont",		SKEYWORD, kws_IconFont },
+    { "iconforeground",		ICON_FOREGROUND, 0 },
+    { "iconifybyunmapping",	ICONIFY_BY_UNMAPPING, 0 },
+    { "iconmanagerbackground",	ICONMGR_BACKGROUND, 0 },
+    { "iconmanagerdontshow",	ICONMGR_NOSHOW, 0 },
+    { "iconmanagerfont",	SKEYWORD, kws_IconManagerFont },
+    { "iconmanagerforeground",	ICONMGR_FOREGROUND, 0 },
+    { "iconmanagergeometry",	ICONMGR_GEOMETRY, 0 },
+    { "iconmanagerhighlight",	ICONMGR_HIGHLIGHT, 0 },
+    { "iconmanagers",		ICONMGRS, 0 },
+    { "iconmanagershow",	ICONMGR_SHOW, 0 },
+    { "iconmgr",		ICONMGR, 0 },
+    { "iconregion",		ICON_REGION, 0 },
+    { "icons",			ICONS, 0 },
+    { "interpolatemenucolors",	KEYWORD, kw0_InterpolateMenuColors },
+    { "lefttitlebutton",	LEFT_TITLEBUTTON, 0 },
+    { "m",			META, 0 },
+    { "maketitle",		MAKE_TITLE, 0 },
+    { "menu",			MENU, 0 },
+    { "menubackground",		MENU_BACKGROUND, 0 },
+    { "menufont",		SKEYWORD, kws_MenuFont },
+    { "menuforeground",		MENU_FOREGROUND, 0 },
+    { "menushadowcolor",	MENU_SHADOW_COLOR, 0 },
+    { "menutitlebackground",	MENU_TITLE_BACKGROUND, 0 },
+    { "menutitleforeground",	MENU_TITLE_FOREGROUND, 0 },
+    { "monochrome",		MONOCHROME, 0 },
+    { "move",			MOVE, 0 },
+    { "movedelta",		NKEYWORD, kwn_MoveDelta },
+    { "nobackingstore",		KEYWORD, kw0_NoBackingStore },
+    { "nodefaults",		KEYWORD, kw0_NoDefaults },
+    { "nograbserver",		KEYWORD, kw0_NoGrabServer },
+    { "nohighlight",		NO_HILITE, 0 },
+    { "noiconmanagers",		KEYWORD, kw0_NoIconManagers },
+    { "nomenushadows",		KEYWORD, kw0_NoMenuShadows },
+    { "noraiseondeiconify",	KEYWORD, kw0_NoRaiseOnDeiconify },
+    { "noraiseonmove",		KEYWORD, kw0_NoRaiseOnMove },
+    { "noraiseonresize",	KEYWORD, kw0_NoRaiseOnResize },
+    { "north",			NORTH, 0 },
+    { "nosaveunders",		KEYWORD, kw0_NoSaveUnders },
+    { "notitle",		NO_TITLE, 0 },
+    { "notitlefocus",		KEYWORD, kw0_NoTitleFocus },
+    { "notitlehighlight",	NO_TITLE_HILITE, 0 },
+    { "noversion",		KEYWORD, kw0_NoVersion },
+    { "opaquemove",		KEYWORD, kw0_OpaqueMove },
+    { "pixmaps",		PIXMAPS, 0 },
+    { "r",			ROOT, 0 },
+    { "randomplacement",	KEYWORD, kw0_RandomPlacement },
+    { "resize",			RESIZE, 0 },
+    { "resizefont",		SKEYWORD, kws_ResizeFont },
+    { "restartpreviousstate",	KEYWORD, kw0_RestartPreviousState },
+    { "righttitlebutton",	RIGHT_TITLEBUTTON, 0 },
+    { "root",			ROOT, 0 },
+    { "s",			SHIFT, 0 },
+    { "select",			SELECT, 0 },
+    { "showiconmanager",	KEYWORD, kw0_ShowIconManager },
+    { "sorticonmanager",	KEYWORD, kw0_SortIconManager },
+    { "south",			SOUTH, 0 },
+    { "squeezetitle",		KEYWORD, kw0_SqueezeTitle },
+    { "starticonified",		START_ICONIFIED, 0 },
+    { "t",			TITLE, 0 },
+    { "t.lower",		F_LOWER, 0 },
+    { "t.move",			F_MOVE, 0 },
+    { "t.nop",			F_NOP, 0 },
+    { "t.raise",		F_RAISE, 0 },
+    { "title",			TITLE, 0 },
+    { "titlebackground",	TITLE_BACKGROUND, 0 },
+    { "titlebuttonborderwidth",	NKEYWORD, kwn_TitleButtonBorderWidth },
+    { "titlefont",		SKEYWORD, kws_TitleFont },
+    { "titleforeground",	TITLE_FOREGROUND, 0 },
+    { "titlehighlight",		TITLE_HILITE, 0 },
+    { "titlepadding",		NKEYWORD, kwn_TitlePadding },
+    { "unknownicon",		SKEYWORD, kws_UnknownIcon },
+    { "usepposition",		SKEYWORD, kws_UsePPosition },
+    { "w",			WINDOW, 0 },
+    { "wait",			WAIT, 0 },
+    { "warpcursor",		KEYWORD, kw0_WarpCursor },
+    { "west",			WEST, 0 },
+    { "window",			WINDOW, 0 },
+    { "windowfunction",		WINDOW_FUNCTION, 0 },
+    { "xorvalue",		NKEYWORD, kwn_XorValue },
+    { "zoom",			ZOOM, 0 },
 };
 
 static int numkeywords = (sizeof(keytable)/sizeof(keytable[0]));
 
-int parse_keyword (s)
+int parse_keyword (s, nump)
     char *s;
+    int *nump;
 {
     register int lower = 0, upper = numkeywords - 1;
 
@@ -456,6 +494,13 @@ int parse_keyword (s)
         if (res < 0) {
             lower = middle + 1;
         } else if (res == 0) {
+	    switch (p->value) {
+	      case KEYWORD:
+	      case SKEYWORD:
+	      case NKEYWORD:
+		*nump = p->subnum;
+		break;
+	    }
             return p->value;
         } else {
             upper = middle - 1;
@@ -463,3 +508,234 @@ int parse_keyword (s)
     }
     return -1;
 }
+
+
+
+/*
+ * action routines called by grammar
+ */
+
+int do_single_keyword (keyword)
+    int keyword;
+{
+    switch (keyword) {
+      case kw0_NoDefaults:
+	Scr->NoDefaults = TRUE;
+	return 1;
+
+      case kw0_AutoRelativeResize:
+	Scr->AutoRelativeResize = TRUE;
+	return 1;
+
+      case kw0_ForceIcons:
+	if (Scr->FirstTime) Scr->ForceIcon = TRUE;
+	return 1;
+
+      case kw0_NoIconManagers:
+	Scr->NoIconManagers = TRUE;
+	return 1;
+
+      case kw0_OpaqueMove:
+	Scr->OpaqueMove = TRUE;
+	return 1;
+
+      case kw0_InterpolateMenuColors:
+	if (Scr->FirstTime) Scr->InterpolateMenuColors = TRUE;
+	return 1;
+
+      case kw0_WarpCursor:
+	if (Scr->FirstTime) Scr->WarpCursor = TRUE;
+	return 1;
+
+      case kw0_NoVersion:
+	/* obsolete */
+	return 1;
+
+      case kw0_SortIconManager:
+	if (Scr->FirstTime) Scr->SortIconMgr = TRUE;
+	return 1;
+
+      case kw0_NoGrabServer:
+	Scr->NoGrabServer = TRUE;
+	return 1;
+
+      case kw0_NoMenuShadows:
+	if (Scr->FirstTime) Scr->Shadow = FALSE;
+	return 1;
+
+      case kw0_NoRaiseOnMove:
+	if (Scr->FirstTime) Scr->NoRaiseMove = TRUE;
+	return 1;
+
+      case kw0_NoRaiseOnResize:
+	if (Scr->FirstTime) Scr->NoRaiseResize = TRUE;
+	return 1;
+
+      case kw0_NoRaiseOnDeiconify:
+	if (Scr->FirstTime) Scr->NoRaiseDeicon = TRUE;
+	return 1;
+
+      case kw0_DontMoveOff:
+	Scr->DontMoveOff = TRUE;
+	return 1;
+
+      case kw0_NoBackingStore:
+	Scr->BackingStore = FALSE;
+	return 1;
+
+      case kw0_NoSaveUnders:
+	Scr->SaveUnder = FALSE;
+	return 1;
+
+      case kw0_RestartPreviousState:
+	RestartPreviousState = True;
+	return 1;
+
+      case kw0_ClientBorderWidth:
+	if (Scr->FirstTime) Scr->ClientBorderWidth = TRUE;
+	return 1;
+
+      case kw0_NoTitleFocus:
+	Scr->TitleFocus = FALSE;
+	return 1;
+
+      case kw0_RandomPlacement:
+	Scr->RandomPlacement = TRUE;
+	return 1;
+
+      case kw0_DecorateTransients:
+	Scr->DecorateTransients = TRUE;
+	return 1;
+
+      case kw0_SqueezeTitle:
+	Scr->SqueezeTitle = TRUE;
+	return 1;
+
+      case kw0_ShowIconManager:
+	Scr->ShowIconManager = TRUE;
+	return 1;
+    }
+
+    return 0;
+}
+
+
+int do_string_keyword (keyword, s)
+    int keyword;
+    char *s;
+{
+    switch (keyword) {
+      case kws_UsePPosition:
+	{ 
+	    int ppos = ParseUsePPosition (s);
+	    if (ppos < 0) {
+		twmrc_error_prefix();
+		fprintf (stderr,
+			 "ignoring invalid UsePPosition argument \"%s\"\n", s);
+	    } else {
+		Scr->UsePPosition = ppos;
+	    }
+	    return 1;
+	}
+
+      case kws_IconFont:
+	if (!Scr->HaveFonts) Scr->IconFont.name = s;
+	return 1;
+
+      case kws_ResizeFont:
+	if (!Scr->HaveFonts) Scr->SizeFont.name = s;
+	return 1;
+
+      case kws_MenuFont:
+	if (!Scr->HaveFonts) Scr->MenuFont.name = s;
+	return 1;
+
+      case kws_TitleFont:
+	if (!Scr->HaveFonts) Scr->TitleBarFont.name = s;
+	return 1;
+
+      case kws_IconManagerFont:
+	if (!Scr->HaveFonts) Scr->IconManagerFont.name = s;
+	return 1;
+
+      case kws_IconManagerGeometry:
+	Scr->iconmgr.geometry = s;
+	return 1;
+
+      case kws_UnknownIcon:
+	if (Scr->FirstTime) GetUnknownIcon (s);
+	return 1;
+
+      case kws_IconDirectory:
+	if (Scr->FirstTime) Scr->IconDirectory = ExpandFilename (s);
+	return 1;
+    }
+
+    return 0;
+}
+
+
+int do_number_keyword (keyword, num)
+    int keyword;
+    int num;
+{
+    switch (keyword) {
+      case kwn_ConstrainedMoveTime:
+	ConstrainedMoveTime = num;
+	return 1;
+
+      case kwn_MoveDelta:
+	Scr->MoveDelta = num;
+	return 1;
+
+      case kwn_XorValue:
+	if (Scr->FirstTime) Scr->XORvalue = num;
+	return 1;
+
+      case kwn_FramePadding:
+	if (Scr->FirstTime) Scr->FramePadding = num;
+	return 1;
+
+      case kwn_TitlePadding:
+	if (Scr->FirstTime) Scr->TitlePadding = num;
+	return 1;
+
+      case kwn_ButtonIndent:
+	if (Scr->FirstTime) Scr->ButtonIndent = num;
+	return 1;
+
+      case kwn_BorderWidth:
+	if (Scr->FirstTime) Scr->BorderWidth = num;
+	return 1;
+
+      case kwn_IconBorderWidth:
+	if (Scr->FirstTime) Scr->IconBorderWidth = num;
+	return 1;
+
+      case kwn_TitleButtonBorderWidth:
+	if (Scr->FirstTime) Scr->TBInfo.border = num;
+	return 1;
+
+    }
+
+    return 0;
+}
+
+static int ParseUsePPosition (s)
+    register char *s;
+{
+    XmuCopyISOLatin1Lowered (s, s);
+
+    if (strcmp (s, "off") == 0) {
+	return PPOS_OFF;
+    } else if (strcmp (s, "on") == 0) {
+	return PPOS_ON;
+    } else if (strcmp (s, "non-zero") == 0 ||
+	       strcmp (s, "nonzero") == 0) {
+	return PPOS_NON_ZERO;
+    }
+
+    return -1;
+}
+
+

@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: lex.l,v 1.1 89/11/13 08:41:02 jim Exp $
+ * $XConsortium: lex.l,v 1.55 89/11/13 10:52:54 jim Exp $
  *
  * .twmrc lex file
  *
@@ -37,7 +37,7 @@
  ***********************************************************************/
 
 static char RCSinfo[]=
-"$XConsortium: lex.l,v 1.1 89/11/13 08:41:02 jim Exp $";
+"$XConsortium: lex.l,v 1.55 89/11/13 10:52:54 jim Exp $";
 
 /* #include <stdio.h> */		/* lex already includes stdio.h */
 #include "gram.h"
@@ -69,7 +69,7 @@ noraise				[Nn][Oo][Rr][Aa][Ii][Ss][Ee][Oo][Nn]
 {tbutton}{number}		{ (void)sscanf(&yytext[11], "%d", &yylval.num);
 				  return (TBUTTON);
 				}
-[a-zA-Z\.]+			{ return parse_keyword(yytext); }
+[a-zA-Z\.]+			{ return parse_keyword (yytext, &yylval.num); }
 
 "!"				{ return F_EXEC; }
 "^"				{ return F_CUT; }
