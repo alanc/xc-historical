@@ -83,11 +83,11 @@ IMPORTSXAW = \
 	$(AWIDGETSRC)/ToggleP.h \
 	$(AWIDGETSRC)/VPaned.h \
 	$(AWIDGETSRC)/Viewport.h \
-	$(AWIDGETSRC)/ViewportP.h \
-	$(AWIDGETSRC)/XawMisc.h
+	$(AWIDGETSRC)/ViewportP.h 
 
 IMPORTSXMU = \
-	$(XMUSRC)/Xmu.h 
+	$(XMUSRC)/Xmu.h \
+	$(XMUSRC)/Misc.h 
 
 IMPORTSEXT = \
 	$(EXTENSIONSRC)/include/zoid.h \
@@ -106,7 +106,7 @@ MakeSubincludesForBuild(all,Xaw,$(IMPORTSXAW))
 MakeSubincludesForBuild(all,Xmu,$(IMPORTSXMU))
 MakeSubincludesForBuild(all,extensions,$(IMPORTSEXT))
 
-#if InstallOldXawLinks
+#if InstallOldHeaderFiles
 /*
  * This will be removed when all core (and contrib?) programs have been fixed
  * to include Athena widgets as <X11/Xaw/header.h> and Xmu headers as
@@ -122,6 +122,12 @@ all::
 clean::
 	@-(list=`echo $(IMPORTSXAW) | sed -e 's/[^ ]*\///g'`; set -x; $(RM) $$list)
 	@-(list=`echo $(IMPORTSXMU) | sed -e 's/[^ ]*\///g'`; set -x; $(RM) $$list)
+
+all::
+	$(LN) Xmu/Misc.h XawMisc.h
+
+clean::
+	$(RM) XawMisc.h
 #endif
 
 
