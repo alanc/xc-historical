@@ -1,4 +1,4 @@
-.\" $XConsortium: XmacII.man,v 1.4 88/09/06 14:40:29 jim Exp $
+.\" $XConsortium: XmacII.man,v 1.5 88/09/30 10:34:40 xguest Exp $
 .TH XMACII 1 "8 August 1988" "X Version 11"
 .SH NAME
 XmacII \- Macintosh II server for X Version 11
@@ -87,7 +87,7 @@ one of the arrow keys.
 .SH "SECURITY"
 .I X
 uses an access control list for deciding whether or not to accept a
-connection from a given cleint.  This list
+connection from a given client.  This list
 initially consists of the machine on which the server is running, and any
 hosts listed in the file
 \fI/etc/X0.hosts\fP
