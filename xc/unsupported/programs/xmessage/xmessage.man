@@ -1,4 +1,4 @@
-.\" $XConsortium: xmessage.man,v 1.4 94/06/03 15:58:36 gildea Exp $
+.\" $XConsortium: xmessage.man,v 1.5 94/07/26 20:44:08 gildea Exp $
 .TH XMESSAGE 1 "26 July 1994" "X Version 11"
 .SH NAME
 xmessage \- display a message or query in a window (X-based /bin/echo)
@@ -37,7 +37,7 @@ is typically used by shell scripts to display information to the user
 or to ask the user to make a choice.
 .PP
 Unless a size is specified, \fIxmessage\fP
-sizes itself to fit the size of the message, up to a maximum size.
+sizes itself to fit the message, up to a maximum size.
 If the message is too big for the window, \fIxmessage\fP will display
 scroll bars.
 .SH OPTIONS
@@ -112,39 +112,39 @@ Xmessage (xmessage)
 customizations that are specific to \fIxmessage\fP. 
 .TP 8
 .B file
-A String resource specifying the file to display.
+A String specifying the file to display.
 .TP 8
 .B buttons
-A String resource specifying the buttons to display.
+A String specifying the buttons to display.
 See the \fB\-buttons\fP command-line option.
 .TP 8
 .B defaultButton
-A String resource specifying a default button by label.
+A String specifying a default button by label.
 .TP 8
 .B printValue
-A Boolean resource that determines whether or not the label of the 
+A Boolean value specifying whether the label of the 
 button pressed to exit the program is printed.  The default is FALSE.
 .TP 8
 .B center
-Pop up the window at the center of the screen.
-The default is FALSE.
+A Boolean value specifying whether to pop up the window at the center
+of the screen.  The default is FALSE.
 .TP 8
 .B nearMouse
-Pop up the window near the mouse cursor.
-The default is FALSE.
+A Boolean value specifying whether to pop up the window near the mouse
+cursor.  The default is FALSE.
 .TP 8
 .B timeout
-Exit with status 0 after \fIsecs\fP seconds.
-The default is 0, which means never time out.
+The number of seconds after which to exit with
+status 0.  The default is 0, which means never time out.
 .TP 8
 .B "maxHeight (\fPclass\fB Maximum)
-If no size was specified in the geometry, this resource specifies the
-maximum height of the text part of the window.
+The maximum height of the text part of the window in pixels,
+used if no size was specified in the geometry.
 The default is 0, which means use 70% of the height of the screen.
 .TP 8
 .B "maxWidth (\fPclass\fB Maximum)
-If no size was specified in the geometry, this resource specifies the
-maximum width of the text part of the window.
+The maximum width of the text part of the window in pixels,
+used if no size was specified in the geometry.
 The default is 0, which means use 70% of the width of the screen.
 .SH ACTIONS
 .TP 8
