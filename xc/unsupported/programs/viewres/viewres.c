@@ -1,5 +1,5 @@
 /*
- * $XConsortium: viewres.c,v 1.53 90/03/09 14:37:10 jim Exp $
+ * $XConsortium: viewres.c,v 1.54 90/03/09 14:50:12 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -201,7 +201,7 @@ static void usage ()
     fprintf (stderr, "usage:  %s [-options...]\n", ProgramName);
     fprintf(stderr, "\nwhere options include:\n");
     for (cpp = help_message; *cpp; cpp++) {
-	fprintf (stderr, "%s\n", *cpp);
+	fprintf (stderr, "    %s\n", *cpp);
     }
     fprintf(stderr, "\n");
     exit (1);
