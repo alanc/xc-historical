@@ -1,4 +1,4 @@
-/* $XConsortium: menu.c,v 1.54 91/05/06 17:12:06 gildea Exp $ */
+/* $XConsortium: menu.c,v 1.55 91/05/07 15:20:40 gildea Exp $ */
 /*
 Copyright 1989 Massachusetts Institute of Technology
 
@@ -692,7 +692,7 @@ static void do_tektextlarge (gw, closure, data)
     Widget gw;
     caddr_t closure, data;
 {
-    TekSetFontSize (gw, tekMenu_tektextlarge);
+    TekSetFontSize (tekMenu_tektextlarge);
 }
 
 
@@ -700,7 +700,7 @@ static void do_tektext2 (gw, closure, data)
     Widget gw;
     caddr_t closure, data;
 {
-    TekSetFontSize (gw, tekMenu_tektext2);
+    TekSetFontSize (tekMenu_tektext2);
 }
 
 
@@ -708,7 +708,7 @@ static void do_tektext3 (gw, closure, data)
     Widget gw;
     caddr_t closure, data;
 {
-    TekSetFontSize (gw, tekMenu_tektext3);
+    TekSetFontSize (tekMenu_tektext3);
 }
 
 
@@ -717,7 +717,7 @@ static void do_tektextsmall (gw, closure, data)
     caddr_t closure, data;
 {
 
-    TekSetFontSize (gw, tekMenu_tektextsmall);
+    TekSetFontSize (tekMenu_tektextsmall);
 }
 
 
