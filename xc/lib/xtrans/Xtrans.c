@@ -1,4 +1,4 @@
-/* $XConsortium: Xtrans.c,v 1.18 94/03/30 10:37:44 mor Exp $ */
+/* $XConsortium: Xtrans.c,v 1.19 94/03/31 10:52:32 mor Exp $ */
 
 /* Copyright (c) 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  * Copyright 1993, 1994 by the Massachusetts Institute of Technology
@@ -370,16 +370,24 @@ char	*address;
     switch (type)
     {
     case XTRANS_OPEN_COTS_CLIENT:
+#ifdef TRANS_CLIENT
 	ciptr = thistrans->OpenCOTSClient(thistrans, protocol, host, port);
+#endif /* TRANS_CLIENT */
 	break;
     case XTRANS_OPEN_COTS_SERVER:
+#ifdef TRANS_SERVER
 	ciptr = thistrans->OpenCOTSServer(thistrans, protocol, host, port);
+#endif /* TRANS_SERVER */
 	break;
     case XTRANS_OPEN_CLTS_CLIENT:
+#ifdef TRANS_CLIENT
 	ciptr = thistrans->OpenCLTSClient(thistrans, protocol, host, port);
+#endif /* TRANS_CLIENT */
 	break;
     case XTRANS_OPEN_CLTS_SERVER:
+#ifdef TRANS_SERVER
 	ciptr = thistrans->OpenCLTSServer(thistrans, protocol, host, port);
+#endif /* TRANS_SERVER */
 	break;
     default:
 	PRMSG (1,"TRANS(Open): Unknown Open type %d\n", type, 0, 0);
@@ -491,6 +499,8 @@ char	*port;
  * table.
  */
 
+#ifdef TRANS_CLIENT
+
 XtransConnInfo
 TRANS(OpenCOTSClient) (address)
 
@@ -500,6 +510,11 @@ char	*address;
     PRMSG (2,"TRANS(OpenCOTSClient) (%s)\n", address, 0, 0);
     return TRANS(Open) (XTRANS_OPEN_COTS_CLIENT, address);
 }
+
+#endif /* TRANS_CLIENT */
+
+
+#ifdef TRANS_SERVER
 
 XtransConnInfo
 TRANS(OpenCOTSServer) (address)
@@ -511,6 +526,11 @@ char	*address;
     return TRANS(Open) (XTRANS_OPEN_COTS_SERVER, address);
 }
 
+#endif /* TRANS_SERVER */
+
+
+#ifdef TRANS_CLIENT
+
 XtransConnInfo
 TRANS(OpenCLTSClient) (address)
 
@@ -519,6 +539,11 @@ char	*address;
     PRMSG (2,"TRANS(OpenCLTSClient) (%s)\n", address, 0, 0);
     return TRANS(Open) (XTRANS_OPEN_CLTS_CLIENT, address);
 }
+
+#endif /* TRANS_CLIENT */
+
+
+#ifdef TRANS_SERVER
 
 XtransConnInfo
 TRANS(OpenCLTSServer) (address)
@@ -529,6 +554,8 @@ char	*address;
     PRMSG (2,"TRANS(OpenCLTSServer) (%s)\n", address, 0, 0);
     return TRANS(Open) (XTRANS_OPEN_CLTS_SERVER, address);
 }
+
+#endif /* TRANS_SERVER */
 
 
 #ifdef TRANS_REOPEN
@@ -667,6 +694,8 @@ int		arg;
     return ret;
 }
 
+#ifdef TRANS_SERVER
+
 int
 TRANS(CreateListener) (ciptr, port)
 
@@ -710,6 +739,11 @@ int		*status;
     return newciptr;
 }
 
+#endif /* TRANS_SERVER */
+
+
+#ifdef TRANS_CLIENT
+
 int
 TRANS(Connect) (ciptr, address)
 
@@ -748,6 +782,9 @@ char		*address;
     
     return ret;
 }
+
+#endif /* TRANS_CLIENT */
+
 
 int
 TRANS(BytesReadable) (ciptr, pend)
@@ -947,6 +984,8 @@ complete_network_count ()
 }
 
 
+#ifdef TRANS_SERVER
+
 int
 TRANS(MakeAllCOTSServerListeners) (port, partial, count_ret, ciptrs_ret)
 
@@ -1103,6 +1142,8 @@ XtransConnInfo 	**ciptrs_ret;
     
     return 0;
 }
+
+#endif /* TRANS_SERVER */
 
 
 
