@@ -1,5 +1,5 @@
 /*
-* $Header: TextP.h,v 1.7 88/01/06 08:57:13 swick Locked $
+* $Header: TextP.h,v 1.7 88/01/06 09:10:55 swick Locked $
 */
 
 /*
@@ -125,8 +125,6 @@ typedef struct {
 
 typedef int (*ActionProc)();
 
-typedef XtTextSelectType XtTextSelectionArray[20];
-
 /* New fields for the Text widget class record */
 
 typedef struct {int foo;} TextClassPart;
@@ -140,7 +138,7 @@ typedef struct _TextClassRec {
 extern TextClassRec textClassRec;
 
 /* New fields for the Text widget record */
-typedef struct {
+typedef struct _TextPart {
     XtTextSource	source;
     XtTextSink		sink;
     XtTextLineTable	lt;
@@ -148,7 +146,8 @@ typedef struct {
     XtTextSelection	s;
     XtTextScanDirection extendDir;
     XtTextSelection	origSel;    /* the selection being modified */
-    XtTextSelectionArray sarray;    /* Array to cycle for selections. */
+    XtTextSelectType	*sarray;    /* Array to cycle for selections. */
+    Dimension	    client_leftmargin; /* client-visible resource */
     Dimension	    leftmargin;	    /* Width of left margin. */
     int		    options;	    /* wordbreak, scroll, etc. */
     Time	    lasttime;	    /* timestamp of last processed action */
