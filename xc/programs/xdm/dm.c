@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: dm.c,v 1.66 93/09/20 18:02:51 hersh Exp $
+ * $XConsortium: dm.c,v 1.67 93/12/06 15:19:40 kaleb Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -92,6 +92,7 @@ int	argc;
 char	**argv;
 {
     int	oldpid, oldumask;
+    char cmdbuf[1024];
 
     /* make sure at least world write access is disabled */
     if (((oldumask = umask(022)) & 002) == 002)
@@ -119,6 +120,8 @@ char	**argv;
 	BecomeOrphan ();
     if (debugLevel >= 10)
 	nofork_session = 1;
+    if (debugLevel == 0 && daemonMode)
+	BecomeDaemon ();
     /* SUPPRESS 560 */
     if (oldpid = StorePid ())
     {
@@ -129,10 +132,13 @@ char	**argv;
 		 pidFile, oldpid);
 	exit (1);
     }
-    if (debugLevel == 0 && daemonMode)
-	BecomeDaemon ();
     if (debugLevel == 0)
 	InitErrorLog ();
+
+    /* Clean up any old Authorization files */
+    sprintf(cmdbuf, "/bin/rm -f %s/A*", authDir);
+    system(cmdbuf);
+
 #ifdef XDMCP
     CreateWellKnownSockets ();
 #else
@@ -698,7 +704,7 @@ StorePid ()
     if (pidFile[0] != '\0') {
 	pidFd = open (pidFile, 2);
 	if (pidFd == -1 && errno == ENOENT)
-	    pidFd = creat (pidFile, 0666);
+	    pidFd = open (pidFile, O_RDWR|O_CREAT, 0666);
 	if (pidFd == -1 || !(pidFilePtr = fdopen (pidFd, "r+")))
 	{
 	    LogError ("process-id file %s cannot be opened\n",
