@@ -1,4 +1,4 @@
-/* $XConsortium: Xfuncproto.h,v 1.0 91/02/03 13:28:36 rws Exp $ */
+/* $XConsortium: Xfuncproto.h,v 1.1 91/02/16 15:36:12 rws Exp $ */
 /* 
  * Copyright 1989, 1991 by the Massachusetts Institute of Technology
  *
@@ -63,12 +63,14 @@
 
 #endif /* NeedFunctionPrototypes */
 
+#ifndef _XFUNCPROTOBEGIN
 #ifdef __cplusplus			/* for C++ V2.0 */
 #define _XFUNCPROTOBEGIN extern "C" {	/* do not leave open across includes */
 #define _XFUNCPROTOEND }
 #else
 #define _XFUNCPROTOBEGIN
 #define _XFUNCPROTOEND
-#endif /* __cpluspus */
+#endif
+#endif /* _XFUNCPROTOBEGIN */
 
 #endif /* _XFUNCPROTO_H_ */
