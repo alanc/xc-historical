@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: window.c,v 5.13 89/07/13 10:13:48 keith Exp $ */
+/* $XConsortium: window.c,v 5.14 89/07/13 11:27:11 rws Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -438,13 +438,13 @@ HandleExposures(pWin)
     {
 	if (val = pChild->valdata)
 	{
-	    if ((*RegionNotEmpty)(&val->borderExposed))
+	    if ((*RegionNotEmpty)(&val->after.borderExposed))
 		(*pChild->drawable.pScreen->PaintWindowBorder)(pChild,
-						    &val->borderExposed,
+						    &val->after.borderExposed,
 						    PW_BORDER);
-	    (*RegionUninit)(&val->borderExposed);
-	    (*WindowExposures)(pChild, &val->exposed);
-	    (*RegionUninit)(&val->exposed);
+	    (*RegionUninit)(&val->after.borderExposed);
+	    (*WindowExposures)(pChild, &val->after.exposed);
+	    (*RegionUninit)(&val->after.exposed);
 	    xfree(val);
 	    pChild->valdata = (ValidatePtr)NULL;
 	    if (pChild->firstChild)
@@ -1968,14 +1968,14 @@ RecomputeExposures (pWin, pValid)
 	/*
 	 * compute exposed regions of this window
 	 */
-	(*pScreen->Subtract)(&pWin->valdata->exposed, &pWin->clipList, pValid);
+	(*pScreen->Subtract)(&pWin->valdata->after.exposed, &pWin->clipList, pValid);
 	/*
 	 * compute exposed regions of the border
 	 */
-	(*pScreen->Subtract)(&pWin->valdata->borderExposed,
+	(*pScreen->Subtract)(&pWin->valdata->after.borderExposed,
 			     &pWin->borderClip, &pWin->winSize);
-	(*pScreen->Subtract)(&pWin->valdata->borderExposed,
-			     &pWin->valdata->borderExposed, pValid);
+	(*pScreen->Subtract)(&pWin->valdata->after.borderExposed,
+			     &pWin->valdata->after.borderExposed, pValid);
 	return WT_WALKCHILDREN;
     }
     return WT_NOMATCH;
@@ -2009,6 +2009,7 @@ SlideAndSizeWindow(pWin, x, y, w, h, pSib)
     RegionPtr	pRegion;
     RegionPtr	destClip;	/* portions of destination already written */
     RegionPtr	oldWinClip;	/* old clip list for window */
+    RegionPtr	borderVisible = NullRegion;	/* visible area of the border */
 
     /* if this is a root window, can't be resized */
     if (!(pParent = pWin->parent))
@@ -2047,6 +2048,15 @@ SlideAndSizeWindow(pWin, x, y, w, h, pSib)
 	    oldWinClip = (*pScreen->RegionCreate) (NullBox, 1);
 	    (*pScreen->RegionCopy) (oldWinClip, &pWin->clipList);
 	}
+    	/*
+     	 * if the window is shrinking in either dimension, borderExposed
+     	 * can't be computed correctly without some help.
+     	 */
+    	if (pWin->drawable.height > h || pWin->drawable.width > w)
+    	{
+	    borderVisible = (*pScreen->RegionCreate) (NullBox, 1);
+	    (*pScreen->Subtract) (borderVisible, &pWin->borderClip, &pWin->winSize);
+    	}
     }
     pWin->origin.x = x + bw;
     pWin->origin.y = y + bw;
@@ -2075,6 +2085,10 @@ SlideAndSizeWindow(pWin, x, y, w, h, pSib)
 	    (*pScreen->RegionCopy) (pRegion, &pWin->clipList);
 
 	anyMarked |= MarkOverlappedWindows(pWin, pFirstChange);
+
+	if (pWin->valdata)
+	    pWin->valdata->before.borderVisible = borderVisible;
+
 #ifdef DO_SAVE_UNDERS
 	if (DO_SAVE_UNDERS(pWin))
 	{
@@ -2086,15 +2100,12 @@ SlideAndSizeWindow(pWin, x, y, w, h, pSib)
 #endif /* DO_SAVE_UNDERS */
 
 	if (anyMarked)
-	{
 	    (* pScreen->ValidateTree)(pParent, pFirstChange, VTOther);
-	    /*
-	     * always redraw the border as CopyWindow will mash it
-	     */
-	    (* pScreen->Subtract)(&pWin->valdata->borderExposed,
-				  &pWin->borderClip, &pWin->winSize);
-	    (* pScreen->RegionCopy)(&pWin->valdata->exposed, &pWin->clipList);
-	}
+	/*
+	 * the entire window is trashed unless bitGravity
+	 * recovers portions of it
+	 */
+	(*pScreen->RegionCopy) (&pWin->valdata->after.exposed, &pWin->clipList);
     }
 
     if (pWin->backStorage &&
@@ -2203,8 +2214,8 @@ SlideAndSizeWindow(pWin, x, y, w, h, pSib)
 	     */
 
 	    if (g == pWin->bitGravity)
-		(*pScreen->Subtract)(&pWin->valdata->exposed,
-				     &pWin->valdata->exposed, gravitate[g]);
+		(*pScreen->Subtract)(&pWin->valdata->after.exposed,
+				     &pWin->valdata->after.exposed, gravitate[g]);
 	    if (!destClip)
 	    	destClip = gravitate[g];
 	    else
@@ -2241,21 +2252,37 @@ ChangeBorderWidth(pWin, width)
     Bool anyMarked;
     register ScreenPtr pScreen;
     Bool WasViewable = (Bool)(pWin->viewable);
+    RegionPtr	borderVisible;
 
     oldwidth = wBorderWidth (pWin);
     if (oldwidth == width)
         return;
     pScreen = pWin->drawable.pScreen;
     pParent = pWin->parent;
-    if (WasViewable && (width < oldwidth))
+    if (WasViewable && width < oldwidth)
 	anyMarked = MarkOverlappedWindows(pWin, pWin);
+
     pWin->borderWidth = width;
     SetBorderSize (pWin);
 
     if (WasViewable)
     {
-        if (width >= oldwidth)
+        if (width > oldwidth)
+	{
 	    anyMarked = MarkOverlappedWindows(pWin, pWin);
+    	    /*
+     	     * save the old border visible region to correctly compute
+     	     * borderExposed.
+     	     */
+	    if (pWin->valdata)
+	    {
+	    	RegionPtr   borderVisible;
+	    	borderVisible = (*pScreen->RegionCreate) (NULL, 1);
+	    	(*pScreen->Subtract) (borderVisible,
+				      &pWin->borderClip, &pWin->winSize);
+	    	pWin->valdata->before.borderVisible = borderVisible;
+	    }
+	}
 #ifdef DO_SAVE_UNDERS
 	if (pWin->saveUnder && DO_SAVE_UNDERS(pWin))
 	    ChangeSaveUnder(pWin, pWin->nextSib);
@@ -2264,15 +2291,6 @@ ChangeBorderWidth(pWin, width)
 	if (anyMarked)
 	{
 	    (* pScreen->ValidateTree)(pParent, pWin, VTOther);
-	    if (width > oldwidth)
-	    {
-		(* pScreen->Subtract)(&pWin->valdata->borderExposed,
-				      &pWin->borderClip, &pWin->winSize);
-		(* pWin->drawable.pScreen->PaintWindowBorder)(pWin,
-						 &pWin->valdata->borderExposed,
-						 PW_BORDER);
-		(* pScreen->RegionEmpty)(&pWin->valdata->borderExposed);
-	    }
 	    HandleExposures(pParent);
 	}
 #ifdef DO_SAVE_UNDERS
@@ -2857,29 +2875,26 @@ ActuallyDoSomething:
 SetShape(pWin)
     WindowPtr	pWin;
 {
-    Bool    WasViewable = (Bool)(pWin->viewable);
+    Bool	WasViewable = (Bool)(pWin->viewable);
     ScreenPtr	pScreen = pWin->drawable.pScreen;
     Bool	anyMarked;
     WindowPtr	pParent = pWin->parent;
-    RegionPtr	oldBorder, newBorder;
-
-    if (WasViewable)
-	anyMarked = MarkOverlappedWindows(pWin, pWin);
-
-    oldBorder = (*pScreen->RegionCreate) (NullBox, 1);
-    (*pScreen->RegionCopy) (oldBorder, &pWin->borderSize);
-    (*pScreen->Subtract) (oldBorder, oldBorder, &pWin->winSize);
-    SetWinSize (pWin);
-    SetBorderSize (pWin);
+    RegionPtr	borderVisible;
 
     if (WasViewable)
     {
-	newBorder = (*pScreen->RegionCreate) (NullBox, 1);
-	(*pScreen->RegionCopy) (newBorder, &pWin->borderSize);
-	(*pScreen->Subtract) (newBorder, newBorder, &pWin->winSize);
-	(*pScreen->Subtract) (newBorder, newBorder, oldBorder);
+	anyMarked = MarkOverlappedWindows(pWin, pWin);
+	if (pWin->valdata)
+	{
+	    borderVisible = (*pScreen->RegionCreate) (NullBox, 1);
+	    (*pScreen->Subtract) (borderVisible,
+				  &pWin->borderClip, &pWin->winSize);
+	    pWin->valdata->before.borderVisible = borderVisible;
+	}
     }
-    (*pScreen->RegionDestroy) (oldBorder);
+
+    SetWinSize (pWin);
+    SetBorderSize (pWin);
 
     ResizeChildrenWinSize(pWin, 0, 0, 0, 0);
 
@@ -2900,12 +2915,8 @@ SetShape(pWin)
 	if (anyMarked)
 	{
 	    (* pScreen->ValidateTree)(pParent, NullWindow, VTOther);
-	    (*pScreen->Intersect)(newBorder, newBorder, &pWin->borderClip);
-	    (*pScreen->Union)(&pWin->valdata->borderExposed,
-			      &pWin->valdata->borderExposed, newBorder);
 	    HandleExposures(pParent);
 	}
-	(*pScreen->RegionDestroy) (newBorder);
 #ifdef DO_SAVE_UNDERS
 	if (DO_SAVE_UNDERS(pWin))
 	    DoChangeSaveUnder(pParent, pWin);
@@ -3100,10 +3111,9 @@ MarkWindow(pWin)
     Must_have_memory = TRUE; /* XXX */
     val = (ValidatePtr)xalloc(sizeof(ValidateRec));
     Must_have_memory = FALSE; /* XXX */
-    (* pWin->drawable.pScreen->RegionInit)(&val->exposed, NullBox, 1);
-    (* pWin->drawable.pScreen->RegionInit)(&val->borderExposed, NullBox, 1);
-    val->oldAbsCorner.x = pWin->drawable.x;
-    val->oldAbsCorner.y = pWin->drawable.y;
+    val->before.oldAbsCorner.x = pWin->drawable.x;
+    val->before.oldAbsCorner.y = pWin->drawable.y;
+    val->before.borderVisible = NullRegion;
     pWin->valdata = val;
 }
 

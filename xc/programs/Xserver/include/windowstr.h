@@ -1,4 +1,4 @@
-/* $XConsortium: windowstr.h,v 5.6 89/07/09 15:35:20 rws Exp $ */
+/* $XConsortium: windowstr.h,v 5.7 89/07/12 17:15:17 keith Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -41,10 +41,16 @@ SOFTWARE.
 
 typedef enum { VTOther, VTStack, VTMove, VTUnmap, VTMap } VTKind;
 
-typedef struct _Validate {
-    RegionRec		exposed;	/* exposed regions, translated */
-    RegionRec		borderExposed;
-    DDXPointRec		oldAbsCorner;
+typedef union _Validate {
+    struct BeforeValidate {
+	DDXPointRec	oldAbsCorner;	/* old window position */
+	RegionPtr	borderVisible;	/* visible region of border, */
+					/* non-null when size changes */
+    } before;
+    struct AfterValidate {
+	RegionRec	exposed;	/* exposed regions, absolute pos */
+	RegionRec	borderExposed;
+    } after;
 } ValidateRec, *ValidatePtr;
 
 #define SameBackground(as, a, bs, b)				\

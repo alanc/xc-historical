@@ -39,7 +39,7 @@
 
 #ifndef lint
 static char rcsid[] =
-"$Header: mivaltree.c,v 5.7 89/07/12 17:17:01 keith Exp $ SPRITE (Berkeley)";
+"$Header: mivaltree.c,v 5.8 89/07/13 10:15:12 keith Exp $ SPRITE (Berkeley)";
 #endif lint
 
 #include    <stdio.h>
@@ -101,6 +101,7 @@ miComputeClips (pParent, pScreen, universe, kind, exposed)
     register BoxPtr  	borderSize;
     RegionPtr		childUnion;
     Bool		overlap;
+    RegionPtr		borderVisible;
     
     /*
      * Figure out the new visibility of this window.
@@ -135,34 +136,23 @@ miComputeClips (pParent, pScreen, universe, kind, exposed)
     if (oldVis != pParent->visibility && pParent->realized)
 	SendVisibilityNotify(pParent);
 
+    dx = pParent->drawable.x - pParent->valdata->before.oldAbsCorner.x;
+    dy = pParent->drawable.y - pParent->valdata->before.oldAbsCorner.y;
+    borderVisible = pParent->valdata->before.borderVisible;
+    
+    (* pScreen->RegionInit) (&pParent->valdata->after.borderExposed, NullBox, 0);
+    (* pScreen->RegionInit) (&pParent->valdata->after.exposed, NullBox, 0);
+
     /*
      * avoid computations when dealing with simple operations
      */
 
-    dx = pParent->drawable.x - pParent->valdata->oldAbsCorner.x;
-    dy = pParent->drawable.y - pParent->valdata->oldAbsCorner.y;
-    
     switch (kind) {
     case VTMap:
     case VTStack:
     case VTUnmap:
 	break;
     case VTMove:
-    	/*
-     	 * To calculate exposures correctly, we have to translate the old
-     	 * borderClip and clipList regions to the window's new location so there
-     	 * is a correspondence between pieces of the new and old clipping regions.
-     	 */
-    	if (dx || dy) 
-    	{
-	    /*
-	     * We translate the old clipList because that will be exposed or copied
-	     * if gravity is right.
-	     */
-	    (* pScreen->TranslateRegion) (&pParent->borderClip, dx, dy);
-	    (* pScreen->TranslateRegion) (&pParent->clipList, dx, dy);
-    	} 
-	break;
     default:
     	/*
      	 * To calculate exposures correctly, we have to translate the old
@@ -178,115 +168,7 @@ miComputeClips (pParent, pScreen, universe, kind, exposed)
 	    (* pScreen->TranslateRegion) (&pParent->borderClip, dx, dy);
 	    (* pScreen->TranslateRegion) (&pParent->clipList, dx, dy);
     	} 
-    	else if (pParent->borderWidth) 
-    	{
-	    /*
-	     * If the window has shrunk, we have to be careful about figuring the
-	     * exposure of the right and bottom borders -- they should be exposed
-	     * if the window shrank on that side and they aren't being obscured
-	     * by a sibling -- so we add those edges to the borderExposed region.
-	     * This is all necessary because sometimes what was the internal window
-	     * in the old borderClip will overlap the new border and cause the
-	     * right and bottom edges of the new border not to appear in the
-	     * borderExposed region and it's a royal pain to figure out what to
-	     * remove from the old borderClip.
-	     * Note that borderSize is clipped to the window's parent, thus its
-	     * extents are not necessarily those of the window's border, thus we
-	     * must use physical position to find the actual extents of the window.
-	     * XXX: Isn't there a nicer way to do this?  Yes, but we'll
-	     * have to save the old clip lists while validating.
-	     */
-	    BoxPtr	oldExtents;
-	    BoxPtr	newExtents;
-	    
-	    oldExtents = (* pScreen->RegionExtents) (&pParent->borderClip);
-	    newExtents = (* pScreen->RegionExtents) (universe);
-    
-	    if ((* pScreen->RegionNotEmpty) (universe) &&
-	    	(* pScreen->RegionNotEmpty) (&pParent->borderClip) &&
-	    	((newExtents->x2 < oldExtents->x2) ||
-	     	 (newExtents->y2 < oldExtents->y2))) 
-            {
-	    	BoxRec 	borderBox;
-	    	RegionPtr 	borderRegion;
-	    	int		x1, y1, x2, y2, v;
-    
-	    	borderRegion = (* pScreen->RegionCreate) (NULL, 1);
-	    	/* Worry about overflow: don't use a Box.  Sigh.
-	     	 * We know we'll clip to universe later, so do it now as well.
-	     	 */
-	    	x1 = pParent->drawable.x - wBorderWidth (pParent);
-	    	if (x1 < newExtents->x1)
-		    x1 = newExtents->x1;
-	    	y1 = pParent->drawable.y - wBorderWidth (pParent);
-	    	if (y1 < newExtents->y1)
-		    y1 = newExtents->y1;
-	    	x2 = pParent->drawable.x +
-		     (int)pParent->drawable.width +
-		     wBorderWidth (pParent);
-	    	if (x2 > newExtents->x2)
-		    x2 = newExtents->x2;
-	    	y2 = pParent->drawable.y +
-		     (int)pParent->drawable.height +
-		     wBorderWidth (pParent);
-	    	if (y2 > newExtents->y2)
-		    y2 = newExtents->y2;
-	    	if (x1 > x2)
-		    x2 = x1;
-	    	if (y1 > y2)
-		    y2 = y1;
-    
-	    	if (newExtents->x2 < oldExtents->x2) 
-            	{
-		    /*
-		     * Add the right edge.
-		     */
-		    v = pParent->drawable.x + (int)pParent->drawable.width;
-		    if (v < x1)
-		    	v = x1;
-		    if ((v < x2) && (y1 < y2))
-		    {
-		    	borderBox.x1 = v;
-		    	borderBox.y1 = y1;
-		    	borderBox.x2 = x2;
-		    	borderBox.y2 = y2;
-		    	(* pScreen->RegionReset) (borderRegion, &borderBox);
-		    	(* pScreen->Union) (&pParent->valdata->borderExposed,
-					    &pParent->valdata->borderExposed,
-					    borderRegion);
-		    }
-	    	}
-	    	if (newExtents->y2 < oldExtents->y2) 
-            	{
-		    /*
-		     * Add the bottom edge.
-		     */
-		    v = pParent->drawable.y + (int)pParent->drawable.height;
-		    if (v < y1)
-		    	v = y1;
-		    if ((v < y2) && (x1 < x2))
-		    {
-		    	borderBox.x1 = x1;
-		    	borderBox.y1 = v;
-		    	borderBox.x2 = x2;
-		    	borderBox.y2 = y2;
-		    	(* pScreen->RegionReset) (borderRegion, &borderBox);
-		    	(* pScreen->Union) (&pParent->valdata->borderExposed,
-					    &pParent->valdata->borderExposed,
-					    borderRegion);
-		    }
-	    	}
-	    	(* pScreen->RegionDestroy) (borderRegion);
-    
-	    	/*
-	     	 * To make sure we don't expose a border that's supposed to
-	     	 * be clipped, clip the regions we just added to borderExposed...
-	     	 */
-	    	(* pScreen->Intersect) (&pParent->valdata->borderExposed,
-					universe,
-				    	&pParent->valdata->borderExposed);
-	    }
-    	}
+	break;
     }
 
     /*
@@ -294,17 +176,26 @@ miComputeClips (pParent, pScreen, universe, kind, exposed)
      * the border exposure first...
      *
      * 'universe' is the window's borderClip. To figure the exposures, remove
-     * the area that used to be exposed (the old borderClip) from the new.
-     * This leaves a region of pieces that weren't exposed before. Border
-     * exposures accumulate until they're taken care of.
+     * the area that used to be exposed from the new.
+     * This leaves a region of pieces that weren't exposed before.
      */
 
-    (* pScreen->Subtract) (exposed, universe, &pParent->borderClip);
-    (* pScreen->Subtract) (exposed, exposed, &pParent->winSize);
-
-    (* pScreen->Union) (&pParent->valdata->borderExposed,
-			&pParent->valdata->borderExposed,
-			exposed);
+    if (borderVisible)
+    {
+	/*
+	 * when the border changes shape, the old visible portions
+	 * of the border will be saved by DIX in borderVisible --
+	 * use that region and destroy it
+	 */
+	(* pScreen->Subtract) (exposed, universe, borderVisible);
+	(* pScreen->RegionDestroy) (borderVisible);
+    }
+    else
+    {
+	(* pScreen->Subtract) (exposed, universe, &pParent->borderClip);
+    }
+    (* pScreen->Subtract) (&pParent->valdata->after.borderExposed,
+			   exposed, &pParent->winSize);
 
     (* pScreen->RegionCopy) (&pParent->borderClip, universe);
 
@@ -381,12 +272,11 @@ miComputeClips (pParent, pScreen, universe, kind, exposed)
      * 'universe' now contains the new clipList for the parent window.
      *
      * To figure the exposure of the window we subtract the old clip from the
-     * new, just as for the border. Again, exposures accumulate.
+     * new, just as for the border.
      */
 
-    (* pScreen->Subtract) (exposed, universe, &pParent->clipList);
-    (* pScreen->Union) (&pParent->valdata->exposed,
-			&pParent->valdata->exposed, exposed);
+    (* pScreen->Subtract) (&pParent->valdata->after.exposed,
+			   universe, &pParent->clipList);
 
     /*
      * One last thing: backing storage. We have to try to save what parts of
@@ -558,11 +448,16 @@ miValidateTree (pParent, pChild, kind)
 	    if (pWin->valdata) {
 		(* pScreen->RegionEmpty)(&pWin->clipList);
 		(* pScreen->RegionEmpty)(&pWin->borderClip);
+		(* pScreen->RegionInit) (&pWin->valdata->after.exposed, NullBox, 0);
+		(* pScreen->RegionInit) (&pWin->valdata->after.borderExposed, NullBox, 0);
 	    }
 	}
     }
 
     (* pScreen->RegionDestroy) (childClip);
+
+    (* pScreen->RegionInit) (&pParent->valdata->after.exposed, NullBox, 0);
+    (* pScreen->RegionInit) (&pParent->valdata->after.borderExposed, NullBox, 0);
 
     /*
      * each case below is responsible for updating the
@@ -578,9 +473,8 @@ miValidateTree (pParent, pChild, kind)
 	 * exposures and obscures as per miComputeClips and reset the parent's
 	 * clipList.
 	 */
-	(* pScreen->Subtract) (exposed, totalClip, &pParent->clipList);
-	(* pScreen->Union) (&pParent->valdata->exposed,
-			    &pParent->valdata->exposed, exposed);
+	(* pScreen->Subtract) (&pParent->valdata->after.exposed,
+			       totalClip, &pParent->clipList);
 	/* fall through */
     case VTMap:
 	if (pParent->backStorage) {
