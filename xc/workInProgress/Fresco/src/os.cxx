@@ -1,5 +1,5 @@
 /*
- * $XConsortium: os.cxx,v 1.6 94/03/18 11:25:22 matt Exp $
+ * $XConsortium: os.cxx,v 1.7 94/03/18 18:01:53 matt Exp $
  */
 
 /*
@@ -64,24 +64,16 @@
 #include <unistd.h>
 
 /*
- * These hide in mysterious places on various systems.
- * For now, it seems safest just to declare them explicitly.
+ * DEC C++ headers don't prototype getpw* functions?
  */
 
-extern "C" {
-#ifndef linux
-    extern uid_t getuid();
-    extern void qsort(
-	void*, size_t, size_t, int (*) (const void*, const void*)
-    );
-    int gethostbyname(char*, int);
 #ifdef __DECCXX
+extern "C" {
     extern struct passwd* getpwent();
     extern struct passwd* getpwnam(const char*);
     extern struct passwd* getpwuid(uid_t);
-#endif
-#endif
 }
+#endif
 
 #ifndef S_ISDIR
 #define S_ISDIR(mode) (((mode) & S_IFMT) == S_IFDIR)
