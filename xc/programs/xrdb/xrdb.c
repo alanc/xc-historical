@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: xrdb.c,v 11.15 88/02/01 17:30:46 jim Locked $";
+static char rcs_id[] = "$Header: xrdb.c,v 11.16 88/02/02 07:31:19 jim Locked $";
 #endif
 
 /*
@@ -571,8 +571,6 @@ main (argc, argv)
 	    Syntax ();
 	} else if (arg[0] == '=') 
 	    continue;
-	else if (index (arg, ':') != NULL)		/* obselete */
-	    displayname = arg;
 	else
 	    filename = arg;
     }							/* end for */

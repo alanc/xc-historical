@@ -34,6 +34,7 @@ usage()
 {
     fprintf(stderr, "usage: %s [options]\n", program_name);
     fprintf(stderr, "  where options are:\n");
+    fprintf(stderr, "  -display <display>   or   -d <display>\n");
     fprintf(stderr, "  -fg <color>   or   -foreground <color>\n");
     fprintf(stderr, "  -bg <color>   or   -background <color>\n");
     fprintf(stderr, "  -rv   or   -reverse\n");
@@ -45,7 +46,6 @@ usage()
     fprintf(stderr, "  -gray   or   -grey\n");
     fprintf(stderr, "  -bitmap <filename>\n");
     fprintf(stderr, "  -mod <x> <y>\n");
-    fprintf(stderr, "  -display <display>   or   -d <display>\n");
     exit(1);
     /*NOTREACHED*/
 }
@@ -143,10 +143,6 @@ main(argc, argv)
 	}
 	if (!strcmp("-rv",argv[i]) || !strcmp("-reverse",argv[i])) {
 	    reverse = 1;
-	    continue;
-	}
-	if (index (argv[i], ':')) {
-	    display_name = argv[i];
 	    continue;
 	}
 	usage();

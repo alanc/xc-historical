@@ -7,7 +7,7 @@
 /* Copyright    Massachusetts Institute of Technology    1985	*/
 
 #ifndef lint
-static char *rcsid_xset_c = "$Header: xset.c,v 1.24 88/01/25 15:04:00 jim Locked $";
+static char *rcsid_xset_c = "$Header: xset.c,v 1.25 88/02/05 16:30:22 jim Locked $";
 #endif
 
 #include <X11/Xos.h>
@@ -57,8 +57,6 @@ for (i = 1; i < argc; i++) {
   if (strcmp (arg, "-display") == 0 || strcmp (arg, "-d") == 0) {
     if (++i >= argc) usage (argv[0]);
     disp = argv[i];
-  } else if (index(arg, ':')) {     			/* obsolete */
-    disp = arg;
   } 
 }
 dpy = XOpenDisplay(disp);  /*  Open display and check for success */
@@ -72,8 +70,6 @@ for (i = 1; i < argc; ) {
   if (strcmp (arg, "-display") == 0 || strcmp (arg, "-d") == 0) {
     ++i;					/* already dealt with */
     continue;
-  } else if (index(arg, ':')) {			/* obsolete */
-	; /* forget this */
   } else if (*arg == '-' && *(arg + 1) == 'c'){ /* Does arg start with "-c"? */
     set_click(dpy, 0);           /* If so, turn click off and  */
   } 
@@ -517,7 +513,7 @@ return;
 usage(prog)
 char *prog;
 {
-	printf("usage: %s [-display host:dpy] option [option ...]\n", prog);
+	printf("usage: %s [-display host:dpy] option ...\n", prog);
 	printf("    To turn bell off:\n");
 	printf("\t-b                b off               b 0\n");
 	printf("    To set bell volume, pitch and duration:\n");

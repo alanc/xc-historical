@@ -24,7 +24,7 @@ SOFTWARE.
 
 /*
  * $Source: /u1/X11/clients/xrefresh/RCS/xrefresh.c,v $
- * $Header: xrefresh.c,v 1.5 88/01/22 17:42:04 jim Locked $
+ * $Header: xrefresh.c,v 1.6 88/02/02 09:15:49 jim Locked $
  *
  * Kitchen sink version, useful for clearing small areas and flashing the 
  * screen.
@@ -50,19 +50,14 @@ void Syntax ()
     fprintf (stderr, "usage:  %s [-options] [geometry] [display]\n\n", 
     	     ProgramName);
     fprintf (stderr, "where the available options are:\n");
+    fprintf (stderr, "    -display host:dpy       or -d\n");
+    fprintf (stderr, "    -geometry WxH+X+Y       or -g spec\n");
     fprintf (stderr, "    -black                  use BlackPixel\n");
     fprintf (stderr, "    -white                  use WhitePixel\n");
     fprintf (stderr, "    -solid colorname        use the color indicated\n");
     fprintf (stderr, "    -root                   use the root background\n");
-    fprintf (stderr, 
-"    -none                   no background in window (smooth refresh)\n");
-    fprintf (stderr, "where geometry may be specified as:\n");
-    fprintf (stderr, "    =WxH+X+Y                old style geometry spec\n");
-    fprintf (stderr, "    -geometry WxH+X+Y       or -g spec\n");
-    fprintf (stderr, "and display may be specified as:\n");
-    fprintf (stderr, "    host:dpy                obselete, use -display\n");
-    fprintf (stderr, "    -display host:dpy       or -d\n");
-    fprintf (stderr, "\nThe default is:  %s -none\n", ProgramName);
+    fprintf (stderr, "    -none                   no background in window\n");
+    fprintf (stderr, "\nThe default is:  %s -none\n\n", ProgramName);
     exit (1);
 }
 
@@ -181,8 +176,6 @@ char	*argv[];
 		Syntax ();
 	} else if (arg[0] == '=')			/* obsolete */
 	    geom = arg;
-	else if (index (arg, ':') != NULL)		/* obsolete */
-	    displayname = arg;
 	else 
 	    Syntax ();
     }
