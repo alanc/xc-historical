@@ -1443,9 +1443,11 @@ void XtTextSetSource(w, source, startPos)
 	ctx->text.lastPos = GETLASTPOS;
 
 	ForceBuildLineTable(ctx);
-	_XtTextPrepareToUpdate(ctx);
-	DisplayTextWindow(w);
-	_XtTextExecuteUpdate(ctx);
+        if (XtIsRealized(ctx)) {
+	    _XtTextPrepareToUpdate(ctx);
+	    DisplayTextWindow(w);
+	    _XtTextExecuteUpdate(ctx);
+	}
 }
 
 /*
