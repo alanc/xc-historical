@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: parse.c,v 1.28 89/11/30 20:03:33 jim Exp $
+ * $XConsortium: parse.c,v 1.29 89/12/01 12:16:02 jim Exp $
  *
  * parse the .twmrc file
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: parse.c,v 1.28 89/11/30 20:03:33 jim Exp $";
+"$XConsortium: parse.c,v 1.29 89/12/01 12:16:02 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -49,9 +49,6 @@ static char RCSinfo[]=
 #include "util.h"
 #include "gram.h"
 #include "parse.h"
-#ifdef USG
-#include <unistd.h>
-#endif
 
 #define SYSTEM_INIT_FILE "/usr/lib/X11/twm/system.twmrc"
 #define BUF_LEN 300
