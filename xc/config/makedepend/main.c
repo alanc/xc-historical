@@ -1,7 +1,10 @@
 /*
- * $Header: main.c,v 1.7 87/12/16 16:55:04 rws Exp $
+ * $Header: main.c,v 1.8 87/12/22 12:24:38 rws Exp $
  *
  * $Log:	main.c,v $
+ * Revision 1.8  87/12/22  12:24:38  rws
+ * build in some defines used in various sources
+ * 
  * Revision 1.7  87/12/16  16:55:04  rws
  * HP lossage
  * 
@@ -42,7 +45,7 @@
 
 #ifdef DEBUG
 int	debug;
-#endif DEBUG
+#endif
 
 char	*directives[] = {
 	"if",
@@ -58,6 +61,12 @@ char	*directives[] = {
 };
 
 struct symtab	predefs[] = {
+#ifdef apollo
+	{"apollo", NULL},
+#endif
+#ifdef ibm032
+	{"ibm032", NULL},
+#endif
 #ifdef sun
 	{"sun", NULL},
 #endif
@@ -66,7 +75,7 @@ struct symtab	predefs[] = {
 #endif
 #ifdef VMS
 	{"VMS", NULL},
-#endif VMS
+#endif
 	{NULL, NULL}
 };
 
@@ -162,7 +171,7 @@ main(argc, argv)
 #ifdef DEBUG
 			if (argv[0][2])
 				debug = atoi(argv[0]+2);
-#endif DEBUG
+#endif
 			break;
 		case 's':
 			startat = argv[0]+2;
