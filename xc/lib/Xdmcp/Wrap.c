@@ -1,5 +1,5 @@
 /*
- * $XConsortium: A8Eq.c,v 1.1 89/09/14 17:10:59 keith Exp $
+ * $XConsortium: Encrypt.c,v 1.1 89/12/13 14:32:54 keith Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -30,42 +30,31 @@
 
 #ifdef HASDES
 
-#ifdef NOTDEF
 /*
  * The following function exists only to demonstrate the
  * desired functional interface for this routine.  You will
  * need to add the appropriate algorithm if you wish to
  * use XDM-AUTHENTICATION-1/XDM-AUTHORIZATION-1.
  *
- * The interface for this routine is quite simple.  Both
- * arguments are arrays of 8 unsigned characters, the first
- * is 64 bits of useful data, the second is 56 bits of useful
- * data packed 7 bits per byte in the low 7 bits of the word
- *
- * The 64 bits of data are to be modified in place with the
- * encrypted result
- *
  * Examine the XDMCP specification for the correct algorithm
  */
 
-static void
-encryptBits (data, key)
-    unsigned char   *data;
-    unsigned char   *key;
-{
-}
-#endif
+#include    "../Xdmcp/des.h"
 
 void
 XdmcpEncrypt (plain, key, crypto, bytes)
     unsigned char	*plain, *crypto;
-    XdmAuthKeyPtr	key;
+    unsigned char	*key;
     int			bytes;
 {
-    int		    i, j;
-    int		    len;
-    unsigned char   tmp[8];
+    int			i, j;
+    int			len;
+    unsigned char	tmp[8];
+    unsigned char	expand_key[8];
+    des_key_schedule	schedule;
 
+    XdmcpKeyToOddParityKey (key, expand_key);
+    des_set_key ((des_cblock *) key, schedule);
     for (j = 0; j < bytes; j += 8)
     {
 	len = 8;
@@ -86,9 +75,49 @@ XdmcpEncrypt (plain, key, crypto, bytes)
 	    else
 		tmp[i] = 0 ^ crypto[j - 8 + i];
 	}
-	encryptBits (tmp, key->data);
-	for (i = 0; i < 8; i++)
-	    crypto[j + i] = tmp[i];
+	des_ecb_encrypt ((des_cblock *) tmp, (des_cblock *) (crypto + j), schedule, 1);
     }
 }
+
+/*
+ * Given a 56 bit key in XDMCP format, create a 56
+ * bit key in 7-bits + odd parity format
+ */
+
+static int
+OddParity (c)
+    unsigned char   c;
+{
+    c = c ^ (c >> 4);
+    c = c ^ (c >> 2);
+    c = c ^ (c >> 1);
+    return ~c & 0x1;
+}
+
+/*
+ * Spread the 56 bit key among 8 bytes, using the upper 7 bits
+ * of each byte, and storing an odd parity bit in the low bit
+ */
+
+void
+XdmcpKeyToOddParityKey (in, out)
+    unsigned char   *in, *out;
+{
+    int		    ashift, bshift;
+    int		    i;
+    unsigned char   c;
+
+    ashift = 7;
+    bshift = 1;
+    for (i = 0; i < 7; i++)
+    {
+	c = ((in[i] << ashift) | (in[i+1] >> bshift)) & 0x7f;
+	out[i] = (c << 1) | OddParity (c);
+	ashift--;
+	bshift++;
+    }
+    c = in[i];
+    out[i] = (c << 1) | OddParity(c);
+}
+
 #endif

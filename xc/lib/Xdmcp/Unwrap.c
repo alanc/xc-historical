@@ -1,5 +1,5 @@
 /*
- * $XConsortium: A8Eq.c,v 1.1 89/09/14 17:10:59 keith Exp $
+ * $XConsortium: Decrypt.c,v 1.1 89/12/13 14:32:07 keith Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -30,42 +30,38 @@
 
 #ifdef HASDES
 
-#ifdef NOTDEF
 /*
  * The following function exists only to demonstrate the
  * desired functional interface for this routine.  You will
  * need to add the appropriate algorithm if you wish to
  * use XDM-AUTHENTICATION-1/XDM-AUTHORIZATION-1.
  *
- * The interface for this routine is quite simple.  Both
- * arguments are arrays of 8 unsigned characters, the first
- * is 64 bits of encrypted data, the second is 56 bits of useful
- * data packed 7 bits per byte in the low 7 bits of the word.
- *
- * The 64 bits of data are to be modified in place with the
- * decrypted result.
+ * The interface for this routine is quite simple.  All three
+ * arguments are arrays of 8 unsigned characters, the first two
+ * are 64 bits of useful data, the last is 56 bits of useful
+ * data packed into 8 bytes, using the low 7 bits of each
+ * byte, filling the high bit with odd parity.
  *
  * Examine the XDMCP specification for the correct algorithm
  */
 
-static void
-decryptBits (data, key)
-    unsigned char   *data;
-    unsigned char   *key;
-{
-}
-#endif
+#include    <des.h>
 
 void
 XdmcpDecrypt (crypto, key, plain, bytes)
     unsigned char	*crypto, *plain;
-    XdmAuthKeyPtr	key;
+    unsigned char	*key;
     int			bytes;
 {
-    int		    i, j, k;
-    int		    len;
-    unsigned char   tmp[8];
-    unsigned char   blocks[2][8];
+    int			i, j, k;
+    int			len;
+    unsigned char	tmp[8];
+    unsigned char	blocks[2][8];
+    unsigned char	expand_key[8];
+    des_key_schedule	schedule;
+
+    XdmcpKeyToOddParityKey (key, expand_key);
+    des_set_key ((des_cblock *) key, schedule);
 
     k = 0;
     for (j = 0; j < bytes; j += 8)
@@ -73,11 +69,8 @@ XdmcpDecrypt (crypto, key, plain, bytes)
 	if (bytes - j < 8)
 	    return; /* bad crypto length */
 	for (i = 0; i < 8; i++)
-	{
-	    tmp[i] = crypto[j + i];
 	    blocks[k][i] = crypto[j + i];
-	}
-	decryptBits (tmp, key->data);
+	des_ecb_encrypt ((des_cblock *) (crypto + j), (des_cblock *) tmp, schedule, 0);
 	/* block chaining */
 	k = (k == 0) ? 1 : 0;
 	for (i = 0; i < 8; i++)
