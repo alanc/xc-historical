@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Event.c,v 1.109 89/12/14 18:35:50 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Event.c,v 1.111 89/12/15 11:29:23 swick Exp $";
 /* $oHeader: Event.c,v 1.9 88/09/01 11:33:51 asente Exp $ */
 #endif /* lint */
 
@@ -878,6 +878,7 @@ static Boolean DecideToDispatch(event)
 		
 		/* Also dispatch to nearest accessible spring_loaded. */
 		/* Fetch this afterward to reflect modal list changes */
+		grabList = *(XtGrabList *)_XtGetGrabList(pdi);
 		widget = LookupSpringLoaded(grabList);
 		if (widget != NULL && widget != dspWidget) {
 		    was_dispatched |= DispatchEvent(event, widget,
