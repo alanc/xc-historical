@@ -41,6 +41,10 @@ Cursor and mask files are bitmaps (little pictures), and can be made with the
 .I bitmap(1)
 program.  You probably want the mask file to be all black until you
 get used to the way masks work.
+.IP "\fB-cursor_name\fP \fIcursorname\fP
+This lets you change the pointer cursor to one of the standard
+cursors from the cursor font.  Refer to appendix B of the X protocol for
+the names (except that the XC_ prefix is elided for this option).
 .IP "\fB-bitmap\fP \fIfilename\fP"
 Use the bitmap specified in the file to set the window pattern.  You can
 make your own bitmap files (little pictures) using the
