@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: colormap.c,v 5.22 91/11/29 18:55:03 rws Exp $ */
+/* $XConsortium: colormap.c,v 5.23 91/12/26 11:33:06 rws Exp $ */
 
 #include "X.h"
 #define NEED_EVENTS
@@ -2011,13 +2011,16 @@ FreeColors (pmap, client, count, pixels, mask)
     if ((class | DynamicClass) == DirectColor)
     {
 	rmask = mask & RGBMASK(pmap->pVisual);
-        result = FreeCo(pmap, client, REDMAP, count, pixels, rmask);
+        result = FreeCo(pmap, client, REDMAP, count, pixels,
+			mask & pmap->pVisual->redMask);
 	/* If any of the three calls fails, we must report that, if more
 	 * than one fails, it's ok that we report the last one */
-        rval = FreeCo(pmap, client, GREENMAP, count, pixels, rmask);
+        rval = FreeCo(pmap, client, GREENMAP, count, pixels,
+		      mask & pmap->pVisual->greenMask);
 	if(rval != Success)
 	    result = rval;
-	rval = FreeCo(pmap, client, BLUEMAP, count, pixels, rmask);
+	rval = FreeCo(pmap, client, BLUEMAP, count, pixels,
+		      mask & pmap->pVisual->blueMask);
 	if(rval != Success)
 	    result = rval;
     }
