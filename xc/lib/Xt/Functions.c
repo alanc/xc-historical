@@ -1,4 +1,4 @@
-/* $XConsortium: Functions.c,v 1.8 93/10/06 17:20:20 kaleb Exp $ */
+/* $XConsortium: Functions.c,v 1.9 94/01/14 17:56:10 kaleb Exp $ */
 
 /*
 
@@ -138,6 +138,13 @@ Boolean XtIsApplicationShell(object)
 			   (WidgetClass)topLevelShellWidgetClass, 0x80);
 }
 
+#undef XtIsSessionShell
+Boolean XtIsSessionShell(object)
+    Widget object;
+{
+    return _XtIsSubclassOf(object, (WidgetClass)sessionShellWidgetClass,
+			   (WidgetClass)topLevelShellWidgetClass, 0x80);
+}
 
 #undef XtMapWidget
 void XtMapWidget(w)
