@@ -1,6 +1,6 @@
 /**/###########################################################################
 /**/# X Window System Build Parameters
-/**/# $XConsortium: Project.tmpl,v 1.7 89/01/17 17:38:19 jim Exp $
+/**/# $XConsortium: Project.tmpl,v 1.8 89/01/18 10:08:48 jim Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -207,7 +207,7 @@
 #define DefaultSystemShell BourneShell
 #endif
 
-#if NeedBerklibinXlib
+#if NeedBerklibInXlib
 #define BandAidLibraryNeeded		YES
 #define BandAidLibrarySources		Berklib.c
 #define BandAidLibraryObjects		Berklib.o
@@ -220,7 +220,7 @@ Berklib.c: sysV/Berklib.c					@@\
 
 /**/###########################################################################
 /**/# X Window System make variables; this need to be coordinated with rules
-/**/# $XConsortium: Project.tmpl,v 1.7 89/01/17 17:38:19 jim Exp $
+/**/# $XConsortium: Project.tmpl,v 1.8 89/01/18 10:08:48 jim Exp $
 
 /*
  * This list must be reflected in the DIRS_TO_BUILD list in the top-level
