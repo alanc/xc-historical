@@ -1,7 +1,4 @@
-#ifndef lint
-static char Xrcsid[] = "$XConsortium: Clock.c,v 1.53 90/10/22 14:43:24 converse Exp $";
-#endif /* lint */
-
+/* $XConsortium: Clock.c,v 1.55 90/12/31 10:43:24 gildea Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -260,11 +257,11 @@ static void Resize (gw)
 	int radius = ((int) min(w->core.width, w->core.height) - (int) (2 * w->clock.padding)) / 2;
         w->clock.radius = (Dimension) max (radius, 1);
 
-        w->clock.second_hand_length = ((SECOND_HAND_FRACT * w->clock.radius) / 100);
-        w->clock.minute_hand_length = ((MINUTE_HAND_FRACT * w->clock.radius) / 100);
-        w->clock.hour_hand_length = ((HOUR_HAND_FRACT * w->clock.radius) / 100);
-        w->clock.hand_width = ((HAND_WIDTH_FRACT * w->clock.radius) / 100);
-        w->clock.second_hand_width = ((SECOND_WIDTH_FRACT * w->clock.radius) / 100);
+        w->clock.second_hand_length = (int)(SECOND_HAND_FRACT * w->clock.radius) / 100;
+        w->clock.minute_hand_length = (int)(MINUTE_HAND_FRACT * w->clock.radius) / 100;
+        w->clock.hour_hand_length = (int)(HOUR_HAND_FRACT * w->clock.radius) / 100;
+        w->clock.hand_width = (int)(HAND_WIDTH_FRACT * w->clock.radius) / 100;
+        w->clock.second_hand_width = (int)(SECOND_WIDTH_FRACT * w->clock.radius) / 100;
 
         w->clock.centerX = w->core.width / 2;
         w->clock.centerY = w->core.height / 2;
@@ -285,12 +282,12 @@ static void Redisplay (gw, event, region)
     } else {
 	w->clock.prev_time_string[0] = '\0';
     }
-    clock_tic((caddr_t)w, (XtIntervalId)0);
+    clock_tic((XtPointer)w, (XtIntervalId)0);
 }
 
 /* ARGSUSED */
 static void clock_tic(client_data, id)
-        caddr_t client_data;
+        XtPointer client_data;
         XtIntervalId *id;
 {
         ClockWidget w = (ClockWidget)client_data;    
@@ -343,7 +340,7 @@ static void clock_tic(client_data, id)
 	     */
 	    clear_from = XTextWidth (w->clock.font, time_ptr, len)
  	    		+ 2 + w->clock.padding;
-	    if (clear_from < w->core.width)
+	    if (clear_from < (int)w->core.width)
 		XFillRectangle (dpy, win, w->clock.EraseGC,
 		    clear_from, 0, w->core.width - clear_from, w->core.height);
 	} else {
@@ -650,7 +647,7 @@ double fraction_of_a_circle;
 	 *	-	 + center
 	 */
 
-	mid = (length + offset) / 2;
+	mid = (int) (length + offset) / 2;
 	mc = mid * cosangle;
 	ms = mid * sinangle;
 	wc = width * cosangle;
@@ -689,7 +686,7 @@ static void DrawClockFace(w)
 ClockWidget w;
 {
 	register int i;
-	register int delta = (w->clock.radius - w->clock.second_hand_length) / 3;
+	register int delta = (int)(w->clock.radius - w->clock.second_hand_length) / 3;
 	
 	w->clock.segbuffptr = w->clock.segbuff;
 	w->clock.numseg = 0;
