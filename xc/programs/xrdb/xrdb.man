@@ -218,11 +218,9 @@ replacing, the current contents of the specified properties.
 New entries override previous entries.
 .TP 8
 .B \-merge
-This option indicates that the input should be merged and sorted with,
-instead of replacing, the current contents of the specified properties.  
-Note that this option does a
-lexicographic sorted merge of the two inputs, which is almost certainly
-not what you want, but remains for backward compatibility.
+This option indicates that the input should be merged and lexicographically
+sorted with, instead of replacing, the current contents of the specified
+properties.  
 .TP 8
 .B \-remove
 This option indicates that the specified properties should be removed
