@@ -1,5 +1,5 @@
 /*
- * $XConsortium: BitmapP.h,v 1.9 90/12/08 17:29:28 dmatic Exp $
+ * $XConsortium: BitmapP.h,v 1.10 91/01/04 13:22:44 dmatic Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -102,7 +102,7 @@ typedef struct {
   Boolean          dashed;
   Boolean          axes;
   Boolean          resize;
-  Dimension        distance, squareW, squareH, width, height;
+  Dimension        margin, squareW, squareH, width, height;
   XPoint           hot;
   int              button_function[5];
   String           filename, basename;
@@ -140,15 +140,15 @@ typedef struct _BitmapRec {
 /* Private functions */
 
 #define Length(width, height)\
-	(int)((int)(((width) + 7) / 8) * (height))
+        (((int)(width) + 7) / 8 * (height))
 
 #define InBitmapX(BW, x)\
-	(Position) (min((Position)((max(BW->bitmap.horizOffset, x)  -\
+	(Position)(min((Position)((Dimension)(max(BW->bitmap.horizOffset,x)  -\
 				   BW->bitmap.horizOffset) /\
 				   BW->bitmap.squareW), BW->bitmap.width - 1))
     
 #define InBitmapY(BW, y)\
-	(Position) (min((Position)((max(BW->bitmap.vertOffset, y)  -\
+	(Position)(min((Position)((Dimension)(max(BW->bitmap.vertOffset, y)  -\
 				   BW->bitmap.vertOffset) /\
 				   BW->bitmap.squareH), BW->bitmap.height - 1))
     
