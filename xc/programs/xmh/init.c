@@ -1,5 +1,5 @@
 /*
- * $XConsortium: init.c,v 2.66 91/07/17 12:28:04 converse Exp $
+ * $XConsortium: init.c,v 2.67 91/07/17 21:29:40 converse Exp $
  *
  *
  *		        COPYRIGHT 1987, 1989
@@ -33,6 +33,7 @@
 #include <errno.h>
 
 #define MIN_APP_DEFAULTS_VERSION 1
+#define xmhCkpDefault "%d.CKP"
 
 static String FallbackResources[] = {
 "*folderButton.label: Close",
@@ -113,6 +114,9 @@ static XtResource resources[] = {
 	 Offset(make_checkpoints), XtRImmediate, (XtPointer)False},
     {"checkpointInterval", "Interval", XtRInt, sizeof(int),
 	 Offset(checkpoint_interval), XtRImmediate, (XtPointer)-1},
+    {"checkpointNameFormat", "CheckpointNameFormat",
+	 XtRString, sizeof(char *),
+	 Offset(checkpoint_name_format), XtRString, xmhCkpDefault},
     {"rescanInterval", "Interval", XtRInt, sizeof(int),
 	 Offset(rescan_interval), XtRImmediate, (XtPointer)-1},
     {"checkFrequency", "CheckFrequency", XtRInt, sizeof(int),
@@ -371,6 +375,11 @@ char **argv;
 	app_resources.checkpoint_interval = 5 * app_resources.check_frequency;
     if (app_resources.rescan_interval == -1)
 	app_resources.rescan_interval = 5 * app_resources.check_frequency;
+    ptr = strchr(app_resources.checkpoint_name_format, '%');
+    while (ptr && *(++ptr) != 'd')
+	ptr = strchr(app_resources.checkpoint_name_format, '%');
+    if (!ptr || strlen(app_resources.checkpoint_name_format) == 2)
+	app_resources.checkpoint_name_format = xmhCkpDefault;
 
     ptr = getenv("MH");
     if (!ptr) {
