@@ -54,7 +54,7 @@ Acknowledgments
 .sp 2
 .na
 .LP
-Many thanks go to Ralph Swick (Project Athena/ Digital) who has
+Many thanks go to Ralph Swick (Project Athena / Digital) who has
 contributed much time and effort to this widget set.  Previous
 versions of the widget set are largely due to his time and effort.
 Many of the improvements that I have been able to make are because he
@@ -62,7 +62,7 @@ provided a solid foundation to build upon.  While much of the effort
 has been Ralph's, many other people have contributed to the code.
 .LP
 .Ds
-Mark Ackerman (Project Athena)
+Mark Ackerman (formerly Project Athena)
 Donna Converse (MIT X Consortium)
 Jim Fulton (MIT X Consortium)
 Loretta Guarino-Reid (Digital WSL)
@@ -70,7 +70,7 @@ Charles Haynes (Digital WSL)
 Rich Hyde (Digital WSL)
 Mary Larson (Digital UEG)
 Joel McCormack (Digital WSL)
-Ron Newman (Project Athena)
+Ron Newman (formerly Project Athena)
 Jeanne Rich (Digital WSL)
 Terry Weissman (Digital WSL)
 .De
@@ -81,12 +81,12 @@ implementation of the X10 toolkit were done by:
 .LP
 .Ds
 Mike Gancarz (Digital UEG)
-Charles Haynes (Digital WSL)
-Phil Karlton (Digital WSL)
+Charles Haynes (formerly Digital WSL)
+Phil Karlton (formerly Digital WSL)
 Kathleen Langone  (Digital UEG)
 Mary Larson (Digital UEG)
 Ram Rao (Digital UEG)
-Smokey Wallace (Digital WSL)
+Smokey Wallace (formerly Digital WSL)
 Terry Weissman (Digital WSL)
 .De
 .LP
