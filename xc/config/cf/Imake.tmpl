@@ -4,7 +4,7 @@
 
 /**/###########################################################################
 /**/# Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-/**/# $XConsortium: Imake.tmpl,v 1.31 89/04/26 12:25:34 jim Exp $
+/**/# $XConsortium: Imake.tmpl,v 1.32 89/05/10 14:58:08 jim Exp $
 /**/#
 /**/# Platform-specific parameters may be set in the appropriate .cf
 /**/# configuration files.  Site-wide parameters may be set in the file
@@ -488,8 +488,17 @@ MakefileTarget()
 
 TagsTarget()
 
-#ifdef IHaveSubdirs
 
+#if HasSaberC
+saber:
+	#load $(ALLDEFINES) $(SRCS)
+
+osaber:
+	#load $(ALLDEFINES) $(OBJS)
+#endif
+
+
+#ifdef IHaveSubdirs
 /**/###########################################################################
 /**/# rules for building in SUBDIRS - do not edit
 
@@ -500,7 +509,6 @@ TagSubdirs($(SUBDIRS))
 MakefileSubdirs($(SUBDIRS))
 
 #else
-
 /**/###########################################################################
 /**/# empty rules for directories that do not have SUBDIRS - do not edit
 
