@@ -39,7 +39,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include "mistruct.h"
 #include "dix.h"
 
-extern void miGetImage();	/* XXX should not be needed */
+extern void miGetImageWithBS();	/* XXX should not be needed */
 extern ColormapPtr CreateStaticColormap();	/* XXX is this needed? */
 
 static VisualRec visuals[] = {
@@ -125,7 +125,7 @@ cfbScreenInit(index, pScreen, pbits, xsize, ysize, dpi)
 
     pScreen->RealizeFont = mfbRealizeFont;
     pScreen->UnrealizeFont = mfbUnrealizeFont;
-    pScreen->GetImage = miGetImage;
+    pScreen->GetImage = miGetImageWithBS;
     pScreen->GetSpans = cfbGetSpans;	/* XXX */
     pScreen->CreateGC = cfbCreateGC;
     pScreen->CreatePixmap = cfbCreatePixmap;
