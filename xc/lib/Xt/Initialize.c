@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Initialize.c,v 1.87 87/12/01 09:04:34 swick Locked $";
+static char rcsid[] = "$Header: Initialize.c,v 1.88 87/12/03 15:08:49 swick Locked $";
 #endif lint
 
 /*
@@ -342,11 +342,11 @@ Cardinal *num_args;
 		
 		w->shell.sizehints.flags |= USPosition | USSize;
 		if(flag & XNegative) 
-			w->core.x =
-			  w->core.screen->width - w->core.width - w->core.x;
+		    w->core.x += WidthOfScreen(XtScreen(w))
+			         - w->core.width - (w->core.border_width<<1);
 		if(flag & YNegative) 
-			w->core.y = 
-			 w->core.screen->height - w->core.height - w->core.y;
+		    w->core.y += HeightOfScreen(XtScreen(w))
+			         - w->core.height - (w->core.border_width<<1);
 	} else 	w->shell.clientspecified = FALSE;
 	if(w->core.width != 0 && w->core.height != 0) {
 	  	w->shell.clientspecified = TRUE;
