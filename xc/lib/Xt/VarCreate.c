@@ -1,4 +1,4 @@
-/* $XConsortium: VarCreate.c,v 1.23 91/07/23 12:21:39 rws Exp $ */
+/* $XConsortium: VarCreate.c,v 1.24 91/12/10 18:57:25 converse Exp $ */
 
 /*
 
@@ -20,8 +20,8 @@ without express or implied warranty.
 */
 
 #include "IntrinsicI.h"
-#include <X11/StringDefs.h>
-#include <X11/Shell.h>
+#include "StringDefs.h"
+#include "Shell.h"
 #include "VarargsI.h"
 
 #if (defined(SUNSHLIB) || defined(AIXSHLIB)) && defined(SHAREDCODE)
