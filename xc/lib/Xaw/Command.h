@@ -30,56 +30,36 @@
 
 /***********************************************************************
  *
- * Command Button Widget
+ * Command Widget
  *
  ***********************************************************************/
 
 #ifndef _XtJustify_e
 #define _XtJustify_e
+
+
+
+
 typedef enum {
     XtjustifyLeft,       /* justify text to left side of button   */
     XtjustifyCenter,     /* justify text in center of button      */
     XtjustifyRight       /* justify text to right side of button  */
 } XtJustify;
 #endif _XtJustify_e
+typedef caddr_t XtCallbackType;
 
-#define XtNwindow		"window"
-#define XtNx			"x"
-#define XtNy			"y"
-#define XtNborderWidth		"borderWidth"
-#define XtNwidth		"width"
-#define XtNheight		"height"
-#define XtNinternalWidth	"internalWidth"
-#define XtNinternalHeight	"internalHeight"
-#define XtNlabel		"label"
-#define XtNforeground		"foreground"
-#define XtNbackground		"background"
-#define XtNborder		"border"
-#define XtNfont			"font"
-#define XtNjustify		"justify"
-#define XtNfunction		"function"
-#define XtNparameter		"parameter"
-#define XtNsensitive		"sensitive"
-#define XtNeventBindings	"eventBindings"
+#define XtRjustify		"Justify"
+#define XtNhighlightThickness    "hightlightThickness"
+#define XtNtranslations         "Translations"
+#define XtCTranslations         "Translations"
+#define XtRTranslationTable     "TranslationTable"
 
-extern Window XtCommandCreate(); /* dpy, parent, args, argCount */
-    /* Display  *dpy;       */
-    /* Window   parent;     */
-    /* ArgList  args;       */
-    /* int      argCount;   */
+extern XtCallbackType  activateCommand;
+extern WidgetClass     commandWidgetClass;
 
-extern void XtCommandSetValues(); /* dpy, window, args, argCount */
-    /* Display  *dpy;       */
-    /* Window   window;     */
-    /* ArgList  args;       */
-    /* int      argCount;   */
-
-extern void XtCommandGetValues(); /* dpy, window, args, argCount */
-    /* Display  *dpy;       */
-    /* Window   window;     */
-    /* ArgList  args;       */
-    /* int      argCount;   */
+typedef struct _CommandClassRec   *CommandWidgetClass;
+typedef struct _CommandRec        *CommandWidget;
 
 
 #endif _XtCommand_h
-/* DON'T ADD STUFF AFTER THIS #endif */
+/* DON'T ADD STUFF AFTER THIS */
