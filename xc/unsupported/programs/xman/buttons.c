@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: buttons.c,v 1.22 90/10/28 17:59:16 dave Exp $
+ * $XConsortium: buttons.c,v 1.23 91/01/09 17:31:13 rws Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -28,6 +28,8 @@
 #include "iconclosed.h"
 
 static void CreateOptionMenu(), CreateSectionMenu();
+static void StartManpage();
+static Widget * ConvertNamesToWidgets();
 ManpageGlobals * InitPsuedoGlobals();
 
 /*	Function Name: MakeTopBox
@@ -60,7 +62,7 @@ MakeTopBox()
   XtSetArg(arglist[num_args], XtNiconPixmap,
 	   XCreateBitmapFromData( XtDisplay(initial_widget), 
 				 XtScreen(initial_widget)->root,
-				 iconclosed_bits, iconclosed_width,
+				 (char *)iconclosed_bits, iconclosed_width,
 				 iconclosed_height));
   num_args++;
 
@@ -130,7 +132,6 @@ CreateManpage( file )
 FILE * file;
 {
   ManpageGlobals * man_globals;	/* The psuedo global structure. */
-  static void StartManpage();
 
   man_globals = InitPsuedoGlobals();
   CreateManpageWidget(man_globals, MANNAME, TRUE);
@@ -211,12 +212,12 @@ Boolean full_instance;
   if (full_instance)
     XtSetArg(arglist[num_args], XtNiconPixmap,
 	     XCreateBitmapFromData( XtDisplay(top), XtScreen(top)->root,
-				   icon_open_bits, icon_open_width,
+				   (char *)icon_open_bits, icon_open_width,
 				   icon_open_height));
   else 
     XtSetArg(arglist[num_args], XtNiconPixmap,
 	     XCreateBitmapFromData( XtDisplay(top), XtScreen(top)->root,
-				   icon_help_bits, icon_help_width,
+				   (char *)icon_help_bits, icon_help_width,
 				   icon_help_height));
   num_args++;
   XtSetValues(top, arglist, num_args);
@@ -382,7 +383,7 @@ Boolean help, page;
 static void
 MenuDestroy(w, free_me, junk)
 Widget w;
-caddr_t free_me, junk;
+XtPointer free_me, junk;
 {
   XtFree( (char *) free_me);
 }
@@ -515,7 +516,7 @@ char * entry;
   ParseEntry(entry, NULL, NULL, page);
 
   if ( (cp = rindex(page, '.')) != NULL)
-    if ( (strlen(cp) > 2) ) {
+    if ( (int)strlen(cp) > 2 ) {
       *cp++ = '(';
       while( (cp[1] != '\0') ) {
 	*cp = *(cp + 1); 
@@ -644,7 +645,6 @@ FormUpWidgets(parent, full_size, half_size)
 Widget parent;
 char ** full_size, ** half_size;
 {
-  static Widget * ConvertNamesToWidgets();
   Widget * full_widgets, * half_widgets, *temp, long_widget;
   Dimension longest, length, b_width;
   int interior_dist;
@@ -708,7 +708,7 @@ char ** full_size, ** half_size;
     XtSetArg(arglist[0], XtNborderWidth, &border_width);
     XtGetValues(*temp, arglist, (Cardinal) 1);
     
-    width = (longest - interior_dist)/2 - 2 * border_width;
+    width = (int)(longest - interior_dist)/2 - 2 * border_width;
     XtSetArg(arglist[0], XtNwidth, width);
     XtSetValues(*temp, arglist, (Cardinal) 1);
   }

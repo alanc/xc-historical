@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: ScrollByL.c,v 1.14 90/04/25 17:18:57 converse Exp $
+ * $XConsortium: ScrollByL.c,v 1.15 91/01/09 17:31:05 rws Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -93,6 +93,8 @@ static void VerticalScroll(), SetThumbHeight(), PaintText(), Layout();
 
 static void Realize(), Initialize(), Destroy(), Redisplay(), Page();
 static Boolean SetValuesHook();
+static int DumpText();
+static Boolean Boldify();	
 
 static XtActionsRec actions[] = {
   { "Page",   Page},
@@ -197,10 +199,11 @@ Widget w;
 
 /* ARGSUSED */
 static void 
-GExpose(w,junk,event)
+GExpose(w, junk, event, cont)
 Widget w;
-caddr_t junk;
+XtPointer junk;			/* unused */
 XEvent *event;
+Boolean *cont;			/* unused */
 {
 
 /*
@@ -383,7 +386,7 @@ int new_line;
 Boolean force_redisp;
 {
   ScrollByLineWidget sblw = (ScrollByLineWidget) w;
-  int num_lines = w->core.height / sblw->scroll.font_height;
+  int num_lines = (int)w->core.height / (int)sblw->scroll.font_height;
   int max_lines, old_line;
   Boolean move_thumb = FALSE;
 
@@ -396,7 +399,8 @@ Boolean force_redisp;
     move_thumb = TRUE;
   }
   else {
-    max_lines = sblw->scroll.lines - w->core.height / sblw->scroll.font_height;
+    max_lines = sblw->scroll.lines -
+	        (int)w->core.height / (int)sblw->scroll.font_height;
     AssignMax(max_lines, 0);
 
     if ( new_line > max_lines ) {
@@ -478,7 +482,7 @@ int old_y, new_y, height;
     return;
   }
 
-  if (height + old_y > w->core.height)
+  if (height + old_y > (int)w->core.height)
     height = w->core.height - old_y;
 
   XCopyArea(XtDisplay(w), XtWindow(w), XtWindow(w), sblw->scroll.move_gc,
@@ -891,8 +895,6 @@ int  start_line, num_lines, location;
   Boolean italicflag = FALSE;	/* Print text in italics?? */
   Boolean first = FALSE;	/* First line of a manual page??? */
   int x_loc, y_loc;		/* x and y location of text. */
-  static int DumpText();
-  static Boolean Boldify();	
 
 /*
  * Nothing loaded, take no action.
