@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: auth.c,v 1.4 88/12/15 18:32:20 keith Exp $
+ * $XConsortium: auth.c,v 1.5 89/01/16 17:14:02 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -632,7 +632,7 @@ struct verify_info	*verify;
 	 		writeAuth (new, auth);
 		if (old) {
 			if (fstat (fileno (old), &statb) != -1)
-				chmod (name, (int) (statb.st_mode & 0777));
+				chmod (new_name, (int) (statb.st_mode & 0777));
 			while (entry = XauReadAuth (old)) {
 				if (!checkAddr (entry->family,
 					       entry->address_length, entry->address,
