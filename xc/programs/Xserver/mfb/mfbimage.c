@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbimage.c,v 5.6 93/07/12 09:29:55 dpw Exp $ */
+/* $XConsortium: mfbimage.c,v 5.7 93/09/13 09:32:08 dpw Exp $ */
 
 #include "X.h"
 
@@ -114,7 +114,7 @@ mfbGetImage( pDrawable, sx, sy, w, h, format, planeMask, pdstLine)
     int		sx, sy, w, h;
     unsigned int format;
     unsigned long planeMask;
-    pointer	pdstLine;
+    char	*pdstLine;
 {
     PixmapPtr pPixmap;
     BoxRec box;
@@ -145,6 +145,6 @@ mfbGetImage( pDrawable, sx, sy, w, h, format, planeMask, pdstLine)
     }
     else
     {
-	bzero((char *)pdstLine, BitmapBytePad(w) * h);
+	bzero(pdstLine, BitmapBytePad(w) * h);
     }
 }

@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbsetsp.c,v 5.4 92/12/23 17:49:32 rws Exp $ */
+/* $XConsortium: mfbsetsp.c,v 5.5 93/09/13 09:32:12 dpw Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -125,15 +125,16 @@ mfbSetScanline(y, xOrigin, xStart, xEnd, psrc, alu, pdstBase, widthDst)
  * on a word boundary.
  */ 
 void
-mfbSetSpans(pDrawable, pGC, psrc, ppt, pwidth, nspans, fSorted)
+mfbSetSpans(pDrawable, pGC, pcharsrc, ppt, pwidth, nspans, fSorted)
     DrawablePtr		pDrawable;
     GCPtr		pGC;
-    unsigned int	*psrc;
+    char		*pcharsrc;
     register DDXPointPtr ppt;
     int			*pwidth;
     int			nspans;
     int			fSorted;
 {
+    unsigned int	*psrc = (unsigned int *)pcharsrc;
     PixelType 		*pdstBase;	/* start of dst bitmap */
     int 		widthDst;	/* width of bitmap in words */
     register BoxPtr 	pbox, pboxLast, pboxTest;

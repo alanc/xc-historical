@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbgetsp.c,v 5.6 92/12/23 17:43:39 rws Exp $ */
+/* $XConsortium: mfbgetsp.c,v 5.7 93/02/07 13:34:03 rws Exp $ */
 #include "X.h"
 #include "Xmd.h"
 
@@ -45,14 +45,15 @@ SOFTWARE.
  */
 /*ARGSUSED*/
 void
-mfbGetSpans(pDrawable, wMax, ppt, pwidth, nspans, pdstStart)
+mfbGetSpans(pDrawable, wMax, ppt, pwidth, nspans, pchardstStart)
     DrawablePtr		pDrawable;	/* drawable from which to get bits */
     int			wMax;		/* largest value of all *pwidths */
     register DDXPointPtr ppt;		/* points to start copying from */
     int			*pwidth;	/* list of number of bits to copy */
     int			nspans;		/* number of scanlines to copy */
-    unsigned int	*pdstStart;	/* where to put the bits */
+    char		*pchardstStart;	/* where to put the bits */
 {
+    unsigned int	*pdstStart = (unsigned int *)pchardstStart;
     register PixelType	*pdst;	/* where to put the bits */
     register PixelType	*psrc;	/* where to get the bits */
     register PixelType	tmpSrc;	/* scratch buffer for bits */

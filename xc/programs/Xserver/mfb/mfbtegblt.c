@@ -1,4 +1,4 @@
-/* $XConsortium: mfbtegblt.c,v 5.8 92/12/23 17:49:52 rws Exp $ */
+/* $XConsortium: mfbtegblt.c,v 5.9 93/09/13 09:32:14 dpw Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -117,7 +117,7 @@ MFBTEGLYPHBLT(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     int 	x, y;
     unsigned int nglyph;
     CharInfoPtr *ppci;		/* array of character info */
-    char *pglyphBase;	/* start of array of glyphs */
+    pointer	pglyphBase;	/* start of array of glyphs */
 {
     FontPtr	pfont = pGC->font;
     int widthDst;
