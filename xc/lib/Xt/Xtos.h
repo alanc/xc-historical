@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Xtos.h,v 1.9 90/12/27 14:34:27 rws Exp $
+* $XConsortium: Xtos.h,v 1.10 91/11/07 14:53:17 gildea Exp $
 */
 
 /***********************************************************
@@ -73,9 +73,9 @@ pragma on(alloca);
  * Some System V boxes extract alloca.o from /lib/libPW.a; if you
  * decide that you don't want to use alloca, you might want to fix it here.
  */
-#ifndef alloca
-char *alloca();
-#endif /* !alloca */
+/* alloca might be a macro taking one arg (hi, Sun!), so give it one. */
+#define __Xnullarg		/* as nothing */
+char *alloca(__Xnullarg);
 #define ALLOCATE_LOCAL(size) alloca((int)(size))
 #define DEALLOCATE_LOCAL(ptr)  /* as nothing */
 #endif /* who does alloca */
