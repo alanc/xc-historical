@@ -1,6 +1,6 @@
 XCOMM -----------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
-XCOMM rules:  $XConsortium: Imake.rules,v 1.196 94/12/02 21:20:21 gildea Exp gildea $
+XCOMM rules:  $XConsortium: Imake.rules,v 1.197 94/12/05 19:30:41 gildea Exp gildea $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -1085,7 +1085,7 @@ depend::								@@\
 #ifndef CleanTarget
 #define	CleanTarget()							@@\
 clean::									@@\
-	$(RM_CMD) FilesToClean ExtraFilesToClean "#"*			@@\
+	$(RM) FilesToClean ExtraFilesToClean "#"*			@@\
 									@@\
 ProofCleanTarget()
 #endif /* CleanTarget */
@@ -1826,7 +1826,7 @@ NamedTargetSubdirs(includes,dirs,including,NullParameter,includes)
  */
 #ifndef NamedCleanSubdirs
 #define NamedCleanSubdirs(name,dirs) \
-NamedTargetSubdirs(name,dirs,"cleaning",RM_CMD='$(RM_CMD)',clean)
+NamedTargetSubdirs(name,dirs,"cleaning",NullParameter,clean)
 #endif /* NamedCleanSubdirs */
 
 #ifndef CleanSubdirs
