@@ -1,4 +1,4 @@
-/* $XConsortium: pexRndr.c,v 5.8 92/04/23 16:16:44 hersh Exp $ */
+/* $XConsortium: pexRndr.c,v 5.9 92/05/01 17:42:47 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -101,14 +101,14 @@ SOFTWARE.
 
 
 #define CHK_PEX_BUF(SIZE,INCR,REPLY,TYPE,PTR) { \
-	SIZE+=INCR; \
-	if (pPEXBuffer->dataSize < SIZE) { \
+	(SIZE)+=(INCR); \
+	if (pPEXBuffer->bufSize < (SIZE)) { \
 	    ErrorCode err = Success; \
-	    int offset = (int)ptr - (int)(pPEXBuffer->pHead); \
+	    int offset = (int)(((unsigned char *)(PTR)) - ((unsigned char *)(pPEXBuffer->pHead))); \
 	    err = puBuffRealloc(pPEXBuffer,(ddULONG)(SIZE)); \
 	    if (err) PEX_ERR_EXIT(err,0,cntxtPtr); \
-	    REPLY = (TYPE *)(pPEXBuffer->pHead); \
-	    PTR = (unsigned char *)(pPEXBuffer->pHead + offset); } \
+	    (REPLY) = (TYPE *)(pPEXBuffer->pHead); \
+	    (PTR) = (unsigned char *)(pPEXBuffer->pHead + offset); } \
     }
 
 
@@ -295,11 +295,11 @@ pexCreateRendererReq    *strmPtr;
 
 
     if (strmPtr->itemMask & PEXRDViewport) {
-	EXTRACT_CARD16(prend->viewport.minval.x,ptr);
-	EXTRACT_CARD16(prend->viewport.minval.y,ptr);
+	EXTRACT_INT16(prend->viewport.minval.x,ptr);
+	EXTRACT_INT16(prend->viewport.minval.y,ptr);
 	EXTRACT_FLOAT(prend->viewport.minval.z,ptr);
-	EXTRACT_CARD16(prend->viewport.maxval.x,ptr);
-	EXTRACT_CARD16(prend->viewport.maxval.y,ptr);
+	EXTRACT_INT16(prend->viewport.maxval.x,ptr);
+	EXTRACT_INT16(prend->viewport.maxval.y,ptr);
 	EXTRACT_FLOAT(prend->viewport.maxval.z,ptr);
 	EXTRACT_CARD8(prend->viewport.useDrawable,ptr);
 	SKIP_PADDING(ptr,(sizeof(CARD8)+sizeof(CARD16)));
@@ -340,10 +340,22 @@ pexCreateRendererReq    *strmPtr;
         PEX_ERR_EXIT(BadAlloc,0,cntxtPtr);
     }
     if (strmPtr->itemMask & PEXRDPickStartPath) {
-	unsigned long numpaths;
+	pexElementRef *per;
+	diStructHandle sh, *psh;
+	CARD32 i, numpaths;
+	extern ddpex4rtn ValidateStructurePath();
+
 	EXTRACT_CARD32( numpaths, ptr);
+	for (i=0, per = (pexElementRef *)ptr; i<numpaths; i++, per++) {
+		LU_STRUCTURE(per->structure,sh);
+		psh = (diStructHandle *)&(per->structure);
+		*psh = sh;
+	}
+
 	puAddToList((ddPointer)ptr, numpaths, prend->pickStartPath);
-	SKIP_STRUCT(ptr, numpaths, pexElementRef);
+	err = ValidateStructurePath(prend->pickStartPath);
+	if (err != Success) PEX_ERR_EXIT(err,0,cntxtPtr);
+	ptr = (unsigned char *)per;
     }
 
     if (strmPtr->itemMask & PEXRDBackgroundColour) {
@@ -520,11 +532,11 @@ pexChangeRendererReq 	*strmPtr;
     }
 
     if (strmPtr->itemMask & PEXRDViewport) {
-	EXTRACT_CARD16(prend->viewport.minval.x,ptr);
-	EXTRACT_CARD16(prend->viewport.minval.y,ptr);
+	EXTRACT_INT16(prend->viewport.minval.x,ptr);
+	EXTRACT_INT16(prend->viewport.minval.y,ptr);
 	EXTRACT_FLOAT(prend->viewport.minval.z,ptr);
-	EXTRACT_CARD16(prend->viewport.maxval.x,ptr);
-	EXTRACT_CARD16(prend->viewport.maxval.y,ptr);
+	EXTRACT_INT16(prend->viewport.maxval.x,ptr);
+	EXTRACT_INT16(prend->viewport.maxval.y,ptr);
 	EXTRACT_FLOAT(prend->viewport.maxval.z,ptr);
 	EXTRACT_CARD8(prend->viewport.useDrawable,ptr);
 	SKIP_PADDING(ptr,(sizeof(CARD8)+sizeof(CARD16)));
@@ -549,11 +561,23 @@ pexChangeRendererReq 	*strmPtr;
     }
 
     if (strmPtr->itemMask & PEXRDPickStartPath) {
-	unsigned long numpaths;
+	pexElementRef *per;
+	diStructHandle sh, *psh;
+	CARD32 i, numpaths;
+	extern ddpex4rtn ValidateStructurePath();
+
 	EXTRACT_CARD32( numpaths, ptr);
+	for (i=0, per = (pexElementRef *)ptr; i<numpaths; i++, per++) {
+		LU_STRUCTURE(per->structure,sh);
+		psh = (diStructHandle *)&(per->structure);
+		*psh = sh;
+	}
+
 	PU_EMPTY_LIST(prend->pickStartPath);
 	puAddToList((ddPointer)ptr, numpaths, prend->pickStartPath);
-	SKIP_STRUCT(ptr, numpaths, pexElementRef);
+	err = ValidateStructurePath(prend->pickStartPath);
+	if (err != Success) PEX_ERR_EXIT(err,0,cntxtPtr);
+	ptr = (unsigned char *)per;
     }
 
 
@@ -691,13 +715,14 @@ pexGetRendererAttributesReq 	*strmPtr;
     if (strmPtr->itemMask & PEXRDViewport) {
 	CHK_PEX_BUF(size, sizeof(pexViewport),
 		    reply, pexGetRendererAttributesReply, ptr);
-	PACK_CARD32( prend->viewport.minval.x, ptr);
-	PACK_CARD32( prend->viewport.minval.y, ptr);
+	PACK_INT16( prend->viewport.minval.x, ptr);
+	PACK_INT16( prend->viewport.minval.y, ptr);
 	PACK_FLOAT( prend->viewport.minval.z, ptr);
-	PACK_CARD32( prend->viewport.maxval.x, ptr);
-	PACK_CARD32( prend->viewport.maxval.y, ptr);
+	PACK_INT16( prend->viewport.maxval.x, ptr);
+	PACK_INT16( prend->viewport.maxval.y, ptr);
 	PACK_FLOAT( prend->viewport.maxval.z, ptr);
-	PACK_CARD32( prend->viewport.useDrawable, ptr);
+	PACK_CARD8( prend->viewport.useDrawable, ptr);
+	SKIP_PADDING( ptr, (sizeof(CARD8)+sizeof(CARD16)));
     }
 
     if (strmPtr->itemMask & PEXRDClipList) {
@@ -706,7 +731,7 @@ pexGetRendererAttributesReq 	*strmPtr;
 		    reply, pexGetRendererAttributesReply, ptr);
 	PACK_CARD32(prend->clipList->numObj, ptr);
 	bcopy((char *)(prend->clipList->pList), (char *)ptr, num_bytes);
-	ptr += num_bytes + 4;
+	ptr += num_bytes;
     }
 
     if (strmPtr->itemMask & PEXRDPickInclusion)
@@ -741,7 +766,7 @@ pexGetRendererAttributesReq 	*strmPtr;
     if (strmPtr->itemMask & PEXRDEchoMode) PACK_CARD32( prend->echoMode, ptr);
 
 
-    reply->length = (unsigned long)(ptr) - (unsigned long)(pPEXBuffer->pBuf) +1;
+    reply->length = (unsigned long)(ptr) - (unsigned long)(pPEXBuffer->pBuf);
     reply->length = LWORDS(reply->length);
     WritePEXReplyToClient(	cntxtPtr, strmPtr,
 				sizeof(pexGetRendererAttributesReply)
