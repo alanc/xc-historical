@@ -1,4 +1,4 @@
-/* $Header: Xlib.h,v 11.123 87/08/26 20:52:02 toddb Locked $ */
+/* $Header: Xlib.h,v 11.124 87/08/26 20:55:42 toddb Locked $ */
 /* 
  * Copyright 1985, 1986, 1987 by the Massachusetts Institute of Technology
  *
@@ -62,6 +62,25 @@
 #define BitmapBitOrder(dpy) ((dpy)->bitmap_bit_order)
 #define BitmapPad(dpy) ((dpy)->bitmap_pad)
 #define ImageByteOrder(dpy) ((dpy)->byte_order)
+
+/*
+ * ...for libraries (such as the toolkit) that decide to use screen pointers
+ * everywhere rather than display pointers.
+ */
+
+#define ScreenRoot(screen)	      ((screen)->root)
+#define ScreenBlackPixel(screen)      ((screen)->black_pixel)
+#define ScreenWhitePixel(screen)      ((screen)->white_pixel)
+#define ScreenDefaultColormap(screen) ((screen)->cmap)
+#define ScreenDefaultDepth(screen)    ((screen)->root_depth)
+#define ScreenDefaultGC(screen)	      ((screen)->default_gc)
+#define ScreenDefaultVisual(screen)   ((screen)->root_visual)
+#define ScreenWidth(screen)	      ((screen)->width)
+#define ScreenHeight(screen)	      ((screen)->height)
+#define ScreenWidthMM(screen)	      ((screen)->mwidth)
+#define ScreenHeightMM(screen)	      ((screen)->mheight)
+#define ScreenPlanes(screen)	      ((screen)->root_depth)
+#define ScreenCells(screen)	      (ScreenDefaultVisual((scr))->map_entries)
 
 /*
  * Extensions need a way to hang private data on some structures.
