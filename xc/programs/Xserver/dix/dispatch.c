@@ -1,4 +1,4 @@
-/* $XConsortium: dispatch.c,v 1.66 88/09/06 15:40:33 jim Exp $ */
+/* $XConsortium: dispatch.c,v 1.67 88/10/05 10:49:54 keith Exp $ */
 /************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -53,8 +53,8 @@ extern void QueryFont();
 extern void NotImplemented();
 extern WindowPtr RealChildHead();
 
-Selection *CurrentSelections = (Selection *)NULL;
-int NumCurrentSelections = 0;
+Selection *CurrentSelections;
+int NumCurrentSelections;
 
 extern long ScreenSaverTime;
 extern long ScreenSaverInterval;
@@ -170,15 +170,10 @@ SetInputCheck(c0, c1)
 void
 InitSelections()
 {
-    int i;
-
-    if (NumCurrentSelections == 0)
-    {    
-	CurrentSelections = (Selection *)xalloc(sizeof(Selection));
-	NumCurrentSelections = 1;
-    }
-    for (i = 0; i< NumCurrentSelections; i++)
-	CurrentSelections[i].window = None;
+    if (CurrentSelections)
+	xfree(CurrentSelections);
+    CurrentSelections = (Selection *)NULL;
+    NumCurrentSelections = 0;
 }
 
 void 
@@ -839,7 +834,7 @@ ProcSetSelectionOwner(client)
             if (CompareTimeStamps(time, CurrentSelections[i].lastTimeChanged)
 		== EARLIER)
 		return Success;
-	    if ((CurrentSelections[i].pWin != (WindowPtr)None) &&
+	    if ((CurrentSelections[i].window != None) &&
 		(CurrentSelections[i].client != client))
 	    {
 		event.u.u.type = SelectionClear;
@@ -850,22 +845,20 @@ ProcSetSelectionOwner(client)
 				NoEventMask, NoEventMask /* CantBeFiltered */,
 				NullGrab);
 	    }
-	    CurrentSelections[i].selection = stuff->selection;
-	    CurrentSelections[i].lastTimeChanged = time;
-	    CurrentSelections[i].window = stuff->window;
-	    CurrentSelections[i].pWin = pWin;
-	    CurrentSelections[i].client = client;
-	    return (client->noClientException);
 	}
-	/*
-	 * It doesn't exist, so add it...
-	 */
-            NumCurrentSelections++;
-	    CurrentSelections = 
-			(Selection *)xrealloc(CurrentSelections, 
-			NumCurrentSelections * sizeof(Selection));
-
-	CurrentSelections[i].selection = stuff->selection;
+	else
+	{
+	    /*
+	     * It doesn't exist, so add it...
+	     */
+	    NumCurrentSelections++;
+	    if (i == 0)
+		CurrentSelections = (Selection *)xalloc(sizeof(Selection));
+	    else
+		CurrentSelections = (Selection *)xrealloc(CurrentSelections, 
+			    NumCurrentSelections * sizeof(Selection));
+	    CurrentSelections[i].selection = stuff->selection;
+	}
         CurrentSelections[i].lastTimeChanged = time;
 	CurrentSelections[i].window = stuff->window;
 	CurrentSelections[i].pWin = pWin;
@@ -3387,6 +3380,7 @@ DeleteWindowFromAnySelections(pWin)
         {
             CurrentSelections[i].pWin = (WindowPtr)NULL;
             CurrentSelections[i].window = None;
+	    CurrentSelections[i].client = NullClient;
 	}
 }
 
@@ -3401,6 +3395,7 @@ DeleteClientFromAnySelections(client)
         {
             CurrentSelections[i].pWin = (WindowPtr)NULL;
             CurrentSelections[i].window = None;
+	    CurrentSelections[i].client = NullClient;
 	}
 }
 
