@@ -1,4 +1,4 @@
-.\" $XConsortium: ddx.doc.tbl.ms,v 1.14 88/09/05 18:26:13 keith Exp $
+.\" $XConsortium: ddx.doc.tbl.ms,v 1.15 88/09/06 18:25:36 jim Exp $
 .EF 'Porting Layer Definition'- % -'March 1, 1988'
 .OF 'Porting Layer Definition'- % -'March 1, 1988'
 .EH '''
@@ -614,7 +614,14 @@ your server, main() calls the routine
 .fi
 .LP
 This routine is called only once, and not called when the server
-is reset.  It is found in server/os/4.2bsd/connection.c.
+is reset.  To recreate any sockets during server resets, the following
+routine is called from the main loop:
+.nf
+
+	ResetWellKnownSockets()
+.fi
+Sample implementations of both of these routines are found in 
+server/os/4.2bsd/connection.c.
 .LP
 For more details, see the section called "Connection Setup" in the X protocol specification.
 
