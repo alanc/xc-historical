@@ -1,10 +1,10 @@
-XCOMM platform:  $XConsortium: sun.cf,v 1.84 93/05/25 16:05:00 rws Exp $
+XCOMM platform:  $XConsortium: sun.cf,v 1.85 93/07/12 19:57:07 rws Exp $
 
 #ifdef SVR4
-#define OSName            SunOS 5.1
+#define OSName            SunOS 5.2
 XCOMM operating system:  OSName
 #define OSMajorVersion    5
-#define OSMinorVersion    1
+#define OSMinorVersion    2
 #define OSTeenyVersion    0
 #else
 #define OSName            SunOS 4.1.3
@@ -21,8 +21,13 @@ XCOMM operating system:  OSName
 #endif
 
 /* You ALSO need this if you have Sun ld patch 100170-06 or later to 4.1.1 */
-#if OSMajorVersion == 4 && (OSMinorVersion > 1 || (OSMinorVersion == 1 && OSTeenyVersion > 1))
+#if OSMajorVersion == 4 
+#if OSMinorVersion == 1
+#define HasPoll           YES
+#endif
+#if OSMinorVersion > 1 || (OSMinorVersion == 1 && OSTeenyVersion > 1)
 #define SunPost411FCSLd	  YES
+#endif
 #endif
 
 #if OSMajorVersion > 4
@@ -36,6 +41,7 @@ XCOMM operating system:  OSName
 #define YaccCmd		  /usr/ccs/bin/yacc
 #define SystemV4	  YES
 #define HasSockets	  YES
+#define HasPoll           YES
 #define InstKmemFlags	  -g sys -m 2755
 #include <sv4Lib.rules>
 #else
