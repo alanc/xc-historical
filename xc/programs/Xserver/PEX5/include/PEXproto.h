@@ -1,4 +1,4 @@
-/* $XConsortium: PEXproto.h,v 5.3 91/07/01 16:19:18 hersh Exp $ */
+/* $XConsortium: PEXproto.h,v 5.4 92/03/04 14:07:30 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -433,7 +433,9 @@ typedef struct {
     CARD16	sequenceNumber	B16;
     CARD32	length B32;		/* not 0 */
     CARD32	numPickElRefs B32;	
-    BYTE	pad[20];
+    pexEnumTypeIndex	pickStatus B16;
+    CARD8	betterPick;
+    BYTE	pad[17];
     /* LISTof pexPickElementRef ( numPickElRefs ) */
     } pexEndPickOneReply;
 
@@ -443,7 +445,9 @@ typedef struct {
     CARD16	sequenceNumber	B16;
     CARD32	length B32;		/* not 0 */
     CARD32	numPickElRefs B32;	
-    BYTE	pad[20];
+    pexEnumTypeIndex	pickStatus B16;
+    CARD8	betterPick;
+    BYTE	pad[17];
     /* LISTof pexPickElementRef ( numPickElRefs ) */
     } pexPickOneReply;
 
@@ -453,8 +457,9 @@ typedef struct {
     CARD16	sequenceNumber	B16;
     CARD32	length B32;		/* not 0 */
     CARD32	numPicked     B32;	
-    CARD8	morePicks;		
-    BYTE	pad[19];
+    pexEnumTypeIndex	pickStatus B16;
+    pexEnumTypeIndex	morePicks  B16;
+    BYTE	pad[16];
     /* LISTof CLISTof pexPickElementRef ( numPicked ) */
     } pexEndPickAllReply;
 
@@ -464,8 +469,9 @@ typedef struct {
     CARD16	sequenceNumber	B16;
     CARD32	length B32;		/* not 0 */
     CARD32	numPicked     B32;	
-    CARD8	morePicks;		
-    BYTE	pad[19];
+    pexEnumTypeIndex	pickStatus B16;
+    pexEnumTypeIndex	morePicks  B16;
+    BYTE	pad[16];
     /* LISTof CLISTof pexPickElementRef ( numPicked ) */
     } pexPickAllReply;
 
@@ -1307,11 +1313,10 @@ typedef struct {
     CARD8 		opcode;
     CARD16 		length B16;   /* 6 + n */
     pexEnumTypeIndex	fpFormat B16;
-    BYTE	        unused;
-    CARD8 		pickOp;
+    pexEnumTypeIndex	method B16;
     pexRenderer		rdr B32;
     Drawable		drawable B32;
-    CARD32 		sid B32;
+    INT32 		sid B32;
     /* SINGLE PickRecord () */
 } pexBeginPickOneReq;
 
@@ -1327,8 +1332,7 @@ typedef struct {
     CARD8 		opcode;
     CARD16 		length B16;   /* 6 + n */
     pexEnumTypeIndex	fpFormat B16;
-    BYTE	        unused;
-    CARD8 		pickOp;
+    pexEnumTypeIndex	method B16;
     pexRenderer		rdr B32;
     Drawable		drawable B32;
     pexStructure	sid B32;
@@ -1340,11 +1344,12 @@ typedef struct {
     CARD8 		opcode;
     CARD16 		length B16;   /* 7 + n */
     pexEnumTypeIndex	fpFormat B16;
-    BYTE	        unused;
+    pexEnumTypeIndex	method B16;
     CARD8 		sendEvent;
+    CARD8 		unused[3];
     pexRenderer		rdr B32;
     Drawable		drawable B32;
-    CARD32		sid B32;
+    INT32		sid B32;
     CARD32              pickMaxHits B32;
     /* SINGLE PickRecord () */
 } pexBeginPickAllReq;
@@ -1361,7 +1366,7 @@ typedef struct {
     CARD8 		opcode;
     CARD16 		length B16;   /* 6 + n */
     pexEnumTypeIndex	fpFormat B16;
-    CARD16 		unused B16;
+    pexEnumTypeIndex	method B16;
     pexRenderer		rdr B32;
     Drawable		drawable B32;
     CARD32              pickMaxHits B32;

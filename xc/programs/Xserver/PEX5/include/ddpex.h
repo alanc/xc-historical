@@ -1,4 +1,4 @@
-/* $XConsortium: ddpex.h,v 5.6 91/10/29 18:37:43 hersh Exp $ */
+/* $XConsortium: ddpex.h,v 5.7 92/03/04 14:09:11 hersh Exp $ */
 
 /***********************************************************
 Copyright (c) 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -543,8 +543,13 @@ typedef enum {
 	DD_MAX_FILTERS=6
 } ddNSFilters; 
 
+/* pick state for Renderer picking */
+#define DD_PICK_ONE 1
+#define DD_PICK_ALL 2
+
 typedef struct {
-	ddBOOL            pick_op;
+	ddUSHORT	  state;        /* pick state one or all */
+	ddSHORT           pick_method;
 	ddBOOL            send_event;
 	ddULONG           max_hits;
 	ClientPtr         client;       /* need to send the event */

@@ -1,4 +1,4 @@
-/* $XConsortium: PEX.h,v 5.7 92/03/09 18:18:43 mor Exp $ */
+/* $XConsortium: PEX.h,v 5.8 92/04/06 18:19:07 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -125,9 +125,15 @@ SOFTWARE.
 #define PEXNoMoreHits    1
 #define PEXMayBeMoreHits 2
 
-/* Pick One Type */
-#define PEXClosest  0
-#define PEXLast     1
+/* PickOne Methods */
+#define PEXLast			1
+#define PEXClosestZ		2
+#define PEXVisibleAny		3
+#define PEXVisibleClosest	4
+
+/* PickAll Methods */
+#define PEXAllPicks		1
+#define PEXVisible		2
 
 /* Element Search */
 #define PEXNotFound	1
@@ -167,6 +173,8 @@ SOFTWARE.
 #define PEXETRenderingColourModel		26
 #define PEXETParaSurfCharacteristics		27
 #define PEXETEscape				28
+#define PEXETPickOneMethod			29
+#define PEXETPickAllMethod			30
 
 /* Renderer State */
 #define PEXIdle 	0
@@ -269,11 +277,12 @@ SOFTWARE.
 /* Pick Status */
 #define PEXNoPick	0
 #define PEXOk		1
+#define PEXAborted	2
 
 /* Pick Echo Switch */
 #define PEXNoEcho	0
 #define PEXEcho		1
-#define PEXUnEcho       2
+#define PEXUnEcho	2
 
 /* Pick Path Order */
 #define PEXTopFirst     0
