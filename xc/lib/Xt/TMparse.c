@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: TMparse.c,v 1.72 88/09/06 14:00:44 swick Exp $";
+static char Xrcsid[] = "$XConsortium: TMparse.c,v 1.73 88/09/06 16:29:14 jim Exp $";
 /* $oHeader: TMparse.c,v 1.4 88/09/01 17:30:39 asente Exp $ */
 #endif lint
 
@@ -461,20 +461,19 @@ static void StoreLateBindings(keysymL,notL,keysymR,notR,lateBindings)
     }
     
 } 
-static Boolean _XtParseAmpersand(name,lateBindings,notFlag,valueP)
+static _XtParseKeysymMod(name,lateBindings,notFlag,valueP,error)
     String name;
     LateBindingsPtr* lateBindings;
     Boolean notFlag;
     Value *valueP;
+    Boolean *error;
 {
     KeySym keySym;
-    keySym = StringToKeySym(name);
+    keySym = StringToKeySym(name, error);
     *valueP = 0;
     if (keySym != NoSymbol) {
         StoreLateBindings(keySym,notFlag,(KeySym) NULL,FALSE,lateBindings);
-        return TRUE;
     }
-    return FALSE;
 }
 
 static Boolean _XtLookupModifier(name,lateBindings,notFlag,valueP,check)
@@ -575,7 +574,7 @@ static String ParseModifiers(str, event,error)
 {
     register String start;
     char modStr[100];
-    Boolean notFlag, exclusive,ampersandFlag;
+    Boolean notFlag, exclusive, keysymAsMod;
     Value maskBit;
  
     str = ScanWhitespace(str);
@@ -620,10 +619,10 @@ static String ParseModifiers(str, event,error)
           } else 
               notFlag = FALSE;
         if (*str == '@') {
-            ampersandFlag = TRUE;
+            keysymAsMod = TRUE;
             str++;
         }
-        else ampersandFlag = FALSE;
+        else keysymAsMod = FALSE;
 	start = str;
         str = FetchModifierToken(str,modStr);
         if (start == str) {
@@ -632,12 +631,11 @@ static String ParseModifiers(str, event,error)
             *error = TRUE;
             return str;
         }
-         if (ampersandFlag) {
-             if (!_XtParseAmpersand(modStr,&event->event.lateModifiers,
-                          notFlag,&maskBit)) {
-                 Syntax("Unknown modifier name:  ",modStr);
+         if (keysymAsMod) {
+             _XtParseKeysymMod(modStr,&event->event.lateModifiers,
+			       notFlag,&maskBit, error);
+	     if (*error) {
                  str = PanicModeRecovery(str);
-                 *error = TRUE;
                  return str;
              }
 
@@ -730,8 +728,9 @@ static unsigned long StrToNum(str)
     return val;
 }
 
-static KeySym StringToKeySym(str)
+static KeySym StringToKeySym(str, error)
     String str;
+    Boolean *error;
 {
     KeySym k;
 
@@ -749,7 +748,16 @@ static KeySym StringToKeySym(str)
 
     if ('0' <= *str && *str <= '9') return (KeySym) StrToNum(str);
 
-    return (KeySym) *str;
+#ifdef NOTASCII
+    /* fall-back case to preserve backwards compatibility; no-one
+     * should be relying upon this!
+     */
+    if (*(str+1) == '\0') return (KeySym) *str;
+#endif
+
+    Syntax("Unknown keysym name: ", str);
+    *error = True;
+    return NoSymbol;
 }
 /* ARGSUSED */
 static void ParseModImmed(name,value,lateBindings,notFlag,valueP)
@@ -763,6 +771,9 @@ static void ParseModImmed(name,value,lateBindings,notFlag,valueP)
 }
 /* ARGSUSED */
 static void ParseModSym (name,value,lateBindings,notFlag,valueP)
+ /* is only valid with keysyms that have an _L and _R in their name;
+  * and ignores keysym lookup errors (i.e. assumes only valid keysyms)
+  */
     String name;
     Value value;
     LateBindingsPtr* lateBindings;
@@ -772,14 +783,15 @@ static void ParseModSym (name,value,lateBindings,notFlag,valueP)
     int length;
     char newName[500];		/* MAXKEYSYMNAMELEN+2 */
     KeySym keysymL, keysymR;
+    Boolean error = False;
     length = strlen(name);
     XtBCopy(name,newName,length);
     newName[length++] = '_';
     newName[length] = 'L';
     newName[length+1] = '\0';
-    keysymL = StringToKeySym(newName);
+    keysymL = StringToKeySym(newName, &error);
     newName[length] = 'R';
-    keysymR = StringToKeySym(newName);
+    keysymR = StringToKeySym(newName, &error);
     if (keysymL != NoSymbol || keysymR != NoSymbol)
         StoreLateBindings(keysymL,notFlag,keysymR,notFlag,lateBindings);
     *valueP = 0;
@@ -845,7 +857,7 @@ static String ParseKeySym(str, closure, event,error)
 	keySymName[0] = *str;
 	if (*str != '\0' && *str != '\n') str++;
 	keySymName[1] = '\0';
-	event->event.eventCode = StringToKeySym(keySymName);
+	event->event.eventCode = StringToKeySym(keySymName, error);
 	event->event.eventCodeMask = ~0L;
     } else if (*str == ',' || *str == ':') {
 	/* no detail */
@@ -862,8 +874,18 @@ static String ParseKeySym(str, closure, event,error)
 		&& *str != '\0') str++;
 	(void) strncpy(keySymName, start, str-start);
 	keySymName[str-start] = '\0';
-	event->event.eventCode = StringToKeySym(keySymName);
+	event->event.eventCode = StringToKeySym(keySymName, error);
 	event->event.eventCodeMask = ~0L;
+    }
+    if (*error) {
+	if (keySymName[0] == '<') {
+	    /* special case for common error */
+	    XtWarningMsg("translationParseError", "missingComma",
+			 "XtToolkitError",
+		     "... possibly due to missing ',' in event sequence.",
+		     (String*)NULL, (Cardinal*)NULL);
+	}
+	return PanicModeRecovery(str);
     }
     if (event->event.standard) event->event.matchEvent = 
         _XtMatchUsingStandardMods;
@@ -1009,7 +1031,7 @@ static String ParseQuotedStringEvent(str, event,error)
     }
     s[0] = c;
     s[1] = '\0';
-    event->event.eventCode = StringToKeySym(s);
+    event->event.eventCode = StringToKeySym(s, error);
 
     return str;
 }
