@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: lcTxtPr.c,v 1.1 93/09/17 13:31:43 rws Exp $ */
 /******************************************************************
 
               Copyright 1991, 1992 by TOSHIBA Corp.
@@ -31,7 +31,7 @@
 ******************************************************************/
 
 #include "Xlibint.h"
-#include "XlcPublicI.h"
+#include "XlcPubI.h"
 #include <X11/Xutil.h>
 #include <X11/Xatom.h>
 

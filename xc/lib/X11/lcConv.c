@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: lcConv.c,v 1.1 93/09/17 13:29:50 rws Exp $ */
 /******************************************************************
 
               Copyright 1991, 1992 by TOSHIBA Corp.
@@ -31,7 +31,7 @@
 ******************************************************************/
 
 #include "Xlibint.h"
-#include "XlcPublicI.h"
+#include "XlcPubI.h"
 
 typedef XlcConv (*XlcConverter)();
 

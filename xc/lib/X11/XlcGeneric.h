@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: XlcGeneric.h,v 1.1 93/09/17 13:30:36 rws Exp $ */
 /******************************************************************
 
               Copyright 1991, 1992 by TOSHIBA Corp.
@@ -33,7 +33,7 @@
 #ifndef _XLCGENERIC_H_
 #define _XLCGENERIC_H_
 
-#include "XlcPublicI.h"
+#include "XlcPubI.h"
 
 typedef struct _ParseInfoRec *ParseInfo;
 

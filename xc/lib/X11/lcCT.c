@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: lcCT.c,v 1.1 93/09/17 13:27:54 rws Exp $ */
 /******************************************************************
 
               Copyright 1991, 1992 by TOSHIBA Corp.
@@ -31,7 +31,7 @@
 ******************************************************************/
 
 #include "Xlibint.h"
-#include "XlcPublicI.h"
+#include "XlcPubI.h"
 #include <X11/Xos.h>
 
 typedef struct _StateRec {

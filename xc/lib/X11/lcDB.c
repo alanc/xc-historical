@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: lcDB.c,v 1.1 93/09/17 13:29:58 rws Exp $ */
 /*
  *
  * Copyright IBM Corporation 1993
@@ -26,7 +26,7 @@
 #include	<X11/Xlib.h>
 #include	<X11/Xresource.h>
 #include	"Xlibint.h"
-#include	"XlcPublicI.h"
+#include	"XlcPubI.h"
 #include	<stdio.h>
 
 static FILE	*open_file();

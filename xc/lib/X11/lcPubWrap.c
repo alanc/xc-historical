@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: lcPubWrap.c,v 1.1 93/09/17 13:30:57 rws Exp $ */
 /******************************************************************
 
               Copyright 1991, 1992 by TOSHIBA Corp.
@@ -30,7 +30,7 @@
 ******************************************************************/
 
 #include "Xlibint.h"
-#include "XlcPublicI.h"
+#include "XlcPubI.h"
 
 #if NeedVarargsPrototypes
 #include <stdarg.h>
