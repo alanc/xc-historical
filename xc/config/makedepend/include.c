@@ -1,7 +1,10 @@
 /*
- * $Header: include.c,v 1.1 87/08/06 17:34:55 toddb Locked $
+ * $Header: include.c,v 1.2 87/08/06 17:40:34 toddb Locked $
  *
  * $Log:	include.c,v $
+ * Revision 1.2  87/08/06  17:40:34  toddb
+ * Bug in removing .. (removedotdot).
+ * 
  * Revision 1.1  87/08/06  17:34:55  toddb
  * Initial revision
  * 
@@ -51,7 +54,7 @@ struct inclist *inc_path(file, include, dot)
 			found = TRUE;
 		}
 		else if (show_where_not)
-			log("\tnot in %s\n", path);
+			log("\tnot in %s\n", include);
 	}
 
 	/*
@@ -258,4 +261,13 @@ included_by(ip, newfile)
 			sizeof(struct inclist *) * ++ip->i_listlen);
 	}
 	ip->i_list[ ip->i_listlen-1 ] = newfile;
+}
+
+inc_clean ()
+{
+	register struct inclist *ip;
+
+	for (ip = inclist; ip < inclistp; ip++) {
+		ip->i_marked = FALSE;
+	}
 }
