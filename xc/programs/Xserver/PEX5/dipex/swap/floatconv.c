@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: floatconv.c,v 5.2 91/02/16 09:57:18 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -57,7 +57,7 @@ SOFTWARE.
 
 #include"floatconv.h"
 
-#define BITMASK(n) ((1L<<n)-1)
+#define BITMASK(n) ((((unsigned long)1)<<n)-1)
 #define VAX_EXPONENT_BIAS	0x00000081
 #define IEEE_EXPONENT_BIAS	0x0000007f
 
@@ -144,7 +144,7 @@ ConvertVaxToIEEE(VaxnumR)
 	       (((BITMASK(16)<<16) & Vaxnum)>>16));
     result |= ( (0x00008000 & Vaxnum) ? 0x80000000 : 0L);
     return *(FLOAT *)(&result);
-};
+}
 
 /*****************************************************************
  * TAG( ConvertIEEEToVax )
@@ -202,4 +202,4 @@ ConvertIEEEToVax(IEEEnumR)
     result |= (BITMASK(16)&IEEEnum)<<16;
     result |= (0x80000000&IEEEnum)>>16;
     return *(FLOAT *)(&result);  /* hopefully the *& will not generate code */
-};
+}

@@ -1,4 +1,4 @@
-/* $XConsortium: sin_val.c,v 5.2 91/04/04 15:25:34 gildea Exp $ */
+/* $XConsortium: sin_val.c,v 5.3 91/04/05 15:02:53 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -55,7 +55,7 @@ set_float_arg( args, num_args, arg, val_p )
 static void
 valuator_jump( w, client_data, call_data )
     Widget	w;
-    XtPointer	*client_data;
+    XtPointer	client_data;
     XtPointer	call_data;
 {
     Arg				args[2];

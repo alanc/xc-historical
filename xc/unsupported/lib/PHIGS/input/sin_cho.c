@@ -1,4 +1,4 @@
-/* $XConsortium: sin_cho.c,v 5.2 91/04/04 15:29:17 gildea Exp $ */
+/* $XConsortium: sin_cho.c,v 5.3 91/04/05 15:02:56 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -40,7 +40,7 @@ SOFTWARE.
 static void
 choice_notify( w, client_data, call_data )
     Widget	w;
-    XtPointer	*client_data;
+    XtPointer	client_data;
     XtPointer	call_data;
 {
     XawListReturnStruct		*selection = (XawListReturnStruct*)call_data;

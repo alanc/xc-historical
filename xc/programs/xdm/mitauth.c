@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: mitauth.c,v 1.6 90/09/14 17:51:33 keith Exp $
+ * $XConsortium: mitauth.c,v 1.7 90/11/19 17:34:43 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -71,7 +71,7 @@ MitGetAuth (namelen, name)
 	free ((char *) new);
 	return (Xauth *) 0;
     }
-    bcopy (name, new->name, namelen);
+    bcopy (name, (char *)new->name, namelen);
     new->name_length = namelen;
     GenerateCryptoKey (new->data, AUTH_DATA_LEN);
     new->data_length = AUTH_DATA_LEN;

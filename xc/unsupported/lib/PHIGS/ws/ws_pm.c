@@ -1,4 +1,4 @@
-/* $XConsortium: ws_pm.c,v 5.1 91/02/16 09:50:36 rws Exp $ */
+/* $XConsortium: ws_pm.c,v 5.2 91/04/04 15:36:58 gildea Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -40,7 +40,7 @@ SOFTWARE.
 static void
 done_button( w, client_data, call_data )
     Widget      w;
-    XtPointer   *client_data;
+    XtPointer   client_data;
     XtPointer   call_data;
 {
     Ws          *ws = (Ws *)client_data;
