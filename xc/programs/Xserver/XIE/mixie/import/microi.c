@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: microi.c,v 1.1 93/07/19 10:16:18 rws Exp $ */
 /**** module microi.c ****/
 /******************************************************************************
 				NOTICE
@@ -473,9 +473,7 @@ static xieTypRectangle * BandROI(roi, nroi, xmin)
 		ix2 = ix1+(iwd-1);
 
 		j = i+1;
-		while (iy2 >= jy1)
-		{
-			if (j >= nr) break; /* nr is varible */
+	        while (j < nr && iy2 >= jy1) {
 
 			jy2 = jy1+(jht-1);
 			jx2 = jx1+(jwd-1);
