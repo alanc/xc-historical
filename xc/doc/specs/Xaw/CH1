@@ -397,7 +397,7 @@ Input Focus
 .LP
 The \*(xI define a resource on all Shell widgets that interact with
 the window manager called \fBinput\fP.  This resource requests the
-assistance of window manager in aquiring the input focus.  The
+assistance of window manager in acquiring the input focus.  The
 resource defaults to \fBFalse\fP in the \*(xI, but is redefined to
 default to \fBTrue\fP when an application is using the Athena widget
 set.  An application programmer may override this default and set the
