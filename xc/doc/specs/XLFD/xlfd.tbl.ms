@@ -1,5 +1,5 @@
-.\" Use eqn, tbl and -ms and macros.t
-.\" $XConsortium: xlfd.tbl.ms,v 1.20 93/12/29 18:54:44 gildea Exp $
+.\" Use tbl and -ms and macros.t	-*- Nroff -*-
+.\" $XConsortium: xlfd.tbl.ms,v 1.21 93/12/29 19:35:57 gildea Exp $
 .de sC			\" start change
 .mc \s+5\(br\s0		\" make tall enough to span paragraph skip
 ..
@@ -21,9 +21,9 @@
 .ce 4
 \s+2\fBX Logical Font Description Conventions\fP\s-2
 
-\fBVersion 1.5 (draft 1)\fP
+\fBVersion 1.5\fP
 
-\fBX Consortium Standard\fP
+\fBPublic Review (draft 1)\fP
 
 \fBX Version 11, Release 6\fP
 .sp 6
@@ -113,7 +113,8 @@ the XLFD also provides for a standard set of key
 that describe the font in more detail. 
 .LP
 The XLFD provides an adequate set of typographic font properties, 
-such as \s-1CAP_HEIGHT\s+1, \s-1X_HEIGHT\s+1, \s-1RELATIVE_SETWIDTH\s+1, 
+such as \s-1CAP_HEIGHT\s+1, \s-1X_HEIGHT\s+1,
+and \s-1RELATIVE_SETWIDTH\s+1, 
 for publishing and other applications to do intelligent font matching 
 or substitution when handling documents created on some foreign server 
 that use potentially unknown fonts.
@@ -124,7 +125,8 @@ recommended leading, word-space values, and so on.
 .LP
 .sC
 Change bars note sections that have changed or been added since
-XLFD version 1.4, which was part of X11 Release 5.
+version 1.4 of this document, which was part of X11 Release 5.
+Version 1.5 was edited by Stephen Gildea.
 .br
 .eC
 .NH 1
@@ -136,12 +138,15 @@ Requirements and Goals
 The XLFD meets the short and long-term goals to have a 
 standard logical font description that:
 .IP \(bu 5
-Provides unique, descriptive font names that support simple pattern matching
+Provides unique, descriptive font names that support simple pattern
+matching
 .IP \(bu 5
 Supports multiple font vendors, arbitrary character sets, and encodings
 .IP \(bu 5
 .sC
 Supports naming and instancing of scalable and polymorphic fonts
+.IP \(bu 5
+Supports transformations and subsetting of fonts
 .br
 .eC
 .IP \(bu 5
@@ -163,7 +168,7 @@ Resolution and size-dependent font masters, multivendor font libraries,
 and so on must be anticipated and handled by the font name alone.
 .LP
 The name itself should be structured to be amenable to simple pattern 
-matching and parsing, thus, allowing X clients to restrict font queries to 
+matching and parsing, thus allowing X clients to restrict font queries to 
 some subset of all possible fonts in the server.
 .NH 2
 Support Multiple Font Vendors and Character Sets
@@ -185,15 +190,34 @@ Others may desire to perform the mapping dynamically in the server.
 Provisions must be made in the font name 
 that allows a font request to specify or identify specific charset mappings 
 in server environments where multiple charsets are supported.
+.br
+.sC
 .NH 2
-Support Scalable Fonts
+Support Scalable and Polymorphic Fonts
+.eC
 .XS
-\*(SN Support Scalable Fonts
+\*(SN Support Scalable and Polymorphic Fonts
 .XE
+.sC
 .LP
-If a font source can be scaled to arbitrary size, it should be possible
-for an application to determine that fact from the font name, and the
-application should be able to construct a font name for any specific size.
+If a font source can be scaled to arbitrary size or varied in other
+ways, it should be possible for an application to determine
+.eC
+that fact from the font name, and the
+application should be able to construct a font name for any specific
+.sC
+instance.
+.NH 2
+Support Transformations and Subsetting of Fonts
+.br
+.eC
+.XS
+\*(SN Support Transformations and Subsetting of Fonts
+.XE
+.sC
+.LP
+(Words still needed for this section.)
+.eC
 .NH 2
 Be Independent of X Server and Operating or File System Implementations
 .XS
@@ -280,7 +304,9 @@ prefix that is followed by a
 .PN FontNameSuffix . 
 The 
 .PN FontNameRegistry
-is an x-registered-name (a name that has been registered with the X Consortium)
+is an
+.IN x-registered-name
+x-registered-name (a name that has been registered with the X Consortium)
 that identifies the registration authority that owns the specified 
 .PN FontNameSuffix
 syntax and semantics.
@@ -324,8 +350,7 @@ The
 is a structured, parsable string (of type STRING8) 
 whose Backus-Naur Form syntax description is as follows:
 .IN "FontName Syntax"
-.ps 9
-.nr PS 9
+.SM
 .TS 
 rw(1.5i) lw(3.75i).
 .sp 6p
@@ -373,8 +398,7 @@ STRING8 \- other than those strings reserved by XLFD
 T}
 PrivFontNameSuffix ::=	STRING8
 .TE
-.ps 11
-.nr PS 11
+.NL
 .LP
 Field values are constructed as strings of ISO 8859-1 graphic characters, 
 excluding the following:
@@ -382,14 +406,14 @@ excluding the following:
 HYPHEN (02/13), the XLFD font name delimiter character
 .IP \(bu 5
 QUESTION MARK (03/15) and ASTERISK (02/10), the X protocol 
-fontname wildcard characters
+font name wildcard characters
 .br
 .sC
 .IP \(bu 5
 COMMA (02/12), used by Xlib to separate XLFD font names in a font set.
 .IP \(bu 5
-QUOTATION MARK (02/02), used by some commercial products to quote an
-XLFD font name.
+QUOTATION MARK (02/02), used by some commercial products to quote a
+font name.
 .br
 .eC
 .LP
@@ -617,7 +641,8 @@ ADD_STYLE_NAME is a string that identifies additional typographic
 style information that is not captured by other fields but is needed 
 to identify the particular font.
 .sC
-The value \*Q%0%\*U is used to indicate a polymorphic font; see section \n(sP.
+The string \*Q%0%\*U anywhere in the field is used to indicate a
+polymorphic font; see section \n(sP.
 .br
 .eC
 .LP
@@ -722,6 +747,7 @@ that is, monospace (fixed pitch), proportional (variable pitch),
 or charcell (a special monospaced font that conforms to the traditional 
 data processing character cell font model).
 The encoding is as follows:
+.ne 5
 .SM
 .TS H
 lw(.5i) lw(1.25i) lw(3.5i).
@@ -803,7 +829,7 @@ and, optionally, a subsetting hint.
 .LP
 Although the X protocol does not explicitly have any knowledge about 
 character set encodings, 
-it is expected that server implementers will prefer to embed knowledge 
+it is expected that server implementors will prefer to embed knowledge 
 of certain proprietary or standard charsets into their font library 
 for reasons of performance and convenience. 
 The CHARSET_REGISTRY and CHARSET_ENCODING fields or properties allow 
@@ -861,10 +887,11 @@ subsetting hint telling the rasterizer that the client is interested
 only in a subset of the characters of the font.
 .LP
 The BNF for the subsetting hint is
+.SM
 .TS
-r l.
-Subset ::=	\*Q=\*U Rangelist
-Rangelist ::=	Range | Range \*Q+\*U Rangelist
+rw(1.5i) l.
+Subset ::=	\*Q=\*U RangeList
+RangeList ::=	Range | Range \*Q+\*U RangeList
 Range ::=	Number | Number \*Q:\*U Number
 Number ::=	\*Q0x\*U HexNumber | DecNumber
 HexNumber ::=	HexDigit | HexDigit HexNumber
@@ -872,6 +899,7 @@ DecNumber ::=	DecDigit | DecDigit DecNumber
 HexDigit ::=	[0-9a-f]
 DecDigit ::=	[0-9]
 .TE
+.NL
 .LP
 For example,
 .br
@@ -896,6 +924,8 @@ Examples
 .LP
 The following examples of font names are derived from the screen fonts 
 shipped with the X Consortium distribution.
+.\" why is this table so long?  I took out some fonts in v1.5
+.\" to make the page breaks better.
 .SM
 .TS H
 lw(1.45i) lw(4.45i).
@@ -933,8 +963,6 @@ T}
 Courier 8 pt	-Adobe-Courier-Medium-R-Normal--8-80-75-75-M-50-ISO8859-1
 Courier 10 pt	-Adobe-Courier-Medium-R-Normal--10-100-75-75-M-60-ISO8859-1
 Courier 12 pt	-Adobe-Courier-Medium-R-Normal--12-120-75-75-M-70-ISO8859-1
-Courier 14 pt	-Adobe-Courier-Medium-R-Normal--14-140-75-75-M-90-ISO8859-1
-Courier 18 pt	-Adobe-Courier-Medium-R-Normal--18-180-75-75-M-110-ISO8859-1
 Courier 24 pt	-Adobe-Courier-Medium-R-Normal--24-240-75-75-M-150-ISO8859-1
 T{
 Courier Bold 10 pt
@@ -952,22 +980,13 @@ T}	T{
 -Adobe-Courier-Medium-O-Normal--10-100-75-75-M-60-ISO8859-1
 T}
 .sp 3p
+.ne 2
 \fB100 dpi Fonts\fP
 .sp 3p
-T{
-Symbol 8 pt
-T}	T{
--Adobe-Symbol-Medium-R-Normal--11-80-100-100-P-61-Adobe-FONTSPECIFIC
-T}
 T{
 Symbol 10 pt
 T}	T{
 -Adobe-Symbol-Medium-R-Normal--14-100-100-100-P-85-Adobe-FONTSPECIFIC
-T}
-T{
-Symbol 12 pt
-T}	T{
--Adobe-Symbol-Medium-R-Normal--17-120-100-100-P-95-Adobe-FONTSPECIFIC
 T}
 T{
 Symbol 14 pt
@@ -1052,10 +1071,18 @@ AVERAGE_WIDTH | CHARSET_REGISTRY | CHARSET_ENCODING | QUAD_WIDTH |
 RESOLUTION | MIN_SPACE | NORM_SPACE | MAX_SPACE | END_SPACE | SUPERSCRIPT_X | 
 SUPERSCRIPT_Y | SUBSCRIPT_X | SUBSCRIPT_Y | UNDERLINE_POSITION | 
 UNDERLINE_THICKNESS | STRIKEOUT_ASCENT | STRIKEOUT_DESCENT | ITALIC_ANGLE 
-| X_HEIGHT | WEIGHT | FACE_NAME | COPYRIGHT | AVG_CAPITAL_WIDTH | 
+| X_HEIGHT | WEIGHT | FACE_NAME |
+.sC
+FULL_NAME | FONT |
+COPYRIGHT | AVG_CAPITAL_WIDTH | 
+.eC
 AVG_LOWERCASE_WIDTH | RELATIVE_SETWIDTH | RELATIVE_WEIGHT | CAP_HEIGHT | 
 SUPERSCRIPT_ SIZE | FIGURE_WIDTH | SUBSCRIPT_SIZE | SMALL_CAP_SIZE | 
 NOTICE | DESTINATION
+.sC
+| FONT_TYPE | FONT_VERSION | RASTERIZER_NAME | RASTERIZER_VERSION
+.br
+.eC
 T}
 Underscore ::=	T{
 OCTET\-the value of ISO 8859-1 UNDERSCORE character (Column/Row 05/15)
@@ -1179,9 +1206,10 @@ THINspace = ROUND (EMspace / 3)\fP
 .LP
 where a slash \*Q/\*U denotes real division, 
 the asterisk \*Q*\*U denotes real multiplication,
-and \*QROUND\*U denotes a function that rounds its real argument 'a' up or down
+and \*QROUND\*U denotes a function that rounds its real argument
+\fIa\fP up or down
 to the next integer. 
-This rounding is done according to X = FLOOR (a + O.5),
+This rounding is done according to X = FLOOR (\fIa\fP + 0.5),
 where FLOOR is a function that rounds its real argument down to the
 nearest integer.
 .LP
@@ -1407,7 +1435,7 @@ according to the following algorithm:
 if (AVG_CAPITAL_WIDTH undefined) then
 .sC
    AVG_CAPITAL_WIDTH = ROUND (MEAN
-                  (ABS (width of each capital glyph) * 10))
+                  (ABS (width of each capital glyph)) * 10)
 	* if (dominant writing direction L-to-R) then 1 else \-1
 .eC
 .DE
@@ -1437,7 +1465,7 @@ if (AVG_LOWERCASE_WIDTH undefined) then
    if (lowercase exists) then
 .sC
       AVG_LOWERCASE_WIDTH = ROUND (MEAN
-                       (ABS (width of each lowercase glyph) * 10))
+                       (ABS (width of each lowercase glyph)) * 10)
 	* if (dominant writing direction L-to-R) then 1 else \-1
 .eC
    else AVG_LOWERCASE_WIDTH undefined
@@ -1470,7 +1498,7 @@ FIGURE_WIDTH
 FIGURE_WIDTH is an integer typographic metric (of type INT32)
 that gives the width of the tabular figures and the dollar sign,
 if suitable for tabular setting (all widths equal).
-For Latin fonts, these tabular figures are the arabic numerals 0 through 9.
+For Latin fonts, these tabular figures are the Arabic numerals 0 through 9.
 .LP
 FIGURE_WIDTH can be approximated if not supplied as a font property, 
 according to the following algorithm:
@@ -1652,7 +1680,7 @@ property, according to the following algorithm:
 if (UNDERLINE_POSITION undefined) then
    UNDERLINE_POSITION = ROUND((maximum descent) / 2)
 .DE
-where maximum descent is the maximum descent (below the baseline)
+where \fImaximum descent\fP is the maximum descent (below the baseline)
 in pixels of any glyph in the font.
 .NH 3
 UNDERLINE_THICKNESS 
@@ -1690,9 +1718,9 @@ according to the following algorithm:
 .LP
 .DS
 if (STRIKEOUT_ASCENT undefined)
-   STRIKEOUT_ASCENT =  maximum ascent
+   STRIKEOUT_ASCENT = maximum ascent
 .DE
-where maximum ascent is the maximum ascent (above the baseline)
+where \fImaximum ascent\fP is the maximum ascent (above the baseline)
 in pixels of any glyph in the font.
 .NH 3
 STRIKEOUT_DESCENT
@@ -1711,9 +1739,9 @@ according to the following algorithm:
 .LP
 .DS
 if (STRIKEOUT_DESCENT undefined)
-   STRIKEOUT_DESCENT =  maximum descent
+   STRIKEOUT_DESCENT = maximum descent
 .DE
-where maximum descent is the maximum descent (below the baseline)
+where \fImaximum descent\fP is the maximum descent (below the baseline)
 in pixels of any glyph in the font.
 .NH 3
 ITALIC_ANGLE
@@ -1757,7 +1785,7 @@ according to the following algorithm:
 .LP
 .DS
 if (CAP_HEIGHT undefined) then
-   if (latin font) then
+   if (Latin font) then
       CAP_HEIGHT = XCharStruct.ascent[glyph X]
    else if (capitals exist) then
        CAP_HEIGHT = XCharStruct.ascent[some capital glyph]
@@ -1788,13 +1816,13 @@ according to the following algorithm:
 .LP
 .DS I
 if (X_HEIGHT undefined) then
-   if (latin font) then
+   if (Latin font) then
       X_HEIGHT = XCharStruct.ascent[glyph x]
    else if (lowercase exists) then
 .sC
         X_HEIGHT = XCharStruct.ascent[some lowercase glyph without an ascender]
 .eC
-   else X_HEIGHT is undefined
+   else X_HEIGHT undefined
 .DE
 .NH 3
 RELATIVE_SETWIDTH
@@ -1807,7 +1835,11 @@ that gives the coded proportionate width of the font,
 relative to all known fonts of the same typeface family, 
 according to the type designer's or FOUNDRY's judgment.
 .LP
-The possible values are:
+.sC
+RELATIVE_SETWIDTH ranges from 10 to 90, or is 0 if undefined or unknown.
+The following reference values are defined:
+.br
+.eC
 .TS H
 lw(.5i) lw(1i) lw(2.75i).
 _
@@ -1841,6 +1873,12 @@ if (RELATIVE_SETWIDTH undefined) then
    RELATIVE_SETWIDTH = 50
 .DE
 .LP
+.sC
+For polymorphic fonts, RELATIVE_SETWIDTH is not necessarily a
+linear function of the font's setwidth axis.
+.br
+.eC
+.LP
 X clients that want to obtain a calculated proportionate width of the 
 font (that is, a font-independent way of identifying the proportionate 
 width across all fonts and all font vendors) can use the following algorithm: 
@@ -1862,7 +1900,11 @@ that gives the coded weight of the font,
 relative to all known fonts of the same typeface family, 
 according to the type designer's or FOUNDRY's judgment.
 .LP
-The possible values are:
+.sC
+RELATIVE_WEIGHT ranges from 10 to 90, or is 0 if undefined or unknown.
+The following reference values are defined:
+.br
+.eC
 .TS H
 lw(.5i) lw(1i) lw(3.75i).
 _
@@ -1897,6 +1939,12 @@ according to the following algorithm:
 if (RELATIVE_WEIGHT undefined) then
    RELATIVE_WEIGHT = 50
 .DE
+.LP
+.sC
+For polymorphic fonts, RELATIVE_WEIGHT is not necessarily a
+linear function of the font's weight axis.
+.br
+.eC
 .NH 3 
 WEIGHT
 .XS
@@ -1953,7 +2001,7 @@ FONT
 .sC
 .LP
 FONT is a string (of type ATOM) that gives the full XLFD name of the
-font\*-that is, the name returned can be used to open another
+font\*-that is, the value can be used to open another
 instance of the same font.
 .LP
 If not provided, the FONT property cannot be calculated.
@@ -2079,7 +2127,7 @@ FONT_TYPE
 .XE
 .sC
 .LP
-FONT_TYPE is a human-readable string (of type ATOM) which
+FONT_TYPE is a human-understandable string (of type ATOM) which
 describes the format of a font before any rasterization
 operation has been performed on it.  It
 is a static attribute of the source data.  It can be used
@@ -2087,15 +2135,18 @@ by clients to select a type of bitmap or outline font
 without regard to the rasterizer used to render the font.
 .LP
 Predefined values are
-.TS
+.TS H
 l lw(5i).
 .sC
 _
 .sp 6p
+.B
 Value	When applicable
 .sp 6p
 _
 .sp 6p
+.TH
+.R
 \*QBitmap\*U	T{
 .eC
 Hand-tuned bitmap fonts.  Some
@@ -2112,7 +2163,7 @@ cannot be described as \*QBitmap\*U,
 that is, hand-tuned.  For example,
 a bitmap format font which was
 generated mechanically using a
-scaleable font rasterizer
+scalable font rasterizer
 would be considered \*QPrebuilt\*U, not \*QBitmap\*U.
 T}
 .sC
@@ -2133,10 +2184,9 @@ FONT_VERSION
 .XE
 .sC
 .LP
-FONT_VERSION is the human-readable string (of type ATOM)
+FONT_VERSION is a human-understandable string (of type ATOM)
 which describes the formal or informal version of the font.
-This property is optional.  \fBNone\fP is a valid
-value.
+\fBNone\fP is a valid value.
 .NH 3
 RASTERSIZER_NAME
 .br
@@ -2146,13 +2196,14 @@ RASTERSIZER_NAME
 .XE
 .sC
 .LP
-RASTERIZER_NAME is the human-readable string (of type ATOM)
-which is the specific vendor or commercial name of the
+RASTERIZER_NAME is a human-understandable string (of type ATOM)
+which is the specific name of the
 rasterizer that has performed some rasterization operation
 (such as scaling from outlines) on this font.
 .LP
 To define a RASTERIZER_NAME, the following format is
 recommended:
+.SM
 .TS
 rw(1.5i) lw(3.75i).
 .sC
@@ -2160,18 +2211,19 @@ RasterizerName ::=	OrganizationId Space Rasterizer
 OrganizationId ::=	T{
 .eC
 STRING8\*-the X Registry ORGANIZATION name
-of the rasterizer vendor or implementor.
+of the rasterizer implementor or maintainer.
 T}
 .sC
 Rasterizer ::=	T{
 .eC
-the case-sensitive, human-readable product name
+the case-sensitive, human-understandable product name
 of the rasterizer.  Words within this
 name should be separated by a single SPACE.
 T}
 .sC
 Space ::=	OCTET\-the value of ISO 8859-1 SPACE (Column/Row 02/00)
 .TE
+.NL
 .LP
 Examples:
 .nf
@@ -2192,11 +2244,11 @@ RASTERSIZER_VERSION
 .XE
 .sC
 .LP
-RASTERIZER_VERSION is the human-readable string (of type
+RASTERIZER_VERSION is a human-understandable string (of type
 ATOM) which represents the formal or informal version of a
 font rasterizer.
 The RASTERIZER_VERSION should match the corresponding
-prodect version number known to users, when applicable.
+product version number known to users, when applicable.
 .br
 .eC
 .NH 2
@@ -2287,17 +2339,14 @@ as the matrix \*Q[N*RESOLUTION_X/RESOLUTION_Y 0 0 N]\*U in that field.
 If matrices are specified for both the POINT_SIZE and PIXEL_SIZE, they
 must bear the following relationship to each other within an
 implementation-specific tolerance:
-.EQ
-delim !!
-.EN
 .br
-	PIXEL_SIZE_MATRIX = [!S sub x! 0 0 !S sub y!] * POINT_SIZE_MATRIX
+	PIXEL_SIZE_MATRIX = [Sx 0 0 Sy] * POINT_SIZE_MATRIX
 .br
 where
 .br
-	!S sub x! = RESOLUTION_X / 72.27
+	Sx = RESOLUTION_X / 72.27
 .br
-	!S sub y! = RESOLUTION_Y / 72.27
+	Sy = RESOLUTION_Y / 72.27
 .LP
 If either the POINT_SIZE or PIXEL_SIZE field is unspecified (either \*Q0\*U or
 wildcarded) the preceding formulas can be used to compute one from the
@@ -2382,7 +2431,7 @@ A scalable font source might be one or more outlines
 together with zero or more hand-tuned bitmap fonts at specific sizes and
 resolutions, or it might be a programmatic description together with
 zero or more bitmap fonts, or some other format
-(perhap even just a single bitmap font).
+(perhaps even just a single bitmap font).
 .LP
 The following definitions are useful for discussing scalable fonts:
 .LP
@@ -2561,7 +2610,7 @@ Sample derived instance:
 .ft P
 .fi
 .LP
-The Adobe Minion MM Italic font program had width, weight, and optical
+The Adobe Minion MM Italic font program has width, weight, and optical
 size axes.
 .nf
 Name:
@@ -2641,15 +2690,7 @@ font.
 The result of specifying an out-of-range value for a polymorphic field is
 undefined.  The font source may treat this as a \fBBadName\fP error, treat the
 value as if it were the closest legal value, or extrapolate to try to
-accomodate the value.
-.LP
-With this degree of variability, the enumerations for the
-RELATIVE_SETWIDTH and RELATIVE_WEIGHT properties are no longer sufficient.
-The restrictions on the values of these properties are relaxed to allow
-any integer between 10 and 90, inclusive, instead of just multiples of 10.
-The meanings for the multiples of 10 remain, so, for example, a
-RELATIVE_WEIGHT of 35 indicates a point midway between 30 and 40.  This is
-not required to be a linear function of the weight axis.
+accommodate the value.
 .br
 .eC
 .NH 1
@@ -2754,9 +2795,9 @@ that gives the recommended typographic ascent above the baseline
 for determining interline spacing. 
 Specific glyphs of the font may extend beyond this.
 If the current position point for line \fIn\fP is at [X,Y], 
-then the origin of the next line \fIn+1\fP 
+then the origin of the next line \fIm = n+1\fP
 (allowing for a possible font change) is 
-[X, Y + !FONT_DESCENT sub n! + !FONT_ ASCENT sub n+1!].
+[X, Y + FONT_DESCENTn + FONT_ASCENTm].
 .LP
 FONT_ASCENT can be approximated if not provided as a font property, 
 according to the following algorithm:
@@ -2778,9 +2819,9 @@ that gives the recommended typographic descent below the baseline
 for determining interline spacing. 
 Specific glyphs of the font may extend beyond this.
 If the current position point for line \fIn\fP is at [X,Y],
-then the origin of the next line \fIn+1\fP 
+then the origin of the next line \fIm = n+1\fP
 (allowing for a possible font change) is 
-[X, Y + !FONT_DESCENT sub n! + !FONT_ ASCENT sub n+1!].
+[X, Y + FONT_DESCENTn + FONT_ASCENTm].
 .LP
 The logical extent of the font is inclusive between the Y-coordinate values: 
 Y \- FONT_ASCENT and Y + FONT_DESCENT + 1.
