@@ -1,5 +1,5 @@
 /*
- * $Header: Tekproc.c,v 1.16 88/02/17 19:05:21 jim Exp $
+ * $Header: Tekproc.c,v 1.17 88/02/18 12:09:58 jim Exp $
  *
  * Warning, there be crufty dragons here.
  */
@@ -115,7 +115,7 @@ char *curs_color;
 #define	unput(c)	*Tpushback++ = c
 
 #ifndef lint
-static char rcs_id[] = "$Header: Tekproc.c,v 1.16 88/02/17 19:05:21 jim Exp $";
+static char rcs_id[] = "$Header: Tekproc.c,v 1.17 88/02/18 12:09:58 jim Exp $";
 #endif	/* lint */
 
 static XPoint *T_box[TEKNUMFONTS] = {
@@ -203,7 +203,7 @@ WidgetClassRec tekClassRec = {
 };
 #define tekWidgetClass ((WidgetClass)&tekClassRec)
 
-static short Tfailed = FALSE;
+static Boolean Tfailed = FALSE;
 
 TekWidget CreateTekWidget ()
 {
@@ -226,8 +226,6 @@ TekWidget CreateTekWidget ()
 
 int TekInit ()
 {
-    TekWidget tw;
-
     if (Tfailed) return (0);
     if (tekWidget) return (1);
     if (CreateTekWidget()) {
@@ -1036,7 +1034,6 @@ TekRun()
 	}
 	screen->TekEmu = FALSE;
 	TekUnselect();
-	reselectwindow (screen);
 }
 
 #define DOTTED_LENGTH 2
@@ -1254,8 +1251,8 @@ static void TekRealize (gw, valuemaskp, values)
 		      HandleLeaveWindow, (caddr_t)NULL);
     XtAddEventHandler(gw, ButtonPressMask, FALSE,
 		      TekButtonPressed, (caddr_t)NULL);
-    XtAddEventHandler(gw, ButtonReleaseMask, FALSE,
-		      HandleEnterWindow, (caddr_t)NULL);
+    XtAddEventHandler(gw, FocusChangeMask, FALSE,
+		      HandleFocusChange, (caddr_t)NULL);
     XtAddEventHandler(gw, KeyPressMask, FALSE,
 		      HandleKeyPressed, (caddr_t)NULL);
 
@@ -1454,7 +1451,7 @@ TekSelect()
 {
 	register TScreen *screen = &term->screen;
 
-	if (TShellWindow)
+	if (tekWidget && TShellWindow)
 	  XSetWindowBorder (screen->display, TShellWindow,
 			    tekWidget->core.border_pixel);
 }
@@ -1463,7 +1460,7 @@ TekUnselect()
 {
 	register TScreen *screen = &term->screen;
 
-	if (TShellWindow)
+	if (tekWidget && TShellWindow)
 	  XSetWindowBorderPixmap (screen->display, TShellWindow,
 				  screen->graybordertile);
 }
