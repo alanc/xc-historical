@@ -7,7 +7,7 @@
 /* Copyright    Massachusetts Institute of Technology    1985	*/
 
 #ifndef lint
-static char *rcsid_xset_c = "$Header: xset.c,v 1.28 88/02/27 10:21:45 rws Exp $";
+static char *rcsid_xset_c = "$Header: xset.c,v 1.29 88/05/11 13:13:46 jim Exp $";
 #endif
 
 #include <X11/Xos.h>
@@ -488,6 +488,7 @@ Bool onoff;
 query(dpy)
 Display *dpy;
 {
+int scr = DefaultScreen (dpy);
 XKeyboardState values;
 int acc_num, acc_denom, threshold;
 int timeout, interval, prefer_blank, allow_exp;
@@ -521,6 +522,10 @@ printf ("Allow Exposures: %s\t",
 	(allow_exp == DontAllowExposures) ? "No" :
 	"<server violates spec>");
 printf ("Time-out: %d \t Cycle: %d\n", timeout, interval);
+printf ("Default colormap:  0x%lx \t BlackPixel: %d \t WhitePixel: %d\n",
+	DefaultColormap (dpy, scr), 
+	BlackPixel (dpy, scr), WhitePixel (dpy, scr));
+
 if (npaths) {
     printf( "Font Path: %s", *font_path++ );
     for( --npaths; npaths; npaths-- )
