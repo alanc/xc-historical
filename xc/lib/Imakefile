@@ -1,16 +1,12 @@
 #define IHaveSubdirs
 #define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
 
-#
-# Be sure to build the toolkit after the old resource manager, because
-# the clients under the toolkit use it.
-#
-
 SUBDIRS = X \
 	oldX \
+	Xt \
+	Xaw \
 	oldXrm \
-	oldXtk \
-	Xt
+	oldXtk
 
 MakeSubdirs($(SUBDIRS))
 DependSubdirs($(SUBDIRS))
