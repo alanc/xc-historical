@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: connection.c,v 1.99 89/03/24 09:22:06 rws Exp $ */
+/* $XConsortium: connection.c,v 1.100 89/03/29 14:46:27 rws Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -113,7 +113,7 @@ static Bool debug_conns = FALSE;
 static int SavedAllClients[mskcnt];
 static int SavedAllSockets[mskcnt];
 static int SavedClientsWithInput[mskcnt];
-static Bool GrabDone = FALSE;
+static Bool GrabInProgress = FALSE;
 
 int ConnectionTranslation[MAXSOCKS];
 extern ClientPtr NextAvailableClient();
@@ -488,7 +488,7 @@ EstablishNewConnections()
 	    close(newconn);
 	    continue;
 	}
-	if (GrabDone)
+	if (GrabInProgress)
 	{
 	    BITSET(SavedAllClients, newconn);
 	    BITSET(SavedAllSockets, newconn);
@@ -593,6 +593,12 @@ CloseDownFileDescriptor(oc)
     BITCLEAR(AllSockets, connection);
     BITCLEAR(AllClients, connection);
     BITCLEAR(ClientsWithInput, connection);
+    if (GrabInProgress)
+    {
+	BITCLEAR(SavedAllSockets, connection);
+	BITCLEAR(SavedAllClients, connection);
+	BITCLEAR(SavedClientsWithInput, connection);
+    }
     BITCLEAR(ClientsWriteBlocked, connection);
     if (!ANYSET(ClientsWriteBlocked))
     	AnyClientsWriteBlocked = FALSE;
@@ -677,7 +683,7 @@ RemoveEnabledDevice(fd)
  * OnlyListenToOneClient:
  *    Only accept requests from  one client.  Continue to handle new
  *    connections, but don't take any protocol requests from the new
- *    ones.  Note that if GrabDone is set, EstablishNewConnections
+ *    ones.  Note that if GrabInProgress is set, EstablishNewConnections
  *    needs to put new clients into SavedAllSockets and SavedAllClients.
  *    Note also that there is no timeout for this in the protocol.
  *    This routine is "undone" by ListenToAllClients()
@@ -689,7 +695,7 @@ OnlyListenToOneClient(client)
     OsCommPtr oc = (OsCommPtr)client->osPrivate;
     int connection = oc->fd;
 
-    if (! GrabDone)
+    if (! GrabInProgress)
     {
 	COPYBITS (ClientsWithInput, SavedClientsWithInput);
         BITCLEAR (SavedClientsWithInput, connection);
@@ -709,7 +715,7 @@ OnlyListenToOneClient(client)
 	BITSET(AllSockets, connection);
 	CLEARBITS(AllClients);
 	BITSET(AllClients, connection);
-	GrabDone = TRUE;
+	GrabInProgress = TRUE;
     }
 }
 
@@ -720,12 +726,12 @@ OnlyListenToOneClient(client)
 
 ListenToAllClients()
 {
-    if (GrabDone)
+    if (GrabInProgress)
     {
 	ORBITS(AllSockets, AllSockets, SavedAllSockets);
 	ORBITS(AllClients, AllClients, SavedAllClients);
 	ORBITS(ClientsWithInput, ClientsWithInput, SavedClientsWithInput);
-	GrabDone = FALSE;
+	GrabInProgress = FALSE;
     }	
 }
 
