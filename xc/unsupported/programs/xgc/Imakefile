@@ -12,6 +12,8 @@ LOCAL_LIBRARIES = $(XAWLIB) $(XMULIB) $(XTOOLLIB) $(XLIB)
 
 ComplexProgramTarget(xgc)
 
+InstallAppDefaults(Xgc)
+
 gram.h gram.c: gram.y
 	yacc -d gram.y
 	$(MV) y.tab.c gram.c
