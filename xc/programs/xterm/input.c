@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: input.c,v 1.13 91/03/26 19:09:10 gildea Exp $
+ *	$XConsortium: input.c,v 1.14 91/04/01 12:03:12 gildea Exp $
  */
 
 /*
@@ -52,8 +52,7 @@ register TScreen *screen;
 		if(screen->bellarmed >= 0) {
 			if(screen->bellarmed == screen->cur_row) {
 			    if(screen->cur_col >= col) {
-				if(screen->cur_col == col)
-				    Bell();
+				Bell();
 				screen->bellarmed = -1;
 			    }
 			} else
