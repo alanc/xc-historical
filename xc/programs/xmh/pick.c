@@ -1,5 +1,5 @@
 /*
- * $XConsortium: pick.c,v 2.36 89/10/06 15:03:16 converse Exp $
+ * $XConsortium: pick.c,v 2.37 89/12/10 17:39:05 converse Exp $
  *
  *
  *			  COPYRIGHT 1987
@@ -109,7 +109,8 @@ InitPick()
      * Search and Replace functionality is removed in the app defaults file.
      */
     NoTextSearchAndReplace = XtParseTranslationTable
-	("Ctrl<Key>R: no-op(RingBell)\n\Ctrl<Key>S: no-op(RingBell)\n");
+	("Ctrl<Key>R: no-op(RingBell)\n\
+          Ctrl<Key>S: no-op(RingBell)\n");
 }
 
 
