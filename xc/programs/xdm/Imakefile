@@ -34,8 +34,13 @@ LOCAL_LIBRARIES = $(XAWLIB) $(XMULIB) $(XTOOLLIB) \
 		  cryptokey.o access.o $(DESOBJS)
           SRCS2 = xdmshell.c 
           OBJS2 = xdmshell.o 
+#if SystemV
+          SRCS3 = /**/
+          OBJS3 = /**/
+#else
           SRCS3 = chooser.c
           OBJS3 = chooser.o
+#endif
        DEPLIBS3 = XawClientDepLibs $(TOP)/lib/Xdmcp/libXdmcp.a
        
           SRCS4 = sessreg.c
@@ -81,7 +86,9 @@ RES_DEFINES = '-DDEF_SERVER_LINE=":0 local $(DEF_SERVER) :0"' \
 ComplexProgramTarget_1(xdm,$(LOCAL_LIBRARIES), /**/)
 SingleProgramTarget(xdmshell,$(OBJS2), /**/, /**/)
 SingleProgramTarget(sessreg,$(OBJS4), /**/, /**/)
+#if !SystemV
 ComplexProgramTarget_3(chooser,XawClientLibs $(TOP)/lib/Xdmcp/libXdmcp.a, /**/)
+#endif
 
 SpecialObjectRule(resource.o, $(ICONFIGFILES), $(RES_DEFINES))
 
