@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: resize.c,v 1.16 91/01/29 15:06:51 rws Exp $
+ *	$XConsortium: resize.c,v 1.17 91/01/31 15:24:42 gildea Exp $
  */
 
 /*
@@ -31,15 +31,18 @@
 #include <X11/Xos.h>
 #include <stdio.h>
 #include <ctype.h>
-#include <sys/ioctl.h>
+
+#ifdef att
+#define ATT
+#endif
 
 #ifdef SVR4
 #define SYSV
+#define ATT
 #endif
 
-#ifdef SYSV
-#include <sys/stream.h>
-#include <sys/ptem.h>
+#ifdef ATT
+#define USE_USG_PTYS
 #endif
 
 #ifdef APOLLO_SR9
@@ -58,11 +61,17 @@
 #define USE_TERMCAP
 #endif /* SYSV */
 
+#include <sys/ioctl.h>
 #ifdef USE_SYSV_TERMIO
 #include <sys/termio.h>
 #else /* else not USE_SYSV_TERMIO */
 #include <sgtty.h>
 #endif	/* USE_SYSV_TERMIO */
+
+#ifdef USE_USG_PTYS
+#include <sys/stream.h>
+#include <sys/ptem.h>
+#endif
 
 #include <signal.h>
 #include <pwd.h>
