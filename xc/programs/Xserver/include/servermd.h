@@ -47,7 +47,7 @@ SOFTWARE.
 ******************************************************************/
 #ifndef SERVERMD_H
 #define SERVERMD_H 1
-/* $XConsortium: servermd.h,v 1.69 94/03/31 14:18:31 dpw Exp $ */
+/* $XConsortium: servermd.h,v 1.70 94/04/17 20:26:08 dpw Exp $ */
 
 /*
  * Machine dependent values:
@@ -237,7 +237,7 @@ SOFTWARE.
 
 #if defined(mips) && !defined(sgi)
 
-#ifdef MIPSEL
+#if defined(MIPSEL) || defined(__MIPSEL__)
 # define IMAGE_BYTE_ORDER	LSBFirst        /* Values for the PMAX only */
 # define BITMAP_BIT_ORDER	LSBFirst
 # define GLYPHPADBYTES		4
