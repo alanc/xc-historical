@@ -1,5 +1,5 @@
 /*
- * $XConsortium: skyIO.c,v 1.1 91/05/10 09:09:03 jap Exp $
+ * $XConsortium: AIX.h,v 1.2 91/07/16 12:54:51 jap Exp $
  *
  * Copyright IBM Corporation 1987,1988,1989,1990,1991
  *
@@ -55,7 +55,7 @@
 #define AIXMappingLpfk		3
 #ifdef AIXTABLET
 #define AIXMappingTablet        4
-#endif AIXTABLET
+#endif
 
 #define DEVDIAL		1
 #define DEVVAL		1
@@ -83,13 +83,13 @@
 #define TabletMetric            1
 #define TabletLowerLeft         0
 #define TabletCenter            1
-#endif AIXTABLET
+#endif
 
 #define AIXDIALNAME "AixDialExtension" /* dial extensions */
 #define AIXLPFKNAME "AixLpfkExtension" /* lpfk extensions */
 #ifdef AIXTABLET
 #define AIXTABLETNAME "AixTabletExtension" /* tablet extensions */
-#endif AIXTABLET
+#endif
 #define AIXDEVICECONTROLNAME "AixDeviceControlExtension" /* device control */
 #define XAIXEXTENSIONNAME "XAixExtension" /* misc extensions */
 #define AIXEVENTCONTROLNAME "AixEventControlExtension" /* event control */
@@ -153,7 +153,7 @@
 #define X_SelectTablet          7
 #define X_GetTabletAttributes   8
 #define X_SetTabletAttributes   9
-#endif AIXTABLET
+#endif
 
 /* xwindow system statistics */
  
@@ -229,7 +229,7 @@
 #define AIXButton3MotionMask    (1L << 13)
 #define AIXButton4MotionMask    (1L << 14)
 #define AIXButton5MotionMask    (1L << 15)
-#endif AIXTABLET
+#endif
 
 /* Event Type */
 
@@ -244,7 +244,7 @@
 #define DeviceMotion            71
 #define DeviceButtonPress       72
 #define DeviceButtonRelease     73
-#endif AIXTABLET
+#endif
 
 /* Grab stuff ... */
 
@@ -260,7 +260,7 @@
 #define AsyncTablet             16
 #define SyncTablet              17
 #define ReplayTablet            18
-#endif AIXTABLET
+#endif
 
 /* Dial Mask */
 
@@ -357,6 +357,6 @@
 #define TabletMask23    (1L << 23)
 
 #define AllTabletsMask  (-1)
-#endif AIXTABLET
+#endif
 
 #endif /* _AIX_H */

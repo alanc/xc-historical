@@ -1,5 +1,5 @@
 /*
- * $XConsortium: skyIO.c,v 1.1 91/05/10 09:09:03 jap Exp $
+ * $XConsortium: AIXext.h,v 1.2 91/07/16 12:56:01 jap Exp $
  *
  * Copyright IBM Corporation 1987,1988,1989,1990,1991
  *
@@ -41,7 +41,7 @@ int lociodn  ;
 #ifdef AIXTABLET
 int mouseiodn ;
 int tabletiodn ;
-#endif AIXTABLET
+#endif
 int dialiodn ;
 int lpfkiodn ;
 int loctype  ;
@@ -143,7 +143,7 @@ typedef struct _TabletState {
     unsigned    int     allEventMasks ;
     unsigned    int     deliverableEvents;
 } TabletStateRec, *TabletStatePtr;
-#endif AIXTABLET
+#endif
 
 typedef struct _WInterest {
     struct _WInterest	*pNextWInterest;
@@ -200,7 +200,6 @@ typedef WInterestRec *WInterestPtr ;
 	pWI->pNextWInterest = 0;\
 	pWI->pLastWInterest = 0;
 
-#define	NUM_GAIDEV	1
 
 typedef struct {
     int                 fastBorder;
@@ -214,8 +213,6 @@ typedef struct {
     unsigned    int     dontPropagateMask;
     unsigned    int     allEventMasks ;
     unsigned    int     deliverableEvents;
-    pointer		pGaiWin 	;	/* gWindowPtr  */
-   pointer		pGaiWinGeom 	;	/* gWinGeomPtr */
 } aixPrivWin;
 
 typedef aixPrivWin *aixPrivWinPtr ;

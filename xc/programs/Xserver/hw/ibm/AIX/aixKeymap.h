@@ -1,5 +1,5 @@
 /*
- * $XConsortium: skyIO.c,v 1.1 91/05/10 09:09:03 jap Exp $
+ * $XConsortium: aixKeymap.h,v 1.2 91/07/16 13:00:30 jap Exp $
  *
  * Copyright IBM Corporation 1987,1988,1989,1990,1991
  *
@@ -164,7 +164,7 @@ KeySym aixmap[MAP_LENGTH*AIX_GLYPHS_PER_KEY] = {
     /* 0x85 */  XK_Mode_switch, NoSymbol
 };
 
-#endif AIXKEYMAP_H
+#endif /* AIXKEYMAP_H */
 
 
 

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: skyIO.c,v 1.1 91/05/10 09:09:03 jap Exp $
+ * $XConsortium: aixEvents.c,v 1.3 91/07/16 12:59:36 jap Exp $
  *
  * Copyright IBM Corporation 1987,1988,1989,1990,1991
  *
@@ -70,7 +70,7 @@ AIXInfoRec      aixInfo  = {0,                          /* kbdid */
 #ifdef AIXTABLET
 	                    0,                          /* mouse iodn */
 	                    0,                          /* tablet iodn */
-#endif AIXTABLET
+#endif
 	                    0,                          /* dial iodn */
 	                    0,                          /* lpfk iodn */
 	                    0,                          /* loctype */
@@ -79,7 +79,7 @@ AIXInfoRec      aixInfo  = {0,                          /* kbdid */
 
 #ifdef AIXTABLET
 extern DevicePtr rtTablet ;
-#endif AIXTABLET
+#endif
 
 #endif
 
@@ -1260,7 +1260,7 @@ xExtEvent       xe;
 	if (rtTablet->on)
 	    (*(rtTablet->processInputProc))((xEvent *)&xe, rtTablet,1);
 
-#else AIXTABLET
+#else /* AIXTABLET */
 
 #ifdef AIXV3
 	/* check if cursor has moved or different button is pressed */
@@ -1328,12 +1328,12 @@ xExtEvent       xe;
 	e.u.keyButtonPointer.time=      GET_OS_TIME();
 
 	(*(ibmPtr->processInputProc))(&e,ibmPtr,1);
-#endif AIXTABLET
+#endif /* AIXTABLET */
 
 	return (1) ;
 }
 
-#endif AIXEXTENSIONS
+#endif /* AIXEXTENSIONS */
 
 
 #ifdef AIXEXTENSIONS

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: skyIO.c,v 1.1 91/05/10 09:09:03 jap Exp $
+ * $XConsortium: aixMouse.c,v 1.3 91/07/16 13:00:48 jap Exp $
  *
  * Copyright IBM Corporation 1987,1988,1989,1990,1991
  *
@@ -90,8 +90,8 @@ AIXMouseProc(pDev, onoff)
 	    map[2] = Button2;
 	    map[3] = Button3;
 	    map[4] = Button4;
-	    InitPointerDeviceStruct(
-	        ibmPtr, map, BUTTONMAPSIZE, rtGetMotionEvents, ibmChangePointerControl, 0);
+	    InitPointerDeviceStruct(ibmPtr, map, BUTTONMAPSIZE,
+			rtGetMotionEvents, ibmChangePointerControl, 0);
 	    SetInputCheck( &hftPending, &always0 );
 
 #ifdef AIXV3
@@ -101,21 +101,24 @@ AIXMouseProc(pDev, onoff)
 
 	    hf_info.hf_cmd = HFMRATE;
 	    hf_info.loc_value1 = 60;
-	    if (ioctl(hftQFD,HFCHGLOC,&hf_info)<0) perror("mouse ioctl rate");
+	    if (ioctl(hftQFD,HFCHGLOC,&hf_info)<0)
+		perror("setting mouse ioctl rate");
 
 	    hf_info.hf_cmd = HFMRES;
 	    hf_info.loc_value1 = 8;
-	    if (ioctl(hftQFD,HFCHGLOC,&hf_info)<0) perror("mouse ioctl resolution");
+	    if (ioctl(hftQFD,HFCHGLOC,&hf_info)<0)
+		perror("setting mouse ioctl resolution");
 
 	    hf_info.hf_cmd = HFMTHRESH;
-	    hf_info.loc_value1 = 1;
-	    hf_info.loc_value2 = 1;
-	    if (ioctl(hftQFD,HFCHGLOC,&hf_info)<0) perror("mouse ioctl threshhold");
+	    hf_info.loc_value1 = 2;
+	    hf_info.loc_value2 = 2;
+	    if (ioctl(hftQFD,HFCHGLOC,&hf_info)<0)
+		perror("setting mouse ioctl threshhold");
 
 	    hf_info.hf_cmd = HFMSCALE;
 	    hf_info.loc_value1 = 1;
-	    if (ioctl(hftQFD,HFCHGLOC,&hf_info)<0) perror("mouse ioctl scale");
-
+	    if (ioctl(hftQFD,HFCHGLOC,&hf_info)<0)
+		perror("mouse ioctl scale");
 #endif
 	    break;
     case DEVICE_ON:

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: hftQueue.c,v 1.4 91/07/16 13:02:11 jap Exp $
+ * $XConsortium: hftQueue.c,v 1.5 91/09/09 13:24:12 rws Exp $
  *
  * Copyright IBM Corporation 1987,1988,1989,1990,1991
  *
@@ -85,9 +85,9 @@
 	 * Package global variables.
 	 */
 
-	unsigned        hftPending;
-	unsigned        hftGrantPending;
-	unsigned        hftRetractPending;
+volatile unsigned        hftPending;
+volatile unsigned        hftGrantPending;
+volatile unsigned        hftRetractPending;
 
 static  int             hftSetInterrupts= 0;
 static  int             hftHaveScreen=  FALSE;
