@@ -1,4 +1,4 @@
-/* $XConsortium: Berklib.c,v 1.15 91/09/10 08:50:04 rws Exp $ */
+/* $XConsortium: Berklib.c,v 1.16 93/03/24 18:11:54 gildea Exp $ */
 
 /*
  * These are routines found in BSD but not on all other systems.  The core
@@ -38,6 +38,11 @@
 #define WANT_FFS
 #endif
 #endif
+
+#ifdef _SEQUENT_
+#define WANT_GTOD
+#define WANT_FFS
+#endif /* _SEQUENT_ */
 
 /* you should use Xfuncs.h in code instead of relying on Berklib */
 #ifdef WANT_BFUNCS
@@ -234,11 +239,29 @@ register struct qelem *elem;
  *  - does not return timezone info.
  */
 
-#if WANT_GTOD
+#ifdef WANT_GTOD
+
+#ifdef _SEQUENT_
+#include <X11/Xos.h>
+#endif /* _SEQUENT_ */
+
 int gettimeofday (tvp, tzp)
     struct timeval *tvp;
     struct timezone *tzp;
 {
+#ifdef _SEQUENT_
+    /*
+     * Sequent has microsecond resolution. Need to link with -lseq
+     */
+    get_process_stats (tvp, -1, NULL, NULL);
+    if (tzp)
+    {
+        tzset ();
+        tzp->tz_minuteswest = timezone / 60;
+        tzp->tz_dsttime = daylight;
+    }
+    return (0);
+#else /* _SEQUENT_ */
     time (&tvp->tv_sec);
     tvp->tv_usec = 0L;
 
@@ -246,7 +269,9 @@ int gettimeofday (tvp, tzp)
 	fprintf( stderr,
 		 "Warning: gettimeofday() emulation does not return timezone\n"
 		);
+#endif /* _SEQUENT_ */
     }
+#endif
 }
 #endif /* WANT_GTOD */
 
