@@ -1,6 +1,6 @@
 /*
  * $Source: /usr/expo/X/src/lib/Xaw/RCS/Mailbox.c,v $
- * $Header: Mailbox.c,v 1.3 88/02/26 12:14:09 swick Exp $
+ * $Header: Mailbox.c,v 1.4 88/03/03 14:43:26 swick Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -56,6 +56,8 @@ static XtResource resources[] = {
 	offset (reverseVideo), XtRString, "FALSE" },
     { XtNfile, XtCFile, XtRString, sizeof (String),
 	offset (filename), XtRString, NULL },
+    { XtNcheckCommand, XtCCheckCommand, XtRString, sizeof(char*),
+	offset (check_command), XtRString, NULL},
 };
 
 #undef offset
@@ -238,9 +240,13 @@ static void check_mailbox (w, force_redraw, reset)
     struct stat st;
     long mailboxsize = 0;
 
-    if (stat (w->mailbox.filename, &st) == 0) {
-	mailboxsize = st.st_size;
-    }
+    if (w->mailbox.check_command != NULL)
+	if (system (w->mailbox.check_command) == 0)
+	    mailboxsize = w->mailbox.last_size + 1;
+    else
+	if (stat (w->mailbox.filename, &st) == 0) {
+	    mailboxsize = st.st_size;
+	}
 
     /*
      * Now check for changes.  If reset is set then we want to pretent that

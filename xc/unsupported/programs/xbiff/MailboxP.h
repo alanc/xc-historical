@@ -1,6 +1,6 @@
 /*
  * $Source: /usr/expo/X/src/lib/Xaw/RCS/MailboxP.h,v $
- * $Header: MailboxP.h,v 1.2 88/02/23 15:52:42 jim Exp $
+ * $Header: MailboxP.h,v 1.3 88/03/03 16:03:08 swick Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -31,6 +31,7 @@ typedef struct {			/* new fields for mailbox widget */
     int update;				/* seconds between updates */
     Pixel foreground_pixel;		/* color index of normal state fg */
     String filename;			/* filename to watch */
+    String check_command;		/* command to exec for mail check */
     Boolean reverseVideo;		/* do reverse video? */
     /* local state */
     GC gc;				/* normal GC to use */

@@ -1,6 +1,6 @@
 /*
  * $Source: /usr/expo/X/src/lib/Xaw/RCS/Mailbox.h,v $
- * $Header: Mailbox.h,v 1.2 88/02/23 15:52:19 jim Exp $
+ * $Header: Mailbox.h,v 1.3 88/02/26 10:18:06 swick Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -28,6 +28,9 @@
 
 #define XtNupdate "update"		/* Int: how often to check mail */
 #define XtNfile "file"			/* String:  file name to check */
+#define XtNcheckCommand "checkCommand"	/* command to exec for mail check */
+
+#define XtCCheckCommand "CheckCommand"
 
 
 /* structures */
