@@ -1,5 +1,5 @@
 .\" Use tbl and -ms and macros.t
-.\" $XConsortium: xlfd.tbl.ms,v 1.7 91/06/19 19:16:24 rws Exp $
+.\" $XConsortium: xlfd.tbl.ms,v 1.8 91/06/19 20:06:58 rws Exp $
 .EH ''''
 .OH ''''
 .EF ''''
@@ -1981,11 +1981,11 @@ font name is not constrained.
 The values of the RESOLUTION_X and RESOLUTION_Y fields of a scalable font name
 are implementation dependent, but to maximize backward compatibility they
 should be reasonable non-zero values, for example, a resolution close to that
-provided by the screen (in a single-screen server).  To maximize backward
-compatibility, server vendors are strongly encouraged in the near term to
-provide a mechanism for including derived instances of scalable fonts in the
-global list, since some existing applications rely on seeing a collection of
-point and pixel sizes for reasonable operation.  For font sources that contain
+provided by the screen (in a single-screen server).  Since some existing
+applications rely on seeing a collection of point and pixel sizes,
+server vendors are strongly encouraged in the near term to
+provide a mechanism for including, for each scalable font name,
+a set of specific derived instance names.  For font sources that contain
 a collection of hand-tuned bitmap fonts, including names of these instances
 in the global list is recommended and sufficient.
 .LP
@@ -2005,6 +2005,28 @@ derived instance, remove the font name from the list.  Now take the modified
 list, and perform a simple pattern match against the pattern argument.
 .PN ListFonts
 returns the resulting list.
+.LP
+For example, given the global list:
+.DS
+-Linotype-Times-Bold-I-Normal--0-0-100-100-P-0-ISO8859-1
+-Linotype-Times-Bold-R-Normal--0-0-100-100-P-0-ISO8859-1
+-Linotype-Times-Medium-I-Normal--0-0-100-100-P-0-ISO8859-1
+-Linotype-Times-Medium-R-Normal--0-0-100-100-P-0-ISO8859-1
+.DE
+.LP
+A
+.PN ListFonts
+request with the pattern:
+.LP
+.DS
+-*-Times-*-R-Normal--*-120-100-100-P-*-ISO8859-1
+.DE
+.LP
+would return:
+.DS
+-Linotype-Times-Bold-R-Normal--0-120-100-100-P-0-ISO8859-1
+-Linotype-Times-Medium-R-Normal--0-120-100-100-P-0-ISO8859-1
+.DE
 .LP
 .PN ListFonts
 on a pattern containing wildcards that is not a well-formed XLFD
