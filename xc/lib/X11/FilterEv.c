@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XFilterEv.c,v 1.6 91/04/02 17:25:44 rws Exp $
+ * $XConsortium: XFilterEv.c,v 1.7 91/04/07 16:17:26 rws Exp $
  */
 
  /*
@@ -58,14 +58,15 @@ XFilterEvent(ev, window)
     else
 	win = ev->xany.window;
     if (ev->type >= LASTEvent)
-	return False;
-    mask = _Xevent_to_mask[ev->type];
+	mask = 0;
+    else
+	mask = _Xevent_to_mask[ev->type];
 
     LockDisplay(ev->xany.display);
     for (p = ev->xany.display->im_filters; p != NULL; p = p->next) {
 	if (win == p->window) {
-	    if ((mask && (mask & p->event_mask)) ||
-		(!mask && p->nonmaskable)) {
+	    if ((mask & p->event_mask) ||
+		(ev->type >= p->start_type && ev->type <= p->end_type)) {
 		ret = (*(p->filter))(ev->xany.display, p->window, ev,
 				      p->client_data);
 		UnlockDisplay(ev->xany.display);
