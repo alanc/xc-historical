@@ -1,5 +1,5 @@
 /*
- * $XConsortium: tocutil.c,v 2.44 90/08/15 14:26:59 converse Exp $
+ * $XConsortium: tocutil.c,v 2.45 90/11/16 18:12:23 swick Exp $
  *
  *
  *			COPYRIGHT 1987, 1989
@@ -378,6 +378,7 @@ void TULoadTocFile(toc)
     } else origcurmsgid = 0;  /* The "default" current msg; 0 means none */
     fid = FOpenAndCheck(toc->scanfile, "r");
     maxmsgs = orignummsgs = toc->nummsgs;
+    if (maxmsgs == 0) maxmsgs = 100;
     toc->nummsgs = 0;
     origmsgs = toc->msgs;
     toc->msgs = (Msg *) XtMalloc((Cardinal) maxmsgs * sizeof(Msg));
