@@ -2816,7 +2816,7 @@ To create a new text disk source, use
 .PN XtDiskSourceCreate .
 .IN "XtDiskSourceCreate" "" "@DEF@"
 .FD 0
-XtTextSource XtDiskSourceCreate(\fIw\f, \fIargs\fP, \fInum_args\fP)
+XtTextSource XtDiskSourceCreate(\fIw\fP, \fIargs\fP, \fInum_args\fP)
 .br
       Widget \fIw\fP;
 .br
@@ -2844,7 +2844,7 @@ To create a new text string source, use
 .PN XtStringSourceCreate .
 .IN "XtStringSourceCreate" "" "@DEF@"
 .FD 0
-XtTextSource XtStringSourceCreate(\fIw\f, \fIargs\fP, \fInum_args\fP)
+XtTextSource XtStringSourceCreate(\fIw\fP, \fIargs\fP, \fInum_args\fP)
 .br
       Widget \fIw\fP;
 .br
@@ -3205,7 +3205,7 @@ NotifyScroll returns without executing any callbacks.
 This must be the last action after a movement is complete.
 .IP \fBMoveThumb\fP(\^) 1i
 Repositions the scroll bar thumb to the current pointer location.
-.IP \fBNotifyThumb\fP(\^)\ \ \ 1i
+.IP \fBNotifyThumb\fP(\^)\ \ \ 
 Calls the XtNjumpProc callbacks and passes in the relative position of the
 pointer as a percentage of the scroll bar length.
 .LP
