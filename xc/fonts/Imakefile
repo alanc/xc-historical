@@ -1,0 +1,51 @@
+             FC = compiler/fc
+         SUBDIRS= compiler
+        HEADERS = cursorfont.h
+
+all: $(SUBDIRS) fonts
+
+$(SUBDIRS): FRC
+	cd $@; echo building $@ ; make $(MFLAGS) all) ;\
+
+InstallMultiple($(HEADERS),$(INCDIR))
+InstallMultiple(snf/?*.snf,$(LIBDIR)/fonts)
+
+# Gruesome hackery suggested by Bill Sommerfeld.
+# The following rule finds all the BDF files, creates a new makefile to
+# compile the changed ones into SNF files, then runs that.
+
+fonts: snf
+	make snf/Makefile
+	cd snf; make -f Makefile
+
+snf/Makefile: bdf Makefile
+	@echo "Building snf/Makefile"; \
+	echo "# This makefile is created automagically by ../Makefile"\
+			 > snf/Makefile; \
+	echo 'FC=../$(FC)' >> snf/Makefile; \
+	echo 'all: \'	>> snf/Makefile; \
+	(cd bdf;ls *.bdf) \
+	| sed -e 's/\(.*\).bdf$$/\1.snf \\/' -e '$$s/..$$//' >> snf/Makefile; \
+	echo >> snf/Makefile; \
+	(cd bdf; ls *.bdf) \
+	| awk -F. '{printf "%s.snf: ../bdf/%s.bdf $$(FC)\n\t$$(FC) ../bdf/%s.bdf >$$@\n", $$1, $$1, $$1}' >> snf/Makefile
+
+snf:
+	mkdir snf
+
+depend:
+	for i in $(SUBDIRS) ; \
+	do \
+		(cd $$i; echo depending $$i ;make $(MFLAGS) depend) ;\
+	done
+	@echo "done"
+
+clean::
+	for i in $(SUBDIRS) ; \
+	do \
+		(cd $$i; make $(MFLAGS) clean) ; \
+	done
+	(cd bdf; $(RM_CMD))
+	(cd snf; $(RM_CMD) Makefile )
+
+FRC:
