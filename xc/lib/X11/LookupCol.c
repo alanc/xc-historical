@@ -1,4 +1,4 @@
-/* $XConsortium: XLookupCol.c,v 11.17 91/06/27 10:52:08 dave Exp $ */
+/* $XConsortium: XLookupCol.c,v 11.18 91/07/22 15:44:19 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1985	*/
 
 /*
@@ -48,7 +48,7 @@ Status XLookupColor (dpy, cmap, spec, def, scr)
 	/* copy string to allow overwrite by _XcmsResolveColorString() */
 	if ((ccc = XcmsCCCOfColormap(dpy, cmap)) != (XcmsCCC)NULL) {
 	    if (_XcmsResolveColorString(ccc, &spec,
-		    &cmsColor_exact, XcmsRGBFormat) == XcmsSuccess) {
+		    &cmsColor_exact, XcmsRGBFormat) != XcmsFailure) {
 		_XcmsRGB_to_XColor(&cmsColor_exact, def, 1);
 		bcopy((char *)def, (char *)scr, sizeof(XColor));
 		_XUnresolveColor(ccc, scr);
