@@ -1,6 +1,6 @@
 /**/###########################################################################
 /**/# Imake rules for building libraries, programs, scripts, and data files
-/**/# rules:  $XConsortium: Imake.rules,v 1.67 89/12/18 17:14:15 jim Exp $
+/**/# rules:  $XConsortium: Imake.rules,v 1.68 90/02/08 13:22:45 jim Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -637,6 +637,20 @@ BuildMakefileTarget(Imakefile, /**/)
 	$(FC) -c $(FCFLAGS) $*.f
 #endif
 
+#ifndef ObjectFromSpecialSource
+#define ObjectFromSpecialSource(dst,src,flags)				@@\
+dst.c:  src.c								@@\
+	$(RM) $@							@@\
+	$(LN) src.c dst.c						@@\
+									@@\
+dst.o::  dst.c								@@\
+	$(CC) -c $(CFLAGS) flags dst.c					@@\
+									@@\
+depend::  dst.c								@@\
+									@@\
+clean::									@@\
+	$(RM) dst.c
+#endif /* ObjectFromSpecialSource */
 
 /*
  * ProfiledLibraryObjectRule - generate make rules to build both profiled
