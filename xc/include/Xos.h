@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xos.h,v 1.19 89/11/19 16:18:38 jim Exp $
+ * $XConsortium: Xos.h,v 1.20 89/11/27 14:56:36 jim Exp $
  * 
  * Copyright 1987 by the Massachusetts Institute of Technology
  *
@@ -73,6 +73,9 @@
 #endif
 #endif /* SYSV */
 #include <sys/file.h>
+#ifdef USG
+#include <unistd.h>
+#endif
 
 
 /*
