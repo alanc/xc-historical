@@ -18,7 +18,7 @@ purpose.  It is provided "as is" without express or implied warranty.
 Author: Keith Packard
 
 */
-/* $XConsortium: cfbbitblt.c,v 5.19 89/11/21 18:02:28 keith Exp $ */
+/* $XConsortium: cfbbitblt.c,v 5.20 89/11/21 19:03:30 rws Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -839,6 +839,12 @@ cfbCopyArea(pSrcDrawable, pDstDrawable,
 	/* If the destination composite clip is one rectangle we can
 	   do the clip directly.  Otherwise we have to create a full
 	   blown region and call intersect */
+
+	/* XXX because CopyPlane uses this routine for 8-to-1 bit
+	 * copies, this next line *must* also correctly fetch the
+	 * composite clip from an mfb gc
+	 */
+
 	cclip = ((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip;
         if (REGION_NUM_RECTS(cclip) == 1)
         {
@@ -1515,17 +1521,68 @@ RegionPtr cfbCopyPlane(pSrcDrawable, pDstDrawable,
     }
     else if (pSrcDrawable->depth == 8 && pDstDrawable->depth == 1)
     {
+	extern	int InverseAlu[16];
+	int oldalu;
+
+	oldalu = pGC->alu;
+    	if (pGC->fgPixel == 0 && pGC->bgPixel == 1)
+	    pGC->alu = InverseAlu[pGC->alu];
+    	else if (pGC->fgPixel == pGC->bgPixel)
+	    pGC->alu = mfbReduceRop(pGC->alu, pGC->fgPixel);
 	copyPlaneBitPlane = bitPlane;
 	doBitBlt = cfbCopyPlane8to1;
 	ret = cfbCopyArea (pSrcDrawable, pDstDrawable,
 		    pGC, srcx, srcy, width, height, dstx, dsty);
 	doBitBlt = cfbDoBitblt;
+	pGC->alu = oldalu;
     }
     else
-#endif
     {
-	ret = miCopyPlane (pSrcDrawable, pDstDrawable,
-	    pGC, srcx, srcy, width, height, dstx, dsty, bitPlane);
+	PixmapPtr	pBitmap;
+	ScreenPtr	pScreen = pSrcDrawable->pScreen;
+	GCPtr		pGC1;
+	unsigned int	fg, bg;
+
+	pBitmap = (*pScreen->CreatePixmap) (pScreen, width, height, 1);
+	if (!pBitmap)
+	    return NULL;
+	pGC1 = GetScratchGC (1, pScreen);
+	if (!pGC1)
+	{
+	    (*pScreen->DestroyPixmap) (pBitmap);
+	    return NULL;
+	}
+	/*
+	 * don't need to set pGC->fgPixel,bgPixel as copyPlane8to1
+	 * ignores pixel values, expecting the rop to "do the
+	 * right thing", which GXcopy will.
+	 */
+	ValidateGC ((DrawablePtr) pBitmap, pGC1);
+	copyPlaneBitPlane = bitPlane;
+	doBitBlt = cfbCopyPlane8to1;
+	/* no exposures here, scratch GC's don't get graphics expose */
+	(void) cfbCopyArea (pSrcDrawable, (DrawablePtr) pBitmap,
+				       pGC1, srcx, srcy, width, height,
+				       0, 0, bitPlane);
+	fg = pGC->fgPixel & pGC->planemask;
+	bg = pGC->bgPixel & pGC->planemask;
+	if (!cfb8CheckPixels(fg, bg))
+	    cfb8SetPixels (fg, bg);
+	doBitBlt = cfbCopyPlane1to8;
+	/* no exposures here, copy bits from inside a pixmap */
+	(void) cfbCopyArea ((DrawablePtr) pBitmap, pDstDrawable, pGC,
+				0, 0, width, height, dstx, dsty, 1);
+	doBitBlt = cfbDoBitblt;
+	FreeScratchGC (pGC1);
+	(*pScreen->DestroyPixmap) (pBitmap);
+	/* compute resultant exposures */
+	ret = miHandleExposures (pSrcDrawable, pDstDrawable, pGC,
+				 srcx, srcy, width, height,
+				 dstx, dsty, bitPlane);
     }
     return ret;
+#else
+    return miCopyPlane (pSrcDrawable, pDstDrawable,
+	    pGC, srcx, srcy, width, height, dstx, dsty, bitPlane);
+#endif
 }
