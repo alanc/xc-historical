@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.129 90/03/06 17:01:07 jim Exp $
+ * $XConsortium: events.c,v 1.130 90/03/08 15:19:54 jim Exp $
  *
  * twm event handling
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: events.c,v 1.129 90/03/06 17:01:07 jim Exp $";
+"$XConsortium: events.c,v 1.130 90/03/08 15:19:54 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -56,6 +56,7 @@ static char RCSinfo[]=
 #include "version.h"
 
 extern int iconifybox_width, iconifybox_height;
+extern unsigned int mods_used;
 
 #define MAX_X_EVENT 256
 event_proc EventHandler[MAX_X_EVENT]; /* event handler jump table */
@@ -1723,7 +1724,7 @@ HandleButtonPress()
     /* if we get to here, we have to execute a function or pop up a 
      * menu
      */
-    modifier = Event.xbutton.state & (ShiftMask | ControlMask | Mod1Mask);
+    modifier = (Event.xbutton.state & mods_used);
 
     if (Context == C_NO_CONTEXT)
 	return;
