@@ -1,4 +1,4 @@
-/* $XConsortium: globals.h,v 1.6 93/12/06 19:58:51 mor Exp $ */
+/* $XConsortium: globals.h,v 1.7 93/12/07 11:05:28 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -20,10 +20,8 @@ Author: Ralph Mor, X Consortium
 extern void _SmcDefaultErrorHandler ();
 extern void _SmsDefaultErrorHandler ();
 
-extern IcePoAuthStatus _SmcAuth1proc ();
-extern IcePaAuthStatus _SmsAuth1proc ();
-extern IcePoAuthStatus _SmcAuth2proc ();
-extern IcePaAuthStatus _SmsAuth2proc ();
+extern IcePoAuthStatus _IcePoMagicCookie1Proc ();
+extern IcePaAuthStatus _IcePaMagicCookie1Proc ();
 
 extern Bool _SmcProcessMessage ();
 extern void _SmsProcessMessage ();
@@ -44,10 +42,10 @@ IcePoVersionRec	_SmcVersions[] = {
 IcePaVersionRec _SmsVersions[] = {
 	  	    {SmProtoMajor, SmProtoMinor, _SmsProcessMessage}};
 
-int		_SmAuthCount = 2;
-char		*_SmAuthNames[] = {"SM-AUTH-TEST-1", "SM-AUTH-TEST-2"};
-IcePoAuthProc 	_SmcAuthProcs[] = {_SmcAuth1proc, _SmcAuth2proc};
-IcePaAuthProc 	_SmsAuthProcs[] = {_SmsAuth1proc, _SmsAuth2proc};
+int		_SmAuthCount = 1;
+char		*_SmAuthNames[] = {"ICE-MAGIC-COOKIE-1"};
+IcePoAuthProc 	_SmcAuthProcs[] = {_IcePoMagicCookie1Proc};
+IcePaAuthProc 	_SmsAuthProcs[] = {_IcePaMagicCookie1Proc};
 
 SmsNewClientProc _SmsNewClientProc;
 SmPointer	 _SmsNewClientData;
