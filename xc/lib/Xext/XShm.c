@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XShm.c,v 1.9 89/12/02 16:14:49 rws Exp $
+ * $XConsortium: XShm.c,v 1.10 89/12/08 18:16:09 converse Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -370,9 +370,13 @@ Status XShmGetImage(dpy, d, image, x, y, plane_mask)
 	return 0;
     }
     visual = _XVIDtoVisual(dpy, rep.visual);
-    image->red_mask = visual->red_mask;
-    image->green_mask = visual->green_mask;
-    image->blue_mask = visual->blue_mask;
+    if (visual) {
+    	image->red_mask = visual->red_mask;
+    	image->green_mask = visual->green_mask;
+    	image->blue_mask = visual->blue_mask;
+    } else {
+	image->red_mask = image->green_mask = image->blue_mask = 0;
+    }
     UnlockDisplay(dpy);
     SyncHandle();
     return 1;
