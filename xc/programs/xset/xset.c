@@ -1,5 +1,5 @@
 /* 
- * $Header: xset.c,v 1.8 87/05/14 03:20:41 dkk Locked $ 
+ * $Header: xset.c,v 1.9 87/05/14 18:30:00 dkk Locked $ 
  * $Locker: dkk $ 
  */
 #include <X11/copyright.h>
@@ -7,13 +7,13 @@
 /* Copyright    Massachusetts Institute of Technology    1985	*/
 
 #ifndef lint
-static char *rcsid_xset_c = "$Header: xset.c,v 1.8 87/05/14 03:20:41 dkk Locked $";
+static char *rcsid_xset_c = "$Header: xset.c,v 1.9 87/05/14 18:30:00 dkk Locked $";
 #endif
 
 #include <X11/X.h>      /*  Should be transplanted to X11/Xlibwm.h     %*/
 #include <X11/Xlib.h>
-/*  #include <X11/Xlibwm.h>  [Doesn't exist yet  -dkk]  %*/
-#include <sys/types.h>  /*  Unnecessary.  Aready exists in X11/Xlib.h  %*/
+/*  #include <X11/Xlibwm.h>  [Doesn't exist yet  5-14-87]  %*/
+/*  #include <sys/types.h>  /*  Unnecessary.  Aready exists in X11/Xlib.h  %*/
 #include <stdio.h>
 #include <netdb.h>
 #include <netinet/in.h>
@@ -187,11 +187,10 @@ char **argv;
 				}
 			}
 		} 
-
 		else if (strcmp(arg, "s") == 0 || strcmp(arg, "saver") == 0) {
 			timeout = -1;
 			interval = -1;
-			prefer_blank = DefaultBlanking
+			prefer_blank = DefaultBlanking;
 			dosaver = TRUE;
 			if (i >= argc)
 				break;
@@ -205,10 +204,15 @@ char **argv;
 			        i++;
 			}
 			if (strcmp(arg, "off") == 0) {
-			        timout = 0;
+			        timeout = 0;
 			        i++;
 				if (i >= argc)
-				  /* %%*/
+				        break;
+				arg = argv[i];
+				if (strcmp(arg, "off") == 0) {
+				        interval = 0;
+					i++;
+				}
 			}
 			if (strcmp(arg, "default") == 0) {
 				i++;
@@ -286,27 +290,27 @@ char **argv;
 	if (status){
 	XGetKeyboardControl(dpy, &values);
 	XGetPointerControl(dpy, &acc_num, &acc_denom, &thresh);
-	XGetScreenSaver(dpy, &dummy1, &dummy2, &prefer_blank, &allow_exp);
+	XGetScreenSaver(dpy, &timeout, &interval, &prefer_blank, &allow_exp);
 
 	printf ("Keyboard Control Values:\n");
-	printf ("Display: %d \t", *dpy);
-	printf ("Key Click Percent: %d \n", values.key_click_percent);
-	printf ("Bell Percent: %d \t", values.bell_percent);
-	printf ("Bell Pitch (Hz): %d \n", values.bell_pitch);
-	printf ("Bell Duration (msec): %d \t", values.bell_duration);
-	printf ("LED: %d \n", values.led);
-	printf ("LED Mode: %o \t", values.led_mode);
-	printf ("Key: %d \t", values.key);
-	printf ("Auto Repeat: %d \n", values.auto_repeat_mode);
+	printf ("Auto Repeat: %d \t\t", values.auto_repeat_mode);
+/* 	printf ("Key: %d \n\n", values.key);     %%*/
+	printf ("Key Click Volume (%%): %d \n", values.key_click_percent);
+	printf ("Bell Volume (%%): %d \t", values.bell_percent);
+	printf ("Bell Pitch (Hz): %d \t", values.bell_pitch);
+	printf ("Bell Duration (msec): %d \n", values.bell_duration);
+/*	printf ("LED: %d \t\t\t", values.led);
+	printf ("LED Mode: %o \t\t", values.led_mode);         %%*/
+
 
 	printf ("Pointer (Mouse) Control Values:\n");
 	printf ("Acceleration: %d \t", acc_num / acc_denom);
-	printf ("Threshold: %d \n", thresh);
+	printf ("Threshold: %d \n\n", thresh);
 
 	printf ("Screen Saver: (yes = %d, no = %d, default = %d)\n",
 		PreferBlanking, DontPreferBlanking, DefaultBlanking);
 	printf ("Prefer Blanking: %d \t", prefer_blank);
-	printf ("Allow Exposures: %d \n", allow_exp);
+	printf ("Time-out: %d \t Cycle: %d\n", timeout, interval);
 
         }
 
@@ -378,8 +382,7 @@ char *prog;
 	printf("\t-r     r off        r    r on\n");
 	printf("    For screen-saver control:\n");
 	printf("\t s [timeout [cycle]]  s default\n");
-	printf("    To make the screen-saver blank the video:\n");
-	printf("\t v [timeout [cycle]]  v default\n");
+	printf("\t s blank              s noblank\n");
 	printf("    For status information:  q   or  query\n");
 	exit(0);
 }
