@@ -1,5 +1,4 @@
-/* "$XConsortium: TMstate.c,v 1.102 90/06/28 13:27:21 swick Exp $"; */
-/* $oHeader: TMstate.c,v 1.5 88/09/01 17:17:29 asente Exp $ */
+/* "$XConsortium: TMstate.c,v 1.101 90/06/15 18:50:34 rws Exp $"; */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -29,6 +28,7 @@ SOFTWARE.
 /* TMstate.c -- maintains the state table of actions for the translation 
  *              manager.
  */
+
 #include <X11/Xlib.h>
 #define XK_MISCELLANY
 #define XK_LATIN1
@@ -356,13 +356,14 @@ static String PrintParams(buf, len, str, params, num_params)
     return str;
 }
 
-static String PrintActions(buf, len, str, actions, stateTable)
+static String PrintActions(buf, len, str, actions, translateData)
     String *buf;
     int *len;
     register String str;
     register ActionPtr actions;
-    XtTranslations stateTable;
+    XtTranslations translateData;
 {
+    StateTablePtr stateTable = translateData->stateTable;
     while (actions != NULL) {
 	String proc;
 	*str++ = ' ';
@@ -372,8 +373,8 @@ static String PrintActions(buf, len, str, actions, stateTable)
 	} else {
 	    /* accelerator */
 	    int temp = -(actions->index+1);
-	    if (stateTable->accProcTbl != NULL) {
-		Widget w = stateTable->accProcTbl[temp].widget;
+	    if (translateData->accProcTbl != NULL) {
+		Widget w = translateData->accProcTbl[temp].widget;
 		if (w != NULL) {
 		    String name = XtName(w);
 		    int nameLen = strlen(name);
@@ -604,7 +605,7 @@ Boolean _XtMatchAtom(event, eventSeq)
 }
 
 static int MatchEvent(translations, eventSeq) 
-  XtTranslations translations;
+  StateTablePtr translations;
   register TMEventPtr eventSeq;
 {
     register EventObjPtr eventTbl = translations->eventObjTbl;
@@ -763,31 +764,24 @@ static unsigned long GetTime(tm, event)
 
 
 /* ARGSUSED */
-static void _XtTranslateEvent (w, closure, event, continue_to_dispatch)
+void _XtTranslateEvent (w, closure, event, continue_to_dispatch)
     Widget w;
     XtPointer closure;		/* XtTM */
     register    XEvent * event;
     Boolean *continue_to_dispatch; /* unused */
 {
-    register XtTranslations stateTable = ((XtTM)closure)->translations;
+    XtTranslations translateData = ((XtTM)closure)->translations;
+    register StateTablePtr stateTable = translateData->stateTable;
     StatePtr oldState;
     TMEventRec curEvent;
     StatePtr current_state = ((XtTM)closure)->current_state;
     int     index;
     register ActionPtr actions;
     XtBoundActions proc_table = ((XtTM)closure)->proc_table;
-    XtBoundAccActions accProcTbl = stateTable->accProcTbl;
+    XtBoundAccActions accProcTbl = translateData->accProcTbl;
     XtTM tm = (XtTM)closure;
     ActionHook actionHookList
 	= XtWidgetToApplicationContext(w)->action_hook_list;
-
-#ifdef notdef
-/* gross disgusting special case ||| */
-    if ((event->type == EnterNotify || event->type == LeaveNotify)
-        &&( event->xcrossing.detail == NotifyInferior
-        ||  event->xcrossing.mode != NotifyNormal) )
-	return;
-#endif
 
     XEventToTMEvent (event, &curEvent);
 
@@ -966,7 +960,7 @@ static Boolean EqualEvents(event1, event2)
 }
 
 static int GetEventIndex(stateTable, event)
-    XtTranslations stateTable;
+    StateTablePtr stateTable;
     register EventPtr event;
 {
     register int	index;
@@ -993,7 +987,7 @@ static int GetEventIndex(stateTable, event)
 
 static StatePtr NewState(index, stateTable)
     int index;
-    XtTranslations stateTable;
+    StateTablePtr stateTable;
 {
     register StatePtr state = XtNew(StateRec);
 
@@ -1142,7 +1136,8 @@ static void DispatchMappingNotify(widget, closure, call_data)
     _XtTranslateEvent( widget, closure, (XEvent*)call_data, &bool );
 }
 
-
+  
+/*ARGSUSED*/
 static void RemoveFromMappingCallbacks(widget, closure, call_data)
     Widget widget;
     XtPointer closure;		/* XtTM */
@@ -1157,16 +1152,18 @@ static void RemoveFromMappingCallbacks(widget, closure, call_data)
 }
 
 
-void _XtInstallTranslations(widget, stateTable)
+void _XtInstallTranslations(widget, translateData)
     Widget widget;
-    XtTranslations stateTable;
+    XtTranslations translateData;
 {
     register EventMask	eventMask = 0;
     register Boolean	nonMaskable = FALSE;
     register Cardinal	i;
+    StateTablePtr stateTable;
 
 /*    widget->core.translations = stateTable; */
-    if (stateTable == NULL) return;
+    if (translateData == NULL) return;
+    stateTable = translateData->stateTable;
 
     for (i = 0; i < stateTable->numEvents; i++) {
 	register EventMask mask = EventToMask(&stateTable->eventObjTbl[i]);
@@ -1208,7 +1205,6 @@ void _XtInstallTranslations(widget, stateTable)
 			   (XtPointer)&widget->core.tm
 			  );
     }
-
 }
 
 void _XtRemoveTranslations(widget)
@@ -1218,13 +1214,15 @@ void _XtRemoveTranslations(widget)
 			 (XtPointer)&widget->core.tm);
 
     if ( widget->core.tm.translations &&
-	 widget->core.tm.translations->mappingNotifyInterest)
+	 widget->core.tm.translations->stateTable->mappingNotifyInterest) {
 	RemoveFromMappingCallbacks(widget, (XtPointer)&widget->core.tm, NULL);
+    }
 }
 
 
 
 /*** Public procedures ***/
+
 
 void XtUninstallTranslations(widget)
     Widget widget;
@@ -1246,7 +1244,7 @@ typedef struct _ActionListRec {
 
 static void ReportUnboundActions(tm, stateTable)
     XtTM tm;
-    XtTranslations stateTable;
+    StateTablePtr stateTable;
 {
     Cardinal num_unbound;
     char     message[10000];
@@ -1281,7 +1279,8 @@ static int BindActions(tm, compiledActionTable, indexP)
     CompiledActionTable compiledActionTable;
     Cardinal *indexP;
 {
-    XtTranslations stateTable=tm->translations;
+    XtTranslations  translateData = tm->translations;
+    StateTablePtr   stateTable = translateData->stateTable;
     int unbound = stateTable->numQuarks - *indexP;
     CompiledAction* action;
     Cardinal index;
@@ -1317,7 +1316,7 @@ static int BindActions(tm, compiledActionTable, indexP)
 static int BindAccActions(widget, stateTable, compiledActionTable,
 			  accBindings, indexP)
     Widget widget;
-    XtTranslations stateTable;
+    StateTablePtr stateTable;
     CompiledActionTable compiledActionTable;
     XtBoundAccActions accBindings;
     Cardinal *indexP;
@@ -1359,15 +1358,18 @@ void _XtBindActions(widget, tm)
     Widget widget;
     XtTM tm;
 {
-    XtTranslations  stateTable=tm->translations;
+    XtTranslations  translateData = tm->translations;
+    StateTablePtr   stateTable;
     register Widget	    w;
     register WidgetClass    class;
     register ActionList     actionList;
-    int unbound = -1; /* initialize to non-zero */
-    XtAppContext app;
-    Cardinal index = 0;
+    int unbound;
+    Cardinal index;
 
-    if (stateTable == NULL) return;
+    if (translateData == NULL) return;
+    unbound = -1;
+    index = 0;
+    stateTable = translateData->stateTable;
     tm->proc_table= (XtBoundActions) XtCalloc(
                       stateTable->numQuarks,(Cardinal)sizeof(XtBoundActions));
     w = widget;
@@ -1385,33 +1387,43 @@ void _XtBindActions(widget, tm)
     w = w->core.parent;
     } while (unbound != 0 && w != NULL);
 
-    app = XtWidgetToApplicationContext(widget);
-    for (actionList = app->action_table;
-	 unbound != 0 && actionList != NULL;
-	 actionList = actionList->next) {
-	unbound = BindActions(tm, actionList->table, &index);
+    if (unbound) {
+	XtAppContext app = XtWidgetToApplicationContext(widget);
+	for (actionList = app->action_table;
+	     unbound != 0 && actionList != NULL;
+	     actionList = actionList->next) {
+	    unbound = BindActions(tm, actionList->table, &index);
+	}
     }
-    if (unbound != 0) ReportUnboundActions(tm, stateTable);
+    if (unbound) ReportUnboundActions(tm, stateTable);
 }
 
-static
-void _XtBindAccActions(widget, stateTable)
+static XtTranslations _XtBindAccActions(widget, translateData)
     Widget	    widget;
-    XtTranslations  stateTable;
+    XtTranslations  translateData;
 {
     register Widget	    w;
     register WidgetClass    class;
     register ActionList     actionList;
-    int unbound = -1; /* initialize to non-zero */
+    int unbound;
     XtBoundAccActions accTemp;
     XtAppContext app;
-    Cardinal index = 0;
+    Cardinal index;
+    XtTranslations accTempTable;
+    StateTablePtr stateTable;
 
+    if (translateData == NULL) return NULL;
     w = widget;
-    if (stateTable == NULL) return;
-    accTemp = (XtBoundAccActions) XtCalloc(
-                      stateTable->accNumQuarks,
-		      (Cardinal)sizeof(XtBoundAccActionRec));
+    unbound = -1; /* initialize to non-zero */
+    index  = 0;
+    stateTable = translateData->stateTable;
+    accTempTable = (XtTranslations) XtCalloc(
+	     1,
+             (stateTable->accNumQuarks * (Cardinal)sizeof(XtBoundAccActionRec))
+              + sizeof(TranslationData));
+    accTemp = (XtBoundAccActions)(accTempTable + 1);
+    accTempTable->stateTable = stateTable;
+    accTempTable->accProcTbl = accTemp;
     do {
 	class = w->core.widget_class;
 	do {
@@ -1438,7 +1450,7 @@ void _XtBindAccActions(widget, stateTable)
 				  &index);
     }
 /*    if (unbound != 0) ReportUnboundActions(tm, stateTable);*/
-    stateTable->accProcTbl = accTemp;
+    return (accTempTable);
 }
 
 void XtAddActions(actions, num_actions)
@@ -1464,9 +1476,11 @@ void XtAppAddActions(app, actions, num_actions)
 void _XtInitializeStateTable(pStateTable)
     XtTranslations *pStateTable;
 {
-    register XtTranslations  stateTable;
+    register StateTablePtr  stateTable;
 
-    (*pStateTable) = stateTable = XtNew(TranslationData);
+    (*pStateTable) = XtNew(TranslationData);
+    (*pStateTable)->stateTable = stateTable = XtNew(StateTableData);
+    (*pStateTable)->accProcTbl = NULL;
     stateTable->operation = XtTableReplace;
     stateTable->numEvents = 0;
     stateTable->eventTblSize = 0;
@@ -1478,18 +1492,18 @@ void _XtInitializeStateTable(pStateTable)
     stateTable->numQuarks = 0;
     stateTable->accNumQuarks = 0;
     stateTable->accQuarkTable = NULL;
-    stateTable->accProcTbl= NULL;
     stateTable->accQuarkTblSize = 0;
     stateTable->mappingNotifyInterest = False;
 }
 
-void _XtAddEventSeqToStateTable(eventSeq, stateTable)
+void _XtAddEventSeqToStateTable(eventSeq, translateData)
     register EventSeqPtr eventSeq;
-    XtTranslations stateTable;
+    XtTranslations translateData;
 {
     register int     index;
     register StatePtr *state;
     EventSeqPtr initialEvent = eventSeq;
+    StateTablePtr stateTable = translateData->stateTable;
 
     if (eventSeq == NULL) return;
 
@@ -1532,11 +1546,11 @@ void _XtAddEventSeqToStateTable(eventSeq, stateTable)
 		    str = str - old + buf;
 		}
 		*str++ = ':';
-		(void)PrintActions( &buf, &len, str, (*state)->actions, stateTable );
+		(void)PrintActions( &buf, &len, str, (*state)->actions, translateData);
 		params[0] = buf;
 		XtWarningMsg (XtNtranslationError,"oldActions",XtCXtToolkitError,
 			      "Previous entry was: %s", params, &num_params);
-		(void)PrintActions( &buf, &len, buf, eventSeq->actions, stateTable );
+		(void)PrintActions( &buf, &len, buf, eventSeq->actions, translateData);
 		params[0] = buf;
 		XtWarningMsg (XtNtranslationError,"newActions",XtCXtToolkitError,
 			      "New actions are:%s", params, &num_params);
@@ -1590,7 +1604,7 @@ static void MergeStates(old, new, override, indexMap,
     register StatePtr *old, new;
     Boolean override;
     Cardinal *indexMap, *quarkIndexMap,*accQuarkIndexMap;
-    XtTranslations oldTable;
+    StateTablePtr oldTable;
     StateMap stateMap;
 {
     register StatePtr state;
@@ -1686,14 +1700,16 @@ static void MergeStates(old, new, override, indexMap,
 }
 
 
-static void MergeTables(old, new, override,accProcTbl)
-    register XtTranslations old, new;
+static void MergeTables(oldT, newT, override)
+    register XtTranslations oldT, newT;
     Boolean override;
-    XtBoundAccActions accProcTbl;
 {
-    register Cardinal i,j,k;
+    register StateTablePtr old, new;
+    register Cardinal i,j;
     Cardinal *indexMap,*quarkIndexMap,*accQuarkIndexMap;
 
+    old = oldT->stateTable;
+    new = newT->stateTable;
     if (new == NULL) return;
     if (old == NULL) {
 	XtWarningMsg(XtNtranslationError,"mergingNullTable",XtCXtToolkitError,
@@ -1763,7 +1779,6 @@ static void MergeTables(old, new, override,accProcTbl)
 /* merge accelerator quark tables */
   accQuarkIndexMap = (Cardinal *)XtCalloc(
       new->accQuarkTblSize, (Cardinal)sizeof(Cardinal));
-    k = old->accNumQuarks;
 
     for (i=0,j=old->accNumQuarks; i < new->accNumQuarks; ) {
         if (j == old->accQuarkTblSize) {
@@ -1777,19 +1792,7 @@ static void MergeTables(old, new, override,accProcTbl)
          accQuarkIndexMap[i++] = j++;
     }
 
-/* merge accelerator action bindings */
-
-    if (old->accProcTbl == NULL) {
-        old->accProcTbl = (XtBoundAccActionRec*)XtCalloc(
-            old->accQuarkTblSize,(Cardinal)sizeof(XtBoundAccActionRec) );
-    }
-    else old->accProcTbl = (XtBoundAccActionRec*)XtRealloc(
-        (char *)old->accProcTbl,
-	old->accQuarkTblSize*sizeof(XtBoundAccActionRec) );
-    for (i=0/*,k=k*/;i<new->accNumQuarks;){
-        old->accProcTbl[k].widget = accProcTbl[i].widget;
-        old->accProcTbl[k++].proc = accProcTbl[i++].proc;
-    }
+/* merge state tables */
 
     for (i=0; i < new->numEvents; i++)
 	MergeStates(
@@ -1837,7 +1840,7 @@ Boolean _XtCvtMergeTranslations(dpy, args, num_args, from, to, closure_ret)
 #ifdef REFCNT_TRANSLATIONS
     {
 	_XtInitializeStateTable(&merged);
-	MergeTables(merged, new, FALSE, new->accProcTbl);
+	MergeTables(merged, new, FALSE);
     }
 #else
 	merged = new;
@@ -1845,12 +1848,12 @@ Boolean _XtCvtMergeTranslations(dpy, args, num_args, from, to, closure_ret)
     else {
 	_XtInitializeStateTable(&merged);
 	if (operation == override) {
-	    MergeTables(merged, new, FALSE, new->accProcTbl);
-	    MergeTables(merged, old, FALSE, old->accProcTbl);
+	    MergeTables(merged, new, FALSE);
+	    MergeTables(merged, old, FALSE);
 	}
 	else if (operation == augment) {
-	    MergeTables(merged, old, FALSE, old->accProcTbl);
-	    MergeTables(merged, new, FALSE, new->accProcTbl);
+	    MergeTables(merged, old, FALSE);
+	    MergeTables(merged, new, FALSE);
 	}
     }
 
@@ -1866,11 +1869,47 @@ Boolean _XtCvtMergeTranslations(dpy, args, num_args, from, to, closure_ret)
     return True;
 }
 
+static void MergeAccProcTbls (mergedT, oldT, newT)
+    XtTranslations* mergedT;
+    XtTranslations oldT;
+    XtTranslations newT;
+{
+    StateTablePtr merged = (*mergedT)->stateTable;
+    StateTablePtr old = NULL;
+    StateTablePtr new = NULL;
+    int i, k;
+
+    if (oldT == NULL && newT == NULL) return;
+    if (merged->accQuarkTblSize == 0) return;
+    if (oldT)
+	old = oldT->stateTable;
+    if (newT)
+	new = newT->stateTable;
+    *mergedT = (XtTranslations)XtMalloc(
+             (merged->accNumQuarks * (Cardinal)sizeof(XtBoundAccActionRec))
+              + sizeof(TranslationData));
+    (*mergedT)->stateTable = merged;
+    (*mergedT)->accProcTbl = (XtBoundAccActions)(*mergedT + 1);
+    k = 0;
+    if (old)
+        for (i=0; i<old->accNumQuarks;){
+            (*mergedT)->accProcTbl[k].widget = oldT->accProcTbl[i].widget;
+            (*mergedT)->accProcTbl[k++].proc = oldT->accProcTbl[i++].proc;
+    }
+    if (new)
+        for (i=0; i<new->accNumQuarks;){
+            (*mergedT)->accProcTbl[k].widget = newT->accProcTbl[i].widget;
+            (*mergedT)->accProcTbl[k++].proc = newT->accProcTbl[i++].proc;
+    }
+}    
+
 static XtTranslations
-ConvertATranslation(widget, new_translations, operation)
+ConvertATranslation(widget, new_translations, operation, acceleratorSource)
 Widget widget;
 XtTranslations new_translations;
 TMkind operation;
+Widget acceleratorSource; /* Non-NULL if new_translations are an unbound 
+			       accelerator table */
 {
     XrmValue from, to;
     TMConvertRec convert_rec;
@@ -1878,6 +1917,7 @@ TMkind operation;
     XtCacheRef cache_ref;
     ConverterTable table =XtWidgetToApplicationContext(widget)->converterTable;
     ConverterPtr cP;
+    Boolean        free_bound_translations = FALSE;
 
     static XrmQuark from_type, to_type;
     static Boolean initialized = FALSE;
@@ -1903,6 +1943,35 @@ TMkind operation;
 			    &cache_ref, cP ))
 	return(NULL);
 
+    /*
+     *  If the new translations are an unbound accelerator table,
+     *  bind it now
+     */
+    if (acceleratorSource && new_translations) {
+        new_translations =
+	    _XtBindAccActions( acceleratorSource, new_translations );
+	free_bound_translations = TRUE;
+    }
+
+    /*
+     *  If either translation table has an accProcTbl, merge the
+     *  accProcTbls
+     */
+    if (operation == augment)
+        MergeAccProcTbls (&newTable,
+		          widget->core.tm.translations,
+        	          new_translations);
+    else /* operation == override */
+        MergeAccProcTbls (&newTable,
+        	          new_translations,
+		          widget->core.tm.translations);
+
+    /*
+     *  Free the TranslationData of bound translations if it is not needed
+     */
+    if (free_bound_translations && new_translations != newTable)
+	XtFree ((char*)new_translations);
+
     if (cache_ref != NULL) {
 	XtAddCallback( widget, XtNdestroyCallback,
 		       XtCallbackReleaseCacheRef, (XtPointer)cache_ref );
@@ -1911,20 +1980,18 @@ TMkind operation;
     return(newTable);
 }
 
+
 void XtOverrideTranslations(widget, new)
     Widget widget;
     XtTranslations new;
 {
-/*
-    MergeTables(widget->core.translations, new, TRUE);
-*/
-    XtTranslations newTable = ConvertATranslation(widget, new, override);
+    XtTranslations newTable = ConvertATranslation(widget, new, override, NULL);
 
     if (newTable == NULL) 
 	return;
 
     if (XtIsRealized(widget)) {
-	   XtUninstallTranslations(widget);
+           XtUninstallTranslations(widget);
            widget->core.tm.translations = newTable;
            _XtBindActions(widget, &widget->core.tm);
            _XtInstallTranslations(widget,newTable);
@@ -1941,7 +2008,8 @@ void _XtFreeTranslations(app, toVal, closure, args, num_args)
     XrmValuePtr	args;
     Cardinal	*num_args;
 {
-    XtTranslations stateTable;
+    XtTranslations translateData;
+    StateTablePtr stateTable;
     register StatePtr state;
     register EventObjPtr eventObj;
     register int i;
@@ -1953,7 +2021,8 @@ void _XtFreeTranslations(app, toVal, closure, args, num_args)
           "Freeing XtTranslations requires no extra arguments",
 	  (String *)NULL, (Cardinal *)NULL);
 
-    stateTable = *(XtTranslations*)toVal->addr;
+    translateData = *(XtTranslations*)toVal->addr;
+    stateTable = translateData->stateTable;
     for (i = stateTable->numEvents, eventObj = stateTable->eventObjTbl; i;) {
 	XtFree( (char*)eventObj->event.lateModifiers );
 	i--; eventObj++;
@@ -1961,9 +2030,9 @@ void _XtFreeTranslations(app, toVal, closure, args, num_args)
     XtFree( (char*)stateTable->eventObjTbl );
     XtFree( (char*)stateTable->quarkTable );
     XtFree( (char*)stateTable->accQuarkTable );
-    XtFree( (char*)stateTable->accProcTbl );
     for (state = stateTable->head; state;) {
-	register StatePtr nextState = state->forw;
+	register StatePtr nextState;
+	nextState = state->forw;
 	for (action = state->actions; action;) {
 	    ActionPtr nextAction = action->next;
 	    for (i = action->num_params; i;) {
@@ -1975,6 +2044,8 @@ void _XtFreeTranslations(app, toVal, closure, args, num_args)
 	XtFree( (char*)state );
 	state = nextState;
     }
+    XtFree( (char*)stateTable);
+    XtFree( (char*)translateData);
 }
 
 /* ARGSUSED */
@@ -1984,21 +2055,22 @@ static void RemoveAccelerators(widget,closure,data)
 {
     int i;
     XtTranslations table = (XtTranslations)closure;
+    StateTablePtr stateTable = table->stateTable;
     if (table == NULL) {
         XtAppWarningMsg(XtWidgetToApplicationContext(widget),
-		XtNtranslationError,"nullTable",XtCXtToolkitError,
+            XtNtranslationError,"nullTable",XtCXtToolkitError,
             "Can't remove accelerators from NULL table",
             (String *)NULL, (Cardinal *)NULL);
         return;
     }
     if (table->accProcTbl == NULL) {
         XtAppWarningMsg(XtWidgetToApplicationContext(widget),
-		XtNtranslationError,"nullTable",XtCXtToolkitError,
+            XtNtranslationError,"nullTable",XtCXtToolkitError,
             "Tried to remove non-existant accelerators",
             (String *)NULL, (Cardinal *)NULL);
         return;
     }
-    for (i=0;i<table->accNumQuarks;i++) {
+    for (i=0;i<stateTable->accNumQuarks;i++) {
         if (table->accProcTbl[i].widget == widget)
             table->accProcTbl[i].widget = 0;
     }
@@ -2009,29 +2081,30 @@ static void RemoveAccelerators(widget,closure,data)
 void XtInstallAccelerators(destination, source)
     Widget destination, source;
 {
+    StateTablePtr stateTable;
     if ((!XtIsWidget(source)) || source->core.accelerators == NULL) return;
-/*    if (source->core.accelerators->accProcTbl == NULL)
- *  %%%
- *  The spec is not clear on when actions specified in accelerators are bound;
+
+/*  The spec is not clear on when actions specified in accelerators are bound;
  *  The most useful (and easiest) thing seems to be to bind them at this time
- *  (rather than at Realize).  Under the current code the preceeding test
- *  seems always to be True, thus guaranteeing accBindings is always set
- *  before being used below.
+ *  (rather than at Realize).
  */
-        _XtBindAccActions( source, source->core.accelerators );
+
+    stateTable = source->core.accelerators->stateTable;
     if (destination->core.tm.translations == NULL)
-	destination->core.tm.translations = source->core.accelerators;
+	destination->core.tm.translations =
+	    _XtBindAccActions( source, source->core.accelerators );
     else {
 	XtTranslations new_table;
 	TMkind operation;
 
-	if (source->core.accelerators->operation == XtTableOverride)
+  	if (stateTable->operation == XtTableOverride)
 	    operation = override;
-	else
+  	else
 	    operation = augment;
 	
 	new_table = ConvertATranslation(destination, 
-					source->core.accelerators, operation);
+					source->core.accelerators, operation,
+					source);
 	if (new_table == NULL)
 	    return;
 
@@ -2048,8 +2121,8 @@ void XtInstallAccelerators(destination, source)
 	 String str = buf;
 	 int i;
          *str = '\0';
-	 for (i = 0; i < source->core.accelerators->numEvents; i++) {
-	     StatePtr state = source->core.accelerators->eventObjTbl[i].state;
+	 for (i = 0; i < stateTable->numEvents; i++) {
+	     StatePtr state = stateTable->eventObjTbl[i].state;
 	     if (state != NULL) {
 		 if (str != buf) *str++ = '\n';
 		 str = PrintState( &buf, &len, str, str-buf, state,
@@ -2091,13 +2164,13 @@ void XtAugmentTranslations(widget, new)
     Widget widget;
     XtTranslations new;
 {
-    XtTranslations newTable = ConvertATranslation(widget, new, augment);
+    XtTranslations newTable = ConvertATranslation(widget, new, augment, NULL);
 
     if (newTable == NULL) 
 	return;
 
     if (XtIsRealized(widget)) {
-	   XtUninstallTranslations(widget);
+ 	   XtUninstallTranslations(widget);
            widget->core.tm.translations = newTable;
            _XtBindActions(widget, &widget->core.tm);
            _XtInstallTranslations(widget,newTable);
@@ -2151,24 +2224,27 @@ static Boolean LookAheadForCycleOrMulticlick(state, eot, countP, nextLevelP)
     return False;
 }
 
-static String PrintState(buf, len, str, start, state, stateTable, dpy)
+static String PrintState(buf, len, str, start, state, translateData, dpy)
     String *buf;
     int *len;
     register String str;
     int start;			/* offset of current LHS; -1 =>print *buf */
     StatePtr state;
-    XtTranslations stateTable;
+    XtTranslations translateData;
     Display *dpy;
 {
-    int oldOffset = str - *buf;
+    int oldOffset;
     int clickCount;
     Boolean cycle;
     StatePtr nextLevel;
     StatePtr sameLevel;
+    StateTablePtr stateTable;
 
     /* print the current state */
     if (state == NULL) return str;
 
+    oldOffset = str - *buf;
+    stateTable = translateData->stateTable;
     sameLevel = state->next;
     str = PrintEvent( buf, len, str,
 		      &stateTable->eventObjTbl[state->index].event,
@@ -2193,7 +2269,7 @@ static String PrintState(buf, len, str, start, state, stateTable, dpy)
 	    int offset = str - *buf;
 	    CHECK_STR_OVERFLOW;
 	    *str++ = ':';
-	    (void) PrintActions(buf, len, str, state->actions, stateTable);
+	    (void) PrintActions(buf, len, str, state->actions, translateData);
 	    (void) printf("%s\n", *buf);
 	    str = *buf + offset;
 	}
@@ -2210,8 +2286,8 @@ static String PrintState(buf, len, str, start, state, stateTable, dpy)
 	    bcopy( *buf+start, str, oldOffset - start );
 	    str += oldOffset - start;
     	}
-	str = PrintState( buf, len, str, start, state->nextLevel,
-			  stateTable, dpy );
+	str = PrintState( buf, len, str, start,
+			  state->nextLevel, translateData, dpy );
     }
 
     if (sameLevel != NULL) {	/* print sibling states */
@@ -2223,7 +2299,7 @@ static String PrintState(buf, len, str, start, state, stateTable, dpy)
 	    bcopy( *buf+start, str, oldOffset - start );
 	    str += oldOffset - start;
 	}
-	str = PrintState(buf, len, str, start, sameLevel, stateTable, dpy);
+	str = PrintState(buf, len, str, start, sameLevel, translateData, dpy);
     }
 
     if (start == -1) str = *buf + oldOffset;
@@ -2232,14 +2308,16 @@ static String PrintState(buf, len, str, start, state, stateTable, dpy)
 }
 
 #ifndef NO_MIT_HACKS
-void _XtTranslateTablePrint(translations)
-    XtTranslations translations;
+void _XtTranslateTablePrint(translateData)
+    XtTranslations translateData;
 {
+    StateTablePtr translations;
     register Cardinal i;
     int len = 1000;
     char *buf;
 
-    if (translations == NULL) return;
+    if (translateData == NULL) return;
+    translations = translateData->stateTable;
     buf = XtMalloc((Cardinal)1000);
     for (i = 0; i < translations->numEvents; i++) {
 	buf[0] = '\0';
@@ -2249,7 +2327,7 @@ void _XtTranslateTablePrint(translations)
 			   buf,
 			   -1,
 			   translations->eventObjTbl[i].state,
-			   translations,
+			   translateData,
 			   NULL
 			 );
     }
@@ -2285,14 +2363,16 @@ static void _XtDisplayInstalledAccelerators(widget, event, params, num_params)
 {
     Widget eventWidget
 	= XtWindowToWidget(event->xany.display, event->xany.window);
-    XtTranslations translations;
+    XtTranslations translateData;
+    StateTablePtr  translations;
     register Cardinal i;
     int len = 1000;
     char *buf;
 
     if (eventWidget == NULL) return;
 
-    if ((translations = eventWidget->core.tm.translations) == NULL) return;
+    if ((translateData = eventWidget->core.tm.translations) == NULL) return;
+    translations = translateData->stateTable;
     buf = XtMalloc((Cardinal)1000);
     for (i = 0; i < translations->numEvents; i++) {
 	register ActionPtr actions
@@ -2307,7 +2387,7 @@ static void _XtDisplayInstalledAccelerators(widget, event, params, num_params)
 			       buf,
 			       -1,
 			       translations->eventObjTbl[i].state,
-			       translations,
+			       translateData,
 			       XtDisplay(eventWidget)
 			     );
 	}
@@ -2479,7 +2559,8 @@ void _XtRegisterGrabs(widget,tm)
     Widget widget;
     XtTM  tm;
 {
-    XtTranslations stateTable=tm->translations;
+    XtTranslations translateData = tm->translations;
+    StateTablePtr stateTable;
     unsigned int count;
 
     if (! XtIsRealized(widget)) return;
@@ -2488,6 +2569,8 @@ void _XtRegisterGrabs(widget,tm)
     /* actions registered as grab actions. */
     /* when you find one, do a grab on the triggering event */
 
+    if (translateData == NULL) return;
+    stateTable = translateData->stateTable;
     if (stateTable == NULL) return;
     for (count=0; count < stateTable->numQuarks; count++) {
       GrabActionRec* grabP;
@@ -2718,6 +2801,7 @@ void XtTranslateKey(dpy, keycode, modifiers,
 	    (*pd->defaultCaseConverter)(dpy, syms[0], &lsym, &usym);
 	*keysym_return = usym;
     }
+
     if (*keysym_return == XK_VoidSymbol)
 	*keysym_return = NoSymbol;
 }
