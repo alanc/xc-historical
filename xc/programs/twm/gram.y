@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: gram.y,v 1.86 90/03/08 16:14:18 jim Exp $
+ * $XConsortium: gram.y,v 1.87 90/03/15 14:23:06 jim Exp $
  *
  * .twmrc command grammer
  *
@@ -685,6 +685,10 @@ char *str;
 			break;
 		}
 		*o = n;
+		break;
+	    case '\n':
+		i++;	/* punt */
+		o--;	/* to account for o++ at end of loop */
 		break;
 	    case '\"':
 	    case '\'':
