@@ -1,4 +1,4 @@
-/* $XConsortium: xfontsel.c,v 1.31 91/06/22 17:29:18 rws Exp $
+/* $XConsortium: xfontsel.c,v 1.32 91/06/22 19:37:57 rws Exp $
 
 Copyright 1985, 1986, 1987, 1988, 1989 by the
 Massachusetts Institute of Technology
@@ -86,6 +86,7 @@ static struct _appRes {
     Boolean print_on_quit;
     String sample_text;
     String sample_text16;
+    Boolean scaled_fonts;
 } AppRes;
 
 #define DEFAULTPATTERN "-*-*-*-*-*-*-*-*-*-*-*-*-*-*"
@@ -115,6 +116,9 @@ static XtResource resources[] = {
     { "sampleText16", "Text16", XtRString, sizeof(String),
 		XtOffsetOf( struct _appRes, sample_text16 ),
 		XtRString, (XtPointer)"" },
+    { "scaledFonts", "ScaledFonts", XtRBoolean, sizeof(Boolean),
+	  	XtOffsetOf( struct _appRes, scaled_fonts ),
+      		XtRImmediate, (XtPointer)True },
 };
 
 static XrmOptionDescRec options[] = {
@@ -122,14 +126,30 @@ static XrmOptionDescRec options[] = {
 {"-print",	"printOnQuit",	XrmoptionNoArg,		"True"},
 {"-sample",	"sampleText",	XrmoptionSepArg,	NULL},
 {"-sample16",	"sampleText16",	XrmoptionSepArg,	NULL},
+{"-noscaled",	"scaledFonts",	XrmoptionNoArg,		"False"},
 };
 
 Syntax(call)
     char *call;
 {
-    fprintf( stderr,
-	     "Usage: %s [-toolkitOption] [-pattern <fontspec>] [-print] [-sample <text>] [-sample16 <text16>]\n",
-	     call );
+    fprintf (stderr, "usage:  %s [-options ...] -fn font\n\n", call);
+    fprintf (stderr, "where options include:\n");
+    fprintf (stderr,
+	"    -display dpy           X server to contact\n");
+    fprintf (stderr, 
+	"    -geometry geom         size and location of window\n");
+    fprintf (stderr, 
+	"    -pattern fontspec      font name pattern to match against\n");
+    fprintf (stderr, 
+	"    -print                 print selected font name on exit\n");
+    fprintf (stderr, 
+	"    -noscaled              do not use scaled instances of fonts\n");
+    fprintf (stderr, 
+	"    -sample string         sample text to use for 1-byte fonts\n");
+    fprintf (stderr, 
+	"    -sample16 string       sample text to use for 2-byte fonts\n");
+    fprintf (stderr, "\n");
+    exit (1);
 }
 
 
@@ -458,7 +478,8 @@ void GetFontNames( closure )
     ScheduleWork(ParseFontNames,(XtPointer)parseRec,work_priority);
     ScheduleWork((XtProc)XFreeFontNames,(XtPointer)fontNames,work_priority);
     ScheduleWork(XtFree, (XtPointer)parseRec, work_priority);
-    ScheduleWork(FixScalables,(XtPointer)0,work_priority);
+    if (AppRes.scaled_fonts)
+	ScheduleWork(FixScalables,(XtPointer)0,work_priority);
     ScheduleWork(SortFields,(XtPointer)0,work_priority);
     SetParsingFontCount(matchingFontCount);
     if (strcmp(AppRes.pattern, DEFAULTPATTERN)) {
@@ -1031,12 +1052,17 @@ void SetCurrentFont(closure)
 	else {
 	    int nargs = 1;
 	    Arg args[3];
-	    int encoding = (font->min_byte1 || font->max_byte1);
+	    int encoding;
+	    if (font->min_byte1 || font->max_byte1)
+		encoding = XawTextEncodingChar2b;
+	    else
+		encoding = XawTextEncoding8bit;
 	    XtSetArg( args[0], XtNfont, font );
 	    if (encoding != textEncoding) {
 		XtSetArg(args[1], XtNencoding, encoding);
 		XtSetArg(args[2], XtNlabel,
-			 encoding ? AppRes.sample_text16 : AppRes.sample_text);
+			 encoding == XawTextEncodingChar2b
+			 ? AppRes.sample_text16 : AppRes.sample_text);
 		textEncoding = encoding;
 		nargs = 3;
 	    }
