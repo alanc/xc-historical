@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $Header: events.c,v 1.141 88/02/02 11:55:23 rws Exp $ */
+/* $Header: events.c,v 1.142 88/02/14 21:09:50 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -2544,7 +2544,7 @@ SetKeySymsMap(pKeySyms)
     }
     bcopy(
 	(char *)pKeySyms->map,
-	(char *)&curKeySyms.map[rowDif],
+	(char *)&curKeySyms.map[rowDif * curKeySyms.mapWidth],
 	(pKeySyms->maxKeyCode - pKeySyms->minKeyCode + 1) *
 	    curKeySyms.mapWidth * sizeof(KeySym));
 }
