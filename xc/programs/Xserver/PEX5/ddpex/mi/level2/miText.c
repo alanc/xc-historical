@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: miText.c,v 5.1 91/02/16 09:55:27 rws Exp $ */
 
 
 /***********************************************************
@@ -48,7 +48,6 @@ SOFTWARE.
 #endif 
 
 extern ddFLOAT ident4x4[];
-extern double       sqrt();
 extern ddpex3rtn ComputeMCVolume();
 
 int
