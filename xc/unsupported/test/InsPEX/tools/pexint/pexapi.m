@@ -1,5 +1,5 @@
 
-/* $XConsortium: pexapi.m,v 5.2 91/03/21 15:40:44 hersh Exp $ */
+/* $XConsortium: pexapi.m,v 5.3 91/07/24 18:40:25 hersh Exp $ */
 
 /*****************************************************************
 Copyright (c) 1989, 1990, 1991,1990 by Sun Microsystems, Inc. and the X Consortium.
@@ -284,9 +284,9 @@ pinq_choice_st3(Pint,Pint,Pstore,Pint*,Pop_mode*,Pecho_switch*,Pin_status*,Pint*
 void
 pinq_choice_st(Pint,Pint,Pstore,Pint*,Pop_mode*,Pecho_switch*,Pin_status*,Pint*,Pint*,Plimit*,Pchoice_data**)
 void
-pinq_pick_st3(Pint,Pint,Pinq_type,Pstore,Pint*,Pop_mode*,Pecho_switch*,Pfilter**,Pin_status*,Ppick_path**,Pint*,Plimit3*,Ppath_order*,Ppick_data3**)
+pinq_pick_st3(Pint,Pint,Pinq_type,Pstore,Pint*,Pop_mode*,Pecho_switch*,Pfilter**,Pin_status*,Ppick_path**,Pint*,Plimit3*,Ppick_data3**,Ppath_order*)
 void
-pinq_pick_st(Pint,Pint,Pinq_type,Pstore,Pint*,Pop_mode*,Pecho_switch*,Pfilter**,Pin_status*,Ppick_path**,Pint*,Plimit*,Ppath_order*,Ppick_data**)
+pinq_pick_st(Pint,Pint,Pinq_type,Pstore,Pint*,Pop_mode*,Pecho_switch*,Pfilter**,Pin_status*,Ppick_path**,Pint*,Plimit*,Ppick_data**,Ppath_order*)
 void
 pinq_string_st3(Pint,Pint,Pstore,Pint*,Pop_mode*,Pecho_switch*,char**,Pint*,Plimit3*,Pstring_data3**)
 void
