@@ -1,14 +1,13 @@
 #ifndef lint
-static char *rcsid_xload_c = "$Header: xload.c,v 1.5 87/12/04 16:34:42 swick Locked $";
+static char rcsid[] = "$Header: xload.c,v 1.6 87/12/08 11:23:37 swick Locked $";
 #endif  lint
 
+#include <X/Intrinsic.h>
+#include <X/Xatom.h>
+#include <X/Atoms.h>
+#include <X/Shell.h>
+#include <X/Load.h>
 #include <stdio.h> 
-#include "Xatom.h"
-#include "Xlib.h"
-#include "Intrinsic.h"
-#include "Atoms.h"
-#include "Shell.h"
-#include "Load.h"
 #include "xload.bit"
 
 extern void exit();
@@ -17,9 +16,8 @@ extern void exit();
    pass over the remaining options after XtParseCommand is let loose. */
 
 static XrmOptionDescRec options[] = {
-{"-u",		XtNupdate,	XrmoptionSepArg,	 NULL},
-{"-update",	XtNupdate,	XrmoptionSepArg,	 NULL},
-{"-scale",	XtNminScale,	XrmoptionSepArg,	 NULL},
+{"-scale",	"*load.minScale",	XrmoptionSepArg,	 NULL},
+{"-update",	"*load.update",		XrmoptionSepArg,	 NULL},
 };
 
 
@@ -31,7 +29,7 @@ void usage()
 "usage: xload [-fn {font}] [-update {seconds}] [-scale {integer}] [-rv]\n"
 );
     fprintf(stderr,
-"             [=[{width}][x{height}][{+-}{xoff}[{+-}{yoff}]]] [[{host}]:[{vs}]]\n"
+"             [-geometry [{width}][x{height}][{+-}{xoff}[{+-}{yoff}]]] [-display [{host}]:[{vs}]]\n"
 );
     fprintf(stderr,
 "             [-fg {color}] [-bg {color}] [-hl {color}] [-bd {color}] [-bw {pixels}]\n");
@@ -48,7 +46,7 @@ void main(argc, argv)
     Arg arg;
     
     (void) gethostname(host,255);
-    toplevel = XtInitialize("XLoad", "XLoad", options, XtNumber(options), &argc, argv);
+    toplevel = XtInitialize(NULL, "XLoad", options, XtNumber(options), &argc, argv);
       
     if (argc != 1) usage();
     
@@ -59,7 +57,7 @@ void main(argc, argv)
     XtSetValues (toplevel, &arg, 1);
 
     XtSetArg (arg, XtNlabel, host);
-    XtCreateManagedWidget (argv[0], loadWidgetClass, toplevel, &arg, 1);
+    XtCreateManagedWidget ("load", loadWidgetClass, toplevel, &arg, 1);
     XtRealizeWidget (toplevel);
     XtMainLoop();
 }
