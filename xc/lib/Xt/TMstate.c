@@ -1,4 +1,4 @@
-/* $XConsortium: TMstate.c,v 1.144 91/04/29 12:03:22 converse Exp $ */
+/* $XConsortium: TMstate.c,v 1.145 91/05/06 20:36:39 rws Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -1194,11 +1194,15 @@ void _XtInstallTranslations(widget)
       xlations->eventMask |= ButtonPressMask;
 
     if (mappingNotifyInterest) {
-	_XtAddCallbackOnce( &_XtGetPerDisplay(XtDisplay(widget))
-			       ->mapping_callbacks,
-			    DispatchMappingNotify,
-			    (XtPointer)&widget->core.tm
-			   );
+	InternalCallbackList mappingCallbacks = 
+	    _XtGetPerDisplay(XtDisplay(widget))->mapping_callbacks;
+	if (mappingCallbacks)
+	    _XtAddCallbackOnce(&mappingCallbacks, DispatchMappingNotify,
+			       (XtPointer)&widget->core.tm);
+	else
+	    _XtAddCallback(&mappingCallbacks, DispatchMappingNotify,
+			   (XtPointer)&widget->core.tm);
+
 	if (widget->core.destroy_callbacks != NULL)
 	    _XtAddCallbackOnce( (InternalCallbackList *)
 			        &widget->core.destroy_callbacks,
