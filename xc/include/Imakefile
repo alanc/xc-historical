@@ -86,6 +86,9 @@ all: $(IMPORTS) $(SUBIMPORTS) extensions
 extensions:
 	-mkdir $@
 	
+install::
+	-mkdir $(INCDIR)
+
 InstallMultiple($(EXPORTS),$(INCDIR))
 
 clean::
@@ -94,8 +97,8 @@ clean::
 		set -x; cd extensions; $(RM) $$list)
 
 install::
+	-cd $(INCDIR); mkdir $(SUBDIRS)
 	@for i in $(SUBDIRS); do \
-		-mkdir $(INCDIR)/$$i; \
 		( \
 			set -x; \
 			cd $$i ; \
