@@ -513,7 +513,7 @@
     (window owner)
     (resource-id selection)
     ((or null card32) time))
-  selection)
+  owner)
 
 (defsetf selection-owner (display selection &optional time) (owner)
   ;; A bit strange, but retains setf form.
