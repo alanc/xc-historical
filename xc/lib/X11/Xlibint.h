@@ -1,4 +1,4 @@
-/* $XConsortium: Xlibint.h,v 11.120 93/09/27 19:39:57 rws Exp $ */
+/* $XConsortium: Xlibint.h,v 11.121 93/10/20 19:10:41 rws Exp $ */
 /* Copyright 1984, 1985, 1987, 1989  Massachusetts Institute of Technology */
 
 /*
@@ -129,6 +129,7 @@ struct _XDisplay
 	Bool in_process_conni;	/* in XProcessInternalConnection */
 	XPointer filedes;	/* struct pollfd cache for _XWaitForReadable */
 	int (*savedsynchandler)(); /* user synchandler when Xlib usurps */
+	XID resource_max;	/* allocator max ID */
 	struct _XkbInfoRec *xkb_info; /* XKB info */
 };
 
