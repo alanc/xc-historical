@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xos.h,v 1.52 93/08/18 10:41:42 rws Exp $
+ * $XConsortium: Xos.h,v 1.53 93/08/20 16:48:22 rws Exp $
  * 
  * Copyright 1987 by the Massachusetts Institute of Technology
  *
@@ -155,6 +155,13 @@ struct timeval {
     long    tv_usec;        /* and microseconds */
 };
 #endif
+#define gettimeofday(t) \
+{ \
+    struct _timeb _gtodtmp; \
+    _ftime (&_gtodtmp); \
+    (t)->tv_sec = _gtodtmp.time; \
+    (t)->tv_usec = _gtodtmp.millitm * 1000; \
+}
 #else
 #include <sys/time.h>
 #endif
