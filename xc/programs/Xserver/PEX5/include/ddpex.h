@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: ddpex.h,v 5.2 91/02/16 09:57:41 rws Exp $ */
 
 /***********************************************************
 Copyright (c) 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -231,7 +231,7 @@ typedef struct {
 } ddElementRef;
 
 typedef struct {
-        ddCoord3D       orig_point;	/* original PEX ref point */
+        ddCoord4D       orig_point;	/* original PEX ref point */
         ddCoord4D       point;
         ddVector3D      orig_vector;	/* original PEX ref vector*/	
         ddVector3D      vector;		/* normalized vector */
