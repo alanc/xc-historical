@@ -4,7 +4,7 @@
  * internal structure definitions for mi backing store
  */
 
-/* $XConsortium: mibstorest.h,v 5.1 89/06/16 17:02:11 keith Exp $ */
+/* $XConsortium: mibstorest.h,v 5.2 89/06/21 11:16:39 rws Exp $ */
 
 /*
 Copyright 1989 by the Massachusetts Institute of Technology
@@ -20,7 +20,8 @@ representations about the suitability of this software for any
 purpose.  It is provided "as is" without express or implied warranty.
 */
 
-# include   "mibstore.h"
+#include "mibstore.h"
+#include "regionstr.h"
 
 /*
  * One of these structures is allocated per GC used with a backing-store
@@ -44,14 +45,13 @@ typedef struct {
  */
 
 typedef struct {
-    GCPtr   	  pgcBlt;   	    /* GC for drawing onto screen */
     PixmapPtr	  pBackingPixmap;   /* Pixmap for saved areas */
-    RegionPtr	  pSavedRegion;	    /* Valid area in pBackingPixmap */
-    Bool    	  viewable; 	    /* Tracks pWin->viewable so pSavedRegion may
+    RegionRec	  pSavedRegion;	    /* Valid area in pBackingPixmap */
+    char    	  viewable; 	    /* Tracks pWin->viewable so pSavedRegion may
 				     * be initialized correctly when the window
 				     * is first mapped */
-    int    	  status;    	    /* StatusNoPixmap, etc. */
-    int		  backgroundState;  /* background type */
+    char    	  status;    	    /* StatusNoPixmap, etc. */
+    char	  backgroundState;  /* background type */
     PixUnion	  background;	    /* background pattern */
 } miBSWindowRec, *miBSWindowPtr;
 
