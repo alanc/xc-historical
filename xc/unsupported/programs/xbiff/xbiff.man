@@ -1,4 +1,4 @@
-.TH XBIFF 1 "7 March 1988" "X Version 11"
+.TH XBIFF 1 "30 September 1988" "X Version 11"
 .SH NAME
 xbiff - mailbox flag for X
 .SH SYNOPSIS
@@ -86,6 +86,12 @@ A successful (zero) exit status should indicate that new mail is waiting.
 .B file (\fPclass\fB File)
 Specifies the name of the file to monitor.  The default is to watch
 /usr/spool/mail/\fIusername\fP, where \fIusername\fP is your login name.
+.TP 8
+.B onceOnly (\fPclass\fB Boolean)
+Specifies that the bell is only rung the first time new mail is found
+and is not rung again until at least one interval has passed with
+no mail waiting.  The window will continue to indicate the presence
+of new mail until it has been retrieved.
 .TP 8
 .B width (\fPclass\fB Width)
 Specifies the width of the mailbox.
