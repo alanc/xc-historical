@@ -8,7 +8,6 @@
 #endif
 
 #define POLY 1000		/* multiple of 25, please		*/
-#define CHARS 100		/* length of text strings		*/
 #define COLS 25
 
 #define WIDTH 600		/* Size of large window to work within  */
