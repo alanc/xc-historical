@@ -1,4 +1,4 @@
-/* $XConsortium: ut_path.c,v 5.3 91/04/10 13:25:14 rws Exp $ */
+/* $XConsortium: ut_path.c,v 5.4 91/05/09 12:26:26 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -25,7 +25,6 @@ SOFTWARE.
 ******************************************************************/
 
 #include "phg.h"		/* includes Intrinsic.h and Xos.h */
-#include "version.h"
 
 #ifndef X_NOT_STDC_ENV
 #include <stdlib.h>
@@ -68,16 +67,10 @@ phg_path( fname, erh, test)
     register char	*str;
     int			err;
 
-    if ( !*dir) {	/* get the path based on the version */
-	if ( !(str = getenv("PEXAPIDIR"))) {
+    if ( !*dir) {	/* get the path */
+	if ( !(str = getenv("PEXAPIDIR")))
 	    str = PEXAPIDIR;
-	    strncat( dir, str, PHG_MAXPATH - 1);
-#ifdef VERSION_PEXAPIDIR
-	    strncat(dir, phg_version_number_string, PHG_MAXPATH - 1);
-            strncat (dir, "/lib", PHG_MAXPATH - 1);
-#endif
-	} else 
-	    strncat( dir, str, PHG_MAXPATH - 1);
+	strncpy( dir, str, PHG_MAXPATH - 1);
 
 	if ( *dir)
 	    strcat( dir, "/");
