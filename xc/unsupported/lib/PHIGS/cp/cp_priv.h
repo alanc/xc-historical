@@ -1,4 +1,4 @@
-/* $XConsortium: cp_priv.h,v 5.4 91/03/29 15:01:45 rws Exp $ */
+/* $XConsortium: cp_priv.h,v 5.5 91/04/04 15:43:41 gildea Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -146,6 +146,46 @@ typedef struct {
     int		size;
     char	**dpp;		/* where to put the data pointer */
 } Cp_recv_vec;
+
+#ifndef X_NOT_POSIX
+#ifdef _POSIX_SOURCE
+#include <limits.h>
+#else
+#define _POSIX_SOURCE
+#include <limits.h>
+#undef _POSIX_SOURCE
+#endif
+#endif
+#ifndef OPEN_MAX
+#ifdef MIN
+#undef MIN
+#endif
+#ifdef MAX
+#undef MAX
+#endif
+#include <sys/param.h>
+#ifndef MIN
+#define MIN( a, b)	(((a) < (b)) ? (a) : (b))
+#endif
+#ifndef MAX
+#define MAX( a, b)	(((a) > (b)) ? (a) : (b))
+#endif
+#ifdef NOFILE
+#define OPEN_MAX NOFILE
+#else
+#define OPEN_MAX NOFILES_MAX
+#endif
+#ifdef FLOAT
+#undef FLOAT	/* hp9000s300 defines FLOAT in <sys/param.h> */
+#endif
+#endif
+
+#if OPEN_MAX > 256
+#undef OPEN_MAX
+#define OPEN_MAX 256
+#endif
+
+#define MSKCNT ((OPEN_MAX + 31) / 32)
 
 #if (MSKCNT==1)
 #define BITMASK(i) (1 << (i))
