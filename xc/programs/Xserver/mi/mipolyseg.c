@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: mipolyseg.c,v 1.17 87/06/15 01:07:27 sue Exp $ */
+/* $XConsortium: mipolyseg.c,v 1.17 87/09/11 07:20:15 toddb Exp $ */
 #include "X.h"
 #include "Xprotostr.h"
 #include "miscstruct.h"

@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: micursor.c,v 1.7 87/06/15 00:40:26 sue Exp $ */
+/* $XConsortium: micursor.c,v 1.7 87/09/11 07:20:20 toddb Exp $ */
 #include "scrnintstr.h"
 #include "cursor.h"
 #include "misc.h"

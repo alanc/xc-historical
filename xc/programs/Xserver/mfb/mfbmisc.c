@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: mfbmisc.c,v 1.9 87/06/15 02:38:23 sue Exp $ */
+/* $XConsortium: mfbmisc.c,v 1.9 87/09/11 07:48:26 toddb Exp $ */
 #include "X.h"
 #include "misc.h"
 #include "cursor.h"

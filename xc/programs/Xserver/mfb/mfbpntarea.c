@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: mfbpntarea.c,v 1.5 87/08/20 17:39:15 drewry Exp $ */
+/* $XConsortium: mfbpntarea.c,v 1.5 87/09/11 07:48:36 toddb Exp $ */
 #include "X.h"
 
 #include "windowstr.h"

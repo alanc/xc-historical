@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: mfbpolypnt.c,v 1.13 87/06/15 02:40:51 sue Exp $ */
+/* $XConsortium: mfbpolypnt.c,v 1.13 87/09/11 07:48:39 toddb Exp $ */
 
 #include "X.h"
 #include "Xprotostr.h"

@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: mipolygen.c,v 1.17 87/06/22 12:21:12 todd Exp $ */
+/* $XConsortium: mipolygen.c,v 1.17 87/09/11 07:19:05 toddb Exp $ */
 #include "X.h"
 #include "gcstruct.h"
 #include "miscanfill.h"

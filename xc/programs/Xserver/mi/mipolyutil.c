@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: mipolyutil.c,v 1.12 87/06/22 12:21:19 todd Exp $ */
+/* $XConsortium: mipolyutil.c,v 1.12 87/09/11 07:19:12 toddb Exp $ */
 #include "miscstruct.h"
 #include "gc.h"
 #include "miscanfill.h"

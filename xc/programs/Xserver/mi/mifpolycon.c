@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: mifpolycon.c,v 1.10 87/09/11 07:20:50 toddb Exp $ */
+/* $XConsortium: mifpolycon.c,v 1.11 88/07/06 11:22:55 rws Exp $ */
 #include "X.h"
 #include "gcstruct.h"
 #include "windowstr.h"

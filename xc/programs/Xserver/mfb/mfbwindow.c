@@ -1,4 +1,4 @@
-/* $Header: mfbwindow.c,v 1.7 88/07/06 10:59:48 rws Exp $ */
+/* $XConsortium: mfbwindow.c,v 1.8 88/07/29 11:45:10 keith Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.

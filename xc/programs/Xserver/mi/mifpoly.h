@@ -1,4 +1,4 @@
-/* $Header: mifpoly.h,v 1.1 87/09/11 07:20:47 toddb Exp $ */
+/* $XConsortium: mifpoly.h,v 1.2 88/08/08 12:49:10 matt Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.

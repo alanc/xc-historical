@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: mizerline.c,v 1.4 88/01/24 13:48:45 rws Exp $ */
+/* $XConsortium: mizerline.c,v 1.5 88/05/21 14:28:01 rws Exp $ */
 #include "X.h"
 
 #include "misc.h"

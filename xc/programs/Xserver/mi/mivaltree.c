@@ -33,7 +33,7 @@
 
 #ifndef lint
 static char rcsid[] =
-"$Header: mivaltree.c,v 1.43 88/07/29 12:07:59 keith Exp $ SPRITE (Berkeley)";
+"$XConsortium: mivaltree.c,v 1.44 88/08/14 10:57:50 keith Exp $ SPRITE (Berkeley)";
 #endif lint
 
 #include    "X.h"

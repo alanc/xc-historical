@@ -1,4 +1,4 @@
-/* $Header$ */
+/* $XConsortium: mfbpntwin.c,v 1.1 87/09/02 00:29:09 toddb Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.

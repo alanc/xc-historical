@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: mipolypnt.c,v 1.7 87/07/15 15:52:01 todd Exp $ */
+/* $XConsortium: mipolypnt.c,v 1.7 87/09/11 07:20:17 toddb Exp $ */
 #include "X.h"
 #include "Xprotostr.h"
 #include "pixmapstr.h"

@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: mifillrct.c,v 1.18 87/07/01 10:30:10 todd Exp $ */
+/* $XConsortium: mifillrct.c,v 1.18 87/09/11 07:19:08 toddb Exp $ */
 
 #include "X.h"
 #include "Xprotostr.h"

@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: mfbfillsp.c,v 1.31 88/07/21 10:26:16 xguest Exp $ */
+/* $XConsortium: mfbfillsp.c,v 1.32 88/08/07 14:13:46 rws Exp $ */
 #include "X.h"
 #include "Xmd.h"
 #include "gcstruct.h"

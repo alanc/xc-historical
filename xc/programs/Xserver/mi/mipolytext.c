@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ************************************************************************/
-/* $Header: mipolytext.c,v 1.11 87/06/15 01:07:57 sue Exp $ */
+/* $XConsortium: mipolytext.c,v 1.11 87/09/11 07:20:25 toddb Exp $ */
 /*
  * mipolytext.c - text routines
  *

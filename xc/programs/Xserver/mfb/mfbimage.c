@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: mfbimage.c,v 1.32 87/10/09 17:27:21 rws Exp $ */
+/* $XConsortium: mfbimage.c,v 1.33 88/07/29 11:44:13 keith Exp $ */
 
 #include "X.h"
 

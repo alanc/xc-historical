@@ -1,4 +1,4 @@
-/* $Header: mibstore.c,v 1.11 88/09/01 19:11:02 keith Exp $ */
+/* $XConsortium: mibstore.c,v 1.12 88/09/03 20:39:35 keith Exp $ */
 /***********************************************************
 Copyright 1987 by the Regents of the University of California
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.

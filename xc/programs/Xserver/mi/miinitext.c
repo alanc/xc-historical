@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: initext.c,v 1.3 87/12/05 11:09:22 rws Exp $ */
+/* $XConsortium: miinitext.c,v 1.1 88/08/08 15:18:03 keith Exp $ */
 
 void
 InitExtensions()

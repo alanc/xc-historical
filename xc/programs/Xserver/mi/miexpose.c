@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: miexpose.c,v 1.33 88/08/30 17:07:54 keith Exp $ */
+/* $XConsortium: miexpose.c,v 1.34 88/09/01 19:10:54 keith Exp $ */
 
 #include "X.h"
 #define NEED_EVENTS

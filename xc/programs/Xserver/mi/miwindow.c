@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: miwindow.c,v 1.15 88/03/15 18:22:13 rws Exp $ */
+/* $XConsortium: miwindow.c,v 1.16 88/07/20 16:30:54 keith Exp $ */
 #include "X.h"
 #include "miscstruct.h"
 #include "region.h"

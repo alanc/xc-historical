@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: mfbgetsp.c,v 1.18 88/07/29 11:43:48 keith Exp $ */
+/* $XConsortium: mfbgetsp.c,v 1.19 88/08/14 16:57:55 rws Exp $ */
 #include "X.h"
 #include "Xmd.h"
 

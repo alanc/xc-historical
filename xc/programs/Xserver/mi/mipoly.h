@@ -1,4 +1,4 @@
-/* $Header$ */
+/* $XConsortium: mipoly.h,v 1.1 87/09/11 07:20:03 toddb Exp $ */
 /*
  *     fill.h
  *

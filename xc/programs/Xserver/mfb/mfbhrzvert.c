@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: mfbhrzvert.c,v 1.8 87/06/15 02:36:36 sue Exp $ */
+/* $XConsortium: mfbhrzvert.c,v 1.8 87/09/11 07:48:42 toddb Exp $ */
 #include "X.h"
 
 #include "gc.h"

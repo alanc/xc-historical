@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: mfbcmap.c,v 1.13 87/09/04 14:19:49 rws Locked $ */
+/* $XConsortium: mfbcmap.c,v 1.14 87/11/07 16:17:52 rws Exp $ */
 #include "X.h"
 #include "scrnintstr.h"
 #include "colormapst.h"

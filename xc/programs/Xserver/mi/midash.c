@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: midash.c,v 1.8 88/02/02 18:20:06 rws Exp $ */
+/* $XConsortium: midash.c,v 1.9 88/08/08 12:47:35 matt Exp $ */
 #include "miscstruct.h"
 #include "mistruct.h"
 #include "mifpoly.h"

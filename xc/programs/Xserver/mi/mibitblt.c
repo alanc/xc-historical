@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: mibitblt.c,v 1.64 88/09/01 19:10:46 keith Exp $ */
+/* $XConsortium: mibitblt.c,v 1.65 88/09/04 17:11:11 rws Exp $ */
 /* Author: Todd Newman  (aided and abetted by Mr. Drewry) */
 
 #include "X.h"

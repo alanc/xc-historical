@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: mfbtilearea.c,v 1.5 87/06/15 02:45:10 sue Exp $ */
+/* $XConsortium: mfbtile.c,v 1.5 87/09/11 07:48:49 toddb Exp $ */
 #include "X.h"
 
 #include "windowstr.h"

@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: mfbline.c,v 1.36 88/02/06 11:53:38 rws Exp $ */
+/* $XConsortium: mfbline.c,v 1.37 88/02/08 20:11:01 rws Exp $ */
 #include "X.h"
 
 #include "gcstruct.h"

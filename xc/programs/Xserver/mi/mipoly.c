@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: mipoly.c,v 1.11 87/06/15 00:56:59 sue Exp $ */
+/* $XConsortium: mipoly.c,v 1.11 87/09/11 07:18:58 toddb Exp $ */
 /*
  *  mipoly.c
  *

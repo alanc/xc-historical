@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: mfbsetsp.c,v 1.20 87/09/03 16:08:48 toddb Locked $ */
+/* $XConsortium: mfbsetsp.c,v 1.21 87/09/07 19:08:09 toddb Exp $ */
 
 #include "X.h"
 #include "Xmd.h"

@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: mfbgc.c,v 1.122 88/07/29 11:43:40 keith Exp $ */
+/* $XConsortium: mfbgc.c,v 1.123 88/08/14 09:09:07 rws Exp $ */
 #include "X.h"
 #include "Xmd.h"
 #include "Xproto.h"

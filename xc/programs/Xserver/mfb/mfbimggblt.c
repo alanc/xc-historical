@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: mfbimggblt.c,v 1.3 87/09/02 00:30:43 toddb Locked $ */
+/* $XConsortium: mfbimggblt.c,v 1.4 87/09/08 10:03:47 toddb Exp $ */
 #include	"X.h"
 #include	"Xmd.h"
 #include	"Xproto.h"

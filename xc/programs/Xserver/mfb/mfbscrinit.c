@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: mfbscrinit.c,v 1.54 88/07/29 11:43:50 keith Exp $ */
+/* $XConsortium: mfbscrinit.c,v 1.55 88/08/30 17:06:36 keith Exp $ */
 
 #include "X.h"
 #include "Xproto.h"	/* for xColorItem */

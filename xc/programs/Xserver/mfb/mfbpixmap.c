@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: mfbpixmap.c,v 1.45 87/09/07 19:03:20 rws Exp $ */
+/* $XConsortium: mfbpixmap.c,v 1.46 88/07/06 10:58:28 rws Exp $ */
 
 /* pixmap management
    written by drewry, september 1986

@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: mfbbitblt.c,v 1.51 88/08/30 17:06:41 keith Exp $ */
+/* $XConsortium: mfbbitblt.c,v 1.52 88/09/01 19:11:33 keith Exp $ */
 #include "X.h"
 #include "Xprotostr.h"
 

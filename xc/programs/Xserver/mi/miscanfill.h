@@ -1,4 +1,4 @@
-/* $Header$ */
+/* $XConsortium: miscanfill.h,v 1.1 87/09/11 07:20:22 toddb Exp $ */
 #ifndef SCANFILLINCLUDED
 #define SCANFILLINCLUDED
 /*

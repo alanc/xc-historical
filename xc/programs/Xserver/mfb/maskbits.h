@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: maskbits.h,v 1.9 88/07/21 10:24:42 xguest Locked $ */
+/* $XConsortium: maskbits.h,v 1.10 88/07/26 17:23:11 xguest Exp $ */
 #include "X.h"
 #include "Xmd.h"
 #include "servermd.h"

@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: mfbpushpxl.c,v 1.16 87/09/11 07:48:33 toddb Exp $ */
+/* $XConsortium: mfbpushpxl.c,v 1.17 88/02/16 09:34:08 rws Exp $ */
 
 #include "X.h"
 #include "gcstruct.h"

@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: miglblt.c,v 1.16 87/09/08 10:10:10 toddb Exp $ */
+/* $XConsortium: miglblt.c,v 1.17 88/03/19 15:03:38 rws Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"

@@ -13,7 +13,7 @@ supporting documentation, and that the names of Digital or MIT not be
 used in advertising or publicity pertaining to distribution of the
 software without specific, written prior permission.  
 ******************************************************************/
-/* $Header: */
+/* $XConsortium: */
 
 #include    "mfb.h"
 #include    "X.h"

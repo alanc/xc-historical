@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: miarc.c,v 1.50 88/08/22 11:19:20 matt Exp $ */
+/* $XConsortium: miarc.c,v 1.51 88/09/02 16:36:06 matt Exp $ */
 /* Author: Todd Newman */
 #include "X.h"
 #include "Xprotostr.h"

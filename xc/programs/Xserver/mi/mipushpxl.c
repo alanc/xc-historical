@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: mipushpxl.c,v 1.15 87/11/09 13:06:51 rws Exp $ */
+/* $XConsortium: mipushpxl.c,v 1.16 88/02/16 09:53:36 rws Exp $ */
 #include "X.h"
 #include "gcstruct.h"
 #include "scrnintstr.h"

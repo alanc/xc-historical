@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: mfb.h,v 1.7 88/07/29 11:43:25 keith Exp $ */
+/* $XConsortium: mfb.h,v 1.8 88/08/30 17:06:08 keith Exp $ */
 /* Monochrome Frame Buffer definitions 
    written by drewry, september 1986
 */

@@ -1,4 +1,4 @@
-/* $Header: maskbits.c,v 1.1 87/09/02 00:29:19 rws Locked $ */
+/* $XConsortium: maskbits.c,v 1.2 87/09/07 19:04:44 rws Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.

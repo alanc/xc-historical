@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: miregion.c,v 1.35 88/07/29 17:16:17 keith Exp $ */
+/* $XConsortium: miregion.c,v 1.36 88/08/27 22:46:01 rws Exp $ */
 
 #include "miscstruct.h"
 #include "regionstr.h"

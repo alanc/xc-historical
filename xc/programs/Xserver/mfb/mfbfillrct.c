@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: mfbfillrct.c,v 1.35 88/05/18 15:52:48 keith Exp $ */
+/* $XConsortium: mfbfillrct.c,v 1.36 88/05/19 09:40:35 rws Exp $ */
 #include "X.h"
 #include "Xprotostr.h"
 #include "pixmapstr.h"

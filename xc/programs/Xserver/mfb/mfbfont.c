@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 */
-/* $Header: mfbfont.c,v 1.13 87/06/15 02:34:57 toddb Locked $ */
+/* $XConsortium: mfbfont.c,v 1.14 87/09/03 13:50:48 toddb Exp $ */
 #include "X.h"
 #include "Xmd.h"
 #include "Xproto.h"
