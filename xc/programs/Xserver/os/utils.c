@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: utils.c,v 1.127 93/09/18 13:43:42 dpw Exp $ */
+/* $XConsortium: utils.c,v 1.128 93/09/20 20:11:38 dpw Exp $ */
 #include "Xos.h"
 #include <stdio.h>
 #include "misc.h"
@@ -155,7 +155,7 @@ Error(str)
 }
 
 #ifndef DDXTIME
-long
+CARD32
 GetTimeInMillis()
 {
     struct timeval  tp;
