@@ -14,7 +14,7 @@ without express or implied warranty.
 
 */
 
-/* $XConsortium: miscrinit.c,v 5.3 93/06/24 10:20:26 dpw Exp $ */
+/* $XConsortium: miscrinit.c,v 5.4 93/07/12 09:29:02 dpw Exp $ */
 
 #include "X.h"
 #include "servermd.h"
@@ -56,7 +56,7 @@ miModifyPixmapHeader(pPixmap, width, height, depth, bitsPerPixel, devKind,
 
 
 /*ARGSUSED*/
-static Bool
+Bool
 miCloseScreen (index, pScreen)
     int		index;
     ScreenPtr	pScreen;
@@ -64,7 +64,7 @@ miCloseScreen (index, pScreen)
     return ((*pScreen->DestroyPixmap)((PixmapPtr)pScreen->devPrivate));
 }
 
-static Bool
+Bool
 miCreateScreenResources(pScreen)
     ScreenPtr pScreen;
 {
