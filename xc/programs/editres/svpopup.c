@@ -1,3 +1,64 @@
+/*
+ * $XConsortium$
+ *
+ * Copyright 1989 Massachusetts Institute of Technology
+ *
+ * Permission to use, copy, modify, distribute, and sell this software and its
+ * documentation for any purpose is hereby granted without fee, provided that
+ * the above copyright notice appear in all copies and that both that
+ * copyright notice and this permission notice appear in supporting
+ * documentation, and that the name of M.I.T. not be used in advertising or
+ * publicity pertaining to distribution of the software without specific,
+ * written prior permission.  M.I.T. makes no representations about the
+ * suitability of this software for any purpose.  It is provided "as is"
+ * without express or implied warranty.
+ *
+ * M.I.T. DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING ALL
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL M.I.T.
+ * BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
+ * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN 
+ * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ *
+ * Author:  Chris D. Peterson, MIT X Consortium
+ */
+
+/************************************************************
+ *
+ * If you activate the SetValue popup you will want to add these
+ * resources to the app-default file.
+ *
+ ************************************************************
+
+! For the SetValuesPopup widget
+
+*setValuesPopup*resizable:		True
+*setValuesPopup*left:			ChainLeft
+*setValuesPopup*right:			ChainLeft
+
+*setValuesPopup*label*Label:		Use <Tab> to Change Fields.
+*setValuesPopup*Label*BorderWidth:	0
+
+*setValuesPopup*resourceLabel.Label:	Resource Name:
+*setValuesPopup*valueLabel.Label:	Value:
+
+*setValuesPopup*Text*EditType:		Edit
+*setValuesPopup*Text*resize:		Width
+
+*setValuesPopup*resourceText.Translations: #override \
+  <Key>Return:     	   no-op(RingBell) \n\
+   Ctrl<Key>q,<Key>Tab:    insert-char()    \n\
+   <Btn1Down>:             select-start() SVActiveEntry(Resource) \n\
+   <Key>Tab:               SVActiveEntry(Value)
+
+*setValuesPopup*valueText.Translations: #override \
+   <Key>Return:     	   no-op(RingBell) \n\
+   Ctrl<Key>q,<Key>Tab:    insert-char()     \n\
+   <Btn1Down>:             select-start() SVActiveEntry(Value)\n\
+   <Key>Tab:               SVActiveEntry(Resource)
+
+ *
+ ************************************************************/
 
 #include "editresP.h"
 
