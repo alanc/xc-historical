@@ -1,5 +1,6 @@
-#ifndef lint
-static char rcs_id[] = "$XConsortium: folder.c,v 2.7 89/04/10 11:50:44 converse Exp $";
+#if !defined(lint) && !defined(SABER)
+static char rcs_id[] =
+    "$XConsortium: folder.c,v 1.1 89/06/27 14:29:03 converse Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -29,6 +30,55 @@ static char rcs_id[] = "$XConsortium: folder.c,v 2.7 89/04/10 11:50:44 converse 
 /* folder.c -- implement buttons relating to folders and other globals. */
 
 #include "xmh.h"
+
+
+
+char *GetCurrentFolderName(scrn)
+    Scrn	scrn;
+{
+    return scrn->curfolder;
+}
+
+
+void SetCurFolderName(scrn, foldername)
+    Scrn	scrn;
+    char	*foldername;
+{
+    scrn->curfolder = foldername;
+    ChangeLabel((Widget) scrn->folderlabel, foldername);
+}
+
+char	*IsSubFolder(foldername)
+    char	*foldername;
+{
+    return index(foldername, '/');
+}
+
+char	*GetParentFolderName(foldername)
+    char	*foldername;
+{
+    char	temp[500];
+    char	*c, *p;
+    strcpy(temp, foldername);
+    c = index(temp, '/');
+    *c = '\0';
+    p = XtMalloc(strlen(temp)+1);
+    strcpy(p, temp);
+    return p;
+}
+
+char	*GetSubFolderName(foldername)
+    char	*foldername;
+{
+    char	temp[500];
+    char	*c, *p;
+    strcpy(temp, foldername);
+    c = index(temp, '/');
+    c++;
+    p = XtMalloc(strlen(c) + 1);
+    strcpy(p, c);
+    return p;
+}
 
 
 /* Close this toc&view scrn.  If this is the last toc&view, quit xmh. */
@@ -147,17 +197,29 @@ Scrn scrn;
     char *foldername, str[100];
     Toc toc;
     int i;
-    foldername = BBoxGetRadioName(scrn->folderbuttons);
-    toc = TocGetNamed(foldername);
+    toc = SelectedToc(scrn);
     if (TocConfirmCataclysm(toc)) return;
+    foldername = GetCurrentFolderName(scrn);
     (void) sprintf(str, "Are you sure you want to destroy %s?", foldername);
     if (!Confirm(scrn, str)) return;
     TocSetScrn(toc, (Scrn) NULL);
     TocDeleteFolder(toc);
     for (i=0 ; i<numScrns ; i++)
-	if (scrnList[i]->folderbuttons)
-	    BBoxDeleteButton(BBoxFindButtonNamed(scrnList[i]->folderbuttons,
-						 foldername));
+	if (scrnList[i]->folderbuttons) {
+	    if (IsSubFolder(foldername)) {
+		char *parentfolder = GetParentFolderName(foldername);
+		char *subfolder = GetSubFolderName(foldername);
+		
+		BBoxDeleteMenuButtonEntry
+		    (BBoxFindButtonNamed(scrnList[i]->folderbuttons,
+					 parentfolder), subfolder);
+		XtFree(parentfolder);
+		XtFree(subfolder);
+	    }
+	    else
+		BBoxDeleteButton(BBoxFindButtonNamed
+				 (scrnList[i]->folderbuttons, foldername));
+	}
 }
 
 
@@ -181,7 +243,7 @@ void CreateFolder(name)
 	Feep();
 	return;
     }
-    for (position = 0; position < numFolders; position++)
+    for (position = numFolders - 1; position >= 0; position--)
 	if (folderList[position] == toc)
 	    break;
     for (i = 0; i < numScrns; i++)
