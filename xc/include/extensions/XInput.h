@@ -1,4 +1,4 @@
-/* $Header: XInput.h,v 1.14 91/07/24 15:33:51 rws Exp $ */
+/* $XConsortium: XInput.h,v 1.15 92/12/30 16:01:49 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 

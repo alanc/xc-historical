@@ -1,4 +1,4 @@
-/* $Header: XIproto.h,v 1.19 91/07/17 16:35:38 rws Exp $ */
+/* $XConsortium: XIproto.h,v 1.20 91/07/24 15:50:02 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
