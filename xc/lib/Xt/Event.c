@@ -1,4 +1,4 @@
-/* $XConsortium: Event.c,v 1.122 90/12/12 14:51:17 rws Exp $ */
+/* $XConsortium: Event.c,v 1.123 90/12/13 23:32:18 rws Exp $ */
 /* $oHeader: Event.c,v 1.9 88/09/01 11:33:51 asente Exp $ */
 
 /***********************************************************
@@ -51,8 +51,6 @@ SOFTWARE.
 #define GRAPHICS_EXPOSE  ((XtExposeGraphicsExpose & COMP_EXPOSE) || \
 			  (XtExposeGraphicsExposeMerged & COMP_EXPOSE))
 #define NO_EXPOSE        (XtExposeNoExpose & COMP_EXPOSE)
-
-extern void 			bzero();
 
 EventMask XtBuildEventMask(widget)
     Widget widget;
