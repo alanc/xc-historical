@@ -2,6 +2,7 @@
  * xman - X window system manual page display program.
  *
  * $XConsortium: ScrollByL.h,v 1.4 89/07/21 17:33:49 kit Exp $
+ * $Athena: ScrollByL.h,v 4.0 88/08/31 22:11:16 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -36,10 +37,12 @@
 #define MANPAGE_NORMAL   "fixed"
 #define MANPAGE_BOLD     "helvetica-bold12"
 #define MANPAGE_ITALIC   "helvetica-boldoblique12"
+#define MANPAGE_SYMBOL   "symbol-medium12"
 #else
 #define MANPAGE_NORMAL   "*-new century schoolbook-medium-r-normal--*-120-*"
 #define MANPAGE_BOLD     "*-new century schoolbook-bold-r-normal--*-120-*"
 #define MANPAGE_ITALIC   "*-new century schoolbook-bold-i-normal--*-120-*"
+#define MANPAGE_SYMBOL   "*-symbol-medium-r-normal--*-120-*"
 #endif /* ATHENA */
 
 #define XtNindent           "indent"
@@ -47,6 +50,7 @@
 #define XtNmanualFontNormal "manualFontNormal"
 #define XtNmanualFontBold   "manualFontBold"
 #define XtNmanualFontItalic "manualFontItalic"
+#define XtNmanualFontSymbol "manualFontSymbol"
 
 #define XtCIndent           "Indent"
 
