@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: window.c,v 5.31 89/08/03 09:39:37 keith Exp $ */
+/* $XConsortium: window.c,v 5.32 89/08/23 14:35:14 rws Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -3856,7 +3856,7 @@ TileScreenSaver(i, kind)
 {
     int j;
     int result;
-    XID attributes[2];
+    XID attributes[3];
     Mask mask;
     WindowPtr pWin;		
     CursorMetricRec cm;
@@ -3875,7 +3875,7 @@ TileScreenSaver(i, kind)
 	    mask |= CWBackPixel;
 	    break;
     	case BackgroundPixmap:
-	    attributes[attri++] = WindowTable[i]->background.pixmap->drawable.id;
+	    attributes[attri++] = None;
 	    mask |= CWBackPixmap;
 	    break;
     	default:
@@ -3887,6 +3887,8 @@ TileScreenSaver(i, kind)
 	mask |= CWBackPixel;
 	break;
     }
+    mask |= CWOverrideRedirect;
+    attributes[attri++] = xTrue;
 
     /*
      * create a blank cursor
@@ -3936,7 +3938,14 @@ TileScreenSaver(i, kind)
 		     (pointer)savedScreenInfo[i].pWindow))
 	return FALSE;
 
-    pWin->overrideRedirect = TRUE;
+    if (mask & CWBackPixmap)
+    {
+	pWin->backgroundState = BackgroundPixmap;
+	pWin->background.pixmap = pWin->parent->background.pixmap;
+	pWin->background.pixmap->refcnt++;
+	(*pWin->drawable.pScreen->ChangeWindowAttributes)(pWin, CWBackPixmap);
+    }
+
     MapWindow(pWin, serverClient);
 #ifndef NOLOGOHACK
     if (kind == SCREEN_IS_TILED && logoScreenSaver)
