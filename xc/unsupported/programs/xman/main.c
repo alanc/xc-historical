@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: main.c,v 1.7 89/05/06 21:16:26 kit Exp $
+ * $XConsortium: main.c,v 1.8 89/05/09 16:35:08 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -50,6 +50,8 @@ static XtResource my_resources[] = {
      Offset(cursors.search_entry), XtRString, SEARCH_ENTRY_CURSOR},
   {"pointerColor", XtCForeground, XtRPixel, sizeof(Pixel),
      Offset(cursors.color), XtRString, "XtDefaultForeground"},
+  {"help", XtCBoolean, XtRBoolean, sizeof(Boolean),
+     Offset(show_help_syntax), XtRImmediate, FALSE},
   {"helpFile", XtCFile, XtRString, sizeof(char *),
      Offset(help_file), XtRString, HELPFILE},
   {"topBox", XtCBoolean, XtRBoolean, sizeof(Boolean),
@@ -64,12 +66,13 @@ static XtResource my_resources[] = {
  */
 
 static XrmOptionDescRec xman_options[] = {
-{"-geometry", "*topBox.geometry", XrmoptionSepArg, (caddr_t) NULL},
-{"=",         "*topBox.geometry", XrmoptionIsArg, (caddr_t) NULL},
+{"-geometry", "*topBox.geometry",        XrmoptionSepArg, (caddr_t) NULL},
+{"-help",     "help",                    XrmoptionNoArg,  (caddr_t) "True"},
+{"=",         "*topBox.geometry",        XrmoptionIsArg,  (caddr_t) NULL},
 {"-pagesize", "*manualBrowser.geometry", XrmoptionSepArg, (caddr_t) NULL},
-{"-notopbox", "topBox", XrmoptionNoArg, (caddr_t) "False"},
-{"-helpfile", "helpFile", XrmoptionSepArg, (caddr_t) NULL},
-{"-bothshown", "bothShown", XrmoptionNoArg, (caddr_t) "True"},
+{"-notopbox", "topBox",                  XrmoptionNoArg,  (caddr_t) "False"},
+{"-helpfile", "helpFile",                XrmoptionSepArg, (caddr_t) NULL},
+{"-bothshown", "bothShown",              XrmoptionNoArg,  (caddr_t) "True"},
 };
 
 XtActionsRec xman_actions[] = {
@@ -98,16 +101,17 @@ int argc;
   initial_widget = XtInitialize(NULL, "Xman", 
 				xman_options, XtNumber(xman_options),
 				(unsigned int*) &argc,argv);
-  if (argc != 1) {
-    ArgError(argc, argv);
-    exit(42);
-  }
 
   manglobals_context = XStringToContext(MANNAME);
 
   XtGetApplicationResources( initial_widget, (caddr_t) &resources, 
 			    my_resources, XtNumber(my_resources),
 			    NULL, (Cardinal) 0);
+
+  if ( (argc != 1) || (resources.show_help_syntax) ) {
+    ArgError(argc, argv);
+    exit(42);
+  }
 
   XtAppAddActions(XtWidgetToApplicationContext(initial_widget),
 		  xman_actions, XtNumber(xman_actions));
@@ -169,6 +173,7 @@ int argc;
   int i;
 
   static char **syntax, *syntax_def[] = {
+  "-help",                   "Print this message",
   "-helpfile <filename>",    "Specifies the helpfile to use.",
   "-bothshown",              "Show both the directory and manpage at once.",
   "-notopbox",               "Starts with manpage rather than topbox.",

@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: man.h,v 1.12 89/07/12 13:54:27 kit Exp $
+ * $XConsortium: man.h,v 1.13 89/08/30 18:24:31 kit Exp $
  * $Athena: man.h,v 4.6 89/01/06 12:17:38 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
@@ -138,6 +138,8 @@ typedef struct _ManpageGlobals{
 typedef struct _Xman_Resources {
   XmanFonts fonts;		/* The fonts used for the man pages. */
   XmanCursors cursors;		/* The cursors for xman. */
+  Boolean show_help_syntax;	/* True of syntax message should be dumped to
+				   stdout. */
   Boolean both_shown_initial;	/* The initial state of the manual pages
 				   show two screens or only one. */
   Boolean top_box_active;	/* Put up the Top Box. */
