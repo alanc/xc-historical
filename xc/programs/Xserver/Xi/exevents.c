@@ -1,4 +1,4 @@
-/* $XConsortium: exevents.c,v 1.46 93/09/03 13:15:33 dpw Exp $ */
+/* $XConsortium: exevents.c,v 1.47 94/02/07 22:25:13 rws Exp $ */
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
 Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -61,7 +61,6 @@ extern int		DeviceButtonPress;
 extern int		DeviceValuator;
 extern Mask 		DevicePointerMotionMask;
 extern Mask 		DeviceMappingNotifyMask;
-extern Mask 		DeviceButton1Mask;
 extern Mask 		DeviceButtonMotionMask;
 extern Mask 		DeviceButtonGrabMask;
 extern Mask 		DeviceOwnerGrabButtonMask;
@@ -233,7 +232,7 @@ ProcessOtherEvent (xE, other, count)
 	if (xE->detail == 0)
 	     return;
 	if (xE->detail <= 5)
-	    b->state |= (DeviceButton1Mask >> 1) << xE->detail;
+	    b->state |= (Button1Mask >> 1) << xE->detail;
 	SetMaskForEvent(Motion_Filter(b),DeviceMotionNotify);
 	if (!grab)
 	    if (CheckDeviceGrabs(other, xE, 0, count))
@@ -252,7 +251,7 @@ ProcessOtherEvent (xE, other, count)
 	if (xE->detail == 0)
 	    return;
 	if (xE->detail <= 5)
-	    b->state &= ~((DeviceButton1Mask >> 1) << xE->detail);
+	    b->state &= ~((Button1Mask >> 1) << xE->detail);
 	SetMaskForEvent(Motion_Filter(b),DeviceMotionNotify);
 	if (!b->state && other->fromPassiveGrab)
 	    deactivateDeviceGrab = TRUE;

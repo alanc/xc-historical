@@ -1,4 +1,4 @@
-/* $XConsortium: extinit.c,v 1.15 92/12/30 16:04:26 rws Exp $ */
+/* $XConsortium: extinit.c,v 1.16 93/09/20 20:15:14 dpw Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -93,7 +93,6 @@ Mask	ChangeDeviceNotifyMask;
 Mask	DeviceMappingNotifyMask;
 Mask	DeviceOwnerGrabButtonMask;
 Mask	DeviceButtonGrabMask;
-Mask	DeviceButton1Mask;
 Mask	DeviceButtonMotionMask;
 
 int	DeviceValuator;
@@ -688,8 +687,7 @@ FixExtensionEvents (extEntry)
 
     DevicePointerMotionHintMask = GetNextExtEventMask();
     SetEventInfo (DevicePointerMotionHintMask, _devicePointerMotionHint);
-    DeviceButton1Mask = GetNextExtEventMask();
-    SetEventInfo (DeviceButton1Mask, _deviceButton1Motion);
+    SetEventInfo (GetNextExtEventMask(), _deviceButton1Motion);
     SetEventInfo (GetNextExtEventMask(), _deviceButton2Motion);
     SetEventInfo (GetNextExtEventMask(), _deviceButton3Motion);
     SetEventInfo (GetNextExtEventMask(), _deviceButton4Motion);
