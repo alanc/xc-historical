@@ -1,7 +1,7 @@
 /*
  * xmodmap - program for loading keymap definitions into server
  *
- * $XConsortium: handle.c,v 1.16 88/11/07 11:13:13 jim Exp $
+ * $XConsortium: handle.c,v 1.17 89/07/07 10:56:38 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -556,10 +556,10 @@ static int do_add (line, len)
     return (0);
 }
 
+#ifdef AUTO_ADD_REMOVE
 /*
  * make_add - stick a single add onto the queue
  */
-
 static void make_add (modifier, keysym)
     int modifier;
     KeySym keysym;
@@ -587,6 +587,7 @@ static void make_add (modifier, keysym)
     add_to_work_queue (opam);
     return;
 }
+#endif /* AUTO_ADD_REMOVE */
 
 
 /*
@@ -695,10 +696,10 @@ static int do_remove (line, len)
     return (0);
 }
 
+#ifdef AUTO_ADD_REMOVE
 /*
  * make_remove - stick a single remove onto the queue
  */
-
 static void make_remove (modifier, keycode)
     int modifier;
     KeyCode keycode;
@@ -727,6 +728,7 @@ static void make_remove (modifier, keycode)
     add_to_work_queue (oprm);
     return;
 }
+#endif /* AUTO_ADD_REMOVE */
 
 
 /*
