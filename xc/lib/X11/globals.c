@@ -1,5 +1,5 @@
 /*
- * $XConsortium: globals.c,v 1.15 93/02/08 10:54:28 rws Exp $
+ * $XConsortium: globals.c,v 1.16 94/02/05 12:37:53 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -64,9 +64,8 @@ without express or implied warranty.
 /*
  * Error handlers; used to be in XlibInt.c
  */
-typedef int (*funcptr)();
-ZEROINIT (funcptr, _XErrorFunction, NULL);
-ZEROINIT (funcptr, _XIOErrorFunction, NULL);
+ZEROINIT (XErrorHandler, _XErrorFunction, NULL);
+ZEROINIT (XIOErrorHandler, _XIOErrorFunction, NULL);
 ZEROINIT (_XQEvent *, _qfree, NULL);
 
 
