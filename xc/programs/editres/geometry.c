@@ -1,5 +1,5 @@
 /*
- * $XConsortium: geometry.c,v 1.11 91/01/09 17:45:41 gildea Exp $
+ * $XConsortium: geometry.c,v 1.12 91/04/04 21:35:22 gildea Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -57,7 +57,7 @@ Widget w;
     Window win, GetClientWindow();
     int x, y;			/* location of event in root coordinates. */
 
-    sprintf(msg, "Click on any widget is the client.\nEditres will %s",
+    sprintf(msg, "Click on any widget in the client.\nEditres will %s",
 	    "select that widget in the tree display.");
 
     SetMessage(global_screen_data.info_label, msg);
