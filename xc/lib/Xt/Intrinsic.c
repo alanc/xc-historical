@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Intrinsic.c,v 1.141 89/10/17 12:59:56 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Intrinsic.c,v 1.142 89/11/14 17:28:52 swick Exp $";
 /* $oHeader: Intrinsic.c,v 1.4 88/08/18 15:40:35 asente Exp $ */
 #endif /* lint */
 
@@ -852,9 +852,12 @@ static SubstitutionRec defaultSubs[] = {
 };
 
 
-String XtResolvePathname(dpy, type, filename, suffix, path, predicate)
+String XtResolvePathname(dpy, type, filename, suffix, path, substitutions,
+			 num_substitutions, predicate)
     Display *dpy;
     String type, filename, suffix, path;
+    Substitution substitutions;
+    Cardinal num_substitutions;
     XtFilePredicate predicate;
 {
     XtPerDisplay pd = _XtGetPerDisplay(dpy);
@@ -863,6 +866,7 @@ String XtResolvePathname(dpy, type, filename, suffix, path, predicate)
     int bytesAllocd, bytesLeft;
     char *ch, *result;
     extern char* getenv();
+    Substitution merged_substitutions;
 
     if (path == NULL) {
 #ifndef VMS
@@ -925,16 +929,31 @@ String XtResolvePathname(dpy, type, filename, suffix, path, predicate)
     printf("Massaged path: %s\n", massagedPath);
 #endif /* XNL_DEBUG */
 
-    defaultSubs[0].substitution = filename;
-    defaultSubs[1].substitution = type;
-    defaultSubs[2].substitution = suffix;
-    FillInLangSubs(&defaultSubs[3], pd);
+    if (num_substitutions == 0)
+	merged_substitutions = defaultSubs;
+    else {
+	int i = XtNumber(defaultSubs);
+	Substitution sub, def;
+	merged_substitutions = sub = (Substitution)
+	    ALLOCATE_LOCAL((unsigned)(num_substitutions+i)*sizeof(SubstitutionRec));
+	if (sub == NULL) _XtAllocError(NULL);
+	for (def = defaultSubs; i--; sub++, def++) sub->match = def->match;
+	for (i = num_substitutions; i--; ) *sub++ = *substitutions++;
+    }
+    merged_substitutions[0].substitution = filename;
+    merged_substitutions[1].substitution = type;
+    merged_substitutions[2].substitution = suffix;
+    FillInLangSubs(&merged_substitutions[3], pd);
 
-    result = XtFindFile(massagedPath, defaultSubs, XtNumber(defaultSubs),
-	    predicate);
+    result = XtFindFile(massagedPath, merged_substitutions,
+			num_substitutions + XtNumber(defaultSubs),
+			predicate);
 
-    if (defaultSubs[4].substitution != NULL)
-	XtFree( (XtPointer)defaultSubs[4].substitution );
+    if (merged_substitutions[4].substitution != NULL)
+	XtFree( (XtPointer)merged_substitutions[4].substitution );
+
+    if (merged_substitutions != defaultSubs) 
+	DEALLOCATE_LOCAL(merged_substitutions);
 
     DEALLOCATE_LOCAL(massagedPath);
 
