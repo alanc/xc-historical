@@ -1,5 +1,5 @@
 /*
- *	$Header: main.c,v 1.16 88/02/20 16:34:15 swick Exp $
+ *	$Header: main.c,v 1.17 88/02/20 17:09:38 swick Exp $
  *
  * WARNING:  This code (particularly, the tty setup code) is a historical
  * relic and should not be confused with a real toolkit application or a
@@ -34,7 +34,7 @@
 /* main.c */
 
 #ifndef lint
-static char rcs_id[] = "$Header: main.c,v 1.16 88/02/20 16:34:15 swick Exp $";
+static char rcs_id[] = "$Header: main.c,v 1.17 88/02/20 17:09:38 swick Exp $";
 #endif	/* lint */
 
 #include <X11/Xos.h>
@@ -57,6 +57,9 @@ static char rcs_id[] = "$Header: main.c,v 1.16 88/02/20 16:34:15 swick Exp $";
 #include <errno.h>
 #include <signal.h>
 #include <setjmp.h>
+#ifdef hpux
+#include <sys/utsname.h>
+#endif
 
 #ifdef apollo
 #define ttyslot() 1
