@@ -1,4 +1,4 @@
-/* $XConsortium: Destroy.c,v 1.32 90/08/29 17:17:15 swick Exp $ */
+/* $XConsortium: Destroy.c,v 1.34 90/08/31 08:15:04 swick Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -276,7 +276,10 @@ void XtDestroyWidget (widget)
 	}
     }
 
-    if (_XtSafeToDestroy(app))
-	_XtDoPhase2Destroy(app, app->dispatch_level);
+    if (_XtSafeToDestroy(app)) {
+	app->dispatch_level = 1; /* avoid nested _XtDoPhase2Destroy */
+	_XtDoPhase2Destroy(app, 0);
+	app->dispatch_level = 0;
+    }
 	
 } /* XtDestroyWidget */
