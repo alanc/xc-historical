@@ -29,7 +29,7 @@
  */
 
 #ifndef lint
-static char *rcsid_xwd_c = "$Header: xwd.c,v 1.3 87/05/18 18:20:30 dkk Locked $";
+static char *rcsid_xwd_c = "$Header: xwd.c,v 1.4 87/05/19 20:09:56 dkk Locked $";
 #endif
 
 #include <X11/X.h>
@@ -65,6 +65,7 @@ char *calloc();
 
 
 extern int errno;
+extern XImage *XCreateImage();
 
 main(argc, argv)
     int argc;
@@ -313,9 +314,8 @@ main(argc, argv)
     image = XCreateImage ( dpy, visual, depth, format, offset,
 			   data, width, height);
 
-/*    XGetImage ( dpy, image_win, virt_x, virt_y, width, height, 
-	       plane_mask, format);
- %%*/
+    image = XGetImage ( dpy, image_win, virt_x, virt_y, width, 
+		       height, plane_mask, format);
 
     if (debug) fprintf(stderr,"xwd: Getting pixmap.\n");
 
