@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 2.24 91/07/16 23:08:20 gildea Exp $
+XCOMM $XConsortium: Imakefile,v 2.25 91/07/21 21:00:00 rws Exp $
 #ifndef X11perfcompLib
 #define X11perfcompLib $(LIBDIR)/x11perfcomp
 #endif
@@ -27,7 +27,7 @@ LOCAL_LIBRARIES = $(XLIB)
 
 ComplexProgramTarget(x11perf)
 
-all:: x11perf_labels x11perfcomp
+all:: x11perfcomp
 
 CppScriptTarget(x11perfcomp,x11pcomp.cpp,-DLIBPATH=$(PERFLIB),$(ICONFIGFILE))
 
@@ -37,9 +37,5 @@ InstallNamedProg(perfboth.sh,perfboth,$(PERFLIB))
 InstallNamedProg(perfratio.sh,perfratio,$(PERFLIB))
 InstallManPageLong(x11pcomp,$(MANDIR),x11perfcomp)
 
-x11perf_labels: x11perf
-	$(RM) $@
-	./x11perf -labels > $@
-
 clean::
-	$(RM) x11perf_labels x11perfcomp
+	$(RM) x11perfcomp
