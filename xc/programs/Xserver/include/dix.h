@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: dix.h,v 1.80 94/04/17 20:25:36 dpw Exp mor $ */
+/* $XConsortium: dix.h,v 1.81 94/11/17 19:23:03 mor Exp mor $ */
 
 #ifndef DIX_H
 #define DIX_H
@@ -175,8 +175,8 @@ typedef struct _ClientPublic {
     int             (*readRequest)();
 } ClientPublicRec, *ClientPublicPtr;
 
-#define WriteToClient(client,buf,len)   (((client)->public.writeToClient)(client,buf,len))
-#define UncompressedWriteToClient(client,buf,len)   (((client)->public.uncompressedWriteToClient)(client,buf,len))
+#define WriteToClient(client,len,buf)   (((client)->public.writeToClient)(client,len,buf))
+#define UncompressedWriteToClient(client,len,buf)   (((client)->public.uncompressedWriteToClient)(client,len,buf))
 #define ReadRequestFromClient(client)   ((client)->public.readRequest(client))
 #define RequestLength(r,client,g,p)           (*(client)->public.requestLength) (r,client,g,p)
 #endif /* LBX */
