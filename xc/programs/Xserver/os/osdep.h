@@ -21,12 +21,13 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: osdep.h,v 1.15 88/09/06 15:50:47 jim Exp $ */
+/* $XConsortium: osdep.h,v 1.16 88/12/08 16:39:33 keith Exp $ */
 
 #ifndef NULL
 #define NULL 0
 #endif
 
+#define BOTIMEOUT 200 /* in milliseconds */
 #define BUFSIZE 4096
 #define BUFWATERMARK 8192
 #define MAXBUFSIZE (1 << 18)
@@ -150,6 +151,7 @@ typedef struct _osComm {
     int bufsize;
     int count;
     XID	auth_id;		/* authorization id */
+    long conn_time;		/* timestamp if not established, else 0  */
 } OsCommRec, *OsCommPtr;
 
 void Notice();
