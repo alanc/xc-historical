@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Viewport.c,v 1.11 88/01/28 09:32:04 swick Locked $";
+static char rcsid[] = "$Header: Viewport.c,v 1.12 88/01/28 10:09:48 swick Locked $";
 #endif lint
 
 /*
@@ -521,6 +521,11 @@ static void Resize(widget)
 	XtResizeWidget( child, (Dimension)child_width,
 		        (Dimension)child_height, 0 );
 	MoveChild(w, child->core.x, child->core.y);
+	/* %%% hack alert! CompositeWidgetClass should have a
+	 * layout method, instead of assuming the following will do... */
+	if (XtIsComposite(child))
+	    (*((CompositeWidgetClass)child->core.widget_class)->
+		composite_class.change_managed) (child);
     }
 }
 
