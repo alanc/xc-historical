@@ -1,4 +1,4 @@
-/* $XConsortium: pdither.c,v 1.1 93/10/26 10:01:23 rws Exp $ */
+/* $XConsortium: pdither.c,v 1.2 93/10/31 09:40:34 dpw Exp $ */
 /**** module pdither.c ****/
 /******************************************************************************
 				NOTICE
@@ -168,7 +168,7 @@ peDefPtr MakeDither(flo,tag,pe)
 Bool CopyPDitherErrorDiffusion(flo, ped, sparms, rparms, tsize, isDefault) 
      floDefPtr  flo;
      peDefPtr   ped;
-     void *sparms, *rparms;
+     pointer sparms, rparms;
      CARD16	tsize;
      Bool	isDefault;
 {
@@ -205,7 +205,7 @@ static
 Bool PrepPDitherStandard(flo, ped, raw, tec) 
      floDefPtr  flo;
      peDefPtr   ped;
-     void *raw, *tec;
+     pointer raw, tec;
 {
   return(TRUE);
 }
@@ -217,9 +217,9 @@ Bool PrepPDitherErrorDiffusion(flo, ped, raw, tec)
      floDefPtr  flo;
      peDefPtr   ped;
      xieFloDither *raw;
-     void	*tec;
+     pointer tec;
 {
-  return PrepPDitherStandard(flo, ped, (void *) raw, tec);
+  return PrepPDitherStandard(flo, ped, (pointer) raw, tec);
 }
 
 /*------------------------------------------------------------------------
@@ -231,7 +231,7 @@ Bool PrepPDitherOrdered(flo, ped, raw, tec)
      xieFloDither *raw;
      xieTecDitherOrdered *tec;
 {
-  return PrepPDitherStandard(flo, ped, (void *) raw, (void *) tec);
+  return PrepPDitherStandard(flo, ped, (pointer) raw, (pointer) tec);
 }
 
 /*------------------------------------------------------------------------
