@@ -1,4 +1,4 @@
-/* $XConsortium: jconfig.h,v 1.1 93/10/26 09:54:14 rws Exp $ */
+/* $XConsortium: jconfig.h,v 1.3 94/04/01 14:19:27 rws Exp $ */
 /* Module jconfig.h */
 
 /****************************************************************************
@@ -447,6 +447,10 @@ typedef short INT16;
 /* to have 64-bit longs, you might want to change this. */
 
 #ifndef XMD_H					/* X11/xmd.h correctly defines INT32 */
+#ifdef __alpha
+typedef int INT32;
+#else
 typedef long INT32;
+#endif
 #endif
 
