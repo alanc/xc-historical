@@ -1,0 +1,39 @@
+/*
+ * SET VERSION NUMBERS BEFORE MAKING MAKEFILES
+ */
+
+#define OSName            UNIOS-B 4.3BSD UNIX: 1.50
+#define OSMajorVersion    1
+#define OSMinorVersion    50
+#define SystemV NO
+#define BootstrapCFlags		-Dluna
+#define StandardDefines		-Dluna
+#define StandardCppDefines	-Dluna
+#define HasVoidSignalReturn	YES
+#define HasPutenv		NO
+#define HasBsearch		NO
+#define HasSaberC		NO
+
+#undef ExtensionDefines
+#define ExtensionDefines -DSHAPE -DMULTIBUFFER -DMITMISC
+
+#define PrimaryScreenResolution 100
+
+#ifdef Mc68000Architecture
+#define BuildServer YES
+#define XlunaServer Xluna
+#define UnalignedReferencesAllowed YES	       /* if arbitrary deref is okay */
+#define ServerDefines StandardDefines ExtensionDefines -DXDMCP
+/* gcc is *VERY USEFUL*, especially for the server; GET it */
+#define HasGcc NO
+#endif
+
+#ifdef Mc88000Architecture
+#define BuildServer NO
+#define XlunaServer Xluna
+#define ServerDefines StandardDefines ExtensionDefines -DXDMCP
+#endif
+
+
+XCOMM platform:  $XConsortium: Exp $
+XCOMM operating system:  OSName
