@@ -22,7 +22,7 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: globals.c,v 1.44 89/05/03 09:47:13 rws Exp $ */
+/* $XConsortium: globals.c,v 1.45 89/07/03 15:07:27 rws Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -57,6 +57,7 @@ int  currentMaxClients;   /* current size of clients array */
 WindowPtr *WindowTable;
 
 unsigned long globalSerialNumber = 0;
+unsigned long serverGeneration = 0;
 
 /* these next four are initialized in main.c */
 long ScreenSaverTime;
