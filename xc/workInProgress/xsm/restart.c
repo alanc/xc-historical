@@ -1,4 +1,4 @@
-/* $XConsortium: restart.c,v 1.14 94/07/27 16:01:01 mor Exp mor $ */
+/* $XConsortium: restart.c,v 1.15 94/08/02 18:46:37 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -320,9 +320,10 @@ int flag;
  */
 
 void
-Clone (client)
+Clone (client, useSavedState)
 
 ClientRec *client;
+Bool useSavedState;
 
 {
     char	*cwd;
@@ -340,7 +341,8 @@ ClientRec *client;
 
     if (verbose)
     {
-	printf ("Cloning id '%s'...\n", client->clientId);
+	printf ("Cloning id '%s', useSavedState = %d...\n",
+		client->clientId, useSavedState);
 	printf ("Host = %s\n", client->clientHostname);
     }
 
@@ -360,7 +362,9 @@ ClientRec *client;
 	    cwd = (char *) prop->vals[0].value;
 	else if (strcmp (prop->name, "_XC_RestartService") == 0)
 	    restart_service_prop = (char *) prop->vals[0].value;
-	else if (strcmp(prop->name, SmCloneCommand) == 0)
+	else if (
+	    (!useSavedState && strcmp(prop->name, SmCloneCommand) == 0) ||
+	    (useSavedState && strcmp(prop->name, SmRestartCommand) == 0))
 	{
 	    args = (char **) malloc ((prop->num_vals + 1) * sizeof (char *));
 	    pp = args;
