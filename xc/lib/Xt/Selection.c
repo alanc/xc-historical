@@ -1,4 +1,4 @@
-/* $XConsortium: Selection.c,v 1.97 94/09/09 21:59:10 converse Exp kaleb $ */
+/* $XConsortium: Selection.c,v 1.98 95/05/10 21:23:58 kaleb Exp converse $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -1199,17 +1199,17 @@ Boolean *cont;
         (*info->callbacks[n])(widget, *info->req_closure, &ctx->selection, 
 			      &info->type, value, &length, &info->format);
       } else {
-          if ((BYTELENGTH(length,info->format)+info->offset) 
-			> info->bytelength) {
-	      unsigned int bytes;
-	      bytes = (info->bytelength *= 2);
-	      info->value = XtRealloc(info->value, bytes);
-          }
-          (void) memmove(&info->value[info->offset], value, 
-			 (int) BYTELENGTH(length, info->format));
-          info->offset += BYTELENGTH(length, info->format);
-         XFree(value);
-     }
+	  int size = BYTELENGTH(length, info->format);
+	  if (info->offset + size > info->bytelength) {
+	      /* allocate enough for this and the next increment */
+	      info->bytelength = info->offset + size * 2;
+	      info->value = XtRealloc(info->value,
+				      (Cardinal) info->bytelength);
+	  }
+	  (void) memmove(&info->value[info->offset], value, size);
+	  info->offset += size;
+	  XFree(value);
+      }
      /* reset timer */
 #ifndef DEBUG_WO_TIMERS
      {
