@@ -23,7 +23,7 @@ SOFTWARE.
 ******************************************************************/
 #ifndef SERVERMD_H
 #define SERVERMD_H 1
-/* $XConsortium: servermd.h,v 1.57 91/02/10 17:29:39 keith Exp $ */
+/* $XConsortium: servermd.h,v 1.58 91/05/08 09:31:05 jap Exp $ */
 
 /*
  * Machine dependent values:
@@ -163,6 +163,10 @@ SOFTWARE.
 #define GETLEFTBITS_ALIGNMENT	4
 /* ibm pcc doesn't understand pragmas. */
 
+#ifdef i386
+#define BITMAP_SCANLINE_UNIT	8
+#endif
+
 #endif /* ibm */
 
 #ifdef hpux
@@ -223,6 +227,7 @@ SOFTWARE.
 #define BITMAP_BIT_ORDER	MSBFirst
 #define	GLYPHPADBYTES		4
 #define GETLEFTBITS_ALIGNMENT	4
+#define IMAGE_BUFSIZE		(64*1024)
 /*
  * Use SysV random number generator.
  */
@@ -256,20 +261,16 @@ SOFTWARE.
  * 2048 words per buffer / 32 words per scanline = 64 scanlines per buffer
  * 864 scanlines / 64 scanlines = 14 buffers to draw a full screen
  */
-#if defined(stellar)
-#define IMAGE_BUFSIZE		(64*1024)
-#else
+#ifndef IMAGE_BUFSIZE
 #define IMAGE_BUFSIZE		8192
 #endif
 
 /* pad scanline to a longword */
-#if defined(ibm) && defined(i386)
-#define BITMAP_SCANLINE_UNIT	8
-#else
+#ifndef BITMAP_SCANLINE_UNIT
 #define BITMAP_SCANLINE_UNIT	32
 #endif
-#define BITMAP_SCANLINE_PAD  32
 
+#define BITMAP_SCANLINE_PAD  32
 #define LOG2_BITMAP_PAD		5
 #define LOG2_BYTES_PER_SCANLINE_PAD	2
 
