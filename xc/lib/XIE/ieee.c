@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: ieee.c,v 1.1 93/07/19 11:39:24 mor Exp $ */
 
 /***	ieee.c - internal type conversion routines	
 
@@ -75,7 +75,7 @@ Logic, Inc.
 */
 
 /**********************************************************************/
-XieFloat XieConvertFromIEEE(ieee)
+XieFloat _XieConvertFromIEEE(ieee)
 xieTypFloat	ieee;
 {
 	printf(" kava kava!!! %s(%d)\n",__FILE__,__LINE__);
@@ -83,7 +83,7 @@ xieTypFloat	ieee;
 }
 
 /**********************************************************************/
-xieTypFloat XieConvertToIEEE(native)
+xieTypFloat _XieConvertToIEEE(native)
 XieFloat native;
 {
 xieTypFloat	value;
