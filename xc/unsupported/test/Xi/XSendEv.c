@@ -1,4 +1,4 @@
-/* $XConsortium: XSendEv.c,v 1.2 91/02/20 09:17:14 rws Exp $ */
+/* $XConsortium: XSendEv.c,v 1.3 91/07/17 16:17:26 rws Exp $ */
 /************************************************************************
  *
  * XSendEv.c.
@@ -751,7 +751,7 @@ send_any_event (display, name, dev, info, win, root)
 	    case KeyClass:
 		status = XSendExtensionEvent (display, dev, win, True, 
 			class[dev->device_id].valid, 
-			&class[dev->device_id].class[0], kev);
+			&class[dev->device_id].class[0], (XEvent *)kev);
     		XSync (display, 0);
 		if (status == 0)
 		    printf ("Event Conversion failed.\n");
@@ -760,7 +760,7 @@ send_any_event (display, name, dev, info, win, root)
 
 		status = XSendExtensionEvent (display, dev, win, True, 
 			class[dev->device_id].valid, 
-			&class[dev->device_id].class[0], sev);
+			&class[dev->device_id].class[0], (XEvent *)sev);
     		XSync (display, 0);
 		if (status == 0)
 		    printf ("Event Conversion failed.\n");
@@ -771,7 +771,7 @@ send_any_event (display, name, dev, info, win, root)
 	    case ValuatorClass:
 		status = XSendExtensionEvent (display, dev, win, True, 
 			class[dev->device_id].valid, 
-			&class[dev->device_id].class[0], mev);
+			&class[dev->device_id].class[0], (XEvent *)mev);
     		XSync (display, 0);
 		if (status == 0)
 		    printf ("Event Conversion failed.\n");
@@ -782,7 +782,7 @@ send_any_event (display, name, dev, info, win, root)
 		    {
 		    status = XSendExtensionEvent (display, dev, win, True, 
 			class[dev->device_id].valid, 
-			&class[dev->device_id].class[0], pev);
+			&class[dev->device_id].class[0], (XEvent *)pev);
     		    XSync (display, 0);
 		    if (status == 0)
 		        printf ("Event Conversion failed.\n");
@@ -794,7 +794,7 @@ send_any_event (display, name, dev, info, win, root)
 	    case ButtonClass:
 		status = XSendExtensionEvent (display, dev, win, True, 
 			class[dev->device_id].valid, 
-			&class[dev->device_id].class[0], bev);
+			&class[dev->device_id].class[0], (XEvent *)bev);
     		XSync (display, 0);
 		if (status == 0)
 		    printf ("Event Conversion failed.\n");
@@ -806,7 +806,7 @@ send_any_event (display, name, dev, info, win, root)
 	}
 
     status = XSendExtensionEvent (display, dev, win, True, 
-	class[dev->device_id].valid, &class[dev->device_id].class[0], fev);
+	class[dev->device_id].valid, &class[dev->device_id].class[0], (XEvent *)fev);
     XSync (display, 0);
     if (status == 0)
 	printf ("Event Conversion failed.\n");
@@ -814,7 +814,7 @@ send_any_event (display, name, dev, info, win, root)
 	compare_events (display, fev, sizeof (XDeviceFocusChangeEvent));
 
     status = XSendExtensionEvent (display, dev, win, True, 
-	class[dev->device_id].valid, &class[dev->device_id].class[0], Mev);
+	class[dev->device_id].valid, &class[dev->device_id].class[0], (XEvent *)Mev);
     XSync (display, 0);
     if (status == 0)
 	printf ("Event Conversion failed.\n");
@@ -822,7 +822,7 @@ send_any_event (display, name, dev, info, win, root)
 	compare_events (display, Mev, sizeof (XDeviceMappingEvent));
 
     status = XSendExtensionEvent (display, dev, win, True, 
-	class[dev->device_id].valid, &class[dev->device_id].class[0], cev);
+	class[dev->device_id].valid, &class[dev->device_id].class[0], (XEvent *)cev);
     XSync (display, 0);
     if (status == 0)
 	printf ("Event Conversion failed.\n");

@@ -1,4 +1,4 @@
-/* $XConsortium: XTouch.c,v 1.2 91/02/20 09:18:23 rws Exp $ */
+/* $XConsortium: XTouch.c,v 1.3 91/07/17 16:17:34 rws Exp $ */
 /************************************************************************
  *
  * XTouch.c
@@ -1263,6 +1263,7 @@ get_motion_history (display, name, dev)
  */
 
 query_extension_version (display)
+    Display *display;
     {
     int			status = 0;
     XExtensionVersion 	*ext;
@@ -1419,7 +1420,7 @@ do_feedback_control (display, name, dev)
 	    kbdf.led_value = 0xcf3f; 
 	    kbdf.key = 0x81; 
 	    kbdf.auto_repeat_mode = AutoRepeatModeOff; 
-	    XChangeFeedbackControl (display, dev, mask, &kbdf);
+	    XChangeFeedbackControl (display, dev, mask, (XFeedbackControl *)&kbdf);
 	    }
 	else if (state->class == PtrFeedbackClass)
 	    {
@@ -1429,7 +1430,7 @@ do_feedback_control (display, name, dev)
 	    ptrf.accelNum = 10;
 	    ptrf.accelDenom = 2;
 	    ptrf.threshold = 6;
-	    XChangeFeedbackControl (display, dev, mask, &ptrf);
+	    XChangeFeedbackControl (display, dev, mask, (XFeedbackControl *)&ptrf);
 	    }
 	}
     XFreeFeedbackList (state);
@@ -1500,7 +1501,7 @@ send_extension_event (display, name, dev, win)
 
     process_events (display, NOPRINT);
     status = XSendExtensionEvent (display, dev, win, propagate,
-	class[dev->device_id].valid, &class[dev->device_id].class[0], sendp);
+	class[dev->device_id].valid, &class[dev->device_id].class[0], (XEvent *)sendp);
     XSync (display, 0);
     if (status == 0)
 	{

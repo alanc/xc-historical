@@ -1,4 +1,4 @@
-/* $XConsortium: XPErrors.c,v 1.1 91/02/18 10:25:22 rws Exp $ */
+/* $XConsortium: XPErrors.c,v 1.2 91/02/20 09:17:37 rws Exp $ */
 /************************************************************************
  *
  * XProtoErrors.c - attempt to force all of the protocol errors defined
@@ -1591,11 +1591,11 @@ change_keyboard_device (display, name, dev, list)
     saveid = dev->device_id;
 
     dev->device_id = -1;
-    XChangeKeyboardDevice (display, dev, -1, 1);
+    XChangeKeyboardDevice (display, dev);
     dev->device_id = xpointer->id;
-    XChangeKeyboardDevice (display, dev, -1, 1);
+    XChangeKeyboardDevice (display, dev);
     dev->device_id = xkeyboard->id;
-    XChangeKeyboardDevice (display, dev, -1, 1);
+    XChangeKeyboardDevice (display, dev);
     XSync (display, 0);
     dev->device_id = saveid;
 
@@ -1610,6 +1610,7 @@ change_keyboard_device (display, name, dev, list)
  */
 
 query_extension_version (display)
+    Display *display;
     {
     int			status = 0;
     XExtensionVersion 	*ext;
@@ -1752,37 +1753,37 @@ do_feedback_control (display, name, dev)
 	    expect = baddevice;
     	    error_code = XChangeFeedbackControl_code;
 	    dev->device_id = -1;
-	    XChangeFeedbackControl (display, dev, mask, &kbdf);
+	    XChangeFeedbackControl (display, dev, mask, (XFeedbackControl *)&kbdf);
 	    dev->device_id = xpointer->id;
-	    XChangeFeedbackControl (display, dev, mask, &kbdf);
+	    XChangeFeedbackControl (display, dev, mask, (XFeedbackControl *)&kbdf);
 	    dev->device_id = xkeyboard->id;
-	    XChangeFeedbackControl (display, dev, mask, &kbdf);
+	    XChangeFeedbackControl (display, dev, mask, (XFeedbackControl *)&kbdf);
 	    XSync (display, 0);
 	    dev->device_id = saveid;
 
 	    expect = BadValue;
 	    kbdf.pitch = -1;
-	    XChangeFeedbackControl (display, dev, mask, &kbdf);
+	    XChangeFeedbackControl (display, dev, mask, (XFeedbackControl *)&kbdf);
 	    kbdf.pitch = 1;
 	    kbdf.percent = -2;
-	    XChangeFeedbackControl (display, dev, mask, &kbdf);
+	    XChangeFeedbackControl (display, dev, mask, (XFeedbackControl *)&kbdf);
 	    kbdf.percent = 1;
 	    kbdf.duration = -2;
-	    XChangeFeedbackControl (display, dev, mask, &kbdf);
+	    XChangeFeedbackControl (display, dev, mask, (XFeedbackControl *)&kbdf);
 	    kbdf.duration = 1;
 	    kbdf.click = 101;
-	    XChangeFeedbackControl (display, dev, mask, &kbdf);
+	    XChangeFeedbackControl (display, dev, mask, (XFeedbackControl *)&kbdf);
 	    kbdf.click = 100;
 	    kbdf.key = 7;
-	    XChangeFeedbackControl (display, dev, mask, &kbdf);
+	    XChangeFeedbackControl (display, dev, mask, (XFeedbackControl *)&kbdf);
 	    kbdf.key = 8;
 	    kbdf.auto_repeat_mode = -2;
-	    XChangeFeedbackControl (display, dev, mask, &kbdf);
+	    XChangeFeedbackControl (display, dev, mask, (XFeedbackControl *)&kbdf);
 	    XSync (display,0);
 
 	    expect = BadMatch;
 	    mask &= ~DvAutoRepeatMode;
-	    XChangeFeedbackControl (display, dev, mask, &kbdf);
+	    XChangeFeedbackControl (display, dev, mask, (XFeedbackControl *)&kbdf);
 	    XSync (display,0);
 	    }
 	else if (state->class == PtrFeedbackClass)
@@ -1797,22 +1798,22 @@ do_feedback_control (display, name, dev)
 	    expect = baddevice;
     	    error_code = XChangeFeedbackControl_code;
 	    dev->device_id = -1;
-	    XChangeFeedbackControl (display, dev, mask, &ptrf);
+	    XChangeFeedbackControl (display, dev, mask, (XFeedbackControl *)&ptrf);
 	    dev->device_id = xpointer->id;
-	    XChangeFeedbackControl (display, dev, mask, &ptrf);
+	    XChangeFeedbackControl (display, dev, mask, (XFeedbackControl *)&ptrf);
 	    dev->device_id = xkeyboard->id;
-	    XChangeFeedbackControl (display, dev, mask, &ptrf);
+	    XChangeFeedbackControl (display, dev, mask, (XFeedbackControl *)&ptrf);
 	    XSync (display, 0);
 	    dev->device_id = saveid;
 
 	    expect = BadValue;
 	    ptrf.accelNum = -2;
-	    XChangeFeedbackControl (display, dev, mask, &ptrf);
+	    XChangeFeedbackControl (display, dev, mask, (XFeedbackControl *)&ptrf);
 	    ptrf.accelNum = 1;
 	    ptrf.accelDenom = -2;
-	    XChangeFeedbackControl (display, dev, mask, &ptrf);
+	    XChangeFeedbackControl (display, dev, mask, (XFeedbackControl *)&ptrf);
 	    ptrf.threshold = -2;
-	    XChangeFeedbackControl (display, dev, mask, &ptrf);
+	    XChangeFeedbackControl (display, dev, mask, (XFeedbackControl *)&ptrf);
 	    XSync (display, 0);
 	    }
 	}
@@ -1901,34 +1902,34 @@ send_extension_event (display, name, dev, win)
     dev->device_id = -1;
     XSendExtensionEvent (display, dev, win, True, 
 			class[saveid].valid, 
-			&class[saveid].class[0], &kev);
+			&class[saveid].class[0], (XEvent *)&kev);
     dev->device_id = xpointer->id;
     XSendExtensionEvent (display, dev, win, True, 
 			class[saveid].valid, 
-			&class[saveid].class[0], &kev);
+			&class[saveid].class[0], (XEvent *)&kev);
     dev->device_id = xkeyboard->id;
     XSendExtensionEvent (display, dev, win, True, 
 			class[saveid].valid, 
-			&class[saveid].class[0], &kev);
+			&class[saveid].class[0], (XEvent *)&kev);
     XSync (display, 0);
 
     dev->device_id = saveid;
     expect = BadWindow;
     XSendExtensionEvent (display, dev, -1, True, 
 			class[saveid].valid, 
-			&class[saveid].class[0], &kev);
+			&class[saveid].class[0], (XEvent *)&kev);
     XSync (display, 0);
 
     expect = badclass;
     XSendExtensionEvent (display, dev, win, True, 2,
-	bogusclass, &kev);
+	bogusclass, (XEvent *)&kev);
     XSync (display, 0);
 
     kev.type = KeyPress;
     expect = BadValue;
     XSendExtensionEvent (display, dev, win, True, 
 			class[saveid].valid, 
-			&class[saveid].class[0], &kev);
+			&class[saveid].class[0], (XEvent *)&kev);
     XSync (display, 0);
 
     }
