@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Event.c,v 1.68 88/03/28 13:36:05 swick Exp $";
+static char rcsid[] = "$Header: Event.c,v 1.70 88/04/01 11:55:06 swick Exp $";
 #endif lint
 
 /***********************************************************
@@ -733,8 +733,10 @@ static Boolean InsertKeyboardGrab(widget, keyboard_focus)
 	if (gl->widget == widget && gl->keyboard_focus != NULL) 
 	    if (gl->keyboard_focus == keyboard_focus)
 		return False;
-	    else
+	    else {
+		SendFocusNotify(gl->keyboard_focus, FocusOut);
 		gl->keyboard_focus = keyboard_focus;
+	    }
 	else {
 	    AddGrab( widget, False, False, keyboard_focus );
 	    ge = grabList;
@@ -927,6 +929,8 @@ static void AddForwardingHandler(widget, descendant)
     unsigned int mask;
     EventMask eventMask;
     register XtEventRec* p = widget->core.event_table;
+    Boolean might_have_focus = False;
+    Boolean had_focus_already = False;
     register XtEventHandler proc = ForwardEvent; /* compiler bug */
 
     /* %%%
@@ -939,24 +943,38 @@ static void AddForwardingHandler(widget, descendant)
     eventMask &= KeyPressMask | KeyReleaseMask;
 
     while (p != NULL && p->proc != proc) p = p->next;
-    if (p != NULL && p->mask == eventMask)
-	p->closure = (caddr_t)descendant;
-    else {
-	if (p != NULL)
+    if (p != NULL) {
+	might_have_focus = True;
+	if (p->mask == eventMask)
+	    p->closure = (caddr_t)descendant;
+	else {
 	    XtRemoveEventHandler(widget, XtAllEvents, False,
-				 HandleFocus, p->closure);
-	if (eventMask != 0) {
-	    XtAddEventHandler
-		(
-		 widget,
-		 eventMask,
-		 False,
-		 ForwardEvent,
-		 (caddr_t)descendant
-		);
+				 ForwardEvent, p->closure);
+	    p = NULL;
 	}
     }
-    if (eventMask != 0
+    if (p == NULL && eventMask != 0) {
+	XtAddEventHandler
+	    (
+	     widget,
+	     eventMask,
+	     False,
+	     ForwardEvent,
+	     (caddr_t)descendant
+	    );
+    }
+    if (might_have_focus) {
+	/* optimization to avoid QueryPointer */
+	register GrabRec *gl;
+	for (gl = grabList; gl != NULL; gl = gl->next) {
+	    if (gl->widget == widget && gl->keyboard_focus != NULL) {
+		had_focus_already = True;
+		break;
+	    }
+	}
+    }
+    if (!had_focus_already
+	&& eventMask != 0
 	&& (widget != XtParent(descendant) ||
 	    !XtIsSubclass(widget, shellWidgetClass))) {
 	/* is the pointer already inside? */
@@ -965,9 +983,12 @@ static void AddForwardingHandler(widget, descendant)
 		       &win_x, &win_y, &mask );
 	if (win_x >= 0 && win_x < widget->core.width &&
 	    win_y >= 0 && win_y < widget->core.height) {
-	    if (InsertKeyboardGrab( widget, descendant ))
-		SendFocusNotify( descendant, FocusIn );
+	    had_focus_already = True;
 	}
+    }
+    if (had_focus_already) {
+	if (InsertKeyboardGrab( widget, descendant ))
+	    SendFocusNotify( descendant, FocusIn );
     }
 }
 
@@ -998,8 +1019,6 @@ void XtSetKeyboardFocus(widget, descendant)
 /*	XtRemoveEventHandler(widget, XtAllEvents, True, HandleFocus, NULL);
 	XtRemoveEventHandler(widget, XtAllEvents, True, ForwardEvent, NULL);
 */
-	/* ||| This search nonsense is necessary until the proposed change to
-	   XtRemoveEventHandler(XtAllEvents) to ignore closure is accepted */
 	register XtEventRec* p;
 	register XtEventHandler proc;
 	p = widget->core.event_table;
@@ -1073,7 +1092,7 @@ static SendFocusNotify(child, type)
     EventMask mask;
     GrabType grabType;
 
-    if (_XtBuildEventMask(child) && FocusChangeMask) {
+    if (_XtBuildEventMask(child) & FocusChangeMask) {
 	event.xfocus.serial = LastKnownRequestProcessed(XtDisplay(child));
 	event.xfocus.send_event = True;
 	event.xfocus.display = XtDisplay(child);
