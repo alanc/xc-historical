@@ -38,4 +38,3 @@ Xmh.notice.Dialog.Text.BorderWidth: 0
 Xmh.notice.Dialog.Text.TextSink.Font: -*-courier-bold-r-*--*-120-*-*-*-*-iso8859-1
 Xmh.notice.Dialog.confirm.label: Acknowledged
 Xmh.notice.BorderWidth:		10
-Xmh.notice.borderPixmap:	gray1
