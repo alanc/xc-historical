@@ -1,4 +1,4 @@
-/* $XConsortium: miText.c,v 5.5 91/11/15 19:58:25 hersh Exp $ */
+/* $XConsortium: miText.c,v 5.6 92/11/16 13:32:19 mor Exp $ */
 
 
 /***********************************************************
@@ -74,7 +74,7 @@ tx_el_to_path(pRend, pddc, numFragments, pString, numChars, tx_el, align_pt)
     miTextFontEntry          *ptr1;
     pexMonoEncoding	    *mono_enc;
     register int             cnt=0;
-    int			     fragnum, charnum, some_characters, signum;
+    int			     fragnum, charnum, some_characters, signum, bytes;
     CARD32		     charval;
     diFontHandle	     font_handle;
     miFontHeader	    *font;
@@ -82,7 +82,7 @@ tx_el_to_path(pRend, pddc, numFragments, pString, numChars, tx_el, align_pt)
     ddFLOAT		     sp; 
     Meta_font		     meta_font;
     pexCoord2D		     cur, end, cpt;
-    register float	     xmin, xmax, ymin, ymax;
+    float	     	     xmin, xmax, ymin, ymax;
     ddTextFontEntry	    *fontEntry;
     ddUSHORT                 es, clip_mode;
     ddpex3rtn                status;
@@ -140,14 +140,15 @@ tx_el_to_path(pRend, pddc, numFragments, pString, numChars, tx_el, align_pt)
     /* Do for each MONO_ENCODING fragment within the ISTRING */
 
     for (fragnum = 0; fragnum < numFragments; fragnum++) {
-	
+
       mono_enc = (pexMonoEncoding *)ptr;
       ptr += sizeof(pexMonoEncoding);
 	    
-      if (mono_enc->characterSet > fontEntry->numFonts)
-	mono_enc->characterSet = 0;
+      if (mono_enc->characterSet < 1 ||
+	  mono_enc->characterSet > fontEntry->numFonts)
+	  mono_enc->characterSet = 1;
 
-      font_handle = fontEntry->fonts[mono_enc->characterSet];
+      font_handle = fontEntry->fonts[mono_enc->characterSet - 1];
 	    
       /* This is the font that this MONO_ENCODING would be rendered with  */
 
@@ -161,6 +162,13 @@ tx_el_to_path(pRend, pddc, numFragments, pString, numChars, tx_el, align_pt)
 	meta_font.bottom = font->bottom;
       if (font->max_width > meta_font.width)
 	meta_font.width = font->max_width;
+
+      bytes = mono_enc->numChars *
+	  ((mono_enc->characterSetWidth == PEXCSByte) ?
+	  sizeof(CARD8) : ((mono_enc->characterSetWidth == PEXCSShort) ?
+	  sizeof(CARD16) : sizeof(CARD32)));
+
+      ptr += (bytes + PADDING (bytes));
     }
 
     /* Now get the character definition and the required per character */
@@ -249,7 +257,7 @@ tx_el_to_path(pRend, pddc, numFragments, pString, numChars, tx_el, align_pt)
 
       }  /* for each character */
 	    
-      ptr += PADDING(2 + mono_enc->numChars * 
+      ptr += PADDING(mono_enc->numChars * 
 		     ((mono_enc->characterSetWidth == PEXCSByte) 
 		      ? sizeof(CARD8) 
 		      : ((mono_enc->characterSetWidth == PEXCSShort) 
@@ -263,7 +271,7 @@ tx_el_to_path(pRend, pddc, numFragments, pString, numChars, tx_el, align_pt)
 
     if (some_characters) {
 	    
-      micalc_cpt_and_align(&meta_font, xmin, xmax, ymin, ymax, path, 
+      micalc_cpt_and_align(&meta_font, &xmin, &xmax, &ymin, &ymax, path, 
 			 expansion, pAlignment, &cpt, align_pt);
 						       
     } else {
@@ -301,7 +309,7 @@ atx_el_to_path(pRend, pddc, numFragments, pString, numChars, tx_el, align_pt)
     miTextFontEntry          *ptr1;
     pexMonoEncoding	    *mono_enc;
     register int             cnt=0;
-    int			     fragnum, charnum, some_characters, signum;
+    int			     fragnum, charnum, some_characters, signum, bytes;
     CARD32		     charval;
     diFontHandle	     font_handle;
     miFontHeader	    *font;
@@ -309,7 +317,7 @@ atx_el_to_path(pRend, pddc, numFragments, pString, numChars, tx_el, align_pt)
     ddFLOAT		     sp;
     Meta_font		     meta_font;
     pexCoord2D		     cur, end, cpt;
-    register float	     xmin, xmax, ymin, ymax;
+    float	     	     xmin, xmax, ymin, ymax;
     ddTextFontEntry	    *fontEntry;
     ddUSHORT                 es;
     ddpex3rtn                status;
@@ -371,11 +379,12 @@ atx_el_to_path(pRend, pddc, numFragments, pString, numChars, tx_el, align_pt)
       mono_enc = (pexMonoEncoding *)ptr;
       ptr += sizeof(pexMonoEncoding);
 	    
-      if (mono_enc->characterSet > fontEntry->numFonts)
-	mono_enc->characterSet = 0;
+      if (mono_enc->characterSet < 1 ||
+	  mono_enc->characterSet > fontEntry->numFonts)
+	  mono_enc->characterSet = 1;
 
-      font_handle = fontEntry->fonts[mono_enc->characterSet];
-	    
+      font_handle = fontEntry->fonts[mono_enc->characterSet - 1];
+
       /* This is the font that this MONO_ENCODING would be rendered with  */
 
       font = (miFontHeader *)(font_handle->deviceData);
@@ -388,6 +397,13 @@ atx_el_to_path(pRend, pddc, numFragments, pString, numChars, tx_el, align_pt)
 	meta_font.bottom = font->bottom;
       if (font->max_width > meta_font.width)
 	meta_font.width = font->max_width;
+
+      bytes = mono_enc->numChars *
+	  ((mono_enc->characterSetWidth == PEXCSByte) ?
+	  sizeof(CARD8) : ((mono_enc->characterSetWidth == PEXCSShort) ?
+	  sizeof(CARD16) : sizeof(CARD32)));
+
+      ptr += (bytes + PADDING (bytes));
     }
 
     /* Now get the character definition and the required per character */
@@ -476,7 +492,7 @@ atx_el_to_path(pRend, pddc, numFragments, pString, numChars, tx_el, align_pt)
 
       }  /* for each character */
 	    
-      ptr += PADDING(2 + mono_enc->numChars * 
+      ptr += PADDING(mono_enc->numChars * 
 		     ((mono_enc->characterSetWidth == PEXCSByte) 
 		      ? sizeof(CARD8) 
 		      : ((mono_enc->characterSetWidth == PEXCSShort) 
@@ -490,7 +506,7 @@ atx_el_to_path(pRend, pddc, numFragments, pString, numChars, tx_el, align_pt)
 
     if (some_characters) {
 	    
-      micalc_cpt_and_align(&meta_font, xmin, xmax, ymin, ymax, path, 
+      micalc_cpt_and_align(&meta_font, &xmin, &xmax, &ymin, &ymax, path, 
 			 expansion, pAlignment, &cpt, align_pt);
 						       
     } else {
@@ -789,9 +805,17 @@ miText3D(pRend, pExecuteOC)
     numChars = 0;
     pMono = pText;
     for (i=0; i<numEncodings; i++) {
+      int bytes = pMono->numChars * ((pMono->characterSetWidth == PEXCSByte) ?
+	  sizeof(CARD8) : ((pMono->characterSetWidth == PEXCSShort) ?
+	  sizeof(CARD16) : sizeof(CARD32)));
       numChars += (ddULONG)pMono->numChars;
-      pMono++;
+      pMono = (pexMonoEncoding *) ((char *) (pMono + 1) +
+	  bytes + PADDING (bytes));
     }
+
+    if (numChars == 0)
+	return (Success);
+
 
     /* Convert text string into required paths */
 
@@ -1061,9 +1085,17 @@ miText2D(pRend, pExecuteOC)
     numChars = 0;
     pMono = pText;
     for (i=0; i<numEncodings; i++) {
+      int bytes = pMono->numChars * ((pMono->characterSetWidth == PEXCSByte) ?
+	  sizeof(CARD8) : ((pMono->characterSetWidth == PEXCSShort) ?
+	  sizeof(CARD16) : sizeof(CARD32)));
       numChars += (ddULONG)pMono->numChars;
-      pMono++;
+      pMono = (pexMonoEncoding *) ((char *) (pMono + 1) +
+	  bytes + PADDING (bytes));
     }
+
+    if (numChars == 0)
+	return (Success);
+
 
     /* Convert text string into required paths */
 
@@ -1387,9 +1419,17 @@ miAnnoText3D(pRend, pExecuteOC)
     numChars = 0;
     pMono = pText;
     for (i=0; i<numEncodings; i++) {
+      int bytes = pMono->numChars * ((pMono->characterSetWidth == PEXCSByte) ?
+	  sizeof(CARD8) : ((pMono->characterSetWidth == PEXCSShort) ?
+	  sizeof(CARD16) : sizeof(CARD32)));
       numChars += (ddULONG)pMono->numChars;
-      pMono++;
+      pMono = (pexMonoEncoding *) ((char *) (pMono + 1) +
+	  bytes + PADDING (bytes));
     }
+
+    if (numChars == 0)
+	return (Success);
+
 
     /* Convert text string into required paths */
 
@@ -1798,9 +1838,17 @@ miAnnoText2D(pRend, pExecuteOC)
     numChars = 0;
     pMono = pText;
     for (i=0; i<numEncodings; i++) {
+      int bytes = pMono->numChars * ((pMono->characterSetWidth == PEXCSByte) ?
+	  sizeof(CARD8) : ((pMono->characterSetWidth == PEXCSShort) ?
+	  sizeof(CARD16) : sizeof(CARD32)));
       numChars += (ddULONG)pMono->numChars;
-      pMono++;
+      pMono = (pexMonoEncoding *) ((char *) (pMono + 1) +
+	  bytes + PADDING (bytes));
     }
+
+    if (numChars == 0)
+	return (Success);
+
 
     /* Convert text string into required paths */
 
