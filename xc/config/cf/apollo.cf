@@ -2,12 +2,12 @@
  * SET VERSION NUMBERS BEFORE MAKING MAKEFILES
  */
 
-#define OSName            Domain/OS SR10.2
+#define OSName            Domain/OS SR10.3
 #define OSMajorVersion    10
-#define OSMinorVersion    2
+#define OSMinorVersion    3
 
 #define CCompilerMajorVersion   6
-#define CCompilerMinorVersion   0
+#define CCompilerMinorVersion   6
 
 #define XapolloServer     Xapollo
 
@@ -16,7 +16,7 @@
 #define HasVoidSignalReturn NO
 
 
-XCOMM platform:  $XConsortium: apollo.cf,v 1.22 90/11/30 11:13:33 rws Exp $
+XCOMM platform:  $XConsortium: apollo.cf,v 1.23 90/12/26 11:39:46 rws Exp $
 XCOMM operating system:  OSName
 
 /*****************************************************************************
@@ -27,13 +27,8 @@ XCOMM operating system:  OSName
 #define DefaultCCOptions -DNOSTDHDRS -DUNIXCPP
 
 #define ConnectionFlags -DTCPCONN
-#define OSReleaseDefines /* as nothing */
 
-#define miOptChoices -DAVOID_GLYPHBLT -DNEED_OLD_MFB_MASKS
-
-#define ExtensionDefines -DSHAPE -DMULTIBUFFER -DMITMISC
-
-#define ServerDefines StandardDefines ExtensionDefines -DXDMCP miOptChoices OSReleaseDefines
+#define ServerOSDefines -DAVOID_GLYPHBLT -DNEED_OLD_MFB_MASKS
 
 #define FontDefines	-DFONT_SNF -DFONT_BDF
 #define FontFilters BDFTOSNFFILT SHELLPATH
