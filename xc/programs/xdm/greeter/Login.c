@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: Login.c,v 1.33 91/05/23 15:48:42 keith Exp $
+ * $XConsortium: Login.c,v 1.34 91/07/18 18:52:34 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -765,8 +765,10 @@ static void Initialize (greq, gnew, args, num_args)
 
 	w->core.height = fy + pady;	/* for stupid compilers */
     }
-    x = (int)(WidthOfScreen (XtScreen (w)) - w->core.width) / 2;
-    y = (int)(HeightOfScreen (XtScreen (w)) - w->core.height) / 3;
+    if ((x = w->core.x) == -1)
+	x = (int)(WidthOfScreen (XtScreen (w)) - w->core.width) / 2;
+    if ((y = w->core.y) == -1)
+	y = (int)(HeightOfScreen (XtScreen (w)) - w->core.height) / 3;
     XtSetArg (position[0], XtNx, x);
     XtSetArg (position[1], XtNy, y);
     XtSetValues (XtParent (w), position, (Cardinal) 2);
