@@ -1,4 +1,4 @@
-/* $XConsortium: XScrResStr.c,v 1.1 91/02/03 13:26:35 rws Exp $ */
+/* $XConsortium: XScrResStr.c,v 1.1 91/02/03 18:14:58 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1991	*/
 
 /*
@@ -19,14 +19,16 @@ without express or implied warranty.
 char *XScreenResourceString(screen)
 	Screen *screen;
 {
+    Atom prop_name;
     Atom actual_type;
     int actual_format;
     unsigned long nitems;
     unsigned long leftover;
     char *val = NULL;
 
-    if (XGetWindowProperty(screen->display, screen->root,
-			   XInternAtom(screen->display, "SCREEN_RESOURCES"),
+    prop_name = XInternAtom(screen->display, "SCREEN_RESOURCES", True);
+    if (prop_name &&
+	XGetWindowProperty(screen->display, screen->root, prop_name,
 			   0L, 100000000L, False,
 			   XA_STRING, &actual_type, &actual_format,
 			   &nitems, &leftover,
