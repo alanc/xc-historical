@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Resources.c,v 1.27 87/11/01 16:43:01 haynes BL5 $";
+static char rcsid[] = "$Header: Resources.c,v 1.27 87/11/01 16:43:01 swick Locked $";
 #endif lint
 
 /*
@@ -40,6 +40,7 @@ static char rcsid[] = "$Header: Resources.c,v 1.27 87/11/01 16:43:01 haynes BL5 
 #include "Atoms.h"
 
 extern void _XrmGetSearchResource();
+extern void _XrmConvert();
 
 #ifdef reverseVideoHack
 static XrmName	QreverseVideo;
@@ -82,6 +83,7 @@ static void CopyToArg(src, dst, size)
 
 }
 
+#ifdef notdef
 static void PrintResourceList(list, count)
     register XtResourceList list;
     register int count;
@@ -94,6 +96,7 @@ static void PrintResourceList(list, count)
 	    list->default_type, list->default_addr);
     }
 }
+#endif
 
 static Cardinal GetNamesAndClasses(w, names, classes)
     register Widget	  w;
@@ -127,7 +130,7 @@ static Cardinal GetNamesAndClasses(w, names, classes)
 /* indicate that this list has been compiled already			*/
 
 
-extern void  XrmCompileResourceList(resources, num_resources)
+extern void  XtCompileResourceList(resources, num_resources)
     register XtResourceList resources;
     	     Cardinal	  num_resources;
 {
@@ -146,7 +149,7 @@ extern void  XrmCompileResourceList(resources, num_resources)
 	xrmres->xrm_default_addr = resources->default_addr;
     }
 
-} /* XrmCompileResourceList */
+} /* XtCompileResourceList */
 
 /* ||| References to display should be references to screen */
 
@@ -163,7 +166,6 @@ static void XrmGetResources(
     ArgList 	  args;		   /* ArgList to override resources	  */
     Cardinal	  num_args;	   /* number of items in arg list	  */
 {
-                Display         *dpy = screen->display;
     register 	ArgList		arg;
     register 	XrmName		argName;
 		XrmResourceList	xrmres;
@@ -197,7 +199,7 @@ static void XrmGetResources(
     if (num_resources != 0) {
 	/* Compile resource list if needed */
 	if (((int)resources->resource_offset) >= 0) {
-	    XrmCompileResourceList(resources, num_resources);
+	    XtCompileResourceList(resources, num_resources);
 	}
 	xrmres = (XrmResourceList) resources;
 
@@ -209,7 +211,7 @@ static void XrmGetResources(
 	/* Copy the args into the resources, mark each as found */
 	for (arg = args, i = 0; i < num_args; i++, arg++) {
 	    argName = StringToName(arg->name);
-#ifdef reversVideoHack
+#ifdef reverseVideoHack
 	    if (argName == QreverseVideo) {
 		reverseVideo = (Boolean) arg->value;
 		getReverseVideo = FALSE;
@@ -515,7 +517,7 @@ static void SetValues(widgetClass, w, args, num_args)
 	widgetClass->core_class.num_resources,
 	args, num_args);
 } /* SetValues */
-/*
+
 static Boolean RecurseSetValues (current, request, new, last, class)
     Widget current, request, new;
     Boolean last;
@@ -527,20 +529,19 @@ static Boolean RecurseSetValues (current, request, new, last, class)
             class->core_class.superclass);
     if (class->core_class.set_values!=NULL)
         redisplay |= (*class->core_class.set_values) (current, request, new,
-           last, class);
+           last);
     return (redisplay);
 }
-*/
+
 
 void XtSetValues(w, args, num_args)
     Widget   w;
     ArgList  args;
     Cardinal num_args;
 {
-    Widget	newWidget,requestWidget;
+    Widget	newWidget, requestWidget;
     Cardinal	widgetSize;
-   Boolean redisplay;
-    XtSetValuesProc setValues;
+    Boolean redisplay;
 
     if (num_args == 0) return;
      if ((args == NULL) && (num_args != 0)) {
@@ -551,45 +552,35 @@ void XtSetValues(w, args, num_args)
     /* Allocate and copy current widget into newWidget */
     widgetSize = w->core.widget_class->core_class.widget_size;
     requestWidget = (Widget) XtMalloc (widgetSize);
-   newWidget = (Widget) XtMalloc(widgetSize);
+    newWidget = (Widget) XtMalloc(widgetSize);
     bcopy((char *) w, (char *) requestWidget, widgetSize);
 
     /* Set resource values starting at CorePart on down to this widget */
     SetValues(w->core.widget_class, requestWidget, args, num_args);
     bcopy ((char *) requestWidget, (char *) newWidget, widgetSize);
-/* take out set values for chaining for this baselevel */
+
     /* Inform widget of changes and deallocate newWidget */
-/*    redisplay = RecurseSetValues (w, requestWidget, newWidget, TRUE,
+    redisplay = RecurseSetValues (w, requestWidget, newWidget, TRUE,
         w->core.widget_class);   
-     If a SetValues proc made a successful geometry request,
+
+    /* If a SetValues proc made a successful geometry request,
        then "w" contains the new, correct x, y, width, height fields.
-       Make sure not to smash them when copying "new" back into "w". 
-   newWidget->core.x = w->core.x;
+       Make sure not to smash them when copying "new" back into "w". */
+
+    newWidget->core.x = w->core.x;
     newWidget->core.y = w->core.y;
     newWidget->core.width = w->core.width;
     newWidget->core.height = w->core.height;
-   newWidget->core.border_width = w->core.border_width;
+    newWidget->core.border_width = w->core.border_width;
 
-   bcopy ((char *) newWidget, (char *) w, widgetSize);
+    bcopy ((char *) newWidget, (char *) w, widgetSize);
     XtFree((char *) requestWidget);
     XtFree((char *) newWidget);
 
     if (redisplay)
-        repaint background of window, and force a full exposure event 
+       /* repaint background of window, and force a full exposure event */
        XClearArea (XtDisplay(w), XtWindow(w), 0, 0, 0, 0, TRUE);
-*/
 
-/* this is old stuff */
-
-    /* Inform widget of changes and deallocate newWidget */
-    setValues = w->core.widget_class->core_class.set_values;
-   if (setValues == (XtSetValuesProc) NULL) {
-        XtError("set_values procedure cannot be NULL");
-    } else {
-        (*setValues)(w, newWidget);
-    }
-    XtFree((char *)newWidget);
-    XtFree((char *)requestWidget);
 } /* XtSetValues */
  
 
