@@ -1,4 +1,4 @@
-/* $XConsortium: xtest.c,v 1.8 92/02/25 14:21:31 rws Exp $ */
+/* $XConsortium: xtest.c,v 1.9 92/03/19 11:29:59 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -241,15 +241,11 @@ ProcXTestFakeInput(client)
     case ButtonPress:
     case ButtonRelease:
 	dev = (DeviceIntPtr)LookupPointerDevice();
-	for (n = 1; n <= dev->button->numButtons; n++)
-	    if (dev->button->map[n] == ev->u.u.detail)
-		break;
-	if (n > dev->button->numButtons)
+	if (!ev->u.u.detail || ev->u.u.detail > dev->button->numButtons)
 	{
 	    client->errorValue = ev->u.u.detail;
 	    return BadValue;
 	}
-	ev->u.u.detail = n;
 	break;
     }
     ev->u.keyButtonPointer.time = currentTime.milliseconds;
