@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: error.c,v 1.12 91/04/02 11:56:56 rws Exp $
+ * $XConsortium: error.c,v 1.13 94/01/14 15:07:15 gildea Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -27,59 +27,104 @@
 
 # include "dm.h"
 # include <stdio.h>
-
-InitErrorLog ()
-{
-	int	i;
-	if (errorLogFile[0]) {
-		i = creat (errorLogFile, 0666);
-		if (i != -1) {
-			if (i != 2) {
-				dup2 (i, 2);
-				close (i);
-			}
-		} else
-			LogError ("Cannot open errorLogFile %s\n", errorLogFile);
-	}
-}
+#if NeedVarargsPrototypes
+# include <stdarg.h>
+#endif
 
 /*VARARGS1*/
-LogInfo (fmt, arg1, arg2, arg3, arg4, arg5, arg6)
-char	*fmt;
-int	arg1, arg2, arg3, arg4, arg5, arg6;
+LogInfo(
+#if NeedVarargsPrototypes
+    char * fmt, ...)
+#else
+    fmt, arg1, arg2, arg3, arg4, arg5, arg6)
+    char *fmt;
+    int arg1, arg2, arg3, arg4, arg5, arg6;
+#endif
 {
     fprintf (stderr, "xdm info (pid %d): ", getpid());
+#if NeedVarargsPrototypes
+    {
+	va_list args;
+	va_start(args, fmt);
+	vfprintf (stderr, fmt, args);
+	va_end(args);
+    }
+#else
     fprintf (stderr, fmt, arg1, arg2, arg3, arg4, arg5, arg6);
+#endif
     fflush (stderr);
 }
 
 /*VARARGS1*/
-LogError (fmt, arg1, arg2, arg3, arg4, arg5, arg6)
-char	*fmt;
-int	arg1, arg2, arg3, arg4, arg5, arg6;
+LogError (
+#if NeedVarargsPrototypes
+    char * fmt, ...)
+#else
+    fmt, arg1, arg2, arg3, arg4, arg5, arg6)
+    char *fmt;
+    int arg1, arg2, arg3, arg4, arg5, arg6;
+#endif
 {
     fprintf (stderr, "xdm error (pid %d): ", getpid());
+#if NeedVarargsPrototypes
+    {
+	va_list args;
+	va_start(args, fmt);
+	vfprintf (stderr, fmt, args);
+	va_end(args);
+    }
+#else
     fprintf (stderr, fmt, arg1, arg2, arg3, arg4, arg5, arg6);
+#endif
     fflush (stderr);
 }
 
 /*VARARGS1*/
-LogPanic (fmt, arg1, arg2, arg3, arg4, arg5, arg6)
-char	*fmt;
-int	arg1, arg2, arg3, arg4, arg5, arg6;
+LogPanic (
+#if NeedVarargsPrototypes
+    char * fmt, ...)
+#else
+    fmt, arg1, arg2, arg3, arg4, arg5, arg6)
+    char *fmt;
+    int arg1, arg2, arg3, arg4, arg5, arg6;
+#endif
 {
-    LogError ("xdm panic (pid %d): ", getpid());
-    LogError (fmt, arg1, arg2, arg3, arg4, arg5, arg6);
+    fprintf (stderr, "xdm panic (pid %d): ", getpid());
+#if NeedVarargsPrototypes
+    {
+	va_list args;
+	va_start(args, fmt);
+	vfprintf (stderr, fmt, args);
+	va_end(args);
+    }
+#else
+    fprintf (fmt, arg1, arg2, arg3, arg4, arg5, arg6);
+#endif
+    fflush (stderr);
     exit (1);
 }
 
 /*VARARGS1*/
-LogOutOfMem (fmt, arg1, arg2, arg3, arg4, arg5, arg6)
-char	*fmt;
-int	arg1, arg2, arg3, arg4, arg5, arg6;
+LogOutOfMem (
+#if NeedVarargsPrototypes
+    char * fmt, ...)
+#else
+    fmt, arg1, arg2, arg3, arg4, arg5, arg6)
+    char *fmt;
+    int arg1, arg2, arg3, arg4, arg5, arg6;
+#endif
 {
     fprintf (stderr, "xdm: out of memory in routine ");
+#if NeedVarargsPrototypes
+    {
+	va_list args;
+	va_start(args, fmt);
+	vfprintf (stderr, fmt, args);
+	va_end(args);
+    }
+#else
     fprintf (stderr, fmt, arg1, arg2, arg3, arg4, arg5, arg6);
+#endif
     fflush (stderr);
 }
 
@@ -96,13 +141,40 @@ char	*mesg;
 
 
 /*VARARGS1*/
-Debug (fmt, arg1, arg2, arg3, arg4, arg5, arg6)
-char	*fmt;
-int	arg1, arg2, arg3, arg4, arg5, arg6;
+Debug (
+#if NeedVarargsPrototypes
+    char * fmt, ...)
+#else
+    fmt, arg1, arg2, arg3, arg4, arg5, arg6)
+    char *fmt;
+    int arg1, arg2, arg3, arg4, arg5, arg6;
+#endif
 {
     if (debugLevel > 0)
     {
+#if NeedVarargsPrototypes
+	va_list args;
+	va_start(args, fmt);
+	vprintf (fmt, args);
+	va_end(args);
+#else
 	printf (fmt, arg1, arg2, arg3, arg4, arg5, arg6);
+#endif
 	fflush (stdout);
     }
+}
+
+InitErrorLog ()
+{
+	int	i;
+	if (errorLogFile[0]) {
+		i = creat (errorLogFile, 0666);
+		if (i != -1) {
+			if (i != 2) {
+				dup2 (i, 2);
+				close (i);
+			}
+		} else
+			LogError ("Cannot open errorLogFile %s\n", errorLogFile);
+	}
 }
