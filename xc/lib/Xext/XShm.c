@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XShm.c,v 1.10 89/12/08 18:16:09 converse Exp $
+ * $XConsortium: XShm.c,v 1.11 90/05/03 14:44:08 keith Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -33,7 +33,8 @@
 #include "Xext.h"
 #include "extutil.h"
 
-static XExtensionInfo *shm_info;
+static XExtensionInfo _shm_info_data;
+static XExtensionInfo *shm_info = &_shm_info_data;
 static /* const */ char *shm_extension_name = SHMNAME;
 
 #define ShmCheckExtension(dpy,i,val) \

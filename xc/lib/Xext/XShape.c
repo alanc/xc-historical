@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XShape.c,v 1.18 89/11/24 11:58:24 jim Exp $
+ * $XConsortium: XShape.c,v 1.19 89/12/12 13:51:28 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -29,7 +29,8 @@
 #include "extutil.h"			/* in ../include */
 #include "shapestr.h"			/* in ../include */
 
-static XExtensionInfo *shape_info;	/* needs to move to globals.c */
+static XExtensionInfo _shape_info_data;
+static XExtensionInfo *shape_info = &_shape_info_data;
 static /* const */ char *shape_extension_name = SHAPENAME;
 
 #define ShapeCheckExtension(dpy,i,val) \

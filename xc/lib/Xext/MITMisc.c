@@ -1,5 +1,5 @@
 /*
- * $XConsortium: MITMisc.c,v 1.2 90/05/15 18:48:21 keith Exp $
+ * $XConsortium: MITMisc.c,v 1.3 90/05/15 18:51:15 keith Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -31,7 +31,8 @@
 #include "Xext.h"
 #include "extutil.h"
 
-static XExtensionInfo *mit_info;
+static XExtensionInfo _mit_info_data;
+static XExtensionInfo *mit_info = &_mit_info_data;
 static /* const */ char *mit_extension_name = MITMISCNAME;
 
 #define MITCheckExtension(dpy,i,val) \
