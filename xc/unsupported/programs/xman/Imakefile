@@ -13,5 +13,5 @@ LOCAL_LIBRARIES = XawClientLibs
 
 ComplexProgramTarget(xman)
 
-InstallNonExec(xman.help, $(LIBDIR))
+InstallNonExecFile(xman.help,$(LIBDIR))
 InstallAppDefaults(Xman)

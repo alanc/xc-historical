@@ -29,7 +29,7 @@ SpecialObjectRule(util.o, ,-DNOPUTENV)
 depend:: lex.c gram.c deftwmrc.c 
 
 ComplexProgramTarget(twm)
-InstallNonExec(system.twmrc, $(TWMDIR))
+InstallNonExecFile(system.twmrc,$(TWMDIR))
 
 gram.h gram.c: gram.y
 	yacc $(YFLAGS) gram.y

@@ -407,8 +407,8 @@ LintLibraryTarget(X11,*.c)
 
 BuildIncludes($(HEADERS),.,.)
 InstallMultiple($(HEADERS),$(INCDIR))
-InstallNonExec(Xcms.txt,$(LIBDIR))
-InstallNonExec(XErrorDB,$(LIBDIR))
+InstallNonExecFile(Xcms.txt,$(LIBDIR))
+InstallNonExecFile(XErrorDB,$(LIBDIR))
 InstallLintLibrary(X11,$(LINTLIBDIR))
 
 
