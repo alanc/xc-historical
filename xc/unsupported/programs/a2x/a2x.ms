@@ -1,5 +1,5 @@
 .\" Use -ms
-.\" $XConsortium: a2x.ms,v 1.39 93/08/04 17:30:02 rws Exp $
+.\" $XConsortium: a2x.ms,v 1.40 93/08/04 17:35:59 rws Exp $
 .de Ds
 .RS
 .nf
@@ -148,6 +148,12 @@ manipulation.  But, you should normally only switch between direct input and
 confusing \fBa2x\fP.  (One simple exception to this rule is that you can use
 \fBa2x\fP to press/release buttons and keys while directly moving the pointer
 with your hand.)
+.LP
+This document uses the notation {c\-\fIchar\fP} to represent a control
+character, the character you get by holding down the Ctrl (Control) key and
+typing the character \fIchar\fP.  For example, {c\-t} represents what you get
+by holding Ctrl and typing 't'.  This syntax is the same as what you will see
+in DragonDictate menus if you enter control characters into macros.
 .LP
 \fBa2x\fP interprets the character {c\-t} specially; it introduces a control
 sequence for special \fBa2x\fP operations.  The character {c\-t} was chosen
