@@ -12,7 +12,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: ShowSup.c,v 1.5 92/06/11 15:52:38 rws Exp $
+ * $XConsortium: ShowSup.c,v 1.6 92/12/22 09:13:26 rws Exp $
  */
 /*
  * ***************************************************************************
@@ -91,11 +91,11 @@ int	format;
 		}
 		break;
 	case FORMAT16:  {
-		unsigned short  *valuePtr;
+		CARD16  *valuePtr;
 		int     valueLen;
 		int     i;
 
-		valuePtr = (unsigned short *) ((unsigned char *) rp + size);
+		valuePtr = (CARD16 *) ((unsigned char *) rp + size);
 		valueLen = (rp -> length << 2) - size;/* bytes extra */
 		for (i = 0; i < (valueLen / 2); i++) {
 			Log_Some("\tvalue[%d] = 0x%x, %d\n", i, *valuePtr, *valuePtr);
@@ -104,11 +104,11 @@ int	format;
 		}
 		break;
         case FORMAT32:  {
-		unsigned long  *valuePtr;
+		CARD32  *valuePtr;
 		int     valueLen;
 		int     i;
 
-		valuePtr = (unsigned long *) ((unsigned long) rp + size);
+		valuePtr = (CARD32 *) ((unsigned char *) rp + size);
 		valueLen = (rp -> length << 2) - size;/* bytes extra */
 		for (i = 0; i < (valueLen / 4); i++) {
 			Log_Some("\tvalue[%d] = 0x%lx, %ld\n", i, *valuePtr, *valuePtr);
@@ -117,24 +117,24 @@ int	format;
 		}
 		break;
 	case FORMATtimecoord:  {
-		unsigned short  *valuePtr;
+		CARD16  *valuePtr;
 		int     valueLen;
 		int     i;
 
-		valuePtr = (unsigned short *) ((unsigned char *) rp + size);
+		valuePtr = (CARD16 *) ((unsigned char *) rp + size);
 		valueLen = (rp -> length << 2) - size;/* bytes extra */
 		for (i = 0; i < (valueLen / 8); i++) {
-			Log_Some("\ttime[%d] = %d\tx[%d] = %d\ty[%d] = %d\n", i, (unsigned long)*valuePtr, i, *(valuePtr+2), i, *(valuePtr+3));
+			Log_Some("\ttime[%d] = %ld\tx[%d] = %d\ty[%d] = %d\n", i, *((CARD32 *)valuePtr), i, *(valuePtr+2), i, *(valuePtr+3));
 			valuePtr += 4;
 		}
 		}
 		break;
 	case FORMATrgb:  {
-		unsigned short  *valuePtr;
+		CARD16  *valuePtr;
 		int     valueLen;
 		int     i;
 
-		valuePtr = (unsigned short *) ((unsigned char *) rp + size);
+		valuePtr = (CARD16 *) ((unsigned char *) rp + size);
 		valueLen = (rp -> length << 2) - size;/* bytes extra */
 		for (i = 0; i < (valueLen / 8); i++) {
 			Log_Some("\tred[%d] = %d\tgreen[%d] = %d\tblue[%d] = %d\n", i, *valuePtr, i, *(valuePtr+1), i, *(valuePtr+2));
@@ -143,11 +143,11 @@ int	format;
 		}
 		break;
 	case FORMATpoint:  {
-		unsigned short  *valuePtr;
+		CARD16  *valuePtr;
 		int     valueLen;
 		int     i;
 
-		valuePtr = (unsigned short *) ((unsigned char *) rp + size);
+		valuePtr = (CARD16 *) ((unsigned char *) rp + size);
 		valueLen = (rp -> length << 2) - size;/* bytes extra */
 		for (i = 0; i < (valueLen / 4); i++) {
 			Log_Some("\tx, y [%d] = %d, %d\n",
@@ -157,11 +157,11 @@ int	format;
 		}
 		break;
 	case FORMATrectangle:  {
-		unsigned short  *valuePtr;
+		CARD16  *valuePtr;
 		int     valueLen;
 		int     i;
 
-		valuePtr = (unsigned short *) ((unsigned char *) rp + size);
+		valuePtr = (CARD16 *) ((unsigned char *) rp + size);
 		valueLen = (rp -> length << 2) - size;/* bytes extra */
 		for (i = 0; i < (valueLen / 8); i++) {
 			Log_Some("\tx, y, width, height [%d] = %d, %d, %d, %d\n", i, *valuePtr, *(valuePtr+1), *(valuePtr+2), *(valuePtr+3));
@@ -170,11 +170,11 @@ int	format;
 		}
 		break;
 	case FORMATarc:  {
-		unsigned short  *valuePtr;
+		CARD16  *valuePtr;
 		int     valueLen;
 		int     i;
 
-		valuePtr = (unsigned short *) ((unsigned char *) rp + size);
+		valuePtr = (CARD16 *) ((unsigned char *) rp + size);
 		valueLen = (rp -> length << 2) - size;/* bytes extra */
 		for (i = 0; i < (valueLen / 12); i++) {
 			Log_Some("\tx, y, width, height,angle1, angle2 [%d] = %d, %d, %d, %d, %d, %d\n", i, *valuePtr, *(valuePtr+1), *(valuePtr+2), *(valuePtr+3), *(valuePtr+4), *(valuePtr+5));
@@ -183,14 +183,14 @@ int	format;
 		}
 		break;
 	case FORMATcoloritem:  {
-		unsigned short  *valuePtr;
+		CARD16  *valuePtr;
 		int     valueLen;
 		int     i;
 
-		valuePtr = (unsigned short *) ((unsigned char *) rp + size);
+		valuePtr = (CARD16 *) ((unsigned char *) rp + size);
 		valueLen = (rp -> length << 2) - size;/* bytes extra */
 		for (i = 0; i < (valueLen / 12); i++) {
-			Log_Some("\tpixel, red, grn, blue, rest [%d] = %d, %d, %d, %d, %d\n", i, (unsigned long)*valuePtr, *(valuePtr+2), *(valuePtr+3), *(valuePtr+4), *(valuePtr+5));
+			Log_Some("\tpixel, red, grn, blue, rest [%d] = %ld, %d, %d, %d, %d\n", i, *((CARD32 *)valuePtr), *(valuePtr+2), *(valuePtr+3), *(valuePtr+4), *(valuePtr+5));
 			valuePtr += 6;
 		}
 		}
@@ -252,11 +252,11 @@ int	format;
 		}
 		break;
 	case FORMAT16:  {
-		unsigned short  *valuePtr;
+		CARD16  *valuePtr;
 		int     valueLen;
 		int     i;
 
-		valuePtr = (unsigned short *) ((unsigned char *) rp + size);
+		valuePtr = (CARD16 *) ((unsigned char *) rp + size);
 		valueLen = (rp->generic.length << 2); /* bytes extra */
 		for (i = 0; i < (valueLen / 2); i++) {
 			Log_Some("\tvalue[%d] = 0x%x, %d\n", i, *valuePtr, *valuePtr);
@@ -265,11 +265,11 @@ int	format;
 		}
 		break;
 	case FORMAT32:  {
-		unsigned long  *valuePtr;
+		CARD32  *valuePtr;
 		int     valueLen;
 		int     i;
 
-		valuePtr = (unsigned long *) ((unsigned long) rp + size);
+		valuePtr = (CARD32 *) ((unsigned char *) rp + size);
 		valueLen = (rp->generic.length << 2); /* bytes extra */
 		for (i = 0; i < (valueLen / 4); i++) {
 			Log_Some("\tvalue[%d] = 0x%lx, %ld\n", i, *valuePtr, *valuePtr);
@@ -278,24 +278,24 @@ int	format;
 		}
 		break;
 	case FORMATtimecoord:  {
-		unsigned short  *valuePtr;
+		CARD16  *valuePtr;
 		int     valueLen;
 		int     i;
 
-		valuePtr = (unsigned short *) ((unsigned char *) rp + size);
+		valuePtr = (CARD16 *) ((unsigned char *) rp + size);
 		valueLen = (rp->generic.length << 2); /* bytes extra */
 		for (i = 0; i < (valueLen / 8); i++) {
-			Log_Some("\ttime[%d] = %d\tx[%d] = %d\ty[%d] = %d\n", i, (unsigned long)*valuePtr, i, *(valuePtr+2), i, *(valuePtr+3));
+			Log_Some("\ttime[%d] = %ld\tx[%d] = %d\ty[%d] = %d\n", i, *((CARD32 *)valuePtr), i, *(valuePtr+2), i, *(valuePtr+3));
 			valuePtr += 4;
 		}
 		}
 		break;
 	case FORMATrgb:  {
-		unsigned short  *valuePtr;
+		CARD16  *valuePtr;
 		int     valueLen;
 		int     i;
 
-		valuePtr = (unsigned short *) ((unsigned char *) rp + size);
+		valuePtr = (CARD16 *) ((unsigned char *) rp + size);
 		valueLen = (rp->generic.length << 2); /* bytes extra */
 		for (i = 0; i < (valueLen / 8); i++) {
 			Log_Some("\tred[%d] = %d\tgreen[%d] = %d\tblue[%d] = %d\n", i, *valuePtr, i, *(valuePtr+1), i, *(valuePtr+2));
@@ -304,11 +304,11 @@ int	format;
 		}
 		break;
 	case FORMATpoint:  {
-		unsigned short  *valuePtr;
+		CARD16  *valuePtr;
 		int     valueLen;
 		int     i;
 
-		valuePtr = (unsigned short *) ((unsigned char *) rp + size);
+		valuePtr = (CARD16 *) ((unsigned char *) rp + size);
 		valueLen = (rp->generic.length << 2); /* bytes extra */
 		for (i = 0; i < (valueLen / 4); i++) {
 			Log_Some("\tx, y [%d] = %d, %d\n",
@@ -318,11 +318,11 @@ int	format;
 		}
 		break;
 	case FORMATrectangle:  {
-		unsigned short  *valuePtr;
+		CARD16  *valuePtr;
 		int     valueLen;
 		int     i;
 
-		valuePtr = (unsigned short *) ((unsigned char *) rp + size);
+		valuePtr = (CARD16 *) ((unsigned char *) rp + size);
 		valueLen = (rp->generic.length << 2); /* bytes extra */
 		for (i = 0; i < (valueLen / 8); i++) {
 			Log_Some("\tx, y, width, height [%d] = %d, %d, %d, %d\n", i, *valuePtr, *(valuePtr+1), *(valuePtr+2), *(valuePtr+3));
@@ -331,11 +331,11 @@ int	format;
 		}
 		break;
 	case FORMATarc:  {
-		unsigned short  *valuePtr;
+		CARD16  *valuePtr;
 		int     valueLen;
 		int     i;
 
-		valuePtr = (unsigned short *) ((unsigned char *) rp + size);
+		valuePtr = (CARD16 *) ((unsigned char *) rp + size);
 		valueLen = (rp->generic.length << 2); /* bytes extra */
 		for (i = 0; i < (valueLen / 12); i++) {
 			Log_Some("\tx, y, width, height,angle1, angle2 [%d] = %d, %d, %d, %d, %d, %d\n", i, *valuePtr, *(valuePtr+1), *(valuePtr+2), *(valuePtr+3), *(valuePtr+4), *(valuePtr+5));
@@ -344,24 +344,24 @@ int	format;
 		}
 		break;
 	case FORMATcoloritem:  {
-		unsigned short  *valuePtr;
+		CARD16  *valuePtr;
 		int     valueLen;
 		int     i;
 
-		valuePtr = (unsigned short *) ((unsigned char *) rp + size);
+		valuePtr = (CARD16 *) ((unsigned char *) rp + size);
 		valueLen = (rp->generic.length << 2); /* bytes extra */
 		for (i = 0; i < (valueLen / 12); i++) {
-			Log_Some("\tpixel, red, grn, blue, rest [%d] = %d, %d, %d, %d, %d\n", i, (unsigned long)*valuePtr, *(valuePtr+2), *(valuePtr+3), *(valuePtr+4), *(valuePtr+5));
+			Log_Some("\tpixel, red, grn, blue, rest [%d] = %ld, %d, %d, %d, %d\n", i, *((CARD32 *)valuePtr), *(valuePtr+2), *(valuePtr+3), *(valuePtr+4), *(valuePtr+5));
 			valuePtr += 6;
 		    }
 	    }
 	break;
 	case FORMATcharinfo:  {
-	    unsigned short  *valuePtr;
+	    CARD16  *valuePtr;
 	    int     valueLen;
 	    int     i;
 
-	    valuePtr = (unsigned short *) ((unsigned char *) rp + size);
+	    valuePtr = (CARD16 *) ((unsigned char *) rp + size);
 	    valueLen = (rp->generic.length << 2); /* bytes extra */
 	    for (i = 0; i < (valueLen / 12); i++) {
 		Log_Some("\tcharinfo %d, left-side-bearing = %d, right-side-bearing = %d, character-width = %d, ascent = %d, descent = %d, attributes = 0x%x\n", i, *valuePtr, *(valuePtr+1), *(valuePtr+2), *(valuePtr+3), *(valuePtr+4), *(valuePtr+5));
@@ -487,13 +487,13 @@ int	format;
 	Reset_Some();
 	switch(format){
 	case FORMATfontprop:  {
-		unsigned long  *valuePtr;
+		CARD32  *valuePtr;
 		int     i;
 		
 		if (nval > 0) {
-		    valuePtr = (unsigned long *) ((unsigned long *) rp + size);
+		    valuePtr = (CARD32 *) ((CARD32 *) rp + size);
 		    for (i = 0; i < nval; i++) {
-			Log_Some("\tfontprop %d, name = 0x%x, value = 0x%x\n", i, *valuePtr, *(valuePtr+1));
+			Log_Some("\tfontprop %d, name = 0x%lx, value = 0x%lx\n", i, *valuePtr, *(valuePtr+1));
 			valuePtr += 2;
 		    }
 		}
@@ -504,11 +504,11 @@ int	format;
 	    }
 	    break;
 	case FORMATcharinfo:  {
-		unsigned short *valuePtr;
+		CARD16 *valuePtr;
 		int     i;
 
 		if (nval > 0) {
-		    valuePtr = (unsigned short *) ((unsigned short *) rp + size);
+		    valuePtr = (CARD16 *) ((CARD16 *) rp + size);
 		    for (i = 0; i < nval; i++) {
 			Log_Some("\tcharinfo %d, left-side-bearing = %d, right-side-bearing = %d, character-width = %d, ascent = %d, descent = %d, attributes = 0x%x\n", i, *valuePtr, *(valuePtr+1), *(valuePtr+2), *(valuePtr+3), *(valuePtr+4), *(valuePtr+5));
 			valuePtr += 6;
