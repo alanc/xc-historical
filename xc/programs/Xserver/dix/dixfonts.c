@@ -22,7 +22,7 @@ SOFTWARE.
 
 ************************************************************************/
 
-/* $XConsortium: dixfonts.c,v 1.36 92/09/29 18:48:53 gildea Exp $ */
+/* $XConsortium: dixfonts.c,v 1.37 93/02/15 11:03:35 rws Exp $ */
 
 #define NEED_REPLIES
 #include "X.h"
@@ -1045,6 +1045,9 @@ SetFontPathElements(npaths, paths, bad)
 		goto bail;
 	    }
 	    fplist[valid_paths++] = fpe;
+	} else {
+	    err = BadValue;
+	    goto bail;
 	}
     }
 
