@@ -1,6 +1,6 @@
 #ifndef lint
 static char rcsid[] =
-    "$XConsortium: Shell.c,v 1.32 88/09/03 09:34:09 swick Exp $";
+    "$XConsortium: Shell.c,v 1.33 88/09/03 09:39:01 swick Exp $";
 /* $oHeader: Shell.c,v 1.6 88/08/19 16:49:51 asente Exp $ */
 #endif lint
 
@@ -1248,7 +1248,6 @@ Cardinal mask;
 
 	if (wm) {
 	    hintp = &wmshell->wm.size_hints;
-	    hintp->flags = 0;
 	    oldx = hintp->x = w->core.x;
 	    oldy = hintp->y = w->core.y;
 	    hintp->width = w->core.width;
@@ -1258,6 +1257,7 @@ Cardinal mask;
 	if (mask & CWX) {
 		if (w->core.x == values->x) mask &= ~CWX;
 		else if (wm) {
+			hintp->flags &= ~USPosition;
 			hintp->flags |= PPosition;
 			w->core.x = hintp->x = values->x;
 		} else w->core.x = values->x;
@@ -1265,6 +1265,7 @@ Cardinal mask;
 	if (mask & CWY) {
 		if (w->core.y == values->y) mask &= ~CWY;
 		else if (wm) {
+			hintp->flags &= ~USPosition;
 			hintp->flags |= PPosition;
 			w->core.y = hintp->y = values->y;
 		} else w->core.y = values->y;
@@ -1277,6 +1278,7 @@ Cardinal mask;
 	if (mask & CWWidth) {
 		if (w->core.width == values->width) mask &= ~CWWidth;
 		else if (wm) {
+			hintp->flags &= ~USSize;
 			hintp->flags |= PSize;
 			hintp->width = values->width;
 		} else w->core.width = values->width;
@@ -1284,6 +1286,7 @@ Cardinal mask;
 	if (mask & CWHeight) {
 		if (w->core.height == values->height) mask &= ~CWHeight;
 		else if (wm) {
+			hintp->flags &= ~USSize;
 			hintp->flags |= PSize;
 			hintp->height = values->height;
 		} else w->core.height = values->height;
