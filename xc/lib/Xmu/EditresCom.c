@@ -1,5 +1,5 @@
 /*
- * $XConsortium: EditresCom.c,v 1.28 92/11/22 09:32:46 dave Exp $
+ * $XConsortium: EditresCom.c,v 1.29 93/04/28 16:35:33 dave Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -1809,7 +1809,7 @@ Widget w;
 			  XtRString, XtREditresBlock, CvtStringToBlock,
 			  NULL, (Cardinal) 0, XtCacheAll, NULL);
 
-    XtGetApplicationResources( w, (caddr_t) &globals, resources,
+    XtGetApplicationResources( w, (XtPointer) &globals, resources,
 			      XtNumber(resources), NULL, (Cardinal) 0);
 }
 
