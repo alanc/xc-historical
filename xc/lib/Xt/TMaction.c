@@ -1,4 +1,4 @@
-/* $XConsortium: TMaction.c,v 1.10 91/02/19 15:08:54 converse Exp $ */
+/* $XConsortium: TMaction.c,v 1.11 91/02/20 22:09:16 converse Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -693,6 +693,34 @@ void XtAppAddActions(app, actions, num_actions)
     app->action_table = rec;
     rec->table = CompileActionTable(actions, num_actions, False, False);
     rec->count = num_actions;
+}
+
+void XtGetActionList(widget_class, actions_return, num_actions_return)
+    WidgetClass widget_class;
+    XtActionList* actions_return;
+    Cardinal* num_actions_return;
+{
+    XtActionList list;
+    CompiledActionTable table;
+    int i;
+
+    *actions_return = NULL;
+    *num_actions_return = 0;
+
+    if (! widget_class->core_class.class_inited)
+	XtInitializeWidgetClass(widget_class);
+    if (! (widget_class->core_class.class_inited & WidgetClassFlag))
+	return;
+    *num_actions_return = widget_class->core_class.num_actions;
+    if (*num_actions_return) {
+	list = *actions_return = (XtActionList) 
+	    XtMalloc(*num_actions_return * sizeof(XtActionsRec));
+	table = GetClassActions(widget_class);
+	for (i= (*num_actions_return); --i >= 0; list++, table++) {
+	    list->string = XrmQuarkToString(table->signature);
+	    list->proc = table->proc;
+	}
+    }
 }
 
 /***********************************************************************
