@@ -1,5 +1,5 @@
 /*
-* $Header: Intrinsic.h,v 1.63 87/12/18 08:08:04 swick Locked $
+* $Header: Intrinsic.h,v 1.64 88/01/06 12:27:50 swick Locked $
 */
 
 /*
@@ -425,6 +425,10 @@ typedef struct _XtCallbackRec {
     XtCallbackProc  callback;
     caddr_t	    closure;
 } XtCallbackRec;
+
+#define XtSetCallback(callbackrec, proc, closure_) \
+    ((callbackrec).callback = (XtCallbackProc)(proc), \
+     (callbackrec).closure = (caddr_t)(closure_))
 
 extern void XtAddCallback ();
     /* Widget		widget;		*/
