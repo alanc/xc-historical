@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: GrayPixmap.c,v 1.24 89/05/11 01:05:21 kit Exp $";
+static char Xrcsid[] = "$XConsortium: GrayPixmap.c,v 1.1 89/05/11 14:01:54 kit Exp $";
 #endif /* lint */
 
 
@@ -35,6 +35,7 @@ typedef struct _PixmapCache {
     Pixmap pixmap;
     Pixel foreground, background;
     unsigned int depth;
+    int ref_count;
     struct _PixmapCache *next;
   } CacheEntry;
 
@@ -88,7 +89,7 @@ Pixmap XmuCreateStippledPixmap(screen, fore, back, depth)
     for (cachePtr = pixmapCache; cachePtr; cachePtr = cachePtr->next) {
 	if (cachePtr->screen == screen && cachePtr->foreground == fore &&
 	    cachePtr->background == back && cachePtr->depth == depth)
-	    return( cachePtr->pixmap );
+	    return( cachePtr->ref_count++, cachePtr->pixmap );
     }
 
     /* nope, we'll have to construct one now */
@@ -115,6 +116,7 @@ Pixmap XmuCreateStippledPixmap(screen, fore, back, depth)
     cachePtr->background = back;
     cachePtr->depth = depth;
     cachePtr->pixmap = stippled_pixmap;
+    cachePtr->ref_count = 1;
     cachePtr->next = pixmapCache;
     pixmapCache = cachePtr;
 
@@ -130,6 +132,26 @@ Pixmap XmuCreateStippledPixmap(screen, fore, back, depth)
     XFreeGC( display, gc );
 
     return( stippled_pixmap );
+}
+
+void XmuReleaseStippledPixmap(screen, pixmap)
+    Screen *screen;
+    Pixmap pixmap;
+{
+    register Display *display = DisplayOfScreen(screen);
+    CacheEntry *cachePtr, **prevP;
+    for (prevP = &pixmapCache, cachePtr = pixmapCache; cachePtr;) {
+	if (cachePtr->screen == screen && cachePtr->pixmap == pixmap) {
+	    if (--cachePtr->ref_count == 0) {
+		XFreePixmap( display, pixmap );
+		*prevP = cachePtr->next;
+		XtFree( (char*)cachePtr );
+		break;
+	    }
+	}
+	prevP = &cachePtr->next;
+	cachePtr = *prevP;
+    }
 }
 
 #ifdef XAW_BC
