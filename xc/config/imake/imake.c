@@ -14,8 +14,8 @@
  * this software for any purpose.  It is provided "as is"
  * without express or implied warranty.
  * 
- * $Header: imake.c,v 1.17 87/09/01 19:37:17 toddb Locked $
- * $Locker: toddb $
+ * $Header: imake.c,v 1.18 87/09/09 15:41:06 toddb Exp $
+ * $Locker:  $
  *
  * Author:
  *	Todd Brunhoff
@@ -664,16 +664,25 @@ KludgeOutputLine(pline)
 {
 	char	*p = *pline;
 
-	if (*p++ != ' ' || *p == ' ')
-		return;
-	while (*p)
-		if (*p++ == ':') {
-			(*pline)++;
-			InRule = TRUE;
-			return;
+	switch (*p) {
+	    case '#':	/*Comment - ignore*/
+		break;
+	    case '\t':	/*Already tabbed - ignore it*/
+	    	break;
+	    case ' ':	/*May need a tab*/
+	    	if (InRule) {
+		    **pline = '\t';
+		    break;
 		}
-	if (InRule)
-		**pline = '\t';
+	    default:
+		if (!InRule) while (*p) if (*p++ == ':') {
+		    if (**pline == ' ')
+			(*pline)++;
+		    InRule = TRUE;
+		    break;
+		}
+		break;
+	}
 }
 
 KludgeResetRule()
