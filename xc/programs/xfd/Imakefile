@@ -1,4 +1,4 @@
-CDEBUGFLAGS = -g
+        DEPLIBS = $(DEPXAWLIB) $(DEPXMULIB) $(DEPXTOOLLIB) $(DEPXLIB)
 LOCAL_LIBRARIES = $(XAWLIB) $(XMULIB) $(XTOOLLIB) $(XLIB)
            SRCS = xfd.c fontgrid.c 
            OBJS = xfd.o fontgrid.o 
