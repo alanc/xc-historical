@@ -1286,13 +1286,13 @@ Show_Prop(format, dformat, prop)
 
   printf("%s", prop);
   if (!(atom = Parse_Atom(prop, True))) {
-	  printf(": not defined.\n");
+	  printf(":  no such atom on any window.\n");
 	  return;
   }
 
   data = Get_Property_Data_And_Type(atom, &length, &type, &size);
   if (!size) {
-          puts(": not defined.");
+          puts(":  not found.");
 	  return;
   }
 
