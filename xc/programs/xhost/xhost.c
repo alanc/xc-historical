@@ -1,4 +1,4 @@
-/* $XConsortium: xhost.c,v 11.52 93/09/26 17:15:46 gildea Exp $ */
+/* $XConsortium: xhost.c,v 11.53 93/09/28 01:22:25 gildea Exp $ */
  
 /*
 
@@ -34,9 +34,6 @@ without express or implied warranty.
 #define NEEDSOCKETS
 #endif
 
-#ifdef K5AUTH
-#include <krb5/krb5.h>
-#endif
 #include <X11/Xlib.h>
 #include <X11/Xos.h>
 #include <X11/Xproto.h>
@@ -390,7 +387,15 @@ int change_host (dpy, name, add)
 #endif /* DNETCONN */
 #ifdef K5AUTH
   if (family == FamilyKrb5Principal) {
-    krb5_parse_name(name, &princ);
+    krb5_error_code retval;
+
+    retval = krb5_parse_name(name, &princ);
+    if (retval) {
+	krb5_init_ets();	/* init krb errs for error_message() */
+	fprintf(stderr, "%s: krb5_parse_name failed: %s\n",
+		ProgramName, error_message(retval));
+	return 0;
+    }
     XauKrb5Encode(princ, &kbuf);
     ha.length = kbuf.length;
     ha.address = kbuf.data;
@@ -474,8 +479,8 @@ int change_host (dpy, name, add)
    */
   if ((addr.s_addr = inet_addr(name)) != -1) {
     ha.family = FamilyInternet;
-    ha.length = sizeof(addr.s_addr);
-    ha.address = (char *)&addr.s_addr;
+    ha.length = 4;		/* but for Cray would be sizeof(addr.s_addr) */
+    ha.address = (char *)&addr;	/* but for Cray would be &addr.s_addr */
     if (add) {
 	XAddHost (dpy, &ha);
 	printf ("%s %s\n", name, add_msg);
