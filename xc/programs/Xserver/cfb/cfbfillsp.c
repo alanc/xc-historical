@@ -536,7 +536,6 @@ int fSorted;
 	    case GXcopy:
 	    case GXnoop:
 	    case GXor:
-	    case GXequiv:
 		stiprop = rop;
 		break;
 	    default:
