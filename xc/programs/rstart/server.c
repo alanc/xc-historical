@@ -25,14 +25,12 @@
 /* Extended rsh "helper" program */
 #include <stdio.h>
 #include <ctype.h>
-#include <stdlib.h>
-#include <string.h>
-#include <X11/Xosdefs.h>
+#include <X11/Xos.h>
 #include <errno.h>
 #ifdef X_NOT_STDC_ENV
+#include <stdlib.h>
 extern int	errno;
 #endif
-#include <sys/types.h>
 #include <sys/fcntl.h>
 #include <sys/stat.h>
 
@@ -170,6 +168,19 @@ char *s;
 	*o = '\0';
 }
 
+char *
+Strdup(s)
+    char *s;
+{
+    char *cs;
+
+    if (!s)
+	return s;
+    cs = (char *)malloc(strlen(s));
+    strcpy(cs, s);
+    return cs;
+}
+
 int
 get_a_line(f, pargc, pargv)
 FILE *f;
@@ -201,7 +212,7 @@ char ***pargv;
 		}
 		*p = '\0';
 
-		saved = strdup(buf);
+		saved = Strdup(buf);
 		if(!saved) nomem();
 
 		*pargc = 0;
@@ -481,7 +492,7 @@ char *s;
 				he->h_addr_list[0][2] & 0xff,
 				he->h_addr_list[0][3] & 0xff,
 				p);
-			s = strdup(buf);
+			s = Strdup(buf);
 			if(!s) nomem();
 			putenv(s);
 			return TRUE;
@@ -744,7 +755,7 @@ key_posix_umask(ac, av)
 int ac;
 char **av;
 {
-	mode_t i;
+	unsigned i;
 	char *s;
 
 	if(ac != 2) {
@@ -753,7 +764,7 @@ char **av;
 		exit(255);
 	}
 
-	i = (mode_t)strtol(av[1], &s, 8);
+	i = strtol(av[1], &s, 8);
 
 	if(*s || i < 0 || i > 0777) {
 		printf(
