@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: twm.c,v 1.126 92/08/24 15:34:01 rws Exp $
+ * $XConsortium: twm.c,v 1.127 93/09/02 11:11:48 dpw Exp $
  *
  * twm - "Tom's Window Manager"
  *
@@ -111,6 +111,19 @@ Bool RestartPreviousState = False;	/* try to restart in previous state */
 unsigned long black, white;
 
 extern void assign_var_savecolor();
+
+Atom TwmAtoms[8];
+
+/* don't change the order of these strings */
+static char* atom_names[8] = {
+    "_MIT_PRIORITY_COLORS",
+    "WM_CHANGE_STATE",
+    "WM_STATE",
+    "WM_COLORMAP_WINDOWS",
+    "WM_PROTOCOLS",
+    "WM_TAKE_FOCUS",
+    "WM_SAVE_YOURSELF",
+    "WM_DELETE_WINDOW" };
 
 /***********************************************************************
  *
@@ -208,8 +221,8 @@ main(argc, argv, environ)
     ScreenContext = XUniqueContext();
     ColormapContext = XUniqueContext();
 
-    InternUsefulAtoms ();
-
+    (void) XInternAtoms(dpy, atom_names, sizeof TwmAtoms / sizeof TwmAtoms[0],
+			False, TwmAtoms);
 
     /* Set up the per-screen global information. */
 
@@ -818,28 +831,4 @@ static int CatchRedirectError(dpy, event)
     LastErrorEvent = *event;
     ErrorOccurred = True;
     return 0;
-}
-
-Atom _XA_MIT_PRIORITY_COLORS;
-Atom _XA_WM_CHANGE_STATE;
-Atom _XA_WM_STATE;
-Atom _XA_WM_COLORMAP_WINDOWS;
-Atom _XA_WM_PROTOCOLS;
-Atom _XA_WM_TAKE_FOCUS;
-Atom _XA_WM_SAVE_YOURSELF;
-Atom _XA_WM_DELETE_WINDOW;
-
-InternUsefulAtoms ()
-{
-    /* 
-     * Create priority colors if necessary.
-     */
-    _XA_MIT_PRIORITY_COLORS = XInternAtom(dpy, "_MIT_PRIORITY_COLORS", False);   
-    _XA_WM_CHANGE_STATE = XInternAtom (dpy, "WM_CHANGE_STATE", False);
-    _XA_WM_STATE = XInternAtom (dpy, "WM_STATE", False);
-    _XA_WM_COLORMAP_WINDOWS = XInternAtom (dpy, "WM_COLORMAP_WINDOWS", False);
-    _XA_WM_PROTOCOLS = XInternAtom (dpy, "WM_PROTOCOLS", False);
-    _XA_WM_TAKE_FOCUS = XInternAtom (dpy, "WM_TAKE_FOCUS", False);
-    _XA_WM_SAVE_YOURSELF = XInternAtom (dpy, "WM_SAVE_YOURSELF", False);
-    _XA_WM_DELETE_WINDOW = XInternAtom (dpy, "WM_DELETE_WINDOW", False);
 }

@@ -27,7 +27,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: twm.h,v 1.74 91/05/31 17:38:30 dave Exp $
+ * $XConsortium: twm.h,v 1.75 93/09/02 11:11:50 dpw Exp $
  *
  * twm include file
  *
@@ -352,13 +352,15 @@ extern XErrorEvent LastErrorEvent;
 extern Bool RestartPreviousState;
 extern Bool GetWMState();
 
-extern Atom _XA_MIT_PRIORITY_COLORS;
-extern Atom _XA_WM_CHANGE_STATE;
-extern Atom _XA_WM_STATE;
-extern Atom _XA_WM_COLORMAP_WINDOWS;
-extern Atom _XA_WM_PROTOCOLS;
-extern Atom _XA_WM_TAKE_FOCUS;
-extern Atom _XA_WM_SAVE_YOURSELF;
-extern Atom _XA_WM_DELETE_WINDOW;
+extern Atom TwmAtoms[];
+
+#define _XA_MIT_PRIORITY_COLORS		TwmAtoms[0]
+#define _XA_WM_CHANGE_STATE		TwmAtoms[1]
+#define _XA_WM_STATE			TwmAtoms[2]
+#define _XA_WM_COLORMAP_WINDOWS		TwmAtoms[3]
+#define _XA_WM_PROTOCOLS		TwmAtoms[4]
+#define _XA_WM_TAKE_FOCUS		TwmAtoms[5]
+#define _XA_WM_SAVE_YOURSELF		TwmAtoms[6]
+#define _XA_WM_DELETE_WINDOW		TwmAtoms[7]
 
 #endif /* _TWM_ */
