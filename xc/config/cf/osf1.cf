@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: osf1.cf,v 1.44 94/09/19 20:04:08 matt Exp kaleb $
+XCOMM platform:  $XConsortium: osf1.cf,v 1.45 94/09/19 22:30:55 kaleb Exp matt $
 /* only tested with Digital OSF/1 */
 
 #ifdef AlphaArchitecture
@@ -47,10 +47,7 @@ XCOMM operating system:  OSName
  * 
  * For DEC C++, define HasDECCplusplus to YES in site.def.  
  *
- * For g++ 2.6.x, define HasGcc2ForCplusplus to YES in site.def, and
- *    check the definition of CplusplusLibC below to make sure it's 
- *    correct for your version of OSF/1 and g++.  If not, add the 
- *    correct definition to site.def.
+ * For g++ 2.6.x, define HasGcc2ForCplusplus to YES in site.def.
  *
  * For other compilers, define HasCplusplus to YES in site.def, and 
  *    check to see if you need to provide values for CplusplusOptions
@@ -87,13 +84,8 @@ XCOMM operating system:  OSName
 
 #if HasGcc2ForCplusplus
 #ifndef CplusplusLibC
-#ifdef AlphaArchitecture
-#define CplusplusLibC /usr/local/lib/gcc-lib/alpha-dec-osf2.0/2.6.0/libgcc.a
+#define CplusplusLibC `$(CXX) -print-libgcc-file-name`
 #endif 
-#ifdef MipsArchitecture
-#define CplusplusLibC /usr/local/lib/gcc-lib/mips-dec-osf1.0/2.6.0/libgcc.a
-#endif
-#endif /* CplusplusLibC */
 #endif /* HasGcc2ForCplusplus */
 
 #include <osfLib.rules>
