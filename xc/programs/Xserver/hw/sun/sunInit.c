@@ -1,4 +1,4 @@
-/* $XConsortium: sunInit.c,v 5.40 93/11/12 16:38:19 kaleb Exp $ */
+/* $XConsortium: sunInit.c,v 5.41 93/11/12 16:46:26 kaleb Exp $ */
 /*
  * sunInit.c --
  *	Initialization functions for screen/keyboard/mouse, etc.
@@ -369,18 +369,20 @@ void OsVendorInit(
 #endif
 )
 {
+    static int inited;
+    if (!inited) {
 #ifndef i386
-    struct rlimit rl;
+	struct rlimit rl;
 
-    /* 
-     * one per client, one per screen, plus keyboard, mouse, & stderr
-     */
-    int maxfds = MAXCLIENTS + MAXSCREENS + 3;
+	/* 
+	 * one per client, one per screen, plus keyboard, mouse, & stderr
+	 */
+	int maxfds = MAXCLIENTS + MAXSCREENS + 3;
 
-    if (getrlimit (RLIMIT_NOFILE, &rl) == 0) {
-	rl.rlim_cur = maxfds < rl.rlim_max ? maxfds : rl.rlim_max;
-	(void) setrlimit (RLIMIT_NOFILE, &rl);
-    }
+	if (getrlimit (RLIMIT_NOFILE, &rl) == 0) {
+	    rl.rlim_cur = maxfds < rl.rlim_max ? maxfds : rl.rlim_max;
+	    (void) setrlimit (RLIMIT_NOFILE, &rl);
+	}
 #endif
 #define SET_FLOW(fd) fcntl(fd, F_SETFL, FNDELAY | FASYNC)
 #ifdef SVR4
@@ -388,20 +390,22 @@ void OsVendorInit(
 #else
 #define WANT_SIGNALS(fd) fcntl(fd, F_SETOWN, getpid())
 #endif
-    if ((sunKbdFd = open ("/dev/kbd", O_RDWR, 0)) >= 0) {
-	if (SET_FLOW(sunKbdFd) == -1 || WANT_SIGNALS(sunKbdFd) == -1) {	
-	    (void) close (sunKbdFd);
-	    sunKbdFd = -1;
+	if ((sunKbdFd = open ("/dev/kbd", O_RDWR, 0)) >= 0) {
+	    if (SET_FLOW(sunKbdFd) == -1 || WANT_SIGNALS(sunKbdFd) == -1) {	
+		(void) close (sunKbdFd);
+		sunKbdFd = -1;
+	    }
 	}
-    }
-    if ((sunPtrFd = open ("/dev/mouse", O_RDWR, 0)) >= 0) {
-	if (SET_FLOW(sunPtrFd) == -1 || WANT_SIGNALS(sunPtrFd) == -1) {	
-	    (void) close (sunPtrFd);
-	    sunPtrFd = -1;
+	if ((sunPtrFd = open ("/dev/mouse", O_RDWR, 0)) >= 0) {
+	    if (SET_FLOW(sunPtrFd) == -1 || WANT_SIGNALS(sunPtrFd) == -1) {	
+		(void) close (sunPtrFd);
+		sunPtrFd = -1;
+	    }
 	}
-    }
+	inited = 1;
 #undef SET_FLOW
 #undef WANT_SIGNALS
+    }
 }
 
 /*-
