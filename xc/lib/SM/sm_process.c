@@ -1,4 +1,4 @@
-/* $XConsortium: sm_process.c,v 1.24 94/03/18 16:03:17 mor Exp $ */
+/* $XConsortium: sm_process.c,v 1.25 94/03/30 21:48:21 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -367,16 +367,8 @@ IceReplyWaitInfo *replyWait;
 
     default:
     {
+	_IceErrorBadMinor (iceConn, _SmcOpcode, opcode, IceCanContinue);
 	_IceReadSkip (iceConn, length << 3);
-
-	IceErrorHeader (iceConn,
-	    _SmcOpcode, opcode,
-	    IceLastReceivedSequenceNumber (iceConn),
-	    IceCanContinue,
-	    IceBadMinor,
-	    0);
-
-	IceFlush (iceConn);
 	break;
     }
     }
@@ -838,16 +830,8 @@ Bool		 swap;
 
     default:
     {
+	_IceErrorBadMinor (iceConn, _SmsOpcode, opcode, IceCanContinue);
 	_IceReadSkip (iceConn, length << 3);
-
-	IceErrorHeader (iceConn,
-	    _SmsOpcode, opcode,
-	    IceLastReceivedSequenceNumber (iceConn),
-	    IceCanContinue,
-	    IceBadMinor,
-	    0);
-
-	IceFlush (iceConn);
 	break;
     }
     }
