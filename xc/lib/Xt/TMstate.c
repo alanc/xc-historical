@@ -152,6 +152,47 @@ static Boolean SpecialCase(event)
 }
 
 
+static int FindEvent(translations, eventSeq) 
+  _XtTranslations translations;
+  EventSeqPtr eventSeq;
+{
+    EventObjPtr eventTbl = translations->eventObjTbl;
+    int i;
+
+    for (i=0; i < translations->numEvents; i++) {
+        if (
+	    (eventTbl[i].eventType	== eventSeq->eventType) &&
+            (eventTbl[i].eventCode	== eventSeq->eventCode) &&
+	    (eventTbl[i].eventCodeMask	== eventSeq->eventCodeMask) &&
+	    (eventTbl[i].modifiers	== eventSeq->modifiers) &&
+	    (eventTbl[i].modifierMask	== eventSeq->modifierMask)
+	   )
+		return(i);
+   }
+    return(-1);
+}
+
+
+static int MatchEvent(translations, eventSeq) 
+  _XtTranslations translations;
+  EventSeqPtr eventSeq;
+{
+    EventObjPtr eventTbl = translations->eventObjTbl;
+    int i;
+
+    for (i=0; i < translations->numEvents; i++) {
+        if ((eventTbl[i].eventType == eventSeq->eventType) &&
+            (eventTbl[i].eventCode ==
+		(eventTbl[i].eventCodeMask & eventSeq->eventCode)) &&
+	    (eventTbl[i].modifiers ==
+		(eventTbl[i].modifierMask & eventSeq->modifiers))
+	   ) 
+		return(i);
+   }
+    return(-1);
+}
+
+
 static EventObjPtr  CreateStates(translations, index, eventSeq)
     _XtTranslations translations;
     int index;
@@ -175,7 +216,7 @@ static EventObjPtr  CreateStates(translations, index, eventSeq)
 	    found = FALSE;
 	    if (eventSeq->next != NULL && state->nextLevel != NULL) {
 		eventSeq = eventSeq->next;
-		index = EventIndex(translations, eventSeq);
+		index = FindEvent(translations, eventSeq);
 		state = state->nextLevel;
 		if (state->index == index) 
 		    found = TRUE;
@@ -197,7 +238,7 @@ static EventObjPtr  CreateStates(translations, index, eventSeq)
     }
     while (eventSeq->next != NULL) {
 	eventSeq = eventSeq->next;
- 	index = EventIndex(translations, eventSeq);
+ 	index = FindEvent(translations, eventSeq);
 	state->nextLevel = (StatePtr) XtMalloc((unsigned)sizeof(StateRec));
 	state = state->nextLevel;
 	state->index = index;
@@ -219,8 +260,9 @@ EventObjPtr EventMapObjectCreate(translations, eventSeq)
   EventSeqPtr eventSeq;
 {
     EventObjPtr new;
+    int i;
 
-    if (EventIndex(translations, eventSeq) >= 0)
+    if (FindEvent(translations, eventSeq) >= 0)
 	return translations->eventObjTbl;
 
     if (translations->numEvents == translations->eventTblSize) {
@@ -250,7 +292,7 @@ EventObjPtr EventMapObjectGet(translations, eventSeq)
 {
     EventObjPtr eventTbl = translations->eventObjTbl;
     int index;
-    if ((index = EventIndex(translations, eventSeq)) < 0)
+    if ((index = FindEvent(translations, eventSeq)) < 0)
 	return NULL;
     else
         return &eventTbl[index];
@@ -263,7 +305,7 @@ EventObjPtr EventMapObjectSet(translations, eventSeq)
 {
     EventObjPtr eventTbl = translations->eventObjTbl;
     int index;
-    if ((index = EventIndex(translations, eventSeq)) >= 0)
+    if ((index = FindEvent(translations, eventSeq)) >= 0)
         eventTbl = CreateStates(translations, index, eventSeq);
     return eventTbl;
 }
@@ -330,7 +372,7 @@ void TranslateEvent(w, closure, event)
 	    break;
     }
     if (curState != NULL) {	/* check the current level */
-	index = EventIndex(w->core.translations, &curEvent);
+	index = MatchEvent(w->core.translations, &curEvent);
 	oldState = curState;
 	while (curState != NULL && curState->index != index)
 	    curState = curState->next;
@@ -342,12 +384,12 @@ void TranslateEvent(w, closure, event)
 			 last event---> start over with this new event. */
 		if (oldState->actions != NULL) {
 		    curState = oldState;
-		    index = EventIndex(w->core.translations, &curEvent);
+		    index = MatchEvent(w->core.translations, &curEvent);
         	    curState = w->core.translations->eventObjTbl[index].state;
 		}
            }
     } else {
-	index = EventIndex(w->core.translations, &curEvent);
+	index = MatchEvent(w->core.translations, &curEvent);
 	if (index == -1) return;
         curState = w->core.translations->eventObjTbl[index].state;
     }
@@ -376,26 +418,6 @@ void TranslateTableFree(translations)
     }
     XtFree((char *)tbl);
     XtFree((char *)translations);
-}
-
-
-int EventIndex(translations, eventSeq) 
-  _XtTranslations translations;
-  EventSeqPtr eventSeq;
-{
-    EventObjPtr eventTbl = translations->eventObjTbl;
-    int i;
-
-    for (i=0; i < translations->numEvents; i++) {
-        if ((eventTbl[i].eventType == eventSeq->eventType) &&
-            (eventTbl[i].eventCode ==
-		(eventTbl[i].eventCodeMask & eventSeq->eventCode)) &&
-	    (eventTbl[i].modifiers ==
-		(eventTbl[i].modifierMask & eventSeq->modifiers))
-	   ) 
-		return(i);
-   }
-    return(-1);
 }
 
 
