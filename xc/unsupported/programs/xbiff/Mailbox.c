@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Mailbox.c,v 1.35 89/10/09 16:51:44 jim Exp $
+ * $XConsortium: Mailbox.c,v 1.36 89/10/10 15:18:05 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -116,7 +116,7 @@ static Boolean SetValues();
 
 MailboxClassRec mailboxClassRec = {
     { /* core fields */
-    /* superclass		*/	&widgetClassRec,
+    /* superclass		*/	(WidgetClass) &simpleClassRec,
     /* class_name		*/	"Mailbox",
     /* widget_size		*/	sizeof(MailboxRec),
     /* class_initialize		*/	ClassInitialize,
@@ -148,6 +148,12 @@ MailboxClassRec mailboxClassRec = {
     /* query_geometry		*/	XtInheritQueryGeometry,
     /* display_accelerator	*/	XtInheritDisplayAccelerator,
     /* extension		*/	NULL
+    },
+    { /* simple fields */
+    /* change_sensitive         */	XtInheritChangeSensitive
+    },
+    { /* mailbox fields */
+    /* ignore                   */	0
     }
 };
 

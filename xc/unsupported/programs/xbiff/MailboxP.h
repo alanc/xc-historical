@@ -1,5 +1,5 @@
 /*
- * $XConsortium: MailboxP.h,v 1.15 89/04/12 15:09:46 jim Exp $
+ * $XConsortium: MailboxP.h,v 1.16 89/05/11 01:05:56 kit Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -20,6 +20,7 @@
 #define _XawMailboxP_h
 
 #include <X11/Xaw/Mailbox.h>
+#include <X11/Xaw/SimpleP.h>
 
 #ifdef SYSV
 #define MAILBOX_DIRECTORY "/usr/mail"
@@ -58,6 +59,7 @@ typedef struct {			/* new fields for mailbox widget */
 
 typedef struct _MailboxRec {		/* full instance record */
     CorePart core;
+    SimplePart simple;
     MailboxPart mailbox;
 } MailboxRec;
 
@@ -68,6 +70,7 @@ typedef struct {			/* new fields for mailbox class */
 
 typedef struct _MailboxClassRec {	/* full class record declaration */
     CoreClassPart core_class;
+    SimpleClassPart simple_class;
     MailboxClassPart mailbox_class;
 } MailboxClassRec;
 
