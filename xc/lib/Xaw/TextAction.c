@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: TextPop.c,v 1.2 89/07/16 16:21:25 kit Exp $";
+static char Xrcsid[] = "$XConsortium: TextAction.c,v 1.1 89/07/18 15:38:48 kit Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -304,14 +304,14 @@ static void MoveForwardParagraph(w, event)
 Widget w;
 XEvent *event;
 {
-  Move((TextWidget) w, event, XawsdRight, XawstEOL, TRUE);
+  Move((TextWidget) w, event, XawsdRight, XawstParagraph, FALSE);
 }
 
 static void MoveBackwardParagraph(w, event)
 Widget w;
 XEvent *event;
 {
-  Move((TextWidget) w, event, XawsdLeft, XawstEOL, TRUE);
+  Move((TextWidget) w, event, XawsdLeft, XawstParagraph, FALSE);
 }
 
 static void 
@@ -596,7 +596,7 @@ KillToEndOfParagraph(w, event)
 Widget w;
 XEvent *event;
 {
-  DeleteOrKill((TextWidget) w, event, XawsdRight, XawstEOL, TRUE, TRUE);
+  DeleteOrKill((TextWidget) w, event, XawsdRight, XawstParagraph, FALSE, TRUE);
 }
 
 void 
@@ -1145,6 +1145,194 @@ Cardinal * num_params;
   ctx->text.mult *= mult;
 }
 
+/*	Function Name: StripOutOldCRs
+ *	Description: strips out the old carrige returns.
+ *	Arguments: ctx - the text widget.
+ *                 from - starting point.
+ *                 to - the ending point
+ *	Returns: the new ending location (we may add some caracters).
+ */
+
+static XawTextPosition
+StripOutOldCRs(ctx, from, to)
+TextWidget ctx;
+XawTextPosition from, to;
+{
+  XawTextPosition (*Scan)() = ctx->text.source->Scan;
+  XawTextPosition startPos, endPos, eop_begin, eop_end;
+  XawTextBlock text;
+  char *buf;
+
+  text.ptr= "  ";
+  text.firstPos = 0;
+  text.format = FMT8BIT;
+   
+/*
+ * Strip out CR's. 
+ */
+
+  eop_begin = eop_end = startPos = endPos = from;
+  while (TRUE) {
+    endPos=(*Scan)(ctx->text.source, startPos, XawstEOL, XawsdRight, 1, FALSE);
+    if (endPos >= to)
+      break;
+
+    if (endPos >= eop_begin) {
+      startPos = eop_end;
+      eop_begin = (*Scan)(ctx->text.source, startPos, XawstParagraph,
+			  XawsdRight, 1, FALSE);
+      eop_end = (*Scan)(ctx->text.source, startPos, XawstParagraph,
+			XawsdRight, 1, TRUE);
+    }
+    else {
+      XawTextPosition periodPos, next_word;
+      int i, len, start;
+
+      periodPos=(*Scan)(ctx->text.source, endPos, 
+			XawstPositions, XawsdLeft, 1, TRUE);
+      next_word = (*Scan)(ctx->text.source, endPos, XawstWhiteSpace,
+			  XawsdRight, 1, FALSE);
+
+      len = next_word - periodPos;
+
+      text.length = 1;
+      buf = _XawTextGetText(ctx, periodPos, next_word);
+      start = 0;
+      if (periodPos < endPos) {
+	if (buf[0] == '.')
+	  text.length++;	/* Put in two spaces. */
+	start++;
+      }
+
+      /*
+       * Remove all spaces following the CR. 
+       */
+
+      for (i = 1 ; i < len; i++) 
+	if ( !isspace(buf[i + start]) )
+	  break;
+      
+      XtFree(buf);
+
+      to -= i - text.length;
+      startPos = (*Scan)(ctx->text.source, periodPos,
+			 XawstPositions, XawsdRight, i + start, TRUE);
+      _XawTextReplace(ctx, endPos, startPos, &text);
+	startPos -= i - text.length;
+    }
+  }
+  return(to);
+}
+
+/*	Function Name: InsertNewCRs
+ *	Description: Inserts the new Carrige Returns.
+ *	Arguments: ctx - the text widget.
+ *                 from, to - the ends of the region.
+ *	Returns: none
+ */
+
+static void
+InsertNewCRs(ctx, from, to)
+TextWidget ctx;
+XawTextPosition from, to;
+{
+  int (*FindPosition)() = ctx->text.sink->FindPosition;
+  XawTextPosition (*Scan)() = ctx->text.source->Scan;
+  XawTextPosition startPos, endPos, space, eol;
+  XawTextBlock text;
+  int i, x, width, height, len;
+  char * buf;
+
+  text.ptr = "\n";
+  text.length = 1;
+  text.firstPos = 0;
+  text.format = FMT8BIT;
+
+  x = ctx->text.leftmargin;
+
+  startPos = from;
+  while (TRUE) {
+    (*FindPosition) ( (Widget) ctx, startPos, x, (int) (ctx->core.width - x), 
+		     TRUE, &eol, &width, &height);
+    if (eol >= to)
+      break;
+
+    eol = (*Scan)(ctx->text.source, eol, XawstPositions, XawsdLeft, 1,
+		  TRUE);
+    space = (*Scan)(ctx->text.source, eol, XawstWhiteSpace, XawsdRight, 1,
+		    TRUE);
+    
+    startPos = endPos = eol;
+    if (eol == space) 
+      return;
+
+    len = (int) (space - eol);
+    buf = _XawTextGetText(ctx, eol, space);
+    for ( i = 0 ; i < len ; i++)
+      if (!isspace(buf[i]))
+	break;
+
+    to -= (i - 1);
+    endPos = (*Scan)(ctx->text.source, endPos,
+		     XawstPositions, XawsdRight, i, TRUE);
+    XtFree(buf);
+    
+    _XawTextReplace(ctx, startPos, endPos, &text);
+    startPos = (*Scan)(ctx->text.source, startPos,
+		       XawstPositions, XawsdRight, 1, TRUE);
+  }
+}  
+  
+/*	Function Name: FormRegion
+ *	Description: Forms up the region specified.
+ *	Arguments: ctx - the text widget.
+ *                 from, to - the ends of the region.
+ *	Returns: none.
+ */
+
+static void
+FormRegion(ctx, from, to)
+TextWidget ctx;
+XawTextPosition from, to;
+{
+  if (from >= to) return;
+
+  to = StripOutOldCRs(ctx, from, to);
+  InsertNewCRs(ctx, from, to);
+  _XawTextForceBuildLineTable(ctx);
+}
+
+/*	Function Name: FromParagraph.
+ *	Description: reforms up the current paragraph.
+ *	Arguments: w - the text widget.
+ *                 event - the X event.
+ *                 params, num_params *** NOT USED ***.
+ *	Returns: none
+ */
+
+/* ARGSUSED */
+static void 
+FormParagraph(w, event, params, num_params)
+Widget w;
+XEvent *event;
+String * params;
+Cardinal * num_params;
+{
+  TextWidget ctx = (TextWidget) w;
+  XawTextPosition from, to;
+
+  StartAction(ctx, event);
+
+  from =  (*ctx->text.source->Scan)(ctx->text.source, ctx->text.insertPos,
+				    XawstParagraph, XawsdLeft, 1, FALSE);
+  to  =  (*ctx->text.source->Scan)(ctx->text.source, from,
+				   XawstParagraph, XawsdRight, 1, FALSE);
+
+  FormRegion(ctx, from, to);
+  EndAction(ctx);
+}
+	     
+
 /* Action Table */
 
 XtActionsRec textActionsTable[] = {
@@ -1204,6 +1392,7 @@ XtActionsRec textActionsTable[] = {
   {"focus-out", 		TextFocusOut},
   {"display-caret",		DisplayCaret},
   {"multiply",		        Multiply},
+  {"form-paragraph",            FormParagraph},
 /* Action to bind special translations for text Dialogs. */
   {"InsertFileAction",          _XawTextInsertFileAction},
   {"DoSearchAction",            _XawTextDoSearchAction},
