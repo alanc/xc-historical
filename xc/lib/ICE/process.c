@@ -1,4 +1,4 @@
-/* $XConsortium: process.c,v 1.39 94/04/17 20:15:37 mor Exp $ */
+/* $XConsortium: process.c,v 1.40 94/05/02 11:18:23 mor Exp $ */
 /******************************************************************************
 
 
@@ -336,12 +336,21 @@ Bool		 *replyReadyRet;
 
 
     /*
-     * Decrement the dispatch level and check for bad IO status.
+     * Decrement the dispatch level.  If we reach level 0, and the
+     * free_asap bit is set, free the connection now.  Also check for
+     * possible bad IO status.
      */
 
     iceConn->dispatch_level--;
-    if (!iceConn->io_ok)
+
+    if (iceConn->dispatch_level == 0 && iceConn->free_asap)
+    {
+	_IceFreeConnection (iceConn);
+	retStatus = IceProcessMessagesConnectionClosed;
+    }
+    else if (!iceConn->io_ok)
 	retStatus = IceProcessMessagesIOError;
+
     return (retStatus);
 }
 
