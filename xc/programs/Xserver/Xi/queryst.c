@@ -1,4 +1,4 @@
-/* $XConsortium: xqueryst.c,v 1.8 92/10/20 17:12:02 rws Exp $ */
+/* $XConsortium: xqueryst.c,v 1.9 92/12/30 16:05:25 rws Exp $ */
 
 /***********************************************************************
  *
@@ -78,7 +78,8 @@ ProcXQueryDeviceState(client)
 	return Success;
 	}
 
-    if (dev->valuator->motionHintWindow)
+    v = dev->valuator;
+    if (v != NULL && v->motionHintWindow != NULL)
 	MaybeStopDeviceHint(dev, client);
 
     k = dev->key;
@@ -95,7 +96,6 @@ ProcXQueryDeviceState(client)
 	num_classes++;
 	}
 
-    v = dev->valuator;
     if (v != NULL)
 	{
 	total_length += (sizeof(xValuatorState) + 
