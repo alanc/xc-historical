@@ -1,4 +1,4 @@
-/* $XConsortium: restart.c,v 1.20 94/12/13 19:33:41 mor Exp mor $ */
+/* $XConsortium: restart.c,v 1.21 94/12/14 20:01:36 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -501,23 +501,6 @@ Bool useSavedState;
 
 
 
-#if defined(sun) && defined(SVR4)
-static int System (s)
-    char *s;
-{
-    int pid, status;
-    if ((pid = fork ()) == 0) {
-	(void) setpgrp();
-	execl ("/bin/sh", "sh", "-c", s, 0);
-    } else
-	waitpid (pid, &status, 0);
-    return status;
-}
-#define system(s) System(s)
-#endif
-
-
-
 void
 StartDefaultApps ()
 
@@ -571,7 +554,7 @@ StartDefaultApps ()
 
 	/* let the shell parse the stupid args */
 
-	system (buf);
+	execute_system_command (buf);
     }
 }
 
@@ -597,7 +580,7 @@ StartNonSessionAwareApps ()
 	add_log_text (logtext);
 
 	strcat (non_session_aware_clients[i], "&");
-	system (non_session_aware_clients[i]);
+	execute_system_command (non_session_aware_clients[i]);
 	free ((char *) non_session_aware_clients[i]);
     }
 
