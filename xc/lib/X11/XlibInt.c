@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlibInt.c,v 11.89 88/09/30 10:13:57 jim Exp $
+ * $XConsortium: XlibInt.c,v 11.90 88/09/30 17:25:18 jim Exp $
  */
 
 #include "copyright.h"
@@ -1219,19 +1219,35 @@ int _XPrintDefaultError (dpy, event, fp)
     char mesg[BUFSIZ];
     char number[32];
     char *mtype = "XlibMessage";
+    register _XExtension *ext = (_XExtension *)NULL;
     XGetErrorText(dpy, event->error_code, buffer, BUFSIZ);
     XGetErrorDatabaseText(dpy, mtype, "XError", "X Error", mesg, BUFSIZ);
     (void) fprintf(fp, "%s:  %s\n  ", mesg, buffer);
     XGetErrorDatabaseText(dpy, mtype, "MajorCode", "Request Major code %d", 
 	mesg, BUFSIZ);
     (void) fprintf(fp, mesg, event->request_code);
-    sprintf(number, "%d", event->request_code);
-    XGetErrorDatabaseText(dpy, "XRequest", number, "", 	buffer, BUFSIZ);
-    (void) fprintf(fp, " (%s)", buffer);
-    fputs("\n  ", fp);
-    XGetErrorDatabaseText(dpy, mtype, "MinorCode", "Request Minor code", 
+    if (event->request_code < 128) {
+	sprintf(number, "%d", event->request_code);
+	XGetErrorDatabaseText(dpy, "XRequest", number, "", buffer, BUFSIZ);
+    } else {
+	for (ext = dpy->ext_procs;
+	     ext && (ext->codes.major_opcode != event->request_code);
+	     ext = ext->next)
+	  ;
+	if (ext)
+	    strcpy(buffer, ext->name);
+	else
+	    buffer[0] = '\0';
+    }
+    (void) fprintf(fp, " (%s)\n  ", buffer);
+    XGetErrorDatabaseText(dpy, mtype, "MinorCode", "Request Minor code %d",
 	mesg, BUFSIZ);
     (void) fprintf(fp, mesg, event->minor_code);
+    if (ext) {
+	sprintf(mesg, "%s.%d", ext->name, event->minor_code);
+	XGetErrorDatabaseText(dpy, "XRequest", mesg, "", buffer, BUFSIZ);
+	(void) fprintf(fp, " (%s)", buffer);
+    }
     fputs("\n  ", fp);
     XGetErrorDatabaseText(dpy, mtype, "ResourceID", "ResourceID 0x%x",
 	mesg, BUFSIZ);
