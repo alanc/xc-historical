@@ -1,21 +1,24 @@
 			  X Window System Bug Report
-			    xbugs@expo.lcs.mit.edu
+			Send to xbugs@expo.lcs.mit.edu
 
+PLEASE make your Subject: line as descriptive as possible!
+
+----cut here----
 
 VERSION:
     R5alpha
 
 CLIENT MACHINE and OPERATING SYSTEM:
-    [e.g. Sun 3/280 running SunOS 4.0.3, Microvax II running Ultrix 3.1, ...]
+    [e.g. Sparc/SunOS 4.1.1, DECstation 3100/Ultrix 4.1, ...]
 
 DISPLAY TYPE:
-    [e.g. Digital QVSS, Sun CG4, HP Topcat, IBM APA16, Apollo 4 plane, ...]
+    [e.g. Sun GX, 8-bit framebuffer, IBM APA16 ...]
 
 WINDOW MANAGER:
-    [e.g. twm, gwm, tekwm, olwm, mwm, ...]
+    [e.g. twm, gwm, olwm, mwm, ...]
 
 COMPILER:
-    [e.g. native cc, native ANSI cc, gcc 1.37.1, ...]
+    [e.g. native cc, native ANSI cc, gcc 1.39, ...]
 
 AREA:
     [e.g. server, Xlib, Xt, Xaw, PEX, twm, xterm, xmh, config, ...]
@@ -30,4 +33,4 @@ REPEAT BY:
     [what you did to get the error; include test program if at all possible]
 
 SAMPLE FIX:
-    [preferred, but not necessary.  Please send context diffs (diff -c -b)]
+    [preferred, but not necessary.  Please send context diffs (diff -c)]
