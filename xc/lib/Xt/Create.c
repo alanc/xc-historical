@@ -1,4 +1,4 @@
-/* $XConsortium: Create.c,v 1.102 94/03/31 15:57:09 converse Exp $ */
+/* $XConsortium: Create.c,v 1.103 94/04/01 20:50:05 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -228,16 +228,19 @@ xtWidgetAlloc(widget_class, parent_constraint_class, parent, name,
     Cardinal	num_typed_args;
 {
     Widget widget;
-    Cardinal                wsize, csize;
+    Cardinal                wsize, csize = 0;
     ObjectClassExtension    ext;
 
     LOCK_PROCESS;
     if (! (widget_class->core_class.class_inited))
 	XtInitializeWidgetClass(widget_class);
     ext = (ObjectClassExtension)
-	XtGetClassExtension(widget_class, XtOffsetOf(CoreClassPart, extension),
+	XtGetClassExtension(widget_class,
+			    XtOffsetOf(ObjectClassRec, object_class.extension),
 			    NULLQUARK, XtObjectExtensionVersion, 
 			    sizeof(ObjectClassExtensionRec));
+    if (parent_constraint_class)
+	csize = parent_constraint_class->constraint_class.constraint_size;    
     if (ext && ext->allocate) {
 	XtAllocateProc allocate;
 	Cardinal extra = 0;
@@ -245,14 +248,12 @@ xtWidgetAlloc(widget_class, parent_constraint_class, parent, name,
 	Cardinal ntyped = num_typed_args;
 	allocate = ext->allocate;
 	UNLOCK_PROCESS;
-	(*allocate)(widget_class, (WidgetClass) parent_constraint_class,
-		    &extra, parent, args, &nargs,
+	(*allocate)(widget_class, &csize, &extra, args, &nargs,
 		    typed_args, &ntyped, &widget, NULL);
     } else {
 	wsize = widget_class->core_class.widget_size;
-	csize = 0;
-	if (parent_constraint_class) {
-	    csize = parent_constraint_class->constraint_class.constraint_size;
+	UNLOCK_PROCESS;
+	if (csize) {
 	    if (sizeof(struct {char a; double b;}) !=
 		(sizeof(struct {char a; unsigned long b;}) -
 		 sizeof(unsigned long) + sizeof(double))) {
@@ -260,7 +261,6 @@ xtWidgetAlloc(widget_class, parent_constraint_class, parent, name,
 		    wsize = (wsize + sizeof(double) - 1) & ~(sizeof(double)-1);
 	    }
 	}
-	UNLOCK_PROCESS;
 	widget = (Widget) XtMalloc((unsigned)(wsize + csize));
 	widget->core.constraints =
 	    (csize ? (XtPointer)((char *)widget + wsize) : NULL);
