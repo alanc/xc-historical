@@ -464,17 +464,18 @@ be put into the ``myhost'' icon manager.
 This variable specifies a list of windows that should appear in the icon
 manager.  When used in conjunction with the \fBIconManagerDontShow\fP
 variable, only the windows in this list will be shown in the icon manager.
-.IP "\fBIconRegion\fP "\fIgeometry\fP" \fIgrav1 grav2 x-space y-space\fP"
+.IP "\fBIconRegion\fP "\fIgeometry\fP" \fIvgrav hgrav gridwidth gridheight\fP"
 This variable specifies an area on the root window in which icons are placed
 if no specific icon location is provided by the client.  If more than one
 \fBIconRegion\fP lines are given,
 icons will be put into the seceeding icon regions when the first is full.
-The \fIgrav1\fP argument should be either \fBNorth\fP or \fBSouth\fP and
+The \fIvgrav\fP argument should be either \fBNorth\fP or \fBSouth\fP and
 control and is used to control whether icons are first filled in from the
-top or bottom of the icon region.  Similarly, the \fIgrav2\fP argument should
+top or bottom of the icon region.  Similarly, the \fIhgrav\fP argument should
 be either \fBEast\fP or \fBWest\fP and is used to control whether icons should
 be filled in from left from the right.  Icons are laid out within the region
-in a grid with cells \fIx-space\fP pixels wide by \fIy-space\fP pixels high.
+in a grid with cells \fIgridwidth\fP pixels wide and \fIgridheight\fP pixels 
+high.
 .IP "\fBIcons\fP { \fIwin-list\fP }" 8
 This variable specifies a list of window names and the bitmap filenames that
 should be used as their icons.  For example:
