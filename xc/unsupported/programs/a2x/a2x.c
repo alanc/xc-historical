@@ -1,4 +1,4 @@
-/* $XConsortium: a2x.c,v 1.48 92/04/09 11:07:11 rws Exp $ */
+/* $XConsortium: a2x.c,v 1.49 92/04/11 15:55:36 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -31,6 +31,7 @@ Syntax of magic values in the input stream:
 ^T^D<dx> <dy>^T		move mouse by (<dx>, <dy>) pixels
 ^T^E			exit the program
 ^T^J<options>[ <mult>]^T jump to next closest top-level window
+	Z		no-op letter to soak up uppercase from prev word 
 	C		closest top-level window
 	D		top-level window going down
 	L		top-level window going left
@@ -892,6 +893,8 @@ do_jump(buf)
 	    if (*endptr)
 		return;
 	    buf = endptr - 1;
+	    break;
+	case 'Z':
 	    break;
 	default:
 	    return;
