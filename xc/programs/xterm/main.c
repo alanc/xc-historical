@@ -1,5 +1,5 @@
 /*
- *	$Header: main.c,v 1.13 88/02/17 19:05:31 jim Exp $
+ *	$Header: main.c,v 1.14 88/02/18 16:47:46 jim Exp $
  *
  * WARNING:  This code (particularly, the tty setup code) is a historical
  * relic and should not be confused with a real toolkit application or a
@@ -34,7 +34,7 @@
 /* main.c */
 
 #ifndef lint
-static char rcs_id[] = "$Header: main.c,v 1.13 88/02/17 19:05:31 jim Exp $";
+static char rcs_id[] = "$Header: main.c,v 1.14 88/02/18 16:47:46 jim Exp $";
 #endif	/* lint */
 
 #include <X11/Xos.h>
@@ -220,9 +220,6 @@ static XtResource resources[] = {
 {XtNboldFont, XtCFont, XtRString, sizeof(char *),
 	XtOffset(XtermWidget, misc.f_b), XtRString,
 	DEFBOLDFONT},
-{XtNborderWidth,XtCBorderWidth, XtRInt, sizeof(int),
-	XtOffset(XtermWidget, core.border_width),
-	XtRInt, (caddr_t)&defaultBorderWidth},
 {XtNc132, XtCC132, XtRBoolean, sizeof(Boolean),
 	XtOffset(XtermWidget, screen.c132),
 	XtRBoolean, (caddr_t) &defaultFALSE},
@@ -316,8 +313,8 @@ static XtResource resources[] = {
    pass over the remaining options after XtParseCommand is let loose. */
 
 static XrmOptionDescRec optionDescList[] = {
-{"-geometry",	".xterm.geometry",XrmoptionSepArg,	(caddr_t) NULL},
-{"=",		".xterm.geometry",XrmoptionIsArg,		(caddr_t) NULL},
+{"-geometry",	"*vt100.geometry",XrmoptionSepArg,	(caddr_t) NULL},
+{"=",		"*vt100.geometry",XrmoptionIsArg,	(caddr_t) NULL},
 {"%",		"*tekGeometry",	XrmoptionIsArg,		(caddr_t) NULL},
 {"#",		"*iconGeometry",XrmoptionIsArg,		(caddr_t) NULL},
 {"-132",	"*c132",	XrmoptionNoArg,		(caddr_t) "on"},
@@ -356,12 +353,11 @@ static XrmOptionDescRec optionDescList[] = {
 {"-sk",		"*scrollKey",	XrmoptionNoArg,		(caddr_t) "on"},
 {"+sk",		"*scrollKey",	XrmoptionNoArg,		(caddr_t) "off"},
 {"-sl",		"*saveLines",	XrmoptionSepArg,	(caddr_t) NULL},
-{"-sp",		"*scrollPos",	XrmoptionSepArg,	(caddr_t) NULL},
 {"-t",		"*tekStartup",	XrmoptionNoArg,		(caddr_t) "on"},
 {"+t",		"*tekStartup",	XrmoptionNoArg,		(caddr_t) "off"},
 {"-vb",		"*visualBell",	XrmoptionNoArg,		(caddr_t) "on"},
 {"+vb",		"*visualBell",	XrmoptionNoArg,		(caddr_t) "off"},
-{"-w",		".borderWidth",	XrmoptionSepArg,	(caddr_t) NULL},
+{"-w",		".TopLevelShell.borderWidth", XrmoptionSepArg, (caddr_t) NULL},
 };
 
 extern void VTRealize(), VTExpose(), VTConfigure();
@@ -371,7 +367,7 @@ WidgetClassRec xtermClassRec = {
   {
 /* core_class fields */	
     /* superclass	  */	(WidgetClass) &widgetClassRec,
-    /* class_name	  */	"Xterm",
+    /* class_name	  */	"VT100",
     /* widget_size	  */	sizeof(XtermWidgetRec),
     /* class_initialize   */    NULL,
     /* class_part_initialize */ NULL,
@@ -501,7 +497,7 @@ char **argv;
 	    }
 	}
 	/* Init the Toolkit. */
-	toplevel = XtInitialize(xterm_name, "XTerm",
+	toplevel = XtInitialize("main", "XTerm",
 		optionDescList, XtNumber(optionDescList), &argc, argv);
 	XtSetValues (toplevel, ourTopLevelShellArgs, 
 		     number_ourTopLevelShellArgs);
@@ -607,7 +603,7 @@ char **argv;
 	}
 
         term = (XtermWidget) XtCreateManagedWidget(
-	    xterm_name, xtermWidgetClass, toplevel, NULL, 0);
+	    "vt100", xtermWidgetClass, toplevel, NULL, 0);
             /* this causes the initialize method to be called */
 
         screen = &term->screen;
