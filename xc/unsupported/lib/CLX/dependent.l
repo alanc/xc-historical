@@ -881,7 +881,8 @@
       (error "Failed to connect to server: ~A ~D" host display))
     (user::make-lisp-stream :input-handle fd
 			    :output-handle fd
-			    :element-type 'unsigned-byte)))
+			    :element-type 'unsigned-byte
+			    #-lcl3.0 :stream-type #-lcl3.0 :ephemeral)))
 
 #+kcl
 (defun open-x-stream (host display protocol)
