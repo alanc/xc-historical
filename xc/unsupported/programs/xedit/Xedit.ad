@@ -28,5 +28,5 @@ Xedit*bc_label*label:			Use Control-S and Control-R to Search.
 ! Keep CR in filename window from confusing the user.
 !
 
-Xedit*filename.translations:		#override \
-					<Key>Return: do-nothing()
+Xedit*filename.translations:	#override \
+				<Key>Return: end-of-line()
