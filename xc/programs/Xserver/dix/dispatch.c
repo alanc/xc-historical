@@ -1,4 +1,4 @@
-/* $XConsortium: dispatch.c,v 5.31 91/05/26 21:08:28 rws Exp $ */
+/* $XConsortium: dispatch.c,v 5.32 91/06/12 17:07:06 rws Exp $ */
 /************************************************************
 Copyright 1987, 1989 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -3129,6 +3129,8 @@ CloseDownClient(client)
 	    client->clientGone = TRUE;  /* so events aren't sent to client */
 	    CloseDownConnection(client);
 	    FreeClientResources(client);
+	    if (ClientIsAsleep (client))
+		ClientSignal (client);
 	    if (client->index < nextFreeClientID)
 		nextFreeClientID = client->index;
 	    clients[client->index] = NullClient;
@@ -3153,6 +3155,8 @@ CloseDownClient(client)
     {
 	/* really kill resources this time */
         FreeClientResources(client);
+	if (ClientIsAsleep (client))
+	    ClientSignal (client);
 	if (client->index < nextFreeClientID)
 	    nextFreeClientID = client->index;
 	clients[client->index] = NullClient;
