@@ -1,6 +1,6 @@
 #ifndef lint
 static char Xrcsid[] =
-    "$XConsortium: Resources.c,v 1.73 89/10/03 17:22:51 swick Exp $";
+    "$XConsortium: Resources.c,v 1.74 89/10/05 13:17:10 swick Exp $";
 /* $oHeader: Resources.c,v 1.6 88/09/01 13:39:14 asente Exp $ */
 #endif /*lint*/
 /*LINTLIBRARY*/
@@ -232,8 +232,7 @@ static Cardinal GetNamesAndClasses(w, names, classes)
 	names[length] = w->core.xrm_name;
 	class = XtClass(w);
 	/* KLUDGE KLUDGE KLUDGE KLUDGE */
-	if (w->core.parent == NULL && 
-		XtIsSubclass(w, applicationShellWidgetClass)) {
+	if (w->core.parent == NULL && XtIsApplicationShell(w)) {
 	    classes[length] =
 		((ApplicationShellWidget) w)->application.xrm_class;
 	} else classes[length] = class->core_class.xrm_class;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Event.c,v 1.101 89/10/03 16:16:27 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Event.c,v 1.102 89/10/04 09:14:11 swick Exp $";
 /* $oHeader: Event.c,v 1.9 88/09/01 11:33:51 asente Exp $ */
 #endif /* lint */
 
@@ -1365,8 +1365,7 @@ static void AddForwardingHandler(w, descendant)
 	if (!have_focus) {
 	    /* If the widget is the shell parent of the descendent, the server
 	       will send the focus notify for us -- we don't need to */
-	    if (w != XtParent(descendant) ||
-		!XtIsSubclass(w, shellWidgetClass)) {
+	    if (w != XtParent(descendant) || !XtIsShell(w)) {
 		/* is the pointer already inside? */
 		XQueryPointer(XtDisplay(w), XtWindow(w), &root, &child,
 			      &root_x, &root_y, &win_x, &win_y, &mask );
@@ -1437,8 +1436,7 @@ void XtSetKeyboardFocus(widget, descendant)
 
     /* shells are always occluded by their children */
     mask = FocusChangeMask;
-    if (widget != XtParent(descendant) || 
-	    !XtIsSubclass(widget, shellWidgetClass)) {
+    if (widget != XtParent(descendant) || !XtIsShell(widget)) {
 	mask |= EnterWindowMask | LeaveWindowMask;
     }
 

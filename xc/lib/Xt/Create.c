@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Create.c,v 1.60 89/09/21 09:07:39 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Create.c,v 1.61 89/10/03 12:35:02 swick Exp $";
 /* $oHeader: Create.c,v 1.5 88/09/01 11:26:22 asente Exp $ */
 #endif /*lint*/
 
@@ -192,7 +192,7 @@ static Widget _XtCreate(
         widget->core.screen = default_screen;
         widget->core.tm.translations = NULL;
     };
-    if (XtIsSubclass(widget, applicationShellWidgetClass)) {
+    if (XtIsApplicationShell(widget)) {
 	ApplicationShellWidget a = (ApplicationShellWidget) widget;
 	if (class != NULL) a->application.class = XtNewString(class);
 	else a->application.class = widget_class->core_class.class_name;
