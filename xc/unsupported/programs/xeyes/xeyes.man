@@ -35,6 +35,9 @@ choose a different color for the window border.
 .TP 8
 .B \-bw \fIborder width\fB
 choose a different width for the window border.
+.TP 8
+.B \-shape
+uses the SHAPE extension to shape the window.
 .SH "SEE ALSO"
 X(1), X Toolkit documentation
 .SH COPYRIGHT

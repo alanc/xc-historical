@@ -1,5 +1,5 @@
 /*
-* $XConsortium: EyesP.h,v 1.4 88/09/06 17:55:28 jim Exp $
+* $XConsortium: EyesP.h,v 1.5 89/03/28 17:29:06 keith Exp $
 */
 
 #ifndef _EyesP_h
@@ -7,6 +7,7 @@
 
 #include "Eyes.h"
 #include <X11/CoreP.h>
+#include "transform.h"
 
 #define SEG_BUFF_SIZE		128
 
@@ -22,15 +23,16 @@ typedef struct {
 /* start of graph stuff */
 	 int		backing_store;	/* backing store variety */
 	 Boolean	reverse_video;	/* swap fg and bg pixels */
-	 Boolean	use_wide_lines;	/* use wide lines instead of fills */
-	 Boolean	use_bevel;	/* use bevel join style for arcs */
 	 Boolean	shape_window;	/* use SetWindowShapeMask */
 	 int		update;		/* current timeout index */
-	 int		thickness;	/* line thickness */
-	 int		odx, ody;	/* old mouse position */
-	 XPoint		pupil[2];	/* pupil position */
+	 TPoint		mouse;		/* old mouse position */
+	 TPoint		pupil[2];	/* pupil position */
+	 Transform	t;
+	 Transform	maskt;
 	 XtIntervalId	interval_id;
 	 Pixmap		shape_mask;	/* window shape */
+	 Dimension	shape_height;	/* window size when shape computed */
+	 Dimension	shape_width;
    } EyesPart;
 
 /* Full instance record declaration */

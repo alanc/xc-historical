@@ -6,7 +6,7 @@ INCLUDES = -I$(TOP) -I$(TOP)/X11
 SYS_LIBRARIES = -lm
 LOCAL_LIBRARIES = $(XMULIB) $(XTOOLLIB) $(EXTENSIONLIB) $(XLIB)
 
-SRCS = xeyes.c Eyes.c
-OBJS = xeyes.o Eyes.o
+SRCS = xeyes.c Eyes.c transform.c
+OBJS = xeyes.o Eyes.o transform.o
 
 ComplexProgramTarget(xeyes)

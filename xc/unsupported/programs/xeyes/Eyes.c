@@ -31,12 +31,8 @@ static XtResource resources[] = {
 	offset (reverse_video), XtRString, "FALSE"},
     {XtNbackingStore, XtCBackingStore, XtRBackingStore, sizeof (int),
     	offset (backing_store), XtRString, "default"},
-    {XtNuseWideLines, XtCUseWideLines, XtRBoolean, sizeof (Boolean),
-        offset (use_wide_lines), XtRString, "FALSE"},
-    {XtNuseBevel, XtCUseBevel, XtRBoolean, sizeof (Boolean),
-	offset (use_bevel), XtRString, "FALSE"},
     {XtNshapeWindow, XtCShapeWindow, XtRBoolean, sizeof (Boolean),
-	offset (shape_window), XtRString, "FALSE"},
+	offset (shape_window), XtRString, "TRUE"},
 };
 
 #undef offset
@@ -48,19 +44,23 @@ static int repaint_window();
 static int draw_it ();
 
 # define NUM_EYES	2
-# define WIDGET_WIDTH(w)	((w)->core.width)
-# define WIDGET_HEIGHT(w)	((w)->core.height)
-# define EYE_THICK(w)	(((WIDGET_WIDTH(w) + WIDGET_HEIGHT(w)) / 2) / 15)
-# define EYE_PAD_X(w)	(WIDGET_WIDTH(w) / 20 + EYE_THICK(w) / 2)
-# define EYE_PAD_Y(w)	(WIDGET_HEIGHT(w) / 20 + EYE_THICK(w) / 2)
-# define EYE_WIDTH(w)	((WIDGET_WIDTH(w) - EYE_PAD_X(w)) / NUM_EYES - EYE_PAD_X(w))
-# define EYE_HEIGHT(w)	(WIDGET_HEIGHT(w) - 2 * EYE_PAD_Y(w))
-# define BALL_WIDTH(w)	(((EYE_WIDTH(w) + EYE_HEIGHT(w)) / 2) / 5)
-# define BALL_HEIGHT(w)	BALL_WIDTH(w)
-# define BALL_DIST	0.5
+# define EYE_X(n)	((n) * 2.0)
+# define EYE_Y(n)	(0.0)
+# define EYE_OFFSET	(0.1)	/* padding between eyes */
+# define EYE_THICK	(0.175)	/* thickness of eye rim */
+# define BALL_WIDTH	(0.3)
+# define BALL_PAD	(0.05)
+# define EYE_WIDTH	(2.0 - (EYE_THICK + EYE_OFFSET) * 2)
+# define EYE_HEIGHT	EYE_WIDTH
+# define BALL_HEIGHT	BALL_WIDTH
+# define BALL_DIST	((EYE_WIDTH - BALL_WIDTH) / 2.0 - BALL_PAD)
+# define W_MIN_X	(-1.0 + EYE_OFFSET)
+# define W_MAX_X	(3.0 - EYE_OFFSET)
+# define W_MIN_Y	(-1.0 + EYE_OFFSET)
+# define W_MAX_Y	(1.0 - EYE_OFFSET)
 
-# define EYE_CENTER_X(w, num)	((EYE_WIDTH(w) + EYE_PAD_X(w)) * (num) + EYE_PAD_X(w) + EYE_WIDTH(w)/2)
-# define EYE_CENTER_Y(w, num)	(EYE_HEIGHT(w) / 2 + EYE_PAD_Y(w))
+# define TPointEqual(a, b)  ((a).x == (b).x && (a).y == (b).y)
+# define XPointEqual(a, b)  ((a).x == (b).x && (a).y == (b).y)
 
 static int delays[] = { 50, 100, 200, 400, 0 };
 
@@ -140,7 +140,6 @@ static void Initialize (greq, gnew)
 	w->eyes.puppixel = bg;
 	w->core.background_pixel = fg;
     }
-    w->eyes.thickness = EYE_THICK (w);
 
     myXGCV.foreground = w->eyes.puppixel;
     myXGCV.background = w->core.background_pixel;
@@ -149,20 +148,9 @@ static void Initialize (greq, gnew)
 
     myXGCV.foreground = w->eyes.outline;
     valuemask = GCForeground | GCBackground;
-    if (w->eyes.use_wide_lines) {
-	myXGCV.line_width = w->eyes.thickness;
-	valuemask |= GCLineWidth;
-	if (w->eyes.use_bevel) {
-	    myXGCV.join_style = JoinBevel;
-	    valuemask |= GCJoinStyle;
-	}
-    }
     w->eyes.outGC = XtGetGC(gnew, valuemask, &myXGCV);
 
-    if (w->eyes.use_wide_lines)
-	myXGCV.foreground = w->core.background_pixel;
-    else
-	myXGCV.foreground = w->eyes.center;
+    myXGCV.foreground = w->eyes.center;
     myXGCV.background = w->eyes.puppixel;
     valuemask = GCForeground | GCBackground;
     w->eyes.centerGC = XtGetGC(gnew, valuemask, &myXGCV);
@@ -171,46 +159,58 @@ static void Initialize (greq, gnew)
     /* wait for Realize to add the timeout */
     w->eyes.interval_id = 0;
 
-    w->eyes.pupil[0].x = w->eyes.pupil[1].x = -1;
-    w->eyes.pupil[0].y = w->eyes.pupil[1].y = -1;
+    w->eyes.pupil[0].x = w->eyes.pupil[1].x = -1000;
+    w->eyes.pupil[0].y = w->eyes.pupil[1].y = -1000;
 
-    if (w->eyes.shape_window && !XQueryShapeExtension (XtDisplay (w)))
+    if (w->eyes.shape_window && !XShapeQueryExtension (XtDisplay (w)))
 	w->eyes.shape_window = False;
     w->eyes.shape_mask = 0;
     w->eyes.shapeGC = 0;
+    w->eyes.shape_width = 0;
+    w->eyes.shape_height = 0;
 }
 
 static void Shape (w)
     EyesWidget	w;
 {
     XGCValues	xgcv;
-    Window	win, root, parent, *childp, nchild;
+    Widget	child, parent;
 
-    w->eyes.shape_mask = XCreatePixmap (XtDisplay (w), XtWindow (w),
-	    w->core.width, w->core.height, 1);
-    if (!w->eyes.shapeGC)
-        w->eyes.shapeGC = XCreateGC (XtDisplay (w), w->eyes.shape_mask, 0, &xgcv);
-    XSetForeground (XtDisplay (w), w->eyes.shapeGC, 0);
-    XFillRectangle (XtDisplay (w), w->eyes.shape_mask, w->eyes.shapeGC, 0, 0,
-	w->core.width, w->core.height);
-    XSetForeground (XtDisplay (w), w->eyes.shapeGC, 1);
-    eyeLiner (w, w->eyes.shape_mask, w->eyes.shapeGC, (GC) 0, 0);
-    eyeLiner (w, w->eyes.shape_mask, w->eyes.shapeGC, (GC) 0, 1);
-    win = XtWindow (w);
-    for (;;) {
-        XShapeMask (XtDisplay (w), win, ShapeWindow,
-		w->eyes.shape_mask, ShapeSet, 0, 0);
-	XShapeMask (XtDisplay  (w), win, ShapeBorder,
-		w->eyes.shape_mask, ShapeSet, 0, 0);
-	XQueryTree (XtDisplay (w), win, &root, &parent, &childp, &nchild);
-	if (nchild)
-	    XFree (childp);
-	if (parent == root)
-	    break;
-	win = parent;
+    if (w->core.width == w->eyes.shape_width &&
+        w->core.height == w->eyes.shape_height)
+	return;
+
+    XClearWindow (XtDisplay (w), XtWindow (w));
+    SetTransform (&w->eyes.t,
+		    0, w->core.width,
+ 		    w->core.height, 0,
+		    W_MIN_X, W_MAX_X,
+		    W_MIN_Y, W_MAX_Y);
+    if (w->eyes.shape_window) {
+    	w->eyes.shape_mask = XCreatePixmap (XtDisplay (w), XtWindow (w),
+	    	w->core.width, w->core.height, 1);
+    	if (!w->eyes.shapeGC)
+            w->eyes.shapeGC = XCreateGC (XtDisplay (w), w->eyes.shape_mask, 0, &xgcv);
+    	XSetForeground (XtDisplay (w), w->eyes.shapeGC, 0);
+    	XFillRectangle (XtDisplay (w), w->eyes.shape_mask, w->eyes.shapeGC, 0, 0,
+	    w->core.width, w->core.height);
+    	XSetForeground (XtDisplay (w), w->eyes.shapeGC, 1);
+    	eyeLiner (w, w->eyes.shape_mask, w->eyes.shapeGC, (GC) 0, 0);
+    	eyeLiner (w, w->eyes.shape_mask, w->eyes.shapeGC, (GC) 0, 1);
+    	XShapeCombineMask (XtDisplay (w), XtWindow (w), ShapeBounding,
+		       	   w->eyes.shape_mask, ShapeSet, 0, 0);
+    	XFreePixmap (XtDisplay (w), w->eyes.shape_mask);
+    	child = (Widget) w;
+    	while (parent = XtParent (child)) {
+	    XShapeCombineShape (XtDisplay (parent), XtWindow (parent), ShapeBounding,
+			    	XtWindow (child), ShapeBounding, ShapeSet,
+			    	child->core.x + child->core.border_width,
+			    	child->core.y + child->core.border_width);
+	    child = parent;
+    	}
     }
-    XFreePixmap (XtDisplay (w), w->eyes.shape_mask);
-    w->eyes.shape_mask = 0;
+    w->eyes.shape_width = w->core.width;
+    w->eyes.shape_height = w->core.height;
 }
  
 static void Realize (gw, valueMask, attrs)
@@ -226,6 +226,7 @@ static void Realize (gw, valueMask, attrs)
     }
     XtCreateWindow( gw, (unsigned)InputOutput, (Visual *)CopyFromParent,
 		     *valueMask, attrs );
+    Shape (w);
     w->eyes.interval_id =
 	    XtAddTimeOut(delays[w->eyes.update], draw_it, (caddr_t)gw);
 }
@@ -234,7 +235,9 @@ static void Destroy (gw)
      Widget gw;
 {
      EyesWidget w = (EyesWidget)gw;
-     if (w->eyes.interval_id) XtRemoveTimeOut (w->eyes.interval_id);
+
+     if (w->eyes.interval_id)
+	XtRemoveTimeOut (w->eyes.interval_id);
      XtDestroyGC (w->eyes.pupGC);
      XtDestroyGC (w->eyes.outGC);
      XtDestroyGC (w->eyes.centerGC);
@@ -252,54 +255,47 @@ static void Redisplay(gw, event, region)
     Display	*dpy;
 
     w = (EyesWidget) gw;
-    if (w->eyes.shape_window)
-        Shape (w);
-    thick = EYE_THICK (w);
-    if (thick != w->eyes.thickness) {
-	dpy = XtDisplay (w);
-	w->eyes.thickness = thick;
-	myXGCV.line_width = w->eyes.thickness;
-	XChangeGC (dpy, w->eyes.outGC, GCLineWidth, &myXGCV);
-    }
-    w->eyes.pupil[0].x = -1;
-    w->eyes.pupil[0].y = -1;
-    w->eyes.pupil[1].x = -1;
-    w->eyes.pupil[1].y = -1;
+    Shape (w);
+    w->eyes.pupil[0].x = -1000;
+    w->eyes.pupil[0].y = -1000;
+    w->eyes.pupil[1].x = -1000;
+    w->eyes.pupil[1].y = -1000;
     (void) repaint_window ((EyesWidget)gw);
 }
 
-static XPoint computePupil (w, num, dx, dy)
+static TPoint computePupil (w, num, mouse)
     EyesWidget	w;
     int		num;
-    int		dx, dy;
+    TPoint	mouse;
 {
-	int	cx, cy;
+	double	cx, cy;
 	double	dist;
 	double	angle;
 	double	x, y;
 	double	h;
 	double	a, b;
-	XPoint	ret;
+	double	dx, dy;
+	TPoint	ret;
 
-	dx = dx - EYE_CENTER_X(w, num);
-	dy = dy - EYE_CENTER_Y(w, num);
+	dx = mouse.x - EYE_X(num);
+	dy = mouse.y - EYE_Y(num);
 	if (dx == 0 && dy == 0) {
-		cx = EYE_CENTER_X(w, num);
-		cy = EYE_CENTER_Y(w, num);
+		cx = EYE_X(num);
+		cy = EYE_Y(num);
 	} else {
 		angle = atan2 ((double) dy, (double) dx);
-		a = EYE_WIDTH(w) / 2.0;
-		b = EYE_HEIGHT(w) / 2.0;
+		a = EYE_WIDTH / 2.0;
+		b = EYE_HEIGHT / 2.0;
 		h = hypot (b * cos (angle), a * sin (angle));
 		x = a * b * cos (angle) / h;
 		y = a * b * sin (angle) / h;
 		dist = BALL_DIST * hypot (x, y);
 		if (dist > hypot ((double) dx, (double) dy)) {
-			cx = dx + EYE_CENTER_X(w, num);
-			cy = dy + EYE_CENTER_Y(w, num);
+			cx = dx + EYE_X(num);
+			cy = dy + EYE_Y(num);
 		} else {
-			cx = dist * cos (angle) + EYE_CENTER_X(w, num);
-			cy = dist * sin (angle) + EYE_CENTER_Y(w, num);
+			cx = dist * cos (angle) + EYE_X(num);
+			cy = dist * sin (angle) + EYE_Y(num);
 		}
 	}
 	ret.x = cx;
@@ -307,13 +303,13 @@ static XPoint computePupil (w, num, dx, dy)
 	return ret;
 }
 
-static void computePupils (w, dx, dy, pupils)
+static void computePupils (w, mouse, pupils)
     EyesWidget	w;
-    int		dx, dy;
-    XPoint	pupils[2];
+    TPoint	mouse;
+    TPoint	pupils[2];
 {
-    pupils[0] = computePupil (w, 0, dx, dy);
-    pupils[1] = computePupil (w, 1, dx, dy);
+    pupils[0] = computePupil (w, 0, mouse);
+    pupils[1] = computePupil (w, 1, mouse);
 }
 
 /* ARGSUSED */
@@ -325,34 +321,40 @@ static int draw_it(client_data, id)
 	Window		rep_root, rep_child;
 	int		rep_rootx, rep_rooty, rep_mask;
 	int		dx, dy;
+	TPoint		mouse;
 	Display		*dpy = XtDisplay (w);
 	Window		win = XtWindow (w);
-	XPoint		newpupil[2];
+	TPoint		newpupil[2];
+	XPoint		xnewpupil, xpupil;
 
 	if (XtIsRealized((Widget)w)) {
     		XQueryPointer (dpy, win, &rep_root, &rep_child,
  			&rep_rootx, &rep_rooty, &dx, &dy, &rep_mask);
-		if (dx != w->eyes.odx || dy != w->eyes.ody) {
-			computePupils (w, dx, dy, newpupil);
-			if (newpupil[0].x != w->eyes.pupil[0].x ||
-			    newpupil[0].y != w->eyes.pupil[0].y)
-			{
-			    if (w->eyes.pupil[0].x != -1 || w->eyes.pupil[0].y != -1)
+		mouse.x = Tx(dx, dy, &w->eyes.t);
+		mouse.y = Ty(dx, dy, &w->eyes.t);
+		if (!TPointEqual (mouse, w->eyes.mouse)) {
+			computePupils (w, mouse.x, mouse.y, newpupil);
+			xpupil.x = Xx(w->eyes.pupil[0].x, w->eyes.pupil[0].y, &w->eyes.t);
+			xpupil.y = Xy(w->eyes.pupil[0].x, w->eyes.pupil[0].y, &w->eyes.t);
+			xnewpupil.x =  Xx(newpupil[0].x, newpupil[0].y, &w->eyes.t);
+			xnewpupil.y =  Xy(newpupil[0].x, newpupil[0].y, &w->eyes.t);
+			if (!XPointEqual (xpupil, xnewpupil)) {
+			    if (w->eyes.pupil[0].x != -1000 || w->eyes.pupil[0].y != -1000)
 				eyeBall (w, w->eyes.centerGC, 0);
 			    w->eyes.pupil[0] = newpupil[0];
 			    eyeBall (w, w->eyes.pupGC, 0);
 			}
-			if (newpupil[1].x != w->eyes.pupil[1].x ||
-			    newpupil[1].y != w->eyes.pupil[1].y)
-			{
+			xpupil.x = Xx(w->eyes.pupil[1].x, w->eyes.pupil[1].y, &w->eyes.t);
+			xpupil.y = Xy(w->eyes.pupil[1].x, w->eyes.pupil[1].y, &w->eyes.t);
+			xnewpupil.x =  Xx(newpupil[1].x, newpupil[1].y, &w->eyes.t);
+			xnewpupil.y =  Xy(newpupil[1].x, newpupil[1].y, &w->eyes.t);
+			if (!XPointEqual (xpupil, xnewpupil)) {
 			    if (w->eyes.pupil[1].x != -1 || w->eyes.pupil[1].y != -1)
 				eyeBall (w, w->eyes.centerGC, 1);
 			    w->eyes.pupil[1] = newpupil[1];
 			    eyeBall (w, w->eyes.pupGC, 1);
 			}
-			XFlush(XtDisplay(w));	   /* Flush output buffers */
-			w->eyes.odx = dx;
-			w->eyes.ody = dy;
+			w->eyes.mouse = mouse;
 			w->eyes.update = 0;
 		} else {
 			if (delays[w->eyes.update + 1] != 0)
@@ -370,7 +372,7 @@ repaint_window (w)
 	if (XtIsRealized ((Widget) w)) {
 		eyeLiner (w, XtWindow (w), w->eyes.outGC, w->eyes.centerGC, 0);
 		eyeLiner (w, XtWindow (w), w->eyes.outGC, w->eyes.centerGC, 1);
-		computePupils (w, w->eyes.odx, w->eyes.ody, w->eyes.pupil);
+		computePupils (w, w->eyes.mouse, w->eyes.pupil);
 		eyeBall (w, w->eyes.pupGC, 0);
 		eyeBall (w, w->eyes.pupGC, 1);
 	}
@@ -392,32 +394,19 @@ GC		outgc, centergc;
 int		num;
 {
 	Display *dpy = XtDisplay(w);
-	int ecx = (int) EYE_CENTER_X(w, num), ecy = (int) EYE_CENTER_Y(w, num);
-	int et = EYE_THICK(w);
-	int ew = EYE_WIDTH(w), eh = EYE_HEIGHT(w);
-	int etdiv2 = et/2;
-	int ewdiv2 = ew/2, ehdiv2 = eh/2;
 
-	if (ew < 0 || eh < 0)
-		return;
-	if (w->eyes.use_wide_lines) {
-		XDrawArc (dpy, d, outgc,
-			  (ecx - ewdiv2), (ecy - ehdiv2),
-			  (unsigned) ew, (unsigned) eh,
-			  90 * 64, 360 * 64);
-	} else {
-		XFillArc (dpy, d, outgc, 
-			  (ecx - ewdiv2 - etdiv2), (ecy - ehdiv2 - etdiv2),
-			  (unsigned) (ew + et), (unsigned) (eh + et),
- 			  90 * 64, 360 * 64);
-		if (et > ew || et > eh)
-			return;
-		if (centergc) {
-    		    XFillArc (dpy, d, centergc,
-    			      (ecx - ewdiv2 + etdiv2), (ecy - ehdiv2 + etdiv2),
-			      (unsigned) (ew - et), (unsigned) (eh - et),
-			      90 * 64, 360 * 64);
-		}
+	TFillArc (dpy, d, outgc, &w->eyes.t,
+		  EYE_X(num) - EYE_WIDTH / 2.0 - EYE_THICK,
+ 		  EYE_Y(num) - EYE_HEIGHT / 2.0 - EYE_THICK,
+		  EYE_WIDTH + EYE_THICK * 2.0,
+ 		  EYE_HEIGHT + EYE_THICK * 2.0,
+ 		  90 * 64, 360 * 64);
+	if (centergc) {
+    	    TFillArc (dpy, d, centergc, &w->eyes.t,
+		  EYE_X(num) - EYE_WIDTH / 2.0,
+ 		  EYE_Y(num) - EYE_HEIGHT / 2.0,
+		  EYE_WIDTH, EYE_HEIGHT,
+		  90 * 64, 360 * 64);
 	}
 }
 
@@ -426,15 +415,12 @@ EyesWidget	w;
 GC	gc;
 int	num;
 {
-	int	cx, cy;
 	Display *dpy = XtDisplay(w);
 	Window win = XtWindow(w);
-	int bw = BALL_WIDTH(w), bh = BALL_HEIGHT(w);
 
-	cx = w->eyes.pupil[num].x;
-	cy = w->eyes.pupil[num].y;
-
-	XFillArc (dpy, win, gc, (cx - bw/2), (cy - bh/2),
-		  (unsigned) bw, (unsigned) bh, 
+	TFillArc (dpy, win, gc, &w->eyes.t,
+		   w->eyes.pupil[num].x - BALL_WIDTH / 2.0,
+		   w->eyes.pupil[num].y - BALL_HEIGHT / 2.0,
+		   BALL_WIDTH, BALL_HEIGHT,
 		  90 * 64, 360 * 64);
 }
