@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.26 92/01/25 16:33:13 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.27 92/03/12 16:35:58 keith Exp $
 #if BuildPexClients || BuildPexExt
 #define IHaveSubdirs
       PEXDIRS = PEX
@@ -14,7 +14,7 @@ XCOMM $XConsortium: Imakefile,v 1.26 92/01/25 16:33:13 rws Exp $
 SUBDIRS = $(PEXDIRS) $(XTRAPDIRS)
 
 HEADERS = Xext.h multibuf.h shape.h XShm.h MITMisc.h XI.h XInput.h XIproto.h \
-	XTest.h xtestext1.h saver.h scrnsaver.h
+	XTest.h xtestext1.h saver.h scrnsaver.h XIE.h XIEproto.h XIEprotost.h
 INSTALLFLAGS = $(INSTINCFLAGS)
 
 all::
