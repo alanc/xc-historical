@@ -1,4 +1,4 @@
-/* $XConsortium: Xtranstli.c,v 1.12 94/03/29 19:12:27 matt Exp $ */
+/* $XConsortium: Xtranstli.c,v 1.13 94/03/31 10:53:07 mor Exp $ */
 
 /* Copyright (c) 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  * Copyright 1993, 1994 by the Massachusetts Institute of Technology
@@ -393,6 +393,8 @@ struct netbuf	*netbufp;
  * These functions are the interface supplied in the Xtransport structure
  */
 
+#ifdef TRANS_CLIENT
+
 static XtransConnInfo
 TRANS(TLIOpenCOTSClient)(thistrans, protocol, host, port)
 
@@ -447,6 +449,10 @@ char		*port;
     return ciptr;
 }
 
+#endif /* TRANS_CLIENT */
+
+
+#ifdef TRANS_SERVER
 
 static XtransConnInfo
 TRANS(TLIOpenCOTSServer)(thistrans, protocol, host, port)
@@ -485,6 +491,10 @@ char		*port;
     return ciptr;
 }
 
+#endif /* TRANS_SERVER */
+
+
+#ifdef TRANS_CLIENT
 
 static XtransConnInfo
 TRANS(TLIOpenCLTSClient)(thistrans, protocol, host, port)
@@ -539,6 +549,10 @@ char		*port;
     return ciptr;
 }			
 
+#endif /* TRANS_CLIENT */
+
+
+#ifdef TRANS_SERVER
 
 static XtransConnInfo
 TRANS(TLIOpenCLTSServer)(thistrans, protocol, host, port)
@@ -572,6 +586,8 @@ char		*port;
     
     return ciptr;
 }			
+
+#endif /* TRANS_SERVER */
 
 
 #ifdef TRANS_REOPEN
@@ -665,6 +681,8 @@ int		arg;
     return -1;
 }
 
+
+#ifdef TRANS_SERVER
 
 static
 TRANS(TLICreateListener)(ciptr, req)
@@ -970,6 +988,10 @@ int		*status;
     return newciptr;
 }
 
+#endif /* TRANS_SERVER */
+
+
+#ifdef TRANS_CLIENT
 
 static
 TRANS(TLIConnect)(ciptr, sndcall )
@@ -1123,6 +1145,8 @@ char		*port;
     return TRANS(TLIConnect)(ciptr, sndcall );
 }
 
+#endif /* TRANS_CLIENT */
+
 
 static
 TRANS(TLIBytesReadable)(ciptr, pend)
@@ -1241,19 +1265,31 @@ Xtransport	TRANS(TLIINETFuncs) = {
 	/* TLI Interface */
 	"inet",
 	0,
+#ifdef TRANS_CLIENT
 	TRANS(TLIOpenCOTSClient),
+#endif /* TRANS_CLIENT */
+#ifdef TRANS_SERVER
 	TRANS(TLIOpenCOTSServer),
+#endif /* TRANS_SERVER */
+#ifdef TRANS_CLIENT
 	TRANS(TLIOpenCLTSClient),
+#endif /* TRANS_CLIENT */
+#ifdef TRANS_SERVER
 	TRANS(TLIOpenCLTSServer),
+#endif /* TRANS_SERVER */
 #ifdef TRANS_REOPEN
 	TRANS(TLIReopenCOTSServer),
 	TRANS(TLIReopenCLTSServer),
 #endif
 	TRANS(TLISetOption),
+#ifdef TRANS_SERVER
 	TRANS(TLIINETCreateListener),
 	NULL,		       			/* ResetListener */
 	TRANS(TLIAccept),
+#endif /* TRANS_SERVER */
+#ifdef TRANS_CLIENT
 	TRANS(TLIINETConnect),
+#endif /* TRANS_CLIENT */
 	TRANS(TLIBytesReadable),
 	TRANS(TLIRead),
 	TRANS(TLIWrite),
@@ -1268,19 +1304,31 @@ Xtransport	TRANS(TLITCPFuncs) = {
 	/* TLI Interface */
 	"tcp",
 	TRANS_ALIAS,
+#ifdef TRANS_CLIENT
 	TRANS(TLIOpenCOTSClient),
+#endif /* TRANS_CLIENT */
+#ifdef TRANS_SERVER
 	TRANS(TLIOpenCOTSServer),
+#endif /* TRANS_SERVER */
+#ifdef TRANS_CLIENT
 	TRANS(TLIOpenCLTSClient),
+#endif /* TRANS_CLIENT */
+#ifdef TRANS_SERVER
 	TRANS(TLIOpenCLTSServer),
+#endif /* TRANS_SERVER */
 #ifdef TRANS_REOPEN
 	TRANS(TLIReopenCOTSServer),
 	TRANS(TLIReopenCLTSServer),
 #endif
 	TRANS(TLISetOption),
+#ifdef TRANS_SERVER
 	TRANS(TLIINETCreateListener),
 	NULL,		       			/* ResetListener */
 	TRANS(TLIAccept),
+#endif /* TRANS_SERVER */
+#ifdef TRANS_CLIENT
 	TRANS(TLIINETConnect),
+#endif /* TRANS_CLIENT */
 	TRANS(TLIBytesReadable),
 	TRANS(TLIRead),
 	TRANS(TLIWrite),
@@ -1295,19 +1343,31 @@ Xtransport	TRANS(TLITLIFuncs) = {
 	/* TLI Interface */
 	"tli",
 	0,
+#ifdef TRANS_CLIENT
 	TRANS(TLIOpenCOTSClient),
+#endif /* TRANS_CLIENT */
+#ifdef TRANS_SERVER
 	TRANS(TLIOpenCOTSServer),
+#endif /* TRANS_SERVER */
+#ifdef TRANS_CLIENT
 	TRANS(TLIOpenCLTSClient),
+#endif /* TRANS_CLIENT */
+#ifdef TRANS_SERVER
 	TRANS(TLIOpenCLTSServer),
+#endif /* TRANS_SERVER */
 #ifdef TRANS_REOPEN
 	TRANS(TLIReopenCOTSServer),
 	TRANS(TLIReopenCLTSServer),
 #endif
 	TRANS(TLISetOption),
+#ifdef TRANS_SERVER
 	TRANS(TLITLICreateListener),
 	NULL,		       			/* ResetListener */
 	TRANS(TLIAccept),
+#endif /* TRANS_SERVER */
+#ifdef TRANS_CLIENT
 	TRANS(TLITLIConnect),
+#endif /* TRANS_CLIENT */
 	TRANS(TLIBytesReadable),
 	TRANS(TLIRead),
 	TRANS(TLIWrite),
