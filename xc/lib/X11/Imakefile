@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.174 94/02/04 21:22:44 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.175 94/02/04 21:39:43 rws Exp $
 #define DoNormalLib NormalLibX11
 #define DoSharedLib SharedLibX11
 #define DoDebugLib DebugLibX11
@@ -16,6 +16,9 @@ REQUIREDLIBS = SharedX11Reqs
 #endif
 #if defined(MacIIArchitecture) || defined(SequentArchitecture)
 XBSDLIB = /**/
+#endif
+#if defined(LunaArchitecture) && defined(Mc88000Architecture)
+EXTRA_LIBRARIES = /**/
 #endif
 #if Malloc0ReturnsNull
      MALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
