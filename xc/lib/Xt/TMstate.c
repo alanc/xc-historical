@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: TMstate.c,v 1.64 89/01/19 16:31:24 swick Exp $";
+static char Xrcsid[] = "$XConsortium: TMstate.c,v 1.65 89/01/20 08:05:17 swick Exp $";
 /* $oHeader: TMstate.c,v 1.5 88/09/01 17:17:29 asente Exp $ */
 #endif lint
 /*LINTLIBRARY*/
@@ -86,43 +86,33 @@ static String PrintModifiers(buf, len, str, mask, mod)
     Boolean notfirst = False;
     CHECK_STR_OVERFLOW;
 
-#if defined(__STDC__) && !defined(UNIXCPP)
-#define MASKNAME(modname) modname##Mask
-#else
-#define MASKNAME(modname) modname/**/Mask
-#endif
-
-#define PRINTMOD(modname) \
-    if (mask & MASKNAME(modname)) {	 \
-	if (! (mod & MASKNAME(modname))) \
+#define PRINTMOD(modmask,modstring) \
+    if (mask & modmask) {	 \
+	if (! (mod & modmask)) \
 	    *str++ = '~';		 \
 	else if (notfirst)		 \
 	    *str++ = ' ';		 \
 	*str = '\0';			 \
-	strcat(str, "modname");		 \
+	strcat(str, modstring);		 \
 	str += strlen(str);		 \
 	notfirst = True;		 \
     }
 
-#define CtrlMask ControlMask
+    PRINTMOD(ShiftMask, "Shift");
+    PRINTMOD(ControlMask, "Ctrl");	/* name is not CtrlMask... */
+    PRINTMOD(LockMask, "Lock");
+    PRINTMOD(Mod1Mask, "Mod1");
+    PRINTMOD(Mod2Mask, "Mod2");
+    PRINTMOD(Mod3Mask, "Mod3");
+    PRINTMOD(Mod4Mask, "Mod4");
+    PRINTMOD(Mod5Mask, "Mod5");
+    PRINTMOD(Button1Mask, "Button1");
+    PRINTMOD(Button2Mask, "Button2");
+    PRINTMOD(Button3Mask, "Button3");
+    PRINTMOD(Button4Mask, "Button4");
+    PRINTMOD(Button5Mask, "Button5");
 
-    PRINTMOD(Shift);
-    PRINTMOD(Ctrl);
-    PRINTMOD(Lock);
-    PRINTMOD(Mod1);
-    PRINTMOD(Mod2);
-    PRINTMOD(Mod3);
-    PRINTMOD(Mod4);
-    PRINTMOD(Mod5);
-    PRINTMOD(Button1);
-    PRINTMOD(Button2);
-    PRINTMOD(Button3);
-    PRINTMOD(Button4);
-    PRINTMOD(Button5);
-
-#undef MASKNAME
 #undef PRINTMOD
-#undef CtrlMask
 
     return str;
 }
