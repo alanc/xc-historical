@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: utils.c,v 1.117 92/09/15 18:52:23 rws Exp $ */
+/* $XConsortium: utils.c,v 1.119 92/10/19 17:01:12 rws Exp $ */
 #include "Xos.h"
 #include <stdio.h>
 #include "misc.h"
@@ -647,7 +647,7 @@ OsInitAllocator ()
 
 /*VARARGS1*/
 void
-AuditF( f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9) /* limit of ten args */
+AuditF(f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9) /* limit of ten args */
     char *f;
     char *s0, *s1, *s2, *s3, *s4, *s5, *s6, *s7, *s8, *s9;
 {
@@ -656,15 +656,19 @@ AuditF( f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9) /* limit of ten args */
 #else
     time_t tm;
 #endif
-    char *autime, *nl;
+    char *autime, *s;
 
     if (*f != ' ')
     {
 	time(&tm);
 	autime = ctime(&tm);
-	if (nl = index(autime, '\n'))
-	    *nl = '\0';
-	ErrorF("AUDIT: %s: ", autime);
+	if (s = index(autime, '\n'))
+	    *s = '\0';
+	if (s = rindex(argvGlobal[0], '/'))
+	    s++;
+	else
+	    s = argvGlobal[0];
+	ErrorF("AUDIT: %s: %d %s: ", autime, getpid(), s);
     }
     ErrorF(f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9);
 }
