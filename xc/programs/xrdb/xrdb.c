@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: xrdb.c,v 11.23 88/10/31 08:40:55 rws Exp $";
+static char rcs_id[] = "$XConsortium: xrdb.c,v 11.24 89/01/06 10:42:16 jim Exp $";
 #endif
 
 /*
@@ -114,6 +114,15 @@ void AddEntry(e, entry)
     register Entries *e;
     Entry entry;
 {
+    register int n;
+
+    for (n = 0; n < e->used; n++) {
+	if (strcmp(e->entry[n].tag, entry.tag) == 0) { /* overwrite old entry */
+	    e->entry[n] = entry;
+	    return ;  /* ok to leave, now there's only one of each tag in db */
+	}
+    }
+
     if (e->used == e->room) {
 	e->entry = (Entry *)realloc(e->entry, 2*e->room*(sizeof(Entry)));
 	e->room *= 2;
@@ -418,6 +427,8 @@ void Syntax ()
 	     "where options include:\n");
     fprintf (stderr, 
 	     "    -display host:dpy            display to use\n");
+    fprintf (stderr,
+	     "    -n                           show but don't do changes\n");
     fprintf (stderr, 
 	     "    -cpp filename                preprocessor to use [%s]\n",
 	     CPP);
@@ -504,6 +515,7 @@ main (argc, argv)
     char *editFile = NULL;
     char *cpp_program = CPP;
     char *backup_suffix = BACKUP_SUFFIX;
+    Bool dont_execute = False;
 
     ProgramName = argv[0];
 
@@ -536,7 +548,10 @@ main (argc, argv)
 		if (++i >= argc) Syntax ();
 		cpp_program = argv[i];
 		continue;
-	    } else if (isabbreviation ("-nocpp", arg, 2)) {
+	    } else if (strcmp ("-n", arg) == 0) {
+		dont_execute = True;
+		continue;
+	    } else if (isabbreviation ("-nocpp", arg, 3)) {
 		cpp_program = NULL;
 		continue;
 	    } else if (isabbreviation ("-query", arg, 2)) {
@@ -636,8 +651,22 @@ main (argc, argv)
 	fclose(output);
 	strcpy(old, editFile);
 	strcat(old, backup_suffix);
-	rename(editFile, old);
-	rename(template, editFile);
+	if (dont_execute) {		/* then write to standard out */
+	    char buf[BUFSIZ];
+	    int n;
+
+	    output = fopen (template, "r");
+	    if (output) {
+		while ((n = fread (buf, 1, sizeof buf, output)) > 0) {
+		    fwrite (buf, 1, n, stdout);
+		}
+		fclose (output);
+	    }
+	    unlink (template);
+	} else {
+	    rename (editFile, old);
+	    rename (template, editFile);
+	}
     } else {
 	if (filename != NULL) {
 		fp = freopen (filename, "r", stdin);
@@ -663,8 +692,16 @@ main (argc, argv)
 	    oldDB.used = 0;
 	buffer.used = 0;
 	MergeEntries(&buffer, newDB, oldDB);
-	XChangeProperty (dpy, RootWindow(dpy, 0), XA_RESOURCE_MANAGER,
-		XA_STRING, 8, PropModeReplace, buffer.buff, buffer.used);
+	if (dont_execute) {
+	    if (buffer.used > 0) {
+		fwrite (buffer.buff, 1, buffer.used, stdout);
+		if (buffer.buff[buffer.used - 1] != '\n') putchar ('\n');
+	    }
+	} else {
+	    XChangeProperty (dpy, RootWindow(dpy, 0), XA_RESOURCE_MANAGER,
+			     XA_STRING, 8, PropModeReplace, buffer.buff, 
+			     buffer.used);
+	}
     }
 
     XCloseDisplay(dpy);

@@ -77,6 +77,11 @@ the allowable options and parameters to be printed.
 .B \-display \fIdisplay\fP
 This option specifies the X server to be used; see \fIX(1)\fP.
 .TP 8
+.B \-n
+This option indicates that changes to the property (when used with \fI-load\fP)
+or to the resource file (when used with \fI-edit\fP) should be shown on the
+standard output, but should not be performed.
+.TP 8
 .B -cpp \fIfilename\fP
 This option specifies the pathname of the C preprocessor program to be used.
 Although 
