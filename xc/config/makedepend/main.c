@@ -1,7 +1,10 @@
 /*
- * $XConsortium: main.c,v 1.44 91/02/13 11:32:55 rws Exp $
+ * $XConsortium: main.c,v 1.45 91/03/13 16:35:35 rws Exp $
  */
 #ifdef SVR4
+#define _POSIX_SOURCE
+#endif
+#ifdef sgi
 #define _POSIX_SOURCE
 #endif
 
