@@ -1,4 +1,4 @@
-/* $XConsortium: XImUtil.c,v 11.40 90/12/26 10:21:22 rws Exp $ */
+/* $XConsortium: XImUtil.c,v 11.41 91/01/06 11:46:33 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -840,7 +840,6 @@ _XInitImageFuncPtrs (image)
 	image->f.add_pixel = _XAddPixel;
 }
 
-void exit();
 static int _XReportBadImage (errtype, error, routine)
     char *errtype;
     int error;
