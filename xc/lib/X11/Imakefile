@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.136 92/08/31 16:24:52 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.137 92/10/19 19:11:02 rws Exp $
 #define DoNormalLib NormalLibX
 #define DoSharedLib SharedLibX
 #define DoDebugLib DebugLibX
@@ -54,6 +54,7 @@ XBSDLIB = /**/
 #if NoRConst
  RCONST_DEFINES = -DNORCONST
 #endif
+ DEPEND_DEFINES = -I$(EXTENSIONSRC)/include
    INSTALLFLAGS = $(INSTINCFLAGS)
        AUTHOBJS = AuDispose.o AuGetBest.o AuFileName.o AuRead.o 
        AUTHSRCS = AuDispose.c AuGetBest.c AuFileName.c AuRead.c 
@@ -1019,7 +1020,7 @@ LibraryObjectRule()
 SpecialCLibObjectRule(XErrDes,$(ICONFIGFILES),$(EDB_DEFINES))
 SpecialCLibObjectRule(XStrKeysym,$(ICONFIGFILES),$(KDB_DEFINES))
 SpecialCLibObjectRule(XConnDis,$(ICONFIGFILES),$(XDMAUTHDEFS) $(RPCDEFS) $(CONN_DEFINES) $(SOCK_DEFINES))
-SpecialCLibObjectRule(XOpenDis,$(ICONFIGFILES),$(BC_DEFINES))
+SpecialCLibObjectRule(XOpenDis,$(ICONFIGFILES),$(BC_DEFINES) $(DEPEND_DEFINES))
 SpecialCLibObjectRule(Wrap,$(ICONFIGFILES),$(XDMAUTHDEFS))
 SpecialCLibObjectRule(Xstreams,$(ICONFIGFILES),$(CONN_DEFINES))
 SpecialCLibObjectRule(XlibInt,$(ICONFIGFILES),$(CONN_DEFINES))
