@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: xrdb.c,v 11.29 89/07/12 12:30:57 jim Exp $";
+static char rcs_id[] = "$XConsortium: xrdb.c,v 11.30 89/07/12 12:37:03 jim Exp $";
 #endif
 
 /*
@@ -541,8 +541,7 @@ void Syntax ()
 	     "    -remove                      remove %s from its window\n",
 	     RESOURCE_PROPERTY_NAME);
     fprintf (stderr, 
-	     "    -retain                      retain %s when xrdb is first client\n",
-	     RESOURCE_PROPERTY_NAME);
+	     "    -retain                      avoid server reset if first client\n");
     fprintf (stderr,
 	     "    -quiet                       don't warn about duplicates\n");
     fprintf (stderr, 
