@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: gc.c,v 5.10 89/07/18 18:17:39 rws Exp $ */
+/* $XConsortium: gc.c,v 5.11 89/09/21 19:21:38 keith Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -1136,7 +1136,7 @@ GetScratchGC(depth, pScreen)
     register ScreenPtr pScreen;
 {
     register int i;
-    register GCPtr pGC = (GCPtr)NULL;;
+    register GCPtr pGC;
 
     for (i=0; i<=pScreen->numDepths; i++)
         if ( pScreen->GCperDepth[i]->depth == depth &&
