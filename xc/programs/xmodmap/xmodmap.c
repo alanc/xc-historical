@@ -2,7 +2,7 @@
  * xmodmap - program for loading keymap definitions into server
  *
  * $Source: /usr/expo/X/src/clients/xmodmap/RCS/xmodmap.c,v $
- * $Header: xmodmap.c,v 1.8 88/02/08 18:33:49 jim Exp $
+ * $Header: xmodmap.c,v 1.9 88/02/19 13:14:43 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -27,6 +27,7 @@
 
 char *ProgramName;
 Display *dpy = NULL;
+int min_keycode, max_keycode;
 Bool verbose = False;
 Bool dontExecute = False;
 
@@ -136,6 +137,8 @@ main (argc, argv)
 		 ProgramName, XDisplayName (displayname));
 	Exit (1);
     }
+
+    XDisplayKeycodes (dpy, &min_keycode, &max_keycode);
 
     initialize_map ();
 

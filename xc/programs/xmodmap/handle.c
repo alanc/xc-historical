@@ -1,8 +1,8 @@
 /*
  * xmodmap - program for loading keymap definitions into server
  *
- * $Source: /usr/expo.lcs.mit.edu/X/src/clients/xmodmap/RCS/handle.c,v $
- * $Header: handle.c,v 1.2 88/02/09 09:27:47 jim Exp $
+ * $Source: /usr/expo/X/src/clients/xmodmap/RCS/handle.c,v $
+ * $Header: handle.c,v 1.3 88/02/14 16:59:10 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -306,6 +306,10 @@ static int do_keycode (line, len)
 	return (-1);
     }
     keycode = (KeyCode) dummy;
+    if (keycode < min_keycode || keycode > max_keycode) {
+	badmsg ("keycode value (out of range)", NULL);
+	return (-1);
+    }
 
     return (finish_keycode (line, len, keycode));
 }
@@ -353,7 +357,7 @@ static int do_keysym (line, len)
 	printf ("! Keysym %s (0x%lx) corresponds to keycode 0x%x\n", 
 		tmpname, (long) keysym, keycode);
     }
-    if (keycode < dpy->min_keycode || keycode > dpy->max_keycode) {
+    if (keycode < min_keycode || keycode > max_keycode) {
 	if (!verbose) {
 	    printf ("! Keysym %s (0x%lx) corresponds to keycode 0x%x\n", 
 		    tmpname, (long) keysym, keycode);
@@ -386,7 +390,7 @@ static int finish_keycode (line, len, keycode)
     n = skip_space (line, len);
     line += n, len -= n;
 
-    if (get_keysym_list (line, len, &n, &kslist) < 0) {
+    if (get_keysym_list (line, len, &n, &kslist) < 0 || n <= 0) {
 	badmsg ("keycode keysym list", NULL);
 	return (-1);
     }
@@ -496,7 +500,7 @@ static int do_add (line, len)
     n += skip_space (line+n, len-n);
     line += n, len -= n;
 
-    if (get_keysym_list (line, len, &n, &kslist) < 0) {
+    if (get_keysym_list (line, len, &n, &kslist) < 0 || n <= 0) {
 	badmsg ("add modifier keysym list", NULL);
 	return (-1);
     }
@@ -600,7 +604,7 @@ static int do_remove (line, len)
     n += skip_space (line+n, len-n);
     line += n, len -= n;
 
-    if (get_keysym_list (line, len, &n, &kslist) < 0) {
+    if (get_keysym_list (line, len, &n, &kslist) < 0 || n <= 0) {
 	badmsg ("remove modifier keysym list", NULL);
 	return (-1);
     }
@@ -625,12 +629,12 @@ static int do_remove (line, len)
 	    printf ("! Keysym %s (0x%lx) corresponds to keycode 0x%x\n", 
 		    tmpname ? tmpname : "?", (long) kslist[i], kc);
 	}
-	if (kc < dpy->min_keycode || kc > dpy->max_keycode) {
+	if (kc < min_keycode || kc > max_keycode) {
 	    char *tmpname = XKeysymToString (kslist[i]);
 	    printf ("! Keysym %s (0x%lx), keycode 0x%x, ",
 		    tmpname ? tmpname : "?", (long) kslist[i], kc);
 	    printf ("out of range [0x%x, 0x%x]\n", 
-		    dpy->min_keycode, dpy->max_keycode);
+		    min_keycode, max_keycode);
 	    badmsg ("keycode value 0x%lx in remove modifier list",
 		    (long) kc);
 	    continue;
@@ -787,7 +791,13 @@ static int get_keysym_list (line, len, np, kslistp)
 	keysym = parse_keysym (line, n);
 	line += n, len -= n;
 	if (keysym == NoSymbol) {
-	    badmsgn ("keysym name '%s' in keysym list", line, n);
+	    badmsgn ("keysym name '%s' in keysym list", line-n, n);
+	    /* do NOT return here, look for others */
+	    continue;
+	}
+
+	if (XKeysymToKeycode (dpy, keysym) == 0) {
+	    badmsgn ("keysym name; '%s' not in keyboard map", line-n, n);
 	    /* do NOT return here, look for others */
 	    continue;
 	}
