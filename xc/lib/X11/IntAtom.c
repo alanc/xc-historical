@@ -1,4 +1,4 @@
-/* $XConsortium: IntAtom.c,v 11.21 93/08/31 19:22:41 rws Exp $ */
+/* $XConsortium: IntAtom.c,v 11.22 93/09/21 22:57:40 rws Exp $ */
 /*
 
 Copyright 1986, 1990 by the Massachusetts Institute of Technology
@@ -195,9 +195,11 @@ Atom XInternAtom (dpy, name, onlyIfExists)
 
 typedef struct {
     unsigned long start_seq;
+    unsigned long stop_seq;
     char **names;
     Atom *atoms;
     int count;
+    Status status;
 } _XIntAtomState;
 
 static
@@ -214,7 +216,8 @@ Bool _XIntAtomHandler(dpy, rep, buf, len, data)
     register xInternAtomReply *repl;
 
     state = (_XIntAtomState *)data;
-    if (dpy->last_request_read < state->start_seq)
+    if (dpy->last_request_read < state->start_seq ||
+	dpy->last_request_read > state->stop_seq)
 	return False;
     for (i = 0; i < state->count; i++) {
 	if (state->atoms[i] & 0x80000000) {
@@ -225,8 +228,10 @@ Bool _XIntAtomHandler(dpy, rep, buf, len, data)
     }
     if (i >= state->count)
 	return False;
-    if (rep->generic.type == X_Error)
+    if (rep->generic.type == X_Error) {
+	state->status = 0;
 	return False;
+    }
     repl = (xInternAtomReply *)
 	_XGetAsyncReply(dpy, (char *)&replbuf, rep, buf, len,
 			(SIZEOF(xInternAtomReply) - SIZEOF(xReply)) >> 2,
@@ -237,7 +242,7 @@ Bool _XIntAtomHandler(dpy, rep, buf, len, data)
     return True;
 }
 
-void
+Status
 XInternAtoms (dpy, names, count, onlyIfExists, atoms_return)
     Display *dpy;
     char **names;
@@ -257,6 +262,7 @@ XInternAtoms (dpy, names, count, onlyIfExists, atoms_return)
     async_state.atoms = atoms_return;
     async_state.names = names;
     async_state.count = count - 1;
+    async_state.status = 1;
     async.next = dpy->async_handlers;
     async.handler = _XIntAtomHandler;
     async.data = (XPointer)&async_state;
@@ -266,17 +272,21 @@ XInternAtoms (dpy, names, count, onlyIfExists, atoms_return)
 					     &sig, &idx, &n))) {
 	    missed = i;
 	    atoms_return[i] = ~((Atom)idx);
+	    async_state.stop_seq = dpy->request;
 	}
     }
     if (missed >= 0) {
 	if (_XReply (dpy, (xReply *)&rep, 0, xTrue)) {
 	    if (atoms_return[missed] = rep.atom)
 		_XUpdateAtomCache(dpy, names[missed], rep.atom, sig, idx, n);
-	} else
+	} else {
 	    atoms_return[missed] = None;
+	    async_state.status = 0;
+	}
     }
     DeqAsyncHandler(dpy, &async);
     UnlockDisplay(dpy);
     if (missed >= 0)
 	SyncHandle();
+    return async_state.status;
 }
