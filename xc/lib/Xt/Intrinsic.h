@@ -1,4 +1,4 @@
-/* $XConsortium: Intrinsic.h,v 1.167 91/06/11 19:07:46 converse Exp $ */
+/* $XConsortium: Intrinsic.h,v 1.168 91/06/11 20:04:41 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -51,8 +51,13 @@ SOFTWARE.
 typedef char *String;
 
 #if NeedFunctionPrototypes
-#define String char*
-#endif
+
+/* We do this in order to get "const" declarations to work right.  We
+ * use _XtString instead of String so that C++ applications can
+ * #define String to something else if they choose, to avoid conflicts
+ * with other C++ libraries.
+ */
+#define _XtString char*
 
 /* _Xt names are private to Xt implementation, do not use in client code */
 #if NeedWidePrototypes
@@ -68,6 +73,8 @@ typedef char *String;
 #define _XtPosition	Position
 #define _XtXtEnum	XtEnum
 #endif /* NeedWidePrototypes */
+
+#endif /* NeedFunctionPrototypes */
 
 #ifndef NULL
 #define NULL 0
@@ -517,9 +524,9 @@ _XFUNCPROTOBEGIN
 extern Boolean XtConvertAndStore(
 #if NeedFunctionPrototypes
     Widget 		/* widget */,
-    _Xconst String 	/* from_type */,
+    _Xconst _XtString 	/* from_type */,
     XrmValue*		/* from */,
-    _Xconst String 	/* to_type */,
+    _Xconst _XtString 	/* to_type */,
     XrmValue*		/* to_in_out */
 #endif
 );
@@ -672,16 +679,16 @@ extern void XtKeysymToKeycodeList(
 
 extern void XtStringConversionWarning( /* obsolete */
 #if NeedFunctionPrototypes
-    _Xconst String	/* from_value */,
-    _Xconst String	/* to_type */
+    _Xconst _XtString	/* from_value */,
+    _Xconst _XtString	/* to_type */
 #endif
 );
 
 extern void XtDisplayStringConversionWarning(
 #if NeedFunctionPrototypes
     Display*	 	/* dpy */,
-    _Xconst String	/* from_value */,
-    _Xconst String	/* to_type */
+    _Xconst _XtString	/* from_value */,
+    _Xconst _XtString	/* to_type */
 #endif
 );
 
@@ -696,8 +703,8 @@ externalref XtConvertArgRec screenConvertArg[];
 extern void XtAppAddConverter( /* obsolete */
 #if NeedFunctionPrototypes
     XtAppContext	/* app_context */,
-    _Xconst String	/* from_type */,
-    _Xconst String	/* to_type */,
+    _Xconst _XtString	/* from_type */,
+    _Xconst _XtString	/* to_type */,
     XtConverter 	/* converter */,
     XtConvertArgList	/* convert_args */,
     Cardinal 		/* num_args */
@@ -706,8 +713,8 @@ extern void XtAppAddConverter( /* obsolete */
 
 extern void XtAddConverter( /* obsolete */
 #if NeedFunctionPrototypes
-    _Xconst String	/* from_type */,
-    _Xconst String 	/* to_type */,
+    _Xconst _XtString	/* from_type */,
+    _Xconst _XtString 	/* to_type */,
     XtConverter 	/* converter */,
     XtConvertArgList 	/* convert_args */,
     Cardinal 		/* num_args */
@@ -716,8 +723,8 @@ extern void XtAddConverter( /* obsolete */
 
 extern void XtSetTypeConverter(
 #if NeedFunctionPrototypes
-    _Xconst String 	/* from_type */,
-    _Xconst String 	/* to_type */,
+    _Xconst _XtString 	/* from_type */,
+    _Xconst _XtString 	/* to_type */,
     XtTypeConverter 	/* converter */,
     XtConvertArgList 	/* convert_args */,
     Cardinal 		/* num_args */,
@@ -729,8 +736,8 @@ extern void XtSetTypeConverter(
 extern void XtAppSetTypeConverter(
 #if NeedFunctionPrototypes
     XtAppContext 	/* app_context */,
-    _Xconst String 	/* from_type */,
-    _Xconst String 	/* to_type */,
+    _Xconst _XtString 	/* from_type */,
+    _Xconst _XtString 	/* to_type */,
     XtTypeConverter 	/* converter */,
     XtConvertArgList 	/* convert_args */,
     Cardinal 		/* num_args */,
@@ -742,9 +749,9 @@ extern void XtAppSetTypeConverter(
 extern void XtConvert( /* obsolete */
 #if NeedFunctionPrototypes
     Widget 		/* widget */,
-    _Xconst String 	/* from_type */,
+    _Xconst _XtString 	/* from_type */,
     XrmValue*		/* from */,
-    _Xconst String 	/* to_type */,
+    _Xconst _XtString 	/* to_type */,
     XrmValue*		/* to_return */
 #endif
 );
@@ -767,13 +774,13 @@ extern void XtDirectConvert( /* obsolete */
 
 extern XtTranslations XtParseTranslationTable(
 #if NeedFunctionPrototypes
-    _Xconst String	/* table */
+    _Xconst _XtString	/* table */
 #endif
 );
 
 extern XtAccelerators XtParseAcceleratorTable(
 #if NeedFunctionPrototypes
-    _Xconst String	/* source */
+    _Xconst _XtString	/* source */
 #endif
 );
 
@@ -851,7 +858,7 @@ extern void XtGetActionTable(
 extern void XtCallActionProc(
 #if NeedFunctionPrototypes
     Widget		/* widget */,
-    _Xconst String	/* action */,
+    _Xconst _XtString	/* action */,
     XEvent*		/* event */,
     String*		/* params */,
     Cardinal		/* num_params */
@@ -1222,7 +1229,7 @@ extern void XtSetMappedWhenManaged(
 extern Widget XtNameToWidget(
 #if NeedFunctionPrototypes
     Widget 		/* reference */,
-    _Xconst String	/* names */
+    _Xconst _XtString	/* names */
 #endif
 );
 
@@ -1346,7 +1353,7 @@ extern Widget XtParent(
 extern void XtAddCallback(
 #if NeedFunctionPrototypes
     Widget 		/* widget */,
-    _Xconst String 	/* callback_name */,
+    _Xconst _XtString 	/* callback_name */,
     XtCallbackProc 	/* callback */,
     XtPointer 		/* closure */
 #endif
@@ -1355,7 +1362,7 @@ extern void XtAddCallback(
 extern void XtRemoveCallback(
 #if NeedFunctionPrototypes
     Widget 		/* widget */,
-    _Xconst String 	/* callback_name */,
+    _Xconst _XtString 	/* callback_name */,
     XtCallbackProc 	/* callback */,
     XtPointer 		/* closure */
 #endif
@@ -1364,7 +1371,7 @@ extern void XtRemoveCallback(
 extern void XtAddCallbacks(
 #if NeedFunctionPrototypes
     Widget 		/* widget */,
-    _Xconst String	/* callback_name */,
+    _Xconst _XtString	/* callback_name */,
     XtCallbackList 	/* callbacks */
 #endif
 );
@@ -1372,7 +1379,7 @@ extern void XtAddCallbacks(
 extern void XtRemoveCallbacks(
 #if NeedFunctionPrototypes
     Widget 		/* widget */,
-    _Xconst String 	/* callback_name */,
+    _Xconst _XtString 	/* callback_name */,
     XtCallbackList 	/* callbacks */
 #endif
 );
@@ -1380,7 +1387,7 @@ extern void XtRemoveCallbacks(
 extern void XtRemoveAllCallbacks(
 #if NeedFunctionPrototypes
     Widget 		/* widget */,
-    _Xconst String 	/* callback_name */
+    _Xconst _XtString 	/* callback_name */
 #endif
 );
 
@@ -1388,7 +1395,7 @@ extern void XtRemoveAllCallbacks(
 extern void XtCallCallbacks(
 #if NeedFunctionPrototypes
     Widget 		/* widget */,
-    _Xconst String 	/* callback_name */,
+    _Xconst _XtString 	/* callback_name */,
     XtPointer 		/* call_data */
 #endif
 );
@@ -1404,7 +1411,7 @@ extern void XtCallCallbackList(
 extern XtCallbackStatus XtHasCallbacks(
 #if NeedFunctionPrototypes
     Widget 		/* widget */,
-    _Xconst String 	/* callback_name */
+    _Xconst _XtString 	/* callback_name */
 #endif
 );
 
@@ -1433,7 +1440,7 @@ extern XtGeometryResult XtQueryGeometry(
 
 extern Widget XtCreatePopupShell(
 #if NeedFunctionPrototypes
-    _Xconst String	/* name */,
+    _Xconst _XtString	/* name */,
     WidgetClass 	/* widgetClass */,
     Widget 		/* parent */,
     ArgList 		/* args */,
@@ -1443,7 +1450,7 @@ extern Widget XtCreatePopupShell(
 
 extern Widget XtVaCreatePopupShell(
 #if NeedVarargsPrototypes
-    _Xconst String	/* name */,
+    _Xconst _XtString	/* name */,
     WidgetClass		/* widgetClass */,
     Widget		/* parent */,
     ...
@@ -1512,7 +1519,7 @@ extern void XtMenuPopupAction(
 
 extern Widget XtCreateWidget(
 #if NeedFunctionPrototypes
-    _Xconst String 	/* name */,
+    _Xconst _XtString 	/* name */,
     WidgetClass 	/* widget_class */,
     Widget 		/* parent */,
     ArgList 		/* args */,
@@ -1522,7 +1529,7 @@ extern Widget XtCreateWidget(
 
 extern Widget XtCreateManagedWidget(
 #if NeedFunctionPrototypes
-    _Xconst String 	/* name */,
+    _Xconst _XtString 	/* name */,
     WidgetClass 	/* widget_class */,
     Widget 		/* parent */,
     ArgList 		/* args */,
@@ -1532,7 +1539,7 @@ extern Widget XtCreateManagedWidget(
 
 extern Widget XtVaCreateWidget(
 #if NeedVarargsPrototypes
-    _Xconst String	/* name */,
+    _Xconst _XtString	/* name */,
     WidgetClass		/* widget */,
     Widget		/* parent */,
     ...
@@ -1541,7 +1548,7 @@ extern Widget XtVaCreateWidget(
 
 extern Widget XtVaCreateManagedWidget(
 #if NeedVarargsPrototypes
-    _Xconst String	/* name */,
+    _Xconst _XtString	/* name */,
     WidgetClass		/* widget_class */,
     Widget		/* parent */,
     ...
@@ -1550,7 +1557,7 @@ extern Widget XtVaCreateManagedWidget(
 
 extern Widget XtCreateApplicationShell( /* obsolete */
 #if NeedFunctionPrototypes
-    _Xconst String 	/* name */,
+    _Xconst _XtString 	/* name */,
     WidgetClass 	/* widget_class */,
     ArgList 		/* args */,
     Cardinal 		/* num_args */
@@ -1559,8 +1566,8 @@ extern Widget XtCreateApplicationShell( /* obsolete */
 
 extern Widget XtAppCreateShell(
 #if NeedFunctionPrototypes
-    _Xconst String	/* application_name */,
-    _Xconst String	/* application_class */,
+    _Xconst _XtString	/* application_name */,
+    _Xconst _XtString	/* application_class */,
     WidgetClass 	/* widget_class */,
     Display*		/* display */,
     ArgList 		/* args */,
@@ -1570,8 +1577,8 @@ extern Widget XtAppCreateShell(
 
 extern Widget XtVaAppCreateShell(
 #if NeedVarargsPrototypes
-    _Xconst String	/* application_name */,
-    _Xconst String	/* application_class */,
+    _Xconst _XtString	/* application_name */,
+    _Xconst _XtString	/* application_class */,
     WidgetClass		/* widget_class */,
     Display*		/* display */,
     ...
@@ -1602,8 +1609,8 @@ extern void XtDisplayInitialize(
 #if NeedFunctionPrototypes
     XtAppContext 	/* app_context */,
     Display*		/* dpy */,
-    _Xconst String	/* application_name */,
-    _Xconst String	/* application_class */,
+    _Xconst _XtString	/* application_name */,
+    _Xconst _XtString	/* application_class */,
     XrmOptionDescRec* 	/* options */,
     Cardinal 		/* num_options */,
     int*		/* argc */,
@@ -1614,7 +1621,7 @@ extern void XtDisplayInitialize(
 extern Widget XtAppInitialize(
 #if NeedFunctionPrototypes
     XtAppContext*	/* app_context_return */,
-    _Xconst String	/* application_class */,
+    _Xconst _XtString	/* application_class */,
     XrmOptionDescList 	/* options */,
     Cardinal 		/* num_options */,
     int*		/* argc_in_out */,
@@ -1628,7 +1635,7 @@ extern Widget XtAppInitialize(
 extern Widget XtVaAppInitialize(
 #if NeedVarargsPrototypes
     XtAppContext*	/* app_context_return */,
-    _Xconst String	/* application_class */,
+    _Xconst _XtString	/* application_class */,
     XrmOptionDescList	/* options */,
     Cardinal		/* num_options */,
     int*		/* argc_in_out */,
@@ -1640,8 +1647,8 @@ extern Widget XtVaAppInitialize(
 
 extern Widget XtInitialize( /* obsolete */
 #if NeedFunctionPrototypes
-    _Xconst String 	/* shell_name */,
-    _Xconst String 	/* application_class */,
+    _Xconst _XtString 	/* shell_name */,
+    _Xconst _XtString 	/* application_class */,
     XrmOptionDescRec* 	/* options */,
     Cardinal 		/* num_options */,
     int*		/* argc */,
@@ -1652,9 +1659,9 @@ extern Widget XtInitialize( /* obsolete */
 extern Display *XtOpenDisplay(
 #if NeedFunctionPrototypes
     XtAppContext 	/* app_context */,
-    _Xconst String	/* display_string */,
-    _Xconst String	/* application_name */,
-    _Xconst String	/* application_class */,
+    _Xconst _XtString	/* display_string */,
+    _Xconst _XtString	/* application_name */,
+    _Xconst _XtString	/* application_class */,
     XrmOptionDescRec*	/* options */,
     Cardinal 		/* num_options */,
     int*		/* argc */,
@@ -1742,8 +1749,8 @@ extern void XtGetSubresources(
 #if NeedFunctionPrototypes
     Widget 		/* widget */,
     XtPointer 		/* base */,
-    _Xconst String 	/* name */,
-    _Xconst String 	/* class */,
+    _Xconst _XtString 	/* name */,
+    _Xconst _XtString 	/* class */,
     XtResourceList 	/* resources */,
     Cardinal 		/* num_resources */,
     ArgList 		/* args */,
@@ -1755,8 +1762,8 @@ extern void XtVaGetSubresources(
 #if NeedVarargsPrototypes
     Widget		/* widget */,
     XtPointer		/* base */,
-    _Xconst String	/* name */,
-    _Xconst String	/* class */,
+    _Xconst _XtString	/* name */,
+    _Xconst _XtString	/* class */,
     XtResourceList	/* resources */,
     Cardinal		/* num_resources */,
     ...
@@ -1918,10 +1925,10 @@ extern void XtSetWarningMsgHandler( /* obsolete */
 extern void XtAppErrorMsg(
 #if NeedFunctionPrototypes
     XtAppContext 	/* app_context */,
-    _Xconst String 	/* name */,
-    _Xconst String	/* type */,
-    _Xconst String	/* class */,
-    _Xconst String	/* default */,
+    _Xconst _XtString 	/* name */,
+    _Xconst _XtString	/* type */,
+    _Xconst _XtString	/* class */,
+    _Xconst _XtString	/* default */,
     String*		/* params */,
     Cardinal*		/* num_params */
 #endif
@@ -1929,10 +1936,10 @@ extern void XtAppErrorMsg(
 
 extern void XtErrorMsg( /* obsolete */
 #if NeedFunctionPrototypes
-    _Xconst String 	/* name */,
-    _Xconst String	/* type */,
-    _Xconst String	/* class */,
-    _Xconst String	/* default */,
+    _Xconst _XtString 	/* name */,
+    _Xconst _XtString	/* type */,
+    _Xconst _XtString	/* class */,
+    _Xconst _XtString	/* default */,
     String*		/* params */,
     Cardinal*		/* num_params */
 #endif
@@ -1941,10 +1948,10 @@ extern void XtErrorMsg( /* obsolete */
 extern void XtAppWarningMsg(
 #if NeedFunctionPrototypes
     XtAppContext 	/* app_context */,
-    _Xconst String 	/* name */,
-    _Xconst String 	/* type */,
-    _Xconst String 	/* class */,
-    _Xconst String 	/* default */,
+    _Xconst _XtString 	/* name */,
+    _Xconst _XtString 	/* type */,
+    _Xconst _XtString 	/* class */,
+    _Xconst _XtString 	/* default */,
     String*		/* params */,
     Cardinal*		/* num_params */
 #endif
@@ -1952,10 +1959,10 @@ extern void XtAppWarningMsg(
 
 extern void XtWarningMsg( /* obsolete */
 #if NeedFunctionPrototypes
-    _Xconst String	/* name */,
-    _Xconst String	/* type */,
-    _Xconst String	/* class */,
-    _Xconst String	/* default */,
+    _Xconst _XtString	/* name */,
+    _Xconst _XtString	/* type */,
+    _Xconst _XtString	/* class */,
+    _Xconst _XtString	/* default */,
     String*		/* params */,
     Cardinal*		/* num_params */
 #endif
@@ -1990,26 +1997,26 @@ extern void XtSetWarningHandler( /* obsolete */
 extern void XtAppError(
 #if NeedFunctionPrototypes
     XtAppContext 	/* app_context */,
-    _Xconst String	/* message */
+    _Xconst _XtString	/* message */
 #endif
 );
 
 extern void XtError( /* obsolete */
 #if NeedFunctionPrototypes
-    _Xconst String	/* message */
+    _Xconst _XtString	/* message */
 #endif
 );
 
 extern void XtAppWarning(
 #if NeedFunctionPrototypes
     XtAppContext 	/* app_context */,
-    _Xconst String	/* message */
+    _Xconst _XtString	/* message */
 #endif
 );
 
 extern void XtWarning( /* obsolete */
 #if NeedFunctionPrototypes
-    _Xconst String	/* message */
+    _Xconst _XtString	/* message */
 #endif
 );
 
@@ -2028,10 +2035,10 @@ extern XrmDatabase *XtGetErrorDatabase( /* obsolete */
 extern void XtAppGetErrorDatabaseText(
 #if NeedFunctionPrototypes
     XtAppContext 	/* app_context */,
-    _Xconst String	/* name */,
-    _Xconst String	/* type */,
-    _Xconst String	/* class */,
-    _Xconst String 	/* default */,
+    _Xconst _XtString	/* name */,
+    _Xconst _XtString	/* type */,
+    _Xconst _XtString	/* class */,
+    _Xconst _XtString 	/* default */,
     String 		/* buffer_return */,
     int 		/* nbytes */,
     XrmDatabase 	/* database */
@@ -2040,10 +2047,10 @@ extern void XtAppGetErrorDatabaseText(
 
 extern void XtGetErrorDatabaseText( /* obsolete */
 #if NeedFunctionPrototypes
-    _Xconst String	/* name */,
-    _Xconst String	/* type */,
-    _Xconst String	/* class */,
-    _Xconst String 	/* default */,
+    _Xconst _XtString	/* name */,
+    _Xconst _XtString	/* type */,
+    _Xconst _XtString	/* class */,
+    _Xconst _XtString 	/* default */,
     String 		/* buffer_return */,
     int 		/* nbytes */
 #endif
@@ -2219,7 +2226,7 @@ extern void XtSetWMColormapWindows(
 
 extern String XtFindFile(
 #if NeedFunctionPrototypes
-    _Xconst String	/* path */,
+    _Xconst _XtString	/* path */,
     Substitution	/* substitutions */,
     Cardinal 		/* num_substitutions */,
     XtFilePredicate	/* predicate */
@@ -2229,10 +2236,10 @@ extern String XtFindFile(
 extern String XtResolvePathname(
 #if NeedFunctionPrototypes
     Display*		/* dpy */,
-    _Xconst String	/* type */,
-    _Xconst String	/* filename */,
-    _Xconst String	/* suffix */,
-    _Xconst String	/* path */,
+    _Xconst _XtString	/* type */,
+    _Xconst _XtString	/* filename */,
+    _Xconst _XtString	/* suffix */,
+    _Xconst _XtString	/* path */,
     Substitution	/* substitutions */,
     Cardinal		/* num_substitutions */,
     XtFilePredicate 	/* predicate */
@@ -2737,10 +2744,6 @@ extern Boolean XtCvtColorToPixel(
 
 
 _XFUNCPROTOEND
-
-#if NeedFunctionPrototypes
-#undef String
-#endif
 
 #endif /*_XtIntrinsic_h*/
 /* DON'T ADD STUFF AFTER THIS #endif */
