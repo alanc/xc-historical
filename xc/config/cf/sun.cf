@@ -1,9 +1,10 @@
-XCOMM platform:  $XConsortium: sun.cf,v 1.70 91/09/16 19:39:50 rws Exp $
+XCOMM platform:  $XConsortium: sun.cf,v 1.71 91/12/20 11:18:34 rws Exp $
 
-#define OSName            SunOS 4.1.1
+#define OSName            SunOS 4.1.2
 XCOMM operating system:  OSName
 #define OSMajorVersion    4
 #define OSMinorVersion    1
+#define OSTeenyVersion    2
 
 #if OSMajorVersion < 4 || (OSMajorVersion == 4 && OSMinorVersion < 1)
 /* We do not guarantee this will work */
@@ -12,7 +13,7 @@ XCOMM operating system:  OSName
 #endif
 
 /* You ALSO need this if you have Sun ld patch 100170-06 to 4.1.1 */
-#if OSMajorVersion == 4 && OSMinorVersion > 1
+#if OSMajorVersion == 4 && (OSMinorVersion > 1 || (OSMinorVersion == 1 && OSTeenyVersion > 1))
 #define SunPost411FCSLd	  YES
 #endif
 
