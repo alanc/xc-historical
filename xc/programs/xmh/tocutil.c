@@ -1,5 +1,5 @@
 /*
- * $XConsortium: tocutil.c,v 2.39 89/12/10 17:30:54 converse Exp $
+ * $XConsortium: tocutil.c,v 2.42 90/06/26 09:37:41 swick Exp $
  *
  *
  *			COPYRIGHT 1987, 1989
@@ -365,7 +365,11 @@ void TULoadTocFile(toc)
     char *ptr;
     Msg msg, curmsg;
     Msg *origmsgs;
+    int bufsiz = app_resources.toc_width + 1;
+    static char *buf;
 
+    if (!buf)
+	buf = XtMalloc((Cardinal) bufsiz);
     TocStopUpdate(toc);
     toc->lastreaddate = LastModifyDate(toc->scanfile);
     if (toc->curmsg) {
@@ -381,15 +385,16 @@ void TULoadTocFile(toc)
     position = 0;
     i = 0;
     curmsg = NULL;
-    while (ptr = ReadLineWithCR(fid)) {
+    while (ptr = fgets(buf, bufsiz, fid)) {
 	toc->msgs[toc->nummsgs++] = msg = XtNew(MsgRec);
 	bzero((char *) msg, sizeof(MsgRec));
-	l = strlen(ptr);
 	msg->toc = toc;
 	msg->position = position;
-	msg->length = l;
-	msg->buf = XtNewString(ptr);
+	msg->length = l = strlen(ptr);
+	msg->buf = strcpy(XtMalloc((Cardinal) l + 1), ptr);
 	msg->msgid = atoi(ptr);
+	while (l == app_resources.toc_width && buf[bufsiz-2] != '\n' && ptr)
+	    ptr = fgets(buf, bufsiz, fid);
 	if (msg->msgid == origcurmsgid)
 	    curmsg = msg;
 	msg->buf[MARKPOS] = ' ';
