@@ -61,5 +61,4 @@ MakeDirectories(install,$(INCDIR)/bitmaps)
 InstallMultiple($(SRCS),$(INCDIR)/bitmaps)
 
 depend::
-	@echo "skipping make depend in ./X11/bitmaps"
 
