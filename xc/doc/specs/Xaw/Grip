@@ -1,27 +1,27 @@
 .NH 2
 Grip Widget
-.LP
 .XS
 \*(SN Grip Widget
 .XE
 .IN "Grip widget" "" "@DEF@"
+.Ds 0
+.TA 2.0i
+.ta 2.0i
+.sp
+Header file	Grip.h
+Class		gripWidgetClass
+Class Name	Grip
+Superclass	Simple Widget
+.sp
+.De
 .LP
 The Grip widget provides a small region in which user input
-events
-(such as
-.PN ButtonPress or
-.PN ButtonRelease )
-may be handled.
-The most common use for the grip is as an attachment
-point for visually repositioning an object, 
-such as the pane border in a VPaned widget.
+events (such as ButtonPress or ButtonRelease ) may be handled.
+The most common use for the grip is as an attachment point for
+visually repositioning an object, such as the pane border in a Paned widget.
 .LP
-The class variable for the Grip widget is 
-.PN gripWidgetClass .
-.LP
-When creating a Grip widget instance, 
-the following resources are retrieved from the argument list 
-or from the resource database:
+When creating a Grip widget instance, the following resources are
+retrieved from the argument list or from the resource database: 
 .ps 9
 .nr PS 9
 .vs 11
@@ -31,45 +31,34 @@ lw(1.5i) lw(1i) lw(1i) lw(2i).
 _
 .sp 3p
 .TB
-Name	Type	Default	Description
+Name	Class	Type	Default Value
 .sp 3p
 _
 .TH
 .R
 .sp 3p
-XtNborderColor	Pixel	XtDefaultForeground	Window border color
-XtNborderPixmap	Pixmap	None	Window border pixmap
-XtNborderWidth	Dimension	0	Width of the border in pixels
-XtNcallback	XtCallbackList	None	Action routine
-XtNcursor	Cursor	None	Cursor for the grip
-T{
-XtNdestroyCallback
-T}	T{
-XtCallbackList
-T}	T{
-NULL
-T}	T{
-Callback for 
-.PN XtDestroyWidget
-T}
-XtNforeground	Pixel	XtDefaultForeground	Window background color
-XtNheight	Dimension	8	Height of the widget
-T{
-XtNmappedWhenManaged
-T}	T{
-Boolean
-T}	T{
-True
-T}	T{
-Whether 
-.PN XtMapWidget
-is automatic
-T}
-XtNsensitive	Boolean	True	Whether widget should receive input
-XtNtranslations	TranslationTable	None	Event-to-action translations
-XtNwidth	Dimension	8	Width of the widget
-XtNx	Position	0	x coordinate within parent
-XtNy	Position	0	y coordinate within parent
+accelerators	Acceleratore	AcceleratorTable	NULL
+ancestorSensitive	AncestorSensitive	Boolean	True
+background	Background	Pixel	XtDefaultBackground
+backgroundPixmap	Pixmap	Pixmap	XtUnspecifiedPixmap
+borderColor	BorderColor	Pixel	XtDefaultForeground
+borderPixmap	Pixmap	Pixmap	XtUnspecifiedPixmap
+borderWidth	BorderWidth	Dimension	1
+callback	Callback	Callback	NULL
+colormap	Colormap	Pointer	Parent's Colormap
+cursor	Cursor	Cursor	None
+depth	Depth	int	Parent's Depth
+destroyCallback	Callback	XtCallbackList	NULL
+foreground	Foreground	Pixel	XtDefaultForeground
+height	Height	Dimension	8
+insensitiveBorder	Insensitive	Pixmap	GreyPixmap
+mappedWhenManaged	MappedWhenManaged	Boolean	True
+screen	Screen	Pointer	Parent's Screen
+sensitive	Sensitive	Boolean	True
+translations	Translations	TranslationTable	NULL
+width	Width	Dimension	8
+x	X	Position	0
+y	Y	Position	0
 .sp 3p
 _
 .TE
@@ -77,38 +66,96 @@ _
 .nr PS 11
 .vs 13
 .nr VS 13
-.LP
-Note that the Grip widget displays its region with the foreground pixel only.
+.IP accelerators 1.5i
+A list of actions to be executed by this widget, even though the
+event occurred in another widget.  See section 10.4 in the \fI\*(xT\fP.
+.IP ancestorSensitive 1.5i
+The sensitivity state of the ancestors of this widget.  A widget is
+insensitive if either it or any of its ancestors is insensitive.
+This resource is not settable with \fBXtSetValues\fP.  It may
+however be queried.
+.IP background 1.5i
+The background color of this widget.
+.IP backgroundPixmap 1.5i
+The background pixmap of this widget.  If this resource is set to
+anything other than \fBXtUnspecifiedPixmap\fP the pixmap specified will be
+used instead of a background color.
+.IP borderColor 1.5i
+The color of this widget's border.
+.IP borderPixmap 1.5i
+The border pixmap of this widget.  If this resource is set to
+anything other than \fBXtUnspecifiedPixmap\fP the pixmap specified will be
+used instead of a background color.
+.IP borderWidth 1.5i
+This is the width of the border of this widget's window.
+.IP \fBcallback\fP 1.5i
+All routines on this list are called whenever the \fBGripAction\fP
+action routine is invoked.  The \fIcall_data\fP contains all
+information passed to the action routines.  A more through description
+is given below in the \fBGrip Actions\fP section.
+.IP colormap 1.5i
+The colormap that this widget will use to display all of its colors.
+.IP cursor 1.5i
+The cursor that will be displayed as the mouse pointer, whenever the mouse
+pointer is in this widget.
+.IP depth 1.5i
+The depth of this widget's window.
+.IP destroyCallback 1.5i
+All callback functions on this list are called when this widget is destroyed.
+.IP \fBforeground\fP 1.5i
+The entire Grip widget is flood filled with this color.
+.IP height 1.5i
+.br
+.ns
+.IP width 1.5i
+The height and width of this widget in pixels.
+.IP insensitiveBorder 1.5i
+This pixmap will be tiled into the widget's border if it becomes insensitive.
+.IP mappedWhenManaged 1.5i
+If this resource is \fBtrue\fP then the widget will automatically be
+mapped by the Toolkit when it is realized and managed.
+.IP screen 1.5i
+The screen that this widget is displayed on.  This is not a settable resource.
+.IP sensitive 1.5i
+Whether or not the toolkit will pass events to this widget.  The
+widget will not get events if either \fBancestorSensitive\fP or 
+\fBsensitive\fP is \fBfalse\fP.
+.IP translations 1.5i
+The translations associated with this widget.
+.IP x 1.5i
+.br
+.ns
+.IP y 1.5i
+The location of the upper lefthand corner of this widget in its parent.
+.NH 3
+Grip Actions
+.IN "Grip widget" "Grip Actions"
 .LP
 The Grip widget does not declare any default event translation bindings,
-but it does declare a single action routine named GripAction
-in its action table.
-The client specifies an arbitrary
-event translation table giving parameters to the GripAction routine.
+but it does declare a single action routine named \fBGripAction\fP.
+The client specifies an arbitrary event translation 
+table giving parameters to the \fBGripAction\fP routine. 
 .LP
-The
-.PN GripAction
-action executes the callbacks on the
-.PN XtNcallback
-list, passing as call_data a pointer to a
-.PN GripCallData
-structure, defined in
-.Pn < X11/Grip.h > :
+The \fBGripAction\fP action executes the callbacks on the \fBcallback\fP
+list, passing as \fIcall_data\fP a pointer to a \fBGripCallData\fP structure, 
+defined in the Grip widget's public header file.
 .LP
 .Ds 0
 .TA .5i 2.25i
 .ta .5i 2.25i
 .IN "GripCallData" "" "@DEF@"
 .IN "GripCallDataRec" "" "@DEF@"
+.sp
 typedef struct _GripCallData {
 	XEvent *event;
 	String *params;
 	Cardinal num_params;
 } GripCallDataRec, *GripCallData;
+.sp
 .De
 .LP
-In this structure, the event field is a pointer to the input
-event that triggered the action, and params and num_params give
+In this structure, the \fIevent\fP is a pointer to the input
+event that triggered the action, and \fIparams\fP and \fInum_params\fP give
 the string parameters specified in the translation table for the
 particular event binding.
 .IN "Grip widget" "GripAction table"
@@ -118,22 +165,11 @@ The following is an example of a GripAction translation table:
 .Ds 0
 .TA .5i 2.5i
 .ta .5i 2.5i
+.sp
 	<Btn1Down>:	GripAction(press)
 	<Btn1Motion>:	GripAction(move)
 	<Btn1Up>:	GripAction(release)
+.sp
 .De
 For a complete description of the format of action routines,
 see the \fI\*(xT\fP.
-.LP
-.IN "Grip widget" "creating"
-.IN "Creating widgets" "Grip"
-To create a Grip widget instance, use
-.PN XtCreateWidget
-and specify the class variable
-.PN gripWidgetClass .
-.LP
-.IN "Grip widget" "destroying"
-.IN "Destroying widgets" "Grip"
-To destroy a Command button widget instance, use
-.PN XtDestroyWidget
-and specify the ID of the Grip widget.

@@ -1,34 +1,38 @@
 .NH 2
 Toggle Widget
-.LP
 .XS
 \*(SN Toggle Widget
 .XE
 .IN "Toggle widget" "" "@DEF@"
-
-The Toggle widget is a rectanglular button that contains a text label
-or pixmap.  This widget maintains a Boolean state (e.g. True/False or
-On/Off) and changes state whenever it is selected. When the pointer
-cursor is on the Toggle it highlights to indicate that the Toggle is
-available for selection.  When the pointer button is pressed the
-Toggle is selected. This causes the state of the Toggle to reverse
-and its callback routine to be invoked. 
+.Ds 0
+.TA 2.0i
+.ta 2.0i
+.sp
+Header file	Toggle.h
+Class		toggleWidgetClass
+Class Name	Toggle
+Superclass 	Command Widget
+.sp
+.De
+.LP
+The Toggle widget is an area of the display, often rectangular, that
+contains a text label or bitmap image.  This widget maintains a
+Boolean state (e.g. True/False or On/Off) and changes state whenever
+it is selected.  When the mouse pointer is on the button, the button
+becomes highlighted by drawing a rectangle around its perimeter.  This
+highlighting indicates that the button is ready for selection.  When
+the left mouse button is pressed the Toggle widget changes state,
+and its callback routine is invoked.
 .LP
 Toggle buttons may also be part of a radio group.  A radio group is a
-list of Toggle buttons in which only one Toggle may be set at any
-time.  A radio group is identified by giving the widget id of any one
-of its members.  There is a convenience routine,
-.PN XtToggleGetCurrent
-that will return information about the Toggle in the radio group that is
+list of Toggle buttons in which no more than one Toggle may be set at any
+time.  A radio group is identified by the widget id of any one
+of its members.  There is a convenience routine, \fBXawToggleGetCurrent\fP
+that will return information about the Toggle button in the radio group that is
 currently set.  More information on radio groups is presented below.
 .LP
-The class variable for the Toggle widget is 
-.PN toggleWidgetClass .
-.LP
-When creating a Toggle widget instance, 
-the following resources are retrieved from the argument list
-or from the resource database:
-.IN "Toggle widget" "resources"
+When creating a Toggle widget instance, the following resources are
+retrieved from the argument list or from the resource database: 
 .ps 9
 .nr PS 9
 .vs 11
@@ -38,91 +42,47 @@ lw(1.5i) lw(1i) lw(1i) lw(2i).
 _
 .sp 3p
 .TB
-Name	Type	Default	Description
+Name	Class	Type	Default Value
 .sp 3p
 _
 .TH
 .R
 .sp 3p
-XtNbackground	Pixel	XtDefaultBackground	Window background color
-XtNbackgroundPixmap	Pixmap	None	Window background pixmap
-T{
-XtNbitmap
-T}	T{
-Pixmap	
-T}	T{
-None
-T}	T{
-Pixmap to display in place of the label
-T}
-XtNborderColor	Pixel	XtDefaultForeground	Window border color
-XtNborderPixmap	Pixmap	None	Window border pixmap
-XtNborderWidth	Dimension	1	Width of button border
-XtNcallback	XtCallbackList	NULL	Callback for button select
-XtNcursor	Cursor	None	Pointer cursor
-T{
-XtNdestroyCallback
-T}	T{
-XtCallbackList
-T}	T{
-NULL
-T}	T{
-Callbacks for 
-.PN XtDestroyWidget
-T}
-XtNfont	XFontStruct*	XtDefaultFont	Label font
-XtNforeground	Pixel	XtDefaultForeground	Foreground color
-XtNheight	Dimension	Text height	Button height
-T{
-XtNhighlightThickness
-T}	T{
-Dimension
-T}	T{
-2
-T}	T{
-Width of border to be highlighted
-T}
-XtNinsensitiveBorder	Pixmap	Gray	Border when not sensitive
-T{
-XtNinternalHeight
-T}	T{
-Dimension
-T}	T{
-2
-T}	T{
-Internal border height for highlighting
-T}
-T{
-XtNinternalWidth
-T}	T{
-Dimension
-T}	T{
-4
-T}	T{
-Internal border width for highlighting
-T}
-XtNjustify	XtJustify	XtJustifyCenter	Type of text alignment
-XtNlabel	String	Button name	Button label
-T{
-XtNmappedWhenManaged
-T}	T{
-Boolean
-T}	T{
-True
-T}	T{
-Whether 
-.PN XtMapWidget
-is automatic
-T}
-XtNradioData	Pointer	Name of widget	Value that will be returned by \fBXtToggleGetCurrent\fP
-XtNradioGroup	Widget	NULL	Any other widget in the Toggle's radio group
-XtNresize	Boolean	True	Whether to auto-resize in \fBSetValues\fP
-XtNsensitive	Boolean	True	Whether widget receives input
-XtNstate	Boolean	Off	State of the Toggle widget
-XtNtranslations	TranslationTable	see below	Event-to-action translations
-XtNwidth	Dimension	Text width	Button width
-XtNx	Position	0	x coordinate
-XtNy	Position	0	y coordinate
+accelerators	Acceleratore	AcceleratorTable	NULL
+ancestorSensitive	AncestorSensitive	Boolean	True
+background	Background	Pixel	XtDefaultBackground
+backgroundPixmap	Pixmap	Pixmap	XtUnspecifiedPixmap
+bitmap	Bitmap	Pixmap	None
+borderColor	BorderColor	Pixel	XtDefaultForeground
+borderPixmap	Pixmap	Pixmap	XtUnspecifiedPixmap
+borderWidth	BorderWidth	Dimension	1
+callback	Callback	XtCallbackList	NULL
+colormap	Colormap	Pointer	Parent's Colormap
+cornerRoundPercent	CornerRoundPercent	Dimension	25
+cursor	Cursor	Cursor	None
+depth	Depth	int	Parent's Depth
+destroyCallback	Callback	XtCallbackList	NULL
+font	Font	XFontStruct	XtDefaultFont
+foreground	Foreground	Pixel	XtDefaultForeground
+height	Height	Dimension	Font height + 2 * \fBinternalHeight\fP
+highlightThickness	Thickness	Dimension 2	(0 if Shaped)
+insensitiveBorder	Insensitive	Pixmap	GreyPixmap
+internalHeight	Height	Dimension	2
+internalWidth	Width	Dimension	4
+justify	Justify	Justify	XtJustifyCenter (center)
+label	Label	String	NULL (name of widget)
+mappedWhenManaged	MappedWhenManaged	Boolean	True
+radioData	RadioData	Pointer	Name of widget
+radioGroup	Widget	Widget	NULL (No radio Group)
+resize	Resize	Boolean	True
+screen	Screen	Pointer	Parent's Screen
+sensitive	Sensitive	Boolean	True
+shapeStype	ShapeStyle	ShapeStyle	Rectangle
+state	State	Boolean	Off
+translations	Translations	TranslationTable	See above
+width	Width	Dimension	\fBlabel\fP Width + 2 * \fBinternalWidth\fP
+x	X	Position	0
+y	Y	Position	0
 .sp 3p
 _
 .TE
@@ -130,170 +90,150 @@ _
 .nr PS 11
 .vs 13
 .nr VS 13
-.TS
-lw(1.7i) lw(4i).
-T{
-.PN XtNbitmap
-T}	T{
-Specifies a bitmap to display in place of the text label
-[See the description of this resource in the Label widget for
-further details].
-T}
-.sp 6p
-T{
-.PN XtNcallback
-T}	T{
-Specifies the callback list of functions to be called when the 
-Toggle widget changes state.  This usually occurs when the Toggle
-widget's notify action is called, but when a toggle is in a radio
-group it may change state at other times.  The places where 
-this can occur include:
-.PN XtToggleSetCurrent , 
-.PN XtToggleUnsetCurrent ,
-.PN XtToggleChangeRadioGroup ,
-the 
-.PN set
-action, 
-.PN XtSetValues, 
-and
-.PN XtCreateWidget.
-T}
-.sp 6p
-T{
-.PN XtNheight
-T}	T{
-Specifies the height of the Toggle widget.
-The default value is the minimum height that will contain:
+.IP accelerators 1.5i
+A list of actions to be executed by this widget, even though the
+event occurred in another widget.  See section 10.4 in the \fI\*(xT\fP.
+.IP ancestorSensitive 1.5i
+The sensitivity state of the ancestors of this widget.  A widget is
+insensitive if either it or any of its ancestors is insensitive.
+This resource is not settable with \fBXtSetValues\fP.  It may
+however be queried.
+.IP background 1.5i
+The background color of this widget.
+.IP backgroundPixmap 1.5i
+The background pixmap of this widget.  If this resource is set to
+anything other than \fBXtUnspecifiedPixmap\fP the pixmap specified will be
+used instead of a background color.
+.IP bitmap 1.5i
+A bitmap to display instead of the label.  The default size of the
+Toggle will be just large enough to contain the bitmap and the button's
+internal width and height.  The resource converter for this resource
+converts a filename into a bitmap.  See \fBConverting Bitmaps\fP for
+details on the string to bitmap conversion.
+.IP borderColor 1.5i
+The color of this widget's border.
+.IP borderPixmap 1.5i
+The border pixmap of this widget.  If this resource is set to
+anything other than \fBXtUnspecifiedPixmap\fP the pixmap specified will be
+used instead of a background color.
+.IP borderWidth 1.5i
+This is the width of the border of this widget's window.
+.IP callback 1.5i
+A list of routines to be called when the notify action is invoked.
+.IP colormap 1.5i
+The colormap that this widget will use to display all of its colors.
+.IP cornerRoundPercent 1.5i
+When a \fBShapeStyle\fP of \fBroundedRectangle\fP is used this
+resource controls the radius of the rounded corder.  The radius of the
+rounded corders is specified as a percentage of the length of the
+shortest side of the widget.  This must be a positive value.
+.IP cursor 1.5i
+The cursor that will be displayed as the mouse pointer, whenever the mouse
+pointer is in this widget.
+.IP depth 1.5i
+The depth of this widgets window.
+.IP destroyCallback 1.5i
+All callback functions on this list are called when this widget is destroyed.
+.IP font 1.5i
+The text font to use when displaying the \fBlabel\fP.
+.IP foreground 1.5i
+The color to used to draw the \fBlabel\fP.  This color is also used to render
+all 1's in the \fBbitmap\fP.
+.IP height 1.5i
 .br
-\fBXtNinternalheight\fP + height of \fBXtNlabel\fP + \fBXtNinternalHeight\fP
+.ns
+.IP width 1.5i
+The height and width of this widget in pixels.
+.IP highlightThickness 1.5i
+The thickness of the rectangle that is used to highlight a the button
+alerting the user that it is ready to be selected.  The default value is
+2 pixels if the \fBshapeStyle\fP is \fBrectangle\fP, and 0 Pixels (no
+highlighting) othersize.
+.IP insensitiveBorder 1.5i
+This pixmap will be tiled into the widget's border if it becomes insensitive.
+.IP internalHeight 1.5i
 .br
-If the specified height is larger than the minimum,
-the label string is centered vertically.
-T}
-.sp 6p
-T{
-.PN XtNinternalHeight 
-T}	T{
-Represents the distance in pixels between the top and bottom 
-of the label text or bitmap and the horizontal edges of the Toggle widget.
-HighlightThickness can be larger or smaller than this value.
-T}
-.sp 6p
-T{
-.PN XtNinternalWidth 
-T}	T{
-Represents the distance in pixels between the ends of the label text
-or bitmap and the vertical edges of the Toggle widget.
-HighlightThickness can be larger or smaller than this value.
-T}
-.sp 6p
-T{
-.PN XtNjustify
-T}	T{
-Specifies left, center, or right alignment of the label string
-within the Toggle widget.
-If it is specified within an
-.PN ArgList ,
-one of the values
-.PN XtJustifyLeft ,
-.PN XtJustifyCenter ,
-or
-.PN XtJustifyRight
-can be specified.
-In a resource of type ``string'',
-one of the values ``left'', ``center'', or ``right'' can be specified.
-T}
-.sp 6p
-T{
-.PN XtNlabel
-T}	T{
-Specifies the text string that is to be displayed in the Toggle widget
-if no bitmap is specified.
-The default is the widget name of the Toggle widget.
-T}
-.sp 6p
-T{
-.PN XtNradioData
-T}	T{
-Specifies the data that will be returned from a call to 
-.PN XtToggleGetCurrent
-if this widget is the one that is set in a radio group.  This data is
-also used to identify the toggle that will be set by a call to
-.PN XtToggleSetCurrent.
-The value NULL is returned by
-.PN XtToggleGetCurrent
-if no widget is set in a radio group.  Programmers not 
-specify NULL as \fBXtNradioData\fP, if they intend to use
-\fBXtToggleGetCurrent\fP
-T}
-.sp 6p
-T{
-.PN XtNradioGroup
-T}	T{
-Specifies another Toggle widget which is in the radio group to which this
+.ns
+.IP internalWidth 1.5i
+The minium amount of space to leave between the label or bitmap and the
+vertical or horizontal edges of the window.
+.IP justify 1.5i
+Specifies left, center, or right alignment of the label
+within the widget.  This resource may be
+specified with the values \fBXtJustifyLeft\fP, \fBXtJustifyCenter\fP,
+or \fBXtJustifyRight\fP.  When specifying the justification from a
+resource file the values \fBleft\fP, \fBcenter\fP, or \fBright\fP may be
+used.
+.IP label 1.5i
+This is a Latin1 text string to be displayed in the Toggle's window.
+.IP mappedWhenManaged 1.5i
+If this resource is \fBtrue\fP then the widget will automatically be
+mapped by the Toolkit when it is realized and managed.
+.IP \fBradioData\fP 1.5i
+Specifies the data that will be returned from a call to
+\fBXawToggleGetCurrent\fP if this is the currently \fIset\fP widget in
+the radio group.  This data is also used to identify the toggle that
+will be set by a call to \fBXawToggleSetCurrent\fP.  The value NULL is
+returned by \fBXawToggleGetCurrent\fP if no widget is set in a radio
+group.  Programmers must not specify NULL (or Zero) as
+\fBradioData\fP, if they intend to use \fBXawToggleGetCurrent\fP
+.IP \fBradioGroup\fP 1.5i
+Specifies another Toggle widget that is in the radio group to which this
 Toggle widget should be added. A radio group is a group of Toggle widgets,
-only one of which may be "set" at a time.  If this value is NULL (the default)
+only one of which may be \fIset\fP at a time.  If this value is NULL
+(the default) 
 then the Toggle will not be part of any radio group and can
-change state without effecting any other Toggle widgets.  If the
+change state without affecting any other Toggle widgets.  If the
 widget specified in this resource is not already in a radio group
 then a new radio group will be created containing these two
 Toggle widgets.  No Toggle widget can be in multiple radio groups.
-T}
-.sp 6p
-T{
-.PN XtNresize
-T}	T{
+.IP resize 1.5i
 Specifies whether the Toggle widget should attempt to resize to its
-preferred dimensions whenever
-.PN XtSetValues
-is called for it.
-The default is
-.PN True .
-T}
-.sp 6p
-T{
-.PN XtNsensitive
-T}	T{
-If set to
-.PN False ,
-the Toggle widget will change its window border to
-.PN XtNinsensitiveBorder
-and will stipple the label string.
-T}
-.sp 6p
-T{
-.PN XtNstate
-T}	T{
-Specifies whether the Toggle widget is set (True/On) or unset (False/Off).
-T}
-.sp 6p
-T{
-.PN XtNwidth
-T}	T{
-Specifies the width of the Toggle widget.
-The default value is the minimum width that will contain:
+preferred dimensions whenever its resources are modified with
+\fBXtSetValues\fP.  This
+attempt at a resize is subject to the dictates of the parent of this
+widget which is free to resize the MenuButton reguardless of the state
+of this resource. 
+.IP shapeStyle 1.5i
+Non rectangular Toggles may be created using this resource.  Non
+rectangular buttons may only be used on a server that supports the
+\fBShape Extension\fP.  The
+Toggle currently supports the following shapes: \fBXmuShapeRectangle\fP,
+\fBXmuShapeOval\fP, \fBXmuShapeEllipse\fP, and \fBXmuShapeRoundedRectangle\fP.
+A resource conveter is registered to convert the following string
+values to shape styles: \fBrectangle\fP, \fBoval\fP, \fPellipse\fP,
+\fBroundedRectangle\fP. 
+.IP screen 1.5i
+The screen that this widget is displayed on.  This is not a settable resource.
+.IP sensitive 1.5i
+Whether or not the toolkit will pass events to this widget.  The
+widget will not get events if either \fBancestorSensitive\fP or 
+\fBsensitive\fP is \fBfalse\fP.
+.IP \fBstate\fP
+Specifies whether the Toggle widget is set (\fBtrue\fP) or unset (\fBfalse\fP).
+.IP translations 1.5i
+The translations associated with this widget.
+.IP x 1.5i
 .br
-\fBXtNinternalwidth\fP + width of \fBXtNlabel\fP + \fBXtNinternalWidth\fP
-.br
-If the width is larger or smaller than the minimum,
-.PN XtNjustify 
-determines how the label string is aligned.
-T}
-.TE
+.ns
+.IP y 1.5i
+The location of the upper lefthand corner of this widget in its parent.
+.NH 3
+Toggle Actions
 .LP
 The Toggle widget supports the following actions:
 .IP \(bu 5
 Switching the button between the foreground and background
-colors with \fBset\fP, \fBunset\fP and \fBtoggle\fP
+colors with \fBset\fP and \fBunset\fP and \fBtoggle\fP
 .IP \(bu 5
-Processing application callbacks with \fBnotify\fP.
+Processing application callbacks with \fBnotify\fP
 .IP \(bu 5
 Switching the internal border between highlighted
 and unhighlighted states with \fBhighlight\fP and \fBunhighlight\fP
 .LE
 .LP
-The following are the default translation bindings that are used 
-by the Toggle widget:
+The following are the default translation bindings used by the
+Toggle widget: 
 .LP
 .Ds 0
 .TA .5i 2.25i
@@ -302,138 +242,128 @@ by the Toggle widget:
 	<LeaveWindow>:	unhighlight(\|)
 	<Btn1Down>,<Btn1Up>:	toggle(\|) notify(\|)
 .De
-.LP
-With these bindings, the user can cancel the action before
-releasing the button by moving the pointer out of the Toggle widget.
 .NH 3
 Toggle Actions
 .LP
-The full list of actions supported by the Toggle widget is:
-.IP \fBhighlight\fP(\fIvalue\fP) 1.5i
-Displays the internal highlight border in the color (\fBXtNforeground\fP
-or
-.PN XtNbackground )
-that contrasts with the interior color of the Toggle widget.
-This action procedure takes one of the following conditions: WhenUnset and
-Always.  If no argument is passed then WhenUnset is assumed, this maintains
-backwards compatibility.
+The full list of actions supported by Toggle is:
+.IP \fBhighlight\fP(\fIcondition\fP) 1.5i
+Displays the internal highlight border in the color (\fBforeground\fP
+or \fBbackground\fP ) that contrasts with the interior color of the
+Toggle widget.  The conditions \fBWhenUnset\fP or \fBAlways\fP are
+understood by this action procedure.  If no argument is passed then
+\fBWhenUnset\fP is assumed, maintaining backwards compatibility.
 .IP \fBunhighlight\fP(\|) 1.5i
-Displays the internal highlight border in the color (\fBXtNforeground\fP
-or
-.PN XtNbackground )
-that matches the interior color of the Toggle widget. 
+Displays the internal highlight border in the color (\fBforeground\fP
+or \fBbackground\fP ) that matches the interior color of the
+Toggle widget.  
 .IP \fBset\fP(\|) 1.5i
-Enters the "set" state, in which \fBnotify\fP is possible and displays the
-interior of the button in the
-.PN XtNforeground
-color.  The label is displayed
-in the 
-.PN XtNbackground
-color.  If the widget to be set is in a radio
-group then this procedure may unset another widget, which will
-cause all routines on its callback list to be invoked.  Since only one
-toggle in a radio group may be set at a time the callback routines for
-the toggle that is to be unset will be called before the one that 
-is to be set.
+Enters the \fIset\fP state, in which \fBnotify\fP is possible.  This
+action causes the botton to display its interior in the
+\fBforeground\fP color.  The label or bitmap is displayed in the
+\fBbackground\fP color. 
 .IP \fBunset\fP(\|) 1.5i
-Cancels the "set" state and displays the interior of the button in the
-.PN XtNbackground
-color.  The label is displayed in the 
-.PN XtNforeground
-color.
+Cancels the \fIset\fP state and displays the interior of the button in the
+\fBbackground\fP color.  The label or bitmap is displayed in the
+\fBforeground\fP color.
 .IP \fBtoggle\fP(\|) 1.5i
 Changes the current state of the Toggle widget, causing to be set
 if it was previously unset, and unset if it was previously set.
 If the widget is to be set, and is in a radio group then this procedure may 
-unset another widget, which will cause all routines on its callback list
-to be invoked.   Since only one toggle in a radio
-group may be set at a time the callback routines for the toggle that
+unset another Toggle widget causing all routines on its callback list
+to be invoked.  The callback routines for the toggle that
 is to be unset will be called before the one that is to be set.
 .IP \fBreset\fP(\|) 1.5i
 Cancels any \fBset\fP or \fBhighlight\fP and displays the interior of the
-button in the
-.PN XtNbackground
-color, with the label displayed in the 
-.PN XtNforeground
-color.   
+button in the \fBbackground\fP color, with the label displayed in the 
+\fBforeground\fP color.
 .IP \fBnotify\fP(\|) 1.5i
-Executes the
-.PN XtNcallback
-callback list.  The call_data contains a Boolean which is
-the current state of the widget.
+When the button is in the \fBset\fP state this action calls all functions in
+the callback list named by the \fBcallback\fP resource.  The value of
+the call_data argument in these callback functions is undefined. 
+.NH 3
+Radio Groups
 .LP
-.IN "Toggle widget" "creating"
-.IN "Creating widgets" "Toggle"
-To create a Toggle widget instance, use
-.PN XtCreateWidget
-and specify the class variable
-.PN toggleWidgetClass .
+There are typically two types of radio groups desired by applications.
+The default translations for the Toggle widget implement a \fIOne or Zero of
+Many\fP radio group.  This means that there may be no more than one
+button active, but there need not be any buttons active. 
 .LP
-.IN "Toggle widget" "destroying"
-.IN "Destroying widgets" "toggle"
-To destroy a Toggle widget instance, use
-.PN XtDestroyWidget
-and specify the widget ID of the Toggle widget.
+The other type of radio group is \fIOne of Many\fP and has the more
+strict policy that there will always be exactly one radio button active.
+The Toggle widgets can be used provide this interface with
+a slight modification to the translation table in each of the Toggles
+in the group. 
+.Ds 0
+.TA .5i 2.25i
+.ta .5i 2.25i
+.sp
+	<EnterWindow>:	highlight(Always)
+	<LeaveWindow>:	unhighlight(\|)
+	<Btn1Down>,<Btn1Up>:	set(\|) notify(\|)
+.sp
+.De
+This translation table will not allow any toggle button to be \fIunset\fP
+except as a result of another toggle becoming \fIset\fP.  It is
+the application programmers responsibility to choose an initial
+state for the radio group by setting one of its member toggle widget's
+\fBstate\fP to \fBtrue\fP.
+.NH 3
+Convience Routines
 .LP
-The Toggle widget supports two callbacks:
-.PN XtNdestroyCallback
-and
-.PN XtNcallback .
-The notify action executes the callbacks on the the
-.PN XtNcallback
-list.
-.SH
+The following functions allow easy access to the Toggle widget's radio
+group functionality.
+.NH 4
 Changing the Toggle's Radio Group.
 .LP
-To enable an application to change the Toggle's current radio group, add
+To enable an application to change the Toggle's radio group, add
 the Toggle to a radio group, or remove the Toggle from a radio group, use 
-.PN XtToggleChangeRadioGroup.
-.IN ""XtToggleChangeRadioGroup"" "@DEF@"
+.PN XawToggleChangeRadioGroup.
+.IN ""XawToggleChangeRadioGroup"" "@DEF@"
 .sp 6p
-void XtToggleChangeRadioGroup(\fIw\fP, \fIradio_group\fP)
+void XawToggleChangeRadioGroup(\fIw\fP, \fIradio_group\fP)
 .br
      Widget \fIw\fP, \fIradio_group\fP;
 .FN
 .IP \fIw\fP 1i
 Specifies the widget ID of the Toggle widget.
 .IP \fIradio_group\fP 1i
-This should be any Toggle on the new radio group.  If NULL then the Toggle
+Any Toggle in the new radio group.  If NULL then the Toggle
 will be removed from any radio group of which it is a member.
 .LP
-If a toggle is already in the set state in the new radio group,
-and the toggle to be added is also set then the previously set toggle in
-the new radio group is unset and its callback procedures are 
-invoked.
+If a Toggle is already in \fIset\fP in the new radio group,
+and the Toggle to be added is also \fIset\fP then the previously
+\fIset\fP Toggle in the new radio group is \fIunset\fP and its callback
+procedures are invoked.
 .SH
 Finding the Currently selected Toggle in a radio group of Toggles
 .LP
 To find the currently selected Toggle in a radio group of Toggle widgets
 use 
-.PN XtToggleGetCurrent.
-.IN ""XtToggleGetCurrent"" "@DEF@"
+.PN XawToggleGetCurrent.
+.IN ""XawToggleGetCurrent"" "@DEF@"
 .sp 6p
-caddr_t XtToggleGetCurrent(\fIradio_group\fP);
+caddr_t XawToggleGetCurrent(\fIradio_group\fP);
 .br
      Widget \fIradio_group\fP;
 .FN
 .IP \fIradio_group\fP 1i
 Specifies the widget ID of any Toggle in the radio group.
 .LP
-The value returned by this function is the data pointed to by 
-.PN XtNradioData, 
-for the Toggle in the radio group that is currently set.  The default
+The value returned by this function is the
+.PN radioData, 
+of the Toggle in this radio group that is currently set.  The default
 value for 
-.PN XtNradioData 
+.PN radioData 
 is the name of that Toggle widget.  If no Toggle 
 is set in the radio group specified then NULL is returned.
 .SH
 Changing the Toggle that is set in a radio group.
 .LP
 To change the Toggle that is currently set in a radio group use 
-.PN XtToggleSetCurrent.
-.IN ""XtToggleSetCurrent"" "@DEF@"
+.PN XawToggleSetCurrent.
+.IN ""XawToggleSetCurrent"" "@DEF@"
 .sp 6p
-void XtToggleSetCurrent(\fIradio_group\fP, \fIradio_data\fP);
+void XawToggleSetCurrent(\fIradio_group\fP, \fIradio_data\fP);
 .br
      Widget \fIradio_group\fP;
      caddr_t \fIradio_data\fP;
@@ -442,29 +372,28 @@ void XtToggleSetCurrent(\fIradio_group\fP, \fIradio_data\fP);
 Specifies the widget ID of any Toggle in the radio group.
 .IP \fIradio_data\fP 1i
 Specifies the 
-.PN XtNradioData
+.PN radioData
 identifying the Toggle that should be set in the radio group specified
 by the \fIradio_group\fP argument.
 .LP
 
-\fBXtToggleSetCurrent\fP locates the Toggle widget to be set by
-matching \fIradio_data\fP against the \fBXtNradioData\fP for each
-Toggle in the radio group.  If none match \fBXtToggleSetCurrent\fP
+\fBXawToggleSetCurrent\fP locates the Toggle widget to be set by
+matching \fIradio_data\fP against the \fBradioData\fP for each
+Toggle in the radio group.  If none match \fBXawToggleSetCurrent\fP
 returns without making any changes.  If more than one Toggle matches,
-\fBXtToggleSetCurrent\fP will choose a Toggle to set arbitrarily.  If
+\fBXawToggleSetCurrent\fP will choose a Toggle to set arbitrarily.  If
 this causes any Toggle widgets to change state all routines in their
-callback lists will be invoked.  Since only one toggle in a radio
-group may be set at a time the callback routines for a Toggle that
+callback lists will be invoked.  The callback routines for a Toggle that
 is to be unset will be called before the one that is to be set.
 
 .SH
 Unsetting all Toggles in a radio group.
 .LP
 To unset all Toggle widgets in a radio group use
-.PN XtToggleUnsetCurrent.
-.IN ""XtToggleUnsetCurrent"" "@DEF@"
+.PN XawToggleUnsetCurrent.
+.IN ""XawToggleUnsetCurrent"" "@DEF@"
 .sp 6p
-void XtToggleUnsetCurrent(\fIradio_group\fP);
+void XawToggleUnsetCurrent(\fIradio_group\fP);
 .br
      Widget \fIradio_group\fP;
 .FN
@@ -473,3 +402,5 @@ Specifies the widget ID of any Toggle in the radio group.
 .LP
 If this causes a Toggle widget to change state all routines on its 
 callback list will be invoked.
+
+.TC

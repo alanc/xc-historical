@@ -1,22 +1,29 @@
-.NH 2 
+.NH 2
 Label Widget
-.LP
 .XS
 \*(SN Label Widget
 .XE
 .IN "Label widget" "" "@DEF@"
-A Label is an noneditable text string or pixmap that is displayed within a window.
-The string is limited to one line and can be aligned to the left, right, 
-or center of its window.
-A Label can neither be selected nor directly edited by the user.
+.Ds 0
+.TA 2.0i
+.ta 2.0i
+.sp
+Header file	Label.h
+Class		LabelWidgetClass
+Class Name	Label
+Superclass	Simple Widget
+.sp
+.De
 .LP
-The class variable for the Label widget is 
-.PN labelWidgetClass .
+A Label widget is an noneditable text string or bitmap that is
+displayed within a rectangular region of the screen.  The \fBlabel\fP is
+limited to one line of Latin1 characters.  The Label widget will
+allow its string to be left, right, or center justified.  This widget can
+neither be selected nor directly edited by the user.  It is intended
+for use as an output device only.
 .LP
-When creating a Label widget instance, 
-the following resources are retrieved from the argument list
-or from the resource database:
-.IN "Label widget" "resources"
+When creating a Label widget instance, the following resources are
+retrieved from the argument list or from the resource database: 
 .ps 9
 .nr PS 9
 .vs 11
@@ -26,61 +33,40 @@ lw(1.5i) lw(1i) lw(1i) lw(2i).
 _
 .sp 3p
 .TB
-Name	Type	Default	Description
+Name	Class	Type	Default Value
 .sp 3p
 _
 .TH
 .R
 .sp 3p
-XtNbackground	Pixel	XtDefaultBackground	Window background color
-XtNbackgroundPixmap	Pixmap	None	Window background pixmap
-T{
-XtNbitmap
-T}	T{
-Pixmap	
-T}	T{
-None
-T}	T{
-Pixmap to display in place of the label
-T}
-XtNborderColor	Pixel	XtDefaultForeground	Window border color
-XtNborderPixmap	Pixmap	None	Window border pixmap
-XtNborderWidth	Dimension	1	Border width in pixels
-XtNcursor	Cursor	None	Pointer cursor
-T{
-XtNdestroyCallback
-T}	T{
-XtCallbackList
-T}	T{
-NULL
-T}	T{
-Callbacks for 
-.PN XtDestroyWidget
-T}
-XtNfont	XFontStruct*	XtDefaultFont	Label font
-XtNforeground	Pixel	XtDefaultForeground	Foreground color
-XtNheight	Dimension	text height	Height of widget
-XtNinsensitiveBorder	Pixmap	Gray	Border when not sensitive
-XtNinternalHeight	Dimension	2	See note
-XtNinternalWidth	Dimension	4	See note
-XtNjustify	XtJustify	XtJustifyCenter	Type of text alignment
-XtNlabel	String	label name	String to be displayed
-T{
-XtNmappedWhenManaged
-T}	T{
-Boolean
-T}	T{
-True
-T}	T{
-Whether 
-.PN XtMapWidget
-is automatic
-T}
-XtNresize	Boolean	True	Whether to auto-resize in SetValues
-XtNsensitive	Boolean	True	Whether widget receives input
-XtNwidth	Dimension	text width	Width of widget
-XtNx	Position	0	x coordinate in pixels
-XtNy	Position	0	y coordinate in pixels
+accelerators	Acceleratore	AcceleratorTable	NULL
+ancestorSensitive	AncestorSensitive	Boolean	True
+background	Background	Pixel	XtDefaultBackground
+backgroundPixmap	Pixmap	Pixmap	XtUnspecifiedPixmap
+bitmap	Bitmap	Pixmap	None
+borderColor	BorderColor	Pixel	XtDefaultForeground
+borderPixmap	Pixmap	Pixmap	XtUnspecifiedPixmap
+borderWidth	BorderWidth	Dimension	1
+colormap	Colormap	Pointer	Parent's Colormap
+cursor	Cursor	Cursor	None
+depth	Depth	int	Parent's Depth
+destroyCallback	Callback	XtCallbackList	NULL
+font	Font	XFontStruct	XtDefaultFont
+foreground	Foreground	Pixel	XtDefaultForeground
+height	Height	Dimension	Font height + 2 * \fBinternalHeight\fP
+insensitiveBorder	Insensitive	Pixmap	GreyPixmap
+internalHeight	Height	Dimension	2
+internalWidth	Width	Dimension	4
+justify	Justify	Justify	XtJustifyCenter (center)
+label	Label	String	NULL (name of widget)
+mappedWhenManaged	MappedWhenManaged	Boolean	True
+resize	Resize	Boolean	True
+screen	Screen	Pointer	Parent's Screen
+sensitive	Sensitive	Boolean	True
+translations	Translations	TranslationTable	See above
+width	Width	Dimension	\fBlabel\fP Width + 2 * \fBinternalWidth\fP
+x	X	Position	0
+y	Y	Position	0
 .sp 3p
 _
 .TE
@@ -88,130 +74,90 @@ _
 .nr PS 11
 .vs 13
 .nr VS 13
-.LP
-The new resources associated with Label are:
-.TS
-lw(1.5i) lw(4i).
-T{
-.PN XtNbitmap
-T}	T{
-Specifies a bitmap to display in place of the text label.
-The bitmap can be specified as a string in the resource data base.
-The StringToPixmap converter will interpret the string as the name of a
-file in the bitmap utility format that is to be loaded into a pixmap.
-The string can be an absolute or a relative file name.
-If a relative file name is used,
-the directory specified by the resource name
-.PN bitmapFilePath
-or
-the resource class
-.PN BitmapFilePath
-is add to the beginning of the
-specified file name.
-If the
-.PN bitmapFilePath
-resource is not defined,
-the default directory on a UNIX-based system is
-.PN /usr/include/X11/bitmaps .
-T}
-.sp 6p
-T{
-.PN XtNheight
-T}	T{
-Specifies the height of the Label widget.
-The default value is the minimum height that will contain:
+.IP accelerators 1.5i
+A list of actions to be executed by this widget, even though the
+event occurred in another widget.  See section 10.4 in the \fI\*(xT\fP.
+.IP ancestorSensitive 1.5i
+The sensitivity state of the ancestors of this widget.  A widget is
+insensitive if either it or any of its ancestors is insensitive.
+This resource is not settable with \fBXtSetValues\fP.  It may
+however be queried.
+.IP background 1.5i
+The background color of this widget.
+.IP backgroundPixmap 1.5i
+The background pixmap of this widget.  If this resource is set to
+anything other than \fBXtUnspecifiedPixmap\fP the pixmap specified will be
+used instead of a background color.
+.IP \fBbitmap\fP 1.5i
+A bitmap to display instead of a label.  The default size of the
+Label will be just large enough to contain the bitmap and the widget's
+internal width and height.  The resource converter for this resource
+converts a filename into a bitmap.  See \fBConverting Bitmaps\fP for
+details on the string to bitmap conversion.
+.IP borderColor 1.5i
+The color of this widget's border.
+.IP borderPixmap 1.5i
+The border pixmap of this widget.  If this resource is set to
+anything other than \fBXtUnspecifiedPixmap\fP the pixmap specified will be
+used instead of a background color.
+.IP borderWidth 1.5i
+This is the width of the border of this widget's window.
+.IP colormap 1.5i
+The colormap that this widget will use to display all of its colors.
+.IP cursor 1.5i
+The cursor that will be displayed as the mouse pointer, whenever the mouse
+pointer is in this widget.
+.IP depth 1.5i
+The depth of this widgets window.
+.IP destroyCallback 1.5i
+All callback functions on this list are called when this widget is destroyed.
+.IP \fBfont\fP 1.5i
+The text font to use when displaying the \fBlabel\fP.
+.IP \fBforeground\fP 1.5i
+The color to used to draw the \fBlabel\fP.  This color is also used to render
+all 1's in the \fBbitmap\fP.
+.IP height 1.5i
 .br
-XtNinternalheight + height of XtNlabel + XtNinternalHeight 
+.ns
+.IP width 1.5i
+The height and width of this widget in pixels.
+.IP insensitiveBorder 1.5i
+This pixmap will be tiled into the widget's border if it becomes insensitive.
+.IP \fBinternalHeight\fP 1.5i
 .br
-If the specified height is larger than the minimum,
-the label string is centered vertically.
-T}
-.sp 6p
-T{
-.PN XtNinternalHeight 
-T}	T{
-Represents the distance in pixels between the top and bottom 
-of the label text or bitmap and the horizontal edges of the Label widget.
-T}
-.sp 6p
-T{
-.PN XtNinternalWidth 
-T}	T{
-Represents the distance in pixels between the ends of the label text or bitmap
-and the vertical edges of the Label widget.
-T}
-.sp 6p
-T{
-.PN XtNjustify
-T}	T{
-Specifies left, center, or right alignment of the label string
-within the Label widget.
-If it is specified within an
-.PN ArgList ,
-one of the values
-.PN XtJustifyLeft ,
-.PN XtJustifyCenter ,
-or
-.PN XtJustifyRight
-can be specified.
-In a resource of type ``string'',
-one of the values ``left'', ``center'', or ``right'' can be specified.
-T}
-.sp 6p
-T{
-.PN XtNlabel
-T}	T{
-Specifies the text string that is to be displayed in the button
-if no bitmap is specified.
-The default is the widget name of the Label widget.
-T}
-.sp 6p
-T{
-.PN XtNresize
-T}	T{
+.ns
+.IP \fBinternalWidth\fP 1.5i
+The minium amount of space to leave between the label or bitmap and the
+vertical or horizontal edges of the window.
+.IP \fBjustify\fP 1.5i
+Specifies left, center, or right alignment of the label 
+within the widget.  This resource may be
+specified with the values \fBXtJustifyLeft\fP, \fBXtJustifyCenter\fP,
+or \fBXtJustifyRight\fP.  When specifying the justification from a
+resource file the values \fBleft\fP, \fBcenter\fP, or \fBright\fP may be
+used.
+.IP \fBlabel\fP 1.5i
+This is a Latin1 text string to be displayed in the Label's window.
+.IP mappedWhenManaged 1.5i
+If this resource is \fBtrue\fP then the widget will automatically be
+mapped by the Toolkit when it is realized and managed.
+.IP \fBresize\fP 1.5i
 Specifies whether the Label widget should attempt to resize to its
-preferred dimensions whenever
-.PN XtSetValues
-is called for it.
-T}
-.sp 6p
-T{
-.PN XtNsensitive
-T}	T{
-If set to
-.PN False ,
-the Label widget will change its window border to
-.PN XtNinsensitiveBorder
-and will stipple the label string.
-T}
-.sp 6p
-T{
-.PN XtNwidth
-T}	T{
-Specifies the width of the Label widget.
-The default value is the minimum width that will contain:
+preferred dimensions whenever its resources are modified with
+\fBXtSetValues\fP.  This
+attempt at a resize is subject to the dictates of the parent of this
+widget which is free to resize the MenuButton reguardless of the state
+of this resource. 
+.IP screen 1.5i
+The screen that this widget is displayed on.  This is not a settable resource.
+.IP sensitive 1.5i
+Whether or not the toolkit will pass events to this widget.  The
+widget will not get events if either \fBancestorSensitive\fP or 
+\fBsensitive\fP is \fBfalse\fP.
+.IP translations 1.5i
+The translations associated with this widget.
+.IP x 1.5i
 .br
-XtNinternalWidth + width of XtNlabel + XtNinternalWidth 
-.br
-If the width is larger or smaller than the minimum,
-.PN XtNjustify 
-determines how the label string is aligned.
-T}
-.TE
-.LP
-.IN "Label widget" "creating"
-.IN "Creating widgets" "Label"
-To create a Label widget instance, use
-.PN XtCreateWidget
-and specify the class variable
-.PN labelWidgetClass .
-.LP
-.IN "Label widget" "destroying"
-.IN "Destroying widgets" "Label"
-To destroy a Label widget instance, use
-.PN XtDestroyWidget
-and specify the widget ID of the label.
-.LP
-The Label widget supports only the
-.PN XtNdestroyCallback
-callback list.
+.ns
+.IP y 1.5i
+The location of the upper lefthand corner of this widget in its parent.
