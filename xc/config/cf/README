@@ -275,7 +275,10 @@ Project.tmpl provides defaults for the following variables:
 	XawClientLibs		LOCAL_LIBRARIES for clients that use Xaw
 	XdmConfigurationSubdirectory	name of default xdm configuration
 	XdmDir			directory in which to install xdm files
+	XFileSearchPathDefault	default path to search for app defaults files
 	XinitDir		directory in which to install xinit files
+	XtErrorPrefix		leading text in XtError() msg; eg. 'X Toolkit '
+	XtWarningPrefix		leading text in XtWarning()msg, same as above
 	ZBDFTOSNFFILT		-D to run uncompress and bdftosnf
 
 
