@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ************************************************************************/
-/* $XConsortium: mipolytext.c,v 1.11 87/09/11 07:20:25 toddb Exp $ */
+/* $XConsortium: mipolytext.c,v 1.12 88/09/06 14:50:18 jim Exp $ */
 /*
  * mipolytext.c - text routines
  *
@@ -52,7 +52,7 @@ miWidth(n, charinfo)
 }
 
 
-static int
+int
 miPolyText(pDraw, pGC, x, y, count, chars, fontEncoding)
     DrawablePtr pDraw;
     GCPtr	pGC;
@@ -104,7 +104,7 @@ miPolyText16(pDraw, pGC, x, y, count, chars)
 }
 
 
-static int
+int
 miImageText(pDraw, pGC, x, y, count, chars, fontEncoding)
     DrawablePtr pDraw;
     GCPtr	pGC;
