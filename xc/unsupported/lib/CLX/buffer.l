@@ -68,7 +68,7 @@
 		   ,@body)))
      ,(if (and (null inline) (macroexpand '(use-closures) env))
 	  `(flet ((.with-buffer-body. () ,@body))
-	     #+ansi-common-lisp
+	     #+clx-ansi-common-lisp
 	     (declare (dynamic-extent #'.with-buffer-body.))
 	     (with-buffer-function ,buffer ,timeout #'.with-buffer-body.))
 	(let ((buf (if (or (symbolp buffer) (constantp buffer))
@@ -484,7 +484,7 @@
       (flet ((card8->char->transform (v)
 	       (declare (type card8 v))
 	       (funcall transform (card8->char v))))
-	#+ansi-common-lisp
+	#+clx-ansi-common-lisp
 	(declare (dynamic-extent #'card8->char->transform))
 	(read-sequence-card8
 	  reply-buffer result-type nitems #'card8->char->transform
@@ -613,7 +613,7 @@
       (flet ((card8->int8->transform (v)
 	       (declare (type card8 v))
 	       (funcall transform (card8->int8 v))))
-	#+ansi-common-lisp
+	#+clx-ansi-common-lisp
 	(declare (dynamic-extent #'card8->int8->transform))
 	(read-sequence-card8
 	  reply-buffer result-type nitems #'card8->int8->transform
@@ -757,7 +757,7 @@
       (flet ((card16->int16->transform (v)
 	       (declare (type card16 v))
 	       (funcall transform (card16->int16 v))))
-	#+ansi-common-lisp
+	#+clx-ansi-common-lisp
 	(declare (dynamic-extent #'card16->int16->transform))
 	(read-sequence-card16
 	  reply-buffer result-type nitems #'card16->int16->transform
@@ -901,7 +901,7 @@
       (flet ((card32->int32->transform (v)
 	       (declare (type card32 v))
 	       (funcall transform (card32->int32 v))))
-	#+ansi-common-lisp
+	#+clx-ansi-common-lisp
 	(declare (dynamic-extent #'card32->int32->transform))
 	(read-sequence-card32
 	  reply-buffer result-type nitems #'card32->int32->transform
@@ -922,7 +922,7 @@
   (if transform 
       (flet ((transform->char->card8 (x)
 	       (char->card8 (the character (funcall transform x)))))
-	#+ansi-common-lisp
+	#+clx-ansi-common-lisp
 	(declare (dynamic-extent #'transform->char->card8))
 	(write-sequence-card8
 	  buffer boffset data start end #'transform->char->card8))
@@ -1055,7 +1055,7 @@
   (if transform 
       (flet ((transform->int8->card8 (x)
 	       (int8->card8 (the int8 (funcall transform x)))))
-	#+ansi-common-lisp
+	#+clx-ansi-common-lisp
 	(declare (dynamic-extent #'transform->int8->card8))
 	(write-sequence-card8
 	  buffer boffset data start end #'transform->int8->card8))
@@ -1487,7 +1487,7 @@
   (if transform 
       (flet ((transform->int32->card32 (x)
 	       (int32->card32 (the int32 (funcall transform x)))))
-	#+ansi-common-lisp
+	#+clx-ansi-common-lisp
 	(declare (dynamic-extent #'transform->int32->card32))
 	(write-sequence-card32
 	  buffer boffset data start end #'transform->int32->card32))

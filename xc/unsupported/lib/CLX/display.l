@@ -200,7 +200,7 @@
 		   ,@body)))
      ,(if (and (null inline) (macroexpand '(use-closures) env))
 	  `(flet ((.with-event-queue-body. () ,@body))
-	     #+ansi-common-lisp
+	     #+clx-ansi-common-lisp
 	     (declare (dynamic-extent #'.with-event-queue-body.))
 	     (with-event-queue-function
 	       ,display ,timeout #'.with-event-queue-body.))

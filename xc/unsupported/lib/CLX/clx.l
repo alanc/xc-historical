@@ -160,7 +160,7 @@
 
 (deftype card4 () '(unsigned-byte 4))
 
-#-ansi-common-lisp
+#-clx-ansi-common-lisp
 (deftype real (&optional (min '*) (max '*))
   (labels ((convert (limit floatp)
 	     (typecase limit

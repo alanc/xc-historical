@@ -693,7 +693,7 @@
 		(declare (type display .display.))
 		(with-buffer-request-internal (.display. ,opcode ,@options)
 		  ,@type-args)))
-	 #+ansi-common-lisp
+	 #+clx-ansi-common-lisp
 	 (declare (dynamic-extent #'.request-body.))
 	 (,(if (eq (car (macroexpand '(with-buffer (buffer)) env)) 'progn)
 	       'with-buffer-request-function-nolock
@@ -733,7 +733,7 @@
 			   (type reply-buffer .reply-buffer.))
 		  (progn .display. .reply-buffer. nil)
 		  ,reply-body))
-	   #+ansi-common-lisp
+	   #+clx-ansi-common-lisp
 	   (declare (dynamic-extent #'.request-body. #'.reply-body.))
 	   (with-buffer-request-and-reply-function
 	     ,buffer ,multiple-reply #'.request-body. #'.reply-body.))

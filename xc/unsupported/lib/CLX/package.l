@@ -13,16 +13,16 @@
 
 ;;; The CLtL way
 
-#-ansi-common-lisp 
+#-clx-ansi-common-lisp 
 (lisp:in-package :xlib :use '(:lisp))
 
-#+(and (or kcl ibcl) (not ansi-common-lisp))
+#+(and (or kcl ibcl) (not clx-ansi-common-lisp))
 (shadow 
   '(
     rational
     ))
 
-#+(and lispm (not ansi-common-lisp))
+#+(and lispm (not clx-ansi-common-lisp))
 (import
   '(
     sys:arglist
@@ -31,7 +31,7 @@
     sys:with-stack-list*
     ))
 
-#+(and Genera (not ansi-common-lisp))
+#+(and Genera (not clx-ansi-common-lisp))
 (import
   '(
     future-common-lisp:print-unreadable-object
@@ -40,7 +40,7 @@
     zwei:indentation
     ))
 
-#+(and lcl3.0 (not ansi-common-lisp))
+#+(and lcl3.0 (not clx-ansi-common-lisp))
 (import
   '(
     lcl:arglist
@@ -50,7 +50,7 @@
     lucid::type-error-expected-type
     ))
 
-#+(and excl (not ansi-common-lisp)) 
+#+(and excl (not clx-ansi-common-lisp)) 
 (import
   '(
     excl::arglist
@@ -60,13 +60,13 @@
     excl::type-error-expected-type
     ))
 
-#+(and allegro (not ansi-common-lisp))
+#+(and allegro (not clx-ansi-common-lisp))
 (import
   '(
     excl::without-interrupts
     ))
 
-#-ansi-common-lisp
+#-clx-ansi-common-lisp
 (export
   '(
     *version* access-control access-error access-hosts
@@ -217,10 +217,14 @@
 
 ;;; The ANSI Common Lisp way
 
-#+ansi-common-lisp
+#+(and Genera clx-ansi-common-lisp)
+(eval-when (compile load eval)
+  (setf *readtable* si:*ansi-common-lisp-readtable*))
+
+#+clx-ansi-common-lisp
 (common-lisp:in-package :common-lisp-user)
 
-#+ansi-common-lisp
+#+clx-ansi-common-lisp
 (defpackage xlib
   (:use common-lisp)
   (:size 3000)

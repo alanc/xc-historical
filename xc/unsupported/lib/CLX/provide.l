@@ -14,13 +14,13 @@
 ;;;			(require :clx <pathname-of-this-file>)
 ;;;
 
-#-ansi-common-lisp 
+#-clx-ansi-common-lisp 
 (in-package :user)
 
-#+ansi-common-lisp
+#+clx-ansi-common-lisp
 (in-package :common-lisp-user)
 
-#-ansi-common-lisp
+#-clx-ansi-common-lisp
 (provide :clx)
 
 (defvar *clx-source-pathname*

@@ -37,7 +37,7 @@
 
 ;;; DECLAIM
 
-#-ansi-common-lisp
+#-clx-ansi-common-lisp
 (defmacro declaim (&rest decl-specs)
   (if (cdr decl-specs)
       `(progn
@@ -70,7 +70,7 @@
 ;;; dynamic extent and therefore can be kept on the stack and not copied to
 ;;; the heap, even though the value is passed out of the function.
 
-#-(or ansi-common-lisp lcl3.0)
+#-(or clx-ansi-common-lisp lcl3.0)
 (declaim (declaration dynamic-extent))
 
 ;;; ARRAY-REGISTER var1 var2 ... -- The variables mentioned are locals (not
@@ -389,8 +389,8 @@
 			  (find-package :pcl)
 			  (let ((lisp-pkg
 				  (find-package
-				    #-ansi-common-lisp :lisp
-				    #+ansi-common-lisp :common-lisp)))
+				    #-clx-ansi-common-lisp :lisp
+				    #+clx-ansi-common-lisp :common-lisp)))
 			    (and (find-symbol (string 'defclass) lisp-pkg)
 				 lisp-pkg)))))
     (if clos-package
@@ -594,7 +594,7 @@
 ;; Printing routines.
 ;;-----------------------------------------------------------------------------
 
-#-(or ansi-common-lisp Genera)
+#-(or clx-ansi-common-lisp Genera)
 (defun print-unreadable-object-function (object stream type identity function)
   (declare (downward-funarg function))
   (princ "#<" stream)
@@ -618,7 +618,7 @@
   (princ ">" stream)
   nil)
   
-#-(or ansi-common-lisp Genera)
+#-(or clx-ansi-common-lisp Genera)
 (defmacro print-unreadable-object
 	  ((object stream &key type identity) &body body)
   (if body

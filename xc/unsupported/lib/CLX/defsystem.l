@@ -20,7 +20,7 @@
 ;;; implied warranty.
 
 ;;; #+ features used in this file
-;;;   ansi-common-lisp
+;;;   clx-ansi-common-lisp
 ;;;   lispm
 ;;;   genera
 ;;;   lucid
@@ -30,10 +30,14 @@
 ;;;   ibcl
 ;;;   excl
 
-#-ansi-common-lisp 
+#-clx-ansi-common-lisp 
 (lisp:in-package :user)
 
-#+ansi-common-lisp
+#+(and Genera clx-ansi-common-lisp)
+(eval-when (compile load eval)
+  (setf *readtable* si:*ansi-common-lisp-readtable*))
+
+#+clx-ansi-common-lisp
 (common-lisp:in-package :common-lisp-user)
 
 
@@ -374,9 +378,9 @@
 
       ;; Now compile and load all the files.
       ;; Defer compiler warnings until everything's compiled, if possible.
-      (#+ansi-common-lisp with-compilation-unit
+      (#+clx-ansi-common-lisp with-compilation-unit
        #+lcl3.0 lucid::with-deferred-warnings
-       #-(or lcl3.0 ansi-common-lisp) progn
+       #-(or lcl3.0 clx-ansi-common-lisp) progn
 
        ()
        

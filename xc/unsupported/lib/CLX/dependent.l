@@ -1643,7 +1643,7 @@
   ;; therefore DISAPPEARS when WITH-STACK-LIST is exited.
   `(let ((,var (list ,@elements)))
      (declare (type cons ,var)
-	      #+ansi-common-lisp (dynamic-extent ,var))
+	      #+clx-ansi-common-lisp (dynamic-extent ,var))
      ,@body))
 
 #-lispm
@@ -1654,7 +1654,7 @@
   ;; therefore DISAPPEARS when WITH-STACK-LIST is exited.
   `(let ((,var (list* ,@elements)))
      (declare (type cons ,var)
-	      #+ansi-common-lisp (dynamic-extent ,var))
+	      #+clx-ansi-common-lisp (dynamic-extent ,var))
      ,@body))
 
 (declaim (inline buffer-replace))
@@ -1878,41 +1878,41 @@
       (apply #'x-cerror "Ignore" error-key :display display :error-key error-key key-vals)
       (apply #'x-error error-key :display display :error-key error-key key-vals)))
 
-#+(and lispm (not Genera) (not ansi-common-lisp))
+#+(and lispm (not Genera) (not clx-ansi-common-lisp))
 (defun x-error (condition &rest keyargs)
   (apply #'sys:signal condition keyargs))
 
-#+(and lispm (not Genera) (not ansi-common-lisp))
+#+(and lispm (not Genera) (not clx-ansi-common-lisp))
 (defun x-cerror (proceed-format-string condition &rest keyargs)
   (sys:signal (apply #'zl:make-condition condition keyargs)
 	      :proceed-types proceed-format-string))
 
-#+(and Genera (not ansi-common-lisp))
+#+(and Genera (not clx-ansi-common-lisp))
 (defun x-error (condition &rest keyargs)
   (declare (dbg:error-reporter))
   (apply #'sys:signal condition keyargs))
 
-#+(and Genera (not ansi-common-lisp))
+#+(and Genera (not clx-ansi-common-lisp))
 (defun x-cerror (proceed-format-string condition &rest keyargs)
   (declare (dbg:error-reporter))
   (apply #'sys:signal condition :continue-format-string proceed-format-string keyargs))
 
-#+(or ansi-common-lisp excl lcl3.0)
+#+(or clx-ansi-common-lisp excl lcl3.0)
 (defun x-error (condition &rest keyargs)
   (declare (dynamic-extent keyargs))
   (apply #'error condition keyargs))
 
-#+(or ansi-common-lisp excl lcl3.0)
+#+(or clx-ansi-common-lisp excl lcl3.0)
 (defun x-cerror (proceed-format-string condition &rest keyargs)
   (declare (dynamic-extent keyargs))
   (apply #'cerror proceed-format-string condition keyargs))
 
-#-(or lispm ansi-common-lisp excl lcl3.0)
+#-(or lispm clx-ansi-common-lisp excl lcl3.0)
 (defun x-error (condition &rest keyargs)
   (error "X-Error: ~a"
 	 (princ-to-string (apply #'make-condition condition keyargs))))
 
-#-(or lispm ansi-common-lisp excl lcl3.0)
+#-(or lispm clx-ansi-common-lisp excl lcl3.0)
 (defun x-cerror (proceed-format-string condition &rest keyargs)
   (cerror proceed-format-string "X-Error: ~a"
 	 (princ-to-string (apply #'make-condition condition keyargs))))
@@ -1938,7 +1938,7 @@
 	      slots)
      ,@args))
 
-#+(and lispm (not ansi-common-lisp))
+#+(and lispm (not clx-ansi-common-lisp))
 (defmacro define-condition (name parent-types &body options)
   (let ((slot-names
 	  (mapcar #'(lambda (slot) (if (consp slot) (car slot) slot))
@@ -1974,37 +1974,37 @@
 	  `(setf (documentation name 'type) ,documentation))
        ',name)))
 
-#+(and lispm (not Genera) (not ansi-common-lisp))
+#+(and lispm (not Genera) (not clx-ansi-common-lisp))
 (zl:defflavor x-error () (global:error))
 
-#+(and Genera (not ansi-common-lisp))
+#+(and Genera (not clx-ansi-common-lisp))
 (scl:defflavor x-error
 	((dbg:proceed-types '(:continue))	;
 	 continue-format-string)
 	(sys:error)
   (:initable-instance-variables continue-format-string))
 
-#+(and Genera (not ansi-common-lisp))
+#+(and Genera (not clx-ansi-common-lisp))
 (scl:defmethod (scl:make-instance x-error) (&rest ignore)
   (when (not (sys:variable-boundp continue-format-string))
     (setf dbg:proceed-types (remove :continue dbg:proceed-types))))
 
-#+(and Genera (not ansi-common-lisp))
+#+(and Genera (not clx-ansi-common-lisp))
 (scl:defmethod (dbg:proceed x-error :continue) ()
   :continue)
 
-#+(and Genera (not ansi-common-lisp))
+#+(and Genera (not clx-ansi-common-lisp))
 (sys:defmethod (dbg:document-proceed-type x-error :continue) (stream)
   (format stream continue-format-string))
 
-#+(or ansi-common-lisp excl lcl3.0)
+#+(or clx-ansi-common-lisp excl lcl3.0)
 (define-condition x-error (error))
 
-#-(or lispm ansi-common-lisp excl lcl3.0)
+#-(or lispm clx-ansi-common-lisp excl lcl3.0)
 (defstruct x-error
   report-function)
 
-#-(or lispm ansi-common-lisp excl lcl3.0)
+#-(or lispm clx-ansi-common-lisp excl lcl3.0)
 (defmacro define-condition (name parent-types &body options)
   ;; Define a structure that when printed displays an error message
   (flet ((reporter-for-condition (name)
@@ -2041,7 +2041,7 @@
 	       ,condition))
 	 ',name))))
 
-#-(or lispm ansi-common-lisp excl lcl3.0)
+#-(or lispm clx-ansi-common-lisp excl lcl3.0)
 (defun condition-print (condition stream depth)
   (declare (type x-error condition)
 	   (type stream stream)
@@ -2051,17 +2051,17 @@
     (funcall (x-error-report-function condition) condition stream))
   condition)
   
-#-(or lispm ansi-common-lisp excl lcl3.0)
+#-(or lispm clx-ansi-common-lisp excl lcl3.0)
 (defun make-condition (type &rest slot-initializations)
   (declare (dynamic-extent slot-initializations))
   (let ((make-function (intern (concatenate 'string (string 'make-) (string type))
 			       (symbol-package type))))
     (apply make-function slot-initializations)))
 
-#-(or ansi-common-lisp excl lcl3.0)
+#-(or clx-ansi-common-lisp excl lcl3.0)
 (define-condition type-error (x-error)
-  ((datum :reader type-error-datum)
-   (expected-type :reader type-error-expected-type))
+  ((datum :reader type-error-datum :initarg :datum)
+   (expected-type :reader type-error-expected-type :initarg :expected-type))
   (:report
     (lambda (condition stream)
       (format stream "~s isn't a ~a"
@@ -2246,7 +2246,7 @@
 ;; WITH-STANDARD-IO-SYNTAX equivalent, used in (SETF WM-COMMAND)
 ;;-----------------------------------------------------------------------------
 
-#-(or ansi-common-lisp Genera)
+#-(or clx-ansi-common-lisp Genera)
 (defun with-standard-io-syntax-function (function)
   (declare (downward-funarg function))
   (let ((*package* (find-package :user))
@@ -2267,7 +2267,7 @@
 	#+lucid (lucid::*print-structure* t))
     (funcall function)))
 
-#-(or ansi-common-lisp Genera)
+#-(or clx-ansi-common-lisp Genera)
 (defmacro with-standard-io-syntax (&body body)
   `(flet ((.with-standard-io-syntax-body. () ,@body))
      (with-standard-io-syntax-function #'.with-standard-io-syntax-body.)))
@@ -2288,7 +2288,7 @@
 ;;; When MASK-MODIFIERS is missing, all other modifiers are ignored.
 ;;; In ambiguous cases, the most specific translation is used.
 
-#-(and ansi-common-lisp (not lispm))
+#-(and clx-ansi-common-lisp (not lispm))
 (defun default-keysym-translate (display state object)
   (declare (type display display)
 	   (type card16 state)
@@ -2311,7 +2311,7 @@
       (setf (char-bit object :hyper) 1)))
   object)
 
-#+(and ansi-common-lisp (not lispm))
+#+(and clx-ansi-common-lisp (not lispm))
 (defun default-keysym-translate (display state object)
   (declare (type display display)
 	   (type card16 state)
