@@ -1,4 +1,4 @@
-/* $XConsortium: evtomask.c,v 1.1 87/09/11 08:08:35 toddb Exp $ */
+/* $XConsortium: evtomask.c,v 1.2 88/09/06 16:11:28 jim Exp $ */
 #include "X.h"
 /*
  * This array can be used given an event type to determine the mask bits
@@ -40,5 +40,6 @@ long _event_to_mask [LASTEvent] = {
 	0,						/* SelectionRequest */
 	0,						/* SelectionNotify */
 	ColormapChangeMask,				/* ColormapNotify */
-	0						/* InterpretNotify */
+	0,						/* ClientMessage */
+	0,						/* MappingNotify */
 };
