@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.175 91/03/12 14:14:24 dave Exp $
+ * $XConsortium: events.c,v 1.176 91/05/01 17:52:13 dave Exp $
  *
  * twm event handling
  *
@@ -52,6 +52,7 @@
 
 extern int iconifybox_width, iconifybox_height;
 extern unsigned int mods_used;
+extern int menuFromFrameOrWindow;
 
 #define MAX_X_EVENT 256
 event_proc EventHandler[MAX_X_EVENT]; /* event handler jump table */
@@ -1482,7 +1483,6 @@ HandleButtonRelease()
     int xl, xr, yt, yb, w, h;
     unsigned mask;
 
-
     if (InfoLines) 		/* delete info box on 2nd button release  */
       if (Context == C_IDENTIFY) {
 	XUnmapWindow(dpy, Scr->InfoWindow);
@@ -1544,8 +1544,8 @@ HandleButtonRelease()
 	CurrentDragX = xl;
 	CurrentDragY = yt;
 	if (DragWindow == Tmp_win->frame)
-	    SetupWindow (Tmp_win, xl, yt,
-			 Tmp_win->frame_width, Tmp_win->frame_height, -1);
+	  SetupWindow (Tmp_win, xl, yt,
+		       Tmp_win->frame_width, Tmp_win->frame_height, -1);
 	else
 	    XMoveWindow (dpy, DragWindow, xl, yt);
 
@@ -1704,11 +1704,12 @@ HandleButtonPress()
 	Cancel = TRUE;
 	CurrentDragX = origDragX;
 	CurrentDragY = origDragY;
-	if (Scr->OpaqueMove && DragWindow != None) {
+	if (!menuFromFrameOrWindow)
+	  if (Scr->OpaqueMove && DragWindow != None) {
 	    XMoveWindow (dpy, DragWindow, origDragX, origDragY);
-	} else {
+	  } else {
 	    MoveOutline(Scr->Root, 0, 0, 0, 0, 0, 0);
-	}
+	  }
 	XUnmapWindow(dpy, Scr->SizeWindow);
 	if (!Scr->OpaqueMove)
 	    UninstallRootColormap();

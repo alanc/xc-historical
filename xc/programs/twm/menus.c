@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.175 91/03/14 16:05:38 dave Exp $
+ * $XConsortium: menus.c,v 1.176 91/05/01 17:33:02 keith Exp $
  *
  * twm menu code
  *
@@ -59,6 +59,7 @@ MenuRoot *ActiveMenu = NULL;		/* the active menu */
 MenuItem *ActiveItem = NULL;		/* the active menu item */
 int MoveFunction;			/* either F_MOVE or F_FORCEMOVE */
 int WindowMoved = FALSE;
+int menuFromFrameOrWindow = FALSE;
 
 int ConstMove = FALSE;		/* constrained move variables */
 int ConstMoveDir;
@@ -476,12 +477,13 @@ UpdateMenu()
     while (TRUE)
     {
 	/* block until there is an event */
-	XMaskEvent(dpy,
-	    ButtonPressMask | ButtonReleaseMask |
-	    EnterWindowMask | ExposureMask |
-	    VisibilityChangeMask | LeaveWindowMask |
-	    ButtonMotionMask, &Event);
-
+        if (!menuFromFrameOrWindow) {
+	  XMaskEvent(dpy,
+		     ButtonPressMask | ButtonReleaseMask |
+		     EnterWindowMask | ExposureMask |
+		     VisibilityChangeMask | LeaveWindowMask |
+		     ButtonMotionMask, &Event);
+	}
 	if (Event.type == MotionNotify) {
 	    /* discard any extra motion events before a release */
 	    while(XCheckMaskEvent(dpy,
@@ -493,8 +495,10 @@ UpdateMenu()
 	if (!DispatchEvent ())
 	    continue;
 
-	if (Event.type == ButtonRelease || Cancel)
-	    return;
+	if (Event.type == ButtonRelease || Cancel) {
+	  menuFromFrameOrWindow = FALSE;
+	  return;
+	}
 
 	if (Event.type != MotionNotify)
 	    continue;
@@ -1126,6 +1130,8 @@ PopDownMenu()
     ActiveMenu = NULL;
     ActiveItem = NULL;
     MenuDepth = 0;
+    if (Context == C_WINDOW || Context == C_FRAME)
+      menuFromFrameOrWindow = TRUE;
 }
 
 
@@ -1445,7 +1451,7 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
 	}
 	XGrabPointer(dpy, eventp->xbutton.root, True,
 	    ButtonPressMask | ButtonReleaseMask |
-	    ButtonMotionMask | PointerMotionHintMask,
+	    ButtonMotionMask | PointerMotionMask, /* PointerMotionHintMask */
 	    GrabModeAsync, GrabModeAsync,
 	    Scr->Root, Scr->MoveCursor, CurrentTime);
 
@@ -1538,12 +1544,25 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
 	 */
 	fromtitlebar = belongs_to_twm_window (tmp_win, eventp->xbutton.window);
 
+	if (menuFromFrameOrWindow) {
+	  /* warp the pointer to the middle of the window */
+	  XWarpPointer(dpy, None, Scr->Root, 0, 0, 0, 0, 
+		       origDragX + DragWidth / 2, 
+		       origDragY + DragHeight / 2);
+	  XFlush(dpy);
+	}
+	
 	while (TRUE)
 	{
+	    long releaseEvent = menuFromFrameOrWindow ? 
+	                          ButtonPress : ButtonRelease;
+	    long movementMask = menuFromFrameOrWindow ?
+	                          PointerMotionMask : ButtonMotionMask;
+
 	    /* block until there is an interesting event */
 	    XMaskEvent(dpy, ButtonPressMask | ButtonReleaseMask |
 				    EnterWindowMask | LeaveWindowMask |
-				    ExposureMask | ButtonMotionMask |
+				    ExposureMask | movementMask |
 				    VisibilityChangeMask, &Event);
 
 	    /* throw away enter and leave events until release */
@@ -1551,21 +1570,22 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
 		Event.xany.type == LeaveNotify) continue; 
 
 	    if (Event.type == MotionNotify) {
-		/* discard any extra motion events before a release */
+		/* discard any extra motion events before a logical release */
 		while(XCheckMaskEvent(dpy,
-		    ButtonMotionMask | ButtonReleaseMask, &Event))
-		    if (Event.type == ButtonRelease)
+		    movementMask | releaseEvent, &Event))
+		    if (Event.type == releaseEvent)
 			break;
 	    }
 
 	    /* test to see if we have a second button press to abort move */
-	    if (Event.type == ButtonPress && DragWindow != None) {
-	      if (Scr->OpaqueMove)
-		XMoveWindow (dpy, DragWindow, origDragX, origDragY);
-	      else
-		MoveOutline(Scr->Root, 0, 0, 0, 0, 0, 0);
-	      DragWindow = None;
-	    }
+	    if (!menuFromFrameOrWindow)
+	      if (Event.type == ButtonPress && DragWindow != None) {
+		if (Scr->OpaqueMove)
+		  XMoveWindow (dpy, DragWindow, origDragX, origDragY);
+		else
+		  MoveOutline(Scr->Root, 0, 0, 0, 0, 0, 0);
+		DragWindow = None;
+	      }
 
 	    if (fromtitlebar && Event.type == ButtonPress) {
 		fromtitlebar = False;
@@ -1577,7 +1597,8 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
 		continue;
 	    }
 
-	    if (!DispatchEvent ()) continue;
+	    if (!menuFromFrameOrWindow)
+	      if (!DispatchEvent ()) continue;
 
 	    if (Cancel)
 	    {
@@ -1586,7 +1607,7 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
 		    UninstallRootColormap();
 		    return TRUE;	/* XXX should this be FALSE? */
 	    }
-	    if (Event.type == ButtonRelease)
+	    if (Event.type == releaseEvent)
 	    {
 		MoveOutline(rootw, 0, 0, 0, 0, 0, 0);
 		if (moving_icon &&
@@ -1678,9 +1699,14 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
 	    else if (DragWindow != None)
 	    {
 		int xl, yt, xr, yb, w, h;
-
-		xl = eventp->xmotion.x_root - DragX - JunkBW;
-		yt = eventp->xmotion.y_root - DragY - JunkBW;
+		if (!menuFromFrameOrWindow) {
+		  xl = eventp->xmotion.x_root - DragX - JunkBW;
+		  yt = eventp->xmotion.y_root - DragY - JunkBW;
+		}
+		else {
+		  xl = eventp->xmotion.x_root - (DragWidth / 2);
+		  yt = eventp->xmotion.y_root - (DragHeight / 2);
+		}		  
 		w = DragWidth + 2 * JunkBW;
 		h = DragHeight + 2 * JunkBW;
 
@@ -2104,7 +2130,7 @@ DeferExecution(context, func, cursor)
 int context, func;
 Cursor cursor;
 {
-    if (context == C_ROOT)
+  if (context == C_ROOT)
     {
 	LastCursor = cursor;
 	XGrabPointer(dpy, Scr->Root, True,
