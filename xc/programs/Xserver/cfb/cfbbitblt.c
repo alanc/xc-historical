@@ -18,7 +18,7 @@ purpose.  It is provided "as is" without express or implied warranty.
 Author: Keith Packard
 
 */
-/* $XConsortium: cfbbitblt.c,v 5.21 89/11/22 18:46:36 keith Exp $ */
+/* $XConsortium: cfbbitblt.c,v 5.22 89/11/25 12:34:03 rws Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -1543,7 +1543,7 @@ RegionPtr cfbCopyPlane(pSrcDrawable, pDstDrawable,
 	PixmapPtr	pBitmap;
 	ScreenPtr	pScreen = pSrcDrawable->pScreen;
 	GCPtr		pGC1;
-	unsigned int	fg, bg;
+	unsigned long	fg, bg;
 
 	pBitmap = (*pScreen->CreatePixmap) (pScreen, width, height, 1);
 	if (!pBitmap)
