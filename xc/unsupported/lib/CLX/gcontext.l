@@ -302,27 +302,31 @@
 	   (type (or null (member :unsorted :y-sorted :yx-sorted :yx-banded)) ordering)
 	   (type (or (member :none) pixmap rect-seq) clip-mask))
   (unless clip-mask (x-type-error clip-mask '(or (member :none) pixmap rect-seq)))
-  (multiple-value-bind (clip-mask clip decache-p)
+  (multiple-value-bind (clip-mask clip)
       (typecase clip-mask
-	(pixmap (values (pixmap-id clip-mask) nil t))
-	((member :none) (values 0 nil nil))
+	(pixmap (values (pixmap-id clip-mask) nil))
+	((member :none) (values 0 nil))
 	(sequence
 	  (values nil
 		  (list (encode-type
 			  (or null (member :unsorted :y-sorted :yx-sorted :yx-banded))
 			  ordering)
-			(copy-seq clip-mask))
-		  nil))
+			(copy-seq clip-mask))))
 	(otherwise (x-type-error clip-mask '(or (member :none) pixmap rect-seq))))
     (modify-gcontext (gcontext local-state)
-      (without-interrupts
-	(setf (gcontext-internal-clip local-state) clip
-	      (gcontext-internal-clip-mask local-state) clip-mask)
-	(when decache-p
-	  ;; write-through clip-mask pixmap, because the protocol allows the
-	  ;; server to copy the pixmap contents at the time of the store,
-	  ;; rather than continuing to share with the pixmap.
-	  (setf (gcontext-internal-clip-mask (gcontext-server-state gcontext)) nil)))))
+      (let ((server-state (gcontext-server-state gcontext)))
+	(declare (type gcontext-state server-state))
+	(without-interrupts
+	  (setf (gcontext-internal-clip local-state) clip
+		(gcontext-internal-clip-mask local-state) clip-mask)
+	  (if (null clip)
+	      (setf (gcontext-internal-clip server-state) nil)
+	    (setf (gcontext-internal-clip-mask server-state) nil))
+	  (when (and clip-mask (not (zerop clip-mask)))
+	    ;; write-through clip-mask pixmap, because the protocol allows the
+	    ;; server to copy the pixmap contents at the time of the store,
+	    ;; rather than continuing to share with the pixmap.
+	    (setf (gcontext-internal-clip-mask server-state) nil))))))
   clip-mask)
 
 (defun gcontext-dashes (gcontext)
@@ -349,9 +353,14 @@
 	    (values nil (or (copy-seq dashes) (vector))))
 	(values (encode-type card8 dashes) nil))
     (modify-gcontext (gcontext local-state)
-      (without-interrupts
-	(setf (gcontext-internal-dashes local-state) dashes
-	      (gcontext-internal-dash local-state) dash))))
+      (let ((server-state (gcontext-server-state gcontext)))
+	(declare (type gcontext-state server-state))
+	(without-interrupts
+	  (setf (gcontext-internal-dash local-state) dash
+		(gcontext-internal-dashes local-state) dashes)
+	  (if (null dash)
+	      (setf (gcontext-internal-dash server-state) nil)
+	    (setf (gcontext-internal-dashes server-state) nil))))))
   dashes)
 
 (defun gcontext-font (gcontext &optional metrics-p)
@@ -382,9 +391,14 @@
 	 (font (and font-object (font-id font-object))))
     ;; XXX need to check font has id (and name?)
     (modify-gcontext (gcontext local-state)
-      (without-interrupts
-	(setf (gcontext-internal-font-obj local-state) font-object
-	      (gcontext-internal-font local-state) font))))
+      (let ((server-state (gcontext-server-state gcontext)))
+	(declare (type gcontext-state server-state))
+	(without-interrupts
+	  (setf (gcontext-internal-font-obj local-state) font-object
+		(gcontext-internal-font local-state) font)
+	  (if (null font-object)
+	      (setf (gcontext-internal-font server-state) nil)
+	    (setf (gcontext-internal-font-obj server-state) font-object))))))
   font)
 
 (defun force-gcontext-changes-internal (gcontext)
