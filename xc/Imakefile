@@ -2,7 +2,6 @@
 #define PassCDebugFlags
 
       WORLDOPTS = -k
-BOOTSTRAPCFLAGS = 
      CHECKFNSRC = $(UTILSRC)/checkfn
         CHECKFN = $(CHECKFNSRC)/checkfn
 
