@@ -1,5 +1,5 @@
 
-/* $XConsortium$ */
+/* $XConsortium: errhandle2.c,v 5.1 91/02/16 10:03:34 rws Exp $ */
 
 /*****************************************************************
 Copyright (c) 1989,1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -44,7 +44,7 @@ main(argc, argv)
 {
 	Pint            err;
 	Pescape_in_data ei;
-	Pescape_out_data eo;
+	Pescape_out_data *eo;
 	int fd;
 	struct stat statbuf;
 	Perr_mode mode;
