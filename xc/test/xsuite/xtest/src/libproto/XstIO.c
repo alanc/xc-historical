@@ -12,7 +12,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: XstIO.c,v 1.8 92/06/11 15:53:15 rws Exp $
+ * $XConsortium: XstIO.c,v 1.9 92/12/22 09:13:46 rws Exp $
  */
 /*
  * ***************************************************************************
@@ -117,6 +117,11 @@ register long   size;
 #endif
 #ifdef EAGAIN
 		if (errno == EAGAIN)
+			_XstWaitForReadable(dpy);
+		else
+#endif
+#ifdef EINTR
+		if (errno == EINTR)
 			_XstWaitForReadable(dpy);
 		else
 #endif
