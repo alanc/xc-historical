@@ -1,4 +1,4 @@
-.\" $XConsortium$
+.\" $XConsortium: CH02,v 1.8 91/07/31 20:23:44 swick Exp $
 .\"
 .\" Copyright 1985, 1986, 1987, 1988, 1991
 .\" Massachusetts Institute of Technology, Cambridge, Massachusetts,
@@ -47,7 +47,7 @@ other clients.
 Composite widgets, that is, members of the class
 .PN compositeWidgetClass ,
 are containers for an arbitrary 
-but implementation-defined collection of children,
+but widget implementation-defined collection of children,
 which may be instantiated by the composite widget itself, 
 by other clients, or by a combination of the two.
 Composite widgets also contain methods for managing the geometry (layout) 
@@ -101,13 +101,16 @@ that instantiate children are entirely responsible for all operations
 that require downward traversal below themselves.
 In addition,
 every widget has a pointer to an array of pop-up children.
+
 .NH 2
 Initializing the \*(tk
 .XS
 \fB\*(SN Initializing the \*(tk\fP
 .XE
 .LP
-Before an application can call any \*(xI function,
+Before an application can call any \*(xI function
+other than
+.PN XtSetLanguageProc ,
 it must initialize the \*(tk by using
 .IP \(bu 5
 .PN XtToolkitInitialize ,
@@ -127,15 +130,23 @@ which creates the root of a widget tree.
 or an application can call the convenience procedure
 .PN XtAppInitialize
 which combines the functions of the preceding procedures.
+An application withing to use the ANSI C locale mechanism should call
+.PN XtSetLanguageProc
+prior to calling
+.PN XtDisplayInitialize ,
+.PN XtOpenDisplay ,
+or
+.PN XtAppInitialize .
 .LP
 Multiple instances of \*(tk applications may be implemented 
 in a single address space.
 Each instance needs to be able to read
 input and dispatch events independently of any other instance.
 Further, an application instance may need multiple display connections 
-to have widgets on multiple screens.
+to have widgets on multiple displays.
 From the application's point of view, multiple display connections
-usually are treated together as a single unit.
+usually are treated together as a single unit
+for purposes of event dispatching.
 .IN "application context" "" "@DEF@"
 To accommodate both requirements, 
 the \*(xI define application contexts,
@@ -239,27 +250,27 @@ void XtDisplayInitialize(\fIapp_context\fP, \fIdisplay\fP, \
 .br
       String *\fIargv\fP;
 .FN
-.IP \fIapp_context\fP 1i
+.IP \fIapp_context\fP 1.4i
 Specifies the application context.
-.IP \fIdisplay\fP 1i
+.IP \fIdisplay\fP 1.4i
 Specifies a previously opened display connection.  Note that a single
 display connection can be in at most one application context.
-.IP \fIapplication_name\fP 1i
+.IP \fIapplication_name\fP 1.4i
 Specifies the name of the application instance.
-.IP \fIapplication_class\fP 1i
+.IP \fIapplication_class\fP 1.4i
 Specifies the class name of this application,
 which is usually the generic name for all instances of this application.
-.IP \fIoptions\fP 1i
+.IP \fIoptions\fP 1.4i
 Specifies how to parse the command line for any application-specific resources.
 The \fIoptions\fP argument is passed as a parameter to
 .PN XrmParseCommand .
 For further information,
 see Section 15.9 in \fI\*(xL\fP and Section 2.4 of this specification.
-.IP \fInum_options\fP 1i
+.IP \fInum_options\fP 1.4i
 Specifies the number of entries in the options list.
-.IP \fIargc\fP 1i
+.IP \fIargc\fP 1.4i
 Specifies a pointer to the number of command line parameters.
-.IP \fIargv\fP 1i
+.IP \fIargv\fP 1.4i
 Specifies the list of command line parameters.
 .LP
 The
@@ -267,7 +278,7 @@ The
 function retrieves the language string to be
 used for the specified display (see Section 11.11),
 calls the language procedure (if set) with that language string,
-builds the resource database(s), calls the Xlib
+builds the resource database for the default screen, calls the Xlib
 .PN XrmParseCommand
 function to parse the command line, 
 and performs other per-display initialization.
@@ -289,7 +300,9 @@ calls the Xlib
 .PN XSynchronize
 function to put Xlib into synchronous mode for this display connection
 and any others currently open in the application context.
-
+See Sections 2.3 and 2.4 for details on the \fIapplication_name\fP,
+\fIapplication_class\fP, \fIoptions\fP, and \fInum_options\fP arguments.
+.LP
 .PN XtDisplayInitialize
 calls
 .PN XrmSetDatabase
@@ -324,24 +337,24 @@ Display *XtOpenDisplay(\fIapp_context\fP, \fIdisplay_string\fP, \
 .br
        String *\fIargv\fP;
 .FN
-.IP \fIapp_context\fP 1i
+.IP \fIapp_context\fP 1.4i
 Specifies the application context.
-.IP \fIdisplay_string\fP 1i
+.IP \fIdisplay_string\fP 1.4i
 Specifies the display string, or NULL.
-.IP \fIapplication_name\fP 1i
+.IP \fIapplication_name\fP 1.4i
 Specifies the name of the application instance, or NULL.
-.IP \fIapplication_class\fP 1i
+.IP \fIapplication_class\fP 1.4i
 Specifies the class name of this application,
 which is usually the generic name for all instances of this application.
-.IP \fIoptions\fP 1i
+.IP \fIoptions\fP 1.4i
 Specifies how to parse the command line for any application-specific resources.
 The options argument is passed as a parameter to
 .PN XrmParseCommand .
-.IP \fInum_options\fP 1i
+.IP \fInum_options\fP 1.4i
 Specifies the number of entries in the options list.
-.IP \fIargc\fP 1i
+.IP \fIargc\fP 1.4i
 Specifies a pointer to the number of command line parameters.
-.IP \fIargv\fP 1i
+.IP \fIargv\fP 1.4i
 Specifies the list of command line parameters.
 .LP
 The
@@ -410,7 +423,7 @@ otherwise, they should call
 or just exit.
 
 .NH 2
-Establishing Language the Locale
+Establishing the Locale
 .XS
 \fB\*(SN Establishing the Locale\fP
 .XE
@@ -418,7 +431,7 @@ Establishing Language the Locale
 .LP
 Resource databases are specified to be created in the current process
 locale.  During display initialization prior to creating the
-per-screen resource databases, the \*(xI will call out to a specified
+per-screen resource database, the \*(xI will call out to a specified
 application procedure to set the locale according to options found on
 the command line or in the per-display resource specifications.
 .LP
@@ -445,21 +458,23 @@ Passes the additional client data specified in the call to
 .PN XtSetLanguageProc .
 .LP
 The language procedure allows an application to set the locale to
-the  value of the language resource determined by
+the value of the language resource determined by
 .PN XtDisplayInitialize .
-The function returns  a new  language  string  which
-will  be  subsequently used by
+The function returns a new language string that
+will be subsequently used by
 .PN XtDisplayInitialize
 to establish the path for loading resource files.  The returned
 string  will be copied by the \*(xI into new memory.
 
 .sp
 .LP
+Initially, no language procedure is set by the \*(xI.
 To set the language procedure for use by
 .PN XtDisplayInitialize
 use
 .PN XtSetLanguageProc .
 .IN XtSetLanguageProc "" "@DEF@"
+.IN "language procedure" "" "@DEF@
 .FD 0
 XtLanguageProc XtSetLanguageProc(\fIapp_context\fP, \fIproc\fP, \fIclient_data\fP)
 .br
@@ -490,7 +505,7 @@ registered.
 .PN XtSetLanguageProc
 returns the previously registered language procedure.
 If a language procedure has not yet been registered, the return value
-is unspecified but if it is used in a subsequent call to
+is unspecified but if this return value is used in a subsequent call to
 .PN XtSetLanguageProc ,
 it will cause the default language procedure to be registered.
 .LP
@@ -500,7 +515,7 @@ Sets the locale according to the environment.  On ANSI C-based
 systems this is done by calling
 .PN setlocale (
 .PN LC_ALL ,
-\fIlanguage\fP).
+\fIlanguage\fP ).
 If an error is encountered a warning message is issued with
 .PN XtWarning .
 .IP \(bu 5
@@ -519,7 +534,7 @@ Returns the value of the current locale.  On ANSI C-based systems this
 is the return value from a final call to
 .PN setlocale (
 .PN LC_ALL ,
-NULL).
+NULL ).
 .LP
 A client wishing to use this mechanism to establish locale can do so
 by calling
@@ -546,13 +561,13 @@ Loading the Resource Database
 The
 .PN XtDisplayInitialize
 function first determines the language
-string to be used for the specified display and then
-creates resource databases as needed for each screen of the display by
+string to be used for the specified display.  It then
+creates a resource database for the default screen of the display by
 combining the following sources in order, with the entries in the
 first named source having highest precedence:
 
 .IP \(bu 5
-Application command line (argv).
+Application command line (\fIargc\fP, \fIargv\fP).
 .IP \(bu 5
 Per-host user environment resource file on the local host.
 .IP \(bu 5
@@ -571,8 +586,7 @@ When the resource database for a particular screen on the display
 is needed (either internally, or when
 .PN XtScreenDatabase
 is called),
-.PN XtDisplayInitialize
-creates the resource database for the screen in the following manner:
+it is created in the following manner:
 
 .IP \(bu 5
 A temporary database, the ``server resource database'', is
@@ -607,7 +621,7 @@ and \fIClass\fP are the \fIapplication_name\fP and
 The language procedure is then invoked with
 the resource value if found, else the empty string.  The
 string returned from the language procedure is saved for all future
-references in the \*(xI that requrie the per-display language string.
+references in the \*(xI that require the per-display language string.
 
 .IP \(bu 5
 The screen resource database is initialized by parsing the command
@@ -615,7 +629,7 @@ line in the manner specified by Section 2.4.
 
 .IP \(bu 5
 If a language procedure has not been set,
-The initial database is then queried for the resource
+the initial database is then queried for the resource
 \fIname\fP\fB.xnlLanguage\fP, class \fIClass\fP\fB.XnlLanguage\fP
 as specified above.
 If this database query fails, the server resource database is
@@ -659,9 +673,12 @@ preference file, are owned and constructed entirely by the user.
 .IP \(bu 5
 The application-specific user resource file from the local host is
 then merged into the screen resource database.
-This file is owned by the application and typically stores user
-customizations in a directory owned by the user.
-Its name is found by calling
+This file contains user customizations and is stored
+in a directory owned by the user.
+Either the user or the application or both can store resource specifications
+in the file.  Each should be prepared to find and respect entries made
+by the other.
+The file name is found by calling
 .PN XrmSetDatabase
 with the current screen resource database, after preserving the
 original display-associated database, then calling
@@ -688,25 +705,20 @@ must contain at least six entries.  These entries must contain
 .IN "XAPPLRESDIR" "" "@DEF@"
 .IN "$HOME"
 $HOME as the directory prefix, plus the following substitutions:
-.RS
-.IP 1. 3
-%C, %N, %L or %C, %N, %l, %t, %c
-.IP 2. 3
-%C, %N, %l
-.IP 3. 3
-%C, %N
-.IP 4. 3
-%N, %L or %N, %l, %t, %c
-.IP 5. 3
-%N, %l
-.IP 6. 3
-%N
 
-.LP
+.nf
+.ta .3i 1.5i 2i
+1.	%C, %N, %L	or	%C, %N, %l, %t, %c
+2.	%C, %N, %l
+3.	%C, %N
+4.	%N, %L	or	%N, %l, %t, %c
+5.	%N, %l
+6.	%N
+.fi
+
 The order of these six entries within the path must be as given above.
 The order and use of substitutions within a given entry is implementation
 dependent.
-.RE
 
 .IP \- 3
 If
@@ -715,27 +727,22 @@ is defined, the default
 .PN \s-1XUSERFILESEARCHPATH\s+1
 must contain at least seven entries.  These entries must contain the
 following directory prefixes and substitutions:
-.RS
-.IP 1. 3
-$XAPPLRESDIR with    %C, %N, %L or %C, %N, %l, %t, %c
-.IP 2. 3
-$XAPPLRESDIR with    %C, %N, %l
-.IP 3. 3
-$XAPPLRESDIR with    %C, %N
-.IP 4. 3
-$XAPPLRESDIR with    %N, %L or %N, %l, %t, %c
-.IP 5. 3
-$XAPPLRESDIR with    %N, %l
-.IP 6. 3
-$XAPPLRESDIR with    %N
-.IP 7. 3
-$HOME with %N
 
-.LP
+.ne 1.1
+.nf
+.ta .3i 1.6i 2i 3.1i 3.5i
+1.	$XAPPLRESDIR	with	%C, %N, %L	or	%C, %N, %l, %t, %c
+2.	$XAPPLRESDIR	with	%C, %N, %l
+3.	$XAPPLRESDIR	with	%C, %N
+4.	$XAPPLRESDIR	with	%N, %L	or	%N, %l, %t, %c
+5.	$XAPPLRESDIR	with	%N, %l
+6.	$XAPPLRESDIR	with	%N
+7.	$HOME	with	%N
+.fi
+
 The order of these seven entries within the path must be as given above.
 The order and use of substitutions within a given entry is implementation
 dependent.
-.RE
 .RE
 
 .IP \(bu 5
@@ -779,8 +786,7 @@ Specifies the screen whose resource database is to be returned.
 .LP
 The
 .PN XtScreenDatabase
-function returns the fully merged resource database built by
-.PN XtDisplayInitialize ,
+function returns the fully merged resource database
 associated with the specified screen.  If the specified \fIscreen\fP
 does not belong to a
 .PN Display
@@ -805,14 +811,14 @@ The
 .PN XtDatabase
 function is equivalent to
 .PN XrmGetDatabase .
-It returns the database associated with the specified display.
-It returns NULL if a database has not been set.
+It returns the database associated with the specified display, or
+NULL if a database has not been set.
 
 .sp
 .LP
 To specify a default set of resource values that will be used to
 initialize the resource database if no application-specific class
-resource file is found (the first of the five sources listed above),
+resource file is found (the last of the six sources listed above),
 use
 .PN XtAppSetFallbackResources .
 .IN "XtAppSetFallbackResources" "" "@DEF@"
@@ -839,7 +845,7 @@ if
 .PN XtDisplayInitialize
 is not able
 to find or read an application-specific class resource file according to the
-rules given above and if \fIspecification_list\fP is non-NULL, the
+rules given above and if \fIspecification_list\fP is not NULL the
 display-specific resource database will be initialized with the resource
 specifications in \fIspecification_list\fP.
 .PN XtAppSetFallbackResources
@@ -850,7 +856,8 @@ valid until all displays are initialized or until
 .PN XtAppSetFallbackResources
 is called again.  The value NULL for
 \fIspecification_list\fP removes any previous fallback resource specification
-for the application context.  The intended use is to provide a minimal
+for the application context.  The intended use for fallback resources
+is to provide a minimal
 number of resources that will make the application usable (or at
 least terminate with helpful diagnostic messages) when some problem
 exists in finding and loading the application defaults file.
@@ -871,7 +878,7 @@ Specifies the display name for
 Sets the resource name prefix, 
 which overrides the application name passed to
 .PN XtOpenDisplay .
-.IP \-xnlLanguage 1i
+.IP \-xnllanguage 1i
 Specifies the initial language string for establishing locale
 and for finding application class resource files.
 .LP
@@ -1002,6 +1009,7 @@ If an option name is a prefix of another option name,
 both names are kept in the merged table.
 The \*(xI reserve all option names
 beginning with the characters ``-xt'' for future standard uses.
+
 .NH 2
 Creating Widgets
 .XS
@@ -1068,6 +1076,7 @@ Finally,
 starts the third phase by making a preorder (top-down) traversal 
 of the widget tree, allocates an X window to each widget by means of 
 its realize procedure, and finally maps the widgets that are managed.
+
 .NH 3
 Creating and Merging Argument Lists
 .XS
@@ -1544,10 +1553,10 @@ resource names for objects within this widget tree.
 
 .LP
 If the specified widget class is a subclass of WMShell, the name and
-<Class> as determined above will be stored into the
+\fIClass\fP as determined above will be stored into the
 .PN WM_CLASS
 property on the widget's window when it becomes realized.
-If the specified widgetclass is
+If the specified \fIwidget_class\fP is
 .PN applicationShellWidgetClass
 or a subclass thereof the
 .PN WM_COMMAND
@@ -1907,6 +1916,7 @@ the \fIrequest\fP widget should never be modified.
 If the initialize procedure
 needs to call any routines that operate on a widget,
 it should specify \fInew\fP as the widget instance.
+
 .NH 3
 Constraint Instance Initialization: the ConstraintClassPart initialize Procedure
 .XS
@@ -1941,6 +1951,7 @@ If a constraint class does not need a constraint initialization procedure,
 it can specify NULL for the \fIinitialize\fP field of the
 .PN ConstraintClassPart
 in the class record.
+
 .NH 3
 Nonwidget Data Initialization: the initialize_hook Procedure
 .XS
@@ -2107,6 +2118,7 @@ widget ancestor is returned.
 Some widget procedures (for example, set_values) might wish to
 operate differently
 after the widget has been realized.
+
 .NH 3
 Widget Instance Window Creation: the realize Procedure
 .XS
@@ -2218,6 +2230,7 @@ Widgets that have children and whose class is not a subclass of
 are responsible for calling
 .PN XtRealizeWidget
 on their children, usually from within the realize procedure.
+
 .NH 3
 Window Creation Convenience Routine
 .XS
@@ -2455,6 +2468,7 @@ an inconsistent world updated by asynchronous
 events or a consistent but slow world in which geometry managers ask the server
 for window sizes whenever they need to lay out their managed children
 (see Chapter 6).
+
 .NH 3
 Unrealizing Widgets
 .XS
@@ -2618,6 +2632,7 @@ deallocates all pop-up descendants, constraint
 records, callback lists, and if the widget's class is a subclass of 
 .PN compositeWidgetClass , 
 children.
+
 .NH 3
 Adding and Removing Destroy Callbacks
 .XS
@@ -2651,6 +2666,7 @@ XtRemoveCallback(\fIw\fP, XtNdestroyCallback, \fIClientDestroy\fP, \fIclient_dat
 The \fIClientDestroy\fP argument is of type
 .PN XtCallbackProc ;
 see Section 8.1.
+
 .NH 3
 Dynamic Data Deallocation: the destroy Procedure
 .XS
@@ -2723,6 +2739,12 @@ Calling
 for each child if the widget has children
 and is not a subclass of 
 .PN compositeWidgetClass .
+.LP
+During destroy phase 2 for each widget, the \*(xI remove the widget
+from the modal cascade, unregister all event handlers, remove all key,
+keyboard, button, and pointer grabs and remove all callback procedures
+registered on the widget.  Any outstanding selection transfers will time out.
+
 .NH 3
 Dynamic Constraint Data Deallocation: the ConstraintClassPart destroy Procedure
 .XS
@@ -2745,6 +2767,7 @@ and not storage allocated by any of its superclasses.
 If a parent does not need to deallocate any constraint storage,
 the constraint destroy procedure entry
 in its class record can be NULL.
+
 .NH 2
 Exiting from an Application
 .XS
