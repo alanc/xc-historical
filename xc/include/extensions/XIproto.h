@@ -1,4 +1,4 @@
-/* $XConsortium: XIproto.h,v 1.2 89/11/08 17:25:07 rws Exp $ */
+/* $XConsortium: XIproto.h,v 1.3 89/12/06 20:44:04 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -172,7 +172,7 @@ typedef struct {
     CARD8 	RepType;        /* always X_ListInputDevices  	*/
     CARD16 	sequenceNumber B16;
     CARD32 	length B32;
-    CARD8 	ndevices B32;
+    CARD8 	ndevices;
     CARD8 	pad1, pad2, pad3;
     CARD32 	pad01 B32;
     CARD32 	pad02 B32;
