@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: dm.h,v 1.11 88/12/05 15:24:02 keith Exp $
+ * $XConsortium: dm.h,v 1.13 88/12/14 17:35:48 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -28,6 +28,10 @@
 # include	<X11/Xauth.h>
 
 # include	<sys/param.h>	/* for NGROUPS */
+
+#ifdef pegasus
+#undef dirty		/* Some bozo put a macro called dirty in sys/param.h */
+#endif /* pegasus */
 
 #ifdef SYSV
 # define waitCode(w)	(((w) >> 8) & 0xff)
