@@ -1,4 +1,4 @@
-/* $XConsortium: FormP.h,v 1.14 89/05/11 01:05:20 kit Exp $ */
+/* $XConsortium: FormP.h,v 1.15 89/05/18 18:20:07 kit Exp $ */
 /* Copyright	Massachusetts Institute of Technology	1987 */
 
 
@@ -36,7 +36,24 @@ SOFTWARE.
 
 #define XtREdgeType		"EdgeType"
 
-typedef struct {int empty;} FormClassPart;
+typedef enum {LayoutPending, LayoutInProgress, LayoutDone} LayoutState;
+#define XtInheritLayout ((Boolean (*)())_XtInherit)
+
+typedef struct {
+    Boolean	(*layout)(/* FormWidget, Dimension, Dimension */);
+} FormClassPart;
+
+/*
+ * Layout(
+ *	FormWidget w	- the widget whose children are to be configured
+ *	Dimension w, h	- bounding box of layout to be calculated
+ *
+ *  Stores preferred geometry in w->form.preferred_{width,height}.
+ *  If w->form.resize_in_layout is True, then a geometry request
+ *  may be made for the preferred bounding box if necessary.
+ *
+ *  Returns True if a geometry request was granted, False otherwise.
+ */
 
 typedef struct _FormClassRec {
     CoreClassPart	core_class;
@@ -48,10 +65,14 @@ typedef struct _FormClassRec {
 extern FormClassRec formClassRec;
 
 typedef struct _FormPart {
-    Dimension	old_width, old_height; /* last known dimensions		 */
+    /* resources */
     int		default_spacing;    /* default distance between children */
+    /* private state */
+    Dimension	old_width, old_height; /* last known dimensions		 */
     int		no_refigure;	    /* no re-layout while > 0		 */
     Boolean	needs_relayout;	    /* next time no_refigure == 0	 */
+    Boolean	resize_in_layout;   /* should layout() do geom request?  */
+    Dimension	preferred_width, preferred_height; /* cached from layout */
 } FormPart;
 
 typedef struct _FormRec {
@@ -68,8 +89,8 @@ typedef struct _FormConstraintsPart {
     XtEdgeType	top, bottom,	/* where to drag edge on resize		*/
 		left, right;
     int		dx;		/* desired horiz offset			*/
-    Widget	horiz_base;	/* measure dx from here if non-null	*/
     int		dy;		/* desired vertical offset		*/
+    Widget	horiz_base;	/* measure dx from here if non-null	*/
     Widget	vert_base;	/* measure dy from here if non-null	*/
     Boolean	allow_resize;	/* TRUE if child may request resize	*/
 
@@ -84,6 +105,7 @@ typedef struct _FormConstraintsPart {
  * constraint the width and height must be greater than zero (0).
  */
 
+    LayoutState	layout_state;	/* temporary layout state		*/
 } FormConstraintsPart;
 
 typedef struct _FormConstraintsRec {
