@@ -38,6 +38,8 @@ typedef struct _FormConstraintsRec {
     Boolean	allow_resize;	/* TRUE if child may request resize	*/
 } FormConstraintsRec, *FormConstraints;
 
+extern XtResource formConstraintResources[];
+extern Cardinal formConstraintResourceCount;
 
 #endif _FormP_h
 /* DON'T ADD STUFF AFTER THIS #endif */
