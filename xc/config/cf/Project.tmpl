@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM X Window System Build Parameters and Rules
-XCOMM $XConsortium: Project.tmpl,v 1.216 94/02/04 18:58:09 rws Exp $
+XCOMM $XConsortium: Project.tmpl,v 1.217 94/02/04 23:16:08 rws Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -428,6 +428,7 @@ XCOMM X Window System make variables; these need to be coordinated with rules
 #endif
 
        DOCUTILSRC = $(TOP)/doc/util
+       XDOCMACROS = $(DOCUTILSRC)/macros.t
        PROGRAMSRC = $(TOP)/programs
            LIBSRC = $(TOP)/lib
           FONTSRC = $(TOP)/fonts
