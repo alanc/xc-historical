@@ -1,4 +1,4 @@
-/* $XConsortium: Shell.c,v 1.122 92/02/13 10:55:01 converse Exp $ */
+/* $XConsortium: Shell.c,v 1.123 92/02/14 16:40:54 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -1104,21 +1104,24 @@ static void EvaluateSizeHints(w)
 	    || sizep->max_aspect.y != XtUnspecifiedShellInt) {
 	    sizep->flags |= PAspect;
 	}
-	if(w->wm.base_width != XtUnspecifiedShellInt
-	   || w->wm.base_height != XtUnspecifiedShellInt) {
+	if (sizep->flags & PBaseSize
+	    || w->wm.base_width != XtUnspecifiedShellInt
+	    || w->wm.base_height != XtUnspecifiedShellInt) {
 	    sizep->flags |= PBaseSize;
 	    if (w->wm.base_width == XtUnspecifiedShellInt)
 		w->wm.base_width = 0;
 	    if (w->wm.base_height == XtUnspecifiedShellInt)
 		w->wm.base_height = 0;
 	}
-	if (sizep->width_inc != XtUnspecifiedShellInt
+	if (sizep->flags & PResizeInc
+	    || sizep->width_inc != XtUnspecifiedShellInt
 	    || sizep->height_inc != XtUnspecifiedShellInt) {
 	    if (sizep->width_inc < 1) sizep->width_inc = 1;
 	    if (sizep->height_inc < 1) sizep->height_inc = 1;
 	    sizep->flags |= PResizeInc;
 	}
-	if (sizep->max_width != XtUnspecifiedShellInt
+	if (sizep->flags & PMaxSize
+	    || sizep->max_width != XtUnspecifiedShellInt
 	    || sizep->max_height != XtUnspecifiedShellInt) {
 	    sizep->flags |= PMaxSize;
 	    if (sizep->max_width == XtUnspecifiedShellInt)
@@ -1126,8 +1129,9 @@ static void EvaluateSizeHints(w)
 	    if (sizep->max_height == XtUnspecifiedShellInt)
 		sizep->max_height = BIGSIZE;
 	}
-	if(sizep->min_width != XtUnspecifiedShellInt
-	   || sizep->min_height != XtUnspecifiedShellInt) {
+	if (sizep->flags & PMinSize
+	    || sizep->min_width != XtUnspecifiedShellInt
+	    || sizep->min_height != XtUnspecifiedShellInt) {
 	    sizep->flags |= PMinSize;
 	    if (sizep->min_width == XtUnspecifiedShellInt)
 		sizep->min_width = 1;
