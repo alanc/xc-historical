@@ -20,7 +20,14 @@
 
 (in-package 'xlib :use '(lisp))
 
+#+lcl3.0
+(import '(
+	  lcl:define-condition
+	  lcl:make-condition))
+
 (export '(
+	  char->card8
+	  card8->char
 	  default-error-handler
 	  define-condition))
 
@@ -57,7 +64,7 @@
 (defconstant *buffer-speed* 3 "Speed compiler option for buffer code.")
 (defconstant *buffer-safety* 0 "Safety compiler option for buffer code.")
 
-(defmacro declare-bufmac ()
+(defun declare-bufmac ()
   `(declare (optimize (speed ,*buffer-speed*) (safety ,*buffer-safety*))))
 
 ;;; It's my impression that in lucid there's some way to make a declaration
@@ -65,7 +72,7 @@
 ;;; checking on args. Sadly, we have no lucid manuals here.  If such a
 ;;; declaration is available, it would be a good idea to make it here when
 ;;; *buffer-speed* is 3 and *buffer-safety* is 0.
-(defmacro declare-buffun ()
+(defun declare-buffun ()
   `(declare (optimize (speed ,*buffer-speed*) (safety ,*buffer-safety*))))
 
 )
@@ -74,129 +81,174 @@
 		   card16->int16 int16->card16
 		   card32->int32 int32->card32))
 
+#-Genera
+(progn
+
 (defun card8->int8 (x)
   (declare (type card8 x))
-  (declare-values int8)
-  (declare-buffun)
+  (declare (values int8))
+  #.(declare-buffun)
   (the int8 (if (logbitp 7 x)
 		(the int8 (- x #x100))
 	      x)))
 
 (defun int8->card8 (x)
   (declare (type int8 x))
-  (declare-values card8)
-  (declare-buffun)
+  (declare (values card8))
+  #.(declare-buffun)
   (the card8 (ldb (byte 8 0) x)))
 
 (defun card16->int16 (x)
   (declare (type card16 x))
-  (declare-values int16)
-  (declare-buffun)
+  (declare (values int16))
+  #.(declare-buffun)
   (the int16 (if (logbitp 15 x)
-		 (the int8 (- x #x10000))
+		 (the int16 (- x #x10000))
 		 x)))
 
 (defun int16->card16 (x)
   (declare (type int16 x))
-  (declare-values card16)
-  (declare-buffun)
+  (declare (values card16))
+  #.(declare-buffun)
   (the card16 (ldb (byte 16 0) x)))
 
-#-genera
 (defun card32->int32 (x)
   (declare (type card32 x))
-  (declare-values int32)
-  (declare-buffun)
+  (declare (values int32))
+  #.(declare-buffun)
   (the int32 (if (logbitp 31 x)
 		 (the int32 (- x #x100000000))
 		 x)))
 
-#+genera
-(defun card32->int32 (x)
-  (macrolet ((signify (x)
-	       ;; 7.1 is defective
-	       (if (= (sys:%logldb (byte 32 0) #x80000000) #x80000000)
-		   `(if (logbitp 31 ,x)
-			(sys:%logdpb (ldb (byte 8 24) ,x) (byte 8 24) (ldb (byte 24 0) ,x))
-			,x)
-		   `(sys:%logldb (byte 32 0) ,x))))
-    (signify x)))
-
 (defun int32->card32 (x)
   (declare (type int32 x))
-  (declare-values card32)
-  (declare-buffun)
+  (declare (values card32))
+  #.(declare-buffun)
   (the card32 (ldb (byte 32 0) x)))
 
+)
+
+#+Genera
+(progn
+
+(defun card8->int8 (x)
+  (declare lt:(side-effects simple reducible))
+  (if (logbitp 7 x) (- x #x100) x))
+
+(defun int8->card8 (x)
+  (declare lt:(side-effects simple reducible))
+  (ldb (byte 8 0) x))
+
+(defun card16->int16 (x)
+  (declare lt:(side-effects simple reducible))
+  (if (logbitp 15 x) (- x #x10000) x))
+
+(defun int16->card16 (x)
+  (declare lt:(side-effects simple reducible))
+  (ldb (byte 16 0) x))
+
+(defun card32->int32 (x)
+  (declare lt:(side-effects simple reducible))
+  (sys:%logldb (byte 32 0) x))
+
+(defun int32->card32 (x)
+  (declare lt:(side-effects simple reducible))
+  (ldb (byte 32 0) x))
+
+)
+
 (proclaim '(inline aref-card8 aset-card8 aref-int8 aset-int8))
+
+#-Genera
+(progn
 
 (defun aref-card8 (a i)
   (declare (type buffer-bytes a)
 	   (type array-index i))
-  (declare-values card8)
-  (declare-buffun)
+  (declare (values card8))
+  #.(declare-buffun)
   (the card8 (aref a i)))
 
 (defun aset-card8 (v a i)
   (declare (type card8 v)
 	   (type buffer-bytes a)
 	   (type array-index i))
-  (declare-buffun)
+  #.(declare-buffun)
   (setf (aref a i) v))
 
 (defun aref-int8 (a i)
   (declare (type buffer-bytes a)
 	   (type array-index i))
-  (declare-values int8)
-  (declare-buffun)
+  (declare (values int8))
+  #.(declare-buffun)
   (card8->int8 (aref a i)))
 
 (defun aset-int8 (v a i)
   (declare (type int8 v)
 	   (type buffer-bytes a)
 	   (type array-index i))
-  (declare-buffun)
+  #.(declare-buffun)
   (setf (aref a i) (int8->card8 v)))
+
+)
+
+#+Genera
+(progn
+
+(defun aref-card8 (a i)
+  (aref a i))
+
+(defun aset-card8 (v a i)
+  (zl:aset v a i))
+
+(defun aref-int8 (a i)
+  (card8->int8 (aref a i)))
+
+(defun aset-int8 (v a i)
+  (zl:aset (int8->card8 v) a i))
+
+)
 
 #+clx-overlapping-arrays
 (proclaim '(inline aref-card16 aref-int16 aref-card32 aref-int32 aref-card29
 		   aset-card16 aset-int16 aset-card32 aset-int32 aset-card29))
 
-#+(and clx-overlapping-arrays genera)
+#+(and clx-overlapping-arrays Genera)
 (progn
 
 (defun aref-card16 (a i)
   (aref a i))
 
 (defun aset-card16 (v a i)
-  (setf (aref a i) v))
+  (zl:aset v a i))
 
 (defun aref-int16 (a i)
   (card16->int16 (aref a i)))
 
 (defun aset-int16 (v a i)
-  (setf (aref a i) (int16->card16 v))
+  (zl:aset (int16->card16 v) a i)
   v)
 
 (defun aref-card32 (a i)
   (int32->card32 (aref a i)))
 
 (defun aset-card32 (v a i)
-  (setf (aref a i) (card32->int32 v)))
+  (zl:aset (card32->int32 v) a i))
 
 (defun aref-int32 (a i) (aref a i))
 
 (defun aset-int32 (v a i)
-  (setf (aref a i) v))
+  (zl:aset v a i))
 
-(defun aref-card29 (a i) (aref a i))
+(defun aref-card29 (a i)
+  (aref a i))
 
 (defun aset-card29 (v a i)
-  (setf (aref a i) v))
+  (zl:aset v a i))
 
 )
 
-#+(and clx-overlapping-arrays (or explorer lambda cadr))
+#+(and clx-overlapping-arrays (not Genera))
 (progn
 
 (defun aref-card16 (a i)
@@ -239,8 +291,8 @@
   (defun aref-card16 (a i)
     (declare (type buffer-bytes a)
 	     (type array-index i))
-    (declare-values card16)
-    (declare-buffun)
+    (declare (values card16))
+    #.(declare-buffun)
     (the card16 (sys:memref a #.(comp::mdparam 'comp::md-svector-data0-adj) i
 			    :unsigned-word)))
   
@@ -248,15 +300,15 @@
     (declare (type card16 v)
 	     (type buffer-bytes a)
 	     (type array-index i))
-    (declare-buffun)
+    #.(declare-buffun)
     (setf (sys:memref a #.(comp::mdparam 'comp::md-svector-data0-adj) i
 		      :unsigned-word) v))
   
   (defun aref-int16 (a i)
     (declare (type buffer-bytes a)
 	     (type array-index i))
-    (declare-values int16)
-    (declare-buffun)
+    (declare (values int16))
+    #.(declare-buffun)
     (the int16 (sys:memref a #.(comp::mdparam 'comp::md-svector-data0-adj) i
 			   :signed-word)))
   
@@ -264,15 +316,15 @@
     (declare (type int16 v)
 	     (type buffer-bytes a)
 	     (type array-index i))
-    (declare-buffun)
+    #.(declare-buffun)
     (setf (sys:memref a #.(comp::mdparam 'comp::md-svector-data0-adj) i
 		      :signed-word) v))
   
   (defun aref-card32 (a i)
     (declare (type buffer-bytes a)
 	     (type array-index i))
-    (declare-values card32)
-    (declare-buffun)
+    (declare (values card32))
+    #.(declare-buffun)
     (the card32 (sys:memref a #.(comp::mdparam 'comp::md-svector-data0-adj) i
 			    :unsigned-long)))
     
@@ -280,15 +332,15 @@
     (declare (type card32 v)
 	     (type buffer-bytes a)
 	     (type array-index i))
-    (declare-buffun)
+    #.(declare-buffun)
     (setf (sys:memref a #.(comp::mdparam 'comp::md-svector-data0-adj) i
 		      :unsigned-long) v))
 
   (defun aref-int32 (a i)
     (declare (type buffer-bytes a)
 	     (type array-index i))
-    (declare-values int32)
-    (declare-buffun)
+    (declare (values int32))
+    #.(declare-buffun)
     (the int32 (sys:memref a #.(comp::mdparam 'comp::md-svector-data0-adj) i
 			   :signed-long)))
     
@@ -296,7 +348,7 @@
     (declare (type int32 v)
 	     (type buffer-bytes a)
 	     (type array-index i))
-    (declare-buffun)
+    #.(declare-buffun)
     (setf (sys:memref a #.(comp::mdparam 'comp::md-svector-data0-adj) i
 		      :signed-long) v))
 
@@ -304,8 +356,8 @@
     ;; Do I need to mask off a few bits here?  XXX
     (declare (type buffer-bytes a)
 	     (type array-index i))
-    (declare-values card29)
-    (declare-buffun)
+    (declare (values card29))
+    #.(declare-buffun)
     (the card29 (sys:memref a #.(comp::mdparam 'comp::md-svector-data0-adj) i
 			    :unsigned-long)))
 
@@ -313,10 +365,155 @@
     (declare (type card29 v)
 	     (type buffer-bytes a)
 	     (type array-index i))
-    (declare-buffun)
+    #.(declare-buffun)
     (setf (sys:memref a #.(comp::mdparam 'comp::md-svector-data0-adj) i
 		      :unsigned-long) v))
 
+  
+  ;; Allegro 3.0 (like most stock hardware CL's) does not support inlining of
+  ;; functions.  So we use compiler-macros to accomplish the same thing.
+
+(defcmacro card8->int8 (x)
+  (let ((xx (gensym)))
+    `(let ((,xx ,x))
+       ,(declare-bufmac)
+       (declare (type card8 ,xx))
+       (the int8 (if (logbitp 7 ,xx)
+		     (the int8 (- ,xx #x100))
+		   ,xx)))))
+
+(defcmacro int8->card8 (x)
+  `(locally ,(declare-bufmac)
+     (the card8 (ldb (byte 8 0) (the int8 ,x)))))
+
+(defcmacro card16->int16 (x)
+  (let ((xx (gensym)))
+    `(let ((,xx ,x))
+       ,(declare-bufmac)
+       (declare (type card16 ,xx))
+       (the int16 (if (logbitp 15 ,xx)
+		      (the int16 (- ,xx #x10000))
+		    ,xx)))))
+
+(defcmacro int16->card16 (x)
+  `(locally ,(declare-bufmac)
+     (the card16 (ldb (byte 16 0) (the int16 ,x)))))
+
+(defcmacro card32->int32 (x)
+  (let ((xx (gensym)))
+    `(let ((,xx ,x))
+       ,(declare-bufmac)
+       (declare (type card32 ,xx))
+       (the int32 (if (logbitp 31 ,xx)
+		      (the int32 (- ,xx #x100000000))
+		    ,xx)))))
+
+(defcmacro int32->card32 (x)
+  `(locally ,(declare-bufmac)
+     (the card32 (ldb (byte 32 0) (the int32 ,x)))))
+
+(defcmacro aref-card8 (a i)
+  `(locally ,(declare-bufmac)
+	    (the card8 (aref (the buffer-bytes ,a) (the array-index ,i)))))
+
+(defcmacro aset-card8 (v a i)
+  `(locally ,(declare-bufmac)
+	    (setf (aref (the buffer-bytes ,a) (the array-index ,i))
+	      (the card8 ,v))))
+
+(defcmacro aref-int8 (a i)
+  `(locally ,(declare-bufmac)
+	    (card8->int8 (aref (the buffer-bytes ,a) (the array-index ,i)))))
+
+(defcmacro aset-int8 (v a i)
+  `(locally ,(declare-bufmac)
+	    (setf (aref (the buffer-bytes ,a) (the array-index ,i))
+	      (int8->card8 ,v))))
+
+(defcmacro aref-card16 (a i)
+  `(locally ,(declare-bufmac)
+     (the card16 (sys:memref (the buffer-bytes ,a)
+			     #.(comp::mdparam 'comp::md-svector-data0-adj)
+			     (the array-index ,i)
+			     :unsigned-word))))
+  
+(defcmacro aset-card16 (v a i)
+  `(locally ,(declare-bufmac)
+     (setf (sys:memref (the buffer-bytes ,a)
+			     #.(comp::mdparam 'comp::md-svector-data0-adj)
+			     (the array-index ,i)
+			     :unsigned-word)
+       (the card16 ,v))))
+  
+(defcmacro aref-int16 (a i)
+  `(locally ,(declare-bufmac)
+     (the int16 (sys:memref (the buffer-bytes ,a)
+			    #.(comp::mdparam 'comp::md-svector-data0-adj)
+			    (the array-index ,i)
+			    :signed-word))))
+  
+(defcmacro aset-int16 (v a i)
+  `(locally ,(declare-bufmac)
+     (setf (sys:memref (the buffer-bytes ,a)
+		       #.(comp::mdparam 'comp::md-svector-data0-adj)
+		       (the array-index ,i)
+		       :signed-word)
+       (the int16 ,v))))
+  
+(defcmacro aref-card32 (a i)
+  `(locally ,(declare-bufmac)
+     (the card32 (sys:memref (the buffer-bytes ,a)
+			     #.(comp::mdparam 'comp::md-svector-data0-adj)
+			     (the array-index ,i)
+			     :unsigned-long))))
+    
+(defcmacro aset-card32 (v a i)
+  `(locally ,(declare-bufmac)
+     (setf (sys:memref (the buffer-bytes ,a)
+		       #.(comp::mdparam 'comp::md-svector-data0-adj)
+		       (the array-index ,i)
+		       :unsigned-long)
+       (the card32 ,v))))
+
+(defcmacro aref-int32 (a i)
+  `(locally ,(declare-bufmac)
+     (the int32 (sys:memref (the buffer-bytes ,a)
+			    #.(comp::mdparam 'comp::md-svector-data0-adj)
+			    (the array-index ,i)
+			    :signed-long))))
+    
+(defcmacro aset-int32 (v a i)
+  `(locally ,(declare-bufmac)
+     (setf (sys:memref (the buffer-bytes ,a)
+		       #.(comp::mdparam 'comp::md-svector-data0-adj)
+		       (the array-index ,i)
+		       :signed-long)
+       (the int32 ,v))))
+
+(defcmacro aref-card29 (a i)
+  ;; Don't need to mask bits here since X protocol guarantees top bits zero
+  `(locally ,(declare-bufmac)
+     (the card29 (sys:memref (the buffer-bytes ,a)
+			     #.(comp::mdparam 'comp::md-svector-data0-adj)
+			     (the array-index ,i)
+			     :unsigned-long))))
+
+(defcmacro aset-card29 (v a i)
+  ;; I also assume here Lisp is passing a number that fits in 29 bits.
+  `(locally ,(declare-bufmac)
+     (setf (sys:memref (the buffer-bytes ,a)
+		       #.(comp::mdparam 'comp::md-svector-data0-adj)
+		       (the array-index ,i)
+		       :unsigned-long)
+       (the card29 ,v))))
+
+(defcmacro char->card8 (char)
+  `(locally ,(declare-bufmac)
+     (the card8 (char-code (the string-char ,char)))))
+
+(defcmacro card8->char (card8)
+  `(locally ,(declare-bufmac)
+     (the string-char (code-char (the card8 ,card8)))))
 )
 
 #-(or excl clx-overlapping-arrays)
@@ -325,8 +522,8 @@
 (defun aref-card16 (a i)
   (declare (type buffer-bytes a)
 	   (type array-index i))
-  (declare-values card16)
-  (declare-buffun)
+  (declare (values card16))
+  #.(declare-buffun)
   (the card16
        (logior (the card16
 		    (ash (the card8 (aref a (index+ i *word-1*))) 8))
@@ -337,7 +534,7 @@
   (declare (type card16 v)
 	   (type buffer-bytes a)
 	   (type array-index i))
-  (declare-buffun)
+  #.(declare-buffun)
   (setf (aref a (index+ i *word-1*)) (the card8 (ldb (byte 8 8) v))
 	(aref a (index+ i *word-0*)) (the card8 (ldb (byte 8 0) v)))
   v)
@@ -345,8 +542,8 @@
 (defun aref-int16 (a i)
   (declare (type buffer-bytes a)
 	   (type array-index i))
-  (declare-values int16)
-  (declare-buffun)
+  (declare (values int16))
+  #.(declare-buffun)
   (the int16
        (logior (the int16
 		    (ash (the int8 (aref-int8 a (index+ i *word-1*))) 8))
@@ -357,7 +554,7 @@
   (declare (type int16 v)
 	   (type buffer-bytes a)
 	   (type array-index i))
-  (declare-buffun)
+  #.(declare-buffun)
   (setf (aref a (index+ i *word-1*)) (the card8 (ldb (byte 8 8) v))
 	(aref a (index+ i *word-0*)) (the card8 (ldb (byte 8 0) v)))
   v)
@@ -365,8 +562,8 @@
 (defun aref-card32 (a i)
   (declare (type buffer-bytes a)
 	   (type array-index i))
-  (declare-values card32)
-  (declare-buffun)
+  (declare (values card32))
+  #.(declare-buffun)
   (the card32
        (logior (the card32
 		    (ash (the card8 (aref a (index+ i *long-3*))) 24))
@@ -381,7 +578,7 @@
   (declare (type card32 v)
 	   (type buffer-bytes a)
 	   (type array-index i))
-  (declare-buffun)
+  #.(declare-buffun)
   (setf (aref a (index+ i *long-3*)) (the card8 (ldb (byte 8 24) v))
 	(aref a (index+ i *long-2*)) (the card8 (ldb (byte 8 16) v))
 	(aref a (index+ i *long-1*)) (the card8 (ldb (byte 8 8) v))
@@ -391,8 +588,8 @@
 (defun aref-int32 (a i)
   (declare (type buffer-bytes a)
 	   (type array-index i))
-  (declare-values int32)
-  (declare-buffun)
+  (declare (values int32))
+  #.(declare-buffun)
   (the int32
        (logior (the int32
 		    (ash (the int8 (aref-int8 a (index+ i *long-3*))) 24))
@@ -407,7 +604,7 @@
   (declare (type int32 v)
 	   (type buffer-bytes a)
 	   (type array-index i))
-  (declare-buffun)
+  #.(declare-buffun)
   (setf (aref a (index+ i *long-3*)) (the card8 (ldb (byte 8 24) v))
 	(aref a (index+ i *long-2*)) (the card8 (ldb (byte 8 16) v))
 	(aref a (index+ i *long-1*)) (the card8 (ldb (byte 8 8) v))
@@ -417,8 +614,8 @@
 (defun aref-card29 (a i)
   (declare (type buffer-bytes a)
 	   (type array-index i))
-  (declare-values card29)
-  (declare-buffun)
+  (declare (values card29))
+  #.(declare-buffun)
   (the card29
        (logior (the card29
 		    (ash (the card8 (aref a (index+ i *long-3*))) 24))
@@ -433,7 +630,7 @@
   (declare (type card29 v)
 	   (type buffer-bytes a)
 	   (type array-index i))
-  (declare-buffun)
+  #.(declare-buffun)
   (setf (aref a (index+ i *long-3*)) (the card8 (ldb (byte 8 24) v))
 	(aref a (index+ i *long-2*)) (the card8 (ldb (byte 8 16) v))
 	(aref a (index+ i *long-1*)) (the card8 (ldb (byte 8 8) v))
@@ -466,30 +663,34 @@
 ;;; Other random conversions
 
 (defun rgb-val->card16 (value)
-  (declare (type float value))
-  (declare-buffun)
+  ;; Short floats are good enough
+  (declare (type rgb-val value))
+  (declare (values card16))
+  #.(declare-buffun)
   ;; Convert VALUE from float to card16
-  (the card16 (identity (truncate (the float value) #.(/ 1.0 #xffff)))))
+  (the card16 (values (round (the rgb-val value) #.(/ 1.0s0 #xffff)))))
 
 (defun card16->rgb-val (value) 
+  ;; Short floats are good enough
   (declare (type card16 value))
-  (declare-buffun)
+  (declare (values short-float))
+  #.(declare-buffun)
   ;; Convert VALUE from card16 to float
-  (the float (/ (the card16 value) #.(float #xffff))))
+  (the short-float (* (the card16 value) #.(/ 1.0s0 #xffff))))
 
 (defun radians->int16 (value)
   ;; Short floats are good enough
-  (declare (type float value))
-  (declare-values int16)
-  (declare-buffun)
-  (the int16 (identity (round (* value 180.0s0 64.0s0) #.(coerce pi 'short-float)))))
+  (declare (type angle value))
+  (declare (values int16))
+  #.(declare-buffun)
+  (the int16 (values (round (the angle value) #.(float (/ pi 180.0s0 64.0s0) 0.0s0)))))
 
 (defun int16->radians (value)
   ;; Short floats are good enough
   (declare (type int16 value))
-  (declare-values short-float)
-  (declare-buffun)
-  (the short-float (* value #.(coerce (/ pi 180.0 64.0) 'short-float))))
+  (declare (values short-float))
+  #.(declare-buffun)
+  (the short-float (* (the int16 value) #.(coerce (/ pi 180.0 64.0) 'short-float))))
 
 ;;; Character transformation
 
@@ -585,16 +786,34 @@
 		     (setf (aref array (cdr pair)) (car pair)))
 		   array))
 
+#-Genera
+(progn
+  
 (defun char->card8 (char)
   (declare (type string-char char))
-  (declare-buffun)
+  #.(declare-buffun)
   (the card8 (aref (the (simple-array card8 (*)) *char-to-card8-translation-table*)
 		   (the array-index (char-code char)))))
 
 (defun card8->char (card8)
   (declare (type card8 card8))
-  (declare-buffun)
+  #.(declare-buffun)
   (the string-char (aref (the simple-string *card8-to-char-translation-table*) card8)))
+
+)
+
+#+Genera
+(progn
+
+(defun char->card8 (char)
+  (declare lt:(side-effects reader reducible))
+  (aref *char-to-card8-translation-table* (char-code char)))
+
+(defun card8->char (card8)
+  (declare lt:(side-effects reader reducible))
+  (aref *card8-to-char-translation-table* card8))
+
+)
 
 (defun check-character-mapping-consistency ()
   (dotimes (i 256)
@@ -618,12 +837,12 @@
  
 (defun char->card8 (char)
   (declare (type string-char char))
-  (declare-buffun)
+  #.(declare-buffun)
   (the card8 (char-code char)))
 
 (defun card8->char (card8)
   (declare (type card8 card8))
-  (declare-buffun)
+  #.(declare-buffun)
   (the string-char (code-char card8)))
 
 (eval-when (eval compile)
@@ -640,174 +859,329 @@
 ;;	similar to with-lock on The TI Explorer, and a little more efficient
 ;;	than with-process-lock on a Symbolics.
 
-#+excl
-(defun make-process-lock ()
-  (if (excl::scheduler-running-p)
-      (mp::make-process-lock)))
+;;; MAKE-PROCESS-LOCK: Creating a process lock.
 
-#+imach
-(defun make-process-lock ()
-  (process:make-lock "CLX Lock" :recursive t))
-
-#-(or excl imach)
-(defun make-process-lock ()
+#-(or LispM excl)
+(defun make-process-lock (name)
+  (declare (ignore name))
   nil)
 
-#+imach
-(defmacro holding-lock ((locator &optional whostate) &body body)
-  whostate
-  `(process:with-lock (,locator)
-     ,@body))
-
-#+(and lispm (not imach))
-(defmacro holding-lock ((locator &optional whostate) &body body)
-  ; This macro is for use in a multi-process environment.
-  (let ((lock (gensym)) (have-lock (gensym)))
-    `(let* ((,lock (zl:locf ,locator))
-	    (,have-lock (eq (car ,lock) sys:current-process)))
-       (unwind-protect 
-	   (progn (unless ,have-lock
-		    ;; Redundant, but saves time if not locked.
-		    (or #+explorer
-			(si:%store-conditional ,lock nil sys:current-process)
-			#-explorer
-			(sys:store-conditional ,lock nil sys:current-process)
-			(sys:process-lock ,lock ,@(when whostate `(nil ,whostate)))))
-		  ,@body)
-	 (unless ,have-lock
-	   #+explorer
-	   (si:%store-conditional ,lock sys:current-process nil)
-	   #-explorer
-	   (sys:store-conditional ,lock sys:current-process nil))))))
-
 #+excl
-(defun event-listen-error ()
-  (error "The only CLX function call allowed from a process wait \
-       function is event-listen with timeout 0."))
+(defun make-process-lock (name)
+  (mp:make-process-lock :name name))
 
-#+excl
-;;
-;; Note that there is a special hack here.  If the current process is nil it
-;; means we're running in the scheduler stack group, which means in turn that
-;; we're running a process wait function.  This wait functions should *always*
-;; be: (event-listen display 0).  So if we are running in the scheduler and the
-;; lock isn't already being held, just run the body without trying to grab the
-;; lock.  If the lock *is* already being held we have to throw out of the
-;; event-listen.
-;;
-(defmacro holding-lock ((locator &optional whostate) &body body)
-  ;; This macro is for use in a multi-process environment.
-  (let ((lock (gensym)) (curproc (gensym)) (locker (gensym))
-	(scheduling (gensym)) (obtained-lock (gensym)))
-    
-    `(let ((,scheduling (excl::scheduler-running-p))
-	   ,lock ,curproc ,locker ,obtained-lock)
-       
-       (declare (special *inside-event-listen-catch*
-			 mp::*current-process*))
-       
-       (when ,scheduling
-	 (setq ,lock ,locator)
-	 (setq ,curproc mp::*current-process*; nil if in scheduler (wait fun)
-	       ,locker (mp::process-lock-locker ,lock)))
-       
-       (unwind-protect
-	    (progn
-	      (when ,scheduling
-		(if (and (null ,curproc) ,locker)
-		    (if (and (boundp '*inside-event-listen-catch*)
-			     *inside-event-listen-catch*)
-			(throw 'event-listen :would-block)
-		      (event-listen-error)))
-		(when (not (eq ,locker ,curproc))
-		  (mp::process-lock ,lock ,curproc
-				    ,@(when whostate `(,whostate)))
-		  (setq ,obtained-lock t)))
-	      ,@body)
-	 (if ,obtained-lock
-	     (mp::process-unlock ,lock ,curproc))))))
+#+(and LispM (not CLX-Genera-New-Scheduler))
+(defun make-process-lock (name)
+  (vector nil name))
 
-;; Lucid has a process locking mechanism as well under release 3.0
-#+lcl3.0
-(defmacro holding-lock ((locator &optional whostate) &body body)
-  whostate ;not implemented in lcl.
-  `(lcl:with-process-lock (,locator)
-     ,@body))
+#+CLX-Genera-New-Scheduler
+(defun make-process-lock (name)
+  (process:make-lock name :flavor 'clx-lock))
+
+;;; HOLDING-LOCK: Execute a body of code with a lock held.
+
+;;; The holding-lock macro takes a timeout keyword argument.  EVENT-LISTEN
+;;; passes its timeout to the holding-lock macro, so any timeout you want to
+;;; work for event-listen you should do for holding-lock.
 
 ;; If you're not sharing DISPLAY objects within a multi-processing
 ;; shared-memory environment, this is sufficient
 #-(or lispm excl lcl3.0)
-(defmacro holding-lock ((locator &optional whostate) &body body)
-  locator whostate ;; not used
+(defmacro holding-lock ((locator display &optional whostate &key timeout) &body body)
+  (declare (ignore locator display whostate timeout))
   `(progn ,@body))
 
-#+(and lispm (not imach))
-(defmacro atomic-push (item reference)
-  `(sys:without-interrupts (push ,item ,reference)))
+#+CLX-Genera-New-Scheduler
+(progn
 
-#+(and lispm (not imach))
-(defmacro atomic-pop (list)
-  `(sys:without-interrupts (pop ,list)))
+(defun holding-lock-internal (function lock display whostate timeout)
+  (declare (sys:downward-funarg function)
+	   (ignore whostate))
+  (process:with-lock (lock :timeout timeout)
+    (let ((debug-io (buffer-debug-io display)))
+      (scl:let-if debug-io ((*debug-io* debug-io))
+	(funcall function)))))
 
-#+imach
-(defmacro atomic-push (item reference)
-  `(process:atomic-push ,item ,reference))
+(defmacro holding-lock ((locator display &optional whostate &key timeout)
+			&body body)
+  `(holding-lock-internal #'(lambda () ,@body) ,locator ,display ,whostate ,timeout))
 
-#+imach
-(defmacro atomic-pop (reference)
-  `(process:atomic-pop ,reference))
+)
 
+#+(and lispm (not CLX-Genera-New-Scheduler))
+(defmacro holding-lock ((locator display &optional whostate &key timeout)
+			&body body)
+  (declare (ignore display))
+  ;; This macro is for use in a multi-process environment.
+  (let ((lock (gensym))
+	(have-lock (gensym))
+	(timeo (gensym)))
+    `(let* ((,lock (zl:locf (svref ,locator 0)))
+	    (,have-lock (eq (car ,lock) sys:current-process))
+	    (,timeo ,timeout))
+       (unwind-protect 
+	   (when (cond (,have-lock)
+		       ((#+explorer si:%store-conditional
+			 #-explorer sys:store-conditional
+			 ,lock nil sys:current-process))
+		       ((null ,timeo)
+			(sys:process-lock ,lock nil ,(or whostate "CLX Lock")))
+		       ((sys:process-wait-with-timeout
+			    ,(or whostate "CLX Lock") (round (* ,timeo 60.))
+			  #'(lambda (lock process)
+			      (#+explorer si:%store-conditional
+			       #-explorer sys:store-conditional
+			       lock nil process))
+			  ,lock sys:current-process)))
+	     ,@body)
+	 (unless ,have-lock
+	   (#+explorer si:%store-conditional
+	    #-explorer sys:store-conditional
+	    ,lock sys:current-process nil))))))
+
+;; Lucid has a process locking mechanism as well under release 3.0
 #+lcl3.0
-(defmacro atomic-push (item reference)
-  `(lcl:with-interrupts-deferred (push ,item ,reference)))
+(defmacro holding-lock ((locator display &optional whostate &key timeout)
+			&body body)
+  (declare (ignore display))
+  (if timeout
+      ;; Hair to support timeout.
+      `(let ((.have-lock. (eq ,locator lcl:*current-process*))
+	     (.timeout. ,timeout))
+	 (unwind-protect
+	     (when (cond (.have-lock.)
+			 ((conditional-store ,locator nil lcl:*current-process*))
+			 ((null .timeout.)
+			  (lcl:process-lock ,locator)
+			  t)
+			 ((lcl:process-wait-with-timeout ,whostate .timeout.
+			    #'(lambda ()
+				(conditional-store ,locator nil lcl:*current-process*)))))
+	       ,@body)
+	   (unless .have-lock. 
+	     (lcl:process-unlock ,locator))))
+    `(lcl:with-process-lock (,locator)
+       ,@body)))
 
-#+lcl3.0
-(defmacro atomic-pop (list)
-  `(lcl:with-interrupts-deferred (pop ,list)))
-
-;; If you don't have multi-processing or push is atomic, this is sufficient
-#-(or lispm lcl3.0)
-(defmacro atomic-push (item reference)
-  `(push ,item ,reference))
-
-;; If you don't have multi-processing or pop is atomic, this is sufficient
-#-(or lispm lcl3.0)
-(defmacro atomic-pop (list)
-  `(pop ,list))
 
 #+excl
-(defvar *inside-event-listen-catch* nil)
+(progn
+
+(defmacro holding-lock ((locator display &optional whostate &key timeout)
+			&body body)
+  (declare (ignore display))
+  ;; Note -- calling holding-lock from within a process-wait function is
+  ;; currently not allowed.  XXX
+  (let ((lock (gensym)) (curproc (gensym)) (locker (gensym))
+	(scheduling (gensym)) (obtained-lock (gensym)))
+    `(let ((,scheduling mp::*scheduler-stack-group*)
+  	   ,lock ,curproc ,locker ,obtained-lock)
+       (unwind-protect
+	    (block --doit--
+	      (when ,scheduling
+		(setq ,lock ,locator
+		      ,curproc mp::*current-process*	; nil if in scheduler
+						        ; running process-wait fun
+		      ,locker (mp::process-lock-locker ,lock))
+		(when (not (eq ,locker ,curproc))
+		  ;; Then we need to grab the lock.
+		  ,(if timeout
+		       `(if (not (mp::with-timeout (,timeout)
+				   (mp::process-lock
+				     ,lock ,curproc
+				     ,@(when whostate `(,whostate)))))
+			    (return-from --doit-- nil)
+			  (setq ,obtained-lock t))
+		     `(progn
+			(mp::process-lock ,lock ,curproc
+					  ,@(when whostate `(,whostate)))
+			(setq ,obtained-lock t)))))
+	      ,@body)
+	 (if (and ,obtained-lock
+		  ;; Note -- next form added to allow error handler inside
+		  ;; body to unlock the lock prematurely if it knows that
+		  ;; the current process cannot possibly continue but will
+		  ;; throw out (or is it throw up?).
+		  (eq (mp::process-lock-locker ,lock) ,curproc))
+	     (mp::process-unlock ,lock ,curproc))))))
+)
+
+;;; WITHOUT-ABORTS
+
+;;; If you can inhibit asynchronous keyboard aborts inside the body of this
+;;; macro, then it is a good idea to do this.  This macro is wrapped around
+;;; request writing and reply reading to ensure that requests are atomically
+;;; written and replies are atomically read from the stream.
+
+#-(or Genera lcl3.0)
+(defmacro without-aborts (&body body)
+  `(progn ,@body))
+
+#+Genera
+(defmacro without-aborts (&body body)
+  `(sys:without-aborts (clx "CLX is in the middle of an operation that should be atomic.")
+     ,@body))
+
+#+lcl3.0
+(defmacro without-aborts (&body body)
+  `(lcl:with-interruptions-inhibited ,@body))
+
+;;; PROCESS-BLOCK: Wait until a given predicate returns a non-NIL value.
+;;; Caller guarantees that PROCESS-WAKEUP will be called after the predicate's
+;;; value changes.
+
+#-(or lispm excl lcl3.0)
+(defun process-block (whostate predicate &rest predicate-args)
+  (or (apply predicate predicate-args)
+      (error "Program tried to wait with no scheduler.")))
+
+#+CLX-Genera-New-Scheduler
+(defun process-block (whostate predicate &rest predicate-args)
+  (declare (type function predicate)
+	   (downward-funarg predicate))
+  (apply #'process:block-process whostate predicate predicate-args))
+
+#+(and lispm (not CLX-Genera-New-Scheduler))
+(defun process-block (whostate predicate &rest predicate-args)
+  (declare (type function predicate)
+	   (downward-funarg predicate))
+  (apply #'global:process-wait whostate predicate predicate-args))
 
 #+excl
-(defmacro wrap-event-listen (form &body body)
-  ;; If we are running a process wait function (in the scheduler stack group)
-  ;; and the input lock is held by another process, return nil.
-  `(let ((*inside-event-listen-catch* t))
-     (unless (eq :would-block (catch 'event-listen ,form))
-       . ,body)))
+(defun process-block (whostate predicate &rest predicate-args)
+  (if mp::*scheduler-stack-group*
+      (apply #'mp::process-wait whostate predicate predicate-args)
+      (or (apply predicate predicate-args)
+	  (error "Program tried to wait with no scheduler."))))
 
-#-excl
-(defmacro wrap-event-listen (form &body body)
-  `(progn ,form . ,body))
+#+lcl3.0
+(defun process-block (whostate predicate &rest predicate-args)
+  (declare (dynamic-extent predicate-args))
+  (apply #'lcl:process-wait whostate predicate predicate-args))
+
+;;; PROCESS-WAKEUP: Check some other process' wait function.
+
+(proclaim '(inline process-wakeup))
+
+#-(or excl CLX-Genera-New-Scheduler)
+(defun process-wakeup (process)
+  (declare (ignore process))
+  nil)
+
+#+excl
+(defun process-wakeup (process)
+  (if (and mp::*current-process*
+	   (> (mp::process-priority process)
+	      (mp::process-priority mp::*current-process*)))
+      (mp::process-allow-schedule process)))
+
+#+CLX-Genera-New-Scheduler
+(defun process-wakeup (process)
+  (process:wakeup process))
+
+;;; CURRENT-PROCESS: Return the current process object for input locking and
+;;; for calling PROCESS-WAKEUP.
+
+(proclaim '(inline current-process))
+
+;;; Default return NIL, which is acceptable even if there is a scheduler.
+
+#-(or lispm excl lcl3.0)
+(defun current-process ()
+  nil)
+
+#+lispm
+(defun current-process ()
+  sys:current-process)
+
+#+excl
+(defun current-process ()
+  (declare (special mp::*current-process*))
+  (and mp::*scheduler-stack-group*
+       mp::*current-process*))
+
+#+lcl3.0
+(defun current-process ()
+  lcl:*current-process*)
+
+;;; WITHOUT-INTERRUPTS -- provide for atomic operations.
+
+#-(or lispm excl lcl3.0)
+(defmacro without-interrupts (&body body)
+  `(progn ,@body))
+
+#+(and lispm (not CLX-Genera-New-Scheduler))
+(defmacro without-interrupts (&body body)
+  `(sys:without-interrupts ,@body))
+
+#+CLX-Genera-New-Scheduler
+(defmacro without-interrupts (&body body)
+  `(process:with-no-other-processes ,@body))
+
+#+LCL3.0
+(defmacro without-interrupts (&body body)
+  `(lcl:with-scheduling-inhibited ,@body))
+
+;;; CONDITIONAL-STORE:
+
+;; This should use GET-SETF-METHOD to avoid evaluating subforms multiple times.
+;; It doesn't because CLtL doesn't pass the environment to GET-SETF-METHOD.
+(defmacro conditional-store (place old-value new-value)
+  `(without-interrupts
+     (cond ((eq ,place ,old-value)
+	    (setf ,place ,new-value)
+	    t))))
 
 ;;;-----------------------------------------------------------------------------
 ;;; IO Error Recovery
 ;;;	All I/O operations are done within a WRAP-BUF-OUTPUT macro.
 ;;;	It prevents multiple mindless errors when the network craters.
 ;;;
-#+comment ;; #+lispm
-(defmacro wrap-buf-output (buffer &body body)
-  ;; Error recovery wrapper
-  `(unless (buffer-dead ,buffer)
-     (sys:condition-case ()
-	 (progn ,@body)
-       (sys:network-error (setf (buffer-dead ,buffer) t)))))
-
-;;#-lispm
-(defmacro wrap-buf-output (buffer &body body)
+#-Genera
+(defmacro wrap-buf-output ((buffer) &body body)
   ;; Error recovery wrapper
   `(unless (buffer-dead ,buffer)
      ,@body))
+
+#+Genera
+(defmacro wrap-buf-output ((buffer) &body body)
+  ;; Error recovery wrapper
+  `(let ((.buffer. ,buffer))
+     (unless (buffer-dead .buffer.)
+       (scl:condition-bind
+	 (((sys:network-error)
+	   #'(lambda (error)
+	       (scl:condition-case () 
+		    (funcall (buffer-close-function .buffer.) .buffer. :abort t)
+		  (sys:network-error))
+	       (setf (buffer-dead .buffer.) error)
+	       (setf (buffer-output-stream .buffer.) nil)
+	       (setf (buffer-input-stream .buffer.) nil)
+	       nil)))
+	 ,@body))))
+
+#-Genera
+(defmacro wrap-buf-input ((buffer) &body body)
+  (declare (ignore buffer))
+  ;; Error recovery wrapper
+  `(progn ,@body))
+
+#+Genera
+(defmacro wrap-buf-input ((buffer) &body body)
+  ;; Error recovery wrapper
+  `(let ((.buffer. ,buffer))
+     (scl:condition-bind
+       (((sys:network-error)
+	 #'(lambda (error)
+	     (scl:condition-case () 
+		  (funcall (buffer-close-function .buffer.) .buffer. :abort t)
+		(sys:network-error))
+	     (setf (buffer-dead .buffer.) error)
+	     (setf (buffer-output-stream .buffer.) nil)
+	     (setf (buffer-input-stream .buffer.) nil)
+	     nil)))
+       ,@body)))
+
 
 ;;;-----------------------------------------------------------------------------
 ;;; System dependent IO primitives
@@ -818,51 +1192,75 @@
 ;;; open-x-stream - create a stream for communicating to the appropriate X
 ;;; server
 
-#-(or explorer genera lucid kcl excl)
+#-(or explorer Genera lucid kcl excl)
 (defun open-x-stream (host display protocol)
   host display protocol ;; unused
   (error "OPEN-X-STREAM not implemented yet."))
 
-#+genera
-(progn
+;;; Genera:
 
 ;;; TCP and DNA are both layered products, so try to work with either one.
 
+#+Genera
 (when (fboundp 'tcp:add-tcp-port-for-protocol)
   (tcp:add-tcp-port-for-protocol :x-window-system 6000))
 
+#+Genera
 (when (fboundp 'dna:add-dna-contact-id-for-protocol)
-  (dna:add-dna-contact-id-for-protocol :x-window-system "X0"))
+  (dna:add-dna-contact-id-for-protocol :x-window-system "X$X0"))
 
+#+Genera
 (net:define-protocol :x-window-system (:x-window-system :byte-stream)
   (:invoke-with-stream ((stream :characters nil :ascii-translation nil))
     stream))
-)
 
-#+genera
+#+Genera
+(eval-when (compile)
+  (compiler:function-defined 'tcp:open-tcp-stream)
+  (compiler:function-defined 'dna:open-dna-bidirectional-stream))
+
+#+Genera
 (defun open-x-stream (host display protocol)
-  (setf host (net:parse-host host))
-  ;; If PROTOCOL is NIL (the default), we use the generic network system to choose a network
-  ;; protocol. Since the GNS has no way to communicate the display number, this only works for
-  ;; display 0.  For other displays, we blindly default to TCP.
-  ;;
-  ;; To take advantage of this, add a service triple to the service host such as:
-  ;;   X-WINDOW-SYSTEM TCP X-WINDOW-SYSTEM
-  ;; or
-  ;;   X-WINDOW-SYSTEM DNA X-WINDOW-SYSTEM
-  (when (and (null protocol) (zerop display))
-    (return-from open-x-stream
-      (let ((neti:*invoke-service-automatic-retry* t))
-	(net:invoke-service-on-host :x-window-system host))))
-  (ccase protocol
-    ((:tcp nil)
-     (tcp:open-tcp-stream host (+ *x-tcp-port* display) nil
-			  :direction :io
-			  :characters nil
-			  :ascii-translation nil))
-    ((:dna)
-     (dna:open-dna-bidirectional-stream host (format nil "X~D" display)
-					:characters nil :ascii-translation nil))))
+  (let ((host (net:parse-host host)))
+    (cond ((or protocol (plusp display))
+	   ;; The protocol was specified or the display isn't 0, so we
+	   ;; can't use the Generic Network System.  If the protocol was
+	   ;; specified, then use that protocol, otherwise, blindly use
+	   ;; TCP.
+	   (ccase protocol
+	     ((:tcp nil)
+	      (tcp:open-tcp-stream
+		host (+ *x-tcp-port* display) nil
+		:direction :io
+		:characters nil
+		:ascii-translation nil))
+	     ((:dna)
+	      (dna:open-dna-bidirectional-stream
+		host (format nil "X$X~D" display)
+		:characters nil
+		:ascii-translation nil))))
+	  ((neti:find-paths-to-service-on-host :x-window-system host t nil)
+	   ;; The Generic Network System has found declared paths to the
+	   ;; service on the host, so just invoke the service using the
+	   ;; declared paths.
+	   (let ((neti:*invoke-service-automatic-retry* t))
+	     (net:invoke-service-on-host :x-window-system host)))
+	  ((neti:find-paths-to-protocol-on-host :x-window-system host nil)
+	   ;; There are no declared paths to the service, but there are
+	   ;; paths to the protocol.  Try them out.
+	   (loop with saps = (neti:find-paths-to-protocol-on-host :x-window-system host nil)
+		 with errors = nil
+		 for sap in saps
+		 do (scl:condition-case (error)
+			 (return (neti:invoke-service-access-path sap nil))
+		       (error (push error errors)))
+		 finally
+		   (error 'neti:unable-to-invoke-service
+			  :service :x-window-system :host host
+			  :service-access-paths saps
+			  :errors (reverse errors))))
+	  (t
+	   (error "There's no way to open an X connection to ~A:~D" host display)))))
 
 #+explorer
 (defun open-x-stream (host display protocol)
@@ -906,7 +1304,7 @@
 
 ;;; buffer-read-default - read data from the X stream
 
-#+(or genera explorer)
+#+(or Genera explorer)
 (defun buffer-read-default (display vector start end timeout)
   ;; returns non-NIL if EOF encountered
   ;; Returns :TIMEOUT when timeout exceeded
@@ -914,18 +1312,16 @@
 	   (type buffer-bytes vector)
 	   (type array-index start end)
 	   (type (or null number) timeout))
-  (declare-buffun)
-  (let ((stream (display-input-stream display))
-	(eofp nil))
+  #.(declare-buffun)
+  (let ((stream (display-input-stream display)))
     (when timeout
       (unless (sys:process-wait-with-timeout
-		  "X Server"
-		  (round (* timeout 60.)) stream :listen)
-	(setq eofp :timeout)))
-    (unless eofp
-      (multiple-value-setq (nil eofp)
-	(funcall stream :string-in nil vector start end)))
-    eofp))
+		  "CLX Input" (round (* timeout 60.))
+		stream :listen)
+	(return-from buffer-read-default :timeout)))
+    (multiple-value-bind (ignore eofp)
+	(funcall stream :string-in nil vector start end)
+      eofp)))
 
 #+excl
 ;;
@@ -933,13 +1329,6 @@
 ;; safely throw this process out of the CLX read loop.
 ;;
 (defparameter *read-whostate* "blocked on read from X server")
-
-#+excl
-(defun listen-fd (fd)
-  "nil if no bytes available, t on bytes available or error"
-  (declare (type fixnum fd))
-  (declare-buffun)
-  (not (zerop (the fixnum (c-howmany-bytes fd)))))
 
 #+excl
 (defmacro with-interrupt-checking-on (&body body)
@@ -959,7 +1348,7 @@
 	   (type buffer-bytes vector)
 	   (type array-index start end)
 	   (type (or null number) timeout))
-  (declare-buffun)
+  #.(declare-buffun)
     
   (let* ((howmany (- end start))
 	 (fd (display-input-stream display))
@@ -967,80 +1356,134 @@
     (declare (fixnum howmany fd numread))
 	  
     (cond ((minusp numread)
-	   t)					;; error
+	   t)					;; error or eof
 	  ((eql numread howmany)
 	   nil)					;; success
 	  (t
-	   ;; We were able to read some or none of the request.
-	   (when (> numread 0)
-	     (decf howmany numread)
-	     (incf start numread))
-	   
+	   ;; No bytes were available on the socket
 	   (cond ((and timeout (zerop timeout))
- 	  ;; If there aren't enough and timeout == 0, timeout.
-	   :timeout)
+		  ;; If there aren't enough and timeout == 0, timeout.
+		  :timeout)
 	  
 		 ;; Otherwise if the scheduler is running let it do timeouts.
-	  ((excl::scheduler-running-p)
-	   (unwind-protect
-		(progn
-		  (mp::mpwatchfor fd)
-			 (do ()
-			     ((zerop howmany) nil)
-		  (if (null timeout)
-		      (mp::process-wait *read-whostate*
-						 #'listen-fd fd)
-		    ;; Otherwise we have a timeout to wait for.
-		    ;; This doesn't work under 2.0.
-		    #+allegro
-		    (if (eql (mp::process-wait-with-timeout
-			      *read-whostate* timeout
-				       #'listen-fd fd)
-			     'mp::with-timeout-internal)
-			(return-from buffer-read-default :timeout))
-		    #-allegro
-		    (mp::process-wait *read-whostate*
-					       #'listen-fd fd))
-			   ;; Now there are more characters available.
-			   (setq numread
-			     (c-read-bytes fd vector start howmany))
-			   (if (minusp numread)
-			       (return-from buffer-read-default t))   ;; error
-			   (decf howmany numread)
-			   (incf start numread)))
+		 (mp::*scheduler-stack-group*
+		  (unwind-protect
+		       (progn
+			 (mp::mpwatchfor fd)
+			 (if (null timeout)
+			     ;; Timeout is infinity.
+			     (mp::process-wait
+			      *read-whostate*
+			      #'fd-char-avail-p fd)
+			   ;; Otherwise timeout in a number of seconds.
+			   #+allegro-v3.0
+			   (if (eql (mp::process-wait-with-timeout
+				     *read-whostate* timeout
+				     #'fd-char-avail-p fd)
+				    'mp::with-timeout-internal)
+			       (return-from buffer-read-default :timeout))
+			   #+(and allegro (not allegro-v3.0))
+			   (if (not (mp::process-wait-with-timeout
+				     *read-whostate* timeout
+				     #'fd-char-avail-p fd))
+			       (return-from buffer-read-default :timeout))
+			   #-allegro
+			   (mp::process-wait
+			    *read-whostate*
+			    #'fd-char-avail-p fd))
+			 ;; Now the read will succeed or return error.
+			 (minusp (c-read-bytes fd vector start howmany)))
 		    (mp::mpunwatchfor fd)))
 	  
 		 ;; Otherwise we have to handle timeouts by hand, and call a
 		 ;; special c read function that will return on interrupt.
-	  (t
+		 (t
 		  (with-interrupt-checking-on 
-	   (if (null timeout)
-			(do ()
-			    ((zerop howmany) nil)
-			  (setq numread (c-read-bytes-interruptible
-					 fd vector start howmany))
-			  (excl:if* (plusp numread)
-			     then (decf howmany numread)
-				  (incf start numread)
-			   elseif (eql numread -1)
-			     then (return-from buffer-read-default t))) ; error
+		      (if (null timeout)
+			  (loop
+			   (setq numread (c-read-bytes-interruptible
+					  fd vector start howmany))
+			   (cond ((plusp numread) ; success
+				  (return-from buffer-read-default nil))
+				 ((eql numread -1) ; error
+				  (return-from buffer-read-default t))))
 		    
-		      ;; Otherwise there is a timed timeout. This is a hack. XX
-	     (dotimes (i (round timeout) :timeout)
-			(declare (fixnum i))
-			(if (null (listen-fd fd))
-		   (sleep 1)
-		 (return-from buffer-read-default
-			    (minusp (the fixnum
-					 (c-read-bytes fd vector start howmany)
-					 )))))))))))))
+			(dotimes (i (round timeout) :timeout)
+			  (declare (fixnum i))
+			  (if (null (fd-char-avail-p fd))
+			      (sleep 1)
+			    (return-from buffer-read-default
+			      (minusp (c-read-bytes fd vector start howmany))))
+			  )))))))))
+
+
+#+lcl3.0
+(defmacro fast-read-bytes (stream vector start end)
+  `(do* ((i ,start (index+ i 1))
+	 (c nil))
+	((index>= i ,end) nil)
+     (declare (type array-index i)
+	      (type (or null card8) c))
+     (setq c (lcl:fast-read-byte ,stream (unsigned-byte 8) nil nil))
+     (if c
+	 (setf (aref ,vector i) c)
+	 (return t))))
+
+#+lcl3.0
+(defmacro extract-underlying-stream (stream display direction)
+  ;;;Our job is to quickly get at the underlying stream for this display's
+  ;;;input stream structure.
+  `(or (getf (display-plist ,display) ,direction)
+       (setf (getf (display-plist ,display) ,direction)
+	     (lucid::underlying-stream ,stream (if (eq ,direction 'input)
+						   :input 
+						 :output)))))
+
+#+lcl3.0
+(defun buffer-read-default (display vector start end timeout)
+  ;;Note that LISTEN must still be done on "slow stream" or the I/O system
+  ;;gets confused.  But reading should be done from "fast stream" for speed.
+  ;;We inhibit scheduling when reading because there seem to be races in 
+  ;;Lucid's multitasking implementation.
+  (declare (type display display)
+	   (type buffer-bytes vector)
+	   (type array-index start end)
+	   (type (or null number) timeout)
+	   (optimize (speed 3)
+		     (safety 0)))
+  (let* ((stream (display-input-stream display))
+	 (fast-stream (extract-underlying-stream stream display 'input)))
+    (cond ((or (null timeout)
+	       (listen stream))
+	   (lcl:with-scheduling-inhibited
+	       (fast-read-bytes fast-stream vector start end))
+	   nil)				;return NIL, it expects that
+	  ((or (minusp timeout) (zerop timeout))
+	   ;;negative timeout means try once, Jerry's hack.  Zerop seems
+	   ;;to *also* mean try once; don't understand why Jerry wanted -1.
+	   (if (listen stream)
+	       (lcl:with-scheduling-inhibited
+		   (fast-read-bytes fast-stream vector start end))
+	       :timeout))
+	  (timeout ;otherwise we have a bona-fide timeout on our hands which
+                   ;we should wait for.
+	   (let ((input-appeared
+		  (lucid::waiting-for-input-from-stream fast-stream
+                     (lucid::with-io-unlocked
+			 (lcl:process-wait-with-timeout
+			   "CLX Input" timeout #'listen stream)))))
+	     (if input-appeared
+		 (lcl:with-scheduling-inhibited
+		     (fast-read-bytes fast-stream vector start end))
+		 :timeout))))))
+
 
 ;;; WARNING:
 ;;;	CLX performance will suffer if your lisp uses read-byte for
 ;;;	receiving all data from the X Window System server.
 ;;;	You are encouraged to write a specialized version of
 ;;;	buffer-read-default that does block transfers.
-#-(or genera explorer excl)
+#-(or Genera explorer excl lcl3.0)
 (defmacro CL-read-bytes (stream vector start end)
   `(do* ((i ,start (index+ i 1))
 	 (c nil))
@@ -1053,16 +1496,16 @@
 	 (return t))))
 
 ;; Poll for input every *buffer-read-polling-time* SECONDS.
-#-(or genera explorer excl)
+#-(or Genera explorer excl lcl3.0)
 (defparameter *buffer-read-polling-time* 0.5)
 
-#-(or genera explorer excl)
+#-(or Genera explorer excl lcl3.0)
 (defun buffer-read-default (display vector start end timeout)
   (declare (type display display)
 	   (type buffer-bytes vector)
 	   (type array-index start end)
 	   (type (or null (rational 0 *) (float 0.0 *)) timeout))
-  (declare-buffun)
+  #.(declare-buffun)
   (let ((stream (display-input-stream display)))
     (declare (type stream stream))
     (cond ((or (null timeout)			; timeout = NIL
@@ -1085,24 +1528,42 @@
 
 ;;; buffer-write--default - write data to the X stream
 
-#+(or genera explorer)
+#+(or Genera explorer)
 (defun buffer-write-default (vector display start end)
   ;; The default buffer write function for use with common-lisp streams
   (declare (type buffer-bytes vector)
 	   (type display display)
 	   (type array-index start end))
-  (declare-buffun)
-  (write-string vector (display-output-stream display) :start start :end end))
+  #.(declare-buffun)
+  (let ((stream (display-output-stream display)))
+    (declare (type (or null stream) stream))
+    (unless (null stream) 
+      (write-string vector stream :start start :end end))))
 
 #+excl
 (defun buffer-write-default (vector display start end)
   (declare (type buffer-bytes vector)
 	   (type display display)
 	   (type array-index start end))
-  (declare-buffun)
-  (if (minusp (the fixnum (c-write-bytes (display-output-stream display)
-					 vector start end)))
-      (error "X write failed:  socket dead!")))
+  #.(declare-buffun)
+  (excl::filesys-write-bytes (display-output-stream display) vector start
+			     (- end start)))
+  
+#+lcl3.0
+(defun buffer-write-default (vector display start end)
+  ;;We inhibit scheduling here because there seem to be races in Lucid's
+  ;;multitasking implementation.  Anyway, when we take it out we get bugs!
+  (declare (type display display)
+	   (type buffer-bytes vector)
+	   (type array-index start end)
+	   (optimize (:tail-merge nil)
+		     (speed 3)
+		     (safety 0)))
+  (lcl:with-scheduling-inhibited
+      (lcl:write-array
+	(extract-underlying-stream
+	  (display-output-stream display) display 'output)
+	vector start end)))
 
 ;;; WARNING:
 ;;;	CLX performance will be severely degraded if your lisp uses
@@ -1110,52 +1571,136 @@
 ;;;	You are STRONGLY encouraged to write a specialized version
 ;;;	of buffer-write-default that does block transfers.
 
-#-(or genera explorer excl)
+#-(or Genera explorer excl lcl3.0)
 (defun buffer-write-default (vector display start end)
   ;; The default buffer write function for use with common-lisp streams
   (declare (type buffer-bytes vector)
 	   (type display display)
 	   (type array-index start end))
-  (declare-buffun)
-  (with-vector (vector buffer-bytes)
-    (do ((stream (display-output-stream display))
-	 (index start (index+ index 1)))
-	((index>= index end))
-      (declare (type stream stream)
-	       (type array-index index))
-      (write-byte (aref vector index) stream))))
+  #.(declare-buffun)
+  (let ((stream (display-output-stream display)))
+    (declare (type (or null stream) stream))
+    (unless (null stream)
+      (with-vector (vector buffer-bytes)
+	(do ((stream (display-output-stream display))
+	     (index start (index+ index 1)))
+	    ((index>= index end))
+	  (declare (type stream stream)
+		   (type array-index index))
+	  (write-byte (aref vector index) stream))))))
 
 ;;; buffer-force-output-default - force output to the X stream
 
 #+excl
 (defun buffer-force-output-default (display)
-  ;; The default buffer force-output function for use with common-lisp streams
-  (declare (type display display))
-  (if (minusp (the fixnum (c-flush-bytes (display-output-stream display))))
-      (error "X write failed:  socket dead!")))
+  ;; buffer-write-default does the actual writing.
+  (declare (ignore display)))
 
 #-excl
 (defun buffer-force-output-default (display)
   ;; The default buffer force-output function for use with common-lisp streams
   (declare (type display display))
-  (force-output (display-output-stream display)))
+  (let ((stream (display-output-stream display)))
+    (declare (type (or null stream) stream))
+    (unless (null stream)
+      (force-output stream))))
 
-;;; buffer-close-default - close the X stream
-
+;;; BUFFER-CLOSE-DEFAULT - close the X stream
 
 #+excl
 (defun buffer-close-default (display &key abort)
   ;; The default buffer close function for use with common-lisp streams
-  (declare (type display display))
-  (declare-buffun)
+  (declare (type display display)
+	   (ignore abort))
+  #.(declare-buffun)
   (excl::filesys-checking-close (display-output-stream display)))
 
 #-excl
 (defun buffer-close-default (display &key abort)
   ;; The default buffer close function for use with common-lisp streams
   (declare (type display display))
-  (declare-buffun)
-  (close (display-output-stream display) :abort abort))
+  #.(declare-buffun)
+  (let ((stream (display-output-stream display)))
+    (declare (type (or null stream) stream))
+    (unless (null stream)
+      (close stream :abort abort))))
+
+;;; BUFFER-INPUT-WAIT-DEFAULT - wait for for input to be available for the
+;;; buffer.  This is called in read-input between requests, so that a process
+;;; waiting for input is abortable when between requests.  Should return
+;;; :TIMEOUT if it times out, NIL otherwise.
+
+;;; The default implementation is to just return right away.
+#-(or Genera lcl3.0)
+(defun buffer-input-wait-default (display timeout)
+  (declare (type display display)
+	   (type (or null number) timeout)
+	   (ignore display timeout))
+  (declare (values timeout))
+  nil)
+
+#+Genera
+(defun buffer-input-wait-default (display timeout)
+  (declare (type display display)
+	   (type (or null number) timeout))
+  (declare (values timeout))
+  (let ((stream (display-input-stream display)))
+    (declare (type (or null stream) stream))
+    (cond ((null stream))
+	  ((null timeout)
+	   #+CLX-Genera-new-scheduler (si:stream-input-block stream "CLX Input")
+	   #-CLX-Genera-new-scheduler (scl:send stream :input-wait "CLX Input"))
+	  (t
+	   (scl:condition-bind ((neti:protocol-timeout
+				  #'(lambda (error)
+				      (when (eq stream (scl:send error :stream))
+					(return-from buffer-input-wait-default :timeout)))))
+	     (neti:with-stream-timeout (stream :input timeout)
+	       #+CLX-Genera-new-scheduler (si:stream-input-block stream "CLX Input")
+	       #-CLX-Genera-new-scheduler (scl:send stream :input-wait "CLX Input")))))
+    nil))
+
+#+lcl3.0
+(defun buffer-input-wait-default (display timeout)
+  (declare (type display display)
+	   (type (or null number) timeout)
+	   (optimize (speed 3) (safety 0)))
+  (declare (values timeout))
+  (let ((stream (display-input-stream display)))
+    (declare (type (or null stream) stream))
+    (unless (null stream)
+      (unless (let ((fast-stream (extract-underlying-stream stream display 'input)))
+		(lucid::waiting-for-input-from-stream fast-stream
+                  (lucid::with-io-unlocked
+		    (if (null timeout)
+			(lcl:process-wait "CLX Input" #'listen stream)
+		      (lcl:process-wait-with-timeout
+			"CLX Input" timeout #'listen stream)))))
+	:timeout))))
+
+
+;;; BUFFER-LISTEN-DEFAULT - returns T if there is input available for the
+;;; buffer. This should never block, so it can be called from the scheduler.
+
+;;; The default implementation is to just use listen.
+#-excl
+(defun buffer-listen-default (display)
+  (declare (type display display))
+  (let ((stream (display-input-stream display)))
+    (declare (type (or null stream) stream))
+    (if (null stream)
+	t
+      (listen stream))))
+
+#+excl 
+(defun buffer-listen-default (display)
+  (declare (type display display))
+  (let ((fd (display-input-stream display)))
+    (declare (type fixnum fd))
+    (if (= fd -1)
+	t
+      (fd-char-avail-p fd))))
+
 
 ;;;-----------------------------------------------------------------------------
 ;;; System dependent speed hacks
@@ -1209,8 +1754,8 @@
   (let ((source-end (length source-sequence)))
     (declare (type array-index source-end))
     
-    (excl::if* (and (eq target-sequence source-sequence)
-		    (> target-start source-start))
+    (if* (and (eq target-sequence source-sequence)
+	      (> target-start source-start))
        then (let ((nelts (min (- target-end target-start)
 			      (- source-end source-start))))
 	      (do ((target-index (+ target-start nelts -1) (1- target-index))
@@ -1333,7 +1878,7 @@
 ;;; This controls macro expansion, and isn't changable at run-time You will
 ;;; probably want to set this to nil if you want good performance at
 ;;; production time.
-(defconstant *type-check?* t)
+(defconstant *type-check?* #+Genera nil #-Genera t)
 
 ;; TYPE? is used to allow the code to do error checking at a different level from
 ;; the declarations.  It also does some optimizations for systems that don't have
@@ -1346,11 +1891,11 @@
       `(typep ,object ,type)
     (progn
       (setq type (eval type))
-      #+explorer
+      #+(or Genera explorer)
       (if *type-check?*
 	  `(locally (declare (optimize safety)) (typep ,object ',type))
 	`(typep ,object ',type))
-      #-explorer
+      #-(or Genera explorer)
       (let ((predicate (assoc type
 			      '((drawable drawable-p) (window window-p) (pixmap pixmap-p)
 				(cursor cursor-p) (font font-p)
@@ -1374,27 +1919,55 @@
 ;;    Hack up KMP error signaling using zetalisp until the real thing comes along
 ;;-------------------------------------------------------------------------------
 
-(defun default-error-handler (display error-key &rest key-vals)
-  ; The default display-error-handler.
-  ; It signals the conditions listed in the DISPLAY file
-  display
-  (apply 'x-error error-key :display display :error-key error-key key-vals))
+#+(or allegro lcl3.0)
+(eval-when (eval compile)
+  (pushnew :clx-cl-error *features*))
 
-#+lispm
+(defun default-error-handler (display error-key &rest key-vals
+			      &key asynchronous &allow-other-keys)
+  (declare (type boolean asynchronous)
+	   (dynamic-extent key-vals))
+  ;; The default display-error-handler.
+  ;; It signals the conditions listed in the DISPLAY file.
+  (if asynchronous
+      (apply #'x-cerror "Ignore" error-key :display display :error-key error-key key-vals)
+      (apply #'x-error error-key :display display :error-key error-key key-vals)))
+
+#+(and lispm (not Genera) (not clx-cl-error))
 (defun x-error (condition &rest keyargs)
   (apply #'sys:signal condition keyargs))
 
-#+lispm
+#+(and lispm (not Genera) (not clx-cl-error))
 (defun x-cerror (proceed-format-string condition &rest keyargs)
   (sys:signal (apply #'zl:make-condition condition keyargs)
 	      :proceed-types proceed-format-string))
 
-#-lispm
+#+(and Genera (not clx-cl-error))
+(defun x-error (condition &rest keyargs)
+  (declare (dbg:error-reporter))
+  (apply #'sys:signal condition keyargs))
+
+#+(and Genera (not clx-cl-error))
+(defun x-cerror (proceed-format-string condition &rest keyargs)
+  (declare (dbg:error-reporter))
+  (apply #'sys:signal condition :continue-format-string proceed-format-string keyargs))
+
+#+clx-cl-error
+(defun x-error (condition &rest keyargs)
+  (declare (dynamic-extent keyargs))
+  (apply #'error condition keyargs))
+
+#+clx-cl-error
+(defun x-cerror (proceed-format-string condition &rest keyargs)
+  (declare (dynamic-extent keyargs))
+  (apply #'cerror proceed-format-string condition keyargs))
+
+#-(or lispm clx-cl-error)
 (defun x-error (condition &rest keyargs)
   (error "X-Error: ~a"
 	 (princ-to-string (apply #'make-condition condition keyargs))))
 
-#-lispm
+#-(or lispm clx-cl-error)
 (defun x-cerror (proceed-format-string condition &rest keyargs)
   (cerror proceed-format-string "X-Error: ~a"
 	 (princ-to-string (apply #'make-condition condition keyargs))))
@@ -1404,7 +1977,7 @@
 ;; Where option is one of: (:documentation doc-string) (:conc-name symbol-or-string)
 ;; or (:report exp)
 
-#+lispm
+#+(and lispm (not clx-cl-error))
 (defmacro define-condition (name parents &body options)
   (let ((slots (pop options))
 	(documentation nil)
@@ -1418,37 +1991,61 @@
     `(within-definition (,name define-condition)
        (zl:defflavor ,name ,slots ,parents
 	 :initable-instance-variables
-	 #-genera
+	 #-Genera
 	 (:accessor-prefix ,conc-name)
-	 #+genera
+	 #+Genera
 	 (:conc-name ,conc-name)
-	 #-genera
+	 #-Genera
 	 (:outside-accessible-instance-variables ,@slots)
-	 #+genera
+	 #+Genera
 	 (:readable-instance-variables ,@slots))
        ,(when reporter ;; when no reporter, parent's is inherited
-	  `(zl:defmethod #-genera (,name :report)
-	                 #+genera (:report ,name) (stream)
+	  `(zl:defmethod #-Genera (,name :report)
+	                 #+Genera (dbg:report ,name) (stream)
 	      ,(if (stringp reporter)
 		   `(write-string ,reporter stream)
 		 `(,reporter global:self stream))
 	      global:self))
+       (zl:compile-flavor-methods ,name)
        ,(when documentation
 	  `(setf (documentation name 'type) ,documentation))
        ',name)))
 
-#+lispm
+#+(and lispm (not Genera) (not clx-cl-error))
 (zl:defflavor x-error () (global:error))
 
-#-lispm
+#+(and Genera (not clx-cl-error))
+(scl:defflavor x-error
+	((dbg:proceed-types '(:continue))	;
+	 continue-format-string)
+	(sys:error)
+  (:initable-instance-variables continue-format-string))
+
+#+(and Genera (not clx-cl-error))
+(scl:defmethod (scl:make-instance x-error) (&rest ignore)
+  (when (not (sys:variable-boundp continue-format-string))
+    (setf dbg:proceed-types (remove :continue dbg:proceed-types))))
+
+#+(and Genera (not clx-cl-error))
+(scl:defmethod (dbg:proceed x-error :continue) ()
+  :continue)
+
+#+(and Genera (not clx-cl-error))
+(sys:defmethod (dbg:document-proceed-type x-error :continue) (stream)
+  (format stream continue-format-string))
+
+#+clx-cl-error
+(define-condition x-error (error))
+
+#-(or lispm clx-cl-error)
 (defstruct x-error
   report-function)
 
-#-lispm
+#-(or lispm clx-cl-error)
 (defun reporter-for-condition (name)
   (xintern "." name '-reporter.))
 
-#-lispm
+#-(or lispm clx-cl-error)
 (defmacro define-condition (name parents &body options)
   ;; Define a structure that when printed displays an error message
   (let ((slots (pop options))
@@ -1479,7 +2076,7 @@
 	     ,condition))
        ',name)))
 
-#-lispm
+#-(or lispm clx-cl-error)
 (defun condition-print (condition stream depth)
   (declare (type x-error condition)
 	   (type stream stream)
@@ -1489,19 +2086,20 @@
     (funcall (x-error-report-function condition) condition stream))
   condition)
   
-#-lispm
+#-(or lispm clx-cl-error)
 (defun make-condition (type &rest slot-initializations)
+  (declare (dynamic-extent slot-initializations))
   (let ((make-function (intern (concatenate 'string (string 'make-) (string type))
 			       (symbol-package type))))
     (apply make-function slot-initializations)))
 
-#-(or explorer genera)
+#-(or explorer Genera)
 (defun host-address (host &optional (family :internet))
   ;; Return a list whose car is the family keyword (:internet :DECnet :Chaos)
   ;; and cdr is a list of network address bytes.
   (declare (type (or stringable list) host)
 	   (type (or null (member :internet :decnet :chaos) card8) family))
-  (declare-values list)
+  (declare (values list))
   host family
   (error "HOST-ADDRESS not implemented yet."))
 
@@ -1511,7 +2109,7 @@
   ;; and cdr is a list of network address bytes.
   (declare (type (or stringable list) host)
 	   (type (or null (member :internet :decnet :chaos) card8) family))
-  (declare-values list)
+  (declare (values list))
   (ecase family
     (:internet
      (let ((addr (ip:get-ip-address host)))
@@ -1528,13 +2126,13 @@
 	     (ldb (byte 8 0) addr)
 	     (ldb (byte 8 8) addr))))))
 
-#+genera
+#+Genera
 (defun host-address (host &optional (family :internet))
   ;; Return a list whose car is the family keyword (:internet :DECnet :Chaos)
   ;; and cdr is a list of network address bytes.
   (declare (type (or stringable list) host)
 	   (type (or null (member :internet :decnet :chaos) card8) family))
-  (declare-values list)
+  (declare (values list))
   (let ((net-type (if (eq family :DECnet)
 		      :DNA
 		      family)))
@@ -1556,7 +2154,7 @@
   ;; host-object is a list whose car is the family keyword (:internet :DECnet :Chaos)
   ;; and cdr is a list of network address bytes.
   (declare (type list host-object))
-  (declare-values string family)
+  (declare (values string family))
   (let* ((family (first host-object))
 	 (address (ecase family
 		    (:internet
@@ -1574,12 +2172,12 @@
       (values (and host (funcall host :name)) family))))
 
 ;;; This isn't required, but it helps make sense of the results from access-hosts
-#+genera
+#+Genera
 (defun get-host (host-object)
   ;; host-object is a list whose car is the family keyword (:internet :DECnet :Chaos)
   ;; and cdr is a list of network address bytes.
   (declare (type list host-object))
-  (declare-values string family)
+  (declare (values string family))
   (let ((family (first host-object)))
     (values (sys:send (net:get-host-from-address 
 			(ecase family
@@ -1609,3 +2207,14 @@
     (princ (display-host display) stream)
     (princ " " stream)
     (princ (display-display display) stream)))
+
+;;;; Whether to use closures for requests or not.
+
+;;; If this variable is non-NIL, then request code is compiled in a much more
+;;; compact format, as the common code wrapped around each request is shared,
+;;; and the code specific to each request is built into a closure that is
+;;; funcalled by the shared code.  If your compiler makes efficient use of
+;;; closures than you probably want to set this to T, as it makes the code
+;;; more compact.
+
+(defconstant *use-closures-for-requests* #+lispm t #-lispm nil)

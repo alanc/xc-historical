@@ -97,6 +97,7 @@
 	  image-depth
 	  display
 	  display-p
+	  display-host
 	  display-display
 	  display-after-function
 	  display-protocol-major-version
@@ -106,10 +107,8 @@
 	  display-resource-id-mask
 	  display-xid
 	  display-byte-order
-	  display-version-number
 	  display-release-number
 	  display-max-request-length
-	  display-squish
 	  display-default-screen
 	  display-nscreens
 	  display-roots
@@ -124,6 +123,7 @@
 	  display-authorization-name
 	  display-authorization-data
 	  display-plist
+	  display-report-asynchronous-errors
 	  color
 	  color-p
 	  color-red
@@ -223,6 +223,7 @@
 	  screen-height-in-millimeters
 	  screen-depths
 	  screen-root-depth
+	  screen-root-visual-info
 	  screen-root-visual
 	  screen-default-colormap
 	  screen-white-pixel
@@ -248,8 +249,6 @@
 	  font-max-byte2
 	  font-all-chars-exist-p
 	  font-default-char
-	  font-min-bounds
-	  font-max-bounds
 	  font-ascent
 	  font-descent
 	  font-properties
@@ -349,15 +348,24 @@
 
 (deftype int8 () '(signed-byte 8))
 
+(deftype real (&optional (min '*) (max '*))
+  (labels ((convert (limit floatp)
+	     (typecase limit
+	       (number (if floatp (float limit 0s0) (rational limit)))
+	       (list (map 'list #'convert limit))
+	       (otherwise limit))))
+    `(or (float ,(convert min t) ,(convert max t))
+	 (rational ,(convert min nil) ,(convert max nil)))))
+
 ; Note that we are explicitly using a different rgb representation than what
 ; is actually transmitted in the protocol.
 
-(deftype rgb-val () '(float 0.0 1.0))
+(deftype rgb-val () '(real 0 1))
 
 ; Note that we are explicitly using a different angle representation than what
 ; is actually transmitted in the protocol.
 
-(deftype angle () 'number)
+(deftype angle () '(real #.(* -2 pi) #.(* 2 pi)))
 
 (deftype mask32 () 'card32)
 
@@ -376,19 +384,19 @@
 ; Note that we are explicitly using a different spectrum representation
 ; than what is actually transmitted in the protocol.
 
-(defstruct (color (:constructor make-color-internal (red green blue)))
+(def-clx-class (color (:constructor make-color-internal (red green blue)) (:copier nil))
   (red 0.0 :type rgb-val)
   (green 0.0 :type rgb-val)
   (blue 0.0 :type rgb-val))
 
 (defun make-color (&key (red 1.0) (green 1.0) (blue 1.0) &allow-other-keys)
   (declare (type rgb-val red green blue))
-  (declare-values color)
+  (declare (values color))
   (make-color-internal red green blue))
 
 (defun color-rgb (color)
   (declare (type color color))
-  (declare-values red green blue)
+  (declare (values red green blue))
   (values (color-red color) (color-green color) (color-blue color)))
 
 (defstruct bitmap-format
@@ -404,20 +412,23 @@
 (defparameter *atom-cache-size* 200)
 (defparameter *resource-id-map-size* 500)
 
-(defstruct (display (:include buffer)
-		    (:constructor make-display-internal)
-		    (:print-function display-print))
-  host						; Server Host
+(def-clx-class (display (:include buffer)
+			(:constructor make-display-internal)
+			(:print-function display-print)
+			(:copier nil))
+  (host)					; Server Host
   (display 0 :type integer)			; Display number on host
   (after-function nil)				; Function to call after every request
-  (waiting-reply-p nil)				; non-nil when waiting for a reply
-  (input-lock (make-process-lock))		; Lock over reading from the input stream
-  (event-lock (make-process-lock))		; with-event-queue lock
-  (event-queue-lock (make-process-lock))	; new-events/event-queue lock
-  (new-events nil :type list)			; unprocessed events (a cons of event-queue)
-  (event-queue (list nil) :type cons)		; processed and unprocessed events
-  (atom-cache (make-hash-table :test #'eq :size *atom-cache-size*)
-	      :type hash-table)			; EQ Hash table relating atoms keywords
+  (event-lock
+    (make-process-lock "CLX Event Lock"))	; with-event-queue lock
+  (event-queue-lock
+    (make-process-lock "CLX Event Queue Lock"))	; new-events/event-queue lock
+  (event-queue-tail				; last event in the event queue
+    nil :type (or null reply-buffer))
+  (event-queue-head				; Threaded queue of events
+    nil :type (or null reply-buffer))
+  (atom-cache (make-hash-table :test (atom-cache-test) :size *atom-cache-size*)
+	      :type hash-table)			; Hash table relating atoms keywords
 						; to resource id's
   (font-cache nil)				;list of font
   (protocol-major-version 0 :type card16)	; Major version of server's X protocol
@@ -434,12 +445,9 @@
 						; objects (used in lookup functions)
   (xid 'resourcealloc)				; allocator function
   (byte-order :lsbfirst)			; screen byte order, LSBFirst, MSBFirst
-  (version-number 11 :type card16)		; X protocol version number.
   (release-number 0 :type card32)		; release of the server
   (max-request-length 0 :type card16)		; maximum number 32 bit words in request
-  (squish nil :type boolean)			; Squish MouseMoved events?
   (default-screen)				; default screen for operations
-  (nscreens 1 :type card8)			; number of screens on this server
   (roots nil :type list)			; List of screens
   (motion-buffer-size 0 :type card32)		; size of motion buffer
   (xdefaults)					; contents of defaults from server
@@ -465,28 +473,49 @@
   (performance-info)				; Hook for gathering performance info
   (trace-history)				; Hook for debug trace
   (plist)					; hook for extension to hang data
+  ;; These slots are used to manage multi-process input.
+  (input-in-progress nil :type (member t nil))	; T if some process is reading from the stream.
+						; Updated with CONDITIONAL-STORE.
+  (pending-commands nil)			; Threaded list of PENDING-COMMAND objects 
+						; for all commands awaiting replies.
+						; Protected by WITH-EVENT-QUEUE-INTERNAL.
+  (asynchronous-errors nil)			; Threaded list of REPLY-BUFFER objects
+						; containing error messages for commands
+						; which did not expect replies.
+						; Protected by WITH-EVENT-QUEUE-INTERNAL.
+  (report-asynchronous-errors			; When to report asynchronous errors
+    '(:immediately) :type list)			; The keywords that can be on this list 
+						; are :IMMEDIATELY, :BEFORE-EVENT-HANDLING,
+						; and :AFTER-FINISH-OUTPUT
+  (event-process nil)				; Process ID of process awaiting events.
+						; Protected by WITH-EVENT-QUEUE.
+  (new-events nil :type (or null reply-buffer))	; Pointer to the first new event in the
+						; event queue.
+						; Protected by WITH-EVENT-QUEUE.
+  (current-event-symbol				; Bound with PROGV by event handling macros 
+    (list (gensym) (gensym)) :type cons)
   )
 
 ;;(deftype drawable () '(or window pixmap))
 
-(defstruct drawable
+(def-clx-class (drawable (:copier nil))
   (id 0 :type resource-id)
   (display nil :type (or null display))
   (plist nil :type list)			; Extension hook
   )
 
-(defstruct (window (:include drawable))
+(def-clx-class (window (:include drawable) (:copier nil))
   )
 
-(defstruct (pixmap (:include drawable))
+(def-clx-class (pixmap (:include drawable) (:copier nil))
   )
 
-(defstruct colormap
+(def-clx-class (colormap (:copier nil))
   (id 0 :type resource-id)
   (display nil :type (or null display))
   )
 
-(defstruct cursor
+(def-clx-class (cursor (:copier nil))
   (id 0 :type resource-id)
   (display nil :type (or null display))
   )
@@ -550,7 +579,8 @@
 ; An association list.
 
 (deftype alist (key-type-and-name datum-type-and-name)
-  key-type-and-name datum-type-and-name 'list)
+  (declare (ignore key-type-and-name datum-type-and-name))
+  'list)
 
 ; A sequence, containing zero or more repetitions of the given elements,
 ; with the elements expressed as (type name).
@@ -569,7 +599,7 @@
 
 (deftype gcontext-state () 'simple-vector)
 
-(defstruct (gcontext (:copier nil))
+(def-clx-class (gcontext (:copier nil))
   ;; The accessors convert to CLX data types.
   (id 0 :type resource-id)
   (display nil :type (or null display))
@@ -578,6 +608,7 @@
   (server-state (allocate-gcontext-state) :type gcontext-state)
   (local-state (allocate-gcontext-state) :type gcontext-state)
   (plist nil :type list)			; Extension hook
+  (next nil #-explorer :type #-explorer (or null gcontext))
   )
 
 (defconstant *event-mask-vector*
@@ -683,8 +714,8 @@
 	   ,boole-nor ,boole-eqv ,boole-c2 ,boole-orc2
 	   ,boole-c1 ,boole-orc1 ,boole-nand ,boole-set))
 
-(defstruct visual-info
-  (id 0 :type card29)
+(defstruct (visual-info (:copier nil) (:predicate nil))
+  (id 0 :type resource-id)
   (class :static-gray :type (member :static-gray :static-color :true-color
 				    :gray-scale :pseudo-color :direct-color))
   (red-mask 0 :type pixel)
@@ -695,7 +726,7 @@
   (plist nil :type list)			; Extension hook
   )
 
-(defstruct screen
+(defstruct (screen (:copier nil) (:predicate nil))
   (root nil :type (or null window))
   (width 0 :type card16)
   (height 0 :type card16)
@@ -703,7 +734,7 @@
   (height-in-millimeters 0 :type card16)
   (depths nil :type (alist (image-depth depth) ((list visual-info) visuals)))
   (root-depth 1 :type image-depth)
-  (root-visual 0 :type card29)
+  (root-visual-info nil :type (or null visual-info))
   (default-colormap nil :type (or null colormap))
   (white-pixel 0 :type pixel)
   (black-pixel 1 :type pixel)
@@ -714,6 +745,11 @@
   (event-mask-at-open 0 :type mask32)
   (plist nil :type list)			; Extension hook
   )
+
+(defun screen-root-visual (screen)
+  (declare (type screen screen)
+	   (values resource-id))
+  (visual-info-id (screen-root-visual-info screen)))
 
 ;; The list contains alternating keywords and integers.
 (deftype font-props () 'list)
@@ -734,13 +770,13 @@
   (descent 0 :type int16)
   (properties nil :type font-props))
 
-(defstruct (font (:constructor make-font-internal))
+(def-clx-class (font (:constructor make-font-internal) (:copier nil))
   (id-internal nil :type (or null resource-id)) ;; NIL when not opened
   (display nil :type (or null display))
   (reference-count 0 :type fixnum)
   (name "" :type (or null string)) ;; NIL when ID is for a GContext
   (font-info-internal nil :type (or null font-info))
-  (char-infos-internal nil :type (or null vector))
+  (char-infos-internal nil :type (or null (simple-array int16 (*))))
   (local-only-p t :type boolean) ;; When T, always calculate text extents locally
   (plist nil :type list)			; Extension hook
   )
@@ -794,7 +830,7 @@
 	       `((proclaim '(inline ,name))
 		 (defun ,name (font)
 		   (declare (type font font))
-		   (declare-values ,type)
+		   (declare (values ,type))
 		   (,accessor (font-font-info font))))))
 	 fields)))
 
@@ -819,7 +855,7 @@
 (defun font-property (font name)
   (declare (type font font)
 	   (type keyword name))
-  (declare-values (or null int32))
+  (declare (values (or null int32)))
   (getf (font-properties font) name))
 
 (eval-when (eval compile) ;; I'd rather use macrolet, but Symbolics doesn't like it...
@@ -858,9 +894,9 @@
   ;; keyword in the vector indicates its bit position in the resulting mask
   ;; KEY-LIST is either a mask or a list of KEY-TYPE
   ;; Returns NIL when KEY-LIST is not a list or mask.
-  (declare (type vector key-vector)
+  (declare (type (simple-array keyword (*)) key-vector)
 	   (type (or mask32 list) key-list))
-  (declare-values (or mask32 nil))
+  (declare (values (or mask32 nil)))
   (typecase key-list
     (mask32 key-list)
     (list (let ((mask 0))
@@ -873,7 +909,7 @@
 (defun decode-mask (key-vector mask)
   (declare (type (simple-array keyword (*)) key-vector)
 	   (type mask32 mask))
-  (declare-values list)
+  (declare (values list))
   (do ((m mask (ash m -1))
        (bit 0 (1+ bit))
        (len (length key-vector))
@@ -887,7 +923,7 @@
 
 (defun encode-event-mask (event-mask)
   (declare (type event-mask event-mask))
-  (declare-values mask32)
+  (declare (values mask32))
   (or (encode-mask *event-mask-vector* event-mask 'event-mask-class)
       (x-type-error event-mask 'event-mask)))
 
@@ -895,49 +931,49 @@
   ;; This is only defined for core events.
   ;; Useful for constructing event-mask, pointer-event-mask, device-event-mask.
   (declare (type list keys)) ;; (list event-mask-class)
-  (declare-values mask32)
+  (declare (values mask32))
   (encode-mask *event-mask-vector* keys 'event-mask-class))
 
 (defun make-event-keys (event-mask)
   ;; This is only defined for core events.
   (declare (type mask32 event-mask))
-  (declare-values (list event-mask-class))
+  (declare (values (list event-mask-class)))
   (decode-mask *event-mask-vector* event-mask))
 
 (defun encode-device-event-mask (device-event-mask)
   (declare (type device-event-mask device-event-mask))
-  (declare-values mask32)
+  (declare (values mask32))
   (or (encode-mask *device-event-mask-vector* device-event-mask
 		   'device-event-mask-class)
       (x-type-error device-event-mask 'device-event-mask)))
 
 (defun encode-modifier-mask (modifier-mask)
   (declare (type modifier-mask modifier-mask)) ;; (list state-mask-key)
-  (declare-values mask16)
+  (declare (values mask16))
   (or (encode-mask *state-mask-vector* modifier-mask 'modifier-key)
       (and (eq modifier-mask :any) #x8000)
       (x-type-error modifier-mask 'modifier-mask)))
 
 (defun encode-state-mask (state-mask)
   (declare (type (or mask16 list) state-mask)) ;; (list state-mask-key)
-  (declare-values mask16)
+  (declare (values mask16))
   (or (encode-mask *state-mask-vector* state-mask 'state-mask-key)
       (x-type-error state-mask '(or mask16 (list state-mask-key)))))
 
 (defun make-state-mask (&rest keys)
   ;; Useful for constructing modifier-mask, state-mask.
   (declare (type list keys)) ;; (list state-mask-key)
-  (declare-values mask16)
+  (declare (values mask16))
   (encode-mask *state-mask-vector* keys 'state-mask-key))
 
 (defun make-state-keys (state-mask)
   (declare (type mask16 state-mask))
-  (declare-values (list state-mask-key))
+  (declare (values (list state-mask-key)))
   (decode-mask *state-mask-vector* state-mask))
 
 (defun encode-pointer-event-mask (pointer-event-mask)
   (declare (type pointer-event-mask pointer-event-mask))
-  (declare-values mask32)
+  (declare (values mask32))
   (or (encode-mask *pointer-event-mask-vector* pointer-event-mask
 		   'pointer-event-mask-class)
       (x-type-error pointer-event-mask 'pointer-event-mask)))

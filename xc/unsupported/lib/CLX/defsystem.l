@@ -1,5 +1,12 @@
 ;;; -*- Mode: LISP; Syntax: Common-lisp; Package: USER; Base: 10; Lowercase: Yes -*-
 
+;; Note: File mode-lines don't have:
+;;    PACKAGE: (XLIB :USE (CL))
+;;  because the TI Explorer doesn't fully support it.
+;;  Define the XLIB package here instead.
+
+(in-package 'xlib :use '(lisp))
+
 ;;;
 ;;;			 TEXAS INSTRUMENTS INCORPORATED
 ;;;				  P.O. BOX 2909
@@ -16,22 +23,8 @@
 ;;; express or implied warranty.
 ;;;
 
-;;; NOTE: This is beta code.  There are various known problems (e.g.,
-;;; various cases of gcontext shadowing, bullet-proof abort handling),
-;;; and various features (e.g., less restrictive locking) being thought
-;;; about.  Bug reports should be addressed to
-;;; bug-clx@zermatt.lcs.mit.edu.
-
-;; Note: File mode-lines don't have:
-;;    PACKAGE: (XLIB :USE (CL))
-;;  because the TI Explorer doesn't fully support it.
-;;  Define the XLIB package here instead.
-
-(unless (find-package "XLIB")
-  (make-package "XLIB" :use '("LISP")))
-
 #+(and lispm (not genera))
-(defsystem CLX
+(global:defsystem CLX
   (:pathname-default "clx:clx;")
   (:patchable "clx:patch;" clx-ti)
   (:initial-status :experimental)
@@ -100,76 +93,61 @@
   )
 
 
-#+genera
-(defsystem CLX
-    (:default-pathname "CLX:CLX;"
+;;; Symbolics Genera has two different schedulers, one in 7.2 and the other in 7.3 and 7.4.
+;;; Define a feature so we can use different code for them.
+#+Genera
+(eval-when (compile load eval)
+  (multiple-value-bind (ignore status)
+      (find-symbol "WITH-LOCK" (find-package 'process))
+    (when (eq status :external)
+      (pushnew :clx-genera-new-scheduler *features*))))
+
+#+Genera
+(scl:defsystem CLX
+    (:default-pathname "SYS:X11;CLX;"
      :default-package "XLIB"
      :pretty-name "CLX"
+     :maintaining-sites (:scrc)
+     :distribute-sources t
      :distribute-binaries t
-     :bug-reports ("CLX" "Report problems with CLX.")
-     :initial-status :experimental)
+     :source-category :basic)
   (:module doc ("doc")
 	   (:type :lisp-example))
-  (:module depdefs ("depdefs"))
+  (:module depdefs ("depdefs" #+CLX-Genera-New-Scheduler "generalock"))
   (:module clx ("clx")
 	   (:uses-definitions-from depdefs))
   (:module dependent ("dependent")
 	   (:uses-definitions-from clx))
   (:module macros ("macros")
-	   (:root-module nil)
 	   (:uses-definitions-from dependent))
   (:module bufmac ("bufmac")
-	   (:root-module nil)
-	   (:uses-definitions-from macros))
+	   (:uses-definitions-from dependent macros))
   (:module buffer ("buffer")
-	   (:in-order-to :compile (:load macros))
-	   (:in-order-to :compile (:load bufmac)))
+	   (:uses-definitions-from dependent macros bufmac))
   (:module display ("display")
-	   (:in-order-to :compile (:load macros))
-	   (:in-order-to :compile (:load bufmac))
-	   (:in-order-to :compile (:load buffer)))
+	   (:uses-definitions-from dependent macros bufmac buffer))
   (:module gcontext ("gcontext")
-	   (:in-order-to :compile (:load macros))
-	   (:in-order-to :compile (:load bufmac))
-	   (:uses-definitions-from display))
+	   (:uses-definitions-from dependent macros bufmac display))
   (:module requests ("requests")
-	   (:in-order-to :compile (:load macros))
-	   (:in-order-to :compile (:load bufmac))
-	   (:uses-definitions-from display))
+	   (:uses-definitions-from dependent macros bufmac display))
   (:module input ("input")
-	   (:in-order-to :compile (:load macros))
-	   (:in-order-to :compile (:load bufmac))
-	   (:uses-definitions-from display))
+	   (:uses-definitions-from dependent macros bufmac display))
   (:module fonts ("fonts")
-	   (:in-order-to :compile (:load macros))
-	   (:in-order-to :compile (:load bufmac))
-	   (:uses-definitions-from display))
+	   (:uses-definitions-from dependent macros bufmac display))
   (:module graphics ("graphics")
-	   (:in-order-to :compile (:load macros))
-	   (:in-order-to :compile (:load bufmac))
-	   (:uses-definitions-from fonts))
+	   (:uses-definitions-from dependent macros bufmac fonts))
   (:module text ("text")
-	   (:in-order-to :compile (:load macros))
-	   (:in-order-to :compile (:load bufmac))
-	   (:uses-definitions-from gcontext fonts))
+	   (:uses-definitions-from dependent macros bufmac gcontext fonts))
   (:module attributes ("attributes")
-	   (:in-order-to :compile (:load macros))
-	   (:in-order-to :compile (:load bufmac))
-	   (:uses-definitions-from display))
+	   (:uses-definitions-from dependent macros bufmac display))
   (:module translate ("translate")
-	   (:in-order-to :compile (:load macros))
-	   (:in-order-to :compile (:load bufmac))
-	   (:uses-definitions-from display))
+	   (:uses-definitions-from dependent macros bufmac display))
   (:module keysyms ("keysyms")
 	   (:uses-definitions-from translate))
   (:module manager ("manager")
-	   (:in-order-to :compile (:load macros))
-	   (:in-order-to :compile (:load bufmac))
-	   (:uses-definitions-from display))
+	   (:uses-definitions-from dependent macros bufmac display))
   (:module image ("image")
-	   (:in-order-to :compile (:load macros))
-	   (:in-order-to :compile (:load bufmac))
-	   (:uses-definitions-from display))
+	   (:uses-definitions-from dependent macros bufmac display))
   (:module resource ("resource"))
   )
 
@@ -178,74 +156,81 @@
 
 #+lucid
 (defun clx-foreign-files ()
-  #-lcl3.0 (load "make-sequence-patch")
-  #+apollo
-  (define-foreign-function '(xlib::connect-to-server "connect_to_server")
-    '((:val host    :string)
-      (:val display :integer32))
+  #-(or lcl3.0 vax) (load "make-sequence-patch")
+  #+(and apollo (not lcl3.0))
+  (lucid::define-foreign-function '(xlib::connect-to-server "connect_to_server")
+      '((:val host    :string)
+	(:val display :integer32))
     :integer32)
-  #-apollo
-  (define-c-function (xlib::connect-to-server "_connect_to_server")
-		     (host display)
-		     :result-type :integer)
+  #+(and (not apollo) (not lcl3.0))
+  (lucid::define-c-function xlib::connect-to-server
+      (host display)
+    :result-type :integer)
+  #+lcl3.0
+  (lucid::def-foreign-function (xlib::connect-to-server 
+				 (:language :c)
+				 (:return-type :signed-32bit))
+      (host :simple-string) (display :signed-32bit))
   (unintern 'display)
   #+apollo
-  (load-foreign-file "socket" :preserve-pathname t)
+  (lucid::load-foreign-file "socket" :preserve-pathname t)
   #-apollo
-  (load-foreign-files '("socket.o") *foreign-libraries*))
+  (lucid::load-foreign-files '("socket.o") *foreign-libraries*))
 
 #-lispm
 (defun compile-clx (&optional pathname-defaults)
-  (let ((*default-pathname-defaults*
-	  (or pathname-defaults *default-pathname-defaults*)))
-    (declare (special *default-pathname-defaults*))
-    #+lucid
-    (clx-foreign-files)
-    #+kcl
-    (load "tcp/tcpinit")
-    #+excl
-    (progn
-      (compile-file "excldep")
-      (load "excldep"))
-    (compile-file "depdefs")
-    (load "depdefs")
-    (compile-file "clx")
-    (load "clx")
-    (compile-file "dependent")
-    (load "dependent")
-    (compile-file "macros")
-    (load "macros")
-    (compile-file "bufmac")
-    (load "bufmac")
-    (compile-file "buffer")
-    (load "buffer")
-    (compile-file "display")
-    (load "display")
-    (compile-file "gcontext")
-    (load "gcontext")
-    (compile-file "requests")
-    (load "requests")
-    (compile-file "input")
-    (load "input")
-    (compile-file "fonts")
-    (load "fonts")
-    (compile-file "graphics")
-    (load "graphics")
-    (compile-file "text")
-    (load "text")
-    (compile-file "attributes")
-    (load "attributes")
-    (compile-file "translate")
-    (load "translate")
-    (compile-file "keysyms")
-    (load "keysyms")
-    (compile-file "manager")
-    (load "manager")
-    (compile-file "image")
-    (load "image")
-    (compile-file "resource")
-    (load "resource")
-    ))
+  (#+lcl3.0 lucid::with-deferred-warnings
+   #-lcl3.0 progn
+   (let ((*default-pathname-defaults*
+	   (or pathname-defaults *default-pathname-defaults*)))
+     (declare (special *default-pathname-defaults*))
+     #+lucid
+     (clx-foreign-files)
+     #+kcl
+     (load "tcpinit")
+     #+excl
+     (progn
+       (compile-file "excldep")
+       (load "excldep"))
+     (compile-file "depdefs")
+     (load "depdefs")
+     (compile-file "clx")
+     (load "clx")
+     (compile-file "dependent")
+     (load "dependent")
+     (compile-file "macros")
+     (load "macros")
+     (compile-file "bufmac")
+     (load "bufmac")
+     (compile-file "buffer")
+     (load "buffer")
+     (compile-file "display")
+     (load "display")
+     (compile-file "gcontext")
+     (load "gcontext")
+     (compile-file "requests")
+     (load "requests")
+     (compile-file "input")
+     (load "input")
+     (compile-file "fonts")
+     (load "fonts")
+     (compile-file "graphics")
+     (load "graphics")
+     (compile-file "text")
+     (load "text")
+     (compile-file "attributes")
+     (load "attributes")
+     (compile-file "translate")
+     (load "translate")
+     (compile-file "keysyms")
+     (load "keysyms")
+     (compile-file "manager")
+     (load "manager")
+     (compile-file "image")
+     (load "image")
+     (compile-file "resource")
+     (load "resource")
+     )))
 
 #-lispm
 (defun load-clx (&optional pathname-defaults macros-p)
@@ -255,7 +240,7 @@
     #+lucid
     (clx-foreign-files)
     #+kcl
-    (load "tcp/tcpinit")
+    (load "tcpinit")
     #+excl
     (load "excldep")
     (load "depdefs")

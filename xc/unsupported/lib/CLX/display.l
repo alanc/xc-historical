@@ -54,7 +54,7 @@
 (defun resourcealloc (display)
   ;; Allocate a resource-id for in DISPLAY
   (declare (type display display))
-  (declare-values resource-id)
+  (declare (values resource-id))
   (dpb (incf (display-resource-id-count display))
        (display-resource-id-byte display)
        (display-resource-id-base display)))
@@ -63,7 +63,7 @@
   ;; Allocate a resource-id for OBJECT in DISPLAY
   (declare (type display display)
 	   (type t object))
-  (declare-values resource-id)
+  (declare (values resource-id))
   (if (member (eval type) *clx-cached-types*)
       `(let ((id (funcall (display-xid ,display) ,display)))
 	 (save-id ,display id ,object)
@@ -87,7 +87,7 @@
   (declare (type display display)
 	   (type integer id)
 	   (type t object))
-  (declare-values object)
+  (declare (values object))
   (setf (gethash id (display-resource-id-map display)) object))
 
 (defun make-xatom (&key display id)
@@ -105,7 +105,7 @@
 		     (display id)
 		(declare (type display display)
 			 (type resource-id id))
-		(declare-values ,type)
+		(declare (values ,type))
 		,(if (member type *clx-cached-types*)
 		     `(let ((,type (lookup-resource-id display id)))
 			(cond ((null ,type) ;; Not found, create and save it.
@@ -144,7 +144,7 @@
   ;; Return the ID for an atom in DISPLAY
   (declare (type xatom atom)
 	   (type display display))
-  (declare-values (or null resource-id))
+  (declare (values (or null resource-id)))
   (gethash (if (keywordp atom)
 	       atom
 	       (kintern atom))
@@ -155,7 +155,7 @@
   (declare (type xatom atom)
 	   (type display display)
 	   (type resource-id id))
-  (declare-values resource-id)
+  (declare (values resource-id))
   (setf (gethash (if (keywordp atom)
 		     atom
 		     (kintern atom))
@@ -169,15 +169,23 @@
        (end (length *predefined-atoms*))
        (save-p (member 'xatom *clx-cached-types*)))
       ((>= i end))
-    (set-atom-id (aref *predefined-atoms* i) display i)
+    (set-atom-id (svref *predefined-atoms* i) display i)
     (when save-p
-      (save-id display i (aref *predefined-atoms* i)))))
+      (save-id display i (svref *predefined-atoms* i)))))
+
+(defun visual-info (display visual-id)
+  (declare (type display display)
+	   (type resource-id visual-id)
+	   (values visual-info))
+  (and (not (zerop visual-id))
+       (or (lookup-resource-id display visual-id)
+	   (error "Visual info not found for id #x~x in display ~s." visual-id display))))
 
 
 ;;
 ;; Display functions
 ;;
-(defmacro with-display ((display) &body body)
+(defmacro with-display ((display &key timeout) &body body)
   ;; This macro is for use in a multi-process environment.  It provides exclusive
   ;; access to the local display object for multiple request generation.  It need not
   ;; provide immediate exclusive access for replies; that is, if another process is
@@ -187,23 +195,27 @@
   ;; is always provided at the interface level on a per-call basis.  Nested uses of
   ;; this macro will work correctly.  This macro does not prevent concurrent event
   ;; processing; see with-event-queue.
-  `(with-buffer (,display) ,@body))
+  `(with-buffer (,display ,@(and timeout `(:timeout ,timeout))) ,@body))
 
-(defmacro with-event-queue ((display) &body body)
-  ; exclusive access to event queue
+(defmacro with-event-queue ((display &key timeout) &body body)
+  ;; exclusive access to event queue
   (declare (special *within-with-event-queue*))
   (if (and (boundp '*within-with-event-queue*) *within-with-event-queue*)
       `(progn ,display ,@body) ;; Speedup hack for lexically nested with-event-queue's
-    `(compiler-let ((*within-with-event-queue* t))
-       (holding-lock ((display-event-lock ,display) "Event-Lock") ,@body))))
+    (let ((disp (if (or (symbolp display) (constantp display)) display '.display.)))
+      `(let (,@(unless (eq disp display) `((,disp ,display))))
+	 (compiler-let ((*within-with-event-queue* t))
+	   (holding-lock ((display-event-lock ,disp) ,disp "CLX Event Lock"
+			  ,@(and timeout `(:timeout ,timeout)))
+	     ,@body))))))
 
-(defmacro with-event-queue-internal ((display) &body body)
-  ; exclusive access to the internal event queues
-  `(holding-lock ((display-event-queue-lock ,display) "Event-Queue-Lock") ,@body))
-
-(defmacro with-input-lock ((display) &body body)
-  ; exclusive access to the input buffer
-  `(holding-lock ((display-input-lock ,display) "Input-Lock") ,@body))
+(defmacro with-event-queue-internal ((display &key timeout) &body body)
+  ;; exclusive access to the internal event queues
+  (let ((disp (if (or (symbolp display) (constantp display)) display '.display.)))
+    `(let (,@(unless (eq disp display) `((,disp ,display))))
+       (holding-lock ((display-event-queue-lock ,disp) ,disp "CLX Event Queue Lock"
+		      ,@(and timeout `(:timeout ,timeout)))
+	 ,@body))))
 
 (defun open-display (host  &rest options &key (display 0) protocol
 		     authorization-name authorization-data &allow-other-keys)
@@ -215,12 +227,13 @@
   ;; for host and protocol are not constrained, and will likely be very
   ;; system dependent.  The default protocol is system specific.  Authorization,
   ;; if any, is assumed to come from the environment somehow.
-  (declare (type integer display))
-  (declare-values display)
+  (declare (type integer display)
+	   (dynamic-extent options))
+  (declare (values display))
   ;; PROTOCOL is the network protocol (something like :TCP :DNA or :CHAOS). See OPEN-X-STREAM.
   (let* ((stream (open-x-stream host display protocol))
 	 (disp (apply #'make-buffer
-		      #x1000 #x1000 'make-display-internal
+		      #x2000 'make-display-internal
 		      :host host
 		      :display display
 		      :output-stream stream
@@ -230,12 +243,14 @@
 	 (ok-p nil))
     (unwind-protect
 	(progn
-	  (display-connect disp :authorization-name authorization-name :authorization-data authorization-data)
+	  (display-connect disp
+			   :authorization-name authorization-name
+			   :authorization-data authorization-data)
 	  (initialize-resource-allocator disp)
 	  (initialize-predefined-atoms disp)
 	  (initialize-extensions disp)
 	  (setq ok-p t))
-      (unless ok-p (close-display disp))) ;; Ensure network connection gets closed on connect problems
+      (unless ok-p (close-display disp :abort t)))
     disp))
 
 (defun display-force-output (display)
@@ -244,10 +259,10 @@
   (with-display (display)
     (buffer-force-output display)))
 
-(defun close-display (display)
+(defun close-display (display &key abort)
   ;; Close the host connection in DISPLAY
   (declare (type display display))
-  (close-buffer display))
+  (close-buffer display :abort abort))
 
 (defun display-connect (display &key authorization-name authorization-data)
   (unless authorization-name (setq authorization-name ""))
@@ -267,118 +282,139 @@
     (write-sequence-char display
 			 (lround (+ 12 (length authorization-name))) authorization-data))
   (buffer-force-output display)
-  (reading-buffer-reply (display :sizes (8 16 32))
-    (buffer-input display buffer-bbuf 0 8)
-    (let ((success (boolean-get 0))
-	  (reason-length (card8-get 1))
-	  (major-version (card16-get 2))
-	  (minor-version (card16-get 4))
-	  (total-length (card16-get 6))
-	  vendor-length
-	  num-roots
-	  num-formats)
-      (declare (ignore total-length))
-      (unless success
-	(x-error 'connection-failure
-		 :major-version major-version
-		 :minor-version minor-version
-		 :host (display-host display)
-		 :display (display-display display)
-		 :reason (string-get reason-length)))
-      (buffer-input display buffer-bbuf 0 32)
-      (setf (display-protocol-major-version display) major-version)
-      (setf (display-protocol-minor-version display) minor-version)
-      (setf (display-release-number display) (card32-get 0))
-      (setf (display-resource-id-base display) (card32-get 4))
-      (setf (display-resource-id-mask display) (card32-get 8))
-      (setf (display-motion-buffer-size display) (card32-get 12))
-      (setq vendor-length (card16-get 16))
-      (setf (display-max-request-length display) (card16-get 18))
-      (setq num-roots (card8-get 20))
-      (setq num-formats (card8-get 21))
-      ;; Get the image-info
-      (setf (display-image-lsb-first-p display) (zerop (card8-get 22)))
-      (let ((format (display-bitmap-format display)))
-	(declare (type bitmap-format format))
-	(setf (bitmap-format-lsb-first-p format) (zerop (card8-get 23)))
-	(setf (bitmap-format-unit format) (card8-get 24))
-	(setf (bitmap-format-pad format) (card8-get 25)))
-      (setf (display-min-keycode display) (card8-get 26))
-      (setf (display-max-keycode display) (card8-get 27))
-      ;; 4 bytes unused
-      ;; Get the vendor string
-      (setf (display-vendor-name display) (string-get vendor-length))
-      ;; Initialize the pixmap formats
-      (dotimes (i num-formats) ;; loop gathering pixmap formats
-	(buffer-input display buffer-bbuf 0 8)
-	(push (make-pixmap-format :depth (card8-get 0)
-				  :bits-per-pixel (card8-get 1)
-				  :scanline-pad (card8-get 2))
-						; 5 unused bytes
-	      (display-pixmap-formats display)))
-      (setf (display-pixmap-formats display) (nreverse (display-pixmap-formats display)))
-      ;; Initialize the screens
-      (dotimes (i num-roots)
-	(buffer-input display buffer-bbuf 0 40)
-	(let* ((root (make-window :id (card32-get 0) :display display))
-	       (screen
-		 (make-screen
-		   :root root
-		   :default-colormap (make-colormap :id (card32-get 4) :display display)
-		   :white-pixel (card32-get 8)
-		   :black-pixel (card32-get 12)
-		   :event-mask-at-open (card32-get 16)
-		   :width  (card16-get 20)
-		   :height (card16-get 22)
-		   :width-in-millimeters  (card16-get 24)
-		   :height-in-millimeters (card16-get 26)
-		   :min-installed-maps (card16-get 28)
-		   :max-installed-maps (card16-get 30)
-		   :root-visual (card32-get 32)
-		   :backing-stores (member8-get 36 :never :when-mapped :always)
-		   :save-unders-p (boolean-get 37)
-		   :root-depth (card8-get 38)))
-	       (num-depths (card8-get 39))
-	       (depths nil))
-	  ;; Save root window for event reporting
-	  (save-id display (window-id root) root)
-	  ;; Create the depth AList for a screen, (depth . visual-infos)
-	  (dotimes (j num-depths)
+  (let ((reply-buffer nil))
+    (declare (type (or null reply-buffer) reply-buffer))
+    (unwind-protect
+	(progn
+	  (setq reply-buffer (allocate-reply-buffer #x1000))
+	  (with-buffer-input (reply-buffer :sizes (8 16 32))
 	    (buffer-input display buffer-bbuf 0 8)
-	    (let ((depth (card8-get 0))
-		  (num-visuals (card16-get 2))
-		  (visuals nil)) ;; 4 bytes unused
-	      (dotimes (k num-visuals)
-		(buffer-input display buffer-bbuf 0 24)
-		(push (make-visual-info
-			:id (card32-get 0)
-			:class (member8-get 4 :static-gray :gray-scale :static-color
-					       :pseudo-color :true-color :direct-color)
-			:bits-per-rgb (card8-get 5)
-			:colormap-entries (card16-get 6)
-			:red-mask (card32-get 8)
-			:green-mask (card32-get 12)
-			:blue-mask (card32-get 16))
-		        ;; 4 bytes unused
-		      visuals))
-	      (push (cons depth (nreverse visuals)) depths)))
-	  (setf (screen-depths screen) (nreverse depths))
-	  (push screen (display-roots display))))
-      (setf (display-roots display) (nreverse (display-roots display)))
-      (setf (display-default-screen display) (first (display-roots display)))))
+	    (let ((success (boolean-get 0))
+		  (reason-length (card8-get 1))
+		  (major-version (card16-get 2))
+		  (minor-version (card16-get 4))
+		  (total-length (card16-get 6))
+		  vendor-length
+		  num-roots
+		  num-formats)
+	      (declare (ignore total-length))
+	      (unless success
+		(x-error 'connection-failure
+			 :major-version major-version
+			 :minor-version minor-version
+			 :host (display-host display)
+			 :display (display-display display)
+			 :reason
+			 (progn (buffer-input display buffer-bbuf 0 reason-length)
+				(string-get reason-length 0 :reply-buffer reply-buffer))))
+	      (buffer-input display buffer-bbuf 0 32)
+	      (setf (display-protocol-major-version display) major-version)
+	      (setf (display-protocol-minor-version display) minor-version)
+	      (setf (display-release-number display) (card32-get 0))
+	      (setf (display-resource-id-base display) (card32-get 4))
+	      (setf (display-resource-id-mask display) (card32-get 8))
+	      (setf (display-motion-buffer-size display) (card32-get 12))
+	      (setq vendor-length (card16-get 16))
+	      (setf (display-max-request-length display) (card16-get 18))
+	      (setq num-roots (card8-get 20))
+	      (setq num-formats (card8-get 21))
+	      ;; Get the image-info
+	      (setf (display-image-lsb-first-p display) (zerop (card8-get 22)))
+	      (let ((format (display-bitmap-format display)))
+		(declare (type bitmap-format format))
+		(setf (bitmap-format-lsb-first-p format) (zerop (card8-get 23)))
+		(setf (bitmap-format-unit format) (card8-get 24))
+		(setf (bitmap-format-pad format) (card8-get 25)))
+	      (setf (display-min-keycode display) (card8-get 26))
+	      (setf (display-max-keycode display) (card8-get 27))
+	      ;; 4 bytes unused
+	      ;; Get the vendor string
+	      (buffer-input display buffer-bbuf 0 (lround vendor-length))
+	      (setf (display-vendor-name display)
+		    (string-get vendor-length 0 :reply-buffer reply-buffer))
+	      ;; Initialize the pixmap formats
+	      (dotimes (i num-formats) ;; loop gathering pixmap formats
+		(buffer-input display buffer-bbuf 0 8)
+		(push (make-pixmap-format :depth (card8-get 0)
+					  :bits-per-pixel (card8-get 1)
+					  :scanline-pad (card8-get 2))
+						; 5 unused bytes
+		      (display-pixmap-formats display)))
+	      (setf (display-pixmap-formats display)
+		    (nreverse (display-pixmap-formats display)))
+	      ;; Initialize the screens
+	      (dotimes (i num-roots)
+		(buffer-input display buffer-bbuf 0 40)
+		(let* ((root (make-window :id (card32-get 0) :display display))
+		       (root-visual (card32-get 32))
+		       (screen
+			 (make-screen
+			   :root root
+			   :default-colormap (make-colormap :id (card32-get 4)
+							    :display display)
+			   :white-pixel (card32-get 8)
+			   :black-pixel (card32-get 12)
+			   :event-mask-at-open (card32-get 16)
+			   :width  (card16-get 20)
+			   :height (card16-get 22)
+			   :width-in-millimeters  (card16-get 24)
+			   :height-in-millimeters (card16-get 26)
+			   :min-installed-maps (card16-get 28)
+			   :max-installed-maps (card16-get 30)
+			   :backing-stores (member8-get 36 :never :when-mapped :always)
+			   :save-unders-p (boolean-get 37)
+			   :root-depth (card8-get 38)))
+		       (num-depths (card8-get 39))
+		       (depths nil))
+		  ;; Save root window for event reporting
+		  (save-id display (window-id root) root)
+		  ;; Create the depth AList for a screen, (depth . visual-infos)
+		  (dotimes (j num-depths)
+		    (buffer-input display buffer-bbuf 0 8)
+		    (let ((depth (card8-get 0))
+			  (num-visuals (card16-get 2))
+			  (visuals nil)) ;; 4 bytes unused
+		      (dotimes (k num-visuals)
+			(buffer-input display buffer-bbuf 0 24)
+			(let ((visual (make-visual-info
+					:id (card32-get 0)
+					:class (member8-get 4 :static-gray :gray-scale
+							    :static-color :pseudo-color
+							    :true-color :direct-color)
+					:bits-per-rgb (card8-get 5)
+					:colormap-entries (card16-get 6)
+					:red-mask (card32-get 8)
+					:green-mask (card32-get 12)
+					:blue-mask (card32-get 16)
+					;; 4 bytes unused
+					)))
+			  (save-id display (visual-info-id visual) visual)
+			  (push visual visuals)))
+		      (push (cons depth (nreverse visuals)) depths)))
+		  (setf (screen-depths screen) (nreverse depths))
+		  (setf (screen-root-visual-info screen) (visual-info display root-visual))
+		  (push screen (display-roots display))))
+	      (setf (display-roots display) (nreverse (display-roots display)))
+	      (setf (display-default-screen display) (first (display-roots display))))))
+      (when reply-buffer
+	(deallocate-reply-buffer reply-buffer))))
   display)
 
 (defun display-protocol-version (display)
   (declare (type display display))
-  (declare-values major minor)
+  (declare (values major minor))
   (values (display-protocol-major-version display)
 	  (display-protocol-minor-version display)))
 
 (defun display-vendor (display)
   (declare (type display display))
-  (declare-values name release)
+  (declare (values name release))
   (values (display-vendor-name display)
 	  (display-release-number display)))
+
+(defun display-nscreens (display)
+  (declare (type display display))
+  (length (display-roots display)))
 
 #+comment ;; defined by the DISPLAY defstruct
 (defsetf display-error-handler (display) (handler)
@@ -423,13 +459,14 @@
       (funcall (display-after-function display) display))))
 
 (defun display-finish-output (display)
-  ; Forces output, then causes a round-trip to ensure that all possible
-  ; errors and events have been received.
+  ;; Forces output, then causes a round-trip to ensure that all possible
+  ;; errors and events have been received.
   (declare (type display display))
-  (with-display (display)
-    (with-buffer-request (display *x-getinputfocus* :no-after))
-    (wait-for-reply display 16)))
-
+  (with-buffer-request-and-reply (display *x-getinputfocus* 16 :sizes (8 32))
+       ()
+    )
+  ;; Report asynchronous errors here if the user wants us to.
+  (report-asynchronous-errors display :after-finish-output))
 
 (defparameter
   *request-names*
