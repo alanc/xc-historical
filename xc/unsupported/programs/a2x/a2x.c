@@ -1,4 +1,4 @@
-/* $XConsortium: a2x.c,v 1.55 92/04/15 13:46:04 rws Exp $ */
+/* $XConsortium: a2x.c,v 1.56 92/04/15 20:21:10 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -141,7 +141,8 @@ typedef struct {
     unsigned long serial;
     struct timeval time;
     MatchRec match;
-    Window windows[1024];
+    int count;
+    Window *windows;
 } Trigger;
 
 Display *dpy;
@@ -186,7 +187,7 @@ Undo *undos[256];
 int curbscount = 0;
 Bool in_control_seq = False;
 Bool skip_next_control_char = False;
-Trigger trigger;
+Trigger trig;
 
 void process();
 
@@ -1291,8 +1292,13 @@ do_jump(buf)
 void
 unset_trigger()
 {
-    trigger.type = 0;
-    XSelectInput(dpy, trigger.root, 0L);
+    trig.type = 0;
+    if (trig.windows) {
+	XFree((char *)trig.windows);
+	trig.windows = NULL;
+	trig.count = 0;
+    }
+    XSelectInput(dpy, trig.root, 0L);
 }
 
 void
@@ -1304,18 +1310,18 @@ set_unmap_trigger()
     int i;
     int j;
 
-    XQueryTree(dpy, trigger.root, &w, &child, &children, &nchild);
+    XQueryTree(dpy, trig.root, &w, &child, &children, &nchild);
     if (!nchild) {
 	unset_trigger();
 	return;
     }
     for (i = nchild, j = 0; --i >= 0; ) {
 	w = children[i];
-	if (matches(w, &trigger.match, True))
-	    trigger.windows[j++] = w;
+	if (matches(w, &trig.match, True))
+	    children[j++] = w;
     }
-    trigger.windows[j] = None;
-    XFree((char *)children);
+    trig.windows = children;
+    trig.count = j;
 }
 
 void
@@ -1333,22 +1339,23 @@ process_events()
 	    reset_mapping();
 	    break;
 	case MapNotify:
-	    if (trigger.type == MapNotify &&
-		ev.xmap.serial >= trigger.serial &&
-		ev.xmap.event == trigger.root &&
-		matches(ev.xmap.window, &trigger.match, True))
+	    if (trig.type == MapNotify &&
+		ev.xmap.serial >= trig.serial &&
+		ev.xmap.event == trig.root &&
+		matches(ev.xmap.window, &trig.match, True))
 		unset_trigger();
 	    break;
 	case UnmapNotify:
-	    if (trigger.type == UnmapNotify &&
-		ev.xunmap.serial >= trigger.serial &&
-		ev.xunmap.event == trigger.root)
-		for (j = 0; trigger.windows[j]; j++) {
-		    if (trigger.windows[j] == ev.xunmap.window) {
+	    if (trig.type == UnmapNotify &&
+		ev.xunmap.serial >= trig.serial &&
+		ev.xunmap.event == trig.root) {
+		for (j = 0; j < trig.count; j++) {
+		    if (trig.windows[j] == ev.xunmap.window) {
 			unset_trigger();
 			break;
 		    }
 		}
+	    }
 	    break;
 	}
     }
@@ -1369,8 +1376,8 @@ do_trigger(buf)
     type = 0;
     match = MatchNone;
     wait = False;
-    trigger.time.tv_sec = 10;
-    trigger.time.tv_usec = 0;
+    trig.time.tv_sec = 10;
+    trig.time.tv_usec = 0;
     for (; *buf; buf++) {
 	switch (*buf) {
 	case 'M':
@@ -1384,7 +1391,7 @@ do_trigger(buf)
 	    break;
 	case 'N':
 	    match = MatchClass;
-	    buf = parse_class(buf + 1, &trigger.match);
+	    buf = parse_class(buf + 1, &trig.match);
 	    break;
 	case 'n':
 	case 'p':
@@ -1392,14 +1399,14 @@ do_trigger(buf)
 		match = MatchName;
 	    else
 		match = MatchPrefix;
-	    buf = parse_name(buf + 1, &trigger.match);
+	    buf = parse_name(buf + 1, &trig.match);
 	    break;
 	case ' ':
 	    delay = strtod(buf+1, &endptr);
 	    if (*endptr)
 		return;
-	    trigger.time.tv_sec = delay;
-	    trigger.time.tv_usec = (delay - trigger.time.tv_sec) * 1000000;
+	    trig.time.tv_sec = delay;
+	    trig.time.tv_usec = (delay - trig.time.tv_sec) * 1000000;
 	    buf = endptr - 1;
 	    break;
 	default:
@@ -1407,26 +1414,26 @@ do_trigger(buf)
 	}
     }
     if (type) {
-	if (trigger.type)
+	if (trig.type)
 	    unset_trigger();
-	trigger.type = type;
-	trigger.match.match = match;
-	XQueryPointer(dpy, DefaultRootWindow(dpy), &trigger.root, &child,
+	trig.type = type;
+	trig.match.match = match;
+	XQueryPointer(dpy, DefaultRootWindow(dpy), &trig.root, &child,
 		      &x, &y, &x, &y, (unsigned int *)&x);
-	trigger.serial = NextRequest(dpy);
-	XSelectInput(dpy, trigger.root, SubstructureNotifyMask);
+	trig.serial = NextRequest(dpy);
+	XSelectInput(dpy, trig.root, SubstructureNotifyMask);
 	if (type == UnmapNotify)
 	    set_unmap_trigger();
     }
-    if (!wait || !trigger.type)
+    if (!wait || !trig.type)
 	return;
-    while (trigger.type) {
+    while (trig.type) {
 	if (XPending(dpy)) {
 	    process_events();
 	    continue;
 	}
 	fdmask[0] = Xmask;
-	type = select(maxfd, fdmask, NULL, NULL, &trigger.time);
+	type = select(maxfd, fdmask, NULL, NULL, &trig.time);
 	if (type < 0)
 	    quit(1);
 	if (!type)
@@ -1717,8 +1724,6 @@ debug_state()
 {
     int i, max;
 
-    fprintf(stderr, "in_control_seq: %d\n", in_control_seq);
-    fprintf(stderr, "bscount: %d\n", curbscount);
     fprintf(stderr, "history: ");
     max = sizeof(history) - 1;
     while (max >= history_end && !history[max])
