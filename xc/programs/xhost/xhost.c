@@ -1,4 +1,4 @@
-/* $XConsortium: xhost.c,v 11.59 94/01/28 18:14:17 gildea Exp $ */
+/* $XConsortium: xhost.c,v 11.60 94/02/06 10:51:19 rws Exp $ */
  
 /*
 
@@ -532,6 +532,12 @@ static char *get_hostname (ha)
 
 #if defined(TCPCONN) || defined(STREAMSCONN)
     if (ha->family == FamilyInternet) {
+#ifdef CRAY
+	struct in_addr t_addr;
+	bzero((char *)&t_addr, sizeof(t_addr));
+	bcopy(ha->address, (char *)&t_addr, 4);
+	ha->address = (char *)&t_addr;
+#endif
 	/* gethostbyaddr can take a LONG time if the host does not exist.
 	   Assume that if it does not respond in NAMESERVER_TIMEOUT seconds
 	   that something is wrong and do not make the user wait.
