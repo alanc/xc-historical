@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: session.c,v 1.26 89/12/06 19:33:37 keith Exp $
+ * $XConsortium: session.c,v 1.27 89/12/07 20:30:22 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -28,6 +28,9 @@
 # include <X11/Xatom.h>
 # include <setjmp.h>
 # include <sys/errno.h>
+# include <stdio.h>
+
+extern int  errno;
 
 static int			clientPid;
 static struct greet_info	greet;
@@ -62,6 +65,37 @@ SessionPingFailed (d)
 
 extern void	exit ();
 
+/*
+ * We need our own error handlers because we can't be sure what exit code Xlib
+ * will use, and our Xlib does exit(1) which matches REMANAGE_DISPLAY, which
+ * can cause a race condition leaving the display wedged.  We need to use
+ * RESERVER_DISPLAY for IO errors, to ensure that the manager waits for the
+ * server to terminate.  For other X errors, we should give up.
+ */
+
+static
+IOErrorHandler (dpy)
+    Display *dpy;
+{
+    extern char *sys_errlist[];
+    extern int sys_nerr;
+    char *s = ((errno >= 0 && errno < sys_nerr) ? sys_errlist[errno]
+						: "unknown error");
+
+    LogError("fatal IO error %d (%s)\n", errno, s);
+    exit(RESERVER_DISPLAY);
+}
+
+static int
+ErrorHandler(dpy, event)
+    Display *dpy;
+    XErrorEvent *event;
+{
+    LogError("X error\n");
+    if (XmuPrintDefaultErrorMessage (dpy, event, stderr) == 0) return 0;
+    exit(UNMANAGE_DISPLAY);
+}
+
 ManageSession (d)
 struct display	*d;
 {
@@ -69,6 +103,8 @@ struct display	*d;
     Display		*dpy, *InitGreet ();
 
     Debug ("ManageSession %s\n", d->name);
+    (void)XSetIOErrorHandler(IOErrorHandler);
+    (void)XSetErrorHandler(ErrorHandler);
     SetTitle(d->name, (char *) 0);
     /*
      * Step 5: Load system default Resources
@@ -326,8 +362,6 @@ waitAbort ()
 # include	<ctype.h>
 #define killpg(pgrp, sig) kill(-(pgrp), sig)
 #endif /* SYSV */
-
-extern int  errno;
 
 AbortClient (pid)
 int	pid;
