@@ -1,4 +1,4 @@
-/* $XConsortium: Clock.c,v 1.55 90/12/31 13:29:44 gildea Exp $ */
+/* $XConsortium: Clock.c,v 1.56 91/02/17 14:51:26 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -62,11 +62,11 @@ static erase_hands(), round();
 
 static XtResource resources[] = {
     {XtNwidth, XtCWidth, XtRDimension, sizeof(Dimension),
-	goffset(width), XtRImmediate, (caddr_t) 0},
+	goffset(width), XtRImmediate, (XtPointer) 0},
     {XtNheight, XtCHeight, XtRDimension, sizeof(Dimension),
-	goffset(height), XtRImmediate, (caddr_t) 0},
+	goffset(height), XtRImmediate, (XtPointer) 0},
     {XtNupdate, XtCInterval, XtRInt, sizeof(int), 
-        offset(update), XtRImmediate, (caddr_t) 60 },
+        offset(update), XtRImmediate, (XtPointer) 60 },
     {XtNforeground, XtCForeground, XtRPixel, sizeof(Pixel),
         offset(fgpixel), XtRString, XtDefaultForeground},
     {XtNhand, XtCForeground, XtRPixel, sizeof(Pixel),
@@ -74,13 +74,13 @@ static XtResource resources[] = {
     {XtNhighlight, XtCForeground, XtRPixel, sizeof(Pixel),
         offset(Hipixel), XtRString, XtDefaultForeground},
     {XtNanalog, XtCBoolean, XtRBoolean, sizeof(Boolean),
-        offset(analog), XtRImmediate, (caddr_t) TRUE},
+        offset(analog), XtRImmediate, (XtPointer) TRUE},
     {XtNchime, XtCBoolean, XtRBoolean, sizeof(Boolean),
-	offset(chime), XtRImmediate, (caddr_t) FALSE },
+	offset(chime), XtRImmediate, (XtPointer) FALSE },
     {XtNpadding, XtCMargin, XtRInt, sizeof(int),
-        offset(padding), XtRImmediate, (caddr_t) 8},
+        offset(padding), XtRImmediate, (XtPointer) 8},
     {XtNfont, XtCFont, XtRFontStruct, sizeof(XFontStruct *),
-        offset(font), XtRString, "fixed"},
+        offset(font), XtRString, XtDefaultFont},
     {XtNbackingStore, XtCBackingStore, XtRBackingStore, sizeof (int),
     	offset (backing_store), XtRString, "default"},
 };
@@ -107,7 +107,7 @@ ClockClassRec clockClassRec = {
     /* num_actions		*/	0,
     /* resources		*/	resources,
     /* resource_count		*/	XtNumber(resources),
-    /* xrm_class		*/	NULL,
+    /* xrm_class		*/	NULLQUARK,
     /* compress_motion		*/	TRUE,
     /* compress_exposure	*/	TRUE,
     /* compress_enterleave	*/	TRUE,
@@ -300,7 +300,7 @@ static void clock_tic(client_data, id)
 	if (id || !w->clock.interval_id)
 	    w->clock.interval_id =
 		XtAppAddTimeOut( XtWidgetToApplicationContext( (Widget) w),
-				w->clock.update*1000, clock_tic, (caddr_t)w );
+				w->clock.update*1000, clock_tic, (XtPointer)w );
 	(void) time(&time_value);
 	tm = *localtime(&time_value);
 	/*
@@ -732,7 +732,7 @@ static Boolean SetValues (gcurrent, grequest, gnew)
 	      new->clock.interval_id = XtAppAddTimeOut( 
                                          XtWidgetToApplicationContext(gnew),
 					 new->clock.update*1000,
-				         clock_tic, (caddr_t)gnew);
+				         clock_tic, (XtPointer)gnew);
 
 	  new->clock.show_second_hand =(new->clock.update <= SECOND_HAND_TIME);
       }
