@@ -1,15 +1,38 @@
 INSTALLFLAGS = $(INSTDATFLAGS)
 
-FILES = C \
-	ja_JP.jis7 ja_JP.jis8 ja_JP.mscode ja_JP.ujis \
-	ko_KR.euc \
-	lt_LN.bit7 lt_LN.bit8 \
-	wr_WR.ct \
-	zh_CN.ugb zh_TW.big5 \
-	nls.dir nls.alias
+#ifndef BuildXimp
+#define BuildXimp NO
+#endif
+#ifndef BuildXsi
+#if !BuildXimp
+#define BuildXsi YES
+#endif
+#endif
 
 all::
 
+depend::
+
+#if BuildXsi
+
+FILES = Xsi/C \
+	Xsi/ja_JP.jis7 Xsi/ja_JP.jis8 Xsi/ja_JP.mscode Xsi/ja_JP.ujis \
+	Xsi/ko_KR.euc \
+	Xsi/lt_LN.bit7 Xsi/lt_LN.bit8 \
+	Xsi/wr_WR.ct \
+	Xsi/zh_CN.ugb Xsi/zh_TW.big5 \
+	Xsi/nls.dir Xsi/nls.alias
+
 InstallMultiple($(FILES),$(NLSDIR))
 
-depend::
+#endif /* BuildXsi */
+
+#if BuildXimp
+
+CFILES = C/codeset.dat C/fontset.dat
+JEUCFILES = ja_JP.EUC/codeset.dat ja_JP.EUC/fontset.dat
+
+InstallMultiple($(CFILES),$(NLSDIR)/C)
+InstallMultiple($(JEUCFILES),$(NLSDIR)/ja_JP.EUC)
+
+#endif /* BuildXimp */
