@@ -1,4 +1,4 @@
-/* $XConsortium: cfbwindow.c,v 5.18 94/01/07 09:42:37 dpw Exp $ */
+/* $XConsortium: cfbwindow.c,v 5.19 94/01/21 22:07:23 dpw Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -209,8 +209,8 @@ cfbChangeWindowAttributes(pWin, mask)
     if (mask & (CWBackPixmap | CWBackPixel) &&
 	pWin->backgroundState != ParentRelative &&
 	pPrivWin->fastBorder &&
-	pPrivWin->oldRotate.x != pWin->drawable.x ||
-	pPrivWin->oldRotate.y != pWin->drawable.y)
+	(pPrivWin->oldRotate.x != pWin->drawable.x ||
+	 pPrivWin->oldRotate.y != pWin->drawable.y))
     {
 	cfbXRotatePixmap(pPrivWin->pRotatedBorder,
 		      pWin->drawable.x - pPrivWin->oldRotate.x);
