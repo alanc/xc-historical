@@ -57,7 +57,7 @@ can generate.  Note that it is not related to the number of planes, which the
 log base 2 of the size of the colormap.  
 .TP 8
 .B CLASS=visualclass
-one of StaticGray, GrayScale, StaticColor, PsuedoColor, TrueColor,
+one of StaticGray, GrayScale, StaticColor, PseudoColor, TrueColor,
 DirectColor.
 .TP 8
 .B COLOR
