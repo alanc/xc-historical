@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: cfbline.c,v 1.2 89/08/21 16:41:28 keith Exp $ */
+/* $XConsortium: cfbline.c,v 1.3 89/09/01 15:45:27 keith Exp $ */
 #include "X.h"
 
 #include "gcstruct.h"
@@ -589,8 +589,8 @@ cfbLineSD( pDrawable, pGC, mode, npt, pptInit)
     isDoubleDash = (pGC->lineStyle == LineDoubleDash);
     dashIndex = 0;
     dashOffset = 0;
-    stepDash (pGC->dashOffset, &dashIndex, pDash,
-	      numInDashList, &dashOffset);
+    miStepDash (pGC->dashOffset, &dashIndex, pDash,
+		numInDashList, &dashOffset);
 
     fg = pGC->fgPixel;
     bg = pGC->bgPixel;
@@ -729,8 +729,8 @@ cfbLineSD( pDrawable, pGC, mode, npt, pptInit)
 			    dlen = abs(pt1Copy.x - x1);
 		    	else
 			    dlen = abs(pt1Copy.y - y1);
-		    	stepDash (dlen, &dashIndexTmp, pDash,
-			      	  numInDashList, &dashOffsetTmp);
+		    	miStepDash (dlen, &dashIndexTmp, pDash,
+				    numInDashList, &dashOffsetTmp);
 		    }
 		    if (axis == X_AXIS)
 		    	len = abs(pt2Copy.x - pt1Copy.x);
@@ -813,40 +813,3 @@ cfbLineSD( pDrawable, pGC, mode, npt, pptInit)
     }
 #endif
 }
-
-#ifndef POLYSEGMENT
-stepDash (dist, pDashIndex, pDash, numInDashList, pDashOffset)
-int *pDashIndex;	/* current dash */
-unsigned char *pDash;	/* dash list */
-int numInDashList;	/* total length of dash list */
-int *pDashOffset;	/* offset into current dash */
-{
-    int	dashIndex, dashOffset;
-    int totallen;
-    int	i;
-    
-    dashIndex = *pDashIndex;
-    dashOffset = *pDashOffset;
-    if (dist < pDash[dashIndex] - dashOffset)
-    {
-	*pDashOffset = dashOffset + dist;
-	return;
-    }
-    dist -= pDash[dashIndex] - dashOffset;
-    if (++dashIndex == numInDashList)
-	dashIndex = 0;
-    totallen = 0;
-    for (i = 0; i < numInDashList; i++)
-	totallen += pDash[i];
-    if (totallen <= dist)
-	dist = dist % totallen;
-    while (dist >= pDash[dashIndex])
-    {
-	dist -= pDash[dashIndex];
-	if (++dashIndex == numInDashList)
-	    dashIndex = 0;
-    }
-    *pDashIndex = dashIndex;
-    *pDashOffset = dist;
-}
-#endif
