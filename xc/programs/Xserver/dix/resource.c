@@ -22,7 +22,7 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: resource.c,v 1.82 90/09/23 15:17:47 rws Exp $ */
+/* $XConsortium: resource.c,v 1.83 90/09/23 15:47:19 rws Exp $ */
 
 /*	Routines to manage various kinds of resources:
  *
@@ -227,6 +227,14 @@ AvailableID(client, id, maxid, goodid)
     }
     return 0;
 }
+
+/*
+ * Return the next usable fake client ID.
+ *
+ * Normally this is just the next one in line, but if we've used the last
+ * in the range, we need to find a new range of safe IDs to avoid
+ * over-running another client.
+ */
 
 XID
 FakeClientID(client)
