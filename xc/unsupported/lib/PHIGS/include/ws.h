@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: ws.h,v 5.1 91/02/16 09:49:21 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -156,7 +156,7 @@ typedef struct {
 
 typedef enum {
     WS_PRE_CSS_DELETE,
-    WS_POST_CSS_DELETE,
+    WS_POST_CSS_DELETE
 } Ws_delete_flag;
 
 typedef	Ws_update_action

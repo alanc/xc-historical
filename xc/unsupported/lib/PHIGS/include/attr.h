@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: attr.h,v 5.1 91/02/16 09:48:58 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -152,7 +152,7 @@ typedef enum {
 typedef enum {
     PHG_ATTR_PKG_ZERO	= 0,
     PHG_ATTR_PKG_GENERIC	= PHG_ATTR_PKG_FIRST,
-    PHG_ATTR_PKG_LAST	= PHG_ATTR_PKG_FIRST + 18,
+    PHG_ATTR_PKG_LAST	= PHG_ATTR_PKG_FIRST + 18
 } Phg_attr_pkg;
     /* Change PHG_ATTR_PKG_LAST to be EQUAL to the last legal pkg id. */
     /* The procedure counter(), called by phg_attr_make, aborts if */

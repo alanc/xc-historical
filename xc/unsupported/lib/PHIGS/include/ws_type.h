@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: ws_type.h,v 5.1 91/02/16 09:49:22 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -456,7 +456,7 @@ typedef struct {
 typedef enum {
     WST_BOUND,		/* not bound to a workstation yet */
     WST_UNBOUND,	/* has been bound to a workstation */
-    WST_GLOBAL,		/* one of the globals supplied by the SI */
+    WST_GLOBAL		/* one of the globals supplied by the SI */
 } Wst_bound_status;
 
 typedef struct _Wst {
