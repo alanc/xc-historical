@@ -1,7 +1,7 @@
 /*
  * Xau - X Authorization Database Library
  *
- * $XConsortium: AuLock.c,v 1.6 91/01/08 15:09:25 gildea Exp $
+ * $XConsortium: AuLock.c,v 1.7 91/04/17 10:59:27 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -21,11 +21,9 @@
 #include <X11/Xauth.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#ifndef X_NOT_POSIX
 #include <errno.h>
-#else
-#include <sys/errno.h>
-#endif
+
+extern int errno;
 
 #if NeedFunctionPrototypes
 int
@@ -50,7 +48,6 @@ long	dead;
     struct stat	statb;
     long	now;
     int		creat_fd = -1;
-    extern int	errno;
 
     if (strlen (file_name) > 1022)
 	return LOCK_ERROR;
@@ -82,6 +79,10 @@ long	dead;
 	if (creat_fd != -1) {
 	    if (link (creat_name, link_name) != -1)
 		return LOCK_SUCCESS;
+	    if (errno == ENOENT) {
+		creat_fd = -1;	/* force re-creat next time around */
+		continue;
+	    }
 	    if (errno != EEXIST)
 		return LOCK_ERROR;
 	}
