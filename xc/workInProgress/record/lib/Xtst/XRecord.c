@@ -2,7 +2,7 @@
  * Copyright 1988-1993 Network Computing Devices, Inc.  All rights reserved.
  * An unpublished work.
  * 
- * $XConsortium: XRecord.c,v 1.1 94/01/29 17:44:56 rws Exp $
+ * $XConsortium: XRecord.c,v 1.2 94/01/29 18:01:34 rws Exp $
  */
 
 #include <stdio.h>
@@ -122,7 +122,7 @@ XRecordQueryVersion (dpy, cmajor, cminor, ret)
 {
     XExtDisplayInfo *info = find_display (dpy);
     register xRecordQueryVersionReq   *req;
-    register xRecordQueryVersionReply rep;
+    xRecordQueryVersionReply rep;
 
     XRecordCheckExtension (dpy, info, False);
   
@@ -226,7 +226,7 @@ XRecordGetCG(dpy, config, ret)
 {
     XExtDisplayInfo *info = find_display (dpy);
     register xRecordGetConfigReq   	*req;
-    register xRecordGetConfigReply 	rep;
+    xRecordGetConfigReply 	rep;
 
     XRecordCheckExtension (dpy, info, 0);
     LockDisplay(dpy);
@@ -255,7 +255,7 @@ XRecordEnableCG(dpy, config, enable, attr)
 {
     XExtDisplayInfo *info = find_display (dpy);
     register xRecordEnableConfigReq   	*req;
-    register xRecordEnableConfigReply 	rep; 
+    xRecordEnableConfigReply 	rep; 
     Status 				status;
     _XAsyncHandler 			async;
     _XCGState 				async_state;
