@@ -1,4 +1,4 @@
-/* $XConsortium: sm_process.c,v 1.17 93/12/07 11:05:33 mor Exp $ */
+/* $XConsortium: sm_process.c,v 1.18 93/12/15 17:32:32 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -166,8 +166,6 @@ IceReplyWaitInfo *replyWait;
 	break;
 
     case SM_Die:
-
-	IceSetShutdownNegotiation (smcConn->iceConn, False);
 
 	(*smcConn->callbacks.die.callback) (smcConn,
 	    smcConn->callbacks.die.client_data);

@@ -1,4 +1,4 @@
-/* $XConsortium: sm_client.c,v 1.16 93/12/07 11:05:30 mor Exp $ */
+/* $XConsortium: sm_client.c,v 1.17 93/12/15 17:32:01 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -235,32 +235,27 @@ int	count;
 char    **reasonMsgs;
 
 {
-    IceConn	iceConn = smcConn->iceConn;
-    int		i;
+    IceConn			iceConn = smcConn->iceConn;
+    smCloseConnectionMsg 	*pMsg;
+    char 			*pData;
+    int				extra, i;
 
-    if (IceCheckShutdownNegotiation (iceConn) == True)
-    {
-	smCloseConnectionMsg 	*pMsg;
-	char 			*pData;
-	int			extra;
+    extra = 8;
 
-	extra = 8;
+    for (i = 0; i < count; i++)
+	extra += ARRAY8_BYTES (strlen (reasonMsgs[i]));
 
-	for (i = 0; i < count; i++)
-	    extra += ARRAY8_BYTES (strlen (reasonMsgs[i]));
+    IceGetHeaderExtra (iceConn, _SmcOpcode, SM_CloseConnection,
+	SIZEOF (smCloseConnectionMsg), WORD64COUNT (extra),
+	smCloseConnectionMsg, pMsg, pData);
 
-	IceGetHeaderExtra (iceConn, _SmcOpcode, SM_CloseConnection,
-	    SIZEOF (smCloseConnectionMsg), WORD64COUNT (extra),
-	    smCloseConnectionMsg, pMsg, pData);
+    STORE_CARD32 (pData, count);
+    pData += 4;
 
-	STORE_CARD32 (pData, count);
-	pData += 4;
+    for (i = 0; i < count; i++)
+	STORE_ARRAY8 (pData, strlen (reasonMsgs[i]), reasonMsgs[i]); 
 
-	for (i = 0; i < count; i++)
-	    STORE_ARRAY8 (pData, strlen (reasonMsgs[i]), reasonMsgs[i]); 
-
-	IceFlush (iceConn);
-    }
+    IceFlush (iceConn);
 
     IceProtocolShutdown (iceConn, _SmcOpcode);
     IceSetShutdownNegotiation (iceConn, False);
