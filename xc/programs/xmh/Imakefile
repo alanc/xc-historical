@@ -11,4 +11,4 @@ LOCAL_LIBRARIES = $(OLDXTOOLLIB) $(OLDXRMLIB) $(XLIB)
                   version.o viewfuncs.o
 
 ComplexProgramTarget(xmh)
-InstallNonExec(xmh.X11defaults,$(LIBDIR))
+InstallNonExec(xmh.Xdefaults,$(LIBDIR))
