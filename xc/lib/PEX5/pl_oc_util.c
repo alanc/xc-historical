@@ -1,4 +1,4 @@
-/* $XConsortium: pl_oc_util.c,v 1.10 92/10/26 11:03:19 mor Exp $ */
+/* $XConsortium: pl_oc_util.c,v 1.11 92/10/27 15:49:07 mor Exp $ */
 
 /******************************************************************************
 Copyright 1987,1991 by Digital Equipment Corporation, Maynard, Massachusetts
@@ -1336,14 +1336,21 @@ INPUT char		*encoded_ocs;
 
 	    pexText 		*oc = (pexText *) ptr;
 	    pexMonoEncoding	*enc;
-	    int			i;
+	    int			size, i;
 
 	    enc = (pexMonoEncoding *) (oc + 1);
 
 	    for (i = 0; i < (int) oc->numEncodings; i++)
 	    {
+		if (enc->characterSetWidth == PEXCSLong)
+		    size = enc->numChars * sizeof (long);
+		else if (enc->characterSetWidth == PEXCSShort)
+		    size = enc->numChars * sizeof (short);
+		else /* enc->characterSetWidth == PEXCSByte) */
+		    size = enc->numChars;
+
 		enc = (pexMonoEncoding *) ((char *) enc +
-	            sizeof (pexMonoEncoding) + PADDED_BYTES (enc->numChars));
+	            sizeof (pexMonoEncoding) + PADDED_BYTES (size));
 	    }
 
 	    ptr = (char *) enc;
@@ -1357,14 +1364,21 @@ INPUT char		*encoded_ocs;
 
 	    pexText2D 		*oc = (pexText2D *) ptr;
 	    pexMonoEncoding	*enc;
-	    int			i;
+	    int			size, i;
 
 	    enc = (pexMonoEncoding *) (oc + 1);
 
 	    for (i = 0; i < (int) oc->numEncodings; i++)
 	    {
+		if (enc->characterSetWidth == PEXCSLong)
+		    size = enc->numChars * sizeof (long);
+		else if (enc->characterSetWidth == PEXCSShort)
+		    size = enc->numChars * sizeof (short);
+		else /* enc->characterSetWidth == PEXCSByte) */
+		    size = enc->numChars;
+
 		enc = (pexMonoEncoding *) ((char *) enc +
-	            sizeof (pexMonoEncoding) + PADDED_BYTES (enc->numChars));
+	            sizeof (pexMonoEncoding) + PADDED_BYTES (size));
 	    }
 
 	    ptr = (char *) enc;
@@ -1378,14 +1392,21 @@ INPUT char		*encoded_ocs;
 
 	    pexAnnotationText 	*oc = (pexAnnotationText *) ptr;
 	    pexMonoEncoding	*enc;
-	    int			i;
+	    int			size, i;
 
 	    enc = (pexMonoEncoding *) (oc + 1);
 
 	    for (i = 0; i < (int) oc->numEncodings; i++)
 	    {
+		if (enc->characterSetWidth == PEXCSLong)
+		    size = enc->numChars * sizeof (long);
+		else if (enc->characterSetWidth == PEXCSShort)
+		    size = enc->numChars * sizeof (short);
+		else /* enc->characterSetWidth == PEXCSByte) */
+		    size = enc->numChars;
+
 		enc = (pexMonoEncoding *) ((char *) enc +
-	            sizeof (pexMonoEncoding) + PADDED_BYTES (enc->numChars));
+	            sizeof (pexMonoEncoding) + PADDED_BYTES (size));
 	    }
 
 	    ptr = (char *) enc;
@@ -1399,14 +1420,21 @@ INPUT char		*encoded_ocs;
 
 	    pexAnnotationText2D	*oc = (pexAnnotationText2D *) ptr;
 	    pexMonoEncoding	*enc;
-	    int			i;
+	    int			size, i;
 
 	    enc = (pexMonoEncoding *) (oc + 1);
 
 	    for (i = 0; i < (int) oc->numEncodings; i++)
 	    {
+		if (enc->characterSetWidth == PEXCSLong)
+		    size = enc->numChars * sizeof (long);
+		else if (enc->characterSetWidth == PEXCSShort)
+		    size = enc->numChars * sizeof (short);
+		else /* enc->characterSetWidth == PEXCSByte) */
+		    size = enc->numChars;
+
 		enc = (pexMonoEncoding *) ((char *) enc +
-	            sizeof (pexMonoEncoding) + PADDED_BYTES (enc->numChars));
+	            sizeof (pexMonoEncoding) + PADDED_BYTES (size));
 	    }
 
 	    ptr = (char *) enc;
