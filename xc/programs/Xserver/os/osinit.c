@@ -21,11 +21,20 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: osinit.c,v 1.24 89/03/31 08:31:56 rws Exp $ */
+/* $XConsortium: osinit.c,v 1.25 89/03/31 08:40:23 rws Exp $ */
+#ifdef apollo
+#ifndef APOLLO_SR9
+#define NDBM
+#endif
+#endif
 #include "os.h"
 #include "opaque.h"
 #undef NULL
+#ifdef NDBM
+#include <ndbm.h>
+#else
 #include <dbm.h>
+#endif
 #undef NULL
 #include <stdio.h>
 #include "Xos.h"
@@ -45,7 +54,11 @@ SOFTWARE.
 #define ADMPATH "/usr/adm/X%smsgs"
 #endif
 
-int	havergb = 0;
+#ifdef NDBM
+DBM     *rgb_dbm = (DBM *)NULL;
+#else
+int	rgb_dbm = 0;
+#endif
 extern char *display;
 #ifndef SYSV
 int limitDataSpace = -1;
@@ -130,9 +143,15 @@ OsInit()
 	been_here = TRUE;
     }
 
-    if(!havergb)
-        if(dbminit (rgbPath) == 0)
-	    havergb = 1;
-        else
+    if (!rgb_dbm)
+    {
+#ifdef NDBM
+	rgb_dbm = dbm_open(rgbPath, 0, 0);
+#else
+	if (dbminit(rgbPath) == 0)
+	    rgb_dbm = 1;
+#endif
+	if (!rgb_dbm)
 	    ErrorF( "Couldn't open RGB_DB '%s'\n", rgbPath );
+    }
 }

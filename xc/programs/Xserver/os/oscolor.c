@@ -21,8 +21,17 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: oscolor.c,v 1.14 88/09/06 15:50:49 jim Exp $ */
+/* $XConsortium: oscolor.c,v 1.15 89/03/23 09:39:36 rws Exp $ */
+#ifdef apollo
+#ifndef APOLLO_SR9
+#define NDBM
+#endif
+#endif
+#ifdef NDBM
+#include <ndbm.h>
+#else
 #include <dbm.h>
+#endif
 #include "rgb.h"
 #include "os.h"
 
@@ -32,7 +41,11 @@ SOFTWARE.
  * time. Or implement a database package that allows you to have more than
  * one database open at a time.
  */
-extern int havergb;
+#ifdef NDBM
+extern DBM *rgb_dbm;
+#else
+extern int rgb_dbm;
+#endif
 
 extern void CopyISOLatin1Lowered();
 
@@ -49,7 +62,7 @@ OsLookupColor(screen, name, len, pred, pgreen, pblue)
     RGB			rgb;
     char	*lowername;
 
-    if(!havergb)
+    if(!rgb_dbm)
 	return(0);
 
     /* convert name to lower case */
@@ -61,7 +74,11 @@ OsLookupColor(screen, name, len, pred, pgreen, pblue)
 
     dbent.dptr = lowername;
     dbent.dsize = len;
+#ifdef NDBM
+    dbent = dbm_fetch(rgb_dbm, dbent);
+#else
     dbent = fetch (dbent);
+#endif
 
     DEALLOCATE_LOCAL(lowername);
 
