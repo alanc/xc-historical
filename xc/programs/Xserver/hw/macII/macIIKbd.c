@@ -99,6 +99,7 @@ static KbPrivRec  	sysKbPriv = {
 };
 
 extern int consoleFd;
+int devosmFd = 0;
 
 /*-
  *-----------------------------------------------------------------------
@@ -135,6 +136,11 @@ macIIKbdProc (pKeyboard, what)
 		if ((consoleFd = open("/dev/console", O_RDWR|O_NDELAY)) < 0) {
 			FatalError("Could not open /dev/console. \n");
 			return (!Success);
+		}
+            }
+	    if (devosmFd == 0) {
+		if ((devosmFd = open("/dev/osm", O_RDWR)) < 0) {
+			ErrorF("Could not open /dev/osm. \n");
 		}
             }
 
@@ -178,6 +184,16 @@ macIIKbdProc (pKeyboard, what)
 	    break;
 
 	case DEVICE_CLOSE:
+	    macIIKbdSetUp(consoleFd, FALSE);
+
+	    RemoveEnabledDevice(consoleFd);
+
+	    pKeyboard->on = FALSE;
+
+	    if (devosmFd > 0) close(devosmFd);
+	    close(consoleFd);
+	    break;
+
 	case DEVICE_OFF:
 	    macIIKbdSetUp(consoleFd, FALSE);
 
@@ -209,10 +225,24 @@ macIIKbdSetUp(fd, openClose)
 		return (!Success);
 	}
 
-	if(ioctl(fd, I_POP, 0) < 0) {
-		FatalError("Failed to ioctl I_POP.\n");
-		return (!Success);
+	{
+		/* 
+		 * Pop all streams modules off /dev/console. Someday we
+		 * will remember which ones and restore them on exit.
+		 */
+		char buff[FMNAMESZ+1];
+
+		errno = 0;
+		ioctl(fd, I_LOOK, buff);
+		while (errno != EINVAL) {
+			if(ioctl(fd, I_POP, 0) < 0) {
+				FatalError("Failed to ioctl I_POP %s.\n", buff);
+				return (!Success);
+			}
+			ioctl(fd, I_LOOK, buff);
+		}
 	}
+
 		
 	iarg = 1;
 	if (ioctl(fd, FIONBIO, &iarg) < 0) {
@@ -259,48 +289,52 @@ macIIKbdSetUp(fd, openClose)
 		return (!Success);
 	}
 
+	if(ioctl(fd, I_PUSH, "kprf") < 0) {
+		/*
+		 * Not fatal! Convenience for A/UX 1.1 and later.
+		 */
+		ErrorF("Failed to ioctl I_PUSH kprf.\n");
+	}
+
     } else {
+	if(ioctl(fd, I_POP, 0) < 0) {
+		ErrorF("Failed to ioctl I_POP.\n");
+	}
+
 	iarg = 0;
 	if (ioctl(fd, FIONBIO, &iarg) < 0) {
 		ErrorF("Could not ioctl FIONBIO. \n");
-		return (!Success);
 	}
 
 #ifdef notdef
 	iarg = 0;
 	if (ioctl(fd, FIOASYNC, &iarg) < 0) {
 		ErrorF("Could not ioctl FIOASYNC. \n");
-		return (!Success);
 	}
 #endif
 
 	if (ioctl(fd, I_FLUSH, FLUSHRW) < 0) {
 		ErrorF("Failed to ioctl I_FLUSH FLUSHRW.\n");
-		return (!Success);
 	}
     
 	ctl.ic_len = 0;
 	ctl.ic_cmd = VIDEO_NOMOUSE;
 	if (ioctl(fd, I_STR, &ctl) < 0) {
 		ErrorF("Failed to ioctl I_STR VIDEO_NOMOUSE.\n");
-		return(!Success);
 	}
 
 	ctl.ic_len = 0;
 	ctl.ic_cmd = VIDEO_ASCII;
 	if (ioctl(fd, I_STR, &ctl) < 0) {
 		ErrorF("Failed to ioctl I_STR VIDEO_ASCII.\n");
-		return(!Success);
 	}
 
 	if(ioctl(fd, I_PUSH, "line") < 0) {
 		ErrorF("Failed to ioctl I_PUSH.\n");
-		return (!Success);
 	}
 
 	if (ioctl(fd, TCSETA, &save_tio) < 0) {
 		ErrorF("Failed to ioctl TCSETA.\n");
-		return (!Success);
 	}
     }
 }
