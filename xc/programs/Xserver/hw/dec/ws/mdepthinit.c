@@ -1,4 +1,4 @@
-/* $XConsortium: mdepthinit.c,v 1.1 92/04/16 09:53:27 rws Exp $ */
+/* $XConsortium: mdepthinit.c,v 1.2 92/04/16 09:57:12 rws Exp $ */
 
 /*
 
@@ -175,7 +175,7 @@ mcfbFinishScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width, bpp, depth
     extern Bool		cfbCloseScreen(), cfb16CloseScreen(), cfb32CloseScreen();
 
     rootdepth = depth;
-    if (!cfbInitVisuals(&visuals, &depths, &nvisuals, &ndepths, &rootdepth, &defaultVisual, 1 << (bpp - 1)))
+    if (!cfbInitVisuals(&visuals, &depths, &nvisuals, &ndepths, &rootdepth, &defaultVisual, 1 << (bpp - 1), 8))
 	return FALSE;
     rootdepth = depth;
     oldDevPrivate = pScreen->devPrivate;

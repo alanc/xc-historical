@@ -1,4 +1,4 @@
-/* $XConsortium: cfbcmap.c,v 4.13 92/02/11 15:04:07 keith Exp $ */
+/* $XConsortium: cfbcmap.c,v 4.14 92/03/14 00:36:20 keith Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -313,7 +313,6 @@ cfbCreateDefColormap(pScreen)
 
 extern int defaultColorVisualClass;
 
-#define _BP 8
 #define _RZ(d) ((d + 2) / 3)
 #define _RS(d) 0
 #define _RM(d) ((1 << _RZ(d)) - 1)
@@ -391,13 +390,14 @@ cfbSetVisualTypes (depth, visuals, bitsPerRGB)
  */
 
 Bool
-cfbInitVisuals (visualp, depthp, nvisualp, ndepthp, rootDepthp, defaultVisp, sizes)
+cfbInitVisuals (visualp, depthp, nvisualp, ndepthp, rootDepthp, defaultVisp, sizes, bitsPerRGB)
     VisualPtr	*visualp;
     DepthPtr	*depthp;
     int		*nvisualp, *ndepthp;
     int		*rootDepthp;
     VisualID	*defaultVisp;
     unsigned long   sizes;
+    int		bitsPerRGB;
 {
     int		i, j, k;
     VisualPtr	visual;
@@ -429,7 +429,7 @@ cfbInitVisuals (visualp, depthp, nvisualp, ndepthp, rootDepthp, defaultVisp, siz
 	    }
 	    else
 		vtype = 0;
-	    if (!cfbSetVisualTypes (d, vtype, _BP))
+	    if (!cfbSetVisualTypes (d, vtype, bitsPerRGB))
 		return FALSE;
     	}
     }
