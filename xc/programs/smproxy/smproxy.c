@@ -1,4 +1,4 @@
-/* $XConsortium: smproxy.c,v 1.21 94/07/27 16:19:42 mor Exp mor $ */
+/* $XConsortium: smproxy.c,v 1.22 94/08/10 19:48:26 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1994  X Consortium
@@ -337,7 +337,6 @@ SmPointer clientData;
 
     if (die_count == proxy_count && ok_to_die)
     {
-	SmcCloseConnection (proxy_smcConn, 0, NULL);
 	exit (0);
     }
 }
@@ -1029,15 +1028,13 @@ SmcConn smcConn;
 SmPointer clientData;
 
 {
-    ok_to_die = 1;
+    SmcCloseConnection (proxy_smcConn, 0, NULL);
+    XtRemoveInput (proxy_iceInputId);
 
     if (die_count == proxy_count)
-    {
-	SmcCloseConnection (proxy_smcConn, 0, NULL);
 	exit (0);
-    }
     else
-	XtRemoveInput (proxy_iceInputId);
+	ok_to_die = 1;
 }
 
 
