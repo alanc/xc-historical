@@ -58,11 +58,7 @@
 #ifndef OPEN_MAX
 #include <sys/param.h>
 #ifdef NOFILE
-#ifdef AIXV3 /* Limit size of array to 128 on AIXV3 as NOFILE = 2000! */
-#define OPEN_MAX 128
-#else  /* AIXV3 */
 #define OPEN_MAX NOFILE
-#endif /* AIXV3 */
 #else
 #define OPEN_MAX NOFILES_MAX
 #endif
@@ -76,6 +72,11 @@
 
 #ifdef CRAY
 #define WORD64
+#endif
+
+#if OPEN_MAX > 256
+#undef OPEN_MAX
+#define OPEN_MAX 256
 #endif
 
 #define MSKCNT ((OPEN_MAX + 31) / 32)
