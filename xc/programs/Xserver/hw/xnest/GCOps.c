@@ -1,4 +1,4 @@
-/* $XConsortium: GCOps.c,v 1.3 93/07/20 13:30:22 rws Exp $ */
+/* $XConsortium: GCOps.c,v 1.4 93/09/03 08:13:28 dpw Exp $ */
 /*
 
 Copyright 1993 by Davor Matic
@@ -385,9 +385,4 @@ void xnestPushPixels(pDrawable, pGC, pBitmap, width, height, x, y)
      int x, y;
 {
   ErrorF("xnest warning: function xnestPushPixels not implemented\n");
-}
-
-void xnestLineHelper()
-{
-  ErrorF("xnest warning: function  xnestLineHelper not implemented\n");
 }

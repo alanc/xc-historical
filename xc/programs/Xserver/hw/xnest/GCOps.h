@@ -1,4 +1,4 @@
-/* $XConsortium: xnestGCOps.h,v 1.1 93/06/23 16:23:51 dmatic Exp $ */
+/* $XConsortium: GCOps.h,v 1.1 93/07/12 15:28:27 rws Exp $ */
 /*
 
 Copyright 1993 by Davor Matic
@@ -39,6 +39,5 @@ void xnestImageText16();
 void xnestImageGlyphBlt();
 void xnestPolyGlyphBlt();
 void xnestPushPixels();
-void xnestLineHelper();
 
 #endif /* XNESTGCOPS_H */

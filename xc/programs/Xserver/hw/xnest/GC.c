@@ -1,4 +1,4 @@
-/* $XConsortium: GC.c,v 1.1 93/07/12 15:28:22 rws Exp $ */
+/* $XConsortium: GC.c,v 1.2 93/09/03 08:13:04 dpw Exp $ */
 /*
 
 Copyright 1993 by Davor Matic
@@ -66,8 +66,7 @@ static GCOps xnestOps = {
   xnestImageText16,
   xnestImageGlyphBlt,
   xnestPolyGlyphBlt,
-  xnestPushPixels,
-  xnestLineHelper,
+  xnestPushPixels
 };
 
 Bool xnestCreateGC(pGC)
