@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XGetPntMap.c,v 1.6 87/10/29 19:03:10 newman Exp $ */
+/* $Header: XGetPntMap.c,v 1.7 88/08/10 16:09:05 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #define NEED_REPLIES
@@ -45,6 +45,7 @@ KeySym *XGetKeyboardMapping (dpy, first_keycode, count, keysyms_per_keycode)
      int *keysyms_per_keycode;		/* RETURN */
 {
     long nbytes;
+    unsigned long nkeysyms;
     register KeySym *mapping = NULL;
     xGetKeyboardMappingReply rep;
     register xGetKeyboardMappingReq *req;
@@ -55,17 +56,14 @@ KeySym *XGetKeyboardMapping (dpy, first_keycode, count, keysyms_per_keycode)
     req->count = count;
     (void) _XReply(dpy, (xReply *)&rep, 0, xFalse);
 
-    if (rep.length > 0) {
+    nkeysyms = (unsigned long) rep.length;
+    if (nkeysyms > 0) {
         *keysyms_per_keycode = rep.keySymsPerKeyCode;
-	nbytes = (long)rep.length << 2;
-#ifdef WORD64
-	mapping = (KeySym *) Xmalloc ((unsigned) nbytes * 2);
+	nbytes = nkeysyms * sizeof (KeySym);
+	mapping = (KeySym *) Xmalloc ((unsigned) nbytes);
+	nbytes = nkeysyms * 4;
 	_XRead32 (dpy, (char *) mapping, nbytes);
-#else
-	mapping = (KeySym *) Xmalloc((unsigned) nbytes);
-	_XRead (dpy, (char *)mapping, nbytes);
-#endif /* WORD64 */
-      }
+    }
     UnlockDisplay(dpy);
     SyncHandle();
     return (mapping);
