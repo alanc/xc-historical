@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: x2pmp.c,v 1.10 91/01/10 11:00:16 rws Exp $
+ *	$XConsortium: x2pmp.c,v 1.11 91/05/04 22:41:11 rws Exp $
  */
 
 /* x2pmp.c: Translate xwd window dump format into PMP format for the
@@ -252,11 +252,10 @@ int scale;
 
 	while (b) {
 	    int i, last, mask;
-	    bit = 0;
-	    i = 1;
+	    bit = 1;
 	    mask = b;
 	    while (! (mask & 1)) {
-		i++;
+		bit++;
 		mask = mask >> 1;
 	    }
 	    last = scale*(bit-1);
