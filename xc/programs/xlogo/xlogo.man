@@ -50,6 +50,8 @@ to get the default host and display number.
 .B XENVIRONMENT
 to get the name of a resource file that overrides the global resources
 stored in the RESOURCE_MANAGER property.
+.SH FILES
+/usr/lib/X11/app-defaults/XLogo - specifies required resources
 .SH SEE ALSO
 X(1), xrdb(1)
 .SH COPYRIGHT
