@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.111 89/11/17 17:36:03 jim Exp $
+ * $XConsortium: events.c,v 1.112 89/11/19 15:33:56 jim Exp $
  *
  * twm event handling
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: events.c,v 1.111 89/11/17 17:36:03 jim Exp $";
+"$XConsortium: events.c,v 1.112 89/11/19 15:33:56 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -88,13 +88,22 @@ void HandleShapeNotify ();
 extern int ShapeEventBase, ShapeErrorBase;
 #endif
 
-static void do_autoraise_window (tmp)
+void AutoRaiseWindow (tmp)
     TwmWindow *tmp;
 {
     XRaiseWindow (dpy, tmp->frame);
     XSync (dpy, 0);
     enter_flag = TRUE;
     raise_win = tmp;
+}
+
+void SetRaiseWindow (tmp)
+    TwmWindow *tmp;
+{
+    enter_flag = TRUE;
+    enter_win = NULL;
+    raise_win = tmp;
+    XSync (dpy, 0);
 }
 
 
@@ -238,7 +247,7 @@ HandleEvents()
 	{
 	    if (enter_flag && !QLength(dpy)) {
 		if (enter_win && enter_win != raise_win) {
-		    do_autoraise_window (enter_win);  /* sets enter_flag T */
+		    AutoRaiseWindow (enter_win);  /* sets enter_flag T */
 		} else {
 		    enter_flag = FALSE;
 		}
@@ -1012,6 +1021,7 @@ HandleMapRequest()
 		XMapWindow(dpy, Tmp_win->w);
 		XMapWindow(dpy, Tmp_win->frame);
 		SetMapStateProp(Tmp_win, NormalState);
+		SetRaiseWindow (Tmp_win);
 		break;
 
 	    case IconicState:
@@ -1026,6 +1036,7 @@ HandleMapRequest()
     else
     {
 	DeIconify(Tmp_win);
+	SetRaiseWindow (Tmp_win);
     }
 }
 
@@ -1100,6 +1111,18 @@ HandleUnmapNotify()
 	return;
 
     if (enter_win == Tmp_win) enter_win = NULL;
+
+    if (Scr->RingLeader && Scr->RingLeader == Tmp_win)
+      Scr->RingLeader = (TwmWindow *) NULL;
+    if (Tmp_win->ring.next) {
+	if (Tmp_win->ring.next != Tmp_win) {
+	    Tmp_win->ring.next->ring.prev = Tmp_win->ring.prev;
+	    Tmp_win->ring.prev->ring.next = Tmp_win->ring.next;
+	    Scr->Ring = Tmp_win->ring.next;
+	} else {
+	    Scr->Ring = (TwmWindow *) NULL;
+	}
+    }
 
     /*
      * The program may have unmapped the client window, from either
@@ -1577,8 +1600,11 @@ HandleEnterNotify()
 	}
 	if (Tmp_win->auto_raise) {
 	    enter_win = Tmp_win;
-	    if (enter_flag == FALSE) do_autoraise_window (Tmp_win);
-	}
+	    if (enter_flag == FALSE) AutoRaiseWindow (Tmp_win);
+	} else if (enter_flag && raise_win == Tmp_win)
+	  enter_win = Tmp_win;
+	if (Tmp_win->ring.next && (!enter_flag || raise_win == enter_win))
+	  Scr->RingLeader = Tmp_win;
 	return;
     }
 
@@ -1614,18 +1640,24 @@ HandleLeaveNotify()
 {
     if (Tmp_win != NULL)
     {
-	if (Scr->FocusRoot)
-	{
-	    if (Event.xcrossing.detail != NotifyInferior)
-	    {
+	if (Scr->RingLeader && Scr->RingLeader == Tmp_win) {
+	    if (Tmp_win->mapped)
+	      Tmp_win->ring.cursor_valid = False;
+	    else {
+		Tmp_win->ring.cursor_valid = True;
+		Tmp_win->ring.curs_x = Event.xcrossing.x_root -
+		  Tmp_win->frame_x;
+		Tmp_win->ring.curs_y = Event.xcrossing.y_root -
+		  Tmp_win->frame_y;
+	    }
+	    Scr->RingLeader = (TwmWindow *) NULL;
+	}
+	if (Scr->FocusRoot) {
+	    if (Event.xcrossing.detail != NotifyInferior) {
 		if (Event.xcrossing.window == Tmp_win->frame ||
-		  (Tmp_win->list && Event.xcrossing.window == Tmp_win->list->w))
-
-		{
-		    if (Tmp_win->list)
-		    {
-			NotActiveIconManager(Tmp_win->list);
-		    }
+		  (Tmp_win->list &&
+		   Event.xcrossing.window == Tmp_win->list->w)) {
+		    if (Tmp_win->list) NotActiveIconManager(Tmp_win->list);
 		    if (Tmp_win->hilite_w)
 			XUnmapWindow(dpy, Tmp_win->hilite_w);
 		    if (Tmp_win->highlight)

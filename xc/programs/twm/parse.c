@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: parse.c,v 1.20 89/11/20 15:57:03 jim Exp $
+ * $XConsortium: parse.c,v 1.21 89/11/20 17:23:06 jim Exp $
  *
  * parse the .twmrc file
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: parse.c,v 1.20 89/11/20 15:57:03 jim Exp $";
+"$XConsortium: parse.c,v 1.21 89/11/20 17:23:06 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -262,23 +262,22 @@ typedef struct _TwmKeyword {
 #define kw0_NoIconManagers		4
 #define kw0_OpaqueMove			5
 #define kw0_InterpolateMenuColors	6
-#define kw0_WarpCursor			7
-#define kw0_NoVersion			8
-#define kw0_SortIconManager		9
-#define kw0_NoGrabServer		10
-#define kw0_NoMenuShadows		11
-#define kw0_NoRaiseOnMove		12
-#define kw0_NoRaiseOnResize		13
-#define kw0_NoRaiseOnDeiconify		14
-#define kw0_DontMoveOff			15
-#define kw0_NoBackingStore		16
-#define kw0_NoSaveUnders		17
-#define kw0_RestartPreviousState	18
-#define kw0_ClientBorderWidth		19
-#define kw0_NoTitleFocus		20
-#define kw0_RandomPlacement		21
-#define kw0_DecorateTransients		22
-#define kw0_ShowIconManager		23
+#define kw0_NoVersion			7
+#define kw0_SortIconManager		8
+#define kw0_NoGrabServer		9
+#define kw0_NoMenuShadows		10
+#define kw0_NoRaiseOnMove		11
+#define kw0_NoRaiseOnResize		12
+#define kw0_NoRaiseOnDeiconify		13
+#define kw0_DontMoveOff			14
+#define kw0_NoBackingStore		15
+#define kw0_NoSaveUnders		16
+#define kw0_RestartPreviousState	17
+#define kw0_ClientBorderWidth		18
+#define kw0_NoTitleFocus		19
+#define kw0_RandomPlacement		20
+#define kw0_DecorateTransients		21
+#define kw0_ShowIconManager		22
 
 #define kws_UsePPosition		1
 #define kws_IconFont			2
@@ -408,6 +407,7 @@ static TwmKeyword keytable[] = {
     { "f.version",		FKEYWORD, F_VERSION },
     { "f.vlzoom",		FKEYWORD, F_LEFTZOOM },
     { "f.vrzoom",		FKEYWORD, F_RIGHTZOOM },
+    { "f.warpring",		FSKEYWORD, F_WARPRING },
     { "f.warpto",		FSKEYWORD, F_WARPTO },
     { "f.warptoiconmgr",	FSKEYWORD, F_WARPTOICONMGR },
     { "f.warptoscreen",		FSKEYWORD, F_WARPTOSCREEN },
@@ -497,10 +497,10 @@ static TwmKeyword keytable[] = {
     { "usepposition",		SKEYWORD, kws_UsePPosition },
     { "w",			WINDOW, 0 },
     { "wait",			WAIT, 0 },
-    { "warpcursor",		KEYWORD, kw0_WarpCursor },
     { "west",			DKEYWORD, D_WEST },
     { "window",			WINDOW, 0 },
     { "windowfunction",		WINDOW_FUNCTION, 0 },
+    { "windowring",		WINDOW_RING, 0 },
     { "xorvalue",		NKEYWORD, kwn_XorValue },
     { "zoom",			ZOOM, 0 },
 };
@@ -563,10 +563,6 @@ int do_single_keyword (keyword)
 
       case kw0_InterpolateMenuColors:
 	if (Scr->FirstTime) Scr->InterpolateMenuColors = TRUE;
-	return 1;
-
-      case kw0_WarpCursor:
-	if (Scr->FirstTime) Scr->WarpCursor = TRUE;
 	return 1;
 
       case kw0_NoVersion:

@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: gram.y,v 1.77 89/11/20 15:56:58 jim Exp $
+ * $XConsortium: gram.y,v 1.78 89/11/20 17:22:48 jim Exp $
  *
  * .twmrc command grammer
  *
@@ -38,7 +38,7 @@
 
 %{
 static char RCSinfo[]=
-"$XConsortium: gram.y,v 1.77 89/11/20 15:56:58 jim Exp $";
+"$XConsortium: gram.y,v 1.78 89/11/20 17:22:48 jim Exp $";
 
 #include <stdio.h>
 #include <ctype.h>
@@ -55,7 +55,7 @@ static MenuRoot	*root, *pull = NULL;
 
 MenuRoot *GetRoot();
 
-static Bool CheckWarpScreenArg(), CheckColormapArg();
+static Bool CheckWarpScreenArg(), CheckWarpRingArg(), CheckColormapArg();
 static void GotButton(), GotKey(), GotTitleButton();
 static char *ptr;
 static name_list **list;
@@ -86,7 +86,7 @@ extern int yylineno;
 %token <num> START_ICONIFIED NO_TITLE_HILITE TITLE_HILITE
 %token <num> MOVE RESIZE WAIT SELECT KILL LEFT_TITLEBUTTON RIGHT_TITLEBUTTON 
 %token <num> NUMBER KEYWORD NKEYWORD CKEYWORD CLKEYWORD FKEYWORD FSKEYWORD 
-%token <num> DKEYWORD JKEYWORD ERRORTOKEN
+%token <num> DKEYWORD JKEYWORD WINDOW_RING WARP_CURSOR ERRORTOKEN
 %token <ptr> STRING SKEYWORD
 
 %type <ptr> string
@@ -224,6 +224,12 @@ stmt		: error
 					   Action = "";
 					   pull = NULL;
 					}
+		| WARP_CURSOR		{ list = &Scr->WarpCursorL; }
+		  win_list
+		| WARP_CURSOR		{ if (Scr->FirstTime) 
+					    Scr->WarpCursor = TRUE; }
+		| WINDOW_RING		{ list = &Scr->WindowRingL; }
+		  win_list
 		;
 
 
@@ -535,11 +541,19 @@ action		: FKEYWORD	{ $$ = $1; }
 				    pull = GetRoot ($2, 0, 0);
 				    pull->prev = root;
 				    break;
+				  case F_WARPRING:
+				    if (!CheckWarpRingArg (Action)) {
+					twmrc_error_prefix();
+					fprintf (stderr,
+			"ignoring invalid f.warptoring argument \"%s\"\n",
+						 Action);
+					$$ = F_NOP;
+				    }
 				  case F_WARPTOSCREEN:
 				    if (!CheckWarpScreenArg (Action)) {
 					twmrc_error_prefix();
 					fprintf (stderr, 
-			"ignoring invalid f.warpscreen argument \"%s\"\n", 
+			"ignoring invalid f.warptoscreen argument \"%s\"\n", 
 					         Action);
 					$$ = F_NOP;
 				    }
@@ -774,6 +788,19 @@ static Bool CheckWarpScreenArg (s)
 
     for (; *s && isascii(*s) && isdigit(*s); s++) ;
     return (*s ? False : True);
+}
+
+
+static Bool CheckWarpRingArg (s)
+    register char *s;
+{
+    XmuCopyISOLatin1Lowered (s, s);
+
+    if (strcmp (s,  WARPSCREEN_NEXT) == 0 ||
+	strcmp (s,  WARPSCREEN_PREV) == 0)
+      return True;
+
+    return False;
 }
 
 

@@ -28,7 +28,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: add_window.c,v 1.113 89/11/19 15:33:52 jim Exp $
+ * $XConsortium: add_window.c,v 1.114 89/11/20 17:22:37 jim Exp $
  *
  * Add a new window, put the titlbar and other stuff around
  * the window
@@ -39,7 +39,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: add_window.c,v 1.113 89/11/19 15:33:52 jim Exp $";
+"$XConsortium: add_window.c,v 1.114 89/11/20 17:22:37 jim Exp $";
 #endif /* lint */
 
 #include <stdio.h>
@@ -237,6 +237,19 @@ IconMgr *iconp;
     tmp_win->iconify_by_unmapping |= 
 	(short)LookInList(Scr->IconifyByUn, tmp_win->full_name,
 	    &tmp_win->class);
+
+    if (LookInList(Scr->WindowRingL, tmp_win->full_name, &tmp_win->class)) {
+	if (Scr->Ring) {
+	    tmp_win->ring.next = Scr->Ring->ring.next;
+	    Scr->Ring->ring.next->ring.prev = tmp_win;
+	    Scr->Ring->ring.next = tmp_win;
+	    tmp_win->ring.prev = Scr->Ring;
+	} else {
+	    tmp_win->ring.next = tmp_win->ring.prev = Scr->Ring = tmp_win;
+	}
+	tmp_win->ring.cursor_valid = False;
+    } else
+      tmp_win->ring.next = tmp_win->ring.prev = NULL;
 
     tmp_win->squeeze_info = NULL;
 #ifdef SHAPE

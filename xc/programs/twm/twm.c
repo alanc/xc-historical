@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: twm.c,v 1.87 89/11/20 16:44:21 jim Exp $
+ * $XConsortium: twm.c,v 1.88 89/11/20 16:50:47 jim Exp $
  *
  * twm - "Tom's Window Manager"
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: twm.c,v 1.87 89/11/20 16:44:21 jim Exp $";
+"$XConsortium: twm.c,v 1.88 89/11/20 16:50:47 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -298,6 +298,8 @@ main(argc, argv, environ)
 	Scr->StartIconified = NULL;
 	Scr->SqueezeTitleL = NULL;
 	Scr->DontSqueezeTitleL = NULL;
+	Scr->WindowRingL = NULL;
+	Scr->WarpCursorL = NULL;
 	/* remember to put an initialization in InitVariables also
 	 */
 
@@ -509,6 +511,9 @@ InitVariables()
     FreeList(&Scr->TitleBackgroundL);
     FreeList(&Scr->IconForegroundL);
     FreeList(&Scr->IconBackgroundL);
+    FreeList(&Scr->IconManagerFL);
+    FreeList(&Scr->IconManagerBL);
+    FreeList(&Scr->IconMgrs);
     FreeList(&Scr->NoTitle);
     FreeList(&Scr->MakeTitle);
     FreeList(&Scr->AutoRaise);
@@ -519,10 +524,12 @@ InitVariables()
     FreeList(&Scr->IconMgrNoShow);
     FreeList(&Scr->IconMgrShow);
     FreeList(&Scr->IconifyByUn);
-    FreeList(&Scr->IconManagerFL);
-    FreeList(&Scr->IconManagerBL);
-    FreeList(&Scr->IconMgrs);
     FreeList(&Scr->StartIconified);
+    FreeList(&Scr->IconManagerHighlightL);
+    FreeList(&Scr->SqueezeTitleL);
+    FreeList(&Scr->DontSqueezeTitleL);
+    FreeList(&Scr->WindowRingL);
+    FreeList(&Scr->WarpCursorL);
 
     NewFontCursor(&Scr->FrameCursor, "top_left_arrow");
     NewFontCursor(&Scr->TitleCursor, "top_left_arrow");
@@ -535,6 +542,9 @@ InitVariables()
     NewFontCursor(&Scr->WaitCursor, "watch");
     NewFontCursor(&Scr->SelectCursor, "dot");
     NewFontCursor(&Scr->DestroyCursor, "pirate");
+
+    Scr->Ring = NULL;
+    Scr->RingLeader = NULL;
 
     Scr->DefaultC.fore = black;
     Scr->DefaultC.back = white;

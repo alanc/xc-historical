@@ -28,7 +28,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: parse.h,v 1.7 89/11/13 18:11:31 jim Exp $
+ * $XConsortium: parse.h,v 1.8 89/11/13 18:23:07 jim Exp $
  *
  * .twmrc parsing externs
  *
@@ -91,16 +91,18 @@ extern void TwmOutput();
 #define F_CUTFILE		44
 #define F_SHOWLIST		45
 #define F_HIDELIST		46
-#define F_MENU			47	/* string */
-#define F_SOURCE		48	/* string */
-#define F_WARPTO		49	/* string */
-#define F_WARPTOICONMGR		50	/* string */
-#define F_FILE			51	/* string */
-#define F_EXEC			52	/* string */
-#define F_CUT			53	/* string */
-#define F_FUNCTION		54	/* string */
-#define F_WARPTOSCREEN		55	/* string */
-#define F_COLORMAP		56	/* string */
+
+#define F_MENU			101	/* string */
+#define F_SOURCE		102	/* string */
+#define F_WARPTO		103	/* string */
+#define F_WARPTOICONMGR		104	/* string */
+#define F_WARPRING		105	/* string */
+#define F_FILE			106	/* string */
+#define F_EXEC			107	/* string */
+#define F_CUT			108	/* string */
+#define F_FUNCTION		109	/* string */
+#define F_WARPTOSCREEN		110	/* string */
+#define F_COLORMAP		111	/* string */
 
 #define D_NORTH			1
 #define D_SOUTH			2

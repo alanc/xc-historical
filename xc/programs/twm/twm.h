@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: twm.h,v 1.48 89/11/20 16:04:24 jim Exp $
+ * $XConsortium: twm.h,v 1.49 89/11/20 16:43:21 jim Exp $
  *
  * twm include file
  *
@@ -243,6 +243,11 @@ typedef struct TwmWindow
     Bool xfree_cmap_windows;	/* t if need to XFree prop instead of free */
     TBWindow *titlebuttons;
     SqueezeInfo *squeeze_info;	/* should the title be squeezed? */
+    struct {
+	struct TwmWindow *next, *prev;
+	Bool cursor_valid;
+	int curs_x, curs_y;
+    } ring;
 } TwmWindow;
 
 #define DoesWmTakeFocus		(1L << 0)

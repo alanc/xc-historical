@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.118 89/11/19 15:34:14 jim Exp $
+ * $XConsortium: menus.c,v 1.119 89/11/20 17:22:59 jim Exp $
  *
  * twm menu code
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: menus.c,v 1.118 89/11/19 15:34:14 jim Exp $";
+"$XConsortium: menus.c,v 1.119 89/11/20 17:22:59 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -92,6 +92,8 @@ static struct {
     int y;
 } MenuOrigins[MAXMENUDEPTH];
 static Cursor LastCursor;
+
+void WarpAlongRing(), WarpToWindow();
 
 extern char *Action;
 extern int Context;
@@ -1150,6 +1152,9 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
     case F_DELTASTOP:
     case F_RAISELOWER:
     case F_WARPTOSCREEN:
+    case F_WARPTO:
+    case F_WARPRING:
+    case F_WARPTOICONMGR:
     case F_COLORMAP:
 	break;
     default:
@@ -1834,7 +1839,7 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
 		    if (t->mapped)
 		    {
 			XRaiseWindow(dpy, t->frame);
-			XWarpPointer(dpy, None, t->w, 0, 0, 0, 0, 10, 10);
+			WarpToWindow (t);
 			break;
 		    }
 		}
@@ -1865,6 +1870,20 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
 	}
 	break;
 	
+    case F_WARPRING:
+	switch (action[0]) {
+	  case 'n':
+	    WarpAlongRing (&eventp->xbutton, True);
+	    break;
+	  case 'p':
+	    WarpAlongRing (&eventp->xbutton, False);
+	    break;
+	  default:
+	    XBell (dpy, 0);
+	    break;
+	}
+	break;
+
     case F_FILE:
 	action = ExpandFilename(action);
 	fd = open(action, 0);
@@ -1993,8 +2012,7 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
 	break;
     }
 
-    if (ButtonPressed == -1)
-	XUngrabPointer(dpy, CurrentTime);
+    if (ButtonPressed == -1) XUngrabPointer(dpy, CurrentTime);
     return do_next_action;
 }
 
@@ -2264,11 +2282,10 @@ TwmWindow *tmp_win;
     }
     if (tmp_win->list)
 	XUnmapWindow(dpy, tmp_win->list->icon);
-    if (Scr->WarpCursor && tmp_win->icon)
-    {
-	XWarpPointer(dpy, None, tmp_win->w,
-	    0, 0, 0, 0, 5, 5);
-    }
+    if ((Scr->WarpCursor ||
+	 LookInList(Scr->WarpCursorL, tmp_win->full_name, &tmp_win->class)) &&
+	tmp_win->icon)
+      WarpToWindow (tmp_win);
     tmp_win->icon = FALSE;
     tmp_win->icon_on = FALSE;
 }
@@ -2598,4 +2615,56 @@ SaveYourself (tmp)
     } else {
 	XBell (dpy, 0);
     }
+}
+
+
+void WarpAlongRing (ev, forward)
+    XButtonEvent *ev;
+    Bool forward;
+{
+    TwmWindow *r, *head;
+
+    if (Scr->RingLeader)
+      head = Scr->RingLeader;
+    else if (!(head = Scr->Ring)) 
+      return;
+
+    if (forward) {
+	for (r = head->ring.next; r != head; r = r->ring.next) {
+	    if (r->mapped) break;
+	}
+    } else {
+	for (r = head->ring.prev; r != head; r = r->ring.prev) {
+	    if (r->mapped) break;
+	}
+    }
+
+    if (r != head) {
+	TwmWindow *p = Scr->RingLeader;
+	TwmWindow *tmp_win;
+
+	Scr->RingLeader = r;
+	WarpToWindow (r);
+	if (r->auto_raise) AutoRaiseWindow (r);
+
+	if (p && p->mapped &&
+	    XFindContext (dpy, ev->window, TwmContext, &tmp_win) != XCNOENT &&
+	    p == tmp_win) {
+	    p->ring.cursor_valid = True;
+	    p->ring.curs_x = ev->x_root - tmp_win->frame_x;
+	    p->ring.curs_y = ev->y_root - tmp_win->frame_y;
+	}
+    }
+}
+
+
+void WarpToWindow (t)
+    TwmWindow *t;
+{
+    if (t->ring.cursor_valid)
+      XWarpPointer (dpy, None, t->frame, 0, 0, 0, 0,
+		    t->ring.curs_x, t->ring.curs_y);
+    else
+      XWarpPointer (dpy, None, t->w, 0, 0, 0, 0,
+		    t->attr.width / 2, t->attr.height / 2);
 }

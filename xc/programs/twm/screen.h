@@ -21,7 +21,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: screen.h,v 1.50 89/11/06 09:17:13 jim Exp $
+ * $XConsortium: screen.h,v 1.51 89/11/16 14:35:04 jim Exp $
  *
  * twm per-screen data include file
  *
@@ -75,6 +75,9 @@ typedef struct ScreenInfo
     MenuRoot *MenuList;		/* head of the menu list */
     MenuRoot *LastMenu;		/* the last menu (mostly unused?) */
     MenuRoot *Windows;		/* the TwmWindows menu */
+
+    TwmWindow *Ring;		/* one of the windows in window ring */
+    TwmWindow *RingLeader;	/* current winodw in ring */
 
     MouseButton Mouse[MAX_BUTTONS+1][NUM_CONTEXTS][MOD_SIZE];
     MouseButton DefaultFunction;
@@ -146,6 +149,8 @@ typedef struct ScreenInfo
     name_list *IconManagerHighlightL;	/* icon manager highlight colors */
     name_list *SqueezeTitleL;		/* windows of which to squeeze title */
     name_list *DontSqueezeTitleL;	/* windows of which not to squeeze */
+    name_list *WindowRingL;	/* windows in ring */
+    name_list *WarpCursorL;	/* windows to warp cursor to on deiconify */
 
     GC NormalGC;		/* normal GC for everything */
     GC MenuGC;			/* gc for menus */
