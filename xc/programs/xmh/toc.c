@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: toc.c,v 1.8 87/12/24 10:38:50 swick Exp $";
+static char rcs_id[] = "$Header: toc.c,v 1.9 88/01/07 08:18:22 swick Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -381,7 +381,7 @@ void TocSetCurMsg(toc, msg)
 		toc->needsrepaint = TRUE;
 	    else {
 		for (i=0 ; i<toc->num_scrns ; i++)
-		    DwtTextSetInsertionPosition(toc->scrn[i]->tocwidget,
+		    XtTextSetInsertionPoint(toc->scrn[i]->tocwidget,
 						msg->position);
 	    }
 	}
@@ -533,21 +533,23 @@ MsgList TocCurMsgList(toc)
   Toc toc;
 {
     MsgList result;
-    DwtTextPosition pos1, pos2;
+    XtTextPosition pos1, pos2;
     extern Msg MsgFromPosition();
     if (toc->num_scrns == NULL) return NULL;
     result = MakeNullMsgList();
-    if ((*toc->source->GetSelection)(toc->source, &pos1, &pos2)) {
-	pos1 = (*toc->source->Scan)(toc->source, pos1, DwtstEOL, DwtsdLeft,
+/*    if ((*toc->source->GetSelection)(toc->source, &pos1, &pos2)) { */
+    XtTextGetSelectionPos( toc->scrn[0]->tocwidget, &pos1, &pos2); /* %%% */
+    if (pos1 < pos2) {
+	pos1 = (*toc->source->Scan)(toc->source, pos1, XtstEOL, XtsdLeft,
 				    1, FALSE);
-	pos2 = (*toc->source->Scan)(toc->source, pos2, DwtstPositions,
-				    DwtsdLeft, 1, TRUE);
-	pos2 = (*toc->source->Scan)(toc->source, pos2, DwtstEOL, DwtsdRight,
+	pos2 = (*toc->source->Scan)(toc->source, pos2, XtstPositions,
+				    XtsdLeft, 1, TRUE);
+	pos2 = (*toc->source->Scan)(toc->source, pos2, XtstEOL, XtsdRight,
 				    1, FALSE);
 	while (pos1 < pos2) {
-	    AppendMsgList(result, MsgFromPosition(toc, pos1, DwtsdRight));
-	    pos1 = (*toc->source->Scan)(toc->source, pos1, DwtstEOL,
-					DwtsdRight, 1, TRUE);
+	    AppendMsgList(result, MsgFromPosition(toc, pos1, XtsdRight));
+	    pos1 = (*toc->source->Scan)(toc->source, pos1, XtstEOL,
+					XtsdRight, 1, TRUE);
 	}
     }
     return result;
@@ -561,7 +563,8 @@ void TocUnsetSelection(toc)
 Toc toc;
 {
     if (toc->source)
-	(*toc->source->SetSelection)(toc->source, 1, 0);
+/*	(*toc->source->SetSelection)(toc->source, 1, 0); */
+        XtTextUnsetSelection(toc->scrn[0]->tocwidget);
 }
 
 
@@ -575,8 +578,7 @@ Toc toc;
     TUEnsureScanIsValidAndOpen(toc);
     msg = TUAppendToc(toc, "####  empty\n");
     if (FileExists(MsgFileName(msg))) {
-	if (debug) (void) fprintf(stderr, "**** FOLDER %s WAS INVALID!!!\n",
-				  toc->foldername);
+        DEBUG1("**** FOLDER %s WAS INVALID!!!\n", toc->foldername)
 	TocForceRescan(toc);
 	return TocMakeNewMsg(toc); /* Try again.  Using recursion here is ugly,
 				      but what the hack ... */
@@ -593,7 +595,7 @@ Toc toc;
 {
     int i;
     for (i=0 ; i<toc->num_scrns ; i++)
-	DwtTextDisableRedisplay(toc->scrn[i]->tocwidget, FALSE);
+	XtTextDisableRedisplay(toc->scrn[i]->tocwidget, FALSE);
     toc->stopupdate++;
 }
 
@@ -615,7 +617,7 @@ Toc toc;
 	    TUSaveTocFile(toc);
     }
     for (i=0 ; i<toc->num_scrns ; i++)
-	DwtTextEnableRedisplay(toc->scrn[i]->tocwidget);
+	XtTextEnableRedisplay(toc->scrn[i]->tocwidget);
 }
 
 
@@ -766,6 +768,7 @@ Toc toc;
 		for (i = 0; i < cur; i++)
 		    (void) fprintf(stderr, "%s ", argv[i]);
 		(void) fprintf(stderr, "\n");
+		(void) fflush(stderr);
 	    }
 	    DoCommand(argv, (char *) NULL, "/dev/null");
 	    for (i = 0; argv[i]; i++)
