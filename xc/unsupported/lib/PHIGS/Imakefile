@@ -1,5 +1,5 @@
 ##
-# $XConsortium: Imakefile,v 5.9 91/02/19 11:19:45 rws Exp $
+# $XConsortium: Imakefile,v 5.10 91/02/19 11:30:04 rws Exp $
 ##
 ## 
 ## Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -81,15 +81,15 @@ phigsmon:
 
 lib/phigsmon: cp/phigsmon
 	$(RM) $@
-	$(LN) cp/phigsmon $@
+	(cd lib; $(LN) ../cp/phigsmon phigsmon)
 
 lib/PHIGSerr.txt: include/PHIGSerr.txt
 	$(RM) $@
-	$(LN) include/PHIGSerr.txt $@	
+	(cd lib; $(LN) ../include/PHIGSerr.txt PHIGSerr.txt)
 
 lib/PHIGSfnc.txt: include/PHIGSfnc.txt
 	$(RM) $@
-	$(LN) include/PHIGSfnc.txt $@	
+	(cd lib; $(LN) ../include/PHIGSfnc.txt PHIGSfnc.txt)
 
 lintlib lint-library: FRC
 	(cd c_binding; $(MAKE) lint-library)
