@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: XShape.c,v 1.12 89/10/05 17:12:27 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -62,7 +62,7 @@ static XExtDisplayInfo *find_display (dpy)
 	dpyinfo = XextAddDisplay (shape_info, dpy, 
 				  shape_extension_name, close_display,
 				  wire_to_event, event_to_wire, 
-				  ShapeNumberEvents, NULL);
+				  ShapeNumberOfEvents, NULL);
     }
 
     return dpyinfo;
@@ -158,34 +158,25 @@ event_to_wire (dpy, re, event)
  *                                                                          *
  ****************************************************************************/
 
-Bool XShapeQueryExtension (dpy)
+Bool XShapeQueryExtension (dpy, event_basep, error_basep)
     Display *dpy;
+    int *event_basep, *error_basep;
 {
     XExtDisplayInfo *info = find_display (dpy);
 
     if (XextHasExtension(info)) {
+	*event_basep = info->codes->first_event;
+	*error_basep = info->codes->first_error;
 	return True;
     } else {
 	return False;
     }
 }
 
-int XShapeGetEventBase (dpy)
+
+Status XShapeQueryVersion(dpy, major_versionp, minor_versionp)
     Display *dpy;
-{
-    XExtDisplayInfo *info = find_display (dpy);
-
-    if (XextHasExtension(info))  {
-	return info->codes->first_event;
-    } else {
-	return -1;
-    }
-}
-
-
-Bool XShapeQueryVersion(dpy, majorVersion, minorVersion)
-    Display *dpy;
-    int	    *majorVersion, *minorVersion;
+    int	    *major_versionp, *minor_versionp;
 {
     XExtDisplayInfo *info = find_display (dpy);
     xShapeQueryVersionReply	    rep;
@@ -202,8 +193,8 @@ Bool XShapeQueryVersion(dpy, majorVersion, minorVersion)
 	SyncHandle ();
 	return 0;
     }
-    *majorVersion = rep.majorVersion;
-    *minorVersion = rep.minorVersion;
+    *major_versionp = rep.majorVersion;
+    *minor_versionp = rep.minorVersion;
     UnlockDisplay (dpy);
     SyncHandle ();
     return 1;
@@ -387,10 +378,10 @@ Status XShapeQueryExtents (dpy, window,
 }
 
 
-void XShapeSelectInput (dpy, window, enable)
+void XShapeSelectInput (dpy, window, mask)
     register Display	*dpy;
     Window		window;
-    Bool		enable;
+    unsigned long	mask;
 {
     XExtDisplayInfo *info = find_display (dpy);
     register xShapeSelectInputReq   *req;
@@ -402,7 +393,7 @@ void XShapeSelectInput (dpy, window, enable)
     req->reqType = info->codes->major_opcode;
     req->shapeReqType = X_ShapeSelectInput;
     req->window = window;
-    if (enable)
+    if (mask & ShapeNotifyMask)
 	req->enable = xTrue;
     else
 	req->enable = xFalse;
@@ -410,7 +401,7 @@ void XShapeSelectInput (dpy, window, enable)
     SyncHandle ();
 }
 
-Bool XShapeInputSelected (dpy, window)
+unsigned long XShapeInputSelected (dpy, window)
     register Display	*dpy;
     Window		window;
 {
@@ -432,7 +423,7 @@ Bool XShapeInputSelected (dpy, window)
     }
     UnlockDisplay (dpy);
     SyncHandle ();
-    return rep.enabled;
+    return rep.enabled ? ShapeNotifyMask : 0L;
 }
 
 
