@@ -1,4 +1,4 @@
-/* $XConsortium: NextEvent.c,v 1.126 93/09/17 10:52:27 rws Exp $ */
+/* $XConsortium: NextEvent.c,v 1.127 93/09/18 18:18:32 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -36,12 +36,11 @@ static WorkProcRec* freeWorkRecs;
 static SignalEventRec* freeSignalRecs;
 
 /* Some systems running NTP daemons are known to return strange usec
- * values from gettimeofday.  At present (3/90) this has only been
- * reported on SunOS...
+ * values from gettimeofday.
  */
 
 #ifndef NEEDS_NTPD_FIXUP
-# if defined(sun) || defined(MOTOROLA) || (defined(__osf__) && defined(__alpha))
+# if defined(sun) || defined(MOTOROLA) || defined(SCO) || (defined(__osf__) && defined(__alpha))
 #  define NEEDS_NTPD_FIXUP 1
 # else
 #  define NEEDS_NTPD_FIXUP 0
