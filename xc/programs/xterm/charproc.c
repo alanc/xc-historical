@@ -1,5 +1,5 @@
 /*
- * $XHeader: charproc.c,v 1.35 88/07/12 09:16:19 jim Exp $
+ * $XHeader: charproc.c,v 1.36 88/07/12 10:41:08 jim Exp $
  */
 
 
@@ -122,7 +122,7 @@ static void VTallocbuf();
 #define	doinput()		(bcnt-- > 0 ? *bptr++ : in_put())
 
 #ifndef lint
-static char rcs_id[] = "$XHeader: charproc.c,v 1.35 88/07/12 09:16:19 jim Exp $";
+static char rcs_id[] = "$XHeader: charproc.c,v 1.36 88/07/12 10:41:08 jim Exp $";
 #endif	/* lint */
 
 static long arg;
@@ -1222,6 +1222,16 @@ int		(*func)();
 		switch (param[i]) {
 		case 1:			/* DECCKM			*/
 			(*func)(&term->keyboard.flags, CURSOR_APL);
+			break;
+		case 2:			/* ANSI/VT52 mode		*/
+			if (func == bitset) {
+				screen->gsets[0] =
+					screen->gsets[1] =
+					screen->gsets[2] =
+					screen->gsets[3] = 'B';
+				screen->curgl = 0;
+				screen->curgr = 2;
+			}
 			break;
 		case 3:			/* DECCOLM			*/
 			if(screen->c132) {
