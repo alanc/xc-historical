@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: encode.c,v 1.1 93/10/26 10:09:24 rws Exp $ */
 /**** module encode.c ****/
 /******************************************************************************
 				NOTICE
@@ -157,7 +157,7 @@ int     reps;
 			height[ 1 ] = 0;
 			height[ 2 ] = 0;
 
-			XIEPhotomap = GetXIEGeometryPhotomap( xp, p, gp, 1 );
+			XIEPhotomap = GetXIEGeometryPhotomap( xp, p, &gp, 1 );
 			GetXIEGeometryWindow( xp, p, xp->w, &gp, 1 );
 		}
 		else
