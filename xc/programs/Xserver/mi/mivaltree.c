@@ -33,7 +33,7 @@
 
 #ifndef lint
 static char rcsid[] =
-"$Header: mivaltree.c,v 1.41 88/05/19 20:05:59 rws Exp $ SPRITE (Berkeley)";
+"$Header: mivaltree.c,v 1.42 88/07/20 14:19:02 keith Exp $ SPRITE (Berkeley)";
 #endif lint
 
 #include    "X.h"
@@ -105,7 +105,7 @@ miComputeClips (pParent, pScreen, universe)
 	    pParent->visibility = VisibilityFullyObscured;
 	    break;
     }
-    if (oldVis != pParent->visibility)
+    if (oldVis != pParent->visibility && pParent->realized)
 	SendVisibilityNotify(pParent);
 
     /*
