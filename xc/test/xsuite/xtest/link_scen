@@ -1,4 +1,4 @@
-# $XConsortium: link_scen,v 1.3 94/01/29 14:50:29 rws Exp $
+# $XConsortium: link_scen,v 1.4 94/01/29 16:50:49 rws Exp $
 #
 # This scenario can build or run all tests in sections 2 to 10 of the
 # X11R4 Xlib specifications and touch tests for the X Protocol (version 11).
@@ -678,7 +678,9 @@ linkexecExt
 	/tset/Xi/alldvevnts/alldvevnts{all}
 	/tset/Xi/chgdvctl/chgdvctl{all}
 	/tset/Xi/chgfctl/chgfctl{all}
+	/tset/Xi/chgkbd/chgkbd{all}
 	/tset/Xi/chgprop/chgprop{all}
+	/tset/Xi/chgptr/chgptr{all}
 	/tset/Xi/chngdvkmap/chngdvkmap{all}
 	/tset/Xi/closdev/closdev{all}
 	/tset/Xi/dvbell/dvbell{all}
@@ -693,7 +695,7 @@ linkexecExt
 	/tset/Xi/gtbtnmppn/gtbtnmppn{all}
 	/tset/Xi/gtdvkmap/gtdvkmap{all}
 	/tset/Xi/gtdvmmap/gtdvmmap{all}
-	/tset/Xi/gtdvmtnevnts/gtdvmtnevnts{all}
+	/tset/Xi/gtdvmtnev/gtdvmtnev{all}
 	/tset/Xi/gtslctevnt/gtslctevnt{all}
 	/tset/Xi/listdev/listdev{all}
 	/tset/Xi/misc/misc{all}
@@ -709,8 +711,6 @@ linkexecExt
 	/tset/Xi/ungrbdvbtn/ungrbdvbtn{all}
 	/tset/Xi/ungrbdvky/ungrbdvky{all}
 	/tset/Xi/ungrbdv/ungrbdv{all}
-	/tset/Xi/chgkbd/chgkbd{all}
-	/tset/Xi/chgptr/chgptr{all}
 	/tset/XiPROTO/alldvevnts/alldvevnts{all}
 	/tset/XiPROTO/chgdvctl/chgdvctl{all}
 	/tset/XiPROTO/chgdvprop/chgdvprop{all}
@@ -729,10 +729,10 @@ linkexecExt
 	/tset/XiPROTO/gtbtnmppn/gtbtnmppn{all}
 	/tset/XiPROTO/gtdvctl/gtdvctl{all}
 	/tset/XiPROTO/gtdvfcs/gtdvfcs{all}
-	/tset/XiPROTO/gtdvmtnevnts/gtdvmtnevnts{all}
+	/tset/XiPROTO/gtdvmtnev/gtdvmtnev{all}
 	/tset/XiPROTO/gtdvprop/gtdvprop{all}
 	/tset/XiPROTO/gtkeymppn/gtkeymppn{all}
-	/tset/XiPROTO/gtslctexevnt/gtslctexevnt{all}
+	/tset/XiPROTO/gtslctexev/gtslctexev{all}
 	/tset/XiPROTO/listdev/listdev{all}
 	/tset/XiPROTO/opendev/opendev{all}
 	/tset/XiPROTO/qrydvstat/qrydvstat{all}

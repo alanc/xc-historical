@@ -1,4 +1,4 @@
-# $XConsortium: tet_scen,v 1.3 94/01/29 14:52:45 rws Exp $
+# $XConsortium: tet_scen,v 1.4 94/01/29 18:27:05 rws Exp $
 #
 # This scenario can build or run all tests in sections 2 to 10 of the
 # X11R4 Xlib specifications and touch tests for the X Protocol (version 11).
@@ -657,7 +657,9 @@ allExt
 	/tset/Xi/alldvevnts/Test{all}
 	/tset/Xi/chgdvctl/Test{all}
 	/tset/Xi/chgfctl/Test{all}
+	/tset/Xi/chgkbd/Test{all}
 	/tset/Xi/chgprop/Test{all}
+	/tset/Xi/chgptr/Test{all}
 	/tset/Xi/chngdvkmap/Test{all}
 	/tset/Xi/closdev/Test{all}
 	/tset/Xi/dvbell/Test{all}
@@ -672,7 +674,7 @@ allExt
 	/tset/Xi/gtbtnmppn/Test{all}
 	/tset/Xi/gtdvkmap/Test{all}
 	/tset/Xi/gtdvmmap/Test{all}
-	/tset/Xi/gtdvmtnevnts/Test{all}
+	/tset/Xi/gtdvmtnev/Test{all}
 	/tset/Xi/gtslctevnt/Test{all}
 	/tset/Xi/listdev/Test{all}
 	/tset/Xi/misc/Test{all}
@@ -688,8 +690,6 @@ allExt
 	/tset/Xi/ungrbdvbtn/Test{all}
 	/tset/Xi/ungrbdvky/Test{all}
 	/tset/Xi/ungrbdv/Test{all}
-	/tset/Xi/chgkbd/Test{all}
-	/tset/Xi/chgptr/Test{all}
 #	
 #	 	X Input Device Extension protocol section
 #	
@@ -711,10 +711,10 @@ allExt
 	/tset/XiPROTO/gtbtnmppn/Test{all}
 	/tset/XiPROTO/gtdvctl/Test{all}
 	/tset/XiPROTO/gtdvfcs/Test{all}
-	/tset/XiPROTO/gtdvmtnevnts/Test{all}
+	/tset/XiPROTO/gtdvmtnev/Test{all}
 	/tset/XiPROTO/gtdvprop/Test{all}
 	/tset/XiPROTO/gtkeymppn/Test{all}
-	/tset/XiPROTO/gtslctexevnt/Test{all}
+	/tset/XiPROTO/gtslctexev/Test{all}
 	/tset/XiPROTO/listdev/Test{all}
 	/tset/XiPROTO/opendev/Test{all}
 	/tset/XiPROTO/qrydvstat/Test{all}
