@@ -53,7 +53,7 @@ in this Software without prior written authorization from the X Consortium.
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.194 93/11/19 09:39:19 kaleb Exp $
+ * $XConsortium: menus.c,v 1.195 94/04/17 20:38:17 kaleb Exp $
  *
  * twm menu code
  *
@@ -2402,26 +2402,18 @@ MenuRoot *root;
  */
 
 #if defined(sun) && defined(SVR4)
-static void System (s)
+static int System (s)
     char *s;
 {
-    int pid;
-    char* shell;
-    char* shellname;
-
+    int pid, status;
     if ((pid = fork ()) == 0) {
 	(void) setpgrp();
-	if ((shell = getenv ("SHELL")) != NULL) {
-	    shellname = strrchr(shell, '/');
-	    if (shellname == NULL)
-		shellname = shell;
-	    else
-		shellname++;
-	    execl (shell, shellname, "-c", s, 0);
-	}
 	execl ("/bin/sh", "sh", "-c", s, 0);
-    }
+    } else
+	waitpid (pid, &status, 0);
+    return status;
 }
+#define system(s) System(s)
 #endif
 
 void
@@ -2458,11 +2450,7 @@ Execute(s)
 	restorevar = 1;
     }
 
-#if defined(sun) && defined(SVR4)
-    System (s);
-#else
     (void) system (s);
-#endif
 
     if (restorevar) {		/* why bother? */
 	(void) sprintf (buf, "DISPLAY=%s", oldDisplay);
