@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: tocfuncs.c,v 1.8 88/01/19 14:50:03 swick Locked $";
+static char rcs_id[] = "$Header: tocfuncs.c,v 2.8 88/01/19 14:50:03 swick Locked $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -30,6 +30,7 @@ static char rcs_id[] = "$Header: tocfuncs.c,v 1.8 88/01/19 14:50:03 swick Locked
 
 #include "xmh.h"
 
+#define MAX_SYSTEM_LEN 510
 
 void ExecNextView(scrn)
   Scrn scrn;
@@ -234,13 +235,23 @@ Scrn scrn;
 {
     Toc toc = scrn->toc;
     MsgList mlist;
-    char str[200];
-    int i;
+    char *str[MAX_SYSTEM_LEN], *msg;
+    int i, used, len;
     if (toc == NULL) return;
     mlist = CurMsgListOrCurMsg(toc);
-    for (i = 0; i < mlist->nummsgs; i++) {
-	(void) sprintf(str, "%s %s", defPrintCommand,
-		MsgFileName(mlist->msglist[i]));
+    i = 0;
+    while (i < mlist->nummsgs) {
+	strcpy( str, defPrintCommand );
+	used = strlen(str) + 2;
+	while (i < mlist->nummsgs &&
+	       (msg = MsgFileName(mlist->msglist[i])) &&
+	       (used + (len = strlen(msg) + 1)) < MAX_SYSTEM_LEN) {
+	    strcat( str, " " );
+	    strcat( str, msg );
+	    used += len;
+	    i++;
+	}
+	DEBUG( str );
 	(void) system(str);
     }
     FreeMsgList(mlist);
