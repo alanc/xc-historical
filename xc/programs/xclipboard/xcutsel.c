@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xcutsel.c,v 1.9 89/07/24 10:47:05 jim Exp $
+ * $XConsortium: xcutsel.c,v 1.10 89/12/05 15:51:16 swick Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -24,7 +24,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$XConsortium: xcutsel.c,v 1.9 89/07/24 10:47:05 jim Exp $";
+static char rcsid[] = "$XConsortium: xcutsel.c,v 1.10 89/12/05 15:51:16 swick Exp $";
 #endif /* lint */
 
 #include <stdio.h>
@@ -109,12 +109,14 @@ static Boolean ConvertSelection(w, selection, target,
     int *format;
 {
     Display* d = XtDisplay(w);
-
+    XSelectionRequestEvent* req =
+	XtGetSelectionRequest(w, *selection, (XtRequestId)NULL);
+	
     if (*target == XA_TARGETS(d)) {
 	Atom* targetP;
 	Atom* std_targets;
 	unsigned long std_length;
-	XmuConvertStandardSelection(w, CurrentTime, selection, target, type,
+	XmuConvertStandardSelection(w, req->time, selection, target, type,
 				   (caddr_t*)&std_targets, &std_length, format);
 	*value = XtMalloc(sizeof(Atom)*(std_length + 4));
 	targetP = *(Atom**)value;
@@ -169,7 +171,7 @@ static Boolean ConvertSelection(w, selection, target,
 	return True;
     }
 #endif /* notdef */
-    if (XmuConvertStandardSelection(w, CurrentTime, selection, target, type,
+    if (XmuConvertStandardSelection(w, req->time, selection, target, type,
 				    value, length, format))
 	return True;
 
@@ -224,7 +226,8 @@ static void GetSelection(w, closure, callData)
     caddr_t callData;		/* unused */
 {
     XtGetSelectionValue(w, app_resources.selection, XA_STRING,
-			StoreBuffer, NULL, CurrentTime);
+			StoreBuffer, NULL,
+			XtLastTimestampProcessed(XtDisplay(w)));
 }
 
 
@@ -238,7 +241,8 @@ static void GetBuffer(w, closure, callData)
     app_resources.value =
 	XFetchBuffer(XtDisplay(w), &app_resources.length, app_resources.buffer);
     if (app_resources.value != NULL) {
-	if (XtOwnSelection(w, app_resources.selection, CurrentTime,
+	if (XtOwnSelection(w, app_resources.selection,
+			   XtLastTimestampProcessed(XtDisplay(w)),
 			   ConvertSelection, LoseSelection, NULL))
 	    SetButton((ButtonState*)closure, True);
     }
