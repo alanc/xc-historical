@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: commands.c,v 1.9 87/08/20 15:21:15 gringort Exp $";
+static char rcs_id[] = "$Header: commands.c,v 1.9 87/09/11 08:22:06 toddb Exp $";
 #endif
 
 /*
@@ -28,7 +28,9 @@ static char rcs_id[] = "$Header: commands.c,v 1.9 87/08/20 15:21:15 gringort Exp
  */
 
 #include "xedit.h"
+#ifdef X10
 #include <sys/types.h>
+#endif	/* X10 */
 #include <sys/stat.h>
 
 static int loadChangeNumber;
