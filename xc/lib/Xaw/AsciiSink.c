@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: AsciiSink.c,v 1.22 88/09/19 15:45:15 swick Exp $";
+static char Xrcsid[] = "$XConsortium: AsciiSink.c,v 1.23 88/09/22 09:15:36 swick Exp $";
 #endif lint
 
 
@@ -32,8 +32,7 @@ SOFTWARE.
 #include <X11/Xatom.h>
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
-#include <X11/Text.h>
-#include <X11/TextP.h>
+#include "TextP.h"
 
 
 #define GETLASTPOS (*source->Scan)(source, 0, XtstAll, XtsdRight, 1, TRUE)
