@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: fmalloc.c,v 1.2 92/04/08 10:34:41 keith Exp $
  *
  * Copyright 1992 Massachusetts Institute of Technology
  *
@@ -34,6 +34,8 @@
  */
 
 #include    <stdio.h>
+
+extern char **environ;
 
 #ifndef FALSE
 #define FALSE 0
