@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: greet.c,v 1.27 91/01/10 19:28:57 converse Exp $
+ * $XConsortium: greet.c,v 1.29 91/04/02 11:58:51 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -127,7 +127,9 @@ struct display	*d;
     i = 0;
     XtSetArg (arglist[i], XtNnotifyDone, GreetDone); i++;
     if (!d->authorize || d->authorizations || !d->authComplain)
+    {
 	XtSetArg (arglist[i], XtNsecureSession, True); i++;
+    }
     login = XtCreateManagedWidget ("login", loginWidgetClass, toplevel,
 				    arglist, i);
     XtRealizeWidget (toplevel);
