@@ -114,10 +114,13 @@ Specifies how long in seconds each test should be run (default 5 seconds).
 .B \-all
 Runs all tests.  This may take a while.
 .TP 14
-.B \-start \fI<test>\fP
-Runs all tests starting at
-.I test.
-``x11perf -start -dot'' is equivalent to ``x11perf -all''.
+.B \-range \fI<test1>\fP[,\fI<test2>\fP]
+Runs all the tests starting from the specified name \fItest1\fP until
+the name \fItest2\fP, including both the specified tests. The testnames
+should be one of the options starting from -dot. (eg) -range line100
+will peform the tests from the 100 pixel line test, and go on till the
+last test, -range line100,dline10 will do the tests from line100 to
+dline10.
 .TP 14
 .B \-labels
 Generates just the descriptive labels for each test.  See
@@ -398,6 +401,24 @@ Fill 10-pixel/side triangle.
 .TP 14
 .B \-triangle100
 Fill 100-pixel/side triangle.
+.TP 14
+.B \-striangle10
+Fill 10-pixel/side transparent stippled triangle, 8x8 stipple pattern.
+.TP 14
+.B \-striangle100
+Fill 100-pixel/side transparent stippled triangle, 8x8 stipple pattern.
+.TP 14
+.B \-ostriangle10
+Fill 10-pixel/side opaque stippled triangle, 8x8 stipple pattern.
+.TP 14
+.B \-ostriangle100
+Fill 100-pixel/side opaque stippled triangle, 8x8 stipple pattern.
+.TP 14
+.B \-tiletriangle10
+Fill 10-pixel/side tiled triangle, 4x4 tile pattern.
+.TP 14
+.B \-tiletriangle100
+Fill 100-pixel/side tiled triangle, 4x4 tile pattern.
 .TP 14
 .B \-trap10
 Fill 10x10 trapezoid.
