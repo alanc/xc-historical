@@ -229,9 +229,16 @@ Display_Stats_Info(window)
      Window window;
 {
   XWindowAttributes win_attributes;
+  int dw = DisplayWidth (dpy, screen), dh = DisplayHeight (dpy, screen);
+  int xright, ybelow;
 
   if (!XGetWindowAttributes(dpy, window, &win_attributes))
     Fatal_Error("Can't get window attributes.");
+
+  xright = (dw - win_attributes.x - win_attributes.border_width * 2 -
+	    win_attributes.width);
+  ybelow = (dh - win_attributes.y - win_attributes.border_width * 2 -
+	    win_attributes.height);
 
   printf("\n         ==> Upper left X: %d\n", win_attributes.x);
   printf("         ==> Upper left Y: %d\n", win_attributes.y);
@@ -243,6 +250,9 @@ Display_Stats_Info(window)
 						   _window_classes));
   printf("         ==> Window Map State: %s\n",
 	 Lookup(win_attributes.map_state, _map_states));
+  printf("         ==> Locations:  +%d+%d  -%d+%d  -%d-%d  +%d-%d\n",
+	 win_attributes.x, win_attributes.y, xright, win_attributes.y, 
+	 xright, ybelow, win_attributes.x, ybelow);
 }
 
 
