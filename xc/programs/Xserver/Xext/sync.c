@@ -240,7 +240,7 @@ SyncInitTrigger(client, pTrigger, counter, changes)
     if (changes & XSyncCATestType)
     {
 	if (pTrigger->test_type != XSyncPositiveTransition &&
-	    pTrigger->test_type != XSyncNegativeComparison &&
+	    pTrigger->test_type != XSyncNegativeTransition &&
 	    pTrigger->test_type != XSyncPositiveComparison &&
 	    pTrigger->test_type != XSyncNegativeComparison)
 	{
@@ -1193,7 +1193,7 @@ ProcSyncListSystemCounters(client)
 	    swapl(&walklist->counter, n);
 	    swapl(&walklist->resolution_hi, n);
 	    swapl(&walklist->resolution_lo, n);
-	    swapl(&walklist->name_length, n);
+	    swaps(&walklist->name_length, n);
 	}
 
 	pname_in_reply = ((char *)walklist) + sz_xSyncSystemCounter;
