@@ -1,4 +1,4 @@
-/* $XConsortium: mibstore.c,v 5.30 89/11/03 16:31:20 rws Exp $ */
+/* $XConsortium: mibstore.c,v 5.31 90/03/12 14:04:00 rws Exp $ */
 /***********************************************************
 Copyright 1987 by the Regents of the University of California
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -3125,8 +3125,8 @@ miBSValidateGC (pGC, stateChanges, pDrawable)
     pPriv->wrapFuncs = pGC->funcs;
     pPriv->wrapOps = pGC->ops;
 
-    if ((pPriv->guarantee == GuaranteeVisBack) ||
-	(!pWin->realized && pWin->backingStore != Always))
+    if (!lift_functions && ((pPriv->guarantee == GuaranteeVisBack) ||
+			    (!pWin->realized && pWin->backingStore != Always)))
         lift_functions = TRUE;
 
     /*
