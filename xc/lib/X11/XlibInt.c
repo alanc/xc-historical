@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlibInt.c,v 11.168 93/07/10 19:10:24 rws Exp $
+ * $XConsortium: XlibInt.c,v 11.169 93/07/20 12:58:09 gildea Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986, 1987 */
@@ -1196,16 +1196,20 @@ Status _XReply (dpy, rep, extra, discard)
 			    switch (err->majorCode) {
 				case X_LookupColor:
 				case X_AllocNamedColor:
+				    UnlockNextReplyReader(dpy);
 				    return(0);
 			    }
 			    break;
 			case BadFont:
-			    if (err->majorCode == X_QueryFont)
+			    if (err->majorCode == X_QueryFont) {
+				UnlockNextReplyReader(dpy);
 				return (0);
+			    }
 			    break;
 			case BadAlloc:
 			case BadAccess:
-				return (0);
+			    UnlockNextReplyReader(dpy);
+			    return (0);
 			}
 		/* 
 		 * we better see if there is an extension who may
@@ -1219,9 +1223,12 @@ Status _XReply (dpy, rep, extra, discard)
 		    _XError(dpy, err);
 		    ret_code = 0;
 		}
-		if (serial == cur_request)
+		if (serial == cur_request) {
+		    UnlockNextReplyReader(dpy);
 		    return(ret_code);
 		}
+
+		} /* case X_Error */
 		break;
 	    default:
 		_XEnq(dpy, (xEvent *) rep);
