@@ -46,6 +46,8 @@ HEADERS = \
 	PannerP.h \
 	Porthole.h \
 	PortholeP.h \
+	Repeater.h \
+	RepeaterP.h \
 	Reports.h \
 	Scroll.h \
 	Scrollbar.h \
@@ -99,6 +101,7 @@ SRCS = \
 	Paned.c \
 	Panner.c \
 	Porthole.c \
+	Repeater.c \
 	Scrollbar.c \
 	Simple.c \
 	SimpleMenu.c \
@@ -137,6 +140,7 @@ OBJS = \
 	Paned.o \
 	Panner.o \
 	Porthole.o \
+	Repeater.o \
 	Scrollbar.o \
 	Simple.o \
 	SimpleMenu.o \
