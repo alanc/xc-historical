@@ -1,4 +1,4 @@
-.\" $XConsortium: CH11,v 1.19 94/04/18 20:20:49 rws Exp $
+.\" $XConsortium: CH11,v 1.20 94/04/18 22:39:24 converse Exp $
 .\" Copyright \(co 1985, 1986, 1987, 1988, 1991, 1994
 .\" X Consortium
 .\" 
@@ -1725,7 +1725,7 @@ Generating MULTIPLE Requests
 \*(SN Generating MULTIPLE Requests
 .XE
 .LP
-To have the \*(xI bundle multiple selection requests into
+To have the \*(xI bundle multiple calls to make selection requests into
 a single request using a MULTIPLE target, use 
 .PN XtCreateSelectionRequest
 and
@@ -1752,8 +1752,8 @@ and
 .PN XtGetSelectionValuesIncremental ,
 with the requestor and selection as specified to 
 .PN XtCreateSelectionRequest
-is bundled into a single selection request with
-multiple targets.  The request is actually initiated by calling 
+are bundled into a single selection request with
+multiple targets.  The request is made by calling 
 .PN XtSendSelectionRequest .
 .sp
 .FD 0
@@ -1770,24 +1770,27 @@ Specifies the widget making the request.  \*(cI
 .IP \fIselection\fP 1i
 Specifies the particular selection desired.
 .IP \fItime\fP 1i
-The time parameters from the intervening requests queued are ignored.
+Specifies the timestamp that indicates when the selection request was
+initiated.  The value 
+.PN CurrentTime
+is not acceptable.
 .LP
 When 
 .PN XtSendSelectionRequest
 is called with a value of \fIrequestor\fP and \fIselection\fP matching
 a previous call to 
 .PN XtCreateSelectionRequest ,
-a selection request is actually sent to the selection owner.
+a selection request is sent to the selection owner.
 If a single target request is queued, that request is made.
 If multiple targets are queued, they are bundled into a single request
 with a target of MULTIPLE using the specified timestamp.
-As the conversions are made, the callbacks specified in
+As the values are returned, the callbacks specified in
 .PN XtGetSelectionValue ,
 .PN XtGetSelectionValueIncremental ,
 .PN XtGetSelectionValues
 and
 .PN XtGetSelectionValueIncremental
-are invoked in turn.
+are invoked.
 .LP
 Multi-threaded applications should lock the application context before
 calling
@@ -1799,7 +1802,7 @@ by another thread assembling a different request naming the same widget
 and selection.
 .sp
 .LP
-To relinquish the composition of a MULTIPLE request, use 
+To relinquish the composition of a MULTIPLE request without sending it, use
 .PN XtCancelSelectionRequest .
 .IN "XtCancelSelectionRequest" "" "@DEF@"
 .FD 0
@@ -1819,7 +1822,7 @@ When
 is called, any requests queued since the last call to
 .PN XtCreateSelectionRequest
 for the same widget and selection are discarded
-and any resources reserved are cleaned up.
+and any resources reserved are released.
 A subsequent call to
 .PN XtSendSelectionRequest
 will not result in any request being made.
@@ -1832,18 +1835,20 @@ or
 will not be deferred.
 
 .NH 3
-Selection Property Names
+Auxiliary Selection Properties
 .XS
-\*(SN Selection Property Names
+\*(SN Auxiliary Selection Properties
 .XE
 .LP
-Clients that need to obtain temporary atoms to name properties
-(for example, for parameters which contain the names of properties
-in which additional parameters are stored) can use 
-.PN XtReservePropertyAtom
-and
-.PN XtReleasePropertyAtom
-to reserve and release them.
+Certain uses of parameterized selections require clients to name
+other window properties within a selection parameter.  To permit
+reuse of temporary property names in these circumstances and
+thereby reduce the number of unique atoms created in the server,
+the \*(xI provides two interfaces for acquiring temporary property names.
+.LP
+To acquire a temporary property name atom for use in a selection
+request, the client may call
+.PN XtReservePropertyAtom .
 .sp
 .FD 0
 Atom XtReservePropertyAtom(\fIw\fP)
@@ -1851,13 +1856,18 @@ Atom XtReservePropertyAtom(\fIw\fP)
       Widget \fIw\fP;
 .FN
 .IP \fIw\fP 1i
-Specifies the widget for which a selection request
-involving the property is made.  \*(cI
+Specifies the widget making a selection request.
 .LP
-This function returns an atom that may be used as a property name in
-conversion requests from widget \fIw\fP.
-The atom returned is unique with respect to all other reserved atoms
-for the widget.
+.PN XtReservePropertyAtom
+returns an atom that may be used as a property name during selection
+requests involving the specified widget. 
+As long as the atom remains reserved, it is unique with respect to all
+other reserved atoms for the widget.
+.sp
+.LP
+To return a temporary property name atom for reuse and to delete
+the property named by that atom, use
+.PN XtReleasePropertyAtom .
 .sp
 .FD 0
 void XtReleasePropertyAtom(\fIw\fP, \fIatom\fP)
@@ -1867,11 +1877,19 @@ void XtReleasePropertyAtom(\fIw\fP, \fIatom\fP)
       Atom \fIatom\fP;
 .FN
 .IP \fIw\fP 1i
-Specifies the widget used to reserve the atom.
+Specifies the widget used to reserve the property name atom.
 .IP \fIatom\fP 1i
-The atom whose reservation is to be released.
+Specifies the property name atom returned by
+.PN XtReservePropertyAtom
+that is to be released for reuse.
 .LP
-If the property exists on the widget's window, it is deleted.
+.PN XtReleasePropertyAtom
+marks the specified property name atom as
+no longer in use and insures that any property having that name
+on the specified widget's window is deleted.  If \fIatom\fP does not
+specify a value returned by
+.PN XtReservePropertyAtom
+for the specified widget, the results are undefined.
 
 .NH 3
 Retrieving the Most Recent Timestamp
@@ -2826,12 +2844,14 @@ Hooks for External Agents
 \fB\*(SN Hooks for External Agents\fP
 .XE
 .LP
-Hooks are places in the \*(xI where an application may register
-functions which are called at a particular control point.
+Applications may register
+functions which are called at a particular control points in the \*(xI.
 These functions are intended to be used to provide notification
-of an "\*(tk event", e.g. widget creation, to an external agent,
+of an \*Q\*(tk event\*U, e.g. widget creation, to an external agent,
 e.g. an interactive resource editor, drag-and-drop server, or
 an aid for physically challenged users.
+The control points containing such registration hooks are identified
+in a \*Qhook registration\*U object.
 .LP
 To retrieve the hook registration widget, use
 .PN XtHooksOfDisplay .
@@ -2853,7 +2873,8 @@ a list of parentless shells.  All of the callback lists are initially
 empty.  When a display is closed the hook object associated with it 
 is destroyed. 
 .LP
-The following procedures can be used on this object:
+The following procedures can be called with the hook registration object
+as an argument:
 .sp
 .IP
 .PN XtAddCallback ,
@@ -2880,15 +2901,15 @@ The following procedures can be used on this object:
 .PN XtIsVendorShell ,
 .PN XtIsTransientShell ,
 .PN XtIsToplevelShell ,
-.PN XtIsApplicationShell
+.PN XtIsApplicationShell ,
+.PN XtIsSessionShell
 .IP
 .PN XtWidgetToApplicationContext
 .IP
+.PN XtName ,
 .PN XtParent ,
 .PN XtDisplayOfObject ,
 .PN XtScreenOfObject
-.IP
-.PN XtName
 .IP
 .PN XtSetValues ,
 .PN XtGetValues ,
@@ -2935,7 +2956,7 @@ The XtNcreateHook callback list is called from:
 .PN XtAppCreateShell ,
 and their corresponding varargs versions.
 .LP
-The \fIcall_data\fP parameter in a CreateHook callback may be 
+The \fIcall_data\fP parameter in a createHook callback may be 
 cast to type
 .PN XtCreateHookData .
 .IN "XtCreateHookData" "" "@DEF@"
@@ -2993,7 +3014,7 @@ The XtNchangeHook callback list is called from:
 .LP
 .sp
 .LP
-The \fIcall_data\fP parameter in a ChangeHook callback may
+The \fIcall_data\fP parameter in a changeHook callback may
 be cast to type
 .PN XtChangeHookData .
 .IN "XtChangeHookData" "" "@DFEF@"
@@ -3011,13 +3032,13 @@ typedef struct {
 .De
 .KE
 .LP
-When the ChangeHook callbacks are called as a result of a call to
+When the changeHook callbacks are called as a result of a call to
 .PN XtSetValues
 or
 .PN XtVaSetValues ,
 \fItype\fP is set to
 .PN XtHsetValues ,
-\fIwidget\fP is the new widget passed to the SetValues method, and
+\fIwidget\fP is the new widget passed to the set_values procedure, and
 \fIevent_data\fP may be cast to type 
 .PN XtChangeHookSetValuesData .
 .IN "XtChangeHookSetValuesData" "" "@DEF@"
@@ -3035,10 +3056,10 @@ typedef struct {
 .KE
 .LP
 The \fIold\fP, \fIreq\fP, \fIargs\fP, and \fInum_args\fP are the
-parameters passed to the SetValues methods. The callbacks are called 
-after the SetValues and Constraint SetValues methods have been called.
+parameters passed to the set_values procedure.  The callbacks are called 
+after the set_values and constraint set_values procedures have been called.
 .LP
-When the ChangeHook callbacks are called as a result of a call to
+When the changeHook callbacks are called as a result of a call to
 .PN XtManageChild
 or
 .PN XtManageChildren ,
@@ -3046,10 +3067,10 @@ or
 .PN XtHmanageChildren ,
 \fIwidget\fP is the parent, \fIevent_data\fP may be cast to type
 WidgetList and is the list of children being managed, and 
-\fInum_event_data\fP is the length of the widget list. The callbacks
-are called after the children have been managed.
+\fInum_event_data\fP is the length of the widget list.
+The callbacks are called after the children have been managed.
 .LP
-When the ChangeHook callbacks are called as a result of a call to
+When the changeHook callbacks are called as a result of a call to
 .PN XtUnmanageChild
 or
 .PN XtUnmanageChildren ,
@@ -3057,56 +3078,56 @@ or
 .PN XtHunmanageChildren ,
 \fIwidget\fP is the parent, \fIevent_data\fP may be cast to type
 WidgetList and is a list of the children being unmanaged, and
-\fInum_event_data\fP is the length of the widget list. The callbacks
-are called after the children have been unmanaged.
+\fInum_event_data\fP is the length of the widget list.
+The callbacks are called after the children have been unmanaged.
 .LP
-The ChangeHook callbacks are called twice as a result of a call to
+The changeHook callbacks are called twice as a result of a call to
 .PN XtChangeManagedSet ,
-once after unmanaging and again after managing. When the callbacks
-are called the first time \fItype\fP is set to
+once after unmanaging and again after managing.
+When the callbacks are called the first time \fItype\fP is set to
 .PN XtHunmanageSet , 
 \fIwidget\fP is the parent, \fIevent_data\fP may be cast to type 
 WidgetList and is a list of the children being unmanaged, and 
-\fInum_event_data\fP is the length of the widget list. When the
-callbacks are called the second time the \fItype\fP is set to
+\fInum_event_data\fP is the length of the widget list.
+When the callbacks are called the second time the \fItype\fP is set to
 .PN XtHmanageSet , 
 \fIwidget\fP is the parent, \fIevent_data\fP may be cast to type 
 WidgetList and is a list of the children being managed, and 
 \fInum_event_data\fP is the length of the widget list.
 .LP
-When the ChangeHook callbacks are called as a result of a call to
+When the changeHook callbacks are called as a result of a call to
 .PN XtRealizeWidget 
 The \fItype\fP is set to
 .PN XtHrealizeWidget 
-and \fIwidget\fP is the widget being realized. The callbacks are 
-called after the widget has been realized.
+and \fIwidget\fP is the widget being realized.
+The callbacks are called after the widget has been realized.
 .LP
-When the ChangeHook callbacks are called as a result of a call to
+When the changeHook callbacks are called as a result of a call to
 .PN XtUnrealizeWidget 
 the \fItype\fP is set to
 .PN XtHunrealizeWidget
-and \fIwidget\fP is the widget being unrealized. The callbacks are
-called after the widget has been unrealized.
+and \fIwidget\fP is the widget being unrealized.
+The callbacks are called after the widget has been unrealized.
 .LP
-When the ChangeHook callbacks are called as a result of a call to
+When the changeHook callbacks are called as a result of a call to
 .PN XtAddCallback ,
 \fItype\fP is set to
 .PN XtHaddCallback ,
 \fIwidget\fP is the widget to which the callback is being added, and
 \fIevent_data\fP may be cast to type String and is the name of the 
-callback being added. The callbacks are called after the callback 
-has been added to the widget.
+callback being added.
+The callbacks are called after the callback has been added to the widget.
 .LP
-When the ChangeHook callbacks are called as a result of a call to
+When the changeHook callbacks are called as a result of a call to
 .PN XtAddCallbacks 
 the \fItype\fP is set to
 .PN XtHaddCallbacks ,
 \fIwidget\fP is the widget to which the callbacks are being added, and
 \fIevent_data\fP may be cast to type String and is the name of the 
-callbacks being added. The callbacks are called after the callbacks 
-have been added to the widget.
+callbacks being added.
+The callbacks are called after the callbacks have been added to the widget.
 .LP
-When the ChangeHook callbacks are called as a result of a call to
+When the changeHook callbacks are called as a result of a call to
 .PN XtRemoveCallback 
 the \fItype\fP is set to
 .PN XtHremoveCallback ,
@@ -3115,7 +3136,7 @@ the \fItype\fP is set to
 the callback being removed.  The callbacks are called after the callback 
 has been removed from the widget.
 .LP
-When the ChangeHook callbacks are called as a result of a call to
+When the changeHook callbacks are called as a result of a call to
 .PN XtRemoveCallbacks ,
 the \fItype\fP is set to
 .PN XtHremoveCallbacks ,
@@ -3124,7 +3145,7 @@ the \fItype\fP is set to
 callbacks being removed.  The callbacks are called after the callbacks 
 have been removed from the widget.
 .LP
-When the ChangeHook callbacks are called as a result of a call to
+When the changeHook callbacks are called as a result of a call to
 .PN XtRemoveAllCallbacks 
 the \fItype\fP is set to
 .PN XtHremoveAllCallbacks
@@ -3132,7 +3153,7 @@ and \fIwidget\fP is the widget from which the callbacks are being removed.
 The callbacks are called after the callbacks have been removed from the
 widget.
 .LP
-When the ChangeHook callbacks are called as a result of a call to
+When the changeHook callbacks are called as a result of a call to
 .PN XtAugmentTranslations
 the \fItype\fP is set to
 .PN XtHaugmentTranslations
@@ -3140,7 +3161,7 @@ and \fIwidget\fP is the widget whose translations are being modified.
 The callbacks are called after the widget's translations have been 
 modified.
 .LP
-When the ChangeHook callbacks are called as a result of a call to
+When the changeHook callbacks are called as a result of a call to
 .PN XtOverrideTranslations
 the \fItype\fP is set to
 .PN XtHoverrideTranslations
@@ -3148,7 +3169,7 @@ and \fIwidget\fP is the widget whose translations are being modified.
 The callbacks are called after the widget's translations have been 
 modified.
 .LP
-When the ChangeHook callbacks are called as a result of a call to
+When the changeHook callbacks are called as a result of a call to
 .PN XtUninstallTranslations
 The \fItype\fP is
 .PN XtHuninstallTranslations
@@ -3156,7 +3177,7 @@ and \fIwidget\fP is the widget whose translations are being uninstalled.
 The callbacks are called after the widget's translations have been 
 uninstalled.
 .LP
-When the ChangeHook callbacks are called as a result of a call to
+When the changeHook callbacks are called as a result of a call to
 .PN XtSetKeyboardFocus
 the \fItype\fP is set to
 .PN XtHsetKeyboardFocus
@@ -3164,7 +3185,7 @@ and \fIevent_data\fP may be cast to type Widget and is the value of
 the descendant argument passed to \fBXtSetKeyboardFocus\fP. The 
 callbacks are called before returning from \fBXtSetKeyboardFocus\fP.
 .LP
-When the ChangeHook callbacks are called as a result of a call to
+When the changeHook callbacks are called as a result of a call to
 .PN XtSetWMColormapWindows ,
 \fItype\fP is set to
 .PN XtHsetWMColormapWindows ,
@@ -3173,7 +3194,7 @@ the list argument passed to \fBXtSetWMColormapWindows\fP, and
 \fInum_event_data\fP is the length of the list. The callbacks are 
 called before returning from \fBXtSetWMColormapWindows\fP.
 .LP
-When the ChangeHook callbacks are called as a result of a call to
+When the changeHook callbacks are called as a result of a call to
 .PN XtSetMappedWhenManaged
 \fItype\fP is set to
 .PN XtHsetMappedWhenManaged
@@ -3182,41 +3203,43 @@ the mapped_when_managed argument passed to \fBXtSetMappedWhenManaged\fP.
 The callbacks are called after setting the widget's mapped_when_managed 
 field and before realizing or unrealizing the widget.
 .LP
-When the ChangeHook callbacks are called as a result of a call to
+When the changeHook callbacks are called as a result of a call to
 .PN XtMapWidget
 \fItype \fP is set to
 .PN XtHmapWidget
-and \fIwidget\fP is the widget being mapped. The callbacks are called
-after mapping the widget.
+and \fIwidget\fP is the widget being mapped.
+The callbacks are called after mapping the widget.
 .LP
-When the ChangeHook callbacks are called as a result of a call to
+When the changeHook callbacks are called as a result of a call to
 .PN XtUnmapWidget
 \fItype \fP is set to
 .PN XtHunmapWidget
-and \fIwidget\fP is the widget being unmapped. The callbacks are called
-after unmapping the widget.
+and \fIwidget\fP is the widget being unmapped.
+The callbacks are called after unmapping the widget.
 .LP
-When the ChangeHook callbacks are called as a result of a call to
+When the changeHook callbacks are called as a result of a call to
 .PN XtPopup ,
 \fItype\fP is set to
 .PN XtHpopup ,
 \fIwidget\fP is the widget being popped up, and \fIevent_data\fP may 
 be cast to type XtGrabKind and is the value of the grab_kind argument 
-passed to \fBXtPopup\fP. The callbacks are called before returning from 
-\fBXtPopup\fP.
+passed to \fBXtPopup\fP.
+The callbacks are called before returning from \fBXtPopup\fP.
 .LP
-When the ChangeHook callbacks are called as a result of a call to
+When the changeHook callbacks are called as a result of a call to
 .PN XtPopupSpringLoaded ,
 \fItype\fP is set to
 .PN XtHpopupSpringLoaded
-and \fIwidget\fP is the widget being popped up. The callbacks are called 
+and \fIwidget\fP is the widget being popped up.
+The callbacks are called 
 before returning from \fBXtPopupSpringLoaded\fP.
 .LP
-When the ChangeHook callbacks are called as a result of a call to
+When the changeHook callbacks are called as a result of a call to
 .PN XtPopdown ,
 \fItype\fP is set to
 .PN XtHpopdown
-and \fIwidget\fP is the widget being popped down. The callbacks are called 
+and \fIwidget\fP is the widget being popped down.
+The callbacks are called 
 before returning from \fBXtPopdown\fP.
 .LP
 A widget set which exports interfaces which change application state
@@ -3250,7 +3273,7 @@ typedef struct {
 .De
 .sp
 .LP
-When the ConfigureHook callbacks are called the \fItype\fP is
+When the configureHook callbacks are called the \fItype\fP is
 .PN XtHconfigure ,
 \fIwidget\fP is the widget being configured, \fIchangeMask\fP and 
 \fIchanges\fP reflect the changes made to the widget. The callbacks 
@@ -3279,11 +3302,12 @@ typedef struct {
 .De
 .sp
 .LP
-When the GeometryHook callbacks are called prior to geometry negotiation, 
+When the geometryHook callbacks are called prior to geometry negotiation, 
 \fItype\fP is
 .PN XtHpreGeometry ,
 \fIwidget\fP is the widget for which the request is being made, and
-\fIrequest\fP is the requested geometry. When the GeometryHook callbacks 
+\fIrequest\fP is the requested geometry.
+When the geometryHook callbacks 
 are called after geometry negotiation, \fItype\fP is
 .PN XtHpostGeometry ,
 \fIwidget\fP is the widget for which the request was made, \fIrequest\fP
@@ -3305,7 +3329,7 @@ typedef struct {
 .De
 .sp
 .LP
-When the DestroyHook callbacks are called as a result of a call to
+When the destroyHook callbacks are called as a result of a call to
 .PN XtDestroyWidget ,
 \fItype\fP is
 .PN XtHdestroy
@@ -3324,7 +3348,7 @@ Querying Open Displays
 \fB\*(SN Querying Open Displays\fP
 .XE
 .LP
-To retrieve a list of the X displays associated with an application context,
+To retrieve a list of the Displays associated with an application context,
 use
 .PN XtGetDisplays .
 .IN "XtGetDisplays" "" "@DEF@"
@@ -3338,13 +3362,13 @@ void XtGetDisplays(\fIapp_context\fP, \fIdpy_return\fP, \fInum_dpy_return\fP)
 .br
       Cardinal *\fInum_dpy_return\fP;
 .FN
-.IP \fIapp_context\fP 1i
+.IP \fIapp_context\fP 1.5i
 Specifies the application context.
-.IP \fIdpy_return\fP 1i
-Returns a list of open X display connections in the specified application
+.IP \fIdpy_return\fP 1.5i
+Returns a list of open Display connections in the specified application
 context.
-.IP \fInum_dpy_return\fP 1i
-Returns the count of open X display connections in \fIdpy_return\fP.
+.IP \fInum_dpy_return\fP 1.5i
+Returns the count of open Display connections in \fIdpy_return\fP.
 .LP
 \fBXtGetDisplays\fP may be used by an external agent to query the
 list of open displays that belong to an application context. To free 
