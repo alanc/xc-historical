@@ -1,4 +1,4 @@
-/* $XConsortium: toc.c,v 2.56 93/09/20 17:52:02 hersh Exp $
+/* $XConsortium: toc.c,v 2.57 93/12/06 15:19:08 kaleb Exp swick $
  *
  *
  *			  COPYRIGHT 1987
@@ -851,6 +851,17 @@ char *name;
 }
 
 
+Boolean TocHasChanges(toc)
+    Toc toc;
+{
+    int i;
+    for (i=0 ; i<toc->nummsgs ; i++)
+	if (toc->msgs[i]->fate != Fignore) return True;
+
+    return False;
+}
+
+
 
 /* Throw out all changes to this toc, and close all views of msgs in it.
    Requires confirmation by the user. */
@@ -879,7 +890,6 @@ int TocConfirmCataclysm(toc, confirms, cancels)
     XtCallbackList	cancels;
 {	
     register int	i;
-    int			found = False;
     static XtCallbackRec yes_callbacks[] = {
 	{TocCataclysmOkay,	(XtPointer) NULL},
 	{(XtCallbackProc) NULL,	(XtPointer) NULL},
@@ -889,13 +899,9 @@ int TocConfirmCataclysm(toc, confirms, cancels)
     if (! toc)
 	return 0;
 
-    for (i=0 ; i<toc->nummsgs && !found ; i++)
-	if (toc->msgs[i]->fate != Fignore) found = True;
-
-    if (found) {
+    if (TocHasChanges(toc)) {
 	char		str[300];
 	Widget		tocwidget;
-	int		i;
 
 	(void)sprintf(str,"Are you sure you want to remove all changes to %s?",
 		      toc->foldername);
