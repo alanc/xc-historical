@@ -414,12 +414,18 @@ macIIMouseProcessEvent(pMouse,me)
             else
                  pPriv->pScreen = screenInfo.screens[0];
         }
+	NewCurrentScreen (pPriv->pScreen, pPriv->x, pPriv->y);
     }
 
+#ifdef notdef
     if (!macIIConstrainXY (&pPriv->x, &pPriv->y)) {
     return;
     }
     NewCurrentScreen (pPriv->pScreen, pPriv->x, pPriv->y);
+#else
+    pPriv->x = max(currentLimits.x1,min(currentLimits.x2,pPriv->x));
+    pPriv->y = max(currentLimits.y1,min(currentLimits.y2,pPriv->y));
+#endif
    
     xE.u.keyButtonPointer.rootX = pPriv->x;
     xE.u.keyButtonPointer.rootY = pPriv->y;
