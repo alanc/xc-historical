@@ -1,4 +1,4 @@
-/* $XConsortium: fserve.c,v 1.30 93/09/22 16:59:22 gildea Exp $ */
+/* $XConsortium: fserve.c,v 1.31 93/09/23 17:08:42 gildea Exp $ */
 /*
  * Copyright 1990 Network Computing Devices
  *
@@ -39,6 +39,11 @@
 #include	<errno.h>
 #ifdef X_NOT_STDC_ENV
 extern int errno;
+#define Time_t long
+extern Time_t time ();
+#else
+#include	<time.h>
+#define Time_t time_t
 #endif
 
 #ifdef NCD
@@ -130,7 +135,10 @@ static Bool
 fs_name_check(name)
     char       *name;
 {
-    return (!strncmp(name, "tcp/", MIN(4, (int) strlen(name))));
+    return (
+	!strncmp(name, "tcp/", MIN(4, (int) strlen(name))) ||
+        !strncmp(name, "local/", MIN(6, (int) strlen(name))) ||
+        !strncmp(name, "decnet/", MIN(7, (int) strlen(name))));
 }
 
 /*
@@ -278,7 +286,7 @@ fs_close_conn(conn)
 {
     FSClientPtr	client, nclient;
 
-    (void) close(conn->fs_fd);
+    (void) _FONTTransClose (conn->trans_conn);
 
     _fs_bit_clear(_fs_fd_mask, conn->fs_fd);
 
@@ -1109,13 +1117,13 @@ fs_block_handler(data, wt, LastSelectMask)
     long       *LastSelectMask;
 {
     static struct timeval recon_timeout;
-    long        now,
+    Time_t      now,
                 soonest;
     FSFpePtr    recon;
 
     _fs_or_bits(LastSelectMask, LastSelectMask, _fs_fd_mask);
     if (recon = awaiting_reconnect) {
-	now = time((long *) 0);
+	now = time((Time_t *) 0);
 	soonest = recon->time_to_try;
 	while (recon = recon->next_reconnect) {
 	    if (recon->time_to_try < soonest)
@@ -1241,9 +1249,10 @@ _fs_connection_died(conn)
 	return;
     conn->attemptReconnect = FALSE;
     fs_close_conn(conn);
-    conn->time_to_try = time((long *) 0) + FS_RECONNECT_WAIT;
+    conn->time_to_try = time((Time_t *) 0) + FS_RECONNECT_WAIT;
     conn->reconnect_delay = FS_RECONNECT_WAIT;
     conn->fs_fd = -1;
+    conn->trans_conn = NULL;
     conn->next_reconnect = awaiting_reconnect;
     awaiting_reconnect = conn;
 }
@@ -1270,10 +1279,10 @@ _fs_try_reconnect()
 {
     FSFpePtr    conn,
                *prev;
-    long        now;
+    Time_t      now;
 
     prev = &awaiting_reconnect;
-    now = time((long *) 0);
+    now = time((Time_t *) 0);
     while (conn = *prev) {
 	if (now - conn->time_to_try > 0) {
 	    if (_fs_reopen_server(conn) && _fs_restart_connection(conn)) {
@@ -1283,7 +1292,7 @@ _fs_try_reconnect()
 	    } else {
 		if (conn->reconnect_delay < FS_MAX_RECONNECT_WAIT)
 		    conn->reconnect_delay *= 2;
-		now = time((long *) 0);
+		now = time((Time_t *) 0);
 		conn->time_to_try = now + conn->reconnect_delay;
 	    }
 	}
