@@ -1,5 +1,5 @@
 /*
- * $XConsortium: RdBitF.c,v 1.3 88/09/05 11:17:55 jim Exp $
+ * $XConsortium: RdBitF.c,v 1.4 88/09/13 12:06:36 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -8,6 +8,7 @@
  *
  * Public entry points:
  *
+ *     XmuReadBitmapData		read data from FILE descriptor
  *     XmuReadBitmapDataFromFile	read X10 or X11 format bitmap files
  *					and return data
  *
@@ -109,13 +110,12 @@ static NextInt (fstream)
  * its arguments won't have been touched.  This routine should look as much
  * like the Xlib routine XReadBitmapfile as possible.
  */
-int XmuReadBitmapDataFromFile (filename, width, height, datap, x_hot, y_hot)
-    char *filename;
+int XmuReadBitmapData (fstream, width, height, datap, x_hot, y_hot)
+    FILE *fstream;			/* handle on file  */
     unsigned int *width, *height;	/* RETURNED */
     unsigned char **datap;		/* RETURNED */
     int *x_hot, *y_hot;			/* RETURNED */
 {
-    FILE *fstream;			/* handle on file  */
     unsigned char *data = NULL;		/* working variable */
     char line[MAX_SIZE];		/* input line from file */
     int size;				/* number of bytes of data */
@@ -135,12 +135,8 @@ int XmuReadBitmapDataFromFile (filename, width, height, datap, x_hot, y_hot)
     /* first time initialization */
     if (initialized == False) initHexTable();
 
-    if ((fstream = fopen(filename, "r")) == NULL) {
-	return BitmapOpenFailed;
-    }
-
     /* error cleanup and return macro	*/
-#define	RETURN(code) { if (data) free (data); fclose (fstream); return code; }
+#define	RETURN(code) { if (data) free (data); return code; }
 
     while (fgets(line, MAX_SIZE, fstream)) {
 	if (strlen(line) == MAX_SIZE-1) {
@@ -234,4 +230,22 @@ int XmuReadBitmapDataFromFile (filename, width, height, datap, x_hot, y_hot)
     if (y_hot) *y_hot = hy;
 
     RETURN (BitmapSuccess);
+}
+
+
+int XmuReadBitmapDataFromFile (filename, width, height, datap, x_hot, y_hot)
+    char *filename;
+    unsigned int *width, *height;	/* RETURNED */
+    unsigned char **datap;		/* RETURNED */
+    int *x_hot, *y_hot;			/* RETURNED */
+{
+    FILE *fstream;
+    int status;
+
+    if ((fstream = fopen (filename, "r")) == NULL) {
+	return BitmapOpenFailed;
+    }
+    status = XmuReadBitmapData (fstream, width, height, datap, x_hot, y_hot);
+    fclose (fstream);
+    return status;
 }
