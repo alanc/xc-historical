@@ -1,4 +1,4 @@
-/* $XConsortium: smproxy.c,v 1.17 94/07/13 12:23:43 mor Exp $ */
+/* $XConsortium: smproxy.c,v 1.18 94/07/18 15:26:48 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1994  X Consortium
@@ -729,15 +729,10 @@ XPropertyEvent *event;
 
 
 void
-ProxySaveYourselfCB (smcConn, clientData, saveType,
-    shutdown, interactStyle, fast)
+ProxySaveYourselfPhase2CB (smcConn, clientData)
 
 SmcConn smcConn;
 SmPointer clientData;
-int saveType;
-Bool shutdown;
-int interactStyle;
-Bool fast;
 
 {
     FILE *proxyFile;
@@ -860,6 +855,33 @@ Bool fast;
 
 
 void
+ProxySaveYourselfCB (smcConn, clientData, saveType,
+    shutdown, interactStyle, fast)
+
+SmcConn smcConn;
+SmPointer clientData;
+int saveType;
+Bool shutdown;
+int interactStyle;
+Bool fast;
+
+{
+    /*
+     * We want the proxy to respond to the Save Yourself after all
+     * the regular XSMP clients have finished with the save (and possibly
+     * interacted with the user).
+     */
+
+    if (!SmcRequestSaveYourselfPhase2 (smcConn,
+	ProxySaveYourselfPhase2CB, NULL))
+    {
+	SmcSaveYourselfDone (smcConn, False);
+    }
+}
+
+
+
+void
 ProxyDieCB (smcConn, clientData)
 
 SmcConn smcConn;
@@ -867,8 +889,6 @@ SmPointer clientData;
 
 {
     ok_to_die = 1;
-
-    /* should really use phase 2 stuff here!!!!!!!!!!!!! */
 
     if (die_count == proxy_count)
     {
@@ -900,7 +920,7 @@ SmcConn smcConn;
 SmPointer clientData;
 
 {
-    ;
+    SmcSaveYourselfDone (smcConn, False);
 }
 
 

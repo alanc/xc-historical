@@ -1,4 +1,4 @@
-/* $XConsortium: session.c,v 1.2 94/07/07 11:18:15 mor Exp $ */
+/* $XConsortium: session.c,v 1.3 94/07/18 15:27:48 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1994  X Consortium
@@ -462,14 +462,10 @@ Bool *iconified;
 
 
 void
-SaveYourselfCB (smcConn, clientData, saveType, shutdown, interactStyle, fast)
+SaveYourselfPhase2CB (smcConn, clientData)
 
 SmcConn smcConn;
 SmPointer clientData;
-int saveType;
-Bool shutdown;
-int interactStyle;
-Bool fast;
 
 {
     int scrnum;
@@ -607,6 +603,23 @@ Bool fast;
 
 
 void
+SaveYourselfCB (smcConn, clientData, saveType, shutdown, interactStyle, fast)
+
+SmcConn smcConn;
+SmPointer clientData;
+int saveType;
+Bool shutdown;
+int interactStyle;
+Bool fast;
+
+{
+    if (!SmcRequestSaveYourselfPhase2 (smcConn, SaveYourselfPhase2CB, NULL))
+	SmcSaveYourselfDone (smcConn, False);
+}
+
+
+
+void
 DieCB (smcConn, clientData)
 
 SmcConn smcConn;
@@ -639,7 +652,7 @@ SmcConn smcConn;
 SmPointer clientData;
 
 {
-    ;
+    SmcSaveYourselfDone (smcConn, False);
 }
 
 
