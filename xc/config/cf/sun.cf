@@ -1,8 +1,8 @@
+XCOMM platform:  $XConsortium: sun.cf,v 1.48 91/03/15 13:53:37 rws Exp $
+XCOMM operating system:  OSName
+
 /*
  * SET VERSION NUMBERS BEFORE MAKING MAKEFILES
- *
- * If you change either of the following numbers, you will need to do a 
- * full build (make World) at the top of the sources....
  */
 
 #define OSName            SunOS 4.1.1
@@ -12,38 +12,12 @@
 #define HasNdbm		  YES
 #define HasShm		  YES
 #define HasSecureRPC	  YES
-#define XsunServer Xsun
+#define SetTtyGroup	  YES
+#define MkdirHasP	  YES
+#define HasPutenv	  YES
+#define HasBsearch	  YES
 #define BuildPex	  YES
-
-#if OSMajorVersion >= 4
-#define HasSharedLibraries YES
-#else
-#define HasSharedLibraries NO
-#endif
-
-#if HasSharedLibraries
-#include <sunLib.rules>
-#endif
-
-/* #define HasGcc YES */	/* VERY USEFUL for server on Sun3 */
-#ifdef mc68000
-#define HasGcc YES
-#else
-#define HasGcc NO
-#endif
-
-#define HasPutenv YES
-#define HasBsearch YES
-
-#if HasSharedLibraries
-#if HasGcc
-#define LibraryCcCmd cc		/* until gcc can generate -pic code */
-#endif
-#endif
-
-#if OSMajorVersion <= 3
-#define HasVoidSignalReturn NO
-#endif
+#define XsunServer Xsun
 
 #ifdef sparc
 #undef sparc
@@ -54,6 +28,19 @@
 #define i386Architecture
 #endif
 
+#include <sunLib.rules>
+
+/* #define HasGcc YES */	/* VERY USEFUL for server on Sun3 */
+#ifdef mc68000
+#define HasGcc YES
+#else
+#define HasGcc NO
+#endif
+
+#if HasSharedLibraries && HasGcc
+#define LibraryCcCmd cc		/* until gcc can generate -pic code */
+#endif
+
 #if HasGcc
 #define ServerCcCmd gcc -DNOSTDHDRS -fstrength-reduce -fpcc-struct-return 
 #define CcCmd cc
@@ -61,23 +48,17 @@
 #endif
 
 #ifdef mc68000
-#define DefaultCCOptions -f68881 -pipe		/* remove in R4 */
+#define DefaultCCOptions -f68881 -pipe
 #else
-#define DefaultCCOptions -pipe			/* remove in R4 */
+#define DefaultCCOptions -pipe
 #endif
-
-/* you may find one or both of these options useful on your system */
-/* #define DefaultCCOptions -f68881 -pipe */
 
 #define LibraryCCOptions /* don't want special floating point */
 #define LibraryDefines  /**/
-/* see below for ServerDefines */
 
-
-XCOMM platform:  $XConsortium: sun.cf,v 1.47 91/03/14 17:55:56 rws Exp $
-XCOMM operating system:  OSName
-
+#ifndef UseSunWindowsInServer
 #define UseSunWindowsInServer	NO	/* link in SunWindows support? */
+#endif
 
 #if UseSunWindowsInServer
 #define SunWindowsDefines -DSUN_WINDOWS
@@ -85,18 +66,13 @@ XCOMM operating system:  OSName
 #define SunWindowsDefines /* as nothing */
 #endif
 
-/* define this as you like for server compilation */
-#if (OSMajorVersion >= 4 || defined(SparcArchitecture)) && !HasGcc
-#define AllocateLocalDefines -DINCLUDE_ALLOCA_H
-#else
+#if HasGcc
 #define AllocateLocalDefines /**/
+#else
+#define AllocateLocalDefines -DINCLUDE_ALLOCA_H
 #endif
 
 #define ServerOSDefines SunWindowsDefines AllocateLocalDefines
-
-#if OSMajorVersion >= 4 && OSMinorVersion >= 0
-#define SetTtyGroup YES
-#endif
 
 #if HasGcc
 #define ServerCDebugFlags -O -g		/* XXX remove this in R5 */
