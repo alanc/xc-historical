@@ -1,5 +1,5 @@
 #if ( !defined(lint) && !defined(SABER) )
-static char Xrcsid[] = "$XConsortium: SimpleMenu.c,v 1.2 89/04/13 17:37:24 kit Exp $";
+static char Xrcsid[] = "$XConsortium: SimpleMenu.c,v 1.3 89/04/20 14:59:59 kit Exp $";
 #endif 
 
 /***********************************************************
@@ -94,8 +94,8 @@ static XtResource entry_resources[] = {
 static char defaultTranslations[] =
     "<EnterWindow>:     highlight()             \n\
      <LeaveWindow>:     unhighlight()           \n\
-     <Btn1Motion>:      highlight()             \n\
-     <Btn1Up>:          notify() MenuPopdown() unhighlight()"; 
+     <BtnMotion>:       highlight()             \n\
+     <BtnUp>:           notify() MenuPopdown() unhighlight()"; 
 
 #define superclass (&overrideShellClassRec)
 
@@ -232,7 +232,7 @@ Initialize(request, new)
 Widget request, new;
 {
   SimpleMenuWidget smw = (SimpleMenuWidget) new;
-  
+
 /*
  * If top or bottom margins are zero then use vertical_space.
  */
@@ -641,7 +641,7 @@ Cardinal * num_params;
  *
  ************************************************************/
  
-/*      Function Name: XawSimpleMenuAddCallback
+/*      Function Name: XawSimpleMenuAddEntryCallback
  *      Description: Adds an entry to the callback list.
  *      Arguments: w - the menu widget
  *                 name - name of new menu item.
@@ -651,7 +651,7 @@ Cardinal * num_params;
  */
 
 void
-XawSimpleMenuAddCallback(w, name, proc, data)
+XawSimpleMenuAddEntryCallback(w, name, proc, data)
 Widget w;
 char * name;
 XtCallbackProc proc;
@@ -721,7 +721,7 @@ char * name;
   RefreshEntry(w, NULL, XawErefreshAll);
 }
   
-/*      Function Name: XawSimpleMenuUpdateEntry
+/*      Function Name: XawSimpleMenuSetEntryValues
  *      Description: Adds an item to the menu.
  *      Arguments: w - the menu widget
  *                 name - name of new menu item.
@@ -735,7 +735,7 @@ char * name;
  */
 
 void
-XawSimpleMenuUpdateEntry(w, name , args, num_args)
+XawSimpleMenuSetEntryValues(w, name , args, num_args)
 Widget w;
 char * name;
 ArgList args;
@@ -751,7 +751,7 @@ Cardinal num_args;
 }
 
   
-/*      Function Name: XawSimpleMenuGetValues
+/*      Function Name: XawSimpleMenuGetEntryValues
  *      Description: gets the current values for an entry.
  *      Arguments: w - the menu widget
  *                 name - name of new menu item.
@@ -761,7 +761,7 @@ Cardinal num_args;
  */
 
 void
-XawSimpleMenuGetValues(w, name , args, num_args)
+XawSimpleMenuGetEntryValues(w, name , args, num_args)
 Widget w;
 char * name;
 ArgList args;
