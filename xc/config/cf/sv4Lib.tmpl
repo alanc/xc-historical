@@ -1,4 +1,4 @@
-XCOMM $XConsortium: sv4Lib.tmpl,v 1.1 91/03/23 16:51:17 rws Exp $
+XCOMM $XConsortium: sv4Lib.tmpl,v 1.1 91/03/23 16:53:33 rws Exp $
 
 /*
  * SVR4 shared library template
@@ -39,7 +39,7 @@ PICFLAGS = PositionIndependentCFlags
              XLIB = $(EXTENSIONLIB) _Use(-lX11,-L$(XLIBSRC) -lX11)
 #endif
 #if SharedLibXmu
-        DEPXMULIB = _UseCat($(USRLIBDIR),$(XMUSRC),/libXmu.sa.$(SOXMUREV))
+        DEPXMULIB = /* _UseCat($(USRLIBDIR),$(XMUSRC),/libXmu.sa.$(SOXMUREV)) */
            XMULIB = _Use(-lXmu,-L$(XMUSRC) -lXmu)
 #endif
 #if SharedOldLibX
@@ -47,10 +47,10 @@ PICFLAGS = PositionIndependentCFlags
           OLDXLIB = _Use(-loldX,-L$(OLDXLIBSRC) -loldX)
 #endif
 #if SharedLibXt
-      DEPXTOOLLIB = _UseCat($(USRLIBDIR),$(TOOLKITSRC),/libXt.sa.$(SOXTREV))
+      DEPXTOOLLIB = /* _UseCat($(USRLIBDIR),$(TOOLKITSRC),/libXt.sa.$(SOXTREV)) */
          XTOOLLIB = _Use(-lXt,-L$(TOOLKITSRC) -lXt)
 #endif
 #if SharedLibXaw
-        DEPXAWLIB = _UseCat($(USRLIBDIR),$(AWIDGETSRC),/libXaw.sa.$(SOXAWREV))
+        DEPXAWLIB = /* _UseCat($(USRLIBDIR),$(AWIDGETSRC),/libXaw.sa.$(SOXAWREV)) */
            XAWLIB = _Use(-lXaw,-L$(AWIDGETSRC) -lXaw)
 #endif
