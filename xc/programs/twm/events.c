@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.84 89/08/14 18:16:24 jim Exp $
+ * $XConsortium: events.c,v 1.85 89/08/15 11:41:41 jim Exp $
  *
  * twm event handling
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: events.c,v 1.84 89/08/14 18:16:24 jim Exp $";
+"$XConsortium: events.c,v 1.85 89/08/15 11:41:41 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -1845,6 +1845,44 @@ static void flush_expose (w)
 }
 
 
+
+InstallWindowColormaps (tmp_win)
+    TwmWindow *tmp_win;
+{
+    Screen *s = ScreenOfDisplay (dpy, Scr->screen);
+    int maxcmaps = MaxCmapsOfScreen (s);
+    int i, n;
+
+    if (tmp_win->cmap_windows) {
+	/*
+	 * keep track of how many there are and then only install
+	 * the last max colormaps; we'll also need track the colormap
+	 * notify events to know which colormaps are present.
+	 */
+	n = tmp_win->number_cmap_windows;
+	for (i = tmp_win->current_cmap_window - 1; i >= 0; i--) {
+	    if (n-- <= maxcmaps)
+	      InstallWindowColormap (tmp_win->cmap_windows[i]);
+	}
+	for (i = tmp_win->number_cmap_windows - 1;
+	     i >= tmp_win->current_cmap_window; i--) {
+	    if (n-- <= maxcmaps)
+	      InstallWindowColormap (tmp_win->cmap_windows[i]);
+	}
+    } else {
+	InstallWindowColormap (tmp_win->attr.colormap);
+    }
+}
+
+InstallWindowColormap (w)
+    Window w;
+{
+    XWindowAttributes attr;
+
+    if (XGetWindowAttributes (dpy, w, &attr)) {
+	InstallAColormap (dpy, attr.colormap);
+    }
+}
 
 InstallAColormap (dpy, cmap)
     Display *dpy;
