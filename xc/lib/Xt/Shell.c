@@ -1,4 +1,4 @@
-/* $XConsortium: Shell.c,v 1.130 93/05/21 16:45:31 kaleb Exp $ */
+/* $XConsortium: Shell.c,v 1.131 93/05/24 15:29:14 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -2177,18 +2177,17 @@ static void GetValuesHook(widget, args, num_args)
     extern void _XtCopyToArg();
 
     /* x and y resource values may be invalid after a shell resize */
-    if (! (w->shell.client_specified & _XtShellPositionValid)) {
+    if (XtIsRealized(widget) &&
+	! (w->shell.client_specified & _XtShellPositionValid)) {
 	Cardinal	n;
 	Position	x, y;
 
 	for (n = *num_args; n; n--, args++) {
 	    if (strcmp(XtNx, args->name) == 0) {
-		 if (! (w->shell.client_specified & _XtShellPositionValid))
-		     _XtShellGetCoordinates(widget, &x, &y);
+		_XtShellGetCoordinates(widget, &x, &y);
 		_XtCopyToArg((char *) &x, &args->value, sizeof(Position));
 	    } else if (strcmp(XtNy, args->name) == 0) {
-		 if (! (w->shell.client_specified & _XtShellPositionValid))
-		     _XtShellGetCoordinates(widget, &x, &y);
+		_XtShellGetCoordinates(widget, &x, &y);
 		_XtCopyToArg((char *) &y, &args->value, sizeof(Position));
 	    }
 	}
