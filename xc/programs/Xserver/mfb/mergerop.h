@@ -1,5 +1,5 @@
 /*
- * $XConsortium: mergerop.h,v 1.3 90/03/29 14:30:52 keith Exp $
+ * $XConsortium: mergerop.h,v 1.4 90/04/01 17:22:39 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -36,7 +36,7 @@ typedef struct _mergeRopBits {
 
 extern mergeRopRec	mergeRopBits[16];
 
-#define DeclareMergeRop(register) register unsigned long   _ca1, _cx1, _ca2, _cx2;
+#define DeclareMergeRop() unsigned long   _ca1, _cx1, _ca2, _cx2;
 
 #if PPW != 32	/* cfb */
 #define InitializeMergeRop(alu,pm) {\
@@ -92,7 +92,8 @@ extern mergeRopRec	mergeRopBits[16];
 #define Mset		(1<<GXset)
 
 #if (MROP) == Mcopy
-#define MROP_DECLARE(register)
+#define MROP_DECLARE()
+#define MROP_DECLARE_REG()
 #define MROP_INITIALIZE(alu,pm)
 #define MROP_SOLID(src,dst)	(src)
 #define MROP_MASK(src,dst,mask)	((dst) & ~(mask) | (src) & (mask))
@@ -100,7 +101,8 @@ extern mergeRopRec	mergeRopBits[16];
 #endif
 
 #if (MROP) == McopyInverted
-#define MROP_DECLARE(register)
+#define MROP_DECLARE()
+#define MROP_DECLARE_REG()
 #define MROP_INITIALIZE(alu,pm)
 #define MROP_SOLID(src,dst)	(~(src))
 #define MROP_MASK(src,dst,mask)	((dst) & ~(mask) | (~(src)) & (mask))
@@ -108,7 +110,8 @@ extern mergeRopRec	mergeRopBits[16];
 #endif
 
 #if (MROP) == Mxor
-#define MROP_DECLARE(register)
+#define MROP_DECLARE()
+#define MROP_DECLARE_REG()
 #define MROP_INITIALIZE(alu,pm)
 #define MROP_SOLID(src,dst)	((src) ^ (dst))
 #define MROP_MASK(src,dst,mask)	(((src) & (mask)) ^ (dst))
@@ -116,7 +119,8 @@ extern mergeRopRec	mergeRopBits[16];
 #endif
 
 #if (MROP) == Mor
-#define MROP_DECLARE(register)
+#define MROP_DECLARE()
+#define MROP_DECLARE_REG()
 #define MROP_INITIALIZE(alu,pm)
 #define MROP_SOLID(src,dst)	((src) | (dst))
 #define MROP_MASK(src,dst,mask)	(((src) & (mask)) | (dst))
@@ -124,7 +128,8 @@ extern mergeRopRec	mergeRopBits[16];
 #endif
 
 #if (MROP) == (Mcopy|Mxor|MandReverse|Mor)
-#define MROP_DECLARE(register)	register unsigned long _ca1, _cx1;
+#define MROP_DECLARE()	unsigned long _ca1, _cx1;
+#define MROP_DECLARE_REG()	register MROP_DECLARE()
 #define MROP_INITIALIZE(alu,pm)	{ \
     mergeRopPtr  _bits; \
     _bits = &mergeRopBits[alu]; \
@@ -139,7 +144,8 @@ extern mergeRopRec	mergeRopBits[16];
 #endif
 
 #if (MROP) == 0
-#define MROP_DECLARE(register)	DeclareMergeRop(register)
+#define MROP_DECLARE()	DeclareMergeRop()
+#define MROP_DECLARE_REG()	register DeclareMergeRop()
 #define MROP_INITIALIZE(alu,pm)	InitializeMergeRop(alu,pm)
 #define MROP_SOLID(src,dst)	DoMergeRop(src,dst)
 #define MROP_MASK(src,dst,mask)	DoMaskMergeRop(src, dst, mask)
