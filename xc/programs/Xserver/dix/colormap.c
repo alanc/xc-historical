@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: colormap.c,v 5.17 91/05/09 21:24:57 rws Exp $ */
+/* $XConsortium: colormap.c,v 5.18 91/05/26 21:09:22 rws Exp $ */
 
 #include "X.h"
 #define NEED_EVENTS
@@ -1458,9 +1458,7 @@ AllocColorCells (client, pmap, colors, planes, contig, ppix, masks)
 		    g += g;
 		while(!(bmask & b))
 		    b += b;
-		*masks++ = (r << pmap->pVisual->offsetRed) |
-			   (g << pmap->pVisual->offsetGreen) |
-			   (b << pmap->pVisual->offsetBlue);
+		*masks++ = r | g | b;
 	    }
 	}
     }
