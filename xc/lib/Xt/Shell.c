@@ -1,4 +1,4 @@
-/* $XConsortium: Shell.c,v 1.106 91/06/27 16:35:25 converse Exp $ */
+/* $XConsortium: Shell.c,v 1.107 91/07/02 18:42:53 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -1656,9 +1656,7 @@ static _wait_for_response(w, event, request_num)
 	    }
 
 	    if (_XtwaitForSomething(TRUE, TRUE, FALSE, TRUE, &timeout, app)
-		!= -1) continue; /* %%% we're in trouble if an event arrives
-				  * on another display
-				  */
+		!= -1) continue;
 	    if (timeout == 0)
 		return FALSE;
 	}
