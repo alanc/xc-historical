@@ -29,7 +29,7 @@ Xmh.SendBreakWidth:		2000
 *delete.Label:			Delete
 *move.Label:			Move
 *copy.Label:			Copy
-*unmark.Label:			UnMark
+*unmark.Label:			Unmark
 *viewNew.Label:			View In New
 *reply.Label:			Reply
 *forward.Label:			Forward
