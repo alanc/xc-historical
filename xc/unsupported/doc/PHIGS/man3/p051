@@ -1,5 +1,5 @@
 .\"##
-.\" $XConsortium$
+.\" $XConsortium: p051,v 5.1 91/02/16 09:37:36 rws Exp $
 .\"##
 .\"## 
 .\"## Copyright (c) 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -22,7 +22,7 @@
 .\"## USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
 .\"## OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 .\"## PERFORMANCE OF THIS SOFTWARE.
-.TH "EVALUATE VIEW MAPPING MATRIX" 3P "29 February 1991"
+.TH "EVALUATE VIEW MAPPING MATRIX" 3P "16 August 1991"
 .SH NAME
 EVALUATE VIEW MAPPING MATRIX  \- generate a transformation matrix to
 map a \s-2\&2D VRC\s+2 window to a \s-2\&2D NPC\s+2 viewport
@@ -64,7 +64,7 @@ This structure is defined in phigs.h as follows:
 typedef struct {
 .sp .2
 	Plimit	win;	/* window limits */
-	Plimit	vp;	/* viewport limits */
+	Plimit	proj_vp;	/* viewport limits */
 .sp .2
 } Pview_map;
 .fi
@@ -94,7 +94,7 @@ The fields in Plimit define the \s-2VRC\s+2 window as follows:
 	Plimit.y_max \(eq maximum \fIv\fP coordinate value
 .fi
 .IP
-\fIvp\fP
+\fIproj_vp\fP
 is a Plimit structure containing the definition of the \s-2NPC\s+2 viewport.
 .SS C Output Parameters
 .IP \fIerror_ind\fP
