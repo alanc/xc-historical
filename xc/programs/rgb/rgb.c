@@ -5,10 +5,24 @@
    where red/green/blue are decimal values, and inserts them in a database.
  */
 #ifndef lint
-static char *rcsid_rgb_c = "$XConsortium: rgb.c,v 11.7 88/09/06 17:51:52 jim Exp $";
+static char *rcsid_rgb_c = "$XConsortium: rgb.c,v 11.8 89/07/20 18:42:46 rws Exp $";
 #endif
 
+#ifdef apollo
+#ifndef APOLLO_SR9
+#define NDBM
+#endif
+#endif
+
+#ifdef NDBM
+#include <ndbm.h>
+#else
 #include <dbm.h>
+#define dbm_open(name,flags,mode) (!dbminit(name))
+#define dbm_store(db,key,content,flags) (store(key,content))
+#define dbm_close(db) dbmclose()
+#endif
+
 #undef NULL
 #include <stdio.h>
 #include <X11/Xos.h>
@@ -42,6 +56,11 @@ main(argc, argv)
     int lineno;
     int i, n;
     int fd;
+#ifdef NDBM
+    DBM *rgb_dbm;
+#else
+    int rgb_dbm;
+#endif
 
     ProgramName = argv[0];
 
@@ -72,10 +91,11 @@ main(argc, argv)
     }
     (void) close (fd);
 
-    if (dbminit (dbname)) {
+    rgb_dbm = dbm_open (dbname, O_RDWR, 0666);
+    if (!rgb_dbm) {
 	fprintf (stderr,
-		 "%s:  unable to initial dbm database for \"%s\"\n",
-		 ProgramName, dbname);
+		 "%s:  unable to open dbm database \"%s\" (error %d, %s)\n",
+		 ProgramName, dbname, errno, SysError());
 	exit (1);
     }
 
@@ -107,9 +127,11 @@ main(argc, argv)
 	rgb.red = (red * 65535) / 255;
 	rgb.green = (green * 65535) / 255;
 	rgb.blue = (blue * 65535) / 255;
-	if (store (key, content)) {
-	    fprintf (stderr, "store of %s failed\n", name);
+	if (dbm_store (rgb_dbm, key, content, DBM_REPLACE)) {
+	    fprintf (stderr, "%s:  store of entry \"%s\" failed\n",
+		     ProgramName, name);
 	    fflush (stderr);
 	}
     }
+    dbm_close(rgb_dbm);
 }

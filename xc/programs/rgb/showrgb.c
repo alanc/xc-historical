@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: showrgb.c,v 1.1 89/10/26 16:24:49 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -23,7 +23,22 @@
  * Author:  Jim Fulton, MIT X Consortium
  */
 
+#ifdef apollo
+#ifndef APOLLO_SR9
+#define NDBM
+#endif
+#endif
+
+#ifdef NDBM
+#include <ndbm.h>
+#else
 #include <dbm.h>
+#define dbm_open(name,flags,mode) (!dbminit(name))
+#define dbm_firstkey(db) (firstkey())
+#define dbm_fetch(db,key) (fetch(key))
+#define dbm_close(db) dbmclose()
+#endif
+
 #undef NULL
 #include <stdio.h>
 #include <X11/Xos.h>
@@ -52,18 +67,29 @@ main (argc, argv)
 dumprgb (filename)
     char *filename;
 {
+#ifdef NDBM
+    DBM *rgb_dbm;
+#else
+    int rgb_dbm;
+#endif
     datum key;
 
-    if (dbminit(filename) != 0) {
+    rgb_dbm = dbm_open (filename, O_RDONLY, 0);
+    if (!rgb_dbm) {
 	fprintf (stderr, "%s:  unable to open rgb database \"%s\"\n",
 		 ProgramName, filename);
 	exit (1);
     }
 
-    for (key = firstkey(); key.dptr != NULL; key = nextkey(key)) {
+#ifndef NDBM
+#define dbm_nextkey(db) (nextkey(key))	/* need variable called key */
+#endif
+
+    for (key = dbm_firstkey(rgb_dbm); key.dptr != NULL;
+	 key = dbm_nextkey(rgb_dbm)) {
 	datum value;
 
-	value = fetch (key);
+	value = dbm_fetch(rgb_dbm, key);
 	if (value.dptr) {
 	    RGB rgb;
 	    unsigned short r, g, b;
@@ -83,5 +109,5 @@ dumprgb (filename)
 	}
     }
 
-    dbmclose();
+    dbm_close (rgb_dbm);
 }
