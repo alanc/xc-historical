@@ -1,4 +1,4 @@
-/* $XConsortium: save.c,v 1.10 94/08/25 17:33:48 mor Exp mor $ */
+/* $XConsortium: save.c,v 1.11 94/08/30 18:00:27 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -29,6 +29,30 @@ in this Software without prior written authorization from the X Consortium.
 #include "saveutil.h"
 
 
+Widget savePopup;
+Widget   saveForm;
+Widget	   saveMessageLabel;
+Widget	   saveTypeLabel;
+Widget	   saveTypeGlobal;
+Widget	   saveTypeLocal;
+Widget	   saveTypeBoth;
+Widget	   interactStyleLabel;
+Widget	   interactStyleNone;
+Widget	   interactStyleErrors;
+Widget	   interactStyleAny;
+Widget	 saveOkButton;
+Widget	 saveCancelButton;
+Widget badSavePopup;
+Widget   badSaveForm;
+Widget	   badSaveLabel;
+Widget     badSaveOkButton;
+Widget	   badSaveCancelButton;
+Widget     badSaveListWidget;
+
+extern Widget clientInfoPopup;
+extern Widget clientPropPopup;
+extern Widget nameSessionPopup;
+
 static int saveTypeData[] = {
 	SmSaveLocal,
 	SmSaveGlobal,
@@ -40,6 +64,10 @@ static int interactStyleData[] = {
 	SmInteractStyleErrors,
 	SmInteractStyleAny
 };
+
+static String *failedNames = NULL;
+static ClientRec **failedClients = NULL;
+static int numFailedNames = 0;
 
 void SetSaveSensitivity ();
 
@@ -361,6 +389,51 @@ Bool on;
 
 
 
+static void
+BadSaveOkXtProc (w, client_data, callData)
+
+Widget		w;
+XtPointer 	client_data;
+XtPointer 	callData;
+
+{
+    ListFreeAllButHead (FailedSaveList);
+    XtPopdown (badSavePopup);
+    FinishUpSave ();
+}
+
+
+
+static void
+BadSaveCancelXtProc (w, client_data, callData)
+
+Widget		w;
+XtPointer 	client_data;
+XtPointer 	callData;
+
+{
+    ListFreeAllButHead (FailedSaveList);
+    XtPopdown (badSavePopup);
+    if (wantShutdown)
+	shutdownCancelled = True;
+    FinishUpSave ();
+}
+
+
+
+static void
+BadSaveListXtProc (w, client_data, callData)
+
+Widget		w;
+XtPointer 	client_data;
+XtPointer 	callData;
+
+{
+
+}
+
+
+
 void
 create_save_popup ()
 
@@ -482,6 +555,65 @@ create_save_popup ()
     XtAddCallback (saveCancelButton, XtNcallback, SaveCancelXtProc, 0);
 
     XtInstallAllAccelerators (saveForm, saveForm);
+
+
+    /*
+     * Pop up when not all clients returned SaveSuccess
+     */
+
+    badSavePopup = XtVaCreatePopupShell (
+	"badSavePopup", topLevelShellWidgetClass, topLevel,
+	XtNallowShellResize, True,
+	NULL);
+    
+
+    badSaveForm = XtVaCreateManagedWidget (
+	"badSaveForm", formWidgetClass, badSavePopup,
+	NULL);
+
+    badSaveLabel = XtVaCreateManagedWidget (
+	"badSaveLabel", labelWidgetClass, badSaveForm,
+        XtNfromHoriz, NULL,
+        XtNfromVert, NULL,
+        XtNborderWidth, 0,
+	XtNresizable, True,
+	XtNtop, XawChainTop,
+	XtNbottom, XawChainTop,
+	NULL);
+
+    badSaveListWidget = XtVaCreateManagedWidget (
+	"badSaveListWidget", listWidgetClass, badSaveForm,
+        XtNdefaultColumns, 1,
+	XtNforceColumns, True,
+        XtNfromHoriz, NULL,
+        XtNfromVert, badSaveLabel,
+	XtNresizable, True,
+	XtNtop, XawChainTop,
+	XtNbottom, XawChainBottom,
+	NULL);
+
+    XtAddCallback (badSaveListWidget, XtNcallback, BadSaveListXtProc, 0);
+
+    badSaveOkButton = XtVaCreateManagedWidget (
+	"badSaveOkButton", commandWidgetClass, badSaveForm,
+        XtNfromHoriz, NULL,
+        XtNfromVert, badSaveListWidget,
+	XtNtop, XawChainBottom,
+	XtNbottom, XawChainBottom,
+        NULL);
+    
+    XtAddCallback (badSaveOkButton, XtNcallback, BadSaveOkXtProc, 0);
+
+
+    badSaveCancelButton = XtVaCreateManagedWidget (
+	"badSaveCancelButton", commandWidgetClass, badSaveForm,
+        XtNfromHoriz, badSaveOkButton,
+        XtNfromVert, badSaveListWidget,
+	XtNtop, XawChainBottom,
+	XtNbottom, XawChainBottom,
+        NULL);
+    
+    XtAddCallback (badSaveCancelButton, XtNcallback, BadSaveCancelXtProc, 0);
 }
 
 
@@ -524,6 +656,11 @@ PopupSaveDialog ()
 
     if (naming_session)
 	XtPopdown (nameSessionPopup);
+
+    if (wantShutdown)
+	XtManageChild (badSaveCancelButton);
+    else
+	XtUnmanageChild (badSaveCancelButton);
 
     XtPopup (savePopup, XtGrabNone);
 }
@@ -572,6 +709,169 @@ XtPointer 	callData;
 	wantShutdown = True;
 	PopupSaveDialog ();
     }
+}
+
+
+
+void
+PopupBadSave ()
+
+{
+    ClientRec *client;
+    char *progName, *hostname, *tmp1, *tmp2;
+    String clientInfo;
+    int maxlen1, maxlen2;
+    char extraBuf1[80], extraBuf2[80];
+    char *restart_service_prop;
+    List *cl, *pl;
+    int i, k;
+
+    if (failedNames)
+    {
+	/*
+	 * Free the previous list of names.  Xaw doesn't make a copy of
+	 * our list, so we need to keep it around.
+	 */
+
+	for (i = 0; i < numFailedNames; i++)
+	    XtFree (failedNames[i]);
+
+	XtFree ((char *) failedNames);
+
+	failedNames = NULL;
+    }
+
+    if (failedClients)
+    {
+	/*
+	 * Free the mapping of client names to client records
+	 */
+
+	XtFree ((char *) failedClients);
+	failedClients = NULL;
+    }
+
+    maxlen1 = maxlen2 = 0;
+    numFailedNames = 0;
+
+    for (cl = ListFirst (FailedSaveList); cl; cl = ListNext (cl))
+    {
+	client = (ClientRec *) cl->thing;
+
+	progName = NULL;
+	restart_service_prop = NULL;
+
+	for (pl = ListFirst (client->props); pl; pl = ListNext (pl))
+	{
+	    Prop *pprop = (Prop *) pl->thing;
+	    List *vl = ListFirst (pprop->values);
+	    PropValue *pval = (PropValue *) vl->thing;
+
+	    if (strcmp (pprop->name, SmProgram) == 0)
+	    {
+		progName = (char *) GetProgramName ((char *) pval->value);
+
+		if (strlen (progName) > maxlen1)
+		    maxlen1 = strlen (progName);
+	    }
+	    else if (strcmp (pprop->name, "_XC_RestartService") == 0)
+	    {
+		restart_service_prop = (char *) pval->value;
+	    }
+	}
+
+	if (!progName)
+	    continue;
+
+	if (restart_service_prop)
+	    tmp1 = restart_service_prop;
+	else if (client->clientHostname)
+	    tmp1 = client->clientHostname;
+	else
+	    continue;
+
+	if ((tmp2 = (char *) strchr (tmp1, '/')) == NULL)
+	    hostname = tmp1;
+	else
+	    hostname = tmp2 + 1;
+
+	if (strlen (hostname) > maxlen2)
+	    maxlen2 = strlen (hostname);
+
+	numFailedNames++;
+    }
+
+    failedNames = (String *) XtMalloc (
+	numFailedNames * sizeof (String));
+    failedClients = (ClientRec **) XtMalloc (
+	numFailedNames * sizeof (ClientRec *));
+
+    i = 0;
+    for (cl = ListFirst (FailedSaveList); cl; cl = ListNext (cl))
+    {
+	ClientRec *client = (ClientRec *) cl->thing;
+	int extra1, extra2;
+
+	progName = NULL;
+	restart_service_prop = NULL;
+
+	for (pl = ListFirst (client->props); pl; pl = ListNext (pl))
+	{
+	    Prop *pprop = (Prop *) pl->thing;
+	    List *vl = ListFirst (pprop->values);
+	    PropValue *pval = (PropValue *) vl->thing;
+
+	    if (strcmp (pprop->name, SmProgram) == 0)
+	    {
+		progName = (char *) GetProgramName ((char *) pval->value);
+	    }
+	    else if (strcmp (pprop->name, "_XC_RestartService") == 0)
+	    {
+		restart_service_prop = (char *) pval->value;
+	    }
+	}
+
+	if (!progName)
+	    continue;
+
+	if (restart_service_prop)
+	    tmp1 = restart_service_prop;
+	else if (client->clientHostname)
+	    tmp1 = client->clientHostname;
+	else
+	    continue;
+
+	if ((tmp2 = (char *) strchr (tmp1, '/')) == NULL)
+	    hostname = tmp1;
+	else
+	    hostname = tmp2 + 1;
+
+	extra1 = maxlen1 - strlen (progName) + 5;
+	extra2 = maxlen2 - strlen (hostname);
+
+	clientInfo = (String) XtMalloc (strlen (progName) +
+	    extra1 + extra2 + 3 + strlen (hostname) + 1);
+
+	for (k = 0; k < extra1; k++)
+	    extraBuf1[k] = ' ';
+	extraBuf1[extra1] = '\0';
+
+	for (k = 0; k < extra2; k++)
+	    extraBuf2[k] = ' ';
+	extraBuf2[extra2] = '\0';
+
+	sprintf (clientInfo, "%s%s (%s%s)", progName, extraBuf1,
+	    hostname, extraBuf2);
+
+	failedClients[i] = client;
+	failedNames[i++] = clientInfo;
+    }
+
+    XawListChange (badSaveListWidget,
+	failedNames, numFailedNames, 0, True);
+
+    XtPopdown (savePopup);
+    XtPopup (badSavePopup, XtGrabNone);
 }
 
 
