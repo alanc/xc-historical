@@ -12,7 +12,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: subwindow.mc,v 1.10 92/06/11 18:04:25 rws Exp $
+ * $XConsortium: subwindow.mc,v 1.11 92/06/12 09:40:34 rws Exp $
  */
 >>EXTERN
 #ifdef A_WINDOW2
@@ -222,6 +222,7 @@ For information purposes only see if graphics operation is rendered properly.
 XVisualInfo	*vp1, *vp2;
 XImage	*swmsav;
 int 	found;
+XSetWindowAttributes w_attr;
 
 	vp2 = NULL;
 	found = 0;
@@ -240,11 +241,6 @@ int 	found;
 		tet_result(TET_UNSUPPORTED);
 		return;
 	}
-
-	/*
-	 * The remainder has not been fully tested - 
-	 * it requires support for visuals at more than one depth.
-	 */
 
 #ifdef A_DRAWABLE2
 	winpair(A_DISPLAY, vp1, &A_DRAWABLE, &A_DRAWABLE2);
@@ -266,6 +262,14 @@ int 	found;
 	swmsav = savimage(A_DISPLAY, A_DRAW);
 	dclear(A_DISPLAY, A_DRAW);
 
+        /*
+         * Must explicitly set the colormap and border_pixel parameters
+         * to ensure that a BadMatch error doesn't get generated, since
+         * it is entire possible that the depth differs from that of the
+         * parent window.
+         */
+        w_attr.colormap = makecolmap(A_DISPLAY, vp2, AllocNone);
+        w_attr.border_pixel = 0;
 	XCreateWindow(A_DISPLAY
 		, A_DRAW
 		, 0
@@ -276,8 +280,8 @@ int 	found;
 		, vp2->depth
 		, InputOutput
 		, vp2->visual
-		, 0
-		, (XSetWindowAttributes*)0
+		, CWColormap | CWBorderPixel 
+		, &w_attr
 		);
 	XSetWindowBackground(A_DISPLAY, A_DRAW, W_BG);
 	XMapWindow(A_DISPLAY, A_DRAW);
