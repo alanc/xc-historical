@@ -327,12 +327,14 @@ static XtEventType LookupXtEventType(eventStr)
 
 /***********************************************************************
  * LookupTableSym
- * Given a table and string, it returns a pointer to the appropriate value
+ * Given a table and string, it fills in the value if found and returns
+ * status
  ***********************************************************************/
 
-static Value LookupTableSym(table, name)
+static Boolean LookupTableSym(table, name, valueP)
     NameValueTable	table;
     char *name;
+    Value *valueP;
 {
 /* !!! should implement via hash or something else faster than linear search */
 
@@ -340,9 +342,12 @@ static Value LookupTableSym(table, name)
     XrmQuark	signature = StringToQuark(name);
 
     for (i=0;table[i].name != NULL;i++)
-	if (table[i].signature == signature) return table[i].value;
+	if (table[i].signature == signature) {
+	    *valueP = table[i].value;
+	    return TRUE;
+	}
 
-    return NULL;
+    return FALSE;
 }
 
 /***********************************************************************
@@ -350,9 +355,17 @@ static Value LookupTableSym(table, name)
  * Given an action, it returns a pointer to the appropriate procedure.
  ***********************************************************************/
 
-#define InterpretAction(compiledActionTable, action) \
-    (ActionProc) LookupTableSym(compiledActionTable, action)
+static ActionProc InterpretAction(compiledActionTable, action)
+    CompiledActionTable compiledActionTable;
+    String action;
+{
+    ActionProc actionProc;
 
+    if (LookupTableSym(compiledActionTable, action, &actionProc))
+	return actionProc;
+
+    return NULL;
+}
 
 static char * ScanAlphanumeric(str)
     char *str;
@@ -368,7 +381,7 @@ static char * ScanIdent(str)
 {
     str = ScanAlphanumeric(str);
     while (
-        ('A' <= *str && *str <= 'Z')
+	   ('A' <= *str && *str <= 'Z')
 	|| ('a' <= *str && *str <= 'z')
 	|| ('0' <= *str && *str <= '9')
 	|| (*str == '-')
@@ -406,7 +419,10 @@ static char * ParseModifiers(str, modifierMaskP, modifierP)
 	}
 	(void) strncpy(modStr, start, str-start);
 	modStr[str-start] = '\0';
-	*modifierMaskP |= maskBit = LookupTableSym(modifiers, modStr);
+	maskBit = 0;
+	if (!LookupTableSym(modifiers, modStr, &maskBit))
+	    Syntax("Unknown modifier name.");
+	*modifierMaskP |= maskBit;
 	if (notFlag) *modifierP &= ~maskBit; else *modifierP |= maskBit;
     }
     return str;
@@ -491,59 +507,85 @@ static KeySym XStringToKeySym(str)
     return (KeySym) *str;
 }
 
-static char * ParseKeySym(str, eventCodeP)
+static char * ParseKeySym(str, eventCodeMaskP, eventCodeP)
     char *str;
     EventCode *eventCodeP;
 {
-    char *start = str;
     char keySymName[100];
 
-    str = ScanAlphanumeric(str);
-    (void) strncpy(keySymName, start, str-start);
-    keySymName[str-start] = '\0';
-    *eventCodeP = XStringToKeySym(keySymName);
+    str = ScanWhitepace(str);
+
+    if (*str == '\\') {
+	str++;
+	keySymName[0] = *str;
+	str++;
+	keySymName[1] = '\0';
+	*eventCodeP = XStringToKeySym(keySymName);
+	*eventCodeMaskP = ~0L;
+    } else if (*str == ',' || *str == ':') {
+	/* no detail */
+	*eventCodeP = 0L;
+        *eventCodeMaskP = 0L;
+    } else {
+	start = str;
+	while (*str != ',' && *str != ':') str++;
+	(void) strncpy(keySymName, start, str-start);
+	keySymName[str-start] = '\0';
+	*eventCodeP = XStringToKeySym(keySymName);
+	*eventCodeMaskP = ~0L;
+    }
+
     return str;
 }
 
 
-static char * ParseTableSym(str, table, eventCodeP)
+static char * ParseTableSym(str, table, eventCodeMaskP, eventCodeP)
     char *str;
     NameValueTable table;
+    EventCode *eventCodeMaskP;
     EventCode *eventCodeP;
 {
     char *start = str;
     char tableSymName[100];
 
+    *eventCodeP = 0L;
     str = ScanAlphanumeric(str);
+    if (str == start) {*eventCodeMaskP = 0L; return str; }
     (void) strncpy(tableSymName, start, str-start);
     tableSymName[str-start] = '\0';
-    *eventCodeP = LookupTableSym(table, tableSymName);
+    if (! LookupTableSym(table, tableSymName, eventCodeP))
+	Syntax("Unknown Detail Type.");
+
     return str;
 }
 
 
-static char * ParseDetail(str, eventType, eventCodeP)
+static char * ParseDetail(str, eventType, eventCodeMaskP, eventCodeP)
     char *str;
     XtEventType eventType;
+    EventCode	*eventCodeMaskP;
     EventCode	*eventCodeP;
 {
     switch (events[eventType].detailType) {
 
 	case DetailImmed:
+	    *eventCodeMaskP = ~0L;
 	    *eventCodeP = (EventCode) events[eventType].detail;
 	    return str;
 
 	case DetailKeySym:
-	    str = ParseKeySym(str, eventCodeP);
+	    str = ParseKeySym(str, eventCodeMaskP, eventCodeP);
 	    return str;
 
 	case DetailTable:
 	    str = ParseTableSym(
-		str, (NameValueTable)events[eventType].detail, eventCodeP);
+		str, (NameValueTable)events[eventType].detail,
+		eventCodeMaskP, eventCodeP);
 	    return str;
 
 	default:
-	    *eventCodeP = 0;
+	    *eventCodeMaskP = 0L;
+	    *eventCodeP = 0L;
 	    return str;
     }
 }
@@ -556,17 +598,19 @@ static char * ParseEvent(str, eventP)
     ModifierMask modifierMask = 0;
     ModifierMask modifiers = 0;
     XtEventType	eventType = 0;
-    EventCode	eventCode = 0;
+    EventCode	eventCodeMask = 0L;
+    EventCode	eventCode = 0L;
 
     str = ParseModifiers(str, &modifierMask, &modifiers);
     if (*str != '<') Syntax("Missing '<'"); else str++;
     str = ParseXtEventType(str, &eventType);
     if (*str != '>') Syntax("Missing '>'"); else str++;
-    str = ParseDetail(str, eventType, &eventCode);
+    str = ParseDetail(str, eventType, &eventCodeMask, &eventCode);
 
     eventP->modifierMask = modifierMask;
     eventP->modifiers = modifiers;
     eventP->eventType = (EventType)eventType;
+    eventP->eventCodeMask = eventCodeMask;
     eventP->eventCode = eventCode;
 
     return str;
@@ -578,11 +622,15 @@ static char * ParseQuotedStringEvent(str, eventP)
 {
     int j;
 
-    ModifierMask ctrlMask = LookupTableSym(modifiers, "Ctrl");
-    ModifierMask metaMask = LookupTableSym(modifiers, "Meta");
-    ModifierMask shiftMask = LookupTableSym(modifiers, "Shift");
+    ModifierMask ctrlMask;
+    ModifierMask metaMask;
+    ModifierMask shiftMask;
     char	c;
     char	s[2];
+
+    (void) LookupTableSym(modifiers, "Ctrl", &ctrlMask);
+    (void) LookupTableSym(modifiers, "Meta", &metaMask);
+    (void) LookupTableSym(modifiers, "Shift", &shiftMask);
 
     eventP->modifierMask = ctrlMask | metaMask | shiftMask;
 
@@ -640,7 +688,8 @@ static char *ParseEventSeq(str, eventSeqP)
         event->modifierMask = 0;
         event->modifiers = 0;
         event->eventType = 0;
-        event->eventCode = 0;
+        event->eventCodeMask = 0L;
+        event->eventCode = 0L;
         event->next = NULL;
         event->actions = NULL;
 
@@ -683,7 +732,8 @@ static char * ParseActionProc(str, actionProcP, actionProcNameP)
 
 /* ||| */
 /*
-    *actionProcP = LookupTableSym(procName, actions);
+    if (! LookupTableSym(procName, actions, actionProcP))
+	Syntax("Unkown action proc.");
 */
     *actionProcP = NULL;
     *actionProcNameP = strncpy(
