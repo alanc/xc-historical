@@ -1,4 +1,4 @@
-/* $XConsortium: ICElib.h,v 1.13 93/09/27 11:44:45 mor Exp $ */
+/* $XConsortium: ICElib.h,v 1.14 93/11/08 16:33:12 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -19,6 +19,7 @@ purpose.  It is provided "as is" without express or implied warranty.
 
 #include <X11/ICE/ICE.h>
 #include <X11/Xfuncproto.h>
+#include <stdio.h>
 
 #define Bool int
 #define Status int
@@ -109,6 +110,7 @@ typedef struct {
 typedef IcePoAuthStatus (*IcePoAuthProc) (
 #if NeedFunctionPrototypes
     IcePointer *	/* authStatePtr */,
+    char *		/* connectionString */,
     Bool		/* cleanUp */,
     Bool		/* swap */,
     int			/* authDataLen */,
@@ -122,6 +124,7 @@ typedef IcePoAuthStatus (*IcePoAuthProc) (
 typedef IcePaAuthStatus (*IcePaAuthProc) (
 #if NeedFunctionPrototypes
     IcePointer *	/* authStatePtr */,
+    char *		/* connectionString */,
     Bool		/* swap */,
     int			/* replyDataLen */,
     IcePointer		/* replyData */,
@@ -181,6 +184,42 @@ typedef void (*IceIOErrorHandler) (
     IceConn 		/* iceConn */
 #endif
 );
+
+
+/*
+ * An entry in the ICE authority file
+ */
+
+typedef struct {
+    unsigned short  protocol_name_length;
+    char    	    *protocol_name;
+    unsigned short  protocol_data_length;
+    char   	    *protocol_data;
+    unsigned short  address_list_length;
+    char    	    *address_list;
+    unsigned short  auth_name_length;
+    char    	    *auth_name;
+    unsigned short  auth_data_length;
+    char   	    *auth_data;
+} IceAuthFileEntry, IceAuthDataEntry;
+
+
+/*
+ * Return values from IceLockAuthFile
+ */
+
+#define ICE_AUTH_LOCK_SUCCESS	0   /* lock succeeded */
+#define ICE_AUTH_LOCK_ERROR	1   /* lock unexpectely failed, check errno */
+#define ICE_AUTH_LOCK_TIMEOUT	2   /* lock failed, timeouts expired */
+
+
+/*
+ * Maxium number of ICE authentication methods allowed in .ICEauthority
+ * file or in ICElib implementation.  This makes it easier to declare
+ * local arrays.
+ */
+
+#define MAX_ICE_AUTH_NAMES 32
 
 
 
@@ -449,6 +488,13 @@ extern Status IceListenForConnections (
 #endif
 );
 
+extern void IceSetAuthenticationData (
+#if NeedFunctionPrototypes
+    int			/* numEntries */,
+    IceAuthDataEntry *	/* entries */
+#endif
+);
+
 extern IceConn IceAcceptConnection (
 #if NeedFunctionPrototypes
     int			/* fd */
@@ -589,6 +635,82 @@ extern char *IceAllocScratch (
 #if NeedFunctionPrototypes
    IceConn		/* iceConn */,
    unsigned long	/* size */
+#endif
+);
+
+extern char *IceAuthFileName ();
+
+extern int IceLockAuthFile (
+#if NeedFunctionPrototypes
+    char *		/* file_name */,
+    int			/* retries */,
+    int			/* timeout */,
+    long		/* dead */
+#endif
+);
+
+extern void IceUnlockAuthFile (
+#if NeedFunctionPrototypes
+    char *		/* file_name */
+#endif
+);
+
+extern IceAuthFileEntry *IceReadAuthFileEntry (
+#if NeedFunctionPrototypes
+    FILE *		/* auth_file */
+#endif
+);
+
+extern void IceDisposeAuthFileEntry (
+#if NeedFunctionPrototypes
+    IceAuthFileEntry *	/* auth */
+#endif
+);
+
+extern Status IceWriteAuthFileEntry (
+#if NeedFunctionPrototypes
+    FILE *		/* auth_file */,
+    IceAuthFileEntry *	/* auth */
+#endif
+);
+
+extern Status IceGetAuthNamesFromAuthFile (
+#if NeedFunctionPrototypes
+    unsigned		/* address_length */,
+    char *		/* address */,
+    unsigned *		/* num_names_ret */,
+    unsigned **		/* names_lengths_ret */,
+    char ***		/* names_ret */
+#endif
+);
+
+extern void IceFreeAuthNames (
+#if NeedFunctionPrototypes
+    unsigned		/* count */,
+    char **		/* names */
+#endif
+);
+
+extern IceAuthFileEntry *IceGetAuthFileEntry (
+#if NeedFunctionPrototypes
+    unsigned		/* protocol_name_length */,
+    char *		/* protocol_name */,
+    unsigned		/* address_length */,
+    char *		/* address */,
+    unsigned		/* auth_name_length */,
+    char *		/* auth_name */
+#endif
+);
+
+extern IceAuthFileEntry *IceGetBestAuthFileEntry (
+#if NeedFunctionPrototypes
+    unsigned		/* protocol_name_length */,
+    char *		/* protocol_name */,
+    unsigned		/* address_length */,
+    char *		/* address */,
+    unsigned		/* num_auth_names */,
+    unsigned *		/* auth_names_lengths */,
+    char **		/* auth_names */
 #endif
 );
 
