@@ -1,5 +1,5 @@
-.\" $XConsortium: Xdec.man,v 1.1 91/07/27 16:20:10 rws Exp $
-.TH Xdec 1 "Release 5" "X Version 11"
+.\" $XConsortium: Xdec.man,v 1.1 91/07/29 15:32:34 rws Exp $
+.TH XDEC 1 "Release 5" "X Version 11"
 .SH Name
 Xdec \- X server for Digital RISC machines
 .SH Syntax
