@@ -28,7 +28,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: add_window.c,v 1.101 89/11/05 17:46:48 jim Exp $
+ * $XConsortium: add_window.c,v 1.102 89/11/05 18:35:27 jim Exp $
  *
  * Add a new window, put the titlbar and other stuff around
  * the window
@@ -39,7 +39,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: add_window.c,v 1.101 89/11/05 17:46:48 jim Exp $";
+"$XConsortium: add_window.c,v 1.102 89/11/05 18:35:27 jim Exp $";
 #endif /* lint */
 
 #include <stdio.h>
@@ -637,10 +637,11 @@ IconMgr *iconp;
 	
     if (!Scr->TBInfo.inited) {
 	TitleButton *tb;
-	int h;
+	int h;				/* inside width */
 
-	Scr->TBInfo.width = h = (Scr->TitleHeight - 2 *
-				 (Scr->FramePadding + Scr->ButtonIndent + 1));
+	Scr->TBInfo.width = (Scr->TitleHeight -
+			     2 * (Scr->FramePadding + Scr->ButtonIndent));
+	h = Scr->TBInfo.width - 2 * Scr->TBInfo.border;
 	Scr->TBInfo.pad = ((Scr->TitlePadding > 1)
 			   ? ((Scr->TitlePadding + 1) / 2) : 1);
 	if (!Scr->NoDefaults) InsertResizeAndIconify ();
@@ -1104,8 +1105,7 @@ static Window CreateHighlightWindow (tmp_win)
     }
 
     w = XCreateWindow (dpy, tmp_win->title_w, 0, Scr->FramePadding,
-		       Scr->TBInfo.width + Scr->TBInfo.border * 2, h, 0,
-		       Scr->d_depth, CopyFromParent,
+		       Scr->TBInfo.width, h, 0, Scr->d_depth, CopyFromParent,
 		       Scr->d_visual, valuemask, &attributes);
     if (pm) XFreePixmap (dpy, pm);
     return w;
@@ -1114,8 +1114,7 @@ static Window CreateHighlightWindow (tmp_win)
 
 static void ComputeCommonTitleOffsets ()
 {
-    int buttonwidth = (Scr->TBInfo.width + Scr->TBInfo.border * 2 +
-		       Scr->TBInfo.pad);
+    int buttonwidth = (Scr->TBInfo.width + Scr->TBInfo.pad);
 
     Scr->TBInfo.leftx = Scr->TBInfo.rightoff = Scr->FramePadding;
     if (Scr->TBInfo.nleft > 0)
@@ -1141,7 +1140,7 @@ void ComputeWindowTitleOffsets (tmp_win, width, squeeze)
     if (squeeze && Scr->SqueezeTitle) {
 	int rx = (tmp_win->highlightx + 
 		  (tmp_win->hilite_w
-		    ? Scr->TBInfo.width + Scr->TBInfo.border * 2 : 0) +
+		    ? Scr->TBInfo.width : 0) +
 		  (Scr->TBInfo.nright > 0 ? Scr->TitlePadding : 0) +
 		  Scr->FramePadding);
 	if (rx < tmp_win->rightx) tmp_win->rightx = rx;
@@ -1154,7 +1153,7 @@ static void CreateTitleButtons(tmp_win)
 {
     unsigned long valuemask;		/* mask for create windows */
     XSetWindowAttributes attributes;	/* attributes for create windows */
-    int leftx, rightx, y, h = Scr->TBInfo.width;
+    int leftx, rightx, y;
     GC gc;
     TitleButton *tb;
     int nb;
@@ -1192,8 +1191,8 @@ static void CreateTitleButtons(tmp_win)
 	    fprintf (stderr, "twm:  unable to allocate %d titlebuttons\n", nb);
 	} else {
 	    TBWindow *tbw;
-	    int boxwidth = (Scr->TBInfo.width + Scr->TBInfo.border * 2 +
-			    Scr->TBInfo.pad);
+	    int boxwidth = (Scr->TBInfo.width + Scr->TBInfo.pad);
+	    int h = (Scr->TBInfo.width - Scr->TBInfo.border * 2);
 
 	    for (tb = Scr->TBInfo.head, tbw = tmp_win->titlebuttons; tb;
 		 tb = tb->next, tbw++) {
@@ -1208,7 +1207,7 @@ static void CreateTitleButtons(tmp_win)
 		    attributes.win_gravity = NorthWestGravity;
 		}
 		tbw->window = XCreateWindow (dpy, tmp_win->title_w, x, y,
-					     h, h, 1, 0, 
+					     h, h, Scr->TBInfo.border, 0, 
 					     CopyFromParent, CopyFromParent,
 					     valuemask, &attributes);
 		tbw->info = tb;
@@ -1312,7 +1311,7 @@ FetchWmColormapWindows (tmp)
 static void InsertResizeAndIconify ()
 {
     Pixmap iconify_pm, resize_pm;
-    int h = Scr->TBInfo.width;
+    int h = Scr->TBInfo.width - Scr->TBInfo.border * 2;
     XSegment segs[4];
     GC gc, gcBack;
     int w;
