@@ -424,7 +424,8 @@ Widget wid;
 static void InsertChild(w)
     Widget w;
 {
-    ((CompositeWidgetClass) XtSuperclass(w))->composite_class.insert_child(w);
+    ((CompositeWidgetClass) XtSuperclass(w->core.parent))
+	->composite_class.insert_child(w);
     XtCompositeAddChild(w);	/* Add to managed set now */
 }
 
