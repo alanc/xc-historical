@@ -1,4 +1,4 @@
-/* $XConsortium: Display.c,v 1.58 90/12/28 16:52:40 gildea Exp $ */
+/* $XConsortium: Display.c,v 1.59 90/12/28 17:01:02 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -242,7 +242,7 @@ XtDisplayInitialize(app, dpy, name, classname, urlist, num_urs, argc, argv)
 #endif
 {
 	XtPerDisplay pd;
-	extern void _XtAllocWWTable();
+	extern void _XtAllocWWTable(), _XtAllocTMContext();
 
 	XtAddToAppContext(dpy, app);
 
@@ -265,7 +265,7 @@ XtDisplayInitialize(app, dpy, name, classname, urlist, num_urs, argc, argv)
 	pd->xa_wm_colormap_windows = None; /* Initialize this to None unless
 					      we need to use it.*/
 	pd->last_timestamp = 0;
-	pd->tm_context = NULL;
+	_XtAllocTMContext(pd);
 	pd->mapping_callbacks = NULL;
 
 	pd->pdi.grabList = NULL;
@@ -334,8 +334,9 @@ static void DestroyAppContext(app)
 	_XtCacheFlushTag(app, (XtPointer)&app->heap);
 	_XtFreeActions(app->action_table);
 	if (app->destroy_callbacks != NULL) {
-	    _XtCallCallbacks((Widget) NULL, app->destroy_callbacks, 
-			     (XtPointer)app);
+	    XtCallCallbackList((Widget) NULL,
+			       (XtCallbackList)app->destroy_callbacks, 
+			       (XtPointer)app);
 	    _XtRemoveAllCallbacks(&app->destroy_callbacks);
 	}
 	while (app->timerQueue) XtRemoveTimeOut((XtIntervalId)app->timerQueue);
@@ -542,8 +543,9 @@ static void CloseDisplay(dpy)
         if (xtpd != NULL) {
 	    extern void _XtGClistFree(), _XtFreeWWTable();
 	    if (xtpd->destroy_callbacks != NULL) {
-		_XtCallCallbacks((Widget) NULL, xtpd->destroy_callbacks,
-				 (XtPointer)xtpd);
+		XtCallCallbackList((Widget) NULL,
+				   (XtCallbackList)xtpd->destroy_callbacks,
+				   (XtPointer)xtpd);
 		_XtRemoveAllCallbacks(&xtpd->destroy_callbacks);
 	    }
 	    if (xtpd->mapping_callbacks != NULL)
