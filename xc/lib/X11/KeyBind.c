@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XKeyBind.c,v 11.42 88/09/02 09:32:06 rws Exp $ */
+/* $XConsortium: XKeyBind.c,v 11.43 88/09/06 16:08:21 jim Exp $ */
 /* Copyright 1985, 1987, Massachusetts Institute of Technology */
 
 /* Beware, here be monsters (still under construction... - JG */
@@ -290,9 +290,7 @@ int XLookupString (event, buffer, nbytes, keysym, status)
 		|| IsPFKey (symbol)      || IsFunctionKey(symbol)
 		|| IsMiscFunctionKey(symbol)
 		|| (symbol == XK_Multi_key) || (symbol == XK_Kanji)) {
-#ifndef LKUPSTR8BIT
 		return 0;
-#endif
 	    } else {
 		if (symbol == XK_KP_Space)
 		   c = XK_space & 0xFF; /* patch encoding botch */
