@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XTextExt.c,v 11.25 90/12/12 09:19:58 rws Exp $
+ * $XConsortium: XTextExt.c,v 11.26 91/01/06 11:48:29 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  */
@@ -157,6 +157,9 @@ int XTextWidth (fs, string, count)
     } else {
 	CI_GET_DEFAULT_INFO_2D (fs, def);
     }
+
+    if (def && fs->min_bounds.width == fs->max_bounds.width)
+	return (fs->min_bounds.width * count);
 
     /*
      * Iterate over all character in the input string; only consider characters
