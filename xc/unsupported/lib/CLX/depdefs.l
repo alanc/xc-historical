@@ -385,7 +385,6 @@
 
 (defmacro def-clx-class ((name &rest options) &body slots)
   (let ((clos-package (or (find-package 'pcl)
-			  (find-package 'ticlos)
 			  (find-package 'clos)
 			  (let ((lisp-pkg (find-package 'lisp)))
 			    (and (find-symbol "DEFCLASS" lisp-pkg)
