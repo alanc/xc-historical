@@ -1,6 +1,6 @@
 #if !defined(lint) && !defined(SABER)
 static char rcs_id[] =
-    "$XConsortium: tsource.c,v 2.17 89/09/01 17:36:42 kit Exp $";
+    "$XConsortium: tsource.c,v 2.18 89/12/15 19:40:42 converse Exp $";
 #endif
 /*
  *			  COPYRIGHT 1987
@@ -326,7 +326,10 @@ Widget request, new;
 }
 
 void TSourceInvalid(toc, position, length)
-Toc toc;
+    Toc toc;	
+    XawTextPosition position;
+    int length;
 {
-  XawTextInvalidate(XtParent(toc->source), position, position+length-1);
+  XawTextInvalidate(XtParent(toc->source), position, 
+		    (XawTextPosition) position+length-1);
 }
