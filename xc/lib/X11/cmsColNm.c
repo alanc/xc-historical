@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsColNm.c,v 1.12 91/05/14 09:54:00 rws Exp $" */
+/* $XConsortium: XcmsColNm.c,v 1.13 91/05/14 10:07:57 rws Exp $" */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -432,10 +432,10 @@ _XcmsLookupColorName(ccc, name, pColor)
  {
     Status		retval = 0;
     char		name_lowered[BUFSIZ];
-    register int	i, j;
+    register int	i, j, left, right;
     int			len;
     char		*tmpName;
-    XcmsPair		*pair, tmpPair;
+    XcmsPair		*pair;
 
     /*
      * Check state of Database:
@@ -476,10 +476,23 @@ Retry:
 	}
     }
     name_lowered[i] = '\0';
-    tmpPair.first = name_lowered;
 
-    if ((pair = (XcmsPair *)bsearch((char *)&tmpPair, (char *)pairs, nEntries,
-	    sizeof(XcmsPair), FirstCmp)) == NULL) {
+    left = 0;
+    right = nEntries - 1;
+    while (left <= right) {
+	i = (left + right) >> 1;
+	pair = &pairs[i];
+	j = strcmp(name_lowered, pair->first);
+	if (j < 0)
+	    right = i - 1;
+	else if (j > 0)
+	    left = i + 1;
+	else {
+	    break;
+	}
+    }
+
+    if (left > right) {
 	if (retval == 2) {
 	    if (name != tmpName) {
 		strncpy(name, tmpName, BUFSIZ - 1);
