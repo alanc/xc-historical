@@ -140,17 +140,17 @@ char *str;
  * XtransConnInfo structure for the connection.
  */
 static int
-TRANS(SocketGetAddr)(ciptr)
+TRANS(SocketINETGetAddr)(ciptr)
 XtransConnInfo ciptr;
 {
 struct sockaddr_in sockname;
 int		namelen=sizeof sockname;
 
-PRMSG(3,"TRANS(SocketGetAddr)(%x)\n", ciptr, 0,0 );
+PRMSG(3,"TRANS(SocketINETGetAddr)(%x)\n", ciptr, 0,0 );
 
 if( getsockname(ciptr->fd,(struct sockaddr *)&sockname,&namelen) < 0 )
 	{
-	PRMSG(1,"TRANS(SocketGetAddr): getsockname() failed: %d\n",
+	PRMSG(1,"TRANS(SocketINETGetAddr): getsockname() failed: %d\n",
 	    						EGET(),0,0);
 	return -1;
 	}
@@ -161,14 +161,14 @@ if( getsockname(ciptr->fd,(struct sockaddr *)&sockname,&namelen) < 0 )
 
 if( (ciptr->addr=(char *)malloc(namelen)) == NULL )
         {
-        PRMSG(1, "TRANS(SocketGetAddr): Can't allocate space for the addr\n",
+        PRMSG(1, "TRANS(SocketINETGetAddr): Can't allocate space for the addr\n",
 									0,0,0);
         return -1;
         }
 
 ciptr->family=sockname.sin_family;
 ciptr->addrlen=namelen;
-memcpy(ciptr->addr,(char*)&sockname,ciptr->addrlen);
+memcpy(ciptr->addr,&sockname,ciptr->addrlen);
 
 return 0;
 }
@@ -178,17 +178,17 @@ return 0;
  * XtransConnInfo structure for the connection.
  */
 static int
-TRANS(SocketGetPeerAddr)(ciptr)
+TRANS(SocketINETGetPeerAddr)(ciptr)
 XtransConnInfo ciptr;
 {
-Xtransaddr	sockname;
+struct sockaddr_in sockname;
 int		namelen=sizeof(sockname);
 
-PRMSG(3,"TRANS(SocketGetPeerAddr)(%x)\n", ciptr, 0,0 );
+PRMSG(3,"TRANS(SocketINETGetPeerAddr)(%x)\n", ciptr, 0,0 );
 
 if( getpeername(ciptr->fd,(struct sockaddr *)&sockname,&namelen) < 0 )
 	{
-	PRMSG(1,"TRANS(SocketGetPeerAddr): getpeername() failed: %d\n",
+	PRMSG(1,"TRANS(SocketINETGetPeerAddr): getpeername() failed: %d\n",
 						EGET(), 0,0 );
 	return -1;
 	}
@@ -200,7 +200,7 @@ if( getpeername(ciptr->fd,(struct sockaddr *)&sockname,&namelen) < 0 )
 if( (ciptr->peeraddr=(char *)malloc(namelen)) == NULL )
         {
         PRMSG(1,
-        "TRANS(SocketGetPeerAddr): Can't allocate space for the addr\n",
+        "TRANS(SocketINETGetPeerAddr): Can't allocate space for the addr\n",
 									0,0,0);
         return -1;
         }
@@ -562,10 +562,10 @@ if( TRANS(SocketCreateListener)( ciptr,
 	return -1;
 	}
 
-if( TRANS(SocketGetAddr)(ciptr) < 0 )
+if( TRANS(SocketINETGetAddr)(ciptr) < 0 )
 	{
 	PRMSG(1,
-	"TRANS(SocketINETCreateListener): TRANS(SocketGetAddr)() failed\n",
+	"TRANS(SocketINETCreateListener): TRANS(SocketINETGetAddr)() failed\n",
 						0,0,0 );
 	return -1;
 	}
@@ -682,7 +682,7 @@ if( TRANS(SocketCreateListener)( ciptr,
  * Now that the listener is esablished, create the addr info for
  * this connection. getpeername() doesn't work for UNIX Domain Sockets
  * on some systems (hpux at least), so we will just do it manually, instead
- * of calling TRANS(SocketGetAddr).
+ * of calling something like TRANS(SocketUNIXGetAddr).
  */
 namelen=sizeof(sockname); /* this will always make it the same size */
 
@@ -772,7 +772,7 @@ TRANS(SocketINETAccept)(ciptr)
 XtransConnInfo ciptr;
 {
 XtransConnInfo	newciptr;
-Xtransaddr	sockname;
+struct sockaddr_in sockname;
 int	namelen=sizeof(sockname);
 
 PRMSG(2, "TRANS(SocketINETAccept)(%x,%d)\n", ciptr, ciptr->fd, 0 );
@@ -806,19 +806,19 @@ if( (newciptr->fd=accept(ciptr->fd,(struct sockaddr *)&sockname, &namelen)) < 0 
  * Get this address again because the transport may give a more 
  * specific address now that a connection is established.
  */
-if( TRANS(SocketGetAddr)(newciptr) < 0 )
+if( TRANS(SocketINETGetAddr)(newciptr) < 0 )
 	{
 	PRMSG(1,
-	"TRANS(SocketINETAccept): TRANS(SocketGetAddr)() failed:\n", 0,0,0 );
+	"TRANS(SocketINETAccept): TRANS(SocketINETGetAddr)() failed:\n", 0,0,0 );
 	close(newciptr->fd);
 	free(newciptr);
         return NULL;
 	}
 
-if( TRANS(SocketGetPeerAddr)(newciptr) < 0 )
+if( TRANS(SocketINETGetPeerAddr)(newciptr) < 0 )
 	{
 	PRMSG(1,
-	"TRANS(SocketINETAccept): TRANS(SocketGetPeerAddr)() failed:\n",
+	"TRANS(SocketINETAccept): TRANS(SocketINETGetPeerAddr)() failed:\n",
 								0,0,0 );
 	close(newciptr->fd);
 	if(newciptr->addr) free(newciptr->addr);
@@ -1053,17 +1053,17 @@ if( connect(ciptr->fd,(struct sockaddr *)&sockname,namelen) < 0 )
  * Sync up the address fields of ciptr.
  */
 
-if( TRANS(SocketGetAddr)(ciptr) < 0 )
+if( TRANS(SocketINETGetAddr)(ciptr) < 0 )
 	{
 	PRMSG(1,
-	"TRANS(SocketINETConnect): TRANS(SocketGetAddr)() failed:\n", 0,0,0 );
+	"TRANS(SocketINETConnect): TRANS(SocketINETGetAddr)() failed:\n", 0,0,0 );
 	return TRANS_CONNECT_FAILED;
 	}
 
-if( TRANS(SocketGetPeerAddr)(ciptr) < 0 )
+if( TRANS(SocketINETGetPeerAddr)(ciptr) < 0 )
 	{
 	PRMSG(1,
-	"TRANS(SocketINETConnect): TRANS(SocketGetPeerAddr)() failed:\n",
+	"TRANS(SocketINETConnect): TRANS(SocketINETGetPeerAddr)() failed:\n",
 								0,0,0 );
 	return TRANS_CONNECT_FAILED;
 	}
