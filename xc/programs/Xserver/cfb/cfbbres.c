@@ -21,31 +21,60 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbbres.c,v 1.13 89/03/16 14:47:26 jim Exp $ */
+/* $XConsortium: cfbbres.c,v 1.1 89/08/18 16:45:35 keith Exp $ */
 #include "X.h"
 #include "misc.h"
 #include "cfb.h"
 #include "cfbmskbits.h"
+
+#if (PPW == 4)
+#include "cfb8bit.h"
+#endif
 
 /* Solid bresenham line */
 /* NOTES
    e2 is used less often than e1, so it's not in a register
 */
 
+#undef Duff
+#ifdef mips
+#define Duff(count,body) \
+    switch (count & 15) { \
+    case 15: body    case 14: body    case 13: body    case 12: body\
+    case 11: body    case 10: body    case 9: body    case 8: body\
+    case 7: body    case 6: body    case 5: body    case 4: body\
+    case 3: body    case 2: body    case 1: body \
+    } \
+    while ((count -= 16) >= 0) { \
+	body body body body body body body body \
+	body body body body body body body body \
+    }
+#else
+#define Duff(count,body) \
+    switch (count & 3) { \
+    case 3: body    case 2: body    case 1: body \
+    } \
+    while ((count -= 4) >= 0) { \
+	body body body body \
+    }
+#endif
+
 cfbBresS(rop, pixel, addrl, nlwidth, signdx, signdy, axis, x1, y1, e, e1, e2, len)
 int rop;
-unsigned long pixel;
-unsigned int *addrl;		/* pointer to base of bitmap */
+register unsigned char pixel;
+unsigned int *addrl;	/* pointer to base of bitmap */
 int nlwidth;		/* width in longwords of bitmap */
-int signdx, signdy;	/* signs of directions */
+register int signdx;
+int signdy;		/* signs of directions */
 int axis;		/* major axis (Y_AXIS or X_AXIS) */
 int x1, y1;		/* initial point */
 register int e;		/* error accumulator */
 register int e1;	/* bresenham increments */
 int e2;
-unsigned int len;	/* length of line */
+int len;	/* length of line */
 {
     register int yinc;	/* increment to next scanline, in bytes */
+    register int xinc;	/* increment to next pixel */
     register unsigned char *addrb;		/* bitmask long pointer 
 						 * cast to char pointer */
 
@@ -56,23 +85,25 @@ unsigned int len;	/* length of line */
     nlwidth <<= 2;
     addrb = (unsigned char *)(addrl) + (y1 * nlwidth) + x1;
     yinc = signdy * nlwidth;
+    xinc = signdx;
     e = e-e1;			/* to make looping easier */
 
     if (axis == X_AXIS)
     {
 	if (rop == GXcopy)
 	{
-	    while(len--)
+	    Duff (len,
 	    { 
 	    	*addrb = pixel;
 	    	e += e1;
+	    	addrb += xinc;
 	    	if (e >= 0)
 	    	{
 		    addrb += yinc;
 		    e += e3;
 	    	}
-	    	addrb += signdx;
 	    }
+	    )
 	}
 	else
 	{
@@ -80,12 +111,12 @@ unsigned int len;	/* length of line */
 	    { 
 	    	*addrb = DoRop (rop, pixel, *addrb);
 	    	e += e1;
+	    	addrb += xinc;
 	    	if (e >= 0)
 	    	{
 		    addrb += yinc;
 		    e += e3;
 	    	}
-	    	addrb += signdx;
 	    }
 	}
     } /* if X_AXIS */
@@ -93,17 +124,18 @@ unsigned int len;	/* length of line */
     {
 	if (rop == GXcopy)
 	{
-	    while(len--)
+	    Duff (len,
 	    {
 	    	*addrb = pixel;
 	    	e += e1;
+	    	addrb += yinc;
 	    	if (e >= 0)
 	    	{
-		    addrb += signdx;
+		    addrb += xinc;
 		    e += e3;
 	    	}
-	    	addrb += yinc;
     	    }
+	    )
 	}
 	else
 	{
@@ -111,12 +143,12 @@ unsigned int len;	/* length of line */
 	    {
 	    	*addrb = DoRop (rop, pixel, *addrb);
 	    	e += e1;
+	    	addrb += yinc;
 	    	if (e >= 0)
 	    	{
-		    addrb += signdx;
+		    addrb += xinc;
 		    e += e3;
 	    	}
-	    	addrb += yinc;
     	    }
 	}
     } /* else Y_AXIS */
