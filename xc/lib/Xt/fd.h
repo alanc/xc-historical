@@ -1,5 +1,5 @@
 /*
-* $XConsortium: fd.h,v 1.11 88/09/06 16:29:37 jim Exp $
+* $XConsortium: fd.h,v 1.12 89/05/03 17:16:53 kit Exp $
 * $oHeader: fd.h,v 1.4 88/08/26 14:49:54 asente Exp $
 */
 
@@ -43,7 +43,9 @@ SOFTWARE.
 #endif
 
 typedef long Fd_mask;
+#ifndef NFDBITS
 #define NFDBITS	(sizeof(Fd_mask) * NBBY)	/* bits per mask */
+#endif
 #ifndef howmany
 #define	howmany(x, y)	(((x)+((y)-1))/(y))
 #endif
@@ -52,8 +54,16 @@ typedef	struct Fd_set {
 	Fd_mask	fds_bits[howmany(FD_SETSIZE, NFDBITS)];
 } Fd_set;
 
+#ifndef FD_SET
 #define	FD_SET(n, p)	((p)->fds_bits[(n)/NFDBITS] |= (1 << ((n) % NFDBITS)))
+#endif
+#ifndef FD_CLR
 #define	FD_CLR(n, p)	((p)->fds_bits[(n)/NFDBITS] &= ~(1 << ((n) % NFDBITS)))
+#endif
+#ifndef FD_ISSET
 #define	FD_ISSET(n, p)	((p)->fds_bits[(n)/NFDBITS] & (1 << ((n) % NFDBITS)))
+#endif
+#ifndef FD_ZERO
 #define FD_ZERO(p)	bzero((char *)(p), sizeof(*(p)))
+#endif
 #endif
