@@ -1,4 +1,4 @@
-/* $XConsortium: keysymdef.h,v 1.13 89/12/12 16:23:30 rws Exp $ */
+/* $XConsortium: keysymdef.h,v 1.14 91/02/14 15:26:22 rws Exp $ */
 
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -40,6 +40,7 @@ SOFTWARE.
 #define XK_Return		0xFF0D	/* Return, enter */
 #define XK_Pause		0xFF13	/* Pause, hold */
 #define XK_Scroll_Lock		0xFF14
+#define XK_Sys_Req		0xFF15
 #define XK_Escape		0xFF1B
 #define XK_Delete		0xFFFF	/* Delete, rubout */
 
@@ -77,7 +78,9 @@ SOFTWARE.
 #define XK_Right		0xFF53	/* Move right, right arrow */
 #define XK_Down			0xFF54	/* Move down, down arrow */
 #define XK_Prior		0xFF55	/* Prior, previous */
+#define XK_Page_Up		0xFF55
 #define XK_Next			0xFF56	/* Next */
+#define XK_Page_Down		0xFF56
 #define XK_End			0xFF57	/* EOL */
 #define XK_Begin		0xFF58	/* BOL */
 
@@ -108,6 +111,19 @@ SOFTWARE.
 #define XK_KP_F2		0xFF92
 #define XK_KP_F3		0xFF93
 #define XK_KP_F4		0xFF94
+#define XK_KP_Home		0xFF95
+#define XK_KP_Left		0xFF96
+#define XK_KP_Up		0xFF97
+#define XK_KP_Right		0xFF98
+#define XK_KP_Down		0xFF99
+#define XK_KP_Prior		0xFF9A
+#define XK_KP_Page_Up		0xFF9A
+#define XK_KP_Next		0xFF9B
+#define XK_KP_Page_Down		0xFF9B
+#define XK_KP_End		0xFF9C
+#define XK_KP_Begin		0xFF9D
+#define XK_KP_Insert		0xFF9E
+#define XK_KP_Delete		0xFF9F
 #define XK_KP_Equal		0xFFBD	/* equals */
 #define XK_KP_Multiply		0xFFAA
 #define XK_KP_Add		0xFFAB
