@@ -1,5 +1,5 @@
 /*
- * $XConsortium: main.c,v 1.54 91/05/11 17:09:45 gildea Exp $
+ * $XConsortium: main.c,v 1.55 91/07/09 14:44:20 rws Exp $
  */
 #include "def.h"
 #ifdef hpux
@@ -49,9 +49,11 @@ struct	inclist inclist[ MAXFILES ],
 char	*filelist[ MAXFILES ];
 char	*includedirs[ MAXDIRS ];
 char	*notdotdot[ MAXDIRS ];
-char	*objfile = ".o";
+char	*objprefix = "";
+char	*objsuffix = ".o";
 char	*startat = "# DO NOT DELETE THIS LINE -- make depend depends on it.";
 int	width = 78;
+boolean	append = FALSE;
 boolean	printed = FALSE;
 boolean	verbose = FALSE;
 boolean	show_where_not = FALSE;
@@ -143,6 +145,10 @@ main(argc, argv)
 			}
 			break;
 		/* do not use if endmarker processing */
+		case 'a':
+			if (endmarker) break;
+			append = TRUE;
+			break;
 		case 'w':
 			if (endmarker) break;
 			if (argv[0][2] == '\0') {
@@ -157,9 +163,18 @@ main(argc, argv)
 			if (argv[0][2] == '\0') {
 				argv++;
 				argc--;
-				objfile = argv[0];
+				objsuffix = argv[0];
 			} else
-				objfile = argv[0]+2;
+				objsuffix = argv[0]+2;
+			break;
+		case 'p':
+			if (endmarker) break;
+			if (argv[0][2] == '\0') {
+				argv++;
+				argc--;
+				objprefix = argv[0];
+			} else
+				objprefix = argv[0]+2;
 			break;
 		case 'v':
 			if (endmarker) break;
@@ -476,7 +491,7 @@ redirect(line, makefile)
 	if ((fdout = freopen(makefile, "w", stdout)) == NULL)
 		fatal("cannot open \"%s\"\n", backup);
 	len = strlen(line);
-	while (fgets(buf, BUFSIZ, fdin) && !found) {
+	while (!found && fgets(buf, BUFSIZ, fdin)) {
 		if (*buf == '#' && strncmp(line, buf, len) == 0)
 			found = TRUE;
 		fputs(buf, fdout);
@@ -486,6 +501,10 @@ redirect(line, makefile)
 		warning("Adding new delimiting line \"%s\" and dependencies...\n",
 			line);
 		puts(line); /* same as fputs(fdout); but with newline */
+	} else if (append) {
+	    while (fgets(buf, BUFSIZ, fdin)) {
+		fputs(buf, fdout);
+	    }
 	}
 	fflush(fdout);
 #ifdef USGISH

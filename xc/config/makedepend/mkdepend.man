@@ -11,9 +11,13 @@ makedepend \- create dependencies in makefiles
 ] [
 .B \-Iincludedir
 ] [
+.B \-a
+] [
 .B \-fmakefile
 ] [
 .B \-oobjsuffix
+] [
+.B \-pobjprefix
 ] [
 .B \-sstring
 ] [
@@ -144,6 +148,9 @@ By default,
 .B makedepend
 only searches /usr/include.
 .TP 5
+.B \-a
+Append the dependencies to the end of the file instead of replacing them. 
+.TP 5
 .B \-fmakefile
 Filename.
 This allows you to specify an alternate makefile in which
@@ -161,6 +168,12 @@ or ":obj"
 with
 .I -o:obj
 and so forth.
+.TP 5
+.B \-pobjprefix
+Object file prefix.
+The prefix is prepended to the name of the object file. This is
+usually used to designate a different directory for the object file.
+The default is the empty string.
 .TP 5
 .B \-sstring
 Starting string delimiter.
