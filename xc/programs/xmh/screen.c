@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: screen.c,v 1.10 88/01/08 08:08:40 swick Exp $";
+static char rcs_id[] = "$Header: screen.c,v 1.11 88/01/19 14:40:59 swick Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -187,7 +187,6 @@ Scrn scrn;
     scrn->toclabel = CreateTitleBar(scrn, 2);
     scrn->tocwidget = CreateTextSW(scrn, 3, "toc", 0);
 /* %%%				   arglist2, XtNumber(arglist2)); */
-    XtTextSetSelectionArray(scrn->tocwidget, sarray);
     scrn->seqbuttons = BBoxRadioCreate(scrn, 4, "seqButtons", &scrn->curseq);
     scrn->tocbuttons = BBoxCreate(scrn, 5, "tocButtons");
     scrn->viewlabel = CreateTitleBar(scrn, 6);
@@ -219,7 +218,7 @@ Scrn scrn;
     BBoxStartUpdate(buttonbox);
     BBoxLockSize(buttonbox);
 
-/*    XtTextSetSelectionArray((Widget) scrn->tocwidget, (XtSelectType *)sarray); %%% */
+    XtTextSetSelectionArray(scrn->tocwidget, sarray);
 
     buttonbox = scrn->tocbuttons;
     BBoxStopUpdate(buttonbox);
