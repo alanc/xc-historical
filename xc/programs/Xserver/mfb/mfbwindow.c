@@ -1,4 +1,4 @@
-/* $Header: mfbwindow.c,v 1.5 88/03/15 16:30:00 rws Exp $ */
+/* $Header: mfbwindow.c,v 1.6 88/06/06 17:28:51 keith Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -241,17 +241,18 @@ mfbChangeWindowAttributes(pWin, mask)
 	    break;
 
 	  case CWBackPixmap:
-	      switch((int)pWin->backgroundTile)
+	      if (pWin->backgroundTile == (PixmapPtr)None)
 	      {
-		case None:
 		  pWin->PaintWindowBackground = mfbPaintWindowNone;
 		  pPrivWin->fastBackground = 0;
-		  break;
-		case ParentRelative:
+	      }
+	      else if (pWin->backgroundTile == (PixmapPtr)ParentRelative)
+	      {
 		  pWin->PaintWindowBackground = mfbPaintWindowPR;
 		  pPrivWin->fastBackground = 0;
-		  break;
-		default:
+	      }
+	      else
+	      {
 		  if(mfbPadPixmap(pWin->backgroundTile))
 		  {
 		      pPrivWin->fastBackground = 1;
