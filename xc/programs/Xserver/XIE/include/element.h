@@ -1,4 +1,4 @@
-/* $XConsortium: element.h,v 1.2 93/10/31 09:48:53 dpw Exp $ */
+/* $XConsortium: element.h,v 1.3 93/11/06 15:44:02 rws Exp $ */
 /* module element.h */
 /*****************************************************************************
 				NOTICE
@@ -16,7 +16,7 @@ terms and conditions:
      the disclaimer, and that the same appears on all copies and
      derivative works of the software and documentation you make.
      
-     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     "Copyright 1993, 1994 by AGE Logic, Inc. and the Massachusetts
      Institute of Technology"
      
      THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO
@@ -97,7 +97,7 @@ typedef struct _iphotodef {
   CARD32		pvtBytes;
   photomapPtr		map;		
 } iPhotoDefRec, *iPhotoDefPtr;
-#endif /* _XIEC_IPHOTO || _XIEC_ICPHOTO */
+#endif /* _XIEC_IPHOTO */
 
 #if defined(_XIEC_IROI)
 /*
@@ -149,10 +149,10 @@ typedef struct _pblend {
  */
 typedef struct _ptecRBGtoCIELab_and_XYZdef {
   double	             matrix[9];
-  double		     whitePoint[3]; /* Optional whitePoint correction */
+  double		     whitePoint[3]; /* Optional whitePoint correction*/
   techVecPtr		     whiteTec;
   xieTypWhiteAdjustTechnique whiteAdjusted; 
-  CARD16		     lenParams;	    /* Length for whitePoint params   */
+  CARD16		     lenWhiteParams;/* Length for whitePoint params  */
 } pTecRGBToCIEDefRec, *pTecRGBToCIEDefPtr;
 
 typedef struct _ptecRGBToYCbCr {
@@ -237,7 +237,7 @@ typedef struct _pctoidef {
   colorListPtr  list;
   ColormapPtr   cmap;
   VisualPtr	visual;
-  CARD16	mask[3];
+  CARD32	mask[3];
   CARD16	cells;
   CARD8		shft[3];
   CARD8		class;
@@ -263,13 +263,13 @@ typedef struct _pTecConvertToIndexMatchdef {
  */
 typedef struct _ptecCIELab_and_XYZtoRGBdef {
   double	             matrix[9];
-  double		     whitePoint[3]; /* Optional whitePoint correction */
+  double		     whitePoint[3]; /* Optional whitePoint correction*/
   techVecPtr		     whiteTec;
   xieTypWhiteAdjustTechnique whiteAdjusted; 
-  CARD16		     numWhiteParams;/* Length for whitePoint params   */
+  CARD16		     lenWhiteParams;/* Length for whitePoint params  */
   techVecPtr		     gamutTec;
-  xieTypGamutTechnique       gamutTechnique; 
-  CARD16		     numGamutParams;/* Length for gamut params   */
+  xieTypGamutTechnique       gamutCompress; 
+  CARD16		     lenGamutParams;/* Length for gamut params   */
 } pTecCIEToRGBDefRec, *pTecCIEToRGBDefPtr;
 
 typedef struct _ptecYCCToRGB {
@@ -281,8 +281,8 @@ typedef struct _ptecYCCToRGB {
   double blue;
   double scale;
   techVecPtr		     gamutTec;
-  xieTypGamutTechnique       gamutTechnique; 
-  CARD16		     numGamutParams;/* Length for gamut params   */
+  xieTypGamutTechnique       gamutCompress; 
+  CARD16		     lenGamutParams;/* Length for gamut params   */
 } pTecYCCToRGBDefRec, *pTecYCCToRGBDefPtr;
 
 typedef struct _ptecYCbCrToRGB {
@@ -296,8 +296,8 @@ typedef struct _ptecYCbCrToRGB {
   double bias1;
   double bias2;
   techVecPtr		     gamutTec;
-  xieTypGamutTechnique       gamutTechnique; 
-  CARD16		     numGamutParams;/* Length for gamut params   */
+  xieTypGamutTechnique       gamutCompress; 
+  CARD16		     lenGamutParams;/* Length for gamut params   */
 } pTecYCbCrToRGBDefRec, *pTecYCbCrToRGBDefPtr;
 
 #endif /* _XIEC_PCTRGB */
@@ -413,16 +413,24 @@ typedef struct _elutdef {
 } eLUTDefRec, *eLUTDefPtr;
 #endif /* _XIEC_ELUT */
 
-#if defined(_XIEC_EPHOTO)
+#if  defined(_XIEC_EPHOTO) || defined(_XIEC_ECPHOTO) || defined(_XIEC_SCHOICE)
 /*
- * dixie element-private data for the ExportPhotomap element
+ * dixie element-private data for the ExportPhotomap/ExportClientPhoto elements
  */
 typedef struct _ephotodef {
   CARD32	pvtBytes;
   photomapPtr   map;
+  BOOL		serverChose;	   /* TRUE = server chose encode technique   */
+  BOOL		congress;	   /* make sure no work gets done 	     */
+  CARD16	encodeNumber;	   /* encode technique number     	     */
+  CARD16	encodeLen;	   /* length of encode parms    	     */
+  pointer	encodeParms;       /* pointer to parms to be used for encode */
+  CARD16	decodeNumber;	   /* decode technique number     	     */
+  CARD16	decodeLen;	   /* length of decode parms    	     */
+  pointer	decodeParms;       /* pointer to parms to be used for decode */
   pointer	pvtParms;
 } ePhotoDefRec, *ePhotoDefPtr;
-#endif /* _XIEC_EPHOTO */
+#endif /* _XIEC_EPHOTO || _XIEC_ECPHOTO || _XIEC_SCHOICE */
 
 #if defined(_XIEC_EROI)
 /*

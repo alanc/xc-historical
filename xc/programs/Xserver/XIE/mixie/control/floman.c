@@ -1,4 +1,4 @@
-/* $XConsortium: floman.c,v 1.2 93/10/31 09:42:54 dpw Exp $ */
+/* $XConsortium: floman.c,v 1.3 93/11/06 15:24:18 rws Exp $ */
 /**** module floman.c ****/
 /******************************************************************************
 				NOTICE
@@ -16,7 +16,7 @@ terms and conditions:
      the disclaimer, and that the same appears on all copies and
      derivative works of the software and documentation you make.
      
-     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     "Copyright 1993, 1994 by AGE Logic, Inc. and the Massachusetts
      Institute of Technology"
      
      THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO
@@ -70,7 +70,6 @@ terms and conditions:
  */
 #include <misc.h>
 #include <dixstruct.h>
-#include <extnsionst.h>
 /*
  *  Server XIE Includes
  */
@@ -213,9 +212,8 @@ Bool InitReceptor(flo,ped,rcp,mapSize,threshold,process,bypass)
   bandPtr  bnd = rcp->band;
   int b, bands = rcp->inFlo->bands;
   
-  /* choose which bands to pass rather than process */
-  rcp->bypass = (rcp->inFlo->index == SRCt1
-		 ? (bandMsk)(bypass & ~process & (1<<bands)-1) : NO_BANDS);
+  /* bands to pass rather than process */
+  rcp->bypass = rcp->inFlo->index == SRCt1 ? bypass : NO_BANDS;
 
   /* initialize each band */
   for(b = 0; b < bands; ++bnd, ++b)
@@ -329,9 +327,13 @@ void ResetReceptors(ped)
   int b,i;
   
   for(i = 0; i < ped->inCnt; i++) {
-    for(rcp = &pet->receptor[i], b = 0; b < xieValMaxBands; ++b)
+    for(rcp = &pet->receptor[i], b = 0; b < xieValMaxBands; ++b) {
+      if(rcp->forward & 1<<b) {
+	FreeStrips(&ped->outFlo.output[b]);
+      }
+      rcp->forward = NO_BANDS;
       ResetBand(&rcp->band[b]);
-
+    }
     rcp->admit  = NO_BANDS;
     rcp->ready  = NO_BANDS;
     rcp->active = NO_BANDS;

@@ -1,4 +1,4 @@
-/* $XConsortium: mecroi.c,v 1.2 93/10/31 09:43:33 dpw Exp $ */
+/* $XConsortium: mecroi.c,v 1.3 93/11/06 15:26:02 rws Exp $ */
 /**** module mecroi.c ****/
 /******************************************************************************
 				NOTICE
@@ -16,7 +16,7 @@ terms and conditions:
      the disclaimer, and that the same appears on all copies and
      derivative works of the software and documentation you make.
      
-     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     "Copyright 1993, 1994 by AGE Logic, Inc. and the Massachusetts
      Institute of Technology"
      
      THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO
@@ -70,7 +70,6 @@ terms and conditions:
  */
 #include <misc.h>
 #include <dixstruct.h>
-#include <extnsionst.h>
 /*
  *  Server XIE Includes
  */
@@ -157,12 +156,12 @@ static int ActivateECROI(flo,ped,pet)
   xieTypRectangle  *prect;
   ROIPtr	    proi;
   
-  if (!(proi = GetCurrentSrc(ROIRec *,flo,pet,sbnd)))
+  if (!(proi = (ROIRec*)GetCurrentSrc(flo,pet,sbnd)))
     return FALSE;
   
   rectSize = sizeof(xieTypRectangle) * proi->nrects;
   
-  if (!(prect = GetDstBytes(xieTypRectangle *,flo,pet,dbnd,0,rectSize,KEEP)))
+  if (!(prect = (xieTypRectangle*)GetDstBytes(flo,pet,dbnd,0,rectSize,KEEP)))
     return FALSE;
   
   ConvertToRect(proi,prect);

@@ -1,4 +1,4 @@
-/* $XConsortium: domain.c,v 1.2 93/10/31 09:42:49 dpw Exp $ */
+/* $XConsortium: domain.c,v 1.3 93/11/06 15:24:02 rws Exp $ */
 /**** module domain.c ****/
 /******************************************************************************
 				NOTICE
@@ -16,7 +16,7 @@ terms and conditions:
      the disclaimer, and that the same appears on all copies and
      derivative works of the software and documentation you make.
      
-     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     "Copyright 1993, 1994 by AGE Logic, Inc. and the Massachusetts
      Institute of Technology"
      
      THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO
@@ -49,7 +49,6 @@ terms and conditions:
 *****************************************************************************/
 
 #define _XIEC_DOMAIN
-#define _XIEC_DOMAIN
 
 /*
  *  Include files
@@ -71,7 +70,6 @@ terms and conditions:
  */
 #include <misc.h>
 #include <dixstruct.h>
-#include <extnsionst.h>
 /*
  *  Server XIE Includes
  */
@@ -211,7 +209,7 @@ INT32	 ytrans;
 
 	/* Grab table if necessary */
 	if (!pet->roi) 
-	    if (!(pet->roi = GetSrcBytes(pointer,flo,pet,rband,0,1,KEEP)))
+	    if (!(pet->roi = GetSrcBytes(flo,pet,rband,0,1,KEEP)))
 		return (FALSE);
 
 	proi = (ROIPtr)pet->roi;
@@ -367,7 +365,7 @@ INT32	ytrans;
 	    bnd->ypass = FALSE;
 
 	/* Grab control plane line */
-        if (!(pet->roi = bnd->pcroi = GetSrc(pointer,flo,pet,rband,ytrans,purge))){
+        if (!(pet->roi = bnd->pcroi = GetSrc(flo,pet,rband,ytrans,purge))){
 	    if (purge)
 		FreeData(flo,pet,rband,rband->current);
 	    else

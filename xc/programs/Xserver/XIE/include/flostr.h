@@ -1,4 +1,4 @@
-/* $XConsortium: flostr.h,v 1.2 93/10/31 09:48:57 dpw Exp $ */
+/* $XConsortium: flostr.h,v 1.3 93/11/06 15:44:36 rws Exp $ */
 /**** module flostr.h ****/
 /****************************************************************************
 				NOTICE
@@ -16,7 +16,7 @@ terms and conditions:
      the disclaimer, and that the same appears on all copies and
      derivative works of the software and documentation you make.
      
-     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     "Copyright 1993, 1994 by AGE Logic, Inc. and the Massachusetts
      Institute of Technology"
      
      THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO
@@ -111,7 +111,7 @@ typedef struct _outflo {
   bandMsk     ready;		     /* bands that are holding client data */
   CARD8       bands;		     /* number of output bands	           */
   CARD8       pad;
-  stripLstRec export[xieValMaxBands];/* strips emitted by export elements  */
+  stripLstRec output[xieValMaxBands];/* holding place for element's output */
   formatRec   format[xieValMaxBands];/* data format per output band        */
 } outFloRec, *outFloPtr;
 

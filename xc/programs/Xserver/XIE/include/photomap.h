@@ -1,4 +1,4 @@
-/* $XConsortium: photomap.h,v 1.2 93/10/31 09:49:01 dpw Exp $ */
+/* $XConsortium: photomap.h,v 1.3 93/11/06 15:45:30 rws Exp $ */
 /**** module photomap.h ****/
 /******************************************************************************
 				NOTICE
@@ -16,7 +16,7 @@ terms and conditions:
      the disclaimer, and that the same appears on all copies and
      derivative works of the software and documentation you make.
      
-     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     "Copyright 1993, 1994 by AGE Logic, Inc. and the Massachusetts
      Institute of Technology"
      
      THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO
@@ -62,15 +62,16 @@ typedef struct _photomap {
   xieTypPhotomap ID;
   CARD16	  refCnt;
   CARD16	  technique;	/* decode technique needed to decompress*/
-  xieTypDataClass dataClass;	/* SingleBand or TripleBand. 		*/
+  CARD16	  lenParms;	/* length of technique params (in bytes)*/
+  CARD16	  pad0;
+  pointer	  tecParms;	/* technique-specific decode parameters	*/
+  pointer	  pvtParms;	/* additional decode hints		*/
+  xieTypDataClass dataClass;	/* {SingleBand,TripleBand} 		*/
   CARD8		  bands;	/* number of bands {0=unpopulated,1,3}	*/
 				/* Tripleband, interleaved has bands=1, */
 				/* so this parameter is *not* redundant */
-  xieTypDataType  dataType;	/* {constrained,unconstrined}		*/
-  CARD8		  pad;
-  pointer	  tecParms;	/* contains technique specific decode   */
-				/* parameters				*/
-  pointer	  pvtParms;	/* decode hints				*/
+  xieTypDataType  dataType;	/* {Constrained,Unconstrined}		*/
+  CARD8		  pad1;
   formatRec	  format[xieValMaxBands];   /* format of data in strips */
   stripLstRec	  strips[xieValMaxBands];   /* lists of image strips    */
 } photomapRec;

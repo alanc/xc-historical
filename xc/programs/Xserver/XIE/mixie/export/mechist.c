@@ -1,4 +1,4 @@
-/* $XConsortium: mechist.c,v 1.1 93/10/26 09:49:18 rws Exp $ */
+/* $XConsortium: mechist.c,v 1.2 93/10/31 09:43:27 dpw Exp $ */
 /**** module mechist.c ****/
 /******************************************************************************
 				NOTICE
@@ -16,7 +16,7 @@ terms and conditions:
      the disclaimer, and that the same appears on all copies and
      derivative works of the software and documentation you make.
      
-     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     "Copyright 1993, 1994 by AGE Logic, Inc. and the Massachusetts
      Institute of Technology"
      
      THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO
@@ -70,7 +70,6 @@ terms and conditions:
  */
 #include <misc.h>
 #include <dixstruct.h>
-#include <extnsionst.h>
 /*
  *  Server XIE Includes
  */
@@ -90,7 +89,6 @@ int	miAnalyzeECHist();
 static int CreateECHist();
 static int InitializeECHist();
 static int ActivateECHist();
-static int FlushECHist();
 static int ResetECHist();
 static int DestroyECHist();
 
@@ -100,7 +98,7 @@ static ddElemVecRec ECHistVec = {
     CreateECHist,
     InitializeECHist,
     ActivateECHist,
-    FlushECHist,
+    (xieIntProc)NULL,
     ResetECHist,
     DestroyECHist
     };
@@ -177,7 +175,7 @@ static int InitializeECHist(flo,ped)
     if (!(pvt->histdata = (pointer ) XieCalloc(nclip * sizeof(CARD32))))
 	AllocError(flo,ped,return(FALSE));
 
-    return InitReceptor(flo,ped,&rcp[SRCt1],NO_DATAMAP,1,1,0) && 
+    return InitReceptor(flo,ped,&rcp[SRCt1],NO_DATAMAP,1,1,NO_BANDS) && 
 	   InitProcDomain(flo, ped, raw->domainPhototag,
 			raw->domainOffsetX, raw->domainOffsetY) &&
            InitEmitter(flo,ped,NO_DATAMAP,NO_INPLACE);
@@ -199,7 +197,7 @@ static int ActivateECHist(flo,ped,pet)
   bandPtr	dbnd = &pet->emitter[0];
   pointer src;
   
-  src = GetCurrentSrc(pointer,flo,pet,sbnd);
+  src = GetCurrentSrc(flo,pet,sbnd);
   while(src && SyncDomain(flo,ped,sbnd,FLUSH)) {
     INT32 x = 0, dx;
     while (dx = GetRun(flo,pet,sbnd)) {
@@ -209,7 +207,7 @@ static int ActivateECHist(flo,ped,pet)
       } else 
 	x -= dx;
     }
-    src = GetNextSrc(pointer,flo,pet,sbnd,FLUSH);
+    src = GetNextSrc(flo,pet,sbnd,FLUSH);
   }
   FreeData(flo,pet,sbnd,sbnd->current);
   
@@ -226,7 +224,7 @@ static int ActivateECHist(flo,ped,pet)
 	nhist++;
     
     if(nhist) {
-      if(!(histpair = GetDstBytes(xieTypHistogramData *,flo,pet,dbnd,0,
+      if(!(histpair = (xieTypHistogramData*)GetDstBytes(flo,pet,dbnd,0,
 				  nhist * sizeof(xieTypHistogramData),KEEP)))
 	return FALSE;
       
@@ -255,15 +253,6 @@ static int ActivateECHist(flo,ped,pet)
   return TRUE;
 }
 
-/*------------------------------------------------------------------------
---------------------------- get rid of left overs ------------------------
-------------------------------------------------------------------------*/
-static int FlushECHist(flo,ped)
-    floDefPtr flo;
-    peDefPtr  ped;
-{
-    return TRUE;
-}
 
 /*------------------------------------------------------------------------
 ------------------------ get rid of run-time stuff -----------------------
@@ -298,7 +287,6 @@ static int DestroyECHist(flo,ped)
     ped->ddVec.create     = (xieIntProc) NULL;
     ped->ddVec.initialize = (xieIntProc) NULL;
     ped->ddVec.activate   = (xieIntProc) NULL;
-    ped->ddVec.flush      = (xieIntProc) NULL;
     ped->ddVec.reset      = (xieIntProc) NULL;
     ped->ddVec.destroy    = (xieIntProc) NULL;
 

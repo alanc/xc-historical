@@ -1,4 +1,4 @@
-/* $XConsortium: medraw.c,v 1.2 93/10/31 09:43:34 dpw Exp $ */
+/* $XConsortium: medraw.c,v 1.4 93/11/06 15:26:15 rws Exp $ */
 /**** module medraw.c ****/
 /******************************************************************************
 				NOTICE
@@ -16,7 +16,7 @@ terms and conditions:
      the disclaimer, and that the same appears on all copies and
      derivative works of the software and documentation you make.
      
-     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     "Copyright 1993, 1994 by AGE Logic, Inc. and the Massachusetts
      Institute of Technology"
      
      THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO
@@ -71,7 +71,6 @@ terms and conditions:
  */
 #include <misc.h>
 #include <dixstruct.h>
-#include <extnsionst.h>
 #include <pixmapstr.h>
 #include <gcstruct.h>
 /*
@@ -194,7 +193,7 @@ static int ActivateEDrawAlign(flo,ped,pet)
   eDrawDefPtr		 dix = (eDrawDefPtr) ped->elemPvt;
   meDrawPtr		 ddx = (meDrawPtr) pet->private;
   bandPtr		 bnd = &pet->receptor[SRCtag].band[0];
-  char		  *dst, *src = GetCurrentSrc(char *,flo,pet,bnd);
+  char		  *dst, *src = (char*)GetCurrentSrc(flo,pet,bnd);
   CARD32	       width = bnd->format->width;
 
   if (!DrawableAndGC(flo,ped,raw->drawable,raw->gc,&dix->pDraw,&dix->pGC))
@@ -217,7 +216,7 @@ static int ActivateEDrawAlign(flo,ped,pet)
 			       ZPixmap,		  	  /* data format   */
 			       dst			  /* data buffer   */
 			       );
-  } while(src = GetNextSrc(char *,flo,pet,bnd,KEEP));
+  } while(src = (char*)GetNextSrc(flo,pet,bnd,KEEP));
   
   /* make sure the scheduler knows how much src we used */
   FreeData(flo,pet,bnd,bnd->current);
@@ -237,7 +236,7 @@ static int ActivateEDrawStrip(flo,ped,pet)
   xieFloExportDrawable  *raw = (xieFloExportDrawable *) ped->elemRaw;
   eDrawDefPtr		 pvt = (eDrawDefPtr) ped->elemPvt;
   bandPtr		 bnd = &pet->receptor[SRCtag].band[0];
-  char			*src = GetCurrentSrc(char *,flo,pet,bnd);
+  char			*src = (char*)GetCurrentSrc(flo,pet,bnd);
   
   if(src) {
     if (!DrawableAndGC(flo,ped,raw->drawable,raw->gc,&pvt->pDraw,&pvt->pGC))
@@ -254,7 +253,7 @@ static int ActivateEDrawStrip(flo,ped,pet)
 				 ZPixmap,		  /* data format */
 				 src			  /* data buffer */
 				 );
-    while(src = GetSrc(char *,flo,pet,bnd,bnd->maxLocal,KEEP));
+    while(src = (char*)GetSrc(flo,pet,bnd,bnd->maxLocal,KEEP));
   }
   /* make sure the scheduler knows how much src we used */
   FreeData(flo,pet,bnd,bnd->current);

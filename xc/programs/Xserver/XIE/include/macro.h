@@ -1,4 +1,4 @@
-/* $XConsortium: macro.h,v 1.2 93/10/31 09:48:59 dpw Exp $ */
+/* $XConsortium: macro.h,v 1.5 93/11/06 15:44:59 rws Exp $ */
 /**** module macro.h ****/
 /******************************************************************************
 				NOTICE
@@ -16,7 +16,7 @@ terms and conditions:
      the disclaimer, and that the same appears on all copies and
      derivative works of the software and documentation you make.
      
-     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     "Copyright 1993, 1994 by AGE Logic, Inc. and the Massachusetts
      Institute of Technology"
      
      THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO
@@ -133,9 +133,9 @@ terms and conditions:
 		 SendElementEvent(flo,ped,xieEvnNoDecodeNotify);}
 #define SendExportAvailableEvent(flo,ped,b,d0,d1,d2) \
 		{((xieExportAvailableEvn *)&flo->event)->bandNumber = b; \
-		 ((xieExportAvailableEvn *)&flo->event)->data1 = d0; \
-		 ((xieExportAvailableEvn *)&flo->event)->data2 = d1; \
-		 ((xieExportAvailableEvn *)&flo->event)->data3 = d2; \
+		 ((xieExportAvailableEvn *)&flo->event)->data0 = d0; \
+		 ((xieExportAvailableEvn *)&flo->event)->data1 = d1; \
+		 ((xieExportAvailableEvn *)&flo->event)->data2 = d2; \
 		 SendElementEvent(flo,ped,xieEvnNoExportAvailable);}
 #define SendImportObscuredEvent(flo,ped,win,ex,ey,ew,eh) \
 		{((xieImportObscuredEvn *)&flo->event)->window = win; \

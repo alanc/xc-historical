@@ -1,4 +1,4 @@
-/* $XConsortium: technq.h,v 1.1 93/10/26 10:04:12 rws Exp $ */
+/* $XConsortium: technq.h,v 1.2 93/11/06 15:45:57 rws Exp $ */
 /**** module technq.h ****/
 /******************************************************************************
 				NOTICE
@@ -16,7 +16,7 @@ terms and conditions:
      the disclaimer, and that the same appears on all copies and
      derivative works of the software and documentation you make.
      
-     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     "Copyright 1993, 1994 by AGE Logic, Inc. and the Massachusetts
      Institute of Technology"
      
      THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO
@@ -73,8 +73,10 @@ extern Bool	CopyICPhotoUnTriple();
 extern Bool	PrepICPhotoUnTriple();
 extern Bool	CopyICPhotoJPEGBaseline();
 extern Bool	PrepICPhotoJPEGBaseline();
+#ifdef	BEYOND_SI
 extern Bool	CopyICPhotoJPEGLossless();
 extern Bool	PrepICPhotoJPEGLossless();
+#endif /* BEYOND_SI */
 #endif
 
 /*
@@ -92,9 +94,11 @@ extern Bool	PrepPConstrainClipScale();
  */
 #if XIE_FULL
 extern Bool     CopyConvolveConstant();
-extern Bool     CopyConvolveReplicate();
 extern Bool     PrepConvolveStandard();
-#endif
+#ifdef	BEYOND_SI
+extern Bool     CopyConvolveReplicate();
+#endif /* BEYOND_SI */
+#endif 
 
 /*
  * dixie dither technique entry points
@@ -137,9 +141,11 @@ extern Bool	PrepPHistogramHyperbolic();
  */
 #if XIE_FULL
 extern Bool 	CopyCtoIAllocAll();
+extern Bool 	PrepCtoIAllocAll();
+#ifdef	BEYOND_SI
 extern Bool 	CopyCtoIAllocMatch();
 extern Bool 	CopyCtoIAllocRequantize();
-extern Bool 	PrepCtoIAllocAll();
+#endif /* BEYOND_SI */
 #endif
 
 /*
@@ -163,8 +169,10 @@ extern Bool	CopyECPhotoUnTriple();
 extern Bool	PrepECPhotoUnTriple();
 extern Bool	CopyECPhotoJPEGBaseline();
 extern Bool	PrepECPhotoJPEGBaseline();
+#ifdef	BEYOND_SI
 extern Bool	CopyECPhotoJPEGLossless();
 extern Bool	PrepECPhotoJPEGLossless();
+#endif /* BEYOND_SI */
 #endif
 
 /*
@@ -376,7 +384,7 @@ TechRec		Tconvertfromrgb[] = {
 			TECH_VARIABLE_SIZE,
 			UNINITIALIZED,	
                         sz_xieTecRGBToCIELab / 4,
-                        xieValCIELab,
+                        xieValRGBToCIELab,
                         CopyPConvertFromRGBCIE, 
                         PrepPConvertFromRGBCIE
                 }
@@ -391,7 +399,7 @@ TechRec		Tconvertfromrgb[] = {
 			TECH_VARIABLE_SIZE,
 			UNINITIALIZED,	
                         sz_xieTecRGBToCIEXYZ / 4,
-                        xieValCIEXYZ,
+                        xieValRGBToCIEXYZ,
                         CopyPConvertFromRGBCIE, 
                         PrepPConvertFromRGBCIE
                 }
@@ -406,7 +414,7 @@ TechRec		Tconvertfromrgb[] = {
 			TECH_FIXED_SIZE,
 			UNINITIALIZED,	
                         sz_xieTecRGBToYCbCr / 4,
-                        xieValYCbCr,
+                        xieValRGBToYCbCr,
                         CopyPConvertFromRGBYCbCr, 
                         PrepPConvertFromRGBYCbCr
                 }
@@ -421,7 +429,7 @@ TechRec		Tconvertfromrgb[] = {
 			TECH_FIXED_SIZE,
 			UNINITIALIZED,	
                         sz_xieTecRGBToYCC / 4,
-                        xieValYCC,
+                        xieValRGBToYCC,
                         CopyPConvertFromRGBYCC, 
                         PrepPConvertFromRGBYCC
                 }
@@ -442,7 +450,7 @@ TechRec		Tconverttorgb[] = {
 			TECH_VARIABLE_SIZE,
 			UNINITIALIZED,	
                         sz_xieTecCIELabToRGB / 4,
-                        xieValCIELab,
+                        xieValCIELabToRGB,
                         CopyPConvertToRGBCIE, 
                         PrepPConvertToRGBCIE
                 }
@@ -457,7 +465,7 @@ TechRec		Tconverttorgb[] = {
 			TECH_VARIABLE_SIZE,
 			UNINITIALIZED,	
                         sz_xieTecCIEXYZToRGB / 4,
-                        xieValCIEXYZ,
+                        xieValCIEXYZToRGB,
                         CopyPConvertToRGBCIE, 
                         PrepPConvertToRGBCIE
                 }
@@ -472,7 +480,7 @@ TechRec		Tconverttorgb[] = {
 			TECH_FIXED_SIZE,
 			UNINITIALIZED,	
                         sz_xieTecYCbCrToRGB / 4,
-                        xieValYCbCr,
+                        xieValYCbCrToRGB,
                         CopyPConvertToRGBYCbCr, 
 			PrepPConvertToRGBYCbCr
                 }
@@ -487,7 +495,7 @@ TechRec		Tconverttorgb[] = {
 			TECH_FIXED_SIZE,
 			UNINITIALIZED,	
                         sz_xieTecYCCToRGB / 4,
-                        xieValYCC,
+                        xieValYCCToRGB,
                         CopyPConvertToRGBYCC, 
 			PrepPConvertToRGBYCC
                 }

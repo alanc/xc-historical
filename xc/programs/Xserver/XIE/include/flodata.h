@@ -1,4 +1,4 @@
-/* $XConsortium: flodata.h,v 1.1 93/10/26 10:03:59 rws Exp $ */
+/* $XConsortium: flodata.h,v 1.2 93/11/06 15:44:22 rws Exp $ */
 /**** module flodata.h ****/
 /******************************************************************************
 				NOTICE
@@ -16,7 +16,7 @@ terms and conditions:
      the disclaimer, and that the same appears on all copies and
      derivative works of the software and documentation you make.
      
-     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     "Copyright 1993, 1994 by AGE Logic, Inc. and the Massachusetts
      Institute of Technology"
      
      THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO
@@ -64,20 +64,19 @@ terms and conditions:
 #define LUT_ARRAY	 32	/* non-canonic lut array		*/
 #define RUN_LENGTH	 64	/* non-canonic run_length		*/
 #define STREAM		128	/* non-canonic generic stream		*/
-#define ENCODED		129	/* non-canonic compressed stream	*/
 
-#define IsntLut(df)         (df != LUT_ARRAY)
-#define IsntDomain(df)      (df & ~(RUN_LENGTH | BIT_PIXEL))
-#define IsntCanonic(df)     (df & (LUT_ARRAY | RUN_LENGTH | STREAM))
-#define IsntConstrained(df) \
-		  (df & (LUT_ARRAY | RUN_LENGTH | STREAM | UNCONSTRAINED))
+#define IsntLut(dfc)         (dfc !=  LUT_ARRAY)
+#define IsntDomain(dfc)      (dfc & ~(RUN_LENGTH | BIT_PIXEL))
+#define IsntCanonic(dfc)     (dfc &  (RUN_LENGTH | STREAM | LUT_ARRAY))
+#define IsntConstrained(dfc) \
+	      (dfc & (UNCONSTRAINED | RUN_LENGTH | STREAM | LUT_ARRAY))
 
-#define IsLut(df)         (df == LUT_ARRAY)
-#define IsDomain(df)      (!IsntDomain(df))
-#define IsCanonic(df)     (!IsntCanonic(df))
-#define IsConstrained(df) (!IsntConstrained(df))
+#define IsLut(dfc)         (dfc == LUT_ARRAY)
+#define IsDomain(dfc)      (!IsntDomain(dfc))
+#define IsCanonic(dfc)     (!IsntCanonic(dfc))
+#define IsConstrained(dfc) (!IsntConstrained(dfc))
 
-#define IndexClass(df)    (df == UNCONSTRAINED ? 0 : df )
+#define IndexClass(dfc)    (dfc == UNCONSTRAINED ? 0 : dfc )
 
 #define ConstrainConst(fconst,levels) \
 	( (fconst <= 0.)	? (CARD32) 0 : \

@@ -1,4 +1,4 @@
-/* $XConsortium: tables.h,v 1.1 93/10/26 10:04:31 rws Exp $ */
+/* $XConsortium: tables.h,v 1.2 93/11/06 15:45:50 rws Exp $ */
 /**** module tables.h ****/
 /******************************************************************************
 				NOTICE
@@ -16,7 +16,7 @@ terms and conditions:
      the disclaimer, and that the same appears on all copies and
      derivative works of the software and documentation you make.
      
-     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     "Copyright 1993, 1994 by AGE Logic, Inc. and the Massachusetts
      Institute of Technology"
      
      THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO
@@ -53,11 +53,21 @@ terms and conditions:
 
 #include <flostr.h>
 
+#define DDAnalyzeIndex		0
+#define DDServerChoiceIndex	1
+
 #ifndef _XIEC_TABLES
+
 extern	void		init_proc_tables();     
 extern	peDefPtr	(*MakeTable[])();
+extern  xieVoidProc 	DDInterface[];
 
 #else  /* _XIEC_TABLES */
+
+	/* dd entry points for di */
+
+extern int DAGalyze();
+extern xieBoolProc GetServerChoice();
 
 	/* flo.c */
 extern  int		ProcAbort();

@@ -1,4 +1,4 @@
-/* $XConsortium: meclut.c,v 1.2 93/10/31 09:43:30 dpw Exp $ */
+/* $XConsortium: meclut.c,v 1.4 93/11/06 15:25:24 rws Exp $ */
 /**** module meclut.c ****/
 /******************************************************************************
 				NOTICE
@@ -16,7 +16,7 @@ terms and conditions:
      the disclaimer, and that the same appears on all copies and
      derivative works of the software and documentation you make.
      
-     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     "Copyright 1993, 1994 by AGE Logic, Inc. and the Massachusetts
      Institute of Technology"
      
      THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO
@@ -70,7 +70,6 @@ terms and conditions:
  */
 #include <misc.h>
 #include <dixstruct.h>
-#include <extnsionst.h>
 /*
  *  Server XIE Includes
  */
@@ -161,7 +160,7 @@ static int ActivateECLUT(flo,ped,pet)
   
   for(b = 0; b < bands; ++sbnd, ++b) {
     
-    if (!(src = GetCurrentSrc(CARD8 *,flo,pet,sbnd))) continue; 
+    if (!(src = (CARD8*)GetCurrentSrc(flo,pet,sbnd))) continue; 
 
     dbnd = &pet->emitter[swizzle ? xieValMaxBands - b - 1 : b];
     
@@ -169,7 +168,7 @@ static int ActivateECLUT(flo,ped,pet)
     pitch = LutPitch(sbnd->format->levels);
     dlen = nentry * pitch;
     
-    if (!(dst = GetDstBytes(CARD8 *,flo,pet,dbnd,dbnd->current,dlen,KEEP)))
+    if (!(dst = (CARD8*)GetDstBytes(flo,pet,dbnd,dbnd->current,dlen,KEEP)))
       return FALSE;
 
     if (start[b])

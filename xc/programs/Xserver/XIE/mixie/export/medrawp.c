@@ -1,4 +1,4 @@
-/* $XConsortium: medrawp.c,v 1.2 93/10/31 09:43:36 dpw Exp $ */
+/* $XConsortium: medrawp.c,v 1.5 93/11/06 15:26:30 rws Exp $ */
 /**** module medrawp.c ****/
 /******************************************************************************
 				NOTICE
@@ -16,7 +16,7 @@ terms and conditions:
      the disclaimer, and that the same appears on all copies and
      derivative works of the software and documentation you make.
      
-     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     "Copyright 1993, 1994 by AGE Logic, Inc. and the Massachusetts
      Institute of Technology"
      
      THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO
@@ -71,7 +71,6 @@ terms and conditions:
  */
 #include <misc.h>
 #include <dixstruct.h>
-#include <extnsionst.h>
 #include <scrnintstr.h>
 #include <pixmapstr.h>
 #include <gcstruct.h>
@@ -183,7 +182,7 @@ static int ActivateEDrawP(flo,ped,pet)
   xieFloExportDrawablePlane *raw = (xieFloExportDrawablePlane *) ped->elemRaw;
   eDrawPDefPtr	 dix = (eDrawPDefPtr) ped->elemPvt;
   bandPtr	 bnd = &pet->receptor[SRCtag].band[0];
-  BytePixel	*src = GetCurrentSrc(BytePixel *,flo,pet,bnd);
+  BytePixel	*src = (BytePixel*)GetCurrentSrc(flo,pet,bnd);
   CARD32    pixtype, depth;
 
   if(src) {
@@ -217,7 +216,7 @@ static int ActivateEDrawP(flo,ped,pet)
 				 (char*)src		  /* data buffer */
 				 );
     }
-    while(src = GetSrc(BytePixel *,flo,pet,bnd,bnd->maxLocal,KEEP));
+    while(src = (BytePixel*)GetSrc(flo,pet,bnd,bnd->maxLocal,KEEP));
 
     /* make sure the scheduler knows how much src we used */
     FreeData(flo,pet,bnd,bnd->current);
@@ -240,7 +239,7 @@ static int ActivateEDrawPTrans(flo,ped,pet)
   int		oldstyle, newstyle = FillSolid;
   XID		gcvals[3];
   
-  src = GetSrc(BytePixel *,flo,pet,bnd,bnd->minGlobal,FALSE);
+  src = (BytePixel*)GetSrc(flo,pet,bnd,bnd->minGlobal,FALSE);
   if(src) {
     if (!DrawableAndGC(flo,ped,raw->drawable,raw->gc,&dix->pDraw,&dix->pGC))
       return FALSE;
@@ -351,7 +350,7 @@ static int ActivateEDrawPTrans(flo,ped,pet)
 		);
 	    src += bnd->pitch * ny; /* gack */
 	}
-    } while(src = GetSrc(BytePixel *,flo,pet,bnd,bnd->maxLocal,FALSE)) ;
+    } while(src = (BytePixel*)GetSrc(flo,pet,bnd,bnd->maxLocal,FALSE)) ;
 
     /* make sure the scheduler knows how much src we used */
     FreeData(flo,pet,bnd,bnd->current);
