@@ -1,4 +1,4 @@
-/* $XConsortium: AsciiText.c,v 1.41 91/01/06 16:08:31 rws Exp $ */
+/* $XConsortium: AsciiText.c,v 1.42 91/02/17 15:45:58 rws Exp $ */
 
 /*
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -48,10 +48,10 @@ SOFTWARE.
 #include <X11/StringDefs.h>
 
 #include <X11/Xaw/XawInit.h>
+#include <X11/Xaw/Cardinals.h>
+#include <X11/Xaw/AsciiTextP.h>
 #include <X11/Xaw/AsciiSrc.h>
 #include <X11/Xaw/AsciiSink.h>
-#include <X11/Xaw/AsciiTextP.h>
-#include <X11/Xaw/Cardinals.h>
 
 #define TAB_COUNT 32
 
