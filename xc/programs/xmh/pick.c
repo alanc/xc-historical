@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: pick.c,v 1.12 88/01/07 09:39:09 swick Exp $";
+static char rcs_id[] = "$Header: pick.c,v 1.13 88/01/18 13:17:21 swick Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -411,6 +411,7 @@ static void ExecOK(entry)
     short removeoldmsgs = row2->wlist[1]->hilite;
     char str[1000];
     int i, found;
+    char *folderpath;
 
     DestroyErrorWidget(pick);
     if (strcmp(toseq, "all") == 0) {
@@ -425,7 +426,8 @@ static void ExecOK(entry)
     argv = MakeArgv(1);
     argvsize = 0;
     AppendArgv("pick");
-    AppendArgv(sprintf(str, "+%s", TocGetFolderName(toc)));
+    AppendArgv(folderpath = TocMakeFolderName(toc));
+    XtFree(folderpath);
     AppendArgv(fromseq);
     AppendArgv("-sequence");
     AppendArgv(toseq);
@@ -778,7 +780,7 @@ AddPick(scrn, toc, fromseq, toseq)
     }
     pick->toc = toc;
     InitGeneral(pick, fromseq, toseq);
-    (void) sprintf(str, "Pick: %s", TocGetFolderName(toc));
+    (void) sprintf(str, "Pick: %s", TocName(toc));
     ChangeLabel(pick->label, str);
     XStoreName(theDisplay, scrn->widget, str);
 }
