@@ -25,7 +25,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: add_window.c,v 1.42 89/05/30 08:50:55 jim Exp $
+ * $XConsortium: add_window.c,v 1.43 89/05/30 11:56:52 jim Exp $
  *
  * Add a new window, put the titlbar and other stuff around
  * the window
@@ -36,7 +36,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: add_window.c,v 1.42 89/05/30 08:50:55 jim Exp $";
+"$XConsortium: add_window.c,v 1.43 89/05/30 11:56:52 jim Exp $";
 #endif /* lint */
 
 #include <stdio.h>
@@ -135,14 +135,6 @@ IconMgr *iconp;
     if (XGetNormalHints(dpy, tmp_win->w, &tmp_win->hints) == 0)
 	tmp_win->hints.flags = 0;
 
-    if (strncmp("xterm", tmp_win->class.res_name, 5) == 0 ||
-    	strncmp("XTerm", tmp_win->class.res_class, 5) == 0 ||
-        strncmp("hpterm", tmp_win->class.res_name, 6) == 0 ||
-    	strncmp("HPterm", tmp_win->class.res_class, 6) == 0)
-	tmp_win->xterm = TRUE;
-    else
-	tmp_win->xterm = FALSE;
-
     /*
      * The July 27, 1988 draft of the ICCCM ignores the size and position
      * fields in the WM_NORMAL_HINTS property.
@@ -235,11 +227,7 @@ IconMgr *iconp;
     if (HandlingEvents && dont_know && !Scr->RandomPlacement)
     {
 	if (!(tmp_win->wmhints && tmp_win->wmhints->flags & StateHint &&
-	      tmp_win->wmhints->initial_state == IconicState)
-#ifdef USE_PROGRAM_SPECIFIED_HINTS
-	    && (tmp_win->xterm || (tmp_win->attr.x==0 && tmp_win->attr.y==0))
-#endif
-	    )
+	      tmp_win->wmhints->initial_state == IconicState))
 	{
 	    /* better wait until all the mouse buttons have been 
 	     * released.

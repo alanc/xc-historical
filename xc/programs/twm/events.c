@@ -25,7 +25,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.62 89/05/15 17:21:33 jim Exp $
+ * $XConsortium: events.c,v 1.63 89/05/30 08:50:58 jim Exp $
  *
  * twm event handling
  *
@@ -35,7 +35,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: events.c,v 1.62 89/05/15 17:21:33 jim Exp $";
+"$XConsortium: events.c,v 1.63 89/05/30 08:50:58 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -1381,8 +1381,7 @@ HandleButtonPress()
 	{
 	    /* if the window was the Root, we don't know for sure it
 	     * it was the root.  We must check to see if it happened to be
-	     * inside of a client that was getting button press events,
-	     * such as an xterm
+	     * inside of a client that was getting button press events.
 	     */
 	    XTranslateCoordinates(dpy, Scr->Root, Scr->Root,
 		Event.xbutton.x, 
