@@ -54,7 +54,7 @@ APA16OBJS = ddx/ibm/rt/rtinit.o ddx/ibm/rt/rtio.o
 APA16LIBS = $(DIX) $(UNIX) $(MFB) $(MI) \
 		ddx/ibm/rt/librt.a ddx/ibm/apa16/libapa16.a
 
-ServerTarget(apa16,$(QVSSDIRS),$(QVSSOBJS),$(QVSSLIBS),$(SYSLIBS))
+ServerTarget(apa16,$(APA16DIRS),$(APA16OBJS),$(APA16LIBS),$(SYSLIBS))
 
 
 #
