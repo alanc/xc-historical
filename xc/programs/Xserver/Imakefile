@@ -191,7 +191,7 @@ QVSSOBJS = ddx/dec/qvss/init.o ddx/dec/qvss/qvss_io.o ddx/dec/lk201/lk201.o
 QVSSLIBS = $(DIX) $(BSD) $(FONT) $(MFB) $(MI) $(EXTENSIONS)
 XqvssDIRS = $(QVSSDIRS)
 
-ServerTarget(Xqvss,$(EXTDIR) $(QVSSDIRS),$(QVSSOBJS),$(QVSSLIBS),$(SYSLIBS))
+ServerTarget(Xqvss,$(QVSSDIRS) $(EXTDIR),$(QVSSOBJS),$(QVSSLIBS),$(SYSLIBS))
 #endif /* doqvssServer */
 
 
@@ -215,7 +215,7 @@ QDSSLIBS = ddx/dec/qdss/libqdss.a ddx/dec/qdss/libtl/libtl.a \
            $(DIX) $(BSD) $(FONT) $(MFB) $(MI) $(EXTENSIONS)
 XqdssDIRS = $(QDSSDIRS)
 
-ServerTarget(Xqdss,$(EXTDIR) $(QDSSDIRS),$(QDSSOBJS),$(QDSSLIBS),$(SYSLIBS))
+ServerTarget(Xqdss,$(QDSSDIRS) $(EXTDIR),$(QDSSOBJS),$(QDSSLIBS),$(SYSLIBS))
 #endif /* doqdssServer */
 
 #ifdef dodecServer
@@ -233,7 +233,7 @@ DECOBJS = ddx/dec/ws/init.o $(FONTUTIL)
 DECLIBS = $(DECWS) $(DIX) $(BSD) $(FONT) $(CFB) $(MFB) $(MI) $(EXTENSIONS)
 XcfbpmaxDIRS = $(DECDIRS)
 
-ServerTarget(Xdec,$(EXTDIR) $(DECDIRS),$(DECOBJS),$(DECLIBS),$(SYSLIBS))
+ServerTarget(Xdec,$(DECDIRS) $(EXTDIR),$(DECOBJS),$(DECLIBS),$(SYSLIBS))
 #endif /* dodecServer */
 
 #ifdef domfbpmaxServer
@@ -252,7 +252,7 @@ PMAXMFBOBJS = ddx/dec/mfbpmax/init.o ddx/dec/mfbpmax/mfbpmax_io.o ddx/dec/lk201/
 PMAXMFBLIBS = $(DIX) $(BSD) $(FONT) $(MFB) $(MI) $(EXTENSIONS)
 XmfbpmaxDIRS = $(PMAXMFBDIRS)
 
-ServerTarget(Xmfbpmax,$(EXTDIR) $(PMAXMFBDIRS),$(PMAXMFBOBJS),$(PMAXMFBLIBS),$(SYSLIBS))
+ServerTarget(Xmfbpmax,$(PMAXMFBDIRS) $(EXTDIR),$(PMAXMFBOBJS),$(PMAXMFBLIBS),$(SYSLIBS))
 #endif /* domfbpmaxServer */
 
 #ifdef docfbpmaxServer
@@ -272,7 +272,7 @@ PMAXCFBOBJS = ddx/dec/cfbpmax/init.o ddx/dec/cfbpmax/cfbpmax_io.o\
 PMAXCFBLIBS = $(DIX) $(BSD) $(FONT) $(CFB) $(MFB) $(MI) $(EXTENSIONS)
 XcfbpmaxDIRS = $(PMAXCFBDIRS)
 
-ServerTarget(Xcfbpmax,$(EXTDIR) $(PMAXCFBDIRS),$(PMAXCFBOBJS),$(PMAXCFBLIBS),$(SYSLIBS))
+ServerTarget(Xcfbpmax,$(PMAXCFBDIRS) $(EXTDIR),$(PMAXCFBOBJS),$(PMAXCFBLIBS),$(SYSLIBS))
 #endif /* docfbpmaxServer */
 
 #ifdef dosunServer
@@ -294,7 +294,7 @@ SUNLIBS = $(SUN) $(CFB) $(DIX) $(BSD) $(FONT) $(MFB) $(MI) $(EXTENSIONS)
 SUNSYSLIBS = $(SYSLIBS) $(SUNWINDOWSLIBS)
 XsunDIRS = $(SUNDIRS)
 
-ServerTarget(Xsun,$(EXTDIR) $(SUNDIRS),$(SUNOBJS),$(SUNLIBS),$(SUNSYSLIBS))
+ServerTarget(Xsun,$(SUNDIRS) $(EXTDIR),$(SUNOBJS),$(SUNLIBS),$(SUNSYSLIBS))
 
 saber_src_sun:
 	XCOMM cd dix
@@ -346,7 +346,7 @@ HPMALLOCLIB = -lmalloc
 HPSYSLIBS = $(SYSLIBS) $(HPMALLOCLIB)
 XhpDIRS = $(HPDIRS)
 
-ServerTarget(Xhp,$(EXTDIR) $(HPDIRS),$(HPOBJS),$(HPLIBS),$(CBRT) $(HPSYSLIBS))
+ServerTarget(Xhp,$(HPDIRS) $(EXTDIR),$(HPOBJS),$(HPLIBS),$(CBRT) $(HPSYSLIBS))
 #endif /* dohpServer */
 
 
@@ -372,7 +372,7 @@ IBMLIBS = ddx/ibm/libibm.a $(IBMALLOCLIB) \
 IBMSYSLIBS = $(SYSLIBS)
 XibmDIRS = $(IBMDIRS)
 
-ServerTarget(Xibm,$(EXTDIR) $(IBMDIRS),$(IBMOBJS),$(IBMLIBS),$(IBMSYSLIBS))
+ServerTarget(Xibm,$(IBMDIRS) $(EXTDIR),$(IBMOBJS),$(IBMLIBS),$(IBMSYSLIBS))
 #endif /* doibmServer */
 
 
@@ -392,7 +392,7 @@ APOLLOOBJS = ddx/apollo/ap_init.o /sys/traits/io_traits.2 $(FONTUTIL)
 APOLLOLIBS = $(APOLLO) $(APC) $(DIX) $(BSD) $(FONT) $(MFB) $(MI) $(EXTENSIONS)
 XapolloDIRS = $(APOLLODIRS)
 
-ServerTarget(Xapollo,$(EXTDIR) $(APOLLODIRS),$(APOLLOOBJS),$(APOLLOLIBS),$(SYSLIBS))
+ServerTarget(Xapollo,$(APOLLODIRS) $(EXTDIR),$(APOLLOOBJS),$(APOLLOLIBS),$(SYSLIBS))
 #endif /* doapolloServer */
 
 
@@ -412,7 +412,7 @@ TEKOBJS = ddx/tek/pegInit.o $(FONTUTIL)
 TEKLIBS = $(DIX) $(BSD) $(FONT) $(TEK) $(MFB) $(CFB) $(MI) $(EXTENSIONS)
 XtekDIRS = $(TEKDIRS)
 
-ServerTarget(Xtek,$(EXTDIR) $(TEKDIRS),$(TEKOBJS),$(TEKLIBS),$(CBRT) $(SYSLIBS))
+ServerTarget(Xtek,$(TEKDIRS) $(EXTDIR),$(TEKOBJS),$(TEKLIBS),$(CBRT) $(SYSLIBS))
 #endif /* dotekServer */
 
 
@@ -433,7 +433,7 @@ MACIILIBS = $(MACII) $(CFB) $(DIX) $(BSD) $(FONT) $(MFB) $(MI) $(EXTENSIONS)
 MACIISYSLIBS = $(SYSLIBS)
 XmacIIDIRS = $(MACIIDIRS)
  
-ServerTarget(XmacII,$(EXTDIR) $(MACIIDIRS),$(MACIIOBJS),$(MACIILIBS),$(CBRT) $(MACIISYSLIBS))
+ServerTarget(XmacII,$(MACIIDIRS) $(EXTDIR),$(MACIIOBJS),$(MACIILIBS),$(CBRT) $(MACIISYSLIBS))
 #endif /* domacIIServer */
 
 
@@ -455,7 +455,7 @@ LUNALIBS = $(DIX) $(LUNA) $(BSD) $(FONT) $(MFB) $(MI) $(EXTENSIONS)
 #endif
 XlunaDIRS = $(LUNADIRS)
 
-ServerTarget(Xluna,$(EXTDIR) $(LUNADIRS),$(LUNAOBJS),$(LUNALIBS),$(SYSLIBS))
+ServerTarget(Xluna,$(LUNADIRS) $(EXTDIR),$(LUNAOBJS),$(LUNALIBS),$(SYSLIBS))
 #endif /* dolunaServer */
 
 
@@ -475,7 +475,7 @@ MIPSLIBS = $(MIPS) $(CFB) $(DIX) $(BSD) $(FONT) $(MFB) $(MI) $(EXTENSIONS)
 MIPSSYSLIBS = $(SYSLIBS) -lc /usr/lib/libc.a
 XmipsDIRS = $(MIPSDIRS)
  
-ServerTarget(Xmips,$(EXTDIR) $(MIPSDIRS),$(MIPSOBJS),$(MIPSLIBS),$(MIPSSYSLIBS))
+ServerTarget(Xmips,$(MIPSDIRS) $(EXTDIR),$(MIPSOBJS),$(MIPSLIBS),$(MIPSSYSLIBS))
 #endif /* domipsServer */
 
 
@@ -654,7 +654,7 @@ MakeMakeSubdirs($(ALLSUBDIRS),AllMakefiles)
 
 
 
-$(EXTDIR) $(SUBDIRS): FRC
+$(SUBDIRS) $(EXTDIR): FRC
 	@cd $@ ; echo "making all in $(CURRENT_DIR)/$@..."; \
 	$(MAKE) $(MFLAGS) PassCDebugFlags all
 
