@@ -121,7 +121,7 @@ typedef long BytesReadable_t;
 #endif
 
 
-#if defined(WIN32) || (defined(USG) && !defined(CRAY) && !defined(umips) && !defined(MOTOROLA) && !defined(uniosu))
+#if defined(WIN32) || (defined(USG) && !defined(CRAY) && !defined(umips) && !defined(MOTOROLA) && !defined(uniosu) && !defined(__sxg__))
 
 /*
  *      TRANS(Readv) and TRANS(Writev) use struct iovec, normally found

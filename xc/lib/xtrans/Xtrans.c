@@ -953,7 +953,7 @@ int 		iovcnt;
 
 #endif /* CRAY */
 
-#if (defined(SYSV) && defined(SYSV386)) || defined(WIN32)
+#if (defined(SYSV) && defined(SYSV386)) || defined(WIN32) || defined(__sxg__)
 
 /*
  * SYSV/386 and WIN32 do not have readv so we emulate
@@ -987,9 +987,9 @@ int 		iovcnt;
     return total;
 }
 
-#endif /* SYSV && SYSV386 || WIN32 */
+#endif /* SYSV && SYSV386 || WIN32 || __sxg__ */
 
-#ifdef WIN32
+#if defined(WIN32) || defined(__sxg__)
 
 /*
  * WIN32 does not have readv so we emulate
@@ -1023,7 +1023,7 @@ int 		iovcnt;
     return total;
 }
 
-#endif /* WIN32 */
+#endif /* WIN32 || __sxg__ */
 
 
 #if (defined(_POSIX_SOURCE) && !defined(AIXV3)) || defined(hpux) || defined(USG) || defined(SVR4)
