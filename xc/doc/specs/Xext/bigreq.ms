@@ -1,5 +1,5 @@
 .\" Use -ms and macros.t
-.\" $XConsortium: bigreq.ms,v 1.3 92/09/07 20:28:38 rws Exp $
+.\" $XConsortium: bigreq.ms,v 1.4 92/09/08 13:57:02 rws Exp $
 .EH ''''
 .OH ''''
 .EF ''''
@@ -64,11 +64,10 @@ for 3D graphics and the XIE extension for imaging, that need to send
 long data lists in output commands.
 .LP
 This extension defines a mechanism for extending the length field
-beyond 16 bits.  The protocol representation is simple: if the normal
-16-bit length field of the protocol request is zero, then an
-additional 32-bit field containing the actual length (in 4-byte units)
-is inserted into the request, immediately following the 16-bit length
-field.
+beyond 16 bits.  If the normal 16-bit length field of the protocol
+request is zero, then an additional 32-bit field containing the actual
+length (in 4-byte units) is inserted into the request, immediately
+following the 16-bit length field.
 .LP
 For example, a normal
 .PN PolyLine
@@ -102,7 +101,7 @@ encoding is:
 	1			coordinate-mode
 		0	Origin
 		1	Previous
-	2	0		extended length
+	2	0		extended length flag
 	4	4+n		request length
 	4	DRAWABLE		drawable
 	4	GCONTEXT		gc
@@ -116,11 +115,16 @@ Requests
 .LP
 .PN "BigReqGetVersion"
 .LP
+.IP
+\fIclient-major-version\fP\^: CARD16
+.br
+\fIclient-minor-version\fP\^: CARD16
+.LP
    =>
 .IP
-\fImajorVersion\fP\^: CARD8
+\fIserver-major-version\fP\^: CARD16
 .br
-\fIminorVersion\fP\^: CARD16
+\fIserver-minor-version\fP\^: CARD16
 .IP
 This request is used to negotiate the version of the extension the
 server will use.  The client must execute this request before
@@ -161,6 +165,10 @@ request, in 4-byte units, that can be used in extended-length protocol
 requests.  This value will always be greater than the maximum-request-length
 returned in the connection setup information.
 .NH 1
+Events and Errors
+.LP
+No new events or errors are defined by this extension.
+.NH 1
 Encoding
 .LP
 Please refer to the X11 Protocol Encoding document as this document uses
@@ -177,9 +185,8 @@ The name of this extension is ``BIG-REQUESTS''.
 	1	CARD8		opcode
 	1	0		bigreq opcode
 	2	2		request length
-	1	CARD8		client major version
-	1			unused
-	2	CARD16		client minor version
+	2	CARD16		client-major-version
+	2	CARD16		client-minor-version
 .De
 .Ds 0
 .TA .2i .5i 1.5i 2.5i
@@ -187,11 +194,12 @@ The name of this extension is ``BIG-REQUESTS''.
 .R
  =>
  	1	1		Reply
-	1	CARD8		server major version
+	1			unused
 	2	CARD16		sequence number
 	4	0		length
-	2	CARD16		server minor version
-	22			unused
+	2	CARD16		server-major-version
+	2	CARD16		server-minor-version
+	20			unused
 .De
 .LP
 .Ds 0
@@ -233,7 +241,7 @@ C language binding
 It is desirable for core Xlib, and other extensions,
 to use this extension internally when necessary.
 It is also desirable to make the use of this extension as transparent as
-possible to the X client.  For example, if enabling of the extension was
+possible to the X client.  For example, if enabling of the extension were
 delayed until the first time it was needed, an application that used
 .PN XNextRequest
 to determine the sequence number of a request would no longer get the
@@ -276,13 +284,24 @@ Returns zero (0) if the specified display does not support this
 extension, otherwise returns the maximum-request-length (in 4-byte
 units) supported by the server through the extended-length encoding.
 .LP
-I propose this separate function because I am not sure of the
-consequences of changing the existing XMaxRequestSize function to return
-a larger value.  Are there good arguments on either side?
+I propose this separate function because I am worried about the
+consequences of changing the existing
+.PN XMaxRequestSize
+function to return a larger value.  For example, existing extension
+library code might use this function (rather than referencing an
+internal member of the
+.PN Display
+structure) to compute maximum protocol lengths.  The current X Test Suite,
+in one configuration, uses the function for this purpose.  This code would
+break if
+.PN XMaxRequestSize
+were changed to return a larger value.
 .LP
-If XMaxRequestSize were changed to return a larger value, it would
-have to return the extended maximum-request-length - 1, because existing
-applications can have computations like
+On the other hand, changing
+.PN XMaxRequestSize
+would eliminate the need to change some client code.
+However, it would have to return the extended maximum-request-length - 1,
+because existing applications can have computations like
 .RS
 ((XMaxRequestSize(dpy) << 2) - SIZEOF(xPolyArcReq)) / SIZEOF(xArc)
 .RE
@@ -292,5 +311,5 @@ by the extended length field.
 .NH 1
 Acknowledgements
 .LP
-Clive Feather (IXI) originated the idea of using a zero value to signal
-an extended-length encoding.
+Clive Feather (IXI) originated the extended-length encoding used in this
+extension proposal.
