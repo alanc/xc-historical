@@ -1,4 +1,4 @@
-/* $XConsortium: a2x.c,v 1.28 92/03/24 19:11:02 rws Exp $ */
+/* $XConsortium: a2x.c,v 1.29 92/03/25 09:49:22 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -34,6 +34,7 @@ Syntax of magic values in the input stream:
 ^T^Y<number>^T		move mouse <number> pixels vertically
 ^Texit^T		exit the program
 ^Tdbg^T			print debugging info
+^T.a2x^T		re-read undo file
 ^T<hexnumber>^T		press and release key with numeric keysym <hexnumber>
 ^Tname^T		press and release key with keysym named <name>
 
@@ -76,23 +77,16 @@ int (*olderror)();
 int (*oldioerror)();
 char history[4096];
 int history_end = 0;
-typedef struct {
+char *undofile = NULL;
+typedef struct _undo {
+    struct _undo *next;
     int bscount;
     char *seq;
     int seq_len;
     char *undo;
     int undo_len;
 } undo;
-undo no_undos[] = {
-{
-    0,
-    0,
-    0,
-    0,
-    0
-}
-};
-undo *undos = no_undos;
+undo *undos[256];
 int curbscount = 0;
 Bool in_control_seq = False;
 
@@ -528,16 +522,17 @@ undo_stroke()
 }
 
 void
-do_backspace(c)
-    char c;
+do_backspace()
 {
     undo *u;
     Bool partial = False;
 
     curbscount++;
     while (curbscount) {
-	if (!in_control_seq) {
-	    for (u = undos; u->bscount; u++) {
+	if (!in_control_seq && history_end) {
+	    for (u = undos[((unsigned char *)history)[history_end-1]];
+		 u;
+		 u = u->next) {
 		if (history_end >= u->seq_len &&
 		    !bcmp(history+history_end-u->seq_len, u->seq,
 			  u->seq_len)) {
@@ -639,41 +634,60 @@ mark_controls(s, len)
 }
 
 void
-get_undofile(undofile)
-    char *undofile;
+free_undo(up)
+    undo *up;
+{
+    free(up->seq);
+    free(up->undo);
+    free((char *)up);
+}
+
+void
+get_undofile()
 {
     FILE *fp;
     char buf[1024];
-    int i, len;
-    undo *up;
-    int idx;
+    int i;
+    undo *up, **upp;
+    int line;
 
     fp = fopen(undofile, "r");
     if (!fp)
 	return;
-    up = (undo *)malloc(sizeof(undo));
-    idx = 0;
-    while (fgets(buf, sizeof(buf), fp)) {
+    for (i = 0; i < sizeof(undos); i++) {
+	while (up = undos[i]) {
+	    undos[i] = up->next;
+	    free_undo(up);
+	}
+    }
+    line = 1;
+    for (; fgets(buf, sizeof(buf), fp); line++) {
 	if (buf[0] == '\n' || buf[0] == '!')
 	    continue;
+	up = (undo *)malloc(sizeof(undo));
+	up->seq = NULL;
+	up->undo = NULL;
 	i = 0;
-	if (!(up[idx].seq = parse_string(buf, &i, &up[idx].seq_len, ':')) ||
-	    !(up[idx].undo = parse_string(buf, &i, &up[idx].undo_len, '\n'))) {
-	    fprintf(stderr, "bad sequence, line %d\n", idx + 1);
+	if (!(up->seq = parse_string(buf, &i, &up->seq_len, ':')) ||
+	    !(up->undo = parse_string(buf, &i, &up->undo_len, '\n'))) {
+	    fprintf(stderr, "bad sequence, line %d\n", line);
+	    free_undo(up);
 	    continue;
 	}
-	mark_controls(up[idx].seq, up[idx].seq_len);
-	up[idx].bscount = bscount(up[idx].seq, up[idx].seq_len);
-	if (!up[idx].bscount) {
-	    fprintf(stderr, "bad sequence, no bs count, line %d\n", idx + 1);
+	mark_controls(up->seq, up->seq_len);
+	up->bscount = bscount(up->seq, up->seq_len);
+	if (!up->bscount) {
+	    free_undo(up);
+	    fprintf(stderr, "bad sequence, no bs count, line %d\n", line);
 	    continue;
 	}
-	idx++;
-	up = (undo *)realloc((char *)up, (idx + 1) * sizeof(undo));
+	i = ((unsigned char *)up->seq)[up->seq_len - 1];
+	for (upp = &undos[i]; *upp; upp = &(*upp)->next)
+	    ;
+	*upp = up;
+	up->next = NULL;
     }
-    up[idx].bscount = 0;
     fclose(fp);
-    undos = up;
 }
 
 void
@@ -722,7 +736,7 @@ process(buf, n, len)
     for (i = 0; i < n; i++) {
 	if (len) {
 	    if (buf[i] == '\b') {
-		do_backspace(buf[i]);
+		do_backspace();
 		continue;
 	    } else if (curbscount) {
 		while (curbscount)
@@ -803,6 +817,8 @@ process(buf, n, len)
 		quit(0);
 	    else if (!strcmp(buf+i, "dbg"))
 		debug_state();
+	    else if (!strcmp(buf+i, ".a2x"))
+		get_undofile();
 	    else if ((sym = strtoul(buf+i, &endptr, 16)) && !*endptr)
 		do_keysym(sym);
 	    else if (sym = XStringToKeysym(buf+i))
@@ -827,10 +843,10 @@ main(argc, argv)
     Bool noecho = True;
     char *dname = NULL;
     char buf[1024];
+    char fbuf[1024];
     XEvent ev;
     int mask[10];
     struct timeval timeout;
-    char *undofile = NULL;
 
     timeout.tv_sec = 0;
     timeout.tv_usec = 1000 * 100;
@@ -873,11 +889,11 @@ main(argc, argv)
 	exit(1);
     }	
     if (!undofile) {
-	strcpy(buf, getenv("HOME"));
-	strcat(buf, "/.a2x");
-	undofile = buf;
+	strcpy(fbuf, getenv("HOME"));
+	strcat(fbuf, "/.a2x");
+	undofile = fbuf;
     }
-    get_undofile(undofile);
+    get_undofile();
     signal(SIGPIPE, SIG_IGN);
     if (tcgetattr(0, &term) >= 0) {
 	istty = True;
