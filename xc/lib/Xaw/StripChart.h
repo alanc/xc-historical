@@ -1,7 +1,4 @@
-/*
-* $XConsortium: StripChart.h,v 1.3 90/10/22 14:37:17 converse Exp $
-*/
-
+/* $XConsortium: StripChart.h,v 1.4 91/05/04 18:59:07 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -36,21 +33,36 @@ SOFTWARE.
  *
  ***********************************************************************/
 
-/* Parameters:
+/* StripChart resources:
 
  Name		     Class		RepType		Default Value
  ----		     -----		-------		-------------
+ accelerators	     Accelerators	AcceleratorTable NULL
+ ancestorSensitive   AncestorSensitive	Boolean		True 
  background	     Background		Pixel		XtDefaultBackground
- border		     BorderColor	Pixel		XtDefaultForeground
+ backgroundPixmap    Pixmap		Pixmap		XtUnspecifiedPixmap
+ borderColor	     BorderColor	Pixel		XtDefaultForeground
+ borderPixmap	     Pixmap		Pixmap		XtUnspecifiedPixmap
  borderWidth	     BorderWidth	Dimension	1
- destroyCallback     Callback		Pointer		NULL
+ colormap	     Colormap		Colormap	parent's colormap
+ cursor		     Cursor		Cursor		None
+ cursorName	     Cursor		String		NULL
+ depth		     Depth		int		parent's depth
+ destroyCallback     Callback		XtCallbackList	NULL
  foreground	     Foreground		Pixel		XtDefaultForeground
- getValue	     Callback		Callback	NULL
+ getValue	     Callback		XtCallbackList	NULL
  height		     Height		Dimension	120
- highlight	     Foreground		Pixel		Black
+ highlight	     Foreground		Pixel		XtDefaultForeground
+ insensitiveBorder   Insensitive	Pixmap		GreyPixmap
+ jumpScroll	     JumpScroll		int		1/2 width
  mappedWhenManaged   MappedWhenManaged	Boolean		True
  minScale	     Scale		int		1
- update		     Interval		int		5 (seconds)
+ pointerColor	     Foreground		Pixel		XtDefaultForeground
+ pointerColorBackground Background	Pixel		XtDefaultBackground
+ screen		     Screen		Screen		parent's screen
+ sensitive	     Sensitive		Boolean		True
+ translations	     Translations	TranslationTable NULL
+ update		     Interval		int		10 (seconds)
  width		     Width		Dimension	120
  x		     Position		Position	0
  y		     Position		Position	0
