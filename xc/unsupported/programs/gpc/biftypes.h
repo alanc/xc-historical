@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: biftypes.h,v 5.2 91/02/16 10:07:03 rws Exp $ */
 
 /*
  */
@@ -91,7 +91,7 @@ typedef char *StringType;
 
 #include "bifbuild.h"
 
-#include "phigs.h"
+#include <phigs/phigs.h>
 
 /* PARSER OUTPUT TYPES */
 #define BIF_REAL double
