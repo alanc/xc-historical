@@ -1,4 +1,4 @@
-/* $XConsortium: XInput.h,v 1.19 94/02/21 11:02:57 rws Exp $ */
+/* $XConsortium: XInput.h,v 1.20 94/02/21 11:55:59 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -1058,7 +1058,6 @@ extern int	XFreeDeviceList(
     XDeviceInfo*	/* list */
 #endif
 );
-/* REMIND XFreeLst.c is not needed */
 
 extern XDevice	*XOpenDevice(
 #if NeedFunctionPrototypes
