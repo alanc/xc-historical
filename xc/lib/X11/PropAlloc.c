@@ -47,8 +47,3 @@ XIconSize *XAllocIconSize ()
 }
 
 
-XWMState *XAllocWMState ()
-{
-    return ((XWMState *) Xcalloc (1, (unsigned) sizeof (XWMState)));
-}
-
