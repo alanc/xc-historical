@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xauth.h,v 1.12 91/01/09 17:16:37 rws Exp $
+ * $XConsortium: iceauth.h,v 1.1 93/12/30 11:58:26 mor Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -26,6 +26,7 @@
 #include <stdio.h>
 #include <X11/Xos.h>
 #include <X11/ICE/ICElib.h>
+#include <X11/ICE/ICEutil.h>
 #include <X11/Xfuncs.h>
 
 #ifndef True
