@@ -85,13 +85,9 @@ bug mentioned above.
 .BI \-e " program \[arguments \.\.\.\]"
 This option specifies the program (and its command line arguments) to be
 run in the \fIxterm\fP window.  It also sets the window title and icon
-name to be the basename of the program being executed.  If this option
-is not given, the user's shell will be started.  \fBThis must be the last 
+name to be the basename of the program being executed if neither \fI-T\fP
+nor \fI-n\fP are given on the command line.  \fBThis must be the last 
 option on the command line.\fP
-.TP 8
-.BI \-E " program \[arguments \.\.\.\]"
-This option is the same as \fI-e\fP except that it does not set the window 
-title or icon name.
 .TP 8
 .BI \-fb " font"
 This option specifies a font to be used when displaying bold text.  
@@ -342,11 +338,6 @@ in \fI/etc/utmp\fP.
 .B "sunFunctionKeys (\fPclass\fB SunFunctionKeys)"
 Specifies whether or not Sun Function Key escape codes should be generated for
 function keys instead of standard escape sequences.
-.TP 8
-.B "forceTitleStrings (\fPclass\fB ForceTitleStrings)"
-Specifies whether or not a command name given with \fI\-e\fP should override
-the window title and icon strings.  This is true by default, but is
-automatically set to false for \fI\-E\fP.
 .sp
 .PP
 The following resources are specified as part of the ``vt100'' widget (class
