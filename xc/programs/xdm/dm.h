@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: dm.h,v 1.29 90/03/05 11:50:18 keith Exp $
+ * $XConsortium: dm.h,v 1.30 90/03/05 18:57:50 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -36,13 +36,15 @@
 #endif /* pegasus */
 
 #ifdef SYSV
-# define waitCode(w)	(((w) >> 8) & 0xff)
+# define waitCode(w)	(((w) >> 8) & 0x7f)
 # define waitSig(w)	((w) & 0xff)
+# define waitCore(w)	(((w) >> 15) & 0x01)
 typedef int		waitType;
 #else
 # include	<sys/wait.h>
 # define waitCode(w)	((w).w_T.w_Retcode)
 # define waitSig(w)	((w).w_T.w_Termsig)
+# define waitCore(w)	((w).w_T.w_Coredump)
 typedef union wait	waitType;
 #endif
 
@@ -51,7 +53,8 @@ typedef union wait	waitType;
 #include	<netinet/in.h>
 #endif
 
-# define waitVal(w)	(waitSig(w) ? (waitSig(w) * 256 + 1) : waitCode (w))
+# define waitCompose(sig,core,code) ((sig) * 256 + (core) * 128 + (code))
+# define waitVal(w)	waitCompose(waitSig(w), waitCore(w), waitCode(w))
 
 typedef enum displayStatus { running, notRunning, zombie, phoenix } DisplayStatus;
 
@@ -96,13 +99,43 @@ typedef enum fileState { NewEntry, OldEntry, MissingEntry } FileState;
 
 struct display {
 	struct display	*next;
+	/* Xservers file / XDMCP information */
 	char		*name;		/* DISPLAY name */
 	char		*class;		/* display class (may be NULL) */
+	DisplayType	displayType;	/* method to handle with */
 	char		**argv;		/* program name and arguments */
+
+	/* display state */
 	DisplayStatus	status;		/* current status */
 	int		pid;		/* process id of child */
 	int		serverPid;	/* process id of server (-1 if none) */
 	FileState	state;		/* state during HUP processing */
+	int		startTries;	/* current start try */
+
+	/* XDMCP state */
+	CARD32		sessionID;	/* ID of active session */
+	struct sockaddr	*peer;		/* sockaddr of display peer */
+	int		peerlen;	/* length of peer name */
+	struct sockaddr	*from;		/* XDMCP port of display */
+	int		fromlen;
+	CARD16		displayNumber;
+
+	/* server management resources */
+	int		serverAttempts;	/* number of attempts at running X */
+	int		openDelay;	/* open delay time */
+	int		openRepeat;	/* open attempts to make */
+	int		openTimeout;	/* abort open attempt timeout */
+	int		startAttempts;	/* number of attempts at starting */
+	int		pingInterval;	/* interval between XSync */
+	int		pingTimeout;	/* timeout for XSync */
+	int		terminateServer;/* restart for each session */
+	int		grabServer;	/* keep server grabbed for Login */
+	int		grabTimeout;	/* time to wait for grab */
+	int		resetSignal;	/* signal to reset server */
+	int		termSignal;	/* signal to terminate server */
+	int		resetForAuth;	/* server reads auth file at reset */
+
+	/* session resources */
 	char		*resources;	/* resource file */
 	char		*xrdb;		/* xrdb program */
 	char		*cpp;		/* cpp program */
@@ -113,33 +146,17 @@ struct display {
 	char		*systemPath;	/* path set for startup/reset */
 	char		*systemShell;	/* interpreter for startup/reset */
 	char		*failsafeClient;/* a client to start when the session fails */
+
+	/* authorization resources */
 	int		authorize;	/* enable authorization */
-	Xauth		*authorization;	/* authorization data */
-	char		*clientAuthFile;/* client specified auth file */
-	char		*authFile;	/* file to store authorization in */
-	char		*userAuthDir;	/* backup directory for tickets */
 	char		*authName;	/* authorization protocol name */
 	unsigned short	authNameLen;	/* authorization protocol name len */
-	int		serverAttempts;	/* number of attempts at running X */
-	int		openDelay;	/* open delay time */
-	int		openRepeat;	/* open attempts to make */
-	int		openTimeout;	/* abort open attempt timeout */
-	int		startAttempts;	/* number of attempts at starting */
-	int		startTries;	/* current start try */
-	int		pingInterval;	/* interval between XSync */
-	int		pingTimeout;	/* timeout for XSync */
-	int		terminateServer;/* restart for each session */
-	int		grabServer;	/* keep server grabbed for Login */
-	int		grabTimeout;	/* time to wait for grab */
-	int		dontHUPServer;	/* don't send SIGHUP for reset */
-	int		resetForAuth;	/* server reads auth file at reset */
-	DisplayType	displayType;	/* method to handle with */
-	CARD32		sessionID;	/* ID of active session */
-	struct sockaddr	*peer;		/* sockaddr of display peer */
-	int		peerlen;	/* length of peer name */
-	struct sockaddr	*from;		/* XDMCP port of display */
-	int		fromlen;
-	CARD16		displayNumber;
+	char		*clientAuthFile;/* client specified auth file */
+	char		*userAuthDir;	/* backup directory for tickets */
+
+	/* information potentially derived from resources */
+	Xauth		*authorization;	/* authorization data */
+	char		*authFile;	/* file to store authorization in */
 };
 
 #define PROTO_TIMEOUT	(30 * 60)   /* 30 minutes should be long enough */
