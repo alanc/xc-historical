@@ -1,5 +1,5 @@
 /*
- * $XConsortium: viewfuncs.c,v 2.18 89/10/06 15:04:15 converse Exp $
+ * $XConsortium: viewfuncs.c,v 2.19 89/12/16 03:33:58 converse Exp $
  *
  *
  *		       COPYRIGHT 1987, 1989
@@ -251,3 +251,20 @@ void XmhPrintView(w, event, params, num_params)
     Scrn scrn = ScrnFromWidget(w);
     DoPrintView(w, (XtPointer) scrn, (XtPointer) NULL);
 }
+
+
+/*ARGSUSED*/
+void XmhViewMarkDelete(w, event, params, num_params)
+    Widget	w;
+    XEvent	*event;
+    String	*params;
+    Cardinal	*num_params;
+{
+    Scrn scrn = ScrnFromWidget(w);
+    Msg		msg;
+
+    if (scrn->msg == NULL) return;
+    MsgSetFate(scrn->msg, Fdelete, (Toc)NULL);
+}
+
+
