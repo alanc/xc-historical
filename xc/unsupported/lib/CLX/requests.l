@@ -559,7 +559,6 @@
 	   (type (or null event-mask) event-mask)
 	   (type boolean propagate-p)
 	   (type (or null display) display)
-	   (special *event-send-vector*)
 	   (dynamic-extent args))
   (unless event-mask (setq event-mask 0))
   (unless display (setq display (window-display window)))
