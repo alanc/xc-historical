@@ -1,7 +1,7 @@
 /*
  * Xau - X Authorization Database Library
  *
- * $XConsortium: AuGetAddr.c,v 1.1 88/11/22 15:27:20 jim Exp $
+ * $XConsortium: AuGetAddr.c,v 1.2 88/12/08 16:40:16 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -19,6 +19,7 @@
  */
 
 # include "Xauth.h"
+# include <sys/file.h>
 
 static
 binaryEqual (a, b, len)
@@ -49,6 +50,8 @@ char	*name;
 
     auth_name = XauFileName ();
     if (!auth_name)
+	return 0;
+    if (access (auth_name, R_OK) != 0)		/* checks REAL id */
 	return 0;
     auth_file = fopen (auth_name, "r");
     if (!auth_file)
