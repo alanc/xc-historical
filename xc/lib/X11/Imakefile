@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.125 91/07/26 13:28:52 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.126 91/09/09 14:47:13 rws Exp $
 #define DoNormalLib NormalLibX
 #define DoSharedLib SharedLibX
 #define DoDebugLib DebugLibX
@@ -23,6 +23,9 @@ XCOMM $XConsortium: Imakefile,v 1.125 91/07/26 13:28:52 rws Exp $
 #endif
 #endif
 
+#ifdef MacIIArchitecture
+XBSDLIB = /**/
+#endif
 #if Malloc0ReturnsNull
         DEFINES = -DMALLOC_0_RETURNS_NULL
 #endif
