@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbbitblt.c,v 1.3 89/08/23 00:17:28 keith Exp $ */
+/* $XConsortium: mfbbitblt.c,v 5.7 89/08/23 20:53:57 keith Exp $ */
 #include "X.h"
 #include "Xprotostr.h"
 
@@ -812,7 +812,7 @@ DDXPointPtr pptSrc;
 			    }
 			    nl = nlMiddle;
 
-#ifdef FAST_CONSTANT_OFSET_MODE
+#ifdef FAST_CONSTANT_OFFSET_MODE
 			    bits1 = bits;
 			    psrc -= nl & (UNROLL - 1);
 			    pdst -= nl & (UNROLL - 1);
