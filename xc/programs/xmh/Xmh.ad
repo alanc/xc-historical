@@ -75,7 +75,19 @@ Xmh.error.Dialog.OK.Label:	Acknowledged
 <Btn3Up>:XtMenuPopdown()XmhPushSequence()notify()XmhAddToSequence()XmhPopSequence()unhighlight()\n\
 <BtnUp>:XtMenuPopdown()notify()unhighlight()\n
 
+*sequenceMenu.baseTranslations: #override\n\
+<Btn2Up>:XtMenuPopdown()notify()XmhOpenSequence()unhighlight()\n\
+<Btn3Up>:XtMenuPopdown()XmhPushSequence()notify()XmhAddToSequence()XmhPopSequence()unhighlight()\n\
+<BtnUp>:XtMenuPopdown()notify()unhighlight()\n
+
 *folders*MenuButton.Translations:#override\n\
+<BtnDown>:set()XmhPopupFolderMenu()\n\
+<Btn2Up>:XmhSetCurrentFolder()XmhOpenFolder()reset()\n\
+<Btn3Up>:XmhPushFolder()XmhSetCurrentFolder()XmhMarkMove()XmhPopFolder()reset()\n\
+<BtnUp>:XmhSetCurrentFolder()reset()\n\
+<LeaveWindow>:reset()XmhLeaveFolderButton()\n
+
+*folders*MenuButton.baseTranslations:#override\n\
 <BtnDown>:set()XmhPopupFolderMenu()\n\
 <Btn2Up>:XmhSetCurrentFolder()XmhOpenFolder()reset()\n\
 <Btn3Up>:XmhPushFolder()XmhSetCurrentFolder()XmhMarkMove()XmhPopFolder()reset()\n\
@@ -87,7 +99,18 @@ Xmh.error.Dialog.OK.Label:	Acknowledged
 <Btn3Up>:XtMenuPopdown()XmhPushFolder()notify()XmhMarkMove()XmhPopFolder()unhighlight()\n\
 <BtnUp>:XtMenuPopdown()notify()unhighlight()\n
 
+*folders*SimpleMenu.baseTranslations:#override\n\
+<Btn2Up>:XtMenuPopdown()notify()XmhOpenFolder()unhighlight()\n\
+<Btn3Up>:XtMenuPopdown()XmhPushFolder()notify()XmhMarkMove()XmhPopFolder()unhighlight()\n\
+<BtnUp>:XtMenuPopdown()notify()unhighlight()\n
+
 *toc.Translations: #override\n\
+	<Btn2Down>: select-start()\n\
+	<Btn2Up>:select-end(PRIMARY)XmhViewNextMessage()\n\
+	Ctrl<Key>R:	no-op(RingBell)\n\
+	Ctrl<Key>S:	no-op(RingBell)\n
+
+*toc.baseTranslations: #override\n\
 	<Btn2Down>: select-start()\n\
 	<Btn2Up>:select-end(PRIMARY)XmhViewNextMessage()\n\
 	Ctrl<Key>R:	no-op(RingBell)\n\
