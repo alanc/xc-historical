@@ -1,4 +1,4 @@
-/* $XConsortium: FSlib.h,v 1.6 91/07/16 20:32:18 keith Exp $ */
+/* $XConsortium: FSlib.h,v 1.7 92/11/18 21:31:30 gildea Exp $ */
 /*
  * Font server C interface library
  */
@@ -127,6 +127,7 @@ typedef struct _FSServer {
     unsigned long scratch_length;
     int         (*synchandler) ();
     unsigned long flags;
+    struct _XtransConnInfo *trans_conn; /* transport connection object */
 }           FSServer;
 
 typedef struct {
