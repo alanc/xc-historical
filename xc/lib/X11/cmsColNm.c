@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsColNm.c,v 1.10 91/05/13 23:18:47 rws Exp $" */
+/* $XConsortium: XcmsColNm.c,v 1.11 91/05/13 23:53:18 rws Exp $" */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -55,7 +55,7 @@ extern void qsort();
 extern char *bsearch();
 #endif
 extern XcmsColorSpace **_XcmsDIColorSpaces;
-
+static Status LoadColornameDB();
 
 /*
  *      LOCAL DEFINES
