@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.136 90/03/15 14:22:55 jim Exp $
+ * $XConsortium: events.c,v 1.137 90/03/15 16:59:48 jim Exp $
  *
  * twm event handling
  *
@@ -38,7 +38,7 @@
 
 #if !defined(lint) && !defined(SABER)
 static char RCSinfo[]=
-"$XConsortium: events.c,v 1.136 90/03/15 14:22:55 jim Exp $";
+"$XConsortium: events.c,v 1.137 90/03/15 16:59:48 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -1525,6 +1525,7 @@ HandleButtonRelease()
     {
 	XUngrabPointer(dpy, CurrentTime);
 	XUngrabServer(dpy);
+	XFlush(dpy);
 	EventHandler[EnterNotify] = HandleEnterNotify;
 	EventHandler[LeaveNotify] = HandleLeaveNotify;
 	ButtonPressed = -1;

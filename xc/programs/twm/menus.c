@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.148 90/03/14 16:49:49 jim Exp $
+ * $XConsortium: menus.c,v 1.149 90/03/15 16:59:43 jim Exp $
  *
  * twm menu code
  *
@@ -38,7 +38,7 @@
 
 #if !defined(lint) && !defined(SABER)
 static char RCSinfo[] =
-"$XConsortium: menus.c,v 1.148 90/03/14 16:49:49 jim Exp $";
+"$XConsortium: menus.c,v 1.149 90/03/15 16:59:43 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -1694,6 +1694,11 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
 	break;
 
     case F_EXEC:
+	PopDownMenu();
+	if (!Scr->NoGrabServer) {
+	    XUngrabServer (dpy);
+	    XSync (dpy, 0);
+	}
 	Execute(action);
 	break;
 
