@@ -1,4 +1,4 @@
-/* $XConsortium: xsetdval.c,v 1.2 90/09/05 12:46:02 gms ic1C-80 $ */
+/* $XConsortium: xsetdval.c,v 1.1 91/02/22 15:34:21 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -113,15 +113,14 @@ ProcXSetDeviceValuators(client)
     if ((dev->grab) && !SameClient(dev->grab, client))
 	rep.status = AlreadyGrabbed;
     else
-	{
 	rep.status = SetDeviceValuators (client, dev, (int *) &stuff[1],
 	    stuff->first_valuator, stuff->num_valuators);
-	if (rep.status != Success)
-	    SendErrorToClient(client, IReqCode, X_SetDeviceValuators, 0, 
-		rep.status);
-	else
-	    WriteReplyToClient (client, sizeof (xSetDeviceValuatorsReply), &rep);
-	}
+
+    if (rep.status != Success && rep.status != AlreadyGrabbed)
+	SendErrorToClient(client, IReqCode, X_SetDeviceValuators, 0, 
+	    rep.status);
+    else
+	WriteReplyToClient (client, sizeof (xSetDeviceValuatorsReply), &rep);
 
     return Success;
     }
