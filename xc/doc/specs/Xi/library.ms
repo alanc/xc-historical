@@ -1,4 +1,4 @@
-.\" $XConsortium: library.ms,v 1.12 94/04/18 14:24:59 rws Exp $
+.\" $XConsortium: library.ms,v 1.13 94/04/27 20:45:22 gildea Exp $
 .\" Input Extension
 .EH ''''
 .OH ''''
@@ -1381,7 +1381,6 @@ the feedback:
 .IP \(bu 3n
 \fBaccelDenom\fP returns the threshold for the acceleration.
 .LP
-.LI
 \fBInteger\fP feedbacks are those capable of displaying integer numbers.  
 The minimum and maximum values that they can display are reported.
 .LP
