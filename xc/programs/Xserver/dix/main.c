@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: main.c,v 1.147 89/03/14 14:07:32 rws Exp $ */
+/* $XConsortium: main.c,v 1.148 89/03/18 16:21:04 rws Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -62,6 +62,8 @@ extern void DefineInitialRootWindow();
 extern void QueryMinMaxKeyCodes();
 extern Bool InitClientResources();
 static Bool CreateConnectionBlock();
+extern Bool CreateGCperDepthArray();
+extern Bool CreateDefaultStipple();
 
 PaddingInfo PixmapWidthPaddingInfo[33];
 int connBlockScreenStart;
@@ -205,13 +207,15 @@ main(argc, argv)
  	PixmapWidthPaddingInfo[1].padBytesLog2 = answer[j][k];
 
 	InitAtoms();
+	InitEvents();
 	InitOutput(&screenInfo, argc, argv);
 	if (screenInfo.numScreens < 1)
 	    FatalError("no screens found");
-	InitEvents();
 	InitExtensions(); 
 	InitInput(argc, argv);
-	InitAndStartDevices(argc, argv);
+	if (InitAndStartDevices(argc, argv) != Success)
+	    FatalError("failed to initialize core devices");
+        DefineInitialRootWindow(WindowTable[0]);
 
 	if (SetDefaultFontPath(defaultFontPath) != Success)
 	    ErrorF("failed to set default font path\n");
@@ -221,12 +225,6 @@ main(argc, argv)
 	    FatalError("could not open default cursor font '%s'",
 		       defaultCursorFont);
 
-	for (i=0; i<screenInfo.numScreens; i++) 
-	{
-	    if (!CreateRootWindow(i))
-		FatalError("could not create root window for all screens");
-	}
-        DefineInitialRootWindow(WindowTable[0]);
 	if (!CreateConnectionBlock())
 	    FatalError("could not create connection block info");
 
@@ -413,27 +411,27 @@ AddScreen(pfnInit, argc, argv)
     char **argv;
 {
 
-    int i = screenInfo.numScreens;
+    int i;
     int scanlinepad, format, depth, bitsPerPixel, j, k;
     ScreenPtr pScreen;
 #ifdef DEBUG
     void	(**jNI) ();
 #endif /* DEBUG */
 
-    if (screenInfo.numScreens == MAXSCREENS)
+    i = screenInfo.numScreens;
+    if (i == MAXSCREENS)
 	return -1;
 
     pScreen = (ScreenPtr) xalloc(sizeof(ScreenRec));
     if (!pScreen)
 	return -1;
-    screenInfo.screens[i] = pScreen;
+
 #ifdef DEBUG
     for (jNI = &pScreen->QueryBestSize; 
 	 jNI < (void (**) ()) &pScreen->SendGraphicsExpose;
 	 jNI++)
 	*jNI = NotImplemented;
 #endif /* DEBUG */
-
 
     /*
      * This loop gets run once for every Screen that gets added,
@@ -468,16 +466,23 @@ AddScreen(pfnInit, argc, argv)
     */ 
     pScreen->rgf = ~0L;  /* there are no scratch GCs yet*/
     pScreen->myNum = i;
-    if ((*pfnInit)(i, pScreen, argc, argv))
+    WindowTable[i] = NullWindow;
+    screenInfo.screens[i] = pScreen;
+    screenInfo.numScreens++;
+    if ((*pfnInit)(i, pScreen, argc, argv) &&
+	CreateRootWindow(i))
     {
-	screenInfo.numScreens++;
-        CreateGCperDepthArray(i);
-	CreateDefaultStipple(i);
+	if (CreateGCperDepth(i))
+	{
+	    if (CreateDefaultStipple(i))
+		return screenInfo.numScreens;
+	    FreeGCperDepth(i);
+	}
+	FreeResource(WindowTable[i]->wid, RC_NONE);
     }
-    else
-	xfree(pScreen);
-
-    return screenInfo.numScreens;
+    xfree(pScreen);
+    screenInfo.numScreens--;
+    return -1;
 }
 
 
