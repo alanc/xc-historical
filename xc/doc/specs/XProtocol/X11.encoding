@@ -732,7 +732,7 @@ STR
 .R
 .PN Length
 	1	0		Error
-	1	17		code
+	1	16		code
 	2	CARD16		sequence number
 	4			unused
 	2	CARD16		minor opcode
@@ -746,7 +746,7 @@ STR
 .R
 .PN Implementation
 	1	0		Error
-	1	18		code
+	1	17		code
 	2	CARD16		sequence number
 	4			unused
 	2	CARD16		minor opcode
