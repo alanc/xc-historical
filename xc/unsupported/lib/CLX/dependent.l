@@ -233,42 +233,93 @@
 
 )
 
-#+(and excl (not (or sun4 clx-little-endian)))
+#+excl
 (progn
   
   (defun aref-card16 (a i)
-    (sys:memref a 3 i :unsigned-word))
+    (declare (type buffer-bytes a)
+	     (type array-index i))
+    (declare-values card16)
+    (declare-buffun)
+    (the card16 (sys:memref a #.(comp::mdparam 'comp::md-svector-data0-adj) i
+			    :unsigned-word)))
   
   (defun aset-card16 (v a i)
-    (setf (sys:memref a 3 i :unsigned-word) v))
+    (declare (type card16 v)
+	     (type buffer-bytes a)
+	     (type array-index i))
+    (declare-buffun)
+    (setf (sys:memref a #.(comp::mdparam 'comp::md-svector-data0-adj) i
+		      :unsigned-word) v))
   
   (defun aref-int16 (a i)
-    (sys:memref a 3 i :signed-word))
+    (declare (type buffer-bytes a)
+	     (type array-index i))
+    (declare-values int16)
+    (declare-buffun)
+    (the int16 (sys:memref a #.(comp::mdparam 'comp::md-svector-data0-adj) i
+			   :signed-word)))
   
   (defun aset-int16 (v a i)
-    (setf (sys:memref a 3 i :signed-word) v))
+    (declare (type int16 v)
+	     (type buffer-bytes a)
+	     (type array-index i))
+    (declare-buffun)
+    (setf (sys:memref a #.(comp::mdparam 'comp::md-svector-data0-adj) i
+		      :signed-word) v))
   
   (defun aref-card32 (a i)
-    (sys:memref a 3 i :unsigned-long))
+    (declare (type buffer-bytes a)
+	     (type array-index i))
+    (declare-values card32)
+    (declare-buffun)
+    (the card32 (sys:memref a #.(comp::mdparam 'comp::md-svector-data0-adj) i
+			    :unsigned-long)))
     
   (defun aset-card32 (v a i)
-    (setf (sys:memref a 3 i :unsigned-long) v))
+    (declare (type card32 v)
+	     (type buffer-bytes a)
+	     (type array-index i))
+    (declare-buffun)
+    (setf (sys:memref a #.(comp::mdparam 'comp::md-svector-data0-adj) i
+		      :unsigned-long) v))
 
   (defun aref-int32 (a i)
-    (sys:memref a 3 i :signed-long))
+    (declare (type buffer-bytes a)
+	     (type array-index i))
+    (declare-values int32)
+    (declare-buffun)
+    (the int32 (sys:memref a #.(comp::mdparam 'comp::md-svector-data0-adj) i
+			   :signed-long)))
     
   (defun aset-int32 (v a i)
-    (setf (sys:memref a 3 i :signed-long) v))
+    (declare (type int32 v)
+	     (type buffer-bytes a)
+	     (type array-index i))
+    (declare-buffun)
+    (setf (sys:memref a #.(comp::mdparam 'comp::md-svector-data0-adj) i
+		      :signed-long) v))
 
   (defun aref-card29 (a i)
-    (the card29 (sys:memref a 3 i :unsigned-long)))
+    ;; Do I need to mask off a few bits here?  XXX
+    (declare (type buffer-bytes a)
+	     (type array-index i))
+    (declare-values card29)
+    (declare-buffun)
+    (the card29 (sys:memref a #.(comp::mdparam 'comp::md-svector-data0-adj) i
+			    :unsigned-long)))
 
   (defun aset-card29 (v a i)
-    (setf (sys:memref a 3 i :unsigned-long) v))
+    (declare (type card29 v)
+	     (type buffer-bytes a)
+	     (type array-index i))
+    (declare-buffun)
+    (setf (sys:memref a #.(comp::mdparam 'comp::md-svector-data0-adj) i
+		      :unsigned-long) v))
 
 )
 
-#-(or (and excl (not sun4)) clx-overlapping-arrays)
+#-(or excl clx-overlapping-arrays)
 (progn
 
 (defun aref-card16 (a i)
@@ -648,31 +699,13 @@
 (defmacro atomic-pop (list)
   `(sys:without-interrupts (pop ,list)))
 
-#+excl
-(defmacro atomic-push (item reference)
-  ;; 2.0 didn't have without-interrupts, but without-scheduling is good enough.
-  #+allegro
-  `(mp::without-interrupts (push ,item ,reference))
-  #-allegro
-  `(mp:without-scheduling (push ,item ,reference))
-  )
-
-#+excl
-(defmacro atomic-pop (list)
-  ;; 2.0 didn't have without-interrupts, but without-scheduling is good enough.
-  #+allegro
-  `(mp::without-interrupts (pop ,list))
-  #-allegro
-  `(mp:without-scheduling (pop ,list))
-  )
-
-;; If you don't have multi-processing, this is sufficient
-#-(or lispm excl)
+;; If you don't have multi-processing or push is atomic, this is sufficient
+#-lispm
 (defmacro atomic-push (item reference)
   `(push ,item ,reference))
 
-;; If you don't have multi-processing, this is sufficient
-#-(or lispm excl)
+;; If you don't have multi-processing or pop is atomic, this is sufficient
+#-lispm
 (defmacro atomic-pop (list)
   `(pop ,list))
 
@@ -780,12 +813,19 @@
 
 #+excl
 (defun open-x-stream (host display protocol)
-  (declare (ignore protocol)) ;; unused
-  (let ((fd (connect-to-server host display)))
+  (declare (ignore protocol));; unused
+  (let ((fd (connect-to-server host (+ *x-tcp-port* display)))
+	stm)
     (when (minusp fd)
       (error "Failed to connect to server: ~A ~D" host display))
-    (let ((stm (excl::make-buffered-byte-stream fd t t)))
-      stm)))
+    (setf stm (excl::make-vanilla-stream))
+    (excl::set-stream-fields
+     stm
+     excl::_sm_type :X-socket-stream
+     excl::_sm_flags #.(+ (comp:mdparam 'comp::md-stream-flag-input-p)
+			  (comp:mdparam 'comp::md-stream-flag-output-p))
+     excl::_sm_fio-name fd)
+    stm))
 
 ;;; buffer-read-default - read data from the X stream
 
@@ -811,6 +851,13 @@
     eofp))
 
 #+excl
+;;
+;; This is used so an 'eq' test may be used to find out whether or not we can
+;; safely throw this process out of the CLX read loop.
+;;
+(defparameter *read-whostate* "blocked on read from X server")
+
+#+excl
 (defun listen-fd (fd howmany)
   (declare (type fixnum fd howmany))
   (declare-buffun)
@@ -828,7 +875,7 @@
 	   (type (or null number) timeout))
   (declare-buffun)
   (let ((howmany (- end start))
-	(fd (excl::sm_fio-fn (display-input-stream display))))
+	(fd (excl::_sm_fio-name (display-input-stream display))))
     
     ;; If there are enough available just read them.
     (cond ((listen-fd fd howmany)
@@ -844,19 +891,24 @@
 		(progn
 		  (mp::mpwatchfor fd)
 		  (if (null timeout)
-		      (mp:process-wait "Reply from X server" 'listen-fd
-				       fd howmany)
- 		    ;; Otherwise we have a timeout to wait for.
+		      (mp:process-wait *read-whostate*
+				       #'listen-fd fd howmany)
+		    ;; Otherwise we have a timeout to wait for.
+		    ;; This doesn't work under 2.0.
+		    #+allegro
 		    (if (eql (mp:process-wait-with-timeout
-			       "Reply from X server" timeout 'listen-fd
-			       fd howmany)
+			      *read-whostate* timeout
+			      #'listen-fd fd howmany)
 			     'mp::with-timeout-internal)
-			(return-from buffer-read-default :timeout)))
- 		  ;; Now the read will succeed.
-		  (minusp (c-read-bytes fd vector start end)))
-	     (mp::mpunwatchfor fd)))
+			(return-from buffer-read-default :timeout))
+		    #-allegro
+		    (mp:process-wait *read-whostate*
+				     #'listen-fd fd howmany)))
+	     (mp::mpunwatchfor fd))
+	   ;; Now the read will succeed.
+	   (minusp (c-read-bytes fd vector start end)))
 	  
- 	  ;; Otherwise we have to handle timeouts by hand, and call a special
+	  ;; Otherwise we have to handle timeouts by hand, and call a special
  	  ;; c read function that will return on interrupt.
 	  (t
 	   (if (null timeout)
@@ -935,10 +987,10 @@
 	   (type display display)
 	   (type array-index start end))
   (declare-buffun)
-  (if (minusp (c-write-bytes (excl::sm_fio-fn (display-output-stream display))
+  (if (minusp (c-write-bytes (excl::_sm_fio-name (display-output-stream display))
 			     vector start end))
       (error "X write failed:  socket dead!")))
-	  
+
 ;;; WARNING:
 ;;;	CLX performance will be severely degraded if your lisp uses
 ;;;	write-byte to send all data to the X Window System server.
@@ -967,7 +1019,7 @@
   ;; The default buffer force-output function for use with common-lisp streams
   (declare (type display display))
   (if (minusp
-	(c-flush-bytes (excl::sm_fio-fn (display-output-stream display))))
+	(c-flush-bytes (excl::_sm_fio-name (display-output-stream display))))
       (error "X write failed:  socket dead!")))
 
 #-excl
@@ -978,6 +1030,18 @@
 
 ;;; buffer-close-default - close the X stream
 
+
+#+excl
+(defun buffer-close-default (display &key abort)
+  ;; The default buffer close function for use with common-lisp streams
+  (declare (type display display))
+  (declare-buffun)
+  (let ((stream (display-output-stream display)))
+    (excl::filesys-checking-close (excl::_sm_fio-name stream))
+    (setf (excl::sm_flags stream) (logior (excl::sm_flags stream) #.(comp::mdparam 'comp::md-stream-flag-closed)))
+    (excl::st-close-down-stream stream)))
+
+#-excl
 (defun buffer-close-default (display &key abort)
   ;; The default buffer close function for use with common-lisp streams
   (declare (type display display))
@@ -1026,13 +1090,43 @@
 	   (type array-index start1 end1 start2))
   (sys:copy-array-portion buf2 start2 (length buf2) buf1 start1 end1))
 
-#+(and clx-overlapping-arrays (not lispm))
+#+excl
+(defun buffer-replace (target-sequence source-sequence target-start
+				       target-end &optional (source-start 0))
+  (declare (type buffer-bytes target-sequence source-sequence)
+	   (type array-index target-start target-end source-start)
+	   (optimize (speed 3) (safety 0)))
+  
+  (let ((source-end (length source-sequence)))
+    (declare (type array-index source-end))
+    
+    (excl::if* (and (eq target-sequence source-sequence)
+		    (> target-start source-start))
+       then (let ((nelts (min (- target-end target-start)
+			      (- source-end source-start))))
+	      (do ((target-index (+ target-start nelts -1) (1- target-index))
+		   (source-index (+ source-start nelts -1) (1- source-index)))
+		  ((= target-index (1- target-start)) target-sequence)
+		(declare (type array-index target-index source-index))
+		
+		(setf (aref target-sequence target-index)
+		  (aref source-sequence source-index))))
+       else (do ((target-index target-start (1+ target-index))
+		 (source-index source-start (1+ source-index)))
+		((or (= target-index target-end) (= source-index source-end))
+		 target-sequence)
+	      (declare (type array-index target-index source-index))
+
+	      (setf (aref target-sequence target-index)
+		(aref source-sequence source-index))))))
+
+#+(and clx-overlapping-arrays (not (or lispm excl)))
 (defun buffer-replace (buf1 buf2 start1 end1 &optional (start2 0))
   (declare (type vector buf1 buf2)
 	   (type array-index start1 end1 start2))
   (replace buf1 buf2 :start1 start1 :end1 end1 :start2 start2))
 
-#-(or lispm clx-overlapping-arrays)
+#-(or lispm excl clx-overlapping-arrays)
 (defun buffer-replace (buf1 buf2 start1 end1 &optional (start2 0))
   (declare (type buffer-bytes buf1 buf2)
 	   (type array-index start1 end1 start2))
