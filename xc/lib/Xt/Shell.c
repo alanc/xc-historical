@@ -1,4 +1,4 @@
-/* $XConsortium: Shell.c,v 1.142 93/10/15 15:04:04 kaleb Exp $ */
+/* $XConsortium: Shell.c,v 1.143 94/01/18 19:47:46 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -897,8 +897,9 @@ static void ApplicationInitialize(req, new, args, num_args)
     /* copy the argv if passed */
     if (w->application.argc > 0) {
 	int i = w->application.argc;
-	char **argv = (char**)XtMalloc( (unsigned)i*sizeof(char*) );
+	char **argv = (char**)XtMalloc(((unsigned)i + 1) * sizeof(char*));
 	char **argp = w->application.argv + i;
+	argv[i] = NULL;
 	while (--i >= 0) {
 	    argv[i] = *--argp;
 	}
@@ -2061,7 +2062,8 @@ static Boolean ApplicationSetValues(current, request, new, args, num_args)
 	if (nw->application.argc > 0) {
 	    int i = nw->application.argc;
 	    char **argp = nw->application.argv + i;
-	    char **argv = (char **) XtMalloc((unsigned) i * sizeof(char *));
+	    char **argv = (char **) XtMalloc(((unsigned)i+1) * sizeof(char *));
+	    argv[i] = NULL;
 	    while (--i >= 0)
 		argv[i] = *--argp;
 	    nw->application.argv = argv;
