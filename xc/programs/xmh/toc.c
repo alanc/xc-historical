@@ -1,6 +1,6 @@
 #if !defined(lint) && !defined(SABER)
 static char rcs_id[] = 
-    "$XConsortium: toc.c,v 2.20 89/05/31 10:27:22 swick Exp $";
+    "$XConsortium: toc.c,v 2.21 89/06/28 16:04:22 converse Exp $";
 #endif
 /*
  *			  COPYRIGHT 1987
@@ -310,7 +310,7 @@ Scrn scrn;
 	TUResetTocLabel(scrn);
 	StoreWindowName(scrn, toc->foldername);
 	TURedisplayToc(scrn);
-	SetCurFolderName(scrn, toc->foldername);
+	SetCurrentFolderName(scrn, toc->foldername);
 	EnableProperButtons(scrn);
     }
 }

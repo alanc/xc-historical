@@ -1,5 +1,5 @@
 /*
- * $XConsortium: externs.h,v 2.10 88/09/06 17:23:15 jim Exp $
+ * $XConsortium: externs.h,v 2.11 89/05/11 19:26:54 converse Exp $
  */
 
 /*
@@ -77,3 +77,9 @@ extern void OpenSequence();
 
 extern int GetWidth();
 extern int GetHeight();
+
+extern char *GetCurrentFolderName();
+extern void SetCurrentFolderName();
+extern char *IsSubFolder();
+extern char *GetParentFolderName();
+extern char *GetSubFolderName();

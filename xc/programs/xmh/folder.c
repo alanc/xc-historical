@@ -1,7 +1,7 @@
 #if !defined(lint) && !defined(SABER)
 static char rcs_id[] =
-    "$XConsortium: folder.c,v 1.1 89/06/27 14:29:03 converse Exp $";
-#endif lint
+    "$XConsortium: folder.c,v 2.9 89/06/28 16:19:23 converse Exp $";
+#endif
 /*
  *			  COPYRIGHT 1987
  *		   DIGITAL EQUIPMENT CORPORATION
@@ -40,7 +40,7 @@ char *GetCurrentFolderName(scrn)
 }
 
 
-void SetCurFolderName(scrn, foldername)
+void SetCurrentFolderName(scrn, foldername)
     Scrn	scrn;
     char	*foldername;
 {
@@ -208,13 +208,10 @@ Scrn scrn;
 	if (scrnList[i]->folderbuttons) {
 	    if (IsSubFolder(foldername)) {
 		char *parentfolder = GetParentFolderName(foldername);
-		char *subfolder = GetSubFolderName(foldername);
-		
 		BBoxDeleteMenuButtonEntry
 		    (BBoxFindButtonNamed(scrnList[i]->folderbuttons,
-					 parentfolder), subfolder);
+					 parentfolder), foldername);
 		XtFree(parentfolder);
-		XtFree(subfolder);
 	    }
 	    else
 		BBoxDeleteButton(BBoxFindButtonNamed
