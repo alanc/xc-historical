@@ -1,5 +1,5 @@
 /*
- *	$Header: misc.c,v 1.11 88/02/18 12:10:05 jim Exp $
+ *	$Header: misc.c,v 1.12 88/02/20 15:30:21 swick Exp $
  */
 
 
@@ -53,7 +53,7 @@ extern void perror();
 extern void abort();
 
 #ifndef lint
-static char rcs_id[] = "$Header: misc.c,v 1.11 88/02/18 12:10:05 jim Exp $";
+static char rcs_id[] = "$Header: misc.c,v 1.12 88/02/20 15:30:21 swick Exp $";
 #endif	/* lint */
 
 xevents()
@@ -829,13 +829,14 @@ void set_vt_visibility (on)
     register TScreen *screen = &term->screen;
 
     if (on) {
-	if (!screen->Vshow && (VWindow (screen) || VTInit())) {
-	    XMapWindow (screen->display, VShellWindow);
+	if (!screen->Vshow && term) {
+	    VTInit ();
+	    XtMapWidget (term->core.parent);
 	    screen->Vshow = TRUE;
 	}
     } else {
-	if (screen->Vshow && VWindow (screen)) {
-	    XUnmapWindow (screen->display, VShellWindow);
+	if (screen->Vshow && term) {
+	    XtUnmapWidget (term->core.parent);
 	    screen->Vshow = FALSE;
 	}
     }
@@ -848,13 +849,14 @@ void set_tek_visibility (on)
     register TScreen *screen = &term->screen;
 
     if (on) {
-	if (!screen->Tshow && (TWindow (screen) || TekInit())) {
-	    XMapWindow (screen->display, TShellWindow);
+	if (!screen->Tshow && (tekWidget || TekInit())) {
+	    XtRealizeWidget (tekWidget->core.parent);
+	    XtMapWidget (tekWidget->core.parent);
 	    screen->Tshow = TRUE;
 	}
     } else {
-	if (screen->Tshow && TWindow (screen)) {
-	    XUnmapWindow (screen->display, TShellWindow);
+	if (screen->Tshow && tekWidget) {
+	    XtUnmapWidget (tekWidget->core.parent);
 	    screen->Tshow = FALSE;
 	}
     }
