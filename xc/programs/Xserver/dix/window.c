@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: window.c,v 1.193 88/01/24 13:13:53 rws Exp $ */
+/* $Header: window.c,v 1.194 88/01/30 10:55:16 rws Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -438,7 +438,7 @@ CreateRootWindow(screen)
     (*pScreen->ChangeWindowAttributes)(pWin, CWBackPixmap | CWBorderPixel);
 
     (*pWin->PaintWindowBackground)(pWin, pWin->clipList, PW_BACKGROUND);
-    EventSelectForWindow(pWin, serverClient, (Mask)0);
+    (void)EventSelectForWindow(pWin, serverClient, (Mask)0); /* can't fail */
     return(Success);
 }
 
@@ -658,7 +658,7 @@ CreateWindow(wid, pParent, x, y, w, h, bw, class, vmask, vlist,
     /* We SHOULD check for an error value here XXX */
     (*pScreen->PositionWindow)(pWin, pWin->absCorner.x, pWin->absCorner.y);
     if ((vmask & CWEventMask) == 0)
-        EventSelectForWindow(pWin, client, (Mask)0);
+        (void)EventSelectForWindow(pWin, client, (Mask)0); /* can't fail */
 
     if (vmask)
         *error = ChangeWindowAttributes(pWin, vmask, vlist, pWin->client);
@@ -667,7 +667,7 @@ CreateWindow(wid, pParent, x, y, w, h, bw, class, vmask, vlist,
 
     if (*error != Success)
     {
-        EventSelectForWindow(pWin, client, (Mask)0);
+        (void)EventSelectForWindow(pWin, client, (Mask)0); /* can't fail */
 	DeleteWindow(pWin, wid);
 	return (WindowPtr)NULL;
     }
