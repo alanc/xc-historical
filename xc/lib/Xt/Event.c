@@ -1,4 +1,4 @@
-/* $XConsortium: Event.c,v 1.150 93/08/15 18:55:41 converse Exp $ */
+/* $XConsortium: Event.c,v 1.151 93/08/16 15:26:51 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -571,6 +571,8 @@ void XtUnregisterDrawable(display, drawable)
     Widget entry;
     Window window = (Window) drawable;
     Widget widget = XtWindowToWidget (display, window);
+
+    if (widget == NULL) return;
 
     tab = WWTABLE(display);
     if (window != XtWindow(widget)) {
