@@ -1,4 +1,4 @@
-/* $Header: dispatch.c,v 1.34 88/01/24 17:23:52 rws Locked $ */
+/* $Header: dispatch.c,v 1.35 88/01/30 09:59:44 rws Exp $ */
 /************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -360,7 +360,10 @@ ProcCreateWindow(client)
     if (Ones(stuff->mask) != len)
         return BadLength;
     if (!stuff->width || !stuff->height)
+    {
+	client->errorValue = 0;
         return BadValue;
+    }
     pWin = CreateWindow(stuff->wid, pParent, stuff->x,
 			      stuff->y, stuff->width, stuff->height, 
 			      stuff->borderWidth, stuff->class,
@@ -470,7 +473,10 @@ ProcChangeSaveSet(client)
             return(result);
     }
     else
+    {
+	client->errorValue = stuff->mode;
 	return( BadValue );
+    }
 }
 
 int
@@ -602,7 +608,10 @@ ProcCirculateWindow(client)
     REQUEST_SIZE_MATCH(xCirculateWindowReq);
     if ((stuff->direction != RaiseLowest) &&
 	(stuff->direction != LowerHighest))
+    {
+	client->errorValue = stuff->direction;
         return BadValue;
+    }
     pWin = (WindowPtr)LookupWindow(stuff->window, client);
     if (!pWin)
         return(BadWindow);
@@ -1265,13 +1274,17 @@ ProcCreatePixmap(client)
     }
 
     if (!stuff->width || !stuff->height)
+    {
+	client->errorValue = 0;
         return BadValue;
+    }
     if (stuff->depth != 1)
     {
         pDepth = pDraw->pScreen->allowedDepths;
         for (i=0; i<pDraw->pScreen->numDepths; i++, pDepth++)
 	   if (pDepth->depth == stuff->depth)
                goto CreatePmap;
+	client->errorValue = stuff->depth;
         return BadValue;
     }
 CreatePmap:
@@ -1391,7 +1404,10 @@ ProcSetDashes(client)
 
     REQUEST_AT_LEAST_SIZE(xSetDashesReq);
     if ((sizeof(xSetDashesReq) >> 2) == stuff->length)
+    {
+	 client->errorValue = 0;
          return BadValue;
+    }
 
     VERIFY_GC(pGC,stuff->gc, client);
 
@@ -1415,7 +1431,10 @@ ProcSetClipRectangles(client)
     REQUEST_AT_LEAST_SIZE(xSetClipRectanglesReq);
     if ((stuff->ordering != Unsorted) && (stuff->ordering != YSorted) &&
 	(stuff->ordering != YXSorted) && (stuff->ordering != YXBanded))
+    {
+	client->errorValue = stuff->ordering;
         return BadValue;
+    }
     VERIFY_GC(pGC,stuff->gc, client);
 		 
     nr = ((stuff->length  << 2) - sizeof(xSetClipRectanglesReq)) >> 3;
@@ -1457,7 +1476,10 @@ ProcClearToBackground(client)
 	return (BadWindow);
     }		    
     if ((stuff->exposures != xTrue) && (stuff->exposures != xFalse))
+    {
+	client->errorValue = stuff->exposures;
         return(BadValue);
+    }
     (*pWin->ClearToBackground)(pWin, stuff->x, stuff->y,
 			       stuff->width, stuff->height,
 			       (Bool)stuff->exposures);
@@ -1507,7 +1529,10 @@ ProcCopyPlane(client)
 
    /* Check to see if stuff->bitPlane has exactly ONE bit set */
    if(stuff->bitPlane == 0 || stuff->bitPlane & (stuff->bitPlane - 1)) 
+   {
+       client->errorValue = stuff->bitPlane;
        return(BadValue);
+   }
 
     VALIDATE_DRAWABLE_AND_GC(stuff->dstDrawable, pdstDraw, pGC, client);
     if (stuff->dstDrawable != stuff->srcDrawable)
@@ -1540,7 +1565,10 @@ ProcPolyPoint(client)
     REQUEST_AT_LEAST_SIZE(xPolyPointReq);
     if ((stuff->coordMode != CoordModeOrigin) && 
 	(stuff->coordMode != CoordModePrevious))
+    {
+	client->errorValue = stuff->coordMode;
         return BadValue;
+    }
     VALIDATE_DRAWABLE_AND_GC(stuff->drawable, pDraw, pGC, client); 
     npoint = ((stuff->length << 2) - sizeof(xPolyPointReq)) >> 2;
     if (npoint)
@@ -1561,7 +1589,10 @@ ProcPolyLine(client)
     REQUEST_AT_LEAST_SIZE(xPolyLineReq);
     if ((stuff->coordMode != CoordModeOrigin) && 
 	(stuff->coordMode != CoordModePrevious))
+    {
+	client->errorValue = stuff->coordMode;
         return BadValue;
+    }
     VALIDATE_DRAWABLE_AND_GC(stuff->drawable, pDraw, pGC, client);
     npoint = ((stuff->length << 2) - sizeof(xPolyLineReq));
     if(npoint % sizeof(xPoint) != 0)
@@ -1642,9 +1673,17 @@ ProcFillPoly(client)
 
     REQUEST_AT_LEAST_SIZE(xFillPolyReq);
     if ((stuff->shape != Complex) && (stuff->shape != Nonconvex) &&  
-	(stuff->shape != Convex) && (stuff->coordMode != CoordModeOrigin) && 
-	(stuff->coordMode != CoordModePrevious))
+	(stuff->shape != Convex))
+    {
+	client->errorValue = stuff->shape;
         return BadValue;
+    }
+    if ((stuff->coordMode != CoordModeOrigin) && 
+	(stuff->coordMode != CoordModePrevious))
+    {
+	client->errorValue = stuff->coordMode;
+        return BadValue;
+    }
 
     VALIDATE_DRAWABLE_AND_GC(stuff->drawable, pDraw, pGC, client);
     things = ((stuff->length << 2) - sizeof(xFillPolyReq)) >> 2;
@@ -1725,7 +1764,10 @@ ProcPutImage(client)
         length = PixmapBytePad(stuff->width, stuff->depth);
     }
     else
+    {
+	client->errorValue = stuff->format;
         return BadValue;
+    }
     length *= stuff->height;
     if ((((length + 3) >> 2) + (sizeof(xPutImageReq) >> 2)) != stuff->length)
 	return BadLength;
@@ -1753,7 +1795,10 @@ ProcGetImage(client)
     height = stuff->height;
     REQUEST_SIZE_MATCH(xGetImageReq);
     if ((stuff->format != XYPixmap) && (stuff->format != ZPixmap))
+    {
+	client->errorValue = stuff->format;
         return(BadValue);
+    }
     if(!(pDraw = LOOKUP_DRAWABLE(stuff->drawable, client) ))
 	return (BadDrawable);
     if(pDraw->type == DRAWABLE_WINDOW)
@@ -1999,7 +2044,10 @@ ProcCreateColormap(client)
     REQUEST_SIZE_MATCH(xCreateColormapReq);
 
     if ((stuff->alloc != AllocNone) && (stuff->alloc != AllocAll))
+    {
+	client->errorValue = stuff->alloc;
         return(BadValue);
+    }
     mid = stuff->mid;
     LEGAL_NEW_RESOURCE(mid);    
     pWin = (WindowPtr)LookupWindow(stuff->window, client);
@@ -2704,7 +2752,10 @@ ProcQueryBestSize   (client)
     if ((stuff->class != CursorShape) && 
 	(stuff->class != TileShape) && 
 	(stuff->class != StippleShape))
+    {
+	client->errorValue = stuff->class;
         return(BadValue);
+    }
     if (!(pDraw = LOOKUP_DRAWABLE(stuff->drawable, client)))
     {
 	client->errorValue = stuff->drawable;
@@ -2793,7 +2844,10 @@ ProcChangeHosts(client)
 	result = RemoveHost(client->index, (int)stuff->hostFamily, 
 			    stuff->hostLength, (pointer)&stuff[1]);  
     else
+    {
+	client->errorValue = stuff->mode;
         return BadValue;
+    }
     return (result || client->noClientException);
 }
 
@@ -2829,7 +2883,10 @@ ProcChangeAccessControl(client)
 
     REQUEST_SIZE_MATCH(xSetAccessControlReq);
     if ((stuff->mode != EnableAccess) && (stuff->mode != DisableAccess))
+    {
+	client->errorValue = stuff->mode;
         return BadValue;
+    }
     ChangeAccessControl(client, stuff->mode == EnableAccess);
     return (client->noClientException);
 }
@@ -2949,7 +3006,10 @@ int ProcForceScreenSaver(client)
     
     if ((stuff->mode != ScreenSaverReset) && 
 	(stuff->mode != ScreenSaverActive))
+    {
+	client->errorValue = stuff->mode;
         return BadValue;
+    }
     SaveScreens(SCREEN_SAVER_FORCER, (int)stuff->mode);
     return client->noClientException;
 }
