@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsCvCols.c,v 1.4 91/02/15 18:33:37 dave Exp $" */
+/* $XConsortium: XcmsCvCols.c,v 1.7 91/05/13 23:20:39 rws Exp $" */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -234,16 +234,24 @@ ValidDDColorSpaceID(ccc, id)
  */
 static Status
 ConvertMixedColors(ccc, pColors_in_out, pWhitePt, nColors,
-	targetFormat, pCompressed, format_flag)
+	targetFormat, format_flag)
     XcmsCCC ccc;
     XcmsColor *pColors_in_out;
     XcmsColor *pWhitePt;
     unsigned int nColors;
     XcmsColorFormat targetFormat;
-    Bool *pCompressed;
     unsigned char format_flag;
 /*
  *	DESCRIPTION
+ *		This routine will only convert the following types of
+ *		batches:
+ *			DI to DI
+ *			DD to DD
+ *			DD to CIEXYZ
+ *		In other words, it will not convert the following types of
+ *		batches:
+ *			DI to DD
+ *			DD to DI(not CIEXYZ)
  *		
  *		format_flag:
  *		    0x01 : convert Device-Dependent only specifications to the
@@ -288,28 +296,63 @@ ConvertMixedColors(ccc, pColors_in_out, pWhitePt, nColors,
 		iColors++;
 	}
 	if (format != targetFormat) {
+	    /*
+	     * Need to convert this batch from current format to target format.
+	     */
 	    if (XCMS_DI_ID(format) && (format_flag & DI_FORMAT) &&
 		XCMS_DI_ID(targetFormat)) {
 		/*
-		 * Device-Independent target format
-		 *	Assumes source formats are already in DI format
+		 * DI->DI
+		 *
+		 * Format of interest is Device-Independent,
+		 * This batch contains Device-Independent specifications, and
+		 * the Target format is Device-Independent.
 		 */
-		if ((retval_tmp = _XcmsDIConvertColors(ccc, pColors_start,
-			pWhitePt, nBatch, targetFormat)) == XcmsFailure) {
-		    return(XcmsFailure);
-		}
-	    } else if ((XCMS_DD_ID(format) && (format_flag & DD_FORMAT)) ||
-		(format == XcmsCIEXYZFormat && XCMS_DD_ID(targetFormat))) {
+		retval_tmp = _XcmsDIConvertColors(ccc, pColors_start, pWhitePt,
+			nBatch, targetFormat);
+	    } else if (XCMS_DD_ID(format) && (format_flag & DD_FORMAT) &&
+		    (targetFormat == XcmsCIEXYZFormat)) {
 		/*
-		 * Device-Dependent target format
-		 *	Assumes source formats are already in DD format
-		 *	or CIEXYZ format.
+		 * DD->CIEXYZ
+		 *
+		 * Format of interest is Device-Dependent,
+		 * This batch contains Device-Dependent specifications, and
+		 * the Target format is CIEXYZ.
+		 *
+		 * Since DD->CIEXYZ we can use NULL instead of pCompressed.
 		 */
-		if ((retval_tmp = _XcmsDDConvertColors(ccc, pColors_start,
-			nBatch, targetFormat, pCompressed)) == XcmsFailure) {
-		    return(XcmsFailure);
+		if ((ccc->whitePtAdjProc != NULL) && !_XcmsEqualWhitePts(ccc,
+			pWhitePt, ScreenWhitePointOfCCC(ccc))) {
+		    /*
+		     * Need to call WhiteAdjustProc (Screen White Point to
+		     *   White Point).
+		     */
+		    retval_tmp = (*ccc->whitePtAdjProc)(ccc,
+			    ScreenWhitePointOfCCC(ccc), pWhitePt,
+			    XcmsCIEXYZFormat, pColors_start, nBatch,
+			    (Bool *)NULL);
+		} else {
+		    retval_tmp = _XcmsDDConvertColors(ccc, pColors_start,
+			    nBatch, XcmsCIEXYZFormat, (Bool *)NULL);
 		}
+	    } else if (XCMS_DD_ID(format) && (format_flag & DD_FORMAT) &&
+		    XCMS_DD_ID(targetFormat)) {
+		/*
+		 * DD->DD(not CIEXYZ)
+		 *
+		 * Format of interest is Device-Dependent,
+		 * This batch contains Device-Dependent specifications, and
+		 * the Target format is Device-Dependent and not CIEXYZ.
+		 */
+		retval_tmp = _XcmsDDConvertColors(ccc, pColors_start, nBatch,
+			targetFormat, (Bool *)NULL);
 	    } else {
+		/*
+		 * This routine is called for the wrong reason.
+		 */
+		return(XcmsFailure);
+	    }
+	    if (retval_tmp == XcmsFailure) {
 		return(XcmsFailure);
 	    }
 	    retval = MAX(retval, retval_tmp);
@@ -706,10 +749,10 @@ XcmsConvertColors(ccc, pColors_in_out, nColors, targetFormat, pCompressed)
  *
  */
 {
-    XcmsColor clientWhitePt, tmpWhitePt;
+    XcmsColor clientWhitePt;
     XcmsColor Color1;
     XcmsColor *pColors_tmp;
-    int whiteAdj = 0;
+    int callWhiteAdjustProc = 0;
     XcmsColorFormat format;
     Status retval;
     unsigned char contents_flag = 0x00;
@@ -749,25 +792,21 @@ XcmsConvertColors(ccc, pColors_in_out, nColors, targetFormat, pCompressed)
 		sizeof(XcmsColor));
 	if (clientWhitePt.format == XcmsUndefinedFormat) {
 	    /*
-	     * If the Client White Point is undefined, convert to the Screen
-	     *   White Point
+	     * Client White Point is undefined, therefore set to the Screen
+	     *   White Point.
+	     * Since Client White Point == Screen White Point, WhiteAdjustProc
+	     *   is not called.
 	     */
 	    bcopy((char *)&ccc->pPerScrnInfo->screenWhitePt, (char *)&clientWhitePt,
 		    sizeof(XcmsColor));
-	} else if (ccc->whitePtAdjProc != NULL) {
-	    if (clientWhitePt.format != XcmsCIEXYZFormat) {
-		bcopy((char *)&clientWhitePt, (char *)&tmpWhitePt,
-			sizeof(XcmsColor));
-		if (_XcmsDIConvertColors(ccc, &tmpWhitePt, (XcmsColor *) NULL,
-			1, XcmsCIEXYZFormat)==0){
-		    return(XcmsFailure);
-		}
-		if (!EqualCIEXYZ(&tmpWhitePt, &ccc->pPerScrnInfo->screenWhitePt)) {
-		    whiteAdj = 1;
-		}
-	    } else if (!EqualCIEXYZ(&clientWhitePt, &ccc->pPerScrnInfo->screenWhitePt)) {
-		whiteAdj = 1;
-	    }
+	} else if ((ccc->whitePtAdjProc != NULL) && !_XcmsEqualWhitePts(ccc,
+		&clientWhitePt, ScreenWhitePointOfCCC(ccc))) {
+	    /*
+	     * Client White Point != Screen White Point, and WhiteAdjustProc
+	     *   is not NULL, therefore, will need to call it when
+	     *   converting between DI and DD specifications.
+	     */
+	    callWhiteAdjustProc = 1;
 	}
     }
 
@@ -822,14 +861,14 @@ XcmsConvertColors(ccc, pColors_in_out, nColors, targetFormat, pCompressed)
 		/*
 		 *    1. Device-Independent to Device-Dependent Conversion
 		 */
-		if (whiteAdj) {
+		if (callWhiteAdjustProc) {
 		    /*
 		     * White Point Adjustment
 		     *		Client White Point to Screen White Point
 		     */
 		    retval = (*ccc->whitePtAdjProc)(ccc, &clientWhitePt,
-			    &ccc->pPerScrnInfo->screenWhitePt,
-			    targetFormat, pColors_tmp, nColors, pCompressed);
+			    ScreenWhitePointOfCCC(ccc), targetFormat,
+			    pColors_tmp, nColors, pCompressed);
 		} else {
 		    if (_XcmsDIConvertColors(ccc, pColors_tmp,
 			    &clientWhitePt, nColors, XcmsCIEXYZFormat)
@@ -843,13 +882,13 @@ XcmsConvertColors(ccc, pColors_in_out, nColors, targetFormat, pCompressed)
 		/*
 		 *    2. Device-Dependent to Device-Independent Conversion
 		 */
-		if (whiteAdj) {
+		if (callWhiteAdjustProc) {
 		    /*
 		     * White Point Adjustment
 		     *		Screen White Point to Client White Point
 		     */
 		    retval = (*ccc->whitePtAdjProc)(ccc,
-			    &ccc->pPerScrnInfo->screenWhitePt, &clientWhitePt,
+			    ScreenWhitePointOfCCC(ccc), &clientWhitePt,
 			    targetFormat, pColors_tmp, nColors, pCompressed);
 		} else {
 		    /*
@@ -873,50 +912,53 @@ XcmsConvertColors(ccc, pColors_in_out, nColors, targetFormat, pCompressed)
 		XCMS_DI_ID(targetFormat)) {
 	    /*
 	     * Convert from DI to DI in batches of contiguous formats
+	     *
+	     * Because DI->DI, WhiteAdjustProc not called.
 	     */
 	    retval = ConvertMixedColors(ccc, pColors_tmp, &clientWhitePt,
-		    nColors, targetFormat, (Bool *)NULL,
-		    (unsigned char)DI_FORMAT);
+		    nColors, targetFormat, (unsigned char)DI_FORMAT);
 	} else if ((contents_flag == (DD_FORMAT | MIX_FORMAT)) &&
 		XCMS_DD_ID(targetFormat)) {
 	    /*
 	     * Convert from DD to DD in batches of contiguous formats
+	     *
+	     * Because DD->DD, WhiteAdjustProc not called.
 	     */
 	    retval = ConvertMixedColors(ccc, pColors_tmp,
-		    (XcmsColor *)NULL, nColors, targetFormat, (Bool *)NULL,
+		    (XcmsColor *)NULL, nColors, targetFormat,
 		    (unsigned char)DD_FORMAT);
 	} else if (XCMS_DI_ID(targetFormat)) {
 	    /*
-	     * We need to convert from DI-to-DI or DI-to-DD, therefore
+	     * We need to convert from DI-to-DI and DD-to-DI, therefore
 	     *   1. convert DD specifications to CIEXYZ, then
-	     *   2. convert all in batches to the target format.
+	     *   2. convert all in batches to the target DI format.
+	     *
+	     * Note that ConvertMixedColors will call WhiteAdjustProc
+	     * as necessary.
 	     */
 
 	    /*
 	     * Convert only DD specifications in batches of contiguous formats
 	     * to CIEXYZ
 	     *
-	     * Since DD->CIEXYZ, no compression takes place therefore
-	     * we can pass NULL instead of pCompressed.
+	     * Since DD->CIEXYZ, ConvertMixedColors will apply WhiteAdjustProc
+	     * if required.
 	     */
 	    retval = ConvertMixedColors(ccc, pColors_tmp, &clientWhitePt,
-		    nColors, XcmsCIEXYZFormat, (Bool *)NULL,
-		    (unsigned char)DD_FORMAT);
+		    nColors, XcmsCIEXYZFormat, (unsigned char)DD_FORMAT);
 
 	    /*
-	     * Convert from DI to DI in batches of contiguous formats
-	     *
-	     * Since DD->DI, no compression takes place therefore
-	     * we can pass NULL instead of pCompressed.
+	     * Because at this point we may have a mix of DI formats
+	     * (e.g., CIEXYZ, CIELuv) we must convert the specs to the
+	     * target DI format in batches of contiguous source formats.
 	     */
 	    retval = ConvertMixedColors(ccc, pColors_tmp, &clientWhitePt,
-		    nColors, targetFormat, (Bool *)NULL,
-		    (unsigned char)DI_FORMAT);
+		    nColors, targetFormat, (unsigned char)DI_FORMAT);
 	} else {
 	    /*
-	     * We need to convert from DI-to-DD or DD-to-DI, therefore
-	     *   1. convert in batches to CIEXYZ, then
-	     *   2. convert all to the target format.
+	     * We need to convert from DI-to-DD and DD-to-DD, therefore
+	     *   1. convert DI specifications to CIEXYZ, then
+	     *   2. convert all to the DD target format.
 	     *
 	     *   This allows white point adjustment and gamut compression
 	     *	 to be applied to all the color specifications in one
@@ -927,22 +969,34 @@ XcmsConvertColors(ccc, pColors_in_out, nColors, targetFormat, pCompressed)
 	    /*
 	     * Convert in batches to CIEXYZ
 	     *
-	     * Since ??->CIEXYZ, no compression takes place therefore
-	     * we can pass NULL instead of pCompressed.
+	     * If DD->CIEXYZ, ConvertMixedColors will apply WhiteAdjustProc
+	     * if required.
 	     */
 	    if ((retval = ConvertMixedColors(ccc, pColors_tmp, &clientWhitePt,
-		    nColors, XcmsCIEXYZFormat, (Bool *)NULL,
+		    nColors, XcmsCIEXYZFormat,
 		    (unsigned char)(DI_FORMAT | DD_FORMAT))) == XcmsFailure) {
 		goto Failure;
 	    }
 
 	    /*
 	     * Convert all specifications (now in CIEXYZ format) to
-	     * the target format
+	     * the target DD format.
+	     * Since CIEXYZ->DD, compression MAY take place therefore
+	     * we must pass pCompressed.
+	     * Note that WhiteAdjustProc must be used if necessary.
 	     */
-	    retval = ConvertMixedColors(ccc, pColors_tmp,
-		    (XcmsColor *)NULL, nColors, targetFormat, (Bool *)NULL,
-		    (unsigned char)DI_FORMAT);
+	    if (callWhiteAdjustProc) {
+		/*
+		 * White Point Adjustment
+		 *	Client White Point to Screen White Point
+		 */
+		retval = (*ccc->whitePtAdjProc)(ccc,
+			&clientWhitePt, ScreenWhitePointOfCCC(ccc),
+			targetFormat, pColors_tmp, nColors, pCompressed);
+	    } else {
+		retval = _XcmsDDConvertColors(ccc, pColors_tmp, nColors,
+			targetFormat, (Bool *)pCompressed);
+	    }
 	}
     }
 
