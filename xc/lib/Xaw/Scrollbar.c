@@ -1,6 +1,6 @@
 #ifndef lint
 static char Xrcsid[] =
-    "$XConsortium: Scroll.c,v 1.51 89/08/24 17:49:49 kit Exp $";
+    "$XConsortium: Scroll.c,v 1.52 89/10/09 16:20:20 jim Exp $";
 #endif /* lint */
 
 /***********************************************************
@@ -70,7 +70,7 @@ static XtResource resources[] = {
   {XtNjumpProc, XtCCallback, XtRCallback, sizeof(caddr_t),
        Offset(scrollbar.jumpProc), XtRCallback, NULL},
   {XtNthumb, XtCThumb, XtRPixmap, sizeof(Pixmap),
-       Offset(scrollbar.thumb), XtRPixmap, NULL},
+       Offset(scrollbar.thumb), XtRImmediate, (XtPointer) XtUnspecifiedPixmap},
   {XtNforeground, XtCForeground, XtRPixel, sizeof(Pixel),
        Offset(scrollbar.foreground), XtRString, XtDefaultForeground},
   {XtNshown, XtCShown, XtRFloat, sizeof(float),
@@ -95,6 +95,7 @@ static XtResource resources[] = {
 
 static void ClassInitialize();
 static void Initialize();
+static void Destroy();
 static void Realize();
 static void Resize();
 static void Redisplay();
@@ -136,7 +137,7 @@ ScrollbarClassRec scrollbarClassRec = {
     /* compress_exposure*/	TRUE,
     /* compress_enterleave*/	TRUE,
     /* visible_interest */      FALSE,
-    /* destroy          */      NULL,
+    /* destroy          */      Destroy,
     /* resize           */      Resize,
     /* expose           */      Redisplay,
     /* set_values       */      SetValues,
@@ -162,12 +163,17 @@ WidgetClass scrollbarWidgetClass = (WidgetClass)&scrollbarClassRec;
 
 static void ClassInitialize()
 {
+    static XtConvertArgRec screenConvertArg[] = {
+        {XtWidgetBaseOffset, (caddr_t) XtOffset(Widget, core.screen),
+	     sizeof(Screen *)}
+    };
+
     XawInitializeWidgetSet();
     XtAddConverter( XtRString, XtROrientation, XmuCvtStringToOrientation,
 		    NULL, (Cardinal)0 );
+    XtAddConverter( XtRString, XtRPixmap, XmuCvtStringToBitmap,
+		   screenConvertArg, XtNumber(screenConvertArg));
 }
-
-
 
 /*
  * Make sure the first number is within the range specified by the other
@@ -278,6 +284,70 @@ static void SetDimensions(w)
     }
 }
 
+/*	Function Name: Destroy
+ *	Description: Called as the scrollbar is going away...
+ *	Arguments: w - the scrollbar.
+ *	Returns: nonw
+ */
+
+static void
+Destroy(w)
+Widget w;
+{
+    ScrollbarWidget sbw = (ScrollbarWidget) w;
+    
+    XtReleaseGC(w, sbw->scrollbar.gc);
+}
+
+/*	Function Name: CreateGC
+ *	Description: Creates the GC.
+ *	Arguments: w - the scrollbar widget.
+ *	Returns: none. 
+ */
+
+static void
+CreateGC(w)
+Widget w;
+{
+    ScrollbarWidget sbw = (ScrollbarWidget) w;
+    XGCValues gcValues;
+    XtGCMask mask;
+    unsigned int depth = 1;
+
+    if (sbw->scrollbar.thumb == XtUnspecifiedPixmap) {
+        sbw->scrollbar.thumb = XmuCreateStippledPixmap (XtScreen(w), 
+							(Pixel) 1, (Pixel) 0,
+							depth);
+    }
+    else if (sbw->scrollbar.thumb != None) {
+	Window root;
+	int x, y;
+	unsigned int width, height, bw;
+	if (XGetGeometry(XtDisplay(w), sbw->scrollbar.thumb, &root, &x, &y,
+			 &width, &height, &bw, &depth) == 0) {
+	    XtAppError(XtWidgetToApplicationContext(w),
+	       "Scrollbar Widget: Could not get geometry of thumb pixmap.");
+	}
+    }
+
+    gcValues.foreground = sbw->scrollbar.foreground;
+    gcValues.background = sbw->core.background_pixel;
+    mask = GCForeground | GCBackground;
+
+    if (sbw->scrollbar.thumb != None) {
+	if (depth == 1) {
+	    gcValues.fill_style = FillOpaqueStippled;
+	    gcValues.stipple = sbw->scrollbar.thumb;
+	    mask |= GCFillStyle | GCStipple;
+	}
+	else {
+	    gcValues.fill_style = FillTiled;
+	    gcValues.tile = sbw->scrollbar.thumb;
+	    mask |= GCFillStyle | GCTile;
+	}
+    }
+    sbw->scrollbar.gc = XtGetGC( w, mask, &gcValues);
+}
 
 /* ARGSUSED */
 static void Initialize( request, new )
@@ -285,18 +355,8 @@ static void Initialize( request, new )
    Widget new;			/* what we're going to give him */
 {
     ScrollbarWidget w = (ScrollbarWidget) new;
-    XGCValues gcValues;
 
-    if (w->scrollbar.thumb == NULL) {
-        w->scrollbar.thumb = XmuCreateStippledPixmap (XtScreen(w),
-						      w->scrollbar.foreground,
-						      w->core.background_pixel,
-						      w->core.depth);
-    }
-
-    gcValues.fill_style = FillTiled;
-    gcValues.tile = w->scrollbar.thumb;
-    w->scrollbar.gc = XtGetGC( new, GCFillStyle | GCTile, &gcValues);
+    CreateGC(new);
 
     if (w->core.width == 0)
 	w->core.width = (w->scrollbar.orientation == XtorientVertical)
@@ -331,29 +391,20 @@ static void Realize( gw, valueMask, attributes )
 		    *valueMask, attributes );
 }
 
-
 /* ARGSUSED */
-static Boolean SetValues( current, request, desired )
-   Widget current,		/* what I am */
-          request,		/* what he wants me to be */
-          desired;		/* what I will become */
+static Boolean 
+SetValues( current, request, desired )
+Widget current,		/* what I am */
+       request,		/* what he wants me to be */
+       desired;		/* what I will become */
 {
     ScrollbarWidget w = (ScrollbarWidget) current;
-    ScrollbarWidget rw = (ScrollbarWidget) request;
     ScrollbarWidget dw = (ScrollbarWidget) desired;
     Boolean redraw = FALSE;
-    Boolean realized = XtIsRealized (desired);
 
-    if (w->scrollbar.foreground != rw->scrollbar.foreground) {
-	redraw = TRUE;
-    }
-
-    if (w->core.background_pixel != rw->core.background_pixel) {
-	if (realized)
-	  XSetWindowBackground (XtDisplay (desired), XtWindow (desired), 
-				dw->core.background_pixel);
-        redraw = TRUE;
-    }
+/*
+ * If these values are outside the acceptable range ignore them...
+ */
 
     if (dw->scrollbar.top < 0.0 || dw->scrollbar.top > 1.0)
         dw->scrollbar.top = w->scrollbar.top;
@@ -361,9 +412,23 @@ static Boolean SetValues( current, request, desired )
     if (dw->scrollbar.shown < 0.0 || dw->scrollbar.shown > 1.0)
         dw->scrollbar.shown = w->scrollbar.shown;
 
-    if (w->scrollbar.top != dw->scrollbar.top ||
-        w->scrollbar.shown != dw->scrollbar.shown)
-	redraw = TRUE;
+/*
+ * Change colors and stuff...
+ */
+
+    if ( XtIsRealized (desired) ) {
+	if ( (w->scrollbar.foreground != dw->scrollbar.foreground) ||
+	    (w->core.background_pixel != dw->core.background_pixel) ||
+	    (w->scrollbar.thumb != dw->scrollbar.thumb) ) 
+	{
+	    XtReleaseGC(w, w->scrollbar.thumb);
+	    CreateGC( (Widget) dw);
+	    redraw = TRUE;
+	}
+	if (w->scrollbar.top != dw->scrollbar.top ||
+	    w->scrollbar.shown != dw->scrollbar.shown)
+	    redraw = TRUE;
+    }
 
     return( redraw );
 }
