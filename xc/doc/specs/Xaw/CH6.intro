@@ -46,7 +46,7 @@ which section of the inner window is currently visible.
 .LP
 .NH 3
 A Brief Note on Geometry Management
-.IN "Geometry management" ""
+.IN "geometry management" ""
 .LP
 The geometry management semantics provided by the X Toolkit give full
 control of the size and position of a widget to the parent of that

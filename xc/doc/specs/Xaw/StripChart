@@ -132,7 +132,7 @@ as the \fBgetValue\fP callback function every \fBupdate\fP seconds to
 obtain another point for the StripChart graph.  
 .LP
 The calling interface for the \fBgetValue\fP callback is:
-.IN "StripChart widget" "getValue Callback" "@DEF@"
+.IN "StripChart widget" "getValue callback" "@DEF@"
 .FD 0
 void (*\fIgetValueProc\fP)(\fIw\fP, \fIclient_data\fP, \fIvalue\fP)
 .br

@@ -58,7 +58,7 @@ append-only mode.
 .LP
 .NH 2
 Text Widget for Users
-.IN "Text widget" "User Guide"
+.IN "Text widget" "User's Guide to the Text widget"
 .XS
 	Text Widget for Users
 .XE
@@ -125,8 +125,8 @@ programmer can modify them by changing the Text widget's
 .bs 1
 .NH 3
 Search and Replace
-.IN "Text widget" "Search"
-.IN "Text widget" "Query Replace"
+.IN "Text widget" "search"
+.IN "Text widget" "query replace"
 .LP
 The Text widget provides a search popup that can be used to search for a
 string within the current Text widget.  The popup can be activated by
@@ -210,7 +210,7 @@ Text  <name of Text widget>
 .NH 3
 File Insertion
 .LP
-.IN "Text widget" "File Insertion"
+.IN "Text widget" "file insertion"
 To insert a file into a text widget, type the key sequence \fIMeta-i\fP,
 which will activate the file insert popup.  This popup will appear under
 the pointer, and any text typed while the focus is in this popup will be
@@ -239,7 +239,7 @@ Text  <name of Text widget>
 .NH 3
 Text Selections for Users
 .LP
-.IN "Text widget" "Text Selections for users"
+.IN "Text widget" "Text Selections for Users"
 The text widgets have a very powerful text selection mechanism that allows
 the user to copy pieces of the text into the \fBPRIMARY\fP selection,
 and paste 

@@ -68,7 +68,7 @@ One foreground color is provided in TextSink.
 .Sg Bold
 .NH 3
 Subclassing the TextSink
-.IN "TextSink object" "Subclassing" "@DEF@"
+.IN "TextSink object" "subclassing" "@DEF@"
 .LP
 The only purpose of the TextSink Object is to be subclassed.  It
 contains the minimum set of class methods that all text sinks must have.

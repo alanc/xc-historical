@@ -63,7 +63,7 @@ _
 .Oe Bold
 .NH 3
 Subclassing the TextSrc
-.IN "TextSrc object" "Subclassing" "@DEF@"
+.IN "TextSrc object" "subclassing" "@DEF@"
 .LP
 The only purpose of the TextSrc Object is to be subclassed.  It contains
 the minimum set of class methods that all text sources must have.  All

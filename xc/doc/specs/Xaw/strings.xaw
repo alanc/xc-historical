@@ -1,7 +1,7 @@
 \" These macros are not associated with any widget.
 
 .de Rs \" Resource Conversion message
-A converter is registered for this resouce that will convert
+A converter is registered for this resource that will convert
 the following strings; \fB\\$1\fP.
 ..
 .de Sk \" This is an AsciiSink Resource
@@ -158,7 +158,7 @@ Specifies left, center, or right alignment of \fBlabel\fP within the
 widget.  This resource may be specified with the values
 \fBXtJustifyLeft\fP, \fBXtJustifyCenter\fP, or \fBXtJustifyRight\fP.
 .Rs "left, right, \fPand\fB center".
-This resource only has noticable effect when the width of the widget
+This resource only has noticeable effect when the width of the widget
 is larger than necessary to display the \fBlabel\fP.
 ..
 .de La \"label
@@ -326,7 +326,7 @@ incorrectly children may overlap or completely occlude other children
 when the \\$1 widget is resized.
 ..
 
-\" Text Resouces
+\" Text Resources
 
 .de Af \"AutoFill
 .ie 'Bold'\\$1' .IP \fBautoFill\fP 1.5i
@@ -456,7 +456,7 @@ right margin to alert the user that this line is too long.
 .ie 'Bold'\\$1' .IP \fBfont\fP 1.5i
 .el .IP font 1.5i
 This is font for rendering all text and must be a character cell
-font (see the X Logical Font Desctiption).  
+font (see the X Logical Font Description).  
 .Sk \\$1
 ..
 
@@ -492,11 +492,11 @@ in the text buffer.
 .de Ou \" Source UseStringInPlace
 .ie 'Bold'\\$1' .IP \fBuseStringInPlace\fP 1.5i
 .el .IP useStringInPlace 1.5i
-Setting this resource to \fBTrue\fP will disable the memory managment 
+Setting this resource to \fBTrue\fP will disable the memory management 
 provided by the Text widget, updating the \fBstring\fP resource in
 place.  Using the string in place can
 be much more efficient for text widgets that display static data, or
-where the programmer whishes to impose strict constraints on the
+where the programmer wishes to impose strict constraints on the
 contents of the \fBstring\fP.  When using the string in place be sure that:
 the length of the string is specified by setting the \fBlength\fP resource,
 the \fBtype\fP of the Text widget is \fBXawAsciiString\fP, and that

@@ -289,7 +289,7 @@ forced to be resized.  See \fBLayout Semantics\fP for details.
 .NH 3
 Layout Semantics
 .LP
-.IN "Paned widget" "Layout semantics"
+.IN "Paned widget" "layout semantics"
 In order to make effective use of the Paned widget it is helpful to know
 the rules it uses to determine which child will be resized in any given
 situation.  There are three rules used to determine which child is

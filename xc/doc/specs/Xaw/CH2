@@ -15,7 +15,7 @@
 .XS
 Chapter 2 \- Using Widgets
 .XE
-.IN "Using Widgets" "" "@DEF@"
+.IN "using widgets" "" "@DEF@"
 Widgets serve as the primary tools for building a user interface or
 application environment.  The Athena widget set consists of primitive
 widgets that contain no children (for example, a command button) and
@@ -48,8 +48,8 @@ other toolkit routines.
 opens the X server connection, parses the command line,
 and creates an initial widget that will serve as the root of
 a tree of widgets created by this application.
-.IN "Initialization" "" "@DEF@"
-.IN "Toolkit Initialization" "" "@DEF@"
+.IN "initialization" "" "@DEF@"
+.IN "toolkit initialization" "" "@DEF@"
 .IN "XtAppInitialize" "" "@DEF@"
 .IN "fallback resources" "" "@DEF@"
 .FD 0
@@ -110,8 +110,8 @@ Creating a Widget
 .XS
 	Creating a Widget
 .XE
-.IN "Widget Creation" "" "@DEF@"
-.IN "Creating Widgets" "" "@DEF@"
+.IN "widget creation" "" "@DEF@"
+.IN "creating widgets" "" "@DEF@"
 .IN "XtRealizeWidget" "" ""
 Creating a widget is a three-step process.  First, the widget instance
 is allocated, and various instance-specific attributes are set by
@@ -168,7 +168,7 @@ Common Resources
 .XS
 	Common Resources
 .XE
-.IN "Resource" ""
+.IN "resource" ""
 .LP
 Although a widget can have unique arguments that it understands, all
 widgets have common arguments that provide some regularity of operation.
@@ -255,9 +255,9 @@ Resources Conversions
 .XS
 	Resources Conversions
 .XE
-.IN "Conversions" "" "@DEF@"
-.IN "String Conversions" "" "@DEF@"
-.IN "Type Conversions" "" "@DEF@"
+.IN "conversions" "" "@DEF@"
+.IN "string conversions" "" "@DEF@"
+.IN "type conversions" "" "@DEF@"
 .LP
 Most resources in the Athena widget set have a converter registered that
 will translate the string in a resource file to the correct internal
@@ -276,8 +276,8 @@ widget.  When these occur, the documentation section for that widget
 will describe the converter.
 .NH 3
 Cursor Conversion
-.IN "Conversions" "Cursor" "@DEF@"
-.IN "Cursor" "" ""
+.IN "conversions" "cursor" "@DEF@"
+.IN "cursor" "" ""
 .LP
 The value for the \fBcursor\fP resource is specified in the resource
 database as a string, and is of the following forms:
@@ -301,8 +301,8 @@ file path is used (see section 2.4.3).
 .NH 3
 Pixel Conversion
 .LP
-.IN "Conversions" "Pixel" "@DEF@"
-.IN "Pixel" "" ""
+.IN "conversions" "pixel" "@DEF@"
+.IN "pixel" "" ""
 .IN "rgb.txt" "" ""
 .IN "XtDefaultForeground" "" ""
 .IN "XtDefaultBackground" "" ""
@@ -321,8 +321,8 @@ numeric values are hexadecimal digits (both upper and lower case).
 The special strings `XtDefaultForeground' and `XtDefaultBackground'
 .NH 3
 Bitmap Conversion
-.IN "Bitmap Coversions" "" "@DEF@"
-.IN "Conversions" "Bitmap" "@DEF@"
+.IN "bitmap conversions" "" "@DEF@"
+.IN "conversions" "bitmap" "@DEF@"
 .IN "bitmapFilePath" "" "@DEF@"
 .IN "BitmapFilePath" "" "@DEF@"
 .IN "/usr/include/X11/bitmaps" "" ""
@@ -346,7 +346,7 @@ Realizing a Widget
 .XS
 	Realizing a Widget
 .XE
-.IN "Realizing Widgets" "" "@DEF@"
+.IN "realizing widgets" "" "@DEF@"
 The
 .PN XtRealizeWidget
 function performs two tasks:
@@ -374,7 +374,7 @@ Processing Events
 .XS
 	Processing Events
 .XE
-.IN "Events" "" ""
+.IN "events" "" ""
 .IN "XtAppInitialize" "" ""
 Now that the application has created, managed and realized its
 widgets, it is ready to process the events that will be delivered by the
@@ -588,7 +588,7 @@ Using the Client Callback Interface
 .XS
 	Using the Client Callback Interface
 .XE
-.IN "Callbacks" "" "" 
+.IN "callbacks" "" "" 
 Widgets can communicate changes in their state to their clients
 by means of a callback facility.
 The format for a client's callback handler is:
@@ -695,7 +695,7 @@ program that uses the \*(tk.
 .NH 3
 Writing Applications
 .LP
-.IN "Writing Applications"
+.IN "writing applications"
 .IN "StringDefs.h"
 .IN "Intrinsic.h"
 When writing an application that uses the X Toolkit, 
@@ -784,8 +784,8 @@ The following provides a sample command line:
 .IN "libXt.a"
 .IN "libXext.a"
 .IN "libX11.a"
-.IN "Linking Applications"
-.IN "Compiling Applications"
+.IN "linking applications"
+.IN "compiling applications"
 .IP
 .Ds 0
 cc -o \fIapplication\fP \fIapplication\fP.c \-lXaw \-lXmu \-lXt \
@@ -793,7 +793,7 @@ cc -o \fIapplication\fP \fIapplication\fP.c \-lXaw \-lXmu \-lXt \
 .De
 .NH 3
 Changing Resource Values
-.IN "Resource" ""
+.IN "resource" ""
 .LP
 The \*(xI support two methods of changing the default resource
 values; the resource manager, and an argument list passed into
@@ -831,7 +831,7 @@ The \fBxrdb\fP utility may be used to load a file containing
 resources into the X server.   Once the resources are loaded, the
 resources will affect any new applications started on the display that
 they were loaded onto.  
-.IN "Application Defaults"
+.IN "application defaults"
 .IN "app-defaults"
 .IN "/usr/lib/X11/app-defaults"
 .IP "\fBApplication Defaults\fP" 1.5i
@@ -926,7 +926,7 @@ For a complete explanation of the rules of precedence, and
 other specific topics see \fI\*(xT\fP and \fI\*(xL\fP.
 .NH 4
 Creating Argument Lists
-.IN "Argument Lists" "" "@DEF@"
+.IN "argument lists" "" "@DEF@"
 .LP
 To set up an argument list for the inline specification of widget attributes,
 you may use any of the four approaches discussed in this section.
@@ -1054,7 +1054,7 @@ Example Programs
 .XS
 	Example Programs
 .XE
-.IN "Examples"
+.IN "examples"
 .LP
 The best way to understand how to use any programming library is by
 trying some simple examples.  A collection of example programs that

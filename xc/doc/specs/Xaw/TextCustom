@@ -4,7 +4,7 @@ Customizing the Text Widget
 .XS
 	Customizing the Text Widget
 .XE
-.IN "Text widget" "Customizing" "@DEF@" 
+.IN "Text widget" "customizing" "@DEF@" 
 .LP
 The remainder of this chapter will describe customizing the Text
 widget.  The Text widget may be customized by subclassing, or by

@@ -68,7 +68,7 @@ be the width of the widest entry.
 .Xy
 .NH 3
 Subclassing the Sme Object
-.IN "Sme object" "Subclassing" "@DEF"
+.IN "Sme object" "subclassing" "@DEF"
 .LP
 .sp
 To Create a new Sme object you will need to define a few class procedures.

@@ -5,7 +5,7 @@ Text Widget Actions.
 .XS
 	Actions Supported by all Text Widgets
 .XE
-.IN "Text widget" "Actions" "@DEF@"
+.IN "Text widget" "actions" "@DEF@"
 
 All editing functions are performed by translation manager actions that may
 be specified through the \fBtranslations\fP resource in the Text widget.
@@ -391,7 +391,7 @@ Default Translation Bindings
 .XS
 	Default Translation Bindings
 .XE
-.IN "Text widget" "Default Translations"
+.IN "Text widget" "default translations"
 The following translations are defaults built into every Text widget.
 They can be overridden, or replaced by specifying a new value for the
 Text widget's \fBtranslations\fP resource.

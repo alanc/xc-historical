@@ -127,7 +127,7 @@ the Viewport.
 .NH 3
 Layout Semantics
 .LP
-.IN "Viewport widget" "Layout semantics"
+.IN "Viewport widget" "layout semantics"
 The Viewport widget manages a single child widget.  When the size of the
 child is larger than the size of the Viewport, the user can interactively
 move the child within the Viewport by repositioning the scrollbars.

@@ -200,12 +200,11 @@ This must be the first action to begin a new movement.
 .IP \fBNotifyScroll\fP(\fIvalue\fP) 1.5i
 The possible \fIvalues\fP are Proportional or FullLength.  If the
 argument to StartScroll was Forward or Backward, NotifyScroll executes
-the
-.PN scrollProc
-callbacks and passes either; the position of the pointer, if \fIvalue\fP
-is Proportional, or the full length of the scroll bar, if \fIvalue\fP is
-FullLength.  If the argument to StartScroll was Continuous, NotifyScroll
-returns without executing any callbacks.
+the \fBscrollProc\fP callbacks and passes either; the position of the
+pointer, if \fIvalue\fP is Proportional, or the full length of the
+scroll bar, if \fIvalue\fP is FullLength.  If the argument to
+StartScroll was Continuous, NotifyScroll returns without executing any
+callbacks.
 .IP \fBEndScroll\fP(\^) 1.5i
 This must be the last action after a movement is complete.
 .IP \fBMoveThumb\fP(\^) 1.5i

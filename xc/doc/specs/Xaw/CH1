@@ -6,7 +6,7 @@
 .ce 3
 \s+1\fBChapter 1\fP\s-1
 
-\s+1\fBAthena Widgets and The Itrinsics\fP\s-1
+\s+1\fBAthena Widgets and The Intrinsics\fP\s-1
 .sp 2
 .nr H1 1
 .nr H2 0
@@ -18,28 +18,28 @@
 Chapter 1 \- Athena Widgets and The \*(xI
 .XE
 The X Toolkit is made up of two distinct pieces, the Xt \*(xI and a
-widget set. 
-The Athena widget set is a sample implementation of a widget set built
-upon the \*(xI.  In the \*(tk, a widget is the combination of an X
-window or subwindow and its associated input and output semantics.
+widget set.  The Athena widget set is a sample implementation of a
+widget set built upon the \*(xI.  In the \*(tk, a widget is the
+combination of an X window or subwindow and its associated input and
+output semantics.
 .LP
-Because the \*(xI provide
-the same basic functionality to all widget sets it may be possible to
-use widgets from the Athena widget set with other widget sets based 
-upon the \*(xI.  Since widget sets may also implement private protocols,
-all functionality may not be available when mixing and matching widget sets.
-For information about the \*(xI, see the \fI\*(xT\fP.
+Because the \*(xI provide the same basic functionality to all widget
+sets it may be possible to use widgets from the Athena widget set with
+other widget sets based upon the \*(xI.  Since widget sets may also
+implement private protocols, all functionality may not be available when
+mixing and matching widget sets.  For information about the \*(xI, see
+the \fI\*(xT\fP.
 .LP
 The Athena widget set is a library package layered on top of the \*(xI
 and Xlib that provides a set of user interface tools sufficient to build
 a wide variety of applications.  This layer extends the basic
-abstractions provided by X and provides the next layer of
-functionality primarily by supplying a cohesive set of sample widgets.
-Although the \*(xI are a Consortium standard, there is no standard widget set.
+abstractions provided by X and provides the next layer of functionality
+primarily by supplying a cohesive set of sample widgets.  Although the
+\*(xI are a Consortium standard, there is no standard widget set.
 .LP
-To the extent possible, the \*(xI are "policy-free".
-The application environment and widget set, not the \*(xI, define,
-implement, and enforce:
+To the extent possible, the \*(xI are "policy-free".  The application
+environment and widget set, not the \*(xI, define, implement, and
+enforce:
 .IP \(bu 5
 Policy
 .IP \(bu 5
@@ -47,9 +47,9 @@ Consistency
 .IP \(bu 5
 Style 
 .LP
-Each individual widget implementation defines its own policy.
-The \*(tk design allows for, but does not necessarily encourage, 
-the free mixing of radically differing widget implementations.
+Each individual widget implementation defines its own policy.  The \*(tk
+design allows for, but does not necessarily encourage, the free mixing
+of radically differing widget implementations.
 .NH 2
 Introduction to the \*(tk 
 .LP
@@ -111,7 +111,7 @@ and used throughout this document.
 .IP
 A programmer who uses the \*(tk to produce an application user interface.
 .LP
-.PN Child
+\fBChild\fP
 .IN "child" "" "@DEF"
 .IP
 A widget that is contained within another "parent" widget.
@@ -143,7 +143,7 @@ A specific widget object as opposed to a general widget class.
 A function or procedure implemented by a widget class.
 .LP
 \fBName\fP
-.IN "name" "" "@DEF@"
+.IN "name" "widget" "@DEF@"
 .IP
 The name that is specific to an instance of a widget for a given client.
 This name is specified at creation time and cannot be modified.
@@ -165,7 +165,7 @@ types of widgets.
 If a function is unique to a single widget type,
 the widget exports the function.
 .LP
-.PN Parent
+\fBParent\fP
 .IN "parent" "" "@DEF@"
 .IP
 A widget that contains at least one other ("child") widget.
@@ -177,7 +177,7 @@ A parent widget is also known as a composite widget.
 A named piece of data in a widget that can be set by a client,
 by an application, or by user defaults.
 .LP
-.PN Superclass
+\fBSuperclass\fP
 .IN "superclass" "" "@DEF@"
 .IP
 A larger class of which a specific class is a member.
@@ -331,7 +331,7 @@ called the ``private'' header file.
 This is the widget class of this widget.  This global symbol is passed to
 \fBXtCreateWidget\fP so that the \(*xI will know which type of widget
 to create.
-.IN "class header" "" "@DEF@"
+.IN "class name" "" "@DEF@"
 .IP "\fBClass Name\fP" 2.0i
 This is the resource name of this class.  This name can be used in
 a resource file to match any widget of this class. 
