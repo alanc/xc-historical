@@ -1,21 +1,4 @@
 .TH XTERM 1 "Release 4" "X Version 11"
-.de Ds
-.nf
-.\\$1D \\$2 \\$1
-.ft 1
-.ps \\n(PS
-.\".if \\n(VS>=40 .vs \\n(VSu
-.\".if \\n(VS<=39 .vs \\n(VSp
-..
-.de De
-.ce 0
-.if \\n(BD .DF
-.nr BD 0
-.in \\n(OIu
-.if \\n(TM .ls 2
-.sp \\n(DDu
-.fi
-..
 .SH NAME
 xterm \- terminal emulator for X
 .SH SYNOPSIS
@@ -987,7 +970,8 @@ The \fImainMenu\fP contains items that apply to both the VT102 and Tektronix
 windows.
 The
 .B Secure Keyboard
-mode should be used when typing in passwords or other sensitive data;
+mode is be used when typing in passwords or other sensitive data in an
+unsecure environment;
 see \fBSECURITY\fP below.
 Notable entries in the command section of the menu are the
 .BR Continue ,
@@ -1033,19 +1017,18 @@ The
 entry in the command section clears the Tektronix window.
 .SH SECURITY
 .PP
-X environments differ in their security consciousness.  The servers provided
-by MIT use a host-based mechanism to control access to the server (see
-\fIxhost(1)\fP).  If you enable access for a host, and other users are
-also permitted to run clients on that host, there is the possibility that
-someone will run an application that will attempt to use the basic services
-of the X protocol to snoop on your activities, and potentially capture a
-transcript of everything you type at the keyboard.  This is of particular
-concern when you want to type in a password or other sensitive data.
-The best solution to this problem is for the industry to choose a standard
-authorization mechanism, with the necessary operating system support,
-and to incorporate this into the X protocol (which is already designed to
-handle such a mechanism).  In the mean time, since passwords are most
-commonly typed to something running in an \fIxterm\fP window, a simple
+X environments differ in their security consciousness.  MIT servers, run
+under \fIxdm\fP, are capable of using a ``magic cookie'' authorization
+scheme that can provide a reasonable level of security for many people.
+If your server is only using a host-based mechanism to control access to
+the server (see \fIxhost(1)\fP), then if you enable access for a host and
+other users are also permitted to run clients on that same host, there is
+every possibility that someone can run an application that will use the
+basic services of the X protocol to snoop on your activities, potentially
+capturing a transcript of everything you type at the keyboard.
+This is of particular concern when you want to type in a password or other
+sensitive data.  The best solution to this problem is to use a better
+authorization mechanism that host-based control, but a simple
 mechanism exists for protecting keyboard input in \fIxterm\fP.
 .PP
 The \fBxterm\fP menu (see \fBMENUS\fP above) contains a \fBSecure Keyboard\fP
@@ -1380,52 +1363,52 @@ This action send the indicated graphics input code.
 The default bindings in the VT102 window are:
 .sp
 .in +4
+.DS
+.TA 2.5i
+.ta 2.5i
 .nf
-.\".DS
-.\".TA .5i 1i 2i
-.\".ta .5i 1i 2i
-  Shift <KeyPress> Prior:	scroll-back(1,halfpage) \\n\\
+ Shift <KeyPress> Prior:	scroll-back(1,halfpage) \\n\\
   Shift <KeyPress> Next:	scroll-forw(1,halfpage) \\n\\
-  Shift <KeyPress> Select:	select-cursor-start() \\
-				select-cursor-end(PRIMARY, CUT_BUFFER0) \\n\\
-  Shift <KeyPress> Insert:	insert-selection(PRIMARY, CUT_BUFFER0) \\n\\
-       ~Meta<KeyPress>: 	insert-seven-bit()	\\n\\
-        Meta<KeyPress>: 	insert-eight-bit()	\\n\\
- Ctrl ~Meta<Btn1Down>:		popup-menu(mainMenu) \\n\\
-      ~Meta <Btn1Down>:		select-start()	\\n\\
-      ~Meta <Btn1Motion>:	select-extend() \\n\\
- Ctrl ~Meta <Btn2Down>:		popup-menu(vtMenu) \\n\\
-~Ctrl ~Meta <Btn2Down>:		ignore()	\\n\\
-~Ctrl ~Meta <Btn2Up>:		insert-selection(PRIMARY, CUT_BUFFER0) \\n\\
- Ctrl ~Meta <Btn3Down>:		popup-menu(fontMenu) \\n\\
-~Ctrl ~Meta <Btn3Down>:		start-extend()	\\n\\
-      ~Meta <Btn3Motion>:	select-extend()	\\n\\
-~Ctrl ~Meta <BtnUp>:		select-end(PRIMARY, CUT_BUFFER0) \\n\\
-	    <BtnDown>:		bell(0)
-.\".DE
+Shift <KeyPress> Select:	select-cursor-start() \\
+	select-cursor-end(PRIMARY, CUT_BUFFER0) \\n\\
+Shift <KeyPress> Insert:	insert-selection(PRIMARY, CUT_BUFFER0) \\n\\
+        ~Meta<KeyPress>: 	insert-seven-bit() \\n\\
+         Meta<KeyPress>: 	insert-eight-bit() \\n\\
+   Ctrl ~Meta<Btn1Down>:	popup-menu(mainMenu) \\n\\
+       ~Meta <Btn1Down>:	select-start() \\n\\
+     ~Meta <Btn1Motion>:	select-extend() \\n\\
+  Ctrl ~Meta <Btn2Down>:	popup-menu(vtMenu) \\n\\
+ ~Ctrl ~Meta <Btn2Down>:	ignore() \\n\\
+   ~Ctrl ~Meta <Btn2Up>:	insert-selection(PRIMARY, CUT_BUFFER0) \\n\\
+  Ctrl ~Meta <Btn3Down>:	popup-menu(fontMenu) \\n\\
+ ~Ctrl ~Meta <Btn3Down>:	start-extend() \\n\\
+     ~Meta <Btn3Motion>:	select-extend() \\n\\
+    ~Ctrl ~Meta <BtnUp>:	select-end(PRIMARY, CUT_BUFFER0) \\n\\
+              <BtnDown>:	bell(0)
 .fi
+.DE
 .sp
 .in -4
 .PP
 The default bindings in the Tektronix window are:
 .sp
 .in +4
+.DS
+.TA 2.5i
+.ta 2.5i
 .nf
-.\".DS
-.\".TA .5i 1i 2i
-.\".ta .5i 1i 2i
-       ~Meta<KeyPress>: 	insert-seven-bit()	\\n\\
-        Meta<KeyPress>: 	insert-eight-bit()\\n\\
- Ctrl ~Meta<Btn1Down>:		popup-menu(mainMenu) \\n\\
- Ctrl ~Meta <Btn2Down>:		popup-menu(tekMenu) \\n\\
- Shift ~Meta<Btn1Down>:		gin-press(L) \\n\\
-       ~Meta<Btn1Down>:		gin-press(l) \\n\\
- Shift ~Meta<Btn2Down>:		gin-press(M) \\n\\
-       ~Meta<Btn2Down>:		gin-press(m) \\n\\
- Shift ~Meta<Btn3Down>:		gin-press(R) \\n\\
-       ~Meta<Btn3Down>:		gin-press(r)
-.\".DE
+      ~Meta<KeyPress>: 	insert-seven-bit() \\n\\
+       Meta<KeyPress>: 	insert-eight-bit()\\n\\
+ Ctrl ~Meta<Btn1Down>:	popup-menu(mainMenu) \\n\\
+Ctrl ~Meta <Btn2Down>:	popup-menu(tekMenu) \\n\\
+Shift ~Meta<Btn1Down>:	gin-press(L) \\n\\
+      ~Meta<Btn1Down>:	gin-press(l) \\n\\
+Shift ~Meta<Btn2Down>:	gin-press(M) \\n\\
+      ~Meta<Btn2Down>:	gin-press(m) \\n\\
+Shift ~Meta<Btn3Down>:	gin-press(R) \\n\\
+      ~Meta<Btn3Down>:	gin-press(r)
 .fi
+.DE
 .sp
 .in -4
 .PP
@@ -1434,9 +1417,10 @@ keys for entering commonly-typed works:
 .sp
 .in +4
 .nf
-.\".DS
-.\".TA .5i
-.\".ta .5i
+.DS
+.TA .5i 1.5i
+.ta .5i 1.5i
+.nf
 *VT100.Translations: #override <Key>F13: keymap(dbx)
 *VT100.dbxKeymap.translations: \\
 	<Key>F14:	keymap(None) \\n\\
@@ -1444,8 +1428,8 @@ keys for entering commonly-typed works:
 	<Key>F18:	string("step") string(0x0d) \\n\\
 	<Key>F19:	string("continue") string(0x0d) \\n\\
 	<Key>F20:	string("print ") insert-selection(PRIMARY, CUT_BUFFER0)
-.\".DE
 .fi
+.DE
 .sp
 .in -4
 .SH "OTHER FEATURES"
