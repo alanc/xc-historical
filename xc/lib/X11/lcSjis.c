@@ -1,4 +1,4 @@
-/* $XConsortium: lcSjis.c,v 1.1 93/09/17 13:31:30 rws Exp $ */
+/* $XConsortium: lcSjis.c,v 1.2 93/09/19 09:18:16 rws Exp $ */
 /****************************************************************
 
         Copyright 1992, 1993 by FUJITSU LIMITED
@@ -31,10 +31,6 @@ OF THIS SOFTWARE.
 
 #include "Xlibint.h"
 #include "XlcGeneric.h"
-
-#ifndef isascii
-#define isascii(c) (!((c) & 0x80))
-#endif
 
 #define CS0	codesets[0]		/* Codeset 0 - 7-bit ASCII	*/
 #define CS1	codesets[1]		/* Codeset 1 - Kanji		*/
@@ -412,9 +408,9 @@ jis_to_sjis(p1, p2)
 static int
 sjis_mbtocs(conv, from, from_left, to, to_left, args, num_args)
     XlcConv conv;
-    char **from;
+    XPointer *from;
     int *from_left;
-    char **to;
+    XPointer *to;
     int *to_left;
     XPointer *args;
     int num_args;
@@ -474,9 +470,9 @@ sjis_mbtocs(conv, from, from_left, to, to_left, args, num_args)
 static int
 sjis_mbstocs(conv, from, from_left, to, to_left, args, num_args)
     XlcConv conv;
-    char **from;
+    XPointer *from;
     int *from_left;
-    char **to;
+    XPointer *to;
     int *to_left;
     XPointer *args;
     int num_args;
@@ -1269,7 +1265,7 @@ _XlcCheckCTSequence(state, ctext, ctext_len)
     }
 
     if (charset == (XlcCharSet) NULL)
-	return -1;	/* XXX  was 0!!! */
+	return -1;      /* XXX  was 0????!!! */
 
     if (charset->side == XlcGL)
 	state->GL_charset = charset;
@@ -1544,8 +1540,6 @@ char *to;
  * Each converter type has its own set of data structures (prefixed by
  * "sgl" (single) and "dbl" (double)).
  */
-
-extern Bool _XlcInitCTInfo();
 
     static XlcConvRec sglconvrec;
     static XlcConvMethodsRec sglconv_methods;
