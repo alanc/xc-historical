@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Drawing.h,v 1.6 90/03/28 15:36:28 swick Exp $
+ * $XConsortium: Drawing.h,v 1.7 90/04/03 09:42:31 swick Exp $
  *
  * Copyright 1988 by the Massachusetts Institute of Technology
  *
@@ -33,7 +33,7 @@ typedef unsigned long Pixel;
 extern "C" {					/* for C++ V2.0 */
 #endif
 
-void XmuDrawRoundedRectangle(
+extern void XmuDrawRoundedRectangle(
 #if NeedFunctionPrototypes
     Display*	/* dpy */,
     Drawable 	/* draw */,
@@ -47,7 +47,7 @@ void XmuDrawRoundedRectangle(
 #endif
 );
 
-void XmuFillRoundedRectangle(
+extern void XmuFillRoundedRectangle(
 #if NeedFunctionPrototypes
     Display*	/* dpy */,
     Drawable 	/* draw */,
@@ -61,7 +61,7 @@ void XmuFillRoundedRectangle(
 #endif
 );
 
-void XmuDrawLogo(
+extern void XmuDrawLogo(
 #if NeedFunctionPrototypes
     Display*	/* dpy */,
     Drawable 	/* drawable */,
@@ -74,7 +74,7 @@ void XmuDrawLogo(
 #endif
 );
 
-Pixmap XmuCreatePixmapFromBitmap(
+extern Pixmap XmuCreatePixmapFromBitmap(
 #if NeedFunctionPrototypes
     Display*		/* dpy */,
     Drawable 		/* d */,
@@ -87,7 +87,7 @@ Pixmap XmuCreatePixmapFromBitmap(
 #endif
 );
 
-Pixmap XmuCreateStippledPixmap(
+extern Pixmap XmuCreateStippledPixmap(
 #if NeedFunctionPrototypes
     Screen*		/* screen */,
     Pixel		/* fore */,
@@ -96,20 +96,14 @@ Pixmap XmuCreateStippledPixmap(
 #endif
 );
 
-void XmuReleaseStippledPixmap(
+extern void XmuReleaseStippledPixmap(
 #if NeedFunctionPrototypes
     Screen*		/* screen */,
     Pixmap 		/* pixmap */
 #endif
 );
 
-Pixmap XtGrayPixmap(
-#if NeedFunctionPrototypes
-    Screen*		/* screen */
-#endif
-);
-
-Pixmap XmuLocateBitmapFile(
+extern Pixmap XmuLocateBitmapFile(
 #if NeedFunctionPrototypes
     Screen*		/* screen */,
     char*		/* name */,
@@ -122,7 +116,7 @@ Pixmap XmuLocateBitmapFile(
 #endif
 );
 
-Pixmap XmuLocatePixmapFile(
+extern Pixmap XmuLocatePixmapFile(
 #if NeedFunctionPrototypes
     Screen*		/* screen */,
     char*		/* name */,
@@ -138,7 +132,7 @@ Pixmap XmuLocatePixmapFile(
 #endif
 );
 
-int XmuReadBitmapData(
+extern int XmuReadBitmapData(
 #if NeedFunctionPrototypes
     FILE*		/* fstream */,
     unsigned int*	/* width_return */,
@@ -149,7 +143,7 @@ int XmuReadBitmapData(
 #endif
 );
 
-int XmuReadBitmapDataFromFile(
+extern int XmuReadBitmapDataFromFile(
 #if NeedFunctionPrototypes
     char*		/* filename */,
     unsigned int*	/* width_return */,
