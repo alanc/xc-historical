@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: cpa_ws.c,v 5.1 91/02/16 09:48:28 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -505,7 +505,7 @@ phg_cpa_set_filter( cph, cp_args, ws )
     if ( args->type == PHG_ARGS_FLT_PICK ) {
 	if ( cph->flags.monitor_active )
 	    /* Send it to the PM to set. */
-	    phg_cpc_class_C( cph, cp_args, (Phg_ret *)NULL );
+	    phg_cpc_class_C( cph, cp_args );
     } else
 	phg_wsx_set_name_set( ws, args->type, (Pint)0, &args->inc_set,
 	    &args->exc_set );

@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: cpb_clnt.c,v 5.1 91/02/16 09:48:44 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -350,7 +350,7 @@ phg_cpbc_ar_archive( cph, arh, args, css_srvr )
     register caddr_t	buffer = NULL;
     register unsigned	buf_size = 0;
 
-    cp_args.op = CP_FUNC_OP_INQ_EL_CONTENT;
+    cp_args.op = (unsigned)CP_FUNC_OP_INQ_EL_CONTENT;
     for ( i = 0; i < args->data.num_ints; i++ ) { /* for all structs */
 	cp_args.data.q_el_data.struct_id = args->data.ints[i];
 	cp_args.data.q_el_data.el_id = 1;
@@ -386,10 +386,10 @@ phg_cpbc_ar_archive( cph, arh, args, css_srvr )
 
 	/* Write the entire structure to the archive. */
 	if ( phg_ar_write_struct_to_archive( arh, args->data.ints[i], 
-		args->resflag, struct_length, num_els, buffer ) ) {
+			args->resflag, (Pint)struct_length, (Pint)num_els, buffer ) ) {
 	    ERR_BUF(cph->erh, ERR406);
 	    if ( buffer )
-		free( (char *)buffer );
+				free( (char *)buffer );
 	    return;
 	}
     }

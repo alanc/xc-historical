@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: cpx_clnt.c,v 5.1 91/02/16 09:48:19 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -255,9 +255,9 @@ build_argv( cph, open_info, name, class )
 }
 
 #define PHG_CP_ADD_WSTS \
-    ( phg_cp_add_wst( cph, phigs_ws_type_x_tool ) \
+    ( phg_cp_add_wst( cph, (Wst_handle)phigs_ws_type_x_tool ) \
      && \
-      phg_cp_add_wst( cph, phigs_ws_type_x_drawable ) \
+      phg_cp_add_wst( cph, (Wst_handle)phigs_ws_type_x_drawable ) \
     )
 
 Cp_handle

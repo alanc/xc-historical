@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: cpx_ws.c,v 5.1 91/02/16 09:48:34 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -522,7 +522,7 @@ phg_cpx_inq_text_extent( cph, cp_args, ret )
     
     ret->err = 0;
     if ( ws = phg_cpx_ws_exists( cph, CPX_BY_WSID, (Cpx_css_srvr *)NULL,
-	    cp_args->data.q_text_extent.wsid )) {
+	    (int)cp_args->data.q_text_extent.wsid )) {
 	(*ws->css_srvr->inq_text_extent )( cph, cp_args, ret, ws );
     }
 }

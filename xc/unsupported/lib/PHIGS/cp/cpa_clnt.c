@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: cpa_clnt.c,v 5.1 91/02/16 09:48:42 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -248,11 +248,11 @@ Cpx_css_srvr	    *css_srvr;
 	    }
 	    
 	    if (phg_ar_write_struct_to_archive(arh, stp->sid, 
-		    args->resflag, struct_length * sizeof(CARD32), 
-		    num_elements, buffer)) {
-		ERR_BUF(cph->erh, ERR406);
-		free(buffer);
-		return;
+					args->resflag, (Pint)struct_length * sizeof(CARD32), 
+					(Pint)num_elements, buffer)) {
+				ERR_BUF(cph->erh, ERR406);
+				free(buffer);
+				return;
 	    }
 	}
     }
