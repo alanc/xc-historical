@@ -14,8 +14,23 @@
 OS_NAME_DEFINES = OsNameDefines
 #endif
 
+/*
+ * If you add anything to this list, don't forget to update ./X11/Imakefile
+ */
 HEADERS = \
-	Xmu.h
+	Xmu.h \
+	Atoms.h \
+	CharSet.h \
+	CloseHook.h \
+	Converters.h \
+	Drawing.h \
+	Error.h \
+	Initer.h \
+	Misc.h \
+	StdSel.h \
+	StdCmap.h \
+	WindowUtil.h
+
 
 SRCS = \
 	AllCmap.c \
