@@ -1,5 +1,6 @@
 #ifndef lint
-static char rcsid[] = "$Header: Vendor.c,v 1.29 88/02/26 12:49:17 swick Exp $";
+static char rcsid[] = "$xHeader: Vendor.c,v 1.3 88/08/19 13:11:01 asente Exp $";
+/* $oHeader: Vendor.c,v 1.3 88/08/19 13:11:01 asente Exp $ */
 #endif lint
 
 /***********************************************************
@@ -30,7 +31,6 @@ SOFTWARE.
 
 #include <pwd.h>
 #include <stdio.h>
-#include <X11/Xos.h>
 #include <sys/param.h>
 
 #include "IntrinsicI.h"
@@ -40,16 +40,20 @@ SOFTWARE.
 #include "Vendor.h"
 #include "VendorP.h"
 
+
 /***************************************************************************
  *
  * Vendor shell class record
  *
  ***************************************************************************/
 
+#define Offset(x)	(XtOffset(VendorShellWidget, x))
+
 static void _VendorShellInitialize();
 static Boolean _VendorShellSetValues();
+static void Realize();
 
-globaldef VendorShellClassRec vendorShellClassRec = {
+externaldef(vendorshellclassrec) VendorShellClassRec vendorShellClassRec = {
   {
     /* superclass         */    (WidgetClass) &wmShellClassRec,
     /* class_name         */    "VendorShell",
@@ -59,7 +63,7 @@ globaldef VendorShellClassRec vendorShellClassRec = {
     /* Class init'ed ?    */	FALSE,
     /* initialize         */    _VendorShellInitialize,
     /* initialize_notify    */	NULL,		
-    /* realize            */    XtInheritRealize,
+    /* realize            */    Realize,
     /* actions            */    NULL,
     /* num_actions        */    0,
     /* resources          */    NULL,
@@ -80,17 +84,25 @@ globaldef VendorShellClassRec vendorShellClassRec = {
     /* intrinsics version */	XtVersion,
     /* callback offsets   */    NULL,
     /* tm_table		  */	NULL,
+    /* query_geometry	    */  NULL,
+    /* display_accelerator  */  NULL,
+    /* extension	    */  NULL
   },{
     /* geometry_manager   */    XtInheritGeometryManager,
     /* change_managed     */    XtInheritChangeManaged,
     /* insert_child	  */	XtInheritInsertChild,
     /* delete_child	  */	XtInheritDeleteChild,
-    /* move_focus_to_next */    NULL,
-    /* move_focus_to_prev */    NULL
+    /* extension	    */  NULL
+  },{
+    /* extension	    */  NULL
+  },{
+    /* extension	    */  NULL
+  },{
+    /* extension	    */  NULL
   }
 };
 
-globaldef WidgetClass vendorShellWidgetClass =
+externaldef(vendorshellwidgetclass) WidgetClass vendorShellWidgetClass =
 	(WidgetClass) (&vendorShellClassRec);
 
 /* ARGSUSED */
@@ -105,3 +117,16 @@ static Boolean _VendorShellSetValues(old, ref, new)
 {
 	return FALSE;
 }
+
+static void Realize(wid, vmask, attr)
+	Widget wid;
+	Mask *vmask;
+	XSetWindowAttributes *attr;
+{
+	WidgetClass super = wmShellWidgetClass;
+
+	/* Make my superclass do all the dirty work */
+
+	(*super->core_class.realize) (wid, vmask, attr);
+}
+
