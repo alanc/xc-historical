@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: os.h,v 1.55 94/01/04 01:07:09 rob Exp $ */
+/* $XConsortium: os.h,v 1.56 94/01/11 23:18:00 rob Exp $ */
 
 #ifndef OS_H
 #define OS_H
@@ -62,7 +62,11 @@ extern char *alloca();
 
 #if HCVERSION < 21003
 #define ALLOCATE_LOCAL(size)	alloca((int)(size))
+#if defined(NCR)
+#pragma on(alloca);
+#else
 pragma on(alloca);
+#endif
 #else /* HCVERSION >= 21003 */
 #define	ALLOCATE_LOCAL(size)	_Alloca((int)(size))
 #endif /* HCVERSION < 21003 */

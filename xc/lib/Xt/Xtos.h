@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Xtos.h,v 1.12 93/09/11 16:15:06 rws Exp $
+* $XConsortium: Xtos.h,v 1.13 93/09/17 12:32:39 gildea Exp $
 */
 
 /***********************************************************
@@ -54,7 +54,11 @@ extern char *alloca();
 
 #if HCVERSION < 21003
 #define ALLOCATE_LOCAL(size)	alloca((int)(size))
+#if defined(NCR)
+#pragma on(alloca);
+#else
 pragma on(alloca);
+#endif
 #else /* HCVERSION >= 21003 */
 #define	ALLOCATE_LOCAL(size)	_Alloca((int)(size))
 #endif /* HCVERSION < 21003 */
