@@ -1,9 +1,5 @@
-#define IHaveSubdirs
-#define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
-
     STD_DEFINES = LibraryDefines
     CDEBUGFLAGS = LibraryCDebugFlags
-        SUBDIRS = clients
        INCLUDES = -I. -I$(XRMSRC) -I$(XLIBSRC) -I$(TOP) -I$(TOP)/X11
         DEFINES = -DLIBDIR=\"$(LIBDIR)\"
    INSTALLFLAGS = -m 0644
@@ -154,9 +150,6 @@ InstallLibraryAlias(Xtk_p,Xtk11_p,$(USRLIBDIR))
 DebuggedLibraryTarget(Xtk,$(OBJS))
 AliasedLibraryTarget(Xtk_d,Xtk11_d)
 #endif
-
-MakeSubdirs($(SUBDIRS))
-DependSubdirs($(SUBDIRS))
 
 InstallMultiple($(HEADERS),$(INCDIR))
 
