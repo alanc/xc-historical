@@ -1,4 +1,4 @@
-/* $XConsortium: smproxy.h,v 1.2 94/07/18 15:17:40 mor Exp $ */
+/* $XConsortium: smproxy.h,v 1.3 94/07/27 16:05:47 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1994  X Consortium
@@ -44,8 +44,6 @@ extern void free();
 
 typedef struct WinInfo {
     Window window;
-    Bool waiting_for_required_props;
-    Bool got_wm_state;
     SmcConn smc_conn;
     XtInputId input_id;
     char *client_id;
@@ -54,9 +52,14 @@ typedef struct WinInfo {
     XClassHint class;
     char *wm_name;
     XTextProperty wm_client_machine;
-    Bool has_save_yourself;
-    Bool waiting_for_update;
     struct WinInfo *next;
+
+    unsigned int waiting_for_required_props : 1;
+    unsigned int got_wm_state : 1;
+    unsigned int has_save_yourself : 1;
+    unsigned int waiting_for_update : 1;
+    unsigned int got_first_save_yourself : 1;
+
 } WinInfo;
 
 
