@@ -63,7 +63,7 @@ WarpUnmapped			# allow warping to unmapped windows
 
 Pixmaps
 {
-    TitleHighlight "solid4x4"		# make it stand out
+#    TitleHighlight "solid4x4"		# make it stand out
 }
 
 Color
@@ -128,12 +128,12 @@ Button1	= c|m|s	: root				: f.refresh
 "F26"		=	: all			: f.warpto "emacs"
 "KP_Subtract"	=	: all			: f.colormap "next"
 "KP_Add"	=	: all			: f.colormap "default"
-"Home"		=	: all			: f.warptoiconmgr ""
 "Left"		= m	: all			: f.backiconmgr
 "Right"		= m	: all			: f.forwiconmgr
 "Up"		= m	: all			: f.upiconmgr
 "Down"		= m	: all			: f.downiconmgr
-
+"Left"		= mod5	: all			: f.warpring "prev"
+"Right"		= mod5	: all			: f.warpring "next"
 
 ###############################################################################
 #                                                                             #
