@@ -219,7 +219,14 @@ terminates the application. If \fIfallback_resources\fP is non-NULL,
 .ZN XtAppSetFallbackResources
 is called with the value prior to calling
 .ZN XtOpenDisplay .
+.LP
+XtAppInitialize and XtVaAppInitialize have been superceded by
+.ZN XtOpenApplication
+and
+.ZN XtVaOpenApplication
+respectively.
 .SH "SEE ALSO"
+XtOpenApplication(3Xt), XtVaOpenApplication(3Xt)
 .br
 \fI\*(xT\fP
 .br
