@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: parse.c,v 1.49 91/01/18 17:26:34 dave Exp $
+ * $XConsortium: parse.c,v 1.50 91/05/08 11:02:37 dave Exp $
  *
  * parse the .twmrc file
  *
@@ -1001,8 +1001,10 @@ void assign_var_savecolor()
     }
     cp = cp->next;
   }
-  if (chead)
+  if (chead) {
     free(chead);
+    chead = NULL;
+  }
 }
 
 static int ParseUsePPosition (s)
