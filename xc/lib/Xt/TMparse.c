@@ -1,7 +1,4 @@
-#ifndef lint
-static char Xrcsid[] = "$XConsortium: TMparse.c,v 1.90 90/04/04 11:28:42 swick Exp $";
-/* $oHeader: TMparse.c,v 1.4 88/09/01 17:30:39 asente Exp $ */
-#endif /*lint*/
+/* $XConsortium: TMparse.c,v 1.91 90/06/04 15:06:41 kit Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -490,7 +487,7 @@ static void StoreLateBindings(keysymL,notL,keysymR,notR,lateBindings)
             temp[count].pair = FALSE;
             temp[count++].keysym = keysymR;
         }
-        temp[count].knot = NULL;
+        temp[count].knot = FALSE;
         temp[count].keysym = NULL;
     }
     
@@ -576,6 +573,7 @@ static String ScanWhitespace(str)
     while (*str == ' ' || *str == '\t') str++;
     return str;
 }
+
 static String FetchModifierToken(str,modStr)
     String str,modStr;
 {
@@ -773,7 +771,6 @@ static KeySym StringToKeySym(str, error)
 
     k = XStringToKeysym(str);
     if (k != NoSymbol) return k;
-
     if ('0' <= *str && *str <= '9') return (KeySym) StrToNum(str);
 
 #ifdef NOTASCII
@@ -1608,9 +1605,9 @@ static String ParseParamSeq(str, paramSeqP, paramNumP)
     }
 
     if (num_params != 0) {
-	String *paramP =
-	    *paramSeqP = (String *)
+	String *paramP = (String *)
 		XtMalloc( (unsigned)(num_params+1) * sizeof(String) );
+	*paramSeqP = paramP;
 	*paramNumP = num_params;
 	paramP += num_params; /* list is LIFO right now */
 	*paramP-- = NULL;
@@ -1656,7 +1653,7 @@ static String ParseAction(str, actionP, quarkP, error)
 
 
 static String ParseActionSeq(stateTable,str, actionsP,acc,error)
-    XtTranslations stateTable;
+    StateTablePtr stateTable;
     String str;
     ActionPtr *actionsP;
     Bool acc;
@@ -1665,8 +1662,8 @@ static String ParseActionSeq(stateTable,str, actionsP,acc,error)
     ActionPtr *nextActionP = actionsP;
     int index;
     Boolean found;
-    *actionsP = NULL;
 
+    *actionsP = NULL;
     while (*str != '\0' && *str != '\n') {
 	register ActionPtr	action;
 	XrmQuark quark;
@@ -1742,8 +1739,8 @@ static void ShowProduction(currentProduction)
  * Parses one line of event bindings.
  ***********************************************************************/
 
-static String ParseTranslationTableProduction(stateTable, str,acc)
-  XtTranslations stateTable;
+static String ParseTranslationTableProduction(translateData, str,acc)
+  XtTranslations translateData;
   register String str;
   Boolean acc;
 {
@@ -1751,6 +1748,7 @@ static String ParseTranslationTableProduction(stateTable, str,acc)
     ActionPtr	*actionsP;
     Boolean error = FALSE;
     String	production = str;
+    StateTablePtr stateTable = translateData->stateTable;
 
     str = ParseEventSeq(str, &eventSeq, &actionsP,&error);
     if (error == TRUE) {
@@ -1766,8 +1764,7 @@ static String ParseTranslationTableProduction(stateTable, str,acc)
         return (str);
     }
 
-    _XtAddEventSeqToStateTable(eventSeq, stateTable);
-
+    _XtAddEventSeqToStateTable(eventSeq, translateData);
     FreeEventSeq(eventSeq);
     return (str);
 }
@@ -1808,12 +1805,14 @@ static Boolean CvtStringToAccelerators(dpy, args, num_args, from, to, closure)
 }
 
 
-static String CheckForPoundSign(stateTable,str)
-    XtTranslations stateTable;
+static String CheckForPoundSign(translateData,str)
+    XtTranslations translateData;
     String str;
 {
     String start;
     char operation[20];
+    StateTablePtr stateTable = translateData->stateTable;
+
     if (*str == '#') {
        str++;
        start = str;
@@ -1829,8 +1828,8 @@ static String CheckForPoundSign(stateTable,str)
        else  stateTable->operation = XtTableReplace;
        str = ScanWhitespace(str);
        if (*str == '\n') {
-   	    str++;
-	    str = ScanWhitespace(str);
+	   str++;
+	   str = ScanWhitespace(str);
        }
     }
     else stateTable->operation = XtTableReplace;
@@ -1950,9 +1949,9 @@ _XtAddTMConverters(table)
      _XtTableAddConverter(table, q,
 	     XrmStringToRepresentation(XtRAcceleratorTable),
  	     CvtStringToAccelerators, (XtConvertArgList) NULL,
-	     (Cardinal)0, True, XtCacheNone,(XtDestructor)_XtFreeTranslations);
+	     (Cardinal)0, True, CACHED, _XtFreeTranslations);
      _XtTableAddConverter(table,
-	     XrmStringToRepresentation( _XtRTranslationTablePair),
+	     XrmStringToRepresentation( _XtRTranslationTablePair ),
 	     XrmStringToRepresentation(XtRTranslationTable), 
  	     _XtCvtMergeTranslations, (XtConvertArgList) NULL,
 	     (Cardinal)0, True, CACHED, _XtFreeTranslations);
