@@ -1,4 +1,4 @@
-XCOMM $XConsortium: sv4Lib.rules,v 1.1 91/03/23 16:48:43 rws Exp $
+XCOMM $XConsortium: sv4Lib.rules,v 1.1 91/03/23 16:53:27 rws Exp $
 
 /*
  * SVR4 shared library rules
@@ -17,7 +17,7 @@ XCOMM $XConsortium: sv4Lib.rules,v 1.1 91/03/23 16:48:43 rws Exp $
 #define ShLibIncludeFile <sv4Lib.tmpl>
 #endif
 #ifndef SharedLibraryLoadFlags
-#define SharedLibraryLoadFlags -G
+#define SharedLibraryLoadFlags -G -z text
 #endif
 #ifndef PositionIndependentCFlags
 #define PositionIndependentCFlags -K PIC
