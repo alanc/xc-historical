@@ -1,6 +1,6 @@
 #!/bin/sh
 
-exec > /usr/lib/X11/xdm/session-errors 2>&1
+exec > $HOME/.xsession-errors 2>&1
 
 case $# in
 1)
