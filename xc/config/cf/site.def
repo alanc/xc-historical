@@ -1,4 +1,4 @@
-XCOMM site:  $XConsortium: site.def,v 1.85 93/09/10 12:22:42 rws Exp $
+XCOMM site:  $XConsortium: site.def,v 1.86 93/09/18 16:06:48 rws Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -127,6 +127,10 @@ clean::									@@\
 #undef BuildServer
 #define BuildServer YES
 #define XnestServer YES
+#endif
+
+#ifdef SVR4Architecture
+#define SvgaConfig vga.pmi:1024x768
 #endif
 
 #ifdef i860SVR4Architecture
