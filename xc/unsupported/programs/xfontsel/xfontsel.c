@@ -1,18 +1,44 @@
+#ifndef lint
+static char Xrcsid[] = "$XConsortium: Toggle.c,v 1.11 89/10/09 16:20:48 jim Exp $";
+#endif
+
+/* $XConsortium: copyright.h,v 1.4 89/07/25 16:12:03 rws Exp $ */
+/*
+
+Copyright 1985, 1986, 1987, 1988, 1989 by the
+Massachusetts Institute of Technology
+
+Permission to use, copy, modify, and distribute this
+software and its documentation for any purpose and without
+fee is hereby granted, provided that the above copyright
+notice appear in all copies and that both that copyright
+notice and this permission notice appear in supporting
+documentation, and that the name of M.I.T. not be used in
+advertising or publicity pertaining to distribution of the
+software without specific, written prior permission.
+M.I.T. makes no representations about the suitability of
+this software for any purpose.  It is provided "as is"
+without express or implied warranty.
+
+Author:	Ralph R. Swick, DEC/MIT Project Athena
+	one weekend in November, 1989
+*/
+
 #include <stdio.h>
 #include <X11/Intrinsic.h>
 #include <X11/StringDefs.h>
 #include <X11/Xatom.h>
-#include <X11/Xaw/Cardinals.h>
-#include <X11/Xaw/Paned.h>
+#include <X11/Xaw/AsciiText.h>
 #include <X11/Xaw/Box.h>
+#include <X11/Xaw/Cardinals.h>
 #include <X11/Xaw/Command.h>
+#include <X11/Xaw/Form.h>
 #include <X11/Xaw/MenuButton.h>
-#include <X11/Xaw/Viewport.h>
+#include <X11/Xaw/Paned.h>
 #include <X11/Xaw/SimpleMenu.h>
 #include <X11/Xaw/SmeBSB.h>
-#include <X11/Xaw/AsciiText.h>
-#include <X11/Xaw/Form.h>
 #include <X11/Xaw/Toggle.h>
+#include <X11/Xaw/Viewport.h>
 #include <X11/Xmu/Atoms.h>
 
 #define MIN_APP_DEFAULTS_VERSION 1
@@ -43,6 +69,7 @@ static struct _appRes {
     int app_defaults_version;
     Cursor cursor;
     String font_spec;
+    Boolean print_on_quit;
 } AppRes;
 
 static XtResource resources[] = {
@@ -52,19 +79,26 @@ static XtResource resources[] = {
     { "pattern", "Pattern", XtRString, sizeof(String),
 		XtOffsetOf( struct _appRes, font_spec ),
 		XtRString, "-*-*-*-*-*-*-*-*-*-*-*-*-*-*" },
+    { "printOnQuit", "PrintOnQuit", XtRBoolean, sizeof(Boolean),
+	  	XtOffsetOf( struct _appRes, print_on_quit ),
+      		XtRImmediate, (XtPointer)False },
     { "appDefaultsVersion", "AppDefaultsVersion", XtRInt, sizeof(int),
 		XtOffsetOf( struct _appRes, app_defaults_version ),
 		XtRImmediate, (XtPointer)0 },
 };
 
 static XrmOptionDescRec options[] = {
-{"-fontSpec",	"fontSpec",	XrmoptionSepArg,	NULL}
+{"-pattern",	"pattern",	XrmoptionSepArg,	NULL},
+{"-print",	"printOnQuit",	XrmoptionNoArg,		"True"},
+{"-sample",	"*sampleText.label", XrmoptionSepArg,	NULL},
 };
 
 Syntax(call)
     char *call;
 {
-    fprintf( stderr, "Usage: %s [-toolkitOption] [-fontSpec font]\n", call );
+    fprintf( stderr,
+	     "Usage: %s [-toolkitOption] [-print] [-sample <text>]\n",
+	     call );
 }
 
 
@@ -729,6 +763,7 @@ void Quit(w, closure, callData)
     XtPointer closure, callData;
 {
     XtCloseDisplay(XtDisplay(w));
+    if (AppRes.print_on_quit) printf( "%s", currentFontNameString );
     exit(0);
 }
 
