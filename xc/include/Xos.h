@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: Xos.h,v 1.10 88/09/06 14:30:21 jim Exp $
  * 
  * Copyright 1987 by the Massachusetts Institute of Technology
  *
@@ -55,10 +55,6 @@
 #define SYSV_STRINGS
 #endif /* SYSV */
 
-#ifdef macII				/* since it doesn't define SYSV */
-#define SYSV_STRINGS
-#endif /* macII */
-
 #ifdef SYSV_STRINGS
 #include <string.h>
 #define index strchr
@@ -72,9 +68,10 @@
 /*
  * Get open(2) constants
  */
-
 #ifdef SYSV
+#ifndef macII
 #include <fcntl.h>
+#endif
 #endif /* SYSV */
 #include <sys/file.h>
 
@@ -83,26 +80,29 @@
  * Get struct timeval
  */
 
-#ifdef macII
-#include <time.h>		/* need this as well as sys/time.h */
-#endif /* macII */
-
 #ifdef SYSV
-#include <time.h>
-# ifdef mips
-# include <bsd/sys/time.h>
-# endif /* mips */
-#else /* else not SYSV */
-#include <sys/time.h>
-#endif /* SYSV */
+#ifdef sgi
+#include <sys/time.h>				/* SYSV && sgi */
+#else
+#include <time.h>				/* SYSV */
+#endif
+#ifdef umips
+#include <bsd/sys/time.h>			/* SYSV && umips */
+#endif
+#ifdef macII
+#include <sys/time.h>				/* SYSV && macII */
+#endif
+#else
+#include <sys/time.h>				/* bsd */
+#endif
 
 /*
  * More BSDisms
  */
 
-#ifdef SYSV
+#ifndef SIGCHLD
 #define SIGCHLD SIGCLD
-#endif /* SYSV */
+#endif
 
 
 /*
@@ -111,14 +111,14 @@
 
 #ifdef hpux
 #define sigvec sigvector
-#endif /* hpux */
+#endif
 
-#ifdef mips
-# ifdef SYSTYPE_SYSV
-# include <bsd/sys/ioctl.h>
-# include <bsd/sys/file.h>
-# endif /* SYSTYPE_SYSV */
-#endif /* mips */
+#ifdef umips
+#ifdef SYSTYPE_SYSV
+#include <bsd/sys/ioctl.h>
+#include <bsd/sys/file.h>
+#endif
+#endif
 
 
 #endif /* _XOS_H_ */
