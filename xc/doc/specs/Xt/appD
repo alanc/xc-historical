@@ -1,4 +1,4 @@
-.\" $XConsortium$
+.\" $XConsortium: appD,v 1.4 91/07/31 20:25:00 swick Exp $
 .\"
 .\" Copyright 1985, 1986, 1987, 1988, 1991
 .\" Massachusetts Institute of Technology, Cambridge, Massachusetts,
@@ -191,7 +191,7 @@ T}
 displayError	invalidDisplay	T{
 Can't find display structure
 T}
-grabError	grabDestroyCallback	T{
+grabError	xtAddGrab	T{
 XtAddGrab requires exclusive grab if spring_loaded is TRUE
 T}
 grabError	grabDestroyCallback	T{
