@@ -1,4 +1,4 @@
-/* $XConsortium: sunInit.c,v 5.30 92/11/20 13:49:49 rws Exp $ */
+/* $XConsortium: sunInit.c,v 5.31 92/11/24 10:48:55 rws Exp $ */
 /*
  * sunInit.c --
  *	Initialization functions for screen/keyboard/mouse, etc.
@@ -133,7 +133,9 @@ sunFbDataRec sunFbData[] = {
 #endif
     sunCG2CProbe,  	"/dev/cgtwo0",	    sunCG2CCreate,
     sunCG4CProbe,  	"/dev/cgfour0",	    sunCG4CCreate,
+#ifdef DEPTH24
     sunCG8CProbe,	"/dev/cgeight0",    sunCG8CCreate,
+#endif
 #endif
     sunBW2Probe,  	"/dev/bwtwo0",	    sunBW2Create,
 };
