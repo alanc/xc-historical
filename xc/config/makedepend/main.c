@@ -1,5 +1,5 @@
 /*
- * $XConsortium: main.c,v 1.71 93/08/18 10:15:55 rws Exp $
+ * $XConsortium: main.c,v 1.72 93/08/18 10:26:46 rws Exp $
  */
 #include "def.h"
 #ifdef hpux
@@ -412,6 +412,15 @@ char *getline(filep)
 			}
 			continue;
 		}
+#ifdef WIN32
+		else if (*p == '/' && *(p+1) == '/') { /* consume comments */
+			*p++ = ' ', *p++ = ' ';
+			while (*p && *p != '\n')
+				*p++ = ' ';
+			lineno++;
+			continue;
+		}
+#endif
 		else if (*p == '\\') {
 			if (*(p+1) == '\n') {
 				*p = ' ';
