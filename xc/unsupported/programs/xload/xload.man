@@ -41,9 +41,9 @@ use fewer than this number.  The default is 1.
 .PP
 .TP 8
 .B \-update \fIseconds\fP
-This option specifies the frequency in seconds at which \fIxload\fP
+This option specifies the interval in seconds at which \fIxload\fP
 updates its display.  The minimum amount of time allowed between updates
-is 1 second (the default is 5 seconds).
+is 1 second.  The default is 10.
 .SH RESOURCES
 In addition to the resources available to each of the widgets used by 
 \fIxload\fP there is one resource defined by the application itself.
