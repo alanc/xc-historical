@@ -1,4 +1,4 @@
-/* $XConsortium: mach8frect.c,v 1.4 94/10/14 13:25:08 kaleb Exp kaleb $ */
+/* $XConsortium: mach8frect.c,v 1.5 95/01/05 22:40:06 kaleb Exp kaleb $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8frect.c,v 3.1 1994/11/26 12:43:26 dawes Exp $ */
 /*
  * Fill rectangles.
@@ -49,7 +49,6 @@ mach8pcach.c 94-07-12, Hans Nasten ( nasten@everyware.se ).
 */
 
 
-/* $XConsortium: mach8frect.c,v 1.4 94/10/14 13:25:08 kaleb Exp kaleb $ */
 
 #include "X.h"
 #include "Xmd.h"

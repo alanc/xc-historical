@@ -1,7 +1,6 @@
-/* $XConsortium: $ */
+/* $XConsortium: mach64curs.c,v 1.1 94/12/14 15:04:34 kaleb Exp kaleb $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64curs.c,v 3.0 1994/11/26 12:42:43 dawes Exp $ */
 /*
- * $XConsortium: mipsCursor.c,v 1.2 91/07/18 22:58:13 keith Exp $
  * 
  * Copyright 1991 MIPS Computer Systems, Inc.
  * Copyright 1994 by Kevin E. Martin, Chapel Hill, North Carolina.
