@@ -37,7 +37,7 @@ $(DEPEND):
 	@echo "making $(DEPENDSRC)"; \
 	cd $(DEPENDSRC); $(MAKE)
 
-DependSubdirs($(SUBDIRS))
+DependSubdirs($(SUBDIRS) $(HACKSRC))
 
 install::
 	-mkdir $(USRLIBDIR)
@@ -53,7 +53,10 @@ install::
 #
 Makefiles:: $(IMAKE)
 
+MakeMakeSubdirs($(HACKSRC))
+
 $(IMAKE):
 	@echo "making $(IMAKESRC)"; \
 	cd $(IMAKESRC); $(MAKE)
 
+CleanSubdirs($(HACKSRC))
