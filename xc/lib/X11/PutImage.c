@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XPutImage.c,v 11.31 87/08/30 12:10:32 ham Exp $ */
+/* $Header: XPutImage.c,v 11.32 87/09/01 15:04:16 toddb Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include <stdio.h>
@@ -13,16 +13,23 @@
 /* XXX Note to who ever must maintain this code:
 
 The helper routine "PutImageRequest" is unfinished and still has a few bugs.
-Byteswapping that may be required when the client and server specify different
-bitmap_unit values hasn't been implemented.  This problem occurs when both the
-client and server are MSB machines but the client specifies a bitmap_unit of 8
-bits and the server's is 16 or 32 ( and vice-versa ).  This case requires byte
-swapping, but I am unsure how it fits into byteswapping that must be done for
-other reasons.  Also, if a client sends ZPixmap format images of 4
-bits_per_pixel and byte swapping is required, this routine does not swap the 
-4 bit nibbles as it should.
+Byte swapping is never required when
+    (image->byte_order == image->bitmap_bit_order) &&
+    (dpy->byte_order == dpy->bitmap_bit_order)
+Someday we will write a treatise on the subject.  If you don't believe us, try it.
+Note that all display hardware we know of works this way.
+Note that in X10, shipping from a VAX to a SUN ended up byte-swapping twice (once
+in dix and once in ddx).  Shipping from a SUN to a VAX byte-swapped once, but
+that worked because bitmaps were described as shorts in VAX order, and thus when
+compiled on a SUN resulted in the additional byte-swap.
 
-Peter Ham
+Swapping in the other cases is probably worked out, but we don't have time to
+make sure, and we don't have any machines that do things that way to test it on.
+You probably need to swap halves within longs without swapping bytes within shorts
+for some cases.
+
+Also, if a client sends ZPixmap format images of 4 bits_per_pixel and nibble swapping
+is required, this routine does not swap the 4 bit nibbles as it should.
 
 XXX */
 
@@ -105,13 +112,13 @@ static PutImageRequest(dpy, d, gc, image, req_xoffset,req_yoffset, x, y, req_wid
 			   if (image->bitmap_bit_order
 			     != dpy->bitmap_bit_order) _swapbits (
 				(unsigned char *)p, image->bytes_per_line);
-			   if (image->bitmap_unit == 8) continue;
-			   if (image->byte_order != dpy->byte_order) {
-				   if (image->bitmap_unit == 16)
-				     _swapshort (p, image->bytes_per_line);
-				   else
-				     _swaplong (p, image->bytes_per_line);
-				    }
+#ifdef notdef
+			   if ((image->byte_order != image->bitmap_bit_order) ||
+			       (dpy->byte_order != dpy->bitmap_bit_order))
+			   {
+			     /* XXX swapping missing XXX */
+			   }
+#endif
 			}
 		        _XSend(dpy,tempbuf,length);
 	       }
@@ -176,13 +183,13 @@ static PutImageRequest(dpy, d, gc, image, req_xoffset,req_yoffset, x, y, req_wid
 			       if (image->bitmap_bit_order
 				 != dpy->bitmap_bit_order) _swapbits (
 				    (unsigned char *)p, nbytes);
-			       if (image->bitmap_unit == 8) continue;
-			       if (image->byte_order != dpy->byte_order) {
-				       if (image->bitmap_unit == 16)
-					 _swapshort (p, nbytes);
-				       else
-					 _swaplong (p, nbytes);
-					}
+#ifdef notdef
+			       if ((image->byte_order != image->bitmap_bit_order) ||
+				   (dpy->byte_order != dpy->bitmap_bit_order))
+			       {
+				 /* XXX swapping missing XXX */
+			       }
+#endif
 			    }
 			}
 		        _XSend(dpy,tempbuf,length);
