@@ -24,7 +24,10 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: shapestr.h,v 1.9 90/06/07 10:08:36 rws Exp $ */
+/* $XConsortium: shapestr.h,v 1.10 91/10/05 14:13:23 rws Exp $ */
+
+#ifndef _SHAPESTR_H_
+#define _SHAPESTR_H_
 
 /*
  * Protocol requests constants and alignment values
@@ -32,6 +35,9 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
 #include "shape.h"
+
+#define Window CARD32
+#define Time CARD32
 
 #define SHAPENAME "SHAPE"
 
@@ -68,7 +74,7 @@ typedef struct _ShapeRectangles {
 	CARD8	destKind;	/* ShapeBounding or ShapeClip */
 	CARD8	ordering;	/* UnSorted, YSorted, YXSorted, YXBanded */
 	CARD8	pad0;		/* not used */
-	CARD32	dest B32;	/* Window */
+	Window	dest B32;
 	INT16	xOff B16;
 	INT16	yOff B16;
 } xShapeRectanglesReq;		/* followed by xRects */
@@ -83,7 +89,7 @@ typedef struct _ShapeMask {
 	CARD8	destKind;	/* ShapeBounding or ShapeClip */
 	CARD16	junk B16;	/* not used */
 
-	CARD32	dest B32;	/* Window */
+	Window	dest B32;
 	INT16	xOff B16;
 	INT16	yOff B16;
 	CARD32	src B32;	/* 1 bit pixmap */
@@ -98,10 +104,10 @@ typedef struct _ShapeCombine {
 	CARD8	destKind;	/* ShapeBounding or ShapeClip */
 	CARD8	srcKind;	/* ShapeBounding or ShapeClip */
 	CARD8	junk;		/* not used */
-	CARD32	dest B32;	/* Window */
+	Window	dest B32;
 	INT16	xOff B16;
 	INT16	yOff B16;
-	CARD32	src B32;	/* Window */
+	Window	src B32;
 } xShapeCombineReq;
 #define sz_xShapeCombineReq	20
 	
@@ -112,7 +118,7 @@ typedef struct _ShapeOffset {
 	CARD8	destKind;	/* ShapeBounding or ShapeClip */
 	CARD8	junk1;		/* not used */
 	CARD16	junk2 B16;	/* not used */
-	CARD32	dest B32;	/* Window */
+	Window	dest B32;
 	INT16	xOff B16;
 	INT16	yOff B16;
 } xShapeOffsetReq;
@@ -122,7 +128,7 @@ typedef struct _ShapeQueryExtents {
 	CARD8	reqType;	/* always ShapeReqCode */
 	CARD8	shapeReqType;	/* always X_ShapeQueryExtents */
 	CARD16	length B16;
-	CARD32	window B32;		/* request destination id */
+	Window	window B32;
 } xShapeQueryExtentsReq;
 #define sz_xShapeQueryExtentsReq	8
 
@@ -150,7 +156,7 @@ typedef struct _ShapeSelectInput {
 	CARD8	reqType;	/* always ShapeReqCode */
 	CARD8	shapeReqType;	/* always X_ShapeSelectInput */
 	CARD16	length B16;
-	CARD32	window B32;	 /* request destination id */
+	Window	window B32;
 	BYTE	enable;		/* xTrue -> send events */
 	BYTE	pad1;
 	CARD16	pad2 B16;
@@ -179,7 +185,7 @@ typedef struct _ShapeInputSelected {
 	CARD8	reqType;	/* always ShapeReqCode */
 	CARD8	shapeReqType;	/* always X_ShapeInputSelected */
 	CARD16	length B16;
-	CARD32	window B32;	/* request destination id */
+	Window	window B32;
 } xShapeInputSelectedReq;
 #define sz_xShapeInputSelectedReq 8
 
@@ -201,7 +207,7 @@ typedef struct _ShapeGetRectangles {
     CARD8   reqType;		/* always ShapeReqCode */
     CARD8   shapeReqType;	/* always X_ShapeGetRectangles */
     CARD16  length B16;
-    CARD32  window B32;		/* request destination id */
+    Window  window B32;
     CARD8   kind;		/* ShapeBounding or ShapeClip */
     CARD8   junk1;
     CARD16  junk2 B16;
@@ -221,3 +227,8 @@ typedef struct {
 	CARD32 pad5 B32;
 } xShapeGetRectanglesReply;		/* followed by xRectangles */
 #define sz_xShapeGetRectanglesReply 32
+
+#undef Window
+#undef Time
+
+#endif /* _SHAPESTR_H_ *
