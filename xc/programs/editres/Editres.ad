@@ -24,15 +24,13 @@ Editres.Geometry:			500x600
 
 *SimpleMenu*sendTree.Label:		Get Widget Tree
 *SimpleMenu*refreshTree.Label:		Refresh Current Widget Tree
-*SimpleMenu*showClientWidget.Label:	Select Widget in Client
-*SimpleMenu*setValues.Label:		Set Values
 *SimpleMenu*dumpTreeToFile.Label:	Dump Widget Tree to a File
-*SimpleMenu*flashActiveWidgets.Label:	Show Active Widgets
 *SimpleMenu*getResourceList.Label:	Show Resource Box
-*SimpleMenu*author.Label:		Show Author 
+*SimpleMenu*setValues.Label:		Set Values
 *SimpleMenu*quit.Label:			Quit
 
 
+*SimpleMenu*showClientWidget.Label:	Select Widget in Client
 *SimpleMenu*selectAll.Label:		Select All
 *SimpleMenu*unselectAll.Label:		Unselect All
 *SimpleMenu*invertAll.Label:		Invert All
@@ -44,6 +42,7 @@ Editres.Geometry:			500x600
 *SimpleMenu*showClassNames.Label:	Show Class Names
 *SimpleMenu*showWidgetIDs.Label:	Show Widget IDs
 *SimpleMenu*showWidgetWindows.Label:	Show Widget Windows
+*SimpleMenu*flashActiveWidgets.Label:	Flash Active Widgets
 
 *MenuButton.leftBitmap:			menu10
 
@@ -142,3 +141,29 @@ Editres.Geometry:			500x600
 	:<Key>I:		Relabel(id) \n\
 	:<Key>W:		Relabel(window) 
 
+! For the SetValues popup
+
+*setValuesPopup*resizable:		True
+*setValuesPopup*left:			ChainLeft
+*setValuesPopup*right:			ChainLeft
+
+*setValuesPopup*label*Label:		Use <Tab> to Change Fields.
+*setValuesPopup*Label*BorderWidth:	0
+
+*setValuesPopup*resourceLabel.Label:	Resource Name:
+*setValuesPopup*valueLabel.Label:	Value:
+
+*setValuesPopup*Text*EditType:		Edit
+*setValuesPopup*Text*resize:		Width
+
+*setValuesPopup*resourceText.Translations: #override \
+  <Key>Return:     	   no-op(RingBell) \n\
+   Ctrl<Key>q,<Key>Tab:    insert-char()    \n\
+   <Btn1Down>:             select-start() SVActiveEntry(Resource) \n\
+   <Key>Tab:               SVActiveEntry(Value)
+
+*setValuesPopup*valueText.Translations: #override \
+   <Key>Return:     	   no-op(RingBell) \n\
+   Ctrl<Key>q,<Key>Tab:    insert-char()     \n\
+   <Btn1Down>:             select-start() SVActiveEntry(Value)\n\
+   <Key>Tab:               SVActiveEntry(Resource)
