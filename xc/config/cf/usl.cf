@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: att.cf,v 1.12 91/03/27 09:12:55 rws Exp $
+XCOMM platform:  $XConsortium: att.cf,v 1.13 91/07/03 15:40:38 rws Exp $
 
 #define OSName			AT&T Unix System V Release 4.2
 XCOMM operating system:  OSName
@@ -6,6 +6,11 @@ XCOMM operating system:  OSName
 #define OSMinorVersion		2
 
 #define SystemV4		YES
+/* The default here is to use the streams interface for Xlib, but various
+ * other things (X server, font server, font library, phigs, xdm chooser)
+ * still depend on sockets being around, so we always link with -lsocket.
+ */
+#define ExtraLibraries		-lsocket -lnsl
 #define BootstrapCFlags		-Datt
 #define NeedWidePrototypes	NO	/* experimental */
 #define DefaultCCOptions	-Xc
