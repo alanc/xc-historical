@@ -21,7 +21,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: icons.c,v 1.15 90/03/08 15:19:52 jim Exp $
+ * $XConsortium: icons.c,v 1.16 90/03/12 17:06:17 jim Exp $
  *
  * Icon releated routines
  *
@@ -556,6 +556,6 @@ int def_x, def_y;
     XSaveContext(dpy, tmp_win->icon_w, TwmContext, (caddr_t)tmp_win);
     XSaveContext(dpy, tmp_win->icon_w, ScreenContext, (caddr_t)Scr);
     XDefineCursor(dpy, tmp_win->icon_w, Scr->IconCursor);
-    XFreePixmap (dpy, pm);
+    if (pm) XFreePixmap (dpy, pm);
     return;
 }
