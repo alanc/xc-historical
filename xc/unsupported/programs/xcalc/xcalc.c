@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xcalc.c,v 1.6 89/08/11 13:46:16 converse Exp $
+ * $XConsortium: xcalc.c,v 1.7 89/10/08 13:48:58 rws Exp $
  *
  * xcalc.c  -  a hand calculator for the X Window system
  * 
@@ -72,8 +72,8 @@ static char check_bits[] = {
 
 /*	command line options specific to the application */
 static XrmOptionDescRec Options[] = {
-{"-rpn",		"rpn",		XrmoptionNoArg,		(caddr_t)"on"},
-{"-stipple",		"stipple",	XrmoptionNoArg,		(caddr_t)"on"}
+{"-rpn",	"rpn",		XrmoptionNoArg,		(XtPointer)"on"},
+{"-stipple",	"stipple",	XrmoptionNoArg,		(XtPointer)"on"}
 };
 
 /*	resources specific to the application */
@@ -83,17 +83,16 @@ static struct resources {
     Cursor	cursor;
 } App_Resources;
 
-static Boolean defFalse = False;
 
 #define offset(field) XtOffset(struct resources *, field)
 
 static XtResource Resources[] = {
 {"rpn",		"Rpn",		XtRBoolean,	sizeof(Boolean),
-     offset(rpn),	XtRBoolean,	(caddr_t)&defFalse},
+     offset(rpn),	XtRImmediate,	(XtPointer) False},
 {"stipple",	"Stipple",	XtRBoolean,	sizeof(Boolean),
-     offset(stipple),	XtRBoolean,	(caddr_t)&defFalse},
+     offset(stipple),	XtRImmediate,	(XtPointer) False},
 {"cursor",	"Cursor",	XtRCursor,	sizeof(Cursor),
-     offset(cursor),	XtRCursor,	(caddr_t)NULL}
+     offset(cursor),	XtRCursor,	(XtPointer)NULL}
 };
 
 void main(argc, argv)
@@ -116,7 +115,7 @@ void main(argc, argv)
     XtSetArg(args[1], XtNtitle,	"Calculator");
     XtSetValues(toplevel, args, TWO);
 
-    XtGetApplicationResources(toplevel, (caddr_t)&App_Resources, Resources,
+    XtGetApplicationResources(toplevel, (XtPointer)&App_Resources, Resources,
 			      XtNumber(Resources), (ArgList) NULL, ZERO);
 
     create_calculator(toplevel);
@@ -321,7 +320,7 @@ Boolean convert(w, selection, target, type, value, length, format)
     Atom	*selection;
     Atom	*target;
     Atom	*type;
-    caddr_t	*value;
+    XtPointer	*value;
     unsigned long	*length;
     int		*format;
 {
