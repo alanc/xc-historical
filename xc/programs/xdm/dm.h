@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: dm.h,v 1.37 90/12/10 15:45:27 keith Exp $
+ * $XConsortium: dm.h,v 1.38 91/01/09 17:26:15 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -25,6 +25,7 @@
  */
 
 # include	<X11/Xos.h>
+# include	<X11/Xfuncs.h>
 # include	<X11/Xmd.h>
 # include	<X11/Xauth.h>
 # include	<X11/Xdmcp.h>
@@ -248,8 +249,12 @@ extern char		*localHostname ();
 # define CLOSE_ALWAYS	    0
 # define LEAVE_FOR_DISPLAY  1
 
-extern char	*malloc (), *realloc (), *strcpy ();
-extern void	free (), exit (), bcopy ();
+#if __STDC__ && !defined(NOSTDHDRS)
+#include <stdlib.h>
+#else
+extern char	*malloc (), *realloc ();
+extern void	free (), exit ();
+#endif
 
 #ifdef SIGNALRETURNSINT
 #define SIGVAL int
