@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Ixx.tmpl,v 1.2 94/03/18 14:54:14 matt Exp $
+XCOMM $XConsortium$
 XCOMM
 XCOMM Definitions for using interface translator
 XCOMM
@@ -11,8 +11,7 @@ XCOMM
 
 #ifndef IXFlags
 #define IXFlags \
--s BaseObject -m TypeObj -r RequestObj -stubclass Stub -p Xf -refobjs \
-$(EXTRA_IXFLAGS)
+-s BaseObject -m TypeObj -r RequestObj -stubclass Stub -p Xf $(EXTRA_IXFLAGS)
 #endif
 
 #ifndef IXIncludes
