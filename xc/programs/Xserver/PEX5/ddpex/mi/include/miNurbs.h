@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: miNurbs.h,v 5.1 91/02/16 09:54:55 rws Exp $ */
 
 /*****************************************************************
 Copyright (c) 1989,1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -138,7 +138,7 @@ typedef enum {
     PT_NOP,
     PT_MOVE,
     PT_LINE,
-    PT_MARKER,
+    PT_MARKER
 } Nurb_path_op;
 
 typedef enum {
