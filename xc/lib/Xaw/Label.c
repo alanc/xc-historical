@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Label.c,v 1.37 88/02/05 18:20:29 swick Locked $";
+static char rcsid[] = "$Header: Label.c,v 1.38 88/02/06 14:42:12 swick Exp $";
 #endif lint
 
 /*
@@ -328,7 +328,7 @@ static Boolean SetValues(current, request, new)
 
 	if (newlw->label.label != newlw->core.name) {
 	    newlw->label.label = strcpy(
-	        XtMalloc((unsigned) newlw->label.label_len + 1),
+	        XtMalloc((unsigned) XtStrlen(newlw->label.label) + 1),
 		newlw->label.label);
 	}
 	was_resized = True;
