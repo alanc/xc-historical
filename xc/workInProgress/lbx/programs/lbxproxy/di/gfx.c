@@ -1,4 +1,4 @@
-/* $XConsortium: gfx.c,v 1.6 94/09/13 21:37:02 mor Exp mor $ */
+/* $XConsortium: gfx.c,v 1.7 94/09/13 22:57:34 mor Exp mor $ */
 /*
  * Copyright 1994 Network Computing Devices, Inc.
  *
@@ -39,7 +39,7 @@
 #include	"wire.h"
 #define _XLBX_SERVER_
 #include	"lbxstr.h"	/* gets dixstruct.h */
-#include        "image.h"
+#include        "lbximage.h"
 
 static int  pad[4] = {0, 3, 2, 1};
 
@@ -361,38 +361,52 @@ ClientPtr   client;
 {
     REQUEST		(xPutImageReq);
     XServerPtr  	server = client->server;
-    int			len = stuff->length << 2;
     xLbxPutImageReq	*newreq = NULL;
-    int         	method, bytes, status;
+    int         	len, method, compBytes, status;
     float		percentCompression;
 
-    /* If it's delta compressible, don't try to reencode */
-
-    if (DELTA_CACHEABLE (&server->outdeltas, len) ||
-        !((stuff->format == ZPixmap && stuff->depth == 8) ||
-	   stuff->depth == 1) ||
-	((newreq = (xLbxPutImageReq *) xalloc (len)) == NULL))
+    if (client->swapped)
     {
-	status = LBX_IMAGE_COMPRESS_FAILURE;
+	char n;
+
+	swaps (&stuff->length, n);
+	swapl (&stuff->drawable, n);
+	swapl (&stuff->gc, n);
+	swaps (&stuff->width, n);
+	swaps (&stuff->height, n);
+	swaps (&stuff->dstX, n);
+	swaps (&stuff->dstY, n);
+    }
+
+    len = stuff->length << 2;
+
+    if (!((stuff->format == ZPixmap && stuff->depth == 8) ||
+	   stuff->depth == 1))
+    {
+	status = LBX_IMAGE_COMPRESS_UNSUPPORTED_FORMAT;
+    }
+    else if ((newreq = (xLbxPutImageReq *) xalloc (len)) == NULL)
+    {
+	status = LBX_IMAGE_COMPRESS_BAD_MALLOC;
     }
     else
     {
 	if (stuff->depth == 1)
 	{
-	    status = ImageEncodeFaxG42D ((unsigned char *) &stuff[1],
+	    status = LbxImageEncodeFaxG42D ((unsigned char *) &stuff[1],
 		      (unsigned char *) newreq + sz_xLbxPutImageReq,
 		      len - sz_xLbxPutImageReq,
 		      len - sz_xPutImageReq,
-		      (int) stuff->width, &bytes);
+		      (int) stuff->width, &compBytes);
 
 	    method = LbxImageCompressFaxG42D;
 	}
 	else /* depth 8 and ZPixmap format */
 	{
-	    status = ImageEncodePackBits ((char *) &stuff[1],
+	    status = LbxImageEncodePackBits ((char *) &stuff[1],
 		      (char *) newreq + sz_xLbxPutImageReq,
 		      len - sz_xLbxPutImageReq,
-		      (int) stuff->height, (int) stuff->width, &bytes);
+		      (int) stuff->height, (int) stuff->width, &compBytes);
 
 	    method = LbxImageCompressPackBits;
 	}
@@ -402,15 +416,28 @@ ClientPtr   client;
     {
 #ifdef LBX_STATS
 	fprintf (stderr, "PutImage: image not compressed ");
-	if (status == LBX_IMAGE_COMPRESS_NOT_WORTH_IT)
+
+	if (status == LBX_IMAGE_COMPRESS_UNSUPPORTED_FORMAT)
+	    fprintf (stderr, "(unsupported format)\n");
+	else if (status == LBX_IMAGE_COMPRESS_NOT_WORTH_IT)
 	    fprintf (stderr, "(not worth it)\n");
-	else
-	    fprintf (stderr, "(error encountered)\n");
+	else if (status == LBX_IMAGE_COMPRESS_BAD_MALLOC)
+	    fprintf (stderr, "(bad malloc)\n");
 #endif
 	if (newreq)
 	    xfree (newreq);
 
 	return ProcStandardRequest (client);
+    }
+
+    if (client->swapped)
+    {
+	/*
+	 * Swap the length back because FinishLBXRequest will swap it.
+	 */
+
+	char n;
+	swaps (&stuff->length, n);
     }
 
     FinishLBXRequest (client, REQ_PASSTHROUGH);
@@ -428,7 +455,7 @@ ClientPtr   client;
     newreq->leftPad = stuff->leftPad;
     newreq->depth = stuff->depth;
 
-    len = sz_xLbxPutImageReq + bytes;
+    len = sz_xLbxPutImageReq + compBytes;
     newreq->padBytes = pad[len % 4];
     len += newreq->padBytes;
     newreq->lbxLength = len >> 2;
@@ -436,7 +463,8 @@ ClientPtr   client;
     
 #ifdef LBX_STATS
     percentCompression = 100.0 * (1.0 -
-	((float) newreq->lbxLength / (float) newreq->xLength));
+	((float) (compBytes + pad[compBytes % 4])/
+	 (float) ((stuff->length << 2) - sz_xPutImageReq)));
 
     fprintf (stderr, "PutImage: %f percent compression ", percentCompression);
     if (method == LbxImageCompressFaxG42D)
@@ -445,8 +473,163 @@ ClientPtr   client;
 	fprintf (stderr, "(PackBits)\n");
 #endif
 
-    WriteToServer (client, len, (char *) newreq);
+    if (client->swapped)
+	SwapPutImage (newreq);
+
+    UncompressWriteToServer (client, len, (char *) newreq);
 
     xfree (newreq);
     return Success;
+}
+
+
+static int
+get_image_req (client, data)
+
+ClientPtr   client;
+char       *data;
+
+{
+    ReplyStuffPtr nr;
+    xGetImageReq *req;
+
+    req = (xGetImageReq *) data;
+    nr = NewReply (client);
+
+    if (nr)
+    {
+	if (client->swapped)
+	{
+	    char n;
+
+	    swapl (&req->drawable, n);
+	    swaps (&req->x, n);
+	    swaps (&req->y, n);
+	    swaps (&req->width, n);
+	    swaps (&req->height, n);
+	    swapl (&req->planeMask, n);
+	}
+
+	nr->sequenceNumber = LBXSequenceNumber (client);
+	nr->request = X_LbxGetImage;
+	nr->lbx_req = TRUE;
+	nr->extension = client->server->lbxReq;
+	nr->request_info.lbxgetimage.width = req->width;
+	nr->request_info.lbxgetimage.height = req->height;
+
+	/*
+	 * this expects a reply.  since we write the data here, we have to be
+	 * sure the seq number is in sync first
+	 */
+
+	ForceSequenceUpdate (client);
+
+	SendGetImage (client, req->drawable, req->x, req->y,
+	    req->width, req->height, req->planeMask, req->format);
+
+	return REQ_REPLACE;
+    }
+    else
+	return REQ_NOCHANGE;
+}
+
+int
+ProcLBXGetImage (client)
+
+ClientPtr client;
+
+{
+    int yank;
+
+    yank = get_image_req (client, client->requestBuffer);
+    return FinishLBXRequest (client, yank);
+}
+
+
+Bool
+GetLbxImageReply (client, data)
+
+ClientPtr   client;
+char       *data;
+
+{
+    xLbxGetImageReply	*rep;
+    xGetImageReply	reply;
+    int         	len;
+    pointer     	imageData;
+    ReplyStuffPtr	nr;
+    int			freeIt = 1;
+
+    rep = (xLbxGetImageReply *) data;
+
+    nr = GetReply (client);
+    assert (nr);
+
+    if (client->swapped)
+    {
+	char n;
+	swapl (&rep->xLength, n);
+	swapl (&rep->visual, n);
+    }
+
+    if ((imageData = (pointer) xalloc (rep->xLength << 2)) == NULL)
+    {
+	/* what to do here ??? */
+    }
+
+    if (rep->compressionMethod == LbxImageCompressFaxG42D)
+    {
+	LbxImageDecodeFaxG42D (
+	    (unsigned char *) &rep[1], (unsigned char *) imageData,
+	    (int) ((rep->xLength << 2) - sz_xPutImageReq),
+	    (int) nr->request_info.lbxgetimage.width);
+    }
+    else if (rep->compressionMethod == LbxImageCompressPackBits)
+    {
+	LbxImageDecodePackBits ((char *) &rep[1], (char *) imageData,
+	    (int) nr->request_info.lbxgetimage.height,
+	    (int) nr->request_info.lbxgetimage.width);
+    }
+    else if (rep->compressionMethod == LbxImageCompressNone)
+    {
+	xfree ((char *) imageData);
+	imageData = (pointer) &rep[1];
+	freeIt = 0;
+    }
+
+    reply.type = X_Reply;
+    reply.depth = rep->depth;
+    reply.sequenceNumber = rep->sequenceNumber;
+    reply.length = rep->xLength;
+    reply.visual = rep->visual;
+
+    if (client->swapped)
+	SwapGetImageReply (&reply);
+
+#ifdef LBX_STATS
+    if (rep->compressionMethod == LbxImageCompressNone)
+    {
+	fprintf (stderr, "GetImage: image not compressed\n");
+    }
+    else
+    {
+	float percentCompression = 100.0 * (1.0 -
+	    ((float) rep->lbxLength / (float) rep->xLength));
+
+	fprintf (stderr, "GetImage: %f percent compression ",
+	    percentCompression);
+	if (rep->compressionMethod == LbxImageCompressFaxG42D)
+	    fprintf (stderr, "(FAX G42D)\n");
+	else if (rep->compressionMethod == LbxImageCompressPackBits)
+	    fprintf (stderr, "(PackBits)\n");
+    }
+#endif
+
+    WriteToClient (client, sizeof (xGetImageReply), &reply);
+    WriteToClientPad (client, rep->xLength << 2, imageData);
+
+    if (freeIt)
+	xfree ((char *) imageData);
+
+    return TRUE;
 }
