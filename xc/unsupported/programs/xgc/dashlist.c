@@ -8,6 +8,7 @@
 **       will fail in a big way.
 */
 
+#include <stdio.h>
 #include <X11/Intrinsic.h>
 #include <X11/Xaw/Form.h>
 #include <X11/Xaw/Label.h>
