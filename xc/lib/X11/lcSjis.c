@@ -1,4 +1,4 @@
-/* $XConsortium: lcSjis.c,v 1.8 94/01/20 18:07:24 rws Exp $ */
+/* $XConsortium: lcSjis.c,v 1.9 94/01/23 16:42:19 kaleb Exp $ */
 /****************************************************************
 
         Copyright 1992, 1993 by FUJITSU LIMITED
@@ -1270,7 +1270,6 @@ _XlcSjisLoader(name)
     char *name;
 {
     XLCd lcd;
-    void initCTptr();
 
     lcd = _XlcCreateLC(name, _XlcGenericMethods);
     if (lcd == NULL)
