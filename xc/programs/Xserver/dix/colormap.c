@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: colormap.c,v 1.69 88/05/26 08:00:30 rws Exp $ */
+/* $Header: colormap.c,v 1.70 88/06/06 11:01:25 keith Exp $ */
 
 #include "X.h"
 #define NEED_EVENTS
@@ -175,7 +175,7 @@ CreateColormap (mid, pScreen, pVisual, ppcmap, alloc, client)
 	{
 	    for(pent = &pmap->green[size-1]; pent >= pmap->green; pent--)
 		pent->refcnt = AllocPrivate;
-	    for(pent = &pmap->blue[size-1]; pent >= pmap->green; pent--)
+	    for(pent = &pmap->blue[size-1]; pent >= pmap->blue; pent--)
 		pent->refcnt = AllocPrivate;
 	    pmap->freeGreen = 0;
 	    pmap->freeBlue = 0;
@@ -973,9 +973,11 @@ QueryColors (pmap, count, ppixIn, prgbList)
 }
 
 /* Free all of a client's colors and cells */
+/*ARGSUSED*/
 static int
-FreeClientPixels (pcr)
+FreeClientPixels (pcr, fakeid)
     colorResource *pcr;
+    XID	fakeid;
 {
     register Pixel		*ppix, *ppixStart;
     register int 		n;
@@ -1391,7 +1393,7 @@ AllocCP (pmap, pentFirst, count, Free, planes, contig, pixels, pMask)
         *pMask = 0;
         return (TRUE);
     }
-    else if ( count <= 0  || planes >= dplanes ||
+    else if ( count <= 0  || planes > dplanes ||
       (count << planes) > Free)
     {
 	return (FALSE);
