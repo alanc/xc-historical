@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: utils.c,v 1.135 94/01/12 18:01:36 dpw Exp $ */
+/* $XConsortium: utils.c,v 1.136 94/01/21 22:00:30 dpw Exp $ */
 #include "Xos.h"
 #include <stdio.h>
 #include "misc.h"
@@ -45,6 +45,7 @@ SOFTWARE.
 #include <sys/resource.h>
 #endif
 #include <time.h>
+#include <sys/stat.h>
 
 /* lifted from Xt/VarargsI.h */
 #if NeedVarargsPrototypes
@@ -239,6 +240,7 @@ void UseMsg()
     ErrorF("c #                    key-click volume (0-100)\n");
     ErrorF("-cc int                default color visual class\n");
     ErrorF("-co string             color database file\n");
+    ErrorF("-config string         read options from file\n");
     ErrorF("-core                  generate core dump on fatal error\n");
     ErrorF("-dpi int               screen resolution in dots per inch\n");
     ErrorF("-deferglyphs [none|all|16] defer loading of [no|all|16-bit] glyphs\n");
@@ -572,6 +574,113 @@ char	*argv[];
         }
     }
 }
+
+static void
+InsertFileIntoCommandLine(resargc, resargv, prefix_argc, prefix_argv,
+			  filename, suffix_argc, suffix_argv)
+    int *resargc;
+    char ***resargv;
+    int prefix_argc;
+    char **prefix_argv;
+    char *filename;
+    int suffix_argc;
+    char **suffix_argv;
+{
+    struct stat     st;
+    FILE           *f;
+    char           *p;
+    char           *q;
+    int             insert_argc;
+    char           *buf;
+    int             len;
+    int             i;
+
+    f = fopen(filename, "r");
+    if (!f)
+	FatalError("Can't open option file %s\n", filename);
+
+    fstat(fileno(f), &st);
+
+    buf = (char *) xalloc((unsigned) st.st_size + 1);
+    if (!buf)
+	FatalError("Out of Memory\n");
+
+    len = fread(buf, 1, (unsigned) st.st_size, f);
+
+    fclose(f);
+
+    if (len < 0)
+	FatalError("Error reading option file %s\n", filename);
+
+    buf[len] = '\0';
+
+    p = buf;
+    q = buf;
+    insert_argc = 0;
+
+    while (*p)
+    {
+	while (isspace(*p))
+	    p++;
+	if (!*p)
+	    break;
+	if (*p == '#')
+	{
+	    while (*p && *p != '\n')
+		p++;
+	} else
+	{
+	    while (*p && !isspace(*p))
+		*q++ = *p++;
+	    /* Since p and q might still be pointing at the same place, we	 */
+	    /* need to step p over the whitespace now before we add the null.	 */
+	    if (*p)
+		p++;
+	    *q++ = '\0';
+	    insert_argc++;
+	}
+    }
+
+    buf = (char *) xrealloc(buf, q - buf);
+    if (!buf)
+	FatalError("Out of memory reallocing option buf\n");
+
+    *resargc = prefix_argc + insert_argc + suffix_argc;
+    *resargv = (char **) xalloc((*resargc + 1) * sizeof(char *));
+
+    memcpy(*resargv, prefix_argv, prefix_argc * sizeof(char *));
+
+    p = buf;
+    for (i = 0; i < insert_argc; i++)
+    {
+	(*resargv)[prefix_argc + i] = p;
+	p += strlen(p) + 1;
+    }
+
+    memcpy(*resargv + prefix_argc + insert_argc,
+	   suffix_argv, suffix_argc * sizeof(char *));
+
+    (*resargv)[*resargc] = NULL;
+} /* end InsertFileIntoCommandLine */
+
+void
+ExpandCommandLine(pargc, pargv)
+    int *pargc;
+    char ***pargv;
+{
+    int i;
+    for (i = 1; i < *pargc; i++)
+    {
+	if ( (0 == strcmp((*pargv)[i], "-config")) && (i < (*pargc - 1)) )
+	{
+	    InsertFileIntoCommandLine(pargc, pargv,
+					  i, *pargv,
+					  (*pargv)[i+1], /* filename */
+					  *pargc - i - 2, *pargv + i + 2);
+	    i--;
+	}
+    }
+} /* end ExpandCommandLine */
 
 /* Implement a simple-minded font authorization scheme.  The authorization
    name is "hp-hostname-1", the contents are simply the host name. */
