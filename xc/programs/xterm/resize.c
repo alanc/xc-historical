@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: resize.c,v 1.14 91/01/07 15:22:35 gildea Exp $
+ *	$XConsortium: resize.c,v 1.15 91/01/24 19:32:31 gildea Exp $
  */
 
 /*
@@ -317,7 +317,7 @@ char **argv;
 	readstring(ttyfp, buf, size[emu]);
 	if(sscanf (buf, size[emu], &rows, &cols) != 2) {
 		fprintf(stderr, "%s: Can't get rows and columns\r\n", myname);
-		onintr();
+		onintr(0);
 	}
 	if(restore[emu])
 		write(tty, restore[emu], strlen(restore[emu]));
@@ -339,7 +339,7 @@ char **argv;
 	    readstring(ttyfp, buf, wsize[emu]);
 	    if(sscanf (buf, wsize[emu], &ws.ws_xpixel, &ws.ws_ypixel) != 2) {
 		fprintf(stderr, "%s: Can't get window size\r\n", myname);
-		onintr();
+		onintr(0);
 	    }
 	    ws.ws_row = rows;
 	    ws.ws_col = cols;
@@ -465,7 +465,7 @@ char *str;
 #endif
 	if((*buf++ = getc(fp)) != *str) {
 		fprintf(stderr, "%s: unknown character, exiting.\r\n", myname);
-		onintr();
+		onintr(0);
 	}
 	last = str[i = strlen(str) - 1];
 	while((*buf++ = getc(fp)) != last);
@@ -487,14 +487,16 @@ Usage()
 }
 
 SIGNAL_T
-timeout()
+timeout(sig)
+    int sig;
 {
 	fprintf(stderr, "%s: Time out occurred\r\n", myname);
-	onintr();
+	onintr(sig);
 }
 
 SIGNAL_T
-onintr()
+onintr(sig)
+    int sig;
 {
 #ifdef USE_SYSV_TERMIO
 	ioctl (tty, TCSETAW, &tioorig);
