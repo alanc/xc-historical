@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: util.c,v 1.26 89/10/27 15:54:28 jim Exp $
+ * $XConsortium: util.c,v 1.27 89/11/01 17:27:38 jim Exp $
  *
  * utility routines for twm
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: util.c,v 1.26 89/10/27 15:54:28 jim Exp $";
+"$XConsortium: util.c,v 1.27 89/11/01 17:27:38 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -498,14 +498,13 @@ LocateStandardColormaps()
     return;
 }
 
-int
 GetColor(kind, what, name)
 int kind;
 int *what;
 char *name;
 {
     XColor color, junkcolor;
-    Status stat;
+    Status stat = 0;
 
 #ifndef TOM
     if (!Scr->FirstTime)

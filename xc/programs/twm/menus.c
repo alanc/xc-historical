@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.116 89/11/13 18:11:24 jim Exp $
+ * $XConsortium: menus.c,v 1.117 89/11/15 21:19:00 jim Exp $
  *
  * twm menu code
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: menus.c,v 1.116 89/11/13 18:11:24 jim Exp $";
+"$XConsortium: menus.c,v 1.117 89/11/15 21:19:00 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -299,8 +299,6 @@ MenuRoot *mr;
 MenuItem *mi;
 int exposure;
 {
-    XGCValues gcv;
-    int new_colors;
     int y_offset;
     int text_y;
     GC gc;
@@ -365,8 +363,8 @@ int exposure;
     }
     else
     {
-	int x, y;
-	
+	int y;
+
 	XSetForeground(dpy, Scr->NormalGC, mi->back);
 
 	/* fill the rectangle with the title background color */
@@ -396,18 +394,10 @@ MenuRoot *mr;
 XEvent *e;
 {
     MenuItem *mi;
-    int y, x, y_offset;
-    GC gc;
-
-#ifdef DEBUG_MENUS
-    fprintf(stderr, "PaintMenu  %d, %d  (%d x %d)\n",
-	e->xexpose.x, e->xexpose.y, e->xexpose.width, e->xexpose.height);
-#endif
-    x = mr->width - 20;
 
     for (mi = mr->first; mi != NULL; mi = mi->next)
     {
-	y_offset = mi->item_num * Scr->EntryHeight;
+	int y_offset = mi->item_num * Scr->EntryHeight;
 
 	/* be smart about handling the expose, redraw only the entries
 	 * that we need to
@@ -421,15 +411,12 @@ XEvent *e;
     XSync(dpy, 0);
 }
 
+
 UpdateMenu()
 {
-    MenuRoot *mr, *tmp;
     MenuItem *mi;
     int i, x, y, x_root, y_root, entry;
     int done;
-    int first = TRUE;
-    int save_x, save_y;
-    Bool badmenus = False;
     MenuItem *badItem = NULL;
 
     while (TRUE)
@@ -449,13 +436,6 @@ UpdateMenu()
 	done = FALSE;
 	XQueryPointer( dpy, ActiveMenu->w, &JunkRoot, &JunkChild,
 	    &x_root, &y_root, &x, &y, &JunkMask);
-	if (first)
-	{
-	    save_x = x_root;
-	    save_y = y_root;
-	    first = FALSE;
-	}
-
 
 	XFindContext(dpy, ActiveMenu->w, ScreenContext, &Scr);
 
@@ -558,9 +538,6 @@ NewMenuRoot(name)
     char *name;
 {
     MenuRoot *tmp;
-    unsigned long valuemask;
-    XSetWindowAttributes attributes;
-
 
     tmp = (MenuRoot *) malloc(sizeof(MenuRoot));
     tmp->hi_fore = -1;
@@ -629,8 +606,6 @@ AddToMenu(menu, item, action, sub, func, fore, back)
     int func;
     char *fore, *back;
 {
-    unsigned long valuemask;
-    XSetWindowAttributes attributes;
     MenuItem *tmp;
     int width;
 
@@ -694,8 +669,6 @@ AddToMenu(menu, item, action, sub, func, fore, back)
 MakeMenus()
 {
     MenuRoot *mr;
-    unsigned long gcm;
-    XGCValues gcv;
 
     for (mr = Scr->MenuList; mr != NULL; mr = mr->next)
     {
@@ -822,7 +795,6 @@ MenuRoot *mr;
 	return;
 
     start = mr->first;
-    end = NULL;
     while (TRUE)
     {
 	for (; start != NULL; start = start->next)
@@ -928,15 +900,14 @@ Bool PopUpMenu (menu, x, y, center)
     int x, y;
     Bool center;
 {
-    unsigned long valuemask;
-    XSetWindowAttributes attributes;
     MenuItem *tmp, *tmp1;
-    TwmWindow *tmp_win;
 
     if (!menu) return False;
 
     if (menu == Scr->Windows)
     {
+	TwmWindow *tmp_win;
+
 	/* this is the twm windows menu,  let's go ahead and build it */
 
 	if (menu->w)
@@ -967,7 +938,8 @@ Bool PopUpMenu (menu, x, y, center)
 	     tmp_win != NULL;
 	     tmp_win = tmp_win->next)
 	{
-	    AddToMenu(menu, tmp_win->name, tmp_win, NULL, F_POPUP, NULL, NULL);
+	    AddToMenu(menu, tmp_win->name, (char *) tmp_win, NULL, F_POPUP,
+		      NULL, NULL);
 	}
 	MakeMenu(menu);
     }

@@ -28,7 +28,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: gc.c,v 1.17 89/07/18 17:15:49 jim Exp $
+ * $XConsortium: gc.c,v 1.18 89/10/27 14:01:15 jim Exp $
  *
  * Open the fonts and create the GCs
  *
@@ -38,16 +38,13 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: gc.c,v 1.17 89/07/18 17:15:49 jim Exp $";
+"$XConsortium: gc.c,v 1.18 89/10/27 14:01:15 jim Exp $";
 #endif /* lint */
 
 #include <stdio.h>
 #include "twm.h"
 #include "util.h"
 #include "screen.h"
-
-static XFontStruct *dfont;		/* my default font */
-static char *dfontname;
 
 /***********************************************************************
  *
@@ -63,7 +60,7 @@ CreateGCs()
 {
     static ScreenInfo *prevScr = NULL;
     XGCValues	    gcv;
-    unsigned long   gcm, mask;
+    unsigned long   gcm;
 
     if (!Scr->FirstTime || prevScr == Scr)
 	return;

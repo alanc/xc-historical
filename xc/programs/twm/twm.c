@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: twm.c,v 1.83 89/11/16 14:35:06 jim Exp $
+ * $XConsortium: twm.c,v 1.84 89/11/16 17:09:06 jim Exp $
  *
  * twm - "Tom's Window Manager"
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: twm.c,v 1.83 89/11/16 14:35:06 jim Exp $";
+"$XConsortium: twm.c,v 1.84 89/11/16 17:09:06 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -132,15 +132,12 @@ main(argc, argv, environ)
     char **argv;
     char **environ;
 {
-    Window w, root, parent, *children;
-    TwmWindow *tmp_win;
-    int nchildren, i, j, width;
-    int m, d, y;
+    Window root, parent, *children;
+    int nchildren, i, j;
     char *display_name;
     unsigned long valuemask;	/* mask for create windows */
     XSetWindowAttributes attributes;	/* attributes for create windows */
     SigProc old_handler;
-    int mask;
     int numManaged, firstscrn, lastscrn, scrnum;
 
 #ifdef REAL_TIME

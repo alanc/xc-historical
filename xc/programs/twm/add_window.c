@@ -28,7 +28,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: add_window.c,v 1.112 89/11/16 18:09:41 jim Exp $
+ * $XConsortium: add_window.c,v 1.112 89/11/16 18:40:37 jim Exp $
  *
  * Add a new window, put the titlbar and other stuff around
  * the window
@@ -39,7 +39,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: add_window.c,v 1.112 89/11/16 18:09:41 jim Exp $";
+"$XConsortium: add_window.c,v 1.112 89/11/16 18:40:37 jim Exp $";
 #endif /* lint */
 
 #include <stdio.h>
@@ -138,20 +138,14 @@ IconMgr *iconp;
 {
     TwmWindow *tmp_win;			/* new twm window structure */
     int stat;
-    char *prop;
+    XEvent event;
     unsigned long valuemask;		/* mask for create windows */
     XSetWindowAttributes attributes;	/* attributes for create windows */
     int width, height, len;		/* tmp variable */
     int junk1, junk2, junk3;
-    int x;
     XWindowChanges xwc;		/* change window structure */
     unsigned int xwcm;		/* change window mask */
     int ask_user;		/* don't know where to put the window */
-    XColor blob, cret;
-    XEvent event;
-    XGCValues	    gcv;
-    unsigned long   gcm, mask;
-    XWindowAttributes gattr;
     long supplied;
     int gravx, gravy;			/* gravity signs for positioning */
     int namelen;
@@ -407,6 +401,8 @@ IconMgr *iconp;
 	    }
 
 	    if (event.xbutton.button == Button2) {
+		int lastx, lasty;
+
 		Scr->SizeStringOffset = width +
 		  XTextWidth(Scr->SizeFont.font, ": ", 2);
 		XResizeWindow (dpy, Scr->SizeWindow, Scr->SizeStringOffset +
@@ -436,10 +432,10 @@ IconMgr *iconp;
 		}
 		AddStartResize(tmp_win, AddingX, AddingY, AddingW, AddingH);
 
+		lastx = -10000;
+		lasty = -10000;
 		while (TRUE)
 		{
-		    int lastx, lasty;
-
 		    /*
 		     * XXX - if we are going to do a loop, we ought to consider
 		     * using multiple GXxor lines so that we don't need to 
@@ -1283,7 +1279,6 @@ static void CreateTitleButtons(tmp_win)
     unsigned long valuemask;		/* mask for create windows */
     XSetWindowAttributes attributes;	/* attributes for create windows */
     int leftx, rightx, y;
-    GC gc;
     TitleButton *tb;
     int nb;
 

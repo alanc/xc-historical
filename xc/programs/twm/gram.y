@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: gram.y,v 1.74 89/11/16 17:08:55 jim Exp $
+ * $XConsortium: gram.y,v 1.75 89/11/16 19:26:22 jim Exp $
  *
  * .twmrc command grammer
  *
@@ -38,7 +38,7 @@
 
 %{
 static char RCSinfo[]=
-"$XConsortium: gram.y,v 1.74 89/11/16 17:08:55 jim Exp $";
+"$XConsortium: gram.y,v 1.75 89/11/16 19:26:22 jim Exp $";
 
 #include <stdio.h>
 #include <ctype.h>
@@ -58,7 +58,6 @@ MenuRoot *GetRoot();
 static Bool CheckWarpScreenArg(), CheckColormapArg();
 static void GotButton(), GotKey(), GotTitleButton();
 static char *ptr;
-static int Button;
 static name_list **list;
 static int cont = 0;
 static int color;
@@ -568,12 +567,12 @@ signed_number	: number		{ $$ = $1; }
 
 button		: BUTTON number		{ $$ = $2;
 					  if ($2 == 0)
-						yyerror();
+						yyerror("bad button 0");
 
 					  if ($2 > MAX_BUTTONS)
 					  {
 						$$ = 0;
-						yyerror();
+						yyerror("button number too large");
 					  }
 					}
 		;

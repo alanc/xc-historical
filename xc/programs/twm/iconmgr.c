@@ -21,7 +21,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: iconmgr.c,v 1.30 89/11/05 19:01:23 jim Exp $
+ * $XConsortium: iconmgr.c,v 1.31 89/11/13 18:11:21 jim Exp $
  *
  * Icon Manager routines
  *
@@ -134,7 +134,7 @@ char *geom;
 char *icon_name;
 int columns;
 {
-    IconMgr *p, *tmp;
+    IconMgr *p;
 
 #ifdef DEBUG_ICONMGR
     fprintf(stderr, "AllocateIconManager\n");
@@ -192,7 +192,7 @@ MoveIconManager(dir)
 int dir;
 {
     IconMgr *ip;
-    WList *tmp;
+    WList *tmp = NULL;
     int cur_row, cur_col, new_row, new_col;
     int row_inc, col_inc;
     int got_it;
@@ -312,8 +312,7 @@ int dir;
 JumpIconManager(dir)
 int dir;
 {
-    IconMgr *ip, *tmp_ip;
-    WList *tmp;
+    IconMgr *ip, *tmp_ip = NULL;
     int got_it;
     ScreenInfo *sp;
     int screen;
@@ -627,7 +626,6 @@ TwmWindow *tmp_win;
 {
     IconMgr *ip;
     WList *tmp;
-    int h, i;
 
     if (tmp_win->list == NULL)
 	return;

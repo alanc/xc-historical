@@ -21,7 +21,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: icons.c,v 1.9 89/11/13 18:22:57 jim Exp $
+ * $XConsortium: icons.c,v 1.10 89/11/16 21:14:14 jim Exp $
  *
  * Icon releated routines
  *
@@ -105,8 +105,8 @@ int def_x, def_y;
 int *final_x, *final_y;
 {
     IconRegion	*ir;
-    IconEntry	*ie, *ne;
-    int		x, y, w, h;
+    IconEntry	*ie;
+    int		w = 0, h = 0;
 
     ie = 0;
     for (ir = Scr->FirstRegion; ir; ir = ir->next) {
@@ -157,8 +157,6 @@ IconUp (tmp_win)
     TwmWindow   *tmp_win;
 {
     int		x, y;
-    Window	root;
-    unsigned int	junkw, junkh, junkbw, junkdepth;
     int		defx, defy;
 
     defx = -100;
@@ -204,7 +202,7 @@ mergeEntries (old, ie)
 IconDown (tmp_win)
     TwmWindow   *tmp_win;
 {
-    IconEntry	*ie, *ip, *in, *tmp;
+    IconEntry	*ie, *ip, *in;
     IconRegion	*ir;
 
     ie = FindIconEntry (tmp_win, &ir);
@@ -331,8 +329,6 @@ int def_x, def_y;
     {
 	char *icon_name;
 	Pixmap bm;
-	XImage *image;
-	unsigned mask;
 
 	icon_name = LookInNameList(Scr->IconNames, tmp_win->full_name);
         if (icon_name == NULL)
@@ -393,8 +389,6 @@ int def_x, def_y;
     {
 	char *icon_name;
 	Pixmap bm;
-	XImage *image;
-	unsigned mask;
 
 	icon_name = LookInNameList(Scr->IconNames, tmp_win->full_name);
         if (icon_name == NULL)

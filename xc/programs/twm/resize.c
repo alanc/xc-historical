@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: resize.c,v 1.52 89/11/16 18:09:45 jim Exp $
+ * $XConsortium: resize.c,v 1.52 89/11/16 18:40:41 jim Exp $
  *
  * window resizing borrowed from the "wm" window manager
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: resize.c,v 1.52 89/11/16 18:09:45 jim Exp $";
+"$XConsortium: resize.c,v 1.52 89/11/16 18:40:41 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -191,9 +191,6 @@ AddStartResize(tmp_win, x, y, w, h)
 TwmWindow *tmp_win;
 int x, y, w, h;
 {
-    Window      junkRoot;
-    int         junkbw, junkDepth;
-
     XGrabServer(dpy);
     XGrabPointer(dpy, Scr->Root, True,
         ButtonReleaseMask,
@@ -414,7 +411,6 @@ void
 EndResize()
 {
     TwmWindow *tmp_win;
-    Window w;
 
 #ifdef DEBUG
     fprintf(stderr, "EndResize\n");
@@ -784,7 +780,6 @@ int flag;
 {
     Window      junkRoot;
     int         junkbw, junkDepth;
-    TwmWindow   *test_win;
 
     XGetGeometry(dpy, (Drawable) tmp_win->frame, &junkRoot,
         &dragx, &dragy, &dragWidth, &dragHeight, &junkbw,

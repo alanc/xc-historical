@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.110 89/11/16 21:04:18 jim Exp $
+ * $XConsortium: events.c,v 1.111 89/11/17 17:36:03 jim Exp $
  *
  * twm event handling
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: events.c,v 1.110 89/11/16 21:04:18 jim Exp $";
+"$XConsortium: events.c,v 1.111 89/11/17 17:36:03 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -292,8 +292,6 @@ HandleColormapNotify()
 
     if (cevent->window == Scr->Root)
     {
-	XWindowAttributes attr;
-
 	/* Did the colormap change? */
 	if (cevent->new == True)
 	    Scr->CMap = cevent->colormap;
@@ -317,8 +315,6 @@ HandleColormapNotify()
 
     if (cevent->window == Tmp_win->w)
     {
-	XWindowAttributes attr;
-
 	/* Did the client change its colormap? */
 	if (cevent->new == True)
 	    Tmp_win->attr.colormap = cevent->colormap;
@@ -513,11 +509,8 @@ void
 HandlePropertyNotify()
 {
     char *prop = NULL;
-    XWMHints *wmhints;
-    XSizeHints hints;
     Atom actual = None;
     int junk1, junk2, len;
-    int width, height, x, y;
     unsigned long valuemask;		/* mask for create windows */
     XSetWindowAttributes attributes;	/* attributes for create windows */
     Pixmap pm;
@@ -790,8 +783,6 @@ HandleExpose()
     } 
     else if (Tmp_win != NULL)
     {
-	int h = Scr->TitleHeight - Scr->FramePadding * 2;
-
 	if (Event.xany.window == Tmp_win->title_w)
 	{
 	    FBF(Tmp_win->title.fore, Tmp_win->title.back,
@@ -939,7 +930,7 @@ HandleDestroyNotify()
 	Tmp_win->next->prev = Tmp_win->prev;
     if (Tmp_win->auto_raise) Scr->NumAutoRaises--;
 
-    free_window_names (Tmp_win, True, True, True, True);	/* 1, 2, 3 */
+    free_window_names (Tmp_win, True, True, True);		/* 1, 2, 3 */
     if (Tmp_win->wmhints)					/* 4 */
       XFree ((char *)Tmp_win->wmhints);
     if (Tmp_win->class.res_name && Tmp_win->class.res_name != NoName)  /* 5 */
@@ -974,7 +965,6 @@ void
 HandleMapRequest()
 {
     int stat;
-    XSizeHints hints;
     int zoom_save;
 
     Event.xany.window = Event.xmaprequest.window;
@@ -1087,10 +1077,8 @@ HandleMapNotify()
 void
 HandleUnmapNotify()
 {
-    int dstx, dsty, dumint;
-    unsigned int dumuint, bw;
+    int dstx, dsty;
     Window dumwin;
-    int gravx, gravy;
 
     /*
      * The July 27, 1988 ICCCM spec states that a client wishing to switch
@@ -1169,8 +1157,6 @@ HandleButtonRelease()
 
     if (DragWindow != None)
     {
-	XEvent client_event;
-
 	MoveOutline(Scr->Root, 0, 0, 0, 0, 0, 0);
 
 	XFindContext(dpy, DragWindow, TwmContext, &Tmp_win);
@@ -1246,8 +1232,6 @@ HandleButtonRelease()
 
     if (ActiveMenu != NULL && RootFunction == NULL)
     {
-	MenuRoot *tmp;
-
 	if (ActiveItem != NULL)
 	{
 	    Action = ActiveItem->action;
@@ -1628,8 +1612,6 @@ HandleEnterNotify()
 void
 HandleLeaveNotify()
 {
-    MenuRoot *mr;
-
     if (Tmp_win != NULL)
     {
 	if (Scr->FocusRoot)
@@ -1767,11 +1749,8 @@ HandleConfigureRequest()
 void
 HandleShapeNotify ()
 {
-    XShapeEvent	    *sev;
-    Window	    w;
-    int		    reshape = 0;
+    XShapeEvent	    *sev = (XShapeEvent *) &Event;
 
-    sev = (XShapeEvent *) &Event;
     if (Tmp_win == NULL)
 	return;
     if (sev->kind != ShapeBounding)
@@ -1841,19 +1820,18 @@ FindScreenInfo(w)
 {
     XWindowAttributes attr;
     int scrnum;
-    Status stat;
 
     attr.screen = NULL;
-    stat = XGetWindowAttributes(dpy, w, &attr);
-
-    for (scrnum = 0; scrnum < NumScreens; scrnum++)
-    {
-	if (ScreenList[scrnum] != NULL &&
-	    ScreenOfDisplay(dpy, ScreenList[scrnum]->screen) == attr.screen)
-		return(ScreenList[scrnum]);
+    if (XGetWindowAttributes(dpy, w, &attr)) {
+	for (scrnum = 0; scrnum < NumScreens; scrnum++) {
+	    if (ScreenList[scrnum] != NULL &&
+		(ScreenOfDisplay(dpy, ScreenList[scrnum]->screen) ==
+		 attr.screen))
+	      return ScreenList[scrnum];
+	}
     }
 
-    return(NULL);
+    return NULL;
 }
 
 
