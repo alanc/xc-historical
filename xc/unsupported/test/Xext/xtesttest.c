@@ -1,4 +1,4 @@
-/* $XConsortium: xtesttest.c,v 1.4 92/02/25 09:57:39 keith Exp $ */
+/* $XConsortium: xtesttest.c,v 1.5 92/03/25 12:05:29 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -21,6 +21,7 @@ without express or implied warranty.
 #include <X11/extensions/XTest.h>
 #include <X11/cursorfont.h>
 #include <X11/keysym.h>
+#include <X11/extensions/XInput.h>
 
 char *ProgramName;
 
@@ -161,6 +162,215 @@ main (argc, argv)
     XTestSetGContextOfGC(gc, gid);
     if (XGContextFromGC(gc) != gid)
 	printf("error: XTestSetGContextOfGC failed\n");
+    test_xinput_devices(dpy, w, major_version, minor_version);
     XCloseDisplay (dpy);
     exit (0);
 }
+
+test_xinput_devices(dpy, w, major_version, minor_version)
+    Display *dpy;
+    Window w;
+    int major_version, minor_version;
+{
+    int i, j, n_devices, axes[6], evcount=0;
+    XDeviceInfo *list, *slist;
+    XInputClassInfo *ip;
+    XAnyClassPtr any;
+    XID dkp, dkr, dbp, dbr, dpi, dpo, dm;
+    XEventClass dkpc, dkrc, dbpc, dbrc, dmc, dpic, dpoc, evclasses[7];
+    XDevice *tdev, *keydevice=NULL, *buttondevice=NULL, *proximitydevice=NULL;
+    XDevice *motiondevice=NULL;
+    KeyCode keycode;
+    XEvent ev, ev2;
+    XDeviceKeyEvent *K;
+    XDeviceButtonEvent *B, *B0;
+    XDeviceMotionEvent *M;
+    XProximityNotifyEvent *P;
+    long    delta_time;
+
+    if (major_version < 2 || minor_version < 2){
+	printf ("XInput extension not testable on server \"%s\"\n",
+		DisplayString(dpy));
+	return;
+    }
+	
+    if (!(list = XListInputDevices (dpy, &n_devices))){
+	printf ("XInput extension not supported on server \"%s\"\n",
+		DisplayString(dpy));
+	return;
+    }
+    slist = list;
+    keydevice = buttondevice = motiondevice = NULL;
+    for (i=0; i<n_devices; i++,list++) {
+	if (list->use != IsXExtensionDevice)
+	    continue;
+	if (!keydevice){
+	    for (any=list->inputclassinfo,j=0; j<list->num_classes; j++) {
+		if (any->class == KeyClass) {
+		    XKeyInfo *k = (XKeyInfo *) any;
+		    if (k->num_keys == 0)
+			continue;
+		    keycode = k->min_keycode;
+		}
+		any = (XAnyClassPtr) ((char *) any + any->length);
+	    }
+	}
+	tdev = XOpenDevice(dpy, list->id);
+	for (ip= tdev->classes, j=0; j<tdev->num_classes; j++, ip++) {
+	    if (ip->input_class == KeyClass && !keydevice) {
+		keydevice = tdev;
+		DeviceKeyPress(keydevice, dkp, dkpc);
+		DeviceKeyRelease(keydevice, dkr, dkrc);
+		evclasses[evcount++]=dkpc;
+		evclasses[evcount++]=dkrc;
+	    }
+	    else if (ip->input_class == ButtonClass && !buttondevice) {
+		buttondevice = tdev;
+		DeviceButtonPress(buttondevice, dbp, dbpc);
+		DeviceButtonRelease(buttondevice, dbr, dbrc);
+		evclasses[evcount++]=dbpc;
+		evclasses[evcount++]=dbrc;
+	    }
+	    else if (ip->input_class == ProximityClass && !proximitydevice) {
+		proximitydevice = tdev;
+		ProximityIn(proximitydevice, dpi, dpic);
+		ProximityOut(proximitydevice, dpo, dpoc);
+		evclasses[evcount++]=dpic;
+		evclasses[evcount++]=dpoc;
+	    }
+	    else if (ip->input_class == ValuatorClass && !motiondevice) {
+		motiondevice = tdev;
+		DeviceMotionNotify(motiondevice, dm, dmc);
+		evclasses[evcount++]=dmc;
+	    }
+	}
+    if (tdev!=keydevice && tdev!=buttondevice && tdev!=motiondevice &&
+	tdev!=proximitydevice)
+	XCloseDevice(dpy, tdev);
+    }
+    XSelectExtensionEvent (dpy, w, evclasses, evcount);
+    for(i=0;i<6;i++)
+	axes[i]=i;
+
+    XTestFakeMotionEvent(dpy, DefaultScreen(dpy), 10, 10, 0);
+    XSync(dpy,True);
+    if (keydevice) {
+	XTestFakeDeviceKeyEvent(dpy, keydevice, keycode, 6, axes, True, 0);
+	XNextEvent(dpy, &ev);
+	K = (XDeviceKeyEvent *) &ev;
+	if (K->type != dkp ||
+	    K->keycode != keycode ||
+	    K->x_root != 10 ||
+	    K->y_root != 10 ||
+	    K->first_axis != 0 ||
+	    K->axis_data[0] != 0 ||
+	    K->axis_data[1] != 1 ||
+	    K->axis_data[2] != 2 ||
+	    K->axis_data[3] != 3 ||
+	    K->axis_data[4] != 4 ||
+	    K->axis_data[5] != 5)
+	    printf("error: bad event received for device key press\n");
+
+	XTestFakeDeviceKeyEvent(dpy, keydevice, keycode, 6, axes, False, 0);
+	XNextEvent(dpy, &ev);
+	K = (XDeviceKeyEvent *) &ev;
+	if (K->type != dkr ||
+	    K->keycode != keycode ||
+	    K->x_root != 10 ||
+	    K->y_root != 10 ||
+	    K->first_axis != 0 ||
+	    K->axis_data[0] != 0 ||
+	    K->axis_data[1] != 1 ||
+	    K->axis_data[2] != 2 ||
+	    K->axis_data[3] != 3 ||
+	    K->axis_data[4] != 4 ||
+	    K->axis_data[5] != 5)
+	    printf("error: bad event received for device key release\n");
+    }
+
+    if (buttondevice) {
+	XTestFakeDeviceButtonEvent(dpy, buttondevice, 1, 6, axes, True, 0);
+	XNextEvent(dpy, &ev);
+	B0 = (XDeviceButtonEvent *) &ev;
+	if (B0->type != dbp ||
+	    B0->button != 1 ||
+	    B0->x_root != 10 ||
+	    B0->y_root != 10 ||
+	    B0->first_axis != 0 ||
+	    B0->axis_data[0] != 0 ||
+	    B0->axis_data[1] != 1 ||
+	    B0->axis_data[2] != 2 ||
+	    B0->axis_data[3] != 3 ||
+	    B0->axis_data[4] != 4 ||
+	    B0->axis_data[5] != 5)
+	    printf("error: bad event received for device button press\n");
+
+	XTestFakeDeviceButtonEvent(dpy, buttondevice, 1, 6, axes, False, 1000);
+	XNextEvent(dpy, &ev2);
+	B = (XDeviceButtonEvent *) &ev2;
+	if (B->type != dbr ||
+	    B->button != 1 ||
+	    B->x_root != 10 ||
+	    B->y_root != 10 ||
+	    B->first_axis != 0 ||
+	    B->axis_data[0] != 0 ||
+	    B->axis_data[1] != 1 ||
+	    B->axis_data[2] != 2 ||
+	    B->axis_data[3] != 3 ||
+	    B->axis_data[4] != 4 ||
+	    B->axis_data[5] != 5)
+	    printf("error: bad event received for device button release\n");
+	delta_time = B->time - B0->time;
+	if (delta_time > 1100 || delta_time < 900)
+	    printf("Poor event spacing is %d should be %d\n", delta_time, 1000);
+	}
+
+    if (proximitydevice) {
+	XTestFakeProximityEvent(dpy, proximitydevice, 6, axes, True, 0);
+	XNextEvent(dpy, &ev);
+	P = (XProximityNotifyEvent *) &ev;
+	if (P->type != dpi ||
+	    P->x_root != 10 ||
+	    P->y_root != 10 ||
+	    P->first_axis != 0 ||
+	    P->axis_data[0] != 0 ||
+	    P->axis_data[1] != 1 ||
+	    P->axis_data[2] != 2 ||
+	    P->axis_data[3] != 3 ||
+	    P->axis_data[4] != 4 ||
+	    P->axis_data[5] != 5)
+	    printf("error: bad event received for proximity in event\n");
+
+	XTestFakeProximityEvent(dpy, proximitydevice, 6, axes, False, 0);
+	XNextEvent(dpy, &ev);
+	P = (XProximityNotifyEvent *) &ev;
+	if (P->type != dpo ||
+	    P->x_root != 10 ||
+	    P->y_root != 10 ||
+	    P->first_axis != 0 ||
+	    P->axis_data[0] != 0 ||
+	    P->axis_data[1] != 1 ||
+	    P->axis_data[2] != 2 ||
+	    P->axis_data[3] != 3 ||
+	    P->axis_data[4] != 4 ||
+	    P->axis_data[5] != 5)
+	    printf("error: bad event received for proximity out event\n");
+    }
+
+    if (motiondevice) {
+	XTestFakeDeviceMotionEvent(dpy, motiondevice, DefaultScreen(dpy), 6, 
+	    axes, 0);
+	XNextEvent(dpy, &ev);
+	M = (XDeviceMotionEvent *) &ev;
+	if (M->type != dm ||
+	    M->first_axis != 0 ||
+	    M->axis_data[0] != 0 ||
+	    M->axis_data[1] != 1 ||
+	    M->axis_data[2] != 2 ||
+	    M->axis_data[3] != 3 ||
+	    M->axis_data[4] != 4 ||
+	    M->axis_data[5] != 5)
+	    printf("error: bad event received for device motion\n");
+    }
+}
+
