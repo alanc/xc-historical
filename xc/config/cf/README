@@ -1,4 +1,4 @@
-$XConsortium: README,v 1.28 92/12/23 16:56:50 gildea Exp $
+$XConsortium: README,v 1.29 93/07/28 19:04:17 rws Exp $
 
 The easiest way to write an Imakefile is to find another one that does
 something similar and copy/modify it!
@@ -30,20 +30,22 @@ Imake.tmpl provides defaults for the following variables:
 	FortranCmd		command to run Fortran compiler
 	FortranDebugFlags	flags for Fortran debug info
 	FortranFlags		Fortran compiler flags
+	HasBSD44Sockets		boolean for system has BSD4.4 sockets
 	HasBsearch		boolean for libc has bsearch()
+	HasCodeCenter		boolean for system has CodeCenter
 	HasFortran		boolean for system has Fortran compiler
 	HasGcc			boolean for system has GNU gcc compiler
 	HasGcc2			boolean for system has GNU gcc 2.x compiler
 	HasLargeTmp		boolean for system has /tmp space
 	HasNdbm			boolean for system has ndbm routines
+	HasPurify		boolean for system has Purify
 	HasPutenv		boolean for libc has putenv()
-	HasSaberC		boolean for system has Saber C
 	HasSecureRPC		boolean for Sun Secure RPC
 	HasSharedLibraries	boolean for system has shared libraries
 	HasShm			boolean for System V shared memory
 	HasSockets		boolean for system has BSD sockets
 	HasSymLinks		boolean for system has symbolic links
-	HasBSD44Sockets		boolean for system has BSD4.4 sockets
+	HasTestCenter		boolean for system has TestCenter
 	HasVFork		boolean for system has vfork()
 	HasVoidSignalReturn	boolean for POSIX signal() procs
 	IncRoot			parent of X11 include directory
