@@ -1,5 +1,5 @@
 /*
- * $XConsortium: editres.c,v 1.3 90/03/14 17:20:45 kit Exp $
+ * $XConsortium: editres.c,v 1.4 90/03/15 17:44:01 kit Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -68,6 +68,8 @@ static XtResource editres_resources[] = {
      Offset(flash_time), XtRImmediate, (XtPointer) FLASH_TIME},       
   {"flashColor", XtCForeground, XtRPixel, sizeof(Pixel),
      Offset(flash_color), XtRImmediate, (XtPointer) XtDefaultForeground},
+  {"saveResourceFile", "SaveResourcesFile", XtRString, sizeof(String),
+     Offset(save_resources_file), XtRString, (XtPointer) ""},
 };
 
 void
@@ -89,6 +91,8 @@ char **argv;
     XtGetApplicationResources(toplevel, (caddr_t) &global_resources, 
 			      editres_resources, XtNumber(editres_resources),
 			      NULL, (Cardinal) 0);
+    global_resources.allocated_save_resources_file = FALSE;
+    
 
     BuildWidgetTree(toplevel);
 

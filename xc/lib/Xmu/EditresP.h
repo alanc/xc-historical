@@ -70,9 +70,9 @@ Currently supported commands are:
 SendWidgetTree
 --------------------
 
-command value =  <ignored>
+command value 	= <ignored>
 
-return value  	= <widget>\n<widget>\n...
+return value  	= <widget><EOL_SEPARATOR><return_value>
 
 widget 		= <grandparent_name>.<parent_name>.<_name>:<class>|<window>
 
@@ -91,7 +91,7 @@ window   	= id of the window associated with this widget, or 0 if
 SetValues
 --------------------
 
-command value	= <command>\n
+command value	= <command><EOL_SEPARATOR><command value>
 
 command		= <id>#resource_name:resource_value
 
@@ -99,9 +99,9 @@ command		= <id>#resource_name:resource_value
 
 if (error == 3) then 
 
-	return value 	= <value>\n
+	return value 	= <value><EOL_SEPARATOR>
 
-	value		= [id]:<string>
+	value		= {[id], "Unknown Widget"}:<string>
 
 else if (error == 0)
 
@@ -110,27 +110,38 @@ else if (error == 0)
 endif
 
 --------------------
-GetResources - NIY
+GetResources
 --------------------
 
-command value 	= <id>\n...
+command value 	= <id><EOL_SEPARATOR><command value>
 
    id 		= .<widgetid>.<parentid>.<grandparentid>...
 
-return value 	= <value>\n
+return value 	= <value><EOL_SEPARATOR>
 
-   value	= <e_val>[id]:<data>
+   value	= <e_val><info>
 
    e_val	= 1 if an error occured, 0 otherwise.
                   NOTE: This field is exactly one character wide.
 
    if (e_val == 0) then
 
+        info	= [id]:<data>
+
    	data 	= <resource>\t...
 
-	resource= <name>:<class>
-		
-   else 
+	resource= <type><name>:<class>#<type>
+
+	type = 'n' or 'c'
+	       NOTE: type is exactly one character long
+	             and distinguishes between (n)ormal 
+		     and (c)onstraint resources.
+
+   else if (e_val == 3)
+
+	info	= {[id], "Unknown Widget"}:<string>
+
+   else
 
    	data 	= <string>
 
@@ -140,24 +151,30 @@ return value 	= <value>\n
 GetGeometry
 -----------
 
-command value 	= <id>\n...
+command value 	= <id><EOL_SEPARATOR>...
 
    id 		= .<widgetid>.<parentid>.<grandparentid>...
 
-return value 	= <value>\n
+return value 	= <value><EOL_SEPARATOR>
 
-   value	= <e_val>[id]:<data>
+   value	= <e_val>
 
    e_val	= 1 if an error occured, 0 otherwise.
                   NOTE: This field is exactly one character wide.
 
    if (e_val == 0) then
 
+        info	= [id]:<data>
+	
    	data 	= <geometry>#<border_width> || <"NOT_VISABLE">
 
 	geometry = <geometry string in format used by XParseGeomtery>
 		
-   else 
+   else if (e_val == 3) then
+
+	info 	=  {[id], "Unknown Widget"}:<string>
+
+   else
 
    	data 	= <string>
 
@@ -178,7 +195,13 @@ NOTE:		These are root coordinates, not coordinates relative
 
    id 		= .<widgetid>.<parentid>.<grandparentid>...
 
-return value 	= <id>
+   if (e_val == 0)
+
+	return value 	= <id>
+
+   else 
+
+        return value    = <string>
 
 NOTE:
 
@@ -226,6 +249,8 @@ two or more mapped widgets, or in two overlapping Rect objs.
 #define WID_RES_SEPARATOR ('#')
 #define EDITRES_BORDER_WIDTH_SEPARATOR WID_RES_SEPARATOR
 #define NAME_VAL_SEPARATOR CLASS_SEPARATOR
+#define CLASS_TYPE_SEPARATOR WID_RES_SEPARATOR
+#define RESOURCE_SEPARATOR ID_SEPARATOR
 #define WINDOW_SEPARATOR COMMAND_SEPARATOR
 #define EOL_SEPARATOR ('\n')
 

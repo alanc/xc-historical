@@ -24,6 +24,7 @@ Editres.Geometry:			500x600
 *SimpleMenu*setValues.Label:		Set Values
 *SimpleMenu*dumpTreeToFile.Label:	Dump Widget Tree to a File
 *SimpleMenu*flashActiveWidgets.Label:	Show Active Widgets
+*SimpleMenu*getResourceList.Label:	Show Resource Box
 *SimpleMenu*quit.Label:			Quit
 
 
@@ -82,9 +83,70 @@ Editres.Geometry:			500x600
    <Btn1Down>:             select-start() SVActiveEntry(Value)\n\
    <Key>Tab:               SVActiveEntry(Resource)
 
+! Resources for the Resource Box.
+
+*resourceBox*resourceLabel.font:			\
+-*-new century schoolbook-bold-r-*-*-20-*-*-*-*-*-*-*
+
+*resourceBox.allowShellResize:				True
+
+*resourceBox*resourceLabel.allowResize:			True
+
+*resourceBox*List.verticalList:				True
+
+*resourceBox*namesAndClasses*BorderWidth:		0
+*resourceBox*star.Label:				*
+*resourceBox*dot.Label:					.
+*resourceBox*any.Label:					Allow Any Widget
+
+*resourceBox*namesLabel.Label:				Normal Resources
+*resourceBox*namesLabel.font:			\
+-*-new century schoolbook-bold-r-*-*-17-*-*-*-*-*-*-*
+*resourceBox*constraintLabel.Label:			Constraint Resources
+*resourceBox*constraintLabel.font:			\
+-*-new century schoolbook-bold-r-*-*-17-*-*-*-*-*-*-*
+
+
+*resourceBox*valueLabel.Label:				Enter Resource Value:
+*resourceBox*valueLabel.BorderWidth:			0
+
+*resourceBox*valueForm*preferredPaneSize:		100
+
+*resourceBox*valueText*editType:			edit
+*resourceBox*valueText.Scroll:				WhenNeeded
+*resourceBox*valueText.width:				300
+
+*resourceBox*setFile.Label:				Set Save File
+*resourceBox*save.Label:				Save
+*resourceBox*apply.Label:				Apply
+*resourceBox*saveAndApply.Label:			Save and Apply
+*resourceBox*commandBox.cancel.Label:			Popdown Resource Box
+
+! This gives us an exactly one of many toggle, if toggle is
+! not set in each group the application will probabally core dump.
+
+*namesAndClasses*Toggle.Translations: #override \n\
+	<Btn1Down>,<Btn1Up>:   set() notify()
+    
+
+*commandBox.skipAdjust:				True
+
 ! Keyboard Actions for Tree and children of the Tree.
 
-*Tree*Translations:	#override \n\
+*Tree.Translations:	#override \n\
+	:<Key>space:		Select(nothing) \n\
+	:<Key>s:		Select(all) \n\
+	:<Key>i:		Select(invert) \n\
+	:<Key>c:		Select(children) \n\
+	:<Key>d:		Select(descendants) \n\
+	:<Key>p:		Select(parent) \n\
+	:<Key>a:		Select(ancestors) \n\
+	:<Key>N:		Relabel(name) \n\
+	:<Key>C:		Relabel(class) \n\
+	:<Key>I:		Relabel(id) \n\
+	:<Key>W:		Relabel(window) 
+
+*Tree.Toggle.Translations:	#override \n\
 	:<Key>space:		Select(nothing) \n\
 	:<Key>s:		Select(all) \n\
 	:<Key>i:		Select(invert) \n\

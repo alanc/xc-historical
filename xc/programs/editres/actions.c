@@ -1,5 +1,5 @@
 /*
- * $XConsortium: actions.c,v 1.2 90/03/14 17:20:38 kit Exp $
+ * $XConsortium: actions.c,v 1.3 90/04/27 16:58:42 kit Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -35,7 +35,7 @@
 
 extern void SetMessage(), _TreeSelect(), _TreeSelectNode();
 extern void _TreeActivateNode(), _TreeRelabel(), _TreeRelabelNode();
-extern void PrepareToLayoutTree(), LayoutTree();
+extern void PrepareToLayoutTree(), LayoutTree(), _PopdownFileDialog();
 
 /*
  * Private data.

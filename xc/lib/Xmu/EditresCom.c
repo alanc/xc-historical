@@ -1,5 +1,5 @@
 /*
- * $XConsortium: EditResCom.c,v 1.9 90/04/01 16:34:18 rws Exp $
+ * $XConsortium: EditResCom.c,v 1.10 90/04/26 17:35:19 converse Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -38,7 +38,9 @@
 #  include <X11/Xaw/Text.h>
 #endif
 
-#define CURRENT_PROTOCOL_VERSION 2L
+#define CURRENT_PROTOCOL_VERSION 3L
+
+#define UNKNOWN ("Unknown Widget")
 
 #define streq(a,b) (strcmp( (a), (b) ) == 0)
 
@@ -223,56 +225,46 @@ Atom sel;
 ResIdent ident;
 char * command, *value;
 {
-    Message error_message;
-    char * DumpWidgets(), msg[BUFSIZ];
-    Boolean set_values, ret_val;
-
     if (streq(EDITRES_SEND_WIDGET_TREE, command)) {
+	char * DumpWidgets();
 	char * comm_str = DumpWidgets(w);
 
 	SendReturnCommand(w, sel, ident, comm_str);
 	XtFree(comm_str);
     }
-    else if ( (set_values = streq(EDITRES_SET_VALUES, command)) ||
-	      streq(EDITRES_GET_GEOMETRY, command) ) {
-	static void DoSetValues();
-	static Boolean DoGetGeometry();
+    else {
+	Message error_message;
+	static Boolean DoFindChild(), DoSetValues(), DoGetGeometry();
+	static Boolean DoGetResources();
+	static Boolean (*func)();
        
 	bzero((char *) &error_message, sizeof(Message));
 
-	if (set_values) {
-	    ret_val = FALSE;	/* Do not send error message back 
-				   as acceptable value. */
-	    DoSetValues(w, value, &error_message);
-	}
-	else 
-	    ret_val = DoGetGeometry(w, value, &error_message);
-		
-	if (error_message.str == NULL) {
-	    sprintf(msg, "%s was sucessful.", command);
-	    SendReturnCommand(w, sel, ident, msg);
-	}
+	if (streq(EDITRES_SET_VALUES, command))
+	    func = DoSetValues;
+	else if (streq(EDITRES_GET_GEOMETRY, command))
+	    func = DoGetGeometry;
+	else if (streq(EDITRES_GET_RESOURCES, command))
+	    func = DoGetResources;
+	else if (streq(EDITRES_FIND_CHILD, command)) 
+	    func = DoFindChild;
 	else {
-	    if (ret_val) 
-		SendReturnCommand(w, sel, ident, error_message.str);
-	    else {
-		SendCommand(w, sel, ident, 
-			    (error_message.formatted ? FormattedResError 
-			                             : UnformattedResError),
-			    error_message.str);	    
-	    }
-
-	    XtFree(error_message.str);
+	    char msg[BUFSIZ];
+	    sprintf(msg, "Unknown Command: %s", command);
+	    SendBackError(w, sel, ident, msg);
+	    return;
 	}
-    }
-    else if (streq(EDITRES_FIND_CHILD, command)) {
-	static ResourceError DoFindChild();
+		
+	if ((*func)(w, value, &error_message))
+	    SendReturnCommand(w, sel, ident, error_message.str);
+	else {
+	    SendCommand(w, sel, ident, 
+			(error_message.formatted ? FormattedResError 
+			                         : UnformattedResError),
+			error_message.str);	    
+	}
 
-	SendCommand(w, sel, ident, DoFindChild(w, value, msg), msg);
-    }
-    else {
-	sprintf(msg, "Unknown Command: %s", command);
-	SendBackError(w, sel, ident, msg);
+	XtFree(error_message.str);
     }
 }
 
@@ -425,6 +417,49 @@ char * str;
  *
  ************************************************************/
 
+/*	Function Name: BreakUpCommand
+ *	Description: Breaks up one command by line into several
+ *                   smaller commands.
+ *	Arguments: str - string containg the original command.
+ *                 num - the number of commands.
+ *	Returns: the newly allocated commands.
+ */
+
+/*
+ * SIDE EFFECT WARNING:
+ * 
+ * The command string is modified to change all EOL_SEPARATORS to '\0'.
+ */
+
+static char **
+BreakUpCommand(msg, str, num)
+Message * msg;
+char * str;
+int * num;
+{
+    register int i;
+    char * ptr, ** commands;
+
+    *num = 1;
+    ptr = str;
+    while (((ptr = index(ptr, EOL_SEPARATOR)) != NULL) ) {
+	ptr++;
+	(*num)++;
+    }
+
+    commands = (char **) XtMalloc(sizeof(char **) * *num);
+    
+    for (i = 0, ptr = str; i < *num; i++) {
+	commands[i] = ptr;
+	if ( (ptr = index(ptr, EOL_SEPARATOR)) == NULL) {
+	    *num = i + 1;
+	    return(commands);	/* we are done */
+	}
+	*ptr = '\0';
+	ptr++;
+    }
+    return(commands);
+}
 
 /*	Function Name: FindChildren
  *	Description: Retuns all children (popup, normal and otherwise)
@@ -510,44 +545,34 @@ Boolean normal, popup;
  *	Description: performs the setvalues requested.
  *	Arguments: w - a widget in the tree.
  *                 value - the value part of the set values command.
- *                 ret_str - return string send to the client.
- *	Returns: True if Set Value was completely sucessful.
+ *                 msg - message to return to editres.
+ *	Returns: True if all SetValues requests were sucessful.
  */
 
-static void
-DoSetValues(w, value, error)
+static Boolean
+DoSetValues(w, value, msg)
 Widget w;
 char * value;
-Message * error;
+Message * msg;
 {
-    Cardinal i, num_commands;
+    int i, num_commands;
     static void ExecuteSetValues();
-    register char * ptr, **commands;
+    register char **commands;
+    Boolean ret_val = FALSE;
 
-    ptr = value;
-    num_commands = 0;
-    while ((ptr = index(ptr, EOL_SEPARATOR)) != NULL) {
-	ptr++;
-	num_commands++;
+    if ( (commands = BreakUpCommand(msg, value, &num_commands)) == NULL)
+	return(FALSE);
+
+    for (i = 0; i < num_commands; i++) 
+	ExecuteSetValues(w, commands[i], msg);
+
+    if (msg->str == NULL) {
+	AddError(msg, NULL, "Set Values was sucessful.");
+	ret_val = TRUE;
     }
 
-    commands = (char **) XtMalloc(sizeof(char **) * num_commands);
-    
-    ptr = value;
-    for (i = 0; i < num_commands; i++) {
-	commands[i] = ptr;
-	if ( (ptr = index(ptr, EOL_SEPARATOR)) == NULL) {
-	    AddError(error, NULL, 
-		     "Internal Client Error: incorrect line count.");
-	    return;
-	}
-	*ptr = '\0';
-	ptr++;
-    }
-
-    for (i = 0; i < num_commands; i++) {
-	ExecuteSetValues(w, commands[i], error);
-    }
+    XtFree((char *) commands);
+    return(ret_val);
 }
 		
 /*	Function Name: IsChild
@@ -585,16 +610,15 @@ Widget top, parent, child;
  *	Description: Performs a setvalues for a given command.
  *	Arguments: w - any widget in the tree.
  *                 command - command to execute.
- *                 error - the error message info.
- *	Returns: NULL if all widgets check out, otherwise an allocated 
- *               error message.
+ *                 msg - the error message info.
+ *	Returns: none.
  */
 
 static void
-ExecuteSetValues(w, command, error)
+ExecuteSetValues(w, command, msg)
 Widget w;
 char * command;
-Message * error;
+Message * msg;
 {
     Widget widget;
     static Widget VerifyWidget();
@@ -602,7 +626,7 @@ Message * error;
     XtErrorMsgHandler old;
     char * begin,* end, *bp, name[100], value[100];
 
-    if ((widget = VerifyWidget(w, command, error, WID_RES_SEPARATOR)) == NULL)
+    if ((widget = VerifyWidget(w, command, msg, WID_RES_SEPARATOR)) == NULL)
 	return;
 
     begin = index(command, WID_RES_SEPARATOR);
@@ -618,7 +642,7 @@ Message * error;
 	    sprintf(error_buf, "Improperly formatted SetValues %s`%c'.", 
 		    "Command, could not find a ", NAME_VAL_SEPARATOR);
 
-	AddError(error, NULL, error_buf);
+	AddError(msg, UNKNOWN, error_buf);
 	return;
     }
 	
@@ -630,7 +654,7 @@ Message * error;
 
     strcpy(value, (end + 1));
 
-    global_error = error;	/* No data can be passed to Error Handlers */
+    global_error = msg;		/* No data can be passed to Error Handlers */
     global_widget_str = command; /* so I have to use globals (YUCK) */
     global_resource_name = name;
     global_resource_value = value;
@@ -668,11 +692,14 @@ char c;
 
     strcpy(buf, command);
 
+    if (streq(buf, ""))     /* Just ignore empty lines. */
+	return(NULL);
+
     if (c != '\0') {
 	if ((end = index(buf, c)) == NULL) {
-	    sprintf(buf, "Formatting error is VerifyWidget, no %d %s",
+	    sprintf(buf, "Formatting error is VerifyWidget, no %c %s",
 		    c, "in command.");
-	    AddError(error, command, buf);
+	    AddError(error, UNKNOWN, buf);
 	    return(NULL);
 	}
 	*end = '\0';
@@ -683,9 +710,9 @@ char c;
     parent = NULL;
     while (TRUE) {
 	if ( (ptr = rindex(buf,  NAME_SEPARATOR)) == NULL) {
-	    sprintf(buf, "Formatting error is VerifyWidget, no %d %s",
+	    sprintf(buf, "Formatting error is VerifyWidget, no %c %s",
 		    NAME_SEPARATOR, "in command.");
-	    AddError(error, command, buf);
+	    AddError(error, UNKNOWN, buf);
 	    return(NULL);
 	}
 
@@ -694,8 +721,8 @@ char c;
 	child = (Widget) atol(ptr + 1);
 	
 	if (!IsChild(top, parent, child)) {
-	    AddError(error, command, "This widget does not exist.");
-	    return(FALSE);
+	    AddError(error, UNKNOWN, "This widget does not exist.");
+	    return(NULL);
 	}
 
 	if (ptr == buf)
@@ -719,7 +746,7 @@ char c;
  *	Returns: 	This function retuns a list of widget names as a
  *			single character string in the following format:
  *
- *                      name\tid.name\tid.name\tid:Class\n
+ *                      name\tid.name\tid.name\tid:Class<EOL_SEPARATOR>
  */
 
 char * 
@@ -831,13 +858,13 @@ Cardinal *end, *bytes;
     ptr = *list + *end;
     
     if (name == NULL)
-	sprintf(ptr, "%s%c%c%s%c%s%c%s\n", parent_name, NAME_SEPARATOR, 
+	sprintf(ptr, "%s%c%c%s%c%s%c%s%c", parent_name, NAME_SEPARATOR, 
 		ID_SEPARATOR, id, CLASS_SEPARATOR, class,
-		WINDOW_SEPARATOR, window);
+		WINDOW_SEPARATOR, window, EOL_SEPARATOR);
     else
-	sprintf(ptr, "%s%c%s%c%s%c%s%c%s\n", parent_name, NAME_SEPARATOR,
+	sprintf(ptr, "%s%c%s%c%s%c%s%c%s%c", parent_name, NAME_SEPARATOR,
 		name, ID_SEPARATOR, id, CLASS_SEPARATOR, class,
-		WINDOW_SEPARATOR, window);
+		WINDOW_SEPARATOR, window, EOL_SEPARATOR);
 
     *end += (len - 1);
 }
@@ -861,7 +888,7 @@ Message * message;
 char * str;
 {
     char * ptr;
-    int len = strlen(str) + 1;	/* leave space for extra '\n' */
+    int len = strlen(str);
 
     if ((message->len + len) >= message->alloc) {
 	message->alloc += ((len + 2) > BUFSIZ) ? (len + 2) : BUFSIZ;
@@ -871,12 +898,15 @@ char * str;
     ptr = message->str + message->len;
     message->len += len;
 
-    sprintf(ptr, "%s\n", str);
+    sprintf(ptr, "%s", str);
 }
  
 /*	Function Name: AddError
  *	Description: Add a string to the error message in the form:
  *                   <widget id>:<message>
+ *                   or
+ *                   <message>                 if 'widget' is NULL.
+ *
  *	Arguments: error - the error structure.
  *                 widget - the string contatining the widget ids.
  *                 str - the message to append to the buffer.
@@ -889,18 +919,21 @@ Message * error;
 char * widget, *str;
 {
     char buf[BUFSIZ], *end, *ptr;
-
-    error->formatted = TRUE;
+    int len;
 
     if (widget == NULL) {
-	buf[0] = NAME_VAL_SEPARATOR;
-	buf[1] = '\0';
+	error->formatted = FALSE;
+	buf[0] = '\0';
     }
     else {
+	error->formatted = TRUE;
+
 	end = index(widget, WID_RES_SEPARATOR);
 
-	if (end == NULL) 
+	if (end == NULL) {
 	    strcpy(buf, widget);
+	    ptr = buf + strlen(widget);
+	}
 	else {
 	    for (ptr = buf; widget < end; ptr++, widget++) 
 		*ptr = *widget;
@@ -912,6 +945,8 @@ char * widget, *str;
     }
 
     strcat(buf, str);
+    buf[len = strlen(buf)] = EOL_SEPARATOR;
+    buf[len + 1] = '\0';
 
     _AddMessage(error, buf);
 }
@@ -945,7 +980,7 @@ Cardinal * num_params;
 		global_resource_value, "to the proper type for the",
 		global_resource_name); 
     else 
-	sprintf(buf, "Name: %s, Type: %s, Class: %s, Msg: %s\n",
+	sprintf(buf, "Name: %s, Type: %s, Class: %s, Msg: %s",
 		name, type, class, msg);
 
     AddError(global_error, global_widget_str, buf);
@@ -976,8 +1011,8 @@ char * widget, * str;
 
     msg->formatted = TRUE;
 
-    sprintf(buf, "%1d%s%c%s", error_code, widget, 
-	    NAME_VAL_SEPARATOR, str);
+    sprintf(buf, "%1d%s%c%s%c", error_code, widget, 
+	    NAME_VAL_SEPARATOR, str, EOL_SEPARATOR);
 
     _AddMessage(msg, buf);
 }
@@ -986,47 +1021,28 @@ char * widget, * str;
  *	Description: retreives the Geometry of each specified widget.
  *	Arguments: w - a widget in the tree.
  *                 value - the value part of the set values command.
- *                 ret_str - return string send to the client.
- *	Returns: True if Set Value was completely successful.
+ *                 msg - messge to return to editres.
+ *	Returns: True if Get Geometry was completely successful.
  */
 
 static Boolean
-DoGetGeometry(w, value, ret_str)
+DoGetGeometry(w, value, msg)
 Widget w;
 char * value;
-Message * ret_str;
+Message * msg;
 {
-    Cardinal i, num_commands;
+    int i, num_commands;
     static Boolean ExecuteGetGeometry();
-    register char * ptr, **commands;
+    register char **commands;
     Boolean ret_val = TRUE;
 
-    ptr = value;
-    num_commands = 0;
-    while ((ptr = index(ptr, EOL_SEPARATOR)) != NULL) {
-	ptr++;
-	num_commands++;
-    }
-
-    commands = (char **) XtMalloc(sizeof(char **) * num_commands);
-    
-    for (i = 0, ptr = value; i < num_commands; i++) {
-	commands[i] = ptr;
-	if ( (ptr = index(ptr, EOL_SEPARATOR)) == NULL) {
-	    ret_str->formatted = FALSE;
-	    ret_str->str = XtNewString(
-			      "Internal Client Error: incorrect line count.");
-	    ret_str->len = strlen(ret_str->str);
-	    ret_str->alloc = ret_str->len + 1;
-
-	    return(FALSE);
-	}
-	*ptr = '\0';
-	ptr++;
-    }
+    if ( (commands = BreakUpCommand(msg, value, &num_commands)) == NULL)
+	return(FALSE);
 
     for (i = 0; i < num_commands; i++)
-	ret_val &= ExecuteGetGeometry(w, commands[i], ret_str);
+	ret_val &= ExecuteGetGeometry(w, commands[i], msg);
+
+    XtFree((char *) commands);
 
     return(ret_val);
 }
@@ -1105,42 +1121,6 @@ Message * msg;
  * Code for executing FindChild.
  *
  ************************************************************/
-
-/*	Function Name: NodeToID
- *	Description: gets the fully specified node id as a string.
- *	Arguments: node - node to work on.
- *                 buf, len - buffer and size of buffer to stuff id into.
- *	Returns: an allocated fully specified node id as a string.
- */
-
-static ResourceError
-WidgetToID(w, buf, len)
-Widget w;
-char * buf;
-int len;
-{
-    register int local_len, t_len = 1;
-    register char * ptr;
-    char temp[51];
-
-    for (ptr = buf ; w != NULL; w = XtParent(w)) {
-	    
-	sprintf(temp, "%c%ld", NAME_SEPARATOR, (long) w);
-	
-	local_len = strlen(temp);
-
-	if (t_len + local_len >= len) {
-	    sprintf(buf, "%s to fit entire name into buffer of length %d",
-		    "Editres Client: Unable", len);
-	    return(UnformattedResError);
-	}
-	strcpy(ptr, temp);
-	
-	ptr += local_len;
-	t_len += local_len;
-    }
-    return(NoResError);
-}
 
 /*	Function Name: PositionInChild
  *	Description: returns true if this location is in the child.
@@ -1230,31 +1210,24 @@ int x, y;
  *	Description: finds the child that contains the location specified.
  *	Arguments: w - any widget in the widget tree.
  *                 str - command string.
- *                 ret_val - a string to stuff the return value into.
- *	Returns: the error code.
+ *                 msg - a message struct to stuff the return value into.
+ *	Returns: True if completely sucessful.
  */
 
-static ResourceError
-DoFindChild(w, str, ret_val)
+static Boolean
+DoFindChild(w, str, msg)
 Widget w;
-String str, ret_val;
+String str;
+Message * msg;
 {
-    Message msg;
-    char * parse_string;
+    char * parse_string, buf[BUFSIZ];
     Widget parent, child;
-    static ResourceError WidgetToID();
     int x_loc, y_loc, mask;
     unsigned int junk;
     Position parent_x, parent_y;
 
-    bzero((char *) &msg, sizeof(Message)); /* initialize to zero. */
-
-    if ((parent = VerifyWidget(w, str, &msg, NAME_VAL_SEPARATOR)) == NULL)
-    {
-	strcpy(ret_val, msg.str);
-	XtFree(msg.str);
-	return(UnformattedResError);
-    }
+    if ((parent = VerifyWidget(w, str, msg, NAME_VAL_SEPARATOR)) == NULL)
+	return(FALSE);
 
     /*
      * There should never be NULL returned here, because VerifyWidget()
@@ -1266,16 +1239,120 @@ String str, ret_val;
     mask = XParseGeometry(parse_string, &x_loc, &y_loc, &junk, &junk);
 
     if ( !(mask & XValue) || !(mask & YValue)) {
-	sprintf(ret_val, "%s `%s' %s %s",
+	sprintf(buf, "%s `%s' %s %s",
 		"The geometry string", parse_string, "passed to the",
 		"client process does not contain an X and Y value.");
-	return(UnformattedResError);
+	AddError(msg, UNKNOWN,  buf);
+	return(FALSE);
     }
 
     XtTranslateCoords(parent, (Position) 0, (Position) 0,
 		      &parent_x, &parent_y);
     
     child = FindChild(parent, x_loc - (int) parent_x, y_loc - (int) parent_y);
-    
-    return(WidgetToID(child, ret_val, BUFSIZ));
+
+    for (; child != NULL; child = XtParent(child)) {
+	sprintf(buf, "%c%ld", NAME_SEPARATOR, (long) child);
+	_AddMessage(msg, buf);
+    }
+
+    return(TRUE);
+}
+
+/*
+ * Procedures for performing GetResources.
+ */
+
+/*	Function Name: ExecuteGetResources.
+ *	Description: Gets the resources for any individual widget.
+ *	Arguments: w - any real widget in the app.
+ *                 val - widget to perform GetResources on.
+ *                 msg - message to send back to editres.
+ *	Returns: TRUE if sucessful, FALSE otherwise.
+ */
+
+static Boolean ExecuteGetResources(w, val, msg)
+Widget w;
+char * val;
+Message * msg;
+{
+    Widget widget;
+    XtResourceList res_list;
+    Cardinal number;
+    char buf[BUFSIZ];
+    register int i;
+
+    if ((widget = VerifyWidget(w, val, msg, '\0')) == NULL)
+	return(FALSE);
+
+    /*
+     * Identify this widget.
+     */
+
+    sprintf(buf, "0%s%c", val, NAME_VAL_SEPARATOR);
+    _AddMessage(msg, buf);
+
+    /* 
+     * Get Normal Resources. 
+     */
+
+    XtGetResourceList(XtClass(widget), &res_list, &number);
+    for ( i = 0; i < (int) number; i++) {
+	sprintf(buf, "n%s%c%s%c%s%c", res_list[i].resource_name,
+		CLASS_SEPARATOR, res_list[i].resource_class,
+		CLASS_TYPE_SEPARATOR, res_list[i].resource_type,
+		RESOURCE_SEPARATOR);
+	_AddMessage(msg, buf);
+    }
+    XtFree((char *) res_list);
+
+    /* 
+     * Get Constraint Resources. 
+     */
+
+    if (XtParent(widget) != NULL) {
+	XtGetConstraintResourceList(XtClass(XtParent(widget)), 
+				    &res_list, &number);
+	for ( i = 0; i < (int) number; i++) {
+	    sprintf(buf, "c%s%c%s%c%s%c", res_list[i].resource_name,
+		    CLASS_SEPARATOR, res_list[i].resource_class,
+		    CLASS_TYPE_SEPARATOR, res_list[i].resource_type,
+		    RESOURCE_SEPARATOR);
+	    _AddMessage(msg, buf);
+	}
+	XtFree((char *) res_list);
+    }
+
+    buf[0] = EOL_SEPARATOR;
+    buf[1] = '\0';
+    _AddMessage(msg, buf);
+    return(TRUE);
+}
+
+/*	Function Name: DoGetResources
+ *	Description: Gets the Resources associated with the widgets passed.
+ *	Arguments: w - any widget in the widget tree.
+ *                 value - command string.
+ *                 msg - a message to return to editres.
+ *	Returns: True if completely sucessful.
+ */
+
+static Boolean
+DoGetResources(w, value, msg)
+Widget w;
+char * value;
+Message * msg;
+{
+    int i, num_commands;
+    Boolean ret_val = TRUE;
+    register char **commands;
+
+    if ( (commands = BreakUpCommand(msg, value, &num_commands)) == NULL)
+	return(FALSE);
+
+    for (i = 0; i < num_commands; i++) 
+	ret_val &= ExecuteGetResources(w, commands[i], msg);
+
+    XtFree((char *) commands);
+    return(ret_val);
 }

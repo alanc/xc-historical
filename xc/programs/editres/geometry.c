@@ -1,5 +1,5 @@
 /*
- * $XConsortium: geometry.c,v 1.4 90/03/16 13:57:09 kit Exp $
+ * $XConsortium: geometry.c,v 1.5 90/03/16 16:37:50 kit Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -35,6 +35,7 @@
 extern WNode * IDToNode();
 extern void SetMessage(), SetCommand(), SetAndCenterTreeNode(), AddString();
 extern void GetAllStrings();
+extern Boolean ParseOutWidgetInfo();
 extern char * NodeToID();
 extern int HandleXErrors();
 
@@ -138,7 +139,9 @@ char * str;
     void _FlashActiveWidgets();
 
     if ( (node = IDToNode(global_tree_info->top_node, str)) == NULL) {
-	/* Oops. */
+	sprintf(msg, "Unable to find widget specified in string `%s'", str);
+	SetMessage(global_screen_data.info_label, msg);
+	return;
     }
 
     SetAndCenterTreeNode(node);
@@ -201,31 +204,17 @@ HandleFlashWidget(value)
 String value;
 {
     static void AddToFlashList();
-    char ** strings, * errors = NULL;
+    char ** strings, * errors = NULL, *data;
     int i, num_strings;
+    WNode * node;
 
     GetAllStrings(value, EOL_SEPARATOR, &strings, &num_strings);
 
     for (i = 0; i < num_strings; i++) {
-	if (strings[i][0] == '0')
-	    AddToFlashList(global_tree_info, strings[i] + 1, &errors);
-	else {
-	    WNode * node;
-	    char ** names, buf[BUFSIZ];
-	    int num_names;
+	if (ParseOutWidgetInfo(global_tree_info, &errors, strings[i], 
+			       &node, &data))
+	    AddToFlashList(global_tree_info, node, data, &errors);
 
-	    /* 
-	     * An Error occured with this geometry request.
-	     */
-
-	    GetAllStrings(strings[i] + 1, NAME_VAL_SEPARATOR, 
-			  &names, &num_names);
-	    
-	    node = IDToNode(global_tree_info->top_node, names[0]);
-	    sprintf(buf, "%s(0x%lx) - %s\n", node->name, node->id, names[1]);
-	    AddString(&errors, buf);
-	    XtFree(names);
-	}
     }
 
     FlashWidgets(global_tree_info);
@@ -236,37 +225,26 @@ String value;
 
 /*	Function Name: AddWidgetToFlashList
  *	Description: Adds a widget to the list of widget to flash.
- *	Arguments: geom_str - a string containing the geometry and widget id.
+ *	Arguments: tree_info - info about this tree.
+ *                 node - the node corrosponding to this widget.
+ *                 geom_str - a string containing the geometry.
+ *                 errors - a string containing the errors.
  *	Returns: 
  */
 
 static void
-AddToFlashList(tree_info, geom_str, errors)
+AddToFlashList(tree_info, node, geom_str, errors)
 TreeInfo * tree_info;
+WNode *node;
 String geom_str;
 char ** errors;
 {
     static void _AddToFlashList();
-    char * ptr, ident[200], geom[100], *ip, *gsp;
+    char * ptr, geom[100];
     unsigned int width, height;
     int bw, x, y, mask;
-    WNode * node;
 
-    if ( (ptr = index(geom_str, NAME_VAL_SEPARATOR)) == NULL) {
-	char buf[BUFSIZ];
-
-	sprintf(buf, "Incorrectly formatted entry, no `%c'\n",
-		NAME_VAL_SEPARATOR);
-	AddString(errors, buf); 
-	return;
-    }
-
-    for (ip = ident, gsp = geom_str; gsp < ptr; ip++, gsp++)
-	*ip = *gsp;
-    *ip = '\0';
-    node = IDToNode(tree_info->top_node, ident);
-
-    if (streq(++ptr, "NOT_VISABLE")) {
+    if (streq(geom_str, "NOT_VISABLE")) {
 	char buf[BUFSIZ];
 
 	sprintf(buf, "%s(0x%lx) - This widget is not mapped\n",
@@ -275,7 +253,7 @@ char ** errors;
 	return;
     }
 
-    strcpy(geom, ptr);
+    strcpy(geom, geom_str);
 
     if ( (ptr = index(geom, EDITRES_BORDER_WIDTH_SEPARATOR)) == NULL) {
 	char buf[BUFSIZ];

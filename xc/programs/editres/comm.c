@@ -14,7 +14,7 @@
 
 #include "editresP.h"
 
-#define CURRENT_PROTOCOL_VERSION 2
+#define CURRENT_PROTOCOL_VERSION 3
 
 /*
  * static Globals.
@@ -29,6 +29,7 @@ static Atom atom_comm, atom_command, atom_resource_editor, atom_client_value;
 extern ResIdent GetNewIdent();
 extern void SetMessage(), BuildVisualTree(),DisplayChild();
 extern char * GetFormattedSetValuesError(), *HandleFlashWidget();
+extern char * HandleGetResources();
 extern int HandleXErrors();
 
 static void TellUserAboutMessage();
@@ -244,6 +245,9 @@ ResCommand command;
     case GetGeometry:
 	str = " asking it to perform GetGeometry()";
 	break;
+    case GetResources:
+	str = " asking it to get a widget's resource list";
+	break;
     case FindChild:
 	str = " asking it to find the child Widget.";
 	break;
@@ -293,6 +297,9 @@ int * format_ret;
     case FlashWidget:
     case GetGeometry:
 	command_str = EDITRES_GET_GEOMETRY;
+	break;
+    case GetResources:
+	command_str = EDITRES_GET_RESOURCES;
 	break;
     case FindChild:
 	command_str = EDITRES_FIND_CHILD;
@@ -435,6 +442,9 @@ int * format;
 	    HandleGetGeometry(local_value);
 	    break;
 #endif
+	case GetResources:
+	    error_msg = HandleGetResources(local_value);
+	    break;
 	case FindChild:
 	    DisplayChild(local_value);
 	    break;
@@ -469,6 +479,9 @@ int * format;
 	    HandleGetGeometry(local_value);
 	    break;
 #endif
+	case GetResources:
+	    HandleGetResources(local_value);
+	    break;
 	default:
 	    sprintf(msg, "Internal error: Unknown command %d.", 
 		    global_client.command);

@@ -9,8 +9,13 @@
 
 #include "editresP.h"
 
+static WidgetResources * ParseResources();
+static int CompareResourceEntries();
+
 extern void PopupCentered(), PerformTreeToFileDump();
 
+Boolean ParseOutWidgetInfo();
+void 	CreateResourceBox();
 
 /*	Function Name: ShowMessage(w, str)
  *	Description: shows the message to the user.
@@ -353,6 +358,7 @@ char * filename;
 /*	Function Name: _PopupFileDialog
  *	Description: Puts up a dialog box to get the filename.
  *	Arguments: str - message.
+ *                 default_value - the default value of the filename;
  *                 func - function to call when filename has been entered.
  *                 data - generic data to pass to func.
  *	Returns: none
@@ -366,15 +372,16 @@ typedef struct _FileDialogInfo {
 } FileDialogInfo;
 
 void
-_PopupFileDialog(w, str, func, data)
+_PopupFileDialog(w, str, default_value, func, data)
 Widget w;
-String str;
+String str, default_value;
 void (*func)();
 XtPointer data;
 {
     FileDialogInfo * file_info;
     Widget shell, dialog;
-    Arg args[1];
+    Arg args[2];
+    Cardinal num_args;
     void _PopdownFileDialog();
 
     if (file_dialog_context == None)
@@ -383,9 +390,11 @@ XtPointer data;
     shell = XtCreatePopupShell("fileDialog", transientShellWidgetClass, w,
 			       NULL, ZERO);
 
-    XtSetArg(args[0], XtNlabel, str);
+    num_args = 0;
+    XtSetArg(args[num_args], XtNlabel, str); num_args++;
+    XtSetArg(args[num_args], XtNvalue, default_value); num_args++;
     dialog = XtCreateManagedWidget("dialog", dialogWidgetClass, 
-				   shell, args, ONE);
+				   shell, args, num_args);
 
     file_info = XtNew(FileDialogInfo);
 
@@ -527,4 +536,388 @@ XtPointer client_data, junk;
 
     XtPopdown(XtParent(dialog));
     XtDestroyWidget(XtParent(dialog)); /* Remove file dialog. */
+}
+
+/************************************************************
+ *
+ * Functions for dealing with the Resource Box.
+ *
+ ************************************************************/
+
+/*	Function Name: GetNamesAndClasses
+ *	Description: Gets a list of names and classes for this widget.
+ *	Arguments: node - this widget's node.
+ *                 names, classes - list of names and classes. ** RETURNED **
+ *	Returns: none.
+ */
+
+void
+GetNamesAndClasses(node, names, classes) 
+WNode * node;
+char *** names, ***classes;
+{
+    int i, total_widgets;
+    WNode * temp = node;
+
+    for (total_widgets = 1 ; temp->parent != NULL ; 
+	 total_widgets++, temp = temp->parent) { } /* empty for */
+
+    *names = (char **) XtMalloc(sizeof(char *) * (total_widgets + 1));
+    *classes = (char **) XtMalloc(sizeof(char *) * (total_widgets + 1));
+
+    (*names)[total_widgets] = (*classes)[total_widgets] = NULL;
+
+    for ( i = (total_widgets - 1); i >= 0 ; node = node->parent, i--) {
+	(*names)[i] = node->name;
+	(*classes)[i] = node->class;
+    }
+}
+
+/*	Function Name: HandleGetResources
+ *	Description: Gets the resources.
+ *	Arguments: val - the return value from the client.
+ *	Returns: none.
+ */
+
+char *
+HandleGetResources(val)
+char * val;
+{
+    char ** widget_strings, *data, * errors = NULL;
+    int i, num;
+    WNode * node;
+
+    GetAllStrings(val, EOL_SEPARATOR, &widget_strings, &num);
+    
+    for (i = 0; i < num; i++) {
+	if (ParseOutWidgetInfo(global_tree_info, &errors, widget_strings[i], 
+			       &node, &data)) {
+	    if (node->resources != NULL) 
+		FreeResources(node->resources);
+	    node->resources = ParseResources(data, &errors);
+	    CreateResourceBox(node);
+	}
+    }
+
+    XtFree(widget_strings);
+    return(errors);
+}
+
+/*	Function Name: CreateResourceBox
+ *	Description: Creates a resource box for the widget specified.
+ *	Arguments: node - the node of the widget in question.
+ *	Returns: none.
+ */
+
+void
+CreateResourceBox(node)
+WNode * node;
+{
+    void CreateResourceBoxWidgets();
+    WidgetResources * resources = node->resources;
+    char ** names, ** cons_names;
+    int i;
+
+    if (resources->num_normal > 0) {
+	names = (char **) XtMalloc(sizeof(char *) *
+				   (resources->num_normal + 1));
+	for (i = 0 ; i < resources->num_normal ; i++) 
+	    names[i] = resources->normal[i].name;
+	names[i] = NULL;
+    }
+    else
+	names = NULL;
+
+    if (resources->num_constraint > 0) {
+	cons_names = (char **) XtMalloc(sizeof(char *) *
+					(resources->num_constraint + 1));
+	
+	for (i = 0 ; i < resources->num_constraint ; i++) 
+	    cons_names[i] = resources->constraint[i].name;
+	cons_names[i] = NULL;
+    }
+    else
+	cons_names = NULL;
+
+    CreateResourceBoxWidgets(node, names, cons_names);
+}
+
+/*	Function Name: ParseResources
+ *	Description: Parses the resource values returned from the client
+ *                   into a resources structure.
+ *	Arguments: str - string containing resources for this widget.
+ *	Returns: The resource information.
+ */
+
+static WidgetResources * 
+ParseResources(str, error)
+char * str, **error;
+{
+    WidgetResources * resources;
+    WidgetResourceInfo * normal;
+    char ** res_strings;
+    int i, num;
+
+    resources = (WidgetResources *) XtMalloc(sizeof(WidgetResources)); 
+    
+    /*
+     * Allocate enough space for both the normal and constraint resources,
+     * then add the normal resources from the top, and the constraint resources
+     * from the bottom.  This assures that enough memory is allocated, and
+     * that there is no overlap.
+     */
+
+    GetAllStrings(str, RESOURCE_SEPARATOR, &res_strings, &num);
+
+    resources->normal = (WidgetResourceInfo *) 
+	                           XtMalloc(sizeof(WidgetResourceInfo) * num);
+
+    normal = resources->normal;
+    resources->constraint = resources->normal + num - 1;
+
+    resources->num_constraint = resources->num_normal = 0;
+
+    for (i = 0; i < num; i++) {
+	switch(res_strings[i][0]) {
+	case 'n':
+	    resources->num_normal++;
+	    AddResource(res_strings[i] + 1, error, normal++);
+	    break;
+	case 'c':
+	    resources->num_constraint++;
+	    AddResource(res_strings[i] + 1, error, resources->constraint--);
+	    break;
+	default:
+	    {
+		char buf[BUFSIZ];
+		sprintf(buf, "Improperly formatted resource value: '%s'", 
+			res_strings[i]);
+		AddString(error, buf);
+	    }
+	    break;
+	}
+    }
+
+    /*
+     * Sort the resources alphabetically. 
+     */
+
+    qsort(resources->normal, resources->num_normal,
+	  sizeof(WidgetResourceInfo), CompareResourceEntries);
+
+    if (resources->num_constraint > 0) {
+	resources->constraint++;
+	qsort(resources->constraint, resources->num_constraint,
+	      sizeof(WidgetResourceInfo), CompareResourceEntries);
+    }
+    else
+	resources->constraint = NULL;
+
+    return(resources);
+}
+
+/*	Function Name: CompareResourceEntries
+ *	Description: Compares two resource entries.
+ *	Arguments: e1, e2 - the entries to compare.
+ *	Returns: an integer >, < or = 0.
+ */
+
+static int 
+CompareResourceEntries(e1, e2) 
+WidgetResourceInfo *e1, *e2;
+{
+    return (strcmp(e1->name, e2->name));
+}
+
+/*	Function Name: AddResource
+ *	Description: Parses the resource string a stuffs in individual
+ *                   parts into the resource info struct.
+ *	Arguments: str - the string to parse, format is below.
+ *                 resource - location to stuff the resource into.
+ *	Returns: none.
+ *
+ * Resources are of the form:
+ *
+ * <name>:<Class>#type
+ */
+
+static void
+AddResource(str, error, resource) 
+char * str;
+char ** error;
+WidgetResourceInfo * resource;
+{
+    char buf[BUFSIZ], *temp, *ptr;
+    int len;
+
+    if ((ptr = index(str, NAME_VAL_SEPARATOR)) == NULL) {
+	sprintf("Error parsing resource value: '%s', must contain a %c",
+		str, NAME_VAL_SEPARATOR);
+	AddString(error, buf);
+    }
+    len = ptr - str;
+    resource->name = XtMalloc(sizeof(char) * (len + 1));
+    strncpy(resource->name, str, len);
+    resource->name[len] = '\0';
+
+    temp = ptr + 1;
+    if ((ptr = index(temp, CLASS_TYPE_SEPARATOR)) == NULL) {
+	sprintf("Error parsing resource value: '%s', must contain a %c",
+		str, CLASS_TYPE_SEPARATOR);
+	AddString(error, buf);
+    }
+    len = ptr - temp;
+    resource->class = XtMalloc(sizeof(char) * (len + 1));
+    strncpy(resource->class, temp, len);
+    resource->class[len] = '\0';
+    
+    temp = ptr + 1;
+    resource->type = XtNewString(temp);
+}
+
+
+/*	Function Name: FreeResources
+ *	Description: frees the resource inforation.
+ *	Arguments: resources.
+ *	Returns: none.
+ */
+
+static void
+FreeResources(resources) 
+WidgetResources * resources;
+{
+    if (resources->num_normal > 0)
+	XFree(resources->normal);
+    XFree(resources);
+}
+	
+/*	Function Name: ParseOutWidgetInfo
+ *	Description: Parses out the widget info and adds the error code 
+ *                   to the error string.
+ *	Arguments: tree_info - the tree info.
+ *                 error - the string containing the error message.
+ *                 str - info to parse. 
+ *                 node - node contained in this command.
+ *                 data - the data associated with this command.
+ *	Returns: True if no error occured and parse was sucessful, 
+ *               False otherwise.
+ *
+ * str is in the form:
+ *
+ *            <e_val>[id]:<data>\0
+ *
+ *   e_val	= 1 if an error occured, 0 otherwise.
+ *                NOTE: This field is exactly one character wide.
+ *
+ *   id 	= .<widgetid>.<parentid>.<grandparentid>...
+ *
+ *   data 	= <string>
+ */
+
+Boolean
+ParseOutWidgetInfo(tree_info, error, str, node, data)
+TreeInfo * tree_info;
+char ** error, *str;
+WNode ** node;
+char ** data;
+{
+    char ** names, buf[BUFSIZ];
+    int num_names;
+
+    GetAllStrings(str + 1, NAME_VAL_SEPARATOR, &names, &num_names);
+	    
+    if ((*node = IDToNode(tree_info->top_node, names[0])) != NULL) {
+	if (str[0] = '0') {	/* no error occured. */
+	    *data = str + (names[1] - names[0]) + 1; /* A bit of a hack... 
+						        but gets us the 
+							correct data. */
+	    XtFree(names);
+	    return(TRUE);
+	}
+	
+	/* 
+	 * error code returned add message to 'error'.
+	 */
+	
+	sprintf(buf, "%s(0x%lx) - %s\n", (*node)->name, (*node)->id, names[1]);
+    }
+    else 
+	sprintf(buf, "%s - %s\n", names[0], names[1]);
+
+    AddString(error, buf);
+    XtFree(names);
+    return(FALSE);
+}
+
+/*	Function Name: CheckDatabase
+ *	Description: Checks to see if the node is in the database.
+ *	Arguments: db - the db to check
+ *                 names, clases - names and clases, represented as quarks.
+ *	Returns: True if this entry is found.
+ */
+
+Boolean
+CheckDatabase(db, names, classes)
+XrmDatabase db;
+XrmQuarkList names, classes;
+{
+    XrmRepresentation junk;
+    XrmValue garbage;
+
+    return(XrmQGetResource(db, names, classes, &junk, &garbage));
+}
+
+/*	Function Name: Quarkify
+ *	Description: Quarkifies the string list specifed.
+ *	Arguments: list - list of strings to quarkify
+ *                 ptr - an additional string to quarkify.
+ *	Returns: none.
+ */
+
+XrmQuarkList
+Quarkify(list, ptr)
+char ** list;
+char * ptr;
+{
+    int i;
+    char ** tlist;
+    XrmQuarkList quarks, tquarks;
+
+    for (i = 0, tlist = list; *tlist != NULL; tlist++, i++) {}
+    if (ptr != NULL)
+	i++;
+    i++;			/* leave space for NULLQUARK */
+
+    quarks = (XrmQuarkList) XtMalloc(sizeof(XrmQuark) * i);
+
+    for (tlist = list, tquarks = quarks; *tlist != NULL; tlist++, tquarks++) 
+	*tquarks = XrmStringToQuark(*tlist);
+
+    if (ptr != NULL) 
+	*tquarks++ = XrmStringToQuark(ptr);
+	
+    *tquarks = NULLQUARK;
+    return(quarks);
+}
+
+/*	Function Name: ExecuteOverAllNodes
+ *	Description: Executes the given function over all nodes.
+ *	Arguments: top_node - top node of the tree.
+ *                 func - the function to execute.
+ *                 data - a data pointer to pass to the function.
+ *	Returns: none
+ */
+
+void
+ExecuteOverAllNodes(top_node, func, data)
+WNode * top_node;
+void (func)();
+XtPointer data;
+{
+    int i;
+
+    (*func)(top_node, data);
+
+    for (i = 0; i < top_node->num_children; i++) 
+	ExecuteOverAllNodes(top_node->children[i], func, data);
 }

@@ -23,6 +23,8 @@ extern void _TreeSelectNode(), _TreeActivateNode(), _TreeRelabelNode();
 extern WNode ** CopyActiveNodes();
 extern char * NodeToID();
 
+void TreeToggle();
+
 /*	Function Name: BuildVisualTree
  *	Description: Creates the Tree and shows it.
  *	Arguments: tree_parent - parent of the tree widget.
@@ -86,7 +88,6 @@ WNode * top;
     int i;
     Arg args[1];
     Cardinal num_args = 0;
-    static void TreeToggle();
     char msg[BUFSIZ];
 
     if (top->parent != NULL) {
@@ -123,7 +124,7 @@ WNode * top;
  */
 
 /* ARGSUSED */
-static void
+void
 TreeToggle(w, node_ptr, state_ptr)
 Widget w;
 caddr_t node_ptr, state_ptr;

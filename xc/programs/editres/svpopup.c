@@ -357,7 +357,10 @@ char * value;
 	    *ptr++ = '\0';
 	    node = IDToNode(global_tree_info->top_node, strings[i]);
 	    
-	    sprintf(buf, "%s(0x%lx) - %s\n", node->name, node->id, ptr);
+	    if (node != NULL) 
+		sprintf(buf, "%s(0x%lx) - %s\n", node->name, node->id, ptr);
+	    else
+		sprintf(buf, "%s - %s\n", strings[i], ptr);
 	}
 	else
 	    strcpy(buf, (ptr + 1));

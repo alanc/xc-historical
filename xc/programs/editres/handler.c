@@ -1,10 +1,13 @@
 
 #include <stdio.h>
+#include <sys/file.h>
 #include <X11/Intrinsic.h>
 #include <X11/StringDefs.h>
 
 #include <X11/Xaw/Cardinals.h>
+#include <X11/Xaw/List.h>
 #include <X11/Xaw/Panner.h>
+#include <X11/Xaw/Toggle.h>
 
 #include "editresP.h"
 
@@ -15,6 +18,13 @@
 extern void SetCommand(), PopupSetValues(), SetAndCenterTreeNode();
 extern void _TreeSelect(), _TreeRelabel(), _TreeActivate(), SetMessage();
 extern void _FlashActiveWidgets(), _DumpTreeToFile(), _PopupFileDialog();
+extern void AddString(), CreateResourceBox(), ExecuteOverAllNodes();
+extern void GetNamesAndClasses(), TreeToggle();
+extern Boolean CheckDatabase();
+extern XrmQuarkList Quarkify();
+
+void SetResourceString(), ActivateResourceWidgets();
+void ActivateWidgetsAndSetResourceString();
 
 /*	Function Name: Quit
  *	Description: This function prints a message to stdout.
@@ -209,6 +219,48 @@ XtPointer junk, garbage;
     _FlashActiveWidgets(global_tree_info);
 }
 
+/*	Function Name: GetResourceList
+ *	Description: Gets the resources lists of all active widgets.
+ *	Arguments: ** NOT USED **
+ *	Returns: none
+ */
+
+/* ARGSUSED */
+void
+GetResourceList(w, junk, garbage)
+Widget w;
+XtPointer junk, garbage;
+{
+    WNode * node;
+    char buf[BUFSIZ], *NodeToID(), *id;
+
+    if (global_tree_info == NULL) {
+	SetMessage(global_screen_data.info_label,
+		   "No widget Tree is avaliable.");
+	return;
+    }
+
+    if (global_tree_info->num_nodes != 1) {
+	SetMessage(global_screen_data.info_label,
+	      "This function requires exactly one (1) widget to be selected.");
+	return;
+    }
+
+    node = global_tree_info->active_nodes[0];
+    if (node->resources != NULL) {
+	CreateResourceBox(node);
+	return;
+    }
+    /*
+     * No resoruces, fetch them from the client.
+     */
+    
+    sprintf(buf, "%s%c", id = NodeToID(global_tree_info->active_nodes[0]),
+	    EOL_SEPARATOR);
+    SetCommand(global_tree_info->tree_widget, GetResources, buf, NULL);
+    XtFree(id);
+}
+
 /*	Function Name: DumpTreeToFile
  *	Description: Dumps all widgets in the tree to a file.
  *	Arguments: w - the widget that activated this callback.
@@ -222,6 +274,539 @@ DumpTreeToFile(w, junk, garbage)
 Widget w;
 XtPointer junk, garbage;
 {
-    _PopupFileDialog(XtParent(w), "Enter the filename:",
+    _PopupFileDialog(XtParent(w), "Enter the filename:", "",
 		     _DumpTreeToFile, (XtPointer) global_tree_info);
+}
+
+/************************************************************
+ * 
+ * Callbacks for the Resource Box.
+ *
+ ************************************************************/
+
+
+/*	Function Name: AnyChosen
+ *	Description: Callback that is called when the "any" widget 
+ *                   is activated.
+ *	Arguments: w - the "any" widget that activated this callback.
+ *                 any_info_ptr - pointer to struct containing 
+ *                                dot and star widgets to lock.
+ *                 state_ptr - state of the any toggle.
+ *	Returns: none.
+ */
+
+/* ARGSUSED */
+void 
+AnyChosen(w, any_info_ptr, state_ptr)
+Widget w;
+XtPointer any_info_ptr, state_ptr;
+{
+    AnyInfo * any_info = (AnyInfo *) any_info_ptr;
+    Boolean state = (Boolean) state_ptr;
+
+    if (state) {
+	Arg args[1];
+
+	if (any_info->left_count == 0) {
+	    XtSetSensitive(any_info->left_dot, FALSE);
+	    XtSetSensitive(any_info->left_star, FALSE);
+
+	    XtSetArg(args[0], XtNstate, TRUE);
+	    XtSetValues(any_info->left_star, args, ONE);
+	}
+
+	if ((any_info->right_count == NULL)||(*any_info->right_count == 0)) {
+	    XtSetSensitive(any_info->right_dot, FALSE);
+	    XtSetSensitive(any_info->right_star, FALSE);
+
+	    XtSetArg(args[0], XtNstate, TRUE);
+	    XtSetValues(any_info->right_star, args, ONE);
+	}
+	any_info->left_count++;
+
+	if (any_info->right_count != NULL)
+	    (*any_info->right_count)++;
+    }
+    else {			/* state == 0 */
+	if (any_info->left_count > 0) 
+	    any_info->left_count--;
+	if ((any_info->right_count != NULL)&&(*any_info->right_count > 0)) 
+	    (*any_info->right_count)--;
+
+	if (any_info->left_count == 0) {
+	    XtSetSensitive(any_info->left_dot, TRUE);
+	    XtSetSensitive(any_info->left_star, TRUE);
+	}
+
+	if ((any_info->right_count == NULL)||(*any_info->right_count == 0)) {
+	    XtSetSensitive(any_info->right_dot, TRUE);
+	    XtSetSensitive(any_info->right_star, TRUE);
+	}
+    }
+    SetResourceString(NULL, (XtPointer) any_info->node, NULL);
+    ActivateResourceWidgets(NULL, (XtPointer) any_info->node, NULL);
+}
+
+/*	Function Name: GetResourceName
+ *	Description: Gets the name of the current resource.
+ *	Arguments: res_box - the resource box.
+ *	Returns: the name of the currently selected resource.
+ */
+
+
+static char *
+GetResourceName(res_box)
+ResourceBoxInfo * res_box;
+{
+    XawListReturnStruct * list_info;
+    char * result;
+    
+    list_info = XawListShowCurrent(res_box->norm_list);
+    if ((list_info->list_index == XAW_LIST_NONE) && 
+	(res_box->cons_list != NULL)) {
+	list_info = XawListShowCurrent(res_box->cons_list);
+    }
+
+    if (list_info->list_index == XAW_LIST_NONE) 
+	result = "unknown";
+    else
+	result = list_info->string;    
+
+    return(result);
+}
+
+
+/*	Function Name: ActivateWidgetsAndSetResourceString
+ *	Description: Sets the new resources string, then
+ *                   activates all widgets that match this resource,
+ *	Arguments: w - the widget that activated this.
+ *                 node_ptr - the node that owns this resource box.
+ *                 call_data - passed on to other callbacks.
+ *	Returns: none.
+ *
+ * NOTE: I cannot just have two callback routines, since I care which
+ *       order that these are executed in, sigh...
+ */
+
+void
+ActivateWidgetsAndSetResourceString(w, node_ptr, call_data)
+Widget w;
+XtPointer node_ptr, call_data;
+{
+    SetResourceString(w, node_ptr, call_data);
+    ActivateResourceWidgets(w, node_ptr, call_data);
+}
+
+/*	Function Name: SetResourceString
+ *	Description: Sets the resource label to corrospond to the currently
+ *                   chosen string.
+ *	Arguments: w - The widget that invoked this callback, or NULL.
+ *                 node_ptr - pointer to widget node contating this res box.
+ *                 call_data - The call data for the action that invoked
+ *                             this callback.
+ *	Returns: none.
+ */
+
+void
+SetResourceString(w, node_ptr, junk)
+Widget w;
+XtPointer node_ptr, junk;
+{
+    static char * malloc_string; /* These are both inited to zero. */
+    static Cardinal malloc_size;
+
+    WNode * node = (WNode *) node_ptr;
+    ResourceBoxInfo * res_box = node->resources->res_box;
+    char * temp, buf[BUFSIZ * 10];	/* here's hoping it's big enough. */
+    NameInfo * name_node = res_box->name_info;
+    Arg args[1];
+    int len;
+
+    if ((w != NULL) && XtIsSubclass(w, toggleWidgetClass)) {
+	/*
+	 * Only set resources when toggles are activated, not when they are
+	 * deactivated. 
+	 */
+	if (!((Boolean) junk))
+	    return;
+    }
+
+    buf[0] = '\0';		/* clear out string. */
+
+    /*
+     * Get the widget name/class info.
+     */
+
+    if ((temp = (char *) XawToggleGetCurrent(name_node->sep_leader)) != NULL)
+	strcat(buf, temp);
+
+    for ( ; name_node->next != NULL ; name_node = name_node->next) {
+	temp = (char *) XawToggleGetCurrent(name_node->name_leader);
+	if ( (temp != NULL) && !streq(temp, ANY_RADIO_DATA) ) {
+	    strcat(buf, temp);
+	    temp = (char *) XawToggleGetCurrent(name_node->next->sep_leader);
+	    if (temp == NULL) 
+		strcat(buf, "!");
+	    else
+		strcat(buf, temp);
+	}
+    }
+		
+    strcat(buf, GetResourceName(res_box));
+
+    XtSetArg(args[0], XtNstring, &temp);
+    XtGetValues(res_box->value_wid, args, ONE);
+    
+    len = strlen(buf) + strlen(temp) + 2; /* Leave space for ':' and '\0' */
+
+    if (len > malloc_size) {
+	malloc_string = XtRealloc(malloc_string, sizeof(char) * len);
+	malloc_size = len;
+    }
+    
+    strcpy(malloc_string, buf);
+    strcat(malloc_string, ":");
+    strcat(malloc_string, temp);
+
+    XtSetArg(args[0], XtNlabel, malloc_string);
+    XtSetValues(res_box->res_label, args, ONE);
+}
+    
+/*	Function Name: ResourceListCallback
+ *	Description: Callback functions for the resource lists.
+ *	Arguments: list - the list widget that we are dealing with.
+ *                 node_ptr - pointer to widget node contating this res box.
+ *                 junk - UNUSED.
+ *	Returns: none
+ */
+
+void
+ResourceListCallback(list, node_ptr, junk)
+Widget list;
+XtPointer node_ptr, junk;
+{
+    Widget o_list;
+    WNode * node = (WNode *) node_ptr;
+    ResourceBoxInfo * res_box = node->resources->res_box;
+
+    if (list == res_box->norm_list) 
+	o_list = res_box->cons_list;
+    else
+	o_list = res_box->norm_list;
+
+    if (o_list != NULL)
+	XawListUnhighlight(o_list);
+
+    SetResourceString(list, node_ptr, junk);
+}
+
+/*	Function Name: PopdownResBox
+ *	Description: Pops down the resource box.
+ *	Arguments: w - UNUSED
+ *                 shell_ptr - pointer to the shell to pop down.
+ *                 junk - UNUSED.
+ *	Returns: none
+ */
+
+/* ARGSUSED */
+void
+PopdownResBox(w, shell_ptr, junk)
+Widget w;
+XtPointer shell_ptr, junk;
+{
+    Widget shell = (Widget) shell_ptr;
+
+    XtPopdown(shell);
+    XtDestroyWidget(shell);
+}
+
+/*	Function Name: _AppendResourceString
+ *	Description: Actually append the resource string to your resoruce file.
+ *	Arguments: w - UNUSED
+ *                 res_box_ptr - the resource box info.
+ *                 filename_ptr - a pointer to the filename;
+ *	Returns: none
+ */
+
+/* ARGSUSED */
+static void
+_AppendResourceString(w, res_box_ptr, filename_ptr)
+Widget w;
+XtPointer res_box_ptr, filename_ptr;
+{
+    Arg args[1];
+    FILE * fp;
+    char buf[BUFSIZ], * resource_string, *filename = (char *) filename_ptr;
+    ResourceBoxInfo * res_box = (ResourceBoxInfo *) res_box_ptr;
+
+    if (filename != NULL) {
+	if (global_resources.allocated_save_resources_file) 
+	    XtFree(global_resources.save_resources_file);
+	else
+	    global_resources.allocated_save_resources_file = TRUE;
+	
+	global_resources.save_resources_file = XtNewString(filename);
+    }
+
+    if ((fp = fopen(global_resources.save_resources_file, "a+")) == NULL) {
+	sprintf(buf, "Unable to open this file for writing, would %s",
+		"you like To try again?");
+	_PopupFileDialog(XtParent(w), buf,global_resources.save_resources_file,
+			 _AppendResourceString, res_box_ptr);
+	return;
+    }
+
+    XtSetArg(args[0], XtNlabel, &resource_string);
+    XtGetValues(res_box->res_label, args, ONE);
+    fputs(resource_string, fp);
+    fputs("\n", fp);
+
+    fclose(fp);
+}
+
+/*	Function Name: SaveResource
+ *	Description: Save the current resource to your resource file
+ *	Arguments: w - any widget in the application.
+ *                 res_box_ptr - the resource box info.
+ *                 junk - UNUSED.
+ *	Returns: none
+ */
+
+/* ARGSUSED */
+void
+SaveResource(w, res_box_ptr, junk)
+Widget w;
+XtPointer res_box_ptr, junk;
+{
+    /* 
+     * If there is no filename the ask for one, otherwise just save to
+     * current file.
+     */
+
+    if (streq(global_resources.save_resources_file, ""))
+	_PopupFileDialog(XtParent(w), "Enter file to dump resources into:",
+			 global_resources.save_resources_file,
+			 _AppendResourceString, res_box_ptr);
+    else
+	_AppendResourceString(w, res_box_ptr, NULL);
+}
+
+/*	Function Name: _SetResourcesFile
+ *	Description: Sets the filename of the file to save the resources to.
+ *	Arguments: w - UNUSED
+ *                 junk - UNUSED
+ *                 filename_ptr - a pointer to the filename;
+ *	Returns: none
+ */
+
+/* ARGSUSED */
+static void
+_SetResourcesFile(w, junk, filename_ptr)
+Widget w;
+XtPointer junk, filename_ptr;
+{
+    char buf[BUFSIZ], *filename = (char *) filename_ptr;
+
+    /* Check to be sure that file is okay */
+
+    if (access(filename, W_OK) != 0) {
+	sprintf(buf, "Unable to open this file for writing, would %s",
+		"you like To try again?");
+	_PopupFileDialog(XtParent(w), buf, filename,
+			 _SetResourcesFile, NULL);
+	return;
+    }
+
+    if (global_resources.allocated_save_resources_file) 
+	XtFree(global_resources.save_resources_file);
+    else
+	global_resources.allocated_save_resources_file = TRUE;
+
+    global_resources.save_resources_file = XtNewString(filename);
+}
+
+/*	Function Name: SetFile
+ *	Description: Changes the current save file
+ *	Arguments: w - UNUSED.
+ *                 res_box_ptr - UNUSED.
+ *                 junk - UNUSED.
+ *	Returns: none
+ */
+
+/* ARGSUSED */
+void
+SetFile(w, junk, garbage)
+Widget w;
+XtPointer junk, garbage;
+{
+    /* 
+     * If there is no filename the ask for one, otherwise just save to
+     * current file.
+     */
+
+    _PopupFileDialog(XtParent(w), "Enter file to dump resources into:",
+		     global_resources.save_resources_file,
+		     _SetResourcesFile, NULL);
+}
+
+/*	Function Name: ApplyResource
+ *	Description: Apply the current resource to the running application.
+ *	Arguments: w - any widget in the application.
+ *                 node_ptr - a pointer to the node containing 
+ *                            the current resouce box.
+ *                 junk - UNUSED.
+ *	Returns: none
+ */
+
+/* ARGSUSED */
+void
+ApplyResource(w, node_ptr, junk)
+Widget w;
+XtPointer node_ptr, junk;
+{
+    static void CreateSetValuesCommand();
+    WNode * node = (WNode *) node_ptr;
+    ApplyResourcesInfo info;
+    char * line;
+    Arg args[1];
+
+    XtSetArg(args[0], XtNlabel, &line);
+    XtGetValues(node->resources->res_box->res_label, args, ONE);
+
+    info.database = NULL;
+    XrmPutLineResource(&(info.database), line);
+
+    XtSetArg(args[0], XtNstring, &line);
+    XtGetValues(node->resources->res_box->value_wid, args, ONE);
+    info.value = XtNewString(line);
+
+    info.name = GetResourceName(node->resources->res_box);
+    info.class = "IGNORE_ME";	/* Not currently used.  */
+    info.com_str = NULL;
+
+    ExecuteOverAllNodes(node->tree_info->top_node,
+			CreateSetValuesCommand, (XtPointer) &info);
+    
+    if (info.com_str != NULL) {
+	SetCommand(node->tree_info->tree_widget, SetValues,info.com_str,NULL);
+	XtFree(info.com_str);
+    }
+    else 
+	SetMessage(global_screen_data.info_label,
+		   "ApplyResource: found no matches.");
+	
+    XtFree(info.value);
+    XrmDestroyDatabase(info.database);
+}
+
+/*	Function Name: CreateSetValuesCommand
+ *	Description: Creates the SetValues command if this widget
+ *                   matches the resource string in the database.
+ *	Arguments: node - the current node.
+ *                 info_ptr - the pointer to the apply info.
+ *	Returns: none
+ */
+
+static void
+CreateSetValuesCommand(node, info_ptr)
+WNode * node;
+XtPointer info_ptr;
+{
+    ApplyResourcesInfo * info = (ApplyResourcesInfo *) info_ptr;
+    XrmNameList name_quarks;
+    XrmClassList class_quarks;
+    char ** names, **classes;
+    char command[BUFSIZ], *ptr;
+
+    GetNamesAndClasses(node, &names, &classes);
+    name_quarks = (XrmNameList) Quarkify(names, info->name);
+    class_quarks = (XrmNameList) Quarkify(classes, info->class);
+
+    if (CheckDatabase(info->database, name_quarks, class_quarks)) {
+	ptr = NodeToID(node);
+	sprintf(command, "%c%s%c%s%c", WID_RES_SEPARATOR, info->name,
+		NAME_VAL_SEPARATOR, info->value, EOL_SEPARATOR);
+	
+	AddString(&info->com_str, ptr);		/* put in widget name. */
+	AddString(&info->com_str, command); 	/* put in rest of command. */
+	XtFree(ptr);
+    }
+
+    XtFree(names);
+    XtFree(classes);
+    XtFree(name_quarks);
+    XtFree(class_quarks);
+}
+
+/*	Function Name: ActivateResourceWidgets
+ *	Description: Activates all widgets that match this resource.
+ *	Arguments: w - UNUSED.
+ *                 node_ptr - the node that owns this resource box.
+ *                 junk - UNUSED. 
+ *	Returns: none.
+ */
+
+/* ARGSUSED */
+void
+ActivateResourceWidgets(w, node_ptr, junk)
+Widget w;
+XtPointer node_ptr, junk;
+{
+    WNode * node = (WNode *) node_ptr;	       
+    static void SetOnlyMatchingWidgets();
+
+    ApplyResourcesInfo info;
+    char * line;
+    Arg args[1];
+
+    XtSetArg(args[0], XtNlabel, &line);
+    XtGetValues(node->resources->res_box->res_label, args, ONE);
+
+    info.database = NULL;
+    XrmPutLineResource(&(info.database), line);
+
+    info.name = GetResourceName(node->resources->res_box);
+    info.class = "IGNORE_ME";	/* Not currently used.  */
+    info.com_str = info.value = NULL; /* unused fields */
+
+    ExecuteOverAllNodes(node->tree_info->top_node,
+			SetOnlyMatchingWidgets, (XtPointer) &info);
+    
+    XrmDestroyDatabase(info.database);
+}
+
+/*	Function Name: SetOnlyMatchingWidgets
+ *	Description: Activates all widgets in the tree that match this
+ *                   resource specifiction.
+ *	Arguments: node - the current node.
+ *                 info_ptr - the pointer to the apply info.
+ *	Returns: none
+ */
+
+static void
+SetOnlyMatchingWidgets(node, info_ptr)
+WNode * node;
+XtPointer info_ptr;
+{
+    ApplyResourcesInfo * info = (ApplyResourcesInfo *) info_ptr;
+    XrmNameList name_quarks;
+    XrmClassList class_quarks;
+    char ** names, **classes;
+    Boolean state;
+    Arg args[1];
+
+    GetNamesAndClasses(node, &names, &classes);
+    name_quarks = (XrmNameList) Quarkify(names, info->name);
+    class_quarks = (XrmNameList) Quarkify(classes, info->class);
+
+    state = CheckDatabase(info->database, name_quarks, class_quarks);
+
+    XtSetArg(args[0], XtNstate, state);
+    XtSetValues(node->widget, args, ONE);
+    TreeToggle(node->widget, (XtPointer) node, (XtPointer) state);
+
+    XtFree(names);
+    XtFree(classes);
+    XtFree(name_quarks);
+    XtFree(class_quarks);
 }
