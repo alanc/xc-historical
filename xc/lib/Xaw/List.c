@@ -1,4 +1,4 @@
-/* $XConsortium: List.c,v 1.31 91/02/19 16:03:00 converse Exp $ */
+/* $XConsortium: List.c,v 1.32 91/04/04 20:59:54 converse Exp $ */
 
 /*
  * Copyright 1989 Massachusetts Institute of Technology
@@ -102,6 +102,7 @@ static void Initialize();
 static void ChangeSize();
 static void Resize();
 static void Redisplay();
+static void Destroy();
 static Boolean Layout();
 static XtGeometryResult PreferredGeom();
 static Boolean SetValues();
@@ -135,7 +136,7 @@ ListClassRec listClassRec = {
     /* compress_exposure  	*/	FALSE,
     /* compress_enterleave	*/	TRUE,
     /* visible_interest	  	*/	FALSE,
-    /* destroy		  	*/	NULL,
+    /* destroy		  	*/	Destroy,
     /* resize		  	*/	Resize,
     /* expose		  	*/	Redisplay,
     /* set_values	  	*/	SetValues,
@@ -823,9 +824,12 @@ Widget current, request, new;
     if ((cl->list.foreground != rl->list.foreground) ||
 	(cl->core.background_pixel != rl->core.background_pixel) ||
 	(cl->list.font != rl->list.font) ) {
-        XtDestroyGC(cl->list.normgc);
-        XtDestroyGC(cl->list.graygc);
-	XtDestroyGC(cl->list.revgc);
+	XGCValues values;
+	XGetGCValues(XtDisplay(current), cl->list.graygc, GCTile, &values);
+	XmuReleaseStippledPixmap(XtScreen(current), values.tile);
+	XtReleaseGC(current, cl->list.graygc);
+	XtReleaseGC(current, cl->list.revgc);
+	XtReleaseGC(current, cl->list.normgc);
         GetGCs(new);
         redraw = TRUE;
     }
@@ -870,6 +874,19 @@ Widget current, request, new;
       return(FALSE);
       
     return(redraw);
+}
+
+static void Destroy(w)
+    Widget w;
+{
+    ListWidget lw = (ListWidget) w;
+    XGCValues values;
+    
+    XGetGCValues(XtDisplay(w), lw->list.graygc, GCTile, &values);
+    XmuReleaseStippledPixmap(XtScreen(w), values.tile);
+    XtReleaseGC(w, lw->list.graygc);
+    XtReleaseGC(w, lw->list.revgc);
+    XtReleaseGC(w, lw->list.normgc);
 }
 
 /* Exported Functions */
