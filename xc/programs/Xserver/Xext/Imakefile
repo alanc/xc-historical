@@ -10,4 +10,7 @@ NormalLibraryTarget(ext,$(OBJS))
 LintLibraryTarget(ext,$(SRCS))
 NormalLintTarget($(SRCS))
 
+saber_src:
+	#load $(CFLAGS) $(SRCS)
+
 DependTarget()

@@ -47,4 +47,7 @@ NormalLintTarget($(SRCS))
 
 SpecialObjectRule(globals.o, $(IRULESRC)/Imake.tmpl, $(SITE_DEFINES))
 
+saber_src:
+	#load $(CFLAGS) $(SITE_DEFINES) $(SRCS)
+
 DependTarget()

@@ -24,4 +24,7 @@ LintLibraryTarget(cfb,$(SRCS))
 
 NormalLintTarget($(SRCS))
 
+saber_src:
+	#load $(CFLAGS) $(SRCS)
+
 DependTarget()
