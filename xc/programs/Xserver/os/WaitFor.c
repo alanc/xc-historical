@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: WaitFor.c,v 1.54 91/05/12 10:14:44 rws Exp $ */
+/* $XConsortium: WaitFor.c,v 1.55 91/06/13 08:55:43 rws Exp $ */
 
 /*****************************************************************
  * OS Depedent input routines:
@@ -63,7 +63,7 @@ extern Bool AnyClientsWriteBlocked;
 extern WorkQueuePtr workQueue;
 
 extern void CheckConnections();
-extern void EstablishNewConnections();
+extern Bool EstablishNewConnections();
 extern void SaveScreens();
 extern void ResetOsBuffers();
 extern void ProcessInputEvents();
@@ -251,7 +251,8 @@ WaitForSomething(pClientsReady)
 
 	    MASKANDSETBITS(clientsReadable, LastSelectMask, AllClients); 
 	    if (LastSelectMask[0] & WellKnownConnections) 
-		EstablishNewConnections();
+		QueueWorkProc(EstablishNewConnections, NULL,
+			      (pointer)LastSelectMask[0]);
 	    if (ANYSET (devicesReadable) || ANYSET (clientsReadable))
 		break;
 	}
