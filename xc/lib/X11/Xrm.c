@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Xrm.c,v 1.9 88/02/24 21:38:58 swick Exp $";
+static char rcsid[] = "$Header: Xrm.c,v 1.10 88/02/26 12:56:11 swick Exp $";
 #endif lint
 
 /***********************************************************
@@ -763,6 +763,7 @@ void XrmPutFileDatabase(db, fileName)
     
     if ((file = fopen(fileName, "w")) == NULL) return;
     EnumerateDatabase(db, DumpEntry, (caddr_t) file);
+    fclose(file);
 }
 
 
