@@ -18,7 +18,7 @@ LOCAL_LIBRARIES = XawClientLibs
 
 AllTarget(xload)
 NormalProgramTarget(xload,$(OBJS),$(DEPLIBS),$(LOCAL_LIBRARIES), /**/)
-InstallProgramWithFlags(xload, $(BINDIR), $(INSTKMEMFLAGS))
+InstallProgramWithFlags(xload,$(BINDIR),$(INSTKMEMFLAGS))
 InstallManPage(xload,$(MANDIR))
 
 InstallAppDefaults(XLoad)
