@@ -1,4 +1,4 @@
-/* $XConsortium: sm_process.c,v 1.23 94/03/16 16:31:59 mor Exp $ */
+/* $XConsortium: sm_process.c,v 1.24 94/03/18 16:03:17 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -207,7 +207,7 @@ IceReplyWaitInfo *replyWait;
 	if (errOffset >= 0)
 	{
 	    _IceErrorBadValue (iceConn, _SmcOpcode,
-	        SM_SaveYourself, errOffset, 1, &errVal);
+	        SM_SaveYourself, errOffset, 1, (IcePointer) &errVal);
 	}
 	else
 	{
@@ -216,11 +216,34 @@ IceReplyWaitInfo *replyWait;
                 pMsg->saveType, pMsg->shutdown,
 		pMsg->interactStyle, pMsg->fast);
 
+	    smcConn->save_yourself_in_progress = True;
+
 	    if (pMsg->shutdown)
 		smcConn->shutdown_in_progress = True;
 	}
 	break;
     }
+
+    case SM_SaveYourselfPhase2:
+
+	if (!smcConn->phase2_wait)
+	{
+	    _IceErrorBadState (iceConn, _SmcOpcode,
+		SM_SaveYourselfPhase2, IceCanContinue);
+	}
+        else
+	{
+	    CHECK_SIZE_MATCH (iceConn, _SmcOpcode, opcode,
+	        length, SIZEOF (smSaveYourselfPhase2Msg),
+	        IceFatalToProtocol);
+
+	    (*smcConn->phase2_wait->phase2_proc) (smcConn,
+		smcConn->phase2_wait->client_data);
+
+	    free ((char *) smcConn->phase2_wait);
+	    smcConn->phase2_wait  = NULL;
+	}
+	break;
 
     case SM_Interact:
 
@@ -242,6 +265,26 @@ IceReplyWaitInfo *replyWait;
 
 	    free ((char *) smcConn->interact_waits);
 	    smcConn->interact_waits = next;
+	}
+	break;
+
+    case SM_SaveComplete:
+
+	if (!smcConn->save_yourself_in_progress)
+	{
+	    _IceErrorBadState (iceConn, _SmcOpcode,
+		SM_SaveComplete, IceCanContinue);
+	}
+	else
+	{
+	    CHECK_SIZE_MATCH (iceConn, _SmcOpcode, opcode,
+	        length, SIZEOF (smSaveCompleteMsg),
+	        IceFatalToProtocol);
+
+	    smcConn->save_yourself_in_progress = False;
+
+	    (*smcConn->callbacks.save_complete.callback) (smcConn,
+	        smcConn->callbacks.save_complete.client_data);
 	}
 	break;
 
@@ -501,7 +544,7 @@ Bool		 swap;
 		unsigned char errVal = pMsg->dialogType;
 
 		_IceErrorBadValue (iceConn, _SmsOpcode,
-	            SM_InteractRequest, 2, 1, &errVal);
+	            SM_InteractRequest, 2, 1, (IcePointer) &errVal);
 	    }
 	    else if (pMsg->dialogType == SmDialogNormal &&
 		smsConn->interaction_allowed != SmInteractStyleAny)
@@ -541,7 +584,7 @@ Bool		 swap;
 		unsigned char errVal = pMsg->cancelShutdown;
 
 		_IceErrorBadValue (iceConn, _SmsOpcode,
-	            SM_InteractDone, 2, 1, &errVal);
+	            SM_InteractDone, 2, 1, (IcePointer) &errVal);
 	    }
 	    else if (pMsg->cancelShutdown && !smsConn->can_cancel_shutdown)
 	    {
@@ -605,7 +648,7 @@ Bool		 swap;
 	if (errOffset >= 0)
 	{
 	    _IceErrorBadValue (iceConn, _SmsOpcode,
-	        SM_SaveYourselfRequest, errOffset, 1, &errVal);
+	        SM_SaveYourselfRequest, errOffset, 1, (IcePointer) &errVal);
 	}
 	else
 	{
@@ -616,6 +659,25 @@ Bool		 swap;
 	}
 	break;
     }
+
+    case SM_SaveYourselfPhase2Request:
+
+        if (!smsConn->save_yourself_in_progress)
+	{
+	    _IceErrorBadState (iceConn, _SmsOpcode,
+		SM_SaveYourselfPhase2Request, IceCanContinue);
+	}
+        else
+	{
+	    CHECK_SIZE_MATCH (iceConn, _SmsOpcode, opcode,
+	        length, SIZEOF (smSaveYourselfPhase2RequestMsg),
+	        IceFatalToProtocol);
+
+	    (*smsConn->callbacks.save_yourself_phase2_request.callback) (
+		smsConn, smsConn->callbacks.
+		save_yourself_phase2_request.manager_data);
+	}
+	break;
 
     case SM_SaveYourselfDone:
 
@@ -639,7 +701,7 @@ Bool		 swap;
 		unsigned char errVal = pMsg->success;
 
 		_IceErrorBadValue (iceConn, _SmsOpcode,
-	            SM_SaveYourselfDone, 2, 1, &errVal);
+	            SM_SaveYourselfDone, 2, 1, (IcePointer) &errVal);
 	    }
 	    else
 	    {
