@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: moto.cf,v 1.0 91/05/08 11:39:02 rws Exp $
+XCOMM platform:  $XConsortium: moto.cf,v 1.1 91/05/08 11:40:47 rws Exp $
 
 #if defined(MotoR3Architecture)
 
@@ -27,7 +27,7 @@ XCOMM platform:  $XConsortium: moto.cf,v 1.0 91/05/08 11:39:02 rws Exp $
 
 #define SystemV4		YES
 #define BootstrapCFlags		-DSVR4 -DMOTOROLA
-#define StandardDefines         -DSVR4 -DMOTOROLA
+#define StandardDefines         -DSVR4 -DMOTOROLA -D_POSIX_SOURCE
 #define HasSockets		YES
 #define ExtraLibraries		-lsocket -lnsl -lm
 #define BuildServer		NO
@@ -38,8 +38,7 @@ XCOMM platform:  $XConsortium: moto.cf,v 1.0 91/05/08 11:39:02 rws Exp $
 #define MakeCmd                 /usr/ccs/bin/make
 #define YaccCmd                 /usr/ccs/bin/yacc
 #define CcCmd                   /bin/cc          /* a front-end to gcc/CI5 */
-#define LibraryDefines          StandardDefines -D_POSIX_SOURCE
-#define LibraryCCOptions        -Xc
+#define DefaultCCOptions        -Xc
 
 #include <motoLib.rules>
 
