@@ -1,4 +1,4 @@
-/* $XConsortium: XGetKMap.c,v 1.5 90/05/18 11:23:24 rws Exp $ */
+/* $XConsortium: XGetKMap.c,v 1.6 94/02/14 17:39:08 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -37,12 +37,25 @@ SOFTWARE.
 #include "extutil.h"
 
 KeySym 
+#if NeedFunctionPrototypes
+*XGetDeviceKeyMapping (
+    register	Display 	*dpy,
+    XDevice			*dev,
+#if NeedWidePrototypes
+    unsigned int                first,
+#else
+    KeyCode			first,
+#endif
+    int				keycount,
+    int				*syms_per_code)
+#else
 *XGetDeviceKeyMapping (dpy, dev, first, keycount, syms_per_code)
     register	Display 	*dpy;
     XDevice			*dev;
     KeyCode			first;
     int				keycount;
     int				*syms_per_code;		/* RETURN */
+#endif
     {
     long nbytes;
     register KeySym *mapping = NULL;
