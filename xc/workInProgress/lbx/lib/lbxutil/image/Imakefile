@@ -1,0 +1,16 @@
+XCOMM $XConsortium: Imakefile,v 1.1 94/09/13 17:22:36 mor Exp $
+
+#include <Library.tmpl>
+
+SRCS = imageutil.c
+
+OBJS = imageutil.o
+
+INCLUDES = -I$(INCLUDESRC) -I$(EXTINCSRC) -I$(SERVERSRC)/include -I../../../include/extensions
+
+SubdirLibraryRule($(OBJS))
+NormalLibraryObjectRule()
+NormalLintTarget($(SRCS))
+
+DependTarget()
+
