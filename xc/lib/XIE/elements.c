@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: elements.c,v 1.1 93/07/19 11:39:17 mor Exp $ */
 
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology
@@ -240,7 +240,7 @@ XiePhotoElement	*elemSrc;
     BEGIN_ELEM_HEAD (ImportClientLUT, elemSrc,
 	LENOF (xieFloImportClientLUT), *bufDest, elemDest);
 
-    elemDest->class	= elemSrc->data.ImportClientLUT.class;
+    elemDest->class     = elemSrc->data.ImportClientLUT.data_class;
     elemDest->bandOrder = elemSrc->data.ImportClientLUT.band_order;
     elemDest->length0	= elemSrc->data.ImportClientLUT.length[0];
     elemDest->length1	= elemSrc->data.ImportClientLUT.length[1];
@@ -271,7 +271,7 @@ XiePhotoElement	*elemSrc;
 	LENOF (xieFloImportClientPhoto) + techLen, *bufDest, elemDest);
 
     elemDest->notify		= elemSrc->data.ImportClientPhoto.notify;
-    elemDest->class		= elemSrc->data.ImportClientPhoto.class;
+    elemDest->class		= elemSrc->data.ImportClientPhoto.data_class;
     elemDest->width0		= elemSrc->data.ImportClientPhoto.width[0];
     elemDest->width1		= elemSrc->data.ImportClientPhoto.width[1];
     elemDest->width2		= elemSrc->data.ImportClientPhoto.width[2];
@@ -436,11 +436,11 @@ XiePhotoElement	*elemSrc;
     elemDest->operator		= elemSrc->data.Arithmetic.operator;
     elemDest->bandMask		= elemSrc->data.Arithmetic.band_mask;
     elemDest->constant0	= 
-	XieConvertToIEEE(elemSrc->data.Arithmetic.constant[0]);
+	_XieConvertToIEEE (elemSrc->data.Arithmetic.constant[0]);
     elemDest->constant1	= 
-	XieConvertToIEEE(elemSrc->data.Arithmetic.constant[1]);
+	_XieConvertToIEEE (elemSrc->data.Arithmetic.constant[1]);
     elemDest->constant2	= 
-	XieConvertToIEEE(elemSrc->data.Arithmetic.constant[2]);
+	_XieConvertToIEEE (elemSrc->data.Arithmetic.constant[2]);
 
     END_ELEM_HEAD (Arithmetic, *bufDest, elemDest);
 }
@@ -480,11 +480,11 @@ XiePhotoElement	*elemSrc;
 
     elemDest->src	= elemSrc->data.BandExtract.src;
     elemDest->constant0	= 
-	XieConvertToIEEE(elemSrc->data.BandExtract.coefficients[0]);
+	_XieConvertToIEEE (elemSrc->data.BandExtract.coefficients[0]);
     elemDest->constant1	= 
-	XieConvertToIEEE(elemSrc->data.BandExtract.coefficients[1]);
+	_XieConvertToIEEE (elemSrc->data.BandExtract.coefficients[1]);
     elemDest->constant2	= 
-	XieConvertToIEEE(elemSrc->data.BandExtract.coefficients[2]);
+	_XieConvertToIEEE (elemSrc->data.BandExtract.coefficients[2]);
     END_ELEM_HEAD (BandExtract, *bufDest, elemDest);
 }
 
@@ -505,13 +505,13 @@ XiePhotoElement	*elemSrc;
     elemDest->src2		= elemSrc->data.Blend.src2;
     elemDest->alpha		= elemSrc->data.Blend.alpha;
     elemDest->constant0	= 
-	XieConvertToIEEE(elemSrc->data.Blend.src_constant[0]);
+	_XieConvertToIEEE (elemSrc->data.Blend.src_constant[0]);
     elemDest->constant1	= 
-	XieConvertToIEEE(elemSrc->data.Blend.src_constant[1]);
+	_XieConvertToIEEE (elemSrc->data.Blend.src_constant[1]);
     elemDest->constant2	= 
-	XieConvertToIEEE(elemSrc->data.Blend.src_constant[2]);
+	_XieConvertToIEEE (elemSrc->data.Blend.src_constant[2]);
     elemDest->alphaConst = 
-	XieConvertToIEEE(elemSrc->data.Blend.alpha_constant);
+	_XieConvertToIEEE (elemSrc->data.Blend.alpha_constant);
     elemDest->domainOffsetX 	= elemSrc->data.Blend.domain.offset_x;
     elemDest->domainOffsetY 	= elemSrc->data.Blend.domain.offset_y;
     elemDest->domainPhototag 	= elemSrc->data.Blend.domain.phototag;
@@ -541,11 +541,11 @@ XiePhotoElement	*elemSrc;
     elemDest->operator		= elemSrc->data.Compare.operator;
     elemDest->combine		= elemSrc->data.Compare.combine;
     elemDest->constant0	= 
-	XieConvertToIEEE(elemSrc->data.Compare.constant[0]);
+	_XieConvertToIEEE (elemSrc->data.Compare.constant[0]);
     elemDest->constant1	= 
-	XieConvertToIEEE(elemSrc->data.Compare.constant[1]);
+	_XieConvertToIEEE (elemSrc->data.Compare.constant[1]);
     elemDest->constant2	= 
-	XieConvertToIEEE(elemSrc->data.Compare.constant[2]);
+	_XieConvertToIEEE (elemSrc->data.Compare.constant[2]);
     elemDest->bandMask		= elemSrc->data.Compare.band_mask;
 
     END_ELEM_HEAD (Compare, *bufDest, elemDest);
@@ -599,7 +599,7 @@ XiePhotoElement	*elemSrc;
 	LENOF (xieFloConvertFromIndex), *bufDest, elemDest);
 
     elemDest->src 	= elemSrc->data.ConvertFromIndex.src;
-    elemDest->class 	= elemSrc->data.ConvertFromIndex.class;
+    elemDest->class	= elemSrc->data.ConvertFromIndex.data_class;
     elemDest->precision = elemSrc->data.ConvertFromIndex.precision;
     elemDest->colormap 	= elemSrc->data.ConvertFromIndex.colormap;
 
@@ -710,8 +710,9 @@ char		**bufDest;
 XiePhotoElement	*elemSrc;
 
 {
-int i,j,ksize=elemSrc->data.Convolve.kernel_size;
-xieTypFloat	*fptr;
+    int 		ksize = elemSrc->data.Convolve.kernel_size;
+    int 		i, j;
+    xieTypFloat		*fptr;
     xieFloConvolve	*elemDest;
     unsigned		techLen, kernelLen;
 
@@ -736,14 +737,17 @@ xieTypFloat	*fptr;
 
     END_ELEM_HEAD (Convolve, *bufDest, elemDest);
 
+
     /* LISTofFloat (kernelSize^2) */
 
-	fptr = (xieTypFloat *) *bufDest;
-	for (i=0; i<ksize; ++i)
-	for (j=0; j<ksize; ++j) 
-		*fptr++ = XieConvertToIEEE(
-			elemSrc->data.Convolve.kernel[i*ksize+j]);
+    fptr = (xieTypFloat *) *bufDest;
+    for (i = 0; i < ksize; i++)
+	for (j = 0; j < ksize; j++) 
+	    *fptr++ = _XieConvertToIEEE (
+		elemSrc->data.Convolve.kernel[i * ksize + j]);
+
     *bufDest += NUMBYTES (kernelLen);
+
 
     /* Technique dependent convolve params */
 
@@ -809,23 +813,23 @@ XiePhotoElement	*elemSrc;
     elemDest->bandMask	= elemSrc->data.Geometry.band_mask;
     elemDest->width 	= elemSrc->data.Geometry.width;
     elemDest->height 	= elemSrc->data.Geometry.height;
-    elemDest->a 	= XieConvertToIEEE(
+    elemDest->a 	= _XieConvertToIEEE (
 		elemSrc->data.Geometry.coefficients[0]);
-    elemDest->b 	= XieConvertToIEEE(
+    elemDest->b 	= _XieConvertToIEEE (
 		elemSrc->data.Geometry.coefficients[1]);
-    elemDest->c 	= XieConvertToIEEE(
+    elemDest->c 	= _XieConvertToIEEE (
 		elemSrc->data.Geometry.coefficients[2]);
-    elemDest->d 	= XieConvertToIEEE(
+    elemDest->d 	= _XieConvertToIEEE (
 		elemSrc->data.Geometry.coefficients[3]);
-    elemDest->tx 	= XieConvertToIEEE(
+    elemDest->tx 	= _XieConvertToIEEE (
 		elemSrc->data.Geometry.coefficients[4]);
-    elemDest->ty 	= XieConvertToIEEE(
+    elemDest->ty 	= _XieConvertToIEEE (
 		elemSrc->data.Geometry.coefficients[5]);
-    elemDest->constant0 = XieConvertToIEEE(
+    elemDest->constant0 = _XieConvertToIEEE (
 		elemSrc->data.Geometry.constant[0] );
-    elemDest->constant1 = XieConvertToIEEE(
+    elemDest->constant1 = _XieConvertToIEEE (
 		elemSrc->data.Geometry.constant[1] );
-    elemDest->constant2 = XieConvertToIEEE(
+    elemDest->constant2 = _XieConvertToIEEE (
 		elemSrc->data.Geometry.constant[2] );
     elemDest->sample 	= elemSrc->data.Geometry.sample_tech;
     elemDest->lenParams = techLen;
@@ -860,11 +864,11 @@ XiePhotoElement	*elemSrc;
     elemDest->operator 		= elemSrc->data.Logical.operator;
     elemDest->bandMask 		= elemSrc->data.Logical.band_mask;
     elemDest->constant0	= 
-	XieConvertToIEEE(elemSrc->data.Logical.constant[0]);
+	_XieConvertToIEEE (elemSrc->data.Logical.constant[0]);
     elemDest->constant1	= 
-	XieConvertToIEEE(elemSrc->data.Logical.constant[1]);
+	_XieConvertToIEEE (elemSrc->data.Logical.constant[1]);
     elemDest->constant2	= 
-	XieConvertToIEEE(elemSrc->data.Logical.constant[2]);
+	_XieConvertToIEEE (elemSrc->data.Logical.constant[2]);
 
     END_ELEM_HEAD (Logical, *bufDest, elemDest);
 }
@@ -945,11 +949,11 @@ XiePhotoElement	*elemSrc;
     elemDest->width 	= elemSrc->data.PasteUp.width;
     elemDest->height 	= elemSrc->data.PasteUp.height;
     elemDest->constant0	= 
-	XieConvertToIEEE(elemSrc->data.PasteUp.constant[0]);
+	_XieConvertToIEEE (elemSrc->data.PasteUp.constant[0]);
     elemDest->constant1	= 
-	XieConvertToIEEE(elemSrc->data.PasteUp.constant[1]);
+	_XieConvertToIEEE (elemSrc->data.PasteUp.constant[1]);
     elemDest->constant2	= 
-	XieConvertToIEEE(elemSrc->data.PasteUp.constant[2]);
+	_XieConvertToIEEE (elemSrc->data.PasteUp.constant[2]);
 
     END_ELEM_HEAD (PasteUp, *bufDest, elemDest);
 
@@ -1038,12 +1042,12 @@ XiePhotoElement	*elemSrc;
     elemDest->src 	= elemSrc->data.ExportClientLUT.src;
     elemDest->notify 	= elemSrc->data.ExportClientLUT.notify;
     elemDest->bandOrder = elemSrc->data.ExportClientLUT.band_order;
-    elemDest->start0 = elemSrc->data.ExportClientLUT.start[0];
-    elemDest->start1 = elemSrc->data.ExportClientLUT.start[1];
-    elemDest->start2 = elemSrc->data.ExportClientLUT.start[2];
-    elemDest->length0 = elemSrc->data.ExportClientLUT.length[0];
-    elemDest->length1 = elemSrc->data.ExportClientLUT.length[1];
-    elemDest->length2 = elemSrc->data.ExportClientLUT.length[2];
+    elemDest->start0    = elemSrc->data.ExportClientLUT.start[0];
+    elemDest->start1    = elemSrc->data.ExportClientLUT.start[1];
+    elemDest->start2    = elemSrc->data.ExportClientLUT.start[2];
+    elemDest->length0   = elemSrc->data.ExportClientLUT.length[0];
+    elemDest->length1   = elemSrc->data.ExportClientLUT.length[1];
+    elemDest->length2   = elemSrc->data.ExportClientLUT.length[2];
 
     END_ELEM_HEAD (ExportClientLUT, *bufDest, elemDest);
 }
@@ -1156,9 +1160,9 @@ XiePhotoElement	*elemSrc;
     BEGIN_ELEM_HEAD (ExportLUT, elemSrc,
 	LENOF (xieFloExportLUT), *bufDest, elemDest);
 
-    elemDest->src = elemSrc->data.ExportLUT.src;
-    elemDest->lut = elemSrc->data.ExportLUT.lut;
-    elemDest->merge = elemSrc->data.ExportLUT.merge;
+    elemDest->src    = elemSrc->data.ExportLUT.src;
+    elemDest->lut    = elemSrc->data.ExportLUT.lut;
+    elemDest->merge  = elemSrc->data.ExportLUT.merge;
     elemDest->start0 = elemSrc->data.ExportLUT.start[0];
     elemDest->start1 = elemSrc->data.ExportLUT.start[1];
     elemDest->start2 = elemSrc->data.ExportLUT.start[2];
