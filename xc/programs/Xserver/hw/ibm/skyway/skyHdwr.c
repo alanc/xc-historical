@@ -1,5 +1,5 @@
 /*
- * $XConsortium: skyIO.c,v 1.1 91/05/10 09:09:03 jap Exp $
+ * $XConsortium: skyHdwr.c,v 1.3 91/07/16 13:14:26 jap Exp $
  *
  * Copyright IBM Corporation 1987,1988,1989,1990,1991
  *
@@ -44,6 +44,23 @@
 #include "skyReg.h"
 
 void SkywayFillSolid();
+static void SkywaySetCoprocessorInfo();
+volatile struct SkyCopRegs
+{
+        unsigned int  a;
+        unsigned int  b;
+	char          c;      
+	unsigned char d;    
+	short         e;   
+	short         f;   
+        unsigned char g;
+        unsigned char h;
+        short         pix_index; 
+        unsigned char i;
+        unsigned char j;   
+	char          *pixmap_base;
+	ulong         k;    
+};
 
 int skyHdwrInit(index)
 int index ;
@@ -51,12 +68,19 @@ int index ;
 
    TRACE(("skyHdwrInit\n"));
 
+   skywayWaitFifo2(index);
+   SKYWAY_CCC_REG(index) = Color_Cmp_Fal;
+   SKYWAY_MEM_REG(index) = 0x0b ;   /* Motorola order, 8 bits/pixel */
+   SkywaySetCoprocessorInfo(index);
+
+   SkywayFillSolid(0,0x3,0xff,0,0,1280,1024,index);
+
+   /* Set the io register pointers					*/
    SKYWAY_SINDEX_REG(index) = 0x5600;/* disable the cursor in the DAC   */
    SKYWAY_SINDEX_REG(index) = 0x6c04;
    SKYWAY_SINDEX_REG(index) = 0x5061; /* set CRTC to prepare for reset  */
    SKYWAY_SINDEX_REG(index) = 0x5060; /* set CRTC to reset              */
 
-   SKYWAY_MEM_REG(index) = 0x0b ;   /* Motorola order, 8 bits/pixel */
    SKYWAY_INT_REG(index) = 0x00 ;
    SKYWAY_INS_REG(index) = 0xff ;    /* clear all interrupt status bits */
    SKYWAY_VMC_REG(index) = 0x00 ;    /* disable virtual memory interrupts */
@@ -65,6 +89,8 @@ int index ;
    /* native motorola mode ; memory decoding enabled */
 
    SKYWAYSetMode(index,0x0c);
+
+   SKYWAY_WINCTRL_REG(index) = 0;    /* No pc window */
 
    /* set the memory configuration register to 64 bit serializer width,
       256K x 4 module type, and 64 bit physical width for 64 bit wide
@@ -109,17 +135,20 @@ SKYWAY_SINDEX_REG(index) = 0x201f;/* vertical total regs set to 0x41f,  */
 SKYWAY_SINDEX_REG(index) = 0x2104;/* which is 1056 lines                */
 SKYWAY_SINDEX_REG(index) = 0x22ff;/* vertical display end registers are */
 SKYWAY_SINDEX_REG (index)= 0x2303;/* set to 0x3ff, which is 1024 lines  */
-SKYWAY_SINDEX_REG(index) = 0x24ff;/* vertical blanking start registers  */
-SKYWAY_SINDEX_REG(index) = 0x2503;/* are set to 0x03ff (1024 lines)     */
-SKYWAY_SINDEX_REG(index) = 0x261f;/* vertical blanking end registers are */
-SKYWAY_SINDEX_REG(index) = 0x2704;/* set to 0x04ff (1056 lines)         */
-SKYWAY_SINDEX_REG(index) = 0x2904;/* are set to 0x0402 (1027 lines)     */
+SKYWAY_SINDEX_REG(index) = 0x241f;/* vertical blanking start registers  */
+SKYWAY_SINDEX_REG(index) = 0x2504;/* are set to 0x041f                  */
+SKYWAY_SINDEX_REG(index) = 0x26ff;/* vertical blanking end registers are */
+SKYWAY_SINDEX_REG(index) = 0x2703;/* set to 0x03ff                      */
+SKYWAY_SINDEX_REG(index) = 0x2801;/* vertical sync pulse start registers*/
+SKYWAY_SINDEX_REG(index) = 0x2904;/* are set to 0x0401                  */
 SKYWAY_SINDEX_REG(index) = 0x4000;/* set the Start Address registers to */
 SKYWAY_SINDEX_REG(index) = 0x4100;/* define the start address of the    */
 SKYWAY_SINDEX_REG(index) = 0x4200;/* active picture to address 0        */
 SKYWAY_SINDEX_REG(index) = 0x43a0;/* buffer pitch registers set to 1280 */
 SKYWAY_SINDEX_REG(index) = 0x4400;/* pixels per scan line               */
 SKYWAY_SINDEX_REG(index) = 0x64ff;/* turn on palette mask               */
+SKYWAY_SINDEX_REG(index) = 0x2cff;/* vertical line compare lo           */
+SKYWAY_SINDEX_REG(index) = 0x2d07;/* vertical line compare hi           */
 SKYWAY_SINDEX_REG(index) = 0x5063;/* set Display Mode 1 register to:    */
 	                        /*      Normal operation                */
 	                        /*      No clock error                  */
@@ -129,7 +158,6 @@ SKYWAY_SINDEX_REG(index) = 0x5063;/* set Display Mode 1 register to:    */
 	                        /*      + Vertical, - Horizontal        */
 	                        /*         sync polarity                */
 
- SkywayFillSolid(0,0x3,0xff,0,0,1280,1024,index);
 
    return( 0 );
 
@@ -244,7 +272,8 @@ SkywayFillSolid( color, alu, pm, x, y, w, h,index)
      int    index ;
 {
 
- TRACE(("SkywayFillSolid\n"));
+ TRACE(("SkywayFillSolid: color %d, alu: %d, pm: %d xy(%d, %d) %dx%d\n",
+	color, alu, pm, x, y, w, h));
 
  skywayWaitFifo2(index);
 
@@ -387,4 +416,15 @@ SKYWAY_PO_REG(index) = POForeSrc | POBackSrc | POStepBlt | POSrcC | PODestC |
 
 skywayWaitFifo2(index);
 
+}
+
+static void
+SkywaySetCoprocessorInfo(index)
+int index;
+{
+	volatile struct SkyCopRegs *cop;
+
+	cop = (struct SkyCopRegs *) COPREG[index];
+	cop->pix_index	= PixMapC;
+	cop->pixmap_base= SKYWAY_VRAM_START[index];
 }
