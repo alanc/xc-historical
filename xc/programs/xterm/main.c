@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: main.c,v 1.122 89/07/21 10:58:26 jim Exp $";
+static char rcs_id[] = "$XConsortium: main.c,v 1.123 89/07/21 16:11:35 jim Exp $";
 #endif	/* lint */
 
 /*
@@ -1769,13 +1769,13 @@ spawn ()
 #endif	/* TIOCSWINSZ */
 #endif	/* sun */
 
+		signal(SIGHUP, SIG_DFL);
 		if (command_to_exec) {
 			execvp(*command_to_exec, command_to_exec);
 			/* print error message on screen */
 			fprintf(stderr, "%s: Can't execvp %s\n", xterm_name,
 			 *command_to_exec);
 		} 
-		signal(SIGHUP, SIG_DFL);
 
 #ifdef UTMP
 		if(((ptr = getenv("SHELL")) == NULL || *ptr == 0) &&
