@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.107 93/08/17 11:22:35 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.108 93/08/17 11:38:07 rws Exp $
 #define IHaveSubdirs
 #define PassCDebugFlags
 
@@ -19,16 +19,8 @@ MakeLintSubdirs($(LNINSTALLDIRS),install.ln,install.ln)
 
 MakeLintSubdirs($(LNINSTALLDIRS),external.ln,lintlib)
 
-#ifndef Win32Architecture
-XCOMM
-XCOMM Watch out!!!  Make sure you do make includes after removing X11....
-XCOMM
-clean::
-	$(RM) -r X11
-
 includes::
-	$(RM) -r X11
-
+	MakeDir(X11)
 
 XCOMM
 XCOMM before depending, be sure to have run make includes
@@ -36,6 +28,13 @@ XCOMM
 /* depend::  includes */
 
 DependSubdirs($(SUBDIRS))
+
+#ifndef Win32Architecture
+XCOMM
+XCOMM Watch out!!!  Make sure you do make includes after removing X11....
+XCOMM
+clean::
+	$(RM) -r X11
 
 XCOMM do not name your log file make.log when you run this ...
 World::
@@ -107,13 +106,6 @@ flushlinks::
 	find . \( \! \( -type d -o -name Makefile \) \) -print
 
 #else
-
-XCOMM
-XCOMM before depending, be sure to have run make includes
-XCOMM
-/* depend::  includes */
-
-DependSubdirs($(SUBDIRS))
 
 XCOMM do not name your log file make.log when you run this ...
 World World.Win32::
