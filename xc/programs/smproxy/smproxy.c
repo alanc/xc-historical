@@ -1,4 +1,4 @@
-/* $XConsortium: smproxy.c,v 1.26 94/11/30 16:16:22 mor Exp mor $ */
+/* $XConsortium: smproxy.c,v 1.27 94/12/30 15:27:00 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1994  X Consortium
@@ -936,7 +936,7 @@ SmPointer clientData;
     if (first_time)
     {
 	char userId[20];
-	char hint = SmRestartAnyway;
+	char hint = SmRestartIfRunning;
 
 	prop1.name = SmProgram;
 	prop1.type = SmARRAY8;
