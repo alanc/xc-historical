@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xclipboard.c,v 1.4 89/07/16 16:04:00 jim Exp $
+ * $XConsortium: xclipboard.c,v 1.5 89/10/10 15:10:13 kit Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -24,7 +24,7 @@
  * Updated for R4:  Chris D. Peterson,  MIT X Consortium.
  */
 
-/* $XConsortium: xclipboard.c,v 1.4 89/07/16 16:04:00 jim Exp $ */
+/* $XConsortium: xclipboard.c,v 1.5 89/10/10 15:10:13 kit Exp $ */
 
 #include <stdio.h>
 #include <X11/Intrinsic.h>
@@ -182,6 +182,26 @@ caddr_t client_data, call_data;
     exit( 0 );
 }
 
+/*ARGSUSED*/
+static Boolean RefuseSelection(w, selection, target,
+			       type, value, length, format)
+    Widget w;
+    Atom *selection, *target, *type;
+    caddr_t *value;
+    unsigned long *length;
+    int *format;
+{
+    return False;
+}
+
+/*ARGSUSED*/
+static void LoseManager(w, selection)
+    Widget w;
+    Atom *selection;
+{
+    XtError("another clipboard has taken over control\n");
+}
+
 void
 main(argc, argv)
 int argc;
@@ -189,9 +209,15 @@ char **argv;
 {
     Arg args[2];
     Widget top, parent, quit, save, erase, text;
+    Atom manager;
 
     top = XtInitialize( "xclipboard", "XClipboard", table, XtNumber(table),
 			  &argc, argv);
+
+    /* CLIPBOARD_MANAGER is a non-standard mechanism */
+    manager = XInternAtom(XtDisplay(top), "CLIPBOARD_MANAGER", False);
+    if (XGetSelectionOwner(XtDisplay(top), manager))
+	XtError("another clipboard is already running\n");
 
     parent = XtCreateManagedWidget("shell", formWidgetClass, top, NULL, ZERO);
     quit = XtCreateManagedWidget("quit", Command, parent, NULL, ZERO);
@@ -208,7 +234,8 @@ char **argv;
 
     XtRealizeWidget(top);
 
-    (void)XmuInternAtom( XtDisplay(text), XmuMakeAtom("NULL") ); /* %%% */
+    XtOwnSelection(text, manager, CurrentTime,
+		   RefuseSelection, LoseManager, NULL);
     XtOwnSelection(text, XA_CLIPBOARD(XtDisplay(text)), CurrentTime,
 		   ConvertSelection, LoseSelection, NULL);
 
