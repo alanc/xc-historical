@@ -59,7 +59,6 @@ cfbGetSpans(pDrawable, wMax, ppt, pwidth, nspans, pdstStart)
     int         	xEnd;		/* last pixel to copy from */
     register int	nstart; 
     int	 		nend; 
-    int	 		srcStartOver; 
     unsigned long	startmask, endmask;
     int			nlMiddle, nl, srcBit;
     int			w;
@@ -78,13 +77,13 @@ cfbGetSpans(pDrawable, wMax, ppt, pwidth, nspans, pdstStart)
     
     cfbGetLongWidthAndPointer (pDrawable, widthSrc, psrcBase)
 
-#if PSZ == 8
+#ifdef PIXEL_ADDR
     if ((nspans == 1) && (*pwidth == 1))
     {
-	tmpSrc = *((unsigned char *)(psrcBase + (ppt->y * (widthSrc >> 2)))
+	tmpSrc = *((PixelType *)(psrcBase + (ppt->y * widthSrc))
 		   + ppt->x);
 #if BITMAP_BIT_ORDER == MSBFirst
-	tmpSrc <<= 24;
+	tmpSrc <<= (sizeof (unsigned long) - sizeof (PixelType)) * 8;
 #endif
 	*pdstStart = tmpSrc;
 	return;
@@ -94,61 +93,45 @@ cfbGetSpans(pDrawable, wMax, ppt, pwidth, nspans, pdstStart)
     pptLast = ppt + nspans;
     while(ppt < pptLast)
     {
-	xEnd = min(ppt->x + *pwidth, widthSrc << (PWSH-2) );
-	psrc = psrcBase + (ppt->y * (widthSrc >> 2)) + (ppt->x >> PWSH); 
+	xEnd = min(ppt->x + *pwidth, widthSrc << PWSH);
+	psrc = psrcBase + ppt->y * widthSrc + (ppt->x >> PWSH); 
 	w = xEnd - ppt->x;
 	srcBit = ppt->x & PIM;
-	/* This shouldn't be needed */
-	pdstNext = pdst + PixmapWidthInPadUnits(w, PSZ);
+    	pdstNext = pdst + ((w + PPW - 1) >> PWSH);
 
 	if (srcBit + w <= PPW) 
 	{ 
 	    getbits(psrc, srcBit, w, tmpSrc);
-/*XXX*/	    putbits(tmpSrc, 0, w, pdst, ~((unsigned long)0)); 
+	    putbits(tmpSrc, 0, w, pdst, ~((unsigned long)0)); 
 	    pdst++;
 	} 
 	else 
 	{ 
-
 	    maskbits(ppt->x, w, startmask, endmask, nlMiddle);
-	    if (startmask) 
-		nstart = PPW - srcBit; 
-	    else 
-		nstart = 0; 
-	    if (endmask) 
-		nend = xEnd & PIM; 
-	    srcStartOver = srcBit + nstart > PLST;
+	    nstart = 0; 
 	    if (startmask) 
 	    { 
+		nstart = PPW - srcBit; 
 		getbits(psrc, srcBit, nstart, tmpSrc);
-/*XXX*/		putbits(tmpSrc, 0, nstart, pdst, ~((unsigned long)0));
-		if(srcStartOver)
+		putbits(tmpSrc, 0, nstart, pdst, ~((unsigned long)0));
+		if(srcBit + nstart >= PPW)
 		    psrc++;
 	    } 
 	    nl = nlMiddle; 
 	    while (nl--) 
 	    { 
 		tmpSrc = *psrc;
-/*XXX*/		putbits(tmpSrc, nstart, PPW, pdst, ~((unsigned long)0));
+		putbits(tmpSrc, nstart, PPW, pdst, ~((unsigned long)0));
 		psrc++;
 		pdst++;
 	    } 
 	    if (endmask) 
 	    { 
+		nend = xEnd & PIM; 
 		getbits(psrc, 0, nend, tmpSrc);
-/*XXX*/		putbits(tmpSrc, nstart, nend, pdst, ~((unsigned long)0));
-		if(nstart + nend >= PPW)
-		    pdst++;
+		putbits(tmpSrc, nstart, nend, pdst, ~((unsigned long)0));
 	    } 
-#ifdef	notdef
-	    pdst++; 
-	    while(pdst < pdstNext)
-	    {
-		*pdst++ = 0;
-	    }
-#else
 	    pdst = pdstNext;
-#endif
 	} 
         ppt++;
 	pwidth++;
