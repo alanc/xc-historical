@@ -68,7 +68,8 @@ for something to happen:
 #endif XTESTEXT1
 
 
-You also need to implement the following routines:
+You also need to implement the following routines (documentation
+is needed; for now, see server/ddx/hp/hp/x_hil.c):
 
 void
 XTestGenerateEvent(dev_type, keycode, keystate, mousex, mousey)
