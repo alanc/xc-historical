@@ -200,6 +200,89 @@ int InitDoubleDashedSegments(xp, p, reps)
     return reps;
 }
 
+int InitHorizSegments(xp, p, reps)
+    XParms  xp;
+    Parms   p;
+    int     reps;
+{
+    int size;
+    int     half;
+    int i;
+    int x, y;		/* base of square to draw in			*/
+    int phase;		/* how far into 0..8*size we are		*/
+    int phaseinc;       /* how much to increment phase at each segment  */
+    XGCValues   gcv;
+
+    pgc = xp->fggc;
+
+    size = p->special;
+    half = (size + 19) / 20;
+
+    segments = (XSegment *)malloc((p->objects) * sizeof(XSegment));
+
+    x = half;
+    y = half;
+    for (i = 0; i != p->objects; i++) {
+	segments[i].x1 = x;
+	segments[i].y1 = y;
+	segments[i].x2 = x + size;
+	segments[i].y2 = y;
+	y += 2;
+	if (y >= HEIGHT - size - half) {
+	    y = half;
+	    x += size;
+	    if (x >= WIDTH - size - half)
+		x = half;
+	}
+    }
+    gcv.cap_style = CapNotLast;
+    XChangeGC(xp->d, xp->fggc, GCCapStyle, &gcv);
+    XChangeGC(xp->d, xp->bggc, GCCapStyle, &gcv);
+    return reps;
+}
+
+int InitVertSegments(xp, p, reps)
+    XParms  xp;
+    Parms   p;
+    int     reps;
+{
+    int size;
+    int     half;
+    int i;
+    int x, y;		/* base of square to draw in			*/
+    int phase;		/* how far into 0..8*size we are		*/
+    int phaseinc;       /* how much to increment phase at each segment  */
+    XGCValues   gcv;
+
+    pgc = xp->fggc;
+
+    size = p->special;
+    half = (size + 19) / 20;
+
+    segments = (XSegment *)malloc((p->objects) * sizeof(XSegment));
+
+    x = half;
+    y = half;
+    for (i = 0; i != p->objects; i++) {
+	segments[i].x1 = x;
+	segments[i].y1 = y;
+	segments[i].x2 = x;
+	segments[i].y2 = y + size;
+	y += size;
+	if (y >= HEIGHT - size - half) {
+	    y = half;
+	    x += 2;
+	    if (x >= WIDTH - size - half) {
+		x = half;
+	    }
+	}
+    }
+    gcv.cap_style = CapNotLast;
+    XChangeGC(xp->d, xp->fggc, GCCapStyle, &gcv);
+    XChangeGC(xp->d, xp->bggc, GCCapStyle, &gcv);
+    return reps;
+}
+
 void DoSegments(xp, p, reps)
     XParms  xp;
     Parms   p;
