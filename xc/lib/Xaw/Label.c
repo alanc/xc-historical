@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Label.c,v 1.22 87/09/13 16:43:25 swick Locked $";
+static char rcsid[] = "$Header: Label.c,v 1.23 87/09/13 21:08:59 swick Locked $";
 #endif lint
 
 /*
@@ -74,7 +74,7 @@ static void Initialize();
 static void Realize();
 static void Resize();
 static void Redisplay();
-static void SetValues();
+static Boolean SetValues();
 static void ClassInitialize();
 
 LabelClassRec labelClassRec = {
@@ -140,7 +140,7 @@ static void CvtStringToJustify(display, fromVal, toVal)
     if (s == NULL) return;
 
     for (i=0; i<=strlen(s); i++) {
-        char c = (char *)fromVal.addr[i];
+        char c = s[i];
 	lowerName[i] = isupper(c) ? (char) tolower(c) : c;
     }
 
