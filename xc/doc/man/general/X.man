@@ -549,6 +549,11 @@ This option indicates that the program should not simulate reverse video.
 This is used to
 override any defaults since reverse video doesn't always work properly.
 .TP 8
+.B \-selectionTimeout
+This option specifies the timeout in milliseconds within which two
+communicating applications must respond to one another for a selection
+request.
+.TP 8
 .B \-synchronous
 This option indicates that requests to the X server should be sent 
 synchronously, instead of asynchronously.  Since 
@@ -562,6 +567,10 @@ program.
 This option specifies the title to be used for this window.  This information 
 is sometimes
 used by a window manager to provide some sort of header identifying the window.
+.TP 8
+.B \-xnllanguage \fIlanguage[_territory][.codeset]\fP
+This option specifies the language, territory, and codeset for use in
+resolving resource and other filenames.
 .TP 8
 .B \-xrm \fIresourcestring\fP
 This option specifies a resource name and value to override any defaults.  It 
