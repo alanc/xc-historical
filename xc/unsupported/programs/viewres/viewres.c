@@ -1,5 +1,5 @@
 /*
- * $XConsortium: viewres.c,v 1.2 90/01/31 17:48:23 jim Exp $
+ * $XConsortium: viewres.c,v 1.3 90/02/01 13:51:24 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -79,6 +79,18 @@ usage ()
 }
 
 
+static void build_tree();
+
+static void reverse_order_siblings (node, tree, w)
+    WidgetNode *node;
+    Widget tree;
+    Widget w;
+{
+    if (!node) return;
+    reverse_order_siblings (node->siblings, tree, w);
+    build_tree (node, tree, w);
+}
+
 static void build_tree (node, tree, super)
     WidgetNode *node;
     Widget tree;
@@ -97,11 +109,15 @@ static void build_tree (node, tree, super)
     w = XtCreateManagedWidget (node->label, commandWidgetClass, tree, args, n);
 
     /*
-     * recursively build the rest of the tree
+     * recursively build the rest of the tree, but start from end of siblings
      */
+#ifndef NOREVERSEORDER
+    reverse_order_siblings (node->children, tree, w);
+#else
     for (child = node->children; child; child = child->siblings) {
 	build_tree (child, tree, w);
     }
+#endif
 }
 
 main (argc, argv)
