@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.5 91/07/22 16:11:18 converse Exp $
+XCOMM $XConsortium: Imakefile,v 1.6 91/08/22 12:27:00 rws Exp $
 XCOMM 
 XCOMM  xgas
 XCOMM 
@@ -33,10 +33,9 @@ LOCAL_LIBRARIES = $(XAWLIB) $(XMULIB) $(XTOOLLIB) $(XLIB)
 
        INCLUDES = -I$(TOOLKITSRC) -I$(TOP)
 
-depend:: $(SRCS) $(DOCNS)
-
-$(DOCSRCS):: $(DOCNS)
-
 ComplexProgramTarget(xgas)
 InstallAppDefaults(XGas)
 
+depend:: $(SRCS) $(DOCNS)
+
+$(DOCSRCS):: $(DOCNS)
