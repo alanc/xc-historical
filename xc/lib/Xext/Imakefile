@@ -20,8 +20,10 @@
       SHMSRCS = XShm.c
       SHMOBJS = XShm.o
 #endif
-  STD_DEFINES = LibraryDefines ExtensionDefines
-  CDEBUGFLAGS = LibraryCDebugFlags
+#if Malloc0ReturnsNull
+ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
+#endif
+      DEFINES = ExtensionDefines $(ALLOC_DEFINES)
      INCLUDES = -I$(XLIBSRC) -I../include
          SRCS = globals.c extutil.c XMultibuf.c XShape.c $(SHMSRCS)  \
 		MITMisc.c XTestExt1.c
