@@ -1,5 +1,5 @@
 /*
- * $XConsortium: fresco.cxx,v 1.10 94/08/23 18:56:00 matt Exp matt $
+ * $XConsortium: fresco.cxx,v 1.11 94/09/01 18:53:16 matt Exp $
  */
 
 /*
@@ -278,14 +278,37 @@ void Fresco::unref(BaseObjectRef r) {
 }
 
 /*
- * We don't use poll under OSF/1 because the OSF/1 v2.0 version of poll
- * is broken.  When called with no struct pollfd's and an nfds argument
- * of zero (to do a simple timeout), it returns immediately instead of
- * waiting until the timeout period has expired.  It also sets errno to
- * EAGAIN sometimes, but not always.  Fortunately, select works instead.
+ * We can't use either poll or select under OSF/1 because they're both
+ * broken, though in different ways.  When called with no struct pollfd's
+ * and an nfds argument of zero to do a timeout, poll returns immediately
+ * instead of waiting until the timeout period has expired.  It also sets
+ * errno to EAGAIN sometimes, but not always.  Select seems to work for
+ * timeouts in simple cases, and even in some complex cases, but in some
+ * multithreaded programs Fresco::delay calls select and select never
+ * returns.
+ *
+ * The most reliable way to do a sleep in a multithreaded program under
+ * OSF/1 seems to be using the pthread_delay_np routine, which puts the
+ * current thread to sleep.  The following code assumes that you always
+ * build multithreaded Fresco libraries on the alpha, which matches the
+ * assumption in threads.cxx; if we switch to using the X11R6 threads
+ * macros, the use of pthread_delay_np should be conditionalized on 
+ * the XTHREADS symbol being defined.
  */
  
-#if defined(USE_POLL) && !defined(__osf__)
+#if defined(__alpha)
+
+#include <pthread.h>
+
+Boolean Fresco::delay(Float seconds) {
+    struct timespec ts;
+    ts.tv_sec = time_t(seconds);
+    ts.tv_nsec = long(1000000000.0 * (seconds - float(ts.tv_sec)) + 0.5);
+    return pthread_delay_np(&ts) == 0;
+}
+
+#else
+#if defined(USE_POLL)
 
 #include <sys/poll.h>
 
@@ -302,10 +325,6 @@ Boolean Fresco::delay(Float seconds) {
 #include <X11/Fresco/OS/types.h>
 #include <sys/time.h>
 
-#if defined(__osf__)
-extern "C" int select(int, fd_set*, fd_set*, fd_set*, struct timeval*);
-#endif
-
 Boolean Fresco::delay(Float seconds) {
     struct timeval tv;
     tv.tv_sec = time_t(seconds);
@@ -313,7 +332,8 @@ Boolean Fresco::delay(Float seconds) {
     return select(0, nil, nil, nil, &tv) == 0;
 }
 
-#endif
+#endif	/* defined(USE_POLL) */
+#endif	/* defined(__osf__) */
 
 /* class FrescoImpl */
 
