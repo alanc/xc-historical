@@ -1,4 +1,4 @@
-/* $XConsortium: GetAtomNm.c,v 11.19 93/09/21 22:58:54 rws Exp $ */
+/* $XConsortium: GetAtomNm.c,v 11.20 93/09/22 09:45:17 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -18,7 +18,7 @@ without express or implied warranty.
 
 extern void _XFreeAtomTable();
 
-/* XXX this table def is duplicated in XIntAtom.c, keep them consistent! */
+/* XXX this table def is duplicated in IntAtom.c, keep them consistent! */
 
 #define TABLESIZE 64
 
