@@ -1,4 +1,4 @@
-/* $XConsortium: xgtmotion.c,v 1.7 89/12/02 15:21:18 rws Exp $ */
+/* $Header: xgtmotion.c,v 1.3 90/11/07 15:34:36 gms Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -72,7 +72,7 @@ int
 ProcXGetDeviceMotionEvents(client)
     ClientPtr client;
 {
-    char *coords, *bufptr;
+    INT32 *coords, *bufptr;
     xGetDeviceMotionEventsReply rep;
     int     i, j, num_events, axes, size, tsize;
     unsigned long nEvents;
@@ -119,12 +119,12 @@ ProcXGetDeviceMotionEvents(client)
 	}
     if (CompareTimeStamps(stop, currentTime) == LATER)
         stop = currentTime;
-    num_events = NumMotionEvents();
+    num_events = v->numMotionEvents;
     if (num_events)
     {
-	size = sizeof(Time) + (axes * sizeof (short));
+	size = sizeof(Time) + (axes * sizeof (INT32));
 	tsize = num_events * size;
-	coords = (char *) xalloc (tsize);
+	coords = (INT32 *) xalloc (tsize);
 	rep.nEvents = (v->GetMotionProc) (
 		dev, coords, start.milliseconds, stop.milliseconds);
 
@@ -143,15 +143,10 @@ ProcXGetDeviceMotionEvents(client)
     	    register 	char n;
 
 	    bufptr = coords;
-	    for (i=0; i<nEvents; i++)
+	    for (i=0; i<nEvents * (axes+1); i++)
 		{
     		swapl(bufptr, n);
-		bufptr += sizeof (Time);
-	        for (j=0; j<axes; j++)
-		    {
-    		    swaps(bufptr, n);
-		    bufptr += sizeof (short);
-		    }
+		bufptr++;
 		}
 	    }
 	WriteToClient(client, length * 4, coords);
