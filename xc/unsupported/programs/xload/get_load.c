@@ -22,6 +22,8 @@
  */
 
 #include <stdio.h>
+#include <X11/Xos.h>
+#include <X11/Intrinsic.h>
 
 #ifdef att
 #define LOADSTUB
@@ -100,9 +102,6 @@ struct lavnum {
 #ifdef sequent
 #define FSCALE	1000.0
 #endif
-
-#include <X11/Xos.h>
-#include <X11/Intrinsic.h>
 
 extern long lseek();
 extern void exit();
