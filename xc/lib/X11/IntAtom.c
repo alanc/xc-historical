@@ -1,4 +1,4 @@
-/* $XConsortium: IntAtom.c,v 11.22 93/09/21 22:57:40 rws Exp $ */
+/* $XConsortium: IntAtom.c,v 11.23 93/09/22 09:45:55 rws Exp $ */
 /*
 
 Copyright 1986, 1990 by the Massachusetts Institute of Technology
@@ -18,7 +18,7 @@ without express or implied warranty.
 #define NEED_REPLIES
 #include "Xlibint.h"
 
-/* XXX this table def is duplicated in XGetAtomNm.c, keep them consistent! */
+/* XXX this table def is duplicated in GetAtomNm.c, keep them consistent! */
 
 #define TABLESIZE 64
 
