@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Panner.c,v 1.43 91/08/26 10:53:17 gildea Exp $
+ * $XConsortium: Panner.c,v 1.44 91/10/16 21:38:24 eswu Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -533,7 +533,7 @@ static void Realize (gw, valuemaskp, attr)
 	    gotpm = TRUE;
 	}
     }
-    (*gw->core.widget_class->core_class.superclass->core_class.realize)
+    (*pannerWidgetClass->core_class.superclass->core_class.realize)
       (gw, valuemaskp, attr);
 
     if (gotpm) XFreePixmap (XtDisplay(gw), pm);
