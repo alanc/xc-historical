@@ -1,4 +1,4 @@
-/* $Header: dsimple.c,v 1.4 88/01/31 15:37:13 rws Exp $ */
+/* $Header: dsimple.c,v 1.4 88/01/31 15:40:41 jim Locked $ */
 #include <X11/Xos.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
@@ -115,11 +115,6 @@ char *Get_Display_Name(pargc, argv)
 		while (i<argc)
 			*pargv++ = argv[i++];
 		break;
-	}
-	if (index (arg, ':') != NULL) {
-	    displayname = arg;
-	    *pargc -= 1;
-	    continue;
 	}
 	*pargv++ = arg;
     }
