@@ -1,7 +1,7 @@
 /*
  * get_load - get system load
  *
- * $XConsortium: get_load.c,v 1.27 91/10/28 19:55:26 rws Exp $
+ * $XConsortium: get_load.c,v 1.28 91/10/30 15:59:29 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -716,7 +716,7 @@ void GetLoadPoint( w, closure, call_data )
         }
         else
         {
-                *loadavg = ((1.0 - cexp) * oldloadavg) ((rq / oc) * cexp);
+                *loadavg = ((1.0 - cexp) * oldloadavg) + ((rq / oc) * cexp);
         }
         oldloadavg = *loadavg;
 	}
