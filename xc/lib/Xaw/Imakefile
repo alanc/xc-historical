@@ -1,7 +1,10 @@
       CCOPTIONS = LibraryCCOptions
     STD_DEFINES = LibraryDefines
     CDEBUGFLAGS = LibraryCDebugFlags
-        DEFINES = -DSHAPE
+#if BuildXawBC
+   XAWBCDEFINES = -DXAW_BC
+#endif
+        DEFINES = -DSHAPE $(XAWBCDEFINES)
        INCLUDES = -I. -I$(TOOLKITSRC) -I$(TOP) -I$(TOP)/X11
    INSTALLFLAGS = $(INSTINCFLAGS)
        LINTLIBS = $(LINTXLIB) $(LINTXTOOL)
