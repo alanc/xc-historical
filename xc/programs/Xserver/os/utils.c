@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: utils.c,v 1.30 87/08/19 15:40:03 todd Exp $ */
+/* $Header: utils.c,v 1.30 87/08/26 23:57:36 toddb Locked $ */
 #include <stdio.h>
 #include <sys/time.h>
 #include "misc.h"
@@ -265,6 +265,7 @@ UseMsg()
  * expectations of malloc, but this makes lint happier.
  */
 
+#ifndef ibm032		/* IBM wants to use a debugging Xalloc */
 unsigned long * 
 Xalloc (amount)
     int amount;
@@ -310,6 +311,7 @@ int amount;
     char *realloc();
     char *foo;
 
+    amount = (amount + 3) & ~3;  
     if (ptr)
     {
         if (ptr < (pointer) minfree)
@@ -386,3 +388,4 @@ CheckNode(ptr)
 	FatalError("Heap bug!\n");
 }
 #endif /* DEBUG */
+#endif /* ibm032 */
