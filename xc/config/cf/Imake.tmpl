@@ -4,7 +4,7 @@
 
 /**/###########################################################################
 /**/# Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-/**/# $XConsortium: Imake.tmpl,v 1.5 89/01/17 16:00:40 jim Exp $
+/**/# $XConsortium: Imake.tmpl,v 1.6 89/01/17 17:38:16 jim Exp $
 /**/#
 /**/# Platform-specific parameters may be set in the appropriate .cf
 /**/# configuration files.  Site-wide parameters may be set in the file
@@ -226,8 +226,8 @@
 #ifndef ArCmd
 #define ArCmd                  ar clq
 #endif
-#ifndef BootstripCFlags
-#define BootstripCFlags        /**/
+#ifndef BootstrapCFlags
+#define BootstrapCFlags        /**/
 #endif
 #ifndef CcCmd
 #define CcCmd                  cc
@@ -323,7 +323,7 @@
               TOP = TOPDIR
 
                AR = ArCmd
-  BOOTSTRAPCFLAGS = BootstripCFlags	/* set if cpp doesn't have uniq sym */
+  BOOTSTRAPCFLAGS = BootstrapCFlags	/* set if cpp doesn't have uniq sym */
                CC = CcCmd
          COMPRESS = CompressCmd
               CPP = CppCmd
