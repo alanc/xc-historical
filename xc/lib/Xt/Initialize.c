@@ -1,7 +1,5 @@
-#ifndef lint
-static char Xrcsid[] = "$XConsortium: Initialize.c,v 1.155 89/12/12 18:56:39 swick Exp $";
+/* "$XConsortium: Initialize.c,v 1.156 90/04/04 11:28:01 swick Exp $"; */
 /* $oHeader: Initialize.c,v 1.7 88/08/31 16:33:39 asente Exp $ */
-#endif /* lint */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -43,6 +41,12 @@ SOFTWARE.
 #include "ShellP.h"
 #include "Quarks.h"
 
+#ifdef __STDC__
+#define Const const
+#else
+#define Const /**/
+#endif
+
 extern void _XtConvertInitialize();
 
 #if defined(SUNSHLIB) && defined(SHAREDCODE)
@@ -79,7 +83,7 @@ extern void _XtConvertInitialize();
  policy, which the toolkit avoids but I hate differing programs at this level.
 */
 
-static XrmOptionDescRec opTable[] = {
+static XrmOptionDescRec Const opTable[] = {
 {"+rv",		"*reverseVideo", XrmoptionNoArg,	(XtPointer) "off"},
 {"+synchronous","*synchronous",	XrmoptionNoArg,		(XtPointer) "off"},
 {"-background",	"*background",	XrmoptionSepArg,	(XtPointer) NULL},
