@@ -22,7 +22,7 @@
          APOLLO = ddx/apollo/libapollo.a
             APC = ddx/apollo/apc/libapc.a
             SUN = ddx/sun/libsun.a
-             HP = ddx/hp/hp/libhp.a
+             HP = ddx/hp/libhp.a
           MACII = ddx/macII/libmacII.a
             PLX = ddx/plx/libplx.a
          XAULIB = $(TOP)/lib/Xau/libXau.a
@@ -312,22 +312,14 @@ ServerTarget(Xplx,$(EXTDIR) $(FONTUTILDIR) $(PLXDIRS),$(PLXOBJS),$(PLXLIBS),$(PL
 #define need_dix
 #define need_ddx_snf
 #define need_ddx_mi
-#define need_ddx_hp_hp
-#define need_ddx_hp_cfb
-#define need_ddx_hp_mfb
-#define need_ddx_hp_topcat
+#define need_ddx_cfb
+#define need_ddx_mfb
+#define need_ddx_hp
 #define need_os_42bsd
 #define need_os_bsdemul
-HPDIRS = dix ddx/snf ddx/mi ddx/hp/hp ddx/hp/cfb ddx/hp/mfb \
-         ddx/hp/topcat os/4.2bsd os/bsdemul
-HPOBJS = ddx/hp/hp/init.o $(FONTUTIL)
-HPLIBS = $(DIX) $(HP) \
-          ddx/hp/topcat/libtopcat.a \
-          ddx/hp/hp/libcrtstub.a \
-	  $(HP) \
-          ddx/hp/cfb/libcfb.a \
-          ddx/hp/mfb/libmfb.a \
-          $(BSD) $(SNF) $(MI) $(EXTENSIONS) $(BSDEMUL)
+HPDIRS = dix ddx/mfb ddx/cfb ddx/snf ddx/mi ddx/hp os/4.2bsd os/bsdemul
+HPOBJS = ddx/hp/hpInit.o $(FONTUTIL)
+HPLIBS = $(DIX) $(HP) $(CFB) $(MFB) $(BSD) $(SNF) $(MI) $(EXTENSIONS) $(BSDEMUL)
 #if ServerMallocLib
 HPMALLOCLIB = -lmalloc
 #endif
@@ -534,25 +526,10 @@ ServerTarget(XmacII,$(EXTDIR) $(FONTUTILDIR) $(MACIIDIRS),$(MACIIOBJS),$(MACIILI
 #else
 #define dir_ddx_dec_cfbpmax /**/
 #endif
-#ifdef need_ddx_hp_cfb
-#define dir_ddx_hp_cfb ddx/hp/cfb
+#ifdef need_ddx_hp
+#define dir_ddx_hp ddx/hp
 #else
-#define dir_ddx_hp_cfb /**/
-#endif
-#ifdef need_ddx_hp_hp
-#define dir_ddx_hp_hp ddx/hp/hp
-#else
-#define dir_ddx_hp_hp /**/
-#endif
-#ifdef need_ddx_hp_mfb
-#define dir_ddx_hp_mfb ddx/hp/mfb
-#else
-#define dir_ddx_hp_mfb /**/
-#endif
-#ifdef need_ddx_hp_topcat
-#define dir_ddx_hp_topcat ddx/hp/topcat
-#else
-#define dir_ddx_hp_topcat /**/
+#define dir_ddx_hp /**/
 #endif
 #ifdef need_ddx_ibm
 #define dir_ddx_ibm ddx/ibm
@@ -579,7 +556,7 @@ OURDIX = dir_dix
 OURDDX = dir_ddx_snf dir_ddx_mfb dir_ddx_cfb dir_ddx_mi
 OUROS = dir_os_42bsd dir_os_bsdemul
 DECDDX = dir_ddx_dec_lk201 dir_ddx_dec_qdss dir_ddx_dec_qvss dir_ddx_dec_mfbpmax dir_ddx_dec_cfbpmax
-HPDDX = dir_ddx_hp_cfb dir_ddx_hp_hp dir_ddx_hp_mfb dir_ddx_hp_topcat
+HPDDX = dir_ddx_hp
 OTHERDDX = dir_ddx_apollo dir_ddx_ibm dir_ddx_macII dir_ddx_ndx dir_ddx_plx dir_ddx_sun
 
 SUBDIRS = $(OURDIX) $(OURDDX) $(OUROS) $(DECDDX) $(HPDDX) $(OTHERDDX)
@@ -590,8 +567,7 @@ SUBDIRS = $(OURDIX) $(OURDDX) $(OUROS) $(DECDDX) $(HPDDX) $(OTHERDDX)
                   ddx/apollo \
                   ddx/ibm \
 		  ddx/dec/mfbpmax ddx/dec/cfbpmax \
-                  ddx/hp/hp ddx/hp/cfb ddx/hp/mfb ddx/hp/topcat \
-                  ddx/ndx ddx/tek \
+                  ddx/hp ddx/ndx ddx/tek \
                   ddx/macII ddx/plx
       ALLOSDIRS = os/4.2bsd os/bsdemul
      ALLSUBDIRS = dix $(ALLDDXDIRS) $(ALLOSDIRS)
