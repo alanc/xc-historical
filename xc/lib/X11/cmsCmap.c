@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsCmap.c,v 1.10 91/05/26 19:55:01 rws Exp $" */
+/* $XConsortium: XcmsCmap.c,v 1.11 91/07/25 01:08:28 rws Exp $" */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -35,6 +35,7 @@
  */
 
 #define NEED_EVENTS
+#define NEED_REPLIES
 #include "Xlibint.h"
 #include "Xcmsint.h"
 #include "Xutil.h"
@@ -45,12 +46,6 @@
 XcmsCmapRec *_XcmsAddCmapRec();
 static void _XcmsFreeClientCmaps();
 
-/*
- *      LOCAL VARIABLES
- */
-static unsigned char CreateWindowStatus;
-
-
 
 /************************************************************************
  *									*
@@ -58,35 +53,6 @@ static unsigned char CreateWindowStatus;
  *									*
  ************************************************************************/
 
-/*
- *	NAME
- *		CreateWindowErrorHandler
- *
- *	SYNOPSIS
- */
-/* ARGSUSED */
-static int
-CreateWindowErrorHandler(dpy, errorp)
-    Display *dpy;
-    XErrorEvent *errorp;
-/*
- *	DESCRIPTION
- *		Error Hander used in CmapRecForColormap() to catch
- *		errors occuring when creating a window with a foreign
- *		colormap.
- *
- *	RETURNS
- *		1
- *
- */
-{
-    if (errorp->request_code == X_CreateWindow) {
-	CreateWindowStatus = errorp->error_code;
-    }
-    return(1);
-}	
-
-
 /*
  *	NAME
  *		CmapRecForColormap
@@ -114,9 +80,10 @@ CmapRecForColormap(dpy, cmap)
     XVisualInfo visualTemplate;	/* Template of the visual we want */
     XVisualInfo *visualList;	/* List for visuals that match */
     int nVisualsMatched;	/* Number of visuals that match */
-    XSetWindowAttributes windowAttr;
     Window tmpWindow;
-    int (*oldErrorHandler)();
+    Visual *vp;
+    _XInternalErrorHandler async;
+    _XInternalErrorState async_state;
 
     for (pRec = (XcmsCmapRec *)dpy->cms.clientCmaps; pRec != NULL;
 	    pRec = pRec->pNext) {
@@ -157,8 +124,7 @@ CmapRecForColormap(dpy, cmap)
      * rigorous process of finding this colormap:
      *        for each screen
      *            for each screen's visual types
-     *                create a window
-     *                attempt to set the window's colormap to cmap
+     *                create a window with cmap specified as the colormap
      *                if successful
      *                    Add a CmapRec
      *                    Create an XcmsCCC
@@ -167,16 +133,9 @@ CmapRecForColormap(dpy, cmap)
      *                    continue
      */
 
-    /*
-     * Before we start into this ugly process, let's sync up.
-     */
-    XSync(dpy, False);
-
-    /*
-     * Setup Temporary Error Handler
-     */
-    oldErrorHandler = XSetErrorHandler(CreateWindowErrorHandler);
-
+    async_state.error_code = 0; /* don't care */
+    async_state.major_opcode = X_CreateWindow;
+    async_state.minor_opcode = 0;
     for (i = 0; i < nScrn; i++) {
 	visualTemplate.screen = i;
 	visualList = XGetVisualInfo(dpy, VisualScreenMask, &visualTemplate,
@@ -185,58 +144,72 @@ CmapRecForColormap(dpy, cmap)
 	    continue;
 	}
 
-	j = 0;
-	windowAttr.colormap = cmap;
-
 	/*
-	 * Call routine that attempts to create a window with cmap
+	 * Attempt to create a window with cmap
 	 */
+	j = 0;
 	do {
-	    CreateWindowStatus = Success;
-	    tmpWindow = XCreateWindow(dpy, RootWindow(dpy, i),
-		    0, 0, 5, 5, 1,
-		    (visualList+j)->depth, 
-		    CopyFromParent,
-		    (visualList+j)->visual, 
-		    CWColormap,
-		    &windowAttr);
-	    XSync(dpy, False);
-	} while (CreateWindowStatus != Success && ++j < nVisualsMatched);
+	    vp = (visualList+j)->visual;
+	    LockDisplay(dpy);
+	    {
+		register xCreateWindowReq *req;
+
+		GetReq(CreateWindow, req);
+		async_state.min_sequence_number = dpy->request;
+		async_state.max_sequence_number = dpy->request;
+		async_state.error_count = 0;
+		async.next = dpy->async_handlers;
+		async.handler = _XAsyncErrorHandler;
+		async.data = (XPointer)&async_state;
+		dpy->async_handlers = &async;
+		req->parent = RootWindow(dpy, i);
+		req->x = 0;
+		req->y = 0;
+		req->width = 1;
+		req->height = 1;
+		req->borderWidth = 0;
+		req->depth = (visualList+j)->depth;
+		req->class = CopyFromParent;
+		req->visual = vp->visualid;
+		tmpWindow = req->wid = XAllocID(dpy);
+		req->mask = CWColormap;
+		req->length++;
+		Data32 (dpy, (long *) &cmap, 4);
+	    }
+	    {
+		xGetInputFocusReply rep;
+		register xReq *req;
+
+		GetEmptyReq(GetInputFocus, req);
+		(void) _XReply (dpy, (xReply *)&rep, 0, xTrue);
+	    }
+	    _XDeqErrorHandler(dpy, &async);
+	    UnlockDisplay(dpy);
+	    SyncHandle();
+	} while (async_state.error_count > 0 && ++j < nVisualsMatched);
+
+	Xfree((char *)visualList);
 
 	/*
 	 * if successful
 	 */
-	if (CreateWindowStatus == Success) {
-	    if ((pRec = _XcmsAddCmapRec(dpy, cmap, tmpWindow,
-		    (visualList+j)->visual)) == NULL) {
+	if (j < nVisualsMatched) {
+	    if ((pRec = _XcmsAddCmapRec(dpy, cmap, tmpWindow, vp)) == NULL)
 		return((XcmsCmapRec *)NULL);
-	    }
 	    pRec->ccc = XcmsCreateCCC(
 		    dpy,
 		    i,			/* screenNumber */
-		    (visualList+j)->visual,
+		    vp,
 		    (XcmsColor *)NULL,	/* clientWhitePt */
 		    (XcmsCompressionProc)NULL,  /* gamutCompProc */
 		    (XPointer)NULL,	/* gamutCompClientData */
 		    (XcmsWhiteAdjustProc)NULL,  /* whitePtAdjProc */
 		    (XPointer)NULL	/* whitePtAdjClientData */
 		    );
-	    XSetErrorHandler(oldErrorHandler);
 	    XDestroyWindow(dpy, tmpWindow);
-	    XFree((XPointer)visualList);
 	    return(pRec);
 	}
-
-	/*
-	 * Otherwise continue ....
-	 */
-	XFree((XPointer)visualList);
     }
-
-    /*
-     * Unsetup Temporary Error Handler
-     */
-    XSetErrorHandler(oldErrorHandler);
 
     return(NULL);
 }
@@ -377,7 +350,7 @@ _XcmsDeleteCmapRec(dpy, cmap)
 	    XcmsFreeCCC(pRec->ccc);
 	}
 	*pPrevPtr = pRec->pNext;
-	Xfree(pRec);
+	Xfree((char *)pRec);
     }
 }
 
@@ -412,7 +385,7 @@ _XcmsFreeClientCmaps(dpy)
 	    XcmsFreeCCC(pRecFree->ccc);
 	}
 	/* Now free the XcmsCmapRec structure */
-	Xfree(pRecFree);
+	Xfree((char *)pRecFree);
     }
     dpy->cms.clientCmaps = (XPointer)NULL;
 }
