@@ -20,7 +20,7 @@ XCOMM PROFITS, EVEN IF ADVISED OF THE POSSIBILITY THEREOF, AND REGARDLESS
 XCOMM OF WHETHER IN AN ACTION IN CONTRACT, TORT OR NEGLIGENCE, ARISING OUT
 XCOMM OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-XCOMM $XConsortium: Imakefile,v 1.16 93/09/20 10:15:51 kaleb Exp $
+XCOMM $XConsortium: Imakefile,v 1.1 94/02/04 11:54:21 mor Exp $
 
 XCOMM Having had to change the name once, I don't want it to be tough
 XCOMM the next time...
@@ -36,7 +36,7 @@ PACKAGEname=rstart
 
 #if	!defined(RshCmd)
 # if	SystemV
-#  if	hpux
+#  ifdef HPArchitecture
 #   define	RshCmd	remsh
 #  else
 #   define	RshCmd	rcmd
