@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: TMstate.c,v 1.69 89/04/24 15:06:15 swick Exp $";
+static char Xrcsid[] = "$XConsortium: TMstate.c,v 1.70 89/04/24 16:38:35 kit Exp $";
 /* $oHeader: TMstate.c,v 1.5 88/09/01 17:17:29 asente Exp $ */
 #endif lint
 /*LINTLIBRARY*/
@@ -44,16 +44,17 @@ SOFTWARE.
 #define STR_THRESHOLD 25
 #define STR_INCAMOUNT 100
 #define CHECK_STR_OVERFLOW \
-    if (str - *buf > *len - STR_THRESHOLD) {		\
-	String old = *buf;				\
-	*buf = XtRealloc(old, *len += STR_INCAMOUNT);	\
-	str = str - old + *buf;				\
+    if (str - *buf > *len - STR_THRESHOLD) {			  \
+	String old = *buf;					  \
+	*buf = XtRealloc(old, (Cardinal)(*len += STR_INCAMOUNT)); \
+	str = str - old + *buf;					  \
     }
 
 #define ExpandToFit(more) \
     if (str - *buf > *len - STR_THRESHOLD - strlen(more)) { 		\
 	String old = *buf;						\
-	*buf = XtRealloc(old, *len += STR_INCAMOUNT + strlen(more));	\
+	*buf = XtRealloc(old,						\
+		(Cardinal)(*len += STR_INCAMOUNT + strlen(more)));	\
 	str = str - old + *buf;						\
     }
 
@@ -923,7 +924,7 @@ void _XtInstallTranslations(widget, stateTable)
 void XtUninstallTranslations(widget)
     Widget widget;
 {
-    XtRemoveEventHandler(widget,~0L,TRUE,_XtTranslateEvent,
+    XtRemoveEventHandler(widget,(EventMask)~0L,TRUE,_XtTranslateEvent,
                      (caddr_t)&widget->core.tm);
     widget->core.tm.translations = NULL;
     if (widget->core.tm.proc_table != NULL)
@@ -1051,7 +1052,7 @@ void _XtBindActions(widget,tm,index)
     w = widget;
     if (stateTable == NULL) return;
     tm->proc_table= (XtBoundActions) XtCalloc(
-                      stateTable->numQuarks,sizeof(XtBoundActions));
+                      stateTable->numQuarks,(Cardinal)sizeof(XtBoundActions));
     do {
 /* ||| */
         class = w->core.widget_class;
@@ -1093,7 +1094,8 @@ void _XtBindAccActions(widget,stateTable,index,accBindings)
     w = widget;
     if (stateTable == NULL) return;
     accTemp = (XtBoundAccActions) XtCalloc(
-                      stateTable->accNumQuarks,sizeof(XtBoundAccActionRec));
+                      stateTable->accNumQuarks,
+		      (Cardinal)sizeof(XtBoundAccActionRec));
 do {
 /* ||| */
     class = w->core.widget_class;
@@ -1153,7 +1155,7 @@ void _XtInitializeStateTable(pStateTable)
     stateTable->clickTime = 200; /* ||| need some way of setting this !!! */
     stateTable->head = NULL;
     stateTable->quarkTable =
-        (XrmQuark *)XtCalloc(20,(unsigned)sizeof(XrmQuark));
+        (XrmQuark *)XtCalloc((Cardinal)20,(Cardinal)sizeof(XrmQuark));
     stateTable->quarkTblSize = 20;
     stateTable->numQuarks = 0;
     stateTable->accNumQuarks = 0;
@@ -1353,7 +1355,7 @@ static void MergeTables(old, new, override,accProcTbl)
 	return;
     }
 
-    indexMap = (Cardinal *)XtCalloc(new->eventTblSize, sizeof(Cardinal));
+    indexMap = (Cardinal *)XtCalloc(new->eventTblSize, (Cardinal)sizeof(Cardinal));
 
     for (i=0; i < new->numEvents; i++) {
 	register Cardinal j;
@@ -1377,7 +1379,7 @@ static void MergeTables(old, new, override,accProcTbl)
 	indexMap[i] = j;
     }
 /* merge quark tables */
-  quarkIndexMap = (Cardinal *)XtCalloc(new->quarkTblSize, sizeof(Cardinal));
+  quarkIndexMap = (Cardinal *)XtCalloc(new->quarkTblSize, (Cardinal)sizeof(Cardinal));
 
 
     for (i=0; i < new->numQuarks; i++) {
@@ -1401,7 +1403,7 @@ static void MergeTables(old, new, override,accProcTbl)
     }
 /* merge accelerator quark tables */
   accQuarkIndexMap = (Cardinal *)XtCalloc(
-      new->accQuarkTblSize, sizeof(Cardinal));
+      new->accQuarkTblSize, (Cardinal)sizeof(Cardinal));
     k = old->accNumQuarks;
 
     for (i=0,j=old->accNumQuarks; i < new->accNumQuarks; ) {
@@ -1420,7 +1422,7 @@ static void MergeTables(old, new, override,accProcTbl)
 
     if (old->accProcTbl == NULL) {
         old->accProcTbl = (XtBoundAccActionRec*)XtCalloc(
-            old->accQuarkTblSize,sizeof(XtBoundAccActionRec) );
+            old->accQuarkTblSize,(Cardinal)sizeof(XtBoundAccActionRec) );
     }
     else old->accProcTbl = (XtBoundAccActionRec*)XtRealloc(
         (char *)old->accProcTbl,
@@ -1603,7 +1605,7 @@ void XtInstallAccelerators(destination,source)
     XtAddCallback(source, XtNdestroyCallback,
         RemoveAccelerators,(caddr_t)destination->core.tm.translations);
     if (XtClass(source)->core_class.display_accelerator != NULL){
-	 char *buf = XtMalloc(100);
+	 char *buf = XtMalloc((Cardinal)100);
 	 int len = 100;
 	 String str = buf;
 	 int i;
@@ -1715,7 +1717,7 @@ static void TranslateTablePrint(translations)
 {
     register Cardinal i;
     int len = 1000;
-    char *buf = XtMalloc(1000);
+    char *buf = XtMalloc((Cardinal)1000);
 
     for (i = 0; i < translations->numEvents; i++) {
 	buf[0] = '\0';
@@ -1913,12 +1915,12 @@ ModToKeysymTable *_XtBuildModsToKeysymTable(dpy,pd)
     XModifierKeymap* modKeymap;
     KeyCode keycode;
 #define KeysymTableSize 16
-    pd->modKeysyms = (KeySym*)XtMalloc(KeysymTableSize*sizeof(KeySym));
+    pd->modKeysyms = (KeySym*)XtMalloc((Cardinal)KeysymTableSize*sizeof(KeySym));
     maxCount = KeysymTableSize;
     tempCount = 0;
 
 
-    table = (ModToKeysymTable*)XtMalloc(8*sizeof(ModToKeysymTable));
+    table = (ModToKeysymTable*)XtMalloc((Cardinal)8*sizeof(ModToKeysymTable));
 
     table[0].mask = ShiftMask;
     table[1].mask = LockMask;
