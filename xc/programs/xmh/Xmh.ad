@@ -1,49 +1,58 @@
-Xmh*Geometry:			508x750
-Xmh*Command.BorderWidth:	1
-Xmh*folders.MenuButton.BorderWidth:0
-Xmh*toc*cursor:			left_ptr
+Xmh*Geometry:				508x750
+Xmh*Command.BorderWidth:		1
+Xmh*MenuButton.BorderWidth:		1
+Xmh*toc*cursor:				left_ptr
 
-Xmh.*close.label:		Close Window
-Xmh*compose.label:		Compose Message
-Xmh*folderButtons.open.label:	Open Folder
-Xmh*folderButtons.openInNew.label:Open Folder in New Window
-Xmh*folderButtons.create.label:	Create Folder
-Xmh*folderButtons.delete.label:	Delete Folder
-Xmh*inc.label:			Incorporate New Mail
-Xmh*next.label:			View Next Message
-Xmh*prev.label:			View Previous
-Xmh*delete.label:		Delete
-Xmh*move.label:			Move
-Xmh*copy.label:			Copy
-Xmh*unmark.label:		UnMark
-Xmh*viewNew.label:		View In New
-Xmh*reply.label:		Reply
-Xmh*forward.label:		Forward
-Xmh*useAsComp.label:		Use as Composition
-Xmh*commit.label:		Commit Changes
-Xmh*print.label:		Print
-Xmh*pack.label:			Pack Folder
-Xmh*sort.label:			Sort Folder
-Xmh*rescan.label:		Rescan Folder
-Xmh*pick.label:			Pick
-Xmh*openSeq.label:		Open Sequence
-Xmh*addToSeq.label:		Add to Sequence
-Xmh*removeFromSeq.label:	Remove from Sequence
-Xmh*deleteSeq.label:		Delete Sequence
-Xmh*edit.label:			Edit Message
-Xmh*save.label:			Save Message
-Xmh*send.label:			Send
-Xmh*reset.label:		New Headers
+Xmh*menuBox.folderButton.Label:		Folder
+Xmh*menuBox.tocButton.Label:		Table of Contents
+Xmh*menuBox.messageButton.Label:	Message
+Xmh*menuBox.sequenceButton.Label:	Sequence
+Xmh*menuBox.viewButton.Label:		View
+Xmh*menuBox.optionButton.Label:		Options
+Xmh*SimpleMenu*LineMenuEntry.Height:	20
+
+Xmh.*close.Label:		Close Window
+Xmh*compose.Label:		Compose Message
+Xmh*open.Label:			Open Folder
+Xmh*openInNew.Label:		Open Folder in New Window
+Xmh*create.Label:		Create Folder
+Xmh*folderMenu*delete.Label:	Delete Folder
+Xmh*inc.Label:			Incorporate New Mail
+Xmh*next.Label:			View Next Message
+Xmh*prev.Label:			View Previous
+Xmh*delete.Label:		Delete
+Xmh*move.Label:			Move
+Xmh*copy.Label:			Copy
+Xmh*unmark.Label:		UnMark
+Xmh*viewNew.Label:		View In New
+Xmh*reply.Label:		Reply
+Xmh*forward.Label:		Forward
+Xmh*useAsComp.Label:		Use as Composition
+Xmh*commit.Label:		Commit Changes
+Xmh*print.Label:		Print
+Xmh*pack.Label:			Pack Folder
+Xmh*sort.Label:			Sort Folder
+Xmh*rescan.Label:		Rescan Folder
+Xmh*pick.Label:			Pick
+Xmh*openSeq.Label:		Open Sequence
+Xmh*addToSeq.Label:		Add to Sequence
+Xmh*removeFromSeq.Label:	Remove from Sequence
+Xmh*deleteSeq.Label:		Delete Sequence
+Xmh*edit.Label:			Edit Message
+Xmh*save.Label:			Save Message
+Xmh*send.Label:			Send
+Xmh*reset.Label:		New Headers
+Xmh*optionMenu*reverse.Label:	Read in Reverse
 
 Xmh.notice.Dialog.Text.BorderWidth: 0
 Xmh.notice.Dialog.Text.TextSink.Font: -*-courier-bold-r-*--*-120-*-*-*-*-iso8859-1
-Xmh.notice.Dialog.confirm.label:Acknowledged
+Xmh.notice.Dialog.confirm.Label:Acknowledged
 Xmh.notice.BorderWidth:		2
-Xmh.confirm.Dialog.yes.label:	Yes
-Xmh.confirm.Dialog.no.label:	No
-Xmh.prompt.Dialog.okay.label:	Okay
-Xmh.prompt.Dialog.cancel.label:	Cancel
-Xmh.error.Dialog.OK.label:	Acknowledged
+Xmh.confirm.Dialog.yes.Label:	Yes
+Xmh.confirm.Dialog.no.Label:	No
+Xmh.prompt.Dialog.okay.Label:	Okay
+Xmh.prompt.Dialog.cancel.Label:	Cancel
+Xmh.error.Dialog.OK.Label:	Acknowledged
 
 Xmh*toc.rightMargin:		0
 Xmh*toc.scrollVertical:		WhenNeeded
@@ -54,40 +63,37 @@ Xmh*comp.scrollVertical:	Always
 Xmh*comp.scrollHorizontal:	WhenNeeded
 Xmh*comp.autoFill:		True
 
-Xmh*folders*MenuButton.translations:#override\
+Xmh*folders*MenuButton.Translations:#override\n\
         <BtnDown>:     set()XmhPopupFolderMenu()\n\
         <Btn2Up>:      XmhSetCurrentFolder()reset()XmhOpenFolderFromMenu()\n\
+	<Btn3Up>:      XmhPushFolder()XmhSetCurrentFolder()XmhMarkMove()XmhPopFolder()reset()\n\
         <BtnUp>:       XmhSetCurrentFolder()reset()\n\
         <LeaveWindow>: reset()XmhLeaveFolderButton()\n
 
-Xmh*folders*SimpleMenu.translations:#override\
-        <Btn2Up>: notify()MenuPopdown()unhighlight()XmhOpenFolderFromMenu()\n\
-        <BtnUp>:  notify()MenuPopdown()unhighlight()\n
+Xmh*folders*SimpleMenu.Translations:#override\n\
+        <Btn2Up>: notify()XtMenuPopdown()unhighlight()XmhOpenFolderFromMenu()\n\
+	<Btn3Up>: XmhPushFolder()notify()XmhMarkMove()XmhPopFolder()XtMenuPopdown()unhighlight()\n\
+        <BtnUp>:  notify()XtMenuPopdown()unhighlight()\n
 
-Xmh*seqButtons.Toggle.translations:#override\
-	<Btn2Down>,<Btn2Up>:	set()notify()XmhOpenSequence()\n
-
-Xmh*toc.Translations: #override\
+Xmh*toc.Translations: #override\n\
 	<Btn2Down>: select-start()\n\
 	<Btn2Up>:select-end()XmhViewNextMessage()\n
 
-Xmh*toc.accelerators: #override\n\
+Xmh*toc.Accelerators: #override\n\
 	:Ctrl<Key>V:	next-page()\n\
 	:Meta<Key>V:	previous-page()\n
+Xmh*view.Accelerators: #override\n\
+	:Ctrl<Key>v:	next-page()\n\
+	:Meta<Key>v:	previous-page()\n
 
-Xmh*tocButtons.tocOps.label:		Table of Contents
-Xmh*tocButtons.msgOps.label:		Current Message(s)
-Xmh*tocButtons.sequenceOps.label:	Sequences
-Xmh*tocButtons.viewedMsgOps.label:	Viewed Message
-
-Xmh*tocButtons.tocOps.menu.accelerators: #override\n\
-	:Meta<Key>I:	XmhIncorporateNewMail()\n\
+Xmh*tocMenu.Accelerators: #override\n\
+	:Meta<Key>I:	XmhIncorporateNewMail()XmhViewNextMessage()\n\
 	:Meta<Key>C: 	XmhCommitChanges()\n\
 	:Meta<Key>R:	XmhForceRescan()\n\
-	:Meta<Key>P:	XmhPack()\n\
-	:Meta<Key>S:	XmhSort()\n
+	:Meta<Key>P:	XmhPackFolder()\n\
+	:Meta<Key>S:	XmhSortFolder()\n
 
-Xmh*tocButtons.msgOps.menu.accelerators: #override\n\
+Xmh*messageMenu.Accelerators: #override\n\
 	 Meta<Key>space: XmhViewNextMessage()\n\
 	:Meta<Key>c:	XmhMarkCopy()\n\
 	:Meta<Key>d:	XmhMarkDelete()\n\
@@ -98,47 +104,30 @@ Xmh*tocButtons.msgOps.menu.accelerators: #override\n\
 	:Meta<Key>r:	XmhReply()\n\
 	:Meta<Key>u:	XmhUnmark()\n
 
-Xmh*view.accelerators: #override\n\
-	:Ctrl<Key>v:	next-page()\n\
-	:Meta<Key>v:	previous-page()\n
-
-Xmh*folderButtons.close.translations:#override\
-	<Btn1Down>,<Btn1Up>:	XmhClose()unset()\n
-Xmh*folderButtons.compose.translations:#override\
-	<Btn1Down>,<Btn1Up>:	XmhComposeMessage()unset()\n
-Xmh*folderButtons.open.translations:#override\
-	<Btn1Down>,<Btn1Up>:	XmhOpenFolder()unset()\n
-Xmh*folderButtons.openInNew.translations:#override\
-	<Btn1Down>,<Btn1Up>:	XmhOpenFolderInNewWindow()unset()\n
-Xmh*folderButtons.create.translations:#override\
-	<Btn1Down>,<Btn1Up>:	XmhCreateFolder()unset()\n
-Xmh*folderButtons.delete.translations: #override\
-	<Btn1Down>,<Btn1Up>:	XmhDeleteFolder()unset()\n
-
-Xmh*viewButtons.close.translations:#override\
+Xmh*viewButtons.close.Translations:#override\n\
 	<Btn1Down>,<Btn1Up>:	XmhCloseView()unset()\n
-Xmh*viewButtons.reply.translations:#override\
+Xmh*viewButtons.reply.Translations:#override\n\
 	<Btn1Down>,<Btn1Up>:	XmhViewReply()unset()\n
-Xmh*viewButtons.forward.translations:#override\
+Xmh*viewButtons.forward.Translations:#override\n\
 	<Btn1Down>,<Btn1Up>:	XmhViewForward()unset()\n
-Xmh*viewButtons.useAsComp.translations:#override\
+Xmh*viewButtons.useAsComp.Translations:#override\n\
 	<Btn1Down>,<Btn1Up>:	XmhViewUseAsComposition()unset()\n
-Xmh*viewButtons.edit.translations:#override\
+Xmh*viewButtons.edit.Translations:#override\n\
 	<Btn1Down>,<Btn1Up>:	XmhEditView()unset()\n
-Xmh*viewButtons.save.translations:#override\
+Xmh*viewButtons.save.Translations:#override\n\
 	<Btn1Down>,<Btn1Up>:	XmhSaveView()unset()\n
-Xmh*viewButtons.print.translations:#override\
+Xmh*viewButtons.print.Translations:#override\n\
 	<Btn1Down>,<Btn1Up>:	XmhPrintView()unset()\n
 
-Xmh*compButtons.close.translations:#override\
+Xmh*compButtons.close.Translations:#override\n\
 	<Btn1Down>,<Btn1Up>:	XmhCloseView()unset()\n
-Xmh*compButtons.send.translations:#override\
+Xmh*compButtons.send.Translations:#override\n\
 	<Btn1Down>,<Btn1Up>:	XmhSend()unset()\n
-Xmh*compButtons.reset.translations:#override\
+Xmh*compButtons.reset.Translations:#override\n\
 	<Btn1Down>,<Btn1Up>:	XmhResetCompose()unset()\n
-Xmh*compButtons.compose.translations:#override\
+Xmh*compButtons.compose.Translations:#override\n\
 	<Btn1Down>,<Btn1Up>:	XmhComposeMessage()unset()\n
-Xmh*compButtons.save.translations:#override\
+Xmh*compButtons.save.Translations:#override\n\
 	<Btn1Down>,<Btn1Up>:	XmhSave()unset()\n
-Xmh*compButtons.insert.translations:#override\
+Xmh*compButtons.insert.Translations:#override\n\
 	<Btn1Down>,<Btn1Up>:	XmhInsert()unset()\n
