@@ -1,4 +1,4 @@
-/* "$XConsortium: TMstate.c,v 1.101 90/06/15 18:50:34 rws Exp $"; */
+/* "$XConsortium: TMstate.c,v 1.104 90/07/02 10:47:42 swick Exp $"; */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -1874,32 +1874,30 @@ static void MergeAccProcTbls (mergedT, oldT, newT)
     XtTranslations oldT;
     XtTranslations newT;
 {
-    StateTablePtr merged = (*mergedT)->stateTable;
-    StateTablePtr old = NULL;
-    StateTablePtr new = NULL;
-    int i, k;
+    StateTablePtr stateTable = (*mergedT)->stateTable;
+    XtBoundAccActions accProcTbl;
+    int i;
 
     if (oldT == NULL && newT == NULL) return;
-    if (merged->accQuarkTblSize == 0) return;
-    if (oldT)
-	old = oldT->stateTable;
-    if (newT)
-	new = newT->stateTable;
+    if (stateTable->accNumQuarks == 0) return;
     *mergedT = (XtTranslations)XtMalloc(
-             (merged->accNumQuarks * (Cardinal)sizeof(XtBoundAccActionRec))
-              + sizeof(TranslationData));
-    (*mergedT)->stateTable = merged;
-    (*mergedT)->accProcTbl = (XtBoundAccActions)(*mergedT + 1);
-    k = 0;
-    if (old)
-        for (i=0; i<old->accNumQuarks;){
-            (*mergedT)->accProcTbl[k].widget = oldT->accProcTbl[i].widget;
-            (*mergedT)->accProcTbl[k++].proc = oldT->accProcTbl[i++].proc;
+	     (stateTable->accNumQuarks * (Cardinal)sizeof(XtBoundAccActionRec))
+	      + sizeof(TranslationData));
+    (*mergedT)->stateTable = stateTable;
+    (*mergedT)->accProcTbl = accProcTbl = (XtBoundAccActions)(*mergedT + 1);
+    if (oldT) {
+	XtBoundAccActions opt = oldT->accProcTbl;
+	for (i = oldT->stateTable->accNumQuarks; i; i--){
+	    accProcTbl	 ->widget = opt	  ->widget;
+	    accProcTbl++ ->proc	  = opt++ ->proc;
+	}
     }
-    if (new)
-        for (i=0; i<new->accNumQuarks;){
-            (*mergedT)->accProcTbl[k].widget = newT->accProcTbl[i].widget;
-            (*mergedT)->accProcTbl[k++].proc = newT->accProcTbl[i++].proc;
+    if (newT) {
+	XtBoundAccActions npt = newT->accProcTbl;
+	for (i = newT->stateTable->accNumQuarks; i; i--){
+	    accProcTbl	 ->widget = npt	  ->widget;
+	    accProcTbl++ ->proc	  = npt++ ->proc;
+	}
     }
 }    
 
@@ -1948,7 +1946,7 @@ Widget acceleratorSource; /* Non-NULL if new_translations are an unbound
      *  bind it now
      */
     if (acceleratorSource && new_translations) {
-        new_translations =
+	new_translations =
 	    _XtBindAccActions( acceleratorSource, new_translations );
 	free_bound_translations = TRUE;
     }
