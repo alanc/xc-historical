@@ -6,7 +6,8 @@ EXPORTS = \
 	Xproto.h \
 	Xprotostr.h \
 	copyright.h \
-	keysym.h
+	keysym.h \
+	keysymdef.h
 
 IMPORTS = \
 	$(OLDXMENUSRC)/XMenu.h \
