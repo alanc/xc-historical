@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: main.c,v 1.81 88/09/06 14:12:02 jim Exp $";
+static char rcs_id[] = "$XConsortium: main.c,v 1.82 88/09/06 17:08:07 jim Exp $";
 #endif	/* lint */
 
 /*
@@ -192,6 +192,7 @@ static struct _resource {
     char *icon_geometry;
     char *title;
     char *icon_name;
+    char *term_name;
     Boolean utmpInhibit;
     Boolean sunFunctionKeys;	/* %%% should be widget resource? */
 } resource;
@@ -215,6 +216,8 @@ static XtResource application_resources[] = {
 	offset(title), XtRString, (caddr_t) NULL},
     {XtNiconName, XtCIconName, XtRString, sizeof(char *),
 	offset(icon_name), XtRString, (caddr_t) NULL},
+    {"termName", "TermName", XtRString, sizeof(char *),
+	offset(term_name), XtRString, (caddr_t) NULL},
     {"utmpInhibit", "UtmpInhibit", XtRBoolean, sizeof (Boolean),
 	offset(utmpInhibit), XtRString, "false"},
     {"sunFunctionKeys", "SunFunctionKeys", XtRBoolean, sizeof (Boolean),
@@ -269,6 +272,7 @@ static XrmOptionDescRec optionDescList[] = {
 {"-sl",		"*saveLines",	XrmoptionSepArg,	(caddr_t) NULL},
 {"-t",		"*tekStartup",	XrmoptionNoArg,		(caddr_t) "on"},
 {"+t",		"*tekStartup",	XrmoptionNoArg,		(caddr_t) "off"},
+{"-tn",		"*termName",	XrmoptionSepArg,	(caddr_t) NULL},
 {"-ut",		"*utmpInhibit",	XrmoptionNoArg,		(caddr_t) "on"},
 {"+ut",		"*utmpInhibit",	XrmoptionNoArg,		(caddr_t) "off"},
 {"-vb",		"*visualBell",	XrmoptionNoArg,		(caddr_t) "on"},
@@ -328,6 +332,7 @@ static struct _options {
 { "-/+sk",                 "turn on/off scroll-on-keypress" },
 { "-sl number",            "number of scrolled lines to save" },
 { "-/+t",                  "turn on/off Tek emulation window" },
+{ "-tn name",              "TERM environment variable name" },
 { "-/+ut",                 "turn on/off utmp inhibit" },
 { "-/+vb",                 "turn on/off visual bell" },
 { "-e command args",       "command to execute" },
@@ -1149,7 +1154,19 @@ spawn ()
 		envnew = vtterm;
 		ptr = termcap;
 	}
-	while (*envnew != NULL) {
+	TermName = NULL;
+	if (resource.term_name) {
+	    if (tgetent (ptr, resource.term_name) == 1) {
+		TermName = resource.term_name;
+		if (!screen->TekEmu)
+		    resize (screen, TermName, termcap, newtc);
+	    } else {
+		fprintf (stderr, "%s:  invalid termcap entry \"%s\".\n",
+			 ProgramName, resource.term_name);
+	    }
+	}
+	if (!TermName) {
+	    while (*envnew != NULL) {
 		if(tgetent(ptr, *envnew) == 1) {
 			TermName = *envnew;
 			if(!screen->TekEmu)
@@ -1157,11 +1174,12 @@ spawn ()
 			break;
 		}
 		envnew++;
-	}
-	if (TermName == NULL) {
-	    fprintf (stderr, "%s:  unable to find usable termcap entry.\n",
-		     ProgramName);
-	    Exit (1);
+	    }
+	    if (TermName == NULL) {
+		fprintf (stderr, "%s:  unable to find usable termcap entry.\n",
+			 ProgramName);
+		Exit (1);
+	    }
 	}
 
 #ifdef sun
