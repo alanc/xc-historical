@@ -1,4 +1,4 @@
-/* $XConsortium: SM.h,v 1.2 93/09/22 11:25:08 mor Exp $ */
+/* $XConsortium: SM.h,v 1.3 93/12/07 11:05:23 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -58,17 +58,18 @@ Author: Ralph Mor, X Consortium
  * Property names
  */
 
-#define SmProgram		"Program"
-#define SmUserID		"UserID"
-#define SmRestartCommand	"RestartCommand"
-#define SmCurrentDirectory	"CurrentDirectory"
-#define SmEnvironment		"Environment"
-#define SmKillCommand		"KillCommand"
-#define SmRestartStyleHint	"RestartStyleHint"
-#define SmDiscardCommand	"DiscardCommand"
-#define SmOperatingSystemName	"OperatingSystemName"
 #define SmCloneCommand		"CloneCommand"
+#define SmCurrentDirectory	"CurrentDirectory"
+#define SmDiscardCommand	"DiscardCommand"
+#define SmEnvironment		"Environment"
+#define SmOperatingSystemName	"OperatingSystemName"
 #define SmProcessID		"ProcessID"
+#define SmProgram		"Program"
+#define SmRestartCommand	"RestartCommand"
+#define SmResignCommand		"ResignCommand"
+#define SmRestartStyleHint	"RestartStyleHint"
+#define SmShutdownCommand	"ShutdownCommand"
+#define SmUserID		"UserID"
 
 
 /*
@@ -76,7 +77,8 @@ Author: Ralph Mor, X Consortium
  */
 
 #define SmARRAY8		"ARRAY8"
-#define SmCard8			"Card8"
+#define SmLISTofARRAY8		"LISTofARRAY8"
+#define SmCARD8			"CARD8"
 
 
 /*
@@ -87,15 +89,17 @@ Author: Ralph Mor, X Consortium
 #define SM_RegisterClient 	1
 #define SM_RegisterClientReply 	2
 #define SM_SaveYourself 	3
-#define SM_InteractRequest 	4
-#define SM_Interact 		5
-#define SM_InteractDone 	6
-#define SM_SaveYourselfDone 	7
-#define SM_Die 			8
-#define SM_ShutdownCancelled	9
-#define SM_CloseConnection 	10
-#define SM_SetProperties 	11
-#define SM_GetProperties 	12
-#define SM_PropertiesReply 	13
+#define SM_SaveYourselfRequest 	4
+#define SM_InteractRequest 	5
+#define SM_Interact 		6
+#define SM_InteractDone 	7
+#define SM_SaveYourselfDone 	8
+#define SM_Die 			9
+#define SM_ShutdownCancelled	10
+#define SM_CloseConnection 	11
+#define SM_SetProperties 	12
+#define SM_DeleteProperties 	13
+#define SM_GetProperties 	14
+#define SM_PropertiesReply 	15
 
 #endif /* SM_H */
