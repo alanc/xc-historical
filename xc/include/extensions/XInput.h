@@ -1,4 +1,4 @@
-/* $XConsortium: XInput.h,v 1.2 89/11/07 19:25:24 rws Exp $ */
+/* $XConsortium: XInput.h,v 1.3 89/11/08 17:28:28 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -98,6 +98,32 @@ SOFTWARE.
 #define ChangeDeviceNotify(d, type, class) \
     FindTypeAndClass(d, type, class, OtherClass, _changeDeviceNotify)
 
+#define DevicePointerMotionHint(d, type, class) \
+    { class =  ((XDevice *) d)->device_id << 8 | _devicePointerMotionHint;}
+
+#define DeviceButton1Motion(d, type, class) \
+    { class =  ((XDevice *) d)->device_id << 8 | _deviceButton1Motion;}
+
+#define DeviceButton2Motion(d, type, class) \
+    { class =  ((XDevice *) d)->device_id << 8 | _deviceButton2Motion;}
+
+#define DeviceButton3Motion(d, type, class) \
+    { class =  ((XDevice *) d)->device_id << 8 | _deviceButton3Motion;}
+
+#define DeviceButton4Motion(d, type, class) \
+    { class =  ((XDevice *) d)->device_id << 8 | _deviceButton4Motion;}
+
+#define DeviceButton5Motion(d, type, class) \
+    { class =  ((XDevice *) d)->device_id << 8 | _deviceButton5Motion;}
+
+#define DeviceButtonMotion(d, type, class) \
+    { class =  ((XDevice *) d)->device_id << 8 | _deviceButtonMotion;}
+
+#define DeviceOwnerGrabButton(d, type, class) \
+    { class =  ((XDevice *) d)->device_id << 8 | _deviceOwnerGrabButton;}
+
+#define DeviceButtonPressGrab(d, type, class) \
+    { class =  ((XDevice *) d)->device_id << 8 | _deviceButtonGrab;}
 
 /***************************************************************
  *
