@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: TMstate.c,v 1.73 89/06/16 19:35:36 jim Exp $";
+static char Xrcsid[] = "$XConsortium: TMstate.c,v 1.74 89/07/21 12:02:35 swick Exp $";
 /* $oHeader: TMstate.c,v 1.5 88/09/01 17:17:29 asente Exp $ */
 #endif /* lint */
 /*LINTLIBRARY*/
@@ -1542,11 +1542,11 @@ void XtOverrideTranslations(widget, new)
 
     if (XtIsRealized(widget)) {
             XtUninstallTranslations((Widget)widget);
-           ((WindowObj)widget)->win_obj.tm.translations = newTable;
-           _XtBindActions(widget,&((WindowObj)widget)->win_obj.tm,0);
-           _XtInstallTranslations((Widget)widget,newTable);
+           widget->core.tm.translations = newTable;
+           _XtBindActions(widget,&widget->core.tm,0);
+           _XtInstallTranslations(widget,newTable);
     }
-    else ((WindowObj)widget)->win_obj.tm.translations = newTable;
+    else widget->core.tm.translations = newTable;
 
     if (cache_ref != NULL) {
 	XtAddCallback( widget, XtNdestroyCallback,
@@ -1632,7 +1632,7 @@ void XtInstallAccelerators(destination,source)
     Widget destination,source;
 {
     XtBoundAccActions accBindings;
-    if ((!XtIsWindowObject(source)) ||
+    if ((!XtIsWidget(source)) ||
         source->core.accelerators == NULL) return;
 /*    if (source->core.accelerators->accProcTbl == NULL)
  *  %%%
@@ -1702,7 +1702,7 @@ void XtInstallAllAccelerators(destination,source)
     }
 
     /* Recurse down popup children */
-    if (XtIsWindowObject(source)) {
+    if (XtIsWidget(source)) {
         for (i = 0; i < source->core.num_popups; i++) {
             XtInstallAllAccelerators(destination,source->core.popup_list[i]);
         }
@@ -1733,11 +1733,11 @@ void XtAugmentTranslations(widget, new)
 
     if (XtIsRealized(widget)) {
         XtUninstallTranslations((Widget)widget);
-        ((WindowObj)widget)->win_obj.tm.translations = newTable;
-        _XtBindActions(widget,&((WindowObj)widget)->win_obj.tm,0);
-        _XtInstallTranslations((Widget)widget,newTable);
+        widget->core.tm.translations = newTable;
+        _XtBindActions(widget,&widget->core.tm,0);
+        _XtInstallTranslations(widget,newTable);
     }
-    else ((WindowObj)widget)->win_obj.tm.translations = newTable;
+    else widget->core.tm.translations = newTable;
 
     if (cache_ref != NULL) {
 	XtAddCallback( widget, XtNdestroyCallback,

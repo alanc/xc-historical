@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Destroy.c,v 1.17 88/09/20 17:48:19 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Destroy.c,v 1.18 89/06/16 19:34:22 jim Exp $";
 /* $oHeader: Destroy.c,v 1.3 88/09/01 11:27:27 asente Exp $ */
 #endif /* lint */
 
@@ -42,15 +42,10 @@ static void Recursive(widget, proc)
 	for (i = 0; i < cwp->num_children; i++) {
 	    Recursive(cwp->children[i], proc);
 	}
-    } else if (XtIsCompositeObject(widget)) {
-	cwp = &(((CompositeObject) widget)->composite);
-	for (i = 0; i < cwp->num_children; i++) {
-	    Recursive(cwp->children[i], proc);
-	}
     }
 
     /* Recurse down popup children */
-    if (XtIsWindowObject(widget)) {
+    if (XtIsWidget(widget)) {
 	for (i = 0; i < widget->core.num_popups; i++) {
 	    Recursive(widget->core.popup_list[i], proc);
 	}
@@ -111,34 +106,30 @@ static void XtPhase2Destroy (widget, closure, call_data)
 {
     Display	    *display;
     Window	    window ;
-    XtWidgetProc    delete_child;
     Widget          parent;
 
     parent = widget->core.parent;
     window = 0;
 
-    if (parent != NULL
-	    && (XtIsComposite(parent) || XtIsCompositeObject(parent))) {
-        if (XtIsRectObject(widget)) {
+    if (parent != NULL && XtIsComposite(parent)) {
+	XtWidgetProc delete_child =
+	    ((CompositeWidgetClass) parent->core.widget_class)->
+		composite_class.delete_child;
+        if (XtIsRectObj(widget)) {
        	    XtUnmanageChild(widget);
         }
-        if (XtIsComposite(parent)) {
-           delete_child = ((CompositeWidgetClass) parent->core.widget_class)->
-            composite_class.delete_child;
-        } else { /* XtIsCompositeObject */
-	    delete_child = ((CompositeObjectClass) parent->core.widget_class)->
-		composite_class.delete_child;
-        };
 	if (delete_child == NULL) {
+	    String param = parent->core.widget_class->core_class.class_name;
+	    Cardinal num_params = 1;
 	    XtAppWarningMsg(XtWidgetToApplicationContext(widget),
 		"invalidProcedure","deleteChild","XtToolkitError",
-		"null delete_child procedure in XtDestroy",
-		(String *)NULL, (Cardinal *)NULL);
+		"null delete_child procedure for class %s in XtDestroy",
+		&param, &num_params);
 	} else {
 	    (*delete_child) (widget);
 	}
     }
-    if (XtIsWindowObject(widget)) {
+    if (XtIsWidget(widget)) {
 	display = XtDisplay(widget); /* widget is freed in Phase2Destroy */
         window = widget->core.window;
     }

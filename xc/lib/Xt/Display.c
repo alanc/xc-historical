@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Display.c,v 1.21 89/07/21 12:06:11 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Display.c,v 1.22 89/07/21 17:08:42 swick Exp $";
 /* $oHeader: Display.c,v 1.9 88/09/01 11:28:47 asente Exp $ */
 #endif /*lint*/
 
@@ -496,7 +496,7 @@ void _XtCloseDisplays()
 XtAppContext XtWidgetToApplicationContext(w)
 	Widget w;
 {
-	while (w != NULL && !XtIsWindowObject(w)) w = XtParent(w);
+	while (w != NULL && !XtIsWidget(w)) w = XtParent(w);
 	if (w == NULL) {
 	    XtErrorMsg("noAppContext", "widgetToApplicationContext",
 		    "XtToolkitError",

@@ -1,5 +1,5 @@
 /*
-* $XConsortium: IntrinsicI.h,v 1.30 89/09/07 17:45:08 swick Exp $
+* $XConsortium: IntrinsicI.h,v 1.31 89/09/08 17:36:21 swick Exp $
 * $oHeader: IntrinsicI.h,v 1.5 88/08/31 16:21:08 asente Exp $
 */
 
@@ -34,16 +34,8 @@ SOFTWARE.
 
 #include "Object.h"
 #include "RectObj.h"
-#include "WindowObj.h"
-#include "CompObj.h"
 #include "ObjectP.h"
 #include "RectObjP.h"
-#include "WindowObjP.h"
-#include "CompObjP.h"
-
-#define XtIsCompositeObject(widget) XtIsSubclass(widget, (WidgetClass) compositeObjectClass)
-#define XtIsWindowObject(widget)    XtIsSubclass(widget, (WidgetClass) windowObjClass)
-#define XtIsRectObject(widget)      XtIsSubclass(widget, (WidgetClass) rectObjClass)
 
 #include "TranslateI.h"
 #include "CallbackI.h"
@@ -62,9 +54,6 @@ SOFTWARE.
 extern void bcopy();
 extern void bzero();
 extern int bcmp();
-
-extern int XtUnspecifiedPixmap;
-
 
 /* If the alignment characteristics of your machine are right, these may be
    faster */

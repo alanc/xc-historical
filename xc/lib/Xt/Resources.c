@@ -1,6 +1,6 @@
 #ifndef lint
 static char Xrcsid[] =
-    "$XConsortium: Resources.c,v 1.3 89/07/20 14:38:00 swick Exp $";
+    "$XConsortium: Resources.c,v 1.61 89/07/21 12:06:45 swick Exp $";
 /* $oHeader: Resources.c,v 1.6 88/09/01 13:39:14 asente Exp $ */
 #endif /*lint*/
 /*LINTLIBRARY*/
@@ -470,7 +470,7 @@ static XtCacheRef *GetResources(widget, base, names, classes,
     bzero((char *) found, (int) (num_resources * sizeof(Boolean)));
 
     /* Get display */
-    if (XtIsWindowObject(widget))
+    if (XtIsWidget(widget))
 	dpy = XtDisplay(widget);
     else dpy = XtDisplay(widget->core.parent);
     
@@ -1062,7 +1062,7 @@ void XtSetValues(w, args, num_args)
 	redisplay |= CallConstraintSetValues(cwc, oldw, reqw, w);
     }
 
-    if (XtIsRectObject(w)) {
+    if (XtIsRectObj(w)) {
 	/* Now perform geometry request if needed */
 	geoReq.request_mode = 0;
 	if (oldw->core.x      != w->core.x)	    geoReq.request_mode |= CWX;
@@ -1123,7 +1123,7 @@ void XtSetValues(w, args, num_args)
 	    (*(wc->core_class.resize))(w);
 	}
 	/* Redisplay if needed */
-        if (XtIsWindowObject(w)) {
+        if (XtIsWidget(w)) {
             /* widgets can distinguish between redisplay and resize, since
              the server will cause an expose on resize */
             if (redisplay && XtIsRealized(w))
@@ -1132,7 +1132,7 @@ void XtSetValues(w, args, num_args)
         if ((redisplay || resize) && XtIsManaged (w)) {
             Widget pw = w;
             RectObj r = (RectObj) oldw;
-            while ((pw!=NULL) && ( ! XtIsWindowObject(pw) ))
+            while ((pw!=NULL) && ( ! XtIsWidget(pw) ))
                 pw = pw->core.parent;
             if ((pw!=NULL) && XtIsRealized (pw)) {
                 int bw2 = r->rectangle.border_width << 1;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Manage.c,v 1.17 89/06/02 10:05:13 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Manage.c,v 1.18 89/06/16 19:34:53 jim Exp $";
 /* $oHeader: Manage.c,v 1.3 88/09/01 11:41:51 asente Exp $ */
 #endif /* lint */
 
@@ -53,14 +53,6 @@ void XtUnmanageChildren(children, num_children)
         change_managed = ((CompositeWidgetClass) parent->core.widget_class)
 		    ->composite_class.change_managed;
 	parent_realized = XtIsRealized(parent);
-
-    } else if (XtIsCompositeObject((Widget) parent)) {
-	Widget  t = parent->core.parent;
-        change_managed = ((CompositeObjectClass) parent->core.widget_class)
-		    ->composite_class.change_managed;
-	/* This is somewhat bogus, as assumes obj realized if parent widget is*/
-	while (t != NULL && ! XtIsWindowObject(t)) t = t->core.parent;
-	parent_realized = XtIsRealized(t);
     }
 
     num_unique_children = 0;
@@ -81,22 +73,22 @@ void XtUnmanageChildren(children, num_children)
         if (child->core.managed) {
             num_unique_children++;
 	    child->core.managed = FALSE;
-            if (XtIsWindowObject(child)) {
-                if (XtIsRealized(child) && child->core.mapped_when_managed)
+            if (XtIsWidget(child)
+		&& XtIsRealized(child)
+		&& child->core.mapped_when_managed)
                     XtUnmapWidget(child);
-            }else  { /*gadget child */
-            Widget pw = child->core.parent;
-            RectObj r = (RectObj) child;
-            while ((pw!=NULL) &&
-		    ( ! XtIsSubclass (pw, (WidgetClass) windowObjClass)))
-                pw = pw->core.parent;
-            if ((pw!=NULL) && XtIsRealized (pw))
-                XClearArea (XtDisplay (pw), XtWindow (pw),
-                    r->rectangle.x, r->rectangle.y,
-                    r->rectangle.width + (r->rectangle.border_width << 1),
-                    r->rectangle.height + (r->rectangle.border_width << 1),
-                    TRUE);
-            }
+            else
+	    { /* RectObj child */
+		Widget pw = child->core.parent;
+		RectObj r = (RectObj) child;
+		while ((pw!=NULL) && (!XtIsWidget(pw))) pw = pw->core.parent;
+		if ((pw!=NULL) && XtIsRealized (pw))
+		    XClearArea (XtDisplay (pw), XtWindow (pw),
+			r->rectangle.x, r->rectangle.y,
+			r->rectangle.width + (r->rectangle.border_width << 1),
+			r->rectangle.height + (r->rectangle.border_width << 1),
+			TRUE);
+	    }
 
         }
     }
@@ -139,14 +131,6 @@ void XtManageChildren(children, num_children)
 		    ->composite_class.change_managed;
 	parent_realized = XtIsRealized(parent);
 
-    } else if (XtIsCompositeObject((Widget) parent)) {
-	Widget  t = parent->core.parent;
-        change_managed = ((CompositeObjectClass) parent->core.widget_class)
-		    ->composite_class.change_managed;
-	/* This is somewhat bogus, as assumes obj realized if parent widget is*/
-	while (t != NULL && ! XtIsWindowObject(t)) t = t->core.parent;
-	parent_realized = XtIsRealized(t);
-
     } else {
 	XtAppErrorMsg(XtWidgetToApplicationContext((Widget)parent),
 		"invalidParent","xtManageChildren", "XtToolkitError",
@@ -171,6 +155,19 @@ void XtManageChildren(children, num_children)
 	    if (unique_children != cache) XtFree((char *) unique_children);
 	    return;
 	}
+#ifdef DEBUG
+	if (!XtIsRectObj(child)) {
+	    String params[2];
+	    Cardinal num_params = 2;
+	    params[0] = XtName(child);
+	    params[1] = child->core.widget_class->core_class.class_name;
+	    XtAppWarningMsg(XtWidgetToApplicationContext((Widget)parent),
+			    "notRectObj","xtManageChildren","XtToolkitError",
+			    "child \"%s\", class %s is not a RectObj",
+			    params, &num_params);
+	    continue;
+	}
+#endif /*DEBUG*/
         if ((CompositeWidget) child->core.parent != parent) {
 	    XtAppWarningMsg(XtWidgetToApplicationContext((Widget)parent),
 		    "ambigiousParent","xtManageChildren","XtToolkitError",
@@ -189,21 +186,20 @@ void XtManageChildren(children, num_children)
 	/* Realize each child if necessary, then map if necessary */
 	for (i = 0; i < num_unique_children; i++) {
 	    child = unique_children[i];
-	    if (XtIsWindowObject(child)) {
+	    if (XtIsWidget(child)) {
 		if (! XtIsRealized(child)) XtRealizeWidget(child);
 		if (child->core.mapped_when_managed) XtMapWidget(child);
-	    } else { /* gadget child */
-            Widget pw = child->core.parent;
-            RectObj r = (RectObj) child;
-            while ((pw!=NULL) &&
-		    ( ! XtIsSubclass (pw, (WidgetClass) windowObjClass)))
-                pw = pw->core.parent;
-            if (pw != NULL)
-                XClearArea (XtDisplay (pw), XtWindow (pw),
-                r->rectangle.x, r->rectangle.y,
-                r->rectangle.width + (r->rectangle.border_width << 1),
-                r->rectangle.height + (r->rectangle.border_width << 1),
-                TRUE);
+	    } else { /* RectObj child */
+		Widget pw = child->core.parent;
+		RectObj r = (RectObj) child;
+		while ((pw!=NULL) && (!XtIsWidget(pw)))
+		    pw = pw->core.parent;
+		if (pw != NULL)
+		    XClearArea (XtDisplay (pw), XtWindow (pw),
+		    r->rectangle.x, r->rectangle.y,
+		    r->rectangle.width + (r->rectangle.border_width << 1),
+		    r->rectangle.height + (r->rectangle.border_width << 1),
+		    TRUE);
             }
         }
     }

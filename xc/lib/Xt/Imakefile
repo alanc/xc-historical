@@ -39,7 +39,6 @@ SRCS = \
 	Alloc.c \
 	ArgList.c \
 	Callback.c \
-	CompObj.c \
 	Composite.c \
 	Constraint.c \
 	Convert.c \
@@ -50,6 +49,7 @@ SRCS = \
 	Display.c \
 	Error.c \
 	Event.c \
+	Functions.c \
 	GCManager.c \
 	Geometry.c \
 	Initialize.c \
@@ -65,14 +65,12 @@ SRCS = \
 	TMparse.c \
 	TMstate.c \
 	Vendor.c \
-	WindowObj.c \
 	sharedlib.c
 
 OBJS = \
 	Alloc.o \
 	ArgList.o \
 	Callback.o \
-	CompObj.o \
 	Composite.o \
 	Constraint.o \
 	Convert.o \
@@ -83,6 +81,7 @@ OBJS = \
 	Display.o \
 	Error.o \
 	Event.o \
+	Functions.o \
 	GCManager.o \
 	Geometry.o \
 	Initialize.o \
@@ -97,8 +96,7 @@ OBJS = \
 	Shell.o \
 	TMparse.o \
 	TMstate.o \
-	Vendor.o \
-	WindowObj.o
+	Vendor.o
 
 UNSHAREDOBJS = sharedlib.o
 

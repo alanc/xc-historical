@@ -1,6 +1,6 @@
 /* LINTLIBRARY */
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: RectObj.c,v 1.7 89/03/10 17:56:05 rws Exp $";
+static char Xrcsid[] = "$XConsortium: RectObj.c,v 1.8 89/06/16 19:35:09 jim Exp $";
 /* $oHeader: RectObj.c,v 1.2 88/08/18 15:51:21 asente Exp $ */
 #endif /* lint */
 
@@ -97,7 +97,8 @@ externaldef(rectobjclassrec) RectObjClassRec rectObjClassRec = {
   }
 };
 
-externaldef(rectObjClass) RectObjClass rectObjClass = &rectObjClassRec;
+externaldef(rectObjClass)
+WidgetClass rectObjClass = (WidgetClass)&rectObjClassRec;
 
 /*
  * Start of rectangle object methods

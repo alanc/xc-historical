@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Geometry.c,v 1.33 89/03/16 16:45:42 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Geometry.c,v 1.34 89/06/16 19:34:43 jim Exp $";
 /* $oHeader: Geometry.c,v 1.3 88/08/23 11:37:50 asente Exp $ */
 #endif /* lint */
 
@@ -54,13 +54,6 @@ XtGeometryResult XtMakeGeometryRequest (widget, request, reply)
 	parentRealized = XtIsRealized(parent);
 	manager = ((CompositeWidgetClass) (parent->core.widget_class))
     		->composite_class.geometry_manager;
-    } else if (XtIsCompositeObject(parent)) {
-	Widget t = parent->core.parent;
-	while (! XtIsWindowObject(t)) t = t->core.parent;
-	parentRealized = XtIsRealized(t);
-	manager = ((CompositeObjectClass) (parent->core.widget_class))
-    		->composite_class.geometry_manager;
-	
     } else if (managed) {
 	/* Should never happen - XtManageChildren should have checked */
 	XtErrorMsg("invalidParent","xtMakeGeometryRequest","XtToolkitError",
@@ -84,7 +77,7 @@ XtGeometryResult XtMakeGeometryRequest (widget, request, reply)
 
     if (widget->core.being_destroyed) return XtGeometryNo;
 
-    if (XtIsWindowObject(widget)) {
+    if (XtIsWidget(widget)) {
         widgetRealized = XtIsRealized(widget);
     } else {
         widgetRealized = FALSE;

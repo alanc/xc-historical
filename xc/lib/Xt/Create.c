@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Create.c,v 1.54 89/08/10 12:38:06 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Create.c,v 1.55 89/09/08 17:35:36 swick Exp $";
 /* $oHeader: Create.c,v 1.5 88/09/01 11:26:22 asente Exp $ */
 #endif /*lint*/
 
@@ -158,7 +158,7 @@ Widget _XtCreate(
        	widget->core.constraints = 
 	    (caddr_t) XtMalloc((unsigned)parent_constraint_class->
                        constraint_class.constraint_size);
-    if (XtIsWindowObject(widget)) {
+    if (XtIsWidget(widget)) {
 	widget->core.name = XtNewString((name != NULL) ? name : "");
         widget->core.screen = default_screen;
         widget->core.tm.translations = NULL;
@@ -241,10 +241,6 @@ Widget XtCreateWidget(name, widgetClass, parent, args, num_args)
     if (XtIsComposite(parent)) {
         insert_child = ((CompositeWidgetClass) parent->core.widget_class)->
 	    composite_class.insert_child;
-
-    } else if (XtIsCompositeObject(parent)) {
-        insert_child = ((CompositeObjectClass) parent->core.widget_class)->
-            composite_class.insert_child;
     } else {
 	return(widget);
     }
