@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.181 91/05/31 17:39:18 dave Exp $
+ * $XConsortium: menus.c,v 1.182 91/06/24 17:38:09 dave Exp $
  *
  * twm menu code
  *
@@ -1926,7 +1926,8 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
 	if (DeferExecution(context, func, Scr->SelectCursor))
 	    return TRUE;
 
-	if (w == tmp_win->icon_w)
+	/* check to make sure raise is not from the WindowFunction */
+	if (w == tmp_win->icon_w && Context != C_ROOT) 
 	    XRaiseWindow(dpy, tmp_win->icon_w);
 	else
 	    XRaiseWindow(dpy, tmp_win->frame);
