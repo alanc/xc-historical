@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
-XCOMM rules:  $XConsortium: Imake.rules,v 1.77 90/12/13 14:44:32 rws Exp $
+XCOMM rules:  $XConsortium: Imake.rules,v 1.78 90/12/13 14:54:26 rws Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -44,7 +44,7 @@ XCOMM rules:  $XConsortium: Imake.rules,v 1.77 90/12/13 14:44:32 rws Exp $
  *     	CleanTarget                              ()
  *     	TagsTarget                               ()
  *      ImakeDependency                          (target)
- *     	BuildMakefileTarget                      (imakefile,imakeflags)
+ *     	BuildMakefileTarget                      (notused,imakeflags)
  *      MakefileTarget                           ()
  *     	NormalLibraryObjectRule                  ()
  *     	ProfiledLibraryObjectRule                ()
@@ -600,10 +600,12 @@ $(IMAKE):								@@\
 /*
  * BuildMakefileTarget - generate rules to build a Makefile from an Imakefile
  * and any special imake flags.  This is generally done automatically by the
- * template or by any special Imakefiles.
+ * template or by any special Imakefiles.  The first argument exists just
+ * because imakeflags is usually empty and some preprocessors will complain
+ * if an empty argument is passed as the sole argument to a macro.
  */
 #ifndef BuildMakefileTarget
-#define	BuildMakefileTarget(imakefile,imakeflags)			@@\
+#define	BuildMakefileTarget(notused,imakeflags)				@@\
 ImakeDependency(Makefile)						@@\
 									@@\
 Makefile:: 								@@\
