@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Resources.c,v 1.27 87/11/01 16:43:01 swick Locked $";
+static char rcsid[] = "$Header: Resources.c,v 1.28 87/12/01 09:25:15 swick Locked $";
 #endif lint
 
 /*
@@ -235,7 +235,7 @@ static void XrmGetResources(
     classes[length+1] = NULLQUARK;
 
 #ifdef reverseVideoHack
-    if (XDisplayCells(dpy, DefaultScreen(dpy)) > 2) {
+    if (CellsOfScreen(screen) > 2) {
     	/* Color box, ignore ReverseVideo */
 	reverseVideo = FALSE;
     } else if (getReverseVideo) {
