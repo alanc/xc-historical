@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Form.c,v 1.25 89/05/18 18:16:15 kit Exp $";
+static char Xrcsid[] = "$XConsortium: Form.c,v 1.26 89/05/31 09:58:22 swick Exp $";
 #endif /* lint */
 
 
@@ -71,7 +71,7 @@ static XtResource formConstraintResources[] = {
 static void ClassInitialize(), ClassPartInitialize(), Initialize(), Resize();
 static void ConstraintInitialize();
 static Boolean SetValues(), ConstraintSetValues();
-static XtGeometryResult GeometryManager();
+static XtGeometryResult GeometryManager(), PreferredGeometry();
 static void ChangeManaged();
 static Boolean Layout();
 
@@ -106,7 +106,7 @@ FormClassRec formClassRec = {
     /* version            */    XtVersion,
     /* callback_private   */    NULL,
     /* tm_table           */    NULL,
-    /* query_geometry     */	XtInheritQueryGeometry,	/* %%% fix this! */
+    /* query_geometry     */	PreferredGeometry,
     /* display_accelerator*/	XtInheritDisplayAccelerator,
     /* extension          */	NULL
   },
@@ -470,7 +470,7 @@ static Boolean ConstraintSetValues(current, request, new)
 
 static void ChangeManaged(w)
     Widget w;
-{ 
+{
   FormWidget fw = (FormWidget)w;
   FormConstraints form;
   WidgetList children, childP;
@@ -504,7 +504,29 @@ static void ChangeManaged(w)
   }
   RefigureLocations( (FormWidget)w );
 }
+
+
+static XtGeometryResult PreferredGeometry( widget, request, reply  )
+    Widget widget;
+    XtWidgetGeometry *request, *reply;
+{
+    FormWidget w = (FormWidget)widget;
     
+    reply->width = w->form.preferred_width;
+    reply->height = w->form.preferred_height;
+    reply->request_mode = CWWidth | CWHeight;
+    if (  request->request_mode & (CWWidth | CWHeight) ==
+	    reply->request_mode & CWWidth | CWHeight
+	  && request->width == reply->width
+	  && request->height == reply->height)
+	return XtGeometryYes;
+    else if (reply->width == w->core.width && reply->height == w->core.height)
+	return XtGeometryNo;
+    else
+	return XtGeometryAlmost;
+}
+
+
 /**********************************************************************
  *
  * Public routines
