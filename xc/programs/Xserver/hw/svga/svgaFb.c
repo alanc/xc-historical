@@ -1,4 +1,4 @@
-/* $XConsortium: svgaFb.c,v 1.1 93/09/18 16:08:02 rws Exp $ */
+/* $XConsortium: svgaFb.c,v 1.2 93/09/20 12:09:57 rws Exp $ */
 /*
  * Copyright 1990,91,92,93 by Thomas Roell, Germany.
  * Copyright 1991,92,93    by SGCS (Snitily Graphics Consulting Services), USA.
@@ -229,6 +229,7 @@ svgaSVGACreateScreenResources(
 )
 {
   PixmapPtr pPixmap;
+  ulong     bytesPerScanLine = (ulong)pScreen->devPrivate;
 
   pPixmap = (*pScreen->CreatePixmap)(pScreen, 0, 0, pScreen->rootDepth);
   if (!pPixmap)
@@ -237,8 +238,7 @@ svgaSVGACreateScreenResources(
   if (!(*pScreen->ModifyPixmapHeader)(pPixmap,
 				      pScreen->width, pScreen->height,
 				      pScreen->rootDepth, pScreen->rootDepth,
-				      PixmapBytePad(pScreen->width,
-						    pScreen->rootDepth),
+				      bytesPerScanLine,
 				      pScreen->devPrivate))
     return FALSE;
 
@@ -374,6 +374,8 @@ svgaSVGAScreenInit(
       return FALSE;
 
   (*pScreen->InstallColormap)(pCmap);
+
+  pScreen->devPrivate = (pointer)bytesPerScanLine;
 
   return TRUE;
 }
