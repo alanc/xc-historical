@@ -1,4 +1,4 @@
-/* $XConsortium: dispatch.c,v 5.11 89/08/17 16:41:09 rws Exp $ */
+/* $XConsortium: dispatch.c,v 5.12 89/08/20 12:14:35 rws Exp $ */
 /************************************************************
 Copyright 1987, 1989 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -2831,8 +2831,13 @@ ProcQueryBestSize   (client)
     }
     if (!(pDraw = LOOKUP_DRAWABLE(stuff->drawable, client)))
     {
-	client->errorValue = stuff->drawable;
-	return (BadDrawable);
+        if (!(pDraw = (DrawablePtr)LookupWindow(stuff->drawable, client))) 
+	{
+	    client->errorValue = stuff->drawable;
+	    return (BadDrawable);
+	}
+	if (stuff->class != CursorShape)
+	    return (BadMatch);
     }
     pScreen = pDraw->pScreen;
     (* pScreen->QueryBestSize)(stuff->class, &stuff->width,
