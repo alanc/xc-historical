@@ -52,7 +52,7 @@ unsigned long pixels[512];
 caddr_t colors[512];
 XColor def;
 int numpixels = 0;
-char *disp = '\0';
+char *disp = NULL;
 Display *dpy;
 progName = argv[0];
 if (argc == 1)  usage (NULL, NULL);    /* To be replaced by window-interface */
