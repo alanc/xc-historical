@@ -12,7 +12,7 @@
 			<Leave>:popdown-pixel()\n\
 			<Key>q:close()\n\
 			Ctrl<Key>c:close()\n\
-			<Key>space:replace()\n
+			<Key>space:replace()
 *close.accelerators:#augment\
 			<Key>q:set()notify()unset()\n\
 			Ctrl<Key>c:set()notify()unset()
@@ -21,4 +21,5 @@
 			<Btn2Up>:set()notify()unset()\n\
 			<Btn3Up>:set()notify()unset()
 *pixLabel.Translations:<Enter>:popdown-pixel()
-*helpLabel.label:	Use MB1 to examine pixels.
+*helpLabel.font:	8x13bold
+*helpLabel.label:	xtmag

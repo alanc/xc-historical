@@ -15,12 +15,14 @@ the same color.  Pressing Button1 on the pointer in the enlargement window
 shows a small pixel information window displaying the position and RGB value
 of the pixel under the pointer until the button is released.  Pressing ``Q'' 
 or ``^C'' in the enlargement window exits the program.  The application has
-3 buttons across its top.  Close deletes this particular magnification 
+5 buttons across its top.  Close deletes this particular magnification 
 instance.  Replace brings up the rubber band selector again to select another
 region for this magnification instance.  New brings up the rubber band
-selector to create a new magnification instance.  Note that resizeing xmag
-resizes the magnification area.  Xmag also preserves colormaps, visuals, and
-window depth from the target magnification area.
+selector to create a new magnification instance.  Cut puts the magnification
+image into the primary selection.  Paste copies the primary selection buffer
+into an xmag. Note that you can cut and paste between xmag and the bitmap
+program. Resizeing xmag resizes the magnification area. Xmag also preserves
+colormaps, visuals, and window depth from the target magnification area.
 .SH WIDGETS
 Xmag uses the X Toolkit Intrinsics and the Athena Widget Set.
 The main part of the toplevel is the Scale widget described below.  
@@ -38,7 +40,9 @@ name is given first, followed by the widget instance name.
 					Command close
 					Command replace
 					Command new
-					Label helpLabel
+					Command cut
+					Command paste
+					Label xmag label
 				Panned pane2
 					Scale scale
 		OverrideShell pixShell 

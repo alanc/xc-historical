@@ -1,5 +1,5 @@
 /*
- * $XConsortium: CutPaste.c,v 1.1 91/01/22 14:45:27 dave Exp $
+ * $XConsortium: CutPaste.c,v 1.2 91/05/08 18:12:40 dave Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -59,11 +59,11 @@ Boolean ConvertSelection(w, selection, target, type, vret, length, format)
     case XA_BITMAP:
 	pixmap = (Pixmap *) XtMalloc(sizeof(Pixmap));
 	*pixmap = XCreatePixmap(XtDisplay(w), XtWindow(w),
-				sw->scale.width, 
-				sw->scale.height, 
+				sw->scale.image->width, 
+				sw->scale.image->height, 
 				sw->scale.image->depth);
 	XPutImage(XtDisplay(w), *pixmap, sw->scale.gc, sw->scale.image,
-		  0, 0, 0, 0, sw->scale.width, sw->scale.height);
+		  0, 0, 0, 0, sw->scale.image->width, sw->scale.image->height);
 	*type = XA_PIXMAP;
 	*value = (caddr_t) pixmap;
 	*length = 1;
@@ -88,7 +88,7 @@ void LoseSelection(w, selection)
     Atom *selection;
 {
 
-	fprintf(stderr, "Lost Selection\n");
+	/*fprintf(stderr, "Lost Selection\n");*/
 }
 
 /* ARGSUSED */
@@ -111,7 +111,7 @@ void SWGrabSelection(w, time)
     if (XtOwnSelection(w, XA_PRIMARY, time,
 		       ConvertSelection, LoseSelection, SelectionDone))
 
-	    fprintf(stderr, "Own the selection\n");
+	    /*fprintf(stderr, "Own the selection\n")*/;
 }
 
 /* ARGSUSED */
@@ -138,13 +138,14 @@ void SelectionCallback(w, clientData, selection, type, v, length, format)
 		     &width, &height, &border_width, &depth);
 	image = XGetImage(XtDisplay(w), *pixmap, 0, 0, width, height, 
 			  AllPlanes, ZPixmap);
+	SWAutoscale(w);
 	SWSetImage(w, image);
-	XFreePixmap(XtDisplay(w), *pixmap);
+	XFree((char *)pixmap);
 	XDestroyImage(image);
 	break;
 	
     case XA_STRING:
-	    fprintf(stderr, "Received:%s\n", value);
+	    /*fprintf(stderr, "Received:%s\n", value);*/
 	break;
 
     default:
@@ -157,7 +158,7 @@ void SWRequestSelection(w, time)
     Widget w;
     Time time;
 {
-    fprintf(stderr, "------------------------------------------>\n");
+    /*fprintf(stderr, "------------------------------------------>\n");*/
     XtGetSelectionValue(w, XA_PRIMARY, XA_PIXMAP,
 			SelectionCallback, NULL, time);
 }

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Scale.c,v 1.11 91/04/02 11:40:56 rws Exp $
+ * $XConsortium: Scale.c,v 1.12 91/05/08 18:13:45 dave Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -105,8 +105,8 @@ static XtActionsRec actions[] =
 {"unscale", SWUnscale},
 {"autoscale", SWAutoscale},
 {"initial-size", SWInitialSize},
-{"request-selection", RequestSelection},
-{"grab-selection", GrabSelection}
+{"paste", RequestSelection},
+{"cut", GrabSelection}
 };
 
 static char translations[] =

@@ -41,6 +41,8 @@
 
 #define min(a, b) a < b ? a : b
 
+extern void SWGrabSelection();
+
 
 
 /* highlight interval */
@@ -95,6 +97,8 @@ static void
   CloseCB(), 
   ReplaceCB(),
   NewCB(), 
+  CutCB(),
+  Paste(),
   SetupGC(), 
   ResizeEH(), 
   DragEH(), 
@@ -501,6 +505,32 @@ NewCB(w, clientData, callData)
 
 
 /*
+ * CutCB() -- Own the primary selection.
+ */
+static void			/* ARGSUSED */
+CutCB(w, clientData, callData)
+     Widget w; XtPointer clientData, callData;
+{
+  hlPtr data = (hlPtr)clientData;
+  SWGrabSelection(data->scaleInstance, XtLastTimestampProcessed(dpy));
+}
+
+
+
+/*
+ * PasteCB() -- Paste from the primary selectin into xmag.
+ */
+static void			/* ARGSUSED */
+PasteCB(w, clientData, callData)
+     Widget w; XtPointer clientData, callData;
+{
+  hlPtr data = (hlPtr)clientData;
+  SWRequestSelection(data->scaleInstance, XtLastTimestampProcessed(dpy));
+}
+
+
+
+/*
  * SetupGC() -- Graphics context for magnification selection.
  */
 static void 
@@ -860,7 +890,7 @@ GetMinIntensity(data)
 
 
 
-static Widget pane1, pane2, pane3, cclose, replace, new, label;
+static Widget pane1, pane2, pane3, cclose, replace, new, cut, paste, label;
 
 /*
  * PopupNewScale() -- Create and popup a new scale composite.
@@ -889,10 +919,14 @@ PopupNewScale(data)
   new = XtCreateManagedWidget("new", commandWidgetClass, pane2,
 			      (Arg *) NULL, 0);
   XtAddCallback(new, XtNcallback, NewCB, (XtPointer)NULL);
-
+  cut = XtCreateManagedWidget("cut", commandWidgetClass, pane2,
+			      (Arg *) NULL, 0);
+  XtAddCallback(cut, XtNcallback, CutCB, (XtPointer)data);
+  paste = XtCreateManagedWidget("paste", commandWidgetClass, pane2,
+			      (Arg *) NULL, 0);
+  XtAddCallback(paste, XtNcallback, PasteCB, (XtPointer)data);
   label = XtCreateManagedWidget("helpLabel", labelWidgetClass, pane2,
 				(Arg *) NULL, 0);
-  
   pane3 = XtCreateManagedWidget("pane2", panedWidgetClass, pane1,
 				(Arg *) NULL, 0);
   data->scaleInstance = 
