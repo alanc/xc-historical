@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: colormap.c,v 5.1 89/06/16 16:54:23 keith Exp $ */
+/* $XConsortium: colormap.c,v 5.2 89/07/16 17:24:34 rws Exp $ */
 
 #include "X.h"
 #define NEED_EVENTS
@@ -1337,17 +1337,26 @@ AllocDirect (client, pmap, c, r, g, b, contig, pixels, prmask, pgmask, pbmask)
 {
     Pixel	*ppixRed, *ppixGreen, *ppixBlue;
     Pixel	*ppix, *pDst, *p;
-    int		npix;
+    int		npix, npixR, npixG, npixB;
     Bool	okR, okG, okB;
     Pixel	*rpix, *gpix, *bpix;
+
+    npixR = c << r;
+    npixG = c << g;
+    npixB = c << b;
+    if ((r >= 32) || (g >= 32) || (b >= 32) ||
+	(npixR > pmap->freeRed) || (npixR < c) ||
+	(npixG > pmap->freeGreen) || (npixG < c) ||
+	(npixB > pmap->freeBlue) || (npixB < c))
+	return BadAlloc;
 
     /* start out with empty pixels */
     for(p = pixels; p < pixels + c; p++)
 	*p = 0;
 
-    ppixRed = (Pixel *)ALLOCATE_LOCAL((c << r) * sizeof(Pixel));
-    ppixGreen = (Pixel *)ALLOCATE_LOCAL((c << g) * sizeof(Pixel));
-    ppixBlue = (Pixel *)ALLOCATE_LOCAL((c << b) * sizeof(Pixel));
+    ppixRed = (Pixel *)ALLOCATE_LOCAL(npixR * sizeof(Pixel));
+    ppixGreen = (Pixel *)ALLOCATE_LOCAL(npixG * sizeof(Pixel));
+    ppixBlue = (Pixel *)ALLOCATE_LOCAL(npixB * sizeof(Pixel));
     if (!ppixRed || !ppixGreen || !ppixBlue)
     {
 	if (ppixBlue) DEALLOCATE_LOCAL(ppixBlue);
@@ -1385,13 +1394,13 @@ AllocDirect (client, pmap, c, r, g, b, contig, pixels, prmask, pgmask, pbmask)
     if (!okR || !okG || !okB || !rpix || !gpix || !bpix)
     {
 	if (okR)
-	    for(ppix = ppixRed, npix = (c << r); --npix >= 0; ppix++)
+	    for(ppix = ppixRed, npix = npixR; --npix >= 0; ppix++)
 		pmap->red[*ppix].refcnt = 0;
 	if (okG)
-	    for(ppix = ppixGreen, npix = (c << g); --npix >= 0; ppix++)
+	    for(ppix = ppixGreen, npix = npixG; --npix >= 0; ppix++)
 		pmap->green[*ppix].refcnt = 0;
 	if (okB)
-	    for(ppix = ppixBlue, npix = (c << b); --npix >= 0; ppix++)
+	    for(ppix = ppixBlue, npix = npixB; --npix >= 0; ppix++)
 		pmap->blue[*ppix].refcnt = 0;
 	DEALLOCATE_LOCAL(ppixBlue);
 	DEALLOCATE_LOCAL(ppixGreen);
@@ -1403,38 +1412,35 @@ AllocDirect (client, pmap, c, r, g, b, contig, pixels, prmask, pgmask, pbmask)
     *pgmask <<= pmap->pVisual->offsetGreen;
     *pbmask <<= pmap->pVisual->offsetBlue;
 
-    npix = c << r;
     ppix = rpix + pmap->numPixelsRed[client];
-    for (pDst = pixels, p = ppixRed; p < ppixRed + npix; p++)
+    for (pDst = pixels, p = ppixRed; p < ppixRed + npixR; p++)
     {
 	*ppix++ = *p;
 	if(p < ppixRed + c)
 	    *pDst++ |= *p << pmap->pVisual->offsetRed;
     }
-    pmap->numPixelsRed[client] += npix;
-    pmap->freeRed -= npix;
+    pmap->numPixelsRed[client] += npixR;
+    pmap->freeRed -= npixR;
 
-    npix = c << g;
     ppix = gpix + pmap->numPixelsGreen[client];
-    for (pDst = pixels, p = ppixGreen; p < ppixGreen + npix; p++)
+    for (pDst = pixels, p = ppixGreen; p < ppixGreen + npixG; p++)
     {
 	*ppix++ = *p;
 	if(p < ppixGreen + c)
 	    *pDst++ |= *p << pmap->pVisual->offsetGreen;
     }
-    pmap->numPixelsGreen[client] += npix;
-    pmap->freeGreen -= npix;
+    pmap->numPixelsGreen[client] += npixG;
+    pmap->freeGreen -= npixG;
 
-    npix = c << b;
     ppix = bpix + pmap->numPixelsBlue[client];
-    for (pDst = pixels, p = ppixBlue; p < ppixBlue + npix; p++)
+    for (pDst = pixels, p = ppixBlue; p < ppixBlue + npixB; p++)
     {
 	*ppix++ = *p;
 	if(p < ppixBlue + c)
 	    *pDst++ |= *p << pmap->pVisual->offsetBlue;
     }
-    pmap->numPixelsBlue[client] += npix;
-    pmap->freeBlue -= npix;
+    pmap->numPixelsBlue[client] += npixB;
+    pmap->freeBlue -= npixB;
 
     DEALLOCATE_LOCAL(ppixBlue);
     DEALLOCATE_LOCAL(ppixGreen);
@@ -1458,6 +1464,8 @@ AllocPseudo (client, pmap, c, r, contig, pixels, pmask, pppixFirst)
     Bool	ok;
 
     npix = c << r;
+    if ((r >= 32) || (npix > pmap->freeRed) || (npix < c))
+	return(BadAlloc);
     if(!(ppixTemp = (Pixel *)ALLOCATE_LOCAL(npix * sizeof(Pixel))))
 	return(BadAlloc);
     ok = AllocCP(pmap, pmap->red, c, pmap->freeRed, r, contig,
@@ -1524,9 +1532,6 @@ AllocCP (pmap, pentFirst, count, Free, planes, contig, pixels, pMask)
     /* Easy case.  Allocate pixels only */
     if (planes == 0)
     {
-        if (count == 0 || count > Free)
-    	    return (FALSE);
-
         /* allocate writable entries */
 	ppix = pixels;
         ent = pentFirst;
@@ -1546,8 +1551,7 @@ AllocCP (pmap, pentFirst, count, Free, planes, contig, pixels, pMask)
         *pMask = 0;
         return (TRUE);
     }
-    else if ( count <= 0  || planes > dplanes ||
-      (count << planes) > Free)
+    else if (planes > dplanes)
     {
 	return (FALSE);
     }
