@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: imCallbk.c,v 1.1 94/01/20 17:56:44 rws Exp $ */
 /***********************************************************************
 Copyright 1993 by Digital Equipment Corporation, Maynard, Massachusetts,
 
@@ -456,11 +456,11 @@ _XimPreeditStartCallback(im, ic, proto, len)
     /* invoke the callback
      */
     if (cb && cb->callback){
-	ret = ((int (*)(
+	ret = (*(int (*)(
 #if NeedFunctionPrototypes
 			XIC, XPointer, XPointer
 #endif
-			))(*cb->callback))((XIC)ic, 
+			))(cb->callback))((XIC)ic, 
 					   cb->client_data, 
 					   (XPointer)NULL);
     }
