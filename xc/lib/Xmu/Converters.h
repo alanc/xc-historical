@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Converters.h,v 1.1 89/07/14 17:51:54 jim Exp $
+ * $XConsortium: Converters.h,v 1.2 89/10/03 11:40:16 swick Exp $
  *
  * Copyright 1988 by the Massachusetts Institute of Technology
  *
@@ -80,9 +80,9 @@ extern void XmuCvtStringToOrientation();
 
 
 /******************************************************************************
- * XmuCvtStringToPixmap
+ * XmuCvtStringToBitmap
  */
-extern void XmuCvtStringToPixmap();
+extern void XmuCvtStringToBitmap();
 
 
 /******************************************************************************

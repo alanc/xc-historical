@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$XConsortium: StrToBmap.c,v 1.7 89/08/17 18:15:11 jim Exp $";
+static char rcsid[] = "$XConsortium: StrToBmap.c,v 1.8 89/08/18 13:03:38 jim Exp $";
 #endif /* lint */
 
 
@@ -34,7 +34,7 @@ SOFTWARE.
 
 
 /*
- * XmuConvertStringToPixmap:
+ * XmuConvertStringToBitmap:
  *
  * creates a depth-1 Pixmap suitable for window manager icons.
  * "string" represents a bitmap(1) filename which may be absolute,
@@ -50,7 +50,7 @@ static XtConvertArgRec screenConvertArg[] = {
     {XtBaseOffset, (caddr_t) XtOffset(Widget, core.screen), sizeof(Screen *)}
 };
 
-    XtAddConverter("String", "Pixmap", XmuCvtStringToPixmap,
+    XtAddConverter("String", "Bitmap", XmuCvtStringToBitmap,
 		   screenConvertArg, XtNumber(screenConvertArg));
  *
  */
@@ -60,7 +60,7 @@ static XtConvertArgRec screenConvertArg[] = {
 
 
 /*ARGSUSED*/
-void XmuCvtStringToPixmap(args, num_args, fromVal, toVal)
+void XmuCvtStringToBitmap(args, num_args, fromVal, toVal)
     XrmValuePtr args;
     Cardinal    *num_args;
     XrmValuePtr	fromVal;
@@ -70,7 +70,7 @@ void XmuCvtStringToPixmap(args, num_args, fromVal, toVal)
     char *name = (char *)fromVal->addr;
 
     if (*num_args != 1)
-     XtErrorMsg("wrongParameters","cvtStringToPixmap","XtToolkitError",
+     XtErrorMsg("wrongParameters","cvtStringToBitmap","XtToolkitError",
              "String to pixmap conversion needs screen argument",
               (String *)NULL, (Cardinal *)NULL);
 
