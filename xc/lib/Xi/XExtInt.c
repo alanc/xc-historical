@@ -1,4 +1,4 @@
-/* $Header: XExtInt.c,v 1.24 91/07/24 15:44:34 rws Exp $ */
+/* $XConsortium: XExtInt.c,v 1.25 92/01/30 14:17:27 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
