@@ -1,4 +1,4 @@
-/* $XConsortium: pl_rdr.c,v 1.7 92/10/22 15:22:24 mor Exp $ */
+/* $XConsortium: pl_rdr.c,v 1.7 93/02/23 14:41:03 mor Exp $ */
 
 /******************************************************************************
 Copyright 1987,1991 by Digital Equipment Corporation, Maynard, Massachusetts
@@ -166,7 +166,7 @@ INPUT unsigned long		valueMask;
     pexGetRendererAttributesReply		rep;
     unsigned long				f;
     int						i;
-    int						count;
+    unsigned					count;
     int						fpConvert;
     int						fpFormat;
 
@@ -213,7 +213,7 @@ INPUT unsigned long		valueMask;
      */
 
     pAttr = (PEXRendererAttributes *)
-	PEXAllocBuf (sizeof (PEXRendererAttributes));
+	Xmalloc (sizeof (PEXRendererAttributes));
 
     pAttr->current_path.count = 0;
     pAttr->current_path.elements = NULL;
@@ -235,7 +235,7 @@ INPUT unsigned long		valueMask;
 		pAttr->current_path.count = count;
 
 		pAttr->current_path.elements = (PEXElementRef *)
-		    PEXAllocBuf (count * sizeof (PEXElementRef));
+		    Xmalloc (count * sizeof (PEXElementRef));
 
 		EXTRACT_LISTOF_ELEMREF (count,
 		    pBuf, pAttr->current_path.elements);
@@ -353,7 +353,7 @@ INPUT unsigned long		valueMask;
 		pAttr->clip_list.count = count;
 
 		pAttr->clip_list.rectangles = (PEXDeviceRect *)
-		    PEXAllocBuf (count * sizeof (PEXDeviceRect));
+		    Xmalloc (count * sizeof (PEXDeviceRect));
 
 		EXTRACT_LISTOF_DEVRECT (count,
 		    pBuf, pAttr->clip_list.rectangles);
@@ -375,7 +375,7 @@ INPUT unsigned long		valueMask;
 		pAttr->pick_start_path.count = count;
 
 		pAttr->pick_start_path.elements = (PEXElementRef *)
-		    PEXAllocBuf (count * sizeof (PEXElementRef));
+		    Xmalloc (count * sizeof (PEXElementRef));
 
 		EXTRACT_LISTOF_ELEMREF (count,
 		    pBuf, pAttr->pick_start_path.elements);

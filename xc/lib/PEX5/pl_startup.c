@@ -1,4 +1,4 @@
-/* $XConsortium: pl_startup.c,v 1.13 93/09/04 20:36:56 rws Exp $ */
+/* $XConsortium: pl_startup.c,v 1.14 93/09/23 12:42:08 mor Exp $ */
 
 /******************************************************************************
 Copyright 1987,1991 by Digital Equipment Corporation, Maynard, Massachusetts
@@ -108,7 +108,7 @@ OUTPUT char		*error_string;
      * most recently referenced display always at the beginning.
      */
 
-    pexDisplayInfo = (PEXDisplayInfo *)	PEXAllocBuf (sizeof (PEXDisplayInfo));
+    pexDisplayInfo = (PEXDisplayInfo *)	Xmalloc (sizeof (PEXDisplayInfo));
 
     if (!pexDisplayInfo)
     {
@@ -191,7 +191,7 @@ OUTPUT char		*error_string;
 	pexDisplayInfo->fpConvert = 1;
     }
 
-    PEXFreeBuf (numReturn);
+    Xfree ((char *) numReturn);
 
 
     /*
@@ -259,7 +259,7 @@ OUTPUT char		*error_string;
      * Get the vendor name string and null terminate it.
      */
 
-    if (!(string = (char *) PEXAllocBuf (rep.lengthName + 1)))
+    if (!(string = (char *) Xmalloc ((unsigned) (rep.lengthName + 1))))
     {
         UnlockDisplay (display);
 	PEXSyncHandle (display);
@@ -290,7 +290,7 @@ OUTPUT char		*error_string;
      */
 
     extInfo = *info_return = pexDisplayInfo->extInfo = (PEXExtensionInfo *)
-	PEXAllocBuf (sizeof (PEXExtensionInfo));
+	Xmalloc (sizeof (PEXExtensionInfo));
 
     if (!extInfo)
     {
@@ -499,7 +499,7 @@ OUTPUT PEXEnumTypeDesc		**enumInfoReturn;
     else
     {
 	*enumInfoReturn = penum = (PEXEnumTypeDesc *)
-	    PEXAllocBuf (totDescs * sizeof (PEXEnumTypeDesc));
+	    Xmalloc ((unsigned) (totDescs * sizeof (PEXEnumTypeDesc)));
     }
 
 
@@ -508,7 +508,7 @@ OUTPUT PEXEnumTypeDesc		**enumInfoReturn;
      */
 
     *numReturn = pcounts = (unsigned long *)
-       PEXAllocBuf (numEnumTypes * sizeof (unsigned long));
+       Xmalloc ((unsigned) (numEnumTypes * sizeof (unsigned long)));
 
 
     /*
@@ -539,7 +539,7 @@ OUTPUT PEXEnumTypeDesc		**enumInfoReturn;
 		EXTRACT_CARD16 (pBuf, length);
 
 		penum->descriptor = pstring =
-		    (char *) PEXAllocBuf (length + 1);
+		    (char *) Xmalloc ((unsigned) (length + 1));
 		memcpy (pstring, pBuf, length);
 		pstring[length] = '\0';       /* null terminate */
 
@@ -555,7 +555,7 @@ OUTPUT PEXEnumTypeDesc		**enumInfoReturn;
 		EXTRACT_CARD16 (pBuf, length);
 
 		penum->descriptor = pstring =
-		    (char *) PEXAllocBuf (length + 1);
+		    (char *) Xmalloc ((unsigned) (length + 1));
 		memcpy (pstring, pBuf, length);
 		pstring[length] = '\0';       /* null terminate */
 
@@ -635,8 +635,8 @@ OUTPUT PEXImpDepConstant	**constantsReturn;
      * Allocate a buffer for the client.
      */
 
-    *constantsReturn = (PEXImpDepConstant *) PEXAllocBuf (
-	numNames * sizeof (PEXImpDepConstant));
+    *constantsReturn = (PEXImpDepConstant *) Xmalloc (
+	(unsigned) (numNames * sizeof (PEXImpDepConstant)));
 
 
     /*
@@ -793,8 +793,8 @@ OUTPUT PEXRenderingTarget	**targets;
      * Allocate a buffer for the target list to pass back to the client.
      */
 
-    *targets = info = (PEXRenderingTarget *) PEXAllocBuf (
-	*numTargets * sizeof (PEXRenderingTarget));
+    *targets = info = (PEXRenderingTarget *) Xmalloc (
+	(unsigned) (*numTargets * sizeof (PEXRenderingTarget)));
 
     for (i = 0; i < *numTargets; i++)
     {
@@ -923,10 +923,10 @@ INPUT XExtCodes	*codes;
     if (pexDisplayInfo == NULL)
 	return (0);
 
-    PEXFreeBuf ((char *) (pexDisplayInfo->extInfo->vendor_name));
-    PEXFreeBuf ((char *) (pexDisplayInfo->extInfo));
-    PEXFreeBuf ((char *) (pexDisplayInfo->fpSupport));
-    PEXFreeBuf ((char *) pexDisplayInfo);
+    Xfree ((char *) (pexDisplayInfo->extInfo->vendor_name));
+    Xfree ((char *) (pexDisplayInfo->extInfo));
+    Xfree ((char *) (pexDisplayInfo->fpSupport));
+    Xfree ((char *) pexDisplayInfo);
 
 
     /*
@@ -934,7 +934,7 @@ INPUT XExtCodes	*codes;
      */
 
     if (PEXPickCache && !PEXPickCacheInUse)
-	PEXFreeBuf ((char *) PEXPickCache);
+	Xfree ((char *) PEXPickCache);
 
     return (1);
 }

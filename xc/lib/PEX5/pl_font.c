@@ -1,4 +1,4 @@
-/* $XConsortium: pl_font.c,v 1.9 92/12/07 19:47:47 mor Exp $ */
+/* $XConsortium: pl_font.c,v 1.8 93/02/23 14:40:40 mor Exp $ */
 
 /******************************************************************************
 Copyright 1987,1991 by Digital Equipment Corporation, Maynard, Massachusetts
@@ -170,12 +170,12 @@ INPUT PEXFont		font;
      * Allocate a buffer for the replies to pass back to the client.
      */
 
-    fontInfo = (PEXFontInfo *) PEXAllocBuf (sizeof (PEXFontInfo));
+    fontInfo = (PEXFontInfo *) Xmalloc (sizeof (PEXFontInfo));
 
     EXTRACT_FONTINFO (pBuf, (*fontInfo));
 
-    fontInfo->props = (PEXFontProp *) PEXAllocBuf (
-	fontInfo->count * sizeof (PEXFontProp));
+    fontInfo->props = (PEXFontProp *) Xmalloc (
+	(unsigned) (fontInfo->count * sizeof (PEXFontProp)));
 
     EXTRACT_LISTOF_FONTPROP (fontInfo->count, pBuf, fontInfo->props);
 
@@ -252,7 +252,7 @@ OUTPUT unsigned long	*countReturn;
      * Allocate a buffer for the replies to pass back to the client.
      */
 
-    names = (char **) PEXAllocBuf (rep.numStrings * sizeof (char *));
+    names = (char **) Xmalloc ((unsigned) (rep.numStrings * sizeof (char *)));
 
     EXTRACT_LISTOF_STRING (rep.numStrings, pBuf, names);
 
@@ -333,7 +333,7 @@ OUTPUT PEXFontInfo	**fontInfoReturn;
      * Allocate a buffer for the font names to pass back to the client.
      */
 
-    names = (char **) PEXAllocBuf (rep.numStrings * sizeof (char *));
+    names = (char **) Xmalloc ((unsigned) (rep.numStrings * sizeof (char *)));
 
     EXTRACT_LISTOF_STRING (rep.numStrings, pBuf, names);
 
@@ -345,14 +345,14 @@ OUTPUT PEXFontInfo	**fontInfoReturn;
     EXTRACT_CARD32 (pBuf, count);
 
     *fontInfoReturn = pInfoRet = (PEXFontInfo *)
-	PEXAllocBuf (count * sizeof (PEXFontInfo));
+	Xmalloc ((unsigned) (count * sizeof (PEXFontInfo)));
 
     for (i = 0; i < count; i++, pInfoRet++)
     {
         EXTRACT_FONTINFO (pBuf, (*pInfoRet));
 
 	pInfoRet->props = (PEXFontProp *)
-	    PEXAllocBuf (pInfoRet->count * sizeof (PEXFontProp));
+	    Xmalloc ((unsigned) (pInfoRet->count * sizeof (PEXFontProp)));
 
         EXTRACT_LISTOF_FONTPROP (pInfoRet->count, pBuf, pInfoRet->props);
     }
@@ -476,8 +476,8 @@ INPUT PEXStringData		*text;
      * Allocate a buffer for the replies to pass back to the client.
      */
 
-    textExtents = (PEXTextExtent *) PEXAllocBuf (
-	count * sizeof (PEXTextExtent));
+    textExtents = (PEXTextExtent *) Xmalloc (
+	(unsigned) (count * sizeof (PEXTextExtent)));
 
     EXTRACT_LISTOF_EXTENT_INFO (count, pBuf, textExtents, fpConvert, fpFormat)
 
@@ -629,8 +629,8 @@ INPUT PEXListOfEncodedText    	*encoded_text;
      * Allocate a buffer for the replies to pass back to the client.
      */
 
-    textExtents = (PEXTextExtent *) PEXAllocBuf (
-	count * sizeof (PEXTextExtent));
+    textExtents = (PEXTextExtent *) Xmalloc (
+	(unsigned) (count * sizeof (PEXTextExtent)));
 
     EXTRACT_LISTOF_EXTENT_INFO (count, pBuf, textExtents, fpConvert, fpFormat)
 

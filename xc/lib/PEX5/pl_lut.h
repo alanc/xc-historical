@@ -1,4 +1,4 @@
-/* $XConsortium: pl_lut.h,v 1.1 93/02/23 14:39:03 mor Exp $ */
+/* $XConsortium: pl_lut.h,v 1.2 93/09/23 12:42:00 mor Exp $ */
 
 /******************************************************************************
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -42,8 +42,8 @@ without express or implied warranty.
 static PEXPointer _PEXRepackLUTEntries();
 
 #define GetLUTEntryBuffer(_numEntries, _entryType, _buf) \
-    (_buf) = (PEXPointer) PEXAllocBuf ( \
-	(_numEntries) * (sizeof (_entryType)));
+    (_buf) = (PEXPointer) Xmalloc ( \
+	(unsigned) ((_numEntries) * (sizeof (_entryType))));
 
 
 

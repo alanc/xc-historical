@@ -1,4 +1,4 @@
-/* $XConsortium: pl_pc.c,v 1.8 92/10/22 17:48:54 mor Exp $ */
+/* $XConsortium: pl_pc.c,v 1.9 93/02/23 14:41:00 mor Exp $ */
 
 /******************************************************************************
 Copyright 1987,1991 by Digital Equipment Corporation, Maynard, Massachusetts
@@ -261,7 +261,7 @@ INPUT unsigned long		*valueMask;
      * Allocate a buffer for the replies to pass back to the client.
      */
 
-    pAttr = (PEXPCAttributes *) PEXAllocBuf (sizeof (PEXPCAttributes));
+    pAttr = (PEXPCAttributes *) Xmalloc (sizeof (PEXPCAttributes));
 
     pAttr->model_clip_volume.count = 0;
     pAttr->model_clip_volume.half_spaces = NULL;
@@ -583,7 +583,7 @@ INPUT unsigned long		*valueMask;
 
 		size = count * sizeof (PEXHalfSpace);
 		pAttr->model_clip_volume.half_spaces =
-		    (PEXHalfSpace *) PEXAllocBuf (size);
+		    (PEXHalfSpace *) Xmalloc (size);
 
 		EXTRACT_LISTOF_HALFSPACE3D (count, pBuf,
 		    pAttr->model_clip_volume.half_spaces,
@@ -602,7 +602,7 @@ INPUT unsigned long		*valueMask;
 
 		size = count * sizeof (PEXTableIndex);
 		pAttr->light_state.indices =
-		    (PEXTableIndex *) PEXAllocBuf (size);
+		    (PEXTableIndex *) Xmalloc (size);
 
 		EXTRACT_LISTOF_CARD16 (count, pBuf,
 		    pAttr->light_state.indices);
@@ -669,7 +669,7 @@ INPUT unsigned long		*valueMask;
 		        fpConvert, fpFormat);
 
 		    pAttr->para_surf_char.psc.level_curves.parameters = 
-		        (float *) PEXAllocBuf (count * sizeof (float));
+		       (float *) Xmalloc ((unsigned) (count * sizeof (float)));
 
 		    EXTRACT_LISTOF_FLOAT32 (count, pBuf,
 			pAttr->para_surf_char.psc.level_curves.parameters,

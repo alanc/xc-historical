@@ -1,4 +1,4 @@
-/* $XConsortium: pl_free.c,v 1.8 92/11/05 15:19:29 mor Exp $ */
+/* $XConsortium: pl_free.c,v 1.8 93/02/23 14:40:44 mor Exp $ */
 
 /******************************************************************************
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -19,7 +19,7 @@ without express or implied warranty.
 #include "PEXlib.h"
 #include "PEXlibint.h"
 
-#define CHECK_AND_FREE(_ptr) if (_ptr) PEXFreeBuf (_ptr)
+#define CHECK_AND_FREE(_ptr) if (_ptr) Xfree (_ptr)
 
 
 void PEXFreeEnumInfo (numCounts, infoCount, enumInfo)
@@ -110,7 +110,7 @@ void PEXFreePDAttributes (pdAttr)
 PEXPDAttributes		*pdAttr;
 
 {
-    CHECK_AND_FREE (pdAttr->path.elements);
+    CHECK_AND_FREE ((char *) pdAttr->path.elements);
 
     CHECK_AND_FREE ((char *) pdAttr);
 }
@@ -156,7 +156,7 @@ INPUT PEXPickPath	*pickPaths;
 	 * The pick cache is in use, so we must free this pick path.
 	 */
 
-	PEXFreeBuf ((char *) pickPaths);
+	Xfree ((char *) pickPaths);
     }
     else
     {
@@ -176,11 +176,11 @@ INPUT PEXPickPath	*pickPaths;
 	 */
 	
 	if (total_size <= PEXPickCacheSize || total_size > MAX_PICK_CACHE_SIZE)
-	    PEXFreeBuf ((char *) pickPaths);
+	    Xfree ((char *) pickPaths);
 	else
 	{
 	    if (PEXPickCache)
-		PEXFreeBuf ((char *) PEXPickCache);
+		Xfree ((char *) PEXPickCache);
 	    PEXPickCache = pickPaths;
 	    PEXPickCacheSize = total_size;
 	}

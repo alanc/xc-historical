@@ -1,4 +1,4 @@
-/* $XConsortium: pl_struct.c,v 1.9 92/11/05 15:21:30 mor Exp $ */
+/* $XConsortium: pl_struct.c,v 1.8 93/02/23 14:41:07 mor Exp $ */
 
 /******************************************************************************
 Copyright 1987,1991 by Digital Equipment Corporation, Maynard, Massachusetts
@@ -299,8 +299,8 @@ OUTPUT PEXElementInfo	**infoReturn;
      * Allocate a buffer for the replies to pass back to the client.
      */
 
-    *infoReturn = (PEXElementInfo *) PEXAllocBuf (
-        sizeof (PEXElementInfo) * rep.numInfo);
+    *infoReturn = (PEXElementInfo *) Xmalloc (
+        (unsigned) (sizeof (PEXElementInfo) * rep.numInfo));
 
     XREAD_LISTOF_ELEMINFO (display, rep.numInfo, (*infoReturn));
 
@@ -367,8 +367,8 @@ OUTPUT unsigned long	*numStructuresReturn;
      * Allocate a buffer for the replies to pass back to the client.
      */
 
-    structsRet = (PEXStructure *) PEXAllocBuf (
-        sizeof (PEXStructure) * rep.numStructures);
+    structsRet = (PEXStructure *) Xmalloc (
+        (unsigned) (sizeof (PEXStructure) * rep.numStructures));
 
     XREAD_LISTOF_CARD32 (display, rep.numStructures, structsRet);
 
@@ -447,15 +447,15 @@ OUTPUT unsigned long	*numPathsReturn;
      * Allocate a buffer for the replies to pass back to the client.
      */
 
-    pStrucPath = (PEXStructurePath *) PEXAllocBuf (
-	rep.numPaths * sizeof (PEXStructurePath));
+    pStrucPath = (PEXStructurePath *) Xmalloc (
+	(unsigned) (rep.numPaths * sizeof (PEXStructurePath)));
 
     for (i = 0; i < rep.numPaths; i++)
     {
 	EXTRACT_CARD32 (pBuf, numElements);
 
-	pElemRef = (PEXElementRef *) PEXAllocBuf (
-	    numElements * sizeof (PEXElementRef));
+	pElemRef = (PEXElementRef *) Xmalloc (
+	    (unsigned) (numElements * sizeof (PEXElementRef)));
 
 	EXTRACT_LISTOF_ELEMREF (numElements, pBuf, pElemRef);
 
@@ -539,15 +539,15 @@ OUTPUT unsigned long	*numPathsReturn;
      * Allocate a buffer to pass the replies back to the client.
      */
 
-    pStrucPath = (PEXStructurePath *) PEXAllocBuf (
-	rep.numPaths * sizeof (PEXStructurePath));
+    pStrucPath = (PEXStructurePath *) Xmalloc (
+	(unsigned) (rep.numPaths * sizeof (PEXStructurePath)));
 
     for (i = 0; i < rep.numPaths; i++)
     {
 	EXTRACT_CARD32 (pBuf, numElements);
 
-	pElemRef = (PEXElementRef *) PEXAllocBuf (
-	    numElements * sizeof (PEXElementRef));
+	pElemRef = (PEXElementRef *) Xmalloc (
+	    (unsigned) (numElements * sizeof (PEXElementRef)));
 
 	EXTRACT_LISTOF_ELEMREF (numElements, pBuf, pElemRef);
 
@@ -653,7 +653,7 @@ OUTPUT char		**ocsReturn;
 	 */
 
 	*sizeReturn = repSize = rep.length << 2;
-	if (*ocsReturn = (char *) PEXAllocBuf (repSize))
+	if (*ocsReturn = (char *) Xmalloc ((unsigned) repSize))
 	    _XRead (display, *ocsReturn, (long) repSize);
     }
 

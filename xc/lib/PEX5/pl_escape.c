@@ -1,4 +1,4 @@
-/* $XConsortium: pl_escape.c,v 1.6 93/04/26 18:51:44 mor Exp $ */
+/* $XConsortium: pl_escape.c,v 1.7 93/09/23 12:41:58 mor Exp $ */
 
 /************************************************************************
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -120,7 +120,7 @@ OUTPUT unsigned long	*escapeOutDataSize;
      * Allocate a buffer for the reply escape data
      */
 
-    escRepData = escRepDataRet = PEXAllocBuf (*escapeOutDataSize);
+    escRepData = escRepDataRet = Xmalloc ((unsigned) *escapeOutDataSize);
 
     memcpy (escRepData, rep.escape_specific, 20);
     escRepData += 20;
@@ -149,7 +149,7 @@ INPUT PEXColor		*color;
 
 {
     char			*escapeData;
-    int				escapeSize;
+    unsigned			escapeSize;
     pexEscapeSetEchoColorData	*header;
     char			*ptr;
     int				fpConvert;
@@ -163,7 +163,7 @@ INPUT PEXColor		*color;
     escapeSize = SIZEOF (pexEscapeSetEchoColorData) +
 	SIZEOF (pexColorSpecifier) + GetColorSize (color_type);
 
-    escapeData = PEXAllocBuf (escapeSize);
+    escapeData = Xmalloc (escapeSize);
 
     fpFormat = PEXGetProtocolFloatFormat (display);
     fpConvert = (fpFormat != NATIVE_FP_FORMAT);
@@ -182,7 +182,7 @@ INPUT PEXColor		*color;
      * Generate the escape.
      */
 
-    PEXEscape (display, PEXEscapeSetEchoColor, escapeSize, escapeData);
+    PEXEscape (display, PEXEscapeSetEchoColor, (int) escapeSize, escapeData);
 
-    PEXFreeBuf (escapeData);
+    Xfree (escapeData);
 }

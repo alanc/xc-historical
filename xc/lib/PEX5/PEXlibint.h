@@ -1,4 +1,4 @@
-/* $XConsortium: PEXlibint.h,v 1.11 93/02/23 14:54:10 mor Exp $ */
+/* $XConsortium: PEXlibint.h,v 1.12 93/09/23 12:41:41 mor Exp $ */
 
 /******************************************************************************
 Copyright 1987,1991 by Digital Equipment Corporation, Maynard, Massachusetts
@@ -141,10 +141,6 @@ typedef struct PEXDisplayInfo
 /* -------------------------------------------------------------------------
  * Memory related macros.
  * ------------------------------------------------------------------------- */
-
-#define PEXAllocBuf(_size)          Xmalloc ((unsigned) (_size))
-#define PEXFreeBuf(_ptr)            Xfree (_ptr)
-
 
 #define PAD(_size) (3 - (((_size) + 3) & 0x3))
 

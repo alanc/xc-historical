@@ -1,4 +1,4 @@
-/* $XConsortium: pl_wks.c,v 1.10 92/10/22 15:26:05 mor Exp $ */
+/* $XConsortium: pl_wks.c,v 1.9 93/02/23 14:41:11 mor Exp $ */
 
 /******************************************************************************
 Copyright 1987,1991 by Digital Equipment Corporation, Maynard, Massachusetts
@@ -228,7 +228,7 @@ INPUT unsigned long	*valueMask;
      */
 
     ppwi = (PEXWorkstationAttributes *)
-	PEXAllocBuf (sizeof (PEXWorkstationAttributes));
+	Xmalloc (sizeof (PEXWorkstationAttributes));
 
     ppwi->defined_views.count = 0;
     ppwi->defined_views.views = NULL;
@@ -267,8 +267,8 @@ INPUT unsigned long	*valueMask;
 		EXTRACT_CARD32 (pBuf, count);
 		ppwi->defined_views.count = count;
 
-		ppwi->defined_views.views = (PEXTableIndex *) PEXAllocBuf (
-		    count * sizeof (PEXTableIndex));
+		ppwi->defined_views.views = (PEXTableIndex *) Xmalloc (
+		    (unsigned) (count * sizeof (PEXTableIndex)));
 
 		EXTRACT_LISTOF_CARD16 (count, pBuf, ppwi->defined_views.views);
 		pBuf += ((count & 1) * SIZEOF (CARD16));
@@ -404,7 +404,7 @@ INPUT unsigned long	*valueMask;
 		ppwi->posted_structures.count = count;
 
 		ppwi->posted_structures.structures = (PEXPostedStructure *)
-		    PEXAllocBuf (count * sizeof (PEXPostedStructure));
+		    Xmalloc ((unsigned) (count * sizeof (PEXPostedStructure)));
 
 		EXTRACT_LISTOF_POSTED_STRUCS (count, pBuf,
 		    ppwi->posted_structures.structures, fpConvert, fpFormat);
@@ -675,8 +675,8 @@ OUTPUT PEXWorkstation	**wksReturn;
      * Allocate a buffer for the replies to pass back to the client.
      */
 
-    *wksReturn = (PEXWorkstation *) PEXAllocBuf (
-        *numWksReturn * sizeof (PEXWorkstation));
+    *wksReturn = (PEXWorkstation *) Xmalloc (
+        (unsigned) (*numWksReturn * sizeof (PEXWorkstation)));
 
     XREAD_LISTOF_CARD32 (display, *numWksReturn, *wksReturn);
 
@@ -1265,8 +1265,8 @@ OUTPUT PEXCoord			**wc_points_return;
      * Allocate a buffer for the replies to pass back to the client.
      */
 
-    *wc_points_return = (PEXCoord *) PEXAllocBuf (
-        rep.numCoords * sizeof (PEXCoord));
+    *wc_points_return = (PEXCoord *) Xmalloc (
+        (unsigned) (rep.numCoords * sizeof (PEXCoord)));
 
     XREAD_LISTOF_COORD3D (display, rep.numCoords, (*wc_points_return),
 	fpConvert, fpFormat);
@@ -1346,8 +1346,8 @@ OUTPUT PEXDeviceCoord		**dc_points_return;
      * Allocate a buffer for the replies to pass back to the client.
      */
 
-    *dc_points_return = (PEXDeviceCoord *) PEXAllocBuf (
-        rep.numCoords * sizeof (PEXDeviceCoord));
+    *dc_points_return = (PEXDeviceCoord *) Xmalloc (
+        (unsigned) (rep.numCoords * sizeof (PEXDeviceCoord)));
 
     XREAD_LISTOF_DEVCOORD (display, rep.numCoords, (*dc_points_return),
         fpConvert, fpFormat);

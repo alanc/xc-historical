@@ -1,4 +1,4 @@
-/* $XConsortium: pl_nameset.c,v 1.4 92/10/09 10:35:02 mor Exp $ */
+/* $XConsortium: pl_nameset.c,v 1.5 93/02/23 14:40:47 mor Exp $ */
 
 /******************************************************************************
 Copyright 1987,1991 by Digital Equipment Corporation, Maynard, Massachusetts
@@ -213,7 +213,8 @@ OUTPUT PEXName		**namesReturn;
      * Allocate a buffer for the replies to pass back to the user.
      */
 
-    *namesReturn = (PEXName *) PEXAllocBuf (sizeof (PEXName) * rep.numNames);
+    *namesReturn = (PEXName *) Xmalloc (
+	(unsigned) (sizeof (PEXName) * rep.numNames));
 
     XREAD_LISTOF_CARD32 (display, rep.numNames, *namesReturn);
 

@@ -1,4 +1,4 @@
-/* $XConsortium: pl_extract.h,v 1.1 93/02/23 14:38:25 mor Exp $ */
+/* $XConsortium: pl_extract.h,v 1.2 93/09/23 12:41:59 mor Exp $ */
 
 /******************************************************************************
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -953,7 +953,7 @@ without express or implied warranty.
     { \
 	pexString *repStrings = (pexString *) _pBuf; \
 	length = repStrings->length; \
-        _pList[_i] = (char *) PEXAllocBuf (length + 1); \
+        _pList[_i] = (char *) Xmalloc (length + 1); \
 	memcpy (_pList[_i], _pBuf + SIZEOF (pexString), length); \
 	_pList[_i][length] = '\0'; \
 	_pBuf += PADDED_BYTES (SIZEOF (pexString) + length); \
@@ -972,7 +972,7 @@ without express or implied warranty.
     { \
 	memcpy (&tString, _pBuf, SIZEOF (pexString)); \
 	length = tString.length; \
-        _pList[_i] = (char *) PEXAllocBuf (length + 1); \
+        _pList[_i] = (char *) Xmalloc (length + 1); \
 	memcpy (_pList[_i], _pBuf + SIZEOF (pexString), length); \
 	_pList[_i][length] = '\0'; \
 	_pBuf += PADDED_BYTES (SIZEOF (pexString) + length); \
@@ -1128,7 +1128,8 @@ without express or implied warranty.
 #define EXTRACT_LISTOF_MONOENCODING(_count, _pBuf, _pList) \
 { \
     PEXEncodedTextData  *nextString; \
-    int 		size, _i; \
+    unsigned 		size; \
+    int			_i; \
 \
     nextString = _pList; \
     for (_i = 0; _i < (int) _count; _i++, nextString++) \
@@ -1142,7 +1143,7 @@ without express or implied warranty.
 	else /* nextString->character_set_width == PEXCSByte) */ \
 	    size = nextString->length; \
 \
-	nextString->ch = (char *) PEXAllocBuf (size); \
+	nextString->ch = (char *) Xmalloc (size); \
 \
         memcpy (nextString->ch, _pBuf, size); \
 	_pBuf += PADDED_BYTES (size); \

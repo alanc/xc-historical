@@ -1,4 +1,4 @@
-/* $XConsortium: pl_oc_enc.c,v 1.8 93/06/09 15:54:59 mor Exp $ */
+/* $XConsortium: pl_oc_enc.c,v 1.9 93/09/23 12:42:03 mor Exp $ */
 
 /******************************************************************************
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -41,7 +41,7 @@ OUTPUT unsigned long	*length_return;
      */
 
     *length_return = PEXGetSizeOCs (float_format, oc_count, oc_data);
-    ocRet = ocDest = (char *) PEXAllocBuf (*length_return);
+    ocRet = ocDest = (char *) Xmalloc ((unsigned) *length_return);
 
 
     /*

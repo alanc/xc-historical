@@ -1,4 +1,4 @@
-/* $XConsortium: pl_sc.c,v 1.9 92/10/22 15:24:18 mor Exp $ */
+/* $XConsortium: pl_sc.c,v 1.8 93/02/23 14:41:04 mor Exp $ */
 
 /******************************************************************************
 Copyright 1987,1991 by Digital Equipment Corporation, Maynard, Massachusetts
@@ -213,7 +213,8 @@ INPUT unsigned long	valueMask;
     pexGetSearchContextReply		rep;
     PEXSCAttributes			*scattr;
     unsigned long			f;
-    int					count, i;
+    unsigned				count;
+    int					i;
     PEXListOfNameSetPair		*pList;
     int					fpConvert;
     int					fpFormat;
@@ -260,7 +261,7 @@ INPUT unsigned long	valueMask;
      * Allocate a buffer for the replies to pass back to the client.
      */
 
-    scattr = (PEXSCAttributes *) PEXAllocBuf (sizeof (PEXSCAttributes));
+    scattr = (PEXSCAttributes *) Xmalloc (sizeof (PEXSCAttributes));
 
     scattr->start_path.count = 0;
     scattr->start_path.elements = NULL;
@@ -301,7 +302,7 @@ INPUT unsigned long	valueMask;
 	        EXTRACT_CARD32 (pBuf, count);
 	        scattr->start_path.count = count;
 
-		scattr->start_path.elements = (PEXElementRef *) PEXAllocBuf (
+		scattr->start_path.elements = (PEXElementRef *) Xmalloc (
 		    count * sizeof (PEXElementRef));
 
 		EXTRACT_LISTOF_ELEMREF (count, pBuf,
@@ -319,7 +320,7 @@ INPUT unsigned long	valueMask;
 	        EXTRACT_CARD32 (pBuf, count);
 		pList->count = count;
 
-		pList->pairs = (PEXNameSetPair *) PEXAllocBuf (
+		pList->pairs = (PEXNameSetPair *) Xmalloc (
 		    count * sizeof (PEXNameSetPair));
 
 		EXTRACT_LISTOF_NAMESET_PAIR (count, pBuf, pList->pairs);
@@ -452,11 +453,11 @@ OUTPUT PEXStructurePath		**path_return;
      */
 
     *path_return = (PEXStructurePath *)
-	PEXAllocBuf (sizeof (PEXStructurePath));
+	Xmalloc (sizeof (PEXStructurePath));
 
     (*path_return)->count = rep.numItems;
     (*path_return)->elements = (PEXElementRef *)
-	PEXAllocBuf (rep.numItems * sizeof (PEXElementRef));
+	Xmalloc ((unsigned) (rep.numItems * sizeof (PEXElementRef)));
 
     XREAD_LISTOF_ELEMREF (display, rep.numItems, (*path_return)->elements);
 

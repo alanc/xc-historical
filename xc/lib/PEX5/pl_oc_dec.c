@@ -1,4 +1,4 @@
-/* $XConsortium: pl_oc_dec.c,v 1.11 93/06/09 15:55:03 mor Exp $ */
+/* $XConsortium: pl_oc_dec.c,v 1.12 93/09/23 12:42:01 mor Exp $ */
 
 /******************************************************************************
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -41,7 +41,7 @@ INPUT char		*encoded_ocs;
      * Allocate a buffer to hold the decoded OC data.
      */
 
-    ocRet = (PEXOCData *) PEXAllocBuf (oc_count * sizeof (PEXOCData));
+    ocRet = (PEXOCData *) Xmalloc ((unsigned) (oc_count * sizeof (PEXOCData)));
 
 
     /*
@@ -521,7 +521,7 @@ PEXOCData	*ocDest;
     ocDest->data.SetModelClipVolume.count = oc->numHalfSpaces;
 
     ocDest->data.SetModelClipVolume.half_spaces = (PEXHalfSpace *)
-	PEXAllocBuf (oc->numHalfSpaces * sizeof (PEXHalfSpace));
+	Xmalloc ((unsigned) (oc->numHalfSpaces * sizeof (PEXHalfSpace)));
 
     EXTRACT_LISTOF_HALFSPACE3D (oc->numHalfSpaces, *ocSrc,
 	ocDest->data.SetModelClipVolume.half_spaces, fpConvert, fpFormat);
@@ -545,7 +545,7 @@ PEXOCData	*ocDest;
     ocDest->data.SetModelClipVolume2D.count = oc->numHalfSpaces;
 
     ocDest->data.SetModelClipVolume2D.half_spaces = (PEXHalfSpace2D *)
-	PEXAllocBuf (oc->numHalfSpaces * sizeof (PEXHalfSpace2D));
+	Xmalloc ((unsigned) (oc->numHalfSpaces * sizeof (PEXHalfSpace2D)));
 
     EXTRACT_LISTOF_HALFSPACE2D (oc->numHalfSpaces, *ocSrc,
 	ocDest->data.SetModelClipVolume2D.half_spaces, fpConvert, fpFormat);
@@ -581,10 +581,10 @@ PEXOCData	*ocDest;
     ocDest->data.SetLightSourceState.disable_count = oc->numDisable;
     
     ocDest->data.SetLightSourceState.enable = (PEXTableIndex *)
-	PEXAllocBuf (oc->numEnable * sizeof (PEXTableIndex));
+	Xmalloc ((unsigned) (oc->numEnable * sizeof (PEXTableIndex)));
 
     ocDest->data.SetLightSourceState.disable = (PEXTableIndex *)
-	PEXAllocBuf (oc->numDisable * sizeof (PEXTableIndex));
+	Xmalloc ((unsigned) (oc->numDisable * sizeof (PEXTableIndex)));
 
     EXTRACT_LISTOF_CARD16 (oc->numEnable, *ocSrc,
 	ocDest->data.SetLightSourceState.enable);
@@ -648,8 +648,8 @@ PEXOCData	*ocDest;
 
 	EXTRACT_PSC_LEVELCURVES (*ocSrc, (*levelDest), fpConvert, fpFormat);
 
-	levelDest->parameters = (float *) PEXAllocBuf (
-	    sizeof (float) * levelDest->count);
+	levelDest->parameters = (float *) Xmalloc (
+	    (unsigned) (sizeof (float) * levelDest->count));
 
 	EXTRACT_LISTOF_FLOAT32 (levelDest->count, *ocSrc,
 	    levelDest->parameters, fpConvert, fpFormat);
@@ -671,7 +671,7 @@ PEXOCData	*ocDest;
 
 {
     pexElementInfo	*elemInfo;
-    int			count;
+    unsigned		count;
 
     GET_STRUCT_PTR (pexElementInfo, *ocSrc, elemInfo);
     *ocSrc += SIZEOF (pexElementInfo);
@@ -679,7 +679,7 @@ PEXOCData	*ocDest;
     ocDest->data.AddToNameSet.count = count = elemInfo->length - 1;
 
     ocDest->data.AddToNameSet.names =
-	(PEXName *) PEXAllocBuf (count * sizeof (PEXName));
+	(PEXName *) Xmalloc (count * sizeof (PEXName));
 
     EXTRACT_LISTOF_CARD32 (count, *ocSrc, ocDest->data.AddToNameSet.names);
 }
@@ -731,7 +731,7 @@ PEXOCData	*ocDest;
     
     ocDest->data.ApplicationData.length = oc->numElements;
     ocDest->data.ApplicationData.data =
-	(PEXPointer) PEXAllocBuf (oc->numElements);
+	(PEXPointer) Xmalloc ((unsigned) oc->numElements);
     
     memcpy (ocDest->data.ApplicationData.data, *ocSrc, oc->numElements);
     *ocSrc += PADDED_BYTES (oc->numElements);
@@ -752,7 +752,7 @@ PEXOCData	*ocDest;
     
     ocDest->data.GSE.id = oc->id;
     ocDest->data.GSE.length = oc->numElements;
-    ocDest->data.GSE.data = (char *) PEXAllocBuf (oc->numElements);
+    ocDest->data.GSE.data = (char *) Xmalloc ((unsigned) oc->numElements);
     
     memcpy (ocDest->data.GSE.data, *ocSrc, oc->numElements);
     *ocSrc += PADDED_BYTES (oc->numElements);
@@ -767,7 +767,7 @@ PEXOCData	*ocDest;
 
 {
     pexMarkers 		*oc;
-    int			count;
+    unsigned		count;
     int			fpConvert = (fpFormat != NATIVE_FP_FORMAT);
 
     GET_STRUCT_PTR (pexMarkers, *ocSrc, oc);
@@ -777,7 +777,7 @@ PEXOCData	*ocDest;
 	(SIZEOF (CARD32) * ((int) oc->oc_length - 1)) / SIZEOF (pexCoord3D);
     
     ocDest->data.Markers.points =
-	(PEXCoord *) PEXAllocBuf (count * sizeof (PEXCoord));
+	(PEXCoord *) Xmalloc (count * sizeof (PEXCoord));
 
     EXTRACT_LISTOF_COORD3D (count, *ocSrc,
 	ocDest->data.Markers.points, fpConvert, fpFormat);
@@ -792,7 +792,7 @@ PEXOCData	*ocDest;
 
 {
     pexMarkers2D	*oc;
-    int			count;
+    unsigned		count;
     int			fpConvert = (fpFormat != NATIVE_FP_FORMAT);
 
     GET_STRUCT_PTR (pexMarkers2D, *ocSrc, oc);
@@ -802,7 +802,7 @@ PEXOCData	*ocDest;
 	(SIZEOF (CARD32) * ((int) oc->oc_length - 1)) / SIZEOF (pexCoord2D);
     
     ocDest->data.Markers2D.points =
-	(PEXCoord2D *) PEXAllocBuf (count * sizeof (PEXCoord2D));
+	(PEXCoord2D *) Xmalloc (count * sizeof (PEXCoord2D));
 
     EXTRACT_LISTOF_COORD2D (count, *ocSrc,
 	ocDest->data.Markers2D.points, fpConvert, fpFormat);
@@ -817,7 +817,7 @@ PEXOCData	*ocDest;
 
 {
     pexPolyline 	*oc;
-    int			count;
+    unsigned		count;
     int			fpConvert = (fpFormat != NATIVE_FP_FORMAT);
 
     GET_STRUCT_PTR (pexPolyline, *ocSrc, oc);
@@ -827,7 +827,7 @@ PEXOCData	*ocDest;
 	(SIZEOF (CARD32) * ((int) oc->oc_length - 1)) / SIZEOF (pexCoord3D);
     
     ocDest->data.Polyline.points =
-	(PEXCoord *) PEXAllocBuf (count * sizeof (PEXCoord));
+	(PEXCoord *) Xmalloc (count * sizeof (PEXCoord));
 
     EXTRACT_LISTOF_COORD3D (count, *ocSrc,
 	ocDest->data.Polyline.points, fpConvert, fpFormat);
@@ -842,7 +842,7 @@ PEXOCData	*ocDest;
 
 {
     pexPolyline2D	*oc;
-    int			count;
+    unsigned		count;
     int			fpConvert = (fpFormat != NATIVE_FP_FORMAT);
 
     GET_STRUCT_PTR (pexPolyline2D, *ocSrc, oc);
@@ -852,7 +852,7 @@ PEXOCData	*ocDest;
 	(SIZEOF (CARD32) * ((int) oc->oc_length - 1)) / SIZEOF (pexCoord2D);
     
     ocDest->data.Polyline2D.points =
-	(PEXCoord2D *) PEXAllocBuf (count * sizeof (PEXCoord2D));
+	(PEXCoord2D *) Xmalloc (count * sizeof (PEXCoord2D));
 
     EXTRACT_LISTOF_COORD2D (count, *ocSrc,
 	ocDest->data.Polyline2D.points, fpConvert, fpFormat);
@@ -911,7 +911,7 @@ PEXOCData	*ocDest;
     ocDest->data.EncodedText.count = oc->numEncodings;
 
     ocDest->data.EncodedText.encoded_text = (PEXEncodedTextData *)
-	PEXAllocBuf (oc->numEncodings * sizeof (PEXEncodedTextData));
+	Xmalloc ((unsigned) (oc->numEncodings * sizeof (PEXEncodedTextData)));
 
     EXTRACT_LISTOF_MONOENCODING (oc->numEncodings,
 	*ocSrc, ocDest->data.EncodedText.encoded_text);
@@ -949,7 +949,7 @@ PEXOCData	*ocDest;
     ocDest->data.EncodedText2D.count = oc->numEncodings;
 
     ocDest->data.EncodedText2D.encoded_text = (PEXEncodedTextData *)
-	PEXAllocBuf (oc->numEncodings * sizeof (PEXEncodedTextData));
+	Xmalloc ((unsigned) (oc->numEncodings * sizeof (PEXEncodedTextData)));
 
     EXTRACT_LISTOF_MONOENCODING (oc->numEncodings,
 	*ocSrc, ocDest->data.EncodedText2D.encoded_text);
@@ -999,7 +999,7 @@ PEXOCData	*ocDest;
     ocDest->data.EncodedAnnoText.count = oc->numEncodings;
 
     ocDest->data.EncodedAnnoText.encoded_text = (PEXEncodedTextData *)
-	PEXAllocBuf (oc->numEncodings *	sizeof (PEXEncodedTextData));
+	Xmalloc ((unsigned) (oc->numEncodings *	sizeof (PEXEncodedTextData)));
 
     EXTRACT_LISTOF_MONOENCODING (oc->numEncodings,
 	*ocSrc, ocDest->data.EncodedAnnoText.encoded_text);
@@ -1043,7 +1043,7 @@ PEXOCData	*ocDest;
     ocDest->data.EncodedAnnoText2D.count = oc->numEncodings;
 
     ocDest->data.EncodedAnnoText2D.encoded_text = (PEXEncodedTextData *)
-	PEXAllocBuf (oc->numEncodings *	sizeof (PEXEncodedTextData));
+	Xmalloc ((unsigned) (oc->numEncodings *	sizeof (PEXEncodedTextData)));
 
     EXTRACT_LISTOF_MONOENCODING (oc->numEncodings,
 	*ocSrc, ocDest->data.EncodedAnnoText2D.encoded_text);
@@ -1071,7 +1071,7 @@ PEXOCData	*ocDest;
     ocDest->data.PolylineSetWithData.count = oc->numLists;
 
     ocDest->data.PolylineSetWithData.vertex_lists = plset = (PEXListOfVertex *)
-	PEXAllocBuf (oc->numLists * sizeof (PEXListOfVertex));
+	Xmalloc ((unsigned) (oc->numLists * sizeof (PEXListOfVertex)));
 
     vertexSize = GetClientVertexSize (oc->colorType, oc->vertexAttribs);
 
@@ -1079,8 +1079,8 @@ PEXOCData	*ocDest;
     {
 	EXTRACT_CARD32 (*ocSrc, plset->count);
 
-	plset->vertices.no_data = (PEXCoord *) PEXAllocBuf (
-	    plset->count * vertexSize);
+	plset->vertices.no_data = (PEXCoord *) Xmalloc (
+	    (unsigned) (plset->count * vertexSize));
 
 	EXTRACT_LISTOF_VERTEX (plset->count, *ocSrc, vertexSize,
 	    oc->colorType, oc->vertexAttribs,
@@ -1118,23 +1118,23 @@ PEXOCData	*ocDest;
     }
 
     ocDest->data.NURBCurve.knots =
-	(float *) PEXAllocBuf (oc->numKnots * sizeof (float));
+	(float *) Xmalloc ((unsigned) (oc->numKnots * sizeof (float)));
 
     EXTRACT_LISTOF_FLOAT32 (oc->numKnots, *ocSrc,
 	ocDest->data.NURBCurve.knots, fpConvert, fpFormat);
 
     if (oc->coordType == PEXRational)
     {
-	ocDest->data.NURBCurve.points.point_4d =
-	    (PEXCoord4D *) PEXAllocBuf (oc->numPoints * sizeof (PEXCoord4D));
+	ocDest->data.NURBCurve.points.point_4d = (PEXCoord4D *) Xmalloc (
+	    (unsigned) (oc->numPoints * sizeof (PEXCoord4D)));
 
 	EXTRACT_LISTOF_COORD4D (oc->numPoints, *ocSrc,
 	    ocDest->data.NURBCurve.points.point_4d, fpConvert, fpFormat);
     }
     else
     {
-	ocDest->data.NURBCurve.points.point =
-	    (PEXCoord *) PEXAllocBuf (oc->numPoints * sizeof (PEXCoord));
+	ocDest->data.NURBCurve.points.point = (PEXCoord *) Xmalloc (
+	    (unsigned) (oc->numPoints * sizeof (PEXCoord)));
 
 	EXTRACT_LISTOF_COORD3D (oc->numPoints, *ocSrc,
 	    ocDest->data.NURBCurve.points.point, fpConvert, fpFormat);
@@ -1150,7 +1150,7 @@ PEXOCData	*ocDest;
 
 {
     pexFillArea 	*oc;
-    int			count;
+    unsigned		count;
     int			fpConvert = (fpFormat != NATIVE_FP_FORMAT);
 
     GET_STRUCT_PTR (pexFillArea, *ocSrc, oc);
@@ -1163,7 +1163,7 @@ PEXOCData	*ocDest;
 	(SIZEOF (CARD32) * ((int) oc->oc_length - 2)) / SIZEOF (pexCoord3D);
     
     ocDest->data.FillArea.points =
-	(PEXCoord *) PEXAllocBuf (count * sizeof (PEXCoord));
+	(PEXCoord *) Xmalloc (count * sizeof (PEXCoord));
 
     EXTRACT_LISTOF_COORD3D (count, *ocSrc,
 	ocDest->data.FillArea.points, fpConvert, fpFormat);
@@ -1178,7 +1178,7 @@ PEXOCData	*ocDest;
 
 {
     pexFillArea2D 	*oc;
-    int			count;
+    unsigned		count;
     int			fpConvert = (fpFormat != NATIVE_FP_FORMAT);
 
     GET_STRUCT_PTR (pexFillArea2D, *ocSrc, oc);
@@ -1191,7 +1191,7 @@ PEXOCData	*ocDest;
 	(SIZEOF (CARD32) * ((int) oc->oc_length - 2)) / SIZEOF (pexCoord2D);
     
     ocDest->data.FillArea2D.points =
-	(PEXCoord2D *) PEXAllocBuf (count * sizeof (PEXCoord2D));
+	(PEXCoord2D *) Xmalloc (count * sizeof (PEXCoord2D));
 
     EXTRACT_LISTOF_COORD2D (count, *ocSrc,
 	ocDest->data.FillArea2D.points, fpConvert, fpFormat);
@@ -1231,7 +1231,7 @@ PEXOCData	*ocDest;
     vertexSize = GetClientVertexSize (oc->colorType, oc->vertexAttribs);
 
     ocDest->data.FillAreaWithData.vertices.no_data =
-	(PEXCoord *) PEXAllocBuf (count * vertexSize);
+	(PEXCoord *) Xmalloc ((unsigned) (count * vertexSize));
 
     EXTRACT_LISTOF_VERTEX (count, *ocSrc, vertexSize,
 	oc->colorType, oc->vertexAttribs,
@@ -1260,14 +1260,14 @@ PEXOCData	*ocDest;
     ocDest->data.FillAreaSet.count = oc->numLists;
 
     ocDest->data.FillAreaSet.point_lists = pList = (PEXListOfCoord *)
-	PEXAllocBuf (oc->numLists * sizeof (PEXListOfCoord));
+	Xmalloc ((unsigned) (oc->numLists * sizeof (PEXListOfCoord)));
 
     for (i = 0; i < oc->numLists; i++, pList++)
     {
 	EXTRACT_CARD32 (*ocSrc, pList->count);
 
 	pList->points = (PEXCoord *)
-	    PEXAllocBuf (pList->count * sizeof (PEXCoord));
+	    Xmalloc ((unsigned) (pList->count * sizeof (PEXCoord)));
 
 	EXTRACT_LISTOF_COORD3D (pList->count, *ocSrc,
 	    pList->points, fpConvert, fpFormat);
@@ -1296,14 +1296,14 @@ PEXOCData	*ocDest;
     ocDest->data.FillAreaSet2D.count = oc->numLists;
 
     ocDest->data.FillAreaSet2D.point_lists = pList = (PEXListOfCoord2D *)
-	PEXAllocBuf (oc->numLists * sizeof (PEXListOfCoord2D));
+	Xmalloc ((unsigned) (oc->numLists * sizeof (PEXListOfCoord2D)));
 
     for (i = 0; i < oc->numLists; i++, pList++)
     {
 	EXTRACT_CARD32 (*ocSrc, pList->count);
 
 	pList->points = (PEXCoord2D *)
-	    PEXAllocBuf (pList->count * sizeof (PEXCoord2D));
+	    Xmalloc ((unsigned) (pList->count * sizeof (PEXCoord2D)));
 
 	EXTRACT_LISTOF_COORD2D (pList->count, *ocSrc,
 	    pList->points, fpConvert, fpFormat);
@@ -1341,7 +1341,7 @@ PEXOCData	*ocDest;
 
     ocDest->data.FillAreaSetWithData.count = oc->numLists;
     ocDest->data.FillAreaSetWithData.vertex_lists = pList = (PEXListOfVertex *)
-	PEXAllocBuf (oc->numLists * sizeof (PEXListOfVertex));
+	Xmalloc ((unsigned) (oc->numLists * sizeof (PEXListOfVertex)));
     
     vertexSize = GetClientVertexSize (oc->colorType, oc->vertexAttribs);
     if (oc->vertexAttribs & PEXGAEdges)
@@ -1351,8 +1351,8 @@ PEXOCData	*ocDest;
     {
 	EXTRACT_CARD32 (*ocSrc, pList->count);
 
-	pList->vertices.no_data = (PEXCoord *) PEXAllocBuf (
-	    pList->count * vertexSize);
+	pList->vertices.no_data = (PEXCoord *) Xmalloc (
+	    (unsigned) (pList->count * vertexSize));
 
 	EXTRACT_LISTOF_VERTEX (pList->count, *ocSrc, vertexSize,
 	    oc->colorType, oc->vertexAttribs,
@@ -1386,7 +1386,7 @@ PEXOCData	*ocDest;
 	facetSize = GetClientFacetSize (oc->colorType, oc->facetAttribs);
 
 	ocDest->data.TriangleStrip.facet_data.index = (PEXColorIndexed *)
-	    PEXAllocBuf ((oc->numVertices - 2) * facetSize);
+	    Xmalloc ((unsigned) ((oc->numVertices - 2) * facetSize));
 
 	EXTRACT_LISTOF_FACET ((oc->numVertices - 2), *ocSrc, facetSize,
 	    oc->colorType, oc->facetAttribs,
@@ -1398,7 +1398,7 @@ PEXOCData	*ocDest;
     vertexSize = GetClientVertexSize (oc->colorType, oc->vertexAttribs);
 
     ocDest->data.TriangleStrip.vertices.no_data =
-	(PEXCoord *) PEXAllocBuf (oc->numVertices * vertexSize);
+	(PEXCoord *) Xmalloc ((unsigned) (oc->numVertices * vertexSize));
 
     EXTRACT_LISTOF_VERTEX (oc->numVertices, *ocSrc, vertexSize,
 	oc->colorType, oc->vertexAttribs,
@@ -1435,7 +1435,7 @@ PEXOCData	*ocDest;
 
 	count = (oc->mPts - 1) * (oc->nPts - 1);
 	ocDest->data.QuadrilateralMesh.facet_data.index =
-	    (PEXColorIndexed *) PEXAllocBuf (count * facetSize);
+	    (PEXColorIndexed *) Xmalloc ((unsigned) (count * facetSize));
 
 	EXTRACT_LISTOF_FACET (count, *ocSrc, facetSize,
 	    oc->colorType, oc->facetAttribs,
@@ -1448,7 +1448,7 @@ PEXOCData	*ocDest;
 
     count = oc->mPts * oc->nPts;
     ocDest->data.QuadrilateralMesh.vertices.no_data =
-	(PEXCoord *) PEXAllocBuf (count * vertexSize);
+	(PEXCoord *) Xmalloc ((unsigned) (count * vertexSize));
 
     EXTRACT_LISTOF_VERTEX (count, *ocSrc, vertexSize,
 	oc->colorType, oc->vertexAttribs,
@@ -1492,7 +1492,7 @@ PEXOCData	*ocDest;
 	facetSize = GetClientFacetSize (oc->colorType, oc->FAS_Attributes);
 
 	ocDest->data.SetOfFillAreaSets.facet_data.index =
-	    (PEXColorIndexed *) PEXAllocBuf (oc->numFAS * facetSize);
+	    (PEXColorIndexed *) Xmalloc ((unsigned) (oc->numFAS * facetSize));
 
 	EXTRACT_LISTOF_FACET (oc->numFAS, *ocSrc, facetSize,
 	    oc->colorType, oc->FAS_Attributes,
@@ -1504,7 +1504,7 @@ PEXOCData	*ocDest;
     vertexSize = GetClientVertexSize (oc->colorType, oc->vertexAttributes);
 
     ocDest->data.SetOfFillAreaSets.vertices.no_data =
-	(PEXCoord *) PEXAllocBuf (oc->numVertices * vertexSize);
+	(PEXCoord *) Xmalloc ((unsigned) (oc->numVertices * vertexSize));
 
     EXTRACT_LISTOF_VERTEX (oc->numVertices, *ocSrc, vertexSize,
 	oc->colorType, oc->vertexAttributes,
@@ -1514,7 +1514,7 @@ PEXOCData	*ocDest;
     {
 	unsigned int size = oc->numEdges * sizeof (CARD8);
 	ocDest->data.SetOfFillAreaSets.edge_flags =
-	    (PEXSwitch *) PEXAllocBuf (size);
+	    (PEXSwitch *) Xmalloc (size);
 	memcpy (ocDest->data.SetOfFillAreaSets.edge_flags, *ocSrc, size);
 	*ocSrc += PADDED_BYTES (size);
     }
@@ -1522,22 +1522,22 @@ PEXOCData	*ocDest;
 	ocDest->data.SetOfFillAreaSets.edge_flags = NULL;
 	
     ocDest->data.SetOfFillAreaSets.connectivity = pCon =
-	(PEXConnectivityData *) PEXAllocBuf (oc->numFAS *
-	sizeof (PEXConnectivityData));
+	(PEXConnectivityData *) Xmalloc ((unsigned) (oc->numFAS *
+	sizeof (PEXConnectivityData)));
 
     for (i = 0; i < (int) oc->numFAS; i++, pCon++)
     {
 	EXTRACT_CARD16 (*ocSrc, pCon->count);
 
 	pCon->lists = pList = (PEXListOfUShort *)
-	    PEXAllocBuf (pCon->count * sizeof (PEXListOfUShort));
+	    Xmalloc ((unsigned) (pCon->count * sizeof (PEXListOfUShort)));
 
 	for (j = 0; j < (int) pCon->count; j++, pList++)
 	{
 	    EXTRACT_CARD16 (*ocSrc, pList->count);
 
-	    pList->shorts = (unsigned short *) PEXAllocBuf (
-		pList->count * sizeof (unsigned short));
+	    pList->shorts = (unsigned short *) Xmalloc (
+		(unsigned) (pList->count * sizeof (unsigned short)));
 
 	    EXTRACT_LISTOF_CARD16 (pList->count, *ocSrc, pList->shorts);
 	}
@@ -1559,7 +1559,7 @@ PEXOCData	*ocDest;
     PEXListOfTrimCurve	*pList;
     pexTrimCurve	*trimSrc;
     PEXTrimCurve	*trimDest;
-    int			count;
+    unsigned		count;
     int			i, j;
     int			fpConvert = (fpFormat != NATIVE_FP_FORMAT);
 
@@ -1574,14 +1574,14 @@ PEXOCData	*ocDest;
 
     count = oc->uOrder + oc->mPts;
     ocDest->data.NURBSurface.uknots =
-	(float *) PEXAllocBuf (count * sizeof (float));
+	(float *) Xmalloc (count * sizeof (float));
 
     EXTRACT_LISTOF_FLOAT32 (count, *ocSrc,
 	ocDest->data.NURBSurface.uknots, fpConvert, fpFormat);
 
     count = oc->vOrder + oc->nPts;
     ocDest->data.NURBSurface.vknots =
-	(float *) PEXAllocBuf (count * sizeof (float));
+	(float *) Xmalloc (count * sizeof (float));
 
     EXTRACT_LISTOF_FLOAT32 (count, *ocSrc,
 	ocDest->data.NURBSurface.vknots, fpConvert, fpFormat);
@@ -1591,7 +1591,7 @@ PEXOCData	*ocDest;
     if (oc->type == PEXRational)
     {
 	ocDest->data.NURBSurface.points.point_4d =
-	    (PEXCoord4D *) PEXAllocBuf (count * sizeof (PEXCoord4D));
+	    (PEXCoord4D *) Xmalloc (count * sizeof (PEXCoord4D));
 
 	EXTRACT_LISTOF_COORD4D (count, *ocSrc,
 	    ocDest->data.NURBSurface.points.point_4d, fpConvert, fpFormat);
@@ -1599,7 +1599,7 @@ PEXOCData	*ocDest;
     else
     {
 	ocDest->data.NURBSurface.points.point =
-	    (PEXCoord *) PEXAllocBuf (count * sizeof (PEXCoord));
+	    (PEXCoord *) Xmalloc (count * sizeof (PEXCoord));
 
 	EXTRACT_LISTOF_COORD3D (count, *ocSrc,
 	    ocDest->data.NURBSurface.points.point, fpConvert, fpFormat);
@@ -1607,14 +1607,14 @@ PEXOCData	*ocDest;
 
     ocDest->data.NURBSurface.curve_count = oc->numLists;
     ocDest->data.NURBSurface.trim_curves = pList = (PEXListOfTrimCurve *)
-	PEXAllocBuf (oc->numLists * sizeof (PEXListOfTrimCurve));
+	Xmalloc ((unsigned) (oc->numLists * sizeof (PEXListOfTrimCurve)));
 
     for (i = 0; i < oc->numLists; i++, pList++)
     {
 	EXTRACT_CARD32 (*ocSrc, pList->count);
 
 	pList->curves = trimDest = (PEXTrimCurve *)
-	    PEXAllocBuf (pList->count * sizeof (PEXTrimCurve));
+	    Xmalloc ((unsigned) (pList->count * sizeof (PEXTrimCurve)));
 
 	for (j = 0; j < (int) pList->count; j++, trimDest++)
 	{
@@ -1643,7 +1643,7 @@ PEXOCData	*ocDest;
 	    count = trimSrc->order + trimSrc->numCoord;
 	    trimDest->knots.count = count;
 	    trimDest->knots.floats =
-		(float *) PEXAllocBuf (count * sizeof (float));
+		(float *) Xmalloc (count * sizeof (float));
 
 	    EXTRACT_LISTOF_FLOAT32 (count, *ocSrc,
 		trimDest->knots.floats, fpConvert, fpFormat);
@@ -1652,16 +1652,16 @@ PEXOCData	*ocDest;
 
 	    if (trimSrc->type == PEXRational)
 	    {
-		trimDest->control_points.point = (PEXCoord *)
-		    PEXAllocBuf (trimSrc->numCoord * sizeof (PEXCoord));
+		trimDest->control_points.point = (PEXCoord *) Xmalloc (
+		    (unsigned) (trimSrc->numCoord * sizeof (PEXCoord)));
 
 		EXTRACT_LISTOF_COORD3D (trimSrc->numCoord, *ocSrc,
 		    trimDest->control_points.point, fpConvert, fpFormat);
 	    }
 	    else
 	    {
-		trimDest->control_points.point_2d = (PEXCoord2D *)
-		    PEXAllocBuf (trimSrc->numCoord * sizeof (PEXCoord2D));
+		trimDest->control_points.point_2d = (PEXCoord2D *) Xmalloc (
+		    (unsigned) (trimSrc->numCoord * sizeof (PEXCoord2D)));
 
 		EXTRACT_LISTOF_COORD2D (trimSrc->numCoord, *ocSrc,
 		    trimDest->control_points.point_2d, fpConvert, fpFormat);
@@ -1679,7 +1679,7 @@ PEXOCData	*ocDest;
 
 {
     pexCellArray	*oc;
-    int			count;
+    unsigned		count;
     int			fpConvert = (fpFormat != NATIVE_FP_FORMAT);
 
 
@@ -1725,7 +1725,7 @@ PEXOCData	*ocDest;
 
     count = oc->dx * oc->dy;
     ocDest->data.CellArray.color_indices =
-	(PEXTableIndex *) PEXAllocBuf (count * sizeof (PEXTableIndex));
+	(PEXTableIndex *) Xmalloc (count * sizeof (PEXTableIndex));
 
     EXTRACT_LISTOF_CARD16 (count, *ocSrc,
 	ocDest->data.CellArray.color_indices);
@@ -1743,7 +1743,7 @@ PEXOCData	*ocDest;
 
 {
     pexCellArray2D	*oc;
-    int			count;
+    unsigned		count;
     int			fpConvert = (fpFormat != NATIVE_FP_FORMAT);
 
 
@@ -1774,7 +1774,7 @@ PEXOCData	*ocDest;
 
     count = oc->dx * oc->dy;
     ocDest->data.CellArray2D.color_indices =
-	(PEXTableIndex *) PEXAllocBuf (count * sizeof (PEXTableIndex));
+	(PEXTableIndex *) Xmalloc (count * sizeof (PEXTableIndex));
 
     EXTRACT_LISTOF_CARD16 (count, *ocSrc,
 	ocDest->data.CellArray2D.color_indices);
@@ -1792,7 +1792,7 @@ PEXOCData	*ocDest;
 
 {
     pexExtendedCellArray	*oc;
-    int				count;
+    unsigned			count;
     int				fpConvert = (fpFormat != NATIVE_FP_FORMAT);
 
     GET_STRUCT_PTR (pexExtendedCellArray, *ocSrc, oc);
@@ -1838,7 +1838,7 @@ PEXOCData	*ocDest;
 
     count = oc->dx * oc->dy;
     ocDest->data.ExtendedCellArray.colors.indexed = (PEXColorIndexed *)
-	PEXAllocBuf (count * GetClientColorSize (oc->colorType));
+	Xmalloc (count * GetClientColorSize (oc->colorType));
 
     EXTRACT_LISTOF_COLOR_VAL (count, *ocSrc, oc->colorType,
 	ocDest->data.ExtendedCellArray.colors, fpConvert, fpFormat);
@@ -1863,12 +1863,12 @@ PEXOCData	*ocDest;
     ocDest->data.GDP.length = oc->numBytes;
 
     ocDest->data.GDP.points =
-	(PEXCoord *) PEXAllocBuf (oc->numPoints * sizeof (PEXCoord));
+	(PEXCoord *) Xmalloc ((unsigned) (oc->numPoints * sizeof (PEXCoord)));
 
     EXTRACT_LISTOF_COORD3D (oc->numPoints, *ocSrc,
 	ocDest->data.GDP.points, fpConvert, fpFormat);
 
-    ocDest->data.GDP.data = (char *) PEXAllocBuf (oc->numBytes);
+    ocDest->data.GDP.data = (char *) Xmalloc ((unsigned) (oc->numBytes));
 
     memcpy (ocDest->data.GDP.data, *ocSrc, oc->numBytes);
     *ocSrc += PADDED_BYTES (oc->numBytes);
@@ -1892,13 +1892,13 @@ PEXOCData	*ocDest;
     ocDest->data.GDP2D.count = oc->numPoints;
     ocDest->data.GDP2D.length = oc->numBytes;
 
-    ocDest->data.GDP2D.points =
-	(PEXCoord2D *) PEXAllocBuf (oc->numPoints * sizeof (PEXCoord2D));
+    ocDest->data.GDP2D.points = (PEXCoord2D *) Xmalloc (
+	(unsigned) (oc->numPoints * sizeof (PEXCoord2D)));
 
     EXTRACT_LISTOF_COORD2D (oc->numPoints, *ocSrc,
 	ocDest->data.GDP2D.points, fpConvert, fpFormat);
 
-    ocDest->data.GDP2D.data = (char *) PEXAllocBuf (oc->numBytes);
+    ocDest->data.GDP2D.data = (char *) Xmalloc ((unsigned) oc->numBytes);
 
     memcpy (ocDest->data.GDP2D.data, *ocSrc, oc->numBytes);
     *ocSrc += PADDED_BYTES (oc->numBytes);

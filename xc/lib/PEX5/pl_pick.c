@@ -1,4 +1,4 @@
-/* $XConsortium: pl_pick.c,v 1.10 92/11/04 11:40:53 mor Exp $ */
+/* $XConsortium: pl_pick.c,v 1.8 93/02/23 14:41:02 mor Exp $ */
 
 /******************************************************************************
 Copyright 1987,1991 by Digital Equipment Corporation, Maynard, Massachusetts
@@ -164,7 +164,7 @@ INPUT unsigned long		valueMask;
     PEXPMAttributes			*ppmi;
     unsigned long			f;
     int					i;
-    int					count;
+    unsigned				count;
 
 
     /*
@@ -207,7 +207,7 @@ INPUT unsigned long		valueMask;
      * Allocate a buffer for the replies to pass back to the client.
      */
 
-    ppmi = (PEXPMAttributes *) PEXAllocBuf (sizeof (PEXPMAttributes));
+    ppmi = (PEXPMAttributes *) Xmalloc (sizeof (PEXPMAttributes));
 
     ppmi->pick_path.count = 0;
     ppmi->pick_path.elements = NULL;
@@ -230,7 +230,7 @@ INPUT unsigned long		valueMask;
 		ppmi->pick_path.count = count;
 
 		ppmi->pick_path.elements = (PEXPickElementRef *)
-		    PEXAllocBuf (count * sizeof (PEXPickElementRef));
+		    Xmalloc (count * sizeof (PEXPickElementRef));
 
 		EXTRACT_LISTOF_PICKELEMREF (count,
 		    pBuf, ppmi->pick_path.elements);
@@ -319,7 +319,7 @@ INPUT unsigned long		valueMask;
     PEXPDAttributes			*ppdi;
     unsigned long			f;
     int					i;
-    int					count;
+    unsigned				count;
     int					size;
     int					fpConvert;
     int					fpFormat;
@@ -367,7 +367,7 @@ INPUT unsigned long		valueMask;
      * Allocate a buffer for the replies to pass back to the client.
      */
 
-    ppdi = (PEXPDAttributes *) PEXAllocBuf (sizeof (PEXPDAttributes));
+    ppdi = (PEXPDAttributes *) Xmalloc (sizeof (PEXPDAttributes));
 
     ppdi->path.count = 0;
     ppdi->path.elements = NULL;
@@ -390,7 +390,7 @@ INPUT unsigned long		valueMask;
 		ppdi->path.count = count;
 
 		ppdi->path.elements = (PEXPickElementRef *)
-		    PEXAllocBuf (count * sizeof (PEXPickElementRef));
+		    Xmalloc (count * sizeof (PEXPickElementRef));
 
 		EXTRACT_LISTOF_PICKELEMREF (count, pBuf, ppdi->path.elements);
 		break;
@@ -762,7 +762,7 @@ OUTPUT int			*undetectable_return;
 	PEXPickCacheInUse = 1;
     }
     else
-	pathRet = (PEXPickPath *) PEXAllocBuf (size);
+	pathRet = (PEXPickPath *) Xmalloc (size);
 
     pathRet->elements = (PEXPickElementRef *) (pathRet + 1);
     pathRet->count = rep.numPickElRefs;
@@ -864,7 +864,7 @@ OUTPUT int			*undetectable_return;
 	PEXPickCacheInUse = 1;
     }
     else
-	pathRet = (PEXPickPath *) PEXAllocBuf (size);
+	pathRet = (PEXPickPath *) Xmalloc (size);
 
     pathRet->elements = (PEXPickElementRef *) (pathRet + 1);
     pathRet->count = rep.numPickElRefs;
@@ -1031,7 +1031,7 @@ OUTPUT unsigned long	*count_return;
 	PEXPickCacheInUse = 1;
     }
     else
-	pPathRet = (PEXPickPath *) PEXAllocBuf (total_size);
+	pPathRet = (PEXPickPath *) Xmalloc (total_size);
 
     pPath = pPathRet;
     pBuf = pBufSave;
@@ -1166,7 +1166,7 @@ OUTPUT unsigned long	*count_return;
 	PEXPickCacheInUse = 1;
     }
     else
-	pPathRet = (PEXPickPath *) PEXAllocBuf (total_size);
+	pPathRet = (PEXPickPath *) Xmalloc (total_size);
 
     pPath = pPathRet;
     pBuf = pBufSave;

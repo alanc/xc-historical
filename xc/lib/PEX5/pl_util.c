@@ -1,4 +1,4 @@
-/* $XConsortium: pl_util.c,v 1.8 93/02/23 14:41:08 mor Exp $ */
+/* $XConsortium: pl_util.c,v 1.9 93/09/09 14:38:42 rws Exp $ */
 
 /******************************************************************************
 Copyright 1987,1991 by Digital Equipment Corporation, Maynard, Massachusetts
@@ -2271,7 +2271,8 @@ OUTPUT PEXCoord		*points_return;
      * Fill in the Z value for each XC point.
      */
 
-    xc_wz_points = (PEXCoord *) PEXAllocBuf (point_count * sizeof (PEXCoord));
+    xc_wz_points = (PEXCoord *) Xmalloc (
+	(unsigned) (point_count * sizeof (PEXCoord)));
 
     for (i = 0; i < point_count; i++)
     {
@@ -2299,7 +2300,7 @@ OUTPUT PEXCoord		*points_return;
     status = PEXTransformPoints (xform, point_count,
 	xc_wz_points, points_return);
 
-    PEXFreeBuf ((char *) xc_wz_points);
+    Xfree ((char *) xc_wz_points);
 
     if (status != 0)
 	return (status);
@@ -2389,7 +2390,8 @@ OUTPUT PEXCoord2D	*points_return;
      * Fill in the XC point.
      */
 
-    xc_points = (PEXCoord2D *) PEXAllocBuf (point_count * sizeof (PEXCoord2D));
+    xc_points = (PEXCoord2D *) Xmalloc (
+	(unsigned) (point_count * sizeof (PEXCoord2D)));
 
     for (i = 0; i < point_count; i++)
     {
@@ -2416,7 +2418,7 @@ OUTPUT PEXCoord2D	*points_return;
     status = PEXTransformPoints2D (xform, point_count,
 	xc_points, points_return);
 
-    PEXFreeBuf ((char *) xc_points);
+    Xfree ((char *) xc_points);
 
     if (status != 0)
 	return (status);

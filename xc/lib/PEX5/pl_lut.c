@@ -1,4 +1,4 @@
-/* $XConsortium: pl_lut.c,v 1.8 92/10/27 10:40:19 mor Exp $ */
+/* $XConsortium: pl_lut.c,v 1.9 93/02/23 14:40:46 mor Exp $ */
 
 /******************************************************************************
 Copyright 1987,1991 by Digital Equipment Corporation, Maynard, Massachusetts
@@ -316,7 +316,7 @@ OUTPUT PEXTableIndex	**indicesReturn;
     register pexGetDefinedIndicesReq	*req;
     char				*pBuf;
     pexGetDefinedIndicesReply		rep;
-    int					count;
+    unsigned				count;
 
 
     /*
@@ -356,7 +356,7 @@ OUTPUT PEXTableIndex	**indicesReturn;
      */
 
     count = (rep.numIndices & 1) ? (rep.numIndices + 1) : rep.numIndices;
-    *indicesReturn = (PEXTableIndex *) PEXAllocBuf (
+    *indicesReturn = (PEXTableIndex *) Xmalloc (
 	count * sizeof (PEXTableIndex));
 
     XREAD_LISTOF_CARD16 (display, count, *indicesReturn);
@@ -1327,9 +1327,9 @@ INPUT int	fpFormat;
 	    dst->col_count = src->numx;
 	    dst->row_count = src->numy;
 
-	    dst->colors.indexed = (PEXColorIndexed *) PEXAllocBuf (
-		GetClientColorSize (dst->color_type) *
-		dst->row_count * dst->col_count);
+	    dst->colors.indexed = (PEXColorIndexed *) Xmalloc (
+		(unsigned) (GetClientColorSize (dst->color_type) *
+		dst->row_count * dst->col_count));
 
 	    EXTRACT_LISTOF_COLOR_VAL (dst->row_count * dst->col_count,
 		pBuf, dst->color_type, dst->colors, fpConvert, fpFormat);
@@ -1353,7 +1353,7 @@ INPUT int	fpFormat;
 	    dst->count = src->numFonts;
 
 	    dst->fonts = (PEXFont *)
-		PEXAllocBuf (dst->count * sizeof (PEXFont));
+		Xmalloc ((unsigned) (dst->count * sizeof (PEXFont)));
 	    
 	    EXTRACT_LISTOF_CARD32 (dst->count, pBuf, dst->fonts);
 	}
