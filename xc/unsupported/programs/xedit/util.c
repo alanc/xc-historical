@@ -1,6 +1,4 @@
-#if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: util.c,v 1.14 89/10/07 14:59:43 kit Exp $";
-#endif /* lint && SABER */
+/* $XConsortium: util.c,v 1.15 92/08/12 15:45:54 converse Exp $ */
 
 /*
  *			  COPYRIGHT 1987
@@ -111,13 +109,13 @@ MaybeCreateFile(file)
 char * file;
 {
     Boolean exists;
+    int fd;
 
-/*
- * If file doesn't exit create it.
- */
-
-    if (access(file, F_OK) != 0) 
-	creat(file, 0666);
+    if (access(file, F_OK) != 0) {
+	fd = creat(file, 0666);
+	if (fd != -1)
+	    close(fd);
+    }
 
     return(CheckFilePermissions(file, &exists));
 }
