@@ -1,4 +1,4 @@
-.TH XPR 1 "1 March 1988" "X Version 11"
+.TH XPR 1 "24 October 1988" "X Version 11"
 .SH NAME
 xpr \- print an X window dump
 .SH SYNOPSIS
@@ -120,39 +120,39 @@ cause the printer to overload and print the page in an obscure manner.
 .IP "\fB\-device\fP \fIdevice\fP"
 Specifies the device on which the file will be printed.  Currently only
 the LN03 (-device ln03), LA100 (-device la100), PostScript printers
-(-device ps) and IBM PP3812  (-device pp) are supported.
+(-device ps) and IBM PP3812 (-device pp) are supported.
 \fB-device lw\fP (LaserWriter) is equivalent to -device ps and is
 provided only for backwards compatibility.
 .SH SEE ALSO
-xwd(1), xdpr(1), xwud(1), X(1)
+xwd(1), xwud(1), X(1)
 .SH LIMITATIONS
 
-The current version of \fIxpr\fP can generally  print out on  the LN03
-most X  windows that are not   larger than two-thirds   of the screen.
-For example, it will be able to print out a  large Emacs  window,  but
-it will usually fail when trying to print out the  entire screen.  The
-LN03 has memory  limitations that can cause it  to  incorrectly  print
-very   large or complex    windows.    The two   most common    errors
-encountered  are ``band  too  complex'' and ``page  memory exceeded.''
-In the first case, a window may have  a particular six  pixel row that
-contains too many  changes (from black to  white to black).  This will
-cause the printer to drop part of the line  and possibly  parts of the
-rest of the page.  The printer will flash the  number `1' on its front
-panel when this problem occurs.  A  possible solution  to this problem
-is to increase the scale of the picture, or to split the picture  onto
-two  or  more pages.   The second problem,   ``page memory exceeded,''
-will occur if the picture contains too much  black, or if the  picture
-contains    complex half-tones such   as   the  background  color of a
-display.  When this   problem occurs  the  printer will  automatically
-split the picture  into two or  more pages.   It may  flash the number
-`5' on  its from panel.   There  is no easy  solution to this problem.
-It will probably be  necessary to either  cut  and paste, or rework to
+The current version of \fIxpr\fP can generally print out on the LN03
+most X windows that are not larger than two-thirds of the screen.
+For example, it will be able to print out a large Emacs window, but
+it will usually fail when trying to print out the entire screen.  The
+LN03 has memory limitations that can cause it to incorrectly print
+very large or complex windows.  The two most common errors
+encountered are ``band too complex'' and ``page memory exceeded.''
+In the first case, a window may have a particular six pixel row that
+contains too many changes (from black to white to black).  This will
+cause the printer to drop part of the line and possibly parts of the
+rest of the page.  The printer will flash the number `1' on its front
+panel when this problem occurs.  A possible solution to this problem
+is to increase the scale of the picture, or to split the picture onto
+two or more pages.  The second problem, ``page memory exceeded,''
+will occur if the picture contains too much black, or if the picture
+contains complex half-tones such as the background color of a
+display.  When this problem occurs the printer will automatically
+split the picture into two or more pages.  It may flash the number
+`5' on its from panel.  There is no easy solution to this problem.
+It will probably be necessary to either cut and paste, or to rework the
 application to produce a less complex picture.
 
-\fIXpr\fP provides some support  for the  LA100.   However, there  are
-several limitations on its use: The picture will  always be printed in
-portrait mode, there is no
-scaling and the aspect ratio will be slightly off.
+\fIXpr\fP provides some support for the LA100.  However, there are
+several limitations on its use: the picture will always be printed in
+portrait mode, there is no scaling,
+and the aspect ratio will be slightly off.
 
 Support for PostScript output currently cannot handle the \fB-append\fP,
 \fB-noff\fP or \fB-split\fP options.
