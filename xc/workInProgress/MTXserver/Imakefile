@@ -109,7 +109,7 @@ ServerTarget(Xsun,$(EXTDIR) $(SUNDIRS),$(SUNOBJS),$(SUNLIBS),$(SUNSYSLIBS))
 HPDIRS = dix ddx/snf ddx/mi ddx/hp/hp ddx/hp/mfb ddx/hp/cfb ddx/hp/gbx \
          ddx/hp/mob ddx/hp/topcat ddx/hp/catseye ddx/hp/ren os/hpux
 HPOBJS = ddx/hp/hp/init.o
-HPLIBS = $(HP) \
+HPLIBS = $(DIX) $(EXTENSIONS) $(HP) \
           ddx/hp/gbx/libgbx.a \
           ddx/hp/mob/libmob.a \
           ddx/hp/topcat/libtopcat.a \
@@ -119,7 +119,7 @@ HPLIBS = $(HP) \
           ddx/hp/mfb/libmfb.a \
           ddx/hp/cfb/libcfb.a \
           ddx/hp/ren/libren.a \
-          $(DIX) $(SNF) $(HPUX) $(MI) $(EXTENSIONS)
+          $(SNF) $(HPUX) $(MI)
 #if ServerMallocLib
 HPMALLOCLIB = -lmalloc
 #endif
