@@ -1,4 +1,4 @@
-/* $XConsortium: Shell.c,v 1.115 91/07/23 16:12:02 converse Exp $ */
+/* $XConsortium: Shell.c,v 1.116 91/07/24 16:41:47 swick Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -1271,11 +1271,11 @@ static void EventHandler(wid, closure, event, continue_to_dispatch)
 #define NEQ(x)	( w->core.x != event->xconfigure.x )
 		if( NEQ(width) || NEQ(height) || NEQ(border_width) ) {
 			sizechanged = TRUE;
-		}
 #undef NEQ
-		w->core.width = event->xconfigure.width;
-		w->core.height = event->xconfigure.height;
-		w->core.border_width = event->xconfigure.border_width;
+			w->core.width = event->xconfigure.width;
+			w->core.height = event->xconfigure.height;
+			w->core.border_width = event->xconfigure.border_width;
+		}
 		if (event->xany.send_event /* ICCCM compliant synthetic ev */
 		    /* || w->shell.override_redirect */
 		    || w->shell.client_specified & _XtShellNotReparented)
@@ -1539,18 +1539,6 @@ static XtGeometryResult GeometryManager( wid, request, reply )
 	if (request->request_mode & (CWX | CWY))
 	    return(XtGeometryNo);
 
-	if(!XtIsRealized((Widget)shell)){
-		*reply = *request;
-		if(request->request_mode & CWWidth)
-		   wid->core.width = shell->core.width = request->width;
-		if(request->request_mode & CWHeight) 
-		   wid->core.height = shell->core.height = request->height;
-		if(request->request_mode & CWBorderWidth)
-		   wid->core.border_width = shell->core.border_width =
-		   	request->border_width;
-		return(XtGeometryYes);
-	}
-
 	/* %%% worry about XtCWQueryOnly */
 	my_request.request_mode = 0;
 	if (request->request_mode & CWWidth) {
@@ -1792,6 +1780,7 @@ static XtGeometryResult RootGeometryManager(gw, request, reply)
 	     * or the current one recovers
 	     * my size requests will be visible
 	     */
+	    PutBackGeometry();
 	    return XtGeometryNo;
     }
 
@@ -1849,6 +1838,7 @@ static XtGeometryResult RootGeometryManager(gw, request, reply)
     } else if (wm) { /* no event */ 
 	((WMShellWidget)w)->wm.wait_for_wm = FALSE; /* timed out; must be broken */
     }
+    PutBackGeometry();
 #undef PutBackGeometry
     return XtGeometryNo;
 }
