@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: xrdb.c,v 11.24 89/01/06 10:42:16 jim Exp $";
+static char rcs_id[] = "$XConsortium: xrdb.c,v 11.25 89/03/24 10:13:17 jim Exp $";
 #endif
 
 /*
@@ -46,6 +46,7 @@ static char rcs_id[] = "$XConsortium: xrdb.c,v 11.24 89/01/06 10:42:16 jim Exp $
 #endif /* CPP */
 
 char *ProgramName;
+static Bool quiet = False;
 
 #define RESOURCE_PROPERTY_NAME "RESOURCE_MANAGER"
 #define BACKUP_SUFFIX ".bak"		/* for editting */
@@ -55,6 +56,7 @@ extern FILE *popen();
 
 typedef struct _Entry {
     char *tag, *value;
+    int lineno;
     Bool usable;
 } Entry;
 typedef struct _Buffer {
@@ -118,6 +120,12 @@ void AddEntry(e, entry)
 
     for (n = 0; n < e->used; n++) {
 	if (strcmp(e->entry[n].tag, entry.tag) == 0) { /* overwrite old entry */
+	    if (!quiet) {
+		fprintf (stderr, 
+			 "%s:  \"%s\" on line %d overrides entry on line %d\n",
+			 ProgramName, entry.tag, entry.lineno, 
+			 e->entry[n].lineno);
+	    }
 	    e->entry[n] = entry;
 	    return ;  /* ok to leave, now there's only one of each tag in db */
 	}
@@ -172,19 +180,24 @@ void GetEntries(entries, buff)
     register char *line, *colon, *temp, *str;
     Entry entry;
     register int length;
+    int lineno = 0;
 
     str = buff->buff;
     if (!str) return;
     for (; str < buff->buff + buff->used; str = line + 1) {
 	line = FindFirst(str, '\n');
+	lineno++;
 	if (line == NULL)
 	    break; 
 	if (str[0] == '!')
 	    continue;
 	if (str[0] == '\n')
 	    continue;
-	if (str[0] == '#')
+	if (str[0] == '#') {
+	    int dummy;
+	    if (sscanf (str, "# %d", &dummy) == 1) lineno = dummy - 1;
 	    continue;
+	}
 	colon = FindFirst(str, ':');
 	if (colon == NULL)
 	    break;
@@ -211,6 +224,7 @@ void GetEntries(entries, buff)
 	    temp++; length--;
 	}
 	entry.value = temp;
+	entry.lineno = lineno;
 
 	AddEntry(entries, entry);
     }
@@ -454,6 +468,8 @@ void Syntax ()
     fprintf (stderr, 
 	     "    -remove                      remove %s from its window\n",
 	     RESOURCE_PROPERTY_NAME);
+    fprintf (stderr,
+	     "    -quiet                       don't warn about duplicates\n");
     fprintf (stderr, 
 	     "    -Dname[=value], -Uname, -Idirectory    %s\n",
 	     "passed to preprocessor");
@@ -576,6 +592,9 @@ main (argc, argv)
 		continue;
 	    } else if (isabbreviation ("-remove", arg, 2)) {
 		removeProp = 1;
+		continue;
+	    } else if (isabbreviation ("-quiet", arg, 2)) {
+		quiet = True;
 		continue;
 	    } else if (arg[1] == 'I' || arg[1] == 'U' || arg[1] == 'D') {
 		strcat(defines, " \"");

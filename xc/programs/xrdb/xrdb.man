@@ -82,6 +82,10 @@ This option indicates that changes to the property (when used with \fI-load\fP)
 or to the resource file (when used with \fI-edit\fP) should be shown on the
 standard output, but should not be performed.
 .TP 8
+.B \-quiet
+This option indicates that warning about duplicate entries should not be 
+displayed.
+.TP 8
 .B -cpp \fIfilename\fP
 This option specifies the pathname of the C preprocessor program to be used.
 Although 
