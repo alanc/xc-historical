@@ -1,5 +1,5 @@
 .\" Contrib manifest  -*- Nroff -*-
-.\" $XConsortium: Manifest.ms,v 1.2 94/06/10 15:17:03 gildea Exp $
+.\" $XConsortium: Manifest.ms,v 1.3 94/06/10 15:36:20 gildea Exp $
 .\" #! troff -ms
 .nr PS 11
 .if n \{
@@ -35,9 +35,9 @@
 .ds CH \"
 
 .ce 100
-\s+2\fBX Window System, Version 11, Release 6\fP\s-2
+\s+2\fBX Window System, Version 11, Release 6\fP\s0
 
-\s+1\fBContrib Manifest\fP\s-1
+\s+2\fBContrib Manifest\fP\s0
 .ce 0
 .sp .5i
 Copyright \(co\ 1994 X Consortium
@@ -91,13 +91,18 @@ not know what hardware (if any) it will work on.  All questions
 regarding contributed software should be directed to the authors, not
 to the X Consortium.
 .LP
-See the Release Notes for general guidelines on building contrib software.
+You will need approximately 175 megabytes of storage to unpack the
+entire R6 contrib part.
+See the Release Notes for general guidelines on unpacking the
+distribution and building contrib software.
 .LP
 Patches to some of this software can usually be found in the directory
 pub/R6/contrib-fixes on ftp.x.org or your local X mirror site, using
 anonymous FTP.
 Entirely new versions of some packages may be found in the appropriate
 subdirectory of contrib on ftp.x.org or your local X mirror site.
+.LP
+The X Consortium thanks everyone who contributed software to Release 6.
 .sp 2
 .LP
 And now the software, directory by directory:
@@ -115,7 +120,8 @@ Sample programs for Fresco.
 
 .DH 1 extensions
 .DH 2 XTrap
-X protocol trapper, allowing event capture and playback.
+An extension to X to facilitate user emulation.
+Trap device input and graphics output to record and playback a user session.
 .DH 2 screensaver
 a hack screen saver extension
 
@@ -246,7 +252,7 @@ xrunclient	launch an X client
 xscreensaver-1.22	run graphics hacks after the user has been idle for a while
 xsession-1.1	session manager for the X Window System
 xterm_color	diffs to make xterm handle color changes in text
-youbin	mail arrival notification service
+youbin-1.9	mail arrival notification service
 .fi
 
 .DH 1 test
