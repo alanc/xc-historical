@@ -4,7 +4,7 @@
 
 XCOMM -------------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-XCOMM $XConsortium: Imake.tmpl,v 1.164 93/03/29 18:51:55 rws Exp $
+XCOMM $XConsortium: Imake.tmpl,v 1.165 93/05/19 17:33:36 gildea Exp $
 XCOMM
 XCOMM Platform-specific parameters may be set in the appropriate <vendor>.cf
 XCOMM configuration files.  Site-specific parameters should be set in the file
@@ -755,6 +755,14 @@ XCOMM the platform-specific parameters - edit site.def to change
 #ifndef EqnCmd
 #define EqnCmd eqn
 #endif
+#if HasPurify
+#ifndef PurifyCmd
+#define PurifyCmd purify
+#endif
+#ifndef PurifyOptions
+#define PurifyOptions /**/
+#endif
+#endif
 #ifndef ExpandManNames
 #if SystemV
 #define ExpandManNames NO
@@ -815,6 +823,10 @@ XCOMM the platform-specific parameters - edit site.def to change
          MSMACROS = MsMacros
               TBL = TblCmd
               EQN = EqnCmd
+#if HasPurify
+           PURIFY = PurifyCmd
+    PURIFYOPTIONS = PurifyOptions
+#endif
      STD_INCLUDES = StandardIncludes
   STD_CPP_DEFINES = StandardCppDefines
       STD_DEFINES = StandardDefines
