@@ -243,6 +243,7 @@ if( (ciptr->fd=socket( Sockettrans2devtab[i].family, type,
 #endif
 	) {
 	PRMSG(1, "TRANS(SocketOpen): socket() failed for %s\n", Sockettrans2devtab[i].transname, 0,0 );
+	free ((char *) ciptr);
 	return NULL;
 	}
 
