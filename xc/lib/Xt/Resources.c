@@ -1,6 +1,6 @@
 #ifndef lint
 static char Xrcsid[] =
-    "$XConsortium: Resources.c,v 1.54 88/09/06 09:52:23 swick Exp $";
+    "$XConsortium: Resources.c,v 1.55 88/09/06 16:28:46 jim Exp $";
 /* $oHeader: Resources.c,v 1.6 88/09/01 13:39:14 asente Exp $ */
 #endif lint
 /*LINTLIBRARY*/
@@ -880,7 +880,7 @@ static Boolean CallSetValues (class, current, request, new, args, num_args)
         redisplay |= (*class->core_class.set_values) (current, request, new);
     if (class->core_class.set_values_hook != NULL)
 	redisplay |=
-	    (*class->core_class.set_values_hook) (current, args, &num_args);
+	    (*class->core_class.set_values_hook) (new, args, &num_args);
     return (redisplay);
 }
 
