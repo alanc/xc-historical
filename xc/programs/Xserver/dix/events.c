@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $Header: events.c,v 1.94 87/08/18 19:55:48 toddb Exp $ */
+/* $Header: events.c,v 1.94 87/08/19 11:30:09 toddb Locked $ */
 
 #include "X.h"
 #include "misc.h"
@@ -1008,7 +1008,7 @@ int
 ProcWarpPointer(client)
     ClientPtr client;
 {
-    WindowPtr  source, dest;
+    WindowPtr  dest = NULL;
     xEvent MotionEvent;		/* Event that is sent to ProcessPointerEvent
 					saying the pointer moved. */
     REQUEST(xWarpPointerReq);
@@ -1020,10 +1020,19 @@ ProcWarpPointer(client)
 	client->errorValue = stuff->dstWid;
 	return BadWindow;
     }
+    if (stuff->dstWid != None)
+    {
+	dest = LookupWindow(stuff->dstWid, client);
+	if (!dest)
+	{
+	    client->errorValue = stuff->dstWid;
+	    return BadWindow;
+	}
+    }
     if (stuff->srcWid != None)
     {
 	int     winX, winY;
-        source = LookupWindow(stuff->srcWid, client);
+        WindowPtr source = LookupWindow(stuff->srcWid, client);
 	if (!source)
 	{
 	    client->errorValue = stuff->srcWid;
@@ -1041,19 +1050,28 @@ ProcWarpPointer(client)
 		(!PointInWindowIsVisible(source, sprite.hot.x, sprite.hot.y)))
 	    return Success;
     }
-    if (currentScreen != dest->drawable.pScreen)
-        NewCurrentScreen(dest->drawable.pScreen, 
-	    	         dest->absCorner.x + stuff->dstX,
-		         dest->absCorner.y + stuff->dstY);
+    if (dest)
+    {
+	if (currentScreen != dest->drawable.pScreen)
+	    NewCurrentScreen(dest->drawable.pScreen, 
+			     dest->absCorner.x + stuff->dstX,
+			     dest->absCorner.y + stuff->dstY);
+    
+	MotionEvent.u.keyButtonPointer.rootX = dest->absCorner.x + stuff->dstX;
+	MotionEvent.u.keyButtonPointer.rootY = dest->absCorner.y + stuff->dstY;
 
+    } else {
+	MotionEvent.u.keyButtonPointer.rootX = sprite.hot.x + stuff->dstX;
+	MotionEvent.u.keyButtonPointer.rootY = sprite.hot.y + stuff->dstY;
+    }
+ 
     /* Send a pointer motion event to ProcessPointerEvent, just as the
 	device dependent driver does when the hardware moves the pointer. */
 
-    (*dest->drawable.pScreen->SetCursorPosition)( dest->drawable.pScreen,
-            dest->absCorner.x + stuff->dstX, dest->absCorner.y + stuff->dstY);
- 
-    MotionEvent.u.keyButtonPointer.rootX = dest->absCorner.x + stuff->dstX;
-    MotionEvent.u.keyButtonPointer.rootY = dest->absCorner.y + stuff->dstY;
+    (*currentScreen->SetCursorPosition)( currentScreen,
+	    MotionEvent.u.keyButtonPointer.rootX,
+	    MotionEvent.u.keyButtonPointer.rootY);
+
     MotionEvent.u.keyButtonPointer.time = currentTime.milliseconds;
     MotionEvent.u.u.type = MotionNotify;
 
