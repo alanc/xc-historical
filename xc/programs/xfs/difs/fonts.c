@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: fonts.c,v 1.5 91/06/17 17:17:42 keith Exp $ */
 /*
  * font control
  */
@@ -50,6 +50,7 @@ static int  num_slept_fpes = 0;
 static int  size_slept_fpes = 0;
 static FontPathElementPtr *slept_fpes = (FontPathElementPtr *) 0;
 
+extern FontPatternCachePtr  fontPatternCache;
 #define	NUM_IDS_PER_CLIENT	5
 
 int
@@ -307,7 +308,8 @@ do_open_font(client, c)
      * optimal, so it may be necessary to add some more stuff to the closure
      * to hold the original name
      */
-    CacheFontPattern(c->fontname, c->fnamelen, pfont);
+    if (fontPatternCache)
+	CacheFontPattern(fontPatternCache, c->fontname, c->fnamelen, pfont);
 
     /* either pull out the original id or make the array */
     if (pfont->refcnt != 0) {
@@ -395,8 +397,9 @@ OpenFont(client, fid, format, format_mask, namelen, name)
     int         i;
 
     /* check name cache */
-    pfont = FindCachedFontPattern(name, namelen);
-    if (pfont) {		/* found it */
+    if (fontPatternCache &&
+	(pfont = FindCachedFontPattern(fontPatternCache, name, namelen)))
+    {
 	ClientFontPtr cfp;
 
 	idlist = (FontIDListPtr *) pfont->svrPrivate;
@@ -478,7 +481,8 @@ close_font(pfont)
 
     assert(pfont);
     if (--pfont->refcnt == 0) {
-	RemoveCachedFontPattern(pfont);
+	if (fontPatternCache)
+	    RemoveCachedFontPattern(fontPatternCache, pfont);
 	fpe = pfont->fpe;
 	fsfree((char *) pfont->svrPrivate);
 	(*fpe_functions[fpe->type].close_font) (fpe, pfont);
@@ -660,7 +664,8 @@ set_font_path_elements(npaths, paths, bad)
     free_font_path(font_path_elements, num_fpes);
     font_path_elements = fplist;
     num_fpes = npaths;
-    FreeFontPatternCache();
+    if (fontPatternCache)
+	EmptyFontPatternCache(fontPatternCache);
     return FSSuccess;
 bail:
     *bad = i;
@@ -1095,7 +1100,7 @@ StartListFontsWithInfo(client, length, pattern, maxNames)
 int
 RegisterFPEFunctions(name_func, init_func, free_func, reset_func,
 	   open_func, close_func, list_func, start_lfwi_func, next_lfwi_func,
-		     wakeup_func, render_names)
+		     wakeup_func, render_names, client_died)
     Bool        (*name_func) ();
     int         (*init_func) ();
     int         (*free_func) ();
@@ -1106,6 +1111,7 @@ RegisterFPEFunctions(name_func, init_func, free_func, reset_func,
     int         (*start_lfwi_func) ();
     int         (*next_lfwi_func) ();
     int         (*wakeup_func) ();
+    int		(*client_died) ();
     FontNamesPtr render_names;
 {
     FPEFunctions *new;
@@ -1130,6 +1136,7 @@ RegisterFPEFunctions(name_func, init_func, free_func, reset_func,
     fpe_functions[num_fpe_types].free_fpe = free_func;
     fpe_functions[num_fpe_types].reset_fpe = reset_func;
 
+    fpe_functions[num_fpe_types].client_died = client_died;
     fpe_functions[num_fpe_types].renderer_names = render_names;
     return num_fpe_types++;
 }
@@ -1141,13 +1148,12 @@ FreeFonts()
 /* convenience functions for FS interface */
 
 FontPtr
-find_old_font(client, id)
-    ClientPtr   client;
+find_old_font(id)
     FSID        id;
 {
     ClientFontPtr cfp;
 
-    cfp = (ClientFontPtr) LookupIDByType(client->index, id, RT_FONT);
+    cfp = (ClientFontPtr) LookupIDByType(0, id, RT_NONE);
 
     return cfp->font;
 }
@@ -1163,7 +1169,13 @@ StoreFontClientFont(pfont, id)
     FontPtr     pfont;
     Font        id;
 {
-    return AddResource(0, id, RT_FONT, (pointer) pfont);
+    return AddResource(0, id, RT_NONE, (pointer) pfont);
+}
+
+DeleteFontClientID (id)
+    Font	id;
+{
+    FreeResource (0, id, RT_NONE);
 }
 
 static int  fs_handlers_installed = 0;
