@@ -1,27 +1,17 @@
-/*
- * Copyright 1991-92 Network Computing Devices, Inc.  All rights reserved.
- * An unpublished work.
- */
+XCOMM $XConsortium: Imakefile,v 1.8 93/09/06 13:41:47 rws Exp $
+#include <Server.tmpl>
 
-/**/# $NCDId: @(#)Imakefile,v 1.2 1994/01/17 20:59:37 dct Exp $
+#define	IHaveSubdirs
 
-#include <Library.tmpl>
+SUBDIRS = lzw delta
+OBJS = lzw/?*.o delta/?*.o
+DONES = lzw/DONE delta/DONE
 
-SRCS = compress_lzw.c lzwio.c lbxdelta.c
+#undef _LinkBuildLibrary
+#define _LinkBuildLibrary(lib) LinkBuildLibrary(lib)
 
-OBJS = compress_lzw.o lzwio.o lbxdelta.o
+NormalDepLibraryTarget(lbxutil,$(SUBDIRS) $(DONES),$(OBJS))
 
-INCLUDES = -I$(INCLUDESRC) -I$(EXTINCSRC) -I$(SERVERSRC)/include
- 
+ForceSubdirs($(SUBDIRS))
 
-all::
-
-NormalLibraryObjectRule()
-
-NormalLibraryTarget(lbxutil,$(OBJS))
-LintLibraryTarget(lbxutil,$(SRCS))
-
-DependTarget()
-
-NormalLintTarget($(SRCS))
-
+DependSubdirs($(SUBDIRS))
