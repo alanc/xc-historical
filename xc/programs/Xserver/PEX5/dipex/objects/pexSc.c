@@ -1,4 +1,4 @@
-/* $XConsortium: pexSc.c,v 5.1 91/02/16 09:56:46 rws Exp $ */
+/* $XConsortium: pexSc.c,v 5.2 91/07/12 17:57:07 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -181,13 +181,11 @@ unsigned char	*ptr;
     };
 
     if (itemMask & PEXSCCeiling) {
-	EXTRACT_CARD16 (psc->ceiling, ptr);
-	SKIP_PADDING (ptr,2);
+	EXTRACT_CARD16_FROM_4B (psc->ceiling, ptr);
     }
 
     if (itemMask & PEXSCModelClipFlag) {
-	EXTRACT_CARD8 (psc->modelClipFlag, ptr);
-	SKIP_PADDING (ptr, 3);
+	EXTRACT_CARD8_FROM_4B (psc->modelClipFlag, ptr);
     }
 
     if (itemMask & PEXSCStartPath) {
@@ -420,14 +418,12 @@ pexGetSearchContextReq  *strmPtr;
 
     if (strmPtr->itemMask & PEXSCCeiling) {
 	CHK_PEX_BUF(size, sizeof(CARD32), reply, pexGetSearchContextReply, ptr);
-	PACK_CARD16 (psc->ceiling, ptr);
-	SKIP_PADDING(ptr,2);
+	PACK_CARD32 (psc->ceiling, ptr);
     }
 
     if (strmPtr->itemMask & PEXSCModelClipFlag) {
 	CHK_PEX_BUF(size, sizeof(CARD32), reply, pexGetSearchContextReply, ptr);
-	PACK_CARD8 (psc->modelClipFlag, ptr);
-	SKIP_PADDING (ptr, 3);
+	PACK_CARD32 (psc->modelClipFlag, ptr);
     }
 
     if (strmPtr->itemMask & PEXSCStartPath) {

@@ -1,4 +1,4 @@
-/* $XConsortium: pexRndr.c,v 5.4 91/07/15 15:13:57 hersh Exp $ */
+/* $XConsortium: pexRndr.c,v 5.5 91/09/12 16:55:16 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -194,11 +194,12 @@ pexCreateRendererReq    *strmPtr;
     } else prend->pPC = 0;
 
     if (strmPtr->itemMask & PEXRDCurrentPath)  {
-	puDeleteList(prend->curPath);
-	if (prend->pPC)
-	    (void)UpdatePCRefs (prend->pPC, prend, (ddAction)(REMOVE));
-	Xfree((pointer)prend);
-	PEX_ERR_EXIT(BadValue,0,cntxtPtr);
+	unsigned long npaths;
+
+	/* Protocol says ignore this so skip past it in the Request Stream */
+	npaths = *(CARD32 *)ptr;
+	SKIP_PADDING(ptr,sizeof(CARD32));
+	SKIP_STRUCT(ptr, npaths, pexElementRef);
     }
 
     if (strmPtr->itemMask & PEXRDMarkerBundle)
@@ -250,13 +251,12 @@ pexCreateRendererReq    *strmPtr;
 	CHANGENS(DD_INVIS_EXCL_NS, PEXDynInvisibilityNameset);
 
     if (strmPtr->itemMask & PEXRDRendererState) {
-	EXTRACT_INT16(prend->state,ptr);
-	SKIP_PADDING(ptr,sizeof(CARD16));
+	/* Protocol says ignore this it's read-only */
+	SKIP_PADDING(ptr,sizeof(CARD32));
     }
 
     if (strmPtr->itemMask & PEXRDHlhsrMode) {
-	EXTRACT_INT16(prend->hlhsrMode,ptr);
-	SKIP_PADDING(ptr,sizeof(CARD16));
+	EXTRACT_INT16_FROM_4B(prend->hlhsrMode,ptr);
     } else prend->hlhsrMode = PEXHlhsrOff;		/* default */
 
     if (strmPtr->itemMask & PEXRDNpcSubvolume) { 
@@ -388,8 +388,13 @@ pexChangeRendererReq 	*strmPtr;
 	prend->pPC = ppc;
     };
 
-    if (strmPtr->itemMask & PEXRDCurrentPath)
-	PEX_ERR_EXIT(BadValue,0,cntxtPtr);
+    if (strmPtr->itemMask & PEXRDCurrentPath) {
+	/* Protocol Spec says ignore this field it is read-only */
+	CARD32 i;
+	i = *(CARD32 *)ptr;
+	SKIP_PADDING(ptr,sizeof(CARD32));
+	SKIP_STRUCT(ptr, i, pexElementRef);
+    }
 
     if (strmPtr->itemMask & PEXRDMarkerBundle)
 	CHANGELUT(PEXMarkerBundleLUT, PEXDynMarkerBundle);
@@ -440,13 +445,12 @@ pexChangeRendererReq 	*strmPtr;
 	CHANGENS(DD_INVIS_EXCL_NS, PEXDynInvisibilityNameset);
 
     if (strmPtr->itemMask & PEXRDRendererState) {
-	EXTRACT_INT16(prend->state,ptr);
-	SKIP_PADDING(ptr,sizeof(CARD16));
+	/* Spec says ignore this in Change Renderer */
+	SKIP_PADDING(ptr,sizeof(CARD32));
     }
 
     if (strmPtr->itemMask & PEXRDHlhsrMode) {
-	EXTRACT_INT16(prend->hlhsrMode,ptr);
-	SKIP_PADDING(ptr,sizeof(CARD16));
+	EXTRACT_INT16_FROM_4B(prend->hlhsrMode,ptr);
 	prend->attrsChanges |= PEXDynHlhsrMode;
     }
 

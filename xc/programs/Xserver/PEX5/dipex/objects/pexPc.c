@@ -1,4 +1,4 @@
-/* $XConsortium: pexPc.c,v 5.2 91/07/12 17:57:32 hersh Exp $ */
+/* $XConsortium: pexPc.c,v 5.3 91/09/06 17:55:41 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -50,6 +50,8 @@ SOFTWARE.
 #undef max
 #endif
 
+/* need to do this to return correct ASF_ENABLES bits per Encoding */
+#define ASF_ALL   0x01FFFFFF
 
 #define CHK_PEX_BUF(SIZE,INCR,REPLY,TYPE,PTR) \
     (SIZE)+=(INCR); \
@@ -90,8 +92,7 @@ unsigned char	*ptr;
     ErrorCode err = Success;
 
     CHECK_BITMASK_ARRAY(itemMask, PEXPCMarkerType) {
-	EXTRACT_CARD16 (pca->markerType, ptr);
-	SKIP_PADDING (ptr, 2);
+	EXTRACT_INT16_FROM_4B (pca->markerType, ptr);
     }
 
     CHECK_BITMASK_ARRAY(itemMask, PEXPCMarkerScale) {
@@ -103,18 +104,15 @@ unsigned char	*ptr;
     }
 
     CHECK_BITMASK_ARRAY(itemMask, PEXPCMarkerBundleIndex) {
-	EXTRACT_CARD16 (pca->markerIndex, ptr);
-	SKIP_PADDING (ptr, 2);
+	EXTRACT_CARD16_FROM_4B (pca->markerIndex, ptr);
     }
 
     CHECK_BITMASK_ARRAY(itemMask, PEXPCTextFont) {
-	EXTRACT_CARD16 (pca->textFont, ptr);
-	SKIP_PADDING (ptr, 2);
+	EXTRACT_CARD16_FROM_4B (pca->textFont, ptr);
     }
 
     CHECK_BITMASK_ARRAY(itemMask, PEXPCTextPrecision) {
-	EXTRACT_CARD16 (pca->textPrecision, ptr);
-	SKIP_PADDING (ptr, 2);
+	EXTRACT_CARD16_FROM_4B (pca->textPrecision, ptr);
     }
 
     CHECK_BITMASK_ARRAY(itemMask, PEXPCCharExpansion) {
@@ -139,8 +137,7 @@ unsigned char	*ptr;
     }
 
     CHECK_BITMASK_ARRAY(itemMask, PEXPCTextPath) {
-	EXTRACT_CARD16 (pca->textPath, ptr);
-	SKIP_PADDING (ptr, 2);
+	EXTRACT_CARD16_FROM_4B (pca->textPath, ptr);
     }
 
     CHECK_BITMASK_ARRAY(itemMask, PEXPCTextAlignment) {
@@ -158,8 +155,7 @@ unsigned char	*ptr;
     }
 
     CHECK_BITMASK_ARRAY(itemMask, PEXPCAtextPath) {
-	EXTRACT_CARD16 (pca->atextPath, ptr);
-	SKIP_PADDING (ptr, 2);
+	EXTRACT_CARD16_FROM_4B (pca->atextPath, ptr);
     }
 
     CHECK_BITMASK_ARRAY(itemMask, PEXPCAtextAlignment) {
@@ -168,18 +164,15 @@ unsigned char	*ptr;
     }
 
     CHECK_BITMASK_ARRAY(itemMask, PEXPCAtextStyle) {
-	EXTRACT_CARD16 (pca->atextStyle, ptr);
-	SKIP_PADDING (ptr, 2);
+	EXTRACT_INT16_FROM_4B (pca->atextStyle, ptr);
     }
 
     CHECK_BITMASK_ARRAY(itemMask, PEXPCTextBundleIndex) {
-	EXTRACT_CARD16 (pca->textIndex, ptr);
-	SKIP_PADDING (ptr, 2);
+	EXTRACT_CARD16_FROM_4B (pca->textIndex, ptr);
     }
 
     CHECK_BITMASK_ARRAY(itemMask, PEXPCLineType) {
-	EXTRACT_CARD16 (pca->lineType, ptr);
-	SKIP_PADDING (ptr, 2);
+	EXTRACT_INT16_FROM_4B (pca->lineType, ptr);
     }
 
     CHECK_BITMASK_ARRAY(itemMask, PEXPCLineWidth) {
@@ -191,29 +184,24 @@ unsigned char	*ptr;
     }
 
     CHECK_BITMASK_ARRAY(itemMask, PEXPCCurveApproximation) {
-	EXTRACT_CARD16 (pca->curveApprox.approxMethod, ptr);
-	SKIP_PADDING (ptr, 2);
+	EXTRACT_INT16_FROM_4B (pca->curveApprox.approxMethod, ptr);
 	EXTRACT_FLOAT (pca->curveApprox.tolerance, ptr);
     }
 
     CHECK_BITMASK_ARRAY(itemMask, PEXPCPolylineInterp) {
-	EXTRACT_CARD16 (pca->lineInterp,ptr);
-	SKIP_PADDING (ptr, 2);
+	EXTRACT_INT16_FROM_4B (pca->lineInterp,ptr);
     }
 
     CHECK_BITMASK_ARRAY(itemMask, PEXPCLineBundleIndex) {
-	EXTRACT_CARD16 (pca->lineIndex,ptr);
-	SKIP_PADDING (ptr, 2);
+	EXTRACT_CARD16_FROM_4B (pca->lineIndex,ptr);
     }
 
     CHECK_BITMASK_ARRAY(itemMask, PEXPCInteriorStyle) {
-	EXTRACT_CARD16 (pca->intStyle,ptr);
-	SKIP_PADDING (ptr, 2);
+	EXTRACT_INT16_FROM_4B (pca->intStyle,ptr);
     }
 
     CHECK_BITMASK_ARRAY(itemMask, PEXPCInteriorStyleIndex) {
-	EXTRACT_CARD16 (pca->intStyleIndex,ptr);
-	SKIP_PADDING (ptr, 2);
+	EXTRACT_INT16_FROM_4B (pca->intStyleIndex,ptr);
     }
 
     CHECK_BITMASK_ARRAY(itemMask, PEXPCSurfaceColour) {
@@ -230,23 +218,19 @@ unsigned char	*ptr;
     }
 
     CHECK_BITMASK_ARRAY(itemMask, PEXPCSurfaceReflModel) {
-	EXTRACT_CARD16 (pca->reflModel,ptr);
-	SKIP_PADDING (ptr, 2);
+	EXTRACT_INT16_FROM_4B (pca->reflModel,ptr);
     }
 
     CHECK_BITMASK_ARRAY(itemMask, PEXPCSurfaceInterp) {
-	EXTRACT_CARD16 (pca->surfInterp,ptr);
-	SKIP_PADDING (ptr, 2);
+	EXTRACT_INT16_FROM_4B (pca->surfInterp,ptr);
     }
 
     CHECK_BITMASK_ARRAY(itemMask, PEXPCBfInteriorStyle) {
-	EXTRACT_CARD16 (pca->bfIntStyle,ptr);
-	SKIP_PADDING (ptr, 2);
+	EXTRACT_INT16_FROM_4B (pca->bfIntStyle,ptr);
     }
 
     CHECK_BITMASK_ARRAY(itemMask, PEXPCBfInteriorStyleIndex) {
-	EXTRACT_CARD16 (pca->bfIntStyleIndex,ptr);
-	SKIP_PADDING (ptr, 2);
+	EXTRACT_INT16_FROM_4B (pca->bfIntStyleIndex,ptr);
     }
 
     CHECK_BITMASK_ARRAY(itemMask, PEXPCBfSurfaceColour) {
@@ -263,30 +247,25 @@ unsigned char	*ptr;
     }
 
     CHECK_BITMASK_ARRAY(itemMask, PEXPCBfSurfaceReflModel) {
-	EXTRACT_CARD16 (pca->bfReflModel,ptr);
-	SKIP_PADDING (ptr, 2);
+	EXTRACT_INT16_FROM_4B (pca->bfReflModel,ptr);
     }
 
     CHECK_BITMASK_ARRAY(itemMask, PEXPCBfSurfaceInterp) {
-	EXTRACT_CARD16 (pca->bfSurfInterp,ptr);
-	SKIP_PADDING (ptr, 2);
+	EXTRACT_INT16_FROM_4B (pca->bfSurfInterp,ptr);
     }
 
     CHECK_BITMASK_ARRAY(itemMask, PEXPCSurfaceApproximation) {
-	EXTRACT_CARD16 (pca->surfApprox.approxMethod,ptr);
-	SKIP_PADDING (ptr, 2);
+	EXTRACT_INT16_FROM_4B (pca->surfApprox.approxMethod,ptr);
 	EXTRACT_FLOAT (pca->surfApprox.uTolerance, ptr);
 	EXTRACT_FLOAT (pca->surfApprox.vTolerance, ptr);
     }
 
     CHECK_BITMASK_ARRAY(itemMask, PEXPCCullingMode) {
-         EXTRACT_CARD16 (pca->cullMode,ptr);
-         SKIP_PADDING (ptr, 2);
+         EXTRACT_CARD16_FROM_4B (pca->cullMode,ptr);
     }
 
     CHECK_BITMASK_ARRAY(itemMask, PEXPCDistinguishFlag) {
-	EXTRACT_CARD8 (pca->distFlag,ptr);
-	SKIP_PADDING (ptr, 3);
+	EXTRACT_CARD8_FROM_4B (pca->distFlag,ptr);
     }
 
     CHECK_BITMASK_ARRAY(itemMask, PEXPCPatternSize) {
@@ -313,18 +292,15 @@ unsigned char	*ptr;
     }
 
     CHECK_BITMASK_ARRAY(itemMask, PEXPCInteriorBundleIndex) {
-	EXTRACT_CARD16 (pca->intIndex,ptr);
-	SKIP_PADDING (ptr, 2);
+	EXTRACT_CARD16_FROM_4B (pca->intIndex,ptr);
     }
 
     CHECK_BITMASK_ARRAY(itemMask, PEXPCSurfaceEdgeFlag) {
-	EXTRACT_CARD16 (pca->edges,ptr);
-	SKIP_PADDING (ptr, 2);
+	EXTRACT_CARD16_FROM_4B (pca->edges,ptr);
     }
 
     CHECK_BITMASK_ARRAY(itemMask, PEXPCSurfaceEdgeType) {
-	EXTRACT_CARD16 (pca->edgeType,ptr);
-	SKIP_PADDING (ptr, 2);
+	EXTRACT_INT16_FROM_4B (pca->edgeType,ptr);
     }
 
     CHECK_BITMASK_ARRAY(itemMask, PEXPCSurfaceEdgeWidth) {
@@ -336,8 +312,7 @@ unsigned char	*ptr;
     }
 
     CHECK_BITMASK_ARRAY(itemMask, PEXPCEdgeBundleIndex) {
-	EXTRACT_CARD16 (pca->edgeIndex,ptr);
-	SKIP_PADDING (ptr, 2);
+	EXTRACT_CARD16_FROM_4B (pca->edgeIndex,ptr);
     }
 
     CHECK_BITMASK_ARRAY(itemMask, PEXPCLocalTransform) {
@@ -355,43 +330,43 @@ unsigned char	*ptr;
     }
 
     CHECK_BITMASK_ARRAY(itemMask, PEXPCModelClip) {
-	EXTRACT_CARD16 (pca->modelClip,ptr);
-	SKIP_PADDING (ptr, 2);
+	EXTRACT_CARD16_FROM_4B (pca->modelClip,ptr);
     }
 
     CHECK_BITMASK_ARRAY(itemMask, PEXPCModelClipVolume) {
 	unsigned long i;
 	EXTRACT_CARD32 (i, ptr);
 	PU_EMPTY_LIST(pca->modelClipVolume);
-/*	puDeleteList(pca->modelClipVolume);
+      /* don't need to do this emptying the list and adding is sufficient
+	puDeleteList(pca->modelClipVolume);
 	pca->modelClipVolume = puCreateList(DD_HALF_SPACE);
 	if (!pca->modelClipVolume) PEX_ERR_EXIT(BadAlloc,0,cntxtPtr);
-*/	puAddToList((ddPointer)ptr, i, pca->modelClipVolume);
+      */
+	puAddToList((ddPointer)ptr, i, pca->modelClipVolume);
     }
 
     CHECK_BITMASK_ARRAY(itemMask, PEXPCViewIndex) {
-	EXTRACT_CARD16 (pca->viewIndex,ptr);
-	SKIP_PADDING (ptr, 2);
+	EXTRACT_CARD16_FROM_4B (pca->viewIndex,ptr);
     }
 
     CHECK_BITMASK_ARRAY(itemMask, PEXPCLightState) {
-/*	EXTRACT_CARD32 (pca->lightState,ptr);
-*/	unsigned long i;
+	unsigned long i;
 	EXTRACT_CARD32(i,ptr);
 	PU_EMPTY_LIST(pca->lightState);
-/*	puDeleteList(pca->lightState);
-	pca->lightState = puCreateList(DD_INDEX);
-	if (!pca->lightState) PEX_ERR_EXIT(BadAlloc,0,cntxtPtr);
-*/	puAddToList((ddPointer)ptr,i,pca->lightState);
+	puAddToList((ddPointer)ptr,i,pca->lightState);
+	if (i % 2) 
+	    SKIP_PADDING(ptr,2);
     }
 
     CHECK_BITMASK_ARRAY(itemMask, PEXPCDepthCueIndex) {
-	EXTRACT_CARD16 (pca->depthCueIndex,ptr);
-	SKIP_PADDING (ptr, 2);
+	EXTRACT_CARD16_FROM_4B (pca->depthCueIndex,ptr);
     }
 
     CHECK_BITMASK_ARRAY(itemMask, PEXPCSetAsfValues) {
-	EXTRACT_CARD32 (pca->asfs,ptr);
+	CARD32  asf_enables, asfs;
+	EXTRACT_CARD32 (asf_enables,ptr);
+	EXTRACT_CARD32 (asfs,ptr);
+	pca->asfs = (pca->asfs & ~asf_enables) | (asfs & asf_enables);
     }
 
     CHECK_BITMASK_ARRAY(itemMask, PEXPCPickId) {
@@ -409,17 +384,15 @@ unsigned char	*ptr;
     }
 
     CHECK_BITMASK_ARRAY(itemMask, PEXPCColourApproxIndex) {
-	EXTRACT_CARD16 (pca->colourApproxIndex,ptr);
-	SKIP_PADDING (ptr, 2);
+	EXTRACT_CARD16_FROM_4B (pca->colourApproxIndex,ptr);
     }
 
     CHECK_BITMASK_ARRAY(itemMask, PEXPCRenderingColourModel) {
-	EXTRACT_CARD16 (pca->rdrColourModel, ptr);
-	SKIP_PADDING (ptr, 2);
+	EXTRACT_INT16_FROM_4B (pca->rdrColourModel, ptr);
     }
 
     CHECK_BITMASK_ARRAY(itemMask, PEXPCParaSurfCharacteristics) {
-	EXTRACT_CARD16 (pca->psc.type, ptr);
+	EXTRACT_INT16 (pca->psc.type, ptr);
 	SKIP_PADDING(ptr,2);
 	switch (pca->psc.type) {
 	    case PEXPSCNone:
@@ -959,6 +932,12 @@ PEXGetPipelineContext( cntxtPtr, strmPtr )
 pexContext   	 		*cntxtPtr;
 pexGetPipelineContextReq 	*strmPtr;
 {
+    /* NOTE: See the Protocol Encoding for exact details of the fields
+       returned by this command. The encoding requires CARD16 and INT16
+       to be sent in 4 byte fields (CARD32) for most fields of these 
+       types, hence the use of PACK_CARD32 for these fields. - JSH
+    */
+
     ErrorCode err = Success;
     ddPCStr *pc;
     ddPCAttr *pca;
@@ -967,6 +946,7 @@ pexGetPipelineContextReq 	*strmPtr;
 			    = (pexGetPipelineContextReply *)(pPEXBuffer->pHead);
     CARD8 *replyPtr = (CARD8 *)(reply);
     int size = 0;
+    int sze = 0;
 
     LU_PIPELINECONTEXT(strmPtr->pc, pc);
 
@@ -981,8 +961,7 @@ pexGetPipelineContextReq 	*strmPtr;
     CHECK_BITMASK_ARRAY(strmPtr->itemMask, PEXPCMarkerType) {
 	CHK_PEX_BUF(size, sizeof(CARD32), reply, pexGetPipelineContextReply,
 		    replyPtr);
-	PACK_CARD16 ( pca->markerType, replyPtr);
-	SKIP_PADDING (replyPtr, 2);
+	PACK_CARD32 ( pca->markerType, replyPtr);
     }
 
     CHECK_BITMASK_ARRAY(strmPtr->itemMask, PEXPCMarkerScale) {
@@ -1000,22 +979,19 @@ pexGetPipelineContextReq 	*strmPtr;
     CHECK_BITMASK_ARRAY(strmPtr->itemMask, PEXPCMarkerBundleIndex) {
 	CHK_PEX_BUF(size, sizeof(CARD32), reply, pexGetPipelineContextReply,
 		    replyPtr);
-	PACK_CARD16 ( pca->markerIndex, replyPtr);
-	SKIP_PADDING (replyPtr, 2);
+	PACK_CARD32 ( pca->markerIndex, replyPtr);
     }
 
     CHECK_BITMASK_ARRAY(strmPtr->itemMask, PEXPCTextFont) {
 	CHK_PEX_BUF(size, sizeof(CARD32), reply, pexGetPipelineContextReply,
 		    replyPtr);
-	PACK_CARD16 ( pca->textFont, replyPtr);
-	SKIP_PADDING (replyPtr, 2);
+	PACK_CARD32 ( pca->textFont, replyPtr);
     }
 
     CHECK_BITMASK_ARRAY(strmPtr->itemMask, PEXPCTextPrecision) {
 	CHK_PEX_BUF(size, sizeof(CARD32), reply, pexGetPipelineContextReply,
 		    replyPtr);
-	PACK_CARD16 ( pca->textPrecision, replyPtr);
-	SKIP_PADDING (replyPtr, 2);
+	PACK_CARD32 ( pca->textPrecision, replyPtr);
     }
 
     CHECK_BITMASK_ARRAY(strmPtr->itemMask, PEXPCCharExpansion) {
@@ -1052,8 +1028,7 @@ pexGetPipelineContextReq 	*strmPtr;
     CHECK_BITMASK_ARRAY(strmPtr->itemMask, PEXPCTextPath) {
 	CHK_PEX_BUF(size, sizeof(CARD32), reply, pexGetPipelineContextReply,
 		    replyPtr);
-	PACK_CARD16 ( pca->textPath, replyPtr);
-	SKIP_PADDING (replyPtr, 2);
+	PACK_CARD32 ( pca->textPath, replyPtr);
     }
 
     CHECK_BITMASK_ARRAY(strmPtr->itemMask, PEXPCTextAlignment) {
@@ -1079,8 +1054,7 @@ pexGetPipelineContextReq 	*strmPtr;
     CHECK_BITMASK_ARRAY(strmPtr->itemMask, PEXPCAtextPath) {
 	CHK_PEX_BUF(size, sizeof(CARD32), reply, pexGetPipelineContextReply,
 		    replyPtr);
-	PACK_CARD16 ( pca->atextPath, replyPtr);
-	SKIP_PADDING (replyPtr, 2);
+	PACK_CARD32 ( pca->atextPath, replyPtr);
     }
 
     CHECK_BITMASK_ARRAY(strmPtr->itemMask, PEXPCAtextAlignment) {
@@ -1093,22 +1067,19 @@ pexGetPipelineContextReq 	*strmPtr;
     CHECK_BITMASK_ARRAY(strmPtr->itemMask, PEXPCAtextStyle) {
 	CHK_PEX_BUF(size, sizeof(CARD32), reply, pexGetPipelineContextReply,
 		    replyPtr);
-	PACK_CARD16 ( pca->atextStyle, replyPtr);
-	SKIP_PADDING (replyPtr, 2);
+	PACK_CARD32 ( pca->atextStyle, replyPtr);
     }
 
     CHECK_BITMASK_ARRAY(strmPtr->itemMask, PEXPCTextBundleIndex) {
 	CHK_PEX_BUF(size, sizeof(CARD32), reply, pexGetPipelineContextReply,
 		    replyPtr);
-	PACK_CARD16 ( pca->textIndex, replyPtr);
-	SKIP_PADDING (replyPtr, 2);
+	PACK_CARD32 ( pca->textIndex, replyPtr);
     }
 
     CHECK_BITMASK_ARRAY(strmPtr->itemMask, PEXPCLineType) {
 	CHK_PEX_BUF(size, sizeof(CARD32), reply, pexGetPipelineContextReply,
 		    replyPtr);
-	PACK_CARD16 ( pca->lineType, replyPtr);
-	SKIP_PADDING (replyPtr, 2);
+	PACK_CARD32 ( pca->lineType, replyPtr);
     }
 
     CHECK_BITMASK_ARRAY(strmPtr->itemMask, PEXPCLineWidth) {
@@ -1126,16 +1097,14 @@ pexGetPipelineContextReq 	*strmPtr;
     CHECK_BITMASK_ARRAY(strmPtr->itemMask, PEXPCCurveApproximation) {
 	CHK_PEX_BUF(size, sizeof(PEXFLOAT) + sizeof(CARD32), reply,
 		    pexGetPipelineContextReply, replyPtr);
-	PACK_CARD16 ( pca->curveApprox.approxMethod, replyPtr);
-	SKIP_PADDING (replyPtr, 2);
+	PACK_CARD32 ( pca->curveApprox.approxMethod, replyPtr);
 	PACK_FLOAT ( pca->curveApprox.tolerance, replyPtr);
     }
 
     CHECK_BITMASK_ARRAY(strmPtr->itemMask, PEXPCPolylineInterp) {
 	CHK_PEX_BUF(size, sizeof(CARD32), reply, pexGetPipelineContextReply,
 		    replyPtr);
-	PACK_CARD16 ( pca->lineInterp, replyPtr);
-	SKIP_PADDING (replyPtr, 2);
+	PACK_CARD32 ( pca->lineInterp, replyPtr);
     }
 
     CHECK_BITMASK_ARRAY(strmPtr->itemMask, PEXPCLineBundleIndex) {
@@ -1148,15 +1117,13 @@ pexGetPipelineContextReq 	*strmPtr;
     CHECK_BITMASK_ARRAY(strmPtr->itemMask, PEXPCInteriorStyle) {
 	CHK_PEX_BUF(size, sizeof(CARD32), reply, pexGetPipelineContextReply,
 		    replyPtr);
-	PACK_CARD16 ( pca->intStyle, replyPtr);
-	SKIP_PADDING (replyPtr, 2);
+	PACK_CARD32 ( pca->intStyle, replyPtr);
     }
 
     CHECK_BITMASK_ARRAY(strmPtr->itemMask, PEXPCInteriorStyleIndex) {
 	CHK_PEX_BUF(size, sizeof(CARD32), reply, pexGetPipelineContextReply,
 		    replyPtr);
-	PACK_CARD16 ( pca->intStyleIndex, replyPtr);
-	SKIP_PADDING (replyPtr, 2);
+	PACK_CARD32 ( pca->intStyleIndex, replyPtr);
     }
 
     CHECK_BITMASK_ARRAY(strmPtr->itemMask, PEXPCSurfaceColour) {
@@ -1180,29 +1147,25 @@ pexGetPipelineContextReq 	*strmPtr;
     CHECK_BITMASK_ARRAY(strmPtr->itemMask, PEXPCSurfaceReflModel) {
 	CHK_PEX_BUF(size, sizeof(CARD32), reply, pexGetPipelineContextReply,
 		    replyPtr);
-	PACK_CARD16 ( pca->reflModel, replyPtr);
-	SKIP_PADDING (replyPtr, 2);
+	PACK_CARD32 ( pca->reflModel, replyPtr);
     }
 
     CHECK_BITMASK_ARRAY(strmPtr->itemMask, PEXPCSurfaceInterp) {
 	CHK_PEX_BUF(size, sizeof(CARD32), reply, pexGetPipelineContextReply,
 		    replyPtr);
-	PACK_CARD16 ( pca->surfInterp, replyPtr);
-	SKIP_PADDING (replyPtr, 2);
+	PACK_CARD32 ( pca->surfInterp, replyPtr);
     }
 
     CHECK_BITMASK_ARRAY(strmPtr->itemMask, PEXPCBfInteriorStyle) {
 	CHK_PEX_BUF(size, sizeof(CARD32), reply, pexGetPipelineContextReply,
 		    replyPtr);
-	PACK_CARD16 ( pca->bfIntStyle, replyPtr);
-	SKIP_PADDING (replyPtr, 2);
+	PACK_CARD32 ( pca->bfIntStyle, replyPtr);
     }
 
     CHECK_BITMASK_ARRAY(strmPtr->itemMask, PEXPCBfInteriorStyleIndex) {
 	CHK_PEX_BUF(size, sizeof(CARD32), reply, pexGetPipelineContextReply,
 		    replyPtr);
-	PACK_CARD16 ( pca->bfIntStyleIndex, replyPtr);
-	SKIP_PADDING (replyPtr, 2);
+	PACK_CARD32 ( pca->bfIntStyleIndex, replyPtr);
     }
 
     CHECK_BITMASK_ARRAY(strmPtr->itemMask, PEXPCBfSurfaceColour) {
@@ -1226,22 +1189,19 @@ pexGetPipelineContextReq 	*strmPtr;
     CHECK_BITMASK_ARRAY(strmPtr->itemMask, PEXPCBfSurfaceReflModel) {
 	CHK_PEX_BUF(size, sizeof(CARD32), reply, pexGetPipelineContextReply,
 		    replyPtr);
-	PACK_CARD16 ( pca->bfReflModel, replyPtr);
-	SKIP_PADDING (replyPtr, 2);
+	PACK_CARD32 ( pca->bfReflModel, replyPtr);
     }
 
     CHECK_BITMASK_ARRAY(strmPtr->itemMask, PEXPCBfSurfaceInterp) {
 	CHK_PEX_BUF(size, sizeof(CARD32), reply, pexGetPipelineContextReply,
 		    replyPtr);
-	PACK_CARD16 ( pca->bfSurfInterp, replyPtr);
-	SKIP_PADDING (replyPtr, 2);
+	PACK_CARD32 ( pca->bfSurfInterp, replyPtr);
     }
 
     CHECK_BITMASK_ARRAY(strmPtr->itemMask, PEXPCSurfaceApproximation) {
 	CHK_PEX_BUF(size, sizeof(CARD32) + 2 * sizeof(PEXFLOAT), reply,
 		    pexGetPipelineContextReply, replyPtr);
-	PACK_CARD16 ( pca->surfApprox.approxMethod, replyPtr);
-	SKIP_PADDING (replyPtr, 2);
+	PACK_CARD32 ( pca->surfApprox.approxMethod, replyPtr);
 	PACK_FLOAT ( pca->surfApprox.uTolerance, replyPtr);
 	PACK_FLOAT ( pca->surfApprox.vTolerance, replyPtr);
     }
@@ -1249,15 +1209,13 @@ pexGetPipelineContextReq 	*strmPtr;
     CHECK_BITMASK_ARRAY(strmPtr->itemMask, PEXPCCullingMode) {
         CHK_PEX_BUF(size, sizeof(CARD32), reply, pexGetPipelineContextReply,
                     replyPtr);
-        PACK_CARD16 ( pca->cullMode, replyPtr);
-        SKIP_PADDING (replyPtr, 2);
+        PACK_CARD32 ( pca->cullMode, replyPtr);
     }
 
     CHECK_BITMASK_ARRAY(strmPtr->itemMask, PEXPCDistinguishFlag) {
 	CHK_PEX_BUF(size, sizeof(CARD32), reply, pexGetPipelineContextReply,
 		    replyPtr);
-	PACK_CARD8 ( pca->distFlag, replyPtr);
-	SKIP_PADDING (replyPtr, 3);
+	PACK_CARD32 ( pca->distFlag, replyPtr);
     }
 
     CHECK_BITMASK_ARRAY(strmPtr->itemMask, PEXPCPatternSize) {
@@ -1294,22 +1252,19 @@ pexGetPipelineContextReq 	*strmPtr;
     CHECK_BITMASK_ARRAY(strmPtr->itemMask, PEXPCInteriorBundleIndex) {
 	CHK_PEX_BUF(size, sizeof(CARD32), reply, pexGetPipelineContextReply,
 		    replyPtr);
-	PACK_CARD16 ( pca->intIndex, replyPtr);
-	SKIP_PADDING (replyPtr, 2);
+	PACK_CARD32 ( pca->intIndex, replyPtr);
     }
 
     CHECK_BITMASK_ARRAY(strmPtr->itemMask, PEXPCSurfaceEdgeFlag) {
 	CHK_PEX_BUF(size, sizeof(CARD32), reply, pexGetPipelineContextReply,
 		    replyPtr);
-	PACK_CARD16 ( pca->edges, replyPtr);
-	SKIP_PADDING (replyPtr, 2);
+	PACK_CARD32 ( pca->edges, replyPtr);
     }
 
     CHECK_BITMASK_ARRAY(strmPtr->itemMask, PEXPCSurfaceEdgeType) {
 	CHK_PEX_BUF(size, sizeof(CARD32), reply, pexGetPipelineContextReply,
 		    replyPtr);
-	PACK_CARD16 ( pca->edgeType, replyPtr);
-	SKIP_PADDING (replyPtr, 2);
+	PACK_CARD32 ( pca->edgeType, replyPtr);
     }
 
     CHECK_BITMASK_ARRAY(strmPtr->itemMask, PEXPCSurfaceEdgeWidth) {
@@ -1327,8 +1282,7 @@ pexGetPipelineContextReq 	*strmPtr;
     CHECK_BITMASK_ARRAY(strmPtr->itemMask, PEXPCEdgeBundleIndex) {
 	CHK_PEX_BUF(size, sizeof(CARD32), reply, pexGetPipelineContextReply,
 		    replyPtr);
-	PACK_CARD16 ( pca->edgeIndex, replyPtr);
-	SKIP_PADDING (replyPtr, 2);
+	PACK_CARD32 ( pca->edgeIndex, replyPtr);
     }
 
     CHECK_BITMASK_ARRAY(strmPtr->itemMask, PEXPCLocalTransform) {
@@ -1352,8 +1306,7 @@ pexGetPipelineContextReq 	*strmPtr;
     CHECK_BITMASK_ARRAY(strmPtr->itemMask, PEXPCModelClip) {
 	CHK_PEX_BUF(size, sizeof(CARD32), reply, pexGetPipelineContextReply,
 		    replyPtr);
-	PACK_CARD16 ( pca->modelClip, replyPtr);
-	SKIP_PADDING (replyPtr, 2);
+	PACK_CARD32 ( pca->modelClip, replyPtr);
     }
 
     CHECK_BITMASK_ARRAY(strmPtr->itemMask, PEXPCModelClipVolume) {
@@ -1371,8 +1324,7 @@ pexGetPipelineContextReq 	*strmPtr;
     CHECK_BITMASK_ARRAY(strmPtr->itemMask, PEXPCViewIndex) {
 	CHK_PEX_BUF(size, sizeof(CARD32), reply, pexGetPipelineContextReply,
 		    replyPtr);
-	PACK_CARD16 ( pca->viewIndex, replyPtr);
-	SKIP_PADDING (replyPtr, 2);
+	PACK_CARD32 ( pca->viewIndex, replyPtr);
     }
 
     CHECK_BITMASK_ARRAY(strmPtr->itemMask, PEXPCLightState) {
@@ -1385,19 +1337,24 @@ pexGetPipelineContextReq 	*strmPtr;
 		    reply, pexGetPipelineContextReply, replyPtr);
 	PACK_CARD32(pca->lightState->numObj, replyPtr);
 	for (i=0; i<pca->lightState->numObj; i++) {
-	    PACK_CARD16(pLS, replyPtr); }
+	    PACK_CARD16(pLS, replyPtr); 
+	}
+        if (pca->lightState->numObj % 2)
+	    SKIP_PADDING(replyPtr,2);
     }
 
     CHECK_BITMASK_ARRAY(strmPtr->itemMask, PEXPCDepthCueIndex) {
 	CHK_PEX_BUF(size, sizeof(CARD32), reply, pexGetPipelineContextReply,
 		    replyPtr);
-	PACK_CARD16 ( pca->depthCueIndex, replyPtr);
-	SKIP_PADDING (replyPtr, 2);
+	PACK_CARD32 ( pca->depthCueIndex, replyPtr);
     }
 
     CHECK_BITMASK_ARRAY(strmPtr->itemMask, PEXPCSetAsfValues) {
-	CHK_PEX_BUF(size, sizeof(CARD32), reply, pexGetPipelineContextReply,
+	CARD32  asf_enables;
+	CHK_PEX_BUF(size, 2*sizeof(CARD32), reply, pexGetPipelineContextReply,
 		    replyPtr);
+        asf_enables = ASF_ALL;
+	PACK_CARD32 ( asf_enables, replyPtr);
 	PACK_CARD32 ( pca->asfs, replyPtr);
     }
 
@@ -1422,8 +1379,73 @@ pexGetPipelineContextReq 	*strmPtr;
     CHECK_BITMASK_ARRAY(strmPtr->itemMask, PEXPCColourApproxIndex) {
 	CHK_PEX_BUF(size, sizeof(CARD32), reply, pexGetPipelineContextReply,
 		    replyPtr);
-	PACK_CARD16 ( pca->colourApproxIndex, replyPtr);
-	SKIP_PADDING (replyPtr, 2);
+	PACK_CARD32 ( pca->colourApproxIndex, replyPtr);
+    }
+
+    CHECK_BITMASK_ARRAY(strmPtr->itemMask, PEXPCRenderingColourModel) {
+	CHK_PEX_BUF(size, sizeof(CARD32), reply, pexGetPipelineContextReply,
+		    replyPtr);
+	PACK_CARD32 ( pca->rdrColourModel, replyPtr);
+    }
+
+    CHECK_BITMASK_ARRAY(strmPtr->itemMask, PEXPCParaSurfCharacteristics) {
+	switch (pca->psc.type) {
+            case PEXPSCNone:
+	    case PEXPSCImpDep: 
+		sze = 0;
+		break;
+	    case PEXPSCIsoCurves: 
+		sze = 8;
+		break;
+            case PEXPSCMcLevelCurves: 
+		sze = (6 * sizeof(PEXFLOAT)) + 4 + (3 * 
+		  pca->psc.data.mcLevelCurves.numberIntersections *
+		  sizeof(PEXFLOAT)) ;
+		break;
+	    case PEXPSCWcLevelCurves: 
+		sze = (6 * sizeof(PEXFLOAT)) + 4 + (3 * 
+		  pca->psc.data.wcLevelCurves.numberIntersections *
+		  sizeof(PEXFLOAT)) ;
+		break;
+	    default:
+		sze = 0;
+		break;
+	}
+
+	CHK_PEX_BUF(size, sizeof(CARD32)+sze, reply, pexGetPipelineContextReply,
+		    replyPtr);
+	PACK_INT16(pca->psc.type, replyPtr);
+	PACK_INT16(sze, replyPtr);
+	switch (pca->psc.type) {
+	    case PEXPSCNone:
+	    case PEXPSCImpDep:
+		break;
+	    case PEXPSCIsoCurves: {
+		PACK_CARD16(pca->psc.data.isoCurves.placementType, replyPtr);
+		SKIP_PADDING(replyPtr,2);
+		PACK_CARD16(pca->psc.data.isoCurves.numUcurves, replyPtr);
+		PACK_CARD16(pca->psc.data.isoCurves.numVcurves, replyPtr);
+	    }
+	    case PEXPSCMcLevelCurves: {
+		PACK_COORD3D(&(pca->psc.data.mcLevelCurves.origin),replyPtr);
+		PACK_COORD3D(&(pca->psc.data.mcLevelCurves.direction),replyPtr);
+		PACK_CARD16(pca->psc.data.mcLevelCurves.numberIntersections,replyPtr);
+		SKIP_PADDING(replyPtr,2);
+		PACK_LISTOF_STRUCT(pca->psc.data.mcLevelCurves.numberIntersections,
+			    pexCoord3D, pca->psc.data.mcLevelCurves.pPoints,
+			    replyPtr);
+	    }
+
+	    case PEXPSCWcLevelCurves: {
+		PACK_COORD3D(&(pca->psc.data.wcLevelCurves.origin),replyPtr);
+		PACK_COORD3D(&(pca->psc.data.wcLevelCurves.direction),replyPtr);
+		PACK_CARD16(pca->psc.data.wcLevelCurves.numberIntersections,replyPtr);
+		SKIP_PADDING(replyPtr,2);
+		PACK_LISTOF_STRUCT(pca->psc.data.wcLevelCurves.numberIntersections,
+				pexCoord3D, pca->psc.data.wcLevelCurves.pPoints,
+				replyPtr);
+	    }
+	}
     }
 
     pPEXBuffer->dataSize = (int)replyPtr - (int)(pPEXBuffer->pBuf); 
