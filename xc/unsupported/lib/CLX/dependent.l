@@ -23,7 +23,8 @@
 #+lcl3.0
 (import '(
 	  lcl:define-condition
-	  lcl:make-condition))
+	  lcl:make-condition
+	  sys:underlying-simple-vector))
 
 (export '(
 	  char->card8
@@ -2174,8 +2175,6 @@
 (deftype bitmap ()
   'pixarray-1)
 
-
-#+lcl3.0 (import 'sys:underlying-simple-vector)
 
 ;;; These are used to read and write pixels from and to CARD8s.
 
