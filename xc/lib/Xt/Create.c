@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Create.c,v 6.28 88/02/01 18:07:37 swick Locked $";
+static char rcsid[] = "$Header: Create.c,v 6.29 88/02/01 18:33:01 swick Locked $";
 #endif lint
 
 /*
@@ -26,15 +26,12 @@ static char rcsid[] = "$Header: Create.c,v 6.28 88/02/01 18:07:37 swick Locked $
  */
 #include "IntrinsicI.h"
 #include "Atoms.h"
-#include <string.h>
+#include <X/Xos.h>
 #include <stdio.h>
 #include "Resource.h"
 
 extern void bcopy();
-
-static void RecurseInitialize();
-static void RecurseConstraintInitialize();
-
+extern CallbackList _CompileCallbackList();
 
 static void CallClassPartInit(ancestor, wc)
     WidgetClass ancestor, wc;
@@ -258,7 +255,7 @@ static void RemovePopupFromParent(widget,closure,call_data)
         XtWarning("RemovePopupFromParent,widget not on parent list");
         return;
     }
-    for (i;i<parent->core.num_popups-1;i++)
+    for (i=0;i<parent->core.num_popups-1;i++)
         parent->core.popup_list[i]= parent->core.popup_list[i+1];
     parent->core.num_popups--;
 
