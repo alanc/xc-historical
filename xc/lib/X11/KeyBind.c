@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XKeyBind.c,v 11.45 89/01/09 18:12:41 rws Exp $ */
+/* $XConsortium: XKeyBind.c,v 11.46 89/03/10 17:45:23 rws Exp $ */
 /* Copyright 1985, 1987, Massachusetts Institute of Technology */
 
 /* Beware, here be monsters (still under construction... - JG */
@@ -289,11 +289,14 @@ int XLookupString (event, buffer, nbytes, keysym, status)
 		|| IsModifierKey(symbol)   || IsCursorKey(symbol)
 		|| IsPFKey (symbol)      || IsFunctionKey(symbol)
 		|| IsMiscFunctionKey(symbol)
+		|| (symbol == XK_Scroll_Lock)
 		|| (symbol == XK_Multi_key) || (symbol == XK_Kanji)) {
 		return 0;
 	    } else {
 		if (symbol == XK_KP_Space)
 		   c = XK_space & 0xFF; /* patch encoding botch */
+		else if (symbol == XK_hyphen)
+		   c = XK_minus & 0xFF; /* map to equiv character */
 		/* if X keysym, convert to ascii by grabbing low 7 bits */
 		if (hiBytes == 0xFF) c &= 0x7F;
 		/* only apply Control key if it makes sense, else ignore it */
