@@ -4,6 +4,10 @@
 #define DoProfileLib ProfileLibXt
 #include <Library.tmpl>
 
+#ifndef MotifBugHacks
+#define MotifBugHacks NO
+#endif
+
 #ifdef RsArchitecture
 REQUIREDLIBS = $(XLIBSRC)/libX11.a
 #endif
@@ -26,6 +30,7 @@ XTWARNINGPREFIX = XtWarningPrefix
 #if Malloc0ReturnsNull
   ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
 #endif
+    MBUG_DEFINES = -DMOTIFBUG
 
    INSTALLFLAGS = $(INSTINCFLAGS)
        LINTLIBS = $(LINTXLIB)
@@ -161,6 +166,9 @@ LibraryObjectRule()
 SpecialLibObjectRule(Intrinsic.o,$(ICONFIGFILES),$(SRCH_DEFINES))
 SpecialLibObjectRule(Error.o,$(ICONFIGFILES),$(DB_DEFINES))
 SpecialLibObjectRule(Alloc.o,,$(ALLOC_DEFINES))
+#if MotifBugHacks
+SpecialLibObjectRule(Converters.o,$(ICONFIGFILES),$(MBUG_DEFINES))
+#endif
 #if DoSharedLib
 SpecialObjectRule(sharedlib.o,,$(SHLIBDEF))
 #endif
