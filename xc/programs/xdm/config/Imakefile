@@ -1,21 +1,23 @@
-XCOMM $XConsortium: Imakefile,v 1.9 91/07/20 14:53:43 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.10 91/07/20 15:09:16 rws Exp $
       XDMCONFIG = xdm-config
    XDMRESOURCES = Xresources
      XDMSERVERS = Xservers
      XDMSESSION = Xsession
 
-all:: Xservers.ws xdm-config
+#ifndef XdmServersType
+#if BuildServer
+#define XdmServersType ws
+#else
+#define XdmServersType fs
+#endif
+#endif
+
+all:: Xservers.ws xdm-config Xservers
 
 CppFileTarget(Xservers.ws,Xserv.ws.cpp,-DBINDIR=$(BINDIR),NullParameter)
 CppFileTarget(xdm-config,xdm-conf.cpp,-DXDMDIR=$(XDMDIR),NullParameter)
 
-#ifdef XdmServersType
 LinkFile(Xservers,Xservers.XdmServersType)
-#else
-Xservers:
-	echo "Choose one of" Xservers.* "and copy it to Xservers"
-	exit 1
-#endif
 
 #if InstallXdmConfig
 InstallNonExecFile($(XDMCONFIG),$(XDMDIR))
@@ -27,4 +29,4 @@ InstallNamedProg($(XDMSESSION),$(XDMSESSION),$(XDMDIR))
 depend::
 
 clean::
-	$(RM) Xservers.ws xdm-config
+	$(RM) Xservers.ws xdm-config Xservers
