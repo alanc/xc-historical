@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mipushpxl.c,v 1.18 89/03/22 10:50:59 rws Exp $ */
+/* $XConsortium: mipushpxl.c,v 5.0 89/06/09 15:08:43 keith Exp $ */
 #include "X.h"
 #include "gcstruct.h"
 #include "scrnintstr.h"
@@ -62,6 +62,9 @@ miPushPixels(pGC, pBitMap, pDrawable, dx, dy, xOrg, yOrg)
     DDXPointRec	pt[NPT], ptThisLine;
     int		width[NPT];
 
+    pwLineStart = (unsigned long *)xalloc(PixmapBytePad(dx, 1));
+    if (!pwLineStart)
+	return;
     ipt = 0;
     dxDiv32 = dx/32;
 
@@ -70,12 +73,10 @@ miPushPixels(pGC, pBitMap, pDrawable, dx, dy, xOrg, yOrg)
 	h++, ptThisLine.y++)
     {
 
-	pw = (unsigned long *)(*pBitMap->drawable.pScreen->GetSpans)(pBitMap,
-						    dx, &ptThisLine, &dx, 1);
-	if (!pw)
-	    continue;
+	(*pBitMap->drawable.pScreen->GetSpans)(pBitMap, dx, &ptThisLine, &dx,
+					       1, pwLineStart);
 
-	pwLineStart = pw;
+	pw = pwLineStart;
 	/* Process all words which are fully in the pixmap */
 	
 	fInBox = FALSE;
@@ -163,8 +164,8 @@ miPushPixels(pGC, pBitMap, pDrawable, dx, dy, xOrg, yOrg)
 		ipt = 0;
 	    }
 	}
-	xfree(pwLineStart);
     }
+    xfree(pwLineStart);
     /* Flush any remaining spans */
     if (ipt)
     {
