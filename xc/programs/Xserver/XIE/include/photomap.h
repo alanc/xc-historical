@@ -1,4 +1,4 @@
-/* $XConsortium: photomap.h,v 1.1 93/10/26 10:04:24 rws Exp $ */
+/* $XConsortium: photomap.h,v 1.2 93/10/31 09:49:01 dpw Exp $ */
 /**** module photomap.h ****/
 /******************************************************************************
 				NOTICE
@@ -68,9 +68,9 @@ typedef struct _photomap {
 				/* so this parameter is *not* redundant */
   xieTypDataType  dataType;	/* {constrained,unconstrined}		*/
   CARD8		  pad;
-  void		  *tecParms;	/* contains technique specific decode   */
+  pointer	  tecParms;	/* contains technique specific decode   */
 				/* parameters				*/
-  void		  *pvtParms;	/* decode hints				*/
+  pointer	  pvtParms;	/* decode hints				*/
   formatRec	  format[xieValMaxBands];   /* format of data in strips */
   stripLstRec	  strips[xieValMaxBands];   /* lists of image strips    */
 } photomapRec;
