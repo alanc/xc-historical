@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XPutImage.c,v 11.30 87/08/12 16:38:10 jg Exp $ */
+/* $Header: XPutImage.c,v 11.30 87/08/12 16:38:10 toddb Locked $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include <stdio.h>
@@ -428,7 +428,8 @@ PutSubImage (dpy, d, gc, image, req_xoffset,req_yoffset, x, y, req_width,
     {
 	/* This is a ridiculous case that should never happen, but just in
 		case. */
-		(void) fputs ("Request size is simply to small to put image\n", stderr);
+		(void) fputs("Request size is simply too small to put image\n",
+			stderr);
 		exit(1);
     }
   
