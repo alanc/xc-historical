@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XSync.c,v 11.12 87/09/11 08:07:42 toddb Exp $ */
+/* $XConsortium: XSync.c,v 11.13 88/09/06 16:11:03 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #define NEED_REPLIES
@@ -13,7 +13,7 @@ extern _XQEvent *_qfree;
 
 XSync (dpy, discard)
     register Display *dpy;
-    int discard;
+    Bool discard;
 {
     xGetInputFocusReply rep;
     register xReq *req;
