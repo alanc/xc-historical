@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Tekproc.c,v 1.98 91/05/07 00:52:47 gildea Exp $
+ * $XConsortium: Tekproc.c,v 1.99 91/05/07 14:52:01 gildea Exp $
  *
  * Warning, there be crufty dragons here.
  */
@@ -230,7 +230,9 @@ static XtResource resources[] = {
 static void TekInitialize(), TekRealize(), TekConfigure();
 static int getpoint();
 static int Tinput();
+
 void TekExpose();
+void TekSetFontSize();
 
 static WidgetClassRec tekClassRec = {
   {
@@ -469,7 +471,7 @@ static void Tekparse()
 
 		 case CASE_CHAR_SIZE: 
 			/* character size selector */
-		        TekSetGCFont (screen->cur.fontsize = (c & 03));
+		        TekSetFontSize (c & 03);
 			Tparsestate = curstate;
 			break;
 
@@ -602,21 +604,6 @@ static void Tekparse()
 		}
 }			
 
-TekSetGCFont (size)
-    int size;  /* TEK_FONT_{LARGE,2,3,SMALL} */
-{
-    register TScreen *screen = &term->screen;
-    Font fid = tekWidget->tek.Tfont[size]->fid;
-    if (fid == DefaultGCID) 
-       /* we didn't succeed in opening a real font
-	  for this size.  Instead, use server default. */
-       XCopyGC (screen->display,
-	  DefaultGC(screen->display, DefaultScreen(screen->display)),
-	  GCFont, screen->TnormalGC);
-   else
-       XSetFont (screen->display, screen->TnormalGC, fid);
-}
-
 static int rcnt;
 static char *rptr;
 static int Tselect_mask;
@@ -636,6 +623,7 @@ static int Tinput()
 			TekRefresh = tek;
 			rcnt = tek->count - 1;
 			rptr = tek->data;
+			TekSetFontSize(tek->fontsize);
 			return(*rptr++);
 		}
 		TekRefresh = (TekLink *)0;
@@ -708,12 +696,15 @@ again:
 			Ttoggled = TRUE;
 		}
 	}
-	if((tek = TekRecord)->count >= TEK_LINK_BLOCK_SIZE) {
+	tek = TekRecord;
+	if(tek->count >= TEK_LINK_BLOCK_SIZE
+	   || tek->fontsize != screen->cur.fontsize) {
 		if((TekRecord = tek->next = (TekLink *)malloc(sizeof(TekLink)))
 		 == (TekLink *)0)
 			Panic("Tinput: malloc error (%d)\n", errno);
 		tek = tek->next;
 		tek->next = (TekLink *)0;
+		tek->fontsize = screen->cur.fontsize;
 		tek->count = 0;
 		tek->ptr = tek->data;
 	}
@@ -745,9 +736,9 @@ static void TekConfigure(w)
    look at the "count" in the exposure event ! */
 /*ARGSUSED*/
 void TekExpose(w, event, region)
-Widget w;
-XExposeEvent *event;
-Region region;
+    Widget w;
+    XExposeEvent *event;
+    Region region;
 {
 	register TScreen *screen = &term->screen;
 
@@ -761,7 +752,6 @@ Region region;
 	screen->cur_X = 0;
 	screen->cur_Y = TEKHOME;
 	screen->cur = screen->page;
-        TekSetGCFont (screen->cur.fontsize);
 	screen->margin = MARGIN1;
 	if(screen->TekGIN) {
 		screen->TekGIN = NULL;
@@ -804,6 +794,7 @@ TekPage()
 	if(screen->TekGIN)
 		TekGINoff();
 	tek = TekRecord = &Tek0;
+	tek->fontsize = screen->cur.fontsize;
 	tek->count = 0;
 	tek->ptr = tek->data;
 	if(tek = tek->next)
@@ -1126,17 +1117,17 @@ static unsigned char *dashes[TEKNUMLINES] = {
 static void TekInitialize(request, new)
     Widget request, new;
 {
-   /* look for focus related events on the shell, because we need
-    * to care about the shell's border being part of our focus.
-    */
+    /* look for focus related events on the shell, because we need
+     * to care about the shell's border being part of our focus.
+     */
     XtAddEventHandler(XtParent(new), EnterWindowMask, FALSE,
 		      HandleEnterWindow, (caddr_t)NULL);
     XtAddEventHandler(XtParent(new), LeaveWindowMask, FALSE,
 		      HandleLeaveWindow, (caddr_t)NULL);
     XtAddEventHandler(XtParent(new), FocusChangeMask, FALSE,
 		      HandleFocusChange, (caddr_t)NULL);
-   XtAddEventHandler((Widget)new, PropertyChangeMask, FALSE,
-		     HandleBellPropertyChange, (Opaque)NULL);
+    XtAddEventHandler((Widget)new, PropertyChangeMask, FALSE,
+		      HandleBellPropertyChange, (Opaque)NULL);
 }
 
 
@@ -1360,6 +1351,7 @@ static void TekRealize (gw, valuemaskp, values)
 
     tek = TekRecord = &Tek0;
     tek->next = (TekLink *)0;
+    tek->fontsize = screen->cur.fontsize;
     tek->count = 0;
     tek->ptr = tek->data;
     Tpushback = Tpushb;
@@ -1372,19 +1364,29 @@ static void TekRealize (gw, valuemaskp, values)
     return;
 }
 
-void TekSetFontSize (gw, newitem)
-    Widget gw;
+void TekSetFontSize (newitem)
     int newitem;
 {
     register TScreen *screen = &term->screen;
     int oldsize = screen->cur.fontsize;
     int newsize = MI2FS(newitem);
+    Font fid;
     
     if (!tekWidget  ||  oldsize == newsize)
 	return;
     if (!Ttoggled) TCursorToggle(TOGGLE);
     set_tekfont_menu_item (oldsize, FALSE);
-    TekSetGCFont (newsize);
+
+    fid = tekWidget->tek.Tfont[newsize]->fid;
+    if (fid == DefaultGCID) 
+       /* we didn't succeed in opening a real font
+	  for this size.  Instead, use server default. */
+       XCopyGC (screen->display,
+		DefaultGC(screen->display, DefaultScreen(screen->display)),
+		GCFont, screen->TnormalGC);
+    else
+       XSetFont (screen->display, screen->TnormalGC, fid);
+
     screen->cur.fontsize = newsize;
     set_tekfont_menu_item (newsize, TRUE);
     if (!Ttoggled) TCursorToggle(TOGGLE);
@@ -1458,7 +1460,8 @@ TCursorToggle(toggle)
 
 	x = (screen->cur_X * TekScale(screen)) + screen->border;
 	y = ((TEKHEIGHT + TEKTOPPAD - screen->cur_Y) * TekScale(screen)) +
-	 screen->border - tekWidget->tek.tobaseline[c];
+	    screen->border - tekWidget->tek.tobaseline[c];
+
 	if (toggle == TOGGLE) {
 	   if (screen->select || screen->always_highlight) 
 	       XFillRectangle(screen->display, TWindow(screen),
