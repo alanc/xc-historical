@@ -1,4 +1,4 @@
-/* $XConsortium: cp_ccom.c,v 5.12 91/05/10 19:44:29 hersh Exp $ */
+/* $XConsortium: cp_ccom.c,v 5.13 91/05/30 09:01:54 jap Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -1292,6 +1292,40 @@ dummy_attach( cph, fd )
 #define DEBUG_PHIGSMON_SOCKET_COMMAND "/tmp/phigs_command"
 #define DEBUG_PHIGSMON_SOCKET_ERROR "/tmp/phigs_error"
 #include <sys/un.h>
+#endif
+
+#ifdef hpux
+#include <sys/un.h> 
+#define socketpair _socketpair
+static int socketpair(domain, s_type, protocol, sv)
+  int domain, s_type, protocol;
+  int sv[2];
+{
+    struct sockaddr_un name;
+    int socket_size, fd;
+
+    if ((sv[0] = socket(domain, s_type, protocol)) < 0)
+	return -1;
+    if ((fd = socket(domain, s_type, protocol)) < 0) {
+	close(sv[0]);
+	return -1;
+    }
+    tmpnam(name.sun_path);
+    name.sun_family = AF_UNIX;
+    socket_size = sizeof(name.sun_family) + strlen(name.sun_path) + 1;
+    if (bind(fd, &name, socket_size) < 0 ||
+	listen(fd, 1) < 0 ||
+	connect(sv[0], &name, socket_size) < 0 ||
+	(sv[1] = accept(fd, &name, &socket_size)) < 0) {
+	unlink(name.sun_path);
+	close(sv[0]);
+	close(fd);
+	return -1;
+    }
+    unlink(name.sun_path);
+    close(fd);
+    return 0;
+}
 #endif
 
 static int
