@@ -54,6 +54,7 @@ static char sccsid[] = "%W %G Copyright 1987 Sun Micro";
 #include "keysym.h"
 #include "inputstr.h"
 #include <signal.h>
+#include <sys/ioctl.h>
 
 typedef struct {
     int	    	  trans;          	/* Original translation form */
@@ -196,6 +197,7 @@ sunKbdProc (pKeyboard, what)
 	    pKeyboard->on = FALSE;
 	    sysKbCtrl = defaultKeyboardControl;
 	    sysKbPriv.ctrl = &sysKbCtrl;
+	    autoRepeatKeyDown = 0;
 
 	    /*
 	     * ensure that the keycodes on the wire are >= MIN_KEYCODE
@@ -640,6 +642,8 @@ sunChangeKbdTranslation(pKeyboard,makeTranslated)
     int 	tmp;
     int		kbdOpenedHere;
     int		old_mask;
+    int		toread;
+    char	junk[8192];
 
     static struct timeval lastChngKbdTransTv;
     struct timeval tv;
@@ -722,6 +726,15 @@ sunChangeKbdTranslation(pKeyboard,makeTranslated)
 	(void)ioctl (kbdFd, KIOCTRANS, &tmp);
     }
 
+    if (ioctl (kbdFd, FIONREAD, &toread) != -1 && toread > 0) {
+	while (toread) {
+	    tmp = toread;
+	    if (toread > sizeof (junk))
+		tmp = sizeof (junk);
+	    (void) read (kbdFd, junk, tmp);
+	    toread -= tmp;
+	}
+    }
     if ( kbdOpenedHere )
 	(void) close( kbdFd );
     sigsetmask (old_mask);
