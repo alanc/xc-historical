@@ -27,7 +27,7 @@
 #include "opaque.h"
 
 #ifdef XDMCP
-#include "Xdmcp/Xdmcp.h"
+#include "Xdmcp.h"
 
 extern int argcGlobal;
 extern char **argvGlobal;
@@ -47,6 +47,9 @@ static long		    defaultKeepaliveDormancy = XDM_DEF_DORMANCY;
 static long		    keepaliveDormancy = XDM_DEF_DORMANCY;
 static CARD16		    DisplayNumber;
 static xdmcp_states	    XDM_INIT_STATE = XDM_OFF;
+#ifdef HASDES
+static char		    *xdmAuthCookie;
+#endif
 
 static XdmcpBuffer	    buffer;
 
@@ -81,6 +84,10 @@ XdmcpUseMsg ()
     ErrorF("-port port-num         UDP port number to send messages to\n");
     ErrorF("-once                  Terminate server after one session\n");
     ErrorF("-class display-class   specify display class to send in manage\n");
+#ifdef HASDES
+    ErrorF("-cookie xdm-auth-bits  specify the magic cookie for XDMCP\n");
+#endif
+    ErrorF("-displayID display-id  manufacturer display ID for request\n");
 }
 
 int 
@@ -117,6 +124,18 @@ XdmcpOptions(argc, argv, i)
     if (strcmp(argv[i], "-class") == 0) {
 	++i;
 	defaultDisplayClass = argv[i];
+	return (i + 1);
+    }
+#ifdef HASDES
+    if (strcmp(argv[i], "-cookie") == 0) {
+	++i;
+	xdmAuthCookie = argv[i];
+	return (i + 1);
+    }
+#endif
+    if (strcmp(argv[i], "-displayID") == 0) {
+	++i;
+	XdmcpRegisterManufacturerDisplayID (argv[i], strlen (argv[i]));
 	return (i + 1);
     }
     return (i);
@@ -159,18 +178,26 @@ XdmcpRegisterBroadcastAddress (addr)
  */
 
 static ARRAYofARRAY8	AuthenticationNames, AuthenticationDatas;
-static Bool		(**AuthenticationValidators)();
+typedef struct _AuthenticationFuncs {
+    Bool    (*Validator)();
+    Bool    (*Generator)();
+    Bool    (*AddAuth)();
+} AuthenticationFuncsRec, *AuthenticationFuncsPtr;
 
-XdmcpRegisterAuthentication (name, namelen, data, datalen, Validator)
+static AuthenticationFuncsPtr	AuthenticationFuncsList;
+
+XdmcpRegisterAuthentication (name, namelen, data, datalen, Validator, Generator, AddAuth)
     char    *name;
     int	    namelen;
     char    *data;
     int	    datalen;
     Bool    (*Validator)();
+    Bool    (*Generator)();
+    Bool    (*AddAuth)();
 {
     int	    i;
     ARRAY8  AuthenticationName, AuthenticationData;
-    static Bool	(**newValidators)();
+    static AuthenticationFuncsPtr	newFuncs;
 
     if (!XdmcpAllocARRAY8 (&AuthenticationName, namelen))
 	return;
@@ -187,18 +214,20 @@ XdmcpRegisterAuthentication (name, namelen, data, datalen, Validator)
 				     AuthenticationNames.length + 1) &&
 	  XdmcpReallocARRAYofARRAY8 (&AuthenticationDatas,
 				     AuthenticationDatas.length + 1) &&
-	  (newValidators = (Bool (**)()) xalloc (
-			(AuthenticationNames.length + 1) * sizeof (Bool (*)())))))
+	  (newFuncs = (AuthenticationFuncsPtr) xalloc (
+			(AuthenticationNames.length + 1) * sizeof (AuthenticationFuncsRec)))))
     {
 	XdmcpDisposeARRAY8 (&AuthenticationName);
 	XdmcpDisposeARRAY8 (&AuthenticationData);
 	return;
     }
-    for (i = 0; i < AuthenticationNames.length; i++)
-	newValidators[i] = AuthenticationValidators[i];
-    newValidators[AuthenticationNames.length] = Validator;
-    xfree (AuthenticationValidators);
-    AuthenticationValidators = newValidators;
+    for (i = 0; i < AuthenticationNames.length - 1; i++)
+	newFuncs[i] = AuthenticationFuncsList[i];
+    newFuncs[AuthenticationNames.length-1].Validator = Validator;
+    newFuncs[AuthenticationNames.length-1].Generator = Generator;
+    newFuncs[AuthenticationNames.length-1].AddAuth = AddAuth;
+    xfree (AuthenticationFuncsList);
+    AuthenticationFuncsList = newFuncs;
     AuthenticationNames.data[AuthenticationNames.length-1] = AuthenticationName;
     AuthenticationDatas.data[AuthenticationDatas.length-1] = AuthenticationData;
 }
@@ -208,22 +237,24 @@ XdmcpRegisterAuthentication (name, namelen, data, datalen, Validator)
  * set by the manager of the host to be connected to.
  */
 
-ARRAY8	AuthenticationName;
-ARRAY8	AuthenticationData;
-Bool	(*AuthenticationValidator)();
+ARRAY8		noAuthenticationName = {(CARD16) 0, (CARD8Ptr) 0};
+ARRAY8		noAuthenticationData = {(CARD16) 0, (CARD8Ptr) 0};
+ARRAY8Ptr	AuthenticationName = &noAuthenticationName;
+ARRAY8Ptr	AuthenticationData = &noAuthenticationData;
+AuthenticationFuncsPtr	AuthenticationFuncs;
 
 XdmcpSetAuthentication (name)
     ARRAY8Ptr	name;
 {
     int	i;
 
-    XdmcpDisposeARRAY8 (&AuthenticationName);
+    XdmcpDisposeARRAY8 (AuthenticationName);
     for (i = 0; i < AuthenticationNames.length; i++)
 	if (XdmcpARRAY8Equal (&AuthenticationNames.data[i], name))
 	{
-	    AuthenticationName = AuthenticationNames.data[i];
-	    AuthenticationData = AuthenticationDatas.data[i];
-	    AuthenticationValidator = AuthenticationValidators[i];
+	    AuthenticationName = &AuthenticationNames.data[i];
+	    AuthenticationData = &AuthenticationDatas.data[i];
+	    AuthenticationFuncs = &AuthenticationFuncsList[i];
 	    break;
 	}
 }
@@ -352,6 +383,10 @@ void
 XdmcpInit()
 {
     state = XDM_INIT_STATE;
+#ifdef HASDES
+    if (xdmAuthCookie)
+	XdmAuthenticationInit (xdmAuthCookie, strlen (xdmAuthCookie));
+#endif
     if (state != XDM_OFF)
     {
 	XdmcpRegisterAuthorizations();
@@ -683,12 +718,28 @@ restart()
     send_packet();
 }
 
-XdmcpCheckAuthentication (Name, Data)
+XdmcpCheckAuthentication (Name, Data, packet_type)
     ARRAY8Ptr	Name, Data;
+    int	packet_type;
 {
-    return (XdmcpARRAY8Equal (Name, &AuthenticationName) &&
-	    (AuthenticationName.length == 0 ||
-	     AuthenticationValidator (&AuthenticationData, Data)));
+    return (XdmcpARRAY8Equal (Name, AuthenticationName) &&
+	    (AuthenticationName->length == 0 ||
+	     (*AuthenticationFuncs->Validator) (AuthenticationData, Data, packet_type)));
+}
+
+XdmcpAddAuthorization (name, data)
+    ARRAY8Ptr	name, data;
+{
+    Bool    (*AddAuth)(), AddAuthorization();
+
+    if (AuthenticationFuncs && AuthenticationFuncs->AddAuth)
+	AddAuth = AuthenticationFuncs->AddAuth;
+    else
+	AddAuth = AddAuthorization;
+    return (*AddAuth) ((unsigned short)name->length,
+		       (char *)name->data,
+		       (unsigned short)data->length,
+		       (char *)data->data);
 }
 
 /*
@@ -797,6 +848,7 @@ send_request_msg()
     XdmcpHeader	    header;
     int		    length;
     int		    i;
+    ARRAY8	    authenticationData;
 
     header.version = XDM_PROTOCOL_VERSION;
     header.opcode = (CARD16) REQUEST;
@@ -806,8 +858,16 @@ send_request_msg()
     length += 1;				    /* connection addresses */
     for (i = 0; i < ConnectionAddresses.length; i++)
 	length += 2 + ConnectionAddresses.data[i].length;
-    length += 2 + AuthenticationName.length;	    /* authentication name */
-    length += 2 + AuthenticationData.length;	    /* authentication data */
+    authenticationData.length = 0;
+    authenticationData.data = 0;
+    if (AuthenticationFuncs)
+    {
+	(*AuthenticationFuncs->Generator) (AuthenticationData,
+					   &authenticationData,
+ 					   REQUEST);
+    }
+    length += 2 + AuthenticationName->length;	    /* authentication name */
+    length += 2 + authenticationData.length;	    /* authentication data */
     length += 1;				    /* authorization names */
     for (i = 0; i < AuthorizationNames.length; i++)
 	length += 2 + AuthorizationNames.data[i].length;
@@ -815,13 +875,17 @@ send_request_msg()
     header.length = length;
 
     if (!XdmcpWriteHeader (&buffer, &header))
+    {
+	XdmcpDisposeARRAY8 (&authenticationData);
 	return;
+    }
     XdmcpWriteCARD16 (&buffer, DisplayNumber);
     XdmcpWriteARRAY16 (&buffer, &ConnectionTypes);
     XdmcpWriteARRAYofARRAY8 (&buffer, &ConnectionAddresses);
 
-    XdmcpWriteARRAY8 (&buffer, &AuthenticationName);
-    XdmcpWriteARRAY8 (&buffer, &AuthenticationData);
+    XdmcpWriteARRAY8 (&buffer, AuthenticationName);
+    XdmcpWriteARRAY8 (&buffer, &authenticationData);
+    XdmcpDisposeARRAY8 (&authenticationData);
     XdmcpWriteARRAYofARRAY8 (&buffer, &AuthorizationNames);
     XdmcpWriteARRAY8 (&buffer, &ManufacturerDisplayID);
     if (XdmcpFlush (xdmcpSocket, &buffer, &req_sockaddr, req_socklen))
@@ -851,17 +915,18 @@ recv_accept_msg(length)
     	if (length == 12 + AcceptAuthenticationName.length +
 		      	   AcceptAuthenticationData.length +
 		      	   AcceptAuthorizationName.length +
- 		      	   AcceptAuthorizationData.length &&
-	    XdmcpCheckAuthentication (&AcceptAuthenticationName,
-				      &AcceptAuthenticationData))
+ 		      	   AcceptAuthorizationData.length)
     	{
+	    if (!XdmcpCheckAuthentication (&AcceptAuthenticationName,
+				      &AcceptAuthenticationData))
+	    {
+		XdmcpFatal ("Authentication Failure", &AcceptAuthenticationName);
+	    }
 	    /* if the authorization specified in the packet fails
 	     * to be acceptable, enable the local addresses
 	     */
-	    if (!AddAuthorization ((unsigned short)AcceptAuthorizationName.length,
-				   (char *)AcceptAuthorizationName.data,
-				   (unsigned short)AcceptAuthorizationData.length,
-				   (char *)AcceptAuthorizationData.data))
+	    if (!XdmcpAddAuthorization (&AcceptAuthorizationName,
+					&AcceptAuthorizationData))
 	    {
 		AddLocalHosts ();
 	    }
