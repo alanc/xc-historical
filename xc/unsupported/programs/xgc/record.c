@@ -54,7 +54,7 @@ void toggle_recordbutton(w,closure,call_data)
   else {
     recording = FALSE;
     stop_recording();
-    sprintf(tmp,"Start Recording");
+    sprintf(tmp,"Record");
     recordargs[0].value = (XtArgVal) tmp;
   }
 
@@ -86,7 +86,7 @@ void done_choosing_filename()
   
   if (recordfile = fopen(filename,"w")) {
     recording = TRUE;
-    sprintf(tmp,"Stop Recording");
+    sprintf(tmp,"End Record");
     recordargs[0].value = (XtArgVal) tmp;
     XtSetValues(recordbutton,recordargs,XtNumber(recordargs));
 
@@ -170,8 +170,8 @@ void print_out_gc_values()
   fprintf(recordfile,"foreground %d\n",X.gcv.foreground);
   fprintf(recordfile,"background %d\n",X.gcv.background);
   fprintf(recordfile,"planemask %d\n",X.gcv.plane_mask);
+  fprintf(recordfile,"dashlist %d\n",X.gcv.dashes);
   /* FONT */
-  /* DASHLIST */
 }  
 
 /********************************************/
