@@ -2,19 +2,33 @@
  * mipointer.c
  */
 
-/* $XConsortium Exp $ */
+/* $XConsortium: mipointer.c,v 5.2 89/06/21 11:16:15 rws Exp $ */
+
+/*
+Copyright 1989 by the Massachusetts Institute of Technology
+
+Permission to use, copy, modify, and distribute this software and its
+documentation for any purpose and without fee is hereby granted,
+provided that the above copyright notice appear in all copies and that
+both that copyright notice and this permission notice appear in
+supporting documentation, and that the name of M.I.T. not be used in
+advertising or publicity pertaining to distribution of the software
+without specific, written prior permission.  M.I.T. makes no
+representations about the suitability of this software for any
+purpose.  It is provided "as is" without express or implied warranty.
+*/
 
 # define NEED_EVENTS
-# include   <X.h>
-# include   <Xmd.h>
-# include   <Xproto.h>
-# include   <misc.h>
-# include   <windowstr.h>
-# include   <pixmapstr.h>
-# include   <mi.h>
-# include   <scrnintstr.h>
-# include   <mipointerstr.h>
-# include   <cursorstr.h>
+# include   "X.h"
+# include   "Xmd.h"
+# include   "Xproto.h"
+# include   "misc.h"
+# include   "windowstr.h"
+# include   "pixmapstr.h"
+# include   "mi.h"
+# include   "scrnintstr.h"
+# include   "mipointrst.h"
+# include   "cursorstr.h"
 
 static int  miPointerScreenIndex = -1;
 
