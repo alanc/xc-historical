@@ -1,5 +1,5 @@
 .\" Use tbl and -ms and macros.t	-*- Nroff -*-
-.\" $XConsortium: xlfd.tbl.ms,v 1.38 94/04/17 20:05:14 gildea Exp $
+.\" $XConsortium: xlfd.tbl.ms,v 1.39 94/04/18 12:37:36 gildea Exp $
 .nr sM 4		\" section on Matrix Transformations
 .nr sS 5		\" section on Scalable fonts
 .nr sP 6		\" section on Polymorphic font support
@@ -17,11 +17,9 @@
 
 \fBVersion 1.5\fP
 
-\fBPost-Public Review Draft 1\fP
-.br
-(with change bars against Public Review Draft)
+\fBX Consortium Standard\fP
 
-\fBX Consortium Draft Standard\fP
+\fBX Version 11, Release 6\fP
 .sp 6
 \s+1Jim Flowers\s-1
 .sp 6p
@@ -87,8 +85,8 @@ This documentation is provided as is without express or implied warranty.
 .ps 11
 .nr PS 11
 .bp 1
-.EH '\fBX Logical Font Description Conventions\fP''\fBPost-Public Review Draft 1\fP'
-.OH '\fBPost-Public Review Draft 1\fP''\fBX Logical Font Description Conventions\fP'
+.EH '\fBX Logical Font Description Conventions\fP''\fBX11, Release 6\fP'
+.OH '\fBX11, Release 6\fP''\fBX Logical Font Description Conventions\fP'
 .EF ''\fB\\\\n(PN\fP''
 .OF ''\fB\\\\n(PN\fP''
 .NH 1 
