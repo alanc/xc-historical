@@ -230,7 +230,7 @@ static void Realize(w, valueMask, attributes)
 		XtDisplay(w), w->core.parent->core.window,
 		w->core.x, w->core.y,
 		w->core.width, w->core.height, w->core.border_width,
-		0, InputOutput, (Visual *)CopyFromParent,
+		w->core.depth, InputOutput, (Visual *)CopyFromParent,	
 		valueMask, attributes);
 } /* Realize */
 
