@@ -1,5 +1,5 @@
 /*
-* $XConsortium: IntrinsicI.h,v 1.27 88/09/26 11:42:47 swick Exp $
+* $XConsortium: IntrinsicI.h,v 1.28 88/10/23 14:03:44 rws Exp $
 * $oHeader: IntrinsicI.h,v 1.5 88/08/31 16:21:08 asente Exp $
 */
 
@@ -140,5 +140,5 @@ extern int XtUnspecifiedPixmap;
  extern Bool _XtClassIsSubclass();
    /* WidgetClass subWidgetClass, widgetClass */
 
-#endif _XtintrinsicI_h
+#endif /* _XtintrinsicI_h */
 /* DON'T ADD STUFF AFTER THIS #endif */

@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Shell.h,v 1.16 88/09/06 16:29:08 jim Exp $
+* $XConsortium: Shell.h,v 1.17 89/06/01 12:56:48 swick Exp $
 * $oHeader: Shell.h,v 1.2 88/08/18 15:56:14 asente Exp $
 */
 /***********************************************************
@@ -133,5 +133,5 @@ externalref WidgetClass topLevelShellWidgetClass;
 externalref WidgetClass applicationShellWidgetClass;
 #endif
 
-#endif _XtShell_h
+#endif /* _XtShell_h */
 /* DON'T ADD STUFF AFTER THIS #endif */

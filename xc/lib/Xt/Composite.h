@@ -1,4 +1,4 @@
-/* $XConsortium: Composite.h,v 1.7 88/09/06 09:40:46 swick Exp $ */
+/* $XConsortium: Composite.h,v 1.8 88/09/06 16:27:11 jim Exp $ */
 /* $oHeader: Composite.h,v 1.2 asente Exp $ */
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -48,5 +48,5 @@ extern void XtUnmanageChild ();
 externalref WidgetClass compositeWidgetClass;
 #endif
 
-#endif _XtComposite_h
+#endif /* _XtComposite_h */
 /* DON'T ADD STUFF AFTER THIS #endif */

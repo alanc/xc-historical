@@ -1,5 +1,5 @@
 /*
-* $XConsortium: ShellP.h,v 1.20 88/09/06 16:29:10 jim Exp $
+* $XConsortium: ShellP.h,v 1.21 89/03/16 16:45:13 swick Exp $
 * $oHeader: ShellP.h,v 1.2 88/08/18 15:56:19 asente Exp $
 */
 
@@ -282,4 +282,4 @@ typedef  struct {
 	ApplicationShellPart application;
 } ApplicationShellRec, *ApplicationShellWidget;
 
-#endif  _XtShellPrivate_h
+#endif /* _XtShellPrivate_h */

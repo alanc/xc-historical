@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Vendor.h,v 1.10 88/09/06 09:42:44 swick Exp $
+* $XConsortium: Vendor.h,v 1.11 88/09/06 16:29:29 jim Exp $
 * $oHeader: Vendor.h,v 1.2 88/08/18 15:56:44 asente Exp $
 */
 
@@ -42,5 +42,5 @@ typedef struct _VendorShellClassRec *VendorShellWidgetClass;
 
 externalref WidgetClass vendorShellWidgetClass;
 
-#endif _XtVendor_h
+#endif /* _XtVendor_h */
 /* DON'T ADD STUFF AFTER THIS #endif */

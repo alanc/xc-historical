@@ -1,5 +1,5 @@
 /*
-* $XConsortium: VendorP.h,v 1.15 88/09/06 09:42:47 swick Exp $
+* $XConsortium: VendorP.h,v 1.16 88/09/06 16:29:31 jim Exp $
 * $oHeader: VendorP.h,v 1.2 88/08/18 15:56:48 asente Exp $
 */
 
@@ -75,4 +75,4 @@ typedef  struct {
 	VendorShellPart	vendor;
 } VendorShellRec, *VendorShellWidget;
 
-#endif  _XtVendorPrivate_h
+#endif  /* _XtVendorPrivate_h */

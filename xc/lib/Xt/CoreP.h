@@ -1,5 +1,5 @@
 /*
-* $XConsortium: CoreP.h,v 1.9 88/09/06 16:27:41 jim Exp $
+* $XConsortium: CoreP.h,v 1.10 88/09/26 11:43:58 swick Exp $
 * $oHeader: CoreP.h,v 1.2 88/08/18 15:54:37 asente Exp $
 */
 
@@ -142,5 +142,5 @@ typedef struct _WidgetClassRec {
 externalref WidgetClassRec widgetClassRec;
 
 
-#endif _XtCoreP_h
+#endif /* _XtCoreP_h */
 /* DON'T ADD STUFF AFTER THIS #endif */

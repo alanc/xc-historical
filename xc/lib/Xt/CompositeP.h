@@ -1,4 +1,4 @@
-/* $XConsortium: CompositeP.h,v 1.7 88/09/06 09:40:52 swick Exp $ */
+/* $XConsortium: CompositeP.h,v 1.8 88/09/06 16:27:14 jim Exp $ */
 /* $oHeader: CompositeP.h,v 1.2 88/08/18 15:54:11 asente Exp $ */
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -74,5 +74,5 @@ externalref CompositeClassRec compositeClassRec;
 #define XtInheritInsertChild ((XtWidgetProc) _XtInherit)
 #define XtInheritDeleteChild ((XtWidgetProc) _XtInherit)
 
-#endif _XtCompositeP_h
+#endif /* _XtCompositeP_h */
 /* DON'T ADD STUFF AFTER THIS #endif */

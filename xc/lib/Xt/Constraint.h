@@ -1,4 +1,4 @@
-/* $XConsortium: Constraint.h,v 1.7 88/09/06 09:40:59 swick Exp $ */
+/* $XConsortium: Constraint.h,v 1.8 88/09/06 16:27:20 jim Exp $ */
 /* $oHeader: Constraint.h,v 1.2 88/08/18 15:54:18 asente Exp $ */
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -33,5 +33,5 @@ typedef struct _ConstraintClassRec *ConstraintWidgetClass;
 externalref WidgetClass constraintWidgetClass;
 #endif
 
-#endif _XtConstraint_h
+#endif /* _XtConstraint_h */
 /* DON'T ADD STUFF AFTER THIS #endif */

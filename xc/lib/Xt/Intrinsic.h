@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Intrinsic.h,v 1.1 89/06/01 14:34:05 swick Exp $
+* $XConsortium: Intrinsic.h,v 1.89 89/06/09 08:16:35 swick Exp $
 * $oHeader: Intrinsic.h,v 1.10 88/09/01 10:33:34 asente Exp $
 */
 
@@ -555,7 +555,7 @@ extern Boolean XtIsSensitive();
 extern Widget XtParent();
     /* Widget	widget; */
 
-#endif _XtIntrinsicP_h
+#endif /* _XtIntrinsicP_h */
 
 #define XtMapWidget(widget)	XMapWindow(XtDisplay(widget), XtWindow(widget))
 #define XtUnmapWidget(widget)	\
@@ -1075,6 +1075,6 @@ extern void XtCallbackReleaseCacheRefList(); /* widget, closure, call_data */
     /* caddr_t closure; */	/* XtCacheRef* */
     /* caddr_t call_data */
 
-#endif _XtIntrinsic_h
+#endif /* _XtIntrinsic_h */
 /* DON'T ADD STUFF AFTER THIS #endif */
 

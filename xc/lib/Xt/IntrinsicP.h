@@ -1,5 +1,5 @@
 /*
-* $XConsortium: IntrinsicP.h,v 1.33 88/09/26 11:40:51 swick Exp $
+* $XConsortium: IntrinsicP.h,v 1.34 88/10/25 11:18:14 swick Exp $
 * $oHeader: IntrinsicP.h,v 1.4 88/08/26 14:49:52 asente Exp $
 */
 
@@ -162,5 +162,5 @@ extern void XtConfigureWidget(); /* widget, x, y, width, height, borderWidth */
     /* Position x, y; */
     /* Dimension height, width, borderWidth; */
 
-#endif _XtIntrinsicP_h
+#endif /* _XtIntrinsicP_h */
 /* DON'T ADD STUFF AFTER THIS #endif */

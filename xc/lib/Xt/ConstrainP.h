@@ -1,4 +1,4 @@
-/* $XConsortium: ConstrainP.h,v 1.9 88/09/06 09:40:56 swick Exp $ */
+/* $XConsortium: ConstrainP.h,v 1.10 88/09/06 16:27:16 jim Exp $ */
 /* $oHeader: ConstrainP.h,v 1.2 88/08/18 15:54:15 asente Exp $ */
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -56,5 +56,5 @@ typedef struct _ConstraintClassRec {
 
 externalref ConstraintClassRec constraintClassRec;
 
-#endif _XtConstraintP_h
+#endif /* _XtConstraintP_h */
 /* DON'T ADD STUFF AFTER THIS #endif */

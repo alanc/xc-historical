@@ -1,4 +1,4 @@
-/* $XConsortium: EventI.h,v 1.7 88/09/06 16:27:53 jim Exp $ */
+/* $XConsortium: EventI.h,v 1.8 88/10/18 10:21:13 swick Exp $ */
 /* $oHeader: EventI.h,v 1.3 88/08/24 09:21:11 asente Exp $ */
 
 /***********************************************************
@@ -77,4 +77,4 @@ extern void _XtAsyncMainLoop(); /* closure */
 extern void _XtRegisterAsyncHandlers(); /* widget */
     /* Widget widget; */
 
-#endif _Event_h_
+#endif /* _Event_h_ */

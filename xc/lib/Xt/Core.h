@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Core.h,v 1.6 88/09/06 09:41:10 swick Exp $
+* $XConsortium: Core.h,v 1.7 88/09/06 16:27:39 jim Exp $
 * $oHeader: Core.h,v 1.2 88/08/18 15:54:32 asente Exp $
 */
 
@@ -34,5 +34,5 @@ SOFTWARE.
 externalref WidgetClass widgetClass;
 #endif
 
-#endif _XtCore_h
+#endif /* _XtCore_h */
 /* DON'T ADD STUFF AFTER THIS #endif */

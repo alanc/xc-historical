@@ -1,4 +1,4 @@
-/* $XConsortium: SelectionI.h,v 1.4 88/09/06 09:42:20 swick Exp $ */
+/* $XConsortium: SelectionI.h,v 1.5 88/09/06 16:29:00 jim Exp $ */
 /* $oHeader: SelectionI.h,v 1.3 88/08/19 14:02:44 asente Exp $ */
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -173,5 +173,5 @@ typedef struct {
 	      (event->property == info->property))))
 
 
-#endif _XtselectionI_h
+#endif /* _XtselectionI_h */
 /* DON'T ADD STUFF AFTER THIS #endif */

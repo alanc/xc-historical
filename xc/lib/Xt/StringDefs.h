@@ -1,5 +1,5 @@
 /*
-* $XConsortium: StringDefs.h,v 1.43 88/09/29 13:36:29 swick Exp $
+* $XConsortium: StringDefs.h,v 1.44 89/03/13 09:37:21 swick Exp $
 * $oHeader: StringDefs.h,v 1.3 88/08/19 16:39:44 asente Exp $
 */
 
@@ -245,4 +245,4 @@ SOFTWARE.
 
 #define XtExtdefaultfont	"xtdefaultfont"
 
-#endif _XtAtom_h_
+#endif /* _XtAtom_h_ */
