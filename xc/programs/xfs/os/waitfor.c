@@ -1,4 +1,4 @@
-/* $XConsortium: waitfor.c,v 1.6 91/06/21 18:19:41 keith Exp $ */
+/* $XConsortium: waitfor.c,v 1.7 91/07/16 20:22:35 keith Exp $ */
 /*
  * waits for input
  */
@@ -196,7 +196,7 @@ ANYSET(src)
 {
     int         i;
 
-    for (i = 0; i < MSKCNT; i++)
+    for (i = 0; i < mskcnt; i++)
 	if (src[i])
 	    return (1);
     return (0);
