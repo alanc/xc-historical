@@ -1,4 +1,4 @@
-/* $XConsortium: Varargs.c,v 1.22 90/12/28 17:43:13 gildea Exp $ */
+/* $XConsortium: Varargs.c,v 1.23 91/02/05 16:59:26 gildea Exp $ */
 
 /*
 
@@ -223,9 +223,9 @@ _XtTypedArgToArg(widget, typed_arg, arg_return, resources, num_resources)
     from_val.size = typed_arg->size;
     if ((strcmp(typed_arg->type, XtRString) == 0) ||
             (typed_arg->size > sizeof(XtArgVal))) {
-        from_val.addr = (caddr_t)typed_arg->value;
+        from_val.addr = (XPointer)typed_arg->value;
     } else {
-            from_val.addr = (caddr_t)&typed_arg->value;
+            from_val.addr = (XPointer)&typed_arg->value;
     }
        
     XtConvert(widget, typed_arg->type, &from_val, to_type, &to_val);
