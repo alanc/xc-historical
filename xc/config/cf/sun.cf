@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: sun.cf,v 1.139 95/01/12 15:30:26 kaleb Exp gildea $
+XCOMM platform:  $XConsortium: sun.cf,v 1.140 95/02/21 21:36:15 gildea Exp kaleb $
 
 #ifdef SVR4Architecture
 #ifdef i386Architecture
@@ -152,8 +152,10 @@ XCOMM operating system:  OSName
 #endif
 #ifdef i386Architecture
 #define StandardDefines	  -Dsun -Di386 -DSVR4 -D__i386
+#define ToolkitStringsABIOptions	-intelabi
 #else
 #define StandardDefines	  -Dsun -DSVR4
+#define ToolkitStringsABIOptions	-sparcabi
 #endif
 #define ExtraLibraries    -lsocket -lnsl
 #if OSMinorVersion > 1
