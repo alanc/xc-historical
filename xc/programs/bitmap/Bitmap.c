@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Bitmap.c,v 1.21 91/01/11 13:53:43 dave Exp $
+ * $XConsortium: Bitmap.c,v 1.22 91/01/11 14:34:27 dmatic Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -431,7 +431,7 @@ void BWChangeNotify(w, client_data, call_data)
 	(*BW->bitmap.notify)(w, client_data, call_data);
 }
 
-void Notify(w, proc)
+void BWNotify(w, proc)
      Widget   w;
      void   (*proc)();
 {
@@ -605,12 +605,14 @@ int XmuWriteBitmapDataToFile (filename, basename,
     
     data_length = Length(width, height);
     
-    if(!filename)    
+    if(!filename || !strcmp(filename, "") || !strcmp(filename, "-")) {   
 	file = stdout;
+	filename = "dummy";
+	}
     else
     	file = fopen(filename, "w+");
     
-    if (!basename)
+    if (!basename || !strcmp(basename, "") || !strcmp(basename, "-"))
 	basename = StripFilename(filename);
     
     if (file) {
@@ -703,6 +705,20 @@ static void ClassInitialize()
 
 }
 
+static void SetSizeFromSizeResource(bw)
+     BitmapWidget bw;
+{
+  if (BWParseSize(bw->bitmap.size, 
+		  &bw->bitmap.width,
+		  &bw->bitmap.height)
+      ==
+      False) {
+    bw->bitmap.width = FallbackBitmapWidth;
+    bw->bitmap.height = FallbackBitmapHeight;
+    XtWarning("Cannot parse the size resource.  BitmapWidget");
+  }
+}
+
 /* ARGSUSED */
 static void Initialize(request, new, argv, argc)
     BitmapWidget request, new;
@@ -730,15 +746,7 @@ static void Initialize(request, new, argv, argc)
     new->bitmap.request_stack[0].call_data = NULL;
     new->bitmap.request_stack[0].trap = False;
 
-    if (BWParseSize(new->bitmap.size, 
-		    &new->bitmap.width,
-		    &new->bitmap.height)
-	==
-	False) {
-      new->bitmap.width = FallbackBitmapWidth;
-      new->bitmap.height = FallbackBitmapHeight;
-      XtWarning("Cannot parse the size resource.  BitmapWidget");
-    }
+    SetSizeFromSizeResource(new);
 
     new->core.width = new->bitmap.width * new->bitmap.squareW + 
 	2 * new->bitmap.distance;
@@ -856,9 +864,14 @@ static void Initialize(request, new, argv, argc)
 	    new->bitmap.changed = False;
 	    new->bitmap.zooming = False;
 	}
+
+	new->bitmap.filename = XtNewString(new->bitmap.filename);
+	
 	if (!strcmp(new->bitmap.basename, "")) {
 	    new->bitmap.basename = StripFilename(new->bitmap.filename);
 	}
+	else
+	  new->bitmap.basename = XtNewString(new->bitmap.basename);
     }
 
     Resize(new);
@@ -961,26 +974,24 @@ void BWChangeFilename(w, str)
     Widget w;
     String str;
 {
-    BitmapWidget BW = (BitmapWidget) w;
-    
-    if (str)
-	if (strcmp(str, "")) {
-	    XtFree(BW->bitmap.filename);
-	    BW->bitmap.filename = XtNewString( str);
-	}
+  BitmapWidget BW = (BitmapWidget) w;
+  
+  if (str) {
+    XtFree(BW->bitmap.filename);
+    BW->bitmap.filename = XtNewString( str);
+  }
 }
 
 void BWChangeBasename(w, str)
     Widget w;
     String str;
 {
-    BitmapWidget BW = (BitmapWidget) w;
-    
-    if (str)
-	if (strcmp(str, "")) {
-	    XtFree(BW->bitmap.basename);
-	    BW->bitmap.basename = XtNewString(str);
-	}
+  BitmapWidget BW = (BitmapWidget) w;
+  
+  if (str) {
+    XtFree(BW->bitmap.basename);
+    BW->bitmap.basename = XtNewString(str);
+  }
 }
 
 
@@ -1027,7 +1038,6 @@ int BWReadFile(w, filename, basename)
 	BW->bitmap.filename = XtNewString(filename);
 	XtFree(BW->bitmap.basename);
 	BW->bitmap.basename= XtNewString(StripFilename(filename));
-	BWChangeBasename(w, basename);
 
 	BWUnmark(w);
 	
@@ -1373,37 +1383,46 @@ Boolean BWQueryZooming(w)
     return BW->bitmap.zooming;
 }
 
+
+static void ResizeGrid(BW, width, height)
+     BitmapWidget BW;
+     Dimension width, height;
+{
+  XImage *image, *buffer;
+  char *image_data, *buffer_data;
+  
+  if (BW->bitmap.zooming)
+    ZoomOut(BW);
+  
+  image_data = CreateCleanData(Length(width, height));
+  buffer_data = CreateCleanData(Length(width, height));
+  
+  image = CreateBitmapImage(BW, image_data, width, height);
+  buffer = CreateBitmapImage(BW, buffer_data, width, height);
+  
+  TransferImageData(BW->bitmap.image, image);
+  TransferImageData(BW->bitmap.buffer, buffer);
+  
+  DestroyBitmapImage(&BW->bitmap.image);
+  DestroyBitmapImage(&BW->bitmap.buffer);
+  
+  BW->bitmap.image = image;
+  BW->bitmap.buffer = buffer;
+  BW->bitmap.width = width;
+  BW->bitmap.height = height;
+  
+  
+  FixHotSpot(BW);
+  FixMark(BW);
+}
+
 void BWResize(w, width, height)
     Widget w;
     Dimension width, height;
 {
     BitmapWidget BW = (BitmapWidget) w;
-    XImage *image, *buffer;
-    char *image_data, *buffer_data;
 
-    if (BW->bitmap.zooming)
-	ZoomOut(BW);
-
-    image_data = CreateCleanData(Length(width, height));
-    buffer_data = CreateCleanData(Length(width, height));
-
-    image = CreateBitmapImage(BW, image_data, width, height);
-    buffer = CreateBitmapImage(BW, buffer_data, width, height);
-
-    TransferImageData(BW->bitmap.image, image);
-    TransferImageData(BW->bitmap.buffer, buffer);
-    
-    DestroyBitmapImage(&BW->bitmap.image);
-    DestroyBitmapImage(&BW->bitmap.buffer);
-
-    BW->bitmap.image = image;
-    BW->bitmap.buffer = buffer;
-    BW->bitmap.width = width;
-    BW->bitmap.height = height;
-
-    
-    FixHotSpot(BW);
-    FixMark(BW);
+    ResizeGrid(BW, width, height);
 
     Resize(BW);
     if (BW->core.visible)
@@ -1423,6 +1442,9 @@ static void Destroy(w)
     XtDestroyGC(BW->bitmap.frame_gc);
     XtDestroyGC(BW->bitmap.axes_gc);
     BWRemoveAllRequests(w);
+
+    XtFree(BW->bitmap.filename);
+    XtFree(BW->bitmap.basename);
 }
 
 
@@ -1685,9 +1707,123 @@ void BWDashed(w, _switch)
 	BWSwitchDashed(w);
 }
 
-static Boolean SetValues()
+static Boolean SetValues(old, request, new, args, num_args)
+     Widget old, request, new;
+     ArgList args;
+     Cardinal num_args;
 {
-    return FALSE;
+  BitmapWidget oldbw = (BitmapWidget) old;
+  BitmapWidget newbw = (BitmapWidget) new;
+  Boolean resize = False;
+  Boolean redisplay = False;
+
+#define NE(field) (oldbw->field != newbw->field)
+
+  if (NE(bitmap.grid))
+    BWSwitchGrid(old);
+
+  if (NE(bitmap.dashed))
+    BWSwitchDashed(old);
+
+  if (NE(bitmap.axes))
+    BWSwitchAxes(old);
+
+  if (NE(bitmap.stippled)) {
+    XSetFillStyle(XtDisplay(new), newbw->bitmap.highlighting_gc,
+		  (newbw->bitmap.stippled ? FillStippled : FillSolid));
+    if (BWQueryMarked(new))
+      redisplay = True;
+  }
+
+  if (NE(bitmap.proportional))
+    resize = True;
+
+  if (NE(bitmap.filename) || NE(bitmap.basename)  || NE(bitmap.size))
+    BWChangeNotify(old);
+
+  if (NE(bitmap.filename))
+    if (newbw->bitmap.filename) {
+      XtFree(oldbw->bitmap.filename);
+      newbw->bitmap.filename = XtNewString(newbw->bitmap.filename);
+    }
+    else 
+      newbw->bitmap.filename = oldbw->bitmap.filename;
+
+  if (NE(bitmap.basename))
+    if (newbw->bitmap.basename) {
+      XtFree(oldbw->bitmap.basename);
+      newbw->bitmap.basename = XtNewString(newbw->bitmap.basename);
+    }
+    else 
+      newbw->bitmap.basename = oldbw->bitmap.basename;
+  
+  if (NE(bitmap.size)) {
+    Dimension width, height;
+    
+    if (BWParseSize(newbw->bitmap.size, &width, &height)) { 
+      ResizeGrid(newbw, width, height);
+      resize = True;
+    }
+  }
+  
+  if (NE(bitmap.distance) || 
+      NE(bitmap.grid_tolerance) ||
+      NE(bitmap.squareW) ||
+      NE(bitmap.squareH) ||
+      NE(core.height) ||
+      NE(core.width))
+    resize = True;
+
+  if (NE(bitmap.hot.x) || NE(bitmap.hot.y))
+    BWSetHotSpot(old, newbw->bitmap.hot.x, newbw->bitmap.hot.y);
+    
+  if (NE(bitmap.foreground_pixel) || NE(core.background_pixel)) {
+    XSetForeground(XtDisplay(new), 
+		   newbw->bitmap.drawing_gc,
+		   newbw->bitmap.foreground_pixel 
+		   ^ 
+		   newbw->core.background_pixel);
+    redisplay = True;
+  }
+
+  if (NE(bitmap.frame_pixel) || NE(core.background_pixel)) {
+    XSetForeground(XtDisplay(new), 
+		   newbw->bitmap.frame_gc,
+		   newbw->bitmap.frame_pixel
+		   ^ 
+		   newbw->core.background_pixel);
+    redisplay = True;
+  }
+
+  if (NE(bitmap.dashes)) {
+    XSetStipple(XtDisplay(new),
+		newbw->bitmap.frame_gc,
+		newbw->bitmap.dashes);
+    redisplay = True;
+  }
+
+  if (NE(bitmap.highlight_pixel) || NE(core.background_pixel)) {
+    XSetForeground(XtDisplay(new), 
+		   newbw->bitmap.highlighting_gc,
+		   newbw->bitmap.highlight_pixel
+		   ^ 
+		   newbw->core.background_pixel);
+    if (BWQueryMarked(new))
+      redisplay = True;
+  }
+ 
+  if (NE(bitmap.stipple)) {
+    XSetStipple(XtDisplay(new),
+		newbw->bitmap.highlighting_gc,
+		newbw->bitmap.stipple);
+    redisplay = True;
+  }
+  
+  if (resize) Resize(newbw);
+
+    return (redisplay || resize);
+
+#undef NE
 }
 
 Boolean BWQueryProportional(w)
