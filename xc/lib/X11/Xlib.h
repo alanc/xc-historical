@@ -1,4 +1,4 @@
-/* $XConsortium: Xlib.h,v 11.182 90/12/11 11:02:25 rws Exp $ */
+/* $XConsortium: Xlib.h,v 11.183 90/12/11 22:38:39 rws Exp $ */
 /* 
  * Copyright 1985, 1986, 1987 by the Massachusetts Institute of Technology
  *
@@ -86,7 +86,7 @@ extern "C" {					/* for C++ V2.0 */
 #define DefaultGC(dpy, scr) 	(((dpy)->screens[(scr)]).default_gc)
 #define BlackPixel(dpy, scr) 	(((dpy)->screens[(scr)]).black_pixel)
 #define WhitePixel(dpy, scr) 	(((dpy)->screens[(scr)]).white_pixel)
-#define AllPlanes 		(~0)
+#define AllPlanes 		((unsigned long)~0L)
 #define QLength(dpy) 		((dpy)->qlen)
 #define DisplayWidth(dpy, scr) 	(((dpy)->screens[(scr)]).width)
 #define DisplayHeight(dpy, scr) (((dpy)->screens[(scr)]).height)
