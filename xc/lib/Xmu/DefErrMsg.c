@@ -1,4 +1,6 @@
 /*
+ * $XConsortium$
+ *
  * Copyright 1988 by the Massachusetts Institute of Technology
  *
  * Permission to use, copy, modify, and distribute this software and its
@@ -17,11 +19,11 @@
 #include <stdio.h>
 
 /*
- * XmuPrintDefaultError - print a nice error that looks like the usual 
+ * XmuPrintDefaultErrorMessage - print a nice error that looks like the usual 
  * message.  Returns 1 if the caller should consider exitting else 0.
  */
 
-int XmuPrintDefaultError (dpy, event, fp)
+int XmuPrintDefaultErrorMessage (dpy, event, fp)
     Display *dpy;
     XErrorEvent *event;
     FILE *fp;
