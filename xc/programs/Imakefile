@@ -5,17 +5,13 @@
 RUNDIRS = xdm xhost xinit
 #endif
 
-#if BuildPexClients
-PEXDIRS = pexscope
-#endif
-
 SUBDIRS = \
 	appres bitmap editres listres oclock twm viewres \
 	xauth xbiff xcalc xclipboard xclock xcmsdb xconsole \
 	xditview xdpyinfo xedit xfd xkill xload xlogo \
 	xlsatoms xlsclients xlsfonts xmag xman xmh \
 	xmodmap xpr xprop xrdb xrefresh xfontsel $(RUNDIRS) \
- 	xset xsetroot xstdcmap xterm xwd xwininfo xwud $(PEXDIRS)
+ 	xset xsetroot xstdcmap xterm xwd xwininfo xwud
 
 MakeSubdirs($(SUBDIRS))
 DependSubdirs($(SUBDIRS))
