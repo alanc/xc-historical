@@ -1,4 +1,4 @@
-/* $XConsortium: Dialog.h,v 1.13 89/04/04 15:11:22 swick Exp $ */
+/* $XConsortium: Dialog.h,v 1.14 89/05/11 01:05:10 kit Exp $ */
 
 
 /***********************************************************
@@ -75,7 +75,7 @@ extern void XawDialogAddButton(); /* parent, name, function, param */
 extern char *XawDialogGetValueString(); /* w */
     /* Widget w; */
 
-#ifndef XAW_NO_COMPATABILITY	
+#ifdef XAW_BC
 /*************************************************************
  * For Compatibility only.                                   */
 
@@ -83,7 +83,7 @@ extern char *XawDialogGetValueString(); /* w */
 #define XtDialogAddButton                XawDialogAddButton
 
 /*************************************************************/
-#endif /* XAW_NO_COMPATABILITY */
+#endif /* XAW_BC */
 
 #endif /* _Dialog_h */
 /* DON'T ADD STUFF AFTER THIS #endif */

@@ -1,5 +1,5 @@
 /*
-* $XConsortium: TextP.h,v 1.30 89/04/07 14:22:10 swick Exp $
+* $XConsortium: TextP.h,v 1.31 89/05/11 01:06:57 kit Exp $
 */
 
 
@@ -143,7 +143,7 @@ typedef struct _TextRec {
     TextPart	text;
 } TextRec;
 
-#ifndef XAW_NO_COMPATABILITY
+#ifdef XAW_BC
 /*************************************************************
  * For Compatibility only.                                   */
 
@@ -153,6 +153,6 @@ typedef struct _TextRec {
 #define XtTextLineTableEntryPtr         XawTextLineTableEntryPtr
 
 /*************************************************************/
-#endif /* XAW_NO_COMPATABILITY */
+#endif /* XAW_BC */
 
 #endif /* _XawTextP_h */

@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Paned.h,v 1.4 89/04/04 15:09:47 swick Exp $
+* $XConsortium: Paned.h,v 1.5 89/05/11 01:06:10 kit Exp $
 */
 
 
@@ -201,7 +201,7 @@ extern void XawPanedAllowResize();  /* widget, allow_resize */
     /* Widget widget; */
     /* Boolean allow_resize; */
 
-#ifndef XAW_NO_COMPATABILITY	
+#ifdef XAW_BC
 /*************************************************************
  * For Compatibility only.                                   */
 
@@ -212,7 +212,7 @@ extern void XawPanedAllowResize();  /* widget, allow_resize */
 #define XtPanedSetRefigureMode  XawPanedSetRefigureMode
 
 /*************************************************************/
-#endif /* XAW_NO_COMPATABILITY */
+#endif /* XAW_BC */
   
 #endif /* _XawPaned_h */
 /* DON'T ADD STUFF AFTER THIS #endif */

@@ -1,4 +1,4 @@
-/* $XConsortium: Form.h,v 1.18 89/03/30 16:05:29 jim Exp $ */
+/* $XConsortium: Form.h,v 1.19 89/05/11 01:05:18 kit Exp $ */
 
 
 /***********************************************************
@@ -109,14 +109,14 @@ typedef struct _FormRec		*FormWidget;
 
 extern WidgetClass formWidgetClass;
 
-#ifndef XAW_NO_COMPATABILITY	
+#ifdef XAW_BC
 /*************************************************************
  * For Compatibility only.                                   */
 
 #define XtFormDoLayout                XawFormDoLayout
 
 /*************************************************************/
-#endif /* XAW_NO_COMPATABILITY */
+#endif /* XAW_BC */
 
 extern void XawFormDoLayout();	/* widget, doit */
     /* Widget widget */

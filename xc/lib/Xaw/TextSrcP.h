@@ -1,5 +1,5 @@
 /*
-* $XConsortium: TextSrcP.h,v 1.2 89/03/30 16:06:03 jim Exp $
+* $XConsortium: TextSrcP.h,v 1.3 89/05/11 01:06:58 kit Exp $
 */
 
 
@@ -83,7 +83,7 @@ typedef struct {
 
 typedef enum  {Normal, Selected }highlightType;
 
-#ifndef XAW_NO_COMPATABILITY
+#ifdef XAW_BC
 /*************************************************************
  * For Compatibility only.                                   */
 
@@ -124,7 +124,7 @@ typedef enum  {Normal, Selected }highlightType;
 
 
 /*************************************************************/
-#endif /* XAW_NO_COMPATABILITY */
+#endif /* XAW_BC */
 
 #endif /* _XawTextSrcP_h */
 

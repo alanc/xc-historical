@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Text.h,v 1.18 89/04/07 14:23:21 swick Exp $
+* $XConsortium: Text.h,v 1.19 89/05/11 01:06:55 kit Exp $
 */
 
 
@@ -120,7 +120,7 @@ typedef struct {
     char *ptr;
     Atom format;
     } XawTextBlock, *XawTextBlockPtr; 
-#ifndef XAW_NO_COMPATABILITY
+#ifdef XAW_BC
 /************************************************************
  *
  * This Stuff is only for compatibility, and will go away in 
@@ -175,7 +175,7 @@ typedef struct _XawTextSink XtTextSinkRec, *XtTextSink;
 #define XtStringSourceDestroy      XawStringSourceDestroy
 
 /*************************************************************/
-#endif /* XAW_NO_COMPATABILITY */
+#endif /* XAW_BC */
 
 extern void XawTextDisplay(); /* w */
     /* Widget w; */

@@ -1,5 +1,5 @@
 /*
- *      $XConsortium: List.h,v 1.11 89/04/18 13:49:20 kit Exp $
+ *      $XConsortium: List.h,v 1.12 89/05/11 01:05:41 kit Exp $
  */
 
 /***********************************************************
@@ -145,14 +145,12 @@ typedef struct _ListRec      *ListWidget;
 typedef struct _XawListReturnStruct {
   String string;
   int list_index;
-} XawListReturnStruct
-#ifdef XAW_NO_COMPATABILITY	
-;
-#else
+} XawListReturnStruct;
+#ifdef XAW_BC
 /*************************************************************
  * For Compatibility only.                                   */
 
- ,XtListReturnStruct;
+#define XtListReturnStruct   XawListReturnStruct
 
 #define XT_LIST_NONE         XAW_LIST_NONE 
 
@@ -162,7 +160,7 @@ typedef struct _XawListReturnStruct {
 #define XtListShowCurrent    XawListShowCurrent
 
 /*************************************************************/
-#endif /* XAW_NO_COMPATABILITY */
+#endif /* XAW_BC */
 
 /******************************************************************
  *

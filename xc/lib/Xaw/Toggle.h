@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Toggle.h,v 1.3 89/03/30 16:06:05 jim Exp $
+ * $XConsortium: Toggle.h,v 1.4 89/05/11 01:07:02 kit Exp $
  */
 
 /***********************************************************
@@ -157,7 +157,7 @@ void XawToggleSetCurrent(/* radio_group, radio_data */);
 void XawToggleUnsetCurrent( /* radio_group */);
 /* Widget radio_group; */
 
-#ifndef XAW_NO_COMPATABILITY	
+#ifdef XAW_BC
 /*************************************************************
  * For Compatibility only.                                   */
 
@@ -167,7 +167,7 @@ void XawToggleUnsetCurrent( /* radio_group */);
 #define XtToggleGetCurrent             XawToggleGetCurrent
 
 /*************************************************************/
-#endif /* XAW_NO_COMPATABILITY */
+#endif /* XAW_BC */
 
 #endif /* _XawToggle_h */
 /* DON'T ADD STUFF AFTER THIS */
