@@ -1,4 +1,4 @@
-/* $XConsortium: Event.c,v 1.139 93/07/09 15:47:38 kaleb Exp $ */
+/* $XConsortium: Event.c,v 1.140 93/07/21 11:48:42 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -350,15 +350,17 @@ static Const WidgetRec WWfake;	/* placeholder for deletions */
 
 static void ExpandWWTable();
 
-void _XtRegisterWindow(window, widget)
-    register Window window;
-    register Widget widget;
+void XtRegisterDrawable(display, drawable, widget)
+    Display* display;
+    Drawable drawable;
+    Widget widget;
 {
-    register WWTable tab;
-    register int idx, rehash;
-    register Widget entry;
+    WWTable tab;
+    int idx, rehash;
+    Widget entry;
+    Window window = (Window) drawable;
 
-    tab = WWTABLE(XtDisplay(widget));
+    tab = WWTABLE(display);
     if (window != XtWindow(widget)) {
 	WWPair pair;
 	pair = XtNew(struct _WWPair);
@@ -385,15 +387,17 @@ void _XtRegisterWindow(window, widget)
     tab->entries[idx] = widget;
 }
 
-void _XtUnregisterWindow(window, widget)
-    register Window window;
-    register Widget widget;
+void XtUnregisterDrawable(display, drawable)
+    Display* display;
+    Drawable drawable;
 {
-    register WWTable tab;
-    register int idx, rehash;
-    register Widget entry;
+    WWTable tab;
+    int idx, rehash;
+    Widget entry;
+    Window window = (Window) drawable;
+    Widget widget = XtWindowToWidget (display, window);
 
-    tab = WWTABLE(XtDisplay(widget));
+    tab = WWTABLE(display);
     if (window != XtWindow(widget)) {
 	WWPair *prev, pair;
 
