@@ -21,7 +21,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: icons.c,v 1.14 89/12/10 19:20:04 jim Exp $
+ * $XConsortium: icons.c,v 1.15 90/03/08 15:19:52 jim Exp $
  *
  * Icon releated routines
  *
@@ -158,6 +158,14 @@ IconUp (tmp_win)
 {
     int		x, y;
     int		defx, defy;
+
+    /*
+     * If the client specified a particular location, let's use it (this might
+     * want to be an option at some point).  Otherwise, try to fit within the
+     * icon region.
+     */
+    if (tmp_win->wmhints && (tmp_win->wmhints->flags & IconPositionHint))
+      return;
 
     defx = -100;
     defy = -100;
