@@ -217,9 +217,9 @@ ComputeProps(pInfo, Vals, Filename)
     FontScalablePtr     Vals;
     char                *Filename;
 {
-    long infoint;
-    long infoBBox[4];
-    long rc;
+    int infoint;
+    int infoBBox[4];
+    int rc;
  
     QueryFontLib(Filename, "isFixedPitch", &infoint, &rc);
     if (!rc) {
