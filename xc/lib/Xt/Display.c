@@ -1,4 +1,4 @@
-/* $XConsortium: Display.c,v 1.96 93/09/03 09:55:42 kaleb Exp $ */
+/* $XConsortium: Display.c,v 1.97 93/09/03 20:28:08 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -375,11 +375,9 @@ XtAppContext XtCreateApplicationContext()
 #endif
 	app->free_bindings = NULL;
 	app->display_name_tried = NULL;
-#if defined(XTHREADS)
 	app->dpy_destroy_count = 0;
 	app->dpy_destroy_list = NULL;
 	app->exit_flag = FALSE;
-#endif
 	UNLOCK_PROCESS;
 	UNLOCK_APP(app);
 	return app;
