@@ -1,4 +1,4 @@
-/* $XConsortium: mach8plypt.c,v 1.1 94/03/28 21:12:36 dpw Exp $ */
+/* $XConsortium: mach8plypt.c,v 1.2 94/04/17 20:31:00 dpw Exp kaleb $ */
 /************************************************************
 
 Copyright (c) 1989  X Consortium
@@ -41,7 +41,6 @@ Further modifications by Tiago Gons (tiago@comosjn.hobby.nl)
 ********************************************************/
 
 
-/* $XConsortium: mach8plypt.c,v 1.1 94/03/28 21:12:36 dpw Exp $ */
 
 #include "X.h"
 #include "gcstruct.h"
