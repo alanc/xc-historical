@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XSetLocale.c,v 1.23 91/04/07 16:37:09 rws Exp $
+ * $XConsortium: XSetLocale.c,v 1.24 91/04/07 19:38:00 rws Exp $
  */
 
 /*
@@ -32,163 +32,24 @@
  *   
  */
 
-#include <X11/Xos.h>
 #include "Xlibint.h"
-#include "Xlocaleint.h"
+#include "Xlcint.h"
+#ifdef X_NOT_STDC_ENV
+#include <X11/Xlocale.h>
+#else
+#include <X11/Xos.h>
+#endif
+
+#ifdef X_NOT_STDC_ENV
+extern char *getenv();
+#endif
+
+#ifdef X_NOT_STDC_ENV
+
+/* alternative setlocale() for when the OS does not provide one */
 
 #define MAXLOCALE	64	/* buffer size of locale name */
 
-XLocale		_Xlocale_ = (XLocale)0;		/* global locale */
-
-#ifndef lint
-static int lock;
-#endif
-
-#define XREALLOC(p, size)	((p) ? Xrealloc(p, size) : Xmalloc(size))
-
-#ifndef X_NOT_STDC_ENV
-static char *_XGetOSLocaleName();
-#endif
-
-/*ARGSUSED*/
-static Bool
-_XChangeLocale(xlocale, lc_category, lc_name)
-    XLocale	xlocale;
-    int		lc_category;	/* locale category */ /* not used */
-    char       *lc_name;	/* locale name */
-{
-    int		i, len;
-    char       *p;
-    char       *lc_alias;
-    char	lang[256];
-    char	*_XlcResolveName();
-    XLocaleDB	*_XlcSetLocaleDB();
-
-    if (lc_name == NULL && xlocale)
-	return (True);
-
-    if (!xlocale)
-	return (False);
-
-    /*
-     * if lc_name that points null-string ("") are given, we must take locale
-     * name from environment.
-     */
-    if (*lc_name == '\0') {
-#ifndef X_NOT_STDC_ENV
-	lc_name = _XGetOSLocaleName();
-#else
-	lc_name = setlocale(LC_CTYPE, (char *)NULL);
-#endif
-    }
-
-    if (! (xlocale->lc_lang = XREALLOC(xlocale->lc_lang,
-				       (unsigned)strlen(lc_name) + 1)))
-	return (False);
-    strcpy(xlocale->lc_lang, lc_name);
-
-    /* extract locale name */
-    lc_alias = _XlcResolveName(lc_name);
-
-    /* set Modifiers */
-    if (!_XlcSetLocaleModifiers(xlocale, lc_alias))
-	return (False);
-
-    len = strlen(lc_alias);
-    for (i = 0, p = lc_alias;  i < len; i++)
-	if (*p++ == '@') break;
-    strncpy(lang, lc_alias, i);
-    lang[i] = '\0';
-
-    if (! (xlocale->xlc_db = _XlcSetLocaleDB(lang)))
-	return (False);
-
-    return (True);
-}
-
-/*ARGSUSED*/
-XLocale
-_XSetLocale(lc_category, lc_name)
-    int		lc_category;	/* locale category */ /* not used */
-    char       *lc_name;	/* locale name */
-{
-    XLocale     xlocale;
-
-    if (lc_name == NULL) {
-	if (_Xlocale_)
-	    return (_Xlocale_);
-	else
-	    lc_name = "C"; /* Setting gloval locale with "C" */
-    }
-
-    if (! (xlocale = (XLocale) Xmalloc(sizeof(XLocaleRec))))
-	return ((XLocale)0);
-    xlocale->lc_lang = NULL;
-    if (! _XChangeLocale(xlocale, lc_category, lc_name)) {
-	_XlcFreeLocale(xlocale);
-	return ((XLocale)0);
-    }
-    return (xlocale);
-}
-
-#ifdef	XML
-void
-_XIMChangeLocale(ic, lc_name)
-    XipIC ic;
-    char *lc_name;
-{
-    XLocale xlc;
-    int i;
-
-    for (i = 0; i < ic->xlc_num; i++) {
-	if ((!strcmp(lc_name, ic->mb_temp[i]->lc_lang)) ||
-	    (!strcmp(lc_name, ic->mb_temp[i]->xlc_db->lc_name))) {
-	    ic->mb = ic->mb_temp[i];
-	    ic->wc = ic->wc_temp[i];
-	    return;
-	}
-    }
-    xlc = _XSetLocale(LC_ALL, lc_name);
-    ic->mb = ic->mb_temp[ic->xlc_num] = xlc;
-    ic->wc = ic->wc_temp[ic->xlc_num] = _XlcDupLocale(xlc);
-    ic->xlc_num++;
-    return;
-}
-#endif	/* XML */
-
-char *
-_Xsetlocale(lc_category, lc_name)
-    int             lc_category;    /* locale category */
-    char           *lc_name;        /* locale name */
-{
-    LockMutex(&lock);
-
-    if (_Xlocale_) {
-	char save[256];
-	strcpy(save, setlocale(lc_category, NULL)); /* save */
-	if (!_XChangeLocale(_Xlocale_, lc_category, lc_name))
-	    if (!_XChangeLocale(_Xlocale_, lc_category, save))
-		_XChangeLocale(_Xlocale_, lc_category, "C");
-    } else {
-	if (!(_Xlocale_ = _XSetLocale(lc_category, lc_name)))
-	    _Xlocale_ = _XSetLocale(lc_category, "C");
-    }
-    UnlockMutex(&lock);
-
-    if (!_Xlocale_)
-	return NULL; 
-
-    return _Xlocale_->xlc_db->lc_name;
-}
-
-#ifdef X_NOT_STDC_ENV
-/* alternative setlocale() for OS does not have */
-static char locale_name[MAXLOCALE] = "C";
-#ifndef lint
-static int lock_name;
-#endif
-
-/*ARGSUSED*/
 #if NeedFunctionPrototypes
 char *
 _X_setlocale(
@@ -202,60 +63,75 @@ _X_setlocale(category, name)
     char       *name;
 #endif
 {
-    extern char *getenv();
-    char	*lang;
+    static char locale_name[MAXLOCALE] = "C";
+    char oldname[MAXLOCALE];
+    XLCd lcd;
 
-    if (name != NULL) {
-	LockMutex(&lock_name);
-	if (*name == '\0') {
-	    lang = getenv("LANG");
-	    if (*lang)
-		strcpy(locale_name, lang);
-	} else {
-	    strcpy(locale_name, name);
-	}
-	UnlockMutex(&lock_name);
-	if (!_Xsetlocale(LC_CTYPE, locale_name))
-	    return (NULL);
-    }
+    if (category != LC_CTYPE && category != LC_ALL)
+	return NULL;
+    if (!name)
+	return locale_name;
+    if (!*name)
+	name = getenv("LC_CTYPE");
+    if (!*name)
+	name = getenv("LANG");
+    if (!*name)
+	name = "C";
+    strcpy(oldname, locale_name);
+    strcpy(locale_name, name);
+    lcd = _XlcCurrentLC();
+    if (lcd)
+	strcpy(locale_name, lcd->core.name);
+    else
+	strcpy(locale_name, oldname);
+    if (!lcd)
+	return NULL;
     return locale_name;
 }
-#else
+
+#endif /* X_NOT_STDC_ENV */
+
+#ifndef X_NOT_STDC_ENV
 /*
- * _XGetOSLocaleName is an implementation dependent routine that
- * derives the locale name as used in the sample implementation from
- * that returned by setlocale  for example HP would use the following:
+ * _XlcMapOSLocaleName is an implementation dependent routine that derives
+ * the LC_CTYPE locale name as used in the sample implementation from that
+ * returned by setlocale.
  */
-#ifndef lint
-static int lock_name;
-#endif
 
 #ifdef hpux
-static char *
-_XGetOSLocaleName()
-{
-    char           *lc_name;
-    char           *end;
-    int             len;
-    static char     new_name[MAXLOCALE];
 
-    LockMutex(&lock_name);
-
-    lc_name = setlocale(LC_CTYPE, NULL);  /* "/:<locale_name>;/" */
-    lc_name = strchr (lc_name, ':');
-    lc_name++;
-    end = strchr(lc_name, ';');
-    len = end - lc_name;
-    strncpy(new_name, lc_name, len);
-    *(new_name + len) = '\0';
-    UnlockMutex(&lock_name);
-    return new_name;
-}
-#else
-static char *
-_XGetOSLocaleName()
+char *
+_XlcMapOSLocaleName(osname, siname)
+    char *osname;
+    char *siname;
 {
-    return setlocale(LC_CTYPE, NULL);
+    char *start;
+    char *end;
+    int   len;
+
+    start = index(osname, ':');
+    if (!start)
+	return osname;
+    start++;
+    end = index(start, ';');
+    if (!end)
+	return osname;
+    len = end - start;
+    strncpy(siname, start, len);
+    siname[len] = '\0';
+    return siname;
 }
-#endif
+
+#else /* hpux */
+
+char *
+_XlcMapOSLocaleName(osname, siname)
+    char *osname;
+    char *siname;
+{
+    return osname;
+}
+
+#endif /* hpux */
+
 #endif  /* X_NOT_STDC_ENV */
