@@ -1,4 +1,4 @@
-/* $XConsortium: fonts.c,v 1.13 92/05/28 17:17:15 gildea Exp $ */
+/* $XConsortium: fonts.c,v 1.14 92/11/18 21:30:07 gildea Exp $ */
 /*
  * font control
  */
@@ -485,13 +485,24 @@ close_font(pfont)
     FontPtr     pfont;
 {
     FontPathElementPtr fpe;
+    FontIDListPtr *idlist;
+    FontIDListPtr ids;
+    int i;
 
     assert(pfont);
     if (--pfont->refcnt == 0) {
 	if (fontPatternCache)
 	    RemoveCachedFontPattern(fontPatternCache, pfont);
 	fpe = pfont->fpe;
-	fsfree((char *) pfont->svrPrivate);
+	idlist = (FontIDListPtr) pfont->svrPrivate;
+	for (i = 0; i < MAXCLIENTS; i++) {
+	    ids = idlist[i];
+	    if (ids) {
+		fsfree((char *) ids->client_list);
+		fsfree((char *) ids);
+	    }
+	}
+	fsfree((char *) idlist);
 	(*fpe_functions[fpe->type].close_font) (fpe, pfont);
 	FreeFPE(fpe);
     }
@@ -503,15 +514,18 @@ CloseClientFont(cfp, fid)
     ClientFontPtr cfp;
     FSID        fid;
 {
-    FontIDListPtr *idlist,
-                ids;
+    FontIDListPtr *idlist;
+    FontIDListPtr ids;
+    int ret;
 
     assert(cfp);
     /* clear otherid id */
     idlist = (FontIDListPtr *) cfp->font->svrPrivate;
     ids = idlist[cfp->clientindex];
     remove_id_from_list(ids, fid);
-    return close_font(cfp->font);
+    ret = close_font(cfp->font);
+    fsfree((char *) cfp);
+    return ret;
 }
 
 /*
@@ -1037,6 +1051,7 @@ bail:
 	FreeFPE(c->fpe_list[i]);
     fsfree(c->fpe_list);
     fsfree(c->current.pattern);
+    fsfree(c->reply);
     fsfree(c);
     return TRUE;
 }
