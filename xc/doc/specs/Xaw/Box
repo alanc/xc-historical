@@ -2,7 +2,7 @@
 Box Widget
 .LP
 .XS
-\*(SN Box Widget
+	Box Widget
 .XE
 .IN "Box widget" "" "@DEF@"
 .Ds 0
@@ -31,6 +31,8 @@ has its own specified dimensions and color.
 .LP
 When creating a Box widget instance, the following resources are
 retrieved from the argument list or from the resource database:
+.NH 3
+Resources
 .IN "Box widget" "resources"
 .ps 9
 .nr PS 9
@@ -121,12 +123,12 @@ Each time a child is managed or unmanaged, the Box widget will attempt
 to reposition the remaining children to compact the box.  Children are
 positioned in order left to right, top to bottom.  The packing
 algorithm used depends on the \fBorientation\fP of the Box.
-.IP \fBXtOrientVertial\fP 1.5i
+.IP \fBXtOrientVertical\fP 1.5i
 When the next child does not fit on the current row, a new row is
 started.  If a child is wider than the width of the box, the box will
 request a larger width from its parent and will begin the layout
 process from the beginning if a new width is granted.
-.IP \fBXtOrientVertial\fP 1.5i
+.IP \fBXtOrientVertical\fP 1.5i
 When the next child does not fit in the current column, a new column is
 started.  If a child is taller than the height of the box, the box will
 request a larger height from its parent and will begin the layout
