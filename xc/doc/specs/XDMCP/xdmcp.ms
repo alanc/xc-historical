@@ -1,3 +1,5 @@
+.\" Use eqn, tbl, and -ms
+.\" $XConsortium: Exp $
 .EQ
 delim @@
 define oc % "\\fR{\\fP" %
@@ -14,8 +16,10 @@ define cc % "\\fR}\\fP" %
 .nr PS 10
 \&
 .sp 8
-.ce 1
+.ce 2
 \s+2\fBX Display Manager Control Protocol\fP\s-2
+.sp 1
+Public Review Draft
 .sp 6
 .ce 4
 Keith Packard
@@ -27,16 +31,13 @@ Massachusetts Institute of Technology
 .LP
 Copyright \(co 1989 by the Massachusetts Institute of Technology
 .LP
-This document is for internal use by Member and Affiliate
-organizations of the MIT X Consortium.  It may be redistributed
-internally within such organizations, provided the above copyright
-notice and this permission notice appear in all copies, but it is not
-to be published and it is not to be redistributed externally.  MIT
-makes no representations about the suitability for any purpose of the
-information in this document.  It is provided ``as is'' without express
-or implied warranty.  The information in this document is a
-preliminary draft and therefore subject to change, and does not
-represent an approved specification of the MIT X Consortium.
+Permission to use, copy, modify, and distribute this documentation for any
+purpose and without fee is hereby granted, provided that the above copyright
+notice and this permission notice appear in all copies.  MIT makes no
+representations about the suitability for any purpose of the information in
+this document.  This documentation is provided ``as is'' without express or
+implied warranty.  This document is only a draft standard of the MIT X
+Consortium and is therefore subject to change.
 .bp
 .AB
 .LP
@@ -1562,8 +1563,12 @@ n\s-2\d1\u\s+2	CARD8	First \f7Connection Address\fP
 o	CARD8	\f7Authentication Name\fP
 2	CARD16	Length of \f7Authentication Data\fP (p)
 p	CARD8	\f7Authentication Data\fP
-2	CARD16	Length of \f7Manufacturer Display ID\fP (q)
-q	CARD8	\f7Manufacturer Display ID\fP
+1	CARD8	Count of \f7Authorization Names\fP (q)
+2	CARD16	Length of first \f7Authorization Name\fP (q\s-2\d1\u\s+2)
+q\s-s\d1\u\s+2	CARD8	First \f7Authorization Name\fP
+\&...		Other authorization names
+2	CARD16	Length of \f7Manufacturer Display ID\fP (r)
+r	CARD8	\f7Manufacturer Display ID\fP
 .TE
 .RE
 .LP
