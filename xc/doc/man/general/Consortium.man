@@ -1,6 +1,7 @@
+.\" $XConsortium$
 .TH XCONSORTIUM 1 "Release 5"  "X Version 11"
 .SH NAME
-MIT X Consortium
+MIT X Consortium \- MIT X Consortium information
 .SH SYNOPSIS
 Release 5 of X Version 11 is brought to you by the MIT X Consortium.
 .SH DESCRIPTION
@@ -50,7 +51,9 @@ The Consortium also sponsors an annual conference, open to
 the public, to promote the exchange of technical information about X.
 .SH STAFF
 The Director of the X Consortium is Bob Scheifler, rws@expo.lcs.mit.edu.
-The MIT staff members are as follows.
+The staff of the X Consortium are all full-time research staff employed
+by the MIT Laboratory for Computer Science.
+The staff members are as follows.
 .nf
 
 Donna Converse, converse@expo.lcs.mit.edu
@@ -137,6 +140,7 @@ Computer & Communication Research Laboratories
 Frame Technology Corp.
 Gfxbase, Inc.
 GIPSI S.A.
+HaL Computer Systems, Inc.
 Institute for Information Industry
 Interactive Systems Corporation
 Integrated Computer Solutions, Inc.
