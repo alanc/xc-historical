@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: gc.c,v 1.98 87/10/15 10:37:48 rws Locked $ */
+/* $Header: gc.c,v 1.99 87/10/15 11:37:39 rws Locked $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -349,9 +349,7 @@ DoChangeGC(pGC, mask, pval, fPointer)
    Returns a pointer to the new GC on success, NULL otherwise.
    returns status of non-default fields in pStatus
 BUG:
-   should check for failure to create default tile and stipple
-   should be able to set the tile before the call the (pScreen->ChangeGC)
-	as it is, we must call ChangeGC twice.
+   should check for failure to create default tile
 
 */
 
@@ -364,10 +362,6 @@ CreateGC(pDrawable, mask, pval, pStatus)
 {
     register GC *pGC;
     extern FontPtr defaultFont;
-    CARD32	tmpval[3];
-    PixmapPtr 	pTile;
-    GCPtr pgcScratch;	/* for drawing into default tile and stipple */
-    xRectangle rect;
 #ifdef DEBUG
     void 	(**j)();
 #endif /* DEBUG */
@@ -420,28 +414,28 @@ CreateGC(pDrawable, mask, pval, pStatus)
     pGC->dash[1] = 4;
     pGC->dashOffset = 0;
 
-    pGC->stateChanges = (1 << GCLastBit+1) - 1;
-    (*pGC->pScreen->CreateGC)(pGC);
-    if(mask)
-        *pStatus = ChangeGC(pGC, mask, pval);
-    else
-	*pStatus = Success;
-
     /* if the client hasn't provided a tile, build one and fill it with
        the foreground pixel
     */
-    if (!pGC->tile)
+    if(!mask & GCTile)
     {
-	short w, h;
+	CARD32		tmpval[3];
+	PixmapPtr 	pTile;
+	GCPtr		pgcScratch;
+	xRectangle	rect;
+	short		w, h;
 
-	w = 16;
+	w = 16; /* XXX arbitrary */
 	h = 16;
 	(*pGC->pScreen->QueryBestSize)(TileShape, &w, &h);
 	pTile = (PixmapPtr)
 		(*pGC->pScreen->CreatePixmap)(pDrawable->pScreen,
 					      w, h, pGC->depth);
 	tmpval[0] = GXcopy;
-	tmpval[1] = pGC->fgPixel;
+	tmpval[1] = (mask & GCForeground) ? 
+	    /* blech */
+	    pval[(mask & GCFunction) + ((mask & GCPlaneMask) == GCPlaneMask)] :
+	    pGC->fgPixel;
 	tmpval[2] = FillSolid;
 	pgcScratch = GetScratchGC(pGC->depth, pGC->pScreen);
 	ChangeGC(pgcScratch, GCFunction | GCForeground | GCFillStyle, 
@@ -451,19 +445,19 @@ CreateGC(pDrawable, mask, pval, pStatus)
 	rect.y = 0;
 	rect.width = w;
 	rect.height = h;
-	(*pgcScratch->PolyFillRect)(pTile, pgcScratch,
-					 1, &rect);
+	(*pgcScratch->PolyFillRect)(pTile, pgcScratch, 1, &rect);
 	/* Always remember to free the scratch graphics context after use. */
 	FreeScratchGC(pgcScratch);
 
-	/*
-	 * Unfortunately, we must call ChangeGC a second time to get
-	 * the tile installed.  This would be nice to do before the first
-	 * call to ChangeGC, but we don't know the value of the
-	 * foreground pixel until afterwards.
-	 */
-	DoChangeGC(pGC, GCTile, (CARD32 *)&pTile, TRUE);
+	pGC->tile = pTile;
     }
+    pGC->stateChanges = (1 << GCLastBit+1) - 1;
+    (*pGC->pScreen->CreateGC)(pGC);
+    if(mask)
+        *pStatus = ChangeGC(pGC, mask, pval);
+    else
+	*pStatus = Success;
+
     return (pGC);
 }
 
