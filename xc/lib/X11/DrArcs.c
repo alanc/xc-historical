@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XDrArcs.c,v 11.12 88/09/06 16:06:36 jim Exp $ */
+/* $XConsortium: XDrArcs.c,v 11.13 89/05/26 18:28:30 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
@@ -15,27 +15,21 @@ XArc *arcs;
 int n_arcs;
 {
     register xPolyArcReq *req;
-    long len;
-    int n;
+    register long len;
 
     LockDisplay(dpy);
     FlushGC(dpy, gc);
-    while (n_arcs) {
-	GetReq(PolyArc,req);
-	req->drawable = d;
-	req->gc = gc->gid;
-	n = n_arcs;
-	len = ((long)n) * arc_scale;
-	if (len > (dpy->max_request_size - req->length)) {
-	    n = (dpy->max_request_size - req->length) / arc_scale;
-	    len = ((long)n) * arc_scale;
-	}
-	req->length += len;
-	len <<= 2; /* watch out for macros... */
-	Data16 (dpy, (short *) arcs, len);
-	n_arcs -= n;
-	arcs += n;
+    GetReq(PolyArc,req);
+    req->drawable = d;
+    req->gc = gc->gid;
+    len = ((long)n_arcs) * arc_scale;
+    if ((req->length + len) > 65535) { /* force BadLength, if possible */
+	n_arcs = (65535 - req->length) / arc_scale;
+	len = ((long)n_arcs) * arc_scale;
     }
+    req->length += len;
+    len <<= 2; /* watch out for macros... */
+    Data16 (dpy, (short *) arcs, len);
     UnlockDisplay(dpy);
     SyncHandle();
 }
