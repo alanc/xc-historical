@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlibInt.c,v 11.132 91/01/08 20:36:19 gildea Exp $
+ * $XConsortium: XlibInt.c,v 11.133 91/01/09 15:09:24 rws Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986, 1987 */
@@ -23,10 +23,10 @@ without express or implied warranty.
 #define NEED_EVENTS
 #define NEED_REPLIES
 
-#include <stdio.h>
 #include <X11/Xlibint.h>
 #include "Xlibnet.h"
 #include <X11/Xos.h>
+#include <stdio.h>
 
 static void _EatData32();
 
