@@ -17,6 +17,8 @@ typedef struct _OFclosure {
     Bool        slept;
 
 /* XXX -- get these from request buffer instead? */
+    char       *origFontName;
+    int		origFontNameLen;
     XID         fontid;
     char       *fontname;
     int         fnamelen;
