@@ -350,6 +350,9 @@ ddxProcessArgument (argc, argv, i)
 	if (++i >= argc) UseMsg ();
 	return 2;
     }
+    if (strcmp (argv[i], "-mono") == 0) {	/* -mono */
+	return 1;
+    }
     return 0;
 }
 
@@ -357,4 +360,5 @@ void
 ddxUseMsg()
 {
     ErrorF("-dev filename          name of device to open\n");
+    ErrorF("-mono                  force monochrome-only screen\n");
 }
