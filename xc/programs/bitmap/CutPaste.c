@@ -1,5 +1,5 @@
 /*
- * $XConsortium: CutPaste.c,v 1.4 91/04/16 09:04:45 rws Exp $
+ * $XConsortium: CutPaste.c,v 1.5 91/07/19 12:01:30 dave Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -23,11 +23,7 @@
  * Author:  Davor Matic, MIT X Consortium
  */
 
-
-
 #include <X11/IntrinsicP.h>
-#include <X11/Xaw/XawInit.h>
-#include <X11/Xmu/Converters.h>
 #include <X11/StringDefs.h>
 #include <X11/Xatom.h>
 #include "BitmapP.h"
@@ -36,7 +32,6 @@
 #include <string.h>
 #include <math.h>
 
-#define XtStrlen(s)                   ((s) ? strlen(s) : 0)
 #ifndef abs
 #define abs(x)                        (((x) > 0) ? (x) : -(x))
 #endif
