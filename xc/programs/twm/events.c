@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.152 90/04/13 13:32:59 jim Exp $
+ * $XConsortium: events.c,v 1.153 90/04/13 13:34:42 jim Exp $
  *
  * twm event handling
  *
@@ -38,7 +38,7 @@
 
 #if !defined(lint) && !defined(SABER)
 static char RCSinfo[]=
-"$XConsortium: events.c,v 1.152 90/04/13 13:32:59 jim Exp $";
+"$XConsortium: events.c,v 1.153 90/04/13 13:34:42 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -2200,7 +2200,7 @@ HandleConfigureRequest()
 	width = cre->width;
     }
     if (cre->value_mask & CWHeight) {
-	height = cre->height + Scr->TitleHeight + bw;
+	height = cre->height + Tmp_win->title_height;
     }
 
     if (width != Tmp_win->frame_width || height != Tmp_win->frame_height)
