@@ -140,7 +140,7 @@ InstallLibrary(Xaw_p,$(USRLIBDIR))
 DebuggedLibraryTarget(Xaw,$(OBJS))
 #endif
 
-InstallMultiple($(HEADERS),$(INCDIR))
+InstallMultiple($(HEADERS),$(INCDIR)/Xaw)
 
 DependTarget()
 
