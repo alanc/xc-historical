@@ -1,5 +1,5 @@
 /*
- * $XConsortium: charproc.c,v 1.169 91/06/24 18:42:52 gildea Exp $
+ * $XConsortium: charproc.c,v 1.170 91/06/25 19:51:01 gildea Exp $
  */
 
 /*
@@ -2811,13 +2811,21 @@ DoSetSelectedFont(w, client_data, selection, type, value, length, format)
 {
     char *val = (char *)value;
     int len;
-    if (*type != XA_STRING || *format != 8) { Bell(); return; }
+    if (*type != XA_STRING  ||  *format != 8) {
+	Bell();
+	return;
+    }
     len = strlen(val);
     if (len > 0) {
 	if (val[len-1] == '\n') val[len-1] = '\0';
-	if (!LoadNewFont (&term->screen, val, NULL, True, 
-			  fontMenu_fontsel))
-	  Bell();
+	/* Do some sanity checking to avoid sending a long selection
+	   back to the server in an OpenFont that is unlikely to succeed.
+	   XLFD allows up to 255 characters and no control characters;
+	   we are a little more liberal here. */
+	if (len > 1000  ||  strchr(val, '\n'))
+	    return;
+	if (!LoadNewFont (&term->screen, val, NULL, True, fontMenu_fontsel))
+	    Bell();
     }
 }
 
