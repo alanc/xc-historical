@@ -1,4 +1,4 @@
-/* $XConsortium: a2x.c,v 1.107 93/01/28 19:23:57 rws Exp $ */
+/* $XConsortium: a2x.c,v 1.108 93/02/01 18:31:48 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -2170,7 +2170,7 @@ debug_state()
 {
     int i, max;
 
-    fprintf(stderr, "history: ");
+    fprintf(stderr, "%s history: ", progname);
     max = sizeof(history) - 1;
     while (max >= history_end && !history[max])
 	max--;
@@ -2523,7 +2523,10 @@ process(buf, n, len)
 		do_display(buf + i + 1);
 		break;
 	    case '\026': /* control v */
-		write(1, buf + i + 1, j - i);
+		if (i == j)
+		    write(1, "\024", 1);
+		else
+		    write(1, buf + i + 1, j - i);
 		break;
 	    case '\027': /* control w */
 		do_warp(buf + i + 1);
@@ -2563,6 +2566,8 @@ main(argc, argv)
 #endif
 
     progname = argv[0];
+    if (s = rindex(progname, '/'))
+	progname = s + 1;
     FD_ZERO(&fdmask);
     for (argc--, argv++; argc > 0; argc--, argv++) {
 	if (argv[0][0] != '-')
