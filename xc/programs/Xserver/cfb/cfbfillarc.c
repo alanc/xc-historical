@@ -15,7 +15,7 @@ without any express or implied warranty.
 
 ********************************************************/
 
-/* $XConsortium: cfbfillarc.c,v 5.5 89/11/05 15:15:24 rws Exp $ */
+/* $XConsortium: cfbfillarc.c,v 5.6 89/11/21 10:56:01 rws Exp $ */
 
 #include "X.h"
 #include "Xprotostr.h"
@@ -31,9 +31,9 @@ extern void miPolyFillArc();
 
 /* gcc 1.35 is stupid */
 #if defined(__GNUC__) && defined(mc68020)
-    #define STUPID volatile
+#define STUPID volatile
 #else
-    #define STUPID
+#define STUPID
 #endif
 
 static void
