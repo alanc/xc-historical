@@ -1,7 +1,7 @@
 /*
  * Xau - X Authorization Database Library
  *
- * $XConsortium: Xauth.h,v 1.8 90/12/12 09:30:27 rws Exp $
+ * $XConsortium: Xauth.h,v 1.9 90/12/21 13:15:48 converse Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -21,34 +21,13 @@
 #ifndef _Xauth_h
 #define _Xauth_h
 
-#ifndef NeedFunctionPrototypes
-#if defined(FUNCPROTO) || __STDC__ || defined(__cplusplus) || defined(c_plusplus)
-#define NeedFunctionPrototypes 1
-#else
-#define NeedFunctionPrototypes 0
-#endif /* __STDC__ */
-#endif /* NeedFunctionPrototypes */
-
-#if defined(NeedFunctionPrototypes) && !defined(_Xconst)
-#if __STDC__ || defined(__cplusplus) || defined(c_plusplus)
-#define _Xconst const
-#else
-#define _Xconst
-#endif
-#endif /* NeedFunctionPrototypes */
-
-#ifndef NeedWidePrototypes
-#if defined(NARROWPROTO)
-#define NeedWidePrototypes 0
-#else
-#define NeedWidePrototypes 1		/* default to make interropt. easier */
-#endif
-#endif
+# include   <X11/Xfuncproto.h>
 
 # include   <stdio.h>
 
 # define FamilyLocal (256)	/* not part of X standard (i.e. X.h) */
 # define FamilyWild  (65535)
+# define FamilySecureRPC    (254)   /* not part of X standard */
 
 #if NeedFunctionPrototypes
 typedef struct xauth {
@@ -76,9 +55,7 @@ typedef struct xauth {
 } Xauth;
 #endif
 
-#ifdef __cplusplus			/* do not leave open across includes */
-extern "C" {					/* for C++ V2.0 */
-#endif
+_XFUNCPROTOBEGIN
 
 char *XauFileName();
 
@@ -169,9 +146,7 @@ Xauth*		/* auth */
 #endif
 );
 
-#ifdef __cplusplus
-}						/* for C++ V2.0 */
-#endif
+_XFUNCPROTOEND
 
 /* Return values from XauLockAuth */
 
