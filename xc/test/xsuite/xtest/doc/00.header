@@ -1,4 +1,4 @@
-.\" $XConsortium: 00.header,v 1.5 92/07/03 17:34:28 rws Exp $
+.\" $XConsortium: 00.header,v 1.6 92/07/03 19:42:05 rws Exp $
 .de TP
 .sp 1
 .tl \\*(}t
@@ -6,7 +6,8 @@
 .if o 'tl \\*(}o
 .sp 1
 ..
-.VM 0 3
+.\" uncomment next line for A4 paper
+.\" .VM 0 3
 .de )k
 ..
 .PH "''''"
