@@ -1,7 +1,7 @@
 /*
  * SECURE-RPC authentication mechanism
  *
- * $XConsortium: rpcauth.c,v 1.3 89/03/14 15:53:36 rws Exp $
+ * $XConsortium: rpcauth.c,v 1.1 91/02/11 20:55:57 keith Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -28,22 +28,6 @@
 #include "misc.h"
 #include "X.h"
 #include "os.h"
-
-#define MAX_NAMELEN 120
-
-typedef struct _netnamelist {
-    char netname[MAX_NAMELEN];
-    struct _netnamelist *next;
-} NetNameList;
-
-static NetNameList *netnamelist = NULL;
-
-static struct auth {
-    struct auth	*next;
-    unsigned short	len;
-    char	*data;
-    XID		id;
-} *rpc_auth;
 
 static char * 
 authdes_ezdecode(inmsg, len)
@@ -101,43 +85,16 @@ bad1:
     return ((char *)0); /* ((struct authdes_cred *) NULL); */
 }
 
-int
-SecureRPCAdd (data_length, data, id)
-unsigned short	data_length;
-char	*data;
-XID	id;
+static XID  rpc_id = (XID) ~0L;
+
+static Bool
+CheckNetName (addr, len, closure)
+    unsigned char    *addr;
+    int		    len;
+    pointer	    closure;
 {
-    struct auth	*new, *auth;
-    NetNameList *netname;
-
-    for (auth = rpc_auth; auth; auth=auth->next)
-      if (auth->len == data_length &&
-	  (bcmp(auth->data, data, data_length) == 0))
-	return 1;
-
-    new = (struct auth *) xalloc (sizeof (struct auth));
-    if (!new)
-	return 0;
-    new->data = (char *) xalloc ((unsigned) data_length);
-    if (!new->data) {
-	xfree(new);
-	return 0;
-    }
-    new->next = rpc_auth;
-    rpc_auth = new;
-    bcopy (data, new->data, (int) data_length);
-    new->len = data_length;
-    new->id = id;
-
-    /* Initialize NetNameList */
-    /* Define self, the person who started the server that is */
-    netnamelist = (NetNameList *)xalloc(sizeof (NetNameList));
-    strcpy(netnamelist->netname, data);
-    netnamelist->next = (NetNameList *)0;
-
-    /* Read netnames from /etc/X?.hosts */
-    
-    return 1;
+    return (len == strlen ((char *) closure) &&
+	    strncmp ((char *) addr, (char *) closure, len) == 0);
 }
 
 XID
@@ -145,49 +102,47 @@ SecureRPCCheck (data_length, data)
 register unsigned short	data_length;
 char	*data;
 {
-  struct auth	*auth;
-  char *fullname;
-  NetNameList *netname;
-
-  for (auth = rpc_auth; auth; auth=auth->next) {
-    if ((fullname = authdes_ezdecode(data, data_length)) != (char *)0)
+    char *fullname;
+    
+    if (rpc_id != (XID) ~0L &&
+	(fullname = authdes_ezdecode(data, data_length)) != (char *)0)
     {
-	for (netname = netnamelist; netname; netname = netname->next)
-	    if (strcmp(netname->netname, fullname) == 0)
-		return auth->id;
-	return (XID) -1;
+	if (ForEachHostInFamily (FamilySecureRPC, CheckNetName, (pointer) fullname))
+	    return rpc_id;
     }
-  }
-  return (XID) -1;
+    return (XID) ~0L;
+}
+    
+
+SecureRPCInit ()
+{
+    if (rpc_id == ~0L)
+	AddAuthorization (10, "SECURE-RPC", 0, (char *) 0);
 }
 
 int
-  SecureRPCReset ()
+SecureRPCAdd (data_length, data, id)
+unsigned short	data_length;
+char	*data;
+XID	id;
 {
-  struct auth	*auth, *next;
-/* Why does main keep calling this after every connection terminates?  
-  for (auth = rpc_auth; auth; auth=next) {
-    next = auth->next;
-    xfree (auth->data);
-    xfree (auth);
-  }
-  rpc_auth = 0;
-*/
+    if (data_length)
+	AddHost ((pointer) 0, FamilySecureRPC, data_length, data);
+    rpc_id = id;
+}
+
+int
+SecureRPCReset ()
+{
+    rpc_id = (XID) ~0L;
 }
 
 XID
-  SecureRPCToID (data_length, data)
-unsigned short	data_length;
-char	*data;
+SecureRPCToID (data_length, data)
+    unsigned short	data_length;
+    char		*data;
 {
-  struct auth	*auth;
-  
-  for (auth = rpc_auth; auth; auth=auth->next) {
-    if (data_length == auth->len &&
-	authdes_ezdecode(data, data_length) == 0)
-      return auth->id;
-  }
-  return (XID) -1;
+    return rpc_id;
 }
 
 SecureRPCFromID (id, data_lenp, datap)
@@ -195,91 +150,14 @@ SecureRPCFromID (id, data_lenp, datap)
      unsigned short	*data_lenp;
      char	**datap;
 {
-  struct auth	*auth;
-  
-  for (auth = rpc_auth; auth; auth=auth->next) {
-    if (id == auth->id) {
-      *data_lenp = auth->len;
-      *datap = auth->data;
-      return 1;
-    }
-  }
-  return 0;
+    return 0;
 }
 
 SecureRPCRemove (data_length, data)
      unsigned short	data_length;
      char	*data;
 {
-  struct auth	*auth, *prev;
-  
-  prev = 0;
-  for (auth = rpc_auth; auth; auth=auth->next) {
-    if (data_length == auth->len &&
-	bcmp (data, auth->data, data_length) == 0)
-      {
-	if (prev)
-	  prev->next = auth->next;
-	else
-	  rpc_auth = auth->next;
-	xfree (auth->data);
-	xfree (auth);
-	return 1;
-      }
-  }
-  return 0;
-}
-
-AddNetName(family, length, pAddr)
-     int family;
-     unsigned length;
-     pointer pAddr;
-{
-  char newnetname[MAX_NAMELEN];
-  NetNameList *netname;
-  
-  if (family != FamilySecureRPC)
-    return(BadValue);
-  
-  bcopy(pAddr, newnetname, length);
-  newnetname[length] = '\0';
-  
-  for (netname = netnamelist; netname; netname = netname->next)
-    if (strcmp(newnetname, netname->netname) == 0)
-      return(Success);
-  netname = (NetNameList *)xalloc(sizeof (NetNameList));
-  if (!netname)
-    return(BadAlloc);
-  strcpy(netname->netname, newnetname);
-  netname->next = netnamelist;
-  netnamelist = netname;
-  return (Success);
-}
-
-RemoveNetName(family, length, pAddr)
-     int family;
-     unsigned length;
-     pointer pAddr;
-{
-  char newnetname[MAX_NAMELEN];
-  NetNameList *prev, *curr;
-  
-  if (family != FamilySecureRPC)
-    return(BadValue);
-  
-  bcopy(pAddr, newnetname, length);
-  newnetname[length] = '\0';
-  
-  for (prev = curr = netnamelist; curr; prev=curr, curr = curr->next) {
-    if (strcmp(newnetname, curr->netname) == 0) {
-      if (prev == curr)
-	netnamelist = curr->next;
-      else
-	prev->next = curr->next;
-      xfree(curr);
-      return (Success);
-    }
-  }
+    return 0;
 }
 #endif SECURE_RPC
 

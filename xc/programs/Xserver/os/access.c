@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: access.c,v 1.45 91/02/11 18:33:46 keith Exp $ */
+/* $XConsortium: access.c,v 1.46 91/02/11 21:17:37 rws Exp $ */
 
 #include "Xos.h"
 #include "X.h"
@@ -32,9 +32,7 @@ SOFTWARE.
 #include <errno.h>
 #include <sys/socket.h>
 #include <sys/ioctl.h>
-#ifdef SECURE_RPC
 #include <X11/Xauth.h>
-#endif
 
 #ifdef hpux
 # include <sys/utsname.h>
@@ -74,48 +72,24 @@ SOFTWARE.
 
 extern char	*index();
 
-static int XFamily(), UnixFamily();
 static int ConvertAddr(), CheckAddr();
-static void NewHost();
+static Bool NewHost();
 
 typedef struct _host {
 	short		family;
 	short		len;
-#ifdef DNETCONN
-	unsigned char	addr[sizeof(struct dn_naddr)];
-#else
-	unsigned char	addr[4];	/* will need to be bigger eventually */
-#endif
+	unsigned char	*addr;
 	struct _host *next;
 } HOST;
 
+#define MakeHost(h,l)	(h)=(HOST *) xalloc(sizeof *(h)+(l));\
+			(h)->addr=(unsigned char *) ((h) + 1);
+#define FreeHost(h)	xfree(h)
 static HOST *selfhosts = NULL;
 static HOST *validhosts = NULL;
 static int AccessEnabled = DEFAULT_ACCESS_CONTROL;
 static int LocalHostEnabled = FALSE;
 static int UsingXdmcp = FALSE;
-
-typedef struct {
-    int af, xf;
-} FamilyMap;
-
-static FamilyMap familyMap[] = {
-#ifdef     AF_DECnet
-#ifdef     DNETCONN
-    {AF_DECnet, FamilyDECnet},
-#endif
-#endif /* AF_DECnet */
-#ifdef     AF_CHAOS
-#ifdef     CHAOSCONN
-    {AF_CHAOS, FamilyChaos},
-#endif
-#endif /* AF_CHAOS */
-#ifdef    AF_INET
-#ifdef    TCPCONN
-    {AF_INET, FamilyInternet}
-#endif
-#endif
-};
 
 /*
  * called when authorization is not enabled to add the
@@ -141,8 +115,6 @@ AccessUsingXdmcp ()
     UsingXdmcp = TRUE;
     LocalHostEnabled = FALSE;
 }
-
-#define FAMILIES ((sizeof familyMap)/(sizeof familyMap[0]))
 
 #if defined(SVR4) || (defined (hpux) && ! defined (HAS_IFREQ))
 /* Define this host for access control.  Find all the hosts the OS knows about 
@@ -182,7 +154,7 @@ DefineSelf (fd)
 	acopy ( hp->h_addr, &(inetaddr->sin_addr), hp->h_length);
 	len = sizeof(saddr.sa);
 	family = ConvertAddr ( &(saddr.sa), &len, &addr);
-	if ( family > 0)
+	if ( family != -1 && family != FamilyLocal )
 	{
 	    for (host = selfhosts;
 		 host && !addrEqual (family, addr, len, host);
@@ -190,7 +162,7 @@ DefineSelf (fd)
 	    if (!host)
 	    {
 		/* add this host to the host list.	*/
-		host = (HOST *) xalloc (sizeof (HOST));
+		MakeHost(host,len)
 		if (host)
 		{
 		    host->family = family;
@@ -237,7 +209,7 @@ DefineSelf (fd)
 	    ;
         if (!host)
 	{
-	    host = (HOST *) xalloc (sizeof (HOST));
+	    MakeHost(host,len)
 	    if (host)
 	    {
 		host->family = family;
@@ -264,7 +236,8 @@ DefineSelf (fd)
 	if (ifr->ifr_addr.sa_family == AF_DECnet)
 	    continue;
 #endif /* DNETCONN */
-        if ((family = ConvertAddr (&ifr->ifr_addr, &len, &addr)) <= 0)
+	family = ConvertAddr (&ifr->ifr_addr, &len, &addr);
+        if (family == -1 || family == FamilyLocal)
 	    continue;
         for (host = selfhosts;
  	     host && !addrEqual (family, addr, len, host);
@@ -272,7 +245,7 @@ DefineSelf (fd)
 	    ;
         if (host)
 	    continue;
-        host = (HOST *) xalloc (sizeof (HOST));
+	MakeHost(host,len)
 	if (host)
 	{
 	    host->family = family;
@@ -288,10 +261,10 @@ DefineSelf (fd)
 	    /*
 	     * If this isn't an Internet Address, don't register it.
 	     */
-	    if (family != AF_INET)
+	    if (family != FamilyInternet)
 		continue;
 
-	    XdmcpRegisterConnection (FamilyInternet, (char *)addr, len);
+	    XdmcpRegisterConnection (family, (char *)addr, len);
 	    broad_addr = ifr->ifr_addr;
 	    ((struct sockaddr_in *) &broad_addr)->sin_addr.s_addr =
 		htonl (INADDR_BROADCAST);
@@ -337,14 +310,14 @@ AugmentSelf(fd)
     if (getpeername(fd, &from, &len))
 	return;
     family = ConvertAddr(&from, &len, &addr);
-    if (family <= 0)
+    if (family == -1 || family == FamilyLocal)
 	return;
     for (host = selfhosts; host; host = host->next)
     {
 	if (addrEqual(family, addr, len, host))
 	    return;
     }
-    host = (HOST *)xalloc(sizeof(HOST));
+    MakeHost(host,len)
     if (!host)
 	return;
     host->family = family;
@@ -360,7 +333,7 @@ AddLocalHosts ()
     HOST    *self;
 
     for (self = selfhosts; self; self = self->next)
-	NewHost (self->family, self->addr, self->len);
+	(void) NewHost (self->family, self->addr, self->len);
 }
 
 /* Reset access control list to initial hosts */
@@ -395,7 +368,7 @@ ResetHosts (display)
     while (host = validhosts)
     {
         validhosts = host->next;
-        xfree (host);
+        FreeHost (host);
     }
     strcpy (fname, "/etc/X");
     strcat (fname, display);
@@ -417,7 +390,7 @@ ResetHosts (display)
 		/* node was specified by name */
 		saddr.sa.sa_family = np->n_addrtype;
 		len = sizeof(saddr.sa);
-		if (ConvertAddr (&saddr.sa, &len, &addr) == AF_DECnet)
+		if (ConvertAddr (&saddr.sa, &len, &addr) == FamilyDECnet)
 		{
 		    bzero ((char *) &dnaddr, sizeof (dnaddr));
 		    dnaddr.a_len = np->n_length;
@@ -426,36 +399,41 @@ ResetHosts (display)
 		}
     	    }
 	    if (dnaddrp)
-		NewHost((short)AF_DECnet, (pointer)dnaddrp,
+		(void) NewHost((short)FamilyDECnet, (pointer)dnaddrp,
 			(int)(dnaddrp->a_len + sizeof(dnaddrp->a_len)));
     	}
 	else
-	{
 #endif /* DNETCONN */
+#ifdef SECURE_RPC
+	if (index (hostname, '@'))
+	{
+	    SecureRPCInit ();
+	    (void) NewHost (FamilySecureRPC, hostname, strlen (hostname));
+	}
+	else
+#endif /* SECURE_RPC */
 #ifdef TCPCONN
+	{
     	    /* host name */
     	    if (hp = gethostbyname (hostname))
 	    {
     		saddr.sa.sa_family = hp->h_addrtype;
 		len = sizeof(saddr.sa);
-    		if ((family = ConvertAddr (&saddr.sa, &len, &addr)) > 0)
-#ifdef h_addr				/* new 4.3bsd version of gethostent */
+    		if ((family = ConvertAddr (&saddr.sa, &len, &addr)) != -1)
 		{
+#ifdef h_addr				/* new 4.3bsd version of gethostent */
 		    char **list;
 
 		    /* iterate over the addresses */
 		    for (list = hp->h_addr_list; *list; list++)
-			NewHost (family, (pointer)*list, len);
-		}
+			(void) NewHost (family, (pointer)*list, len);
 #else
-    		    NewHost (family, (pointer)hp->h_addr, len);
+    		    (void) NewHost (family, (pointer)hp->h_addr, len);
 #endif
-
+		}
     	    }
-#endif /* TCPCONN */
-#ifdef DNETCONN
     	}	
-#endif /* DNETCONN */
+#endif /* TCPCONN */
         }
         fclose (fd);
     }
@@ -470,18 +448,20 @@ AuthorizedClient(client)
     pointer		addr;
     register HOST	*host;
 
+    if (!client)
+	return TRUE;
     alen = sizeof (from);
     if (!getpeername (((OsCommPtr)client->osPrivate)->fd, &from, &alen))
     {
-        if ((family = ConvertAddr (&from, &alen, &addr)) >= 0)
+	family = ConvertAddr (&from, &alen, &addr);
+	if (family == -1)
+	    return FALSE;
+	if (family == FamilyLocal)
+	    return TRUE;
+	for (host = selfhosts; host; host = host->next)
 	{
-	    if (family == 0)
+	    if (addrEqual (family, addr, alen, host))
 		return TRUE;
-	    for (host = selfhosts; host; host = host->next)
-	    {
-		if (addrEqual (family, addr, alen, host))
-		    return TRUE;
-	    }
 	}
     }
     return FALSE;
@@ -503,40 +483,49 @@ AddHost (client, family, length, pAddr)
 
     if (!AuthorizedClient(client))
 	return(BadAccess);
+    switch (family) {
 #ifdef SECURE_RPC
-    if (family == FamilySecureRPC)
-	return AddNetName(family, length, pAddr);
+    case FamilySecureRPC:
+	len = length;
+	SecureRPCInit ();
+	break;
 #endif
-    unixFamily = UnixFamily(family);
-    if (unixFamily < 0)
-    {
+    case FamilyInternet:
+    case FamilyDECnet:
+    case FamilyChaos:
+	if ((len = CheckAddr (family, pAddr, length)) < 0)
+	{
+	    client->errorValue = length;
+	    return (BadValue);
+	}
+	break;
+    case FamilyLocal:
+    default:
 	client->errorValue = family;
 	return (BadValue);
     }
-    if ((len = CheckAddr (unixFamily, pAddr, length)) < 0)
-    {
-	client->errorValue = length;
-        return (BadValue);
-    }
+    if (NewHost (family, pAddr, len))
+	return Success;
+    return BadAlloc;
+}
+
+Bool
+ForEachHostInFamily (family, func, closure)
+    int	    family;
+    Bool    (*func)();
+    pointer closure;
+{
+    HOST    *host;
+
     for (host = validhosts; host; host = host->next)
-    {
-        if (addrEqual (unixFamily, pAddr, len, host))
-    	    return (Success);
-    }
-    host = (HOST *) xalloc (sizeof (HOST));
-    if (!host)
-	return(BadAlloc);
-    host->family = unixFamily;
-    host->len = len;
-    acopy(pAddr, host->addr, len);
-    host->next = validhosts;
-    validhosts = host;
-    return (Success);
+	if (family == host->family && func (host->addr, host->len, closure))
+	    return TRUE;
+    return FALSE;
 }
 
 /* Add a host to the access control list. This is the internal interface 
  * called when starting or resetting the server */
-static void
+static Bool
 NewHost (family, addr, len)
     short	family;
     pointer	addr;
@@ -547,17 +536,17 @@ NewHost (family, addr, len)
     for (host = validhosts; host; host = host->next)
     {
         if (addrEqual (family, addr, len, host))
-	    return;
+	    return TRUE;
     }
-    host = (HOST *) xalloc (sizeof (HOST));
-    if (host)
-    {
-	host->family = family;
-	host->len = len;
-	acopy(addr, host->addr, len);
-	host->next = validhosts;
-	validhosts = host;
-    }
+    MakeHost(host,len)
+    if (!host)
+	return FALSE;
+    host->family = family;
+    host->len = len;
+    acopy(addr, host->addr, len);
+    host->next = validhosts;
+    validhosts = host;
+    return TRUE;
 }
 
 /* Remove a host from the access control list */
@@ -569,35 +558,38 @@ RemoveHost (client, family, length, pAddr)
     unsigned            length;        /* of bytes in pAddr */
     pointer             pAddr;
 {
-    int			len,
-                        unixFamily;
+    int			len;
     register HOST	*host, **prev;
 
     if (!AuthorizedClient(client))
 	return(BadAccess);
+    switch (family) {
 #ifdef SECURE_RPC
-    if (family == FamilySecureRPC)
-	return RemoveNetName(family, length, pAddr);
+    case FamilySecureRPC:
+	break;
 #endif
-    unixFamily = UnixFamily(family);
-    if (unixFamily < 0)
-    {
+    case FamilyInternet:
+    case FamilyDECnet:
+    case FamilyChaos:
+    	if ((len = CheckAddr (family, pAddr, length)) < 0)
+    	{
+	    client->errorValue = length;
+            return(BadValue);
+    	}
+	break;
+    case FamilyLocal:
+    default:
 	client->errorValue = family;
         return(BadValue);
     }
-    if ((len = CheckAddr (unixFamily, pAddr, length)) < 0)
-    {
-	client->errorValue = length;
-        return(BadValue);
-    }
     for (prev = &validhosts;
-         (host = *prev) && (!addrEqual (unixFamily, pAddr, len, host));
+         (host = *prev) && (!addrEqual (family, pAddr, len, host));
          prev = &host->next)
         ;
     if (host)
     {
         *prev = host->next;
-        xfree (host);
+        FreeHost (host);
     }
     return (Success);
 }
@@ -644,7 +636,7 @@ GetHosts (data, pnHosts, pLen, pEnabled)
 	{
 
 	    len = lengths[nHosts++];
-	    ((xHostEntry *)ptr)->family = XFamily(host->family);
+	    ((xHostEntry *)ptr)->family = host->family;
 	    ((xHostEntry *)ptr)->length = len;
 	    ptr += sizeof(xHostEntry);
 	    acopy (host->addr, ptr, len);
@@ -673,7 +665,7 @@ CheckAddr (family, pAddr, length)
     switch (family)
     {
 #ifdef TCPCONN
-      case AF_INET:
+      case FamilyInternet:
 	if (length == sizeof (struct in_addr))
 	    len = length;
 	else
@@ -681,7 +673,7 @@ CheckAddr (family, pAddr, length)
         break;
 #endif 
 #ifdef DNETCONN
-      case AF_DECnet:
+      case FamilyDECnet:
         {
 	    struct dn_naddr *dnaddr = (struct dn_naddr *) pAddr;
 
@@ -714,9 +706,10 @@ InvalidHost (saddr, len)
 
     if (!AccessEnabled)   /* just let them in */
         return(0);    
-    if ((family = ConvertAddr (saddr, &len, &addr)) < 0)
-        return (1);
-    if (family == 0)
+    family = ConvertAddr (saddr, &len, &addr);
+    if (family == -1)
+        return 1;
+    if (family == FamilyLocal)
     {
 	if (!LocalHostEnabled)
  	{
@@ -735,7 +728,7 @@ InvalidHost (saddr, len)
 	    }
 	    return 1;
 	} else
-	    return (0);
+	    return 0;
     }
     for (host = validhosts; host; host = host->next)
     {
@@ -752,36 +745,39 @@ ConvertAddr (saddr, len, addr)
     pointer			*addr;
 {
     if (*len == 0)
-        return (0);
+        return (FamilyLocal);
     switch (saddr->sa_family)
     {
-      case AF_UNSPEC:
+    case AF_UNSPEC:
 #ifdef UNIXCONN
-      case AF_UNIX:
+    case AF_UNIX:
 #endif
-        return (0);
-
+        return FamilyLocal;
 #ifdef TCPCONN
-      case AF_INET:
+    case AF_INET:
         *len = sizeof (struct in_addr);
         *addr = (pointer) &(((struct sockaddr_in *) saddr)->sin_addr);
-        return (AF_INET);
+        return FamilyInternet;
 #endif
-
 #ifdef DNETCONN
-      case AF_DECnet:
+    case AF_DECnet:
 	{
 	    struct sockaddr_dn *sdn = (struct sockaddr_dn *) saddr;
 	    *len = sdn->sdn_nodeaddrl + sizeof(sdn->sdn_nodeaddrl);
 	    *addr = (pointer) &(sdn->sdn_add);
 	}
-        return (AF_DECnet);
+        return FamilyDECnet;
 #endif
-
-      default:
-        break;
+#ifdef CHAOSCONN
+    case AF_CHAOS:
+	{
+	    not implemented
+	}
+	return FamilyChaos;
+#endif
+    default:
+        return -1;
     }
-    return (-1);
 }
 
 int
@@ -794,24 +790,3 @@ ChangeAccessControl(client, fEnabled)
     AccessEnabled = fEnabled;
     return Success;
 }
-
-static int XFamily(af)
-    int af;
-{
-    int i;
-    for (i = 0; i < FAMILIES; i++)
-        if (familyMap[i].af == af)
-            return familyMap[i].xf;
-    return -1;
-}
-
-static int UnixFamily(xf)
-    int xf;
-{
-    int i;
-    for (i = 0; i < FAMILIES; i++)
-        if (familyMap[i].xf == xf)
-            return familyMap[i].af;
-    return -1;
-}
-
