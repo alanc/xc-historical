@@ -1,4 +1,4 @@
-.\" $XConsortium: Xvfb.man,v 1.5 94/04/12 17:27:09 dpw Exp $
+.\" $XConsortium: Xvfb.man,v 1.6 94/04/17 20:30:25 dpw Exp dpw $
 .\" Copyright (c) 1993  X Consortium
 .\" 
 .\" Permission is hereby granted, free of charge, to any person obtaining
@@ -75,6 +75,12 @@ interface.
 .PP
 If neither \fB\-shmem\fP nor \fB\-fbdir\fP is specified,
 the framebuffer memory will be allocated with malloc().
+.TP 4
+.B "\-linebias \fIn\fP"
+This option specifies how to adjust the pixelization of thin lines.
+The value \fIn\fP is a bitmask of octants in which to prefer an axial
+step when the Bresenham error term is exactly zero.  See the file
+Xserver/mi/miline.h for more information.
 .SH FILES
 The following files are created if the \-fbdir option is given.
 .TP 4
