@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: macII.cf,v 1.44 93/10/13 15:31:23 rws Exp $
+XCOMM platform:  $XConsortium: macII.cf,v 1.45 94/01/28 22:16:26 rws Exp $
 
 #define OSName            A/UX 3.0.1
 #define OSMajorVersion    3
@@ -20,6 +20,7 @@ XCOMM operating system:  OSName
 #define ExpandManNames      YES
 #define PexShmIPC           NO
 #define XmacIIServer        YES
+#define XawI18nDefines      -DUSE_XWCHAR_STRING
 #if MacHasc89
 #define CcCmd c89 -D_POSIX_SOURCE
 #else
