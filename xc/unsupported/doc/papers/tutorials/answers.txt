@@ -1,31 +1,7 @@
-(Message /users/jim/Mail/inbox:76)
-Return-Path: lemke@sun.com
-Received: from Sun.COM by expo.lcs.mit.edu; Wed, 11 Oct 89 16:42:27 EDT
-Received: from snail.Sun.COM (snail.Corp.Sun.COM) by Sun.COM (4.1/SMI-4.1)
-	id AA12195; Wed, 11 Oct 89 13:42:24 PDT
-Received: from wirehead.sun.com by snail.Sun.COM (4.1/SMI-4.1)
-	id AA13097; Wed, 11 Oct 89 13:40:03 PDT
-Received: from localhost by wirehead.sun.com (4.0/SMI-4.0)
-	id AA13559; Wed, 11 Oct 89 13:41:57 PDT
-Message-Id: <8910112041.AA13559@wirehead.sun.com>
-To: jim@expo.lcs.mit.edu, kit@expo.lcs.mit.edu, rws@expo.lcs.mit.edu
-Cc: smarks@sun.com
-Subject: commonly asked X questions
-Date: Wed, 11 Oct 89 13:41:52 PDT
-From: Dave Lemke <lemke@sun.com>
+		     Late Night's Top Ten X11 Questions
 
-
-we've been joking about "common question #37" for several months now,
-and since Ralph made a similar joke and the "why can't i get the
-BackgroundPixel" question came up yet again, Stuart and I just whipped
-this out.
-
-it needs a bit of work, and all the common Xt questions added, but then
-you can just do a monthly posting and answer "#3" :-)
-
---------------------------------------------------------------------------
-
-Frequently Asked X11 Questions
+			 Dave Lemke (lemke@ncd.com)
+		       Stuart Marks (smarks@sun.com)
 
 1.  Why doesn't my program draw anything?  I create the window and draw into
     it, but it's always blank.
@@ -54,8 +30,10 @@ Frequently Asked X11 Questions
     implementation-dependent.  They may be reversed, or they may not even
     correspond to black and white at all.  For instance, an 8-bit grayscale
     server might choose to have 0 be black and 255 be white.  If you want to
-    draw in black and white, use the BlackPixel() and WhitePixel() macros to
-    make sure your application is portable amongst different servers.
+    draw in black and white, set the foreground and background pixels in the
+    GC using BlackPixel() and WhitePixel() macros instead of 0 and 1.  This
+    will help ensure that your application is portable amongst different
+    servers.
 
 3.  Can I get the background pixel/pixmap of a window using
     GetWindowAttributes?
@@ -77,15 +55,28 @@ Frequently Asked X11 Questions
     The window manager controls how the input focus is transferred from one
     window to another.  In order to get keystrokes, your program must ask the
     window manager for the input focus.  To do this, you must set up what are
-    called "hints" for the window manager.  Examples: using Xlib,
-	XSetWMHints(...)		    [make sure to finish this!!!]
-    or using Xt,
-	args[0] = XtNInput;
-	args[1] = True;
-	XtSetArg( dpy, w, args );	    [approximate; correct this!!!]
+    called "hints" for the window manager.  If your applications is
+    Xlib-based, you can use something like the following:
+
+	XWMHints wmhints;
+	...
+	wmhints.flags = InputHint;
+	wmhints.input = True;
+	XSetWMHints(dpy, window, &hints)
+
+    If your application is based on the Xt Intrinsics, you can use something
+    like the following:
+
+	Arg arglist[MAXARGS];
+	Cardinal nargs = (Cardinal) 0;
+	...
+	XtSetArg(arglist[nargs++], XtNinput, TRUE);
+	...
+	XtCreatePopupShell(...);
 
 5.  I encountered a breakpoint when I was debugging a program, and now
-    everything is hung.  HELP!
+    everything is hung.  I can still move the mouse around on the screen,
+    but I can't type anything or get any mouse clicks to do anything.  HELP!
 
     The debugger stopped your program while it was in the middle of what is
     called a "grab".  There are various flavors of grabs, but the important
@@ -105,7 +96,7 @@ Frequently Asked X11 Questions
     deactivated by the server.
 
     If the debugged program is in the middle of a server grab, you're really
-    stuck.  A server grab grabs *all* of the server's resoures.  Thus, you
+    stuck.  A server grab grabs *all* of the server's resources.  Thus, you
     have to attack the problem by going outside of the server.  Killing the
     debugged program and its debugger will release the grab and get you
     unstuck, but you obviously can't continue debugging.  You might also try
@@ -152,10 +143,12 @@ Frequently Asked X11 Questions
 7.  I create and draw into a pixmap, but when I copy it to the screen with
     XCopyArea, I get nothing but garbage.
 
-    The initial contents of pixmaps as undefined.  This means that most
+    The initial contents of pixmaps is undefined.  This means that most
     servers will allocate the memory and leave around whatever happens to be
     there -- which is usually garbage.  You probably want to clear the pixmap
-    first using XFillRectangle().
+    first using XFillRectangle() with an alu function of GXcopy and a
+    foreground pixel of whatever color you want as your background (or 0L
+    if you are using the pixmap as a mask).
 
 8.  My color program always fails on XAllocColorCells().  But it works on
     other servers.
@@ -185,34 +178,47 @@ Frequently Asked X11 Questions
     forget to set up WM_COLORMAP_WINDOWS so the window manager can install
     your colormap.
 
-9.  My program worked fine in R3, but fails in R4 and X11/NeWS with an
-    error in ChangeWindowAttributes.  Also, my Andrew and Interviews
-    code stopped working with the same error.
+9.  My program worked fine in R3, but fails in X11R4 with an error in
+    ChangeWindowAttributes.  Also, my Andrew and Interviews code stopped
+    working with the same error.
 
-    A likely problem is the value given to a window's do_not_propagate
-    mask.  R3 allowed bogus values to be set, and early version of
-    both Andrew and Interviews did just that.  R4 and X11/NeWS catch
+    A likely problem is the value given to a window's do_not_propagate mask.
+    R3 allowed bogus values to be set, and early version of both Andrew and
+    Interviews did just that.  X11R4 and several productized servers catch
     this error and complain.  The events that can be suppressed are:
 
-    KeyPress, KeyRelease, ButtonPress, ButtonRelease, PointerMotion,
-    ButtonMotion and Button[1-5]Motion
+	KeyPress, KeyRelease, ButtonPress, ButtonRelease, PointerMotion,
+	ButtonMotion and Button[1-5]Motion
 
 10. I set my windows to have BackingStore, yet they still get exposures.
 
     There are several things that can be going on here.  The most
     important thing to remember is that backing store is a hint.
-    First, when a window is first made with BackingStore turned on,
-    Exposure events are sent to tell the client to place the correct
-    bits.
+    You may have asked for backing store on your window, but the server may
+    not have enough memory to service your request.  If this is the case,
+    the server will go ahead and create and window without backing store,
+    and then send you an Exposure event to tell you to draw into it.
 
-    More and more servers will also remove the bits taken up by
-    BackingStore when they run low on memory, and thus require the
-    client to redraw the window.
+    Other behavior that could possibly be counterintuitive is that, if you
+    create a window with BackingStore == Always, you will get an Exposure
+    event as soon as you create the window.  The server does this to let you
+    know that the initial contents of the window need to be filled.  It does
+    this even before you have mapped the window.
 
-    Another common cause can be a window manager with a 'Refresh'
-    option.  The only way to truly Refresh a window is to force it to
-    redraw by doing a ClearArea on it with the Exposure flag set.
+    Some servers will throw away backing store if they start running out of
+    memory.  A window may start out with backing store, but then have it
+    thrown away by the server because of a memory shortage.  This window
+    will then start getting Exposure events.
 
-    The bottom line is that a client must always treat backing store as
-    a hint, and always have an exposure handler if it cares about the
-    window's contents.
+    Another possibility is a window manager with a 'Refresh' function.  Some
+    window managers implement this function by doing a ClearArea with the
+    Exposure flag set.  This will force the server the send an Exposure
+    event, even if the window still has backing store.
+
+    The bottom line is that clients must *always* be prepared to repaint
+    their windows in response to Exposure events.  Backing store is a hint,
+    and it is only useful to reduce the number of Exposures on the window;
+    it doesn't guarantee that none will ever occur.  If you need to keep an
+    image in the server, but not on the screen, use pixmaps.
+
+[@(#)answers.txt 1.3 89/12/15]
