@@ -1,5 +1,5 @@
 /*
-* $XConsortium: TextP.h,v 1.21 88/09/13 18:05:00 swick Exp $
+* $XConsortium: TextP.h,v 1.22 88/09/16 13:13:35 swick Exp $
 */
 
 
@@ -31,9 +31,9 @@ SOFTWARE.
 #define _XtTextP_h
 
 
-#include <X11/Text.h>
+#include "Text.h"
 #include <X11/CoreP.h>
-#include <X11/SimpleP.h>
+#include "SimpleP.h"
 
 /****************************************************************
  *
@@ -50,9 +50,11 @@ SOFTWARE.
 #define DEL	0x7f
 #define BSLASH	'\\'
 
-#define EditDone 0
-#define EditError 1
-#define PositionError 2
+/* for backwards compatibility only */
+
+#define EditDone	XawEditDone
+#define EditError	XawEditError
+#define PositionError	XawPositionError
 
 /* constants that subclasses may want to know */
 #define DEFAULT_TEXT_HEIGHT ((Dimension)~0)
@@ -61,16 +63,6 @@ SOFTWARE.
 typedef enum {XtsdLeft, XtsdRight} XtTextScanDirection;
 typedef enum {XtstPositions, XtstWhiteSpace, XtstEOL, XtstParagraph, XtstAll}
     XtTextScanType;
-
-typedef struct {
-    int  firstPos;
-    int  length;
-    char *ptr;
-    Atom format;
-    } XtTextBlock, *XtTextBlockPtr;
-
-/* the data field is really a pointer to source info, see disk and 
-   stream sources in TextKinds.c */
 
 typedef struct _XtTextSource {
     XtTextPosition	(*Read)();
@@ -97,6 +89,7 @@ typedef struct _XtTextSink {
     int (*Resolve)();
     int (*MaxLines)();
     int (*MaxHeight)();
+    void (*SetTabs)();		/* widget, offset, tab_count, *tabs */
     caddr_t data;
     };
 
