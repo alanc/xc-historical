@@ -1,6 +1,6 @@
 XCOMM ----------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-XCOMM $XConsortium: Imake.tmpl,v 1.223 94/12/01 16:06:21 kaleb Exp gildea $
+XCOMM $XConsortium: Imake.tmpl,v 1.224 94/12/27 03:57:50 gildea Exp gildea $
 XCOMM
 
 /*
@@ -1071,8 +1071,10 @@ CenterLoadTarget(debug_src,$(SRCS),NullParameter,$(ALLDEFINES))
 
 CenterLoadTarget(debug_obj,$(OBJS),NullParameter,$(ALLDEFINES))
 
+ManKeywordsTarget($(MANPATH))
+
 #ifdef IHaveSubdirs
-XCOMM -----------------------------------------------------------------------
+XCOMM ----------------------------------------------------------------------
 XCOMM rules for building in SUBDIRS - do not edit
 
 InstallSubdirs($(SUBDIRS))
@@ -1083,8 +1085,15 @@ TagSubdirs($(SUBDIRS))
 MakefileSubdirs($(SUBDIRS))
 IncludesSubdirs($(SUBDIRS))
 
-#else
-XCOMM -----------------------------------------------------------------------
+#endif
+
+/* must be after all install.man rules that install anything */
+#ifdef MakeManKeywords		/* typically only at top level */
+install.man:: man_keywords
+#endif
+
+#ifndef IHaveSubdirs
+XCOMM ----------------------------------------------------------------------
 XCOMM empty rules for directories that do not have SUBDIRS - do not edit
 
 install::
