@@ -24,15 +24,15 @@ usage()
 		 program_name);
 	fprintf (stderr, "where options include:\n");
 	fprintf (stderr,
-	    "    -l                   give long info about each font\n");
+	    "    -l                       give long info about each font\n");
 	fprintf (stderr,
-	    "    -m                   give min and max bounds\n");
+	    "    -m                       give min and max bounds\n");
 	fprintf (stderr,
-	    "    -C                   force columns\n");
+	    "    -C                       force columns\n");
 	fprintf (stderr,
-	    "    -1                   force single column\n");
+	    "    -1                       force single column\n");
 	fprintf (stderr,
-	    "    -display host:dpy    X server to contact\n");
+	    "    -display displayname     X server to contact\n");
 	fprintf (stderr,
 	    "\n");
 	exit(1);
