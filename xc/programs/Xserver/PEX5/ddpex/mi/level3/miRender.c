@@ -1,4 +1,4 @@
-/* $XConsortium: miRender.c,v 5.11 92/11/10 19:00:23 hersh Exp $ */
+/* $XConsortium: miRender.c,v 5.12 92/11/17 17:30:29 hersh Exp $ */
 
 
 /***********************************************************
@@ -400,7 +400,7 @@ RenderOCs(pRend, numOCs, pOCs)
 	strpp[ROCdepth].pickid = trav_state.pickId;
 	strpp[ROCdepth].offset += numOCs;
 
-        /* clean up structure for next time */
+        /* clean up structure */
         {
           miStructPtr pheader = (miStructPtr) sh->deviceData;
           extern cssTableType DestroyCSSElementTable[];
@@ -564,7 +564,15 @@ RenderElements(pRend, pStr, range)
     miTraverserState      trav_state;
     diPMHandle            pPM = (diPMHandle) NULL;
     miDDContext           *pddc = (miDDContext *) pRend->pDDContext;
-    int                 eltype;
+    int                 eltype, ROCdepth, j;
+    ddPickPath          *strpp, sIDpp, *sIDlist;
+    miPPLevel           *travpp;
+    XID                 fakeStrID;
+    diStructHandle      sh = 0, REfakeStr;
+    ddUSHORT		serverstate;
+    ddElementPos	REfakePos;
+
+
 
 
     /* if renderer idle ignore.... */
@@ -597,17 +605,118 @@ RenderElements(pRend, pStr, range)
     ValidateRenderer(pRend);
 
     if (pRend->state == PEXPicking) {
+
+	/* in client side picking RenderElements could be called
+	   at different levels of nested Begin Structures. In
+	   order to uniquely store a correspondence between 
+	   structure handles and the correct ID a fake structure 
+	   must be allocated
+	*/
+
+        fakeStrID = FakeClientID(pRend->pickstr.client->index);
+        REfakeStr = (diStructHandle)Xalloc((unsigned long)
+                                              sizeof(ddStructResource));
+        if (!REfakeStr) return (BadAlloc);
+        REfakeStr->id = fakeStrID;
+        err = CreateStructure(REfakeStr);
+        if (err != Success) {
+            Xfree((pointer)(REfakeStr));
+            return (err);
+        }
+        if (!AddResource( fakeStrID, PEXStructType, (pointer)REfakeStr)) {
+            Xfree((pointer)(REfakeStr));
+            return (err);
+        }
+
+	/* now copy the desired elements out of the structure passed in
+	   and into the fake structure
+	*/
+	REfakePos.whence = PEXBeginning;
+	REfakePos.offset = 0;
+	err = CopyElements(pStr, range, REfakeStr, &REfakePos);
+        if (err != Success) {
+            Xfree((pointer)(REfakeStr));
+            return (err);
+        }
+
+
+	/* need to handle case where RenderElements is called
+	   after a ROC that may or may not have Begin/End structures
+	   nested in it
+	*/
+        ROCdepth = (pRend->pickstr.fakeStrlist)->numObj-1;
+        strpp = (ddPickPath *)(pRend->pickstr.fakeStrlist)->pList;
+        sh = strpp[ROCdepth].structure;
+
+
+        /* set up incoming state properly for traverser */
+        if (ROCdepth > 0) {
+            travpp = (miPPLevel *)  xalloc(sizeof(miPPLevel));
+            trav_state.p_pick_path = travpp;
+            travpp->pp = strpp[ROCdepth-1];
+            for (j = ROCdepth-2; j >= 0; j--) {
+                travpp->up = (miPPLevel *)  xalloc(sizeof(miPPLevel));
+                travpp = travpp->up;
+                travpp->pp = strpp[j];
+            }
+        }
+
+
 	/* set exec_str_flag */
 	trav_state.exec_str_flag = ES_YES;
 	trav_state.p_curr_pick_el = (ddPickPath *) NULL;
 	trav_state.p_curr_sc_el = (ddElementRef *) NULL;
-	trav_state.max_depth = 0;
-	trav_state.pickId = 0;
-	trav_state.ROCoffset =  0;
+	trav_state.max_depth = ROCdepth;
+	trav_state.pickId = strpp[ROCdepth].pickid;
+	trav_state.ROCoffset =  strpp[ROCdepth].offset;
 
 	pPM = pRend->pickstr.pseudoPM;
 
-	err = traverser(pRend, pStr, offset1, offset2, pPM, NULL, &trav_state);
+        /* turn off this flag so BeginStructure calls made inside traverser
+          do not cause fake structures to be allocated
+        */
+        serverstate = pRend->pickstr.server;
+        pRend->pickstr.server = DD_NEITHER;
+	/* redefine the offsets into the fake structure from the originals */
+	offset2 = (offset2 - offset1 + 1);
+        offset1 = 1;
+	
+	err = traverser(pRend, REfakeStr, offset1, offset2, pPM, NULL, &trav_state);
+
+        /* restore the state flag */
+        pRend->pickstr.server = serverstate;
+
+        /* save pickid returned by traverser */
+        strpp[ROCdepth].pickid = trav_state.pickId;
+        strpp[ROCdepth].offset += offset2;
+
+	/* now find the ID that corresponds to the handle sh and
+	   save that as the corresponding ID for pStr in the sIDlist
+	   note that the IDs ARE stored in the pickid field
+	*/
+        sIDpp.structure = REfakeStr;
+        sIDpp.offset = 0;
+	sIDlist = (ddPickPath *) (pRend->pickstr.sIDlist)->pList;
+	for (j = 0; j < (pRend->pickstr.sIDlist)->numObj; j++, sIDlist++) 
+	    if (sh == sIDlist->structure) {
+		sIDpp.pickid = sIDlist->pickid;
+		break;
+	    }
+
+        err = puAddToList((ddPointer) &sIDpp, (ddULONG) 1, pRend->pickstr.sIDlist);
+        if (err != Success)   return (err);
+ 
+        /* clean up structure */
+        {
+          miStructPtr pheader = (miStructPtr) REfakeStr->deviceData;
+          extern cssTableType DestroyCSSElementTable[];
+ 
+          MISTR_DEL_ELS(REfakeStr, pheader, offset1, offset2);
+          MISTR_CURR_EL_PTR(pheader) = MISTR_ZERO_EL(pheader);
+          MISTR_CURR_EL_OFFSET(pheader) = 0;
+ 
+        }
+
     }
     else {
     /* state == PEXRendering call directly into level 2 for efficiency */
@@ -1222,15 +1331,13 @@ EndStructure(pRend)
 
     if ((pRend->state == PEXPicking) && (pRend->pickstr.server == DD_CLIENT)) {
 
-	/* free the fake structure, but only remove the info for it
-	   from the fakeStrlist. The handle and ID must stay on the sID
-	   list until after the reply is processed
+	/* the fake structure can not be freed until End Picking
+	   since otherwise that chunk of memory could be allocated
+	   to another client provided sID thus destroying the 1 to 1
+	   mapping that the sIDlist counts up, so just remove the info 
+	   for the structure from the fakeStrlist. The handle and ID 
+	   must stay on the sID list until after the reply is processed
 	*/
-        strpp = (ddPickPath *)(pRend->pickstr.fakeStrlist)->pList;
-        sh = strpp[(pRend->pickstr.fakeStrlist)->numObj-1].structure;
-
-	FreeResource(sh->id, RT_NONE);
-
 	PU_REMOVE_LAST_OBJ(pRend->pickstr.fakeStrlist);
     }
 
@@ -1524,6 +1631,10 @@ EndPicking(pRend)
 {
 /* Locals */
       miDDContext      *pddc = (miDDContext *)(pRend->pDDContext);
+      ddPickPath        *strpp;
+      diStructHandle    sh = 0;
+      int		i;
+
 
 #ifdef DDTEST
     ErrorF( " EndPicking\n");
@@ -1535,8 +1646,16 @@ EndPicking(pRend)
     */
     PU_EMPTY_LIST(pRend->pickstr.list);
 
-    /* The first one should always be there to support ROCs */ 
-    pRend->pickstr.sIDlist->numObj = 1;
+    /* free all but the first the fake structure
+       it should always be there to support ROCs  
+    */
+    strpp = (ddPickPath *)(pRend->pickstr.sIDlist)->pList;
+    for (i = 1; i < (pRend->pickstr.sIDlist)->numObj; i++) {
+	sh = strpp[i].structure;
+	FreeResource(sh->id, RT_NONE);
+    }
+
+    (pRend->pickstr.sIDlist)->numObj = 1;
 
     pRend->state = PEXIdle;
 
