@@ -1,5 +1,5 @@
 #ifndef lint
-static char *rid="$XConsortium: main.c,v 1.208 93/12/06 15:18:46 kaleb Exp $";
+static char *rid="$XConsortium: main.c,v 1.209 93/12/23 19:22:26 gildea Exp $";
 #endif /* lint */
 
 /*
@@ -708,6 +708,7 @@ Widget toplevel;
 Bool waiting_for_initial_map;
 
 extern void do_hangup();
+extern void xt_error();
 
 /*
  * DeleteWindow(): Action proc to implement ICCCM delete_window.
@@ -885,6 +886,7 @@ char **argv;
 #endif	/* USE_SYSV_TERMIO */
 
 	/* Init the Toolkit. */
+	XtSetErrorHandler(xt_error);
 	toplevel = XtAppInitialize (&app_con, "XTerm", 
 				    optionDescList, XtNumber(optionDescList), 
 				    &argc, argv, fallback_resources, NULL, 0);

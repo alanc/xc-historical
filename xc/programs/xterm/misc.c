@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: misc.c,v 1.98 93/11/04 08:45:05 gildea Exp $
+ *	$XConsortium: misc.c,v 1.99 94/01/01 18:46:47 rws Exp $
  */
 
 /*
@@ -885,6 +885,15 @@ Display *dpy;
 		    DisplayString (dpy));
 
     Exit(ERROR_XIOERROR);
+}
+
+void xt_error(message)
+    String message;
+{
+    extern char *ProgramName;
+
+    (void) fprintf (stderr, "%s Xt error: %s\n", ProgramName, message);
+    exit(1);
 }
 
 XStrCmp(s1, s2)
