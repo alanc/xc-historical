@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: utils.c,v 1.115 92/08/21 19:55:34 rws Exp $ */
+/* $XConsortium: utils.c,v 1.116 92/09/15 15:56:16 rws Exp $ */
 #include "Xos.h"
 #include <stdio.h>
 #include "misc.h"
@@ -68,6 +68,7 @@ extern Bool defeatAccessControl;
 
 Bool CoreDump;
 Bool noTestExtensions;
+int auditTrailLevel = 1;
 
 void ddxUseMsg();
 
@@ -196,6 +197,7 @@ void UseMsg()
 #ifdef MEMBUG
     ErrorF("-alloc int             chance alloc should fail\n");
 #endif
+    ErrorF("-audit int             set audit trail level\n");	
     ErrorF("-auth string           select authorization file\n");	
     ErrorF("bc                     enable bug compatibility\n");
     ErrorF("-bs                    disable any backing store support\n");
@@ -297,6 +299,13 @@ char	*argv[];
 		UseMsg();
 	}
 #endif
+	else if ( strcmp( argv[i], "-audit") == 0)
+	{
+	    if(++i < argc)
+	        auditTrailLevel = atoi(argv[i]);
+	    else
+		UseMsg();
+	}
 	else if ( strcmp( argv[i], "-auth") == 0)
 	{
 	    if(++i < argc)
