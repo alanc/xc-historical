@@ -86,7 +86,7 @@
  * The command filters for the manual and apropos searches.
  */
 
-#if ( defined(hpux) || defined(macII) || defined(CRAY) )
+#if ( defined(hpux) || defined(macII) || defined(CRAY) || defined(ultrix) )
 #  define NO_MANPATH_SUPPORT
 #endif
 
