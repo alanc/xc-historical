@@ -49,8 +49,8 @@ XCOMM
 XCOMM install stuff; create the directories that we are going to need
 XCOMM 
 
-#if BuildServer
-  DIRS_SERVER = $(FONTDIR) /* $(ADMDIR) */
+#if BuildPexExt | BuildBdfFonts
+  DIRS_FONTS = $(FONTDIR)
 #endif
 #if InstallxinitConfig
    DIRS_XINIT = $(XINITDIR)
@@ -62,11 +62,9 @@ XCOMM
   DIRS_APPDEF = $(XAPPLOADDIR)
 #endif
 
- DIRS_CONTRIB = /* $(AWMDIR) $(TWMDIR) */
-
-DIRS_TO_CREATE = $(DIRS_SERVER) /* $(LINTLIBDIR) */ \
+DIRS_TO_CREATE = $(DIRS_FONTS)
 	$(USRLIBDIR) $(BINDIR) $(INCDIR) $(LIBDIR) $(CONFIGDIR) \
-	$(DIRS_XINIT) $(DIRS_XDM) $(DIRS_APPDEF) $(DIRS_CONTRIB)
+	$(DIRS_XINIT) $(DIRS_XDM) $(DIRS_APPDEF)
 
 MakeDirectories(install, $(DIRS_TO_CREATE))
 
