@@ -21,13 +21,21 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: osinit.c,v 1.12 88/02/22 10:42:50 rws Exp $ */
+/* $Header: osinit.c,v 1.13 88/03/16 09:50:32 rws Exp $ */
 #include "os.h"
 #include "opaque.h"
 #undef NULL
 #include <dbm.h>
 #undef NULL
 #include <stdio.h>
+#ifndef MAXPATHLEN
+/*
+ * just to get MAXPATHLEN.  Define it elsewhere if you need to
+ * avoid these files.
+ */
+#include <sys/types.h>
+#include <sys/param.h>
+#endif
 
 #ifndef ADMPATH
 #define ADMPATH "/usr/adm/X%smsgs"
@@ -39,7 +47,7 @@ extern char *display;
 OsInit()
 {
     static Bool been_here = FALSE;
-    char fname[32];
+    char fname[MAXPATHLEN];
 
     /* hack test to decide where to log errors */
 
