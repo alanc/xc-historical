@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: utils.c,v 1.54 88/08/16 20:42:07 jim Exp $ */
+/* $Header: utils.c,v 1.55 88/08/16 21:45:29 jim Exp $ */
 #include <stdio.h>
 #include "Xos.h"
 #include "misc.h"
@@ -151,7 +151,7 @@ GetTimeInMillis()
     return(tp.tv_sec * 1000) + (tp.tv_usec / 1000);
 }
 
-static void UseMsg()
+void UseMsg()
 {
     ErrorF("use: X [:<display>] [option] [<tty>]\n");
     ErrorF("-a #                   mouse acceleration (pixels)\n");
