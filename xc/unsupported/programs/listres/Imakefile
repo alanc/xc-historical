@@ -5,6 +5,8 @@ SRCS = listres.c util.c
 OBJS = listres.o util.o 
 HEADERS = $(AWIDGETSRC)\/*.h $(TOOLKITSRC)\/*.h
 
+AllTarget(listres)
+
 depend:: widgets.h
 
 clean:: 
