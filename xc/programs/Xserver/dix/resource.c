@@ -22,7 +22,7 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: resource.c,v 1.92 93/10/23 12:05:45 rws Exp $ */
+/* $XConsortium: resource.c,v 1.93 94/02/23 15:48:29 dpw Exp $ */
 
 /*	Routines to manage various kinds of resources:
  *
@@ -268,6 +268,43 @@ GetXIDRange(client, server, minp, maxp)
 	id = maxid = 0;
     *minp = id;
     *maxp = maxid;
+}
+
+/*  GetXIDList is called by the XC-MISC extension's MiscGetXIDList function.
+ *  This function tries to find count unused XIDs for the given client.  It 
+ *  puts the IDs in the array pids and returns the number found, which should
+ *  almost always be the number requested.
+ *
+ *  The circumstances that lead to a call to this function are very rare.
+ *  Xlib must run out of IDs while trying to generate a request that wants
+ *  multiple ID's, like the Multi-buffering CreateImageBuffers request.
+ *
+ *  No rocket science in the implementation; just iterate over all
+ *  possible IDs for the given client and pick the first count IDs
+ *  that aren't in use.  A more efficient algorithm could probably be
+ *  invented, but this will be used so rarely that this should suffice.
+ */
+
+unsigned int
+GetXIDList(pClient, count, pids)
+    ClientPtr pClient;
+    unsigned int count;
+    XID *pids;
+{
+    unsigned int found = 0;
+    XID id = pClient->clientAsMask;
+    XID maxid;
+
+    maxid = id | RESOURCE_ID_MASK;
+    while ( (found < count) && (id <= maxid) )
+    {
+	if (!LookupIDByClass(id, RC_ANY))
+	{
+	    pids[found++] = id;
+	}
+	id++;
+    }
+    return found;
 }
 
 /*
