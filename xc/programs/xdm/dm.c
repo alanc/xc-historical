@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: dm.c,v 1.51 91/02/13 19:13:00 rws Exp $
+ * $XConsortium: dm.c,v 1.52 91/02/15 08:31:41 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -359,8 +359,8 @@ WaitForChild ()
 #else
     sigsetmask (omask);
 #endif
-#ifdef POSIXSIG
-    while ((pid = waitpid (-1, (int *)NULL, WNOHANG)) > 0)
+#ifdef USE_POSIX_STYLE_WAIT
+    while ((pid = waitpid (-1, &status, WNOHANG)) > 0)
 #else
     while ((pid = wait3 (&status, WNOHANG, (struct rusage *) 0)) > 0)
 #endif
