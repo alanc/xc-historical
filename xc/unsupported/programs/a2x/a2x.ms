@@ -1,5 +1,5 @@
 .\" Use -ms
-.\" $XConsortium: a2x.ms,v 1.43 93/08/05 19:18:14 rws Exp $
+.\" $XConsortium: a2x.ms,v 1.44 93/12/29 20:35:46 rws Exp $
 .de Ds
 .RS
 .nf
@@ -98,8 +98,8 @@ programs on the PC.  If you use DragonDictate with programs on the PC, you may
 need to create dcom files for switching between PC and X use.
 .LP
 A mailing list of \fBa2x\fP users exists, to keep people abreast of
-any new developments.  The mailing list is a2x-users@expo.lcs.mit.edu;
-send requests to join to a2x-users-request@expo.lcs.mit.edu.
+any new developments.  The mailing list is a2x-users@x.org; send requests to
+join to a2x-users-request@x.org.
 .LP
 There are two ways to run DragonDictate: directly under DOS, and under
 DESQview/X.  Running directly under DOS is described here; running under
@@ -695,7 +695,7 @@ the last '.' as the separator between \fI<name>\fP and \fI<class>\fP, so if
 you have no \fI<class>\fP to provide, simply terminate the \fI<name>\fP with
 another '.'.  For example:
 .Ds
-nxterm-expo.lcs.mit.edu.
+nxterm-x.org.
 .De
 .IP
 The _MIT_OBJ_CLASS property is set by a nonstandard addition to the Xt
