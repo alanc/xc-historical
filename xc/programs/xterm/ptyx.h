@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: ptyx.h,v 1.59 91/06/24 18:41:57 gildea Exp $
+ *	$XConsortium: ptyx.h,v 1.60 91/06/24 20:45:02 gildea Exp $
  */
 
 /*
@@ -281,7 +281,8 @@ typedef struct {
 	int		copy_dest_x;
 	int		copy_dest_y;
 	Boolean		c132;		/* allow change to 132 columns	*/
-	Boolean		curses;		/* cludge-ups for more and vi	*/
+	Boolean		curses;		/* kludge line wrap for more	*/
+	Boolean		hp_ll_bc;	/* kludge HP-style ll for xdb	*/
 	Boolean		marginbell;	/* true if margin bell on	*/
 	int		nmarginbell;	/* columns from right margin	*/
 	int		bellarmed;	/* cursor below bell margin	*/
