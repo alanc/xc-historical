@@ -1,12 +1,3 @@
-/*
- *	$Source$
- *	$Header$
- */
-
-#ifndef lint
-static char *rcsid_main_c = "$Header$";
-#endif	lint
-
 
 /**  Puzzle
  **
@@ -173,7 +164,7 @@ RepaintTitle()
     Twidth  = XTextWidth(TitleFontInfo,ProgName,strlen(ProgName));
     Theight = TitleFontInfo->ascent + TitleFontInfo->descent;
     Tx	    = (PuzzleWinInfo.width-Twidth)/2;
-    Ty	    = (TitleWinHeight-Theight)/2;
+    Ty	    = (TitleWinHeight-Theight)/2 + TitleFontInfo->ascent;
     
     XSetFont(dpy, gc, TitleFontInfo->fid);
     XDrawString(dpy, TitleWindow, gc,
