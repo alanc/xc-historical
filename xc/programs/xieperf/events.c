@@ -1,4 +1,4 @@
-/* $XConsortium: events.c,v 1.2 93/10/27 21:52:12 rws Exp $ */
+/* $XConsortium: events.c,v 1.3 93/10/30 13:49:32 rws Exp $ */
 /**** module events.c ****/
 /******************************************************************************
 				NOTICE
@@ -377,7 +377,7 @@ int	reps;
 
 	/* set the new one */
 
-	p->ts = ( caddr_t ) &cticfg;
+	p->ts = ( XPointer ) &cticfg;
 
 	/* call the convert to index test init function */
 
@@ -385,7 +385,7 @@ int	reps;
 
 	/* restore the original test configuration */
 
-	p->ts = ( caddr_t )evcfg;
+	p->ts = ( XPointer )evcfg;
 	return( retval );
 }
 
