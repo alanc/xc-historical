@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Geometry.c,v 1.44 90/04/04 11:27:56 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Geometry.c,v 1.45 90/04/10 16:57:22 swick Exp $";
 /* $oHeader: Geometry.c,v 1.3 88/08/23 11:37:50 asente Exp $ */
 #endif /* lint */
 
@@ -45,8 +45,9 @@ static void ClearRectObjAreas(r, old)
 
     bw2 = r->rectangle.border_width << 1;
     XClearArea( XtDisplay(pw), XtWindow(pw),
-		r->rectangle.x, r->rectangle.y,
-		r->rectangle.width + bw2, r->rectangle.height + bw2,
+		(int)r->rectangle.x, (int)r->rectangle.y,
+		(unsigned int)(r->rectangle.width + bw2),
+	        (unsigned int)(r->rectangle.height + bw2),
 		TRUE );
 }
 
@@ -344,7 +345,8 @@ void XtResizeWidget(w, width, height, borderWidth)
 		if ((height + (borderWidth << 1)) > old_height)
 		    old_height = height + (borderWidth << 1);
 		XClearArea( XtDisplay(pw), XtWindow(pw),
-			    w->core.x, w->core.y, old_width, old_height,
+			    (int)w->core.x, (int)w->core.y,
+			    (unsigned int)old_width, (unsigned int)old_height,
 			    TRUE );
 	    }
 	}
