@@ -1,4 +1,4 @@
-/* $XConsortium: XIElib.h,v 1.8 94/03/18 10:29:48 mor Exp $ */
+/* $XConsortium: XIElib.h,v 1.9 94/04/17 20:18:16 mor Exp $ */
 
 /*
 
@@ -392,7 +392,7 @@ typedef struct {
 	struct {
 	    XiePhototag		src;
 	    XieProcessDomain	domain;
-	    XieLut		lut;
+	    XiePhototag		lut;
 	    unsigned int	band_mask;
 	} Point;
 	
@@ -1456,7 +1456,7 @@ extern void XieFloPoint (
     XiePhotoElement *	/* element */,
     XiePhototag		/* src */,
     XieProcessDomain *	/* domain */,
-    XieLut		/* lut */,
+    XiePhototag		/* lut */,
     unsigned int	/* band_mask */
 #endif
 );

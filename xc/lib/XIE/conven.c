@@ -1,4 +1,4 @@
-/* $XConsortium: conven.c,v 1.7 94/03/09 15:02:39 mor Exp $ */
+/* $XConsortium: conven.c,v 1.8 94/04/17 20:18:20 mor Exp $ */
 
 /*
 
@@ -605,7 +605,7 @@ XieFloPoint (element, src, domain, lut, band_mask)
 XiePhotoElement		*element;
 XiePhototag		src;
 XieProcessDomain	*domain;
-XieLut			lut;
+XiePhototag		lut;
 unsigned int		band_mask;
 
 {
