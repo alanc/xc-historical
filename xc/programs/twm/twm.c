@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: twm.c,v 1.104 89/12/14 14:52:20 jim Exp $
+ * $XConsortium: twm.c,v 1.105 90/03/13 12:32:19 jim Exp $
  *
  * twm - "Tom's Window Manager"
  *
@@ -36,9 +36,9 @@
  *
  ***********************************************************************/
 
-#ifndef lint
+#if !defined(lint) && !defined(SABER)
 static char RCSinfo[] =
-"$XConsortium: twm.c,v 1.104 89/12/14 14:52:20 jim Exp $";
+"$XConsortium: menus.c,v 1.145 90/03/13 11:46:56 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -485,8 +485,10 @@ main(argc, argv, environ)
 	attributes.cursor = XCreateFontCursor (dpy, XC_hand2);
 	valuemask = (CWBorderPixel | CWBackPixel | CWEventMask | 
 		     CWBackingStore | CWCursor);
-	Scr->InfoWindow = XCreateWindow (dpy, Scr->Root, 0, 0, 5, 5, BW, 0,
-					 CopyFromParent, CopyFromParent,
+	Scr->InfoWindow = XCreateWindow (dpy, Scr->Root, 0, 0, 5, 5, 
+					 (unsigned int) BW, 0,
+					 (unsigned int) CopyFromParent,
+					 (Visual *) CopyFromParent,
 					 valuemask, &attributes);
 
 	Scr->SizeStringWidth = XTextWidth (Scr->SizeFont.font,
@@ -494,9 +496,12 @@ main(argc, argv, environ)
 	valuemask = (CWBorderPixel | CWBackPixel | CWBitGravity);
 	attributes.bit_gravity = NorthWestGravity;
 	Scr->SizeWindow = XCreateWindow (dpy, Scr->Root, 0, 0, 
-					 Scr->SizeStringWidth,
-					 Scr->SizeFont.height + SIZE_VINDENT*2,
-					 BW, 0, CopyFromParent, CopyFromParent,
+					 (unsigned int) Scr->SizeStringWidth,
+					 (unsigned int) (Scr->SizeFont.height +
+							 SIZE_VINDENT*2),
+					 (unsigned int) BW, 0,
+					 (unsigned int) CopyFromParent,
+					 (Visual *) CopyFromParent,
 					 valuemask, &attributes);
 
 	XUngrabServer(dpy);

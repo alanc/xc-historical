@@ -21,7 +21,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: iconmgr.c,v 1.38 89/12/10 19:20:38 jim Exp $
+ * $XConsortium: iconmgr.c,v 1.39 89/12/14 16:22:57 rws Exp $
  *
  * Icon Manager routines
  *
@@ -510,9 +510,9 @@ WList *AddIconManager(tmp_win)
 			     ButtonReleaseMask | ExposureMask |
 			     EnterWindowMask | LeaveWindowMask);
     attributes.cursor = Scr->IconMgrCursor;
-    tmp->w = XCreateWindow (dpy, ip->w, 0, 0, 1, h, 0, 
-			    CopyFromParent, CopyFromParent, CopyFromParent,
-			    valuemask, &attributes);
+    tmp->w = XCreateWindow (dpy, ip->w, 0, 0, 1, h, (unsigned int) 0, 
+			    CopyFromParent, (unsigned int) CopyFromParent,
+			    (Visual *) CopyFromParent, valuemask, &attributes);
 
 
     valuemask = (CWBackPixel | CWBorderPixel | CWEventMask | CWCursor);
@@ -522,8 +522,11 @@ WList *AddIconManager(tmp_win)
 			     ExposureMask);
     attributes.cursor = Scr->ButtonCursor;
     tmp->icon = XCreateWindow (dpy, tmp->w, 5, (h - siconify_height)/2,
-			       siconify_width, siconify_height, 0,
-			       CopyFromParent, CopyFromParent, CopyFromParent,
+			       (unsigned int) siconify_width,
+			       (unsigned int) siconify_height,
+			       (unsigned int) 0, CopyFromParent,
+			       (unsigned int) CopyFromParent,
+			       (Visual *) CopyFromParent,
 			       valuemask, &attributes);
 
     ip->count += 1;

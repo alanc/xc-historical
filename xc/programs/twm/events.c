@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.131 90/03/08 15:44:37 jim Exp $
+ * $XConsortium: events.c,v 1.132 90/03/08 15:56:40 jim Exp $
  *
  * twm event handling
  *
@@ -36,9 +36,9 @@
  *
  ***********************************************************************/
 
-#ifndef lint
+#if !defined(lint) && !defined(SABER)
 static char RCSinfo[]=
-"$XConsortium: events.c,v 1.131 90/03/08 15:44:37 jim Exp $";
+"$XConsortium: events.c,v 1.132 90/03/08 15:56:40 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -816,10 +816,13 @@ HandlePropertyNotify()
 	    if (Tmp_win->icon_bm_w)
 		XDestroyWindow(dpy, Tmp_win->icon_bm_w);
 
-	    Tmp_win->icon_bm_w = XCreateWindow(dpy, Tmp_win->icon_w,
-		0, 0, Tmp_win->icon_width, Tmp_win->icon_height,
-		0, Scr->d_depth, CopyFromParent, Scr->d_visual,
-		valuemask, &attributes);
+	    Tmp_win->icon_bm_w =
+	      XCreateWindow (dpy, Tmp_win->icon_w, 0, 0,
+			     (unsigned int) Tmp_win->icon_width,
+			     (unsigned int) Tmp_win->icon_height,
+			     (unsigned int) 0, Scr->d_depth,
+			     (unsigned int) CopyFromParent, Scr->d_visual,
+			     valuemask, &attributes);
 
 	    XFreePixmap (dpy, pm);
 	    RedoIconName();
@@ -1735,7 +1738,7 @@ HandleButtonPress()
     if (Scr->Mouse[Event.xbutton.button][Context][modifier].func == F_MENU)
     {
 	do_menu (Scr->Mouse[Event.xbutton.button][Context][modifier].menu,
-		 None);
+		 (Window) None);
     }
     else if (Scr->Mouse[Event.xbutton.button][Context][modifier].func != NULL)
     {
@@ -1748,7 +1751,7 @@ HandleButtonPress()
     {
 	if (Scr->DefaultFunction.func == F_MENU)
 	{
-	    do_menu (Scr->DefaultFunction.menu, None);
+	    do_menu (Scr->DefaultFunction.menu, (Window) None);
 	}
 	else
 	{

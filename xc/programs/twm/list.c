@@ -28,7 +28,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: list.c,v 1.16 89/11/20 17:22:57 jim Exp $
+ * $XConsortium: list.c,v 1.17 89/12/10 17:46:13 jim Exp $
  *
  * TWM code to deal with the name lists for the NoTitle list and
  * the AutoRaise list
@@ -37,10 +37,10 @@
  *
  **********************************************************************/
 
-#ifndef lint
+#if !defined(lint) && !defined(SABER)
 static char RCSinfo[]=
-"$XConsortium: list.c,v 1.16 89/11/20 17:22:57 jim Exp $";
-#endif /* lint */
+"$XConsortium: list.c,v 1.17 89/12/10 17:46:13 jim Exp $";
+#endif
 
 #include <stdio.h>
 #include "twm.h"

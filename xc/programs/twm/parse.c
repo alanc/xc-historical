@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: parse.c,v 1.42 90/03/08 15:44:47 jim Exp $
+ * $XConsortium: parse.c,v 1.43 90/03/08 16:14:15 jim Exp $
  *
  * parse the .twmrc file
  *
@@ -36,9 +36,9 @@
  *
  ***********************************************************************/
 
-#ifndef lint
+#if !defined(lint) && !defined(SABER)
 static char RCSinfo[]=
-"$XConsortium: parse.c,v 1.42 90/03/08 15:44:47 jim Exp $";
+"$XConsortium: parse.c,v 1.43 90/03/08 16:14:15 jim Exp $";
 #endif
 
 #include <stdio.h>

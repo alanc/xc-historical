@@ -21,7 +21,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: icons.c,v 1.17 90/03/12 17:24:25 jim Exp $
+ * $XConsortium: icons.c,v 1.18 90/03/13 11:46:50 jim Exp $
  *
  * Icon releated routines
  *
@@ -522,10 +522,13 @@ int def_x, def_y;
 	else
 	    x = (tmp_win->icon_w_width - tmp_win->icon_width)/2;
 
-	tmp_win->icon_bm_w = XCreateWindow(dpy, tmp_win->icon_w,
-	    x, y, tmp_win->icon_width, tmp_win->icon_height,
-	    0, Scr->d_depth, CopyFromParent,
-	    Scr->d_visual, valuemask, &attributes);
+	tmp_win->icon_bm_w = XCreateWindow (dpy, tmp_win->icon_w, x, y,
+					    (unsigned int)tmp_win->icon_width,
+					    (unsigned int)tmp_win->icon_height,
+					    (unsigned int) 0, Scr->d_depth,
+					    (unsigned int) CopyFromParent,
+					    Scr->d_visual, valuemask,
+					    &attributes);
     }
 
     /* I need to figure out where to put the icon window now, because 

@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: util.c,v 1.36 89/12/14 14:52:06 jim Exp $
+ * $XConsortium: util.c,v 1.37 90/03/07 16:43:15 jim Exp $
  *
  * utility routines for twm
  *
@@ -36,9 +36,9 @@
  *
  ***********************************************************************/
 
-#ifndef lint
+#if !defined(lint) && !defined(SABER)
 static char RCSinfo[]=
-"$XConsortium: util.c,v 1.36 89/12/14 14:52:06 jim Exp $";
+"$XConsortium: util.c,v 1.37 90/03/07 16:43:15 jim Exp $";
 #endif
 
 #include <stdio.h>

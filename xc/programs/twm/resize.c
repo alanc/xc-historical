@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: resize.c,v 1.65 90/03/05 16:47:07 jim Exp $
+ * $XConsortium: resize.c,v 1.66 90/03/06 17:01:04 jim Exp $
  *
  * window resizing borrowed from the "wm" window manager
  *
@@ -36,9 +36,9 @@
  *
  ***********************************************************************/
 
-#ifndef lint
+#if !defined(lint) && !defined(SABER)
 static char RCSinfo[]=
-"$XConsortium: resize.c,v 1.65 90/03/05 16:47:07 jim Exp $";
+"$XConsortium: resize.c,v 1.66 90/03/06 17:01:04 jim Exp $";
 #endif
 
 #include <stdio.h>

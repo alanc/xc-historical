@@ -28,7 +28,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: add_window.c,v 1.131 90/02/08 13:40:01 jim Exp $
+ * $XConsortium: add_window.c,v 1.132 90/03/06 17:00:59 jim Exp $
  *
  * Add a new window, put the titlbar and other stuff around
  * the window
@@ -37,10 +37,10 @@
  *
  **********************************************************************/
 
-#ifndef lint
+#if !defined(lint) && !defined(SABER)
 static char RCSinfo[]=
-"$XConsortium: add_window.c,v 1.131 90/02/08 13:40:01 jim Exp $";
-#endif /* lint */
+"$XConsortium: add_window.c,v 1.132 90/03/06 17:00:59 jim Exp $";
+#endif
 
 #include <stdio.h>
 #include "twm.h"
@@ -148,7 +148,7 @@ IconMgr *iconp;
     XWindowChanges xwc;		/* change window structure */
     unsigned int xwcm;		/* change window mask */
     int ask_user;		/* don't know where to put the window */
-    long supplied;
+    long supplied = 0;
     int gravx, gravy;			/* gravity signs for positioning */
     int namelen;
 
@@ -644,9 +644,12 @@ IconMgr *iconp;
     }
 
     tmp_win->frame = XCreateWindow (dpy, Scr->Root, tmp_win->frame_x,
-				    tmp_win->frame_y, tmp_win->frame_width,
-				    tmp_win->frame_height, tmp_win->frame_bw,
-				    Scr->d_depth, CopyFromParent,
+				    tmp_win->frame_y, 
+				    (unsigned int) tmp_win->frame_width,
+				    (unsigned int) tmp_win->frame_height,
+				    (unsigned int) tmp_win->frame_bw,
+				    Scr->d_depth,
+				    (unsigned int) CopyFromParent,
 				    Scr->d_visual, valuemask, &attributes);
     
     if (tmp_win->title_height)
@@ -659,9 +662,11 @@ IconMgr *iconp;
 	tmp_win->title_w = XCreateWindow (dpy, tmp_win->frame, 
 					  -tmp_win->frame_bw,
 					  -tmp_win->frame_bw,
-					  tmp_win->attr.width, 
-					  Scr->TitleHeight, tmp_win->frame_bw,
-					  Scr->d_depth, CopyFromParent,
+					  (unsigned int) tmp_win->attr.width, 
+					  (unsigned int) Scr->TitleHeight,
+					  (unsigned int) tmp_win->frame_bw,
+					  Scr->d_depth,
+					  (unsigned int) CopyFromParent,
 					  Scr->d_visual, valuemask,
 					  &attributes);
     }
@@ -1013,7 +1018,9 @@ static Window CreateHighlightWindow (tmp_win)
     }
 
     w = XCreateWindow (dpy, tmp_win->title_w, 0, Scr->FramePadding,
-		       Scr->TBInfo.width, h, 0, Scr->d_depth, CopyFromParent,
+		       (unsigned int) Scr->TBInfo.width, (unsigned int) h,
+		       (unsigned int) 0,
+		       Scr->d_depth, (unsigned int) CopyFromParent,
 		       Scr->d_visual, valuemask, &attributes);
     if (pm) XFreePixmap (dpy, pm);
     return w;
@@ -1159,7 +1166,7 @@ static void CreateWindowTitlebarButtons (tmp_win)
 	} else {
 	    TBWindow *tbw;
 	    int boxwidth = (Scr->TBInfo.width + Scr->TBInfo.pad);
-	    int h = (Scr->TBInfo.width - Scr->TBInfo.border * 2);
+	    unsigned int h = (Scr->TBInfo.width - Scr->TBInfo.border * 2);
 
 	    for (tb = Scr->TBInfo.head, tbw = tmp_win->titlebuttons; tb;
 		 tb = tb->next, tbw++) {
@@ -1173,9 +1180,10 @@ static void CreateWindowTitlebarButtons (tmp_win)
 		    leftx += boxwidth;
 		    attributes.win_gravity = NorthWestGravity;
 		}
-		tbw->window = XCreateWindow (dpy, tmp_win->title_w, x, y,
-					     h, h, Scr->TBInfo.border, 0, 
-					     CopyFromParent, CopyFromParent,
+		tbw->window = XCreateWindow (dpy, tmp_win->title_w, x, y, h, h,
+					     (unsigned int) Scr->TBInfo.border,
+					     0, (unsigned int) CopyFromParent,
+					     (Visual *) CopyFromParent,
 					     valuemask, &attributes);
 		tbw->info = tb;
 	    }

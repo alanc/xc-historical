@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.144 90/03/12 16:20:23 jim Exp $
+ * $XConsortium: menus.c,v 1.145 90/03/13 11:46:56 jim Exp $
  *
  * twm menu code
  *
@@ -36,9 +36,9 @@
  *
  ***********************************************************************/
 
-#ifndef lint
+#if !defined(lint) && !defined(SABER)
 static char RCSinfo[] =
-"$XConsortium: menus.c,v 1.144 90/03/12 16:20:23 jim Exp $";
+"$XConsortium: menus.c,v 1.145 90/03/13 11:46:56 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -781,9 +781,12 @@ MenuRoot *mr;
 		attributes.save_under = True;
 	    }
 	    mr->shadow = XCreateWindow (dpy, Scr->Root, 0, 0,
-					mr->width, mr->height, 0,
-					CopyFromParent, CopyFromParent,
-					CopyFromParent,
+					(unsigned int) mr->width, 
+					(unsigned int) mr->height,
+					(unsigned int)0,
+					CopyFromParent, 
+					(unsigned int) CopyFromParent,
+					(Visual *) CopyFromParent,
 					valuemask, &attributes);
 	}
 
@@ -799,8 +802,10 @@ MenuRoot *mr;
 	    valuemask |= CWBackingStore;
 	    attributes.backing_store = Always;
 	}
-	mr->w = XCreateWindow (dpy, Scr->Root, 0, 0, mr->width, mr->height, 1,
-			       CopyFromParent, CopyFromParent, CopyFromParent,
+	mr->w = XCreateWindow (dpy, Scr->Root, 0, 0, (unsigned int) mr->width,
+			       (unsigned int) mr->height, (unsigned int) 1,
+			       CopyFromParent, (unsigned int) CopyFromParent,
+			       (Visual *) CopyFromParent,
 			       valuemask, &attributes);
 
 
@@ -1856,9 +1861,12 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
 	    attributes.background_pixel = Scr->Black;
 	    attributes.backing_store = NotUseful;
 	    attributes.save_under = False;
-	    w = XCreateWindow (dpy, Scr->Root, 0, 0, Scr->MyDisplayWidth,
-			       Scr->MyDisplayHeight, 0, CopyFromParent,
-			       CopyFromParent, CopyFromParent, valuemask,
+	    w = XCreateWindow (dpy, Scr->Root, 0, 0,
+			       (unsigned int) Scr->MyDisplayWidth,
+			       (unsigned int) Scr->MyDisplayHeight,
+			       (unsigned int) 0,
+			       CopyFromParent, (unsigned int) CopyFromParent,
+			       (Visual *) CopyFromParent, valuemask,
 			       &attributes);
 	    XMapWindow (dpy, w);
 	    XDestroyWindow (dpy, w);
