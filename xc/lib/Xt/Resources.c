@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Resources.c,v 1.36 88/02/02 14:40:25 swick Locked $";
+static char rcsid[] = "$Header: Resources.c,v 1.37 88/02/08 19:25:17 swick Exp $";
 #endif lint
 
 /*
@@ -105,6 +105,9 @@ static Cardinal GetNamesAndClasses(w, names, classes)
 	classes[length] = XtClass(w)->core_class.xrm_class;
 	length++;
      }
+    names[length] = XtApplicationName;
+    classes[length] = XtApplicationClass;
+    length++;
     /* They're in backwards order, flop them around */
     for (j = 0; j < length/2; j++) {
 	t = names[j];
@@ -460,7 +463,7 @@ void XtGetApplicationResources
     XrmQuarkList    quark_args;
 
     /* Get full name, class of subobject */
-    length = GetNamesAndClasses(w, names, classes);
+    length = GetNamesAndClasses(NULL, names, classes);
 
     /* Compile arg list into quarks */
     CacheArgs(args, num_args, quark_cache, XtNumber(quark_cache), &quark_args);
