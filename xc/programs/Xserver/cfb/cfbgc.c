@@ -34,6 +34,7 @@ SOFTWARE.
 
 #include "cfb.h"
 #include "mistruct.h"
+#include "mibstore.h"
 
 #include "cfbmskbits.h"
 #ifdef CFBROTPIX
@@ -124,6 +125,8 @@ cfbCreateGC(pGC)
 	    pPriv->freeCompClip = REPLACE_CC;
 	}
     }
+    pGC->devBackingStore = (pointer)NULL;
+    
     pQ = (GCInterestPtr) Xalloc(sizeof(GCInterestRec));
     if (!pQ) {
 	Xfree(pGC->devPriv);
@@ -219,6 +222,7 @@ cfbValidateGC(pGC, pQ, changes, pDrawable)
     int         new_line, new_text, new_fillspans;
     /* flags for changing the proc vector */
     cfbPrivGCPtr devPriv;
+    int	    	  procChanges = 0;
 
     switch (pGC->depth) {
     case PSZ:
@@ -517,6 +521,8 @@ cfbValidateGC(pGC, pQ, changes, pDrawable)
 	else
 	    pGC->Polylines = miWideDash;
 
+	procChanges |= MIBS_POLYLINES;
+
 	switch(pGC->joinStyle)
 	{
 	  case JoinMiter:
@@ -536,6 +542,7 @@ cfbValidateGC(pGC, pQ, changes, pDrawable)
         {
             pGC->PolyGlyphBlt = miPolyGlyphBlt;
             pGC->ImageGlyphBlt = miImageGlyphBlt;
+	    procChanges |= MIBS_POLYGLYPHBLT|MIBS_IMAGEGLYPHBLT;
         }
         else
         {
@@ -547,6 +554,7 @@ cfbValidateGC(pGC, pQ, changes, pDrawable)
 	    }
             else
                 pGC->ImageGlyphBlt = miImageGlyphBlt;
+	    procChanges |= MIBS_IMAGEGLYPHBLT;
         }
     }    
 
@@ -584,6 +592,7 @@ cfbValidateGC(pGC, pQ, changes, pDrawable)
 	default:
 	    FatalError("cfbValidateGC: illegal fillStyle\n");
 	}
+	procChanges |= MIBS_FILLSPANS;
     } /* end of new_fillspans */
 
 #ifdef CFBROTPIX
@@ -628,6 +637,19 @@ cfbValidateGC(pGC, pQ, changes, pDrawable)
 	}
     }
 #endif
+    /*
+     * If this GC has ever been used with a window with backing-store enabled,
+     * we must call miVaidateBackingStore to keep the backing-store module
+     * up-to-date, should this GC be used with that drawable again. In
+     * addition, if the current drawable is a window and has backing-store
+     * enabled, we also call miValidateBackingStore to give it a chance to get
+     * its hooks in.
+     */
+    if (pGC->devBackingStore ||
+	(pWin && (pWin->backingStore != NotUseful)))
+    {
+	miValidateBackingStore(pDrawable, pGC, procChanges);
+    }
 }
 
 

@@ -92,7 +92,7 @@ cfbScreenInit(index, pScreen, pbits, xsize, ysize, dpi)
     pScreen->rootDepth = 8;
     pScreen->minInstalledCmaps = 1;
     pScreen->maxInstalledCmaps = 1;
-    pScreen->backingStoreSupport = NotUseful;
+    pScreen->backingStoreSupport = Always;
     pScreen->saveUnderSupport = NotUseful;
 
     /* cursmin and cursmax are device specific */
@@ -100,7 +100,7 @@ cfbScreenInit(index, pScreen, pbits, xsize, ysize, dpi)
     pScreen->numVisuals = NUMVISUALS;
     pScreen->visuals = visuals;
 
-    pPixmap = (PixmapPtr )xalloc(sizeof(PixmapRec));
+    pPixmap = (PixmapPtr ) xalloc(sizeof(PixmapRec));
     pPixmap->drawable.type = DRAWABLE_PIXMAP;
     pPixmap->drawable.depth = 8;
     pPixmap->drawable.pScreen = pScreen;

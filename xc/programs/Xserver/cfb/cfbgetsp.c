@@ -63,6 +63,10 @@ cfbGetSpans(pDrawable, wMax, ppt, pwidth, nspans)
     int			w;
     unsigned int	*pdstStart;
     unsigned int	*pdstNext;
+    DDXPointPtr	  	pptInit;
+    int	    	  	*pwidthInit;
+    int	    	  	*pwidthPadded;
+    int	    	  	i;
 
     switch (pDrawable->depth) {
 	case 1:
@@ -73,6 +77,14 @@ cfbGetSpans(pDrawable, wMax, ppt, pwidth, nspans)
 	    FatalError("cfbGetSpans: invalid depth\n");
     }
     pptLast = ppt + nspans;
+    pptInit = ppt;
+    pwidthInit = pwidth;
+
+    pwidthPadded = (int *)ALLOCATE_LOCAL(nspans * sizeof(int));
+    if (pwidthPadded == (int *)NULL)
+    {
+	return (NULL);
+    }
 
     if (pDrawable->type == DRAWABLE_WINDOW)
     {
@@ -99,6 +111,7 @@ cfbGetSpans(pDrawable, wMax, ppt, pwidth, nspans)
     pdstStart = (unsigned int *)Xalloc(nspans * PixmapBytePad(wMax, PSZ));
     pdst = pdstStart;
 
+    i = 0;
     while(ppt < pptLast)
     {
 	xEnd = min(ppt->x + *pwidth, widthSrc << (PWSH-2) );
@@ -108,6 +121,8 @@ cfbGetSpans(pDrawable, wMax, ppt, pwidth, nspans)
 	srcBit = ppt->x & PIM;
 	/* This shouldn't be needed */
 	pdstNext = pdst + PixmapWidthInPadUnits(w, PSZ);
+	pwidthPadded[i] = PixmapWidthInPadUnits(w, PSZ) * PPW;
+	i++;
 
 	if (srcBit + w <= PPW) 
 	{ 
@@ -159,7 +174,40 @@ cfbGetSpans(pDrawable, wMax, ppt, pwidth, nspans)
 #endif notdef
 	} 
         ppt++;
+	pwidth++;
     }
+    /*
+     * If the drawable is a window with some form of backing-store, consult
+     * the backing-store module to fetch any invalid spans from the window's
+     * backing-store. The pixmap is made into one long scanline and the
+     * backing-store module takes care of the rest. We do, however, have
+     * to tell the backing-store module exactly how wide each span is, padded
+     * to the correct boundary, so we allocate pwidthPadded and set those
+     * widths into it.
+     */
+    if ((pDrawable->type == DRAWABLE_WINDOW) &&
+	(((WindowPtr)pDrawable)->backingStore != NotUseful))
+    {
+	PixmapPtr pPixmap;
+
+	pPixmap = (PixmapPtr)ALLOCATE_LOCAL(sizeof(PixmapRec));
+	if ((pPixmap != (PixmapPtr)NULL) && (pwidthPadded != (int *)NULL))
+	{
+	    pPixmap->drawable.type = DRAWABLE_PIXMAP;
+	    pPixmap->drawable.pScreen = pDrawable->pScreen;
+	    pPixmap->drawable.depth = pDrawable->depth;
+	    pPixmap->drawable.serialNumber = NEXT_SERIAL_NUMBER;
+	    pPixmap->devKind = PixmapBytePad(wMax, PSZ) * nspans;
+	    pPixmap->width = (pPixmap->devKind >> 2) * PPW;
+	    pPixmap->height = 1;
+	    pPixmap->refcnt = 1;
+	    pPixmap->devPrivate = (pointer)pdstStart;
+	    miBSGetSpans(pDrawable, pPixmap, wMax, pptInit, pwidthInit,
+			 pwidthPadded, nspans);
+	}
+	DEALLOCATE_LOCAL(pPixmap);
+    }
+    DEALLOCATE_LOCAL(pwidthPadded);
     return(pdstStart);
 }
 

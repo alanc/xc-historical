@@ -3,14 +3,14 @@ SRCS =	 cfbgc.c cfbwindow.c \
 	 cfbfillsp.c cfbsetsp.c cfbscrinit.c \
 	 cfbgetsp.c cfbutils.c \
 	 cfbcmap.c cfboldmfb.c \
-	 cfbtegblt.c
+	 cfbtegblt.c cfbbstore.c
 
 OBJS =   cfbgc.o cfbwindow.o \
 	 cfbgetsp.o cfbutils.o \
 	 cfbfillsp.o cfbsetsp.o cfbscrinit.o \
 	 cfbpntwin.o cfbmskbits.o cfbpixmap.o cfbbitblt.o \
 	 cfbcmap.o cfboldmfb.o \
-	 cfbtegblt.o
+	 cfbtegblt.o cfbbstore.o
 
 STD_DEFINES = ServerDefines
 CDEBUGFLAGS = ServerCDebugFlags

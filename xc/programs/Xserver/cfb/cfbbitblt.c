@@ -227,7 +227,7 @@ int dstx, dsty;
 	miHandleExposures(pSrcDrawable, pDstDrawable, pGC,
 			  origSource.x, origSource.y,
 			  origSource.width, origSource.height,
-			  origDest.x, origDest.y);
+			  origDest.x, origDest.y, 0);
 
     (*pGC->pScreen->RegionDestroy)(prgnDst);
     if (realSrcClip)

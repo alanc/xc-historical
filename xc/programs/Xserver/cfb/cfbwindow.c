@@ -47,16 +47,6 @@ WindowPtr pWin;
     pPrivWin->fastBackground = 0;
     pPrivWin->fastBorder = 0;
 
-    /* backing store stuff 
-       is this ever called with backing store turned on ???
-    */
-    if ((pWin->backingStore == WhenMapped) ||
-	(pWin->backingStore == Always))
-    {
-    }
-    else
-    {
-    }
     return TRUE;
 }
 
@@ -71,11 +61,17 @@ WindowPtr pWin;
     cfbDestroyPixmap(pPrivWin->pRotatedBorder);
     cfbDestroyPixmap(pPrivWin->pRotatedBackground);
     Xfree(pWin->devPrivate);
+    if (pWin->backingStore != NotUseful)
+    {
+	miFreeBackingStore(pWin);
+    }
+    return(TRUE);
 }
 
 Bool cfbMapWindow(pWindow)
 WindowPtr pWindow;
 {
+    return(TRUE);
 }
 
 /* (x, y) is the upper left corner of the window on the screen 
@@ -197,29 +193,21 @@ cfbChangeWindowAttributes(pWin, mask)
 	switch(index)
 	{
 	  case CWBackingStore:
-/*
-	    if ((pWin->backingStore == WhenMapped) ||
-	 	(pWin->backingStore == Always))
-	    {
-		if (!pWin->devBackingStore)
-		{
-		    pWin->devBackingStore = (pointer)miInitBackingStore(pWin);
-		    if (!pWin->backStorage)
-		       pWin->backStorage = 
-				   (BackingStorePtr)Xalloc(sizeof(BackingStoreRec));
-		    pWin->backStorage->SaveDoomedAreas = miSaveAreas;
-		    pWin->backStorage->RestoreAreas = miRestoreAreas;
-		    pWin->backStorage->TranslateBackingStore = 
-				miTranslateBackingStore;
-		}
-	    }
-	    else
-	    {
-		if (pWin->devBackingStore)
-		    miRemoveBackingStore(pWin);
-	    }
-*/
-	    break;
+	      if (pWin->backingStore != NotUseful)
+	      {
+		  miInitBackingStore(pWin, cfbSaveAreas, cfbRestoreAreas);
+	      }
+	      else
+	      {
+		  miFreeBackingStore(pWin);
+	      }
+	      /*
+	       * XXX: The changing of the backing-store status of a window
+	       * is serious enough to warrant a validation, since otherwise
+	       * the backing-store stuff won't work.
+	       */
+	      pWin->drawable.serialNumber = NEXT_SERIAL_NUMBER;
+	      break;
 
 	  case CWBackPixmap:
 	      if (pWin->backgroundTile == (PixmapPtr)None)

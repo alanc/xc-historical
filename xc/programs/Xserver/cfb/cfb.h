@@ -79,6 +79,9 @@ extern void cfbUnnaturalStippleFS();
 
 extern void cfbTEGlyphBlt();
 
+extern void cfbSaveAreas();
+extern void cfbRestoreAreas();
+
 /* included from mfb.h; we can't include mfb.h directly because of other 
  * conflicts */
 extern void mfbSetSpans();
