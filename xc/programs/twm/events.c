@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.169 91/01/05 13:19:50 dave Exp $
+ * $XConsortium: events.c,v 1.170 91/01/05 15:06:19 dave Exp $
  *
  * twm event handling
  *
@@ -38,7 +38,7 @@
 
 #if !defined(lint) && !defined(SABER)
 static char RCSinfo[]=
-"$XConsortium: events.c,v 1.169 91/01/05 13:19:50 dave Exp $";
+"$XConsortium: events.c,v 1.170 91/01/05 15:06:19 dave Exp $";
 #endif
 
 #include <stdio.h>
@@ -332,7 +332,7 @@ HandleColormapNotify()
     XColormapEvent *cevent = (XColormapEvent *) &Event;
     ColormapWindow *cwin, **cwins;
     TwmColormap *cmap;
-    int i, j, n, number_cwins;
+    int lost, won, n, number_cwins;
     extern TwmColormap *CreateTwmColormap();
 
     if (XFindContext(dpy, cevent->window, ColormapContext, (caddr_t *)&cwin) == XCNOENT)
@@ -388,38 +388,77 @@ HandleColormapNotify()
 	     */
 
 	    cwins = Scr->cmapInfo.cmaps->cwins;
-	    for (i = j = -1, n = 0;
-		 (i == -1 || j == -1) && n < number_cwins;
+	    for (lost = won = -1, n = 0;
+		 (lost == -1 || won == -1) && n < number_cwins;
 		 n++)
 	    {
-		if (i == -1 && cwins[n] == cwin)
+		if (lost == -1 && cwins[n] == cwin)
 		{
-		    i = n;
+		    lost = n;	/* This is the window which lost its colormap */
 		    continue;
 		}
 
-		if (j == -1 &&
+		if (won == -1 &&
 		    cwins[n]->colormap->install_req == cevent->serial)
 		{
-		    j = n;
-		    continue; /* for symetry and later added code */
+		    won = n;	/* This is the window whose colormap caused */
+		    continue;	/* the de-install of the previous colormap */
 		}
 	    }
 
-	    /* need if test in case client was fooling arround w/
-	     * XInstallColormap() or XUninstallColormap()
-	     */
-	    if (i != -1 && j != -1)
-	    {
-		/* lower diagonal index calculation */
-		if (i > j)
-		    n = i*(i-1)/2 + j;
-		else
-		    n = j*(j-1)/2 + i;
-		Scr->cmapInfo.cmaps->scoreboard[n] = 1;
-	    } else {
+	    /*
+	    ** Cases are:
+	    ** Both the request and the window were found:
+	    **		One of the installs made honoring the WM_COLORMAP
+	    **		property caused another of the colormaps to be
+	    **		de-installed, just mark the scoreboard.
+	    **
+	    ** Only the request was found:
+	    **		One of the installs made honoring the WM_COLORMAP
+	    **		property caused a window not in the WM_COLORMAP
+	    **		list to lose its map.  This happens when the map
+	    **		it is losing is one which is trying to be installed,
+	    **		but is getting getting de-installed by another map
+	    **		in this case, we'll get a scoreable event later,
+	    **		this one is meaningless.
+	    **
+	    ** Neither the request nor the window was found:
+	    **		Somebody called installcolormap, but it doesn't
+	    **		affect the WM_COLORMAP windows.  This case will
+	    **		probably never occur.
+	    **
+	    ** Only the window was found:
+	    **		One of the WM_COLORMAP windows lost its colormap
+	    **		but it wasn't one of the requests known.  This is
+	    **		probably because someone did an "InstallColormap".
+	    **		The colormap policy is "enforced" by re-installing
+	    **		the colormaps which are believed to be correct.
+	    */
+
+	    if (won != -1)
+		if (lost != -1)
+		{
+		    /* lower diagonal index calculation */
+		    if (lost > won)
+			n = lost*(lost-1)/2 + won;
+		    else
+			n = won*(won-1)/2 + lost;
+		    Scr->cmapInfo.cmaps->scoreboard[n] = 1;
+		} else
+		{
+		    /*
+		    ** One of the cwin installs caused one of the cwin
+		    ** colormaps to be de-installed, so I'm sure to get an
+		    ** UninstallNotify for the cwin I know about later.
+		    ** I haven't got it yet, or the test of CM_INSTALLED
+		    ** above would have failed.  Turning the CM_INSTALLED
+		    ** bit back on makes sure we get back here to score
+		    ** the collision.
+		    */
+		    cmap->state |= CM_INSTALLED;
+		}
+	    else if (lost != -1)
 		InstallWindowColormaps(ColormapNotify, (TwmWindow *) NULL);
-	    }
 	}
     }
 
