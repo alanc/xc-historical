@@ -1,6 +1,6 @@
 #ifndef lint
 static char Xrcsid[] =
-    "$XConsortium: Popup.c,v 1.22 89/06/16 19:35:06 jim Exp $";
+    "$XConsortium: Popup.c,v 1.23 89/09/12 16:49:11 swick Exp $";
 /* $oHeader: Popup.c,v 1.3 88/09/01 11:45:34 asente Exp $ */
 #endif /* lint */
 
@@ -88,6 +88,13 @@ void XtPopup (widget, grab_kind)
     _XtPopup(widget, grab_kind, FALSE);
 } /* XtPopup */
 
+void XtPopupSpringLoaded (widget)
+    Widget widget;
+{
+    _XtPopup(widget, XtGrabExclusive, True);
+}
+
+
 /* ARGSUSED */
 void XtCallbackNone(widget, closure, call_data)
     Widget  widget;
@@ -136,6 +143,8 @@ void XtPopdown(widget)
 
     if (shell_widget->shell.popped_up) {
 	XtUnmapWidget(widget);
+	XWithdrawWindow(XtDisplay(widget), XtWindow(widget),
+			XScreenNumberOfScreen(XtScreen(widget)));
 	if (shell_widget->shell.grab_kind != XtGrabNone) {
 	    XtRemoveGrab(widget);
 	}
