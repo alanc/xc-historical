@@ -1,4 +1,4 @@
-.\" $XConsortium$
+.\" $XConsortium: CH06,v 1.5 91/07/31 20:24:06 swick Exp $
 .\"
 .\" Copyright 1985, 1986, 1987, 1988, 1991
 .\" Massachusetts Institute of Technology, Cambridge, Massachusetts,
@@ -49,6 +49,7 @@ stacking order of the widget's children.
 The only exception is fixed boxes,
 which create their children themselves and can ensure that
 their children will never make a geometry request.
+
 .NH 2
 Initiating Geometry Changes
 .LP
@@ -120,6 +121,7 @@ a widget does not know whether its resize procedure has been called.
 Widgets should have resize procedures that can be called more than once
 without ill effects.
 .NE
+
 .NH 2
 General Geometry Manager Requests
 .XS
@@ -388,6 +390,7 @@ and
 see Section 3.7 in \fI\*(xL\fP.
 .PN XtSMDontChange
 indicates that the widget wants its current stacking order preserved.
+
 .NH 2
 Resize Requests
 .XS
@@ -444,6 +447,7 @@ If the widget is not interested in
 .PN XtGeometryAlmost
 replies, 
 it can pass NULL for \fIwidth_return\fP and \fIheight_return\fP.
+
 .NH 2
 Potential Geometry Changes
 .XS
@@ -496,6 +500,7 @@ Note that a compromise geometry returned with
 .PN XtGeometryAlmost
 is guaranteed only for the next call to the same widget; 
 therefore, a cache of size 1 is sufficient.
+
 .NH 2
 Child Geometry Management: the geometry_manager Procedure
 .XS
@@ -661,6 +666,7 @@ and \fIgeometry_return\fP arguments point to independent storage.
 The caller is permitted to use the same field for both,
 and the geometry manager must allocate its own temporary storage,
 if necessary.
+
 .NH 2
 Widget Placement and Sizing
 .XS
@@ -823,6 +829,7 @@ There are very few times to use
 .PN XtResizeWindow ;
 instead, the parent should use
 .PN XtResizeWidget .
+
 .NH 2
 Preferred Geometry
 .XS
@@ -986,10 +993,12 @@ Parents are expected to call
 .PN XtQueryGeometry
 in their layout routine and wherever else the information is significant
 after change_managed has been called.
-The changed_managed procedure may assume that the child's current geometry
+The first time it is invoked,
+the changed_managed procedure may assume that the child's current geometry
 is its preferred geometry.
 Thus, the child is still responsible for storing values
 into its own geometry during its initialize procedure.
+
 .NH 2
 Size Change Management: the resize Procedure
 .XS
