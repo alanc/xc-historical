@@ -22,11 +22,13 @@
  */
 
 #include <X11/Fresco/Impls/action.h>
+#include <X11/Fresco/Impls/charstr.h>
 #include <X11/Fresco/Impls/glyphs.h>
 #include <X11/Fresco/Impls/viewers.h>
 #include <X11/Fresco/OS/threads.h>
 #include <X11/Fresco/Ox/object.h>
 #include <X11/Fresco/figures.h>
+#include <X11/Fresco/fresco.h>
 #include <X11/Fresco/layouts.h>
 #include <X11/Fresco/widgets.h>
 #include <stdlib.h>
@@ -54,14 +56,14 @@ static Boolean delay(float seconds) {
 
 extern "C" {
     int select(int, fd_set*, fd_set*, fd_set*, struct timeval*);
-};
+}
 
 static Boolean delay(float seconds) {
     struct timeval tv;
     tv.tv_sec = time_t(seconds);
     tv.tv_usec = time_t(1000000.0 * (seconds - float(tv.tv_sec)) + 0.5);
     return select(0, nil, nil, nil, &tv) == 0;
-};
+}
 
 #endif
 
@@ -453,7 +455,7 @@ Boolean Dish::add_long(char* arg, RequestObjRef req) {
     Boolean b = true;
     if (arg != nil) {
 	char* ptr;
-	long_int i = strtol(arg, &ptr, 0);
+	Long i = strtol(arg, &ptr, 0);
 	if (*ptr == '\0') {
 	    req->put_long(i);
 	} else {
@@ -485,7 +487,7 @@ Boolean Dish::add_unsigned_long(char* arg, RequestObjRef req) {
     Boolean b = true;
     if (arg != nil) {
 	char* ptr;
-	u_long_int i = strtol(arg, &ptr, 0);
+	ULong i = strtol(arg, &ptr, 0);
 	if (*ptr == '\0') {
 	    req->put_unsigned_long(i);
 	} else {
@@ -560,7 +562,7 @@ Boolean Dish::add_interface(
     Boolean b = true;
     if (arg != nil) {
 	if (strcmp(type->name(), "CharString") == 0) {
-	    req->put_object(Fresco::string_ref(arg));
+	    req->put_object(Fresco::string_copy(arg));
 	} else {
 	    BaseObjectRef o = nil;
 	    if (string_to_object(arg, o)) {
@@ -840,10 +842,15 @@ void Dish::get_concrete(
 void Dish::get_interface(
     TypeObjRef, RequestObjRef req, Tcl_Interp* interp
 ) {
-    char buffer[100];
-    Tcl_AppendResult(
-	interp, object_to_string(req->_c_get_object(), buffer), 0
-    );
+    BaseObjectRef object = req->_c_get_object();
+    CharString s = CharString::_narrow(object);
+    if (is_not_nil(s)) {
+	CharStringBuffer cs(s);
+	Tcl_AppendResult(interp, cs.string(), 0);
+    } else {
+	char buffer[100];
+	Tcl_AppendResult(interp, object_to_string(object, buffer), 0);
+    }
 }
 
 void Dish::get_array(
