@@ -1,4 +1,4 @@
-/* $XConsortium: pl_oc_util.c,v 1.14 92/05/07 23:29:02 mor Exp $ */
+/* $XConsortium: pl_oc_util.c,v 1.1 92/05/08 15:13:30 mor Exp $ */
 
 /************************************************************************
 Copyright 1992 by the Massachusetts Institute of Technology,
@@ -37,11 +37,12 @@ INPUT int		numWords;
 
 
     /*
-     * If the oc is larger than the max request size.  Return an error.
+     * If the oc is larger than the protocol max request size?
+     * If so, return an error.
      */
 
-    if (OCIsTooLarge (display, numWords))
-        return (Failure);
+    if (numWords + LENOF (pexOCRequestHeader) > MAX_REQUEST_SIZE)
+        return (0);
 
 
     /*
@@ -88,7 +89,7 @@ INPUT int		numWords;
 	currentReq->numCommands += numOCs;
     }
     
-    return (Success);
+    return (1);
 }
 
 
@@ -253,4 +254,48 @@ INPUT char		*encoded_ocs;
     PEXCopyBytesToOC (display, NUMBYTES (length), encoded_ocs);
 
     PEXFinishOC (display);
+}
+
+
+
+void _PEXGenOCBadLengthError (display, resource_id, req_type)
+
+INPUT Display		*display;
+INPUT XID		resource_id;
+INPUT PEXOCRequestType	req_type;
+
+{
+    PEXDisplayInfo 	*pexDisplayInfo;
+    pexOCRequestHeader 	*req;
+
+
+    /*
+     * Generate an OC request with a zero request length.
+     */
+
+    LockDisplay (display);
+
+    PEXGetDisplayInfo (display, pexDisplayInfo);
+    PEXGetOCReq (display, 0);
+    req = (pexOCRequestHeader *) (display->bufptr);
+
+    req->extOpcode = pexDisplayInfo->extOpcode;
+    req->pexOpcode =
+	(req_type == PEXOCStore || req_type == PEXOCStoreSingle) ?
+	PEXRCStoreElements : PEXRCRenderOutputCommands;
+    req->reqLength = 0;
+    req->fpFormat = pexDisplayInfo->fpFormat;
+    req->target = resource_id;
+    req->numCommands = 1;
+
+
+    /*
+     * Make sure that the next oc starts a new request.
+     */
+
+    pexDisplayInfo->lastReqNum = -1;
+    pexDisplayInfo->lastResID = resource_id;
+    pexDisplayInfo->lastReqType = req_type;
+	
+    UnlockDisplay (display);
 }
