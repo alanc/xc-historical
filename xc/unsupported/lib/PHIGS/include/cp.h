@@ -1,4 +1,4 @@
-/* $XConsortium: cp.h,v 5.4 91/04/02 09:43:44 rws Exp $ */
+/* $XConsortium: cp.h,v 5.5 91/04/17 10:10:49 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -150,29 +150,6 @@ typedef struct {
     }		ret;			/* returned data buffers */
 } Cp_shm_buf;
 
-#ifndef X_NOT_POSIX
-#ifdef _POSIX_SOURCE
-#include <limits.h>
-#else
-#define _POSIX_SOURCE
-#include <limits.h>
-#undef _POSIX_SOURCE
-#endif
-#endif
-#ifndef OPEN_MAX
-#include <sys/param.h>
-#ifdef NOFILE
-#define OPEN_MAX NOFILE
-#else
-#define OPEN_MAX NOFILES_MAX
-#endif
-#ifdef FLOAT
-#undef FLOAT	/* hp9000s300 defines FLOAT in <sys/param.h> */
-#endif
-#endif
-
-#define MSKCNT ((OPEN_MAX + 31) / 32)
-
 typedef struct _Cp_struct {
     Cp_func		funcs[NUM_CP_FUNCS];
     Psl_handle		psl;	/* NULL in monitor */
@@ -196,7 +173,8 @@ typedef struct _Cp_struct {
     Phg_scratch		scratch;
     Cp_shm_buf		*shm_buf;
     int			max_fd;
-    unsigned long	fd_masks[MSKCNT];
+    /* Use a generous size for fd_masks, to avoid including <sys/param.h> */
+    unsigned long	fd_masks[64];
     Phg_desc_tbl	pdt;
     Cp_display_connection	*displays;
 } Cp_struct;
