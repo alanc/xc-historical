@@ -1,4 +1,4 @@
-/* $XConsortium: a2x.c,v 1.106 92/12/23 09:33:53 rws Exp $ */
+/* $XConsortium: a2x.c,v 1.107 93/01/28 19:23:57 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -78,6 +78,7 @@ Syntax of magic values in the input stream:
 ^T^S			set Shift key for next device event
 ^T^T			^T
 ^T^U			re-read undo file
+^T^V<string>^T		echo <string> to stdout
 ^T^W<screen> <x> <y>^T	warp to position (<x>,<y>) on screen <screen>
 			(screen can be -1 for current)
 ^T^Y<options>[ <delay>]^T
@@ -487,7 +488,7 @@ void
 catch(sig)
 int	sig;
 {
-    fprintf(stderr, "a2x: interrupt received, exiting\n");
+    fprintf(stderr, "%: interrupt received, exiting\n", progname);
     quit(1);
 }
 
@@ -1882,7 +1883,7 @@ trim_history()
 	if (macro_start >= 0) {
 	    macro_start -= sizeof(history)/2;
 	    if (macro_start < 0)
-		fprintf(stderr, "macro definition overflowed\n");
+		fprintf(stderr, "%s: macro definition overflowed\n", progname);
 	}
     }
     bzero(history + history_end, sizeof(history) - history_end);
@@ -2143,7 +2144,8 @@ get_undofile()
 	i = 0;
 	if (!(up->seq = parse_string(buf, &i, &up->seq_len, ':')) ||
 	    !(up->undo = parse_string(buf, &i, &up->undo_len, '\n'))) {
-	    fprintf(stderr, "bad sequence, line %d\n", line);
+	    fprintf(stderr, "%s: bad sequence in file %s, line %d\n",
+		    progname, undofile, line);
 	    free_undo(up);
 	    continue;
 	}
@@ -2151,7 +2153,7 @@ get_undofile()
 	up->bscount = bscount(up->seq, up->seq_len);
 	if (!up->bscount) {
 	    free_undo(up);
-	    fprintf(stderr, "bad sequence, no bs count, line %d\n", line);
+	    fprintf(stderr, "%s: bad sequence, no backspaces are generated, in file %s, line %d\n", progname, undofile, line);
 	    continue;
 	}
 	i = ((unsigned char *)up->seq)[up->seq_len - 1];
@@ -2451,7 +2453,7 @@ process(buf, n, len)
 	    }
 	    if (buf[j] != control_char) {
 		if (j != i) {
-		    if (iscntrl(buf[j])) {
+		    if (iscntrl(buf[j]) && buf[i] != '\026') {
 			if (buf[j] != '\010') { /* abort */
 			    i = j;
 			    break;
@@ -2519,6 +2521,9 @@ process(buf, n, len)
 		break;
 	    case '\022': /* control r */
 		do_display(buf + i + 1);
+		break;
+	    case '\026': /* control v */
+		write(1, buf + i + 1, j - i);
 		break;
 	    case '\027': /* control w */
 		do_warp(buf + i + 1);
