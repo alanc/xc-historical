@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: window.c,v 1.236 89/03/20 13:50:13 rws Exp $ */
+/* $XConsortium: window.c,v 1.233 89/03/20 14:09:56 rws Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -142,8 +142,9 @@ static Bool TileScreenSaver();
  *-----------------------------------------------------------------------
  */
 void
-CheckSubSaveUnder(pParent, pRegion)
+CheckSubSaveUnder(pParent, pFirst, pRegion)
     WindowPtr	  	pParent;    	/* Parent to check */
+    WindowPtr		pFirst;		/* first window which might change */
     RegionPtr	  	pRegion;    	/* Initial area obscured by saveUnder */
 {
     register WindowPtr	pChild;	    	/* Current child */
@@ -151,38 +152,44 @@ CheckSubSaveUnder(pParent, pRegion)
     RegionPtr	  	pSubRegion; 	/* Area of children obscured */
 
     pScreen = pParent->drawable.pScreen;
-    if (pParent->firstChild)
+    if (pChild = pParent->firstChild)
     {
-	pSubRegion = (* pScreen->RegionCreate) (NullBox, 1);
+	/*
+	 * build region above first changed window
+	 */
+
+	for (; pChild != pFirst; pChild = pChild->nextSib)
+	    if (pChild->viewable && pChild->saveUnder)
+		(* pScreen->Union) (pRegion, pRegion, pChild->borderSize);
 	
-	for (pChild = pParent->firstChild;
-	     pChild != NullWindow;
-	     pChild = pChild->nextSib)
+	pSubRegion = NullRegion;
+
+	/*
+	 * check region below and including first changed window
+	 */
+
+	for (; pChild != NullWindow; pChild = pChild->nextSib)
 	{
-	    /*
-	     * Copy the region (so it may be modified in the recursion) and
-	     * check this child. Note we don't bother finding the intersection
-	     * since it is probably faster for RectIn to skip over the extra
-	     * rectangles than for us to find the intersection
-	     */
 	    if (pChild->viewable)
 	    {
-		(* pScreen->RegionCopy) (pSubRegion, pRegion);
-		CheckSubSaveUnder(pChild, pSubRegion);
+		if (!pSubRegion)
+		    pSubRegion = (* pScreen->RegionCreate) (NullBox, 1);
 
 		/*
-		 * If the child is a save-under window, we want it to obscure
-		 * the parent as well as its siblings, so we add its extents
-		 * to the obscured region.
+		 * don't save under nephew/niece windows;
+		 * use a separate region
 		 */
+
+		(* pScreen->RegionCopy) (pSubRegion, pRegion);
+		CheckSubSaveUnder(pChild, pChild->firstChild, pSubRegion);
+
 		if (pChild->saveUnder)
-		{
 		    (* pScreen->Union) (pRegion, pRegion, pChild->borderSize);
-		}
 	    }
 	}
 
-	(* pScreen->RegionDestroy) (pSubRegion);
+	if (pSubRegion)
+	    (* pScreen->RegionDestroy) (pSubRegion);
     }
 
     switch ((*pScreen->RectIn) (pRegion,
@@ -197,7 +204,8 @@ CheckSubSaveUnder(pParent, pRegion)
 		 * so set the change bit in backingStore and we'll actually
 		 * do the change when DoChangeSaveUnder is called
 		 */
-		pParent->backingStore ^= (SAVE_UNDER_BIT|SAVE_UNDER_CHANGE_BIT);
+		pParent->backingStore &= ~SAVE_UNDER_BIT;
+		pParent->backingStore |= SAVE_UNDER_CHANGE_BIT;
 	    }
 	    break;
 	default:
@@ -226,38 +234,13 @@ CheckSubSaveUnder(pParent, pRegion)
  */
 void
 CheckSaveUnder (pWin)
-    register WindowPtr	pWin;	    	/* Window to check */
+    WindowPtr	pWin;	    	/* Window to check */
 {
-    register RegionPtr	pRegion;    	/* Extent of siblings with saveUnder */
-    register WindowPtr	pSib;
-    ScreenPtr	  	pScreen;
+    RegionPtr	pRegion;    	/* Extent of siblings with saveUnder */
 
-    
-    pScreen = pWin->drawable.pScreen;
-
-    pRegion = (* pScreen->RegionCreate) (NullBox, 1);
-
-    /*
-     * First form a region of all the siblings above this one that have
-     * saveUnder set TRUE.
-     * XXX: Should this be done all the way up the tree?
-     */
-    for (pSib = pWin->parent->firstChild; pSib != pWin; pSib = pSib->nextSib)
-    {
-	if (pSib->saveUnder && pSib->viewable)
-	{
-	    (* pScreen->Union) (pRegion, pRegion, pSib->borderSize);
-	}
-    }
-
-    /*
-     * Now find the piece of that area that overlaps this window and check
-     * to make sure the window isn't obscured by children as well. Note that
-     * this also takes care of any newly-obscured or -exposed inferiors
-     */
-    (* pScreen->Intersect) (pRegion, pRegion, pWin->borderSize);
-    CheckSubSaveUnder(pWin, pRegion);
-    (* pScreen->RegionDestroy) (pRegion);
+    pRegion = (* pWin->drawable.pScreen->RegionCreate) (NullBox, 1);
+    CheckSubSaveUnder (pWin->parent, pWin->nextSib, pRegion);
+    (*pWin->drawable.pScreen->RegionDestroy) (pRegion);
 }
 
 
@@ -281,59 +264,14 @@ ChangeSaveUnder(pWin, first)
     WindowPtr  	  	first; 	    	/* First window to check.
 					 * Used when pWin was restacked */
 {
-    register WindowPtr	pSib;	    	/* Sibling being examined */
-    register RegionPtr	saveUnder;  	/* Area obscured by saveUnder windows */
+    register RegionPtr	pRegion;  	/* Area obscured by saveUnder windows */
     ScreenPtr	  	pScreen;
-    RegionPtr     	subSaveUnder;
     
-
     pScreen = pWin->drawable.pScreen;
 
-    if (first == NullWindow)
-    {
-	/*
-	 * If on the bottom of the heap, don't need to do anything
-	 */
-	return;
-    }
-
-    saveUnder = (* pScreen->RegionCreate) (NullBox, 1);
-
-    /*
-     * First form the region of save-under windows above the first window
-     * to check.
-     */
-    for (pSib = pWin->parent->firstChild; pSib != first; pSib = pSib->nextSib)
-    {
-	if (pSib->saveUnder && pSib->viewable)
-	{
-	    (* pScreen->Union) (saveUnder, saveUnder, pSib->borderSize);
-	}
-    }
-
-    subSaveUnder = (* pScreen->RegionCreate) (NullBox, 1);
-
-    /*
-     * Now check the trees of all siblings of this window, building up the
-     * saveUnder area as we go along.
-     */
-    while (pSib != NullWindow)
-    {
-	if (pSib->viewable)
-	{
-	    (* pScreen->Intersect) (subSaveUnder, saveUnder, pSib->borderSize);
-	    CheckSubSaveUnder(pSib, subSaveUnder);
-	    
-	    if (pSib->saveUnder)
-	    {
-		(* pScreen->Union) (saveUnder, saveUnder, pSib->borderSize);
-	    }
-	}
-	pSib = pSib->nextSib;
-    }
-
-    (* pScreen->RegionDestroy) (subSaveUnder);
-    (* pScreen->RegionDestroy) (saveUnder);
+    pRegion = (* pScreen->RegionCreate) (NullBox, 1);
+    CheckSubSaveUnder (pWin->parent, first, pRegion);
+    (* pScreen->RegionDestroy) (pRegion);
 }
 	    
 /*-
@@ -2116,7 +2054,7 @@ SlideAndSizeWindow(pWin, x, y, w, h, pSib)
 		if (pChild->winGravity != g)
 		    continue;
 		(*pScreen->Intersect) (pRegion, pChild->borderClip, gravitate[g]);
-		TraverseTree (pChild, RecomputeExposures, pRegion);
+		TraverseTree (pChild, RecomputeExposures, (pointer)pRegion);
 	    }
 
 	    /*
@@ -3611,8 +3549,8 @@ SaveScreens(on, mode)
 			(*pWin->ClearToBackground)(pWin, 0, 0, 0, 0, FALSE);
 #endif
 	            MoveWindow(pWin,
-			       -(random() % RANDOM_WIDTH),
-			       -(random() % RANDOM_WIDTH), 
+			       (short)(-(random() % RANDOM_WIDTH)),
+			       (short)(-(random() % RANDOM_WIDTH)),
 		               pWin->nextSib);
 #ifndef NOLOGOHACK
 		    if (logoScreenSaver)
