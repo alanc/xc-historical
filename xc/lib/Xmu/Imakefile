@@ -149,6 +149,12 @@ SharedLibraryTarget(Xmu,$(SOXMUREV),$(OBJS),shared,..)
 #else
 SharedLibraryTarget(Xmu,$(SOXMUREV),$(OBJS),.,.)
 #endif
+#ifdef RsArchitecture
+libXmu.a: $(EXTENSIONSRC)/lib/libXext.a
+
+$(EXTENSIONSRC)/lib/libXext.a:
+	cd $(EXTENSIONSRC)/lib; make libXext.a
+#endif
 InstallSharedLibrary(Xmu,$(SOXMUREV),$(USRLIBDIR))
 #endif
 #if DoNormalLib
