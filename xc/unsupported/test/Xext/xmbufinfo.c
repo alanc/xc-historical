@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xmbufinfo.c,v 1.1 89/10/08 15:09:00 jim Exp $
+ * $XConsortium: xmbufinfo.c,v 1.2 89/10/09 11:52:17 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -22,15 +22,6 @@
  */
 
 #include <stdio.h>
-#ifndef MULTIBUFFER
-main (argc, argv)
-    int argc;
-    char **argv;
-{
-    fprintf (stderr, "%s:  multibuffer extension not compiled.\n", argv[0]);
-    exit (1);
-}
-#else
 #include <X11/Xlib.h>
 #include <X11/Xos.h>
 #include <X11/extensions/multibuf.h>
@@ -119,4 +110,3 @@ main (argc, argv)
     XCloseDisplay (dpy);
     exit (0);
 }
-#endif /* MULTIBUFFER */
