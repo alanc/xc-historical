@@ -48,9 +48,6 @@ Xtransport *Xtransports[] = {
  * These are a few utility function used by the public interface functions.
  */
 
-#ifndef X11_t
-static
-#endif
 void
 TRANS(FreeConnInfo) (ciptr)
 
@@ -485,6 +482,20 @@ char		*port;
     return ciptr->transptr->CreateListener (ciptr, port);
 }
 
+
+int
+TRANS(ResetListener) (ciptr)
+
+XtransConnInfo	ciptr;
+
+{
+    if (ciptr->transptr->ResetListener)
+	return ciptr->transptr->ResetListener (ciptr);
+    else
+	return TRANS_RESET_NOOP;
+}
+
+
 XtransConnInfo
 TRANS(Accept) (ciptr)
 
@@ -630,6 +641,17 @@ TRANS(AddrToName) (XtransConnInfo ciptr /*???what else???*/)
 {
 }
 #endif
+
+
+int
+TRANS(IsLocal) (ciptr)
+
+XtransConnInfo	ciptr;
+
+{
+    return (ciptr->family == AF_UNIX);
+}
+
 
 int
 TRANS(GetMyAddr) (ciptr, familyp, addrlenp, addrp)
