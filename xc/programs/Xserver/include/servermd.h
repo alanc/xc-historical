@@ -23,7 +23,7 @@ SOFTWARE.
 ******************************************************************/
 #ifndef SERVERMD_H
 #define SERVERMD_H 1
-/* $XConsortium: servermd.h,v 1.63 92/08/11 09:53:25 rws Exp $ */
+/* $XConsortium: servermd.h,v 1.64 92/08/14 14:45:35 rws Exp $ */
 
 /*
  * Machine dependent values:
@@ -269,6 +269,13 @@ SOFTWARE.
 #define GLYPHPADBYTES		4
 #define GETLEFTBITS_ALIGNMENT	1
 #define AVOID_MEMORY_READ
+#ifdef XSVGA
+#define AVOID_GLYPHBLT
+#define FAST_CONSTANT_OFFSET_MODE
+#define FAST_MEMCPY
+#define NO_ONE_RECT
+#define SINGLEDEPTH
+#endif
 
 #endif /* SYSV386 */
 
