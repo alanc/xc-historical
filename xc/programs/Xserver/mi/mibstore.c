@@ -1,4 +1,4 @@
-/* $XConsortium: mibstore.c,v 5.42 90/08/31 18:51:00 keith Exp $ */
+/* $XConsortium: mibstore.c,v 5.43 90/10/17 18:34:22 keith Exp $ */
 /***********************************************************
 Copyright 1987 by the Regents of the University of California
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -457,7 +457,7 @@ miBSGetImage (pDrawable, sx, sy, w, h, format, planemask, pdstLine)
 			    pWindowPriv->backgroundState == BackgroundPixel)
 			miBSFillVirtualBits ((DrawablePtr) pPixmap, pGC, &Inside,
 					    xoff, yoff,
-					    pWindowPriv->backgroundState,
+					    (int) pWindowPriv->backgroundState,
 					    pWindowPriv->background, ~0L);
 			break;
 		    }
@@ -2541,8 +2541,10 @@ miBSFree(pWin)
  *-----------------------------------------------------------------------
  */
 static void
-miResizeBackingStore(pWin)
-    WindowPtr 	  pWin;
+miResizeBackingStore(pWin, dx, dy, saveBits)
+    WindowPtr	pWin;
+    int		dx, dy;	    /* bits are moving this far */
+    Bool	saveBits;   /* bits are useful */
 {
     miBSWindowPtr pBackingStore;
     PixmapPtr pBackingPixmap;
@@ -2551,6 +2553,7 @@ miResizeBackingStore(pWin)
     BoxPtr  extents;
     PixmapPtr pNewPixmap;
     int nx, ny;
+    int	nw, nh;
 
     pBackingStore = (miBSWindowPtr)(pWin->backStorage);
     pBackingPixmap = pBackingStore->pBackingPixmap;
@@ -2559,51 +2562,66 @@ miResizeBackingStore(pWin)
     pScreen = pWin->drawable.pScreen;
     extents = (*pScreen->RegionExtents)(&pBackingStore->SavedRegion);
     pNewPixmap = pBackingPixmap;
-    nx = pBackingStore->x;
-    ny = pBackingStore->y;
+
+    nw = extents->x2 - extents->x1;
+    nh = extents->y2 - extents->y1;
+
     /* the policy here could be more sophisticated */
-    if ((extents->x2 - extents->x1) != pBackingPixmap->drawable.width ||
-	(extents->y2 - extents->y1) != pBackingPixmap->drawable.height)
+    if (nw != pBackingPixmap->drawable.width ||
+	nh != pBackingPixmap->drawable.height)
     {
-	pNewPixmap = (PixmapPtr)(*pScreen->CreatePixmap)
-					(pScreen,
-					 extents->x2 - extents->x1,
-					 extents->y2 - extents->y1,
-					 pWin->drawable.depth);
-	nx = extents->x1;
-	ny = extents->y1;
+	if (!saveBits)
+	{
+	    pNewPixmap = NullPixmap;
+	    pBackingStore->status = StatusNoPixmap;
+	}
+	else
+	{
+	    pNewPixmap = (PixmapPtr)(*pScreen->CreatePixmap)
+					    (pScreen,
+					     nw, nh,
+					     pWin->drawable.depth);
+	    if (!pNewPixmap)
+	    {
+#ifdef BSEAGER
+		pBackingStore->status = StatusNoPixmap;
+#else
+		pBackingStore->status = StatusBadAlloc;
+#endif
+	    }
+	}
     }
     if (!pNewPixmap)
     {
-#ifdef BSEAGER
-	pBackingStore->status = StatusNoPixmap;
-#else
-	pBackingStore->status = StatusBadAlloc;
-#endif
 	pBackingStore->x = 0;
 	pBackingStore->y = 0;
     }
-    else if (pNewPixmap != pBackingPixmap ||
-	     pBackingStore->x != nx || pBackingStore->y != ny)
+    else
     {
-	pGC = GetScratchGC(pNewPixmap->drawable.depth, pScreen);
-	if (pGC)
-	{
-	    ValidateGC((DrawablePtr)pNewPixmap, pGC);
-	    /* if we implement a policy where the pixmap can be larger than
-	     * the region extents, we might want to optimize this copyarea
-	     * by only copying the old extents, rather than the entire pixmap
-	     */
-	    (*pGC->ops->CopyArea)(pBackingPixmap, pNewPixmap, pGC,
-				  0, 0,
-				  pBackingPixmap->drawable.width,
-				  pBackingPixmap->drawable.height,
-				  pBackingStore->x - extents->x1,
-				  pBackingStore->y - extents->y1);
-	    FreeScratchGC(pGC);
-	}
-	pBackingStore->x = nx;
-	pBackingStore->y = ny;
+    	nx = pBackingStore->x - extents->x1 + dx;
+    	ny = pBackingStore->y - extents->y1 + dy;
+    	pBackingStore->x = extents->x1;
+    	pBackingStore->y = extents->y1;
+    	
+    	if (saveBits && (pNewPixmap != pBackingPixmap || nx != 0 || ny != 0))
+    	{
+    	    pGC = GetScratchGC(pNewPixmap->drawable.depth, pScreen);
+    	    if (pGC)
+    	    {
+	    	ValidateGC((DrawablePtr)pNewPixmap, pGC);
+	    	/* if we implement a policy where the pixmap can be larger than
+		 * the region extents, we might want to optimize this copyarea
+		 * by only copying the old extents, rather than the entire
+		 * pixmap
+		 */
+	    	(*pGC->ops->CopyArea)(pBackingPixmap, pNewPixmap, pGC,
+				      0, 0,
+				      pBackingPixmap->drawable.width,
+				      pBackingPixmap->drawable.height,
+				      nx, ny);
+	    	FreeScratchGC(pGC);
+    	    }
+    	}
     }
     /* SavedRegion is used in the backingGC clip; force an update */
     pWin->drawable.serialNumber = NEXT_SERIAL_NUMBER;
@@ -2688,7 +2706,7 @@ miBSSaveDoomedAreas(pWin, pObscured, dx, dy)
 	    if (!pBackingStore->pBackingPixmap)
 		miCreateBSPixmap (pWin, &oldExtents);
 	    else
-		miResizeBackingStore(pWin);
+		miResizeBackingStore(pWin, 0, 0, TRUE);
 
 	    if (pBackingStore->pBackingPixmap) {
 		if (pBackingStore->x | pBackingStore->y)
@@ -2791,7 +2809,7 @@ miBSRestoreAreas(pWin, prgnExposed)
 		(*pScreen->TranslateRegion) (prgnSaved,
 					     -pWin->drawable.x,
 					     -pWin->drawable.y);
-		miResizeBackingStore(pWin);
+		miResizeBackingStore(pWin, 0, 0, TRUE);
 	    }
 	    else
 		miDestroyBSPixmap (pWin);
@@ -2909,7 +2927,7 @@ miBSRestoreAreas(pWin, prgnExposed)
  *	    that the bits should move within the window.  oldClip
  *	    will be set to the old visible portion of the window.
  *	    TranslateBackingStore, then, should adjust the backing
- *	    store to accomadate the portion of the existing backing
+ *	    store to accommodate the portion of the existing backing
  *	    store bits which coorespond to backing store bits which
  *	    will still be occluded in the new configuration.  oldx,oldy
  *	    are set to the old position of the window on the screen.
@@ -2962,18 +2980,14 @@ miBSTranslateBackingStore(pWin, windx, windy, oldClip, oldx, oldy)
     extents.y2 = pWin->drawable.y + (int) pWin->drawable.height;
     (* pScreen->Inverse)(newSaved, &pWin->clipList, &extents);
 
+    (* pScreen->TranslateRegion) (newSaved,
+				  -pWin->drawable.x, -pWin->drawable.y);
 #ifdef SHAPE
     if (wBoundingShape (pWin) || wClipShape (pWin)) {
-	(* pScreen->TranslateRegion) (newSaved,
-				    -pWin->drawable.x,
-				    -pWin->drawable.y);
 	if (wBoundingShape (pWin))
 	    (* pScreen->Intersect) (newSaved, newSaved, wBoundingShape (pWin));
 	if (wClipShape (pWin))
 	    (* pScreen->Intersect) (newSaved, newSaved, wClipShape (pWin));
-	(* pScreen->TranslateRegion) (newSaved,
-				    pWin->drawable.x,
-				    pWin->drawable.y);
     }
 #endif
     
@@ -3006,48 +3020,65 @@ miBSTranslateBackingStore(pWin, windx, windy, oldClip, oldx, oldy)
 	 * bits on the screen which can be put into the
 	 * new backing store
  	 */
-	(* pScreen->TranslateRegion)(newSaved, -scrdx, -scrdy);
+	(* pScreen->TranslateRegion) (oldClip, windx - oldx, windy - oldy);
 	doomed = (* pScreen->RegionCreate) (NullBox, 1);
 	(* pScreen->Intersect) (doomed, oldClip, newSaved);
+	(* pScreen->TranslateRegion) (oldClip, oldx - windx, oldy - windy);
+
 	/*
-	 * Translate newSaved to window relative:
-	 *
-	 * Old offset was:
-	 *
-	 *	pWin->drawable.x
-	 * Then:
-	 *  pWin->drawable.x - scrdx
-	 *	= pWin->drawable.x - (windx + pWin->drawable.x - oldx)
-	 *	= oldx - windx
-	 * So, to get back to a zero offset (window relative), 
-	 * subtract oldx and add windx (similarly for y)
+	 * Translate the old saved region to the position in the
+	 * window where it will appear to be
 	 */
-	(* pScreen->TranslateRegion) (newSaved, windx - oldx, windy - oldy);
+	(* pScreen->TranslateRegion) (pSavedRegion, windx, windy);
+
 	/*
- 	 * subtract out what we already have saved to compute
-	 * the region to expose.  Note the misuse of variables here:
-	 * pSavedRegion ends up holding the exposures; pSavedRegion
-	 * and newSaved are then swapped by flipping the region
-	 * structure contents (very naughty).
- 	 */
-	(* pScreen->Subtract) (pSavedRegion, newSaved, pSavedRegion);
-	/* now exchange old and new SaveRegions */
+	 * Add the old saved region to the new saved region, so
+	 * that calls to RestoreAreas will be able to fetch those
+	 * bits back
+	 */
+	(* pScreen->Union) (newSaved, newSaved, pSavedRegion);
+
+	/*
+	 * Swap the new saved region into the window
+	 */
 	{
-	    RegionRec tmpRgn;
-    
-	    tmpRgn = *pSavedRegion; /* don't look */
+	    RegionRec	tmp;
+
+	    tmp = *pSavedRegion;
 	    *pSavedRegion = *newSaved;
-	    *newSaved = tmpRgn;
+	    *newSaved = tmp;
 	}
-	/* now save any visible areas we need to keep */
+	miResizeBackingStore (pWin, windx, windy, TRUE);
+
+	/*
+	 * Compute the newly enabled region
+	 * of backing store.  This region will be
+	 * set to background in the backing pixmap and
+	 * sent as exposure events to the client.
+	 */
+	(* pScreen->Subtract) (newSaved, pSavedRegion, newSaved);
+
+	/*
+	 * Fetch bits which will be obscured from
+	 * the screen
+	 */
 	if ((* pScreen->RegionNotEmpty) (doomed))
 	{
-	    /* need new coordinates for SaveDoomedAreas, sigh */
-	    (* pScreen->TranslateRegion)(doomed, dx, dy);
-	    (* pScreen->SaveDoomedAreas)(pWin, doomed, dx, dy);
+	    /*
+	     * Don't clear regions which have bits on the
+	     * screen
+	     */
+	    (* pScreen->Subtract) (newSaved, newSaved, doomed);
+
+	    /*
+	     * Make the region to SaveDoomedAreas absolute, instead
+	     * of window relative.
+	     */
+	    (* pScreen->TranslateRegion) (doomed,
+					  pWin->drawable.x, pWin->drawable.y);
+	    (* pScreen->SaveDoomedAreas) (pWin, doomed, scrdx, scrdy);
 	}
-	else
-	    miResizeBackingStore(pWin);
+	
 	(*pScreen->RegionDestroy)(doomed);
 
     	/*
@@ -3058,6 +3089,13 @@ miBSTranslateBackingStore(pWin, windx, windy, oldClip, oldx, oldy)
 	    BoxPtr	pBox;
 	    int		i;
 
+	    /*
+	     * Used to swap newSaved with pSaved and call Clear on
+	     * the extents of newSaved.  This really doesn't work
+	     * because the background of the window may have changed,
+	     * and portions may need to be painted in the old bg.
+	     * Yes this could be optimized by adding an interface.
+	     */
 	    i = REGION_NUM_RECTS(newSaved);
 	    pBox = REGION_RECTS(newSaved);
 	    while (i--)
@@ -3088,9 +3126,10 @@ miBSTranslateBackingStore(pWin, windx, windy, oldClip, oldx, oldy)
 	 * expose the whole mess
 	 */
 	(* pScreen->RegionCopy) (pSavedRegion, newSaved);
-	(* pScreen->TranslateRegion) (pSavedRegion,
-				      -pWin->drawable.x, -pWin->drawable.y);
+	(* pScreen->TranslateRegion) (newSaved,
+				      pWin->drawable.x, pWin->drawable.y);
 
+	miResizeBackingStore (pWin, 0, 0, FALSE);
 	(void) miBSClearBackingStore (pWin, 0, 0, 0, 0, FALSE);
     }
 
@@ -3116,7 +3155,7 @@ miBSDrawGuarantee (pWin, pGC, guarantee)
     {
 	pPriv = (miBSGCPtr)pGC->devPrivates[miBSGCIndex].ptr;
 	if (!pPriv)
-	    miBSCreateGCPrivate (pGC);
+	    (void) miBSCreateGCPrivate (pGC);
 	pPriv = (miBSGCPtr)pGC->devPrivates[miBSGCIndex].ptr;
 	if (pPriv)
 	{
@@ -3687,7 +3726,7 @@ miBSExposeCopy (pSrc, pDst, pGC, prgnExposed, srcx, srcy, dstx, dsty, plane)
 	    if (gcMask)
 	    	CopyGC (pGC, pScratchGC, gcMask);
 	    miBSFillVirtualBits (pDst, pScratchGC, tempRgn, dx, dy,
-				 pBackingStore->backgroundState,
+				 (int) pBackingStore->backgroundState,
 				 pBackingStore->background,
 				 ~0L);
 	    FreeScratchGC (pScratchGC);
