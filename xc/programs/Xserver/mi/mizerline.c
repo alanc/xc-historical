@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mizerline.c,v 1.6 88/09/06 14:50:26 jim Exp $ */
+/* $XConsortium: mizerline.c,v 1.7 88/10/02 15:04:57 rws Exp $ */
 #include "X.h"
 
 #include "misc.h"
@@ -215,8 +215,8 @@ DDXPointRec *pptInit;	/* points in the polyline */
 
 	(*pgc->FillSpans)(dst, pgc, pwidth-pwidthInit,
 			  pspanInit, pwidthInit, FALSE);
-	DEALLOCATE_LOCAL(pspanInit);
 	DEALLOCATE_LOCAL(pwidthInit);
+	DEALLOCATE_LOCAL(pspanInit);
     } 
 
     if ((pgc->capStyle != CapNotLast) &&

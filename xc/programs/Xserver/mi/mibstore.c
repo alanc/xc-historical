@@ -1,4 +1,4 @@
-/* $XConsortium: mibstore.c,v 1.19 88/10/15 17:48:37 keith Exp $ */
+/* $XConsortium: mibstore.c,v 1.20 88/10/20 19:59:28 keith Exp $ */
 /***********************************************************
 Copyright 1987 by the Regents of the University of California
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -233,8 +233,8 @@ miBSFillSpans(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 				  pBackingGC, nInit, pptCopy, pwidthCopy,
 				  fSorted);
 
-	DEALLOCATE_LOCAL(pptCopy);
 	DEALLOCATE_LOCAL(pwidthCopy);
+	DEALLOCATE_LOCAL(pptCopy);
 
 	pPriv->inUse = FALSE;
     }
@@ -287,8 +287,8 @@ miBSSetSpans(pDrawable, pGC, psrc, ppt, pwidth, nspans, fSorted)
 				 psrc, pptCopy, pwidthCopy, nspans,
 				 fSorted);
 
-	DEALLOCATE_LOCAL(pptCopy);
 	DEALLOCATE_LOCAL(pwidthCopy);
+	DEALLOCATE_LOCAL(pptCopy);
 
 	pPriv->inUse = FALSE;
     }
@@ -361,9 +361,9 @@ miBSGetSpans(pDrawable, pPixmap, wMax, ppt, pwidth, pwidthPadded, nspans)
     
     if(!pptClipped || !pwidthClipped || !pptDest)
     {
-	DEALLOCATE_LOCAL(pptClipped);
 	DEALLOCATE_LOCAL(pwidthClipped);
 	DEALLOCATE_LOCAL(pptDest);
+	DEALLOCATE_LOCAL(pptClipped);
 	return;
     }
 
@@ -432,9 +432,9 @@ miBSGetSpans(pDrawable, pPixmap, wMax, ppt, pwidth, pwidthPadded, nspans)
 	}
     }
     FreeScratchGC(pGC);
-    DEALLOCATE_LOCAL(pptClipped);
     DEALLOCATE_LOCAL(pwidthClipped);
     DEALLOCATE_LOCAL(pptDest);
+    DEALLOCATE_LOCAL(pptClipped);
 }
 
 /*-
@@ -1202,8 +1202,8 @@ miBSDoCopy(pWin, pGC, srcx, srcy, w, h, dstx, dsty, plane, copyProc, ppRgn)
 			  pBox->x1 + dx, pBox->y1 + dy, plane);
 	}
     }
-    DEALLOCATE_LOCAL(boxes);
     DEALLOCATE_LOCAL(sequence);
+    DEALLOCATE_LOCAL(boxes);
 
     pGC->graphicsExposures = graphicsExposures;
     if (graphicsExposures)
