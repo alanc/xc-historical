@@ -1,4 +1,4 @@
-/* $XConsortium: xtest.c,v 1.4 92/02/05 16:18:32 rws Exp $ */
+/* $XConsortium: xtest.c,v 1.5 92/02/06 09:00:26 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -30,7 +30,7 @@ without express or implied warranty.
 static unsigned char XTestReqCode;
 static int ProcXTestDispatch(), SProcXTestDispatch();
 static void XTestResetProc();
-static void XTestSwapFakeInput();
+static int XTestSwapFakeInput();
 CursorPtr GetSpriteCursor();
 WindowPtr GetCurrentRootWindow();
 
@@ -117,6 +117,7 @@ ProcXTestFakeInput(client)
 {
     REQUEST(xReq);
     int nev;
+    int	i;
     xEvent *ev;
     DeviceIntPtr dev;
     WindowPtr root;
@@ -127,7 +128,32 @@ ProcXTestFakeInput(client)
     nev /= sizeof(xEvent);
     if (nev != 1)
 	return BadLength; /* for now */
+    UpdateCurrentTime();
     ev = (xEvent *)&stuff[1];
+    if (ev->u.keyButtonPointer.time)
+    {
+	TimeStamp activateTime;
+	CARD32 ms;
+
+	activateTime = currentTime;
+	ms = activateTime.milliseconds + ev->u.keyButtonPointer.time;
+	if (ms < activateTime.milliseconds)
+	    activateTime.months++;
+	activateTime.milliseconds = ms;
+	ev->u.keyButtonPointer.time = 0;
+	/* swap the request back so we can simply re-execute it */
+	if (client->swapped)
+	{
+	    register int n;
+    	    swaps(&stuff->length, n);
+    	    (void) XTestSwapFakeInput(stuff);
+	}
+	ResetCurrentRequest (client);
+	client->sequence--;
+	if (!ClientSleepUntil(client, &activateTime, NULL, NULL))
+	    return BadAlloc;
+	return Success;
+    }
     switch (ev->u.u.type)
     {
     case KeyPress:
@@ -175,35 +201,23 @@ ProcXTestFakeInput(client)
     case ButtonPress:
     case ButtonRelease:
 	dev = (DeviceIntPtr)LookupPointerDevice();
-	if (ev->u.u.detail == 0 || ev->u.u.detail > dev->button->numButtons)
+	for (i = 1; i <= dev->button->numButtons; i++)
+	    if (dev->button->map[i] == ev->u.u.detail)
+		break;
+	if (i > dev->button->numButtons)
 	{
 	    client->errorValue = ev->u.u.detail;
 	    return BadValue;
 	}
+	ev->u.u.detail = i;
 	break;
     default:
 	client->errorValue = ev->u.u.type;
 	return BadValue;
     }
-    UpdateCurrentTime();
-    if (ev->u.keyButtonPointer.time)
-    {
-	TimeStamp activateTime;
-	CARD32 ms;
-
-	activateTime = currentTime;
-	ms = activateTime.milliseconds + ev->u.keyButtonPointer.time;
-	if (ms < activateTime.milliseconds)
-	    activateTime.months++;
-	activateTime.milliseconds = ms;
-	ev->u.keyButtonPointer.time = 0;
-#ifdef notyet
-	ClientSleepUntil(client, &activateTime, SwapXTestFakeInput);
-#endif
-    }
     ev->u.keyButtonPointer.time = currentTime.milliseconds;
     (*dev->public.processInputProc)(ev, (DevicePtr)dev, 1); 
-    return(client->noClientException);
+    return client->noClientException;
 }
 
 static int
@@ -251,22 +265,25 @@ SProcXTestCompareCursor(client)
     return ProcXTestCompareCursor(client);
 }
 
-static void
+static int
 XTestSwapFakeInput(req)
     xReq *req;
 {
-    register int n;
     register int nev;
     register xEvent *ev;
+    void (*proc)(), NotImplemented();
 
     nev = ((req->length << 2) - sizeof(xReq)) / sizeof(xEvent);
     for (ev = (xEvent *)&req[1]; --nev >= 0; ev++)
     {
-	swapl(&ev->u.keyButtonPointer.time, n);
-	swapl(&ev->u.keyButtonPointer.root, n);
-	swaps(&ev->u.keyButtonPointer.rootX, n);
-	swaps(&ev->u.keyButtonPointer.rootY, n);
+    	/* Swap event */
+    	proc = EventSwapVector[ev->u.u.type & 0177];
+	/* no swapping proc; invalid event type? */
+    	if (!proc || (int (*)()) proc == (int (*)()) NotImplemented)
+       	   return (BadValue);
+    	(*proc)(ev, ev);
     }
+    return Success;
 }
 
 static int
@@ -277,7 +294,9 @@ SProcXTestFakeInput(client)
     REQUEST(xReq);
 
     swaps(&stuff->length, n);
-    XTestSwapFakeInput(stuff);
+    n = XTestSwapFakeInput(stuff);
+    if (n != Success)
+	return n;
     return ProcXTestFakeInput(client);
 }
 
