@@ -1,5 +1,5 @@
 /*
- * $Header: xbiff.c,v 1.5 87/11/09 10:45:11 jim Exp $
+ * $Header: xbiff.c,v 1.1 88/02/23 15:18:09 jim Exp $
  *
  * Copyright 1987 by Cognition Inc.  All rights reserved.
  *
@@ -27,6 +27,7 @@ char *ProgramName;
 
 static XrmOptionDescRec options[] = {
 { "-update", "*mailbox.update", XrmoptionSepArg, (caddr_t) NULL },
+{ "-file",   "*mailbox.file", XrmoptionSepArg, (caddr_t) NULL },
 };
 
 static void Usage ()
@@ -37,6 +38,7 @@ static void Usage ()
 "    -bg color                      background color",
 "    -fg color                      foreground color",
 "    -rv                            reverse video",
+"    -file file                     file to watch",
 "    -geometry geom                 size of mailbox",
 "    -display host:dpy              X server to contact",
 NULL};
