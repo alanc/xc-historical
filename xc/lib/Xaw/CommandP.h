@@ -93,6 +93,7 @@ typedef struct {
     Pixmap      grayPixmap;
     GC          highlightGC;
     GC          inverseGC;
+    GC          inverseTextGC;
     Dimension   highlightThickness;
     CallbackList callbackList;
     CallbackProc callback;
