@@ -1,4 +1,4 @@
-/* $XConsortium: XVisUtil.c,v 11.12 91/01/06 11:48:45 rws Exp $ */
+/* $XConsortium: XVisUtil.c,v 11.13 91/02/01 16:34:53 gildea Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -75,7 +75,10 @@ int *nitems;	/* RETURN */
   if (visual_info_mask & VisualScreenMask)
     {
       screen_s = visual_info_template->screen;
-      screen_e = screen_s + 1;
+      if (screen_s < 0 || screen_s >= screen_e)
+	  screen_e = screen_s;
+      else
+	  screen_e = screen_s + 1;
     }
 
   /* LOOP THROUGH SCREENS */
@@ -184,6 +187,9 @@ Status XMatchVisualInfo( dpy, screen, depth, class, visual_info)
   Depth *dp;
   Screen *sp;
   int ii,jj;
+
+  if (screen < 0 || screen >= dpy->nscreens)
+      return False;
 
   LockDisplay(dpy);
 
