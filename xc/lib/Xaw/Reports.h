@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Reports.h,v 1.1 90/02/13 14:13:01 jim Exp $
+ * $XConsortium: Reports.h,v 1.2 90/02/28 14:27:20 jim Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -32,18 +32,18 @@
  */
 typedef struct {
     unsigned int changed;		/* mask, see below */
-    Position inner_x, inner_y;		/* location of inner within outer */
-    Dimension inner_width, inner_height;  /* size of inner */
-    Dimension outer_width, outer_height;  /* size of outer */
+    Position slider_x, slider_y;	/* location of slider within outer */
+    Dimension slider_width, slider_height;  /* size of slider */
+    Dimension canvas_width, canvas_height;  /* size of canvas */
 } XawPannerReport;
 
-#define XawPRInnerX		(1)
-#define XawPRInnerY		(2)
-#define XawPRInnerWidth		(4)
-#define XawPRInnerHeight	(8)
-#define XawPROuterWidth		(16)
-#define XawPROuterHeight	(32)
-#define XawPRAll		(63)	/* union */
+#define XawPRSliderX		(1 << 0)
+#define XawPRSliderY		(1 << 1)
+#define XawPRSliderWidth	(1 << 2)
+#define XawPRSliderHeight	(1 << 3)
+#define XawPRCanvasWidth	(1 << 4)
+#define XawPRCanvasHeight	(1 << 5)
+#define XawPRAll		(63)	/* union of above */
 
 #define XtNreportCallback "reportCallback"
 #define XtCReportCallback "reportCallback"

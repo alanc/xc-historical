@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: Porthole.c,v 1.1 90/02/28 18:07:29 jim Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -43,7 +43,6 @@ static XtResource resources[] = {
 /*
  * widget class methods used below
  */
-static void Initialize();		/* do initial */
 static void Realize();			/* set gravity and upcall */
 static void Resize();			/* report new size */
 static XtGeometryResult GeometryManager();  /* deal with child requests */
@@ -58,7 +57,7 @@ PortholeClassRec portholeClassRec = {
     /* class_initialize		*/	XawInitializeWidgetSet,
     /* class_part_initialize	*/	NULL,
     /* class_inited		*/	FALSE,
-    /* initialize		*/	Initialize,
+    /* initialize		*/	NULL,
     /* initialize_hook		*/	NULL,
     /* realize			*/	Realize,
     /* actions			*/	NULL,
@@ -115,12 +114,12 @@ static void SendReport (pw, changed)
 	Widget child = pw->composite.children[0];
 
 	prep.changed = changed;
-	prep.inner_x = -child->core.x;	/* porthole is "inner" */
-	prep.inner_y = -child->core.y;	/* child is outer since it is larger */
-	prep.inner_width = pw->core.width;
-	prep.inner_height = pw->core.height;
-	prep.outer_width = child->core.width;
-	prep.outer_height = child->core.height;
+	prep.slider_x = -child->core.x;	/* porthole is "inner" */
+	prep.slider_y = -child->core.y;	/* child is outer since it is larger */
+	prep.slider_width = pw->core.width;
+	prep.slider_height = pw->core.height;
+	prep.canvas_width = child->core.width;
+	prep.canvas_height = child->core.height;
 	XtCallCallbackList (pw, pw->porthole.report_callbacks,
 			    (caddr_t) &prep);
     }
@@ -132,17 +131,6 @@ static void SendReport (pw, changed)
  *			 Porthole Widget Class Methods                       *
  *                                                                           *
  *****************************************************************************/
-
-static void Initialize (greq, gnew)
-    Widget greq, gnew;
-{
-    PortholeWidget req = (PortholeWidget) greq, new = (PortholeWidget) gnew;
-
-/*
-    if (req->core.width < 1) new->core.width = 1;
-    if (req->core.height < 1) new->core.height = 1;
- */
-}
 
 
 static void Realize (gw, valueMask, attributes)
@@ -163,7 +151,7 @@ static void Resize (gw)
     Widget gw;
 {
     SendReport ((PortholeWidget) gw,
-		(unsigned int) (XawPROuterWidth | XawPROuterHeight));
+		(unsigned int) (XawPRCanvasWidth | XawPRCanvasHeight));
 }
 
 static XtGeometryResult QueryGeometry (gw, intended, preferred)
@@ -225,19 +213,19 @@ static XtGeometryResult GeometryManager (w, req, reply)
      * the visible region.
      */
     if (req->request_mode & CWX && w->core.x != req->x) {
-	changed |= XawPRInnerX;
+	changed |= XawPRSliderX;
 	w->core.x = req->x;
     }
     if (req->request_mode & CWY && w->core.y != req->y) {
-	changed |= XawPRInnerY;
+	changed |= XawPRSliderY;
 	w->core.y = req->y;
     }
     if (req->request_mode & CWWidth && w->core.width != req->width) {
-	changed |= XawPRInnerWidth;
+	changed |= XawPRSliderWidth;
 	w->core.width = req->width;
     }
     if (req->request_mode & CWHeight && w->core.height != req->height) {
-	changed |= XawPRInnerHeight;
+	changed |= XawPRSliderHeight;
 	w->core.height = req->height;
     }
 

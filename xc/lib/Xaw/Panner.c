@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Panner.c,v 1.19 90/02/28 12:21:03 jim Exp $
+ * $XConsortium: Panner.c,v 1.20 90/02/28 13:35:38 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -195,9 +195,11 @@ static void reset_xor_gc (pw)		/* used when resources change */
     if (pw->panner.rubber_band) {
 	XtGCMask valuemask = (GCForeground | GCFunction);
 	XGCValues values;
+	Pixel tmp;
 
-	values.foreground = (pw->panner.foreground ^
-			     pw->core.background_pixel);
+	tmp = ((pw->panner.foreground == pw->core.background_pixel) ?
+	       pw->panner.shadow_color : pw->panner.foreground);
+	values.foreground = tmp ^ pw->core.background_pixel;
 	values.function = GXxor;
 	if (pw->panner.line_width > 0) {
 	    valuemask |= GCLineWidth;
@@ -495,7 +497,8 @@ static Boolean SetValues (gcur, greq, gnew, args, num_args)
 
     if (cur->panner.foreground != new->panner.foreground) {
 	reset_slider_gc (new);
-	reset_xor_gc (new);
+	if (cur->panner.foreground != cur->core.background_pixel)
+	  reset_xor_gc (new);
 	redisplay = TRUE;
     } else if (cur->panner.line_width != new->panner.line_width ||
 	       cur->core.background_pixel != new->core.background_pixel) {
@@ -504,6 +507,8 @@ static Boolean SetValues (gcur, greq, gnew, args, num_args)
     }
     if (cur->panner.shadow_color != new->panner.shadow_color) {
 	reset_shadow_gc (new);
+	if (cur->panner.foreground == cur->core.background_pixel)
+	  reset_xor_gc (new);
 	redisplay = TRUE;
     }
     if (cur->panner.shadow != new->panner.shadow && new->panner.shadow) {
@@ -704,13 +709,13 @@ static void ActionNotify (gw, event, params, num_params)
 	XawPannerReport rep;
 
 	Redisplay (gw, (XEvent*) NULL, (Region) NULL);
-	rep.changed = (XawPRInnerX | XawPRInnerY);
-	rep.inner_x = pw->panner.slider_x;
-	rep.inner_y = pw->panner.slider_y;
-	rep.inner_width = pw->panner.slider_width;
-	rep.inner_height = pw->panner.slider_height;
-	rep.outer_width = pw->panner.canvas_width;
-	rep.outer_height = pw->panner.canvas_height;
+	rep.changed = (XawPRSliderX | XawPRSliderY);
+	rep.slider_x = pw->panner.slider_x;
+	rep.slider_y = pw->panner.slider_y;
+	rep.slider_width = pw->panner.slider_width;
+	rep.slider_height = pw->panner.slider_height;
+	rep.canvas_width = pw->panner.canvas_width;
+	rep.canvas_height = pw->panner.canvas_height;
 	XtCallCallbackList (gw, pw->panner.report_callbacks, (caddr_t) &rep);
     }
 }

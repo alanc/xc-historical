@@ -1,5 +1,5 @@
 /*
- * $XConsortium: viewres.c,v 1.43 90/02/26 12:01:28 jim Exp $
+ * $XConsortium: viewres.c,v 1.44 90/02/28 18:08:00 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -665,8 +665,8 @@ static void panner_callback (gw, closure, data)
     Arg args[2];
 
     if (portholeWidget) {
-	XtSetArg (args[0], XtNx, -rep->inner_x);
-	XtSetArg (args[1], XtNy, -rep->inner_y);
+	XtSetArg (args[0], XtNx, -rep->slider_x);
+	XtSetArg (args[1], XtNy, -rep->slider_y);
 	XtSetValues (treeWidget, args, TWO);
     }
 }
@@ -683,13 +683,13 @@ static void porthole_callback (gw, closure, data)
 	Arg args[6];
 	Cardinal n = TWO;
 
-	XtSetArg (args[0], XtNsliderX, rep->inner_x);
-	XtSetArg (args[1], XtNsliderY, rep->inner_y);
-	if (rep->changed != (XawPRInnerX | XawPRInnerY)) {
-	    XtSetArg (args[2], XtNsliderWidth, rep->inner_width);
-	    XtSetArg (args[3], XtNsliderHeight, rep->inner_height);
-	    XtSetArg (args[4], XtNcanvasWidth, rep->outer_width);
-	    XtSetArg (args[5], XtNcanvasHeight, rep->outer_height);
+	XtSetArg (args[0], XtNsliderX, rep->slider_x);
+	XtSetArg (args[1], XtNsliderY, rep->slider_y);
+	if (rep->changed != (XawPRSliderX | XawPRSliderY)) {
+	    XtSetArg (args[2], XtNsliderWidth, rep->slider_width);
+	    XtSetArg (args[3], XtNsliderHeight, rep->slider_height);
+	    XtSetArg (args[4], XtNcanvasWidth, rep->canvas_width);
+	    XtSetArg (args[5], XtNcanvasHeight, rep->canvas_height);
 	    n = SIX;
 	}
 	XtSetValues (pannerWidget, args, n);

@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Viewport.c,v 1.54 90/02/13 14:04:09 jim Exp $";
+static char Xrcsid[] = "$XConsortium: Viewport.c,v 1.55 90/02/28 16:24:32 kit Exp $";
 #endif /* lint */
 
 
@@ -398,12 +398,12 @@ static void SendReport (w, changed)
 	register Widget clip = w->viewport.clip;
 
 	rep.changed = changed;
-	rep.inner_x = -child->core.x;
-	rep.inner_y = -child->core.y;
-	rep.inner_width = clip->core.width;
-	rep.inner_height = clip->core.height;
-	rep.outer_width = child->core.width;
-	rep.outer_height = child->core.height;
+	rep.slider_x = -child->core.x;	/* child is canvas */
+	rep.slider_y = -child->core.y;	/* clip is slider */
+	rep.slider_width = clip->core.width;
+	rep.slider_height = clip->core.height;
+	rep.canvas_width = child->core.width;
+	rep.canvas_height = child->core.height;
 	XtCallCallbackList ((Widget) w, w->viewport.report_callbacks,
 			    (caddr_t) &rep);
     }
@@ -429,7 +429,7 @@ static void MoveChild(w, x, y)
     if (y >= 0) y = 0;
 
     XtMoveWidget(child, x, y);
-    SendReport (w, (XawPRInnerX | XawPRInnerY));
+    SendReport (w, (XawPRSliderX | XawPRSliderY));
 
     RedrawThumbs(w);
 }
