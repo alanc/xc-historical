@@ -6,7 +6,7 @@
 .ds xC Inter-Client Communication Conventions Manual
 .ds Rn 3
 .ds Vn 2.2
-.hw XtSet-Values XtVa-Set-Values XtSet-Subvalues XtGet-Values XtVa-Get-Values XtGet-Subvalues constraint-Widget-Class wid-get
+.hw XtSet-Values XtVa-Set-Values XtSet-Subvalues XtVa-Set-Subvalues XtGet-Values XtVa-Get-Values XtGet-Subvalues XtVa-Get-Subvalues constraint-Widget-Class wid-get
 .na
 .de Ds
 .nf
@@ -99,7 +99,7 @@
 .ny0
 .TH XtSetValues 3Xt "Release 6" "X Version 11" "XT FUNCTIONS"
 .SH NAME
-XtSetValues, XtVaSetValues, XtSetSubvalues, XtGetValues, XtVaGetValues, XtGetSubvalues \- obtain and set widget resources 
+XtSetValues, XtVaSetValues, XtSetSubvalues, XtVaSetSubvalues, XtGetValues, XtVaGetValues, XtGetSubvalues, XtVaGetSubvalues \- obtain and set widget resources 
 .SH SYNTAX
 void XtSetValues(\fIw\fP, \fIargs\fP, \fInum_args\fP)
 .br
@@ -126,6 +126,14 @@ void XtSetSubvalues(\fIbase\fP, \fIresources\fP, \fInum_resources\fP, \
 .br
       Cardinal \fInum_args\fP;
 .LP
+void XtVaSetSubvalues(\fIbase\fP, \fIresources\fP, \fInum_resources\fP, \fI...\fP)
+.br
+      XtPointer \fIbase\fP;
+.br
+      XtResourceList \fIresources\fP;
+.br
+      Cardinal \fInum_resources\fP;
+.LP
 void XtGetValues(\fIw\fP, \fIargs\fP, \fInum_args\fP)
 .br
       Widget \fIw\fP;
@@ -150,6 +158,14 @@ void XtGetSubvalues(\fIbase\fP, \fIresources\fP, \fInum_resources\fP, \
       ArgList \fIargs\fP;
 .br
       Cardinal \fInum_args\fP;
+.LP
+void XtVaGetSubvalues(\fIbase\fP, \fIresources\fP, \fInum_resources\fP, \fI...\fP)
+.br
+      XtPointer \fIbase\fP;
+.br
+      XtResourceList \fIresources\fP;
+.br
+      Cardinal \fInum_resources\fP;
 .SH ARGUMENTS
 .ds Al of name/address pairs that contain the resource name \
 and either the address into which the resource value is to be stored \
