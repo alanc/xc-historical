@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: TextAction.c,v 1.31 90/04/26 17:35:57 converse Exp $";
+static char Xrcsid[] = "$XConsortium: TextAction.c,v 1.32 90/06/01 17:33:09 converse Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -291,16 +291,6 @@ Boolean include;
   StartAction(ctx, event);
   ctx->text.insertPos = SrcScan(ctx->text.source, ctx->text.insertPos,
 				type, dir, ctx->text.mult, include);
-
-/*
- * If no movement actually happened, then bump the count and try again. 
- * This causes the character position at the very beginning and end of 
- * a boundry to act correctly. 
- */
-
-  if (ctx->text.insertPos == old_pos)
-      ctx->text.insertPos = SrcScan(ctx->text.source, ctx->text.insertPos,
-				    type, dir, ctx->text.mult + 1, include);
   EndAction(ctx);
 }
 
@@ -831,6 +821,7 @@ Cardinal *n;
 {
   XawTextBlock text;
   XawTextPosition pos1, pos2;
+
   TextWidget ctx = (TextWidget) w;
 
   StartAction(ctx, event);
