@@ -1,12 +1,12 @@
 #include "copyright.h"
 
-/* $Header: XGetKCnt.c,v 11.6 87/08/07 12:41:05 toddb Locked $ */
+/* $Header: XGetKCnt.c,v 11.7 87/08/29 13:46:15 toddb Locked $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #define NEED_REPLIES
 #include "Xlibint.h"
 
-struct kmap {char keys[32];}
+struct kmap {char keys[32];};
 
 void
 XGetKeyboardControl (dpy, state)
