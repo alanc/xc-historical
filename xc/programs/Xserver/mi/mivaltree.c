@@ -39,7 +39,7 @@
 
 #ifndef lint
 static char rcsid[] =
-"$Header: mivaltree.c,v 5.13 89/07/16 11:42:30 rws Exp $ SPRITE (Berkeley)";
+"$Header: mivaltree.c,v 5.14 89/07/17 16:11:41 keith Exp $ SPRITE (Berkeley)";
 #endif lint
 
 #include    "X.h"
@@ -231,7 +231,7 @@ miComputeClips (pParent, pScreen, universe, kind, exposed)
 		    (* pScreen->RegionAppend)(&childUnion, &pChild->borderSize);
 	    }
 	}
-	overlap = (* pScreen->RegionValidate)(&childUnion);
+	(* pScreen->RegionValidate)(&childUnion, &overlap);
 
 	for (pChild = pParent->firstChild;
 	     pChild;
@@ -381,6 +381,7 @@ miValidateTree (pParent, pChild, kind)
     RegionRec		exposed;    /* For intermediate calculations */
     register ScreenPtr	pScreen;
     register WindowPtr	pWin;
+    Bool		overlap;    /* result ignored */
 
     pScreen = pParent->drawable.pScreen;
     if (pChild == NullWindow)
@@ -418,7 +419,7 @@ miValidateTree (pParent, pChild, kind)
 	    pWin = pWin->prevSib;
 	}
     }
-    (void)(* pScreen->RegionValidate)(&totalClip);
+    (* pScreen->RegionValidate)(&totalClip, &overlap);
 
     /*
      * Now go through the children of the root and figure their new
