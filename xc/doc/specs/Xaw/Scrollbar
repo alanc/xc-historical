@@ -345,7 +345,7 @@ Values greater than 1.0 are truncated to 1.0.
 If called from \fBjumpProc\fP, \fBXawScrollbarSetThumb\fP has no effect.
 .NH 3
 Setting Float Resources
-.IN "Float resources" "setting"
+.IN "float resources" "setting"
 .LP
 The \fBshown\fP and \fBtopOfThumb\fP resources are of type
 \fIfloat\fP.  These resources can be difficult to get into an

@@ -107,7 +107,7 @@ only appear when it is needed, unless \fBforceBars\fP is \fBTrue\fP.
 .Dc
 .IP \fBforceBars\fP 1.5i
 When \fBTrue\fP the scrollbars that have been \fIallowed\fP will always be
-visible on the screen.  If \fBFalse\fP the scrollbars will be visable only
+visible on the screen.  If \fBFalse\fP the scrollbars will be visible only
 when the inner window is larger than the frame.
 .Hw
 .Mm

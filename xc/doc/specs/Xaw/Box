@@ -122,7 +122,7 @@ specify \fBXawOrientHorizontal\fP.
 .Xy
 .NH 3
 Layout Semantics
-.IN "Box widget" "Layout semantics"
+.IN "Box widget" "layout semantics"
 .LP
 Each time a child is managed or unmanaged, the Box widget will attempt
 to reposition the remaining children to compact the box.  Children are
