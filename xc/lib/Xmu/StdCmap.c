@@ -1,4 +1,4 @@
-/* $XConsortium: StdCmap.c,v 1.9 89/05/24 11:08:32 converse Exp $ 
+/* $XConsortium: StdCmap.c,v 1.10 89/07/16 18:10:44 jim Exp $ 
  * 
  * Copyright 1989 by the Massachusetts Institute of Technology
  *
@@ -56,8 +56,8 @@ XStandardColormap *XmuStandardColormap(dpy, screen, visualid, depth, property,
     unsigned long	red_max, green_max, blue_max;	/* allocations */
 {
     XStandardColormap	*stdcmap;
-    Status		status = 0;
-    XVisualInfo		vinfo_template, *vinfo = NULL;
+    Status		status;
+    XVisualInfo		vinfo_template, *vinfo;
     long		vinfo_mask;
     int			n;
 
@@ -144,7 +144,6 @@ static Status valid_args(vinfo, red_max, green_max, blue_max, property)
     if ((vinfo->class == DirectColor) || (vinfo->class == TrueColor)) {
 	unsigned long mask;
 
-	ncolors = (red_max + 1) * (green_max + 1) * (blue_max + 1);
 	mask = vinfo->red_mask;
 	while (!(mask & 1))
 	    mask >>= 1;
@@ -184,19 +183,16 @@ static Status valid_args(vinfo, red_max, green_max, blue_max, property)
 	if ((vinfo->class != PseudoColor && vinfo->class != DirectColor) ||
 	    (red_max == 0))
 	    return 0;
-	green_max = blue_max = 0;
 	break;
       case XA_RGB_GREEN_MAP:
 	if ((vinfo->class != PseudoColor && vinfo->class != DirectColor) ||
 	    (green_max == 0))
 	    return 0;
-	red_max = blue_max = 0;
 	break;
       case XA_RGB_BLUE_MAP:	
 	if ((vinfo->class != PseudoColor && vinfo->class != DirectColor) ||
 	    blue_max == 0)
 	    return 0;
-	red_max = green_max = 0;
 	break;
       case XA_RGB_BEST_MAP:
 	if (vinfo->class == GrayScale || vinfo->class == StaticGray ||

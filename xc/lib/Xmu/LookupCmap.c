@@ -1,4 +1,4 @@
-/* $XConsortium: LookupCmap.c,v 1.5 89/05/24 11:09:18 converse Exp $ 
+/* $XConsortium: LookupCmap.c,v 1.6 89/07/16 18:10:47 jim Exp $ 
  * 
  * Copyright 1989 by the Massachusetts Institute of Technology
  *
@@ -123,7 +123,6 @@ Status XmuLookupStandardColormap(dpy, screen, visualid, depth, property,
 	odpy = dpy;
 	if ((dpy = XOpenDisplay(XDisplayString(odpy))) == NULL) {
 	    XFree((char *) vinfo);
-	    dpy = odpy;
 	    return 0;
 	}
     }
@@ -156,10 +155,8 @@ Status XmuLookupStandardColormap(dpy, screen, visualid, depth, property,
 	status = 1;
     }
 
-    if (retain) {
+    if (retain)
 	XCloseDisplay(dpy);
-	dpy = odpy;
-    }
     XFree((char *) vinfo);
     return status;
 }
