@@ -918,7 +918,7 @@ recv_accept_msg(length)
  		      	   AcceptAuthorizationData.length)
     	{
 	    if (!XdmcpCheckAuthentication (&AcceptAuthenticationName,
-				      &AcceptAuthenticationData))
+				      &AcceptAuthenticationData, ACCEPT))
 	    {
 		XdmcpFatal ("Authentication Failure", &AcceptAuthenticationName);
 	    }
@@ -958,7 +958,7 @@ recv_decline_msg(length)
 		      	  DeclineAuthenticationName.length +
  		      	  DeclineAuthenticationData.length &&
 	    XdmcpCheckAuthentication (&DeclineAuthenticationName,
-				      &DeclineAuthenticationData))
+				      &DeclineAuthenticationData, DECLINE))
     	{
 	    XdmcpFatal ("Session declined", &Status);
     	}
