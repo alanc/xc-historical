@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: window.c,v 1.153 87/08/02 18:18:01 susan Exp $ */
+/* $Header: window.c,v 1.153 87/08/06 14:21:58 toddb Locked $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -329,7 +329,7 @@ MakeRootTile(pWin)
 
    ValidateGC(pWin->backgroundTile, pGC);
 
-   (*pGC->PutImage)(pWin->backgroundTile, pGC, pScreen->rootDepth,
+   (*pGC->PutImage)(pWin->backgroundTile, pGC, 1,
 	            0, 0, 16, 16, 0, XYBitmap, _back);
 
     pWin->backgroundTile->refcnt++;
@@ -665,19 +665,18 @@ CrushTree(pWin)
         return;
     while (pWin) 
     {
-	FreeResource(pWin->wid, RC_CORE);
-	pSib = pWin->nextSib;
-        pWin->realized = FALSE;
-        pWin->viewable = FALSE;
-        (* pWin->drawable.pScreen->UnrealizeWindow)(pWin);
-	FreeWindowResources(pWin);
-
 	CrushTree(pWin->firstChild);
 
 	event.u.u.type = DestroyNotify;
        	event.u.destroyNotify.window = pWin->wid;
 	DeliverEvents(pWin, &event, 1, NullWindow);		
 
+	FreeResource(pWin->wid, RC_CORE);
+	pSib = pWin->nextSib;
+	pWin->realized = FALSE;
+	pWin->viewable = FALSE;
+	(* pWin->drawable.pScreen->UnrealizeWindow)(pWin);
+	FreeWindowResources(pWin);
 	Xfree(pWin);
 	pWin = pSib;
     }
@@ -697,11 +696,12 @@ DeleteWindow(pWin, wid)
 
     UnmapWindow(pWin, HANDLE_EXPOSURES, SEND_NOTIFICATION, FALSE);
 
+    CrushTree(pWin->firstChild);
+
     event.u.u.type = DestroyNotify;
     event.u.destroyNotify.window = pWin->wid;
     DeliverEvents(pWin, &event, 1, NullWindow);		
 
-    CrushTree(pWin->firstChild);
     pParent = pWin->parent;
     FreeWindowResources(pWin);
     if (pParent)
@@ -729,10 +729,6 @@ DestroySubwindows(pWin, client)
         return;
     while (pChild) 
     {
-	event.u.u.type = DestroyNotify;
-	event.u.destroyNotify.window = pChild->wid;
-	DeliverEvents(pChild, &event, 1, NullWindow);		
-    
 	pSib = pChild->prevSib;
 	/* a little lazy evaluation, don't send exposes until all deleted */
 	if (pSib != (WindowPtr) NULL)
@@ -747,8 +743,13 @@ DestroySubwindows(pWin, client)
 	    pChild->nextSib = (WindowPtr)NULL;
     	    UnmapWindow(pChild, HANDLE_EXPOSURES, SEND_NOTIFICATION, FALSE);
 	}
-	FreeResource(pChild->wid, RC_CORE);
 	CrushTree(pChild->firstChild);
+
+	event.u.u.type = DestroyNotify;
+	event.u.destroyNotify.window = pChild->wid;
+	DeliverEvents(pChild, &event, 1, NullWindow);		
+    
+	FreeResource(pChild->wid, RC_CORE);
 	FreeWindowResources(pChild);
 	Xfree(pChild);
 	pChild = pSib;
