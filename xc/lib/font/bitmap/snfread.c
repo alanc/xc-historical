@@ -22,7 +22,7 @@ SOFTWARE.
 
 ************************************************************************/
 
-/* $XConsortium: snfread.c,v 1.13 93/08/24 18:49:06 gildea Exp $ */
+/* $XConsortium: snfread.c,v 1.14 93/09/17 18:26:54 gildea Exp $ */
 
 #include <ctype.h>
 #include "fntfilst.h"
@@ -417,6 +417,9 @@ snfReadFontInfo(pFontInfo, file)
 	    xfree(pFontInfo->isStringProp);
 	    return ret;
 	}
+    } else {
+	pFontInfo->ink_minbounds = pFontInfo->minbounds;
+	pFontInfo->ink_maxbounds = pFontInfo->maxbounds;
     }
     return Successful;
 
