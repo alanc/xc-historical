@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: utils.c,v 1.10 95/04/04 21:09:29 dpw Exp $ */
+/* $XConsortium: utils.c,v 1.11 95/05/17 18:26:41 dpw Exp mor $ */
 /* $NCDId: @(#)utils.c,v 1.8 1994/11/16 02:27:25 lemke Exp $ */
 
 #include "lbx.h"
@@ -609,7 +609,7 @@ strnalloc(str, len)
     t = (char *) Xalloc(len);
     if (!t)
 	return (char *) 0;
-    bcopy(str, t, len);
+    memcpy(t, str, len);
     return t;
 }
 

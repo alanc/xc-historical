@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: lbxio.c,v 1.2 94/12/02 17:33:49 mor Exp kaleb $ */
+/* $XConsortium: lbxio.c,v 1.3 95/04/05 19:58:34 kaleb Exp mor $ */
 /*****************************************************************
  * i/o functions
  *
@@ -476,7 +476,7 @@ AppendFakeRequest (client, data, count)
 	oco->buffer = ibuf;
 	oco->bufptr = ibuf;
     }
-    bcopy(data, oco->bufptr + gotnow, count);
+    memmove(oco->bufptr + gotnow, data, count);
     oco->bufcnt += count;
     gotnow += count;
     if (gotnow >= RequestLength (oco->bufptr, client, gotnow, &part) && !part)
@@ -563,7 +563,7 @@ LbxFlushClient(who, oc, extraBuf, extraCount)
 	    MarkClientException(who);
 	    return(-1);
 	}
-	bcopy(extraBuf, (char *)oco->buf + oco->count, extraCount);
+	memmove((char *)oco->buf + oco->count, extraBuf, extraCount);
 	oco->count = newlen;
     }
 
@@ -611,7 +611,7 @@ UncompressWriteToClient (who, count, buf)
 	    return -1;
 	}
     }
-    bcopy(buf, (char *)oco->buf + oco->count, count);
+    memmove((char *)oco->buf + oco->count, buf, count);
     oco->count += paddedLen;
 
     if (oc->ofirst) {

@@ -1,4 +1,4 @@
-/* $XConsortium: tags.c,v 1.5 94/03/27 13:57:43 dpw Exp $ */
+/* $XConsortium: tags.c,v 1.6 95/05/17 18:26:41 dpw Exp mor $ */
 /*
  * Copyright 1993 Network Computing Devices, Inc.
  *
@@ -90,7 +90,7 @@ TagStoreData(cache, id, size, dtype, data)
 	xfree(tag);
 	return FALSE;
     }
-    bcopy((char *) data, (char *) tag->tdata, size);
+    memcpy((char *) tag->tdata, (char *) data, size);
     tag->tid = id;
     tag->data_type = dtype;
     tag->size = size;

@@ -22,7 +22,7 @@
  * $NCDId: @(#)lbxfuncs.c,v 1.43 1995/03/09 00:54:06 lemke Exp $
  */
 
-/* $XConsortium: lbxfuncs.c,v 1.12 95/05/17 18:26:41 dpw Exp mor $ */
+/* $XConsortium: lbxfuncs.c,v 1.13 95/05/24 16:14:13 mor Exp mor $ */
 
 /*
  * top level LBX request & reply handling
@@ -142,7 +142,7 @@ get_tagged_setup_reply(client, data)
 		qt.typedata.setup.changes = (pointer) xalloc(len);
 		if (!qt.typedata.setup.changes)
 		    CloseDownClient(client);
-		bcopy((char *) &rep[1], qt.typedata.setup.changes, len);
+		memcpy(qt.typedata.setup.changes, (char *) &rep[1], len);
 		/* lost data -- ask again for tag value */
 		QueryTag(client, &qt);
 
@@ -826,7 +826,7 @@ free_colors_req(client, data)
     if (client->swapped) {
 	pixels = (Pixel *) ALLOCATE_LOCAL(num * sizeof(Pixel));
 	if (pixels) {
-	    bcopy((char *) &req[1], (char *) pixels, (num * sizeof(Pixel)));
+	    memcpy((char *) pixels, (char *) &req[1], (num * sizeof(Pixel)));
 	    SwapLongs((CARD32 *) pixels, num);
 	}
 	freepix = TRUE;
@@ -1018,7 +1018,7 @@ FinishKeymapReply(client, seqnum, kpk, first, count, data)
 	/* have to copy data because we could be handed the tag storage */
 	sdata = (char *) ALLOCATE_LOCAL(len);
 	if (sdata) {
-	    bcopy(data, sdata, len);
+	    memcpy(sdata, data, len);
 	    SwapLongs((CARD32 *) sdata, len / 4);
 	    freedata = TRUE;
 	}
@@ -1163,7 +1163,7 @@ FinishQueryFontReply(client, seqnum, length, data)
 
     reply = (xQueryFontReply *) ALLOCATE_LOCAL(length);
     if (reply) {
-	bcopy((char *) data, (char *) reply, length);
+	memcpy((char *) reply, (char *) data, length);
 	/* patch up certain fields */
 	reply->type = X_Reply;
 	reply->sequenceNumber = seqnum;
@@ -1241,9 +1241,9 @@ UnsquishFontInfo(compression, fdata, dlen, qfr)
     t = (char *) new;
     t += junklen;
     if (compression) {
-	bcopy((char *) fdata, (char *) t, hlen - junklen);
+	memcpy((char *) t, (char *) fdata, hlen - junklen);
     } else {
-	bcopy((char *) fdata, (char *) t, len - junklen);
+	memcpy((char *) t, (char *) fdata, len - junklen);
 	return len;
     }
 
