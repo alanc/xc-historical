@@ -1,5 +1,5 @@
 /*
- * $XConsortium: locking.c,v 1.29 94/02/24 14:36:02 rws Exp $
+ * $XConsortium: locking.c,v 1.30 94/02/27 21:15:41 rws Exp $
  *
  * Copyright 1992 Massachusetts Institute of Technology
  *
@@ -37,6 +37,8 @@
 #ifdef XTHREADS_WARN
 #include <stdio.h>		/* for warn/debug stuff */
 #endif
+
+#define NUM_FREE_CVLS 4
 
 /* in XOpenDis.c */
 extern int  (*_XInitDisplayLock_fn)();
@@ -235,23 +237,25 @@ static void _XUnlockDisplay(dpy)
 }
 
 
-static struct _XCVList *_XCreateCVL(
-#if NeedFunctionPrototypes
-    void
-#endif
-    )
+static struct _XCVList *_XCreateCVL(dpy)
+    Display *dpy;
 {
     struct _XCVList *cvl;
 
-    cvl = (struct _XCVList *)Xmalloc(sizeof(struct _XCVList));
-    if (!cvl)
-	return NULL;
-    cvl->cv = xcondition_malloc();
-    if (!cvl->cv) {
-	Xfree(cvl);
-	return NULL;
+    if ((cvl = dpy->lock->free_cvls) != NULL) {
+	dpy->lock->free_cvls = cvl->next;
+	dpy->lock->num_free_cvls--;
+    } else {
+	cvl = (struct _XCVList *)Xmalloc(sizeof(struct _XCVList));
+	if (!cvl)
+	    return NULL;
+	cvl->cv = xcondition_malloc();
+	if (!cvl->cv) {
+	    Xfree(cvl);
+	    return NULL;
+	}
+	xcondition_init(cvl->cv);
     }
-    xcondition_init(cvl->cv);
     cvl->next = NULL;
     return cvl;
 }
@@ -260,12 +264,13 @@ static struct _XCVList *_XCreateCVL(
    Allocates and returns a queue element. */
 
 static struct _XCVList *
-_XPushReader(tail)
+_XPushReader(dpy, tail)
+    Display *dpy;
     struct _XCVList ***tail;
 {
     struct _XCVList *cvl;
 
-    cvl = _XCreateCVL();
+    cvl = _XCreateCVL(dpy);
 #ifdef XTHREADS_DEBUG
     printf("_XPushReader called in thread %x, pushing %x\n",
 	   xthread_self(), cvl);
@@ -277,9 +282,8 @@ _XPushReader(tail)
 
 /* signal the next thread waiting to read the connection */
 
-static void _XPopReader(dpy, cvl, list, tail)
+static void _XPopReader(dpy, list, tail)
     Display *dpy;
-    struct _XCVList *cvl;
     struct _XCVList **list;
     struct _XCVList ***tail;
 {
@@ -294,25 +298,23 @@ static void _XPopReader(dpy, cvl, list, tail)
 	/* we never added ourself in the first place */
 	return;
 
-    if (front) {
-	/* with XLockDisplay, which puts itself on the front of the event
-	   awaiters list, we the reply reader may not be at the front of the
-	   list.  So we have to look for ourselves.
-	   */
-	while (cvl && cvl != front) {
-	    list = &front->next;
-	    front = *list;
-	}
+    if (front) {		/* check "front" for paranoia */
 	*list = front->next;
 	if (*tail == &front->next)	/* did we free the last elt? */
 	    *tail = list;
-	xcondition_clear(front->cv);
-	Xfree((char *)front->cv);
-	Xfree((char *)front);
+	if (dpy->lock->num_free_cvls < NUM_FREE_CVLS) {
+	    front->next = dpy->lock->free_cvls;
+	    dpy->lock->free_cvls = front;
+	    dpy->lock->num_free_cvls++;
+	} else {
+	    xcondition_clear(front->cv);
+	    Xfree((char *)front->cv);
+	    Xfree((char *)front);
+	}
     }
 
     /* signal new front after it is in place */
-    if (dpy->lock->reply_awaiters) {
+    if (dpy->lock->reply_first = (dpy->lock->reply_awaiters != NULL)) {
 	ConditionSignal(dpy, dpy->lock->reply_awaiters->cv);
     } else if (dpy->lock->event_awaiters) {
 	ConditionSignal(dpy, dpy->lock->event_awaiters->cv);
@@ -411,6 +413,8 @@ static void _XConditionBroadcast(cv)
 static void _XFreeDisplayLock(dpy)
     Display *dpy;
 {
+    struct _XCVList *cvl;
+
     if (dpy->lock != NULL) {
 	if (dpy->lock->mutex != NULL) {
 	    xmutex_clear(dpy->lock->mutex);
@@ -423,6 +427,12 @@ static void _XFreeDisplayLock(dpy)
 	if (dpy->lock->writers != NULL) {
 	    xcondition_clear(dpy->lock->writers);
 	    xcondition_free(dpy->lock->writers);
+	}
+	while (cvl = dpy->lock->free_cvls) {
+	    dpy->lock->free_cvls = cvl->next;
+	    xcondition_clear(cvl->cv);
+	    Xfree((char *)cvl->cv);
+	    Xfree((char *)cvl);
 	}
 	Xfree((char *)dpy->lock);
 	dpy->lock = NULL;
@@ -564,7 +574,10 @@ static int _XInitDisplayLock(dpy)
     dpy->lock->reply_awaiters_tail = &dpy->lock->reply_awaiters;
     dpy->lock->event_awaiters = NULL;
     dpy->lock->event_awaiters_tail = &dpy->lock->event_awaiters;
+    dpy->lock->reply_first = False;
     dpy->lock->locking_level = 0;
+    dpy->lock->num_free_cvls = 0;
+    dpy->lock->free_cvls = NULL;
     xthread_clear_id(dpy->lock->locking_thread);
     xthread_clear_id(dpy->lock->reading_thread);
     xthread_clear_id(dpy->lock->conni_thread);
@@ -581,6 +594,7 @@ static int _XInitDisplayLock(dpy)
     dpy->lock->condition_wait = _XConditionWait;
     dpy->lock->condition_signal = _XConditionSignal;
     dpy->lock->condition_broadcast = _XConditionBroadcast;
+    dpy->lock->create_cvl = _XCreateCVL;
     dpy->lock->lock_wait = NULL; /* filled in by XLockDisplay() */
 
     return 0;
@@ -602,7 +616,6 @@ Status XInitThreads()
     _XLockMutex_fn = _XLockMutex;
     _XUnlockMutex_fn = _XUnlockMutex;
     _XCreateMutex_fn = _XCreateMutex;
-    _XCreateCVL_fn = _XCreateCVL;
     _XFreeMutex_fn = _XFreeMutex;
     _XInitDisplayLock_fn = _XInitDisplayLock;
     _XFreeDisplayLock_fn = _XFreeDisplayLock;
