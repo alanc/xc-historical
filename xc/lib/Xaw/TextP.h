@@ -1,5 +1,5 @@
 /*
-* $Header: TextP.h,v 1.8 88/01/08 07:42:33 swick Locked $
+* $Header: TextP.h,v 1.9 88/01/25 13:45:27 swick Locked $
 */
 
 /*
@@ -175,6 +175,7 @@ typedef struct _TextPart {
     } *dialog;			    /* InsertFile pop-up widget */
     GC              gc;
     Boolean         hasfocus;       /* TRUE if we currently have input focus.*/
+    Boolean	    update_disabled; /* TRUE if display updating turned off */
 } TextPart;
 
 /****************************************************************
