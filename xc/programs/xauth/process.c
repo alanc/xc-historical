@@ -1,5 +1,5 @@
 /*
- * $XConsortium: process.c,v 1.21 89/01/03 10:17:05 jim Exp $
+ * $XConsortium: process.c,v 1.22 89/01/03 10:42:33 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -596,6 +596,7 @@ static int dispatch_command (inputfilename, lineno, argc, argv, tab, statusp)
 
 
 static AuthList *xauth_head = NULL;	/* list of auth entries */
+static Bool xauth_existed = False;	/* if was present at initialize */
 static Bool xauth_modified = False;	/* if added, removed, or merged */
 static Bool xauth_allowed = True;	/* if allowed to write auth file */
 static char *xauth_filename = NULL;
@@ -669,7 +670,7 @@ int auth_initialize (authfilename)
     }
 
     if (break_locks && verbose) {
-	printf ("Attempting to break locks on authority file %s\n",
+	printf ("Attempting to break locks on authorization file %s\n",
 		authfilename);
     }
 
@@ -689,7 +690,7 @@ int auth_initialize (authfilename)
 		reason = "timeout";
 		break;
 	    }
-	    fprintf (stderr, "%s:  %s in locking authority file %s\n",
+	    fprintf (stderr, "%s:  %s in locking authorization file %s\n",
 		     ProgramName, reason, authfilename);
 	    return -1;
 	}
@@ -706,7 +707,11 @@ int auth_initialize (authfilename)
 	    errno = olderrno;
 	    return -1;
 	}				/* else ignore it */
+	fprintf (stderr, 
+		 "%s:  creating new authorization file %s\n",
+		 ProgramName, authfilename);
     } else {
+	xauth_existed = True;
 	n = read_auth_entries (authfp, False, &head, &tail);
 	(void) fclose (authfp);
 	if (n < 0) {
@@ -764,7 +769,7 @@ int auth_finalize ()
     if (xauth_modified) {
 	if (dieing) {
 	    if (verbose) {
-		printf ("Aborting changes to authority file %s\n",
+		printf ("Aborting changes to authorization file %s\n",
 			xauth_filename);
 	    }
 	} else if (!xauth_allowed) {
@@ -773,19 +778,20 @@ int auth_finalize ()
 		     ProgramName, xauth_filename);
 	} else {
 	    if (verbose) {
-		printf ("%s authority file %s\n", 
+		printf ("%s authorization file %s\n", 
 			ignore_locks ? "Ignoring locks and writing" :
 			"Writing", xauth_filename);
 	    }
 	    tmpnam[0] = '\0';
 	    if (write_auth_file (tmpnam) == -1) {
-		fprintf (stderr, "%s:  unable to write authority file %s\n",
+		fprintf (stderr,
+			 "%s:  unable to write authorization file %s\n",
 			 ProgramName, tmpnam);
 	    } else {
 		(void) unlink (xauth_filename);
 		if (link (tmpnam, xauth_filename) == -1) {
 		    fprintf (stderr,
-			     "%s:  unable to link authority file %s, use %s\n",
+		     "%s:  unable to link authorization file %s, use %s\n",
 			     ProgramName, xauth_filename, tmpnam);
 		} else {
 		    (void) unlink (tmpnam);
@@ -1333,7 +1339,7 @@ static int do_extract (inputfilename, lineno, argc, argv)
 
     if (!ed.fp) {
 	fprintf (stderr, 
-		 "No matches found, authority file \"%s\" not written.\n",
+		 "No matches found, authorization file \"%s\" not written.\n",
 		 ed.filename);
     } else {
 	if (verbose) {
@@ -1494,13 +1500,14 @@ static int do_info (inputfilename, lineno, argc, argv)
 
     for (l = xauth_head, n = 0; l; l = l->next, n++) ;
 
-    printf ("Auth file name:       %s\n",
+    printf ("Authorization file:   %s\n",
 	    xauth_filename ? xauth_filename : "(none)");
+    printf ("File new:             %s\n", xauth_existed ? No : Yes);
+    printf ("File locked:          %s\n", ignore_locks ? No : Yes);
     printf ("Number of entries:    %d\n", n);
-    printf ("Auth file locked:     %s\n", ignore_locks ? No : Yes);
+    printf ("Changes honored:      %s\n", xauth_allowed ? Yes : No);
     printf ("Changes made:         %s\n", xauth_modified ? Yes : No);
-    printf ("Changes permanent:    %s\n", xauth_allowed ? Yes : No);
-    printf ("Input file name:      %s:%d\n", inputfilename, lineno);
+    printf ("Current input:        %s:%d\n", inputfilename, lineno);
     return 0;
 }
 
