@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: error.c,v 1.9 89/09/09 13:00:57 keith Exp $
+ * $XConsortium: error.c,v 1.10 89/10/09 14:58:11 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -103,5 +103,8 @@ char	*fmt;
 int	arg1, arg2, arg3, arg4, arg5, arg6;
 {
     if (debugLevel > 0)
+    {
 	printf (fmt, arg1, arg2, arg3, arg4, arg5, arg6);
+	fflush (stdout);
+    }
 }
