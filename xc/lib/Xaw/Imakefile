@@ -138,6 +138,7 @@ InstallLibrary(Xaw_p,$(USRLIBDIR))
 DebuggedLibraryTarget(Xaw,$(OBJS))
 #endif
 
+BuildIncludes($(HEADERS),Xaw)
 InstallMultiple($(HEADERS),$(INCDIR)/Xaw)
 
 #if InstallOldHeaderFiles 
