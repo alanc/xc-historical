@@ -15,7 +15,7 @@ without specific, written prior permission.  M.I.T. makes no
 representations about the suitability of this software for any
 purpose.  It is provided "as is" without express or implied warranty.
 */
-/* $XConsortium: cfbpush8.c,v 5.3 89/09/14 17:04:48 rws Exp $ */
+/* $XConsortium: cfbpush8.c,v 5.4 89/09/19 15:36:28 keith Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -42,9 +42,9 @@ cfbPushPixels8 (pGC, pBitmap, pDrawable, dx, dy, xOrg, yOrg)
     DrawablePtr	pDrawable;
     int		dx, dy, xOrg, yOrg;
 {
-    unsigned long   pixel;
-    unsigned long   bits, c;
-    unsigned long   *src, *dst;
+    register unsigned long   *src, *dst;
+    register unsigned long   pixel;
+    register unsigned long   c, bits;
     unsigned long   *pdstLine, *psrcLine;
     unsigned long   *pdstBase;
     int		    srcWidth;
