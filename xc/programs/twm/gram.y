@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: gram.y,v 1.61 89/11/01 17:27:48 jim Exp $
+ * $XConsortium: gram.y,v 1.62 89/11/01 19:21:02 jim Exp $
  *
  * .twmrc command grammer
  *
@@ -38,7 +38,7 @@
 
 %{
 static char RCSinfo[]=
-"$XConsortium: gram.y,v 1.61 89/11/01 17:27:48 jim Exp $";
+"$XConsortium: gram.y,v 1.62 89/11/01 19:21:02 jim Exp $";
 
 #include <stdio.h>
 #include <ctype.h>
@@ -172,8 +172,7 @@ stmt		: error
 					    Scr->InterpolateMenuColors=TRUE; }
 		| WARPCURSOR		{ if (Scr->FirstTime)
 						Scr->WarpCursor = TRUE; }
-		| NO_VERSION		{ if (Scr->FirstTime)
-						Scr->ShowVersion = FALSE; }
+		| NO_VERSION		{ /* obsolete */ }
 		| SORT_ICONMGR		{ if (Scr->FirstTime) 
 						Scr->SortIconMgr = TRUE; }
 		| NO_GRAB_SERVER	{ if (Scr->FirstTime)

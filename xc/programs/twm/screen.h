@@ -21,7 +21,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: screen.h,v 1.41 89/11/01 17:28:06 jim Exp $
+ * $XConsortium: screen.h,v 1.42 89/11/03 13:26:56 jim Exp $
  *
  * twm per-screen data include file
  *
@@ -60,7 +60,6 @@ typedef struct ScreenInfo
     TwmWindow TwmRoot;		/* the head of the twm window list */
 
     Window Root;		/* the root window */
-    Window VersionWindow;	/* the twm version window */
     Window SizeWindow;		/* the resize dimensions window */
     Window InitialWindow;	/* the window name we are creating */
     Window InfoWindow;		/* the information window */
@@ -158,7 +157,6 @@ typedef struct ScreenInfo
     MyFont MenuFont;		/* menu font structure */
     MyFont IconFont;		/* icon font structure */
     MyFont SizeFont;		/* resize font structure */
-    MyFont VersionFont;		/* version font structure */
     MyFont InitialFont;		/* window creation font structure */
     MyFont IconManagerFont;	/* window list font structure */
     MyFont DefaultFont;
@@ -204,7 +202,6 @@ typedef struct ScreenInfo
     short ZoomCount;		/* zoom outline count */
     short SortIconMgr;		/* sort entries in the icon manager */
     short Shadow;		/* show the menu shadow */
-    short ShowVersion;		/*  show the version window on startup */
     short InterpolateMenuColors;/* make pretty menus */
     short NoIconManagers;	/* Don't create any icon managers */
     short ClientBorderWidth;	/* respect client window border width */

@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.106 89/11/01 19:32:47 jim Exp $
+ * $XConsortium: menus.c,v 1.107 89/11/01 20:50:13 jim Exp $
  *
  * twm menu code
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: menus.c,v 1.106 89/11/01 19:32:47 jim Exp $";
+"$XConsortium: menus.c,v 1.107 89/11/01 20:50:13 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -1204,6 +1204,10 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
 	Identify(tmp_win);
 	break;
 
+    case F_VERSION:
+	Identify (NULL);
+	break;
+
     case F_AUTORAISE:
 	if (DeferExecution(context, func, Scr->SelectCursor))
 	    return TRUE;
@@ -1698,11 +1702,6 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
 
     case F_CIRCLEDOWN:
 	XCirculateSubwindowsDown(dpy, Scr->Root);
-	break;
-
-    case F_VERSION:
-	XMapRaised(dpy, Scr->VersionWindow);
-	Scr->ShowVersion = TRUE;
 	break;
 
     case F_EXEC:
@@ -2341,20 +2340,24 @@ TwmWindow *t;
     int px, py, dummy;
     unsigned udummy;
 
-    XGetGeometry(dpy, t->w, &JunkRoot, &JunkX, &JunkY,
-	&wwidth, &wheight, &bw, &depth);
-    XTranslateCoordinates(dpy, t->w, Scr->Root, JunkX, JunkY, &x, &y, &junk);
-
     n = 0;
     strcpy(Info[n++], Version);
     Info[n++][0] = '\0';
-    sprintf(Info[n++], "Name             = \"%s\"", t->full_name);
-    sprintf(Info[n++], "Class.res_name   = \"%s\"", t->class.res_name);
-    sprintf(Info[n++], "Class.res_class  = \"%s\"", t->class.res_class);
-    Info[n++][0] = '\0';
-    sprintf(Info[n++], "Geometry/root    = %dx%d+%d+%d", wwidth, wheight,x,y);
-    sprintf(Info[n++], "Border width     = %d", bw);
-    sprintf(Info[n++], "Depth            = %d", depth);
+
+    if (t) {
+	XGetGeometry (dpy, t->w, &JunkRoot, &JunkX, &JunkY,
+		      &wwidth, &wheight, &bw, &depth);
+	(void) XTranslateCoordinates (dpy, t->w, Scr->Root, JunkX, JunkY,
+				      &x, &y, &junk);
+	sprintf(Info[n++], "Name             = \"%s\"", t->full_name);
+	sprintf(Info[n++], "Class.res_name   = \"%s\"", t->class.res_name);
+	sprintf(Info[n++], "Class.res_class  = \"%s\"", t->class.res_class);
+	Info[n++][0] = '\0';
+	sprintf(Info[n++], "Geometry/root    = %dx%d+%d+%d", wwidth, wheight,
+		x, y);
+	sprintf(Info[n++], "Border width     = %d", bw);
+	sprintf(Info[n++], "Depth            = %d", depth);
+    }
 
     /* figure out the width and height of the info window */
     height = n * (Scr->DefaultFont.height+2);

@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: twm.c,v 1.73 89/11/01 17:28:08 jim Exp $
+ * $XConsortium: twm.c,v 1.74 89/11/03 13:26:58 jim Exp $
  *
  * twm - "Tom's Window Manager"
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: twm.c,v 1.73 89/11/01 17:28:08 jim Exp $";
+"$XConsortium: twm.c,v 1.74 89/11/03 13:26:58 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -60,7 +60,6 @@ static char RCSinfo[] =
 #include "screen.h"
 #include "iconmgr.h"
 
-#include "twm.bm"
 #include "gray.bm"
 
 Display *dpy;			/* which display are we talking to */
@@ -472,32 +471,6 @@ main(argc, argv, environ)
 		0, 0, 5, Scr->InitialFont.height + 4, BW,
 		Scr->DefaultC.fore,Scr->DefaultC.back);
 
-	/* contruct the version string */
-
-	Scr->VersionWindow = XCreateSimpleWindow(dpy, Scr->Root, 0, 0,
-	    twm_width + 
-		XTextWidth(Scr->VersionFont.font,Version,strlen(Version)) + 20,
-	    Scr->VersionFont.height + 4, BW,
-	    Scr->DefaultC.fore, Scr->DefaultC.back);
-
-	FB(Scr->DefaultC.fore, Scr->DefaultC.back);
-	valuemask = CWBackPixmap;
-	attributes.background_pixmap =
-	    XCreatePixmapFromBitmapData(dpy, Scr->VersionWindow,
-		twm_bits, twm_width, twm_height,
-		Scr->DefaultC.fore, Scr->DefaultC.back,
-		Scr->d_depth);
-
-	XCreateWindow(dpy, Scr->VersionWindow,
-		      4, 1, twm_width, twm_height,
-		      0, Scr->d_depth, CopyFromParent,
-		      Scr->d_visual, valuemask, &attributes);
-
-	XSelectInput(dpy, Scr->VersionWindow, ExposureMask);
-	XMapSubwindows(dpy, Scr->VersionWindow);
-	if (Scr->ShowVersion)
-	    XMapWindow(dpy, Scr->VersionWindow);
-
 	width = XTextWidth (Scr->SizeFont.font, " 8888 x 8888 ", 13);
 	if (width <= 0) width = 100;
 	Scr->SizeWindow = XCreateSimpleWindow (dpy, Scr->Root, 0, 0, width,
@@ -623,7 +596,6 @@ InitVariables()
     Scr->ZoomCount = 8;
     Scr->SortIconMgr = FALSE;
     Scr->Shadow = TRUE;
-    Scr->ShowVersion = TRUE;
     Scr->InterpolateMenuColors = FALSE;
     Scr->NoIconManagers = FALSE;
     Scr->ClientBorderWidth = FALSE;
@@ -644,8 +616,6 @@ InitVariables()
     Scr->IconFont.name = DEFAULT_NICE_FONT;
     Scr->SizeFont.font = NULL;
     Scr->SizeFont.name = DEFAULT_FAST_FONT;
-    Scr->VersionFont.font = NULL;
-    Scr->VersionFont.name = DEFAULT_NICE_FONT;
     Scr->InitialFont.font = NULL;
     Scr->InitialFont.name = DEFAULT_NICE_FONT;
     Scr->IconManagerFont.font = NULL;
@@ -662,7 +632,6 @@ CreateFonts ()
     GetFont(&Scr->MenuFont);
     GetFont(&Scr->IconFont);
     GetFont(&Scr->SizeFont);
-    GetFont(&Scr->VersionFont);
     GetFont(&Scr->InitialFont);
     GetFont(&Scr->IconManagerFont);
     GetFont(&Scr->DefaultFont);
