@@ -1,5 +1,5 @@
 /*
- * $XConsortium: lcWrap.c,v 11.16 94/01/28 23:30:31 rws Exp $
+ * $XConsortium: lcWrap.c,v 11.18 94/03/30 19:03:52 rws Exp $
  */
 
 /*
@@ -55,6 +55,10 @@ extern void _XlcInitLoader(
     void
 #endif
 );
+
+#ifdef XTHREADS
+LockInfoPtr _Xi18n_lock;
+#endif
 
 #if NeedFunctionPrototypes
 char *
@@ -155,10 +159,6 @@ _XlcDefaultMapModifiers (lcd, user_mods, prog_mods)
     return mods;
 }
 
-#ifndef	lint
-static lock;
-#endif /* lint */
-
 typedef struct _XLCdListRec {
     struct _XLCdListRec *next;
     XLCd lcd;
@@ -246,7 +246,7 @@ _XOpenLC(name)
     if (name == NULL)
 	name = setlocale (LC_CTYPE, (char *)NULL);
 
-    _XLockMutex(_Xglobal_lock);
+    _XLockMutex(_Xi18n_lock);
 
     /*
      * search for needed lcd, if found return it
@@ -283,7 +283,7 @@ _XOpenLC(name)
     }
 
 found:
-    _XUnlockMutex(_Xglobal_lock);
+    _XUnlockMutex(_Xi18n_lock);
     return lcd;
 }
 
