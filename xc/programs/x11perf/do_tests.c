@@ -56,6 +56,16 @@ extern void InitPopups();
 extern void DoPopUps();
 extern void EndPopups();
 
+extern void InitScrolling();
+extern void DoScrolling();
+extern void MidScroll();
+extern void EndScrolling();
+
+extern void InitCopyArea();
+extern void DoCopyArea();
+extern void MidCopyArea();
+extern void EndCopyArea();
+
 
 /*
  * some test must be done a certain multiple of times. That multiple is
@@ -152,6 +162,14 @@ Test test[] = {
   {"-popup", "Popup Window",
 		InitPopups, DoPopUps, NULL, EndPopups, True, False,
 		{10, 4, True}},
+  {"-scroll", "Scrolling",
+		InitScrolling, DoScrolling, MidScroll,
+		EndScrolling, False, False,
+		{50, 1, False}},
+  {"-copyarea", "copyarea",
+		InitCopyArea, DoCopyArea, MidCopyArea,
+		EndCopyArea, False, False,
+		{50, 1, False}},
   { NULL, NULL,
 		NULL, NULL, NULL, NULL, False, False,
 		{0, 0, False, NULL, NULL}}
