@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XGetDflt.c,v 1.23 91/01/04 19:51:01 gildea Exp $
+ * $XConsortium: XGetDflt.c,v 1.24 91/02/01 16:34:15 gildea Exp $
  */
 
 /***********************************************************
@@ -36,7 +36,7 @@ SOFTWARE.
 static char *GetHomeDir (dest)
 	char *dest;
 {
-#if defined(_POSIX_SOURCE) || defined(SVR4)
+#ifndef X_NOT_POSIX
         uid_t uid;
 #else
 	int uid;

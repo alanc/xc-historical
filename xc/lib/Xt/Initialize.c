@@ -1,4 +1,4 @@
-/* $XConsortium: Initialize.c,v 1.177 91/02/19 21:34:30 rws Exp $ */
+/* $XConsortium: Initialize.c,v 1.178 91/03/07 19:15:11 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -162,7 +162,7 @@ void XtToolkitInitialize()
 static String XtGetRootDirName(buf)
      String buf;
 {
-#if defined(_POSIX_SOURCE) || defined(SVR4)
+#ifndef X_NOT_POSIX
      uid_t uid;
 #else
      int uid;
