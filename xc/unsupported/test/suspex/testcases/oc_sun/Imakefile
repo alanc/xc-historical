@@ -1,4 +1,4 @@
-# $XConsortium$
+# $XConsortium: Imakefile,v 1.0 93/11/22 12:48:43 rws Exp $
 #
 #       NOTICE TO USER: The source code in this file is copyrighted under
 #       U.S. and international laws.  SunSoft, Inc., a Sun Microsystems,
@@ -38,9 +38,8 @@ SUSPEX_LIB = $(SUSPEX_LIB_DIR)/libSusPEX.a
 CDEBUGFLAGS = -g
 INCLUDES = -I. -I$(COMMON_DIR) 
 
-PEXLIB=-lPEX5
-LDLIBS = $(SUSPEX_LIB) $(PEXLIB) $(XMULIB) $(XLIB) -lm
-LDOPTIONS = -L$(LIBDIR)
+LOCAL_LIBRARIES = $(SUSPEX_LIB) $(PEXUT_LIB) $(PEXLIB) $(XMULIB) $(XLIB)
+SYS_LIBRARIES = MathLibrary
 
 PROGS= atextAttr cell \
         edgeAttr encTextAttr \
@@ -51,43 +50,48 @@ PROGS= atextAttr cell \
         quadMesh sendoc shade sofas startoc struct \
         textAttr textExtent triStrip twoCircles
 
-AllTarget($(PROGS))
-
 $(SUSPEX_LIB):
 	(cd $(SUSPEX_LIB_DIR); make)
 
 $(COMMON_OBJS):
 	(cd $(COMMON_DIR); make)
 
-NormalProgramTarget(atextAttr, atextAttr.o $(SHARED_MAIN_OBJS), $(SUSPEX_LIB),,)
-NormalProgramTarget(cell, cell.o $(SHARED_MAIN_OBJS), $(SUSPEX_LIB),,)
-NormalProgramTarget(edgeAttr, edgeAttr.o $(SHARED_MAIN_OBJS), $(SUSPEX_LIB),,)
-NormalProgramTarget(encTextAttr,encTextAttr.o $(SHARED_MAIN_OBJS), $(SUSPEX_LIB),,)
-NormalProgramTarget(fa, fa.o $(SHARED_MAIN_OBJS), $(SUSPEX_LIB),,)
-NormalProgramTarget(faData, faData.o $(SHARED_MAIN_OBJS), $(SUSPEX_LIB),,)
-NormalProgramTarget(fasData, fasData.o $(SHARED_MAIN_OBJS), $(SUSPEX_LIB),,)
-NormalProgramTarget(faset, faset.o $(SHARED_MAIN_OBJS), $(SUSPEX_LIB),,)
-NormalProgramTarget(font, font.o $(SHARED_MAIN_OBJS), $(SUSPEX_LIB),,)
-NormalProgramTarget(interior, interior.o $(SHARED_MAIN_OBJS), $(SUSPEX_LIB),,)
-NormalProgramTarget(intrAttr, intrAttr.o $(SHARED_MAIN_OBJS), $(SUSPEX_LIB),,)
-NormalProgramTarget(line, line.o $(SHARED_MAIN_OBJS), $(SUSPEX_LIB),,)
-NormalProgramTarget(lineAttr, lineAttr.o $(SHARED_MAIN_OBJS), $(SUSPEX_LIB),,)
-NormalProgramTarget(lineSet, lineSet.o $(SHARED_MAIN_OBJS), $(SUSPEX_LIB),,)
-NormalProgramTarget(markerAttr, markerAttr.o $(SHARED_MAIN_OBJS), $(SUSPEX_LIB),,)
-NormalProgramTarget(multiDraw, multiDraw.o $(COMMON_OBJS) workstation.o, $(SUSPEX_LIB),,)
-NormalProgramTarget(nurbCurve, nurbCurve.o $(SHARED_MAIN_OBJS), $(SUSPEX_LIB),,)
-NormalProgramTarget(nurbSurf, nurbSurf.o $(SHARED_MAIN_OBJS), $(SUSPEX_LIB),,)
-NormalProgramTarget(pfline, pfline.o $(SHARED_MAIN_OBJS), $(SUSPEX_LIB),,)
-NormalProgramTarget(quadMesh, quadMesh.o $(SHARED_MAIN_OBJS), $(SUSPEX_LIB),,)
-NormalProgramTarget(sendoc, sendoc.o $(SHARED_MAIN_OBJS), $(SUSPEX_LIB),,)
-NormalProgramTarget(shade, shade.o $(SHARED_MAIN_OBJS), $(SUSPEX_LIB),,)
-NormalProgramTarget(sofas, sofas.o $(SHARED_MAIN_OBJS), $(SUSPEX_LIB),,)
-NormalProgramTarget(startoc, startoc.o $(SHARED_MAIN_OBJS), $(SUSPEX_LIB),,)
-NormalProgramTarget(struct, struct.o $(SHARED_MAIN_OBJS), $(SUSPEX_LIB),,)
-NormalProgramTarget(textAttr, textAttr.o $(SHARED_MAIN_OBJS), $(SUSPEX_LIB),,)
-NormalProgramTarget(textExtent, textExtent.o $(SHARED_MAIN_OBJS), $(SUSPEX_LIB),,)
-NormalProgramTarget(triStrip, triStrip.o $(SHARED_MAIN_OBJS), $(SUSPEX_LIB),,)
-NormalProgramTarget(twoCircles, twoCircles.o $(SHARED_MAIN_OBJS), $(SUSPEX_LIB),,)
+#define CommonTarget(prog) \
+  NormalProgramTarget(prog, prog.o $(COMMON_OBJS) $(MAIN_OBJ), $(PEXUT_LIB) $(SUSPEX_LIB),$(LOCAL_LIBRARIES),)
+
+AllTarget($(PROGS))
+
+CommonTarget( atextAttr )
+CommonTarget( cell )
+CommonTarget( edgeAttr )
+CommonTarget( encTextAttr )
+CommonTarget( fa )
+CommonTarget( faData )
+CommonTarget( fasData )
+CommonTarget( faset )
+CommonTarget( font )
+CommonTarget( interior )
+CommonTarget( intrAttr )
+CommonTarget( line )
+CommonTarget( lineAttr )
+CommonTarget( lineSet )
+CommonTarget( markerAttr )
+CommonTarget( multiDraw )
+CommonTarget( nurbCurve )
+CommonTarget( nurbSurf )
+CommonTarget( pfline )
+CommonTarget( quadMesh )
+CommonTarget( sendoc )
+CommonTarget( shade )
+CommonTarget( sofas )
+CommonTarget( startoc )
+CommonTarget( struct )
+CommonTarget( textAttr )
+CommonTarget( textExtent )
+CommonTarget( triStrip )
+CommonTarget( twoCircles)
+
+CleanTarget()
 
 DependTarget()
 
