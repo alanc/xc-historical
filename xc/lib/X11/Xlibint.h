@@ -1,4 +1,4 @@
-/* $XConsortium: Xlibint.h,v 11.86 91/02/11 18:58:04 rws Exp $ */
+/* $XConsortium: Xlibint.h,v 11.87 91/02/20 21:17:17 rws Exp $ */
 /* Copyright 1984, 1985, 1987, 1989  Massachusetts Institute of Technology */
 
 /*
@@ -25,23 +25,14 @@ without express or implied warranty.
 #define _XEVENT_
 #endif
 
-#ifdef USG
-#ifndef __TYPES__
-#include <sys/types.h>			/* forgot to protect it... */
-#define __TYPES__
-#endif /* __TYPES__ */
-#else
-#include <sys/types.h>
-#endif /* USG */
+#include <X11/Xlib.h>
 
 /*
  * define the following if you want the Data macro to be a procedure instead
  */
-#if defined(CRAY)
+#ifdef CRAY
 #define DataRoutineIsProcedure
 #endif /* CRAY */
-
-#include <X11/Xlib.h>		/* get NeedFunctionPrototypes defs */
 
 #ifndef _XEVENT_
 /*
