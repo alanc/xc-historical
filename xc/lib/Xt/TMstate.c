@@ -1497,6 +1497,7 @@ void XtInstallAccelerators(destination,source)
     if ((!XtIsWindowObject(source)) ||
         source->core.accelerators == NULL) return;
 /*    if (source->core.accelerators->accProcTbl == NULL)
+ *  %%%
  *  The spec is not clear on when actions specified in accelerators are bound;
  *  The most useful (and easiest) thing seems to be to bind them at this time
  *  (rather than at Realize).  Under the current code the preceeding test
@@ -1532,7 +1533,7 @@ void XtInstallAccelerators(destination,source)
     if (XtClass(source)->core_class.display_accelerator != NULL){
          str[0] = '\0';
          (void) PrintEvent(&str[0],
-                &source->core.tm.translations->eventObjTbl[0].event);
+                &source->core.accelerators->eventObjTbl[0].event);
          (*(XtClass(source)->core_class.display_accelerator))(source,str);
     }
 }         
