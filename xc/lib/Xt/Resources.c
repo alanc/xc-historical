@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Resources.c,v 1.37 88/02/08 19:25:17 swick Exp $";
+static char rcsid[] = "$Header: Resources.c,v 1.38 88/02/21 16:21:47 swick Exp $";
 #endif lint
 
 /*
@@ -167,7 +167,11 @@ static void XrmGetResources(widget, base, names, classes, length,
     		XrmValue	value, defaultValue;
     register 	int		j;
     		int		i;
-    		XrmHashTable	searchList[100];
+#define SEARCHTABLESIZE 100
+		XrmHashTable	stackSearchList[SEARCHTABLESIZE];
+    		XrmHashTable	*searchList;
+		unsigned int	searchListSize;
+		Bool		status;
 		Boolean		found[400];
 		XrmQuark	rawType;
 		XrmValue	rawValue;
@@ -246,12 +250,24 @@ static void XrmGetResources(widget, base, names, classes, length,
     names[length] = NULLQUARK;
     classes[length] = NULLQUARK;
 
+    searchList = stackSearchList;
+    searchListSize = SEARCHTABLESIZE;
     if (num_resources != 0) {
 
 	/* Ask resource manager for a list of database levels that we can
 	   do a single-level search on each resource */
 
-	XrmQGetSearchList(XtDefaultDB, names, classes, searchList);
+	status = XrmQGetSearchList(XtDefaultDB, names, classes,
+				   searchList, SEARCHTABLESIZE);
+	if (!status) {
+	    searchList = NULL;
+	    do {
+		searchList = (XrmHashTable*)
+		    XtRealloc(searchList, (searchListSize *= 2));
+		status = XrmQGetSearchList(XtDefaultDB, names, classes,
+					   searchList, searchListSize);
+	    } while (!status);
+	}
 	
 	/* go to the resource manager for those resources not found yet */
 	/* if it's not in the resource database use the default value   */
@@ -302,6 +318,7 @@ static void XrmGetResources(widget, base, names, classes, length,
 	    }
 	}
     }
+    if (searchList != stackSearchList) XtFree(searchList);
 }
 
 static void GetResources(

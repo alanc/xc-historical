@@ -1,4 +1,4 @@
-/* $Header: Xresource.h,v 1.7 88/02/02 20:34:03 swick Exp $ */
+/* $Header: Xresource.h,v 1.8 88/02/14 11:55:33 rws Exp $ */
 
 /*
  * Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
@@ -194,11 +194,12 @@ extern Bool XrmGetResource();
     /* char		    *type;      */  /* RETURN */
     /* XrmValue		    *value;     */  /* RETURN */
 
-extern void XrmQGetSearchList();
+extern Bool XrmQGetSearchList();
     /* XrmDatabase	    db;		*/
     /* XrmNameList	    names;      */
     /* XrmClassList	    classes;    */
     /* XrmSearchList	    searchList; */  /* RETURN */
+    /* int		    listLength; */
 
 extern Bool XrmQGetSearchResource();
     /* SearchList	    searchList; */

@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Xrm.c,v 1.7 88/02/10 18:04:45 rws Exp $";
+static char rcsid[] = "$Header: Xrm.c,v 1.8 88/02/14 11:55:24 rws Exp $";
 #endif lint
 
 /*
@@ -257,7 +257,8 @@ static Bool GetEntry(tight, loose, names, classes, type, value)
 } /* GetEntry */
 
 
-int numTables;
+static int numTables;
+static int lenTables;
 
 static void GetTables(tight, loose, names, classes, tables)
              XrmHashTable   tight;
@@ -282,9 +283,11 @@ static void GetTables(tight, loose, names, classes, tables)
 		if (names[1] != NULLQUARK) {				    \
 		    GetTables(nTight, nLoose, names+1, classes+1, tables);  \
 		} else if (nTight != NULL) {				    \
+		    if (numTables == lenTables) return;			    \
 		    tables[numTables++] = nTight;			    \
 		}							    \
 		if (nLoose != NULL) {					    \
+		    if (numTables == lenTables) return;			    \
 		    tables[numTables++] = nLoose;			    \
 		}							    \
 	    }								    \
@@ -511,15 +514,17 @@ static void Merge(new, old)
     XFree(new);
 } /* Merge */
 
-void XrmQGetSearchList(db, names, classes, searchList)
+Bool XrmQGetSearchList(db, names, classes, searchList, listLength)
     XrmHashBucket   db;
     XrmNameList	    names;
     XrmClassList    classes;
     XrmSearchList   searchList;	/* RETURN */
+    int		    listLength;
 {
     XrmHashTable    nTight, nLoose;
 
     numTables = 0;
+    lenTables = listLength;
     if (db != NULL) {
 	nTight = db->tables[(int) XrmBindTightly];
 	nLoose = db->tables[(int) XrmBindLoosely];
@@ -527,11 +532,15 @@ void XrmQGetSearchList(db, names, classes, searchList)
 	if (*names != NULLQUARK) {
 	    GetTables(nTight, nLoose, names, classes, searchList);
 	} else if (nTight != NULL) {
+	    if (numTables == lenTables) return False;
 	    searchList[numTables++] = nTight;
 	}
+	if (numTables == lenTables) return False;
 	searchList[numTables++] = nLoose;
     }
+    if (numTables == lenTables) return False;
     searchList[numTables] = NULL;
+    return True;
 } /* XrmGetSearchList */
 
 Bool XrmQGetSearchResource(searchList, name, class, pType, pVal)
