@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: io.c,v 1.33 87/09/01 17:22:31 rws Locked $ */
+/* $Header: io.c,v 1.34 87/09/07 12:22:18 toddb Locked $ */
 /*****************************************************************
  * i/o functions
  *
@@ -325,7 +325,7 @@ WriteToClient (who, remaining, buf)
     {
 #ifdef notdef
 	ErrorF( "CONNECTION %d ON ITS WAY OUT\n", connection);
-#endif notdef
+#endif
 	return(-1);
     }
 
@@ -362,7 +362,7 @@ WriteToClient (who, remaining, buf)
 		   clean up after the client.  We can't clean up here,
 		   because the we're in the middle of doing something
 		   and will probably screw up some data strucutres */
-#endif notdef
+#endif
 	    close(connection);
             MarkClientException(who);
 	    return(-1);
@@ -373,7 +373,7 @@ WriteToClient (who, remaining, buf)
 		connection);
         ErrorF("need to write: %d, have written: %d, eerno: %d\n", 
 	       remaining, n, errno);
-#endif notdef
+#endif
 	CLEARBITS(mask);
 	BITSET(mask, connection);
 	n = select (connection + 1, (int *) NULL, mask, (int *) NULL, 
