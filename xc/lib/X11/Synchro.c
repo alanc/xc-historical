@@ -1,4 +1,4 @@
-/* $XConsortium: Synchro.c,v 11.10 91/11/09 15:40:03 keith Exp $ */
+/* $XConsortium: Synchro.c,v 11.11 93/10/20 19:22:04 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -13,26 +13,14 @@ suitability of this software for any purpose.  It is provided "as is"
 without express or implied warranty.
 */
 
-#define NEED_REPLIES
 #include "Xlibint.h"
+
 
 int _XSyncFunction(dpy)
 register Display *dpy;
 {
-    xGetInputFocusReply rep;
-    register xReq *req;
-    int (*func)();
-
-    LockDisplay(dpy);
-    GetEmptyReq(GetInputFocus, req);
-    (void) _XReply (dpy, (xReply *)&rep, 0, xTrue);
-    if (func = dpy->savedsynchandler) {
-	dpy->synchandler = func;
-	dpy->savedsynchandler = NULL;
-    }
-    UnlockDisplay(dpy);
-    if (func) (*func)(dpy);
-    return 0;
+	XSync(dpy,0);
+	return 0;
 }
 
 #if NeedFunctionPrototypes
