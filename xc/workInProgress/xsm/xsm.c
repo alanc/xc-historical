@@ -1,4 +1,4 @@
-/* $XConsortium: xsm.c,v 1.58 94/07/26 18:20:33 mor Exp $ */
+/* $XConsortium: xsm.c,v 1.59 94/07/28 13:26:04 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -48,6 +48,7 @@ in this Software without prior written authorization from the X Consortium.
 #include <signal.h>
 
 Atom wmStateAtom;
+List *dead_clients;
 
 
 /*
@@ -180,6 +181,16 @@ char **argv;
     create_client_info_popup ();
     create_save_popup ();
     create_name_session_popup ();
+
+    /*
+     * We have to keep track of clients that go away.  They may come
+     * back trying to use the same client ID.  So we keep a list of
+     * dead clients.
+     */
+
+    dead_clients = ListInit ();
+    if (!dead_clients)
+	nomem ();
 
 
     /*
@@ -520,6 +531,16 @@ PendingClient	*pendclient;
 		XtFree (client->discardCommand);
 	    client->discardCommand = (char *) XtNewString(prop->vals[0].value);
 	}
+	else if (strcmp (prop->name, SmRestartStyleHint) == 0)
+	{
+	    int hint = (int) *((char *) (prop->vals[0].value));
+
+	    if (hint == SmRestartIfRunning || hint == SmRestartAnyway ||
+		hint == SmRestartImmediately || hint == SmRestartNever)
+	    {
+		client->restartHint = hint;
+	    }
+	}
 
 	ListFreeAll(pprop->values);
 	free(pprop);
@@ -535,14 +556,17 @@ PendingClient	*pendclient;
 
 
 void
-SetProperty(client, prop)
+SetProperty(client, theProp, mallocFlag)
 ClientRec	*client;
-SmProp		*prop;
+SmProp		*theProp;
+Bool		mallocFlag;
+
 {
-    int	idx, j;
+    SmProp *prop;
+    int	idx, i, j;
 
     for (j = 0; j < client->numProps; j++)
-	if (strcmp (prop->name, client->props[j]->name) == 0)
+	if (strcmp (theProp->name, client->props[j]->name) == 0)
 	{
 	    SmFreeProperty (client->props[j]);
 	    break;
@@ -557,6 +581,36 @@ SmProp		*prop;
 
 	if (client->numProps > MAX_PROPS)
 	    return;
+    }
+
+    if (!mallocFlag)
+    {
+	prop = theProp;
+    }
+    else
+    {
+	prop = (SmProp *) malloc (sizeof (SmProp));
+
+	prop->name = (char *) malloc (strlen (theProp->name) + 1);
+	strcpy (prop->name, theProp->name);
+
+	prop->type = (char *) malloc (strlen (theProp->type) + 1);
+	strcpy (prop->type, theProp->type);
+
+	prop->num_vals = theProp->num_vals;
+
+	prop->vals = (SmPropValue *) malloc (
+	    theProp->num_vals * sizeof (SmPropValue));
+
+	for (i = 0; i < theProp->num_vals; i++)
+	{
+	    prop->vals[i].length = theProp->vals[i].length;
+	    prop->vals[i].value = (SmPointer) malloc (
+		theProp->vals[i].length + 1);
+	    memcpy (prop->vals[i].value, theProp->vals[i].value,
+		theProp->vals[i].length);
+	    ((char *) prop->vals[i].value)[theProp->vals[i].length] = '\0';
+	}
     }
 
     client->props[idx] = prop;
@@ -582,6 +636,16 @@ SmProp		*prop;
 		XtFree (client->discardCommand);
 	    client->discardCommand =
 		(char *) XtNewString (prop->vals[0].value);
+	}
+    }
+    else if (strcmp (prop->name, SmRestartStyleHint) == 0)
+    {
+	int hint = (int) *((char *) (prop->vals[0].value));
+
+	if (hint == SmRestartIfRunning || hint == SmRestartAnyway ||
+	    hint == SmRestartImmediately || hint == SmRestartNever)
+	{
+	    client->restartHint = hint;
 	}
     }
 }
@@ -673,6 +737,25 @@ ClientRec *client;
 
 
 
+void
+AddDeadClient (client)
+
+ClientRec *client;
+
+{
+    List *cl;
+
+    for (cl = ListFirst (dead_clients); cl; cl = ListNext (cl))
+    {
+	if (strcmp ((char *) cl->thing, client->clientId) == 0)
+	    return;
+    }
+
+    ListAddLast (dead_clients, XtNewString (client->clientId));
+}
+
+
+
 /*
  * Session Manager callbacks
  */
@@ -688,9 +771,10 @@ char 		*previousId;
     ClientRec	*client = (ClientRec *) managerData;
     char 	*id;
     List	*cl;
-    int		send_save = 1;
+    int		send_save;
 
-    if (verbose) {
+    if (verbose)
+    {
 	printf (
 	"On IceConn fd = %d, received REGISTER CLIENT [Previous Id = %s]\n",
 	IceConnectionNumber (client->ice_conn),
@@ -698,17 +782,60 @@ char 		*previousId;
 	printf ("\n");
     }
 
-    if (previousId)
+    if (!previousId)
     {
-	id = (char *)malloc (strlen (previousId) + 1);
-	strcpy (id, previousId);
+	id = SmsGenerateClientID (smsConn);
+	send_save = 1;
     }
     else
-	id = SmsGenerateClientID (smsConn);
+    {
+	int found_match = 0;
+	send_save = 1;
+
+	if (PendingList)
+	{
+	    for (cl = ListFirst (PendingList); cl; cl = ListNext (cl))
+	    {
+		if (!strcmp (((PendingClient *) cl->thing)->clientId,
+		    previousId))
+		{
+		    SetInitialProperties (client, (PendingClient *) cl->thing);
+		    ListFreeOne (cl);
+		    found_match = 1;
+		    send_save = 0;
+		    break;
+		}
+	    }
+	}
+
+	if (!found_match)
+	{
+	    for (cl = ListFirst (dead_clients); cl; cl = ListNext (cl))
+	    {
+		if (strcmp ((char *) cl->thing, previousId) == 0)
+		{
+		    found_match = 1;
+		    XtFree (cl->thing);
+		    ListFreeOne (cl);
+		    break;
+		}
+	    }
+	}
+
+	if (!found_match)
+	{
+	    /* previous id was bogus, return bad status */
+
+	    free (previousId);
+	    return (0);
+	}
+	else
+	{
+	    id = previousId;
+	}
+    }
 
     SmsRegisterClientReply (smsConn, id);
-    client->clientId = id;
-    client->clientHostname = SmsClientHostName (smsConn);
 
     if (verbose) {
 	printf (
@@ -717,25 +844,8 @@ char 		*previousId;
 	printf ("\n");
     }
 
-    if(previousId) {
-	for(cl = ListFirst(PendingList); cl; cl = ListNext(cl)) {
-	    if(!strcmp(((PendingClient *)cl->thing)->clientId, previousId)) {
-		SetInitialProperties(client, (PendingClient *)cl->thing);
-		ListFreeOne(cl);
-		send_save = 0;
-		break;
-	    }
-	}
-	free (previousId);
-
-	if (send_save)
-	{
-	    /* previous id was bogus, return bad status */
-
-	    return (0);
-	}
-    }
-
+    client->clientId = id;
+    client->clientHostname = SmsClientHostName (smsConn);
     client->restarted = (previousId != NULL);
 
     if (send_save) {
@@ -798,6 +908,8 @@ InteractDoneProc (smsConn, managerData, cancelShutdown)
     if (cancelShutdown && !shutdownCancelled) {
 	shutdownCancelled = True;
 	for (client = ClientList; client; client = client->next) {
+	    if (!client->running)
+		continue;
 	    SmsShutdownCancelled (client->smsConn);
 	    if (verbose) 
 		printf ("Client Id = %s, sent SHUTDOWN CANCELLED\n",
@@ -915,29 +1027,44 @@ CloseConnectionProc (smsConn, managerData, count, reasonMsgs)
     IceSetShutdownNegotiation (client->ice_conn, False);
     IceCloseConnection (client->ice_conn);
 
-    if (client == ClientList)
-    {
-	FreeClientInfo (client);
-	ClientList = next;
-    }
-    else
-    {
-	ptr = ClientList;
-	while (ptr && ptr->next != client)
-	    ptr = ptr->next;
+    client->ice_conn = NULL;
+    client->smsConn = NULL;
+    client->running = False;
 
-	if (ptr->next == client)
+    AddDeadClient (client);
+
+    if (client->restartHint == SmRestartImmediately && !shutdownInProgress)
+    {
+	Clone (client, True /* use saved state */);
+    }
+
+    if (client->restartHint != SmRestartAnyway || shutdownInProgress)
+    {
+	if (client == ClientList)
 	{
 	    FreeClientInfo (client);
-	    ptr->next = next;
+	    ClientList = next;
+	}
+	else
+	{
+	    ptr = ClientList;
+	    while (ptr && ptr->next != client)
+		ptr = ptr->next;
+
+	    if (ptr->next == client)
+	    {
+		FreeClientInfo (client);
+		ptr->next = next;
+	    }
 	}
     }
 
     numClients--;
 
-    if (shutdownInProgress && numClients == 0)
+    if (shutdownInProgress)
     {
-	EndSession ();
+	if (numClients == 0)
+	    EndSession ();
     }
     else if (client_info_visible)
 	UpdateClientList ();
@@ -967,7 +1094,7 @@ SmProp 		**props;
     for (i = 0; i < numProps; i++) {
 	if(verbose)
 	    PrintProperty (props[i]);
-	SetProperty (client, props[i]);
+	SetProperty (client, props[i], False /* Don't malloc - use this */);
     }
     free ((char *) props);
 
@@ -1070,6 +1197,8 @@ char 		**failureReasonRet;
     newClient->numProps = 0;
     newClient->discardCommand = NULL;
     newClient->saveDiscardCommand = NULL;
+    newClient->running = True;
+    newClient->restartHint = SmRestartIfRunning;
     newClient->next = ClientList;
 
     ClientList = newClient;
@@ -1238,14 +1367,6 @@ IceConn 	ice_conn;
 	}
 	else
 	{
-	    if (prev == NULL)
-		ClientList = ptr->next;
-	    else
-		prev->next = ptr->next;
-
-	    SmsCleanUp (ptr->smsConn);
-	    FreeClientInfo (ptr);
-	    
 	    if (verbose)
 	    {
 		printf ("ICE Connection terminated (fd = %d)\n",
@@ -1255,12 +1376,36 @@ IceConn 	ice_conn;
 
 	    IceSetShutdownNegotiation (ice_conn, False);
 	    IceCloseConnection (ice_conn);
+	    SmsCleanUp (ptr->smsConn);
+
+	    ptr->ice_conn = NULL;
+	    ptr->smsConn = NULL;
+	    ptr->running = False;
+
+	    AddDeadClient (ptr);
+
+	    if (ptr->restartHint == SmRestartImmediately &&
+		!shutdownInProgress)
+	    {
+		Clone (ptr, True /* use saved state */);
+	    }
+
+	    if (ptr->restartHint != SmRestartAnyway || shutdownInProgress)
+	    {
+		if (prev == NULL)
+		    ClientList = ptr->next;
+		else
+		    prev->next = ptr->next;
+
+		FreeClientInfo (ptr);
+	    }
 
 	    numClients--;
 
-	    if (shutdownInProgress && numClients == 0)
+	    if (shutdownInProgress)
 	    {
-		EndSession ();
+		if (numClients == 0)
+		    EndSession ();
 	    }
 	    else if (client_info_visible)
 		UpdateClientList ();
