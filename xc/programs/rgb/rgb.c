@@ -5,13 +5,17 @@
    where red/green/blue are decimal values, and inserts them in a database.
  */
 #ifndef lint
-static char *rcsid_rgb_c = "$XConsortium: rgb.c,v 11.12 89/12/12 21:18:34 jim Exp $";
+static char *rcsid_rgb_c = "$XConsortium: rgb.c,v 11.13 89/12/13 09:01:45 jim Exp $";
 #endif
 
 #ifdef NDBM
 #include <ndbm.h>
 #else
+#ifdef SVR4
+#include <rpcsvc/dbm.h>
+#else
 #include <dbm.h>
+#endif
 #define dbm_open(name,flags,mode) (!dbminit(name))
 #define dbm_store(db,key,content,flags) (store(key,content))
 #define dbm_close(db) dbmclose()

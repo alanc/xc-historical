@@ -1,5 +1,5 @@
 /*
- * $XConsortium: showrgb.c,v 1.6 89/12/13 09:01:47 jim Exp $
+ * $XConsortium: showrgb.c,v 1.7 91/02/14 13:43:51 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -26,7 +26,11 @@
 #ifdef NDBM
 #include <ndbm.h>
 #else
+#ifdef SVR4
+#include <rpcsvc/dbm.h>
+#else
 #include <dbm.h>
+#endif
 #define dbm_open(name,flags,mode) (!dbminit(name))
 #define dbm_firstkey(db) (firstkey())
 #define dbm_fetch(db,key) (fetch(key))
