@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: access.c,v 1.29 89/03/10 17:34:13 rws Exp $ */
+/* $XConsortium: access.c,v 1.30 89/03/14 08:33:31 rws Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -635,13 +635,12 @@ ConvertAddr (saddr, len, addr)
       case AF_UNIX:
 #endif
         return (0);
-      case AF_INET:
+
 #ifdef TCPCONN
+      case AF_INET:
         *len = sizeof (struct in_addr);
         *addr = (pointer) &(((struct sockaddr_in *) saddr)->sin_addr);
         return (AF_INET);
-#else
-	break;
 #endif
 
 #ifdef DNETCONN
@@ -649,9 +648,8 @@ ConvertAddr (saddr, len, addr)
         *len = sizeof (struct dn_naddr);
         *addr = (pointer) &(((struct sockaddr_dn *) saddr)->sdn_add);
         return (AF_DECnet);
-#else
-	break;
 #endif
+
       default:
         break;
     }

@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: window.c,v 1.237 89/03/31 13:19:02 keith Exp $ */
+/* $XConsortium: window.c,v 1.238 89/04/07 16:55:52 rws Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -2227,9 +2227,8 @@ MakeBoundingRegion (pWin, pBox)
     WindowPtr	pWin;
     BoxPtr	pBox;
 {
-    RegionPtr	pRgn, pShape;
+    RegionPtr	pRgn;
     ScreenPtr	pScreen = pWin->drawable.pScreen;
-    BoxRec	shapeBox;
 
     pRgn = (*pScreen->RegionCreate) (pBox, 1);
     if (pWin->boundingShape) {
