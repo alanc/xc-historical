@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 5.22 94/08/11 17:06:16 dpw Exp kaleb $
+XCOMM $XConsortium: Imakefile,v 5.23 94/11/21 18:28:11 kaleb Exp kaleb $
 #include <Server.tmpl>
 
 SRCS =  mivaltree.c mipolyseg.c mipolyrect.c \
@@ -40,9 +40,11 @@ InstallLinkKitLibrary(mi,$(LINKKITDIR)/lib)
 InstallLinkKitLibrary(cbrt,$(LINKKITDIR)/lib)
 InstallLinkKitNonExecFile(mi.h,$(LINKKITDIR)/include)
 InstallLinkKitNonExecFile(mibstore.h,$(LINKKITDIR)/include)
+InstallLinkKitNonExecFile(miline.h,$(LINKKITDIR)/include)
 InstallLinkKitNonExecFile(mipointer.h,$(LINKKITDIR)/include)
 InstallLinkKitNonExecFile(misprite.h,$(LINKKITDIR)/include)
 InstallLinkKitNonExecFile(mispritest.h,$(LINKKITDIR)/include)
 InstallLinkKitNonExecFile(mistruct.h,$(LINKKITDIR)/include)
+InstallLinkKitNonExecFile(miinitext.c,$(LINKKITDIR)/include)
 
 DependTarget()
