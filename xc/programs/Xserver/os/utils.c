@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: utils.c,v 1.33 87/09/09 16:56:52 toddb Locked $ */
+/* $Header: utils.c,v 1.34 87/09/14 02:09:06 toddb Exp $ */
 #include <stdio.h>
 #include <sys/time.h>
 #include "misc.h"
@@ -275,7 +275,7 @@ UseMsg()
 
 unsigned long * 
 Xalloc (amount)
-    int amount;
+    unsigned long amount;
 {
     char		*malloc();
     register pointer  ptr;
@@ -285,7 +285,7 @@ Xalloc (amount)
 #ifdef DEBUG
         /* aligned extra on long word boundary */
     amount = (amount + 3) & ~3;  
-    if (ptr =  (pointer) malloc( ((unsigned) amount) + 12))
+    if (ptr =  (pointer) malloc(amount + 12))
     {
         *(unsigned long *)ptr = FIRSTMAGIC;
         *((unsigned long *)(ptr + 4)) = amount;
@@ -295,7 +295,7 @@ Xalloc (amount)
     FatalError("Error in Xalloc\n");
     /* NOTREACHED */
 #else
-    ptr =  (pointer) malloc( ((unsigned) amount));
+    ptr =  (pointer) malloc(amount);
     return ((unsigned long *)ptr);
 #endif /* DEBUG */
     /* NOTREACHED */
@@ -312,11 +312,10 @@ extern unsigned long *minfree;           /* DEBUG */
 unsigned long *
 Xrealloc (ptr, amount)
 register pointer ptr;
-int amount;
+unsigned long amount;
 {
     char *malloc();
     char *realloc();
-    char *foo;
 
     amount = (amount + 3) & ~3;  
     if (ptr)
@@ -330,7 +329,7 @@ int amount;
 #ifdef DEBUG
 	if (!CheckNode(ptr - 8))
 	    AbortServer();
-	ptr = (pointer) realloc ((ptr - 8), (unsigned) amount + 12);
+	ptr = (pointer) realloc ((ptr - 8), amount + 12);
 #else
         ptr = (pointer) realloc (ptr, amount);
 #endif /* DEBUG */
@@ -338,9 +337,9 @@ int amount;
     else
     {
 #ifdef DEBUG
-	ptr =  (pointer) malloc (((unsigned) amount) + 12);
+	ptr =  (pointer) malloc (amount + 12);
 #else
-	ptr =  (pointer) malloc ((unsigned) amount);
+	ptr =  (pointer) malloc (amount);
 #endif 
     }
 #ifdef DEBUG
@@ -388,7 +387,7 @@ static Bool
 CheckNode(ptr)
     pointer ptr;
 {
-    int    amount;
+    unsigned long    amount;
 
     amount = *((unsigned long *)(ptr + 4));
     if (*((unsigned long *) ptr) == FREEDMAGIC)
