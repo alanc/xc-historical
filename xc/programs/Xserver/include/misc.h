@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: misc.h,v 1.57 91/04/02 09:12:37 rws Exp $ */
+/* $XConsortium: misc.h,v 1.58 91/04/10 08:53:39 rws Exp $ */
 #ifndef MISC_H
 #define MISC_H 1
 /*
@@ -109,13 +109,13 @@ typedef unsigned long ATOM;
 /* some macros to help swap requests, replies, and events */
 
 #define LengthRestB(stuff) \
-    (((unsigned long)stuff->length << 2) - sizeof(*stuff))
+    ((client->req_len << 2) - sizeof(*stuff))
 
 #define LengthRestS(stuff) \
-    (((unsigned long)stuff->length << 1) - (sizeof(*stuff) >> 1))
+    ((client->req_len << 1) - (sizeof(*stuff) >> 1))
 
 #define LengthRestL(stuff) \
-    ((unsigned long)stuff->length - (sizeof(*stuff) >> 2))
+    (client->req_len - (sizeof(*stuff) >> 2))
 
 #define SwapRestS(stuff) \
     SwapShorts((short *)(stuff + 1), LengthRestS(stuff))
