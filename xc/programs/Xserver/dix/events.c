@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: events.c,v 5.68 93/09/27 22:49:24 rws Exp $ */
+/* $XConsortium: events.c,v 5.69 94/01/07 09:41:17 dpw Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -44,6 +44,9 @@ SOFTWARE.
 
 extern WindowPtr *WindowTable;
 
+#ifdef XRECORD 
+extern int (* EventProcVector[128]) ();
+#endif 
 extern void (* EventSwapVector[128]) ();
 extern void (* ReplySwapVector[256]) ();
 
@@ -1029,6 +1032,23 @@ TryClientEvents (client, pEvents, count, mask, filter, grab)
 	"Event([%d, %d], mask=0x%x), client=%d",
 	pEvents->u.u.type, pEvents->u.u.detail, mask, client->index);
 #endif
+#ifdef XRECORD 
+    for (i = 0; i < count; i++)
+    {
+	if ( (EventProcVector[pEvents[i].u.u.type & 0177]) && 
+		!(pEvents[i].u.u.type & EXTENSION_EVENT_BASE) )
+	{ 
+#ifdef DEBUG
+	    ErrorF(
+	    "TryClientEvents trapped event([%d, %d], mask=0x%x), client=%d\n",
+	    pEvents->u.u.type, pEvents->u.u.detail, mask, client->index);
+#endif
+
+	    (*EventProcVector[pEvents[i].u.u.type & 0177])(client,
+		&(pEvents[i]));
+        }
+    }
+#endif 
     if ((client) && (client != serverClient) && (!client->clientGone) &&
 	((filter == CantBeFiltered) || (mask & filter)))
     {
@@ -3533,6 +3553,28 @@ WriteEventsToClient(pClient, count, events)
     int		count;
     xEvent	*events;
 {
+#ifdef XRECORD 
+    xEvent    *eventFrom;
+    int       i;
+
+    for(i = 0; i < count; i++)
+    {
+      eventFrom = &events[i];
+
+      if ( (EventProcVector[eventFrom->u.u.type]) && 
+	(eventFrom->u.u.type & EXTENSION_EVENT_BASE 
+		|| eventFrom->u.u.type == X_Error) )
+      { 
+#ifdef DEBUG
+	    ErrorF(
+	    "WriteEventsToClient trapped event [%d, %d], client=%d\n",
+	    eventFrom->u.u.type, eventFrom->u.u.detail, pClient->index);
+#endif 
+	    (*EventProcVector[eventFrom->u.u.type])(pClient,
+		eventFrom); 
+      }
+    }
+#endif
     if(pClient->swapped)
     {
         int	i;

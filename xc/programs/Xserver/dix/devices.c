@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: devices.c,v 5.34 93/09/27 22:49:36 rws Exp $ */
+/* $XConsortium: devices.c,v 5.35 93/09/28 21:15:43 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -39,6 +39,9 @@ SOFTWARE.
 #include "site.h"
 
 extern InputInfo inputInfo;
+#ifdef XRECORD
+extern int (* EventProcVector[128]) ();
+#endif 
 extern int (* InitialVector[3]) ();
 extern void (* ReplySwapVector[256]) ();
 extern void CopySwap32Write(), SwapTimeCoordWrite();
@@ -723,6 +726,10 @@ SendMappingNotify(request, firstKeyCode, count)
 #endif
     /* 0 is the server client */
     for (i=1; i<currentMaxClients; i++)
+#ifdef XRECORD
+	if (EventProcVector[MappingNotify])
+	    (*EventProcVector[MappingNotify])(clients[i], &event);
+#endif
         if (clients[i] && ! clients[i]->clientGone &&
 	    (clients[i]->requestVector != InitialVector)
 #ifdef XKB
