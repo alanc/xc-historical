@@ -24,7 +24,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: multibufpx.c,v 1.11 91/06/01 13:25:50 rws Exp $ */
+/* $XConsortium: multibufpx.c,v 1.1 92/03/17 17:01:31 eswu Exp $ */
 #define NEED_REPLIES
 #define NEED_EVENTS
 #include <stdio.h>
@@ -358,7 +358,7 @@ pixDisplayImageBuffers(pScreen, ppMBWindow, ppMBBuffer, nbuf)
 		    bool = TRUE;
 		    DoChangeGC (pGC, GCGraphicsExposures, &bool, FALSE);
 		}
-		ValidateGC (pPrevPixmap, pGC);
+		ValidateGC ((DrawablePtr)pPrevPixmap, pGC);
 		pExposed = (*pGC->ops->CopyArea)((DrawablePtr) pWin,
 						 (DrawablePtr) pPrevPixmap,
 						 pGC,
@@ -401,8 +401,9 @@ pixDisplayImageBuffers(pScreen, ppMBWindow, ppMBBuffer, nbuf)
 
 	    case MultibufferUpdateActionCopied:
 
-		ValidateGC (pPrevPixmap, pGC);
-		(*pGC->ops->CopyArea) (pNewPixmap, pPrevPixmap, pGC,
+		ValidateGC ((DrawablePtr)pPrevPixmap, pGC);
+		(*pGC->ops->CopyArea) ((DrawablePtr)pNewPixmap,
+				       (DrawablePtr)pPrevPixmap, pGC,
 				       0, 0, pWin->drawable.width,
 				       pWin->drawable.height, 0, 0);
 		break;
@@ -411,10 +412,11 @@ pixDisplayImageBuffers(pScreen, ppMBWindow, ppMBBuffer, nbuf)
 
 	    /* display the new buffer */
 
-	    ValidateGC (pWin, pGC);
-	    (*pGC->ops->CopyArea) (pNewPixmap, pWin, pGC,
-			       0, 0, pWin->drawable.width, pWin->drawable.height,
-			       0, 0);
+	    ValidateGC ((DrawablePtr)pWin, pGC);
+	    (*pGC->ops->CopyArea) ((DrawablePtr)pNewPixmap, (DrawablePtr)pWin,
+				   pGC, 0, 0,
+				   pWin->drawable.width, pWin->drawable.height,
+				   0, 0);
 	}
 
 	ppMBWindow[i]->lastUpdate = currentTime;
@@ -550,13 +552,14 @@ pixPositionWindow (pWin, x, y)
 	}
 	if (pWin->bitGravity != ForgetGravity)
 	{
-	    ValidateGC (pPixmap, pGC);
-	    (*pGC->ops->CopyArea) (pMBBuffer->pDrawable, pPixmap, pGC,
-				    sourcex, sourcey, savewidth, saveheight,
-				    destx, desty);
+	    ValidateGC ((DrawablePtr)pPixmap, pGC);
+	    (*pGC->ops->CopyArea) (pMBBuffer->pDrawable, (DrawablePtr)pPixmap,
+				   pGC,
+				   sourcex, sourcey, savewidth, saveheight,
+				   destx, desty);
 	}
 	pPixmap->drawable.id = pMBBuffer->pDrawable->id;
-	(*pScreen->DestroyPixmap) (pMBBuffer->pDrawable);
+	(*pScreen->DestroyPixmap) ((PixmapPtr) pMBBuffer->pDrawable);
 	pMBBuffer->pDrawable = (DrawablePtr) pPixmap;
 	if (i != pMBWindow->displayedMultibuffer)
 	{
