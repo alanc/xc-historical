@@ -551,8 +551,6 @@ extern XtPeekEvent(); /* event */
 
 extern Boolean XtPending ();
 
-extern XtSetCompressMotion ();
-    /* Boolean compress; */
 
 /****************************************************************
  *
