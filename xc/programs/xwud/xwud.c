@@ -4,7 +4,7 @@
 /* xwud - marginally useful raster image undumper */
 
 #ifndef lint
-static char *rcsid = "$XConsortium: xwud.c,v 1.27 89/05/02 18:41:08 rws Exp $";
+static char *rcsid = "$XConsortium: xwud.c,v 1.28 89/05/03 11:15:34 rws Exp $";
 #endif
 
 #include <X11/Xos.h>
@@ -471,6 +471,11 @@ main(argc, argv)
     hints.flags = PMaxSize |
 		  ((gbits & (XValue|YValue)) ? USPosition : 0) |
 		  ((gbits & (HeightValue|WidthValue)) ? USSize : PSize);
+
+    if ((gbits & XValue) && (gbits & XNegative))
+	hints.x += DisplayWidth(dpy, screen) - hints.width; 
+    if ((gbits & YValue) && (gbits & YNegative))
+	hints.y += DisplayHeight(dpy, screen) - hints.height;
 
     /* create the image window */
     image_win = XCreateWindow(dpy, RootWindow(dpy, screen),
