@@ -7,7 +7,7 @@ displaynumber [-option ...] ttyname
 .SH DESCRIPTION
 .I X
 is the window system server.  On operating systems derived from 4.3bsd, it is 
-run automatically run \fIinit(8)\fP, otherwise it is started from the
+run automatically by \fIinit(8)\fP, otherwise it is started from the
 \fIxinit(1)\fP program.  The \fIdisplaynumber\fP argument is used
 by clients in their DISPLAY environment variables to indicate which server
 to contact (large machines may have several displays attached).  This
@@ -191,23 +191,18 @@ If run from \fIinit(8)\fP, errors are logged in the file \fI/usr/adm/X*msgs\fP,
 .SH FILES
 .TP 30
 /etc/X*.hosts
-.br
 Initial access control list
 .TP 30
 /usr/lib/X11/fonts
-.br
 Font directory
 .TP 30
 /usr/lib/X11/rgb.txt
-.br
 Color database
 .TP 30
 /tmp/.X11-unix/X*
-.br
 Unix domain socket
 .TP 30
 /usr/adm/X*msgs
-.br
 Error log file
 .SH "SEE ALSO"
 X(1), xinit(1), xterm(1), xwm(1), xhost(1), xset(1), xsetroot(1), init(8),
