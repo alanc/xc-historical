@@ -1,4 +1,4 @@
-/* $XConsortium: x11perf.c,v 2.36 92/11/11 14:34:46 rws Exp $ */
+/* $XConsortium: x11perf.c,v 2.37 92/11/11 16:41:24 rws Exp $ */
 /*****************************************************************************
 Copyright 1988, 1989 by Digital Equipment Corporation, Maynard, Massachusetts.
 
@@ -417,7 +417,7 @@ void HardwareSync(xp)
 
     image = XGetImage(xp->d, xp->p ? xp->p : xp->w, WIDTH-1, HEIGHT-1, 
 		      1, 1, ~0, ZPixmap);
-    XDestroyImage(image);
+    if (image) XDestroyImage(image);
 }
 
 void DoHardwareSync(xp, p, reps)
