@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: verify.c,v 1.3 88/09/23 14:21:35 keith Exp $
+ * $XConsortium: verify.c,v 1.4 88/10/15 19:11:29 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -44,7 +44,7 @@ struct verify_info	*verify;
 {
 	struct passwd	*p;
 	char		*crypt ();
-	char		**setEnv (), **parseArgs ();
+	char		**userEnv (), **systemEnv (), **parseArgs ();
 	char		*shell, *home;
 	char		**argv;
 
@@ -73,7 +73,8 @@ struct verify_info	*verify;
 	if (!argv)
 		argv = parseArgs (argv, "xsession");
 	verify->argv = argv;
-	verify->environ = setEnv (d, greet->name, home, shell);
+	verify->userEnviron = userEnv (d, greet->name, home, shell);
+	verify->systemEnviron = systemEnv (d, greet->name, home);
 	return 1;
 }
 
@@ -89,7 +90,6 @@ struct verify_info	*verify;
 
 # define NENV		5
 
-char	*environment[NENV + 1];
 
 char	*envname[NENV] = {
  	"DISPLAY",
@@ -111,16 +111,35 @@ char	*value;
 }
 
 char **
-setEnv (d, user, home, shell)
+userEnv (d, user, home, shell)
 struct display	*d;
 char	*user, *home, *shell;
 {
-	environment[DISPLAY] = makeEnv (DISPLAY, d->name);
-	environment[HOME] = makeEnv (HOME, home);
-	environment[USER] = makeEnv (USER, user);
-	environment[PATH] = makeEnv (PATH, d->unixPath);
-	environment[SHELL] = makeEnv (SHELL, shell);
-	return environment;
+	static char	*userEnvironment[NENV + 1];
+
+	userEnvironment[DISPLAY] = makeEnv (DISPLAY, d->name);
+	userEnvironment[HOME] = makeEnv (HOME, home);
+	userEnvironment[USER] = makeEnv (USER, user);
+	userEnvironment[PATH] = makeEnv (PATH, d->userPath);
+	userEnvironment[SHELL] = makeEnv (SHELL, shell);
+	userEnvironment[NENV] = 0;
+	return userEnvironment;
+}
+
+char **
+systemEnv (d, user, home)
+struct display	*d;
+char	*user, *home;
+{
+	static char	*systemEnvironment[NENV + 1];
+	
+	systemEnvironment[DISPLAY] = makeEnv (DISPLAY, d->name);
+	systemEnvironment[HOME] = makeEnv (HOME, home);
+	systemEnvironment[USER] = makeEnv (USER, user);
+	systemEnvironment[PATH] = makeEnv (PATH, d->systemPath);
+	systemEnvironment[SHELL] = makeEnv (SHELL, d->systemShell);
+	systemEnvironment[NENV] = 0;
+	return systemEnvironment;
 }
 
 char *
@@ -207,7 +226,7 @@ char	*string;
 	for (;;) {
 		if (!*string || isblank (*string)) {
 			if (word != string) {
-				argv = (char **) realloc (argv, (i + 1) * sizeof (char *));
+				argv = (char **) realloc ((char *) argv, (i + 2) * sizeof (char *));
 				argv[i] = strncpy (malloc (string - word + 1), word, string-word);
 				argv[i][string-word] = '\0';
 				i++;

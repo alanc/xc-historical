@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: socket.c,v 1.4 88/09/23 14:21:33 keith Exp $
+ * $XConsortium: socket.c,v 1.5 88/10/15 19:13:45 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -35,15 +35,8 @@
 
 int	socketFd = -1;
 
-fd_set	WellKnownSocketsMask;
+FD_TYPE	WellKnownSocketsMask;
 int	WellKnownSocketsMax;
-
-#ifndef FD_ZERO
-/* typedef	struct	fd_set { int fds_bits[1]; } fd_set; */
-# define FD_ZERO(fdp)	bzero ((fdp), sizeof (*(fdp)))
-# define FD_SET(f,fdp)	((fdp)->fds_bits[(f) / (sizeof (int) * 8)] |= (1 << ((f) % (sizeof (int) * 8))))
-# define FD_ISSET(f,fdp)	((fdp)->fds_bits[(f) / (sizeof (int) * 8)] & (1 << ((f) % (sizeof (int) * 8))))
-#endif
 
 
 CreateWellKnownSockets ()
@@ -58,6 +51,7 @@ CreateWellKnownSockets ()
 		LogError ("socket creation failed\n");
 		return;
 	}
+	RegisterCloseOnFork (socketFd);
 	sock_addr.sin_family = AF_INET;
 	sock_addr.sin_port = htons ((short) request_port);
 	sock_addr.sin_addr.s_addr = htonl (INADDR_ANY);
@@ -76,7 +70,7 @@ AnyWellKnownSockets ()
 
 WaitForSomething ()
 {
-	fd_set	reads;
+	FD_TYPE	reads;
 	int	nready;
 
 	Debug ("WaitForSomething\n");
