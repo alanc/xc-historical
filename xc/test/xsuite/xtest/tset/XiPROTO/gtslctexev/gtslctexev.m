@@ -13,7 +13,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: gtslctexevnt.m,v 1.3 94/01/29 15:29:18 rws Exp $
+ * $XConsortium: gtslctexev.m,v 1.4 94/01/30 11:53:19 rws Exp $
  */
 >>TITLE GetSelectedExtensionEvents XIPROTO
 >>SET startup protostartup
@@ -56,7 +56,7 @@ static
 void
 tester()
 {
-Display *client1;
+Display *client1, *opendisplay();
 Window w;
 
 	Create_Client(CLIENT);
