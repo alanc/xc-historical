@@ -1,4 +1,4 @@
-/* $XConsortium: registry,v 1.103 94/10/07 19:59:21 rws Exp rws $ */
+/* $XConsortium: registry,v 1.104 94/10/07 20:00:23 rws Exp rws $ */
 
 				  X Registry
 
@@ -85,6 +85,7 @@ Name						Reference
 "WN"						[103]
 "WRI"						[102]
 "WYSE"						[68]
+"X/software"					[115]
 "X3D"						[8]
 "XC"						[104]
 "Xerox"						[91]
@@ -329,6 +330,7 @@ String						Reference
 "VIT-Visual Information Technologies, Inc (VITec)"	[46]
 "Wolfram Research, Inc."			[102]
 "Wyse Technology Inc."				[68]
+"X/software Germany"				[115]
 "X11/NeWS - Sun Microsystems, Inc."		[58]
 "X Consortium"					[104]
 
@@ -395,6 +397,9 @@ Name						Reference
 "TeKPeerWindows"				[43]
 "VEX"						[14]
 "VIT-Image Display List Extension"		[46]
+"X/software X/bigX"				[115]
+"X/software X/metaX"				[115]
+"X/software X/shadowX"				[115]
 "X3D-PEX"					[8], [9]
 "XC-MISC"					[109]
 "XFree86-VidModeExtension"			[113]
@@ -1517,3 +1522,8 @@ REFERENCES
 	SunSoft, Inc.
 	2550 Garcia Avenue, Mail Stop UMTV 21-122
 	Mountain View, CA  94043-1100
+
+[115]	Michael Gehret
+	X/software
+	Marktstrasse 8, D-87730
+	Groenenbach, Germany
