@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.77 91/07/17 00:42:21 gildea Exp $
+XCOMM $XConsortium: Imakefile,v 1.78 91/09/18 14:28:23 rws Exp $
 #define DoNormalLib NormalLibXaw
 #define DoSharedLib SharedLibXaw
 #define DoDebugLib DebugLibXaw
@@ -169,7 +169,7 @@ OBJS = \
 LibraryObjectRule()
 
 #if DoSharedLib && SharedDataSeparation
-SpecialObjectRule(sharedlib.o,,$(SHLIBDEF))
+SpecialCObjectRule(sharedlib,NullParameter,$(SHLIBDEF))
 #endif
 
 #if DoSharedLib
