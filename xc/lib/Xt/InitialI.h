@@ -1,4 +1,4 @@
-/* $XConsortium: InitialI.h,v 1.16 89/09/12 16:45:50 swick Exp $ */
+/* $XConsortium: InitialI.h,v 1.17 89/09/18 17:59:08 kit Exp $ */
 /* $oHeader: InitializeI.h,v 1.8 88/09/01 11:25:04 asente Exp $ */
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -109,10 +109,12 @@ typedef struct _XtAppStruct {
     ConverterTable converterTable;
     unsigned long selectionTimeout;
     FdStruct fds;
-    short count, max, last;
-    Boolean sync, rv, being_destroyed, error_inited;
+    short count;			/* num of assigned entries in list */
+    short max;				/* allocate size of list */
+    short last;
+    Boolean sync, being_destroyed, error_inited;
     Heap heap;
-    String * fallback_resources;       /* Set by XtAppSetFallbackResources. */
+    String * fallback_resources;	/* Set by XtAppSetFallbackResources. */
 } XtAppStruct;
 
 extern void _XtSetDefaultErrorHandlers();
@@ -147,11 +149,13 @@ typedef struct _XtPerDisplayStruct {
     ModToKeysymTable *modsToKeysyms;   /* modifiers to Keysysms index table*/
     Boolean being_destroyed;
     XrmName name;		       /* resolved app name */
-    XrmClass class;		       /* R2 compatibility only */
+    XrmClass class;		       /* application class */
     Heap heap;
     struct _GCrec *GClist;	       /* for XtGetGC */
     Drawable* drawables;	       /* support for XtGetGC */
     Cardinal drawable_count;	       /* num entries in above list */
+    String language;		       /* XPG language string */
+    Boolean rv;			       /* reverse_video resource */
 } XtPerDisplayStruct, *XtPerDisplay;
 
 extern void _XtPerDisplayInitialize();
