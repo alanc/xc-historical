@@ -1,5 +1,5 @@
 /*
- * $XConsortium: multibuf.h,v 1.4 89/10/03 13:45:34 jim Exp $
+ * $XConsortium: multibuf.h,v 1.5 89/10/03 17:22:16 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -143,6 +143,153 @@ typedef struct {
     int max_buffers;		/* most buffers for this visual */
     int depth;			/* depth of buffers to be created */
 } XmbufBufferInfo;
+
+
+/*
+ * The application programming library contains the interfaces described below.
+ * With the exception of XmbufQueryExtension, if any of these routines are
+ * called with a display that does not support the extension, the
+ * ExtensionErrorHandler (which can be set with XSetExtensionErrorHandler and
+ * functions the same way as XSetErrorHandler) will be called.
+ *
+
+Bool XmbufQueryExtension (dpy, event_base_return, error_base_return)
+    Display *dpy;
+    int *event_base_return, *error_base_return;
+
+	Returns True if the multibuffering/stereo extension is available on the
+	given display.  If the extension exists, the value of the first event
+	code (which should be added to the event type constants
+	MultibufferClobberNotify and MultibufferUpdateNotify to get the actual
+	values) is stored into event_base_return and the value of the first
+	error code (which should be added to the error type constant
+	MultibufferBadBuffer to get the actual value) is stored into
+	error_base_return.
+
+
+Status XmbufGetVersion (dpy, major_version_return, minor_version_return)
+    Display *dpy;
+    int *major_version_return, *minor_version_return;
+
+	Gets the major and minor version numbers of the extension.  The return
+	value is zero if an error occurs or non-zero if no error happens.
+
+
+int XmbufCreateBuffers (dpy, window, count, update_action, update_hint,
+			buffers_update)
+    Display *dpy;
+    Window window;
+    int count;
+    int update_action, update_hint;
+    Multibuffer *buffers_update;
+
+	Requests that "count" buffers be created with the given update_action
+	and update_hint and be associated with the indicated window.  The
+	number of buffers created is returned (zero if an error occurred)
+	and buffers_update is filled in with that many Multibuffer identifiers.
+
+
+void XmbufDestroyBuffers (dpy, window)
+    Display *dpy;
+    Window window;
+
+	Destroys the buffers associated with the given window.
+
+
+void XmbufDisplayBuffers (dpy, count, buffers, min_delay, max_delay)
+    Display *dpy;
+    int count;
+    Multibuffer *buffers;
+    int min_delay, max_delay;
+
+	Displays the indicated buffers their appropriate windows within
+	max_delay milliseconds after min_delay milliseconds have passed.
+	No two buffers may be associated with the same window or else a Matc
+	error is generated.
+
+
+Status XmbufGetWindowAttributes (dpy, window, attributes)
+    Display *dpy;
+    Window window;
+    XmbufWindowAttributes *attributes;
+
+	Gets the multibuffering attributes that apply to all buffers associated
+	with the given window.  Returns non-zero on success and zero if an
+	error occurs.
+
+
+void XmbufChangeWindowAttributes (dpy, window, valuemask, attributes)
+    Display *dpy;
+    Window window;
+    unsigned long valuemask;
+    XmbufSetWindowAttributes *attributes;
+
+	Sets the multibuffering attributes that apply to all buffers associated
+	with the given window.  This is currently limited to the update_hint.
+
+
+Status XmbufGetBufferAttributes (dpy, buffer, attributes)
+    Display *dpy;
+    Buffer buffer;
+    XmbufBufferAttributes *attributes;
+
+	Gets the attributes for the indicated buffer.  Returns non-zero on
+	success and zero if an error occurs.
+
+
+void XmbufChangeBufferAttributes (dpy, buffer, valuemask, attributes)
+    Display *dpy;
+    Multibuffer buffer;
+    unsigned long valuemask;
+    XmbufSetBufferAttributes *attributes;
+
+	Sets the attributes for the indicated buffer.  This is currently
+	limited to the event_mask.
+
+
+Status XmbufGetScreenInfo (dpy, drawable, nmono_return, mono_info_return,
+			   nstereo, stereo_info_return)
+    Display *dpy;
+    Drawable drawable;
+    int *nmono_return;
+    XmbufBufferInfo **mono_info_return;
+    int *nstereo_return;
+    XmbufBufferInfo **stereo_info_return;
+
+	Gets the parameters controlling how mono and stereo windows may be
+	created on the screen of the given drawable.  The numbers of sets of
+	visual and depths are returned in nmono_return and nstereo_return.  If
+	nmono_return is greater than zero, then mono_info_return is set to the
+	address of an array of XmbufBufferInfo structures describing the
+	various visuals and depths that may be used.  Otherwise,
+	mono_info_return is set to NULL.  Similarly, stereo_info_return is set
+	according to nstereo_return.  The storage returned in mono_info_return
+	and stereo_info_return may be released by XFree.  If no errors are
+	encounted, non-zero will be returned.
+
+
+Window XmbufCreateStereoWindow (dpy, parent, x, y, width, height, border_width,
+				depth, class, visual, valuemask, attributes,
+				left_return, right_return)
+    Display *dpy;
+    Window parent;
+    int x, y;
+    unsigned int width, height, border_width;
+    int depth;
+    unsigned int class;
+    Visual *visual;
+    unsigned long valuemask;
+    XSetWindowAttributes *attributes;
+    Multibuffer *left_return, *right_return;
+
+	Creates a stereo window in the same way that XCreateWindow creates
+	a mono window.  The buffer ids for the left and right buffers are 
+	returned in left_return and right_return, respectively.  If an
+	extension error handler that returns is installed, None will be
+	returned if the extension is not available on this display.
+
+ * 
+ */
 
 extern Bool XmbufQueryExtension ();	/* is extension on server */
 extern Status XmbufGetVersion ();		/* what is extension rev */
