@@ -1008,8 +1008,7 @@ TekRun()
 	}
 	if(!screen->Tshow) {
 	    XtRealizeWidget (tekWidget);
-	    screen->Tshow = TRUE;
-	    XMapWindow (screen->display, TWindow(screen));
+	    set_tek_visibility (TRUE);
 	} 
 
 	if(screen->select)
@@ -1609,44 +1608,23 @@ int item;
 		break;
 
 	case TMENU_HIDETEK:
-		screen->Tshow = FALSE;
-		XUnmapWindow(screen->display, TWindow(screen));
-		/* SyncUnmap(TWindow(screen), TWINDOWEVENTS); */
+		set_tek_visibility (FALSE);
 		reselectwindow(screen);
 		TekRefresh = (TekLink *)0;
 			/* drop through */
 	case TMENU_VTMODE:
 		if(TekRefresh)
 			dorefresh();
-		if(screen->TekEmu) {
-			if(screen->logging) {
-				FlushLog(screen);
-				screen->logstart = buffer;
-			}
-			longjmp(Tekend, 1);
-		} 
+		end_tek_mode ();
 		break;
 
 	case TMENU_VTWIN:
-		if(screen->Vshow = !screen->Vshow) {
-			if(VWindow(screen) || VTInit()) {
-				XMapWindow(screen->display, VShellWindow);
-				screen->Vshow = TRUE;
-			}
+		if (!screen->Vshow) {
+		    set_vt_visibility (TRUE);
 		} else {
-			screen->Vshow = FALSE;
-			XUnmapWindow(screen->display, VShellWindow);
-			/* SyncUnmap(VWindow(screen), WINDOWEVENTS); */
-			if(!screen->TekEmu) {
-				if(TekRefresh)
-					dorefresh();
-				if(screen->logging) {
-					FlushLog(screen);
-					screen->logstart = Tbuffer;
-				}
-				screen->TekEmu = TRUE;
-				longjmp(VTend, 1);
-			}
+		    set_vt_visibility (FALSE);
+		    if (!screen->TekEmu && TekRefresh) dorefresh ();
+		    end_vt_mode ();
 		}
 
 		reselectwindow(screen);

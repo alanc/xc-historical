@@ -1,6 +1,6 @@
 /*
  * $Source: /usr/expo/X/src/clients/xterm.new/RCS/charproc.c,v $
- * $Header: charproc.c,v 1.13 88/02/16 19:23:43 jim Exp $
+ * $Header: charproc.c,v 1.14 88/02/16 19:32:19 jim Exp $
  */
 
 
@@ -58,7 +58,7 @@ extern void exit(), bcopy();
 #define	doinput()		(bcnt-- > 0 ? *bptr++ : in_put())
 
 #ifndef lint
-static char rcs_id[] = "$Header: charproc.c,v 1.13 88/02/16 19:23:43 jim Exp $";
+static char rcs_id[] = "$Header: charproc.c,v 1.14 88/02/16 19:32:19 jim Exp $";
 #endif	/* lint */
 
 static long arg;
@@ -1445,8 +1445,7 @@ VTRun()
 
 	if (!screen->Vshow) {
 	    XtRealizeWidget (term);
-	    screen->Vshow = TRUE;
-	    XMapWindow (screen->display, VWindow (screen));
+	    set_vt_visibility (TRUE);
 	} 
 
 	screen->cursor_state = OFF;
@@ -2303,39 +2302,20 @@ int item;
 		break;
 
 	case MMENU_HIDEVT:
-		XUnmapWindow(screen->display, VShellWindow);
-		screen->Vshow = FALSE;
+		set_vt_visibility (FALSE);
 		reselectwindow(screen);
-		/* SyncUnmap(VWindow(screen), WINDOWEVENTS); */
-			/* drop through */
+		/* drop through */
+
 	case MMENU_TEKMODE:
-		if(!screen->TekEmu) {
-			if(screen->logging) {
-				FlushLog(screen);
-				screen->logstart = Tbuffer;
-			}
-			screen->TekEmu = TRUE;
-			longjmp(VTend, 1);
-		} 
+		end_vt_mode ();
 		break;
 
 	case MMENU_TEKWIN:
-		if(screen->Tshow = !screen->Tshow) {
-			if(TWindow(screen) || TekInit()) {
-				XMapWindow(screen->display, TWindow(screen));
-				screen->Tshow = TRUE;
-			}
+		if (!screen->Tshow) {
+		    set_tek_visibility (TRUE);
 		} else {
-			screen->Tshow = FALSE;
-			XUnmapWindow(screen->display, TWindow(screen));
-			/* SyncUnmap(TWindow(screen), TWINDOWEVENTS); */
-			if(screen->TekEmu) {
-				if(screen->logging) {
-					FlushLog(screen);
-					screen->logstart = buffer;
-				}
-				longjmp(Tekend, 1);
-			}
+		    set_tek_visibility (FALSE);
+		    end_tek_mode ();
 		}
 		reselectwindow(screen);
 		break;

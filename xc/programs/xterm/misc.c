@@ -1,5 +1,5 @@
 /*
- *	$Header: misc.c,v 1.4 88/02/16 14:59:57 jim Exp $
+ *	$Header: misc.c,v 1.5 88/02/16 17:39:03 jim Exp $
  */
 
 
@@ -52,7 +52,7 @@ extern void perror();
 extern void abort();
 
 #ifndef lint
-static char rcs_id[] = "$Header: misc.c,v 1.4 88/02/16 14:59:57 jim Exp $";
+static char rcs_id[] = "$Header: misc.c,v 1.5 88/02/16 17:39:03 jim Exp $";
 #endif	/* lint */
 
 xevents()
@@ -856,4 +856,71 @@ char *s1, *s2;
   if (s1 && *s1) return(1);
   if (s2 && *s2) return(-1);
   return(0);
+}
+
+void set_vt_visibility (on)
+    Boolean on;
+{
+    register TScreen *screen = &term->screen;
+
+    if (on) {
+	if (!screen->Vshow && (VWindow (screen) || VTInit())) {
+	    XMapWindow (screen->display, VShellWindow);
+	    screen->Vshow = TRUE;
+	}
+    } else {
+	if (screen->Vshow && VWindow (screen)) {
+	    XUnmapWindow (screen->display, VShellWindow);
+	    screen->Vshow = FALSE;
+	}
+    }
+    return;
+}
+
+void set_tek_visibility (on)
+    Boolean on;
+{
+    register TScreen *screen = &term->screen;
+
+    if (on) {
+	if (!screen->Tshow && (TWindow (screen) || TekInit())) {
+	    XMapWindow (screen->display, TWindow (screen));
+	    screen->Tshow = TRUE;
+	}
+    } else {
+	if (screen->Tshow && TWindow (screen)) {
+	    XUnmapWindow (screen->display, TWindow (screen));
+	    screen->Tshow = FALSE;
+	}
+    }
+    return;
+}
+
+void end_tek_mode ()
+{
+    register TScreen *screen = &term->screen;
+
+    if (screen->TekEmu) {
+	if (screen->logging) {
+	    FlushLog (screen);
+	    screen->logstart = buffer;
+	}
+	longjmp(Tekend, 1);
+    } 
+    return;
+}
+
+void end_vt_mode ()
+{
+    register TScreen *screen = &term->screen;
+
+    if (!screen->TekEmu) {
+	if(screen->logging) {
+	    FlushLog(screen);
+	    screen->logstart = Tbuffer;
+	}
+	screen->TekEmu = TRUE;
+	longjmp(VTend, 1);
+    } 
+    return;
 }
