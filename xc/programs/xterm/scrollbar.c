@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: scrollbar.c,v 1.23 89/05/25 15:12:26 jim Exp $
+ *	$XConsortium: scrollbar.c,v 1.24 89/05/26 11:39:05 jim Exp $
  */
 
 #include <X11/copyright.h>
@@ -46,7 +46,7 @@
 extern void bcopy();
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: scrollbar.c,v 1.23 89/05/25 15:12:26 jim Exp $";
+static char rcs_id[] = "$XConsortium: scrollbar.c,v 1.24 89/05/26 11:39:05 jim Exp $";
 #endif	/* lint */
 
 /* Event handlers */
@@ -88,14 +88,16 @@ static void ResizeScreen(xw, min_width, min_height )
 	};
 
 #ifndef nothack
+	long supp;
+
 	/* %%% gross hack caused by our late processing of geometry
 	   (in VTRealize) and setting of size hints there, leaving
 	   Shell with insufficient information to do the job properly here.
 	   Instead of doing it properly, we save and restore the
 	   size hints around Shell.SetValues and Shell.GeometryManager
 	 */
-	if (!XGetNormalHints(screen->display, XtWindow(XtParent(xw)),
-			     &sizehints))
+	if (!XGetWMNormalHints (screen->display, XtWindow(XtParent(xw)),
+				&sizehints, &supp))
 	    sizehints.flags = 0;
 	sizehints.min_width = min_width;
 	sizehints.min_height = min_height;
@@ -135,7 +137,7 @@ static void ResizeScreen(xw, min_width, min_height )
 					     &repWidth, &repHeight);
 
 #ifndef nothack
-	XSetNormalHints(screen->display, XtWindow(XtParent(xw)), &sizehints);
+	XSetWMNormalHints(screen->display, XtWindow(XtParent(xw)), &sizehints);
 #endif
 
 	if (oldWidth != reqWidth || oldHeight != reqHeight) {

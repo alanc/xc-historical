@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Tekproc.c,v 1.56 89/05/25 15:11:26 jim Exp $
+ * $XConsortium: Tekproc.c,v 1.57 89/05/26 18:09:53 jim Exp $
  *
  * Warning, there be crufty dragons here.
  */
@@ -110,7 +110,7 @@ extern long time();
 #define	unput(c)	*Tpushback++ = c
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: Tekproc.c,v 1.56 89/05/25 15:11:26 jim Exp $";
+static char rcs_id[] = "$XConsortium: Tekproc.c,v 1.57 89/05/26 18:09:53 jim Exp $";
 #endif	/* lint */
 
 extern Widget toplevel;
@@ -1184,9 +1184,26 @@ static void TekRealize (gw, valuemaskp, values)
     sizehints.flags = PMinSize|PResizeInc;
     sizehints.x = winX;
     sizehints.y = winY;
-    if ((XValue&pr) || (YValue&pr))
-      sizehints.flags |= USSize|USPosition;
-    else sizehints.flags |= PSize|PPosition;
+    if ((XValue&pr) || (YValue&pr)) {
+	sizehints.flags |= USSize|USPosition;
+	sizehints.flags |= PWinGravity;
+	switch (pr & (XNegative | YNegative)) {
+	  case 0:
+	    sizehints.win_gravity = NorthWestGravity;
+	    break;
+	  case XNegative:
+	    sizehints.win_gravity = NorthEastGravity;
+	    break;
+	  case YNegative:
+	    sizehints.win_gravity = SouthWestGravity;
+	    break;
+	  default:
+	    sizehints.win_gravity = SouthEastGravity;
+	    break;
+	}
+    } else {
+	sizehints.flags |= PSize|PPosition;
+    }
     sizehints.width = width;
     sizehints.height = height;
     if ((WidthValue&pr) || (HeightValue&pr))
@@ -1203,8 +1220,9 @@ static void TekRealize (gw, valuemaskp, values)
     if (sizehints.flags & USPosition)
       XMoveWindow (XtDisplay(tw), tw->core.parent->core.window,
 		   sizehints.x, sizehints.y);
-    XSetNormalHints (XtDisplay(tw), tw->core.parent->core.window,
-		     &sizehints);
+
+    XSetWMNormalHints (XtDisplay(tw), tw->core.parent->core.window,
+		       &sizehints);
 
     values->win_gravity = NorthWestGravity;
     values->background_pixel = screen->Tbackground;

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: charproc.c,v 1.83 89/05/26 11:38:39 jim Exp $
+ * $XConsortium: charproc.c,v 1.84 89/05/26 18:10:32 jim Exp $
  */
 
 
@@ -139,7 +139,7 @@ static void VTallocbuf();
 #define	doinput()		(bcnt-- > 0 ? *bptr++ : in_put())
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: charproc.c,v 1.83 89/05/26 11:38:39 jim Exp $";
+static char rcs_id[] = "$XConsortium: charproc.c,v 1.84 89/05/26 18:10:32 jim Exp $";
 #endif	/* lint */
 
 static long arg;
@@ -2115,9 +2115,26 @@ XSetWindowAttributes *values;
 	sizehints.flags = PMinSize|PResizeInc;
 	sizehints.x = xpos;
 	sizehints.y = ypos;
-	if ((XValue&pr) || (YValue&pr)) 
-	  sizehints.flags |= USSize|USPosition;
-	else sizehints.flags |= PSize|PPosition;
+	if ((XValue&pr) || (YValue&pr)) {
+	    sizehints.flags |= USSize|USPosition;
+	    sizehints.flags |= PWinGravity;
+	    switch (pr & (XNegative | YNegative)) {
+	      case 0:
+		sizehints.win_gravity = NorthWestGravity;
+		break;
+	      case XNegative:
+		sizehints.win_gravity = NorthEastGravity;
+		break;
+	      case YNegative:
+		sizehints.win_gravity = SouthWestGravity;
+		break;
+	      default:
+		sizehints.win_gravity = SouthEastGravity;
+		break;
+	    }
+	} else {
+	    sizehints.flags |= PSize|PPosition;
+	}
 	sizehints.width = width;
 	sizehints.height = height;
 	if ((WidthValue&pr) || (HeightValue&pr)) 
@@ -2136,8 +2153,8 @@ XSetWindowAttributes *values;
 	    XMoveWindow (XtDisplay(term), term->core.parent->core.window,
 			 sizehints.x, sizehints.y);
 
-	XSetNormalHints(XtDisplay(term), term->core.parent->core.window,
-		&sizehints);
+	XSetWMNormalHints (XtDisplay(term), term->core.parent->core.window,
+			   &sizehints);
 
         screen->fullVwin.fullwidth = width;
         screen->fullVwin.fullheight = height;
