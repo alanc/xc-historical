@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.190 93/09/02 11:11:25 dpw Exp $
+ * $XConsortium: menus.c,v 1.191 93/09/03 09:55:25 dpw Exp $
  *
  * twm menu code
  *
@@ -2377,6 +2377,29 @@ MenuRoot *root;
  ***********************************************************************
  */
 
+#if defined(sun) && defined(SVR4)
+static void System (s)
+    char *s;
+{
+    int pid;
+    char* shell;
+    char* shellname;
+
+    if ((pid = fork ()) == 0) {
+	(void) setpgrp();
+	if ((shell = getenv ("SHELL")) != NULL) {
+	    shellname = rindex (shell, '/');
+	    if (shellname == NULL)
+		shellname = shell;
+	    else
+		shellname++;
+	    execl (shell, shellname, "-c", s, 0);
+	}
+	execl ("/bin/sh", "sh", "-c", s, 0);
+    }
+}
+#endif
+
 void
 Execute(s)
     char *s;
@@ -2411,7 +2434,11 @@ Execute(s)
 	restorevar = 1;
     }
 
+#if defined(sun) && defined(SVR4)
+    System (s);
+#else
     (void) system (s);
+#endif
 
     if (restorevar) {		/* why bother? */
 	(void) sprintf (buf, "DISPLAY=%s", oldDisplay);
