@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfb.h,v 5.4 89/07/16 16:32:02 rws Exp $ */
+/* $XConsortium: mfb.h,v 5.5 89/07/17 08:39:21 rws Exp $ */
 /* Monochrome Frame Buffer definitions 
    written by drewry, september 1986
 */
@@ -160,8 +160,9 @@ extern int  mfbWindowPrivateIndex;	/* index into Window private array */
 
 /* private field of window */
 typedef struct {
-    unsigned fastBorder:1;	/* non-zero if border tile is 32 bits wide */
-    unsigned fastBackground:1;
+    unsigned char fastBorder;	/* non-zero if border tile is 32 bits wide */
+    unsigned char fastBackground;
+    unsigned short unused; /* pad for alignment with Sun compiler */
     DDXPointRec	oldRotate;
     PixmapPtr	pRotatedBackground;
     PixmapPtr	pRotatedBorder;
