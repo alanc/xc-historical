@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XDrArcs.c,v 11.13 89/05/26 18:28:30 rws Exp $ */
+/* $XConsortium: XDrArcs.c,v 11.14 89/06/02 14:39:42 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
@@ -23,10 +23,8 @@ int n_arcs;
     req->drawable = d;
     req->gc = gc->gid;
     len = ((long)n_arcs) * arc_scale;
-    if ((req->length + len) > 65535) { /* force BadLength, if possible */
-	n_arcs = (65535 - req->length) / arc_scale;
-	len = ((long)n_arcs) * arc_scale;
-    }
+    if ((req->length + len) > 65535)
+	len = 1; /* force BadLength */
     req->length += len;
     len <<= 2; /* watch out for macros... */
     Data16 (dpy, (short *) arcs, len);
