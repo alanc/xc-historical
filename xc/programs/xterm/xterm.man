@@ -1,4 +1,4 @@
-.\" $XConsortium: xterm.man,v 1.72 91/08/23 18:46:18 gildea Exp $
+.\" $XConsortium: xterm.man,v 1.73 93/02/25 19:20:09 gildea Exp $
 .TH XTERM 1 "Release 5" "X Version 11"
 .SH NAME
 xterm \- terminal emulator for X
@@ -41,7 +41,7 @@ sets the ``TERM'' and the ``TERMCAP'' environment variables.
 .PP
 Many of the special
 .I xterm
-features (like logging) may be modified under program control
+features may be modified under program control
 through a set of escape sequences different from the standard VT102 escape
 sequences.  
 (See the
@@ -97,11 +97,8 @@ to switch to the alternate screen for editing and to restore the screen
 on exit.  
 .PP
 In either VT102 or Tektronix mode, there are escape sequences to change the
-name of the windows and to specify a new log file name.
+name of the windows.
 See \fIXterm Control Sequences\fP for details.
-Enabling the escape sequence to change the
-log file name is a compile-time option;
-by default this escape sequence is ignored for security reasons.
 .SH OPTIONS
 The \fIxterm\fP terminal emulator 
 accepts all of the standard X Toolkit command line options as well as
@@ -209,25 +206,6 @@ feature on or off.
 .TP 8
 .B \+j
 This option indicates that \fIxterm\fP should not do jump scrolling.
-.TP 8
-.B \-l
-This option indicates that \fIxterm\fP should send all terminal output to
-a log file as well as to the screen.  This option can be enabled or disabled
-using the ``VT Options'' menu.
-.TP 8
-.B \+l
-This option indicates that \fIxterm\fP should not do logging.
-.TP 8
-.BI \-lf " filename"
-This option specifies the name of the file to which the output log described
-above is written.  If \fIfile\fP begins with a pipe symbol (|), the rest of 
-the string is assumed to be a command to be used as the endpoint of a pipe.
-The ability to log to a pipe is a compile-time option which is
-disabled by default for security reasons.
-The default filename is ``\fBXtermLog.\fIXXXXX\fR'' (where \fIXXXXX\fP
-is the process id of \fIxterm\fP) and is created in the directory from which
-\fIxterm\fP was started (or the user's home directory in the case of a
-login window).
 .TP 8
 .B \-ls
 This option indicates that the shell that is started in the \fIxterm\fP window
@@ -641,19 +619,6 @@ The default is 2.
 .B "jumpScroll (\fPclass\fB JumpScroll)"
 Specifies whether or not jump scroll should be used.  The default is ``true.''
 .TP 8
-.B "logFile (\fPclass\fB Logfile)"
-Specifies the name of the file to which a terminal session is logged.  The
-default is ``\fBXtermLog.\fIXXXXX\fR'' (where \fIXXXXX\fP
-is the process id of \fIxterm\fP).
-.TP 8
-.B "logging (\fPclass\fB Logging)"
-Specifies whether or not a terminal session should be logged.  The default is
-``false.''
-.TP 8
-.B "logInhibit (\fPclass\fB LogInhibit)"
-Specifies whether or not terminal session logging should be inhibited.  The
-default is ``false.''
-.TP 8
 .B "loginShell (\fPclass\fB LoginShell)"
 Specifies whether or not the shell to be run in the window should be started
 as a login shell.  The default is ``false.''
@@ -812,9 +777,6 @@ This entry invokes the \fBsecure()\fP action.
 .TP 8
 .B "allowsends (\fPclass\fB SmeBSB)"
 This entry invokes the \fBallow-send-events(toggle)\fP action.
-.TP 8
-.B "logging (\fPclass\fB SmeBSB)"
-This entry invokes the \fBset-logging(toggle)\fP action.
 .TP 8
 .B "redraw (\fPclass\fB SmeBSB)"
 This entry invokes the \fBredraw()\fP action.
@@ -1386,10 +1348,6 @@ the other direction.
 This action set or toggles the \fBallowSendEvents\fP resource and is also
 invoked by the \fBallowsends\fP entry in \fImainMenu\fP.
 .TP 8
-.B "set-logging(\fIon/off/toggle\fP)"
-This action toggles the \fBlogging\fP resource and is also invoked
-by the \fBlogging\fP entry in \fImainMenu\fP.
-.TP 8
 .B "redraw()"
 This action redraws the window and is also invoked by the
 \fIredraw\fP entry in \fImainMenu\fP.
@@ -1639,8 +1597,7 @@ modular sections, with the various emulators being completely separate
 widgets that don't know about each other.  Ideally, you'd like to be able to
 pick and choose emulator widgets and stick them into a single control widget.
 .PP
-There needs to be a dialog box to allow entry of log file name
-and the COPY file name.
+There needs to be a dialog box to allow entry of the Tek COPY file name.
 .SH COPYRIGHT
 Copyright 1989, Massachusetts Institute of Technology.
 .br
