@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Intrinsic.h,v 1.139 90/08/22 14:21:01 swick Exp $
+* $XConsortium: Intrinsic.h,v 1.140 90/11/05 15:47:03 converse Exp $
 * $oHeader: Intrinsic.h,v 1.10 88/09/01 10:33:34 asente Exp $
 */
 
@@ -37,27 +37,16 @@ SOFTWARE.
 
 #define XtSpecificationRelease 4
 
-#ifdef XTFUNCPROTO
-#undef NeedFunctionPrototypes
-#define NeedFunctionPrototypes 1
-#else
-#undef NeedFunctionPrototypes
-#define NeedFunctionPrototypes 0
-#undef NeedWidePrototypes
-#define NeedWidePrototypes 0
-#endif
-
 #ifndef NeedFunctionPrototypes
-#if defined(FUNCPROTO) || defined(__STDC__) || defined(__cplusplus) || defined(c_plusplus)
+#if defined(FUNCPROTO) || __STDC__ || defined(__cplusplus) || defined(c_plusplus)
 #define NeedFunctionPrototypes 1
 #else
 #define NeedFunctionPrototypes 0
 #endif /* __STDC__ */
 #endif /* NeedFunctionPrototypes */
 
-/* NeedVarargsPrototypes is temporary until function prototypes work everywhere */
 #ifndef NeedVarargsPrototypes
-#if defined(FUNCPROTO) || defined(__STDC__) || defined(__cplusplus) || defined(c_plusplus) || NeedFunctionPrototypes
+#if __STDC__ || defined(__cplusplus) || defined(c_plusplus)
 #define NeedVarargsPrototypes 1
 #else
 #define NeedVarargsPrototypes 0
@@ -758,7 +747,7 @@ extern void XtDisplayStringConversionWarning(
 #endif
 );
 
-#if defined(__STDC__)
+#if __STDC__
 externalref XtConvertArgRec const colorConvertArgs[];
 externalref XtConvertArgRec const screenConvertArg[];
 #else
