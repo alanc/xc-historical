@@ -142,6 +142,11 @@ DebuggedLibraryTarget(Xaw,$(OBJS))
 
 InstallMultiple($(HEADERS),$(INCDIR)/Xaw)
 
+#if InstallOldHeaderFiles 
+/* Make links for old programs that need to be converted. */ 
+LinkFileList(install,$(HEADERS),$(INCDIR),Xaw)
+#endif
+
 DependTarget()
 
 NormalLintTarget($(SRCS))
