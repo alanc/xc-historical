@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XGetHints.c,v 11.20 88/06/19 16:49:17 rws Exp $ */
+/* $Header: XGetHints.c,v 11.21 88/06/29 09:22:10 rws Exp $ */
 
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -54,8 +54,11 @@ Status XGetSizeHints (dpy, w, hints, property)
                 return(0);
 		}
 	hints->flags	  = prop->flags;
-	hints->x 	  = prop->x;
-	hints->y 	  = prop->y;
+	/* XSizeHints misdeclares these as int instead of long */
+	hints->x 	  = cvtINT32toInt (prop->x);
+	hints->y 	  = cvtINT32toInt (prop->y);
+	/* XSizeHints misdeclares these as int instead of unsigned long */
+	/* so, large values will look negative instead of positive */
 	hints->width      = prop->width;
 	hints->height     = prop->height;
 	hints->min_width  = prop->minWidth;
@@ -109,8 +112,8 @@ XWMHints *XGetWMHints (dpy, w)
 	hints->initial_state = prop->initialState;
 	hints->icon_pixmap = prop->iconPixmap;
 	hints->icon_window = prop->iconWindow;
-	hints->icon_x = prop->iconX;
-	hints->icon_y = prop->iconY;
+	hints->icon_x = cvtINT32toInt (prop->iconX);
+	hints->icon_y = cvtINT32toInt (prop->iconY);
 	hints->icon_mask = prop->iconMask;
 	if (nitems >= NumPropWMHintsElements)
 	    hints->window_group = prop->windowGroup;
