@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Command.h,v 1.16 88/10/23 13:15:47 swick Exp $
+* $XConsortium: Command.h,v 1.17 88/10/23 13:28:49 swick Exp $
 */
 
 
@@ -49,7 +49,7 @@ SOFTWARE.
  callback	     Callback		Pointer		NULL
  cursor		     Cursor		Cursor		None
  destroyCallback     Callback		Pointer		NULL
- font		     Font		XFontStructx*	XtDefaultFont
+ font		     Font		XFontStruct*	XtDefaultFont
  foreground	     Foreground		Pixel		XtDefaultForeground
  height		     Height		Dimension	text height
  highlightThickness  Thickness		Dimension	2
