@@ -1,5 +1,5 @@
 /*
- * $XConsortium: access.c,v 1.7 91/02/11 21:00:17 keith Exp $
+ * $XConsortium: access.c,v 1.8 91/05/06 23:53:53 gildea Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -403,12 +403,18 @@ ScanAccessDatabase ()
 {
     FILE	*datafile;
 
-    datafile = fopen (accessFile, "r");
-    if (!datafile)
-	return 0;
     FreeAccessDatabase ();
-    ReadAccessDatabase (datafile);
-    fclose (datafile);
+    if (*accessFile)
+    {
+    	datafile = fopen (accessFile, "r");
+    	if (!datafile)
+	{
+	    LogError ("Cannot open access control file %s, no XDMCP reqeusts will be granted\n", accessFile);
+	    return 0;
+	}
+	ReadAccessDatabase (datafile);
+	fclose (datafile);
+    }
     return 1;
 }
 
@@ -685,6 +691,8 @@ AcceptableDisplayAddress (clientAddress, connectionType, type)
     DisplayEntry    *d;
     char	    *clientName = 0, *NetworkAddressToHostname ();
 
+    if (!*accessFile)
+	return 1;
     if (type == INDIRECT_QUERY)
 	return 1;
     for (d = database; d; d = d->next)
