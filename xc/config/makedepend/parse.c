@@ -1,5 +1,5 @@
 /*
- * $XConsortium: parse.c,v 1.8 88/09/22 13:30:00 martin Exp $
+ * $XConsortium: parse.c,v 1.8 88/09/22 13:52:51 jim Exp $
  */
 #include "def.h"
 #include	<sys/signal.h>
@@ -99,6 +99,9 @@ find_includes(filep, file, file_red, recursion)
 			add_include(file, file_red, line, TRUE);
 			break;
 		case PRAGMA:
+		case ERROR:
+		case IDENT:
+		case SCCS:
 		case EJECT:
 			break;
 		case -1:
@@ -150,6 +153,9 @@ gobble(filep, file, file_red)
 		case INCLUDE:
 		case INCLUDEDOT:
 		case PRAGMA:
+		case ERROR:
+		case IDENT:
+		case SCCS:
 		case EJECT:
 			break;
 		case ELIF:
@@ -294,6 +300,9 @@ deftype(line, filep, file_red, file, parse_it)
 	case ENDIF:
 	case ELIF:
 	case PRAGMA:
+	case ERROR:
+	case IDENT:
+	case SCCS:
 	case EJECT:
 		debug0("%s, line %d: #%s\n",
 			file->i_file, filep->f_line, directives[ret]);

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: main.c,v 1.25 89/05/14 11:21:24 rws Exp $
+ * $XConsortium: main.c,v 1.26 89/06/01 14:10:11 jim Exp $
  */
 #include "def.h"
 #ifdef hpux
@@ -24,6 +24,9 @@ char	*directives[] = {
 	"include",
 	"line",
 	"pragma",
+	"error",
+	"ident",
+	"sccs",
 	"elif",
 	"eject",
 	NULL

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: def.h,v 1.6 88/09/22 13:31:49 martin Exp $
+ * $XConsortium: def.h,v 1.6 88/09/22 13:52:33 jim Exp $
  */
 #include <stdio.h>
 #include <ctype.h>
@@ -29,11 +29,14 @@
 #define	INCLUDE		7
 #define	LINE		8
 #define	PRAGMA		9
-#define ELIF		10
-#define EJECT		11
-#define	IFFALSE		12	/* pseudo value --- never matched */
-#define ELIFFALSE	13	/* pseudo value --- never matched */
-#define	INCLUDEDOT	14	/* pseudo value --- never matched */
+#define ERROR           10
+#define IDENT           11
+#define SCCS            12
+#define ELIF            13
+#define EJECT           14
+#define IFFALSE         15     /* pseudo value --- never matched */
+#define ELIFFALSE       16     /* pseudo value --- never matched */
+#define INCLUDEDOT      17     /* pseudo value --- never matched */
 
 #ifdef DEBUG
 extern int	debug;
