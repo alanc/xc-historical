@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: maskbits.h,v 1.4 87/09/02 00:26:44 rws Locked $ */
+/* $Header: maskbits.h,v 1.5 87/09/07 19:08:59 toddb Locked $ */
 #include "X.h"
 #include "Xmd.h"
 #include "servermd.h"
@@ -295,6 +295,21 @@ else \
     *((pdst)+1) = (*((pdst)+1) & starttab[n]) | (t2 & endtab[n]); \
 }
 
+#if GETLEFTBITS_ALIGNMENT == 1
+#define getleftbits(psrc, w, dst)	getbits(psrc, 0, w, dst)
+#endif /* GETLEFTBITS_ALIGNMENT == 1 */
+
+#if GETLEFTBITS_ALIGNMENT == 2
+#define getleftbits(psrc, w, dst) \
+    { \
+	if ( ((int)(psrc)) & 0x01 ) \
+		getbits( ((unsigned int *)((int)(psrc))-1), 8, (w), (dst) ); \
+	else
+		getbits(psrc, 0, w, dst)
+    }
+#endif /* GETLEFTBITS_ALIGNMENT == 2 */
+
+#if GETLEFTBITS_ALIGNMENT == 4
 #define getleftbits(psrc, w, dst) \
     { \
 	int off; \
@@ -304,6 +319,7 @@ else \
 		(off), (w), (dst) \
 	       ); \
     }
+#endif /* GETLEFTBITS_ALIGNMENT == 4 */
 
 
 #define getshiftedleftbits(psrc, offset, w, dst) \
