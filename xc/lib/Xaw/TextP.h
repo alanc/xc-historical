@@ -1,5 +1,5 @@
 /*
-* $XConsortium: TextP.h,v 1.29 89/03/30 16:06:01 jim Exp $
+* $XConsortium: TextP.h,v 1.30 89/04/07 14:22:10 swick Exp $
 */
 
 
@@ -27,13 +27,12 @@ SOFTWARE.
 
 ******************************************************************/
 
-#ifndef _XtTextP_h
-#define _XtTextP_h
+#ifndef _XawTextP_h
+#define _XawTextP_h
 
-
-#include <X11/Text.h>
-#include <X11/SimpleP.h>
-#include <X11/TextSrcP.h>
+#include <X11/Xaw/Text.h>
+#include <X11/Xaw/SimpleP.h>
+#include <X11/Xaw/TextSrcP.h>
 
 /****************************************************************
  *
@@ -54,20 +53,19 @@ SOFTWARE.
 #define DEFAULT_TEXT_HEIGHT ((Dimension)~0)
 #define  yMargin 2
 
-
 /* displayable text management data structures */
 
 typedef struct {
-    XtTextPosition position;
+    XawTextPosition position;
     Position x, y, endX;
-    } XtTextLineTableEntry, *XtTextLineTableEntryPtr;
+    } XawTextLineTableEntry, *XawTextLineTableEntryPtr;
 
 /* Line Tables are n+1 long - last position displayed is in last lt entry */
 typedef struct {
-    XtTextPosition	 top;	/* Top of the displayed text.		*/
+    XawTextPosition	 top;	/* Top of the displayed text.		*/
     int			 lines;	/* How many lines in this table.	*/
-    XtTextLineTableEntry *info;	/* A dynamic array, one entry per line  */
-    } XtTextLineTable, *XtTextLineTablePtr;
+    XawTextLineTableEntry *info;	/* A dynamic array, one entry per line  */
+    } XawTextLineTable, *XawTextLineTablePtr;
 
 #define IsPositionVisible(ctx, pos) \
 		(pos >= ctx->text.lt.info[0].position && \
@@ -93,32 +91,32 @@ extern TextClassRec textClassRec;
 /* New fields for the Text widget record */
 typedef struct _TextPart {
     /* resources */
-    XtTextSource	source;
-    XtTextSink		sink;
-    XtTextPosition	insertPos;
-    XtTextSelection	s;
-    XtTextSelectType	*sarray;	   /* Array to cycle for selections. */
+    XawTextSource	source;
+    XawTextSink		sink;
+    XawTextPosition	insertPos;
+    XawTextSelection	s;
+    XawTextSelectType	*sarray;	   /* Array to cycle for selections. */
     Dimension		client_leftmargin;   /* client-visible resource */
     int			options;	     /* wordbreak, scroll, etc. */
     int			dialog_horiz_offset; /* position for popup dialog */
     int			dialog_vert_offset;  /* position for popup dialog */
     Boolean		display_caret;	     /* insertion pt visible iff T */
     /* private state */
-    XtTextLineTable	lt;
-    XtTextScanDirection extendDir;
-    XtTextSelection	origSel;    /* the selection being modified */
+    XawTextLineTable	lt;
+    XawTextScanDirection extendDir;
+    XawTextSelection	origSel;    /* the selection being modified */
     Dimension	    leftmargin;	    /* Width of left margin. */
     Time	    lasttime;	    /* timestamp of last processed action */
     Time	    time;	    /* time of last key or button action */ 
     Position	    ev_x, ev_y;	    /* x, y coords for key or button action */
     Widget	    sbar;	    /* The vertical scroll bar (none = 0).  */
     Widget	    outer;	    /* Parent of scrollbar & text (if any) */
-    XtTextPosition  *updateFrom;    /* Array of start positions for update. */
-    XtTextPosition  *updateTo;	    /* Array of end positions for update. */
+    XawTextPosition  *updateFrom;    /* Array of start positions for update. */
+    XawTextPosition  *updateTo;	    /* Array of end positions for update. */
     int		    numranges;	    /* How many update ranges there are. */
     int		    maxranges;	    /* How many ranges we have space for */
     Boolean	    showposition;   /* True if we need to show the position. */
-    XtTextPosition  lastPos;	    /* Last position of source. */
+    XawTextPosition  lastPos;	    /* Last position of source. */
     struct _dialog {
 	TextWidget  text;	    /* the dialog's parent */
 	Widget      widget;	    /* the dialog widget */
@@ -130,7 +128,7 @@ typedef struct _TextPart {
     GC              gc;
     Boolean         hasfocus;       /* TRUE if we currently have input focus.*/
     Boolean	    update_disabled; /* TRUE if display updating turned off */
-    XtTextPosition  old_insert;      /* Last insertPos for batched updates */
+    XawTextPosition  old_insert;      /* Last insertPos for batched updates */
 } TextPart;
 
 /****************************************************************
@@ -145,5 +143,16 @@ typedef struct _TextRec {
     TextPart	text;
 } TextRec;
 
+#ifndef XAW_NO_COMPATABILITY
+/*************************************************************
+ * For Compatibility only.                                   */
 
-#endif /* _XtTextP_h */
+#define XtTextLineTable                 XawTextLineTable
+#define XtTextLineTablePtr              XawTextLineTablePtr
+#define XtTextLineTableEntry            XawTextLineTableEntry
+#define XtTextLineTableEntryPtr         XawTextLineTableEntryPtr
+
+/*************************************************************/
+#endif /* XAW_NO_COMPATABILITY */
+
+#endif /* _XawTextP_h */

@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Grip.h,v 1.12 89/03/06 16:32:32 kit Exp $
+* $XConsortium: Grip.h,v 1.13 89/03/30 16:05:31 jim Exp $
 */
 
 
@@ -32,10 +32,10 @@ SOFTWARE.
  *
  */
 
-#ifndef _XtGrip_h
-#define _XtGrip_h
+#ifndef _XawGrip_h
+#define _XawGrip_h
 
-#include <X11/Simple.h>
+#include <X11/Xaw/Simple.h>
 
 /***************************************************************************
  *
@@ -77,4 +77,4 @@ extern WidgetClass gripWidgetClass;
 typedef struct _GripClassRec *GripWidgetClass;
 typedef struct _GripRec      *GripWidget;
 
-#endif /* _XtGrip_h */
+#endif /* _XawGrip_h */

@@ -1,5 +1,5 @@
 /*
-* $XConsortium: BoxP.h,v 1.13 88/09/06 16:40:55 jim Exp $
+* $XConsortium: BoxP.h,v 1.14 89/03/30 16:05:14 jim Exp $
 */
 
 
@@ -32,8 +32,8 @@ SOFTWARE.
  * 
  */
 
-#ifndef _BoxP_h
-#define _BoxP_h
+#ifndef _XawBoxP_h
+#define _XawBoxP_h
 
 /***********************************************************************
  *
@@ -41,7 +41,7 @@ SOFTWARE.
  *
  ***********************************************************************/
 
-#include <X11/Box.h>
+#include <X11/Xaw/Box.h>
 #include <X11/CompositeP.h>
 
 /* New fields for the Box widget class record */
@@ -77,4 +77,4 @@ typedef struct _BoxRec {
     BoxPart 	    box;
 } BoxRec;
 
-#endif /* _BoxP_h */
+#endif /* _XawBoxP_h */

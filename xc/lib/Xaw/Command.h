@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Command.h,v 1.18 88/10/31 11:29:07 swick Exp $
+* $XConsortium: Command.h,v 1.19 89/03/30 16:05:24 jim Exp $
 */
 
 
@@ -27,8 +27,8 @@ SOFTWARE.
 
 ******************************************************************/
 
-#ifndef _XtCommand_h
-#define _XtCommand_h
+#ifndef _XawCommand_h
+#define _XawCommand_h
 
 /***********************************************************************
  *
@@ -36,7 +36,7 @@ SOFTWARE.
  *
  ***********************************************************************/
 
-#include <X11/Label.h>
+#include <X11/Xaw/Label.h>
 
 /* Resources:
 
@@ -67,9 +67,7 @@ SOFTWARE.
 
 */
 
-#define XtNcallback		"callback"
 #define XtNhighlightThickness   "highlightThickness"
-#define XtNtranslations		"translations"
 
 extern WidgetClass     commandWidgetClass;
 
@@ -77,5 +75,5 @@ typedef struct _CommandClassRec   *CommandWidgetClass;
 typedef struct _CommandRec        *CommandWidget;
 
 
-#endif /* _XtCommand_h */
+#endif /* _XawCommand_h */
 /* DON'T ADD STUFF AFTER THIS */

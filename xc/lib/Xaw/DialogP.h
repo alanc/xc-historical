@@ -1,4 +1,4 @@
-/* $XConsortium: DialogP.h,v 1.8 88/09/06 16:41:16 jim Exp $ */
+/* $XConsortium: DialogP.h,v 1.9 89/03/30 16:05:27 jim Exp $ */
 
 
 /***********************************************************
@@ -30,8 +30,8 @@ SOFTWARE.
 #ifndef _DialogP_h
 #define _DialogP_h
 
-#include <X11/Dialog.h>
-#include <X11/FormP.h>
+#include <X11/Xaw/Dialog.h>
+#include <X11/Xaw/FormP.h>
 
 typedef struct {int empty;} DialogClassPart;
 

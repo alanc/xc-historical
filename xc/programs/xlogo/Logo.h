@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Logo.h,v 1.7 88/10/23 14:04:52 swick Exp $
+* $XConsortium: Logo.h,v 1.8 89/03/30 16:05:42 jim Exp $
 */
 
 /*
@@ -18,8 +18,8 @@ this software for any purpose.  It is provided "as is"
 without express or implied warranty.
 */
 
-#ifndef _XtLogo_h
-#define _XtLogo_h
+#ifndef _XawLogo_h
+#define _XawLogo_h
 
 /* Parameters:
 
@@ -44,4 +44,4 @@ typedef struct _LogoClassRec *LogoWidgetClass;
 
 extern WidgetClass logoWidgetClass;
 
-#endif /* _XtLogo_h */
+#endif /* _XawLogo_h */

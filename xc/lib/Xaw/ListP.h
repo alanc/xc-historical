@@ -7,9 +7,9 @@
  *	By:		Chris D. Peterson
  *                      MIT - Project Athena
  *
- *      $Author: swick $
+ *      $Author: jim $
  *      $oHeader: ListP.h,v 1.3 88/08/30 16:37:03 kit Exp $
- *      $XConsortium: ListP.h,v 1.9 88/10/18 12:25:49 swick Exp $
+ *      $XConsortium: ListP.h,v 1.10 89/03/30 16:05:38 jim Exp $
  *	
  */
 
@@ -42,8 +42,8 @@ SOFTWARE.
  * 
  */
 
-#ifndef _XtListP_h
-#define _XtListP_h
+#ifndef _XawListP_h
+#define _XawListP_h
 
 /***********************************************************************
  *
@@ -51,10 +51,10 @@ SOFTWARE.
  *
  ***********************************************************************/
 
-#include <X11/SimpleP.h>
-#include <X11/List.h>
+#include <X11/Xaw/SimpleP.h>
+#include <X11/Xaw/List.h>
 
-#define NO_HIGHLIGHT            XT_LIST_NONE
+#define NO_HIGHLIGHT            XAW_LIST_NONE
 #define OUT_OF_RANGE            -1
 #define OKAY                     0
 
@@ -116,4 +116,4 @@ typedef struct _ListRec {
     ListPart	list;
 } ListRec;
 
-#endif /* _XtListP_h */
+#endif /* _XawListP_h */

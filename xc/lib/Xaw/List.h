@@ -1,17 +1,5 @@
-/*  This is the List widget, it is useful to display a list, without the
- *  overhead of having a widget for each item in the list.  It allows 
- *  the user to select an item in a list and notifies the application through
- *  a callback function.
- *
- *	Created: 	8/13/88
- *	By:		Chris D. Peterson
- *                      MIT - Project Athena
- *
- *      $Author: jim $
- *      $oHeader: List.h,v 1.4 88/08/30 16:36:53 kit Exp $
- *      $XConsortium: List.h,v 1.10 89/03/30 16:05:36 jim Exp $
- *	
- *
+/*
+ *      $XConsortium: List.h,v 1.11 89/04/18 13:49:20 kit Exp $
  */
 
 /***********************************************************
@@ -38,17 +26,26 @@ SOFTWARE.
 
 ******************************************************************/
 
-#ifndef _XtList_h
-#define _XtList_h
+/*  This is the List widget, it is useful to display a list, without the
+ *  overhead of having a widget for each item in the list.  It allows 
+ *  the user to select an item in a list and notifies the application through
+ *  a callback function.
+ *
+ *	Created: 	8/13/88
+ *	By:		Chris D. Peterson
+ *                      MIT X Consortium
+ */
+
+#ifndef _XawList_h
+#define _XawList_h
 
 /***********************************************************************
  *
  * List Widget
  *
- *
  ***********************************************************************/
 
-#include <X11/Simple.h>
+#include <X11/Xaw/Simple.h>
 
 /* Resources:
 
@@ -107,10 +104,17 @@ SOFTWARE.
        have a given number of columns.	     
         
  **6 - This returns the name and index of the item selected in an 
-       XtListReturnStruct that is pointed to by the client_data
+       XawListReturnStruct that is pointed to by the client_data
        in the CallbackProc.
 
 */
+
+
+/*
+ * Value returned when there are no highlighted objects. 
+ */
+
+#define XAW_LIST_NONE -1	
 
 #define XtCList                 "List"
 #define XtCSpacing              "Spacing"
@@ -118,17 +122,16 @@ SOFTWARE.
 #define XtCLongest              "Longest"
 #define XtCNumberStrings        "NumberStrings"
 
-#define XtNpasteBuffer          "pasteBuffer"
+#define XtNcursor               "cursor"
 #define XtNcolumnSpacing        "columnSpacing"
+#define XtNdefaultColumns       "defaultColumns"
+#define XtNforceColumns         "forceColumns"
+#define XtNlist                 "list"
+#define XtNlongest              "longest"
+#define XtNnumberStrings        "numberStrings"
+#define XtNpasteBuffer          "pasteBuffer"
 #define XtNrowSpacing           "rowSpacing"
 #define XtNverticalList         "verticalList"
-#define XtNforceColumns         "forceColumns"
-#define XtNnumberStrings        "numberStrings"
-#define XtNlongest              "longest"
-#define XtNdefaultColumns       "defaultColumns"
-#define XtNforeground		"foreground"
-#define XtNfont			"font"
-#define XtNlist                 "list"
  
 /* Class record constants */
 
@@ -139,10 +142,27 @@ typedef struct _ListRec      *ListWidget;
 
 /* The list return structure. */
 
-typedef struct _XtListReturnStruct {
+typedef struct _XawListReturnStruct {
   String string;
   int list_index;
-} XtListReturnStruct;
+} XawListReturnStruct
+#ifdef XAW_NO_COMPATABILITY	
+;
+#else
+/*************************************************************
+ * For Compatibility only.                                   */
+
+ ,XtListReturnStruct;
+
+#define XT_LIST_NONE         XAW_LIST_NONE 
+
+#define XtListChange         XawListChange
+#define XtListUnhighlight    XawListUnhighlight
+#define XtListHighlight      XawListHighlight
+#define XtListShowCurrent    XawListShowCurrent
+
+/*************************************************************/
+#endif /* XAW_NO_COMPATABILITY */
 
 /******************************************************************
  *
@@ -150,7 +170,7 @@ typedef struct _XtListReturnStruct {
  *
  *****************************************************************/
 
-/*	Function Name: XtListChange.
+/*	Function Name: XawListChange.
  *	Description: Changes the list being used and shown.
  *	Arguments: w - the list widget.
  *                 list - the new list.
@@ -164,39 +184,33 @@ typedef struct _XtListReturnStruct {
  *                 If nitems is <= 0 then the list needs to be NULL terminated.
  */
 
-extern void XtListChange(); /* w, list, nitems, longest, resize */
+extern void XawListChange(); /* w, list, nitems, longest, resize */
 
-/*	Function Name: XtListUnhighlight
+/*	Function Name: XawListUnhighlight
  *	Description: unlights the current highlighted element.
  *	Arguments: w - the widget.
  *	Returns: none.
  */
 
-extern void XtListUnhighlight(); /* w */
+extern void XawListUnhighlight(); /* w */
 
-/*	Function Name: XtListHighlight
+/*	Function Name: XawListHighlight
  *	Description: Highlights the given item.
  *	Arguments: w - the list widget.
  *                 item - the item to hightlight.
  *	Returns: none.
  */
 
-extern void XtListHighlight(); /* w, item */
+extern void XawListHighlight(); /* w, item */
 
 
-/*	Function Name: XtListShowCurrent
+/*	Function Name: XawListShowCurrent
  *	Description: returns the currently highlighted object.
  *	Arguments: w - the list widget.
  *	Returns: the info about the currently highlighted object.
  */
 
-extern XtListReturnStruct * XtListShowCurrent(); /* w */
+extern XawListReturnStruct * XawListShowCurrent(); /* w */
 
-/*
- * Value returned when there are no highlighted objects. 
- */
-
-#define XT_LIST_NONE -1	
-
-#endif /* _XtList_h */
+#endif /* _XawList_h */
 /* DON'T ADD STUFF AFTER THIS #endif */

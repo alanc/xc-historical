@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Viewport.c,v 1.38 89/03/30 16:55:11 jim Exp $";
+static char Xrcsid[] = "$XConsortium: Viewport.c,v 1.39 89/04/25 19:06:19 kit Exp $";
 #endif /* lint */
 
 
@@ -28,11 +28,11 @@ SOFTWARE.
 ******************************************************************/
 
 #include <X11/IntrinsicP.h>
-#include <X11/XawMisc.h>
-#include <X11/Scroll.h>
 #include <X11/StringDefs.h>
-#include <X11/ViewportP.h>
 
+#include <X11/Xmu/Misc.h>
+#include <X11/Xaw/Scroll.h>
+#include <X11/Xaw/ViewportP.h>
 
 static void ScrollUpDownProc(), ThumbProc();
 

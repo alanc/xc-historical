@@ -1,4 +1,4 @@
-/* $XConsortium: FormP.h,v 1.12 88/09/06 16:41:26 jim Exp $ */
+/* $XConsortium: FormP.h,v 1.13 89/03/30 16:05:30 jim Exp $ */
 /* Copyright	Massachusetts Institute of Technology	1987 */
 
 
@@ -28,10 +28,10 @@ SOFTWARE.
 
 /* Form widget private definitions */
 
-#ifndef _FormP_h
-#define _FormP_h
+#ifndef _XawFormP_h
+#define _XawFormP_h
 
-#include <X11/Form.h>
+#include <X11/Xaw/Form.h>
 #include <X11/ConstrainP.h>
 
 #define XtREdgeType		"EdgeType"
@@ -75,4 +75,4 @@ typedef struct _FormConstraintsRec {
     FormConstraintsPart	form;
 } FormConstraintsRec, *FormConstraints;
 
-#endif /* _FormP_h */
+#endif /* _XawFormP_h */

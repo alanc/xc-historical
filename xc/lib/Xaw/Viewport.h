@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Viewport.h,v 1.7 88/10/23 14:43:56 swick Exp $
+ * $XConsortium: Viewport.h,v 1.8 89/03/30 16:06:07 jim Exp $
  * Public definitions for Viewport widget
  */
 
@@ -30,7 +30,7 @@ SOFTWARE.
 #ifndef _Viewport_h
 #define _Viewport_h
 
-#include <X11/Form.h>
+#include <X11/Xaw/Form.h>
 
 /* Resources:
 

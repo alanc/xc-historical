@@ -1,6 +1,6 @@
 /***********************************************************
 
-  $XConsortium: PanedP.h,v 1.2 89/03/09 16:24:26 kit Exp $
+  $XConsortium: PanedP.h,v 1.3 89/03/30 16:05:51 jim Exp $
 
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -33,13 +33,14 @@ SOFTWARE.
  * Date:    March 1, 1989
  *
  * By:      Chris D. Peterson
- *          MIT X Consortium / Project Athena.
- *          kit@athena.mit.edu
+ *          MIT X Consortium
+ *          kit@expo.lcs.mit.edu
  */
 
-#ifndef _PanedP_h
-#define _PanedP_h
-#include <X11/Paned.h>
+#ifndef _XawPanedP_h
+#define _XawPanedP_h
+
+#include <X11/Xaw/Paned.h>
 #include <X11/Constraint.h>
 
 /*********************************************************************
@@ -47,9 +48,6 @@ SOFTWARE.
  * Paned Widget Private Data
  *
  *********************************************************************/
-
-#define XtInheritSetMinMax	((void (*)())_XtInherit)
-#define XtInheritRefigureMode	((void (*)())_XtInherit)
 
 /* New fields for the Paned widget class record */
 
@@ -168,5 +166,5 @@ typedef struct _PanedRec {
     PanedPart     paned;
 } PanedRec;
 
-#endif /* _PanedP_h */
+#endif /* _XawPanedP_h */
 /* DON'T ADD STUFF AFTER THIS #endif */

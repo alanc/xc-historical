@@ -2,7 +2,7 @@
 Copyright 1989 by the Massachusetts Institute of Technology,
 Cambridge, Massachusetts.
 
- "$XConsortium: SimpleMenu.h,v 1.2 89/05/02 21:25:50 kit Exp $";
+ "$XConsortium: SimpleMenu.h,v 1.3 89/05/08 17:39:14 kit Exp $";
 
                         All Rights Reserved
 
@@ -46,8 +46,8 @@ SOFTWARE.
  * Date:    April 3, 1989
  *
  * By:      Chris D. Peterson
- *          MIT X Consortium / Project Athena.
- *          kit@athena.mit.edu
+ *          MIT X Consortium 
+ *          kit@expo.lcs.mit.edu
  */
 
 /* SimpleMenu Resources:
@@ -115,7 +115,7 @@ typedef struct _SimpleMenuRec*		SimpleMenuWidget;
 
 extern WidgetClass simpleMenuWidgetClass;
 
-#define XtNcursor		"cursor"
+#define XtNcursor               "cursor"
 
 #define XtNbottomMargin         "bottomMargin"
 #define XtNcolumnWidth          "columnWidth"

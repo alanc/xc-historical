@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Mailbox.c,v 1.24 89/04/12 16:03:07 jim Exp $
+ * $XConsortium: Mailbox.c,v 1.25 89/04/22 13:10:54 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -22,25 +22,24 @@
  *         XBiff*emptyPixmap:  mailempty
  */
 
-#include <X11/Xos.h>
-#include <X11/Xlib.h>			/* for Xlib definitions */
+#include <stdio.h>			/* for printing error messages */
+#include <pwd.h>			/* for getting username */
+
 #include <X11/cursorfont.h>		/* for cursor constants */
 #include <X11/StringDefs.h>		/* for useful atom names */
 #include <X11/IntrinsicP.h>		/* for toolkit stuff */
-#include <X11/MailboxP.h>		/* for implementation mailbox stuff */
-#include <stdio.h>			/* for printing error messages */
-#include <sys/stat.h>			/* for stat() */
-#include <pwd.h>			/* for getting username */
+#include <sys/stat.h>			/* for stat() ** needs types.h ***/
+
 #include <X11/bitmaps/mailfull>		/* for flag up (mail present) bits */
 #include <X11/bitmaps/mailempty>	/* for flag down (mail not here) */
-#include <X11/Xmu.h>			/* for StringToPixmap */
+
+#include <X11/Xaw/MailboxP.h>		/* for implementation mailbox stuff */
+
+#include <X11/Xmu/Xmu.h>		/* for StringToPixmap */
+
 #ifdef SHAPE
 #include <X11/extensions/shape.h>
 #endif
-
-#define min(a,b) ((a) < (b) ? (a) : (b))
-#define max(a,b) ((a) > (b) ? (a) : (b))
-
 
 /*
  * The default user interface is to have the mailbox turn itself off whenever

@@ -1,4 +1,4 @@
-/* $XConsortium: Dialog.h,v 1.12 89/03/30 16:05:26 jim Exp $ */
+/* $XConsortium: Dialog.h,v 1.13 89/04/04 15:11:22 swick Exp $ */
 
 
 /***********************************************************
@@ -28,6 +28,8 @@ SOFTWARE.
 #ifndef _Dialog_h
 #define _Dialog_h
 
+#include <X11/Xaw/Form.h>
+
 /***********************************************************************
  *
  * Dialog Widget
@@ -54,9 +56,6 @@ SOFTWARE.
 
 */
 
-
-#include <X11/Form.h>
-
 #define XtNgrabFocus			"grabFocus"
 #define XtNmaximumLength		"maximumLength"
 #define XtCGrabFocus			"GrabFocus"
@@ -67,15 +66,24 @@ typedef struct _DialogRec	*DialogWidget;
 
 extern WidgetClass dialogWidgetClass;
 
-extern void XtDialogAddButton(); /* parent, name, function, param */
-    /* Wiget parent; */
+extern void XawDialogAddButton(); /* parent, name, function, param */
+    /* Widget parent; */
     /* char *name; */
     /* void (*function)(); */
     /* caddr_t param; */
 
-extern char *XtDialogGetValueString(); /* dpy, window */
-    /* Display *dpy; */
-    /* Window window; */
+extern char *XawDialogGetValueString(); /* w */
+    /* Widget w; */
+
+#ifndef XAW_NO_COMPATABILITY	
+/*************************************************************
+ * For Compatibility only.                                   */
+
+#define XtDialogGetValueString           XawDialogGetValueString
+#define XtDialogAddButton                XawDialogAddButton
+
+/*************************************************************/
+#endif /* XAW_NO_COMPATABILITY */
 
 #endif /* _Dialog_h */
 /* DON'T ADD STUFF AFTER THIS #endif */

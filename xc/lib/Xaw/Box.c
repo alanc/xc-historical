@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Box.c,v 1.37 89/01/03 15:30:17 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Box.c,v 1.38 89/03/30 16:53:17 jim Exp $";
 #endif /* lint */
 
 
@@ -35,8 +35,8 @@ SOFTWARE.
 
 #include	<X11/IntrinsicP.h>
 #include	<X11/StringDefs.h>
-#include	<X11/XawMisc.h>
-#include	<X11/BoxP.h>
+#include	<X11/Xmu/Misc.h>
+#include	<X11/Xaw/BoxP.h>
 
 /****************************************************************
  *

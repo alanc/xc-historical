@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Dialog.c,v 1.26 89/04/07 11:06:12 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Dialog.c,v 1.27 89/04/07 11:13:59 swick Exp $";
 #endif /* lint */
 
 
@@ -35,12 +35,13 @@ SOFTWARE.
 #include <X11/Xlib.h>
 #include <X11/Xos.h>
 #include <X11/IntrinsicP.h>
-#include <X11/XawMisc.h>
 #include <X11/StringDefs.h>
-#include <X11/AsciiText.h>
-#include <X11/Command.h>
-#include <X11/Label.h>
-#include <X11/DialogP.h>
+#include <X11/Xmu/Misc.h>
+
+#include <X11/Xaw/AsciiText.h>
+#include <X11/Xaw/Command.h>	
+#include <X11/Xaw/Label.h>
+#include <X11/Xaw/DialogP.h>
 
 #define streq(a,b) (strcmp( (a), (b) ) == 0)
 
@@ -214,14 +215,14 @@ Widget current, request, new;
 	    CreateDialogValueWidget( (Widget) w);
 	}
 	else {			/* Widget ok, just change string. */
-	    XtTextBlock t_block;
+	    XawTextBlock t_block;
 
 	    t_block.firstPos = 0;
 	    t_block.length = strlen(w->dialog.value);
 	    t_block.ptr = w->dialog.value;
 	    t_block.format = FMT8BIT;
 
-	    if (XtTextReplace(w->dialog.valueW, 
+	    if (XawTextReplace(w->dialog.valueW, 
 			      0, strlen(old->dialog.value), &t_block) !=
 		XawEditDone) 
 	        XtWarning("Error while changing value in Dialog Widget.");
@@ -260,7 +261,7 @@ Widget w;
     XtSetArg(arglist[num_args], XtNresizable, True); num_args++;
     XtSetArg(arglist[num_args], XtNtextOptions, (resizeWidth | resizeHeight));
     num_args++;
-    XtSetArg(arglist[num_args], XtNeditType, XttextEdit); num_args++;
+    XtSetArg(arglist[num_args], XtNeditType, XawtextEdit); num_args++;
     XtSetArg(arglist[num_args], XtNleft, XtChainLeft); num_args++;
     XtSetArg(arglist[num_args], XtNright, XtChainRight); num_args++;
     
@@ -284,7 +285,7 @@ Widget w;
 #endif /* notdef */
 }
 
-void XtDialogAddButton(dialog, name, function, param)
+void XawDialogAddButton(dialog, name, function, param)
 Widget dialog;
 char *name;
 void (*function)();
@@ -303,7 +304,7 @@ caddr_t param;
 }
 
 
-char *XtDialogGetValueString(w)
+char *XawDialogGetValueString(w)
 Widget w;
 {
     return ((DialogWidget)w)->dialog.value;

@@ -1,5 +1,5 @@
 /*
-* $XConsortium: GripP.h,v 1.12 89/03/06 16:32:34 kit Exp $
+* $XConsortium: GripP.h,v 1.13 89/03/30 16:05:32 jim Exp $
 */
 
 
@@ -32,11 +32,11 @@ SOFTWARE.
  *
  */
 
-#ifndef _XtGripP_h
-#define _XtGripP_h
+#ifndef _XawGripP_h
+#define _XawGripP_h
 
-#include <X11/Grip.h>
-#include <X11/SimpleP.h>
+#include <X11/Xaw/Grip.h>
+#include <X11/Xaw/SimpleP.h>
 
 /*****************************************************************************
  *
@@ -75,5 +75,5 @@ typedef struct _GripRec {
    GripPart    grip;
 } GripRec;
 
-#endif /* _XtGripP_h */
+#endif /* _XawGripP_h */
 

@@ -1,6 +1,6 @@
 /***********************************************************
 
- "$XConsortium: SimpleMenuP.h,v 1.1 89/04/03 17:23:04 kit Exp $";
+ "$XConsortium: SimpleMenuP.h,v 1.2 89/05/08 17:39:21 kit Exp $";
 
 Copyright 1989 by the Massachusetts Institute of Technology,
 Cambridge, Massachusetts.
@@ -31,14 +31,14 @@ SOFTWARE.
  * Date:    April 3, 1989
  *
  * By:      Chris D. Peterson
- *          MIT X Consortium / Project Athena.
- *          kit@athena.mit.edu
+ *          MIT X Consortium
+ *          kit@expo.lcs.mit.edu
  */
 
 #ifndef _SimpleMenuP_h
 #define _SimpleMenuP_h
 
-#include <X11/SimpleMenu.h>
+#include <X11/Xaw/SimpleMenu.h>
 #include <X11/ShellP.h>
 
 #define MAGIC_DIMENSION 54321

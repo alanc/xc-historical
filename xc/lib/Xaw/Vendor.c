@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Vendor.c,v 1.5 89/03/30 16:55:10 jim Exp $";
+static char Xrcsid[] = "$XConsortium: Vendor.c,v 1.6 89/04/27 17:51:20 kit Exp $";
 /* $oHeader: Vendor.c,v 1.3 88/08/19 13:11:01 asente Exp $ */
 #endif /* lint */
 
@@ -37,9 +37,6 @@ SOFTWARE.
 
 #include <pwd.h>
 #include <stdio.h>
-#ifdef notdef
-#include <sys/param.h>
-#endif
 
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>

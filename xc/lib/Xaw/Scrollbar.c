@@ -1,6 +1,6 @@
 #ifndef lint
 static char Xrcsid[] =
-    "$XConsortium: Scroll.c,v 1.45 88/09/27 16:58:47 swick Exp $";
+    "$XConsortium: Scroll.c,v 1.46 89/03/30 16:54:31 jim Exp $";
 #endif /* lint */
 
 /***********************************************************
@@ -32,9 +32,10 @@ SOFTWARE.
 /* converted by swick, Thu Aug 27 1987 */
 
 #include <X11/IntrinsicP.h>
-#include <X11/Xresource.h>
 #include <X11/StringDefs.h>
-#include <X11/ScrollP.h>
+
+#include <X11/Xmu/Xmu.h>
+#include <X11/Xaw/ScrollP.h>
 
 /* Private definitions. */
 
@@ -671,10 +672,15 @@ static void NotifyThumb( gw, event, params, num_params )
 
 
 
-/* Public routines. */
+/************************************************************
+ *
+ *  Public routines. 
+ *
+ ************************************************************/
 
 /* Set the scroll bar to the given location. */
-extern void XtScrollBarSetThumb( gw, top, shown )
+
+extern void XawScrollBarSetThumb( gw, top, shown )
   Widget gw;
   float top, shown;
 {

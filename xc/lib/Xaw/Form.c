@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Form.c,v 1.22 88/10/18 12:30:27 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Form.c,v 1.23 89/03/30 16:53:39 jim Exp $";
 #endif /* lint */
 
 
@@ -29,16 +29,14 @@ SOFTWARE.
 
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
-#include <X11/Xmu.h>
-#include <X11/FormP.h>
+#include <X11/Xmu/Xmu.h>
+#include <X11/Xaw/FormP.h>
 
 /* Private Definitions */
-
 
 static int def0 = 0;
 static int def4 = 4;
 static int DEFAULTVALUE = -99999;
-
 
 #define Offset(field) XtOffset(FormWidget, form.field)
 static XtResource resources[] = {
@@ -423,20 +421,17 @@ static void ChangeManaged(w)
     RefigureLocations( w );
 }
     
-
-
 /**********************************************************************
  *
  * Public routines
  *
  **********************************************************************/
 
-
 /* 
  * Set or reset figuring (ignored if realized)
  */
 
-void XtFormDoLayout(w, doit)
+void XawFormDoLayout(w, doit)
 Widget w;
 Boolean doit;
 {

@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: MenuButton.c,v 1.2 89/05/02 21:17:54 kit Exp $";
+static char Xrcsid[] = "$XConsortium: MenuButton.c,v 1.3 89/05/08 17:40:13 kit Exp $";
 #endif /* lint */
 
 /***********************************************************
@@ -48,7 +48,8 @@ SOFTWARE.
 #include <stdio.h>
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
-#include <X11/MenuButtonP.h>
+
+#include <X11/Xaw/MenuButtonP.h>
 
 static void Realize();
 static void PopupMenu();

@@ -1,5 +1,5 @@
 /*
-* $XConsortium: LogoP.h,v 1.4 88/09/06 16:42:06 jim Exp $
+* $XConsortium: LogoP.h,v 1.5 89/03/30 16:05:43 jim Exp $
 */
 
 /*
@@ -18,11 +18,10 @@ this software for any purpose.  It is provided "as is"
 without express or implied warranty.
 */
 
-#ifndef _XtLogoP_h
-#define _XtLogoP_h
+#ifndef _XawLogoP_h
+#define _XawLogoP_h
 
-#include <X11/Logo.h>
-#include <X11/CoreP.h>
+#include <X11/Xaw/Logo.h>
 
 typedef struct {
 	 Pixel	 fgpixel;
@@ -45,4 +44,4 @@ typedef struct _LogoClassRec {
 
 extern LogoClassRec logoClassRec;
 
-#endif /* _XtLogoP_h */
+#endif /* _XawLogoP_h */

@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Grip.c,v 1.23 89/03/10 18:08:03 rws Exp $";
+static char Xrcsid[] = "$XConsortium: Grip.c,v 1.24 89/03/30 16:53:50 jim Exp $";
 #endif /* lint */
 
 /***********************************************************
@@ -30,10 +30,9 @@ SOFTWARE.
  * Grip.c - Grip Widget (Used by Paned Widget)
  *
  */
-
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
-#include <X11/GripP.h>
+#include <X11/Xaw/GripP.h>
 
 static XtResource resources[] = {
    {XtNwidth, XtCWidth, XtRDimension, sizeof(Dimension),

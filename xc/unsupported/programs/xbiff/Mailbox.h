@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Mailbox.h,v 1.15 89/04/11 19:30:48 jim Exp $
+ * $XConsortium: Mailbox.h,v 1.16 89/04/12 15:49:20 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -16,8 +16,8 @@
  * Author:  Jim Fulton, MIT X Consortium
  */
 
-#ifndef _XtMailbox_h
-#define _XtMailbox_h
+#ifndef _XawMailbox_h
+#define _XawMailbox_h
 
 /*
  * Mailbox widget; looks a lot like the clock widget, don't it...
@@ -26,7 +26,6 @@
 /* resource names used by mailbox widget that aren't defined in StringDefs.h */
 
 #define XtNupdate		"update"
-#define XtNfile			"file"
 #define XtNcheckCommand		"checkCommand"	/* command to exec */
 #define XtNonceOnly		"onceOnly"
 #define XtNvolume		"volume"	/* Int: volume for bell */
@@ -39,7 +38,6 @@
 
 #define XtCCheckCommand		"CheckCommand"
 #define XtCVolume		"Volume"
-#define XtCPixmap		"Pixmap"
 #define XtCPixmapMask		"PixmapMask"
 #define XtCFlip			"Flip"
 #define XtCShapeWindow		"ShapeWindow"
@@ -53,5 +51,5 @@ typedef struct _MailboxClassRec *MailboxWidgetClass;  /* see MailboxP.h */
 
 extern WidgetClass mailboxWidgetClass;
 
-#endif /* _XtMailbox_h */
+#endif /* _XawMailbox_h */
 /* DON'T ADD STUFF AFTER THIS #endif */

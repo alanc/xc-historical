@@ -1,5 +1,5 @@
 /*
-* $XConsortium: ToggleP.h,v 1.2 89/03/30 16:06:06 jim Exp $
+* $XConsortium: ToggleP.h,v 1.3 89/05/01 13:19:48 kit Exp $
 */
 
 
@@ -31,18 +31,18 @@ SOFTWARE.
  * ToggleP.h - Private definitions for Toggle widget
  * 
  * Author: Chris D. Peterson
- *         MIT X Consortium / Project Athena
- *         kit@athena.mit.edu
+ *         MIT X Consortium
+ *         kit@expo.lcs.mit.edu
  *  
- * Date:   January 12, 1988
+ * Date:   January 12, 1989
  *
  */
 
-#ifndef _XtToggleP_h
-#define _XtToggleP_h
+#ifndef _XawToggleP_h
+#define _XawToggleP_h
 
-#include <X11/Toggle.h>
-#include <X11/CommandP.h>
+#include <X11/Xaw/Toggle.h>
+#include <X11/Xaw/CommandP.h>
 
 /***********************************************************************
  *
@@ -52,10 +52,10 @@ SOFTWARE.
 
 #define streq(a,b) ( strcmp( (a), (b) ) == 0)
 
-typedef struct _RadioList {
-  struct _RadioList *prev, *next; /* Pointers to other elements in list. */
+typedef struct _RadioGroup {
+  struct _RadioGroup *prev, *next; /* Pointers to other elements in group. */
   Widget widget;		  /* Widget corrosponding to this element. */
-} RadioList;
+} RadioGroup;
 
 /************************************
  *
@@ -93,7 +93,7 @@ typedef struct {
     caddr_t     radio_data;
 
     /* private data */
-    RadioList * radio_list;
+    RadioGroup * radio_group;
 } TogglePart;
 
    /* Full widget declaration */
@@ -105,6 +105,6 @@ typedef struct _ToggleRec {
     TogglePart       toggle;
 } ToggleRec;
 
-#endif /* _XtToggleP_h */
+#endif /* _XawToggleP_h */
 
 

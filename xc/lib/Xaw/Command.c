@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Command.c,v 1.48 89/03/29 13:15:24 kit Exp $";
+static char Xrcsid[] = "$XConsortium: Command.c,v 1.49 89/03/30 16:53:29 jim Exp $";
 #endif /* lint */
 
 /***********************************************************
@@ -38,12 +38,12 @@ SOFTWARE.
      Xt..Field macro in this code just refers to some field in
      one of the substructures of the WidgetRec.  */
 
-#include <X11/IntrinsicP.h>
-#include <X11/StringDefs.h>
 #include <stdio.h>
 #include <ctype.h>
-#include <X11/XawMisc.h>
-#include <X11/CommandP.h>
+#include <X11/IntrinsicP.h>
+#include <X11/StringDefs.h>
+#include <X11/Xmu/Misc.h>
+#include <X11/Xaw/CommandP.h>
 #include "CommandI.h"
 
 /****************************************************************
@@ -91,7 +91,7 @@ static XtActionsRec actionsList[] =
  * Chris D. Peterson - 12/28/88.
  */
 
-XtActionList xt_command_actions_list = actionsList;
+XtActionList xaw_command_actions_list = actionsList;
 
 #define SuperClass ((LabelWidgetClass)&labelClassRec)
 

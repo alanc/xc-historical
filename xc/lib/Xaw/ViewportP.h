@@ -1,5 +1,5 @@
 /*
- * $XConsortium: ViewportP.h,v 1.8 88/09/06 16:42:50 jim Exp $
+ * $XConsortium: ViewportP.h,v 1.9 89/03/30 16:06:09 jim Exp $
  * Private declarations for ViewportWidgetClass
  */
 
@@ -30,8 +30,8 @@ SOFTWARE.
 #ifndef _ViewportP_h
 #define _ViewportP_h
 
-#include <X11/Viewport.h>
-#include <X11/FormP.h>
+#include <X11/Xaw/Viewport.h>
+#include <X11/Xaw/FormP.h>
 
 typedef struct {int empty;} ViewportClassPart;
 

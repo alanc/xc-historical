@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Text.h,v 1.17 89/03/30 16:06:00 jim Exp $
+* $XConsortium: Text.h,v 1.18 89/04/07 14:23:21 swick Exp $
 */
 
 
@@ -27,8 +27,8 @@ SOFTWARE.
 
 ******************************************************************/
 
-#ifndef _XtText_h
-#define _XtText_h
+#ifndef _XawText_h
+#define _XawText_h
 
 /****************************************************************
  *
@@ -67,7 +67,6 @@ SOFTWARE.
 
 */
 
-
 #define XtNtextOptions		"textOptions"
 #define XtNdialogHOffset	"dialogHOffset"
 #define XtNdialogVOffset	"dialogVOffset"
@@ -78,20 +77,13 @@ SOFTWARE.
 #define XtNinsertPosition	"insertPosition"
 #define XtNleftMargin		"leftMargin"
 #define XtNselectTypes		"selectTypes"
-#define XtNtextSource		"textSource"
-#define XtNtextSink		"textSink"
 #define XtNselection		"selection"
-
-#define XtNeditType		"editType"
-#define XtNfile			"file"
-#define XtNstring		"string"
-#define XtNlength		"length"
-#define XtNfont			"font"
 
 #define XtCOutput		"Output"
 #define XtCSelectTypes		"SelectTypes"
 
-/* Return codes from XtTextReplace */
+/* Return codes from XawTextReplace */
+
 #define XawEditDone		0
 #define XawEditError		1
 #define XawPositionError	2
@@ -106,13 +98,13 @@ typedef struct _TextRec      *TextWidget;
 
 /* other stuff */
 
-typedef long XtTextPosition;
-typedef struct _XtTextSource XtTextSourceRec, *XtTextSource;
-typedef struct _XtTextSink XtTextSinkRec, *XtTextSink;
+typedef long XawTextPosition;
+typedef struct _XawTextSource XawTextSourceRec, *XawTextSource;
+typedef struct _XawTextSink XawTextSinkRec, *XawTextSink;
 
-typedef enum {XttextRead, XttextAppend, XttextEdit} XtTextEditType;
-typedef enum {XtselectNull, XtselectPosition, XtselectChar, XtselectWord,
-    XtselectLine, XtselectParagraph, XtselectAll} XtTextSelectType;
+typedef enum {XawtextRead, XawtextAppend, XawtextEdit} XawTextEditType;
+typedef enum {XawselectNull, XawselectPosition, XawselectChar, XawselectWord,
+    XawselectLine, XawselectParagraph, XawselectAll} XawTextSelectType;
 
 #define wordBreak		0x01
 #define scrollVertical		0x02
@@ -127,99 +119,155 @@ typedef struct {
     int  length;
     char *ptr;
     Atom format;
-    } XtTextBlock, *XtTextBlockPtr;
+    } XawTextBlock, *XawTextBlockPtr; 
+#ifndef XAW_NO_COMPATABILITY
+/************************************************************
+ *
+ * This Stuff is only for compatibility, and will go away in 
+ * future releases.                                         */
 
-extern void XtTextDisplay(); /* w */
+typedef long XtTextPosition;
+typedef struct _XawTextSource XtTextSourceRec, *XtTextSource;
+typedef struct _XawTextSink XtTextSinkRec, *XtTextSink;
+
+#define XtTextBlock                XawTextBlock
+#define XtTextBlockPtr             XawTextBlockPtr
+
+
+#define XttextRead                 XawtextRead
+#define XttextAppend               XawtextAppend
+#define XttextEdit                 XawtextEdit
+#define XtTextEditType             XawTextEditType
+#define XtselectNull               XawselectNull
+
+#define XtselectPosition           XawselectPosition
+#define XtselectChar               XawselectChar
+#define XtselectWord               XawselectWord
+#define XtselectLine               XawselectLine
+#define XtselectParagraph          XawselectParagraph
+#define XtselectAll                XawselectAll
+#define XtTextSelectType           XawTextSelectType
+
+#define XtTextDisableRedisplay     XawTextDisableRedisplay
+#define XtTextEnableRedisplay      XawTextEnableRedisplay
+#define XtTextGetSource            XawTextGetSource
+
+#define XtTextDisplay              XawTextDisplay
+#define XtTextSetSelectionArray    XawTextSetSelectionArray
+#define XtTextSetLastPos           XawTextSetLastPos
+#define XtTextGetSelectionPos      XawTextGetSelectionPos
+#define XtTextSetSource            XawTextSetSource
+#define XtTextReplace              XawTextReplace
+#define XtTextTopPosition          XawTextTopPosition
+#define XtTextSetInsertionPoint    XawTextSetInsertionPoint
+#define XtTextGetInsertionPoint    XawTextGetInsertionPoint
+#define XtTextUnsetSelection       XawTextUnsetSelection
+#define XtTextChangeOptions        XawTextChangeOptions
+#define XtTextGetOptions           XawTextGetOptions
+#define XtTextSetSelection         XawTextSetSelection
+#define XtTextInvalidate           XawTextInvalidate
+
+#define XtAsciiSinkCreate          XawAsciiSinkCreate
+#define XtAsciiSinkDestroy         XawAsciiSinkDestroy
+#define XtDiskSourceCreate         XawDiskSourceCreate
+#define XtDiskSourceDestroy        XawDiskSourceDestroy
+#define XtStringSourceCreate       XawStringSourceCreate
+#define XtStringSourceDestroy      XawStringSourceDestroy
+
+/*************************************************************/
+#endif /* XAW_NO_COMPATABILITY */
+
+extern void XawTextDisplay(); /* w */
     /* Widget w; */
 
-extern void XtTextSetSelectionArray(); /* w, sarray */
+extern void XawTextSetSelectionArray(); /* w, sarray */
     /* Widget        w;		*/
     /* SelectionType *sarray;   */
 
-extern void XtTextSetLastPos(); /* w, lastPos */
+extern void XawTextSetLastPos(); /* w, lastPos */
     /* Widget        w;		*/
-    /* XtTextPosition lastPos;  */
+    /* XawTextPosition lastPos;  */
 
-extern void XtTextGetSelectionPos(); /* dpy, w, left, right */
+extern void XawTextGetSelectionPos(); /* dpy, w, left, right */
     /* Widget        w;		*/
-    /* XtTextPosition *left, *right;    */
+    /* XawTextPosition *left, *right;    */
 
-extern void XtTextSetSource(); /* dpy, w, source, startPos */
+extern void XawTextSetSource(); /* dpy, w, source, startPos */
     /* Widget         w;	    */
-    /* XtTextSource   source;       */
-    /* XtTextPosition startPos;     */
+    /* XawTextSource   source;       */
+    /* XawTextPosition startPos;     */
 
-extern int XtTextReplace(); /* w, startPos, endPos, text */
+extern int XawTextReplace(); /* w, startPos, endPos, text */
     /* Widget        w;		*/
-    /* XtTextPosition   startPos, endPos; */
-    /* XtTextBlock      *text; */
+    /* XawTextPosition   startPos, endPos; */
+    /* XawTextBlock      *text; */
 
-extern XtTextPosition XtTextTopPosition(); /* w */
-    /* Widget        w;		*/
-
-extern void XtTextSetInsertionPoint(); /*  w, position */
-    /* Widget        w;		*/
-    /* XtTextPosition position; */
-
-extern XtTextPosition XtTextGetInsertionPoint(); /* w */
+extern XawTextPosition XawTextTopPosition(); /* w */
     /* Widget        w;		*/
 
-extern void XtTextUnsetSelection(); /* w */
+extern void XawTextSetInsertionPoint(); /*  w, position */
+    /* Widget        w;		*/
+    /* XawTextPosition position; */
+
+extern XawTextPosition XawTextGetInsertionPoint(); /* w */
     /* Widget        w;		*/
 
-extern void XtTextChangeOptions(); /* w, options */
+extern void XawTextUnsetSelection(); /* w */
+    /* Widget        w;		*/
+
+extern void XawTextChangeOptions(); /* w, options */
     /* Widget        w;		*/
     /* int    options; */
 
-extern int XtTextGetOptions(); /* w */
+extern int XawTextGetOptions(); /* w */
     /* Widget        w;		*/
 
-extern void XtTextSetSelection(); /* w, left, right */
+extern void XawTextSetSelection(); /* w, left, right */
     /* Widget        w;		*/
-    /* XtTextPosition left, right; */
+    /* XawTextPosition left, right; */
 
-extern void XtTextInvalidate(); /* w, from, to */
+extern void XawTextInvalidate(); /* w, from, to */
     /* Widget        w;		*/
-    /* XtTextPosition from, to; */
+    /* XawTextPosition from, to; */
 
-extern XtTextSource XtTextGetSource() ; /* w */
+extern XawTextSource XawTextGetSource() ; /* w */
     /* Widget        w;		*/
 
 /*
  * Stuff from AsciiSink
  */
 
-extern XtTextSink XtAsciiSinkCreate(); /* parent, args, num_args */
+extern XawTextSink XawAsciiSinkCreate(); /* parent, args, num_args */
     /* Widget parent;		*/
     /* ArgList args;		*/
     /* Cardinal num_args;	*/
 
-extern void XtAsciiSinkDestroy(); /* sink */
-    /* XtTextSink  sink */
+extern void XawAsciiSinkDestroy(); /* sink */
+    /* XawTextSink  sink */
 
 /*
  * from DiskSrc
  */
-extern XtTextSource XtDiskSourceCreate(); /* parent, args, num_args */
+extern XawTextSource XawDiskSourceCreate(); /* parent, args, num_args */
     /* Widget	parent;		*/
     /* ArgList	args;		*/
     /* Cardinal	num_args;	*/
 
-extern void XtDiskSourceDestroy(); /* src */
-    /* XtTextSource src;	*/
+extern void XawDiskSourceDestroy(); /* src */
+    /* XawTextSource src;	*/
 
 /*
  * from StringSrc
  */
 
-extern XtTextSource XtStringSourceCreate(); /* parent, args, num_args */
+extern XawTextSource XawStringSourceCreate(); /* parent, args, num_args */
     /* Widget parent;		*/
     /* ArgList args;		*/
     /* Cardinal num_args;	*/
 
-extern void XtStringSourceDestroy(); /* src */
-    /* XtTextSource src;	*/
+extern void XawStringSourceDestroy(); /* src */
+    /* XawTextSource src;	*/
 
 
-#endif /* _XtText_h */
+#endif /* _XawText_h */
 /* DON'T ADD STUFF AFTER THIS #endif */

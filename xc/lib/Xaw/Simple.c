@@ -1,13 +1,34 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Simple.c,v 1.18 89/03/30 16:54:36 jim Exp $";
+static char Xrcsid[] = "$XConsortium: Simple.c,v 1.19 89/05/02 12:58:13 swick Exp $";
 #endif /* lint */
 
-/* Copyright	Massachusetts Institute of Technology	1987 */
+/***********************************************************
+Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
+and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
+
+                        All Rights Reserved
+
+Permission to use, copy, modify, and distribute this software and its 
+documentation for any purpose and without fee is hereby granted, 
+provided that the above copyright notice appear in all copies and that
+both that copyright notice and this permission notice appear in 
+supporting documentation, and that the names of Digital or MIT not be
+used in advertising or publicity pertaining to distribution of the
+software without specific, written prior permission.  
+
+DIGITAL DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING
+ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL
+DIGITAL BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR
+ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS,
+WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION,
+ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
+SOFTWARE.
+
+******************************************************************/
 
 #include <X11/IntrinsicP.h>
-#include <X11/copyright.h>
 #include <X11/StringDefs.h>
-#include <X11/SimpleP.h>
+#include <X11/Xaw/SimpleP.h>
 #include <X11/Vendor.h>		/* hack; force Xaw/Vendor.o to be loaded */
 
 #define UnspecifiedPixmap 2	/* %%% should be NULL, according to the spec */

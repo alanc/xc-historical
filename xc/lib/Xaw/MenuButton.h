@@ -1,5 +1,5 @@
 /*
-* $XConsortium: MenuButton.h,v 1.1 89/04/20 16:24:01 kit Exp $
+* $XConsortium: MenuButton.h,v 1.2 89/05/02 21:18:18 kit Exp $
 */
 
 /***********************************************************
@@ -26,9 +26,6 @@ SOFTWARE.
 
 ******************************************************************/
 
-#ifndef _XtMenuButton_h
-#define _XtMenuButton_h
-
 /***********************************************************************
  *
  * MenuButton Widget
@@ -48,7 +45,10 @@ SOFTWARE.
  *          kit@expo.lcs.mit.edu
  */
 
-#include <X11/Command.h>
+#ifndef _XawMenuButton_h
+#define _XawMenuButton_h
+
+#include <X11/Xaw/Command.h>
 
 /* Resources:
 
@@ -88,4 +88,4 @@ extern WidgetClass     menuButtonWidgetClass;
 typedef struct _MenuButtonClassRec   *MenuButtonWidgetClass;
 typedef struct _MenuButtonRec        *MenuButtonWidget;
 
-#endif /* _XtMenuButton_h --  DON'T ADD STUFF AFTER THIS */
+#endif /* _XawMenuButton_h --  DON'T ADD STUFF AFTER THIS */

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: MailboxP.h,v 1.14 89/04/12 08:37:10 jim Exp $
+ * $XConsortium: MailboxP.h,v 1.15 89/04/12 15:09:46 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -16,11 +16,10 @@
  * Author:  Jim Fulton, MIT X Consortium
  */
 
-#ifndef _XtMailboxP_h
-#define _XtMailboxP_h
+#ifndef _XawMailboxP_h
+#define _XawMailboxP_h
 
-#include <X11/Mailbox.h>
-#include <X11/CoreP.h>
+#include <X11/Xaw/Mailbox.h>
 
 #ifdef SYSV
 #define MAILBOX_DIRECTORY "/usr/mail"
@@ -74,4 +73,4 @@ typedef struct _MailboxClassRec {	/* full class record declaration */
 
 extern MailboxClassRec mailboxClassRec;	 /* class pointer */
 
-#endif /* _XtMailboxP_h */
+#endif /* _XawMailboxP_h */

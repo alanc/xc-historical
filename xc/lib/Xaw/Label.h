@@ -1,7 +1,6 @@
 /*
-* $XConsortium: Label.h,v 1.20 88/10/23 13:45:42 swick Exp $
-*/
-
+ * $XConsortium: Label.h,v 1.21 89/03/30 16:05:34 jim Exp $
+ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -27,17 +26,17 @@ SOFTWARE.
 
 ******************************************************************/
 
-#ifndef _XtLabel_h
-#define _XtLabel_h
+#ifndef _XawLabel_h
+#define _XawLabel_h
 
 /***********************************************************************
  *
  * Label Widget
  *
- *
  ***********************************************************************/
 
-#include <X11/Simple.h>
+#include <X11/Xaw/Simple.h>
+#include <X11/Xmu/Xmu.h>
 
 /* Resources:
 
@@ -66,8 +65,6 @@ SOFTWARE.
 
 */
 
-#include <X11/Xmu.h>
-
 #define XtNbitmap		"bitmap"
 #define XtNforeground		"foreground"
 #define XtNlabel		"label"
@@ -86,5 +83,5 @@ extern WidgetClass labelWidgetClass;
 typedef struct _LabelClassRec *LabelWidgetClass;
 typedef struct _LabelRec      *LabelWidget;
 
-#endif /* _XtLabel_h */
+#endif /* _XawLabel_h */
 /* DON'T ADD STUFF AFTER THIS #endif */

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Toggle.h,v 1.2 89/02/13 14:39:05 kit Exp $
+ * $XConsortium: Toggle.h,v 1.3 89/03/30 16:06:05 jim Exp $
  */
 
 /***********************************************************
@@ -30,14 +30,14 @@ SOFTWARE.
  * ToggleP.h - Private definitions for Toggle widget
  *
  * Author: Chris D. Peterson
- *         MIT X Consortium / Project Athena
- *         kit@athena.mit.edu
+ *         MIT X Consortium
+ *         kit@expo.lcs.mit.edu
  *  
- * Date:   January 12, 1988
+ * Date:   January 12, 1989
  */
 
-#ifndef _XtToggle_h
-#define _XtToggle_h
+#ifndef _XawToggle_h
+#define _XawToggle_h
 
 /***********************************************************************
  *
@@ -45,7 +45,7 @@ SOFTWARE.
  *
  ***********************************************************************/
 
-#include <X11/Command.h>
+#include <X11/Xaw/Command.h>
 
 /* Resources:
 
@@ -86,33 +86,56 @@ SOFTWARE.
 
 */
 
+/*
+ * These should be in StringDefs.h but aren't so we will define
+ * them here if they are needed.
+ */
+
+
+#define XtCWidget		"Widget"
+#define XtCState                 "State"
+#define XtCRadioGroup            "RadioGroup"
+#define XtCRadioData             "RadioData"
+
+#define XtRWidget		"Widget"
+
+#define XtNstate                 "state"
+#define XtNradioGroup            "radioGroup"
+#define XtNradioData             "radioData"
+
+extern WidgetClass               toggleWidgetClass;
+
+typedef struct _ToggleClassRec   *ToggleWidgetClass;
+typedef struct _ToggleRec        *ToggleWidget;
+
+
 /************************************************************
  * 
  * Public Functions
  *
  ************************************************************/
    
-/*	Function Name: XtToggleChangeRadioGroup
+/*	Function Name: XawToggleChangeRadioGroup
  *	Description: Allows a toggle widget to change radio lists.
  *	Arguments: w - The toggle widget to change lists.
  *                 radio_group - any widget in the new list.
  *	Returns: none.
  */
 
-void XtToggleChangeRadioGroup(/* w, radio_group */);
+void XawToggleChangeRadioGroup(/* w, radio_group */);
 /* Widget w, radio_group; */
 
-/*	Function Name: XtToggleGetCurrent
+/*	Function Name: XawToggleGetCurrent
  *	Description: Returns the RadioData associated with the toggle
  *                   widget that is currently active in a toggle list.
  *	Arguments: radio_group - any toggle widget in the toggle list.
  *	Returns: The XtNradioData associated with the toggle widget.
  */
 
-caddr_t XtToggleGetCurrent(/* radio_group */);
+caddr_t XawToggleGetCurrent(/* radio_group */);
 /* Widget radio_group; */
 
-/*	Function Name: XtToggleSetCurrent
+/*	Function Name: XawToggleSetCurrent
  *	Description: Sets the Toggle widget associated with the
  *                   radio_data specified.
  *	Arguments: radio_group - any toggle widget in the toggle list.
@@ -120,44 +143,31 @@ caddr_t XtToggleGetCurrent(/* radio_group */);
  *	Returns: none.
  */
 
-void XtToggleSetCurrent(/* radio_group, radio_data */);
+void XawToggleSetCurrent(/* radio_group, radio_data */);
 /* Widget radio_group;
  * caddr_t radio_data;
  */
  
-/*	Function Name: XtToggleUnsetCurrent
+/*	Function Name: XawToggleUnsetCurrent
  *	Description: Unsets all Toggles in the radio_group specified.
  *	Arguments: radio_group - any toggle widget in the toggle list.
  *	Returns: none.
  */
 
-void XtToggleUnsetCurrent( /* radio_group */);
+void XawToggleUnsetCurrent( /* radio_group */);
 /* Widget radio_group; */
 
-/*
- * These shoul d be in StringDefs.h but aren't so we will define
- * them here if they are needed.
- */
+#ifndef XAW_NO_COMPATABILITY	
+/*************************************************************
+ * For Compatibility only.                                   */
 
-#ifndef XtCWidget
-#define XtCWidget                "Widget"
-#endif /* XtCWidget */
+#define XtToggleChangeRadioGroup       XawToggleChangeRadioGroup
+#define XtToggleSetCurrent             XawToggleSetCurrent
+#define XtToggleUnsetCurrent           XawToggleUnsetCurrent
+#define XtToggleGetCurrent             XawToggleGetCurrent
 
-#ifndef XtRWidget
-#define XtRWidget                "Widget"
-#endif /* XtRWidget */
+/*************************************************************/
+#endif /* XAW_NO_COMPATABILITY */
 
-#define XtNstate                 "state"
-#define XtCState                 "State"
-#define XtNradioGroup            "radioGroup"
-#define XtCRadioGroup            "RadioGroup"
-#define XtNradioData             "radioData"
-#define XtCRadioData             "RadioData"
-
-extern WidgetClass               toggleWidgetClass;
-
-typedef struct _ToggleClassRec   *ToggleWidgetClass;
-typedef struct _ToggleRec        *ToggleWidget;
-
-#endif /* _XtToggle_h */
+#endif /* _XawToggle_h */
 /* DON'T ADD STUFF AFTER THIS */

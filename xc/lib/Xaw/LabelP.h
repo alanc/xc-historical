@@ -1,5 +1,5 @@
 /*
-* $XConsortium: LabelP.h,v 1.21 88/09/29 13:34:51 swick Exp $
+* $XConsortium: LabelP.h,v 1.22 89/03/30 16:05:35 jim Exp $
 */
 
 
@@ -32,8 +32,8 @@ SOFTWARE.
  * 
  */
 
-#ifndef _XtLabelP_h
-#define _XtLabelP_h
+#ifndef _XawLabelP_h
+#define _XawLabelP_h
 
 /***********************************************************************
  *
@@ -41,8 +41,8 @@ SOFTWARE.
  *
  ***********************************************************************/
 
-#include <X11/Label.h>
-#include <X11/SimpleP.h>
+#include <X11/Xaw/Label.h>
+#include <X11/Xaw/SimpleP.h>
 
 /* New fields for the Label widget class record */
 
@@ -92,4 +92,4 @@ typedef struct _LabelRec {
     LabelPart	label;
 } LabelRec;
 
-#endif /* _XtLabelP_h */
+#endif /* _XawLabelP_h */

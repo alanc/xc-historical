@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: AsciiText.c,v 1.18 88/10/18 12:28:26 swick Exp $";
+static char Xrcsid[] = "$XConsortium: AsciiText.c,v 1.19 89/03/30 16:53:12 jim Exp $";
 #endif /* lint */
 
 
@@ -30,7 +30,7 @@ SOFTWARE.
 #include <X11/copyright.h>
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
-#include <X11/AsciiTextP.h>
+#include <X11/Xaw/AsciiTextP.h>
 
 /* from Text.c */
 
@@ -146,7 +146,6 @@ static void StringClassInitialize()
     asciiStringClassRec.core_class.num_actions = textActionsTableCount;
 }
 
-
 /* ARGSUSED */
 static void StringInitialize(request, new)
     Widget request, new;
@@ -165,16 +164,16 @@ static void StringCreateSourceSink(widget, args, num_args)
     AsciiStringWidget w = (AsciiStringWidget)widget;
     void (*NullProc)() = NULL;	/* some compilers require this */
 
-    w->text.source = XtStringSourceCreate( widget, args, *num_args );
-    w->text.sink = XtAsciiSinkCreate( widget, args, *num_args );
+    w->text.source = XawStringSourceCreate( widget, args, *num_args );
+    w->text.sink = XawAsciiSinkCreate( widget, args, *num_args );
 
     if (w->core.height == DEFAULT_TEXT_HEIGHT)
         w->core.height = (2*yMargin) + 2
 			  + (*w->text.sink->MaxHeight)(widget, 1);
 
     w->text.lastPos = /* GETLASTPOS */
-      (*w->text.source->Scan) ( w->text.source, 0, XtstAll,
-			        XtsdRight, 1, TRUE );
+      (*w->text.source->Scan) ( w->text.source, 0, XawstAll,
+			        XawsdRight, 1, TRUE );
 
     if (w->text.sink->SetTabs != NullProc) {
 #define TAB_COUNT 32
@@ -209,8 +208,8 @@ static Boolean StringSetValues(current, request, new)
 static void StringDestroy(w)
     Widget w;
 {
-    XtStringSourceDestroy( ((AsciiStringWidget)w)->text.source );
-    XtAsciiSinkDestroy( ((AsciiStringWidget)w)->text.sink );
+    XawStringSourceDestroy( ((AsciiStringWidget)w)->text.source );
+    XawAsciiSinkDestroy( ((AsciiStringWidget)w)->text.sink );
 }
 
 
@@ -238,12 +237,12 @@ static void DiskCreateSourceSink(widget, args, num_args)
     AsciiDiskWidget w = (AsciiDiskWidget)widget;
     void (*NullProc)() = NULL;	/* some compilers require this */
 
-    w->text.source = XtDiskSourceCreate( widget, args, *num_args );
-    w->text.sink = XtAsciiSinkCreate( widget, args, *num_args );
+    w->text.source = XawDiskSourceCreate( widget, args, *num_args );
+    w->text.sink = XawAsciiSinkCreate( widget, args, *num_args );
 
     w->text.lastPos = /* GETLASTPOS */
-      (*w->text.source->Scan) ( w->text.source, 0, XtstAll,
-			        XtsdRight, 1, TRUE );
+      (*w->text.source->Scan) ( w->text.source, 0, XawstAll,
+			        XawsdRight, 1, TRUE );
 
     if (w->core.height == DEFAULT_TEXT_HEIGHT)
         w->core.height = (2*yMargin) + 2
@@ -282,6 +281,6 @@ static Boolean DiskSetValues(current, request, new)
 static void DiskDestroy(w)
     Widget w;
 {
-    XtDiskSourceDestroy( ((AsciiDiskWidget)w)->text.source );
-    XtAsciiSinkDestroy( ((AsciiDiskWidget)w)->text.sink );
+    XawDiskSourceDestroy( ((AsciiDiskWidget)w)->text.source );
+    XawAsciiSinkDestroy( ((AsciiDiskWidget)w)->text.sink );
 }

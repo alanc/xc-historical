@@ -1,5 +1,5 @@
 /*
-* $XConsortium: TextSrcP.h,v 1.1 88/10/18 13:13:08 swick Exp $
+* $XConsortium: TextSrcP.h,v 1.2 89/03/30 16:06:03 jim Exp $
 */
 
 
@@ -27,32 +27,31 @@ SOFTWARE.
 
 ******************************************************************/
 
-#ifndef _XtTextSrcP_h
-#define _XtTextSrcP_h
+#ifndef _XawTextSrcP_h
+#define _XawTextSrcP_h
 
+#include <X11/Xaw/Text.h>
 
-#include <X11/Text.h>
+typedef enum {XawsdLeft, XawsdRight} XawTextScanDirection;
+typedef enum {XawstPositions, XawstWhiteSpace, XawstEOL, XawstParagraph,
+		XawstAll} XawTextScanType;
 
-typedef enum {XtsdLeft, XtsdRight} XtTextScanDirection;
-typedef enum {XtstPositions, XtstWhiteSpace, XtstEOL, XtstParagraph, XtstAll}
-    XtTextScanType;
-
-typedef struct _XtTextSource {
-    XtTextPosition	(*Read)();
+typedef struct _XawTextSource {
+    XawTextPosition	(*Read)();
     int			(*Replace)();
-    XtTextPosition	(*GetLastPos)();
+    XawTextPosition	(*GetLastPos)();
     int			(*SetLastPos)();
-    XtTextPosition	(*Scan)();
+    XawTextPosition	(*Scan)();
     void		(*AddWidget)( /* source, widget */ );
     void		(*RemoveWidget)( /* source, widget */ );
     Boolean		(*GetSelection)( /* source, left, right, selection */);
     void		(*SetSelection)( /* source, left, right, selection */);
     Boolean		(*ConvertSelection)( /* Display*, source, ... */ );
-    XtTextEditType	edit_mode;
+    XawTextEditType	edit_mode;
     caddr_t		data;	    
     };
 
-typedef struct _XtTextSink {
+typedef struct _XawTextSink {
     XFontStruct	*font;
     int foreground;
     int (*Display)();
@@ -67,27 +66,67 @@ typedef struct _XtTextSink {
     caddr_t data;
     };
 
-typedef enum {XtisOn, XtisOff} XtTextInsertState;
+typedef enum {XawisOn, XawisOff} XawTextInsertState;
 
-typedef enum {XtsmTextSelect, XtsmTextExtend} XtTextSelectionMode;
+typedef enum {XawsmTextSelect, XawsmTextExtend} XawTextSelectionMode;
 
-typedef enum {XtactionStart, XtactionAdjust, XtactionEnd}
-    XtTextSelectionAction;
+typedef enum {XawactionStart, XawactionAdjust, XawactionEnd}
+    XawTextSelectionAction;
 
 typedef struct {
-    XtTextPosition   left, right;
-    XtTextSelectType type;
+    XawTextPosition   left, right;
+    XawTextSelectType type;
     Atom*	     selections;
     int		     atom_count;
     int		     array_size;
-} XtTextSelection;
+} XawTextSelection;
 
 typedef enum  {Normal, Selected }highlightType;
 
-/* for backwards compatibility only */
+#ifndef XAW_NO_COMPATABILITY
+/*************************************************************
+ * For Compatibility only.                                   */
 
-#define EditDone	XawEditDone
-#define EditError	XawEditError
-#define PositionError	XawPositionError
+#define EditDone	   XawEditDone
+#define EditError	   XawEditError
+#define PositionError	   XawPositionError
 
-#endif /* _XtTextSrcP_h */
+#define XtEditDone	   XawEditDone
+#define XtEditError	   XawEditError
+#define XtPositionError	   XawPositionError
+
+#define _XtTextSink        _XawTextSink
+#define _XtTextSource      _XawTextSource
+
+#define XtisOn             XawisOn
+#define XtisOff            XawisOff
+
+#define XtsmTextSelect     XawsmTextSelect
+#define XtsmTextExtend     XawsmTextExtend
+
+#define XtactionStart      XawactionStart
+#define XtactionAdjust     XawactionAdjust
+#define XtactionEnd        XawactionEnd
+
+#define XtsdLeft           XawsdLeft
+#define XtsdRight          XawsdRight
+
+#define XtstPositions      XawstPositions
+#define XtstWhiteSpace     XawstWhiteSpace
+#define XtstEOL            XawstEOL
+#define XtstParagraph      XawstParagraph
+#define XtstAll            XawstAll
+
+#define XtTextSelectionAction XawTextSelectionAction
+#define XtTextSelection       XawTextSelection
+#define XtTextScanDirection   XawTextScanDirection
+#define XtTextScanType        XawTextScanType
+
+
+/*************************************************************/
+#endif /* XAW_NO_COMPATABILITY */
+
+#endif /* _XawTextSrcP_h */
+
+
+

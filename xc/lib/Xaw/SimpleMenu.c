@@ -1,5 +1,5 @@
 #if ( !defined(lint) && !defined(SABER) )
-static char Xrcsid[] = "$XConsortium: SimpleMenu.c,v 1.6 89/05/03 16:29:38 kit Exp $";
+static char Xrcsid[] = "$XConsortium: SimpleMenu.c,v 1.7 89/05/08 17:38:51 kit Exp $";
 #endif 
 
 /***********************************************************
@@ -32,15 +32,16 @@ SOFTWARE.
  * Date:    April 3, 1989
  *
  * By:      Chris D. Peterson
- *          MIT X Consortium / Project Athena.
- *          kit@athena.mit.edu
+ *          MIT X Consortium 
+ *          kit@expo.lcs.mit.edu
  */
 
 #include <stdio.h>
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
-#include <X11/SimpleMenuP.h>
-#include <X11/Xmu.h>
+
+#include <X11/Xaw/SimpleMenuP.h>
+#include <X11/Xmu/Xmu.h>
 
 #define streq(a, b)        ( strcmp((a), (b)) == 0 )
 

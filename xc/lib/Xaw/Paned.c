@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Paned.c,v 1.4 89/03/09 16:24:16 kit Exp $";
+static char Xrcsid[] = "$XConsortium: Paned.c,v 1.5 89/03/30 16:54:19 jim Exp $";
 #endif /* lint */
 
 
@@ -35,17 +35,21 @@ SOFTWARE.
  * Date:    March 1, 1989
  *
  * By:      Chris D. Peterson
- *          MIT X Consortium / Project Athena.
- *          kit@athena.mit.edu
+ *          MIT X Consortium
+ *          kit@expo.lcs.mit.edu
  */
 
 #include <ctype.h>
+
 #include <X11/IntrinsicP.h>
 #include <X11/cursorfont.h>
 #include <X11/StringDefs.h>
-#include <X11/Grip.h>
-#include <X11/PanedP.h>
-#include <X11/XawMisc.h>
+
+#include <X11/Xmu/Misc.h>
+#include <X11/Xmu/Xmu.h>
+
+#include <X11/Xaw/Grip.h>
+#include <X11/Xaw/PanedP.h>
 
 typedef enum {UpLeftPane = 'U', LowRightPane = 'L', 
 	      ThisBorderOnly = 'T', AnyPane = 'A' } Direction;
@@ -1737,7 +1741,7 @@ Widget old, request, new;
     /* Check for new min and max. */
 
     if (old_pane->min != new_pane->min || old_pane->max != new_pane->max)
-	XtPanedSetMinMax(new, (int)new_pane->min, (int)new_pane->max);
+	XawPanedSetMinMax(new, (int)new_pane->min, (int)new_pane->max);
 
     /* Check for change in XtNshowGrip. */
 
@@ -1769,7 +1773,7 @@ Widget old, request, new;
  *
  ************************************************************/
 
-/*	Function Name: XtPanedSetMinMax
+/*	Function Name: XawPanedSetMinMax
  *	Description: Sets the min and max size for a pane.
  *	Arguments: widget - the widget that is a child of the Paned widget.
  *                 min, max - the new min and max size for the pane.
@@ -1777,7 +1781,7 @@ Widget old, request, new;
  */
 
 void 
-XtPanedSetMinMax(widget, min, max)
+XawPanedSetMinMax(widget, min, max)
 Widget widget;
 int min, max;
 {
@@ -1788,7 +1792,7 @@ int min, max;
     RefigureLocationsAndCommit( widget->core.parent );
 }
 
-/*	Function Name: XtPanedGetMinMax
+/*	Function Name: XawPanedGetMinMax
  *	Description: Gets the min and max size for a pane.
  *	Arguments: widget - the widget that is a child of the Paned widget.
  ** RETURNED **    min, max - the current min and max size for the pane.
@@ -1796,7 +1800,7 @@ int min, max;
  */
 
 void 
-XtPanedGetMinMax(widget, min, max)
+XawPanedGetMinMax(widget, min, max)
 Widget widget;
 int    *min, *max;
 {
@@ -1806,7 +1810,7 @@ int    *min, *max;
     *max = pane->max;
 }
 
-/*	Function Name: XtPanedSetRefigureMode
+/*	Function Name: XawPanedSetRefigureMode
  *	Description: Allows a flag to be set the will inhibit 
  *                   the paned widgets relayout routine.
  *	Arguments: w - the paned widget.
@@ -1815,7 +1819,7 @@ int    *min, *max;
  */
 
 void 
-XtPanedSetRefigureMode(w, mode)
+XawPanedSetRefigureMode(w, mode)
 Widget w;
 Boolean mode;
 {
@@ -1823,20 +1827,20 @@ Boolean mode;
     RefigureLocationsAndCommit( w );
 }
 
-/*	Function Name: XtPanedGetNumSub
+/*	Function Name: XawPanedGetNumSub
  *	Description: Returns the number of panes in the paned widget.
  *	Arguments: w - the paned widget.
  *	Returns: the number of panes in the paned widget.
  */
 
 int 
-XtPanedGetNumSub(w)
+XawPanedGetNumSub(w)
 Widget w;
 {
     return ((PanedWidget)w)->paned.num_panes;
 }
 
-/*	Function Name: XtPanedAllowResize
+/*	Function Name: XawPanedAllowResize
  *	Description: Allows a flag to be set that determines if the paned
  *                   widget will allow geometry requests from this child
  *	Arguments: widget - a child of the paned widget.
@@ -1844,7 +1848,7 @@ Widget w;
  */
 
 void 
-XtPanedAllowResize(widget, allow_resize)
+XawPanedAllowResize(widget, allow_resize)
 Widget widget;
 Boolean allow_resize;
 {

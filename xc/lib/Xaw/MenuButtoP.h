@@ -1,5 +1,5 @@
 /*
-* $XConsortium: MenuButtonP.h,v 1.1 89/04/20 16:24:17 kit Exp $
+* $XConsortium: MenuButtonP.h,v 1.2 89/05/02 21:18:21 kit Exp $
 */
 
 
@@ -46,11 +46,11 @@ SOFTWARE.
  *          kit@expo.lcs.mit.edu
  */
 
-#ifndef _XtMenuButtonP_h
-#define _XtMenuButtonP_h
+#ifndef _XawMenuButtonP_h
+#define _XawtMenuButtonP_h
 
-#include <X11/MenuButton.h>
-#include <X11/CommandP.h>
+#include <X11/Xaw/MenuButton.h>
+#include <X11/Xaw/CommandP.h>
 
 /************************************
  *
@@ -98,6 +98,6 @@ typedef struct _MenuButtonRec {
     MenuButtonPart   menu_button;
 } MenuButtonRec;
 
-#endif /* _XtMenuButtonP_h */
+#endif /* _XawMenuButtonP_h */
 
 

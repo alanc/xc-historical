@@ -1,20 +1,6 @@
 #if ( !defined(lint) && !defined(SABER))
-  static char Xrcs_id[] = "$XConsortium: List.c,v 1.13 89/04/18 13:48:02 kit Exp $";
-  static char rcsid_module_c[] = "$oHeader: List.c,v 1.4 88/08/30 16:36:03 kit Exp $";
+  static char Xrcs_id[] = "$XConsortium: List.c,v 1.14 89/05/10 12:17:41 kit Exp $";
 #endif
-
-/*  This is the List widget, it is useful to display a list, without the
- *  overhead of having a widget for each item in the list.  It allows 
- *  the user to select an item in a list and notifies the application through
- *  a callback function.
- *
- *	Created: 	8/13/88
- *	By:		Chris D. Peterson
- *                      MIT - Project Athena
- *
- *      $Author: kit $
- *	
- */
 
 /***********************************************************
 Copyright 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -45,14 +31,23 @@ SOFTWARE.
  *
  */
 
-#include <X11/IntrinsicP.h>
-#include <stdio.h>
-#include <X11/Xos.h>
-#include <ctype.h>
-#include <X11/StringDefs.h>
-#include <X11/ListP.h>
+/*  This is the List widget, it is useful to display a list, without the
+ *  overhead of having a widget for each item in the list.  It allows 
+ *  the user to select an item in a list and notifies the application through
+ *  a callback function.
+ *
+ *	Created: 	8/13/88
+ *	By:		Chris D. Peterson
+ *                      MIT X Consortium
+ */
 
-char * malloc();
+#include <stdio.h>
+#include <ctype.h>
+
+#include <X11/IntrinsicP.h>
+#include <X11/StringDefs.h>
+
+#include <X11/Xaw/ListP.h>
 
 /* 
  * Default Translation table.
@@ -713,7 +708,7 @@ Cardinal *num_params;
 {
     ListWidget lw = ( ListWidget ) w;
     int item, item_len;
-    XtListReturnStruct ret_value;
+    XawListReturnStruct ret_value;
 
 /* 
  * Find item and if out of range then unhighlight and return. 
@@ -724,7 +719,7 @@ Cardinal *num_params;
 
     if ( ((CvtToItem(w, event->xbutton.x, event->xbutton.y, &item))
 	  == OUT_OF_RANGE) || (lw->list.highlight != item) ) {
-        XtListUnhighlight(w);
+        XawListUnhighlight(w);
         return;
     }
 
@@ -759,7 +754,7 @@ XEvent * event;
 String * params;
 Cardinal *num_params;
 {
-  XtListUnhighlight(w);
+  XawListUnhighlight(w);
 }
 
 /*	Function Name: Set
@@ -783,9 +778,9 @@ Cardinal *num_params;
 
   if ( (CvtToItem(w, event->xbutton.x, event->xbutton.y, &item))
       == OUT_OF_RANGE)
-    XtListUnhighlight(w);		        /* Unhighlight current item. */
+    XawListUnhighlight(w);		        /* Unhighlight current item. */
   else if ( lw->list.is_highlighted != item )   /* If this item is not */
-    XtListHighlight(w, item);	                /* highlighted then do it. */
+    XawListHighlight(w, item);	                /* highlighted then do it. */
 }
 
 /*
@@ -855,7 +850,7 @@ Widget current, request, new;
 
 /* Exported Functions */
 
-/*	Function Name: XtListChange.
+/*	Function Name: XawListChange.
  *	Description: Changes the list being used and shown.
  *	Arguments: w - the list widget.
  *                 list - the new list.
@@ -870,7 +865,7 @@ Widget current, request, new;
  */
 
 void
-XtListChange(w, list, nitems, longest, resize_it)
+XawListChange(w, list, nitems, longest, resize_it)
 Widget w;
 char ** list;
 int nitems, longest;
@@ -891,14 +886,14 @@ Boolean resize_it;
       Redisplay(w, NULL, NULL);
 }
 
-/*	Function Name: XtListUnhighlight
+/*	Function Name: XawListUnhighlight
  *	Description: unlights the current highlighted element.
  *	Arguments: w - the widget.
  *	Returns: none.
  */
 
 void
-XtListUnhighlight(w)
+XawListUnhighlight(w)
 Widget w;
 {
     ListWidget lw = ( ListWidget ) w;
@@ -908,7 +903,7 @@ Widget w;
         PaintItemName(w, lw->list.is_highlighted); /* unhighlight this one. */
 }
 
-/*	Function Name: XtListHighlight
+/*	Function Name: XawListHighlight
  *	Description: Highlights the given item.
  *	Arguments: w - the list widget.
  *                 item - the item to hightlight.
@@ -916,7 +911,7 @@ Widget w;
  */
 
 void
-XtListHighlight(w, item)
+XawListHighlight(w, item)
 Widget w;
 int item;
 {
@@ -930,25 +925,23 @@ int item;
     }
 }
 
-/*	Function Name: XtListShowCurrent
+/*	Function Name: XawListShowCurrent
  *	Description: returns the currently highlighted object.
  *	Arguments: w - the list widget.
  *	Returns: the info about the currently highlighted object.
  */
 
-XtListReturnStruct *
-XtListShowCurrent(w)
+XawListReturnStruct *
+XawListShowCurrent(w)
 Widget w;
 {
     ListWidget lw = ( ListWidget ) w;
-    XtListReturnStruct * ret_val;
+    XawListReturnStruct * ret_val;
 
-    ret_val = (XtListReturnStruct *) malloc (sizeof (XtListReturnStruct));
-    if (ret_val == NULL)
-      XtError("Could not allocate memory in XtListShowCurrent.");
+    ret_val = (XawListReturnStruct *) XtMalloc (sizeof (XawListReturnStruct));
     
     ret_val->list_index = lw->list.highlight;
-    if (ret_val->list_index == XT_LIST_NONE)
+    if (ret_val->list_index == XAW_LIST_NONE)
       ret_val->string = "";
     else
       ret_val->string = lw->list.list[ ret_val->list_index ];

@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Logo.c,v 1.7 88/09/06 10:26:08 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Logo.c,v 1.8 88/09/06 16:41:58 jim Exp $";
 #endif
 
 /*
@@ -18,10 +18,9 @@ this software for any purpose.  It is provided "as is"
 without express or implied warranty.
 */
 
-#include <X11/Xlib.h>
 #include <X11/StringDefs.h>
 #include <X11/IntrinsicP.h>
-#include <X11/LogoP.h>
+#include <X11/Xaw/LogoP.h>
 
 static Dimension defDim = 100;
 

@@ -1,4 +1,4 @@
-/* $XConsortium: Form.h,v 1.17 89/03/16 11:25:14 swick Exp $ */
+/* $XConsortium: Form.h,v 1.18 89/03/30 16:05:29 jim Exp $ */
 
 
 /***********************************************************
@@ -25,8 +25,8 @@ SOFTWARE.
 
 ******************************************************************/
 
-#ifndef _Form_h
-#define _Form_h
+#ifndef _XawForm_h
+#define _XawForm_h
 
 #include <X11/Constraint.h>
 
@@ -88,8 +88,8 @@ SOFTWARE.
 
 #define XtRWidget		"Widget"
 
-#ifndef _XtEdgeType_e
-#define _XtEdgeType_e
+#ifndef _XawEdgeType_e
+#define _XawEdgeType_e
 typedef enum {
     XtChainTop,			/* Keep this edge a constant distance from
 				   the top of the form */
@@ -102,14 +102,25 @@ typedef enum {
     XtRubber			/* Keep this edge a proportional distance
 				   from the edges of the form*/
 } XtEdgeType;
-#endif  _XtEdgeType_e
-
-extern void XtFormDoLayout();
+#endif  _XawEdgeType_e
 
 typedef struct _FormClassRec	*FormWidgetClass;
 typedef struct _FormRec		*FormWidget;
 
 extern WidgetClass formWidgetClass;
+
+#ifndef XAW_NO_COMPATABILITY	
+/*************************************************************
+ * For Compatibility only.                                   */
+
+#define XtFormDoLayout                XawFormDoLayout
+
+/*************************************************************/
+#endif /* XAW_NO_COMPATABILITY */
+
+extern void XawFormDoLayout();	/* widget, doit */
+    /* Widget widget */
+    /* Boolean doit */
  
-#endif /* _Form_h */
+#endif /* _XawForm_h */
 

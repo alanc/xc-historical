@@ -1,5 +1,5 @@
 /*
-* $XConsortium: CommandP.h,v 1.23 89/01/12 19:32:19 kit Exp $
+* $XConsortium: CommandP.h,v 1.24 89/03/30 16:05:25 jim Exp $
 */
 
 
@@ -32,11 +32,11 @@ SOFTWARE.
  * 
  */
 
-#ifndef _XtCommandP_h
-#define _XtCommandP_h
+#ifndef _XawCommandP_h
+#define _XawCommandP_h
 
-#include <X11/Command.h>
-#include <X11/LabelP.h>
+#include <X11/Xaw/Command.h>
+#include <X11/Xaw/LabelP.h>
 
 /***********************************************************************
  *
@@ -108,6 +108,6 @@ typedef struct _CommandRec {
     CommandPart      command;
 } CommandRec;
 
-#endif /* _XtCommandP_h */
+#endif /* _XawCommandP_h */
 
 

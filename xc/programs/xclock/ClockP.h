@@ -1,5 +1,5 @@
 /*
-* $XConsortium: ClockP.h,v 1.16 88/09/06 16:41:06 jim Exp $
+* $XConsortium: ClockP.h,v 1.17 89/03/30 16:05:22 jim Exp $
 */
 
 
@@ -27,11 +27,10 @@ SOFTWARE.
 
 ******************************************************************/
 
+#ifndef _XawClockP_h
+#define _XawClockP_h
 
-#ifndef _XtClockP_h
-#define _XtClockP_h
-
-#include <X11/Clock.h>
+#include <X11/Xaw/Clock.h>
 #include <X11/CoreP.h>
 
 #define SEG_BUFF_SIZE		128
@@ -91,4 +90,4 @@ typedef struct _ClockClassRec {
 /* Class pointer. */
 extern ClockClassRec clockClassRec;
 
-#endif /* _XtClockP_h */
+#endif /* _XawClockP_h */

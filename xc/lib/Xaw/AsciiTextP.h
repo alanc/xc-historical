@@ -1,6 +1,6 @@
 #include <X11/copyright.h>
 
-/* $XConsortium: AsciiTextP.h,v 1.10 88/10/18 12:25:24 swick Exp $ */
+/* $XConsortium: AsciiTextP.h,v 1.11 89/03/30 16:05:11 jim Exp $ */
 
 
 /***********************************************************
@@ -30,8 +30,8 @@ SOFTWARE.
 #ifndef _AsciiTextP_h
 #define _AsciiTextP_h
 
-#include <X11/AsciiText.h>
-#include <X11/TextP.h>
+#include <X11/Xaw/AsciiText.h>
+#include <X11/Xaw/TextP.h>
 
 extern XtActionsRec textActionsTable[];
 extern Cardinal textActionsTableCount;
