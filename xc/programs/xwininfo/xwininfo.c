@@ -85,11 +85,6 @@ main(argc, argv)
 
   /* Handle our command line arguments */
   for (i = 1; i < argc; i++) {
-    if (strcmp(argv[i], "-display") == 0 || strcmp(argv[i], "-d") == 0) {
-	if (++i >= argc) usage ();
-	/* already handled */
-	continue;
-    }
     if (!strcmp(argv[i], "-help"))
       usage();
     if (!strcmp(argv[i], "-int")) {
@@ -124,7 +119,6 @@ main(argc, argv)
       tree = stats = bits = events = wm = size = 1;
       continue;
     }
-    if (index (argv[i], ':') != NULL) continue;	/* already handled */
     usage();
   }
 
