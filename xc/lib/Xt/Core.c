@@ -1,4 +1,4 @@
-/* $XConsortium: Core.c,v 1.42 90/08/17 15:23:04 swick Exp $ */
+/* $XConsortium: Core.c,v 1.43 90/12/30 12:43:25 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -202,9 +202,11 @@ static void CoreClassPartInitialize(wc)
     }
 }
 /* ARGSUSED */
-static void CoreInitialize(requested_widget, new_widget)
+static void CoreInitialize(requested_widget, new_widget, args, num_args)
     Widget   requested_widget;
     register Widget new_widget;
+    ArgList args;
+    Cardinal *num_args;
 {
     XtTranslations save;
     new_widget->core.window = (Window) NULL;
@@ -260,8 +262,10 @@ static void CoreDestroy (widget)
 } /* CoreDestroy */
 
 /* ARGSUSED */
-static Boolean CoreSetValues(old, reference, new)
+static Boolean CoreSetValues(old, reference, new, args, num_args)
     Widget old, reference, new;
+    ArgList args;
+    Cardinal *num_args;
 {
     Boolean redisplay;
     Mask    window_mask;

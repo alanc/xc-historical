@@ -1,4 +1,4 @@
-/* $XConsortium: Vendor.c,v 1.37 89/06/16 19:35:45 jim Exp $ */
+/* $XConsortium: Vendor.c,v 1.38 90/12/28 17:47:08 gildea Exp $ */
 /* $oHeader: Vendor.c,v 1.3 88/08/19 13:11:01 asente Exp $ */
 
 /***********************************************************
@@ -101,14 +101,18 @@ externaldef(vendorshellwidgetclass) WidgetClass vendorShellWidgetClass =
 	(WidgetClass) (&vendorShellClassRec);
 
 /* ARGSUSED */
-static void _VendorShellInitialize(req, new)
+static void _VendorShellInitialize(req, new, args, num_args)
 	Widget req, new;
+	ArgList args;
+	Cardinal *num_args;
 {
 }
 
 /* ARGSUSED */
-static Boolean _VendorShellSetValues(old, ref, new)
+static Boolean _VendorShellSetValues(old, ref, new, args, num_args)
 	Widget old, ref, new;
+	ArgList args;
+	Cardinal *num_args;
 {
 	return FALSE;
 }
