@@ -37,7 +37,7 @@
 
 #ifndef lint
 static char rcsid[] =
-"$Header: mivaltree.c,v 5.0 89/06/09 15:08:45 keith Exp $ SPRITE (Berkeley)";
+"$Header: mivaltree.c,v 5.1 89/07/04 16:15:19 rws Exp $ SPRITE (Berkeley)";
 #endif lint
 
 #include    <stdio.h>
@@ -46,11 +46,6 @@ static char rcsid[] =
 #include    "windowstr.h"
 #include    "mi.h"
 #include    "regionstr.h"
-
-typedef enum { VTOther, VTStack, VTMove, VTUnmap, VTMap } VTKind;
-
-static RegionPtr	exposed = NullRegion;
-static RegionPtr	obscured = NullRegion;
 
 static void	(*clipNotify)() = 0;
 
@@ -91,11 +86,12 @@ void	(*func)();
  */
 
 static void
-miComputeClips (pParent, pScreen, universe, kind)
+miComputeClips (pParent, pScreen, universe, kind, exposed)
     register WindowPtr	pParent;
     register ScreenPtr	pScreen;
     register RegionPtr	universe;
     VTKind		kind;
+    RegionPtr		exposed; /* for intermediate calculations */
 {
     int			dx,
 			dy;
@@ -356,7 +352,8 @@ miComputeClips (pParent, pScreen, universe, kind)
 		    (* pScreen->Intersect) (childUniverse,
 					    universe,
 					    pChild->borderSize);
-		    miComputeClips (pChild, pScreen, childUniverse, kind);
+		    miComputeClips (pChild, pScreen, childUniverse, kind,
+				    exposed);
 		}
 		/*
 		 * Once the child has been processed, we remove its extents
@@ -372,7 +369,8 @@ miComputeClips (pParent, pScreen, universe, kind)
 		     * Create an empty universe for the child and recurse
 		     */
 		    (* pScreen->RegionEmpty) (childUniverse);
-		    miComputeClips (pChild, pScreen, childUniverse, kind);
+		    miComputeClips (pChild, pScreen, childUniverse, kind,
+				    exposed);
 		}
 	    }
 	}
@@ -397,20 +395,16 @@ miComputeClips (pParent, pScreen, universe, kind)
 	(*pScreen->RegionEmpty) (pParent->valdata->exposed);
 
     /*
-     * One last thing: backing storage. We have to find out what parts of
+     * One last thing: backing storage. We have to try to save what parts of
      * the window are about to be obscured. We can just subtract the universe
      * from the old clipList and get the areas that were in the old but aren't
      * in the new and, hence, are about to be obscured.
-     * (note - "exposed" is used as a temporary region here)
      */
     if (pParent->backStorage)
     {
 	(* pScreen->Subtract) (exposed, pParent->clipList, universe);
-	(* pScreen->Union) (pParent->backStorage->obscured,
-			    pParent->backStorage->obscured,
-			    exposed);
-	pParent->backStorage->oldAbsCorner.x = pParent->drawable.x - dx;
-	pParent->backStorage->oldAbsCorner.y = pParent->drawable.y - dy;
+	(*pParent->backStorage->funcs->SaveDoomedAreas)(
+					    pParent, exposed, dx, dy);
     }
     
     (* pScreen->RegionCopy) (pParent->clipList, universe);
@@ -427,11 +421,24 @@ miTreeObscured(pParent)
 {
     register WindowPtr pChild;
 
-    pParent->visibility = VisibilityFullyObscured;
-    SendVisibilityNotify(pParent);
-    for (pChild = pParent->firstChild; pChild; pChild = pChild->nextSib) {
+    pChild = pParent;
+    while (1)
+    {
 	if (pChild->viewable)
-	    miTreeObscured(pChild);
+	{
+	    pChild->visibility = VisibilityFullyObscured;
+	    SendVisibilityNotify(pChild);
+	    if (pChild->firstChild)
+	    {
+		pChild = pChild->firstChild;
+		continue;
+	    }
+	}
+	while (!pChild->nextSib && (pChild != pParent))
+	    pChild = pChild->parent;
+	if (pChild == pParent)
+	    break;
+	pChild = pChild->nextSib;
     }
 }
 
@@ -478,6 +485,7 @@ miValidateTree (pParent, pChild, kind)
 				     * the marked children. */
     RegionPtr	  	childClip;  /* The new borderClip for the current
 				     * child */
+    RegionPtr		exposed;    /* For intermediate calculations */
     register ScreenPtr	pScreen;
     register WindowPtr	pWin;
 
@@ -486,8 +494,7 @@ miValidateTree (pParent, pChild, kind)
 	pChild = pParent->firstChild;
 
     childClip = (* pScreen->RegionCreate) (NULL, 1);
-    if (exposed == NullRegion) 
-	exposed = (* pScreen->RegionCreate) (NULL, 1);
+    exposed = (* pScreen->RegionCreate) (NULL, 1);
 
     /*
      * compute the area of the parent window occupied
@@ -524,7 +531,7 @@ miValidateTree (pParent, pChild, kind)
 		(* pScreen->Intersect) (childClip,
 					totalClip,
  					pWin->borderSize);
-		miComputeClips (pWin, pScreen, childClip, kind);
+		miComputeClips (pWin, pScreen, childClip, kind, exposed);
 		(* pScreen->Subtract) (totalClip,
 				       totalClip,
 				       pWin->borderSize);
@@ -538,7 +545,7 @@ miValidateTree (pParent, pChild, kind)
 	     	 * unmapped are marked but unviewable...)
 	     	 */
 	    	(* pScreen->RegionEmpty) (childClip);
-	    	miComputeClips (pWin, pScreen, childClip, kind);
+	    	miComputeClips (pWin, pScreen, childClip, kind, exposed);
 	    }
 	}
     }
@@ -552,11 +559,6 @@ miValidateTree (pParent, pChild, kind)
 
     switch (kind) {
     case VTStack:
-	if (pParent->backStorage)
-	{
-	    pParent->backStorage->oldAbsCorner.x = pParent->drawable.x;
-	    pParent->backStorage->oldAbsCorner.y = pParent->drawable.y;
-	}
 	break;
     default:
 	/*
@@ -571,11 +573,8 @@ miValidateTree (pParent, pChild, kind)
     case VTMap:
 	if (pParent->backStorage) {
 	    (* pScreen->Subtract) (exposed, pParent->clipList, totalClip);
-	    (* pScreen->Union) (pParent->backStorage->obscured,
-				pParent->backStorage->obscured,
-				exposed);
-	    pParent->backStorage->oldAbsCorner.x = pParent->drawable.x;
-	    pParent->backStorage->oldAbsCorner.y = pParent->drawable.y;
+	    (*pParent->backStorage->funcs->SaveDoomedAreas)(
+					    pParent, exposed, 0, 0);
 	}
 	
 	(* pScreen->RegionCopy) (pParent->clipList, totalClip);
@@ -584,5 +583,6 @@ miValidateTree (pParent, pChild, kind)
     }
 
     (* pScreen->RegionDestroy) (totalClip);
+    (* pScreen->RegionDestroy) (exposed);
     return (1);
 }
