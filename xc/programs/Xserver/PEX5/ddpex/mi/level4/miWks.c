@@ -1,4 +1,4 @@
-/* $XConsortium: miWks.c,v 5.13 93/09/06 15:24:10 rws Exp $ */
+/* $XConsortium: miWks.c,v 5.14 94/04/17 20:37:35 rws Exp dpw $ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium
@@ -729,7 +729,7 @@ FreePhigsWks(pWKS, WKSid)
 	WKS_CHECK_BITMASK( type )		\
 		needbytes += (bytes)
 
-static ddULONG  ulNULL = 0;
+static XID  ulNULL = 0;
 
 #define PLUTID( plut ) \
 	(plut)==NULL ? &ulNULL : &(plut)->id
