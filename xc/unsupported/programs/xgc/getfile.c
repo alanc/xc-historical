@@ -127,7 +127,7 @@ void get_filename(success,failure)
   XtPopup(popupshell,XtGrabExclusive);
 }
 
-void kill_popup_shell()
+static void kill_popup_shell()
 {
   XtPopdown(popupshell);
   XtDestroyWidget(popupshell);

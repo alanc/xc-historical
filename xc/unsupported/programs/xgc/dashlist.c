@@ -13,6 +13,9 @@
 #include <X11/StringDefs.h>
 #include "xgc.h"
 
+void change_dashlist();
+extern void interpret();
+
 #define DASHLENGTH 8		/* How many bits in the dash description */
 
 extern XStuff X;
@@ -110,7 +113,7 @@ void create_dashlist_choice(w)
 */
 
 /*ARGSUSED*/
-void change_dashlist(w,closure,call_data)
+static void change_dashlist(w,closure,call_data)
      Widget w;
      caddr_t closure;
      caddr_t call_data;
