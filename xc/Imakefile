@@ -48,7 +48,7 @@ DependSubdirs($(SUBDIRS))
 
 
 /**/# 
-/**/# install stuff; create the directories that we're going to need
+/**/# install stuff; create the directories that we are going to need
 /**/# 
 
 #if BuildServer
@@ -78,7 +78,7 @@ InstallManPageLong(Consortium,$(MANDIR),XConsortium)
 InstallManPageLong(Standards,$(MANDIR),XStandards)
 
 
-/**/# don't name your log file make.log when you run this ...
+/**/# do not name your log file make.log when you run this ...
 World::
 	@echo ""
 	@echo "Building Release 4 of the X Window System"
