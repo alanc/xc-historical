@@ -1,29 +1,22 @@
-.TH XRDB 1 "6 January 1988" "X Version 11"
+.TH XRDB 1 "1 March 1988" "X Version 11"
 .SH NAME
 xrdb - Server Resource Database Utility.
 .SH SYNOPSIS
 .B xrdb
-[
-.B \-options \.\.\.
-] [
-.I filename
-] 
+[-option ...] [\fIfilename\fP]
 .SH DESCRIPTION
 .I Xrdb
 is used to get or set the contents of the RESOURCE_MANAGER property
 on the root window of screen 0.  You would normally run this program from 
 your .login script.  
 .LP
-The resource manager (used by the Xlib routine XGetDefault and the
-Xtk toolkit) uses the RESOURCE_MANAGER property to get user preferences about 
+The resource manager (used by the Xlib routine XGetDefaults and the
+Xt toolkit) uses the RESOURCE_MANAGER property to get user preferences about 
 color, fonts, and so on for applications.  Having this information in
 the server (where it is available to all clients) instead of on disk,
-addresses the problem present in previous versions of X that required you to 
-maintain up to date default files on all of the machines you
-used in your network.  In addition, since different defaults can be loaded
-dynamically, this makes it easy set up different sets of defaults for 
-different environments (e.g. if you login to different types of servers 
-from the same place).
+solves the problem in previous versions of X that required you to 
+maintain default files on every machine that you might use.  It also allows
+for dynamic changing of defaults without editting files.
 .LP
 For compatibility, if there is no RESOURCE_MANAGER property defined (either 
 because xrdb was not run or if the property was removed), the resource manager
@@ -37,65 +30,65 @@ The
 is (optionally) passed through the C preprocessor with the 
 following symbols defined, based on the capabilities of the server
 being used:
-.TP
-.B HOST=<hostname>
+.TP 8
+.B HOST=hostname
 the hostname portion of the display to which you are
 connected.
-.TP
-.B WIDTH=<num>
+.TP 8
+.B WIDTH=num
 the width of the screen in pixels.
-.TP
-.B HEIGHT=<num>
+.TP 8
+.B HEIGHT=num
 the height of the screen in pixels.
-.TP
-.B X_RESOLUTION=<num>
+.TP 8
+.B X_RESOLUTION=num
 the x resolution of the screen in pixels per meter.
-.TP
-.B Y_RESOLUTION=<num>
+.TP 8
+.B Y_RESOLUTION=num
 the y resolution of the screen in pixels per meter.
-.TP
-.B PLANES=<num>
+.TP 8
+.B PLANES=num
 the number of bit planes for the default visual.
-.TP
-.B CLASS=<visual class>
-one of {StaticGray, GrayScale, StaticColor, PsuedoColor, TrueColor,
-DirectColor}.
-.TP
+.TP 8
+.B CLASS=visualclass
+one of StaticGray, GrayScale, StaticColor, PsuedoColor, TrueColor,
+DirectColor.
+.TP 8
 .B COLOR
 only defined if the default visual's type is one of the color options.
 .LP
-Lines that begin with a "!" character are discarded.
+Lines that begin with an exclamation mark (!) are considered comments.
 .SH "OPTIONS"
 .PP
 .I xrdb
 program accepts the following options:
-.TP
+.TP 8
 .B \-help
 This option (or any other incorrect option) will cause a brief description of 
 the allowable options and parameters to be printed.
-.TP
+.TP 8
 .B \-display \fIhost\fP:\fIdisplay\fP
 This option specifies the server to be used.
-.TP
+.TP 8
 .B -cpp \fIfilename\fP
 This option specifies the pathname of the C preprocessor program to be used.
 Although 
 .I xrdb
 was designed to use CPP, any program that acts as a filter
 and accepts the -D, -I, and -U options may be used.
-.TP
+.TP 8
 .B -nocpp
 This option indicates that
 .I xrdb
 should not run the input file through a preprocessor before loading it
 into the RESOURCE_MANAGER property.
-.TP
+.TP 8
 .B \-symbols
 This option indicates that the symbols that are defined for the preprocessor
 should be printed onto the standard output.  It can be used in conjunction with 
 .B \-query,
 but not with the options that change the RESOURCE_MANAGER property.
-.TP
+.TP 8
 .B \-query
 This option indicates that the current contents of the RESOURCE_MANAGER 
 property should be printed onto the standard output.  Note that since
@@ -105,12 +98,12 @@ option.  The
 .B \-edit
 option can be used to merge the contents property back into the input resource
 file without damaging preprocessor commands.
-.TP
+.TP 8
 .B \-load
 This option indicates that the input should be loaded as the new value
 of the RESOURCE_MANAGER property, replacing whatever what there (i.e.
 the old contents are deleted).  This is the default action.
-.TP
+.TP 8
 .B \-merge
 This option indicates that the input should be merged with, instead of
 replacing, the current contents of the RESOURCE_MANAGER property.  Since
@@ -118,31 +111,31 @@ replacing, the current contents of the RESOURCE_MANAGER property.  Since
 can read the standard input, this option can be used to
 the change the contents of the RESOURCE_MANAGER property directly from
 a terminal or from a shell script.
-.TP
+.TP 8
 .B \-remove
 This option indicates that the RESOUCE_MANAGER property should be removed
 from its window.
-.TP
+.TP 8
 .B \-edit \fIfilename\fP
 This option indicates that the contents of the RESOURCE_MANAGER property
 should be edited into the given file, replacing any values already listed
 there.  This allows you to put changes that you have made to your defaults
 back into your source file, preserving any comments or preprocessor lines.
-.TP
+.TP 8
 .B \-backup \fIstring\fP
 This option specifies a suffix to be appended to the filename used with
 .B \-edit
 to generate a backup file.
-.TP
+.TP 8
 .B \-D\fIname\[=value\]\fP
 This option is passed through to the preprocessor and is used to define 
 symbols for use with conditionals such as
 .I #ifdef.
-.TP
+.TP 8
 .B \-U\fIname\fP
 This option is passed through to the preprocessor and is used to remove
 any definitions of this symbol.
-.TP
+.TP 8
 .B \-I\fIdirectory\fP
 This option is passed through to the preprocessor and is used to specify
 a directory to search for files that are referenced with 
@@ -152,12 +145,17 @@ Generalizes ~/.Xdefaults
 .SH "SEE ALSO"
 XGetDefault(3X)
 .SH ENVIRONMENT
-DISPLAY	-	To figure out which display to use.
+.TP 8
+.B DISPLAY
+to figure out which display to use.
+.SH BUGS
+.PP
+The default for no arguments should be to query, not to overwrite, so that
+it is consistent with other programs.
 .SH AUTHORS
-Jim Gettys
-.br
-Phil Karlton
-.br
 Copyright (c) 1987, 1988 by Digital Equipment Corporation
 .br
+Phil Karlton, rewritten from the original by Jim Gettys
+
+
 
