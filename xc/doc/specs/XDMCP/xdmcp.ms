@@ -1514,7 +1514,7 @@ Length	Type	Description
 _
 2	CARD16	version number (always 1)
 2	CARD16	opcode (always \f8Willing\fP)
-2	CARD16	length (2 + m + n + o)
+2	CARD16	length (3 + m + n + o)
 1	CARD8	Length of \f7Authentication Name\fP (m)
 m	CARD8	\f7Authentication Name\fP
 1	CARD8	\f7Hostname\fP length (n)
