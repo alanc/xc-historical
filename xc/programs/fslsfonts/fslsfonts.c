@@ -1,4 +1,4 @@
-/* $XConsortium: fslsfonts.c,v 1.3 92/11/18 21:31:22 gildea Exp $ */
+/* $XConsortium: fslsfonts.c,v 1.4 93/07/06 15:24:38 gildea Exp $ */
 /*
  * Copyright 1990 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -24,6 +24,7 @@
 
 #include "FSlib.h"
 #include <stdio.h>
+#include <X11/Xos.h>
 
 #ifndef N_START
 #define N_START 1000		/* Maximum # of fonts to start with */
