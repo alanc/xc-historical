@@ -1,4 +1,4 @@
-/* $XConsortium: main.c,v 1.19 91/02/19 15:54:08 converse Exp $
+/* $XConsortium: main.c,v 1.20 91/02/22 17:14:30 converse Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -288,6 +288,9 @@ main(argc,argv)
   /* Now do things we couldn't do until we had a window available */
 
   X.win = XtWindow(test);
+  X.tile = XCreatePixmap(X.dpy,X.win,tile_width,tile_height,
+			 DefaultDepthOfScreen(X.scr));
+
   X.tile = XCreatePixmapFromBitmapData(X.dpy,X.win,
 				       (char *)tile_bits,tile_width,
 				       tile_height,Black,White,
@@ -295,9 +298,7 @@ main(argc,argv)
   X.stipple = XCreateBitmapFromData(X.dpy,X.win,(char *)tile_bits,tile_width,
 				    tile_height);
 
-  XSetTile(X.dpy,X.gc,X.tile);
   XSetStipple(X.dpy,X.gc,X.stipple);
-  XSetTile(X.dpy,X.miscgc,X.tile);
   XSetStipple(X.dpy,X.miscgc,X.stipple);
 
   GC_change_foreground(X.foreground,TRUE);
