@@ -1,4 +1,4 @@
-/* $XConsortium: a2x.c,v 1.1 92/03/11 10:40:51 rws Exp $ */
+/* $XConsortium: a2x.c,v 1.2 92/03/11 11:07:47 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -29,6 +29,7 @@ unsigned short modifiers[256];
 KeyCode keycodes[256];
 KeyCode shift, control;
 struct termios oldterm;
+int istty = 0;
 
 usage()
 {
@@ -36,21 +37,26 @@ usage()
     exit(1);
 }
 
+quit(val)
+{
+    if (istty)
+	tcsetattr(0, TCSANOW, &oldterm);
+    exit(val);
+}
+
 void
 catch(sig)
     int	sig;
 {
-    tcsetattr(0, TCSANOW, &oldterm);
     fprintf(stderr, "a2x: interrupt received, exiting\n");
-    exit(1);
+    quit(1);
 }
 
 ioerror(Dpy)
     Display *Dpy;
 {
-    tcsetattr(0, TCSANOW, &oldterm);
     fprintf(stderr, "a2x: display connection lost, exiting\n");
-    exit(1);
+    quit(1);
 }
 
 reset_mapping()
@@ -110,17 +116,13 @@ reset_mapping()
 }
 
 unsigned short
-dochar(c, curmods)
-    int c;
-    unsigned short curmods;
+do_key(key, mods, curmods)
+    int key;
+    unsigned short mods, curmods;
 {
-    register int i;
-    unsigned short mods;
 
-    i = keycodes[c];
-    if (!i)
+    if (!key)
 	return curmods;
-    mods = modifiers[c];
     if ((mods & ShiftMask) && !(curmods & ShiftMask)) {
 	XTestFakeKeyEvent(dpy, shift, True, 0);
 	curmods |= ShiftMask;
@@ -135,9 +137,25 @@ dochar(c, curmods)
 	XTestFakeKeyEvent(dpy, control, False, 0);
 	curmods &= ~ControlMask;
     }
-    XTestFakeKeyEvent(dpy, i, True, 0);
-    XTestFakeKeyEvent(dpy, i, False, 0);
+    XTestFakeKeyEvent(dpy, key, True, 0);
+    XTestFakeKeyEvent(dpy, key, False, 0);
     return curmods;
+}
+
+unsigned short
+dochar(c, curmods)
+    int c;
+    unsigned short curmods;
+{
+    return do_key(keycodes[c], modifiers[c], curmods);
+}
+
+unsigned short
+do_keysym(sym, curmods)
+    KeySym sym;
+    unsigned short curmods;
+{
+    return do_key(XKeysymToKeycode(dpy, sym), 0, curmods);
 }
 
 unsigned short
@@ -155,15 +173,16 @@ main(argc, argv)
     int argc;
     char **argv;
 {
-    register int n, i;
+    register int n, i, j;
     int eventb, errorb, vmajor, vminor;
     struct termios term;
     int noecho = 1;
     char *dname = NULL;
-    int istty = 0;
     unsigned short mods = 0;
     char buf[1024];
     XEvent ev;
+    char keysym_char = '\024'; /* control T */
+    KeySym sym;
 
     for (argc--, argv++; argc > 0; argc--, argv++) {
 	if (argv[0][0] != '-')
@@ -211,7 +230,7 @@ main(argc, argv)
     while (1) {
 	n = read(0, buf, sizeof(buf));
 	if (n < 0)
-	    break;
+	    quit(0);
 	if (i = XEventsQueued(dpy, QueuedAfterReading)) {
 	    while (--i >= 0) {
 		XNextEvent(dpy, &ev);
@@ -221,12 +240,38 @@ main(argc, argv)
 		}
 	    }
 	}
-	for (i = 0; i < n; i++)
-	    mods = dochar(buf[i], mods);
+	for (i = 0; i < n; i++) {
+	    if (buf[i] != keysym_char) {
+		mods = dochar(buf[i], mods);
+		continue;
+	    }
+	    i++;
+	    for (j = i; 1; j++) {
+		if (j == n) {
+		    if (n == sizeof(buf))
+			break;
+		    n = read(0, buf+j, sizeof(buf)-j);
+		    if (n < 0)
+			quit(0);
+		    n += j;
+		}
+		if (buf[j] != keysym_char)
+		    continue;
+		buf[j] = '\0';
+		if (j == i)
+		    mods = dochar(keysym_char, mods);
+		else if (!strcmp(buf+i, "exit"))
+		    quit(0);
+		else if (sym = strtoul(buf+i, NULL, 16))
+		    mods = do_keysym(sym, mods);
+		else if (sym = XStringToKeysym(buf+i))
+		    mods = do_keysym(sym, mods);
+		i = j;
+		break;
+	    }
+	}
 	mods = quiesce(mods);
 	XFlush(dpy);
     }
-    if (istty)
-	tcsetattr(0, TCSANOW, &oldterm);
-    exit(0);
+    quit(0);
 }
