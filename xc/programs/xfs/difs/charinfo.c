@@ -1,4 +1,4 @@
-/* $XConsortium: charinfo.c,v 1.11 94/02/04 17:07:29 gildea Exp $ */
+/* $XConsortium: charinfo.c,v 1.12 94/02/09 18:37:35 gildea Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -459,9 +459,9 @@ packGlyphs (client, pfont, format, flags, num_ranges, range, tsize, num_glyphs,
 	src_off &= 7;
 
 	/* minimum of source/dest bytes per row */
-	width = srcbpr;
-	if (srcbpr > dstbpr)
-	    width = dstbpr;
+	width = srcbpr - src_left_bytes;
+	if (width > dstbpr - dst_left_bytes)
+	    width = dstbpr - dst_left_bytes;
 	/* extra bytes in source and dest for padding */
 	src_extra = srcbpr - width - src_left_bytes;
 	dst_extra = dstbpr - width - dst_left_bytes;
@@ -475,7 +475,7 @@ packGlyphs (client, pfont, format, flags, num_ranges, range, tsize, num_glyphs,
 	{
 	    if (srcbpr == dstbpr && src_left_bytes == dst_left_bytes)
 	    {
-		r = height * width;
+		r = height * srcbpr;
 		memmove( dstp, srcp, r);
 		dstp += r;
 	    }
