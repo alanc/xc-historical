@@ -1,4 +1,4 @@
-/* $XConsortium: NextEvent.c,v 1.114 93/08/16 14:05:22 kaleb Exp $ */
+/* $XConsortium: NextEvent.c,v 1.115 93/08/17 18:37:04 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -70,13 +70,7 @@ static SignalEventRec* freeSignalRecs;
 #endif /*NEEDS_NTPD_FIXUP*/
 
 #ifdef WIN32
-#define GETTIMEOFDAY(t) \
-{ \
-    struct _timeb _tmptime; \
-    _ftime (&_tmptime); \
-    (t)->tv_sec = _tmptime.time; \
-    (t)->tv_usec = _tmptime.millitm * 1000; \
-}
+#define GETTIMEOFDAY(t) gettimeofday(t)
 #else
 #ifdef SVR4
 #define GETTIMEOFDAY(t) (void) gettimeofday(t)
