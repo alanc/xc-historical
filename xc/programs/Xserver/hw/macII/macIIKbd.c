@@ -73,7 +73,6 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 extern CARD8 *macIIModMap[];
 extern KeySymsRec macIIKeySyms[];
-extern CARD16 keyModifiersList[];
 
 static void 	  macIIBell();
 static void 	  macIIKbdCtrl();
@@ -478,10 +477,10 @@ macIIKbdProcessEvent(pKeyboard,me)
 	autoRepeatEvent.u.keyButtonPointer.rootX = ptrPriv->x;
 	autoRepeatEvent.u.keyButtonPointer.rootY = ptrPriv->y;
 	autoRepeatEvent.u.u.type = KeyRelease;
-	(* pKeyboard->processInputProc) (&autoRepeatEvent, pKeyboard);
+	(* pKeyboard->processInputProc) (&autoRepeatEvent, pKeyboard, 1);
 
 	autoRepeatEvent.u.u.type = KeyPress;
-	(* pKeyboard->processInputProc) (&autoRepeatEvent, pKeyboard);
+	(* pKeyboard->processInputProc) (&autoRepeatEvent, pKeyboard, 1);
 
 	/* Update time of last key down */
 	autoRepeatLastKeyDownTv += autoRepeatDeltaTv;
@@ -490,7 +489,7 @@ macIIKbdProcessEvent(pKeyboard,me)
     }
 
     key = KEY_DETAIL(*me) + sysKbPriv.offset;
-    if ((keyModifiers = keyModifiersList[key]) == 0) {
+    if ((keyModifiers = ((DeviceIntPtr)pKeyboard)->key->modifierMap[key]) == 0) {
         /*
          * Kill AutoRepeater on any real Kbd event.
          */
@@ -515,7 +514,7 @@ macIIKbdProcessEvent(pKeyboard,me)
         autoRepeatLastKeyDownTv = lastEventTime;
     }
 
-    (* pKeyboard->processInputProc) (&xE, pKeyboard);
+    (* pKeyboard->processInputProc) (&xE, pKeyboard, 1);
 }
 
 

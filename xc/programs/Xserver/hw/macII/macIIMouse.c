@@ -234,7 +234,7 @@ MouseAccelerate (pMouse, delta)
     register PtrCtrl *pCtrl;
 
     delta = abs(delta);
-    pCtrl = &((DeviceIntPtr) pMouse)->u.ptr.ctrl;
+    pCtrl = &((DeviceIntPtr) pMouse)->ptrfeed->ctrl;
 
     if (delta > pCtrl->threshold) {
 	return ((short) (sgn * (pCtrl->threshold +
@@ -331,7 +331,7 @@ macIIMouseProcessEvent(pMouse,me)
                            &xE.u.keyButtonPointer.rootX,
                            &xE.u.keyButtonPointer.rootY);
 
-    	    (* pMouse->processInputProc) (&xE, pMouse);
+    	    (* pMouse->processInputProc) (&xE, pMouse, 1);
 	    return;
 	
     }
@@ -350,7 +350,7 @@ macIIMouseProcessEvent(pMouse,me)
                            &xE.u.keyButtonPointer.rootX,
                            &xE.u.keyButtonPointer.rootY);
 
-    	    (* pMouse->processInputProc) (&xE, pMouse);
+    	    (* pMouse->processInputProc) (&xE, pMouse, 1);
 	    return;
 	
     }
@@ -374,7 +374,7 @@ macIIMouseProcessEvent(pMouse,me)
     register PtrCtrl *pCtrl;
 
     xpos = abs(xpos);
-    pCtrl = &((DeviceIntPtr) pMouse)->u.ptr.ctrl;
+    pCtrl = &((DeviceIntPtr) pMouse)->ptrfeed->ctrl;
 
     if (xpos > pCtrl->threshold) {
 	pPriv->x += ((short) (sgn * (pCtrl->threshold +
@@ -396,7 +396,7 @@ macIIMouseProcessEvent(pMouse,me)
     register PtrCtrl *pCtrl;
 
     ypos = abs(ypos);
-    pCtrl = &((DeviceIntPtr) pMouse)->u.ptr.ctrl;
+    pCtrl = &((DeviceIntPtr) pMouse)->ptrfeed->ctrl;
 
     if (ypos > pCtrl->threshold) {
 	pPriv->y += ((short) (sgn * (pCtrl->threshold +
@@ -422,7 +422,7 @@ macIIMouseProcessEvent(pMouse,me)
         if (pmacIIPriv->mouseMoved) {
 	    (* pPriv->DoneEvents) (pMouse, FALSE);
         }
-        (* pMouse->processInputProc) (&xE, pMouse);
+        (* pMouse->processInputProc) (&xE, pMouse, 1);
     }
    }
    
