@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mibitblt.c,v 1.67 88/09/20 16:00:54 keith Exp $ */
+/* $XConsortium: mibitblt.c,v 1.68 88/10/02 15:37:02 rws Exp $ */
 /* Author: Todd Newman  (aided and abetted by Mr. Drewry) */
 
 #include "X.h"
@@ -425,7 +425,7 @@ miOpqStipDrawable(pDraw, pGC, prgnSrc, pbits, srcx, w, h, dstx, dsty)
     RegionPtr	prgnSrcClip;
 
     pPixmap = (PixmapPtr)(*pDraw->pScreen->CreatePixmap)
-			   (pDraw->pScreen, w, h, 1);
+			   (pDraw->pScreen, w + srcx, h, 1);
 
     if (!pPixmap)
     {
@@ -456,6 +456,7 @@ miOpqStipDrawable(pDraw, pGC, prgnSrc, pbits, srcx, w, h, dstx, dsty)
     */
     prgnSrcClip = (*pGCT->pScreen->RegionCreate)(NULL, 0);
     (*pGCT->pScreen->RegionCopy)(prgnSrcClip, prgnSrc);
+    (*pGCT->pScreen->TranslateRegion) (prgnSrcClip, srcx, 0);
     (*pGCT->ChangeClip)(pGCT, CT_REGION, prgnSrcClip, 0);
     ValidateGC((DrawablePtr)pPixmap, pGCT);
 
@@ -463,9 +464,9 @@ miOpqStipDrawable(pDraw, pGC, prgnSrc, pbits, srcx, w, h, dstx, dsty)
      * about translation here */
     for(i = 0; i < h; i++)
     {
-	ppt->x = srcx;
+	ppt->x = 0;
 	ppt++->y = i;
-	*pwidth++ = w;
+	*pwidth++ = w + srcx;
     }
 
     (*pGCT->SetSpans)(pPixmap, pGCT, pbits, pptFirst, pwidthFirst, h, TRUE);
@@ -483,7 +484,7 @@ miOpqStipDrawable(pDraw, pGC, prgnSrc, pbits, srcx, w, h, dstx, dsty)
     /* Set a new stipple in the drawable */
     gcv[0] = FillStippled;
     gcv[1] = (long) pPixmap;
-    gcv[2] = dstx;
+    gcv[2] = dstx - srcx;
     gcv[3] = dsty;
 
     DoChangeGC(pGC,
