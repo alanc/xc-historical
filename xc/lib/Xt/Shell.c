@@ -1,4 +1,4 @@
-/* $XConsortium: Shell.c,v 1.131 93/05/24 15:29:14 kaleb Exp $ */
+/* $XConsortium: Shell.c,v 1.132 93/05/24 15:40:55 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -1886,49 +1886,39 @@ static Boolean SetValues(old, ref, new, args, num_args)
 	ArgList args;
 	Cardinal *num_args;
 {
-	if (XtIsRealized(new)) {
-	    ShellWidget nw = (ShellWidget) new;
-	    ShellWidget ow = (ShellWidget) old;
-	    Mask mask = 0;
-	    XSetWindowAttributes attr;
+	ShellWidget nw = (ShellWidget) new;
+	ShellWidget ow = (ShellWidget) old;
+	Mask mask = 0;
+	XSetWindowAttributes attr;
 
-	    if (ow->shell.save_under != nw->shell.save_under) {
-		mask = CWSaveUnder;
-		attr.save_under = nw->shell.save_under;
-	    }
+	if (!XtIsRealized(new))
+	    return False;
 
-	    if (ow->shell.override_redirect != nw->shell.override_redirect) {
-		mask |= CWOverrideRedirect;
-		attr.override_redirect = nw->shell.override_redirect;
-	    }
+	if (ow->shell.save_under != nw->shell.save_under) {
+	    mask = CWSaveUnder;
+	    attr.save_under = nw->shell.save_under;
+	}
 
-	    if (mask) {
-		XChangeWindowAttributes(XtDisplay(new), XtWindow(new), 
-					mask, &attr);
-		if ((mask & CWOverrideRedirect) && !nw->shell.override_redirect)
-		    _popup_set_prop(nw);
-	    }
+	if (ow->shell.override_redirect != nw->shell.override_redirect) {
+	    mask |= CWOverrideRedirect;
+	    attr.override_redirect = nw->shell.override_redirect;
+	}
 
-	    /* 
-	     * x and y resource values may be invalid in ow...  If
-	     * they are, we're going to break the (unwritten) rule 
-	     * that you should never write in the old widget. But 
-	     * since the old widget has decidedly wrong values in 
-	     * it, we're going to make it tell the truth! This has 
-	     * a "downstream effect that will trigger a geometry 
-	     * request when the new requested x/y values are "different" 
-	     * than the old x/y values.
-	     */
-	    if (! (ow->shell.client_specified & _XtShellPositionValid)) {
-		Cardinal n;
-		void _XtShellGetCoordinates();
+	if (mask) {
+	    XChangeWindowAttributes(XtDisplay(new), XtWindow(new), mask, &attr);
+	    if ((mask & CWOverrideRedirect) && !nw->shell.override_redirect)
+		_popup_set_prop(nw);
+	}
 
-		for (n = *num_args; n; n--, args++) {
-		    if (strcmp(XtNx, args->name) == 0) {
-			_XtShellGetCoordinates(ow, &ow->core.x, &ow->core.y);
-		    } else if (strcmp(XtNy, args->name) == 0) {
-			_XtShellGetCoordinates(ow, &ow->core.x, &ow->core.y);
-		    }
+	if (! (ow->shell.client_specified & _XtShellPositionValid)) {
+	    Cardinal n;
+	    void _XtShellGetCoordinates();
+
+	    for (n = *num_args; n; n--, args++) {
+		if (strcmp(XtNx, args->name) == 0) {
+		    _XtShellGetCoordinates(ow, &ow->core.x, &ow->core.y);
+		} else if (strcmp(XtNy, args->name) == 0) {
+		    _XtShellGetCoordinates(ow, &ow->core.x, &ow->core.y);
 		}
 	    }
 	}
@@ -2152,7 +2142,8 @@ void _XtShellGetCoordinates( widget, x, y)
     Position* y;
 {
     ShellWidget w = (ShellWidget)widget;
-    if (!(w->shell.client_specified & _XtShellPositionValid)) {
+    if (XtIsRealized(widget) && 
+	!(w->shell.client_specified & _XtShellPositionValid)) {
 	int tmpx, tmpy;
 	Window tmpchild;
 	(void) XTranslateCoordinates(XtDisplay(w), XtWindow(w), 
@@ -2178,7 +2169,7 @@ static void GetValuesHook(widget, args, num_args)
 
     /* x and y resource values may be invalid after a shell resize */
     if (XtIsRealized(widget) &&
-	! (w->shell.client_specified & _XtShellPositionValid)) {
+	!(w->shell.client_specified & _XtShellPositionValid)) {
 	Cardinal	n;
 	Position	x, y;
 
