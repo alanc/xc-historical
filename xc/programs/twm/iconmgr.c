@@ -21,7 +21,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: iconmgr.c,v 1.26 89/07/21 18:30:25 jim Exp $
+ * $XConsortium: iconmgr.c,v 1.27 89/07/27 17:41:55 jim Exp $
  *
  * Icon Manager routines
  *
@@ -496,21 +496,28 @@ TwmWindow *tmp_win;
     tmp->x = -1;
     tmp->y = -1;
     
-    tmp->w = XCreateSimpleWindow(dpy, ip->w,
-	0, 0, 1, h, 0,
-	tmp->back, tmp->back);
-    XSelectInput(dpy, tmp->w, KeyPressMask |
-    	ButtonPressMask | ButtonReleaseMask | ExposureMask |
-	EnterWindowMask | LeaveWindowMask);
-    
-    tmp->icon = XCreateSimpleWindow(dpy, tmp->w,
-	5, (h - siconify_height)/2,
-	siconify_width, siconify_height,
-	0, Scr->Black, tmp->back);
-    XSelectInput(dpy, tmp->icon, ButtonReleaseMask| ButtonPressMask |
-	ExposureMask);
-    XDefineCursor(dpy, tmp->w, Scr->IconMgrCursor);
-    XDefineCursor(dpy, tmp->icon, Scr->ButtonCursor);
+    valuemask = (CWBackPixel | CWBorderPixel | CWEventMask | CWCursor);
+    attributes.background_pixel = tmp->back;
+    attributes.border_pixel = tmp->back;
+    attributes.event_mask = (KeyPressMask | ButtonPressMask |
+			     ButtonReleaseMask | ExposureMask |
+			     EnterWindowMask | LeaveWindowMask);
+    attributes.cursor = Scr->IconMgrCursor;
+    tmp->w = XCreateWindow (dpy, ip->w, 0, 0, 1, h, 0, 
+			    CopyFromParent, CopyFromParent, CopyFromParent,
+			    valuemask, &attributes);
+
+
+    valuemask = (CWBackPixel | CWBorderPixel | CWEventMask | CWCursor);
+    attributes.background_pixel = tmp->back;
+    attributes.border_pixel = Scr->Black;
+    attributes.event_mask = (ButtonReleaseMask| ButtonPressMask |
+			     ExposureMask);
+    attributes.cursor = Scr->ButtonCursor;
+    tmp->icon = XCreateWindow (dpy, tmp->w, 5, (h - siconify_height)/2,
+			       siconify_width, siconify_height, 0,
+			       CopyFromParent, CopyFromParent, CopyFromParent,
+			       valuemask, &attributes);
 
     ip->count += 1;
     PackIconManager(ip);
