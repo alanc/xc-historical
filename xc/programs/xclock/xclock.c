@@ -2,7 +2,7 @@
  *  Hacked from Tony Della Fera's much hacked clock program.
  */
 #ifndef lint
-static char rcsid[] = "$XConsortium: xclock.c,v 1.20 88/09/12 13:00:47 swick Exp $";
+static char rcsid[] = "$XConsortium: xclock.c,v 1.21 88/10/18 14:05:32 swick Exp $";
 #endif  lint
 
 #include <X11/Xatom.h>
@@ -13,6 +13,7 @@ static char rcsid[] = "$XConsortium: xclock.c,v 1.20 88/09/12 13:00:47 swick Exp
 #include <X11/Clock.h>
 #include <X11/Cardinals.h>
 #include "clock.bit"
+#include "clmask.bit"
 
 extern void exit();
 
@@ -76,6 +77,15 @@ void main(argc, argv)
 	arg.value = (XtArgVal)XCreateBitmapFromData(XtDisplay(toplevel),
 				       XtScreen(toplevel)->root,
 				       clock_bits, clock_width, clock_height);
+	XtSetValues (toplevel, &arg, ONE);
+    }
+    XtSetArg(arg, XtNiconMask, &icon_pixmap);
+    XtGetValues(toplevel, &arg, ONE);
+    if (icon_pixmap == None) {
+	arg.value = (XtArgVal)XCreateBitmapFromData(XtDisplay(toplevel),
+				       XtScreen(toplevel)->root,
+				       clock_mask_bits, clock_mask_width, 
+				       clock_mask_height);
 	XtSetValues (toplevel, &arg, ONE);
     }
 
