@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.138 91/12/28 15:02:20 keith Exp $
+XCOMM $XConsortium: Imakefile,v 1.139 92/04/20 14:54:26 rws Exp $
 /*
  * Server Master Makefile
  */
@@ -274,7 +274,7 @@ IBMALLOCLIB =
 #endif
 SUBDIRS0 = CFBSubdirs ddx/ibm
 IBMDIRS = $(SUBDIRS0) $(DEPDIRS)
-IBMOBJS = ddx/ibm/common/ibmcomm.o ddx/ibm/common/ibmDate.o ddx/ibm/pgc/pgc.o
+IBMOBJS = ddx/ibm/common/ibmcomm.o ddx/ibm/common/ibmDate.o
 IBMLIBS = ddx/ibm/AIX/hft.o ddx/ibm/libibm.a $(IBMALLOCLIB) CFBLibs
 
 ServerTarget(Xibm,$(IBMDIRS),$(IBMOBJS),$(IBMLIBS),$(SYSLIBS))
