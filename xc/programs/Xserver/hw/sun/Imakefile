@@ -1,22 +1,5 @@
-XCOMM $XConsortium: Imakefile,v 5.20 93/09/04 17:36:15 rws Exp $
+XCOMM $XConsortium: Imakefile,v 5.21 93/09/04 19:16:11 rws Exp $
 #include <Server.tmpl>
-
-#if defined(SparcArchitecture)
-# if HasMITGXSource
-GXSRC=sunGX.c
-# else
-GXSRC=
-#  if SystemV4
-GXOBJDIST=solGX.o.dist
-#  else
-GXOBJDIST=sunGX.o.dist
-#  endif
-# endif
-GXOBJ=sunGX.o
-#else
-GXOBJ=
-GXSRC=
-#endif
 
 SRCS1 =	sunInit.c \
 	sunCfb.c \
@@ -26,7 +9,7 @@ SRCS1 =	sunInit.c \
 	sunKbd.c \
 	sunMfb.c \
 	sunMouse.c\
-	$(GXSRC) \
+	sunGX.c \
 	sunKeyMap.c
 
 SRCS =	$(SRCS1) kbd_mode.c constype.c
@@ -44,7 +27,7 @@ OBJS = 	sunCfb.o \
 	sunKbd.o \
 	sunMfb.o \
 	sunMouse.o \
-	$(GXOBJ) \
+	sunGX.o \
 	sunKeyMap.o
 
    INCLUDES = -I. -I../../mfb -I../../mi -I../../cfb -I../../include\
@@ -60,10 +43,6 @@ lintlib:
 
 NormalLibraryTarget(sun,$(OBJS))
 NormalLintTarget($(SRCS1))
-
-#if !HasMITGXSource
-LinkFile(sunGX.o,$(GXOBJDIST))
-#endif
 
 #ifndef i386Architecture
 sunInitExtMono.o: $(ICONFIGFILES)
