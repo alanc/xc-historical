@@ -167,9 +167,6 @@
   ;; This is a macro to enable NAME to be interned for fast run-time
   ;; retrieval. 
   ;; Note: The case of NAME is important.
-  (declare (type display display)
-	   (type stringable name))
-  (declare (values card8))
   (let ((name-symbol (kintern name))) ;; Intern name in the keyword package
     `(or (second (assoc ',name-symbol (display-extension-alist ,display)))
 	 (x-error 'absent-extension :name ',name-symbol :display ,display))))

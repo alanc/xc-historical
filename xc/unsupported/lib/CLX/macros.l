@@ -678,7 +678,6 @@
 (defmacro with-buffer-request-internal
 	  ((buffer opcode &key length sizes &allow-other-keys)
 	   &body type-args)
-  (declare (values request-number))
   (multiple-value-bind (code index item-sizes)
       (get-put-items 4 type-args t)
     (let ((length (if length `(index+ ,length *requestsize*) '*requestsize*))
@@ -696,7 +695,6 @@
 (defmacro with-buffer-request
 	  ((buffer opcode &rest options &key inline gc-force &allow-other-keys)
 	   &body type-args &environment env)
-  (declare (values request-number))
   (if (and (null inline) (macroexpand '(use-closures) env))
       `(flet ((.request-body. (.display.)
 		(declare (type display .display.))
