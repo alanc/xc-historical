@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XGetHints.c,v 11.15 87/09/01 14:48:51 swick Locked $ */
+/* $Header: XGetHints.c,v 11.16 87/09/09 15:42:48 newman Locked $ */
 
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -218,7 +218,7 @@ XGetTransientForHint(dpy, w, propWindow)
 	return (1);
 	}
     *propWindow = None;
-    Xfree( (char *) data);
+    if (data) Xfree( (char *) data);
     return(0);
 }
 
@@ -253,6 +253,6 @@ XGetClassHint(dpy, w, classhint)
 	return(Success);
 	}
     classhint = NULL;
-    Xfree( (char *) data);
+    if (data) Xfree( (char *) data);
     return(0);
 }
