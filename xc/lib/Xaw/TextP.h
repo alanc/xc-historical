@@ -1,5 +1,5 @@
 /*
-* $Header: TextP.h,v 1.4 87/12/23 07:55:10 swick Locked $
+* $Header: TextP.h,v 1.5 87/12/23 16:30:43 swick Locked $
 */
 
 /*
@@ -43,46 +43,51 @@
 #define DEL	0x7f
 #define BSLASH	'\\'
 
-#define EDITDONE 0
-#define EDITERROR 1
-#define POSITIONERROR 2
+#define EditDone 0
+#define EditError 1
+#define PositionError 2
 
 #define DEFAULTVALUE -9999
 
-typedef enum {XtsdLeft, XtsdRight} ScanDirection;
-typedef enum {XtstPositions, XtstWhiteSpace, XtstEOL, XtstParagraph, XtstFile} ScanType;
+typedef enum {XtsdLeft, XtsdRight} XtTextScanDirection;
+typedef enum {XtstPositions, XtstWhiteSpace, XtstEOL, XtstParagraph, XtstAll}
+    XtTextScanType;
 
 typedef struct {
     int  firstPos;
     int  length;
     char *ptr;
     Atom format;
-    } XtTextBlock, *TextBlockPtr;
+    } XtTextBlock, *XtTextBlockPtr;
 
 /* the data field is really a pointer to source info, see disk and 
    stream sources in TextKinds.c */
 
 typedef struct _XtTextSource {
-    int		    (*read)();
-    int		    (*replace)();
-    XtTextPosition  (*getLastPos)();
-    int		    (*setLastPos)();
-    XtTextPosition  (*scan)();
-    XtEditType      (*editType)();
-    caddr_t	    data;       
+    int			(*Read)();
+    int			(*Replace)();
+    XtTextPosition	(*GetLastPos)();
+    int			(*SetLastPos)();
+    XtTextPosition	(*Scan)();
+    XtTextEditType	(*EditType)();
+    void		(*AddWidget)( /* source, widget */ );
+    void		(*RemoveWidget)( /* source, widget */ );
+    void		(*SetSelection)( /* source, left, right */);
+    Boolean		(*GetSelection)( /* source, left, right */);
+    caddr_t		data;	    
     };
 
 typedef struct _XtTextSink {
-    XFontStruct *font;
+    XFontStruct	*font;
     int foreground;
-    int (*display)();
-    int (*insertCursor)();
-    int (*clearToBackground)();
-    int (*findPosition)();
-    int (*findDistance)();
-    int (*resolve)();
-    int (*maxLines)();
-    int (*maxHeight)();
+    int (*Display)();
+    int (*InsertCursor)();
+    int (*ClearToBackground)();
+    int (*FindPosition)();
+    int (*FindDistance)();
+    int (*Resolve)();
+    int (*MaxLines)();
+    int (*MaxHeight)();
     caddr_t data;
     };
 
@@ -91,37 +96,39 @@ typedef struct _XtTextSink {
 typedef struct {
     XtTextPosition position;
     Position x, y, endX;
-    } LineTableEntry, *LineTableEntryPtr;
+    } XtTextLineTableEntry, *XtTextLineTableEntryPtr;
 
 /* Line Tables are n+1 long - last position displayed is in last lt entry */
 typedef struct {
-    XtTextPosition  top;	/* Top of the displayed text.		*/
-    int		    lines;	/* How many lines in this table.	*/
-    LineTableEntry  *info;	/* A dynamic array, one entry per line  */
-    } LineTable, *LineTablePtr;
+    XtTextPosition	 top;	/* Top of the displayed text.		*/
+    int			 lines;	/* How many lines in this table.	*/
+    XtTextLineTableEntry *info;	/* A dynamic array, one entry per line  */
+    } XtTextLineTable, *XtTextLineTablePtr;
 
-typedef enum {XtisOn, XtisOff} InsertState;
+typedef enum {XtisOn, XtisOff} XtTextInsertState;
 
 typedef enum {XtselectNull, XtselectPosition, XtselectChar, XtselectWord,
-    XtselectLine, XtselectParagraph, XtselectAll} XtSelectType;
+    XtselectLine, XtselectParagraph, XtselectAll} XtTextSelectType;
 
-typedef enum {XtsmTextSelect, XtsmTextExtend} SelectionMode;
+typedef enum {XtsmTextSelect, XtsmTextExtend} XtTextSelectionMode;
 
-typedef enum {XtactionStart, XtactionAdjust, XtactionEnd} SelectionAction;
+typedef enum {XtactionStart, XtactionAdjust, XtactionEnd}
+    XtTextSelectionAction;
 
 typedef struct {
     XtTextPosition left, right;
-    XtSelectType  type;
-} TextSelection;
+    XtTextSelectType type;
+} XtTextSelection;
 
-#define IsPositionVisible(ctx, pos)	(pos >= ctx->text.lt.info[0].position && \
-	    pos <= ctx->text.lt.info[ctx->text.lt.lines].position)
+#define IsPositionVisible(ctx, pos) \
+		(pos >= ctx->text.lt.info[0].position && \
+		 pos <= ctx->text.lt.info[ctx->text.lt.lines].position)
 
 /* Private Text Definitions */
 
 typedef int (*ActionProc)();
 
-typedef XtSelectType SelectionArray[20];
+typedef XtTextSelectType XtTextSelectionArray[20];
 
 /* New fields for the Text widget class record */
 
@@ -137,28 +144,28 @@ extern TextClassRec textClassRec;
 
 /* New fields for the Text widget record */
 typedef struct {
-    XtTextSource    source;
-    XtTextSink      sink;
-    LineTable       lt;
-    XtTextPosition  insertPos;
-    TextSelection   s;
-    ScanDirection   extendDir;
-    TextSelection   origSel;        /* the selection being modified */
-    SelectionArray  sarray;         /* Array to cycle for selections. */
-    Dimension       leftmargin;     /* Width of left margin. */
-    int             options;        /* wordbreak, scroll, etc. */
-    Time            lasttime;       /* timestamp of last processed action */
-    Time            time;           /* time of last key or button action */ 
-    Position        ev_x, ev_y;     /* x, y coords for key or button action */
-    Widget          sbar;           /* The vertical scroll bar (none = 0).  */
-    Widget          outer;          /* Parent of scrollbar & text (if any) */
+    XtTextSource	source;
+    XtTextSink		sink;
+    XtTextLineTable	lt;
+    XtTextPosition	insertPos;
+    XtTextSelection	s;
+    XtTextScanDirection extendDir;
+    XtTextSelection	origSel;    /* the selection being modified */
+    XtTextSelectionArray sarray;    /* Array to cycle for selections. */
+    Dimension	    leftmargin;	    /* Width of left margin. */
+    int		    options;	    /* wordbreak, scroll, etc. */
+    Time	    lasttime;	    /* timestamp of last processed action */
+    Time	    time;	    /* time of last key or button action */ 
+    Position	    ev_x, ev_y;	    /* x, y coords for key or button action */
+    Widget	    sbar;	    /* The vertical scroll bar (none = 0).  */
+    Widget	    outer;	    /* Parent of scrollbar & text (if any) */
     XtTextPosition  *updateFrom;    /* Array of start positions for update. */
-    XtTextPosition  *updateTo;      /* Array of end positions for update. */
-    int             numranges;      /* How many update ranges there are. */
-    int             maxranges;      /* How many ranges we have space for */
-    Boolean         showposition;   /* True if we need to show the position. */
-    XtTextPosition  lastPos;        /* Last position of source. */
-    Widget          dialog;         /* Window containing dialog, if any. */
+    XtTextPosition  *updateTo;	    /* Array of end positions for update. */
+    int		    numranges;	    /* How many update ranges there are. */
+    int		    maxranges;	    /* How many ranges we have space for */
+    Boolean	    showposition;   /* True if we need to show the position. */
+    XtTextPosition  lastPos;	    /* Last position of source. */
+    Widget	    dialog;	    /* Window containing dialog, if any. */
     GC              gc;
     Boolean         hasfocus;       /* TRUE if we currently have input focus.*/
 } TextPart;
