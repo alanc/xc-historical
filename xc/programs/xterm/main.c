@@ -1,5 +1,5 @@
 /*
- *	$Header: main.c,v 1.19 88/02/21 09:32:26 swick Exp $
+ *	$Header: main.c,v 1.20 88/02/21 15:45:41 jim Exp $
  *
  * WARNING:  This code (particularly, the tty setup code) is a historical
  * relic and should not be confused with a real toolkit application or a
@@ -34,7 +34,7 @@
 /* main.c */
 
 #ifndef lint
-static char rcs_id[] = "$Header: main.c,v 1.19 88/02/21 09:32:26 swick Exp $";
+static char rcs_id[] = "$Header: main.c,v 1.20 88/02/21 15:45:41 jim Exp $";
 #endif	/* lint */
 
 #include <X11/Xos.h>
@@ -953,9 +953,16 @@ get_terminal ()
 
 }
 
+/*
+ * The only difference in /etc/termcap between 4014 and 4015 is that 
+ * the latter has support for switching character sets.  We support the
+ * 4015 protocol, but ignore the character switches.  Therefore, we should
+ * probably choose 4014 over 4015.
+ */
+
 static char *tekterm[] = {
-	"tek4015",
 	"tek4014",
+	"tek4015",		/* has alternate character set switching */
 	"tek4013",
 	"tek4010",
 	"dumb",
