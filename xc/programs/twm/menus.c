@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.163 90/06/19 12:20:02 jim Exp $
+ * $XConsortium: menus.c,v 1.164 90/09/20 18:07:55 converse Exp $
  *
  * twm menu code
  *
@@ -38,7 +38,7 @@
 
 #if !defined(lint) && !defined(SABER)
 static char RCSinfo[] =
-"$XConsortium: menus.c,v 1.163 90/06/19 12:20:02 jim Exp $";
+"$XConsortium: menus.c,v 1.164 90/09/20 18:07:55 converse Exp $";
 #endif
 
 #include <stdio.h>
@@ -1212,7 +1212,7 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
 
     case F_RESTART:
 	XSync (dpy, 0);
-	Reborder ();
+	Reborder (eventp->xbutton.time);
 	XSync (dpy, 0);
 	execvp(*Argv, Argv);
 	fprintf (stderr, "%s:  unable to restart:  %s\n", ProgramName, *Argv);
@@ -1750,7 +1750,7 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
 		InstallWindowColormaps (0, tmp_win);
 		if (tmp_win->hilite_w) XMapWindow (dpy, tmp_win->hilite_w);
 		SetBorder (tmp_win, True);
-		SetFocus (tmp_win, CurrentTime);
+		SetFocus (tmp_win, eventp->xbutton.time);
 		Scr->FocusRoot = FALSE;
 		Scr->Focus = tmp_win;
 	    }
@@ -2180,7 +2180,7 @@ Execute(s)
 void
 FocusOnRoot()
 {
-    SetFocus ((TwmWindow *) NULL, CurrentTime);
+    SetFocus ((TwmWindow *) NULL, LastTimestamp());
     if (Scr->Focus != NULL)
     {
 	SetBorder (Scr->Focus, False);
@@ -2324,7 +2324,7 @@ int def_x, def_y;
 		SetBorder (t, False);
 		if (t == Scr->Focus)
 		{
-		    SetFocus ((TwmWindow *) NULL, CurrentTime);
+		    SetFocus ((TwmWindow *) NULL, LastTimestamp());
 		    Scr->Focus = NULL;
 		    Scr->FocusRoot = TRUE;
 		}
@@ -2352,7 +2352,7 @@ int def_x, def_y;
     SetBorder (tmp_win, False);
     if (tmp_win == Scr->Focus)
     {
-	SetFocus ((TwmWindow *) NULL, CurrentTime);
+	SetFocus ((TwmWindow *) NULL, LastTimestamp());
 	Scr->Focus = NULL;
 	Scr->FocusRoot = TRUE;
     }

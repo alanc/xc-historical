@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: twm.c,v 1.114 90/06/07 16:32:42 jim Exp $
+ * $XConsortium: twm.c,v 1.115 90/09/20 18:08:04 converse Exp $
  *
  * twm - "Tom's Window Manager"
  *
@@ -38,7 +38,7 @@
 
 #if !defined(lint) && !defined(SABER)
 static char RCSinfo[] =
-"$XConsortium: twm.c,v 1.114 90/06/07 16:32:42 jim Exp $";
+"$XConsortium: twm.c,v 1.115 90/09/20 18:08:04 converse Exp $";
 #endif
 
 #include <stdio.h>
@@ -727,7 +727,8 @@ RestoreWithdrawnLocation (tmp)
  ***********************************************************************
  */
 
-void Reborder ()
+void Reborder (time)
+Time time;
 {
     TwmWindow *tmp;			/* temp twm window structure */
     int scrnum;
@@ -749,12 +750,12 @@ void Reborder ()
     }
 
     XUngrabServer (dpy);
-    SetFocus ((TwmWindow*)NULL, CurrentTime);
+    SetFocus ((TwmWindow*)NULL, time);
 }
 
 SIGNAL_T Done()
 {
-    Reborder ();
+    Reborder (CurrentTime);
     XCloseDisplay(dpy);
     exit(0);
     SIGNAL_RETURN;
