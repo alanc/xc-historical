@@ -1,4 +1,4 @@
-/* $XConsortium: uOCprim.c,v 5.7 92/06/02 19:41:24 hersh Exp $ */
+/* $XConsortium: uOCprim.c,v 5.8 93/05/07 16:07:19 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -56,6 +56,10 @@ SOFTWARE.
 #include "UconvName.h"
 #define LOCAL_FLAG
 #include "OCprim.h"
+
+#ifndef PADDING
+#define PADDING(n) ( (n)%4 ? (4 - (n)%4) : 0)
+#endif 
 
 
 unsigned char *
@@ -119,21 +123,34 @@ pexMonoEncoding	*pME;
 CARD32		num;
 {
     CARD16 i, j;
+    int bytes;
+
     for (i=0; i<num; i++) {
 	SWAP_CARD16(pME->characterSet);
-	SWAP_CARD16(pME->numChars);
 	switch (pME->characterSetWidth) {
-	    case PEXCSByte: break;
+	    case PEXCSByte: 
+	  	bytes = pME->numChars;
+	  	break;
 	    case PEXCSShort: {
 		CARD16 *ptr = (CARD16 *)(pME+1);
 		for (j=0; j<pME->numChars; j++, ptr++) SWAP_CARD16((*ptr));
+	  	bytes = pME->numChars * sizeof(CARD16);
+	  	break;
 	    }
+
 	    case PEXCSLong: {
 		CARD32 *ptr = (CARD32 *)(pME+1);
 		for (j=0; j<pME->numChars; j++, ptr++) SWAP_CARD32((*ptr));
+	  	bytes = pME->numChars * sizeof(CARD32);
+	  	break;
 	    }
+
 	}
 	
+	SWAP_CARD16(pME->numChars);
+	pME = (pexMonoEncoding *) ((char *) (pME + 1) +
+	  bytes + PADDING (bytes));
+
     }
     
 }
