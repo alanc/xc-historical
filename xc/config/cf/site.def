@@ -1,4 +1,4 @@
-XCOMM site:  $XConsortium: site.def,v 1.96 94/01/31 11:35:50 gildea Exp $
+XCOMM site:  $XConsortium: site.def,v 1.97 94/02/03 20:32:56 gildea Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -61,7 +61,9 @@ XCOMM #define HasGcc2 YES
 
 #define ProjectRoot /X11
 
+#ifndef BuildXKBlib
 #define BuildXKBlib	YES
+#endif
 
 #ifdef SunArchitecture
 #define HasCodeCenter	YES
