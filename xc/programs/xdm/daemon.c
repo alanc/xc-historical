@@ -1,4 +1,4 @@
-/* $XConsortium: daemon.c,v 1.14 94/04/17 20:03:35 gildea Exp kaleb $ */
+/* $XConsortium: daemon.c,v 1.15 94/11/21 18:33:11 kaleb Exp kaleb $ */
 /*
 
 Copyright (c) 1988  X Consortium
@@ -122,7 +122,7 @@ BecomeDaemon ()
     close (1);
     close (2);
 
-#ifndef SYSV386
+#if !((defined(SYSV) || defined(SVR4)) && defined(i386))
     if ((i = open ("/dev/tty", O_RDWR)) >= 0) {	/* did open succeed? */
 #if defined(USG) && defined(TCCLRCTTY)
 	int zero = 0;
@@ -137,7 +137,7 @@ BecomeDaemon ()
 #endif
 	(void) close (i);
     }
-#endif /* !SYSV386 */
+#endif /* !i386 */
 
     /*
      * Set up the standard file descriptors.
