@@ -1,6 +1,6 @@
 /**/###########################################################################
 /**/# Imake rules for building libraries, programs, scripts, and data files
-/**/# rules:  $XConsortium: Imake.rules,v 1.19 89/04/11 14:49:31 jim Exp $
+/**/# rules:  $XConsortium: Imake.rules,v 1.20 89/04/11 15:12:56 jim Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -232,12 +232,12 @@ InstallManPage(program,$(MANDIR))
 server: subdirs objects libs						@@\
 	-@if [ -f server ]; then echo "$(MV) server server.bak"; \	@@\
 		$(MV) server server.bak; else exit 0; fi		@@\
-	$(CC) $(CDEBUGFLAGS) -o server objects libs $(EXTRA_LIBRARIES) syslibs $(EXTRA_LOAD_FLAGS) @@\
+	$(CC) $(CDEBUGFLAGS) $(CCOPTIONS) -o server objects libs $(EXTRA_LIBRARIES) syslibs $(EXTRA_LOAD_FLAGS) @@\
 									@@\
 load/**/server:								@@\
 	-@if [ -f server ]; then echo "$(MV) server server.bak"; \	@@\
 		$(MV) server server.bak; else exit 0; fi		@@\
-	$(CC) $(CDEBUGFLAGS) -o server objects libs $(EXTRA_LIBRARIES) syslibs $(EXTRA_LOAD_FLAGS)
+	$(CC) $(CDEBUGFLAGS) $(CCOPTIONS) -o server objects libs $(EXTRA_LIBRARIES) syslibs $(EXTRA_LOAD_FLAGS)
 #endif /* ServerTarget */
 
 
