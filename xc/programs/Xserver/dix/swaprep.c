@@ -22,7 +22,7 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: swaprep.c,v 1.30 88/09/06 15:41:22 jim Exp $ */
+/* $XConsortium: swaprep.c,v 1.31 89/03/03 10:25:23 rws Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -75,10 +75,18 @@ CopySwap32Write(pClient, size, pbuf)
     int bufsize = size;
     long *pbufT;
     register long *from, *to, *fromLast, *toLast;
+    long tmpbuf[1];
     
     /* Allocate as big a buffer as we can... */
-    while ((pbufT = (long *) ALLOCATE_LOCAL(bufsize)) == NULL)
+    while (!(pbufT = (long *) ALLOCATE_LOCAL(bufsize)))
+    {
         bufsize >>= 1;
+	if (bufsize == 4)
+	{
+	    pbufT = tmpbuf;
+	    break;
+	}
+    }
     
     /* convert lengths from # of bytes to # of longs */
     size >>= 2;
@@ -101,7 +109,8 @@ CopySwap32Write(pClient, size, pbuf)
 	(void)WriteToClient (pClient, nbytes, (char *) pbufT);
 	}
 
-    DEALLOCATE_LOCAL ((char *) pbufT);
+    if (pbufT != tmpbuf)
+	DEALLOCATE_LOCAL ((char *) pbufT);
 }
 
 void
@@ -113,10 +122,18 @@ CopySwap16Write(pClient, size, pbuf)
     int bufsize = size;
     short *pbufT;
     register short *from, *to, *fromLast, *toLast;
+    short tmpbuf[2];
     
     /* Allocate as big a buffer as we can... */
-    while ((pbufT = (short *) ALLOCATE_LOCAL(bufsize)) == NULL)
+    while (!(pbufT = (short *) ALLOCATE_LOCAL(bufsize)))
+    {
         bufsize >>= 1;
+	if (bufsize == 4)
+	{
+	    pbufT = tmpbuf;
+	    break;
+	}
+    }
     
     /* convert lengths from # of bytes to # of shorts */
     size >>= 1;
@@ -139,7 +156,8 @@ CopySwap16Write(pClient, size, pbuf)
 	(void)WriteToClient (pClient, nbytes, (char *) pbufT);
 	}
 
-    DEALLOCATE_LOCAL ((char *) pbufT);
+    if (pbufT != tmpbuf)
+	DEALLOCATE_LOCAL ((char *) pbufT);
 }
 
 
@@ -1248,7 +1266,11 @@ WriteSConnectionInfo(pClient, size, pInfo)
     xConnSetup	*pConnSetup = (xConnSetup *)pInfo;
 
     pInfoT = pInfoTBase = (char *) ALLOCATE_LOCAL(size);
-
+    if (!pInfoTBase)
+    {
+	pClient->noClientException = -1;
+	return;
+    }
     SwapConnSetup(pConnSetup, (xConnSetup *)pInfoT);
     pInfo += sizeof(xConnSetup);
     pInfoT += sizeof(xConnSetup);

@@ -22,11 +22,12 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: atom.c,v 1.24 88/01/01 16:11:46 rws Exp $ */
+/* $XConsortium: atom.c,v 1.25 88/09/06 15:40:03 jim Exp $ */
 
 #include "X.h"
 #include "Xatom.h"
 #include "misc.h"
+#include "resource.h"
 
 #define InitialTableSize 100
 
@@ -78,20 +79,37 @@ MakeAtom(string, len, makeit)
     }
     if (makeit)
     {
-	*np = (NodePtr) xalloc(sizeof(NodeRec));
-	(*np)->left = (*np)->right = (NodePtr) NULL;
-	(*np)->fingerPrint = fp;
-	(*np)->a = (++lastAtom);
-	strncpy((*np)->string = (char *) xalloc(len + 1), string, len);
-	(*np)->string[len] = 0;
-	if (lastAtom >= tableLength)
-	{
-	    tableLength *= 2;
-	    nodeTable = (NodePtr *) xrealloc(nodeTable,
-					     tableLength * sizeof(NodePtr));
+	register NodePtr nd;
+
+	nd = (NodePtr) xalloc(sizeof(NodeRec));
+	if (!nd)
+	    return BAD_RESOURCE;
+	nd->string = (char *) xalloc(len + 1);
+	if (!nd->string) {
+	    xfree(nd);
+	    return BAD_RESOURCE;
 	}
-	*(nodeTable+lastAtom) = *np;
-	return(*np)->a;
+	if ((lastAtom + 1) >= tableLength) {
+	    NodePtr *table;
+
+	    table = (NodePtr *) xrealloc(nodeTable,
+					 tableLength * (2 * sizeof(NodePtr)));
+	    if (!table) {
+		xfree(nd->string);
+		xfree(nd);
+		return BAD_RESOURCE;
+	    }
+	    tableLength <<= 1;
+	    nodeTable = table;
+	}
+	*np = nd;
+	nd->left = nd->right = (NodePtr) NULL;
+	nd->fingerPrint = fp;
+	nd->a = (++lastAtom);
+	strncpy(nd->string, string, len);
+	nd->string[len] = 0;
+	*(nodeTable+lastAtom) = nd;
+	return nd->a;
     }
     else
 	return None;
@@ -123,6 +141,8 @@ InitAtoms()
     FreeAllAtoms();
     tableLength = InitialTableSize;
     nodeTable = (NodePtr *)xalloc(InitialTableSize*sizeof(NodePtr));
+    if (!nodeTable)
+	AtomError();
     nodeTable[None] = (NodePtr)NULL;
     MakePredeclaredAtoms();
     if (lastAtom != XA_LAST_PREDEFINED)

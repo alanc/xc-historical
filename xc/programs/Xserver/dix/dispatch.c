@@ -1,4 +1,4 @@
-/* $XConsortium: dispatch.c,v 1.79 89/02/10 18:30:59 keith Exp $ */
+/* $XConsortium: dispatch.c,v 1.80 89/03/08 08:51:46 rws Exp $ */
 /************************************************************
 Copyright 1987, 1989 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -52,6 +52,7 @@ extern void ReleaseActiveGrabs();
 extern void QueryFont();
 extern void NotImplemented();
 extern WindowPtr RealChildHead();
+extern Bool InitClientResources();
 
 Selection *CurrentSelections;
 int NumCurrentSelections;
@@ -97,8 +98,7 @@ XID clientErrorValue;   /* XXX this is a kludge */
     (a.pScreen == b.pScreen))
 
 #define LEGAL_NEW_RESOURCE(id,client)\
-    if ((LookupID(id, RT_ANY, RC_CORE) != 0) || (id & SERVER_BIT) \
-	|| (client->clientAsMask != CLIENT_BITS(id)))\
+    if (!LegalNewID(id,client)) \
     {\
 	client->errorValue = id;\
         return(BadIDChoice);\
@@ -221,6 +221,8 @@ Dispatch()
     nClients = 0;
 
     clientReady = (int *) ALLOCATE_LOCAL(sizeof(int) * MaxClients);
+    if (!clientReady)
+	return;
     request = (xReq *)NULL;
 
     while (!clientsDoomed)
@@ -338,7 +340,15 @@ ProcCreateWindow(client)
 			      (int)stuff->depth, 
 			      client, stuff->visual, &result);
     if (pWin)
-        AddResource(stuff->wid, RT_WINDOW, (pointer)pWin, DeleteWindow, RC_CORE);
+    {
+	Mask mask = pWin->eventMask;
+
+	pWin->eventMask = 0; /* subterfuge in case AddResource fails */
+	if (!AddResource(stuff->wid, RT_WINDOW, (pointer)pWin, DeleteWindow,
+			 RC_CORE))
+	    return BadAlloc;
+	pWin->eventMask = mask;
+    }
     if (client->noClientException != Success)
         return(client->noClientException);
     else
@@ -657,7 +667,9 @@ ProcQueryTree(client)
     {
 	int curChild = 0;
 
-	childIDs = (Window *) xalloc(numChildren * sizeof(Window));
+	childIDs = (Window *) ALLOCATE_LOCAL(numChildren * sizeof(Window));
+	if (!childIDs)
+	    return BadAlloc;
 	for (pChild = pWin->lastChild; pChild != pHead; pChild = pChild->prevSib)
 	    childIDs[curChild++] = pChild->wid;
     }
@@ -670,7 +682,7 @@ ProcQueryTree(client)
     {
     	client->pSwapReplyFunc = Swap32Write;
 	WriteSwappedDataToClient(client, numChildren * sizeof(Window), childIDs);
-	xfree(childIDs);
+	DEALLOCATE_LOCAL(childIDs);
     }
 
     return(client->noClientException);
@@ -692,13 +704,13 @@ ProcInternAtom(client)
     }
     tchar = (char *) &stuff[1];
     atom = MakeAtom(tchar, stuff->nbytes, !stuff->onlyIfExists);
-    if (atom || stuff->onlyIfExists)
+    if (atom != BAD_RESOURCE)
     {
 	xInternAtomReply reply;
 	reply.type = X_Reply;
 	reply.length = 0;
 	reply.sequenceNumber = client->sequence;
-	reply.atom = (atom ? atom : None);
+	reply.atom = atom;
 	WriteReplyToClient(client, sizeof(xInternAtomReply), &reply);
 	return(client->noClientException);
     }
@@ -823,12 +835,17 @@ ProcSetSelectionOwner(client)
 	    /*
 	     * It doesn't exist, so add it...
 	     */
-	    NumCurrentSelections++;
+	    Selection *newsels;
+
 	    if (i == 0)
-		CurrentSelections = (Selection *)xalloc(sizeof(Selection));
+		newsels = (Selection *)xalloc(sizeof(Selection));
 	    else
-		CurrentSelections = (Selection *)xrealloc(CurrentSelections, 
-			    NumCurrentSelections * sizeof(Selection));
+		newsels = (Selection *)xrealloc(CurrentSelections,
+			    (NumCurrentSelections + 1) * sizeof(Selection));
+	    if (!newsels)
+		return BadAlloc;
+	    NumCurrentSelections++;
+	    CurrentSelections = newsels;
 	    CurrentSelections[i].selection = stuff->selection;
 	}
         CurrentSelections[i].lastTimeChanged = time;
@@ -1049,7 +1066,9 @@ ProcOpenFont(client)
     LEGAL_NEW_RESOURCE(stuff->fid, client);
     if ( pFont = OpenFont( stuff->nbytes, (char *)&stuff[1]))
     {
-	AddResource( stuff->fid, RT_FONT, (pointer)pFont, CloseFont,RC_CORE);
+	if (!AddResource( stuff->fid, RT_FONT, (pointer)pFont, CloseFont,
+			 RC_CORE))
+	    return BadAlloc;
 	return(client->noClientException);
     }
     else
@@ -1167,7 +1186,8 @@ ProcQueryTextExtents(client)
 	    return(BadLength);
         length--;
     }
-    QueryTextExtents(pFont, length, (unsigned char *)&stuff[1], &info);   
+    if (!QueryTextExtents(pFont, length, (unsigned char *)&stuff[1], &info))
+	return(BadAlloc);
     reply.type = X_Reply;
     reply.length = 0;
     reply.sequenceNumber = client->sequence;
@@ -1329,13 +1349,11 @@ CreatePmap:
     if (pMap)
     {
 	pMap->drawable.serialNumber = NEXT_SERIAL_NUMBER;
-	AddResource(
-	    stuff->pid, RT_PIXMAP, (pointer)pMap, dixDestroyPixmap,
-	    RC_CORE);
-	return(client->noClientException);
+	if (AddResource(stuff->pid, RT_PIXMAP, (pointer)pMap,
+			dixDestroyPixmap, RC_CORE))
+	    return(client->noClientException);
     }
-    else
-	return (BadAlloc);
+    return (BadAlloc);
 }
 
 int
@@ -1385,13 +1403,9 @@ ProcCreateGC(client)
 			 (XID *) &stuff[1], &error);
     if (error != Success)
         return error;
-    if (pGC)
-    {
-	AddResource(stuff->gc, RT_GC, (pointer)pGC, FreeGC, RC_CORE);
-	return(client->noClientException);
-    }
-    else 
+    if (!AddResource(stuff->gc, RT_GC, (pointer)pGC, FreeGC, RC_CORE))
 	return (BadAlloc);
+    return(client->noClientException);
 }
 
 int
@@ -2727,7 +2741,14 @@ ProcCreateCursor( client)
 
     n = PixmapBytePad(width, 1)*height;
     srcbits = (unsigned char *)xalloc(n);
+    if (!srcbits)
+	return (BadAlloc);
     mskbits = (unsigned char *)xalloc(n);
+    if (!mskbits)
+    {
+	xfree(srcbits);
+	return (BadAlloc);
+    }
 
     (* src->drawable.pScreen->GetImage)( src, 0, 0, width, height,
 					 XYPixmap, 1, srcbits);
@@ -2748,8 +2769,11 @@ ProcCreateCursor( client)
 	    stuff->foreRed, stuff->foreGreen, stuff->foreBlue,
 	    stuff->backRed, stuff->backGreen, stuff->backBlue);
 
-    AddResource( stuff->cid, RT_CURSOR, (pointer)pCursor, FreeCursor, RC_CORE);
-    return (client->noClientException);
+    if (pCursor &&
+	AddResource( stuff->cid, RT_CURSOR, (pointer)pCursor, FreeCursor,
+		    RC_CORE))
+	    return (client->noClientException);
+    return BadAlloc;
 }
 
 /*
@@ -2797,6 +2821,8 @@ ProcCreateGlyphCursor( client)
 	}
 	n = PixmapBytePad(cm.width, 1)*cm.height;
 	bits = mskbits = (unsigned char *)xalloc(n);
+	if (!bits)
+	    return BadAlloc;
 	while (--n >= 0)
 	    *bits++ = ~0;
     }
@@ -2824,8 +2850,11 @@ ProcCreateGlyphCursor( client)
 	    stuff->foreRed, stuff->foreGreen, stuff->foreBlue,
 	    stuff->backRed, stuff->backGreen, stuff->backBlue);
 
-    AddResource(stuff->cid, RT_CURSOR, (pointer)pCursor, FreeCursor, RC_CORE);
-    return client->noClientException;
+    if (pCursor &&
+	AddResource(stuff->cid, RT_CURSOR, (pointer)pCursor, FreeCursor,
+		    RC_CORE))
+	    return client->noClientException;
+    return BadAlloc;
 }
 
 
@@ -3296,10 +3325,8 @@ NextAvailableClient(ospriv)
     if (i == MAXCLIENTS)
 	return (ClientPtr)NULL;
     clients[i] = client = (ClientPtr)xalloc(sizeof(ClientRec));
-    if (i == currentMaxClients)
-	currentMaxClients++;
-    while ((nextFreeClientID < MAXCLIENTS) && clients[nextFreeClientID])
-	nextFreeClientID++;
+    if (!client)
+	return (ClientPtr)NULL;
     client->index = i;
     client->sequence = 0; 
     client->clientAsMask = ((Mask)i) << CLIENTOFFSET;
@@ -3316,7 +3343,14 @@ NextAvailableClient(ospriv)
     client->requestVector = InitialVector;
     client->osPrivate = ospriv;
     client->swapped = FALSE;
-    InitClientResources(client);
+    if (!InitClientResources(client)) {
+	xfree(client);
+	return (ClientPtr)NULL;
+    }
+    if (i == currentMaxClients)
+	currentMaxClients++;
+    while ((nextFreeClientID < MAXCLIENTS) && clients[nextFreeClientID])
+	nextFreeClientID++;
     data.reqType = 1;
     data.length = (sz_xReq + sz_xConnClientPrefix) >> 2;
     InsertFakeRequest(client, (char *)&data, sz_xReq);

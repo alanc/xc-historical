@@ -23,7 +23,7 @@ SOFTWARE.
 ******************************************************************/
 
 
-/* $XConsortium: cursor.c,v 1.29 88/01/02 18:04:02 rws Exp $ */
+/* $XConsortium: cursor.c,v 1.30 88/09/06 15:40:29 jim Exp $ */
 
 #include "X.h"
 #include "scrnintstr.h"
@@ -66,7 +66,7 @@ FreeCursor( pCurs, cid)
 
 /*
  * does nothing about the resource table, just creates the data structure.
- * allocates no storage.
+ * does not copy the src and mask bits
  */
 CursorPtr 
 AllocCursor( psrcbits, pmaskbits, cm,
@@ -82,6 +82,8 @@ AllocCursor( psrcbits, pmaskbits, cm,
     ScreenPtr 	pscr;
 
     pCurs = (CursorPtr )xalloc( sizeof(CursorRec)); 
+    if (!pCurs)
+	return (CursorPtr)NULL;
 
     pCurs->source = psrcbits;
     pCurs->mask = pmaskbits;
@@ -139,10 +141,9 @@ CreateRootCursor(pfilename, glyph)
     XID		fontID;
 
     fontID = FakeClientID(0);
-    if (cursorfont = OpenFont( (unsigned)strlen( pfilename), pfilename))
-	AddResource(
-	   fontID, RT_FONT, (pointer)cursorfont, CloseFont, RC_CORE);
-    else
+    cursorfont = OpenFont( (unsigned)strlen( pfilename), pfilename);
+    if (!cursorfont ||
+	!AddResource(fontID, RT_FONT, (pointer)cursorfont, CloseFont, RC_CORE))
 	return NullCursor;
 
     if (!CursorMetricsFromGlyph(cursorfont, glyph+1, &cm))
@@ -155,7 +156,11 @@ CreateRootCursor(pfilename, glyph)
 
     curs = AllocCursor( psrcbits, pmskbits, &cm, 0, 0, 0, ~0, ~0, ~0);
 
-    AddResource(FakeClientID(0), RT_CURSOR, (pointer)curs, FreeCursor, RC_CORE);
+    if (!curs ||
+	!AddResource(FakeClientID(0), RT_CURSOR, (pointer)curs, FreeCursor,
+		     RC_CORE))
+	return NullCursor;
+
     return curs;
 }
 

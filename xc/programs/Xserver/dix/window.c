@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: window.c,v 1.223 89/02/06 17:43:49 keith Exp $ */
+/* $XConsortium: window.c,v 1.225 89/03/09 19:39:13 keith Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -57,7 +57,6 @@ static unsigned char _back_msb[4] = {0x11, 0x44, 0x22, 0x88};
 typedef struct _ScreenSaverStuff {
     WindowPtr pWindow;
     XID       wid;
-    XID       cid;
     BYTE      blanked;
 } ScreenSaverStuffRec;
 
@@ -83,6 +82,7 @@ extern void RecalculateDeliverableEvents();
 extern long random();
 static Bool MarkSiblingsBelowMe();
 static void SetWinSize(), SetBorderSize();
+static Bool TileScreenSaver();
 
 #define INPUTONLY_LEGAL_MASK (CWWinGravity | CWEventMask | \
 			      CWDontPropagate | CWOverrideRedirect | CWCursor )
@@ -583,36 +583,6 @@ SetWindowToDefaults(pWin, pScreen)
 }
 
 static void
-MakeRootCursor(pWin)
-    WindowPtr pWin;
-{
-    unsigned char *srcbits, *mskbits;
-    int i;
-    if (rootCursor)
-    {
-	pWin->cursor = rootCursor;
-	rootCursor->refcnt++;
-    }
-    else
-    {
-	CursorMetricRec cm;
-	cm.width=32;
-	cm.height=16;
-	cm.xhot=8;
-	cm.yhot=8;
-
-        srcbits = (unsigned char *)xalloc( PixmapBytePad(32, 1)*16); 
-        mskbits = (unsigned char *)xalloc( PixmapBytePad(32, 1)*16); 
-        for (i=0; i<PixmapBytePad(32, 1)*16; i++)
-	{
-	    srcbits[i] = mskbits[i] = 0xff;
-	}
-	pWin->cursor = AllocCursor( srcbits, mskbits,	&cm,
-				    0xFFFF, 0xFFFF, 0xFFFF, 0, 0, 0);
-    }
-}
-
-static void
 MakeRootTile(pWin)
     WindowPtr pWin;
 {
@@ -668,7 +638,6 @@ CreateRootWindow(screen)
 
     savedScreenInfo[screen].pWindow = NULL;
     savedScreenInfo[screen].wid = FakeClientID(0);
-    savedScreenInfo[screen].cid = FakeClientID(0);
     screenIsSaved = SCREEN_SAVER_OFF;
     
     pWin = &WindowTable[screen];
@@ -689,7 +658,8 @@ CreateRootWindow(screen)
 
     pWin->nextSib = NullWindow;
 
-    MakeRootCursor(pWin);
+    pWin->cursor = rootCursor;
+    rootCursor->refcnt++;
 
     pWin->client = serverClient;        /* since belongs to server */
     pWin->wid = FakeClientID(0);
@@ -719,7 +689,9 @@ CreateRootWindow(screen)
     pWin->borderPixel = pScreen->blackPixel;
     pWin->borderWidth = 0;
 
-    AddResource(pWin->wid, RT_WINDOW, (pointer)pWin, DeleteWindow, RC_CORE);
+    if (!AddResource(pWin->wid, RT_WINDOW, (pointer)pWin, DeleteWindow,
+		     RC_CORE))
+	return BadAlloc;
 
     /* re-validate GC for use with root Window */
 
@@ -902,6 +874,11 @@ CreateWindow(wid, pParent, x, y, w, h, bw, class, vmask, vlist,
     }
 
     pWin = (WindowPtr) xalloc( sizeof(WindowRec) );
+    if (!pWin)
+    {
+	*error = BadAlloc;
+        return (WindowPtr)NULL;
+    }
     InitProcedures(pWin);
     pWin->drawable = pParent->drawable;
     pWin->drawable.depth = depth;
@@ -1454,7 +1431,10 @@ ChangeWindowAttributes(pWin, vmask, vlist, client)
 	        if (pWin->cursor != (CursorPtr)None)
 		    FreeCursor(pWin->cursor, None);
                 if (pWin == &WindowTable[pWin->drawable.pScreen->myNum])
-		   MakeRootCursor( pWin);
+		{
+		   pWin->cursor = rootCursor;
+		   rootCursor->refcnt++;
+		}
                 else            
                     pWin->cursor = (CursorPtr)None;
 	    }
@@ -1873,22 +1853,6 @@ ResizeChildrenWinSize(pWin, dx, dy, dw, dh)
 	}
         pSib = pSib->nextSib;
     }
-}
-
-static int
-ExposeAll(pWin, pScreen)
-    WindowPtr pWin;
-    ScreenPtr pScreen;
-{
-    if (!pWin)
-        return(WT_NOMATCH);
-    if (pWin->mapped)
-    {
-        (* pScreen->RegionCopy)(pWin->exposed, pWin->clipList);
-        return (WT_WALKCHILDREN);
-    }
-    else
-        return(WT_NOMATCH);
 }
 
 /*
@@ -3589,6 +3553,7 @@ SendVisibilityNotify(pWin)
 
 #ifndef NOLOGOHACK
 extern int logoScreenSaver;
+static DrawLogo();
 #endif
 
 void
@@ -3596,9 +3561,8 @@ SaveScreens(on, mode)
     int on;
     int mode;
 {
-    int i, j;
+    int i;
     int what;
-    unsigned char *srcbits, *mskbits;
 
     if (on == SCREEN_SAVER_FORCER)
     {
@@ -3627,7 +3591,6 @@ SaveScreens(on, mode)
 	    {
     	        FreeResource(savedScreenInfo[i].wid, RC_NONE);
                 savedScreenInfo[i].pWindow = (WindowPtr)NULL;
-    	        FreeResource(savedScreenInfo[i].cid, RC_NONE);
 	    }
 	    continue;
         }
@@ -3662,63 +3625,9 @@ SaveScreens(on, mode)
                    continue;
 	       }
 	    }
-            if (ScreenSaverAllowExposures != DontAllowExposures)
+            if ((ScreenSaverAllowExposures != DontAllowExposures) &&
+	        TileScreenSaver(i))
             {
-                int result;
-                XID attributes[1];
-	        Mask mask = CWBackPixmap;
-                WindowPtr pWin;		
-		CursorMetricRec cm;
-                
-                if (WindowTable[i].backgroundTile == 
-		    (PixmapPtr)USE_BACKGROUND_PIXEL)
-		{
-                    attributes[0] = WindowTable[i].backgroundPixel;
-		    mask = CWBackPixel;
-		}
-                else
-                    attributes[0] = None;
-
-                pWin = savedScreenInfo[i].pWindow = 
-    			/* We SHOULD check for an error value here XXX */
-		     CreateWindow(savedScreenInfo[i].wid,
-		     &WindowTable[i], 
-		     -RANDOM_WIDTH, -RANDOM_WIDTH,
-		     (unsigned short)screenInfo.screen[i].width + RANDOM_WIDTH, 
-		     (unsigned short)screenInfo.screen[i].height + RANDOM_WIDTH,
-		     0, InputOutput, mask, attributes, 0, (ClientPtr)NULL,
-		     WindowTable[i].visual, &result);
-                if (mask & CWBackPixmap)
-		{
-		    
-		    pWin->backgroundTile = pWin->parent->backgroundTile;
-		    pWin->backgroundTile->refcnt++;
-		    (* screenInfo.screen[i].ChangeWindowAttributes)
-				(pWin, CWBackPixmap);
-		}
-	        AddResource(pWin->wid, RT_WINDOW, 
-			(pointer)savedScreenInfo[i].pWindow,
-			DeleteWindow, RC_CORE);
-		cm.width=32;
-		cm.height=16;
-		cm.xhot=8;
-		cm.yhot=8;
-                srcbits = (unsigned char *)xalloc( PixmapBytePad(32, 1)*16); 
-		mskbits = (unsigned char *)xalloc( PixmapBytePad(32, 1)*16); 
-                for (j=0; j<PixmapBytePad(32, 1)*16; j++)
-    	            srcbits[j] = mskbits[j] = 0x0;
-		pWin->cursor = AllocCursor( srcbits, mskbits, &cm,
-					    0xFFFF, 0xFFFF, 0xFFFF, 0, 0, 0);
-		AddResource(savedScreenInfo[i].cid, RT_CURSOR,
-			(pointer)pWin->cursor,
-			FreeCursor, RC_CORE);	
- 		pWin->cursor->refcnt++; 
-	        pWin->overrideRedirect = TRUE;
-                MapWindow(pWin, TRUE, FALSE, FALSE, (ClientPtr)NULL);
-#ifndef NOLOGOHACK
-		if (logoScreenSaver)
-		    DrawLogo(pWin);
-#endif
 	        savedScreenInfo[i].blanked = SCREEN_IS_TILED;
 	    }
             else
@@ -3728,7 +3637,84 @@ SaveScreens(on, mode)
     screenIsSaved = what; 
 }
 
+static Bool
+TileScreenSaver(i)
+    int i;
+{
+    int j;
+    int result;
+    XID attributes[1];
+    Mask mask = CWBackPixmap;
+    WindowPtr pWin;		
+    CursorMetricRec cm;
+    unsigned char *srcbits, *mskbits;
+    CursorPtr cursor;
+
+    if (WindowTable[i].backgroundTile == 
+	(PixmapPtr)USE_BACKGROUND_PIXEL)
+    {
+	attributes[0] = WindowTable[i].backgroundPixel;
+	mask = CWBackPixel;
+    }
+    else
+	attributes[0] = None;
+
+    pWin = savedScreenInfo[i].pWindow = 
+	 CreateWindow(savedScreenInfo[i].wid,
+	      &WindowTable[i], 
+	      -RANDOM_WIDTH, -RANDOM_WIDTH,
+	      (unsigned short)screenInfo.screen[i].width + RANDOM_WIDTH, 
+	      (unsigned short)screenInfo.screen[i].height + RANDOM_WIDTH,
+	      0, InputOutput, mask, attributes, 0, (ClientPtr)NULL,
+	      WindowTable[i].visual, &result);
+    if (!pWin)
+	return FALSE;
+    if (mask & CWBackPixmap)
+    {
+
+	pWin->backgroundTile = pWin->parent->backgroundTile;
+	pWin->backgroundTile->refcnt++;
+	(* screenInfo.screen[i].ChangeWindowAttributes)(pWin, CWBackPixmap);
+    }
+    if (!AddResource(pWin->wid, RT_WINDOW, 
+		     (pointer)savedScreenInfo[i].pWindow,
+		     DeleteWindow, RC_CORE))
+	return FALSE;
+    cm.width=16;
+    cm.height=16;
+    cm.xhot=8;
+    cm.yhot=8;
+    srcbits = (unsigned char *)xalloc( PixmapBytePad(32, 1)*16); 
+    mskbits = (unsigned char *)xalloc( PixmapBytePad(32, 1)*16); 
+    if (!srcbits || !mskbits)
+    {
+	if (srcbits)
+	    xfree(srcbits);
+	if (mskbits)
+	    xfree(mskbits);
+    }
+    else
+    {
+	for (j=0; j<PixmapBytePad(32, 1)*16; j++)
+	    srcbits[j] = mskbits[j] = 0x0;
+	cursor = AllocCursor(srcbits, mskbits, &cm, 0, 0, 0, 0, 0, 0);
+	if (cursor)
+	{
+	    pWin->cursor = cursor;
+	    (* screenInfo.screen[i].ChangeWindowAttributes)(pWin, CWCursor);
+	}
+    }
+    pWin->overrideRedirect = TRUE;
+    MapWindow(pWin, TRUE, FALSE, FALSE, (ClientPtr)NULL);
 #ifndef NOLOGOHACK
+    if (logoScreenSaver)
+	DrawLogo(pWin);
+#endif
+    return TRUE;
+}
+
+#ifndef NOLOGOHACK
+static
 DrawLogo(pWin)
     WindowPtr pWin;
 {
@@ -3738,7 +3724,6 @@ DrawLogo(pWin)
     unsigned int width, height, size;
     GC *pGC;
     int d11, d21, d31;
-    xRectangle rect;
     xPoint poly[4];
     XID fore[2], back[2];
     xrgb rgb[2];

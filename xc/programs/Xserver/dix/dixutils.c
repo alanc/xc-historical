@@ -23,7 +23,7 @@ SOFTWARE.
 ******************************************************************/
 
 
-/* $XConsortium: dixutils.c,v 1.29 88/08/16 20:02:40 keith Exp $ */
+/* $XConsortium: dixutils.c,v 1.30 88/09/06 15:40:46 jim Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -169,9 +169,10 @@ AlterSaveSetForClient(client, pWin, mode)
 	if (j < numnow)         /* duplicate */
 	   return(Success);
 	numnow++;
-	client->saveSet = (pointer * )xrealloc(
-		  client->saveSet, 
-		  sizeof(pointer) * numnow);
+	pTmp = (pointer *)xrealloc(client->saveSet, sizeof(pointer) * numnow);
+	if (!pTmp)
+	    return(BadAlloc);
+	client->saveSet = pTmp;
        	client->numSaved = numnow;
 	client->saveSet[numnow - 1] = (pointer)pWin;
 	return(Success);
@@ -185,9 +186,12 @@ AlterSaveSetForClient(client, pWin, mode)
 	}
 	numnow--;
         if (numnow)
-    	    client->saveSet = (pointer * )xrealloc(
-		      client->saveSet, 
-		      sizeof(pointer) * numnow);
+	{
+    	    pTmp = (pointer *)xrealloc(client->saveSet,
+				       sizeof(pointer) * numnow);
+	    if (pTmp)
+		client->saveSet = pTmp;
+	}
         else
         {
             xfree(client->saveSet);
@@ -210,7 +214,7 @@ DeleteWindowFromAnySaveSet(pWin)
     {    
 	client = clients[i];
 	if (client && client->numSaved)
-	    AlterSaveSetForClient(client, pWin, SetModeDelete);
+	    (void)AlterSaveSetForClient(client, pWin, SetModeDelete);
     }
 }
 
