@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: dm.c,v 1.19 89/10/09 14:56:47 keith Exp $
+ * $XConsortium: dm.c,v 1.20 89/10/31 13:57:00 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -375,7 +375,7 @@ CloseOnFork ()
 {
 	int	fd;
 
-	for (fd = 0; fd < max; fd++)
+	for (fd = 0; fd <= max; fd++)
 		if (FD_ISSET (fd, &CloseMask))
 			close (fd);
 	FD_ZERO (&CloseMask);
