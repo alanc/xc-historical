@@ -629,10 +629,19 @@ cfbDestroyClip(pGC)
     }
     if(pGC->clientClipType == CT_NONE)
 	return;
-    (*pGC->pScreen->RegionDestroy)(pGC->clientClip);
+    else if (pGC->clientClipType == CT_PIXMAP)
+    {
+	cfbDestroyPixmap((PixmapPtr)(pGC->clientClip));
+    }
+    else
+    {
+	/* we know we'll never have a list of rectangles, since
+	   ChangeClip immediately turns them into a region 
+	*/
+        (*pGC->pScreen->RegionDestroy)(pGC->clientClip);
+    }
     pGC->clientClip = NULL;
     pGC->clientClipType = CT_NONE;
-    pGC->stateChanges |= (GCClipXOrigin | GCClipYOrigin | GCClipMask);
 }
 
 void
@@ -659,16 +668,17 @@ cfbChangeClip(pGC, type, pvalue, nrects)
 	(*pGC->pScreen->DestroyPixmap)(pvalue);
     }
     else if (type == CT_REGION) {
-	pGC->clientClip = (pointer) (*pGC->pScreen->RegionCreate)( NULL, 0 );
-	(*pGC->pScreen->RegionCopy)( pGC->clientClip, pvalue );
+	/* stuff the region in the GC */
+	pGC->clientClip = pvalue;
     }
     else if (type != CT_NONE)
     {
 	pGC->clientClip = (pointer) miRectsToRegion(pGC, nrects, pvalue, type);
 	Xfree(pvalue);
     }
-    pGC->clientClipType = (pGC->clientClip) ? CT_REGION : CT_NONE;
-    pGC->stateChanges |= (GCClipXOrigin | GCClipYOrigin | GCClipMask);
+    pGC->clientClipType = (type != CT_NONE && pGC->clientClip) ? CT_REGION :
+								 CT_NONE;
+    pGC->stateChanges |= GCClipMask;
 }
 
 void
@@ -689,8 +699,10 @@ cfbCopyClip (pgcDst, pgcSrc)
     }
     switch(pgcSrc->clientClipType)
     {
-      case CT_NONE:
       case CT_PIXMAP:
+	((PixmapPtr) pgcSrc->clientClip)->refcnt++;
+	/* Fall through !! */
+      case CT_NONE:
         cfbChangeClip(pgcDst, pgcSrc->clientClipType, pgcSrc->clientClip, 0);
         break;
       case CT_REGION:
