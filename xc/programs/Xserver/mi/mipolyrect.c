@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mipolyrect.c,v 5.5 91/02/23 17:28:00 keith Exp $ */
+/* $XConsortium: mipolyrect.c,v 5.6 91/04/07 16:36:53 keith Exp $ */
 #include "X.h"
 #include "Xprotostr.h"
 #include "miscstruct.h"
@@ -88,10 +88,26 @@ miPolyRectangle(pDraw, pGC, nrects, pRects)
 	    }
 	    else if (height < offset2 || width < offset1)
 	    {
-		MINBOUND (t->x, x - offset1)
-		MINBOUND (t->y, y - offset1)
-		MAXUBOUND (t->width, width + offset2)
-		MAXUBOUND (t->height, height + offset2)
+		if (height == 0)
+		{
+		    t->x = x;
+		    t->width = width;
+		}
+		else
+		{
+		    MINBOUND (t->x, x - offset1)
+		    MAXUBOUND (t->width, width + offset2)
+		}
+		if (width == 0)
+		{
+		    t->y = y;
+		    t->height = height;
+		}
+		else
+		{
+		    MINBOUND (t->y, y - offset1)
+		    MAXUBOUND (t->height, height + offset2)
+		}
 		t++;
 	    }
 	    else
