@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: xfontsel.c,v 1.16 89/12/12 14:10:48 rws Exp $";
+static char Xrcsid[] = "$XConsortium: xfontsel.c,v 1.17 90/04/24 17:35:59 converse Exp $";
 #endif
 
 /*
@@ -65,6 +65,14 @@ void AnyValue();
 void EnableOtherValues();
 void EnableMenu();
 void SetCurrentFont();
+void QuitAction();
+
+XtActionsRec xfontsel_actions[] = {
+    "Quit",	    QuitAction
+};
+
+Atom wm_delete_window;
+
 Boolean IsXLFDFontName();
 
 typedef void (*XtProc)();
@@ -191,6 +199,11 @@ void main(argc, argv)
 
     if (argc != 1) Syntax(argv[0]);
 
+    XtAppAddActions(XtWidgetToApplicationContext(topLevel), 
+		    xfontsel_actions, XtNumber(xfontsel_actions));
+    XtOverrideTranslations
+	(topLevel, XtParseTranslationTable ("<Message>WM_PROTOCOLS: Quit()"));
+
     appCtx = XtWidgetToApplicationContext(topLevel);
     XtGetApplicationResources( topLevel, (XtPointer)&AppRes,
 			       resources, XtNumber(resources), NZ );
@@ -279,6 +292,10 @@ see 'xfontsel' manual page."
 	int f;
 	for (f = 0; f < FIELD_COUNT; f++) currentFont.value_index[f] = -1;
     }
+    wm_delete_window = XInternAtom(XtDisplay(topLevel), "WM_DELETE_WINDOW",
+				   False);
+    (void) XSetWMProtocols (XtDisplay(topLevel), XtWindow(topLevel),
+                            &wm_delete_window, 1);
     XtAppMainLoop(appCtx);
 }
 
@@ -1074,4 +1091,10 @@ void OwnSelection(w, closure, callData)
 	    XtDisownSelection(w, XA_PRIMARY, time);
 	XtSetSensitive(currentFontName, False);
     }
+}
+
+static void
+QuitAction ()
+{
+    exit (0);
 }
