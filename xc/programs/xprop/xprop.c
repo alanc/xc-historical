@@ -1105,8 +1105,15 @@ char **argv;
 
   if (target_win == None) {
       target_win = Select_Window(dpy);
-      if (target_win != None && !frame_only) 
-        target_win = XmuClientWindow (dpy, target_win);
+      if (target_win != None && !frame_only) {
+	Window root;
+	int dummy;
+
+	if (XGetGeometry (dpy, target_win, &root, &dummy, &dummy,
+			  &dummy, &dummy, &dummy, &dummy) &&
+	    target_win != root)
+	  target_win = XmuClientWindow (dpy, target_win);
+      }
   }
 
   if (remove_propname) {

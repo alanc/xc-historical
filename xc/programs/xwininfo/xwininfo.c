@@ -260,7 +260,15 @@ main(argc, argv)
 	  printf("         ==> would like information by clicking the\n");
 	  printf("         ==> mouse in that window.\n");
 	  window = Select_Window(dpy);
-	  if (window && !frame) window = XmuClientWindow (dpy, window);
+	  if (window && !frame) {
+	      Window root;
+	      int dummy;
+
+	      if (XGetGeometry (dpy, window, &root, &dummy, &dummy, 
+				&dummy, &dummy, &dummy, &dummy) &&
+		  window != root)
+	        window = XmuClientWindow (dpy, window);
+	  }
   }
 
   /*
