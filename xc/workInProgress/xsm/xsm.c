@@ -1,4 +1,4 @@
-/* $XConsortium: xsm.c,v 1.6 93/12/30 11:11:51 mor Exp $ */
+/* $XConsortium: xsm.c,v 1.7 94/01/18 18:28:23 converse Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -1091,8 +1091,7 @@ HostBasedProc (hostname)
 char *hostname;
 
 {
-    printf ("Attempt to connect from: %s\n", hostname);
-    printf ("Stay away damn it!!!\n\n");
+    printf ("Attempt to connect from: %s failed.\n", hostname);
     return (0);
 }
 
