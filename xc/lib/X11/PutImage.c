@@ -1,4 +1,4 @@
-/* $XConsortium: XPutImage.c,v 11.57 91/02/02 16:48:08 rws Exp $ */
+/* $XConsortium: XPutImage.c,v 11.58 91/04/04 18:57:55 gildea Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -491,7 +491,7 @@ static int (* Const (SwapFunction[12][12]))() = {
 /* 4Lm */ { l   l   l   L   W   R   l   w   n   L   L   L },
 /* 1Ll */ { R   R   R   n   s   l   R   S   L   n   n   n },
 /* 2Ll */ { R   R   R   n   s   l   R   S   L   n   n   n },
-/* 4Ll */ { R   R   R   n   s   l   R   S   L   n   n   n },
+/* 4Ll */ { R   R   R   n   s   l   R   S   L   n   n   n }
 
 #undef n
 #undef s
