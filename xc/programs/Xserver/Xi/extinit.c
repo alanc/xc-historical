@@ -1,4 +1,4 @@
-/* $XConsortium: xextinit.c,v 1.6 89/12/02 15:20:48 rws Exp $ */
+/* $XConsortium: xextinit.c,v 1.7 90/05/18 10:56:34 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -656,6 +656,7 @@ FixExtensionEvents (extEntry)
 
     DeviceOwnerGrabButtonMask = GetNextExtEventMask();
     SetEventInfo (DeviceOwnerGrabButtonMask, _deviceOwnerGrabButton);
+    SetEventInfo (0, _noExtensionEvent);
     }
 
 /************************************************************************

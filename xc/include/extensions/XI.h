@@ -1,4 +1,4 @@
-/* $XConsortium: XI.h,v 1.3 89/11/21 13:44:01 rws Exp $ */
+/* $XConsortium: XI.h,v 1.4 89/12/06 20:43:42 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -154,6 +154,7 @@ SOFTWARE.
 #define _deviceButtonMotion	 6
 #define _deviceButtonGrab	 7
 #define _deviceOwnerGrabButton	 8
+#define _noExtensionEvent	 9
 
 #define XI_BadDevice	0
 #define XI_BadEvent	1
