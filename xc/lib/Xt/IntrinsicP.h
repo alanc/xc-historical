@@ -1,5 +1,5 @@
 /*
-* $Header: IntrinsicP.h,v 6.24 88/02/14 14:53:48 rws Exp $
+* $Header: IntrinsicP.h,v 1.25 88/02/15 10:24:50 swick Exp $
 */
 
 /*
@@ -91,7 +91,7 @@ typedef XtGeometryResult (*XtGeometryHandler)();
 
 #include "CoreP.h"
 #include "CompositeP.h"
-#include "ConstraintP.h"
+#include "ConstrainP.h"
 
 #define XtDisplay(widget)	((widget)->core.screen->display)
 #define XtScreen(widget)	((widget)->core.screen)

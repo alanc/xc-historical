@@ -22,7 +22,7 @@ IMPORTS = \
 	$(TOOLKITSRC)/Composite.h \
 	$(TOOLKITSRC)/CompositeP.h \
 	$(TOOLKITSRC)/Constraint.h \
-	$(TOOLKITSRC)/ConstraintP.h \
+	$(TOOLKITSRC)/ConstrainP.h \
 	$(TOOLKITSRC)/Convert.h \
 	$(TOOLKITSRC)/Core.h \
 	$(TOOLKITSRC)/CoreP.h \

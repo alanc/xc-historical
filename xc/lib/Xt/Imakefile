@@ -11,7 +11,7 @@ HEADERS = \
 	Composite.h \
 	CompositeP.h \
 	Constraint.h \
-	ConstraintP.h \
+	ConstrainP.h \
 	Convert.h \
 	Core.h \
 	CoreP.h \
