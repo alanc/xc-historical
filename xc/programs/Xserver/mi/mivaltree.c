@@ -39,7 +39,7 @@
 
 #ifndef lint
 static char rcsid[] =
-"$Header: mivaltree.c,v 5.16 89/07/21 13:54:22 keith Exp $ SPRITE (Berkeley)";
+"$Header: mivaltree.c,v 5.17 89/08/25 17:03:32 rws Exp $ SPRITE (Berkeley)";
 #endif
 
 #include    "X.h"
@@ -419,6 +419,8 @@ miValidateTree (pParent, pChild, kind)
 				     * the marked children. */
     RegionRec	  	childClip;  /* The new borderClip for the current
 				     * child */
+    RegionRec		childUnion; /* the space covered by borderSize for
+				     * all marked children */
     RegionRec		exposed;    /* For intermediate calculations */
     register ScreenPtr	pScreen;
     register WindowPtr	pWin;
@@ -469,8 +471,28 @@ miValidateTree (pParent, pChild, kind)
      * from the totalClip to clip any siblings below it.
      */
 
-    if (kind != VTStack)
+    if (kind == VTStack)
+    {
+	overlap = TRUE;
+    }
+    else
+    {
 	(* pScreen->Union) (&totalClip, &totalClip, &pParent->clipList);
+	/*
+	 * precompute childUnion to discover whether any of them
+	 * overlap.  This seems redundant, but performance studies
+	 * have demonstrated that the cost of this loop is
+	 * lower than the cost of multiple Subtracts in the
+	 * loop below.
+	 */
+	(*pScreen->RegionInit) (&childUnion, NullBox, 0);
+	for (pWin = pChild; pWin; pWin = pWin->nextSib)
+	    if (pWin->valdata && pWin->viewable)
+		(* pScreen->RegionAppend) (&childUnion, &pWin->borderSize);
+	(*pScreen->RegionValidate)(&childUnion, &overlap);
+	if (overlap)
+	    (*pScreen->RegionUninit) (&childUnion);
+    }
 
     for (pWin = pChild;
 	 pWin != NullWindow;
@@ -482,9 +504,12 @@ miValidateTree (pParent, pChild, kind)
 					&totalClip,
  					&pWin->borderSize);
 		miComputeClips (pWin, pScreen, &childClip, kind, &exposed);
-		(* pScreen->Subtract) (&totalClip,
-				       &totalClip,
-				       &pWin->borderSize);
+		if (overlap)
+		{
+		    (* pScreen->Subtract) (&totalClip,
+				       	   &totalClip,
+				       	   &pWin->borderSize);
+		}
 	    } else if (pWin->visibility == VisibilityNotViewable) {
 		miTreeObscured(pWin);
 	    }
@@ -498,6 +523,11 @@ miValidateTree (pParent, pChild, kind)
     }
 
     (* pScreen->RegionUninit) (&childClip);
+    if (!overlap)
+    {
+	(*pScreen->Subtract)(&totalClip, &totalClip, &childUnion);
+	(*pScreen->RegionUninit) (&childUnion);
+    }
 
     (* pScreen->RegionInit) (&pParent->valdata->after.exposed, NullBox, 0);
     (* pScreen->RegionInit) (&pParent->valdata->after.borderExposed, NullBox, 0);
