@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: dm.c,v 1.27 89/11/18 12:43:16 rws Exp $
+ * $XConsortium: dm.c,v 1.28 89/12/05 19:04:43 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -34,8 +34,9 @@ extern void	exit (), abort ();
 static void	RescanServers ();
 int		Rescan;
 static long	ServersModTime, ConfigModTime;
-static SIGVAL	TerminateAll (), RescanNotify ();
-static void	StopDisplay ();
+static SIGVAL	StopAll (), RescanNotify ();
+void		StopDisplay ();
+static void	RestartDisplay ();
 
 #ifndef NOXDMTITLE
 static char *Title;
@@ -74,8 +75,8 @@ char	**argv;
     CreateWellKnownSockets ();
     InitErrorLog ();
     StorePid ();
-    (void) signal (SIGTERM, TerminateAll);
-    (void) signal (SIGINT, TerminateAll);
+    (void) signal (SIGTERM, StopAll);
+    (void) signal (SIGINT, StopAll);
     /*
      * Step 2 - Read /etc/Xservers and set up
      *	    the socket.
@@ -218,12 +219,10 @@ RescanIfMod ()
  */
 
 static SIGVAL
-TerminateAll ()
+StopAll ()
 {
-    void    TerminateDisplay ();
-
     DestroyWellKnownSockets ();
-    ForEachDisplay (TerminateDisplay);
+    ForEachDisplay (StopDisplay);
 }
 
 /*
@@ -265,7 +264,7 @@ WaitForChild ()
 	if (autoRescan)
 	    RescanIfMod ();
 	if ((d = FindDisplayByPid (pid))) {
-	    d->status = notRunning;
+	    d->pid = -1;
 	    switch (waitVal (status)) {
 	    case UNMANAGE_DISPLAY:
 		Debug ("Display exited with UNMANAGE_DISPLAY\n");
@@ -275,6 +274,8 @@ WaitForChild ()
 		Debug ("Display exited with OBEYSESS_DISPLAY\n");
 		if (d->displayType.lifetime != Permanent)
 		    StopDisplay (d);
+		else
+		    RestartDisplay (d, FALSE);
 		break;
 	    default:
 		Debug ("Display exited with unknown status %d\n", waitVal(status));
@@ -282,25 +283,31 @@ WaitForChild ()
 			  waitVal (status), pid);
 		StopDisplay (d);
 		break;
+	    case OPENFAILED_DISPLAY:
+		Debug ("Display exited with OPENFAILED_DISPLAY\n");
+		if (d->displayType.origin == FromXDMCP)
+		{
+		    SendFailed (d, "Cannot open display");
+		    StopDisplay (d);
+		}
+		else
+		{
+		    if (++d->startTries >= d->startAttempts)
+			StopDisplay (d);
+		    else
+			RestartDisplay (d, TRUE);
+		}
+		break;
 	    case RESERVER_DISPLAY:
 		Debug ("Display exited with RESERVER_DISPLAY\n");
 		if (d->displayType.origin == FromXDMCP)
 		    StopDisplay(d);
-		else if (d->serverPid != -1)
-		{
-		    kill (d->serverPid, SIGTERM);
-#ifdef SIGCONT
-		    kill (d->serverPid, SIGCONT);
-#endif
-		    d->serverPid = -1;
-		}
+		else
+		    RestartDisplay (d, TRUE);
 		break;
 	    case SIGTERM * 256 + 1:
 		Debug ("Display exited on SIGTERM\n");
-		if (d->displayType.origin == FromXDMCP)
-		    StopDisplay(d);
-		else if (d->serverPid != -1)
-		    kill (d->serverPid, SIGHUP);
+		StopDisplay(d);
 		break;
 	    case REMANAGE_DISPLAY:
 		Debug ("Display exited with REMANAGE_DISPLAY\n");
@@ -310,23 +317,34 @@ WaitForChild ()
 		 */
 		if (d->displayType.origin == FromXDMCP)
 		    StopDisplay(d);
+		else
+		    RestartDisplay (d, FALSE);
 		break;
 	    }
 	}
 	else if (d = FindDisplayByServerPid (pid))
 	{
-	    Debug ("Server for display %s terminated unexpectedly, status %d\n", d->name, waitVal (status));
-	    LogError ("Server for display %s terminated unexpectedly\n", d->name);
 	    d->serverPid = -1;
-	    /*
-	     * nuke the session; it won't be much use anymore
-	     * anyhow.  When it exits, the appropriate stuff
-	     * will occur
-	     */
-	    kill (d->pid, SIGTERM);
-#ifdef SIGCONT
-	    kill (d->pid, SIGCONT);
-#endif
+	    switch (d->status)
+	    {
+	    case zombie:
+		Debug ("Zombie server reaped, removing display %s\n", d->name);
+		RemoveDisplay (d);
+		break;
+	    case phoenix:
+		Debug ("Phoenix server arises, restarting display %s\n", d->name);
+		d->status = notRunning;
+		break;
+	    case running:
+		Debug ("Server for display %s terminated unexpectedly, status %d\n", d->name, waitVal (status));
+		LogError ("Server for display %s terminated unexpectedly\n", d->name);
+		if (d->pid != -1)
+		    TerminateProcess (d->pid);
+		break;
+	    case notRunning:
+		Debug ("Server exited for notRunning session on display %s\n", d->name);
+		break;
+	    }
 	}
 	else
 	{
@@ -340,13 +358,11 @@ static void
 CheckDisplayStatus (d)
 struct display	*d;
 {
-    void	TerminateDisplay ();
-
     if (d->displayType.origin == FromFile)
     {
 	switch (d->state) {
 	case MissingEntry:
-	    TerminateDisplay (d);
+	    StopDisplay (d);
 	    break;
 	case NewEntry:
 	    d->state = OldEntry;
@@ -370,9 +386,14 @@ struct display	*d;
     int	ResourcesLoaded = FALSE;
 
     Debug ("StartDisplay %s\n", d->name);
+    d->startTries = 0;
     if (d->displayType.location == Local)
     {
 	LoadDisplayResources (d);
+	/* don't bother pinging local displays; we'll
+	 * certainly notice when they exit
+	 */
+	d->pingInterval = 0;
 	ResourcesLoaded = TRUE;
     	if (d->authorize)
     	{
@@ -409,7 +430,7 @@ struct display	*d;
 	    LoadDisplayResources (d);
 	SetAuthorization (d);
 	if (!WaitForServer (d))
-	    exit (RESERVER_DISPLAY);
+	    exit (OPENFAILED_DISPLAY);
 	ManageSession (d);
 	exit (REMANAGE_DISPLAY);
     case -1:
@@ -422,39 +443,52 @@ struct display	*d;
     }
 }
 
-static void
+TerminateProcess (pid)
+{
+    kill (pid, SIGTERM);
+#ifdef SIGCONT
+    kill (pid, SIGCONT);
+#endif
+}
+
+/*
+ * transition from running to zombie or deleted
+ */
+
+void
 StopDisplay (d)
     struct display	*d;
 {
-    int	serverPid = d->serverPid;
-
-    RemoveDisplay (d);
-    if (serverPid >= 2)
+    if (d->pid != -1)
     {
-	kill (serverPid, SIGTERM);
-#ifdef SIGCONT
-	kill (serverPid, SIGCONT);
-#endif
+	TerminateProcess (d->pid);
     }
+    if (d->serverPid != -1)
+    {
+	TerminateProcess (d->serverPid);
+	d->status = zombie;
+    }
+    else
+	RemoveDisplay (d);
 }
 
-void
-TerminateDisplay (d)
-    struct display	*d;
-{
-    DisplayStatus   status;
-    int		    pid;
+/*
+ * transition from running to phoenix or notRunning
+ */
 
-    status = d->status;
-    pid = d->pid;
-    StopDisplay (d);
-    if (status == running) {
-	if (pid < 2)
-	    abort ();
-	kill (pid, SIGTERM);
-#ifdef SIGCONT
-	kill (pid, SIGCONT);
-#endif
+static void
+RestartDisplay (d, forceReserver)
+    struct display  *d;
+    int		    forceReserver;
+{
+    if (d->serverPid != -1 && (forceReserver || d->terminateServer))
+    {
+	TerminateProcess (d->serverPid);
+	d->status = phoenix;
+    }
+    else
+    {
+	d->status = notRunning;
     }
 }
 
