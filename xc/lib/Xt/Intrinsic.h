@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Intrinsic.h,v 1.118 89/11/28 16:49:59 swick Exp $
+* $XConsortium: Intrinsic.h,v 1.119 89/12/12 20:07:40 swick Exp $
 * $oHeader: Intrinsic.h,v 1.10 88/09/01 10:33:34 asente Exp $
 */
 
@@ -1397,6 +1397,7 @@ extern void XtCallCallbacks(
 
 extern void XtCallCallbackList(
 #if NeedFunctionPrototypes
+    Widget		/* widget */,
     XtCallbackList 	/* callbacks */,
     XtPointer 		/* call_data */
 #endif
