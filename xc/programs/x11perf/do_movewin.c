@@ -10,8 +10,6 @@ void InitMoveWins(d, p)
     Display *d;
     Parms p;
 {
-    int     wp = WhitePixel (d, 0);
-    int     bp = BlackPixel (d, 0);
     int     i = 0;
     int     x, y;
 
@@ -32,7 +30,8 @@ void InitMoveWins(d, p)
     for (x = 0; x < columns; x++)
 	for (y = 0; y < rows; y++) {
 	    children[i++] = XCreateSimpleWindow (
-		d, w, x*20 + x_offset, y*20 + y_offset, 10, 10, 0, bp, bp);
+		d, w, x*20 + x_offset, y*20 + y_offset, 10, 10, 0,
+		fgPixel, fgPixel);
 	}
     if (p->special)
 	XMapSubwindows (d, w);
@@ -42,8 +41,6 @@ void InitCircWins(d, p)
     Display *d;
     Parms p;
 {
-    int     wp = WhitePixel (d, 0);
-    int     bp = BlackPixel (d, 0);
     int     i;
 
     CreatePerfStuff (d, 1, WIDTH, HEIGHT, &w, NULL, NULL);
@@ -51,7 +48,7 @@ void InitCircWins(d, p)
     for (i = 0; i < p->objects; i++) {
 	register int pos = i % STACK;
 	children[i] = XCreateSimpleWindow (
-		d, w, 5*pos + 10*(i/STACK), 5*pos, 20, 20, 1, wp, bp);
+		d, w, 5*pos + 10*(i/STACK), 5*pos, 20, 20, 1, bgPixel, fgPixel);
     }
     if (p -> special)
 	XMapSubwindows (d, w);
