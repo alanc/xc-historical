@@ -3,7 +3,7 @@
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
- * $XConsortium: xload.c,v 1.33 91/04/26 15:22:00 keith Exp $
+ * $XConsortium: xload.c,v 1.34 91/05/01 14:48:39 keith Exp $
  */
 
 #include <stdio.h> 
@@ -24,6 +24,7 @@ char *ProgramName;
 
 extern void exit(), GetLoadPoint();
 static void quit();
+static void ClearLights();
 
 /*
  * Definition of the Application resources structure.
