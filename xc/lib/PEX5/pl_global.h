@@ -1,4 +1,4 @@
-/* $XConsortium: pl_global_def.h,v 1.5 92/07/24 14:15:25 mor Exp $ */
+/* $XConsortium: pl_global_def.h,v 1.7 92/11/05 10:35:30 mor Exp $ */
 
 /******************************************************************************
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -30,6 +30,46 @@ PEXDisplayInfo 	*PEXDisplayInfoHeader = NULL;
 PEXPickPath	*PEXPickCache = NULL;
 unsigned int	PEXPickCacheSize = 0;
 int		PEXPickCacheInUse = 0;
+
+
+/*
+ * Floating point conversion function table.
+ */
+
+extern void _PEXIEEE32toDECF();
+extern void _PEXDECFtoIEEE32();
+
+#ifdef CRAY
+extern void _PEXIEEE32toCRAY();
+extern void _PEXCRAYtoIEEE32();
+#else
+#define _PEXIEEE32toCRAY 0
+#define _PEXCRAYtoIEEE32 0
+#endif
+
+void (*(PEX_fp_convert[NUM_FP_FORMATS][NUM_FP_FORMATS]))() = {
+
+/* IEEE 32 -> OTHER */
+
+    {0, _PEXIEEE32toDECF, 0, 0, _PEXIEEE32toCRAY},
+
+/* DEC F -> OTHER */
+
+    {_PEXDECFtoIEEE32, 0, 0, 0, 0},
+
+/* IEEE 64 -> OTHER ------- NOT SUPPORTED !!! */
+
+    {0, 0, 0, 0, 0},
+
+/* DEC D -> OTHER   ------- NOT SUPPORTED !!! */
+
+    {0, 0, 0, 0, 0},
+
+/* CRAY -> OTHER */
+
+    {_PEXCRAYtoIEEE32, 0, 0, 0, 0}
+
+};
 
 
 /*

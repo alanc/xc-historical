@@ -1,4 +1,4 @@
-/* $XConsortium: PEXlibint.h,v 1.9 93/02/08 10:56:25 rws Exp $ */
+/* $XConsortium: PEXlibint.h,v 1.14 93/02/16 14:11:13 mor Exp $ */
 
 /******************************************************************************
 Copyright 1987,1991 by Digital Equipment Corporation, Maynard, Massachusetts
@@ -31,58 +31,10 @@ SOFTWARE.
 #include <X11/Xlibint.h>
 #include <X11/Xfuncs.h>
 #include "PEXproto.h"
-
-
-/* -------------------------------------------------------------------------
- * Typedefs for referencing fields in requests. 
- * ------------------------------------------------------------------------- */
-
-/*
- * Generic request header.
- */
-
-typedef struct pexRequestHeader
-{
-    unsigned char       extOpcode;
-    unsigned char       pexOpcode;
-    unsigned short      reqLength;
-} pexRequestHeader;
-
-
-/*
- * OC request header.
- */
-
-typedef struct pexOCRequestHeader
-{
-    unsigned char       extOpcode;
-    unsigned char       pexOpcode;
-    unsigned short      reqLength;
-    unsigned short      fpFormat;
-    unsigned short      pad;
-    unsigned long       target;
-    unsigned long       numCommands;
-} pexOCRequestHeader;
-
-
-/*
- * Element header for OC with list.
- */
-
-typedef pexElementInfo pexOCListHeader;
-
-
-/*
- * Element header for OC with list & count.
- */
-
-typedef struct pexOCcListHeader
-{
-    pexElementInfo      head;
-    unsigned short      length;
-    unsigned short      pad;
-} pexOCcListHeader;
-
+#include "pl_convert.h"
+#include "pl_store.h"
+#include "pl_extract.h"
+#include "pl_xdata.h"
 
 
 /* -------------------------------------------------------------------------
@@ -111,13 +63,6 @@ typedef struct PEXDisplayInfo
     int			lastReqNum;  /* request number of last OC */
     struct PEXDisplayInfo *next;     /* next in list */
 } PEXDisplayInfo;
-
-
-/*
- * Pointer to head of list is defined externally.
- */
-
-extern PEXDisplayInfo *PEXDisplayInfoHeader;
 
 
 /*
@@ -197,9 +142,8 @@ extern PEXDisplayInfo *PEXDisplayInfoHeader;
  * Memory related macros.
  * ------------------------------------------------------------------------- */
 
-#define PEXAllocBuf(size)          Xmalloc(size)
-#define PEXFreeBuf(ptr)            Xfree(ptr)
-#define PEXReallocBuf(ptr, size)   Xrealloc(ptr, size)
+#define PEXAllocBuf(_size)          Xmalloc ((unsigned) (_size))
+#define PEXFreeBuf(_ptr)            Xfree (_ptr)
 
 #define COPY_AREA(_from, _to, _size) \
     bcopy (_from, _to, _size)
@@ -215,21 +159,21 @@ extern PEXDisplayInfo *PEXDisplayInfoHeader;
 
 #define PADDED_BYTES(_bytes) (_bytes + PAD (_bytes))
 
-#define NUMWORDS(_size) (((unsigned int)((_size) + 3)) >> 2)
+#define NUMWORDS(_size) (((unsigned int) ((_size) + 3)) >> 2)
 
-#define NUMBYTES(_len) (((unsigned int)(_len)) << 2)
+#define NUMBYTES(_len) (((unsigned int) (_len)) << 2)
 
-#define LENOF(_ctype) (sizeof (_ctype) >> 2)
+#define LENOF(_ctype) (SIZEOF (_ctype) >> 2)
 
 
 /* 
  * Count the number of ones in a longword.
  */
 
-#define CountOnes(mask, countReturn) \
-    countReturn = ((mask) - (((mask)>>1)&0x77777777) \
-	- (((mask)>>2)&0x33333333) - (((mask)>>3)&0x11111111)); \
-    countReturn = ((((countReturn)+((countReturn)>>4)) & 0x0F0F0F0F) % 255)
+#define CountOnes(_mask, _countReturn) \
+    _countReturn = ((_mask) - (((_mask)>>1)&0x77777777) \
+	- (((_mask)>>2)&0x33333333) - (((_mask)>>3)&0x11111111)); \
+    _countReturn = ((((_countReturn)+((_countReturn)>>4)) & 0x0F0F0F0F) % 255)
 
 
 
@@ -268,136 +212,6 @@ extern PEXDisplayInfo *PEXDisplayInfoHeader;
     (((_display)->bufmax - (_display)->bufptr) >> 2)
 
 
-/*
- * Setup the OC element info header.
- */
-
-#define STORE_ELEMENT_INFO(_reqPtr,_ocType,_ocLength) \
-{ \
-    ((pexElementInfo *)(_reqPtr))->elementType = (_ocType); \
-    ((pexElementInfo *)(_reqPtr))->length = (_ocLength); \
-}
-
-
-/* 
- * PEXGetReq sets up a request to be sent to the X server.  If there isn't
- * enough room left in the X buffer, it is flushed before the new request
- * is started.
- *
- * PEXGetFPReq is similar to PEXGetReq, except that it sets up a request
- * that contains floating point values.  A return flag indicates whether
- * or not the client native floating point format has to be converted to
- * a server supported format.
- *
- * SETUP_REQ is a macro containing common code for PEXGetReq and PEXGetFPReq.
- */
-
-#if (__STDC__ && !defined(UNIXCPP)) || defined(ANSICPP)
-
-#define SETUP_REQ(_name, _req) \
-    PEXDisplayInfo *pexDisplayInfo; \
-    PEXGetDisplayInfo (display, pexDisplayInfo); \
-    if ((display->bufptr + sizeof (pex##_name##Req)) > display->bufmax) \
-        _XFlush (display); \
-    _req = (pex##_name##Req *) (display->last_req = display->bufptr); \
-    _req->reqType = pexDisplayInfo->extOpcode; \
-    _req->opcode = PEXRC##_name; \
-    _req->length = (sizeof (pex##_name##Req)) >> 2; \
-    display->bufptr += sizeof (pex##_name##Req); \
-    display->request++
-
-#else /* non-ANSI C uses empty comment instead of "##" for token concat */
-
-#define SETUP_REQ(_name, _req) \
-    PEXDisplayInfo *pexDisplayInfo; \
-    PEXGetDisplayInfo (display, pexDisplayInfo); \
-    if ((display->bufptr + sizeof (pex/**/_name/**/Req)) > display->bufmax) \
-        _XFlush (display); \
-    _req = (pex/**/_name/**/Req *) (display->last_req = display->bufptr); \
-    _req->reqType = pexDisplayInfo->extOpcode; \
-    _req->opcode = PEXRC/**/_name; \
-    _req->length = (sizeof (pex/**/_name/**/Req)) >> 2; \
-    display->bufptr += sizeof (pex/**/_name/**/Req); \
-    display->request++
-#endif
-
-#define PEXGetReq(_name, _req)\
-{ \
-    SETUP_REQ (_name, _req); \
-}
-
-#define PEXGetFPReq(_name, _req, _fpConvert)\
-{ \
-    SETUP_REQ (_name, _req); \
-    _req->fpFormat = pexDisplayInfo->fpFormat; \
-    _fpConvert = pexDisplayInfo->fpConvert; \
-}
-
-
-/* 
- * PEXGetReqExtra and PEXGetFPReqExtra are the same as PEXGetReq and
- * PEXGetFPReq, except that an additional "n" bytes are allocated after
- * the request.  "n" will be padded to a word boundary.
- */
-
-#if (__STDC__ && !defined(UNIXCPP)) || defined(ANSICPP)
-
-#define SETUP_REQ_EXTRA(_name, _n, _req) \
-    PEXDisplayInfo *pexDisplayInfo; \
-    PEXGetDisplayInfo (display, pexDisplayInfo); \
-    if ((display->bufptr + sizeof (pex##_name##Req) + PADDED_BYTES (_n)) >\
-        display->bufmax) \
-        _XFlush (display); \
-    _req = (pex##_name##Req *) (display->last_req = display->bufptr); \
-    _req->reqType = pexDisplayInfo->extOpcode; \
-    _req->opcode = PEXRC##_name; \
-    _req->length = (sizeof(pex##_name##Req) + PADDED_BYTES (_n)) >> 2; \
-    display->bufptr += sizeof (pex##_name##Req) + PADDED_BYTES (_n); \
-    display->request++
-
-#else /* non-ANSI C uses empty comment instead of "##" for token concat */
-
-#define SETUP_REQ_EXTRA(_name, _n, _req) \
-    PEXDisplayInfo *pexDisplayInfo; \
-    PEXGetDisplayInfo (display, pexDisplayInfo); \
-    if ((display->bufptr + sizeof (pex/**/_name/**/Req) + PADDED_BYTES (_n)) >\
-        display->bufmax) \
-        _XFlush (display); \
-    _req = (pex/**/_name/**/Req *) (display->last_req = display->bufptr); \
-    _req->reqType = pexDisplayInfo->extOpcode; \
-    _req->opcode = PEXRC/**/_name; \
-    _req->length = (sizeof(pex/**/_name/**/Req) + PADDED_BYTES (_n)) >> 2; \
-    display->bufptr += sizeof (pex/**/_name/**/Req) + PADDED_BYTES (_n); \
-    display->request++
-#endif
-
-#define PEXGetReqExtra(_name, _n, _req) \
-{ \
-    SETUP_REQ_EXTRA (_name, _n, _req); \
-}
-
-#define PEXGetFPReqExtra(_name, _n, _req, _fpConvert) \
-{ \
-    SETUP_REQ_EXTRA (_name, _n, _req); \
-    _req->fpFormat = pexDisplayInfo->fpFormat; \
-    _fpConvert = pexDisplayInfo->fpConvert; \
-}
-
-
-/*
- * PEXGetOCReq is similiar to PEXGetReq except that it does not update
- * display->bufptr.  This is used when writing ocs into the transport buffer.
- */
-
-#define PEXGetOCReq(_display, _nBytes) \
-{ \
-    if ((_display)->bufptr + (_nBytes) > (_display)->bufmax) \
-        _XFlush (_display); \
-    (_display)->last_req = (_display)->bufptr; \
-    (_display)->request++; \
-}
-
-
 /* 
  * See if XSynchronize has been called.  If so, send request right away.
  */
@@ -406,111 +220,795 @@ extern PEXDisplayInfo *PEXDisplayInfoHeader;
     if ((_display)->synchandler) (*(_display)->synchandler) (_display)
 
 
+/*
+ * Read a reply into a scratch buffer.
+ */
+
+#define XREAD_INTO_SCRATCH(_display, _pBuf, _numBytes) \
+    _pBuf = (char *) _XAllocScratch (_display, (unsigned long) (_numBytes)); \
+    _XRead (_display, _pBuf, (long) (_numBytes));
+
+
+
+/* -------------------------------------------------------------------------
+ * Output Command request header.  The pexOpCode field specifies the type
+ * of request - Render Output Commands or Store Elements.
+ * ------------------------------------------------------------------------- */
+
+typedef struct pexOCRequestHeader
+{
+    CARD8       extOpcode;
+    CARD8       pexOpcode;
+    CARD16      reqLength B16;
+    INT16       fpFormat B16;
+    CARD16      pad B16;
+    CARD32      target B32;
+    CARD32      numCommands B32;
+} pexOCRequestHeader;
+
+
+
+/* -------------------------------------------------------------------------
+ * Macros for setting up requests.
+ * ------------------------------------------------------------------------- */
+
+/*
+ * Request names and opcodes.
+ */
+
+#if (__STDC__ && !defined(UNIXCPP)) || defined(ANSICPP)
+#define REQNAME(_name_) pex##_name_##Req
+#define REQOPCODE(_name_) PEXRC##_name_
+#define REQSIZE(_name_) sz_pex##_name_##Req
+#else
+#define REQNAME(_name_) pex/**/_name_/**/Req
+#define REQOPCODE(_name_) PEXRC/**/_name_
+#define REQSIZE(_name_) sz_pex/**/_name_/**/Req
+#endif
+
+
+/* 
+ * PEXGetReq sets up a request to be sent to the X server.  If there isn't
+ * enough room left in the X buffer, it is flushed before the new request
+ * is started.
+ */
+
+#define PEXGetReq(_name, _req) \
+    if ((display->bufptr + REQSIZE(_name)) > display->bufmax) \
+        _XFlush (display); \
+    _req = (char *) (display->last_req = display->bufptr); \
+    display->bufptr += REQSIZE(_name); \
+    display->request++
+
+
+/*
+ * PEXGetReqExtra is the same as PEXGetReq and except that an additional
+ * "n" bytes are allocated after the request.  "n" will be padded to a word
+ * boundary.
+ */
+
+#define PEXGetReqExtra(_name, _n, _req) \
+    if ((display->bufptr + REQSIZE(_name) + \
+	PADDED_BYTES (_n)) > display->bufmax) _XFlush (display); \
+    _req = (char *) (display->last_req = display->bufptr); \
+    display->bufptr += (REQSIZE(_name) + PADDED_BYTES (_n)); \
+    display->request++
+
+
+/*
+ * BEGIN_REQUEST_HEADER and END_REQUEST_HEADER are used to hide
+ * the extra work that has to be done on 64 bit clients.  On such
+ * machines, all structure pointers must point to an 8 byte boundary.
+ * As a result, we must first store the request header info in
+ * a static data stucture, then bcopy it into the transport buffer.
+ */
+
+#ifndef WORD64
+
+#define BEGIN_REQUEST_HEADER(_name, _pBuf, _pReq) \
+{ \
+    PEXDisplayInfo *pexDisplayInfo; \
+    PEXGetDisplayInfo (display, pexDisplayInfo); \
+    _pReq = (REQNAME(_name) *) _pBuf;
+
+#define END_REQUEST_HEADER(_name, _pBuf, _pReq) \
+    _pBuf += REQSIZE(_name); \
+}
+
+#else /* WORD64 */
+
+#define BEGIN_REQUEST_HEADER(_name, _pBuf, _pReq) \
+{ \
+    PEXDisplayInfo *pexDisplayInfo; \
+    REQNAME(_name) tReq; \
+    PEXGetDisplayInfo (display, pexDisplayInfo); \
+    _pReq = &tReq;
+
+#define END_REQUEST_HEADER(_name, _pBuf, _pReq) \
+    COPY_AREA ((char *) _pReq, _pBuf, REQSIZE(_name)); \
+    _pBuf += REQSIZE(_name); \
+}
+
+#endif /* WORD64 */
+
+
+/*
+ * Macros used to store the request header info.
+ */
+
+#define PEXStoreReqHead(_name, _req) \
+    _req->reqType = pexDisplayInfo->extOpcode; \
+    _req->opcode = REQOPCODE(_name); \
+    _req->length = (REQSIZE(_name)) >> 2;
+
+
+#define PEXStoreFPReqHead(_name, _fpFormat, _req) \
+    _req->reqType = pexDisplayInfo->extOpcode; \
+    _req->opcode = REQOPCODE(_name); \
+    _req->length = (REQSIZE(_name)) >> 2; \
+    _req->fpFormat = _fpFormat;
+
+#define PEXStoreReqExtraHead(_name, _extraBytes, _req) \
+    _req->reqType = pexDisplayInfo->extOpcode; \
+    _req->opcode = REQOPCODE(_name); \
+    _req->length = (REQSIZE(_name) + PADDED_BYTES (_extraBytes)) >> 2;
+
+#define PEXStoreFPReqExtraHead(_name, _fpFormat, _extraBytes, _req) \
+    _req->reqType = pexDisplayInfo->extOpcode; \
+    _req->opcode = REQOPCODE(_name); \
+    _req->length = (REQSIZE(_name) + PADDED_BYTES (_extraBytes)) >> 2; \
+    _req->fpFormat = _fpFormat;
+
+
+
+/*
+ * Return flag for floating point conversion, as well as the
+ * float format to convert to.  The call to this macro must come
+ * after BEGIN_REQUEST_HEADER and before END_REQUEST_HEADER.
+ */
+
+#define CHECK_FP(_fpConvert, _fpFormat) \
+    _fpConvert = pexDisplayInfo->fpConvert; \
+    _fpFormat = pexDisplayInfo->fpFormat;
+
+
+
+/* -------------------------------------------------------------------------
+ * Get pointer to a structure in a buffer stream.  On 64 bit clients,
+ * all structure pointers must point to an 8 byte boundary.  As a result,
+ * we must first bcopy into a static data structure, then return a pointer
+ * to this static data structure.
+ *
+ * Note: GET_STRUCT_PTR must be used in the declaration section of a block.
+ * ------------------------------------------------------------------------- */
+
+#ifndef WORD64
+
+#define GET_STRUCT_PTR(_name, _pBuf, _pStruct) \
+    _pStruct = (_name *) _pBuf;
+
+#else /* WORD64 */
+
+#define GET_STRUCT_PTR(_name, _pBuf, _pStruct) \
+    _name tStruct; \
+    COPY_AREA (_pBuf, (char *) &tStruct, SIZEOF (_name)); \
+    _pStruct = &tStruct;
+
+#endif /* WORD64 */
+
+
 
 /* -------------------------------------------------------------------------
  * Color related macros.
  * ------------------------------------------------------------------------- */
 
 /* 
- * Return the size of the color in bytes by looking at the color type.  
- * Note that the size of an indexed color is pre-padded to a word boundary.
+ * Protocol color size based on color type (in bytes).
  */
 
 #define GetColorSize(_type) \
-    ((_type) == PEXColorTypeIndexed ? (sizeof (pexTableIndex) * 2) : \
-    ((_type) == PEXColorTypeRGB8 ? sizeof (pexRgb8Color) : \
-    ((_type) == PEXColorTypeRGB16 ? sizeof (pexRgb16Color) : \
-	sizeof (pexRgbFloatColor))))
-
-/*
- * Return the number of words in a color.  Note that all the PEX color
- * types are padded to end on a word boundary
- */
-
-#define GetColorLength(_type_)\
-    ((_type_) == PEXColorTypeIndexed ?  LENOF( PEXColorIndexed) :\
-    ((_type_) == PEXColorTypeRGB8 ?  LENOF( PEXColorRGB8) :\
-    ((_type_) == PEXColorTypeRGB16 ? LENOF( PEXColorRGB16) : \
-					LENOF( PEXColorRGB) )))
+    ((_type) == PEXColorTypeIndexed ? SIZEOF (pexIndexedColor) : \
+    ((_type) == PEXColorTypeRGB8 ? SIZEOF (pexRgb8Color) : \
+    ((_type) == PEXColorTypeRGB16 ? SIZEOF (pexRgb16Color) : \
+	SIZEOF (pexRgbFloatColor))))
 
 /* 
- * How big, relative to the largest color specifier, is the color?
- * The users of this macro must subtract this value from the sizeof value.
+ * Protocol color size based on color type (in words).
  */
 
-#define AdjustSizeFromType(_type) \
-    (sizeof (pexColor) - GetColorSize (_type))
-
+#define GetColorLength(_type)\
+    ((_type) == PEXColorTypeIndexed ?  LENOF (pexIndexedColor) :\
+    ((_type) == PEXColorTypeRGB8 ? LENOF (pexRgb8Color) :\
+    ((_type) == PEXColorTypeRGB16 ? LENOF (pexRgb16Color) : \
+	LENOF (pexRgbFloatColor))))
 
 /* 
- * Initialize a color specifier.  'dst' is of type PEXColorSpecifier,
- * and 'src' is of type PEXColor.
+ * Client color size based on color type (in bytes).
  */
 
-#define InitializeColorSpecifier(_dst, _src, _type)\
-    (_dst).type = _type; \
-    COPY_SMALL_AREA ((_src), &((_dst).value), GetColorSize (_type));
-
-
-/*
- * PackColorSpecifier is similar to InitalizeColorSpecifier, except that
- * the destination is a pointer to memory, rather than a static structure.
- */
-
-#define PackColorSpecifier(srcBuf, dstBuf, sizeColor) \
-{ \
-    ((PEXColorSpecifier *) (dstBuf))->type = \
-        ((PEXColorSpecifier *) (srcBuf))->type; \
-    sizeColor = \
-        GetColorSize (((PEXColorSpecifier *) (srcBuf))->type); \
-    COPY_SMALL_AREA (&(((PEXColorSpecifier *) (srcBuf))->value), \
-        &(((PEXColorSpecifier *) (dstBuf))->value), sizeColor); \
-}
+#define GetClientColorSize(_type) \
+    ((_type) == PEXColorTypeIndexed ? sizeof (PEXColorIndexed) : \
+    ((_type) == PEXColorTypeRGB8 ? sizeof (PEXColorRGB8) : \
+    ((_type) == PEXColorTypeRGB16 ? sizeof (PEXColorRGB16) : \
+	sizeof (PEXColorRGB))))
 
 
 
 /* -------------------------------------------------------------------------
- * Macros to compute the number of words in a facet/vertex with data.
+ * Constants
  * ------------------------------------------------------------------------- */
 
 /*
- * Compute the number of words in the facet data
+ * IEEE-754-32 is the most common floating point type.  Vendors who have
+ * a different native floating point format should define NATIVE_FP_FORMAT
+ * at compile time via the -D switch (this is done by modifying the vendors
+ * config file to include a "#define PexNativeFPFormat your_format".
  */
 
-#define GetFacetDataLength(_fattribs, _lenofColor) \
-    (((_fattribs & PEXGAColor) ? _lenofColor : 0) + \
-    ((_fattribs & PEXGANormal) ? LENOF(pexVector3D) : 0))
+#ifndef NATIVE_FP_FORMAT
+#define NATIVE_FP_FORMAT	PEXIEEE_754_32
+#endif
 
 
 /*
- * Compute the number of words in a vertex with optional colors and normals
+ * The PEXlib SI supports Cray floating point format, but this constant
+ * is not a registered float format, so it's not found in PEX.h.  We define
+ * it here.
+ *
+ * If a vendor wants to add support for his own float format in PEXlib, he
+ * should add a consant here for the format, and bump up NUM_FP_FORMATS.
+ * Then he must modify the fp conversion function table found in the file
+ * pl_global_def.h to include his format.
+ *
+ * Note : Floating point formats 1-4 are registered with PEX at this time.
  */
 
-#define GetVertexWithDataLength(_vattribs, _lenofColor) \
-    (LENOF (pexCoord3D) + \
-    ((_vattribs & PEXGAColor) ? _lenofColor : 0) + \
-    ((_vattribs & PEXGANormal) ? LENOF (pexVector3D) : 0))
+#define PEXCRAY_Floating	5
+
+#define NUM_FP_FORMATS		5
+
+
+/*
+ * Maximum size of pick cache in bytes.
+ */
+
+#define MAX_PICK_CACHE_SIZE	2048
+
+
+/*
+ * Protocol data structure sizes.  SIZEOF (rec) == sz_rec.
+ */
+
+#define sz_pexAccumulateStateReq 		12
+#define sz_pexAddToNameSet 			4
+#define sz_pexRemoveFromNameSet 		4
+#define sz_pexAnnotationText 			32
+#define sz_pexAnnotationText2D 			24
+#define sz_pexApplicationData 			8
+#define sz_pexATextStyle 			8
+#define sz_pexBeginPickAllReq 			28
+#define sz_pexBeginPickOneReq 			20
+#define sz_pexBeginRenderingReq 		12
+#define sz_pexBeginStructureReq 		12
+#define sz_pexCellArray 			48
+#define sz_pexCellArray2D 			28
+#define sz_pexChangeNameSetReq 			12
+#define sz_pexChangePickDeviceReq 		20
+#define sz_pexChangePipelineContextReq 		24
+#define sz_pexChangeRendererReq 		16
+#define sz_pexChangeSearchContextReq 		16
+#define sz_pexChangeStructureRefsReq 		12
+#define sz_pexCharExpansion 			8
+#define sz_pexCharHeight 			8
+#define sz_pexATextHeight			8
+#define sz_pexCharSpacing 			8
+#define sz_pexCharUpVector 			12
+#define sz_pexATextUpVector 			12
+#define sz_pexCopyElementsReq 			36
+#define sz_pexCopyLookupTableReq 		12
+#define sz_pexCopyNameSetReq 			12
+#define sz_pexCopyPipelineContextReq 		24
+#define sz_pexCopySearchContextReq 		16
+#define sz_pexCopyStructureReq 			12
+#define sz_pexCreateLookupTableReq 		16
+#define sz_pexCreatePickMeasureReq 		16
+#define sz_pexCreatePipelineContextReq 		24
+#define sz_pexCreateRendererReq 		20
+#define sz_pexCreateSearchContextReq 		16
+#define sz_pexCreateWorkstationReq 		76
+#define sz_pexFacetCullingMode 			8
+#define sz_pexCurveApprox	 		12
+#define sz_pexDeleteBetweenLabelsReq 		16
+#define sz_pexDeleteElementsReq 		24
+#define sz_pexDeleteElementsToLabelReq 		20
+#define sz_pexDeleteTableEntriesReq 		12
+#define sz_pexDestroyStructuresReq 		8
+#define sz_pexFacetDistinguishFlag 		8
+#define sz_pexElementSearchReply 		32
+#define sz_pexElementSearchReq 			28
+#define sz_pexEndPickAllReply 			32
+#define sz_pexEndPickAllReq 			8
+#define sz_pexEndPickOneReply 			32
+#define sz_pexEndPickOneReq 			8
+#define sz_pexEndRenderingReq 			12
+#define sz_pexEscapeReq 			8
+#define sz_pexEscapeWithReplyReq 		sz_pexEscapeReq
+#define sz_pexEscapeWithReplyReply 		32
+#define sz_pexExecuteStructure 			8
+#define sz_pexExtendedCellArray 		52
+#define sz_pexFillAreaWithData 			16
+#define sz_pexFillAreaSetWithData		20
+#define sz_pexFetchElementsReply 		32
+#define sz_pexFetchElementsReq 			28
+#define sz_pexFillArea 				8
+#define sz_pexFillArea2D 			8
+#define sz_pexFillAreaSet 			12
+#define sz_pexFillAreaSet2D 			12
+#define sz_pexGDP 				16
+#define sz_pexGDP2D 				16
+#define sz_pexGetAncestorsReply 		32
+#define sz_pexGetAncestorsReq 			16
+#define sz_pexGetDescendantsReq 		sz_pexGetAncestorsReq
+#define sz_pexGetDefinedIndicesReply 		32
+#define sz_pexGetElementInfoReply 		32
+#define sz_pexGetElementInfoReq 		28
+#define sz_pexGetEnumTypeInfoReply 		32
+#define sz_pexGetEnumTypeInfoReq 		16
+#define sz_pexGetExtensionInfoReply 		32
+#define sz_pexGetExtensionInfoReq 		8
+#define sz_pexGetImpDepConstantsReply 		32
+#define sz_pexGetImpDepConstantsReq 		16
+#define sz_pexGetNameSetReply 			32
+#define sz_pexGetPickDeviceReply 		32
+#define sz_pexGetPickDeviceReq 			16
+#define sz_pexGetPickMeasureReply 		32
+#define sz_pexGetPickMeasureReq 		12
+#define sz_pexGetPipelineContextReply 		32
+#define sz_pexGetPipelineContextReq 		24
+#define sz_pexGetPredefinedEntriesReply 	32
+#define sz_pexGetPredefinedEntriesReq 		20
+#define sz_pexGetRendererAttributesReply	32
+#define sz_pexGetRendererAttributesReq 		16
+#define sz_pexGetRendererDynamicsReply 		32
+#define sz_pexGetSearchContextReply 		32
+#define sz_pexGetSearchContextReq 		16
+#define sz_pexGetStructureInfoReply 		32
+#define sz_pexGetStructureInfoReq 		12
+#define sz_pexGetStructuresInNetworkRepl	32
+#define sz_pexGetStructuresInNetworkReq 	12
+#define sz_pexGetTableEntriesReply 		32
+#define sz_pexGetTableEntriesReq 		16
+#define sz_pexGetTableEntryReply 		32
+#define sz_pexGetTableEntryReq 			16
+#define sz_pexGetTableInfoReply 		32
+#define sz_pexGetTableInfoReq 			12
+#define sz_pexGetWorkstationAttributesReply 	32
+#define sz_pexGetWorkstationAttributesReq 	20
+#define sz_pexGetWorkstationDynamicsReply 	32
+#define sz_pexGetWorkstationDynamicsReq 	8
+#define sz_pexGetWorkstationPostingsReply 	32
+#define sz_pexGetWorkstationViewRepReply 	32
+#define sz_pexGetWorkstationViewRepReq 		12
+#define sz_pexGlobalTransform 			68
+#define sz_pexGlobalTransform2D 		40
+#define sz_pexGSE 				12
+#define sz_pexHLHSRID				8
+#define sz_pexInteriorStyle 			8
+#define sz_pexBFInteriorStyle 			8
+#define sz_pexLabel 				8
+#define sz_pexLightSourceState 			8
+#define sz_pexLineType 				8
+#define sz_pexLineWidth 			8
+#define sz_pexSurfaceEdgeWidth 			8
+#define sz_pexListFontsReply 			32
+#define sz_pexListFontsReq 			8
+#define sz_pexListFontsWithInfoReply 		32
+#define sz_pexListFontsWithInfoReq 		12
+#define sz_pexLoadFontReq 			12
+#define sz_pexLocalTransform 			72
+#define sz_pexLocalTransform2D 			44
+#define sz_pexLookupTable 			4
+#define sz_pexMapDCtoWCReply 			32
+#define sz_pexMapDCtoWCReq 			16
+#define sz_pexMapWCtoDCReply 			32
+#define sz_pexMapWCtoDCReq 			16
+#define sz_pexMarkers 				4
+#define sz_pexMarkers2D				4
+
+#define sz_pexMarkerBundleIndex 		8
+#define sz_pexTextBundleIndex 			8
+#define sz_pexLineBundleIndex 			8
+#define sz_pexInteriorBundleIndex 		8
+#define sz_pexInteriorStyleIndex 		8
+#define sz_pexBFInteriorStyleIndex 		8
+#define sz_pexEdgeBundleIndex 			8
+#define sz_pexViewIndex 			8
+#define sz_pexDepthCueIndex 			8
+#define sz_pexColorApproxIndex 			8
+
+#define sz_pexMarkerColorIndex 			8
+#define sz_pexTextColorIndex			8
+#define sz_pexLineColorIndex			8
+#define sz_pexSurfaceColorIndex			8
+#define sz_pexBFSurfaceColorIndex		8
+#define sz_pexSurfaceEdgeColorIndex		8
+
+#define sz_pexMarkerColor 			8
+#define sz_pexTextColor 			8
+#define sz_pexLineColor 			8
+#define sz_pexSurfaceColor 			8
+#define sz_pexBFSurfaceColor 			8
+#define sz_pexSurfaceEdgeColor 			8
+
+#define sz_pexTextFontIndex			8
+
+#define sz_pexMarkerScale 			8
+#define sz_pexMarkerType 			8
+#define sz_pexMatchRenderingTargetsReply 	32
+#define sz_pexMatchRenderingTargetsReq 		20
+#define sz_pexMaxHitsReachedEvent 		32
+#define sz_pexModelClipFlag 			8
+#define sz_pexModelClipVolume 			8
+#define sz_pexModelClipVolume2D 		8
+#define sz_pexNoop 				4
+#define sz_pexNURBCurve 			24
+#define sz_pexNURBSurface 			28
+#define sz_pexParaSurfCharacteristics 		8
+#define sz_pexPatternAttributes			40
+#define sz_pexPatternAttributes2D		12
+#define sz_pexPatternSize 			12
+#define sz_pexPickAllReply 			32
+#define sz_pexPickAllReq 			20
+#define sz_pexPickID 				8
+#define sz_pexPickOneReply 			32
+#define sz_pexPickOneReq 			20
+#define sz_pexPolyline 				4
+#define sz_pexPolyline2D 			4
+#define sz_pexPolylineInterpMethod		8
+#define sz_pexPolylineSetWithData		12
+#define sz_pexPostStructureReq 			20
+#define sz_pexQuadrilateralMesh 		16
+#define sz_pexQueryFontReply 			32
+#define sz_pexQueryFontReq 			8
+#define sz_pexQueryTextExtentsReply 		32
+#define sz_pexQueryTextExtentsReq 		36
+#define sz_pexRedrawClipRegionReq 		12
+#define sz_pexRenderElementsReq 		28
+#define sz_pexRenderNetworkReq 			16
+#define sz_pexRenderOutputCommandsReq 		16
+#define sz_pexRenderingColorModel 		8
+#define sz_pexReq 				4
+#define sz_pexResourceReq 			8
+#define sz_pexFreeLookupTableReq 		sz_pexResourceReq
+#define sz_pexGetDefinedIndicesReq 		sz_pexResourceReq
+#define sz_pexFreePipelineContextReq 		sz_pexResourceReq
+#define sz_pexFreeRendererReq 			sz_pexResourceReq
+#define sz_pexGetRendererDynamicsReq 		sz_pexResourceReq
+#define sz_pexEndStructureReq 			sz_pexResourceReq
+#define sz_pexCreateStructureReq 		sz_pexResourceReq
+#define sz_pexCreateNameSetReq 			sz_pexResourceReq
+#define sz_pexFreeNameSetReq 			sz_pexResourceReq
+#define sz_pexGetNameSetReq 			sz_pexResourceReq
+#define sz_pexFreeSearchContextReq 		sz_pexResourceReq
+#define sz_pexFreeWorkstationReq 		sz_pexResourceReq
+#define sz_pexRedrawAllStructuresReq 		sz_pexResourceReq
+#define sz_pexUpdateWorkstationReq 		sz_pexResourceReq
+#define sz_pexExecuteDeferredActionsReq 	sz_pexResourceReq
+#define sz_pexUnpostAllStructuresReq 		sz_pexResourceReq
+#define sz_pexGetWorkstationPostingsReq 	sz_pexResourceReq
+#define sz_pexFreePickMeasureReq 		sz_pexResourceReq
+#define sz_pexUnloadFontReq 			sz_pexResourceReq
+#define sz_pexSearchNetworkReq 			sz_pexResourceReq
+#define sz_pexRestoreModelClipVolume		4
+#define sz_pexSetOfFillAreaSets			24
+#define sz_pexSearchNetworkReply 		32
+#define sz_pexIndividualASF			12
+#define sz_pexSetEditingModeReq 		12
+#define sz_pexSetElementPointerAtLabelReq 	16
+#define sz_pexSetElementPointerReq 		16
+#define sz_pexSetTableEntriesReq 		16
+#define sz_pexSetWorkstationBufferModeReq 	12
+#define sz_pexSetWorkstationDisplayUpdateModeReq 12
+#define sz_pexSetWorkstationHLHSRModeReq 	12
+#define sz_pexSetWorkstationViewPriorityReq 	16
+#define sz_pexSetWorkstationViewRepReq 		172
+#define sz_pexSetWorkstationViewportReq 	32
+#define sz_pexSetWorkstationWindowReq 		36
+#define sz_pexStoreElementsReq 			16
+#define sz_pexSurfaceApprox	 		16
+#define sz_pexSurfaceEdgeFlag 			8
+#define sz_pexSurfaceEdgeType 			8
+#define sz_pexSurfaceInterpMethod		8
+#define sz_pexBFSurfaceInterpMethod		8
+#define sz_pexReflectionAttributes		28
+#define sz_pexBFReflectionAttributes		28
+#define sz_pexReflectionModel 			8
+#define sz_pexBFReflectionModel 		8
+#define sz_pexText 				44
+#define sz_pexText2D 				16
+#define sz_pexTextAlignment 			8
+#define sz_pexATextAlignment 			8
+#define sz_pexTextPath 				8
+#define sz_pexATextPath 			8
+#define sz_pexTextPrecision 			8
+#define sz_pexTriangleStrip 			16
+#define sz_pexUnpostStructureReq 		12
+#define sz_pexUpdatePickMeasureReq 		12
+#define sz_pexCieColor 				12
+#define sz_pexColor 				12
+#define sz_pexColorApproxEntry 			40
+#define sz_pexColorSpecifier 			4
+#define sz_pexColorEntry			sz_pexColorSpecifier
+#define sz_pexCoord2D 				8
+#define sz_pexCoord3D 				12
+#define sz_pexCoord4D 				16
+#define sz_pexCullMode 				2
+#define sz_pexCurveApproxData 			8
+#define sz_pexDepthCueEntry 			24
+#define sz_pexDeviceCoord 			8
+#define sz_pexDeviceCoord2D 			4
+#define sz_pexDeviceRect 			8
+#define sz_pexEdgeBundleEntry 			12
+#define sz_pexElementInfo 			4
+#define sz_pexElementPos 			8
+#define sz_pexElementRange 			16
+#define sz_pexElementRef 			8
+#define sz_pexEnumTypeDesc 			4
+#define sz_pexEnumTypeIndex 			4
+#define sz_pexEscapeSetEchoColorData 		8
+#define sz_pexExtentInfo 			24
+#define sz_pexFloatColor 			12
+#define sz_pexFont 				4
+#define sz_pexFontInfo 				20
+#define sz_pexFontProp 				8
+#define sz_pexHalfSpace 			24
+#define sz_pexHalfSpace2D 			16
+#define sz_pexHlsColor 				12
+#define sz_pexHsvColor 				12
+#define sz_pexIndexedColor 			4
+#define sz_pexInteriorBundleEntry 		28
+#define sz_pexLightEntry 			48
+#define sz_pexLineBundleEntry 			20
+#define sz_pexLocalTransform2DData 		40
+#define sz_pexLocalTransform3DData 		68
+#define sz_pexMarkerBundleEntry 		12
+#define sz_pexMatrix 				64
+#define sz_pexMatrix3X3 			36
+#define sz_pexMonoEncoding 			8
+#define sz_pexName 				4
+#define sz_pexNameSet 				4
+#define sz_pexNameSetPair 			8
+#define sz_pexNpcSubvolume 			24
+#define sz_pexPD_NPC_HitVolume 			sz_pexNpcSubvolume
+#define sz_pexOutputCommandError 		32
+#define sz_pexPD_DC_HitBox 			8
+#define sz_pexPSC_IsoparametricCurves 		8
+#define sz_pexPSC_LevelCurves 			28
+#define sz_pexPatternEntry 			8
+#define sz_pexPickElementRef 			12
+#define sz_pexPickRecord 			4
+#define sz_pexReflectionAttr 			24
+#define sz_pexRendererTarget 			8
+#define sz_pexRgb16Color 			8
+#define sz_pexRgb8Color 			4
+#define sz_pexRgbFloatColor 			12
+#define sz_pexString 				2
+#define sz_pexStructure 			4
+#define sz_pexStructureInfo 			8
+#define sz_pexSurfaceApproxData			12
+#define sz_pexSwitch 				1
+#define sz_pexTableInfo 			8
+#define sz_pexTableIndex 			2
+#define sz_pexTextAlignmentData 		4
+#define sz_pexTextBundleEntry 			16
+#define sz_pexTextFontEntry 			4
+#define sz_pexTrimCurve 			28
+#define sz_pexVector2D 				8
+#define sz_pexVector3D 				12
+#define sz_pexVertex 				12
+#define sz_pexViewEntry 			156
+#define sz_pexViewRep 				160
+#define sz_pexViewport 				20
+
+/* from PEXlibint.h */
+#define sz_pexOCRequestHeader 			16
+
+/* for X-Window system protocol elements */
+#define sz_CARD32 				4
+#define sz_CARD16 				2
+#define sz_CARD8 				1
+#define sz_INT32 				4
+#define sz_INT16 				2
+
+/* for other things */
+#define sz_char 				1
+#define sz_short				2
+#define sz_long					4
+#define sz_float				4
 
 
 
 /* -------------------------------------------------------------------------
- * Data structures useful for packing protocol data.
+ * Externally defined globals.
  * ------------------------------------------------------------------------- */
 
-typedef struct
-{
-    unsigned long       attribute;
-    unsigned char	value;
-    unsigned char	reserved[3];
-} PEXASFData;
+/*
+ * Linked list of open displays.
+ */
+
+extern PEXDisplayInfo	*PEXDisplayInfoHeader;
 
 
-typedef struct {
-    short 		fp_format;
-    short		reserved;
-    unsigned long	renderer;
-    PEXColorSpecifier	echo_color;
-} PEXEchoColorData;
+/*
+ * Pick path cache.
+ */
+
+extern PEXPickPath	*PEXPickCache;
+extern unsigned int	PEXPickCacheSize;
+extern int		PEXPickCacheInUse;
+
+
+/*
+ * Floating point conversion function table.
+ */
+
+extern void (*(PEX_fp_convert[NUM_FP_FORMATS][NUM_FP_FORMATS]))();
+
+
+
+/* -------------------------------------------------------------------------
+ * Function prototypes for PEXlib internal functions.
+ * ------------------------------------------------------------------------- */
+
+extern void _PEXCopyPaddedBytesToOC(
+#if NeedFunctionPrototypes
+    Display *			/* display */,
+    int 			/* numBytes */,
+    char *			/* data */
+#endif
+);
+
+extern void _PEXSendBytesToOC(
+#if NeedFunctionPrototypes
+    Display *			/* display */,
+    int 			/* numBytes */,
+    char *			/* data */
+#endif
+);
+
+extern void _PEXOCFacet(
+#if NeedFunctionPrototypes
+    Display *			/* display */,
+    int				/* colorType */,
+    unsigned int		/* facetAttr */,
+    PEXFacetData *		/* facetData */,
+    int				/* fpFormat */
+#endif
+);
+
+extern void _PEXOCListOfFacet(
+#if NeedFunctionPrototypes
+    Display *			/* display */,
+    int				/* count */,
+    int				/* colorType */,
+    unsigned int		/* facetAttr */,
+    PEXArrayOfFacetData 	/* facetData */,
+    int				/* fpFormat */
+#endif
+);
+
+extern void _PEXOCListOfVertex(
+#if NeedFunctionPrototypes
+    Display *			/* display */,
+    int				/* count */,
+    int				/* colorType */,
+    unsigned int		/* vertAttr */,
+    PEXArrayOfVertex	 	/* vertData */,
+    int				/* fpFormat */
+#endif
+);
+
+extern void _PEXOCListOfColor(
+#if NeedFunctionPrototypes
+    Display *			/* display */,
+    int				/* count */,
+    int				/* colorType */,
+    PEXArrayOfColor	 	/* colors */,
+    int				/* fpFormat */
+#endif
+);
+
+extern void _PEXStoreFacet(
+#if NeedFunctionPrototypes
+    int				/* colorType */,
+    unsigned int		/* facetAttr */,
+    PEXFacetData *		/* facetData */,
+    char **			/* bufPtr */,
+    int				/* fpFormat */
+#endif
+);
+
+extern void _PEXStoreListOfFacet(
+#if NeedFunctionPrototypes
+    int				/* count */,
+    int				/* colorType */,
+    unsigned int		/* facetAttr */,
+    PEXArrayOfFacetData 	/* facetData */,
+    char **			/* bufPtr */,
+    int				/* fpFormat */
+#endif
+);
+
+extern void _PEXStoreListOfVertex(
+#if NeedFunctionPrototypes
+    int				/* count */,
+    int				/* colorType */,
+    unsigned int		/* vertAttr */,
+    PEXArrayOfVertex	 	/* vertData */,
+    char **			/* bufPtr */,
+    int				/* fpFormat */
+#endif
+);
+
+extern void _PEXStoreListOfColor(
+#if NeedFunctionPrototypes
+    int				/* count */,
+    int				/* colorType */,
+    PEXArrayOfColor	 	/* colors */,
+    char **			/* bufPtr */,
+    int				/* fpFormat */
+#endif
+);
+
+extern void _PEXExtractFacet(
+#if NeedFunctionPrototypes
+    char **			/* bufPtr */,
+    int				/* colorType */,
+    unsigned int		/* facetAttr */,
+    PEXFacetData *		/* facetData */,
+    int				/* fpFormat */
+#endif
+);
+
+extern void _PEXExtractListOfFacet(
+#if NeedFunctionPrototypes
+    int				/* count */,
+    char **			/* bufPtr */,
+    int				/* colorType */,
+    unsigned int		/* facetAttr */,
+    PEXArrayOfFacetData 	/* facetData */,
+    int				/* fpFormat */
+#endif
+);
+
+extern void _PEXExtractListOfVertex(
+#if NeedFunctionPrototypes
+    int				/* count */,
+    char **			/* bufPtr */,
+    int				/* colorType */,
+    unsigned int		/* vertAttr */,
+    PEXArrayOfVertex	 	/* vertData */,
+    int				/* fpFormat */
+#endif
+);
+
+extern void _PEXExtractListOfColor(
+#if NeedFunctionPrototypes
+    int				/* count */,
+    char **			/* bufPtr */,
+    int				/* colorType */,
+    PEXArrayOfColor	 	/* colors */,
+    int				/* fpFormat */
+#endif
+);
+
+extern void _PEXGenOCBadLengthError(
+#if NeedFunctionPrototypes
+    Display *			/* display */,
+    XID				/* resource_id */,
+    PEXOCRequestType		/* req_type */
+#endif
+);
 
 
 
@@ -519,19 +1017,7 @@ typedef struct {
  * ------------------------------------------------------------------------- */
 
 /*
- * IEEE-754-32 is the most common floating point type.  Vendors who have
- * a different native floating point format should define NATIVE_FP_FORMAT
- * at compile time via the -D switch (this is done by modifying the vendors
- * config file.
- */
-
-#ifndef NATIVE_FP_FORMAT
-#define NATIVE_FP_FORMAT PEXIEEE_754_32
-#endif
-
-
-/*
- * INPUT and OUTPUT are defined to make looking at function arguments easier.
+ * Argument types in function definitions.
  */
 
 #define INPUT  
@@ -540,21 +1026,18 @@ typedef struct {
 
 
 /*
- * Pick path cache.
+ * Xlib defines min and max as macros; Must undef since min and max
+ * are field names in PEXlib data structures.
  */
 
-#define MAX_PICK_CACHE_SIZE 2048
+#ifdef min
+#undef min
+#endif
 
-extern PEXPickPath	*PEXPickCache;
-extern unsigned int	PEXPickCacheSize;
-extern int		PEXPickCacheInUse;
-
-
-/*
- * _XAllocScratch is defined in Xlib.
- */
-
-extern char *_XAllocScratch();
-
+#ifdef max
+#undef max
+#endif
 
 #endif /* PEXLIBINT_H */
+
+
