@@ -13,7 +13,8 @@ SRCS =	\
 	sunCG3C.c \
 	sunCG4C.c \
 	sunKeyMap.c \
-	kbd_mode.c
+	kbd_mode.c \
+	consoletype.c 
 
 OFILES = sunInit.o
 
@@ -40,14 +41,17 @@ CDEBUGFLAGS = ServerCDebugFlags
 
 NormalLibraryObjectRule()
 
-all:: $(OFILES) kbd_mode
+all:: $(OFILES) kbd_mode consoletype
 
 lintlib:
 
 NormalLibraryTarget(sun,$(OBJS))
 NormalLintTarget($(SRCS))
 SingleProgramTarget(kbd_mode, kbd_mode.o,,)
+SingleProgramTarget(consoletype, consoletype.o,,)
 InstallProgram(kbd_mode,$(BINDIR))
+InstallProgram(consoletype,$(BINDIR))
 InstallManPage(kbd_mode,$(MANDIR))
+InstallManPage(consoletype,$(MANDIR))
 DependTarget()
 InstallManPage(Xsun,$(MANDIR))
