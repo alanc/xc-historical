@@ -1,4 +1,4 @@
-/* $XConsortium: PEX.h,v 5.3 91/08/26 12:29:34 rws Exp $ */
+/* $XConsortium: PEX.h,v 5.4 91/10/21 10:29:04 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -598,8 +598,8 @@ SOFTWARE.
 /*	namesets	      */
 #define PEXDynHighlightNameset			 (1L<<0)
 #define PEXDynInvisibilityNameset		 (1L<<1)
-#define PEXDynHighlightNamesetContents		(1L<<12)
-#define PEXDynInvisibilityNamesetContents	(1L<<13)
+#define PEXDynHighlightNamesetContents		(1L<<16)
+#define PEXDynInvisibilityNamesetContents	(1L<<17)
 /*	attributes	      */
 #define PEXDynHlhsrMode				 (1L<<0)
 #define PEXDynNpcSubvolume			 (1L<<1)
