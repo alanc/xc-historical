@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: miarc.c,v 1.72 89/03/22 13:25:46 rws Exp $ */
+/* $XConsortium: miarc.c,v 1.73 89/03/24 15:27:59 keith Exp $ */
 /* Author: Keith Packard */
 
 #include "X.h"
@@ -1713,7 +1713,7 @@ double	x;
 		if (x > -NEWTON_LIMIT)
 			return 0;
 		else
-			abort ();
+			FatalError ("miarc.c: Sqrt of negative number %g\n", x);
 	}
 	return sqrt (x);
 }
@@ -2815,7 +2815,7 @@ span (left, right)
 			y = -spanY;
 			break;
 		default:
-			abort ();
+			FatalError ("miarc.c: illegal quadrant mask bit %d\n", bit);
 		}
 		xmin = (int) ceil (min + arcXcenter) + arcXoffset;
 		xmax = (int) ceil (max + arcXcenter) + arcXoffset;
