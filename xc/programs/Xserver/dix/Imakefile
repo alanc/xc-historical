@@ -16,4 +16,4 @@ lint:
 	lint -Cdix $(INCLUDES) $(SRCS) > lint.out
 
 ../../include/Xatom.h initatoms.c:	BuiltInAtoms buildatoms
-	buildatoms
+	sh buildatoms
