@@ -1,5 +1,5 @@
 /*
- * $XConsortium: imakemdep.h,v 1.70 94/02/06 13:24:37 rws Exp $
+ * $XConsortium: imakemdep.h,v 1.71 94/02/10 20:08:52 rws Exp $
  * 
  * This file contains machine-dependent constants for the imake utility.
  * When porting imake, read each of the steps below and add in any necessary
@@ -102,6 +102,18 @@
 
 #ifdef _SEQUENT_
 #define imake_ccflags "-DSYSV -DUSG"
+#endif
+
+#if defined(SX) || defined(PC_UX)
+#define imake_ccflags "-DSYSV"
+#endif
+
+#ifdef nec_ews_svr2
+#define imake_ccflags "-DUSG"
+#endif
+
+#if defined(nec_ews_svr4) || defined(_nec_ews_svr4) || defined(_nec_up) || defined(_nec_ft)
+#define imake_ccflags "-DSVR4"
 #endif
 
 #else /* not CCIMAKE */
@@ -322,6 +334,9 @@ char *cpp_argv[ARGUMENTS] = {
 #ifdef __sxg__
 	"-D__sxg__",
 #endif
+#ifdef nec_ews_svr2
+	"-Dnec_ews_svr2",
+#endif
 };
 #else /* else MAKEDEPEND */
 /*
@@ -493,6 +508,30 @@ struct symtab	predefs[] = {
 #ifdef _SEQUENT_
 	{"_SEQUENT_", "1"},
 	{"__STDC__", "1"},
+#endif
+#ifdef nec_ews_svr2
+	{"nec_ews_svr2", "1"},
+#endif
+#ifdef nec_ews_svr4
+	{"nec_ews_svr4", "1"},
+#endif
+#ifdef _nec_ews_svr4
+	{"_nec_ews_svr4", "1"},
+#endif
+#ifdef _nec_up
+	{"_nec_up", "1"},
+#endif
+#ifdef SX
+	{"SX", "1"},
+#endif
+#ifdef nec
+	{"nec", "1"},
+#endif
+#ifdef _nec_ft
+	{"_nec_ft", "1"},
+#endif
+#ifdef PC_UX
+	{"PC_UX", "1"},
 #endif
 	/* add any additional symbols before this line */
 	{NULL, NULL}

@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imake.cf,v 1.9 94/02/05 15:53:55 rws Exp $
+XCOMM $XConsortium: Imake.cf,v 1.10 94/02/10 20:05:22 rws Exp $
 /*
  * To add support for another platform:
  * 
@@ -311,6 +311,15 @@ XCOMM $XConsortium: Imake.cf,v 1.9 94/02/05 15:53:55 rws Exp $
 #  define DynixPtxArchitecture
 # endif
 # define SequentArchitecture
+#endif
+
+#if defined(_nec_ews_svr4) || defined(nec_ews_svr4) || defined(nec_ews_svr2) || defined(SX) || defined(_nec_up) || defined(_nec_ft) || defined(PC_UX)
+#ifdef nec
+#undef nec
+#endif
+#define MacroIncludeFile <nec.cf>
+#define MacroFile nec.cf
+#define NecArchitecture
 #endif
 
 #ifndef MacroIncludeFile
