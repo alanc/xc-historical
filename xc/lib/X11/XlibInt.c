@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlibInt.c,v 11.217 94/03/19 19:53:42 gildea Exp $
+ * $XConsortium: XlibInt.c,v 11.218 94/03/26 20:01:24 rws Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986, 1987 */
@@ -1388,37 +1388,45 @@ _XSend (dpy, data, size)
 	return 0;
 }
 
-static int
-_XIDHandler(dpy)
+static void
+_XGetMiscCode(dpy)
     register Display *dpy;
 {
     xQueryExtensionReply qrep;
     register xQueryExtensionReq *qreq;
     xXCMiscGetVersionReply vrep;
     register xXCMiscGetVersionReq *vreq;
+
+    if (dpy->xcmisc_opcode)
+	return;
+    GetReq(QueryExtension, qreq);
+    qreq->nbytes = sizeof(XCMiscExtensionName) - 1;
+    qreq->length += (qreq->nbytes+(unsigned)3)>>2;
+    _XSend(dpy, XCMiscExtensionName, (long)qreq->nbytes);
+    if (!_XReply (dpy, (xReply *)&qrep, 0, xTrue))
+	dpy->xcmisc_opcode = -1;
+    else {
+	GetReq(XCMiscGetVersion, vreq);
+	vreq->reqType = qrep.major_opcode;
+	vreq->miscReqType = X_XCMiscGetVersion;
+	vreq->majorVersion = XCMiscMajorVersion;
+	vreq->minorVersion = XCMiscMinorVersion;
+	if (!_XReply (dpy, (xReply *)&vrep, 0, xTrue))
+	    dpy->xcmisc_opcode = -1;
+	else
+	    dpy->xcmisc_opcode = qrep.major_opcode;
+    }
+}
+
+static int
+_XIDHandler(dpy)
+    register Display *dpy;
+{
     xXCMiscGetXIDRangeReply grep;
     register xXCMiscGetXIDRangeReq *greq;
 
     LockDisplay(dpy);
-    if (!dpy->xcmisc_opcode) {
-	GetReq(QueryExtension, qreq);
-	qreq->nbytes = sizeof(XCMiscExtensionName) - 1;
-	qreq->length += (qreq->nbytes+(unsigned)3)>>2;
-	_XSend(dpy, XCMiscExtensionName, (long)qreq->nbytes);
-	if (!_XReply (dpy, (xReply *)&qrep, 0, xTrue))
-	    dpy->xcmisc_opcode = -1;
-	else {
-	    GetReq(XCMiscGetVersion, vreq);
-	    vreq->reqType = qrep.major_opcode;
-	    vreq->miscReqType = X_XCMiscGetVersion;
-	    vreq->majorVersion = XCMiscMajorVersion;
-	    vreq->minorVersion = XCMiscMinorVersion;
-	    if (!_XReply (dpy, (xReply *)&vrep, 0, xTrue))
-		dpy->xcmisc_opcode = -1;
-	    else
-		dpy->xcmisc_opcode = qrep.major_opcode;
-	}
-    }
+    _XGetMiscCode(dpy);
     if (dpy->xcmisc_opcode > 0) {
 	GetReq(XCMiscGetXIDRange, greq);
 	greq->reqType = dpy->xcmisc_opcode;
@@ -1469,6 +1477,58 @@ XID _XAllocID(dpy)
        dpy->resource_id = id >> dpy->resource_shift;
    }
    return id;
+}
+
+/*
+ * _XAllocIDs - multiple resource ID allocation routine.
+ */
+void _XAllocIDs(dpy, ids, count)
+    register Display *dpy;
+    XID *ids;
+    int count;
+{
+    XID id;
+    int i;
+    xXCMiscGetXIDListReply grep;
+    register xXCMiscGetXIDListReq *greq;
+
+    id = dpy->resource_id << dpy->resource_shift;
+    if (id <= dpy->resource_mask &&
+	(dpy->resource_max - id) > ((count - 1) << dpy->resource_shift)) {
+	id += dpy->resource_base;
+	for (i = 0; i < count; i++) {
+	    ids[i] = id;
+	    id += dpy->resource_shift;
+	    dpy->resource_id++;
+	}
+	return;
+    }
+    grep.count = 0;
+    _XGetMiscCode(dpy);
+    if (dpy->xcmisc_opcode > 0) {
+	GetReq(XCMiscGetXIDList, greq);
+	greq->reqType = dpy->xcmisc_opcode;
+	greq->miscReqType = X_XCMiscGetXIDList;
+	greq->count = count;
+	if (_XReply(dpy, (xReply *)&grep, 0, xFalse) && grep.count) {
+	    _XRead32(dpy, (long *) ids, 4L * (long) (grep.count));
+	    for (i = 0; i < grep.count; i++) {
+		id = (ids[i] - dpy->resource_base) >> dpy->resource_shift;
+		if (id >= dpy->resource_id)
+		    dpy->resource_id = id + dpy->resource_shift;
+	    }
+	    if (id >= dpy->resource_max) {
+		if (!(dpy->flags & XlibDisplayPrivSync)) {
+		    dpy->savedsynchandler = dpy->synchandler;
+		    dpy->flags |= XlibDisplayPrivSync;
+		}
+		dpy->synchandler = _XIDHandler;
+		dpy->resource_max = dpy->resource_mask + 1;
+	    }
+	}
+    }
+    for (i = grep.count; i < count; i++)
+	ids[i] = XAllocID(dpy);
 }
 
 /*
