@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: Text.c,v 1.148 90/05/08 15:15:45 converse Exp $";
+static char Xrcsid[] = "$XConsortium: Text.c,v 1.149 90/06/01 16:41:02 converse Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -2473,19 +2473,11 @@ TextWidget ctx;
 _XawTextShowPosition(ctx)
 TextWidget ctx;
 {
-  int x, y, number, lines;
-  XawTextPosition max_pos, top, first, second;
+  int x, y, lines, number;
+  XawTextPosition max_pos, top, first;
 
   if ( (!XtIsRealized((Widget)ctx)) || (ctx->text.lt.lines <= 0) )
     return;
-  
-#ifdef notdef
-  lines = ctx->text.lt.lines;
-  if ( IsValidLine(ctx, lines)) 
-    max_pos = ctx->text.lt.info[lines].position;
-  else
-    max_pos = ctx->text.lastPos + 1;
-#else				/* Using this code now... */
 
 /*
  * Find out the bottom the visable window, and make sure that the
@@ -2496,7 +2488,7 @@ TextWidget ctx;
  */
 
   x = ctx->text.margin.left;
-  y = ctx->core.height - ctx->text.margin.left;
+  y = ctx->core.height - ctx->text.margin.bottom;
   if (ctx->text.hbar != NULL)
     y -= ctx->text.hbar->core.height - 2 * ctx->text.hbar->core.border_width;
   
@@ -2504,41 +2496,63 @@ TextWidget ctx;
   max_pos = SrcScan(ctx->text.source, max_pos, XawstEOL, XawsdRight, 1, FALSE);
   max_pos++;
   lines = LineForPosition(ctx, max_pos); /* number of visable lines. */
-#endif
   
   if ( (ctx->text.insertPos >= ctx->text.lt.top) &&
        ((ctx->text.insertPos < max_pos) || ( max_pos > ctx->text.lastPos)) ) 
     return;
 
   first = ctx->text.lt.top;
-  if (IsValidLine(ctx, 1))
-    second = ctx->text.lt.info[1].position;
-  else
-    second = max_pos;
-      
-  if (ctx->text.insertPos < first)
-    number = 1;
-  else
-    number = lines;
 
-  top = SrcScan(ctx->text.source, ctx->text.insertPos,
-		XawstEOL, XawsdLeft, number, FALSE);
+  if (ctx->text.insertPos < first) {
+      top = SrcScan(ctx->text.source, ctx->text.insertPos,
+		    XawstEOL, XawsdLeft, 1, FALSE);
 
-  _XawTextBuildLineTable(ctx, top, FALSE);
-  while (ctx->text.insertPos >= ctx->text.lt.info[lines].position) {
-    if (ctx->text.lt.info[lines].position > ctx->text.lastPos)
-      break; 
-    _XawTextBuildLineTable(ctx, ctx->text.lt.info[1].position, FALSE);
+      /* count the number of lines we have to scroll */
+
+      number = 0;
+      while (first > top) {
+	  first = SrcScan(ctx->text.source, first,
+			  XawstEOL, XawsdLeft, 1, TRUE);
+	  number--;
+      }
+     
+      /* Back up to just before the last CR. */
+
+      if (first > 0) 
+	  first = SrcScan(ctx->text.source, first,
+			  XawstPositions, XawsdRight, 1, TRUE);
+
+      /* Check to make sure the cursor is visable. */
+
+      if (first > top) {
+	  /*
+	   * Not visable, back out of previous backup. */
+	  first = SrcScan(ctx->text.source, first,
+			  XawstPositions, XawsdLeft, 1, TRUE);
+      }
+      else			/* we are okay, back up line counter. */
+	  number++;
+
+      if (number > lines)	/* Make sure we don't scroll more than 
+				   once screen. */
+	  lines = 0;
+      else
+	  lines = number;
   }
-  if (ctx->text.lt.top == second) {
-    _XawTextBuildLineTable(ctx, first, FALSE);
-    _XawTextVScroll(ctx, 1);
-  } else if (ctx->text.lt.info[1].position == first) {
-    _XawTextBuildLineTable(ctx, first, FALSE);
-    _XawTextVScroll(ctx, -1);
-  } else {
-    ctx->text.numranges = 0;
-    if (ctx->text.lt.top != first)
+  else {
+      top = SrcScan(ctx->text.source, ctx->text.insertPos,
+		    XawstEOL, XawsdLeft, lines, FALSE);
+
+      if (top < max_pos) 
+	  lines = LineForPosition(ctx, top);
+      else
+	  lines = 0;
+  }
+
+  if (lines != 0)
+      _XawTextVScroll(ctx, lines);
+  else {
+      _XawTextBuildLineTable(ctx, top, FALSE);      
       DisplayTextWindow((Widget)ctx);
   }
 }
