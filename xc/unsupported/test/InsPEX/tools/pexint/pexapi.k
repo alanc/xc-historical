@@ -1,5 +1,5 @@
 
-/* $XConsortium$ */
+/* $XConsortium: pexapi.k,v 5.1 91/02/16 10:00:02 rws Exp $ */
 
 /*****************************************************************
 Copyright (c) 1989, 1990, 1991,1990 by Sun Microsystems, Inc. and the X Consortium.
@@ -40,7 +40,7 @@ SOFTWARE.
 /* Pstruct_status */
     PSTRUCT_STATUS_NON_EXISTENT
     PSTRUCT_STATUS_EMPTY
-    PSTRUCT_STATUS_NON_EMPTY
+    PSTRUCT_STATUS_NOT_EMPTY
 /* Par_st */
     PST_ARCL
     PST_AROP
@@ -58,8 +58,8 @@ SOFTWARE.
     PFLAG_COND
     PFLAG_ALWAYS
 /* Pregen_flag */
-    PUPD_PERFORM
-    PUPD_POSTPONE
+    PFLAG_PERFORM
+    PFLAG_POSTPONE
 /* Pdefer_mode */
     PDEFER_ASAP
     PDEFER_BNIG
@@ -82,7 +82,7 @@ SOFTWARE.
     PSIMULT_MORE
 /* Pstruct_net_source */
     PNET_CSS
-    PNET_ARCHIVE
+    PNET_AR
 /* Pdisp_surf_empty */
     PSURF_EMPTY
     PSURF_NOT_EMPTY
@@ -99,12 +99,12 @@ SOFTWARE.
     PPATH_LEFT
     PPATH_UP
     PPATH_DOWN
-/* Phor_align */
+/* Phor_text_align */
     PHOR_NORM
     PHOR_LEFT
     PHOR_CTR
     PHOR_RIGHT
-/* Pvert_align */
+/* Pvert_text_align */
     PVERT_NORM
     PVERT_TOP
     PVERT_CAP
@@ -124,8 +124,8 @@ SOFTWARE.
     PASPECT_LINETYPE
     PASPECT_LINEWIDTH
     PASPECT_LINE_COLR_IND
-    PASPECT_MARKERTYPE
-    PASPECT_MARKERSIZE
+    PASPECT_MARKER_TYPE
+    PASPECT_MARKER_SIZE
     PASPECT_MARKER_COLR_IND
     PASPECT_TEXT_FONT
     PASPECT_TEXT_PREC
@@ -217,8 +217,8 @@ SOFTWARE.
     PINQ_SET
     PINQ_REALIZED
 /* Pupd_st */
-    PUPD_NOT_PENDING
-    PUPD_PENDING
+    PUPD_NOT_PEND
+    PUPD_PEND
 /* Pdc_units */
     PDC_METRES
     PDC_OTHER
@@ -341,7 +341,7 @@ SOFTWARE.
     PEDIT_INSERT
     PEDIT_REPLACE
 /* Pref_flag */
-    PFLAG_DELETE
+    PFLAG_DEL
     PFLAG_KEEP
 /* Perr_mode */
     PERR_OFF
@@ -399,7 +399,7 @@ PFACET_COLOUR_NORMAL
 PLINE_SOLID	
 PLINE_DASH                
 PLINE_DOT		
-PLINE_DOT_DASH
+PLINE_DASH_DOT
 /* Marker types */
 PMARKER_DOT
 PMARKER_PLUS
