@@ -1,4 +1,4 @@
-/* $XConsortium: Xlib.h,v 11.166 89/12/09 18:54:58 rws Exp $ */
+/* $XConsortium: Xlib.h,v 11.167 89/12/09 20:24:38 jim Exp $ */
 /* 
  * Copyright 1985, 1986, 1987 by the Massachusetts Institute of Technology
  *
@@ -25,10 +25,6 @@
 #ifndef _XLIB_H_
 #define _XLIB_H_
 
-#ifdef __cplusplus
-extern "C" {					/* for C++ V2.0 */
-#endif
-
 #if defined(CRAY) || defined(USG)
 #ifndef __TYPES__
 #define __TYPES__
@@ -41,7 +37,7 @@ extern "C" {					/* for C++ V2.0 */
 #include <X11/X.h>
 
 #ifndef NeedFunctionPrototypes
-#if defined(__STDC__) || defined(__cplusplus)
+#if defined(FUNCPROTO) || defined(__STDC__) || defined(__cplusplus)
 #define NeedFunctionPrototypes 1
 #else
 #define NeedFunctionPrototypes 0
@@ -49,11 +45,15 @@ extern "C" {					/* for C++ V2.0 */
 #endif /* NeedFunctionPrototypes */
 
 #ifndef NeedWidePrototypes
-#ifdef WIDEPROTO
+#if defined(WIDEPROTO)
 #define NeedWidePrototypes 1
 #else
 #define NeedWidePrototypes 0
 #endif
+#endif
+
+#ifdef __cplusplus			/* do not leave open across includes */
+extern "C" {					/* for C++ V2.0 */
 #endif
 
 #define Bool int
