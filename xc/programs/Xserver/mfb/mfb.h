@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfb.h,v 5.28 94/03/06 18:24:15 dpw Exp $ */
+/* $XConsortium: mfb.h,v 5.29 94/03/11 18:27:48 dpw Exp $ */
 /* Monochrome Frame Buffer definitions 
    written by drewry, september 1986
 */
@@ -1050,19 +1050,56 @@ typedef struct {
 #define mfbGetWindowByteWidthAndPointer(pWin, width, pointer) \
     mfbGetWindowTypedWidthAndPointer(pWin, width, pointer, char, char)
 
-#define mfbScanlineInc(pointer, offset) pointer += (offset)
+/*  mfb uses the following macros to calculate addresses in drawables.
+ *  To support banked framebuffers, the macros come in four flavors.
+ *  All four collapse into the same definition on unbanked devices.
+ *  
+ *  mfbScanlineFoo - calculate address and do bank switching
+ *  mfbScanlineFooNoBankSwitch - calculate address, don't bank switch
+ *  mfbScanlineFooSrc - calculate address, switch source bank
+ *  mfbScanlineFooDst - calculate address, switch destination bank
+ */
 
-#define mfbScanlineOffset(pointer, offset) ((pointer) + (offset))
+/* The NoBankSwitch versions are the same for banked and unbanked cases */
 
-#define mfbScanlineDelta(pointer, y, width) \
-    mfbScanlineOffset(pointer, (y) * (width))
+#define mfbScanlineIncNoBankSwitch(_ptr, _off) _ptr += (_off)
+#define mfbScanlineOffsetNoBankSwitch(_ptr, _off) ((_ptr) + (_off))
+#define mfbScanlineDeltaNoBankSwitch(_ptr, _y, _w) \
+    mfbScanlineOffsetNoBankSwitch(_ptr, (_y) * (_w))
+#define mfbScanlineNoBankSwitch(_ptr, _x, _y, _w) \
+    mfbScanlineOffsetNoBankSwitch(_ptr, (_y) * (_w) + ((_x) >> MFB_PWSH))
 
-#define mfbScanline(pointer, x, y, width) \
-    mfbScanlineOffset(pointer, (y) * (width) + ((x) >> MFB_PWSH))
+#ifdef MFB_LINE_BANK
+
+#include "mfblinebank.h" /* get macro definitions from this file */
+
+#else /* !MFB_LINE_BANK - unbanked case */
+
+#define mfbScanlineInc(_ptr, _off)       mfbScanlineIncNoBankSwitch(_ptr, _off)
+#define mfbScanlineIncSrc(_ptr, _off)     mfbScanlineInc(_ptr, _off)
+#define mfbScanlineIncDst(_ptr, _off)     mfbScanlineInc(_ptr, _off)
+
+#define mfbScanlineOffset(_ptr, _off) mfbScanlineOffsetNoBankSwitch(_ptr, _off)
+#define mfbScanlineOffsetSrc(_ptr, _off)  mfbScanlineOffset(_ptr, _off)
+#define mfbScanlineOffsetDst(_ptr, _off)  mfbScanlineOffset(_ptr, _off)
+
+#define mfbScanlineSrc(_ptr, _x, _y, _w)  mfbScanline(_ptr, _x, _y, _w)
+#define mfbScanlineDst(_ptr, _x, _y, _w)  mfbScanline(_ptr, _x, _y, _w)
+
+#define mfbScanlineDeltaSrc(_ptr, _y, _w) mfbScanlineDelta(_ptr, _y, _w)
+#define mfbScanlineDeltaDst(_ptr, _y, _w) mfbScanlineDelta(_ptr, _y, _w)
+
+#endif /* MFB_LINE_BANK */
+
+#define mfbScanlineDelta(_ptr, _y, _w) \
+    mfbScanlineOffset(_ptr, (_y) * (_w))
+
+#define mfbScanline(_ptr, _x, _y, _w) \
+    mfbScanlineOffset(_ptr, (_y) * (_w) + ((_x) >> MFB_PWSH))
+
 
 /* precomputed information about each glyph for GlyphBlt code.
-   this saves recalculating the per glyph information for each
-box.
+   this saves recalculating the per glyph information for each box.
 */
 typedef struct _pos{
     int xpos;		/* xposition of glyph's origin */

@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbline.c,v 5.14 94/01/12 18:05:07 dpw Exp $ */
+/* $XConsortium: mfbline.c,v 5.16 94/03/06 18:24:26 dpw Exp $ */
 #include "X.h"
 
 #include "gcstruct.h"
@@ -91,6 +91,7 @@ mfbLineSS (pDrawable, pGC, mode, npt, pptInit)
     unsigned int oc1;		/* outcode of point 1 */
     unsigned int oc2;		/* outcode of point 2 */
 
+    PixelType *addrlBase;	/* pointer to start of drawable */
     PixelType *addrl;		/* address of destination pixmap */
     int nlwidth;		/* width in longwords of destination pixmap */
     int xorg, yorg;		/* origin of window */
@@ -117,7 +118,7 @@ mfbLineSS (pDrawable, pGC, mode, npt, pptInit)
     pboxInit = REGION_RECTS(cclip);
     nboxInit = REGION_NUM_RECTS(cclip);
 
-    mfbGetPixelWidthAndPointer(pDrawable, nlwidth, addrl);
+    mfbGetPixelWidthAndPointer(pDrawable, nlwidth, addrlBase);
 
     xorg = pDrawable->x;
     yorg = pDrawable->y;
@@ -194,7 +195,7 @@ mfbLineSS (pDrawable, pGC, mode, npt, pptInit)
 			if (y1t != y2t)
 			{
 			    mfbVertS (alu,
-				      addrl, nlwidth, 
+				      addrlBase, nlwidth, 
 				      x1, y1t, y2t-y1t);
 			}
 		    }
@@ -266,7 +267,7 @@ mfbLineSS (pDrawable, pGC, mode, npt, pptInit)
 		    if (x1t != x2t)
 		    {
 			mfbHorzS (alu,
-				  addrl, nlwidth, 
+				  addrlBase, nlwidth, 
 				  x1t, y1, x2t-x1t);
 		    }
 		    nbox--;
@@ -320,7 +321,7 @@ mfbLineSS (pDrawable, pGC, mode, npt, pptInit)
 			len++;
 #endif
 		    mfbBresS (alu,
-			  addrl, nlwidth,
+			  addrlBase, nlwidth,
 			  signdx, signdy, axis, x1, y1,
 			  e, e1, e2, len);
 		    break;
@@ -372,7 +373,7 @@ mfbLineSS (pDrawable, pGC, mode, npt, pptInit)
 			    err = e;
 			mfbBresS   
 			    (alu,
-			     addrl, nlwidth,
+			     addrlBase, nlwidth,
 			     signdx, signdy, axis, new_x1, new_y1,
 			     err, e1, e2, len);
 		    }
@@ -410,7 +411,7 @@ mfbLineSS (pDrawable, pGC, mode, npt, pptInit)
 		(x2 <  pbox->x2) &&
 		(y2 <  pbox->y2))
 	    {
-		addrl = mfbScanline(addrl, x2, y2, nlwidth);
+		addrl = mfbScanline(addrlBase, x2, y2, nlwidth);
 		switch(alu)
 		{
 		    case RROP_BLACK:

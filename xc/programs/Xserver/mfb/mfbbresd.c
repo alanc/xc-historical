@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbbresd.c,v 1.6 94/01/12 18:04:36 dpw Exp $ */
+/* $XConsortium: mfbbresd.c,v 1.8 94/03/06 18:24:23 dpw Exp $ */
 #include "X.h"
 #include "misc.h"
 #include "mfb.h"
@@ -43,7 +43,7 @@ SOFTWARE.
 void
 mfbBresD(fgrop, bgrop,
 	 pdashIndex, pDash, numInDashList, pdashOffset, isDoubleDash,
-	 addrl, nlwidth,
+	 addrlbase, nlwidth,
 	 signdx, signdy, axis, x1, y1, e, e1, e2, len)
 int fgrop, bgrop;
 int *pdashIndex;	/* current dash */
@@ -51,7 +51,7 @@ unsigned char *pDash;	/* dash list */
 int numInDashList;	/* total length of dash list */
 int *pdashOffset;	/* offset into current dash */
 int isDoubleDash;
-PixelType *addrl;	/* pointer to base of bitmap */
+PixelType *addrlbase;	/* pointer to base of bitmap */
 int nlwidth;		/* width in longwords of bitmap */
 int signdx, signdy;	/* signs of directions */
 int axis;		/* major axis (Y_AXIS or X_AXIS) */
@@ -62,7 +62,7 @@ int e2;
 int len;		/* length of line */
 {
     register int yinc;	/* increment to next scanline, in bytes */
-    register unsigned char *addrb;
+    register PixelType *addrl;
     register int e3 = e2-e1;
     register unsigned long bit;
     PixelType leftbit = mask[0]; /* leftmost bit to process in new word */
@@ -82,8 +82,8 @@ int len;		/* length of line */
 	rop = bgrop;
 
     /* point to longword containing first point */
-    addrb = (unsigned char *)mfbScanline(addrl, x1, y1, nlwidth);
-    yinc = signdy * nlwidth * PGSZB;
+    addrl = mfbScanline(addrlbase, x1, y1, nlwidth);
+    yinc = signdy * nlwidth;
     e = e-e1;			/* to make looping easier */
     bit = mask[x1 & PIM];
     if (axis == X_AXIS)
@@ -93,19 +93,19 @@ int len;		/* length of line */
 	    while(len--)
 	    { 
 		if (rop == RROP_BLACK)
-		    *(PixelType *)addrb &= ~bit;
+		    *addrl &= ~bit;
 		else if (rop == RROP_WHITE)
-		    *(PixelType *)addrb |= bit;
+		    *addrl |= bit;
 		else if (rop == RROP_INVERT)
-		    *(PixelType *)addrb ^= bit;
+		    *addrl ^= bit;
 		e += e1;
 		if (e >= 0)
 		{
-		    mfbScanlineInc(addrb, yinc);
+		    mfbScanlineInc(addrl, yinc);
 		    e += e3;
 		}
 		bit = SCRRIGHT(bit,1);
-		if (!bit) { bit = leftbit;addrb += PGSZB; }
+		if (!bit) { bit = leftbit;addrl ++; }
 		StepDash
 	    }
 	}
@@ -114,19 +114,19 @@ int len;		/* length of line */
 	    while(len--)
 	    { 
 		if (rop == RROP_BLACK)
-		    *(PixelType *)addrb &= ~bit;
+		    *addrl &= ~bit;
 		else if (rop == RROP_WHITE)
-		    *(PixelType *)addrb |= bit;
+		    *addrl |= bit;
 		else if (rop == RROP_INVERT)
-		    *(PixelType *)addrb ^= bit;
+		    *addrl ^= bit;
 		e += e1;
 		if (e >= 0)
 		{
-		    mfbScanlineInc(addrb, yinc);
+		    mfbScanlineInc(addrl, yinc);
 		    e += e3;
 		}
 		bit = SCRLEFT(bit,1);
-		if (!bit) { bit = rightbit;addrb -= PGSZB; }
+		if (!bit) { bit = rightbit;addrl --; }
 		StepDash
 	    }
 	}
@@ -138,19 +138,19 @@ int len;		/* length of line */
 	    while(len--)
 	    {
 		if (rop == RROP_BLACK)
-		    *(PixelType *)addrb &= ~bit;
+		    *addrl &= ~bit;
 		else if (rop == RROP_WHITE)
-		    *(PixelType *)addrb |= bit;
+		    *addrl |= bit;
 		else if (rop == RROP_INVERT)
-		    *(PixelType *)addrb ^= bit;
+		    *addrl ^= bit;
 		e += e1;
 		if (e >= 0)
 		{
 		    bit = SCRRIGHT(bit,1);
-		    if (!bit) { bit = leftbit;addrb += PGSZB; }
+		    if (!bit) { bit = leftbit;addrl ++; }
 		    e += e3;
 		}
-		mfbScanlineInc(addrb, yinc);
+		mfbScanlineInc(addrl, yinc);
 		StepDash
 	    }
 	}
@@ -159,19 +159,19 @@ int len;		/* length of line */
 	    while(len--)
 	    {
 		if (rop == RROP_BLACK)
-		    *(PixelType *)addrb &= ~bit;
+		    *addrl &= ~bit;
 		else if (rop == RROP_WHITE)
-		    *(PixelType *)addrb |= bit;
+		    *addrl |= bit;
 		else if (rop == RROP_INVERT)
-		    *(PixelType *)addrb ^= bit;
+		    *addrl ^= bit;
 		e += e1;
 		if (e >= 0)
 		{
 		    bit = SCRLEFT(bit,1);
-		    if (!bit) { bit = rightbit;addrb -= PGSZB; }
+		    if (!bit) { bit = rightbit;addrl --; }
 		    e += e3;
 		}
-		mfbScanlineInc(addrb, yinc);
+		mfbScanlineInc(addrl, yinc);
 		StepDash
 	    }
 	}

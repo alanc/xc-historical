@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbimggblt.c,v 5.14 94/01/12 18:05:04 dpw Exp $ */
+/* $XConsortium: mfbimggblt.c,v 5.15 94/02/23 15:50:58 dpw Exp $ */
 #include	"X.h"
 #include	"Xmd.h"
 #include	"Xproto.h"
@@ -179,7 +179,7 @@ MFBIMAGEGLYPHBLT(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
       case rgnOUT:
 	break;
       case rgnIN:
-        pdstBase = mfbScanline(pdstBase, x, y, widthDst);
+	pdstBase = mfbScanlineNoBankSwitch(pdstBase, x, y, widthDst);
         xchar = x & PIM;
 
         while(nglyph--)
@@ -270,7 +270,7 @@ MFBIMAGEGLYPHBLT(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 	if(!(ppos = (TEXTPOS *)ALLOCATE_LOCAL(nglyph * sizeof(TEXTPOS))))
 	    return;
 
-        pdstBase = mfbScanline(pdstBase, x, y, widthDst);
+	pdstBase = mfbScanlineNoBankSwitch(pdstBase, x, y, widthDst);
         xpos = x;
 	xchar = xpos & PIM;
 

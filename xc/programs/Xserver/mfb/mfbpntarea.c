@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbpntarea.c,v 5.4 92/12/24 09:26:36 rws Exp $ */
+/* $XConsortium: mfbpntarea.c,v 5.5 94/01/12 18:05:18 dpw Exp $ */
 #include "X.h"
 
 #include "windowstr.h"
@@ -89,7 +89,7 @@ MFBSOLIDFILLAREA(pDraw, nbox, pbox, alu, nop)
 	{
 	    maskpartialbits(pbox->x1, w, startmask);
 	    nlwExtra = nlwidth;
-	    Duff(h, *p OPEQ startmask; p += nlwExtra);
+	    Duff(h, *p OPEQ startmask; mfbScanlineInc(p, nlwExtra));
 	}
 	else
 	{
@@ -207,7 +207,7 @@ MFBSTIPPLEFILLAREA(pDraw, nbox, pbox, alu, pstipple)
 		srcpix = psrc[iy];
 		iy = ++iy < tileHeight ? iy : 0;
 		*p OPEQ (srcpix & startmask);
-		p += nlwExtra;
+		mfbScanlineInc(p, nlwExtra);
 	    }
 	}
 	else
@@ -227,7 +227,7 @@ MFBSTIPPLEFILLAREA(pDraw, nbox, pbox, alu, pstipple)
 		    p++;
 		    Duff (nlw, *p++ OPEQ srcpix);
 		    *p OPEQ (srcpix & endmask);
-		    p += nlwExtra;
+		    mfbScanlineInc(p, nlwExtra);
 		}
 	    }
 	    else if (startmask && !endmask)
@@ -241,7 +241,7 @@ MFBSTIPPLEFILLAREA(pDraw, nbox, pbox, alu, pstipple)
 		    *p OPEQ (srcpix & startmask);
 		    p++;
 		    Duff(nlw, *p++ OPEQ srcpix);
-		    p += nlwExtra;
+		    mfbScanlineInc(p, nlwExtra);
 		}
 	    }
 	    else if (!startmask && endmask)
@@ -253,7 +253,7 @@ MFBSTIPPLEFILLAREA(pDraw, nbox, pbox, alu, pstipple)
 		    nlw = nlwMiddle;
 		    Duff(nlw, *p++ OPEQ srcpix);
 		    *p OPEQ (srcpix & endmask);
-		    p += nlwExtra;
+		    mfbScanlineInc(p, nlwExtra);
 		}
 	    }
 	    else /* no ragged bits at either end */
@@ -264,7 +264,7 @@ MFBSTIPPLEFILLAREA(pDraw, nbox, pbox, alu, pstipple)
 		    iy = ++iy < tileHeight ? iy : 0;
 		    nlw = nlwMiddle;
 		    Duff(nlw, *p++ OPEQ srcpix);
-		    p += nlwExtra;
+		    mfbScanlineInc(p, nlwExtra);
 		}
 	    }
 	}

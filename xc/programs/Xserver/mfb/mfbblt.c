@@ -18,7 +18,7 @@ purpose.  It is provided "as is" without express or implied warranty.
 Author: Keith Packard
 
 */
-/* $XConsortium: mfbblt.c,v 1.8 93/09/13 09:32:19 dpw Exp $ */
+/* $XConsortium: mfbblt.c,v 1.9 94/01/12 18:04:29 dpw Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -201,13 +201,13 @@ MROP_NAME(mfbDoBitblt)(pSrc, pDst, alu, prgnDst, pptSrc)
 
 	if (ydir == -1) /* start at last scanline of rectangle */
 	{
-	    psrcLine = mfbScanlineDelta(psrcBase, -(pptSrc->y+h-1), widthSrc);
-	    pdstLine = mfbScanlineDelta(pdstBase, -(pbox->y2-1), widthDst);
+	    psrcLine = mfbScanlineDeltaSrc(psrcBase, -(pptSrc->y+h-1), widthSrc);
+	    pdstLine = mfbScanlineDeltaDst(pdstBase, -(pbox->y2-1), widthDst);
 	}
 	else /* start at first scanline */
 	{
-	    psrcLine = mfbScanlineDelta(psrcBase, pptSrc->y, widthSrc);
-	    pdstLine = mfbScanlineDelta(pdstBase, pbox->y1, widthDst);
+	    psrcLine = mfbScanlineDeltaSrc(psrcBase, pptSrc->y, widthSrc);
+	    pdstLine = mfbScanlineDeltaDst(pdstBase, pbox->y1, widthDst);
 	}
 	if ((pbox->x1 & PIM) + w <= PPW)
 	{
@@ -237,8 +237,6 @@ MROP_NAME(mfbDoBitblt)(pSrc, pDst, alu, prgnDst, pptSrc)
 		{
 		    psrc = psrcLine;
 		    pdst = pdstLine;
-		    mfbScanlineInc(pdstLine, widthDst);
-		    mfbScanlineInc(psrcLine, widthSrc);
 		    if (startmask)
 		    {
 			*pdst = MROP_MASK(*psrc, *pdst, startmask);
@@ -300,6 +298,8 @@ psrc += UNROLL;
 
 		    if (endmask)
 			*pdst = MROP_MASK(*psrc, *pdst, endmask);
+		    mfbScanlineIncDst(pdstLine, widthDst);
+		    mfbScanlineIncSrc(psrcLine, widthSrc);
 		}
 	    }
 #ifndef DO_UNALIGNED_BITBLT
@@ -319,8 +319,6 @@ psrc += UNROLL;
 		{
 		    psrc = psrcLine;
 		    pdst = pdstLine;
-		    mfbScanlineInc(pdstLine, widthDst);
-		    mfbScanlineInc(psrcLine, widthSrc);
 		    bits = 0;
 		    if (xoffSrc > xoffDst)
 			bits = *psrc++;
@@ -395,6 +393,8 @@ pdst++;
 			}
 			*pdst = MROP_MASK (bits1, *pdst, endmask);
 		    }
+		    mfbScanlineIncDst(pdstLine, widthDst);
+		    mfbScanlineIncSrc(psrcLine, widthSrc);
 		}
 	    }
 #endif /* DO_UNALIGNED_BITBLT */
@@ -417,8 +417,6 @@ pdst++;
 		{
 		    psrc = psrcLine;
 		    pdst = pdstLine;
-		    mfbScanlineInc(pdstLine, widthDst);
-		    mfbScanlineInc(psrcLine, widthSrc);
 		    if (endmask)
 		    {
 			pdst--;
@@ -464,6 +462,8 @@ psrc -= UNROLL;
 			--psrc;
 			*pdst = MROP_MASK(*psrc, *pdst, startmask);
 		    }
+		    mfbScanlineIncDst(pdstLine, widthDst);
+		    mfbScanlineIncSrc(psrcLine, widthSrc);
 		}
 	    }
 #ifndef DO_UNALIGNED_BITBLT
@@ -483,8 +483,6 @@ psrc -= UNROLL;
 		{
 		    psrc = psrcLine;
 		    pdst = pdstLine;
-		    mfbScanlineInc(pdstLine, widthDst);
-		    mfbScanlineInc(psrcLine, widthSrc);
 		    bits = 0;
 		    if (xoffDst > xoffSrc)
 			bits = *--psrc;
@@ -556,6 +554,8 @@ bits1 = *--psrc; --pdst; \
 			--pdst;
 			*pdst = MROP_MASK(bits1, *pdst, startmask);
 		    }
+		    mfbScanlineIncDst(pdstLine, widthDst);
+		    mfbScanlineIncSrc(psrcLine, widthSrc);
 		}
 	    }
 #endif

@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbtile.c,v 5.5 92/12/24 09:26:41 rws Exp $ */
+/* $XConsortium: mfbtile.c,v 5.6 94/01/12 18:05:34 dpw Exp $ */
 #include "X.h"
 
 #include "windowstr.h"
@@ -83,7 +83,7 @@ MROP_NAME(mfbTileAreaPPW)(pDraw, nbox, pbox, alu, ptile)
 	w = pbox->x2 - pbox->x1;
 	h = pbox->y2 - pbox->y1;
 	iy = pbox->y1 % tileHeight;
-	p = pbits + (pbox->y1 * nlwidth) + (pbox->x1 >> PWSH);
+	p = mfbScanline(pbits, pbox->x1, pbox->y1, nlwidth);
 
 	if ( ((pbox->x1 & PIM) + w) < PPW)
 	{

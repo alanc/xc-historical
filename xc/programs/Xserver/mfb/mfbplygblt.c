@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbplygblt.c,v 5.11 94/01/12 18:05:14 dpw Exp $ */
+/* $XConsortium: mfbplygblt.c,v 5.12 94/02/23 15:51:01 dpw Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -137,7 +137,7 @@ MFBPOLYGLYPHBLT(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
       case rgnOUT:
 	break;
       case rgnIN:
-        pdstBase = mfbScanline(pdstBase, x, y, widthDst);
+        pdstBase = mfbScanlineNoBankSwitch(pdstBase, x, y, widthDst);
         xchar = x & PIM;
 
         while(nglyph--)
@@ -228,7 +228,7 @@ MFBPOLYGLYPHBLT(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 	if(!(ppos = (TEXTPOS *)ALLOCATE_LOCAL(nglyph * sizeof(TEXTPOS))))
 	    return;
 
-        pdstBase = mfbScanline(pdstBase, x, y, widthDst);
+        pdstBase = mfbScanlineNoBankSwitch(pdstBase, x, y, widthDst);
         xpos = x;
 	xchar = xpos & PIM;
 

@@ -15,7 +15,7 @@ without any express or implied warranty.
 
 ********************************************************/
 
-/* $XConsortium: mfbfillarc.c,v 5.11 94/01/07 09:43:20 dpw Exp $ */
+/* $XConsortium: mfbfillarc.c,v 5.12 94/01/12 18:04:49 dpw Exp $ */
 
 #include "X.h"
 #include "Xprotostr.h"
@@ -62,7 +62,7 @@ mfbFillEllipseSolid(pDraw, arc, rop)
 	if (!slw)
 	    continue;
 	xpos = xorg - x;
-	addrl = addrlt + (xpos >> PWSH);
+	addrl = mfbScanlineOffset(addrlt, (xpos >> PWSH));
 	if (((xpos & PIM) + slw) < PPW)
 	{
 	    maskpartialbits(xpos, slw, startmask);
@@ -74,7 +74,7 @@ mfbFillEllipseSolid(pDraw, arc, rop)
 		*addrl ^= startmask;
 	    if (miFillArcLower(slw))
 	    {
-		addrl = addrlb + (xpos >> PWSH);
+		addrl = mfbScanlineOffset(addrlb, (xpos >> PWSH));
 		if (rop == RROP_BLACK)
 		    *addrl &= ~startmask;
 		else if (rop == RROP_WHITE)
@@ -115,7 +115,7 @@ mfbFillEllipseSolid(pDraw, arc, rop)
 	}
 	if (!miFillArcLower(slw))
 	    continue;
-	addrl = addrlb + (xpos >> PWSH);
+	addrl = mfbScanlineOffset(addrlb, (xpos >> PWSH));
 	if (startmask)
 	{
 	    if (rop == RROP_BLACK)
@@ -151,7 +151,7 @@ mfbFillEllipseSolid(pDraw, arc, rop)
     if (xr >= xl) \
     { \
 	width = xr - xl + 1; \
-	addrl = addr + (xl >> PWSH); \
+	addrl = mfbScanlineOffset(addr, (xl >> PWSH)); \
 	if (((xl & PIM) + width) < PPW) \
 	{ \
 	    maskpartialbits(xl, width, startmask); \
@@ -236,14 +236,14 @@ mfbFillArcSliceSolidCopy(pDraw, pGC, arc, rop)
     xorg += pDraw->x;
     yorg += pDraw->y;
     addrlb = addrlt;
-    addrlt = mfbScanlineDelta(addrlt, yorg - y, nlwidth);
-    addrlb = mfbScanlineDelta(addrlb, yorg + y + dy, nlwidth);
+    addrlt = mfbScanlineDeltaNoBankSwitch(addrlt, yorg - y, nlwidth);
+    addrlb = mfbScanlineDeltaNoBankSwitch(addrlb, yorg + y + dy, nlwidth);
     slice.edge1.x += pDraw->x;
     slice.edge2.x += pDraw->x;
     while (y > 0)
     {
-	mfbScanlineInc(addrlt, nlwidth);
-	mfbScanlineInc(addrlb, -nlwidth);
+	mfbScanlineIncNoBankSwitch(addrlt, nlwidth);
+	mfbScanlineIncNoBankSwitch(addrlb, -nlwidth);
 	MIFILLARCSTEP(slw);
 	MIARCSLICESTEP(slice.edge1);
 	MIARCSLICESTEP(slice.edge2);
