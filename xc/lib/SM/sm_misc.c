@@ -1,4 +1,4 @@
-/* $XConsortium: misc.c,v 1.1 93/09/03 13:25:14 mor Exp $ */
+/* $XConsortium: sm_misc.c,v 1.2 93/09/08 20:11:42 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -19,36 +19,32 @@ purpose.  It is provided "as is" without express or implied warranty.
 #include <stdio.h>
 
 /*
- * Free properties
+ * Free property
  */
 
 void
-SmFreeProperties (numProps, props)
+SmFreeProperty (prop)
 
-int	numProps;
-SmProp	*props;
+SmProp	*prop;
 
 {
-    if (props)
+    if (prop)
     {
-	int i, j;
+	int i;
 
-	for (i = 0; i < numProps; i++)
+	if (prop->name)
+	    free (prop->name);
+	if (prop->type)
+	    free (prop->type);
+	if (prop->vals)
 	{
-	    if (props[i].name)
-		free (props[i].name);
-	    if (props[i].type)
-		free (props[i].type);
-	    if (props[i].vals)
-	    {
-		for (j = 0; j < props[i].num_vals; j++)
-		    if (props[i].vals[j].value)
-			free ((char *) props[i].vals[j].value);
-		free ((char *) props[i].vals);
-	    }
+	    for (i = 0; i < prop->num_vals; i++)
+		if (prop->vals[i].value)
+		    free ((char *) prop->vals[i].value);
+	    free ((char *) prop->vals);
 	}
 
-	free ((char *) props);
+	free ((char *) prop);
     }
 }
 
