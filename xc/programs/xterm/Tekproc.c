@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Tekproc.c,v 1.97 91/05/04 21:44:40 gildea Exp $
+ * $XConsortium: Tekproc.c,v 1.98 91/05/07 00:52:47 gildea Exp $
  *
  * Warning, there be crufty dragons here.
  */
@@ -105,12 +105,6 @@ extern long time();		/* included in <time.h> by Xos.h */
 
 extern Widget toplevel;
 
-static XPoint *T_box[TEKNUMFONTS] = {
-	T_boxlarge,
-	T_box2,
-	T_box3,
-	T_boxsmall,
-};
 static struct Tek_Char {
 	int hsize;	/* in Tek units */
 	int vsize;	/* in Tek units */
@@ -1276,8 +1270,6 @@ static void TekRealize (gw, valuemaskp, values)
 		       ((*valuemaskp)|CWBackPixel|CWWinGravity),
 		       values);
 
-    screen->Tbox = T_box;
-
     TFullWidth(screen) = width;
     TFullHeight(screen) = height;
     TWidth(screen) = width - border;
@@ -1320,11 +1312,14 @@ static void TekRealize (gw, valuemaskp, values)
     gcv.function = GXinvert;
     gcv.plane_mask = screen->xorplane = (screen->Tbackground ^
 					 screen->Tcursorcolor);
+    gcv.join_style = JoinMiter;	/* default */
+    gcv.line_width = 1;
     screen->TcursorGC = XCreateGC (screen->display, TWindow(screen), 
 				   (GCFunction|GCPlaneMask), &gcv);
 
     gcv.foreground = screen->Tforeground;
     gcv.line_style = LineOnOffDash;
+    gcv.line_width = 0;
     for(i = 0 ; i < TEKNUMLINES ; i++) {
 	screen->linepat[i] = XCreateGC (screen->display, TWindow(screen),
 					(GCForeground|GCLineStyle), &gcv); 
@@ -1466,27 +1461,23 @@ TCursorToggle(toggle)
 	 screen->border - tekWidget->tek.tobaseline[c];
 	if (toggle == TOGGLE) {
 	   if (screen->select || screen->always_highlight) 
-		XFillRectangle(
-		    screen->display, TWindow(screen), screen->TcursorGC,
-		    x, y, cellwidth, cellheight);
-	  else { /* fix to use different GC! */
-		  screen->Tbox[c]->x = x;
-		  screen->Tbox[c]->y = y ;
-		  XDrawLines(screen->display, TWindow(screen), 
-		    screen->TcursorGC,
-		    screen->Tbox[c], NBOX, CoordModePrevious);
+	       XFillRectangle(screen->display, TWindow(screen),
+			      screen->TcursorGC, x, y,
+			      cellwidth, cellheight);
+	   else { /* fix to use different GC! */
+	       XDrawRectangle(screen->display, TWindow(screen),
+			      screen->TcursorGC, x, y,
+			      cellwidth-1, cellheight-1);
 	   }
 	} else {
-	   if (screen->select || screen->always_highlight) 
-		XClearArea(screen->display, TWindow(screen), x, y,
-			   cellwidth, cellheight, FALSE);
-	   else { 
-		  screen->Tbox[c]->x = x;
-		  screen->Tbox[c]->y = y ;
-		  XDrawLines(screen->display, TWindow(screen), 
-		    screen->TcursorGC,
-		    screen->Tbox[c], NBOX, CoordModePrevious);
-	   }
+	    /* Clear the entire rectangle, even though we may only
+	     * have drawn an outline.  This fits with our refresh
+	     * scheme of redrawing the entire window on any expose
+	     * event and is easier than trying to figure out exactly
+	     * which part of the cursor needs to be erased.
+	     */
+	    XClearArea(screen->display, TWindow(screen), x, y,
+		       cellwidth, cellheight, FALSE);
 	}
 }
 
