@@ -6,12 +6,14 @@ all::
 SRCS = 
 OBJS = 
 
+FONTINSTDIR = $(FONTDIR)/100dpi
+
 MakeFonts()
 
-InstallFonts($(FONTDIR)/100dpi)
+InstallFonts($(FONTINSTDIR))
 
  */
 
 depend::
-	@echo "skipping depend in bdf/100dpi"
+	@echo "skipping make depend in bdf/100dpi"
 

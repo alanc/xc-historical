@@ -42,7 +42,7 @@ OBJS = \
 	timI10.snf timI12.snf timI14.snf timI18.snf timI24.snf timR08.snf \
 	timR10.snf timR12.snf timR14.snf timR18.snf timR24.snf
 
-
+FONTINSTDIR = ($FONTDIR)/75dpi
 
 MakeFonts()
 
@@ -149,7 +149,7 @@ FontTarget(timR14)
 FontTarget(timR18)
 FontTarget(timR24)
 
-InstallFonts($(FONTDIR)/75dpi)
+InstallFonts($(FONTINSTDIR))
 
 depend::
-	@echo "skipping depend in bdf/75dpi"
+	@echo "skipping make depend in bdf/75dpi"
