@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: colormap.c,v 5.28 93/07/17 09:52:00 dpw Exp $ */
+/* $XConsortium: colormap.c,v 5.29 93/09/03 07:57:44 dpw Exp $ */
 
 #include "X.h"
 #define NEED_EVENTS
@@ -78,13 +78,6 @@ static void FreePixels(
 #if NeedFunctionPrototypes
     register ColormapPtr /*pmap*/,
     register int /*client*/
-#endif
-);
-
-extern int FreeClientPixels(
-#if NeedFunctionPrototypes
-    pointer /*value*/,
-    XID /*fakeid*/
 #endif
 );
 
@@ -918,6 +911,7 @@ AllocColor (pmap, pred, pgreen, pblue, pPix, client)
  * is that this routine will never return failure.
  */
 
+void
 FakeAllocColor (pmap, item)
     register ColormapPtr pmap;
     register xColorItem  *item;
@@ -982,6 +976,7 @@ FakeAllocColor (pmap, item)
 }
 
 /* free a pixel value obtained from FakeAllocColor */
+void
 FakeFreeColor(pmap, pixel)
     register ColormapPtr pmap;
     Pixel pixel;
@@ -1034,7 +1029,7 @@ typedef struct _bignum {
 #define MaxBigNum(r)		(((r)->upper = BIGNUMUPPER-1), \
 				 ((r)->lower = BIGNUMLOWER-1))
 
-static
+static void
 BigNumAdd (x, y, r)
     BigNumPtr	x, y, r;
 {
@@ -1471,6 +1466,7 @@ FreeClientPixels (value, fakeid)
     if (pmap)
 	FreePixels(pmap, pcr->client);
     xfree(pcr);
+    return Success;
 }
 
 int
@@ -2012,7 +2008,7 @@ AllocShared (pmap, ppix, c, r, g, b, rmask, gmask, bmask, ppixFirst)
 {
     Pixel	*pptr, *cptr;
     int		npix, z, npixClientNew, npixShared;
-    Pixel	basemask, base, bits, common, pmask;
+    Pixel	basemask, base, bits, common;
     SHAREDCOLOR *pshared, **ppshared, **psharedList;
 
     npixClientNew = c << (r + g + b);

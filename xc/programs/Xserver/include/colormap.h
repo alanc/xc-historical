@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 */
-/* $XConsortium: colormap.h,v 1.23 93/07/12 09:44:29 dpw Exp $ */
+/* $XConsortium: colormap.h,v 1.24 93/07/12 16:33:27 dpw Exp $ */
 #ifndef CMAP_H
 #define CMAP_H 1
 
@@ -104,14 +104,14 @@ extern int AllocColor(
 #endif
 );
 
-extern int FakeAllocColor(
+extern void FakeAllocColor(
 #if NeedFunctionPrototypes
     ColormapPtr /*pmap*/,
     xColorItem * /*item*/
 #endif
 );
 
-extern int FakeFreeColor(
+extern void FakeFreeColor(
 #if NeedFunctionPrototypes
     ColormapPtr /*pmap*/,
     Pixel /*pixel*/
