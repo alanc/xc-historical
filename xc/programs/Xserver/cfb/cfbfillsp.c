@@ -153,7 +153,7 @@ cfbSolidFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     if (!(pGC->planemask))
 	return;
 
-    n = nInit * FindMaxBand(((cfbPrivGC *)(pGC->devPriv))->pCompositeClip);
+    n = nInit * miFindMaxBand(((cfbPrivGC *)(pGC->devPriv))->pCompositeClip);
     pwidth = (int *)ALLOCATE_LOCAL(n * sizeof(int));
     ppt = (DDXPointRec *)ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
     if(!ppt || !pwidth)
@@ -269,7 +269,7 @@ int fSorted;
     if (!(pGC->planemask))
 	return;
 
-    n = nInit * FindMaxBand(((cfbPrivGC *)(pGC->devPriv))->pCompositeClip);
+    n = nInit * miFindMaxBand(((cfbPrivGC *)(pGC->devPriv))->pCompositeClip);
     pwidth = (int *)ALLOCATE_LOCAL(n * sizeof(int));
     ppt = (DDXPointRec *)ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
     if(!ppt || !pwidth)
@@ -544,7 +544,7 @@ int fSorted;
     if (!(pGC->planemask))
 	return;
 
-    n = nInit * FindMaxBand(((cfbPrivGC *)(pGC->devPriv))->pCompositeClip);
+    n = nInit * miFindMaxBand(((cfbPrivGC *)(pGC->devPriv))->pCompositeClip);
     pwidth = (int *)ALLOCATE_LOCAL(n * sizeof(int));
     ppt = (DDXPointRec *)ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
     if(!ppt || !pwidth)
