@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Tekproc.c,v 1.67 89/10/27 12:18:26 jim Exp $
+ * $XConsortium: Tekproc.c,v 1.68 89/11/17 16:56:52 jim Exp $
  *
  * Warning, there be crufty dragons here.
  */
@@ -60,7 +60,6 @@
 
 #ifdef CRAY
 #include <sys/ioctl.h>
-#include <sys/unistd.h>
 #include <time.h>
 #endif
 
@@ -116,7 +115,7 @@ extern long time();
 #define	unput(c)	*Tpushback++ = c
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: Tekproc.c,v 1.67 89/10/27 12:18:26 jim Exp $";
+static char rcs_id[] = "$XConsortium: Tekproc.c,v 1.68 89/11/17 16:56:52 jim Exp $";
 #endif	/* lint */
 
 extern Widget toplevel;
