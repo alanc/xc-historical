@@ -1,4 +1,4 @@
-XCOMM $XConsortium: ibmLib.rules,v 1.2 91/05/03 15:59:01 rws Exp $
+XCOMM $XConsortium: ibmLib.rules,v 1.3 91/05/04 11:07:25 rws Exp $
 
 /*
  * AIX shared library rules
@@ -54,13 +54,13 @@ InstallLibrary(libname,dest)
 AllTarget(Concat(lib,libname.a))					@@\
 									@@\
 Concat(lib,libname.a):  solist $(UNSHAREDOBJS)				@@\
-	$(RM) $@~ sharedobj.o						@@\
+	$(RM) $@~ shr.o							@@\
 	(cd down; $(AR) up/$@~ solist)					@@\
 	dump -g $@~ | sed -n -e 's/^[ 	]*[0-9][0-9]*[	 ]*\([^	 .][^	 ]*\)$$/\1/p' > $@.syms	@@\
-	$(LD) -o sharedobj.o $@~ -H512 -T512 -bM\:SRE -bE\:$@.syms $(REQUIREDLIBS) -lc -lm	@@\
+	$(LD) -o shr.o $@~ -H512 -T512 -bM\:SRE -bE\:$@.syms $(REQUIREDLIBS) -lc -lm	@@\
 	$(RM) $@~							@@\
-	$(AR) $@~ sharedobj.o $(UNSHAREDOBJS)				@@\
-	$(RM) $@.syms $@ sharedobj.o					@@\
+	$(AR) $@~ shr.o $(UNSHAREDOBJS)					@@\
+	$(RM) $@.syms $@ shr.o						@@\
 	$(MV) $@~ $@							@@\
 									@@\
 clean::									@@\
