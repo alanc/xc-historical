@@ -1,4 +1,4 @@
-.\" $XConsortium: relnotes.ms,v 1.2 94/04/19 19:21:32 gildea Exp $
+.\" $XConsortium: RELNOTES.ms,v 1.2 94/04/19 20:39:41 gildea Exp $
 .\" X11R6 Release Notes.  Use troff -ms macros
 .\"
 .ie t \{
@@ -47,7 +47,7 @@ Copyright \(co 1994 X Consortium
 .LP
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
-\*QSoftware\*U deal in the Software without restriction, including
+\*QSoftware\*U), to deal in the Software without restriction, including
 without limitation the rights to use, copy, modify, merge, publish,
 distribute, sublicense, and/or sell copies of the Software, and to
 permit persons to whom the Software is furnished to do so, subject to
@@ -388,6 +388,24 @@ zcat\0\fIftp-dir\fP/xc\-\fIN\fP.tar.Z | tar xpf\0\-
 For each tar file \fBcontrib\-*.tar.Z\fP, execute this:
 .ID
 zcat\0\fIftp-dir\fP/contrib\-\fIN\fP.tar.Z | tar xpf\0\-
+.DE
+
+.nH 3 "Unpacking a gzipped FTP Distribution"
+
+If you have obtained gzipped tar files over the network,
+create a directory to hold the sources and \fIcd\fP into it:
+.ID
+mkdir \fIsourcedir\fP
+cd \fIsourcedir\fP
+.DE
+Then for each tar file \fBxc\-*.tar.gz\fP, execute this:
+.ID
+gunzip\0\-c\0\fIftp-dir\fP/xc\-\fIN\fP.tar.gz | tar xpf\0\-
+.DE
+.LP
+For each tar file \fBcontrib\-*.tar.gz\fP, execute this:
+.ID
+gunzip\0\-c\0\fIftp-dir\fP/contrib\-\fIN\fP.tar.gz | tar xpf\0\-
 .DE
 
 .nH 3 "Unpacking a Split Compressed FTP Distribution"
@@ -2178,7 +2196,8 @@ Many companies and individuals have cooperated and worked extremely hard to
 make this release a reality, and our thanks go out to them.  You will find
 many of them listed in the acknowledgements in the individual specifications.
 Major implementation contributions come from
-Digital, Fujitsu, HP, NCD, NCR, Omron, SGI, Sony, and SunSoft.
+Data General, Digital, Fujitsu, HP, NCD, NCR, Omron, SGI, Sony, SunSoft,
+and XFree86.
 .LP
 Contributions were received from the follow people at various
 X Consortium member companies.
@@ -2186,16 +2205,16 @@ Each X Window System release is the work of many, many people, and
 this list is surely incomplete.
 .IP "Fresco"
 .br
-Mark Linton;
-Steven C. Bilow;
+Mark Linton (Silicon Graphics);
 Chuck Price (SunSoft);
-Steve Churchill;
-Steve Tang;
-Douglas Pan
+Steve Churchill (Fujitsu);
+Steve Tang (Stanford University);
+Douglas Pan (Fujitsu);
+Jean-Daniel Fekete (2001 S.A.)
 .IP "Xlib"
 .br
 Courtney Loomis (Hewlett-Packard Company);
-Daniel Dardailler
+Daniel Dardailler (Open Software Foundation)
 .\"
 .IP "Xlib internationalization"
 The manager of the internationalization project is
@@ -2228,12 +2247,13 @@ Jinsoo Yoon (KAIST) and Akiyasu Zen (HP).
 .IP "Xt Intrinsics"
 Douglas Rand (Open Software Foundation), parameterized selections;
 Paul Asente (Adobe Systems Incorporated), extension event handling;
-Ajay Vohra, support for multithreading;
+Ajay Vohra (SunSoft), support for multithreading;
 Sam Chang (Novell), widget caching research;
 Larry Cable (SunSoft), object allocation and change managed set;
-Vania Joloboff;
-Courtney Loomis (Hewlett-Packard Company); and
-Daniel Dardailler.
+Vania Joloboff (Open Software Foundation);
+Courtney Loomis (Hewlett-Packard Company);
+Daniel Dardailler (Open Software Foundation);
+and Ellis Cohen (Open Software Foundation).
 The following people at Georgia Tech contributed the
 extensions for disability access:
 Keith Edwards,
@@ -2244,94 +2264,141 @@ Tom Rodriguez.
 .IP "Athena Widget Set"
 Frank Sheeran (Omron Data General)
 .IP "X Logical Font Description"
-Paul Asente (Adobe Systems Incorporated), extensions design;
-Nathan Meyers (Hewlett-Packard Company), implementation of Matrix
-enhancement, glyph caching, scalable aliases, sample
-authorization protocol;
+Paul Asente (Adobe Systems Incorporated);
+Nathan Meyers (Hewlett-Packard Company);
+Jim Graham (Sun);
 Perry A. Caro (Adobe Systems Incorporated)
 .IP "Font Support Enhancments"
-Nathan Meyers (Hewlett-Packard Company)
+Nathan Meyers (Hewlett-Packard Company), implementation of matrix
+enhancement, glyph caching, scalable aliases, sample
+authorization protocol
 .IP "X Transport Library"
 Stuart R. Anderson (AT&T Global Information Solutions)
-.IP "X Keyboard Extention"
-Erik Fortune, design and sample implementation;
-Jordan Brown;
+.IP "X Keyboard Extension"
+Erik Fortune (Silicon Graphics), design and sample implementation;
+Jordan Brown (Quarterdeck Office Systems);
 Will Walker (Digital Equipment Corporation), AccessX portion;
 Mark Novak (Trace Center), AccessX portion
 .IP "Low-Bandwidth X"
-Chris Kantarjiev, design;
 Jim Fulton (Network Computing Devices);
 Dave Lemke (Network Computing Devices);
 Dale Tonogai (Network Computing Devices);
-Keith Packard (Network Computing Devices)
+Keith Packard (Network Computing Devices);
+Chris Kantarjiev (Xerox PARC)
 .IP "X Image Extension"
-Bob Shelley;
-Larry Hare;
-Dean Verheiden;
-Syd Logan;
-Gary Rogers;
-Ben Fahy
+Bob Shelley (AGE Logic), protocol architect, lead implementation architect;
+Larry Hare (AGE Logic), server implementation;
+Dean Verheiden (AGE Logic), server implementation;
+Syd Logan (AGE Logic), xieperf;
+Gary Rogers (AGE Logic), JPEG code, XIElib documentation;
+Ben Fahy (AGE Logic), client and server implementation
 .IP "ICCCM"
-Stuart Marks;
+Stuart Marks (SunSoft);
+Gabe Beged-Dov (Hewlett-Packard Company);
+Chan Benson (Hewlett-Packard Company);
+Jordan Brown (Quarterdeck Office Systems);
 Larry Cable (SunSoft);
-Jordan Brown;
-Vania Joloboff;
-Andrew deBlois
+Ellis Cohen (Open Software Foundation);
+Brian Cripe (Hewlett-Packard Company);
+Susan Dahlberg (Silicon Graphics);
+Peter Daifuku (Silicon Graphics);
+Andrew deBlois (Open Software Foundation);
+Clive Feather (IXI);
+Christian Jacobi (Xerox PARC);
+Bill Janssen (Xerox PARC);
+Vania Joloboff (Open Software Foundation);
+Phil Karlton (Silicon Graphics);
+Mark Manasse (Digital Equipment Corporation);
+Todd Newman (Silicon Graphics);
+Keith Taylor (Hewlett-Packard Company);
+Jim VanGilder (Digital Equipment Corporation);
+Mike Wexler (Kubota Pacific);
+Michael Yee (Apple Computer)
 .IP "ICE"
 .br
-Jordan Brown;
-Vania Joloboff
+Jordan Brown (Quarterdeck Office Systems);
+Vania Joloboff (Open Software Foundation);
+Stuart Marks (SunSoft)
 .IP "XSMP"
 .br
-Jordan Brown;
-Vania Joloboff;
-Mike Wexler
+Mike Wexler (Kubota Pacific);
+Jordan Brown (Quarterdeck Office Systems);
+Ellis Cohen (Open Software Foundation);
+Vania Joloboff (Open Software Foundation);
+Stuart Marks (SunSoft)
 .IP "SYNC Extension"
 Tim Glauert (Olivetti Research Limited);
-Dave Carver;
-Jim Gettys;
+Dave Carver (Digital Equipment Corporation);
+Jim Gettys (Digital Equipment Corporation);
 Pete Snider (Digital Equipment Corporation)
 .IP "RECORD"
-Yochanan Slonim (Mercury Interactive Corp.);
-Martha Zimet;
-Ken Miller
+Martha Zimet (Network Computing Devices);
+Robert Chesler (Absol-puter);
+Kieron Drake (UniSoft);
+Marc Evans (Synergytics);
+Jim Fulton (Network Computing Devices);
+Ken Miller (Digital Equipment Corporation)
 .IP "X Input Extension tests"
 George Sachs (Hewlett-Packard Company)
 .IP "PEX"
-Jeff Stevenson (Hewlett-Packard Company)
+Ken Garnett (Shographics);
+Cheryl Huntington (Sun Microsystems);
+Karl Schultz (IBM);
+Jeff Stevenson (Hewlett-Packard Company);
+Paula Womack (Digital Equipment Corporation)
 .IP "Multi-Buffering Extension"
+Eng-Shien Wu (IBM);
 John Marks (Hewlett-Packard Company);
 Ian Elliott (Hewlett-Packard Company)
 .IP "X server"
-Milind Pansare (SunSoft); Peter Daifuku (SGI); David Lister (Adobe
-Systems Incorporated); Ken Whaley (Kubota Pacific); Joel McCormack
-(Digital Equipment Corporation);
-Rob Lembree (Digital Equipment Corporation);
-Davor Matic (MIT); Nathan Meyers
-(Hewlett-Packard Company); Jordan Brown
+Milind Pansare (SunSoft), pixmap privates;
+Peter Daifuku (SGI), layered window support;
+David Lister (Adobe Systems Incorporated), callback manager;
+Ken Whaley (Kubota Pacific), thin line pixelization;
+Joel McCormack (Digital Equipment Corporation), 64-bit mfb and cfb;
+Rob Lembree (Digital Equipment Corporation), 64-bit mfb and cfb;
+Davor Matic (MIT), xnest ddx;
+Nathan Meyers (Hewlett-Packard Company), font support;
+Jordan Brown (Quarterdeck Office Systems), -config option;
+Michael Brenner (Apple Computer), macII ddx;
+Thomas Roell, svga ddx
 .IP "Multi-Threaded X Server"
-H. Chiba (Omron);
-Akeio Harada (Omron);
-Mike Haynes (Data General);
-Hidenobu Kanaoka (Omron);
-Paul Layne (Data General);
-Takayuki Miyake (Omron);
-Keith Packard (Network Computing Devices);
-Richard Potts (Data General);
-John A. Smith (while at Data General);
-Sid Manning (IBM);
-Rob Chesler
+John A. Smith (while at Data General), team leader;
+H. Chiba (Omron), ddx;
+Akeio Harada (Omron), ddx;
+Mike Haynes (Data General), dix;
+Hidenobu Kanaoka (Omron), ddx;
+Paul Layne (Data General), dix and ddx;
+Takayuki Miyake (Omron), ddx;
+Keith Packard (Network Computing Devices), design;
+Richard Potts (Data General), dix;
+Sid Manning (IBM), integration with core server;
+Rob Chesler (Absol-puter), integration with core server
 .IP "xdm modular loadable greeter"
 Peter Derr (Digital Equipment Corporation)
 .IP "x11perf"
-Joel McCormack
-.IP "Motorola port"
-Patrick E. Kane
+Joel McCormack (Digital Equipment Corporation);
+Graeme Gill (Labtam Australia);
+Mark Martin (CETIA)
+.IP "config"
+Stuart R. Anderson (AT&T Global Information Solutions);
+David Brooks (Open Software Foundation);
+Kendall Collett (Motorola);
+John Freeman (Cray);
+John Freitas (Digital Equipment Corporation);
+Patrick E. Kane (Motorola);
+Mark Kilgard (Silicon Graphics);
+Akira Kon (NEC);
+Masahiko Narita (Fujitsu);
+Paul Shearer (Sequent);
+Mark Snitily (SGCS)
 .IP "XFree86 port"
-Stuart R. Anderson (AT&T Global Information Solutions),
-and the XFree86, Inc. team.
-.IP "macII ddx"
-Michael Brenner
+Stuart R. Anderson (AT&T Global Information Solutions);
+Doug Anson; Gertjan Akkerman; Mike Bernson; David Dawes; Marc Evans;
+Pascal Haible; Matthieu Herrb; Dirk Hohndel; David Holland; Alan Hourihane;
+Jeffrey Hsu; Glenn Lai; Ted Lemon; Rich Murphey; Hans Nasten; Mark Snitily;
+Randy Terbush; Jon Tombs; Kees Verstoep; Paul Vixie; Mark Weaver;
+David Wexelblat; Philip Wheatley; Thomas Wolfram; Orest Zborowski
 .IP "fonts"
 .br
 Under \fBxc/fonts/\fP, the \fBmisc/\fP directory
