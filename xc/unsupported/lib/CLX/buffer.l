@@ -1254,7 +1254,7 @@
     (declare-array (simple-bit-vector 256) result)
     (do ((i (index+ boffset 1) (index+ i 1)) ;; Skip first byte
 	 (j 8 (index+ j 8)))
-	((= i 32))
+	((index>= j 256))
       (declare (type array-index i j))
       (do ((byte (aref-card8 buffer-bbuf i) (index-ash byte -1))
 	   (k j (index+ k 1)))
