@@ -16,6 +16,9 @@ CLIENT MACHINE and OPERATING SYSTEM:
 DISPLAY:
 	[e.g. Digital QVSS, Sun CG4, HP Topcat, IBM APA16, Apollo 4 plane, ...]
 
+WINDOW MANAGER:
+	[e.g. uwm, twm, awm, wm, ...]
+
 AREA:
 	[e.g. Xlib, xterm, uwm, server, doc, config, ...]
 
