@@ -1,7 +1,7 @@
 /*
  * Xau - X Authorization Database Library
  *
- * $XConsortium: AuGetAddr.c,v 1.10 90/12/12 09:30:36 rws Exp $
+ * $XConsortium: AuGetAddr.c,v 1.11 91/01/08 15:09:05 gildea Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -78,7 +78,7 @@ char	*name;
 	return 0;
     if (access (auth_name, R_OK) != 0)		/* checks REAL id */
 	return 0;
-    auth_file = fopen (auth_name, "r");
+    auth_file = fopen (auth_name, "rb");
     if (!auth_file)
 	return 0;
     for (;;) {

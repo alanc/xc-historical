@@ -1,7 +1,7 @@
 /*
  * Xau - X Authorization Database Library
  *
- * $XConsortium: AuGetBest.c,v 1.3 90/12/21 13:15:27 converse Exp $
+ * $XConsortium: AuGetBest.c,v 1.4 91/01/08 15:09:20 gildea Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -79,7 +79,7 @@ XauGetBestAuthByAddr (family, address_length, address,
 	return 0;
     if (access (auth_name, R_OK) != 0)		/* checks REAL id */
 	return 0;
-    auth_file = fopen (auth_name, "r");
+    auth_file = fopen (auth_name, "rb");
     if (!auth_file)
 	return 0;
     best = 0;
