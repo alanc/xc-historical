@@ -25,7 +25,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: add_window.c,v 1.72 89/07/12 14:37:47 jim Exp $
+ * $XConsortium: add_window.c,v 1.73 89/07/12 16:15:05 jim Exp $
  *
  * Add a new window, put the titlbar and other stuff around
  * the window
@@ -36,7 +36,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: add_window.c,v 1.72 89/07/12 14:37:47 jim Exp $";
+"$XConsortium: add_window.c,v 1.73 89/07/12 16:15:05 jim Exp $";
 #endif /* lint */
 
 #include <stdio.h>
@@ -997,7 +997,7 @@ TwmWindow *tmp_win;
     XSetWindowAttributes attributes;	/* attributes for create windows */
     int x, y;
     int h = Scr->TitleHeight - (Scr->FramePadding * 2) - Scr->ButtonIndent * 2
-	    - TITLEBUTTON_BORDERWIDTH * 2;
+	    - TITLEBUTTON_BORDERWIDTH;
 
     if (tmp_win->title_height == 0)
     {
@@ -1009,6 +1009,7 @@ TwmWindow *tmp_win;
 
     if (Scr->iconifyPm == NULL)
     {
+	XSegment segs[4];
 	GC gc, gcBack;
 	int w;
 
@@ -1031,7 +1032,10 @@ TwmWindow *tmp_win;
 	 * draw the logo large so that it gets as dense as possible; then white
 	 * out the edges so that they look crisp
 	 */
-	XmuDrawLogo (dpy, Scr->iconifyPm, gc, gcBack, 0, 0, h + 1, h + 1);
+	w = - (TITLEBUTTON_BORDERWIDTH + 1);
+	XmuDrawLogo (dpy, Scr->iconifyPm, gc, gcBack, w, w,
+		     h + TITLEBUTTON_BORDERWIDTH * 2 + 1, 
+		     h + TITLEBUTTON_BORDERWIDTH * 2 + 1);
 	XDrawRectangle (dpy, Scr->iconifyPm, gcBack, 0, 0, h - 1, h - 1);
 	XFreeGC (dpy, gcBack);
 
@@ -1039,10 +1043,12 @@ TwmWindow *tmp_win;
 	 * draw the resize button, 
 	 */
 	w = (h * 2 + 2) / 3;
-	XDrawRectangle (dpy, Scr->resizePm, gc, -1, -1, w + 1, w + 1);
-
-	w = (w + 1) / 2;
-	XDrawRectangle (dpy, Scr->resizePm, gc, -1, -1, w + 2, w + 2);
+	segs[0].x1 = w; segs[0].y1 = 0; segs[0].x2 = w; segs[0].y2 = w;
+	segs[1].x1 = 0; segs[1].y1 = w; segs[1].x2 = w; segs[1].y2 = w;
+	w = w / 2;
+	segs[2].x1 = w; segs[2].y1 = 0; segs[2].x2 = w; segs[2].y2 = w;
+	segs[3].x1 = 0; segs[3].y1 = w; segs[3].x2 = w; segs[3].y2 = w;
+	XDrawSegments (dpy, Scr->resizePm, gc, segs, 4);
 
 
 	/*
