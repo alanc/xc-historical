@@ -17,7 +17,7 @@ representations about the suitability of this software for any
 purpose.  It is provided "as is" without express or implied warranty.
 */
 
-/* $XConsortium: cfbteblt8.c,v 5.16 91/12/19 18:36:38 keith Exp $ */
+/* $XConsortium: cfbteblt8.c,v 5.17 92/01/27 19:12:22 eswu Exp $ */
 
 #if PSZ == 8
 
@@ -106,6 +106,8 @@ typedef unsigned int	*glyphPointer;
 #define GetBits5U   NGetBits4U(| BitRight(*char5++, widthGlyph))
 
 #else
+
+typedef unsigned int	*glyphPointer;
 
 #define USE_LEFTBITS
 #define ALL_LEFTBITS
