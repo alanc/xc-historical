@@ -1,4 +1,4 @@
-/* $XConsortium: dixfont.h,v 1.1 87/09/11 07:50:12 toddb Exp $ */
+/* $XConsortium: dixfont.h,v 1.2 88/09/06 15:48:30 jim Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -28,12 +28,20 @@ SOFTWARE.
 #define NullFont ((FontPtr)0)
 
 typedef struct _DIXFontProp *DIXFontPropPtr;
-typedef struct _Font *FontPtr;
+
+#ifndef R4_FONT_STRUCTURES
+typedef struct _EncodedFont *FontPtr;
+#else
+
+typedef struct _R4Font	    *FontPtr;
+
 /*
  * this type is for people who want to talk about the font encoding
  */
 
 typedef enum {Linear8Bit, TwoD8Bit, Linear16Bit, TwoD16Bit} FontEncoding;
+#endif
+
 typedef struct _FontData *FontDataPtr;
 
 extern FontPtr OpenFont();

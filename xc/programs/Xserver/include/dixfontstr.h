@@ -1,4 +1,4 @@
-/* $XConsortium: dixfontstr.h,v 1.5 88/09/06 15:49:24 jim Exp $ */
+/* $XConsortium: dixfontstr.h,v 1.6 89/03/11 15:20:13 rws Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -27,12 +27,41 @@ SOFTWARE.
 #define DIXFONTSTRUCT_H
 
 #include "dixfont.h"
-#include "font.h"
+#include "fontstruct.h"
 #include "misc.h"
 
 extern FontPtr	FontFileLoad(/* name, length */); /* implemented in OS layer */
 extern Bool	FontFilePropLoad(/* name, length, *font, fi, *props */);
 extern void	FontUnload(/* font */);
+
+#ifndef R4_FONT_STRUCTURES
+
+#define FONTCHARSET(font)	  (font)->pCS
+#define FONTMAXBOUNDS(font,field) (font)->pCS->maxbounds.field
+#define FONTMINBOUNDS(font,field) (font)->pCS->minbounds.field
+#define TERMINALFONT(font)	  (font)->pCS->terminalFont
+#define FONTASCENT(font)	  (font)->pCS->fontAscent
+#define FONTDESCENT(font)	  (font)->pCS->fontDescent
+#define FONTGLYPHS(font)	  (font)->pCS->pBitmaps
+#define FONTCONSTMETRICS(font)	  (font)->pCS->constantMetrics
+#define FONTCONSTWIDTH(font)	  (font)->pCS->constantWidth
+#define FONTALLEXIST(font)	  (font)->allExist
+#define FONTFIRSTCOL(font)	  (font)->firstCol
+#define FONTLASTCOL(font)	  (font)->lastCol
+#define FONTFIRSTROW(font)	  (font)->firstRow
+#define FONTLASTROW(font)	  (font)->lastRow
+#define FONTDEFAULTCH(font)	  (font)->defaultCh
+#define FONTINKMIN(font)	  (&((font)->inkMin))
+#define FONTINKMAX(font)	  (&((font)->inkMax))
+#define FONTPROPS(font)		  (font)->pCS->props
+#define FONTGLYPHBITS(base,pci)	  ((unsigned char *) (pci)->pPriv)
+
+extern FontPathPtr  fpExpandFontNamePattern(), fpGetFontPath();
+
+typedef struct _EncodedFont FontRec;
+typedef struct _CharSet	    FontInfoRec, *FontInfoPtr;
+
+#else
 
 typedef struct _DIXFontProp {
     ATOM	name;
@@ -41,7 +70,7 @@ typedef struct _DIXFontProp {
 
 /*
  * FONT is created at font load time; it is not part of the
- * font file format
+ * font file format.
  */
 typedef struct _Font {
     FontInfoPtr	pFI;
@@ -57,9 +86,50 @@ typedef struct _Font {
     CharInfoPtr	pInkMax;		/* ink metrics */
 } FontRec;
 
+#define FONTCHARSET(font)	  (font)->pFI
+#define FONTMAXBOUNDS(font,field) (font)->pFI->maxbounds.metrics.field
+#define FONTMINBOUNDS(font,field) (font)->pFI->minbounds.metrics.field
+#define TERMINALFONT(font)	  (font)->pFI->terminalFont
+#define FONTASCENT(font)	  (font)->pFI->fontAscent
+#define FONTDESCENT(font)	  (font)->pFI->fontDescent
+#define FONTGLYPHS(font)	  (font)->pGlyphs
+#define FONTCONSTMETRICS(font)	  (font)->pFI->constantMetrics
+#define FONTCONSTWIDTH(font)	  (font)->pFI->constantWidth
+#define FONTALLEXIST(font)	  (font)->pFI->allExist
+#define FONTFIRSTCOL(font)	  (font)->pFI->firstCol
+#define FONTLASTCOL(font)	  (font)->pFI->lastCol
+#define FONTFIRSTROW(font)	  (font)->pFI->firstRow
+#define FONTLASTROW(font)	  (font)->pFI->lastRow
+#define FONTDEFAULTCH(font)	  (font)->pCI->chDefault
+#define FONTHASINK(font)	  (font)->pFI->inkMetrics
+#define FONTINKMIN(font)	  (&(font)->pInkMin.metrics)
+#define FONTINKMAX(font)	  (&(font)->pInkMax.metrics)
+#define FONTPROPS(font)		  (font)->pFP
+#define FONTGLYPHBITS(base,pci)	  (((unsigned char *) base) + (pci)->byteOffset)
+
+typedef struct _FontInfoRec	FontInfoRec, *FontInfoPtr;
+typedef struct _DIXFontProp	DIXFontPropRec, *DIXFontPropPtr;
+
+#endif
+
+/* some things haven't changed names, but we'll be careful anyway */
+
+#define FONTREFCNT(font)	  (font)->refcnt
+#define FONTINFONPROPS(pfi)	  (pfi)->nProps
+
+/*
+ * for linear char sets
+ */
+#define N1dChars(pfont)	(FONTLASTCOL(pfont) - FONTFIRSTCOL(pfont) + 1)
+
+/*
+ * for 2D char sets
+ */
+#define N2dChars(pfont)	(N1dChars(pfont) * \
+			 (FONTLASTROW(pfont) - FONTFIRSTROW(pfont) + 1))
+
 
 /* in dixfont.c */
-extern FontPtr	OpenFont();
 extern Bool	SetDefaultFont();
 extern int	CloseFont();
 extern Bool	DescribeFont();
