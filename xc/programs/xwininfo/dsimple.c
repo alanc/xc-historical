@@ -1,4 +1,4 @@
-/* $XConsortium: dsimple.c,v 1.12 91/05/11 21:00:35 gildea Exp $ */
+/* $XConsortium: dsimple.c,v 1.13 93/08/02 16:25:04 converse Exp $ */
 #include <X11/Xos.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
@@ -8,8 +8,6 @@
  * Other_stuff.h: Definitions of routines in other_stuff.
  *
  * Written by Mark Lillibridge.   Last updated 7/1/87
- *
- * Send bugs, etc. to chariot@athena.mit.edu.
  */
 
 unsigned long Resolve_Color();
@@ -28,8 +26,6 @@ void Fatal_Error();
  *               and screen already defined on entry.
  *
  * Written by Mark Lillibridge.   Last updated 7/1/87
- *
- * Send bugs, etc. to chariot@athena.mit.edu.
  */
 
 
@@ -300,8 +296,6 @@ Window Select_Window_Args(rargc, argv)
  * Other_stuff: A group of routines which do common X11 tasks.
  *
  * Written by Mark Lillibridge.   Last updated 7/1/87
- *
- * Send bugs, etc. to chariot@athena.mit.edu.
  */
 
 extern Display *dpy;
