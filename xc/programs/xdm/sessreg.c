@@ -1,5 +1,5 @@
 /*
- * $XConsortium: sessreg.c,v 1.6 91/04/03 17:14:30 gildea Exp $
+ * $XConsortium: sessreg.c,v 1.7 91/07/18 21:41:28 rws Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -315,8 +315,18 @@ char	*display_name;
 	int	slot = 1;
 	int	column0 = 1;
 	char	servers_line[1024];
+	char	disp_name[512];
 	int	len;
+	char	*pos;
 
+	/* remove screen number from the display name */
+	strcpy(disp_name, display_name);
+	pos = rindex(disp_name, ':');
+	if (pos) {
+	    pos = index(pos, '.');
+	    if (pos)
+		*pos = '\0';
+	}
 	sysnerr (ttys = fopen (ttys_file, "r"), ttys_file);
 	while ((c = getc (ttys)) != EOF)
 		if (c == '\n') {
@@ -328,15 +338,20 @@ char	*display_name;
 		++slot;
 	(void) fclose (ttys);
 	sysnerr (servers = fopen (servers_file, "r"), servers_file);
-	len = strlen (display_name);
+	len = strlen (disp_name);
 	column0 = 1;
 	while (fgets (servers_line, sizeof (servers_line), servers)) {
-		if (column0 && !strncmp (display_name, servers_line, len))
-			return slot;
-		else if (servers_line[strlen(servers_line)-1] != '\n')
+		if (column0 && *servers_line != '#') {
+			if (!strncmp (disp_name, servers_line, len) &&
+			    (servers_line[len] == ' ' ||
+			     servers_line[len] == '\t'))
+				return slot;
+			++slot;
+		}
+		if (servers_line[strlen(servers_line)-1] != '\n')
 			column0 = 0;
 		else
-			++slot;
+			column0 = 1;
 	}
 	return 0;
 }
