@@ -1,4 +1,4 @@
-/* $XConsortium: Xlibint.h,v 11.73 89/12/08 18:29:13 converse Exp $ */
+/* $XConsortium: Xlibint.h,v 11.74 89/12/09 13:45:17 jim Exp $ */
 /* Copyright 1984, 1985, 1987, 1989  Massachusetts Institute of Technology */
 
 /*
@@ -8,10 +8,6 @@
  *
  *	Warning, there be dragons here....
  */
-
-#ifdef __cplusplus
-extern "C" {					/* for C++ V2.0 */
-#endif
 
 #include <X11/copyright.h>
 
@@ -43,13 +39,18 @@ extern "C" {					/* for C++ V2.0 */
 #endif /* __STDC__ */
 #endif /* NeedFunctionPrototypes */
 
-#include "Xlib.h"
+#include <X11/Xlib.h>
+
 #if NeedFunctionPrototypes	/* prototypes require event type definitions */
 #define NEED_EVENTS
 #endif
 #include <X11/Xproto.h>
 #include <errno.h>
-#include "Xlibos.h"
+#include <X11/Xlibos.h>
+
+#ifdef __cplusplus			/* do not leave open across includes */
+extern "C" {					/* for C++ V2.0 */
+#endif
 
 #ifndef NULL
 #define NULL 0
