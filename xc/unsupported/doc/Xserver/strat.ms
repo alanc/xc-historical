@@ -15,6 +15,12 @@ Philip Karlton
 Todd Newman
 .AI
 Digital Equipment Corporation
+.AI
+minor revisions by
+.AU
+Bob Scheifler
+.AI
+Massachusetts Institute of Technology
 
 .LP
 X is a graphic user interface system enabling an application
@@ -80,9 +86,9 @@ Directories
 Directories
 .XE
 .LP
-This section describes the directories accompanying the tape.
+This section describes some of the directories accompanying the tape.
 .LP
-Xlib/
+lib/X
 .RS
 .RE
 The X client library is used for developing client programs.
@@ -135,7 +141,7 @@ This is an empty directory you can use to store binary
 font files that the font compiler generates.
 
 .LP
-include/
+X11/
 .RS
 .RE
 This is an important directory because it has some include files
@@ -149,7 +155,7 @@ server/
 This directory
 contains all the source for the server code.
 There are some other files that are needed from other top-level directories,
-such as .h files from the include/ directory.
+such as .h files from the X11/ directory.
 
 .LP
 server/ddx
@@ -159,12 +165,26 @@ This directory has all the Device Dependent X server code.
 Operating System dependent code is under server/os.
 
 .LP
-server/ddx/lk201
+server/ddx/dec/lk201
 .RS
 .RE
 This directory has code to handle the
 Digital 
 LK201 keyboard.
+
+.LP
+server/ddx/cfb
+.RS
+.RE
+This directory has "Pixblit" and other 
+code for Color Frame Buffer displays.
+(In this document, "color" means multiple bits per pixel.
+You may be able to simply plug in a few
+special numbers into defines, then compile it and have it work for your
+display.
+Otherwise, it will serve as no more than an example of what you should
+implement as Pixblit routines for your own frame buffer.  Much of this
+code was originally derived from the mfb code.
 
 .LP
 server/ddx/mfb
@@ -193,6 +213,12 @@ It also contains other routines.
 It is portable to any system that can draw graphics by
 manipulating rows of pixels by hand.
 See the "Definition" document for an explanation of these terms.
+
+.LP
+server/ddx/snf
+.RS
+.RE
+This directory has code to handle SNF font files.
 
 .LP
 server/ddx/dec/qvss
@@ -290,9 +316,9 @@ processor that insists upon doing all of the
 work itself, you have a substantial task.
 
 .NH 2
-About DDX, mfb, and mi
+About DDX, mfb, cfb, and mi
 .XS
-About DDX, mfb, and mi
+About DDX, mfb, cfb, and mi
 .XE
 .LP
 The DDX (device dependent X) layer provides a software interface to a
@@ -305,10 +331,12 @@ conceptual machine built out of very simple primatives such as GetSpans,
 SetSpans, FillSpans, PushPixels, etc., which we call the Pixblit routines.
 
 The mfb layer is one implementation of the software interface that connects
-to monochrome (one bit deep) framebuffers.  Some functionality it provides by
+to monochrome (one bit deep) framebuffers.
+The cfb layer is one implementation that connects to multi-bit framebuffers.
+In both cases, some functionality is provided by
 writing directly to the framebuffer. Some more esoteric functionality is
 achieved by calling the mi  routines.  In order to be able to use the mi
-routines, it must also implement Pixblit routines.
+routines, they must also implement Pixblit routines.
 
 The mi code should be portable to all systems.
 It calls the Pixblit routines to apply the pixels,
@@ -317,13 +345,13 @@ all device dependencies are contained in there.
 The Pixblit routines supplied work on most monochrome  screens with minimal
 modification.  Other depths require a reimplementation.
 
-Some routines in mi are not used by the mfb DDX implementation.  They are
+Some routines in mi are not used by the mfb or cfb DDX implementations.  They are
 provided to make it easier for you to get a simple port running quickly.
 Unfortunately, it is not reasonable to provide a complete DDX implementation
 in mi, you need the Pixblit routines which actually know how the hardware
 looks.
 
-The mi and mfb routines were designed for portability over performance.
+The mi, mfb, and cfb routines were designed for portability over performance.
 Therefore, you may want to spend time optimizing them if you choose to use
 them.
 
@@ -334,7 +362,7 @@ What do I do?
 .XE
 .LP
 To start, you should get the simplest server running by
-modifying as little as possible, probably using mi and maybe using mfb.
+modifying as little as possible, probably using mi and maybe using mfb or cfb.
 Later, you can carefully optimize it.
 
 The first step is to copy the source code off the tar tape onto your machine.
@@ -384,6 +412,8 @@ graphics on the screen works.
 For monochrome screens, setting a few
 defines and recompiling the mfb files may be all you need.
 (See "Porting MFB" in the Details, below.)
+For color screens, setting a few
+defines and recompiling the cfb files may be all you need.
 
 The xclock program is a good candidate for testing graphical output.
 Depending on your networking software, it might be easiest to
@@ -1312,15 +1342,7 @@ Deep Frame Buffers
 If your screen has more than one bit per pixel, you need to rewrite
 certain parts of the DDX code supplied.
 The mi code is portable to deeper frame buffers.
-The Pixblit code (supplied by mfb) must, of course, be changed.
-
-These changes are somewhat complex.
-Several assumptions have been made throughout the mfb code that depend upon
-there being nothing more complex than one bit per pixel.
-(For instance, there is a plane mask in the GC that determines into
-which bit planes one should write.  The function of this mask
-can be handled quite simply with one plane.)
-Start with the mfb code, though, as it affords you a good starting point,
+Start with the cfb code, as it affords you a good starting point,
 and it will show you the subtle details of the interface.
 
 Have your initialization code specify that your screen supports
@@ -1639,7 +1661,7 @@ Graphic Output Tuning
 Graphic Output Tuning
 .XE
 .LP
-The mi (and mfb, if used) code is designed to be portable by sacrificing 
+The mi (and mfb or cfb, if used) code is designed to be portable by sacrificing 
 a certain amount of performance.
 Once you have got it running and have a large user base,
 it might be appropriate to make it run faster.
