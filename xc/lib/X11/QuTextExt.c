@@ -1,4 +1,4 @@
-/* $XConsortium: XQuTextExt.c,v 11.17 91/01/05 14:56:08 rws Exp $ */
+/* $XConsortium: QuTextExt.c,v 11.18 91/01/06 11:47:37 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986, 1987	*/
 
 /*
@@ -47,21 +47,18 @@ XQueryTextExtents (dpy, fid, string, nchars, dir, font_ascent, font_descent,
 
     LockDisplay(dpy);
     nbytes = nchars << 1;
-    if (! (buf = _XAllocScratch (dpy, (unsigned long) nbytes))) {
-	UnlockDisplay(dpy);
-	SyncHandle();
-	return 0;
-    }
     GetReq(QueryTextExtents, req);
     req->fid = fid;
-    req->length += (nbytes + 3)>>2;
-    req->oddLength = nchars & 1;
-    for (ptr = buf, i = nchars; --i >= 0;) {
-	*ptr++ = 0;
-	*ptr++ = *string++;
+    if (buf = _XAllocScratch (dpy, (unsigned long) nbytes)) {
+	req->length += (nbytes + 3)>>2;
+	req->oddLength = nchars & 1;
+	for (ptr = buf, i = nchars; --i >= 0;) {
+	    *ptr++ = 0;
+	    *ptr++ = *string++;
+	}
+	Data (dpy, buf, nbytes);
     }
-    Data (dpy, buf, nbytes);
-    if (!_XReply (dpy, (xReply *)&rep, 0, xTrue)) {
+    if (!_XReply (dpy, (xReply *)&rep, 0, xTrue) || !buf) {
         UnlockDisplay(dpy);
 	SyncHandle();
 	return (0);
