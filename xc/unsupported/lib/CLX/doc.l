@@ -1832,6 +1832,28 @@
 	   (type (or null number) timeout)
 	   (type boolean peek-p)))
 
+(defun make-event-handlers (&key (type 'array) default)
+  (declare (type t type)			;Sequence type specifier
+	   (type function default)
+	   (values sequence))			;Default handler for initial content
+  ;; Makes a handler sequence suitable for process-event
+  )
+   
+(defun event-handler (handlers event-key)
+  (declare (type sequence handlers)
+	   (type event-key event-key)
+	   (values function))
+  ;; Accessor for a handler sequence
+  )
+
+(defsetf event-handler (handlers event-key) (handler)
+  (declare (type sequence handlers)
+	   (type event-key event-key)
+	   (type function handler)
+	   (values function))
+  ;; Setf accessor for a handler sequence
+  )
+
 (defmacro event-case ((display &key timeout peek-p discard-p (force-output-p t))
 		      &body clauses)
   (declare (arglist (display &key timeout peek-p discard-p force-output-p)
@@ -3566,6 +3588,8 @@ EVENT-CASE
 EVENT-LISTEN
 MAPPING-NOTIFY
 PROCESS-EVENT
+EVENT-HANDLER
+MAKE-EVENT-HANDLERS
 QUEUE-EVENT
 					   ;Image
 COPY-IMAGE

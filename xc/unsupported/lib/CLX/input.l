@@ -31,6 +31,8 @@
 	  event-listen
 	  queue-event
 	  process-event
+	  make-event-handlers
+	  event-handler
 	  event-case
 	  event-cond
 	  discard-current-event
@@ -1246,6 +1248,29 @@
 	(cerror "Ignore this event"
 		"Server Error: event with unknown event code ~d received."
 		event-code)))))
+
+(defun make-event-handlers (&key (type 'array) default)
+  (declare (type t type)			;Sequence type specifier
+	   (type function default)
+	   (values sequence))			;Default handler for initial content
+  ;; Makes a handler sequence suitable for process-event
+  (make-sequence type *max-events* :initial-element default))
+   
+(defun event-handler (handlers event-key)
+  (declare (type sequence handlers)
+	   (type event-key event-key)
+	   (values function))
+  ;; Accessor for a handler sequence
+  (elt handlers (position event-key *event-key-vector* :test #'eq)))
+
+(defun set-event-handler (handlers event-key handler)
+  (declare (type sequence handlers)
+	   (type event-key event-key)
+	   (type function handler)
+	   (values handler))
+  (setf (elt handlers (position event-key *event-key-vector* :test #'eq)) handler))
+
+(defsetf event-handler set-event-handler)
 
 ;;
 ;; EVENT-CASE
