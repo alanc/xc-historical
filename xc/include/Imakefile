@@ -68,16 +68,16 @@ IMPORTSXAW = \
 	$(AWIDGETSRC)/LogoP.h \
 	$(AWIDGETSRC)/Mailbox.h \
 	$(AWIDGETSRC)/MailboxP.h \
-	$(AWIDGETSRC)/MButton.h \
-	$(AWIDGETSRC)/MButtonP.h \
+	$(AWIDGETSRC)/MenuButton.h \
+	$(AWIDGETSRC)/MenuButtoP.h \
 	$(AWIDGETSRC)/Paned.h \
 	$(AWIDGETSRC)/PanedP.h \
 	$(AWIDGETSRC)/Scroll.h \
 	$(AWIDGETSRC)/ScrollP.h \
 	$(AWIDGETSRC)/Simple.h \
 	$(AWIDGETSRC)/SimpleP.h \
-	$(AWIDGETSRC)/SimpMenu.h \
-	$(AWIDGETSRC)/SimpMenuP.h \
+	$(AWIDGETSRC)/SimpleMenu.h \
+	$(AWIDGETSRC)/SimpleMenP.h \
 	$(AWIDGETSRC)/Text.h \
 	$(AWIDGETSRC)/TextP.h \
 	$(AWIDGETSRC)/TextSrcP.h \
