@@ -1,4 +1,4 @@
-/* $Header: Xutil.h,v 11.40 87/12/21 09:32:48 swick Exp $ */
+/* $Header: Xutil.h,v 11.41 88/02/14 11:55:28 rws Exp $ */
 
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -268,4 +268,4 @@ Region XCreateRegion(), XPolygonRegion();
 XImage *XCreateImage();
 
 XVisualInfo *XGetVisualInfo();
-#endif _XUTIL_H_
+#endif /* _XUTIL_H_ */

@@ -1,7 +1,7 @@
-/* $Header: Context.c,v 1.1 87/09/11 08:16:18 toddb Exp $ */
+/* $Header: Context.c,v 1.2 88/02/26 12:57:50 swick Exp $ */
 #ifndef lint
 static char *sccsid = "@(#)Context.c	1.5	2/24/87";
-#endif lint
+#endif /* lint */
 
 
 /***********************************************************

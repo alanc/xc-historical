@@ -1,6 +1,6 @@
 #ifndef lint
-static char rcsid[] = "$Header: XErrDes.c,v 11.24 88/02/22 11:19:57 rws Exp $";
-#endif lint
+static char rcsid[] = "$Header: XErrDes.c,v 11.25 88/02/26 12:57:26 swick Exp $";
+#endif /* lint */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,

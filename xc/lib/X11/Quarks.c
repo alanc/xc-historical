@@ -1,6 +1,6 @@
 #ifndef lint
-static char rcsid[] = "$Header: Quarks.c,v 1.9 88/08/09 13:22:14 jim Exp $";
-#endif lint
+static char rcsid[] = "$Header: Quarks.c,v 1.10 88/08/09 13:24:27 jim Exp $";
+#endif /* lint */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,

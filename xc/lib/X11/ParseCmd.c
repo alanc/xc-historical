@@ -1,6 +1,6 @@
 #ifndef lint
-static char rcsid[] = "$Header: ParseCmd.c,v 1.10 88/02/10 18:04:54 rws Exp $";
-#endif lint
+static char rcsid[] = "$Header: ParseCmd.c,v 1.11 88/02/26 12:55:45 swick Exp $";
+#endif /* lint */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,

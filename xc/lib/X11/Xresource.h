@@ -1,4 +1,4 @@
-/* $Header: Xresource.h,v 1.10 88/02/26 12:57:06 swick Exp $ */
+/* $Header: Xresource.h,v 1.11 88/08/09 17:12:40 jim Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -272,5 +272,5 @@ extern void XrmParseCommand();
 
 
 
-#endif _Xresource_h
+#endif /* _Xresource_h */
 /* DON'T ADD STUFF AFTER THIS #endif */
