@@ -1,4 +1,4 @@
-/* $XConsortium: main.c,v 1.16 91/10/21 14:32:45 eswu Exp $ */
+/* $XConsortium: main.c,v 1.17 93/08/22 11:16:22 rws Exp $ */
 
 /* Puzzle - (C) Copyright 1987, 1988 Don Bennett.
  *
@@ -713,9 +713,6 @@ Reset()
 CalculateSpeed()
 {
     struct timeval tv1, tv2;
-#if !defined(SVR4) && !defined(WIN32)
-    struct timezone tz;
-#endif
     int i, x, y;
     long timePerTile;
     static int firstCall = 1;
@@ -730,11 +727,7 @@ CalculateSpeed()
     timePerTile = (long)(1000/TilesPerSecond);
 
     XSync(dpy,0);
-#if defined(SVR4) || defined(WIN32)
-    gettimeofday(&tv1);
-#else
-    gettimeofday(&tv1, &tz);
-#endif
+    GETTIMEOFDAY(&tv1);
     tv2 = tv1;
 
     MoveSteps = 0;
@@ -743,11 +736,7 @@ CalculateSpeed()
 	MoveArea(TileWindow,x,y,x+1,y,TileWidth,TileHeight);
 	RectSet(TileWindow,x,y,1,TileHeight,FgPixel);
 	XSync(dpy,0);
-#if defined(SVR4) || defined(WIN32)
-	gettimeofday(&tv2);
-#else
-	gettimeofday(&tv2, &tz);
-#endif
+	GETTIMEOFDAY(&tv2);
 	delta = DeltaT(tv2,tv1);
 	delta = max(MIN_DELTA_T, delta);
 	if (delta >= 0) MoveSteps++;	/* crock for broken systems */
@@ -759,21 +748,13 @@ CalculateSpeed()
      */
 
     XSync(dpy,0);
-#if defined(SVR4) || defined(WIN32)
-    gettimeofday(&tv1);
-#else
-    gettimeofday(&tv1, &tz);
-#endif
+    GETTIMEOFDAY(&tv1);
     for (i=0; i<MoveSteps; i++) {
 	MoveArea(TileWindow,x,y,x+1,y,TileWidth,TileHeight);
 	RectSet(TileWindow,x,y,1,TileHeight,FgPixel);
     }
     XFlush(dpy);
-#if defined(SVR4) || defined(WIN32)
-    gettimeofday(&tv2);
-#else
-    gettimeofday(&tv2, &tz);
-#endif
+    GETTIMEOFDAY(&tv2);
     delta = DeltaT(tv2, tv1);
     delta = max(MIN_DELTA_T, delta);
     MoveSteps = (((long)MoveSteps) * timePerTile)/(delta ? delta : 1L);

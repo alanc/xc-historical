@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: puzzle.c,v 1.11 91/07/25 13:48:17 rws Exp $
+ *	$XConsortium: puzzle.c,v 1.12 93/08/22 11:13:58 rws Exp $
  */
 
 /* Puzzle - (C) Copyright 1987, 1988 Don Bennett.
@@ -438,11 +438,7 @@ initialize()
    int sp_x, sp_y;
    struct timeval tv;
 
-#if defined(SVR4) || defined(WIN32)
-   gettimeofday (&tv);
-#else
-   gettimeofday (&tv, NULL);
-#endif
+   GETTIMEOFDAY (&tv);
    srand ((int) tv.tv_usec);
    layers = PuzzleSize / 2;
 
@@ -508,11 +504,7 @@ Scramble()
    old_output_state = OutputLogging;
    OutputLogging = 0;
 
-#if defined(SVR4) || defined(WIN32)
-   gettimeofday (&tv);
-#else
-   gettimeofday (&tv, NULL);
-#endif
+   GETTIMEOFDAY (&tv);
    srand ((int) tv.tv_usec);
 
    for (i=0; i<10*PuzzleWidth*PuzzleHeight; i++) {
