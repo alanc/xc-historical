@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xos.h,v 1.24 89/12/18 16:14:23 rws Exp $
+ * $XConsortium: Xos.h,v 1.25 90/08/22 18:04:13 rws Exp $
  * 
  * Copyright 1987 by the Massachusetts Institute of Technology
  *
@@ -23,6 +23,19 @@
 
 #ifndef _XOS_H_
 #define _XOS_H_
+
+#include <X11/Xdefs.h>
+
+#ifdef _POSIX_SOURCE
+
+#include <sys/types.h>
+#include <string.h>
+#define index strchr
+#define rindex strrchr
+#include <fcntl.h>
+#include <unistd.h>
+
+#else /* _POSIX_SOURCE */
 
 /*
  * Get major data types (esp. caddr_t)
@@ -83,6 +96,7 @@
 #include <unistd.h>
 #endif
 
+#endif /* not _POSIX_SOURCE */
 
 /*
  * Get struct timeval
@@ -118,11 +132,11 @@ struct timezone {
 #endif
 
 #else
-#include <sys/time.h>				/* else bsd */
+#include <sys/time.h>				/* else bsd or SVR4 */
 #endif
 
 /*
- * More BSDisms
+ * POSIXism
  */
 
 #ifdef SYSV
@@ -134,7 +148,6 @@ struct timezone {
 #endif
 #endif
 #endif
-
 
 /*
  * Put system-specific definitions here
