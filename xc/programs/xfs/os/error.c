@@ -1,4 +1,4 @@
-/* $XConsortium: error.c,v 1.1 91/07/27 00:19:14 keith Exp $ */
+/* $XConsortium: error.c,v 1.2 91/07/31 01:09:50 keith Exp $ */
 /*
  * error message handling
  */
@@ -30,7 +30,23 @@
 
 #include	<stdio.h>
 #include	<X11/Xos.h>
-#include	<sys/param.h>
+#ifndef X_NOT_POSIX
+#ifdef _POSIX_SOURCE
+#include <limits.h>
+#else
+#define _POSIX_SOURCE
+#include <limits.h>
+#undef _POSIX_SOURCE
+#endif
+#endif
+#ifndef PATH_MAX
+#include <sys/param.h>
+#ifdef MAXPATHLEN
+#define PATH_MAX MAXPATHLEN
+#else
+#define PATH_MAX 1024
+#endif
+#endif
 
 #ifdef USE_SYSLOG
 #include	<syslog.h>
@@ -39,7 +55,7 @@
 #include	"misc.h"
 
 Bool        UseSyslog;
-char        ErrorFile[MAXPATHLEN];
+char        ErrorFile[PATH_MAX];
 
 static Bool log_open;
 
