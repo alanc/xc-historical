@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Event.c,v 1.108 89/12/14 07:44:35 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Event.c,v 1.109 89/12/14 18:35:50 swick Exp $";
 /* $oHeader: Event.c,v 1.9 88/09/01 11:33:51 asente Exp $ */
 #endif /* lint */
 
@@ -1111,6 +1111,7 @@ void _XtSendFocusEvent(child, type)
 
     child = XtIsWidget(child) ? child : _XtWindowedAncestor(child);
     if (XtIsSensitive(child) && !child->core.being_destroyed
+	&& XtIsRealized(child)
 	&& (XtBuildEventMask(child) & FocusChangeMask))
     {
 	EventMask mask;
