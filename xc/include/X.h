@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: X.h,v 1.65 87/09/07 14:57:14 toddb Exp $
+ *	$XConsortium: X.h,v 1.66 88/09/06 15:55:56 jim Exp $
  */
 
 /* Definitions for the X window system likely to be used by applications */
@@ -35,7 +35,24 @@ SOFTWARE.
 
 /* Resources */
 
+/*
+ * _XSERVER64 must ONLY be defined when compiling X server sources on
+ * systems where unsigned long is not 32 bits, must NOT be used in
+ * client or library code.
+ */
+#ifndef _XSERVER64
 typedef unsigned long XID;
+typedef unsigned long Mask;
+typedef unsigned long Atom;
+typedef unsigned long VisualID;
+typedef unsigned long Time;
+#else
+typedef unsigned int XID;
+typedef unsigned int Mask;
+typedef unsigned int Atom;
+typedef unsigned int VisualID;
+typedef unsigned int Time;
+#endif
 
 typedef XID Window;
 typedef XID Drawable;
@@ -45,14 +62,6 @@ typedef XID Cursor;
 typedef XID Colormap;
 typedef XID GContext;
 typedef XID KeySym;
-
-typedef unsigned long Mask;
-
-typedef unsigned long Atom;
-
-typedef unsigned long VisualID;
-
-typedef unsigned long Time;
 
 typedef unsigned char KeyCode;
 
