@@ -1,4 +1,4 @@
-/* 3812 PagePrinter macros, copied from pmp.h; change there, too */
+/* 3812 PagePrinter macros */
 #define PPI	240
 #define inch2pel(inches)	((int) ((inches) * PPI))
 #define DEFAULT_WIDTH	8.5
