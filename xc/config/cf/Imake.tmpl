@@ -1,6 +1,6 @@
 XCOMM -----------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-XCOMM $XConsortium: Imake.tmpl,v 1.216 94/03/28 17:10:53 matt Exp $
+XCOMM $XConsortium: Imake.tmpl,v 1.217 94/03/29 15:42:11 gildea Exp $
 XCOMM
 
 /*
@@ -979,7 +979,7 @@ CXXEXTRA_INCLUDES = CplusplusExtraIncludes
          LDPRELIB = LdPreLib
         LDPOSTLIB = LdPostLib
         LDOPTIONS = $(CDEBUGFLAGS) $(CCOPTIONS)  $(EXTRA_LDOPTIONS) $(THREADS_LDFLAGS) $(LOCAL_LDFLAGS) $(LDPRELIB)
-     CXXLDOPTIONS = $(CDEBUGFLAGS) $(CXXOPTIONS) $(EXTRA_LDOPTIONS) $(THREADS_LDFLAGS) $(LOCAL_LDFLAGS) $(LDPRELIB)
+     CXXLDOPTIONS = $(CDEBUGFLAGS) $(CXXOPTIONS) $(EXTRA_LDOPTIONS) $(THREADS_CXXLDFLAGS) $(LOCAL_LDFLAGS) $(LDPRELIB)
 
            LDLIBS = $(LDPOSTLIB) $(THREADS_LIBS) $(SYS_LIBRARIES) $(EXTRA_LIBRARIES)
 #if AlternateUsrLibDir && HasLdRunPath
