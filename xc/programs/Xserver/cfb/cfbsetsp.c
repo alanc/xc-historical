@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: cfbsetsp.c,v 5.8 94/02/06 20:14:57 rws Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -148,7 +148,6 @@ cfbSetSpans(pDrawable, pGC, pcharsrc, ppt, pwidth, nspans, fSorted)
 
     alu = pGC->alu;
     prgnDst = cfbGetCompositeClip(pGC);
-
     pptLast = ppt + nspans;
 
     cfbGetLongWidthAndPointer (pDrawable, widthDst, pdstBase)
@@ -212,7 +211,7 @@ cfbSetSpans(pDrawable, pGC, pcharsrc, ppt, pwidth, nspans, fSorted)
 	    /* We've tried this line against every box; it must be outside them
 	     * all.  move on to the next point */
 	    ppt++;
-	    psrc += PixmapWidthInPadUnits(*pwidth, PSZ);
+	    psrc += PixmapWidthInPadUnits(*pwidth, pDrawable->depth);
 	    pwidth++;
 	}
     }
@@ -249,7 +248,7 @@ cfbSetSpans(pDrawable, pGC, pcharsrc, ppt, pwidth, nspans, fSorted)
 
 		}
 	    }
-	psrc += PixmapWidthInPadUnits(*pwidth, PSZ);
+	psrc += PixmapWidthInPadUnits(*pwidth, pDrawable->depth);
 	ppt++;
 	pwidth++;
 	}
