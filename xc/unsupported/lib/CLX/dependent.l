@@ -681,46 +681,51 @@
 	   (sys:store-conditional ,lock sys:current-process nil))))))
 
 #+excl
+(defun event-listen-error ()
+  (error "The only CLX function call allowed from a process wait \
+       function is event-listen with timeout 0."))
+
+#+excl
 ;;
 ;; Note that there is a special hack here.  If the current process is nil it
 ;; means we're running in the scheduler stack group, which means in turn that
 ;; we're running a process wait function.  This wait functions should *always*
 ;; be: (event-listen display 0).  So if we are running in the scheduler and the
-;; lock isn't already being held just run the body without trying to grab the
+;; lock isn't already being held, just run the body without trying to grab the
 ;; lock.  If the lock *is* already being held we have to throw out of the
 ;; event-listen.
 ;;
 (defmacro holding-lock ((locator &optional whostate) &body body)
   ;; This macro is for use in a multi-process environment.
   (let ((lock (gensym)) (curproc (gensym)) (locker (gensym))
-	(without-interrupts-state (gensym)))
+	(scheduling (gensym)) (obtained-lock (gensym)))
     
-    `(let* ((,without-interrupts-state excl::*without-interrupts*)
-	    (excl::*without-interrupts* t)
-	    (,lock ,locator)
-	    (,curproc mp:*current-process*) ; nil if in scheduler (wait fun)
-	    (,locker (mp:process-lock-locker ,lock)))
-       (declare (special *inside-event-listen-catch*))
+    `(let ((,scheduling (excl::scheduler-running-p))
+	   ,lock ,curproc ,locker ,obtained-lock)
+       
+       (declare (special *inside-event-listen-catch*
+			 mp::*current-process*))
+       
+       (when ,scheduling
+	 (setq ,lock ,locator)
+	 (setq ,curproc mp::*current-process*; nil if in scheduler (wait fun)
+	       ,locker (mp::process-lock-locker ,lock)))
        
        (unwind-protect
-	    (progn 
-	      (if (and (null ,curproc) ,locker)
-		  (if (and (boundp '*inside-event-listen-catch*)
-			   *inside-event-listen-catch*)
-		      (throw 'event-listen :would-block)
-		    (error "The only CLX function call allowed from a process wait \
-       function is event-listen with timeout 0.")))
-	      (excl:if* (eq ,locker ,curproc)
-		 then
-		      (setq ,locker nil)
-		 else
-		      (setq ,locker ,curproc)
-		      (mp:process-lock ,lock ,curproc
-				       ,@(when whostate `(,whostate))))
-	      (setq excl::*without-interrupts* ,without-interrupts-state)
+	    (progn
+	      (when ,scheduling
+		(if (and (null ,curproc) ,locker)
+		    (if (and (boundp '*inside-event-listen-catch*)
+			     *inside-event-listen-catch*)
+			(throw 'event-listen :would-block)
+		      (event-listen-error)))
+		(when (not (eq ,locker ,curproc))
+		  (mp::process-lock ,lock ,curproc
+				    ,@(when whostate `(,whostate)))
+		  (setq ,obtained-lock t)))
 	      ,@body)
-	 (if (and ,curproc (eq ,locker ,curproc))
-	     (mp:process-unlock ,lock ,curproc))))))
+	 (if ,obtained-lock
+	     (mp::process-unlock ,lock ,curproc))))))
 
 ;; If you're not sharing DISPLAY objects within a multi-processing
 ;; shared-memory environment, this is sufficient
