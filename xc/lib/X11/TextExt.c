@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XTextExt.c,v 11.21 89/06/07 13:15:03 jim Exp $
+ * $XConsortium: XTextExt.c,v 11.22 89/06/07 13:44:09 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  */
@@ -51,7 +51,7 @@ XTextExtents (fs, string, nchars, dir, font_ascent, font_descent, overall)
     Bool singlerow = (fs->max_byte1 == 0);  /* optimization */
     int nfound = 0;			/* number of characters found */
     XCharStruct *def;			/* info about default char */
-    unsigned char *us = (unsigned char *) string;  /* be 8bit clean */
+    unsigned char *us;  		/* be 8bit clean */
 
     if (singlerow) {			/* optimization */
 	CI_GET_DEFAULT_INFO_1D (fs, def);
@@ -119,7 +119,7 @@ int XTextWidth (fs, string, count)
     int i;				/* iterator */
     Bool singlerow = (fs->max_byte1 == 0);  /* optimization */
     XCharStruct *def;			/* info about default char */
-    unsigned char *us = (unsigned char *) string;  /* be 8bit clean */
+    unsigned char *us;  		/* be 8bit clean */
     int width = 0;			/* RETURN value */
 
     if (singlerow) {			/* optimization */
