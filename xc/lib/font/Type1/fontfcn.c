@@ -1,4 +1,4 @@
-/* $XConsortium: fontfcn.c,v 1.5 91/10/11 11:34:02 rws Exp $ */
+/* $XConsortium: fontfcn.c,v 1.6 92/03/20 14:36:00 keith Exp $ */
 /* Copyright International Business Machines,Corp. 1991
  * All Rights Reserved
  *
@@ -131,8 +131,7 @@ char *env;
   return(rcode);
 }
 /***================================================================***/
-xobject fontfcnB(FontP,S,code,lenP,mode)
-psfont  *FontP;
+xobject fontfcnB(S,code,lenP,mode)
 XYspace S;
 unsigned char *code;
 int  *lenP;
@@ -150,25 +149,10 @@ int  *mode;
  
   path  charpath;   /* the path for this character              */
  
-  /* We parse the glyphname.  Multi-byte names are delimited by '|'; */
-  /* all others are single-byte.  */
-  --(*lenP);
   charnameP = &CodeName;
-    if (*code != '|') {
-      charnameP->len = 1;
-      charnameP->data.stringP = code;
-    }
-    else {
-      for (s = ++code; *s++ != '|'; )
-        if (--(*lenP) <= 0) {
-          *mode = FF_PARSE_ERROR;
-          return(NULL);
-        }
-      charnameP->len = s - code - 1;
-      charnameP->data.stringP = code ;
-      --(*lenP);
-    }
- 
+  charnameP->len = *lenP;
+  charnameP->data.stringP = code;
+
   CharStringsDictP =  FontP->CharStringsP;
  
   /* search the chars string for this charname as key */
@@ -198,19 +182,15 @@ int  *mode;
   return(charpath);
 }
 /***================================================================***/
-/*   fontfcnA(env,S,code, len,mode)                                   */
+/*   fontfcnA(env, mode)                                              */
 /*                                                                    */
 /*          env is a pointer to a string that contains the fontname.  */
 /*                                                                    */
 /*     1) initialize the font     - global indicates it has been done */
 /*     2) load the font                                               */
-/*     3) use the font to call fontfcnB to get the character pattern  */
 /***================================================================***/
-xobject fontfcnA(env,S,code,len,mode)
+Bool fontfcnA(env,mode)
 char *env;
-XYspace S;
-unsigned char *code;
-int  *len;
 int  *mode;
 {
   int rc;
@@ -222,7 +202,7 @@ int  *mode;
     if (!(initFont(VM_SIZE))) {
       /* we are really out of memory */
       *mode = SCAN_OUT_OF_MEMORY;
-      return(NULL);
+      return(FALSE);
     }
   }
  
@@ -235,10 +215,10 @@ int  *mode;
     if (rc != 0 ) {
       strcpy(CurFontName, "");    /* no font loaded */
       *mode = rc;
-      return(NULL);
+      return(FALSE);
     }
   }
-  return(fontfcnB(FontP,S,code,len,mode));
+  return(TRUE);
  
 }
 /***================================================================***/

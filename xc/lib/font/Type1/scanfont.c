@@ -1,4 +1,4 @@
-/* $XConsortium: scanfont.c,v 1.3 91/10/10 11:19:10 rws Exp $ */
+/* $XConsortium: scanfont.c,v 1.4 92/03/20 16:04:03 eswu Exp $ */
 /* Copyright International Business Machines,Corp. 1991
  * All Rights Reserved
  *
@@ -262,6 +262,119 @@ int getInt()
  
 }
 /***================================================================***/
+/*
+ * See Sec 10.3 of ``Adobe Type 1 Font Format'' v1.1,
+ * for parsing Encoding.
+ */
+int getEncoding(arrayP)
+psobj *arrayP;
+{
+
+  scan_token(inputP);
+  if ((tokenType == TOKEN_NAME) &&
+      (tokenLength == 16) &&
+      (0 == strncmp(tokenStartP,"StandardEncoding",16)))
+  {
+      /* Adobe Standard Encoding */
+
+      arrayP->data.valueP = (char *) StdEncArrayP;
+      arrayP->len = 256;
+      return(SCAN_OK);
+  }
+  else if ( (tokenType == TOKEN_LEFT_BRACE) ||
+       (tokenType == TOKEN_LEFT_BRACKET) )
+  {
+      /* Array of literal names */
+
+      psobj *objP;
+      int i;
+
+      objP = (psobj *)vm_alloc(256*(sizeof(psobj)));
+      if (!(objP)) return(SCAN_OUT_OF_MEMORY);
+
+      arrayP->data.valueP = (char *) objP;
+      arrayP->len = 256;
+
+      for (i=0; i<256; i++, objP++)
+      {
+	  scan_token(inputP);
+	  
+	  if (tokenType != TOKEN_LITERAL_NAME)
+	      return(SCAN_ERROR);
+
+	  if (!(vm_alloc(tokenLength)) ) return(SCAN_OUT_OF_MEMORY);
+	  objFormatName(objP,tokenLength,tokenStartP);
+      }
+
+      scan_token(inputP);
+      if ( (tokenType == TOKEN_RIGHT_BRACE) ||
+	  (tokenType == TOKEN_RIGHT_BRACKET) )
+	  return(SCAN_OK);
+  }
+  else
+  {
+      /* Must be sequences of ``dup <index> <charactername> put" */
+
+      psobj *objP;
+      int i;
+
+      objP = (psobj *)vm_alloc(256*(sizeof(psobj)));
+      if (!(objP)) return(SCAN_OUT_OF_MEMORY);
+
+      arrayP->data.valueP = (char *) objP;
+      arrayP->len = 256;
+
+      for (i=0; i<256; i++)
+	  objFormatName(objP + i, 7, ".notdef");
+
+      while (TRUE)
+      {
+	  scan_token(inputP);
+
+	  switch (tokenType)
+	  {
+	  case TOKEN_NAME:
+	      if (tokenLength == 3)
+	      {
+		  if (strncmp(tokenStartP,"dup",3) == 0)
+		  {
+		      /* get <index> */
+		      scan_token(inputP);
+		      if (tokenType != TOKEN_INTEGER ||
+			  tokenValue.integer < 0 ||
+			  tokenValue.integer > 255)
+			  return (SCAN_ERROR);
+		      i = tokenValue.integer;
+
+		      /* get <characer_name> */
+		      scan_token(inputP);
+		      if (tokenType != TOKEN_LITERAL_NAME)
+			  return(SCAN_ERROR);
+
+		      if (!(vm_alloc(tokenLength)) )
+			  return(SCAN_OUT_OF_MEMORY);
+		      objFormatName(objP + i,tokenLength,tokenStartP);
+
+		      /* get "put" */
+		      scan_token(inputP);
+		      if (tokenType != TOKEN_NAME)
+			  return(SCAN_ERROR);
+		  }
+		  else if (strncmp(tokenStartP,"def",3) == 0)
+		      return (SCAN_OK);
+	      }
+	      break;
+	  case TOKEN_EOF:
+	  case TOKEN_NONE:
+	  case TOKEN_INVALID:
+	      return (SCAN_ERROR);
+	  }
+      }
+  }
+
+  return (SCAN_ERROR);
+}
+/***================================================================***/
 int getArray(arrayP)
 psobj *arrayP;
 {
@@ -516,17 +629,19 @@ psfont *fontP;
   if (!(dictP)) return(SCAN_OUT_OF_MEMORY);
  
   fontP->fontInfoP = dictP;
-  fontP->fontInfoP[0].key.len = 16;  /* number of actual entries */
+  fontP->fontInfoP[0].key.len = 17;  /* number of actual entries */
   objFormatName(&(dictP[FONTNAME].key),8,"FontName");
   objFormatName(&(dictP[FONTNAME].value),0,NULL);
   objFormatName(&(dictP[PAINTTYPE].key),9,"PaintType");
   objFormatInteger(&(dictP[PAINTTYPE].value),0);
-  objFormatName(&(dictP[FONTTYPE].key),8,"FontType");
-  objFormatInteger(&(dictP[FONTTYPE].value),0);
+  objFormatName(&(dictP[FONTTYPENUM].key),8,"FontType");
+  objFormatInteger(&(dictP[FONTTYPENUM].value),0);
   objFormatName(&(dictP[FONTMATRIX].key),10,"FontMatrix");
   objFormatArray(&(dictP[FONTMATRIX].value),0,NULL);
   objFormatName(&(dictP[FONTBBOX].key),8,"FontBBox");
   objFormatArray(&(dictP[FONTBBOX].value),0,NULL);
+  objFormatName(&(dictP[ENCODING].key),8,"Encoding");
+  objFormatEncoding(&(dictP[ENCODING].value),0,NULL);
   objFormatName(&(dictP[UNIQUEID].key),8,"UniqueID");
   objFormatInteger(&(dictP[UNIQUEID].value),0);
   objFormatName(&(dictP[STROKEWIDTH].key),11,"StrokeWidth");
@@ -945,6 +1060,10 @@ psdict    *dictP;
    if ( N > 0 ) {
      /* what type */
      switch (dictP[N].value.type) {
+       case OBJ_ENCODING:
+         V = getEncoding(&(dictP[N].value));
+         if ( V != SCAN_OK ) return(V);
+         break;
        case OBJ_ARRAY:
          V = getArray(&(dictP[N].value));
          if ( V != SCAN_OK ) return(V);

@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: util.h,v 1.2 91/10/10 11:20:14 rws Exp $ */
 /* Copyright International Business Machines,Corp. 1991
  * All Rights Reserved
  *
@@ -95,6 +95,7 @@ extern char    *vm_alloc();
 #define OBJ_STRING     (4)
 #define OBJ_NAME       (5)
 #define OBJ_FILE       (6)
+#define OBJ_ENCODING   (7)
  
 /***================================================================***/
 /* Value of PostScript objects */

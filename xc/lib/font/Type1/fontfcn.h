@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: fontfcn.h,v 1.2 91/10/10 11:18:06 rws Exp $ */
 /* Copyright International Business Machines,Corp. 1991
  * All Rights Reserved
  *
@@ -62,7 +62,7 @@ extern int GetFontInfo();
  
 #define FONTNAME 1
 #define PAINTTYPE 2
-#define FONTTYPE  3
+#define FONTTYPENUM 3
 #define FONTMATRIX 4
 #define FONTBBOX   5
 #define UNIQUEID  6
@@ -76,6 +76,7 @@ extern int GetFontInfo();
 #define ISFIXEDPITCH  14
 #define UNDERLINEPOSITION 15
 #define UNDERLINETHICKNESS 16
+#define ENCODING 17
 /***================================================================***/
 /*  Name of Private values                                            */
 /***================================================================***/

@@ -1,4 +1,4 @@
-/* $XConsortium: util.c,v 1.4 91/10/10 11:20:12 rws Exp $ */
+/* $XConsortium: util.c,v 1.5 92/03/20 14:35:58 keith Exp $ */
 /* Copyright International Business Machines,Corp. 1991
  * All Rights Reserved
  *
@@ -115,6 +115,21 @@ void objFormatBoolean(objP,value)
     objP->type         = OBJ_BOOLEAN;
     objP->len          = 0;
     objP->data.boolean = value;
+  }
+}
+ 
+/*
+ * Format an Encoding object
+ */
+void objFormatEncoding(objP,length,valueP)
+  psobj *objP;
+  int length;
+  psobj *valueP;
+{
+  if (objP != NULL) {
+    objP->type        = OBJ_ENCODING;
+    objP->len         = length;
+    objP->data.arrayP = valueP;
   }
 }
  
