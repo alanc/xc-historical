@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xfd.c,v 1.26 91/02/20 18:47:57 dave Exp $
+ * $XConsortium: xfd.c,v 1.27 91/05/16 16:22:39 swick Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -23,10 +23,9 @@
  * Author:  Jim Fulton, MIT X Consortium
  */
 
-#include <stdio.h>
-#include <X11/Xos.h>
 #include <X11/Intrinsic.h>
 #include <X11/StringDefs.h>
+#include <X11/Xos.h>
 #include <X11/Xatom.h>
 #include <X11/Shell.h>
 #include <X11/Xaw/Cardinals.h>
@@ -34,7 +33,7 @@
 #include <X11/Xaw/Box.h>
 #include <X11/Xaw/Form.h>
 #include <X11/Xaw/Command.h>
-#include <X11/Xmu/Converters.h>
+#include <stdio.h>
 #include "fontgrid.h"
 
 char *ProgramName;
