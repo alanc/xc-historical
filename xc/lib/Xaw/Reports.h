@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: Reports.h,v 1.1 90/02/13 14:13:01 jim Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -44,5 +44,8 @@ typedef struct {
 #define XawPROuterWidth		(16)
 #define XawPROuterHeight	(32)
 #define XawPRAll		(63)	/* union */
+
+#define XtNreportCallback "reportCallback"
+#define XtCReportCallback "reportCallback"
 
 #endif /* _Xaw_Reports_h */

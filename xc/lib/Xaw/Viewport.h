@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Viewport.h,v 1.13 90/02/13 10:56:47 jim Exp $
+ * $XConsortium: Viewport.h,v 1.14 90/02/13 14:04:12 jim Exp $
  * Public definitions for Viewport widget
  */
 
@@ -62,9 +62,6 @@ SOFTWARE.
 #define XtNallowVert "allowVert"
 #define XtNuseBottom "useBottom"
 #define XtNuseRight "useRight"
-
-#define XtNreportCallback "reportCallback"
-#define XtCReportCallback "ReportCallback"
 
 extern WidgetClass viewportWidgetClass;
 

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Panner.h,v 1.13 90/02/28 11:38:55 jim Exp $
+ * $XConsortium: Panner.h,v 1.14 90/02/28 11:51:37 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -74,8 +74,6 @@
 #define XtNinternalBorderWidth "internalBorderWidth"
 #define XtNlineWidth "lineWidth"
 #define XtCLineWidth "LineWidth"
-#define XtNreportCallback "reportCallback"
-#define XtCReportCallback "ReportCallback"
 #define XtNresize "resize"
 #define XtNrubberBand "rubberBand"
 #define XtCRubberBand "RubberBand"
