@@ -1,4 +1,4 @@
-/* $XConsortium: Viewport.c,v 1.62 91/01/02 12:04:08 gildea Exp $ */
+/* $XConsortium: Viewport.c,v 1.63 91/02/17 16:51:51 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -785,6 +785,69 @@ static void ThumbProc(widget, closure, percent)
     MoveChild(w, x, y);
 }
 
+static XtGeometryResult
+TestSmaller(w, request, reply_return)
+     Widget w; XtWidgetGeometry *request, *reply_return;
+{
+  if (request->width < w->core.width || request->height < w->core.height)
+    return XtMakeGeometryRequest(w, request, reply_return);
+  else {
+    reply_return = NULL;
+    return XtGeometryYes;  
+  }
+}
+
+static XtGeometryResult
+GeometryRequestPlusScrollbar(w, horizontal, request, reply_return)
+     Boolean horizontal;
+     ViewportWidget w; 
+     XtWidgetGeometry *request, *reply_return;
+{
+  Widget sb;
+  XtWidgetGeometry plusScrollbars;
+  plusScrollbars = *request;
+  if ((sb = w->viewport.horiz_bar) == (Widget)NULL)
+    sb = CreateScrollbar( w, horizontal);
+  request->width += sb->core.width;
+  request->height += sb->core.height;
+  XtDestroyWidget(sb);
+  return XtMakeGeometryRequest((Widget) w, &plusScrollbars, reply_return);
+ }
+
+#define WidthChange() (request->width != w->core.width)
+#define HeightChange() (request->height != w->core.height)
+
+static XtGeometryResult 
+QueryGeometry(w, request, reply_return)
+     ViewportWidget w; XtWidgetGeometry *request, *reply_return;
+{	
+  if (w->viewport.allowhoriz && w->viewport.allowvert) 
+    return TestSmaller(w, request, reply_return);
+
+  else if (w->viewport.allowhoriz && !w->viewport.allowvert) 
+    if (WidthChange() && !HeightChange())
+      return TestSmaller(w, request, reply_return);
+    else if (!WidthChange() && HeightChange())
+      return XtMakeGeometryRequest((Widget) w, request, reply_return);
+    else if (WidthChange() && HeightChange()) { /* hard part */
+      return GeometryRequestPlusScrollbar(w, True, request, reply_return);
+    }
+
+  else if (!w->viewport.allowhoriz && w->viewport.allowvert) 
+    if (!WidthChange() && HeightChange())
+      return TestSmaller(w, request, reply_return);
+    else if (WidthChange() && !HeightChange())
+      return XtMakeGeometryRequest((Widget)w, request, reply_return);
+    else if (WidthChange() && HeightChange()) { /* hard part */
+      return GeometryRequestPlusScrollbar(w, False, request, reply_return);
+    }
+      
+  else if (!w->viewport.allowhoriz && !w->viewport.allowvert) 
+    return XtMakeGeometryRequest((Widget) w, request, reply_return);
+}
+
+#undef WidthChange
+#undef HeightChange
 
 static XtGeometryResult GeometryManager(child, request, reply)
     Widget child;
@@ -799,14 +862,17 @@ static XtGeometryResult GeometryManager(child, request, reply)
     Boolean child_changed_size;
     Dimension height_remaining;
 
+    if (request->request_mode & XtCWQueryOnly)
+      return QueryGeometry(w, request, reply);
+
     if (child != w->viewport.child
-	|| request->request_mode & ~(CWWidth | CWHeight | CWBorderWidth)
+        || request->request_mode & ~(CWWidth | CWHeight
+				     | CWBorderWidth)
 	|| ((request->request_mode & CWBorderWidth)
 	    && request->border_width > 0))
 	return XtGeometryNo;
 
     allowed = *request;
-
 
     reconfigured = GetGeometry( (Widget)w,
 			        (rWidth ? request->width : w->core.width),
