@@ -1,4 +1,4 @@
-# $XConsortium$
+# $XConsortium: x11r6,v 1.2 94/02/06 16:27:15 mor Exp $
 #
 # Copyright (c) 1993 Quarterdeck Office Systems
 #
@@ -26,3 +26,5 @@ MISC X MANPATH=_MANPATH
 MISC POSIX PATH=_PATH
 INTERNAL-AUTH-PROGRAM X11 xauth xauth
 INTERNAL-AUTH-INPUT X11 add\040$1\040$2\040$3
+INTERNAL-AUTH-PROGRAM ICE iceauth iceauth
+INTERNAL-AUTH-INPUT ICE add\040$1\040$2\040$3\040$4\040$5
