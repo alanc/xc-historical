@@ -1,4 +1,4 @@
-.\" $XConsortium$
+.\" $XConsortium: Consortium.man,v 1.15 91/08/15 18:16:47 rws Exp $
 .TH XCONSORTIUM 1 "Release 5"  "X Version 11"
 .SH NAME
 MIT X Consortium \- MIT X Consortium information
@@ -144,6 +144,7 @@ HaL Computer Systems, Inc.
 Institute for Information Industry
 Interactive Systems Corporation
 Integrated Computer Solutions, Inc.
+Ithaca Software
 IXI Limited
 Japan Computer Corporation
 Jupiter Systems
@@ -181,5 +182,6 @@ Unipalm XTech
 Visix Software, Inc.
 Visual Information Technologies, Inc.
 Visual Technology, Inc.
+Widget, Inc.
 X/Open Company Ltd.
 .fi
