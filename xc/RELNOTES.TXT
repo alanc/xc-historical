@@ -52,6 +52,10 @@ The following vendor.cf files are in the release but have not been used here
 and hence probably need changes to work: DGUX.cf, Mips.cf, apollo.cf, bsd.cf,
 convex.cf, moto.cf, pegasus.cf, x386.cf.
 
+The file xc/lib/Wraphelp.c, for XDM-AUTHORIZATION-1, is not included in this
+release.  The file is available within the US; get /pub/R5/xdm-auth/README
+from ftp.x.org via anonymous ftp.
+
 
 3. Documentation
 
@@ -386,6 +390,13 @@ once.  See xc/programs/Xserver/dix/dixfonts.c, xc/lib/font/fc/fserve.c, and
 xc/lib/font/fc/fsconvert.c.  A new X server command line option, -deferglyphs,
 controls which types of fonts (8 vs. 16 bit) to demand load; see the X man
 page for details.
+
+The os layer now uses sigaction on POSIX systems; a new function OsSignal was
+added for convenience, which you should use in your ddx code.
+
+A new timer interface has been added to the os layer; see the functions in
+os/WaitFor.c.  This interface is used by XKB, but we haven't tried to use it
+anywhere else (like in Xext/sleepuntil.c) yet.
 
 Integration of 64-bit server changes for Digital Alpha didn't happen.  The dix
 and os code should be in pretty good shape (by compiling the server with
