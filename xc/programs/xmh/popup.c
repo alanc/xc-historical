@@ -1,4 +1,4 @@
-/* $XConsortium: popup.c,v 2.32 91/07/07 16:30:29 converse Exp $
+/* $XConsortium: popup.c,v 2.33 91/07/08 15:28:29 converse Exp $
  *
  *
  *			  COPYRIGHT 1989
@@ -202,23 +202,15 @@ void DestroyPopup(widget, client_data, call_data)
     XtDestroyWidget(popup);
 }
 
-/*ARGSUSED*/
-void XmhWMDeletePopup(w, event, params, num)
-    Widget	w;
-    XEvent	*event;
-    String	*params;
-    Cardinal	*num;
+void WMDeletePopup(popup, event)
+    Widget	popup;	/* transient shell */
+    XEvent*	event;
 {
     String	shellName;
     String	buttonName;
     Widget	button;
 
-    if (event->type != ClientMessage ||
-	event->xclient.message_type != wm_protocols ||
-	event->xclient.data.l[0] != wm_delete_window)
-	return;
-
-    shellName = XtName(w);
+    shellName = XtName(popup);
     if (strcmp(shellName, XmhNconfirm) == 0)
 	buttonName = "*no";
     else if (strcmp(shellName, XmhNprompt) == 0)
@@ -230,7 +222,7 @@ void XmhWMDeletePopup(w, event, params, num)
     else
 	return;		/* WM may kill us */
 
-    button = XtNameToWidget(w, buttonName);
+    button = XtNameToWidget(popup, buttonName);
     if (! button) return;
     XtCallActionProc(button, "set", event, (String*)NULL, ZERO);
     XtCallActionProc(button, "notify", event, (String*)NULL, ZERO);
@@ -240,16 +232,12 @@ void XmhWMDeletePopup(w, event, params, num)
 static void TheUsual(popup)
     Widget	popup;	/* shell */
 {
-    static XtTranslations WMProtocolTranslations = NULL;
-    if (!WMProtocolTranslations)
-	WMProtocolTranslations = XtParseTranslationTable
-	    ("<Message>WM_PROTOCOLS: XmhWMDeletePopup()\n");
     XtInstallAllAccelerators(popup, popup);
-    XtAugmentTranslations(popup, WMProtocolTranslations);
+    XtAugmentTranslations(popup, app_resources.wm_protocols_translations);
     XtRealizeWidget(popup);
     XDefineCursor(XtDisplay(popup), XtWindow(popup), app_resources.cursor);
-    (void) XSetWMProtocols(XtDisplay(popup), XtWindow(popup),
-			   &wm_delete_window, 1);
+    (void) XSetWMProtocols(XtDisplay(popup), XtWindow(popup), 
+			   protocolList, XtNumber(protocolList));
 }
 
 
