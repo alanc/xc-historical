@@ -1,4 +1,4 @@
-/* $XConsortium: globals.h,v 1.1 93/08/17 18:58:55 mor Exp $ */
+/* $XConsortium: globals.h,v 1.1 93/08/19 18:25:25 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -29,11 +29,11 @@ int         	_IceLastMajorOpcode = 0;
 
 int		_IceAuthCount = 2;
 IceOCLauthRec	_IceOCLauthRecs[] = {
-		  		{"ICE-AUTH-1", _IceOCLauth1proc},
-		  		{"ICE-AUTH-2", _IceOCLauth2proc}};
+		  		{"ICE-AUTH-TEST-1", _IceOCLauth1proc},
+		  		{"ICE-AUTH-TEST-2", _IceOCLauth2proc}};
 IceACLauthRec	_IceACLauthRecs[] = {
-		  		{"ICE-AUTH-1", _IceACLauth1proc},
-		  		{"ICE-AUTH-2", _IceACLauth2proc}};
+		  		{"ICE-AUTH-TEST-1", _IceACLauth1proc},
+		  		{"ICE-AUTH-TEST-2", _IceACLauth2proc}};
 
 int		_IceVersionCount = 1;
 _IceVersion	_IceVersions[] = {
