@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: daemon.c,v 1.3 88/09/23 14:36:49 jim Exp $
+ * $XConsortium: daemon.c,v 1.4 89/01/16 17:13:00 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -20,7 +20,7 @@
 
 #include <X11/Xos.h>
 #include <sys/ioctl.h>
-#ifdef SYSV
+#ifdef hpux
 #include <sys/ptyio.h>
 #endif
 
@@ -54,7 +54,7 @@ BecomeDaemon ()
     close (2);
 
     if ((i = open ("/dev/tty", O_RDWR)) >= 0) {	/* did open succeed? */
-#ifdef SYSV
+#if defined(SYSV) && defined(TIOCTTY)
 	int zero = 0;
 	(void) ioctl (i, TIOCTTY, &zero);
 #else
