@@ -1,4 +1,4 @@
-/* $XConsortium: setauth.c,v 1.3 93/12/06 18:51:21 mor Exp $ */
+/* $XConsortium: setauth.c,v 1.4 93/12/07 11:04:16 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -19,8 +19,28 @@ Author: Ralph Mor, X Consortium
 
 #include <X11/ICE/ICElib.h>
 #include <X11/ICE/ICElibint.h>
+#include <X11/ICE/ICEutil.h>
 
 
+/*
+ * IceSetPaAuthData is not a standard part of ICElib, it is specific
+ * to the sample implementation.
+ *
+ * For the client that initiates a Protocol Setup, we look in the
+ * .ICEauthority file to get authentication data.
+ *
+ * For the client accepting the Protocol Setup, we get the data
+ * from an in-memory database of authentication data (set by the
+ * application calling IceSetPaAuthData).  We have to get the data
+ * from memory because getting it directly from the .ICEauthority
+ * file is not secure - someone can just modify the contents of the
+ * .ICEauthority file behind our back.
+ */
+
+int		 _IcePaAuthDataEntryCount = 0;
+IceAuthDataEntry _IcePaAuthDataEntries[ICE_MAX_AUTH_DATA_ENTRIES];
+
+
 void
 IceSetPaAuthData (numEntries, entries)
 
