@@ -1,4 +1,4 @@
-/* $XConsortium: Display.c,v 1.83 92/04/14 14:28:02 gildea Exp $ */
+/* $XConsortium: Display.c,v 1.84 92/06/08 11:12:11 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -183,7 +183,7 @@ Display *XtOpenDisplay(app, displayName, applName, className,
 	d = XOpenDisplay(displayName);
 
 	if (! applName && !(applName = getenv("RESOURCE_NAME"))) {
-	    if (*argc > 0 && argv[0]) {
+	    if (*argc > 0 && argv[0] && *argv[0]) {
 		char *ptr = rindex(argv[0], '/');
 		if (ptr) applName = ++ptr;
 		else applName = argv[0];
