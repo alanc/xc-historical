@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Initialize.c,v 1.128 89/04/18 11:31:42 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Initialize.c,v 1.129 89/04/27 17:48:57 kit Exp $";
 /* $oHeader: Initialize.c,v 1.7 88/08/31 16:33:39 asente Exp $ */
 #endif lint
 
@@ -90,7 +90,6 @@ void XtToolkitInitialize()
     _XtConvertInitialize();
     _XtEventInitialize();
     _XtTranslateInitialize();
-    _XtPerDisplayInitialize();
 }
 
 static String XtGetRootDirName(buf)
@@ -310,6 +309,21 @@ static void _MergeOptionTables(src1, num_src1, src2, num_src2, dst, num_dst)
 	}
     }
     *num_dst = dst_len;
+}
+
+
+static void LowerCase(source, dest)
+    register char  *source, *dest;
+{
+    register char ch;
+
+    for (; (ch = *source) != 0; source++, dest++) {
+    	if ('A' <= ch && ch <= 'Z')
+	    *dest = ch - 'A' + 'a';
+	else
+	    *dest = ch;
+    }
+    *dest = 0;
 }
 
 
