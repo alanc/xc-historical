@@ -2214,7 +2214,7 @@ A Text widget lets both the user and the application
 take control of the text being displayed.
 The user takes control with the scroll bar or with key strokes 
 defined by the event bindings.
-The scroll bar option places the scroll bar on the left side of the window
+The scroll bar option places the scroll bar on the left side of the widget
 and can be used with any editing mode.
 The application takes control with procedure calls to the Text widget
 to:
@@ -2226,7 +2226,7 @@ Highlight specified text areas
 Replace specified text areas
 .LE
 .LP
-The text that is selected within a Text window may be assigned to an
+The text that is selected within a Text widget may be assigned to an
 X selection or copied into a cut buffer
 and can be retrieved by the application with the Intrinsics
 .PN XtGetSelectionValue
@@ -2413,22 +2413,22 @@ T}
 T{
 .PN resizeHeight
 T}	T{
-Makes a request to the parent widget to lengthen the window 
+Makes a request to the parent widget to lengthen the widget 
 if all the text cannot fit in the window.
 T}
 .sp 3p
 T{
 .PN resizeWidth
 T}	T{
-Makes a request to the parent widget to widen the window if the 
+Makes a request to the parent widget to widen the widget if the 
 text becomes too long to fit on one line.
 T}
-.sp 3p
-T{
-.PN scrollHorizontal
-T}	T{
-Puts a scroll bar on the top of the window.
-T}
+.\".sp 3p
+.\"T{
+.\".PN scrollHorizontal
+.\"T}	T{
+.\"Puts a scroll bar on the top of the widget.
+.\"T}
 .sp 3p
 T{
 .PN scrollOnOverflow
@@ -2440,7 +2440,7 @@ T}
 T{
 .PN scrollVertical
 T}	T{
-Puts a scroll bar on the left side of the window.
+Puts a scroll bar on the left side of the widget.
 T}
 .sp 3p
 T{
@@ -2589,7 +2589,7 @@ void XtTextSetSelection(\fIw\fP, \fIleft\fP, \fIright\fP)
      XtTextPosition \fIleft\fP, \fIright\fP;
 .FN
 .IP \fIw\fP 1i
-Specifies the window ID.
+Specifies the widget ID.
 .IP \fIleft\fP 1i
 Specifies the character position at which the selection begins.
 .IP \fIright\fP 1i
@@ -2602,7 +2602,7 @@ makes it the PRIMARY selection.
 .NH 3
 Unhighlighting Text
 .LP
-To unhighlight previously highlighted text in a window, use 
+To unhighlight previously highlighted text in a widget, use 
 .PN XtTextUnsetSelection .
 .IN "XtTextUnsetSelection" "" "@DEF@"
 .FD 0
@@ -2626,7 +2626,7 @@ void XtTextGetSelectionPos(\fIw\fP, \fIpos1\fP, \fIpos2\fP)
      XtTextPosition *\fIpos1\fP, *\fIpos2\fP; 
 .FN
 .IP \fIw\fP 1i
-Specifies the window ID.
+Specifies the widget ID.
 .IP \fIpos1\fP 1i
 Specifies a pointer to the location to which the beginning character position
 of the selection
@@ -2653,7 +2653,7 @@ int XtTextReplace(\fIw\fP, \fIstart_pos\fP, \fIend_pos\fP, \fItext\fP)
      XtTextBlock *\fItext\fP;
 .FN
 .IP \fIw\fP 1i
-Specifies the window ID.
+Specifies the widget ID.
 .IP \fIstart_pos\fP 1i
 Specifies the starting character position of the text replacement.
 .IP \fIend_pos\fP 1i
@@ -3044,7 +3044,7 @@ For both scrolling actions,
 the callback returns the Scrollbar widget ID, the client_data,
 and the pixel position of the pointer when the button was released.
 For smooth scrolling,
-the callback routine returns the scroll bar window, the client data, 
+the callback routine returns the scroll bar widget, the client data, 
 and the current relative position of the thumb.
 When the thumb is moved using pointer button 2, 
 the callback procedure is invoked continuously.
@@ -3278,7 +3278,7 @@ void \fIJumpProc\fP(\fIscrollbar\fP, \fIclient_data\fP, \fIpercent\fP)
      caddr_t \fIpercent_ptr\fP;    /* float* */
 .FN
 .IP \fIscrollbar\fP 1i
-Specifies the ID of the scroll bar window.
+Specifies the ID of the scroll bar widget.
 .IP \fIclient_data\fP 1i
 Specifies the client data.
 .IP \fIpercent_ptr\fP 1i
@@ -3769,7 +3769,7 @@ All the children of this box are automatically destroyed at the same time.
 .\".PN XtDestroyWidget
 .\"and specify the widget ID of the entry.
 .\".LP
-.\"The MenuBox widget resides in whatever parent window the application specifies.
+.\"The MenuBox widget resides in whatever parent widget the application specifies.
 .\"For example, it does not automatically create a pop-up widget.
 .\"To create a pop-up menu, use
 .\".PN XtCreatePopupShell
@@ -3793,11 +3793,11 @@ All the children of this box are automatically destroyed at the same time.
 .\"XtWidgetGeometry *\fIrequest_box\fP, *\fIreply_box\fP;
 .\".FN 
 .\".IP \fIw\fP 1i
-.\"Specifies the window ID.
+.\"Specifies the widget ID.
 .\".IP \fIrequest\fP 1i
 .\"Specifies the geometry management request.
 .\".IP \fIrequest_box\fP 1i
-.\"Specifies the desired window geometry.
+.\"Specifies the desired widget geometry.
 .\".IP \fIreply_box\fP 1i
 .\"Specifies an argument to which the allowed widget size is returned.
 .\".LP
@@ -4019,7 +4019,7 @@ void XtPanedAllowResize(\fIw\fP, \fIallow_resize\fP)
 .IP \fIw\fP 1i
 Specifies the widget ID of the child widget pane.
 .IP \fIallow_resize\fP
-Enables or disables a pane window for resizing requests.
+Enables or disables a pane widget for resizing requests.
 .LP
 If allow_resize is
 .PN True ,
