@@ -1,4 +1,4 @@
-/* $XConsortium: sunKeyMap.c,v 4.21 94/05/16 18:28:26 kaleb Exp $ */
+/* $XConsortium: sunKeyMap.c,v 4.22 94/05/18 11:16:07 kaleb Exp kaleb $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -432,23 +432,6 @@ static SunModmapRec Generic5Modmap[] = {
 	98,	Mod4Mask,
 	0,	0
 };
-
-#if defined(JAPAN4) || defined(TAI4) || defined(UK4) || defined(US4)
-
-static SunModmapRec JapanTaiUKUS4Modmap[] = {
-	99,	ShiftMask,
-	110,	ShiftMask,
-	119,	LockMask,
-	76,	ControlMask,
-	120,	Mod1Mask,
-	122,	Mod1Mask,
-	13,	Mod2Mask,
-	19,	Mod3Mask,
-	98,	Mod4Mask,
-	0,	0
-};
-
-#endif
 
 #if defined(DEN4) || defined(SWEDFIN4) || defined(SWFR4) || defined(SWGE4)
 
@@ -1913,7 +1896,7 @@ static KeySym Japan4Keymap[] = {
 	XK_KP_Add,	XK_KP_Add,	NoSymbol,	NoSymbol,	/*125*/
 };
 
-#define Japan4Modmap JapanTaiUKUS4Modmap
+#define Japan4Modmap Generic5Modmap
 
 #else
 
@@ -4444,7 +4427,7 @@ static KeySym Taiwan4Keymap[] = {
 	XK_KP_Add,	NoSymbol,	NoSymbol,	NoSymbol,	/*125*/
 };
 
-#define Taiwan4Modmap JapanTaiUKUS4Modmap
+#define Taiwan4Modmap Generic5Modmap
 
 #else
 
@@ -4724,7 +4707,7 @@ static KeySym UK4Keymap[] = {
 	XK_KP_Add,	NoSymbol,	NoSymbol,	NoSymbol,	/*125*/
 };
 
-#define UK4Modmap JapanTaiUKUS4Modmap
+#define UK4Modmap Generic5Modmap
 
 #else
 
@@ -5153,7 +5136,7 @@ static KeySym US4Keymap[] = {
 	XK_KP_Add,	NoSymbol,	NoSymbol,	NoSymbol,	/*125*/
 };
 
-#define US4Modmap JapanTaiUKUS4Modmap
+#define US4Modmap Generic5Modmap
 
 #else
 
