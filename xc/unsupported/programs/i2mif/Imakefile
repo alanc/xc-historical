@@ -1,9 +1,9 @@
-XCOMM $XConsortium: Imakefile,v 1.2 94/02/10 19:38:07 matt Exp $
+XCOMM $XConsortium: Imakefile,v 1.3 94/02/10 20:35:13 matt Exp $
 
         DEPLIBS = FrescoClientDepLibs
 LOCAL_LIBRARIES = FrescoClientLibs 
            SRCS = main.CCsuf
-           OBJS = main.Osuf
+           OBJS = main.o
 
 #if ThreadedX
   LOCAL_LDFLAGS = ThreadsLoadFlags
