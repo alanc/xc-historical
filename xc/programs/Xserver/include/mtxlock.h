@@ -28,7 +28,7 @@
  *
  ************************************************************************/
 
-/* $XConsortium: mtxlock.h,v 1.8 93/12/08 19:41:26 rob Exp $ */
+/* $XConsortium: mtxlock.h,v 1.9 93/12/13 13:24:00 rob Exp $ */
 
 #ifndef MTXLOCK_H
 #define MTXLOCK_H
@@ -348,6 +348,7 @@
         if (_error = LockAndVerifyTwoWindows(&(pWin1), &(pWin2), 	\
 					(winID1), (winID2), (client)))	\
         {								\
+	    MTXReturnPooledMessage;					\
 	    return (_error);						\
         }								\
         POQ_SET_ALL_CONFLICT((client));					\
@@ -356,6 +357,7 @@
     {									\
         if (_error = LockAndVerifyWindow(&(pWin1), (winID1), (client)))	\
         {								\
+	    MTXReturnPooledMessage;					\
 	    return (_error);						\
         }								\
 	(pWin2) = NullWindow;						\
@@ -365,6 +367,7 @@
     {									\
         if (_error = LockAndVerifyWindow(&(pWin2), (winID2), (client)))	\
         {								\
+	    MTXReturnPooledMessage;					\
 	    return (_error);						\
         }								\
 	(pWin1) = NullWindow;						\
@@ -435,7 +438,7 @@
 	    return BadWindow;						\
     }									\
     else								\
-	(pWin1) = NullWindow;						\
+	(pWin2) = NullWindow;						\
 }
 #endif
     
