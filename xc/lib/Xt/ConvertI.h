@@ -1,4 +1,4 @@
-/* $XConsortium: ConvertI.h,v 1.13 91/04/30 12:27:02 converse Exp $ */
+/* $XConsortium: ConvertI.h,v 1.14 91/05/11 14:53:10 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -33,6 +33,12 @@ extern	XrmQuark  _XtQString;
  */
 
 typedef struct _ConverterRec **ConverterTable;
+
+extern void _XtAddDefaultConverters(
+#if NeedFunctionPrototypes
+    ConverterTable	/* table */
+#endif
+);
 
 extern void _XtSetDefaultConverterTable(
 #if NeedFunctionPrototypes
