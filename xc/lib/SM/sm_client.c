@@ -1,4 +1,4 @@
-/* $XConsortium: sm_client.c,v 1.26 94/03/30 22:19:24 mor Exp $ */
+/* $XConsortium: sm_client.c,v 1.27 94/04/02 15:27:16 rws Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -25,10 +25,12 @@ static void set_callbacks();
 
 
 SmcConn
-SmcOpenConnection (networkIdsList, xsmpMajorRev, xsmpMinorRev, mask, callbacks,
+SmcOpenConnection (networkIdsList, context,
+    xsmpMajorRev, xsmpMinorRev, mask, callbacks,
     previousId, clientIdRet, errorLength, errorStringRet)
 
 char 		*networkIdsList;
+SmPointer	context;
 int		xsmpMajorRev;
 int		xsmpMinorRev;
 unsigned long   mask;
@@ -52,7 +54,7 @@ char 		*errorStringRet;
     int				extra, len;
     IceReplyWaitInfo		replyWait;
     _SmcRegisterClientReply	reply;
-    Bool			gotReply;
+    Bool			gotReply, ioErrorOccured;
 
     *clientIdRet = NULL;
 
@@ -96,7 +98,7 @@ char 		*errorStringRet;
     }
 
     if ((iceConn = IceOpenConnection (
-	ids, 0, _SmcOpcode, errorLength, errorStringRet)) == NULL)
+	ids, context, 0, _SmcOpcode, errorLength, errorStringRet)) == NULL)
     {
 	return (NULL);
     }
@@ -114,7 +116,8 @@ char 		*errorStringRet;
 	&majorVersion, &minorVersion,
 	&vendor, &release, errorLength, errorStringRet);
 
-    if (setupstat == IceProtocolSetupFailure)
+    if (setupstat == IceProtocolSetupFailure ||
+	setupstat == IceProtocolSetupIOError)
     {
 	IceCloseConnection (iceConn);
 	free ((char *) smcConn);
@@ -173,9 +176,25 @@ char 		*errorStringRet;
     replyWait.reply = (IcePointer) &reply;
 
     gotReply = False;
+    ioErrorOccured = False;
 
-    while (gotReply == False)
-	if ((gotReply = IceProcessMessages (iceConn, &replyWait)) == True)
+    while (!gotReply && !ioErrorOccured)
+    {
+	ioErrorOccured = (IceProcessMessages (
+	    iceConn, &replyWait, &gotReply) == IceProcessMessagesIOError);
+
+	if (ioErrorOccured)
+	{
+	    strncpy (errorStringRet, "IO error occured opening connection",
+		errorLength);
+
+	    free (smcConn->vendor);
+	    free (smcConn->release);
+	    free ((char *) smcConn);
+
+	    return (NULL);
+	}
+	else if (gotReply)
 	{
 	    if (reply.status == 1)
 	    {
@@ -214,6 +233,7 @@ char 		*errorStringRet;
 		gotReply = False;
 	    }
 	}
+    }
 
     return (smcConn);
 }
