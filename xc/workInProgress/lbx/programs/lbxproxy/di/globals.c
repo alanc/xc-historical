@@ -46,7 +46,7 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: globals.c,v 1.5 95/04/04 21:00:43 dpw Exp $ */
+/* $XConsortium: globals.c,v 1.6 95/05/17 18:26:41 dpw Exp mor $ */
 /* $NCDId: @(#)globals.c,v 1.3 1994/03/24 17:54:39 lemke Exp $ */
   
 #include "misc.h"
@@ -54,6 +54,8 @@ SOFTWARE.
 ClientPtr *clients;
 ClientPtr  serverClient;
 int  currentMaxClients;   /* current size of clients array */
+
+ClientPtr lastLbxClientIndexLookup;    /* see di/resource.c for comments */
 
 unsigned long serverGeneration = 0;
 

@@ -1,4 +1,4 @@
-/* $XConsortium: dispatch.c,v 1.8 95/04/04 20:59:24 dpw Exp $ */
+/* $XConsortium: dispatch.c,v 1.9 95/05/17 18:26:41 dpw Exp mor $ */
 /*
  * $NCDOr: dispatch.c,v 1.2 1993/11/19 21:28:48 keithp Exp keithp $
  * $NCDId: @(#)dispatch.c,v 1.27 1994/11/18 20:35:09 lemke Exp $
@@ -351,6 +351,9 @@ void
 CloseDownClient(client)
     register ClientPtr client;
 {
+    if (lastLbxClientIndexLookup == client)
+	lastLbxClientIndexLookup = NULL;
+
     if (!client->clientGone)
     {
 	CloseClient (client);

@@ -22,7 +22,7 @@
  * $NCDId: @(#)lbxfuncs.c,v 1.43 1995/03/09 00:54:06 lemke Exp $
  */
 
-/* $XConsortium: lbxfuncs.c,v 1.8 95/04/04 21:06:19 dpw Exp $ */
+/* $XConsortium: lbxfuncs.c,v 1.12 95/05/17 18:26:41 dpw Exp mor $ */
 
 /*
  * top level LBX request & reply handling
@@ -87,6 +87,7 @@ FinishSetupReply(client, setup_len, setup_data, changes, majorVer, minorVer)
     if (client->swapped) {
 	SwapConnSetupPrefix(&reply);
     }
+    client->server_client_index = CLIENT_ID(setup_data->ridBase);
     WriteToClient(client, sizeof(xConnSetupPrefix), &reply);
     if (client->swapped) {
 	WriteSConnectionInfo(client, setup_len, (char *) setup_data);

@@ -1,4 +1,4 @@
-/* $XConsortium: colormap.c,v 1.7 94/12/01 20:40:50 mor Exp $ */
+/* $XConsortium: colormap.c,v 1.8 95/05/17 18:26:41 dpw Exp mor $ */
 /*
  * Copyright 1994 Network Computing Devices, Inc.
  *
@@ -403,8 +403,10 @@ StorePixel(client, cmap, red, green, blue, rep_red, rep_green, rep_blue, pixel)
     case PseudoColor:
     case GrayScale:
 	pent = pmap->red;
+#ifdef DEBUG
 	if (pent[pixel].refcnt)
 	    fprintf(stderr, "Overwriting existing pixel\n");
+#endif
 
 	pent[pixel].red = red;
 	pent[pixel].green = green;
@@ -586,7 +588,7 @@ IncrementPixel(pclient, cmap, pent)
 
     pent->refcnt++;
 
-    if ((CLIENT_ID(cmap) != client) && (pmap->numPixelsRed[client] == 1)) {
+    if ((LbxClientIndex(cmap) != client) && (pmap->numPixelsRed[client]==1)) {
 	pcr = (colorResource *) xalloc(sizeof(colorResource));
 	if (!pcr)
 	    return 0;

@@ -1,4 +1,4 @@
-/* $XConsortium: main.c,v 1.7 94/12/01 20:43:25 mor Exp $ */
+/* $XConsortium: main.c,v 1.8 95/05/17 18:26:41 dpw Exp mor $ */
 /*
  * $NCDOr$
  * $NCDId: @(#)main.c,v 1.17 1994/11/16 02:27:55 lemke Exp $
@@ -69,11 +69,11 @@ main (argc, argv)
             serverClient->clientGone = FALSE;
             serverClient->server = servers[0];
 	    serverClient->index = 0;
+	    serverClient->server_client_index = 0;
 	    serverClient->clientAsMask = (Mask)0;
 	    serverClient->noClientException = Success;
             serverClient->awaitingSetup = FALSE;
             serverClient->swapped = FALSE;
-
 	}
 	TagsInit();
         if (!InitClientResources(serverClient))
@@ -81,6 +81,7 @@ main (argc, argv)
         InitDeleteFuncs();
 	InitExtensions();
         clients[0] = serverClient;
+	lastLbxClientIndexLookup = NULL;
         currentMaxClients = 1;
 
 	if (Dispatch () != 0)
