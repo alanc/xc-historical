@@ -1,5 +1,5 @@
 .\" Use -ms
-.\" $XConsortium: a2x.ms,v 1.31 93/02/02 09:21:55 rws Exp $
+.\" $XConsortium: a2x.ms,v 1.32 93/03/31 16:00:21 rws Exp $
 .de Ds
 .RS
 .nf
@@ -357,12 +357,26 @@ Pointer Motion
 To warp the pointer to a specific location on a screen, use the control
 sequence:
 .Ds
-{c-t}{c-w}\fI<screen>\fP \fI<x>\fP \fI<y>\fP{c-t}
+{c-t}{c-w}\fI<dest>\fP \fI<x>\fP \fI<y>\fP{c-t}
 .De
-where \fI<screen>\fP is either a decimal screen number (starting from 0), or
--1 to position on whatever screen the pointer is currently on.  For example:
+where \fI<dest>\fP is one of:
+.LP
+.nf
+.TA .5i
+.ta .5i
+<int>	decimal screen number (starting from 0)
+S	current screen
+W	top-level window containing the pointer
+w	innermost window containing the pointer
+.fi
+.LP
+The position (\fI<x>\fP, \fI<y>\fP) is taken relative to \fI<dest>\fP.
+A positive value is relative to the left/top edge, a negative value is
+taken relative to the right/bottom edge.  For example:
 .Ds
 add-word /t "[go to icons]" "{c-t}{c-w}0 478 235{c-t}" invisible
+add-word /t "[go upper left]" "{c-t}{c-w}W 0 0{c-t}" invisible
+add-word /t "[go lower right]" "{c-t}{c-w}W -0 -0{c-t}" invisible
 .De
 .LP
 Moving to an absolute position is not really very useful.  More useful is to
