@@ -35,7 +35,7 @@
  OR PERFORMANCE OF THIS SOFTWARE.
  *****************************************************************************/
 
-#include  <sys/types.h>
+/* #include  <sys/types.h> */
 #include  <stdio.h>
 #include  <X11/Xlib.h>
 #include  <X11/Xutil.h>
@@ -126,7 +126,7 @@ main(argc,argv)                                               /* main module */
   char	*display = NULL;
   char	*geo = NULL;
   char	*cmd;
-  char	c;
+  int	c;
   extern char	*getenv();
   int	screen_saver = 0;
   Pixmap	backmap, bdrmap;
