@@ -1,4 +1,4 @@
-/* $XConsortium: wsb.c,v 5.4 91/10/01 02:55:51 hersh Exp $ */
+/* $XConsortium: wsb.c,v 5.5 92/01/29 09:48:14 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -1892,7 +1892,7 @@ update_inv_view_xform( view )
 {
      /* Calculate the inverse xform, if necessary. */
     if ( view->npc_to_wc_state == WS_INV_NOT_CURRENT ) {
-	phg_mat_mul( view->npc_to_wc, view->vom, view->vmm );
+	phg_mat_mul( view->npc_to_wc, view->vmm, view->vom );
 	phg_mat_inv( view->npc_to_wc );
 	view->npc_to_wc_state = WS_INV_CURRENT;
     }
@@ -1934,7 +1934,7 @@ phg_wsb_map_initial_points( ws, view_index, num_pts, wc_pts, dwbl_pts )
     }
 
     view = &ws->out_ws.model.b.views[view_index];
-    phg_mat_mul( wc_to_npc, view->vom, view->vmm );
+    phg_mat_mul( wc_to_npc, view->vmm, view->vom );
     if ( !phg_tranpts3( wc_to_npc, *num_pts, wc_pts, npc_pts ) ) {
 	*num_pts = 0;
 	return 0;
