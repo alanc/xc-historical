@@ -1,4 +1,4 @@
-/* $XConsortium: xwud.c,v 1.51 92/01/30 09:52:06 rws Exp $ */
+/* $XConsortium: xwud.c,v 1.52 92/04/14 17:51:22 rws Exp $ */
 /* Copyright 1985, 1986, 1988 Massachusetts Institute of Technology */
 
 /*
@@ -17,7 +17,6 @@ without express or implied warranty.
 
 
 #include <X11/Xos.h>
-#define XLIB_ILLEGAL_ACCESS
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <X11/Xatom.h>
@@ -69,6 +68,7 @@ main(argc, argv)
     Display *dpy;
     int screen;
     register int i;
+    XImage in_image_struct;
     XImage *in_image, *out_image;
     XSetWindowAttributes attributes;
     XVisualInfo vinfo, *vinfos;
@@ -185,10 +185,14 @@ main(argc, argv)
     }
     
     if (file_name) {
-	in_file = fopen(file_name, "r");
+	in_file = fopen(file_name, "rb");
 	if (in_file == NULL)
 	    Error("Can't open input file as specified.");
     }
+#ifdef WIN32
+    else
+	_setmode(fileno(in_file), _O_BINARY);
+#endif
     
     dpy = XOpenDisplay(display_name);
     if (dpy == NULL) {
@@ -229,35 +233,24 @@ main(argc, argv)
 
     /* initialize the input image */
 
-    /* This is a crock.  Xlib does not provide a way to create an
-     * arbitrary image and get the internal image functions correctly
-     * initialized.  So, we cheat.
-     */
-    {
-	Display fakedpy;
-	ScreenFormat fakefmt;
-
-	fakedpy.byte_order = (int) header.byte_order;
-	fakedpy.bitmap_unit = (int) header.bitmap_unit;
-	fakedpy.bitmap_bit_order = (int) header.bitmap_bit_order;
-	fakedpy.pixmap_format = &fakefmt;
-	fakedpy.nformats = 1;
-	fakefmt.depth = (int) header.pixmap_depth;
-	fakefmt.bits_per_pixel = (int) header.bits_per_pixel;
-
-	in_image = XCreateImage(&fakedpy, NULL,
-				(int) header.pixmap_depth,
-				(int) header.pixmap_format,
-				(int) header.xoffset, NULL,
-				(int) header.pixmap_width,
-				(int) header.pixmap_height,
-				(int) header.bitmap_pad,
-				(int) header.bytes_per_line);
-    }
-
+    in_image = &in_image_struct;
+    in_image->depth = header.pixmap_depth;
+    in_image->format = header.pixmap_format;
+    in_image->xoffset = header.xoffset;
+    in_image->data = NULL;
+    in_image->width = header.pixmap_width;
+    in_image->height = header.pixmap_height;
+    in_image->bitmap_pad = header.bitmap_pad;
+    in_image->bytes_per_line = header.bytes_per_line;
+    in_image->byte_order = header.byte_order;
+    in_image->bitmap_unit = header.bitmap_unit;
+    in_image->bitmap_bit_order = header.bitmap_bit_order;
+    in_image->bits_per_pixel = header.bits_per_pixel;
     in_image->red_mask = header.red_mask;
     in_image->green_mask = header.green_mask;
     in_image->blue_mask = header.blue_mask;
+    if (!XInitImage(in_image))
+	Error("Invalid input image header data.");
 
     /* read in the color map buffer */
     if(ncolors = header.ncolors) {
