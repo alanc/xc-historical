@@ -1,4 +1,4 @@
-/* $XConsortium: miNSurf.c,v 5.4 91/05/01 14:46:26 hersh Exp $ */
+/* $XConsortium: miNSurf.c,v 5.5 91/05/03 14:37:26 hersh Exp $ */
 
 #define TRIMING 1
 
@@ -26,6 +26,7 @@ SOFTWARE.
 
 ******************************************************************/
 
+#include <math.h>
 #include "mipex.h"
 #include "misc.h"
 #include "miscstruct.h"
@@ -43,6 +44,21 @@ static ddpex3rtn       build_surf_reps();
 static int             add_grid();
 static int             uniform_isocurves();
 static int             nonuniform_isocurves();
+static void	       nurb_surf_state_free();
+static ddpex3rtn       compute_adaptive_surf_interval();
+static void	       determine_reps_required();
+static ddpex3rtn       compute_nurb_surface();
+static ddpex3rtn       build_facets();
+static ddpex3rtn       build_control_polygon();
+static ddpex3rtn       build_surf_markers();
+static ddpex3rtn       span_grids();
+static void	       compute_edge_point_normals();
+static void	       build_edge_reps();
+static void	       make_edge_segments();
+static void	       span_evaluation_points();
+static ddpex3rtn       add_pgon_point();
+
+
 
 /* 
  * This convention is established in the trimming code.
@@ -106,7 +122,6 @@ miNurbsSurface(pRend, pExecuteOC)
 {
 /* calls */
     ddpex3rtn		build_surf_reps();
-    static void		nurb_surf_state_free();
     extern ocTableType	InitExecuteOCTable[];
 
 /* Local variable definitions */
@@ -403,11 +418,6 @@ build_surf_reps( pddc, surface, state, trans )
     Nurb_surf_state	*state;
     ddFLOAT		trans[4][4];
 {
-    /* calls */
-    static ddpex3rtn compute_adaptive_surf_interval();
-    static void determine_reps_required();
-    static ddpex3rtn compute_nurb_surface();
-
     /* uses */
     ddpex3rtn		status = Success;	/* assume success */
 
@@ -480,9 +490,6 @@ compute_adaptive_surf_interval( pddc, surface, state, trans )
     Nurb_surf_state	*state;
     ddFLOAT		trans[4][4];
 {
-/*  calls  */
-    double	sqrt();
-
 /*  uses  */
     ddFLOAT	uval, vval, a_coeff, b_coeff, c_coeff, denom,
 		z1, z2, z3;
@@ -771,16 +778,9 @@ compute_nurb_surface( pddc, surface, state )
 {
 
 /*  calls */
-    static ddpex3rtn build_facets();
-    static ddpex3rtn build_control_polygon();
-    static ddpex3rtn build_surf_markers();
-    static ddpex3rtn span_grids();
 #ifdef TRIMING
     ddpex3rtn phg_nt_install_trim_loops();
 #endif
-    static void compute_edge_point_normals();
-    static void build_edge_reps();
-    static void make_edge_segments();
 
 /*  uses  */
     ddpex3rtn		status = Success;
@@ -877,9 +877,6 @@ span_grids( state, surface )
     Nurb_surf_state	*state;
     miNurbSurfaceStruct *surface;
 {
-/*  calls  */
-    static void span_evaluation_points();
-
 /*  uses */
     double		*uvals = 0, 
 			*vvals = 0; /* need double precision */
@@ -1305,7 +1302,6 @@ build_facets( state, surface )
 {
 
 #ifdef TRIMING
-    static ddpex3rtn add_pgon_point();
     ddpex3rtn	phg_nt_trim_rect();
 #endif /* TRIMING */
 
