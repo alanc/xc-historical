@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: AsciiText.c,v 1.16 88/09/19 15:45:32 swick Exp $";
+static char Xrcsid[] = "$XConsortium: AsciiText.c,v 1.17 88/10/04 16:05:09 swick Exp $";
 #endif lint
 
 
@@ -30,7 +30,7 @@ SOFTWARE.
 #include <X11/copyright.h>
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
-#include "AsciiTextP.h"
+#include <X11/AsciiTextP.h>
 
 /* from Text.c */
 

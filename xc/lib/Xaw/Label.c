@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Label.c,v 1.59 88/09/29 13:34:21 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Label.c,v 1.60 88/10/11 18:11:24 swick Exp $";
 #endif lint
 
 
@@ -38,7 +38,7 @@ SOFTWARE.
 #include <X11/StringDefs.h>
 #include <stdio.h>
 #include <ctype.h>
-#include "LabelP.h"
+#include <X11/LabelP.h>
 
 /****************************************************************
  *

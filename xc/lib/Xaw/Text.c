@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Text.c,v 1.72 88/10/12 10:35:50 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Text.c,v 1.73 88/10/17 20:01:13 swick Exp $";
 #endif
 
 
@@ -32,12 +32,12 @@ SOFTWARE.
 #include <X11/Shell.h>
 #include <X11/Xatom.h>
 #include <X11/Xmu.h>
-#include "Cardinals.h"
-#include "Label.h"
-#include "Command.h"
-#include "Dialog.h"
-#include "Scroll.h"
-#include "TextP.h"
+#include <X11/Cardinals.h>
+#include <X11/Label.h>
+#include <X11/Command.h>
+#include <X11/Dialog.h>
+#include <X11/Scroll.h>
+#include <X11/TextP.h>
 
 Atom FMT8BIT = NULL;
 

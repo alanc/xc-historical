@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Command.c,v 1.42 88/09/27 11:33:27 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Command.c,v 1.44 88/10/18 12:29:27 swick Exp $";
 #endif lint
 
 /***********************************************************
@@ -42,8 +42,8 @@ SOFTWARE.
 #include <X11/StringDefs.h>
 #include <stdio.h>
 #include <ctype.h>
-#include "XawMisc.h"
-#include "CommandP.h"
+#include <X11/XawMisc.h>
+#include <X11/CommandP.h>
 #include "CommandI.h"
 
 /****************************************************************

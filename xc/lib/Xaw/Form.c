@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Form.c,v 1.20 88/10/03 10:35:14 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Form.c,v 1.21 88/10/14 15:34:43 swick Exp $";
 #endif lint
 
 
@@ -30,7 +30,7 @@ SOFTWARE.
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
 #include <X11/Xmu.h>
-#include "FormP.h"
+#include <X11/FormP.h>
 
 /* Private Definitions */
 

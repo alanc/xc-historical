@@ -1,5 +1,5 @@
 #if ( !defined(lint) && !defined(SABER))
-  static char Xrcs_id[] = "$XConsortium: List.c,v 1.7 88/09/06 16:41:44 jim Exp $";
+  static char Xrcs_id[] = "$XConsortium: List.c,v 1.8 88/09/06 18:14:31 jim Exp $";
   static char rcsid_module_c[] = "$oHeader: List.c,v 1.4 88/08/30 16:36:03 kit Exp $";
 #endif
 
@@ -50,7 +50,7 @@ SOFTWARE.
 #include <X11/Xos.h>
 #include <ctype.h>
 #include <X11/StringDefs.h>
-#include "ListP.h"
+#include <X11/ListP.h>
 
 char * malloc();
 

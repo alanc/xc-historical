@@ -9,7 +9,7 @@
  *
  *      $Author: jim $
  *      $oHeader: ListP.h,v 1.3 88/08/30 16:37:03 kit Exp $
- *      $XConsortium: ListP.h,v 1.7 88/09/06 16:41:49 jim Exp $
+ *      $XConsortium: ListP.h,v 1.8 88/09/06 18:14:45 jim Exp $
  *	
  */
 
@@ -52,7 +52,7 @@ SOFTWARE.
  ***********************************************************************/
 
 #include <X11/SimpleP.h>
-#include "List.h"
+#include <X11/List.h>
 
 #define NO_HIGHLIGHT            XT_LIST_NONE
 #define OUT_OF_RANGE            -1
