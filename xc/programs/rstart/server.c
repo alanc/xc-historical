@@ -1,4 +1,4 @@
-/* $XConsortium: server.c,v 1.8 94/02/06 16:16:19 mor Exp $ */
+/* $XConsortium: server.c,v 1.9 94/02/08 13:43:31 mor Exp $ */
 
 /************************************************************************/
 /* Copyright (c) 1993 Quarterdeck Office Systems			*/
@@ -180,23 +180,6 @@ Strdup(s)
     strcpy(cs, s);
     return cs;
 }
-
-#if defined(X_NOT_STDC_ENV) || (defined(sun) && !defined(SVR4)) || defined(macII)
-extern int sys_nerr;
-extern char *sys_errlist[];
-
-char *
-strerror(err)
-int err;
-{
-	static char buf[20];
-	if(err < 0 || err > sys_nerr) {
-		sprintf(buf, "Unknown err %d");
-		return buf;
-	}
-	return sys_errlist[err];
-}
-#endif
 
 int
 get_a_line(f, pargc, pargv)
