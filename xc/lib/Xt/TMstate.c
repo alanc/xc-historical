@@ -1,4 +1,4 @@
-/* $XConsortium: TMstate.c,v 1.119 90/12/03 16:30:51 converse Exp $ */
+/* $XConsortium: TMstate.c,v 1.120 90/12/03 17:43:32 converse Exp $ */
 
 /*LINTLIBRARY*/
 
@@ -1028,7 +1028,7 @@ CompiledActionTable _CompileActionTable(actions, count)
 
     for (i=0; i<count; i++) {
 	compiledActionTable[i].name = actions[i].string;
-	compiledActionTable[i].signature = StringToQuark(actions[i].string);
+	compiledActionTable[i].signature = XrmPermStringToQuark(actions[i].string);
 	compiledActionTable[i].proc = actions[i].proc;
     }
 
@@ -1944,8 +1944,8 @@ Widget acceleratorSource; /* Non-NULL if new_translations are an unbound
     static XrmQuark from_type = NULLQUARK, to_type;
 
     if (from_type == NULLQUARK) {
-	from_type = XrmStringToRepresentation(_XtRStateTablePair);
-	to_type = XrmStringToRepresentation(XtRTranslationTable);
+	from_type = XrmPermStringToQuark(_XtRStateTablePair);
+	to_type = XrmPermStringToQuark(XtRTranslationTable);
     }
 
     from.addr = (XtPointer)&convert_rec;
