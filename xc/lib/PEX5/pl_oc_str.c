@@ -1,4 +1,4 @@
-/* $XConsortium: pl_oc_struct.c,v 1.13 92/05/07 23:28:59 mor Exp $ */
+/* $XConsortium: pl_oc_struct.c,v 1.1 92/05/08 15:13:26 mor Exp $ */
 
 /************************************************************************
 Copyright 1987,1991,1992 by Digital Equipment Corporation, Maynard,
@@ -28,6 +28,8 @@ SOFTWARE.
 #include "PEXlib.h"
 #include "PEXlibint.h"
 #include "pl_oc_util.h"
+
+extern void _PEXCopyPaddedBytesToOC();
 
 
 void
