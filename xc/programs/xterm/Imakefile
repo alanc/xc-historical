@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.51 91/08/16 10:40:31 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.52 91/09/10 11:12:25 rws Exp $
 XCOMM
 XCOMM                         Attention xterm porters
 XCOMM
@@ -71,7 +71,7 @@ LDOVERRIDE = -L$(DESTDIR)$(USRLIBDIR)
 install:: xterm
 	MakeDir($(DESTDIR)$(BINDIR))
 	$(RM) xterm.inst
-	cc -o xterm.inst $(OBJS1) $(LDOPTIONS) $(LDOVERRIDE) -lXaw -lXmu -lXt -lXext -lX11 $(LDLIBS) $(TERMCAPLIB) $(PTYLIB)
+	$(CC) -o xterm.inst $(OBJS1) $(LDOPTIONS) $(LDOVERRIDE) -lXaw -lXmu -lXt -lXext -lX11 $(LDLIBS) $(TERMCAPLIB) $(PTYLIB) $(EXTRA_LOAD_FLAGS)
 	$(INSTALL) -c $(INSTPGMFLAGS) $(INSTUIDFLAGS) xterm.inst $(DESTDIR)$(BINDIR)/xterm
 	$(RM) xterm.inst
 #else
