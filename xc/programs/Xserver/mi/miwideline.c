@@ -1,5 +1,5 @@
 /*
- * $XConsortium: miwideline.c,v 1.13 89/11/02 12:04:09 rws Exp $
+ * $XConsortium: miwideline.c,v 1.14 89/11/02 13:51:16 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -223,6 +223,8 @@ miPolyBuildEdge (x0, y0, k, dx, dy, xi, yi, left, edge)
     edge->dy = dy;
     edge->x = x + xi;
     edge->e = e - dy;
+    if (dx == 0)
+	edge->e = -1;
     return y + yi;
 }
 
@@ -926,17 +928,18 @@ miSetupSpanData (pGC, spanData)
     switch(pGC->alu)
     {
     case GXclear:		/* 0 */
-    case GXcopy:		/* src */
-    case GXcopyInverted:	/* NOT src */
-    case GXset:		/* 1 */
     case GXand:		/* src AND dst */
+    case GXcopy:		/* src */
+    case GXandInverted:	/* NOT src AND dst */
     case GXnoop:		/* dst */
     case GXor:		/* src OR dst */
+    case GXcopyInverted:	/* NOT src */
     case GXorInverted:	/* NOT src OR dst */
-    case GXandInverted:	/* NOT src AND dst */
+    case GXset:		/* 1 */
 	spanData = (SpanDataPtr) NULL;
 	break;
     case GXandReverse:	/* src AND NOT dst */
+    case GXxor:			/* src XOR dst */
     case GXnor:		/* NOT src AND NOT dst */
     case GXequiv:		/* NOT src XOR dst */
     case GXinvert:		/* NOT dst */
@@ -1091,18 +1094,35 @@ miWideDashSegment (pDrawable, pGC, spanData, pDashOffset, pDashIndex,
     dashRemain = pDash[dashIndex] - *pDashOffset;
 
     l = ((double) pGC->lineWidth) / 2.0;
-    L = hypot ((double) dx, (double) dy);
-    if (L)
+    if (dx == 0)
     {
+	L = dy;
+	rdx = 0;
+	rdy = l;
+	if (dy < 0)
+	{
+	    L = -dy;
+	    rdy = -l;
+	}
+    }
+    else if (dy == 0)
+    {
+	L = dx;
+	rdx = l;
+	rdy = 0;
+	if (dx < 0)
+	{
+	    L = -dx;
+	    rdx = -l;
+	}
+    }
+    else
+    {
+	L = hypot ((double) dx, (double) dy);
 	r = l / L;
 
 	rdx = r * dx;
 	rdy = r * dy;
-    }
-    else
-    {
-	rdx = l;
-	rdy = 0;
     }
     LRemain = L;
     /* All position comments are relative to a line with dx and dy > 0,
@@ -1302,6 +1322,7 @@ miWideDash (pDrawable, pGC, mode, npt, pPts)
     LineFaceRec	    leftFace, rightFace, prevRightFace;
     int		    first;
     int		    dashIndex, dashOffset;
+    int		    prevDashIndex;
     SpanDataRec	    spanDataRec;
     SpanDataPtr	    spanData;
 
@@ -1333,12 +1354,13 @@ miWideDash (pDrawable, pGC, mode, npt, pPts)
 	    continue;
 	if (npt == 1 && pGC->capStyle == CapProjecting)
 	    projectRight = TRUE;
+	prevDashIndex = dashIndex;
 	miWideDashSegment (pDrawable, pGC, spanData, &dashOffset, &dashIndex,
 			   x1, y1, x2, y2,
 			   projectLeft, projectRight, &leftFace, &rightFace);
-	if (pGC->lineStyle == LineDoubleDash || !(dashIndex & 1))
+	if (pGC->lineStyle == LineDoubleDash || !(prevDashIndex & 1))
 	{
-	    pixel = (dashIndex & 1) ? pGC->bgPixel : pGC->fgPixel;
+	    pixel = (prevDashIndex & 1) ? pGC->bgPixel : pGC->fgPixel;
 	    if (first)
 	    {
 	    	if (pGC->capStyle == CapRound)
@@ -1351,6 +1373,9 @@ miWideDash (pDrawable, pGC, mode, npt, pPts)
 	    	miLineJoin (pDrawable, pGC, pixel, spanData, &leftFace,
 		            &prevRightFace);
 	    }
+	}
+	if (pGC->lineStyle == LineDoubleDash || !(dashIndex & 1))
+	{
 	    if (npt == 1 && pGC->capStyle == CapRound)
 	    	miLineArc (pDrawable, pGC, pixel, spanData,
 			   rightFace.x, rightFace.y,
