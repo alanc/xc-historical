@@ -33,7 +33,7 @@
  */
 
 #ifndef lint
-static char *rcsid_xpr_c = "$XConsortium: xpr.c,v 1.34 89/01/21 18:05:50 rws Exp $";
+static char *rcsid_xpr_c = "$XConsortium: xpr.c,v 1.35 89/01/22 17:31:37 rws Exp $";
 #endif
 
 #include <X11/Xos.h>
@@ -215,6 +215,7 @@ char **argv;
 		(orientation==PORTRAIT) ? "Portrait" : "Landscape", scale);
     }
     if (device != PS && (flags & F_DUMP)) dump_sixmap(sixmap, iw, ih);
+    exit(0);
 }
 
 usage()
