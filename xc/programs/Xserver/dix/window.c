@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: window.c,v 5.89 92/07/23 10:16:41 rws Exp $ */
+/* $XConsortium: window.c,v 5.90 92/12/20 20:56:58 rws Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -575,7 +575,7 @@ MakeRootTile(pWin)
 	for (j = len; j > 0; j--)
 	    *to++ = *from;
 
-   (*pGC->ops->PutImage)(pWin->background.pixmap, pGC, 1,
+   (*pGC->ops->PutImage)((DrawablePtr)pWin->background.pixmap, pGC, 1,
 	            0, 0, 4, 4, 0, XYBitmap, back);
 
    FreeScratchGC(pGC);

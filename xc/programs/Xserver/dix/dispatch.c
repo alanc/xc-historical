@@ -1,4 +1,4 @@
-/* $XConsortium: dispatch.c,v 5.41 92/08/21 19:22:51 rws Exp $ */
+/* $XConsortium: dispatch.c,v 5.42 92/12/17 11:47:36 rws Exp $ */
 /************************************************************
 Copyright 1987, 1989 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -1586,7 +1586,7 @@ ProcPolyPoint(client)
     npoint = ((client->req_len << 2) - sizeof(xPolyPointReq)) >> 2;
     if (npoint)
         (*pGC->ops->PolyPoint)(pDraw, pGC, stuff->coordMode, npoint,
-			  (xPoint *) &stuff[1]);
+			  (DDXPointPtr) &stuff[1]);
     return (client->noClientException);
 }
 
@@ -1610,7 +1610,7 @@ ProcPolyLine(client)
     npoint = ((client->req_len << 2) - sizeof(xPolyLineReq)) >> 2;
     if (npoint)
 	(*pGC->ops->Polylines)(pDraw, pGC, stuff->coordMode, npoint, 
-			      (xPoint *) &stuff[1]);
+			      (DDXPointPtr) &stuff[1]);
     return(client->noClientException);
 }
 
@@ -1791,7 +1791,7 @@ ProcPutImage(client)
     (*pGC->ops->PutImage) (pDraw, pGC, stuff->depth, stuff->dstX, stuff->dstY,
 		  stuff->width, stuff->height, 
 		  stuff->leftPad, stuff->format, 
-		  (char *) &stuff[1]);
+		  (unsigned char *) &stuff[1]);
      return (client->noClientException);
 }
 
@@ -2047,7 +2047,7 @@ ProcImageText8(client)
 
     (void) LoadGlyphs(client, pGC->font, stuff->nChars, 1, &stuff[1]);
     (*pGC->ops->ImageText8)(pDraw, pGC, stuff->x, stuff->y,
-		       stuff->nChars, &stuff[1]);
+		       stuff->nChars, (char *)&stuff[1]);
     return (client->noClientException);
 }
 
@@ -2065,7 +2065,7 @@ ProcImageText16(client)
 
     (void) LoadGlyphs(client, pGC->font, stuff->nChars, 2, &stuff[1]);
     (*pGC->ops->ImageText16)(pDraw, pGC, stuff->x, stuff->y,
-			stuff->nChars, &stuff[1]);
+			stuff->nChars, (unsigned char *)&stuff[1]);
     return (client->noClientException);
 }
 

@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: gc.c,v 5.17 91/05/10 17:40:06 keith Exp $ */
+/* $XConsortium: gc.c,v 5.18 92/04/13 17:38:16 rws Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -344,7 +344,8 @@ DoChangeGC(pGC, mask, pval, fPointer)
 		pval++;
 		if(error == Success)
 		{
-		    (*pGC->funcs->ChangeClip)(pGC, clipType, pPixmap, 0);
+		    (*pGC->funcs->ChangeClip)(pGC, clipType,
+					      (pointer)pPixmap, 0);
 		}
 		break;
 	      }
@@ -593,7 +594,7 @@ CreateDefaultTile (pGC)
     rect.y = 0;
     rect.width = w;
     rect.height = h;
-    (*pgcScratch->ops->PolyFillRect)(pTile, pgcScratch, 1, &rect);
+    (*pgcScratch->ops->PolyFillRect)((DrawablePtr)pTile, pgcScratch, 1, &rect);
     /* Always remember to free the scratch graphics context after use. */
     FreeScratchGC(pgcScratch);
 
@@ -952,8 +953,8 @@ CreateDefaultStipple(screenNum)
     rect.y = 0;
     rect.width = w;
     rect.height = h;
-    (*pgcScratch->ops->PolyFillRect)(pScreen->PixmapPerDepth[0], 
-				pgcScratch, 1, &rect);
+    (*pgcScratch->ops->PolyFillRect)((DrawablePtr)pScreen->PixmapPerDepth[0], 
+				     pgcScratch, 1, &rect);
     FreeScratchGC(pgcScratch);
     return TRUE;
 }
@@ -1106,7 +1107,7 @@ SetClipRects(pGC, xOrigin, yOrigin, nrects, prects, ordering)
 
     if (size)
 	bcopy((char *)prects, (char *)prectsNew, size);
-    (*pGC->funcs->ChangeClip)(pGC, newct, prectsNew, nrects);
+    (*pGC->funcs->ChangeClip)(pGC, newct, (pointer)prectsNew, nrects);
     if (pGC->funcs->ChangeGC)
 	(*pGC->funcs->ChangeGC) (pGC, GCClipXOrigin|GCClipYOrigin|GCClipMask);
     return Success;
