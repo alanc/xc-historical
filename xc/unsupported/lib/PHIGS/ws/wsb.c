@@ -1,4 +1,4 @@
-/* $XConsortium: wsb.c,v 5.6 92/01/29 17:41:33 mor Exp $ */
+/* $XConsortium: wsb.c,v 5.7 92/10/15 16:23:42 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -2239,14 +2239,145 @@ phg_wsb_resolve_pick( ws, dev, echo, dc_pt, pick )
     pexDeviceCoord      *dc_pt;
     Ppick		*pick;
 {
-    /* Picking not supported by the SI for client-side structure storage.
-     * But this is where the pick detection code would go if it did do it.
-     */
+    register Wsb_output_ws	*owsb = &ws->out_ws.model.b;
+    register Ws_post_str	*post_str, *end;
+    pexDeviceCoord2D		dc_vol[2];
+    Ppoint			npc_pt[2];
+    pexPickElementRef		*pickPath;
+    int				pickDepth;
+    int				betterPick, i;
 
-    /* Make the resolution look like a no-pick. */
-    pick->status = PIN_STATUS_NONE;
-    pick->pick_path.depth = 0;
-    pick->pick_path.path_list = (Ppick_path_elem *)NULL;
+    CARD32			pickDataBytes;
+
+    struct {
+	pexEnumTypeIndex pickType;
+	CARD16		 unused;
+	union {
+	    pexPD_DC_HitBox	dcHitBox;
+	    pexPD_NPC_HitVolume npcHitVolume;
+	} pickRec;
+    } pickData;
+    
+    WSB_CHECK_POSTED (&owsb->posted)
+
+    if (WSB_SOME_POSTED (&owsb->posted)) {
+
+	/*
+	 * Use pick rendering to get the pick results.  Call BeginPickOne, do
+	 * a complete traversal (starting with highest priority structure,
+	 * then call EndPickOne to get the pick results.
+	 */
+
+	if (dev->dev_type == PEXPickDeviceDC_HitBox) {
+
+	    pickData.pickType = PEXPickDeviceDC_HitBox;
+
+	    pickData.pickRec.dcHitBox.position.x = dc_pt->x;
+	    pickData.pickRec.dcHitBox.position.y = dc_pt->y;
+	    pickData.pickRec.dcHitBox.distance = dev->ap_size;
+
+	    pickDataBytes = 4 + sizeof (pexPD_DC_HitBox);
+
+	} else {
+
+	    pickData.pickType = PEXPickDeviceNPC_HitVolume;
+
+	    dc_vol[0].x = dc_pt->x - dev->ap_size;
+	    dc_vol[0].y = dc_pt->y - dev->ap_size;
+	    dc_vol[1].x = dc_pt->x + dev->ap_size;
+	    dc_vol[1].y = dc_pt->y + dev->ap_size;
+
+	    WS_DC_TO_NPC2 (&owsb->ws_xform, &dc_vol[0], &npc_pt[0])
+	    WS_DC_TO_NPC2 (&owsb->ws_xform, &dc_vol[1], &npc_pt[1])
+
+	    pickData.pickRec.npcHitVolume.minval.x = npc_pt[0].x;
+	    pickData.pickRec.npcHitVolume.minval.y = npc_pt[0].y;
+	    pickData.pickRec.npcHitVolume.maxval.x = npc_pt[1].x;
+	    pickData.pickRec.npcHitVolume.maxval.y = npc_pt[1].y;
+	    pickData.pickRec.npcHitVolume.minval.z = owsb->ws_window.z_min;
+	    pickData.pickRec.npcHitVolume.maxval.z = owsb->ws_window.z_max;
+
+	    pickDataBytes = 4 + sizeof (pexPD_NPC_HitVolume);
+	}
+
+	PEXChangeRenderer (ws->display, ws->rid,
+		(pexBitmask) PEXRDPickInclusion, (CARD32) sizeof (pexNameSet),
+		(char *) &(dev->filter.incl));
+
+	PEXChangeRenderer (ws->display, ws->rid,
+		(pexBitmask) PEXRDPickExclusion, (CARD32) sizeof (pexNameSet),
+		(char *) &(dev->filter.excl));
+
+
+	PEXBeginPickOne (ws->display, ws->rid, ws->drawable_id, -1,
+		PEXLast, pickDataBytes, &pickData);
+
+	post_str = owsb->posted.highest.lower;
+	end = &(owsb->posted.lowest);
+
+	while (post_str != end) {
+	    phg_wsb_traverse_net (ws, post_str->structh);
+	    post_str = post_str->lower;
+	}
+
+	PEXEndPickOne (ws->display, ws->rid, &betterPick,
+	    &pickPath, &pickDepth);
+    }
+
+
+    if (!pickDepth) {
+
+    	pick->status = PIN_STATUS_NONE;
+    	pick->pick_path.depth = 0;
+    	pick->pick_path.path_list = (Ppick_path_elem *) NULL;
+
+    } else {
+
+	/*
+	 * The protocol pick element ref data structure has its fields
+	 * layed out in a different order than the PHIGS data structure.
+	 * We must repack the data into PHIGS format.
+	 */
+
+	for (i = 1; i < pickDepth; i++) {
+	    Ppick_path_elem *dst = (Ppick_path_elem *) &pickPath[i];
+	    pexPickElementRef src;
+
+	    src = pickPath[i];
+	    dst->struct_id = src.sid;
+	    dst->pick_id = src.pickid;
+	    dst->elem_pos = src.offset;
+	}
+
+	/*
+	 * order = bottom first?
+	 */
+
+	if (dev->order == PORDER_BOTTOM_FIRST) {
+	    int			head, tail;
+	    pexPickElementRef 	temp;
+
+	    head = 1;
+	    tail = pickDepth - 1;
+
+	    for (i = 0; i < (pickDepth - 1) / 2; i++) {
+		temp = pickPath[head];
+		pickPath[head] = pickPath[tail];
+		pickPath[tail] = temp;
+		head++;
+		tail--;
+	    }
+	}
+
+	/*
+	 * return status and pick path
+	 */
+
+	pick->status = PIN_STATUS_OK;
+	pick->pick_path.depth = pickDepth - 1;
+	pick->pick_path.path_list = (Ppick_path_elem *) &(pickPath[1]);
+    }
+
     return 1;
 }
 
