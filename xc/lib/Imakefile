@@ -1,4 +1,4 @@
-XCOMM $XConsortium$
+XCOMM $XConsortium: Imakefile,v 1.17 91/07/16 22:54:04 gildea Exp $
 #define IHaveSubdirs
 #define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
 
@@ -10,9 +10,11 @@ XCOMM $XConsortium$
 OTHERDIRS = Berk
 #endif
 
-SUBDIRS = $(OTHERDIRS) Xau X oldX Xt Xmu Xaw Xdmcp nls
+LINTSUBDIRS = Xau X oldX Xt Xmu Xaw Xdmcp
+
+SUBDIRS = $(OTHERDIRS) $(LINTSUBDIRS) nls
 
 MakeSubdirs($(SUBDIRS))
 DependSubdirs($(SUBDIRS))
-MakeLintLibSubdirs($(SUBDIRS))
-MakeLintSubdirs($(SUBDIRS),install.ln,install.ln)
+MakeLintLibSubdirs($(LINTSUBDIRS))
+MakeLintSubdirs($(LINTSUBDIRS),install.ln,install.ln)
