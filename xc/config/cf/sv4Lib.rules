@@ -1,4 +1,4 @@
-XCOMM $XConsortium: sv4Lib.rules,v 1.4 91/03/24 17:22:04 rws Exp $
+XCOMM $XConsortium: sv4Lib.rules,v 1.5 91/03/24 17:56:05 rws Exp $
 
 /*
  * SVR4 shared library rules
@@ -49,7 +49,7 @@ install:: Concat(lib,libname.so.rev) 					@@\
 
 /*
  * SharedLibraryTarget - generate rules to create a shared library;
- * build it into a different name so that the we do not hose people by having
+ * build it into a different name so that we do not hose people by having
  * the library gone for long periods.
  */
 #ifndef SharedLibraryTarget
