@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: main.c,v 1.101 89/01/18 16:28:07 jim Exp $";
+static char rcs_id[] = "$XConsortium: main.c,v 1.101 89/01/18 16:29:10 jim Exp $";
 #endif	/* lint */
 
 /*
@@ -1541,7 +1541,7 @@ spawn ()
 
 #define TMODE(ind,var) if (ttymodelist[ind].set) var = ttymodelist[ind].value;
 		    if (override_tty_modes) {
-			TMODE (XTTYMODE_intr, tc.t_quitc);
+			TMODE (XTTYMODE_intr, tc.t_intrc);
 			TMODE (XTTYMODE_quit, tc.t_quitc);
 			TMODE (XTTYMODE_erase, sg.sg_erase);
 			TMODE (XTTYMODE_kill, sg.sg_kill);
