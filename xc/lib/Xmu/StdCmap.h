@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xmu.h,v 1.23 89/06/07 16:50:58 jim Exp $
+ * $XConsortium: StdCmap.h,v 1.1 89/07/14 17:51:56 jim Exp $
  *
  * Copyright 1988 by the Massachusetts Institute of Technology
  *
@@ -22,12 +22,80 @@
 #ifndef _XMU_STDCMAP_H_
 #define _XMU_STDCMAP_H_
 
-Status XmuAllStandardColormaps( /* Display* */ );
-Status XmuCreateColormap( /* Display*, XStandardColormap* */ );
-void   XmuDeleteStandardColormap( /* Display*, int, Atom */ );
-Status XmuGetColormapAllocation( /* XVisualInfo*, Atom, unsigned long, ... */);
-Status XmuLookupColormap( /* Display*, int, VisualID, ... */ );
-XStandardColormap *XmuStandardColormap( /* Display*, int, VisualID, ... */ );
-Status XmuVisualStandardColormaps( /* Display*, int, VisualID, ... */ );
+#ifdef __cplusplus
+extern "C" {		/* for C++ V2.0 */
+#endif
+
+Status XmuAllStandardColormaps(
+#if NeedFunctionPrototypes
+    Display*		/* dpy */
+#endif
+);
+
+Status XmuCreateColormap(
+#if NeedFunctionPrototypes
+    Display*		/* dpy */,
+    XStandardColormap*	/* colormap */
+#endif
+);
+
+void   XmuDeleteStandardColormap(
+#if NeedFunctionPrototypes
+    Display*		/* dpy */,
+    int			/* screen */,
+    Atom		/* property */
+#endif
+);
+
+Status XmuGetColormapAllocation(
+#if NeedFunctionPrototypes
+    XVisualInfo*	/* vinfo */,
+    Atom		/* property */,
+    unsigned long*	/* red_max_return */,
+    unsigned long*	/* green_max_return */,
+    unsigned long*	/* blue_max_return */
+#endif
+);
+
+Status XmuLookupStandardColormap(
+#if NeedFunctionPrototypes
+    Display*		/* dpy */,
+    int			/* screen */,
+    VisualID		/* visualid */,
+    unsigned int	/* depth */,
+    Atom		/* property */,
+    Bool		/* replace */,
+    Bool		/* retain */
+#endif
+);
+
+XStandardColormap *XmuStandardColormap(
+#if NeedFunctionPrototypes
+    Display*		/* dpy */,
+    int			/* screen */,
+    VisualID		/* visualid */,
+    unsigned int	/* depth */,
+    Atom		/* property */,
+    Colormap		/* cmap */,
+    unsigned long	/* red_max */,
+    unsigned long	/* green_max */,
+    unsigned long	/* blue_max */
+#endif
+);
+
+Status XmuVisualStandardColormaps(
+#if NeedFunctionPrototypes
+    Display*		/* dpy */,
+    int			/* screen */,
+    VisualID		/* visualid */,
+    unsigned int	/* depth */,
+    Bool		/* replace */,
+    Bool		/* retain */
+#endif
+);
+
+#ifdef __cplusplus
+}			/* for C++ V2.0 */
+#endif
 
 #endif /* _XMU_STDCMAP_H_ */
