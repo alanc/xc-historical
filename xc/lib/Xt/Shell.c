@@ -1,4 +1,4 @@
-/* $XConsortium: Shell.c,v 1.148 94/02/08 20:59:18 converse Exp $ */
+/* $XConsortium: Shell.c,v 1.149 94/02/09 20:30:27 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -985,7 +985,9 @@ static void ApplicationInitialize(req, new, args, num_args)
 
     w->application.program_path = w->application.program_path
 	? XtNewString(w->application.program_path)
-	: XtNewString(w->application.restart_command[0]);
+	: w->application.restart_command ?
+	    XtNewString(w->application.restart_command[0])
+		: NULL;
 
     if (w->application.connection)
 	SetSessionProperties(w, True);
@@ -2714,7 +2716,7 @@ static void DieCallback(widget, client_data, call_data)
 	XtRemoveInput(w->application.input_id);
 	SmcCloseConnection(w->application.connection, count, reason_msgs);
 	w->application.connection = (SmcConn) NULL;
-	w->application.input_id = NULL;
+	w->application.input_id = 0;
     }
 }
 
