@@ -1,4 +1,4 @@
-/* $XConsortium: css_tbls.c,v 5.1 91/02/16 09:56:11 rws Exp $ */
+/* $XConsortium: css_tbls.c,v 5.2 91/12/26 18:05:04 hersh Exp $ */
 
 /***********************************************************
 Copyright (c) 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -150,7 +150,8 @@ cssTableType    CreateCSSElementTable[] = {
 	createCSS_Plain,	/* 100 CellArray2D */
 	createCSS_Plain,	/* 101 ExtCellArray */
 	createCSS_Plain,	/* 102 Gdp */
-	createCSS_Plain		/* 103 Gdp2D */
+	createCSS_Plain,	/* 103 Gdp2D */
+	createCSS_Plain		/* 104 Noop */
 };
 
 cssTableType    DestroyCSSElementTable[] = {
@@ -257,7 +258,8 @@ cssTableType    DestroyCSSElementTable[] = {
 	destroyCSS_Plain,	/* 100 CellArray2D */
 	destroyCSS_Plain,	/* 101 ExtCellArray */
 	destroyCSS_Plain,	/* 102 Gdp */
-	destroyCSS_Plain	/* 103 Gdp2D */
+	destroyCSS_Plain,	/* 103 Gdp2D */
+	destroyCSS_Plain	/* 104 Noop */
 };
 
 cssTableType    CopyCSSElementTable[] = {
@@ -364,7 +366,8 @@ cssTableType    CopyCSSElementTable[] = {
 	copyCSS_Plain,		/* 100 CellArray2D */
 	copyCSS_Plain,		/* 101 ExtCellArray */
 	copyCSS_Plain,		/* 102 Gdp */
-	copyCSS_Plain		/* 103 Gdp2D */
+	copyCSS_Plain,		/* 103 Gdp2D */
+	copyCSS_Plain		/* 104 Noop */
 };
 
 cssTableType    ReplaceCSSElementTable[] = {
@@ -471,7 +474,8 @@ cssTableType    ReplaceCSSElementTable[] = {
 	replaceCSS_Plain,	/* 100 CellArray2D */
 	replaceCSS_Plain,	/* 101 ExtCellArray */
 	replaceCSS_Plain,	/* 102 Gdp */
-	replaceCSS_Plain	/* 103 Gdp2D */
+	replaceCSS_Plain,	/* 103 Gdp2D */
+	replaceCSS_Plain	/* 104 Noop */
 };
 
 cssTableType    InquireCSSElementTable[] = {
@@ -578,5 +582,6 @@ cssTableType    InquireCSSElementTable[] = {
 	inquireCSS_Plain,	/* 100 CellArray2D */
 	inquireCSS_Plain,	/* 101 ExtCellArray */
 	inquireCSS_Plain,	/* 102 Gdp */
-	inquireCSS_Plain	/* 103 Gdp2D */
+	inquireCSS_Plain,	/* 103 Gdp2D */
+	inquireCSS_Plain	/* 104 Noop */
 };

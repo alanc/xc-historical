@@ -1,4 +1,4 @@
-/* $XConsortium: miLvl2Tab.c,v 5.2 91/05/31 07:24:36 jap Exp $ */
+/* $XConsortium: miLvl2Tab.c,v 5.3 91/12/26 18:00:42 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -265,7 +265,8 @@ ocTableType	ParseOCTable[] = {
     parseCellArray2D,		/* 100 cell array 2d */
     parseExtCellArray,		/* 101 extended cell array 3d */
     parseGdp,			/* 102 gdp 3d */
-    parseGdp2D			/* 103 gdp 2d */
+    parseGdp2D,			/* 103 gdp 2d */
+    parseSetAttribute		/* 104 Noop */
 };
 
 extern void		destroyOC_PEX(),
@@ -377,7 +378,8 @@ destroyTableType	DestroyOCTable[] = {
     destroyOC_PEX,		/* 100 cell array 2d */
     destroyOC_PEX,		/* 101 extended cell array 3d */
     destroyOC_PEX,		/* 102 gdp 3d */
-    destroyOC_PEX		/* 103 gdp 2d */
+    destroyOC_PEX,		/* 103 gdp 2d */
+    destroyOC_PEX		/* 104 Noop */
 };
 
 /* initial setup for output command table in renderers */
@@ -486,7 +488,8 @@ ocTableType	InitExecuteOCTable[] = {
     miCellArray,	    /* 100 cell array 2d */
     miCellArray,	    /* 101 extended cell array 3d */
     miTestGDP,		    /* 102 gdp 3d */
-    miTestGDP		    /* 103 gdp 2d */
+    miTestGDP,		    /* 103 gdp 2d */
+    miNoop		    /* 104 Noop */
 };
 
 /* initial setup for output command table for picking */
@@ -595,7 +598,8 @@ ocTableType	PickExecuteOCTable[] = {
     miPickPrimitives,	    /* 100 cell array 2d */
     miPickPrimitives,	    /* 101 extended cell array 3d */
     miTestPickGdp3d,	    /* 102 gdp 3d */
-    miTestPickGdp2d	    /* 103 gdp 2d */
+    miTestPickGdp2d,	    /* 103 gdp 2d */
+    miNoop		    /* 104 Noop  */
 };
 
 
@@ -705,7 +709,8 @@ ocTableType	SearchExecuteOCTable[] = {
     miSearchPrimitives,	    /* 100 cell array 2d */
     miSearchPrimitives,	    /* 101 extended cell array 3d */
     miTestSearchGdp3d,	    /* 102 gdp 3d */
-    miTestSearchGdp2d	    /* 103 gdp 2d */
+    miTestSearchGdp2d,	    /* 103 gdp 2d */
+    miNoop		    /* 104 Noop */
 };
 
 
@@ -850,7 +855,8 @@ ocTableType	CopyOCTable[] = {
     copyCellArray2D,		/* 100 cell array 2d */
     copyExtCellArray,		/* 101 extended cell array 3d */
     copyGdp,			/* 102 gdp 3d */
-    copyGdp2D			/* 103 gdp 2d */
+    copyGdp2D,			/* 103 gdp 2d */
+    copySetAttribute		/* 104 Noop */
 };
 
 
@@ -996,7 +1002,8 @@ ocTableType	InquireOCTable[] = {
     inquireCellArray2D,		/* 100 cell array 2d */
     inquireExtCellArray,	/* 101 extended cell array 3d */
     inquireGdp,			/* 102 gdp 3d */
-    inquireGdp2D		/* 103 gdp 2d */
+    inquireGdp2D,		/* 103 gdp 2d */
+    inquireSetAttribute		/* 104 Noop */
 };
 
 
@@ -1111,5 +1118,6 @@ ocTableType	ReplaceOCTable[] = {
     parseCellArray2D,		/* 100 cell array 2d */
     parseExtCellArray,		/* 101 extended cell array 3d */
     parseGdp,			/* 102 gdp 3d */
-    parseGdp2D			/* 103 gdp 2d */
+    parseGdp2D,			/* 103 gdp 2d */
+    parseSetAttribute		/* 104 Noop */
 };
