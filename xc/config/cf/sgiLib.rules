@@ -1,4 +1,4 @@
-XCOMM $XConsortium: sgiLib.rules,v 1.6 92/05/29 17:05:46 rws Exp $
+XCOMM $XConsortium: sgiLib.rules,v 1.7 93/09/04 16:01:10 rws Exp $
 
 #ifndef HasSharedLibraries
 #define HasSharedLibraries YES
@@ -38,14 +38,12 @@ clean::									@@\
 #define	InstallSharedLibrary(libname,rev,dest)				@@\
 install:: Concat3(lib,libname,_s)					@@\
 	MakeDir($(DESTDIR)dest)						@@\
-	$(INSTALL) -c $(INSTLIBFLAGS) Concat3(lib,libname,_s.a) $(DESTDIR)dest @@\
-	$(INSTALL) -c $(INSTBINFLAGS) Concat3(lib,libname,_s) $(DESTDIR)dest
+	$(INSTALL) $(INSTALLFLAGS) $(INSTLIBFLAGS) Concat3(lib,libname,_s.a) $(DESTDIR)dest @@\
+	$(INSTALL) $(INSTALLFLAGS) $(INSTBINFLAGS) Concat3(lib,libname,_s) $(DESTDIR)dest
 
 
 /*
  * InstallSharedLibraryData - generate rules to install the shared library data
  */
 #define	InstallSharedLibraryData(libname,rev,dest)			@@\
-install:: Concat3(lib,libname,_s.a)					@@\
-	MakeDir($(DESTDIR)dest)						@@\
-	$(INSTALL) -c $(INSTLIBFLAGS) Concat3(lib,libname,_s.a) $(DESTDIR)dest
+InstallTarget(install,Concat3(lib,libname,_s.a),$(INSTLIBFLAGS),dest)
