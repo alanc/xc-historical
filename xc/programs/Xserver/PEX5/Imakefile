@@ -1,5 +1,5 @@
 ##
-# $XConsortium$
+# $XConsortium: Imakefile,v 5.2 91/02/16 09:58:01 rws Exp $
 ##
 ## 
 ## Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -43,7 +43,7 @@
 
  CDEBUGFLAGS = PexDipexCDebugFlags
      DEFINES = ExtensionDefines PexDipexDefines
-   INCLUDES  = -I. -I./include -I../include -I$(INCLUDESRC) \
+   INCLUDES  = -I. -Iinclude -I../include -I$(INCLUDESRC) \
 		-I$(SERVERSRC)/include\
 		-I$(SERVERSRC)/ddx/hp/hp -I$(SERVERSRC)/ddx/hp/mfb
    LINTLIBS =    ../../../server/dix/llib-ldix.ln \
@@ -58,31 +58,31 @@
 		$(DDPEXSDIR)/llib-ldps.ln \
 		$(OSPEXDIR)/llib-losp.ln
 
-     SWAPDIR = ./dipex/swap
+     SWAPDIR = dipex/swap
         SWAP = $(SWAPDIR)/libdiswapex.a
 
- DISPATCHDIR = ./dipex/dispatch
+ DISPATCHDIR = dipex/dispatch
     DISPATCH = $(DISPATCHDIR)/libdidipex.a
 
-  OBJECTSDIR = ./dipex/objects
+  OBJECTSDIR = dipex/objects
      OBJECTS = $(OBJECTSDIR)/libdiobpex.a
 
-    DDPEX1DIR = ./ddpex/mi/level1
+    DDPEX1DIR = ddpex/mi/level1
        DDPEX1 = $(DDPEX1DIR)/libddpex1.a
 
-    DDPEX2DIR = ./ddpex/mi/level2
+    DDPEX2DIR = ddpex/mi/level2
        DDPEX2 = $(DDPEX2DIR)/libddpex2.a
 
-    DDPEX3DIR = ./ddpex/mi/level3
+    DDPEX3DIR = ddpex/mi/level3
        DDPEX3 = $(DDPEX3DIR)/libddpex3.a
 
-    DDPEX4DIR = ./ddpex/mi/level4
+    DDPEX4DIR = ddpex/mi/level4
        DDPEX4 = $(DDPEX4DIR)/libddpex4.a
 
-    DDPEXSDIR = ./ddpex/mi/shared
+    DDPEXSDIR = ddpex/mi/shared
        DDPEXS = $(DDPEXSDIR)/libddpexs.a
 
-     OSPEXDIR = ./ospex/4.2bsd
+     OSPEXDIR = ospex/4.2bsd
         OSPEX = $(OSPEXDIR)/libospex.a
 
      SUBDIRS = $(DISPATCHDIR) $(SWAPDIR) $(OBJECTSDIR) $(DDPEX1DIR) \
@@ -91,8 +91,8 @@
      SUBOBJS = $(DISPATCH) $(SWAP) $(OBJECTS) $(DDPEX1) \
 		$(DDPEX2) $(DDPEX3) $(DDPEX4) $(DDPEXS) $(OSPEX)
 
-   PEXSRVINC = ./include
-  PEXINCLUDE = ./../../include/PEX
+   PEXSRVINC = include
+  PEXINCLUDE = ../../include/PEX
     INCLUDES = -I. -I$(PEXSRVINC) -I$(PEXINCLUDE) -I$(INCLUDESRC) \
 		-I$(SERVERSRC)/include
 
