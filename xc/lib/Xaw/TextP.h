@@ -1,5 +1,5 @@
 /*
-* $XConsortium: TextP.h,v 1.46 90/12/01 13:02:19 rws Exp $
+* $XConsortium: TextP.h,v 1.47 91/03/27 14:28:02 converse Exp $
 */
 
 
@@ -40,7 +40,9 @@ SOFTWARE.
  ****************************************************************/
 #define MAXCUT	30000	/* Maximum number of characters that can be cut. */
 
+#ifndef abs
 #define abs(x)	(((x) < 0) ? (-(x)) : (x))
+#endif
 
 #define GETLASTPOS  XawTextSourceScan(ctx->text.source, 0, \
 				      XawstAll, XawsdRight, 1, TRUE)

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: CutPaste.c,v 1.2 91/01/25 11:04:06 dave Exp $
+ * $XConsortium: CutPaste.c,v 1.3 91/02/08 18:13:55 dave Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -37,7 +37,9 @@
 #include <math.h>
 
 #define XtStrlen(s)                   ((s) ? strlen(s) : 0)
+#ifndef abs
 #define abs(x)                        (((x) > 0) ? (x) : -(x))
+#endif
 #define min(x, y)                     (((x) < (y)) ? (x) : (y))
 #define max(x, y)                     (((x) > (y)) ? (x) : (y))
 

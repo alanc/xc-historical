@@ -1,5 +1,5 @@
 /*
- * $XConsortium: ReqMach.c,v 1.7 91/01/09 16:55:42 rws Exp $
+ * $XConsortium: ReqMach.c,v 1.8 91/01/25 11:06:12 dmatic Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -38,7 +38,9 @@
 #include <math.h>
 
 #define XtStrlen(s)                   ((s) ? strlen(s) : 0)
+#ifndef abs
 #define abs(x)                        (((x) > 0) ? (x) : -(x))
+#endif
 #define min(x, y)                     (((x) < (y)) ? (x) : (y))
 #define max(x, y)                     (((x) > (y)) ? (x) : (y))
 

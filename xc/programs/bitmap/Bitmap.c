@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Bitmap.c,v 1.30 91/02/16 17:40:33 dave Exp $
+ * $XConsortium: Bitmap.c,v 1.31 91/03/19 12:10:13 gildea Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -39,7 +39,9 @@
 #include <math.h>
 
 #define XtStrlen(s)                   ((s) ? strlen(s) : 0)
+#ifndef abs
 #define abs(x)                        ((((int)(x)) > 0) ? (x) : -(x))
+#endif
 #define min(x, y)                     ((((int)(x)) < (int)(y)) ? (x) : (y))
 #define max(x, y)                     ((((int)(x)) > (int)(y)) ? (x) : (y))
 
