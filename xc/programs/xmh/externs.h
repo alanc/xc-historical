@@ -1,5 +1,5 @@
 /*
- * $XConsortium: externs.h,v 2.32 89/12/14 21:11:03 converse Exp $
+ * $XConsortium: externs.h,v 2.33 91/04/02 19:28:31 gildea Exp $
  *
  *
  *		       COPYRIGHT 1987, 1989
@@ -26,10 +26,6 @@
  * without specific, written prior permission.
  */
 
-	/* Action routines are declared in actions.h
-	 * Functions which begin with `Do' are the corresponding callbacks.
-         */
-
 #ifndef X_NOT_STDC_ENV
 #include <errno.h>
 #include <stdlib.h>
@@ -39,6 +35,9 @@ extern char *getenv();
 extern void exit();
 extern void free();
 #endif
+
+/* Action routines are declared in actions.h */
+/* Functions which begin with `Do' are the corresponding callbacks. */
 
 	/* from command.c */
 
@@ -79,10 +78,10 @@ extern Widget   CreateFileSource	(/* Widget, String, Boolean */);
 	/* from popup.c */
 
 extern void	DestroyPopup	(/* Widget, XtPointer, XtPointer */);
-extern void	PopupPrompt	(/* String, XtCallbackProc */);
+extern void	PopupPrompt	(/* Widget, String, XtCallbackProc */);
 extern void	PopupConfirm	(/* Widget, String, XtCallbackList, ... */);
 extern void	PopupNotice	(/* char *, XtCallbackProc, XtPointer */);
-extern void 	PopupError	(/* String */);
+extern void 	PopupError	(/* Widget, String */);
 
 	/* from screen.c */
 
