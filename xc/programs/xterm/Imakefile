@@ -61,15 +61,15 @@ XCOMM
 
 AllTarget($(PROGRAMS))
 
-SpecialObjectRule(main.o, ,$(MAIN_DEFINES))
-SpecialObjectRule(misc.o, ,$(MISC_DEFINES))
-SpecialObjectRule(charproc.o, ,$(MISC_DEFINES))
+SpecialObjectRule(main.o,NullParameter,$(MAIN_DEFINES))
+SpecialObjectRule(misc.o,NullParameter,$(MISC_DEFINES))
+SpecialObjectRule(charproc.o,NullParameter,$(MISC_DEFINES))
 
 NormalProgramTarget(xterm,$(OBJS1),$(DEPLIBS1),XawClientLibs,$(TERMCAPLIB) $(PTYLIB))
-InstallProgramWithFlags(xterm, $(BINDIR), $(INSTUIDFLAGS))
+InstallProgramWithFlags(xterm,$(BINDIR),$(INSTUIDFLAGS))
 
-NormalProgramTarget(resize,$(OBJS2),$(DEPLIBS2), ,$(TERMCAPLIB))
-InstallProgramWithFlags(resize, $(BINDIR), )
+NormalProgramTarget(resize,$(OBJS2),$(DEPLIBS2),NullParameter,$(TERMCAPLIB))
+InstallProgramWithFlags(resize,$(BINDIR),NullParameter)
 
 InstallAppDefaults(XTerm)
 InstallManPage(xterm,$(MANDIR))

@@ -21,9 +21,9 @@ LOCAL_LIBRARIES = $(XMULIB) $(EXTENSIONLIB) $(XLIB)
 
 AllTarget(twm)
 
-SpecialObjectRule(parse.o, ,'-DSYSTEM_INIT_FILE="'$(TWMDIR)'/system.twmrc"')
+SpecialObjectRule(parse.o,NullParameter,'-DSYSTEM_INIT_FILE="'$(TWMDIR)'/system.twmrc"')
 #if !HasPutenv
-SpecialObjectRule(util.o, ,-DNOPUTENV)
+SpecialObjectRule(util.o,NullParameter,-DNOPUTENV)
 #endif
 
 depend:: lex.c gram.c deftwmrc.c 
