@@ -1,5 +1,5 @@
 /*
- * $Header: Tekproc.c,v 1.20 88/02/18 17:54:42 jim Exp $
+ * $Header: Tekproc.c,v 1.21 88/02/19 08:41:02 jim Exp $
  *
  * Warning, there be crufty dragons here.
  */
@@ -115,7 +115,7 @@ char *curs_color;
 #define	unput(c)	*Tpushback++ = c
 
 #ifndef lint
-static char rcs_id[] = "$Header: Tekproc.c,v 1.20 88/02/18 17:54:42 jim Exp $";
+static char rcs_id[] = "$Header: Tekproc.c,v 1.21 88/02/19 08:41:02 jim Exp $";
 #endif	/* lint */
 
 static XPoint *T_box[TEKNUMFONTS] = {
@@ -163,26 +163,34 @@ extern void HandleLeaveWindow();
 extern void HandleFocusChange();
 extern void TekButtonPressed();
 
+static int defOne = 1;
 
-static void TekInitialize(), TekRealize(), TekConfigure();
+static XtResource resources[] = {
+    {XtNwidth, XtCWidth, XtRInt, sizeof(int),
+	 XtOffset(Widget, core.width), XtRInt, (caddr_t)&defOne},
+    {XtNheight, XtCHeight, XtRInt, sizeof(int),
+	 XtOffset(Widget, core.height), XtRInt, (caddr_t)&defOne},
+};
+
+static void TekRealize(), TekConfigure();
 void TekExpose();
 
 WidgetClassRec tekClassRec = {
   {
 /* core_class fields */	
     /* superclass	  */	(WidgetClass) &widgetClassRec,
-    /* class_name	  */	"Tek",
+    /* class_name	  */	"Tek4014",
     /* widget_size	  */	sizeof(TekWidgetRec),
     /* class_initialize   */    NULL,
     /* class_part_initialize */ NULL,
     /* class_inited       */	FALSE,
-    /* initialize	  */	TekInitialize,
+    /* initialize	  */	NULL,
     /* initialize_hook    */    NULL,				
     /* realize		  */	TekRealize,
     /* actions		  */	NULL,
     /* num_actions	  */	0,
-    /* resources	  */	NULL,
-    /* num_resources	  */	0,
+    /* resources	  */	resources,
+    /* num_resources	  */	XtNumber(resources),
     /* xrm_class	  */	NULLQUARK,
     /* compress_motion	  */	TRUE,
     /* compress_exposure  */	TRUE,
@@ -208,17 +216,16 @@ static Boolean Tfailed = FALSE;
 TekWidget CreateTekWidget ()
 {
     Widget tekshellwidget;
-    char *tek_name = "tektronix";	/* should be a resource */
     extern Arg ourTopLevelShellArgs[];
     extern int number_ourTopLevelShellArgs;
 
     /* this causes the Initialize method to be called */
-    tekshellwidget = XtCreateApplicationShell ("Tektronix Emulator",
+    tekshellwidget = XtCreateApplicationShell ("tektronix",
 					       topLevelShellWidgetClass,
 					       ourTopLevelShellArgs, 
 					       number_ourTopLevelShellArgs);
     /* this causes the Realize method to be called */
-    tekWidget = (TekWidget) XtCreateManagedWidget (tek_name, tekWidgetClass,
+    tekWidget = (TekWidget) XtCreateManagedWidget ("tek4014", tekWidgetClass,
 						   tekshellwidget, NULL, 0);
     return (tekWidget);
 }
@@ -229,28 +236,10 @@ int TekInit ()
     if (Tfailed) return (0);
     if (tekWidget) return (1);
     if (CreateTekWidget()) {
-	XtRealizeWidget (tekWidget->core.parent);
 	return (1);
     }
     return (0);
 }
-
-
-static void TekInitialize (request, new)
-    TekWidget request, new;
-{
-    /*
-     * make sure that the shell doesn't give us a bogus size
-     */
-    if (request->core.width < 1) new->core.width = 1;
-    if (request->core.height < 1) new->core.height = 1;
-    new->core.border_pixel = term->core.border_pixel;
-    new->core.background_pixel = term->core.background_pixel;
-    new->core.border_width = term->core.border_width;
-    return;
-}
-
-
 
 Tekparse()
 {
@@ -1240,13 +1229,6 @@ static void TekRealize (gw, valuemaskp, values)
 	return;
     }
 
-#ifdef notyet
-    /*
-     * set the appropriate window manager cruft if the shell doesn't
-     */
-#endif /* notyet */
-
-
     XtAddEventHandler(gw, EnterWindowMask, FALSE,
 		      HandleEnterWindow, (caddr_t)NULL);
     XtAddEventHandler(gw, LeaveWindowMask, FALSE,
@@ -1328,22 +1310,29 @@ static void TekRealize (gw, valuemaskp, values)
     XDefineCursor(screen->display, TWindow(screen), screen->curs);
     TekUnselect ();
 
-#ifdef notyet
-	if((screen->Ticonname = malloc((unsigned) screen->iconnamelen + 7)) == NULL)
-		Error(ERROR_TWINNAME);
-	strcpy(screen->Ticonname, screen->iconname);
-	strcat(screen->Ticonname, "(Tek) ");
-	screen->Ticonnamelen = strlen(screen->Ticonname);
-	if((screen->Ttitlename = malloc((unsigned) screen->titlenamelen + 7)) == NULL)
-		Error(ERROR_TWINNAME);
-	strcpy(screen->Ttitlename, screen->titlename);
-	strcat(screen->Ttitlename, "(Tek) ");
-	screen->Ttitlenamelen = strlen(screen->Ttitlename);
-	XStoreName (screen->display, TWindow(screen), screen->Ttitlename);
-	XChangeProperty(screen->display, TWindow(screen), XA_WM_ICON_NAME,
-	  XA_STRING, 8, PropModeReplace, (unsigned char *)screen->Ticonname,
-	  screen->Ticonnamelen);
-#endif /* notyet */
+    {	/* there's gotta be a better way... */
+	extern Widget toplevel;
+	static Arg args[] = {
+	    {XtNtitle, NULL},
+	    {XtNiconName, NULL},
+	};
+	char *icon_name, *title, *tek_icon_name, *tek_title;
+
+	args[0].value = (XtArgVal)&icon_name;
+	args[1].value = (XtArgVal)&title;
+	XtGetValues( toplevel, args, 2 );
+	tek_icon_name = XtMalloc(strlen(icon_name)+7);
+	strcpy(tek_icon_name, icon_name);
+	strcat(tek_icon_name, "(Tek)");
+	tek_title = XtMalloc(strlen(title)+7);
+	strcpy(title, tek_title);
+	strcat(tek_title, "(Tek)");
+	args[0].value = (XtArgVal)tek_icon_name;
+	args[1].value = (XtArgVal)tek_title;
+	XtSetValues( toplevel, args, 2 );
+	XtFree( tek_icon_name );
+	XtFree( tek_title );
+    }
 
     tek = TekRecord = &Tek0;
     tek->next = (TekLink *)0;
