@@ -250,7 +250,6 @@ protected:
     virtual ~TypeSchema();
 public:
     virtual TypeObjType* map(TypeObjId t) = 0;
-    virtual Boolean compatible(TypeObjId ancestor, TypeObjId descendant) = 0;
 };
 
 class Exception {
