@@ -1,4 +1,4 @@
-/* $XConsortium: xwd.c,v 1.59 93/09/13 12:02:28 rws Exp $ */
+/* $XConsortium: xwd.c,v 1.60 93/09/20 17:45:56 hersh Exp $ */
 
 /* Copyright 1987 Massachusetts Institute of Technology */
 
@@ -54,6 +54,7 @@ extern int errno;
 
 #include <X11/Xmu/WinUtil.h>
 typedef unsigned long Pixel;
+#include "X11/XWDFile.h"
 
 #define FEEP_VOLUME 0
 
@@ -190,8 +191,6 @@ main(argc, argv)
 
 char *calloc();
 
-#include "X11/XWDFile.h"
-
 Window_Dump(window, out)
      Window window;
      FILE *out;
@@ -212,7 +211,7 @@ Window_Dump(window, out)
     int bw;
     Window dummywin;
     XWDFileHeader header;
-
+    XWDColor xwdcolor;
     
     /*
      * Inform the user not to alter the screen.
@@ -306,7 +305,7 @@ Window_Dump(window, out)
      * Calculate header size.
      */
     if (debug) outl("xwd: Calculating header size.\n");
-    header_size = sizeof(header) + win_name_size;
+    header_size = SIZEOF(XWDheader) + win_name_size;
 
     /*
      * Write out header information.
@@ -346,7 +345,7 @@ Window_Dump(window, out)
 	}
     }
 
-    if (fwrite((char *)&header, sizeof(header), 1, out) != 1 ||
+    if (fwrite((char *)&header, SIZEOF(XWDheader), 1, out) != 1 ||
 	fwrite(win_name, win_name_size, 1, out) != 1) {
 	perror("xwd");
 	exit(1);
@@ -357,9 +356,16 @@ Window_Dump(window, out)
      */
 
     if (debug) outl("xwd: Dumping %d colors.\n", ncolors);
-    if (fwrite((char *) colors, sizeof(XColor), ncolors, out) != ncolors) {
-	perror("xwd");
-	exit(1);
+    for (i = 0; i < ncolors; i++) {
+	xwdcolor.pixel = colors[i].pixel;
+	xwdcolor.red = colors[i].red;
+	xwdcolor.green = colors[i].green;
+	xwdcolor.blue = colors[i].blue;
+	xwdcolor.flags = colors[i].flags;
+	if (fwrite((char *) &xwdcolor, SIZEOF(XWDColor), 1, out) != 1) {
+	    perror("xwd");
+	    exit(1);
+	}
     }
 
     /*

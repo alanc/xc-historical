@@ -1,4 +1,4 @@
-/* $XConsortium: xwud.c,v 1.52 92/04/14 17:51:22 rws Exp $ */
+/* $XConsortium: xwud.c,v 1.53 93/09/13 12:02:48 rws Exp $ */
 /* Copyright 1985, 1986, 1988 Massachusetts Institute of Technology */
 
 /*
@@ -102,6 +102,7 @@ main(argc, argv)
     GC gc;
     XGCValues gc_val;
     XWDFileHeader header;
+    XWDColor xwdcolor;
     FILE *in_file = stdin;
     char *map_name;
     Atom map_prop;
@@ -205,24 +206,24 @@ main(argc, argv)
     /*
      * Read in header information.
      */
-    if(!Read((char *)&header, sizeof(header), 1, in_file))
+    if(!Read((char *)&header, SIZEOF(XWDheader), 1, in_file))
       Error("Unable to read dump file header.");
 
     if (*(char *) &swaptest)
-	_swaplong((char *) &header, sizeof(header));
+	_swaplong((char *) &header, SIZEOF(XWDheader));
 
     /* check to see if the dump file is in the proper format */
     if (header.file_version != XWD_FILE_VERSION) {
 	fprintf(stderr,"xwud: XWD file format version mismatch.");
 	Error("exiting.");
     }
-    if (header.header_size < sizeof(header)) {
+    if (header.header_size < SIZEOF(XWDheader)) {
 	fprintf(stderr,"xwud: XWD header size is too small.");
 	Error("exiting.");
     }
 
     /* alloc window name */
-    win_name_size = (header.header_size - sizeof(header));
+    win_name_size = (header.header_size - SIZEOF(XWDheader));
     if((win_name = malloc((unsigned) win_name_size + 6)) == NULL)
       Error("Can't malloc window name storage.");
     strcpy(win_name, "xwud: ");
@@ -257,8 +258,15 @@ main(argc, argv)
 	colors = (XColor *)malloc((unsigned) ncolors * sizeof(XColor));
 	if (!colors)
 	    Error("Can't malloc color table");
-	if(!Read((char *) colors, sizeof(XColor), ncolors, in_file))
-	  Error("Unable to read color map from dump file.");
+	for (i = 0; i < ncolors; i++) {
+	    if(!Read((char *) &xwdcolor, SIZEOF(XWDColor), 1, in_file))
+		Error("Unable to read color map from dump file.");
+	    colors[i].pixel = xwdcolor.pixel;
+	    colors[i].red = xwdcolor.red;
+	    colors[i].green = xwdcolor.green;
+	    colors[i].blue = xwdcolor.blue;
+	    colors[i].flags = xwdcolor.flags;
+	}
 	if (*(char *) &swaptest) {
 	    for (i = 0; i < ncolors; i++) {
 		_swaplong((char *) &colors[i].pixel, sizeof(long));
