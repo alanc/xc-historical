@@ -1,4 +1,4 @@
-/* $XConsortium: sm_process.c,v 1.21 94/03/07 17:08:43 mor Exp $ */
+/* $XConsortium: sm_process.c,v 1.22 94/03/15 13:41:55 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -21,6 +21,35 @@ Author: Ralph Mor, X Consortium
 #include <X11/SM/SMlibint.h>
 
 
+/*
+ * Check for bad length
+ */
+
+#define CHECK_SIZE_MATCH(_iceConn, _majorOp, _minorOp, _expected_len, _actual_len, _severity) \
+    if ((((_actual_len) - SIZEOF (iceMsg)) >> 3) != _expected_len) \
+    { \
+       _IceErrorBadLength (_iceConn, _majorOp, _minorOp, _severity); \
+       return (0); \
+    }
+
+#define CHECK_AT_LEAST_SIZE(_iceConn, _majorOp, _minorOp, _expected_len, _actual_len, _severity) \
+    if ((((_actual_len) - SIZEOF (iceMsg)) >> 3) > _expected_len) \
+    { \
+       _IceErrorBadLength (_iceConn, _majorOp, _minorOp, _severity); \
+       return (0); \
+    }
+
+#define CHECK_COMPLETE_SIZE(_iceConn, _majorOp, _minorOp, _expected_len, _actual_len, _pStart, _severity) \
+    if (((PADDED_BYTES64((_actual_len)) - SIZEOF (iceMsg)) >> 3) \
+        != _expected_len) \
+    { \
+       _IceErrorBadLength (_iceConn, _majorOp, _minorOp, _severity); \
+       IceDisposeCompleteMessage (iceConn, _pStart); \
+       return (0); \
+    }
+
+
+
 Bool
 _SmcProcessMessage (iceConn, clientData, opcode, length, swap, replyWait)
 
@@ -58,6 +87,9 @@ IceReplyWaitInfo *replyWait;
     {
 	iceErrorMsg 	*pMsg;
 	char	    	*pData;
+
+	CHECK_AT_LEAST_SIZE (iceConn, _SmcOpcode, opcode,
+	    length, SIZEOF (iceErrorMsg), IceFatalToProtocol);
 
 	IceReadCompleteMessage (iceConn, SIZEOF (iceErrorMsg),
 	    iceErrorMsg, pMsg, pData);
@@ -109,8 +141,19 @@ IceReplyWaitInfo *replyWait;
 	    _SmcRegisterClientReply 	*reply = 
 	        (_SmcRegisterClientReply *) (replyWait->reply);
 
+	    CHECK_AT_LEAST_SIZE (iceConn, _SmcOpcode, opcode,
+		length, SIZEOF (smRegisterClientReplyMsg), IceFatalToProtocol);
+
 	    IceReadCompleteMessage (iceConn, SIZEOF (smRegisterClientReplyMsg),
 		smRegisterClientReplyMsg, pMsg, pStart);
+
+	    pData = pStart;
+
+	    SKIP_ARRAY8 (pData, swap);		/* client id */
+
+	    CHECK_COMPLETE_SIZE (iceConn, _SmcOpcode, opcode,
+		length, pData - pStart + SIZEOF (smRegisterClientReplyMsg),
+		pStart, IceFatalToProtocol);
 
 	    pData = pStart;
 
@@ -126,16 +169,56 @@ IceReplyWaitInfo *replyWait;
     case SM_SaveYourself:
     {
 	smSaveYourselfMsg 	*pMsg;
+	unsigned char		errVal;
+	int			errOffset = -1;
+
+	CHECK_SIZE_MATCH (iceConn, _SmcOpcode, opcode,
+	    length, SIZEOF (smSaveYourselfMsg),
+	    IceFatalToProtocol);
 
 	IceReadMessageHeader (iceConn, SIZEOF (smSaveYourselfMsg),
 	    smSaveYourselfMsg, pMsg);
 
-	(*smcConn->callbacks.save_yourself.callback) (smcConn,
-	    smcConn->callbacks.save_yourself.client_data,
-            pMsg->saveType, pMsg->shutdown, pMsg->interactStyle, pMsg->fast);
+	if (pMsg->saveType != SmSaveGlobal &&
+	    pMsg->saveType != SmSaveLocal &&
+	    pMsg->saveType != SmSaveBoth)
+	{
+	    errVal = pMsg->saveType;
+	    errOffset = 8;
+	}
+	else if (pMsg->shutdown != 1 && pMsg->shutdown != 0)
+	{
+	    errVal = pMsg->shutdown;
+	    errOffset = 9;
+	}
+	else if (pMsg->interactStyle != SmInteractStyleNone &&
+	    pMsg->interactStyle != SmInteractStyleErrors &&
+	    pMsg->interactStyle != SmInteractStyleAny)
+	{
+	    errVal = pMsg->interactStyle;
+	    errOffset = 10;
+	}
+	else if (pMsg->fast != 1 && pMsg->fast != 0)
+	{
+	    errVal = pMsg->fast;
+	    errOffset = 11;
+	}
 
-	if (pMsg->shutdown)
-	    smcConn->shutdown_in_progress = True;
+	if (errOffset >= 0)
+	{
+	    _IceErrorBadValue (iceConn, _SmcOpcode,
+	        SM_SaveYourself, errOffset, 1, &errVal);
+	}
+	else
+	{
+	    (*smcConn->callbacks.save_yourself.callback) (smcConn,
+	        smcConn->callbacks.save_yourself.client_data,
+                pMsg->saveType, pMsg->shutdown,
+		pMsg->interactStyle, pMsg->fast);
+
+	    if (pMsg->shutdown)
+		smcConn->shutdown_in_progress = True;
+	}
 	break;
     }
 
@@ -150,6 +233,10 @@ IceReplyWaitInfo *replyWait;
 	{
 	    _SmcInteractWait *next = smcConn->interact_waits->next;
 
+	    CHECK_SIZE_MATCH (iceConn, _SmcOpcode, opcode,
+	        length, SIZEOF (smInteractMsg),
+	        IceFatalToProtocol);
+
 	    (*smcConn->interact_waits->interact_proc) (smcConn,
 		smcConn->interact_waits->client_data);
 
@@ -159,6 +246,10 @@ IceReplyWaitInfo *replyWait;
 	break;
 
     case SM_Die:
+
+	CHECK_SIZE_MATCH (iceConn, _SmcOpcode, opcode,
+	    length, SIZEOF (smDieMsg),
+	    IceFatalToProtocol);
 
 	(*smcConn->callbacks.die.callback) (smcConn,
 	    smcConn->callbacks.die.client_data);
@@ -173,6 +264,10 @@ IceReplyWaitInfo *replyWait;
 	}
 	else
 	{
+	    CHECK_SIZE_MATCH (iceConn, _SmcOpcode, opcode,
+	        length, SIZEOF (smShutdownCancelledMsg),
+	        IceFatalToProtocol);
+
 	    smcConn->shutdown_in_progress = False;
 
 	    (*smcConn->callbacks.shutdown_cancelled.callback) (smcConn,
@@ -197,8 +292,19 @@ IceReplyWaitInfo *replyWait;
 	    SmProp			**props = NULL;
 	    _SmcPropReplyWait 		*next;
 
+	    CHECK_AT_LEAST_SIZE (iceConn, _SmcOpcode, opcode,
+		length, SIZEOF (smPropertiesReplyMsg), IceFatalToProtocol);
+
 	    IceReadCompleteMessage (iceConn, SIZEOF (smPropertiesReplyMsg),
 		smPropertiesReplyMsg, pMsg, pStart);
+
+	    pData = pStart;
+
+	    SKIP_LISTOF_PROPERTY (pData, swap);
+
+	    CHECK_COMPLETE_SIZE (iceConn, _SmcOpcode, opcode,
+	        length, pData - pStart + SIZEOF (smPropertiesReplyMsg),
+	        pStart, IceFatalToProtocol);
 
 	    pData = pStart;
 
@@ -236,6 +342,41 @@ IceReplyWaitInfo *replyWait;
 }
 
 
+
+/*
+ * Undef the macros for length checking.  Redefine them the same as
+ * before, but don't return a value.
+ */
+
+#undef CHECK_SIZE_MATCH
+#undef CHECK_AT_LEAST_SIZE
+#undef CHECK_COMPLETE_SIZE
+
+#define CHECK_SIZE_MATCH(_iceConn, _majorOp, _minorOp, _expected_len, _actual_len, _severity) \
+    if ((((_actual_len) - SIZEOF (iceMsg)) >> 3) != _expected_len) \
+    { \
+       _IceErrorBadLength (_iceConn, _majorOp, _minorOp, _severity); \
+       return; \
+    }
+
+#define CHECK_AT_LEAST_SIZE(_iceConn, _majorOp, _minorOp, _expected_len, _actual_len, _severity) \
+    if ((((_actual_len) - SIZEOF (iceMsg)) >> 3) > _expected_len) \
+    { \
+       _IceErrorBadLength (_iceConn, _majorOp, _minorOp, _severity); \
+       return; \
+    }
+
+#define CHECK_COMPLETE_SIZE(_iceConn, _majorOp, _minorOp, _expected_len, _actual_len, _pStart, _severity) \
+    if (((PADDED_BYTES64((_actual_len)) - SIZEOF (iceMsg)) >> 3) \
+        != _expected_len) \
+    { \
+       _IceErrorBadLength (_iceConn, _majorOp, _minorOp, _severity); \
+       IceDisposeCompleteMessage (iceConn, _pStart); \
+       return; \
+    }
+
+
+
 void
 _SmsProcessMessage (iceConn, clientData, opcode, length, swap)
 
@@ -272,6 +413,9 @@ Bool		 swap;
 	iceErrorMsg 	*pMsg;
 	char	    	*pData;
 
+	CHECK_AT_LEAST_SIZE (iceConn, _SmsOpcode, opcode,
+	    length, SIZEOF (iceErrorMsg), IceFatalToProtocol);
+
 	IceReadCompleteMessage (iceConn, SIZEOF (iceErrorMsg),
 	    iceErrorMsg, pMsg, pData);
 
@@ -291,8 +435,19 @@ Bool		 swap;
 	char 			*pData, *pStart;
 	char 			*previousId;
 
+	CHECK_AT_LEAST_SIZE (iceConn, _SmsOpcode, opcode,
+	    length, SIZEOF (smRegisterClientMsg), IceFatalToProtocol);
+
 	IceReadCompleteMessage (iceConn, SIZEOF (smRegisterClientMsg),
 	    smRegisterClientMsg, pMsg, pStart);
+
+	pData = pStart;
+
+	SKIP_ARRAY8 (pData, swap);	/* previous id */
+
+	CHECK_COMPLETE_SIZE (iceConn, _SmsOpcode, opcode,
+	   length, pData - pStart + SIZEOF (smRegisterClientMsg),
+	   pStart, IceFatalToProtocol);
 
 	pData = pStart;
 
@@ -334,9 +489,21 @@ Bool		 swap;
 	{
 	    smInteractRequestMsg 	*pMsg;
 
+	    CHECK_SIZE_MATCH (iceConn, _SmsOpcode, opcode,
+	        length, SIZEOF (smInteractRequestMsg),
+	        IceFatalToProtocol);
+
 	    IceReadSimpleMessage (iceConn, smInteractRequestMsg, pMsg);
 
-	    if (pMsg->dialogType == SmDialogNormal &&
+	    if (pMsg->dialogType != SmDialogNormal &&
+		pMsg->dialogType != SmDialogError)
+	    {
+		unsigned char errVal = pMsg->dialogType;
+
+		_IceErrorBadValue (iceConn, _SmsOpcode,
+	            SM_InteractRequest, 2, 1, &errVal);
+	    }
+	    else if (pMsg->dialogType == SmDialogNormal &&
 		smsConn->interaction_allowed != SmInteractStyleAny)
 	    {
 		_IceErrorBadState (iceConn, _SmsOpcode,
@@ -362,9 +529,21 @@ Bool		 swap;
 	{
 	    smInteractDoneMsg 	*pMsg;
 
+	    CHECK_SIZE_MATCH (iceConn, _SmsOpcode, opcode,
+	        length, SIZEOF (smInteractDoneMsg),
+	        IceFatalToProtocol);
+
 	    IceReadSimpleMessage (iceConn, smInteractDoneMsg, pMsg);
 
-	    if (pMsg->cancelShutdown && !smsConn->can_cancel_shutdown)
+	    if (pMsg->cancelShutdown != 1 &&
+		pMsg->cancelShutdown != 0)
+	    {
+		unsigned char errVal = pMsg->cancelShutdown;
+
+		_IceErrorBadValue (iceConn, _SmsOpcode,
+	            SM_InteractDone, 2, 1, &errVal);
+	    }
+	    else if (pMsg->cancelShutdown && !smsConn->can_cancel_shutdown)
 	    {
 		_IceErrorBadState (iceConn, _SmsOpcode,
 		    SM_InteractDone, IceCanContinue);
@@ -380,6 +559,64 @@ Bool		 swap;
 	}
 	break;
 
+    case SM_SaveYourselfRequest:
+    {
+	smSaveYourselfRequestMsg 	*pMsg;
+	unsigned char			errVal;
+	int				errOffset = -1;
+
+	CHECK_SIZE_MATCH (iceConn, _SmsOpcode, opcode,
+	    length, SIZEOF (smSaveYourselfRequestMsg),
+	    IceFatalToProtocol);
+
+	IceReadMessageHeader (iceConn, SIZEOF (smSaveYourselfRequestMsg),
+	    smSaveYourselfRequestMsg, pMsg);
+
+	if (pMsg->saveType != SmSaveGlobal &&
+	    pMsg->saveType != SmSaveLocal &&
+	    pMsg->saveType != SmSaveBoth)
+	{
+	    errVal = pMsg->saveType;
+	    errOffset = 8;
+	}
+	else if (pMsg->shutdown != 1 && pMsg->shutdown != 0)
+	{
+	    errVal = pMsg->shutdown;
+	    errOffset = 9;
+	}
+	else if (pMsg->interactStyle != SmInteractStyleNone &&
+	    pMsg->interactStyle != SmInteractStyleErrors &&
+	    pMsg->interactStyle != SmInteractStyleAny)
+	{
+	    errVal = pMsg->interactStyle;
+	    errOffset = 10;
+	}
+	else if (pMsg->fast != 1 && pMsg->fast != 0)
+	{
+	    errVal = pMsg->fast;
+	    errOffset = 11;
+	}
+	else if (pMsg->global != 1 && pMsg->global != 0)
+	{
+	    errVal = pMsg->fast;
+	    errOffset = 11;
+	}
+
+	if (errOffset >= 0)
+	{
+	    _IceErrorBadValue (iceConn, _SmsOpcode,
+	        SM_SaveYourselfRequest, errOffset, 1, &errVal);
+	}
+	else
+	{
+	    (*smsConn->callbacks.save_yourself_request.callback) (smsConn,
+	        smsConn->callbacks.save_yourself_request.manager_data,
+                pMsg->saveType, pMsg->shutdown, pMsg->interactStyle,
+	        pMsg->fast, pMsg->global);
+	}
+	break;
+    }
+
     case SM_SaveYourselfDone:
 
         if (!smsConn->save_yourself_in_progress)
@@ -391,14 +628,28 @@ Bool		 swap;
 	{
 	    smSaveYourselfDoneMsg 	*pMsg;
 
+	    CHECK_SIZE_MATCH (iceConn, _SmsOpcode, opcode,
+	        length, SIZEOF (smSaveYourselfDoneMsg),
+	        IceFatalToProtocol);
+
 	    IceReadSimpleMessage (iceConn, smSaveYourselfDoneMsg, pMsg);
 
-	    smsConn->save_yourself_in_progress = False;
-	    smsConn->interaction_allowed = SmInteractStyleNone;
+	    if (pMsg->success != 1 && pMsg->success != 0)
+	    {
+		unsigned char errVal = pMsg->success;
 
-	    (*smsConn->callbacks.save_yourself_done.callback) (smsConn,
-	        smsConn->callbacks.save_yourself_done.manager_data,
-		pMsg->success);
+		_IceErrorBadValue (iceConn, _SmsOpcode,
+	            SM_SaveYourselfDone, 2, 1, &errVal);
+	    }
+	    else
+	    {
+		smsConn->save_yourself_in_progress = False;
+		smsConn->interaction_allowed = SmInteractStyleNone;
+
+		(*smsConn->callbacks.save_yourself_done.callback) (smsConn,
+	            smsConn->callbacks.save_yourself_done.manager_data,
+		    pMsg->success);
+	    }
 	}
 	break;
 
@@ -409,6 +660,9 @@ Bool		 swap;
 	int 			count, i;
 	char 			**reasonMsgs = NULL;
 
+	CHECK_AT_LEAST_SIZE (iceConn, _SmsOpcode, opcode,
+	    length, SIZEOF (smCloseConnectionMsg), IceFatalToProtocol);
+
 	IceReadCompleteMessage (iceConn, SIZEOF (smCloseConnectionMsg),
 	    smCloseConnectionMsg, pMsg, pStart);
 
@@ -416,6 +670,15 @@ Bool		 swap;
 
 	EXTRACT_CARD32 (pData, swap, count);
 	pData += 4;
+
+	for (i = 0; i < count; i++)
+	    SKIP_ARRAY8 (pData, swap);
+
+	CHECK_COMPLETE_SIZE (iceConn, _SmsOpcode, opcode,
+	   length, pData - pStart + SIZEOF (smCloseConnectionMsg),
+	   pStart, IceFatalToProtocol);
+
+	pData = pStart + 8;
 
 	reasonMsgs = (char **) malloc (count * sizeof (char *));
 	for (i = 0; i < count; i++)
@@ -436,8 +699,19 @@ Bool		 swap;
 	SmProp			**props = NULL;
 	int 			numProps;
 	
+	CHECK_AT_LEAST_SIZE (iceConn, _SmsOpcode, opcode,
+	    length, SIZEOF (smSetPropertiesMsg), IceFatalToProtocol);
+
 	IceReadCompleteMessage (iceConn, SIZEOF (smSetPropertiesMsg),
 	    smSetPropertiesMsg, pMsg, pStart);
+
+	pData = pStart;
+
+	SKIP_LISTOF_PROPERTY (pData, swap);
+
+	CHECK_COMPLETE_SIZE (iceConn, _SmsOpcode, opcode,
+	   length, pData - pStart + SIZEOF (smSetPropertiesMsg),
+	   pStart, IceFatalToProtocol);
 
 	pData = pStart;
 
@@ -457,6 +731,9 @@ Bool		 swap;
 	int 			count, i;
 	char 			**propNames = NULL;
 
+	CHECK_AT_LEAST_SIZE (iceConn, _SmsOpcode, opcode,
+	    length, SIZEOF (smDeletePropertiesMsg), IceFatalToProtocol);
+
 	IceReadCompleteMessage (iceConn, SIZEOF (smDeletePropertiesMsg),
 	    smDeletePropertiesMsg, pMsg, pStart);
 
@@ -464,6 +741,15 @@ Bool		 swap;
 
 	EXTRACT_CARD32 (pData, swap, count);
 	pData += 4;
+
+	for (i = 0; i < count; i++)
+	    SKIP_ARRAY8 (pData, swap);	/* prop names */
+
+	CHECK_COMPLETE_SIZE (iceConn, _SmsOpcode, opcode,
+	   length, pData - pStart + SIZEOF (smDeletePropertiesMsg),
+	   pStart, IceFatalToProtocol);
+
+	pData = pStart + 8;
 
 	propNames = (char **) malloc (count * sizeof (char *));
 	for (i = 0; i < count; i++)
@@ -479,6 +765,10 @@ Bool		 swap;
     }
 
     case SM_GetProperties:
+
+	CHECK_SIZE_MATCH (iceConn, _SmsOpcode, opcode,
+	    length, SIZEOF (smGetPropertiesMsg),
+	    IceFatalToProtocol);
 
 	(*smsConn->callbacks.get_properties.callback) (smsConn,
 	    smsConn->callbacks.get_properties.manager_data);
