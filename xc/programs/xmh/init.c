@@ -1,5 +1,5 @@
 /*
- * $XConsortium: init.c,v 2.35 89/09/27 19:15:09 converse Exp $
+ * $XConsortium: init.c,v 2.36 89/10/06 15:02:38 converse Exp $
  *
  *
  *		        COPYRIGHT 1987, 1989
@@ -127,9 +127,9 @@ static XtResource resources[] = {
 
 static XrmOptionDescRec table[] = {
     {"-debug",	"debug",		XrmoptionNoArg,	"on"},
-    {"-flag",	"mailwaitingflag",	XrmoptionNoArg, "on"},
-    {"-initial","initialfolder",	XrmoptionSepArg, NULL},
-    {"-path",	"mailpath",		XrmoptionSepArg, NULL},
+    {"-flag",	"mailWaitingFlag",	XrmoptionNoArg, "on"},
+    {"-initial","initialFolder",	XrmoptionSepArg, NULL},
+    {"-path",	"mailPath",		XrmoptionSepArg, NULL},
 };
 
 /* Tell the user how to use this program. */
