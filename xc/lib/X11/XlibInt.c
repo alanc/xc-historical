@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlibInt.c,v 11.108 89/06/16 13:44:03 jim Exp $
+ * $XConsortium: XlibInt.c,v 11.109 89/06/16 17:58:48 jim Exp $
  */
 
 #include "copyright.h"
@@ -94,7 +94,7 @@ _XFlush (dpy)
 		else
 		  _XWaitForWritable(dpy);
 #endif
-	    } else {
+	    } else if (errno != EINTR) {
 		/* Write failed! */
 		/* errno set by write system call. */
 		(*_XIOErrorFunction)(dpy);
@@ -521,7 +521,7 @@ _XSend (dpy, data, size)
 		else 
 		  _XWaitForWritable(dpy);
 #endif
-	    } else {
+	    } else if (errno != EINTR) {
 		(*_XIOErrorFunction)(dpy);
 	    }
 	}
