@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: GCManager.c,v 1.34 89/07/21 17:14:07 swick Exp $";
+static char Xrcsid[] = "$XConsortium: GCManager.c,v 1.35 89/09/14 10:13:58 swick Exp $";
 /* $oHeader: GCManager.c,v 1.4 88/08/19 14:19:51 asente Exp $ */
 #endif /* lint */
 
@@ -115,10 +115,22 @@ GC XtGetGC(widget, valueMask, values)
 {
 	     GCptr      prev;
     register GCptr      cur;
-    register Cardinal   depth   = widget->core.depth;
-    register Screen     *screen = XtScreenOfObject(widget);
+    register Cardinal   depth;
+    register Screen     *screen;
 	     Drawable   drawable;
-	     XtPerDisplay pd = _XtGetPerDisplay(DisplayOfScreen(screen));
+	     XtPerDisplay pd;
+
+    if (XtIsWidget(widget)) {
+	depth = widget->core.depth;
+	screen = XtScreen(widget);
+	drawable = XtWindow(widget);
+    } else {
+	Widget w = _XtWindowedAncestor(widget);
+	depth = w->core.depth;
+	screen = XtScreen(w);
+	drawable = XtWindow(w);
+    }
+    pd = _XtGetPerDisplay(DisplayOfScreen(screen));
 
     /* Search for existing GC that matches exactly */
     for (cur = pd->GClist, prev = NULL; cur != NULL; prev = cur, cur = cur->next) {
@@ -147,7 +159,7 @@ GC XtGetGC(widget, valueMask, values)
     cur->valueMask  = valueMask;
     if (values != NULL) cur->values = *values;
 
-    if ((drawable = XtWindowOfObject(widget)) == NULL) {
+    if (drawable == NULL) {
 	/* Have to find a Drawable to identify the depth for the GC */
 	if (depth >= pd->drawable_count) {
 	    int i;
