@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: xdmauth.c,v 1.2 90/09/13 18:28:50 keith Exp $
+ * $XConsortium: xdmauth.c,v 1.3 90/09/14 17:51:55 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -107,16 +107,16 @@ XdmGetAuth (namelen, name)
 	free ((char *) new);
 	return (Xauth *) 0;
     }
-    bcopy (name, new->name, namelen);
+    bcopy (name, (char *)new->name, namelen);
     new->name_length = namelen;
-    GenerateCryptoKey (new->data, AUTH_DATA_LEN);
+    GenerateCryptoKey ((char *)new->data, AUTH_DATA_LEN);
     /*
      * The encryption key is only 56 bits long, not 64.  XDM-AUTHORIZATION-1
      * requires that the first byte of the key be zero.
      */
-    new->data[8] = '\0';
+    ((char *)new->data)[8] = '\0';
     new->data_length = AUTH_DATA_LEN;
-    XdmPrintDataHex ("Local server auth", new->data, new->data_length);
+    XdmPrintDataHex ("Local server auth", (char *)new->data, new->data_length);
     return new;
 }
 
