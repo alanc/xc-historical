@@ -12,7 +12,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium$
+ * $XConsortium: exps.m,v 1.8 92/06/11 17:20:54 rws Exp $
  */
 >>TITLE Expose CH08
 >>EXTERN
@@ -100,9 +100,10 @@ then they are contiguously delivered by the server.
 >>STRATEGY
 Build and create window hierarchy.
 Choose event window.
+Select for Visibility events on all windows.
 Select for Expose events on event window.
-Generate Expose events on event window.
-Verify that events are contiguously delivered.
+Unmap and remap event window to generate Expose events.
+Verify that Expose events are contiguously delivered.
 >>CODE
 Display	*display = Dsp;
 Winh	*eventw;
@@ -120,22 +121,20 @@ int	lastcount;
 		CHECK;
 /* Choose event window. */
 	eventw = guardian->firstchild;
-/* Select for Expose events on event window. */
-	if (winh_selectinput(display, eventw, MASK))
+/* Select for Visibility events on all windows. */
+	if (winh_selectinput(display, (Winh *)NULL, VisibilityChangeMask))
 		return;
 	else
 		CHECK;
-/* Generate Expose events on event window. */
+/* Select for Expose events on event window. */
+	if (winh_selectinput(display, eventw, VisibilityChangeMask|MASK))
+		return;
+	else
+		CHECK;
+/* Unmap and remap event window to generate Expose events. */
+	XUnmapWindow(display, eventw->window);
 	XSync(display, True);
-	for (child = eventw->firstchild; child != (Winh *) NULL; child = child->nextsibling) {
-		static	int	first = 1;
-
-		if (first) {
-			first = 0;
-			CHECK;
-		}
-		XUnmapWindow(display, child->window);
-	}
+	XMapWindow(display, eventw->window);
 	XSync(display, False);
 /* Verify that events are contiguously delivered. */
 	if (winh_harvest(display, (Winh *) NULL)) {
@@ -150,8 +149,11 @@ int	lastcount;
 	}
 	else
 		CHECK;
+	winhe = winh_qdel;
+	while (winhe && winhe->event->type == VisibilityNotify)
+		winhe = winhe->next;
 	expected = -1;
-	for (winhe = winh_qdel; winhe != (Winhe *) NULL; winhe = winhe->next) {
+	for ( ; winhe && expected; winhe = winhe->next) {
 		if (expected == -1)
 			CHECK;
 		if (winhe->event->type != EVENT) {
@@ -160,20 +162,17 @@ int	lastcount;
 			delete("Unexpected event received.");
 			return;
 		}
+		if (winhe->event->xexpose.window != eventw->window) {
+			report("Received event on wrong window, got %d expecting %d",
+				winhe->event->xexpose.window, eventw->window);
+			delete("Unexpected event received.");
+			return;
+		}
 		lastcount = winhe->event->xexpose.count;
-		if (expected == -1) {
+		if (lastcount < expected)
+			expected--;
+		else
 			expected = lastcount;
-		}
-		else {
-			if (lastcount > expected) {
-				report("Count (%d) greater than expected (%d)",
-					lastcount, expected);
-				FAIL;
-				break;
-			}
-			else if (lastcount < expected)
-				expected--;
-		}
 	}
 	if (lastcount != 0) {
 		report("Last %s had count set to %d, not zero",
@@ -182,8 +181,16 @@ int	lastcount;
 	}
 	else
 		CHECK;
-
-	CHECKPASS(7);
+	while (winhe && winhe->event->type == VisibilityNotify)
+		winhe = winhe->next;
+	if (winhe) {
+		report("Received %s event while only expecting %s types",
+			eventname(winhe->event->type), eventname(VisibilityNotify));
+		FAIL;
+	}
+	else
+		CHECK;
+	CHECKPASS(8);
 >>ASSERTION Good A
 When an xname event is generated,
 then
@@ -198,7 +205,7 @@ Choose event window.
 Select for Expose events on event window.
 Select for Expose events on event window with client2.
 Select for no events on event window with client3.
-Generate Expose events on event window.
+Unmap and remap event window to generate Expose events.
 Verify that events are delivered to selecting clients.
 Verify that no Expose events are received for client3.
 >>CODE
@@ -238,11 +245,12 @@ XEvent	event_return;
 	XSelectInput(client2, w, MASK);
 /* Select for no events on event window with client3. */
 	XSelectInput(client3, w, NoEventMask);
-/* Generate Expose events on event window. */
+/* Unmap and remap event window to generate Expose events. */
+	XUnmapWindow(display, eventw->window);
 	XSync(display, True);
 	XSync(client2, True);
 	XSync(client3, True);
-	XUnmapWindow(display, eventw->firstchild->window);
+	XMapWindow(display, eventw->window);
 	XSync(display, False);
 	XSync(client2, False);
 	XSync(client3, False);
