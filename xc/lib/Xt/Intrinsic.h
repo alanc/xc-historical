@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Intrinsic.h,v 1.136 90/04/03 11:37:20 swick Exp $
+* $XConsortium: Intrinsic.h,v 1.137 90/06/22 16:49:46 swick Exp $
 * $oHeader: Intrinsic.h,v 1.10 88/09/01 10:33:34 asente Exp $
 */
 
@@ -693,7 +693,7 @@ extern XtGeometryResult XtMakeResizeRequest(
 #endif
 );
 
-extern void XtTransformCoords(
+extern void XtTranslateCoords(
 #if NeedFunctionPrototypes
     Widget 		/* widget */,
 #if NeedWidePrototypes
@@ -703,8 +703,8 @@ extern void XtTransformCoords(
     Position		/* x */,
     Position		/* y */,
 #endif /* NeedWidePrototypes */
-    Position*		/* rootx */,
-    Position*		/* rooty */
+    Position*		/* rootx_return */,
+    Position*		/* rooty_return */
 #endif
 );
 
