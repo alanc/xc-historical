@@ -1,26 +1,15 @@
-XCOMM platform:  $XConsortium: apollo.cf,v 1.26 91/03/27 09:12:49 rws Exp $
+XCOMM platform:  $XConsortium: apollo.cf,v 1.27 91/06/06 14:13:14 rws Exp $
+
+XCOMM THIS HAS NEVER BEEN TESTED, IT IS A RANDOM GUESS
 
 #define OSName            Domain/OS SR10.3
 XCOMM operating system:  OSName
 #define OSMajorVersion    10
 #define OSMinorVersion    3
 
-#define CCompilerMajorVersion   6
-#define CCompilerMinorVersion   6
+#define CCompilerMajorVersion 6
+#define CCompilerMinorVersion 8
 
-#define BuildServer	  NO
-#define XapolloServer     YES
-
-#define HasNdbm YES
-
-#define HasVoidSignalReturn NO
-
-
-#define UnixCpp /**/
-#define DefaultCCOptions -DNOSTDHDRS -DUNIXCPP
-
-#define ConnectionFlags -DTCPCONN
-
-#define ServerOSDefines -DAVOID_GLYPHBLT -DNEED_OLD_MFB_MASKS
-
-#define FontFilters BDFTOSNFFILT SHELLPATH
+#define BuildServer	NO
+#define HasNdbm		YES
+#define ConnectionFlags	-DTCPCONN
