@@ -1,5 +1,5 @@
 #if ( !defined(lint) && !defined(SABER) )
-static char Xrcsid[] = "$XConsortium: TextSink.c,v 1.4 89/10/04 13:56:46 kit Exp $";
+static char Xrcsid[] = "$XConsortium: TextSink.c,v 1.5 89/10/09 16:21:11 jim Exp $";
 #endif 
 
 /*
@@ -56,11 +56,11 @@ static void FindDistance(), Resolve(), SetTabs(), GetCursorBounds();
 #define offset(field) XtOffset(TextSinkObject, text_sink.field)
 static XtResource resources[] = {
   {XtNfont, XtCFont, XtRFontStruct, sizeof (XFontStruct *),
-     offset(font), XtRString, "Fixed"},
+     offset(font), XtRString, XtDefaultFont},
   {XtNforeground, XtCForeground, XtRPixel, sizeof (Pixel),
-     offset(foreground), XtRString, "XtDefaultForeground"}, 
+     offset(foreground), XtRString, XtDefaultForeground}, 
   {XtNbackground, XtCBackground, XtRPixel, sizeof (Pixel),
-     offset(background), XtRString, "XtDefaultBackground"}, 
+     offset(background), XtRString, XtDefaultBackground}, 
 };
 #undef offset
 
