@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $Header: events.c,v 1.90 87/08/12 08:40:51 swick Locked $ */
+/* $Header: events.c,v 1.5 87/08/14 22:04:25 newman Locked $ */
 
 #include "X.h"
 #include "misc.h"
@@ -39,10 +39,9 @@ SOFTWARE.
 #include "dixstruct.h"
 
 extern WindowRec WindowTable[];
-extern int swappedClients[];
 
-extern int (* EventSwapVector[128]) ();
-extern int (* ReplySwapVector[256]) ();
+extern void (* EventSwapVector[128]) ();
+extern void (* ReplySwapVector[256]) ();
 
 #define NoSuchEvent 0x80000000	/* so doesn't match NoEventMask */
 #define StructureAndSubMask ( StructureNotifyMask | SubstructureNotifyMask )
@@ -630,7 +629,7 @@ TryClientEvents (client, pEvents, count, mask, filter, grab)
     {
 	for (i = 0; i < count; i++)
 	    pEvents[i].u.u.sequenceNumber = client->sequence;
-	WriteEventToClient(client, count, pEvents);
+	WriteEventsToClient(client, count, pEvents);
 	if (debug_events) ErrorF(  " delivered\n");
 	return 1;
     }
@@ -2594,7 +2593,7 @@ SendMappingNotify(request, firstKeyCode, count)
     /* 0 is the server client */
     for (i=1; i<currentMaxClients; i++)
         if (! clients[i]->clientGone)
-            WriteEventToClient(clients[i], 1, &event);
+            WriteEventsToClient(clients[i], 1, &event);
 }
 
 /*
@@ -2820,7 +2819,7 @@ ProcGetKeyboardMapping(client)
     rep.length = (curKeySyms.mapWidth * stuff->count);
     WriteReplyToClient(client, sizeof(xGetKeyboardMappingReply), &rep);
 
-    WriteReplyToClient(
+    WriteSwappedDataToClient(
 	client,
 	curKeySyms.mapWidth * stuff->count * sizeof(KeySym),
 	&curKeySyms.map[stuff->firstKeyCode - curKeySyms.minKeyCode]);
@@ -2841,7 +2840,7 @@ ProcGetPointerMapping(client)
     rep.nElts = inputInfo.pointer->u.ptr.mapLength;
     rep.length = (rep.nElts + (4-1))/4;
     WriteReplyToClient(client, sizeof(xGetPointerMappingReply), &rep);
-    WriteReplyToClient(client, rep.nElts, &inputInfo.pointer->u.ptr.map[1]);
+    WriteToClient(client, rep.nElts, &inputInfo.pointer->u.ptr.map[1]);
     return Success;    
 }
 
@@ -3170,7 +3169,7 @@ ProcGetMotionEvents(client)
     WriteReplyToClient(client, sizeof(xGetMotionEventsReply), &rep);
     if (inputInfo.numMotionEvents)
     {
-	WriteReplyToClient( client, rep.nEvents * sizeof(xTimecoord), coords);
+	WriteSwappedDataToClient( client, rep.nEvents * sizeof(xTimecoord), coords);
 	Xfree(coords);
     }
     return Success;
@@ -3625,23 +3624,22 @@ ProcRecolorCursor(client)
 }
 
 void
-WriteEventToClient(pClient, count, pbuf)
+WriteEventsToClient(pClient, count, events)
     ClientPtr	pClient;
     int		count;
-    char	*pbuf;
+    xEvent	*events;
 {
-    if(pClient->swapped)
-    {
-    int iEvent;
-      for(iEvent = 0; iEvent < count; iEvent++)
-	/* Remember to stip off the leading bit of type in case this event was sent
-		with "SendEvent" */
-
-      (*EventSwapVector[(((xEvent *)pbuf) + iEvent)->u.u.type & 0177])
-		(pClient, sizeof(xEvent), pbuf);
-    }
+    if(pClient->swapped) {
+        int i;
+        xEvent eventTo, *eventFrom;
+        for(i = 0; i < count; i++) {
+            eventFrom = &events[i];
+	    /* Remember to strip off the leading bit of type in case
+               this event was sent with "SendEvent" */
+            (*EventSwapVector[eventFrom->u.u.type & 0177]) (eventFrom, &eventTo);
+            WriteToClient (pClient, sizeof(xEvent), (char *) &eventTo);
+            }
+	}
     else
-    {
-	WriteToClient(pClient, count * sizeof(xEvent), pbuf);
-    }
+	WriteToClient(pClient, count * sizeof(xEvent), (char *) events);
 }
