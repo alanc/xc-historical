@@ -1,4 +1,4 @@
-XCOMM $XConsortium$
+XCOMM $XConsortium: lnxLib.rules,v 1.1 94/03/29 15:34:47 gildea Exp $
 
 /*
  * Linux shared library rules (DLL version)
@@ -22,7 +22,7 @@ XCOMM $XConsortium$
 #define SharedLibraryDef /**/
 #endif
 #ifndef ShLibIncludeFile
-#define ShLibIncludeFile <linuxLib.tmpl>
+#define ShLibIncludeFile <lnxLib.tmpl>
 #endif
 #ifndef SharedLibraryLoadFlags
 #define SharedLibraryLoadFlags /**/

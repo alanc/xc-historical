@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium$
+XCOMM platform:  $XConsortium: linux.cf,v 1.1 94/03/29 15:34:46 gildea Exp $
 
 #define OSName			Linux
 #define OSVendor		/**/
@@ -78,5 +78,5 @@ XCOMM platform:  $XConsortium$
 # define FileManDir	$(MANSOURCEPATH)5
 #endif
 
-#include <linuxLib.rules>
+#include <lnxLib.rules>
 #include <xfree86.cf>

@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.29 94/03/26 19:17:37 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.30 94/03/29 15:42:14 gildea Exp $
 
 #ifdef LocalConfigFiles
 LOCALFILES = LocalConfigFiles
@@ -13,7 +13,7 @@ Win32.rules \
 hpLib.rules \
 bsdLib.rules \
 ibmLib.rules \
-linuxLib.rules \
+lnxLib.rules \
 necLib.rules \
 noop.rules \
 oldlib.rules \
@@ -21,14 +21,14 @@ osfLib.rules \
 sgiLib.rules \
 sunLib.rules \
 sv4Lib.rules \
-xfree86.rules
+xf86.rules
 
 TMPLFILES = \
 Imake.tmpl \
 Fresco.tmpl \
 Ixx.tmpl \
 bsdLib.tmpl \
-linuxLib.tmpl \
+lnxLib.tmpl \
 Library.tmpl \
 Project.tmpl \
 Server.tmpl \

@@ -1,4 +1,4 @@
-XCOMM $XConsortium$
+XCOMM $XConsortium: xfree86.cf,v 1.1 94/03/29 15:34:48 gildea Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -187,4 +187,4 @@ XF86MLIBS  = $(XF86MINIT) $(XF86CONFIG) $(XF86COMLIB) $(XF86HWLIB) $(XF86OSLIB)
 #endif
 #endif
 
-#include <xfree86.rules>
+#include <xf86.rules>
