@@ -222,6 +222,7 @@
 		      :display display
 		      :output-stream stream
 		      :input-stream stream
+		      :allow-other-keys t
 		      options))
 	 (ok-p nil))
     (unwind-protect
