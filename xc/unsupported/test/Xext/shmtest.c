@@ -15,7 +15,7 @@ implied warranty.
 
 ********************************************************/
 
-/* $XConsortium: shmtest.c,v 1.1 89/08/21 09:24:07 rws Exp $ */
+/* $XConsortium: shmtest.c,v 1.2 89/10/09 15:02:56 keith Exp $ */
 
 #ifndef MITSHM
 main()
@@ -30,6 +30,9 @@ main()
 #include <sys/ipc.h>
 #include <sys/shm.h>
 #include <stdio.h>
+#ifdef dirty
+#undef dirty
+#endif
 #include <X11/Xlib.h>
 #include <X11/extensions/XShm.h>
 
