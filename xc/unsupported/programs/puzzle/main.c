@@ -715,7 +715,7 @@ CalculateSpeed()
 
     XSync(dpy,0);
     gettimeofday(&tv1, &tz);
-    bcopy(&tv1, &tv2, sizeof(struct timeval));
+    tv2 = tv1;
 
     MoveSteps = 0;
     delta = 0L;
