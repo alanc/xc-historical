@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: main.c,v 1.135 88/04/30 11:59:42 rws Exp $ */
+/* $Header: main.c,v 1.136 88/06/03 12:30:41 matt Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -301,7 +301,7 @@ CreateConnectionBlock()
     {
 	format.depth = screenInfo.formats[i].depth;
 	format.bitsPerPixel = screenInfo.formats[i].bitsPerPixel;
-	format.scanlinePad = screenInfo.formats[i].scanlinePad;;
+	format.scanLinePad = screenInfo.formats[i].scanlinePad;
 	bcopy((char *)&format, pBuf, sizeof(xPixmapFormat));
 	pBuf += sizeof(xPixmapFormat);
 	sizesofar += sizeof(xPixmapFormat);
