@@ -313,87 +313,86 @@
 #+excl
 (progn
   
-  (defun aref-card16 (a i)
-    (declare (type buffer-bytes a)
-	     (type array-index i))
-    (declare (values card16))
-    #.(declare-buffun)
-    (the card16 (sys:memref a #.(comp::mdparam 'comp::md-svector-data0-adj) i
-			    :unsigned-word)))
+(defun aref-card16 (a i)
+  (declare (type buffer-bytes a)
+	   (type array-index i))
+  (declare (values card16))
+  #.(declare-buffun)
+  (the card16 (sys:memref a #.(comp::mdparam 'comp::md-svector-data0-adj) i
+			  :unsigned-word)))
   
-  (defun aset-card16 (v a i)
-    (declare (type card16 v)
-	     (type buffer-bytes a)
-	     (type array-index i))
-    #.(declare-buffun)
-    (setf (sys:memref a #.(comp::mdparam 'comp::md-svector-data0-adj) i
-		      :unsigned-word) v))
+(defun aset-card16 (v a i)
+  (declare (type card16 v)
+	   (type buffer-bytes a)
+	   (type array-index i))
+  #.(declare-buffun)
+  (setf (sys:memref a #.(comp::mdparam 'comp::md-svector-data0-adj) i
+		    :unsigned-word) v))
   
-  (defun aref-int16 (a i)
-    (declare (type buffer-bytes a)
-	     (type array-index i))
-    (declare (values int16))
-    #.(declare-buffun)
-    (the int16 (sys:memref a #.(comp::mdparam 'comp::md-svector-data0-adj) i
-			   :signed-word)))
+(defun aref-int16 (a i)
+  (declare (type buffer-bytes a)
+	   (type array-index i))
+  (declare (values int16))
+  #.(declare-buffun)
+  (the int16 (sys:memref a #.(comp::mdparam 'comp::md-svector-data0-adj) i
+			 :signed-word)))
   
-  (defun aset-int16 (v a i)
-    (declare (type int16 v)
-	     (type buffer-bytes a)
-	     (type array-index i))
-    #.(declare-buffun)
-    (setf (sys:memref a #.(comp::mdparam 'comp::md-svector-data0-adj) i
-		      :signed-word) v))
+(defun aset-int16 (v a i)
+  (declare (type int16 v)
+	   (type buffer-bytes a)
+	   (type array-index i))
+  #.(declare-buffun)
+  (setf (sys:memref a #.(comp::mdparam 'comp::md-svector-data0-adj) i
+		    :signed-word) v))
   
-  (defun aref-card32 (a i)
-    (declare (type buffer-bytes a)
-	     (type array-index i))
-    (declare (values card32))
-    #.(declare-buffun)
-    (the card32 (sys:memref a #.(comp::mdparam 'comp::md-svector-data0-adj) i
-			    :unsigned-long)))
+(defun aref-card32 (a i)
+  (declare (type buffer-bytes a)
+	   (type array-index i))
+  (declare (values card32))
+  #.(declare-buffun)
+  (the card32 (sys:memref a #.(comp::mdparam 'comp::md-svector-data0-adj) i
+			  :unsigned-long)))
     
-  (defun aset-card32 (v a i)
-    (declare (type card32 v)
-	     (type buffer-bytes a)
-	     (type array-index i))
-    #.(declare-buffun)
-    (setf (sys:memref a #.(comp::mdparam 'comp::md-svector-data0-adj) i
-		      :unsigned-long) v))
+(defun aset-card32 (v a i)
+  (declare (type card32 v)
+	   (type buffer-bytes a)
+	   (type array-index i))
+  #.(declare-buffun)
+  (setf (sys:memref a #.(comp::mdparam 'comp::md-svector-data0-adj) i
+		    :unsigned-long) v))
 
-  (defun aref-int32 (a i)
-    (declare (type buffer-bytes a)
-	     (type array-index i))
-    (declare (values int32))
-    #.(declare-buffun)
-    (the int32 (sys:memref a #.(comp::mdparam 'comp::md-svector-data0-adj) i
-			   :signed-long)))
+(defun aref-int32 (a i)
+  (declare (type buffer-bytes a)
+	   (type array-index i))
+  (declare (values int32))
+  #.(declare-buffun)
+  (the int32 (sys:memref a #.(comp::mdparam 'comp::md-svector-data0-adj) i
+			 :signed-long)))
     
-  (defun aset-int32 (v a i)
-    (declare (type int32 v)
-	     (type buffer-bytes a)
-	     (type array-index i))
-    #.(declare-buffun)
-    (setf (sys:memref a #.(comp::mdparam 'comp::md-svector-data0-adj) i
-		      :signed-long) v))
+(defun aset-int32 (v a i)
+  (declare (type int32 v)
+	   (type buffer-bytes a)
+	   (type array-index i))
+  #.(declare-buffun)
+  (setf (sys:memref a #.(comp::mdparam 'comp::md-svector-data0-adj) i
+		    :signed-long) v))
 
-  (defun aref-card29 (a i)
-    ;; Do I need to mask off a few bits here?  XXX
-    (declare (type buffer-bytes a)
-	     (type array-index i))
-    (declare (values card29))
-    #.(declare-buffun)
-    (the card29 (sys:memref a #.(comp::mdparam 'comp::md-svector-data0-adj) i
-			    :unsigned-long)))
+(defun aref-card29 (a i)
+  ;; Do I need to mask off a few bits here?  XXX
+  (declare (type buffer-bytes a)
+	   (type array-index i))
+  (declare (values card29))
+  #.(declare-buffun)
+  (the card29 (sys:memref a #.(comp::mdparam 'comp::md-svector-data0-adj) i
+			  :unsigned-long)))
 
-  (defun aset-card29 (v a i)
-    (declare (type card29 v)
-	     (type buffer-bytes a)
-	     (type array-index i))
-    #.(declare-buffun)
-    (setf (sys:memref a #.(comp::mdparam 'comp::md-svector-data0-adj) i
-		      :unsigned-long) v))
-
+(defun aset-card29 (v a i)
+  (declare (type card29 v)
+	   (type buffer-bytes a)
+	   (type array-index i))
+  #.(declare-buffun)
+  (setf (sys:memref a #.(comp::mdparam 'comp::md-svector-data0-adj) i
+		    :unsigned-long) v))
   
 )
 
