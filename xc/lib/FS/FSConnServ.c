@@ -21,8 +21,6 @@
 
 #endif
 
-void        bcopy();
-
 #define FamilyLocal (256)
 #define FamilyWild  (65535)
 

@@ -21,7 +21,6 @@
 #endif
 
 extern int  errno;		/* Internal system error number. */
-extern void bcopy();
 
 extern      (*_FSIOErrorFunction) ();
 extern      (*_FSErrorFunction) ();

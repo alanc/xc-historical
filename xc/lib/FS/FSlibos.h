@@ -169,8 +169,6 @@ void exit();
 char *malloc(), *realloc(), *calloc();
 #endif /* macII */
 
-void        bcopy();
-
 /*
  * The following definitions can be used for locking requests in multi-threaded
  * address spaces.
