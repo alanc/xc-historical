@@ -1,6 +1,6 @@
-.\" $Header: ddx.doc.tbl.ms,v 1.2 87/09/07 12:15:14 toddb Exp $
-.EF 'Porting Layer Definition'- % -'June 15, 1987'
-.OF 'Porting Layer Definition'- % -'June 15, 1987'
+.\" $Header: ddx.doc.tbl.ms,v 1.3 87/09/09 18:01:37 sun Locked $
+.EF 'Porting Layer Definition'- % -'September 12, 1987'
+.OF 'Porting Layer Definition'- % -'September 12, 1987'
 .EH '''
 .OH '''
 .TL
@@ -365,6 +365,69 @@ There is a request waiting from a known client, in which case
 you should return a nonzero nReady
 .IP \(bu 5
 A new client tries to connect, in which case you should return a nonzero nNew
+.LP
+If WaitForSomething() decides it is about to do something that might block
+(in the sample server,  before it calls select()) it must call a DIX
+routine called BlockHandler().
+.nf
+
+	BlockHandler(pTimeout, pReadmask)
+		pointer pTimeout;
+		pointer pReadmask;
+.fi
+The types of the arguments are for agreement between the OS and DDX
+implementations,  but the pTimeout is a pointer to the information
+determining how long the block is allowed to last,  and the
+pReadmask is a pointer to the information describing the descriptors
+that will be waited on.
+.LP
+In the 4.2 case,  pTimeout is a struct timeval **,  and pReadmask is
+the address of the select mask for reading.
+.LP
+Immediately after it returns from the
+block,  even if it didn't actually block,  it must call the DIX routine
+WakeupHandler().
+.nf
+
+	WakeupHandler(result, pReadmask)
+		unsigned long result;
+		pointer pReadmask;
+.fi
+.LP
+Once again,  the types are not specified by DIX.  The result is the
+success indicator for the thing that (may have) blocked,
+and the pReadmask is a mask of the descriptors that came active.
+.LP
+In the 4.2 case,  result is the resdult from select(),  and pReadmask is
+the address of the select mask for reading.
+.LP
+The DIX BlockHandler() iterates through the Screens,  for each one calling
+its BlockHandler.  A BlockHandler is declared thus:
+.nf
+
+	void
+	xxxBlockHandler(nscreen, pbdata, pptv, pReadmask)
+		int nscreen;
+		pointer pbdata;
+		pointer pptv;
+		pointer pReadmask;
+.fi
+The arguments are the index of the Screen,  the BlockData field
+of the Screen,  and the arguments to the DIX BlockHandler().
+.LP
+The DIX WakeupHandler() does the same thing,  calling each Screen's
+WakeupHandler.  A WakeupHandler is declared thus:
+.nf
+
+	void
+	xxxWakeupHandler(nscreen, pbdata, err, pReadmask)
+		int nscreen;
+		pointer pbdata;
+		unsigned long err;
+		pointer pReadmask;
+.fi
+The arguments are the index of the Screen,  the BlockData field
+of the Screen,  and the arguments to the DIX BlockHandler().
 .LP
 The WaitForSomething on the sample server also has a built
 in screen saver that darkens the screen if no input happens for a period of time.
