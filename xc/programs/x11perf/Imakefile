@@ -1,0 +1,18 @@
+       PROGRAMS = x11perf
+           SRCS = x11perf.c x11perf_tests.c \
+		  do_simple.c do_rects.c do_valgc.c do_lines.c \
+		  do_dots.c do_windows.c do_movewin.c do_text.c 
+           OBJS = x11perf.o x11perf_tests.o \
+		  do_simple.o do_rects.o do_valgc.o do_lines.o \
+		  do_dots.o do_windows.o do_movewin.o do_text.o 
+ SYS_LIBRARIES	= -ldnet
+    CDEBUGFLAGS = -g
+
+all: $(PROGRAMS)
+
+SingleProgramTarget(x11perf, $(OBJS), $(XLIB),)
+
+DependTarget()
+clean::
+	$(RM) $(PROGRAMS)
+
