@@ -21,6 +21,10 @@ extern XStuff X;
 extern Widget test;
 extern Widget GCform;
 extern Widget foregroundchoice;
+extern Widget dashlistchoice;
+extern Widget planemaskchoice;
+extern Widget testchoiceform;
+extern void change_text();
 
 /* interpret(string)
 ** -----------------
@@ -47,7 +51,7 @@ void interpret(string)
     if (!strcmp(word1,TestStuff.choice.text))  {
       for (i=0;i<NUM_TESTS;++i) {
 	if (!strcmp(word2,(TestStuff.data)[i].text)) {
-	  change_test((TestStuff.data)[i].code);
+	  change_test((TestStuff.data)[i].code,FALSE);
 	  break;
 	}
       }
@@ -111,9 +115,9 @@ void interpret(string)
       }
     }
     else if (!strcmp(word1,"planemask")) 
-      GC_change_planemask((unsigned int) atoi(word2));
+      GC_change_planemask((unsigned int) atoi(word2),FALSE);
     else if (!strcmp(word1,"dashlist"))
-      GC_change_dashlist(atoi(word2));
+      GC_change_dashlist(atoi(word2),FALSE);
     else if (!strcmp(word1,"font"))
       GC_change_font(word2);
     else if (!strcmp(word1,"foreground"))
@@ -123,7 +127,6 @@ void interpret(string)
     else fprintf(stderr,"Ack... %s %s\n",word1,word2);
   }
 }
-
 
 #define select_correct_button(x,n) \
 select_button(((CompositeWidget) \
@@ -231,8 +234,9 @@ void GC_change_arcmode(arcmode,feedback)
 **     119 => XXX_XXX_ => [3,1,3,1]
 */
 
-void GC_change_dashlist(dashlist) 
+void GC_change_dashlist(dashlist,feedback) 
      int dashlist;
+     Boolean feedback;
 {
   char dasharray[8];            /* what we're gonna pass to XSetDashes */
   int dashnumber = 0;		/* which element of dasharray we're currently
@@ -262,28 +266,26 @@ void GC_change_dashlist(dashlist)
 
   XSetDashes(X.dpy,X.gc,0,dasharray,dashnumber+1);
   X.gcv.dashes = dashlist;
+  if (feedback) update_dashlist(dashlistchoice,dashlist);
 }
 
-void GC_change_dashoffset(dashoffset)
-     int dashoffset;
-{
-  X.gcv.dash_offset = dashoffset;
-  XChangeGC(X.dpy,X.gc,GCDashOffset,&X.gcv);
-}
-
-void GC_change_clipmask() {}
-
-void GC_change_planemask(planemask) 
+void GC_change_planemask(planemask,feedback)
      unsigned long planemask;
+     Boolean feedback;
 {
   XSetPlaneMask(X.dpy,X.gc,planemask);
   X.gcv.plane_mask = planemask;
+  if (feedback) update_planemask(planemaskchoice,planemask);
 }
 
-void change_test(test) 
+void change_test(test,feedback) 
      int test;
+     Boolean feedback;
 {
   X.test = test;
+  if (feedback) select_button(((CompositeWidget) testchoiceform)
+			      ->composite.children[test+1],
+			      (caddr_t) NULL, (caddr_t) NULL);
 }
 
 void GC_change_font(str)
