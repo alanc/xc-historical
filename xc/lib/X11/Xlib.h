@@ -1,4 +1,4 @@
-/* $XConsortium: Xlib.h,v 11.184 90/12/26 10:02:29 rws Exp $ */
+/* $XConsortium: Xlib.h,v 11.185 91/01/30 09:48:41 dave Exp $ */
 /* 
  * Copyright 1985, 1986, 1987 by the Massachusetts Institute of Technology
  *
@@ -1454,6 +1454,11 @@ extern long XMaxRequestSize(
 extern char *XResourceManagerString(
 #if NeedFunctionPrototypes
     Display*		/* display */
+#endif
+);
+extern char *XScreenResourceString(
+#if NeedFunctionPrototypes
+	Screen*		/* screen */
 #endif
 );
 extern unsigned long XDisplayMotionBufferSize(
