@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: twm.h,v 1.49 89/11/20 16:43:21 jim Exp $
+ * $XConsortium: twm.h,v 1.50 89/11/21 16:41:47 jim Exp $
  *
  * twm include file
  *
@@ -170,7 +170,6 @@ typedef struct TwmWindow
     struct TwmWindow *next;	/* next twm window */
     struct TwmWindow *prev;	/* previous twm window */
     Window w;			/* the child window */
-    int bw;			/* the child window border width */
     int old_bw;			/* border width before reparenting */
     Window frame;		/* the frame window */
     Window title_w;		/* the title bar window */
@@ -185,7 +184,6 @@ typedef struct TwmWindow
     int frame_bw;		/* borderwidth of frame */
     int title_x;
     int title_y;
-    int title_bw;		/* borderwidth of titlebar */
     int icon_x;			/* icon text x coordinate */
     int icon_y;			/* icon text y coordiante */
     int icon_w_width;		/* width of the icon window */

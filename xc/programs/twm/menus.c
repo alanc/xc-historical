@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.119 89/11/20 17:22:59 jim Exp $
+ * $XConsortium: menus.c,v 1.120 89/11/21 16:41:26 jim Exp $
  *
  * twm menu code
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: menus.c,v 1.119 89/11/20 17:22:59 jim Exp $";
+"$XConsortium: menus.c,v 1.120 89/11/21 16:41:26 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -1594,7 +1594,7 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
 	    {
 		w = tmp_win->frame;
 		vis = tmp_win->frame_vis;
-		bw = (tmp_win->frame_bw + tmp_win->bw) * 2;
+		bw = tmp_win->frame_bw;
 	    }
 
 	    if (vis == VisibilityUnobscured)

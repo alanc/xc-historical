@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: resize.c,v 1.54 89/11/20 13:30:48 jim Exp $
+ * $XConsortium: resize.c,v 1.55 89/11/20 14:30:47 jim Exp $
  *
  * window resizing borrowed from the "wm" window manager
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: resize.c,v 1.54 89/11/20 13:30:48 jim Exp $";
+"$XConsortium: resize.c,v 1.55 89/11/20 14:30:47 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -201,8 +201,8 @@ int x, y, w, h;
     dragy = y + tmp_win->frame_bw;
     origx = dragx;
     origy = dragy;
-    dragWidth = origWidth = w - 2 * (tmp_win->bw + tmp_win->frame_bw);
-    dragHeight = origHeight = h - 2 * (tmp_win->bw + tmp_win->frame_bw);
+    dragWidth = origWidth = w - 2 * tmp_win->frame_bw;
+    dragHeight = origHeight = h - 2 * tmp_win->frame_bw;
     clampTop = clampBottom = clampLeft = clampRight = clampDX = clampDY = 0;
 
     if (Scr->AutoRelativeResize) {
@@ -366,8 +366,8 @@ int height;
     last_width = width;
     last_height = height;
 
-    dheight = height - tmp_win->title_height - 2*tmp_win->bw;
-    dwidth = width - 2*tmp_win->bw;
+    dheight = height - tmp_win->title_height;
+    dwidth = width;
 
     /*
      * ICCCM says that PMinSize is the default is no PBaseSize is given,
@@ -427,19 +427,19 @@ EndResize()
         dragHeight != tmp_win->frame_height)
             tmp_win->zoomed = ZOOM_NONE;
 
-    SetupWindow(tmp_win,
-        dragx - tmp_win->frame_bw,
-        dragy - tmp_win->frame_bw,
-        dragWidth, dragHeight);
+    SetupWindow (tmp_win,
+		 dragx - 2 * tmp_win->frame_bw,
+		 dragy - 2 * tmp_win->frame_bw,
+		 dragWidth, dragHeight);
 
     if (tmp_win->iconmgr)
     {
 	int ncols = tmp_win->iconmgrp->cur_columns;
 	if (ncols == 0) ncols == 1;
 
-	tmp_win->iconmgrp->width = (int) (((dragWidth - tmp_win->bw * 2) *
-			    (long) tmp_win->iconmgrp->columns)
-			   / ncols);
+	tmp_win->iconmgrp->width = (int) ((dragWidth *
+					   (long) tmp_win->iconmgrp->columns)
+					  / ncols);
         PackIconManager(tmp_win->iconmgrp);
     }
 
@@ -469,8 +469,8 @@ TwmWindow *tmp_win;
     ConstrainSize (tmp_win, &dragWidth, &dragHeight);
     AddingX = dragx;
     AddingY = dragy;
-    AddingW = dragWidth + (2 * (tmp_win->bw + tmp_win->frame_bw));
-    AddingH = dragHeight + (2 * (tmp_win->bw + tmp_win->frame_bw));
+    AddingW = dragWidth + (2 * tmp_win->frame_bw);
+    AddingH = dragHeight + (2 * tmp_win->frame_bw);
 }
 
 /***********************************************************************
@@ -496,8 +496,7 @@ ConstrainSize (tmp_win, widthp, heightp)
     int dwidth = *widthp, dheight = *heightp;
 
 
-    dheight -= tmp_win->title_height + 2*tmp_win->bw;
-    dwidth -= 2*tmp_win->bw;
+    dheight -= tmp_win->title_height;
 
     if (tmp_win->hints.flags & PMinSize) {
         minWidth = tmp_win->hints.min_width;
@@ -587,8 +586,8 @@ ConstrainSize (tmp_win, widthp, heightp)
     /*
      * Fourth, account for border width and title height
      */
-    *widthp = dwidth + 2*tmp_win->bw;
-    *heightp = dheight + tmp_win->title_height + 2*tmp_win->bw;
+    *widthp = dwidth;
+    *heightp = dheight + tmp_win->title_height;
 }
 
 
@@ -602,8 +601,8 @@ ConstrainSize (tmp_win, widthp, heightp)
  *      tmp_win - the TwmWindow pointer
  *      x       - the x coordinate of the frame window
  *      y       - the y coordinate of the frame window
- *      w       - the width of the frame window
- *      h       - the height of the frame window
+ *      w       - the width of the frame window w/o border
+ *      h       - the height of the frame window w/o border
  *
  *  Special Considerations:
  *      This routine will check to make sure the window is not completely
@@ -618,10 +617,9 @@ ConstrainSize (tmp_win, widthp, heightp)
  ***********************************************************************
  */
 
-void
-SetupWindow(tmp_win, x, y, w, h)
-TwmWindow *tmp_win;
-int x, y, w, h;
+void SetupWindow (tmp_win, x, y, w, h)
+    TwmWindow *tmp_win;
+    int x, y, w, h;
 {
     XEvent client_event;
     XWindowChanges xwc;
@@ -644,7 +642,7 @@ int x, y, w, h;
 
     if (tmp_win->iconmgr)
     {
-	tmp_win->iconmgrp->width = w - 2 * tmp_win->bw;
+	tmp_win->iconmgrp->width = w;
         h = tmp_win->iconmgrp->height + tmp_win->title_height;
     }
 
@@ -660,12 +658,7 @@ int x, y, w, h;
         sendEvent = FALSE;
 
     xwcm = CWWidth;
-
-    if (tmp_win->title_x < 0)
-        xwc.width = w;
-    else
-	xwc.width = w - 2 * tmp_win->title_bw;
-    title_width = xwc.width;
+    title_width = xwc.width = w;
 
     ComputeWindowTitleOffsets (tmp_win, xwc.width, True);
 
@@ -697,9 +690,8 @@ int x, y, w, h;
     tmp_win->attr.width = w;
     tmp_win->attr.height = h - tmp_win->title_height;
 
-    XMoveResizeWindow(dpy, tmp_win->w, 0, tmp_win->title_height,
-        w - 2 * tmp_win->bw,
-        h - tmp_win->title_height - 2 * tmp_win->bw);
+    XMoveResizeWindow (dpy, tmp_win->w, 0, tmp_win->title_height,
+		       w, h - tmp_win->title_height);
 
     tmp_win->frame_x = x;
     tmp_win->frame_y = y;
@@ -740,10 +732,10 @@ int x, y, w, h;
         client_event.xconfigure.window = tmp_win->w;
         client_event.xconfigure.x = x;
         client_event.xconfigure.y = y + tmp_win->title_height;
-        client_event.xconfigure.width = tmp_win->frame_width - 2 * tmp_win->bw;
+        client_event.xconfigure.width = tmp_win->frame_width;
         client_event.xconfigure.height = tmp_win->frame_height -
-                tmp_win->title_height - 2 * tmp_win->bw;
-        client_event.xconfigure.border_width = tmp_win->bw;
+                tmp_win->title_height;
+        client_event.xconfigure.border_width = 0;
         /* Real ConfigureNotify events say we're above title window, so ... */
 	/* what if we don't have a title ????? */
         client_event.xconfigure.above = tmp_win->frame;
@@ -904,57 +896,111 @@ SetFrameShape (tmp)
 	 * need to do general case
 	 */
 	XShapeCombineShape (dpy, tmp->frame, ShapeBounding,
-			    0, tmp->title_height, tmp->w,
+			    -tmp->frame_bw, Scr->TitleHeight, tmp->w,
 			    ShapeBounding, ShapeSet);
 	if (tmp->title_w) {
 	    XShapeCombineShape (dpy, tmp->frame, ShapeBounding,
-				tmp->title_x + tmp->title_bw,
-				tmp->title_y + tmp->title_bw,
+				tmp->title_x + tmp->frame_bw,
+				tmp->title_y + tmp->frame_bw,
 				tmp->title_w, ShapeBounding,
 				ShapeUnion);
 	}
     } else {
-	int expect_title_width;
 	/*
 	 * can optimize rectangular contents window
 	 */
-	expect_title_width = tmp->frame_width;
-	if (tmp->title_x >= 0) expect_title_width -= 2 * tmp->title_bw;
-	if (tmp->squeeze_info && tmp->title_width != expect_title_width) {
+	if (tmp->squeeze_info) {
 	    XRectangle  newBounding[2];
 	    XRectangle  newClip[2];
+	    int fbw2 = 2 * tmp->frame_bw;
 
 	    /*
 	     * Build the border clipping rectangles; one around title, one
-	     * around window.  The title_[xy] field already have had title_bw
+	     * around window.  The title_[xy] field already have had frame_bw
 	     * subtracted off them so that they line up properly in the frame.
+	     *
+	     * The frame_width and frame_height do *not* include borders.
 	     */
 	    /* border */
 	    newBounding[0].x = tmp->title_x;
 	    newBounding[0].y = tmp->title_y;
-	    newBounding[0].width = (tmp->title_width + 
-				    2 * tmp->frame_bw);
+	    newBounding[0].width = tmp->title_width + fbw2;
 	    newBounding[0].height = tmp->title_height;
 	    newBounding[1].x = -tmp->frame_bw;
-	    newBounding[1].y = newBounding[0].y + newBounding[0].height;
-	    newBounding[1].width = (tmp->frame_width + 
-				    tmp->frame_bw * 2);
-	    newBounding[1].height = (tmp->frame_height - newBounding[1].y +
-				     tmp->frame_bw);
+	    newBounding[1].y = Scr->TitleHeight;
+	    newBounding[1].width = tmp->attr.width + fbw2;
+	    newBounding[1].height = tmp->attr.height + fbw2;
 	    XShapeCombineRectangles (dpy, tmp->frame, ShapeBounding, 0, 0,
 				     newBounding, 2, ShapeSet, YXBanded);
 	    /* insides */
-	    newClip[0].x = tmp->title_x + tmp->title_bw;
+	    newClip[0].x = tmp->title_x + tmp->frame_bw;
 	    newClip[0].y = 0;
 	    newClip[0].width = tmp->title_width;
-	    newClip[0].height = tmp->title_height;
+	    newClip[0].height = Scr->TitleHeight;
 	    newClip[1].x = 0;
-	    newClip[1].y = newClip[0].y + newClip[0].height;
-	    newClip[1].width = tmp->frame_width;
-	    newClip[1].height = tmp->frame_height - newClip[1].y;
+	    newClip[1].y = tmp->title_height;
+	    newClip[1].width = tmp->attr.width;
+	    newClip[1].height = tmp->attr.height;
 	    XShapeCombineRectangles (dpy, tmp->frame, ShapeClip, 0, 0,
 				     newClip, 2, ShapeSet, YXBanded);
 	}
     }
 }
 #endif
+
+/*
+ * Squeezed Title:
+ * 
+ *                         tmp->title_x
+ *                   0     |
+ *  tmp->title_y   ........+--------------+.........  -+,- tmp->frame_bw
+ *             0   : ......| +----------+ |....... :  -++
+ *                 : :     | |          | |      : :   ||-Scr->TitleHeight
+ *                 : :     | |          | |      : :   ||
+ *                 +-------+ +----------+ +--------+  -+|-tmp->title_height
+ *                 | +---------------------------+ |  --+
+ *                 | |                           | |
+ *                 | |                           | |
+ *                 | |                           | |
+ *                 | |                           | |
+ *                 | |                           | |
+ *                 | +---------------------------+ |
+ *                 +-------------------------------+
+ * 
+ * 
+ * Unsqueezed Title:
+ * 
+ *                 tmp->title_x
+ *                 | 0
+ *  tmp->title_y   +-------------------------------+  -+,tmp->frame_bw
+ *             0   | +---------------------------+ |  -+'
+ *                 | |                           | |   |-Scr->TitleHeight
+ *                 | |                           | |   |
+ *                 + +---------------------------+ +  -+
+ *                 |-+---------------------------+-|
+ *                 | |                           | |
+ *                 | |                           | |
+ *                 | |                           | |
+ *                 | |                           | |
+ *                 | |                           | |
+ *                 | +---------------------------+ |
+ *                 +-------------------------------+
+ * 
+ * 
+ * 
+ * Dimensions and Positions:
+ * 
+ *     frame orgin                 (0, 0)
+ *     frame upper left border     (-tmp->frame_bw, -tmp->frame_bw)
+ *     frame size w/o border       tmp->frame_width , tmp->frame_height
+ *     frame/title border width    tmp->frame_bw
+ *     extra title height w/o bdr  tmp->title_height = TitleHeight + frame_bw
+ *     title window height         Scr->TitleHeight
+ *     title origin w/o border     (tmp->title_x, tmp->title_y)
+ *     client origin               (0, Scr->TitleHeight + tmp->frame_bw)
+ *     client size                 tmp->attr.width , tmp->attr.height
+ * 
+ * When shaping, need to remember that the width and height of rectangles
+ * are really deltax and deltay to lower right handle corner, so they need
+ * to have -1 subtracted from would normally be the actual extents.
+ */

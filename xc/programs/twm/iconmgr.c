@@ -21,7 +21,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: iconmgr.c,v 1.32 89/11/19 15:34:09 jim Exp $
+ * $XConsortium: iconmgr.c,v 1.33 89/11/20 17:22:52 jim Exp $
  *
  * Icon Manager routines
  *
@@ -809,11 +809,9 @@ IconMgr *ip;
     XResizeWindow(dpy, ip->w, newwidth, ip->height);
 
     savewidth = ip->width;
-    if (ip->twm_win != NULL)
-	SetupWindow(ip->twm_win,
-	    ip->twm_win->frame_x,
-	    ip->twm_win->frame_y,
-	    newwidth + 2*ip->twm_win->bw,
-	    ip->height + ip->twm_win->title_height);
+    if (ip->twm_win)
+      SetupWindow (ip->twm_win,
+		   ip->twm_win->frame_x, ip->twm_win->frame_y,
+		   newwidth, ip->height + ip->twm_win->title_height);
     ip->width = savewidth;
 }

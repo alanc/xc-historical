@@ -28,7 +28,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: add_window.c,v 1.114 89/11/20 17:22:37 jim Exp $
+ * $XConsortium: add_window.c,v 1.115 89/11/21 16:41:14 jim Exp $
  *
  * Add a new window, put the titlbar and other stuff around
  * the window
@@ -39,7 +39,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: add_window.c,v 1.114 89/11/20 17:22:37 jim Exp $";
+"$XConsortium: add_window.c,v 1.115 89/11/21 16:41:14 jim Exp $";
 #endif /* lint */
 
 #include <stdio.h>
@@ -274,20 +274,17 @@ IconMgr *iconp;
 
     tmp_win->old_bw = tmp_win->attr.border_width;
 
-    tmp_win->bw = 0;
     if (Scr->ClientBorderWidth) {
     	tmp_win->frame_bw = tmp_win->old_bw;
-    	tmp_win->title_bw = tmp_win->old_bw;
     } else {
     	tmp_win->frame_bw = Scr->BorderWidth;
-    	tmp_win->title_bw = Scr->BorderWidth;
     }
 
-    tmp_win->title_height = Scr->TitleHeight + tmp_win->title_bw;
+    tmp_win->title_height = Scr->TitleHeight + tmp_win->frame_bw;
     if (Scr->NoTitlebar)
         tmp_win->title_height = 0;
     if (LookInList(Scr->MakeTitle, tmp_win->full_name, &tmp_win->class))
-        tmp_win->title_height = Scr->TitleHeight + tmp_win->title_bw;
+        tmp_win->title_height = Scr->TitleHeight + tmp_win->frame_bw;
     if (LookInList(Scr->NoTitle, tmp_win->full_name, &tmp_win->class))
         tmp_win->title_height = 0;
 
@@ -393,9 +390,9 @@ IconMgr *iconp;
 	    AddingW = tmp_win->attr.width;
 	    AddingH = tmp_win->attr.height;
 
-	    AddingW = tmp_win->attr.width + 2*(tmp_win->bw+tmp_win->frame_bw);
+	    AddingW = tmp_win->attr.width + 2* tmp_win->frame_bw;
 	    AddingH = tmp_win->attr.height + tmp_win->title_height +
-		2 * (tmp_win->bw + tmp_win->frame_bw);
+	      2 * tmp_win->frame_bw;
 
 	    while (TRUE)
 	    {
@@ -499,9 +496,9 @@ IconMgr *iconp;
 
 	    tmp_win->attr.x = AddingX;
 	    tmp_win->attr.y = AddingY + tmp_win->title_height;
-	    tmp_win->attr.width = AddingW - 2*(tmp_win->bw + tmp_win->frame_bw);
+	    tmp_win->attr.width = AddingW - 2 * tmp_win->frame_bw;
 	    tmp_win->attr.height = AddingH - tmp_win->title_height -
-		2*(tmp_win->bw + tmp_win->frame_bw);
+	      2 * tmp_win->frame_bw;
 
 	    XUngrabServer(dpy);
 	}
@@ -615,9 +612,8 @@ IconMgr *iconp;
     tmp_win->frame_x = tmp_win->attr.x + tmp_win->old_bw - tmp_win->frame_bw;
     tmp_win->frame_y = tmp_win->attr.y - tmp_win->title_height +
 	tmp_win->old_bw - tmp_win->frame_bw;
-    tmp_win->frame_width = tmp_win->attr.width + 2 * tmp_win->bw;
-    tmp_win->frame_height = tmp_win->attr.height + tmp_win->title_height +
-        2 * tmp_win->bw;
+    tmp_win->frame_width = tmp_win->attr.width;
+    tmp_win->frame_height = tmp_win->attr.height + tmp_win->title_height;
 
     valuemask = CWBackPixmap | CWBorderPixel | CWCursor | CWEventMask;
     attributes.background_pixmap = None;
@@ -644,9 +640,11 @@ IconMgr *iconp;
 				 ButtonReleaseMask | ExposureMask);
 	attributes.border_pixel = tmp_win->border;
 	attributes.background_pixel = tmp_win->title.back;
-	tmp_win->title_w = XCreateWindow (dpy, tmp_win->frame, 0, 0,
+	tmp_win->title_w = XCreateWindow (dpy, tmp_win->frame, 
+					  -tmp_win->frame_bw,
+					  -tmp_win->frame_bw,
 					  tmp_win->attr.width, 
-					  Scr->TitleHeight, tmp_win->title_bw,
+					  Scr->TitleHeight, tmp_win->frame_bw,
 					  Scr->d_depth, CopyFromParent,
 					  Scr->d_visual, valuemask,
 					  &attributes);
@@ -1230,21 +1228,21 @@ void ComputeWindowTitleOffsets (tmp_win, width, squeeze)
 
 /*
  * ComputeTitleLocation - calculate the position of the title window; we need
- * to take the title_bw into account since we want (0,0) of the title window
+ * to take the frame_bw into account since we want (0,0) of the title window
  * to line up with (0,0) of the frame window.
  */
 void ComputeTitleLocation (tmp)
     register TwmWindow *tmp;
 {
-    tmp->title_x = -tmp->title_bw;
-    tmp->title_y = -tmp->title_bw;
+    tmp->title_x = -tmp->frame_bw;
+    tmp->title_y = -tmp->frame_bw;
 
 #ifdef SHAPE
     if (tmp->squeeze_info) {
 	register SqueezeInfo *si = tmp->squeeze_info;
 	int basex;
-	int maxwidth = tmp->frame_width - 2 * tmp->frame_bw;
-	int tw = tmp->title_width - 2 * tmp->title_bw;
+	int maxwidth = tmp->frame_width;
+	int tw = tmp->title_width;
 
 	/*
 	 * figure label base from squeeze info (justification fraction)
@@ -1280,7 +1278,7 @@ void ComputeTitleLocation (tmp)
 	  basex = maxwidth - tw + 1;
 	if (basex < 0) basex = 0;
 
-	tmp->title_x = basex - tmp->title_bw;
+	tmp->title_x = basex - tmp->frame_bw;
     }
 #endif
 }
