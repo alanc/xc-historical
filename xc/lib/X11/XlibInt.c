@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlibInt.c,v 1.2 89/06/14 11:03:48 jim Exp $
+ * $XConsortium: XlibInt.c,v 11.103 89/06/15 11:52:31 jim Exp $
  */
 
 #include "copyright.h"
@@ -1668,8 +1668,6 @@ int iovcnt;
 /*
 	END USER STAMP AREA
 */
-#include "Xstreams.h"
-
 extern char * malloc();
 extern char TypeOfStream[];
 extern Xstream xstream[];
