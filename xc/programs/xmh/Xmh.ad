@@ -99,7 +99,7 @@ Xmh*view.Accelerators: #override\n\
 	:Meta<Key>v:	previous-page()\n
 
 Xmh*tocMenu.Accelerators: #override\n\
-	:Meta<Key>I:	XmhIncorporateNewMail()XmhViewNextMessage()\n\
+	:Meta<Key>I:	XmhIncorporateNewMail()\n\
 	:Meta<Key>C: 	XmhCommitChanges()\n\
 	:Meta<Key>R:	XmhForceRescan()\n\
 	:Meta<Key>P:	XmhPackFolder()\n\
