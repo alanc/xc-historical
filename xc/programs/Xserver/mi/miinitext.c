@@ -21,7 +21,11 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: miinitext.c,v 1.19 92/08/22 15:43:10 rws Exp $ */
+/* $XConsortium: miinitext.c,v 1.20 92/09/07 13:29:44 rws Exp $ */
+
+#include "misc.h"
+
+extern Bool noTestExtensions;
 
 #ifdef BEZIER
 extern void BezierExtensionInit();
@@ -76,7 +80,7 @@ InitExtensions(argc, argv)
     BezierExtensionInit();
 #endif
 #ifdef XTESTEXT1
-    XTestExtension1Init();
+    if (!noTestExtensions) XTestExtension1Init();
 #endif
 #ifdef SHAPE
     ShapeExtensionInit();
@@ -94,7 +98,7 @@ InitExtensions(argc, argv)
     XInputExtensionInit();
 #endif
 #ifdef XTEST
-    XTestExtensionInit();
+    if (!noTestExtensions) XTestExtensionInit();
 #endif
 #ifdef BIGREQS
     BigReqExtensionInit();
@@ -106,7 +110,7 @@ InitExtensions(argc, argv)
     XIdleExtensionInit();
 #endif
 #ifdef XTRAP
-    DEC_XTRAPInit();
+    if (!noTestExtensions) DEC_XTRAPInit();
 #endif
 #ifdef SCREENSAVER
     ScreenSaverExtensionInit ();
