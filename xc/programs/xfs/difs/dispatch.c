@@ -1,4 +1,4 @@
-/* $XConsortium: dispatch.c,v 1.19 93/09/20 18:10:35 hersh Exp $ */
+/* $XConsortium: dispatch.c,v 1.20 93/09/23 14:45:22 gildea Exp $ */
 /*
  * protocol dispatcher
  */
@@ -607,7 +607,6 @@ alloc_failure:
     rep.auth_index = index;
     rep.sequenceNumber = client->sequence;
     rep.length = (SIZEOF(fsCreateACReply) + size) >> 2;
-    rep.status = AuthSuccess;
 
     WriteReplyToClient(client, SIZEOF(fsCreateACReply), &rep);
     if (size)
