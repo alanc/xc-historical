@@ -1,4 +1,4 @@
-.\" $XConsortium: xterm.man,v 1.75 94/04/11 14:26:20 gildea Exp $
+.\" $XConsortium: xterm.man,v 1.76 94/04/12 18:42:50 gildea Exp $
 .\" Copyright 1989 Massachusetts Institute of Technology
 .\"
 .\" Permission to use, copy, modify, distribute, and sell this software and
@@ -1588,7 +1588,7 @@ window.
 .SH "SEE ALSO"
 resize(1), X(1), pty(4), tty(4)
 .br
-\fIXterm Control Sequences\fP (in the \fIxterm\fP source directory)
+\fIXterm Control Sequences\fP
 .SH BUGS
 .PP
 Large pastes do not work on some systems.  This is not a bug in
@@ -1619,4 +1619,3 @@ Mark Vandevoorde (MIT-Athena), Bob McNamara (DEC-MAD),
 Jim Gettys (MIT-Athena), Bob Scheifler (MIT X Consortium), Doug Mink (SAO),
 Steve Pitschke (Stellar), Ron Newman (MIT-Athena), Jim Fulton (MIT X 
 Consortium), Dave Serisky (HP), Jonathan Kamens (MIT-Athena)
-
