@@ -1,6 +1,6 @@
 #if !defined(lint) && !defined(SABER)
 static char rcs_id[] =
-    "$XConsortium: screen.c,v 2.44 89/07/27 18:50:33 converse Exp $";
+    "$XConsortium: screen.c,v 2.45 89/08/31 19:10:45 converse Exp $";
 #endif
 /*
  *			  COPYRIGHT 1987
@@ -295,7 +295,9 @@ ScrnKind kind;
 	DEBUG("Realizing...")
 	XtRealizeWidget(scrn->parent);
 	DEBUG(" done.\n")
-	if (kind != STtocAndView)
+	if (kind == STtocAndView)
+	    XtInstallAllAccelerators(scrn->widget, scrn->widget);
+	else
 	    XtSetKeyboardFocus(scrn->parent, scrn->viewwidget);
 	XDefineCursor(XtDisplay(scrn->parent), XtWindow(scrn->parent),
 		      app_resources.cursor );
