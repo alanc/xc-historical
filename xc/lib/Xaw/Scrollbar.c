@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Scroll.c,v 1.32 88/06/29 11:27:02 jim Exp $";
+static char rcsid[] = "$Header: Scroll.c,v 1.33 88/07/08 11:30:14 jim Exp $";
 #endif lint
 
 /***********************************************************
@@ -391,9 +391,26 @@ static Boolean SetValues( current, request, desired )
     ScrollbarWidget dw = (ScrollbarWidget) desired;
     Boolean redraw = FALSE;
 
-    if (w->scrollbar.foreground != rw->scrollbar.foreground ||
-	w->core.background_pixel != rw->core.background_pixel)
+    if (w->scrollbar.reverse_video != rw->scrollbar.reverse_video) {
+	Pixel fg = dw->scrollbar.foreground;
+	Pixel bg = dw->core.background_pixel;
+
+	dw->scrollbar.foreground = bg;
+	dw->core.background_pixel = fg;
+	XSetWindowBackground (XtDisplay (desired), XtWindow (desired), 
+			      dw->core.background_pixel);
+	redraw = TRUE;
+    }
+
+    if (w->scrollbar.foreground != rw->scrollbar.foreground) {
+	redraw = TRUE;
+    }
+
+    if (w->core.background_pixel != rw->core.background_pixel) {
+	XSetWindowBackground (XtDisplay (desired), XtWindow (desired), 
+			      dw->core.background_pixel);
         redraw = TRUE;
+    }
 
     if (dw->scrollbar.top < 0.0 || dw->scrollbar.top > 1.0)
         dw->scrollbar.top = w->scrollbar.top;
