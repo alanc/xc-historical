@@ -1,4 +1,4 @@
-/* $XConsortium: CIELuv.c,v 1.2 91/01/30 17:11:45 dave Exp $" */
+/* $XConsortium: CIELuv.c,v 1.3 91/02/05 13:40:45 dave Exp $" */
 
 /*
  * (c) Copyright 1990 1991 Tektronix Inc.
@@ -46,6 +46,7 @@
  *		program using this package.
  */
 #include <X11/Xos.h>
+#include <X11/Xfuncs.h>
 #include "TekCMSext.h"
 #include "XcmsMath.h"
 
