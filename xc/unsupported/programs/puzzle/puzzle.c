@@ -1,9 +1,18 @@
 /*
- *	$Header: puzzle.c,v 1.1 88/01/22 15:44:52 bennett Exp $
+ *	$Header: puzzle.c,v 1.2 88/01/30 11:35:34 rws Exp $
+ */
+
+/* Puzzle - (C) Copyright 1987, 1988 Don Bennett.
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation for any purpose and without fee is hereby granted,
+ * provided that the above copyright notice appear in all copies and that
+ * both that copyright notice and this permission notice appear in
+ * supporting documentation.
  */
 
 #ifndef lint
-static char *rcsid_puzzle_c = "$Header: puzzle.c,v 1.1 88/01/22 15:44:52 bennett Exp $";
+static char *rcsid_puzzle_c = "$Header: puzzle.c,v 1.2 88/01/30 11:35:34 rws Exp $";
 #endif	/* lint */
 
 /**

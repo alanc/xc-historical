@@ -1,3 +1,11 @@
+/* Puzzle - (C) Copyright 1987, 1988 Don Bennett.
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation for any purpose and without fee is hereby granted,
+ * provided that the above copyright notice appear in all copies and that
+ * both that copyright notice and this permission notice appear in
+ * supporting documentation.
+ */
 
 #include <stdio.h>
 #include <X11/Xos.h>
