@@ -1,4 +1,4 @@
-/* $XConsortium: xsm.c,v 1.11 94/01/21 17:36:28 converse Exp $ */
+/* $XConsortium: xsm.c,v 1.12 94/02/04 15:29:57 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -31,7 +31,10 @@ purpose.  It is provided "as is" without express or implied warranty.
 #include <X11/SM/SMlib.h>
 #include <X11/Xfuncs.h>
 #include <stdio.h>
+#include <ctype.h>
+#ifndef X_NOT_STDC_ENV
 #include <stdlib.h>
+#endif
 #include <setjmp.h>
 #include <sys/param.h>
 
@@ -260,7 +263,7 @@ char 		*previousId;
 
     if (previousId)
     {
-	id = malloc (strlen (previousId) + 1);
+	id = (char *)malloc (strlen (previousId) + 1);
 	strcpy (id, previousId);
     }
     else
@@ -1317,6 +1320,24 @@ char *b;
 	return !strncmp(a, b, strlen(b));
 }
 
+#ifndef X_NOT_STDC_ENV
+#define Strstr strstr
+#else
+char *Strstr(s1, s2)
+    char *s1, *s2;
+{
+    int n1, n2;
+
+    n1 = strlen(s1);
+    n2 = strlen(s2);
+    for ( ; n1 >= n2; s1++, n1--) {
+	if (!strncmp(s1, s2, n2))
+	    return s1;
+    }	
+    return NULL;
+}
+#endif
+
 restart_everything()
 {
     List *cl;
@@ -1394,7 +1415,7 @@ restart_everything()
 	if (!non_local_session_env) nomem();
 	strcpy (non_local_session_env, session_env);
 
-	if ((temp = strstr (non_local_session_env, "local/")) != NULL)
+	if ((temp = Strstr (non_local_session_env, "local/")) != NULL)
 	{
 	    char *delim = strchr (temp, ',');
 	    if (delim == NULL)
@@ -1563,7 +1584,7 @@ restart_everything()
  */
 
 			for (i = 0; env[i]; i++)
-			    if (strstr (env[i], "PATH"))
+			    if (Strstr (env[i], "PATH"))
 				fprintf (fp, "MISC X %s\n", env[i]);
 			fprintf (fp, "MISC X %s\n", non_local_display_env);
 			fprintf (fp, "MISC X %s\n", non_local_session_env);
