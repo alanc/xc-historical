@@ -1,19 +1,12 @@
 #!/bin/sh
-#
-# Xsession
-#
-# This is the program that is run as the client
-# for the display manager.  This example is
-# quite friendly as it attempts to run a per-user
-# .xsession file instead of forcing a particular
-# session layout
-#
+
+exec > /usr/lib/X11/xdm/session-errors 2>&1
 
 case $# in
 1)
 	case $1 in
 	failsafe)
-		exec xterm -geometry 80x24-0-0 -ls
+		exec xterm -geometry 80x24-0-0
 		;;
 	esac
 esac
@@ -23,7 +16,6 @@ resources=$HOME/.Xresources
 
 if [ -f $startup ]; then
 	exec $startup
-	exec /bin/sh $startup
 else
 	if [ -f $resources ]; then
 		xrdb -load $resources
