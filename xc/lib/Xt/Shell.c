@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Shell.c,v 1.42 88/09/22 16:03:36 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Shell.c,v 1.44 88/09/22 20:22:32 swick Exp $";
 /* $oHeader: Shell.c,v 1.7 88/09/01 11:57:00 asente Exp $ */
 #endif lint
 
@@ -1438,33 +1438,31 @@ static Boolean SetValues(old, ref, new)
 	if (!XtIsRealized((Widget)ow)) { 
 	    COPY_GEOMETRY(ow,nw)
 	} else {
-	    if (nw->shell.allow_shell_resize) {
-		mask = 0;
+	    mask = 0;
 #define EQC(x) (ow->core.x == nw->core.x)
-		if (!EQC(x)) {
-		    mask |= CWX;
-		    values.x = nw->core.x;
-		}
-		if (!EQC(y)) {
-		    mask |= CWY;
-		    values.y = nw->core.y;
-		}
-		if (!EQC(width)) {
-		    mask |= CWWidth;
-		    values.width = nw->core.width;
-		}
-		if (!EQC(height)) {
-		    mask |= CWHeight;
-		    values.height = nw->core.height;
-		}
-		if (!EQC(border_width)) {
-		    mask |= CWBorderWidth;
-		    values.border_width = nw->core.border_width;
-		}
-		if (mask) (void) _ask_wm_for_size(ow, &values, mask);
-		COPY_GEOMETRY(ow,nw);
+	    if (!EQC(x)) {
+		mask |= CWX;
+		values.x = nw->core.x;
+	    }
+	    if (!EQC(y)) {
+		mask |= CWY;
+		values.y = nw->core.y;
+	    }
+	    if (!EQC(width)) {
+		mask |= CWWidth;
+		values.width = nw->core.width;
+	    }
+	    if (!EQC(height)) {
+		mask |= CWHeight;
+		values.height = nw->core.height;
+	    }
+	    if (!EQC(border_width)) {
+		mask |= CWBorderWidth;
+		values.border_width = nw->core.border_width;
+	    }
+	    if (mask) (void) _ask_wm_for_size(ow, &values, mask);
+	    COPY_GEOMETRY(nw,ow);
 #undef EQC
-	    } else COPY_GEOMETRY(nw,ow)
 	}
 	return FALSE;
 #undef COPY_GEOMETRY
