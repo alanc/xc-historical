@@ -1,4 +1,4 @@
-/* $XConsortium: button.c,v 1.56 91/02/05 20:07:45 gildea Exp $ */
+/* $XConsortium: button.c,v 1.57 91/03/04 14:50:50 gildea Exp $ */
 /*
  * Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
  *
@@ -955,14 +955,6 @@ register int frow, fcol, trow, tcol;
 	register TScreen *screen = &term->screen;
 	int old_startrow, old_startcol, old_endrow, old_endcol;
 
-	/* (frow, fcol) may have been scrolled off top of display */
-	if (frow < 0)
-		frow = fcol = 0;
-	/* (trow, tcol) may have been scrolled off bottom of display */
-	if (trow > screen->max_row+1) {
-		trow = screen->max_row+1;
-		tcol = 0;
-	}
 	old_startrow = screen->startHRow;
 	old_startcol = screen->startHCol;
 	old_endrow = screen->endHRow;
@@ -1345,7 +1337,7 @@ SaveText(screen, row, scol, ecol, lp, eol)
 	ecol = scol + i;
 	*eol = (ecol < oldecol) ? 1 : 0;
 	if (*eol == 0) {
-		if(ScrnGetAttributes(screen, row, ecol - 1, &attr, 1) == 1) {
+		if(ScrnGetAttributes(screen, row + screen->topline, ecol - 1, &attr, 1) == 1) {
 			*eol = (attr & ENDLINE) ? 1 : 0;
 		} else {
 			/* If we can't get the attributes, assume ENDLINE */
