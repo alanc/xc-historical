@@ -12,7 +12,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: DataMove.c,v 1.3 92/06/11 15:50:10 rws Exp $
+ * $XConsortium: DataMove.c,v 1.4 92/12/22 09:12:06 rws Exp $
  */
 /*
  * ***************************************************************************
@@ -57,7 +57,7 @@ char val;
 void
 pack2(bufpp,val,swap)
 char **bufpp;
-short val;
+CARD16 val;
 int swap;
 {
 
@@ -73,7 +73,7 @@ int swap;
 void
 pack4(bufpp,val,swap)
 char **bufpp;
-long val;
+CARD32 val;
 int swap;
 {
 
@@ -107,7 +107,7 @@ int swap;
 void
 pack2_lsb (bufpp,val)
     char **bufpp;
-    short val;
+    CARD16 val;
 {
     if (native_byte_sex () == 1) { 
 	swapcpsp(((char *)&val),(*bufpp));     /* msb, so swap */
@@ -233,7 +233,7 @@ char val;
 void
 Set_Value2(to,val)
 char **to;
-short val;
+CARD16 val;
 {
     nonswapcpsp(((char *)&val),(*to));
     *to += 2;
@@ -242,7 +242,7 @@ short val;
 void
 Set_Value4(to,val)
 char **to;
-long val;
+CARD32 val;
 {
     nonswapcplp(((char *)&val),(*to));
     *to += 4;
@@ -250,7 +250,7 @@ long val;
 
 void
 Unpack_Shorts(to,from,count,swap)
-unsigned short *to;
+CARD16 *to;
 unsigned char **from;
 int count;
 int swap;
@@ -265,7 +265,7 @@ int swap;
 
 void
 Unpack_Longs(to,from,count,swap)
-unsigned long *to;
+CARD32 *to;
 unsigned char **from;
 int count;
 int swap;
