@@ -3,8 +3,6 @@ MANSUFFIX = $(LIBMANSUFFIX)
 
 all::
 
-depend:
-
 #if ExpandManNames
 InstallManPageLong(XtAddCbk,$(MANDIR),XtAddCallback)
 InstallManPageAliases(XtAddCallback,$(MANDIR),XtAddCallbacks XtRemoveCallback XtRemoveCallbacks XtRemoveAllCallbacks)

@@ -3,8 +3,6 @@ MANSUFFIX = $(LIBMANSUFFIX)
 
 all::
 
-depend:
-
 InstallManPage(X,$(MANDIR))
 InstallManPageLong(Consortium,$(MANDIR),XConsortium)
 InstallManPageLong(Standards,$(MANDIR),XStandards)
