@@ -1,5 +1,5 @@
 #if ( !defined(lint) && !defined(SABER) )
-static char Xrcsid[] = "$XConsortium: AsciiSrc.c,v 1.27 90/01/10 11:27:11 rws Exp $";
+static char Xrcsid[] = "$XConsortium: AsciiSrc.c,v 1.28 90/01/10 14:25:21 kit Exp $";
 #endif 
 
 /*
@@ -844,17 +844,12 @@ String string, name;
   int fd;
   
   if ( ((fd = creat(name, 0666)) == -1 ) ||
-       (write(fd, string, sizeof(unsigned char) * strlen(string)) == -1) ) {
-    sprintf(buf, "Error, while attempting to write to the file %s.", name);
-    XtAppWarning(XtWidgetToApplicationContext((Widget) src), buf); 
+       (write(fd, string, sizeof(unsigned char) * strlen(string)) == -1) )
     return(FALSE);
-  }
 
-  if ( close(fd) == -1 ) {
-    sprintf(buf, "Error, while attempting to close the file %s.", name);
-    XtAppWarning(XtWidgetToApplicationContext((Widget) src), buf); 
+  if ( close(fd) == -1 ) 
     return(FALSE);
-  }
+
   return(TRUE);
 }
 
