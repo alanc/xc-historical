@@ -1,4 +1,4 @@
-/* $XConsortium: TMstate.c,v 1.111 90/07/24 12:02:36 swick Exp $ */
+/* $XConsortium: TMstate.c,v 1.112 90/07/26 10:06:41 swick Exp $ */
 
 /*LINTLIBRARY*/
 
@@ -1231,7 +1231,7 @@ void XtUninstallTranslations(widget)
     _XtRemoveTranslations(widget);
     if (widget->core.tm.translations &&
 	widget->core.tm.translations->accProcTbl) {
-	  XtFree((char*)widget->core.tm.translations);
+	  _XtUninstallAccelerators(widget);
     }
     widget->core.tm.translations = NULL;
     if (widget->core.tm.proc_table != NULL) {
@@ -2096,7 +2096,8 @@ static void RemoveAccelerators(widget,closure,data)
     XtPointer closure, data;
 {
     int i;
-    XtTranslations table = (XtTranslations)closure;
+    Widget destination = (Widget)closure;
+    XtTranslations table = destination->core.tm.translations;
     StateTablePtr stateTable = table->stateTable;
     if (table == NULL) {
         XtAppWarningMsg(XtWidgetToApplicationContext(widget),
@@ -2114,11 +2115,60 @@ static void RemoveAccelerators(widget,closure,data)
     }
     for (i=0;i<stateTable->accNumQuarks;i++) {
         if (table->accProcTbl[i].widget == widget)
-            table->accProcTbl[i].widget = 0;
+            table->accProcTbl[i].widget = NULL;
     }
-
 }
         
+void _XtRegisterAccRemoveCallbacks(dest)
+    Widget dest;
+{
+/*
+ * called by Core.SetValues when the translation table is replaced.
+ */
+    int i;
+    XtTranslations translations = dest->core.tm.translations;
+    Widget lastWidget = NULL;
+    for (i = 0; i < translations->stateTable->accNumQuarks; i++) {
+	if (translations->accProcTbl[i].widget &&
+	    translations->accProcTbl[i].widget != lastWidget) {
+	      lastWidget = translations->accProcTbl[i].widget;
+	      if (lastWidget->core.destroy_callbacks != NULL)
+		  _XtAddCallbackOnce( lastWidget,
+				      _XtCallbackList((CallbackStruct*)
+					    lastWidget->core.destroy_callbacks
+					   ),
+				      RemoveAccelerators,
+				      (XtPointer)dest
+				     );
+	      else
+		  XtAddCallback( lastWidget, XtNdestroyCallback,
+				 RemoveAccelerators,
+				 (XtPointer)dest
+				);
+	}
+    }
+}
+
+void _XtUninstallAccelerators(w)
+    Widget w;
+{
+/*
+ * Called from Core.Destroy and XtUninstallTranslations
+ */
+    int i;
+    XtTranslations translations = w->core.tm.translations;
+    Widget lastWidget = NULL;
+    for (i = 0; i < translations->stateTable->accNumQuarks; i++) {
+	if (translations->accProcTbl[i].widget &&
+	    translations->accProcTbl[i].widget != lastWidget) {
+	      lastWidget = translations->accProcTbl[i].widget;
+	      XtRemoveCallback(lastWidget, XtNdestroyCallback,
+			       RemoveAccelerators, (XtPointer)w);
+	}
+    }
+    XtFree( (char*)translations );
+}
+
 
 void XtInstallAccelerators(destination, source)
     Widget destination, source;
@@ -2161,7 +2211,7 @@ void XtInstallAccelerators(destination, source)
     }
 
     XtAddCallback(source, XtNdestroyCallback,
-        RemoveAccelerators,(XtPointer)destination->core.tm.translations);
+        RemoveAccelerators,(XtPointer)destination);
     if (XtClass(source)->core_class.display_accelerator != NULL){
 	 char *buf = XtMalloc((Cardinal)100);
 	 int len = 100;
