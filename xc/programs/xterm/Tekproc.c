@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Tekproc.c,v 1.71 89/12/09 17:24:03 jim Exp $
+ * $XConsortium: Tekproc.c,v 1.72 89/12/10 20:44:32 jim Exp $
  *
  * Warning, there be crufty dragons here.
  */
@@ -64,10 +64,6 @@
 #define EWOULDBLOCK EAGAIN
 #endif
 
-#ifdef CRAY
-#include <time.h>
-#endif
-
 extern void exit();
 extern long time();
 
@@ -114,7 +110,7 @@ extern long time();
 #define	unput(c)	*Tpushback++ = c
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: Tekproc.c,v 1.71 89/12/09 17:24:03 jim Exp $";
+static char rcs_id[] = "$XConsortium: Tekproc.c,v 1.72 89/12/10 20:44:32 jim Exp $";
 #endif	/* lint */
 
 extern Widget toplevel;
