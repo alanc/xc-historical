@@ -1,5 +1,5 @@
-.\" $XConsortium: XmacII.man,v 1.7 89/12/21 10:05:04 rws Exp $
-.TH XMACII 1 "Release 5" "X Version 11"
+.\" $XConsortium: XmacII.man,v 1.8 91/07/27 16:17:30 rws Exp $
+.TH XMACII 1 "Release 6" "X Version 11"
 .SH NAME
 XmacII \- Macintosh II server for X Version 11
 .SH SYNOPSIS
@@ -13,9 +13,8 @@ It will normally be started by the shell script
 .fi
 .SH CONFIGURATIONS
 .I XmacII
-operates under A/UX Release 1.0 and later.
-Under A/UX Release 1.0, the server supports a single monochrome display.
-Color and multiple screens are supported under A/UX Release 1.1 and later.
+operates under A/UX Release 2.0 and later.
+Color and multiple screens are supported.
 .SH OPTIONS
 The following options can be given on the command line to the X server.
 .TP 8
@@ -23,9 +22,11 @@ The following options can be given on the command line to the X server.
 arranges that the given screen will operate at the given depth.
 Screens are numbered from 0 and correspond to the relative position
 of video cards in the Macintosh II slots.
-Supported depths are 1 (monochrome at 1 bit per pixel, the default value),
-and 8 (color at 8 bits per pixel, indexing a colormap with 256 entries).
-Multiple screens and color support require A/UX Release 1.1 or later.
+Supported depths are 1 (monochrome at 1 bit per pixel), 
+8 (color at 8 bits per pixel, indexing a colormap with 256 entries), and
+24 (color at 24 bits per pixel). The server starts up, by default, in the
+deepest depth available for any particular screen. This option must be used to
+modify that behavior.
 .TP 8
 .B \-a \fInumber\fP
 sets pointer acceleration (i.e. the ratio of how much is reported to how much
@@ -72,6 +73,14 @@ sets default cursor font
 .TP 8
 .B \-fn \fIfont\fP
 sets the default font
+.TP 8
+.B \-optionmouse
+requires holding the option key down while pressing the arrow keys to get
+middle and right mouse buttons. Allows the arrow keys to retain their normal
+function
+.TP 8
+.B \-noosm
+don't open /dev/osm
 .SH "BUTTON MAPPINGS"
 Many X clients assume the mouse has three buttons. The A/UX X server simulates
 the middle and right mouse buttons with keystrokes -- the left-arrow key
@@ -109,14 +118,15 @@ check, but it is not used in the standard distribution.
 Fonts are stored in individual files in the directory(ies) named by
 the font search path.  These files may be created by the \fIfc\fP utility.
 The name of the file must correspond to the name of the font in lowercase
-with the suffix ".snf" appended.
+with the suffix ".pcf" appended.
 Font files may be stored in \fIcompress\fP(1) format, in which case an
 additional suffix (usually ".Z", defined when the server is built) must
 be appended to the usual filename.
 .SH "FILES"
 .TP 30
 /usr/bin/X11/X11 
-Bourne shell script which starts the server and initial 
+/usr/bin/X11/X11R6 
+Bourne shell scripts which start the server and initial 
 .I xterm 
 client
 .TP 30
@@ -153,11 +163,6 @@ $HOME/.twmrc
 customization for the
 .I twm
 window manager. Reference copy in /usr/lib/X11/Sample.twmrc
-.TP 30
-$HOME/.uwmrc 
-customization for the
-.I uwm
-window manager. Reference copy in /usr/lib/X11/default.uwmrc
 .TP 30
 /usr/lib/X11/XErrorDB 
 client error message database

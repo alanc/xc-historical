@@ -1,5 +1,5 @@
-/************************************************************ 
-Copyright 1988 by Apple Computer, Inc, Cupertino, California
+/*****************************************************************************
+Copyright 1988-1993 by Apple Computer, Inc, Cupertino, California
 			All Rights Reserved
 
 Permission to use, copy, modify, and distribute this software
@@ -19,7 +19,7 @@ THE WARRANTY AND REMEDIES SET FORTH ABOVE ARE EXCLUSIVE
 AND IN LIEU OF ALL OTHERS, ORAL OR WRITTEN, EXPRESS OR
 IMPLIED.
 
-************************************************************/
+*****************************************************************************/
 /*-
  * macII.h --
  *	Internal declarations for the macII ddx interface
@@ -46,10 +46,15 @@ IMPLIED.
 #include    <sys/file.h>
 #include    <sys/signal.h>
 #include    <sys/stropts.h>
+#include    <mac/osutils.h>
+#include    <mac/types.h>
+#ifndef	SUPPORT_2_0
+#include    <sys/driver.h>
+#endif	/* SUPPORT_2_0 */
 
 /*
- * Under A/UX >=2.0 struct video has been "Macintized" and now incorporates
- * a structure called AuxDCE which is defined once and for all in
+ * Under A/UX 2.0 and beyond struct video has been "Macintized" and now
+ * incorporates a structure called AuxDCE which is defined once and for all in
  * /usr/include/mac. Alas the definition for AuxDCE requires wheeling in
  * lots of Mac stuff including QuickDraw. This is a headache as there are
  * a variety of clashes between X and QuickDraw (they both do windows after
@@ -57,114 +62,127 @@ IMPLIED.
  * includes. Of course if this ever changes ...
  */
 
-#if !defined(__mac_types_h) && !defined(__TYPES__)
-#define __mac_types_h
-typedef unsigned char Boolean;
-typedef long (*ProcPtr)();
-typedef short OSErr;
-typedef char *Ptr;
+#ifndef __DEVICES__
+#ifndef __mac_devices_h
+#include    <mac/files.h>
 
-struct Point {
-    short v;
-    short h;
+struct DCtlEntry {
+        char **dCtlDriver;
+        short dCtlFlags;
+        struct QHdr dCtlQHdr;
+        long dCtlPosition;
+        char **dCtlStorage;
+        short dCtlRefNum;
+        long dCtlCurTicks;
+        char *dCtlWindow;
+        short dCtlDelay;
+        short dCtlEMask;
+        short dCtlMenu;
+        char dCtlSlot;
+        char dCtlSlotId;
+        long dCtlDevBase;
+        long reserved;
+        char dCtlExtDev;
+        char fillByte;
 };
 
-typedef struct Point Point;
-
-struct Rect {
-    short top;
-    short left;
-    short bottom;
-    short right;
-};
-
-typedef struct Rect Rect;
-#endif /* __mac_types_h */
-
-#if !defined(__mac_quickdraw_h)
-#define __mac_quickdraw_h
-struct RGBColor {
-    unsigned short red;
-    unsigned short green;
-    unsigned short blue;
-};
-
-typedef struct RGBColor RGBColor;
-
-struct ColorSpec {
-    short value;
-    RGBColor rgb;
-};
-
-typedef struct ColorSpec ColorSpec;
-#endif /* __mac_quickdraw_h */
-
-#if !defined(__mac_osutils_h)
-#define __mac_osutils_h
-struct QElem {
-    struct QElem *qLink;
-    short qType;
-    short qData[1];
-};
-
-typedef struct QElem QElem;
-
-typedef QElem *QElemPtr;
-
-struct QHdr {
-    short qFlags;
-    QElemPtr qHead;
-    QElemPtr qTail;
-};
-
-typedef struct QHdr QHdr;
-
-typedef QHdr *QHdrPtr;
-#endif /* __mac_osutils_h */
-
-#if !defined(__mac_files_h)
-#define __mac_files_h
-struct CntrlParam {
-	QElem *qLink;
-	short qType;
-	short ioTrap;
-	Ptr ioCmdAddr;
-	ProcPtr ioCompletion;
-	OSErr ioResult;
-	unsigned char *ioNamePtr;
-	short ioVRefNum;
-	short ioCRefNum;
-	short csCode;
-	short csParam[11];
-};
-#endif /* __mac_files_h */
-
-#if !defined(__mac_devices_h)
-#define __mac_devices_h
 struct AuxDCE {
-    Ptr dCtlDriver;
-    short dCtlFlags;
-    QHdr dCtlQHdr;
-    long dCtlPosition;
-    Ptr *dCtlStorage;
-    short dCtlRefNum;
-    long dCtlCurTicks;
-    Ptr dCtlWindow;
-    short dCtlDelay;
-    short dCtlEMask;
-    short dCtlMenu;
-    char dCtlSlot;
-    char dCtlSlotId;
-    long dCtlDevBase;
-    Ptr dCtlOwner;
-    char dCtlExtDev;
-    char fillByte;
+        char **dCtlDriver;
+        short dCtlFlags;
+        struct QHdr dCtlQHdr;
+        long dCtlPosition;
+        char **dCtlStorage;
+        short dCtlRefNum;
+        long dCtlCurTicks;
+        char *dCtlWindow;
+        short dCtlDelay;
+        short dCtlEMask;
+        short dCtlMenu;
+        char dCtlSlot;
+        char dCtlSlotId;
+        long dCtlDevBase;
+        long reserved;
+        char dCtlExtDev;
+        char fillByte;
 };
 
 typedef struct AuxDCE AuxDCE;
 
 typedef AuxDCE *AuxDCEPtr;
-#endif /* __mac_devices_h */
+
+#define __mac_devices_h
+#endif
+#define __DEVICES__
+#endif
+
+#ifndef __QUICKDRAW__
+#ifndef __mac_quickdraw_h
+
+#ifdef __STDC__
+struct Region {
+    short rgnSize;                  /*size in bytes*/
+    Rect rgnBBox;                   /*enclosing rectangle*/
+};
+
+typedef struct Region Region;
+
+typedef Region *RgnPtr, **RgnHandle;
+#endif
+
+struct RGBColor {
+	unsigned short red;
+	unsigned short green;
+	unsigned short blue;
+};
+
+typedef struct RGBColor RGBColor;
+
+struct ColorSpec {
+	short value;
+	RGBColor color;
+};
+
+typedef struct ColorSpec ColorSpec;
+
+#define __mac_quickdraw_h
+#endif
+#define __QUICKDRAW__
+#endif
+
+/*
+ * The current code has been modified for the 3.0 header files. The
+ * modifications below are required to provide support for compiling on a 2.0
+ * system. Most of the definitions can be properly used from the 3.0 mac
+ * header files.
+ */
+
+#ifdef	SUPPORT_2_0
+
+typedef struct video_data VPBlock;
+#define	VDSetEntryRecord VDEntryRecord
+#define VDPageInfo	VDPgInfo
+#define vpBlock		video_data
+#define noQueueBit	0x0200
+#define cscSetMode	0x2
+#define cscSetEntries	0x3
+#define	catDisplay	3
+#define typeVideo	1
+#define drSwApple	1
+#define mVidParams	1
+#define vpBaseOffset	v_baseoffset
+#define	vpRowBytes	v_rowbytes
+#define	vpHRes		v_hres
+#define	vpVRes		v_vres
+#define	vpPixelSize	v_pixelsize
+
+#else	/* not SUPPORT_2_0 */
+
+#include    <mac/video.h>
+#include    <mac/romdefs.h>
+#include    <mac/errors.h>
+
+#endif	/* SUPPORT_2_0 */
+
 
 #include    <sys/video.h>
 
@@ -241,6 +259,12 @@ typedef struct kbPrivate {
 
 #define	MIN_KEYCODE	8	/* necessary to avoid the mouse buttons */
 
+#ifdef XTESTEXT1
+extern KeyCode xtest_command_key;
+#define XE_POINTER 0
+#define XE_KEYBOARD 1
+#endif
+
 /*
  * Data private to any macII pointer device.
  *	ProcessEvent and DoneEvents have uses similar to the
@@ -260,21 +284,19 @@ typedef struct ptrPrivate {
  *	    	  	by the driving routines for the specific frame buffer
  *	    	  	type.
  *	slot
- *	default_depth
+ *	defaultDepth
  *	installedMap
  *	info	  	description of the frame buffer -- type, height, depth,
  *	    	  	width, etc.
  *	fbPriv	  	Data private to the frame buffer type.
  */
 
-#define FBTYPE_MACII 0
-
-typedef struct VPBlock fbtype;
+typedef VPBlock fbtype;
 
 typedef struct {
     pointer 	  	fb; 	    /* Frame buffer itself */
     int			slot;
-    int			default_depth;
+    int			defaultDepth;
     ColormapPtr		installedMap;
     fbtype 		info;	    /* Frame buffer characteristics */
     pointer 	  	fbPriv;	    /* Frame-buffer-dependent data */
@@ -299,11 +321,30 @@ typedef struct _macIIFbDataRec {
 
 extern macIIFbDataRec macIIFbData[];
 
+#ifndef __mac_aux_rsrc_h
+#include <mac/aux_rsrc.h>
+#endif
+
+typedef struct screenTag {
+        short   sSlotHdwrId;
+        short   sSlot;
+        long    sDceBase;
+        short   sMode;
+        short   sMask;
+        short   sFlags;
+        short   sClut;
+        short   sGamma;
+        short   sRect[4];
+        short   sCtlCalls;
+} screenT;
+
+#define CTB_SET_ENTRIES(fbArray) \
+    (fbArray.info.vpPixelType == 16)? cscDirectSetEntries: cscSetEntries
+
 /*
  * Initialization
  */
 extern Bool 	  macIIScreenInit();
-extern int  	  macIIOpenFrameBuffer();
 
 extern int  	  macIICheckInput;    /* Non-zero if input is available */
 
