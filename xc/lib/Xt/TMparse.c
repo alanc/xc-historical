@@ -1,4 +1,4 @@
-/* $XConsortium: TMparse.c,v 1.119 91/05/11 21:04:37 converse Exp $ */
+/* $XConsortium: TMparse.c,v 1.120 91/05/14 22:40:05 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -1831,7 +1831,7 @@ Boolean XtCvtStringToAcceleratorTable(dpy, args, num_args, from, to, closure)
     else {
 	static XtAccelerators staticStateTable;
 	staticStateTable = XtParseAcceleratorTable(str);
-	to->addr= (XtPointer)&staticStateTable;
+	to->addr = (XPointer) &staticStateTable;
 	to->size = sizeof(XtAccelerators);
     }
     return True;
@@ -1868,7 +1868,7 @@ XtCvtStringToTranslationTable(dpy, args, num_args, from, to, closure_ret)
     else {
 	static XtTranslations staticStateTable;
 	staticStateTable = XtParseTranslationTable(str);
-	to->addr= (XtPointer)&staticStateTable;
+	to->addr = (XPointer) &staticStateTable;
 	to->size = sizeof(XtTranslations);
     }
     return True;
