@@ -1,5 +1,5 @@
 /*
- * $XConsortium: parse.c,v 1.24 92/08/24 16:31:42 gildea Exp $
+ * $XConsortium: parse.c,v 1.25 93/07/12 18:00:51 gildea Exp $
  */
 #include "def.h"
 
@@ -243,9 +243,9 @@ int deftype (line, filep, file_red, file, parse_it)
 		/*
 		 * parse an expression.
 		 */
-		debug(0,("%s, line %d: #if %s\n",
-			file->i_file, filep->f_line, p));
 		ret = zero_value(p, filep, file_red);
+		debug(0,("%s, line %d: %s #if %s\n",
+			 file->i_file, filep->f_line, ret?"false":"true", p));
 		break;
 	case IFDEF:
 	case IFNDEF:
@@ -350,13 +350,11 @@ struct symtab *fdefined(symbol, file, srcfile)
 		return(NULL);
 	file->i_defchecked = TRUE;
 	if (val = slookup(symbol, file))
-		debug(1,("%s defined in %s\n", symbol, file->i_file));
+		debug(1,("%s defined in %s as %s\n", symbol, file->i_file, val->s_value));
 	if (val == NULL && file->i_list)
 		{
 		for (ip = file->i_list, i=0; i < file->i_listlen; i++, ip++)
 			if (val = fdefined(symbol, *ip, srcfile)) {
-				debug(1,("%s defined in %s\n",
-					symbol, (*ip)->i_file));
 				break;
 			}
 		}
@@ -393,7 +391,7 @@ define(def, file)
 	val++;
     if (*val)
 	*val++ = '\0';
-    while (*val == ' ' && *val == '\t')
+    while (*val == ' ' || *val == '\t')
 	val++;
 
     if (!*val)
