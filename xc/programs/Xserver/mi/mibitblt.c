@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: mibitblt.c,v 1.51 87/09/11 00:27:12 toddb Locked $ */
+/* $Header: mibitblt.c,v 1.52 87/09/13 20:56:01 rws Locked $ */
 /* Author: Todd Newman  (aided and abetted by Mr. Drewry) */
 
 #include "X.h"
@@ -108,7 +108,15 @@ miCopyArea(pSrcDrawable, pDstDrawable,
     {
 	srcx += ((WindowPtr)pSrcDrawable)->absCorner.x;
 	srcy += ((WindowPtr)pSrcDrawable)->absCorner.y;
-	prgnSrcClip = ((WindowPtr)pSrcDrawable)->clipList;
+	if (pGC->subWindowMode == IncludeInferiors)
+	{
+	    prgnSrcClip = NotClippedByChildren((WindowPtr)pSrcDrawable);
+	    realSrcClip = 1;
+	}
+	else
+	{
+	    prgnSrcClip = ((WindowPtr)pSrcDrawable)->clipList;
+	}
     }
 
     /* If the src drawable is a window, we need to translate the srcBox so
@@ -139,12 +147,12 @@ miCopyArea(pSrcDrawable, pDstDrawable,
         ALLOCATE_LOCAL(prgnSrcClip->numRects * sizeof(unsigned int));
     if(!pptFirst || !pwidthFirst || !ordering)
     {
-       if (pptFirst)
-           DEALLOCATE_LOCAL(pptFirst);
-       if (pwidthFirst)
-           DEALLOCATE_LOCAL(pwidthFirst);
        if (ordering)
 	   DEALLOCATE_LOCAL(ordering);
+       if (pwidthFirst)
+           DEALLOCATE_LOCAL(pwidthFirst);
+       if (pptFirst)
+           DEALLOCATE_LOCAL(pptFirst);
        return;
     }
 
@@ -251,9 +259,9 @@ miCopyArea(pSrcDrawable, pDstDrawable,
     if(realSrcClip)
 	(*pGC->pScreen->RegionDestroy)(prgnSrcClip);
 		
-    DEALLOCATE_LOCAL(pptFirst);
-    DEALLOCATE_LOCAL(pwidthFirst);
     DEALLOCATE_LOCAL(ordering);
+    DEALLOCATE_LOCAL(pwidthFirst);
+    DEALLOCATE_LOCAL(pptFirst);
 }
 
 /* MIGETPLANE -- gets a bitmap representing one plane of pDraw
@@ -434,8 +442,8 @@ miOpqStipDrawable(pDraw, pGC, prgnSrc, pbits, srcx, w, h, dstx, dsty)
     pwidth = pwidthFirst = (int *)ALLOCATE_LOCAL(h * sizeof(int));
     if(!ppt || !pwidth)
     {
-	DEALLOCATE_LOCAL(pwidthFirst);
-	DEALLOCATE_LOCAL(pptFirst);
+	if (pwidth) DEALLOCATE_LOCAL(pwidth);
+	if (ppt) DEALLOCATE_LOCAL(ppt);
 	FreeScratchGC(pGCT);
 	return;
     }
@@ -579,8 +587,18 @@ miCopyPlane(pSrcDrawable, pDstDrawable,
         box.x2 = box.x1 + width;
         box.y2 = box.y1 + height;
         prgnSrc = (*pGC->pScreen->RegionCreate)(&box, 1);
-	(*pGC->pScreen->Intersect)
-	    (prgnSrc, prgnSrc, ((WindowPtr)pSrcDrawable)->clipList);
+	if (pGC->subWindowMode == IncludeInferiors)
+	{
+	    RegionPtr prgnSrcClip = NotClippedByChildren((WindowPtr)pSrcDrawable);
+	    (*pGC->pScreen->Intersect)
+		(prgnSrc, prgnSrc, prgnSrcClip);
+	    (*pGC->pScreen->RegionDestroy)(prgnSrcClip);
+	}
+	else
+	{
+	    (*pGC->pScreen->Intersect)
+		(prgnSrc, prgnSrc, ((WindowPtr)pSrcDrawable)->clipList);
+	}
 	(*pGC->pScreen->TranslateRegion)(prgnSrc,
 			-((WindowPtr)pSrcDrawable)->absCorner.x,
 			-((WindowPtr)pSrcDrawable)->absCorner.y);
@@ -779,10 +797,10 @@ miPutImage(pDraw, pGC, depth, x, y, w, h, leftPad, format, pImage)
     	pwidth = pwidthFirst = (int *)ALLOCATE_LOCAL(h * sizeof(int));
 	if(!ppt || !pwidth)
         {
+	   if (pwidth)
+               DEALLOCATE_LOCAL(pwidth);
            if (ppt)
                DEALLOCATE_LOCAL(ppt);
-           else if (pwidth)
-               DEALLOCATE_LOCAL(pwidthFirst);
            return;
         }
 	if ((pDraw->type == DRAWABLE_WINDOW) &&
@@ -801,8 +819,8 @@ miPutImage(pDraw, pGC, depth, x, y, w, h, leftPad, format, pImage)
 	}
 
 	(*pGC->SetSpans)(pDraw, pGC, pImage, pptFirst, pwidthFirst, h, TRUE);
-	DEALLOCATE_LOCAL(pptFirst);
 	DEALLOCATE_LOCAL(pwidthFirst);
+	DEALLOCATE_LOCAL(pptFirst);
 	break;
     }
 }
