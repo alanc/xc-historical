@@ -1,4 +1,4 @@
-/* $XConsortium: Intrinsic.c,v 1.162 91/02/08 17:31:34 converse Exp $ */
+/* $XConsortium: Intrinsic.c,v 1.163 91/04/01 16:32:36 gildea Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -848,6 +848,44 @@ String XtFindFile(path, substitutions, num_substitutions, predicate)
 }
 
 
+/* The implementation of this routine is operating system dependent */
+
+static char *ExtractLocaleName(lang)
+    String	lang;
+{
+
+#ifdef hpux	 /* hpux-specific parsing of the locale string */
+#define MAXLOCALE       64      /* buffer size of locale name */
+
+    char           *start;
+    char           *end;
+    int             len;
+    static char     buf[MAXLOCALE];
+
+    /*  If lang has a substring ":<category>;", extract <category>
+     *  from the first such occurrence as the locale name.
+     */
+
+    start = lang;
+    if (start = strchr (lang, ':')) {
+        start++;
+        if (end = strchr (start, ';')) {
+            len = end - start;
+            strncpy(buf, start, len);
+            *(buf + len) = '\0';
+            lang = buf;
+      }
+    }
+#endif	/* hpux */
+
+    /*  If result is "C", return NULL instead. */
+
+    if (strcmp(lang, "C"))
+        return lang;
+    else
+      return NULL;
+}
+
 static void FillInLangSubs(subs, pd)
     Substitution subs;
     XtPerDisplay pd;
@@ -863,8 +901,16 @@ static void FillInLangSubs(subs, pd)
 	return;
     }
 
-    len = strlen(pd->language) + 1;
-    string = subs[0].substitution = pd->language;
+    string = ExtractLocaleName(pd->language);
+
+    if (string == NULL || string[0] == '\0') {
+	subs[0].substitution = subs[1].substitution =
+		subs[2].substitution = subs[3].substitution = NULL;
+	return;
+    }
+
+    len = strlen(string) + 1;
+    subs[0].substitution = string;
     p1 = subs[1].substitution = XtMalloc((Cardinal) 3*len);
     p2 = subs[2].substitution = subs[1].substitution + len;
     p3 = subs[3].substitution = subs[2].substitution + len;
