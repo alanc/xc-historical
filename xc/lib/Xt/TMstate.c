@@ -1,4 +1,4 @@
-/* $XConsortium: TMstate.c,v 1.142 91/04/12 18:58:18 converse Exp $ */
+/* $XConsortium: TMstate.c,v 1.143 91/04/15 19:33:09 converse Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -1645,27 +1645,18 @@ static XtTranslations UnmergeTranslations(widget, xlations, unmergeXlations,
 	    else
 	      result = second;
 	}
-	if (numOldBindings) {
-	    TMShortCard	i, j, k;
-	    for (i = 0, k = currIndex; i < 2; i++) {
-		if (xlations->composers[i] && 
-		    xlations->composers[i] != unmergeXlations) {
-		    for (j = 0;
-			 j < xlations->composers[i]->numStateTrees;
-			 j++) {
-			if (xlations->composers[i]->
-			    stateTreeTbl[j]->simple.isAccelerator)
-			  newBindings[*numNewBindingsRtn] =
-			    oldBindings[k + j];
-			(*numNewBindingsRtn)++;
-		    }
-		    k += xlations->composers[i]->numStateTrees;
-		}
+    } else { /* only update for leaf nodes */
+  	if (numOldBindings) {
+ 	    Cardinal	i;
+ 	    for (i = 0; i < xlations->numStateTrees; i++) {
+ 		if (xlations->stateTreeTbl[i]->simple.isAccelerator)
+		    newBindings[*numNewBindingsRtn] =
+			oldBindings[currIndex + i];
+ 		(*numNewBindingsRtn)++;
 	    }
 	}
+	result = xlations;
     }
-    else
-      result = xlations;
     return result;
 }
 
