@@ -1,4 +1,4 @@
-/* $XConsortium: XGetProp.c,v 11.16 89/11/08 17:06:54 converse Exp $ */
+/* $XConsortium: XGetProp.c,v 11.17 91/01/06 11:46:15 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -30,9 +30,11 @@ XGetWindowProperty(dpy, w, property, offset, length, delete,
     unsigned long *nitems; 	/* RETURN  # of 8-, 16-, or 32-bit entities */
     unsigned long *bytesafter;	/* RETURN */
     unsigned char **prop;	/* RETURN */
-    {
+{
     xGetPropertyReply reply;
     register xGetPropertyReq *req;
+    xError error;
+
     LockDisplay(dpy);
     GetReq (GetProperty, req);
     req->window = w;
@@ -41,6 +43,7 @@ XGetWindowProperty(dpy, w, property, offset, length, delete,
     req->delete = delete;
     req->longOffset = offset;
     req->longLength = length;
+    error.sequenceNumber = dpy->request;
     
     if (!_XReply (dpy, (xReply *) &reply, 0, xFalse)) {
 	UnlockDisplay(dpy);
@@ -85,8 +88,7 @@ XGetWindowProperty(dpy, w, property, offset, length, delete,
 	     * This is a BadImplementation error. 
 	     */
 	    {
-		xError error;
-		error.sequenceNumber = dpy->request;
+		/* sequence number stored above */
 		error.type = X_Error;
 		error.majorCode = X_GetProperty;
 		error.minorCode = 0;
