@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: events.c,v 5.53 92/03/13 17:49:31 rws Exp $ */
+/* $XConsortium: events.c,v 5.54 92/03/19 11:30:46 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -2620,7 +2620,7 @@ ProcGrabPointer(client)
     DeviceIntPtr device = inputInfo.pointer;
     GrabPtr grab;
     WindowPtr pWin, confineTo;
-    CursorPtr cursor;
+    CursorPtr cursor, oldCursor;
     REQUEST(xGrabPointerReq);
     TimeStamp time;
 
@@ -2694,8 +2694,13 @@ ProcGrabPointer(client)
     {
 	GrabRec tempGrab;
 
-	if (grab && grab->confineTo && !confineTo)
-	    ConfineCursorToWindow(ROOT, FALSE);
+	oldCursor = NullCursor;
+	if (grab)
+ 	{
+	    if (grab->confineTo && !confineTo)
+		ConfineCursorToWindow(ROOT, FALSE);
+	    oldCursor = grab->cursor;
+	}
 	tempGrab.cursor = cursor;
 	tempGrab.resource = client->clientAsMask;
 	tempGrab.ownerEvents = stuff->ownerEvents;
@@ -2706,6 +2711,8 @@ ProcGrabPointer(client)
 	tempGrab.pointerMode = stuff->pointerMode;
 	tempGrab.device = device;
 	(*device->ActivateGrab)(device, &tempGrab, time, FALSE);
+	if (oldCursor)
+	    FreeCursor (oldCursor, (Cursor)0);
 	rep.status = GrabSuccess;
     }
     WriteReplyToClient(client, sizeof(xGrabPointerReply), &rep);
