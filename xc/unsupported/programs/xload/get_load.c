@@ -198,11 +198,11 @@ void GetLoadPoint( w, closure, call_data )
 #endif /* alliant */
 
 #ifdef CRAY
-#  if defined(CRAY2) && defined(UNICOS4)
+#  if defined(CRAY2) && OSMAJORVERSION == 4
 #    define KERNEL_LOAD_VARIABLE "avenrun"
 #  else
 #    define KERNEL_LOAD_VARIABLE "sysinfo"
-#  endif /* defined(CRAY2) && defined(UNICOS4) */
+#  endif /* defined(CRAY2) && OSMAJORVERSION == 4 */
 #endif /* CRAY */
 
 #ifdef hpux
