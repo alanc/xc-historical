@@ -1,4 +1,4 @@
-/* $XConsortium: flostr.h,v 1.1 93/10/26 10:03:28 rws Exp $ */
+/* $XConsortium: flostr.h,v 1.2 93/10/31 09:48:57 dpw Exp $ */
 /**** module flostr.h ****/
 /****************************************************************************
 				NOTICE
@@ -123,8 +123,8 @@ typedef struct _pedef {
   struct _pedef  *clink;        /* next element of the same class          */
   struct _pedef  *olink;        /* link to optimized element               */
   xieFlo         *elemRaw;      /* raw (swapped) client element		   */
-  void		 *elemPvt;	/* dixie element-private info		   */
-  void		 *techPvt;	/* dixie technique-private info		   */
+  pointer	  elemPvt;	/* dixie element-private info		   */
+  pointer	  techPvt;	/* dixie technique-private info		   */
   techVecPtr	  techVec;	/* technique vectors			   */
   ddPETexPtr	  peTex;	/* DDXIE execution context		   */
   inFloPtr	  inFloLst;	/* pointer to in-line array of input info  */
