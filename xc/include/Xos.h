@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xos.h,v 1.65 94/04/04 19:49:47 rws Exp $
+ * $XConsortium: Xos.h,v 1.66 94/04/17 20:10:51 rws Exp kaleb $
  * 
  * 
 Copyright (c) 1987  X Consortium
@@ -108,7 +108,7 @@ extern int sys_nerr;
  */
 #ifdef X_NOT_POSIX
 #include <fcntl.h>
-#if defined(USL) || defined(CRAY) || defined(MOTOROLA) || defined(SYSV386) || defined(__sxg__)
+#if defined(USL) || defined(CRAY) || defined(MOTOROLA) || (defined(i386) && (defined(SYSV) || defined(SVR4))) || defined(__sxg__)
 #include <unistd.h>
 #endif
 #ifdef WIN32

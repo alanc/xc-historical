@@ -1,7 +1,7 @@
 /*
  * O/S-dependent (mis)feature macro definitions
  *
- * $XConsortium: Xosdefs.h,v 1.12 94/03/26 18:06:18 rws Exp $
+ * $XConsortium: Xosdefs.h,v 1.13 94/04/17 20:10:51 rws Exp kaleb $
  *
 Copyright (c) 1991  X Consortium
 
@@ -79,7 +79,7 @@ in this Software without prior written authorization from the X Consortium.
 #endif
 #endif
 
-#ifdef SYSV386
+#ifdef i386
 #ifdef SYSV
 #define X_NOT_POSIX
 #define X_NOT_STDC_ENV
