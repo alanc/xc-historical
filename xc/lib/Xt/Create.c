@@ -1,4 +1,4 @@
-/* $XConsortium: Create.c,v 1.91 93/08/27 16:27:16 kaleb Exp $ */
+/* $XConsortium: Create.c,v 1.92 93/09/18 18:18:23 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -343,16 +343,21 @@ Widget _XtCreateWidget(name, widget_class, parent, args, num_args,
     XtWidgetProc	    insert_child;
     Screen*                 default_screen;
     XtEnum		    class_inited;
+    String		    params[3];
+    Cardinal		    num_params;
+
+    params[0] = name;
+    num_params = 1;
 
     if (parent == NULL) {
 	XtErrorMsg("invalidParent",XtNxtCreateWidget,XtCXtToolkitError,
-                "XtCreateWidget requires non-NULL parent",
-                  (String *)NULL, (Cardinal *)NULL);
+                "XtCreateWidget \"%s\" requires non-NULL parent",
+                  params, &num_params);
     } else if (widget_class == NULL) {
 	XtAppErrorMsg(XtWidgetToApplicationContext(parent),
 		"invalidClass",XtNxtCreateWidget,XtCXtToolkitError,
-                "XtCreateWidget requires non-NULL widget class",
-                  (String *)NULL, (Cardinal *)NULL);
+                "XtCreateWidget \"%s\" requires non-NULL widget class",
+                 params, &num_params);
     }
     LOCK_PROCESS;
     if (!widget_class->core_class.class_inited)
@@ -373,20 +378,17 @@ Widget _XtCreateWidget(name, widget_class, parent, args, num_args,
 	    if (ext != NULL &&
 		(ext->version != XtCompositeExtensionVersion
 		 || ext->record_size != sizeof(CompositeClassExtensionRec))) {
-		String params[1];
-		Cardinal num_params = 1;
-		params[0] = XtClass(parent)->core_class.class_name;
+		params[1] = XtClass(parent)->core_class.class_name;
+		num_params = 2;
 		XtAppWarningMsg(XtWidgetToApplicationContext(parent),
 		  "invalidExtension", XtNxtCreateWidget, XtCXtToolkitError,
-		  "widget class %s has invalid CompositeClassExtension record",
+		  "widget \"%s\" class %s has invalid CompositeClassExtension record",
 		  params, &num_params);
 		ext = NULL;
 	    }
 	    if (ext == NULL || !ext->accepts_objects) {
-		String params[2];
-		Cardinal num_params = 2;
-		params[0] = name;
 		params[1] = XtName(parent);
+		num_params = 2;
 		XtAppErrorMsg(XtWidgetToApplicationContext(parent),
 			      "nonWidget",XtNxtCreateWidget,XtCXtToolkitError,
 			      "attempt to add non-widget child \"%s\" to parent \"%s\" which supports only widgets",
@@ -417,8 +419,8 @@ Widget _XtCreateWidget(name, widget_class, parent, args, num_args,
     if (insert_child == NULL) {
 	XtAppErrorMsg(XtWidgetToApplicationContext(parent),
 		"nullProc","insertChild",XtCXtToolkitError,
-                "NULL insert_child procedure",
-                  (String *)NULL, (Cardinal *)NULL);
+                "\"%s\" parent has NULL insert_child method",
+                 params, &num_params);
     } else {
 	(*insert_child) (widget);
     }
