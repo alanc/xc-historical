@@ -1,5 +1,5 @@
 /*
- * $XConsortium:
+ * $XConsortium: $
  *
  * Copyright IBM Corporation 1991 
  *
