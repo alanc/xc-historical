@@ -1,32 +1,30 @@
-#ifndef XHPLIB_H
-#define XHPLIB_H
-/* $XConsortium$ */
-/*
+/************************************************************
+Copyright (c) 1992 by Hewlett-Packard Company, Palo Alto, California.
 
-Copyright (c) 1986, 1987 by Hewlett-Packard Company
+			All Rights Reserved
 
-Permission to use, copy, modify, and distribute this
-software and its documentation for any purpose and without
-fee is hereby granted, provided that the above copyright
-notice appear in all copies and that both that copyright
-notice and this permission notice appear in supporting
-documentation, and that the name of Hewlett Packard not be used in
-advertising or publicity pertaining to distribution of the
+Permission to use, copy, modify, and distribute this software and its
+documentation for any purpose and without fee is hereby granted,
+provided that the above copyright notice appear in all copies and that
+both that copyright notice and this permission notice appear in
+supporting documentation, and that the name of Hewlett-Packard not be
+used in advertising or publicity pertaining to distribution of the
 software without specific, written prior permission.
 
-HEWLETT-PACKARD MAKES NO WARRANTY OF ANY KIND WITH REGARD
-TO THIS SOFWARE, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-PURPOSE.  Hewlett-Packard shall not be liable for errors
-contained herein or direct, indirect, special, incidental or
-consequential damages in connection with the furnishing,
-performance, or use of this material.
+HEWLETT-PACKARD DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING
+ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL
+HEWLETT-PACKARD BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR
+ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS,
+WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION,
+ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
+SOFTWARE.
 
-This software is not subject to any license of the American
-Telephone and Telegraph Company or of the Regents of the
-University of California.
+********************************************************/
 
-*/
+#ifndef XHPLIB_H
+#define XHPLIB_H
+/* $Header: XHPlib.h,v 1.2 94/12/15 08:58:03 gms Exp $ */
+
 /* Definitions used by Xlib and the client */
 
 #include "XHPproto.h"
@@ -362,13 +360,20 @@ typedef struct {
 #define K16_NLIOSTATE  1
 #define K16_ALTSTATE   2
 
-/* The following block of defines are required for XHPSetKeyboardMapping */
+    /* The following block of defines are required for XHPSetKeyboardMapping,
+     *   the server and other things that use XHPKeymaps.
+     */
+#ifdef hpV4
+#define DEF_DIRECTORY		"/etc/X11/"
+#else
+#define DEF_DIRECTORY		"/usr/lib/X11/"
+#endif	/* hpV4 */
 
-#define DEF_FILENAME	"XHPKeymaps"
-#define DEF_DIRECTORY	"/usr/lib/X11/"
-#define VERIFY_MAGIC	"HPKeyMap Rev 1.0"
+#define SHL_DIRECTORY		"/usr/lib/X11/"
+#define DEF_FILENAME		"XHPKeymaps"
 
-#define MAGIC_SIZE 20
+#define VERIFY_MAGIC		"HPKeyMap Rev 1.0"
+#define MAGIC_SIZE		20	/* sizeof(VERIFY_MAGIC) + some slop */
 
 struct XHP_keymap_header {
     int kbd;
@@ -445,8 +450,8 @@ typedef struct
 #define KB_Romanian		106	/* Romanian Keymap - NO KEYBOARD */
 #define KB_Rumanian		106	/* alternate spelling */
 #define KB_Turkish		107	/* Turkey Keymap - NO KEYBOARD */
-#define KB_Greek		108	/* Greek Keymap - NO KEYBOARD */
-#define KB_Arabic		109	/* Greek Keymap - NO KEYBOARD */
+#define KB_Greek		108	/* Greek  Keymap - NO KEYBOARD */
+#define KB_Arabic		109	/* Arabic Keymap - NO KEYBOARD */
 
 
 	/* PS2 ethereal keyboards (which may never exist) */
@@ -459,8 +464,8 @@ typedef struct
 #define KB_PS2_Romanian		156	/* Romanian Keymap - NO KEYBOARD */
 #define KB_PS2_Rumanian 	156	/* alternate spelling */
 #define KB_PS2_Turkish		157	/* Turkey Keymap - NO KEYBOARD */
-#define KB_PS2_Greek		158	/* Greek Keymap - NO KEYBOARD */
-#define KB_PS2_Arabic		159	/* Greek Keymap - NO KEYBOARD */
+#define KB_PS2_Greek		158	/* Greek  Keymap - NO KEYBOARD */
+#define KB_PS2_Arabic		159	/* Arabic Keymap - NO KEYBOARD */
 
 /* ******************** HP hil PS2 keyboards *************** */
 
@@ -488,6 +493,7 @@ typedef struct
 #define KB_PS2_Canada_English	84
 #define KB_PS2_Swiss_French	88
 #define KB_PS2_Japanese		89
+#define KB_JIS_Japanese		90
 
 #define KB_NULL		201	/* Device that needs a null keymap, modmap */
 #define KB_BUTTON_BOX	202	/* HP button box(es) */
@@ -501,7 +507,6 @@ typedef	int  KEYBOARD_ID;
 /* Function definitions for clients. */
 
 Status      XHPSetKeyboardMapping();
-KEYBOARD_ID XHPGetKeyboardID();
 
 /* End of entries required for XHPSetKeyboardMapping. */
 
