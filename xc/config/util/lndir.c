@@ -1,4 +1,4 @@
-/* $XConsortium: lndir.c,v 1.4 91/07/17 15:55:05 gildea Exp $ */
+/* $XConsortium: lndir.c,v 1.5 91/07/21 15:52:11 rws Exp $ */
 /* Create shadow link tree (after X11R4 script of the same name)
    Mark Reinhold (mbr@lcs.mit.edu)/3 January 1990 */
 
@@ -17,13 +17,13 @@
 
 /* From the original /bin/sh script:
 
-   Used to create a copy of the a directory tree that has links for all
-   non-directories (except those named RCS or SCCS).  If you are
-   building the distribution on more than one machine, you should use
-   this script.
+  Used to create a copy of the a directory tree that has links for all
+  non-directories (except those named RCS, SCCS or CVS.adm).  If you are
+  building the distribution on more than one machine, you should use
+  this technique.
 
-   If your master sources are located in /usr/local/src/X and you would like
-   your link tree to be in /usr/local/src/new-X, do the following:
+  If your master sources are located in /usr/local/src/X and you would like
+  your link tree to be in /usr/local/src/new-X, do the following:
 
    	%  mkdir /usr/local/src/new-X
 	%  cd /usr/local/src/new-X
@@ -136,6 +136,8 @@ int rel;			/* if true, prepend "../" to fn before using */
 		if (!strcmp (dp->d_name, "RCS"))
 		    continue;
 		if (!strcmp (dp->d_name, "SCCS"))
+		    continue;
+		if (!strcmp (dp->d_name, "CVS.adm"))
 		    continue;
 		if (!silent)
 		    printf ("%s:\n", buf);
