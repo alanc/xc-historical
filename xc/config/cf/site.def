@@ -1,4 +1,4 @@
-XCOMM site:  $XConsortium: site.def,v 1.129 94/07/21 16:49:44 gildea Exp gildea $
+XCOMM site:  $XConsortium: site.def,v 1.130 94/08/02 16:01:35 gildea Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -52,7 +52,7 @@ XCOMM site:  $XConsortium: site.def,v 1.129 94/07/21 16:49:44 gildea Exp gildea 
 #ifdef SunArchitecture
 
 #ifdef SVR4
-#if !defined(HasSunCplusplus) && !defined(HasCenterLineCplusplus)
+#if !defined(HasSunCplusplus) && !defined(HasCenterLineCplusplus) && !defined(HasGcc2ForCplusplus)
 #define HasSunCplusplus YES
 #define CplusplusCompilerMajorVersion 4
 #endif
@@ -67,7 +67,7 @@ XCOMM site:  $XConsortium: site.def,v 1.129 94/07/21 16:49:44 gildea Exp gildea 
 
 #else /* !SVR4 */
 
-#if !defined(HasSunCplusplus) && !defined(HasCenterLineCplusplus)
+#if !defined(HasSunCplusplus) && !defined(HasCenterLineCplusplus) && !defined(HasGcc2ForCplusplus)
 #define HasSunCplusplus YES
 #endif
 #ifdef HasSunCplusplus
