@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.119 91/07/20 09:05:27 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.120 91/07/20 10:27:29 rws Exp $
 #define DoNormalLib NormalLibX
 #define DoSharedLib SharedLibX
 #define DoDebugLib DebugLibX
@@ -26,10 +26,10 @@ XCOMM $XConsortium: Imakefile,v 1.119 91/07/20 09:05:27 rws Exp $
 #if Malloc0ReturnsNull
         DEFINES = -DMALLOC_0_RETURNS_NULL
 #endif
-#if HasDESLibrary
-        DESDEFS = -DHASDES
-        DESOBJS = Encrypt.o Crypt.o
-        DESSRCS = Encrypt.c Crypt.c
+#if HasXdmAuth
+        DESDEFS = -DHASXDMAUTH
+        DESOBJS = Wrap.o Wraphelp.o
+        DESSRCS = Wrap.c Wraphelp.c
 #endif
 #if HasSecureRPC
         RPCDEFS = -DSECURE_RPC
@@ -636,7 +636,7 @@ SpecialLibObjectRule(XErrDes.o,$(ICONFIGFILES),$(EDB_DEFINES))
 SpecialLibObjectRule(XStrKeysym.o,$(ICONFIGFILES),$(KDB_DEFINES))
 SpecialLibObjectRule(XConnDis.o,$(ICONFIGFILES),$(CONN_DEFINES))
 SpecialLibObjectRule(XOpenDis.o,$(ICONFIGFILES),$(DESDEFS) $(RPCDEFS) $(CONN_DEFINES))
-SpecialLibObjectRule(Encrypt.o,$(ICONFIGFILES),$(DESDEFS))
+SpecialLibObjectRule(Wrap.o,$(ICONFIGFILES),$(DESDEFS))
 SpecialLibObjectRule(Xstreams.o,$(ICONFIGFILES),$(CONN_DEFINES))
 SpecialLibObjectRule(XlibInt.o,$(ICONFIGFILES),$(CONN_DEFINES))
 SpecialLibObjectRule(XcmsColNm.o,$(ICONFIGFILES),$(CMS_DEFINES))
@@ -684,9 +684,9 @@ LinkSourceFile(AuDispose.c,$(XAUTHSRC))
 LinkSourceFile(AuGetBest.c,$(XAUTHSRC))
 LinkSourceFile(AuFileName.c,$(XAUTHSRC))
 LinkSourceFile(AuRead.c,$(XAUTHSRC))
-LinkSourceFile(des.h,$(XDMCPLIBSRC))
-LinkSourceFile(Encrypt.c,$(XDMCPLIBSRC))
-LinkSourceFile(Crypt.c,$(XDMCPLIBSRC))
+LinkSourceFile(Wrap.h,$(XDMCPLIBSRC))
+LinkSourceFile(Wrap.c,$(XDMCPLIBSRC))
+LinkSourceFile(Wraphelp.c,$(XDMCPLIBSRC))
 
 ks_tables.h: $(INCLUDESRC)/keysymdef.h util/makekeys.c
 	$(RM) $@ makekeys
@@ -695,9 +695,9 @@ ks_tables.h: $(INCLUDESRC)/keysymdef.h util/makekeys.c
 	$(MV) ks_tables_h $@
 	$(RM) makekeys ks_tables_h
 
-includes:: ks_tables.h des.h $(AUTHSRCS) $(DESSRCS) $(LCSRCS)
+includes:: ks_tables.h Wrap.h $(AUTHSRCS) $(DESSRCS) $(LCSRCS)
 
-depend:: ks_tables.h des.h $(AUTHSRCS) $(DESSRCS) $(LCSRCS)
+depend:: ks_tables.h Wrap.h $(AUTHSRCS) $(DESSRCS) $(LCSRCS)
 
 clean::
 	$(RM) ks_tables_h ks_tables.h makekeys

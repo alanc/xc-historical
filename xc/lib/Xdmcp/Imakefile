@@ -1,4 +1,4 @@
-XCOMM $XConsortium$
+XCOMM $XConsortium: Imakefile,v 1.17 91/07/16 20:50:28 gildea Exp $
 #define DoNormalLib NormalLibXdmcp
 #define DoSharedLib SharedLibXdmcp
 #define DoDebugLib DebugLibXdmcp
@@ -12,13 +12,13 @@ XCOMM
 
    INSTALLFLAGS = $(INSTINCFLAGS)
 
-#if HasDESLibrary
-DESDEFS = -DHASDES
-DESSRCS = Encrypt.c Decrypt.c Crypt.c
-DESOBJS = Encrypt.o Decrypt.o Crypt.o
+#if HasXdmAuth
+AUTHDEFS = -DHASXDMAUTH
+AUTHSRCS = Wrap.c Unwrap.c Wraphelp.c
+AUTHOBJS = Wrap.o Unwrap.o Wraphelp.o
 #endif
 
-DEFINES = $(DESDEFS)
+DEFINES = $(AUTHDEFS)
 
 HEADERS = Xdmcp.h
 
@@ -61,7 +61,7 @@ SRCS = \
 	DecKey.c \
 	GenKey.c \
 	IncKey.c \
-	$(DESSRCS)
+	$(AUTHSRCS)
 
 OBJS = \
 	A8Eq.o \
@@ -102,7 +102,7 @@ OBJS = \
 	DecKey.o \
 	GenKey.o \
 	IncKey.o \
-	$(DESOBJS)
+	$(AUTHOBJS)
 
 LibraryObjectRule()
 
@@ -132,8 +132,3 @@ InstallMultiple($(HEADERS),$(INCDIR))
 DependTarget()
 
 NormalLintTarget($(SRCS))
-
-NormalProgramTarget(verify,verify.o,libXdmcp.a,libXdmcp.a,NullParameter)
-
-saber_verify: verify.c $(SRCS)
-	XCOMM load $(INCLUDES) $(DEFINES) verify.c $(SRCS)

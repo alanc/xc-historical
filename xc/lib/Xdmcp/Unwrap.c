@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Decrypt.c,v 1.5 91/01/23 22:13:31 gildea Exp $
+ * $XConsortium: Decrypt.c,v 1.6 91/07/23 21:20:20 keith Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -28,7 +28,7 @@
 #include <X11/Xmd.h>
 #include <X11/Xdmcp.h>
 
-#ifdef HASDES
+#ifdef HASXDMAUTH
 
 /*
  * The following function exists only to demonstrate the
@@ -45,41 +45,41 @@
  * Examine the XDMCP specification for the correct algorithm
  */
 
-#include "des.h"
+#include "Wrap.h"
 
 void
-XdmcpDecrypt (crypto, key, plain, bytes)
-    unsigned char	*crypto, *plain;
-    unsigned char	*key;
+XdmcpUnwrap (input, wrapper, output, bytes)
+    unsigned char	*input, *output;
+    unsigned char	*wrapper;
     int			bytes;
 {
     int			i, j, k;
     unsigned char	tmp[8];
     unsigned char	blocks[2][8];
-    unsigned char	expand_key[8];
-    des_key_schedule	schedule;
+    unsigned char	expand_wrapper[8];
+    auth_wrapper_schedule	schedule;
 
-    XdmcpKeyToOddParityKey (key, expand_key);
-    _Xdes_set_key ((unsigned char *) key, schedule);
+    _XdmcpWrapperToOddParity (wrapper, expand_wrapper);
+    _XdmcpAuthSetup ((unsigned char *) wrapper, schedule);
 
     k = 0;
     for (j = 0; j < bytes; j += 8)
     {
 	if (bytes - j < 8)
-	    return; /* bad crypto length */
+	    return; /* bad input length */
 	for (i = 0; i < 8; i++)
-	    blocks[k][i] = crypto[j + i];
-	_Xdes_ecb_encrypt ((unsigned char *) (crypto + j), (unsigned char *) tmp, schedule, 0);
+	    blocks[k][i] = input[j + i];
+	_XdmcpAuthDoIt ((unsigned char *) (input + j), (unsigned char *) tmp, schedule, 0);
 	/* block chaining */
 	k = (k == 0) ? 1 : 0;
 	for (i = 0; i < 8; i++)
 	{
 	    if (j == 0)
-		plain[j + i] = tmp[i];
+		output[j + i] = tmp[i];
 	    else
-		plain[j + i] = tmp[i] ^ blocks[k][i];
+		output[j + i] = tmp[i] ^ blocks[k][i];
 	}
     }
 }
 
-#endif /* HASDES */
+#endif /* HASXDMAUTH */

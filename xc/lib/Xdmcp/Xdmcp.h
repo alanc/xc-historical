@@ -1,4 +1,4 @@
-/* $XConsortium: Xdmcp.h,v 1.6 91/07/14 15:44:52 gildea Exp $ */
+/* $XConsortium: Xdmcp.h,v 1.7 91/07/16 20:32:51 gildea Exp $ */
 /*
  * Copyright 1989 Network Computing Devices, Inc., Mountain View, California.
  *
@@ -119,13 +119,12 @@ extern int XdmcpCopyARRAY8();
 
 extern int XdmcpARRAY8Equal();
 
-#ifdef HASDES
+#ifdef HASXDMAUTH
 extern void XdmcpGenerateKey();
 extern void XdmcpIncrementKey();
 extern void XdmcpDecrementKey();
-extern void XdmcpEncrypt();
-extern void XdmcpDecrypt();
-extern void XdmcpKeyToOddParityKey();
+extern void XdmcpWrap();
+extern void XdmcpUnwrap();
 #endif
 
 #ifndef TRUE

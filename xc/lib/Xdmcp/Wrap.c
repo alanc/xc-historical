@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Encrypt.c,v 1.5 91/01/08 14:36:31 gildea Exp $
+ * $XConsortium: Encrypt.c,v 1.6 91/07/23 21:20:19 keith Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -28,7 +28,7 @@
 #include <X11/Xmd.h>
 #include <X11/Xdmcp.h>
 
-#ifdef HASDES
+#ifdef HASXDMAUTH
 
 /*
  * The following function exists only to demonstrate the
@@ -39,22 +39,22 @@
  * Examine the XDMCP specification for the correct algorithm
  */
 
-#include "des.h"
+#include "Wrap.h"
 
 void
-XdmcpEncrypt (plain, key, crypto, bytes)
-    unsigned char	*plain, *crypto;
-    unsigned char	*key;
+XdmcpWrap (input, wrapper, output, bytes)
+    unsigned char	*input, *output;
+    unsigned char	*wrapper;
     int			bytes;
 {
     int			i, j;
     int			len;
     unsigned char	tmp[8];
-    unsigned char	expand_key[8];
-    des_key_schedule	schedule;
+    unsigned char	expand_wrapper[8];
+    auth_wrapper_schedule	schedule;
 
-    XdmcpKeyToOddParityKey (key, expand_key);
-    _Xdes_set_key (key, schedule);
+    _XdmcpWrapperToOddParity (wrapper, expand_wrapper);
+    _XdmcpAuthSetup (wrapper, schedule);
     for (j = 0; j < bytes; j += 8)
     {
 	len = 8;
@@ -64,24 +64,24 @@ XdmcpEncrypt (plain, key, crypto, bytes)
 	for (i = 0; i < len; i++)
 	{
 	    if (j == 0)
-		tmp[i] = plain[i];
+		tmp[i] = input[i];
 	    else
-		tmp[i] = plain[j + i] ^ crypto[j - 8 + i];
+		tmp[i] = input[j + i] ^ output[j - 8 + i];
 	}
 	for (; i < 8; i++)
 	{
 	    if (j == 0)
 		tmp[i] = 0;
 	    else
-		tmp[i] = 0 ^ crypto[j - 8 + i];
+		tmp[i] = 0 ^ output[j - 8 + i];
 	}
-	_Xdes_ecb_encrypt (tmp, (crypto + j), schedule, 1);
+	_XdmcpAuthDoIt (tmp, (output + j), schedule, 1);
     }
 }
 
 /*
- * Given a 56 bit key in XDMCP format, create a 56
- * bit key in 7-bits + odd parity format
+ * Given a 56 bit wrapper in XDMCP format, create a 56
+ * bit wrapper in 7-bits + odd parity format
  */
 
 static int
@@ -95,12 +95,12 @@ OddParity (c)
 }
 
 /*
- * Spread the 56 bit key among 8 bytes, using the upper 7 bits
+ * Spread the 56 bit wrapper among 8 bytes, using the upper 7 bits
  * of each byte, and storing an odd parity bit in the low bit
  */
 
 void
-XdmcpKeyToOddParityKey (in, out)
+_XdmcpWrapperToOddParity (in, out)
     unsigned char   *in, *out;
 {
     int		    ashift, bshift;

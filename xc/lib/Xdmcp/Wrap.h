@@ -1,7 +1,9 @@
 /*
- * header file for compatibility with kerberos DES routines
+ * header file for compatibility with something useful
  */
 
-typedef unsigned char des_cblock[8];	/* crypto-block size */
+typedef unsigned char auth_cblock[8];	/* block size */
 
-typedef struct des_ks_struct { des_cblock _; } des_key_schedule[16];
+typedef struct auth_ks_struct { auth_cblock _; } auth_wrapper_schedule[16];
+
+extern void _XdmcpWrapperToOddParity();

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XOpenDis.c,v 11.117 91/05/06 15:38:12 keith Exp $
+ * $XConsortium: XOpenDis.c,v 11.118 91/07/22 15:43:33 rws Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986	*/
@@ -20,7 +20,7 @@ without express or implied warranty.
 
 #include <X11/Xlibint.h>
 #include <X11/Xos.h>
-#ifdef HASDES
+#ifdef HASXDMAUTH
 #include "Xlibnet.h"
 #if TCPCONN
 #include <sys/socket.h>
@@ -33,7 +33,7 @@ without express or implied warranty.
 #ifdef SVR4
 #include <tiuser.h>
 #else
-#undef HASDES
+#undef HASXDMAUTH
 #endif
 #endif
 
@@ -79,7 +79,7 @@ static char *default_xauth_names[] = {
 #ifdef SECURE_RPC
     "SUN-DES-1",
 #endif
-#ifdef HASDES
+#ifdef HASXDMAUTH
     "XDM-AUTHORIZATION-1",
 #endif
     "MIT-MAGIC-COOKIE-1"
@@ -89,7 +89,7 @@ static int default_xauth_lengths[] = {
 #ifdef SECURE_RPC
     9,	    /* strlen ("SUN-DES-1") */
 #endif
-#ifdef HASDES
+#ifdef HASXDMAUTH
     19,	    /* strlen ("XDM-AUTHORIZATION-1") */
 #endif
     18	    /* strlen ("MIT-MAGIC-COOKIE-1") */
@@ -159,11 +159,10 @@ void XSetAuthorization (name, namelen, data, datalen)
 
 #ifdef SECURE_RPC
 /*
- * Create an encrypted credential that we can send to the
- * X server.
+ * Create a credential that we can send to the X server.
  */
 static int
-authdes_ezencode(servername, window, cred_out, len)
+auth_ezencode(servername, window, cred_out, len)
         char           *servername;
         int             window;
 	char	       *cred_out;
@@ -174,12 +173,12 @@ authdes_ezencode(servername, window, cred_out, len)
 
         a = authdes_create(servername, window, NULL, NULL);
         if (a == (AUTH *)NULL) {
-                perror("authdes_create");
+                perror("auth_create");
                 return 0;
         }
         xdrmem_create(&xdr, cred_out, *len, XDR_ENCODE);
         if (AUTH_MARSHALL(a, &xdr) == FALSE) {
-                perror("authdes_marshal");
+                perror("auth_marshall");
                 AUTH_DESTROY(a);
                 return 0;
         }
@@ -240,8 +239,8 @@ Display *XOpenDisplay (display)
 	char	rpc_cred[MAX_AUTH_BYTES];
 #endif
  
-#ifdef HASDES
-	char    encrypted_data[192/8];
+#ifdef HASXDMAUTH
+	char    xdmcp_data[192/8];
 #endif
 
 	/*
@@ -326,7 +325,7 @@ Display *XOpenDisplay (display)
 		conn_auth_data = NULL;
 	    }
 	}
-#ifdef HASDES
+#ifdef HASXDMAUTH
 	/*
 	 * build XDM-AUTHORIZATION-1 data
 	 */
@@ -336,7 +335,7 @@ Display *XOpenDisplay (display)
 	    int	    i, j;
 	    long    now;
 	    for (j = 0; j < 8; j++)
-		encrypted_data[j] = conn_auth_data[j];
+		xdmcp_data[j] = conn_auth_data[j];
 #ifdef STREAMSCONN /* && SVR4 */
 	    {
 	    	struct netbuf	netb;
@@ -354,9 +353,9 @@ Display *XOpenDisplay (display)
 		 * on a non 32-bit machine (same in Xstreams.c)
 		 */
 		for (i = 4; i < 8; i++)
-		    encrypted_data[j++] = netb.buf[i];
+		    xdmcp_data[j++] = netb.buf[i];
 		for (i = 2; i < 4; i++)
-		    encrypted_data[j++] = netb.buf[i];
+		    xdmcp_data[j++] = netb.buf[i];
 	    }
 #else
 	    {
@@ -383,27 +382,27 @@ Display *XOpenDisplay (display)
 		    addr = unix_addr--;
 		    port = getpid ();
 	    	}
-	    	encrypted_data[j++] = (addr >> 24) & 0xFF;
-	    	encrypted_data[j++] = (addr >> 16) & 0xFF;
-	    	encrypted_data[j++] = (addr >>  8) & 0xFF;
-	    	encrypted_data[j++] = (addr >>  0) & 0xFF;
-	    	encrypted_data[j++] = (port >>  8) & 0xFF;
-	    	encrypted_data[j++] = (port >>  0) & 0xFF;
+	    	xdmcp_data[j++] = (addr >> 24) & 0xFF;
+	    	xdmcp_data[j++] = (addr >> 16) & 0xFF;
+	    	xdmcp_data[j++] = (addr >>  8) & 0xFF;
+	    	xdmcp_data[j++] = (addr >>  0) & 0xFF;
+	    	xdmcp_data[j++] = (port >>  8) & 0xFF;
+	    	xdmcp_data[j++] = (port >>  0) & 0xFF;
 	    }
 #endif
 	    time (&now);
-	    encrypted_data[j++] = (now >> 24) & 0xFF;
-	    encrypted_data[j++] = (now >> 16) & 0xFF;
-	    encrypted_data[j++] = (now >>  8) & 0xFF;
-	    encrypted_data[j++] = (now >>  0) & 0xFF;
+	    xdmcp_data[j++] = (now >> 24) & 0xFF;
+	    xdmcp_data[j++] = (now >> 16) & 0xFF;
+	    xdmcp_data[j++] = (now >>  8) & 0xFF;
+	    xdmcp_data[j++] = (now >>  0) & 0xFF;
 	    while (j < 192 / 8)
-		encrypted_data[j++] = 0;
-	    XdmcpEncrypt (encrypted_data, conn_auth_data + 8,
-			  encrypted_data, j);
-	    conn_auth_data = encrypted_data;
+		xdmcp_data[j++] = 0;
+	    XdmcpWrap (xdmcp_data, conn_auth_data + 8,
+			  xdmcp_data, j);
+	    conn_auth_data = xdmcp_data;
 	    conn_auth_datalen = j;
 	}
-#endif /* HASDES */
+#endif /* HASXDMAUTH */
 #ifdef SECURE_RPC
         /*
          * The SUN-DES-1 authorization protocol uses the
@@ -424,7 +423,7 @@ Display *XOpenDisplay (display)
             servernetname[conn_auth_datalen] = '\0';
 
 	    conn_auth_datalen = sizeof (rpc_cred);
-            if (authdes_ezencode(servernetname, 100, rpc_cred, &conn_auth_datalen))
+            if (auth_ezencode(servernetname, 100, rpc_cred, &conn_auth_datalen))
 		conn_auth_data = rpc_cred;
 	    else
 		conn_auth_data = NULL;
