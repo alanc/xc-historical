@@ -69,6 +69,7 @@ typedef int             Boolean;
 typedef char*           Opaque;
 typedef struct _TranslationData	*Translations;
 typedef struct _CallbackRec*    CallbackList;
+typedef unsigned long   XtCallbackType;
 typedef unsigned long   ValueMask;
 typedef unsigned long   XtIntervalId;
 typedef unsigned long   GeometryMask;
@@ -353,7 +354,8 @@ extern void XtCompositeRemoveChild ();
 
 typedef void (*CallbackProc)();
     /* Widget widget; */
-    /* caddr_t closure; */
+    /* caddr_t closure;  data the application registered */
+    /* caddr_t callData; widget instance specific data passed to application*/
 
 typedef struct _CallbackRec {
     struct _CallbackRec *next;
@@ -362,27 +364,31 @@ typedef struct _CallbackRec {
     Opaque  closure;
 }CallbackRec;
 
+extern XtCallbackType XtNewXtCallbackType();
+    /* WidegtClass widgetClass; */
+    /* Cardinal offset; */
 
 extern void XtAddCallback ();
-    /* CallbackList callbacks; */
-    /* Callback     callback; */
     /* Widget       widget;   */
+    /* XtCallbackType callbackType; */
+    /* CallbackProc callback; */
     /* caddr_t      closure;  */
 
-
 extern void XtRemoveCallback ();
-    /* CallbackList callbacks; */
-    /* Callback     callback; */
     /* Widget       widget;   */
+    /* XtCallbackType callbackType; */
+    /* CallbackProc callback; */
     /* caddr_t      closure;  */
 
 
 extern void XtRemoveAllCallbacks ();
-    /* CallbackList callbacks; */
+    /* Widget widget; */
+    /* XtCallbackType callbackType; */
 
 extern void XtCallCallbacks ();
-    /* Callbacks callbacks; */
-
+    /* Widget  widget; */
+    /* XtCallbackType callbackType; */
+    /* caddr_t callData */
 
 /****************************************************************
  *
