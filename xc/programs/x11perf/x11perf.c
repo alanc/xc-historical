@@ -197,6 +197,9 @@ NULL};
     exit (1);
 }
 
+/* Main window created (if any) that the current benchmark draws to. */
+static Window perfWindow;
+
 DoTest(d, test, label)
     Display *d;
     Test *test;
@@ -208,7 +211,20 @@ DoTest(d, test, label)
     XSync (d, 0);
     InitTimes ();
     (*test->proc) (d, &test->parms);
-    XSync (d, 0);
+    if (perfWindow == NULL) {
+	XSync (d, 0);
+    } else {
+	/*
+	 * Some graphics hardware allows the server to claim it is done,
+	 * while in reality the hardware is busily working away.  So fetch
+	 * a pixel from the window that was drawn to, which should be
+	 * enough to make the server wait for the graphics hardware.
+	 */
+	XImage *i;
+	i = XGetImage(d, perfWindow, 1, 1, 1, 1, ~0, ZPixmap);
+	XDestroyImage(i);
+    }
+
     GetTime (&r);
     ReportTimes (r, test->parms.reps * test->parms.objects, label);
     if (drawToGPX)
@@ -234,6 +250,8 @@ Window CreatePerfWindow(d, x, y, width, height)
     return w;
 }
 
+
+
 void CreatePerfStuff(d, count, width, height, w, bggc, fggc)
     Display *d;
     int width, height, count;
@@ -246,7 +264,12 @@ void CreatePerfStuff(d, count, width, height, w, bggc, fggc)
 
     xswa.override_redirect = True;
     for (i = 0; i < count; i++) {
-	w[i] = CreatePerfWindow(d, 50, 50, width, height);
+	w[i] = CreatePerfWindow(d, 50+i*width, 50+i*height, width, height);
+    }
+
+    if (count != 0) {
+	/* Stash away main graphics window */
+	perfWindow = w[0];
     }
 
     if (bggc != NULL) {
@@ -412,6 +435,7 @@ main(argc, argv)
 		}
 		else
 		    strcpy (label, test[i].label);
+		perfWindow = NULL;
 		if (test[i].init != NullProc)
 		    (*test[i].init) (display, &test[i].parms);
 		for (j = 0; j < repeat; j++)
