@@ -4,42 +4,50 @@
 #
 #**********************************************************************
 
-IconDirectory "/users/jim/icons"
+#IconDirectory "/users/jim/icons"	# use *bitmapFilePath instead.
 
-SqueezeTitle
+#
+# Use the SHAPE extension to make titles use as little space as possible.  The
+# location of the titles is specified as a fraction of the distance from the
+# left (numerator positive) or right edge (numerator negative).  A denominator
+# of 0 indicates that the numerator is measured in pixels.  The title is then
+# justified over the indicated spot (note special cases are made for center on
+# 0/0 and right on 0/0 to indicate the center and right edge of the titlebar).
+#
+SqueezeTitle			# also sets default to Squeeze all Titles
 {
-    "oclock"	center	  0  0
-    "XTerm"	left	  0  0
+#   name	justify	num denom
+    "oclock"	center	  0  0		# centered over middle of title
+    "XTerm"	left	  0  0		# left edge of title
+    "xlogo"	right	  0  0		# for kicks
     "emacs"	center	  0  0
-    "xlogo"	right	 -1  4
     "xmh"	center	  0  0
 }
-NoDefaults
-LeftTitleButton "menu12" = f.menu "windowmenu"
-TitleButtonBorderWidth 0
-ButtonIndent 0
+NoDefaults			# turn off iconify and resize button
+LeftTitleButton "menu12" = f.menu "windowmenu"	# add a menu to each window
+TitleButtonBorderWidth 0	# don't want to see box around button
+ButtonIndent 0			# button doesn't have to be smaller
 
-UsePPosition "on"
-NoVersion
-NoHighlight
-OpaqueMove
-AutoRelativeResize
-RestartPreviousState
-ClientBorderWidth
-BorderWidth 2
-NoGrabServer
-NoRaiseOnMove
-NoRaiseOnResize
-NoTitleFocus
-DecorateTransients
+UsePPosition "on"		# use program-specified size hints accepted
+NoHighlight			# do not flash borders on enter events
+OpaqueMove			# actually move window instead of outline
+AutoRelativeResize		# don't require resize to cross border to start
+RestartPreviousState		# reiconify iconified things on startup
+ClientBorderWidth		# use the application border width on frame
+BorderWidth 2			# width of top level windows created by twm
+NoGrabServer			# don't grab server during menus, etc.
+NoRaiseOnMove			# allow moving under other windows
+NoRaiseOnResize			# allow resizing under other windows
+NoTitleFocus			# use XSendEvent instead of XSetFocus in title
+DecorateTransients		# put titlebars on transients
 TitleFont "-adobe-helvetica-bold-r-normal--*-120-*-*-*-*-*-*"
 MenuFont "-adobe-helvetica-bold-r-normal--*-120-*-*-*-*-*-*"
 IconFont "-adobe-helvetica-bold-r-normal--*-100-*-*-*-*-*-*"
 IconManagerFont "-adobe-helvetica-bold-r-normal--*-100-*-*-*"
 ResizeFont "-adobe-helvetica-bold-r-normal--*-120-*-*-*"
-NoSaveUnders
-XORvalue 1
-ConstrainedMoveTime 0
+NoSaveUnders			# faster to just repaint then save
+XORvalue 1			# tend to use visually distinct adjacent colors
+ConstrainedMoveTime 0		# turn off horizontal/vertical only moving
 
 
 ###############################################################################
@@ -50,7 +58,7 @@ ConstrainedMoveTime 0
 
 Cursors
 {
-    Button "hand2"
+    Button "hand2"		# to remind me to press in the button
 }
 
 Color
@@ -84,8 +92,8 @@ Monochrome
 #                                                                             #
 ###############################################################################
 
-MoveDelta 3
-Function "move-or-raise"
+MoveDelta 3			# need to move this much before takes effect
+Function "move-or-raise"	# simulate uwm action
 {
     f.move
     f.deltastop
@@ -93,7 +101,7 @@ Function "move-or-raise"
 }
 
 
-DefaultFunction f.nop
+DefaultFunction f.nop		# ignore extraneous events
 
 Button1 =      : root                     : f.menu "twmops"
 Button2 =      : root                     : f.menu "windowops"
@@ -125,18 +133,11 @@ Button1 = c|m|s: root			  : f.refresh
 #                                                                             #
 ###############################################################################
 
-SortIconManager
-ShowIconManager
-IconManagerGeometry	"370x50+576+1" 6
-IconifyByUnmapping
-DontIconifyByUnmapping
-{
-  "xclock"
-  "xbiff"
-  "xload"
-  "xcutsel"
-}
-IconManagerDontShow
+SortIconManager			# keep them in alphabetic order
+ShowIconManager			# start with iconmgr up
+IconManagerGeometry "700x50+246+2" 14	# strip across top
+IconifyByUnmapping		# just use icon manager
+IconManagerDontShow		# but ignore these windows
 {
   "xclock"
   "xbiff"
@@ -144,7 +145,14 @@ IconManagerDontShow
   "oclock"
   "xcutsel"
 }
-NoTitle
+DontIconifyByUnmapping		# don't lose them (still in TwmWindows menu)
+{
+  "xclock"
+  "xbiff"
+  "xload"
+  "xcutsel"
+}
+NoTitle				# little programs that look like icons
 {
   "xclock"
   "xbiff"
