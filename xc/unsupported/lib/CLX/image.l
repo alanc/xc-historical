@@ -18,16 +18,6 @@
 ;;; express or implied warranty.
 ;;;
 
-;;;
-;;; Change history:
-;;;
-;;;  Date	Author	Description
-;;; -------------------------------------------------------------------------------------
-;;; 10/14/87	LGO	Created
-;;; 11/03/87	LGO	Re-written to split out image-x image-xy and image-z types
-;;;  5/18/88    DLC     Moved BYTE-REVERSE to before it was used for inline expansion
-;;; 11/12/89    CJL     Major rewrite for performance and robustness.
-
 (in-package 'xlib :use '(lisp))
 
 (export '(bitmap
@@ -70,8 +60,8 @@
 
 ;; Image-Plist accessors:
 (defmacro image-name (image) `(getf (image-plist ,image) :name))
-(defmacro image-x-hot (image) `(getf (image-plist ,image) :x_hot))
-(defmacro image-y-hot (image) `(getf (image-plist ,image) :y_hot))
+(defmacro image-x-hot (image) `(getf (image-plist ,image) :x-hot))
+(defmacro image-y-hot (image) `(getf (image-plist ,image) :y-hot))
 (defmacro image-red-mask (image) `(getf (image-plist ,image) :red-mask))
 (defmacro image-blue-mask (image) `(getf (image-plist ,image) :blue-mask))
 (defmacro image-green-mask (image) `(getf (image-plist ,image) :green-mask))
@@ -91,7 +81,8 @@
   (byte-lsb-first-p *image-byte-lsb-first-p* :type boolean)	; Byte order
   (data *empty-data-x* :type (array card8 (*)))			; row-major
   (unit *image-unit* :type (member 8 16 32))			; Bitmap unit
-  (pad *image-pad* :type (member 8 16 32)))			; Scanline pad
+  (pad *image-pad* :type (member 8 16 32))			; Scanline pad
+  (left-pad 0 :type card8))					; Left pad
 
 (defstruct (image-xy (:include image) (:copier nil))
   ;; Public structure
@@ -111,7 +102,7 @@
 		     bits-per-pixel format bytes-per-line
 		     (byte-lsb-first-p *image-byte-lsb-first-p*)
 		     (bit-lsb-first-p *image-bit-lsb-first-p*)
-		     unit pad)
+		     unit pad left-pad)
   ;; Returns an image-x image-xy or image-z structure, depending on the
   ;; type of the :DATA parameter.
   (declare
@@ -131,7 +122,8 @@
 	  format)				; defaults to :z-pixmap
     (type (or null card16) bytes-per-line)
     (type boolean byte-lsb-first-p bit-lsb-first-p)
-    (type (or null (member 8 16 32)) unit pad))
+    (type (or null (member 8 16 32)) unit pad)
+    (type card8 left-pad))
   (declare (values image))
   (let ((image
 	  (etypecase data
@@ -165,8 +157,11 @@
 		  (setq pad
 			(dolist (pad '(32 16 8))
 			  (when (and (index<= pad *image-pad*)
-				     (zerop (index-mod bytes-per-line pad)))
+				     (zerop
+				       (index-mod
+					 (index* bytes-per-line 8) pad)))
 			    (return pad)))))
+		(unless left-pad (setq left-pad 0))
 		(make-image-x
 		  :width width :height height :depth depth :plist plist
 		  :format format :data data
@@ -174,7 +169,7 @@
 		  :bytes-per-line bytes-per-line
 		  :byte-lsb-first-p byte-lsb-first-p
 		  :bit-lsb-first-p bit-lsb-first-p
-		  :unit unit :pad pad)))
+		  :unit unit :pad pad :left-pad left-pad)))
 	    (list				; image-xy
 	      (let ((data data))
 		(declare (type list data))
@@ -768,27 +763,53 @@
 	      (if to-bitmap-byte-lsb-first-p 6 0)))
       (aref *image-swap-lsb-first-p* from-index))))
 
-(defun image-swap (src dest srcoff destoff srclen srcinc destinc height
-		   from-bitmap-unit from-bitmap-bit-lsb-first-p 
-		   from-bitmap-byte-lsb-first-p
-		   to-bitmap-unit to-bitmap-bit-lsb-first-p 
-		   to-bitmap-byte-lsb-first-p)
+(defun image-swap-xy
+       (src dest srcoff destoff srclen srcinc destinc height
+	from-bitmap-unit from-byte-lsb-first-p from-bit-lsb-first-p
+	to-bitmap-unit to-byte-lsb-first-p to-bit-lsb-first-p)
   (declare (type buffer-bytes src dest)
 	   (type array-index srcoff destoff srclen srcinc destinc)
 	   (type card16 height)
-	   (type boolean from-bitmap-unit from-bitmap-bit-lsb-first-p
-		 from-bitmap-byte-lsb-first-p
-		 to-bitmap-unit to-bitmap-bit-lsb-first-p
-		 to-bitmap-byte-lsb-first-p))
+	   (type (member 8 16 32) from-bitmap-unit to-bitmap-unit)
+	   (type boolean from-byte-lsb-first-p from-bit-lsb-first-p
+		 to-byte-lsb-first-p to-bit-lsb-first-p))
   (multiple-value-bind (function lsb-first-p)
       (image-swap-function
-	from-bitmap-unit from-bitmap-byte-lsb-first-p
-	from-bitmap-bit-lsb-first-p to-bitmap-unit
-	to-bitmap-byte-lsb-first-p to-bitmap-bit-lsb-first-p)
+	from-bitmap-unit from-byte-lsb-first-p from-bit-lsb-first-p
+	to-bitmap-unit to-byte-lsb-first-p to-bit-lsb-first-p)
     (declare (type symbol function)
 	     (type boolean lsb-first-p))
     (funcall function src dest srcoff destoff srclen srcinc destinc height
 	     lsb-first-p)))
+
+(defun image-swap-z
+       (src dest srcoff destoff srclen srcinc destinc height
+	bits-per-pixel from-byte-lsb-first-p to-byte-lsb-first-p)
+  (declare (type buffer-bytes src dest)
+	   (type array-index srcoff destoff srclen srcinc destinc)
+	   (type (member 1 4 8 16 24 32) bits-per-pixel)
+	   (type card16 height)
+	   (type boolean from-byte-lsb-first-p to-byte-lsb-first-p))
+  (cond ((or (eq from-byte-lsb-first-p to-byte-lsb-first-p)
+	     (= bits-per-pixel 8))
+	 (image-noswap
+	   src dest srcoff destoff srclen srcinc destinc height
+	   from-byte-lsb-first-p))
+	((= bits-per-pixel 32)
+	 (image-swap-four-bytes
+	   src dest srcoff destoff srclen srcinc destinc height
+	   from-byte-lsb-first-p))
+	((= bits-per-pixel 24)
+	 (image-swap-three-bytes
+	   src dest srcoff destoff srclen srcinc destinc height
+	   from-byte-lsb-first-p))
+	((= bits-per-pixel 16)
+	 (image-swap-two-bytes
+	   src dest srcoff destoff srclen srcinc destinc height
+	   from-byte-lsb-first-p))
+	(t
+	 (image-swap-nibbles
+	   src dest srcoff destoff srclen srcinc destinc height))))
 
 
 ;;;-----------------------------------------------------------------------------
@@ -1062,34 +1083,21 @@
 		(aref buffer-bbuf (index+ i 3))))))))
 
 (defun read-xy-format-image-x
-       (buffer-bbuf index length data x y width height depth
+       (buffer-bbuf index length data width height depth
 	padded-bytes-per-line padded-bytes-per-plane
 	unit byte-lsb-first-p bit-lsb-first-p pad)
   (declare (type buffer-bytes buffer-bbuf)
-	   (type card16 x y width height)
+	   (type card16 width height)
 	   (type array-index index length padded-bytes-per-line
 		 padded-bytes-per-plane)
 	   (type image-depth depth)
 	   (type (member 8 16 32) unit pad)
 	   (type boolean byte-lsb-first-p bit-lsb-first-p)
 	   (values image-x))
-  (unless (zerop (index-mod x unit))
-    (error "~S subimaging can only be performed to the granularity of the~@
-            image scanline unit" 'image-x))
-  (assert (index<= (index+ (index* (index1- depth) padded-bytes-per-plane)
-			   (index* (index+ y height) padded-bytes-per-line))
-		   length))
-  (let* ((image-bytes-per-line (index-ceiling width 8))
-	 (image-padded-bits-per-line
-	   (index* (index-ceiling width pad) pad))
-	 (image-padded-bytes-per-line
-	   (index-ceiling image-padded-bits-per-line 8))
-	 (image-padded-bytes-per-plane
-	   (index* image-padded-bytes-per-line height))
-	 (data-length (index* image-padded-bytes-per-plane depth)))
-    (declare (type array-index image-bytes-per-line
-		   image-padded-bits-per-line image-padded-bytes-per-line
-		   image-padded-bytes-per-plane data-length))
+  (assert (index<= (index* depth padded-bytes-per-plane) length))
+  (let* ((bytes-per-line (index-ceiling width 8))
+	 (data-length (index* padded-bytes-per-plane depth)))
+    (declare (type array-index bytes-per-line data-length))
     (cond (data
 	   (check-type data buffer-bytes)
 	   (assert (index>= (length data) data-length)))
@@ -1098,69 +1106,47 @@
     (do ((plane 0 (index1+ plane)))
 	((index>= plane depth))
       (declare (type image-depth plane))
-      (image-noswap buffer-bbuf data
-		    (index+ index
-			    (index* plane padded-bytes-per-plane)
-			    (index* y padded-bytes-per-line)
-			    (index-floor x 8))
-		    (index* plane image-padded-bytes-per-plane)
-		    image-bytes-per-line
-		    padded-bytes-per-line
-		    image-padded-bytes-per-line
-		    height
-		    nil))
+      (image-noswap
+	buffer-bbuf data
+	(index+ index (index* plane padded-bytes-per-plane))
+	(index* plane padded-bytes-per-plane)
+	bytes-per-line padded-bytes-per-line padded-bytes-per-line
+	height byte-lsb-first-p))
     (create-image 
       :width width :height height :depth depth :data data
       :bits-per-pixel 1 :format :xy-pixmap
-      :bytes-per-line image-padded-bytes-per-line
+      :bytes-per-line padded-bytes-per-line
       :unit unit :byte-lsb-first-p byte-lsb-first-p
       :bit-lsb-first-p bit-lsb-first-p :unit unit :pad pad)))
 
 (defun read-z-format-image-x
-       (buffer-bbuf index length data x y width height depth
+       (buffer-bbuf index length data width height depth
 	padded-bytes-per-line 
 	unit byte-lsb-first-p bit-lsb-first-p pad bits-per-pixel)
   (declare (type buffer-bytes buffer-bbuf)
-	   (type card16 x y width height)
+	   (type card16 width height)
 	   (type array-index index length padded-bytes-per-line)
 	   (type image-depth depth)
 	   (type (member 8 16 32) unit pad)
 	   (type boolean byte-lsb-first-p bit-lsb-first-p)
 	   (type (member 1 4 8 16 24 32) bits-per-pixel)
 	   (values image-x))
-  (unless (zerop (index-mod (index* x bits-per-pixel) unit))
-    (error "~S subimaging can only be performed to the granularity of the~@
-            image scanline unit" 'image-x))
-  (assert (index<= (index* (index+ y height) padded-bytes-per-line) length))
-  (let* ((image-bits-per-line (index* width bits-per-pixel))
-	 (image-bytes-per-line (index-ceiling image-bits-per-line 8))
-	 (image-padded-bits-per-line
-	   (index* (index-ceiling image-bits-per-line pad) pad))
-	 (image-padded-bytes-per-line
-	   (index-ceiling image-padded-bits-per-line 8))
-	 (data-length (index* image-padded-bytes-per-line height)))
-    (declare (type array-index image-bits-per-line image-bytes-per-line
-		   image-padded-bits-per-line image-padded-bytes-per-line
-		   data-length))
+  (assert (index<= (index* height padded-bytes-per-line) length))
+  (let ((bytes-per-line (index-ceiling (index* width bits-per-pixel) 8))
+	(data-length (index* padded-bytes-per-line height)))
+    (declare (type array-index bytes-per-line data-length))
     (cond (data
 	   (check-type data buffer-bytes)
 	   (assert (index>= (length data) data-length)))
 	  (t
 	   (setq data (make-array data-length :element-type 'card8))))
-    (image-noswap buffer-bbuf data
-		  (index+ index
-			  (index* y padded-bytes-per-line)
-			  (index-floor (index* x bits-per-pixel) 8))
-		  0
-		  image-bytes-per-line
-		  padded-bytes-per-line
-		  image-padded-bytes-per-line
-		  height
-		  nil)
+    (image-noswap
+      buffer-bbuf data index 0 bytes-per-line padded-bytes-per-line
+      padded-bytes-per-line height byte-lsb-first-p)
     (create-image 
       :width width :height height :depth depth :data data
       :bits-per-pixel bits-per-pixel :format :z-pixmap
-      :bytes-per-line image-padded-bytes-per-line
+      :bytes-per-line padded-bytes-per-line
       :unit unit :byte-lsb-first-p byte-lsb-first-p
       :bit-lsb-first-p bit-lsb-first-p :unit unit :pad pad)))
 
@@ -1175,7 +1161,41 @@
 	     ,@body))
        (deallocate-reply-buffer .reply-buffer.))))
 
-(defun read-image-xy (buffer-bbuf index length data x y width height depth
+(defun read-image-xy-data (bbuf index pixarray x y width height
+			   padded-bytes-per-line
+			   unit byte-lsb-first-p bit-lsb-first-p)
+  (declare (type buffer-bytes bbuf)
+	   (type array-index index padded-bytes-per-line)
+	   (type pixarray pixarray)
+	   (type card16 x y width height)
+	   (type (member 8 16 32) unit)
+	   (type boolean byte-lsb-first-p bit-lsb-first-p))
+  (let* ((x1 (index* (index-floor x unit) unit))
+	 (x (index- x x1))
+	 (width1 (index+ width x))
+	 (padded-bits-per-line1
+	   (index* (index-ceiling width1 *image-pad*) *image-pad*))
+	 (padded-bytes-per-line1 (index-ceiling padded-bits-per-line1 8)))
+    (declare (type card16 x1 x width1)
+	     (type array-index padded-bytes-per-line1))
+    (with-image-data-buffer (buf (index* height padded-bytes-per-line1))
+      (image-swap-xy
+	bbuf buf 
+	(index+ index
+		(index* y padded-bytes-per-line)
+		(index-floor x1 8))
+	0
+	(index-ceiling width1 8)
+	padded-bytes-per-line padded-bytes-per-line1
+	height
+	unit byte-lsb-first-p bit-lsb-first-p
+	*image-unit* *image-byte-lsb-first-p* *image-bit-lsb-first-p*)
+      (unless (fast-read-pixarray
+		buf 0 pixarray x 0 width height padded-bytes-per-line1 1)
+	(read-pixarray-1
+	  buf 0 pixarray x 0 width height padded-bytes-per-line1)))))
+
+(defun read-image-xy (bbuf index length data x y width height depth
 		      padded-bytes-per-line padded-bytes-per-plane
 		      unit byte-lsb-first-p bit-lsb-first-p)
   (declare (type buffer-bytes buffer-bbuf)
@@ -1199,46 +1219,87 @@
 	  (result nil)
 	  (limit (index+ length index))
 	  (plane 0 (1+ plane))
-	  (bytes-per-line (index-ceiling (index+ x width) 8))
 	  (index index (index+ index padded-bytes-per-plane)))
 	 ((or (>= plane depth)
 	      (index> (index+ index padded-bytes-per-plane) limit))
 	  (setq data (nreverse result) depth (length data)))
-      (declare (type array-index limit bytes-per-line index)
+      (declare (type array-index limit index)
 	       (type image-depth plane)
 	       (type list arrays result))
       (let ((array (or (pop arrays)
 		       (make-array dimensions :element-type element-type))))
 	(declare (type pixarray-1 array))
 	(push array result)
-	(with-image-data-buffer (buf padded-bytes-per-plane)
-	  (image-swap
-	    buffer-bbuf buf index 0 bytes-per-line
-	    padded-bytes-per-line padded-bytes-per-line
-	    (index+ y height) unit byte-lsb-first-p bit-lsb-first-p
-	    *image-unit* *image-byte-lsb-first-p* *image-bit-lsb-first-p*)
-	  (unless (fast-read-pixarray
-		    buf 0 array x y width height padded-bytes-per-line 1)
-	    (read-pixarray-1
-	      buf 0 array x y width height padded-bytes-per-line)))))
+	(read-image-xy-data
+	  bbuf index array x y width height
+	  padded-bytes-per-line
+	  unit byte-lsb-first-p bit-lsb-first-p)))
     (create-image 
       :width width :height height :depth depth :data data)))
 
-(defun read-image-z (buffer-bbuf index length data x y width height depth
-		     padded-bytes-per-line
-		     unit byte-lsb-first-p bit-lsb-first-p bits-per-pixel)
-  (declare (type buffer-bytes buffer-bbuf)
+(defun read-image-z-data (bbuf index pixarray x y width height
+			  padded-bytes-per-line
+			  bits-per-pixel
+			  unit byte-lsb-first-p bit-lsb-first-p)
+  (declare (type buffer-bytes bbuf)
+	   (type array-index index bytes-per-line padded-bytes-per-line)
+	   (type pixarray pixarray)
+	   (type card16 x y width height)
+	   (type (member 1 4 8 16 24 32) bits-per-pixel)
+	   (type (member 8 16 32) unit)
+	   (type boolean byte-lsb-first-p bit-lsb-first-p))
+  (if (index= bits-per-pixel 1)
+      (read-image-xy-data
+	bbuf index pixarray x y width height
+	padded-bytes-per-line
+	unit byte-lsb-first-p bit-lsb-first-p)
+  (let* ((xbits (index* x bits-per-pixel))
+	 (xbits1 (index* (index-floor xbits unit) unit))
+	 (x1 (index-floor xbits1 bits-per-pixel))
+	 (x (index- x x1))
+	 (width1 (index+ width x))
+	 (bits-per-line1 (index* width1 bits-per-pixel))
+	 (bytes-per-line1 (index-ceiling bits-per-line1 8))
+	 (padded-bits-per-line1
+	   (index* (index-ceiling bits-per-line1 *image-pad*) *image-pad*))
+	 (padded-bytes-per-line1
+	   (index-ceiling padded-bits-per-line1 8)))
+      (declare (type array-index xbits xbits1 x1 x bits-per-line1
+		     padded-bits-per-line1 padded-bytes-per-line1))
+      (with-image-data-buffer (buf (index* height padded-bytes-per-line1))
+	(image-swap-z
+	  bbuf buf 
+	  (index+ index
+		  (index* y padded-bytes-per-line)
+		  (index-floor xbits1 8))
+	  0
+	  bytes-per-line1
+	  padded-bytes-per-line padded-bytes-per-line1
+	  height
+	  bits-per-pixel byte-lsb-first-p *image-byte-lsb-first-p*)
+	(unless (fast-read-pixarray
+		  buf 0 pixarray x 0 width height padded-bytes-per-line1
+		  bits-per-pixel)
+	  (funcall
+	    (ecase bits-per-pixel 
+	      (1 #'read-pixarray-1) (4 #'read-pixarray-4)
+	      (8 #'read-pixarray-8) (16 #'read-pixarray-16)
+	      (24 #'read-pixarray-24) (32 #'read-pixarray-32))
+	    buf 0 pixarray x 0 width height padded-bytes-per-line1))))))
+
+(defun read-image-z (bbuf index length data x y width height depth
+		     padded-bytes-per-line bits-per-pixel
+		     unit byte-lsb-first-p bit-lsb-first-p)
+  (declare (type buffer-bytes bbuf)
 	   (type card16 x y width height)
 	   (type array-index index length padded-bytes-per-line)
 	   (type image-depth depth)
+	   (type (member 1 4 8 16 24 32) bits-per-pixel)
 	   (type (member 8 16 32) unit)
 	   (type boolean byte-lsb-first-p bit-lsb-first-p)
-	   (type (member 1 4 8 16 24 32) bits-per-pixel)
 	   (values image-z))
   (assert (index<= (index* (index+ y height) padded-bytes-per-line) length))
-  (let* ((bits-per-line (index* (index+ x width) bits-per-pixel))
-	 (bytes-per-line (index-ceiling bits-per-line 8))
-	 (image-bits-per-line (index* width bits-per-pixel))
+  (let* ((image-bits-per-line (index* width bits-per-pixel))
 	 (image-pixels-per-line
 	   (index-ceiling
 	     (index* (index-ceiling image-bits-per-line *image-pad*)
@@ -1257,22 +1318,10 @@
 			      (16 'pixarray-16-element-type)
 			      (24 'pixarray-24-element-type)
 			      (32 'pixarray-32-element-type)))))
-    (with-image-data-buffer (buf (index* padded-bytes-per-line
-					 (index+ y height)))
-      (image-swap
-	buffer-bbuf buf index 0 bytes-per-line
-	padded-bytes-per-line padded-bytes-per-line (index+ y height)
-	unit byte-lsb-first-p bit-lsb-first-p
-	*image-unit* *image-byte-lsb-first-p* *image-bit-lsb-first-p*)
-      (unless (fast-read-pixarray
-		buf 0 data x y width height padded-bytes-per-line
-		bits-per-pixel)
-	(funcall
-	  (ecase bits-per-pixel 
-	    (1 #'read-pixarray-1) (4 #'read-pixarray-4)
-	    (8 #'read-pixarray-8) (16 #'read-pixarray-16)
-	    (24 #'read-pixarray-24) (32 #'read-pixarray-32))
-	  buf 0 data x y width height padded-bytes-per-line)))
+    (read-image-z-data
+      bbuf index data x y width height
+      padded-bytes-per-line bits-per-pixel
+      unit byte-lsb-first-p bit-lsb-first-p)
     (create-image 
       :width width :height height :depth depth :data data
       :bits-per-pixel bits-per-pixel)))
@@ -1357,14 +1406,14 @@
 			 (:xy-pixmap
 			   (read-xy-format-image-x
 			     buffer-bbuf *replysize* length data
-			     0 0 width height depth
+			     width height depth
 			     padded-bytes-per-line padded-bytes-per-plane
 			     unit byte-lsb-first-p bit-lsb-first-p
 			     pad))
 			 (:z-pixmap
 			   (read-z-format-image-x
 			     buffer-bbuf *replysize* length data
-			     0 0 width height depth
+			     width height depth
 			     padded-bytes-per-line
 			     unit byte-lsb-first-p bit-lsb-first-p
 			     pad bits-per-pixel))))
@@ -1377,17 +1426,22 @@
 		     (image-z
 		       (read-image-z
 			 buffer-bbuf *replysize* length data
-			 0 0 width height depth
-			 padded-bytes-per-line
-			 unit byte-lsb-first-p bit-lsb-first-p
-			 bits-per-pixel)))))
+			 0 0 width height depth padded-bytes-per-line
+			 bits-per-pixel 
+			 unit byte-lsb-first-p bit-lsb-first-p)))))
 	    (declare (type image image)
 		     (type array-index bits-per-line 
 			   padded-bits-per-line padded-bytes-per-line))
 	    (when visual-info
-	      (setf (image-red-mask image) (visual-info-red-mask visual-info))
-	      (setf (image-green-mask image) (visual-info-green-mask visual-info))
-	      (setf (image-blue-mask image) (visual-info-blue-mask visual-info)))
+	      (unless (zerop (visual-info-red-mask visual-info))
+		(setf (image-red-mask image)
+		      (visual-info-red-mask visual-info)))
+	      (unless (zerop (visual-info-green-mask visual-info))
+		(setf (image-green-mask image)
+		      (visual-info-green-mask visual-info)))
+	      (unless (zerop (visual-info-blue-mask visual-info))
+		(setf (image-blue-mask image)
+		      (visual-info-blue-mask visual-info))))
 	    (values image visual-info)))))))
 
 
@@ -1592,23 +1646,78 @@
 	  (setf (aref buffer-bbuf (index+ i 2))
 		(write-image-load-byte 24 pixel 32)))))))
 
+(defun write-xy-format-image-x-data
+       (data obuf data-start obuf-start x y width height
+	from-padded-bytes-per-line to-padded-bytes-per-line
+	from-bitmap-unit from-byte-lsb-first-p from-bit-lsb-first-p
+	to-bitmap-unit to-byte-lsb-first-p to-bit-lsb-first-p)
+  (declare (type buffer-bytes data obuf)
+	   (type array-index data-start obuf-start
+		 from-padded-bytes-per-line to-padded-bytes-per-line)
+	   (type card16 x y width height)
+	   (type (member 8 16 32) from-bitmap-unit to-bitmap-unit)
+	   (type boolean from-byte-lsb-first-p from-bit-lsb-first-p
+		 to-byte-lsb-first-p to-bit-lsb-first-p))
+  (assert (index-zerop (index-mod x 8)))
+  (let ((x-mod-unit (index-mod x from-bitmap-unit)))
+    (declare (type card16 x-mod-unit))
+    (if (and (index-plusp x-mod-unit)
+	     (not (eq from-byte-lsb-first-p from-bit-lsb-first-p)))
+	(let* ((temp-width (index+ width x-mod-unit))
+	       (temp-bytes-per-line (index-ceiling temp-width 8))
+	       (temp-padded-bits-per-line
+		 (index* (index-ceiling temp-width from-bitmap-unit)
+			 from-bitmap-unit))
+	       (temp-padded-bytes-per-line
+		 (index-ceiling temp-padded-bits-per-line 8)))
+	  (declare (type card16 temp-width temp-bytes-per-line
+			 temp-padded-bits-per-line temp-padded-bytes-per-line))
+	  (with-image-data-buffer (buf (index* height
+					       temp-padded-bytes-per-line))
+	    (image-swap-xy
+	      data buf
+	      (index+ data-start
+		      (index* y from-padded-bytes-per-line)
+		      (index-floor (index- x x-mod-unit) 8))
+	      0
+	      temp-bytes-per-line
+	      from-padded-bytes-per-line temp-padded-bytes-per-line
+	      height
+	      from-bitmap-unit from-byte-lsb-first-p from-bit-lsb-first-p
+	      from-bitmap-unit to-byte-lsb-first-p to-byte-lsb-first-p)
+	    (write-xy-format-image-x-data
+	      buf obuf 0 obuf-start x-mod-unit 0 width height
+	      temp-padded-bytes-per-line to-padded-bytes-per-line
+	      from-bitmap-unit to-byte-lsb-first-p to-byte-lsb-first-p
+	      to-bitmap-unit to-byte-lsb-first-p to-bit-lsb-first-p)))
+      (image-swap-xy
+	data obuf 
+	(index+ data-start
+		(index* y from-padded-bytes-per-line)
+		(index-floor x 8))
+	obuf-start
+	(index-ceiling width 8)
+	from-padded-bytes-per-line to-padded-bytes-per-line
+	height
+	from-bitmap-unit from-byte-lsb-first-p from-bit-lsb-first-p
+	to-bitmap-unit to-byte-lsb-first-p to-bit-lsb-first-p))))
+
 (defun write-xy-format-image-x
        (display image src-x src-y width height
 	padded-bytes-per-line
-	unit bit-lsb-first-p byte-lsb-first-p)
+	unit byte-lsb-first-p bit-lsb-first-p)
   (declare (type display display)
 	   (type image-x image)
 	   (type int16 src-x src-y)
 	   (type card16 width height)
 	   (type array-index padded-bytes-per-line)
 	   (type (member 8 16 32) unit)
-	   (type boolean bit-lsb-first-p byte-lsb-first-p))
-  (unless (zerop (index-mod src-x (image-x-unit image)))
-    (error "~S subimaging can only be performed to the granularity of the~@
-            image scanline unit" 'image-x))
+	   (type boolean byte-lsb-first-p bit-lsb-first-p))
   (dotimes (plane (image-depth image))
-    (declare (type image-depth plane))
-    (let ((src-y src-y)
+    (let ((data-start
+	    (index* (index* plane (image-height image))
+		    (image-x-bytes-per-line image)))
+	  (src-y src-y)
 	  (height height))
       (declare (type int16 src-y)
 	       (type card16 height))
@@ -1621,16 +1730,11 @@
 			   height)))
 	  (declare (type array-index nlines))
 	  (when (index-plusp nlines)
-	    (image-swap
+	    (write-xy-format-image-x-data
 	      (image-x-data image) (buffer-obuf8 display)
-	      (index+ (index* (index+ (index* plane (image-height image))
-				      src-y)
-			      (image-x-bytes-per-line image))
-		      (index-ceiling src-x 8))
-	      (buffer-boffset display)
-	      (index-ceiling width 8)
+	      data-start (buffer-boffset display)
+	      src-x src-y width nlines 
 	      (image-x-bytes-per-line image) padded-bytes-per-line
-	      nlines
 	      (image-x-unit image) (image-x-byte-lsb-first-p image)
 	      (image-x-bit-lsb-first-p image)
 	      unit byte-lsb-first-p bit-lsb-first-p)
@@ -1640,21 +1744,57 @@
 	    (when (index-zerop (index-decf height nlines)) (return))))
 	(buffer-flush display)))))
 
-(defun write-z-format-image-x
-       (display image src-x src-y width height
-	padded-bytes-per-line
-	unit bit-lsb-first-p byte-lsb-first-p)
+(defun write-z-format-image-x-data
+       (data obuf data-start obuf-start x y width height
+	from-padded-bytes-per-line to-padded-bytes-per-line
+	bits-per-pixel
+	from-bitmap-unit from-byte-lsb-first-p from-bit-lsb-first-p
+	to-bitmap-unit to-byte-lsb-first-p to-bit-lsb-first-p)
+  (declare (type buffer-bytes data obuf)
+	   (type array-index data-start obuf-start
+		 from-padded-bytes-per-line to-padded-bytes-per-line)
+	   (type card16 x y width height)
+	   (type (member 1 4 8 16 24 32) bits-per-pixel)
+	   (type (member 8 16 32) from-bitmap-unit to-bitmap-unit)
+	   (type boolean from-byte-lsb-first-p from-bit-lsb-first-p
+		 to-byte-lsb-first-p to-bit-lsb-first-p))
+  (if (index= bits-per-pixel 1)
+      (write-xy-format-image-x-data
+	data obuf data-start obuf-start x y width height
+	from-padded-bytes-per-line to-padded-bytes-per-line
+	from-bitmap-unit from-byte-lsb-first-p from-bit-lsb-first-p
+	to-bitmap-unit to-byte-lsb-first-p to-bit-lsb-first-p)
+    (let ((srcoff
+	    (index+ data-start
+		    (index* y from-padded-bytes-per-line)
+		    (index-floor (index* x bits-per-pixel) 8)))
+	  (srclen (index-ceiling (index* width bits-per-pixel) 8)))
+      (declare (type array-index srcoff srclen))
+      (if (and (index= bits-per-pixel 4) (index-oddp x))
+	  (with-image-data-buffer (buf (index* height to-padded-bytes-per-line))
+	    (image-swap-nibbles-left
+	      data buf srcoff 0 srclen
+	      from-padded-bytes-per-line to-padded-bytes-per-line height)
+	    (write-z-format-image-x-data
+	      buf obuf 0 obuf-start 0 0 width height
+	      to-padded-bytes-per-line to-padded-bytes-per-line
+	      bits-per-pixel
+	      from-bitmap-unit from-byte-lsb-first-p from-bit-lsb-first-p
+	      to-bitmap-unit to-byte-lsb-first-p to-bit-lsb-first-p))
+	(image-swap-z
+	  data obuf srcoff obuf-start srclen
+	  from-padded-bytes-per-line to-padded-bytes-per-line height
+	  bits-per-pixel from-byte-lsb-first-p to-byte-lsb-first-p)))))
+
+(defun write-z-format-image-x (display image src-x src-y width height
+			       padded-bytes-per-line
+			       unit byte-lsb-first-p bit-lsb-first-p)
   (declare (type display display)
 	   (type image-x image)
 	   (type int16 src-x src-y)
 	   (type card16 width height)
 	   (type array-index padded-bytes-per-line)
-	   (type (member 8 16 32) unit)
-	   (type boolean bit-lsb-first-p byte-lsb-first-p))
-  (unless (zerop (index-mod (index* src-x (image-x-bits-per-pixel image))
-			    (image-x-unit image)))
-    (error "~S subimaging can only be performed to the granularity of the~@
-            image scanline unit" 'image-x))
+	   (type boolean byte-lsb-first-p bit-lsb-first-p))
   (loop 
     (when (index-zerop height) (return))
     (let ((nlines
@@ -1664,17 +1804,11 @@
 		       height)))
       (declare (type array-index nlines))
       (when (index-plusp nlines)
-	(image-swap
-	  (image-x-data image) (buffer-obuf8 display)
-	  (index+ (index* src-y (image-x-bytes-per-line image))
-		  (index-ceiling
-		    (index* src-x (image-x-bits-per-pixel image))
-		    8))
-	  (buffer-boffset display)
-	  (index-ceiling
-	    (index* width (image-x-bits-per-pixel image)) 8)
+	(write-z-format-image-x-data 
+	  (image-x-data image) (buffer-obuf8 display) 0 (buffer-boffset display)
+	  src-x src-y width nlines
 	  (image-x-bytes-per-line image) padded-bytes-per-line
-	  nlines
+	  (image-x-bits-per-pixel image)
 	  (image-x-unit image) (image-x-byte-lsb-first-p image)
 	  (image-x-bit-lsb-first-p image)
 	  unit byte-lsb-first-p bit-lsb-first-p)
@@ -1683,6 +1817,26 @@
 	(index-incf src-y nlines)
 	(when (index-zerop (index-decf height nlines)) (return))))
     (buffer-flush display)))
+
+(defun write-image-xy-data (obuf boffset pixarray x y width height
+			    padded-bytes-per-line
+			    unit byte-lsb-first-p bit-lsb-first-p)
+  (declare (type buffer-bytes obuf)
+	   (type array-index boffset padded-bytes-per-line)
+	   (type pixarray-1 pixarray)
+	   (type card16 x y width height)
+	   (type (member 8 16 32) unit)
+	   (type boolean byte-lsb-first-p bit-lsb-first-p))
+  (with-image-data-buffer (buf (index* height padded-bytes-per-line))
+    (unless (fast-write-pixarray
+	      buf 0 pixarray x y width height padded-bytes-per-line 1)
+      (write-pixarray-1 
+	buf 0 pixarray x y width height padded-bytes-per-line))
+    (image-swap-xy
+      buf obuf 0 boffset (index-ceiling width 8)
+      padded-bytes-per-line padded-bytes-per-line height
+      *image-unit* *image-byte-lsb-first-p* *image-bit-lsb-first-p*
+      unit byte-lsb-first-p bit-lsb-first-p)))
 
 (defun write-image-xy (display image src-x src-y width height
 		       padded-bytes-per-line
@@ -1708,25 +1862,47 @@
 			   height)))
 	  (declare (type array-index nlines))
 	  (when (index-plusp nlines)
-	    (with-image-data-buffer (buf (index* nlines padded-bytes-per-line))
-	      (unless (fast-write-pixarray
-			buf 0 bitmap src-x src-y width nlines
-			padded-bytes-per-line 1)
-		(write-pixarray-1 
-		  buf 0 bitmap src-x src-y width nlines
-		  padded-bytes-per-line))
-	      (image-swap
-		buf (buffer-obuf8 display) 0 (buffer-boffset display)
-		(index-ceiling width 8)
-		padded-bytes-per-line padded-bytes-per-line
-		nlines
-		*image-unit* *image-byte-lsb-first-p* *image-bit-lsb-first-p*
-		unit byte-lsb-first-p bit-lsb-first-p))
+	    (write-image-xy-data
+	      (buffer-obuf8 display) (buffer-boffset display)
+	      bitmap src-x src-y width nlines
+	      padded-bytes-per-line
+	      unit byte-lsb-first-p bit-lsb-first-p)
 	    (index-incf (buffer-boffset display)
 			(index* nlines padded-bytes-per-line))
 	    (index-incf src-y nlines)
 	    (when (index-zerop (index-decf height nlines)) (return))))
 	(buffer-flush display)))))
+
+(defun write-image-z-data (obuf boffset pixarray x y width height
+			   padded-bytes-per-line bits-per-pixel
+			   unit byte-lsb-first-p bit-lsb-first-p)
+  (declare (type buffer-bytes obuf)
+	   (type array-index boffset padded-bytes-per-line)
+	   (type pixarray-1 pixarray)
+	   (type card16 x y width height)
+	   (type (member 1 4 8 16 24 32) bits-per-pixel)
+	   (type (member 8 16 32) unit)
+	   (type boolean byte-lsb-first-p bit-lsb-first-p))
+  (if (index= bits-per-pixel 1)
+      (write-image-xy-data
+	obuf boffset pixarray x y width height padded-bytes-per-line
+	unit byte-lsb-first-p bit-lsb-first-p)
+    (with-image-data-buffer (buf (index* height padded-bytes-per-line))
+      (unless (fast-write-pixarray
+		buf 0 pixarray x y width height
+		padded-bytes-per-line bits-per-pixel)
+	(funcall
+	  (ecase bits-per-pixel
+	    (1 #'write-pixarray-1) (4 #'write-pixarray-4)
+	    (8 #'write-pixarray-8) (16 #'write-pixarray-16)
+	    (24 #'write-pixarray-24) (32 #'write-pixarray-32))
+	  buf 0 pixarray x y width height padded-bytes-per-line))
+      (image-swap-z
+	buf obuf 0 boffset 
+	(index-ceiling (index* width bits-per-pixel) 8)
+	padded-bytes-per-line padded-bytes-per-line
+	height bits-per-pixel
+	*image-byte-lsb-first-p* byte-lsb-first-p))))
 
 (defun write-image-z (display image src-x src-y width height
 		      padded-bytes-per-line
@@ -1739,33 +1915,20 @@
 	   (type (member 8 16 32) unit)
 	   (type boolean byte-lsb-first-p bit-lsb-first-p))
   (loop 
-    (let ((nlines
+    (let ((bits-per-pixel (image-z-bits-per-pixel image))
+	  (nlines
 	    (index-min (index-floor (index- (buffer-size display)
 					    (buffer-boffset display))
 				    padded-bytes-per-line)
 		       height)))
-      (declare (type array-index nlines))
+      (declare (type (member 1 4 8 16 24 32) bits-per-pixel)
+	       (type array-index nlines))
       (when (index-plusp nlines)
-	(with-image-data-buffer (buf (index* nlines padded-bytes-per-line))
-	  (unless (fast-write-pixarray
-		    buf 0 (image-z-pixarray image)
-		    src-x src-y width nlines 
-		    padded-bytes-per-line (image-z-bits-per-pixel image))
-	    (funcall
-	      (ecase (image-z-bits-per-pixel image)
-		(1 #'write-pixarray-1) (4 #'write-pixarray-4)
-		(8 #'write-pixarray-8) (16 #'write-pixarray-16)
-		(24 #'write-pixarray-24) (32 #'write-pixarray-32))
-	      buf 0 (image-z-pixarray image)
-	      src-x src-y width nlines padded-bytes-per-line))
-	  (image-swap
-	    buf (buffer-obuf8 display) 0 (buffer-boffset display)
-	    (index-ceiling
-	      (index* width (image-z-bits-per-pixel image)) 8)
-	    padded-bytes-per-line padded-bytes-per-line
-	    nlines
-	    *image-unit* *image-byte-lsb-first-p* *image-bit-lsb-first-p*
-	    unit byte-lsb-first-p bit-lsb-first-p))
+	(write-image-z-data
+	  (buffer-obuf8 display) (buffer-boffset display)
+	  (image-z-pixarray image) src-x src-y width nlines
+	  padded-bytes-per-line bits-per-pixel
+	  unit byte-lsb-first-p bit-lsb-first-p)
 	(index-incf (buffer-boffset display)
 		    (index* nlines padded-bytes-per-line))
 	(index-incf src-y nlines)
@@ -1798,6 +1961,10 @@
 	     (image-x (image-x-format (the image-x image)))
 	     (image-xy :xy-pixmap)
 	     (image-z :z-pixmap)))
+	 (src-x
+	   (if (image-x-p image)
+	       (index+ src-x (image-x-left-pad (the image-x image)))
+	     src-x))
 	 (image-width (image-width image))
 	 (image-height (image-height image))
 	 (width (min (or width image-width) (index- image-width src-x)))
@@ -1809,7 +1976,7 @@
 	 (byte-lsb-first-p (display-image-lsb-first-p display))
 	 (bit-lsb-first-p  (bitmap-format-lsb-first-p bitmap-format)))
     (declare (type (member :xy-pixmap :z-pixmap) format)
-	     (type card16 image-width image-height width height)
+	     (type card16 src-x image-width image-height width height)
 	     (type image-depth depth)
 	     (type display display)
 	     (type bitmap-format bitmap-format)
@@ -1838,7 +2005,7 @@
 	(declare (type (member 8 16 32) pad)
 		 (type (member 1 4 8 16 24 32) bits-per-pixel))
 	(let* ((left-pad
-		 (if (or bitmap-p (eq format :xy-pixmap))
+		 (if (or (eq format :xy-pixmap) (= depth 1))
 		     (index-mod src-x (index-min pad *image-pad*))
 		   0))
 	       (left-padded-src-x (index- src-x left-pad))
@@ -1885,7 +2052,9 @@
 		       (type card8 request-pad))
 	      (with-buffer-request (display *x-putimage* :gc-force gcontext)
 		((data (member :bitmap :xy-pixmap :z-pixmap))
-		 (if bitmap-p :bitmap format))
+		 (cond (bitmap-p :bitmap)
+		       ((plusp left-pad) :xy-pixmap)
+		       (t format)))
 		(drawable drawable)
 		(gcontext gcontext)
 		(card16 width request-height)
@@ -1929,58 +2098,135 @@
 ;;;-----------------------------------------------------------------------------
 ;;; COPY-IMAGE
 
+(defun xy-format-image-x->image-x (image x y width height)
+  (declare (type image-x image)
+	   (type card16 x y width height)
+	   (values image-x))
+  (let* ((x (index+ x (image-x-left-pad image)))
+	 (left-pad (index-mod x 8))
+	 (x (index- x left-pad))
+	 (unit (image-x-unit image))
+	 (byte-lsb-first-p (image-x-byte-lsb-first-p image))
+	 (bit-lsb-first-p (image-x-bit-lsb-first-p image))
+	 (pad (image-x-pad image))
+	 (padded-width
+	   (index* (index-ceiling (index+ width left-pad) pad) pad))
+	 (padded-bytes-per-line (index-ceiling padded-width 8))
+	 (padded-bytes-per-plane (index* padded-bytes-per-line height))
+	 (length (index* padded-bytes-per-plane (image-depth image)))
+	 (obuf (make-array length :element-type 'card8)))
+    (declare (type card16 x)
+	     (type card8 left-pad)
+	     (type (member 8 16 32) unit pad)
+	     (type array-index padded-width padded-bytes-per-line
+		   padded-bytes-per-plane length)
+	     (type buffer-bytes obuf))
+    (dotimes (plane (image-depth image))
+      (let ((data-start
+	      (index* (image-x-bytes-per-line image)
+		      (image-height image)
+		      plane))
+	    (obuf-start
+	      (index* padded-bytes-per-plane
+		      plane)))
+	(declare (type array-index data-start obuf-start))
+	(write-xy-format-image-x-data
+	  (image-x-data image) obuf data-start obuf-start
+	  x y width height 
+	  (image-x-bytes-per-line image) padded-bytes-per-line
+	  unit byte-lsb-first-p bit-lsb-first-p
+	  unit byte-lsb-first-p bit-lsb-first-p)))
+    (create-image
+      :width width :height height :depth (image-depth image)
+      :data obuf :format :xy-pixmap :bits-per-pixel 1
+      :bytes-per-line padded-bytes-per-line
+      :unit unit :byte-lsb-first-p byte-lsb-first-p
+      :bit-lsb-first-p bit-lsb-first-p :pad pad :left-pad left-pad)))
+
+(defun z-format-image-x->image-x (image x y width height)
+  (declare (type image-x image)
+	   (type card16 x y width height)
+	   (values image-x))
+  (let* ((x (index+ x (image-x-left-pad image)))
+	 (left-pad
+	   (if (index= (image-depth image) 1)
+	       (index-mod x 8)
+	     0))
+	 (x (index- x left-pad))
+	 (bits-per-pixel (image-x-bits-per-pixel image))
+	 (unit (image-x-unit image))
+	 (byte-lsb-first-p (image-x-byte-lsb-first-p image))
+	 (bit-lsb-first-p (image-x-bit-lsb-first-p image))
+	 (pad (image-x-pad image))
+	 (bits-per-line (index* (index+ width left-pad) bits-per-pixel))
+	 (padded-bits-per-line (index* (index-ceiling bits-per-line pad) pad))
+	 (padded-bytes-per-line (index-ceiling padded-bits-per-line 8))
+	 (padded-bytes-per-plane (index* padded-bytes-per-line height))
+	 (length (index* padded-bytes-per-plane (image-depth image)))
+	 (obuf (make-array length :element-type 'card8)))
+    (declare (type card16 x)
+	     (type card8 left-pad)
+	     (type (member 8 16 32) unit pad)
+	     (type array-index bits-per-pixel padded-width padded-bytes-per-line
+		   padded-bytes-per-plane length)
+	     (type buffer-bytes obuf))
+    (write-z-format-image-x-data
+      (image-x-data image) obuf 0 0
+      x y width height 
+      (image-x-bytes-per-line image) padded-bytes-per-line
+      bits-per-pixel
+      unit byte-lsb-first-p bit-lsb-first-p
+      unit byte-lsb-first-p bit-lsb-first-p)
+    (create-image
+      :width width :height height :depth (image-depth image)
+      :data obuf :format :z-pixmap :bits-per-pixel bits-per-pixel
+      :bytes-per-line padded-bytes-per-line
+      :unit unit :byte-lsb-first-p byte-lsb-first-p
+      :bit-lsb-first-p bit-lsb-first-p :pad pad :left-pad left-pad)))
+
 (defun image-x->image-x  (image x y width height)
   (declare (type image-x image)
 	   (type card16 x y width height)
 	   (values image-x))
   (ecase (image-x-format image)
     (:xy-pixmap
-      (read-xy-format-image-x
-	(image-x-data image) 0 (length (image-x-data image)) nil
-	x y width height (image-depth image) (image-x-bytes-per-line image)
-	(index* (image-x-bytes-per-line image)
-		(image-height image))
-	(image-x-unit image) (image-x-byte-lsb-first-p image)
-	(image-x-bit-lsb-first-p image) (image-x-pad image)))
+      (xy-format-image-x->image-x image x y width height))
     (:z-pixmap
-      (read-z-format-image-x
-	(image-x-data image) 0 (length (image-x-data image)) nil
-	x y width height (image-depth image) (image-x-bytes-per-line image)
-	(image-x-unit image) (image-x-byte-lsb-first-p image)
-	(image-x-bit-lsb-first-p image) (image-x-pad image)
-	(image-x-bits-per-pixel image)))))
+      (z-format-image-x->image-x image x y width height))))
 
 (defun image-x->image-xy (image x y width height)
   (declare (type image-x image)
 	   (type card16 x y width height)
 	   (values image-xy))
-  (ecase (image-x-format image)
-    (:xy-pixmap
-      (read-image-xy
-	(image-x-data image) 0 (length (image-x-data image)) nil
-	x y width height (image-depth image) (image-x-bytes-per-line image)
-	(index* (image-x-bytes-per-line image)
-		(image-height image))
-	(image-x-unit image) (image-x-byte-lsb-first-p image)
-	(image-x-bit-lsb-first-p image)))
-    (:z-pixmap 
-      (error "Format conversion from ~S to ~S not supported"
-	     :z-pixmap :xy-pixmap))))
+  (unless (or (eq (image-x-format image) :xy-pixmap)
+	      (and (eq (image-x-format image) :z-pixmap)
+		   (index= (image-depth image) 1)))
+    (error "Format conversion from ~S to ~S not supported"
+	   (image-x-format image) :xy-pixmap))
+  (read-image-xy
+    (image-x-data image) 0 (length (image-x-data image)) nil
+    (index+ x (image-x-left-pad image)) y width height
+    (image-depth image) (image-x-bytes-per-line image)
+    (index* (image-x-bytes-per-line image) (image-height image))
+    (image-x-unit image) (image-x-byte-lsb-first-p image)
+    (image-x-bit-lsb-first-p image)))
 
 (defun image-x->image-z  (image x y width height)
   (declare (type image-x image)
 	   (type card16 x y width height)
 	   (values image-z))
-  (ecase (image-x-format image)
-    (:xy-pixmap
-      (error "Format conversion from ~S to ~S not supported"
-	     :xy-pixmap :z-pixmap))
-    (:z-pixmap
-      (read-image-z
-	(image-x-data image) 0 (length (image-x-data image)) nil
-	x y width height (image-depth image) (image-x-bytes-per-line image)
-	(image-x-unit image) (image-x-byte-lsb-first-p image)
-	(image-x-bit-lsb-first-p image) (image-x-bits-per-pixel image)))))
+  (unless (or (eq (image-x-format image) :z-pixmap)
+	      (and (eq (image-x-format image) :xy-pixmap)
+		   (index= (image-depth image) 1)))
+    (error "Format conversion from ~S to ~S not supported"
+	   (image-x-format image) :z-pixmap))
+  (read-image-z
+    (image-x-data image) 0 (length (image-x-data image)) nil
+    (index+ x (image-x-left-pad image)) y width height
+    (image-depth image) (image-x-bytes-per-line image)
+    (image-x-bits-per-pixel image)
+    (image-x-unit image) (image-x-byte-lsb-first-p image)
+    (image-x-bit-lsb-first-p image)))
 
 (defun copy-pixarray (array x y width height bits-per-pixel)
   (declare (type pixarray array)
@@ -2175,69 +2421,96 @@
   (declare (values image))
   (with-open-file (fstream pathname :direction :input)
     (let ((line "")
-	  (name nil)
 	  (properties nil)
-	  (start nil))
+	  (*package* (find-package 'keyword)))
       (declare (type string line)
 	       (type stringable name)
 	       (type list properties)
 	       (type (or null array-index) start))
       (with-vector (line string)
 	;; Get properties
-	(loop
-	  (setq line (read-line fstream))
-	  (unless (eql (aref line 0) #\#)
-	    (return))
-	  (unless start (setq start (position #\_ line :from-end t)))
-	  (let ((*package* (find-package 'keyword))
-		(value 0)
-		property)
-	    (setq name (read-from-string line t nil :start 7 :end start))
-	    (multiple-value-setq (property value)
-	      (read-from-string line t nil :start (1+ start)))
-	    (setf (getf properties property) (read-from-string line t nil :start value))))
-	(when name (setf (getf properties :name) name))
+	(let (name start end indicator value)
+	  (loop
+	    (setq line (read-line fstream))
+	    (unless (char= (aref line 0) #\#) (return))
+	    (setq start 8
+		  end (position #\_ line :test #'char= :start start)
+		  name (read-from-string
+			 (string-upcase (subseq line start end))))
+	    (unless (eq name :image)
+	      (setf (getf properties :name) name))
+	    (setq start (index1+ end)
+		  end (position #\Space line :test #'char= :start start)
+		  indicator (read-from-string
+			      (substitute
+				#\- #\_ (string-upcase (subseq line start end))
+				:test #'char=)))
+	    (setq start (index1+ end)
+		  end nil
+		  value (parse-integer line :start start :end end))
+	    (setf (getf properties indicator) value)))
 	;; Calculate sizes
-	(let* ((width (getf properties :width))
-	       (height (getf properties :height))
-	       (depth (getf properties :depth 1)))
-	  (declare (type (or null card16) width height))
-	  (unless (and width height)
-	    (error "Not a BITMAP file"))
-	  (let* ((byte-width (ceiling (* width depth) 8))
-		 (line-width (* 4 (ceiling (* width depth) 32)))
-		 (data (make-array (* line-width height) :element-type 'card8))
+	(multiple-value-bind (width height depth left-pad)
+	    (flet ((extract-property (ind &rest default)
+		     (prog1 (apply #'getf properties ind default)
+			    (remf properties ind))))
+	      (values (extract-property :width)
+		      (extract-property :height)
+		      (extract-property :depth 1)
+		      (extract-property :left-pad 0)))
+	  (declare (type (or null card16) width height)
+		   (type image-depth depth)
+		   (type card8 left-pad))
+	  (unless (and width height) (error "Not a BITMAP file"))
+	  (let* ((bits-per-pixel
+		   (cond ((index> depth 24) 32)
+			 ((index> depth 16) 24)
+			 ((index> depth 8)  16)
+			 ((index> depth 4)   8)
+			 ((index> depth 1)   4)
+			 (t                  1)))
+		 (bits-per-line (index* width bits-per-pixel))
+		 (bytes-per-line (index-ceiling bits-per-line 8))
+		 (padded-bits-per-line
+		   (index* (ceiling bits-per-line 32) 32))
+		 (padded-bytes-per-line
+		   (index-ceiling padded-bits-per-line 8))
+		 (data (make-array (* padded-bytes-per-line height)
+				   :element-type 'card8))
 		 (line-base 0)
 		 (byte 0))
-	    (declare (type card16 byte-width line-width line-base byte)
+	    (declare (type array-index bits-per-line bytes-per-line
+			   padded-bits-per-line pad padded-bytes-per-line
+			   line-base byte)
 		     (type buffer-bytes data))
 	    (with-vector (data buffer-bytes)
-	      (macrolet ((parse-hex (char)
-			   ;; Return the hex digit signified by CHAR.
-			   ;; Perhaps not rigorously portable, but very fast...
-			   `(let ((n (char-int ,char)))
-			      (cond ((index>= n ,(char-int #\a))
-				     (index- n ,(- (char-int #\a) 10.)))
-				    ((index>= n ,(char-int #\A))
-				     (index- n ,(- (char-int #\A) 10.)))
-				    (t 
-				     (index- n ,(char-int #\0)))))))
+	      (flet ((parse-hex (char)
+		       (second
+			 (assoc char
+				'((#\0  0) (#\1  1) (#\2  2) (#\3  3)
+				  (#\4  4) (#\5  5) (#\6  6) (#\7  7)
+				  (#\8  8) (#\9  6) (#\a 10) (#\b 11)
+				  (#\c 12) (#\d 13) (#\e 14) (#\f 15))
+				:test #'char-equal))))
 		;; Read data
 		;; Note: using read-line instead of read-char would be 20% faster,
 		;;       but would cons a lot of garbage...
 		(dotimes (i height)
-		  (dotimes (j byte-width)
+		  (dotimes (j bytes-per-line)
 		    (loop (when (eql (read-char fstream) #\x) (return)))
 		    (setf (aref data (index+ line-base byte))
 			  (index+ (index-ash (parse-hex (read-char fstream)) 4)
 				  (parse-hex (read-char fstream))))
 		    (incf byte))
 		  (setq byte 0
-			line-base (index+ line-base line-width))))
-	      (create-image :width width :height height :depth depth
-			    :plist properties :data data
-			    :bit-lsb-first-p t ;; WHY? (sounds like a bug)
-			    ))))))))
+			line-base (index+ line-base padded-bytes-per-line)))))
+	    (create-image
+	      :width (index- width left-pad) :height height
+	      :depth depth :bits-per-pixel bits-per-pixel
+	      :data data :plist properties :format :z-pixmap
+	      :bytes-per-line padded-bytes-per-line
+	      :unit 32 :byte-lsb-first-p t :bit-lsb-first-p t
+	      :pad 32 :left-pad left-pad)))))))
 
 (defun write-bitmap-file (pathname image &optional name)
   ;; Writes an image to a C include file in standard X11 format
@@ -2247,53 +2520,80 @@
 	   (type (or null stringable) name))
   (unless (typep image 'image-x)
     (setq image (copy-image image :result-type 'image-x)))
-  (when (and (= (image-depth image) 1)
-	     (not (image-x-bit-lsb-first-p image)))
-    (bit-reverse-image image))
   (let* ((plist (image-plist image))
 	 (name (or name (image-name image) 'image))
-	 (width (image-width image))
+	 (left-pad (image-x-left-pad image))
+	 (width (index+ (image-width image) left-pad))
 	 (height (image-height image))
-	 (depth (image-depth image))
-	 (data (image-x-data image))
-	 (byte-width (image-x-bytes-per-line image))
-	 (last (* byte-width height))
+	 (depth
+	   (if (eq (image-x-format image) :z-pixmap)
+	       (image-depth image)
+	     1))
+	 (bits-per-pixel (image-x-bits-per-pixel image))
+	 (bits-per-line (index* width bits-per-pixel))
+	 (bytes-per-line (index-ceiling bits-per-line 8))
+	 (padded-bits-per-line (index* (index-ceiling bits-per-line 32) 32))
+	 (padded-bytes-per-line (index-ceiling padded-bits-per-line 8))
+	 (last (index* padded-bytes-per-line height))
 	 (count 0))
     (declare (type list plist)
 	     (type stringable name)
-	     (type card16 width height byte-width)
-	     (type array-index count last)
-	     (type buffer-bytes data))
-    (with-vector (data buffer-bytes)
-      (setq name (string-downcase (string name)))
-      (with-open-file (fstream pathname :direction :output)
-	(format fstream "#define ~a_width ~d~%" name width)
-	(format fstream "#define ~a_height ~d~%" name height)
-	(unless (= depth 1)
-	  (format fstream "#define ~a_depth ~d~%" name depth))
-	(do ((prop plist (cddr prop)))
-	    ((endp prop))
-	  (when (and (not (member (car prop) '(:width :height)))
-		     (numberp (cadr prop)))
-	    (format fstream "#define ~a_~a ~d~%"
-		    name (string-downcase (string (car prop))) (cadr prop))))
-	(format fstream "static char ~a_bits[] = {" name)
-	(dotimes (i height)
-	  (dotimes (j byte-width)
-	    (when (zerop (index-mod count 15))
-	      (terpri fstream)
-	      (write-char #\space fstream))
-	    (write-string "0x" fstream)
-	    ;; Faster than (format fstream "0x~2,'0x," byte)
-	    (let ((byte (aref data count))
-		  (translate "0123456789abcdef"))
-	      (declare (type card16 byte))
-	      (write-char (char translate (ldb (byte 4 4) byte)) fstream)
-	      (write-char (char translate (ldb (byte 4 0) byte)) fstream))
-	    (index-incf count)
-	    (unless (index= count last)
-	      (write-char #\, fstream))))
-	(format fstream "};~%" fstream)))))
+	     (type card8 left-pad)
+	     (type card16 width height)
+	     (type (member 1 4 8 16 24 32) bits-per-pixel)
+	     (type image-depth depth)
+	     (type array-index bits-per-line bytes-per-line
+		   padded-bits-per-line padded-bytes-per-line count last))
+    (with-image-data-buffer (data last)
+      (if (index> bits-per-pixel 1)
+	  (image-swap-z
+	    (image-x-data image) data 0 0 bytes-per-line
+	    (image-x-bytes-per-line image) padded-bytes-per-line
+	    height bits-per-pixel
+	    (image-x-byte-lsb-first-p image) t)
+	(image-swap-xy
+	  (image-x-data image) data 0 0 bytes-per-line
+	  (image-x-bytes-per-line image) padded-bytes-per-line
+	  height 
+	  (image-x-unit image) (image-x-byte-lsb-first-p image)
+	  (image-x-bit-lsb-first-p image)
+	  32 t t))
+      (with-vector (data buffer-bytes)
+	(setq name (string-downcase (string name)))
+	(with-open-file (fstream pathname :direction :output)
+	  (format fstream "#define ~a_width ~d~%" name width)
+	  (format fstream "#define ~a_height ~d~%" name height)
+	  (unless (= depth 1)
+	    (format fstream "#define ~a_depth ~d~%" name depth))
+	  (unless (zerop left-pad)
+	    (format fstream "#define ~a_left_pad ~d~%" name left-pad))
+	  (do ((prop plist (cddr prop)))
+	      ((endp prop))
+	    (when (and (not (member (car prop) '(:width :height)))
+		       (numberp (cadr prop)))
+	      (format fstream "#define ~a_~a ~d~%"
+		      name
+		      (substitute
+			#\_ #\- (string-downcase (string (car prop)))
+			:test #'char=)
+		      (cadr prop))))
+	  (format fstream "static char ~a_bits[] = {" name)
+	  (dotimes (i height)
+	    (dotimes (j bytes-per-line)
+	      (when (zerop (index-mod count 15))
+		(terpri fstream)
+		(write-char #\space fstream))
+	      (write-string "0x" fstream)
+	      ;; Faster than (format fstream "0x~2,'0x," byte)
+	      (let ((byte (aref data count))
+		    (translate "0123456789abcdef"))
+		(declare (type card8 byte))
+		(write-char (char translate (ldb (byte 4 4) byte)) fstream)
+		(write-char (char translate (ldb (byte 4 0) byte)) fstream))
+	      (index-incf count)
+	      (unless (index= count last)
+		(write-char #\, fstream))))
+	  (format fstream "};~%" fstream))))))
 
 (defun bitmap-image (&optional plist &rest patterns)
   ;; Create an image containg pattern
