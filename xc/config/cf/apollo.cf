@@ -16,7 +16,7 @@
 #define HasVoidSignalReturn NO
 
 
-XCOMM platform:  $XConsortium: apollo.cf,v 1.23 90/12/26 11:39:46 rws Exp $
+XCOMM platform:  $XConsortium: apollo.cf,v 1.24 91/01/08 10:11:56 rws Exp $
 XCOMM operating system:  OSName
 
 /*****************************************************************************
@@ -30,5 +30,4 @@ XCOMM operating system:  OSName
 
 #define ServerOSDefines -DAVOID_GLYPHBLT -DNEED_OLD_MFB_MASKS
 
-#define FontDefines	-DFONT_SNF -DFONT_BDF
 #define FontFilters BDFTOSNFFILT SHELLPATH
