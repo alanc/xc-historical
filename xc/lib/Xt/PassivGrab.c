@@ -143,7 +143,7 @@ static XtServerGrabPtr CreateGrab(widget, ownerEvents, modifiers,
     
     Widget	widget;
     Boolean	ownerEvents;
-    unsigned short modifiers;
+    Modifiers	modifiers;
     KeyCode 	key;
     int		pointer_mode, keyboard_mode;
     Mask	event_mask;
@@ -412,7 +412,8 @@ static void  DeleteServerGrabFromList(passiveListPtr,
 						       pMinuendGrab->detail.exact);
 				  
 				  pNewGrab = CreateGrab(grab->widget,
-							grab->ownerEvents, AnyModifier,
+							grab->ownerEvents,
+							(Modifiers)AnyModifier,
 							pMinuendGrab->detail.exact,
 							grab->pointerMode,
 							grab->keyboardMode, 0, 0, 0);
@@ -487,10 +488,11 @@ static void DestroyPassiveList(passiveListPtr)
 /*
  * This function is called at widget destroy time to clean up
  */
+/*ARGSUSED*/
 void _XtDestroyServerGrabs(w, pwi, call_data)
     Widget		w;
     XtPerWidgetInput	pwi;
-    XtPointer		call_data;
+    XtPointer		call_data; /* unused */
 {
     XtPerDisplayInput		pdi;
     
@@ -577,6 +579,7 @@ XtServerGrabPtr _XtCheckServerGrabsOnWidget (event, widget, isKeyboard, pdi)
  * widget has been unmapped.
  */
 
+/*ARGSUSED*/
 static void  ActiveHandler (widget, pdi, event)
     Widget 		widget;
     XtPerDisplayInput	pdi;
@@ -659,16 +662,17 @@ static void MakeGrabs(passiveListPtr, isKeyboard, pdi)
 } 
    
 /*
- * This functions is the event handler attached to the associated widget
+ * This function is the event handler attached to the associated widget
  * when grabs need to be added, but the widget is not yet realized.  When
  * it is first mapped, this handler will be invoked, and it will add all
  * needed grabs.
  */
 
+/*ARGSUSED*/
 static void  RealizeHandler (widget, pwi, event)
     Widget 		widget;
     XtPerWidgetInput	pwi;
-    XEvent 		*event;
+    XEvent 		*event;	/* unused */
 
 {
     XtPerDisplayInput	pdi;
@@ -678,8 +682,8 @@ static void  RealizeHandler (widget, pwi, event)
     MakeGrabs(&pwi->keyList, KEYBOARD, pdi);
     MakeGrabs(&pwi->ptrList, POINTER, pdi);
  
-    XtRemoveEventHandler(widget, StructureNotifyMask,
-			 False, RealizeHandler, (XtPointer)pwi);
+    XtRemoveEventHandler(widget, XtAllEvents, True,
+			 RealizeHandler, (XtPointer)pwi);
     pwi->realize_handler_added = FALSE;
 }
 
@@ -699,7 +703,7 @@ void GrabKeyOrButton (widget, keyOrButton, modifiers, owner_events,
 		       confine_to, cursor, isKeyboard)
     Widget	widget;
     KeyCode	keyOrButton;
-    unsigned int modifiers;
+    Modifiers	modifiers;
     Boolean	owner_events;
     int 	pointer_mode;
     int 	keyboard_mode;
@@ -761,7 +765,7 @@ static
 void   UngrabKeyOrButton (widget, keyOrButton, modifiers, isKeyboard)
     Widget	widget;
     int		keyOrButton;
-    unsigned int modifiers;
+    Modifiers	modifiers;
     Boolean	isKeyboard;
 {
     XtServerGrabRec 	tempGrab;
@@ -787,19 +791,11 @@ void   UngrabKeyOrButton (widget, keyOrButton, modifiers, isKeyboard)
     
     pwi = _XtGetPerWidgetInput(widget, FALSE);
     
-    if (pwi)
-      {
-	  if (isKeyboard)
-	    passiveListPtr = &pwi->keyList;
-	  else
-	    passiveListPtr = &pwi->ptrList;
-      }
-    
     /*
      * if either there is no entry in the context manager or the entry
      * is empty, then somethings wrong
      */
-    if (!pwi || !passiveListPtr)
+    if (!pwi)
       {
 	  XtAppWarningMsg(XtWidgetToApplicationContext(widget),
 		       "invalidGrab", "ungrabKeyOrButton", "XtToolkitError",
@@ -807,15 +803,21 @@ void   UngrabKeyOrButton (widget, keyOrButton, modifiers, isKeyboard)
 		       (String *)NULL, (Cardinal *)NULL);
 	  return;
       }
+
+    if (isKeyboard)
+	passiveListPtr = &pwi->keyList;
+    else
+	passiveListPtr = &pwi->ptrList;
+
     if (XtIsRealized(widget))
       {
 	  if (isKeyboard)
 	    XUngrabKey(widget->core.screen->display,
-		       keyOrButton, modifiers, 
+		       keyOrButton, (unsigned int)modifiers,
 		       widget->core.window);
 	  else
 	    XUngrabButton(widget->core.screen->display,
-			  keyOrButton, modifiers, 
+			  keyOrButton, (unsigned int)modifiers, 
 			  widget->core.window);
       }
 
@@ -832,7 +834,7 @@ void  XtGrabKey (widget, keycode, modifiers, owner_events,
 		 pointer_mode, keyboard_mode)
     Widget	widget;
     KeyCode	keycode;
-    unsigned int modifiers;
+    Modifiers	modifiers;
     Boolean	owner_events;
     int 	pointer_mode;
     int 	keyboard_mode;
@@ -840,7 +842,7 @@ void  XtGrabKey (widget, keycode, modifiers, owner_events,
 {
     GrabKeyOrButton(widget, keycode, modifiers, owner_events,
 		    pointer_mode, keyboard_mode, 
-		    0, 0, 0, KEYBOARD);
+		    (Mask)0, (Window)None, (Cursor)None, KEYBOARD);
 }
 
 void  XtGrabButton(widget, button, modifiers, owner_events,
@@ -870,16 +872,16 @@ void  XtGrabButton(widget, button, modifiers, owner_events,
 void   XtUngrabKey (widget, keycode, modifiers)
     Widget	widget;
     KeyCode	keycode;
-    unsigned int modifiers;
+    Modifiers	modifiers;
 {
 
-    UngrabKeyOrButton(widget, keycode, modifiers, KEYBOARD);
+    UngrabKeyOrButton(widget, (int)keycode, modifiers, KEYBOARD);
 }
 
 void   XtUngrabButton (widget, button, modifiers)
     Widget	widget;
     int		button;
-    unsigned int modifiers;
+    Modifiers	modifiers;
 {
 
     UngrabKeyOrButton(widget, button, modifiers, POINTER);
@@ -914,13 +916,13 @@ static int GrabDevice (widget, owner_events,
     
     if (!isKeyboard)
       returnVal = XGrabPointer(XtDisplay(widget), XtWindow(widget), 
-			       owner_events, GrabModeAsync, 
-			       GrabModeAsync, event_mask,
+			       owner_events, event_mask,
+			       pointer_mode, keyboard_mode,
 			       confine_to, cursor, time);
     else
       returnVal = XGrabKeyboard(XtDisplay(widget), XtWindow(widget), 
-				owner_events, GrabModeAsync, 
-				GrabModeAsync, time);
+				owner_events, pointer_mode, 
+				keyboard_mode, time);
 
     if (returnVal == GrabSuccess)
       {	
@@ -988,7 +990,7 @@ int XtGrabKeyboard (widget, owner_events,
 {
     return (GrabDevice (widget, owner_events,
 			pointer_mode, keyboard_mode, 
-			0, 0, 0, time, KEYBOARD));
+			(Mask)0, (Window)None, (Cursor)None, time, KEYBOARD));
 }
 
 
