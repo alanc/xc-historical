@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: picture.c,v 1.5 91/02/18 17:41:07 converse Exp $ */
 /* Puzzle - (C) Copyright 1987, 1988 Don Bennett.
  *
  * Permission to use, copy, modify, and distribute this software and its
@@ -73,7 +73,10 @@ int readcount;
     read(fd, colormapData, 3*cmapSize);
     data = (unsigned char *) malloc((*width)*(*height));
     if (!data) {
-	/** error **/
+	fprintf(stderr,
+		"could not allocate memory for picture '%s', errno = %d\n",
+		fname, errno);
+	exit(1);
     }
     readcount = read(fd, data, (*width)*(*height));
 
