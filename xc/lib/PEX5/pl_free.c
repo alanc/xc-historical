@@ -1,8 +1,8 @@
-/* $XConsortium: pl_free.c,v 1.2 92/05/20 21:51:01 mor Exp $ */
+/* $XConsortium: pl_free.c,v 1.3 92/05/26 11:08:46 mor Exp $ */
 
 /************************************************************************
-Copyright 1992 by the Massachusetts Institute of Technology, Cambridge,
-Massachusetts.
+Copyright 1992 by the Massachusetts Institute of Technology,
+Cambridge, Massachusetts.
 
                         All Rights Reserved
 
@@ -10,16 +10,16 @@ Permission to use, copy, modify, and distribute this software and its
 documentation for any purpose and without fee is hereby granted, 
 provided that the above copyright notice appear in all copies and that
 both that copyright notice and this permission notice appear in 
-supporting documentation, and that the names of Digital or MIT not be
-used in advertising or publicity pertaining to distribution of the
-software without specific, written prior permission.  
+supporting documentation, and that the name of MIT not be used in
+advertising or publicity pertaining to distribution of the software
+without specific, written prior permission.  
 
 *************************************************************************/
 
 #include "PEXlib.h"
 #include "PEXlibint.h"
 
-#define FreeIfNotNull(_ptr) if (_ptr) PEXFreeBuf (_ptr)
+#define CHECK_AND_FREE(_ptr) if (_ptr) PEXFreeBuf (_ptr)
 
 
 void PEXFreeEnumInfo (numCounts, infoCount, enumInfo)
@@ -36,12 +36,12 @@ INPUT PEXEnumTypeDesc 	*enumInfo;
     for (i = 0; i < numCounts; i++)
 	for (j = 0; j < infoCount[i]; j++)
 	{
-	    FreeIfNotNull ((char *) desc->descriptor);
+	    CHECK_AND_FREE ((char *) desc->descriptor);
 	    desc++;
 	}
 
-    PEXFreeBuf ((char *) infoCount);
-    PEXFreeBuf ((char *) enumInfo);
+    CHECK_AND_FREE ((char *) infoCount);
+    CHECK_AND_FREE ((char *) enumInfo);
 }
 
 
@@ -57,11 +57,11 @@ INPUT PEXFontInfo	*fontInfo;
 
     for (i = 0; i < numFontInfo; i++)
     {
-	PEXFreeBuf ((char *) info->props);
+	CHECK_AND_FREE ((char *) info->props);
 	info++;
     }
 
-    PEXFreeBuf ((char *) fontInfo);
+    CHECK_AND_FREE ((char *) fontInfo);
 }
 
 
@@ -75,9 +75,9 @@ INPUT char		**fontNames;
 
 
     for (i = 0; i < numFontNames; i++)
-	PEXFreeBuf (fontNames[i]);
+	CHECK_AND_FREE (fontNames[i]);
 
-    PEXFreeBuf ((char *) fontNames);
+    CHECK_AND_FREE ((char *) fontNames);
 }
 
 
@@ -86,21 +86,21 @@ void PEXFreePCAttributes (pcAttr)
 INPUT PEXPCAttributes	*pcAttr;
 
 {
-    FreeIfNotNull ((char *) pcAttr->model_clip_volume.half_spaces);
-    FreeIfNotNull ((char *) pcAttr->light_state.indices);
+    CHECK_AND_FREE ((char *) pcAttr->model_clip_volume.half_spaces);
+    CHECK_AND_FREE ((char *) pcAttr->light_state.indices);
 
     if (pcAttr->para_surf_char.type == PEXPSCMCLevelCurves ||
         pcAttr->para_surf_char.type == PEXPSCWCLevelCurves)
     {
-	PEXFreeBuf ((char *)
+	CHECK_AND_FREE ((char *)
 	    pcAttr->para_surf_char.psc.level_curves.parameters);
     }
     else if (pcAttr->para_surf_char.type == PEXPSCImpDep)
     {
-	PEXFreeBuf ((char *) pcAttr->para_surf_char.psc.imp_dep.data);
+	CHECK_AND_FREE ((char *) pcAttr->para_surf_char.psc.imp_dep.data);
     }
 
-    PEXFreeBuf ((char *) pcAttr);
+    CHECK_AND_FREE ((char *) pcAttr);
 }
 
 
@@ -109,9 +109,9 @@ void PEXFreePDAttributes (pdAttr)
 PEXPDAttributes		*pdAttr;
 
 {
-    FreeIfNotNull (pdAttr->path.elements);
+    CHECK_AND_FREE (pdAttr->path.elements);
 
-    PEXFreeBuf ((char *) pdAttr);
+    CHECK_AND_FREE ((char *) pdAttr);
 }
 
 
@@ -120,9 +120,9 @@ void PEXFreePMAttributes (pmAttr)
 PEXPMAttributes	 *pmAttr;
 
 {
-    FreeIfNotNull ((char *) pmAttr->pick_path.elements);
+    CHECK_AND_FREE ((char *) pmAttr->pick_path.elements);
 
-    PEXFreeBuf ((char *) pmAttr);
+    CHECK_AND_FREE ((char *) pmAttr);
 }
 
 
@@ -141,15 +141,15 @@ INPUT PEXPickPath	*pickPaths;
      * of allocating a seperate buffer for each pick path.
      */
 
-    if (pickPaths == PickCache)
+    if (pickPaths == PEXPickCache)
     {
 	/*
 	 * Make the pick cache available again.
 	 */
 
-	PickCacheInUse = 0;
+	PEXPickCacheInUse = 0;
     }
-    else if (PickCacheInUse)
+    else if (PEXPickCacheInUse)
     {
 	/*
 	 * The pick cache is in use, so we must free this pick path.
@@ -174,14 +174,14 @@ INPUT PEXPickPath	*pickPaths;
 	 * new pick cache buffer.
 	 */
 	
-	if (total_size <= PickCacheSize || total_size > MAX_PICK_CACHE_SIZE)
+	if (total_size <= PEXPickCacheSize || total_size > MAX_PICK_CACHE_SIZE)
 	    PEXFreeBuf ((char *) pickPaths);
 	else
 	{
-	    if (PickCache)
-		PEXFreeBuf ((char *) PickCache);
-	    PickCache = pickPaths;
-	    PickCacheSize = total_size;
+	    if (PEXPickCache)
+		PEXFreeBuf ((char *) PEXPickCache);
+	    PEXPickCache = pickPaths;
+	    PEXPickCacheSize = total_size;
 	}
     }
 }
@@ -192,11 +192,11 @@ void PEXFreeRendererAttributes (rdrAttr)
 INPUT PEXRendererAttributes	*rdrAttr;
 
 {
-    FreeIfNotNull ((char *) rdrAttr->current_path.elements);
-    FreeIfNotNull ((char *) rdrAttr->clip_list.rectangles);
-    FreeIfNotNull ((char *) rdrAttr->pick_start_path.elements);
+    CHECK_AND_FREE ((char *) rdrAttr->current_path.elements);
+    CHECK_AND_FREE ((char *) rdrAttr->clip_list.rectangles);
+    CHECK_AND_FREE ((char *) rdrAttr->pick_start_path.elements);
 
-    PEXFreeBuf ((char *) rdrAttr);
+    CHECK_AND_FREE ((char *) rdrAttr);
 }
 
 
@@ -205,11 +205,11 @@ void PEXFreeSCAttributes (scAttr)
 PEXSCAttributes		*scAttr;
 
 {
-    FreeIfNotNull ((char *) scAttr->start_path.elements);
-    FreeIfNotNull ((char *) scAttr->normal.pairs);
-    FreeIfNotNull ((char *) scAttr->inverted.pairs);
+    CHECK_AND_FREE ((char *) scAttr->start_path.elements);
+    CHECK_AND_FREE ((char *) scAttr->normal.pairs);
+    CHECK_AND_FREE ((char *) scAttr->inverted.pairs);
 
-    PEXFreeBuf ((char *) scAttr);
+    CHECK_AND_FREE ((char *) scAttr);
 }
 
 
@@ -223,9 +223,9 @@ INPUT PEXStructurePath	*paths;
 
 
     for (i = 0; i < numPaths; i++)
-	PEXFreeBuf ((char *) paths[i].elements);
+	CHECK_AND_FREE ((char *) paths[i].elements);
 
-    PEXFreeBuf ((char *) paths);
+    CHECK_AND_FREE ((char *) paths);
 }
 
 
@@ -246,7 +246,7 @@ INPUT PEXPointer	tableEntries;
 	PEXPatternEntry *entries = (PEXPatternEntry *) tableEntries;
 	
 	for (i = 0; i < numTableEntries; i++)
-	    PEXFreeBuf ((char *) entries[i].colors);
+	    CHECK_AND_FREE ((char *) entries[i].colors);
 	break;
     }
     
@@ -255,7 +255,7 @@ INPUT PEXPointer	tableEntries;
 	PEXTextFontEntry *entries = (PEXTextFontEntry *) tableEntries;
 	
 	for (i = 0; i < numTableEntries; i++)
-	    PEXFreeBuf ((char *) entries[i].fonts);
+	    CHECK_AND_FREE ((char *) entries[i].fonts);
 	break;
     }
 
@@ -279,8 +279,265 @@ void PEXFreeWorkstationAttributes (wksAttr)
 INPUT PEXWorkstationAttributes	*wksAttr;
 
 {
-    FreeIfNotNull ((char *) wksAttr->defined_views.views);
-    FreeIfNotNull ((char *) wksAttr->posted_structures.structures);
+    CHECK_AND_FREE ((char *) wksAttr->defined_views.views);
+    CHECK_AND_FREE ((char *) wksAttr->posted_structures.structures);
 
-    PEXFreeBuf ((char *) wksAttr);
+    CHECK_AND_FREE ((char *) wksAttr);
+}
+
+
+void PEXFreeOCData (count, oc_data)
+
+INPUT unsigned long	count;
+INPUT PEXOCData		*oc_data;
+
+{
+    PEXOCData		*oc = oc_data;
+    PEXEncodedTextData 	*encText;
+    PEXListOfVertex	*plset;
+    PEXListOfCoord	*fillset;
+    PEXListOfCoord2D	*fillset2D;
+    PEXListOfVertex	*fillsetdata;
+    PEXConnectivityData	*pCon;
+    PEXListOfTrimCurve	*pTrim;
+    int 		i, j, k;
+
+
+    for (i = 0; i < count; i++, oc++)
+    {
+	switch (oc->oc_type)
+	{
+	case PEXOCModelClipVolume:
+
+	    CHECK_AND_FREE ((char *) oc->data.SetModelClipVolume.half_spaces);
+	    break;
+
+	case PEXOCModelClipVolume2D:
+
+	    CHECK_AND_FREE ((char *) oc->data.SetModelClipVolume2D.half_spaces);
+	    break;
+
+	case PEXOCLightSourceState:
+
+	    CHECK_AND_FREE ((char *) oc->data.SetLightSourceState.enable);
+	    CHECK_AND_FREE ((char *) oc->data.SetLightSourceState.disable);
+	    break;
+
+	case PEXOCParaSurfCharacteristics:
+
+	    if (oc->data.SetParaSurfCharacteristics.psc_type ==
+		PEXPSCMCLevelCurves ||
+                oc->data.SetParaSurfCharacteristics.psc_type ==
+		PEXPSCWCLevelCurves)
+		CHECK_AND_FREE ((char *) oc->data.SetParaSurfCharacteristics.characteristics.level_curves.parameters);
+	    break;
+
+	case PEXOCAddToNameSet:
+
+	    CHECK_AND_FREE ((char *) oc->data.AddToNameSet.names);
+	    break;
+
+	case PEXOCRemoveFromNameSet:
+
+	    CHECK_AND_FREE ((char *) oc->data.RemoveFromNameSet.names);
+	    break;
+
+	case PEXOCApplicationData:
+
+	    CHECK_AND_FREE ((char *) oc->data.ApplicationData.data);
+	    break;
+
+	case PEXOCGSE:
+
+	    CHECK_AND_FREE ((char *) oc->data.GSE.data);
+	    break;
+
+	case PEXOCMarkers:
+
+	    CHECK_AND_FREE ((char *) oc->data.Markers.points);
+	    break;
+
+	case PEXOCMarkers2D:
+
+	    CHECK_AND_FREE ((char *) oc->data.Markers2D.points);
+	    break;
+
+	case PEXOCPolyline:
+
+	    CHECK_AND_FREE ((char *) oc->data.Polyline.points);
+	    break;
+
+	case PEXOCPolyline2D:
+
+	    CHECK_AND_FREE ((char *) oc->data.Polyline2D.points);
+	    break;
+
+	case PEXOCText:
+
+	    encText = oc->data.EncodedText.encoded_text;
+	    for (j = 0; j < oc->data.EncodedText.count; j++, encText++)
+		CHECK_AND_FREE ((char *) encText->ch);
+	    CHECK_AND_FREE ((char *) oc->data.EncodedText.encoded_text);
+	    break;
+
+	case PEXOCText2D:
+
+	    encText = oc->data.EncodedText2D.encoded_text;
+	    for (j = 0; j < oc->data.EncodedText2D.count; j++, encText++)
+		CHECK_AND_FREE ((char *) encText->ch);
+	    CHECK_AND_FREE ((char *) oc->data.EncodedText2D.encoded_text);
+	    break;
+
+	case PEXOCAnnotationText:
+
+	    encText = oc->data.EncodedAnnoText.encoded_text;
+	    for (j = 0; j < oc->data.EncodedAnnoText.count; j++, encText++)
+		CHECK_AND_FREE ((char *) encText->ch);
+	    CHECK_AND_FREE ((char *) oc->data.EncodedAnnoText.encoded_text);
+	    break;
+
+	case PEXOCAnnotationText2D:
+
+	    encText = oc->data.EncodedAnnoText2D.encoded_text;
+	    for (j = 0; j < oc->data.EncodedAnnoText2D.count; j++, encText++)
+		CHECK_AND_FREE ((char *) encText->ch);
+	    CHECK_AND_FREE ((char *) oc->data.EncodedAnnoText2D.encoded_text);
+	    break;
+
+	case PEXOCPolylineSetWithData:
+
+	    plset = oc->data.PolylineSetWithData.vertex_lists;
+	    for (j = 0; j < oc->data.PolylineSetWithData.count; j++, plset++)
+	    {
+		CHECK_AND_FREE ((char *) plset->vertices.no_data);
+	    }
+	    CHECK_AND_FREE ((char *) oc->data.PolylineSetWithData.vertex_lists);
+	    break;
+
+	case PEXOCNURBCurve:
+
+	    CHECK_AND_FREE ((char *) oc->data.NURBCurve.knots);
+	    CHECK_AND_FREE ((char *) oc->data.NURBCurve.points.point);
+	    break;
+
+	case PEXOCFillArea:
+
+	    CHECK_AND_FREE ((char *) oc->data.FillArea.points);
+	    break;
+
+	case PEXOCFillArea2D:
+
+	    CHECK_AND_FREE ((char *) oc->data.FillArea2D.points);
+	    break;
+
+	case PEXOCFillAreaWithData:
+
+	    CHECK_AND_FREE ((char *)
+		oc->data.FillAreaWithData.vertices.no_data);
+	    break;
+
+	case PEXOCFillAreaSet:
+
+	    fillset = oc->data.FillAreaSet.point_lists;
+	    for (j = 0; j < oc->data.FillAreaSet.count; j++, fillset++)
+	    {
+		CHECK_AND_FREE ((char *) fillset->points);
+	    }
+	    CHECK_AND_FREE ((char *) oc->data.FillAreaSet.point_lists);
+	    break;
+
+	case PEXOCFillAreaSet2D:
+
+	    fillset2D = oc->data.FillAreaSet2D.point_lists;
+	    for (j = 0; j < oc->data.FillAreaSet2D.count; j++, fillset2D++)
+	    {
+		CHECK_AND_FREE ((char *) fillset2D->points);
+	    }
+	    CHECK_AND_FREE ((char *) oc->data.FillAreaSet2D.point_lists);
+	    break;
+
+	case PEXOCFillAreaSetWithData:
+
+	    fillsetdata = oc->data.FillAreaSetWithData.vertex_lists;
+	    for (j = 0; j < oc->data.FillAreaSetWithData.count;
+		j++, fillsetdata++)
+	    {
+		CHECK_AND_FREE ((char *) fillsetdata->vertices.no_data);
+	    }
+	    CHECK_AND_FREE ((char *) oc->data.FillAreaSetWithData.vertex_lists);
+	    break;
+
+	case PEXOCTriangleStrip:
+
+	    CHECK_AND_FREE ((char *) oc->data.TriangleStrip.facet_data.index);
+	    CHECK_AND_FREE ((char *) oc-> data.TriangleStrip.vertices.no_data);
+	    break;
+
+	case PEXOCQuadrilateralMesh:
+
+	    CHECK_AND_FREE ((char *)
+		oc->data.QuadrilateralMesh.facet_data.index);
+	    CHECK_AND_FREE ((char *)
+		oc->data.QuadrilateralMesh.vertices.no_data);
+	    break;
+
+	case PEXOCSetOfFillAreaSets:
+
+	    CHECK_AND_FREE ((char *)
+		oc->data.SetOfFillAreaSets.facet_data.index);
+	    CHECK_AND_FREE ((char *)
+		oc->data.SetOfFillAreaSets.vertices.no_data);
+	    CHECK_AND_FREE ((char *) oc->data.SetOfFillAreaSets.edge_flags);
+
+	    pCon = oc->data.SetOfFillAreaSets.connectivity;
+	    for (j = 0; j < oc->data.SetOfFillAreaSets.set_count; j++, pCon++)
+	    {
+		for (k = 0; k < pCon->count; k++)
+		    CHECK_AND_FREE ((char *) pCon->lists[k].shorts);
+		CHECK_AND_FREE ((char *) pCon->lists);
+	    }
+	    CHECK_AND_FREE ((char *) oc->data.SetOfFillAreaSets.connectivity);
+	    break;
+
+	case PEXOCNURBSurface:
+	   
+	    CHECK_AND_FREE ((char *) oc->data.NURBSurface.uknots);
+	    CHECK_AND_FREE ((char *) oc->data.NURBSurface.vknots);
+	    CHECK_AND_FREE ((char *) oc->data.NURBSurface.points.point);
+	    
+	    pTrim = oc->data.NURBSurface.trim_curves;
+	    for (j = 0; j < oc->data.NURBSurface.curve_count; j++, pTrim++)
+	    {
+		for (k = 0; k < pTrim->count; k++)
+		{
+		    CHECK_AND_FREE ((char *) pTrim->curves[k].knots.floats);
+		    CHECK_AND_FREE ((char *)
+			pTrim->curves[k].control_points.point);
+		}
+		CHECK_AND_FREE ((char *) pTrim->curves);
+	    }
+	    CHECK_AND_FREE ((char *) oc->data.NURBSurface.trim_curves);
+	    break;
+
+	case PEXOCCellArray:
+
+	    CHECK_AND_FREE ((char *) oc->data.CellArray.color_indices);
+	    break;
+
+	case PEXOCCellArray2D:
+
+	    CHECK_AND_FREE ((char *) oc->data.CellArray2D.color_indices);
+	    break;
+
+	case PEXOCExtendedCellArray:
+
+	    CHECK_AND_FREE ((char *) oc->data.ExtendedCellArray.colors.indexed);
+	    break;
+
+	default:
+	    break;
+	}
+    }
+
+    CHECK_AND_FREE ((char *) oc_data);
 }
