@@ -1,5 +1,20 @@
+#if !defined(RshCmd)
+#if SystemV
+#ifdef HPArchitecture
+#define	RshCmd remsh
+#else
+#define	RshCmd rcmd
+#endif
+#else
+#define	RshCmd rsh
+#endif
+#endif
+
+         RSHCMD = RshCmd
+
         DEPLIBS = XawClientDepLibs
 LOCAL_LIBRARIES = XawClientLibs
+        DEFINES = '-DRSHCMD="$(RSHCMD)"'
 
            SRCS1 = xsm.c xtwatch.c list.c
            OBJS1 = xsm.o xtwatch.o list.o
