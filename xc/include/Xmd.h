@@ -23,10 +23,15 @@ SOFTWARE.
 ******************************************************************/
 #ifndef XMD_H
 #define XMD_H 1
-/* $Header: Xmd.h,v 1.23 88/05/31 16:57:53 swick Exp $ */
+/* $Header: Xmd.h,v 1.24 88/06/29 15:35:48 swick Exp $ */
 /*
  *  Xmd.h: MACHINE DEPENDENT DECLARATIONS.
  */
+
+#ifdef CRAY
+#define WORD64
+#endif
+
 
 /*
  * ibm pcc doesn't understand pragmas.
@@ -40,8 +45,14 @@ pragma off(char_default_unsigned);
  * Bitfield suffixes for the protocol structure elements, if you
  * need them.
  */
-#define B16
+#ifdef WORD64
+#define B32 :32
+#define B16 :16
+#else
 #define B32
+#define B16
+#endif /* WORD64 */
+
 
 typedef long           INT32;
 typedef short          INT16;

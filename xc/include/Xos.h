@@ -38,22 +38,26 @@
  */
 
 #ifdef SYSV
-#include <string.h>
-#define index strchr
-#define rindex strrchr
-#else /* SYSV */
-/* 
- * Apple A/UX is mostly like BSD (at least as far as X uses it), although it 
- * uses SYSV string.h.
- */
-#ifdef macII
-#include <string.h>
-#define index strchr
-#define rindex strrchr
-#else /* macII */
-#include <strings.h>
-#endif /* macII */
+#define SYSV_STRINGS
 #endif /* SYSV */
+
+#ifdef macII
+#define SYSV_STRINGS
+#endif /* macII */
+
+#ifdef CRAY
+#define SYSV_STRINGS
+#endif /* CRAY */
+
+
+#ifdef SYSV_STRINGS
+#include <string.h>
+#define index strchr
+#define rindex strrchr
+#undef SYSV_STRINGS
+#else
+#include <strings.h>
+#endif /* SYSV_STRINGS */
 
 
 /*
