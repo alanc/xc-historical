@@ -1,4 +1,4 @@
-.\" $XConsortium: mkdepend.man,v 1.14 94/04/13 16:26:36 gildea Exp $
+.\" $XConsortium: mkdepend.man,v 1.15 94/04/17 20:10:37 gildea Exp gildea $
 .\" Copyright (c) 1993, 1994  X Consortium
 .\" 
 .\" Permission is hereby granted, free of charge, to any person obtaining a
@@ -289,7 +289,7 @@ file exactly once, maintaining an internal symbol table
 for each.
 Thus, the first file on the command line will take an amount of time
 proportional to the amount of time that a normal C preprocessor takes.
-But on subsequent files, if it encounter's an include file
+But on subsequent files, if it encounters an include file
 that it has already parsed, it does not parse it again.
 .PP
 For example,
