@@ -1,4 +1,4 @@
-/* $XConsortium: Initialize.c,v 1.176 91/02/05 16:58:27 gildea Exp $ */
+/* $XConsortium: Initialize.c,v 1.177 91/02/19 21:34:30 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -278,7 +278,7 @@ static XrmDatabase CopyDB(db)
     return copy;
 }
 
-XrmDatabase _XtScreenDatabase(screen)
+XrmDatabase XtScreenDatabase(screen)
     Screen *screen;
 {
     Display *dpy;
@@ -290,11 +290,16 @@ XrmDatabase _XtScreenDatabase(screen)
     char *scr_resources;
 
     dpy = DisplayOfScreen(screen);
+    if (screen == DefaultScreenOfDisplay(dpy)) {
+	scrno = DefaultScreen(dpy);
+	doing_def = True;
+    } else {
+	scrno = XScreenNumberOfScreen(screen);
+	doing_def = False;
+    }
     pd = _XtGetPerDisplay(dpy);
-    scrno = XScreenNumberOfScreen(screen);
     if (db = pd->per_screen_db[scrno])
 	return db;
-    doing_def = (scrno == DefaultScreen(dpy));
     scr_resources = XScreenResourceString(screen);
     if (doing_def) {
 	XrmRepresentation type;
@@ -302,8 +307,6 @@ XrmDatabase _XtScreenDatabase(screen)
 	XrmName names[3];
 	XrmClass classes[3];
 
-	if (scr_resources)
-	    pd->def_db_screen_specific = True;
 	user_db = (XrmDatabase)NULL;
 	CombineUserDefaults(dpy, &user_db);
 	names[0] = pd->name;
@@ -327,11 +330,6 @@ XrmDatabase _XtScreenDatabase(screen)
 	db = pd->cmd_db;
 	pd->cmd_db = NULL;
     } else {
-	if (!scr_resources && !pd->def_db_screen_specific && !doing_def) {
-	    db = pd->per_screen_db[DefaultScreen(dpy)];
-	    pd->per_screen_db[scrno] = db;
-	    return db;
-	}	    
 	db = CopyDB(pd->cmd_db);
     }
     {   /* Environment defaults */
@@ -386,29 +384,6 @@ XrmDatabase _XtScreenDatabase(screen)
 	for (res = pd->appContext->fallback_resources; *res; res++)
 	    XrmPutLineResource(&fdb, *res);
 	(void)XrmCombineDatabase(fdb, &db, False);
-    }
-    return db;
-}
-
-/* if you are inside Xt, call _XtScreenDatabase, to avoid forcing an
- * unnecessary copy of the database
- */
-XrmDatabase XtScreenDatabase(screen)
-    Screen *screen;
-{
-    Display *dpy = DisplayOfScreen(screen);
-    XrmDatabase def_db = XrmGetDatabase(dpy);
-    XrmDatabase db;
-    XtPerDisplay pd;
-
-    if (screen == DefaultScreenOfDisplay(dpy))
-	return def_db;
-    db = _XtScreenDatabase(screen);
-    if (db == def_db) {
-	/* must treat the databases as distinct */
-	db = CopyDB(db);
-	pd = _XtGetPerDisplay(dpy);
-	pd->per_screen_db[XScreenNumberOfScreen(screen)] = db;
     }
     return db;
 }
@@ -557,7 +532,7 @@ void _XtDisplayInitialize(dpy, pd, name, class, urlist, num_urs, argc, argv)
 	 */
 	XrmParseCommand(&pd->cmd_db, options, num_options, name, argc, argv);
 
-	db = _XtScreenDatabase(DefaultScreenOfDisplay(dpy));
+	db = XtScreenDatabase(DefaultScreenOfDisplay(dpy));
 
 	if (!(search_list = (XrmHashTable*)
 		       ALLOCATE_LOCAL( SEARCH_LIST_SIZE*sizeof(XrmHashTable))))
