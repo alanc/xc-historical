@@ -1,5 +1,5 @@
 /*
- *	$Header: Xproto.h,v 1.73 87/09/03 16:23:10 newman Exp $
+ *	$Header: Xproto.h,v 1.74 88/01/30 17:48:56 rws Exp $
  */
 
 /* Definitions for the X window system used by server and c bindings */
@@ -170,7 +170,7 @@ typedef struct {
 
 typedef struct {
     CARD32 time B32;
-    CARD16 x B16, y B16;
+    INT16 x B16, y B16;
 } xTimecoord;
 
 typedef struct {
