@@ -1,4 +1,4 @@
-/* $XConsortium: Geometry.c,v 1.54 91/09/23 11:09:45 converse Exp $ */
+/* $XConsortium: Geometry.c,v 1.55 92/02/11 17:13:18 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -242,7 +242,10 @@ _XtMakeGeometryRequest (widget, request, reply, clear_rect_obj)
 	if (changeMask & CWStackMode) {
 	    changes.stack_mode = request->stack_mode;
 	    if (changeMask & CWSibling)
-		changes.sibling = XtWindow(request->sibling);
+		if (XtIsWidget(request->sibling))
+		    changes.sibling = XtWindow(request->sibling);
+		else
+		    changeMask &= ~(CWStackMode | CWSibling);
 	}
 
 	XConfigureWindow(XtDisplay(widget), XtWindow(widget),
