@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: ScrOfWin.c,v 1.1 89/09/22 12:07:38 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -27,7 +27,7 @@
 #include <X11/Xlib.h>
 
 
-Screen *XScreenOfWindow (dpy, w)
+Screen *XmuScreenOfWindow (dpy, w)
     Display *dpy;
     Window w;
 {
