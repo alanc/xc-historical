@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsLRGB.c,v 1.6 91/02/12 16:13:06 dave Exp $" */
+/* $XConsortium: XcmsLRGB.c,v 1.7 91/02/16 15:57:19 dave Exp $" */
 
 /*
  * (c) Copyright 1990 1991 Tektronix Inc.
@@ -35,7 +35,6 @@
 
 #include <stdio.h>
 #include <X11/Xos.h>
-#include "Xlibos.h"
 #include <X11/Xatom.h>
 #include "Xlibint.h"
 #include "Xcmsint.h"

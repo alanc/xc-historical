@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsSetGet.c,v 1.2 91/02/11 18:18:02 dave Exp $" */
+/* $XConsortium: XcmsSetGet.c,v 1.3 91/02/12 16:13:44 dave Exp $" */
 
 /*
  * (c) Copyright 1989 1990 1991 Tektronix Inc.
@@ -44,8 +44,6 @@
  *              Include files for local use only, therefore, NOT exported
  *		to any package or program using this package.
  */
-#include "Xlibos.h"
-
 
 /*
  *      EXTERNS

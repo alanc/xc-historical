@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsCvCols.c,v 1.4 91/02/15 18:33:37 dave Exp $" */
+/* $XConsortium: XcmsCvCols.c,v 1.5 91/03/28 15:07:39 rws Exp $" */
 
 /*
  * (c) Copyright 1990 1991 Tektronix Inc.
@@ -33,7 +33,6 @@
 
 #include "Xlibint.h"
 #include "Xcmsint.h"
-#include "Xlibos.h"
 
 /*
  *      EXTERNS
