@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: misc.h,v 1.47 88/01/02 12:04:22 rws Exp $ */
+/* $Header: misc.h,v 1.48 88/02/21 18:25:20 rws Exp $ */
 #ifndef MISC_H
 #define MISC_H 1
 /*
@@ -33,7 +33,11 @@ SOFTWARE.
 extern unsigned long globalSerialNumber;
 
 #ifndef NULL
+#if __STDC__ && !NOSTDHDRS
+#include <stddef.h>
+#else
 #define NULL            0
+#endif
 #endif
 
 #define MAXSCREENS	3
