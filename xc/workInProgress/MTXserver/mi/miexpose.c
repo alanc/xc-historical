@@ -295,19 +295,31 @@ miHandleExposures(pSrcDrawable, pDstDrawable,
 			(WindowPtr)pDstDrawable, &rgnExposed, PW_BACKGROUND);
 
 	if (extents)
+	{
 	    REGION_RESET(pscr, &rgnExposed, &expBox);
+	}
 	else
+	{
 	    REGION_TRANSLATE(pscr, &rgnExposed,
 				     -pDstDrawable->x, -pDstDrawable->y);
+	}
     }
     if (prgnDstClip == &rgnDstRec)
+    {
 	REGION_UNINIT(pscr, prgnDstClip);
+    }
     else if (prgnDstClip != prgnSrcClip)
+    {
 	REGION_DESTROY(pscr, prgnDstClip);
+    }
     if (prgnSrcClip == &rgnSrcRec)
+    {
 	REGION_UNINIT(pscr, prgnSrcClip);
+    }
     else
+    {
 	REGION_DESTROY(pscr, prgnSrcClip);
+    }
     if (pGC->graphicsExposures)
     {
 	/* don't look */
@@ -481,11 +493,17 @@ miWindowExposures(pWin, prgn, other_exposed)
 	    miSendExposures(pWin, exposures,
 			    pWin->drawable.x, pWin->drawable.y);
 	if (exposures == &expRec)
+	{
 	    REGION_UNINIT(pWin->drawable.pScreen, exposures);
+	}
 	else if (exposures && exposures != prgn && exposures != other_exposed)
+	{
 	    REGION_DESTROY(pWin->drawable.pScreen, exposures);
+	}
 	if (prgn)
+	{
 	    REGION_EMPTY(pWin->drawable.pScreen, prgn);
+	}
     }
     else if (exposures && exposures != prgn)
 	REGION_DESTROY(pWin->drawable.pScreen, exposures);

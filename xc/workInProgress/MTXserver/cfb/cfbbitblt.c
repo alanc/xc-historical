@@ -252,9 +252,13 @@ cfbBitBlt (pSrcDrawable, pDstDrawable,
 
 	    /* Check to see if the region is empty */
 	    if (fastBox.x1 >= fastBox.x2 || fastBox.y1 >= fastBox.y2)
+	    {
 		REGION_INIT(pGC->pScreen, &rgnDst, NullBox, 0);
+	    }
 	    else
+	    {
 		REGION_INIT(pGC->pScreen, &rgnDst, &fastBox, 1);
+	    }
 	}
         else
 	{

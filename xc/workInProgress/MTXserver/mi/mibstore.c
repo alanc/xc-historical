@@ -1449,7 +1449,9 @@ miBSDoCopy(pWin, pGC, srcx, srcy, w, h, dstx, dsty, plane, copyProc, ppRgn)
     box.y1 = srcy;
     box.y2 = srcy + h;
     if (RECT_IN_REGION(pGC->pScreen, pRgnExp, &box) == rgnIN)
+    {
 	REGION_EMPTY(pGC->pScreen, pRgnExp);
+    }
     else
     {
 	REGION_INVERSE(pGC->pScreen, pRgnExp, pRgnExp, &box);
@@ -1467,7 +1469,9 @@ miBSDoCopy(pWin, pGC, srcx, srcy, w, h, dstx, dsty, plane, copyProc, ppRgn)
     if (graphicsExposures)
 	*ppRgn = pRgnExp;
     else
+    {
 	REGION_DESTROY(pGC->pScreen, pRgnExp);
+    }
     REGION_DESTROY(pGC->pScreen, pRgnObs);
 
     return (TRUE);
