@@ -1,4 +1,4 @@
-/* $XConsortium: scrnintstr.h,v 5.7 89/07/26 11:47:51 rws Exp $ */
+/* $XConsortium: scrnintstr.h,v 5.8 89/09/11 18:01:40 keith Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -130,8 +130,8 @@ typedef struct _Screen {
     RegionPtr (* RestoreAreas)();	/* pWin, pRegion */
     void (* ExposeCopy)();		/* pSrc, pDst, pGC, pRegion, */
 					/* srcx, srcy, dstx, dsty, plane */
-    void (* TranslateBackingStore)();	/* pWin, dx, dy, pOldClip */
-    void (* ClearBackingStore)();	/* pWin, x, y, w, h, sendExpose */
+    RegionPtr (* TranslateBackingStore)();/* pWin, dx, dy, pOldClip */
+    RegionPtr (* ClearBackingStore)();	/* pWin, x, y, w, h, sendExpose */
     void (* DrawGuarantee)();		/* pWin, pGC, guarantee */
     
     /* Font procedures */
