@@ -1,5 +1,5 @@
 /*
- * $XConsortium: chooser.c,v 1.16 93/09/29 17:18:14 rws Exp $
+ * $XConsortium: chooser.c,v 1.17 94/03/26 17:29:07 rws Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -472,8 +472,16 @@ RegisterHostname (name)
 	ifc.ifc_buf = buf;
 	if (ioctl (socketFD, (int) SIOCGIFCONF, (char *) &ifc) < 0)
 	    return;
-	for (ifr = ifc.ifc_req, n = ifc.ifc_len / sizeof (struct ifreq); --n >= 0;
-	    ifr++)
+	for (ifr = ifc.ifc_req
+#if defined (__bsdi__) || defined(__NetBSD__)
+	     ; (char *)ifr < ifc.ifc_buf + ifc.ifc_len;
+	     ifr = (struct ifreq *)((char *)ifr + sizeof (struct ifreq) +
+		(ifr->ifr_addr.sa_len > sizeof (ifr->ifr_addr) ?
+		 ifr->ifr_addr.sa_len - sizeof (ifr->ifr_addr) : 0))
+#else
+	     , n = ifc.ifc_len / sizeof (struct ifreq); --n >= 0; ifr++
+#endif
+	     )
 	{
 	    if (ifr->ifr_addr.sa_family != AF_INET)
 		continue;

@@ -1,4 +1,4 @@
-/* $XConsortium: access.c,v 1.70 94/03/24 14:54:05 mor Exp $ */
+/* $XConsortium: access.c,v 1.71 94/03/31 14:01:59 dpw Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -469,8 +469,16 @@ DefineSelf (fd)
     ifc.ifc_buf = buf;
     if (ioctl (fd, (int) SIOCGIFCONF, (pointer) &ifc) < 0)
         Error ("Getting interface configuration");
-    for (ifr = ifc.ifc_req, n = ifc.ifc_len / sizeof (struct ifreq); --n >= 0;
-     ifr++)
+    for (ifr = ifc.ifc_req
+#if defined (__bsdi__) || defined(__NetBSD__)
+	 ; (char *)ifr < ifc.ifc_buf + ifc.ifc_len;
+	 ifr = (struct ifreq *)((char *)ifr + sizeof (struct ifreq) +
+		(ifr->ifr_addr.sa_len > sizeof (ifr->ifr_addr) ?
+		 ifr->ifr_addr.sa_len - sizeof (ifr->ifr_addr) : 0))
+#else
+	 , n = ifc.ifc_len / sizeof (struct ifreq); --n >= 0; ifr++
+#endif
+	 )
     {
 	len = sizeof(ifr->ifr_addr);
 #ifdef DNETCONN
