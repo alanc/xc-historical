@@ -9,7 +9,7 @@
  * LibName, SoRev, HasSharedData, and optionally HugLibrary and IncSubdir
  */
 
-XCOMM $XConsortium: Library.tmpl,v 1.17 93/08/25 13:57:12 rws Exp $
+XCOMM $XConsortium: Library.tmpl,v 1.18 93/08/25 14:13:57 rws Exp $
 
 #ifndef LibraryCcCmd
 #if DoSharedLib && defined(SharedLibraryCcCmd)
@@ -163,8 +163,10 @@ InstallLintLibrary(LibName,$(LINTLIBDIR))
 BuildIncludes($(HEADERS),IncSubdir,..)
 InstallMultiple($(HEADERS),$(INCDIR)/IncSubdir)
 #else
+#if !defined(LibHeaders) || LibHeaders
 BuildIncludes($(HEADERS),.,.)
 InstallMultiple($(HEADERS),$(INCDIR))
+#endif
 #endif
 
 NormalLintTarget($(SRCS))
