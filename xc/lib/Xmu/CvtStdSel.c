@@ -1,4 +1,4 @@
-/* $XConsortium: CvtStdSel.c,v 1.7 88/11/01 17:00:44 jim Exp $
+/* $XConsortium: CvtStdSel.c,v 1.8 88/11/14 18:40:08 jim Exp $
  *
  * Copyright 1988 by the Massachusetts Institute of Technology
  *
@@ -11,13 +11,21 @@
 
 #include <X11/copyright.h>
 
+#ifdef att
+#include <interlan/il_types.h>
+#define __TYPES__		/* prevent #including <sys/types.h> in Xlib.h */
+#include <interlan/netdb.h>
+#include <interlan/socket.h>
+#endif /* att */
 #include <X11/IntrinsicP.h>
 #include <X11/Xatom.h>
 #include <X11/Shell.h>
 #include <X11/ShellP.h>
 #include <stdio.h>
+#ifndef att
 #include <netdb.h>
 #include <sys/socket.h>
+#endif
 #include "Xmu.h"
 
 
