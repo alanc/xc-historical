@@ -25,7 +25,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.h,v 1.3 89/04/12 18:55:36 jim Exp $
+ * $XConsortium: events.h,v 1.4 89/04/13 15:48:14 jim Exp $
  *
  * twm event handler include file
  *
@@ -38,6 +38,7 @@
 
 typedef void (*event_proc)();
 
+extern Bool DispatchEvent();
 extern void HandleEvents();
 extern void HandleExpose();
 extern void HandleDestroyNotify();

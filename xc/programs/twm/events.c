@@ -25,7 +25,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.73 89/07/06 12:16:59 jim Exp $
+ * $XConsortium: events.c,v 1.74 89/07/13 09:46:24 jim Exp $
  *
  * twm event handling
  *
@@ -35,7 +35,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: events.c,v 1.73 89/07/06 12:16:59 jim Exp $";
+"$XConsortium: events.c,v 1.74 89/07/13 09:46:24 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -127,6 +127,48 @@ InitEvents()
 #endif
 }
 
+
+
+/***********************************************************************
+ *
+ *  Procedure:
+ *	DispatchEvent - handle a single X event stored in global var Event
+ *
+ ***********************************************************************
+ */
+Bool DispatchEvent ()
+{
+    if (XFindContext (dpy, Event.xany.window,
+		      TwmContext, &Tmp_win) == XCNOENT)
+      Tmp_win = NULL;
+
+    if (XFindContext (dpy, Event.xany.window,
+		      ScreenContext, &Scr) == XCNOENT)
+      Scr = FindScreenInfo(Event.xany.window);
+
+    if (Scr == NULL) return False;
+
+#ifdef DEBUG_EVENTS
+    if (Tmp_win != NULL) {
+	fprintf (stderr,"Event w=%x, t->w=%x, t->frame=%x, t->title=%x, ",
+		 Event.xany.window, Tmp_win->w,
+		 Tmp_win->frame, Tmp_win->title_w);
+    } else {
+	fprintf (stderr, "Event w=%x, ", Event.xany.window);
+    }
+#endif
+
+    if (Event.type >= 0 && Event.type < MAX_X_EVENT)
+      (*EventHandler[Event.type])();
+
+#ifdef DEBUG_EVENTS
+    fflush(stderr);
+#endif
+
+    return True;
+}
+
+
 /***********************************************************************
  *
  *  Procedure:
@@ -156,37 +198,11 @@ HandleEvents()
 	{
 	    WindowMoved = FALSE;
 	    XNextEvent(dpy, &Event);
-	    if (XFindContext(dpy, Event.xany.window,
-		TwmContext, &Tmp_win) == XCNOENT)
-		Tmp_win = NULL;
-
-	    if (XFindContext(dpy, Event.xany.window,
-		ScreenContext, &Scr) == XCNOENT)
-		Scr = FindScreenInfo(Event.xany.window);
-
-	    if (Scr == NULL)
-		continue;
-
-#ifdef DEBUG_EVENTS
-	    if (Tmp_win != NULL)
-	    {
-		fprintf(stderr,"Event w=%x, t->w=%x, t->frame=%x, t->title=%x, ",
-		    Event.xany.window, Tmp_win->w,
-		    Tmp_win->frame, Tmp_win->title_w);
-	    }
-	    else
-	    {
-		fprintf(stderr, "Event w=%x, ", Event.xany.window);
-	    }
-#endif
-	    if (Event.type >= 0 && Event.type < MAX_X_EVENT)
-	        (*EventHandler[Event.type])();
-#ifdef DEBUG_EVENTS
-	    fflush(stderr);
-#endif
+	    (void) DispatchEvent ();
 	}
     }
 }
+
 
 /***********************************************************************
  *

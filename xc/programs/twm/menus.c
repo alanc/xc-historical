@@ -25,7 +25,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.79 89/07/06 17:18:00 jim Exp $
+ * $XConsortium: menus.c,v 1.80 89/07/07 13:13:06 jim Exp $
  *
  * twm menu code
  *
@@ -35,7 +35,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: menus.c,v 1.79 89/07/06 17:18:00 jim Exp $";
+"$XConsortium: menus.c,v 1.80 89/07/07 13:13:06 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -78,7 +78,6 @@ int ConstMoveYB;
 int StartingX, StartingY, RestorePointer;
 static Cursor LastCursor;
 
-ScreenInfo *FindScreenInfo();
 extern char *Action;
 extern int Context;
 extern TwmWindow *ButtonWindow, *Tmp_win;
@@ -340,24 +339,7 @@ UpdateMenu()
 	while (XCheckMaskEvent(dpy, ButtonPressMask | ButtonReleaseMask |
 	    EnterWindowMask | ExposureMask, &Event))
 	{
-	    if (XFindContext(dpy, Event.xany.window,
-		TwmContext,&Tmp_win) == XCNOENT)
-		Tmp_win = NULL;
-
-	    if (XFindContext(dpy, Event.xany.window,
-		ScreenContext, &Scr) == XCNOENT)
-		Scr = FindScreenInfo(Event.xany.window);
-
-	    if (Scr == NULL)
-		continue;
-
-	    if (Event.type == ButtonRelease || Cancel)
-		if (!Scr->NoGrabServer)
-		    XUngrabServer(dpy);
-
-	    if (Event.type >= 0 && Event.type < LASTEvent)
-	        (*EventHandler[Event.type])();
-
+	    if (!DispatchEvent ()) continue;
 	    if (Event.type == ButtonRelease || Cancel)
 		return;
 	}
@@ -1269,14 +1251,6 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
 
 	origX = eventp->xbutton.x_root;
 	origY = eventp->xbutton.y_root;
-	/*
-	MoveOutline(eventp->xbutton.root,
-	    eventp->xbutton.x_root-DragX-JunkBW,
-	    eventp->xbutton.y_root-DragY-JunkBW,
-	    DragWidth + 2 * JunkBW,
-	    DragHeight + 2 * JunkBW, 
-	    tmp->tmp_win->frame_bw, tmp_win->title_height);
-	*/
 
 	if ((eventp->xbutton.time - last_time) < 400)
 	{
@@ -1307,26 +1281,14 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
 
 	    done = FALSE;
 	    while (XCheckMaskEvent(dpy, ButtonPressMask | ButtonReleaseMask |
-					EnterWindowMask | LeaveWindowMask,
-		&Event))
+					EnterWindowMask | LeaveWindowMask |
+				        ExposureMask, &Event))
 	    {
 		/* throw away enter and leave events until release */
 		if (Event.xany.type == EnterNotify ||
 		    Event.xany.type == LeaveNotify) continue; 
 
-		if (XFindContext(dpy, Event.xany.window,
-		    TwmContext,&Tmp_win) == XCNOENT)
-		    Tmp_win = NULL;
-
-		if (XFindContext(dpy, Event.xany.window,
-		    ScreenContext, &Scr) == XCNOENT)
-		    Scr = FindScreenInfo(Event.xany.window);
-
-		if (Scr == NULL)
-		    continue;
-
-		if (Event.type >= 0 && Event.type < LASTEvent)
-		    (*EventHandler[Event.type])();
+		if (!DispatchEvent ()) continue;
 
 		if (Cancel)
 		{
