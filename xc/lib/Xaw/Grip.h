@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Grip.h,v 1.9 88/09/06 09:44:53 swick Exp $
+* $XConsortium: Grip.h,v 1.10 88/09/06 16:41:31 jim Exp $
 */
 
 
@@ -45,18 +45,18 @@ SOFTWARE.
 
  Name		     Class		RepType		Default Value
  ----		     -----		-------		-------------
- background	     Background		pixel		Black
- border		     BorderColor	pixel		Black
- borderWidth	     BorderWidth	int		0
+ foreground	     Foreground		Pixel		XtDefaultForeground
+ border		     BorderColor	Pixel		XtDefaultForeground
+ borderWidth	     BorderWidth	Dimension	0
  callback	     Callback		Pointer		GripAction
  cursor		     Cursor		Cursor		None
  destroyCallback     Callback		Pointer		NULL
- height		     Height		int		6
+ height		     Height		Dimension	8
  mappedWhenManaged   MappedWhenManaged	Boolean		True
  sensitive	     Sensitive		Boolean		True
- width		     Width		int		6
- x		     Position		int		0
- y		     Position		int		0
+ width		     Width		Dimension	8
+ x		     Position		Position	0
+ y		     Position		Position	0
 
 */
 

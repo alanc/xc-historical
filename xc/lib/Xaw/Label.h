@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Label.h,v 1.18 88/09/27 11:17:39 swick Exp $
+* $XConsortium: Label.h,v 1.19 88/09/29 13:34:45 swick Exp $
 */
 
 
@@ -43,19 +43,19 @@ SOFTWARE.
 
  Name		     Class		RepType		Default Value
  ----		     -----		-------		-------------
- background	     Background		Pixel		White
+ background	     Background		Pixel		XtDefaultBackground
  bitmap		     Pixmap		Pixmap		None
- border		     BorderColor	Pixel		Black
+ border		     BorderColor	Pixel		XtDefaultForeground
  borderWidth	     BorderWidth	Dimension	1
  cursor		     Cursor		Cursor		None
  destroyCallback     Callback		XtCallbackList	NULL
- font		     Font		XFontStruct*	fixed
- foreground	     Foreground		Pixel		Black
+ font		     Font		XFontStruct*	XtDefaultFont
+ foreground	     Foreground		Pixel		XtDefaultForeground
  height		     Height		Dimension	text height
  insensitiveBorder   Insensitive	Pixmap		Gray
  internalHeight	     Height		Dimension	2
  internalWidth	     Width		Dimension	4
- justify	     Justify		Justify		Center
+ justify	     Justify		XtJustify	XtJustifyCenter
  label		     Label		String		NULL
  mappedWhenManaged   MappedWhenManaged	Boolean		True
  resize		     Resize		Boolean		True

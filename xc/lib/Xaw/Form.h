@@ -1,4 +1,4 @@
-/* $XConsortium: Form.h,v 1.14 88/09/06 16:41:24 jim Exp $ */
+/* $XConsortium: Form.h,v 1.15 88/09/09 16:35:05 swick Exp $ */
 
 
 /***********************************************************
@@ -40,17 +40,17 @@ SOFTWARE.
 
  Name		     Class		RepType		Default Value
  ----		     -----		-------		-------------
- background	     Background		pixel		White
- border		     BorderColor	pixel		Black
- borderWidth	     BorderWidth	int		1
+ background	     Background		Pixel		XtDefaultBackground
+ border		     BorderColor	Pixel		XtDefaultForeground
+ borderWidth	     BorderWidth	Dimension	1
  defaultDistance     Thickness		int		4
  destroyCallback     Callback		Pointer		NULL
- height		     Height		int		0
+ height		     Height		Dimension	computed at realize
  mappedWhenManaged   MappedWhenManaged	Boolean		True
  sensitive	     Sensitive		Boolean		True
- width		     Width		int		0
- x		     Position		int		0
- y		     Position		int		0
+ width		     Width		Dimension	computed at realize
+ x		     Position		Position	0
+ y		     Position		Position	0
 
 */
 
