@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.128 89/11/28 15:42:55 jim Exp $
+ * $XConsortium: menus.c,v 1.129 89/11/29 14:48:02 jim Exp $
  *
  * twm menu code
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: menus.c,v 1.128 89/11/28 15:42:55 jim Exp $";
+"$XConsortium: menus.c,v 1.129 89/11/29 14:48:02 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -1716,14 +1716,22 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
 	if (DeferExecution(context, func, Scr->DestroyCursor))
 	    return TRUE;
 
-	DeleteWindow (tmp_win);
+	if (tmp_win->iconmgr)		/* don't send ourself a message */
+	  HideIconManager ();
+	else if (tmp_win->protocols & DoesWmDeleteWindow)
+	  SendDeleteWindowMessage (tmp_win, LastTimestamp());
+	else
+	  XBell (dpy, 0);
 	break;
 
     case F_SAVEYOURSELF:
 	if (DeferExecution (context, func, Scr->SelectCursor))
 	  return TRUE;
 
-	SaveYourself (tmp_win);
+	if (tmp_win->protocols & DoesWmSaveYourself)
+	  SendSaveYourselfMessage (tmp_win, LastTimestamp());
+	else
+	  XBell (dpy, 0);
 	break;
 
     case F_CIRCLEUP:
@@ -2570,47 +2578,9 @@ HideIconManager ()
 }
 
 
-SetupWmProtocolsClientMessage (w, ev, a)
-    Window w;
-    XClientMessageEvent *ev;
-    Atom a;
-{
-    ev->type = ClientMessage;
-    ev->window = w;
-    ev->message_type = _XA_WM_PROTOCOLS;
-    ev->format = 32;
-    ev->data.l[0] = a;
-    ev->data.l[1] = LastTimestamp();
-}
-
-
-DeleteWindow (tmp)
-    TwmWindow *tmp;
-{
-    if (tmp->iconmgr) {
-	HideIconManager ();
-    } else if (tmp->protocols & DoesWmDeleteWindow) {
-	XClientMessageEvent ev;
-	SetupWmProtocolsClientMessage (tmp->w, &ev, _XA_WM_DELETE_WINDOW);
-	XSendEvent (dpy, tmp->w, False, 0, &ev);
-    } else {
-	XBell (dpy, 0);
-    }
-}
-
-SaveYourself (tmp)
-    TwmWindow *tmp;
-{
-    if (tmp->protocols & DoesWmSaveYourself) {
-	XClientMessageEvent ev;
-	SetupWmProtocolsClientMessage (tmp->w, &ev, _XA_WM_SAVE_YOURSELF);
-	XSendEvent (dpy, tmp->w, False, 0, &ev);
-    } else {
-	XBell (dpy, 0);
-    }
-}
-
-
+/*
+ * warping routines
+ */
 void WarpAlongRing (ev, forward)
     XButtonEvent *ev;
     Bool forward;
@@ -2648,7 +2618,6 @@ void WarpAlongRing (ev, forward)
     }
 }
 
-
 void WarpToWindow (t)
     TwmWindow *t;
 {
@@ -2660,3 +2629,54 @@ void WarpToWindow (t)
       XWarpPointer (dpy, None, t->w, 0, 0, 0, 0,
 		    t->attr.width / 2, t->attr.height / 2);
 }
+
+
+/*
+ * ICCCM Client Messages - Section 4.2.8 of the ICCCM dictates that all
+ * client messages will have the following form:
+ *
+ *     event type	ClientMessage
+ *     message type	_XA_WM_PROTOCOLS
+ *     window		tmp->w
+ *     format		32
+ *     data[0]		message atom
+ *     data[1]		time stamp
+ */
+static void send_clientmessage (w, a, timestamp)
+    Window w;
+    Atom a;
+    Time timestamp;
+{
+    XClientMessageEvent ev;
+
+    ev.type = ClientMessage;
+    ev.window = w;
+    ev.message_type = _XA_WM_PROTOCOLS;
+    ev.format = 32;
+    ev.data.l[0] = a;
+    ev.data.l[1] = timestamp;
+    XSendEvent (dpy, w, False, 0, &ev);
+}
+
+SendDeleteWindowMessage (tmp, timestamp)
+    TwmWindow *tmp;
+    Time timestamp;
+{
+    send_clientmessage (tmp->w, _XA_WM_DELETE_WINDOW, timestamp);
+}
+
+SendSaveYourselfMessage (tmp, timestamp)
+    TwmWindow *tmp;
+    Time timestamp;
+{
+    send_clientmessage (tmp->w, _XA_WM_SAVE_YOURSELF, timestamp);
+}
+
+
+SendTakeFocusMessage (tmp, timestamp)
+    TwmWindow *tmp;
+    Time timestamp;
+{
+    send_clientmessage (tmp->w, _XA_WM_TAKE_FOCUS, timestamp);
+}
+

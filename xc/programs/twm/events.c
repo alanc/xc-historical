@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.117 89/11/27 16:45:16 jim Exp $
+ * $XConsortium: events.c,v 1.118 89/11/28 15:42:51 jim Exp $
  *
  * twm event handling
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: events.c,v 1.117 89/11/27 16:45:16 jim Exp $";
+"$XConsortium: events.c,v 1.118 89/11/28 15:42:51 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -1605,69 +1605,106 @@ void
 HandleEnterNotify()
 {
     MenuRoot *mr;
+    XEnterWindowEvent *ewp = &Event.xcrossing;
 
-    if (ActiveMenu == NULL && Event.xcrossing.window == Scr->Root)
-    {
-	InstallAColormap(dpy, Scr->CMap);
-	return;
-    }
-
-    if (ActiveMenu == NULL && Tmp_win != NULL)
-    {
-	if (Scr->FocusRoot && Tmp_win->list)
-	{
-	    ActiveIconManager(Tmp_win->list);
+    /*
+     * if we aren't in the middle of menu processing
+     */
+    if (!ActiveMenu) {
+	/*
+	 * if entering root window, restore twm default colormap so that 
+	 * titlebars are legible
+	 */
+	if (ewp->window == Scr->Root) {
+	    InstallAColormap (dpy, Scr->CMap);
+	    return;
 	}
-	if (Scr->FocusRoot && Tmp_win->mapped)
-	{
-	    if (Scr->Focus != NULL && Scr->Focus != Tmp_win &&Tmp_win->hilite_w)
-		XUnmapWindow(dpy, Scr->Focus->hilite_w);
 
-	    if (Event.xcrossing.window == Tmp_win->frame ||
-		(Tmp_win->list && Event.xcrossing.window == Tmp_win->list->w))
-	    {
-		if (Tmp_win->hilite_w)
-		    XMapWindow(dpy, Tmp_win->hilite_w);
-		InstallAColormap(dpy, Scr->CMap);
-		XSetWindowBorder(dpy, Tmp_win->frame, Tmp_win->border);
-		if (Tmp_win->title_w)
-		    XSetWindowBorder(dpy, Tmp_win->title_w, Tmp_win->border);
-		if(Tmp_win->title_w && Scr->TitleFocus)
-		  SetFocus (Tmp_win);
-		Scr->Focus = Tmp_win;
-	    }
-	    if (Event.xcrossing.window == Tmp_win->w)
-	    {
-		InstallAColormap(dpy, Tmp_win->attr.colormap);
-	    }
-	}
-	if (Tmp_win->auto_raise) {
-	    enter_win = Tmp_win;
-	    if (enter_flag == FALSE) AutoRaiseWindow (Tmp_win);
-	} else if (enter_flag && raise_win == Tmp_win)
-	  enter_win = Tmp_win;
-	if (Tmp_win->ring.next && (!enter_flag || raise_win == enter_win))
-	  Scr->RingLeader = Tmp_win;
-	return;
-    }
+	/*
+	 * if we have an event for a specific one of our windows
+	 */
+	if (Tmp_win) {
+	    /*
+	     * If currently in PointerRoot mode (indicated by FocusRoot), then
+	     * focus on this window
+	     */
+	    if (Scr->FocusRoot) {
+		if (Tmp_win->list) ActiveIconManager(Tmp_win->list);
+		if (Tmp_win->mapped) {
+		    /*
+		     * unhighlight old focus window
+		     */
+		    if (Scr->Focus &&
+			Scr->Focus != Tmp_win && Tmp_win->hilite_w)
+		      XUnmapWindow(dpy, Scr->Focus->hilite_w);
 
+		    /*
+		     * If entering the frame or the icon manager, then do 
+		     * "window activation things":
+		     *
+		     *     1.  turn on highlight window (if any)
+		     *     2.  install frame colormap
+		     *     3.  set frame and highlight window (if any) border
+		     *     4.  focus on client window to forward typing
+		     *     5.  send WM_TAKE_FOCUS if requested
+		     */
+		    if (ewp->window == Tmp_win->frame ||
+			(Tmp_win->list && ewp->window == Tmp_win->list->w)) {
+			if (Tmp_win->hilite_w)				/* 1 */
+			  XMapWindow (dpy, Tmp_win->hilite_w);
+			InstallAColormap (dpy, Scr->CMap);		/* 2 */
+			XSetWindowBorder (dpy, Tmp_win->frame,		/* 3 */
+					  Tmp_win->border);
+			if (Tmp_win->title_w)				/* 3 */
+			  XSetWindowBorder (dpy, Tmp_win->title_w,
+					    Tmp_win->border);
+			if (Tmp_win->title_w && Scr->TitleFocus)	/* 4 */
+			  SetFocus (Tmp_win);
+			if (Tmp_win->protocols & DoesWmTakeFocus)	/* 5 */
+			  SendTakeFocusMessage (Tmp_win, ewp->time);
+			Scr->Focus = Tmp_win;
+		    } else if (ewp->window == Tmp_win->w) {
+			/*
+			 * If we are entering the application window, install
+			 * its colormap(s).
+			 */
+			InstallAColormap (dpy, Tmp_win->attr.colormap);
+		    }
+		}			/* end if Tmp_win->mapped */
+	    }				/* end if FocusRoot */
+	    /*
+	     * If this window is to be autoraised, mark it so
+	     */
+	    if (Tmp_win->auto_raise) {
+		enter_win = Tmp_win;
+		if (enter_flag == FALSE) AutoRaiseWindow (Tmp_win);
+	    } else if (enter_flag && raise_win == Tmp_win)
+	      enter_win = Tmp_win;
+	    /*
+	     * set ring leader
+	     */
+	    if (Tmp_win->ring.next && (!enter_flag || raise_win == enter_win))
+	      Scr->RingLeader = Tmp_win;
+	    return;
+	}				/* end if Tmp_win */
+    }					/* end if !ActiveMenu */
 
-    if (XFindContext(dpy, Event.xany.window, MenuContext, &mr) != 0)
-      return;
+    /*
+     * Find the menu that we are dealing with now; punt if unknown
+     */
+    if (XFindContext (dpy, ewp->window, MenuContext, &mr) != XCSUCCESS) return;
 
     mr->entered = TRUE;
-    if (ActiveMenu && mr == ActiveMenu->prev && RootFunction == NULL)
-    {
-	if (Scr->Shadow)
-	    XUnmapWindow(dpy, ActiveMenu->shadow);
-	XUnmapWindow(dpy, ActiveMenu->w);
+    if (ActiveMenu && mr == ActiveMenu->prev && RootFunction == NULL) {
+	if (Scr->Shadow) XUnmapWindow (dpy, ActiveMenu->shadow);
+	XUnmapWindow (dpy, ActiveMenu->w);
 	ActiveMenu->mapped = UNMAPPED;
-	if (ActiveItem)
-	    ActiveItem->state = 0;
+	if (ActiveItem) ActiveItem->state = 0;
 	ActiveItem = NULL;
 	ActiveMenu = mr;
 	MenuDepth--;
     }
+    return;
 }
 
 /***********************************************************************
@@ -1711,7 +1748,8 @@ HandleLeaveNotify()
 			    XSetWindowBorderPixmap(dpy,
 			       Tmp_win->title_w,Tmp_win->gray);
 		    }
-		    if (Scr->TitleFocus)
+		    if (Scr->TitleFocus ||
+			Tmp_win->protocols & DoesWmTakeFocus)
 		      SetFocus (NULL);
 		    Scr->Focus = NULL;
 		}
