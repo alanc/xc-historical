@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: button.c,v 1.8 88/07/29 15:37:52 jim Exp $
+ *	$XConsortium: button.c,v 1.9 88/09/06 17:07:48 jim Exp $
  */
 
 
@@ -35,10 +35,12 @@ button.c	Handles button events in the terminal emulator.
 				J. Gettys.
 */
 #ifndef lint
-static char rcs_id[] = "$XConsortium: button.c,v 1.8 88/07/29 15:37:52 jim Exp $";
+static char rcs_id[] = "$XConsortium: button.c,v 1.9 88/09/06 17:07:48 jim Exp $";
 #endif	/* lint */
 #include <X11/Xos.h>
 #include <X11/Xlib.h>
+#include <X11/Xatom.h>
+#include <X11/Xmu.h>
 #include <stdio.h>
 #include <signal.h>
 #include <setjmp.h>
@@ -66,6 +68,12 @@ extern char *malloc();
 #define DOWN 0
 #define SHIFTS 8		/* three keys, so eight combinations */
 #define	Coordinate(r,c)		((r) * (term->screen.max_col+1) + (c))
+
+/* STACK_SIZE should be as large as the maximum number of selections
+   we're going to own (i.e. than any reasonable user would put in a
+   translation entry for select-end(), though it's not fatal if it's
+   too small for some instances */
+#define STACK_SIZE 10
 
 char *SaveText();
 extern UnSaltText();
@@ -246,16 +254,18 @@ static int replyToEmacs;
 
 
 /*ARGSUSED*/
-void VTButtonPressed(w, eventdata, event)
+void VTButtonPressed(w, event, params, num_params)
 Widget w;
-caddr_t eventdata;
-register XButtonEvent *event;
+XEvent *event;			/* must be XButtonEvent */
+String *params;			/* unused */
+Cardinal *num_params;		/* unused */
 {
 	register TScreen *screen = &term->screen;
 	/* so table above will be nice, we index from 0 */
-	int button = event->button - 1; 
-	int shift = KeyState(event->state);
+	int button = event->xbutton.button - 1; 
+	int shift = KeyState(event->xbutton.state);
 
+	((XtermWidget)w)->screen.selection_time = event->xbutton.time;
 	if (eventMode != NORMAL)
 		return;
 	if (screen->incopy)
@@ -264,15 +274,17 @@ register XButtonEvent *event;
 }
 
 /*ARGSUSED*/
-void VTMouseMoved(w, eventdata, event)
+void VTMouseMoved(w, event, params, num_params)
 Widget w;
-caddr_t eventdata;
-register XMotionEvent *event;
+XEvent *event;			/* must be XMotionEvent */
+String *params;			/* unused */
+Cardinal *num_params;		/* unused */
 {
+	((XtermWidget)w)->screen.selection_time = event->xmotion.time;
 	switch (eventMode) {
 		case LEFTEXTENSION :
 		case RIGHTEXTENSION :
-			ExtendExtend(event->x, event->y);
+			ExtendExtend(event->xmotion.x, event->xmotion.y);
 			break;
 		default :
 			/* Should get here rarely when everything
@@ -284,16 +296,18 @@ register XMotionEvent *event;
 
 
 /*ARGSUSED*/
-void VTButtonReleased(w, eventdata, event)
+void VTButtonReleased(w, event, params, num_params)
 Widget w;
-caddr_t eventdata;
-register XButtonEvent *event;
+XEvent *event;			/* must be XButtonEvent */
+String *params;			/* selections */
+Cardinal *num_params;
 {
 	register TScreen *screen = &term->screen;
 	/* so table above will be nice, we index from 0 */
-	int button = event->button - 1; 
-	int shift = KeyState(event->state);
+	int button = event->xbutton.button - 1; 
+	int shift = KeyState(event->xbutton.state);
 
+	((XtermWidget)w)->screen.selection_time = event->xbutton.time;
 	switch (eventMode) {
 		case NORMAL :
 			(*(textfunc[screen->send_mouse_pos][shift][1][button]))
@@ -301,8 +315,8 @@ register XButtonEvent *event;
 			break;
 		case LEFTEXTENSION :
 		case RIGHTEXTENSION :
-			if AllButtonsUp(event->state, event->button)
-				EndExtend(event);
+			if AllButtonsUp(event->xbutton.state, event->xbutton.button)
+				EndExtend(event, params, *num_params);
 			break;
 	}
 }
@@ -444,17 +458,19 @@ int startrow, startcol;
 
 }
 
-EndExtend(event)
-XButtonEvent *event;
+EndExtend(event, params, num_params)
+XEvent *event;			/* must be XButtonEvent */
+String *params;			/* selections */
+Cardinal num_params;
 {
 	int	row, col;
 	TScreen *screen = &term->screen;
 	char line[9];
 
-	ExtendExtend(event->x, event->y);
+	ExtendExtend(event->xbutton.x, event->xbutton.y);
 
-	lastButtonUpTime = event->time;
-	PointToRowCol(event->y, event->x, &row, &col);
+	lastButtonUpTime = event->xbutton.time;
+	PointToRowCol(event->xbutton.y, event->xbutton.x, &row, &col);
 	/* Only do select stuff if non-null select */
 	if (startSRow != endSRow || startSCol != endSCol) {
 		if (replyToEmacs) {
@@ -477,9 +493,11 @@ XButtonEvent *event;
 				v_write(screen->respond, line, 9);
 			}
 		}
-		SaltTextAway(startSRow, startSCol, endSRow, endSCol);
-	}
-	TrackText(0, 0, 0, 0);
+		SaltTextAway(startSRow, startSCol, endSRow, endSCol,
+			     params, num_params);
+	} else _DisownSelection(term, params, num_params);
+
+	/* TrackText(0, 0, 0, 0); */
 	eventMode = NORMAL;
 }
 
@@ -877,8 +895,10 @@ int hilite;
 	}
 }
 
-SaltTextAway(crow, ccol, row, col)
+SaltTextAway(crow, ccol, row, col, params, num_params)
 register crow, ccol, row, col;
+String *params;			/* selections */
+Cardinal num_params;
 /* Guaranteed that (crow, ccol) <= (row, col), and that both points are valid
    (may have row = screen->max_row+1, col = 0) */
 {
@@ -900,8 +920,13 @@ register crow, ccol, row, col;
 	
 	/* now get some memory to save it in */
 
-	if((line = malloc((unsigned) j + 1)) == (char *)NULL)
+	if (screen->selection_size <= j) {
+	    if((line = malloc((unsigned) j + 1)) == (char *)NULL)
 		SysError(ERROR_BMALLOC2);
+	    XtFree(screen->selection);
+	    screen->selection = line;
+	    screen->selection_size = j + 1;
+	} else line = screen->selection;
 	line[j] = '\0';		/* make sure it is null terminated */
 	lp = line;		/* lp points to where to save the text */
 	if ( row == crow ) lp = SaveText(screen, row, ccol, col, lp);
@@ -917,9 +942,177 @@ register crow, ccol, row, col;
 	}
 	*lp = '\0';		/* make sure we have end marked */
 	
-	XStoreBytes(screen->display,line, j);
-	free(line);
+	screen->selection_length = j;
+	_OwnSelection(term, params, num_params);
 }
+
+static Boolean ConvertSelection(w, selection, target,
+				type, value, length, format)
+Widget w;
+Atom *selection, *target, *type;
+caddr_t *value;
+unsigned long *length;
+int *format;
+{
+    Display* d = XtDisplay(w);
+    XtermWidget xterm = (XtermWidget)w;
+
+    if (xterm->screen.selection == NULL) return False; /* can this happen? */
+
+    if (*target == XA_TARGETS(d)) {
+	Atom* targetP;
+	Atom* std_targets;
+	unsigned long std_length;
+	XmuConvertStandardSelection(
+		    w, xterm->screen.selection_time, selection,
+		    target, type, (caddr_t*)&std_targets, &std_length, format
+		   );
+	*length = std_length + 4;
+	*value = (caddr_t)XtMalloc(sizeof(Atom)*(*length));
+	targetP = *(Atom**)value;
+	*targetP++ = XA_STRING;
+	*targetP++ = XA_TEXT(d);
+	*targetP++ = XA_LENGTH(d);
+	*targetP++ = XA_LIST_LENGTH(d);
+	bcopy((char*)std_targets, (char*)targetP, sizeof(Atom)*std_length);
+	XtFree((char*)std_targets);
+	*type = XA_ATOM;
+	*format = 32;
+	return True;
+    }
+
+    if (*target == XA_STRING || *target == XA_TEXT(d)) {
+	*type = XA_STRING;
+	*value = xterm->screen.selection;
+	*length = xterm->screen.selection_length;
+	*format = 8;
+	return True;
+    }
+    if (*target == XA_LIST_LENGTH(d)) {
+	*value = XtMalloc(4);
+	if (sizeof(long) == 4)
+	    *(long*)*value = 1;
+	else {
+	    long temp = 1;
+	    bcopy( ((char*)&temp)+sizeof(long)-4, (char*)*value, 4);
+	}
+	*type = XA_INTEGER;
+	*length = 1;
+	*format = 32;
+	return True;
+    }
+    if (*target == XA_LENGTH(d)) {
+	*value = XtMalloc(4);
+	if (sizeof(long) == 4)
+	    *(long*)*value = xterm->screen.selection_length;
+	else {
+	    long temp = xterm->screen.selection_length;
+	    bcopy( ((char*)&temp)+sizeof(long)-4, (char*)*value, 4);
+	}
+	*type = XA_INTEGER;
+	*length = 1;
+	*format = 32;
+	return True;
+    }
+    if (XmuConvertStandardSelection(w, xterm->screen.selection_time, selection,
+				    target, type, value, length, format))
+	return True;
+
+    /* else */
+    return False;
+
+}
+
+
+/* ARGSUSED */
+static void LoseSelection(w, selection)
+  Widget w;
+  Atom *selection;
+{
+    TrackText(0, 0, 0, 0);
+}
+
+
+/* ARGSUSED */
+static void SelectionDone(w, selection, target)
+Widget w;
+Atom *selection, *target;
+{
+    /* empty proc so Intrinsics know we want to keep storage */
+}
+
+
+static /* void */ _OwnSelection(term, selections, count)
+register XtermWidget term;
+String *selections;
+Cardinal count;
+{
+    Atom stack_atoms[STACK_SIZE];
+    Atom* atoms = stack_atoms;
+    int i;
+
+    if (count > STACK_SIZE) {
+	atoms = (Atom*)XtMalloc(atoms, count*sizeof(Atom));
+    }
+    XmuInternStrings( XtDisplay((Widget)term), selections, count, atoms );
+    for (i = 0; i < count; i++) {
+	int buffer;
+	switch (atoms[i]) {
+	  case XA_CUT_BUFFER0: buffer = 0; break;
+	  case XA_CUT_BUFFER1: buffer = 1; break;
+	  case XA_CUT_BUFFER2: buffer = 2; break;
+	  case XA_CUT_BUFFER3: buffer = 3; break;
+	  case XA_CUT_BUFFER4: buffer = 4; break;
+	  case XA_CUT_BUFFER5: buffer = 5; break;
+	  case XA_CUT_BUFFER6: buffer = 6; break;
+	  case XA_CUT_BUFFER7: buffer = 7; break;
+	  default:	       buffer = -1;
+	}
+	if (buffer >= 0)
+	    XStoreBytes( XtDisplay((Widget)term), term->screen.selection,
+			 term->screen.selection_length, buffer );
+	else {
+	    XtOwnSelection( (Widget)term, atoms[i],
+			    term->screen.selection_time,
+			    ConvertSelection, LoseSelection, SelectionDone );
+	}
+    }
+    if (atoms != stack_atoms) XtFree(atoms);
+}
+
+static /* void */ _DisownSelection(term, selections, count)
+register XtermWidget term;
+String *selections;
+Cardinal count;
+{
+    Atom stack_atoms[STACK_SIZE];
+    Atom* atoms = stack_atoms;
+    int i;
+
+    if (count > STACK_SIZE) {
+	atoms = (Atom*)XtMalloc(atoms, count*sizeof(Atom));
+    }
+    XmuInternStrings( XtDisplay((Widget)term), selections, count, atoms );
+    for (i = 0; i < count; i++) {
+	int buffer;
+	switch (atoms[i]) {
+	  case XA_CUT_BUFFER0: buffer = 0; break;
+	  case XA_CUT_BUFFER1: buffer = 1; break;
+	  case XA_CUT_BUFFER2: buffer = 2; break;
+	  case XA_CUT_BUFFER3: buffer = 3; break;
+	  case XA_CUT_BUFFER4: buffer = 4; break;
+	  case XA_CUT_BUFFER5: buffer = 5; break;
+	  case XA_CUT_BUFFER6: buffer = 6; break;
+	  case XA_CUT_BUFFER7: buffer = 7; break;
+	  default:	       buffer = -1;
+	}
+	if (buffer < 0)
+	    XtDisownSelection( (Widget)term, atoms[i],
+			       term->screen.selection_time );
+    }
+    if (atoms != stack_atoms) XtFree(atoms);
+}
+
 
 /* returns number of chars in line from scol to ecol out */
 int Length(screen, row, scol, ecol)

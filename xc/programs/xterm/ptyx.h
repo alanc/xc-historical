@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: ptyx.h,v 1.13 88/08/08 12:49:55 jim Exp $
+ *	$XConsortium: ptyx.h,v 1.14 88/09/06 17:08:22 jim Exp $
  */
 
 #include <X11/copyright.h>
@@ -191,7 +191,6 @@ typedef struct {
 } BitmapBits;
 
 #define	SAVELINES		64      /* default # lines to save      */
-#define	SCROLLBARWIDTH		15      /* scroll bar width		*/
 
 typedef struct {
 /* These parameters apply to both windows */
@@ -332,6 +331,10 @@ typedef struct {
 	char		*charClass;	/* for overriding word selection */
 	Boolean		cutNewline;	/* whether or not line cut has \n */
 	Boolean		cutToBeginningOfLine;  /* line cuts to BOL? */
+	char		*selection;	/* the current selection */
+	int		selection_size; /* size of allocated buffer */
+	int		selection_length; /* number of significant bytes */
+	int		selection_time;	/* latest event timestamp */
 } TScreen;
 
 /* meaning of bits in screen.select flag */

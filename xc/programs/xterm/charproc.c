@@ -1,5 +1,5 @@
 /*
- * $XConsortium: charproc.c,v 1.52 88/09/04 20:13:06 rws Exp $
+ * $XConsortium: charproc.c,v 1.53 88/09/06 14:34:59 jim Exp $
  */
 
 
@@ -128,7 +128,7 @@ static void VTallocbuf();
 #define	doinput()		(bcnt-- > 0 ? *bptr++ : in_put())
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: charproc.c,v 1.45 88/08/08 12:49:42 jim Exp $";
+static char rcs_id[] = "$XConsortium: charproc.c,v 1.53 88/09/06 14:34:59 jim Exp $";
 #endif	/* lint */
 
 static long arg;
@@ -183,16 +183,24 @@ static  int	defaultNMarginBell = N_MARGINBELL;
 static  int	defaultMultiClickTime = MULTICLICKTIME;
 
 static char defaultTranslations[] = 
-    "<KeyPress>: insert()";
+    "<KeyPress>:	insert() \n\
+     <BtnDown>:		dispatch-btn-press() \n\
+     <Btn1Motion>:	select-extend() \n\
+     <BtnUp>:		dispatch-btn-release(PRIMARY, CUT_BUFFER0) ";
 
 static XtActionsRec actionsList[] = { 
     { "string",		HandleStringEvent },
     { "insert",		HandleKeyPressed },
     { "keymap", 	HandleKeymapChange },
     { "selection",	HandleInsertSelection },
+    { "dispatch-btn-press",	VTButtonPressed },
+    { "select-extend",		VTMouseMoved },
+    { "dispatch-btn-release",	VTButtonReleased },
+#ifdef notdef
     { "select-start",	HandleSelectStart },	/* NYI */
     { "select-extend",	HandleSelectExtend },	/* NYI */
     { "select-end",	HandleSelectEnd },	/* NYI */
+#endif /*notdef*/
 };
 
 static XtResource resources[] = {
@@ -308,6 +316,7 @@ static XtResource resources[] = {
 
 
 static void VTInitialize(), VTRealize(), VTExpose(), VTConfigure();
+static void VTDestroy();
 
 WidgetClassRec xtermClassRec = {
   {
@@ -330,7 +339,7 @@ WidgetClassRec xtermClassRec = {
     /* compress_exposure  */	FALSE,
     /* compress_enterleave */   TRUE,
     /* visible_interest	  */	FALSE,
-    /* destroy		  */	NULL,
+    /* destroy		  */	VTDestroy,
     /* resize		  */	VTConfigure,
     /* expose		  */	VTExpose,
     /* set_values	  */	NULL,
@@ -1919,12 +1928,6 @@ static void VTInitialize (request, new)
 		HandleLeaveWindow, (Opaque)NULL);
    XtAddEventHandler(XtParent(new), FocusChangeMask, FALSE,
 		HandleFocusChange, (Opaque)NULL);
-   XtAddEventHandler(new, ButtonPressMask, FALSE,
-		VTButtonPressed, (Opaque)NULL);
-   XtAddEventHandler(new, ButtonReleaseMask, FALSE,
-		VTButtonReleased, (Opaque)NULL);
-   XtAddEventHandler(new, ButtonMotionMask, FALSE,
-		VTMouseMoved, (Opaque)NULL);
    XtAddEventHandler(new, 0L, TRUE,
 		VTNonMaskableEvent, (Opaque)NULL);
 
@@ -1936,6 +1939,12 @@ static void VTInitialize (request, new)
    return;
 }
 
+
+static void VTDestroy (w)
+Widget w;
+{
+    XtFree(((XtermWidget)w)->screen.selection);
+}
 
 /*ARGSUSED*/
 static void VTRealize (w, valuemask, values)
