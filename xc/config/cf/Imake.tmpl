@@ -4,7 +4,7 @@
 
 /**/###########################################################################
 /**/# Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-/**/# $XConsortium: Imake.tmpl,v 1.74 89/12/08 15:35:12 jim Exp $
+/**/# $XConsortium: Imake.tmpl,v 1.75 89/12/09 20:55:56 jim Exp $
 /**/#
 /**/# Platform-specific parameters may be set in the appropriate .cf
 /**/# configuration files.  Site-wide parameters may be set in the file
@@ -291,7 +291,7 @@
 #define NeedFunctionPrototypes NO
 #endif
 #ifndef NeedWidePrototypes
-#define NeedWidePrototypes	NO	/* ANSI-C apps but pcc libs */
+#define NeedWidePrototypes	YES	/* mix and match ANSI-C, non-ANSI */
 #endif
 
 #ifndef HasSunOSSharedLibraries
@@ -596,9 +596,9 @@
 #define _funcprotodef /**/
 #endif
 #if NeedWidePrototypes
-#define _wideprotodef -DWIDEPROTO
-#else
 #define _wideprotodef /**/
+#else
+#define _wideprotodef -DNARROWPROTO
 #endif
     PROTO_DEFINES = _funcprotodef _wideprotodef 
 #undef _funcprotodef
