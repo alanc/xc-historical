@@ -1,4 +1,4 @@
-XCOMM site:  $XConsortium: site.def,v 1.79 93/07/29 11:40:47 rws Exp $
+XCOMM site:  $XConsortium: site.def,v 1.80 93/09/04 20:26:33 rws Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -48,6 +48,7 @@ XCOMM #define HasGcc2 YES
 
 #ifdef AfterVendorCF
 
+#undef ProjectRoot
 #define ProjectRoot /X11
 
 #if HasGcc2
