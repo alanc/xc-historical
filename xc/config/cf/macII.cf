@@ -15,7 +15,7 @@
 #define NeedBerklibInXlib YES
 #define HasSockets        YES
 /* the server *REALLY* needs GCC for performance */
-/* #define HasGcc         YES */
+#define HasGcc         YES
 
 #undef ExtensionDefines
 #define ExtensionDefines -DSHAPE -DMULTIBUFFER -DMITSHM -DMITMISC
@@ -32,7 +32,7 @@
 #define ServerDefines StandardDefines ExtensionDefines -DPURDUE
 
 
-/**/# platform:  $XConsortium: macII.cf,v 1.15 89/12/22 15:46:11 rws Exp $
+/**/# platform:  $XConsortium: macII.cf,v 1.16 89/12/22 15:50:50 rws Exp $
 /**/# operating system:  OSName
 
 /*****************************************************************************

@@ -20,7 +20,7 @@
 #define HasSaberC YES
 #define ServerDefines StandardDefines ExtensionDefines -DXDMCP -DNOSTDHDRS -DX11R4
 /* gcc is *VERY USEFUL*, especially for the server; GET it */
-/* #define HasGcc YES */
+#define HasGcc YES
 #endif
 
 #ifdef MipsArchitecture
@@ -30,7 +30,17 @@
 #define DefaultCCOptions -Wf,-XNh2000 -Olimit 2000
 #define ServerDefines StandardDefines ExtensionDefines -DXDMCP
 
+/*
+ * XXX - temporary hack for Keith since he has a wimpy disk.
+ */
+#define BuildExamples NO
 #endif
 
-/**/# platform:  $XConsortium: ultrix.cf,v 1.19 89/11/26 17:35:18 keith Exp $
+#if HasGcc
+#define ServerCcCmd gcc -DNOSTDHDRS -fstrength-reduce -fpcc-struct-return 
+#define CcCmd cc
+#define ServerCCOptions /* */
+#endif
+
+/**/# platform:  $XConsortium: ultrix.cf,v 1.20 89/12/22 15:56:14 rws Exp $
 /**/# operating system:  OSName
