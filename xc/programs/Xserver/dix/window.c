@@ -1,4 +1,4 @@
-/* $XConsortium: window.c,v 5.103 94/03/23 21:30:57 dpw Exp $ */
+/* $XConsortium: window.c,v 5.104 94/04/17 20:26:49 dpw Exp gildea $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -3418,7 +3418,7 @@ DrawLogo(pWin)
     int x, y;
     unsigned int width, height, size;
     GC *pGC;
-    int d11, d21, d31;
+    int thin, gap, d31;
     DDXPointRec poly[4];
     XID fore[2], back[2];
     xrgb rgb[2];
@@ -3467,6 +3467,8 @@ DrawLogo(pWin)
 	bmask = GCFillStyle|GCTile;
     }
 
+    /* should be the same as the reference function XmuDrawLogo() */
+
     size = width;
     if (height < width)
 	 size = height;
@@ -3476,18 +3478,23 @@ DrawLogo(pWin)
     y += rand() % (height - size);
 
 /*
- *	     -----
- *	    /	 /
- *	   /	/
- *	  /    /
- *	 /    /
- *	/____/
+ * Draw what will be the thin strokes.
+ *
+ *           -----
+ *          /    /
+ *         /    /
+ *        /    /
+ *       /    /
+ *      /____/
+ *           d
+ *
+ * Point d is 9/44 (~1/5) of the way across.
  */
 
-    d11 = (size / 11);
-    if (d11 < 1) d11 = 1;
-    d21 = (d11+3) / 4;
-    d31 = d11 + d11 + d21;
+    thin = (size / 11);
+    if (thin < 1) thin = 1;
+    gap = (thin+3) / 4;
+    d31 = thin + thin + gap;
     poly[0].x = x + size;	       poly[0].y = y;
     poly[1].x = x + size-d31;	       poly[1].y = y;
     poly[2].x = x + 0;		       poly[2].y = y + size;
@@ -3497,12 +3504,14 @@ DrawLogo(pWin)
     (*pGC->ops->FillPolygon)(pDraw, pGC, Convex, CoordModeOrigin, 4, poly);
 
 /*
- *	     ------
- *	    /	  /
- *	   /  __ /
- *	  /  /	/
- *	 /  /  /
- *	/__/__/
+ * Erase area not needed for lower thin stroke.
+ *
+ *           ------
+ *          /	  /
+ *         /  __ /
+ *        /  /	/
+ *       /  /  /
+ *      /__/__/
  */
 
     poly[0].x = x + d31/2;			 poly[0].y = y + size;
@@ -3514,6 +3523,8 @@ DrawLogo(pWin)
     (*pGC->ops->FillPolygon)(pDraw, pGC, Convex, CoordModeOrigin, 4, poly);
 
 /*
+ * Erase area not needed for upper thin stroke.
+ *
  *	     ------
  *	    /  /  /
  *	   /--/	 /
@@ -3530,6 +3541,10 @@ DrawLogo(pWin)
     (*pGC->ops->FillPolygon)(pDraw, pGC, Convex, CoordModeOrigin, 4, poly);
 
 /*
+ * Draw thick stroke.
+ * Point b is 1/4 of the way across.
+ *
+ *      b
  * -----
  * \	\
  *  \	 \
@@ -3547,6 +3562,8 @@ DrawLogo(pWin)
     (*pGC->ops->FillPolygon)(pDraw, pGC, Convex, CoordModeOrigin, 4, poly);
 
 /*
+ * Erase to create gap.
+ *
  *	    /
  *	   /
  *	  /
@@ -3554,10 +3571,10 @@ DrawLogo(pWin)
  *	/
  */
 
-    poly[0].x = x + size- d11;	      poly[0].y = y;
-    poly[1].x = x + size-( d11+d21);  poly[1].y = y;
-    poly[2].x = x + d11;	      poly[2].y = y + size;
-    poly[3].x = x + d11 + d21;	      poly[3].y = y + size;
+    poly[0].x = x + size- thin;	      poly[0].y = y;
+    poly[1].x = x + size-( thin+gap);  poly[1].y = y;
+    poly[2].x = x + thin;	      poly[2].y = y + size;
+    poly[3].x = x + thin + gap;	      poly[3].y = y + size;
     (void)DoChangeGC(pGC, bmask, back, 1);
     ValidateGC(pDraw, pGC);
     (*pGC->ops->FillPolygon)(pDraw, pGC, Convex, CoordModeOrigin, 4, poly);
