@@ -1,5 +1,5 @@
 /*
- * $XConsortium: miwideline.c,v 1.4 89/10/29 11:30:51 rws Exp $
+ * $XConsortium: miwideline.c,v 1.5 89/10/29 12:24:52 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -800,28 +800,4 @@ miWideLine (pDrawable, pGC, mode, npt, pPts)
 	first = FALSE;
 	projectLeft = FALSE;
     }
-}
-
-miMiter()
-{
-}
-
-miNotMiter ()
-{
-}
-
-miGetPts ()
-{
-}
-
-miRoundCap()
-{
-}
-
-miOneSegWide()
-{
-}
-
-miExtendSegment ()
-{
 }
