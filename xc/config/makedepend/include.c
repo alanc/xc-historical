@@ -1,5 +1,5 @@
 /*
- * $XConsortium: include.c,v 1.6 88/09/22 13:31:51 martin Exp $
+ * $XConsortium: include.c,v 1.6 88/09/22 13:52:38 jim Exp $
  */
 #include "def.h"
 
@@ -178,6 +178,7 @@ isdotdot(p)
 issymbolic(dir, component)
 	register char	*dir, *component;
 {
+#ifdef S_IFLNK
 	struct stat	st;
 	char	buf[ BUFSIZ ], **pp;
 
@@ -192,6 +193,7 @@ issymbolic(dir, component)
 			log_fatal("out of .. dirs, increase MAXDIRS\n");
 		return(TRUE);
 	}
+#endif
 	return(FALSE);
 }
 
