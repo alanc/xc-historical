@@ -1,4 +1,4 @@
-/* $XConsortium: Convert.c,v 1.65 92/02/27 17:08:12 converse Exp $ */
+/* $XConsortium: Convert.c,v 1.66 92/04/03 16:36:12 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -746,7 +746,8 @@ _XtCallConverter(dpy, converter,
 
 	if (retval == False && supplied_size < to->size) {
 	    /* programmer error: caller must allocate sufficient storage */
-	    *cache_ref_return = NULL;
+	    if (cache_ref_return)
+		*cache_ref_return = NULL;
 	    return False;
 	}
 
