@@ -15,7 +15,7 @@ without any express or implied warranty.
 
 ********************************************************/
 
-/* $XConsortium: mfbzerarc.c,v 5.1 89/09/10 18:05:03 rws Exp $ */
+/* $XConsortium: mfbzerarc.c,v 5.2 89/09/11 09:35:00 rws Exp $ */
 
 /* Derived from:
  * "Algorithm for drawing ellipses or hyperbolae with a digital plotter"
@@ -69,8 +69,6 @@ mfbZeroArcSS(pDraw, pGC, arc)
     int pmask;
     register int *paddr;
 
-    if (!pGC->planemask & 1)
-	return;
     if (((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->rop ==
 	RROP_BLACK)
 	pixel = 0;
@@ -290,6 +288,8 @@ mfbZeroPolyArcSS(pDraw, pGC, narcs, parcs)
     BoxRec box;
     RegionPtr cclip;
 
+    if (!pGC->planemask & 1)
+	return;
     cclip = ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->pCompositeClip;
     for (arc = parcs, i = narcs; --i >= 0; arc++)
     {
