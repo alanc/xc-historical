@@ -22,7 +22,7 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: swaprep.c,v 1.37 91/05/09 16:50:15 rws Exp $ */
+/* $XConsortium: swaprep.c,v 1.38 93/09/03 08:00:05 dpw Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -40,7 +40,7 @@ void
 Swap32Write(pClient, size, pbuf)
     ClientPtr	pClient;
     int		size;  /* in bytes */
-    register long *pbuf;
+    register CARD32 *pbuf;
 {
     register int i;
     register char n;
@@ -59,15 +59,15 @@ void
 CopySwap32Write(pClient, size, pbuf)
     ClientPtr	pClient;
     int		size;   /* in bytes */
-    long	*pbuf;
+    CARD32	*pbuf;
 {
     int bufsize = size;
-    long *pbufT;
-    register long *from, *to, *fromLast, *toLast;
-    long tmpbuf[1];
+    CARD32 *pbufT;
+    register CARD32 *from, *to, *fromLast, *toLast;
+    CARD32 tmpbuf[1];
     
     /* Allocate as big a buffer as we can... */
-    while (!(pbufT = (long *) ALLOCATE_LOCAL(bufsize)))
+    while (!(pbufT = (CARD32 *) ALLOCATE_LOCAL(bufsize)))
     {
         bufsize >>= 1;
 	if (bufsize == 4)
