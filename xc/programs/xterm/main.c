@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: main.c,v 1.38 88/05/18 10:45:45 jim Exp $";
+static char rcs_id[] = "$Header: main.c,v 1.39 88/05/18 13:44:11 jim Exp $";
 #endif	/* lint */
 
 /*
@@ -140,7 +140,6 @@ static char etc_utmp[] = "/etc/utmp";
 #endif	/* SYSV */
 static char *get_ty;
 static int inhibit;
-static int log_on;
 static char passedPty[2];	/* name if pty if slave */
 static int loginpty;
 #ifdef TIOCCONS
@@ -579,8 +578,7 @@ char **argv;
 	    write (pty, buf, strlen (buf));
 	}
 
-	if(log_on) {
-		log_on = FALSE;
+	if (term->misc.log_on) {
 		StartLog(screen);
 	}
 	screen->inhibit = inhibit;
