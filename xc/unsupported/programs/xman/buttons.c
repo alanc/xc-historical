@@ -1,8 +1,8 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: buttons.c,v 1.4 89/02/14 16:07:53 kit Exp $
- * $Header: buttons.c,v 1.4 89/02/14 16:07:53 kit Exp $
+ * $XConsortium: buttons.c,v 1.5 89/02/14 16:33:28 kit Exp $
+ * $Header: buttons.c,v 1.5 89/02/14 16:33:28 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -666,22 +666,18 @@ Widget standby_parent,save_parent;
 /* make the please stand by popup widget. */
 
   num_args = 0;
-  shell = XtCreatePopupShell( "PleaseStandBy", transientShellWidgetClass,
+  shell = XtCreatePopupShell( "pleaseStandBy", transientShellWidgetClass,
 			      standby_parent, arglist, num_args);
 
-  box = XtCreateWidget("PleaseStandByBox",boxWidgetClass,shell,
-		       arglist,num_args);
+  XtSetArg(arglist[num_args], XtNborderWidth, 0);
+  num_args++; 
+  XtSetArg(arglist[num_args], XtNlabel, 
+	   "Formatting Manual Page, Please Stand By...");
+  num_args++; 
+  man_globals->standby = XtCreateManagedWidget("label",
+					       labelWidgetClass,shell,
+					       arglist,num_args);
 
-/*  XtSetArg(arglist[num_args], XtNborderWidth, 0);
-  num_args++; */
-  man_globals->standby1 = XtCreateManagedWidget("Formatting Manual Page,",
-						labelWidgetClass,box,
-						arglist,num_args);
-
-  man_globals->standby2 = XtCreateManagedWidget("Please Stand By...",
-						labelWidgetClass,box,
-						arglist,num_args);
-  XtManageChild(box);
   XtRealizeWidget(shell);
   AddCursor(shell,resources.cursors.top);
 

@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: misc.c,v 1.7 89/02/15 17:53:45 kit Exp $
+ * $XConsortium: misc.c,v 1.8 89/02/15 18:06:56 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -121,6 +121,7 @@ char * entry;
   Window junk;
   char cmdbuf[BUFSIZ], tmp[BUFSIZ], catdir[BUFSIZ];
   char path[BUFSIZ], section[BUFSIZ], error_buf[BUFSIZ];
+  XEvent event;
 
   int x,y;			/* location to pop up whould you 
 				   like to save widget. */
@@ -130,22 +131,15 @@ char * entry;
 
 /*
  * Replace with XtPopupSync when this becomes avaliable. 
- * This section of code does not work, and I have not got time
- * to f*ck with it.
  */
 
-/*
   PopUpMenu(w,NULL,NULL);
   while ( !XCheckTypedWindowEvent(XtDisplay(w), 
-				 XtWindow(man_globals->standby1), 
-				 Expose, &event) );
-  XtDispatchEvent( &event );
-  while ( !XCheckTypedWindowEvent(XtDisplay(w), 
-				 XtWindow(man_globals->standby2), 
+				 XtWindow(man_globals->standby), 
 				 Expose, &event) );
   XtDispatchEvent( &event );
   XFlush(XtDisplay(w));
-*/
+
 /* End replacement. */
 
   if ( (file = fopen( entry , "r")) == NULL) {
@@ -186,6 +180,8 @@ char * entry;
  */
 
   sprintf(catdir,"%s/%s%c", path, CAT, section[LCAT]);
+
+  XtPopdown( XtParent(man_globals->standby) );
   
   if( (access(catdir,W_OK)) == 0)  {
     x = (int) Width(man_globals->manpagewidgets.manpage)/2;
@@ -207,8 +203,6 @@ char * entry;
     man_globals->tmpfile[0] = '\0'; /* remove name of tmpfile. */
   }
     
-  XtPopdown( PopupChild(w, 0) );
-  
   return(file);
 }
 
