@@ -7,7 +7,7 @@
 #endif
 XCOMM -------------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-XCOMM $XConsortium: Imake.tmpl,v 1.153 92/05/29 18:07:59 rws Exp $
+XCOMM $XConsortium: Imake.tmpl,v 1.154 92/05/29 18:37:41 rws Exp $
 XCOMM
 XCOMM Platform-specific parameters may be set in the appropriate <vendor>.cf
 XCOMM configuration files.  Site-specific parameters should be set in the file
@@ -591,6 +591,12 @@ XCOMM the platform-specific parameters - edit site.def to change
 #ifndef LdCmd
 #define LdCmd ld
 #endif
+#ifndef LexCmd
+#define LexCmd lex
+#endif
+#ifndef YaccCmd
+#define YaccCmd yacc
+#endif
 #ifndef LintCmd
 #define LintCmd lint
 #endif
@@ -754,6 +760,8 @@ XCOMM the platform-specific parameters - edit site.def to change
     PREPROCESSCMD = PreProcessCmd $(STD_CPP_DEFINES)	/* prefered; mdep */
           INSTALL = InstallCmd
                LD = LdCmd
+              LEX = LexCmd
+             YACC = YaccCmd
              LINT = LintCmd
       LINTLIBFLAG = LintLibFlag
          LINTOPTS = LintOpts
