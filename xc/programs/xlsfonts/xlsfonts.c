@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: xlsfonts.c,v 1.24 89/06/08 09:20:52 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -381,7 +381,7 @@ static int IgnoreError(dpy, event)
 static char *bounds_metrics_title =
                       "width   left    right    asc    desc   attr\n";
 static char *char_metrics_fmt = 
-"\t0x%02x%0x (%u)\t%4d    %4d    %4d    %4d    %4d    0x%x\n";
+"\t0x%02x%02x (%u)\t%4d    %4d    %4d    %4d    %4d    0x%x\n";
 static char *bounds_metrics_fmt =
 "\t%3s\t\t%4d    %4d    %4d    %4d    %4d    0x%x\n";
 
