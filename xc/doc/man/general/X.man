@@ -11,7 +11,7 @@ has both client and server support for the following operating systems:
 Ultrix 3.0
 SunOS 4.0.3
 HP-UX 6.5
-Domain/IX 10.2
+Domain/OS 10.2
 A/UX 1.1
 AOS-4.3
 NEWS-OS 3.2
