@@ -573,6 +573,7 @@ Widget *root;
 	Display *dpy;
 	char *ptr, *rindex();
 	TopLevelWidget w;
+	int squish = -1;
 
 
 	if( name == NULL) {
@@ -599,6 +600,11 @@ Widget *root;
 	for(i = 1; i < *argc; i++) {
 	  if(index(argv[i], ':') != NULL) {
 		  (void) strncpy(displayName, argv[i], sizeof(displayName));
+		  if( *argc == i + 1) {
+		    (*argc)--;
+		  } else {  /* need to squish this one out of the list */
+		    squish = i;
+		  }
 		  continue;
 	  }
 	  if(!strcmp("-name", argv[i]) || ! strcmp("-n", argv[i])) {
@@ -607,6 +613,12 @@ Widget *root;
 		  name = argv[i];
 		  continue;
 	  }
+	}
+	if(squish != -1) {
+		(*argc)--;
+		for(i = squish; i < *argc; i++) {
+			argv[i] = argv[i+1];
+		}
 	}
 	/* Open display  */
 	if (!(dpy = XOpenDisplay(displayName))) {
