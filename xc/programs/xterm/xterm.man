@@ -1,4 +1,4 @@
-.\" $XConsortium$
+.\" $XConsortium: xterm.man,v 1.70 91/07/31 18:25:17 gildea Exp $
 .TH XTERM 1 "Release 5" "X Version 11"
 .SH NAME
 xterm \- terminal emulator for X
@@ -1188,7 +1188,8 @@ character number of the first character occurring in the set.
 .PP
 The default table is:
 .sp
-.in +10
+.in +8
+.ft C			\" Courier
 .nf
 static int charClass[128] = {
 /* NUL  SOH  STX  ETX  EOT  ENQ  ACK  BEL */
@@ -1224,8 +1225,9 @@ static int charClass[128] = {
 /*   x    y    z    {    |    }    ~  DEL */
     48,  48,  48, 123, 124, 125, 126,   1};
 .fi
+.ft P
+.in -8
 .sp
-.in -10
 For example, the string ``33:48,37:48,45-47:48,64:48'' indicates that the
 exclamation mark, percent sign, dash, period, slash, and ampersand characters
 should be treated the same way as characters and numbers.  This is very useful 
