@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
-XCOMM rules:  $XConsortium: Imake.rules,v 1.175 93/12/13 18:30:33 rob Exp $
+XCOMM rules:  $XConsortium: Imake.rules,v 1.176 93/10/25 15:00:21 rws Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -363,6 +363,16 @@ includes::								@@\
 	done)
 #endif /* BuildIncludes */
 
+#ifndef BuildInterfaces
+#define BuildInterfaces(srclist,dstsubdir,dstupdir)			@@\
+interfaces::								@@\
+	MakeDir($(BUILDINCDIR)/dstsubdir)				@@\
+	@(set -x; cd $(BUILDINCDIR)/dstsubdir; for i in srclist; do \	@@\
+		RemoveFile($$i); \					@@\
+		$(LN) $(BUILDINCTOP)/dstupdir/$(CURRENT_DIR)/$$i .; \	@@\
+	done)
+#endif /* BuildInterfaces */
+
 /*
  * LinkRule - link a program
  */
@@ -370,6 +380,11 @@ includes::								@@\
 #define LinkRule(program,options,objects,libraries) \
 $(CCLINK) -o program options objects libraries $(EXTRA_LOAD_FLAGS)
 #endif /* LinkRule */
+
+#ifndef CplusplusLinkRule
+#define CplusplusLinkRule(program,options,objects,libraries) \
+$(CCCLINK) -o program options objects libraries $(EXTRA_LOAD_FLAGS)
+#endif /* CplusplusLinkRule */
 
 /*
  * NormalProgramTarget - generate rules to compile and link the indicated 
@@ -417,6 +432,13 @@ NormalProgramTarget(program,objects,NullParameter,locallibs,syslibs)
 ComplexProgramTarget(program)
 #endif /* SimpleProgramTarget */
 
+#ifndef SimpleCplusplusProgramTarget
+#define SimpleCplusplusProgramTarget(program)				@@\
+           OBJS = program.o						@@\
+           SRCS = program.CCsuf						@@\
+									@@\
+ComplexCplusplusProgramTarget(program)
+#endif /* SimpleCplusplusProgramTarget */
 
 #ifndef ProgramTargetHelper
 #define	ProgramTargetHelper(program,srcs,objs,deplib,locallib,syslib)	@@\
@@ -431,6 +453,20 @@ ProofProgramTarget(program,$(objs) $(deplib),$(objs) locallib $(LDLIBS) syslib) 
 InstallProgram(program,$(BINDIR))					@@\
 InstallManPage(program,$(MANDIR))
 #endif /* ProgramTargetHelper */
+
+#ifndef CplusplusProgramTargetHelper
+#define	CplusplusProgramTargetHelper(program,srcs,objs,deplib,locallib,syslib) @@\
+ProgramTargetName(program): $(objs) $(deplib)				@@\
+	RemoveTargetProgram($@)						@@\
+	CplusplusLinkRule($@,$(LDOPTIONS),$(objs),locallib $(LDLIBS) syslib) @@\
+									@@\
+CenterProgramTarget(program,$(srcs),$(objs),locallib,syslib)		@@\
+PurifyProgramTarget(program,$(objs) $(deplib),$(objs) locallib $(LDLIBS) syslib) @@\
+ProofProgramTarget(program,$(objs) $(deplib),$(objs) locallib $(LDLIBS) syslib) @@\
+									@@\
+InstallProgram(program,$(BINDIR))					@@\
+InstallManPage(program,$(MANDIR))
+#endif /* CplusplusProgramTargetHelper */
 
 /*
  * ComplexProgramTarget - generate rules for compiling and linking the 
@@ -453,6 +489,20 @@ clean::									@@\
 	RemoveFile(ProgramTargetName(program))
 #endif /* ComplexProgramTarget */
 
+#ifndef ComplexCplusplusProgramTarget
+#define	ComplexCplusplusProgramTarget(program)				@@\
+        PROGRAM = program						@@\
+									@@\
+AllTarget(program)							@@\
+									@@\
+CplusplusProgramTargetHelper(program,SRCS,OBJS,DEPLIBS,$(LOCAL_LIBRARIES),NullParameter) @@\
+									@@\
+DependTarget()								@@\
+LintTarget()								@@\
+									@@\
+clean::									@@\
+	RemoveFile(ProgramTargetName(program))
+#endif /* ComplexCplusplusProgramTarget */
 
 /*
  * ComplexProgramTarget_1 - generate rules for compiling and linking the
@@ -477,6 +527,21 @@ clean::									@@\
 	RemoveFiles($(PROGRAMS))
 #endif /* ComplexProgramTarget_1 */
 
+#ifndef ComplexCplusplusProgramTarget_1
+#define	ComplexCplusplusProgramTarget_1(program,locallib,syslib)	@@\
+            OBJS = $(OBJS1) $(OBJS2) $(OBJS3)				@@\
+            SRCS = $(SRCS1) $(SRCS2) $(SRCS3)				@@\
+									@@\
+AllTarget($(PROGRAMS))							@@\
+									@@\
+CplusplusProgramTargetHelper(program,SRCS1,OBJS1,DEPLIBS1,locallib,syslib)@@\
+									@@\
+DependTarget()								@@\
+LintTarget()								@@\
+									@@\
+clean::									@@\
+	RemoveFiles($(PROGRAMS))
+#endif /* ComplexCplusplusProgramTarget_1 */
 
 /*
  * ComplexProgramTarget_2 - generate rules for compiling and linking the
@@ -489,6 +554,10 @@ clean::									@@\
 ProgramTargetHelper(program,SRCS2,OBJS2,DEPLIBS2,locallib,syslib)
 #endif /* ComplexProgramTarget_2 */
 
+#ifndef ComplexCplusplusProgramTarget_2
+#define	ComplexCplusplusProgramTarget_2(program,locallib,syslib)	@@\
+CplusplusProgramTargetHelper(program,SRCS2,OBJS2,DEPLIBS2,locallib,syslib)
+#endif /* ComplexCplusplusProgramTarget_2 */
 
 /*
  * ComplexProgramTarget_3 - generate rules for compiling and linking the
@@ -500,6 +569,11 @@ ProgramTargetHelper(program,SRCS2,OBJS2,DEPLIBS2,locallib,syslib)
 #define	ComplexProgramTarget_3(program,locallib,syslib)			@@\
 ProgramTargetHelper(program,SRCS3,OBJS3,DEPLIBS3,locallib,syslib)
 #endif /* ComplexProgramTarget_3 */
+
+#ifndef ComplexCplusplusProgramTarget_3
+#define	ComplexCplusplusProgramTarget_3(program,locallib,syslib)	@@\
+CplusplusProgramTargetHelper(program,SRCS3,OBJS3,DEPLIBS3,locallib,syslib)
+#endif /* ComplexCplusplusProgramTarget_3 */
 
 #ifndef MoveToBakFile
 #define MoveToBakFile(file) -@if [ -f file ]; then set -x; \		@@\
@@ -802,6 +876,23 @@ ProgramTargetName($(DEPEND)):						@@\
 #endif /* UseInstalled */
 #endif /* DependDependency */
 
+/*
+ * IxxDependency - generate rules to build the interface translator if 
+ * this Imakefile is within the source tree.
+ */
+#ifndef IxxDependency
+#ifdef UseInstalled
+#define IxxDependency() /**/
+#else
+#define IxxDependency()							@@\
+interfaces:: ProgramTargetName($(IXX))					@@\
+									@@\
+ProgramTargetName($(IXX)):						@@\
+	@echo "checking $@ over in $(IXXSRC) first..."; \		@@\
+	cd $(IXXSRC); $(MAKE); \					@@\
+	echo "okay, continuing in $(CURRENT_DIR)"
+#endif /* UseInstalled */
+#endif /* IxxDependency */
 
 /*
  * DependTarget - generate rules to compute dependencies for all files listed
@@ -814,7 +905,6 @@ DependDependency()							@@\
 depend::								@@\
 	RunProgram(DEPEND,$(DEPENDFLAGS) -- $(ALLDEFINES) $(DEPEND_DEFINES) -- $(SRCS))
 #endif /* DependTarget */
-
 
 /*
  * DependTarget3 - generate rules to compute dependencies for all files given.
@@ -986,6 +1076,11 @@ LintLibReferences(varname,libname,libsource)
 	$(CC) -c $(CFLAGS) options $*.c
 #endif
 
+#ifndef ObjectCplusplusCompile
+#define ObjectCplusplusCompile(options) RemoveFile($@)			@@\
+	$(CCC) -c $(CCFLAGS) options $*.CCsuf
+#endif
+
 /*
  * NormalLibObjCompile - compile fragment for a normal library object file
  */
@@ -993,11 +1088,19 @@ LintLibReferences(varname,libname,libsource)
 #define NormalLibObjCompile(options) ObjectCompile(options)
 #endif
 
+#ifndef NormalLibObjCplusplusCompile
+#define NormalLibObjCplusplusCompile(options) ObjectCplusplusCompile(options)
+#endif
+
 /*
  * NormalSharedLibObjCompile - compile fragment for shared objects
  */
 #ifndef NormalSharedLibObjCompile
 #define NormalSharedLibObjCompile(options) NormalLibObjCompile(options $(SHLIBDEF) $(SHAREDCODEDEF) $(PICFLAGS))
+#endif
+
+#ifndef NormalSharedLibObjCplusplusCompile
+#define NormalSharedLibObjCplusplusCompile(options) NormalLibObjCplusplusCompile(options $(SHLIBDEF) $(SHAREDCODEDEF) $(PICFLAGS))
 #endif
 
 /*
@@ -1009,11 +1112,21 @@ LintLibReferences(varname,libname,libsource)
 	$(MV) $@ dir/$@
 #endif
 
+#ifndef LibObjCplusplusCompile
+#define LibObjCplusplusCompile(dir,options) RemoveFiles($@ dir/$@)	@@\
+	$(CCC) -c $(CCCOPTIONS) $(CCDEFINES) options $*.CCsuf		@@\
+	$(MV) $@ dir/$@
+#endif
+
 /*
  * DebuggedLibObjCompile - compile fragment for debugged objects
  */
 #ifndef DebuggedLibObjCompile
 #define DebuggedLibObjCompile(options) LibObjCompile(debugger,DebuggableCDebugFlags options)
+#endif
+
+#ifndef DebuggedLibObjCplusplusCompile
+#define DebuggedLibObjCplusplusCompile(options) LibObjCplusplusCompile(debugger,DebuggableCplusplusDebugFlags options)
 #endif
 
 /*
@@ -1023,11 +1136,19 @@ LintLibReferences(varname,libname,libsource)
 #define ProfiledLibObjCompile(options) LibObjCompile(profiled,ProfiledCDebugFlags options)
 #endif
 
+#ifndef ProfiledLibObjCplusplusCompile
+#define ProfiledLibObjCplusplusCompile(options) LibObjCplusplusCompile(profiled,ProfiledCplusplusDebugFlags options)
+#endif
+
 /*
  * UnsharedLibObjCompile - compile fragment for unshared objects
  */
 #ifndef UnsharedLibObjCompile
 #define UnsharedLibObjCompile(options) LibObjCompile(unshared,$(CDEBUGFLAGS) options)
+#endif
+
+#ifndef UnsharedLibObjCplusplusCompile
+#define UnsharedLibObjCplusplusCompile(options) LibObjCplusplusCompile(unshared,$(CCDEBUGFLAGS) options)
 #endif
 
 /*
@@ -1048,6 +1169,11 @@ LintLibReferences(varname,libname,libsource)
 	NormalLibObjCompile($(_NOOP_))
 #endif /* NormalLibraryObjectRule */
 
+#ifndef NormalCplusplusObjectRule
+#define NormalCplusplusObjectRule()					@@\
+.CCsuf.Osuf:								@@\
+	NormalLibObjCplusplusCompile($(_NOOP_))
+#endif
 
 #ifndef NormalFortranObjectRule
 #define NormalFortranObjectRule()					@@\
@@ -1065,6 +1191,11 @@ objs:	depends								@@\
 	ObjectCompile(options)
 #endif /* SpecialObjectRule */
 
+#ifndef SpecialCplusplusObjectRule
+#define SpecialCplusplusObjectRule(objs,depends,options)		@@\
+objs:	depends								@@\
+	ObjectCplusplusCompile(options)
+#endif /* SpecialCplusplusObjectRule */
 
 /*
  * SpecialCObjectRule - generate rules to compile a C file with special flags.
@@ -1113,6 +1244,17 @@ file.h file.c: file.y							@@\
 clean::									@@\
 	RemoveFiles(y.tab.c y.tab.h file.h file.c)
 #endif /* YaccFile */
+
+#ifndef MakeHFromIDL
+#define MakeHFromIDL(name,flags)					@@\
+									@@\
+interfaces:: name.h							@@\
+									@@\
+name.h: name.idl							@@\
+	@$(RM) name.h							@@\
+	$(CPP) $(CCDEFINES) name.idl | \				@@\
+	$(IXX) $(IXXFLAGS) $(IXXINCLUDES) -file name.idl flags > name.h
+#endif /* MakeHFromIDL */
 
 #ifndef MakeLibrary
 #define MakeLibrary(libname,objlist) $(AR) libname objlist

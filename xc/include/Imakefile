@@ -1,9 +1,16 @@
-XCOMM $XConsortium: Imakefile,v 1.80 93/08/09 14:58:25 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.82 93/09/04 16:20:03 rws Exp $
 #define IHaveSubdirs
 #define PassCDebugFlags /**/
 
 INSTALLFLAGS = $(INSTINCFLAGS)
-SUBDIRS = bitmaps extensions fonts
+
+#if BuildFresco
+FRESCOSUBDIR = Fresco
+#endif
+
+REGSUBDIRS = bitmaps extensions fonts
+
+SUBDIRS = $(REGSUBDIRS) $(FRESCOSUBDIR)
 
 HEADERS = DECkeysym.h \
 	Sunkeysym.h \

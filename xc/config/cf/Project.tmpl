@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM X Window System Build Parameters and Rules
-XCOMM $XConsortium: Project.tmpl,v 1.205 93/10/26 13:10:48 rws Exp $
+XCOMM $XConsortium: Project.tmpl,v 1.206 93/11/08 15:42:14 rws Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -66,6 +66,13 @@ XCOMM $XConsortium: Project.tmpl,v 1.205 93/10/26 13:10:48 rws Exp $
 #endif
 #ifndef BuildXKBlib
 #define BuildXKBlib		NO
+#endif
+#ifndef BuildFresco
+#if HasCplusplus
+#define BuildFresco		YES
+#else
+#define BuildFresco		NO
+#endif
 #endif
 #ifndef InstallLibManPages
 #define InstallLibManPages	YES
@@ -600,6 +607,50 @@ UnsharedLibReferences(XTOOL,Xt,$(TOOLKITSRC))
 SharedDSLibReferences(XAW,Xaw,$(AWIDGETSRC),SOXAWREV,SharedXawRev)
 #else
 UnsharedLibReferences(XAW,Xaw,$(AWIDGETSRC))
+#endif
+
+#ifndef SharedLibXtf
+#define SharedLibXtf HasSharedLibraries
+#endif
+#ifndef NormalLibXtf
+#define NormalLibXtf (!SharedLibXtf | ForceNormalLib)
+#endif
+#ifndef DebugLibXtf
+#define DebugLibXtf		NO	/* debugged widget library */
+#endif
+#ifndef ProfileLibXtf
+#define ProfileLibXtf		NO	/* profiled widget library */
+#endif
+       XTFSRC = $(LIBSRC)/Xtf
+#if SharedLibXtf
+#ifndef SharedXtfRev
+#define SharedXtfRev 0.4
+#endif
+SharedLibReferences(XTF,Xtf,$(XTFSRC),SOXTFREV,SharedXtfRev)
+#else
+UnsharedLibReferences(XTF,Xtf,$(XTFSRC))
+#endif
+
+#ifndef SharedLibFresco
+#define SharedLibFresco HasSharedLibraries
+#endif
+#ifndef NormalLibFresco
+#define NormalLibFresco (!SharedLibFresco | ForceNormalLib)
+#endif
+#ifndef DebugLibFresco
+#define DebugLibFresco		NO	/* debugged widget library */
+#endif
+#ifndef ProfileLibFresco
+#define ProfileLibFresco	NO	/* profiled widget library */
+#endif
+       FRESCOSRC = $(LIBSRC)/Fresco
+#if SharedLibFresco
+#ifndef SharedFrescoRev
+#define SharedFrescoRev 0.4
+#endif
+SharedLibReferences(FRESCO,Fresco,$(FRESCOSRC),SOFRESCOREV,SharedFrescoRev)
+#else
+UnsharedLibReferences(FRESCO,Fresco,$(FRESCOSRC))
 #endif
 
 #ifndef SharedLibXi

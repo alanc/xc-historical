@@ -44,6 +44,17 @@ XCOMM site:  $XConsortium: site.def,v 1.93 93/12/03 17:08:07 rws Exp $
 XCOMM #define HasGcc2 YES
 #endif
 
+#ifdef SunArchitecture
+#define HasCplusplus YES
+#define CplusplusCmd /obj/CenterLine/bin/CC
+#define CplusplusOptions -Xa
+#ifdef SVR4
+#define CplusplusDependIncludes -I/obj/CenterLine/clc++/sparc-solaris2/incl
+#else
+#define CplusplusDependIncludes -I/obj/CenterLine/clc++/sparc-sunos4/incl
+#endif
+#endif
+
 #endif /* BeforeVendorCF */
 
 #ifdef AfterVendorCF
@@ -101,7 +112,8 @@ XCOMM #define HasGcc2 YES
 program: objects deplibs						@@\
 	RemoveTargetProgram($@)						@@\
 	$(CC) -o $@ objects $(LDOPTIONS) locallibs $(LDLIBS) syslibs $(EXTRA_LOAD_FLAGS) @@\
-	-$(TOP)/config/util/chown-xterm					@@\
+	-root /etc/chown root $@					@@\
+	-root chmod 4755 $@						@@\
 									@@\
 clean::									@@\
 	$(RM) program
