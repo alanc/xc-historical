@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: TextAction.c,v 1.4 89/07/27 17:51:00 kit Exp $";
+static char Xrcsid[] = "$XConsortium: TextAction.c,v 1.5 89/07/27 18:20:48 kit Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -50,7 +50,7 @@ void _XawTextSetField(), _XawTextPopdownSearchAction();
  */
 
 char * _XawTextGetText();
-void _XawTextBuildLineTable(), _XawTextAlterSelection(), _XawTextScroll();
+void _XawTextBuildLineTable(), _XawTextAlterSelection(), _XawTextVScroll();
 void _XawTextSetSelection(), _XawTextCheckResize(), _XawTextExecuteUpdate();
 Atom * _XawTextSelectionList();
 
@@ -406,9 +406,9 @@ XawTextScanDirection dir;
   StartAction(ctx, event);
 
   if (dir == XawsdLeft)
-    _XawTextScroll(ctx, ctx->text.mult);
+    _XawTextVScroll(ctx, ctx->text.mult);
   else
-    _XawTextScroll(ctx, -ctx->text.mult);
+    _XawTextVScroll(ctx, -ctx->text.mult);
 
   EndAction(ctx);
 }
@@ -441,7 +441,7 @@ XawTextScanDirection dir;
     scroll_val = -scroll_val;
 
   StartAction(ctx, event);
-  _XawTextScroll(ctx, scroll_val);
+  _XawTextVScroll(ctx, scroll_val);
   ctx->text.insertPos = ctx->text.lt.top;
   EndAction(ctx);
 }
@@ -901,7 +901,7 @@ AutoFill(ctx)
 TextWidget ctx;
 {
   int (*FindPosition)() = ctx->text.sink->FindPosition;
-  int width, height, x, line_num;
+  int width, height, x, line_num, max_width;
   XawTextPosition ret_pos;
   XawTextBlock text;
 
@@ -913,18 +913,17 @@ TextWidget ctx;
       break;
   line_num--;			/* backup a line. */
 
-  x = ctx->text.lt.info[line_num].x;
+  max_width = Max(0, ctx->core.width - (x + ctx->text.margin.right));
+
+  x = ctx->text.margin.left;
   (*FindPosition) ( (Widget) ctx, ctx->text.lt.info[line_num].position, x, 
-		   (int) (ctx->core.width - x), FALSE, 
-		   &ret_pos, &width, &height);
+		   max_width, FALSE, &ret_pos, &width, &height);
   
   if ( ret_pos != ctx->text.insertPos )
     return;
 
-  x = ctx->text.lt.info[line_num].x;
   (*FindPosition) ( (Widget) ctx, ctx->text.lt.info[line_num].position, x, 
-		   (int) (ctx->core.width - x), TRUE, 
-		   &ret_pos, &width, &height);
+		   max_width, TRUE, &ret_pos, &width, &height);
   
   /*
    * Do not make any changes if we could not find a word break.
@@ -941,16 +940,15 @@ TextWidget ctx;
   
   _XawTextReplace(ctx, ret_pos - 1, ret_pos, &text);
   
-  ctx->text.lt.info[line_num].endX = x + width;
+  ctx->text.lt.info[line_num].textWidth = width;
   ctx->text.lt.info[line_num + 1].position = ret_pos;
   
-  x = ctx->text.lt.info[line_num + 1].x;
   (*FindPosition) ( (Widget) ctx,
 		   ctx->text.lt.info[line_num + 1].position + 1, x,
 		   (int) (ctx->core.width - x), FALSE, 
 		   &ret_pos, &width, &height);
   
-  ctx->text.lt.info[line_num + 1].endX = x + width;
+  ctx->text.lt.info[line_num + 1].textWidth = width;
   
   if (ret_pos != ctx->text.lt.info[line_num + 2].position)
     _XawTextBuildLineTable(ctx, ctx->text.lt.top, TRUE);
@@ -1231,7 +1229,7 @@ XawTextPosition from, to;
   XawTextPosition (*Scan)() = ctx->text.source->Scan;
   XawTextPosition startPos, endPos, space, eol;
   XawTextBlock text;
-  int i, x, width, height, len;
+  int i, width, height, len;
   char * buf;
 
   text.ptr = "\n";
@@ -1239,12 +1237,11 @@ XawTextPosition from, to;
   text.firstPos = 0;
   text.format = FMT8BIT;
 
-  x = ctx->text.leftmargin;
-
   startPos = from;
   while (TRUE) {
-    (*FindPosition) ( (Widget) ctx, startPos, x, (int) (ctx->core.width - x), 
-		     TRUE, &eol, &width, &height);
+    (*FindPosition) ( (Widget) ctx, startPos, (int) ctx->text.margin.left,
+		      (int) (ctx->core.width - HMargins(ctx)), 
+		      TRUE, &eol, &width, &height);
     if (eol >= to)
       break;
 
