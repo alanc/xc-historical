@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: xload.c,v 1.9 88/02/14 15:06:34 rws Exp $";
+static char rcsid[] = "$Header: xload.c,v 1.10 88/02/21 16:24:58 swick Exp $";
 #endif  lint
 
 #include <X11/Intrinsic.h>
@@ -43,9 +43,10 @@ void main(argc, argv)
 {
     char host[256];
     Widget toplevel;
+    Widget load;
     Arg arg;
+    char *labelname = NULL;
     
-    (void) gethostname(host,255);
     toplevel = XtInitialize("main", "XLoad", options, XtNumber(options), &argc, argv);
       
     if (argc != 1) usage();
@@ -56,8 +57,14 @@ void main(argc, argv)
 				     xload_bits, xload_width, xload_height));
     XtSetValues (toplevel, &arg, 1);
 
-    XtSetArg (arg, XtNlabel, host);
-    XtCreateManagedWidget ("load", loadWidgetClass, toplevel, &arg, 1);
+    XtSetArg (arg, XtNlabel, &labelname);
+    load = XtCreateManagedWidget ("load", loadWidgetClass, toplevel, NULL, 0);
+    XtGetValues(load, &arg, 1);
+    if (!labelname) {
+       (void) gethostname (host, 255);
+       XtSetArg (arg, XtNlabel, host);
+       XtSetValues (load, &arg, 1);
+    }
     XtRealizeWidget (toplevel);
     XtMainLoop();
 }
