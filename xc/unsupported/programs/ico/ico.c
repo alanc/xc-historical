@@ -1,4 +1,4 @@
-/* $XConsortium: ico.c,v 1.40 93/12/24 09:05:09 rws Exp $ */
+/* $XConsortium: ico.c,v 1.41 93/12/24 10:51:27 rws Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -306,8 +306,7 @@ char **argv;
 #endif
 	if (!(dpy = XOpenDisplay(display)))
 	{
-		perror("Cannot open display\n");
-		exit(-1);
+	    icoFatal("cannot open display \"%s\"", XDisplayName(display));
 	}
 #ifdef MULTIBUFFER
 	if (multibufext && !XmbufQueryExtension (dpy, &mbevbase, &mberrbase)) {
