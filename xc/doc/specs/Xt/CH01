@@ -1,4 +1,4 @@
-.\" $XConsortium: CH01,v 1.12 94/04/18 20:20:21 rws Exp $
+.\" $XConsortium: CH01,v 1.13 94/04/18 23:17:52 rws Exp $
 .\" Copyright \(co 1985, 1986, 1987, 1988, 1991, 1994
 .\" X Consortium
 .\" 
@@ -648,8 +648,8 @@ typedef struct {
 	XrmQuark record_type;	See Section 1.6.12
 	long version;	See Section 1.6.12
 	Cardinal record_size;	See Section 1.6.12
-	Boolean accepts_objects;	See Chapter 3
-	Boolean allows_change_managed_set;	See Chapter 3
+	Boolean accepts_objects;	See Section 2.5.2
+	Boolean allows_change_managed_set;	See Section 3.4.3
 } CompositeClassExtensionRec, *CompositeClassExtension;
 .De
 .LP
