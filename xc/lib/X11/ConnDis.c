@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XConnDis.c,v 11.69 91/01/08 20:34:49 gildea Exp $
+ * $XConsortium: XConnDis.c,v 11.70 91/02/01 16:33:36 gildea Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -764,6 +764,7 @@ _XWaitForReadable(dpy)
 
 static int padlength[4] = {0, 3, 2, 1};	 /* make sure auth is multiple of 4 */
 
+Bool
 _XSendClientPrefix (dpy, client, auth_proto, auth_string)
      Display *dpy;
      xConnClientPrefix *client;		/* contains count for auth_* */
@@ -775,9 +776,10 @@ _XSendClientPrefix (dpy, client, auth_proto, auth_string)
     int pad;
     struct iovec iovarray[5], *iov = iovarray;
     int niov = 0;
+    int len = 0;
 
 #define add_to_iov(b,l) \
-	  { iov->iov_base = (b); iov->iov_len = (l); iov++, niov++; }
+  { iov->iov_base = (b); iov->iov_len = (l); iov++, niov++; len += (l); }
 
     add_to_iov ((caddr_t) client, SIZEOF(xConnClientPrefix));
 
@@ -797,6 +799,5 @@ _XSendClientPrefix (dpy, client, auth_proto, auth_string)
 
 #undef add_to_iov
 
-    (void) WritevToServer (dpy->fd, iovarray, niov);
-    return;
+    return WritevToServer (dpy->fd, iovarray, niov) == len;
 }
