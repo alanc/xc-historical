@@ -1,4 +1,4 @@
-/* $XConsortium: a2x.c,v 1.122 93/04/16 09:25:18 rws Exp $ */
+/* $XConsortium: a2x.c,v 1.123 93/05/19 10:57:55 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -536,7 +536,7 @@ Strtol(nptr, endptr, base)
 void
 usage()
 {
-    printf("%s: [-d <display>] [-c] [-e] [-E] [-b] [-C <char>] [-u <undofile>] [-h <keysym>] [-w <name>] [-f] [-g <geometry>] [-p]\n",
+    printf("%s: [-d <display>] [-c] [-e] [-E] [-b] [-C <char>] [-U] [-u <undofile>] [-h <keysym>] [-w <name>] [-f] [-g <geometry>] [-p]\n",
 	   progname);
     exit(1);
 }
@@ -2885,6 +2885,9 @@ main(argc, argv)
 	    if (!argc)
 		usage();
 	    undofile = *argv;
+	    break;
+	case 'U':
+	    pc_bs = '\377';
 	    break;
 	case 'w':
 	    argc--; argv++;
