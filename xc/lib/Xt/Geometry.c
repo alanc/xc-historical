@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Geometry.c,v 1.37 89/09/18 08:02:19 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Geometry.c,v 1.38 89/09/19 11:27:05 swick Exp $";
 /* $oHeader: Geometry.c,v 1.3 88/08/23 11:37:50 asente Exp $ */
 #endif /* lint */
 
@@ -42,6 +42,7 @@ XtGeometryResult XtMakeGeometryRequest (widget, request, reply)
     Widget parent = widget->core.parent;
     XtGeometryMask	changeMask;
     Boolean managed, parentRealized,widgetRealized;
+    XWindowChanges changes;
 
     if (XtIsShell(widget)) {
 	ShellClassExtension ext;
@@ -142,6 +143,15 @@ XtGeometryResult XtMakeGeometryRequest (widget, request, reply)
     if (changeMask == NULL) return XtGeometryYes;
     changeMask |= (request->request_mode & XtCWQueryOnly);
 
+    if ( !(changeMask & XtCWQueryOnly) && widgetRealized ) {
+	/* keep record of the current geometry so we know what's changed */
+	changes.x = widget->core.x ;
+	changes.y = widget->core.y ;
+	changes.width = widget->core.width ;
+	changes.height = widget->core.height ;
+	changes.border_width = widget->core.border_width ;
+    }
+
     if (!managed || !parentRealized) {
 	/* Don't get parent's manager involved--assume the answer is yes */
 	if (changeMask & XtCWQueryOnly) {
@@ -179,14 +189,26 @@ XtGeometryResult XtMakeGeometryRequest (widget, request, reply)
     if (returnCode == XtGeometryYes && widgetRealized) {
 	/* reconfigure the window (if needed) */
 
-	XWindowChanges changes;
-
-	if (changeMask & CWX) changes.x = widget->core.x;
-	if (changeMask & CWY) changes.y = widget->core.y;
-	if (changeMask & CWWidth) changes.width = widget->core.width;
-	if (changeMask & CWHeight) changes.height = widget->core.height;
-	if (changeMask & CWBorderWidth)
-	    changes.border_width = widget->core.border_width;
+	if (changes.x != widget->core.x) {
+ 	    changeMask |= CWX;
+ 	    changes.x = widget->core.x;
+ 	}
+ 	if (changes.y != widget->core.y) {
+ 	    changeMask |= CWY;
+ 	    changes.y = widget->core.y;
+ 	}
+ 	if (changes.width != widget->core.width) {
+ 	    changeMask |= CWWidth;
+ 	    changes.width = widget->core.width;
+ 	}
+ 	if (changes.height != widget->core.height) {
+ 	    changeMask |= CWHeight;
+ 	    changes.height = widget->core.height;
+ 	}
+ 	if (changes.border_width != widget->core.border_width) {
+ 	    changeMask |= CWBorderWidth;
+ 	    changes.border_width = widget->core.border_width;
+ 	}
 	if (changeMask & CWStackMode) {
 	    changes.stack_mode = request->stack_mode;
 	    if (changeMask & CWSibling)
