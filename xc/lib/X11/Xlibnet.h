@@ -1,4 +1,4 @@
-/* $XConsortium: Xlibnet.h,v 1.33 93/09/25 13:32:52 rws Exp $ */
+/* $XConsortium: Xlibnet.h,v 1.34 93/09/25 13:54:40 rws Exp $ */
 
 /*
 Copyright 1991 Massachusetts Institute of Technology
@@ -55,18 +55,26 @@ typedef long BytesReadable_t;
 /*
  * socket-based systems
  */
+#if defined(TCPCONN) || defined(UNIXCONN) || defined(DNETCONN)
 #include <netinet/in.h>
+#else
+#ifdef ESIX
+#include <lan/in.h>
+#endif
+#endif
 #include <sys/ioctl.h>
+#if defined(TCPCONN) || defined(UNIXCONN) || defined(DNETCONN)
 #include <netdb.h>
+#endif
 #include <sys/uio.h>	/* needed for XlibInt.c */
 #ifdef SVR4
 #include <sys/filio.h>
 #endif
 
 #if (defined(SYSV386) && defined(SYSV)) || defined(_SEQUENT_)
-#ifndef _SEQUENT_
+#if !defined(_SEQUENT_) && !defined(ESIX)
 #include <net/errno.h>
-#endif /* _SEQUENT_ */
+#endif /* _SEQUENT_  || ESIX */
 #include <sys/stropts.h>
 #define BytesReadable(fd,ptr) ioctl((fd), I_NREAD, (char *)(ptr))
 #else
