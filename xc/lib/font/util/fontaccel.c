@@ -1,5 +1,5 @@
 /*
- * $XConsortium: fontaccel.c,v 1.1 91/05/10 16:51:50 keith Exp $
+ * $XConsortium: fontaccel.c,v 1.2 91/05/11 09:16:34 keith Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -83,6 +83,10 @@ FontCouldBeTerminal(pFontInfo)
 	     pFontInfo->minbounds.rightSideBearing != pFontInfo->minbounds.characterWidth ||
 	     pFontInfo->minbounds.ascent != pFontInfo->fontAscent ||
 	     pFontInfo->minbounds.descent != pFontInfo->fontDescent)) {
+	/* blow off font with nothing but a SPACE */
+	if (pFontInfo->maxbounds.ascent == 0 && 
+	    pFontInfo->maxbounds.descent == 0)
+		return FALSE;
 	return TRUE;
     }
     return FALSE;

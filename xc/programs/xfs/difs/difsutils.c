@@ -1,4 +1,4 @@
-/* $XConsortium: difsutils.c,v 1.6 91/07/18 22:35:28 keith Exp $ */
+/* $XConsortium: difsutils.c,v 1.7 92/05/27 15:55:12 gildea Exp $ */
 /*
  * misc utility routines
  */
@@ -34,6 +34,10 @@
 #include	"accstr.h"
 #include	"fontstruct.h"
 #include	<X11/keysymdef.h>
+
+#include	"authstr.h"
+#include	"auth.h"
+#include	"client.h"
 
 extern ClientPtr currentClient;
 static FontResolutionPtr default_resolutions;
@@ -543,7 +547,9 @@ ClientWakeup(client)
 	if (q->client == client) {
 	    *prev = q->next;
 	    fsfree(q);
-	    if (client->clientGone != CLIENT_GONE)
+	    if (client->clientGone == CLIENT_GONE)
+		CloseDownClient(client);
+	    else
 		AttendClient(client);
 	    break;
 	}
@@ -583,4 +589,48 @@ Xfree(n)
     unsigned long *n;
 {
     fsfree(n);
+}
+
+int
+set_font_authorizations(authorizations, authlen, client)
+char **authorizations;
+int *authlen;
+ClientPtr client;
+{
+#define AUTH1_NAME "hp-hostname-1"
+#define AUTH2_NAME "hp-printername-1"
+    static char result[1024];
+    char *p;
+    AuthContextPtr acp = client->auth;
+    int len1, len2;
+
+    if (acp != NULL && acp->authname != NULL && acp->authdata != NULL &&
+	(!strcmp(AUTH1_NAME, acp->authname) ||
+	 !strcmp(AUTH2_NAME, acp->authname)) &&
+	(len1 = strlen(acp->authname) + 1) +
+	(len2 = strlen(acp->authdata) + 1) + 2 * sizeof(short) <= 1024)
+    {
+	p = result;
+	*p++ = len1 >> 8;
+	*p++ = len1 &0xff;
+	*p++ = len2 >> 8;
+	*p++ = len2 & 0xff;
+	bcopy(acp->authname, p, len1);
+	p += len1;
+	bcopy(acp->authdata, p, len2);
+	p += len2;
+	*authlen = p - result;
+	*authorizations = result;
+	return 1;
+    }
+
+    *authlen = 0;
+    return 0;
+}
+
+int
+client_auth_generation(client)
+ClientPtr client;
+{
+    return client->auth_generation;
 }

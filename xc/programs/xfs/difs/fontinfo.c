@@ -1,4 +1,4 @@
-/* $XConsortium: fontinfo.c,v 1.8 92/05/12 18:08:08 gildea Exp $ */
+/* $XConsortium: fontinfo.c,v 1.9 92/11/18 21:30:13 gildea Exp $ */
 /*
  * font data query
  */
@@ -49,7 +49,7 @@ CopyCharInfo(ci, dst)
     dst->left = src->leftSideBearing;
     dst->right = src->rightSideBearing;
     dst->width = src->characterWidth;
-    dst->attributes = 0;
+    dst->attributes = src->attributes;
 }
 
 
@@ -133,12 +133,13 @@ convert_props(pinfo, props)
  * a list of ranges
  */
 static fsRange *
-build_range(type, src, item_size, num, all)
+build_range(type, src, item_size, num, all, pfi)
     Bool        type;
     pointer     src;
     int         item_size;
     int        *num;
     Bool       *all;
+    FontInfoPtr	pfi;
 {
     fsRange    *new = (fsRange *) 0,
                *np;
@@ -149,39 +150,47 @@ build_range(type, src, item_size, num, all)
 				 * of char2bs */
 	char *rp = (char *) src;
 
-	src_num = *num / 2;
+	src_num = *num;
 	if (src_num == 0) {
 	    *all = TRUE;
 	    return new;
 	}
-/* XXX - handle odd length list -- this could get nasty since
- * it has to poke into the font
- */
-	/* yes, a real "sizeof".  This is not a protocol object.
-	   XXX - probably should use a different struct */
-	np = new = (fsRange *) fsalloc(sizeof(fsRange) * src_num);
-	if (!np) {
+
+	np = new = (fsRange *) fsalloc(sizeof(fsRange) * (src_num + 1) / 2);
+	if (!np)
 	    return np;
-	}
-	/* unpack the ranges from the protocol buffer */
-	for (i = 0; i < src_num; i++) {
-	    np->min_char_high = *rp++;
+	/* Build a new range */
+	for (i = 1; i < src_num; i += 2)
+	{
+	    np->min_char_high = (item_size == 1) ? 0 : *rp++;
 	    np->min_char_low  = *rp++;
-	    np->max_char_high = *rp++;
+	    np->max_char_high = (item_size == 1) ? 0 : *rp++;
 	    np->max_char_low  = *rp++;
 	    np++;
 	}
-	*num = src_num;
+
+	/* If src_num is odd, we need to determine the final range
+	   by examining the fontinfo */
+	if (i == src_num)
+	{
+	    np->min_char_high = (item_size == 1) ? 0 : *rp++;
+	    np->min_char_low  = *rp++;
+	    np->max_char_high = pfi->lastRow;
+	    np->max_char_low  = pfi->lastCol;
+	    np++;
+	}
+	*num = np - new;
 	return new;
     } else {			/* deal with data as a list of characters */
 	pointer     pp = src;
 
-	src_num = *num / item_size;
+	src_num = *num;
 	np = new = (fsRange *) fsalloc(SIZEOF(fsRange) * src_num);
-	if (!np) {
+	if (!np)
 	    return np;
-	}
-	/* convert each char to a range */
+
+	/* Build a range, with coalescence, from the list of chars */
+
 	for (i = 0; i < src_num; i++) {
 	    if (item_size == 1) {
 		np->min_char_low = *pp;
@@ -190,13 +199,18 @@ build_range(type, src, item_size, num, all)
 		np->min_char_low = ((fsChar2b *) pp)->low;
 		np->min_char_high = ((fsChar2b *) pp)->high;
 	    }
-/* XXX - eventually this should get smarter, and coallesce ranges */
 	    np->max_char_high = np->min_char_high;
 	    np->max_char_low = np->min_char_low;
-	    np++;
+	    /* Can we coalesce? */
+	    if (np > new &&
+		np->max_char_high == np[-1].max_char_high &&
+		np->max_char_low == np[-1].max_char_low + 1)
+		np[-1].max_char_low++;		/* Yes */
+	    else
+		np++;				/* No */
 	    pp += item_size;
 	}
-	*num = src_num / item_size;
+	*num = np - new;
 	return new;
     }
 }
@@ -236,6 +250,7 @@ do_query_extents(client, c)
 		     c->flags, c->nranges, c->range, &num_extents, &extents);
     if (err == Suspended) {
 	if (!c->slept) {
+	    c->pfont->unload_glyphs = 0;  /* Not a safe call for this font */
 	    c->slept = TRUE;
 	    ClientSleep(client, do_query_extents, (pointer) c);
 	}
@@ -258,6 +273,8 @@ do_query_extents(client, c)
 finish:
     if (c->slept)
 	ClientWakeup(c->client);
+    if (c->pfont->unload_glyphs)  /* For rasterizers that want to save memory */
+	(*c->pfont->unload_glyphs)(c->pfont);
     fsfree(c->range);
     fsfree(c);
     return TRUE;
@@ -280,7 +297,7 @@ QueryExtents(client, cfp, item_size, nranges, range_flag, range_data)
 	swap_char2b (range_data, nranges);
 
     fixed_range = build_range(range_flag, range_data, item_size,
-			      &nranges, &all_glyphs);
+			      &nranges, &all_glyphs, &cfp->font->info);
 
     if (!fixed_range && !all_glyphs) {
 	SendErrToClient(client, FSBadRange, 0);
@@ -319,6 +336,7 @@ do_query_bitmaps(client, c)
 
     if (err == Suspended) {
 	if (!c->slept) {
+	    c->pfont->unload_glyphs = 0;  /* Not a safe call for this font */
 	    c->slept = TRUE;
 	    ClientSleep(client, do_query_bitmaps, (pointer) c);
 	}
@@ -348,6 +366,8 @@ do_query_bitmaps(client, c)
 finish:
     if (c->slept)
 	ClientWakeup(c->client);
+    if (c->pfont->unload_glyphs)  /* For rasterizers that want to save memory */
+	(*c->pfont->unload_glyphs)(c->pfont);
     fsfree(c->range);
     fsfree(c);
     return TRUE;
@@ -371,7 +391,7 @@ QueryBitmaps(client, cfp, item_size, format, nranges, range_flag, range_data)
 	swap_char2b (range_data, nranges);
 
     fixed_range = build_range(range_flag, range_data, item_size,
-			      &nranges, &all_glyphs);
+			      &nranges, &all_glyphs, &cfp->font->info);
 
     if (!fixed_range && !all_glyphs) {
 	SendErrToClient(client, FSBadRange, 0);

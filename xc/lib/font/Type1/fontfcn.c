@@ -1,4 +1,4 @@
-/* $XConsortium: fontfcn.c,v 1.7 92/03/26 16:42:13 eswu Exp $ */
+/* $XConsortium: fontfcn.c,v 1.8 92/03/27 18:15:45 eswu Exp $ */
 /* Copyright International Business Machines,Corp. 1991
  * All Rights Reserved
  *
@@ -168,11 +168,9 @@ int  *mode;
  
   SubrsArrayP = &(FontP->Subrs);
   /* scale the Adobe fonts to 1 unit high */
-  S = Permanent(Scale(S, .001 , .001));
   /* call the type 1 routine to rasterize the character     */
   charpath = Type1Char(FontP,S,theStringP,SubrsArrayP,NULL,
                FontP->BluesP , mode);
-  Destroy(S);
   /* if Type1Char reported an error, then return */
   if ( *mode == FF_PARSE_ERROR)  return(NULL);
   /* fill with winding rule unless path was requested */

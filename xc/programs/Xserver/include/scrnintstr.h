@@ -1,4 +1,4 @@
-/* $XConsortium: scrnintstr.h,v 5.13 93/06/24 10:33:01 dpw Exp $ */
+/* $XConsortium: scrnintstr.h,v 5.14 93/07/12 09:44:42 dpw Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -693,6 +693,8 @@ typedef struct _ScreenInfo {
     int		arraySize;
     int		numScreens;
     ScreenPtr	screens[MAXSCREENS];
+    int		glyphCachingMode;	/* for screens to indicate
+					   highest supported mode */
 } ScreenInfo;
 
 extern ScreenInfo screenInfo;

@@ -22,7 +22,7 @@ SOFTWARE.
 
 ************************************************************************/
 
-/* $XConsortium: snfread.c,v 1.11 92/05/12 18:07:49 gildea Exp $ */
+/* $XConsortium: snfread.c,v 1.12 92/05/29 17:10:19 gildea Exp $ */
 
 #include <ctype.h>
 #include "fontfilest.h"
@@ -88,6 +88,7 @@ snfCopyInfo(snfInfo, pFontInfo)
     pFontInfo->allExist = snfInfo->allExist;
     pFontInfo->drawDirection = snfInfo->drawDirection;
     pFontInfo->anamorphic = FALSE;
+    pFontInfo->cachable = TRUE;
     pFontInfo->maxOverlap = 0;
     pFontInfo->minbounds = snfInfo->minbounds.metrics;
     pFontInfo->maxbounds = snfInfo->maxbounds.metrics;
@@ -252,6 +253,7 @@ snfReadFont(pFont, file, bit, byte, glyph, scan)
     }
 
     if (ret != Successful) {
+	xfree(bitmaps);
 	xfree(fontspace);
 	return ret;
     }
@@ -360,6 +362,7 @@ snfReadFont(pFont, file, bit, byte, glyph, scan)
     pFont->get_glyphs = bitmapGetGlyphs;
     pFont->get_metrics = bitmapGetMetrics;
     pFont->unload_font = snfUnloadFont;
+    pFont->unload_glyphs = NULL;
     pFont->bit = bit;
     pFont->byte = byte;
     pFont->glyph = glyph;

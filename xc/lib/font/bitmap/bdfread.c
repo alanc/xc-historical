@@ -22,7 +22,7 @@ SOFTWARE.
 
 ************************************************************************/
 
-/* $XConsortium: bdfread.c,v 1.14 92/05/29 17:10:11 gildea Exp $ */
+/* $XConsortium: bdfread.c,v 1.15 92/11/18 21:30:59 gildea Exp $ */
 
 #include <ctype.h>
 #include "fontfilest.h"
@@ -775,6 +775,7 @@ bdfReadFont(pFont, file, bit, byte, glyph, scan)
     pFont->glyph = glyph;
     pFont->scan = scan;
     pFont->info.anamorphic = FALSE;
+    pFont->info.cachable = TRUE;
     bitmapComputeFontBounds(pFont);
     if (FontCouldBeTerminal(&pFont->info)) {
 	bdfPadToTerminal(pFont);
@@ -809,6 +810,7 @@ bdfReadFont(pFont, file, bit, byte, glyph, scan)
     pFont->get_glyphs = bitmapGetGlyphs;
     pFont->get_metrics = bitmapGetMetrics;
     pFont->unload_font = bdfUnloadFont;
+    pFont->unload_glyphs = NULL;
     return Successful;
 BAILOUT:
     if (pFont->fontPrivate)

@@ -1,4 +1,4 @@
-/* $XConsortium: spfont.c,v 1.17 92/09/17 11:57:02 gildea Exp $ */
+/* $XConsortium: spfont.c,v 1.18 92/11/18 21:31:09 gildea Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -29,8 +29,12 @@
 
 #include	"FSproto.h"
 #include	"spint.h"
-#include	<server/include/servermd.h>
+#include	<servermd.h>
+#include	<math.h>
 
+#ifndef M_PI
+#define M_PI 3.14159
+#endif /* M_PI */
 #ifndef DEFAULT_BIT_ORDER
 
 #ifdef BITMAP_BIT_ORDER
@@ -183,41 +187,12 @@ sp_get_metrics(pFont, count, chars, charEncoding, glyphCount, glyphs)
     return ret;
 }
 
-void
-sp_fixup_vals(vals)
-    FontScalablePtr vals;
-{
-    fsResolution *res;
-    int         x_res = 75;
-    int         y_res = 75;
-    int         pointsize = 120;
-    int         num_res;
-
-    if (!vals->x || !vals->y || (!vals->point && !vals->pixel)) {
-	res = (fsResolution *) GetClientResolutions(&num_res);
-	if (num_res) {
-	    if (res->x_resolution)
-		x_res = res->x_resolution;
-	    if (res->y_resolution)
-		y_res = res->y_resolution;
-	    if (res->point_size)
-		pointsize = res->point_size;
-	}
-	if (!vals->x)
-	    vals->x = x_res;
-	if (!vals->y)
-	    vals->y = y_res;
-	if (!vals->point)
-	    vals->point = pointsize;
-    }
-}
-
-
 int
-sp_open_font(fontname, filename, entry, format, fmask, flags, spfont)
+sp_open_font(fontname, filename, entry, vals, format, fmask, flags, spfont)
     char       *fontname,
                *filename;
     FontEntryPtr entry;
+    FontScalablePtr vals;
     fsBitmapFormat format;
     fsBitmapFormatMask fmask;
     Mask        flags;
@@ -226,10 +201,9 @@ sp_open_font(fontname, filename, entry, format, fmask, flags, spfont)
     SpeedoFontPtr spf;
     SpeedoMasterFontPtr spmf;
     int         ret;
-    char        tmpname[MAXFONTNAMELEN];
     specs_t     specs;
-    FontScalableRec vals;
-    double      pointsize;
+    int		xx8, xy8, yx8, yy8;
+    double	sxmult;
 
     /* find a master (create it if necessary) */
     spmf = (SpeedoMasterFontPtr) entry->u.scalable.extra->private;
@@ -247,43 +221,32 @@ sp_open_font(fontname, filename, entry, format, fmask, flags, spfont)
 	return AllocError;
     bzero((char *) spf, sizeof(SpeedoFontRec));
 
+    *spfont = spf;
+
+    /* clobber everything -- this may be leaking, but other wise evil
+     * stuff is left behind -- succesive transformed fonts get mangled */
+    bzero((char *)&sp_globals, sizeof(sp_globals));
+
     spf->master = spmf;
     spf->entry = entry;
     spmf->refcount++;
     sp_reset_master(spmf);
     /* now we've done enough that if we bail out we must call sp_close_font */
 
-    /* tear apart name to get sizes */
-    strcpy(tmpname, fontname);
-    if (!FontParseXLFDName(tmpname, &vals, FONT_XLFD_REPLACE_NONE))
-    {
-	sp_close_font(spf);
-	return BadFontName;
-    }
-
-    sp_fixup_vals(&vals);
-    if (vals.point > 0)
-	pointsize = vals.point;
-    else if (vals.pixel > 0) {
-	/* make sure we don't caculate it to 0 */
-	pointsize = (vals.pixel * 722.70)/vals.y;
-    }
-    spf->vals.point = pointsize;
-    spf->vals.x = vals.x;
-    spf->vals.y = vals.y;
-    spf->vals.pixel = ((pointsize * vals.y) / 722.7) + 0.5;	/* round it */
+    spf->vals = *vals;
 
     /* set up specs */
 
     specs.pfont = &spmf->font;
-    /* XXX beware of overflow */
-    /* Note that point size is in decipoints */
-    specs.xxmult = (int) (pointsize * vals.x / 720 * (1 << 16));
-    specs.xymult = 0L << 16;
-    specs.xoffset = 0L << 16;
-    specs.yxmult = 0L << 16;
-    specs.yymult = (int) (pointsize * vals.y / 720 * (1 << 16));
-    specs.yoffset = 0L << 16;
+
+    specs.xxmult = (int)(vals->pixel_matrix[0] * (double)(1L << 16));
+    specs.xymult = (int)(vals->pixel_matrix[2] * (double)(1L << 16));
+    specs.yxmult = (int)(vals->pixel_matrix[1] * (double)(1L << 16));
+    specs.yymult = (int)(vals->pixel_matrix[3] * (double)(1L << 16));
+
+    specs.xoffset = 0L << 16; /* XXX tweak? */
+    specs.yoffset = 0L << 16; /* XXX tweak? */
+
     specs.flags = MODE_SCREEN;
     specs.out_info = NULL;
 
@@ -292,15 +255,19 @@ sp_open_font(fontname, filename, entry, format, fmask, flags, spfont)
        Don't know why this is so, but until we can fix it properly,
        return BadFontName for anything smaller than 4 pixels.
        */
-#define TINY_FACTOR (4 << 16)
-    /* XXX may have to do more tweaking for ROTATED_TEXT */
-    if (specs.xxmult < TINY_FACTOR  ||  specs.yymult < TINY_FACTOR)
+#define TINY_FACTOR (16 << 16)
+    xx8 = specs.xxmult >> 8;
+    xy8 = specs.xymult >> 8;
+    yx8 = specs.yxmult >> 8;
+    yy8 = specs.yymult >> 8;
+    if (xx8 * xx8 + xy8 * xy8 < TINY_FACTOR ||
+	yx8 * yx8 + yy8 * yy8 < TINY_FACTOR)
     {
 	sp_close_font(spf);
 	return BadFontName;
     }
 
-    /* clobber global state to avoid wrecking future obliqued fonts */
+    /* clobber global state to avoid wrecking future transformed fonts */
     bzero ((char *) &sp_globals, sizeof(sp_globals));
 
     if (!sp_set_specs(&specs))
@@ -317,10 +284,11 @@ sp_open_font(fontname, filename, entry, format, fmask, flags, spfont)
 }
 
 static int
-sp_load_font(fontname, filename, entry, format, fmask, pfont, flags)
+sp_load_font(fontname, filename, entry, vals, format, fmask, pfont, flags)
     char       *fontname,
                *filename;
     FontEntryPtr    entry;
+    FontScalablePtr vals;
     fsBitmapFormat format;
     fsBitmapFormatMask fmask;
     FontPtr     pfont;
@@ -330,8 +298,10 @@ sp_load_font(fontname, filename, entry, format, fmask, pfont, flags)
     SpeedoMasterFontPtr spmf;
     int         esize;
     int         ret;
+    long	sWidth;
 
-    ret = sp_open_font(fontname, filename, entry, format, fmask, flags, &spf);
+    ret = sp_open_font(fontname, filename, entry, vals, format, fmask,
+		       flags, &spf);
 
     if (ret != Successful)
 	return ret;
@@ -350,9 +320,9 @@ sp_load_font(fontname, filename, entry, format, fmask, pfont, flags)
 
     sp_make_header(spf, &pfont->info);
 
-    sp_compute_bounds(spf, &pfont->info, SaveMetrics);
+    sp_compute_bounds(spf, &pfont->info, SaveMetrics, &sWidth);
 
-    sp_compute_props(spf, fontname, &pfont->info);
+    sp_compute_props(spf, fontname, &pfont->info, sWidth);
 
     pfont->fontPrivate = (pointer) spf;
 
@@ -367,13 +337,14 @@ sp_load_font(fontname, filename, entry, format, fmask, pfont, flags)
 	return ret;
 
     /* compute remaining accelerators */
-    FontComputeInfoAccelerators (&pfont->info);
+    FontComputeInfoAccelerators(&pfont->info);
 
     pfont->format = format;
 
     pfont->get_metrics = sp_get_metrics;
     pfont->get_glyphs = sp_get_glyphs;
     pfont->unload_font = SpeedoCloseFont;
+    pfont->unload_glyphs = NULL;
     pfont->refcnt = 0;
     pfont->maxPrivate = -1;
     pfont->devPrivates = (pointer *) 0;
@@ -385,11 +356,12 @@ sp_load_font(fontname, filename, entry, format, fmask, pfont, flags)
 }
 
 int
-SpeedoFontLoad(ppfont, fontname, filename, entry, format, fmask, flags)
+SpeedoFontLoad(ppfont, fontname, filename, entry, vals, format, fmask, flags)
     FontPtr    *ppfont;
     char       *fontname;
     char       *filename;
     FontEntryPtr    entry;
+    FontScalablePtr vals;
     fsBitmapFormat format;
     fsBitmapFormatMask fmask;
     Mask        flags;
@@ -401,7 +373,8 @@ SpeedoFontLoad(ppfont, fontname, filename, entry, format, fmask, flags)
     if (!pfont) {
 	return AllocError;
     }
-    ret = sp_load_font(fontname, filename, entry, format, fmask, pfont, flags);
+    ret = sp_load_font(fontname, filename, entry, vals, format, fmask,
+		       pfont, flags);
 
     if (ret == Successful)
 	*ppfont = pfont;

@@ -1,4 +1,4 @@
-/* $XConsortium: spint.h,v 1.5 92/03/25 18:45:51 keith Exp $ */
+/* $XConsortium: spint.h,v 1.6 92/09/17 11:57:07 gildea Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -33,6 +33,7 @@
 #include	"speedo.h"
 
 #define	SaveMetrics	0x1
+#define ComputeBoundsOnly	0x2
 
 #define GLWIDTHBYTESPADDED(bits,nbytes) \
         ((nbytes) == 1 ? (((bits)+7)>>3)        /* pad to 1 byte */ \
@@ -44,6 +45,9 @@
 #define GLYPH_SIZE(ch, nbytes)          \
         GLWIDTHBYTESPADDED((ch)->metrics.rightSideBearing - \
                         (ch)->metrics.leftSideBearing, (nbytes))
+
+#define mincharno(p) ((p).min_char_low + ((p).min_char_high << 8))
+#define maxcharno(p) ((p).max_char_low + ((p).max_char_high << 8))
 
 #define	MasterFileOpen	0x1
 

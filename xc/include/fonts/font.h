@@ -1,4 +1,4 @@
-/* $XConsortium: font.h,v 1.8 91/07/19 21:03:49 rws Exp $ */
+/* $XConsortium: font.h,v 1.9 93/07/12 09:37:40 dpw Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -84,12 +84,20 @@ typedef int DrawDirection;
 #define FontLoadBitmaps	0x0008
 #define FontLoadAll	0x000f
 #define	FontOpenSync	0x0010
+#define FontReopen	0x0020
 
 /* Query flags */
 #define	LoadAll		0x1
 #define	FinishRamge	0x2
 #define       EightBitFont    0x4
 #define       SixteenBitFont  0x8
+
+/* Glyph Caching Modes */
+#define CACHING_OFF 0
+#define CACHE_16_BIT_GLYPHS 1
+#define CACHE_ALL_GLYPHS 2
+#define DEFAULT_GLYPH_CACHING_MODE CACHING_OFF
+extern int glyphCachingMode;
 
 typedef char *closure;
 

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: fontfilest.h,v 1.2 91/06/12 14:35:24 keith Exp $
+ * $XConsortium: fontfilest.h,v 1.3 91/07/16 20:15:16 keith Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -109,6 +109,13 @@ typedef struct _FontDirectory {
     FontTableRec    nonScalable;
 } FontDirectoryRec;
 
+/* Capability bits: for definition of capabilities bitmap in the
+   FontRendererRec to indicate support of XLFD enhancements */
+
+#define CAP_MATRIX		0x1
+#define CAP_EMBOLDENING		0x2
+#define CAP_CHARSUBSETTING	0x4
+
 typedef struct _FontRenderer {
     char    *fileSuffix;
     int	    fileSuffixLen;
@@ -117,6 +124,7 @@ typedef struct _FontRenderer {
     int	    (*GetInfoBitmap)(/* fpe, pFontInfo, entry, fileName */);
     int	    (*GetInfoScalable)(/* fpe, pFontInfo, entry, fileName, vals */);
     int	    number;
+    int     capabilities;	/* Bitmap components defined above */
 } FontRendererRec;
 
 typedef struct _FontRenders {

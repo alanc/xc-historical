@@ -1,4 +1,4 @@
-/* $XConsortium: spfuncs.c,v 1.7 92/04/15 14:35:48 gildea Exp $ */
+/* $XConsortium: spfuncs.c,v 1.8 92/09/17 11:57:04 gildea Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -42,7 +42,7 @@ SpeedoOpenScalable (fpe, pFont, flags, entry, fileName, vals, format, fmask)
 
     strcpy (fullName, entry->name.name);
     FontParseXLFDName (fullName, vals, FONT_XLFD_REPLACE_VALUE);
-    return SpeedoFontLoad (pFont, fullName, fileName, entry,
+    return SpeedoFontLoad (pFont, fullName, fileName, entry, vals,
 			    format, fmask, flags);
 }
 
@@ -65,6 +65,7 @@ get_font_info(pinfo, fontname, filename, entry, spfont)
 {
     SpeedoFontPtr spf;
     int         err;
+    long	sWidth;
 
     err = sp_open_font(fontname, filename, entry,
 	       (fsBitmapFormat) 0, (fsBitmapFormatMask) 0, (unsigned long) 0,
@@ -78,9 +79,9 @@ get_font_info(pinfo, fontname, filename, entry, spfont)
 
     sp_make_header(spf, pinfo);
 
-    sp_compute_bounds(spf, pinfo, (unsigned long) 0);
+    sp_compute_bounds(spf, pinfo, (unsigned long) 0, &sWidth);
 
-    sp_compute_props(spf, fontname, pinfo);
+    sp_compute_props(spf, fontname, pinfo, sWidth);
 
     /* compute remaining accelerators */
     FontComputeInfoAccelerators (pinfo);
@@ -103,8 +104,6 @@ SpeedoGetInfoScaleable(fpe, pFontInfo, entry, fontName, fileName, vals)
     char        fullName[MAXFONTNAMELEN];
     int         err;
 
-    sp_fixup_vals(vals);
-
     strcpy(fullName, entry->name.name);
     FontParseXLFDName(fullName, vals, FONT_XLFD_REPLACE_VALUE);
 
@@ -119,6 +118,7 @@ SpeedoGetInfoScaleable(fpe, pFontInfo, entry, fontName, fileName, vals)
 static FontRendererRec renderer = {
     ".spd", 4, (int (*)()) 0, SpeedoOpenScalable,
 	(int (*)()) 0, SpeedoGetInfoScaleable, 0
+    , CAP_MATRIX | CAP_CHARSUBSETTING
 };
     
 SpeedoRegisterFontFileFunctions()

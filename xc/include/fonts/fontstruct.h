@@ -1,4 +1,4 @@
-/* $XConsortium: fontstruct.h,v 1.10 91/07/22 15:37:41 keith Exp $ */
+/* $XConsortium: fontstruct.h,v 1.11 92/05/12 18:07:16 gildea Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -114,6 +114,7 @@ typedef struct _Font {
     int         (*get_glyphs) ( /* font, count, chars, encoding, count, glyphs */ );
     int         (*get_metrics) ( /* font, count, chars, encoding, count, glyphs */ );
     void        (*unload_font) ( /* font */ );
+    void        (*unload_glyphs) ( /* font */ );
     FontPathElementPtr fpe;
     pointer     svrPrivate;
     pointer     fontPrivate;
@@ -164,6 +165,16 @@ typedef struct _FPEFunctions {
 					         info, num, data */ );
     int         (*wakeup_fpe) ( /* fpe, mask */ );
     int		(*client_died) ( /* client, fpe */ );
+    int		(*load_glyphs) ( /* client, pfont, range_flag,
+				    nchars, item_size, data */ );
+		/* for load_glyphs, range_flag = 0 ->
+			nchars = # of characters in data
+			item_size = bytes/char
+			data = list of characters
+		   range_flag = 1 ->
+			nchars = # of fsChar2b's in data
+			item_size is ignored
+			data = list of fsChar2b's */
 }           FPEFunctionsRec, FPEFunctions;
 
 extern int  InitFPETypes();

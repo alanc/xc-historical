@@ -23,7 +23,7 @@ SOFTWARE.
 ******************************************************************/
 
 
-/* $XConsortium: dixutils.c,v 1.42 92/07/21 18:22:02 rws Exp $ */
+/* $XConsortium: dixutils.c,v 1.43 93/07/12 09:23:41 dpw Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -514,7 +514,9 @@ ClientWakeup (client)
 	{
 	    *prev = q->next;
 	    xfree (q);
-	    if (!client->clientGone)
+	    if (client->clientGone)
+		CloseDownClient(client);
+	    else
 		AttendClient (client);
 	    break;
 	}

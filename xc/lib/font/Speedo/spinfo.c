@@ -1,4 +1,4 @@
-/* $XConsortium: spinfo.c,v 1.7 91/09/16 11:42:32 keith Exp $ */
+/* $XConsortium: spinfo.c,v 1.8 92/09/17 11:57:06 gildea Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -25,13 +25,14 @@
 
 #include	"fontfilest.h"
 #include	"spint.h"
+#include	<math.h>
 
 /* percentage of pointsize used to specify ascent & descent */
 #define	STRETCH_FACTOR	120
 
 enum scaleType {
-    atom, pixel_size, point_size, resolution_x, resolution_y, average_width,
-    scaledX, scaledY, unscaled, scaledXoverY, uncomputed
+    atom, truncate_atom, pixel_size, point_size, resolution_x,
+    resolution_y, average_width
 };
 
 typedef struct _fontProp {
@@ -43,7 +44,7 @@ typedef struct _fontProp {
 static fontProp fontNamePropTable[] = {
     "FOUNDRY", 0, atom,
     "FAMILY_NAME", 0, atom,
-    "WEIGHT_NAME", 0, atom,
+    "WEIGHT_NAME", 0, truncate_atom,
     "SLANT", 0, atom,
     "SETWIDTH_NAME", 0, atom,
     "ADD_STYLE_NAME", 0, atom,
@@ -54,17 +55,31 @@ static fontProp fontNamePropTable[] = {
     "SPACING", 0, atom,
     "AVERAGE_WIDTH", 0, average_width,
     "CHARSET_REGISTRY", 0, atom,
-    "CHARSET_ENCODING", 0, atom,
+    "CHARSET_ENCODING", 0, truncate_atom,
 };
 
+/* Warning: following array is closely related to the sequence of
+   defines after it. */
+
 static fontProp extraProps[] = {
-    "FONT", 0, atom,
-    "COPYRIGHT", 0, atom,
+    "FONT", 0, 0,
+    "COPYRIGHT", 0, 0,
+    "RAW_PIXELSIZE", 0, 0,
+    "RAW_POINTSIZE", 0, 0,
+    "RAW_ASCENT", 0, 0,
+    "RAW_DESCENT", 0, 0,
+    "RAW_AVERAGE_WIDTH", 0, 0,
 };
 
 /* this is a bit kludgy */
 #define	FONTPROP	0
 #define	COPYRIGHTPROP	1
+#define RAWPIXELPROP	2
+#define RAWPOINTPROP	3
+#define RAWASCENTPROP	4
+#define RAWDESCENTPROP	5
+#define RAWWIDTHPROP	6
+
 
 #define NNAMEPROPS (sizeof(fontNamePropTable) / sizeof(fontProp))
 #define NEXTRAPROPS (sizeof(extraProps) / sizeof(fontProp))
@@ -111,9 +126,10 @@ sp_make_header(spf, pinfo)
     pinfo->allExist = 0;
     pinfo->drawDirection = LeftToRight;
     pinfo->cachable = 1;
-    pinfo->anamorphic = 0;
     if (spf->specs.xxmult != spf->specs.yymult)
 	pinfo->anamorphic = TRUE;
+    else
+	pinfo->anamorphic = FALSE;
 /* computed by sp_compute_bounds:
  *  maxOverlap
  *  maxbounds
@@ -121,7 +137,7 @@ sp_make_header(spf, pinfo)
  *  ink_maxbounds
  *  ink_minbounds
  */
-    pixel_size = spf->vals.pixel * STRETCH_FACTOR / 100;
+    pixel_size = spf->vals.pixel_matrix[3] * STRETCH_FACTOR / 100;
     pinfo->fontAscent = pixel_size * 764 / 1000;	/* 764 == EM_TOP */
     pinfo->fontDescent = pixel_size - pinfo->fontAscent;
 }
@@ -144,15 +160,21 @@ adjust_min_max(minc, maxc, tmp)
     MINMAX(rightSideBearing, tmp);
     MINMAX(characterWidth, tmp);
 
+    if ((INT16)minc->attributes > (INT16)tmp->attributes)
+	minc->attributes = tmp->attributes;
+    if ((INT16)maxc->attributes < (INT16)tmp->attributes)
+	maxc->attributes = tmp->attributes;
+
 #undef	MINMAX
 }
 
 
 void
-sp_compute_bounds(spf, pinfo, flags)
+sp_compute_bounds(spf, pinfo, flags, sWidth)
     SpeedoFontPtr spf;
     FontInfoPtr pinfo;
     unsigned long flags;
+    long *sWidth;
 {
     int         i,
                 id,
@@ -168,45 +190,80 @@ sp_compute_bounds(spf, pinfo, flags)
                 total_width = 0.0;
     SpeedoMasterFontPtr spmf = spf->master;
     int	firstChar;
+    int num_chars = 0;
 
     firstChar = spmf->first_char_id;
     minchar.ascent = minchar.descent =
 	minchar.leftSideBearing = minchar.rightSideBearing =
-	minchar.characterWidth = 32767;
-    minchar.attributes = 0;
+	minchar.characterWidth = minchar.attributes = 32767;
     maxchar.ascent = maxchar.descent =
 	maxchar.leftSideBearing = maxchar.rightSideBearing =
-	maxchar.characterWidth = -32767;
-    maxchar.attributes = 0;
+	maxchar.characterWidth = maxchar.attributes = -32767;
     maxOverlap = -32767;
+    *sWidth = 0;
     for (i = 0; i < spmf->num_chars; i++) {
+	int j;
+	int char_id;
+
 	index = spmf->enc[i * 2 + 1];
-	width = sp_get_char_width(index);
+	char_id = spmf->enc[i * 2];
+      /*
+       * See if this character is in the list of ranges specified in the
+       * XLFD name
+       */
+	for (j = 0; j < spf->vals.nranges; j++)
+	    if (char_id >= mincharno(spf->vals.ranges[j]) &&
+		    char_id <= maxcharno(spf->vals.ranges[j]))
+		break;
+	if (spf->vals.nranges && j == spf->vals.nranges)
+	    continue;
+	num_chars++;
 
-	/* convert to pixel coords */
-	pix_width = width * (spf->specs.xxmult / 65536L) +
-	    ((ufix32) width * ((ufix32) spf->specs.xxmult & 0xffff))
-	    / 65536L;
-	width = (pix_width * 720L) / (spf->specs.yymult);
-	pix_width /= 65536L;
+	if (!(flags & ComputeBoundsOnly)) {
 
-	(void) sp_get_char_bbox(index, &bbox);
-	bbox.ymax = (bbox.ymax + 32768L) >> 16;
-	bbox.ymin = (bbox.ymin + 32768L) >> 16;
-	bbox.xmin = (bbox.xmin + 32768L) >> 16;
-	bbox.xmax = (bbox.xmax + 32768L) >> 16;
-	tmpchar.ascent = bbox.ymax;
-	tmpchar.descent = -bbox.ymin;
-	tmpchar.leftSideBearing = bbox.xmin;
-	tmpchar.rightSideBearing = bbox.xmax;
-	tmpchar.characterWidth = (int) (pix_width + 0.5);	/* round */
-	tmpchar.attributes = 0;
+	    width = sp_get_char_width(index);
+
+	    /* convert to pixel coords */
+	    pix_width = (int)width * (spf->specs.xxmult / 65536L) +
+		((int) width * (spf->specs.xxmult % 65536L))
+		/ 65536L;
+	    pix_width /= 65536L;
+
+	    (void) sp_get_char_bbox(index, &bbox);
+	    bbox.ymax = (bbox.ymax + 32768L) >> 16;
+	    bbox.ymin = (bbox.ymin + 32768L) >> 16;
+	    bbox.xmin = (bbox.xmin + 32768L) >> 16;
+	    bbox.xmax = (bbox.xmax + 32768L) >> 16;
+	    tmpchar.ascent = bbox.ymax;
+	    tmpchar.descent = -bbox.ymin;
+	    tmpchar.characterWidth = (int)(pix_width +		/* round */
+					   (pix_width > 0 ? 0.5 : -0.5));
+	    tmpchar.rightSideBearing = bbox.xmax;
+	    tmpchar.leftSideBearing = bbox.xmin;
+
+	    if (!tmpchar.characterWidth &&
+		tmpchar.ascent == -tmpchar.descent &&
+		tmpchar.rightSideBearing == tmpchar.leftSideBearing)
+	    {
+		/* Character appears non-existent, probably as a result
+		   of the transformation.  Let's give it one pixel in
+		   the universe so it's not mistaken for non-existent. */
+		tmpchar.leftSideBearing = tmpchar.descent = 0;
+		tmpchar.rightSideBearing = tmpchar.ascent = 1;
+	    }
+
+	    tmpchar.attributes = (int)((double)(int)width / 65.536 + .5);
+	}
+	else
+	    tmpchar = spf->encoding[char_id - firstChar].metrics;
+
 	adjust_min_max(&minchar, &maxchar, &tmpchar);
 	overlap = tmpchar.rightSideBearing - tmpchar.characterWidth;
 	if (maxOverlap < overlap)
 	    maxOverlap = overlap;
 
-	total_width += pix_width;
+	total_width += fabs(pix_width);
+	*sWidth += abs((INT16)tmpchar.attributes);
 
 	if (flags & SaveMetrics) {
 	    id = spmf->enc[i * 2] - firstChar;
@@ -216,7 +273,16 @@ sp_compute_bounds(spf, pinfo, flags)
     }
 
 
-    spf->vals.width = total_width / spmf->num_chars * 10;
+    if (num_chars > 0)
+    {
+	double n2 = (double)num_chars / 2.0;
+	spf->vals.width = (total_width * 10.0 + n2) / num_chars;
+	*sWidth = (int)((double)*sWidth * 10.0 + n2) / num_chars;
+    }
+    else
+    {
+	spf->vals.width = 0;
+    }
     pinfo->maxbounds = maxchar;
     pinfo->minbounds = minchar;
     pinfo->ink_maxbounds = maxchar;
@@ -225,10 +291,11 @@ sp_compute_bounds(spf, pinfo, flags)
 }
 
 void
-sp_compute_props(spf, fontname, pinfo)
+sp_compute_props(spf, fontname, pinfo, sWidth)
     SpeedoFontPtr spf;
     char       *fontname;
     FontInfoPtr pinfo;
+    long	sWidth;
 {
     FontPropPtr pp;
     int         i,
@@ -237,6 +304,7 @@ sp_compute_props(spf, fontname, pinfo)
     char       *is_str;
     char       *ptr1,
                *ptr2;
+    char       *ptr3;
 
     nprops = pinfo->nprops = NPROPS;
     pinfo->isStringProp = (char *) xalloc(sizeof(char) * nprops);
@@ -255,26 +323,33 @@ sp_compute_props(spf, fontname, pinfo)
 	    is_str = pinfo->isStringProp;
 	    i;
 	    i--, pp++, fpt++, is_str++) {
-	ptr1 = ptr2 + 1;
-	if (*ptr1 == '-')
-	    ptr2 = ptr1;
-	else {
-	    if (i > 1)
-		ptr2 = index(ptr1 + 1, '-');
-	    else
-		ptr2 = index(ptr1 + 1, '\0');
-	}
+
+        if (*ptr2)
+        {
+            ptr1 = ptr2 + 1;
+            if (!(ptr2 = index(ptr1, '-'))) ptr2 = index(ptr1, '\0');
+        }
+
 	pp->name = fpt->atom;
 	switch (fpt->type) {
 	case atom:
 	    *is_str = TRUE;
 	    pp->value = MakeAtom(ptr1, ptr2 - ptr1, TRUE);
 	    break;
+	case truncate_atom:
+	    *is_str = TRUE;
+	    for (ptr3 = ptr1; *ptr3; ptr3++)
+		if (*ptr3 == '=' || *ptr3 == '-' ||
+		    *ptr3 == '+' || *ptr3 == '~')
+		    break;
+	    pp->value = MakeAtom(ptr1, ptr3 - ptr1, TRUE);
+	    break;
 	case pixel_size:
-	    pp->value = spf->vals.pixel;
+	    pp->value = spf->vals.pixel_matrix[3];
 	    break;
 	case point_size:
-	    pp->value = spf->vals.point;
+	    pp->value = (int)(spf->vals.point_matrix[3] * 10.0 +
+			      (spf->vals.point_matrix[3] > 0 ? .5 : -.5));
 	    break;
 	case resolution_x:
 	    pp->value = spf->vals.x;
@@ -299,6 +374,26 @@ sp_compute_props(spf, fontname, pinfo)
 	    *is_str = TRUE;
 	    pp->value = MakeAtom(spf->master->copyright,
 				 strlen(spf->master->copyright), TRUE);
+	    break;
+         case RAWPIXELPROP:
+            *is_str = FALSE;
+            pp->value = 1000;
+	    break;
+         case RAWPOINTPROP:
+            *is_str = FALSE;
+            pp->value = (long)(72270.0 / (double)spf->vals.y + .5);
+	    break;
+         case RAWASCENTPROP:
+            *is_str = FALSE;
+            pp->value = STRETCH_FACTOR * 764 / 100;
+	    break;
+         case RAWDESCENTPROP:
+            *is_str = FALSE;
+            pp->value = STRETCH_FACTOR * 236 / 100;
+	    break;
+         case RAWWIDTHPROP:
+            *is_str = FALSE;
+            pp->value = sWidth;
 	    break;
 	}
     }

@@ -1,4 +1,4 @@
-/* $XConsortium: access.c,v 1.6 92/06/01 17:04:22 gildea Exp $ */
+/* $XConsortium: access.c,v 1.6 92/06/01 17:07:58 gildea Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -32,6 +32,7 @@
 #include	"site.h"
 #include	"accstr.h"
 #include	"osdep.h"
+#include	"osstruct.h"
 
 long        MaxClients = DEFAULT_CLIENT_LIMIT;
 
@@ -87,6 +88,7 @@ CheckClientAuthorization(client, client_auth, accept, index, size, auth_data)
     char      **auth_data;
 {
     OsCommPtr	oc;
+    int i;
 
     /* now that it's connected, zero the connect time
        so it doesn't get killed */
@@ -95,6 +97,18 @@ CheckClientAuthorization(client, client_auth, accept, index, size, auth_data)
 
     *size = 0;
     *accept = AuthSuccess;
-    *index = 0;			/* we support no authorization protocols */
+
+    client->auth_generation++;
+
+#define AUTH1_NAME "hp-hostname-1"
+#define AUTH2_NAME "hp-printername-1"
+    for (i = 0; i < *index; i++)
+	if (client_auth[i].namelen == sizeof(AUTH1_NAME) &&
+	    !strcmp(client_auth[i].name, AUTH1_NAME) ||
+	    client_auth[i].namelen == sizeof(AUTH2_NAME) &&
+	    !strcmp(client_auth[i].name, AUTH2_NAME)) break;
+    if (i == *index) i == 0;
+    else i++;
+    *index = i;
     return FSSuccess;
 }

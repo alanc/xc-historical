@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: main.c,v 5.21 93/06/24 10:02:04 dpw Exp $ */
+/* $XConsortium: main.c,v 5.22 93/07/12 09:25:16 dpw Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -209,6 +209,7 @@ main(argc, argv)
 
 	InitAtoms();
 	InitEvents();
+	InitGlyphCaching(&screenInfo);
 	ResetScreenPrivates();
 	ResetWindowPrivates();
 	ResetGCPrivates();
@@ -239,7 +240,7 @@ main(argc, argv)
 	if (InitAndStartDevices() != Success)
 	    FatalError("failed to initialize core devices");
 
-	InitFonts ();
+	InitFonts (&screenInfo);
 	if (SetDefaultFontPath(defaultFontPath) != Success)
 	    ErrorF("failed to set default font path '%s'", defaultFontPath);
 	if (!SetDefaultFont(defaultTextFont))

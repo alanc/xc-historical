@@ -1,5 +1,5 @@
 /*
- * $XConsortium: bitmapfuncs.c,v 1.3 91/06/12 14:35:17 keith Exp $
+ * $XConsortium: bitmapfuncs.c,v 1.4 91/09/07 11:59:18 keith Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -51,25 +51,34 @@ static BitmapFileFunctionsRec readers[] = {
     bdfReadFont, bdfReadFontInfo,
 };
 
+
+#define CAPABILITIES (CAP_MATRIX | CAP_CHARSUBSETTING)
+
 static FontRendererRec	renderers[] = {
     ".pcf", 4,
     BitmapOpenBitmap, BitmapOpenScalable,
 	BitmapGetInfoBitmap, BitmapGetInfoScalable, 0,
+	CAPABILITIES,
     ".pcf.Z", 6,
     BitmapOpenBitmap, BitmapOpenScalable,
 	BitmapGetInfoBitmap, BitmapGetInfoScalable, 0,
+	CAPABILITIES,
     ".snf", 4,
     BitmapOpenBitmap, BitmapOpenScalable,
 	BitmapGetInfoBitmap, BitmapGetInfoScalable, 0,
+	CAPABILITIES,
     ".snf.Z", 6,
     BitmapOpenBitmap, BitmapOpenScalable,
 	BitmapGetInfoBitmap, BitmapGetInfoScalable, 0,
+	CAPABILITIES,
     ".bdf", 4,
     BitmapOpenBitmap, BitmapOpenScalable,
 	BitmapGetInfoBitmap, BitmapGetInfoScalable, 0,
+	CAPABILITIES,
     ".bdf.Z", 6,
     BitmapOpenBitmap, BitmapOpenScalable,
 	BitmapGetInfoBitmap, BitmapGetInfoScalable, 0,
+	CAPABILITIES,
 };
 
 BitmapOpenBitmap (fpe, ppFont, flags, entry, fileName, format, fmask)

@@ -1,4 +1,4 @@
-/* $XConsortium: charinfo.c,v 1.7 92/11/18 21:30:12 gildea Exp $ */
+/* $XConsortium: charinfo.c,v 1.8 93/07/15 17:37:43 gildea Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -100,20 +100,11 @@ getCharInfos (pfont, num_ranges, range, ink_metrics, nump, retp)
     } else {
 	nchars = 0;
 	for (i = 0, rp = range; i < num_ranges; i++, rp++) {
-	    if (rp->min_char_high > rp->max_char_high)
+	    if (rp->min_char_high > rp->max_char_high ||
+		rp->min_char_low > rp->max_char_low)
 		return BadCharRange;
-	    if (rp->min_char_high == rp->max_char_high)
-	    {
-		if (rp->min_char_low > rp->max_char_low)
-		    return BadCharRange;
-		nchars += rp->max_char_low - rp->min_char_low + 1;
-	    }
-	    else
-	    {
-		nchars += lastRow - rp->min_char_low + 1;
-		nchars += (rp->max_char_high - rp->min_char_high - 1) * num_cols;
-		nchars += rp->max_char_low - firstRow + 1;
-	    }
+	    nchars += (rp->max_char_high - rp->min_char_high + 1) *
+		      (rp->max_char_low - rp->min_char_low + 1);
 	}
     }
 
@@ -145,13 +136,7 @@ getCharInfos (pfont, num_ranges, range, ink_metrics, nump, retp)
     for (i = 0, rp = range; i < num_ranges; i++, rp++) {
 	for (r = rp->min_char_high; r <= rp->max_char_high; r++)
 	{
-	    minCol = firstCol;
-	    if (r == rp->min_char_high)
-		minCol = rp->min_char_low;
-	    maxCol = lastCol;
-	    if (r == rp->max_char_high)
-		maxCol = rp->max_char_low;
-	    for (c = minCol; c <= maxCol; c++) {
+	    for (c = rp->min_char_low; c <= rp->max_char_low; c++) {
 		ch[0] = r;
 		ch[1] = c;
 		err = (*metrics_func) (pfont, 1, ch, encoding,
@@ -187,7 +172,7 @@ GetExtents(client, pfont, flags, num_ranges, range, num_extents, data)
     fsXCharInfo *ci;
     fsXCharInfo cilocal;
     char *pci;
-    CharInfoPtr	*xchars, *xchars_cur;
+    CharInfoPtr	*xchars, *xchars_cur, *temp;
     CharInfoPtr xci;
     int		nchars;
     int		err;
@@ -209,6 +194,7 @@ GetExtents(client, pfont, flags, num_ranges, range, num_extents, data)
 
     ci = (fsXCharInfo *) pci;
     *num_extents = nchars;
+    temp = xchars;
     
     /* pack the data */
     xchars_cur = xchars;
@@ -219,12 +205,12 @@ GetExtents(client, pfont, flags, num_ranges, range, num_extents, data)
 	cilocal.left = xci->metrics.leftSideBearing;
 	cilocal.right = xci->metrics.rightSideBearing;
 	cilocal.width = xci->metrics.characterWidth;
-	cilocal.attributes = 0;
+	cilocal.attributes = xci->metrics.attributes;
 	bcopy(&cilocal, pci, SIZEOF(fsXCharInfo));
 	pci += SIZEOF(fsXCharInfo);
     }
     
-    fsfree (xchars);
+    fsfree (temp);
     
     *data = ci;
     
@@ -359,7 +345,11 @@ packGlyphs (client, pfont, format, flags, num_ranges, range, tsize, num_glyphs,
 	    if ((char *) gdata + size != bitc->bits)
 		contiguous = FALSE;
 	    if (mappad == BitmapFormatImageRectMin)
+	    {
 		dstbpr = GLYPH_SIZE(inkc, scanlinepad);
+		srcbpr = GLYPH_SIZE(bitc, src_glyph_pad);
+		if (dstbpr != srcbpr) reformat = TRUE;
+	    }
 	    if (mappad != BitmapFormatImageRectMax)
 	    {
 		height = inkc->metrics.ascent + inkc->metrics.descent;
@@ -421,14 +411,28 @@ packGlyphs (client, pfont, format, flags, num_ranges, range, tsize, num_glyphs,
 
 	dstp = gd;
 
+	if (mappad == BitmapFormatImageRectMax)
+	    height = max_ascent + max_descent;
+	else
+	    height = inkm->ascent + inkm->descent;
+
 	/* adjust destination and calculate shift offsets */
 	switch (mappad) {
 	case BitmapFormatImageRectMax:
 	    /* leave the first padded rows blank */
-	    dstp += dstbpr * (max_ascent - inkm->ascent);
+	    if (max_ascent > inkm->ascent)
+	    {
+		height -= (max_ascent - inkm->ascent);
+		dstp += dstbpr * (max_ascent - inkm->ascent);
+	    }
+	    if (max_descent > inkm->descent)
+	    {
+		height -= (max_descent - inkm->descent);
+	    }
 	    /* fall thru */
 	case BitmapFormatImageRectMaxWidth:
 	    dst_off = inkm->leftSideBearing - min_left;
+	    if (dst_off < 0) dst_off = 0;
 	    break;
 	case BitmapFormatImageRectMin:
 	    dst_off = 0;
@@ -469,13 +473,13 @@ packGlyphs (client, pfont, format, flags, num_ranges, range, tsize, num_glyphs,
 	{
 	    if (srcbpr == dstbpr && src_left_bytes == dst_left_bytes)
 	    {
-		r = (inkm->ascent + inkm->descent) * width;
+		r = height * width;
 		bcopy (srcp, dstp, r);
 		dstp += r;
 	    }
 	    else
 	    {
-		for (r = inkm->ascent + inkm->descent; r; r--)
+		for (r =  height; r; r--)
 		{
 		    dstp += dst_left_bytes;
 		    srcp += src_left_bytes;
@@ -587,10 +591,18 @@ GetBitmaps(client, pfont, format, flags, num_ranges, range,
     pointer    *data;
     int		*freeData;
 {
+    int err;
+
     assert(pfont);
 
     *size = 0;
     *data = (pointer) 0;
+
+    err = LoadGlyphRanges(client, pfont, TRUE, num_ranges * 2, 0, range);
+
+    if (err != Successful)
+	return err;
+
     return packGlyphs (client, pfont, format, flags,
 			      num_ranges, range, size, num_glyphs,
 			      offsets, data, freeData);

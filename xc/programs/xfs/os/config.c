@@ -1,4 +1,4 @@
-/* $XConsortium: config.c,v 1.8 92/04/03 11:30:03 eswu Exp $ */
+/* $XConsortium: config.c,v 1.9 92/05/29 18:04:30 gildea Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -39,6 +39,7 @@ static char *font_catalogue = NULL;
 static char *config_set_int(),
            *config_set_bool(),
            *config_set_catalogue(),
+           *config_set_glyph_caching_mode(),
            *config_set_list(),
            *config_set_file(),
            *config_set_resolutions(),
@@ -54,6 +55,7 @@ static ConfigOptionRec config_options[] = {
     {"clone-self", config_set_bool},
     {"default-point-size", config_set_int},
     {"default-resolutions", config_set_resolutions},
+    {"defer", config_set_glyph_caching_mode},
     {"error-file", config_set_file},
     {"port", config_set_int},
     {"server-number", config_set_int},
@@ -489,6 +491,24 @@ config_set_list(parm, val)
     *val = '\0';
     if (!strcmp(parm->parm_name, "alternate-servers")) {
 	SetAlternateServers(start);
+    }
+    *val = t;
+    return val;
+}
+
+static char *
+config_set_glyph_caching_mode(parm, val)
+    ConfigOptionPtr parm;
+    char       *val;
+{
+    char       *start = val,
+                t;
+
+    skip_list_val(val);
+    t = *val;
+    *val = '\0';
+    if (!strcmp(parm->parm_name, "defer")) {
+	SetGlyphCachingMode(start);
     }
     *val = t;
     return val;

@@ -1,4 +1,4 @@
-/* $XConsortium: t1funcs.c,v 1.9 92/03/27 18:13:14 eswu Exp $ */
+/* $XConsortium: t1funcs.c,v 1.10 92/05/12 18:07:55 gildea Exp $ */
 /* Copyright International Business Machines,Corp. 1991
  * All Rights Reserved
  *
@@ -55,6 +55,7 @@
  */
  
 #include    <string.h>
+#include    <math.h>
 #include    "X11/Xfuncs.h"
 #include    "fontfilest.h"
 #include    "FSproto.h"
@@ -74,6 +75,9 @@ extern int  Type1GetInfoScalable ();
  
 static int  Type1GetMetrics ();
  
+#define minchar(p) ((p).min_char_low + ((p).min_char_high << 8))
+#define maxchar(p) ((p).max_char_low + ((p).max_char_high << 8))
+
 static void fillrun();
  
  
@@ -110,13 +114,17 @@ int Type1OpenScalable (fpe, ppFont, flags, entry, fileName, vals, format, fmask)
        int size;             /* for memory size calculations                 */
        struct XYspace *S;    /* coordinate space for character               */
        struct region *area;
-       double scale;         /* scale factor for font                        */
        CharInfoRec *glyphs;
        register int i;
-       int len,rc;
+       int len, rc, count = 0;
        struct type1font *type1;
        char *p;
        psobj *fontencoding = NULL;
+       fsRange char_range;
+       psobj *fontmatrix;
+       long x0, width = 0;
+       double x1, y1, t1 = .001, t2 = 0.0, t3 = 0.0, t4 = .001;
+       double sxmult;
 
        /* set up default values */
        FontDefaultFormat(&bit, &byte, &glyph, &scan);
@@ -142,7 +150,9 @@ int Type1OpenScalable (fpe, ppFont, flags, entry, fileName, vals, format, fmask)
        bzero(type1, sizeof(struct type1font));
  
        /* heuristic for "maximum" size of pool we'll need: */
-       size = 200000 + 120 * vals->pixel * sizeof(short);
+       size = 200000 + 120 *
+	      (int)hypot(vals->pixel_matrix[2], vals->pixel_matrix[3])
+	      * sizeof(short);
        if (size < 0 || NULL == (pool = (unsigned long *) xalloc(size))) {
                xfree(type1);
                xfree(pFont);
@@ -151,14 +161,39 @@ int Type1OpenScalable (fpe, ppFont, flags, entry, fileName, vals, format, fmask)
  
        addmemory(pool, size);
  
-       scale = (double) vals->pixel;
-       S = (struct XYspace *)Permanent(Scale(IDENTITY, scale, - scale));
  
        glyphs = type1->glyphs;
  
        /* load font if not already loaded */
        if (!fontfcnA(fileName, &rc))
 	   return (rc);
+
+       fontmatrix = &FontP->fontInfoP[FONTMATRIX].value;
+       if (objPIsArray(fontmatrix) && fontmatrix->len == 6)
+       {
+#define assign(n,d,f) if (objPIsInteger(fontmatrix->data.arrayP + n)) \
+			  d = fontmatrix->data.arrayP[n].data.integer; \
+		      else if (objPIsReal(fontmatrix->data.arrayP + n)) \
+			  d = fontmatrix->data.arrayP[n].data.real; \
+		      else d = f;
+
+	   assign(0, t1, .001);
+	   assign(1, t2, 0.0);
+	   assign(2, t3, 0.0);
+	   assign(3, t4, .001);
+       }
+
+       S = (struct XYspace *) t1_Transform(IDENTITY, t1, t2, t3, t4);
+
+       S = (struct XYspace *) Permanent(t1_Transform(S, vals->pixel_matrix[0],
+						       -vals->pixel_matrix[1],
+							vals->pixel_matrix[2],
+						       -vals->pixel_matrix[3]));
+
+
+       /* multiplier for computation of raw values */
+       sxmult = hypot(vals->pixel_matrix[0], vals->pixel_matrix[1]);
+       if (sxmult > EPS) sxmult = 1000.0 / sxmult;
 
        p = entry->name.name + entry->name.length - 19;
        if (entry->name.ndashes == 14 &&
@@ -171,15 +206,35 @@ int Type1OpenScalable (fpe, ppFont, flags, entry, fileName, vals, format, fmask)
        if (!fontencoding)
 	   fontencoding = ISOLatin1EncArrayP;
 
+       pFont->info.firstCol = 255;
+       pFont->info.lastCol  = FIRSTCOL;
+
        for (i=0; i < 256-FIRSTCOL; i++) {
                long h,w;
                long paddedW;
+	       int j;
 	       char *codename;
 
 	       codename = fontencoding[i + FIRSTCOL].data.valueP;
 	       len = fontencoding[i + FIRSTCOL].len;
 	       if (len == 7 && strcmp(codename,".notdef")==0)
 		   continue;
+ 
+	       /* See if this character is in the list of ranges specified
+		  in the XLFD name */
+	       for (j = 0; j < vals->nranges; j++)
+		   if (i + FIRSTCOL >= minchar(vals->ranges[j]) &&
+		       i + FIRSTCOL <= maxchar(vals->ranges[j]))
+		       break;
+
+	       /* If not, don't realize it. */
+	       if (vals->nranges && j == vals->nranges)
+		   continue;
+
+	       if (pFont->info.firstCol > i + FIRSTCOL)
+		   pFont->info.firstCol = i + FIRSTCOL;
+	       if (pFont->info.lastCol < i + FIRSTCOL)
+		   pFont->info.lastCol = i + FIRSTCOL;
 
                rc = 0;
                area = fontfcnB(S, codename, &len, &rc);
@@ -206,20 +261,43 @@ int Type1OpenScalable (fpe, ppFont, flags, entry, fileName, vals, format, fmask)
                        }
                }
                else {
+		       size = 0;
                        h = w = 0;
                        area->xmin = area->xmax = 0;
                        area->ymax = area->ymax = 0;
                }
  
                glyphs[i].metrics.leftSideBearing  = area->xmin;
-               glyphs[i].metrics.characterWidth   = NEARESTPEL(area->ending.x - area->origin.x);
+	       x1 = (double)(x0 = area->ending.x - area->origin.x);
+	       y1 = (double)(area->ending.y - area->origin.y);
+               glyphs[i].metrics.characterWidth   =
+		   (x0 + (x0 > 0 ? FPHALF : -FPHALF)) / (1 << FRACTBITS);
+               if (!glyphs[i].metrics.characterWidth && size == 0)
+	       {
+		   /* Zero size and zero extents: presumably caused by
+		      the choice of transformation.  Let's create a
+		      small bitmap so we're not mistaken for an undefined
+		      character. */
+		   h = w = 1;
+		   size = paddedW = (w, pad);
+		   glyphs[i].bits = (char *)xalloc(size);
+                   if (glyphs[i].bits == NULL) {
+                       rc = AllocError;
+                       break;
+                   }
+	       }
+               glyphs[i].metrics.attributes =
+		   NEARESTPEL((long)(hypot(x1, y1) * sxmult));
+	       width += glyphs[i].metrics.attributes;
+	       count++;
                glyphs[i].metrics.rightSideBearing = w + area->xmin;
                glyphs[i].metrics.descent          = area->ymax - NEARESTPEL(area->origin.y);
                glyphs[i].metrics.ascent           = h - glyphs[i].metrics.descent;
  
+ 
+               bzero(glyphs[i].bits, size);
                if (h > 0 && w > 0) {
-                       bzero(glyphs[i].bits, size);
-                       fill(glyphs[i].bits, h, paddedW, area, byte, bit, wordsize );
+                   fill(glyphs[i].bits, h, paddedW, area, byte, bit, wordsize );
                }
  
                Destroy(area);
@@ -227,6 +305,13 @@ int Type1OpenScalable (fpe, ppFont, flags, entry, fileName, vals, format, fmask)
  
        delmemory();
        xfree(pool);
+ 
+       if (pFont->info.firstCol > pFont->info.lastCol)
+       {
+               xfree(type1);
+               xfree(pFont);
+               return BadFontName;
+       }
  
        if (i != 256 - FIRSTCOL) {
                for (i--; i >= 0; i--)
@@ -245,21 +330,22 @@ int Type1OpenScalable (fpe, ppFont, flags, entry, fileName, vals, format, fmask)
        pFont->glyph       = glyph;
        pFont->scan        = scan;
  
-       pFont->info.firstCol = FIRSTCOL;
-       pFont->info.lastCol  = 255;
        pFont->info.firstRow = 0;
        pFont->info.lastRow  = 0;
  
        pFont->get_metrics = Type1GetMetrics;
        pFont->get_glyphs  = Type1GetGlyphs;
        pFont->unload_font = Type1CloseFont;
+       pFont->unload_glyphs = NULL;
        pFont->refcnt = 0;
        pFont->maxPrivate = -1;
        pFont->devPrivates = 0;
  
        pFont->fontPrivate = (unsigned char *) type1;
+
+       if (count) width = (width * 10 + count / 2) / count;
  
-       T1FillFontInfo(pFont, vals, fileName, entry->name.name);
+       T1FillFontInfo(pFont, vals, fileName, entry->name.name, width);
  
        *ppFont = pFont;
        return Successful;
@@ -290,6 +376,11 @@ Type1GetGlyphs(pFont, count, chars, charEncoding, glyphCount, glyphs)
     glyphsBase = glyphs;
  
     switch (charEncoding) {
+
+#define EXIST(pci) \
+    ((pci)->metrics.attributes || \
+     (pci)->metrics.ascent != -(pci)->metrics.descent || \
+     (pci)->metrics.leftSideBearing != (pci)->metrics.rightSideBearing)
  
     case Linear8Bit:
     case TwoD8Bit:
@@ -298,7 +389,8 @@ Type1GetGlyphs(pFont, count, chars, charEncoding, glyphCount, glyphs)
         while (count--) {
                 c = (*chars++);
                 if (c >= firstCol &&
-                       (pci = &type1Font->glyphs[c-firstCol])->metrics.characterWidth != 0)
+                       (pci = &type1Font->glyphs[c-FIRSTCOL]) &&
+		       EXIST(pci))
                     *glyphs++ = pci;
                 else if (pDefault)
                     *glyphs++ = pDefault;
@@ -309,7 +401,8 @@ Type1GetGlyphs(pFont, count, chars, charEncoding, glyphCount, glyphs)
                 c = *chars++ << 8;
                 c = (c | *chars++);
                 if (c < 256 && c >= firstCol &&
-                        (pci = &type1Font->glyphs[c-firstCol])->metrics.characterWidth != 0)
+                        (pci = &type1Font->glyphs[c-FIRSTCOL]) &&
+			EXIST(pci))
                     *glyphs++ = pci;
                 else if (pDefault)
                     *glyphs++ = pDefault;
@@ -323,7 +416,8 @@ Type1GetGlyphs(pFont, count, chars, charEncoding, glyphCount, glyphs)
             r = (*chars++) - firstRow;
             c = (*chars++);
             if (r < numRows && c < 256 && c >= firstCol &&
-                    (pci = &type1Font->glyphs[(r << 8) + c - firstCol])->metrics.characterWidth != 0)
+                    (pci = &type1Font->glyphs[(r << 8) + c - FIRSTCOL]) &&
+		    EXIST(pci))
                 *glyphs++ = pci;
             else if (pDefault)
                 *glyphs++ = pDefault;
@@ -332,6 +426,8 @@ Type1GetGlyphs(pFont, count, chars, charEncoding, glyphCount, glyphs)
     }
     *glyphCount = glyphs - glyphsBase;
     return Successful;
+
+#undef EXIST
 }
  
 static int
@@ -364,7 +460,7 @@ void Type1CloseFont(pFont)
        struct type1font *type1;
  
        type1 = (struct type1font *) pFont->fontPrivate;
-       for (i=0; i < 256 - pFont->info.firstCol; i++)
+       for (i=0; i < 256 - FIRSTCOL; i++)
                if (type1->glyphs[i].bits != NULL)
                         xfree(type1->glyphs[i].bits);
        xfree(type1);
@@ -491,14 +587,16 @@ static void fillrun(p, x0, x1, bit)
        }
 }
  
+#define CAPABILITIES (CAP_MATRIX | CAP_CHARSUBSETTING)
  
 static FontRendererRec renderers[] = {
   { ".pfa", 4, (int (*)()) 0, Type1OpenScalable,
-        (int (*)()) 0, Type1GetInfoScalable, 0 },
+        (int (*)()) 0, Type1GetInfoScalable, 0, CAPABILITIES },
   { ".pfb", 4, (int (*)()) 0, Type1OpenScalable,
-        (int (*)()) 0, Type1GetInfoScalable, 0 }
+        (int (*)()) 0, Type1GetInfoScalable, 0, CAPABILITIES }
 };
  
+
 Type1RegisterFontFileFunctions()
 {
     int i;

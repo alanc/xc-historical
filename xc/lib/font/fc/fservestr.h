@@ -1,4 +1,4 @@
-/* $XConsortium: fservestr.h,v 1.9 92/11/18 21:31:07 gildea Exp $ */
+/* $XConsortium: fservestr.h,v 1.10 93/02/08 10:46:50 rws Exp $ */
 /*
  * Copyright 1990 Network Computing Devices
  *
@@ -37,17 +37,11 @@
  * font server private storage
  */
 
-/*
- * XXX -- currently, all the glyph & metric data is sucked over from the
- * FS, so this is pretty simplistic.  needs work to deal with caching
- * properly.
- */
 
 typedef struct _fs_font {
     CharInfoPtr pDefault;
     CharInfoPtr encoding;
     CharInfoPtr inkMetrics;
-    pointer     bitmaps;
 }           FSFontRec, *FSFontPtr;
 
 /* FS special data for the font */
@@ -55,8 +49,19 @@ typedef struct _fs_font_data {
     long        fontid;
     int		generation;	/* FS generation when opened */
     FontPathElementPtr fpe;
-    Bool        complete;	/* all glyphs sucked over? */
+    unsigned long glyphs_to_get;	/* # glyphs remaining to be gotten */
+
+    /* Following data needed in case font needs to be reopened. */
+    int		namelen;
+    char       *name;
+    fsBitmapFormat	format;
+    fsBitmapFormatMask	fmask;
 }           FSFontDataRec;
+
+typedef struct fs_clients_depending {
+    pointer	client;
+    struct fs_clients_depending *next;
+}	FSClientsDependingRec, *FSClientsDependingPtr;
 
 /* OpenFont specific data for blocked request */
 typedef struct _fs_blocked_font {
@@ -66,13 +71,17 @@ typedef struct _fs_blocked_font {
     int         errcode;
     int         flags;
     fsBitmapFormat format;
+    FSClientsDependingPtr	clients_depending;
 }           FSBlockedFontRec;
 
 /* LoadGlyphs data for blocked request */
 typedef struct _fs_blocked_glyphs {
     FontPtr     pfont;
-    fsRange     expected_range;
+    int		num_expected_ranges;
+    fsRange     *expected_ranges;
+    int         errcode;
     Bool        done;
+    FSClientsDependingPtr	clients_depending;
 }           FSBlockedGlyphRec;
 
 /* LoadExtents data for blocked request */

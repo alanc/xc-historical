@@ -6,6 +6,7 @@
 #include "closure.h"
 #include "dix.h"
 #include "misc.h"
+#include "gcstruct.h"
 
 /* closure structures */
 typedef struct _OFclosure {
@@ -58,4 +59,36 @@ typedef struct _LFWIclosure {
     Bool		slept;
     char		*savedName;
 } LFWIclosureRec;
+
+typedef struct _PTclosure {
+    ClientPtr		client;
+    DrawablePtr		pDraw;
+    GC			*pGC;
+    unsigned char	*pElt;
+    unsigned char	*endReq;
+    unsigned char	*data;
+    int			xorg;
+    int			yorg;
+    CARD8		reqType;
+    int			(* polyText)();
+    int			itemSize;
+    XID			did;
+    int			err;
+    Bool		slept;
+} PTclosureRec;
+
+typedef struct _ITclosure {
+    ClientPtr		client;
+    DrawablePtr		pDraw;
+    GC			*pGC;
+    BYTE		nChars;
+    unsigned char	*data;
+    int			xorg;
+    int			yorg;
+    CARD8		reqType;
+    void		(* imageText)();
+    int			itemSize;
+    XID			did;
+    Bool		slept;
+} ITclosureRec;
 #endif				/* CLOSESTR_H */

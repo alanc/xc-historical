@@ -1,4 +1,4 @@
-/* $XConsortium: t1info.c,v 1.8 92/02/04 21:36:48 keith Exp $ */
+/* $XConsortium: t1info.c,v 1.9 92/03/20 16:00:13 eswu Exp $ */
 /* Copyright International Business Machines,Corp. 1991
  * All Rights Reserved
  *
@@ -64,9 +64,8 @@
 #define DEFAULTPOINTSIZE 120
  
 enum scaleType {
-    atom, pixel_size, point_size, resolution_x, resolution_y,
-    average_width, scaledX, scaledY, unscaled, scaledXoverY,
-    uncomputed
+    atom, truncate_atom, pixel_size, point_size, resolution_x,
+    resolution_y, average_width
 };
  
 typedef struct _fontProp {
@@ -78,10 +77,10 @@ typedef struct _fontProp {
 static fontProp fontNamePropTable[] = {  /* Example: */
     "FOUNDRY", 0, atom,                  /* adobe */
     "FAMILY_NAME", 0, atom,              /* times roman */
-    "WEIGHT_NAME", 0, atom,              /* bold */
-    "SLANT", 0, atom,                    /* i */
+    "WEIGHT_NAME", 0, truncate_atom,     /* bold */
+    "SLANT", 0, atom,			 /* i */
     "SETWIDTH_NAME", 0, atom,            /* normal */
-    "ADD_STYLE_NAME", 0, atom,           /* */
+    "ADD_STYLE_NAME", 0, atom,		 /* */
     "PIXEL_SIZE", 0, pixel_size,         /* 18 */
     "POINT_SIZE", 0, point_size,         /* 180 */
     "RESOLUTION_X", 0, resolution_x,     /* 72 */
@@ -89,17 +88,29 @@ static fontProp fontNamePropTable[] = {  /* Example: */
     "SPACING", 0, atom,                  /* p */
     "AVERAGE_WIDTH", 0, average_width,   /* 0 */
     "CHARSET_REGISTRY", 0, atom,         /* ISO8859 */
-    "CHARSET_ENCODING", 0, atom,         /* 1 */
+    "CHARSET_ENCODING", 0, truncate_atom, /* 1 */
 };
  
+/* NOTICE: Following array is closely related to the sequence of defines
+   following it. */
 static fontProp extraProps[] = {
-    "FONT", 0, atom,
-    "COPYRIGHT", 0, atom,
+    "FONT", 0, 0,
+    "COPYRIGHT", 0, 0,
+    "RAW_PIXELSIZE", 0, 0,
+    "RAW_POINTSIZE", 0, 0,
+    "RAW_ASCENT", 0, 0,
+    "RAW_DESCENT", 0, 0,
+    "RAW_AVERAGE_WIDTH", 0, 0,
 };
  
 /* this is a bit kludgy */
 #define FONTPROP        0
 #define COPYRIGHTPROP   1
+#define RAWPIXELPROP	2
+#define RAWPOINTPROP	3
+#define RAWASCENTPROP	4
+#define RAWDESCENTPROP	5
+#define RAWWIDTHPROP	6
  
 #define NNAMEPROPS (sizeof(fontNamePropTable) / sizeof(fontProp))
 #define NEXTRAPROPS (sizeof(extraProps) / sizeof(fontProp))
@@ -123,9 +134,10 @@ FillHeader(pInfo, Vals)
     /* Items we should handle better someday +++ */
     pInfo->defaultCh = 0;
     pInfo->drawDirection = LeftToRight;
-    /* our size is based only on Vals->pixel, so we won't
-       create an anamorphic font (yet) */
-    pInfo->anamorphic = 0;
+    if (Vals->point_matrix[0] == Vals->point_matrix[3])
+	pInfo->anamorphic = 0;
+    else
+	pInfo->anamorphic = 1;
     pInfo->inkMetrics = 0;  /* no ink metrics here */
     pInfo->cachable = 1;    /* no licensing (yet) */
 }
@@ -147,6 +159,13 @@ adjust_min_max(minc, maxc, tmp)
     MINMAX(leftSideBearing, tmp);
     MINMAX(rightSideBearing, tmp);
     MINMAX(characterWidth, tmp);
+
+    /* Do MINMAX for attributes field.  Since that field is CARD16,
+       we'll cast to a signed integer */
+    if ((INT16)minc->attributes > (INT16)tmp->attributes)
+         minc->attributes = tmp->attributes;
+    if ((INT16)maxc->attributes < (INT16)tmp->attributes)
+        maxc->attributes = tmp->attributes;
  
 #undef  MINMAX
 }
@@ -167,21 +186,22 @@ ComputeBounds(pInfo, pChars, Vals)
  
     minchar.ascent = minchar.descent =
         minchar.leftSideBearing = minchar.rightSideBearing =
-        minchar.characterWidth = 32767;
-    minchar.attributes = 0;  /* What's this for? +++ */
+        minchar.characterWidth = minchar.attributes = 32767;
     maxchar.ascent = maxchar.descent =
         maxchar.leftSideBearing = maxchar.rightSideBearing =
-        maxchar.characterWidth = -32767;
-    maxchar.attributes = 0;
+        maxchar.characterWidth = maxchar.attributes = -32767;
  
     maxlap = -32767;
     totchars = pInfo->lastCol - pInfo->firstCol + 1;
+    pChars += pInfo->firstCol - FIRSTCOL;
     pInfo->allExist = 1;
     for (i = 0; i < totchars; i++,pChars++) {
         xCharInfo *pmetrics = &pChars->metrics;
  
-        if (pmetrics->characterWidth) {
-            width += pmetrics->characterWidth;
+        if (pmetrics->attributes ||
+	    pmetrics->ascent != -pmetrics->descent ||
+	    pmetrics->leftSideBearing != pmetrics->rightSideBearing) {
+            width += abs(pmetrics->characterWidth);
             numchars++;
             adjust_min_max(&minchar, &maxchar, pmetrics);
             overlap = pmetrics->rightSideBearing - pmetrics->characterWidth;
@@ -190,7 +210,10 @@ ComputeBounds(pInfo, pChars, Vals)
         else pInfo->allExist = 0;
     }
  
-    Vals->width = ((width * 10)+((numchars+1)/2)) / numchars;
+    if (numchars == 0)
+	Vals->width = 0;
+    else
+	Vals->width = ((width * 10)+((numchars+1)/2)) / numchars;
     /* (We think the above average width value should be put into
         the Vals structure.  This may be wrong, and the proper
         behavior might be to regard the values in Vals as sacred,
@@ -215,10 +238,12 @@ ComputeBounds(pInfo, pChars, Vals)
 }
  
 static void
-ComputeProps(pInfo, Vals, Filename)
+ComputeProps(pInfo, Vals, Filename, sAscent, sDescent)
     FontInfoPtr         pInfo;
     FontScalablePtr     Vals;
     char                *Filename;
+    long		*sAscent;
+    long		*sDescent;
 {
     int infoint;
     int infoBBox[4];
@@ -230,17 +255,26 @@ ComputeProps(pInfo, Vals, Filename)
     }
     QueryFontLib((char *)0, "FontBBox", infoBBox, &rc);
     if (!rc) {
-        pInfo->fontAscent = (infoBBox[3] * Vals->pixel) / 1000;
-        pInfo->fontDescent = - (infoBBox[1] * Vals->pixel) / 1000;
+	pInfo->fontAscent =
+	    (int)((double)infoBBox[3] * Vals->pixel_matrix[3] +
+		  (infoBBox[3] > 0 ? 500 : -500)) / 1000;
+	pInfo->fontDescent =
+	    -(int)((double)infoBBox[1] * Vals->pixel_matrix[3] +
+		   (infoBBox[1] > 0 ? 500 : -500)) / 1000;
+	*sAscent = infoBBox[3];
+	*sDescent = -infoBBox[1];
     }
 }
  
 static void
-ComputeStdProps(pInfo, Vals, Filename, Fontname)
+ComputeStdProps(pInfo, Vals, Filename, Fontname, sAscent, sDescent, sWidth)
     FontInfoPtr         pInfo;
     FontScalablePtr     Vals;
     char                *Filename;
     char                *Fontname;
+    long		sAscent;
+    long		sDescent;
+    long		sWidth;
 {
     FontPropPtr pp;
     int         i,
@@ -249,6 +283,7 @@ ComputeStdProps(pInfo, Vals, Filename, Fontname)
     char       *is_str;
     char       *ptr1,
                *ptr2;
+    char       *ptr3;
     char *infostrP;
     long rc;
     char      scaledName[MAXFONTNAMELEN];
@@ -275,26 +310,33 @@ ComputeStdProps(pInfo, Vals, Filename, Fontname)
     for (i = NNAMEPROPS, pp = pInfo->props, fpt = fontNamePropTable, is_str = pInfo->isStringProp;
             i;
             i--, pp++, fpt++, is_str++) {
-        ptr1 = ptr2 + 1;
-        if (*ptr1 == '-')
-            ptr2 = ptr1;
-        else {
-            if (i > 1)
-                ptr2 = index(ptr1 + 1, '-');
-            else
-                ptr2 = index(ptr1 + 1, '\0');
-        }
+
+	if (*ptr2)
+	{
+	    ptr1 = ptr2 + 1;
+	    if (!(ptr2 = index(ptr1, '-'))) ptr2 = index(ptr1, '\0');
+	}
+
         pp->name = fpt->atom;
         switch (fpt->type) {
          case atom:  /* Just copy info from scaledName */
             *is_str = TRUE;
             pp->value = MakeAtom(ptr1, ptr2 - ptr1, TRUE);
             break;
+	case truncate_atom:
+            *is_str = TRUE;
+	    for (ptr3 = ptr1; *ptr3; ptr3++)
+		if (*ptr3 == '=' || *ptr3 == '-' ||
+		    *ptr3 == '+' || *ptr3 == '~')
+		    break;
+	    pp->value = MakeAtom(ptr1, ptr3 - ptr1, TRUE);
+	    break;
          case pixel_size:
-            pp->value = Vals->pixel;
+            pp->value = Vals->pixel_matrix[3];
             break;
          case point_size:
-            pp->value = Vals->point;
+            pp->value = Vals->point_matrix[3] * 10.0 +
+			(Vals->point_matrix[3] > 0 ? .5 : -.5);
             break;
          case resolution_x:
             pp->value = Vals->x;
@@ -314,7 +356,6 @@ ComputeStdProps(pInfo, Vals, Filename, Fontname)
         pp->name = fpt->atom;
         switch (i) {
          case FONTPROP:
-            /* Why do we need this property -- nice for debug anyway */
             *is_str = TRUE;
             pp->value = MakeAtom(scaledName, strlen(scaledName), TRUE);
             break;
@@ -326,6 +367,26 @@ ComputeStdProps(pInfo, Vals, Filename, Fontname)
             }
             pp->value = MakeAtom(infostrP, strlen(infostrP), TRUE);
             break;
+         case RAWPIXELPROP:
+            *is_str = FALSE;
+            pp->value = 1000;
+	    break;
+         case RAWPOINTPROP:
+            *is_str = FALSE;
+            pp->value = (long)(72270.0 / (double)Vals->y + .5);
+	    break;
+         case RAWASCENTPROP:
+            *is_str = FALSE;
+            pp->value = sAscent;
+	    break;
+         case RAWDESCENTPROP:
+            *is_str = FALSE;
+            pp->value = sDescent;
+	    break;
+         case RAWWIDTHPROP:
+            *is_str = FALSE;
+            pp->value = sWidth;
+	    break;
         }
     }
 }
@@ -360,21 +421,23 @@ Type1GetInfoScalable(fpe, pInfo, entry, fontName, fileName, Vals)
 }
  
 void
-T1FillFontInfo(pFont, Vals, Filename, Fontname)
+T1FillFontInfo(pFont, Vals, Filename, Fontname, sWidth)
     FontPtr             pFont;
     FontScalablePtr     Vals;
     char                *Filename;
     char                *Fontname;
+    long		sWidth;
 {
     FontInfoPtr         pInfo = &pFont->info;
     struct type1font *p = (struct type1font *)pFont->fontPrivate;
+    long sAscent, sDescent;	/* Scalable 1000-pixel values */
  
     FillHeader(pInfo, Vals);
  
     ComputeBounds(pInfo, p->glyphs, Vals);
  
-    ComputeProps(pInfo, Vals, Filename);
-    ComputeStdProps(pInfo, Vals, Filename, Fontname);
+    ComputeProps(pInfo, Vals, Filename, &sAscent, &sDescent);
+    ComputeStdProps(pInfo, Vals, Filename, Fontname, sAscent, sDescent, sWidth);
 }
  
 /* Called once, at renderer registration time */

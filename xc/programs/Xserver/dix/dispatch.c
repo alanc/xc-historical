@@ -1,4 +1,4 @@
-/* $XConsortium: dispatch.c,v 5.44 93/07/12 09:24:22 dpw Exp $ */
+/* $XConsortium: dispatch.c,v 5.45 93/07/17 09:52:49 dpw Exp $ */
 /************************************************************
 Copyright 1987, 1989 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -1946,93 +1946,42 @@ ProcGetImage(client)
 }
 
 
+
 int
 ProcPolyText(client)
     register ClientPtr client;
 {
-    int		xorg;
+    int	err;
     REQUEST(xPolyTextReq);
-    register DrawablePtr pDraw;
-    register GC *pGC;
-    register FontPtr pFont;
-
-    int (* polyText)();
-    register unsigned char *pElt;
-    unsigned char *pNextElt;
-    unsigned char *endReq;
-    int		itemSize;
-    
-#define TextEltHeader 2
-#define FontShiftSize 5
+    DrawablePtr pDraw;
+    GC *pGC;
 
     REQUEST_AT_LEAST_SIZE(xPolyTextReq);
     VALIDATE_DRAWABLE_AND_GC(stuff->drawable, pDraw, pGC, client);
 
-    pElt = (unsigned char *)&stuff[1];
-    endReq = ((unsigned char *) stuff) + (client->req_len <<2);
-    xorg = stuff->x;
-    if (stuff->reqType == X_PolyText8)
+    err = PolyText(client,
+		   pDraw,
+		   pGC,
+		   (unsigned char *)&stuff[1],
+		   ((unsigned char *) stuff) + (client->req_len << 2),
+		   stuff->x,
+		   stuff->y,
+		   stuff->reqType,
+		   stuff->drawable);
+
+    if (err == Success)
     {
-	polyText = pGC->ops->PolyText8;
-	itemSize = 1;
+	return(client->noClientException);
     }
     else
-    {
-	polyText =  pGC->ops->PolyText16;
-	itemSize = 2;
-    }
-
-    while (endReq - pElt > TextEltHeader)
-    {
-	if (*pElt == FontChange)
-        {
-	    Font	fid;
-
-	    if (endReq - pElt < FontShiftSize)
-		 return (BadLength);
-	    fid =  ((Font)*(pElt+4))		/* big-endian */
-		 | ((Font)*(pElt+3)) << 8
-		 | ((Font)*(pElt+2)) << 16
-		 | ((Font)*(pElt+1)) << 24;
-	    pFont = (FontPtr)LookupIDByType(fid, RT_FONT);
-	    if (!pFont)
-	    {
-		client->errorValue = fid;
-		return (BadFont);
-	    }
-	    if (pFont != pGC->font)
-	    {
-		DoChangeGC( pGC, GCFont, &fid, 0);
-		ValidateGC(pDraw, pGC);
-		if (stuff->reqType == X_PolyText8)
-		    polyText = pGC->ops->PolyText8;
-		else
-		    polyText = pGC->ops->PolyText16;
-	    }
-	    pElt += FontShiftSize;
-	}
-	else	/* print a string */
-	{
-	    pNextElt = pElt + TextEltHeader + (*pElt)*itemSize;
-	    if ( pNextElt > endReq)
-		return( BadLength);
-	    xorg += *((INT8 *)(pElt + 1));	/* must be signed */
-	    (void) LoadGlyphs(client, pGC->font, *pElt, itemSize,
-		pElt + TextEltHeader);
-	    xorg = (* polyText)(pDraw, pGC, xorg, stuff->y, *pElt,
-		pElt + TextEltHeader);
-	    pElt = pNextElt;
-	}
-    }
-    return (client->noClientException);
-#undef TextEltHeader
-#undef FontShiftSize
+	return err;
 }
 
 int
 ProcImageText8(client)
     register ClientPtr client;
 {
+    int	err;
     register DrawablePtr pDraw;
     register GC *pGC;
 
@@ -2041,17 +1990,29 @@ ProcImageText8(client)
     REQUEST_FIXED_SIZE(xImageTextReq, stuff->nChars);
     VALIDATE_DRAWABLE_AND_GC(stuff->drawable, pDraw, pGC, client);
 
-    (void) LoadGlyphs(client, pGC->font, stuff->nChars, 1,
-		      (unsigned char *)&stuff[1]);
-    (*pGC->ops->ImageText8)(pDraw, pGC, stuff->x, stuff->y,
-		       stuff->nChars, (char *)&stuff[1]);
-    return (client->noClientException);
+    err = ImageText(client,
+		    pDraw,
+		    pGC,
+		    stuff->nChars,
+		    (unsigned char *)&stuff[1],
+		    stuff->x,
+		    stuff->y,
+		    stuff->reqType,
+		    stuff->drawable);
+
+    if (err == Success)
+    {
+	return(client->noClientException);
+    }
+    else
+	return err;
 }
 
 int
 ProcImageText16(client)
     register ClientPtr client;
 {
+    int	err;
     register DrawablePtr pDraw;
     register GC *pGC;
 
@@ -2060,11 +2021,22 @@ ProcImageText16(client)
     REQUEST_FIXED_SIZE(xImageTextReq, stuff->nChars << 1);
     VALIDATE_DRAWABLE_AND_GC(stuff->drawable, pDraw, pGC, client);
 
-    (void) LoadGlyphs(client, pGC->font, stuff->nChars, 2,
-		      (unsigned char *)&stuff[1]);
-    (*pGC->ops->ImageText16)(pDraw, pGC, stuff->x, stuff->y,
-			stuff->nChars, (unsigned short *)&stuff[1]);
-    return (client->noClientException);
+    err = ImageText(client,
+		    pDraw,
+		    pGC,
+		    stuff->nChars,
+		    (unsigned char *)&stuff[1],
+		    stuff->x,
+		    stuff->y,
+		    stuff->reqType,
+		    stuff->drawable);
+
+    if (err == Success)
+    {
+	return(client->noClientException);
+    }
+    else
+	return err;
 }
 
 
@@ -3136,28 +3108,37 @@ void
 CloseDownClient(client)
     register ClientPtr client;
 {
+    Bool really_close_down = client->clientGone ||
+			     client->closeDownMode == DestroyAll;
+
     if (!client->clientGone)
     {
 	/* ungrab server if grabbing client dies */
 	if (grabState != GrabNone && grabClient == client)
+	{
 	    UngrabServer();
+	}
 	BITCLEAR(grabWaiters, client->index);
 	DeleteClientFromAnySelections(client);
 	ReleaseActiveGrabs(client);
 	DeleteClientFontStuff(client);
     
-	if (client->closeDownMode == DestroyAll)
+	client->clientGone = TRUE;  /* so events aren't sent to client */
+	CloseDownConnection(client);
+	--nClients;
+    }
+
+    if (really_close_down)
+    {
+	if (ClientIsAsleep(client))
+	    ClientSignal (client);
+	else
 	{
-	    client->clientGone = TRUE;  /* so events aren't sent to client */
-	    CloseDownConnection(client);
 	    FreeClientResources(client);
-	    if (ClientIsAsleep (client))
-		ClientSignal (client);
 	    if (client->index < nextFreeClientID)
 		nextFreeClientID = client->index;
 	    clients[client->index] = NullClient;
-	    if ((client->requestVector != InitialVector) &&
-		(--nClients == 0))
+	    if (client->requestVector != InitialVector && nClients == 0)
 	    {
 		if (terminateAtReset)
 		    dispatchException |= DE_TERMINATE;
@@ -3165,28 +3146,11 @@ CloseDownClient(client)
 		    dispatchException |= DE_RESET;
 	    }
 	    xfree(client);
-	}
-	else
-	{
-	    client->clientGone = TRUE;
-	    CloseDownConnection(client);
-	    --nClients;
-	}
-    }
-    else
-    {
-	/* really kill resources this time */
-        FreeClientResources(client);
-	if (ClientIsAsleep (client))
-	    ClientSignal (client);
-	if (client->index < nextFreeClientID)
-	    nextFreeClientID = client->index;
-	clients[client->index] = NullClient;
-        xfree(client);
-    }
 
-    while (!clients[currentMaxClients-1])
-      currentMaxClients--;
+	    while (!clients[currentMaxClients-1])
+		currentMaxClients--;
+	}
+    }
 }
 
 static void

@@ -1,4 +1,4 @@
-/* $XConsortium: fsio.c,v 1.24 92/08/10 17:50:41 eswu Exp $ */
+/* $XConsortium: fsio.c,v 1.25 92/11/18 21:31:08 gildea Exp $ */
 /*
  * Copyright 1990 Network Computing Devices
  *
@@ -66,7 +66,7 @@ extern int  errno;
 static int  padlength[4] = {0, 3, 2, 1};
 unsigned long _fs_fd_mask[MSKCNT];
 
-static int  _fs_wait_for_readable();
+int  _fs_wait_for_readable();
 
 static int
 _fs_name_to_address(servername, inaddr)
@@ -498,7 +498,7 @@ _fs_data_ready(conn)
     return readable;
 }
 
-static int
+int
 _fs_wait_for_readable(conn)
     FSFpePtr    conn;
 {

@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: utils.c,v 1.120 93/07/12 09:33:57 dpw Exp $ */
+/* $XConsortium: utils.c,v 1.121 93/07/12 18:46:57 rws Exp $ */
 #include "Xos.h"
 #include <stdio.h>
 #include "misc.h"
@@ -213,6 +213,7 @@ void UseMsg()
     ErrorF("-co string             color database file\n");
     ErrorF("-core                  generate core dump on fatal error\n");
     ErrorF("-dpi int               screen resolution in dots per inch\n");
+    ErrorF("-defer [0|8|16]        defer loading of [no|all|16-bit] glyphs\n");
     ErrorF("-f #                   bell base (0-100)\n");
     ErrorF("-fc string             cursor font\n");
     ErrorF("-fn string             default font name\n");
@@ -355,6 +356,11 @@ char	*argv[];
 	    if(++i < argc)
 	        monitorResolution = atoi(argv[i]);
 	    else
+		UseMsg();
+	}
+	else if ( strcmp( argv[i], "-defer") == 0)
+	{
+	    if(++i >= argc || !SetGlyphCachingMode(argv[i]))
 		UseMsg();
 	}
 	else if ( strcmp( argv[i], "-f") == 0)
@@ -536,6 +542,52 @@ char	*argv[];
 	    exit (1);
         }
     }
+}
+
+/* Implement a simple-minded font authorization scheme.  The authorization
+   name is "hp-hostname-1", the contents are simply the host name. */
+int
+set_font_authorizations(authorizations, authlen, client)
+char **authorizations;
+int *authlen;
+pointer client;
+{
+#define AUTHORIZATION_NAME "hp-hostname-1"
+#ifdef TCPCONN
+#include <netdb.h>
+    static char result[1024];
+    static char *p = NULL;
+
+    if (p == NULL)
+    {
+	char hname[1024], *hnameptr;
+	struct hostent *host, *gethostbyname();
+	int len;
+
+	gethostname(hname, 1024);
+	host = gethostbyname(hname);
+	if (host == NULL)
+	    hnameptr = hname;
+	else
+	    hnameptr = host->h_name;
+
+	p = result;
+        *p++ = sizeof(AUTHORIZATION_NAME) >> 8;
+        *p++ = sizeof(AUTHORIZATION_NAME) & 0xff;
+        *p++ = (len = strlen(hnameptr) + 1) >> 8;
+        *p++ = (len & 0xff);
+
+	bcopy(AUTHORIZATION_NAME, p, sizeof(AUTHORIZATION_NAME));
+	p += sizeof(AUTHORIZATION_NAME);
+	bcopy(hnameptr, p, len);
+	p += len;
+    }
+    *authlen = p - result;
+    *authorizations = result;
+    return 1;
+#else /* TCPCONN */
+    return 0;
+#endif /* TCPCONN */
 }
 
 /* XALLOC -- X's internal memory allocator.  Why does it return unsigned

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: pcfread.c,v 1.10 92/05/12 18:07:47 gildea Exp $
+ * $XConsortium: pcfread.c,v 1.11 92/05/29 17:10:17 gildea Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -309,6 +309,7 @@ pcfGetAccel(pFontInfo, file, tables, ntables, type)
     pFontInfo->inkMetrics = pcfGetINT8(file, format);
     pFontInfo->drawDirection = pcfGetINT8(file, format);
     pFontInfo->anamorphic = FALSE;
+    pFontInfo->cachable = TRUE;
      /* natural alignment */ pcfGetINT8(file, format);
     pFontInfo->fontAscent = pcfGetINT32(file, format);
     pFontInfo->fontDescent = pcfGetINT32(file, format);
@@ -562,6 +563,7 @@ pcfReadFont(pFont, file, bit, byte, glyph, scan)
     pFont->get_glyphs = bitmapGetGlyphs;
     pFont->get_metrics = bitmapGetMetrics;
     pFont->unload_font = pcfUnloadFont;
+    pFont->unload_glyphs = NULL;
     pFont->bit = bit;
     pFont->byte = byte;
     pFont->glyph = glyph;

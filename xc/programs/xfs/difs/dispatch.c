@@ -1,4 +1,4 @@
-/* $XConsortium: dispatch.c,v 1.16 92/11/18 21:30:06 gildea Exp $ */
+/* $XConsortium: dispatch.c,v 1.17 93/07/15 17:36:43 gildea Exp $ */
 /*
  * protocol dispatcher
  */
@@ -101,6 +101,10 @@ Dispatch()
 
 	while (!dispatchException && (--nready >= 0)) {
 	    client = currentClient = clients[clientReady[nready]];
+
+	    /* Client can be NULL if CloseDownClient() is called during
+	       this dispatchException loop. */
+	    if (client == (ClientPtr)NULL) continue;
 
 	    isItTimeToYield = FALSE;
 
@@ -238,8 +242,49 @@ ProcEstablishConnection(client)
     }
 
     auth_index = prefix->num_auths;
+    client->auth_generation = 0;
     ret = CheckClientAuthorization(client, client_auth,
 		    &auth_accept, &auth_index, &auth_len, &server_auth_data);
+    if (auth_index > 0)
+    {
+	AuthContextPtr authp;
+	authp = (AuthContextPtr) fsalloc(sizeof(AuthContextRec));
+	if (!authp) {
+	    SendErrToClient(client, FSBadAlloc, (pointer) 0);
+	    return FSBadAlloc;
+	}
+	authp->authname = 0;
+	authp->authdata = 0;
+	authp->authname =
+	    (char *) fsalloc(client_auth[auth_index - 1].namelen + 1);
+	authp->authdata =
+	    (char *) fsalloc(client_auth[auth_index - 1].datalen + 1);
+	if (!authp->authname || !authp->authdata) {
+	    fsfree((char *) authp->authname);
+	    fsfree((char *) authp->authdata);
+	    fsfree((char *) authp);
+	    SendErrToClient(client, FSBadAlloc, (pointer) 0);
+	    return FSBadAlloc;
+	}
+	bcopy(client_auth[auth_index - 1].name, authp->authname,
+	      client_auth[auth_index - 1].namelen);
+	bcopy(client_auth[auth_index - 1].data, authp->authdata,
+	      client_auth[auth_index - 1].datalen);
+	/* Save it with a zero resource id...  subsequent
+	   SetAuthorizations of None will find it.  And it will be freed
+	   by FreeClientResources when the connection closes.  */
+	if (!AddResource(client->index, 0, RT_AUTHCONT,(pointer) authp)) 
+	{
+	    fsfree((char *) authp->authname);
+	    fsfree((char *) authp->authdata);
+	    fsfree((char *) authp);
+	    SendErrToClient(client, FSBadAlloc, (pointer) 0);
+	    return FSBadAlloc;
+	}
+	client->auth = client->default_auth = authp;
+    }
+    else
+	client->auth = client->default_auth = (AuthContextPtr)0;
 
     DEALLOCATE_LOCAL(client_auth);
 
@@ -602,6 +647,8 @@ ProcFreeAC(client)
 	SendErrToClient(client, FSBadIDChoice, (pointer) &aligned_id);
 	return FSBadIDChoice;
     }
+    if (client->auth == authp)
+	client->auth = client->default_auth;
     FreeResource(client->index, stuff->id, RT_NONE);
     return client->noClientException;
 }
@@ -886,38 +933,42 @@ void
 CloseDownClient(client)
     ClientPtr   client;
 {
-    int client_alive = client->clientGone == CLIENT_ALIVE;
-
-    if (client_alive) {
+    if (client->clientGone != CLIENT_GONE) {
+	DeleteClientFontStuff(client);
 	client->clientGone = CLIENT_GONE;
 	CloseDownConnection(client);
+	--nClients;
     }
-    FreeClientResources(client);
+
     if (ClientIsAsleep(client))
 	ClientSignal(client);
-    if (client->index < nextFreeClientID)
-	nextFreeClientID = client->index;
-    clients[client->index] = NullClient;
+    else
+    {
+	FreeClientResources(client);
+	if (client->index < nextFreeClientID)
+	    nextFreeClientID = client->index;
+	clients[client->index] = NullClient;
+#ifdef DebugConnectionTranslation
+	CheckFileNumbers();
+#endif /* DebugConnectionTranslation */
 
-    if (client_alive) {
-	--nClients;
 #ifdef NOTYET
 	/* reset server when last client goes away */
 	if (client->requestVector != InitialVector && nClients == 0)
 	    dispatchException |= DE_RESET;
 #endif
-    } 
-    if (currentClient == client)
-	currentClient = serverClient;
-    fsfree(client->resolutions);
-    fsfree(client);
+
+	if (currentClient == client)
+	    currentClient = serverClient;
+	fsfree(client);
 
 #ifdef DEBUG
-    fprintf(stderr, "Shut down client\n");
+	fprintf(stderr, "Shut down client\n");
 #endif
 
-    while (!clients[currentMaxClients - 1])
-	currentMaxClients--;
+	while (!clients[currentMaxClients - 1])
+	    currentMaxClients--;
+    }
 }
 
 static void

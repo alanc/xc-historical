@@ -1,4 +1,4 @@
-/* $XConsortium: fserve.h,v 1.5 91/06/20 15:52:27 keith Exp $ */
+/* $XConsortium: fserve.h,v 1.6 91/06/21 18:15:47 keith Exp $ */
 /*
  * Copyright 1990 Network Computing Devices
  *
@@ -36,9 +36,6 @@
 #define	FS_LOAD_GLYPHS		2
 #define	FS_LIST_FONTS		3
 #define	FS_LIST_WITH_INFO	4
-
-#define	FS_LOAD_BITMAPS		5
-#define	FS_LOAD_EXTENTS		6
 
 /* states of OpenFont */
 #define	FS_OPEN_REPLY		0

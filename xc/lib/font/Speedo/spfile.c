@@ -1,4 +1,4 @@
-/* $XConsortium: spfile.c,v 1.6 92/04/09 18:13:03 gildea Exp $ */
+/* $XConsortium: spfile.c,v 1.7 92/09/17 11:57:01 gildea Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -295,4 +295,5 @@ sp_reset_master(spmf)
 	/* XXX -- what to do if we can't open the file? */
 	spmf->state |= MasterFileOpen;
     }
+    fseek(spmf->fp, 0, 0);
 }

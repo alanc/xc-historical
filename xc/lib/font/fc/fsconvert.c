@@ -1,4 +1,4 @@
-/* $XConsortium: fsconvert.c,v 1.12 92/10/08 17:20:02 gildea Exp $ */
+/* $XConsortium: fsconvert.c,v 1.13 92/11/18 21:31:01 gildea Exp $ */
 /*
  * Copyright 1990 Network Computing Devices
  *
@@ -32,6 +32,10 @@
 #include	"fontmisc.h"
 #include	"fontstruct.h"
 #include	"fservestr.h"
+
+extern char glyph_undefined;
+extern char glyph_requested;
+extern char glyph_zero_length;
 
 extern int _fs_load_glyphs();
 
@@ -156,27 +160,242 @@ _fs_convert_lfwi_reply(conn, pfi, fsrep, pi, po, pd)
     return Successful;
 }
 
+
+#define ENCODING_UNDEFINED(enc) \
+	((enc)->bits == &glyph_undefined ? \
+	 TRUE : \
+	 (access_done = access_done && (enc)->bits != &glyph_requested, \
+	  FALSE))
+
+#define GLYPH_UNDEFINED(loc) ENCODING_UNDEFINED(encoding + (loc))
+
 /*
  * figures out what glyphs to request
- * this is where lots of extra
- * smarts wants to live
+ *
+ * Includes logic to attempt to reduce number of round trips to the font
+ * server:  when a glyph is requested, fs_build_range() requests a
+ * 16-glyph range of glyphs that contains the requested glyph.  This is
+ * predicated on the belief that using a glyph increases the chances
+ * that nearby glyphs will be used: a good assumption for phonetic
+ * alphabets, but a questionable one for ideographic/pictographic ones.
  */
 /* ARGSUSED */
 int
-_fs_build_range(pfont, count, item_size, range, data)
+fs_build_range(pfont, range_flag, count, item_size, data, nranges, ranges)
     FontPtr     pfont;
-    unsigned int count;
+    Bool	range_flag;
+    register unsigned int count;
     int         item_size;
-    fsRange    *range;
-    unsigned char *data;
+    register unsigned char *data;
+    int	       *nranges;
+    fsRange   **ranges;
 {
     FSFontDataPtr fsd = (FSFontDataPtr) (pfont->fpePrivate);
+    FSFontPtr fsfont = (FSFontPtr) (pfont->fontPrivate);
+    register CharInfoPtr encoding = fsfont->encoding;
+    FontInfoPtr pfi = &(pfont->info);
+    fsRange	range;
+    int		access_done = TRUE;
+    int		err;
+    register unsigned long firstrow, lastrow, firstcol, lastcol;
+    register unsigned long row;
+    register unsigned long col;
+    register unsigned long loc;
 
-    if (fsd->complete)
+    if (!fsd->glyphs_to_get)
 	return AccessDone;
+
+    firstrow = pfi->firstRow;
+    lastrow = pfi->lastRow;
+    firstcol = pfi->firstCol;
+    lastcol = pfi->lastCol;
+
+    /* Make sure we have default char */
+    if (fsfont->pDefault && ENCODING_UNDEFINED(fsfont->pDefault))
+    {
+	loc = fsfont->pDefault - encoding;
+	row = loc / (lastcol - firstcol + 1) + firstrow;
+	col = loc % (lastcol - firstcol + 1) + firstcol;
+
+	range.min_char_low = range.max_char_low = col;
+	range.min_char_high = range.max_char_high = row;
+
+	if ((err = add_range(&range, nranges, ranges, FALSE)) !=
+	    Successful) return err;
+	encoding[loc].bits = &glyph_requested;
+	access_done = FALSE;
+    }
+
+    if (!range_flag && item_size == 1)
+    {
+	if (firstrow != 0) return AccessDone;
+	while (count--)
+	{
+	    col = *data++;
+	    if (col >= firstcol && col <= lastcol &&
+		GLYPH_UNDEFINED(col - firstcol))
+	    {
+		int col1, col2;
+		col1 = col & 0xf0;
+		col2 = col1 + 15;
+		if (col1 < firstcol) col1 = firstcol;
+		if (col2 > lastcol) col2 = lastcol;
+		/* Collect a 16-glyph neighborhood containing the requested
+		   glyph... should in most cases reduce the number of round
+		   trips to the font server. */
+		for (col = col1; col <= col2; col++)
+		{
+		    if (!GLYPH_UNDEFINED(col - firstcol)) continue;
+		    range.min_char_low = range.max_char_low = col;
+		    range.min_char_high = range.max_char_high = 0;
+		    if ((err = add_range(&range, nranges, ranges, FALSE)) !=
+		        Successful) return err;
+		    encoding[col - firstcol].bits = &glyph_requested;
+		    access_done = FALSE;
+		}
+	    }
+	}
+    }
     else
-	return Successful;
+    {
+	fsRange fullrange[1];
+
+	if (range_flag && count == 0)
+	{
+	    count = 2;
+	    data = (unsigned char *)fullrange;
+	    fullrange[0].min_char_high = firstrow;
+	    fullrange[0].min_char_low = firstcol;
+	    fullrange[0].max_char_high = lastrow;
+	    fullrange[0].max_char_low = lastcol;
+	}
+
+	while (count--)
+	{
+	    int row1, col1, row2, col2;
+	    row1 = row2 = *data++;
+	    col1 = col2 = *data++;
+	    if (range_flag)
+	    {
+		if (count)
+		{
+		    row2 = *data++;
+		    col2 = *data++;
+		    count--;
+		}
+		else
+		{
+		    row2 = lastrow;
+		    col2 = lastcol;
+		}
+		if (row1 < firstrow) row1 = firstrow;
+		if (row2 > lastrow) row2 = lastrow;
+		if (col1 < firstcol) col1 = firstcol;
+		if (col2 > lastcol) col2 = lastcol;
+	    }
+	    else
+	    {
+		if (row1 < firstrow || row1 > lastrow ||
+		    col1 < firstcol || col1 > lastcol)
+		    continue;
+	    }
+	    for (row = row1; row <= row2; row++)
+	    {
+	    expand_glyph_range: ;
+		loc = (row - firstrow) * (lastcol + 1 - firstcol) +
+		      (col1 - firstcol);
+		for (col = col1; col <= col2; col++, loc++)
+		{
+		    if (GLYPH_UNDEFINED(loc))
+		    {
+			if (row1 == row2 &&
+			    ((col1 & 0xf) && col1 > firstcol ||
+			     (col2 & 0xf) != 0xf) && col2 < lastcol)
+			{
+			    /* If we're loading from a single row, expand
+			       range of glyphs loaded to a multiple of
+			       a 16-glyph range -- attempt to reduce number
+			       of round trips to the font server. */
+			    col1 &= 0xf0;
+			    col2 = (col2 & 0xf0) + 15;
+			    if (col1 < firstcol) col1 = firstcol;
+			    if (col2 > lastcol) col2 = lastcol;
+			    goto expand_glyph_range;
+			}
+			range.min_char_low = range.max_char_low = col;
+			range.min_char_high = range.max_char_high = row;
+			if ((err = add_range(&range, nranges, ranges, FALSE)) !=
+			    Successful) return err;
+			encoding[loc].bits = &glyph_requested;
+			access_done = FALSE;
+		    }
+		}
+	    }
+	}
+    }
+
+    return access_done ?
+	   AccessDone :
+	   Successful;
 }
+
+#undef GLYPH_UNDEFINED
+#undef ENCODING_UNDEFINED
+
+
+/* clean_aborted_loadglyphs(): Undoes the changes to the encoding array
+   performed by fs_build_range(); for use if the associated LoadGlyphs
+   requests needs to be cancelled. */
+
+clean_aborted_loadglyphs(pfont, num_expected_ranges, expected_ranges)
+    FontPtr pfont;
+    int num_expected_ranges;
+    fsRange *expected_ranges;
+{
+    register FSFontPtr fsfont;
+    register FSFontDataRec *fsd;
+    register int i;
+
+    fsfont = (FSFontPtr) pfont->fontPrivate;
+    fsd = (FSFontDataRec *) pfont->fpePrivate;
+    if (fsfont->encoding)
+    {
+	fsRange full_range[1];
+	if (!num_expected_ranges)
+	{
+	    full_range[0].min_char_low = pfont->info.firstCol;
+	    full_range[0].min_char_high = pfont->info.firstRow;
+	    full_range[0].max_char_low = pfont->info.lastCol;
+	    full_range[0].max_char_high = pfont->info.lastRow;
+	    num_expected_ranges = 1;
+	    expected_ranges = full_range;
+	}
+
+	for (i = 0; i < num_expected_ranges; i++)
+	{
+	    int row, col;
+	    for (row = expected_ranges[i].min_char_high;
+		 row <= expected_ranges[i].max_char_high;
+		 row++)
+	    {
+		register CharInfoPtr encoding = fsfont->encoding +
+		    ((row - pfont->info.firstRow) *
+		     (pfont->info.lastCol -
+		      pfont->info.firstCol + 1) +
+		     expected_ranges[i].min_char_low -
+		     pfont->info.firstCol);
+		for (col = expected_ranges[i].min_char_low;
+		     col <= expected_ranges[i].max_char_low;
+		     encoding++, col++)
+		{
+		    if (encoding->bits == &glyph_requested)
+			encoding->bits = &glyph_undefined;
+		}
+	    }
+	}
+    }
+}
+
 
 /*
  * figures out what extents to request
@@ -241,10 +460,131 @@ _fs_get_glyphs(pFont, count, chars, charEncoding, glyphCount, glyphs)
     CharInfoPtr pDefault;
     FSFontDataPtr fsd = (FSFontDataPtr) pFont->fpePrivate;
     int         itemSize;
-    int         err = Success;
+    int         err = Successful;
 
     fsdata = (FSFontPtr) pFont->fontPrivate;
     encoding = fsdata->encoding;
+    pDefault = fsdata->pDefault;
+    firstCol = pFont->info.firstCol;
+    numCols = pFont->info.lastCol - firstCol + 1;
+    glyphsBase = glyphs;
+
+
+    if (charEncoding == Linear8Bit || charEncoding == TwoD8Bit)
+	itemSize = 1;
+    else
+	itemSize = 2;
+
+    /* In this age of glyph caching, any glyphs gotten through this
+       procedure should already be loaded.  If they are not, we are
+       dealing with someone (perhaps a ddx driver optimizing a font)
+       that doesn't understand the finer points of glyph caching.  The
+       CHECK_ENCODING macro checks for this condition...  if found, it
+       calls fs_load_all_glyphs(), which corrects it.  Since the caller
+       of this code will not know how to handle a return value of
+       Suspended, the fs_load_all_glyphs() procedure will block and
+       freeze the server until the load operation is done.  Moral: the
+       glyphCachingMode flag really must indicate the capabilities of
+       the ddx drivers.  */
+
+#define CHECK_ENCODING(cnum) \
+    ( pci = encoding + (cnum), \
+      fsd->glyphs_to_get ? \
+      ( pci->bits == &glyph_undefined || pci->bits == &glyph_requested ? \
+	((err = fs_load_all_glyphs(pFont)), pci) : \
+	pci ) : \
+      pci )
+
+    switch (charEncoding) {
+
+    case Linear8Bit:
+    case TwoD8Bit:
+	if (pFont->info.firstRow > 0)
+	    break;
+	if (pFont->info.allExist && pDefault) {
+	    while (err == Successful && count--) {
+		c = (*chars++) - firstCol;
+		if (c < numCols)
+		    *glyphs++ = CHECK_ENCODING(c);
+		else
+		    *glyphs++ = pDefault;
+	    }
+	} else {
+	    while (err == Successful && count--) {
+		c = (*chars++) - firstCol;
+		if (c < numCols && CHECK_ENCODING(c)->bits)
+		    *glyphs++ = pci;
+		else if (pDefault)
+		    *glyphs++ = pDefault;
+	    }
+	}
+	break;
+    case Linear16Bit:
+	if (pFont->info.allExist && pDefault) {
+	    while (err == Successful && count--) {
+		c = *chars++ << 8;
+		c = (c | *chars++) - firstCol;
+		if (c < numCols)
+		    *glyphs++ = CHECK_ENCODING(c);
+		else
+		    *glyphs++ = pDefault;
+	    }
+	} else {
+	    while (err == Successful && count--) {
+		c = *chars++ << 8;
+		c = (c | *chars++) - firstCol;
+		if (c < numCols && CHECK_ENCODING(c)->bits)
+		    *glyphs++ = pci;
+		else if (pDefault)
+		    *glyphs++ = pDefault;
+	    }
+	}
+	break;
+
+    case TwoD16Bit:
+	firstRow = pFont->info.firstRow;
+	numRows = pFont->info.lastRow - firstRow + 1;
+	while (err == Successful && count--) {
+	    r = (*chars++) - firstRow;
+	    c = (*chars++) - firstCol;
+	    if (r < numRows && c < numCols &&
+		    CHECK_ENCODING(r * numCols + c)->bits)
+		*glyphs++ = pci;
+	    else if (pDefault)
+		*glyphs++ = pDefault;
+	}
+	break;
+    }
+    *glyphCount = glyphs - glyphsBase;
+    return err;
+}
+
+
+static int
+_fs_get_metrics(pFont, count, chars, charEncoding, glyphCount, glyphs)
+    FontPtr     pFont;
+    unsigned long count;
+    register unsigned char *chars;
+    FontEncoding charEncoding;
+    unsigned long *glyphCount;	/* RETURN */
+    xCharInfo **glyphs;		/* RETURN */
+{
+    FSFontPtr   fsdata;
+    unsigned int firstCol;
+    register unsigned int numCols;
+    unsigned int firstRow;
+    unsigned int numRows;
+    xCharInfo **glyphsBase;
+    register unsigned int c;
+    unsigned int r;
+    CharInfoPtr encoding;
+    CharInfoPtr pDefault;
+    FSFontDataPtr fsd = (FSFontDataPtr) pFont->fpePrivate;
+    int         itemSize;
+    int         err = Successful;
+
+    fsdata = (FSFontPtr) pFont->fontPrivate;
+    encoding = fsdata->inkMetrics;
     pDefault = fsdata->pDefault;
     firstCol = pFont->info.firstCol;
     numCols = pFont->info.lastCol - firstCol + 1;
@@ -257,10 +597,6 @@ _fs_get_glyphs(pFont, count, chars, charEncoding, glyphCount, glyphs)
 	itemSize = 1;
     else
 	itemSize = 2;
-    if (!fsd->complete)
-	err = _fs_load_glyphs((pointer) 0, pFont, count, itemSize, chars);
-    if (err != Success)
-	return err;
 
     switch (charEncoding) {
 
@@ -272,17 +608,17 @@ _fs_get_glyphs(pFont, count, chars, charEncoding, glyphCount, glyphs)
 	    while (count--) {
 		c = (*chars++) - firstCol;
 		if (c < numCols)
-		    *glyphs++ = &encoding[c];
+		    *glyphs++ = (xCharInfo *)&encoding[c];
 		else
-		    *glyphs++ = pDefault;
+		    *glyphs++ = (xCharInfo *)pDefault;
 	    }
 	} else {
 	    while (count--) {
 		c = (*chars++) - firstCol;
-		if (c < numCols && (pci = &encoding[c])->bits)
-		    *glyphs++ = pci;
+		if (c < numCols)
+		    *glyphs++ = (xCharInfo *)(encoding + c);
 		else if (pDefault)
-		    *glyphs++ = pDefault;
+		    *glyphs++ = (xCharInfo *)pDefault;
 	    }
 	}
 	break;
@@ -292,18 +628,18 @@ _fs_get_glyphs(pFont, count, chars, charEncoding, glyphCount, glyphs)
 		c = *chars++ << 8;
 		c = (c | *chars++) - firstCol;
 		if (c < numCols)
-		    *glyphs++ = &encoding[c];
+		    *glyphs++ = (xCharInfo *)(encoding + c);
 		else
-		    *glyphs++ = pDefault;
+		    *glyphs++ = (xCharInfo *)pDefault;
 	    }
 	} else {
 	    while (count--) {
 		c = *chars++ << 8;
 		c = (c | *chars++) - firstCol;
-		if (c < numCols && (pci = &encoding[c])->bits)
-		    *glyphs++ = pci;
+		if (c < numCols)
+		    *glyphs++ = (xCharInfo *)(encoding + c);
 		else if (pDefault)
-		    *glyphs++ = pDefault;
+		    *glyphs++ = (xCharInfo *)pDefault;
 	    }
 	}
 	break;
@@ -314,11 +650,10 @@ _fs_get_glyphs(pFont, count, chars, charEncoding, glyphCount, glyphs)
 	while (count--) {
 	    r = (*chars++) - firstRow;
 	    c = (*chars++) - firstCol;
-	    if (r < numRows && c < numCols &&
-		    (pci = &encoding[r * numCols + c])->bits)
-		*glyphs++ = pci;
+	    if (r < numRows && c < numCols)
+		*glyphs++ = (xCharInfo *)(encoding + (r * numCols + c));
 	    else if (pDefault)
-		*glyphs++ = pDefault;
+		*glyphs++ = (xCharInfo *)pDefault;
 	}
 	break;
     }
@@ -326,37 +661,6 @@ _fs_get_glyphs(pFont, count, chars, charEncoding, glyphCount, glyphs)
     return Successful;
 }
 
-static CharInfoRec junkDefault;
-
-int
-_fs_get_metrics(pFont, count, chars, charEncoding, glyphCount, glyphs)
-    FontPtr     pFont;
-    unsigned long count;
-    register unsigned char *chars;
-    FontEncoding charEncoding;
-    unsigned long *glyphCount;	/* RETURN */
-    xCharInfo **glyphs;		/* RETURN */
-{
-    int         ret;
-    FSFontPtr   fsfont;
-    CharInfoPtr encoding;
-    CharInfoPtr oldDefault;
-    
-    fsfont = (FSFontPtr) pFont->fontPrivate;
-
-    oldDefault = fsfont->pDefault;
-    fsfont->pDefault = &junkDefault;
-
-    /* sleeze - smash the encoding so we get ink metrics */
-    encoding = fsfont->encoding;
-    fsfont->encoding = fsfont->inkMetrics;
-    ret = _fs_get_glyphs(pFont, count, chars, charEncoding,
-			 glyphCount, (CharInfoPtr *) glyphs);
-    fsfont->encoding = encoding;
-
-    fsfont->pDefault = oldDefault;
-    return ret;
-}
 
 void
 _fs_unload_font(pfont)
@@ -364,8 +668,24 @@ _fs_unload_font(pfont)
 {
     FSFontPtr   fsdata = (FSFontPtr) pfont->fontPrivate;
 
+    if (fsdata->encoding)
+    {
+	register int i;
+	register CharInfoPtr encoding = fsdata->encoding;
+	FontInfoPtr pfi = &pfont->info;
+	for (i = (pfi->lastCol - pfi->firstCol + 1) *
+	         (pfi->lastRow - pfi->firstRow + 1);
+	     i > 0;
+	     encoding++, i--)
+	{
+	    if (encoding->bits &&
+		encoding->bits != &glyph_undefined &&
+		encoding->bits != &glyph_requested &&
+		encoding->bits != &glyph_zero_length)
+		xfree(encoding->bits);
+	}
+    }
     xfree(fsdata->encoding);
-    xfree(fsdata->bitmaps);
     xfree(fsdata);
 
     pfont->fontPrivate = 0;
@@ -379,4 +699,5 @@ _fs_init_font(pfont)
     pfont->get_glyphs = _fs_get_glyphs;
     pfont->get_metrics = _fs_get_metrics;
     pfont->unload_font = _fs_unload_font;
+    pfont->unload_glyphs = (void *)0;
 }

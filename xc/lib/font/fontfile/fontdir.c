@@ -1,5 +1,5 @@
 /*
- * $XConsortium: fontdir.c,v 1.10 92/11/20 15:30:49 gildea Exp $
+ * $XConsortium: fontdir.c,v 1.11 92/11/22 11:31:23 gildea Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -49,6 +49,7 @@ FontFileFreeEntry (entry)
     FontEntryPtr    entry;
 {
     FontScalableExtraPtr   extra;
+    int i;
 
     if (entry->name.name)
 	xfree(entry->name.name);
@@ -58,6 +59,9 @@ FontFileFreeEntry (entry)
     case FONT_ENTRY_SCALABLE:
 	xfree (entry->u.scalable.fileName);
 	extra = entry->u.scalable.extra;
+	for (i = 0; i < extra->numScaled; i++)
+	    if (extra->scaled[i].vals.ranges)
+		free (extra->scaled[i].vals.ranges);
 	xfree (extra->scaled);
 	xfree (extra);
 	break;
@@ -352,8 +356,22 @@ FontFileSaveString (s)
 
 FontEntryPtr
 FontFileFindNameInDir(table, pat)
+{
+    return FontFileFindNameInScalableDir(table, pat, (FontScalablePtr)0);
+}
+
+int
+FontFileFindNamesInDir(table, pat, max, names)
+{
+    return FontFileFindNamesInScalableDir(table, pat, max, names,
+					  (FontScalablePtr)0);
+}
+
+FontEntryPtr
+FontFileFindNameInScalableDir(table, pat, vals)
     FontTablePtr    table;
     FontNamePtr	    pat;
+    FontScalablePtr	vals;
 {
     int         i,
                 start,
@@ -368,7 +386,28 @@ FontFileFindNameInDir(table, pat)
 	name = &table->entries[i].name;
 	res = PatternMatch(pat->name, private, name->name, name->ndashes);
 	if (res > 0)
+	{
+	    /* Check to see if enhancements requested are available */
+	    if (vals)
+	    {
+		int vs = vals->values_supplied;
+		int cap;
+
+		if (table->entries[i].type == FONT_ENTRY_SCALABLE)
+		    cap = table->entries[i].u.scalable.renderer->capabilities;
+		else
+		    cap = 0;
+		if (((vs & PIXELSIZE_MASK) == PIXELSIZE_ARRAY ||
+		     (vs & POINTSIZE_MASK) == POINTSIZE_ARRAY) &&
+		    !(cap & CAP_MATRIX) ||
+		    (vs & EMBOLDENING_SPECIFIED) &&
+		    !(cap & CAP_EMBOLDENING) ||
+		    (vs & CHARSUBSET_SPECIFIED) &&
+		    !(cap & CAP_CHARSUBSETTING))
+		    continue;
+	    }
 	    return &table->entries[i];
+	}
 	if (res < 0)
 	    break;
     }
@@ -376,11 +415,12 @@ FontFileFindNameInDir(table, pat)
 }
 
 int
-FontFileFindNamesInDir(table, pat, max, names)
+FontFileFindNamesInScalableDir(table, pat, max, names, vals)
     FontTablePtr    table;
     FontNamePtr	    pat;
     int		    max;
     FontNamesPtr    names;
+    FontScalablePtr	vals;
 {
     int		    i,
 		    start,
@@ -401,6 +441,24 @@ FontFileFindNamesInDir(table, pat, max, names)
     for (i = start, fname = &table->entries[start]; i < stop; i++, fname++) {
 	res = PatternMatch(pat->name, private, fname->name.name, fname->name.ndashes);
 	if (res > 0) {
+	    if (vals)
+	    {
+		int vs = vals->values_supplied;
+		int cap;
+
+		if (fname->type == FONT_ENTRY_SCALABLE)
+		    cap = fname->u.scalable.renderer->capabilities;
+		else
+		    cap = 0;
+		if (((vs & PIXELSIZE_MASK) == PIXELSIZE_ARRAY ||
+		     (vs & POINTSIZE_MASK) == POINTSIZE_ARRAY) &&
+		    !(cap & CAP_MATRIX) ||
+		    (vs & EMBOLDENING_SPECIFIED) &&
+		    !(cap & CAP_EMBOLDENING) ||
+		    (vs & CHARSUBSET_SPECIFIED) &&
+		    !(cap & CAP_CHARSUBSETTING))
+		    continue;
+	    }
 	    ret = AddFontNamesName(names, fname->name.name, fname->name.length);
 	    if (ret != Successful)
 		return ret;
@@ -444,12 +502,18 @@ FontFileAddFontFile (dir, fontName, fileName)
     /*
      * Add a bitmap name if the incoming name isn't an XLFD name, or
      * if it isn't a scalable name (i.e. non-zero scalable fields)
+     *
+     * If name of bitmapped font contains XLFD enhancements, do not add
+     * a scalable version of the name... this can lead to confusion and
+     * ambiguity between the font name and the field enhancements.
      */
-    isscale = FALSE;
-    if (entry.name.ndashes != 14 ||
-	!(isscale = FontParseXLFDName (entry.name.name,
-					     &vals, FONT_XLFD_REPLACE_NONE)) ||
-	  vals.pixel != 0)
+    isscale = entry.name.ndashes == 14 &&
+	      FontParseXLFDName(entry.name.name,
+				&vals, FONT_XLFD_REPLACE_NONE) &&
+	      (vals.values_supplied & PIXELSIZE_MASK) != PIXELSIZE_ARRAY &&
+	      (vals.values_supplied & POINTSIZE_MASK) != POINTSIZE_ARRAY &&
+	      !(vals.values_supplied & ENHANCEMENT_SPECIFY_MASK);
+    if (!isscale || (vals.values_supplied & SIZE_SPECIFY_MASK))
     {
       /* If the fontname says it is nonScalable, make sure that the
        * renderer supports OpenBitmap and GetInfoBitmap.
@@ -479,26 +543,31 @@ FontFileAddFontFile (dir, fontName, fileName)
        */
       if (renderer->OpenScalable && renderer->GetInfoScalable)
       {
-	if (vals.pixel != 0)
+	if (vals.values_supplied & SIZE_SPECIFY_MASK)
 	{
-	    zeroVals.pixel = 0;
-	    zeroVals.point = 0;
+	    bzero((char *)&zeroVals, sizeof(zeroVals));
 	    zeroVals.x = vals.x;
 	    zeroVals.y = vals.y;
-	    zeroVals.width = 0;
-	    FontParseXLFDName (entry.name.name, &zeroVals, FONT_XLFD_REPLACE_VALUE);
+	    zeroVals.values_supplied = PIXELSIZE_SCALAR | POINTSIZE_SCALAR;
+	    FontParseXLFDName (entry.name.name, &zeroVals,
+			       FONT_XLFD_REPLACE_VALUE);
 	    entry.name.length = strlen (entry.name.name);
 	    existing = FontFileFindNameInDir (&dir->scalable, &entry.name);
 	    if (existing)
 	    {
-		if (vals.point == GetDefaultPointSize ())
+		if ((vals.values_supplied & POINTSIZE_MASK) ==
+			POINTSIZE_SCALAR &&
+		    (int)(vals.point_matrix[3] * 10) == GetDefaultPointSize())
 		{
 		    existing->u.scalable.extra->defaults = vals;
+
 		    xfree (existing->u.scalable.fileName);
 		    if (!(existing->u.scalable.fileName = FontFileSaveString (fileName)))
 			return FALSE;
 		}
-		FontFileAddScaledInstance (existing, &vals, NullFont, bitmap->name.name);
+		FontFileCompleteXLFD(&vals, &vals);
+		FontFileAddScaledInstance (existing, &vals, NullFont,
+					   bitmap->name.name);
 		return TRUE;
 	    }
 	}
@@ -510,7 +579,9 @@ FontFileAddFontFile (dir, fontName, fileName)
 	    xfree (entry.u.scalable.fileName);
 	    return FALSE;
 	}
-	if (vals.point == GetDefaultPointSize())
+	bzero((char *)&extra->defaults, sizeof(extra->defaults));
+	if ((vals.values_supplied & POINTSIZE_MASK) == POINTSIZE_SCALAR &&
+	    (int)(vals.point_matrix[3] * 10) == GetDefaultPointSize())
 	    extra->defaults = vals;
 	else
 	{
@@ -522,8 +593,13 @@ FontFileAddFontFile (dir, fontName, fileName)
 	    } *resolution, *GetClientResolutions();
 	    int num;
 
-	    extra->defaults.point = GetDefaultPointSize();
-	    extra->defaults.pixel = -1;
+	    extra->defaults.point_matrix[0] =
+		extra->defaults.point_matrix[3] =
+		    (double)GetDefaultPointSize() / 10.0;
+	    extra->defaults.point_matrix[1] =
+		extra->defaults.point_matrix[2] = 0.0;
+	    extra->defaults.values_supplied =
+		POINTSIZE_SCALAR | PIXELSIZE_UNDEFINED;
 	    extra->defaults.width = -1;
 	    if (vals.x <= 0 || vals.y <= 0)
 	    {
@@ -559,8 +635,12 @@ FontFileAddFontFile (dir, fontName, fileName)
 	    xfree (entry.u.scalable.fileName);
 	    return FALSE;
 	}
-	if (vals.pixel != 0)
-	    FontFileAddScaledInstance (scalable, &vals, NullFont, bitmap->name.name);
+	if (vals.values_supplied & SIZE_SPECIFY_MASK)
+	{
+	    FontFileCompleteXLFD(&vals, &vals);
+	    FontFileAddScaledInstance (scalable, &vals, NullFont,
+				       bitmap->name.name);
+	}
       }
     }
     return TRUE;

@@ -1,4 +1,4 @@
-/* $XConsortium: fsio.h,v 1.9 91/07/18 22:40:50 keith Exp $ */
+/* $XConsortium: fsio.h,v 1.10 92/05/12 18:07:38 gildea Exp $ */
 /*
  * Copyright 1990 Network Computing Devices
  *
@@ -40,6 +40,7 @@ typedef struct _fs_client_data {
     pointer		    client;
     struct _fs_client_data  *next;
     XID			    acid;
+    int			    auth_generation;
 } FSClientRec, *FSClientPtr;
 
 #define FS_RECONNECT_WAIT	5

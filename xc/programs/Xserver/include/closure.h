@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: closure.h,v 1.1 91/07/31 21:15:51 keith Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -28,5 +28,7 @@ SOFTWARE.
 typedef struct _LFclosure	*LFclosurePtr;
 typedef struct _LFWIclosure	*LFWIclosurePtr;
 typedef struct _OFclosure	*OFclosurePtr;
+typedef struct _PTclosure	*PTclosurePtr;
+typedef struct _ITclosure	*ITclosurePtr;
 
 #endif /* CLOSURE_H */

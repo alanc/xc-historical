@@ -1,4 +1,4 @@
-/* $XConsortium: spglyph.c,v 1.12 92/05/13 16:03:30 keith Exp $ */
+/* $XConsortium: spglyph.c,v 1.13 92/09/17 11:57:05 gildea Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -137,6 +137,11 @@ sp_set_bitmap_bits(y, xbit1, xbit2)
 
 	xbit2 = cfv->bit_width;
     }
+
+    if (xbit2 < xbit1) {
+	xbit2 = xbit1;
+    }
+
     while (cfv->cur_y != y) {
 	finish_line(sp_fp_cur);
 	cfv->cur_y++;
@@ -221,10 +226,21 @@ sp_open_bitmap(x_set_width, y_set_width, xorg, yorg, xsize, ysize)
 	off_vert = (fix15) ((yorg - 32768L) / 65536);
     else
 	off_vert = (fix15) ((yorg + 32768L) / 65536);
-    ci->metrics.leftSideBearing = off_horz;
-    ci->metrics.descent = -off_vert;
-    ci->metrics.rightSideBearing = xsize + off_horz;
-    ci->metrics.ascent = ysize + off_vert;
+    if (xsize != 0 || ysize != 0 || ci->metrics.characterWidth)
+    {
+	ci->metrics.leftSideBearing = off_horz;
+	ci->metrics.descent = -off_vert;
+	ci->metrics.rightSideBearing = xsize + off_horz;
+	ci->metrics.ascent = ysize + off_vert;
+    }
+    else
+    {
+    /* If setting the proper size would cause the character to appear to
+       be non-existent, fudge things by giving it a pixel to occupy.  */
+	xsize = ysize = 1;
+	ci->metrics.leftSideBearing = ci->metrics.descent = 0;
+	ci->metrics.rightSideBearing = ci->metrics.ascent = 1;
+    }
 
     cfv->bit_width = xsize;
     cfv->bit_height = ysize;
@@ -326,10 +342,25 @@ sp_build_all_bitmaps(pfont, format, fmask)
     cfv->bp = bitmaps;
 
     for (i = 0; i < spmf->num_chars; i++) {
+	int j;
 	cfv->char_index = spmf->enc[i * 2 + 1];
 	cfv->char_id = spmf->enc[i * 2];
 	if (!cfv->char_id)
 	    continue;
+
+	/*
+	 * See if this character is in the list of ranges specified in the
+	 * XLFD name
+	 */
+	for (j = 0; j < spf->vals.nranges; j++)
+	    if (cfv->char_id >= mincharno(spf->vals.ranges[j]) &&
+		    cfv->char_id <= maxcharno(spf->vals.ranges[j]))
+		break;
+
+	  /* If not, don't realize it. */
+	if (spf->vals.nranges && j == spf->vals.nranges)
+	    continue;
+
 	if (!sp_make_char(cfv->char_index)) {
 
 #ifdef DEBUG			/* can be very common with some encodings */

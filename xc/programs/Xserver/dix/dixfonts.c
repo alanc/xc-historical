@@ -22,7 +22,7 @@ SOFTWARE.
 
 ************************************************************************/
 
-/* $XConsortium: dixfonts.c,v 1.38 93/03/29 19:18:49 rws Exp $ */
+/* $XConsortium: dixfonts.c,v 1.39 93/07/12 09:23:55 dpw Exp $ */
 
 #define NEED_REPLIES
 #include "X.h"
@@ -76,8 +76,6 @@ static Mask FontFormat =
 #endif
 
     BitmapFormatScanlineUnit8;
-
-static int  FinishListFontsWithInfo();
 
 extern pointer fosNaturalParams;
 extern FontPtr defaultFont;
@@ -561,7 +559,7 @@ finish:
     client = c->client;
     stringLens = 0;
     for (i = 0; i < nnames; i++)
-	stringLens += names->length[i];
+	stringLens += names->length[i] <= 255 ? names->length[i]: 0;
 
     reply.type = X_Reply;
     reply.length = (stringLens + nnames + 3) >> 2;
@@ -579,10 +577,17 @@ finish:
      * write all at once
      */
     for (i = 0; i < nnames; i++) {
-	*bufptr++ = names->length[i];
-	bcopy(names->names[i], bufptr, names->length[i]);
-	bufptr += names->length[i];
+	if (names->length[i] > 255)
+	    reply.nFonts--;
+	else
+	{
+	    *bufptr++ = names->length[i];
+	    bcopy(names->names[i], bufptr, names->length[i]);
+	    bufptr += names->length[i];
+	}
     }
+    reply.length = (stringLens + reply.nFonts + 3) >> 2;
+    nnames = reply.nFonts;
     client->pSwapReplyFunc = ReplySwapVector[X_ListFonts];
     WriteSwappedDataToClient(client, sizeof(xListFontsReply), &reply);
     (void) WriteToClient(client, stringLens + nnames, bufferStart);
@@ -923,6 +928,452 @@ badAlloc:
     return BadAlloc;
 }
 
+#define TextEltHeader 2
+#define FontShiftSize 5
+static XID clearGC[] = { CT_NONE };
+#define clearGCmask (GCClipMask)
+
+PolyText(client, pDraw, pGC, pElt, endReq, xorg, yorg, reqType, did)
+    ClientPtr client;
+    DrawablePtr pDraw;
+    GC *pGC;
+    unsigned char *pElt;
+    unsigned char *endReq;
+    int xorg;
+    int yorg;
+    CARD8 reqType;
+    XID did;
+{
+    register PTclosurePtr c;
+
+    /* Set up closure structure */
+
+    c = (PTclosurePtr) xalloc(sizeof(PTclosureRec));
+    if (!c)
+	return BadAlloc;
+
+    c->pElt = pElt;
+    c->endReq = endReq;
+    c->client = client;
+    c->pDraw = pDraw;
+    c->xorg = xorg;
+    c->yorg = yorg;
+    if ((c->reqType = reqType) == X_PolyText8)
+    {
+	c->polyText = pGC->ops->PolyText8;
+	c->itemSize = 1;
+    }
+    else
+    {
+	c->polyText =  pGC->ops->PolyText16;
+	c->itemSize = 2;
+    }
+    c->pGC = pGC;
+    c->did = did;
+    c->err = Success;
+    c->slept = FALSE;
+
+    (void) doPolyText(client, c);
+    return Success;
+}
+
+doPolyText(client, c)
+    ClientPtr   client;
+    register PTclosurePtr c;
+{
+    register FontPtr pFont = c->pGC->font, oldpFont;
+    Font	fid, oldfid;
+    int err = Success, lgerr;	/* err is in X error, not font error, space */
+    enum { NEVER_SLEPT, START_SLEEP, SLEEPING } client_state;
+    FontPathElementPtr fpe;
+
+    if (client->clientGone)
+    {
+	fpe = c->pGC->font->fpe;
+	(*fpe_functions[fpe->type].client_died) ((pointer) client, fpe);
+
+	if (c->slept)
+	{
+	    /* Client has died, but we cannot bail out right now.  We
+	       need to clean up after the work we did when going to
+	       sleep.  Setting the drawable pointer to 0 makes this
+	       happen without any attempts to render or perform other
+	       unnecessary activities.  */
+	    c->pDraw = (DrawablePtr)0;
+	}
+	else
+	{
+	    err = Success;
+	    goto bail;
+	}
+    }
+
+    /* Make sure our drawable hasn't disappeared while we slept. */
+    if (c->slept &&
+	c->pDraw &&
+	c->pDraw != (DrawablePtr)LookupIDByClass(c->did, RC_DRAWABLE))
+    {
+	/* Our drawable has disappeared.  Treat like client died... ask
+	   the FPE code to clean up after client and avoid further
+	   rendering while we clean up after ourself.  */
+	fpe = c->pGC->font->fpe;
+	(*fpe_functions[fpe->type].client_died) ((pointer) client, fpe);
+	c->pDraw = (DrawablePtr)0;
+    }
+
+    client_state = c->slept ? SLEEPING : NEVER_SLEPT;
+
+    while (c->endReq - c->pElt > TextEltHeader)
+    {
+	if (*c->pElt == FontChange)
+        {
+	    if (c->endReq - c->pElt < FontShiftSize)
+	    {
+		 err = BadLength;
+		 goto bail;
+	    }
+
+	    oldpFont = pFont;
+	    oldfid = fid;
+
+	    fid =  ((Font)*(c->pElt+4))		/* big-endian */
+		 | ((Font)*(c->pElt+3)) << 8
+		 | ((Font)*(c->pElt+2)) << 16
+		 | ((Font)*(c->pElt+1)) << 24;
+	    pFont = (FontPtr)LookupIDByType(fid, RT_FONT);
+	    if (!pFont)
+	    {
+		client->errorValue = fid;
+		err = BadFont;
+		/* restore pFont and fid for step 4 (described below) */
+		pFont = oldpFont;
+		fid = oldfid;
+
+		/* If we're in START_SLEEP mode, the following step
+		   shortens the request...  in the unlikely event that
+		   the fid somehow becomes valid before we come through
+		   again to actually execute the polytext, which would
+		   then mess up our refcounting scheme badly.  */
+		c->err = err;
+		c->endReq = c->pElt;
+
+		goto bail;
+	    }
+
+	    /* Step 3 (described below) on our new font */
+	    if (client_state == START_SLEEP)
+		pFont->refcnt++;
+	    else
+	    {
+		if (pFont != c->pGC->font && c->pDraw)
+		{
+		    ChangeGC( c->pGC, GCFont, &fid);
+		    ValidateGC(c->pDraw, c->pGC);
+		    if (c->reqType == X_PolyText8)
+			c->polyText = c->pGC->ops->PolyText8;
+		    else
+			c->polyText = c->pGC->ops->PolyText16;
+		}
+
+		/* Undo the refcnt++ we performed when going to sleep */
+		if (client_state == SLEEPING)
+		    (void)CloseFont(c->pGC->font, (Font)0);
+	    }
+	    c->pElt += FontShiftSize;
+	}
+	else	/* print a string */
+	{
+	    unsigned char *pNextElt;
+	    pNextElt = c->pElt + TextEltHeader + (*c->pElt)*c->itemSize;
+	    if ( pNextElt > c->endReq)
+	    {
+		err = BadLength;
+		goto bail;
+	    }
+	    if (client_state == START_SLEEP)
+	    {
+		c->pElt = pNextElt;
+		continue;
+	    }
+	    if (c->pDraw)
+	    {
+		lgerr = LoadGlyphs(client, c->pGC->font, *c->pElt, c->itemSize,
+				   c->pElt + TextEltHeader);
+	    }
+	    else lgerr = Successful;
+
+	    if (lgerr == Suspended)
+	    {
+		if (!c->slept) {
+		    int len;
+		    GC *pGC;
+
+    /*  We're putting the client to sleep.  We need to do a few things
+	to ensure successful and atomic-appearing execution of the
+	remainder of the request.  First, copy the remainder of the
+	request into a safe malloc'd area.  Second, create a scratch GC
+	to use for the remainder of the request.  Third, mark all fonts
+	referenced in the remainder of the request to prevent their
+	deallocation.  Fourth, make the original GC look like the
+	request has completed...  set its font to the final font value
+	from this request.  These GC manipulations are for the unlikely
+	(but possible) event that some other client is using the GC.
+	Steps 3 and 4 are performed by running this procedure through
+	the remainder of the request in a special no-render mode
+	indicated by client_state = START_SLEEP.  */
+
+		    /* Step 1 */
+		    len = c->endReq - c->pElt;
+		    c->data = (unsigned char *)xalloc(len);
+		    if (!c->data)
+		    {
+			err = BadAlloc;
+			goto bail;
+		    }
+		    bcopy(c->pElt, c->data, len);
+		    c->pElt = c->data;
+		    c->endReq = c->pElt + len;
+
+		    /* Step 2 */
+
+		    pGC = GetScratchGC(c->pGC->depth, c->pGC->pScreen);
+		    if (!pGC)
+		    {
+			xfree(c->data);
+			err = BadAlloc;
+			goto bail;
+		    }
+		    if ((err = CopyGC(c->pGC, pGC, GCFunction |
+				      GCPlaneMask | GCForeground |
+				      GCBackground | GCFillStyle |
+				      GCTile | GCStipple |
+				      GCTileStipXOrigin |
+				      GCTileStipYOrigin | GCFont |
+				      GCSubwindowMode | GCClipXOrigin |
+				      GCClipYOrigin | GCClipMask)) !=
+				      Success)
+		    {
+			FreeScratchGC(pGC);
+			xfree(c->data);
+			err = BadAlloc;
+			goto bail;
+		    }
+		    c->pGC = pGC;
+		    ValidateGC(c->pDraw, c->pGC);
+		    
+		    c->slept = TRUE;
+		    ClientSleep(client, doPolyText, (pointer) c);
+
+		    /* Set up to perform steps 3 and 4 */
+		    client_state = START_SLEEP;
+		    continue;	/* on to steps 3 and 4 */
+		}
+		return TRUE;
+	    }
+	    else if (lgerr != Successful)
+	    {
+		err = FontToXError(lgerr);
+		goto bail;
+	    }
+	    if (c->pDraw)
+	    {
+		c->xorg += *((INT8 *)(c->pElt + 1));	/* must be signed */
+		c->xorg = (* c->polyText)(c->pDraw, c->pGC, c->xorg, c->yorg,
+		    *c->pElt, c->pElt + TextEltHeader);
+	    }
+	    c->pElt = pNextElt;
+	}
+    }
+
+bail:
+
+    if (client_state == START_SLEEP)
+    {
+	/* Step 4 */
+	if (pFont != c->pGC->font)
+	{
+	    ChangeGC(c->pGC, GCFont, &fid);
+	    ValidateGC(c->pDraw, c->pGC);
+	}
+
+	/* restore pElt pointer for execution of remainder of the request */
+	c->pElt = c->data;
+	return TRUE;
+    }
+
+    if (c->err != Success) err = c->err;
+    if (err != Success && c->client != serverClient) {
+	SendErrorToClient(c->client, c->reqType, 0, 0, err);
+    }
+    if (c->slept)
+    {
+	ClientWakeup(c->client);
+	ChangeGC(c->pGC, clearGCmask, clearGC);
+
+	/* Unreference the font from the scratch GC */
+	CloseFont(c->pGC->font, (Font)0);
+	c->pGC->font = NullFont;
+
+	FreeScratchGC(c->pGC);
+	xfree(c->data);
+    }
+    xfree(c);
+    return TRUE;
+}
+
+#undef TextEltHeader
+#undef FontShiftSize
+
+ImageText(client, pDraw, pGC, nChars, data, xorg, yorg, reqType, did)
+    ClientPtr client;
+    DrawablePtr pDraw;
+    GC *pGC;
+    BYTE nChars;
+    unsigned char *data;
+    int xorg;
+    int yorg;
+    CARD8 reqType;
+    XID did;
+{
+    register ITclosurePtr c;
+    int err;
+
+    c = (ITclosurePtr) xalloc(sizeof(ITclosureRec));
+    if (!c)
+	return BadAlloc;
+
+    c->client = client;
+    c->pDraw = pDraw;
+    c->pGC = pGC;
+    c->nChars = nChars;
+    c->data = data;
+    c->xorg = xorg;
+    c->yorg = yorg;
+    if ((c->reqType = reqType) == X_ImageText8)
+    {
+	c->imageText = pGC->ops->ImageText8;
+	c->itemSize = 1;
+    }
+    else
+    {
+	c->imageText =  pGC->ops->ImageText16;
+	c->itemSize = 2;
+    }
+    c->did = did;
+    c->slept = FALSE;
+
+    (void) doImageText(client, c);
+    return Success;
+}
+
+doImageText(client, c)
+    ClientPtr   client;
+    register ITclosurePtr c;
+{
+    int err = Success, lgerr;	/* err is in X error, not font error, space */
+    FontPathElementPtr fpe;
+
+    if (client->clientGone)
+    {
+	fpe = c->pGC->font->fpe;
+	(*fpe_functions[fpe->type].client_died) ((pointer) client, fpe);
+	err = Success;
+	goto bail;
+    }
+
+    /* Make sure our drawable hasn't disappeared while we slept. */
+    if (c->slept &&
+	c->pDraw &&
+	c->pDraw != (DrawablePtr)LookupIDByClass(c->did, RC_DRAWABLE))
+    {
+	/* Our drawable has disappeared.  Treat like client died... ask
+	   the FPE code to clean up after client. */
+	fpe = c->pGC->font->fpe;
+	(*fpe_functions[fpe->type].client_died) ((pointer) client, fpe);
+	err = Success;
+	goto bail;
+    }
+
+    lgerr = LoadGlyphs(client, c->pGC->font, c->nChars, c->itemSize, c->data);
+    if (lgerr == Suspended)
+    {
+        if (!c->slept) {
+	    GC *pGC;
+	    unsigned char *data;
+
+	    /* We're putting the client to sleep.  We need to
+	       save some state.  Similar problem to that handled
+	       in doPolyText, but much simpler because the
+	       request structure is much simpler. */
+
+	    data = (unsigned char *)xalloc(c->nChars * c->itemSize);
+	    if (!data)
+	    {
+		err = BadAlloc;
+		goto bail;
+	    }
+	    bcopy(c->data, data, c->nChars * c->itemSize);
+	    c->data = data;
+
+	    pGC = GetScratchGC(c->pGC->depth, c->pGC->pScreen);
+	    if (!pGC)
+	    {
+		xfree(c->data);
+		err = BadAlloc;
+		goto bail;
+	    }
+	    if ((err = CopyGC(c->pGC, pGC, GCFunction | GCPlaneMask |
+			      GCForeground | GCBackground | GCFillStyle |
+			      GCTile | GCStipple | GCTileStipXOrigin |
+			      GCTileStipYOrigin | GCFont |
+			      GCSubwindowMode | GCClipXOrigin |
+			      GCClipYOrigin | GCClipMask)) != Success)
+	    {
+		FreeScratchGC(pGC);
+		xfree(c->data);
+		err = BadAlloc;
+		goto bail;
+	    }
+	    c->pGC = pGC;
+	    ValidateGC(c->pDraw, c->pGC);
+
+	    c->slept = TRUE;
+            ClientSleep(client, doImageText, (pointer) c);
+        }
+        return TRUE;
+    }
+    else if (lgerr != Successful)
+    {
+        err = FontToXError(lgerr);
+        goto bail;
+    }
+    if (c->pDraw)
+    {
+	(* c->imageText)(c->pDraw, c->pGC, c->xorg, c->yorg,
+	    c->nChars, c->data);
+    }
+
+bail:
+
+    if (err != Success && c->client != serverClient) {
+	SendErrorToClient(c->client, c->reqType, 0, 0, err);
+    }
+    if (c->slept)
+    {
+	ClientWakeup(c->client);
+	ChangeGC(c->pGC, clearGCmask, clearGC);
+
+	/* Unreference the font from the scratch GC */
+	CloseFont(c->pGC->font, (Font)0);
+	c->pGC->font = NullFont;
+
+	FreeScratchGC(c->pGC);
+	xfree(c->data);
+    }
+    xfree(c);
+    return TRUE;
+}
+
 /* does the necessary magic to figure out the fpe type */
 static int
 DetermineFPEType(pathname)
@@ -1167,13 +1618,11 @@ LoadGlyphs(client, pfont, nchars, item_size, data)
     int         item_size;
     unsigned char *data;
 {
-
-#ifdef NOTDEF
-/* under construction */
-    /* either returns Success, ClientBlocked, or some nasty error */
-    return (*fpe_functions[pfont->type].load_glyphs)
-	(client, pfont, nchars, item_size, data);
-#endif
+    if (fpe_functions[pfont->fpe->type].load_glyphs)
+	return (*fpe_functions[pfont->fpe->type].load_glyphs)
+	    (client, pfont, 0, nchars, item_size, data);
+    else
+	return Successful;
 }
 
 /* XXX -- these two funcs may want to be broken into macros */
@@ -1211,11 +1660,32 @@ DeleteClientFontStuff(client)
     }
 }
 
-InitFonts ()
+InitGlyphCaching(screenInfo)
+    ScreenInfo *screenInfo;
+{
+    /* Set screenInfo->glyphCachingMode to the mode the server hopes to
+       support.  DDX drivers that do not support the requested level
+       of glyph caching can change this at InitOutput() time...  the
+       server will note the change at InitFonts() time.  */
+
+    static int defaultGlyphCachingMode = -1;
+
+    if (defaultGlyphCachingMode == -1)
+	defaultGlyphCachingMode = glyphCachingMode;	/* First time through */
+
+    screenInfo->glyphCachingMode = glyphCachingMode = defaultGlyphCachingMode;
+}
+
+InitFonts (screenInfo)
+    ScreenInfo *screenInfo;
 {
     patternCache = MakeFontPatternCache();
     FontFileRegisterFpeFunctions();
     fs_register_fpe_functions();
+
+    if (glyphCachingMode > screenInfo->glyphCachingMode &&
+	screenInfo->glyphCachingMode >= 0)
+	glyphCachingMode = screenInfo->glyphCachingMode;
 }
 
 GetDefaultPointSize ()
@@ -1267,7 +1737,7 @@ GetClientResolutions (num)
 int
 RegisterFPEFunctions(name_func, init_func, free_func, reset_func,
 	   open_func, close_func, list_func, start_lfwi_func, next_lfwi_func,
-		     wakeup_func, client_died)
+		     wakeup_func, client_died, load_glyphs)
     Bool        (*name_func) ();
     int         (*init_func) ();
     int         (*free_func) ();
@@ -1279,6 +1749,7 @@ RegisterFPEFunctions(name_func, init_func, free_func, reset_func,
     int         (*next_lfwi_func) ();
     int         (*wakeup_func) ();
     int		(*client_died) ();
+    int		(*load_glyphs) ();
 {
     FPEFunctions *new;
 
@@ -1302,6 +1773,7 @@ RegisterFPEFunctions(name_func, init_func, free_func, reset_func,
     fpe_functions[num_fpe_types].free_fpe = free_func;
     fpe_functions[num_fpe_types].reset_fpe = reset_func;
     fpe_functions[num_fpe_types].client_died = client_died;
+    fpe_functions[num_fpe_types].load_glyphs = load_glyphs;
 
     return num_fpe_types++;
 }
@@ -1349,6 +1821,12 @@ DeleteFontClientID(id)
     FreeResource(id, RT_NONE);
 }
 
+int
+client_auth_generation(client)
+    ClientPtr client;
+{
+    return 0;
+}
 
 static int  fs_handlers_installed = 0;
 static unsigned int last_server_gen;

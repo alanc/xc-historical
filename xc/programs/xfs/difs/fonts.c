@@ -1,4 +1,4 @@
-/* $XConsortium: fonts.c,v 1.15 93/07/15 17:35:46 gildea Exp $ */
+/* $XConsortium: fonts.c,v 1.16 93/07/15 17:51:26 gildea Exp $ */
 /*
  * font control
  */
@@ -182,7 +182,7 @@ add_id_to_list(ids, fid)
     if (ids->num == ids->size) {
 	/* increase size of array */
 	newlist = (Font *) fsrealloc(ids->client_list,
-			      sizeof(Font) * ids->size + NUM_IDS_PER_CLIENT);
+			      sizeof(Font) * (ids->size + NUM_IDS_PER_CLIENT));
 	if (!newlist)
 	    return FALSE;
 	ids->client_list = newlist;
@@ -231,6 +231,26 @@ make_clients_id_list()
     ids->size = NUM_IDS_PER_CLIENT;
     ids->num = 0;
     return ids;
+}
+
+static void
+free_svrPrivate(svrPrivate)
+    pointer svrPrivate;
+{
+    FontIDListPtr *idlist = (FontIDListPtr*) svrPrivate;
+    FontIDListPtr ids;
+    int i;
+
+    if (!idlist)
+	return;
+    for (i = 0; i < MAXCLIENTS; i++) {
+	ids = idlist[i];
+	if (ids) {
+	    fsfree((char *) ids->client_list);
+	    fsfree((char *) ids);
+	}
+    }
+    fsfree((char *) idlist);
 }
 
 static Bool
@@ -307,7 +327,7 @@ do_open_font(client, c)
     cfp->font = pfont;
     cfp->clientindex = c->client->index;
 
-    if (fontPatternCache)
+    if (fontPatternCache && pfont->info.cachable)
 	CacheFontPattern(fontPatternCache, c->orig_name, c->orig_len, pfont);
 
     /* either pull out the other id or make the array */
@@ -345,7 +365,7 @@ do_open_font(client, c)
     }
     if (!AddResource(c->client->index, c->fontid, RT_FONT, (pointer) cfp)) {
 	fsfree(cfp);
-	fsfree(pfont->svrPrivate);
+	free_svrPrivate(pfont->svrPrivate);
 	pfont->svrPrivate = (pointer) 0;
 	err = AllocError;
 	goto dropout;
@@ -358,7 +378,7 @@ do_open_font(client, c)
 	rep.otherid_valid = TRUE;
     else
 	rep.otherid_valid = FALSE;
-    rep.cachable = TRUE;	/* XXX */
+    rep.cachable = pfont->info.cachable;
     rep.sequenceNumber = client->sequence;
     rep.length = SIZEOF(fsOpenBitmapFontReply) >> 2;
     WriteReplyToClient(client,
@@ -485,24 +505,13 @@ close_font(pfont)
     FontPtr     pfont;
 {
     FontPathElementPtr fpe;
-    FontIDListPtr *idlist;
-    FontIDListPtr ids;
-    int i;
 
     assert(pfont);
     if (--pfont->refcnt == 0) {
 	if (fontPatternCache)
 	    RemoveCachedFontPattern(fontPatternCache, pfont);
+	free_svrPrivate(pfont->svrPrivate);
 	fpe = pfont->fpe;
-	idlist = (FontIDListPtr*) pfont->svrPrivate;
-	for (i = 0; i < MAXCLIENTS; i++) {
-	    ids = idlist[i];
-	    if (ids) {
-		fsfree((char *) ids->client_list);
-		fsfree((char *) ids);
-	    }
-	}
-	fsfree((char *) idlist);
 	(*fpe_functions[fpe->type].close_font) (fpe, pfont);
 	FreeFPE(fpe);
     }
@@ -733,6 +742,10 @@ do_list_fonts(client, c)
 	goto bail;
     }
     /* try each fpe in turn, returning if one wants to be blocked */
+
+    if (!c->patlen)
+	goto finish;
+
     while (c->current_fpe < c->num_fpes && c->names->nnames <= c->maxnames) {
 	fpe = c->fpe_list[c->current_fpe];
 
@@ -756,12 +769,15 @@ do_list_fonts(client, c)
 	SendErrToClient(client, FontToFSError(err), (pointer) 0);
 	goto bail;
     }
+
+finish:
+
     names = c->names;
     nnames = names->nnames;
     client = c->client;
     stringLens = 0;
     for (i = 0; i < nnames; i++)
-	stringLens += names->length[i];
+	stringLens += (names->length[i] <= 255) ? names->length[i] : 0;
 
     reply.type = FS_Reply;
     reply.length = (SIZEOF(fsListFontsReply) + stringLens + nnames + 3) >> 2;
@@ -780,10 +796,17 @@ do_list_fonts(client, c)
      * write all at once
      */
     for (i = 0; i < nnames; i++) {
-	*bufptr++ = names->length[i];
-	bcopy(names->names[i], bufptr, names->length[i]);
-	bufptr += names->length[i];
+	if (names->length[i] > 255)
+	    reply.nFonts--;
+	else
+	{
+	    *bufptr++ = names->length[i];
+	    bcopy(names->names[i], bufptr, names->length[i]);
+	    bufptr += names->length[i];
+	}
     }
+    nnames = reply.nFonts;
+    reply.length = (SIZEOF(fsListFontsReply) + stringLens + nnames + 3) >> 2;
     WriteReplyToClient(client, SIZEOF(fsListFontsReply), &reply);
     (void) WriteToClient(client, stringLens + nnames, bufferStart);
     DEALLOCATE_LOCAL(bufferStart);
@@ -813,7 +836,7 @@ make_list_fonts_closure(client, pattern, length, maxnames)
     if (!c)
 	return (LFclosurePtr) 0;
     c->pattern = (char *) fsalloc(length);
-    if (!c->pattern) {
+    if (!c->pattern && length) {
 	fsfree(c);
 	return (LFclosurePtr) 0;
     }
@@ -1068,7 +1091,7 @@ StartListFontsWithInfo(client, length, pattern, maxNames)
 
     if (!(c = (LFWXIclosurePtr) fsalloc(sizeof *c)))
 	goto badAlloc;
-    if (!(c->current.pattern = (char *) fsalloc(length))) {
+    if (!(c->current.pattern = (char *) fsalloc(length)) && length) {
 	fsfree(c);
 	goto badAlloc;
     }
@@ -1104,9 +1127,26 @@ badAlloc:
 }
 
 int
+LoadGlyphRanges(client, pfont, range_flag, num_ranges, item_size, data)
+    ClientPtr   client;
+    FontPtr	pfont;
+    Bool	range_flag;
+    int		num_ranges;
+    int		item_size;
+    fsChar2b	*data;
+{
+    /* either returns Successful, Suspended, or some nasty error */
+    if (fpe_functions[pfont->fpe->type].load_glyphs)
+	return (*fpe_functions[pfont->fpe->type].load_glyphs)(
+		client, pfont, range_flag, num_ranges, item_size, data);
+    else
+	return Successful;
+}
+
+int
 RegisterFPEFunctions(name_func, init_func, free_func, reset_func,
 	   open_func, close_func, list_func, start_lfwi_func, next_lfwi_func,
-		     wakeup_func, client_died)
+		     wakeup_func, client_died, load_glyphs)
     Bool        (*name_func) ();
     int         (*init_func) ();
     int         (*free_func) ();
@@ -1118,6 +1158,7 @@ RegisterFPEFunctions(name_func, init_func, free_func, reset_func,
     int         (*next_lfwi_func) ();
     int         (*wakeup_func) ();
     int         (*client_died) ();
+    int         (*load_glyphs) ();
 {
     FPEFunctions *new;
 
@@ -1142,6 +1183,7 @@ RegisterFPEFunctions(name_func, init_func, free_func, reset_func,
     fpe_functions[num_fpe_types].reset_fpe = reset_func;
 
     fpe_functions[num_fpe_types].client_died = client_died;
+    fpe_functions[num_fpe_types].load_glyphs = load_glyphs;
     return num_fpe_types++;
 }
 
@@ -1223,4 +1265,19 @@ remove_fs_handlers(fpe, block_handler, all)
 	}
     }
     RemoveFontWakeup(fpe);
+}
+
+DeleteClientFontStuff(client)
+    ClientPtr   client;
+{
+    int i;
+    FontPathElementPtr fpe;
+
+    for (i = 0; i < num_fpes; i++)
+    {
+	fpe = font_path_elements[i];
+
+	if (fpe_functions[fpe->type].client_died)
+	    (*fpe_functions[fpe->type].client_died) ((pointer) client, fpe);
+    }
 }
