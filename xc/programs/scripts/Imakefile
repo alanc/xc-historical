@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.18 91/07/17 16:08:39 gildea Exp $
+XCOMM $XConsortium: Imakefile,v 1.19 91/07/24 14:40:07 rws Exp $
 #if UseCCMakeDepend
 MDEP_DIR = makedepend
 #endif
@@ -14,6 +14,7 @@ CppScriptTarget(mergelib,mergelib.cpp,"-DARCMD=$(AR)" "-DRANLIB=$(RANLIB)",$(ICO
 
 InstallNamedProg(xmkmf,xmkmf,$(BINDIR))
 InstallNamedProg(mkdirhier.sh,mkdirhier,$(BINDIR))
+InstallManPage(mkdirhier,$(MANDIR))
 #if UseCCMakeDepend
 InstallNamedProg(makedepend,makedepend,$(BINDIR))
 #endif
