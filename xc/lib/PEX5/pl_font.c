@@ -1,4 +1,4 @@
-/* $XConsortium: pl_font.c,v 1.1 92/05/08 15:12:56 mor Exp $ */
+/* $XConsortium: pl_font.c,v 1.2 92/05/20 20:55:38 mor Exp $ */
 
 /************************************************************************
 Copyright 1987,1991,1992 by Digital Equipment Corporation, Maynard,
@@ -36,7 +36,7 @@ INPUT Display	*display;
 INPUT char	*fontname;
 
 {
-    pexOpenFontReq	*req;
+    pexLoadFontReq	*req;
     pexFont		id;
 
 
@@ -51,7 +51,7 @@ INPUT char	*fontname;
      * Put the request in the X request buffer.
      */
 
-    PEXGetReq (OpenFont, req);
+    PEXGetReq (LoadFont, req);
     req->numBytes = strlen (fontname);
     req->font = id = XAllocID (display);
     req->length += (req->numBytes + 3) >> 2;
@@ -91,7 +91,7 @@ INPUT PEXFont	font;
      * Put the request in the X request buffer.
      */
 
-    PEXGetReq (CloseFont, req);
+    PEXGetReq (UnloadFont, req);
     req->id = font;
 
 
