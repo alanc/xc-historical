@@ -1,4 +1,4 @@
-/* $XConsortium: dispatch.c,v 5.55 94/01/21 22:00:03 dpw Exp $ */
+/* $XConsortium: dispatch.c,v 5.56 94/01/30 19:10:40 rws Exp $ */
 /************************************************************
 Copyright 1987, 1989 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -70,6 +70,7 @@ static ClientPtr grabClient;
 #define GrabKickout 2
 static int grabState = GrabNone;
 static long grabWaiters[mskcnt];
+CallbackListPtr ServerGrabCallback = NULL;
 long	*checkForInput[2];
 extern int connBlockScreenStart;
 
@@ -965,11 +966,21 @@ ProcGrabServer(client)
     OnlyListenToOneClient(client);
     grabState = GrabKickout;
     grabClient = client;
+
+    if (ServerGrabCallback)
+    {
+	ServerGrabInfoRec grabinfo;
+	grabinfo.client = client;
+	grabinfo.grabstate  = SERVER_GRABBED;
+	CallCallbacks(&ServerGrabCallback, &grabinfo);
+    }
+
     return(client->noClientException);
 }
 
 static void
-UngrabServer()
+UngrabServer(client)
+    ClientPtr client;
 {
     int i;
 
@@ -985,6 +996,14 @@ UngrabServer()
 	BITCLEAR(grabWaiters, i);
 	AttendClient(clients[i]);
     }
+
+    if (ServerGrabCallback)
+    {
+	ServerGrabInfoRec grabinfo;
+	grabinfo.client = client;
+	grabinfo.grabstate  = SERVER_UNGRABBED;
+	CallCallbacks(&ServerGrabCallback, &grabinfo);
+    }
 }
 
 int
@@ -993,7 +1012,7 @@ ProcUngrabServer(client)
 {
     REQUEST(xReq);
     REQUEST_SIZE_MATCH(xReq);
-    UngrabServer();
+    UngrabServer(client);
     return(client->noClientException);
 }
 
@@ -3275,7 +3294,7 @@ CloseDownClient(client)
 	/* ungrab server if grabbing client dies */
 	if (grabState != GrabNone && grabClient == client)
 	{
-	    UngrabServer();
+	    UngrabServer(client);
 	}
 	BITCLEAR(grabWaiters, client->index);
 	DeleteClientFromAnySelections(client);
