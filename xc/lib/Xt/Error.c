@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Error.c,v 1.19 88/09/06 16:27:47 jim Exp $";
+static char Xrcsid[] = "$XConsortium: Error.c,v 1.20 89/06/16 19:34:29 jim Exp $";
 /* $oHeader: Error.c,v 1.6 88/08/31 17:46:14 asente Exp $ */
 #endif /* lint */
 
@@ -68,9 +68,9 @@ XrmDatabase *XtAppGetErrorDatabase(app)
 }
 
 void XtGetErrorDatabaseText(name,type,class,defaultp, buffer, nbytes)
-    register char *name, *type,*class;
-    char *defaultp;
-    char *buffer;
+    register String name, type, class;
+    String defaultp;
+    String buffer;
     int nbytes;
 {
 #ifdef GLOBALERRORS
@@ -85,9 +85,9 @@ void XtGetErrorDatabaseText(name,type,class,defaultp, buffer, nbytes)
 void XtAppGetErrorDatabaseText(app, name,type,class,defaultp,
 	buffer, nbytes, db)
     XtAppContext app;
-    register char *name, *type,*class;
-    char *defaultp;
-    char *buffer;
+    register String name, type, class;
+    String defaultp;
+    String buffer;
     int nbytes;
     XrmDatabase db;
 {
