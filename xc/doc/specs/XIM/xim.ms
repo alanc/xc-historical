@@ -1,4 +1,4 @@
-.\" $XConsortium: xim.ms,v 1.5 94/04/14 21:46:48 rws Exp $
+.\" $XConsortium: xim.ms,v 1.6 94/04/15 15:34:32 rws Exp $
 .\" To print this out, type tbl macros.t ThisFile | troff -ms
 .EH ''''
 .OH ''''
@@ -49,21 +49,48 @@ applications within the stand-alone distributed environment.
 .sp 8
 .LP
 .DS C
-X Window System is a trademark of M.I.T.
+X Window System is a trademark of X Consortium, Inc.
 .sp
 Copyright \(co 1993, 1994 by X Consortium, Inc.
-.sp
+.DE
+.sp 2
+.LP
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject to
+the following conditions:
+.LP
+The above copyright notice and this permission notice shall be included
+in all copies or substantial portions of the Software.
+.LP
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR
+OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+OTHER DEALINGS IN THE SOFTWARE.
+.LP
+Except as contained in this notice, the name of the X Consortium shall
+not be used in advertising or otherwise to promote the sale, use or
+other dealings in this Software without prior written authorization
+from the X Consortium.
+.sp 3
+.DS C
 Copyright \(co 1993, 1994 by FUJITSU LIMITED
 .sp
 Copyright \(co 1993, 1994 by Sun Microsystems, Inc.
 .DE
-.sp 3
+.sp 2
 .LP 
 Permission to use, copy, modify, and distribute this documentation 
 for any purpose and without fee is hereby granted, provided 
 that the above copyright notice and this permission 
 notice appear in all copies.
-X Consortium, Fujitsu and Sun Microsystems make no representations 
+Fujitsu and Sun Microsystems make no representations 
 about the suitability for any purpose of the information in this document. 
 This documentation is provided as is without express or implied warranty. 
 .ps 11
@@ -85,10 +112,7 @@ Scope
 .XE
 .LP
 The internationalization in the
-X Window System,*
-.FS
-*X Window System is a trademark of the Massachusetts Institute of Technology.
-.FE
+X Window System
 Version 11, Release 5 (X11R5) provides a common API which application 
 developers can use to create portable internationalized programs and to 
 adapt them to the requirements of different native languages, local customs,
