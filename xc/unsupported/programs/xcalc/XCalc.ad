@@ -128,7 +128,7 @@ XCalc.ti.button6.translations:		#override<Btn1Up>:inverse()unset()
 XCalc.ti.button7.label:		sin
 XCalc.ti.button7.translations:		#override<Btn1Up>:sine()unset()
 XCalc.ti.button8.label:		cos
-XCalc.it.button8.translations:		#override<Btn1Up>:cosine()unset()
+XCalc.ti.button8.translations:		#override<Btn1Up>:cosine()unset()
 XCalc.ti.button9.label:		tan
 XCalc.ti.button9.translations:		#override<Btn1Up>:tangent()unset()
 XCalc.ti.button10.label:		DRG
