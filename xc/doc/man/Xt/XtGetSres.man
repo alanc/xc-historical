@@ -6,7 +6,7 @@
 .ds xC Inter-Client Communication Conventions Manual
 .ds Rn 3
 .ds Vn 2.2
-.hw XtGet-Subresources, XtGet-Application-Resources wid-get
+.hw XtGet-Subresources XtVa-Get-Subresources wid-get
 .na
 .de Ds
 .nf
@@ -99,7 +99,7 @@
 .ny0
 .TH XtGetSubresources 3Xt "Release 6" "X Version 11" "XT FUNCTIONS"
 .SH NAME
-XtGetSubresources, XtGetApplicationResources \- obtain subresources or application resources
+XtGetSubresources, XtVaGetSubresources \- obtain subresources
 .SH SYNTAX
 void XtGetSubresources(\fIw\fP, \fIbase\fP, \fIname\fP, \fIclass\fP, \
 \fIresources\fP, \fInum_resources\fP, \fIargs\fP, \fInum_args\fP)
@@ -120,20 +120,21 @@ void XtGetSubresources(\fIw\fP, \fIbase\fP, \fIname\fP, \fIclass\fP, \
 .br
       Cardinal \fInum_args\fP;
 .LP
-void XtGetApplicationResources(\fIw\fP, \fIbase\fP, \fIresources\fP, \
-\fInum_resources\fP, \fIargs\fP, \fInum_args\fP)
+void XtVaGetSubresources(\fIw\fP, \fIbase\fP, \fIname\fP, \fIclass\fP, \
+\fIresources\fP, \fInum_resources\fP, \fI...\fP)
 .br
       Widget \fIw\fP;
 .br
       XtPointer \fIbase\fP;
 .br
+      String \fIname\fP;
+.br
+      String \fIclass\fP;
+.br
       XtResourceList \fIresources\fP;
 .br
       Cardinal \fInum_resources\fP;
 .br
-      ArgList \fIargs\fP;
-.br
-      Cardinal \fInum_args\fP;
 .SH ARGUMENTS
 .ds Al to override resources obtained from the resource database
 .IP \fIargs\fP 1i
@@ -156,6 +157,8 @@ Specifies the resource list for the subpart.
 or that identifies the resource database to search
 .IP \fIw\fP 1i
 Specifies the widget \*(Wi.
+.IP \fI...\fP 1i
+Specifies the variable arguments \*(Al.
 .SH DESCRIPTION
 The
 .ZN XtGetSubresources
@@ -169,26 +172,8 @@ If args is NULL,
 num_args must be zero.
 However, if num_args is zero,
 the argument list is not referenced.
-.LP
-The
-.ZN XtGetApplicationResources
-function first uses the passed widget,
-which is usually an application shell,
-to construct a resource name and class list,
-Then, it retrieves the resources from the argument list,
-the resource database, or the resource list default values.
-After adding base to each address,
-.ZN XtGetApplicationResources
-copies the resources into the address given in the resource list.
-If args is NULL,
-num_args must be zero.
-However, if num_args is zero,
-the argument list is not referenced.
-The portable way to specify application resources is to declare them
-as members of a structure and pass the address of the structure 
-as the base argument.
 .SH "SEE ALSO"
-XtGetResourceList(3Xt)
+XtGetApplicationResources, XtVaGetApplicationResources
 .br
 \fI\*(xT\fP
 .br
