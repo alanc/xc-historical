@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: TMparse.c,v 1.79 89/09/19 20:15:05 swick Exp $";
+static char Xrcsid[] = "$XConsortium: TMparse.c,v 1.80 89/09/27 15:25:42 swick Exp $";
 /* $oHeader: TMparse.c,v 1.4 88/09/01 17:30:39 asente Exp $ */
 #endif /*lint*/
 
@@ -122,6 +122,12 @@ static NameValueRec buttonNames[] = {
     {NULL, NULL, NULL},
 };
 
+static NameValueRec motionDetails[] = {
+    {"Normal",		0,	NotifyNormal},
+    {"Hint",		0,	NotifyHint},
+    {NULL, NULL, NULL},
+};
+
 static NameValueRec notifyModes[] = {
     {"Normal",		0,	NotifyNormal},
     {"Grab",		0,	NotifyGrab},
@@ -161,12 +167,20 @@ static NameValueRec propertyChanged[] = {
     {NULL, NULL, NULL},
 };
 
+static NameValueRec mappingNotify[] = {
+    {"MappingModifier",	0,	MappingModifier},
+    {"MappingKeyboard",	0,	MappingKeyboard},
+    {"MappingPointer",	0,	MappingPointer},
+    {NULL, NULL, NULL},
+};
+
 static String ParseKeySym();
 static String ParseKeyAndModifiers();
 static String ParseTable();
 static String ParseImmed();
 static String ParseAddModifier();
 static String ParseNone();
+static String ParseAtom();
 
 static EventKey events[] = {
 
@@ -177,12 +191,12 @@ static EventKey events[] = {
 {"KeyDown",	    NULL, KeyPress,	ParseKeySym,	NULL},
 {"Ctrl",            NULL, KeyPress,  ParseKeyAndModifiers,(Opaque)ControlMask},
 {"Shift",           NULL, KeyPress,    ParseKeyAndModifiers,(Opaque)ShiftMask},
-{"Meta",            NULL, KeyPress,    ParseKeyAndModifiers,(Opaque)NULL},
+{"Meta",            NULL, KeyPress,     ParseKeyAndModifiers,(Opaque)NULL},
 {"KeyUp",	    NULL, KeyRelease,	ParseKeySym,	NULL},
 {"KeyRelease",	    NULL, KeyRelease,	ParseKeySym,	NULL},
 
-{"ButtonPress",     NULL, ButtonPress,    ParseTable,(Opaque)buttonNames},
-{"BtnDown",	    NULL, ButtonPress,    ParseTable,(Opaque)buttonNames},
+{"ButtonPress",     NULL, ButtonPress,  ParseTable,(Opaque)buttonNames},
+{"BtnDown",	    NULL, ButtonPress,  ParseTable,(Opaque)buttonNames},
 {"Btn1Down",	    NULL, ButtonPress,	ParseImmed,(Opaque)Button1},
 {"Btn2Down", 	    NULL, ButtonPress,	ParseImmed,(Opaque)Button2},
 {"Btn3Down", 	    NULL, ButtonPress,	ParseImmed,(Opaque)Button3},
@@ -199,10 +213,10 @@ static EventKey events[] = {
 {"Btn4Up", 	    NULL, ButtonRelease,    ParseImmed,(Opaque)Button4},
 {"Btn5Up", 	    NULL, ButtonRelease,    ParseImmed,(Opaque)Button5},
 
-{"MotionNotify",    NULL, MotionNotify,	ParseNone,	NULL},
-{"PtrMoved", 	    NULL, MotionNotify,	ParseNone,	NULL},
-{"Motion", 	    NULL, MotionNotify,	ParseNone,	NULL},
-{"MouseMoved", 	    NULL, MotionNotify,	ParseNone,	NULL},
+{"MotionNotify",    NULL, MotionNotify,	ParseTable,	(Opaque)motionDetails},
+{"PtrMoved", 	    NULL, MotionNotify,	ParseTable,	(Opaque)motionDetails},
+{"Motion", 	    NULL, MotionNotify,	ParseTable,	(Opaque)motionDetails},
+{"MouseMoved", 	    NULL, MotionNotify,	ParseTable,	(Opaque)motionDetails},
 {"BtnMotion",       NULL, MotionNotify,ParseAddModifier,(Opaque)AnyButtonMask},
 {"Btn1Motion",      NULL, MotionNotify, ParseAddModifier, (Opaque)Button1Mask},
 {"Btn2Motion",      NULL, MotionNotify, ParseAddModifier, (Opaque)Button2Mask},
@@ -220,7 +234,7 @@ static EventKey events[] = {
 
 /* Event Name,	  Quark, Event Type,	Detail Parser, Closure */
 
-{"FocusIn",	    NULL, FocusIn,	       ParseTable,(Opaque)notifyModes},
+{"FocusIn",	    NULL, FocusIn,	  ParseTable,(Opaque)notifyModes},
 
 {"FocusOut",	    NULL, FocusOut,       ParseTable,(Opaque)notifyModes},
 
@@ -278,32 +292,34 @@ static EventKey events[] = {
 {"CirculateRequest",NULL, CirculateRequest,ParseNone,	NULL},
 {"CircReq",	    NULL, CirculateRequest,ParseNone,	NULL},
 
-{"PropertyNotify",  NULL, PropertyNotify,	ParseNone,	NULL},
-{"Prop",	    NULL, PropertyNotify,	ParseNone,	NULL},
+{"PropertyNotify",  NULL, PropertyNotify,	ParseAtom,	NULL},
+{"Prop",	    NULL, PropertyNotify,	ParseAtom,	NULL},
 
-{"SelectionClear",  NULL, SelectionClear,	ParseNone,	NULL},
-{"SelClr",	    NULL, SelectionClear,	ParseNone,	NULL},
+{"SelectionClear",  NULL, SelectionClear,	ParseAtom,	NULL},
+{"SelClr",	    NULL, SelectionClear,	ParseAtom,	NULL},
 
-{"SelectionRequest",NULL, SelectionRequest,ParseNone,	NULL},
-{"SelReq",	    NULL, SelectionRequest,ParseNone,	NULL},
+{"SelectionRequest",NULL, SelectionRequest,	ParseAtom,	NULL},
+{"SelReq",	    NULL, SelectionRequest,	ParseAtom,	NULL},
 
 /* Event Name,	  Quark, Event Type,	Detail Parser, Closure */
 
-{"SelectionNotify", NULL, SelectionNotify,	ParseNone,	NULL},
-{"Select",	    NULL, SelectionNotify,	ParseNone,	NULL},
+{"SelectionNotify", NULL, SelectionNotify,	ParseAtom,	NULL},
+{"Select",	    NULL, SelectionNotify,	ParseAtom,	NULL},
 
 {"ColormapNotify",  NULL, ColormapNotify,	ParseNone,	NULL},
 {"Clrmap",	    NULL, ColormapNotify,	ParseNone,	NULL},
 
-{"ClientMessage",   NULL, ClientMessage,	ParseNone,	NULL},
-{"Message",	    NULL, ClientMessage,	ParseNone,	NULL},
+{"ClientMessage",   NULL, ClientMessage,	ParseAtom,	NULL},
+{"Message",	    NULL, ClientMessage,	ParseAtom,	NULL},
 
-{"MappingNotify",   NULL,MappingNotify,	ParseNone,	NULL},
-{"Mapping",	    NULL,MappingNotify,	ParseNone,	NULL},
+{"MappingNotify",   NULL,MappingNotify, ParseTable,	(Opaque)mappingNotify},
+{"Mapping",	    NULL,MappingNotify,	ParseTable,	(Opaque)mappingNotify},
 
+#ifdef notdef
 {"Timer",	    NULL, _XtTimerEventType,ParseNone,	NULL},
 
 {"EventTimer",	    NULL, _XtEventTimerEventType,ParseNone,NULL},
+#endif
 
 /* Event Name,	  Quark, Event Type,	Detail Parser, Closure */
 
@@ -929,6 +945,38 @@ static String ParseNone(str, closure, event,error)
     event->event.eventCode = 0;
     event->event.eventCodeMask = 0;
 
+    return str;
+}
+
+static String ParseAtom(str, closure, event,error)
+    String str;
+    Opaque closure;
+    EventPtr event;
+    Boolean* error;
+{
+    char *atomName, *start;
+
+    str = ScanWhitespace(str);
+
+    if (*str == ',' || *str == ':') {
+	/* no detail */
+	event->event.eventCode = 0L;
+        event->event.eventCodeMask = 0L;
+    } else {
+	start = str;
+	while (
+		*str != ','
+		&& *str != ':'
+		&& *str != ' '
+		&& *str != '\t'
+                && *str != '\n'
+		&& *str != '\0') str++;
+	(void) strncpy(atomName, start, str-start);
+	atomName[str-start] = '\0';
+	event->event.eventCode = XrmStringToQuark(atomName);
+	event->event.eventCodeMask = ~0L;
+	event->event.matchEvent = _XtMatchAtom;
+    }
     return str;
 }
 
@@ -1855,10 +1903,12 @@ void _XtTranslateInitialize()
     Compile_XtModifierTable( modifiers );
     CompileNameValueTable( buttonNames );
     CompileNameValueTable( notifyModes );
+    CompileNameValueTable( motionDetails );
     CompileNameValueTable( notifyDetail );
     CompileNameValueTable( visibilityNotify );
     CompileNameValueTable( circulation );
     CompileNameValueTable( propertyChanged );
+    CompileNameValueTable( mappingNotify );
 }
 
 _XtAddTMConverters(table)
