@@ -1,5 +1,5 @@
 #if ( !defined(lint) && !defined(SABER) )
-static char Xrcsid[] = "$XConsortium: BSBMenuEnt.c,v 1.5 89/10/09 16:21:14 jim Exp $";
+static char Xrcsid[] = "$XConsortium: SmeBSB.c,v 1.6 89/10/11 11:55:07 jim Exp $";
 #endif 
 
 /***********************************************************
@@ -214,7 +214,8 @@ Region region;
     GC gc;
     SmeBSBObject entry = (SmeBSBObject) w;
     int	font_ascent, font_descent, y_loc;
-    
+
+    entry->sme_bsb.set_values_area_cleared = FALSE;    
     font_ascent = entry->sme_bsb.font->max_bounds.ascent;
     font_descent = entry->sme_bsb.font->max_bounds.descent;
 
@@ -316,26 +317,12 @@ Widget current, request, new;
 	ret_val = TRUE;
     }
 
-    if (ret_val && XtIsRealized(new) ) {
-	Dimension width, height;
-	
-	GetDefaultSize(new, &width, &height);
-	switch (XtMakeResizeRequest(new, width, height, &width, &height)) {
-
-	case XtGeometryAlmost:	/* Fall through. */
-	    (void) XtMakeResizeRequest(new, width, height, &width, &height);
-	case XtGeometryYes:	/* Fall through. */
-	    XClearArea(XtDisplayOfObject(new), XtWindowOfObject(new),
-		       (int) entry->rectangle.x, (int) entry->rectangle.y,
-		       (unsigned int) entry->rectangle.width,
-		       (unsigned int) entry->rectangle.height, FALSE);
-	    Redisplay(new, (XEvent *) NULL, (Region) NULL);
-	case XtGeometryNo:	/* Fall through. */
-	default:
-	    break;
-	}
+    if (ret_val) {
+	GetDefaultSize(new, 
+		       &(entry->rectangle.width), &(entry->rectangle.height));
+	entry->sme_bsb.set_values_area_cleared = TRUE;
     }
-    return(FALSE);
+    return(ret_val);
 }
 
 /*	Function Name: QueryGeometry.
@@ -397,6 +384,8 @@ FlipColors(w)
 Widget w;
 {
     SmeBSBObject entry = (SmeBSBObject) w;
+
+    if (entry->sme_bsb.set_values_area_cleared) return;
 
     XFillRectangle(XtDisplayOfObject(w), XtWindowOfObject(w),
 		   entry->sme_bsb.invert_gc, 0, (int) entry->rectangle.y,

@@ -1,5 +1,5 @@
 /*
-* $XConsortium: SmeBSBP.h,v 1.3 89/10/05 17:50:35 kit Exp $
+* $XConsortium: SmeBSBP.h,v 1.4 89/10/11 11:55:10 jim Exp $
 */
 
 
@@ -77,6 +77,7 @@ typedef struct {
 
 /* private resources. */
 
+    Boolean set_values_area_cleared; /* Remember if we need to unhighlight. */
     GC norm_gc;			/* noral color gc. */
     GC rev_gc;			/* reverse color gc. */
     GC norm_gray_gc;		/* Normal color (grayed out) gc. */
