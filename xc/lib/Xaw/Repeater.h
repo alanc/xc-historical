@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Repeater.h,v 1.16 90/03/01 17:05:05 jim Exp $
+ * $XConsortium: Repeater.h,v 1.1 90/03/02 11:46:59 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -39,15 +39,21 @@
  *  Name		Class		Type		Default
  *  ----		-----		----		-------
  * 
- *  initialDelay	Delay		int		200 milliseconds
- *  repeatDealy		Delay		int		50 milliseconds
+ *  decay		Decay		int		5 milliseconds
  *  flash		Boolean		Boolean		FALSE
+ *  initialDelay	Delay		int		200 milliseconds
+ *  minimumDelay	MinimumDelay	int		10 milliseconds
+ *  repeatDelay		Delay		int		50 milliseconds
  * 
  *****************************************************************************/
 
 					/* new instance and class names */
+#define XtNdecay "decay"
+#define XtCDecay "Decay"
 #define XtNinitialDelay "initialDelay"
 #define XtCDelay "Delay"
+#define XtNminimumDelay "minimumDelay"
+#define XtCMinimumDelay "MinimumDelay"
 #define XtNrepeatDelay "repeatDelay"
 #define XtNflash "flash"
 					/* external declarations */

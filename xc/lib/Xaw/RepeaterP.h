@@ -1,5 +1,5 @@
 /*
- * $XConsortium: RepeaterP.h,v 1.13 90/02/28 13:35:36 jim Exp $
+ * $XConsortium: RepeaterP.h,v 1.1 90/03/02 11:47:00 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -45,8 +45,11 @@ typedef struct {			/* new fields in widget */
     /* resources... */
     int initial_delay;			/* initialDelay/Delay */
     int repeat_delay;			/* repeatDelay/Delay */
+    int minimum_delay;			/* minimumDelay/MinimumDelay */
+    int decay;				/* decay to minimum delay */
     Boolean flash;			/* flash/Boolean */
     /* private data... */
+    int next_delay;			/* next amount for timer */
     XtIntervalId timer;			/* timer that will fire */
 } RepeaterPart;
 
@@ -58,7 +61,9 @@ typedef struct _RepeaterRec {
     RepeaterPart repeater;
 } RepeaterRec;
 
+#define REP_DEF_DECAY 5			/* milliseconds */
 #define REP_DEF_INITIAL_DELAY 200	/* milliseconds */
+#define REP_DEF_MINIMUM_DELAY 10	/* milliseconds */
 #define REP_DEF_REPEAT_DELAY 50		/* milliseconds */
 
 /*

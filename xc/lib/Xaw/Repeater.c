@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Repeater.c,v 1.1 90/03/02 11:46:57 jim Exp $
+ * $XConsortium: Repeater.c,v 1.2 90/03/02 11:51:04 jim Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -32,8 +32,10 @@
 
 static void tic();			/* clock timeout */
 
-#define DO_CALLBACK(rw) XtCallCallbackList ((Widget) rw, \
-					    rw->command.callbacks, NULL)
+#define DO_CALLBACK(rw) \
+    XtCallCallbackList ((Widget) rw, rw->command.callbacks, NULL)
+
+
 #define ADD_TIMEOUT(rw,delay) \
   XtAppAddTimeOut (XtWidgetToApplicationContext ((Widget) rw), \
 		   (unsigned long) delay, tic, (caddr_t) rw)
@@ -71,8 +73,12 @@ static XtActionsRec actions[] = {
  */
 static XtResource resources[] = {
 #define off(field) XtOffset(RepeaterWidget, repeater.field)
+    { XtNdecay, XtCDecay, XtRInt, sizeof (int),
+	off(decay), XtRImmediate, (XtPointer) REP_DEF_DECAY },
     { XtNinitialDelay, XtCDelay, XtRInt, sizeof (int),
 	off(initial_delay), XtRImmediate, (XtPointer) REP_DEF_INITIAL_DELAY },
+    { XtNminimumDelay, XtCMinimumDelay, XtRInt, sizeof (int),
+	off(minimum_delay), XtRImmediate, (XtPointer) REP_DEF_MINIMUM_DELAY },
     { XtNrepeatDelay, XtCDelay, XtRInt, sizeof (int),
 	off(repeat_delay), XtRImmediate, (XtPointer) REP_DEF_REPEAT_DELAY },
     { XtNflash, XtCBoolean, XtRBoolean, sizeof (Boolean),
@@ -87,6 +93,7 @@ static XtResource resources[] = {
 
 static void Initialize();		/* setup private data */
 static void Destroy();			/* clear timers */
+static Boolean SetValues();		/* set resources */
 
 RepeaterClassRec repeaterClassRec = {
   { /* core fields */
@@ -111,7 +118,7 @@ RepeaterClassRec repeaterClassRec = {
     /* destroy			*/	Destroy,
     /* resize			*/	XtInheritResize,
     /* expose			*/	XtInheritExpose,
-    /* set_values		*/	NULL,
+    /* set_values		*/	SetValues,
     /* set_values_hook		*/	NULL,
     /* set_values_almost	*/	XtInheritSetValuesAlmost,
     /* get_values_hook		*/	NULL,
@@ -153,8 +160,26 @@ static void tic (client_data, id)
     RepeaterWidget rw = (RepeaterWidget) client_data;
 
     rw->repeater.timer = 0;		/* timer is removed */
+    if (rw->repeater.flash) {
+	XtExposeProc expose = XtSuperclass(rw)->core_class.expose;
+
+	XClearWindow (XtDisplay((Widget) rw), XtWindow((Widget) rw));
+	rw->command.set = FALSE;
+	(*expose) ((Widget) rw, (XEvent *) NULL, (Region) NULL);
+	XClearWindow (XtDisplay((Widget) rw), XtWindow((Widget) rw));
+	rw->command.set = TRUE;
+	(*expose) ((Widget) rw, (XEvent *) NULL, (Region) NULL);
+    }
     DO_CALLBACK (rw);
-    rw->repeater.timer = ADD_TIMEOUT (rw, rw->repeater.repeat_delay);
+
+    rw->repeater.timer = ADD_TIMEOUT (rw, rw->repeater.next_delay);
+
+					/* decrement delay time, but clamp */
+    if (rw->repeater.decay) {
+	rw->repeater.next_delay -= rw->repeater.decay;
+	if (rw->repeater.next_delay < rw->repeater.minimum_delay)
+	  rw->repeater.next_delay = rw->repeater.minimum_delay;
+    }
 }
 
 
@@ -170,6 +195,7 @@ static void Initialize (greq, gnew)
 {
     RepeaterWidget new = (RepeaterWidget) gnew;
 
+    if (new->repeater.minimum_delay < 0) new->repeater.minimum_delay = 0;
     new->repeater.timer = (XtIntervalId) 0;
 }
 
@@ -179,6 +205,20 @@ static void Destroy (gw)
     CLEAR_TIMEOUT ((RepeaterWidget) gw);
 }
 
+static Boolean SetValues (gcur, greq, gnew)
+    Widget gcur, greq, gnew;
+{
+    RepeaterWidget cur = (RepeaterWidget) gcur;
+    RepeaterWidget new = (RepeaterWidget) gnew;
+    Boolean redisplay = FALSE;
+
+    if (cur->repeater.minimum_delay != new->repeater.minimum_delay) {
+	if (new->repeater.next_delay < new->repeater.minimum_delay) 
+	  new->repeater.next_delay = new->repeater.minimum_delay;
+    }
+
+    return redisplay;
+}
 
 /*****************************************************************************
  *                                                                           *
@@ -196,8 +236,9 @@ static void ActionStart (gw, event, params, num_params)
     RepeaterWidget rw = (RepeaterWidget) gw;
 
     CLEAR_TIMEOUT (rw);
-    rw->repeater.timer = ADD_TIMEOUT (rw, rw->repeater.initial_delay);
     DO_CALLBACK (rw);
+    rw->repeater.timer = ADD_TIMEOUT (rw, rw->repeater.initial_delay);
+    rw->repeater.next_delay = rw->repeater.repeat_delay;
 }
 
 
