@@ -1,4 +1,4 @@
-/* $XConsortium: dipexExt.c,v 5.7 92/04/15 15:27:36 hersh Exp $ */
+/* $XConsortium: dipexExt.c,v 5.8 92/11/24 13:05:48 mor Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -121,7 +121,12 @@ PexExtensionInit()
 
     if (ddpexInit()) {
 	ErrorF("PEXExtensionInit: Couldn't init ddPEX!");
-	return; }
+	/* this isn't needed for the SI since ddpexInit won't fail
+	   in the SI but maybe some vendors versions might...
+	*/
+  	diFreePEXBuffer(pPEXBuffer);
+	return; 
+    }
 
     /*
      *  Open up the default font
@@ -129,7 +134,9 @@ PexExtensionInit()
     pPEXFont=(dipexFont *)Xalloc((unsigned long)(sizeof(dipexFont)));
     if (!pPEXFont) {
 	ErrorF("PEXExtensionInit: Memory error--could not allocate default PEX font");
-	return; }
+  	diFreePEXBuffer(pPEXBuffer);
+	return; 
+    }
 	
     pPEXFont->refcnt = 1;
     pPEXFont->ddFont.id = FakeClientID(0);
@@ -157,7 +164,9 @@ PexExtensionInit()
 
 	Xfree(pPEXFont);
 	defaultPEXFont = 0; 
-	return; }
+  	diFreePEXBuffer(pPEXBuffer);
+	return; 
+    }
     
     /*
      * Note that fonts resources are stored with the type (dipexFont *),
@@ -172,6 +181,9 @@ PexExtensionInit()
     if (!AddResource(	pPEXFont->ddFont.id, PEXFontType,
 			(pointer)(pPEXFont))) {
 	ErrorF("PEXExtensionInit: Couldn't add default PEX font resource.");
+	Xfree(pPEXFont);
+	defaultPEXFont = 0; 
+  	diFreePEXBuffer(pPEXBuffer);
 	return;
     }
 
@@ -180,7 +192,11 @@ PexExtensionInit()
 				    PEXResetProc, StandardMinorOpcode);
     if (!PextEntry) {
 	ErrorF("PEXExtensionInit: AddExtensions failed\n");
-	return; }
+	Xfree(pPEXFont);
+	defaultPEXFont = 0; 
+  	diFreePEXBuffer(pPEXBuffer);
+	return; 
+    }
 
     PexReqCode = PextEntry->base;
     PexErrorBase = PextEntry->errorBase;
@@ -273,6 +289,7 @@ void PEXResetProc()
     FreeResource(temp->id, RT_NONE);
 
     ddpexReset();
+    diFreePEXBuffer(pPEXBuffer);
 }
 
 

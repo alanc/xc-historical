@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: dipexBuf.c,v 5.1 91/02/16 09:56:37 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -37,10 +37,21 @@ diInitPEXBuffer()
     if (!(temp = (ddBuffer *)Xalloc((unsigned long)(sizeof(ddBuffer)))))
 	return (0);
     if (!(temp->pHead =(ddPointer)Xalloc((unsigned long)(INIT_PEX_BUFFER_SIZE))))
-	return (0);
+    {
+  	Xfree(temp);
+   	return (0);
+    }
     temp->bufSize = (ddULONG)INIT_PEX_BUFFER_SIZE;
     temp->dataSize = 0;
     temp->pBuf = temp->pHead;
     return (temp);
+}
+
+  
+void diFreePEXBuffer(buffer)
+    ddBuffer *buffer;
+{
+    Xfree(buffer->pHead);
+    Xfree(buffer);
 }
 
