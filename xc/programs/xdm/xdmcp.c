@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: xdmcp.c,v 1.6 92/03/24 10:30:37 gildea Exp $
+ * $XConsortium: xdmcp.c,v 1.7 92/08/10 10:16:03 eswu Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -1063,6 +1063,8 @@ NetworkAddressToHostname (connectionType, connectionAddress)
 			connectionAddress->data[2],
 			connectionAddress->data[3]);
 		local_name = dotted;
+		LogError ("Cannot convert Internet address %s to host name\n",
+			  dotted);
 	    }
 	    if (!getString (name, strlen (local_name)))
 		break;
