@@ -1,6 +1,6 @@
 #ifndef lint
 static char rcsid[] =
-    "$XConsortium: TMparse.c,v 1.67 88/09/05 14:11:36 swick Exp $";
+    "$XConsortium: TMparse.c,v 1.68 88/09/05 14:19:05 swick Exp $";
 /* $oHeader: TMparse.c,v 1.4 88/09/01 17:30:39 asente Exp $ */
 #endif lint
 
@@ -1610,6 +1610,22 @@ static String ParseActionSeq(stateTable,str, actionsP,acc,error)
 }
 
 
+static void ShowProduction(currentProduction)
+  String currentProduction;
+{
+    Cardinal num_params = 1;
+    char production[500], *eol;
+    String params[1];
+	
+    strncpy( production, currentProduction, 500 );
+    if ((eol = index(production, '\n')) != 0) *eol = '\0';
+    else production[499] = '\0'; /* just in case */
+
+    params[0] = production;
+    XtWarningMsg("translationParseError", "showLine", "XtToolkitError",
+		 "... found while parsing '%s'", params, &num_params);
+}
+
 /***********************************************************************
  * ParseTranslationTableProduction
  * Parses one line of event bindings.
@@ -1623,15 +1639,18 @@ static String ParseTranslationTableProduction(stateTable, str,acc)
     EventSeqPtr	eventSeq = NULL;
     ActionPtr	*actionsP;
     Boolean error = FALSE;
+    String	production = str;
 
     str = ParseEventSeq(str, &eventSeq, &actionsP,&error);
     if (error == TRUE) {
+	ShowProduction(production);
         FreeEventSeq(eventSeq);
         return (str);
     }
     str = ScanWhitespace(str);
     str = ParseActionSeq(stateTable,str, actionsP,acc,&error);
     if (error == TRUE) {
+	ShowProduction(production);
         FreeEventSeq(eventSeq);
         return (str);
     }
