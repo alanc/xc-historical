@@ -1,4 +1,4 @@
-/* $XConsortium: Core.c,v 1.46 91/01/10 21:17:36 converse Exp $ */
+/* $XConsortium: Core.c,v 1.47 91/01/30 09:16:46 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -44,7 +44,7 @@ externaldef(xtinherittranslations) int _XtInheritTranslations = 0;
 extern String XtCXtToolkitError; /* from IntrinsicI.h */
 
 static XtResource resources[] = {
-    {XtNscreen, XtCScreen, XtRScreen, sizeof(int),
+    {XtNscreen, XtCScreen, XtRScreen, sizeof(Screen*),
       XtOffset(CoreWidget,core.screen), XtRCallProc, (XtPointer)XtCopyScreen},
 /*XtCopyFromParent does not work for screen because the Display
 parameter is not passed through to the XtRCallProc routines */
