@@ -1,5 +1,5 @@
 /*
- * $XConsortium: LocBitmap.c,v 1.6 90/03/23 11:09:29 rws Exp $
+ * $XConsortium: LocBitmap.c,v 1.7 90/11/30 17:00:47 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -39,6 +39,11 @@
  * XmuLocateBitmapFile - read a bitmap file using the normal defaults
  */
 
+#if NeedFunctionPrototypes
+Pixmap XmuLocateBitmapFile (Screen *screen, _Xconst char *name, char *srcname,
+			    int srcnamelen, int *widthp, int *heightp, 
+			    int *xhotp, int *yhotp)
+#else
 Pixmap XmuLocateBitmapFile (screen, name, srcname, srcnamelen,
 			    widthp, heightp, xhotp, yhotp)
     Screen *screen;
@@ -46,6 +51,7 @@ Pixmap XmuLocateBitmapFile (screen, name, srcname, srcnamelen,
     char *srcname;			/* RETURN */
     int srcnamelen;
     int *widthp, *heightp, *xhotp, *yhotp;  /* RETURN */
+#endif
 {
     return XmuLocatePixmapFile (screen, name, 
 				(unsigned long) 1, (unsigned long) 0,
@@ -57,6 +63,13 @@ Pixmap XmuLocateBitmapFile (screen, name, srcname, srcnamelen,
 /*
  * version that reads pixmap data as well as bitmap data
  */
+#if NeedFunctionPrototypes
+Pixmap XmuLocatePixmapFile (Screen *screen, _Xconst char *name, 
+			    unsigned long fore, unsigned long back, 
+			    unsigned int depth, 
+			    char *srcname, int srcnamelen,
+			    int *widthp, int *heightp, int *xhotp, int *yhotp)
+#else
 Pixmap XmuLocatePixmapFile (screen, name, fore, back, depth, 
 			    srcname, srcnamelen,
 			    widthp, heightp, xhotp, yhotp)
@@ -67,6 +80,7 @@ Pixmap XmuLocatePixmapFile (screen, name, fore, back, depth,
     char *srcname;			/* RETURN */
     int srcnamelen;
     int *widthp, *heightp, *xhotp, *yhotp;  /* RETURN */
+#endif
 {
     Display *dpy = DisplayOfScreen (screen);
     Window root = RootWindowOfScreen (screen);
@@ -133,7 +147,7 @@ Pixmap XmuLocatePixmapFile (screen, name, fore, back, depth,
 	  case 1:
 	    if (!(name[0] == '/' || (name[0] == '.') && name[1] == '/')) 
 	      continue;
-	    fn = name;
+	    fn = (char *) name;
 	    try_plain_name = False;
 	    break;
 	  case 2:
@@ -149,7 +163,7 @@ Pixmap XmuLocatePixmapFile (screen, name, fore, back, depth,
 	    break;
 	  case 4:
 	    if (!try_plain_name) continue;
-	    fn = name;
+	    fn = (char *) name;
 	    break;
 	}
 
