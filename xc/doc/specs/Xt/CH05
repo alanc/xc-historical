@@ -1,4 +1,4 @@
-.\" $XConsortium: CH05,v 1.6 91/07/31 20:24:03 swick Exp $
+.\" $XConsortium: CH05,v 1.7 91/08/26 13:31:15 swick Exp $
 .\"
 .\" Copyright 1985, 1986, 1987, 1988, 1991
 .\" Massachusetts Institute of Technology, Cambridge, Massachusetts,
@@ -104,7 +104,7 @@ require different processing by the \*(xI.
 Further, all user input remap events occurring outside the spring-loaded
 pop-up (e.g., in a descendant) are also delivered to the spring-loaded
 pop-up after they have been dispatched to the appropriate descendant, so
-that, for example, buttond- up can take down a spring-loaded pop-up no
+that, for example, button-up can take down a spring-loaded pop-up no
 matter where the
 button-up occurs.
 .LP
