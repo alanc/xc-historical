@@ -1,4 +1,4 @@
-/* $XConsortium: globals.h,v 1.11 94/02/07 19:13:42 mor Exp $ */
+/* $XConsortium: globals.h,v 1.12 94/03/08 12:17:00 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -23,7 +23,7 @@ extern void _IceDefaultIOErrorHandler ();
 extern IcePoAuthStatus _IcePoMagicCookie1Proc ();
 extern IcePaAuthStatus _IcePaMagicCookie1Proc ();
 
-extern Bool _IceProcessCoreMessage ();
+extern void _IceProcessCoreMessage ();
 
 IceConn     	_IceConnectionObjs[256];
 char	    	*_IceConnectionStrings[256];
