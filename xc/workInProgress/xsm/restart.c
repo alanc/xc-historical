@@ -1,4 +1,4 @@
-/* $XConsortium: restart.c,v 1.17 94/08/17 18:02:00 mor Exp mor $ */
+/* $XConsortium: restart.c,v 1.18 94/11/14 15:31:32 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -26,6 +26,7 @@ in this Software without prior written authorization from the X Consortium.
 ******************************************************************************/
 
 #include "xsm.h"
+#include "log.h"
 
 #if (defined(SYSV) || defined(macII)) && !defined(hpux)
 #define vfork() fork()
@@ -233,6 +234,8 @@ int flag;
 	}
 
 	if(program && args) {
+	    char logtext[256];
+
 	    if ((flag == RESTART_MANAGERS && !is_manager) ||
 	        (flag == RESTART_REST_OF_CLIENTS && is_manager))
 	    {
@@ -260,6 +263,16 @@ int flag;
 		 * The client is being restarted on the local machine.
 		 */
 
+		sprintf (logtext, "Restarting locally : ");
+		for (pp = args; *pp; pp++)
+		{
+		    strcat (logtext, *pp);
+		    strcat (logtext, " ");
+		}
+
+		strcat (logtext, "\n");
+		add_log_text (logtext);
+
 		switch(vfork()) {
 		case -1:
 		    perror("vfork");
@@ -285,6 +298,16 @@ int flag;
 		/*
 		 * The client is being restarted on a remote machine.
 		 */
+
+		sprintf (logtext, "Restarting remotely on %s : ",
+		    restart_machine);
+		for (pp = args; *pp; pp++)
+		{
+		    strcat (logtext, *pp);
+		    strcat (logtext, " ");
+		}
+		strcat (logtext, "\n");
+		add_log_text (logtext);
 
 		remote_start (restart_protocol, restart_machine,
 		    program, args, cwd, env,
@@ -557,6 +580,7 @@ void
 StartNonSessionAwareApps ()
 
 {
+    char logtext[256];
     int i;
 
     for (i = 0; i < non_session_aware_count; i++)
@@ -566,6 +590,10 @@ StartNonSessionAwareApps ()
 	 * at the end of the command.  We previously allocated an extra
 	 * byte for this.
 	 */
+
+	sprintf (logtext, "Restarting locally : %s\n",
+	    non_session_aware_clients[i]);
+	add_log_text (logtext);
 
 	strcat (non_session_aware_clients[i], "&");
 	system (non_session_aware_clients[i]);
