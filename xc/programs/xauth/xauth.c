@@ -7,12 +7,14 @@
 
 #include "xauth.h"
 
+
 /*
  * global data
  */
 char *ProgramName;			/* argv[0], set at top of main() */
 Bool format_numeric = False;		/* dump entries in hex */
 Bool verbose = True;			/* print certain messages */
+Bool ignore_locks = False;		/* for error recovery */
 
 /*
  * local data
@@ -36,6 +38,7 @@ void print_help (printall)
 "    -f authfilename           name of authority file to use",
 "    -n                        start in numeric mode",
 "    -q                        print no unsolicited messages",
+"    -i                        ignore locks",
 "",
 "and commands have the following syntax",
 NULL };
@@ -48,14 +51,12 @@ NULL };
 "    set numeric {on,off}              turn numeric mode on or off",
 "    source filename                   read command from the given file",
 "    info                              print out info about inputs",
-"    quit                              exit program (same as end of file)",
-"    abort                             exit program and abort any changes",
+"    exit                              exit program (same as end of file)",
+"    quit                              exit program and abort any changes",
 "    help                              display this message",
 "",
-"If a single dash is specified as a filename for the merge or source commands",
-"the data will be read from the standard input.  If a single dash is",
-"specified as the filename for the extract command the data will be written",
-"to the standard output.",
+"A dash may be used with the \"merge\" and \"source\" to read from the",
+"standard input.",
 "",
 NULL };
     char **msg;
@@ -116,6 +117,9 @@ main (argc, argv)
 	      case 'q':			/* -q */
 		verbose = False;
 		continue;
+	      case 'i':			/* -i */
+		ignore_locks = True;
+		continue;
 	      default:
 		usage ();
 	    }
@@ -137,8 +141,7 @@ main (argc, argv)
 	}
     }
     if (auth_initialize (authfilename) != 0) {
-	fprintf (stderr, "%s:  unable to initialize authority file \"%s\"\n",
-		 ProgramName, authfilename);
+	/* error message printed in auth_initialize */
 	exit (1);
     }
 

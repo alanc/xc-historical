@@ -1,5 +1,5 @@
 /*
- * $XConsortium: process.c,v 1.8 88/12/09 14:55:53 jim Exp $
+ * $XConsortium: process.c,v 1.10 88/12/09 18:38:49 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -26,11 +26,11 @@
 #include <stdio.h>
 #include <ctype.h>
 #include <errno.h>
+extern int errno;			/* for stupid errno.h files */
+#include <signal.h>
 #include "xauth.h"
 #include <X11/X.h>
 #include <pwd.h>
-
-extern int errno;			/* for stupid errno.h files */
 
 #ifndef DEFAULT_PROTOCOL
 #define DEFAULT_PROTOCOL "MIT-MAGIC-COOKIE-1"
@@ -39,6 +39,10 @@ extern int errno;			/* for stupid errno.h files */
 #ifndef DEFAULT_PROTOCOL_ABBREV
 #define DEFAULT_PROTOCOL_ABBREV "."
 #endif
+
+#define XAUTH_DEFAULT_RETRIES 2		/* just a few times */
+#define XAUTH_DEFAULT_TIMEOUT 2		/* in seconds, be quick */
+#define XAUTH_DEFAULT_DEADTIME 600L	/* 10 minutes in seconds */
 
 typedef struct _AuthList {
     struct _AuthList *next;
@@ -61,24 +65,31 @@ struct _extract_data {
 };
 
 
+
+/*
+ * private data
+ */
+
 static int do_list(), do_merge(), do_extract(), do_add(), do_remove();
-static int do_help(), do_source(), do_set(), do_info(), do_quit();
-static int do_abort(), do_questionmark();
+static int do_help(), do_source(), do_set(), do_info(), do_exit();
+static int do_quit(), do_questionmark();
 
 CommandTable command_table[] = {
-    { "abort",   2, 5, do_abort },	/* abort */
-    { "add",     2, 3, do_add },	/* add dpy proto hexkey */
-    { "extract", 1, 7, do_extract },	/* extract filename dpy... */
-    { "help",    1, 4, do_help },	/* help */
-    { "info",    1, 4, do_info },	/* info */
-    { "list",    1, 4, do_list },	/* list [dpy...] */
-    { "merge",   1, 5, do_merge },	/* merge filename... */
-    { "quit",    1, 4, do_quit },	/* quit */
-    { "remove",  1, 6, do_remove },	/* remove dpy... */
-    { "set",     1, 3, do_set },	/* set numeric [on/off] */
-    { "source",  1, 6, do_source },	/* source filename */
-    { "?",       1, 1, do_questionmark },  /* print xauth commands */
-    { NULL,      0, 0, NULL },
+    { "add",      2, 3, do_add },	/* add dpy proto hexkey */
+    { "exit",     3, 4, do_exit },	/* exit */
+    { "extract",  3, 7, do_extract },	/* extract filename dpy... */
+    { "help",     1, 4, do_help },	/* help */
+    { "info",     1, 4, do_info },	/* info */
+    { "list",     1, 4, do_list },	/* list [dpy...] */
+    { "merge",    1, 5, do_merge },	/* merge filename... */
+    { "nextract", 2, 8, do_extract },	/* nextract filename dpy... */
+    { "nlist",    2, 5, do_list },	/* nlist [dpy...] */
+    { "nmerge",   2, 6, do_merge },	/* nmerge filename... */
+    { "quit",     1, 4, do_quit },	/* quit */
+    { "remove",   1, 6, do_remove },	/* remove dpy... */
+    { "source",   1, 6, do_source },	/* source filename */
+    { "?",        1, 1, do_questionmark },  /* print xauth commands */
+    { NULL,       0, 0, NULL },
 };
 
 
@@ -128,6 +139,8 @@ static char *hex_table[] = {		/* for printing hex digits */
     "f0", "f1", "f2", "f3", "f4", "f5", "f6", "f7", 
     "f8", "f9", "fa", "fb", "fc", "fd", "fe", "ff", 
 };
+
+static unsigned int hexvalues[256];
 
 static int original_umask = 0;
 
@@ -249,42 +262,151 @@ static char **split_into_words (src, argcp)
 }
 
 
+static int getinput (fp)
+    FILE *fp;
+{
+    register int c;
+
+    while ((c = getc (fp)) != EOF && isascii(c) && c != '\n' && isspace(c)) ;
+    return c;
+}
+
+static int get_short (fp, sp)
+    FILE *fp;
+    unsigned short *sp;
+{
+    int c;
+    int i;
+    unsigned short us = 0;
+
+    /*
+     * read family:  written with %04x
+     */
+    for (i = 0; i < 4; i++) {
+	switch (c = getinput (fp)) {
+	  case EOF:
+	  case '\n':
+	    return 0;
+	}
+	if (c < 0 || c > 255) return 0;
+	us = (us * 16) + hexvalues[c];	/* since msb */
+    }
+    *sp = us;
+    return 1;
+}
+
+static int get_bytes (fp, n, ptr)
+    FILE *fp;
+    unsigned int n;
+    char **ptr;
+{
+    char *s;
+    register char *cp;
+    char buf[2];
+
+    cp = s = malloc (n);
+    if (!cp) return 0;
+
+    while (n > 0) {
+	if ((buf[0] = getinput (fp)) == EOF || buf[0] == '\n' ||
+	    (buf[1] = getinput (fp)) == EOF || buf[1] == '\n') {
+	    free (s);
+	    return 0;
+	}
+	*cp = (char) ((hexvalues[(unsigned int)buf[0]] * 16) + 
+		      hexvalues[(unsigned int)buf[1]]);
+	cp++;
+	n--;
+    }
+
+    *ptr = s;
+    return 1;
+}
+
+
 static Xauth *read_numeric (fp)
     FILE *fp;
 {
-    /* XXX */
+    Xauth *auth;
+
+    auth = (Xauth *) malloc (sizeof (Xauth));
+    if (!auth) goto bad;
+    auth->family = 0;
+    auth->address = NULL;
+    auth->address_length = 0;
+    auth->number = NULL;
+    auth->number_length = 0;
+    auth->name = NULL;
+    auth->name_length = 0;
+    auth->data = NULL;
+    auth->data_length = 0;
+
+    if (!get_short (fp, (unsigned short *) &auth->family))
+      goto bad;
+    if (!get_short (fp, (unsigned short *) &auth->address_length))
+      goto bad;
+    if (!get_bytes (fp, (unsigned int) auth->address_length, &auth->address))
+      goto bad;
+    if (!get_short (fp, (unsigned short *) &auth->number_length))
+      goto bad;
+    if (!get_bytes (fp, (unsigned int) auth->number_length, &auth->number))
+      goto bad;
+    if (!get_short (fp, (unsigned short *) &auth->name_length))
+      goto bad;
+    if (!get_bytes (fp, (unsigned int) auth->name_length, &auth->name))
+      goto bad;
+    if (!get_short (fp, (unsigned short *) &auth->data_length))
+      goto bad;
+    if (!get_bytes (fp, (unsigned int) auth->data_length, &auth->data))
+      goto bad;
+    
+    switch (getinput (fp)) {		/* get end of line */
+      case EOF:
+      case '\n':
+	return auth;
+    }
+
+  bad:
+    if (auth) XauDisposeAuth (auth);	/* won't free null pointers */
     return NULL;
 }
 
-static int read_auth_entries (fp, numeric, headp, tailp)
+static int read_auth_entries (fp, allownumeric, headp, tailp)
     FILE *fp;
-    Bool numeric;
+    Bool allownumeric;
     AuthList **headp, **tailp;
 {
-    Xauth *((*readfunc)()) = (numeric ? read_numeric : XauReadAuth);
+    static Xauth *((*readfunc)())[] = { XauReadAuth, read_numeric };
     Xauth *auth;
     AuthList *head, *tail;
     int n;
+    int i;
+    long foff = ftell (fp);
 
     head = tail = NULL;
     n = 0;
 					/* put all records into linked list */
-    while ((auth = ((*readfunc) (fp))) != NULL) {
-	AuthList *l = (AuthList *) malloc (sizeof (AuthList));
-	if (!l) {
-	    fprintf (stderr,
-		     "%s:  unable to alloc entry while reading auth file\n",
-		     ProgramName);
-	    exit (1);
+    for (i = 0; i < 2; i++) {
+	while ((auth = ((readfunc[i]) (fp))) != NULL) {
+	    AuthList *l = (AuthList *) malloc (sizeof (AuthList));
+	    if (!l) {
+		fprintf (stderr,
+			 "%s:  unable to alloc entry reading auth file\n",
+			 ProgramName);
+		exit (1);
+	    }
+	    l->next = NULL;
+	    l->auth = auth;
+	    if (tail) 			/* if not first time through append */
+	      tail->next = l;
+	    else
+	      head = l;			/* first time through, so assign */
+	    tail = l;
+	    n++;
 	}
-	l->next = NULL;
-	l->auth = auth;
-	if (tail) 			/* if not first time through append */
-	  tail->next = l;
-	else
-	  head = l;			/* first time through, so assign */
-	tail = l;
-	n++;
+	if (n != 0 || !allownumeric)
+	  break;
+	fseek (fp, foff, 0);		/* go back and try again */
     }
     *headp = head;
     *tailp = tail;
@@ -434,20 +556,79 @@ static int dispatch_command (inputfilename, lineno, argc, argv, tab, statusp)
 }
 
 
-/*
- * public procedures for parsing lines of input
- */
-
-static FILE *authfp = NULL;
 static AuthList *xauth_head = NULL;	/* list of auth entries */
 static Bool xauth_modified = False;
 static char *xauth_filename = NULL;
+
+static die (sig)
+    int sig;
+{
+#ifdef SYSV
+    if (sig > 0) signal (sig, die);	/* re-establish signal handler */
+#endif
+    xauth_modified = False;		/* bash it to prevent writing */
+    exit (auth_finalize ());
+    /* NOTREACHED */
+}
+
+static void register_signals ()
+{
+    signal (SIGINT, die);
+    signal (SIGTERM, die);
+    signal (SIGHUP, die);
+    return;
+}
+
+
+/*
+ * public procedures for parsing lines of input
+ */
 
 int auth_initialize (authfilename)
     char *authfilename;
 {
     int n;
     AuthList *head, *tail;
+    FILE *authfp;
+
+    register_signals ();
+
+    bzero ((char *) hexvalues, sizeof hexvalues);
+    hexvalues['0'] = 0;
+    hexvalues['1'] = 1;
+    hexvalues['2'] = 2;
+    hexvalues['3'] = 3;
+    hexvalues['4'] = 4;
+    hexvalues['5'] = 5;
+    hexvalues['6'] = 6;
+    hexvalues['7'] = 7;
+    hexvalues['8'] = 8;
+    hexvalues['9'] = 9;
+    hexvalues['a'] = hexvalues['A'] = 0xa;
+    hexvalues['b'] = hexvalues['B'] = 0xb;
+    hexvalues['c'] = hexvalues['C'] = 0xc;
+    hexvalues['d'] = hexvalues['D'] = 0xd;
+    hexvalues['e'] = hexvalues['E'] = 0xe;
+    hexvalues['f'] = hexvalues['F'] = 0xf;
+
+    if (!ignore_locks) {
+	n = XauLockAuth (authfilename, XAUTH_DEFAULT_RETRIES,
+			 XAUTH_DEFAULT_TIMEOUT, XAUTH_DEFAULT_DEADTIME);
+	if (n != LOCK_SUCCESS) {
+	    char *reason = "unknown error";
+	    switch (n) {
+	      case LOCK_ERROR:
+		reason = "error";
+		break;
+	      case LOCK_TIMEOUT:
+		reason = "timeout";
+		break;
+	    }
+	    fprintf (stderr, "%s:  %s in locking authority file %s\n",
+		     ProgramName, reason, authfilename);
+	    return -1;
+	}
+    }
 
     original_umask = umask (0077);	/* disallow non-owner access */
 
@@ -465,6 +646,7 @@ int auth_initialize (authfilename)
 	}				/* else ignore it */
     } else {
 	n = read_auth_entries (authfp, False, &head, &tail);
+	(void) fclose (authfp);
 	if (n < 0) {
 	    fprintf (stderr,
 		     "%s:  unable to read auth entries from file \"%s\"\n",
@@ -481,17 +663,60 @@ int auth_initialize (authfilename)
     return 0;
 }
 
+static int write_auth_file (tmpnam)
+    char *tmpnam;
+{
+    FILE *fp;
+    AuthList *list;
+
+    /*
+     * xdm and auth spec assumes auth file is 12 or fewer characters
+     */
+    strcpy (tmpnam, xauth_filename);
+    strcat (tmpnam, "-n");		/* for new */
+    (void) unlink (tmpnam);
+    fp = fopen (tmpnam, "w");		/* umask is still set to 0077 */
+    if (!fp) {
+	fprintf (stderr, "%s:  unable to open tmp file \"%s\"\n",
+		 ProgramName, tmpnam);
+	return -1;
+    } 
+
+    for (list = xauth_head; list; list = list->next) {
+	XauWriteAuth (fp, list->auth);
+    }
+
+    (void) fclose (fp);
+    return 0;
+}
+
 int auth_finalize ()
 {
+    char tmpnam[1024];			/* large filename size */
+
     if (xauth_modified) {
-	/* XXX - need to write stuff back out */
 	if (verbose) {
 	    printf ("Writing authority file %s\n", xauth_filename);
 	}
+	tmpnam[0] = '\0';
+	if (write_auth_file (tmpnam) == -1) {
+	    fprintf (stderr, "%s:  unable to write authority file %s\n",
+		     ProgramName, tmpnam);
+	} else {
+	    (void) unlink (xauth_filename);
+	    if (link (tmpnam, xauth_filename) == -1) {
+		fprintf (stderr,
+			 "%s:  unable to link authority file %s, use %s\n",
+			 ProgramName, xauth_filename, tmpnam);
+	    } else {
+		(void) unlink (tmpnam);
+	    }
+	}
     }
-    /*
-     * XXX - need to unlock auth file
-     */
+
+    if (!ignore_locks) {
+	XauUnlockAuth (xauth_filename);
+    }
     (void) umask (original_umask);
     return 0;
 }
@@ -882,6 +1107,7 @@ static int do_merge (inputfilename, lineno, argc, argv)
     int errors = 0;
     AuthList *head, *tail, *listhead, *listtail;
     int nentries;
+    Bool numeric = False;
 
     if (argc < 2) {
 	prefix (inputfilename, lineno);
@@ -889,6 +1115,7 @@ static int do_merge (inputfilename, lineno, argc, argv)
 	return 1;
     }
 
+    if (argv[0][0] == 'n') numeric = True;
     listhead = listtail = NULL;
 
     for (i = 1; i < argc; i++) {
@@ -921,7 +1148,7 @@ static int do_merge (inputfilename, lineno, argc, argv)
 	}
 
 	head = tail = NULL;
-	nentries = read_auth_entries (fp, format_numeric, &head, &tail);
+	nentries = read_auth_entries (fp, numeric, &head, &tail);
 	if (nentries == 0) {
 	    prefix (inputfilename, lineno);
 	    fprintf (stderr, "unable to read any entries from file \"%s\"\n",
@@ -1124,7 +1351,6 @@ static int do_info (inputfilename, lineno, argc, argv)
     printf ("Authority file:     %s\n",
 	    xauth_filename ? xauth_filename : "(none)");
     printf ("Has been modified:  %s\n", xauth_modified ? "yes" : "no");
-    printf ("Numeric format:     %s\n", format_numeric ? "on" : "off");
     printf ("Input line:         %s:%d\n", inputfilename, lineno);
     return 0;
 }
@@ -1186,10 +1412,24 @@ static int do_set_numeric (inputfilename, lineno, argc, argv)
 
 
 /*
+ * exit
+ */
+static Bool alldone = False;
+
+static int do_exit (inputfilename, lineno, argc, argv)
+    char *inputfilename;
+    int lineno;
+    int argc;
+    char **argv;
+{
+    /* allow bogus stuff */
+    alldone = True;
+    return 0;
+}
+
+/*
  * quit
  */
-static Bool quit = False;
-
 static int do_quit (inputfilename, lineno, argc, argv)
     char *inputfilename;
     int lineno;
@@ -1197,22 +1437,7 @@ static int do_quit (inputfilename, lineno, argc, argv)
     char **argv;
 {
     /* allow bogus stuff */
-    quit = True;
-    return 0;
-}
-
-/*
- * abort
- */
-static int do_abort (inputfilename, lineno, argc, argv)
-    char *inputfilename;
-    int lineno;
-    int argc;
-    char **argv;
-{
-    /* allow bogus stuff */
-    xauth_modified = False;		/* bash it to prevent writing */
-    exit (auth_finalize ());
+    die (0);
     /* NOTREACHED */
 }
 
@@ -1265,9 +1490,9 @@ static int do_source (inputfilename, lineno, argc, argv)
 	}
     }
 
-    if (isatty (fileno (fp))) prompt = True;
+    if (verbose && isatty (fileno (fp))) prompt = True;
 
-    while (!quit) {
+    while (!alldone) {
 	buf[0] = '\0';
 	if (prompt) {
 	    printf ("xauth> ");
