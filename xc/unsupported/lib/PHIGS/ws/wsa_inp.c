@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: wsa_inp.c,v 5.1 91/02/16 09:50:37 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -107,7 +107,7 @@ int
 phg_wsa_resolve_pick( ws, dev, dc_pt, status, depth, path )
     Ws			*ws;
     Ws_inp_pick		*dev;
-    pexDeviceCoord2D	*dc_pt;
+    pexDeviceCoord	*dc_pt;
     CARD16		*status;
     CARD32		*depth;
     pexPickPath		**path;
@@ -205,7 +205,7 @@ int
 phg_wsa_pick_enable( ws, dev, init_path_size, init_path )
     Ws			*ws;
     Ws_inp_pick		*dev;
-    CARD32		*init_path_size;
+    CARD32		init_path_size;
     char		*init_path;	/* must be PEX encoded */
 {
     pexBitmask		mask = 0;
@@ -254,7 +254,7 @@ phg_wsa_pick_enable( ws, dev, init_path_size, init_path )
     *card16_p = dev->esw == PSWITCH_ECHO ? PEXEcho : PEXNoEcho;
 
     (void)PEXChangePickDevice( ws->display, ws->rid, dev->dev_type, mask,
-	sizeof(buffer), buffer );
+															(CARD32)sizeof(buffer), buffer );
 
     if ( dev->pick.status == PIN_STATUS_OK ) {
 	mask = PEXPDPickPath;
