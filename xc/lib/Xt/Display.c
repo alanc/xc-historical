@@ -1,5 +1,6 @@
 #ifndef lint
-static char rcsid[] = "$xHeader: Display.c,v 1.7 88/08/29 16:41:15 asente Exp $";
+static char rcsid[] =
+    "$XConsortium: Display.c,v 1.7 88/08/29 16:41:15 asente Exp $";
 /* $oHeader: Display.c,v 1.7 88/08/29 16:41:15 asente Exp $ */
 #endif lint
 
@@ -199,6 +200,8 @@ void XtDisplayInitialize(app, dpy, name, classname,
         pd->keysyms = NULL;
         pd ->modsToKeysyms = NULL;
 	pd->appContext = app;
+	pd->name = XrmStringToName(name);
+	pd->class = XrmStringToClass(classname);
 
 	_XtDisplayInitialize(dpy, app, name, classname, urlist, 
 		num_urs, argc, argv);
@@ -224,7 +227,6 @@ XtAppContext XtCreateApplicationContext()
 	FD_ZERO(&app->fds.rmask);
 	FD_ZERO(&app->fds.wmask);
 	FD_ZERO(&app->fds.emask);
-	app->name = app->class = NULL; /* R2 compatibility only */
 	return app;
 }
 
