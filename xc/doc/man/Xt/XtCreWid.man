@@ -6,7 +6,7 @@
 .ds xC Inter-Client Communication Conventions Manual
 .ds Rn 3
 .ds Vn 2.2
-.hw XtCreate-Widget XtCreate-Managed-Widget XtDestroy-Widget wid-get
+.hw XtCreate-Widget XtCreate-Managed-Widget XtDestroy-Widget XtVa-Create-Widget XtVa-Create-Managed-Widget wid-get
 .na
 .de Ds
 .nf
@@ -99,7 +99,7 @@
 .ny0
 .TH XtCreateWidget 3Xt "Release 6" "X Version 11" "XT FUNCTIONS"
 .SH NAME
-XtCreateWidget, XtCreateManagedWidget, XtDestroyWidget \- create and destroy widgets
+XtCreateWidget, XtVaCreateWidget, XtCreateManagedWidget, XtVaCreateManagedWidget, XtDestroyWidget \- create and destroy widgets
 .SH SYNTAX
 Widget XtCreateWidget(\fIname\fP, \fIwidget_class\fP, \fIparent\fP, \
 \fIargs\fP, \fInum_args\fP)
@@ -114,6 +114,14 @@ Widget XtCreateWidget(\fIname\fP, \fIwidget_class\fP, \fIparent\fP, \
 .br
       Cardinal \fInum_args\fP;
 .LP
+Widget XtVaCreateWidget(\fIname\fP, \fIwidget_class\fP, \fIparent\fP, ...)
+.br
+      String \fIname\fP;
+.br
+      WidgetClass \fIwidget_class\fP;
+.br
+      Widget \fIparent\fP;
+.LP
 Widget XtCreateManagedWidget(\fIname\fP, \fIwidget_class\fP, \fIparent\fP, \
 \fIargs\fP, \fInum_args\fP)
 .br
@@ -126,6 +134,14 @@ Widget XtCreateManagedWidget(\fIname\fP, \fIwidget_class\fP, \fIparent\fP, \
       ArgList \fIargs\fP;
 .br
       Cardinal \fInum_args\fP;
+.LP
+Widget XtVaCreateManagedWidget(\fIname\fP, \fIwidget_class\fP, \fIparent\fP, ...)
+.br
+      String \fIname\fP;
+.br
+      WidgetClass \fIwidget_class\fP;
+.br
+      Widget \fIparent\fP;
 .LP
 void XtDestroyWidget(\fIw\fP)
 .br
@@ -148,6 +164,8 @@ Specifies the widget.
 .ds Wc \ pointer for the created widget
 .IP \fIwidget_class\fP 1i
 Specifies the widget class\*(Wc.
+.IP \fI...\fP
+Specifies the variable argument list \*(Al.
 .SH DESCRIPTION
 The
 .ZN XtCreateWidget
