@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: connection.c,v 1.140 91/07/19 23:22:17 keith Exp $ */
+/* $XConsortium: connection.c,v 1.141 91/09/09 14:27:23 rws Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -568,8 +568,11 @@ ClientAuthorized(client, proto_n, auth_proto, string_n, auth_string)
  *    and AllSockets.
  *****************/
 
-void
-EstablishNewConnections()
+/*ARGSUSED*/
+Bool
+EstablishNewConnections(clientUnused, closure)
+    ClientPtr clientUnused;
+    pointer closure;
 {
     long readyconnections;     /* mask of listeners that are ready */
     int curconn;                  /* fd of listener that's ready */
@@ -595,9 +598,9 @@ EstablishNewConnections()
     int	fromlen;
 #endif /* TCP_NODELAY */
 
-    readyconnections = (LastSelectMask[0] & WellKnownConnections);
+    readyconnections = (((long)closure) & WellKnownConnections);
     if (!readyconnections)
-	return;
+	return TRUE;
     connect_time = GetTimeInMillis();
     /* kill off stragglers */
     for (i=1; i<currentMaxClients; i++)
@@ -689,6 +692,7 @@ EstablishNewConnections()
 	XdmcpOpenDisplay(newconn);
 #endif /* XDMCP */
     }
+    return TRUE;
 }
 
 #define NOROOM "Maximum number of clients reached"
