@@ -1,4 +1,4 @@
-/* $XConsortium: dixfont.h,v 1.8 93/07/12 09:44:45 dpw Exp $ */
+/* $XConsortium: dixfont.h,v 1.9 93/08/25 22:40:04 gildea Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -151,9 +151,11 @@ extern int DeleteClientFontStuff(
 #endif
 );
 
+typedef struct _ScreenInfo *ScreenInfoPtr; /* XXX temporary */
+
 extern int InitFonts(
 #if NeedFunctionPrototypes
-    ScreenInfo */*screenInfo*/
+    ScreenInfoPtr /*screenInfo*/
 #endif
 );
 
