@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: button.c,v 1.34 89/03/06 11:02:46 jim Exp $
+ *	$XConsortium: button.c,v 1.35 89/03/11 10:01:13 rws Exp $
  */
 
 
@@ -35,7 +35,7 @@ button.c	Handles button events in the terminal emulator.
 				J. Gettys.
 */
 #ifndef lint
-static char rcs_id[] = "$XConsortium: button.c,v 1.34 89/03/06 11:02:46 jim Exp $";
+static char rcs_id[] = "$XConsortium: button.c,v 1.35 89/03/11 10:01:13 rws Exp $";
 #endif	/* lint */
 #include <X11/Xos.h>
 #include <X11/Xlib.h>
@@ -1408,6 +1408,7 @@ register Menu **menu;
 		if(xlog = screen->logging)
 			CheckItem(*menu, XMENU_LOG);
 		DisableItem(*menu, XMENU_LINE);
+		DisableItem(*menu, XMENU_LINE2);
 		if(screen->inhibit & I_LOG)
 			DisableItem(*menu, XMENU_LOG);
 		if(screen->inhibit & I_SIGNAL)
