@@ -1,5 +1,5 @@
 /*
- *	$Header: main.h,v 1.7 87/12/19 10:52:55 rws Exp $
+ *	$Header: main.h,v 1.1 88/02/11 22:08:40 jim Exp $
  */
 
 
@@ -32,5 +32,5 @@
 
 #define	DEFBOLDFONT		"fixed"
 #define	DEFBORDER		2
-#define	DEFBORDERWIDTH		1
+#define	DEFBORDERWIDTH		2
 #define	DEFFONT			"fixed"
