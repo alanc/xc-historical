@@ -1,5 +1,5 @@
 /*
- * $XConsortium: process.c,v 1.7 88/12/08 15:09:59 jim Exp $
+ * $XConsortium: process.c,v 1.8 88/12/09 14:55:53 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -63,13 +63,12 @@ struct _extract_data {
 
 static int do_list(), do_merge(), do_extract(), do_add(), do_remove();
 static int do_help(), do_source(), do_set(), do_info(), do_quit();
-static int do_abort(), do_questionmark(), do_give();
+static int do_abort(), do_questionmark();
 
 CommandTable command_table[] = {
     { "abort",   2, 5, do_abort },	/* abort */
     { "add",     2, 3, do_add },	/* add dpy proto hexkey */
     { "extract", 1, 7, do_extract },	/* extract filename dpy... */
-    { "give",    1, 4, do_give },	/* give user filename dpy... */
     { "help",    1, 4, do_help },	/* help */
     { "info",    1, 4, do_info },	/* info */
     { "list",    1, 4, do_list },	/* list [dpy...] */
@@ -355,20 +354,6 @@ static Bool get_displayname_auth (displayname, auth)
 	return False;
     }
 }
-
-static void free_list (list)
-    AuthList *list;
-{
-    while (list) {
-	AuthList *next = list->next;
-
-	XauDisposeAuth (list->auth);
-	free ((char *) list);
-	list = next;
-    }
-    return;
-}
-
 
 static int cvthexkey (hexstr, ptrp)
     char *hexstr;
@@ -995,70 +980,6 @@ static int do_extract (inputfilename, lineno, argc, argv)
 	(void) fclose (ed.fp);
     }
 
-    return errors;
-}
-
-/*
- * give username filename displayname...
- */
-static int do_give (inputfilename, lineno, argc, argv)
-    char *inputfilename;
-    int lineno;
-    int argc;
-    char **argv;
-{ 
-    char *user;
-    int errors, status;
-    struct _extract_data ed;
-    struct passwd *p;
-
-    if (argc < 4) {
-	prefix (inputfilename, lineno);
-	badcommandline (argv[0]);
-	return 1;
-    }
-	
-    user = argv[1];
-    setpwent ();
-    p = getpwnam (user);
-    if (!p) {
-	prefix (inputfilename, lineno);
-	fprintf (stderr, "no such user \"%s\"\n", user);
-	endpwent ();
-	return 1;
-    }
-
-    ed.fp = NULL;
-    ed.filename = argv[2];
-    ed.nwritten = 0;
-
-    errors = iterdpy (inputfilename, lineno, 3, argc, argv, 
-		      extract_entry, NULL, (char *) &ed);
-
-    if (!ed.fp) {
-	printf ("No matches found, authority file \"%s\" not written.\n",
-		ed.filename);
-    } else {
-	printf ("%d entries written to \"%s\"\n", ed.nwritten, ed.filename);
-	if (setuid (effective_uid) != 0) {
-	    prefix (inputfilename, lineno);
-	    fprintf (stderr, "unable to set uid to root\n");
-	}
-	status = fchown (fileno(ed.fp), p->pw_uid, p->pw_gid);
-	if (setuid (real_uid) != 0) {
-	    prefix (inputfilename, lineno);
-	    fprintf (stderr, "unbale to set uid to user\n");
-	}
-	if (status != 0) {
-	    prefix (inputfilename, lineno);
-	    fprintf (stderr, "unable to change owner of auth file to \"%s\"\n",
-		     user);
-	    errors++;
-	}
-	(void) fclose (ed.fp);
-    }
-
-    endpwent ();
     return errors;
 }
 

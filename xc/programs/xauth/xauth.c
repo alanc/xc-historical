@@ -38,7 +38,6 @@ void print_help ()
 "and commands have the following syntax",
 "    add dpyname protoname hexkey      add entry to authority file",
 "    extract filename dpyname...       extract auth entries into file",
-"    give user filename dpyname...     extract into file readable by user",
 "    list [dpyname...]                 list auth entries",
 "    merge filename...                 merge in cookies from given files",
 "    remove dpyname...                 remove entry for given display",
