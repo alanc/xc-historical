@@ -1,5 +1,6 @@
 ! XCalc application class resource file
 
+*Title:	Calculator
 *Cursor:	hand2
 *IconName:	Calc
 *IconPixmap:	calculator

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xcalc.c,v 1.11 90/04/30 16:54:34 converse Exp $
+ * $XConsortium: xcalc.c,v 1.12 91/01/09 20:31:13 gildea Exp $
  *
  * xcalc.c  -  a hand calculator for the X Window system
  * 
@@ -116,8 +116,7 @@ void main(argc, argv)
     if (argc != 1) Syntax(argc, argv);
     
     XtSetArg(args[0], XtNinput, True);
-    XtSetArg(args[1], XtNtitle,	"Calculator");
-    XtSetValues(toplevel, args, TWO);
+    XtSetValues(toplevel, args, ONE);
 
     XtGetApplicationResources(toplevel, (XtPointer)&App_Resources, Resources,
 			      XtNumber(Resources), (ArgList) NULL, ZERO);
