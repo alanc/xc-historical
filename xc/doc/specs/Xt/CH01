@@ -1,4 +1,4 @@
-.\" $XConsortium: CH01,v 1.13 94/04/18 23:17:52 rws Exp $
+.\" $XConsortium: CH01,v 1.14 94/04/19 17:39:58 converse Exp $
 .\" Copyright \(co 1985, 1986, 1987, 1988, 1991, 1994
 .\" X Consortium
 .\" 
@@ -246,7 +246,6 @@ which is defined by the
 and 
 .PN CorePart 
 structures.
-.bp
 
 .NH 4
 CoreClassPart Structure
