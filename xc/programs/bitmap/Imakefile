@@ -1,5 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.19 93/07/06 09:18:06 rws Exp $
-INSTALLFLAGS = $(INSTINCFLAGS)
+XCOMM $XConsortium: Imakefile,v 1.20 93/08/17 21:15:26 rws Exp $
 BUTTONPICTURES = \
 	Dashes \
 	Down \
@@ -36,7 +35,7 @@ BuildIncludes($(BUTTONPICTURES),bitmaps,..)
 
 InstallAppDefaults(Bitmap)
 InstallAppDefaultsLong(Bitmap-co,Bitmap-color)
-InstallMultiple($(BUTTONPICTURES),$(INCDIR)/bitmaps)
+InstallMultipleDestFlags(install,$(BUTTONPICTURES),$(INCDIR)/bitmaps,$(INSTINCFLAGS))
 
 InstallProgramWithFlags(bmtoa,$(BINDIR),NullParameter)
 InstallProgramWithFlags(atobm,$(BINDIR),NullParameter)
