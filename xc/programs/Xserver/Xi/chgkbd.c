@@ -1,4 +1,4 @@
-/* $XConsortium: xchgkbd.c,v 1.14 92/10/20 17:11:26 rws Exp $ */
+/* $XConsortium: xchgkbd.c,v 1.15 92/11/14 10:46:59 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -124,6 +124,8 @@ ProcXChangeKeyboardDevice (client)
 	    }
 	if (!dev->focus)
 	    InitFocusClassDeviceStruct (dev);
+	if (!dev->kbdfeed)
+	   InitKbdFeedbackClassDeviceStruct(dev, NoopDDA, NoopDDA);
 	dev->focus->win = xkbd->focus->win;
 	RegisterOtherDevice (xkbd);
 	RegisterKeyboardDevice (dev);

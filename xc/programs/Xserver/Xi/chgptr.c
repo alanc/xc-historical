@@ -1,4 +1,4 @@
-/* $XConsortium: xchgptr.c,v 1.15 92/10/20 17:11:33 rws Exp $ */
+/* $XConsortium: xchgptr.c,v 1.16 92/11/14 10:47:08 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -130,6 +130,10 @@ ProcXChangePointerDevice (client)
 	    }
 	if (dev->focus)
 	    DeleteFocusClassDeviceStruct(dev);
+	if (!dev->button)
+	    InitButtonClassDeviceStruct (dev, 0, NULL);
+	if (!dev->ptrfeed)
+	   InitPtrFeedbackClassDeviceStruct(dev, NoopDDA);
 	RegisterOtherDevice (xptr);
 	RegisterPointerDevice (dev);
 
