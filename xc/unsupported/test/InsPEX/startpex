@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $XConsortium$
+# $XConsortium: startpex,v 5.1 91/02/16 10:04:53 rws Exp $
 #
 # 
 # Copyright 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -31,7 +31,7 @@ XHOME=${XHOME:-../../../..}
 
 X=$XHOME/server/Xsun
 XPATH=/usr/bin/X11
-XCMD=xinit
+#XCMD=xinit
 
 #	This Env'var MUST be set to start up the PEX server extension right
 PEX_FONTPATH=$XHOME/extensions/fonts/PEX; export PEX_FONTPATH
@@ -65,10 +65,10 @@ PATH=$PATH:$XPATH; export PATH
 
 WINDOW_PARENT=/dev/win0; export WINDOW_PARENT
 
-##echo "$XCMD $XRC -- $X $MONO -dev $DEV $* -fp $XFONTS -co $XRGB"
-##($XCMD $XRC -- $X $MONO -dev $DEV $* -fp $XFONTS -co $XRGB 2>&1 ) | strings &
-echo "$XCMD -- $X $MONO -dev $DEV $* -fp $XFONTS -co $XRGB"
-($XCMD -- $X $MONO -dev $DEV $* -fp $XFONTS -co $XRGB 2>&1 ) | strings &
+##echo "$XCMD $XRC -- $X $MONO $* -fp $XFONTS -co $XRGB"
+##($XCMD $XRC -- $X $MONO $* -fp $XFONTS -co $XRGB 2>&1 ) | strings &
+echo "$XCMD -- $X $MONO $* -fp $XFONTS -co $XRGB"
+($XCMD -- $X $MONO $* -fp $XFONTS -co $XRGB 2>&1 ) | strings &
 
 unset WINDOW_PARENT
 exit
