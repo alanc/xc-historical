@@ -1,4 +1,4 @@
-/* $XConsortium: shutdown.c,v 1.1 93/09/10 14:13:52 mor Exp $ */
+/* $XConsortium: shutdown.c,v 1.2 93/09/12 14:21:29 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -19,7 +19,7 @@ purpose.  It is provided "as is" without express or implied warranty.
 
 
 Status
-IceDoneWithProtocol (iceConn, majorOpcode)
+IceProtocolShutdown (iceConn, majorOpcode)
 
 IceConn iceConn;
 int	majorOpcode;

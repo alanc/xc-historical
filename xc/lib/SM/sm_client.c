@@ -1,4 +1,4 @@
-/* $XConsortium: sm_client.c,v 1.3 93/09/08 20:13:53 mor Exp $ */
+/* $XConsortium: sm_client.c,v 1.4 93/09/12 14:33:35 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -158,7 +158,7 @@ char 		*errorStringRet;
 	    }
 	    else
 	    {
-		IceDoneWithProtocol (iceConn, _SmcOpcode);
+		IceProtocolShutdown (iceConn, _SmcOpcode);
 		IceCloseConnection (iceConn);
 
 		free (smcConn->vendor);
@@ -217,7 +217,7 @@ char    **reasonMsgs;
 	IceFlush (iceConn);
     }
 
-    IceDoneWithProtocol (iceConn, _SmcOpcode);
+    IceProtocolShutdown (iceConn, _SmcOpcode);
     IceCloseConnection (iceConn);
 
     for (i = 0; i < _SmcConnectionCount; i++)

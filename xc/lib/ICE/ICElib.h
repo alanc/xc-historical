@@ -1,4 +1,4 @@
-/* $XConsortium: ICElib.h,v 1.5 93/09/10 14:15:04 mor Exp $ */
+/* $XConsortium: ICElib.h,v 1.6 93/09/12 14:17:06 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -485,7 +485,7 @@ extern Status IceProtocolSetup (
 #endif
 );
 
-extern Status IceDoneWithProtocol (
+extern Status IceProtocolShutdown (
 #if NeedFunctionPrototypes
     IceConn		/* iceConn */,
     int			/* majorOpcode */
