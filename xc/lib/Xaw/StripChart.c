@@ -1,4 +1,4 @@
-/* $XConsortium: StripChart.c,v 1.16 90/12/26 16:35:29 rws Exp $ */
+/* $XConsortium: StripChart.c,v 1.17 91/01/02 10:21:50 gildea Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -35,25 +35,25 @@ SOFTWARE.
 
 /* Private Data */
 
-#define offset(field) XtOffset(StripChartWidget,field)
+#define offset(field) XtOffsetOf(StripChartRec, field)
 
 static XtResource resources[] = {
     {XtNwidth, XtCWidth, XtRDimension, sizeof(Dimension),
-	offset(core.width), XtRImmediate, (caddr_t) 120},
+	offset(core.width), XtRImmediate, (XtPointer) 120},
     {XtNheight, XtCHeight, XtRDimension, sizeof(Dimension),
-	offset(core.height), XtRImmediate, (caddr_t) 120},
+	offset(core.height), XtRImmediate, (XtPointer) 120},
     {XtNupdate, XtCInterval, XtRInt, sizeof(int),
-        offset(strip_chart.update), XtRImmediate, (caddr_t) 10},
+        offset(strip_chart.update), XtRImmediate, (XtPointer) 10},
     {XtNminScale, XtCScale, XtRInt, sizeof(int),
-        offset(strip_chart.min_scale), XtRImmediate, (caddr_t) 1},
+        offset(strip_chart.min_scale), XtRImmediate, (XtPointer) 1},
     {XtNforeground, XtCForeground, XtRPixel, sizeof(Pixel),
         offset(strip_chart.fgpixel), XtRString, XtDefaultForeground},
     {XtNhighlight, XtCForeground, XtRPixel, sizeof(Pixel),
         offset(strip_chart.hipixel), XtRString, XtDefaultForeground},
-    {XtNgetValue, XtCCallback, XtRCallback, sizeof(caddr_t),
-        offset(strip_chart.get_value), XtRImmediate, (caddr_t) NULL},
+    {XtNgetValue, XtCCallback, XtRCallback, sizeof(XtPointer),
+        offset(strip_chart.get_value), XtRImmediate, (XtPointer) NULL},
     {XtNjumpScroll, XtCJumpScroll, XtRInt, sizeof(int),
-        offset(strip_chart.jump_val), XtRImmediate, (caddr_t) DEFAULT_JUMP},
+        offset(strip_chart.jump_val), XtRImmediate, (XtPointer) DEFAULT_JUMP},
 };
 
 #undef offset
@@ -167,7 +167,7 @@ static void Initialize (greq, gnew)
         w->strip_chart.interval_id = XtAppAddTimeOut( 
 					XtWidgetToApplicationContext(gnew),
 					w->strip_chart.update * MS_PER_SEC, 
-					draw_it, (caddr_t) gnew);
+					draw_it, (XtPointer) gnew);
     else
         w->strip_chart.interval_id = NULL;
 
@@ -233,7 +233,7 @@ XtIntervalId *id;		/* unused */
    if (w->strip_chart.get_value == NULL)
        return;
 
-   XtCallCallbacks( (Widget)w, XtNgetValue, (caddr_t)&value );
+   XtCallCallbacks( (Widget)w, XtNgetValue, (XtPointer)&value );
 
    /* 
     * Keep w->strip_chart.max_value up to date, and if this data 
@@ -424,7 +424,7 @@ static Boolean SetValues (current, request, new)
 	w->strip_chart.interval_id =
 	    XtAppAddTimeOut(XtWidgetToApplicationContext(new),
 			    w->strip_chart.update * MS_PER_SEC,
-			    draw_it, (caddr_t)w);
+			    draw_it, (XtPointer)w);
     }
 
     if ( w->strip_chart.min_scale > (int) ((w->strip_chart.max_value) + 1) )
