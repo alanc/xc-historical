@@ -1,4 +1,4 @@
-/* $XConsortium: imCallbk.c,v 1.9 94/10/10 18:31:09 kaleb Exp kaleb $ */
+/* $XConsortium: imCallbk.c,v 1.10 95/05/12 15:44:03 kaleb Exp kaleb $ */
 /***********************************************************************
 Copyright 1993 by Digital Equipment Corporation, Maynard, Massachusetts,
 Copyright 1994 by FUJITSU LIMITED
@@ -94,7 +94,6 @@ Private XimCbStatus _XimGeometryCallback(Xim, Xic, char*, int);
 Private XimCbStatus _XimStrConversionCallback(Xim, Xic, char*, int);
 Private XimCbStatus _XimPreeditStartCallback(Xim, Xic, char*, int);
 Private XimCbStatus _XimPreeditDoneCallback(Xim, Xic, char*, int);
-Private void _read_text_from_packet(Xim, char*, XIMText*);
 Private void _free_memory_for_text(XIMText*);
 Private XimCbStatus _XimPreeditDrawCallback(Xim, Xic, char*, int);
 Private XimCbStatus _XimPreeditCaretCallback(Xim, Xic, char*, int);
@@ -108,7 +107,6 @@ Private XimCbStatus _XimGeometryCallback();
 Private XimCbStatus _XimStrConversionCallback();
 Private XimCbStatus _XimPreeditStartCallback();
 Private XimCbStatus _XimPreeditDoneCallback();
-Private void _read_text_from_packet();
 Private void _free_memory_for_text();
 Private XimCbStatus _XimPreeditDrawCallback();
 Private XimCbStatus _XimPreeditCaretCallback();
@@ -543,17 +541,25 @@ Private void
 #if NeedFunctionPrototypes
 _read_text_from_packet(Xim im, 
 		       char* buf, 
-		       XIMText* text)
+		       XIMText** text_ptr)
 #else
-_read_text_from_packet(im, buf, text)
+_read_text_from_packet(im, buf, text_ptr)
   Xim im;
   char* buf;
-  XIMText* text;
+  XIMText** text_ptr;
 #endif
 {
     int status;
+    XIMText* text;
 
     status = (int)*(BITMASK32*)buf; buf += sz_BITMASK32;
+
+    if (status & 0x00000003) {
+	*text_ptr = (XIMText*)NULL;
+	return;
+    }
+    *text_ptr = text = (XIMText*)Xmalloc(sizeof(XIMText));
+    if (text == (XIMText*)NULL) return;
 
     /* string part
      */
@@ -618,6 +624,19 @@ _read_text_from_packet(im, buf, text)
 	    i -= sz_CARD32;
 	    j++;
 	}
+	/* 
+	 * text->length tells how long both the status string and
+	 * the feedback array are. If there's "no string" the
+	 * text->length was set to zero previously. See above.
+	 * But if there is feedback (i.e. not "no feedback") then
+	 * we need to convey the length of the feedback array.
+	 * It might have been better if the protocol sent two
+	 * different values, one for the length of the status
+	 * string and one for the length of the feedback array.
+	 */
+	if (status & 0x00000001) /* "no string" bit on */ {
+	    text->length = j;
+	}
     }
 }
 
@@ -654,18 +673,14 @@ _XimPreeditDrawCallback(im, ic, proto, len)
 {
     XIMCallback* cb = &ic->core.preedit_attr.draw_callback;
     XIMPreeditDrawCallbackStruct cbs;
-    int p;
 
     /* invoke the callback
      */
     if (cb && cb->callback) {
-	p = 0;
-	cbs.caret      = (int)*(INT32*)&proto[p]; p += sz_INT32;
-	cbs.chg_first  = (int)*(INT32*)&proto[p]; p += sz_INT32;
-	cbs.chg_length = (int)*(INT32*)&proto[p]; p += sz_INT32;
-	if (cbs.text = (XIMText*)Xmalloc(sizeof(XIMText))) {
-	    _read_text_from_packet(im, (char*)&proto[p], (XIMText*)cbs.text);
-	}
+	cbs.caret      = (int)*(INT32*)proto; proto += sz_INT32;
+	cbs.chg_first  = (int)*(INT32*)proto; proto += sz_INT32;
+	cbs.chg_length = (int)*(INT32*)proto; proto += sz_INT32;
+	_read_text_from_packet(im, proto, &cbs.text);
 
 	(*cb->callback)((XIC)ic, cb->client_data, &cbs);
 
@@ -702,8 +717,8 @@ _XimPreeditCaretCallback(im, ic, proto, len)
      */
     if (cb && cb->callback) {
 	cbs.position  = (int)*(INT32*)proto; proto += sz_INT32;
-	cbs.direction = (int)*(CARD32*)proto; proto += sz_CARD32;
-	cbs.style     = (int)*(CARD32*)proto; proto += sz_CARD32;
+	cbs.direction = (XIMCaretDirection)*(CARD32*)proto; proto += sz_CARD32;
+	cbs.style     = (XIMCaretStyle)*(CARD32*)proto; proto += sz_CARD32;
 
 	(*cb->callback)((XIC)ic, cb->client_data, &cbs);
     }
@@ -825,9 +840,7 @@ _XimStatusDrawCallback(im, ic, proto, len)
     if (cb && cb->callback) {
 	cbs.type = (XIMStatusDataType)*(CARD32*)proto; proto += sz_CARD32;
 	if (cbs.type == XIMTextType) {
-	    if (cbs.data.text = (XIMText*)Xmalloc(sizeof(XIMText))) {
-		_read_text_from_packet(im, proto, cbs.data.text);
-	    }
+	    _read_text_from_packet(im, proto, &cbs.data.text);
 	}
 	else if (cbs.type == XIMBitmapType) {
 	    cbs.data.bitmap = (Pixmap)*(CARD32*)proto;
