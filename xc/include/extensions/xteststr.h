@@ -1,4 +1,4 @@
-/* $XConsortium: xteststr.h,v 1.2 92/02/01 15:06:32 rws Exp $ */
+/* $XConsortium: xteststr.h,v 1.3 92/02/05 16:18:15 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -23,7 +23,7 @@ without express or implied warranty.
 
 #define XTestNumberErrors	0
 
-#define XTEST_MAJOR	1
+#define XTEST_MAJOR	2
 #define XTEST_MINOR	0
 
 #define XTestCurrentCursor ((Cursor)1)
