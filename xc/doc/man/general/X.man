@@ -639,7 +639,7 @@ details.
 Any user- and machine-specific resources may be specified by setting
 the XENVIRONMENT environment variable to the name of a resource file
 to be loaded by all applications.  If this variable is not defined,
-a file named .Xdefaults-\fIhostname\fP is looked for instead,
+a file named \fI$HOME\fP/.Xdefaults-\fIhostname\fP is looked for instead,
 where \fIhostname\fP is the name of the host where the application
 is executing.
 .TP 8
