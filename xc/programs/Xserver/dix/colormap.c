@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: colormap.c,v 1.54 87/10/03 14:49:02 rws Locked $ */
+/* $Header: colormap.c,v 1.55 87/11/06 08:33:27 rws Locked $ */
 
 #include "X.h"
 #define NEED_EVENTS
@@ -109,6 +109,8 @@ CreateColormap (mid, pScreen, pVisual, ppcmap, alloc, client)
     AddResource(mid, RT_COLORMAP, pmap, FreeColormap, RC_CORE);
     pmap->mid = mid;
     pmap->flags = 0; 	/* start out with all flags clear */
+    if(mid == pScreen->defColormap)
+	pmap->flags |= IsDefault;
     pmap->pScreen = pScreen;
     pmap->pVisual = pVisual;
     pmap->class = class;
