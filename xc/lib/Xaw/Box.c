@@ -1,4 +1,4 @@
-/* $XConsortium: Box.c,v 1.44 90/03/23 18:13:58 converse Exp $ */
+/* $XConsortium: Box.c,v 1.45 90/12/31 10:22:09 gildea Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -538,8 +538,10 @@ static void ClassInitialize()
 }
 
 /* ARGSUSED */
-static void Initialize(request, new)
+static void Initialize(request, new, args, num_args)
     Widget request, new;
+    ArgList args;
+    Cardinal *num_args;
 {
     BoxWidget newbbw = (BoxWidget)new;
 
@@ -569,8 +571,10 @@ static void Realize(w, valueMask, attributes)
 } /* Realize */
 
 /* ARGSUSED */
-static Boolean SetValues(current, request, new)
+static Boolean SetValues(current, request, new, args, num_args)
     Widget current, request, new;
+    ArgList args;
+    Cardinal *num_args;
 {
    /* need to relayout if h_space or v_space change */
 
