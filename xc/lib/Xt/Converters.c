@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Converters.c,v 1.17 88/02/05 21:24:55 swick Locked $";
+static char rcsid[] = "$Header: Converters.c,v 1.18 88/02/06 12:57:15 swick Locked $";
 #endif lint
 
 /*
@@ -36,7 +36,6 @@ static char rcsid[] = "$Header: Converters.c,v 1.17 88/02/05 21:24:55 swick Lock
 #include	<X/Atoms.h>
 #include	<stdio.h>
 #include	<sys/dir.h>
-#include	<sys/file.h>
 #include	<X/cursorfont.h>
 #include	<X/Convert.h>
 #include	"Quarks.h"
