@@ -41,9 +41,8 @@ static char *sccsid = "@(#)Label.c	1.15	2/25/87";
 
 #include <stdio.h>
 #include <string.h>
+#include <ctype.h>
 #include "Intrinsic.h"
-#include "Xrm.h"	/* quarks */
-#include "Conversion.h" /* lower case proc */
 #include "Label.h"
 #include "LabelPrivate.h"
 #include "Atoms.h"
@@ -139,19 +138,29 @@ static void CvtStringToJustify(display, fromVal, toVal)
     XrmValue    fromVal;
     XrmValue    *toVal;
 {
-    XtJustify	e;
+    static XtJustify	e;
     XrmQuark    q;
+    char	*s = (char *) fromVal.addr;
     char        lowerName[1000];
+    int		i;
 
-#define	done(address, type) \
-	{ (*toVal).size = sizeof(type); (*toVal).addr = (caddr_t) address; }
+    if (s == NULL) return;
 
-    LowerCase((char *) fromVal.addr, lowerName);
+    for (i=0; i<=strlen(s); i++) {
+	lowerName[i] = tolower((char *)fromVal.addr[i]);
+    }
+
     q = XrmAtomToQuark(lowerName);
 
-    if (q == XrmQEleft)   { e = XtjustifyLeft;   done(&e, XtJustify); return; }
-    if (q == XrmQEcenter) { e = XtjustifyCenter; done(&e, XtJustify); return; }
-    if (q == XrmQEright)  { e = XtjustifyRight;  done(&e, XtJustify); return; }
+    (*toVal).size = sizeof(XtJustify);
+    (*toVal).addr = (caddr_t) &e;
+
+    if (q == XrmQEleft)   { e = XtjustifyLeft;   return; }
+    if (q == XrmQEcenter) { e = XtjustifyCenter; return; }
+    if (q == XrmQEright)  { e = XtjustifyRight;  return; }
+
+    (*toVal).size = 0;
+    (*toVal).addr = NULL;
 };
 
 /*
