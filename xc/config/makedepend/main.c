@@ -1,5 +1,5 @@
 /*
- * $XConsortium: main.c,v 1.37 89/12/12 12:44:15 jim Exp $
+ * $XConsortium: main.c,v 1.38 89/12/12 15:48:40 jim Exp $
  */
 #include "def.h"
 #ifdef hpux
@@ -275,20 +275,6 @@ freefile(fp)
 	free(fp);
 }
 
-/*VARARGS*/
-fatal(x0,x1,x2,x3,x4,x5,x6,x7,x8,x9)
-{
-	warning(x0,x1,x2,x3,x4,x5,x6,x7,x8,x9);
-	exit (1);
-}
-
-/*VARARGS0*/
-warning(x0,x1,x2,x3,x4,x5,x6,x7,x8,x9)
-{
-	fprintf(stderr, "%s:  ", ProgramName);
-	fprintf(stderr, x0,x1,x2,x3,x4,x5,x6,x7,x8,x9);
-}
-
 char *copy(str)
 	register char	*str;
 {
@@ -451,4 +437,18 @@ redirect(line, makefile)
 #else
         fchmod(fileno(fdout), st.st_mode);
 #endif /* USG */
+}
+
+/*VARARGS*/
+fatal(x0,x1,x2,x3,x4,x5,x6,x7,x8,x9)
+{
+	warning(x0,x1,x2,x3,x4,x5,x6,x7,x8,x9);
+	exit (1);
+}
+
+/*VARARGS0*/
+warning(x0,x1,x2,x3,x4,x5,x6,x7,x8,x9)
+{
+	fprintf(stderr, "%s:  ", ProgramName);
+	fprintf(stderr, x0,x1,x2,x3,x4,x5,x6,x7,x8,x9);
 }
