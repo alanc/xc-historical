@@ -63,6 +63,8 @@ extern int TellLostMap(), TellGainedMap();
 
 extern int consoleFd;
 
+extern CursorPtr currentCursor;
+
 static struct ColorSpec {
 	unsigned short value;
 	unsigned short red;
@@ -77,11 +79,29 @@ macIIColorUpdateColormap(pScreen, index, count, pColorSpec)
     struct ColorSpec	*pColorSpec;
 {
 
-#ifndef STATIC_COLOR
+	/* 
+	 * Unfortunately we must slam the entire colormap into
+	 * the video boards CLUT 'cause SuperMac (and others?)
+	 * insist on swallowing the whole map at once. The MacOS
+	 * does it this way. We require count to be 254 on entry
+	 * here, the remaining two hardware CLUT entries are allocated
+	 * to color the cursor.
+	 */
 	int fd;
 	struct strioctl ctl; /* Streams ioctl control structure */
 	struct CntrlParam pb;
 	struct VDEntryRecord vde;
+
+	pColorSpec[0xfe].value = 0xfe;
+	pColorSpec[0xfe].red = currentCursor->foreRed;
+	pColorSpec[0xfe].green = currentCursor->foreGreen;
+	pColorSpec[0xfe].blue = currentCursor->foreBlue;
+	count++;
+	pColorSpec[0xff].value = 0xff;
+	pColorSpec[0xff].red = currentCursor->backRed;
+	pColorSpec[0xff].green = currentCursor->backGreen;
+	pColorSpec[0xff].blue = currentCursor->backBlue;
+	count++;
 
 	if (consoleFd <= 0) {
 		fd = open("/dev/console",O_RDWR);
@@ -114,8 +134,6 @@ macIIColorUpdateColormap(pScreen, index, count, pColorSpec)
 
 	if (consoleFd <=0) close(fd);
 
-#endif 
-
 }
 
 /*-
@@ -136,18 +154,6 @@ macIIColorSaveScreen (pScreen, on)
     ScreenPtr	  pScreen;
     Bool    	  on;
 {
-    int		state = on;
-
-    if (on != SCREEN_SAVER_ON) {
-      SetTimeSinceLastInputEvent();
-      state = 1;
-    } else {
-      state = 0;
-    }
-/* XXX fd is closed??!! XXX */
-/*
-    (void) ioctl(macIIFbs[pScreen->myNum].fd, FBIOSVIDEO, &state);
-*/
     return( TRUE );
 }
 
@@ -170,6 +176,9 @@ macIIColorCloseScreen(i, pScreen)
     int		i;
     ScreenPtr	pScreen;
 {
+    extern macIIBlackScreen();
+
+    macIIBlackScreen(pScreen->myNum);
     macIIFbs[pScreen->myNum].installedMap = NULL;
     return (pScreen->SaveScreen(pScreen, SCREEN_SAVER_OFF));
 }
@@ -206,11 +215,13 @@ macIIColorInstallColormap(cmap)
 		 (char *) &(installedMap->mid));
     for (i = 0; i < cmap->pVisual->ColormapEntries; i++) {
 	if (pent->fShared) {
+	    Map[i].value = i;
 	    Map[i].red = pent->co.shco.red->color;
 	    Map[i].green = pent->co.shco.green->color;
 	    Map[i].blue = pent->co.shco.blue->color;
 	}
 	else {
+	    Map[i].value = i;
 	    Map[i].red = pent->co.local.red;
 	    Map[i].green = pent->co.local.green;
 	    Map[i].blue = pent->co.local.blue;
@@ -298,24 +309,44 @@ macIIColorStoreColors(pmap, ndef, pdefs)
     int		ndef;
     xColorItem	*pdefs;
 {
-    struct ColorSpec ColorSlot;
+    struct ColorSpec Map[256];
 
     switch (pmap->class) {
     case PseudoColor:
 	if (pmap == macIIFbs[pmap->pScreen->myNum].installedMap) {
 	    /* We only have a single colormap */
 
+	    register Entry *pent = pmap->red;
+	    register int i;
+
+    	    for (i = 0; i < pmap->pVisual->ColormapEntries; i++) {
+	        if (pent->fShared) {
+		    Map[i].value = i;
+	    	    Map[i].red = pent->co.shco.red->color;
+	    	    Map[i].green = pent->co.shco.green->color;
+	    	    Map[i].blue = pent->co.shco.blue->color;
+		    }
+		else {
+		    Map[i].value = i;
+	    	    Map[i].red = pent->co.local.red;
+	    	    Map[i].green = pent->co.local.green;
+	    	    Map[i].blue = pent->co.local.blue;
+		}
+		pent++;
+    	    }
+
 	    while (ndef--) {
 		register unsigned index = pdefs->pixel&0xff;
 
 		/* PUTCMAP assumes colors to be assigned start at 0 */
-		ColorSlot.red = (pdefs->red);
-		ColorSlot.green = (pdefs->green);
-		ColorSlot.blue = (pdefs->blue);
-	 	macIIColorUpdateColormap(pmap->pScreen,
-				      index, 1, &ColorSlot);
+		Map[index].value = index;
+		Map[index].red = (pdefs->red);
+		Map[index].green = (pdefs->green);
+		Map[index].blue = (pdefs->blue);
 		pdefs++;
 	    }
+	    macIIColorUpdateColormap(pmap->pScreen, 0, 
+		                     pmap->pVisual->ColormapEntries, Map);
 	}
 	break;
     case DirectColor:
@@ -394,20 +425,22 @@ macIIColorInit (index, pScreen, argc, argv)
 
     pScreen->SaveScreen =   	    	macIIColorSaveScreen;
     pScreen->RecolorCursor = 	    	macIIRecolorCursor;
-
-#ifndef STATIC_COLOR
     pScreen->InstallColormap = macIIColorInstallColormap;
     pScreen->UninstallColormap = macIIColorUninstallColormap;
     pScreen->ListInstalledColormaps = macIIColorListInstalledColormaps;
     pScreen->StoreColors = macIIColorStoreColors;
     pScreen->ResolveColor = macIIColorResolvePseudoColor;
-#endif
 
     {
-	ColormapPtr cmap = (ColormapPtr)LookupID(pScreen->defColormap, RT_COLORMAP, RC_CORE);
+	ColormapPtr cmap = (ColormapPtr)LookupID(pScreen->defColormap, 
+	RT_COLORMAP, RC_CORE);
 
 	if (!cmap)
 	    FatalError("Can't find default colormap\n");
+
+	pScreen->whitePixel = 0xfc;
+	pScreen->blackPixel = 0xfd;
+
 	if (AllocColor(cmap, &ones, &ones, &ones, &(pScreen->whitePixel), 0)
 	    || AllocColor(cmap, &zero, &zero, &zero, &(pScreen->blackPixel), 0))
 		FatalError("Can't alloc black & white pixels in cfbScreeninit\n");
@@ -418,137 +451,4 @@ macIIColorInit (index, pScreen, argc, argv)
     macIIColorSaveScreen( pScreen, SCREEN_SAVER_FORCER );
     macIIScreenInit (pScreen);
     return (TRUE);
-}
-
-/*-
- *-----------------------------------------------------------------------
- * macIIColorProbe --
- *	Attempt to find and initialize a color framebuffer. 
- *
- * Results:
- *	TRUE if everything went ok. FALSE if not.
- *
- * Side Effects:
- *	Memory is allocated for the frame buffer and the buffer is mapped.
- *
- *-----------------------------------------------------------------------
- */
-Bool
-macIIColorProbe (pScreenInfo, index, fbNum, argc, argv)
-    ScreenInfo	  *pScreenInfo;	/* The screenInfo struct */
-    int	    	  index;    	/* The index of pScreen in the ScreenInfo */
-    int	    	  fbNum;    	/* Index into the macIIFbData array */
-    int	    	  argc;	    	/* The number of the Server's arguments. */
-    char    	  **argv;   	/* The arguments themselves. Don't change! */
-{
-#ifdef notdef
-    int         i, oldNumScreens;
-
-    if (macIIFbData[fbNum].probeStatus == probedAndFailed) {
-	return FALSE;
-    }
-
-    if (macIIFbData[fbNum].probeStatus == neverProbed) {
-	int         fd;
-	fbtype fbType;
-
-	if ((fd = macIIOpenFrameBuffer(FBTYPE_MACII, &fbType, index, fbNum,
-				     argc, argv)) < 0) {
-	    macIIFbData[fbNum].probeStatus = probedAndFailed;
-	    return FALSE;
-	}
-
-
-	{
-#ifndef notdef
-		char *video_physaddr;
-#endif
-		static char *video_virtaddr = 120 * 1024 * 1024;
-		struct video_map vmap;
-		struct VDPgInfo vdp;
-		struct CntrlParam pb;
-		struct strioctl ctl; /* Streams ioctl control structure */
-
-		ctl.ic_cmd = VIDEO_CONTROL;
-		ctl.ic_timout = -1;
-		ctl.ic_len = sizeof(pb);
-		ctl.ic_dp = (char *)&pb;
-
-#define EightBitMode 0x83 /* ??? */
-		vdp.csMode = EightBitMode;
-		vdp.csData = 0;
-		vdp.csPage = 0;
-		vdp.csBaseAddr = (char *) NULL;
-
-#define noQueueBit 0x0200
-#define SetMode 0x2
-#define APPLE8BIT_SLOT 11
-		pb.qType = APPLE8BIT_SLOT; /* !!! */
-		pb.ioTrap = noQueueBit;
-		pb.ioCmdAddr = (char *) -1;
-		pb.csCode = SetMode;
-		* (char **) pb.csParam = (char *) &vdp;
-
-		if (ioctl(fd, I_STR, &ctl) == -1) {
-			FatalError ("ioctl I_STR VIDEO_CONTROL failed");
-			(void) close (fd);
-			return (FALSE);
-		}
-
-#ifdef notdef
-		/* map to next 8MB segment boundary above 128M */
-		video_virtaddr = video_virtaddr + (8 * 1024 * 1024); 
-	        vmap.map_physnum = 0;
-        	vmap.map_virtaddr = video_virtaddr;
-
-		ctl.ic_cmd = VIDEO_MAP;
-		ctl.ic_timout = -1;
-		ctl.ic_len = sizeof(vmap);
-		ctl.ic_dp = (char *)&vmap;
-		if (ioctl(fd, I_STR, &ctl) == -1) {
-			FatalError ("ioctl I_STR VIDEO_MAP failed");
-			(void) close (fd);
-			return (FALSE);
-		}
-#else
-		ctl.ic_cmd = VIDEO_ADDR;
-		ctl.ic_timout = -1;
-		ctl.ic_len = sizeof(video_physaddr);
-		ctl.ic_dp = (char *)&video_physaddr;
-		if (ioctl(fd, I_STR, &ctl) == -1) {
-			FatalError ("ioctl I_STR VIDEO_ADDR failed");
-			(void) close (fd);
-			return (FALSE);
-		}
-		video_physaddr += 15 * 1024 * 1024;
-		video_virtaddr = video_virtaddr + (8 * 1024 * 1024);
-		if (phys(0, video_virtaddr, 1024*1024, video_physaddr) == -1) {
-			FatalError ("phys failed");
-			(void) close (fd);
-			return (FALSE);
-		}
-#endif
-
-    		macIIFbs[index].fb = 
-		    (pointer)(video_virtaddr + fbType.v_baseoffset); 
-
-
-		(void) close(fd);
-	}
-	macIIFbs[index].fd = fd; /* This fd has been closed! XXX */
-	macIIFbs[index].info = fbType;
-	macIIFbData[fbNum].probeStatus = probedAndSucceeded;
-
-    }
-
-    /*
-     * If we've ever successfully probed this device, do the following. 
-     */
-
-    oldNumScreens = pScreenInfo->numScreens;
-    i = AddScreen(macIIColorInit, argc, argv);
-    pScreenInfo->screen[index].CloseScreen = macIIColorCloseScreen;
-
-    return (i > oldNumScreens);
-#endif
 }

@@ -73,6 +73,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 extern int macIIMouseProc();
 extern void macIIKbdProc();
+extern int macIIKbdSetUp();
 
 extern Bool macIIMonoProbe();
 extern Bool macIIMonoInit();
@@ -86,6 +87,8 @@ extern void ProcessInputEvents();
 
 extern void SetInputCheck();
 extern GCPtr CreateScratchGC();
+
+DevicePtr pPointerDevice, pKeyboardDevice;
 
 int macIISigIO = 0;	 /* For use with SetInputCheck */
 static int autoRepeatHandlersInstalled; /* FALSE each time InitOutput called */
@@ -160,16 +163,22 @@ static PixmapFormatRec	formats[] = {
 
 #define NUMSLOTS 16
 struct video *video_index[NUMSLOTS];     /* how to find it by slot number */
-static struct video video[NUMSLOTS];   /* their attributes */
+static struct video video[NUMSLOTS];    /* their attributes */
 
 #define NUMMODES	7		/* 1,2,4,8,16,24,32 */
+static struct legal_mode_struct {	/* only 1 and 8 bits are supported */
+    int depth;
+    int legal;
+} legal_modes[NUMMODES] = {{1,1},{2,0},{4,0},{8,1},{16,0},{24,0},{32,0}};
+
+static int screen_depth[MAXSCREENS] = {0,0,0,0,0,0};
 
 static struct video_mode_struct{
 	int depth[NUMMODES];
         int mode[NUMMODES];   
 	struct video_data  info[NUMMODES];
 } video_modes[NUMSLOTS] = {
-	{0,0,0,0,0,0,0}, {0,0,0,0,0,0,0}, {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+	{0,0,0,0,0,0,0}, {0,0,0,0,0,0,0}, {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}, 
 	{0,0,0,0,0,0,0}, {0,0,0,0,0,0,0}, {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
 	{0,0,0,0,0,0,0}, {0,0,0,0,0,0,0}, {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
 	{0,0,0,0,0,0,0}, {0,0,0,0,0,0,0}, {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
@@ -221,39 +230,20 @@ InitOutput(pScreenInfo, argc, argv)
 
     autoRepeatHandlersInstalled = FALSE;
 
+    ParseDepths(argc, argv);
+
 #define SLOT_LO 0x09
     for (i = SLOT_LO, index = 0; i < NUMSCREENS - 1; i++) {
-#ifdef debug
-	ErrorF("Probing: %s for a video card ... ", macIIFbData[i].devName);
-#endif
 	if ((* macIIFbData[i].probeProc) (pScreenInfo, index, i, argc, argv)) {
 	    /* This display exists OK */
-#ifdef debug
-	    ErrorF("Succeded!\n");
-#endif
 	    index++;
-	} else {
-	    /* This display can't be opened */
-#ifdef debug
-	    ErrorF("none found.\n");
-#endif
-	}
+	} 
     }
 
     if (index == 0) {
-#ifdef debug
-	ErrorF("Probing: /dev/console ... ");
-#endif
 	if (macIIMonoProbe(pScreenInfo, index, NUMSCREENS - 1, argc, argv)) {
-#ifdef debug
-	    ErrorF("Succeded!\n");
-#endif
 	    index++;
-	} else {
-#ifdef debug
-	    ErrorF("Failed!\n");
-#endif
-	}
+	} 
     }
     if (index == 0)
 	FatalError("Can't find any displays\n");
@@ -261,6 +251,60 @@ InitOutput(pScreenInfo, argc, argv)
     pScreenInfo->numScreens = index;
 
     macIIInitCursor();
+}
+
+ParseDepths(argc, argv)
+    int		argc;
+    char 	**argv;
+{
+#define SCREEN_LO 	0
+#define SCREEN_HI 	(MAXSCREENS - 1)
+#define EQSTRING(s1,s2)	(!(strcmp((s1), (s2))))
+
+    int i;
+    int j;
+    int screen = -1;
+    int depth = -1;
+    int supported_depth = 0;
+
+    i = 0;
+    while (i < argc) {
+	if (EQSTRING(argv[i], "-screen")) {
+	    if (i <= argc - 4) {
+	        screen = atoi(argv[i+1]);
+                if ((screen < SCREEN_LO) || (screen > SCREEN_HI)) {
+		    ErrorF("Invalid screen number %d; a legal number is %d < screen < %d\n", 
+		        screen, SCREEN_LO, SCREEN_HI);
+                }
+
+		if (!EQSTRING(argv[i+2], "-depth")) {
+		    goto usage;
+		}
+
+	        /* is this a depth supported by the server? */
+		depth = atoi(argv[i+3]);
+		for (j = 0; j < NUMMODES; j++) {
+		    if ((legal_modes[j].depth == depth) &&
+			(legal_modes[j].legal)) {
+			screen_depth[screen] = depth;
+			supported_depth = 1;
+			break;
+		    }
+		}
+		if (!supported_depth) {
+		    ErrorF("Invalid screen depth specified\n", depth);
+		}
+	    }
+	    else {
+usage:
+		ErrorF("Usage: -screen screennum -depth depthnum\n");
+	    }
+	    i += 4;
+	}
+	else {
+            i++;
+	}
+    }
 }
 
 /*-
@@ -289,12 +333,17 @@ InitInput(argc, argv)
     p = AddInputDevice(macIIMouseProc, TRUE);
     k = AddInputDevice(macIIKbdProc, TRUE);
 
+    pPointerDevice = p;
+    pKeyboardDevice = k;
+
     RegisterPointerDevice(p, MOTION_BUFFER_SIZE);
     RegisterKeyboardDevice(k);
 
+#ifdef notdef
     signal(SIGIO, SigIOHandler);
 
     SetInputCheck (&zero, &isItTimeToYield);
+#endif
 }
 
 /*-
@@ -318,10 +367,29 @@ macIISlotProbe (pScreenInfo, index, fbNum, argc, argv)
     int	    	  argc;	    	/* The number of the Server's arguments. */
     char    	  **argv;   	/* The arguments themselves. Don't change! */
 {
-    int         i, oldNumScreens;
+    int         i, j, oldNumScreens;
     int		depth;
+    int		depth_supported;
     char 	*video_physaddr;
     static char *video_virtaddr = (char *)(120 * 1024 * 1024);
+    static long csTable[] =
+	{
+	    0x0000ffff, 0xffffffff,
+	    0x00000000, 0x00000000
+	};
+
+    static struct VDEntryRecord vde =
+	{
+	    (char *) csTable,
+	    0,              /* start = 0 */
+	    1               /* count = 1 (2 entries) */
+	};
+    struct VDPgInfo vdp;
+    struct CntrlParam pb;
+    struct strioctl ctl; /* Streams ioctl control structure */
+    int mode_index;
+    int fd;
+
 
     if (macIIFbData[fbNum].probeStatus == probedAndFailed) {
 	return FALSE;
@@ -334,17 +402,68 @@ macIISlotProbe (pScreenInfo, index, fbNum, argc, argv)
 		return FALSE;
 	}
 
+	/* this slot is a video screen */
+
+	/*
+	 * we need to ensure that the video board supports a depth that the 
+	 * server supports before physing in the board.
+	 */
+	depth_supported = 0;
+	for (i = 0; i < NUMMODES; i++) {
+	    for (j = 0; j < NUMMODES; j++) {
+		if ((video_modes[fbNum].depth[i] == legal_modes[j].depth) &&
+		        (legal_modes[j].legal)) {
+		    depth_supported = 1;
+		}
+	    }
+	}
+	if (!depth_supported) {
+	    macIIFbData[fbNum].probeStatus = probedAndFailed;
+	    ErrorF("Video board in slot %d does not offer a supported depth\n",
+		(fbNum - SLOT_LO));
+	    return FALSE;
+	}
+
+#ifdef VIDEO_MAP_SLOT
+	{
+		struct video_map_slot vmap;
+		struct strioctl ctl; /* Streams ioctl control structure */
+
+		/* map frame buffer to next 16MB segment boundary above 128M */
+		video_virtaddr = video_virtaddr + (16 * 1024 * 1024); 
+		vmap.map_slotnum = fbNum;
+	        vmap.map_physnum = index;
+        	vmap.map_virtaddr = video_virtaddr;
+
+		ctl.ic_cmd = VIDEO_MAP_SLOT;
+		ctl.ic_timout = -1;
+		ctl.ic_len = sizeof(vmap);
+		ctl.ic_dp = (char *)&vmap;
+		fd = open("/dev/console", O_RDWR, 0);
+		if (fd < 0) {
+		    FatalError ("could not open /dev/console");
+		} 
+		if (ioctl(fd, I_STR, &ctl) == -1) {
+			FatalError ("ioctl I_STR VIDEO_MAP_SLOT failed");
+			(void) close (fd);
+			return (FALSE);
+		}
+		(void) close(fd);
+	}
+#else
 	video_physaddr = video[fbNum].video_base;
-	video_virtaddr = video_virtaddr + (8 * 1024 * 1024);
+	video_virtaddr = video_virtaddr + (16 * 1024 * 1024);
 
 	/*
 	 * Note that a unique reference number is provided as the
 	 * first argument to phys. School of hard knocks ...
 	 */
-	if (phys(index, video_virtaddr, 1024*1024, video_physaddr) == -1) {
+	ErrorF("macIIInitS.c -- need to take out temp phys() hack.\n");
+	if (phys(index, video_virtaddr, 16*1024*1024, video_physaddr) == -1) {
 		FatalError ("phys failed, server must run suid root");
 		return (FALSE);
 	}
+#endif /* VIDEO_MAP_SLOT */
 
     	macIIFbs[index].fb = (pointer)(video_virtaddr + 
 		video[fbNum].video_data.v_baseoffset); 
@@ -356,16 +475,22 @@ macIISlotProbe (pScreenInfo, index, fbNum, argc, argv)
 	macIIFbs[index].default_depth = depth;
         macIIFbs[index].info = video[fbNum].video_data;
 
-	/* if the board supports 8 bits, patch up a couple of things */
-	{
+	/* check if user asks for a specific depth */
+        if (screen_depth[index]) {
 	    int i;
 	    for (i = 0; i < NUMMODES; i++) {
-		if (video_modes[fbNum].depth[i] == 8) {
-		    macIIFbs[index].default_depth = 8;
+		if (video_modes[fbNum].depth[i] == screen_depth[index]) {
+		    macIIFbs[index].default_depth = screen_depth[index];
 	            macIIFbs[index].info = video_modes[fbNum].info[i];
+		    break;
 		}
 	    }
+	    if (i == NUMMODES) {
+		ErrorF("Screen %d does not support %d bits per pixel\n",
+		    index, screen_depth[index]);
+	    }
 	}
+
 	macIIFbData[fbNum].probeStatus = probedAndSucceeded;
 
     }
@@ -375,73 +500,88 @@ macIISlotProbe (pScreenInfo, index, fbNum, argc, argv)
      */
 
     oldNumScreens = pScreenInfo->numScreens;
-    switch (macIIFbs[index].default_depth) {
-	case 1:
-	    macIIBlackScreen(index);
-    	    i = AddScreen(macIIMonoInit, argc, argv);
-    	    pScreenInfo->screen[index].CloseScreen = macIIMonoCloseScreen;
-	    break;
-	case 8:
-	    {
-	    /* poke the video board */
-		struct VDPgInfo vdp;
-		struct CntrlParam pb;
-		struct strioctl ctl; /* Streams ioctl control structure */
-		int mode_index;
-		int fd;
 
-#ifdef debug
-ErrorF("trying to goose an 8 bit board\n");
-#endif
-		ctl.ic_cmd = VIDEO_CONTROL;
-		ctl.ic_timout = -1;
-		ctl.ic_len = sizeof(pb);
-		ctl.ic_dp = (char *)&pb;
+    {
+    /* poke the video board */
+	ctl.ic_cmd = VIDEO_CONTROL;
+	ctl.ic_timout = -1;
+	ctl.ic_len = sizeof(pb);
+	ctl.ic_dp = (char *)&pb;
 
-	        fd = open("/dev/console", O_RDWR, 0);
-                if (fd < 0) {
-		    FatalError ("could not open /dev/console");
-	        } 
-		for (mode_index = 0; mode_index < NUMMODES; ) {
-		    if (video_modes[fbNum].depth[mode_index] == 8) {
-			break;
-		    }
-		    mode_index++;
-		}
-#ifdef debug
-ErrorF("mode_index: %d fbNum: %x mode: %x\n", mode_index, fbNum, video_modes[fbNum].mode[mode_index]);
-#endif
-		vdp.csMode = video_modes[fbNum].mode[mode_index];
-		vdp.csData = 0;
-		vdp.csPage = 0;
-		vdp.csBaseAddr = (char *) NULL;
+	fd = open("/dev/console", O_RDWR, 0);
+	if (fd < 0) {
+	    FatalError ("could not open /dev/console");
+	} 
+	for (mode_index = 0; mode_index < NUMMODES; ) {
+	    if (video_modes[fbNum].depth[mode_index] == 
+		    macIIFbs[index].default_depth) {
+		break;
+	    }
+	    mode_index++;
+	}
 
 #define noQueueBit 0x0200
 #define SetMode 0x2
-		pb.qType = fbNum;
-		pb.ioTrap = noQueueBit;
-		pb.ioCmdAddr = (char *) -1;
-		pb.csCode = SetMode;
-		* (char **) pb.csParam = (char *) &vdp;
+#define SetEntries 0x3 
 
-		if (ioctl(fd, I_STR, &ctl) == -1) {
-			FatalError ("ioctl I_STR VIDEO_CONTROL failed");
-			(void) close (fd);
-			return (FALSE);
-		}
-		if (pb.qType != 0) {
-			FatalError ("ioctl I_STR VIDEO_CONTROL CMD failed");
-			(void) close (fd);
-			return (FALSE);
-		}
+	vdp.csMode = video_modes[fbNum].mode[mode_index];
+	vdp.csData = 0;
+	vdp.csPage = 0;
+	vdp.csBaseAddr = (char *) NULL;
 
-	    }
-	    macIIBlackScreen(index);
+	pb.qType = fbNum;
+	pb.ioTrap = noQueueBit;
+	pb.ioCmdAddr = (char *) -1;
+	pb.csCode = SetMode;
+	* (char **) pb.csParam = (char *) &vdp;
+
+	if (ioctl(fd, I_STR, &ctl) == -1) {
+		FatalError ("ioctl I_STR VIDEO_CONTROL failed");
+		(void) close (fd);
+		return (FALSE);
+	}
+
+	(void) close (fd);
+	if (pb.qType != 0) {
+		FatalError ("ioctl I_STR VIDEO_CONTROL CMD failed");
+		return (FALSE);
+	}
+
+    }
+
+    macIIBlackScreen(index);
+
+    switch (macIIFbs[index].default_depth) {
+	case 1:
+	    /* install the black & white color map */
+	    fd = open("/dev/console", O_RDWR, 0);
+	    if (fd < 0) {
+		FatalError ("could not open /dev/console");
+	    } 
+	    pb.qType = fbNum;
+	    pb.ioTrap = noQueueBit;
+	    pb.ioCmdAddr = (char *) -1;
+	    pb.csCode = SetEntries;
+	    * (char **) pb.csParam = (char *) &vde;
+
+	    if (ioctl(fd, I_STR, &ctl) == -1) {
+		FatalError ("ioctl I_STR VIDEO_CONTROL failed");
+		(void) close (fd);
+		return(FALSE);
+	    }  
+	    (void) close (fd);
+
+    	    i = AddScreen(macIIMonoInit, argc, argv);
+    	    pScreenInfo->screen[index].CloseScreen = macIIMonoCloseScreen;
+	    break;
+
+	case 8:
     	    i = AddScreen(macIIColorInit, argc, argv);
     	    pScreenInfo->screen[index].CloseScreen = macIIColorCloseScreen;
 	    break;
+
 	default:
-	    FatalError("Encountered bogus depth: %d", macIIFbs[index].fd);
+	    FatalError("Encountered bogus depth: %d", fbNum);
 	    break;
     }
 
@@ -498,6 +638,17 @@ have gained this knowledge only by promising to remove their tongues.
 */
 
 #include "sys/slotmgr.h"
+static int noSlotMgr;
+
+static void
+SigSYSHandler(sig, code, scp)
+    int		code;
+    int		sig;
+    struct sigcontext *scp;
+{
+    noSlotMgr++;
+}
+
 static int get_video_data(vp)
 register struct video *vp;
 {
@@ -517,7 +668,12 @@ register struct video *vp;
 	pb.spDrvrSW = 1;	/* drSwApple */
 	pb.spTBMask = 1;
 
+	noSlotMgr = 0;
+	signal(SIGSYS, SigSYSHandler);
 	err = slotmanager(_sNextTypesRsrc,&pb);
+	signal(SIGSYS, SIG_DFL);
+	if (noSlotMgr) return(-1);
+
 	if (err == 0 && pb.spSlot != vp->dce.dCtlSlot)
 	    err = smNoMoresRsrcs;
 	else if (err == 0) {
@@ -530,7 +686,7 @@ register struct video *vp;
 			if (err == 0) {
 				pb.spID = 1;	/* mVidParams */
 				pb.spResult = 
-				    (long *)malloc(sizeof(struct video_data));
+				    (long)malloc(sizeof(struct video_data));
 				err = slotmanager(_sGetBlock,&pb);
 				if (err == 0) {
 					vd = (struct video_data *) pb.spResult;
@@ -547,41 +703,11 @@ register struct video *vp;
 		}
 	}
 	vp->video_def_mode = default_mode;
-#define MGC
-#ifdef MGC
-	get_video_data_new(vp);
-	{
-	int s, d;
-
-#ifdef debug
-	ErrorF("after get_video_data_new...\n");
-#endif
-	for (s = 0; s < NUMSLOTS; s++) {
-#ifdef debug
-	    ErrorF("Slot %d  ", s);
-#endif
-	    for (d = 0; d < NUMMODES; d++) {
-		if (video_modes[s].depth[d] != 0) {
-#ifdef debug
-		    ErrorF("mode for %2d bits = %2x  ",
-		       video_modes[s].depth[d], video_modes[s].mode[d]);
-#endif
-		}
-	    }
-#ifdef debug
-	    ErrorF("\n");
-#endif
-	}
-#ifdef debug
-	ErrorF("\n\n");
-#endif
-
-	}
-#endif MGC
+	get_all_video_data(vp);
 	return success? depth: -abs(err);
 }
 
-static int get_video_data_new(vp)
+static int get_all_video_data(vp)
 register struct video *vp;
 {
 	int depth = 1024;
@@ -603,7 +729,13 @@ register struct video *vp;
 	pb.spTBMask = 1;
 
         slot = vp->dce.dCtlSlot;
+
+	noSlotMgr = 0;
+	signal(SIGSYS, SigSYSHandler);
 	err = slotmanager(_sNextTypesRsrc,&pb);
+	signal(SIGSYS, SIG_DFL);
+	if (noSlotMgr) return(-1);
+
 	if (err == 0 && pb.spSlot != vp->dce.dCtlSlot)
 	    err = smNoMoresRsrcs;
 	else if (err == 0) {
@@ -615,7 +747,7 @@ register struct video *vp;
 		err = slotmanager(_sFindStruct,&pb);
 		if (err == 0) {
 		    pb.spID = 1;	/* mVidParams */
-		    pb.spResult = (long *)(&video_modes[slot].info[i]);
+		    pb.spResult = (long)(&video_modes[slot].info[i]);
 		    err = slotmanager(_sGetBlock,&pb);
 		    if (err == 0) {
 		        vd = (struct video_data *) pb.spResult;
@@ -771,7 +903,7 @@ macIIScreenInit (pScreen)
 /*-
  *-----------------------------------------------------------------------
  * macIIBlackScreen --
- *	Fill a frame buffer with pixel 1.
+ *	Fill a frame buffer with the black pixel.
  *
  * Results:
  *	None
@@ -797,8 +929,8 @@ macIIBlackScreen(index)
     {
 	fbinc = pf->info.v_rowbytes;
         for (line = pf->info.v_top; line < pf->info.v_bottom; line++) {
-	    lw = ((pf->info.v_right - pf->info.v_left) + 31) >> 5;
 	    fbt = (unsigned int *)fb;
+	    lw = ((pf->info.v_right - pf->info.v_left) + 31) >> 5;
 	    do {
 		*fbt++ = 0xffffffff;
 	    } while (--lw);
@@ -810,10 +942,10 @@ macIIBlackScreen(index)
     {
 	fbinc = pf->info.v_rowbytes;
         for (line = pf->info.v_top; line < pf->info.v_bottom; line++) {
-	    lw = ((pf->info.v_right - pf->info.v_left) + 3) >> 2;
 	    fbt = (unsigned int *)fb;
+	    lw = ((pf->info.v_right - pf->info.v_left) + 3) >> 2;
 	    do {
-		*fbt++ = 0x01010101;
+		*fbt++ = 0xfdfdfdfd;
 	    } while (--lw);
 	    fb += fbinc;
 	}
@@ -865,4 +997,40 @@ macIIOpenFrameBuffer(expect, pfbType, index, fbNum, argc, argv)
     }
 
     return (fd);
+}
+
+void
+AbortDDX()
+{
+    extern int consoleFd, devosmFd;
+
+    if (devosmFd > 0) close(devosmFd);
+    if (consoleFd > 0) {
+	macIIKbdSetUp(consoleFd, FALSE); /* Must NOT FatalError() anywhere! */
+        close(consoleFd);
+	consoleFd = 0;
+    }
+}
+
+/* Called by GiveUp(). */
+void
+ddxGiveUp()
+{
+}
+
+int
+ddxProcessArgument (argc, argv, i)
+    int       argc;
+    char *argv[];
+    int       i;
+{
+    if ( strcmp ( argv[i], "-screen" ) == 0)
+	return 4;
+    else return 0;
+}
+
+void
+ddxUseMsg()
+{
+    ErrorF("-screen # -depth #      run screen (0-5) at depth {1,8}\n");
 }
