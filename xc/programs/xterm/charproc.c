@@ -1,5 +1,5 @@
 /*
- * $XConsortium: charproc.c,v 1.145 91/04/24 14:26:53 gildea Exp $
+ * $XConsortium: charproc.c,v 1.145 91/04/24 15:45:51 gildea Exp $
  */
 
 /*
@@ -1883,6 +1883,7 @@ unparsefputs (s, fd)
     }
 }
 
+static void SwitchBufs();
 
 ToAlternate(screen)
 register TScreen *screen;
@@ -1909,20 +1910,16 @@ register TScreen *screen;
 	update_altscreen();
 }
 
+static void
 SwitchBufs(screen)
-register TScreen *screen;
+    register TScreen *screen;
 {
 	register int rows, top;
-	char *save [2 * MAX_ROWS];
 
 	if(screen->cursor_state)
 		HideCursor();
 	rows = screen->max_row + 1;
-	bcopy((char *)screen->buf, (char *)save, 2 * sizeof(char *) * rows);
-	bcopy((char *)screen->altbuf, (char *)screen->buf, 2 * sizeof(char *) *
-	 rows);
-	bcopy((char *)save, (char *)screen->altbuf, 2 * sizeof(char *) * rows);
-
+	SwitchBufPtrs(screen);
 	if((top = -screen->topline) <= screen->max_row) {
 		if(screen->scroll_amt)
 			FlushScroll(screen);
@@ -1940,6 +1937,20 @@ register TScreen *screen;
 			    FALSE);
 	}
 	ScrnRefresh(screen, 0, 0, rows, screen->max_col + 1, False);
+}
+
+/* swap buffer line pointers between alt and regular screens */
+
+SwitchBufPtrs(screen)
+    register TScreen *screen;
+{
+    register int rows = screen->max_row + 1;
+    char *save [2 * MAX_ROWS];
+
+    bcopy((char *)screen->buf, (char *)save, 2 * sizeof(char *) * rows);
+    bcopy((char *)screen->altbuf, (char *)screen->buf,
+	  2 * sizeof(char *) * rows);
+    bcopy((char *)save, (char *)screen->altbuf, 2 * sizeof(char *) * rows);
 }
 
 VTRun()
