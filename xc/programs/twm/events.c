@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.160 90/05/03 09:24:04 jim Exp $
+ * $XConsortium: events.c,v 1.161 90/06/05 14:17:40 jim Exp $
  *
  * twm event handling
  *
@@ -38,7 +38,7 @@
 
 #if !defined(lint) && !defined(SABER)
 static char RCSinfo[]=
-"$XConsortium: events.c,v 1.160 90/05/03 09:24:04 jim Exp $";
+"$XConsortium: events.c,v 1.161 90/06/05 14:17:40 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -1503,11 +1503,23 @@ HandleButtonRelease()
     {
 	if (ActiveItem != NULL)
 	{
+	    int func = ActiveItem->func;
 	    Action = ActiveItem->action;
-	    if (ActiveItem->func == F_MOVE ||
-		ActiveItem->func == F_FORCEMOVE)
-		    ButtonPressed = -1;
-	    ExecuteFunction(ActiveItem->func, ActiveItem->action,
+	    switch (func) {
+	      case F_MOVE:
+	      case F_FORCEMOVE:
+		ButtonPressed = -1;
+		break;
+	      case F_CIRCLEUP:
+	      case F_CIRCLEDOWN:
+	      case F_REFRESH:
+	      case F_WARPTOSCREEN:
+		PopDownMenu();
+		break;
+	      default:
+		break;
+	    }
+	    ExecuteFunction(func, Action,
 		ButtonWindow ? ButtonWindow->frame : NULL,
 		ButtonWindow, &ButtonEvent, Context, TRUE);
 	    Context = C_NO_CONTEXT;
