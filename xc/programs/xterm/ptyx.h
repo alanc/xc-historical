@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: ptyx.h,v 1.52 91/04/26 15:03:45 gildea Exp $
+ *	$XConsortium: ptyx.h,v 1.53 91/05/07 14:53:04 gildea Exp $
  */
 
 /*
@@ -497,8 +497,9 @@ typedef struct Tek_Link
 {
 	struct Tek_Link	*next;	/* pointer to next TekLink in list
 				   NULL <=> this is last TekLink */
-	short count;
-	char *ptr;
+	short fontsize;		/* character size, 0-3 */
+	short count;		/* number of chars in data */
+	char *ptr;		/* current pointer into data */
 	char data [TEK_LINK_BLOCK_SIZE];
 } TekLink;
 
