@@ -1,4 +1,4 @@
-/* $XConsortium: pexRndr.c,v 5.23 92/12/03 19:56:51 hersh Exp $ */
+/* $XConsortium: pexRndr.c,v 5.24 93/05/07 16:12:48 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -461,6 +461,8 @@ ddRendererStr *prend;
 pexRenderer id;
 {
     ddPickPath 	*strpp;
+    ErrorCode err = Success;
+    CARD32 i;
 
     if (prend) {
 	DeleteDDContext(prend->pDDContext);
@@ -473,10 +475,31 @@ pexRenderer id;
 	DeleteStructure(strpp[0].structure, (strpp[0].structure)->id );
 	puDeleteList(prend->pickstr.fakeStrlist);
 	puDeleteList(prend->pickstr.sIDlist);
+
+	if (prend->pPC) (void)UpdatePCRefs(prend->pPC,prend,(ddAction)REMOVE);
+	for (i = 1; i < PEXMaxTableType+1; i++ ) {
+	  if (prend->lut[i]) {
+	    err = UpdateLUTRefs(    prend->lut[i],
+				    (diResourceHandle)(prend), 
+				    (ddResourceType)RENDERER_RESOURCE,
+				    (ddAction)REMOVE); 
+            if (err) return(err);
+	  }
+	}
+	for (i = 0;  i < DD_MAX_FILTERS; i++ ) {
+	  if (prend->ns[(unsigned)i]) { 
+	    err = UpdateNSRefs(	prend->ns[(unsigned)i], 
+			       (diResourceHandle)(prend), 
+			       (ddResourceType)RENDERER_RESOURCE, 
+			       (ddAction)REMOVE); 
+            if (err) return(err);
+	  }
+	}
+
 	Xfree((pointer)prend);
     }
 
-    return( Success );
+    return( err );
 }
 
 /*++	PEXFreeRenderer
