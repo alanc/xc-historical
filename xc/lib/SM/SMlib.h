@@ -1,4 +1,4 @@
-/* $XConsortium: SMlib.h,v 1.3 93/09/08 20:30:00 mor Exp $ */
+/* $XConsortium: SMlib.h,v 1.4 93/09/22 11:28:38 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -389,22 +389,24 @@ struct _SmsConn {
 typedef void (*SmcErrorHandler) (
 #if NeedFunctionPrototypes
     SmcConn		/* smcConn */,
+    Bool		/* swap */,
     int			/* offendingMinorOpcode */,
     unsigned long 	/* offendingSequence */,
     int 		/* errorClass */,
     int			/* severity */,
-    SmPointer		/* data */
+    SmPointer		/* values */
 #endif
 );
 
 typedef void (*SmsErrorHandler) (
 #if NeedFunctionPrototypes
     SmsConn		/* smsConn */,
+    Bool		/* swap */,
     int			/* offendingMinorOpcode */,
     unsigned long 	/* offendingSequence */,
     int 		/* errorClass */,
     int			/* severity */,
-    SmPointer		/* data */
+    SmPointer		/* values */
 #endif
 );
 
