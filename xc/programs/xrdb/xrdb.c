@@ -1,7 +1,7 @@
 /*
  * xrdb - X resource manager database utility
  *
- * $XConsortium: xrdb.c,v 11.68 93/02/08 13:32:35 rws Exp $
+ * $XConsortium: xrdb.c,v 11.69 93/09/11 13:58:54 rws Exp $
  */
 
 /*
@@ -102,6 +102,9 @@ char *filename = NULL;
 #ifdef PATHETICCPP
 Bool need_real_defines = False;
 char tmpname2[32];
+#ifdef WIN32
+char tmpname3[32];
+#endif
 #endif
 int oper = OPLOAD;
 char *editFile = NULL;
@@ -117,7 +120,7 @@ Display *dpy;
 Buffer buffer;
 Entries newDB;
 
-#ifndef sgi
+#if !defined(sgi) && !defined(WIN32)
 extern FILE *popen();
 #endif
 
@@ -837,9 +840,11 @@ main (argc, argv)
 	    filename = arg;
     }							/* end for */
 
+#ifndef WIN32
     while ((i = open("/dev/null", 0)) < 3)
 	; /* make sure later freopen won't clobber things */
     (void) close(i);
+#endif
     /* Open display  */
     if (!(dpy = XOpenDisplay (displayname)))
 	fatal("%s: Can't open display '%s'\n", ProgramName,
@@ -852,7 +857,12 @@ main (argc, argv)
     if (cpp_program &&
 	(oper == OPLOAD || oper == OPMERGE || oper == OPOVERRIDE)) {
 	need_real_defines = True;
+#ifdef WIN32
+	strcpy(tmpname2, "xrdbD_XXXXXX");
+	strcpy(tmpname3, "\\temp\\xrdbD_XXXXXX");
+#else
 	strcpy(tmpname2, "/tmp/xrdbD_XXXXXX");
+#endif
 	(void) mktemp(tmpname2);
     }
 #endif
@@ -865,7 +875,11 @@ main (argc, argv)
 	(whichResources == RALL || whichResources == RSCREENS)
 #endif
 	) {
+#ifdef WIN32
+	strcpy(tmpname, "\\temp\\xrdb_XXXXXX");
+#else
 	strcpy(tmpname, "/tmp/xrdb_XXXXXX");
+#endif
 	(void) mktemp(tmpname);
 	filename = tmpname;
 	fp = fopen(filename, "w");
@@ -1067,6 +1081,20 @@ Process(scrno, doScreen, execute)
 	    GetEntriesString(&newDB, xdefs);
 #ifdef PATHETICCPP
 	if (need_real_defines) {
+#ifdef WIN32
+	    if (!(input = fopen(tmpname2, "w")))
+		fatal("%s: can't open file '%s'\n", ProgramName, tmpname2);
+	    fputs(defines, input);
+	    fprintf(input, "\n#include \"%s\"\n", filename);
+	    fclose(input);
+	    (void) mktemp(tmpname3);
+	    sprintf(cmd, "%s%s %s > %s", cpp_program, includes,
+		    tmpname2, tmpname3);
+	    if (system(cmd) < 0)
+		fatal("%s: cannot run '%s'\n", ProgramName, cmd);
+	    if (!(input = fopen(tmpname3, "r")))
+		fatal("%s: can't open file '%s'\n", ProgramName, tmpname3);
+#else
 	    if (!freopen(tmpname2, "w+", stdin))
 		fatal("%s: can't open file '%s'\n", ProgramName, tmpname2);
 	    fputs(defines, stdin);
@@ -1076,6 +1104,7 @@ Process(scrno, doScreen, execute)
 	    sprintf(cmd, "%s%s", cpp_program, includes);
 	    if (!(input = popen(cmd, "r")))
 		fatal("%s: cannot run '%s'\n", ProgramName, cmd);
+#endif
 	} else {
 #endif
 	if (filename) {
@@ -1083,9 +1112,19 @@ Process(scrno, doScreen, execute)
 		fatal("%s: can't open file '%s'\n", ProgramName, filename);
 	}
 	if (cpp_program) {
+#ifdef WIN32
+	    (void) mktemp(tmpname3);
+	    sprintf(cmd, "%s%s %s %s > %s", cpp_program, includes, defines,
+		    filename ? filename : "", tmpname3);
+	    if (system(cmd) < 0)
+		fatal("%s: cannot run '%s'\n", ProgramName, cmd);
+	    if (!(input = fopen(tmpname3, "r")))
+		fatal("%s: can't open file '%s'\n", ProgramName, tmpname3);
+#else
 	    sprintf(cmd, "%s%s %s", cpp_program, includes, defines);
 	    if (!(input = popen(cmd, "r")))
 		fatal("%s: cannot run '%s'\n", ProgramName, cmd);
+#endif
 	} else {
 	    input = stdin;
 	}
@@ -1093,11 +1132,21 @@ Process(scrno, doScreen, execute)
 	}
 #endif
 	ReadFile(&buffer, input);
-	if (cpp_program)
+	if (cpp_program) {
+#ifdef WIN32
+	    fclose(input);
+#else
 	    pclose(input);
+#endif
+	}
 #ifdef PATHETICCPP
-	if (need_real_defines)
+	if (need_real_defines) {
 	    unlink(tmpname2);
+#ifdef WIN32
+	    if (tmpname3[strlen(tmpname3) - 1] != 'X')
+		unlink(tmpname3);
+#endif
+	}
 #endif
 	GetEntries(&newDB, &buffer, 0);
 	if (execute) {
