@@ -1,4 +1,4 @@
-/* $XConsortium: a2x.c,v 1.101 92/10/02 16:10:52 rws Exp $ */
+/* $XConsortium: a2x.c,v 1.102 92/10/02 18:00:40 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -631,6 +631,15 @@ reset_mapping()
     case Mod5Mask:
 	meta = mod5;
 	break;
+    default:
+	meta = 0;
+	break;
+    }
+    if (meta) {
+	for (c = 0; c < 128; c++) {
+	    keycodes[c + 128] = keycodes[c];
+	    modifiers[c + 128] = modifiers[c] | modmask[i];
+	}
     }
     if (bs_is_del) {
 	keycodes['\b'] = keycodes['\177'];
