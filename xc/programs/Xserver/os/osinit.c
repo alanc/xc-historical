@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: osinit.c,v 1.27 89/11/13 09:58:31 rws Exp $ */
+/* $XConsortium: osinit.c,v 1.28 89/12/18 15:41:25 rws Exp $ */
 #include "os.h"
 #include "opaque.h"
 #undef NULL
@@ -69,16 +69,15 @@ OsInit()
     set42sig();
 #endif
 
-    /* hack test to decide where to log errors */
-
     if (!been_here) {
+	fclose(stdin);
+	fclose(stdout);
+	/* hack test to decide where to log errors */
 	if (write (2, fname, 0)) 
 	{
 	    long t; 
 	    char *ctime();
 	    FILE *err;
-	    fclose(stdin);
-	    fclose(stdout);
 	    sprintf (fname, ADMPATH, display);
 	    /*
 	     * uses stdio to avoid os dependencies here,
