@@ -1,4 +1,4 @@
-XCOMM $XConsortium$
+XCOMM $XConsortium: Threads.tmpl,v 1.1 94/03/28 15:24:38 gildea Exp $
 
 XCOMM included by application Imakefile if application is multi-threaded
 
@@ -36,13 +36,13 @@ XCOMM included by application Imakefile if application is multi-threaded
 #endif
 
 #if ThreadedX
- THREADS_CFLAGS = ThreadsCompileFlags
-THREADS_DEFINES = XThreadsDefines ThreadTypeDefines
-THREADS_LDFLAGS = ThreadsLoadFlags
-   THREADS_LIBS = ThreadsLibraries
+    THREADS_CFLAGS = ThreadsCompileFlags
+   THREADS_DEFINES = XThreadsDefines ThreadTypeDefines
+   THREADS_LDFLAGS = ThreadsLoadFlags
+      THREADS_LIBS = ThreadsLibraries
 
-  THREADS_CCFLAGS = ThreadsCplusplusCompileFlags
-THREADS_CCDEFINES = XCplusplusThreadsDefines ThreadTypeDefines
-THREADS_CCLDFLAGS = ThreadsCplusplusLoadFlags
-   THREADS_CCLIBS = ThreadsCplusplusLibraries
+  THREADS_CXXFLAGS = ThreadsCplusplusCompileFlags
+THREADS_CXXDEFINES = XCplusplusThreadsDefines ThreadTypeDefines
+THREADS_CXXLDFLAGS = ThreadsCplusplusLoadFlags
+   THREADS_CXXLIBS = ThreadsCplusplusLibraries
 #endif
