@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: osinit.c,v 1.7 87/05/12 11:26:50 sue Exp $ */
+/* $Header: osinit.c,v 1.7 87/06/21 11:27:39 swick Locked $ */
 #include "os.h"
 #include "site.h"
 #undef NULL
@@ -32,5 +32,7 @@ OsInit()
 {
     if(!havergb)
         if(dbminit (RGB_DB) == 0)
+	    havergb = 1;
+	else if (dbminit (RGB_DB_ALTERNATE) == 0)
 	    havergb = 1;
 }
