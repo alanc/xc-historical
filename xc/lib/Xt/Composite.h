@@ -1,4 +1,4 @@
-/* $XConsortium: Composite.h,v 1.10 89/12/12 20:08:44 swick Exp $ */
+/* $XConsortium: Composite.h,v 1.11 91/06/11 18:19:08 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -28,6 +28,12 @@ SOFTWARE.
 #define _XtComposite_h
 
 typedef struct _CompositeClassRec *CompositeWidgetClass;
+
+typedef Cardinal (*XtOrderProc)(
+#if NeedFunctionPrototypes
+    Widget 	/* child */
+#endif
+);
 
 _XFUNCPROTOBEGIN
 
