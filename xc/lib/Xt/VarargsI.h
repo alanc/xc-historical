@@ -1,4 +1,4 @@
-/* $XConsortium: VarargsI.h,v 1.6 89/11/14 13:56:30 swick Exp $ */
+/* $XConsortium: VarargsI.h,v 1.7 89/11/14 14:27:10 swick Exp $ */
 /*
 
 Copyright 1985, 1986, 1987, 1988, 1989 by the
@@ -21,6 +21,12 @@ without express or implied warranty.
 #ifndef _VarargsI_h_ 
 #define _VarargsI_h_ 
  
+/* temporary hack for varargs stuff 'till function prototypes are fully implemented */
+#if NeedVarargsPrototypes
+#undef NeedFunctionPrototypes
+#define NeedFunctionPrototypes 1
+#endif
+
 #ifdef __STDC__
 # ifndef MISSING_STDARG_H
 #  include <stdarg.h>
