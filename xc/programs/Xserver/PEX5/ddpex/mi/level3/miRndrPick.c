@@ -1,4 +1,4 @@
-/* $XConsortium: $ */
+/* $XConsortium: miRndrPick.c,v 1.1 92/03/04 14:11:52 hersh Exp $ */
 
 /************************************************************
 Copyright 1992 by The Massachusetts Institute of Technology
@@ -38,6 +38,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include "miscstruct.h"
 #include "miRender.h"
 #include "miStruct.h"
+#include "miStrMacro.h"
 #include "miWks.h"
 #include "ddpex4.h"
 
@@ -78,11 +79,24 @@ ddRendererPtr       pRend;    /* renderer handle */
     ppm = (miPickMeasureStr *) xalloc(sizeof(miPickMeasureStr));
     if (!ppm) return (BadAlloc);
 
-    /* initialize pointers to NULL values */
+/*
+    ppm->path = puCreateList(DD_PICK_PATH);
+    if (!ppm->path) {
+	xfree(ppm);
+	return (BadAlloc);
+    }
+*/
     ppm->path = 0;
+
+    /* initialize pointers to NULL values */
     ppm->pWks = 0;
+    /* initialize type to an out of range value */
+    ppm->type = -1;
+    ppm->status = PEXNoPick;
+    ppm->pathOrder = PEXTopFirst;
     ppm->incl_handle = 0;
     ppm->excl_handle = 0;
+    ppm->devPriv = (ddPointer) NULL;
 
     (pRend->pickstr.pseudoPM)->deviceData = (ddPointer) ppm;
     return(Success);
@@ -109,6 +123,52 @@ ddPickRecord       *pRec;     /* PickRecord */
     
     ppm = (miPickMeasureStr *) (pRend->pickstr.pseudoPM)->deviceData;
 
+/*
+    if (!ppm->path) {
+	ppm->path = puCreateList(DD_PICK_PATH);
+	if (!ppm->path) {
+	    xfree(ppm);
+	    return (BadAlloc);
+	}
+    } else {
+	if (puCopyList(pRend->pickStartPath, ppm->path)) {
+	    puDeleteList(ppm->path);
+	    xfree(ppm);
+	    return (BadAlloc);
+	}
+    }
+*/
+    ppm->path = 0;
+    ppm->incl_handle = pRend->ns[DD_PICK_INCL_NS];
+    ppm->excl_handle = pRend->ns[DD_PICK_EXCL_NS];
+
+    if (ppm->incl_handle)
+	UpdateNSRefs(   ppm->incl_handle, (diResourceHandle) NULL,
+			PICK_RESOURCE, ADD);
+
+    if (ppm->excl_handle)
+	UpdateNSRefs(   ppm->excl_handle, (diResourceHandle) NULL,
+			PICK_RESOURCE, ADD);
+
+    /* now store the pick record */
+    ppm->type = pRec->pickType;
+    switch (ppm->type) {
+	case PEXPickDeviceDC_HitBox:
+	    bcopy((char *)&(pRec->hit_box.DC_HitBox), 
+	       	  (char *)&(ppm->input_rec.dc_hit_box), 
+		   sizeof(pexPD_DC_HitBox));
+            break;
+
+	case PEXPickDeviceNPC_HitVolume:
+	    bcopy((char *)&(pRec->hit_box.NPC_HitVolume), 
+	       	  (char *)&(ppm->input_rec.npc_hit_volume), 
+		   sizeof(pexPD_NPC_HitVolume));
+            break;
+    }
+
+
+    ppm->status = PEXNoPick;
+
     return(Success);
 }
 
@@ -134,11 +194,21 @@ PickOne( pRend)
 ddRendererPtr       pRend;    /* renderer handle */
 {
     ddpex3rtn		err = Success;
+    ddElementRange      range;
+    miStructPtr         pstruct;
 
     /* JSH this one uses the structure handle in prend->pickstr
        and makes a fake ddElementRange so that it can call
        RenderElements to render all elements in the structure
    */
+
+   pstruct = (miStructPtr) (pRend->pickstr.strHandle)->deviceData;
+   range.position1.whence = PEXBeginning;
+   range.position1.offset = 1;
+   range.position2.whence = PEXBeginning;
+   range.position2.offset = MISTR_NUM_EL(pstruct);
+
+   err = RenderElements(pRend, pRend->pickstr.strHandle, &range);
 
   return(err);
 }
