@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: AsciiText.c,v 1.26 89/08/14 14:43:24 kit Exp $";
+static char Xrcsid[] = "$XConsortium: AsciiText.c,v 1.27 89/08/18 15:34:43 kit Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -131,7 +131,8 @@ Cardinal *num_args;
   
   w->text.source = XawAsciiSourceCreate( widget, args, *num_args );
   w->text.sink = XawAsciiSinkCreate( widget, args, *num_args );
-  
+
+#ifdef notdef  
 /*
  * Do not display caret in read only widget. 
  */
@@ -142,7 +143,8 @@ Cardinal *num_args;
     XtSetArg(arglist[0], XtNdisplayCaret, FALSE);
     XtSetValues(w, arglist, ONE);
   }
-  
+#endif /* notdef */  
+
   w->text.lastPos = /* GETLASTPOS */
     (*w->text.source->Scan) ( w->text.source, 0, XawstAll,
 			     XawsdRight, 1, TRUE );
