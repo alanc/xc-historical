@@ -12,7 +12,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium$
+ * $XConsortium: XlibOpaque.c,v 1.10 92/06/11 15:54:22 rws Exp $
  */
 /*
  * ***************************************************************************
@@ -285,31 +285,28 @@ int     needswap;
 		XFree((char*)xpfvp);
  /* Screen structures */
 	for (s = 0; s < (int)setupdp->numRoots; s++) {
-		XID *ip = (XID *)sptr;
 		xWindowRoot *xwp = (xWindowRoot *)sptr;
 		Screen *scr = ScreenOfDisplay(xdpy, s);
 		int ndepths;
 		int *depths;
 
-		*ip++ = RootWindow(xdpy, s); sptr += 4;
-		*ip++ = DefaultColormap(xdpy, s); sptr += 4;
-		*ip++ = WhitePixel(xdpy, s); sptr += 4;
-		*ip++ = BlackPixel(xdpy, s); sptr += 4;
-		*ip++ = 0L; sptr += 4;
+		xwp->windowId = RootWindow(xdpy, s); sptr += 4;
+		xwp->defaultColormap = DefaultColormap(xdpy, s); sptr += 4;
+		xwp->whitePixel = WhitePixel(xdpy, s); sptr += 4;
+		xwp->blackPixel = BlackPixel(xdpy, s); sptr += 4;
+		xwp->currentInputMask = 0L; sptr += 4;
 		xwp->pixWidth = DisplayWidth(xdpy, s); sptr += 2;
 		xwp->pixHeight = DisplayHeight(xdpy, s); sptr += 2;
 		xwp->mmWidth = DisplayWidthMM(xdpy, s); sptr += 2;
 		xwp->mmHeight = DisplayHeightMM(xdpy, s); sptr += 2;
 		xwp->minInstalledMaps = MinCmapsOfScreen(scr); sptr += 2;
 		xwp->maxInstalledMaps = MaxCmapsOfScreen(scr); sptr += 2;
-		ip += 3;
-		*ip++ = XVisualIDFromVisual(DefaultVisualOfScreen(scr)); sptr += 4;
+		xwp->rootVisualID = XVisualIDFromVisual(DefaultVisualOfScreen(scr)); sptr += 4;
 		xwp->backingStore = DoesBackingStore(scr); sptr++;
 		xwp->saveUnders = DoesSaveUnders(scr); sptr++;
 		xwp->rootDepth = PlanesOfScreen(scr); sptr++;
 		depths = XListDepths(xdpy, s, &ndepths);
 		xwp->nDepths = ndepths; sptr++;
-		ip++;
 	for (d = 0; d < ndepths; d++) {
 		int nvisuals;
 		XVisualInfo template,
