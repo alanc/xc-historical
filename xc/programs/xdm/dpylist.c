@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: dpylist.c,v 1.16 89/11/08 17:21:09 keith Exp $
+ * $XConsortium: dpylist.c,v 1.17 89/12/06 19:38:23 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -142,6 +142,7 @@ struct display	*old;
 	    IfFree (d->failsafeClient);
 	    if (d->authorization)
 		XauDisposeAuth (d->authorization);
+	    IfFree (d->clientAuthFile);
 	    if (d->authFile)
 		(void) unlink (d->authFile);
 	    IfFree (d->authFile);
@@ -209,6 +210,7 @@ char		*class;
     d->failsafeClient = NULL;
     d->authorize = FALSE;
     d->authorization = NULL;
+    d->clientAuthFile = NULL;
     d->authFile = NULL;
     d->userAuthDir = NULL;
     d->authName = NULL;
