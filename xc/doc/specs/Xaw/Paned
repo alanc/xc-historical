@@ -50,6 +50,7 @@ will change to an arrow that points along the pane border.
 The default bindings for the Paned widget's grips are:
 .NH 3
 Resources
+.LP
 .IN "Paned widget" "resources"
 .ps 9
 .nr PS 9
@@ -155,7 +156,7 @@ The cursor to use when the mouse pointer is over the Paned widget, but
 not in any of its children (children may also inherit this cursor).  It
 should be noted that the internal borders are actually part of the Paned
 widget, not the children.
-.De
+.Dp
 .Dc
 .IP \fBgripCursor\fP 1.5i
 The cursor to use when the grips are not active.  The default value is

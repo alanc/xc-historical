@@ -29,6 +29,7 @@ This section lists the resources that are actually part of the
 Text widget, and explains the functionality provided by each.
 .NH 3
 Resources
+.LP
 .IN "Text widget" "resources"
 .ps 9
 .nr PS 9
@@ -98,7 +99,7 @@ _
 .Tm Bold
 .Cm
 .Cu
-.De
+.Dp
 .Dc
 .Dp
 .Hw

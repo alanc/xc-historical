@@ -30,6 +30,7 @@ defines a few new resources.
 .De
 .NH 3
 Resources
+.LP
 .IN "AsciiSink object" "resources"
 .ps 9
 .nr PS 9

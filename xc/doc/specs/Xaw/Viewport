@@ -38,6 +38,7 @@ When creating a Viewport widget instance, the following resources are
 retrieved from the argument list or the resource database:
 .NH 3
 Resources
+.LP
 .IN "Viewport widget" "resources"
 .ps 9
 .nr PS 9
@@ -103,7 +104,7 @@ only appear when it is needed, unless \fBforceBars\fP is \fBTrue\fP.
 .Bw
 .Ch
 .Cm
-.De
+.Dp
 .Dc
 .IP \fBforceBars\fP 1.5i
 When \fBTrue\fP the scrollbars that have been \fIallowed\fP will always be

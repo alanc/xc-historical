@@ -97,7 +97,7 @@ _
 .Ch
 .Cm
 .Dd
-.De
+.Dp
 .Dc
 .Hw
 .IP \fBicon\fP 1.5i

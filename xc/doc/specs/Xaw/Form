@@ -38,6 +38,7 @@ to the Form that is too small for the layout, the children will
 be clipped by the right and bottom edges of the Form.
 .NH 3
 Resources
+.LP
 .IN "Form widget" "resources"
 .ps 9
 .nr PS 9
@@ -93,7 +94,7 @@ _
 .Ch
 .Cm
 .Dd Bold
-.De
+.Dp
 .Dc
 .Hw
 .Ip

@@ -55,6 +55,7 @@ way to get the latest version of the text string is with
 .De
 .NH 3
 Resources
+.LP
 .IN "AsciiSrc object" "resources"
 .ps 9
 .nr PS 9
