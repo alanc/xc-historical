@@ -1,4 +1,4 @@
-/* $XConsortium: xieperf.c,v 1.9 93/10/30 11:52:31 rws Exp $ */
+/* $XConsortium: xieperf.c,v 1.10 93/10/30 13:27:00 rws Exp $ */
 
 int   verbosity_Group_xielib ;
 int   verbosity_Group_xielib_user_level ;
@@ -55,10 +55,14 @@ terms and conditions:
 #include <ctype.h>
 #include <signal.h>
 #include <math.h>
-
-extern int errno;
-
 #include "xieperf.h"
+#include <errno.h>
+#ifdef X_NOT_STDC_ENV
+extern int errno;
+#endif
+#ifndef O_BINARY
+#define O_BINARY 0
+#endif
 
 /* Only for working on ``fake'' servers, for hardware that doesn't exist */
 static Bool     drawToFakeServer = False;
@@ -1125,14 +1129,10 @@ main(argc, argv)
     if (!foreground) foreground = "Black";
     if (!background) background = "White";
 
-#ifndef VMS
-    gethostname (hostname, 100);
-    printf ("%s server on %s\nfrom %s\n",
-	    ServerVendor (xparms.d), DisplayString (xparms.d), hostname);
-#else
-    printf ("%s server on %s\n",
-	    ServerVendor (xparms.d), DisplayString (xparms.d));
-#endif
+    XmuGetHostname (hostname, 100);
+    printf ("%s server version %d on %s\nfrom %s\n",
+	    ServerVendor (xparms.d), VendorRelease (xparms.d),
+	    DisplayString (xparms.d), hostname);
     PrintTime ();
 
     /* Force screen out of screen-saver mode, grab current data, and set
@@ -3644,7 +3644,7 @@ int	which;
 	if ( *size == 0 )
 		return( 0 );
 
-        if ( ( fd = open( buf, O_RDONLY ) ) == -1 )
+        if ( ( fd = open( buf, O_RDONLY|O_BINARY ) ) == -1 )
         {
                 fprintf( stderr, "Couldn't open %s\n", buf );
                 goto out;
