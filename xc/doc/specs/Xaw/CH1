@@ -15,17 +15,17 @@
 .XS
 Chapter 1 \- Athena Widgets and The \*(xI
 .XE
-The X Toolkit is made up of two distict pieces, the Xt \*(xI and a
+The X Toolkit is made up of two distinct pieces, the Xt \*(xI and a
 widget set. 
-The Athena widget set is a sample implementation of a widget set build
+The Athena widget set is a sample implementation of a widget set built
 upon the \*(xI.  In the \*(tk, a widget is the combination of an X
 window or subwindow and its associated input and output semantics.
-The Athena widgets provide the base functionality necessary to build 
+The Athena widgets provide the functionality needed to build 
 a wide variety of applications.  Because the \*(xI provide
 the same basic functionality to all widget sets it may be possible to
 use widgets from the Athena widget set with other widget sets based 
 upon the \*(xI.  Since widget sets may also implement private protocols,
-all functionality may not be avalible when mixing and matching widget sets.
+all functionality may not be available when mixing and matching widget sets.
 For information about the \*(xI, see the \fI\*(xT\fP.
 .LP
 The Athena widget set is a library package layered on top of the \*(xI
@@ -233,8 +233,8 @@ suggestions about their own geometry.
 .NH 2
 Conventions Used in this Manual
 .IP \(bu 5
-All resources avalible to the widgets are listed with each widget.  Many
-of these are avalible to more than one widget class due to the object
+All resources available to the widgets are listed with each widget.  Many
+of these are available to more than one widget class due to the object
 oriented nature of the \*(xI.  The new resources for each widget are
 listed in bold text, and the inherited resources are listed in plain text.
 .IP \(bu 5
@@ -285,10 +285,10 @@ Text Widgets
 Composite and Constraint Widget
 .LP
 Following the introduction will be a description of each widget is that
-chapter.  When no funtional grouping is obvious the widgets are listed
+chapter.  When no functional grouping is obvious the widgets are listed
 in alphabetical order, such as in chapters three and six.
 .LP
-The First section of each widget's description is a table that
+The first section of each widget's description is a table that
 contains general information about this widget class.  Here is the
 table for the Box widget, and an explanation of all the entries.
 .Ds 0
@@ -306,28 +306,28 @@ Superclass	Composite
 This file must be included when an application desires to use this widget
 it usually contains the class definition, and some resource macros.
 .IP "\fBClass Header File\fP" 2.0i
-This file will only be used by widget programmers will need to be
+This file will only be used by widget programmers.  It will need to be
 included by any widget that subclasses this widget.
 .IP \fBClass\fP 2.0i
-This is widget class of this widget.  This global symbol is passed to
+This is the widget class of this widget.  This global symbol is passed to
 \fBXtCreateWidget\fP to determine which type of widget to create.
 .IP "\fBClass Name\fP" 2.0i
 This is the resource name of this class.  This name can be used in
 resource files to match any widget of this class. 
 .IP \fBSuperclass\fP 2.0i
-This is the superclass that this widget class is decended from.  If
+This is the superclass that this widget class is descended from.  If
 you understand how the superclass works it will allow you to more quickly
 understand what this widget does, since much of its functionality may be
 inherited from its superclass.
 .LP
 After this table follows a general description of the default behavior of
 this widget, as seen by the user.  In many cases this functionality
-may be override by the application programmer, or the user.
+may be overridden by the application programmer, or by the user.
 .LP
-The next section is a table listing resources.  This table gives the
-name, class, type and default value of each resource that is avaliable
+The next section is a table which lists resources.  This table gives the
+name, class, type and default value of each resource that is available
 to this widget.  There is also a column containing notes describing
-special restrictions placed upon this resources. 
+special restrictions placed upon the resources. 
 .IN "Notes" "" "@DEF@"
 .IP A .5i
 This resource may be automatically adjusted when another
@@ -342,19 +342,20 @@ there is another preferred interface proveded by the \*(tk.
 .IP R .i5
 This resource is READ-ONLY, and may not be modified. 
 .LP
-After the resource table is a detailed discription of every resource
-avalible to that widget.  Some of these are redundant, but printing
+After the resource table is a detailed description of every resource
+available to that widget.  Many of these are redundant, but printing
 them with each widget saves page flipping.  The names of the resources
-that hare inherited are printed in plain text, while the names of the
+that are inherited are printed in plain text, while the names of the
 resources that are new to this class are printed in \fBbold\fP.
 If you have already read the description of the superclass you need
 only pay attention to the resources printed in bold.
 .LP
 For composite widgets there is a section on layout semantics that
-follows the resource description.  This section will desctibe the
+follows the resource description.  This section will describe the
 effect of constraint resources on the layout of the children, as well
-as a general description of where it preferres to place its children.
+as a general description of where it prefers to place its children.
 .LP
-For widgets with default translations and action routines these
-descriptions come next.  The last thing in the widget documentation is
-the discription of each convience routine provided by this widget.
+Descriptions of default translations and action routines come next, for
+widgets to which they apply.  The last item in each widget's
+documentation is the description of all convenience routines provided by
+the widget.
