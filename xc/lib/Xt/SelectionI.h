@@ -1,4 +1,4 @@
-/* $XConsortium: SelectionI.h,v 1.12 89/11/28 16:48:49 swick Exp $ */
+/* $XConsortium: SelectionI.h,v 1.13 89/11/30 12:56:49 swick Exp $ */
 /* $oHeader: SelectionI.h,v 1.3 88/08/19 14:02:44 asente Exp $ */
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -43,7 +43,6 @@ typedef struct _RequestRec {
    Atom target;
    Atom type;
    int format;
-   Request next, prev;
    char *value;
    int bytelength;
    int offset;
@@ -64,7 +63,6 @@ typedef struct _SelectRec {
     XtLoseSelectionProc loses;
     XtSelectionDoneProc notify;
     XtCancelConvertSelectionProc owner_cancel;
-    Request requestList;
     Boolean incremental;
     XtPointer owner_closure;
     Atom incremental_atom; 		/* constant */

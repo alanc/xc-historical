@@ -1,6 +1,6 @@
 #ifndef lint
 static char Xrcsid[] =
-    "$XConsortium: Selection.c,v 1.30 89/11/30 17:52:49 swick Exp $";
+    "$XConsortium: Selection.c,v 1.31 89/11/30 19:25:20 swick Exp $";
 #endif
 
 /***********************************************************
@@ -201,7 +201,6 @@ Atom selection;
 	ctx->dpy = dpy;
 	ctx->selection = selection;
 	ctx->widget = NULL;
-	ctx->requestList = NULL;
  	ctx->refcount = 0;
 	ctx->incremental_atom = atoms->incremental_atom;
 	ctx->indirect_atom = atoms->indirect_atom;
@@ -305,10 +304,7 @@ XtIntervalId   *id;
 			     &req->target, (XtRequestId*)&req,
 			     ctx->owner_closure);
     }
-    if (req->prev==NULL) ctx->requestList = ctx->requestList->next;
-    else req->prev->next = req->next;
-    if (req->next != NULL) req->next->prev = req->prev;
-    if (ctx->notify == NULL) XtFree((char *)req->value);
+    if (ctx->notify == NULL) XtFree((XtPointer)req->value);
 
     /* the requestor hasn't received it, but owner needs to free it anyway */
     if (ctx->notify) 
@@ -346,10 +342,6 @@ Request req;
 		    req->property, req->type,  req->format, 
 		    PropModeReplace, (unsigned char *) NULL, 0);
     req->allSent = TRUE;
-
-    if (req->prev==NULL) ctx->requestList = ctx->requestList->next;
-    else req->prev->next = req->next;
-    if (req->next != NULL) req->next->prev = req->prev;
 
     if (ctx->notify == NULL) XtFree((XtPointer)req->value);
 }
@@ -440,10 +432,6 @@ int format;
 	req->bytelength = BYTELENGTH(length,format);
 	req->format = format;
 	req->offset = 0;
-	req->prev = NULL;
-	req->next = ctx->requestList;
-	if (req->next != NULL) req->next->prev = req;
-	ctx->requestList = req;
 	req->ctx = ctx;
 	req->target = target;
 	req->widget = widget;
@@ -857,7 +845,7 @@ XEvent *ev;
 			  &info->type, 
 			  (info->offset == 0 ? value : info->value), 
 			  &info->offset, &info->format);
-       if (info->offset) Xfree(value);
+       if (info->offset) XFree(value);
        XtRemoveEventHandler(widget, (EventMask) PropertyChangeMask, FALSE, 
 		HandleGetIncrement, (XtPointer) info);
        FreeSelectionProperty(event->display, info->property);
@@ -988,18 +976,6 @@ unsigned long size;
     info->bytelength = size;
     info->value = (char *) XtMalloc((unsigned) info->bytelength);
     info->offset = 0;
-
-#ifdef notdef
-    incr->requestor = XtWindow(widget);
-    incr->type = None;
-    incr->property = property;
-    incr->incr_callback = FALSE;
-    incr->format = 0;
-    incr->prev = NULL;
-    incr->next = ctx->incrList;
-    if (incr->next != NULL) incr->next->prev = incr;
-    ctx->incrList = incr;
-#endif
 
     /* reset the timer */
     info->proc = HandleGetIncrement;
