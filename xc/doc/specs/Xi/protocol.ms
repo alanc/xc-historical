@@ -12,6 +12,8 @@
 \fBX11 Input Extension Protocol Specification
 .ps 12
 .sp 2
+Version 1.0
+.sp 1
 MIT X Consortium Standard
 .sp 1
 X Version 11, Release 5
