@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: access.c,v 1.17 87/08/11 13:22:36 ham Exp $ */
+/* $Header: access.c,v 1.17 87/08/11 13:22:36 toddb Locked $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -452,14 +452,19 @@ ConvertAddr (saddr, len, addr)
         *len = sizeof (struct in_addr);
         *addr = (pointer) &(((struct sockaddr_in *) saddr)->sin_addr);
         return (AF_INET);
-#endif TCPCONN
+#else TCPCONN
         break;
+#endif TCPCONN
+
 #ifdef DNETCONN
       case AF_DECnet:
         *len = sizeof (struct dn_naddr);
         *addr = (pointer) &(((struct sockaddr_dn *) saddr)->sdn_add);
         return (AF_DECnet);
-#endif
+#else DNETCONN
+        break;
+#endif DNETCONN
+
       default:
         break;
     }
