@@ -31,8 +31,9 @@ SOFTWARE.
 
 extern WindowPtr *WindowTable;
 
-Bool cfbCreateWindow(pWin)
-WindowPtr pWin;
+Bool
+cfbCreateWindow(pWin)
+    WindowPtr pWin;
 {
     cfbPrivWin *pPrivWin;
 
@@ -40,7 +41,9 @@ WindowPtr pWin;
     pWin->PaintWindowBackground = cfbPaintAreaNone;
     pWin->PaintWindowBorder = cfbPaintAreaPR;
     pWin->CopyWindow = cfbCopyWindow;
-    pPrivWin = (cfbPrivWin *)Xalloc(sizeof(cfbPrivWin));
+    pPrivWin = (cfbPrivWin *)xalloc(sizeof(cfbPrivWin));
+    if (!pPrivWin)
+	return FALSE;
     pWin->devPrivate = (pointer)pPrivWin;
     pPrivWin->pRotatedBorder = NullPixmap;
     pPrivWin->pRotatedBackground = NullPixmap;
@@ -50,8 +53,9 @@ WindowPtr pWin;
     return TRUE;
 }
 
-Bool cfbDestroyWindow(pWin)
-WindowPtr pWin;
+Bool
+cfbDestroyWindow(pWin)
+    WindowPtr pWin;
 {
     cfbPrivWin *pPrivWin;
 
@@ -60,7 +64,7 @@ WindowPtr pWin;
     /* cfbDestroyPixmap() deals with any NULL pointers */
     cfbDestroyPixmap(pPrivWin->pRotatedBorder);
     cfbDestroyPixmap(pPrivWin->pRotatedBackground);
-    Xfree(pWin->devPrivate);
+    xfree(pWin->devPrivate);
     if (pWin->backingStore != NotUseful)
     {
 	miFreeBackingStore(pWin);
@@ -68,8 +72,10 @@ WindowPtr pWin;
     return(TRUE);
 }
 
-Bool cfbMapWindow(pWindow)
-WindowPtr pWindow;
+/*ARGSUSED*/
+Bool
+cfbMapWindow(pWindow)
+    WindowPtr pWindow;
 {
     return(TRUE);
 }
@@ -81,9 +87,11 @@ or otherwise.)
    cfbChangeWindowAttributes() has already put a copy of the pixmap
 in pPrivWin->pRotated*
 */
-Bool cfbPositionWindow(pWin, x, y)
-WindowPtr pWin;
-int x, y;
+/*ARGSUSED*/
+Bool
+cfbPositionWindow(pWin, x, y)
+    WindowPtr pWin;
+    int x, y;
 {
     cfbPrivWin *pPrivWin;
     int setxy = 0;
@@ -116,8 +124,10 @@ int x, y;
     return (TRUE);
 }
 
-Bool cfbUnmapWindow(pWindow)
-WindowPtr pWindow;
+/*ARGSUSED*/
+Bool
+cfbUnmapWindow(pWindow)
+    WindowPtr pWindow;
 {
     return (TRUE);
 }
@@ -167,7 +177,8 @@ cfbCopyWindow(pWin, ptOldOrg, prgnSrc)
 	ppt->y = pbox->y1 + dy;
     }
 
-    cfbDoBitblt(pwinRoot, pwinRoot, GXcopy, prgnDst, pptSrc);
+    cfbDoBitblt((DrawablePtr)pwinRoot, (DrawablePtr)pwinRoot,
+		GXcopy, prgnDst, pptSrc);
     DEALLOCATE_LOCAL(pptSrc);
     (* pWin->drawable.pScreen->RegionDestroy)(prgnDst);
 }
