@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: gc.h,v 1.48 88/09/05 14:33:59 rws Exp $ */
+/* $XConsortium: gc.h,v 1.49 88/09/06 15:47:26 jim Exp $ */
 
 #ifndef GC_H
 #define GC_H 
@@ -50,7 +50,7 @@ SOFTWARE.
 
 #define MAX_SERIAL_NUM     (1L<<28)
 #define NEXT_SERIAL_NUMBER ((++globalSerialNumber) > MAX_SERIAL_NUM ? \
-	    (globalSerialNumber  = 1): globalSerialNumber);
+	    (globalSerialNumber  = 1): globalSerialNumber)
 
 typedef struct _GCInterest *GCInterestPtr;
 typedef struct _GC    *GCPtr;
