@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM X Window System Build Parameters
-XCOMM $XConsortium: Project.tmpl,v 1.86 91/02/09 14:35:10 rws Exp $
+XCOMM $XConsortium: Project.tmpl,v 1.87 91/02/13 10:34:15 rws Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -161,9 +161,6 @@ XCOMM $XConsortium: Project.tmpl,v 1.86 91/02/09 14:35:10 rws Exp $
 #ifndef BinDir
 #define BinDir $(DESTDIR)/usr/bin/X11
 #endif
-#ifndef IncRoot
-#define IncRoot $(DESTDIR)/usr/include
-#endif
 #ifndef BuildIncRoot
 #define BuildIncRoot $(TOP)
 #endif
@@ -323,7 +320,7 @@ XCOMM $XConsortium: Project.tmpl,v 1.86 91/02/09 14:35:10 rws Exp $
 
 XCOMM -------------------------------------------------------------------------
 XCOMM X Window System make variables; this need to be coordinated with rules
-XCOMM $XConsortium: Project.tmpl,v 1.86 91/02/09 14:35:10 rws Exp $
+XCOMM $XConsortium: Project.tmpl,v 1.87 91/02/13 10:34:15 rws Exp $
 
 /*
  * This list must be reflected in the DIRS_TO_BUILD list in the top-level
