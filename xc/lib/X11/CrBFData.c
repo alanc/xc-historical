@@ -1,4 +1,4 @@
-/* $XConsortium: XCrBFData.c,v 1.9 90/12/12 09:17:25 rws Exp $ */
+/* $XConsortium: XCrBFData.c,v 1.10 91/01/06 11:44:51 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1987	*/
 
 /*
@@ -57,8 +57,9 @@ Pixmap XCreateBitmapFromData(display, d, data, width, height)
     ximage.height = height;
     ximage.width = width;
     ximage.depth = 1;
+    ximage.bits_per_pixel = 1;
     ximage.xoffset = 0;
-    ximage.format = ZPixmap;
+    ximage.format = XYPixmap;
     ximage.data = (char *)data;
     ximage.byte_order = LSBFirst;
     ximage.bitmap_unit = 8;
