@@ -400,7 +400,7 @@ XCOMM
 #define need_os_42bsd
 MACIIDIRS = dix ddx/snf ddx/mi ddx/mfb ddx/cfb ddx/macII os/4.2bsd
 MACIIOBJS = ddx/macII/macIIInitS.o ddx/macII/macIIColor.o $(FONTUTIL)
-MACIILIBS = $(MACII) $(CFB) $(DIX) $(BSD) $(SNF) $(BSDEMUL) $(MFB) $(MI) $(EXTENSIONS)
+MACIILIBS = $(MACII) $(CFB) $(DIX) $(BSD) $(SNF) $(MFB) $(MI) $(EXTENSIONS)
 MACIISYSLIBS = $(SYSLIBS)
 XmacIIDIRS = $(MACIIDIRS)
  
