@@ -1,4 +1,4 @@
-.\" $XConsortium: 00.header,v 1.4 92/07/03 15:46:44 gildea Exp $
+.\" $XConsortium: 00.header,v 1.5 92/07/03 17:34:28 rws Exp $
 .de TP
 .sp 1
 .tl \\*(}t
@@ -29,32 +29,13 @@ Xlib and X Protocol Test Suite
 \*(dD
 .DE
 .R
+.SP 8
 .S 14
 .DS 2
-
-
-
-
-
-
-
-
-Prepared by
-
-UniSoft Group Limited
-
-
 July 1992
 .DE
-.SP 8
+.SP 15
 .S 10
-.nf
-UniSoft Group Limited,
-Spa House,
-Chapel Place,
-Rivington Street,
-LONDON EC2A 3DQ
-.fi
 .sp
 Copyright \(co 1991, 1992 by the Massachusetts Institute of Technology and
 UniSoft Group Limited
