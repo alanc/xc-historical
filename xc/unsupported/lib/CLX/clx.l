@@ -78,7 +78,7 @@
 
 ;; Note: all of the following is in the package XLIB.
 
-(in-package 'xlib :use '(lisp))
+(in-package 'xlib)
 
 (export '(
 	  *version*
@@ -281,13 +281,10 @@
 	  make-state-keys
 	  ))
 
-(provide 'clx)
-(provide 'xlib)
-
 (pushnew :clx *features*)
 (pushnew :xlib *features*)
 
-(defparameter *version* "MIT R4.1")
+(defparameter *version* "MIT R4.2 Experimental")
 (pushnew :clx-mit-r4 *features*)
 
 (defparameter *protocol-major-version* 11.)
