@@ -25,7 +25,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: version.c,v 5.30 89/04/12 11:32:26 toml Exp $
+ * $XConsortium: version.c,v 5.30 89/04/12 18:56:09 jim Exp $
  *
  * twm version number
  *
@@ -34,12 +34,12 @@
  ***********************************************************************/
 
 static char RCSinfo[]=
-"$XConsortium: version.c,v 5.30 89/04/12 11:32:26 toml Exp $";
+"$XConsortium: version.c,v 5.30 89/04/12 18:56:09 jim Exp $";
 
-char *Revision = "version: 5.30";
-char *Date = "date: 89/04/12 11:32:26";
+char *Revision = "version: 6.00";
+char *Date = "date: 89/07/14 14:00:00";
 
 /* the following strings are for the SCCS "what" command */
 
-char *WhatRevision = "@(#)twm version: 5.30 $";
+char *WhatRevision = "@(#)twm version: 6.00 $";
 char *WhatDate = "@(#)twm date: 89/04/12 11:32:26 $";
