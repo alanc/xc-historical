@@ -1,4 +1,4 @@
-/* $XConsortium: xsm.c,v 1.69 94/12/12 19:54:33 mor Exp mor $ */
+/* $XConsortium: xsm.c,v 1.70 94/12/13 20:45:03 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -116,7 +116,6 @@ char **argv;
 {
     IceListenObj *listenObjs;
     char	*p;
-    char	*progName;
     char 	errormsg[256];
     static	char environment_name[] = "SESSION_MANAGER";
     int		success, found_command_line_name, i;
@@ -145,13 +144,10 @@ char **argv;
 
     usage:
 	fprintf (stderr,
-	    "usage: %s [-display display] [-session session_name] [-verbose]\n",
-	    argv[0]);
+	 "usage: xsm [-display display] [-session session_name] [-verbose]\n");
 	exit (1);
     }
 
-    p = strrchr(argv[0], '/');
-    progName = (p ? p + 1 : argv[0]);
     topLevel = XtVaAppInitialize (&appContext, "XSm", NULL, 0,
 	&argc, argv, NULL,
 	XtNmappedWhenManaged, False,
