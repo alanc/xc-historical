@@ -1,12 +1,12 @@
 .TH XLSATOMS 1 "27 August 1989" "X Version 11"
 .SH NAME
-xlsatoms - list installed atoms defined on server
+xlsatoms - list interned atoms defined on server
 .SH SYNOPSIS
 .B xlsatoms
 [-options ...]
 .SH DESCRIPTION
 .I Xlsatoms
-lists the installed atoms.  By default, all atoms starting from 1 (the lowest
+lists the interned atoms.  By default, all atoms starting from 1 (the lowest
 atom value defined by the protocol) are listed until unknown atom is found.
 If an explicit range is given, \fIxlsatoms\fP will try all atoms in the range,
 regardless of whether or not any are undefined.
